@@ -19,7 +19,9 @@ void main() {
         repository: repository,
         size: const Size(1440, 1200),
       );
-      await tester.tap(find.widgetWithText(ListTile, hero.name));
+      await tester.tap(
+        find.byKey(ValueKey<String>('karto-heldenwahl-held-${hero.id}')),
+      );
       await tester.pumpAndSettle();
       expect(container.read(selectedHeroIdProvider), hero.id);
 

@@ -87,55 +87,76 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
           initiallyExpanded: true,
           tilePadding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
           childrenPadding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-          title: Row(
+          // Wrap statt Row: breit stehen Titel und Knoepfe wie bisher in einer
+          // Zeile, schmal rutschen die Knoepfe in die naechste, statt ueber
+          // den Rand zu laufen.
+          title: Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 8,
+            runSpacing: 4,
             children: [
-              Expanded(
-                child: Text(
-                  'Sonderfertigkeiten',
-                  style: Theme.of(context).textTheme.titleSmall,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                '(${_draftTalentSpecialAbilities.length})',
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-              const SizedBox(width: 8),
-              PopupMenuButton<String>(
-                key: const ValueKey<String>(
-                  'talents-special-abilities-catalog',
-                ),
-                tooltip: 'Aus Katalog wählen',
-                onSelected: (value) async {
-                  await _ensureEditingSession();
-                  if (!mounted) {
-                    return;
-                  }
-                  _openTalentSpecialAbilityCatalog(karmal: value == 'karmal');
-                },
-                itemBuilder: (context) => const [
-                  PopupMenuItem(value: 'allgemein', child: Text('Allgemein')),
-                  PopupMenuItem(value: 'karmal', child: Text('Karmal')),
-                ],
-                child: IgnorePointer(
-                  child: OutlinedButton.icon(
-                    onPressed: null,
-                    icon: const Icon(Icons.library_add),
-                    label: const Text('Aus Katalog'),
+              Wrap(
+                spacing: 8,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  Text(
+                    'Sonderfertigkeiten',
+                    style: Theme.of(context).textTheme.titleSmall,
                   ),
-                ),
+                  Text(
+                    '(${_draftTalentSpecialAbilities.length})',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ],
               ),
-              const SizedBox(width: 8),
-              FilledButton(
-                key: const ValueKey<String>('talents-special-abilities-add'),
-                onPressed: () async {
-                  await _ensureEditingSession();
-                  if (!mounted) {
-                    return;
-                  }
-                  _addTalentSpecialAbility();
-                },
-                child: const Text('+ Sonderfertigkeit'),
+              Wrap(
+                spacing: 8,
+                runSpacing: 4,
+                children: [
+                  PopupMenuButton<String>(
+                    key: const ValueKey<String>(
+                      'talents-special-abilities-catalog',
+                    ),
+                    tooltip: 'Aus Katalog wählen',
+                    onSelected: (value) async {
+                      await _ensureEditingSession();
+                      if (!mounted) {
+                        return;
+                      }
+                      _openTalentSpecialAbilityCatalog(
+                        karmal: value == 'karmal',
+                      );
+                    },
+                    itemBuilder: (context) => const [
+                      PopupMenuItem(
+                        value: 'allgemein',
+                        child: Text('Allgemein'),
+                      ),
+                      PopupMenuItem(value: 'karmal', child: Text('Karmal')),
+                    ],
+                    child: IgnorePointer(
+                      child: OutlinedButton.icon(
+                        onPressed: null,
+                        icon: const Icon(Icons.library_add),
+                        label: const Text('Aus Katalog'),
+                      ),
+                    ),
+                  ),
+                  FilledButton(
+                    key: const ValueKey<String>(
+                      'talents-special-abilities-add',
+                    ),
+                    onPressed: () async {
+                      await _ensureEditingSession();
+                      if (!mounted) {
+                        return;
+                      }
+                      _addTalentSpecialAbility();
+                    },
+                    child: const Text('+ Sonderfertigkeit'),
+                  ),
+                ],
               ),
             ],
           ),

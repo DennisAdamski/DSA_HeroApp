@@ -3,8 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dsa_heldenverwaltung/data/hero_transfer_file_gateway.dart';
+import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_workspace_screen.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/heroes_home_screen.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/settings_screen.dart';
+import 'package:dsa_heldenverwaltung/ui2/shell/karto_workspace.dart';
+import 'package:dsa_heldenverwaltung/ui2/widgets/karto_papier.dart';
 
 import 'karto_acceptance_support.dart';
 import 'karto_test_support.dart';
@@ -56,6 +60,53 @@ void main() {
     expect(find.byType(SettingsScreen), findsNothing);
     expect(repository.heroWrites, isEmpty);
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Held öffnen aus der Bestandsliste bleibt in Kartograph', (
+    tester,
+  ) async {
+    // Frueher legte die Liste den klassischen Arbeitsbereich darueber; unter
+    // Kartograph waehlt sie den Helden fuer den eigenen Workspace.
+    final repository = AcceptanceRepository(
+      heroes: [testHero(), testHero('alrik', 'Alrik')],
+    );
+    final container = await pumpAcceptanceWorkspace(
+      tester,
+      repository: repository,
+      selectedHeroId: 'rondra',
+    );
+    await _openMenu(tester, 'Helden verwalten');
+    expect(find.byType(HeroesHomeScreen), findsOneWidget);
+    await tester.tap(find.text('Alrik').first);
+    await tester.pumpAndSettle();
+    final oeffnen = find.text('Held öffnen');
+    if (oeffnen.evaluate().isNotEmpty) {
+      await tester.tap(oeffnen.first);
+      await tester.pumpAndSettle();
+    }
+    expect(container.read(selectedHeroIdProvider), 'alrik');
+    expect(find.byType(HeroesHomeScreen), findsNothing);
+    expect(find.byType(HeroWorkspaceScreen), findsNothing);
+    expect(find.byType(KartoWorkspace), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Einstellungen liegen unter Kartograph auf Papier', (
+    tester,
+  ) async {
+    await pumpAcceptanceWorkspace(
+      tester,
+      repository: AcceptanceRepository(heroes: [testHero()]),
+      selectedHeroId: 'rondra',
+    );
+    await _openMenu(tester, 'Einstellungen');
+    expect(
+      find.descendant(
+        of: find.byType(SettingsScreen),
+        matching: find.byType(KartoPapier),
+      ),
+      findsOneWidget,
+    );
   });
 }
 

@@ -4,14 +4,27 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_advancement_entry.dart';
 import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/theme/codex_theme.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/karto_variante.dart';
+import 'package:dsa_heldenverwaltung/ui2/foundation/karto_stroke.dart';
+import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
 
 /// Zeigt AP-Vorschau, bearbeitbare Sitzung und unveränderliche frühere Historie.
 class AdvancementHistoryPanel extends ConsumerWidget {
   /// Erstellt die Sitzungsübersicht für Seitenleiste oder mobiles Detailpanel.
-  const AdvancementHistoryPanel({super.key, required this.heroId});
+  const AdvancementHistoryPanel({
+    super.key,
+    required this.heroId,
+    this.zeigeApZeilen = true,
+  });
 
   /// Held der aktuell geplanten Runde.
   final String heroId;
+
+  /// Zeigt Frei, Reserviert und Danach verfügbar.
+  ///
+  /// Die neue Oberfläche setzt `false`: dort steht dieselbe Bilanz bereits als
+  /// Gleichung über dem Katalog, zweimal dieselben drei Zahlen verwirren.
+  final bool zeigeApZeilen;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -31,14 +44,16 @@ class AdvancementHistoryPanel extends ConsumerWidget {
           const Text(
             'Erst beim Übernehmen werden Werte, AP und Sondererfahrungen gespeichert.',
           ),
-          const SizedBox(height: 16),
-          _ApRow(label: 'Frei zu Beginn', value: session.base.apAvailable),
-          _ApRow(label: 'Reserviert', value: session.apReserved),
-          _ApRow(
-            label: 'Danach verfügbar',
-            value: session.preview.apAvailable,
-            emphasized: true,
-          ),
+          if (zeigeApZeilen) ...[
+            const SizedBox(height: 16),
+            _ApRow(label: 'Frei zu Beginn', value: session.base.apAvailable),
+            _ApRow(label: 'Reserviert', value: session.apReserved),
+            _ApRow(
+              label: 'Danach verfügbar',
+              value: session.preview.apAvailable,
+              emphasized: true,
+            ),
+          ],
           const Divider(height: 28),
           Text('Laufende Runde', style: theme.textTheme.titleMedium),
           const SizedBox(height: 6),
@@ -141,6 +156,10 @@ class _HistoryEntry extends StatelessWidget {
         : previous == null || previous < 0
         ? 'Aktivierung → $next'
         : '$previous → $next';
+    final karto = kartoVariante(context);
+    if (karto != null) {
+      return _kartograph(context, change, dateLabel, timeLabel);
+    }
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 5),
       child: Padding(
@@ -183,6 +202,76 @@ class _HistoryEntry extends StatelessWidget {
                   error!,
                   style: TextStyle(color: context.codexTheme.danger),
                 ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Unter Kartograph eine Zeile mit Haarlinie statt einer Karte in der
+  // Kontextspalte; die Kosten stehen rechtsbündig in Tabellenziffern.
+  Widget _kartograph(
+    BuildContext context,
+    String change,
+    String dateLabel,
+    String timeLabel,
+  ) {
+    final karto = kartoVariante(context)!;
+    final texte = Theme.of(context).textTheme;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            color: karto.hoehenlinie,
+            width: Strich.hoehenlinie,
+          ),
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Expanded(child: Text(entry.label, style: texte.wert)),
+                Text(
+                  '${entry.apCost} AP',
+                  style: texte.wert.copyWith(color: karto.schriftLeise),
+                ),
+                if (removable)
+                  IconButton(
+                    key: ValueKey('advancement-remove-${entry.id}'),
+                    tooltip: 'Geplante Steigerung entfernen',
+                    visualDensity: VisualDensity.compact,
+                    onPressed: onRemove,
+                    icon: const Icon(Icons.close, size: 18),
+                  )
+                else
+                  const Padding(
+                    padding: EdgeInsets.all(8),
+                    child: Tooltip(
+                      message: 'Bereits übernommen',
+                      child: Icon(Icons.lock_outline, size: 18),
+                    ),
+                  ),
+              ],
+            ),
+            Text(change, style: texte.etikett),
+            if (entry.seSpent > 0)
+              Text(
+                '${entry.seSpent} Sondererfahrung(en)',
+                style: texte.etikett,
+              ),
+            if (entry.options['meisterentscheid'] == 'true')
+              Text('Mit Meisterentscheid', style: texte.etikett),
+            Text('$dateLabel · $timeLabel', style: texte.bodySmall),
+            if (error != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 6),
+                child: Text(error!, style: TextStyle(color: karto.siegel)),
               ),
           ],
         ),

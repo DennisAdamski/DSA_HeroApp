@@ -12,6 +12,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_note_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_resource_activation_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/advancement/advancement_catalog.dart';
+import 'package:dsa_heldenverwaltung/ui2/widgets/karto_papier.dart';
 
 import '../theme/karto_test_fonts.dart';
 import 'karto_acceptance_support.dart';
@@ -164,6 +165,65 @@ void main() {
       }
     }
   }
+
+  // Die Heldenwahl ist die erste Flaeche nach dem Start; sie laeuft ueber
+  // dieselben Breiten, Helligkeiten und Schriftgroessen wie der Workspace.
+  for (final width in [320.0, 390.0, 744.0, 1024.0, 1440.0]) {
+    for (final brightness in Brightness.values) {
+      for (final scale in [1.0, 2.0]) {
+        testWidgets('Heldenwahl $width dp, ${brightness.name}, Text $scale', (
+          tester,
+        ) async {
+          final screenshotKey = GlobalKey();
+          final repository = AcceptanceRepository(
+            heroes: [
+              testHero(
+                'rondra',
+                'Rondra Alrike von Gareth und den Silberquellen',
+              ).copyWith(
+                apAvailable: 1375,
+                background: const HeroBackground(
+                  rasse: 'Mittelländer',
+                  kultur: 'Mittelreich',
+                  profession: 'Reisende Gelehrte',
+                ),
+              ),
+              testHero('alrik', 'Alrik Feuerstein').copyWith(
+                apAvailable: 420,
+                background: const HeroBackground(
+                  rasse: 'Thorwaler',
+                  kultur: 'Thorwal',
+                  profession: 'Hetmann',
+                ),
+              ),
+            ],
+          );
+          await pumpAcceptanceWorkspace(
+            tester,
+            repository: repository,
+            size: Size(width, 1000),
+            textScale: scale,
+            brightness: brightness,
+            screenshotKey: screenshotKey,
+          );
+          expect(find.text('Deine Helden'), findsOneWidget);
+          expect(tester.takeException(), isNull);
+          final capture =
+              scale == 1 &&
+              ((brightness == Brightness.light &&
+                      (width == 390 || width == 1440)) ||
+                  (brightness == Brightness.dark && width == 1024));
+          if (capture) {
+            await _capture(
+              tester,
+              screenshotKey,
+              'heldenwahl-${width.toInt()}-${brightness.name}',
+            );
+          }
+        }, tags: ['r3-acceptance']);
+      }
+    }
+  }
 }
 
 // Rasterisiert genau den gezeichneten Flutter-Frame samt Navigator und Dialogen.
@@ -173,6 +233,11 @@ Future<void> _capture(
   String name,
 ) async {
   if (_screenshotDirectory.isEmpty) return;
+  // Die Papiertextur laedt als Asset asynchron; ohne echtes Warten fehlte
+  // sie im Rasterbild, obwohl sie in der App sichtbar ist.
+  await tester.runAsync(
+    () => precacheImage(KartoPapier.textur, boundaryKey.currentContext!),
+  );
   await tester.pumpAndSettle();
   final boundary =
       boundaryKey.currentContext!.findRenderObject()! as RenderRepaintBoundary;

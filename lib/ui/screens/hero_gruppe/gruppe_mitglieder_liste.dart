@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dsa_heldenverwaltung/domain/externer_held.dart';
 import 'package:dsa_heldenverwaltung/state/externe_helden_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/karto_variante.dart';
 
 /// Zeigt die Mitglieder einer Gruppe als Karten-Liste an.
 class GruppeMitgliederListe extends ConsumerWidget {
@@ -227,7 +228,7 @@ class _StatChip extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
         color: theme.colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(kartoRadiusOder(context, 12)),
       ),
       child: Text('$label $value', style: theme.textTheme.labelSmall),
     );

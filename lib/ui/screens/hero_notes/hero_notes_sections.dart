@@ -520,6 +520,15 @@ class _SectionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Unter Kartograph dieselbe Flaeche wie jeder andere Abschnitt.
+    if (kartoVariante(context) != null) {
+      return CodexSectionCard(
+        title: title,
+        subtitle: subtitle,
+        trailing: action,
+        child: child,
+      );
+    }
     final headerChildren = <Widget>[
       Expanded(
         child: Text(title, style: Theme.of(context).textTheme.titleLarge),

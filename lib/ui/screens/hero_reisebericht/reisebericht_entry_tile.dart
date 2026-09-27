@@ -82,15 +82,28 @@ class _RewardChips extends StatelessWidget {
   Widget build(BuildContext context) {
     final chips = <Widget>[];
     if (ap > 0) {
-      chips.add(_SmallChip(label: '+$ap AP', color: Colors.amber));
+      chips.add(
+        _SmallChip(
+          label: '+$ap AP',
+          color: _ReiseberichtFarben.von(context).belohnung,
+        ),
+      );
     }
     for (final se in seDefs) {
       final label = se.ziel == 'wahl' ? 'SE: ${se.name}' : 'SE ${se.name}';
-      chips.add(_SmallChip(label: label, color: Colors.blue));
+      chips.add(
+        _SmallChip(
+          label: label,
+          color: _ReiseberichtFarben.von(context).hinweis,
+        ),
+      );
     }
     for (final tb in talentBoni) {
       chips.add(
-        _SmallChip(label: '+${tb.wert} ${tb.talentName}', color: Colors.green),
+        _SmallChip(
+          label: '+${tb.wert} ${tb.talentName}',
+          color: _ReiseberichtFarben.von(context).erledigt,
+        ),
       );
     }
     if (chips.isEmpty) return const SizedBox.shrink();
@@ -141,15 +154,17 @@ class _ProgressIndicator extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
         color: done
-            ? Colors.green.withValues(alpha: 0.15)
+            ? _ReiseberichtFarben.von(context).erledigt.withValues(alpha: 0.15)
             : Theme.of(context).colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(
+          kartoVariante(context) == null ? 12 : 8,
+        ),
       ),
       child: Text(
         '$current/$total',
         style: Theme.of(context).textTheme.labelSmall?.copyWith(
           fontWeight: FontWeight.bold,
-          color: done ? Colors.green : null,
+          color: done ? _ReiseberichtFarben.von(context).erledigt : null,
         ),
       ),
     );
@@ -187,7 +202,9 @@ class _CheckpointTile extends StatelessWidget {
               )
             : Icon(
                 checked ? Icons.check_circle : Icons.circle_outlined,
-                color: checked ? Colors.green : null,
+                color: checked
+                    ? _ReiseberichtFarben.von(context).erledigt
+                    : null,
               ),
         title: Text(
           def.name,
@@ -243,7 +260,9 @@ class _MultiRequirementTile extends StatelessWidget {
       child: ExpansionTile(
         leading: Icon(
           doneCount >= totalCount ? Icons.check_circle : Icons.circle_outlined,
-          color: doneCount >= totalCount ? Colors.green : null,
+          color: doneCount >= totalCount
+              ? _ReiseberichtFarben.von(context).erledigt
+              : null,
         ),
         title: Row(
           children: [
@@ -273,7 +292,7 @@ class _MultiRequirementTile extends StatelessWidget {
                           : Icons.check_box_outline_blank,
                       size: 20,
                       color: draft.checkedIds.contains(req.id)
-                          ? Colors.green
+                          ? _ReiseberichtFarben.von(context).erledigt
                           : null,
                     ),
               title: Text(req.name),
@@ -316,7 +335,9 @@ class _CollectionFixedTile extends StatelessWidget {
           checkedCount >= totalCount
               ? Icons.check_circle
               : Icons.circle_outlined,
-          color: checkedCount >= totalCount ? Colors.green : null,
+          color: checkedCount >= totalCount
+              ? _ReiseberichtFarben.von(context).erledigt
+              : null,
         ),
         title: Row(
           children: [
@@ -342,7 +363,9 @@ class _CollectionFixedTile extends StatelessWidget {
                       ? 'Schwelle $checkedCount/${def.schwelle} erreicht!'
                       : 'Schwelle: ${def.schwelle} für Bonus',
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: thresholdMet ? Colors.green : null,
+                    color: thresholdMet
+                        ? _ReiseberichtFarben.von(context).erledigt
+                        : null,
                     fontWeight: thresholdMet ? FontWeight.bold : null,
                   ),
                 ),
@@ -358,7 +381,7 @@ class _CollectionFixedTile extends StatelessWidget {
                 padding: const EdgeInsets.only(top: 2),
                 child: _SmallChip(
                   label: '${def.bonus!.name}: +${def.bonus!.ap} AP',
-                  color: Colors.orange,
+                  color: _ReiseberichtFarben.von(context).warnung,
                 ),
               ),
           ],
@@ -379,7 +402,7 @@ class _CollectionFixedTile extends StatelessWidget {
                           : Icons.check_box_outline_blank,
                       size: 20,
                       color: draft.checkedIds.contains(eintrag.id)
-                          ? Colors.green
+                          ? _ReiseberichtFarben.von(context).erledigt
                           : null,
                     ),
               title: Text(eintrag.name),
@@ -420,7 +443,7 @@ class _CollectionOpenTile extends StatelessWidget {
               ? Icons.check_circle
               : Icons.circle_outlined,
           color: def.schwelle > 0 && itemCount >= def.schwelle
-              ? Colors.green
+              ? _ReiseberichtFarben.von(context).erledigt
               : null,
         ),
         title: Row(
@@ -433,7 +456,9 @@ class _CollectionOpenTile extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(
+                    kartoVariante(context) == null ? 12 : 8,
+                  ),
                 ),
                 child: Text(
                   '$itemCount',
@@ -467,10 +492,10 @@ class _CollectionOpenTile extends StatelessWidget {
             ListTile(
               dense: true,
               contentPadding: const EdgeInsets.only(left: 32, right: 16),
-              leading: const Icon(
+              leading: Icon(
                 Icons.check_box,
                 size: 20,
-                color: Colors.green,
+                color: _ReiseberichtFarben.von(context).erledigt,
               ),
               title: Text(items[i].name),
               subtitle: items[i].klassifikation.isNotEmpty
@@ -574,7 +599,9 @@ class _GroupedProgressionTile extends StatelessWidget {
               )
             : Icon(
                 checked ? Icons.check_circle : Icons.circle_outlined,
-                color: checked ? Colors.green : null,
+                color: checked
+                    ? _ReiseberichtFarben.von(context).erledigt
+                    : null,
               ),
         title: Text(
           def.name,
@@ -623,18 +650,20 @@ class _GroupedProgressionBonusTile extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.only(bottom: 4),
       color: complete
-          ? Colors.green.withValues(alpha: 0.08)
+          ? _ReiseberichtFarben.von(context).erledigt.withValues(alpha: 0.08)
           : Theme.of(context).colorScheme.surfaceContainerLow,
       child: ListTile(
         leading: Icon(
           complete ? Icons.star : Icons.star_outline,
-          color: complete ? Colors.amber : Colors.grey,
+          color: complete
+              ? _ReiseberichtFarben.von(context).belohnung
+              : _ReiseberichtFarben.von(context).offen,
         ),
         title: Text(
           def.name,
           style: TextStyle(
             fontWeight: FontWeight.w600,
-            color: complete ? Colors.green : null,
+            color: complete ? _ReiseberichtFarben.von(context).erledigt : null,
           ),
         ),
         subtitle: Column(
@@ -687,19 +716,23 @@ class _MetaTile extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.only(bottom: 4),
       color: complete
-          ? Colors.amber.withValues(alpha: 0.1)
+          ? _ReiseberichtFarben.von(context).belohnung.withValues(alpha: 0.1)
           : Theme.of(context).colorScheme.surfaceContainerLow,
       child: ListTile(
         leading: Icon(
           complete ? Icons.emoji_events : Icons.emoji_events_outlined,
-          color: complete ? Colors.amber : Colors.grey,
+          color: complete
+              ? _ReiseberichtFarben.von(context).belohnung
+              : _ReiseberichtFarben.von(context).offen,
           size: 28,
         ),
         title: Text(
           def.name,
           style: TextStyle(
             fontWeight: FontWeight.bold,
-            color: complete ? Colors.amber.shade800 : null,
+            color: complete
+                ? _ReiseberichtFarben.von(context).belohnungText
+                : null,
           ),
         ),
         subtitle: Column(
@@ -719,11 +752,11 @@ class _MetaTile extends StatelessWidget {
                 ),
               ),
             if (complete)
-              const Padding(
-                padding: EdgeInsets.only(top: 2),
+              Padding(
+                padding: const EdgeInsets.only(top: 2),
                 child: _SmallChip(
                   label: 'Meta-Erfolg freigeschaltet!',
-                  color: Colors.amber,
+                  color: _ReiseberichtFarben.von(context).belohnung,
                 ),
               ),
             _RewardChips(ap: def.ap, seDefs: def.se),
@@ -739,7 +772,7 @@ class _MetaTile extends StatelessWidget {
                         label: eb.eigenschaft == 'wahl'
                             ? '+${eb.wert} Eigenschaft (Wahl: ${eb.optionen.join("/")})'
                             : '+${eb.wert} ${eb.eigenschaft.toUpperCase()}',
-                        color: Colors.purple,
+                        color: _ReiseberichtFarben.von(context).besonders,
                       ),
                   ],
                 ),

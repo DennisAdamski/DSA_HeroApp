@@ -82,4 +82,43 @@ void main() {
     expect(find.bySemanticsLabel('Held verwalten'), findsOneWidget);
     expect(find.bySemanticsLabel('Entwicklung planen'), findsOneWidget);
   });
+
+  testWidgets('vorgemerkte Steigerungen stehen als Marke an der Planung', (
+    tester,
+  ) async {
+    final semantics = tester.ensureSemantics();
+    Future<void> zeige(int vorgemerkt, {required bool kompakt}) {
+      return tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: KartoModusNavigation(
+              bereich: KartoArbeitsbereich.spielen,
+              kompakt: kompakt,
+              vorgemerkt: vorgemerkt,
+              onAuswahl: (_) {},
+            ),
+          ),
+        ),
+      );
+    }
+
+    await zeige(0, kompakt: false);
+    expect(find.byKey(const ValueKey('karto-marke-entwickeln')), findsNothing);
+
+    for (final kompakt in <bool>[false, true]) {
+      await zeige(2, kompakt: kompakt);
+      expect(
+        find.byKey(const ValueKey('karto-marke-entwickeln')),
+        findsOneWidget,
+      );
+      expect(find.text('2'), findsOneWidget);
+      // Der Name bleibt unveraendert; die Zahl steht als Wert daneben, damit
+      // bestehende Bedienpruefungen das Ziel weiter unter seinem Namen finden.
+      final daten = tester
+          .getSemantics(find.bySemanticsLabel('Entwicklung planen'))
+          .getSemanticsData();
+      expect(daten.value, '2 vorgemerkt');
+    }
+    semantics.dispose();
+  });
 }

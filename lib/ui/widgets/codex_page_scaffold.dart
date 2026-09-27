@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import 'package:dsa_heldenverwaltung/ui/theme/codex_theme.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/karto_variante.dart';
+import 'package:dsa_heldenverwaltung/ui2/widgets/karto_papier.dart';
 
 /// Umschliessende Seite mit dekorativem Codex-Hintergrund.
 class CodexPageScaffold extends StatelessWidget {
@@ -22,6 +24,13 @@ class CodexPageScaffold extends StatelessWidget {
     final codex = context.codexTheme;
     // Zeichnet ListTile-Hintergründe und Ink-Effekte über der Seitendekoration.
     final content = Material(type: MaterialType.transparency, child: child);
+
+    // Unter Kartograph derselbe Papiergrund wie in den Arbeitsbereichen.
+    if (kartoVariante(context) != null) {
+      return KartoPapier(
+        child: Padding(padding: padding, child: content),
+      );
+    }
 
     if (!codex.showDecoration) {
       return Container(

@@ -26,6 +26,7 @@ void main() {
     TestBestand? bestand,
     double width = 390,
     double scale = 1,
+    bool animationenAus = false,
     Future<RulesCatalog> Function()? catalogLoader,
   }) async {
     tester.view.devicePixelRatio = 1;
@@ -58,8 +59,10 @@ void main() {
             centerAppBarTitle: false,
           ),
           builder: (context, child) => MediaQuery(
-            data: MediaQuery.of(context)
-                .copyWith(textScaler: TextScaler.linear(scale)),
+            data: MediaQuery.of(context).copyWith(
+              textScaler: TextScaler.linear(scale),
+              disableAnimations: animationenAus,
+            ),
             child: child!,
           ),
           home: KartoShell(bestand: bestand ?? TestBestand()),
@@ -351,6 +354,38 @@ void main() {
       expect(tester.takeException(), isNull);
     });
   }
+
+  group('Bereichswechsel', () {
+    double deckkraft(WidgetTester tester) => tester
+        .widget<FadeTransition>(
+          find.byKey(const ValueKey<String>('karto-bereichsblende')),
+        )
+        .opacity
+        .value;
+
+    testWidgets('blendet den neuen Bereich ein', (tester) async {
+      await pumpShell(tester, selected: 'rondra', width: 1024);
+      expect(deckkraft(tester), 1);
+      await tester.tap(find.byTooltip('Held verwalten').first);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 60));
+      expect(deckkraft(tester), inExclusiveRange(0, 1));
+      await tester.pumpAndSettle();
+      expect(deckkraft(tester), 1);
+    });
+
+    testWidgets('steht ohne Systemanimationen sofort am Ziel', (tester) async {
+      await pumpShell(
+        tester,
+        selected: 'rondra',
+        width: 1024,
+        animationenAus: true,
+      );
+      await tester.tap(find.byTooltip('Held verwalten').first);
+      await tester.pump();
+      expect(deckkraft(tester), 1);
+    });
+  });
 }
 
 class _ErrorRepository extends FakeRepository {

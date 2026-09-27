@@ -12,6 +12,8 @@ import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/config/ui_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui/theme/codex_theme.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/karto_variante.dart';
+import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
 
 enum _RestRollMode { digital, manual }
 
@@ -1355,12 +1357,21 @@ class _RestSectionSurface extends StatelessWidget {
   Widget build(BuildContext context) {
     final codex = context.codexTheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    // Unter Kartograph eine eingelassene senke-Flaeche mit Haarlinie, wie
+    // jede Begleitflaeche; klassisch die halbdurchsichtige Tafel.
+    final karto = kartoVariante(context);
     return DecoratedBox(
-      decoration: BoxDecoration(
-        color: codex.panelRaised.withValues(alpha: isDark ? 0.38 : 0.55),
-        borderRadius: BorderRadius.circular(codex.panelRadius),
-        border: Border.all(color: codex.rule),
-      ),
+      decoration: karto != null
+          ? BoxDecoration(
+              color: karto.senke,
+              borderRadius: BorderRadius.circular(kKartoRadius),
+              border: Border.all(color: karto.hoehenlinie, width: 0.5),
+            )
+          : BoxDecoration(
+              color: codex.panelRaised.withValues(alpha: isDark ? 0.38 : 0.55),
+              borderRadius: BorderRadius.circular(codex.panelRadius),
+              border: Border.all(color: codex.rule),
+            ),
       child: Padding(padding: const EdgeInsets.all(12), child: child),
     );
   }

@@ -54,7 +54,13 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
 - `CodexPageScaffold` legt eine transparente `Material`-Fläche über den
   Seitenhintergrund, damit `ListTile`-/`ExpansionTile`-Hintergründe und
   Ink-Effekte sichtbar bleiben. Der Regressionstest liegt unter
-  `test/ui/widgets/codex_page_scaffold_test.dart`.
+  `test/ui/widgets/codex_page_scaffold_test.dart`. Dasselbe gilt für
+  `KartoPapier` und `KartoFlaeche`: beide tragen diese Schicht selbst
+  (`test/ui2/widgets/karto_tintenschicht_test.dart`). Flutter prüft in
+  `ListTile.build` jede `ColoredBox`, `DecoratedBox` und `ShapeDecoration` mit
+  Farbe zwischen Kachel und nächstem `Material` — jede neue farbige Fläche,
+  die Bestandskacheln aufnimmt, braucht deshalb ebenfalls eine eigene
+  `Material`-Schicht (oder `ListTileMaterial`).
 - Steigerungen laufen getrennt von manuellen Korrekturen als Sitzung:
   `lib/domain/hero_advancement_entry.dart` trägt persistierbare Einträge,
   `lib/rules/derived/advancement*.dart` Optionen und Replay,
@@ -309,6 +315,17 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
 - Nicht enthalten und bewusst nicht erfunden: pauschaler Schadens- und
   Rücknahmeknopf, KR-Zähler, persistente Favoriten, Offline-/Sync-Status ohne
   echten Providerzustand. Ein Test in `test/ui2/spielen/` hält das fest.
+- Der Kopf von `WorkspaceManagementBody` (nur UI2) ist der
+  `KartoSeitenkopf`: Kontext „Heldenbogen“ (schmal ohne), Tab als Titel,
+  Helfertext als Unterzeile; `management-active-title`/`-helper` hängen über
+  `titelSchluessel`/`unterzeileSchluessel` daran. Die oberste Reiterreihe
+  setzt Meer-Unterstrich und Schrift selbst, alle inneren Reiter kommen als
+  ruhige Pille aus dem Feinschliff. In UI2 zeigt der Planungsverlauf keine
+  AP-Zeilen (`AdvancementHistoryPanel.zeigeApZeilen: false`), die Bilanz
+  steht als Gleichung darüber. `HeroesHomeScreen` bekommt dort
+  `onHeldOeffnen` und `onEinstellungen`: „Held öffnen“ wählt den Helden für
+  den Kartograph-Workspace statt den klassischen `HeroWorkspaceScreen`
+  aufzulegen.
 - **Tabs, Editoraktionen und Leave-Guard der Heldenverwaltung liegen im
   `WorkspaceManagementCoordinator`** (`lib/ui/screens/workspace/`), den
   **beide** Oberflächen benutzen: der bestehende `HeroWorkspaceScreen` und der
@@ -344,10 +361,11 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   `test/ui2/theme/karto_theme_uebergang_test.dart` gepinnt. Der Fehler zeigt
   sich **nur** beim Übergang, nie beim Bau eines einzelnen Themes.
 - Kartograph-Token liegen in `lib/ui2/theme/` (`KartoTheme` als
-  `ThemeExtension`, 19 rollenbenannte Farben einschließlich der drei
-  Ressourcenfarben, zwei Paletten), die
+  `ThemeExtension`, 25 rollenbenannte Farben einschließlich der drei
+  Ressourcenfarben, `messing`/`messingNavigation` und `schatten`, zwei
+  Paletten), die
   helligkeitsunabhängigen Skalen in `lib/ui2/foundation/` (`Abstand`,
-  `Strich`, `KartoBreite`). Abstände, Linienstärken und Breakpoints gehören
+  `Strich`, `KartoBreite`, `KartoTiefe`, `Bewegung`). Abstände, Linienstärken und Breakpoints gehören
   bewusst **nicht** ins Theme. Linienstärke trägt die Hierarchie: `kueste`,
   `grat` und `hoehenlinie` sind fest an die gleichnamigen Farbtoken gepaart.
   Das Token-Blatt (`lib/ui2/debug/karto_token_sheet.dart`) zeigt alles auf
@@ -360,9 +378,61 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   Farbtoken erzwingt. Verteilung: Seitengrund `blatt`, Abschnitte/Karten/
   Dialoge `feld`, Kontextspalten und Eingabefelder `senke`, schwebendes
   (Tooltip, Snackbar) `senke`. Ein Eingabefeld auf `feld` wäre innerhalb eines
-  Abschnitts farbgleich und damit unsichtbar. Schatten gibt es weiterhin
-  keine. Radien: `kKartoRadius` 8 für Flächen, `kKartoRadiusKlein` 4 für
-  Chips und Knöpfe — mehr Stufen nicht.
+  Abschnitts farbgleich und damit unsichtbar. **Liegendes wirft keinen
+  Schatten, Schwebendes schon**: Dialog, Blatt, Menü, Snackbar, Tooltip und
+  die Hover-Anhebung antippbarer Karten nehmen `KartoTiefe`
+  (`lib/ui2/foundation/karto_tiefe.dart`, zwei Stufen, Farbe `schatten`);
+  Karten, Chips und Knöpfe bleiben bei `elevation: 0`. Verläufe gibt es nur
+  im Navigationsgrund und im Wappenschein. Radien: `kKartoRadius` 8 für
+  Flächen, `kKartoRadiusKlein` 4 für Chips und Knöpfe — mehr Stufen nicht.
+- **Atmosphäre kommt aus Ornament, Papier und kurzer Bewegung**, nie aus neuer
+  Bedeutung. Ornamente (`lib/ui2/widgets/karto_ornamente.dart`: Kompassrose,
+  Kompassring, Höhenlinien, Zierlinie, Stern) sind deterministische
+  CustomPainter ohne Semantik und Hit-Test und zeichnen in `messing` — das ist
+  **nie** Textfarbe, deshalb genügt 3:1 als Grafik. `KartoPapier`
+  (`lib/ui2/widgets/karto_papier.dart`) legt hell die vorhandene
+  Pergamenttextur per Multiplikation auf `blatt`, dunkel bleibt der Grund
+  glatt; Rasterbilder müssen `KartoPapier.textur` vorab laden. Jede Animation
+  nimmt ihre Dauer über `kartoDauer` (`lib/ui2/foundation/karto_bewegung.dart`)
+  und steht bei abgeschalteten Systemanimationen sofort am Ziel. Begleitflächen
+  heben sich nur über `KartoAkzent` (Messingkante, astrale Tönung) ab, nie
+  über freie Farben.
+- Im Bestandsbaum (`buildKartoCompatTheme`) trägt `bodySmall` die aufrechte
+  Datenschrift statt der kursiven Spectral-Legende
+  (`buildKartoBestandsTextTheme` in `karto_typography.dart`): die
+  Altansichten setzen dort fast alle kleinen Beschriftungen. Von den
+  Schriftrollen weicht nur dieser Slot ab;
+  `test/ui/bridges/karto_compat_theme_test.dart` hält `inherit` und die
+  Überblendbarkeit fest.
+- **Komponenten-Textstile gibt es nur verschachtelt.** `buildKartoFeinschliff`
+  (`lib/ui2/theme/karto_feinschliff.dart`) setzt Dialogtitel (`titel`),
+  `DataTable`, `ExpansionTile`, die ruhigen inneren Reiter (`senke`-Pille),
+  das Blatt (Radius 8, Küste) und `KartoRahmen` als Dialogform
+  (`lib/ui2/theme/karto_rahmen.dart`: Küste rundum, Messingkante oben). Er
+  liegt als `Theme` in `KartoShell` und wird in `buildKartoCompatTheme`
+  erneut angewendet, weil Routen nur das Wurzeltheme sehen; das überblendete
+  Wurzeltheme bleibt ohne Komponenten-Textstile
+  (`test/ui2/theme/karto_feinschliff_test.dart`). Die Container-Rollen des
+  `ColorScheme` sind dagegen reine Farben und liegen im Wurzeltheme
+  (Auswahl in Messing, sonst fiele Material auf siegelrot zurück).
+- Aufgelegte Seiten aus dem Bestand (Einstellungsdetail, Katalog- und
+  Hausregelverwaltung, Heldenliste, Anmeldung) nehmen das Theme ihres
+  Aufrufers per `InheritedTheme.captureAll` mit; sonst fiele unter
+  Kartograph die Brücke weg und `CodexTheme` auf Pergament zurück.
+- **Bestandsbausteine haben eine Kartograph-Variante, die klassische
+  Oberfläche bleibt Zeichen für Zeichen, wie sie war.** Erkannt wird über
+  `kartoVariante(context)` (`lib/ui/widgets/karto_variante.dart`): nur
+  Kartograph führt `KartoTheme` im Theme, das Codex-Theme allein
+  `CodexTheme` — nie `KartoTheme.of`, das fiele auf die helle Palette zurück.
+  Dort liegen auch `epischerAkzent` (klassisch Goldgelb, Kartograph Messing)
+  und `kartoRadiusOder`. Umgestellt sind u. a. `CodexSectionCard`,
+  `CodexTabHeader`, `CodexMetricTile`, `CodexBadge`, `CodexEmptyState`,
+  `CodexPageScaffold`, `FlexibleTable` (neu `numerischeSpalten`, nur unter
+  Kartograph rechtsbündig), `ResponsiveAdaptiveTable`, `EditAwareTableCell`,
+  `InspectorVitalBlock`, `AnimatedDiceRow`, `AdvancementOptionCard`,
+  `skill_tree_branch.dart`, Reisebericht-Farben, Heldenliste und Anmeldung.
+  `test/ui/widgets/karto_variante_test.dart` prüft jeden Baustein unter
+  beiden Themes. Neue Bestandsbausteine folgen demselben Muster.
 - Jede Arbeitsfläche beginnt mit `KartoSeitenkopf`
   (`lib/ui2/widgets/karto_seitenkopf.dart`): Kontextzeile, Titel, eine Aktion,
   getrennt durch Weißraum statt Linie. Er ist die **einzige** Verwendung von
@@ -380,8 +450,8 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   Notizen und Personen lesen und pflegen, Abschluss und Belohnungen bleiben in
   der Verwaltung. Das Blatt ist eine eigene Seite (Grund `blatt`); Personen
   und Notizen stehen als `feld`-Karten im `KartoKartenraster`
-  (`karto_abenteuer_karten.dart`), Personen mit derselben Ringfassung wie die
-  Heldenmarke, Anlegen als leise `senke`-Kachel am Rasterende. Es ist UI2-eigen, weil der Notizen-Tab beim Speichern seinen
+  (`lib/ui2/widgets/karto_kartenraster.dart`, geteilt mit der Heldenwahl),
+  Personen mit demselben `KartoKompassring` wie die Heldenmarke, Anlegen als leise `senke`-Kachel am Rasterende. Es ist UI2-eigen, weil der Notizen-Tab beim Speichern seinen
   **ganzen** Entwurf (Notizen, Kontakte, alle Abenteuer) über den Helden legt.
   Das Blatt schreibt dagegen nur dieses eine Abenteuer, über
   `HeroActions.updateHero` (frisch laden, dann ändern, analog zu
@@ -399,13 +469,17 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   Auf `KartoBreite.schmal` entfällt der Titel in der Planung: der Katalog führt
   dort schon eine eigene Überschrift, und die Höhe wird für die erste
   Steigerungskarte gebraucht.
-- Die dunkle Bereichsnavigation trägt oben `KartoHeldenmarke`
-  (Avatar oder ringgefasstes Monogramm, Name, Profession) und unten
-  `Heldenauswahl` und `Workspace-Menü`; auf breiten Fenstern gibt es deshalb
+- Die dunkle Bereichsnavigation trägt oben die Markenzeile und
+  `KartoHeldenmarke` (Avatar oder Monogramm im `KartoKompassring`, Name,
+  Profession) und unten `Heldenauswahl` und `Workspace-Menü`; auf breiten Fenstern gibt es deshalb
   **keine** `AppBar`, auf schmalen bleibt sie. Beide Tooltips müssen wortgleich
   erhalten bleiben. Der Avatar kommt über `KartoBestandsAdapter.heldenbild`,
   nicht über ein eigenes Bildwidget auf `avatarBytesProvider`: Bilder rendert
-  ausschließlich `AvatarGalleryImage`.
+  ausschließlich `AvatarGalleryImage`. Die Heldenwahl bekommt dieselbe
+  Methode als `heldenbild` hereingereicht. „Entwicklung planen“ zeigt die Zahl
+  vorgemerkter Einträge der offenen Runde als Marke; der Semantics-Name bleibt
+  unverändert, die Zahl steht als Wert. Der Bereichswechsel blendet über, der
+  `IndexedStack` darunter bleibt.
 - Zahlen mit Bezugsgröße werden als **ein** `Text.rich` aus mehreren Spans
   gesetzt, nicht als mehrere `Text`. So trägt der aktuelle Wert das Gewicht und
   die Bezugsgröße bleibt leise, während `find.text` die Zeile weiterhin als
@@ -651,7 +725,7 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   von `sqlite3` in `pubspec.yaml` muss `web/sqlite3.wasm` manuell gegen die
   passende `sqlite3.wasm` aus den GitHub-Releases von
   github.com/simolus3/sqlite3.dart ersetzt werden — Tag `sqlite3-<version>`,
-  aktuell `sqlite3-3.5.2`. Ein Versatz zwischen Package und `.wasm` faellt
+  aktuell `sqlite3-3.6.0`. Ein Versatz zwischen Package und `.wasm` faellt
   **nicht** beim Kompilieren auf, sondern erst zur Laufzeit im Browser.
 - Die nativen SQLite-Bibliotheken fuer Desktop und Mobile liefert seit
   `sqlite3` 3.x dessen eigener Build-Hook, der SQLite direkt mit der App

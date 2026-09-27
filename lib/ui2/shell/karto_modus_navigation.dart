@@ -1,16 +1,21 @@
 import 'package:flutter/material.dart';
 
+import 'package:dsa_heldenverwaltung/ui2/foundation/karto_bewegung.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_stroke.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_arbeitsbereich.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
+import 'package:dsa_heldenverwaltung/ui2/widgets/karto_ornamente.dart';
 
 /// Zeigt die drei Aufgabenbereiche eines Helden und meldet eine Auswahl.
 ///
 /// Das Widget besitzt bewusst keinen Providerzugriff. Der umgebende Workspace
 /// entscheidet, ob und wann ein angeforderter Bereichswechsel stattfinden darf,
-/// und liefert [kopf] und [fuss] als fertige Widgets.
+/// und liefert [kopf], [fuss] und [vorgemerkt] als fertige Werte.
+///
+/// In der breiten Anordnung zeichnet die Navigation **keinen** eigenen Grund:
+/// Verlauf und Hoehenlinien liegen darunter (`KartoNavigationsgrund`).
 class KartoModusNavigation extends StatelessWidget {
   /// Erstellt die Navigation fuer breite oder kompakte Anordnungen.
   const KartoModusNavigation({
@@ -20,6 +25,7 @@ class KartoModusNavigation extends StatelessWidget {
     required this.kompakt,
     this.kopf,
     this.fuss,
+    this.vorgemerkt = 0,
   });
 
   /// Der aktuell hervorgehobene Aufgabenbereich.
@@ -40,6 +46,12 @@ class KartoModusNavigation extends StatelessWidget {
   /// Globale Aktionen unter den Zielen. Nur in der breiten Anordnung.
   final Widget? fuss;
 
+  /// Anzahl vorgemerkter Steigerungen der offenen Runde.
+  ///
+  /// Steht als Marke an "Entwicklung planen", damit eine offene Planung auch
+  /// aus den anderen Bereichen sichtbar bleibt. `0` blendet sie aus.
+  final int vorgemerkt;
+
   /// Rendert drei erreichbare Ziele mit den semantischen Navigationsfarben.
   @override
   Widget build(BuildContext context) {
@@ -57,7 +69,7 @@ class KartoModusNavigation extends StatelessWidget {
       ),
       _Navigationsziel(
         wert: KartoArbeitsbereich.verwalten,
-        icon: Icons.assignment_ind_outlined,
+        icon: Icons.person_outline,
         vollstaendigerName: 'Held verwalten',
         kurzerName: 'Verwalten',
         unterzeile: 'Der vollständige Bogen',
@@ -67,13 +79,14 @@ class KartoModusNavigation extends StatelessWidget {
       ),
       _Navigationsziel(
         wert: KartoArbeitsbereich.entwickeln,
-        icon: Icons.account_tree_outlined,
+        icon: Icons.eco_outlined,
         vollstaendigerName: 'Entwicklung planen',
         kurzerName: 'Planen',
         unterzeile: 'Neue Möglichkeiten',
         ausgewaehlt: bereich == KartoArbeitsbereich.entwickeln,
         kompakt: kompakt,
         onAuswahl: onAuswahl,
+        marke: vorgemerkt,
       ),
     ];
 
@@ -96,8 +109,10 @@ class KartoModusNavigation extends StatelessWidget {
       ),
     );
 
+    // Transparent, damit Verlauf und Hoehenlinien des Grundes durchscheinen;
+    // die Ziele brauchen das Material nur fuer ihre Tintenwirkung.
     return Material(
-      color: token.navigation,
+      type: MaterialType.transparency,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -111,7 +126,17 @@ class KartoModusNavigation extends StatelessWidget {
               ),
               child: kopf,
             ),
-            trenner,
+            // Identitaet und Ziele trennt ein Schmuckstrich statt einer
+            // Linie: beide gehoeren zu demselben Helden.
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: Abstand.bahn,
+                vertical: Abstand.block,
+              ),
+              child: KartoZierlinie(
+                farbe: token.messingNavigation.withValues(alpha: 0.7),
+              ),
+            ),
           ] else
             const SizedBox(height: Abstand.weit),
           ...ziele,
@@ -138,6 +163,7 @@ class _Navigationsziel extends StatefulWidget {
     required this.ausgewaehlt,
     required this.kompakt,
     required this.onAuswahl,
+    this.marke = 0,
   });
 
   final KartoArbeitsbereich wert;
@@ -148,6 +174,7 @@ class _Navigationsziel extends StatefulWidget {
   final bool ausgewaehlt;
   final bool kompakt;
   final ValueChanged<KartoArbeitsbereich> onAuswahl;
+  final int marke;
 
   @override
   State<_Navigationsziel> createState() => _NavigationszielState();
@@ -155,6 +182,7 @@ class _Navigationsziel extends StatefulWidget {
 
 class _NavigationszielState extends State<_Navigationsziel> {
   bool _fokussiert = false;
+  bool _schwebt = false;
 
   @override
   Widget build(BuildContext context) {
@@ -168,21 +196,42 @@ class _NavigationszielState extends State<_Navigationsziel> {
     final token = KartoTheme.of(context);
     final texte = Theme.of(context).textTheme;
     final farbe = ausgewaehlt ? token.navigationText : token.navigationMuted;
+    // Das Symbol traegt den Messingakzent; der Text bleibt hell, damit die
+    // Beschriftung ihren Kontrast behaelt.
+    final symbolFarbe = ausgewaehlt
+        ? token.messingNavigation
+        : token.navigationMuted;
+    final radius = BorderRadius.circular(kompakt ? 0 : kKartoRadius);
     // Der Fokusrahmen liegt im Vordergrund, damit er die Auswahlkante nicht
     // verdeckt; der Schluessel macht beide Zustaende im Test unterscheidbar.
     final fokusRahmen = _fokussiert
         ? BoxDecoration(
+            borderRadius: radius,
             border: Border.all(color: token.navigationText, width: 3),
           )
         : null;
     final zielSchluessel = ValueKey(
       _fokussiert ? 'karto-fokus-${wert.name}' : 'karto-ziel-${wert.name}',
     );
+    final marke = widget.marke > 0;
+    final markenSchluessel = ValueKey<String>('karto-marke-${wert.name}');
+    Widget symbol = Icon(icon, color: symbolFarbe);
+    // Kompakt sitzt die Marke am Symbol, breit am Zeilenende: dort verdeckte
+    // sie das Symbol, und der Platz ist ohnehin frei.
+    if (marke && kompakt) {
+      symbol = Badge(
+        key: markenSchluessel,
+        label: Text('${widget.marke}'),
+        backgroundColor: token.messingNavigation,
+        textColor: token.navigation,
+        child: symbol,
+      );
+    }
     final inhalt = kompakt
         ? Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, color: farbe),
+              symbol,
               const SizedBox(height: Abstand.knapp),
               Text(
                 kurzerName,
@@ -198,7 +247,7 @@ class _NavigationszielState extends State<_Navigationsziel> {
           )
         : Row(
             children: [
-              Icon(icon, color: farbe),
+              symbol,
               const SizedBox(width: Abstand.weit),
               Expanded(
                 child: Column(
@@ -228,8 +277,42 @@ class _NavigationszielState extends State<_Navigationsziel> {
                   ],
                 ),
               ),
+              if (marke) ...[
+                const SizedBox(width: Abstand.normal),
+                DecoratedBox(
+                  key: markenSchluessel,
+                  decoration: BoxDecoration(
+                    color: token.messingNavigation,
+                    borderRadius: BorderRadius.circular(kKartoRadiusKlein),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: Abstand.knapp,
+                      vertical: Abstand.haar,
+                    ),
+                    child: Text(
+                      '${widget.marke}',
+                      style: texte.marke.copyWith(color: token.navigation),
+                    ),
+                  ),
+                ),
+              ],
             ],
           );
+
+    // Auswahl traegt drei Signale: hellerer Grund, Messingsymbol und die
+    // Kante. Die Kante allein war auf einer grossen dunklen Flaeche zu leise.
+    final grund = token.navigationText.withValues(
+      alpha: ausgewaehlt
+          ? 0.09
+          : _schwebt
+          ? 0.05
+          : 0,
+    );
+    final kante = BorderSide(
+      color: token.messingNavigation.withValues(alpha: ausgewaehlt ? 1 : 0),
+      width: 3,
+    );
 
     return Tooltip(
       message: vollstaendigerName,
@@ -241,45 +324,45 @@ class _NavigationszielState extends State<_Navigationsziel> {
         focused: _fokussiert,
         onTap: () => onAuswahl(wert),
         label: vollstaendigerName,
+        value: marke ? '${widget.marke} vorgemerkt' : null,
         excludeSemantics: true,
-        child: InkWell(
-          onTap: () => onAuswahl(wert),
-          onFocusChange: (value) => setState(() => _fokussiert = value),
-          child: Container(
-            key: zielSchluessel,
-            foregroundDecoration: fokusRahmen,
-            constraints: const BoxConstraints(minHeight: 56),
-            padding: EdgeInsets.symmetric(
-              horizontal: kompakt ? Abstand.knapp : Abstand.block,
-              vertical: Abstand.weit,
-            ),
-            decoration: BoxDecoration(
-              // Auswahl traegt drei Signale: hellerer Grund, hellerer Text und
-              // die Kante. Die Kante allein war auf einer grossen dunklen
-              // Flaeche zu leise.
-              color: ausgewaehlt
-                  ? token.navigationText.withValues(alpha: 0.08)
-                  : null,
-              border: Border(
-                left: kompakt
-                    ? BorderSide.none
-                    : BorderSide(
-                        color: ausgewaehlt
-                            ? token.navigationText
-                            : Colors.transparent,
-                        width: 3,
-                      ),
-                top: kompakt
-                    ? BorderSide(
-                        color: ausgewaehlt
-                            ? token.navigationText
-                            : Colors.transparent,
-                        width: 3,
-                      )
-                    : BorderSide.none,
+        child: Padding(
+          // Breit liegt die Auswahl als eingerueckte, abgerundete Flaeche in
+          // der Leiste; kompakt fuellt jedes Ziel seinen Anteil der Leiste.
+          padding: kompakt
+              ? EdgeInsets.zero
+              : const EdgeInsets.symmetric(
+                  horizontal: Abstand.weit,
+                  vertical: Abstand.haar,
+                ),
+          child: ClipRRect(
+            borderRadius: radius,
+            child: InkWell(
+              onTap: () => onAuswahl(wert),
+              onHover: (value) => setState(() => _schwebt = value),
+              onFocusChange: (value) => setState(() => _fokussiert = value),
+              child: AnimatedContainer(
+                key: zielSchluessel,
+                duration: kartoDauer(context, Bewegung.kurz),
+                curve: Bewegung.kurve,
+                foregroundDecoration: fokusRahmen,
+                constraints: const BoxConstraints(minHeight: 56),
+                padding: EdgeInsets.symmetric(
+                  horizontal: kompakt ? Abstand.knapp : Abstand.weit,
+                  vertical: Abstand.weit,
+                ),
+                // Keine Rundung an dieser Dekoration: eine einseitige Kante
+                // vertraegt keinen Radius. Gerundet wird per ClipRRect.
+                decoration: BoxDecoration(
+                  color: grund,
+                  border: Border(
+                    left: kompakt ? BorderSide.none : kante,
+                    top: kompakt ? kante : BorderSide.none,
+                  ),
+                ),
+                child: inhalt,
               ),
             ),
-            child: inhalt,
           ),
         ),
       ),
