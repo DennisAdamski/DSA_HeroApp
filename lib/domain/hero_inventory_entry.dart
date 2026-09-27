@@ -1,5 +1,6 @@
 import 'package:dsa_heldenverwaltung/domain/copy_with_sentinel.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
+import 'package:dsa_heldenverwaltung/domain/unbekannte_json_felder.dart';
 
 /// Wer oder was ein Inventarstück trägt.
 enum InventoryTraeger {
@@ -45,6 +46,7 @@ class HeroInventoryEntry {
     // Träger-Felder (v19)
     this.traegerTyp = InventoryTraeger.held,
     this.traegerId,
+    this.unbekannteFelder = const <String, Object?>{},
   });
 
   // --- Bestehende 12 String-Felder (unveraendert, rueckwaertskompatibel) ---
@@ -120,6 +122,41 @@ class HeroInventoryEntry {
   /// Null, wenn der Held das Item trägt.
   final String? traegerId;
 
+  /// JSON-Felder einer neueren App-Version; bleiben beim Speichern erhalten
+  /// (siehe `unbekannte_json_felder.dart`).
+  final Map<String, Object?> unbekannteFelder;
+
+  /// Alle Schluessel, die [fromJson] liest — einschliesslich der nur bedingt
+  /// geschriebenen; alles andere bleibt erhalten.
+  static const Set<String> jsonSchluessel = <String>{
+    'gegenstand',
+    'woGetragen',
+    'typ',
+    'welchesAbenteuer',
+    'gewicht',
+    'wert',
+    'artefakt',
+    'anzahl',
+    'amKoerper',
+    'woDann',
+    'gruppe',
+    'beschreibung',
+    'itemType',
+    'source',
+    'sourceRef',
+    'istAusgeruestet',
+    'modifiers',
+    'gewichtGramm',
+    'wertSilber',
+    'herkunft',
+    'isMagisch',
+    'magischDescription',
+    'isGeweiht',
+    'geweihtDescription',
+    'traegerTyp',
+    'traegerId',
+  };
+
   /// Gibt eine Kopie mit selektiv überschriebenen Feldern zurück.
   HeroInventoryEntry copyWith({
     String? gegenstand,
@@ -148,6 +185,7 @@ class HeroInventoryEntry {
     String? geweihtDescription,
     InventoryTraeger? traegerTyp,
     Object? traegerId = keepFieldValue,
+    Map<String, Object?>? unbekannteFelder,
   }) {
     return HeroInventoryEntry(
       gegenstand: gegenstand ?? this.gegenstand,
@@ -180,6 +218,7 @@ class HeroInventoryEntry {
       traegerId: traegerId == keepFieldValue
           ? this.traegerId
           : traegerId as String?,
+      unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
     );
   }
 
@@ -192,7 +231,7 @@ class HeroInventoryEntry {
       legacyArtifact: artefakt.trim(),
     );
 
-    return <String, dynamic>{
+    return mitUnbekanntenFeldern(<String, dynamic>{
       'gegenstand': gegenstand,
       'woGetragen': woGetragen,
       'typ': typ,
@@ -221,7 +260,7 @@ class HeroInventoryEntry {
       // v19
       'traegerTyp': traegerTyp.name,
       if (traegerId != null) 'traegerId': traegerId,
-    };
+    }, unbekannteFelder);
   }
 
   /// Deserialisiert einen Inventar-Eintrag aus einem JSON-Map.
@@ -293,6 +332,7 @@ class HeroInventoryEntry {
         orElse: () => InventoryTraeger.held,
       ),
       traegerId: json['traegerId'] as String?,
+      unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
     );
   }
 }

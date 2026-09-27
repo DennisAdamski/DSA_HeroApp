@@ -1,5 +1,6 @@
 import 'package:dsa_heldenverwaltung/domain/combat_config/ranged_weapon_profile.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config/weapon_combat_type.dart';
+import 'package:dsa_heldenverwaltung/domain/unbekannte_json_felder.dart';
 
 /// Konfiguriert eine einzelne Hauptwaffenposition des Helden.
 ///
@@ -30,6 +31,7 @@ class MainWeaponSlot {
     this.isGeweiht = false,
     this.geweihtDescription = '',
     this.rangedProfile = const RangedWeaponProfile(),
+    this.unbekannteFelder = const <String, Object?>{},
   });
 
   /// Stabile Kennung des Slots innerhalb der Kampfkonfiguration.
@@ -102,6 +104,39 @@ class MainWeaponSlot {
   /// Zusatzprofil fuer Fernkampfwaffen.
   final RangedWeaponProfile rangedProfile;
 
+  /// JSON-Felder einer neueren App-Version; bleiben beim Speichern erhalten
+  /// (siehe `unbekannte_json_felder.dart`).
+  final Map<String, Object?> unbekannteFelder;
+
+  /// Alle Schluessel, die [fromJson] liest — einschliesslich des
+  /// Altschluessels `wmFk`, der beim Laden in [wmAt] aufgeht und deshalb
+  /// nicht als unbekannt zurueckgeschrieben werden darf.
+  static const Set<String> jsonSchluessel = <String>{
+    'id',
+    'name',
+    'talentId',
+    'combatType',
+    'weaponType',
+    'distanceClass',
+    'kkBase',
+    'kkThreshold',
+    'breakFactor',
+    'tpDiceCount',
+    'tpDiceSides',
+    'tpFlat',
+    'wmAt',
+    'wmFk',
+    'wmPa',
+    'iniMod',
+    'beTalentMod',
+    'isOneHanded',
+    'isArtifact',
+    'artifactDescription',
+    'isGeweiht',
+    'geweihtDescription',
+    'rangedProfile',
+  };
+
   /// Gibt an, ob es sich um eine Fernkampfwaffe handelt.
   bool get isRanged => combatType == WeaponCombatType.ranged;
 
@@ -131,6 +166,7 @@ class MainWeaponSlot {
     bool? isGeweiht,
     String? geweihtDescription,
     RangedWeaponProfile? rangedProfile,
+    Map<String, Object?>? unbekannteFelder,
   }) {
     return MainWeaponSlot(
       id: id ?? this.id,
@@ -156,12 +192,13 @@ class MainWeaponSlot {
       isGeweiht: isGeweiht ?? this.isGeweiht,
       geweihtDescription: geweihtDescription ?? this.geweihtDescription,
       rangedProfile: rangedProfile ?? this.rangedProfile,
+      unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
     );
   }
 
   /// Serialisiert den Slot zu einem JSON-kompatiblen Map.
   Map<String, dynamic> toJson() {
-    return {
+    return mitUnbekanntenFeldern(<String, dynamic>{
       if (id.isNotEmpty) 'id': id,
       'name': name,
       'talentId': talentId,
@@ -185,7 +222,7 @@ class MainWeaponSlot {
       'isGeweiht': isGeweiht,
       'geweihtDescription': geweihtDescription,
       'rangedProfile': rangedProfile.toJson(),
-    };
+    }, unbekannteFelder);
   }
 
   /// Deserialisiert einen [MainWeaponSlot] aus einem JSON-Map.
@@ -236,6 +273,7 @@ class MainWeaponSlot {
       isGeweiht: (json['isGeweiht'] as bool?) ?? false,
       geweihtDescription: getString('geweihtDescription'),
       rangedProfile: RangedWeaponProfile.fromJson(getMap('rangedProfile')),
+      unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
     );
   }
 }

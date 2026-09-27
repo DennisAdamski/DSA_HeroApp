@@ -86,6 +86,17 @@ Regeln:
   entfernt und benennt einen der beiden gleichnamigen Dolche aus `f06` um
   und prüft Neustart sowie Export. Widgettests stellen sicher, dass die
   Editoren für Geschosse und Nebenhandteile ihre Instanz-ID erhalten.
+- **Felder einer neueren App-Version** simuliert
+  `test/test_support/zukunftsfelder.dart`. `mitZukunftsfeldern` setzt in f01
+  an jeder Ebene der Ausrüstung ein `zukunftsfeld`: Kampfkonfiguration,
+  nicht gewählte Waffe, Fernkampfprofil, Distanzstufe, Geschoss, Rüstung,
+  Nebenhand, Inventareinträge und Modifikator. Es liefert die Pfade im Format
+  von `jsonUnterschiede`. Eine neue Fixture ist dafür nicht nötig: Das Format
+  ist dasselbe, nur um fremde Felder ergänzt.
+  `test/domain/unbekannte_ausruestungsfelder_test.dart` prüft die zehn Modelle
+  einzeln, dazu Altschlüssel, Gleichheit, Katalogschutz und den Fixpunkt. Die
+  Regel-, Widget- und Hive-Tests prüfen Abgleich, Editoren sowie Import,
+  Bearbeiten, Neustart und Export.
 - Fehler, die diese Tests aufdecken, werden nicht nebenbei behoben: Der Test
   hält das heutige Verhalten mit dem Kommentar `Befund ARCH-07-Bx` fest, der
   Befund steht mit Folgeauftrag in `docs/architecture_roadmap.md`.
@@ -174,7 +185,7 @@ Die CI (`.github/workflows/flutter-tests.yml`) führt alle Tests auf
 | `test/rules/talent_be_rules_test.dart` | rules | Talent-BE-Regeln |
 | `test/rules/talent_value_rules_test.dart` | rules | Formel `TaW + Mod + eBE` |
 | `test/rules/bestandshelden_regelwerte_test.dart` | rules | Abgeleitete Werte der Bestandsfixtures gegen den echten Katalog, epische Wundhalbierung, Befunde B1/B7 |
-| `test/rules/bestandshelden_ausruestung_test.dart` | rules | Inventar-Kampf-Abgleich mit gleichnamigen Exemplaren, Befunde B2/B3 |
+| `test/rules/bestandshelden_ausruestung_test.dart` | rules | Inventar-Kampf-Abgleich mit gleichnamigen Exemplaren, Befunde B2/B3, Felder neuerer Versionen im Abgleich |
 | `test/ui/combat/hero_combat_tab_test.dart` | ui | Combat-UI-Interaktion/Struktur |
 | `test/ui/combat/hero_combat_talents_tab_test.dart` | ui | Combat-Talents-UI-Validierungsfluss |
 | `test/ui/talents/hero_talents_tab_test.dart` | ui | Talents-UI-Interaktion |
@@ -193,11 +204,12 @@ Die CI (`.github/workflows/flutter-tests.yml`) führt alle Tests auf
 | `test/data/catalog_loader_test.dart` | data | Katalog-Loading/Validierung |
 | `test/data/catalog_model_test.dart` | data | Katalogmodell Roundtrip |
 | `test/data/hero_actions_import_export_test.dart` | data | Actions Import/Export |
-| `test/data/bestandsheld_ablauf_test.dart` | data | Echte Hive-Speichergrenze je Bestandsheld und Ablauf Import bis Export mit Neustart, Befund B4 |
+| `test/data/bestandsheld_ablauf_test.dart` | data | Echte Hive-Speichergrenze je Bestandsheld und Ablauf Import bis Export mit Neustart, Befund B4, Felder neuerer Versionen in der Ausrüstung |
 | `test/data/sync_zwei_geraete_test.dart` | data | Zwei Geräte an einer Cloud: Abbruch, verlorene Antwort, Neustart (auch mit Hive), Konfliktauflösungen samt Zustand, Befunde B1/B8 |
 | `test/domain/hero_sheet_model_test.dart` | domain | HeroSheet-Kompatibilitaet |
 | `test/domain/hero_transfer_bundle_test.dart` | domain | Transfer-Bundle-Kontrakt |
 | `test/domain/bestandshelden_kompatibilitaet_test.dart` | domain | Bestandsfixtures: Fixpunkt nach einmaligem Laden, Inhalts-Hashes, Altschlüssel, Befunde B1/B5/B6 |
+| `test/domain/unbekannte_ausruestungsfelder_test.dart` | domain | Unbekannte Felder in den zehn Ausrüstungsmodellen, Altschlüssel, Katalogschutz, Fixpunkt mit f01 |
 | `test/workspace/workspace_area_registry_test.dart` | workspace | Area-Registry |
 | `test/workspace/workspace_tab_edit_controller_test.dart` | workspace | Tab-Edit-Controller |
 | `test/ui2/shell/app_root_switch_test.dart` | ui2 | Weiche zwischen bestehender und neuer Oberfläche |

@@ -30,9 +30,11 @@ extension _WeaponEditorStateHelpers on WeaponEditorScreenState {
         _reloadTimeController,
         _draftWeapon.rangedProfile.reloadTime,
       ),
+      // Jede Stufe baut auf der bisherigen auf, damit Felder neuerer
+      // App-Versionen erhalten bleiben.
       distanceBands: <RangedDistanceBand>[
         for (var i = 0; i < 5; i++)
-          RangedDistanceBand(
+          fallback[i].copyWith(
             label: _distanceLabelControllers[i].text.trim().isEmpty
                 ? fallback[i].label
                 : _distanceLabelControllers[i].text.trim(),

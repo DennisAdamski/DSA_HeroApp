@@ -2909,6 +2909,7 @@ void main() {
                 id: 'nebenhand-1',
                 name: 'Holzschild',
                 type: OffhandEquipmentType.shield,
+                unbekannteFelder: <String, Object?>{'zukunftsfeld': 1},
               ),
             ],
           ),
@@ -2942,6 +2943,11 @@ void main() {
     final held = (await repo.listHeroes()).single;
     expect(held.combatConfig.offhandEquipment.single.id, 'nebenhand-1');
     expect(held.combatConfig.offhandEquipment.single.name, 'Rundschild');
+    expect(
+      held.combatConfig.offhandEquipment.single.unbekannteFelder,
+      <String, Object?>{'zukunftsfeld': 1},
+      reason: 'Felder einer neueren App-Version überstehen den Editor.',
+    );
   });
 
   testWidgets('weapon overview table lists active weapon first', (

@@ -1,3 +1,5 @@
+import 'package:dsa_heldenverwaltung/domain/unbekannte_json_felder.dart';
+
 /// Art eines Inventar-Modifikators: Stat, Attribut, Talent oder Talentgruppe.
 enum InventoryModifierKind { stat, attribut, talent, talentgruppe }
 
@@ -54,6 +56,7 @@ class InventoryItemModifier {
     required this.targetId,
     required this.wert,
     this.beschreibung = '',
+    this.unbekannteFelder = const <String, Object?>{},
   });
 
   final InventoryModifierKind kind;
@@ -66,29 +69,43 @@ class InventoryItemModifier {
   /// Freitext-Quelle (max. 60 Zeichen). Wird beim Serialisieren nicht gekuerzt.
   final String beschreibung;
 
+  /// JSON-Felder einer neueren App-Version; bleiben beim Speichern erhalten
+  /// (siehe `unbekannte_json_felder.dart`).
+  final Map<String, Object?> unbekannteFelder;
+
+  /// Alle Schluessel, die [fromJson] liest; alles andere bleibt erhalten.
+  static const Set<String> jsonSchluessel = <String>{
+    'kind',
+    'targetId',
+    'wert',
+    'beschreibung',
+  };
+
   /// Liefert eine Kopie mit gezielt ersetzten Modifikatorfeldern.
   InventoryItemModifier copyWith({
     InventoryModifierKind? kind,
     String? targetId,
     int? wert,
     String? beschreibung,
+    Map<String, Object?>? unbekannteFelder,
   }) {
     return InventoryItemModifier(
       kind: kind ?? this.kind,
       targetId: targetId ?? this.targetId,
       wert: wert ?? this.wert,
       beschreibung: beschreibung ?? this.beschreibung,
+      unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
     );
   }
 
   /// Serialisiert den Modifikator fuer Persistenz und Export.
   Map<String, dynamic> toJson() {
-    return <String, dynamic>{
+    return mitUnbekanntenFeldern(<String, dynamic>{
       'kind': kind.name,
       'targetId': targetId,
       'wert': wert,
       'beschreibung': beschreibung,
-    };
+    }, unbekannteFelder);
   }
 
   /// Laedt einen Inventar-Modifikator tolerant gegenueber fehlenden Feldern.
@@ -103,6 +120,7 @@ class InventoryItemModifier {
       targetId: (json['targetId'] as String?) ?? '',
       wert: (json['wert'] as num?)?.toInt() ?? 0,
       beschreibung: (json['beschreibung'] as String?) ?? '',
+      unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
     );
   }
 }

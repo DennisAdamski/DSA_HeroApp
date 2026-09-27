@@ -166,6 +166,8 @@ List<HeroInventoryEntry> reconcileInventoryWithCombat(
 /// Identitaetsfelder ([gegenstand], [source], [sourceRef], [itemType]) stammen
 /// immer aus [base] (CombatConfig ist die Quelle der Wahrheit fuer den Namen).
 /// Fuer Geschoss-Eintraege wird [anzahl] ebenfalls aus [base] uebernommen.
+/// Unbekannte Felder einer neueren App-Version kommen aus [existing]; [base]
+/// ist frisch gebaut und kennt keine.
 HeroInventoryEntry _mergeEntry({
   required HeroInventoryEntry base,
   required HeroInventoryEntry existing,
@@ -193,6 +195,7 @@ HeroInventoryEntry _mergeEntry({
         : base.istAusgeruestet,
     // anzahl: bei Geschossen immer aus CombatConfig (bidirektionaler Sync)
     anzahl: isProjectile ? base.anzahl : existing.anzahl,
+    unbekannteFelder: existing.unbekannteFelder,
   );
 }
 
