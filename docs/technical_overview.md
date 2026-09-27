@@ -199,6 +199,14 @@ vier Stellen in `syncing_hero_repository.dart`. Bestandsdaten haben zunaechst
 kein `lastModified` und zeigen bis zum naechsten Speichern weiterhin
 `Unbekannt`; das ist gewollt, geraten wird nichts.
 
+`syncNow` laedt einen lokal geaenderten Zustand auch dann hoch, wenn es ihn
+online schon gibt: Weicht sein Hash vom zuletzt abgeglichenen ab, waehrend die
+Online-Revision noch der Basis entspricht, wartet er auf den Upload
+(`_hasPendingLocalStateChange`, Gegenstueck zur Heldenpruefung in
+`_syncHeroes`). Vorher erreichten offline geaenderte LeP, AsP oder Wunden die
+Cloud erst mit der naechsten Zustandsaenderung (Befund ARCH-07-B8). Ist zum
+Helden eine Entscheidung offen, wartet der Zustand darauf.
+
 Seit 2026-08-31 wird ein Zustands-Konflikt nicht mehr unabhaengig vom Helden
 entschieden. Ein `HeroState` gehoert zu genau einem Heldenblatt; zwei getrennte
 Fragen (`Held: Alrik` und `Zustand: Alrik`) liessen sich gegenlaeufig

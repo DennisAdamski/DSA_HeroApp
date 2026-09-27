@@ -460,17 +460,45 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
     final records = await stateGateway.loadAllHeroStates();
     final applyFailures = await _applyRemoteStateRecords(records);
 
-    final remoteIds = records.map((record) => record.heroId).toSet();
+    final recordsById = <String, RemoteHeroStateRecord>{
+      for (final record in records) record.heroId: record,
+    };
     for (final hero in await local.listHeroes()) {
-      if (remoteIds.contains(hero.id)) {
+      final state = await local.loadHeroState(hero.id);
+      if (state == null) {
         continue;
       }
-      final state = await local.loadHeroState(hero.id);
-      if (state != null) {
-        await _pushHeroStateIfSafe(hero.id, state);
+      final record = recordsById[hero.id];
+      if (record != null &&
+          !await _hasPendingLocalStateChange(hero.id, state, record)) {
+        continue;
       }
+      await _pushHeroStateIfSafe(hero.id, state);
     }
     return applyFailures;
+  }
+
+  /// Ob ein lokal geaenderter Zustand auf unveraenderter Online-Basis wartet.
+  ///
+  /// Gegenstueck zur Heldenpruefung in [_syncHeroes]: Ein Zustand, dessen
+  /// Upload beim Speichern scheiterte (offline), weicht vom zuletzt
+  /// abgeglichenen Hash ab, waehrend die Online-Revision noch der Basis
+  /// entspricht. Ohne diese Pruefung erreichte er die Cloud erst mit der
+  /// naechsten Zustandsaenderung (Befund ARCH-07-B8). Solange zum Helden eine
+  /// Entscheidung offen ist, wartet der Zustand darauf: Er folgt dem Helden.
+  Future<bool> _hasPendingLocalStateChange(
+    String heroId,
+    HeroState state,
+    RemoteHeroStateRecord record,
+  ) async {
+    if (record.isDeleted || _hasOpenHeroConflict(heroId)) {
+      return false;
+    }
+    final metadata = await metadataStore.load(_stateKey(heroId));
+    if (metadata == null || record.revision != metadata.remoteRevision) {
+      return false;
+    }
+    return heroStateContentHash(state) != metadata.localHash;
   }
 
   /// Übernimmt Remote-Helden einzeln und isoliert Fehler pro Datensatz.
