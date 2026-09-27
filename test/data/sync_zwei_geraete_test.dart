@@ -296,8 +296,8 @@ void main() {
       },
     );
 
-    test('Befund ARCH-07-B8: offline geänderte Lebenspunkte lädt der '
-        'nächste Abgleich nicht hoch', () async {
+    test('offline geänderte Lebenspunkte lädt der nächste Abgleich hoch '
+        '(Befund ARCH-07-B8)', () async {
       await gemeinsamerStart(<Bestandsheld>[Bestandsheld.kriegerNormal]);
       final vorher = cloud.zustandSchreibvorgaenge[_krieger]!;
       a.remote.offline = true;
@@ -306,15 +306,13 @@ void main() {
 
       a.remote.offline = false;
       await a.repo.syncNow();
-      await a.neustart();
       await a.repo.syncNow();
 
-      // Gewollt wäre 11 in der Cloud und ein Schreibvorgang mehr:
-      // `_syncHeroStates` lädt nur Zustände hoch, die online noch fehlen.
-      expect((await cloud.loadHeroState(_krieger))!.state!.currentLep, 28);
-      expect(cloud.zustandSchreibvorgaenge[_krieger], vorher);
-      expect((await a.lokal.loadHeroState(_krieger))!.currentLep, 11);
+      expect((await cloud.loadHeroState(_krieger))!.state!.currentLep, 11);
+      expect(cloud.zustandSchreibvorgaenge[_krieger], vorher + 1);
       expect(a.konflikte, isEmpty);
+      await b.repo.syncNow();
+      expect((await b.lokal.loadHeroState(_krieger))!.currentLep, 11);
     });
 
     test('ein Inspector-Modifikator wird genau einmal hochgeladen '
@@ -342,11 +340,10 @@ void main() {
   });
 
   group('S6 Held und Zustand gemeinsam', () {
-    // A aendert Held und Lebenspunkte online, B dieselben offline.
-    // (Offline geaenderte Zustaende laedt `syncNow` nicht hoch, Befund B8 —
-    // deshalb ist A hier online.)
+    // Beide aendern offline Held und Lebenspunkte; A ist zuerst online.
     Future<void> konkurrierendeAenderung() async {
       await gemeinsamerStart(<Bestandsheld>[Bestandsheld.kriegerNormal]);
+      a.remote.offline = true;
       b.remote.offline = true;
       for (final (geraet, dukaten, lep) in <(SyncTestGeraet, String, int)>[
         (a, '20', 11),
@@ -363,7 +360,9 @@ void main() {
           zustand.copyWith(currentLep: lep),
         );
       }
+      a.remote.offline = false;
       b.remote.offline = false;
+      await a.repo.syncNow();
       await b.repo.syncNow();
     }
 
