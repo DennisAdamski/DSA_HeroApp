@@ -93,6 +93,30 @@ stehen können. Aktualisiert werden sie nur im selben Commit wie eine gewollte
 Regel- oder Kataloganpassung, mit Zeilenkommentar zum Grund — nie per Kopie
 der Ist-Ausgabe.
 
+### Ablauf über echte Speichergrenzen
+
+`test/data/bestandsheld_ablauf_test.dart` arbeitet mit `HiveHeroRepository`
+in einem temporären Verzeichnis statt mit `FakeRepository`. Für jede Fixture
+prüft er Import → Schließen → Neu öffnen → Export, für f01 zusätzlich den
+ganzen Ablauf mit Steigerungsrunde, Ausrüstungswechsel, Treffer samt Wunde,
+langer Rast, Neustart und Re-Import als neuer Held. Jeder Schritt vergleicht
+den gespeicherten Stand mit `expectNurGeaendert` gegen die Felder, die er
+ändern darf.
+
+Fallstricke mit echtem Hive:
+
+- Boxnamen gelten pro Isolat. Ein Repository, das ein Test nicht schließt,
+  liefert dem nächsten Test dieselbe offene Box — auch mit anderem Pfad.
+  Deshalb registriert jeder Test sein Schließen per `addTearDown`, und das
+  temporäre Verzeichnis (`hiveTempVerzeichnis`) wird vorher registriert, also
+  erst danach gelöscht. Unter Windows scheitert das Löschen sonst an offenen
+  Dateien.
+- Wie in der App zuerst den `ProviderContainer` verwerfen, dann das
+  Repository schließen.
+- `FakeRepository` setzt kein `lastModified`, Hive schon — Vergleiche über
+  beide Repositories hinweg laufen über `ohneZeitstempel` oder die
+  Inhalts-Hashes.
+
 ## Zuordnungsmatrix
 
 | Testdatei | Gruppe | Zweck |
@@ -127,6 +151,7 @@ der Ist-Ausgabe.
 | `test/data/catalog_loader_test.dart` | data | Katalog-Loading/Validierung |
 | `test/data/catalog_model_test.dart` | data | Katalogmodell Roundtrip |
 | `test/data/hero_actions_import_export_test.dart` | data | Actions Import/Export |
+| `test/data/bestandsheld_ablauf_test.dart` | data | Echte Hive-Speichergrenze je Bestandsheld und Ablauf Import bis Export mit Neustart, Befund B4 |
 | `test/domain/hero_sheet_model_test.dart` | domain | HeroSheet-Kompatibilitaet |
 | `test/domain/hero_transfer_bundle_test.dart` | domain | Transfer-Bundle-Kontrakt |
 | `test/domain/bestandshelden_kompatibilitaet_test.dart` | domain | Bestandsfixtures: Fixpunkt nach einmaligem Laden, Inhalts-Hashes, Altschlüssel, Befunde B1/B5/B6 |
