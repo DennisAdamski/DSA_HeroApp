@@ -117,6 +117,39 @@ Fallstricke mit echtem Hive:
   beide Repositories hinweg laufen über `ohneZeitstempel` oder die
   Inhalts-Hashes.
 
+### Zwei Geräte am Konto-Sync
+
+`test/data/sync_zwei_geraete_test.dart` hängt zwei `SyncingHeroRepository`
+an eine gemeinsame In-Memory-Cloud (`test/test_support/sync_geraete.dart`):
+
+- `GeteilteCloud` zählt Schreibvorgänge je Held und Zustand — so lässt sich
+  „die Wiederholung bucht nichts doppelt“ nachweisen.
+- `GeraeteRemote` ist die Leitung eines Geräts: `offline`,
+  `schreibvorgaengeBisAbbruch` (Abbruch mitten im Abgleich) und
+  `naechsteAntwortVerlieren` (Schreibvorgang kommt an, Antwort nicht). Nutzdaten
+  gehen wie bei Firestore als JSON über die Leitung.
+- `JsonHeroRepository` speichert lokal wie Hive nur JSON; `FakeRepository`
+  gäbe dieselbe Objektinstanz zurück und verdeckte Effekte des Ladens.
+- `SyncTestGeraet.neustart()` baut das Repository neu, Speicher und
+  Metadaten bleiben.
+
+Das Cloud-Fake (`fake_remote_hero_sync_gateway.dart`) hasht wie die echten
+Gateways mit `heroContentHash` und prüft auch bei Zuständen die Vorrevision.
+Mit dem früheren Hash inklusive `lastModified` wäre jede Runde ein Upload
+gewesen.
+
+### Plattformabdeckung
+
+Die CI (`.github/workflows/flutter-tests.yml`) führt alle Tests auf
+`ubuntu-latest` aus, die Hive-Tests also mit echtem Dateisystem. Automatisch
+**nicht** abgedeckt sind und bleiben manuell zu prüfen:
+
+- Web: Hive auf IndexedDB, Avatar-Cache, Datei-Upload im Regel-Nachschlag;
+- Android, iOS und Windows mit ihren echten Speicherpfaden;
+- Dateiauswahl für Import und Export (`file_picker`);
+- Konto-Sync gegen ein echtes Firebase-Backend, nativ und über REST
+  (Windows), einschließlich Storage-CORS.
+
 ## Zuordnungsmatrix
 
 | Testdatei | Gruppe | Zweck |
@@ -152,6 +185,7 @@ Fallstricke mit echtem Hive:
 | `test/data/catalog_model_test.dart` | data | Katalogmodell Roundtrip |
 | `test/data/hero_actions_import_export_test.dart` | data | Actions Import/Export |
 | `test/data/bestandsheld_ablauf_test.dart` | data | Echte Hive-Speichergrenze je Bestandsheld und Ablauf Import bis Export mit Neustart, Befund B4 |
+| `test/data/sync_zwei_geraete_test.dart` | data | Zwei Geräte an einer Cloud: Abbruch, verlorene Antwort, Neustart (auch mit Hive), Konfliktauflösungen samt Zustand, Befunde B1/B8 |
 | `test/domain/hero_sheet_model_test.dart` | domain | HeroSheet-Kompatibilitaet |
 | `test/domain/hero_transfer_bundle_test.dart` | domain | Transfer-Bundle-Kontrakt |
 | `test/domain/bestandshelden_kompatibilitaet_test.dart` | domain | Bestandsfixtures: Fixpunkt nach einmaligem Laden, Inhalts-Hashes, Altschlüssel, Befunde B1/B5/B6 |
