@@ -1,0 +1,800 @@
+{
+  "kind": "dsa.hero.export",
+  "transferSchemaVersion": 3,
+  "exportedAt": "2026-09-20T18:00:00.000Z",
+  "hero": {
+    "schemaVersion": 28,
+    "id": "bestand-f01",
+    "name": "Alrik vom Blautann",
+    "level": 7,
+    "attributes": {
+      "mu": 14,
+      "kl": 10,
+      "inn": 12,
+      "ch": 11,
+      "ff": 11,
+      "ge": 13,
+      "ko": 14,
+      "kk": 14
+    },
+    "rawStartAttributes": {
+      "mu": 13,
+      "kl": 10,
+      "inn": 12,
+      "ch": 11,
+      "ff": 11,
+      "ge": 12,
+      "ko": 13,
+      "kk": 14
+    },
+    "startAttributes": {
+      "mu": 13,
+      "kl": 10,
+      "inn": 12,
+      "ch": 11,
+      "ff": 11,
+      "ge": 12,
+      "ko": 13,
+      "kk": 14
+    },
+    "persistentMods": {
+      "lep": 0,
+      "au": 0,
+      "asp": 0,
+      "kap": 0,
+      "mr": 0,
+      "iniBase": 0,
+      "at": 0,
+      "pa": 0,
+      "fk": 0,
+      "gs": 0,
+      "ausweichen": 0,
+      "rs": 0
+    },
+    "bought": {
+      "lep": 2,
+      "au": 1,
+      "asp": 0,
+      "kap": 0,
+      "mr": 0
+    },
+    "combatConfig": {
+      "mainWeapon": {
+        "name": "Langschwert",
+        "talentId": "tal_schwerter",
+        "combatType": "melee",
+        "weaponType": "Langschwert",
+        "distanceClass": "N",
+        "kkBase": 11,
+        "kkThreshold": 4,
+        "breakFactor": 1,
+        "tpDiceCount": 1,
+        "tpDiceSides": 6,
+        "tpFlat": 4,
+        "wmAt": 0,
+        "wmPa": 0,
+        "iniMod": 0,
+        "beTalentMod": 0,
+        "isOneHanded": true,
+        "isArtifact": false,
+        "artifactDescription": "",
+        "isGeweiht": false,
+        "geweihtDescription": "",
+        "rangedProfile": {
+          "reloadTime": 0,
+          "distanceBands": [
+            {
+              "label": "Distanz 1",
+              "tpMod": 0
+            },
+            {
+              "label": "Distanz 2",
+              "tpMod": 0
+            },
+            {
+              "label": "Distanz 3",
+              "tpMod": 0
+            },
+            {
+              "label": "Distanz 4",
+              "tpMod": 0
+            },
+            {
+              "label": "Distanz 5",
+              "tpMod": 0
+            }
+          ],
+          "projectiles": [],
+          "selectedDistanceIndex": 0,
+          "selectedProjectileIndex": -1
+        }
+      },
+      "weapons": [
+        {
+          "name": "Langschwert",
+          "talentId": "tal_schwerter",
+          "combatType": "melee",
+          "weaponType": "Langschwert",
+          "distanceClass": "N",
+          "kkBase": 11,
+          "kkThreshold": 4,
+          "breakFactor": 1,
+          "tpDiceCount": 1,
+          "tpDiceSides": 6,
+          "tpFlat": 4,
+          "wmAt": 0,
+          "wmPa": 0,
+          "iniMod": 0,
+          "beTalentMod": 0,
+          "isOneHanded": true,
+          "isArtifact": false,
+          "artifactDescription": "",
+          "isGeweiht": false,
+          "geweihtDescription": "",
+          "rangedProfile": {
+            "reloadTime": 0,
+            "distanceBands": [
+              {
+                "label": "Distanz 1",
+                "tpMod": 0
+              },
+              {
+                "label": "Distanz 2",
+                "tpMod": 0
+              },
+              {
+                "label": "Distanz 3",
+                "tpMod": 0
+              },
+              {
+                "label": "Distanz 4",
+                "tpMod": 0
+              },
+              {
+                "label": "Distanz 5",
+                "tpMod": 0
+              }
+            ],
+            "projectiles": [],
+            "selectedDistanceIndex": 0,
+            "selectedProjectileIndex": -1
+          }
+        },
+        {
+          "name": "Leichte Armbrust",
+          "talentId": "tal_armbrust",
+          "combatType": "ranged",
+          "weaponType": "Leichte Armbrust",
+          "distanceClass": "",
+          "kkBase": 0,
+          "kkThreshold": 1,
+          "breakFactor": 0,
+          "tpDiceCount": 1,
+          "tpDiceSides": 6,
+          "tpFlat": 6,
+          "wmAt": 0,
+          "wmPa": 0,
+          "iniMod": 0,
+          "beTalentMod": 0,
+          "isOneHanded": false,
+          "isArtifact": false,
+          "artifactDescription": "",
+          "isGeweiht": false,
+          "geweihtDescription": "",
+          "rangedProfile": {
+            "reloadTime": 15,
+            "distanceBands": [
+              {
+                "label": "Distanz 1",
+                "tpMod": 1
+              },
+              {
+                "label": "Distanz 2",
+                "tpMod": 0
+              },
+              {
+                "label": "Distanz 3",
+                "tpMod": 0
+              },
+              {
+                "label": "Distanz 4",
+                "tpMod": -1
+              },
+              {
+                "label": "Distanz 5",
+                "tpMod": -2
+              }
+            ],
+            "projectiles": [
+              {
+                "name": "Bolzen",
+                "count": 20,
+                "tpMod": 0,
+                "iniMod": 0,
+                "atMod": 0,
+                "description": ""
+              }
+            ],
+            "selectedDistanceIndex": 1,
+            "selectedProjectileIndex": 0
+          }
+        }
+      ],
+      "selectedWeaponIndex": 0,
+      "offhandAssignment": {
+        "weaponIndex": -1,
+        "equipmentIndex": 0
+      },
+      "offhandEquipment": [
+        {
+          "name": "Holzschild",
+          "type": "shield",
+          "breakFactor": 3,
+          "shieldSize": "small",
+          "iniMod": -1,
+          "atMod": -1,
+          "paMod": 3,
+          "isArtifact": false,
+          "artifactDescription": "",
+          "isGeweiht": false,
+          "geweihtDescription": ""
+        }
+      ],
+      "armor": {
+        "pieces": [
+          {
+            "name": "Kettenhemd",
+            "isActive": true,
+            "rg1Active": false,
+            "rs": 3,
+            "be": 3,
+            "isArtifact": false,
+            "artifactDescription": "",
+            "isGeweiht": false,
+            "geweihtDescription": ""
+          },
+          {
+            "name": "Lederhelm",
+            "isActive": true,
+            "rg1Active": false,
+            "rs": 1,
+            "be": 1,
+            "isArtifact": false,
+            "artifactDescription": "",
+            "isGeweiht": false,
+            "geweihtDescription": ""
+          }
+        ],
+        "globalArmorTrainingLevel": 1
+      },
+      "specialRules": {
+        "kampfreflexe": true,
+        "kampfgespuer": false,
+        "schnellziehen": false,
+        "ausweichenI": false,
+        "ausweichenII": false,
+        "ausweichenIII": false,
+        "schildkampfI": false,
+        "schildkampfII": false,
+        "parierwaffenI": false,
+        "parierwaffenII": false,
+        "linkhandActive": false,
+        "flink": false,
+        "behaebig": false,
+        "axxeleratusActive": false,
+        "klingentaenzer": false,
+        "aufmerksamkeit": false,
+        "activeCombatSpecialAbilityIds": [
+          "ksf_ruestungsgewoehnung_i"
+        ],
+        "gladiatorStyleTalent": "",
+        "activeManeuvers": [
+          "man_finte",
+          "man_wuchtschlag"
+        ]
+      },
+      "manualMods": {
+        "iniMod": 0,
+        "ausweichenMod": 0,
+        "atMod": 0,
+        "paMod": 0,
+        "iniWurf": 0
+      },
+      "waffenmeisterschaften": []
+    },
+    "talents": {
+      "tal_klettern": {
+        "talentValue": 5,
+        "atValue": 0,
+        "paValue": 0,
+        "modifier": 0,
+        "talentModifiers": [],
+        "specialExperiences": 0,
+        "specializations": "",
+        "combatSpecializations": [],
+        "gifted": false,
+        "ebe": 0
+      },
+      "tal_koerperbeherrschung": {
+        "talentValue": 4,
+        "atValue": 0,
+        "paValue": 0,
+        "modifier": 0,
+        "talentModifiers": [],
+        "specialExperiences": 0,
+        "specializations": "",
+        "combatSpecializations": [],
+        "gifted": false,
+        "ebe": 0
+      },
+      "tal_zechen": {
+        "talentValue": 3,
+        "atValue": 0,
+        "paValue": 0,
+        "modifier": 0,
+        "talentModifiers": [],
+        "specialExperiences": 0,
+        "specializations": "",
+        "combatSpecializations": [],
+        "gifted": false,
+        "ebe": 0
+      },
+      "tal_menschenkenntnis": {
+        "talentValue": 2,
+        "atValue": 0,
+        "paValue": 0,
+        "modifier": 0,
+        "talentModifiers": [],
+        "specialExperiences": 0,
+        "specializations": "",
+        "combatSpecializations": [],
+        "gifted": false,
+        "ebe": 0
+      },
+      "tal_schwerter": {
+        "talentValue": 10,
+        "atValue": 6,
+        "paValue": 4,
+        "modifier": 0,
+        "talentModifiers": [],
+        "specialExperiences": 0,
+        "specializations": "Langschwert",
+        "combatSpecializations": [
+          "Langschwert"
+        ],
+        "gifted": false,
+        "ebe": 0
+      },
+      "tal_armbrust": {
+        "talentValue": 7,
+        "atValue": 7,
+        "paValue": 0,
+        "modifier": 0,
+        "talentModifiers": [],
+        "specialExperiences": 0,
+        "specializations": "",
+        "combatSpecializations": [],
+        "gifted": false,
+        "ebe": 0
+      }
+    },
+    "metaTalents": [],
+    "hiddenTalentIds": [],
+    "talentSpecialAbilities": [
+      {
+        "name": "Kulturkunde (Mittelreich)",
+        "note": ""
+      }
+    ],
+    "spells": {},
+    "ritualCategories": [],
+    "representationen": [],
+    "repraesentationsTraditionen": {},
+    "merkmalskenntnisse": [],
+    "magicSpecialAbilities": [],
+    "magicLeadAttribute": "",
+    "sprachen": {
+      "spr_garethi": {
+        "wert": 12,
+        "modifier": 0
+      }
+    },
+    "schriften": {
+      "sch_kusliker_zeichen": {
+        "wert": 6,
+        "modifier": 0
+      }
+    },
+    "muttersprache": "spr_garethi",
+    "geschlecht": "männlich",
+    "alter": "24",
+    "groesse": "",
+    "gewicht": "",
+    "haarfarbe": "",
+    "augenfarbe": "",
+    "aussehen": "",
+    "avatarFileName": "",
+    "avatarGallery": [],
+    "primaerbildId": "",
+    "aktivesBildId": "",
+    "rasse": "Mittelländer",
+    "rasseModText": "LEP+10, AU+10, MR-4",
+    "kultur": "Mittelreich",
+    "kulturModText": "",
+    "profession": "Krieger",
+    "professionModText": "LEP+2, AU+2",
+    "familieHerkunftHintergrund": "",
+    "stand": "",
+    "titel": "",
+    "sozialstatus": 0,
+    "vorteileText": "Eisern, Richtungssinn",
+    "nachteileText": "Jähzorn 6, Arroganz 5",
+    "apTotal": 3200,
+    "apSpent": 2650,
+    "apAvailable": 550,
+    "dukaten": "12",
+    "resourceActivationConfig": {},
+    "inventoryEntries": [
+      {
+        "gegenstand": "Wasserschlauch",
+        "woGetragen": "",
+        "typ": "",
+        "welchesAbenteuer": "",
+        "gewicht": "",
+        "wert": "",
+        "artefakt": "",
+        "anzahl": "",
+        "amKoerper": "",
+        "woDann": "",
+        "gruppe": "",
+        "beschreibung": "",
+        "itemType": "ausruestung",
+        "source": "manuell",
+        "istAusgeruestet": false,
+        "modifiers": [],
+        "gewichtGramm": 1500,
+        "wertSilber": 2,
+        "herkunft": "",
+        "isMagisch": false,
+        "magischDescription": "",
+        "isGeweiht": false,
+        "geweihtDescription": "",
+        "traegerTyp": "held"
+      },
+      {
+        "gegenstand": "Langschwert",
+        "woGetragen": "",
+        "typ": "",
+        "welchesAbenteuer": "",
+        "gewicht": "",
+        "wert": "",
+        "artefakt": "",
+        "anzahl": "",
+        "amKoerper": "",
+        "woDann": "",
+        "gruppe": "",
+        "beschreibung": "",
+        "itemType": "ausruestung",
+        "source": "waffe",
+        "sourceRef": "w:Langschwert",
+        "istAusgeruestet": true,
+        "modifiers": [],
+        "gewichtGramm": 0,
+        "wertSilber": 0,
+        "herkunft": "",
+        "isMagisch": false,
+        "magischDescription": "",
+        "isGeweiht": false,
+        "geweihtDescription": "",
+        "traegerTyp": "held"
+      },
+      {
+        "gegenstand": "Leichte Armbrust",
+        "woGetragen": "",
+        "typ": "",
+        "welchesAbenteuer": "",
+        "gewicht": "",
+        "wert": "",
+        "artefakt": "",
+        "anzahl": "",
+        "amKoerper": "",
+        "woDann": "",
+        "gruppe": "",
+        "beschreibung": "",
+        "itemType": "ausruestung",
+        "source": "waffe",
+        "sourceRef": "w:Leichte Armbrust",
+        "istAusgeruestet": true,
+        "modifiers": [],
+        "gewichtGramm": 0,
+        "wertSilber": 0,
+        "herkunft": "",
+        "isMagisch": false,
+        "magischDescription": "",
+        "isGeweiht": false,
+        "geweihtDescription": "",
+        "traegerTyp": "held"
+      },
+      {
+        "gegenstand": "Bolzen",
+        "woGetragen": "",
+        "typ": "",
+        "welchesAbenteuer": "",
+        "gewicht": "",
+        "wert": "",
+        "artefakt": "",
+        "anzahl": "20",
+        "amKoerper": "",
+        "woDann": "",
+        "gruppe": "",
+        "beschreibung": "",
+        "itemType": "verbrauchsgegenstand",
+        "source": "geschoss",
+        "sourceRef": "w:Leichte Armbrust|p:Bolzen",
+        "istAusgeruestet": false,
+        "modifiers": [],
+        "gewichtGramm": 0,
+        "wertSilber": 0,
+        "herkunft": "",
+        "isMagisch": false,
+        "magischDescription": "",
+        "isGeweiht": false,
+        "geweihtDescription": "",
+        "traegerTyp": "held"
+      },
+      {
+        "gegenstand": "Kettenhemd",
+        "woGetragen": "",
+        "typ": "",
+        "welchesAbenteuer": "",
+        "gewicht": "",
+        "wert": "",
+        "artefakt": "",
+        "anzahl": "",
+        "amKoerper": "",
+        "woDann": "",
+        "gruppe": "",
+        "beschreibung": "",
+        "itemType": "ausruestung",
+        "source": "ruestung",
+        "sourceRef": "a:Kettenhemd",
+        "istAusgeruestet": true,
+        "modifiers": [],
+        "gewichtGramm": 0,
+        "wertSilber": 0,
+        "herkunft": "",
+        "isMagisch": false,
+        "magischDescription": "",
+        "isGeweiht": false,
+        "geweihtDescription": "",
+        "traegerTyp": "held"
+      },
+      {
+        "gegenstand": "Lederhelm",
+        "woGetragen": "",
+        "typ": "",
+        "welchesAbenteuer": "",
+        "gewicht": "",
+        "wert": "",
+        "artefakt": "",
+        "anzahl": "",
+        "amKoerper": "",
+        "woDann": "",
+        "gruppe": "",
+        "beschreibung": "",
+        "itemType": "ausruestung",
+        "source": "ruestung",
+        "sourceRef": "a:Lederhelm",
+        "istAusgeruestet": true,
+        "modifiers": [],
+        "gewichtGramm": 0,
+        "wertSilber": 0,
+        "herkunft": "",
+        "isMagisch": false,
+        "magischDescription": "",
+        "isGeweiht": false,
+        "geweihtDescription": "",
+        "traegerTyp": "held"
+      },
+      {
+        "gegenstand": "Holzschild",
+        "woGetragen": "",
+        "typ": "",
+        "welchesAbenteuer": "",
+        "gewicht": "",
+        "wert": "",
+        "artefakt": "",
+        "anzahl": "",
+        "amKoerper": "",
+        "woDann": "",
+        "gruppe": "",
+        "beschreibung": "",
+        "itemType": "ausruestung",
+        "source": "nebenhand",
+        "sourceRef": "oh:Holzschild",
+        "istAusgeruestet": true,
+        "modifiers": [],
+        "gewichtGramm": 0,
+        "wertSilber": 0,
+        "herkunft": "",
+        "isMagisch": false,
+        "magischDescription": "",
+        "isGeweiht": false,
+        "geweihtDescription": "",
+        "traegerTyp": "held"
+      }
+    ],
+    "notes": [
+      {
+        "title": "Schuldschein",
+        "description": "Schuldet Answin 12 Dukaten."
+      }
+    ],
+    "connections": [],
+    "adventures": [
+      {
+        "id": "abenteuer-sichel",
+        "status": "current",
+        "title": "Die Schwarze Sichel",
+        "summary": "Auf dem Weg nach Gareth.",
+        "notes": [],
+        "people": [],
+        "startWorldDate": {
+          "day": "",
+          "month": "",
+          "year": ""
+        },
+        "startAventurianDate": {
+          "day": "12",
+          "month": "praios",
+          "year": "1040"
+        },
+        "endWorldDate": {
+          "day": "",
+          "month": "",
+          "year": ""
+        },
+        "endAventurianDate": {
+          "day": "",
+          "month": "",
+          "year": ""
+        },
+        "currentAventurianDate": {
+          "day": "18",
+          "month": "praios",
+          "year": "1040"
+        },
+        "apReward": 0,
+        "seRewards": [],
+        "dukatenReward": 0.0,
+        "lootRewards": [],
+        "rewardsApplied": false
+      }
+    ],
+    "attributeSePool": {
+      "mu": 0,
+      "kl": 0,
+      "inn": 0,
+      "ch": 0,
+      "ff": 0,
+      "ge": 0,
+      "ko": 0,
+      "kk": 0
+    },
+    "statSePool": {
+      "lep": 0,
+      "au": 0,
+      "asp": 0,
+      "kap": 0,
+      "mr": 0
+    },
+    "companions": [],
+    "gruppen": [],
+    "reisebericht": {
+      "checkedIds": [],
+      "openEntries": {},
+      "wahlSeZuordnungen": {},
+      "appliedRewardIds": []
+    },
+    "statModifiers": {
+      "mr": [
+        {
+          "modifier": 1,
+          "description": "Schutzamulett"
+        }
+      ]
+    },
+    "attributeModifiers": {
+      "mu": [
+        {
+          "modifier": 1,
+          "description": "Ruhmesabzeichen"
+        }
+      ]
+    },
+    "unknownModifierFragments": [],
+    "isEpisch": false,
+    "epicStartAp": 0,
+    "epicAttributeMaxBonus": {
+      "mu": 0,
+      "kl": 0,
+      "inn": 0,
+      "ch": 0,
+      "ff": 0,
+      "ge": 0,
+      "ko": 0,
+      "kk": 0
+    },
+    "epicMainAttributes": {
+      "mu": 0,
+      "kl": 0,
+      "inn": 0,
+      "ch": 0,
+      "ff": 0,
+      "ge": 0,
+      "ko": 0,
+      "kk": 0
+    },
+    "epicLockedWaffenmeisterCategories": [],
+    "epicUnactivatedTalentIds": [],
+    "lastModified": "2026-09-20T17:55:00.000Z"
+  },
+  "state": {
+    "schemaVersion": 6,
+    "currentLep": 28,
+    "currentAsp": 0,
+    "currentKap": 0,
+    "currentAu": 30,
+    "erschoepfung": 1,
+    "ueberanstrengung": 0,
+    "tempMods": {
+      "lep": 0,
+      "au": 0,
+      "asp": 0,
+      "kap": 0,
+      "mr": 0,
+      "iniBase": 0,
+      "at": 0,
+      "pa": 0,
+      "fk": 0,
+      "gs": 0,
+      "ausweichen": 0,
+      "rs": 0
+    },
+    "tempAttributeMods": {
+      "mu": 0,
+      "kl": 0,
+      "inn": 0,
+      "ch": 0,
+      "ff": 0,
+      "ge": 0,
+      "ko": 0,
+      "kk": 0
+    },
+    "activeSpellEffects": {
+      "activeEffectIds": [],
+      "effectDetails": {}
+    },
+    "wpiZustand": {
+      "wundenProZone": {
+        "linkerArm": 1
+      },
+      "kopfIniMalus": 0
+    },
+    "diceLog": [
+      {
+        "timestamp": "2026-09-20T17:40:00.000Z",
+        "type": "attribute",
+        "title": "Mut",
+        "subtitle": "",
+        "success": true,
+        "diceValues": [
+          7
+        ],
+        "targetValue": 14,
+        "automaticOutcome": "none"
+      }
+    ],
+    "lastModified": "2026-09-20T17:56:00.000Z"
+  }
+}

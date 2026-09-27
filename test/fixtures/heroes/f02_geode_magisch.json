@@ -1,0 +1,491 @@
+{
+  "kind": "dsa.hero.export",
+  "transferSchemaVersion": 3,
+  "exportedAt": "2026-09-20T18:00:00.000Z",
+  "hero": {
+    "schemaVersion": 28,
+    "id": "bestand-f02",
+    "name": "Xorgolosch Sohn des Xembalosch",
+    "level": 7,
+    "attributes": {
+      "mu": 12,
+      "kl": 13,
+      "inn": 14,
+      "ch": 13,
+      "ff": 12,
+      "ge": 11,
+      "ko": 13,
+      "kk": 12
+    },
+    "rawStartAttributes": {
+      "mu": 12,
+      "kl": 13,
+      "inn": 13,
+      "ch": 12,
+      "ff": 12,
+      "ge": 11,
+      "ko": 13,
+      "kk": 12
+    },
+    "startAttributes": {
+      "mu": 12,
+      "kl": 13,
+      "inn": 13,
+      "ch": 12,
+      "ff": 12,
+      "ge": 11,
+      "ko": 13,
+      "kk": 12
+    },
+    "persistentMods": {
+      "lep": 0,
+      "au": 0,
+      "asp": 0,
+      "kap": 0,
+      "mr": 0,
+      "iniBase": 0,
+      "at": 0,
+      "pa": 0,
+      "fk": 0,
+      "gs": 0,
+      "ausweichen": 0,
+      "rs": 0
+    },
+    "bought": {
+      "lep": 0,
+      "au": 0,
+      "asp": 0,
+      "kap": 0,
+      "mr": 0
+    },
+    "combatConfig": {
+      "mainWeapon": {
+        "name": "Magierstab",
+        "talentId": "tal_staebe",
+        "combatType": "melee",
+        "weaponType": "Magierstab",
+        "distanceClass": "",
+        "kkBase": 0,
+        "kkThreshold": 1,
+        "breakFactor": 0,
+        "tpDiceCount": 1,
+        "tpDiceSides": 6,
+        "tpFlat": 1,
+        "wmAt": 0,
+        "wmPa": 0,
+        "iniMod": 0,
+        "beTalentMod": 0,
+        "isOneHanded": false,
+        "isArtifact": false,
+        "artifactDescription": "",
+        "isGeweiht": false,
+        "geweihtDescription": "",
+        "rangedProfile": {
+          "reloadTime": 0,
+          "distanceBands": [
+            {
+              "label": "Distanz 1",
+              "tpMod": 0
+            },
+            {
+              "label": "Distanz 2",
+              "tpMod": 0
+            },
+            {
+              "label": "Distanz 3",
+              "tpMod": 0
+            },
+            {
+              "label": "Distanz 4",
+              "tpMod": 0
+            },
+            {
+              "label": "Distanz 5",
+              "tpMod": 0
+            }
+          ],
+          "projectiles": [],
+          "selectedDistanceIndex": 0,
+          "selectedProjectileIndex": -1
+        }
+      },
+      "weapons": [
+        {
+          "name": "Magierstab",
+          "talentId": "tal_staebe",
+          "combatType": "melee",
+          "weaponType": "Magierstab",
+          "distanceClass": "",
+          "kkBase": 0,
+          "kkThreshold": 1,
+          "breakFactor": 0,
+          "tpDiceCount": 1,
+          "tpDiceSides": 6,
+          "tpFlat": 1,
+          "wmAt": 0,
+          "wmPa": 0,
+          "iniMod": 0,
+          "beTalentMod": 0,
+          "isOneHanded": false,
+          "isArtifact": false,
+          "artifactDescription": "",
+          "isGeweiht": false,
+          "geweihtDescription": "",
+          "rangedProfile": {
+            "reloadTime": 0,
+            "distanceBands": [
+              {
+                "label": "Distanz 1",
+                "tpMod": 0
+              },
+              {
+                "label": "Distanz 2",
+                "tpMod": 0
+              },
+              {
+                "label": "Distanz 3",
+                "tpMod": 0
+              },
+              {
+                "label": "Distanz 4",
+                "tpMod": 0
+              },
+              {
+                "label": "Distanz 5",
+                "tpMod": 0
+              }
+            ],
+            "projectiles": [],
+            "selectedDistanceIndex": 0,
+            "selectedProjectileIndex": -1
+          }
+        }
+      ],
+      "selectedWeaponIndex": 0,
+      "offhandAssignment": {
+        "weaponIndex": -1,
+        "equipmentIndex": -1
+      },
+      "offhandEquipment": [],
+      "armor": {
+        "pieces": [],
+        "globalArmorTrainingLevel": 0
+      },
+      "specialRules": {
+        "kampfreflexe": false,
+        "kampfgespuer": false,
+        "schnellziehen": false,
+        "ausweichenI": false,
+        "ausweichenII": false,
+        "ausweichenIII": false,
+        "schildkampfI": false,
+        "schildkampfII": false,
+        "parierwaffenI": false,
+        "parierwaffenII": false,
+        "linkhandActive": false,
+        "flink": false,
+        "behaebig": false,
+        "axxeleratusActive": false,
+        "klingentaenzer": false,
+        "aufmerksamkeit": false,
+        "activeCombatSpecialAbilityIds": [],
+        "gladiatorStyleTalent": "",
+        "activeManeuvers": []
+      },
+      "manualMods": {
+        "iniMod": 0,
+        "ausweichenMod": 0,
+        "atMod": 0,
+        "paMod": 0,
+        "iniWurf": 0
+      },
+      "waffenmeisterschaften": []
+    },
+    "talents": {
+      "tal_magiekunde": {
+        "talentValue": 8,
+        "atValue": 0,
+        "paValue": 0,
+        "modifier": 0,
+        "talentModifiers": [],
+        "specialExperiences": 0,
+        "specializations": "",
+        "combatSpecializations": [],
+        "gifted": false,
+        "ebe": 0
+      },
+      "tal_wildnisleben": {
+        "talentValue": 6,
+        "atValue": 0,
+        "paValue": 0,
+        "modifier": 0,
+        "talentModifiers": [],
+        "specialExperiences": 0,
+        "specializations": "",
+        "combatSpecializations": [],
+        "gifted": false,
+        "ebe": 0
+      },
+      "tal_staebe": {
+        "talentValue": 5,
+        "atValue": 3,
+        "paValue": 2,
+        "modifier": 0,
+        "talentModifiers": [],
+        "specialExperiences": 0,
+        "specializations": "",
+        "combatSpecializations": [],
+        "gifted": false,
+        "ebe": 0
+      }
+    },
+    "metaTalents": [],
+    "hiddenTalentIds": [],
+    "talentSpecialAbilities": [],
+    "spells": {
+      "spell_balsam_salabunde": {
+        "spellValue": 9,
+        "modifier": 0,
+        "hauszauber": true,
+        "gifted": false,
+        "specializations": []
+      },
+      "spell_armatrutz": {
+        "spellValue": 7,
+        "modifier": 0,
+        "hauszauber": false,
+        "gifted": false,
+        "specializations": []
+      },
+      "spell_fulminictus_donnerkeil": {
+        "spellValue": 5,
+        "modifier": 0,
+        "hauszauber": false,
+        "gifted": false,
+        "specializations": [
+          "Reichweite"
+        ]
+      }
+    },
+    "ritualCategories": [
+      {
+        "id": "ritcat-geoden",
+        "name": "Geodische Rituale",
+        "knowledgeMode": "ownKnowledge",
+        "ownKnowledge": {
+          "name": "Geodische Rituale",
+          "value": 7,
+          "learningComplexity": "E"
+        },
+        "derivedTalentIds": [],
+        "additionalFieldDefs": [],
+        "rituals": [
+          {
+            "name": "Kraft des Erzes",
+            "wirkung": "Erdkraft bündeln",
+            "kosten": "7 AsP",
+            "wirkungsdauer": "",
+            "merkmale": "",
+            "zauberdauer": "",
+            "zielobjekt": "",
+            "reichweite": "",
+            "technik": "",
+            "additionalFieldValues": []
+          }
+        ]
+      }
+    ],
+    "representationen": [
+      "Geo"
+    ],
+    "repraesentationsTraditionen": {
+      "Geo": "geode_diener_sumus"
+    },
+    "merkmalskenntnisse": [
+      "Elementar"
+    ],
+    "magicSpecialAbilities": [
+      {
+        "name": "Eiserner Wille I / II",
+        "beschreibung": "Altname",
+        "note": "Altname"
+      },
+      {
+        "name": "Regeneration I (ZHV)",
+        "beschreibung": "",
+        "note": ""
+      }
+    ],
+    "magicLeadAttribute": "",
+    "sprachen": {},
+    "schriften": {},
+    "muttersprache": "",
+    "geschlecht": "",
+    "alter": "",
+    "groesse": "",
+    "gewicht": "",
+    "haarfarbe": "",
+    "augenfarbe": "",
+    "aussehen": "",
+    "avatarFileName": "",
+    "avatarGallery": [],
+    "primaerbildId": "",
+    "aktivesBildId": "",
+    "rasse": "Zwerg",
+    "rasseModText": "LEP+11, AU+14, MR+2",
+    "kultur": "Ambosszwerge",
+    "kulturModText": "",
+    "profession": "Geode",
+    "professionModText": "ASP+12",
+    "familieHerkunftHintergrund": "",
+    "stand": "",
+    "titel": "",
+    "sozialstatus": 0,
+    "vorteileText": "Vollzauberer, Zäher Hund",
+    "nachteileText": "Goldgier 7",
+    "apTotal": 2400,
+    "apSpent": 2100,
+    "apAvailable": 300,
+    "dukaten": "",
+    "resourceActivationConfig": {},
+    "inventoryEntries": [
+      {
+        "gegenstand": "Magierstab",
+        "woGetragen": "",
+        "typ": "",
+        "welchesAbenteuer": "",
+        "gewicht": "",
+        "wert": "",
+        "artefakt": "",
+        "anzahl": "",
+        "amKoerper": "",
+        "woDann": "",
+        "gruppe": "",
+        "beschreibung": "",
+        "itemType": "ausruestung",
+        "source": "waffe",
+        "sourceRef": "w:Magierstab",
+        "istAusgeruestet": true,
+        "modifiers": [],
+        "gewichtGramm": 0,
+        "wertSilber": 0,
+        "herkunft": "",
+        "isMagisch": false,
+        "magischDescription": "",
+        "isGeweiht": false,
+        "geweihtDescription": "",
+        "traegerTyp": "held"
+      }
+    ],
+    "notes": [],
+    "connections": [],
+    "adventures": [],
+    "attributeSePool": {
+      "mu": 0,
+      "kl": 0,
+      "inn": 0,
+      "ch": 0,
+      "ff": 0,
+      "ge": 0,
+      "ko": 0,
+      "kk": 0
+    },
+    "statSePool": {
+      "lep": 0,
+      "au": 0,
+      "asp": 0,
+      "kap": 0,
+      "mr": 0
+    },
+    "companions": [],
+    "gruppen": [],
+    "reisebericht": {
+      "checkedIds": [],
+      "openEntries": {},
+      "wahlSeZuordnungen": {},
+      "appliedRewardIds": []
+    },
+    "statModifiers": {},
+    "attributeModifiers": {},
+    "unknownModifierFragments": [],
+    "isEpisch": false,
+    "epicStartAp": 0,
+    "epicAttributeMaxBonus": {
+      "mu": 0,
+      "kl": 0,
+      "inn": 0,
+      "ch": 0,
+      "ff": 0,
+      "ge": 0,
+      "ko": 0,
+      "kk": 0
+    },
+    "epicMainAttributes": {
+      "mu": 0,
+      "kl": 0,
+      "inn": 0,
+      "ch": 0,
+      "ff": 0,
+      "ge": 0,
+      "ko": 0,
+      "kk": 0
+    },
+    "epicLockedWaffenmeisterCategories": [],
+    "epicUnactivatedTalentIds": [],
+    "lastModified": "2026-09-20T17:55:00.000Z"
+  },
+  "state": {
+    "schemaVersion": 6,
+    "currentLep": 30,
+    "currentAsp": 25,
+    "currentKap": 0,
+    "currentAu": 35,
+    "erschoepfung": 0,
+    "ueberanstrengung": 0,
+    "tempMods": {
+      "lep": 0,
+      "au": 0,
+      "asp": 0,
+      "kap": 0,
+      "mr": 0,
+      "iniBase": 0,
+      "at": 0,
+      "pa": 0,
+      "fk": 0,
+      "gs": 0,
+      "ausweichen": 0,
+      "rs": 0
+    },
+    "tempAttributeMods": {
+      "mu": 0,
+      "kl": 0,
+      "inn": 0,
+      "ch": 0,
+      "ff": 0,
+      "ge": 0,
+      "ko": 0,
+      "kk": 0
+    },
+    "activeSpellEffects": {
+      "activeEffectIds": [
+        "effect_spell_armatrutz"
+      ],
+      "effectDetails": {
+        "effect_spell_armatrutz": {
+          "amount": 2,
+          "duration": {
+            "amount": 10,
+            "remaining": 6,
+            "unit": "spielrunden"
+          }
+        }
+      }
+    },
+    "wpiZustand": {
+      "wundenProZone": {},
+      "kopfIniMalus": 0
+    },
+    "diceLog": [],
+    "lastModified": "2026-09-20T17:56:00.000Z"
+  }
+}
