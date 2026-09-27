@@ -330,8 +330,42 @@ mit älterer App per Sync die Felder einer neueren (Befunde ARCH-07-B5/B6):
   `UnbekannterVerlaufseintrag` an ihrer Position erhalten, statt den Helden
   unlesbar zu machen. Sie werden nicht ausgewertet; der Verlauf nennt ihre
   Anzahl.
-- Unbekannte Felder **innerhalb** verschachtelter Objekte (etwa in der
-  Kampfkonfiguration) gehen weiterhin verloren.
+- **Ausrüstung** bewahrt Unbekanntes auf jeder Ebene. Jedes der zehn Modelle
+  trägt dafür einen eigenen Satz `unbekannteFelder` und ein eigenes
+  `jsonSchluessel`:
+  - `CombatConfig`;
+  - Waffen: `MainWeaponSlot`, `RangedWeaponProfile`, `RangedProjectile`,
+    `RangedDistanceBand`;
+  - Rüstung: `ArmorConfig`, `ArmorPiece`;
+  - Nebenhand: `OffhandEquipmentEntry`;
+  - Inventar: `HeroInventoryEntry`, `InventoryItemModifier`.
+
+  Zwei Regeln halten das dicht:
+  1. **Jeder gelesene Altschlüssel gehört in den Schlüsselsatz.** Das betrifft
+     `offhand`, `wmFk` und `fkMod`, die beim Laden in neue Felder aufgehen.
+     Als „unbekannt“ zurückgeschrieben, käme etwa ein gelöschter migrierter
+     Schild beim nächsten Laden wieder.
+  2. **Bestehende Objekte ändert man nur per `copyWith`.** Wer sie per
+     Konstruktor neu aufbaut, verliert die Felder. Deshalb bauen
+     `_mergeEntry` im Inventarabgleich und die Editoren für Nebenhand,
+     Geschoss, Distanzstufe und Begleiterrüstung auf der Bestandsinstanz auf.
+
+  Katalogwaffen setzen die Felder ihrer Geschosse und Stufen beim Laden leer
+  (`weapon_def.dart`). Katalogschlüssel sind keine Heldendaten.
+- Unbekannte Felder in `OffhandAssignment`, `CombatSpecialRules`,
+  `CombatManualMods`, `WaffenmeisterConfig` und allen übrigen verschachtelten
+  Objekten gehen weiterhin verloren. Das betrifft etwa Talente, Zauber,
+  Rituale, die eigenen Felder von `HeroCompanion`, Abenteuer und Notizen.
+  Ebenso ungeschützt sind **unbekannte Werte** bekannter Felder: Ein
+  unbekannter Enum-Wert fällt auf den Standard zurück.
+
+**Formatregel für künftige Versionen:** Änderungen am gespeicherten Format
+bleiben additiv. Erhalten wird nur, was eine ältere Version nicht versteht;
+ändert sich dagegen die Bedeutung eines vorhandenen Schlüssels, schriebe sie
+ihn nach ihrem alten Verständnis fort. Eine neue Bedeutung bekommt deshalb
+einen neuen Schlüssel. Nur ein Formatwechsel, der sich so nicht ausdrücken
+lässt, bräuchte eine sichtbare Schreibsperre in älteren Versionen — die gibt
+es bisher nicht.
 
 Bestandsdaten enthalten nichts Unbekanntes, ihr JSON und ihre Inhalts-Hashes
 ändern sich dadurch nicht.

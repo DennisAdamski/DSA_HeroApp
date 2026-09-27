@@ -1,3 +1,5 @@
+import 'package:dsa_heldenverwaltung/domain/unbekannte_json_felder.dart';
+
 /// Beschreibt ein einzelnes Ruestungsstueck des Helden.
 ///
 /// Unveraenderlich; Aktualisierungen erfolgen ueber [copyWith].
@@ -13,6 +15,7 @@ class ArmorPiece {
     this.artifactDescription = '',
     this.isGeweiht = false,
     this.geweihtDescription = '',
+    this.unbekannteFelder = const <String, Object?>{},
   });
 
   /// Stabile Kennung des Ruestungsstuecks (siehe `CombatConfig.withStableIds`).
@@ -45,6 +48,24 @@ class ArmorPiece {
   /// Freitext-Beschreibung fuer den geweihten Gegenstand.
   final String geweihtDescription;
 
+  /// JSON-Felder einer neueren App-Version; bleiben beim Speichern erhalten
+  /// (siehe `unbekannte_json_felder.dart`).
+  final Map<String, Object?> unbekannteFelder;
+
+  /// Alle Schluessel, die [fromJson] liest; alles andere bleibt erhalten.
+  static const Set<String> jsonSchluessel = <String>{
+    'id',
+    'name',
+    'isActive',
+    'rg1Active',
+    'rs',
+    'be',
+    'isArtifact',
+    'artifactDescription',
+    'isGeweiht',
+    'geweihtDescription',
+  };
+
   /// Gibt eine Kopie mit selektiv ueberschriebenen Feldern zurueck.
   ArmorPiece copyWith({
     String? id,
@@ -57,6 +78,7 @@ class ArmorPiece {
     String? artifactDescription,
     bool? isGeweiht,
     String? geweihtDescription,
+    Map<String, Object?>? unbekannteFelder,
   }) {
     return ArmorPiece(
       id: id ?? this.id,
@@ -69,12 +91,13 @@ class ArmorPiece {
       artifactDescription: artifactDescription ?? this.artifactDescription,
       isGeweiht: isGeweiht ?? this.isGeweiht,
       geweihtDescription: geweihtDescription ?? this.geweihtDescription,
+      unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
     );
   }
 
   /// Serialisiert das Ruestungsstueck zu einem JSON-kompatiblen Map.
   Map<String, dynamic> toJson() {
-    return {
+    return mitUnbekanntenFeldern(<String, dynamic>{
       if (id.isNotEmpty) 'id': id,
       'name': name,
       'isActive': isActive,
@@ -85,7 +108,7 @@ class ArmorPiece {
       'artifactDescription': artifactDescription,
       'isGeweiht': isGeweiht,
       'geweihtDescription': geweihtDescription,
-    };
+    }, unbekannteFelder);
   }
 
   /// Deserialisiert ein [ArmorPiece] aus einem JSON-Map.
@@ -104,6 +127,7 @@ class ArmorPiece {
       artifactDescription: (json['artifactDescription'] as String?) ?? '',
       isGeweiht: (json['isGeweiht'] as bool?) ?? false,
       geweihtDescription: (json['geweihtDescription'] as String?) ?? '',
+      unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
     );
   }
 
@@ -120,7 +144,8 @@ class ArmorPiece {
           isArtifact == other.isArtifact &&
           artifactDescription == other.artifactDescription &&
           isGeweiht == other.isGeweiht &&
-          geweihtDescription == other.geweihtDescription;
+          geweihtDescription == other.geweihtDescription &&
+          unbekannteFelderGleich(unbekannteFelder, other.unbekannteFelder);
 
   @override
   int get hashCode => Object.hash(
@@ -134,5 +159,6 @@ class ArmorPiece {
     artifactDescription,
     isGeweiht,
     geweihtDescription,
+    unbekannteFelderHash(unbekannteFelder),
   );
 }

@@ -8,6 +8,13 @@
 ///
 /// Bestandsdaten enthalten keine unbekannten Schluessel; ihr JSON und damit
 /// ihr Inhalts-Hash bleiben unveraendert.
+///
+/// Neben `HeroSheet` und `HeroState` tragen die Ausruestungsmodelle
+/// (`CombatConfig` mit Waffen, Fernkampfprofil, Geschossen, Distanzstufen,
+/// Ruestung und Nebenhand sowie `HeroInventoryEntry` mit seinen
+/// Modifikatoren) je einen eigenen Satz. Das wirkt nur, solange Aenderungen
+/// ueber `copyWith` der vorhandenen Instanz laufen; wer ein bestehendes
+/// Objekt per Konstruktor neu aufbaut, verliert die Felder.
 library;
 
 /// Liefert alle Eintraege aus [json], deren Schluessel nicht in [bekannt]
@@ -39,6 +46,42 @@ Map<String, dynamic> mitUnbekanntenFeldern(
     json.putIfAbsent(entry.key, () => _kopie(entry.value));
   }
   return json;
+}
+
+/// Vergleicht zwei Saetze unbekannter Felder inhaltlich (tief, wie JSON).
+///
+/// Fuer `==` von Modellen, die unbekannte Felder tragen: Zwei Objekte, die
+/// sich nur darin unterscheiden, sind verschiedene Daten.
+bool unbekannteFelderGleich(Map<String, Object?> a, Map<String, Object?> b) {
+  return _jsonGleich(a, b);
+}
+
+/// Hashwert passend zu [unbekannteFelderGleich].
+///
+/// Beruht nur auf den Schluesseln: gleiche Saetze haben gleiche Schluessel,
+/// und die Werte muessen dafuer nicht tief gehasht werden.
+int unbekannteFelderHash(Map<String, Object?> felder) {
+  return Object.hashAllUnordered(felder.keys);
+}
+
+// Tiefer Vergleich roher JSON-Werte; Map-Reihenfolge zaehlt nicht.
+bool _jsonGleich(Object? a, Object? b) {
+  if (a is Map && b is Map) {
+    if (a.length != b.length) return false;
+    for (final entry in a.entries) {
+      if (!b.containsKey(entry.key)) return false;
+      if (!_jsonGleich(entry.value, b[entry.key])) return false;
+    }
+    return true;
+  }
+  if (a is List && b is List) {
+    if (a.length != b.length) return false;
+    for (var i = 0; i < a.length; i++) {
+      if (!_jsonGleich(a[i], b[i])) return false;
+    }
+    return true;
+  }
+  return a == b;
 }
 
 // Tiefe Kopie roher JSON-Werte, damit kein geteilter Zustand entsteht.

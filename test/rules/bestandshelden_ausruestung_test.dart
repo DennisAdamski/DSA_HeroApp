@@ -4,9 +4,11 @@ import 'package:dsa_heldenverwaltung/domain/combat_config/main_weapon_slot.dart'
 import 'package:dsa_heldenverwaltung/domain/combat_config/ranged_projectile.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
+import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/inventory_sync_rules.dart';
 
 import '../test_support/hero_fixtures.dart';
+import '../test_support/zukunftsfelder.dart';
 
 // Beschreibung je Eintrag, in Listenreihenfolge.
 List<String> _beschreibungen(List<HeroInventoryEntry> eintraege) {
@@ -119,5 +121,95 @@ void main() {
       contains('Beutestück'),
       reason: 'Der umbenannte Slot behält den Inventareintrag.',
     );
+  });
+
+  group('Felder einer neueren App-Version (f01)', () {
+    late HeroSheet zukunftsheld;
+    late Map<String, dynamic> roh;
+
+    setUp(() {
+      final bundle = ladeBestandsheldJson(Bestandsheld.kriegerNormal);
+      roh = mitZukunftsfeldern((bundle['hero'] as Map).cast<String, dynamic>())
+          .json;
+      zukunftsheld = HeroSheet.fromJson(roh);
+    });
+
+    // Zukunftsfeld an einem Pfad des Roh-JSON (siehe `zukunftsfelder.dart`).
+    Object? erwartet(String pfad) => wertAn(roh, '$pfad/$zukunftsfeld');
+
+    test('Umbenennen einer Waffe erhält die Felder ihres Eintrags', () {
+      final waffen = List<MainWeaponSlot>.of(
+        zukunftsheld.combatConfig.weaponSlots,
+      );
+      waffen[1] = waffen[1].copyWith(name: 'Schwere Armbrust');
+
+      final ergebnis = reconcileInventoryWithCombat(
+        zukunftsheld.inventoryEntries,
+        zukunftsheld.combatConfig.copyWith(weapons: waffen),
+      );
+
+      final armbrust = _verknuepft(ergebnis, 'Schwere Armbrust').single;
+      expect(
+        armbrust.unbekannteFelder[zukunftsfeld],
+        erwartet('inventoryEntries/2'),
+      );
+      final manuell = ergebnis.firstWhere((e) => e.sourceRef == null);
+      expect(
+        manuell.unbekannteFelder[zukunftsfeld],
+        erwartet('inventoryEntries/0'),
+      );
+      expect(
+        manuell.modifiers.single.unbekannteFelder[zukunftsfeld],
+        erwartet('inventoryEntries/0/modifiers/0'),
+      );
+    });
+
+    test('entfernte Waffe nimmt ihre Einträge mit', () {
+      final waffen = List<MainWeaponSlot>.of(
+        zukunftsheld.combatConfig.weaponSlots,
+      )..removeAt(1);
+
+      final ergebnis = reconcileInventoryWithCombat(
+        zukunftsheld.inventoryEntries,
+        zukunftsheld.combatConfig.copyWith(weapons: waffen),
+      );
+
+      expect(_verknuepft(ergebnis, 'Leichte Armbrust'), isEmpty);
+      expect(_verknuepft(ergebnis, 'Bolzen'), isEmpty);
+    });
+
+    test('Inventarangaben und Munition erhalten die Felder der Slots', () {
+      final bolzen = zukunftsheld.inventoryEntries.firstWhere(
+        (entry) => entry.source == InventoryItemSource.geschoss,
+      );
+
+      final mitDetails = applyLinkedInventoryDetailsToConfig(
+        zukunftsheld.combatConfig,
+        zukunftsheld.inventoryEntries,
+      );
+      final mitMunition = applyAmmoCountChangeToConfig(
+        mitDetails,
+        bolzen.sourceRef!,
+        3,
+      );
+
+      final json = mitMunition.toJson();
+      final armbrust = mitMunition.weaponSlots[1];
+      expect(armbrust.rangedProfile.projectiles.single.count, 3);
+      for (final pfad in <String>[
+        '',
+        'weapons/1',
+        'weapons/1/rangedProfile',
+        'weapons/1/rangedProfile/distanceBands/0',
+        'weapons/1/rangedProfile/projectiles/0',
+        'armor',
+        'armor/pieces/0',
+        'offhandEquipment/0',
+      ]) {
+        final teil = pfad.isEmpty ? zukunftsfeld : '$pfad/$zukunftsfeld';
+        final quelle = pfad.isEmpty ? 'combatConfig' : 'combatConfig/$pfad';
+        expect(wertAn(json, teil), erwartet(quelle), reason: quelle);
+      }
+    });
   });
 }

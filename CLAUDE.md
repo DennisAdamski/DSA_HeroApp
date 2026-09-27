@@ -46,7 +46,16 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   was in `jsonSchluessel` steht (bei `HeroSheet` einschliesslich der flach
   eingebetteten Schluessel von `HeroAppearance`/`HeroBackground`). **Jedes neue
   Feld dort eintragen** — sonst kaeme ein bewusst weggelassener Wert als
-  „unbekannt“ zurueck. Verschachtelte Objekte bewahren Unbekanntes nicht.
+  „unbekannt“ zurueck. Dasselbe gilt fuer die zehn Ausruestungsmodelle
+  (`CombatConfig`, Waffe, Fernkampfprofil, Geschoss, Distanzstufe, Ruestung,
+  Ruestungsstueck, Nebenhand, `HeroInventoryEntry`, `InventoryItemModifier`).
+  Jedes hat eigene `unbekannteFelder` und ein eigenes `jsonSchluessel`, das
+  auch gelesene Altschluessel (`offhand`, `wmFk`, `fkMod`) enthaelt.
+  Bestehende Objekte **nur per `copyWith`** aendern; ein Neuaufbau per
+  Konstruktor verliert die Felder. Andere verschachtelte Objekte und
+  unbekannte Enum-Werte bewahren nichts. Formatregel: nur additiv, eine neue
+  Bedeutung bekommt einen neuen Schluessel
+  (`docs/technical_overview.md` Abschnitt 2.1).
 - Verknuepfte Kampf-/Inventareintraege tragen stabile Slot-IDs in
   `lib/domain/combat_config/`; das Verweisformat und die Migration aus
   Namensverweisen liegen in `inventar_verweise.dart`. `HeroSheet.fromJson`

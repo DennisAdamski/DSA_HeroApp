@@ -29,6 +29,7 @@ import 'package:dsa_heldenverwaltung/domain/combat_config/offhand_mode.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config/offhand_slot.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config/ranged_projectile.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config/waffenmeister_config.dart';
+import 'package:dsa_heldenverwaltung/domain/unbekannte_json_felder.dart';
 
 /// Aggregiert alle Kampfkonfigurationsdaten eines Helden.
 ///
@@ -49,6 +50,7 @@ class CombatConfig {
     this.specialRules = const CombatSpecialRules(),
     this.manualMods = const CombatManualMods(),
     this.waffenmeisterschaften = const <WaffenmeisterConfig>[],
+    this.unbekannteFelder = const <String, Object?>{},
   });
 
   /// Legacy-Hauptwaffe (wird bei [weapons.isEmpty] als einziger Slot verwendet).
@@ -77,6 +79,32 @@ class CombatConfig {
 
   /// Konfigurierte Waffenmeisterschaften (eine pro Waffenart).
   final List<WaffenmeisterConfig> waffenmeisterschaften;
+
+  /// JSON-Felder einer neueren App-Version; bleiben beim Speichern erhalten
+  /// (siehe `unbekannte_json_felder.dart`).
+  ///
+  /// Gilt fuer diese Ebene und die Ausruestung darunter (Waffen samt
+  /// Fernkampfprofil, Ruestung, Nebenhand). [offhandAssignment],
+  /// [specialRules], [manualMods] und [waffenmeisterschaften] bewahren
+  /// Unbekanntes bewusst nicht; sie sind Einstellungen, keine Gegenstaende.
+  final Map<String, Object?> unbekannteFelder;
+
+  /// Alle Schluessel, die [fromJson] liest — einschliesslich des
+  /// Altschluessels `offhand`, der beim Laden in [offhandEquipment]
+  /// aufgeht. Als unbekannt zurueckgeschrieben, kaeme ein geloeschter
+  /// migrierter Schild beim naechsten Laden wieder.
+  static const Set<String> jsonSchluessel = <String>{
+    'mainWeapon',
+    'weapons',
+    'selectedWeaponIndex',
+    'offhandAssignment',
+    'offhandEquipment',
+    'armor',
+    'specialRules',
+    'manualMods',
+    'waffenmeisterschaften',
+    'offhand',
+  };
 
   /// Gibt die normalisierte Waffenliste zurueck.
   ///
@@ -124,6 +152,7 @@ class CombatConfig {
     CombatSpecialRules? specialRules,
     CombatManualMods? manualMods,
     List<WaffenmeisterConfig>? waffenmeisterschaften,
+    Map<String, Object?>? unbekannteFelder,
   }) {
     final nextWeapons = List<MainWeaponSlot>.from(
       weapons ?? weaponSlots,
@@ -162,6 +191,7 @@ class CombatConfig {
       waffenmeisterschaften: waffenmeisterschaften != null
           ? List<WaffenmeisterConfig>.unmodifiable(waffenmeisterschaften)
           : this.waffenmeisterschaften,
+      unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
     );
   }
 
@@ -173,7 +203,7 @@ class CombatConfig {
       slots.length,
     );
     final activeWeapon = index < 0 ? mainWeapon : slots[index];
-    return {
+    return mitUnbekanntenFeldern(<String, dynamic>{
       'mainWeapon': activeWeapon.toJson(),
       'weapons': slots.map((entry) => entry.toJson()).toList(growable: false),
       'selectedWeaponIndex': index,
@@ -192,7 +222,7 @@ class CombatConfig {
       'waffenmeisterschaften': waffenmeisterschaften
           .map((entry) => entry.toJson())
           .toList(growable: false),
-    };
+    }, unbekannteFelder);
   }
 
   /// Vergibt stabile IDs an benannte Slots, die noch keine eindeutige haben.
@@ -335,6 +365,7 @@ class CombatConfig {
       specialRules: CombatSpecialRules.fromJson(readMap('specialRules')),
       manualMods: CombatManualMods.fromJson(readMap('manualMods')),
       waffenmeisterschaften: _parseWaffenmeisterschaften(json),
+      unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
     );
     // Altdaten ohne Slot-IDs bekommen sie hier deterministisch.
     return config.withStableIds();

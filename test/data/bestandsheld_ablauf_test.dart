@@ -1,9 +1,13 @@
+import 'dart:convert';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dsa_heldenverwaltung/data/app_storage_paths.dart';
 import 'package:dsa_heldenverwaltung/data/hive_hero_repository.dart';
+import 'package:dsa_heldenverwaltung/domain/combat_config/armor_piece.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config/main_weapon_slot.dart';
+import 'package:dsa_heldenverwaltung/domain/combat_config/offhand_equipment_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config/ranged_projectile.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config/ranged_weapon_profile.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config/weapon_combat_type.dart';
@@ -24,6 +28,7 @@ import 'package:dsa_heldenverwaltung/test_support/in_memory_avatar_file_storage.
 
 import '../test_support/hero_fixtures.dart';
 import '../test_support/real_catalog.dart';
+import '../test_support/zukunftsfelder.dart';
 
 /// Felder, die `HeroActions.saveHero` beim Import eines Altstands neu
 /// berechnet oder abgleicht. `lastModified` stempelt jeder Schreibvorgang.
@@ -206,6 +211,84 @@ void main() {
     expect(
       jsonUnterschiede(nachNeustart.toJson(), export.hero.toJson()),
       isEmpty,
+    );
+  });
+
+  test('Felder einer neueren App-Version in der Ausrüstung überstehen '
+      'Import, Bearbeiten, Neustart und Export', () async {
+    final pfad = await hiveTempVerzeichnis('arch03_zukunft_');
+    var speicher = await oeffnen(pfad);
+    final roh = ladeBestandsheldJson(Bestandsheld.kriegerNormal);
+    final zukunft = mitZukunftsfeldern(
+      (roh['hero'] as Map).cast<String, dynamic>(),
+    );
+    roh['hero'] = zukunft.json;
+    final bundle = await speicher.actions.parseImportJson(jsonEncode(roh));
+    final id = await speicher.actions.importHeroBundle(
+      bundle,
+      resolution: ImportConflictResolution.overwriteExisting,
+    );
+    final kopieId = await speicher.actions.importHeroBundle(
+      bundle,
+      resolution: ImportConflictResolution.createNewHero,
+    );
+    final vorher = (await speicher.repo.loadHeroById(id))!;
+    final idsVorher = vorher.combatConfig.weaponSlots.map((slot) => slot.id);
+
+    await speicher.actions.updateHero(id, (aktuell) {
+      final kampf = aktuell.combatConfig;
+      final waffen = List<MainWeaponSlot>.of(kampf.weaponSlots);
+      final armbrust = waffen[1];
+      final profil = armbrust.rangedProfile;
+      waffen[1] = armbrust.copyWith(
+        name: 'Schwere Armbrust',
+        rangedProfile: profil.copyWith(
+          projectiles: <RangedProjectile>[
+            profil.projectiles.single.copyWith(count: 7),
+          ],
+        ),
+      );
+      final stuecke = List<ArmorPiece>.of(kampf.armor.pieces);
+      stuecke[0] = stuecke[0].copyWith(rs: stuecke[0].rs + 1);
+      final nebenhand = <OffhandEquipmentEntry>[
+        kampf.offhandEquipment.single.copyWith(name: 'Großschild'),
+      ];
+      return aktuell.copyWith(
+        combatConfig: kampf.copyWith(
+          weapons: waffen,
+          armor: kampf.armor.copyWith(pieces: stuecke),
+          offhandEquipment: nebenhand,
+        ),
+      );
+    });
+    await speicher.schliessen();
+    speicher = await oeffnen(pfad);
+
+    for (final heldId in <String>[id, kopieId]) {
+      final export = jsonDecode(await speicher.actions.buildExportJson(heldId));
+      final heldJson = (export as Map)['hero'];
+      for (final feldPfad in zukunft.pfade) {
+        expect(
+          wertAn(heldJson, feldPfad),
+          wertAn(zukunft.json, feldPfad),
+          reason: '$heldId: $feldPfad',
+        );
+      }
+    }
+    final nachher = (await speicher.repo.loadHeroById(id))!;
+    final armbrust = nachher.combatConfig.weaponSlots[1];
+    expect(nachher.combatConfig.weaponSlots.map((slot) => slot.id), idsVorher);
+    final eintrag = nachher.inventoryEntries.singleWhere(
+      (entry) => entry.gegenstand == 'Schwere Armbrust',
+    );
+    expect(eintrag.sourceRef, 'w#${armbrust.id}');
+    final bolzen = nachher.inventoryEntries.singleWhere(
+      (entry) => entry.gegenstand == 'Bolzen',
+    );
+    expect(bolzen.anzahl, '7');
+    expect(
+      nachher.inventoryEntries.map((entry) => entry.gegenstand),
+      contains('Großschild'),
     );
   });
 
