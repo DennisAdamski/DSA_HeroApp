@@ -337,7 +337,6 @@ CombatPreviewStats computeCombatPreviewStats(
         parsed.attributeMods + state.tempAttributeMods,
       );
   final effectiveSheet = sheet.copyWith(attributes: effective);
-  final mods = sheet.persistentMods + parsed.statMods + state.tempMods;
   final derived =
       derivedStats ??
       computeDerivedStatsFromInputs(
@@ -346,6 +345,10 @@ CombatPreviewStats computeCombatPreviewStats(
         parsedModifiers: parsed,
         effectiveAttributes: effective,
       );
+  // Dieselbe Modifikatorsumme wie die Basiswerte (benannte, Inventar- und
+  // Wundmodifikatoren eingeschlossen); eine eigene, kleinere Summe liess
+  // Wunden in AT/PA fehlen, obwohl AT-Basis und INI sie enthielten.
+  final mods = derived.modifiers;
 
   final config = overrideConfig ?? sheet.combatConfig;
   final talents = overrideTalents ?? sheet.talents;

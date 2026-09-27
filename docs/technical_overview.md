@@ -1100,7 +1100,12 @@ Alle Regeln sind **pure Dart-Funktionen** ohne Seiteneffekte in `lib/rules/deriv
 | MaxKaP | `bought.kap + Mod` (kein Eigenschaftsanteil) |
 | MR | `round((MU + KL + KO) / 5) + bought.mr + Mod` |
 
-`Mod` = Summe aus `persistentMods` + `tempMods` für den jeweiligen Wert.
+`Mod` = Summe aus `persistentMods` (Inspector-Schnellmodifikatoren), benannten
+Stat-Modifikatoren, Textmodifikatoren aus Herkunft und Vor-/Nachteilen,
+`tempMods`, ausgerüstetem Inventar und Wunden für den jeweiligen Wert.
+`DerivedStats.modifiers` trägt diese Summe; die Kampfvorschau rechnet AT-/PA-
+Basis, RS und Eigenschafts-INI damit weiter, sodass etwa eine Wunde AT, PA
+und Ausweichen genauso senkt wie die Basiswerte.
 
 **Zukauf-Grenzen:** `lib/rules/derived/bought_stat_limit_rules.dart`
 begrenzt den AP-Zukauf im Steigerungsdialog fuer Grundwerte. LeP duerfen bis
