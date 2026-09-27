@@ -317,8 +317,8 @@ void main() {
       expect(a.konflikte, isEmpty);
     });
 
-    test('Befund ARCH-07-B1: ein Inspector-Modifikator erzeugt nach dem '
-        'Neuladen einen zusätzlichen Upload', () async {
+    test('ein Inspector-Modifikator wird genau einmal hochgeladen '
+        '(Befund ARCH-07-B1)', () async {
       await gemeinsamerStart(<Bestandsheld>[Bestandsheld.freitextMerkmale]);
       const id = 'bestand-f05';
       final vorher = cloud.heldSchreibvorgaenge[id]!;
@@ -334,9 +334,9 @@ void main() {
       await a.repo.syncNow();
       await a.repo.syncNow();
 
-      // Gewollt wäre +1: Der gespeicherte Stand ist nach dem Laden ein
-      // anderer als der hochgeladene, die nächste Runde lädt erneut hoch.
-      expect(cloud.heldSchreibvorgaenge[id], vorher + 2);
+      // Vor der Behebung lud die zweite Runde erneut hoch, weil das Laden
+      // aus JSON den Wert nach `statModifiers` kopierte.
+      expect(cloud.heldSchreibvorgaenge[id], vorher + 1);
       expect(a.konflikte, isEmpty);
     });
   });

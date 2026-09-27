@@ -277,7 +277,7 @@ HeroState zustandUeberJson(HeroState state) {
 ///
 /// `FakeRepository` gaebe dieselbe Objektinstanz zurueck; Hive dagegen
 /// laedt jeden Helden per `fromJson` neu, und genau dabei greifen die
-/// Kompatibilitaetspfade (siehe Befund ARCH-07-B1).
+/// Kompatibilitaetspfade (Befund ARCH-07-B1 fiel erst dadurch im Sync auf).
 class JsonHeroRepository extends FakeRepository {
   @override
   Future<void> saveHero(HeroSheet hero) => super.saveHero(heldUeberJson(hero));

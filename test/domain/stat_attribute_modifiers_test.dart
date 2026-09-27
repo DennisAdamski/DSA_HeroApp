@@ -62,8 +62,10 @@ void main() {
       expect(loaded.attributeModifiers, isEmpty);
     });
 
-    test('Migration: persistentMods werden zu statModifiers migriert', () {
-      // Simuliert altes JSON ohne statModifiers aber mit persistentMods.
+    test('alte persistentMods ohne statModifiers werden nicht kopiert', () {
+      // Altes JSON ohne statModifiers: Die Inspector-Werte bleiben allein in
+      // persistentMods. Die fruehere Kopie nach statModifiers liess sie
+      // doppelt zaehlen (Befund ARCH-07-B1).
       final json = <String, dynamic>{
         'id': 'test',
         'name': 'Test',
@@ -83,15 +85,9 @@ void main() {
 
       final loaded = HeroSheet.fromJson(json);
 
-      expect(loaded.statModifiers['lep'], hasLength(1));
-      expect(loaded.statModifiers['lep']![0].modifier, 3);
-      expect(loaded.statModifiers['lep']![0].description, 'Manuell');
-
-      expect(loaded.statModifiers['mr'], hasLength(1));
-      expect(loaded.statModifiers['mr']![0].modifier, -1);
-
-      // au=0 sollte nicht migriert werden.
-      expect(loaded.statModifiers.containsKey('au'), isFalse);
+      expect(loaded.statModifiers, isEmpty);
+      expect(loaded.persistentMods.lep, 3);
+      expect(loaded.persistentMods.mr, -1);
     });
 
     test(

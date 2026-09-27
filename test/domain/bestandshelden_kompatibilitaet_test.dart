@@ -21,10 +21,12 @@ const Map<Bestandsheld, String> _heldenHashes = <Bestandsheld, String>{
   Bestandsheld.geodeMagisch: 'ps_Vd_oV2ug2lXeY_wH0snYZWnukcX7WTny7NvLUS8Y=',
   Bestandsheld.geweihterKarmal: 'vLCzKgAFwmZSwLvYNI5LxIjCbottabPf8Noxw6ydTvE=',
   Bestandsheld.episch: 'Ke5FIb-VWW4jc5_1Ak9u-yk9DRfaIKqxC046mXczKD8=',
-  Bestandsheld.freitextMerkmale: 'k_pufXDsXM5LxrttXa0_nzk5f2Re_pB-WZ8xnz68BaQ=',
+  // f05 und f07 laden seit der Behebung von Befund ARCH-07-B1 ohne Kopie der
+  // Inspector-Werte in `statModifiers`.
+  Bestandsheld.freitextMerkmale: 'Jnwfp6I0Esdy3uCTb7QzmptyqEVPVhGvnPy75vb9XcU=',
   Bestandsheld.gleichnamigeAusruestung:
       'KUmCzbjUsamNmpnLs7OMe6Vk-qPHvlVRKIYk61o_DRg=',
-  Bestandsheld.legacySchema1: '-DHnCp2y-Bd-tfvz6ZrGJ7kHs5PUozHH1AAsEaRKmLo=',
+  Bestandsheld.legacySchema1: 'ZkQmLrSS6y7Vl6txFL0F_0i4smrZilDLbscfa2HL3eM=',
   Bestandsheld.steigerungshistorie:
       'hnMwYN9ZXVqwdsDvsjKeSZc3WnCNKaGQ8pXMm1Nns7E=',
 };
@@ -83,17 +85,10 @@ void main() {
           final roh = ladeBestandsheldJson(held);
           final bundle = ladeBestandsheld(held);
 
-          // Befund ARCH-07-B1: Beim Laden werden `persistentMods` nach
-          // `statModifiers` gespiegelt, sobald dort nichts steht — der Wert
-          // steht danach doppelt im Helden. Hier hält der Test das heutige
-          // Verhalten fest; die Korrektur ist ein eigener Auftrag.
-          final erlaubt = held == Bestandsheld.freitextMerkmale
-              ? const <String>{'statModifiers'}
-              : const <String>{};
           expectNurGeaendert(
             (roh['hero'] as Map).cast<String, dynamic>(),
             bundle.hero.toJson(),
-            erlaubt,
+            const <String>{},
           );
           expectNurGeaendert(
             (roh['state'] as Map).cast<String, dynamic>(),
@@ -105,16 +100,77 @@ void main() {
     }
   });
 
-  test('Befund ARCH-07-B1: f05 trägt INI +1 nach dem Laden doppelt', () {
-    final gespeichert = ladeBestandsheldJson(Bestandsheld.freitextMerkmale);
-    final heldJson = (gespeichert['hero'] as Map).cast<String, dynamic>();
-    expect(heldJson['statModifiers'], isEmpty);
-    expect((heldJson['persistentMods'] as Map)['iniBase'], 1);
+  group('Inspector-Werte zählen einfach (Befund ARCH-07-B1)', () {
+    // Baut einen Helden-JSON mit Inspector-Werten und benannten Einträgen.
+    HeroSheet lade({
+      required Map<String, int> inspector,
+      required Map<String, List<Map<String, Object>>> benannt,
+    }) {
+      final roh = ladeBestandsheldJson(Bestandsheld.freitextMerkmale);
+      final heldJson = (roh['hero'] as Map).cast<String, dynamic>()
+        ..['persistentMods'] = inspector
+        ..['statModifiers'] = benannt;
+      return HeroSheet.fromJson(heldJson);
+    }
 
-    final geladen = ladeBestandsheld(Bestandsheld.freitextMerkmale).hero;
+    test('f05 lädt den Inspector-Wert ohne Kopie', () {
+      final gespeichert = ladeBestandsheldJson(Bestandsheld.freitextMerkmale);
+      final heldJson = (gespeichert['hero'] as Map).cast<String, dynamic>();
+      expect(heldJson['statModifiers'], isEmpty);
+      expect((heldJson['persistentMods'] as Map)['iniBase'], 1);
 
-    expect(geladen.persistentMods.iniBase, 1);
-    expect(geladen.statModifiers['iniBase']?.single.modifier, 1);
+      final geladen = ladeBestandsheld(Bestandsheld.freitextMerkmale).hero;
+
+      expect(geladen.persistentMods.iniBase, 1);
+      expect(geladen.statModifiers, isEmpty);
+    });
+
+    test('eine gespeicherte Kopie „Manuell“ mit gleichem Wert entfällt', () {
+      final held = lade(
+        inspector: const <String, int>{'iniBase': 1, 'lep': 2},
+        benannt: const <String, List<Map<String, Object>>>{
+          'iniBase': <Map<String, Object>>[
+            <String, Object>{'modifier': 1, 'description': 'Manuell'},
+            <String, Object>{'modifier': 2, 'description': 'Segen'},
+          ],
+          'lep': <Map<String, Object>>[
+            <String, Object>{'modifier': 2, 'description': 'Manuell'},
+          ],
+        },
+      );
+
+      expect(held.persistentMods.iniBase, 1);
+      expect(held.statModifiers['iniBase']?.single.description, 'Segen');
+      expect(held.statModifiers.containsKey('lep'), isFalse);
+      expect(
+        heroContentHash(HeroSheet.fromJson(held.toJson())),
+        heroContentHash(held),
+        reason: 'die Reparatur ist nach einmaligem Laden stabil',
+      );
+    });
+
+    test('abweichende oder eigene Einträge bleiben erhalten', () {
+      final held = lade(
+        inspector: const <String, int>{'iniBase': 2, 'at': 0},
+        benannt: const <String, List<Map<String, Object>>>{
+          // Seit der Kopie im Inspector nachgesteuert: bleibt stehen.
+          'iniBase': <Map<String, Object>>[
+            <String, Object>{'modifier': 1, 'description': 'Manuell'},
+          ],
+          // Kein Inspector-Wert zu diesem Feld: keine Kopie.
+          'at': <Map<String, Object>>[
+            <String, Object>{'modifier': 1, 'description': 'Manuell'},
+          ],
+          'mr': <Map<String, Object>>[
+            <String, Object>{'modifier': 1, 'description': 'Amulett'},
+          ],
+        },
+      );
+
+      expect(held.statModifiers['iniBase']?.single.modifier, 1);
+      expect(held.statModifiers['at']?.single.modifier, 1);
+      expect(held.statModifiers['mr']?.single.description, 'Amulett');
+    });
   });
 
   group('Altstand f07 (Transferversion 1, ohne Schemaversion)', () {
@@ -135,13 +191,10 @@ void main() {
       expect(held.startAttributes.toJson(), held.attributes.toJson());
     });
 
-    test('persistentMods bleiben und werden zusätzlich gespiegelt', () {
-      // Befund ARCH-07-B1: dieselben Werte stehen danach an zwei Stellen.
+    test('alte persistentMods bleiben die einzige Quelle', () {
       expect(held.persistentMods.lep, 2);
       expect(held.persistentMods.iniBase, 1);
-      expect(held.statModifiers['lep']?.single.modifier, 2);
-      expect(held.statModifiers['lep']?.single.description, 'Manuell');
-      expect(held.statModifiers['iniBase']?.single.modifier, 1);
+      expect(held.statModifiers, isEmpty);
     });
 
     test('Textfelder werden in strukturierte Einträge übersetzt', () {
