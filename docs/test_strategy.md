@@ -84,6 +84,15 @@ Regeln:
 Laden über `test/test_support/hero_fixtures.dart` (`Bestandsheld`,
 `ladeBestandsheld`, `expectNurGeaendert` mit reihenfolgestrengem Pfad-Diff).
 
+Die Regelwerte je Fixture (`test/rules/bestandshelden_regelwerte_test.dart`)
+rechnet `buildHeroComputedSnapshot` gegen den **echten** Katalog
+(`test/test_support/real_catalog.dart`: alle eingebauten Hausregel-Pakete
+aktiv, ohne Inhaltspasswort, einmal pro Test-Isolat geladen). Die
+Erwartungen stehen als Dart-Map im Test, damit Befundkommentare daneben
+stehen können. Aktualisiert werden sie nur im selben Commit wie eine gewollte
+Regel- oder Kataloganpassung, mit Zeilenkommentar zum Grund — nie per Kopie
+der Ist-Ausgabe.
+
 ## Zuordnungsmatrix
 
 | Testdatei | Gruppe | Zweck |
@@ -98,6 +107,8 @@ Laden über `test/test_support/hero_fixtures.dart` (`Bestandsheld`,
 | `test/rules/meta_talent_rules_test.dart` | rules | Meta-Talent-Mittelwerte, Validierung und Aktivierung |
 | `test/rules/talent_be_rules_test.dart` | rules | Talent-BE-Regeln |
 | `test/rules/talent_value_rules_test.dart` | rules | Formel `TaW + Mod + eBE` |
+| `test/rules/bestandshelden_regelwerte_test.dart` | rules | Abgeleitete Werte der Bestandsfixtures gegen den echten Katalog, epische Wundhalbierung, Befunde B1/B7 |
+| `test/rules/bestandshelden_ausruestung_test.dart` | rules | Inventar-Kampf-Abgleich mit gleichnamigen Exemplaren, Befunde B2/B3 |
 | `test/ui/combat/hero_combat_tab_test.dart` | ui | Combat-UI-Interaktion/Struktur |
 | `test/ui/combat/hero_combat_talents_tab_test.dart` | ui | Combat-Talents-UI-Validierungsfluss |
 | `test/ui/talents/hero_talents_tab_test.dart` | ui | Talents-UI-Interaktion |
