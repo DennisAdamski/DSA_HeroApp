@@ -292,10 +292,11 @@ Commits:
    Sprachen/Schriften, Zauber, Merkmal je Treffer, Ritualkenntnis),
    abgeleitet in `hero_begabung_rules.dart` und nicht gespeichert.
    „Begabung für X“ wird über die aufgelöste Auswahlliste eindeutig. Offen:
-   Die Katalogvorschau beim Hinzufügen eines Talents oder Zaubers und die
-   Zauberspezialisierungskosten zeigen Merkmals-Begabungen nicht; der
-   Textweg (ohne Katalog) kennt keine Lernspalten, das ist die bewusste
-   Ausnahme im Äquivalenztest.
+   Die Katalogvorschau beim Hinzufügen eines Talents oder Zaubers zeigt die
+   Basisspalte ohne Begabung. Zauberspezialisierungen zählen jede Begabung
+   wie das Häkchen als eine Spalte (wie bisher ohne Merkmal, Hauszauber und
+   Unfähigkeit). Der Textweg (ohne Katalog) kennt keine Lernspalten, das ist
+   die bewusste Ausnahme im Äquivalenztest.
 
 ## ARCH-03 — Gemeinsame Ausrüstungsdaten für Inventar und Kampf
 
