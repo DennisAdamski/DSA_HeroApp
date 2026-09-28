@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:dsa_heldenverwaltung/domain/active_spell_effects_state.dart';
+import 'package:dsa_heldenverwaltung/domain/attribute_modifiers.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/avatar_gallery_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/avatar_gesichtsbefund.dart';
@@ -7,6 +9,7 @@ import 'package:dsa_heldenverwaltung/domain/avatar_snapshot.dart';
 import 'package:dsa_heldenverwaltung/domain/aventurian_date.dart';
 import 'package:dsa_heldenverwaltung/domain/bought_stats.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
+import 'package:dsa_heldenverwaltung/domain/dice_log_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_advancement_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_adventure_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_adventure_se_pools.dart';
@@ -24,9 +27,12 @@ import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_spell_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_spell_text_overrides.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/magic_special_ability.dart';
+import 'package:dsa_heldenverwaltung/domain/spell_duration.dart';
 import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
 import 'package:dsa_heldenverwaltung/domain/talent_special_ability.dart';
+import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
 
 /// Nachbildung der bereits veroeffentlichten App-Version (`main`, Stand
@@ -260,6 +266,30 @@ void _talenteUndMagie(Map<String, dynamic> json) {
 Iterable<Map<String, dynamic>> _werte(Object? map) {
   if (map is! Map) return const <Map<String, dynamic>>[];
   return map.values.whereType<Map<String, dynamic>>();
+}
+
+/// Was die veroeffentlichte App von [zustandJson] uebrig laesst, wenn sie den
+/// Laufzeitzustand laedt und wieder speichert: alles Unbekannte faellt weg.
+Map<String, dynamic> zustandWieVeroeffentlichteApp(
+  Map<String, dynamic> zustandJson,
+) {
+  final json = jsonDecode(jsonEncode(zustandJson)) as Map<String, dynamic>;
+  _behalte(json, HeroState.jsonSchluessel);
+  _behalteIn(json['tempMods'], StatModifiers.jsonSchluessel);
+  _behalteIn(json['tempAttributeMods'], AttributeModifiers.jsonSchluessel);
+  final effekte = json['activeSpellEffects'];
+  if (effekte is Map<String, dynamic>) {
+    _behalte(effekte, ActiveSpellEffectsState.jsonSchluessel);
+    for (final detail in _werte(effekte['effectDetails'])) {
+      _behalte(detail, ActiveSpellEffectDetail.jsonSchluessel);
+      _behalteIn(detail['duration'], SpellDuration.jsonSchluessel);
+    }
+  }
+  _behalteIn(json['wpiZustand'], WundZustand.jsonSchluessel);
+  for (final eintrag in _maps(json['diceLog'])) {
+    _behalte(eintrag, DiceLogEntry.jsonSchluessel);
+  }
+  return json;
 }
 
 /// Namenszuordnung aus dem Abgleich der veroeffentlichten App, auf JSON.

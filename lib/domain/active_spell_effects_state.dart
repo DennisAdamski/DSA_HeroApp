@@ -1,4 +1,5 @@
 import 'package:dsa_heldenverwaltung/domain/spell_duration.dart';
+import 'package:dsa_heldenverwaltung/domain/unbekannte_json_felder.dart';
 
 /// Zusatzdaten eines laufenden Zaubereffekts.
 ///
@@ -8,7 +9,11 @@ import 'package:dsa_heldenverwaltung/domain/spell_duration.dart';
 /// gefuehrt werden.
 class ActiveSpellEffectDetail {
   /// Erstellt die Zusatzdaten eines Effekts.
-  const ActiveSpellEffectDetail({this.amount = 0, this.duration});
+  const ActiveSpellEffectDetail({
+    this.amount = 0,
+    this.duration,
+    this.unbekannteFelder = const <String, Object?>{},
+  });
 
   /// Effektspezifischer Zahlenwert (z. B. zusaetzlicher RS beim Armatrutz).
   final int amount;
@@ -16,8 +21,20 @@ class ActiveSpellEffectDetail {
   /// Wirkungsdauer des Effekts oder `null`, wenn keine erfasst ist.
   final SpellDuration? duration;
 
+  /// JSON-Felder einer neueren App-Version; bleiben beim Speichern erhalten
+  /// (siehe `unbekannte_json_felder.dart`).
+  final Map<String, Object?> unbekannteFelder;
+
+  /// Alle Schluessel, die [fromJson] liest — einschliesslich der nur bedingt
+  /// geschriebenen; alles andere bleibt erhalten.
+  static const Set<String> jsonSchluessel = <String>{'amount', 'duration'};
+
   /// `true`, wenn weder Wert noch Wirkungsdauer erfasst sind.
-  bool get isEmpty => amount == 0 && duration == null;
+  ///
+  /// Felder einer neueren App-Version zaehlen als Inhalt: Zusatzdaten, die
+  /// nur sie tragen, werden nicht als leer verworfen.
+  bool get isEmpty =>
+      amount == 0 && duration == null && unbekannteFelder.isEmpty;
 
   /// Gibt eine Kopie mit geaenderten Feldern zurueck.
   ///
@@ -27,19 +44,21 @@ class ActiveSpellEffectDetail {
     int? amount,
     SpellDuration? duration,
     bool clearDuration = false,
+    Map<String, Object?>? unbekannteFelder,
   }) {
     return ActiveSpellEffectDetail(
       amount: amount ?? this.amount,
       duration: clearDuration ? null : (duration ?? this.duration),
+      unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
     );
   }
 
   /// Serialisiert die Zusatzdaten fuer Persistenz und Sync.
   Map<String, dynamic> toJson() {
-    return {
+    return mitUnbekanntenFeldern(<String, dynamic>{
       'amount': amount,
       if (duration != null) 'duration': duration!.toJson(),
-    };
+    }, unbekannteFelder);
   }
 
   /// Laedt die Zusatzdaten robust aus JSON.
@@ -50,6 +69,7 @@ class ActiveSpellEffectDetail {
       duration: rawDuration == null
           ? null
           : SpellDuration.fromJson(rawDuration),
+      unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
     );
   }
 
@@ -57,11 +77,13 @@ class ActiveSpellEffectDetail {
   bool operator ==(Object other) {
     return other is ActiveSpellEffectDetail &&
         other.amount == amount &&
-        other.duration == duration;
+        other.duration == duration &&
+        unbekannteFelderGleich(unbekannteFelder, other.unbekannteFelder);
   }
 
   @override
-  int get hashCode => Object.hash(amount, duration);
+  int get hashCode =>
+      Object.hash(amount, duration, unbekannteFelderHash(unbekannteFelder));
 }
 
 /// Laufzeitzustand fuer aktivierte wichtige Zaubereffekte.
@@ -76,6 +98,7 @@ class ActiveSpellEffectsState {
   const ActiveSpellEffectsState({
     this.activeEffectIds = const <String>[],
     this.effectDetails = const <String, ActiveSpellEffectDetail>{},
+    this.unbekannteFelder = const <String, Object?>{},
   });
 
   /// IDs aller aktuell aktiven Zaubereffekte.
@@ -83,6 +106,16 @@ class ActiveSpellEffectsState {
 
   /// Zusatzdaten je Effekt-ID; Effekte ohne Eintrag laufen ohne Zusatzdaten.
   final Map<String, ActiveSpellEffectDetail> effectDetails;
+
+  /// JSON-Felder einer neueren App-Version; bleiben beim Speichern erhalten
+  /// (siehe `unbekannte_json_felder.dart`).
+  final Map<String, Object?> unbekannteFelder;
+
+  /// Alle Schluessel, die [fromJson] liest; alles andere bleibt erhalten.
+  static const Set<String> jsonSchluessel = <String>{
+    'activeEffectIds',
+    'effectDetails',
+  };
 
   /// Prueft, ob ein Effekt mit [effectId] aktiv ist.
   bool isActive(String effectId) {
@@ -98,6 +131,7 @@ class ActiveSpellEffectsState {
   ActiveSpellEffectsState copyWith({
     List<String>? activeEffectIds,
     Map<String, ActiveSpellEffectDetail>? effectDetails,
+    Map<String, Object?>? unbekannteFelder,
   }) {
     final nextIds = _normalizeEffectIds(
       activeEffectIds ?? this.activeEffectIds,
@@ -108,6 +142,7 @@ class ActiveSpellEffectsState {
         effectDetails ?? this.effectDetails,
         nextIds,
       ),
+      unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
     );
   }
 
@@ -153,12 +188,12 @@ class ActiveSpellEffectsState {
   Map<String, dynamic> toJson() {
     final normalizedIds = _normalizeEffectIds(activeEffectIds);
     final normalizedDetails = _normalizeDetails(effectDetails, normalizedIds);
-    return {
+    return mitUnbekanntenFeldern(<String, dynamic>{
       'activeEffectIds': normalizedIds,
       'effectDetails': normalizedDetails.map(
         (effectId, detail) => MapEntry(effectId, detail.toJson()),
       ),
-    };
+    }, unbekannteFelder);
   }
 
   /// Laedt den Effektzustand rueckwaertskompatibel aus JSON.
@@ -182,6 +217,7 @@ class ActiveSpellEffectsState {
     return ActiveSpellEffectsState(
       activeEffectIds: normalizedIds,
       effectDetails: _normalizeDetails(details, normalizedIds),
+      unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
     );
   }
 }

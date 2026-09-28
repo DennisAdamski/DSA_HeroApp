@@ -1,3 +1,5 @@
+import 'package:dsa_heldenverwaltung/domain/unbekannte_json_felder.dart';
+
 class AttributeModifiers {
   const AttributeModifiers({
     this.mu = 0,
@@ -8,6 +10,7 @@ class AttributeModifiers {
     this.ge = 0,
     this.ko = 0,
     this.kk = 0,
+    this.unbekannteFelder = const <String, Object?>{},
   });
 
   final int mu;
@@ -19,6 +22,22 @@ class AttributeModifiers {
   final int ko;
   final int kk;
 
+  /// JSON-Felder einer neueren App-Version; bleiben beim Speichern erhalten
+  /// (siehe `unbekannte_json_felder.dart`).
+  final Map<String, Object?> unbekannteFelder;
+
+  /// Alle Schluessel, die [fromJson] liest; alles andere bleibt erhalten.
+  static const Set<String> jsonSchluessel = <String>{
+    'mu',
+    'kl',
+    'inn',
+    'ch',
+    'ff',
+    'ge',
+    'ko',
+    'kk',
+  };
+
   AttributeModifiers copyWith({
     int? mu,
     int? kl,
@@ -28,6 +47,7 @@ class AttributeModifiers {
     int? ge,
     int? ko,
     int? kk,
+    Map<String, Object?>? unbekannteFelder,
   }) {
     return AttributeModifiers(
       mu: mu ?? this.mu,
@@ -38,6 +58,22 @@ class AttributeModifiers {
       ge: ge ?? this.ge,
       ko: ko ?? this.ko,
       kk: kk ?? this.kk,
+      unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
+    );
+  }
+
+  /// Uebernimmt die acht Werte aus [quelle] und behaelt die unbekannten
+  /// Felder dieser Instanz (wie `Attributes.uebernimmWerte`).
+  AttributeModifiers uebernimmWerte(AttributeModifiers quelle) {
+    return copyWith(
+      mu: quelle.mu,
+      kl: quelle.kl,
+      inn: quelle.inn,
+      ch: quelle.ch,
+      ff: quelle.ff,
+      ge: quelle.ge,
+      ko: quelle.ko,
+      kk: quelle.kk,
     );
   }
 
@@ -55,7 +91,7 @@ class AttributeModifiers {
   }
 
   Map<String, dynamic> toJson() {
-    return {
+    return mitUnbekanntenFeldern(<String, dynamic>{
       'mu': mu,
       'kl': kl,
       'inn': inn,
@@ -64,7 +100,7 @@ class AttributeModifiers {
       'ge': ge,
       'ko': ko,
       'kk': kk,
-    };
+    }, unbekannteFelder);
   }
 
   static AttributeModifiers fromJson(Map<String, dynamic> json) {
@@ -78,6 +114,7 @@ class AttributeModifiers {
       ge: getInt('ge'),
       ko: getInt('ko'),
       kk: getInt('kk'),
+      unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
     );
   }
 }

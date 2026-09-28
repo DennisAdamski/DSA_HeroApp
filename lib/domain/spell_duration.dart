@@ -1,3 +1,5 @@
+import 'package:dsa_heldenverwaltung/domain/unbekannte_json_felder.dart';
+
 /// Zeiteinheiten, in denen DSA-Zauber ihre Wirkungsdauer angeben.
 ///
 /// Die Auswahl deckt die in den Zauberbeschreibungen gebraeuchlichen Einheiten
@@ -34,9 +36,13 @@ enum SpellDurationUnit {
 /// kann, ohne die Ausgangsdauer zu verlieren.
 class SpellDuration {
   /// Erstellt eine Wirkungsdauer; ohne [remaining] laeuft sie voll.
-  SpellDuration({required int amount, required this.unit, int? remaining})
-    : amount = amount < 0 ? 0 : amount,
-      remaining = _clampRemaining(remaining ?? amount, amount);
+  SpellDuration({
+    required int amount,
+    required this.unit,
+    int? remaining,
+    this.unbekannteFelder = const <String, Object?>{},
+  }) : amount = amount < 0 ? 0 : amount,
+       remaining = _clampRemaining(remaining ?? amount, amount);
 
   /// Gesamtdauer in [unit].
   final int amount;
@@ -46,6 +52,17 @@ class SpellDuration {
 
   /// Zeiteinheit der Wirkungsdauer.
   final SpellDurationUnit unit;
+
+  /// JSON-Felder einer neueren App-Version; bleiben beim Speichern erhalten
+  /// (siehe `unbekannte_json_felder.dart`).
+  final Map<String, Object?> unbekannteFelder;
+
+  /// Alle Schluessel, die [fromJson] liest; alles andere bleibt erhalten.
+  static const Set<String> jsonSchluessel = <String>{
+    'amount',
+    'remaining',
+    'unit',
+  };
 
   /// Wirkungsdauern ohne Ablauf werden nie als abgelaufen gemeldet.
   bool get isPermanent => unit == SpellDurationUnit.permanent;
@@ -62,6 +79,7 @@ class SpellDuration {
     int? amount,
     int? remaining,
     SpellDurationUnit? unit,
+    Map<String, Object?>? unbekannteFelder,
   }) {
     final nextAmount = amount ?? this.amount;
     final nextRemaining = remaining ?? amount ?? this.remaining;
@@ -69,12 +87,17 @@ class SpellDuration {
       amount: nextAmount,
       remaining: nextRemaining,
       unit: unit ?? this.unit,
+      unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
     );
   }
 
   /// Serialisiert die Wirkungsdauer fuer Persistenz und Sync.
   Map<String, dynamic> toJson() {
-    return {'amount': amount, 'remaining': remaining, 'unit': unit.name};
+    return mitUnbekanntenFeldern(<String, dynamic>{
+      'amount': amount,
+      'remaining': remaining,
+      'unit': unit.name,
+    }, unbekannteFelder);
   }
 
   /// Laedt eine Wirkungsdauer robust aus JSON; unbekannte Einheiten fallen
@@ -87,7 +110,12 @@ class SpellDuration {
     );
     final amount = (json['amount'] as num?)?.toInt() ?? 0;
     final rawRemaining = (json['remaining'] as num?)?.toInt();
-    return SpellDuration(amount: amount, remaining: rawRemaining, unit: unit);
+    return SpellDuration(
+      amount: amount,
+      remaining: rawRemaining,
+      unit: unit,
+      unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
+    );
   }
 
   @override
@@ -95,11 +123,17 @@ class SpellDuration {
     return other is SpellDuration &&
         other.amount == amount &&
         other.remaining == remaining &&
-        other.unit == unit;
+        other.unit == unit &&
+        unbekannteFelderGleich(unbekannteFelder, other.unbekannteFelder);
   }
 
   @override
-  int get hashCode => Object.hash(amount, remaining, unit);
+  int get hashCode => Object.hash(
+    amount,
+    remaining,
+    unit,
+    unbekannteFelderHash(unbekannteFelder),
+  );
 }
 
 // Haelt die Restdauer im gueltigen Bereich [0, amount].

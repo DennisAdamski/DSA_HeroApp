@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config/main_weapon_slot.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config/ranged_projectile.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/sync_models.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 
@@ -231,6 +232,7 @@ void main() {
   group('neuere Version mit Feldern in verschachtelten Modellen', () {
     late EchterKatalog katalog;
     late Zukunftsheld zukunft;
+    late Zukunftsheld zukunftsZustand;
 
     setUpAll(() async {
       katalog = await ladeEchtenRegelkatalog();
@@ -258,6 +260,15 @@ void main() {
         zukunft.json,
         previousRevision: aktuell.revision,
       );
+      zukunftsZustand = zustandMitZukunftsfeldern(
+        (roh['state'] as Map).cast<String, dynamic>(),
+      );
+      final zustand = (await cloud.loadHeroState(_krieger))!;
+      await cloud.speichereFremdenZustand(
+        _krieger,
+        zukunftsZustand.json,
+        previousRevision: zustand.revision,
+      );
       await a.repo.syncNow();
       await b.repo.syncNow();
     });
@@ -275,9 +286,14 @@ void main() {
 
     test('der Stand ist hier verlustfrei darstellbar', () async {
       final online = (await cloud.loadHero(_krieger))!;
+      final zustand = (await cloud.loadHeroState(_krieger))!;
 
       expect(await b.heldHash(_krieger), online.contentHash);
       expect(await a.heldHash(_krieger), online.contentHash);
+      for (final geraet in <SyncTestGeraet>[a, b]) {
+        final lokal = (await geraet.lokal.loadHeroState(_krieger))!;
+        expect(heroStateContentHash(lokal), zustand.contentHash);
+      }
     });
 
     test('Mischbetrieb: das Echo der veröffentlichten App wird ohne Upload '
@@ -293,6 +309,18 @@ void main() {
         echo,
         previousRevision: aktuell.revision,
       );
+      final zustand = (await cloud.loadHeroState(_krieger))!;
+      final zustandsEcho = zustandWieVeroeffentlichteApp(
+        zustand.state!.toJson(),
+      );
+      for (final pfad in zukunftsZustand.pfade) {
+        expect(wertAn(zustandsEcho, pfad), isNull, reason: pfad);
+      }
+      await cloud.speichereFremdenZustand(
+        _krieger,
+        zustandsEcho,
+        previousRevision: zustand.revision,
+      );
       final schreibvorgaenge = cloud.schreibvorgaenge;
 
       for (var runde = 0; runde < 2; runde++) {
@@ -307,6 +335,11 @@ void main() {
       final lokal = (await b.lokal.loadHeroById(_krieger))!.toJson();
       for (final pfad in zukunft.pfade) {
         expect(wertAn(lokal, pfad), isNull, reason: pfad);
+      }
+      final lokalerZustand = (await b.lokal.loadHeroState(_krieger))!;
+      expect(heroStateContentHash(lokalerZustand), isNotEmpty);
+      for (final pfad in zukunftsZustand.pfade) {
+        expect(wertAn(lokalerZustand.toJson(), pfad), isNull, reason: pfad);
       }
     });
 
@@ -337,6 +370,9 @@ void main() {
           ),
         );
       });
+      await container
+          .read(heroActionsProvider)
+          .updateHeroState(_krieger, bearbeiteZustand);
       await b.repo.syncNow();
       await a.repo.syncNow();
 
@@ -347,6 +383,21 @@ void main() {
       expectZukunftsfelder(online.toJson(), 'Cloud');
       expectZukunftsfelder(aufA.toJson(), 'Gerät A');
       expectZukunftsfelder(aufB.toJson(), 'Gerät B');
+      final zustaende = <String, HeroState>{
+        'Cloud': (await cloud.loadHeroState(_krieger))!.state!,
+        'Gerät A': (await a.lokal.loadHeroState(_krieger))!,
+        'Gerät B': (await b.lokal.loadHeroState(_krieger))!,
+      };
+      for (final eintrag in zustaende.entries) {
+        expect(eintrag.value.tempMods.at, 1, reason: eintrag.key);
+        for (final pfad in zukunftsZustand.pfade) {
+          expect(
+            wertAn(eintrag.value.toJson(), pfad),
+            wertAn(zukunftsZustand.json, pfad),
+            reason: '${eintrag.key}: $pfad',
+          );
+        }
+      }
       expect(a.konflikte, isEmpty);
       expect(b.konflikte, isEmpty);
     });

@@ -2,6 +2,8 @@ import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:dsa_heldenverwaltung/domain/active_spell_effects_state.dart';
+import 'package:dsa_heldenverwaltung/domain/attribute_modifiers.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/avatar_gallery_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/avatar_gesichtsbefund.dart';
@@ -9,6 +11,7 @@ import 'package:dsa_heldenverwaltung/domain/avatar_snapshot.dart';
 import 'package:dsa_heldenverwaltung/domain/aventurian_date.dart';
 import 'package:dsa_heldenverwaltung/domain/bought_stats.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
+import 'package:dsa_heldenverwaltung/domain/dice_log_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_advancement_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_adventure_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_adventure_se_pools.dart';
@@ -26,9 +29,15 @@ import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_spell_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_spell_text_overrides.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/magic_special_ability.dart';
+import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
+import 'package:dsa_heldenverwaltung/domain/spell_duration.dart';
 import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
 import 'package:dsa_heldenverwaltung/domain/talent_special_ability.dart';
+import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/rest_rules.dart';
 
 /// Ein verschachteltes Heldenmodell im Tabellentest: voll belegte Instanz,
 /// Laden und eine Bearbeitung ueber `copyWith`.
@@ -650,6 +659,92 @@ final _grundwerteAvatarVerlauf = <_Modell>[
   ),
 ];
 
+SpellDuration _dauer() =>
+    SpellDuration(amount: 4, remaining: 2, unit: SpellDurationUnit.spielrunden);
+
+final _zustand = <_Modell>[
+  _Modell(
+    'AttributeModifiers',
+    schluessel: AttributeModifiers.jsonSchluessel,
+    voll: () => const AttributeModifiers(ge: 1).toJson(),
+    lade: (json) => AttributeModifiers.fromJson(json).toJson(),
+    bearbeite: (json) =>
+        AttributeModifiers.fromJson(json).copyWith(kk: 2).toJson(),
+    unbekannt: (json) => AttributeModifiers.fromJson(json).unbekannteFelder,
+  ),
+  _Modell(
+    'ActiveSpellEffectsState',
+    schluessel: ActiveSpellEffectsState.jsonSchluessel,
+    voll: () => const ActiveSpellEffectsState()
+        .withToggled('e1', true)
+        .withDetail('e1', const ActiveSpellEffectDetail(amount: 2))
+        .toJson(),
+    lade: (json) => ActiveSpellEffectsState.fromJson(json).toJson(),
+    bearbeite: (json) =>
+        ActiveSpellEffectsState.fromJson(json).withToggled('e2', true).toJson(),
+    unbekannt: (json) =>
+        ActiveSpellEffectsState.fromJson(json).unbekannteFelder,
+  ),
+  _Modell(
+    'ActiveSpellEffectDetail',
+    schluessel: ActiveSpellEffectDetail.jsonSchluessel,
+    voll: () => ActiveSpellEffectDetail(amount: 2, duration: _dauer()).toJson(),
+    lade: (json) => ActiveSpellEffectDetail.fromJson(json).toJson(),
+    bearbeite: (json) =>
+        ActiveSpellEffectDetail.fromJson(json).copyWith(amount: 3).toJson(),
+    unbekannt: (json) =>
+        ActiveSpellEffectDetail.fromJson(json).unbekannteFelder,
+  ),
+  _Modell(
+    'SpellDuration',
+    schluessel: SpellDuration.jsonSchluessel,
+    voll: () => _dauer().toJson(),
+    lade: (json) => SpellDuration.fromJson(json).toJson(),
+    bearbeite: (json) =>
+        SpellDuration.fromJson(json).copyWith(remaining: 1).toJson(),
+    unbekannt: (json) => SpellDuration.fromJson(json).unbekannteFelder,
+  ),
+  _Modell(
+    'WundZustand',
+    schluessel: WundZustand.jsonSchluessel,
+    voll: () => const WundZustand(
+      wundenProZone: <WundZone, int>{WundZone.brust: 2},
+      kopfIniMalus: 1,
+      unterdrueckteWundenProZone: <WundZone, int>{WundZone.brust: 1},
+      kampfunfaehigIgnoriert: true,
+    ).toJson(),
+    lade: (json) => WundZustand.fromJson(json).toJson(),
+    bearbeite: (json) =>
+        WundZustand.fromJson(json).mitWundeHinzu(WundZone.kopf).toJson(),
+    unbekannt: (json) => WundZustand.fromJson(json).unbekannteFelder,
+  ),
+  _Modell(
+    'DiceLogEntry',
+    schluessel: DiceLogEntry.jsonSchluessel,
+    voll: () => DiceLogEntry(
+      timestamp: DateTime.utc(2026, 9, 28),
+      type: ProbeType.attribute,
+      title: 'Mut',
+      subtitle: '',
+      success: true,
+      diceValues: const <int>[3],
+      targetValue: 14,
+      total: 3,
+      isNeutral: true,
+    ).toJson(),
+    lade: (json) => DiceLogEntry.fromJson(json).toJson(),
+    // Unveraenderlich: bearbeitet wird der Zustand, der das Protokoll traegt.
+    bearbeite: (json) =>
+        (HeroState.fromJson(<String, dynamic>{
+                      'diceLog': <Object?>[json],
+                    }).copyWith(currentLep: 3).toJson()['diceLog']
+                    as List)
+                .single
+            as Map<String, dynamic>,
+    unbekannt: (json) => DiceLogEntry.fromJson(json).unbekannteFelder,
+  ),
+];
+
 // Voll belegtes JSON eines Modells samt Zukunftsfeld, frisch kopiert.
 Map<String, dynamic> _mitZukunft(_Modell modell) {
   final json = jsonDecode(jsonEncode(modell.voll())) as Map<String, dynamic>;
@@ -765,6 +860,89 @@ void main() {
         'wert': 1,
       });
       expect(held.statModifiers['ws']!.single.modifier, 1);
+    });
+  });
+
+  _pruefeModelle(
+    'Laufzeitzustand bewahrt unbekannte Felder in allen Teilmodellen',
+    _zustand,
+  );
+
+  group('Laufzeitzustand: Sonderfälle', () {
+    const feld = <String, Object?>{'zukunftsfeld': 1};
+
+    test('Zusatzdaten nur mit unbekannten Feldern gelten nicht als leer', () {
+      final effekte = ActiveSpellEffectsState.fromJson(<String, dynamic>{
+        'activeEffectIds': <Object?>['e1'],
+        'effectDetails': <String, dynamic>{
+          'e1': <String, dynamic>{'amount': 0, ...feld},
+        },
+      });
+
+      expect(effekte.detailFor('e1').unbekannteFelder, feld);
+      expect(effekte.toJson()['effectDetails'], <String, dynamic>{
+        'e1': <String, dynamic>{'amount': 0, ...feld},
+      });
+    });
+
+    test('Wunden hinzufügen und entfernen behält die Felder', () {
+      const zustand = WundZustand(unbekannteFelder: feld);
+
+      final mitWunde = zustand.mitWundeHinzu(WundZone.kopf, iniWuerfelWert: 4);
+      final ohneWunde = mitWunde.mitWundeEntfernt(WundZone.kopf);
+
+      expect(mitWunde.unbekannteFelder, feld);
+      expect(ohneWunde.unbekannteFelder, feld);
+    });
+
+    test('die volle Rast heilt die Wunden und behält die Felder', () {
+      const zustand = HeroState(
+        currentLep: 1,
+        currentAsp: 0,
+        currentKap: 0,
+        currentAu: 1,
+        wpiZustand: WundZustand(
+          wundenProZone: <WundZone, int>{WundZone.brust: 2},
+          kampfunfaehigIgnoriert: true,
+          unbekannteFelder: feld,
+        ),
+      );
+
+      final nachRast = buildFullRestoreState(
+        currentState: zustand,
+        derivedStats: const DerivedStats(
+          maxLep: 30,
+          maxAu: 30,
+          maxAsp: 0,
+          maxKap: 0,
+          mr: 0,
+          iniBase: 0,
+          atBase: 0,
+          paBase: 0,
+          fkBase: 0,
+          gs: 0,
+          ausweichen: 0,
+        ),
+      );
+
+      expect(nachRast.wpiZustand.gesamtWunden, 0);
+      expect(nachRast.wpiZustand.kampfunfaehigIgnoriert, isFalse);
+      expect(nachRast.wpiZustand.unbekannteFelder, feld);
+    });
+
+    test('eine neue Wirkungsdauer per copyWith läuft voll und behält die '
+        'Felder', () {
+      final dauer = SpellDuration(
+        amount: 4,
+        remaining: 1,
+        unit: SpellDurationUnit.kampfrunden,
+        unbekannteFelder: feld,
+      );
+
+      final neu = dauer.copyWith(amount: 6, unit: SpellDurationUnit.minuten);
+
+      expect(neu.remaining, 6);
+      expect(neu.unbekannteFelder, feld);
     });
   });
 

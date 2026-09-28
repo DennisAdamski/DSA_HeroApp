@@ -74,7 +74,10 @@ class _ActiveSpellEffectsDialogState
 
     if (!value) {
       final updatedState = state.copyWith(
-        tempAttributeMods: const AttributeModifiers(),
+        // Nur die Werte zuruecksetzen; unbekannte Felder bleiben erhalten.
+        tempAttributeMods: state.tempAttributeMods.uebernimmWerte(
+          const AttributeModifiers(),
+        ),
         activeSpellEffects: state.activeSpellEffects.withToggled(
           activeSpellEffectAttributo,
           false,
@@ -89,7 +92,7 @@ class _ActiveSpellEffectsDialogState
       return;
     }
     final updatedState = state.copyWith(
-      tempAttributeMods: bonuses,
+      tempAttributeMods: state.tempAttributeMods.uebernimmWerte(bonuses),
       activeSpellEffects: state.activeSpellEffects.withToggled(
         activeSpellEffectAttributo,
         true,

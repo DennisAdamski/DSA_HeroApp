@@ -154,10 +154,14 @@ class _ArmatrutzInputDialogState extends State<_ArmatrutzInputDialog> {
         FilledButton(
           key: const ValueKey<String>('armatrutz-input-confirm'),
           onPressed: () {
-            final detail = ActiveSpellEffectDetail(
-              amount: _rsBonus,
-              duration: _duration,
-            );
+            // Per `copyWith`, damit unbekannte Felder erhalten bleiben.
+            final detail =
+                (widget.initialDetail ?? const ActiveSpellEffectDetail())
+                    .copyWith(
+                      amount: _rsBonus,
+                      duration: _duration,
+                      clearDuration: _duration == null,
+                    );
             Navigator.of(context).pop(detail);
           },
           child: const Text('Übernehmen'),
