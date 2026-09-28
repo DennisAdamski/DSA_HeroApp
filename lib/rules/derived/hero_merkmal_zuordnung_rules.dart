@@ -588,3 +588,67 @@ List<HeroMerkmal> fuegeMerkmalHinzu(
   ergebnis.add(neu);
   return List<HeroMerkmal>.unmodifiable(ergebnis);
 }
+
+/// Aendert die Vor- (bei [vorteil]) oder Nachteile von [held] gezielt.
+///
+/// Ausgangspunkt ist die wirksame Liste: bei einem Bestandshelden ohne Liste
+/// die Laufzeitmigration, damit schon die erste Aenderung alles strukturiert
+/// speichert. Geschrieben werden Liste **und** Projektion. Eine offene
+/// Abweichung (eine aeltere App hat den Text geaendert) loest dieser Weg
+/// nicht nebenbei auf, sondern wirft einen [StateError]; aufgeloest wird sie
+/// nur ueber [loeseMerkmalAbweichung].
+HeroSheet aendereMerkmale(
+  HeroSheet held, {
+  required bool vorteil,
+  required MerkmalKatalog katalog,
+  required List<HeroMerkmal> Function(List<HeroMerkmal> eintraege) aenderung,
+}) {
+  final abgleich = gleicheMerkmaleAb(held, katalog: katalog);
+  final abweichung = vorteil
+      ? abgleich.vorteilAbweichung
+      : abgleich.nachteilAbweichung;
+  if (abweichung != null) {
+    throw StateError(
+      'Eine ältere App-Version hat diese Einträge geändert. Bitte zuerst '
+      'entscheiden, welcher Stand gilt.',
+    );
+  }
+  final neu = List<HeroMerkmal>.unmodifiable(
+    aenderung(vorteil ? abgleich.vorteile : abgleich.nachteile),
+  );
+  return _mitMerkmalen(held, vorteil: vorteil, eintraege: neu);
+}
+
+/// Loest eine Abweichung der Vor- (bei [vorteil]) oder Nachteile auf.
+///
+/// Mit [textUebernehmen] wird der geaenderte Text neu zugeordnet
+/// ([uebernimmMerkmalText]); sonst bleibt die Liste und der Text wird wieder
+/// ihre Projektion. Ohne Abweichung aendert sich nichts.
+HeroSheet loeseMerkmalAbweichung(
+  HeroSheet held, {
+  required bool vorteil,
+  required MerkmalKatalog katalog,
+  required bool textUebernehmen,
+}) {
+  final liste = vorteil ? held.vorteilEintraege : held.nachteilEintraege;
+  final text = vorteil ? held.vorteileText : held.nachteileText;
+  if (liste.isEmpty || vergleicheMerkmalText(text, liste) == null) {
+    return held;
+  }
+  final neu = textUebernehmen
+      ? uebernimmMerkmalText(text, liste, katalog.liste(vorteil: vorteil))
+      : liste;
+  return _mitMerkmalen(held, vorteil: vorteil, eintraege: neu);
+}
+
+// Setzt Liste und Projektion einer Merkmalsart.
+HeroSheet _mitMerkmalen(
+  HeroSheet held, {
+  required bool vorteil,
+  required List<HeroMerkmal> eintraege,
+}) {
+  final text = projiziereMerkmalText(eintraege);
+  return vorteil
+      ? held.copyWith(vorteilEintraege: eintraege, vorteileText: text)
+      : held.copyWith(nachteilEintraege: eintraege, nachteileText: text);
+}

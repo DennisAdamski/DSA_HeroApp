@@ -253,19 +253,17 @@ class _Rechner {
   void _wende(HeroTraitEffect wirkung, HeroMerkmal eintrag, HeroTraitDef def) {
     switch (wirkung.art) {
       case HeroTraitEffectArt.basiswert:
-        final roh = eintrag.wert ?? wirkung.standard;
-        if (roh == null) {
+        final betrag = merkmalBasiswertBetrag(wirkung, eintrag);
+        if (betrag == null) {
           return;
         }
-        final betrag = _kappe(roh.abs(), 0, wirkung.max) * wirkung.jeWert;
         _stats = _stats + _statMods(wirkung.ziel, betrag);
       case HeroTraitEffectArt.eigenschaft:
         final code = parseAttributeCode(eintrag.auswahl);
         if (code == null) {
           return;
         }
-        final roh = eintrag.wert?.abs() ?? wirkung.standard ?? 1;
-        final betrag = _kappe(roh, 1, wirkung.max) * wirkung.jeWert;
+        final betrag = merkmalEigenschaftBetrag(wirkung, eintrag);
         final mods = attributeModifiersFor(code, betrag);
         _attribute = _attribute + mods;
         if (wirkung.startwert) {
@@ -280,11 +278,7 @@ class _Rechner {
       case HeroTraitEffectArt.wundschwelle:
         _wundschwelle[def.id] = wirkung.betrag;
       case HeroTraitEffectArt.rast:
-        final stufe = _kappe(
-          eintrag.wert ?? wirkung.standard ?? 1,
-          1,
-          wirkung.max,
-        );
+        final stufe = merkmalRastStufe(wirkung, eintrag);
         switch (wirkung.ziel) {
           case 'lepStufe':
             _lepStufe = math.max(_lepStufe, stufe);
@@ -314,6 +308,28 @@ class _Rechner {
       astralerBlock: _astralerBlock,
     );
   }
+}
+
+/// Betrag einer `basiswert`-Wirkung fuer [eintrag]; `null` ohne Wert und
+/// ohne Standard (dann wirkt das Merkmal nicht). Geteilt von Rechnung und
+/// Anzeige, damit beide dieselbe Kappung verwenden.
+int? merkmalBasiswertBetrag(HeroTraitEffect wirkung, HeroMerkmal eintrag) {
+  final roh = eintrag.wert ?? wirkung.standard;
+  if (roh == null) {
+    return null;
+  }
+  return _kappe(roh.abs(), 0, wirkung.max) * wirkung.jeWert;
+}
+
+/// Betrag einer `eigenschaft`-Wirkung fuer [eintrag] (mindestens 1).
+int merkmalEigenschaftBetrag(HeroTraitEffect wirkung, HeroMerkmal eintrag) {
+  final roh = eintrag.wert?.abs() ?? wirkung.standard ?? 1;
+  return _kappe(roh, 1, wirkung.max) * wirkung.jeWert;
+}
+
+/// Stufe einer `rast`-Wirkung fuer [eintrag] (mindestens 1).
+int merkmalRastStufe(HeroTraitEffect wirkung, HeroMerkmal eintrag) {
+  return _kappe(eintrag.wert ?? wirkung.standard ?? 1, 1, wirkung.max);
 }
 
 int _kappe(int wert, int minimum, int? maximum) {
