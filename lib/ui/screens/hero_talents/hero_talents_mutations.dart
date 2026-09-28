@@ -5,14 +5,18 @@ extension _HeroTalentMutations on _HeroTalentTableTabState {
     return _draftTalents[talentId] ?? const HeroTalentEntry();
   }
 
-  /// Begabung/Unfaehigkeit aus Vor-/Nachteilen fuer [talent].
-  LernspaltenBefund _befundFuer(TalentDef talent) {
+  /// Begabungen/Unfaehigkeiten aus Vor-/Nachteilen des Helden.
+  HeroBegabungen _begabungen() {
     final hero = _latestHero;
     if (hero == null) {
-      return LernspaltenBefund.keiner;
+      return HeroBegabungen.leer;
     }
-    return ermittleBegabungen(hero, catalog: _latestCatalog).talent(talent);
+    return ermittleBegabungen(hero, catalog: _latestCatalog);
   }
+
+  /// Begabung/Unfaehigkeit aus Vor-/Nachteilen fuer [talent].
+  LernspaltenBefund _befundFuer(TalentDef talent) =>
+      _begabungen().talent(talent);
 
   TalentComplexityResolution _resolveTalentComplexity(
     TalentDef talent,

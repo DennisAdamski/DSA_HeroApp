@@ -72,7 +72,11 @@ extension _HeroTalentsCells on _HeroTalentTableTabState {
     );
   }
 
-  Widget _complexityCell(TalentComplexityResolution resolution, {Key? key}) {
+  Widget _complexityCell(
+    TalentComplexityResolution resolution, {
+    Key? key,
+    LernspaltenBefund befund = LernspaltenBefund.keiner,
+  }) {
     final theme = Theme.of(context);
     final highlighted =
         resolution.effectiveKomplexitaet != resolution.baseKomplexitaet;
@@ -91,6 +95,7 @@ extension _HeroTalentsCells on _HeroTalentTableTabState {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(resolution.effectiveKomplexitaet, style: style),
+            LernspaltenMarke(befund: befund),
             if (resolution.houseRuleHint != null) ...[
               const SizedBox(width: 4),
               Tooltip(

@@ -19,6 +19,8 @@ import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_combat_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 
+import '../../test_support/begabung_katalog.dart';
+
 void main() {
   HeroSheet buildHero({
     CombatConfig combatConfig = const CombatConfig(),
@@ -255,13 +257,16 @@ void main() {
     FakeRepository repo, {
     bool showInlineCombatTalentsActions = true,
     bool? epicAdvantagesActive,
+    RulesCatalog? catalog,
   }) async {
     WorkspaceTabEditActions? actions;
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
           heroRepositoryProvider.overrideWithValue(repo),
-          rulesCatalogProvider.overrideWith((ref) async => buildCatalog()),
+          rulesCatalogProvider.overrideWith(
+            (ref) async => catalog ?? buildCatalog(),
+          ),
           if (epicAdvantagesActive != null)
             isHouseRuleActiveProvider(EpicRuleKeys.advantages)
                 .overrideWithValue(epicAdvantagesActive),
@@ -1105,6 +1110,51 @@ void main() {
       expect(find.text('Boegen'), findsAtLeastNWidgets(1));
     },
   );
+
+  testWidgets('Kampftechniken zeigen Begabung aus Vorteilen gesperrt', (
+    tester,
+  ) async {
+    final repo = FakeRepository(
+      heroes: [
+        buildHero(
+          talents: const <String, HeroTalentEntry>{
+            'tal_nah': HeroTalentEntry(),
+          },
+        ).copyWith(vorteileText: 'Begabung für Nahkampf-Talente'),
+      ],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+    final catalog = mitKatalogMerkmalen(
+      buildCatalog(),
+      vorteilIds: const ['adv_begabung_nahkampf'],
+    );
+
+    final actions = await openCombatTab(tester, repo, catalog: catalog);
+    await tapTab(tester, 'Kampftechniken');
+    expect(find.byTooltip('Begabung für Nahkampf-Talente'), findsOneWidget);
+
+    await actions.startEdit();
+    await tester.pumpAndSettle();
+    final haekchen = tester.widget<Checkbox>(
+      find.byKey(const ValueKey<String>('combat-talents-gifted-tal_nah')),
+    );
+    expect(haekchen.value, isTrue);
+    expect(haekchen.onChanged, isNull);
+
+    // Katalogvorschau (Schwerter ist aktiv, Boegen nicht): nur Nahkampf.
+    await tester.tap(
+      find.byKey(const ValueKey<String>('combat-talents-catalog-open')),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byTooltip('Begabung für Nahkampf-Talente'), findsWidgets);
+  });
 
   testWidgets('combat techniques support manual correction without AP', (
     tester,

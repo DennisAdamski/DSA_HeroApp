@@ -23,6 +23,8 @@ import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_magic_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 
+import '../../test_support/begabung_katalog.dart';
+
 class _OpenedMagicTab {
   const _OpenedMagicTab({required this.repo, required this.actions});
 
@@ -1809,6 +1811,135 @@ void main() {
         findsNothing,
       );
       expect(find.widgetWithText(FilledButton, 'Erwerben'), findsNothing);
+    });
+  });
+
+  group('Begabung und Unfähigkeit aus Vor-/Nachteilen', () {
+    RulesCatalog katalog() => mitKatalogMerkmalen(
+      buildCatalog(
+        magicSpecialAbilities: const <SpecialAbilityDef>[
+          SpecialAbilityDef(
+            id: 'msf_hexenflueche',
+            name: 'Hexenflüche*',
+            kategorie: 'Traditionsrituale',
+            varianten: <String>['Hexenfluch'],
+          ),
+        ],
+      ),
+      vorteilIds: const ['adv_begabung_merkmal', 'adv_begabung_ritual'],
+      nachteilIds: const ['dis_unfaehigkeit_merkmal'],
+    );
+
+    FakeRepository repoMit({
+      String vorteile = '',
+      String nachteile = '',
+      List<HeroRitualCategory> ritualCategories = const [],
+    }) {
+      return FakeRepository(
+        heroes: <HeroSheet>[
+          buildHero(ritualCategories: ritualCategories)
+              .copyWith(vorteileText: vorteile, nachteileText: nachteile),
+        ],
+        states: <String, HeroState>{
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 10,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
+      );
+    }
+
+    testWidgets(
+      'Merkmals-Begabung verbilligt den Zauber und sperrt das Häkchen',
+      (tester) async {
+        final opened = await openMagicTab(
+          tester,
+          repo: repoMit(vorteile: 'Begabung für Kraft'),
+          catalog: katalog(),
+        );
+
+        // Axxeleratus (Kraft, Basis C): Merkmalskenntnis und Begabung je -1.
+        expect(find.text('A'), findsOneWidget);
+        expect(find.byTooltip('Begabung für Kraft'), findsOneWidget);
+
+        await opened.actions.startEdit();
+        await _pumpAndSettleIgnoringKnownOverflow(tester);
+        final haekchen = tester.widget<Checkbox>(
+          find.byKey(
+            const ValueKey<String>('magic-spells-gifted-spell_axxeleratus'),
+          ),
+        );
+        expect(haekchen.value, isTrue);
+        expect(haekchen.onChanged, isNull);
+        expect(
+          find.byTooltip('Aus Vorteil: Begabung für Kraft'),
+          findsOneWidget,
+        );
+      },
+    );
+
+    testWidgets('Zauberkatalog zeigt Unfähigkeit für ein Merkmal', (
+      tester,
+    ) async {
+      final opened = await openMagicTab(
+        tester,
+        repo: repoMit(nachteile: 'Unfähigkeit für Form'),
+        catalog: katalog(),
+      );
+      await opened.actions.startEdit();
+      await _pumpAndSettleIgnoringKnownOverflow(tester);
+      await tester.tap(find.byKey(const ValueKey<String>('magic-spells-add')));
+      await _pumpAndSettleIgnoringKnownOverflow(tester);
+
+      // Adlerschwinge (Form, Basis D) eine Spalte teurer.
+      final marke = find.byTooltip('Unfähigkeit für Form');
+      expect(marke, findsOneWidget);
+      final zelle = find.ancestor(of: marke, matching: find.byType(Row)).first;
+      expect(
+        find.descendant(of: zelle, matching: find.text('E')),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('Ritual-Begabung verbilligt die Ritualkenntnis', (
+      tester,
+    ) async {
+      await openMagicTab(
+        tester,
+        repo: repoMit(
+          vorteile: 'Begabung für Hexenfluch',
+          ritualCategories: <HeroRitualCategory>[
+            HeroRitualCategory(
+              id: 'ritual_cat_1',
+              name: 'Flueche',
+              knowledgeMode: HeroRitualKnowledgeMode.ownKnowledge,
+              ownKnowledge: const HeroRitualKnowledge(
+                name: 'Flueche',
+                value: 3,
+                learningComplexity: 'E',
+              ),
+              rituals: const <HeroRitualEntry>[
+                HeroRitualEntry(name: 'Hexenfluch'),
+              ],
+            ),
+          ],
+        ),
+        catalog: katalog(),
+      );
+
+      await tester.tap(find.text('Rituale'));
+      await _pumpAndSettleIgnoringKnownOverflow(tester);
+
+      expect(
+        find.textContaining('Kompl. D (Basis E; Begabung für Hexenfluch)'),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey<String>('magic-ritual-begabt-0-0')),
+        findsOneWidget,
+      );
     });
   });
 }

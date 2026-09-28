@@ -22,6 +22,8 @@ import 'package:dsa_heldenverwaltung/ui/screens/hero_talents_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/codex_section_card.dart';
 
+import '../../test_support/begabung_katalog.dart';
+
 void main() {
   var tabOpenCounter = 0;
 
@@ -675,53 +677,10 @@ void main() {
   testWidgets(
     'Begabung und Unfähigkeit aus Vor-/Nachteilen wirken abgeleitet',
     (tester) async {
-      final basis = buildCatalog();
-      final catalog = RulesCatalog(
-        version: basis.version,
-        source: basis.source,
-        talents: basis.talents,
-        spells: basis.spells,
-        weapons: basis.weapons,
-        sprachen: basis.sprachen,
-        schriften: basis.schriften,
-        generalSpecialAbilities: basis.generalSpecialAbilities,
-        karmalSpecialAbilities: basis.karmalSpecialAbilities,
-        advantages: <HeroTraitDef>[
-          HeroTraitDef.fromJson(const <String, dynamic>{
-            'id': 'adv_begabung_anderes_talent',
-            'name': 'Begabung für einzelnes anderes Talent',
-            'traitType': 'advantage',
-            'valueKind': 'choice',
-            'selectionTemplate': 'Begabung für {choice}',
-            'choiceSource': 'talente_sonstige',
-            'choiceFreeText': false,
-            'wirkungen': <Map<String, dynamic>>[
-              <String, dynamic>{
-                'art': 'lernspalte',
-                'ziel': 'talent',
-                'betrag': 1,
-              },
-            ],
-          }),
-        ],
-        disadvantages: <HeroTraitDef>[
-          HeroTraitDef.fromJson(const <String, dynamic>{
-            'id': 'dis_unfaehigkeit_anderes_talent',
-            'name': 'Unfähigkeit für [anderes Talent]',
-            'traitType': 'disadvantage',
-            'valueKind': 'choice',
-            'selectionTemplate': 'Unfähigkeit für {choice}',
-            'choiceSource': 'talente_sonstige',
-            'choiceFreeText': false,
-            'wirkungen': <Map<String, dynamic>>[
-              <String, dynamic>{
-                'art': 'lernspalte',
-                'ziel': 'talent',
-                'betrag': -1,
-              },
-            ],
-          }),
-        ],
+      final catalog = mitKatalogMerkmalen(
+        buildCatalog(),
+        vorteilIds: const ['adv_begabung_anderes_talent'],
+        nachteilIds: const ['dis_unfaehigkeit_anderes_talent'],
       );
       final repo = FakeRepository(
         heroes: [
@@ -775,6 +734,50 @@ void main() {
       expect(hero.talents['tal_a']?.gifted, isFalse);
     },
   );
+
+  testWidgets('Talentkatalog zeigt die Begabung eines neuen Talents', (
+    tester,
+  ) async {
+    final repo = FakeRepository(
+      heroes: [
+        buildHero(
+          talents: const <String, HeroTalentEntry>{'tal_a': HeroTalentEntry()},
+        ).copyWith(vorteileText: 'Begabung für Boote Fahren'),
+      ],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+    final catalog = mitKatalogMerkmalen(
+      buildCatalog(),
+      vorteilIds: const ['adv_begabung_anderes_talent'],
+    );
+
+    final actions = await openTalentsTab(tester, repo, catalog);
+    await actions.startEdit();
+    await tester.pumpAndSettle();
+    expect(find.byTooltip('Begabung für Boote Fahren'), findsNothing);
+
+    await tester.tap(
+      find.byKey(const ValueKey<String>('talents-catalog-open')),
+    );
+    await tester.pumpAndSettle();
+
+    // Boote Fahren (Basis B) steht noch nicht auf dem Bogen, die Vorschau
+    // zeigt trotzdem die wirksame Spalte samt Quelle.
+    final marke = find.byTooltip('Begabung für Boote Fahren');
+    expect(marke, findsOneWidget);
+    final zeile = find.ancestor(of: marke, matching: find.byType(Row)).first;
+    expect(
+      find.descendant(of: zeile, matching: find.text('A')),
+      findsOneWidget,
+    );
+  });
 
   testWidgets(
     'manual talent correction persists without AP or raising actions',

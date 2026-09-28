@@ -721,19 +721,26 @@ class _MagicActiveSpellsTable extends StatelessWidget {
                                 ),
                               ),
                               DataCell(
-                                Text(
-                                  effSteigerung,
-                                  style:
-                                      effSteigerung != def.steigerung ||
-                                          currentAvailabilityEntry == null
-                                      ? theme.textTheme.bodySmall?.copyWith(
-                                          color:
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      effSteigerung,
+                                      style:
+                                          effSteigerung != def.steigerung ||
                                               currentAvailabilityEntry == null
-                                              ? theme.colorScheme.error
-                                              : theme.colorScheme.primary,
-                                          fontWeight: FontWeight.bold,
-                                        )
-                                      : theme.textTheme.bodySmall,
+                                          ? theme.textTheme.bodySmall?.copyWith(
+                                              color:
+                                                  currentAvailabilityEntry ==
+                                                      null
+                                                  ? theme.colorScheme.error
+                                                  : theme.colorScheme.primary,
+                                              fontWeight: FontWeight.bold,
+                                            )
+                                          : theme.textTheme.bodySmall,
+                                    ),
+                                    LernspaltenMarke(befund: befund),
+                                  ],
                                 ),
                               ),
                               DataCell(

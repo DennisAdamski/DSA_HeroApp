@@ -78,3 +78,47 @@ class UnfaehigkeitsMarke extends StatelessWidget {
     );
   }
 }
+
+/// Quellen einer Spaltenverschiebung fuer Tooltips, z. B.
+/// `Begabung für Abrichten · Unfähigkeit für Alchimie`; `null` ohne Wirkung.
+String? lernspaltenHinweis(LernspaltenBefund befund) {
+  if (!befund.wirkt) {
+    return null;
+  }
+  return <String>[
+    ...befund.begabungsQuellen,
+    ...befund.unfaehigkeitsQuellen,
+  ].join(' · ');
+}
+
+/// Marke neben einer Steigerungsspalte, die Begabung oder Unfaehigkeit aus
+/// Vor-/Nachteilen verschiebt; ohne Wirkung leer.
+class LernspaltenMarke extends StatelessWidget {
+  /// Erstellt die Marke.
+  const LernspaltenMarke({super.key, required this.befund});
+
+  /// Befund des Ziels.
+  final LernspaltenBefund befund;
+
+  @override
+  Widget build(BuildContext context) {
+    final hinweis = lernspaltenHinweis(befund);
+    if (hinweis == null) {
+      return const SizedBox.shrink();
+    }
+    final farben = Theme.of(context).colorScheme;
+    final begabt = befund.abgeleitetBegabt;
+    return Padding(
+      padding: const EdgeInsets.only(left: 4),
+      child: Tooltip(
+        message: hinweis,
+        child: Icon(
+          begabt ? Icons.auto_awesome : Icons.trending_down,
+          size: 14,
+          semanticLabel: begabt ? 'Begabung' : 'Unfähigkeit',
+          color: begabt ? farben.primary : farben.error,
+        ),
+      ),
+    );
+  }
+}

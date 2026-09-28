@@ -49,12 +49,16 @@ class _TalentCatalogTable extends StatefulWidget {
     required this.lockedTalentIds,
     required this.ruleResolver,
     required this.onToggleTalent,
+    this.begabungen,
   });
 
   final List<TalentDef> allTalents;
   final Set<String> activeTalentIds;
   final Set<String> lockedTalentIds;
   final CatalogRuleResolver ruleResolver;
+
+  /// Begabungen aus Vor-/Nachteilen fuer die Vorschau; `null` wirkt nicht.
+  final HeroBegabungen? begabungen;
   final void Function(String talentId, bool activate) onToggleTalent;
 
   @override
@@ -172,10 +176,16 @@ class _TalentCatalogTableState extends State<_TalentCatalogTable> {
                             final isLocked =
                                 isActive &&
                                 widget.lockedTalentIds.contains(talent.id);
+                            // Das Haekchen zaehlt hier nicht: das Talent
+                            // steht noch nicht auf dem Bogen.
+                            final befund =
+                                widget.begabungen?.talent(talent) ??
+                                LernspaltenBefund.keiner;
                             final complexityResolution = widget.ruleResolver
                                 .resolveTalentComplexity(
                                   talent: talent,
-                                  gifted: false,
+                                  gifted: befund.abgeleitetBegabt,
+                                  unfaehigkeitsSchritte: befund.erhoehung,
                                 );
                             return DataRow(
                               cells: [
@@ -242,6 +252,7 @@ class _TalentCatalogTableState extends State<_TalentCatalogTable> {
                                             .effectiveKomplexitaet,
                                         style: theme.textTheme.bodySmall,
                                       ),
+                                      LernspaltenMarke(befund: befund),
                                       if (complexityResolution.houseRuleHint !=
                                           null) ...[
                                         const SizedBox(width: 4),
