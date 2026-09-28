@@ -284,6 +284,18 @@ Commits:
    „Vor- und Nachteile“ der Spielansicht; der Übersichts-Tab bleibt.
 6. `AvatarSnapshot` vergleicht weiter Texte. Nach der ersten Migration
    unterscheiden sich nur Trennzeichen, nicht die Fragmente.
+7. *Nachtrag (Commits `c2b1b54`, `f0afcb6`):* `parseAttributeCode` kannte
+   „Gewandtheit“ nur falsch geschrieben; die Zuordnung liest jetzt
+   Doppelpunkte als Trenner und speichert Eigenschaften als Kürzel.
+   Begabungen und Unfähigkeiten wirken über die neue Wirkungsart
+   `lernspalte` auf ihre Ziele (Talent, Talentgruppe, Nah-/Fernkampf,
+   Sprachen/Schriften, Zauber, Merkmal je Treffer, Ritualkenntnis),
+   abgeleitet in `hero_begabung_rules.dart` und nicht gespeichert.
+   „Begabung für X“ wird über die aufgelöste Auswahlliste eindeutig. Offen:
+   Die Katalogvorschau beim Hinzufügen eines Talents oder Zaubers und die
+   Zauberspezialisierungskosten zeigen Merkmals-Begabungen nicht; der
+   Textweg (ohne Katalog) kennt keine Lernspalten, das ist die bewusste
+   Ausnahme im Äquivalenztest.
 
 ## ARCH-03 — Gemeinsame Ausrüstungsdaten für Inventar und Kampf
 

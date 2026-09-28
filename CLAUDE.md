@@ -190,6 +190,16 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   catalog`: in `lib/` immer den vorhandenen Katalog durchreichen,
   `catalog: null` (Textweg) nur in Tests. Details in
   `docs/technical_overview.md` Abschnitt 4.11.
+- Begabungen und Unfähigkeiten wirken über die Katalogwirkung `lernspalte`
+  auf ihre Ziele; `ermittleBegabungen` (`hero_begabung_rules.dart`) liefert
+  je Talent, Zauber, Sprache/Schrift und Ritualkenntnis einen
+  `LernspaltenBefund`. **Abgeleitet, nie am Ziel gespeichert**: das Häkchen
+  `gifted` bleibt daneben, eine Begabung aus Vorteil erscheint gesperrt
+  (`BegabungHaekchen`). Begabung wirkt wie das Häkchen (eine Spalte,
+  Maximum +5), Merkmale je passendem Merkmal; Unfähigkeit verteuert um eine
+  Spalte. Neue Kostenstellen nehmen den Befund, nie `entry.gifted` allein.
+  Der Textweg kennt keine Lernspalten (bewusste Ausnahme im
+  Äquivalenztest).
 - Mehrfach erwerbbare allgemeine Sonderfertigkeiten (Kulturkunde, Geländekunde,
   Ortskenntnis, Akklimatisierung, Berufsgeheimnis) tragen im Katalog ihre
   Auswahlmöglichkeiten (`mehrfachwaehlbar`, `varianten`, `ap_erstwerb`,

@@ -2154,10 +2154,17 @@ nicht. `zerlegeMerkmalText` fuegt durch Komma getrennte Teile wieder
 zusammen, wenn sie gemeinsam ein Template mit Komma treffen (`Adlig, Adliges
 Erbe`). `ordneMerkmalZu` vergleicht ohne Gross-/Kleinschreibung, erlaubt ein
 fehlendes abschliessendes `{value}` und roemische Stufen und beachtet feste
-Auswahllisten. Ein Template ohne Platzhalter schlaegt eines mit. Mehrdeutiges
-(`Begabung für {choice}` gibt es fuenfmal) wird nicht geraten: Der Eintrag
+Auswahllisten. Doppelpunkte gelten wie im Modifikator-Parser als Trenner
+(`Herausragende Eigenschaft: Gewandtheit: 1`), und eine ausgeschriebene
+Eigenschaft wird als Kuerzel gespeichert (`GE`). Ein Template ohne
+Platzhalter schlaegt eines mit. Teilen sich mehrere Eintraege ein Template
+(`Begabung für {choice}` gibt es fuenfmal), gewinnen die, deren aufgeloeste
+Auswahlliste (`resolveTraitChoices`, gemerkt von `MerkmalKatalog.von`) die
+Auswahl fuehrt: „Begabung für Abrichten“ ist dann das Talent, „Begabung für
+Objekt“ das Merkmal. Ohne diese Bestaetigung wird nicht geraten: Der Eintrag
 bleibt frei, nennt seine Kandidaten und laesst sich in der Uebersicht
-zuordnen. Die Migration ist deterministisch und ein Fixpunkt.
+zuordnen. Bereits gespeicherte Kandidaten bleiben unangetastet. Die
+Migration ist deterministisch und ein Fixpunkt.
 
 **Wirkung.** `werteMerkmaleAus(hero, catalog:)` loest je Held und Katalog
 einmal auf (gemerkt per `Expando`). Katalogisierte Eintraege wirken ueber
@@ -2199,6 +2206,34 @@ inzwischen, meldet das Blatt einen Fehler statt zu raten. Die Karten baut
 `beschreibeMerkmal` (`hero_merkmal_anzeige_rules.dart`); Wirkungstexte nutzen
 `merkmalBasiswertBetrag`, `merkmalEigenschaftBetrag` und `merkmalRastStufe`
 aus `hero_merkmal_wirkung_rules.dart` wie die Rechnung selbst.
+
+**Begabung und Unfaehigkeit.** Die 18 Begabungs- und Unfaehigkeitseintraege
+tragen die Wirkungsart `lernspalte` (`betrag` +1 = eine Spalte guenstiger,
+-1 = teurer; Ziele `talent`, `talentgruppe`, `nahkampf`, `fernkampf`,
+`sprachen`, `sprachgruppe`, `zauber`, `merkmal`, `ritual`).
+`werteMerkmaleAus` sammelt sie als `MerkmalWirkungen.lernspalten`;
+`ermittleBegabungen(hero, catalog:)` (`hero_begabung_rules.dart`) liefert je
+Ziel einen `LernspaltenBefund`. Abgeleitet wird zur Laufzeit, am Ziel wird
+nichts gespeichert; das Haekchen `gifted` bleibt daneben und wirkt wieder,
+wenn der Vorteil entfernt ist.
+- Talent-, Gruppen-, Kampfart- und Zauber-Begabung wirken wie das Haekchen:
+  zusammen hoechstens eine Spalte guenstiger, Maximum +5 statt +3.
+- Merkmals-Begabungen zaehlen je passendem Merkmal eines Zaubers eine
+  weitere Spalte (Vergleich wie Merkmalskenntnis, exakter Name aus
+  `parseSpellTraits`); Merkmals-Unfaehigkeiten spiegelbildlich.
+- Uebrige Unfaehigkeiten verteuern zusammen eine Spalte, das Maximum bleibt.
+  Verteuert wird zuerst (bis `H`), dann verbilligt (bis `A*`).
+- Sprachen/Schriften verschieben die Spalte der Steigerungsoption.
+- Eine Ritual-Begabung verbilligt die eigene Ritualkenntnis der Kategorie,
+  die das Ritual fuehrt oder deren Name der Traditionsritual-SF mit diesem
+  Ritual entspricht (Untergrenze `A`); das Ritual traegt eine Marke.
+Verbraucher: `AdvancementContext.begabungen` (einmal je Optionsaufbau),
+`CatalogRuleResolver.resolveTalentComplexity` (`unfaehigkeitsSchritte`),
+Talente-, Kampf- und Magie-Tab. Abgeleitete Begabung zeigt
+`BegabungHaekchen` (`lib/ui/widgets/begabung_haekchen.dart`) als gesetztes,
+gesperrtes Haekchen mit Quelle; Unfaehigkeit als Marke. Der Textweg kennt
+keine Lernspalten: freie und mehrdeutige Texte wirken nicht, und der
+Aequivalenztest nimmt `lernspalte` bewusst aus.
 
 ## 5. Zustandsverwaltung (State Layer)
 
@@ -2728,6 +2763,8 @@ ueber die Settings-Katalogverwaltung bearbeitet.
   (Fernkampf); `IN` wird dabei nicht beruecksichtigt.
 - Zauber addieren Hauszauber, passende Merkmalskenntnis und Begabung jeweils
   als eigene Reduktionsstufe; die Untergrenze ist `A*`.
+- Seit ARCH-02 kommen Begabung und Unfaehigkeit auch aus Vor-/Nachteilen
+  (Abschnitt 4.11, `hero_begabung_rules.dart`).
 
 ### Update 2026-03-08: Zauber-Repraesentation und Verbreitung
 
