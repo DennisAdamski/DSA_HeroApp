@@ -1,3 +1,5 @@
+import 'package:dsa_heldenverwaltung/domain/unbekannte_json_felder.dart';
+
 /// Haelt die Aktivierungszustaende aller Kampfsonderfertigkeiten und Manoever.
 ///
 /// Alle boolean-Felder sind standardmaessig `false`.
@@ -26,6 +28,7 @@ class CombatSpecialRules {
     this.activeCombatSpecialAbilityIds = const <String>[],
     this.gladiatorStyleTalent = '',
     this.activeManeuvers = const <String>[],
+    this.unbekannteFelder = const <String, Object?>{},
   });
 
   /// Sonderfertigkeit Kampfreflexe aktiv.
@@ -88,6 +91,38 @@ class CombatSpecialRules {
   /// Liste der aktuell aktiven Manoever-IDs (dedupliziert, kein Leerstring).
   final List<String> activeManeuvers;
 
+  /// JSON-Felder einer neueren App-Version; bleiben beim Speichern erhalten
+  /// (siehe `unbekannte_json_felder.dart`).
+  final Map<String, Object?> unbekannteFelder;
+
+  /// Alle Schluessel, die [fromJson] liest — einschliesslich der
+  /// Altschluessel `schnellladenBogen`/`schnellladenArmbrust`, die beim Laden
+  /// in [activeManeuvers] aufgehen. Als unbekannt zurueckgeschrieben, kaeme
+  /// ein abgewaehltes Manoever beim naechsten Laden wieder.
+  static const Set<String> jsonSchluessel = <String>{
+    'kampfreflexe',
+    'kampfgespuer',
+    'schnellziehen',
+    'ausweichenI',
+    'ausweichenII',
+    'ausweichenIII',
+    'schildkampfI',
+    'schildkampfII',
+    'parierwaffenI',
+    'parierwaffenII',
+    'linkhandActive',
+    'flink',
+    'behaebig',
+    'axxeleratusActive',
+    'klingentaenzer',
+    'aufmerksamkeit',
+    'activeCombatSpecialAbilityIds',
+    'gladiatorStyleTalent',
+    'activeManeuvers',
+    'schnellladenBogen',
+    'schnellladenArmbrust',
+  };
+
   /// Gibt eine Kopie mit selektiv ueberschriebenen Feldern zurueck.
   ///
   /// [activeManeuvers] wird automatisch dedupliziert und bereinigt.
@@ -111,6 +146,7 @@ class CombatSpecialRules {
     List<String>? activeCombatSpecialAbilityIds,
     String? gladiatorStyleTalent,
     List<String>? activeManeuvers,
+    Map<String, Object?>? unbekannteFelder,
   }) {
     return CombatSpecialRules(
       kampfreflexe: kampfreflexe ?? this.kampfreflexe,
@@ -137,12 +173,13 @@ class CombatSpecialRules {
       activeManeuvers: _normalizeStringList(
         activeManeuvers ?? this.activeManeuvers,
       ),
+      unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
     );
   }
 
   /// Serialisiert die Sonderfertigkeiten zu einem JSON-kompatiblen Map.
   Map<String, dynamic> toJson() {
-    return {
+    return mitUnbekanntenFeldern(<String, dynamic>{
       'kampfreflexe': kampfreflexe,
       'kampfgespuer': kampfgespuer,
       'schnellziehen': schnellziehen,
@@ -164,7 +201,7 @@ class CombatSpecialRules {
       ),
       'gladiatorStyleTalent': gladiatorStyleTalent.trim(),
       'activeManeuvers': _normalizeStringList(activeManeuvers),
-    };
+    }, unbekannteFelder);
   }
 
   /// Deserialisiert [CombatSpecialRules] aus einem JSON-Map.
@@ -205,6 +242,7 @@ class CombatSpecialRules {
       gladiatorStyleTalent:
           (json['gladiatorStyleTalent'] as String?)?.trim() ?? '',
       activeManeuvers: _normalizeStringList(rawManeuvers),
+      unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
     );
   }
 }

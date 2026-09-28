@@ -17,8 +17,8 @@ import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
 /// Sie kennt weder Slot-IDs noch `slotRef` und bewahrt keine unbekannten
 /// Felder, weder oben noch verschachtelt. Nachgebildet mit den
 /// Schluesselsaetzen dieser Version ohne `id` und `slotRef`; Felder, die erst
-/// nach ihr dazukamen, bleiben damit stehen — fuer die Ausruestung spielt
-/// das keine Rolle.
+/// nach ihr dazukamen, bleiben damit stehen — fuer die hier geprueften
+/// Modelle spielt das keine Rolle.
 Map<String, dynamic> wieVeroeffentlichteApp(Map<String, dynamic> heldJson) {
   final json = jsonDecode(jsonEncode(heldJson)) as Map<String, dynamic>;
   _behalte(json, HeroSheet.jsonSchluessel);
@@ -50,6 +50,15 @@ Map<String, dynamic> wieVeroeffentlichteApp(Map<String, dynamic> heldJson) {
     }
     for (final teil in _maps(kampf['offhandEquipment'])) {
       _behalteOhneId(teil, OffhandEquipmentEntry.jsonSchluessel);
+    }
+    _behalteIn(kampf['offhandAssignment'], OffhandAssignment.jsonSchluessel);
+    _behalteIn(kampf['specialRules'], CombatSpecialRules.jsonSchluessel);
+    _behalteIn(kampf['manualMods'], CombatManualMods.jsonSchluessel);
+    for (final meister in _maps(kampf['waffenmeisterschaften'])) {
+      _behalte(meister, WaffenmeisterConfig.jsonSchluessel);
+      for (final bonus in _maps(meister['bonuses'])) {
+        _behalte(bonus, WaffenmeisterBonus.jsonSchluessel);
+      }
     }
   }
   for (final eintrag in _maps(json['inventoryEntries'])) {
@@ -135,6 +144,11 @@ int? _nimmErsten(List<int> offen, bool Function(int index) passt) {
 Iterable<Map<String, dynamic>> _maps(Object? liste) {
   if (liste is! List) return const <Map<String, dynamic>>[];
   return liste.whereType<Map<String, dynamic>>();
+}
+
+// Wie [_behalte] fuer einen JSON-Wert, der eine Map sein kann.
+void _behalteIn(Object? json, Set<String> bekannt) {
+  if (json is Map<String, dynamic>) _behalte(json, bekannt);
 }
 
 // Entfernt alle Schluessel ausserhalb von [bekannt].

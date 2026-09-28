@@ -1,3 +1,5 @@
+import 'package:dsa_heldenverwaltung/domain/unbekannte_json_felder.dart';
+
 /// Manuell eingegebene Kampfmodifikatoren fuer den laufenden Kampf.
 ///
 /// Wird vom Spieler zur Laufzeit gesetzt, z. B. fuer situative AT/PA-Boni
@@ -10,6 +12,7 @@ class CombatManualMods {
     this.atMod = 0,
     this.paMod = 0,
     this.iniWurf = 0,
+    this.unbekannteFelder = const <String, Object?>{},
   });
 
   /// Manueller Initiativmodifikator.
@@ -27,6 +30,21 @@ class CombatManualMods {
   /// Ergebnis des physischen W6/2W6-Wurfs zu Kampfrundenbeginn.
   final int iniWurf;
 
+  /// JSON-Felder einer neueren App-Version; bleiben beim Speichern erhalten
+  /// (siehe `unbekannte_json_felder.dart`).
+  final Map<String, Object?> unbekannteFelder;
+
+  /// Alle Schluessel, die [fromJson] liest — einschliesslich des
+  /// Altschluessels `fkMod`, der beim Laden in [atMod] aufgeht.
+  static const Set<String> jsonSchluessel = <String>{
+    'iniMod',
+    'ausweichenMod',
+    'atMod',
+    'paMod',
+    'iniWurf',
+    'fkMod',
+  };
+
   /// Gibt eine Kopie mit selektiv ueberschriebenen Feldern zurueck.
   CombatManualMods copyWith({
     int? iniMod,
@@ -34,6 +52,7 @@ class CombatManualMods {
     int? atMod,
     int? paMod,
     int? iniWurf,
+    Map<String, Object?>? unbekannteFelder,
   }) {
     return CombatManualMods(
       iniMod: iniMod ?? this.iniMod,
@@ -41,18 +60,19 @@ class CombatManualMods {
       atMod: atMod ?? this.atMod,
       paMod: paMod ?? this.paMod,
       iniWurf: iniWurf ?? this.iniWurf,
+      unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
     );
   }
 
   /// Serialisiert die manuellen Modifikatoren zu einem JSON-kompatiblen Map.
   Map<String, dynamic> toJson() {
-    return {
+    return mitUnbekanntenFeldern(<String, dynamic>{
       'iniMod': iniMod,
       'ausweichenMod': ausweichenMod,
       'atMod': atMod,
       'paMod': paMod,
       'iniWurf': iniWurf,
-    };
+    }, unbekannteFelder);
   }
 
   /// Deserialisiert [CombatManualMods] aus einem JSON-Map.
@@ -67,6 +87,7 @@ class CombatManualMods {
       atMod: hasAtMod ? getInt('atMod') : getInt('fkMod'),
       paMod: getInt('paMod'),
       iniWurf: getInt('iniWurf'),
+      unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
     );
   }
 }

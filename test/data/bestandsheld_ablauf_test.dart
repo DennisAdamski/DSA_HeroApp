@@ -216,8 +216,8 @@ void main() {
     );
   });
 
-  test('Felder einer neueren App-Version in der Ausrüstung überstehen '
-      'Import, Bearbeiten, Neustart und Export', () async {
+  test('Felder einer neueren App-Version in verschachtelten Modellen '
+      'überstehen Import, Bearbeiten, Neustart und Export', () async {
     final pfad = await hiveTempVerzeichnis('arch03_zukunft_');
     var speicher = await oeffnen(pfad);
     final roh = ladeBestandsheldJson(Bestandsheld.kriegerNormal);
@@ -255,11 +255,13 @@ void main() {
       final nebenhand = <OffhandEquipmentEntry>[
         kampf.offhandEquipment.single.copyWith(name: 'Großschild'),
       ];
-      return aktuell.copyWith(
-        combatConfig: kampf.copyWith(
-          weapons: waffen,
-          armor: kampf.armor.copyWith(pieces: stuecke),
-          offhandEquipment: nebenhand,
+      return bearbeiteVerschachtelteModelle(
+        aktuell.copyWith(
+          combatConfig: kampf.copyWith(
+            weapons: waffen,
+            armor: kampf.armor.copyWith(pieces: stuecke),
+            offhandEquipment: nebenhand,
+          ),
         ),
       );
     });
