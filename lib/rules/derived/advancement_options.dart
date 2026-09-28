@@ -253,7 +253,7 @@ AdvancementOption? resolveAdvancementOptionIn({
 /// Dauerhafte Eigenschaften für Grenzen und Erwerbsvoraussetzungen.
 Attributes advancementPermanentAttributes(
   HeroSheet hero, {
-  RulesCatalog? catalog,
+  required RulesCatalog? catalog,
 }) {
   final parsed = parseModifierTextsForHero(hero, catalog: catalog);
   final named = aggregateNamedAttributeModifiers(hero.attributeModifiers);

@@ -14,6 +14,7 @@ class _MagicSpecialAbilitiesSection extends StatelessWidget {
     this.episch = false,
     this.onApKostenBestaetigt,
     this.requirementContext,
+    required this.rulesCatalog,
   });
 
   final List<MagicSpecialAbility> abilities;
@@ -36,6 +37,9 @@ class _MagicSpecialAbilitiesSection extends StatelessWidget {
   /// Pruefkontext fuer die Erwerbsvoraussetzungen; `null` schaltet die
   /// Pruefung ab.
   final HeroRequirementContext? requirementContext;
+
+  /// Regelkatalog fuer den Sonderfertigkeiten-Picker (ARCH-02).
+  final RulesCatalog? rulesCatalog;
 
   Future<void> _editAbility(BuildContext context, int index) async {
     final result = await showAdaptiveInputDialog<_MagicSpecialAbilityErwerb>(
@@ -98,6 +102,7 @@ class _MagicSpecialAbilitiesSection extends StatelessWidget {
       verfuegbareAp: verfuegbareAp,
       episch: episch,
       requirementContext: requirementContext,
+      rulesCatalog: rulesCatalog,
       onAdd: (ability, anzeigeName, apKosten) {
         final updated = List<MagicSpecialAbility>.from(abilities)
           ..add(

@@ -114,7 +114,8 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
     HeroComputedSnapshot snapshot,
     HeroResourceActivation resourceActivation,
   ) {
-    final parsed = parseModifierTextsForHero(hero);
+    // Derselbe Parse wie im Snapshot (mit Katalog, ARCH-02).
+    final parsed = snapshot.modifierParse;
     final namedStatMods = aggregateNamedStatModifiers(hero.statModifiers);
     final totalMods =
         hero.persistentMods +
@@ -888,7 +889,10 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
     HeroState state,
     HeroComputedSnapshot snapshot,
   ) async {
-    final breakdown = computeModifierSourceBreakdown(hero);
+    final breakdown = computeModifierSourceBreakdown(
+      hero,
+      catalog: ref.read(rulesCatalogProvider).valueOrNull,
+    );
     final statKey = entry.statKey;
     final namedMods = hero.statModifiers[statKey] ?? const [];
 
@@ -956,7 +960,10 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
   }) async {
     final hero = snapshot.hero;
     final state = snapshot.state;
-    final breakdown = computeModifierSourceBreakdown(hero);
+    final breakdown = computeModifierSourceBreakdown(
+      hero,
+      catalog: ref.read(rulesCatalogProvider).valueOrNull,
+    );
     final namedMods = hero.attributeModifiers[attrKey] ?? const [];
     final baseValue = _valueByKey(hero.attributes, attrKey);
 

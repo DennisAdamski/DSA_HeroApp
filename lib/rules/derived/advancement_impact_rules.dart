@@ -102,7 +102,12 @@ AdvancementImpact computeAttributeAdvancementImpact({
   required int targetValue,
   required bool epicAdvantagesActive,
 }) {
-  final after = applyAdvancementAttributeValue(hero, attribute, targetValue);
+  final after = applyAdvancementAttributeValue(
+    hero,
+    attribute,
+    targetValue,
+    catalog: catalog,
+  );
   final stats = computeAdvancementImpact(
     before: hero,
     after: after,

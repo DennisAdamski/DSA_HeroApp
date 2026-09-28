@@ -50,6 +50,7 @@ void main() {
                   },
                   onAdd: (_, _, _) {},
                   onRemove: (_) {},
+                  rulesCatalog: null,
                 ),
                 child: const Text('Öffnen'),
               ),

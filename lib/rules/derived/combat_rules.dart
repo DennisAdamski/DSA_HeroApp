@@ -328,8 +328,12 @@ CombatPreviewStats computeCombatPreviewStats(
   Attributes? effectiveAttributes,
   DerivedStats? derivedStats,
   bool epicAdvantagesRuleActive = true,
+  RulesCatalog? catalog,
 }) {
-  final parsed = parsedModifiers ?? parseModifierTextsForHero(sheet);
+  // [catalog] dient nur der Ersatzauswertung ohne [parsedModifiers]: Vor- und
+  // Nachteile wirken damit über ihre Katalog-ID (ARCH-02).
+  final parsed =
+      parsedModifiers ?? parseModifierTextsForHero(sheet, catalog: catalog);
   final effective =
       effectiveAttributes ??
       applyAttributeModifiers(

@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/domain/dice_log_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/rest_rules.dart';
@@ -657,7 +658,10 @@ class _RestPanelState extends ConsumerState<RestPanel> {
     BuildContext context,
     HeroComputedSnapshot computed,
   ) {
-    final abilities = collectRestAbilities(computed.hero);
+    final abilities = collectRestAbilities(
+      computed.hero,
+      catalog: ref.watch(rulesCatalogProvider).valueOrNull,
+    );
     return Card(
       margin: EdgeInsets.zero,
       child: Padding(
@@ -1165,7 +1169,10 @@ class _RestPanelState extends ConsumerState<RestPanel> {
       final phase1 = _applyRecoveryPhase(
         heroState: heroState,
         computed: computed,
-        abilities: collectRestAbilities(computed.hero),
+        abilities: collectRestAbilities(
+          computed.hero,
+          catalog: ref.read(rulesCatalogProvider).valueOrNull,
+        ),
         notes: notes,
         currentLep: nextLep,
         currentAsp: nextAsp,
@@ -1190,7 +1197,10 @@ class _RestPanelState extends ConsumerState<RestPanel> {
         final phase2 = _applyRecoveryPhase(
           heroState: heroState,
           computed: computed,
-          abilities: collectRestAbilities(computed.hero),
+          abilities: collectRestAbilities(
+          computed.hero,
+          catalog: ref.read(rulesCatalogProvider).valueOrNull,
+        ),
           notes: notes,
           currentLep: nextLep,
           currentAsp: nextAsp,

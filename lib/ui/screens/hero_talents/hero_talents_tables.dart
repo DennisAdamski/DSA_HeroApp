@@ -422,7 +422,7 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
     final complexityResolution = _resolveTalentComplexity(talent, entry);
 
     final effective = _latestHero != null
-        ? computeEffectiveAttributes(_latestHero!)
+        ? computeEffectiveAttributes(_latestHero!, catalog: _latestCatalog)
         : const Attributes(
             mu: 0,
             kl: 0,
@@ -751,7 +751,7 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
     final isInvalid = _invalidCombatTalentIds.contains(talent.id);
     final complexityResolution = _resolveTalentComplexity(talent, entry);
     final effective = _latestHero != null
-        ? computeEffectiveAttributes(_latestHero!)
+        ? computeEffectiveAttributes(_latestHero!, catalog: _latestCatalog)
         : const Attributes(
             mu: 0,
             kl: 0,

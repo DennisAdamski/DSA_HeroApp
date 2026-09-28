@@ -20,7 +20,12 @@ HeroSheet _applyEntry(
       );
     case AdvancementKind.attribute:
       final code = parseAttributeCode(id)!;
-      final raised = applyAdvancementAttributeValue(hero, code, entry.toValue!);
+      final raised = applyAdvancementAttributeValue(
+        hero,
+        code,
+        entry.toValue!,
+        catalog: catalog,
+      );
       return raised.copyWith(
         attributeSePool: hero.attributeSePool.adjust(code, -entry.seSpent),
       );

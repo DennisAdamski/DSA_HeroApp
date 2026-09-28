@@ -43,10 +43,19 @@ void main() {
     final heroAsp = buildHero(professionModText: 'AsP-1');
     final heroAstralmacht = buildHero(vorteileText: 'Astralmacht 3');
 
-    expect(computeHeroResourceActivation(heroAe).magic.autoEnabled, isTrue);
-    expect(computeHeroResourceActivation(heroAsp).magic.autoEnabled, isTrue);
     expect(
-      computeHeroResourceActivation(heroAstralmacht).magic.autoEnabled,
+      computeHeroResourceActivation(heroAe, catalog: null).magic.autoEnabled,
+      isTrue,
+    );
+    expect(
+      computeHeroResourceActivation(heroAsp, catalog: null).magic.autoEnabled,
+      isTrue,
+    );
+    expect(
+      computeHeroResourceActivation(
+        heroAstralmacht,
+        catalog: null,
+      ).magic.autoEnabled,
       isTrue,
     );
   });
@@ -55,17 +64,27 @@ void main() {
     final heroKe = buildHero(rasseModText: 'KE+2');
     final heroKap = buildHero(kulturModText: 'KaP-1');
 
-    expect(computeHeroResourceActivation(heroKe).divine.autoEnabled, isTrue);
-    expect(computeHeroResourceActivation(heroKap).divine.autoEnabled, isTrue);
+    expect(
+      computeHeroResourceActivation(heroKe, catalog: null).divine.autoEnabled,
+      isTrue,
+    );
+    expect(
+      computeHeroResourceActivation(heroKap, catalog: null).divine.autoEnabled,
+      isTrue,
+    );
   });
 
   test('auto activation ignores missing modifiers and Nachteile', () {
     final mundaneHero = buildHero();
     final heroWithDisadvantage = buildHero(nachteileText: 'AE+4, KE+3');
 
-    final mundaneActivation = computeHeroResourceActivation(mundaneHero);
+    final mundaneActivation = computeHeroResourceActivation(
+      mundaneHero,
+      catalog: null,
+    );
     final disadvantageActivation = computeHeroResourceActivation(
       heroWithDisadvantage,
+      catalog: null,
     );
 
     expect(mundaneActivation.magic.autoEnabled, isFalse);
@@ -82,7 +101,7 @@ void main() {
       ),
     );
 
-    final activation = computeHeroResourceActivation(hero);
+    final activation = computeHeroResourceActivation(hero, catalog: null);
 
     expect(activation.magic.autoEnabled, isTrue);
     expect(activation.magic.isEnabled, isFalse);

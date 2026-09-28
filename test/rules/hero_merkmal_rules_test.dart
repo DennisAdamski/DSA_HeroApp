@@ -5,6 +5,8 @@ import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_merkmal.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/advancement_attribute_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/attribute_start_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_wirkung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_zuordnung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_requirement_context.dart';
@@ -196,7 +198,10 @@ void main() {
         isFalse,
       );
       // Auch ohne Katalog rechnet der Parser mit der Liste.
-      expect(parseModifierTextsForHero(hero).hasFlinkFromVorteile, isFalse);
+      expect(
+        parseModifierTextsForHero(hero, catalog: null).hasFlinkFromVorteile,
+        isFalse,
+      );
     });
 
     test('ein entfernter Eintrag wird gemeldet', () {
@@ -368,9 +373,70 @@ void main() {
       final kontext = buildHeroRequirementContext(hero, catalog: neuerKatalog);
       expect(kontext.vorteile, contains('Robuste Konstitution 3'));
       expect(
-        parseModifierTextsForHero(hero).statMods.lep,
+        parseModifierTextsForHero(hero, catalog: null).statMods.lep,
         0,
         reason: 'ohne Katalog kennt der Namensparser den Eintrag nicht',
+      );
+    });
+
+    test('Steigerungs-Replay und Option rechnen nach einer Umbenennung '
+        'gleich', () {
+      HeroTraitDef umbenannt(HeroTraitDef def) {
+        if (def.id != 'adv_herausragende_eigenschaft') {
+          return def;
+        }
+        return HeroTraitDef.fromJson(<String, dynamic>{
+          ...def.toJson(),
+          'name': 'Überragende Eigenschaft',
+          'selectionTemplate': 'Überragende Eigenschaft {choice} {value}',
+        });
+      }
+
+      final neuerKatalog = RulesCatalog(
+        version: 'house_rules_v1',
+        source: 'test',
+        talents: const [],
+        spells: const [],
+        weapons: const [],
+        advantages: vorteile.map(umbenannt).toList(),
+        disadvantages: nachteile,
+      );
+      final hero = held(
+        vorteileText: 'Überragende Eigenschaft KK 2',
+        vorteilEintraege: const [
+          HeroMerkmal(
+            katalogId: 'adv_herausragende_eigenschaft',
+            text: 'Überragende Eigenschaft KK 2',
+            wert: 2,
+            auswahl: 'KK',
+          ),
+        ],
+      );
+      // Die Option plant auf Effektivebene: Rohwert 12 plus Vorteil 2.
+      final start = parseStartAttributeModifiers(hero, catalog: neuerKatalog);
+      expect(start.kk, 2);
+
+      final gesteigert = applyAdvancementAttributeValue(
+        hero,
+        AttributeCode.kk,
+        15,
+        catalog: neuerKatalog,
+      );
+      expect(gesteigert.attributes.kk, 13);
+      expect(
+        computeEffectiveAttributes(gesteigert, catalog: neuerKatalog).kk,
+        15,
+      );
+      // Gegenprobe: Der Namensweg kennt den neuen Namen nicht und schriebe
+      // den Vorteil in den Rohwert.
+      expect(
+        applyAdvancementAttributeValue(
+          hero,
+          AttributeCode.kk,
+          15,
+          catalog: null,
+        ).attributes.kk,
+        15,
       );
     });
 
@@ -427,7 +493,7 @@ void main() {
                 : held(nachteileText: text, nachteilEintraege: [eintrag]);
             final grund = '$text (${def.id})';
 
-            final a = parseModifierTextsForHero(alt);
+            final a = parseModifierTextsForHero(alt, catalog: null);
             final b = parseModifierTextsForHero(neu, catalog: catalog);
             expect(
               b.attributeMods.toJson(),
@@ -443,7 +509,7 @@ void main() {
             expect(b.hasFlinkFromVorteile, a.hasFlinkFromVorteile);
             expect(b.hasBehaebigFromNachteile, a.hasBehaebigFromNachteile);
 
-            final restA = collectRestAbilities(alt);
+            final restA = collectRestAbilities(alt, catalog: null);
             final restB = collectRestAbilities(neu, catalog: catalog);
             expect(
               restB.fastHealingLevel,
@@ -477,7 +543,10 @@ void main() {
                 neu,
                 catalog: catalog,
               ).magic.autoEnabled,
-              computeHeroResourceActivation(alt).magic.autoEnabled,
+              computeHeroResourceActivation(
+                alt,
+                catalog: null,
+              ).magic.autoEnabled,
               reason: grund,
             );
           }

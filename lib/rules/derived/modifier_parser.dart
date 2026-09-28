@@ -77,7 +77,7 @@ const int _modifierParseCacheMaxEntries = 512;
 /// jeden unveraendert benannten Katalogeintrag.
 ModifierParseResult parseModifierTextsForHero(
   HeroSheet hero, {
-  RulesCatalog? catalog,
+  required RulesCatalog? catalog,
 }) {
   final merkmale = werteMerkmaleAus(hero, catalog: catalog);
   final key = _buildModifierParseCacheKey(
@@ -125,7 +125,7 @@ ModifierParseResult mitMerkmalWirkungen(
 Attributes computeEffectiveAttributes(
   HeroSheet hero, {
   AttributeModifiers tempAttributeMods = const AttributeModifiers(),
-  RulesCatalog? catalog,
+  required RulesCatalog? catalog,
 }) {
   final parsed = parseModifierTextsForHero(hero, catalog: catalog);
   return applyAttributeModifiers(

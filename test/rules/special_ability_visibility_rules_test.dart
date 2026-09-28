@@ -58,7 +58,7 @@ void main() {
         ),
       ],
     );
-    final activation = computeHeroResourceActivation(_hero);
+    final activation = computeHeroResourceActivation(_hero, catalog: null);
     final filtered = visibleAdvancementAbilityOptions(
       options: [magic, target, owned],
       activation: activation,
@@ -112,7 +112,7 @@ void main() {
   );
 
   test('only inapplicable areas disappear; owned and planned remain', () {
-    final activation = computeHeroResourceActivation(_hero);
+    final activation = computeHeroResourceActivation(_hero, catalog: null);
     bool visible(
       String group, {
       bool owned = false,
@@ -142,7 +142,7 @@ void main() {
         expect(
           isSpecialAbilityVisible(
             group: group,
-            activation: computeHeroResourceActivation(automatic),
+            activation: computeHeroResourceActivation(automatic, catalog: null),
           ),
           true,
         );
@@ -155,7 +155,7 @@ void main() {
         expect(
           isSpecialAbilityVisible(
             group: group,
-            activation: computeHeroResourceActivation(disabled),
+            activation: computeHeroResourceActivation(disabled, catalog: null),
           ),
           false,
         );
@@ -168,7 +168,7 @@ void main() {
         expect(
           isSpecialAbilityVisible(
             group: group,
-            activation: computeHeroResourceActivation(enabled),
+            activation: computeHeroResourceActivation(enabled, catalog: null),
           ),
           true,
         );

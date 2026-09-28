@@ -268,6 +268,7 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
           : 'Allgemeine Sonderfertigkeiten',
       catalog: abilities,
       hero: hero,
+      rulesCatalog: catalog,
       onShowInapplicableChanged: ref
           .read(advancementSessionProvider(hero.id).notifier)
           .setShowInapplicableSpecialAbilities,

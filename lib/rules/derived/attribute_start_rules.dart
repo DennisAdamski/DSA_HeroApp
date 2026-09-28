@@ -15,7 +15,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/modifier_source_breakdown.dar
 /// beschreiben laufende Effekte, keine Generierungswerte.
 AttributeModifiers parseStartAttributeModifiers(
   HeroSheet hero, {
-  RulesCatalog? catalog,
+  required RulesCatalog? catalog,
 }) {
   return parseModifierTextsForHero(hero, catalog: catalog).startAttributeMods;
 }
@@ -36,7 +36,7 @@ Attributes computeEffectiveStartAttributes(
 /// zweites Mal.
 Attributes computeHeroEffectiveStartAttributes(
   HeroSheet hero, {
-  RulesCatalog? catalog,
+  required RulesCatalog? catalog,
 }) {
   return computeEffectiveStartAttributes(
     hero.rawStartAttributes,
@@ -68,7 +68,7 @@ Attributes computeAttributeMaximums(
 /// Eigenschaftsmaxima eines Helden inklusive epischem Obergrenzenbonus.
 Attributes computeHeroAttributeMaximums(
   HeroSheet hero, {
-  RulesCatalog? catalog,
+  required RulesCatalog? catalog,
 }) {
   return computeAttributeMaximums(
     computeHeroEffectiveStartAttributes(hero, catalog: catalog),
