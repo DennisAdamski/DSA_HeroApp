@@ -1067,9 +1067,9 @@ final _enumFelder = <_EnumFeld>[
       return m.copyWith(zuordnung: m.zuordnung, wert: 5).toJson();
     },
     anders: (json) =>
-        HeroMerkmal.fromJson(
-          json,
-        ).copyWith(zuordnung: HeroMerkmalZuordnung.frei).toJson(),
+        HeroMerkmal.fromJson(json)
+            .copyWith(zuordnung: HeroMerkmalZuordnung.frei)
+            .toJson(),
     andersJson: 'frei',
     ersatz: (json) => HeroMerkmal.fromJson(json).zuordnung,
     erwarteterErsatz: HeroMerkmalZuordnung.katalog,

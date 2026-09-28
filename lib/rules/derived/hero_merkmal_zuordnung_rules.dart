@@ -545,3 +545,46 @@ String behalteMerkmalListe(List<HeroMerkmal> eintraege) {
   }
   return (eintraege: eintraege, text: projiziereMerkmalText(eintraege));
 }
+
+/// Fuegt [neu] zu [eintraege] hinzu.
+///
+/// Gleicher Katalogeintrag mit gleicher Auswahl wird bei Templates mit
+/// `{choice}` **und** `{value}` zu einem Eintrag mit summiertem Wert
+/// zusammengefasst (wie [mergeHeroTraitFragment]); ein Eintrag mit
+/// identischem Text wird nicht doppelt aufgenommen, weil die Projektion ihn
+/// ohnehin nur einmal schriebe.
+List<HeroMerkmal> fuegeMerkmalHinzu(
+  List<HeroMerkmal> eintraege,
+  HeroMerkmal neu, {
+  HeroTraitDef? def,
+}) {
+  final ergebnis = List<HeroMerkmal>.of(eintraege);
+  final template = def == null ? '' : _template(def);
+  final summierbar =
+      def != null &&
+      neu.wert != null &&
+      template.contains('{choice}') &&
+      template.contains('{value}');
+  if (summierbar) {
+    final gesucht = neu.auswahl.trim().toLowerCase();
+    for (var index = 0; index < ergebnis.length; index++) {
+      final bisher = ergebnis[index];
+      if (bisher.katalogId != neu.katalogId ||
+          bisher.wert == null ||
+          bisher.auswahl.trim().toLowerCase() != gesucht) {
+        continue;
+      }
+      final summe = bisher.wert! + neu.wert!;
+      ergebnis[index] = bisher.copyWith(
+        wert: summe,
+        text: merkmalTextFuer(def, auswahl: bisher.auswahl, wert: summe),
+      );
+      return List<HeroMerkmal>.unmodifiable(ergebnis);
+    }
+  }
+  if (ergebnis.any((bisher) => bisher.text.trim() == neu.text.trim())) {
+    return List<HeroMerkmal>.unmodifiable(ergebnis);
+  }
+  ergebnis.add(neu);
+  return List<HeroMerkmal>.unmodifiable(ergebnis);
+}

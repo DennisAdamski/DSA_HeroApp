@@ -8,6 +8,7 @@ import 'package:dsa_heldenverwaltung/domain/bought_stats.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_adventure_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_appearance.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_background.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_merkmal.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
@@ -428,10 +429,9 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(chip);
     await tester.pumpAndSettle();
-    await tester.enterText(
-      find.widgetWithText(TextField, 'Eintrag'),
-      'Goldgier 3',
-    );
+    // Katalogisierte Einträge behalten beim Ändern ihren Katalogbezug
+    // (ARCH-02): Der Wertedialog ersetzt die frühere Textbearbeitung.
+    await tester.enterText(find.widgetWithText(TextField, 'Punkt'), '3');
     await tester.tap(find.text('Übernehmen'));
     await tester.pumpAndSettle();
 
@@ -440,6 +440,8 @@ void main() {
 
     final saved = await repo.loadHeroById('demo');
     expect(saved!.nachteileText, 'Goldgier 3');
+    expect(saved.nachteilEintraege.single.katalogId, 'dis_goldgier');
+    expect(saved.nachteilEintraege.single.wert, 3);
     expect(saved.apSpent, 0);
   });
 
@@ -889,6 +891,171 @@ void main() {
 
     final saved = await repo.loadHeroById('demo');
     expect(saved!.vorteileText, 'Herausragender Sinn Tastsinn');
+  });
+
+  group('strukturierte Vor- und Nachteile (ARCH-02)', () {
+    Future<void> sichtbar(WidgetTester tester, Finder finder) async {
+      await tester.scrollUntilVisible(
+        finder,
+        240,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets(
+      'ein Katalogeintrag wird mit ID, Wert und Auswahl gespeichert',
+      (tester) async {
+        final repo = buildRepo();
+        final editActions = await pumpOverview(tester, repo);
+        await editActions.startEdit();
+        await tester.pumpAndSettle();
+
+        await openTraitCatalog(tester, 'Guter Ruf');
+        await tester.tap(find.byKey(const Key('trait-choice-dropdown')));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Eigene Kultur').last);
+        await tester.pumpAndSettle();
+        await tester.enterText(find.byType(TextField).last, '4');
+        await tester.tap(find.text('Übernehmen'));
+        await tester.pumpAndSettle();
+        await editActions.save();
+        await tester.pumpAndSettle();
+
+        final eintrag = (await repo.loadHeroById('demo'))!
+            .vorteilEintraege
+            .single;
+        expect(eintrag.katalogId, 'adv_guter_ruf');
+        expect(eintrag.wert, 4);
+        expect(eintrag.auswahl, 'Eigene Kultur');
+        expect(eintrag.zuordnung, HeroMerkmalZuordnung.katalog);
+      },
+    );
+
+    testWidgets('Speichern ohne Änderung lässt die Merkmale unberührt', (
+      tester,
+    ) async {
+      final repo = buildRepo(
+        hero: buildHero().copyWith(vorteileText: 'Flink, Astralmacht 3'),
+      );
+      final editActions = await pumpOverview(tester, repo);
+      await editActions.startEdit();
+      await tester.pumpAndSettle();
+      await editActions.save();
+      await tester.pumpAndSettle();
+
+      // Den Alttext migriert `saveHero` einmalig; die Übersicht baut keine
+      // eigene Liste, solange der Nutzer nichts ändert.
+      final saved = (await repo.loadHeroById('demo'))!;
+      expect(saved.vorteilEintraege.map((e) => e.katalogId), [
+        'adv_flink',
+        'adv_astralmacht',
+      ]);
+      expect(saved.vorteileText, 'Flink; Astralmacht 3');
+    });
+
+    HeroSheet heldMitAbweichung() {
+      return buildHero().copyWith(
+        vorteileText: 'Flink, Astralmacht 3',
+        vorteilEintraege: const <HeroMerkmal>[
+          HeroMerkmal(katalogId: 'adv_flink', text: 'Flink'),
+        ],
+      );
+    }
+
+    testWidgets('eine Änderung durch eine ältere App wird angezeigt und '
+        'sperrt das Bearbeiten bis zur Entscheidung', (tester) async {
+      final repo = buildRepo(hero: heldMitAbweichung());
+      final editActions = await pumpOverview(tester, repo);
+
+      final hinweis = find.byKey(
+        const ValueKey<String>('overview-traits-abweichung-vorteile'),
+      );
+      await sichtbar(tester, hinweis);
+      expect(find.text('Neu im Text: Astralmacht 3'), findsOneWidget);
+
+      await editActions.startEdit();
+      await tester.pumpAndSettle();
+      final hinzufuegen = tester.widget<TextButton>(
+        find.byKey(const ValueKey<String>('overview-add-trait-vorteile')),
+      );
+      expect(hinzufuegen.onPressed, isNull);
+
+      await tester.tap(
+        find.byKey(
+          const ValueKey<String>('overview-traits-text-uebernehmen-vorteile'),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(hinweis, findsNothing);
+      await editActions.save();
+      await tester.pumpAndSettle();
+
+      final saved = (await repo.loadHeroById('demo'))!;
+      expect(saved.vorteilEintraege.map((e) => e.katalogId), [
+        'adv_flink',
+        'adv_astralmacht',
+      ]);
+      expect(saved.vorteileText, 'Flink; Astralmacht 3');
+    });
+
+    testWidgets('„Liste behalten“ schreibt den Text neu', (tester) async {
+      final repo = buildRepo(hero: heldMitAbweichung());
+      final editActions = await pumpOverview(tester, repo);
+      await editActions.startEdit();
+      await tester.pumpAndSettle();
+
+      final behalten = find.byKey(
+        const ValueKey<String>('overview-traits-liste-behalten-vorteile'),
+      );
+      await sichtbar(tester, behalten);
+      await tester.tap(behalten);
+      await tester.pumpAndSettle();
+      await editActions.save();
+      await tester.pumpAndSettle();
+
+      final saved = (await repo.loadHeroById('demo'))!;
+      expect(saved.vorteilEintraege.single.katalogId, 'adv_flink');
+      expect(saved.vorteileText, 'Flink');
+    });
+
+    testWidgets('ein mehrdeutiger Eintrag lässt sich zuordnen', (tester) async {
+      final repo = buildRepo(
+        hero: buildHero().copyWith(
+          vorteileText: 'Begabung für Schwerter',
+          vorteilEintraege: const <HeroMerkmal>[
+            HeroMerkmal(
+              text: 'Begabung für Schwerter',
+              kandidatenIds: <String>['adv_begabung_talent', 'adv_flink'],
+              zuordnung: HeroMerkmalZuordnung.migration,
+            ),
+          ],
+        ),
+      );
+      final editActions = await pumpOverview(tester, repo);
+      await editActions.startEdit();
+      await tester.pumpAndSettle();
+
+      final chip = find.byKey(
+        const ValueKey<String>('overview-trait-chip-vorteile-0'),
+      );
+      await sichtbar(tester, chip);
+      await tester.tap(chip);
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(const ValueKey<String>('overview-trait-kandidat-adv_flink')),
+      );
+      await tester.pumpAndSettle();
+      await editActions.save();
+      await tester.pumpAndSettle();
+
+      final eintrag = (await repo.loadHeroById('demo'))!
+          .vorteilEintraege
+          .single;
+      expect(eintrag.katalogId, 'adv_flink');
+      expect(eintrag.kandidatenIds, isEmpty);
+      expect(eintrag.text, 'Begabung für Schwerter');
+    });
   });
 
   testWidgets('Guter Ruf speichert Wert und Geltungsbereich', (tester) async {
