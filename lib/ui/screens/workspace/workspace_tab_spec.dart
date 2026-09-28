@@ -91,9 +91,10 @@ typedef WorkspaceTabHeaderActionsBuilder =
 ///
 /// [catalog] ist der Regelkatalog, sofern geladen; Vor- und Nachteile wirken
 /// damit ueber ihre Katalog-ID (ARCH-02).
-typedef WorkspaceTabVisibilityPredicate =
-    bool Function(HeroSheet hero, RulesCatalog? catalog);
-
+typedef WorkspaceTabVisibilityPredicate = bool Function(
+  HeroSheet hero,
+  RulesCatalog? catalog,
+);
 
 /// Zentrale Definition eines Workspace-Tabs.
 class WorkspaceTabSpec {
@@ -192,10 +193,8 @@ List<WorkspaceTabSpec> buildWorkspaceTabs({
       label: 'Magie',
       icon: Icons.bolt_outlined,
       helper: 'Katalogansicht für Zauber',
-      isVisible: (hero, catalog) => computeHeroResourceActivation(
-        hero,
-        catalog: catalog,
-      ).magic.isEnabled,
+      isVisible: (hero, catalog) =>
+          computeHeroResourceActivation(hero, catalog: catalog).magic.isEnabled,
       buildContent: ({required heroId, required callbacks}) => HeroMagicTab(
         heroId: heroId,
         onDirtyChanged: callbacks.onDirtyChanged,

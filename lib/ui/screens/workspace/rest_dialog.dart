@@ -1198,9 +1198,9 @@ class _RestPanelState extends ConsumerState<RestPanel> {
           heroState: heroState,
           computed: computed,
           abilities: collectRestAbilities(
-          computed.hero,
-          catalog: ref.read(rulesCatalogProvider).valueOrNull,
-        ),
+            computed.hero,
+            catalog: ref.read(rulesCatalogProvider).valueOrNull,
+          ),
           notes: notes,
           currentLep: nextLep,
           currentAsp: nextAsp,
