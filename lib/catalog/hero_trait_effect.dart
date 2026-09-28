@@ -22,6 +22,12 @@ enum HeroTraitEffectArt {
   /// Regenerationsstufe oder -einschraenkung bei der Rast.
   rast,
 
+  /// Steigerungsspalte eines Ziels (Begabung/Unfaehigkeit):
+  /// [HeroTraitEffect.betrag] Spalten guenstiger, negativ = teurer. Das
+  /// konkrete Ziel steht bei Auswahl-Eintraegen in der Auswahl (Talent,
+  /// Talentgruppe, Zauber, Merkmal, Ritual, Sprachen/Schriften).
+  lernspalte,
+
   /// Von dieser Version nicht verstandene Art; wirkt nicht.
   unbekannt,
 }
@@ -65,7 +71,8 @@ class HeroTraitEffect {
   /// Obergrenze des Betrags vor Anwendung von [jeWert].
   final int? max;
 
-  /// Fester Betrag fuer [HeroTraitEffectArt.wundschwelle].
+  /// Fester Betrag fuer [HeroTraitEffectArt.wundschwelle] und
+  /// [HeroTraitEffectArt.lernspalte] (Spalten guenstiger).
   final int betrag;
 
   /// Ob die Wirkung zusaetzlich den Startwert der Eigenschaft hebt.
@@ -125,6 +132,17 @@ const Map<HeroTraitEffectArt, Set<String>> kHeroTraitEffectZiele =
         'aspStufe',
         'schlechteRegeneration',
         'astralerBlock',
+      },
+      HeroTraitEffectArt.lernspalte: <String>{
+        'talent',
+        'talentgruppe',
+        'nahkampf',
+        'fernkampf',
+        'sprachen',
+        'sprachgruppe',
+        'zauber',
+        'merkmal',
+        'ritual',
       },
     };
 

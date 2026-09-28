@@ -18,6 +18,7 @@
 /// Werte behalten.
 library;
 
+import 'package:dsa_heldenverwaltung/catalog/hero_trait_choices.dart';
 import 'package:dsa_heldenverwaltung/catalog/hero_trait_text.dart';
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
@@ -43,11 +44,29 @@ class MerkmalKatalog {
        };
 
   /// Gemerkter Merkmalskatalog zu [catalog].
+  ///
+  /// Merkt sich ausserdem je Eintrag die aufgeloesten Auswahllisten
+  /// (`resolveTraitChoices`), damit die Zuordnung „Begabung für Abrichten“
+  /// dem Eintrag zuschreiben kann, dessen Liste das Talent fuehrt.
   static MerkmalKatalog von(RulesCatalog catalog) {
-    return _cache[catalog] ??= MerkmalKatalog(
-      vorteile: catalog.advantages,
-      nachteile: catalog.disadvantages,
-    );
+    return _cache[catalog] ??= () {
+      for (final def in <HeroTraitDef>[
+        ...catalog.advantages,
+        ...catalog.disadvantages,
+      ]) {
+        if (def.choiceSource.trim().isEmpty && def.choices.isEmpty) {
+          continue;
+        }
+        _auswahlListen[def] = <String>{
+          for (final auswahl in resolveTraitChoices(def, catalog))
+            auswahl.toLowerCase(),
+        };
+      }
+      return MerkmalKatalog(
+        vorteile: catalog.advantages,
+        nachteile: catalog.disadvantages,
+      );
+    }();
   }
 
   static final Expando<MerkmalKatalog> _cache = Expando<MerkmalKatalog>();
@@ -322,6 +341,10 @@ class _Treffer {
   final String auswahl;
 }
 
+// Aufgeloeste Auswahllisten je Katalogeintrag (klein geschrieben), gefuellt
+// von [MerkmalKatalog.von].
+final Expando<Set<String>> _auswahlListen = Expando<Set<String>>();
+
 // Alle aktiven Katalogeintraege, deren Template [fragment] trifft.
 //
 // Ein Template ohne Platzhalter, das exakt passt, schlaegt Templates mit
@@ -348,6 +371,24 @@ List<_Treffer> _treffer(String fragment, List<HeroTraitDef> defs) {
       .toList(growable: false);
   if (exakt.isNotEmpty) {
     return exakt;
+  }
+  if (treffer.length > 1) {
+    // Teilen sich mehrere Eintraege ein Template (`Begabung für {choice}`),
+    // gewinnen die, deren aufgeloeste Auswahlliste die Auswahl fuehrt.
+    // Ausgeschlossen wird dadurch nichts: ohne Bestaetigung bleibt es
+    // mehrdeutig.
+    final bestaetigt = treffer
+        .where(
+          (eintrag) =>
+              _auswahlListen[eintrag.def]?.contains(
+                eintrag.auswahl.toLowerCase(),
+              ) ??
+              false,
+        )
+        .toList(growable: false);
+    if (bestaetigt.isNotEmpty) {
+      return bestaetigt;
+    }
   }
   return treffer;
 }

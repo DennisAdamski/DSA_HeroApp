@@ -514,11 +514,18 @@ void main() {
   });
 
   group('Äquivalenz: Katalog-ID und Textweg rechnen gleich', () {
+    // Bewusste Ausnahme: `lernspalte` (Begabung/Unfähigkeit) wirkt nur über
+    // die Katalog-ID. Der Textweg kannte nie Lernspalten; freie oder
+    // mehrdeutige Begabungstexte wirken erst nach der Zuordnung
+    // (`test/rules/hero_begabung_rules_test.dart`).
+    bool wirktUeberText(HeroTraitDef def) => def.wirkungen.any(
+      (wirkung) => wirkung.art != HeroTraitEffectArt.lernspalte,
+    );
     final wirkende = <(HeroTraitDef, bool)>[
       for (final def in vorteile)
-        if (def.wirkungen.isNotEmpty) (def, true),
+        if (wirktUeberText(def)) (def, true),
       for (final def in nachteile)
-        if (def.wirkungen.isNotEmpty) (def, false),
+        if (wirktUeberText(def)) (def, false),
     ];
 
     for (final (def, istVorteil) in wirkende) {

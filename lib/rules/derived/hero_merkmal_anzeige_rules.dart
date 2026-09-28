@@ -145,9 +145,35 @@ String? _wirkungstext(HeroTraitEffect wirkung, HeroMerkmal eintrag) {
         'astralerBlock' => 'AsP-Regeneration −1',
         _ => null,
       };
+    case HeroTraitEffectArt.lernspalte:
+      return _lernspaltenText(wirkung, eintrag.auswahl.trim());
     case HeroTraitEffectArt.unbekannt:
       return null;
   }
+}
+
+// Ziel und Richtung einer Begabung/Unfaehigkeit, z. B.
+// `Abrichten eine Spalte günstiger`.
+String? _lernspaltenText(HeroTraitEffect wirkung, String auswahl) {
+  if (wirkung.betrag == 0) {
+    return null;
+  }
+  final schritte = wirkung.betrag.abs();
+  final spalten = schritte == 1 ? 'eine Spalte' : '$schritte Spalten';
+  final richtung = wirkung.betrag > 0 ? 'günstiger' : 'teurer';
+  final ziel = switch (wirkung.ziel) {
+    'nahkampf' => 'Nahkampftalente',
+    'fernkampf' => 'Fernkampftalente',
+    'sprachen' => 'Sprachen',
+    'merkmal' when auswahl.isNotEmpty => 'Zauber je Merkmal $auswahl',
+    'ritual' when auswahl.isNotEmpty => 'Ritualkenntnis zu $auswahl',
+    'talent' ||
+    'talentgruppe' ||
+    'sprachgruppe' ||
+    'zauber' when auswahl.isNotEmpty => auswahl,
+    _ => null,
+  };
+  return ziel == null ? null : '$ziel $spalten $richtung';
 }
 
 String _basiswertName(String ziel) => switch (ziel) {

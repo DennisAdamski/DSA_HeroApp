@@ -26,6 +26,33 @@ import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/attribute_trait_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_zuordnung_rules.dart';
 
+/// Verschiebung der Steigerungsspalte durch Begabung oder Unfaehigkeit.
+///
+/// Ausgewertet in `hero_begabung_rules.dart`; hier nur gesammelt, damit
+/// Begabungen wie alle anderen Wirkungen ueber die Katalog-ID laufen.
+class LernspaltenWirkung {
+  /// Erstellt eine gesammelte Lernspalten-Wirkung.
+  const LernspaltenWirkung({
+    required this.ziel,
+    required this.auswahl,
+    required this.betrag,
+    required this.quelle,
+  });
+
+  /// Zielart, z. B. `talent`, `talentgruppe`, `zauber` oder `merkmal`.
+  final String ziel;
+
+  /// Gewaehltes Ziel (Talent-, Gruppen-, Zauber-, Merkmal- oder Ritualname);
+  /// leer bei festen Zielen wie `nahkampf` oder `sprachen`.
+  final String auswahl;
+
+  /// Spalten guenstiger (Begabung `+1`), negativ = teurer (Unfaehigkeit).
+  final int betrag;
+
+  /// Kurztext des Merkmals fuer Hinweise, z. B. `Begabung für Abrichten`.
+  final String quelle;
+}
+
 /// Summe der deklarativen Wirkungen katalogisierter Merkmale.
 class MerkmalWirkungen {
   /// Erstellt ein Wirkungsergebnis; ohne Angaben wirkt nichts.
@@ -40,6 +67,7 @@ class MerkmalWirkungen {
     this.aspStufe = 0,
     this.schlechteRegeneration = false,
     this.astralerBlock = false,
+    this.lernspalten = const <LernspaltenWirkung>[],
   });
 
   /// Eigenschaftsmodifikatoren (laufend).
@@ -72,6 +100,9 @@ class MerkmalWirkungen {
   /// Astraler Block.
   final bool astralerBlock;
 
+  /// Begabungen und Unfaehigkeiten in Eintragsreihenfolge.
+  final List<LernspaltenWirkung> lernspalten;
+
   /// Fasst die Wirkungen von Vor- und Nachteilen zusammen.
   MerkmalWirkungen kombiniert(MerkmalWirkungen andere) {
     return MerkmalWirkungen(
@@ -86,6 +117,10 @@ class MerkmalWirkungen {
       schlechteRegeneration:
           schlechteRegeneration || andere.schlechteRegeneration,
       astralerBlock: astralerBlock || andere.astralerBlock,
+      lernspalten: List<LernspaltenWirkung>.unmodifiable(<LernspaltenWirkung>[
+        ...lernspalten,
+        ...andere.lernspalten,
+      ]),
     );
   }
 }
@@ -223,6 +258,7 @@ class _Rechner {
   var _aspStufe = 0;
   var _schlechteRegeneration = false;
   var _astralerBlock = false;
+  final List<LernspaltenWirkung> _lernspalten = <LernspaltenWirkung>[];
 
   // Wundschwellenboni zaehlen je Katalogeintrag einmal, wie die fruehere
   // Namensregel (`Eisern` zweimal eingetragen bleibt +2).
@@ -289,6 +325,22 @@ class _Rechner {
           case 'astralerBlock':
             _astralerBlock = true;
         }
+      case HeroTraitEffectArt.lernspalte:
+        if (wirkung.betrag == 0) {
+          return;
+        }
+        _lernspalten.add(
+          LernspaltenWirkung(
+            ziel: wirkung.ziel,
+            auswahl: eintrag.auswahl.trim(),
+            betrag: wirkung.betrag,
+            quelle: merkmalTextFuer(
+              def,
+              auswahl: eintrag.auswahl,
+              wert: eintrag.wert,
+            ),
+          ),
+        );
       case HeroTraitEffectArt.unbekannt:
         return;
     }
@@ -306,6 +358,7 @@ class _Rechner {
       aspStufe: _aspStufe,
       schlechteRegeneration: _schlechteRegeneration,
       astralerBlock: _astralerBlock,
+      lernspalten: List<LernspaltenWirkung>.unmodifiable(_lernspalten),
     );
   }
 }

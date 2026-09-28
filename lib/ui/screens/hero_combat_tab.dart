@@ -55,6 +55,8 @@ import 'package:dsa_heldenverwaltung/ui/screens/shared/special_ability_chain_car
 import 'package:dsa_heldenverwaltung/ui/widgets/erwerb_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/karto_variante.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/requirement_checklist.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/hero_begabung_rules.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/begabung_haekchen.dart';
 
 part 'hero_combat/hero_combat_talents_subtab.dart';
 part 'hero_combat/combat_talent_catalog_table.dart';
@@ -102,6 +104,7 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
 
   HeroSheet? _latestHero;
   CatalogRuleResolver _latestCatalogRuleResolver = const CatalogRuleResolver();
+  RulesCatalog? _latestCatalog;
   Map<String, HeroTalentEntry> _draftTalents = <String, HeroTalentEntry>{};
   Set<String> _invalidCombatTalentIds = <String>{};
   CombatConfig _draftCombatConfig = const CombatConfig();
@@ -264,13 +267,25 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
     });
   }
 
+  /// Begabung/Unfaehigkeit aus Vor-/Nachteilen fuer [talent].
+  LernspaltenBefund _befundFuer(TalentDef talent) {
+    final hero = _latestHero;
+    final catalog = _latestCatalog;
+    if (hero == null || catalog == null) {
+      return LernspaltenBefund.keiner;
+    }
+    return ermittleBegabungen(hero, catalog: catalog).talent(talent);
+  }
+
   TalentComplexityResolution _resolveTalentComplexity(
     TalentDef talent,
     HeroTalentEntry entry,
   ) {
+    final befund = _befundFuer(talent);
     return _latestCatalogRuleResolver.resolveTalentComplexity(
       talent: talent,
-      gifted: entry.gifted,
+      gifted: befund.istBegabt(gifted: entry.gifted),
+      unfaehigkeitsSchritte: befund.erhoehung,
     );
   }
 
@@ -303,6 +318,7 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
             Center(child: Text('Katalog-Fehler: $error')),
         data: (catalog) {
           _latestCatalogRuleResolver = catalog.ruleResolver;
+          _latestCatalog = catalog;
           return ValueListenableBuilder<int>(
             valueListenable: _viewRevision,
             builder: (context, revision, child) {

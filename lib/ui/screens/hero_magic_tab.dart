@@ -44,6 +44,8 @@ import 'package:dsa_heldenverwaltung/ui/screens/shared/protected_content_helpers
 import 'package:dsa_heldenverwaltung/ui/screens/shared/special_ability_picker.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/erwerb_dialog.dart';
 import 'package:uuid/uuid.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/hero_begabung_rules.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/begabung_haekchen.dart';
 
 part 'hero_magic/magic_active_spells_table.dart';
 part 'hero_magic/magic_header_section.dart';
@@ -347,6 +349,7 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
         final spellDefsById = <String, SpellDef>{
           for (final spell in catalog.spells) spell.id: spell,
         };
+        final begabungen = ermittleBegabungen(hero, catalog: catalog);
         final effectiveAttributes = computeEffectiveAttributes(
           hero,
           catalog: catalog,
@@ -405,6 +408,7 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
                             ),
                           ),
                           _MagicActiveSpellsTable(
+                            begabungen: begabungen,
                             activeSpellIds: activeSpellIds,
                             spellEntries: _draftSpells,
                             spellDefs: spellDefsById,
@@ -482,6 +486,7 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
                         padding: const EdgeInsets.fromLTRB(0, 8, 0, 12),
                         children: [
                           _MagicRitualsSection(
+                            begabungen: begabungen,
                             ritualCategories: _draftRitualCategories,
                             catalogTalents: catalog.talents,
                             heroTalents: hero.talents,

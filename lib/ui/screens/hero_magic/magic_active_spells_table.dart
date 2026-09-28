@@ -3,6 +3,7 @@ part of '../hero_magic_tab.dart';
 /// Tabelle der aktivierten Zauber mit editierbaren ZfW-Werten und Detailzugriff.
 class _MagicActiveSpellsTable extends StatelessWidget {
   const _MagicActiveSpellsTable({
+    this.begabungen,
     required this.activeSpellIds,
     required this.spellEntries,
     required this.spellDefs,
@@ -28,6 +29,9 @@ class _MagicActiveSpellsTable extends StatelessWidget {
     this.episch = false,
     this.onApKostenBestaetigt,
   });
+
+  /// Begabungen/Unfaehigkeiten aus Vor-/Nachteilen; `null` wirkt nicht.
+  final HeroBegabungen? begabungen;
 
   final List<String> activeSpellIds;
   final Map<String, HeroSpellEntry> spellEntries;
@@ -117,7 +121,7 @@ class _MagicActiveSpellsTable extends StatelessWidget {
           'einer Spezialisierung; ohne Lehrmeister doppelte Kosten',
       vorgeschlageneApKosten: spellSpecializationApCost(
         basisKomplexitaet: def.steigerung,
-        gifted: entry.gifted,
+        gifted: _befundFuer(def).istBegabt(gifted: entry.gifted),
         specializationOrdinal: current.length + 1,
       ),
       verfuegbareAp: verfuegbareAp,
@@ -164,6 +168,10 @@ class _MagicActiveSpellsTable extends StatelessWidget {
       return;
     }
     onTextOverridesChanged(spellId, result.overrides);
+  }
+
+  LernspaltenBefund _befundFuer(SpellDef def) {
+    return begabungen?.zauber(def) ?? LernspaltenBefund.keiner;
   }
 
   @override
@@ -449,13 +457,17 @@ class _MagicActiveSpellsTable extends StatelessWidget {
                             def.attributes,
                           );
                           final merkmale = parseSpellTraits(def.traits);
+                          final befund = _befundFuer(def);
                           final effSteigerung = effectiveSteigerung(
                             basisSteigerung: def.steigerung,
                             istHauszauber: entry.hauszauber,
                             zauberMerkmale: merkmale,
                             heldMerkmalskenntnisse: merkmalskenntnisse,
-                            istBegabt: entry.gifted,
+                            istBegabt:
+                                entry.gifted || befund.begabungen.isNotEmpty,
                             fremdReprPenaltySteps: fremdReprPenaltySteps,
+                            zusatzReduktion: befund.zusatzBegabungen.length,
+                            zusatzErhoehung: befund.erhoehung,
                           );
                           final representationLabel =
                               currentAvailabilityEntry == null
@@ -749,15 +761,14 @@ class _MagicActiveSpellsTable extends StatelessWidget {
                               ),
                               if (isEditing)
                                 DataCell(
-                                  Checkbox(
-                                    key: ValueKey<String>(
+                                  BegabungHaekchen(
+                                    checkboxKey: ValueKey<String>(
                                       'magic-spells-gifted-$spellId',
                                     ),
                                     value: entry.gifted,
-                                    onChanged: (value) => onGiftedChanged(
-                                      spellId,
-                                      value ?? false,
-                                    ),
+                                    befund: befund,
+                                    onChanged: (value) =>
+                                        onGiftedChanged(spellId, value),
                                   ),
                                 ),
                               DataCell(
