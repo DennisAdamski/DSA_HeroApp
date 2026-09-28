@@ -57,8 +57,13 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   `Attributes.uebernimmWerte`. Ein Neuaufbau per Konstruktor verliert die
   Felder. Neue Modelle faengt der Vollstaendigkeitswaechter in
   `test/domain/unbekannte_verschachtelte_felder_test.dart` ab. Unbekannte
-  Enum-Werte bewahren noch nichts. Formatregel: nur additiv, eine neue
-  Bedeutung bekommt einen neuen Schluessel.
+  Enum-Werte haelt jedes Modell roh in `unbekannteEnumWerte` (Regeln sehen
+  den Ersatz, `toJson` schreibt den Rohwert); ein `copyWith` mit **anderem**
+  Wert ueberschreibt ihn, derselbe Wert laesst ihn stehen. Neue
+  Enum-Felder ueber `leseEnumWert` lesen und in die `_enumFelder`-Tabelle
+  desselben Tests eintragen. Unbekannte Wundzonen: `WundZustand.unbekannteZonen`.
+  Formatregel: nur additiv, eine neue Bedeutung bekommt einen neuen
+  Schluessel.
 - Verknuepfte Kampf-/Inventareintraege tragen stabile Slot-IDs in
   `lib/domain/combat_config/`; das Verweisformat und die Migration liegen in
   `inventar_verweise.dart`. `HeroSheet.fromJson` vergibt fuer Altdaten

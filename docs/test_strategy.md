@@ -91,8 +91,10 @@ Regeln:
 - **Mischbetrieb mit der veröffentlichten App** (`main`, vor ARCH-03) bildet
   `test/test_support/veroeffentlichte_app.dart` nach:
   - `wieVeroeffentlichteApp` entfernt, was sie beim Speichern verliert
-    (Slot-IDs, `slotRef`, unbekannte Felder in jedem verschachtelten Modell),
-    `zustandWieVeroeffentlichteApp` dasselbe für den Laufzeitzustand;
+    (Slot-IDs, `slotRef`, unbekannte Felder in jedem verschachtelten Modell)
+    und setzt unbekannte Aufzählungswerte auf ihren Ersatz,
+    `zustandWieVeroeffentlichteApp` dasselbe für den Laufzeitzustand
+    einschließlich unbekannter Wundzonen;
   - `zuordnungWieVeroeffentlichteApp` portiert ihre Namenszuordnung auf JSON.
 
   `test/domain/inventar_verweise_test.dart` prüft damit die Ladetabelle der
@@ -107,9 +109,13 @@ Regeln:
   Overrides, Ritualkategorie, Begleiter, Abenteuerinhalte, Kontakt, Gruppe,
   Reiseberichtseintrag, Geburtsdatum, Bild, Schnappschuss, Verlaufseintrag),
   und setzt an jeder verschachtelten Ebene ein `zukunftsfeld` — 71 Stellen
-  von der Ausrüstung bis zum Gesichtsbefund.
+  von der Ausrüstung bis zum Gesichtsbefund. Dazu schreibt es an 15
+  Aufzählungsfeldern den unbekannten Wert `zukunftsWert` (nur an Stellen,
+  die kein Abgleich neu setzt, also am manuellen Inventareintrag).
   `zustandMitZukunftsfeldern` macht dasselbe für den Laufzeitzustand
-  (Modifikatoren, Zaubereffekt samt Dauer, Wunden, Würfelprotokoll). Beide
+  (Modifikatoren, Zaubereffekt samt Dauer, Wunden, Würfelprotokoll; dazu
+  vier Aufzählungswerte bzw. die Wundzone `zukunftsZone`).
+  `istZukunftsWertPfad` unterscheidet beide Pfadarten. Beide
   liefern die Pfade im Format von `jsonUnterschiede`; eine neue Fixture ist
   nicht nötig, weil das Format dasselbe bleibt. `bearbeiteVerschachtelteModelle`
   und `bearbeiteZustand` ändern je Modell ein bekanntes Feld per `copyWith`,
@@ -117,7 +123,11 @@ Regeln:
   `test/domain/unbekannte_ausruestungsfelder_test.dart` und
   `test/domain/unbekannte_verschachtelte_felder_test.dart` prüfen die Modelle
   einzeln (bekannte Schlüssel, Laden, Bearbeiten, unverändertes JSON ohne
-  Zukunftsfeld), dazu Altschlüssel, Sonderfälle und den Fixpunkt. Der
+  Zukunftsfeld), dazu Altschlüssel, Sonderfälle und den Fixpunkt. Die
+  Tabelle `_enumFelder` prüft je Aufzählungsfeld Ersatz, Rohwert, Fixpunkt,
+  die Änderungsregel (derselbe Wert behält, ein anderer überschreibt) und
+  unverändertes Verhalten bekannter, fehlender und leerer Werte; die Gruppe
+  „Inventarabgleich“ hält die Befunde B12 und B13 fest. Der
   **Vollständigkeitswächter** dort setzt in jede Objektebene eines voll
   belegten Helden und Zustands sowie aller Bestandshelden einzeln ein
   Zukunftsfeld; ein künftiges Modell ohne `unbekannteFelder` fällt so ohne
@@ -129,6 +139,9 @@ Regeln:
 - **Gegenproben**: Jeder dieser Tests scheitert ohne den Fix. Nachgewiesen
   wird das, indem man die Editor-Dateien einzeln per `git stash` zurücksetzt
   oder `sammleUnbekannteFelder` vorübergehend eine leere Map liefern lässt.
+  Für Aufzählungen entsprechend: `leseEnumWert` merkt den Rohwert nicht,
+  `WundZustand.fromJson` verwirft unbekannte Zonen, `ohneGeaenderteEnumWerte`
+  löscht nie bzw. immer, oder B12/B13 werden einzeln zurückgenommen.
 - Fehler, die diese Tests aufdecken, werden nicht nebenbei behoben: Der Test
   hält das heutige Verhalten mit dem Kommentar `Befund ARCH-07-Bx` fest, der
   Befund steht mit Folgeauftrag in `docs/architecture_roadmap.md`.
@@ -257,7 +270,7 @@ Die CI (`.github/workflows/flutter-tests.yml`) führt alle Tests auf
 | `test/domain/hero_transfer_bundle_test.dart` | domain | Transfer-Bundle-Kontrakt |
 | `test/domain/bestandshelden_kompatibilitaet_test.dart` | domain | Bestandsfixtures: Fixpunkt nach einmaligem Laden, Inhalts-Hashes, Altschlüssel, Befunde B1/B5/B6 |
 | `test/domain/unbekannte_ausruestungsfelder_test.dart` | domain | Unbekannte Felder in den zehn Ausrüstungsmodellen, Altschlüssel, Katalogschutz, Fixpunkt mit f01 |
-| `test/domain/unbekannte_verschachtelte_felder_test.dart` | domain | Unbekannte Felder in allen übrigen Modellen von Held und Zustand, Altschlüssel, Sonderfälle, Vollständigkeitswächter über jede Objektebene |
+| `test/domain/unbekannte_verschachtelte_felder_test.dart` | domain | Unbekannte Felder in allen übrigen Modellen von Held und Zustand, unbekannte Aufzählungswerte und Wundzonen, Befunde B12/B13, Altschlüssel, Sonderfälle, Vollständigkeitswächter über jede Objektebene |
 | `test/domain/inventar_verweise_test.dart` | domain | Ladetabelle `sourceRef`/`slotRef`, Vorabfassung, Mischbetrieb mit der veröffentlichten App |
 | `test/workspace/workspace_area_registry_test.dart` | workspace | Area-Registry |
 | `test/workspace/workspace_tab_edit_controller_test.dart` | workspace | Tab-Edit-Controller |
