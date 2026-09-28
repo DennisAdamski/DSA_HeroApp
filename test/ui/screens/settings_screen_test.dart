@@ -153,6 +153,16 @@ void main() {
         find.textContaining('Ulisses Spiele GmbH', findRichText: true),
         findsOneWidget,
       );
+      // Die Lizenzkarte liegt unter dem Rechtehinweis ausserhalb der Sicht.
+      await tester.scrollUntilVisible(
+        find.byKey(const ValueKey<String>('settings-legal-licenses')),
+        200,
+        scrollable: find.byType(Scrollable).last,
+      );
+      expect(
+        find.textContaining('BlazeFace', findRichText: true),
+        findsOneWidget,
+      );
 
       await tester.pageBack();
       await tester.pumpAndSettle();

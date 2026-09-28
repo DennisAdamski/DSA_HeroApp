@@ -127,6 +127,81 @@ Geladene Bytes legt die Web-Ablage zusaetzlich in der Hive-Box
 nicht, weil Dateinamen eine UUID tragen; `AvatarCacheReconciler` entfernt beim
 Start lediglich Eintraege ohne Galerie-Bezug.
 
+Beschnittene Avatarflaechen richten sich seit 2026-09-26 am erkannten Gesicht
+aus: die runde Heldenmarke der neuen Oberflaeche, Albumkacheln, der
+Workspace-Header und das Gruppen-Thumbnail. Vollansichten wie die Uebersicht
+(`BoxFit.contain`) und der Vollbilddialog bleiben unveraendert.
+
+- **Erkennung** (`lib/data/avatar_gesicht/`): Googles BlazeFace Short Range
+  aus dem MediaPipe Face Detector (Apache 2.0), gerechnet in reinem Dart. Es
+  gibt also keine native Bibliothek und kein CDN; Windows, macOS, Linux, iOS,
+  Android und Web liefern dasselbe Ergebnis. `tool/avatar_gesicht/` wandelt
+  das `.tflite` in `assets/models/blazeface_short_range.bin` um (JSON-Kopf mit
+  Op-Folge plus float16-Gewichte). `BlazeFaceRechenkern` ist ein generischer
+  Interpreter fuer genau die vorkommenden Ops (`blazeface_ops.dart`).
+  `BlazeFaceErkennung` setzt Letterbox, 896 SSD-Anker, Sigmoid-Schwelle 0,5
+  und gewichtetes NMS (IoU 0,3) nach MediaPipe um. Findet der erste Durchlauf
+  nichts, sucht ein zweiter auf ueberlappenden Kacheln der halben kurzen
+  Bildseite, bei Hochformat nur in den oberen 60 %. Das Short-Range-Modell
+  ist fuer grosse Gesichter gebaut und uebersieht bei Ganzkoerperbildern sonst
+  den Kopf. Dekodiert wird ueber `dart:ui` auf hoechstens 512 px; das Netz
+  rechnet nativ per `compute` im Hintergrund-Isolate. Im Web laeuft es inline
+  und gibt zwischen den Ops die Kontrolle ab.
+- **Golden-Test**: `test/data/avatar_gesicht/blazeface_golden_test.dart` pinnt
+  die Rohausgaben gegen Googles LiteRT-Laufzeit
+  (`tool/avatar_gesicht/reference_outputs.py`), die Ende-zu-Ende-Tests laufen
+  auf zwei gemeinfreien Gemaelden unter `test/fixtures/avatar_gesicht/`.
+  Faellt der Golden-Test, rechnet der Kern falsch; die Fixtures werden dann
+  nicht angepasst.
+- **Befund am Eintrag, sonst lokaler Cache**: Neue Bilder bekommen den
+  Befund beim Anlegen. `uploadHeroImage` und `saveHeroAvatar` starten
+  `AvatarGesichtService.erkenneNeu` parallel zum Speichern der Bilddatei
+  (Zeitlimit 5 s) und haengen das Ergebnis als
+  `AvatarGalleryEntry.gesichtsbefund` samt Detektorversion an den neuen
+  Eintrag. Das geschieht im selben `saveHero`, der ohnehin laeuft, also ohne
+  zusaetzlichen Schreibvorgang oder Konflikt. Andere Geraete und das Web
+  zeigen das Bild damit sofort richtig. Im JSON steht der Schluessel `gesicht`
+  nur bei belegtem Wert, Bestandseintraege serialisieren bytegleich. Auch
+  „kein Gesicht“ wird gespeichert (nur Bildgroesse). Export und Import tragen
+  das Feld mit.
+  **Nachgetragen wird nie:** Ein Feld an einem Bestandseintrag aenderte
+  `heroContentHash` und loeste beim Konto-Sync Konflikte aus. Bestandsbilder
+  und Eintraege mit veralteter Detektorversion nutzen deshalb
+  `AvatarGesichtService` (`lib/data/avatar_gesicht_service.dart`) mit der
+  Hive-Box `avatar_gesicht_v1` im Heldenspeicher, geschluesselt nach
+  `AvatarGalleryEntry.fileName`. Jedes Geraet erkennt dort einmal selbst. Der
+  Cache-Eintrag traegt `kAvatarGesichtDetektorVersion` und die Bytelaenge
+  (Schutz fuer den Legacy-Namen `{heroId}.png`); weicht eines ab, wird neu
+  erkannt. `avatarGesichtProvider` nimmt zuerst den Eintrag
+  (`gespeicherterGesichtsbefund`, per `select` auf den Helden), dann den
+  Cache. Der Service wirft nie: Fehler und Zeitueberschreitung (15 s)
+  ergeben `null` und damit den Rueckfall-Ausschnitt. Eine laenger laufende
+  Erkennung schreibt ihr Ergebnis trotzdem noch in den Cache. Erkennungen
+  laufen nacheinander, damit ein frisch geoeffnetes Album nicht fuer jede
+  Kachel gleichzeitig rechnet.
+- **Rahmung** (`lib/rules/derived/avatar_rahmung_rules.dart`):
+  `berechneAvatarAusschnitt` liefert einen Quellausschnitt mit exakt dem
+  Seitenverhaeltnis der Zielflaeche. `portraet` fasst den Gesichtsrahmen auf
+  36 % der Hoehe mit der Mitte bei 52 %, `kopfzeile` enger (42 % / 56 %);
+  beide lassen Haar und Kopfbedeckung im Bild.
+  Gezoomt wird hoechstens vierfach gegenueber dem Cover-Ausschnitt. Ohne
+  Gesicht gilt der groesste Ausschnitt, bei Hochformat mit der Mitte bei
+  38 % der Bildhoehe.
+- **Darstellung**: `AvatarGalleryImage(rahmung: ...)` liest
+  `avatarGesichtProvider` und zeichnet ueber `AvatarAusschnittBild` das ganze
+  Bild vergroessert und verschoben — die Bytes gehen weiter unveraendert an
+  `Image.memory`. Bis der Befund vorliegt, bleibt der Ladezustand stehen,
+  damit das Bild nicht erst mittig und dann versetzt erscheint. Im Header
+  gewinnt ein manuell gesetzter Ausschnitt (`headerFocusX/Y`, `headerZoom`);
+  der Dialog dafuer startet ohne eigenen Fokus auf der Gesichtsmitte.
+- **Gruppen-Thumbnail**: `AvatarThumbnailEncoder` schneidet ein Quadrat aus,
+  um das Gesicht herum oder mittig, statt das ganze Bild aufs Quadrat zu
+  stauchen. `HeroActions` holt den Befund dafuer direkt beim Service, nicht
+  ueber `ref.read(provider.future)`.
+- In Widget-Tests `avatarGesichtServiceProvider` mit
+  `festerAvatarGesichtService()` (`lib/test_support/`) ueberschreiben: Die
+  echte Erkennung rechnet in einem Isolate, das im Fake-Async nie fertig wird.
+
 Seit 2026-08-08 gilt beim Startabgleich zusaetzlich: Sind lokale und
 Online-Version inhaltlich identisch, wird kommentarlos die Online-Version
 uebernommen und der Datensatz uebersprungen — es entsteht kein Konflikt. Das

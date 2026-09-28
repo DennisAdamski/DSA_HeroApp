@@ -5,9 +5,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/domain/avatar_gallery_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/avatar_rahmung_rules.dart';
+import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/avatar_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_header_stat_rail.dart';
 import 'package:dsa_heldenverwaltung/ui/theme/codex_theme.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/avatar_ausschnitt_bild.dart';
 
 /// Kompakter Workspace-Header fuer Tablet- und Desktop-Layouts.
 class WorkspaceHeroHeader extends ConsumerWidget {
@@ -73,6 +76,7 @@ class WorkspaceHeroHeader extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   _WorkspaceHeroPortrait(
+                    heroId: heroId,
                     heroName: hero.name,
                     activeEntry: activeEntry,
                     portraitBytesAsync: portraitBytesAsync,
@@ -159,6 +163,7 @@ class WorkspaceHeroHeader extends ConsumerWidget {
 /// Flacher Portraet-Slot fuer den kompakten Workspace-Header.
 class _WorkspaceHeroPortrait extends StatelessWidget {
   const _WorkspaceHeroPortrait({
+    required this.heroId,
     required this.heroName,
     required this.activeEntry,
     required this.portraitBytesAsync,
@@ -166,6 +171,7 @@ class _WorkspaceHeroPortrait extends StatelessWidget {
     required this.height,
   });
 
+  final String heroId;
   final String heroName;
   final AvatarGalleryEntry? activeEntry;
   final AsyncValue<Uint8List?> portraitBytesAsync;
@@ -192,54 +198,90 @@ class _WorkspaceHeroPortrait extends StatelessWidget {
           if (bytes == null || bytes.isEmpty) {
             return _InitialsPortrait(heroName: heroName);
           }
-          return _HeaderPortraitImage(bytes: bytes, activeEntry: activeEntry);
+          return _HeaderPortraitImage(
+            heroId: heroId,
+            bytes: bytes,
+            activeEntry: activeEntry,
+          );
         },
-        loading: () => Center(
-          child: SizedBox(
-            width: 18,
-            height: 18,
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              color: codex.brass,
-            ),
-          ),
-        ),
+        loading: () => _HeaderPortraitLoading(color: codex.brass),
         error: (_, _) => _InitialsPortrait(heroName: heroName),
       ),
     );
   }
 }
 
-/// Zeigt das aktive Avatar-Bild mit gespeichertem Fokuspunkt als breiten Header-Ausschnitt.
-class _HeaderPortraitImage extends StatelessWidget {
-  const _HeaderPortraitImage({required this.bytes, required this.activeEntry});
+/// Ladeanzeige des Portraet-Slots, fuer Bytes wie fuer den Gesichtsbefund.
+class _HeaderPortraitLoading extends StatelessWidget {
+  const _HeaderPortraitLoading({required this.color});
 
-  final Uint8List bytes;
-  final AvatarGalleryEntry? activeEntry;
+  final Color color;
 
   @override
   Widget build(BuildContext context) {
-    final focusX = activeEntry?.headerFocusX ?? 0.5;
-    final focusY = activeEntry?.headerFocusY ?? 0.5;
-    final zoom = (activeEntry?.headerZoom ?? 1.0).clamp(1.0, 8.0);
-    final alignment = Alignment((focusX * 2) - 1, (focusY * 2) - 1);
+    return Center(
+      child: SizedBox(
+        width: 18,
+        height: 18,
+        child: CircularProgressIndicator(strokeWidth: 2, color: color),
+      ),
+    );
+  }
+}
+
+/// Zeigt das aktive Avatar-Bild als breiten Header-Ausschnitt.
+///
+/// Ein manuell gesetzter Header-Ausschnitt (`headerFocusX/Y`, `headerZoom`)
+/// gewinnt immer. Ohne ihn richtet sich der Ausschnitt am erkannten Gesicht
+/// aus; bis der Befund vorliegt, bleibt die Ladeanzeige stehen.
+class _HeaderPortraitImage extends ConsumerWidget {
+  const _HeaderPortraitImage({
+    required this.heroId,
+    required this.bytes,
+    required this.activeEntry,
+  });
+
+  static const Key _imageKey = ValueKey<String>(
+    'workspace-header-portrait-image',
+  );
+
+  final String heroId;
+  final Uint8List bytes;
+  final AvatarGalleryEntry? activeEntry;
+
+  bool get _hasManualFocus {
+    final entry = activeEntry;
+    return entry != null &&
+        (entry.headerFocusX != null ||
+            entry.headerFocusY != null ||
+            entry.headerZoom != null);
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final entry = activeEntry;
+    final Widget image;
+    if (_hasManualFocus || entry == null) {
+      image = _buildManualFocusImage();
+    } else {
+      final befundAsync = ref.watch(
+        avatarGesichtProvider((heroId: heroId, fileName: entry.fileName)),
+      );
+      if (befundAsync.isLoading && !befundAsync.hasValue) {
+        return _HeaderPortraitLoading(color: context.codexTheme.brass);
+      }
+      image = AvatarAusschnittBild(
+        bytes: bytes,
+        befund: befundAsync.valueOrNull,
+        rahmung: AvatarRahmung.kopfzeile,
+        imageKey: _imageKey,
+      );
+    }
 
     return Stack(
       fit: StackFit.expand,
       children: [
-        ClipRect(
-          child: Transform.scale(
-            scale: zoom,
-            alignment: alignment,
-            child: Image.memory(
-              bytes,
-              key: const ValueKey<String>('workspace-header-portrait-image'),
-              fit: BoxFit.cover,
-              alignment: alignment,
-              errorBuilder: (_, _, _) => const SizedBox.shrink(),
-            ),
-          ),
-        ),
+        image,
         DecoratedBox(
           decoration: BoxDecoration(
             gradient: LinearGradient(
@@ -253,6 +295,26 @@ class _HeaderPortraitImage extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildManualFocusImage() {
+    final focusX = activeEntry?.headerFocusX ?? 0.5;
+    final focusY = activeEntry?.headerFocusY ?? 0.5;
+    final zoom = (activeEntry?.headerZoom ?? 1.0).clamp(1.0, 8.0);
+    final alignment = Alignment((focusX * 2) - 1, (focusY * 2) - 1);
+    return ClipRect(
+      child: Transform.scale(
+        scale: zoom,
+        alignment: alignment,
+        child: Image.memory(
+          bytes,
+          key: _imageKey,
+          fit: BoxFit.cover,
+          alignment: alignment,
+          errorBuilder: (_, _, _) => const SizedBox.shrink(),
+        ),
+      ),
     );
   }
 }

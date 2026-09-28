@@ -8,15 +8,19 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:dsa_heldenverwaltung/data/app_storage_paths.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/avatar_gallery_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/avatar_gesichtsbefund.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_appearance.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/state/avatar_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
+import 'package:dsa_heldenverwaltung/test_support/fake_avatar_gesichtserkennung.dart';
 import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
 import 'package:dsa_heldenverwaltung/test_support/in_memory_avatar_file_storage.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_overview_tab.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/avatar_rahmung_rules.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/avatar_ausschnitt_bild.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/avatar_gallery_image.dart';
 
 /// Kleinstmoegliches gueltiges PNG (1x1 Pixel).
@@ -46,7 +50,14 @@ void main() {
     );
   }
 
-  Future<void> pumpTab(WidgetTester tester, HeroSheet hero) async {
+  Future<void> pumpTab(
+    WidgetTester tester,
+    HeroSheet hero, {
+    AvatarGesichtsbefund befund = const AvatarGesichtsbefund(
+      bildBreite: 1,
+      bildHoehe: 1,
+    ),
+  }) async {
     tester.view.devicePixelRatio = 1.0;
     tester.view.physicalSize = const Size(1400, 1400);
     addTearDown(tester.view.resetPhysicalSize);
@@ -69,6 +80,9 @@ void main() {
             ),
           ),
           avatarFileStorageProvider.overrideWithValue(storage),
+          avatarGesichtServiceProvider.overrideWithValue(
+            festerAvatarGesichtService(befund: befund),
+          ),
           heroStorageLocationProvider.overrideWith(
             (ref) async => const HeroStorageLocation(
               defaultPath: '/helden',
@@ -158,5 +172,107 @@ void main() {
 
     expect(find.text('Header-Ausschnitt'), findsWidgets);
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Albumkacheln richten sich am Gesicht aus, die Uebersicht '
+      'zeigt das ganze Bild', (tester) async {
+    storage.files['demo_a.png'] = _pngBytes;
+
+    await pumpTab(
+      tester,
+      buildHero(
+        appearance: const HeroAppearance(
+          aktivesBildId: 'a',
+          avatarGallery: [AvatarGalleryEntry(id: 'a', fileName: 'demo_a.png')],
+        ),
+      ),
+    );
+
+    final uebersicht = tester.widget<AvatarGalleryImage>(
+      find.byType(AvatarGalleryImage),
+    );
+    expect(uebersicht.rahmung, isNull);
+    expect(uebersicht.fit, BoxFit.contain);
+
+    await tester.tap(find.text('Avatar Album (1)'));
+    await tester.pumpAndSettle();
+
+    final kachel = tester.widget<AvatarGalleryImage>(
+      find.descendant(
+        of: find.byType(Dialog),
+        matching: find.byType(AvatarGalleryImage),
+      ),
+    );
+    expect(kachel.rahmung, AvatarRahmung.portraet);
+    expect(
+      find.descendant(
+        of: find.byType(Dialog),
+        matching: find.byType(AvatarAusschnittBild),
+      ),
+      findsOneWidget,
+    );
+  });
+
+  Future<Alignment> vorschauAusrichtung(
+    WidgetTester tester,
+    AvatarGalleryEntry entry,
+  ) async {
+    storage.files['demo_a.png'] = _pngBytes;
+    await pumpTab(
+      tester,
+      buildHero(
+        appearance: HeroAppearance(aktivesBildId: 'a', avatarGallery: [entry]),
+      ),
+      befund: const AvatarGesichtsbefund(
+        bildBreite: 400,
+        bildHoehe: 600,
+        gesicht: AvatarGesichtsrahmen(
+          links: 0.4,
+          oben: 0.2,
+          breite: 0.2,
+          hoehe: 0.1,
+        ),
+        konfidenz: 0.9,
+      ),
+    );
+    await tester.tap(find.text('Avatar Album (1)'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Header-Ausschnitt'));
+    await tester.pumpAndSettle();
+
+    final vorschau = tester.widget<Image>(
+      find.byWidgetPredicate((w) => w is Image && w.fit == BoxFit.cover),
+    );
+    return vorschau.alignment as Alignment;
+  }
+
+  testWidgets('Header-Ausschnitt startet ohne eigenen Fokus auf dem Gesicht', (
+    tester,
+  ) async {
+    final ausrichtung = await vorschauAusrichtung(
+      tester,
+      const AvatarGalleryEntry(id: 'a', fileName: 'demo_a.png'),
+    );
+
+    // Gesichtsmitte (0,5 | 0,25) als Ausrichtung (0 | -0,5).
+    expect(ausrichtung.x, closeTo(0, 1e-9));
+    expect(ausrichtung.y, closeTo(-0.5, 1e-9));
+  });
+
+  testWidgets('Header-Ausschnitt behaelt einen gespeicherten Fokus', (
+    tester,
+  ) async {
+    final ausrichtung = await vorschauAusrichtung(
+      tester,
+      const AvatarGalleryEntry(
+        id: 'a',
+        fileName: 'demo_a.png',
+        headerFocusX: 0.8,
+        headerFocusY: 0.9,
+      ),
+    );
+
+    expect(ausrichtung.x, closeTo(0.6, 1e-9));
+    expect(ausrichtung.y, closeTo(0.8, 1e-9));
   });
 }

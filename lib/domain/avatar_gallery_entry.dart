@@ -1,3 +1,5 @@
+import 'package:dsa_heldenverwaltung/domain/avatar_gesichtsbefund.dart';
+
 /// Einzelner Eintrag in der Avatar-Galerie eines Helden.
 class AvatarGalleryEntry {
   const AvatarGalleryEntry({
@@ -10,6 +12,8 @@ class AvatarGalleryEntry {
     this.headerFocusX,
     this.headerFocusY,
     this.headerZoom,
+    this.gesichtsbefund,
+    this.gesichtsbefundVersion,
   });
 
   /// Eindeutige ID (UUID).
@@ -40,6 +44,19 @@ class AvatarGalleryEntry {
   /// `null` oder `1.0` entsprechen dem Default-Cover-Ausschnitt.
   final double? headerZoom;
 
+  /// Gesichtsbefund, erkannt beim Anlegen des Bildes.
+  ///
+  /// Wird **nur** beim Hochladen oder Generieren gesetzt, weil der Held dabei
+  /// ohnehin gespeichert wird. Nachtraeglich darf er nie in einen Helden
+  /// geschrieben werden: das Feld geht in `heroContentHash` ein, und ein
+  /// Nachtragen fuer Bestandsbilder loeste beim Konto-Sync Konflikte aus.
+  /// Bestandsbilder nutzen stattdessen den lokalen Cache
+  /// (`AvatarGesichtService`).
+  final AvatarGesichtsbefund? gesichtsbefund;
+
+  /// `kAvatarGesichtDetektorVersion`, mit der [gesichtsbefund] entstand.
+  final int? gesichtsbefundVersion;
+
   AvatarGalleryEntry copyWith({
     String? id,
     String? fileName,
@@ -50,6 +67,8 @@ class AvatarGalleryEntry {
     double? headerFocusX,
     double? headerFocusY,
     double? headerZoom,
+    AvatarGesichtsbefund? gesichtsbefund,
+    int? gesichtsbefundVersion,
   }) {
     return AvatarGalleryEntry(
       id: id ?? this.id,
@@ -61,6 +80,9 @@ class AvatarGalleryEntry {
       headerFocusX: headerFocusX ?? this.headerFocusX,
       headerFocusY: headerFocusY ?? this.headerFocusY,
       headerZoom: headerZoom ?? this.headerZoom,
+      gesichtsbefund: gesichtsbefund ?? this.gesichtsbefund,
+      gesichtsbefundVersion:
+          gesichtsbefundVersion ?? this.gesichtsbefundVersion,
     );
   }
 
@@ -74,9 +96,16 @@ class AvatarGalleryEntry {
     if (headerFocusX != null) 'headerFocusX': headerFocusX,
     if (headerFocusY != null) 'headerFocusY': headerFocusY,
     if (headerZoom != null) 'headerZoom': headerZoom,
+    // Nur bei belegtem Wert: sonst aendert sich das JSON jedes
+    // Bestandseintrags und mit ihm `heroContentHash`.
+    if (gesichtsbefund != null)
+      'gesicht': {'v': gesichtsbefundVersion ?? 0, ...gesichtsbefund!.toJson()},
   };
 
   static AvatarGalleryEntry fromJson(Map<String, dynamic> json) {
+    final rohGesicht = json['gesicht'];
+    final gesichtsbefund = AvatarGesichtsbefund.fromJson(rohGesicht);
+    final rohVersion = rohGesicht is Map ? rohGesicht['v'] : null;
     return AvatarGalleryEntry(
       id: (json['id'] as String?) ?? '',
       fileName: (json['fileName'] as String?) ?? '',
@@ -87,6 +116,10 @@ class AvatarGalleryEntry {
       headerFocusX: _readNormalizedFocusValue(json['headerFocusX']),
       headerFocusY: _readNormalizedFocusValue(json['headerFocusY']),
       headerZoom: _readHeaderZoomValue(json['headerZoom']),
+      gesichtsbefund: gesichtsbefund,
+      gesichtsbefundVersion: gesichtsbefund == null || rohVersion is! num
+          ? null
+          : rohVersion.toInt(),
     );
   }
 }
