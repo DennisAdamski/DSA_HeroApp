@@ -1,3 +1,5 @@
+import 'package:dsa_heldenverwaltung/domain/unbekannte_json_felder.dart';
+
 /// Die acht DSA-Grundeigenschaften eines Helden (unveraenderlich).
 ///
 /// Kuerzel und Namen:
@@ -15,6 +17,7 @@ class Attributes {
     required this.ge,
     required this.ko,
     required this.kk,
+    this.unbekannteFelder = const <String, Object?>{},
   });
 
   const Attributes.zero()
@@ -25,7 +28,8 @@ class Attributes {
       ff = 0,
       ge = 0,
       ko = 0,
-      kk = 0;
+      kk = 0,
+      unbekannteFelder = const <String, Object?>{};
 
   final int mu; // Mut: Tapferkeit, Willenskraft, magische Kraftquelle
   final int kl; // Klugheit: Denkvermögen, Lernfähigkeit
@@ -36,6 +40,22 @@ class Attributes {
   final int ko; // Konstitution: Zähigkeit, Gesundheit
   final int kk; // Körperkraft: Muskeln, Hebeln, Tragen
 
+  /// JSON-Felder einer neueren App-Version; bleiben beim Speichern erhalten
+  /// (siehe `unbekannte_json_felder.dart`).
+  final Map<String, Object?> unbekannteFelder;
+
+  /// Alle Schluessel, die [fromJson] liest; alles andere bleibt erhalten.
+  static const Set<String> jsonSchluessel = <String>{
+    'mu',
+    'kl',
+    'inn',
+    'ch',
+    'ff',
+    'ge',
+    'ko',
+    'kk',
+  };
+
   Attributes copyWith({
     int? mu,
     int? kl,
@@ -45,6 +65,7 @@ class Attributes {
     int? ge,
     int? ko,
     int? kk,
+    Map<String, Object?>? unbekannteFelder,
   }) {
     return Attributes(
       mu: mu ?? this.mu,
@@ -55,11 +76,31 @@ class Attributes {
       ge: ge ?? this.ge,
       ko: ko ?? this.ko,
       kk: kk ?? this.kk,
+      unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
+    );
+  }
+
+  /// Uebernimmt die acht Werte aus [quelle] und behaelt die unbekannten
+  /// Felder dieser Instanz.
+  ///
+  /// Fuer Werte, die neu errechnet oder aus Formularfeldern gelesen werden
+  /// (etwa effektive Startwerte), damit ein Neuaufbau Felder einer neueren
+  /// App-Version nicht verwirft.
+  Attributes uebernimmWerte(Attributes quelle) {
+    return copyWith(
+      mu: quelle.mu,
+      kl: quelle.kl,
+      inn: quelle.inn,
+      ch: quelle.ch,
+      ff: quelle.ff,
+      ge: quelle.ge,
+      ko: quelle.ko,
+      kk: quelle.kk,
     );
   }
 
   Map<String, dynamic> toJson() {
-    return {
+    return mitUnbekanntenFeldern(<String, dynamic>{
       'mu': mu,
       'kl': kl,
       'inn': inn,
@@ -68,7 +109,7 @@ class Attributes {
       'ge': ge,
       'ko': ko,
       'kk': kk,
-    };
+    }, unbekannteFelder);
   }
 
   // Lenient: fehlende Felder ergeben 0, damit aeltere Schemata
@@ -85,6 +126,7 @@ class Attributes {
       ge: getInt('ge'),
       ko: getInt('ko'),
       kk: getInt('kk'),
+      unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
     );
   }
 }

@@ -145,31 +145,65 @@ class _RitualCategoryDialogState extends State<_RitualCategoryDialog> {
     }
 
     final knowledgeValue = int.tryParse(_knowledgeValueController.text.trim());
-    final builtCategory = HeroRitualCategory(
-      id: widget.existing?.id ?? _ritualDialogUuid.v4(),
+    final existing = widget.existing;
+    // Vorhandene Eintraege werden per `copyWith` geaendert, damit Felder einer
+    // neueren App-Version erhalten bleiben.
+    final bisherigeKenntnis = existing?.ownKnowledge;
+    final bisherigeFelder = <String, HeroRitualFieldDef>{
+      for (final fieldDef
+          in existing?.additionalFieldDefs ?? const <HeroRitualFieldDef>[])
+        fieldDef.id: fieldDef,
+    };
+    final kenntnisWert = (knowledgeValue ?? 3).clamp(0, 9999);
+    final werte = (
       name: name,
       knowledgeMode: _knowledgeMode,
       ownKnowledge: _knowledgeMode == HeroRitualKnowledgeMode.ownKnowledge
-          ? HeroRitualKnowledge(
-              name: name,
-              value: (knowledgeValue ?? 3).clamp(0, 9999),
-              learningComplexity: _learningComplexity,
-            )
+          ? bisherigeKenntnis?.copyWith(
+                  name: name,
+                  value: kenntnisWert,
+                  learningComplexity: _learningComplexity,
+                ) ??
+                HeroRitualKnowledge(
+                  name: name,
+                  value: kenntnisWert,
+                  learningComplexity: _learningComplexity,
+                )
           : null,
       derivedTalentIds: _knowledgeMode == HeroRitualKnowledgeMode.derivedTalents
           ? _selectedTalentIds.toList(growable: false)
           : const <String>[],
       additionalFieldDefs: _fieldDefs
           .map((fieldDef) {
-            return HeroRitualFieldDef(
-              id: fieldDef.id,
-              label: fieldDef.labelController.text.trim(),
-              type: fieldDef.type,
-            );
+            final label = fieldDef.labelController.text.trim();
+            return bisherigeFelder[fieldDef.id]?.copyWith(
+                  label: label,
+                  type: fieldDef.type,
+                ) ??
+                HeroRitualFieldDef(
+                  id: fieldDef.id,
+                  label: label,
+                  type: fieldDef.type,
+                );
           })
           .toList(growable: false),
-      rituals: widget.existing?.rituals ?? const <HeroRitualEntry>[],
     );
+    final builtCategory = existing == null
+        ? HeroRitualCategory(
+            id: _ritualDialogUuid.v4(),
+            name: werte.name,
+            knowledgeMode: werte.knowledgeMode,
+            ownKnowledge: werte.ownKnowledge,
+            derivedTalentIds: werte.derivedTalentIds,
+            additionalFieldDefs: werte.additionalFieldDefs,
+          )
+        : existing.copyWith(
+            name: werte.name,
+            knowledgeMode: werte.knowledgeMode,
+            ownKnowledge: werte.ownKnowledge,
+            derivedTalentIds: werte.derivedTalentIds,
+            additionalFieldDefs: werte.additionalFieldDefs,
+          );
     Navigator.of(context).pop(
       _RitualCategoryResult(
         category: normalizeRitualCategory(builtCategory),

@@ -292,8 +292,9 @@ Helden eine Entscheidung offen, wartet der Zustand darauf.
 (Befund ARCH-07-B10, seit 2026-09-27). Jeder Online-Datensatz bringt den
 Inhalts-Hash seines Schreibers mit. Diese App liest ihn aber mit ihrem eigenen
 `fromJson`. Stammt der Stand von einer neueren Version, deren Felder hier
-nicht bewahrt werden — ausserhalb der Ausruestung oder als unbekannter
-Enum-Wert —, weicht die lokale Darstellung von diesem Hash ab. Frueher merkte
+nicht bewahrt werden (vor 2026-09-28 alles ausserhalb der Ausruestung und
+unbekannte Enum-Werte, heute nur noch, was eine Normalisierung verwirft),
+weicht die lokale Darstellung von diesem Hash ab. Frueher merkte
 sich die Basis nach dem Uebernehmen den **Schreiber-Hash** als `localHash`.
 Die verkuerzte lokale Fassung galt danach als lokale Aenderung und wurde im
 selben `syncNow()` ohne Konflikt hochgeladen: Ein blosser Abgleich loeschte
@@ -435,34 +436,98 @@ mit älterer App per Sync die Felder einer neueren (Befunde ARCH-07-B5/B6):
   `UnbekannterVerlaufseintrag` an ihrer Position erhalten, statt den Helden
   unlesbar zu machen. Sie werden nicht ausgewertet; der Verlauf nennt ihre
   Anzahl.
-- **Ausrüstung** bewahrt Unbekanntes auf jeder Ebene. Jedes der zehn Modelle
-  trägt dafür einen eigenen Satz `unbekannteFelder` und ein eigenes
-  `jsonSchluessel`:
-  - `CombatConfig`;
-  - Waffen: `MainWeaponSlot`, `RangedWeaponProfile`, `RangedProjectile`,
-    `RangedDistanceBand`;
-  - Rüstung: `ArmorConfig`, `ArmorPiece`;
-  - Nebenhand: `OffhandEquipmentEntry`;
-  - Inventar: `HeroInventoryEntry`, `InventoryItemModifier`.
+- **Jedes verschachtelte Modell** bewahrt Unbekanntes auf seiner Ebene
+  (Teilstände ARCH-03 vom 28.09.2026). Jedes trägt dafür einen eigenen Satz
+  `unbekannteFelder` und ein eigenes `jsonSchluessel`:
+  - Ausrüstung: `CombatConfig`, `MainWeaponSlot`, `RangedWeaponProfile`,
+    `RangedProjectile`, `RangedDistanceBand`, `ArmorConfig`, `ArmorPiece`,
+    `OffhandEquipmentEntry`, `HeroInventoryEntry`, `InventoryItemModifier`;
+  - Kampfeinstellungen: `OffhandAssignment`, `CombatSpecialRules`,
+    `CombatManualMods`, `WaffenmeisterConfig`, `WaffenmeisterBonus`;
+  - Talente und Magie: `HeroTalentEntry`, `HeroTalentModifier` (auch in
+    `statModifiers`/`attributeModifiers`), `HeroMetaTalent`,
+    `TalentSpecialAbility`, `HeroSpellEntry`, `HeroSpellTextOverrides`,
+    `HeroRitualCategory`, `HeroRitualKnowledge`, `HeroRitualEntry`,
+    `HeroRitualFieldDef`, `HeroRitualFieldValue`, `MagicSpecialAbility`,
+    `HeroLanguageEntry`, `HeroScriptEntry`;
+  - Begleiter und Chronik: `HeroCompanion`, `HeroCompanionAttack`,
+    `HeroCompanionSonderfertigkeit`, `HeroCompanionSpeed`,
+    `HeroAdventureEntry`, `HeroAdventureSeReward`, `HeroAdventureDateValue`,
+    `HeroAdventurePersonEntry`, `HeroAdventureLootEntry`, `HeroNoteEntry`,
+    `HeroConnectionEntry`, `HeroReisebericht`, `ReiseberichtOpenItem`,
+    `HeroGruppenMitgliedschaft`;
+  - Werte, Bilder, Verlauf: `Attributes` (alle fünf Verwendungen),
+    `StatModifiers`, `BoughtStats`, `HeroAttributeSePool`, `HeroStatSePool`,
+    `HeroResourceActivationConfig`, `AventurianDate` (Geburtsdatum),
+    `AvatarGalleryEntry`, `AvatarGesichtsbefund`, `AvatarGesichtsrahmen`,
+    `AvatarSnapshot`, `HeroAdvancementEntry`;
+  - Laufzeitzustand: `AttributeModifiers`, `ActiveSpellEffectsState`,
+    `ActiveSpellEffectDetail`, `SpellDuration`, `WundZustand`, `DiceLogEntry`.
 
-  Zwei Regeln halten das dicht:
+  Ausgenommen ist nur `OffhandSlot`: der Altschlüssel `offhand` wird beim
+  Laden migriert und nie geschrieben. Drei Regeln halten das dicht:
   1. **Jeder gelesene Altschlüssel gehört in den Schlüsselsatz.** Das betrifft
-     `offhand`, `wmFk` und `fkMod`, die beim Laden in neue Felder aufgehen.
-     Als „unbekannt“ zurückgeschrieben, käme etwa ein gelöschter migrierter
-     Schild beim nächsten Laden wieder.
+     `offhand`, `wmFk`, `fkMod` (Geschoss und manuelle Modifikatoren),
+     `schnellladenBogen`/`schnellladenArmbrust`, `eigenAp`, `vorNachteile`
+     und den Alias `note` der magischen SF. Als „unbekannt“
+     zurückgeschrieben, käme etwa ein gelöschter migrierter Schild beim
+     nächsten Laden wieder.
   2. **Bestehende Objekte ändert man nur per `copyWith`.** Wer sie per
-     Konstruktor neu aufbaut, verliert die Felder. Deshalb bauen
-     `_mergeEntry` im Inventarabgleich und die Editoren für Nebenhand,
-     Geschoss, Distanzstufe und Begleiterrüstung auf der Bestandsinstanz auf.
+     Konstruktor neu aufbaut, verliert die Felder. Editoren arbeiten deshalb
+     auf der Bestandsinstanz — auch zeilenweise Dialoge wie die
+     Modifikatorlisten, die dafür das Original je Zeile mitführen. Neu
+     errechnete oder aus Formularen gelesene Werte übernimmt
+     `Attributes.uebernimmWerte` bzw. `AttributeModifiers.uebernimmWerte` in
+     die vorhandene Instanz (effektive Startwerte in `saveHero`, epische
+     Werte, Attributo). Ohne das erbten die Startwerte die Felder der
+     Rohstartwerte.
+  3. **Felder einer neueren Version zählen als Inhalt.** Text-Overrides,
+     Zusatzdaten eines Zaubereffekts und das Geburtsdatum werden nur
+     geschrieben, wenn sie belegt sind; Objekte, die ausschließlich
+     unbekannte Felder tragen, gelten dabei als belegt. Ein Objekt ohne
+     beides schreibt weiterhin nichts.
 
   Katalogwaffen setzen die Felder ihrer Geschosse und Stufen beim Laden leer
   (`weapon_def.dart`). Katalogschlüssel sind keine Heldendaten.
-- Unbekannte Felder in `OffhandAssignment`, `CombatSpecialRules`,
-  `CombatManualMods`, `WaffenmeisterConfig` und allen übrigen verschachtelten
-  Objekten gehen weiterhin verloren. Das betrifft etwa Talente, Zauber,
-  Rituale, die eigenen Felder von `HeroCompanion`, Abenteuer und Notizen.
-  Ebenso ungeschützt sind **unbekannte Werte** bekannter Felder: Ein
-  unbekannter Enum-Wert fällt auf den Standard zurück.
+  `test/domain/unbekannte_verschachtelte_felder_test.dart` prüft neben den
+  Modellen einzeln jede Objektebene eines voll belegten Helden und aller
+  Bestandshelden (Vollständigkeitswächter); ein neues Modell ohne
+  `unbekannteFelder` fällt dort auf.
+- Nicht erhalten bleibt, was eine bestehende **Normalisierung verwirft**:
+  Personen, SE-Zeilen und Beute ohne Inhalt, Talentmodifikatoren ohne
+  Beschreibung, Ritualkategorien ohne oder mit doppelter ID, Zusatzfelder
+  ohne Bezeichnung und ungültige Gesichtsbefunde fallen samt ihren
+  unbekannten Feldern weg. `mainWeapon` spiegelt nur die gewählte Waffe.
+- **Unbekannte Aufzählungswerte** bleiben ebenfalls erhalten. Kennt diese
+  Version einen Wert nicht, rechnen Modell und Regeln mit dem Ersatzwert;
+  den Rohwert hält das Modell in `unbekannteEnumWerte` (JSON-Schlüssel →
+  Rohwert, getrennt von `unbekannteFelder`), und `toJson` schreibt ihn
+  anstelle des Ersatzes zurück. Fehlende oder leere Angaben gelten wie
+  bisher als fehlend. Betroffen sind 18 Felder: `HeroInventoryEntry`
+  (`itemType`, `source`, `traegerTyp`), `InventoryItemModifier` (`kind`),
+  `MainWeaponSlot` (`combatType`), `OffhandEquipmentEntry` (`type`,
+  `shieldSize`), `WaffenmeisterBonus` (`type`), `HeroRitualCategory`
+  (`knowledgeMode`), `HeroRitualFieldDef` (`type`), `HeroCompanion` (`typ`),
+  `HeroAdventureEntry` (`status`), `HeroAdventureSeReward` (`targetType`),
+  `HeroAdventureLootEntry` (`itemType`), `SpellDuration` (`unit`),
+  `DiceLogEntry` (`type`, `automaticOutcome`) und `AventurianDate`
+  (`month`). Muster beim Lesen: `leseEnumWert` mit einer Erkennerfunktion,
+  die `null` für Unbekanntes liefert, dann `festeEnumWerte`; beim Schreiben
+  `mitUnbekanntenEnumWerten` über `mitUnbekanntenFeldern`.
+  **Änderungsregel:** `copyWith` mit einem *anderen* Wert überschreibt den
+  Rohwert (`ohneGeaenderteEnumWerte`), derselbe Wert lässt ihn stehen —
+  Dialoge, die alle Felder neu durchreichen, verlieren ihn also nicht.
+  Unbekannte Wundzonen hält `WundZustand.unbekannteZonen` je Map
+  (`wundenProZone`, `unterdrueckteWundenProZone`); sie zählen nicht mit
+  und entfallen erst bei der vollen Rast. Zwei Stellen berücksichtigen
+  den Rohwert ausdrücklich, weil der Ersatz Daten verlöre:
+  `MainWeaponSlot.fuehrtGeschosse` behandelt eine unbekannte Kampfart wie
+  Fernkampf, damit Verweise und Abgleich die Geschosse samt Inventardaten
+  behalten (Befund ARCH-07-B13), und der Inventarabgleich lässt einen
+  Eintrag mit Verweis, aber unbekannter Quelle unverändert stehen und
+  legt für seinen Slot keinen zweiten an (B12). Sonst rechnet alles mit
+  dem Ersatz; verknüpfte Einträge übernehmen `itemType` und `source` beim
+  Abgleich aus ihrem Slot.
 
 **Formatregel für künftige Versionen:** Änderungen am gespeicherten Format
 bleiben additiv. Erhalten wird nur, was eine ältere Version nicht versteht;

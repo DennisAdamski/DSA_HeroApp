@@ -6,8 +6,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/aventurian_date.dart';
-import 'package:dsa_heldenverwaltung/domain/bought_stats.dart';
-import 'package:dsa_heldenverwaltung/domain/hero_resource_activation_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
@@ -276,7 +274,8 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
       appearance: hero.appearance.copyWith(
         geschlecht: _field('geschlecht').text.trim(),
         alter: _field('alter').text.trim(),
-        geburtsdatum: _readBirthDateDraft(),
+        // Per `copyWith`, damit unbekannte Felder erhalten bleiben.
+        geburtsdatum: _readBirthDateDraft(hero.appearance.geburtsdatum),
         groesse: _field('groesse').text.trim(),
         gewicht: _field('gewicht').text.trim(),
         haarfarbe: _field('haarfarbe').text.trim(),
@@ -299,18 +298,20 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
       nachteileText: _field('nachteile').text.trim(),
       apTotal: _readInt('ap_total', min: 0),
       apSpent: _readInt('ap_spent', min: 0),
-      resourceActivationConfig: HeroResourceActivationConfig(
+      // Vorhandene Werte werden per `copyWith` geaendert, damit Felder einer
+      // neueren App-Version erhalten bleiben.
+      resourceActivationConfig: hero.resourceActivationConfig.copyWith(
         magicEnabledOverride: _draftMagicEnabledOverride,
         divineEnabledOverride: _draftDivineEnabledOverride,
       ),
-      bought: BoughtStats(
+      bought: hero.bought.copyWith(
         lep: _readInt('b_lep', min: 0, max: 999),
         au: _readInt('b_au', min: 0, max: 999),
         asp: _readInt('b_asp', min: 0, max: 999),
         kap: _readInt('b_kap', min: 0, max: 999),
         mr: _readInt('b_mr', min: 0, max: 999),
       ),
-      attributes: Attributes(
+      attributes: hero.attributes.copyWith(
         mu: _readInt('mu', min: 0, max: 99),
         kl: _readInt('kl', min: 0, max: 99),
         inn: _readInt('inn', min: 0, max: 99),
@@ -363,11 +364,21 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
   }
 
   /// Liest das Geburtsdatum aus dem aktuellen Bearbeitungsstand.
-  AventurianDate _readBirthDateDraft() {
-    return AventurianDate.fromParts(
+  ///
+  /// Mit [bisher] werden die Werte in das gespeicherte Datum uebernommen,
+  /// damit dessen unbekannte Felder erhalten bleiben.
+  AventurianDate _readBirthDateDraft([
+    AventurianDate bisher = const AventurianDate(),
+  ]) {
+    final entwurf = AventurianDate.fromParts(
       _field('geburt_tag').text,
       _draftGeburtsmonat,
       _field('geburt_jahr').text,
+    );
+    return bisher.copyWith(
+      day: entwurf.day,
+      month: entwurf.month,
+      year: entwurf.year,
     );
   }
 
@@ -409,7 +420,7 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
     if (!_editController.isEditing) {
       return computeHeroResourceActivation(
         hero.copyWith(
-          resourceActivationConfig: HeroResourceActivationConfig(
+          resourceActivationConfig: hero.resourceActivationConfig.copyWith(
             magicEnabledOverride: magicEnabledOverride,
             divineEnabledOverride: divineEnabledOverride,
           ),
@@ -423,7 +434,7 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
         professionModText: _field('profession_mod').text.trim(),
       ),
       vorteileText: _field('vorteile').text.trim(),
-      resourceActivationConfig: HeroResourceActivationConfig(
+      resourceActivationConfig: hero.resourceActivationConfig.copyWith(
         magicEnabledOverride: magicEnabledOverride,
         divineEnabledOverride: divineEnabledOverride,
       ),
@@ -453,7 +464,7 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
     required bool? divineEnabledOverride,
   }) async {
     final updatedHero = hero.copyWith(
-      resourceActivationConfig: HeroResourceActivationConfig(
+      resourceActivationConfig: hero.resourceActivationConfig.copyWith(
         magicEnabledOverride: magicEnabledOverride,
         divineEnabledOverride: divineEnabledOverride,
       ),

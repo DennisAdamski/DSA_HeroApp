@@ -216,15 +216,19 @@ void main() {
     );
   });
 
-  test('Felder einer neueren App-Version in der Ausrüstung überstehen '
-      'Import, Bearbeiten, Neustart und Export', () async {
+  test('Felder einer neueren App-Version in verschachtelten Modellen '
+      'überstehen Import, Bearbeiten, Neustart und Export', () async {
     final pfad = await hiveTempVerzeichnis('arch03_zukunft_');
     var speicher = await oeffnen(pfad);
     final roh = ladeBestandsheldJson(Bestandsheld.kriegerNormal);
     final zukunft = mitZukunftsfeldern(
       (roh['hero'] as Map).cast<String, dynamic>(),
     );
+    final zukunftsZustand = zustandMitZukunftsfeldern(
+      (roh['state'] as Map).cast<String, dynamic>(),
+    );
     roh['hero'] = zukunft.json;
+    roh['state'] = zukunftsZustand.json;
     final bundle = await speicher.actions.parseImportJson(jsonEncode(roh));
     final id = await speicher.actions.importHeroBundle(
       bundle,
@@ -255,14 +259,17 @@ void main() {
       final nebenhand = <OffhandEquipmentEntry>[
         kampf.offhandEquipment.single.copyWith(name: 'Großschild'),
       ];
-      return aktuell.copyWith(
-        combatConfig: kampf.copyWith(
-          weapons: waffen,
-          armor: kampf.armor.copyWith(pieces: stuecke),
-          offhandEquipment: nebenhand,
+      return bearbeiteVerschachtelteModelle(
+        aktuell.copyWith(
+          combatConfig: kampf.copyWith(
+            weapons: waffen,
+            armor: kampf.armor.copyWith(pieces: stuecke),
+            offhandEquipment: nebenhand,
+          ),
         ),
       );
     });
+    await speicher.actions.updateHeroState(id, bearbeiteZustand);
     await speicher.schliessen();
     speicher = await oeffnen(pfad);
 
@@ -276,7 +283,17 @@ void main() {
           reason: '$heldId: $feldPfad',
         );
       }
+      for (final feldPfad in zukunftsZustand.pfade) {
+        expect(
+          wertAn(export['state'], feldPfad),
+          wertAn(zukunftsZustand.json, feldPfad),
+          reason: '$heldId (Zustand): $feldPfad',
+        );
+      }
     }
+    final zustand = (await speicher.repo.loadHeroState(id))!;
+    expect(zustand.tempMods.at, 1);
+    expect(zustand.diceLog, hasLength(2));
     final nachher = (await speicher.repo.loadHeroById(id))!;
     final armbrust = nachher.combatConfig.weaponSlots[1];
     expect(nachher.combatConfig.weaponSlots.map((slot) => slot.id), idsVorher);

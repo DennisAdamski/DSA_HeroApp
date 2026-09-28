@@ -1,3 +1,5 @@
+import 'package:dsa_heldenverwaltung/domain/unbekannte_json_felder.dart';
+
 /// Normierter Rahmen eines erkannten Gesichts.
 ///
 /// Alle Werte sind Anteile der Bildbreite bzw. -hoehe (0..1). Der Rahmen
@@ -9,6 +11,7 @@ class AvatarGesichtsrahmen {
     required this.oben,
     required this.breite,
     required this.hoehe,
+    this.unbekannteFelder = const <String, Object?>{},
   });
 
   final double links;
@@ -16,15 +19,22 @@ class AvatarGesichtsrahmen {
   final double breite;
   final double hoehe;
 
+  /// JSON-Felder einer neueren App-Version; bleiben beim Speichern erhalten
+  /// (siehe `unbekannte_json_felder.dart`).
+  final Map<String, Object?> unbekannteFelder;
+
+  /// Alle Schluessel, die [fromJson] liest; alles andere bleibt erhalten.
+  static const Set<String> jsonSchluessel = <String>{'l', 'o', 'b', 'h'};
+
   double get mitteX => links + breite / 2;
   double get mitteY => oben + hoehe / 2;
 
-  Map<String, dynamic> toJson() => {
+  Map<String, dynamic> toJson() => mitUnbekanntenFeldern(<String, dynamic>{
     'l': links,
     'o': oben,
     'b': breite,
     'h': hoehe,
-  };
+  }, unbekannteFelder);
 
   /// Liest einen Rahmen; unvollstaendige oder leere Werte ergeben `null`.
   static AvatarGesichtsrahmen? fromJson(Object? raw) {
@@ -42,6 +52,10 @@ class AvatarGesichtsrahmen {
       oben: oben,
       breite: breite,
       hoehe: hoehe,
+      unbekannteFelder: sammleUnbekannteFelder(
+        raw.cast<String, dynamic>(),
+        jsonSchluessel,
+      ),
     );
   }
 
@@ -51,10 +65,17 @@ class AvatarGesichtsrahmen {
       other.links == links &&
       other.oben == oben &&
       other.breite == breite &&
-      other.hoehe == hoehe;
+      other.hoehe == hoehe &&
+      unbekannteFelderGleich(unbekannteFelder, other.unbekannteFelder);
 
   @override
-  int get hashCode => Object.hash(links, oben, breite, hoehe);
+  int get hashCode => Object.hash(
+    links,
+    oben,
+    breite,
+    hoehe,
+    unbekannteFelderHash(unbekannteFelder),
+  );
 
   @override
   String toString() =>
@@ -75,6 +96,7 @@ class AvatarGesichtsbefund {
     required this.bildHoehe,
     this.gesicht,
     this.konfidenz = 0,
+    this.unbekannteFelder = const <String, Object?>{},
   });
 
   /// Breite des Originalbildes in Pixeln.
@@ -89,12 +111,20 @@ class AvatarGesichtsbefund {
   /// Score des Detektors (0..1); 0 ohne Gesicht.
   final double konfidenz;
 
-  Map<String, dynamic> toJson() => {
+  /// JSON-Felder einer neueren App-Version; bleiben beim Speichern erhalten
+  /// (siehe `unbekannte_json_felder.dart`).
+  final Map<String, Object?> unbekannteFelder;
+
+  /// Alle Schluessel, die [fromJson] liest, einschliesslich der Version `v`,
+  /// die `AvatarGalleryEntry` auf derselben Ebene fuehrt.
+  static const Set<String> jsonSchluessel = <String>{'v', 'w', 'h', 'g', 'k'};
+
+  Map<String, dynamic> toJson() => mitUnbekanntenFeldern(<String, dynamic>{
     'w': bildBreite,
     'h': bildHoehe,
     if (gesicht != null) 'g': gesicht!.toJson(),
     if (gesicht != null) 'k': konfidenz,
-  };
+  }, unbekannteFelder);
 
   /// Liest einen Befund; ohne gueltige Bildgroesse ergibt sich `null`.
   static AvatarGesichtsbefund? fromJson(Object? raw) {
@@ -110,6 +140,10 @@ class AvatarGesichtsbefund {
       bildHoehe: hoehe,
       gesicht: gesicht,
       konfidenz: gesicht == null ? 0 : (_zahl(raw['k']) ?? 0),
+      unbekannteFelder: sammleUnbekannteFelder(
+        raw.cast<String, dynamic>(),
+        jsonSchluessel,
+      ),
     );
   }
 
@@ -119,10 +153,17 @@ class AvatarGesichtsbefund {
       other.bildBreite == bildBreite &&
       other.bildHoehe == bildHoehe &&
       other.gesicht == gesicht &&
-      other.konfidenz == konfidenz;
+      other.konfidenz == konfidenz &&
+      unbekannteFelderGleich(unbekannteFelder, other.unbekannteFelder);
 
   @override
-  int get hashCode => Object.hash(bildBreite, bildHoehe, gesicht, konfidenz);
+  int get hashCode => Object.hash(
+    bildBreite,
+    bildHoehe,
+    gesicht,
+    konfidenz,
+    unbekannteFelderHash(unbekannteFelder),
+  );
 
   @override
   String toString() =>

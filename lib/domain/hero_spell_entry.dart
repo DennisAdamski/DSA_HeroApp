@@ -1,5 +1,6 @@
 import 'package:dsa_heldenverwaltung/domain/copy_with_sentinel.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_spell_text_overrides.dart';
+import 'package:dsa_heldenverwaltung/domain/unbekannte_json_felder.dart';
 
 /// Speichert den Heldenwert in einem einzelnen Zauber (unveraenderlich).
 ///
@@ -25,6 +26,7 @@ class HeroSpellEntry {
     this.learnedTradition,
     this.specializations = const [],
     this.textOverrides,
+    this.unbekannteFelder = const <String, Object?>{},
   });
 
   final int? spellValue;
@@ -36,6 +38,23 @@ class HeroSpellEntry {
   final List<String> specializations;
   final HeroSpellTextOverrides? textOverrides;
 
+  /// JSON-Felder einer neueren App-Version; bleiben beim Speichern erhalten
+  /// (siehe `unbekannte_json_felder.dart`).
+  final Map<String, Object?> unbekannteFelder;
+
+  /// Alle Schluessel, die [fromJson] liest — einschliesslich der nur bedingt
+  /// geschriebenen; alles andere bleibt erhalten.
+  static const Set<String> jsonSchluessel = <String>{
+    'spellValue',
+    'modifier',
+    'hauszauber',
+    'gifted',
+    'learnedRepresentation',
+    'learnedTradition',
+    'specializations',
+    'textOverrides',
+  };
+
   /// Liefert eine gezielte, immutable Aktualisierung des Zaubereintrags.
   HeroSpellEntry copyWith({
     Object? spellValue = keepFieldValue,
@@ -46,6 +65,7 @@ class HeroSpellEntry {
     Object? learnedTradition = keepFieldValue,
     List<String>? specializations,
     Object? textOverrides = keepFieldValue,
+    Map<String, Object?>? unbekannteFelder,
   }) {
     return HeroSpellEntry(
       spellValue: identical(spellValue, keepFieldValue)
@@ -64,6 +84,7 @@ class HeroSpellEntry {
       textOverrides: identical(textOverrides, keepFieldValue)
           ? this.textOverrides
           : textOverrides as HeroSpellTextOverrides?,
+      unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
     );
   }
 
@@ -86,7 +107,7 @@ class HeroSpellEntry {
     if (overrides != null && !overrides.isEmpty) {
       json['textOverrides'] = overrides.toJson();
     }
-    return json;
+    return mitUnbekanntenFeldern(json, unbekannteFelder);
   }
 
   /// Liest einen Zaubereintrag rueckwaertskompatibel aus JSON.
@@ -111,6 +132,7 @@ class HeroSpellEntry {
       textOverrides: HeroSpellTextOverrides.fromJsonValue(
         json['textOverrides'],
       ),
+      unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
     );
   }
 }

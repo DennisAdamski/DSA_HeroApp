@@ -1,3 +1,5 @@
+import 'package:dsa_heldenverwaltung/domain/unbekannte_json_felder.dart';
+
 /// Ein Monat des aventurischen Kalenders.
 ///
 /// [value] ist der persistierte Schluessel, [label] der Anzeigename.
@@ -49,7 +51,13 @@ const int aventurianNamenloseTageCount = 5;
 /// Auswertung uebernimmt `lib/rules/derived/aventurian_age_rules.dart`.
 class AventurianDate {
   /// Erzeugt ein persistierbares aventurisches Datum.
-  const AventurianDate({this.day = '', this.month = '', this.year = ''});
+  const AventurianDate({
+    this.day = '',
+    this.month = '',
+    this.year = '',
+    this.unbekannteFelder = const <String, Object?>{},
+    this.unbekannteEnumWerte = const <String, Object?>{},
+  });
 
   /// Erzeugt ein Datum aus einzelnen, moeglicherweise ungetrimmten Teilen.
   factory AventurianDate.fromParts(String day, String month, String year) {
@@ -76,28 +84,69 @@ class AventurianDate {
         year.trim().isNotEmpty;
   }
 
+  /// JSON-Felder einer neueren App-Version; bleiben beim Speichern erhalten
+  /// (siehe `unbekannte_json_felder.dart`).
+  final Map<String, Object?> unbekannteFelder;
+
+  /// Unbekannte Aufzaehlungswerte einer neueren App-Version (JSON-Schluessel
+  /// -> Rohwert). Die Felder tragen den Ersatzwert, mit dem Regeln rechnen;
+  /// geschrieben wird der Rohwert, bis jemand das Feld auf einen anderen Wert
+  /// setzt (siehe `unbekannte_json_felder.dart`).
+  final Map<String, Object?> unbekannteEnumWerte;
+
+  /// Alle Schluessel, die [fromJson] liest; alles andere bleibt erhalten.
+  static const Set<String> jsonSchluessel = <String>{'day', 'month', 'year'};
+
   /// Liefert eine Kopie mit gezielt ersetzten Feldern.
-  AventurianDate copyWith({String? day, String? month, String? year}) {
+  AventurianDate copyWith({
+    String? day,
+    String? month,
+    String? year,
+    Map<String, Object?>? unbekannteFelder,
+    Map<String, Object?>? unbekannteEnumWerte,
+  }) {
     return AventurianDate(
       day: day ?? this.day,
       month: month ?? this.month,
       year: year ?? this.year,
+      unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
+      unbekannteEnumWerte:
+          unbekannteEnumWerte ??
+          ohneGeaenderteEnumWerte(this.unbekannteEnumWerte, {
+            'month': month != null && month != this.month,
+          }),
     );
   }
 
   /// Serialisiert das Datum fuer Persistenz und Export.
   Map<String, dynamic> toJson() {
-    return <String, dynamic>{'day': day, 'month': month, 'year': year};
+    return mitUnbekanntenEnumWerten(
+      mitUnbekanntenFeldern(<String, dynamic>{
+        'day': day,
+        'month': month,
+        'year': year,
+      }, unbekannteFelder),
+      unbekannteEnumWerte,
+    );
   }
 
   /// Laedt ein Datum tolerant gegenueber fehlenden Feldern.
   static AventurianDate fromJson(Map<String, dynamic> json) {
+    final enumRoh = <String, Object?>{};
     String getString(String key) => json[key]?.toString().trim() ?? '';
 
     return AventurianDate(
       day: getString('day'),
-      month: normalizeAventurianMonth(getString('month')),
+      month: leseEnumWert(
+        json['month'],
+        'month',
+        erkenne: _erkenneMonat,
+        ersatz: '',
+        unbekannt: enumRoh,
+      ),
       year: getString('year'),
+      unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
+      unbekannteEnumWerte: festeEnumWerte(enumRoh),
     );
   }
 
@@ -106,14 +155,29 @@ class AventurianDate {
     return other is AventurianDate &&
         other.day == day &&
         other.month == month &&
-        other.year == year;
+        other.year == year &&
+        unbekannteFelderGleich(unbekannteFelder, other.unbekannteFelder) &&
+        unbekannteFelderGleich(unbekannteEnumWerte, other.unbekannteEnumWerte);
   }
 
   @override
-  int get hashCode => Object.hash(day, month, year);
+  int get hashCode => Object.hash(
+    day,
+    month,
+    year,
+    unbekannteFelderHash(unbekannteFelder),
+    unbekannteFelderHash(unbekannteEnumWerte),
+  );
 
   @override
   String toString() => 'AventurianDate($day, $month, $year)';
+}
+
+// Erkennt einen Monat samt Anzeigenamen; Unbekanntes ergibt `null`.
+String? _erkenneMonat(Object? raw) {
+  if (raw == null) return null;
+  final monat = normalizeAventurianMonth(raw.toString());
+  return monat.isEmpty ? null : monat;
 }
 
 /// Fuehrt eine Monatsangabe auf ihren Schluessel zurueck.

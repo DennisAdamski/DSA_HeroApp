@@ -195,6 +195,51 @@ void main() {
     expect(abenteuer.people.single.name, 'Alrik');
   });
 
+  testWidgets('Bearbeiten erhält Felder einer neueren App-Version', (
+    tester,
+  ) async {
+    const feld = <String, Object?>{'zukunftsfeld': 1};
+    await zeige(
+      tester,
+      held: testHero().copyWith(
+        adventures: [
+          _nebel.copyWith(
+            notes: [_nebel.notes.single.copyWith(unbekannteFelder: feld)],
+            people: [_nebel.people.single.copyWith(unbekannteFelder: feld)],
+            currentAventurianDate: const HeroAdventureDateValue(
+              day: '1',
+              month: 'praios',
+              year: '1040',
+              unbekannteFelder: feld,
+            ),
+            unbekannteFelder: feld,
+          ),
+        ],
+      ),
+    );
+    await tester.tap(find.text('Weiß mehr.'));
+    await tester.pumpAndSettle();
+    await tester.enterText(key('karto-abenteuer-feld-2'), 'Weiß alles.');
+    await speichern(tester);
+    await tester.tap(find.text('Alrik'));
+    await tester.pumpAndSettle();
+    await tester.enterText(key('karto-abenteuer-feld-2'), 'Wirt in Gareth');
+    await speichern(tester);
+    await tester.tap(key('karto-abenteuer-datum'));
+    await tester.pumpAndSettle();
+    await tester.enterText(key('karto-abenteuer-tag'), '12');
+    await speichern(tester);
+
+    final abenteuer = await gespeichert();
+    expect(abenteuer.notes.single.description, 'Weiß alles.');
+    expect(abenteuer.people.single.description, 'Wirt in Gareth');
+    expect(abenteuer.currentAventurianDate.day, '12');
+    expect(abenteuer.unbekannteFelder, feld);
+    expect(abenteuer.notes.single.unbekannteFelder, feld);
+    expect(abenteuer.people.single.unbekannteFelder, feld);
+    expect(abenteuer.currentAventurianDate.unbekannteFelder, feld);
+  });
+
   testWidgets('waehrend einer Planung ist das Blatt schreibgeschuetzt', (
     tester,
   ) async {

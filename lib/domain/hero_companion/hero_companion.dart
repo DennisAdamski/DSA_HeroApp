@@ -8,6 +8,7 @@ import 'package:dsa_heldenverwaltung/domain/combat_config.dart' show ArmorPiece;
 import 'package:dsa_heldenverwaltung/domain/hero_companion/hero_companion_attack.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_companion/hero_companion_sonderfertigkeit.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_companion/hero_companion_speed.dart';
+import 'package:dsa_heldenverwaltung/domain/unbekannte_json_felder.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_rituals.dart'
     show HeroRitualCategory;
 
@@ -88,6 +89,8 @@ class HeroCompanion {
     this.startAup,
     this.startAsp,
     this.startMr,
+    this.unbekannteFelder = const <String, Object?>{},
+    this.unbekannteEnumWerte = const <String, Object?>{},
   });
 
   /// Stabiler Schluessel des Begleiters.
@@ -241,6 +244,67 @@ class HeroCompanion {
   /// Startwert fuer MR (analog zu startLep).
   final int? startMr;
 
+  /// JSON-Felder einer neueren App-Version; bleiben beim Speichern erhalten
+  /// (siehe `unbekannte_json_felder.dart`).
+  final Map<String, Object?> unbekannteFelder;
+
+  /// Unbekannte Aufzaehlungswerte einer neueren App-Version (JSON-Schluessel
+  /// -> Rohwert). Die Felder tragen den Ersatzwert, mit dem Regeln rechnen;
+  /// geschrieben wird der Rohwert, bis jemand das Feld auf einen anderen Wert
+  /// setzt (siehe `unbekannte_json_felder.dart`).
+  final Map<String, Object?> unbekannteEnumWerte;
+
+  /// Alle Schluessel, die [fromJson] liest — einschliesslich der nur bedingt
+  /// geschriebenen und der Altschluessel `eigenAp` und `vorNachteile`.
+  static const Set<String> jsonSchluessel = <String>{
+    'id',
+    'name',
+    'typ',
+    'familie',
+    'aussehen',
+    'gattung',
+    'gewicht',
+    'groesse',
+    'alter',
+    'mu',
+    'kl',
+    'inn',
+    'ch',
+    'ff',
+    'ge',
+    'ko',
+    'kk',
+    'ini',
+    'magieresistenz',
+    'loyalitaet',
+    'apGesamt',
+    'eigenAp',
+    'apAusgegeben',
+    'geschwindigkeiten',
+    'maxLep',
+    'maxAup',
+    'maxAsp',
+    'tragkraft',
+    'zugkraft',
+    'ausbildung',
+    'futterbedarf',
+    'vorteile',
+    'vorNachteile',
+    'nachteile',
+    'gw',
+    'au',
+    'angriffe',
+    'sonderfertigkeiten',
+    'ruestungsTeile',
+    'ruestungsgewoehnung',
+    'ritualCategories',
+    'steigerungen',
+    'startLep',
+    'startAup',
+    'startAsp',
+    'startMr',
+  };
+
   HeroCompanion copyWith({
     String? id,
     String? name,
@@ -286,6 +350,8 @@ class HeroCompanion {
     Object? startAup = _keepNull,
     Object? startAsp = _keepNull,
     Object? startMr = _keepNull,
+    Map<String, Object?>? unbekannteFelder,
+    Map<String, Object?>? unbekannteEnumWerte,
   }) {
     return HeroCompanion(
       id: id ?? this.id,
@@ -346,68 +412,78 @@ class HeroCompanion {
           ? this.startAsp
           : startAsp as int?,
       startMr: identical(startMr, _keepNull) ? this.startMr : startMr as int?,
+      unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
+      unbekannteEnumWerte:
+          unbekannteEnumWerte ??
+          ohneGeaenderteEnumWerte(this.unbekannteEnumWerte, {
+            'typ': typ != null && typ != this.typ,
+          }),
     );
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'name': name,
-      'typ': typ.name,
-      'familie': familie,
-      'aussehen': aussehen,
-      'gattung': gattung,
-      'gewicht': gewicht,
-      'groesse': groesse,
-      'alter': alter,
-      if (mu != null) 'mu': mu,
-      if (kl != null) 'kl': kl,
-      if (inn != null) 'inn': inn,
-      if (ch != null) 'ch': ch,
-      if (ff != null) 'ff': ff,
-      if (ge != null) 'ge': ge,
-      if (ko != null) 'ko': ko,
-      if (kk != null) 'kk': kk,
-      if (ini != null) 'ini': ini,
-      if (magieresistenz != null) 'magieresistenz': magieresistenz,
-      if (loyalitaet != null) 'loyalitaet': loyalitaet,
-      if (apGesamt != null) 'apGesamt': apGesamt,
-      if (apAusgegeben != null) 'apAusgegeben': apAusgegeben,
-      'geschwindigkeiten': geschwindigkeiten
-          .map((s) => s.toJson())
-          .toList(growable: false),
-      if (maxLep != null) 'maxLep': maxLep,
-      if (maxAup != null) 'maxAup': maxAup,
-      if (maxAsp != null) 'maxAsp': maxAsp,
-      'tragkraft': tragkraft,
-      'zugkraft': zugkraft,
-      'ausbildung': ausbildung,
-      'futterbedarf': futterbedarf,
-      'vorteile': vorteile,
-      'nachteile': nachteile,
-      if (gw != null) 'gw': gw,
-      if (au != null) 'au': au,
-      'angriffe': angriffe.map((a) => a.toJson()).toList(growable: false),
-      'sonderfertigkeiten': sonderfertigkeiten
-          .map((s) => s.toJson())
-          .toList(growable: false),
-      'ruestungsTeile': ruestungsTeile
-          .map((p) => p.toJson())
-          .toList(growable: false),
-      'ruestungsgewoehnung': ruestungsgewoehnung,
-      if (ritualCategories.isNotEmpty)
-        'ritualCategories': ritualCategories
-            .map((c) => c.toJson())
+    return mitUnbekanntenEnumWerten(
+      mitUnbekanntenFeldern(<String, dynamic>{
+        'id': id,
+        'name': name,
+        'typ': typ.name,
+        'familie': familie,
+        'aussehen': aussehen,
+        'gattung': gattung,
+        'gewicht': gewicht,
+        'groesse': groesse,
+        'alter': alter,
+        if (mu != null) 'mu': mu,
+        if (kl != null) 'kl': kl,
+        if (inn != null) 'inn': inn,
+        if (ch != null) 'ch': ch,
+        if (ff != null) 'ff': ff,
+        if (ge != null) 'ge': ge,
+        if (ko != null) 'ko': ko,
+        if (kk != null) 'kk': kk,
+        if (ini != null) 'ini': ini,
+        if (magieresistenz != null) 'magieresistenz': magieresistenz,
+        if (loyalitaet != null) 'loyalitaet': loyalitaet,
+        if (apGesamt != null) 'apGesamt': apGesamt,
+        if (apAusgegeben != null) 'apAusgegeben': apAusgegeben,
+        'geschwindigkeiten': geschwindigkeiten
+            .map((s) => s.toJson())
             .toList(growable: false),
-      if (steigerungen.isNotEmpty) 'steigerungen': steigerungen,
-      if (startLep != null) 'startLep': startLep,
-      if (startAup != null) 'startAup': startAup,
-      if (startAsp != null) 'startAsp': startAsp,
-      if (startMr != null) 'startMr': startMr,
-    };
+        if (maxLep != null) 'maxLep': maxLep,
+        if (maxAup != null) 'maxAup': maxAup,
+        if (maxAsp != null) 'maxAsp': maxAsp,
+        'tragkraft': tragkraft,
+        'zugkraft': zugkraft,
+        'ausbildung': ausbildung,
+        'futterbedarf': futterbedarf,
+        'vorteile': vorteile,
+        'nachteile': nachteile,
+        if (gw != null) 'gw': gw,
+        if (au != null) 'au': au,
+        'angriffe': angriffe.map((a) => a.toJson()).toList(growable: false),
+        'sonderfertigkeiten': sonderfertigkeiten
+            .map((s) => s.toJson())
+            .toList(growable: false),
+        'ruestungsTeile': ruestungsTeile
+            .map((p) => p.toJson())
+            .toList(growable: false),
+        'ruestungsgewoehnung': ruestungsgewoehnung,
+        if (ritualCategories.isNotEmpty)
+          'ritualCategories': ritualCategories
+              .map((c) => c.toJson())
+              .toList(growable: false),
+        if (steigerungen.isNotEmpty) 'steigerungen': steigerungen,
+        if (startLep != null) 'startLep': startLep,
+        if (startAup != null) 'startAup': startAup,
+        if (startAsp != null) 'startAsp': startAsp,
+        if (startMr != null) 'startMr': startMr,
+      }, unbekannteFelder),
+      unbekannteEnumWerte,
+    );
   }
 
   static HeroCompanion fromJson(Map<String, dynamic> json) {
+    final enumRoh = <String, Object?>{};
     final rawGeschwindigkeiten =
         (json['geschwindigkeiten'] as List?) ?? const <dynamic>[];
     final rawRuestungsTeile =
@@ -415,7 +491,13 @@ class HeroCompanion {
     return HeroCompanion(
       id: (json['id'] as String?) ?? '',
       name: (json['name'] as String?) ?? '',
-      typ: BegleiterTyp.fromJson(json['typ'] as String?),
+      typ: leseEnumWert(
+        json['typ'],
+        'typ',
+        erkenne: (roh) => enumNachName(BegleiterTyp.values, roh),
+        ersatz: BegleiterTyp.sonstigerBegleiter,
+        unbekannt: enumRoh,
+      ),
       familie: (json['familie'] as String?) ?? '',
       aussehen: (json['aussehen'] as String?) ?? '',
       gattung: (json['gattung'] as String?) ?? '',
@@ -491,6 +573,8 @@ class HeroCompanion {
       startAup: (json['startAup'] as num?)?.toInt(),
       startAsp: (json['startAsp'] as num?)?.toInt(),
       startMr: (json['startMr'] as num?)?.toInt(),
+      unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
+      unbekannteEnumWerte: festeEnumWerte(enumRoh),
     );
   }
 
@@ -541,7 +625,12 @@ class HeroCompanion {
           startLep == other.startLep &&
           startAup == other.startAup &&
           startAsp == other.startAsp &&
-          startMr == other.startMr;
+          startMr == other.startMr &&
+          unbekannteFelderGleich(unbekannteFelder, other.unbekannteFelder) &&
+          unbekannteFelderGleich(
+            unbekannteEnumWerte,
+            other.unbekannteEnumWerte,
+          );
 
   @override
   int get hashCode => Object.hashAll([
@@ -589,6 +678,8 @@ class HeroCompanion {
     startAup,
     startAsp,
     startMr,
+    unbekannteFelderHash(unbekannteFelder),
+    unbekannteFelderHash(unbekannteEnumWerte),
   ]);
 }
 

@@ -1,4 +1,5 @@
 import 'package:dsa_heldenverwaltung/domain/avatar_gesichtsbefund.dart';
+import 'package:dsa_heldenverwaltung/domain/unbekannte_json_felder.dart';
 
 /// Einzelner Eintrag in der Avatar-Galerie eines Helden.
 class AvatarGalleryEntry {
@@ -14,6 +15,7 @@ class AvatarGalleryEntry {
     this.headerZoom,
     this.gesichtsbefund,
     this.gesichtsbefundVersion,
+    this.unbekannteFelder = const <String, Object?>{},
   });
 
   /// Eindeutige ID (UUID).
@@ -57,6 +59,25 @@ class AvatarGalleryEntry {
   /// `kAvatarGesichtDetektorVersion`, mit der [gesichtsbefund] entstand.
   final int? gesichtsbefundVersion;
 
+  /// JSON-Felder einer neueren App-Version; bleiben beim Speichern erhalten
+  /// (siehe `unbekannte_json_felder.dart`).
+  final Map<String, Object?> unbekannteFelder;
+
+  /// Alle Schluessel, die [fromJson] liest — einschliesslich der nur bedingt
+  /// geschriebenen; alles andere bleibt erhalten.
+  static const Set<String> jsonSchluessel = <String>{
+    'id',
+    'fileName',
+    'quelle',
+    'stilId',
+    'erstelltAm',
+    'promptAuszug',
+    'headerFocusX',
+    'headerFocusY',
+    'headerZoom',
+    'gesicht',
+  };
+
   AvatarGalleryEntry copyWith({
     String? id,
     String? fileName,
@@ -69,6 +90,7 @@ class AvatarGalleryEntry {
     double? headerZoom,
     AvatarGesichtsbefund? gesichtsbefund,
     int? gesichtsbefundVersion,
+    Map<String, Object?>? unbekannteFelder,
   }) {
     return AvatarGalleryEntry(
       id: id ?? this.id,
@@ -83,10 +105,11 @@ class AvatarGalleryEntry {
       gesichtsbefund: gesichtsbefund ?? this.gesichtsbefund,
       gesichtsbefundVersion:
           gesichtsbefundVersion ?? this.gesichtsbefundVersion,
+      unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
     );
   }
 
-  Map<String, dynamic> toJson() => {
+  Map<String, dynamic> toJson() => mitUnbekanntenFeldern(<String, dynamic>{
     'id': id,
     'fileName': fileName,
     'quelle': quelle,
@@ -100,7 +123,7 @@ class AvatarGalleryEntry {
     // Bestandseintrags und mit ihm `heroContentHash`.
     if (gesichtsbefund != null)
       'gesicht': {'v': gesichtsbefundVersion ?? 0, ...gesichtsbefund!.toJson()},
-  };
+  }, unbekannteFelder);
 
   static AvatarGalleryEntry fromJson(Map<String, dynamic> json) {
     final rohGesicht = json['gesicht'];
@@ -120,6 +143,7 @@ class AvatarGalleryEntry {
       gesichtsbefundVersion: gesichtsbefund == null || rohVersion is! num
           ? null
           : rohVersion.toInt(),
+      unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
     );
   }
 }

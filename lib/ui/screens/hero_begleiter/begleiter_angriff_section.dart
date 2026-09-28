@@ -307,16 +307,19 @@ class _AngriffDialogState extends State<_AngriffDialog> {
     super.dispose();
   }
 
+  // Ein vorhandener Angriff wird per `copyWith` geaendert: sonst gingen die
+  // gekauften Steigerungen (Befund ARCH-07-B11) und unbekannte Felder
+  // verloren.
   HeroCompanionAttack _build() {
-    return HeroCompanionAttack(
-      id: widget.initial?.id ?? const Uuid().v4(),
-      name: _name.text.trim(),
-      dk: _dk.text.trim(),
-      at: int.tryParse(_at.text.trim()),
-      pa: int.tryParse(_pa.text.trim()),
-      tp: _tp.text.trim(),
-      beschreibung: _beschreibung.text.trim(),
-    );
+    return (widget.initial ?? HeroCompanionAttack(id: const Uuid().v4()))
+        .copyWith(
+          name: _name.text.trim(),
+          dk: _dk.text.trim(),
+          at: int.tryParse(_at.text.trim()),
+          pa: int.tryParse(_pa.text.trim()),
+          tp: _tp.text.trim(),
+          beschreibung: _beschreibung.text.trim(),
+        );
   }
 
   @override

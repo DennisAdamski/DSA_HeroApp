@@ -9,12 +9,20 @@
 /// Bestandsdaten enthalten keine unbekannten Schluessel; ihr JSON und damit
 /// ihr Inhalts-Hash bleiben unveraendert.
 ///
-/// Neben `HeroSheet` und `HeroState` tragen die Ausruestungsmodelle
-/// (`CombatConfig` mit Waffen, Fernkampfprofil, Geschossen, Distanzstufen,
-/// Ruestung und Nebenhand sowie `HeroInventoryEntry` mit seinen
-/// Modifikatoren) je einen eigenen Satz. Das wirkt nur, solange Aenderungen
-/// ueber `copyWith` der vorhandenen Instanz laufen; wer ein bestehendes
-/// Objekt per Konstruktor neu aufbaut, verliert die Felder.
+/// Neben `HeroSheet` und `HeroState` traegt **jedes** verschachtelte Modell,
+/// das in ihrem JSON steht, einen eigenen Satz und ein eigenes
+/// `jsonSchluessel` (Ausruestung, Kampfeinstellungen, Talente, Zauber,
+/// Rituale, Sprachen, Sonderfertigkeiten, Begleiter, Abenteuer, Notizen,
+/// Kontakte, Gruppen, Reisebericht, Eigenschaften und Grundwerte, SE-Pools,
+/// Bilder, Steigerungsverlauf sowie die Teilmodelle des Laufzeitzustands).
+/// Das wirkt nur, solange Aenderungen ueber `copyWith` der vorhandenen
+/// Instanz laufen; wer ein bestehendes Objekt per Konstruktor neu aufbaut,
+/// verliert die Felder. Neu errechnete Werte werden deshalb per `copyWith`
+/// (bzw. `uebernimmWerte` bei `Attributes`/`AttributeModifiers`) in die
+/// vorhandene Instanz uebernommen.
+///
+/// Ausgenommen ist nur `OffhandSlot`: der Altschluessel `offhand` wird beim
+/// Laden migriert und nie geschrieben.
 library;
 
 /// Liefert alle Eintraege aus [json], deren Schluessel nicht in [bekannt]
@@ -46,6 +54,81 @@ Map<String, dynamic> mitUnbekanntenFeldern(
     json.putIfAbsent(entry.key, () => _kopie(entry.value));
   }
   return json;
+}
+
+/// Liest einen Aufzaehlungswert und bewahrt einen unbekannten Rohwert.
+///
+/// Erkennt [erkenne] den Rohwert [roh], ist das Ergebnis der erkannte Wert.
+/// Sonst liefert die Funktion [ersatz]; ist [roh] dabei belegt (weder `null`
+/// noch ein leerer Text), stammt er vermutlich aus einer neueren App-Version
+/// und wird unter [schluessel] in [unbekannt] vermerkt. Regeln rechnen nur
+/// mit dem Ersatz; [mitUnbekanntenEnumWerten] schreibt den Rohwert zurueck.
+E leseEnumWert<E>(
+  Object? roh,
+  String schluessel, {
+  required E? Function(Object? roh) erkenne,
+  required E ersatz,
+  required Map<String, Object?> unbekannt,
+}) {
+  final erkannt = erkenne(roh);
+  if (erkannt != null) {
+    return erkannt;
+  }
+  if (roh != null && !(roh is String && roh.trim().isEmpty)) {
+    unbekannt[schluessel] = _kopie(roh);
+  }
+  return ersatz;
+}
+
+/// Erkennt einen Aufzaehlungswert ueber seinen Namen; sonst `null`.
+E? enumNachName<E extends Enum>(List<E> werte, Object? roh) {
+  if (roh is! String) {
+    return null;
+  }
+  return werte.asNameMap()[roh];
+}
+
+/// Friert gesammelte unbekannte Aufzaehlungswerte ein.
+Map<String, Object?> festeEnumWerte(Map<String, Object?> werte) {
+  if (werte.isEmpty) {
+    return const <String, Object?>{};
+  }
+  return Map<String, Object?>.unmodifiable(werte);
+}
+
+/// Ersetzt in [json] die Ersatzwerte durch die bewahrten Rohwerte.
+///
+/// Anders als [mitUnbekanntenFeldern] ueberschreibt diese Funktion: Der
+/// Schluessel ist bekannt, geschrieben wurde aber nur der Ersatz.
+Map<String, dynamic> mitUnbekanntenEnumWerten(
+  Map<String, dynamic> json,
+  Map<String, Object?> werte,
+) {
+  for (final entry in werte.entries) {
+    json[entry.key] = _kopie(entry.value);
+  }
+  return json;
+}
+
+/// Entfernt die Rohwerte der Felder, die [geaendert] als geaendert meldet.
+///
+/// Fuer `copyWith`: Ein Feld gilt als geaendert, wenn ein **anderer** Wert
+/// als der bisherige gesetzt wird. Wer den bisherigen Wert (auch den
+/// Ersatz) nur durchreicht, etwa in einer Normalisierung oder einem Abgleich,
+/// laesst den Rohwert stehen. Eine echte Aenderung durch den Nutzer
+/// ueberschreibt ihn bewusst.
+Map<String, Object?> ohneGeaenderteEnumWerte(
+  Map<String, Object?> werte,
+  Map<String, bool> geaendert,
+) {
+  if (werte.isEmpty ||
+      !geaendert.entries.any((e) => e.value && werte.containsKey(e.key))) {
+    return werte;
+  }
+  return festeEnumWerte(<String, Object?>{
+    for (final entry in werte.entries)
+      if (geaendert[entry.key] != true) entry.key: entry.value,
+  });
 }
 
 /// Vergleicht zwei Saetze unbekannter Felder inhaltlich (tief, wie JSON).

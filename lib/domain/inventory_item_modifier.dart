@@ -57,6 +57,7 @@ class InventoryItemModifier {
     required this.wert,
     this.beschreibung = '',
     this.unbekannteFelder = const <String, Object?>{},
+    this.unbekannteEnumWerte = const <String, Object?>{},
   });
 
   final InventoryModifierKind kind;
@@ -73,6 +74,12 @@ class InventoryItemModifier {
   /// (siehe `unbekannte_json_felder.dart`).
   final Map<String, Object?> unbekannteFelder;
 
+  /// Unbekannte Aufzaehlungswerte einer neueren App-Version (JSON-Schluessel
+  /// -> Rohwert). Die Felder tragen den Ersatzwert, mit dem Regeln rechnen;
+  /// geschrieben wird der Rohwert, bis jemand das Feld auf einen anderen Wert
+  /// setzt (siehe `unbekannte_json_felder.dart`).
+  final Map<String, Object?> unbekannteEnumWerte;
+
   /// Alle Schluessel, die [fromJson] liest; alles andere bleibt erhalten.
   static const Set<String> jsonSchluessel = <String>{
     'kind',
@@ -88,6 +95,7 @@ class InventoryItemModifier {
     int? wert,
     String? beschreibung,
     Map<String, Object?>? unbekannteFelder,
+    Map<String, Object?>? unbekannteEnumWerte,
   }) {
     return InventoryItemModifier(
       kind: kind ?? this.kind,
@@ -95,25 +103,36 @@ class InventoryItemModifier {
       wert: wert ?? this.wert,
       beschreibung: beschreibung ?? this.beschreibung,
       unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
+      unbekannteEnumWerte:
+          unbekannteEnumWerte ??
+          ohneGeaenderteEnumWerte(this.unbekannteEnumWerte, {
+            'kind': kind != null && kind != this.kind,
+          }),
     );
   }
 
   /// Serialisiert den Modifikator fuer Persistenz und Export.
   Map<String, dynamic> toJson() {
-    return mitUnbekanntenFeldern(<String, dynamic>{
-      'kind': kind.name,
-      'targetId': targetId,
-      'wert': wert,
-      'beschreibung': beschreibung,
-    }, unbekannteFelder);
+    return mitUnbekanntenEnumWerten(
+      mitUnbekanntenFeldern(<String, dynamic>{
+        'kind': kind.name,
+        'targetId': targetId,
+        'wert': wert,
+        'beschreibung': beschreibung,
+      }, unbekannteFelder),
+      unbekannteEnumWerte,
+    );
   }
 
   /// Laedt einen Inventar-Modifikator tolerant gegenueber fehlenden Feldern.
   static InventoryItemModifier fromJson(Map<String, dynamic> json) {
-    final kindStr = (json['kind'] as String?) ?? 'stat';
-    final kind = InventoryModifierKind.values.firstWhere(
-      (e) => e.name == kindStr,
-      orElse: () => InventoryModifierKind.stat,
+    final enumRoh = <String, Object?>{};
+    final kind = leseEnumWert(
+      json['kind'],
+      'kind',
+      erkenne: (roh) => enumNachName(InventoryModifierKind.values, roh),
+      ersatz: InventoryModifierKind.stat,
+      unbekannt: enumRoh,
     );
     return InventoryItemModifier(
       kind: kind,
@@ -121,6 +140,7 @@ class InventoryItemModifier {
       wert: (json['wert'] as num?)?.toInt() ?? 0,
       beschreibung: (json['beschreibung'] as String?) ?? '',
       unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
+      unbekannteEnumWerte: festeEnumWerte(enumRoh),
     );
   }
 }
