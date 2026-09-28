@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/resource_activation_rules.dart';
@@ -85,12 +86,17 @@ class WorkspaceHeaderStatRail extends ConsumerWidget {
     final computedAsync = ref.watch(heroComputedProvider(heroId));
     final talentBeOverride = ref.watch(talentBeOverrideProvider(heroId));
     final computed = computedAsync.valueOrNull;
+    // Ersatz, solange der Snapshot laedt; Vor-/Nachteile wirken wie dort
+    // ueber ihre Katalog-ID (ARCH-02).
+    final catalog = ref.watch(rulesCatalogProvider).valueOrNull;
     final effectiveAttributes =
-        computed?.effectiveAttributes ?? computeEffectiveAttributes(hero);
+        computed?.effectiveAttributes ??
+        computeEffectiveAttributes(hero, catalog: catalog);
     final state = computed?.state;
     final derived = computed?.derivedStats;
     final resourceActivation =
-        computed?.resourceActivation ?? computeHeroResourceActivation(hero);
+        computed?.resourceActivation ??
+        computeHeroResourceActivation(hero, catalog: catalog);
     final activeTalentBe =
         talentBeOverride ?? computed?.combatPreviewStats.beKampf;
     final showMagicResources = resourceActivation.magic.isEnabled;

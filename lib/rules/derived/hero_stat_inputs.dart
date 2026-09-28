@@ -46,7 +46,7 @@ HeroStatInputs computeHeroStatInputs({
   required HeroState state,
   required List<TalentDef> talents,
   required bool epicAdvantagesActive,
-  RulesCatalog? catalog,
+  required RulesCatalog? catalog,
 }) {
   final parsed = parseModifierTextsForHero(hero, catalog: catalog);
   // Inventar-Modifikatoren aus ausgeruesteten Items aggregieren

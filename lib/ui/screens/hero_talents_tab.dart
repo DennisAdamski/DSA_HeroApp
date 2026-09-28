@@ -133,6 +133,10 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
   /// demselben Grund wie [_tabellenAnsicht] in `build` gelesen.
   bool _epicAdvantagesActive = false;
   CatalogRuleResolver _latestCatalogRuleResolver = const CatalogRuleResolver();
+
+  /// Zuletzt gebauter Regelkatalog; die Tabellen rechnen Vor-/Nachteile damit
+  /// ueber ihre Katalog-ID (ARCH-02).
+  RulesCatalog? _latestCatalog;
   Map<String, HeroTalentEntry> _draftTalents = <String, HeroTalentEntry>{};
   List<HeroMetaTalent> _draftMetaTalents = <HeroMetaTalent>[];
   Set<String> _invalidCombatTalentIds = <String>{};
@@ -232,6 +236,7 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
             Center(child: Text('Katalog-Fehler: $error')),
         data: (catalog) {
           _latestCatalogRuleResolver = catalog.ruleResolver;
+          _latestCatalog = catalog;
           final combatBaseBe = widget.scope == _TalentTabScope.nonCombat
               ? computeCombatPreviewStats(
                   hero,
@@ -239,6 +244,7 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
                   catalogTalents: catalog.talents,
                   catalogManeuvers: catalog.maneuvers,
                   catalogCombatSpecialAbilities: catalog.combatSpecialAbilities,
+                  catalog: catalog,
                 ).beKampf
               : null;
           final talentBeOverride = ref.watch(talentBeOverrideProvider(hero.id));
@@ -252,6 +258,7 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
               ? computeEffectiveAttributes(
                   hero,
                   tempAttributeMods: state.tempAttributeMods,
+                  catalog: catalog,
                 )
               : null;
           return ValueListenableBuilder<int>(

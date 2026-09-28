@@ -182,7 +182,7 @@ class RestConditionRecoveryResult {
 /// (ARCH-02), frei wirkende Texte wie bisher über ihren Namen.
 RestAbilitySummary collectRestAbilities(
   HeroSheet hero, {
-  RulesCatalog? catalog,
+  required RulesCatalog? catalog,
 }) {
   final merkmale = werteMerkmaleAus(hero, catalog: catalog);
   final wirkungen = merkmale.wirkungen;

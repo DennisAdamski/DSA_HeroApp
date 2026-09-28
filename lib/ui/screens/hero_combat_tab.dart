@@ -325,6 +325,7 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
                 catalogTalents: catalog.talents,
                 catalogManeuvers: catalog.maneuvers,
                 catalogCombatSpecialAbilities: catalog.combatSpecialAbilities,
+                catalog: catalog,
                 epicAdvantagesRuleActive: ref.watch(
                   isHouseRuleActiveProvider(EpicRuleKeys.advantages),
                 ),
@@ -332,6 +333,7 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
               final effectiveAttributes = computeEffectiveAttributes(
                 hero,
                 tempAttributeMods: state.tempAttributeMods,
+                catalog: catalog,
               );
 
               return Column(

@@ -55,7 +55,7 @@ void main() {
         ],
       );
 
-      final abilities = collectRestAbilities(hero);
+      final abilities = collectRestAbilities(hero, catalog: null);
 
       expect(abilities.fastHealingLevel, 2);
       expect(abilities.astralRegenerationLevel, 3);
@@ -123,7 +123,7 @@ void main() {
     );
 
     final result = computeRestRecoveryPhase(
-      abilities: collectRestAbilities(hero),
+      abilities: collectRestAbilities(hero, catalog: null),
       effectiveAttributes: hero.attributes,
       environment: const RestEnvironmentInput(),
       lepRoll: 4,
@@ -150,7 +150,7 @@ void main() {
     );
 
     final result = computeRestRecoveryPhase(
-      abilities: collectRestAbilities(hero),
+      abilities: collectRestAbilities(hero, catalog: null),
       effectiveAttributes: hero.attributes,
       environment: const RestEnvironmentInput(isIll: true),
       lepRoll: 6,

@@ -39,7 +39,7 @@ class ModifierSourceBreakdown {
 /// kommen wie in [parseModifierTextsForHero] aus [werteMerkmaleAus].
 ModifierSourceBreakdown computeModifierSourceBreakdown(
   HeroSheet hero, {
-  RulesCatalog? catalog,
+  required RulesCatalog? catalog,
 }) {
   const empty = '';
   final merkmale = werteMerkmaleAus(hero, catalog: catalog);

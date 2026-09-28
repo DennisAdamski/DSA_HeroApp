@@ -34,7 +34,7 @@ void main() {
     StatModifiers inventar = const StatModifiers(),
     StatModifiers wunden = const StatModifiers(),
   }) {
-    final parsed = parseModifierTextsForHero(held);
+    final parsed = parseModifierTextsForHero(held, catalog: null);
     final basis = computeDerivedStatsFromInputs(
       sheet: held,
       state: leererZustand,

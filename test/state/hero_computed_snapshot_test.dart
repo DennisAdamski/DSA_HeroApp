@@ -112,8 +112,11 @@ void main() {
 
     final computed = computedSub.read().requireValue;
 
-    final parsed = parseModifierTextsForHero(hero);
-    final effectiveStartAttributes = computeHeroEffectiveStartAttributes(hero);
+    final parsed = parseModifierTextsForHero(hero, catalog: null);
+    final effectiveStartAttributes = computeHeroEffectiveStartAttributes(
+      hero,
+      catalog: null,
+    );
     final attributeMaximums = computeAttributeMaximums(
       effectiveStartAttributes,
     );

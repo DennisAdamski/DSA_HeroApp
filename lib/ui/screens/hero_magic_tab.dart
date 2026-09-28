@@ -347,7 +347,10 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
         final spellDefsById = <String, SpellDef>{
           for (final spell in catalog.spells) spell.id: spell,
         };
-        final effectiveAttributes = computeEffectiveAttributes(hero);
+        final effectiveAttributes = computeEffectiveAttributes(
+          hero,
+          catalog: catalog,
+        );
         final contentUnlocked = ref.watch(catalogContentVisibleProvider);
         final contentPassword = ref.watch(catalogContentPasswordProvider);
         _syncProtectedContentCache(
@@ -529,6 +532,7 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
                             isEditing: _editController.isEditing,
                             onChanged: _updateMagicSpecialAbilities,
                             catalogAbilities: catalog.magicSpecialAbilities,
+                            rulesCatalog: catalog,
                             verfuegbareAp: _verfuegbareApImDraft(hero),
                             episch: hero.isEpisch,
                             requirementContext: _buildRequirementContext(

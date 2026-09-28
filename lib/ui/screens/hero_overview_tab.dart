@@ -19,7 +19,6 @@ import 'package:dsa_heldenverwaltung/rules/derived/epic_main_attribute_rules.dar
 import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_wirkung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_zuordnung_rules.dart';
-import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_source_breakdown.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/resource_activation_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/house_rules/house_rule_registry.dart';
@@ -411,6 +410,7 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
     required bool? magicEnabledOverride,
     required bool? divineEnabledOverride,
   }) {
+    final catalog = ref.read(rulesCatalogProvider).valueOrNull;
     if (!_editController.isEditing) {
       return computeHeroResourceActivation(
         hero.copyWith(
@@ -419,6 +419,7 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
             divineEnabledOverride: divineEnabledOverride,
           ),
         ),
+        catalog: catalog,
       );
     }
     final draftHero = _mitMerkmalEntwurf(hero).copyWith(
@@ -432,10 +433,7 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
         divineEnabledOverride: divineEnabledOverride,
       ),
     );
-    return computeHeroResourceActivation(
-      draftHero,
-      catalog: ref.read(rulesCatalogProvider).valueOrNull,
-    );
+    return computeHeroResourceActivation(draftHero, catalog: catalog);
   }
 
   /// Uebernimmt Ressourcen-Overrides in den Draft des Overview-Tabs.

@@ -47,7 +47,7 @@ class HeroResourceActivation {
 /// (`Astralmacht`), sonst ueber ihren Text (ARCH-02).
 HeroResourceActivation computeHeroResourceActivation(
   HeroSheet hero, {
-  RulesCatalog? catalog,
+  required RulesCatalog? catalog,
 }) {
   final autoMagicEnabled = hasAutomaticMagicActivation(hero, catalog: catalog);
   final autoDivineEnabled = hasAutomaticDivineActivation(
@@ -70,7 +70,10 @@ HeroResourceActivation computeHeroResourceActivation(
 }
 
 /// Prueft die automatische Aktivierung von Magie anhand der Stammdaten.
-bool hasAutomaticMagicActivation(HeroSheet hero, {RulesCatalog? catalog}) {
+bool hasAutomaticMagicActivation(
+  HeroSheet hero, {
+  required RulesCatalog? catalog,
+}) {
   return _hasOriginOrAdvantageModifier(
     hero,
     recognizedCodes: const <String>{'ASP'},
@@ -79,7 +82,10 @@ bool hasAutomaticMagicActivation(HeroSheet hero, {RulesCatalog? catalog}) {
 }
 
 /// Prueft die automatische Aktivierung goettlicher Ressourcen.
-bool hasAutomaticDivineActivation(HeroSheet hero, {RulesCatalog? catalog}) {
+bool hasAutomaticDivineActivation(
+  HeroSheet hero, {
+  required RulesCatalog? catalog,
+}) {
   return _hasOriginOrAdvantageModifier(
     hero,
     recognizedCodes: const <String>{'KAP'},
@@ -90,7 +96,7 @@ bool hasAutomaticDivineActivation(HeroSheet hero, {RulesCatalog? catalog}) {
 bool _hasOriginOrAdvantageModifier(
   HeroSheet hero, {
   required Set<String> recognizedCodes,
-  RulesCatalog? catalog,
+  required RulesCatalog? catalog,
 }) {
   final originTexts = <String>[
     hero.background.rasseModText,

@@ -40,7 +40,10 @@ void main() {
       nachteileText: 'GE-3',
     );
 
-    final effectiveStart = computeHeroEffectiveStartAttributes(hero);
+    final effectiveStart = computeHeroEffectiveStartAttributes(
+      hero,
+      catalog: null,
+    );
 
     expect(effectiveStart.mu, 13);
     expect(effectiveStart.kl, 14);
@@ -98,8 +101,8 @@ void main() {
       vorteileText: 'Herausragende Eigenschaft KK 2',
     );
 
-    expect(computeHeroEffectiveStartAttributes(hero).kk, 16);
-    expect(computeHeroAttributeMaximums(hero).kk, 24);
+    expect(computeHeroEffectiveStartAttributes(hero, catalog: null).kk, 16);
+    expect(computeHeroAttributeMaximums(hero, catalog: null).kk, 24);
   });
 
   test('Rassenbonus addiert sich nach dem Vorteil zum selben Startwert', () {
@@ -133,8 +136,8 @@ void main() {
       vorteileText: 'Herausragende Eigenschaft KK 2',
     );
 
-    expect(computeHeroEffectiveStartAttributes(hero).kk, 17);
-    expect(computeHeroAttributeMaximums(hero).kk, 26);
+    expect(computeHeroEffectiveStartAttributes(hero, catalog: null).kk, 17);
+    expect(computeHeroAttributeMaximums(hero, catalog: null).kk, 26);
   });
 
   test('computeHeroEffectiveStartAttributes ignoriert startAttributes', () {
@@ -169,8 +172,8 @@ void main() {
       background: HeroBackground(rasseModText: 'KK+1'),
     );
 
-    expect(computeHeroEffectiveStartAttributes(hero).kk, 15);
-    expect(computeHeroAttributeMaximums(hero).kk, 23);
+    expect(computeHeroEffectiveStartAttributes(hero, catalog: null).kk, 15);
+    expect(computeHeroAttributeMaximums(hero, catalog: null).kk, 23);
   });
 
   test('computeHeroAttributeMaximums beruecksichtigt den epischen Bonus', () {
@@ -202,7 +205,7 @@ void main() {
       ),
     );
 
-    expect(computeHeroAttributeMaximums(hero).mu, 23);
+    expect(computeHeroAttributeMaximums(hero, catalog: null).mu, 23);
   });
 
   group('pendingAttributeTraitNotices', () {

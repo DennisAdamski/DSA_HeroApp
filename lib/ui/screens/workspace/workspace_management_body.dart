@@ -5,6 +5,7 @@ import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/rules_lookup_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_management_coordinator.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_spec.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_breakpoints.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
@@ -127,7 +128,7 @@ class _WorkspaceManagementBodyState
     }
     final hero = snapshot.byId[widget.heroId];
     if (hero == null) return const Center(child: Text('Held nicht gefunden.'));
-    _coordinator.syncHero(hero);
+    _coordinator.syncHero(hero, catalog: laufenderRegelkatalog(ref));
     if (_coordinator.visibleTabs.isEmpty) {
       return const Center(child: Text('Keine Bereiche verfügbar.'));
     }
