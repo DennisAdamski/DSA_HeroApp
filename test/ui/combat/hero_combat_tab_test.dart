@@ -2863,9 +2863,9 @@ void main() {
       ),
       'Gebundener Schutzgeist',
     );
-    await tester.tap(
-      find.byKey(const ValueKey<String>('combat-offhand-form-save')),
-    );
+    final save = find.byKey(const ValueKey<String>('combat-offhand-form-save'));
+    await tester.ensureVisible(save);
+    await tester.tap(save);
     await tester.pumpAndSettle();
 
     await tapTab(tester, 'Kampfwerte');
@@ -2894,6 +2894,59 @@ void main() {
     expect(
       hero.combatConfig.offhandEquipment.single.artifactDescription,
       'Gebundener Schutzgeist',
+    );
+  });
+
+  testWidgets('editing offhand equipment keeps its instance ID', (
+    tester,
+  ) async {
+    final repo = FakeRepository(
+      heroes: [
+        buildHero(
+          combatConfig: const CombatConfig(
+            offhandEquipment: <OffhandEquipmentEntry>[
+              OffhandEquipmentEntry(
+                id: 'nebenhand-1',
+                name: 'Holzschild',
+                type: OffhandEquipmentType.shield,
+                unbekannteFelder: <String, Object?>{'zukunftsfeld': 1},
+              ),
+            ],
+          ),
+        ),
+      ],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    await openCombatTab(tester, repo);
+    await openArmorTab(tester);
+    final schild = find.text('Holzschild');
+    await tester.ensureVisible(schild.first);
+    await tester.tap(schild.first);
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const ValueKey<String>('combat-offhand-form-name')),
+      'Rundschild',
+    );
+    final save = find.byKey(const ValueKey<String>('combat-offhand-form-save'));
+    await tester.ensureVisible(save);
+    await tester.tap(save);
+    await tester.pumpAndSettle();
+
+    final held = (await repo.listHeroes()).single;
+    expect(held.combatConfig.offhandEquipment.single.id, 'nebenhand-1');
+    expect(held.combatConfig.offhandEquipment.single.name, 'Rundschild');
+    expect(
+      held.combatConfig.offhandEquipment.single.unbekannteFelder,
+      <String, Object?>{'zukunftsfeld': 1},
+      reason: 'Felder einer neueren App-Version überstehen den Editor.',
     );
   });
 

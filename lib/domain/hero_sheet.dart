@@ -1,6 +1,7 @@
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/bought_stats.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
+import 'package:dsa_heldenverwaltung/domain/combat_config/inventar_verweise.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_appearance.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_adventure_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_advancement_entry.dart';
@@ -20,6 +21,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_spell_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/magic_special_ability.dart';
 import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
+import 'package:dsa_heldenverwaltung/domain/unbekannte_json_felder.dart';
 import 'package:dsa_heldenverwaltung/domain/talent_special_ability.dart';
 
 /// Persistiertes Kernmodell eines Helden (ohne Laufzeitzustand).
@@ -70,6 +72,8 @@ class HeroSheet {
     this.connections = const <HeroConnectionEntry>[],
     this.adventures = const <HeroAdventureEntry>[],
     this.advancementHistory = const <HeroAdvancementEntry>[],
+    this.unbekannteVerlaufseintraege = const <UnbekannterVerlaufseintrag>[],
+    this.unbekannteFelder = const <String, Object?>{},
     this.attributeSePool = const HeroAttributeSePool(),
     this.statSePool = const HeroStatSePool(),
     this.companions = const <HeroCompanion>[],
@@ -148,6 +152,14 @@ class HeroSheet {
 
   /// Ausschließlich übernommene, unveränderlich zu behandelnde Erwerbsnachweise.
   final List<HeroAdvancementEntry> advancementHistory;
+
+  /// Verlaufseintraege einer neueren App-Version mit unbekannter
+  /// Steigerungsart; bleiben an ihrer Stelle erhalten (Befund ARCH-07-B5).
+  final List<UnbekannterVerlaufseintrag> unbekannteVerlaufseintraege;
+
+  /// JSON-Felder oberster Ebene, die diese Version nicht kennt; werden beim
+  /// Speichern unveraendert zurueckgeschrieben (Befund ARCH-07-B6).
+  final Map<String, Object?> unbekannteFelder;
 
   /// Zeitpunkt der letzten lokalen Speicherung (UTC).
   final DateTime? lastModified;
@@ -239,6 +251,8 @@ class HeroSheet {
     List<HeroConnectionEntry>? connections,
     List<HeroAdventureEntry>? adventures,
     List<HeroAdvancementEntry>? advancementHistory,
+    List<UnbekannterVerlaufseintrag>? unbekannteVerlaufseintraege,
+    Map<String, Object?>? unbekannteFelder,
     Object? lastModified = _copySentinel,
     HeroAttributeSePool? attributeSePool,
     HeroStatSePool? statSePool,
@@ -304,6 +318,9 @@ class HeroSheet {
       connections: connections ?? this.connections,
       adventures: adventures ?? this.adventures,
       advancementHistory: advancementHistory ?? this.advancementHistory,
+      unbekannteVerlaufseintraege:
+          unbekannteVerlaufseintraege ?? this.unbekannteVerlaufseintraege,
+      unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
       lastModified: identical(lastModified, _copySentinel)
           ? this.lastModified
           : lastModified as DateTime?,
@@ -332,9 +349,71 @@ class HeroSheet {
     );
   }
 
+  /// Alle Schluessel, die [fromJson] liest — einschliesslich der flach
+  /// eingebetteten von [HeroAppearance] und [HeroBackground] und der nur
+  /// bedingt geschriebenen. Alles andere gilt als unbekannt und bleibt
+  /// erhalten (siehe `unbekannte_json_felder.dart`).
+  static const Set<String> jsonSchluessel = <String>{
+    'schemaVersion',
+    'id',
+    'name',
+    'level',
+    'attributes',
+    'rawStartAttributes',
+    'startAttributes',
+    'persistentMods',
+    'bought',
+    'combatConfig',
+    'talents',
+    'metaTalents',
+    'hiddenTalentIds',
+    'talentSpecialAbilities',
+    'spells',
+    'ritualCategories',
+    'representationen',
+    'repraesentationsTraditionen',
+    'merkmalskenntnisse',
+    'magicSpecialAbilities',
+    'magicLeadAttribute',
+    'sprachen',
+    'schriften',
+    'muttersprache',
+    'vorteileText',
+    'nachteileText',
+    'apTotal',
+    'apSpent',
+    'apAvailable',
+    'dukaten',
+    'resourceActivationConfig',
+    'showInapplicableSpecialAbilities',
+    'inventoryEntries',
+    'notes',
+    'connections',
+    'adventures',
+    'advancementHistory',
+    'lastModified',
+    'attributeSePool',
+    'statSePool',
+    'companions',
+    'gruppen',
+    'reisebericht',
+    'statModifiers',
+    'attributeModifiers',
+    'unknownModifierFragments',
+    'isEpisch',
+    'epicStartAp',
+    'epicAttributeMaxBonus',
+    'epicMainAttributes',
+    'epicActivationPolicy',
+    'epicLockedWaffenmeisterCategories',
+    'epicUnactivatedTalentIds',
+    ...HeroAppearance.jsonSchluessel,
+    ...HeroBackground.jsonSchluessel,
+  };
+
   /// Serialisierung fuer lokale Persistenz und Export.
   Map<String, dynamic> toJson() {
-    return {
+    final json = <String, dynamic>{
       'schemaVersion': schemaVersion,
       'id': id,
       'name': name,
@@ -388,10 +467,12 @@ class HeroSheet {
       'adventures': adventures
           .map((entry) => entry.toJson())
           .toList(growable: false),
-      if (advancementHistory.isNotEmpty)
-        'advancementHistory': advancementHistory
-            .map((entry) => entry.toJson())
-            .toList(growable: false),
+      if (advancementHistory.isNotEmpty ||
+          unbekannteVerlaufseintraege.isNotEmpty)
+        'advancementHistory': schreibeSteigerungsverlauf(
+          advancementHistory,
+          unbekannteVerlaufseintraege,
+        ),
       if (lastModified != null)
         'lastModified': lastModified!.toUtc().toIso8601String(),
       'attributeSePool': attributeSePool.toJson(),
@@ -426,6 +507,7 @@ class HeroSheet {
         growable: false,
       ),
     };
+    return mitUnbekanntenFeldern(json, unbekannteFelder);
   }
 
   /// Rueckwaertskompatibles Laden alter Datenstaende.
@@ -484,6 +566,15 @@ class HeroSheet {
           (json['attributes'] as Map?)?.cast<String, dynamic>() ??
           const {},
     );
+    final parsedCombatConfig = CombatConfig.fromJson(
+      (json['combatConfig'] as Map?)?.cast<String, dynamic>() ?? const {},
+    );
+    final verlauf = leseSteigerungsverlauf(
+      (json['advancementHistory'] as List?) ?? const <dynamic>[],
+    );
+    final parsedPersistentMods = StatModifiers.fromJson(
+      (json['persistentMods'] as Map?)?.cast<String, dynamic>() ?? const {},
+    );
 
     return HeroSheet(
       schemaVersion: (json['schemaVersion'] as num?)?.toInt() ?? 1,
@@ -493,15 +584,11 @@ class HeroSheet {
       attributes: parsedAttributes,
       rawStartAttributes: parsedRawStartAttributes,
       startAttributes: parsedStartAttributes,
-      persistentMods: StatModifiers.fromJson(
-        (json['persistentMods'] as Map?)?.cast<String, dynamic>() ?? const {},
-      ),
+      persistentMods: parsedPersistentMods,
       bought: BoughtStats.fromJson(
         (json['bought'] as Map?)?.cast<String, dynamic>() ?? const {},
       ),
-      combatConfig: CombatConfig.fromJson(
-        (json['combatConfig'] as Map?)?.cast<String, dynamic>() ?? const {},
-      ),
+      combatConfig: parsedCombatConfig,
       talents: rawTalents.map((key, value) {
         final map = value is Map
             ? value.cast<String, dynamic>()
@@ -575,13 +662,19 @@ class HeroSheet {
       ),
       showInapplicableSpecialAbilities:
           json['showInapplicableSpecialAbilities'] == true,
-      inventoryEntries: rawInventoryEntries
-          .whereType<Map>()
-          .map(
-            (entry) =>
-                HeroInventoryEntry.fromJson(entry.cast<String, dynamic>()),
-          )
-          .toList(growable: false),
+      // Verknuepfte Eintraege ohne ID-Verweis (Altdaten, zuletzt von einer
+      // aelteren App-Version gespeichert) erhalten ihn hier (Befunde
+      // ARCH-07-B2/B3, inventar_verweise.dart).
+      inventoryEntries: migriereInventarVerweise(
+        rawInventoryEntries
+            .whereType<Map>()
+            .map(
+              (entry) =>
+                  HeroInventoryEntry.fromJson(entry.cast<String, dynamic>()),
+            )
+            .toList(growable: false),
+        parsedCombatConfig,
+      ),
       notes: rawNotes
           .whereType<Map>()
           .map((entry) => HeroNoteEntry.fromJson(entry.cast<String, dynamic>()))
@@ -600,14 +693,9 @@ class HeroSheet {
                 HeroAdventureEntry.fromJson(entry.cast<String, dynamic>()),
           )
           .toList(growable: false),
-      advancementHistory: List<HeroAdvancementEntry>.unmodifiable(
-        ((json['advancementHistory'] as List?) ?? const [])
-            .whereType<Map>()
-            .map(
-              (entry) =>
-                  HeroAdvancementEntry.fromJson(entry.cast<String, dynamic>()),
-            ),
-      ),
+      advancementHistory: verlauf.bekannt,
+      unbekannteVerlaufseintraege: verlauf.unbekannt,
+      unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
       lastModified: DateTime.tryParse(json['lastModified'] as String? ?? ''),
       attributeSePool: HeroAttributeSePool.fromJson(
         (json['attributeSePool'] as Map?)?.cast<String, dynamic>() ??
@@ -632,11 +720,9 @@ class HeroSheet {
       reisebericht: HeroReisebericht.fromJson(
         (json['reisebericht'] as Map?)?.cast<String, dynamic>() ?? const {},
       ),
-      statModifiers: _parseNamedModifiersMap(
-        json['statModifiers'],
-        migrationFallback: StatModifiers.fromJson(
-          (json['persistentMods'] as Map?)?.cast<String, dynamic>() ?? const {},
-        ),
+      statModifiers: _ohneGespiegelteInspectorWerte(
+        _parseNamedModifiersMap(json['statModifiers']),
+        parsedPersistentMods,
       ),
       attributeModifiers: _parseNamedModifiersMap(json['attributeModifiers']),
       unknownModifierFragments: rawUnknown
@@ -701,77 +787,83 @@ List<TalentSpecialAbility> _parseTalentSpecialAbilities(dynamic raw) {
 }
 
 /// Parst eine verschachtelte Modifikator-Map aus JSON.
-///
-/// Bei fehlenden Daten und vorhandenem [migrationFallback] werden Nicht-Null-
-/// Werte aus den alten persistentMods als benannte Eintraege migriert.
-Map<String, List<HeroTalentModifier>> _parseNamedModifiersMap(
-  dynamic raw, {
-  StatModifiers? migrationFallback,
-}) {
-  if (raw is Map) {
-    final result = <String, List<HeroTalentModifier>>{};
-    for (final entry in raw.entries) {
-      final key = entry.key.toString();
-      final list = entry.value;
-      if (list is! List) {
+Map<String, List<HeroTalentModifier>> _parseNamedModifiersMap(dynamic raw) {
+  if (raw is! Map) {
+    return const <String, List<HeroTalentModifier>>{};
+  }
+  final result = <String, List<HeroTalentModifier>>{};
+  for (final entry in raw.entries) {
+    final key = entry.key.toString();
+    final list = entry.value;
+    if (list is! List) {
+      continue;
+    }
+    final modifiers = <HeroTalentModifier>[];
+    for (final item in list) {
+      if (item is! Map) {
         continue;
       }
-      final modifiers = <HeroTalentModifier>[];
-      for (final item in list) {
-        if (item is! Map) {
-          continue;
-        }
-        final parsed = HeroTalentModifier.fromJson(
-          item.cast<String, dynamic>(),
-        );
-        if (parsed != null) {
-          modifiers.add(parsed);
-        }
-      }
-      if (modifiers.isNotEmpty) {
-        result[key] = List<HeroTalentModifier>.unmodifiable(modifiers);
+      final parsed = HeroTalentModifier.fromJson(item.cast<String, dynamic>());
+      if (parsed != null) {
+        modifiers.add(parsed);
       }
     }
-    if (result.isNotEmpty) {
-      return Map<String, List<HeroTalentModifier>>.unmodifiable(result);
+    if (modifiers.isNotEmpty) {
+      result[key] = List<HeroTalentModifier>.unmodifiable(modifiers);
     }
   }
-
-  // Migration: persistentMods-Werte als benannte Eintraege uebernehmen.
-  if (migrationFallback != null) {
-    return _migrateStatModifiers(migrationFallback);
-  }
-  return const <String, List<HeroTalentModifier>>{};
-}
-
-/// Konvertiert alte persistentMods in benannte Modifikatoreintraege.
-Map<String, List<HeroTalentModifier>> _migrateStatModifiers(
-  StatModifiers mods,
-) {
-  final result = <String, List<HeroTalentModifier>>{};
-  void add(String key, int value) {
-    if (value != 0) {
-      result[key] = [
-        HeroTalentModifier(modifier: value, description: 'Manuell'),
-      ];
-    }
-  }
-
-  add('lep', mods.lep);
-  add('au', mods.au);
-  add('asp', mods.asp);
-  add('kap', mods.kap);
-  add('mr', mods.mr);
-  add('iniBase', mods.iniBase);
-  add('at', mods.at);
-  add('pa', mods.pa);
-  add('fk', mods.fk);
-  add('gs', mods.gs);
-  add('ausweichen', mods.ausweichen);
-  add('rs', mods.rs);
-
   if (result.isEmpty) {
     return const <String, List<HeroTalentModifier>>{};
+  }
+  return Map<String, List<HeroTalentModifier>>.unmodifiable(result);
+}
+
+/// Beschreibung, mit der die fruehere Lade-Migration Inspector-Werte als
+/// benannte Modifikatoren kopiert hat.
+const String _gespiegelteBeschreibung = 'Manuell';
+
+/// Entfernt benannte Eintraege, die nur Kopien der Inspector-Werte sind.
+///
+/// Von Maerz bis September 2026 hat `fromJson` die Inspector-Werte
+/// (`persistentMods`) als Eintrag „Manuell“ nach `statModifiers` kopiert,
+/// sobald dort nichts stand — `persistentMods` blieb dabei erhalten, jeder
+/// Wert zaehlte also doppelt (Befund ARCH-07-B1). Nach dem naechsten Speichern
+/// stand die Kopie dauerhaft im Helden. Ein Eintrag „Manuell“, der genau dem
+/// Inspector-Wert desselben Feldes entspricht, ist eine solche Kopie und
+/// entfaellt. Weicht der Wert ab, hat der Nutzer seitdem nachgesteuert; der
+/// Eintrag bleibt dann unangetastet. Die Reparatur ist deterministisch, damit
+/// alle Geraete denselben Inhalt errechnen und kein Sync-Konflikt entsteht.
+Map<String, List<HeroTalentModifier>> _ohneGespiegelteInspectorWerte(
+  Map<String, List<HeroTalentModifier>> benannt,
+  StatModifiers inspector,
+) {
+  if (benannt.isEmpty) {
+    return benannt;
+  }
+  final inspectorWerte = inspector.toJson();
+  var geaendert = false;
+  final result = <String, List<HeroTalentModifier>>{};
+  for (final entry in benannt.entries) {
+    final inspectorWert = (inspectorWerte[entry.key] as int?) ?? 0;
+    final kopieIndex = inspectorWert == 0
+        ? -1
+        : entry.value.indexWhere(
+            (mod) =>
+                mod.description == _gespiegelteBeschreibung &&
+                mod.modifier == inspectorWert,
+          );
+    if (kopieIndex < 0) {
+      result[entry.key] = entry.value;
+      continue;
+    }
+    geaendert = true;
+    final rest = List<HeroTalentModifier>.of(entry.value)..removeAt(kopieIndex);
+    if (rest.isNotEmpty) {
+      result[entry.key] = List<HeroTalentModifier>.unmodifiable(rest);
+    }
+  }
+  if (!geaendert) {
+    return benannt;
   }
   return Map<String, List<HeroTalentModifier>>.unmodifiable(result);
 }

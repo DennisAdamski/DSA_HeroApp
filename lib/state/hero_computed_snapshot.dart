@@ -1,10 +1,13 @@
+import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/attribute_modifiers.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/attribute_start_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/combat_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/hero_stat_inputs.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/resource_activation_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/wund_rules.dart';
@@ -56,4 +59,79 @@ class HeroComputedSnapshot {
 
   /// Aggregierte Talentboni aus ausgeruesteten Inventar-Items (talentId → Bonus).
   final Map<String, int> inventoryTalentMods;
+}
+
+/// Setzt den [HeroComputedSnapshot] aus Sheet, State und Katalog zusammen.
+///
+/// Reine Funktion ohne Provider-Zugriff: `heroComputedProvider` ruft sie mit
+/// den beobachteten Werten auf, Regel- und Bestandsheldentests rechnen damit
+/// dieselben Werte ohne `ProviderContainer`. Ohne geladenen [catalog] fehlen
+/// nur die katalogabhaengigen Anteile (Talente, Manoever, Kampf-SF), genau wie
+/// im Provider waehrend des Katalogladens.
+HeroComputedSnapshot buildHeroComputedSnapshot({
+  required HeroSheet hero,
+  required HeroState state,
+  required RulesCatalog? catalog,
+  required bool epicAdvantagesActive,
+}) {
+  final catalogTalents = catalog?.talents ?? const <TalentDef>[];
+  final catalogManeuvers = catalog?.maneuvers ?? const <ManeuverDef>[];
+  final catalogCombatSpecialAbilities =
+      catalog?.combatSpecialAbilities ?? const <CombatSpecialAbilityDef>[];
+
+  final inputs = computeHeroStatInputs(
+    hero: hero,
+    state: state,
+    talents: catalogTalents,
+    epicAdvantagesActive: epicAdvantagesActive,
+  );
+  final parsed = inputs.parsed;
+  final inventoryMods = inputs.inventory;
+  final effective = inputs.effective;
+  final wundEffekte = inputs.wounds;
+  final resourceActivation = computeHeroResourceActivation(hero);
+  final effectiveStartAttributes = computeHeroEffectiveStartAttributes(hero);
+  final attributeMaximums = computeHeroAttributeMaximums(hero);
+  final wundschwelleMods = hero.statModifiers['wundschwelle'] ?? const [];
+  final wundschwelle = computeWundschwelle(
+    ko: effective.ko,
+    mods: wundschwelleMods,
+  );
+  final wundschwellenStufen = computeWundschwellenStufen(
+    ko: effective.ko,
+    mods: wundschwelleMods,
+    vorteileText: hero.vorteileText,
+    nachteileText: hero.nachteileText,
+  );
+
+  final derived = inputs.derive(hero, state);
+  final combat = computeCombatPreviewStats(
+    hero,
+    state,
+    catalogTalents: catalogTalents,
+    catalogManeuvers: catalogManeuvers,
+    catalogCombatSpecialAbilities: catalogCombatSpecialAbilities,
+    parsedModifiers: parsed,
+    effectiveAttributes: effective,
+    derivedStats: derived,
+    epicAdvantagesRuleActive: epicAdvantagesActive,
+  );
+
+  return HeroComputedSnapshot(
+    hero: hero,
+    state: state,
+    modifierParse: parsed,
+    resourceActivation: resourceActivation,
+    effectiveStartAttributes: effectiveStartAttributes,
+    attributeMaximums: attributeMaximums,
+    effectiveAttributes: effective,
+    derivedStats: derived,
+    combatPreviewStats: combat,
+    wundEffekte: wundEffekte,
+    wundschwelle: wundschwelle,
+    wundschwellenStufen: wundschwellenStufen,
+    inventoryStatMods: inventoryMods.statMods,
+    inventoryAttributeMods: inventoryMods.attributeMods,
+    inventoryTalentMods: inventoryMods.talentMods,
+  );
 }

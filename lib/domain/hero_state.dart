@@ -2,6 +2,7 @@ import 'package:dsa_heldenverwaltung/domain/active_spell_effects_state.dart';
 import 'package:dsa_heldenverwaltung/domain/attribute_modifiers.dart';
 import 'package:dsa_heldenverwaltung/domain/dice_log_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
+import 'package:dsa_heldenverwaltung/domain/unbekannte_json_felder.dart';
 import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
 
 /// Laufzeitzustand eines Helden, getrennt von den Stammdaten (`HeroSheet`).
@@ -23,6 +24,7 @@ class HeroState {
     this.wpiZustand = const WundZustand(),
     this.diceLog = const <DiceLogEntry>[],
     this.lastModified,
+    this.unbekannteFelder = const <String, Object?>{},
   });
 
   const HeroState.empty()
@@ -38,7 +40,8 @@ class HeroState {
       tempAttributeMods = const AttributeModifiers(),
       activeSpellEffects = const ActiveSpellEffectsState(),
       wpiZustand = const WundZustand(),
-      diceLog = const <DiceLogEntry>[];
+      diceLog = const <DiceLogEntry>[],
+      unbekannteFelder = const <String, Object?>{};
 
   /// Maximale Anzahl persistierter Wuerfelprotokoll-Eintraege pro Held.
   ///
@@ -72,6 +75,27 @@ class HeroState {
   /// "welche Version ist neuer?" ohne Datengrundlage abverlangt.
   final DateTime? lastModified;
 
+  /// JSON-Felder oberster Ebene, die diese Version nicht kennt; werden beim
+  /// Speichern unveraendert zurueckgeschrieben (Befund ARCH-07-B6).
+  final Map<String, Object?> unbekannteFelder;
+
+  /// Alle Schluessel, die [fromJson] liest; alles andere bleibt erhalten.
+  static const Set<String> jsonSchluessel = <String>{
+    'schemaVersion',
+    'currentLep',
+    'currentAsp',
+    'currentKap',
+    'currentAu',
+    'erschoepfung',
+    'ueberanstrengung',
+    'tempMods',
+    'tempAttributeMods',
+    'activeSpellEffects',
+    'wpiZustand',
+    'diceLog',
+    'lastModified',
+  };
+
   /// Immutable Update fuer Teilmengen des Laufzeitzustands.
   HeroState copyWith({
     int? currentLep,
@@ -101,6 +125,7 @@ class HeroState {
       wpiZustand: wpiZustand ?? this.wpiZustand,
       diceLog: diceLog ?? this.diceLog,
       lastModified: lastModified ?? this.lastModified,
+      unbekannteFelder: unbekannteFelder,
     );
   }
 
@@ -123,7 +148,7 @@ class HeroState {
 
   /// Serialisierung fuer Persistenz (eigene State-Box).
   Map<String, dynamic> toJson() {
-    return {
+    final json = <String, dynamic>{
       'schemaVersion': schemaVersion,
       'currentLep': currentLep,
       'currentAsp': currentAsp,
@@ -139,6 +164,7 @@ class HeroState {
       if (lastModified != null)
         'lastModified': lastModified!.toUtc().toIso8601String(),
     };
+    return mitUnbekanntenFeldern(json, unbekannteFelder);
   }
 
   /// Robust gegen fehlende Felder in aelteren Daten.
@@ -176,6 +202,7 @@ class HeroState {
       ),
       diceLog: diceLog,
       lastModified: DateTime.tryParse(json['lastModified'] as String? ?? ''),
+      unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
     );
   }
 }

@@ -132,8 +132,10 @@ class _RangedProjectileEditorDialogState
         FilledButton(
           key: const ValueKey<String>('combat-projectile-form-save'),
           onPressed: () {
+            // Auf dem Ausgangsgeschoss aufbauen: ID und Felder neuerer
+            // App-Versionen bleiben so erhalten.
             Navigator.of(context).pop(
-              RangedProjectile(
+              widget.initialProjectile.copyWith(
                 name: _nameController.text.trim(),
                 count: _readInt(_countController).clamp(0, 9999),
                 tpMod: _readInt(_tpModController),

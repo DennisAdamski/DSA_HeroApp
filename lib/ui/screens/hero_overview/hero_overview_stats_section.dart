@@ -915,6 +915,9 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
         label: 'Nachteile',
         value: statModValue(breakdown.nachteileStatMods, statKey),
       ),
+      // Schnellmodifikatoren aus dem Inspector (`persistentMods`); sie zählen
+      // zur Summe, sind aber keine benannten Einträge dieses Dialogs.
+      (label: 'Inspector', value: statModValue(hero.persistentMods, statKey)),
       (label: 'Temporaer', value: statModValue(state.tempMods, statKey)),
       if (levelBonus != 0) (label: 'Level', value: levelBonus),
       (

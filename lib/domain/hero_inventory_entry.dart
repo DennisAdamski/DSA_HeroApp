@@ -1,5 +1,6 @@
 import 'package:dsa_heldenverwaltung/domain/copy_with_sentinel.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
+import 'package:dsa_heldenverwaltung/domain/unbekannte_json_felder.dart';
 
 /// Wer oder was ein Inventarstück trägt.
 enum InventoryTraeger {
@@ -33,6 +34,7 @@ class HeroInventoryEntry {
     this.itemType = InventoryItemType.sonstiges,
     this.source = InventoryItemSource.manuell,
     this.sourceRef,
+    this.slotRef,
     this.istAusgeruestet = false,
     this.modifiers = const <InventoryItemModifier>[],
     this.gewichtGramm = 0,
@@ -45,6 +47,7 @@ class HeroInventoryEntry {
     // Träger-Felder (v19)
     this.traegerTyp = InventoryTraeger.held,
     this.traegerId,
+    this.unbekannteFelder = const <String, Object?>{},
   });
 
   // --- Bestehende 12 String-Felder (unveraendert, rueckwaertskompatibel) ---
@@ -71,16 +74,24 @@ class HeroInventoryEntry {
   /// Ursprung: manuell angelegt oder automatisch aus dem Kampf-Tab synchronisiert.
   final InventoryItemSource source;
 
-  /// Composite-Schluessel fuer die Zuordnung zu einem Kampf-Tab-Eintrag.
+  /// Verweis auf einen Kampf-Slot oder einen anderen fachlichen Ursprung.
   ///
-  /// Format:
-  /// - Waffe:     `'w:{weaponName}'`
-  /// - Ruestung:  `'a:{pieceName}'`
-  /// - Geschoss:  `'w:{weaponName}|p:{projName}'`
-  /// - Nebenhand: `'oh:{equipmentName}'`
+  /// Kampf-Eintraege tragen hier den Namensverweis (`w:<Name>`, `a:<Name>`,
+  /// `oh:<Name>`, `w:<Waffe>|p:<Geschoss>`), den auch die bereits
+  /// veroeffentlichte App-Version versteht; zugeordnet wird ueber [slotRef]
+  /// (siehe `inventar_verweise.dart`). Andere Urspruenge wie Abenteuerbeute
+  /// behalten ihre eigenen Verweisformate.
   ///
   /// `null` bei manuell angelegten Eintraegen.
   final String? sourceRef;
+
+  /// Stabiler ID-Verweis auf den Kampf-Slot (`w#<id>`, `a#<id>`, `oh#<id>`,
+  /// `w#<waffenId>|p#<geschossId>`).
+  ///
+  /// Unterscheidet gleichnamige Exemplare. `null` bei Eintraegen ohne
+  /// Kampf-Slot und bei solchen, die zuletzt eine aeltere App-Version
+  /// gespeichert hat; sie erhalten ihn beim Laden ueber den Namen.
+  final String? slotRef;
 
   /// Ob das Item gerade getragen/ausgeruest wird.
   ///
@@ -121,6 +132,42 @@ class HeroInventoryEntry {
   /// Null, wenn der Held das Item trägt.
   final String? traegerId;
 
+  /// JSON-Felder einer neueren App-Version; bleiben beim Speichern erhalten
+  /// (siehe `unbekannte_json_felder.dart`).
+  final Map<String, Object?> unbekannteFelder;
+
+  /// Alle Schluessel, die [fromJson] liest — einschliesslich der nur bedingt
+  /// geschriebenen; alles andere bleibt erhalten.
+  static const Set<String> jsonSchluessel = <String>{
+    'gegenstand',
+    'woGetragen',
+    'typ',
+    'welchesAbenteuer',
+    'gewicht',
+    'wert',
+    'artefakt',
+    'anzahl',
+    'amKoerper',
+    'woDann',
+    'gruppe',
+    'beschreibung',
+    'itemType',
+    'source',
+    'sourceRef',
+    'slotRef',
+    'istAusgeruestet',
+    'modifiers',
+    'gewichtGramm',
+    'wertSilber',
+    'herkunft',
+    'isMagisch',
+    'magischDescription',
+    'isGeweiht',
+    'geweihtDescription',
+    'traegerTyp',
+    'traegerId',
+  };
+
   /// Gibt eine Kopie mit selektiv überschriebenen Feldern zurück.
   HeroInventoryEntry copyWith({
     String? gegenstand,
@@ -138,6 +185,7 @@ class HeroInventoryEntry {
     InventoryItemType? itemType,
     InventoryItemSource? source,
     Object? sourceRef = keepFieldValue,
+    Object? slotRef = keepFieldValue,
     bool? istAusgeruestet,
     List<InventoryItemModifier>? modifiers,
     int? gewichtGramm,
@@ -149,6 +197,7 @@ class HeroInventoryEntry {
     String? geweihtDescription,
     InventoryTraeger? traegerTyp,
     Object? traegerId = keepFieldValue,
+    Map<String, Object?>? unbekannteFelder,
   }) {
     return HeroInventoryEntry(
       gegenstand: gegenstand ?? this.gegenstand,
@@ -168,6 +217,7 @@ class HeroInventoryEntry {
       sourceRef: sourceRef == keepFieldValue
           ? this.sourceRef
           : sourceRef as String?,
+      slotRef: slotRef == keepFieldValue ? this.slotRef : slotRef as String?,
       istAusgeruestet: istAusgeruestet ?? this.istAusgeruestet,
       modifiers: modifiers ?? this.modifiers,
       gewichtGramm: gewichtGramm ?? this.gewichtGramm,
@@ -181,6 +231,7 @@ class HeroInventoryEntry {
       traegerId: traegerId == keepFieldValue
           ? this.traegerId
           : traegerId as String?,
+      unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
     );
   }
 
@@ -193,7 +244,7 @@ class HeroInventoryEntry {
       legacyArtifact: artefakt.trim(),
     );
 
-    return <String, dynamic>{
+    return mitUnbekanntenFeldern(<String, dynamic>{
       'gegenstand': gegenstand,
       'woGetragen': woGetragen,
       'typ': typ,
@@ -210,6 +261,7 @@ class HeroInventoryEntry {
       'itemType': itemType.name,
       'source': source.name,
       if (sourceRef != null) 'sourceRef': sourceRef,
+      if (slotRef != null) 'slotRef': slotRef,
       'istAusgeruestet': istAusgeruestet,
       'modifiers': modifiers.map((m) => m.toJson()).toList(),
       'gewichtGramm': gewichtGramm,
@@ -222,7 +274,7 @@ class HeroInventoryEntry {
       // v19
       'traegerTyp': traegerTyp.name,
       if (traegerId != null) 'traegerId': traegerId,
-    };
+    }, unbekannteFelder);
   }
 
   /// Deserialisiert einen Inventar-Eintrag aus einem JSON-Map.
@@ -279,6 +331,7 @@ class HeroInventoryEntry {
       itemType: parseItemType(json['itemType'] as String?),
       source: parseSource(json['source'] as String?),
       sourceRef: json['sourceRef'] as String?,
+      slotRef: json['slotRef'] as String?,
       istAusgeruestet: (json['istAusgeruestet'] as bool?) ?? false,
       modifiers: modifiers,
       gewichtGramm: (json['gewichtGramm'] as num?)?.toInt() ?? 0,
@@ -294,6 +347,7 @@ class HeroInventoryEntry {
         orElse: () => InventoryTraeger.held,
       ),
       traegerId: json['traegerId'] as String?,
+      unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
     );
   }
 }

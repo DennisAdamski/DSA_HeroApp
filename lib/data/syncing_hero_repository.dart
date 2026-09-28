@@ -460,17 +460,45 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
     final records = await stateGateway.loadAllHeroStates();
     final applyFailures = await _applyRemoteStateRecords(records);
 
-    final remoteIds = records.map((record) => record.heroId).toSet();
+    final recordsById = <String, RemoteHeroStateRecord>{
+      for (final record in records) record.heroId: record,
+    };
     for (final hero in await local.listHeroes()) {
-      if (remoteIds.contains(hero.id)) {
+      final state = await local.loadHeroState(hero.id);
+      if (state == null) {
         continue;
       }
-      final state = await local.loadHeroState(hero.id);
-      if (state != null) {
-        await _pushHeroStateIfSafe(hero.id, state);
+      final record = recordsById[hero.id];
+      if (record != null &&
+          !await _hasPendingLocalStateChange(hero.id, state, record)) {
+        continue;
       }
+      await _pushHeroStateIfSafe(hero.id, state);
     }
     return applyFailures;
+  }
+
+  /// Ob ein lokal geaenderter Zustand auf unveraenderter Online-Basis wartet.
+  ///
+  /// Gegenstueck zur Heldenpruefung in [_syncHeroes]: Ein Zustand, dessen
+  /// Upload beim Speichern scheiterte (offline), weicht vom zuletzt
+  /// abgeglichenen Hash ab, waehrend die Online-Revision noch der Basis
+  /// entspricht. Ohne diese Pruefung erreichte er die Cloud erst mit der
+  /// naechsten Zustandsaenderung (Befund ARCH-07-B8). Solange zum Helden eine
+  /// Entscheidung offen ist, wartet der Zustand darauf: Er folgt dem Helden.
+  Future<bool> _hasPendingLocalStateChange(
+    String heroId,
+    HeroState state,
+    RemoteHeroStateRecord record,
+  ) async {
+    if (record.isDeleted || _hasOpenHeroConflict(heroId)) {
+      return false;
+    }
+    final metadata = await metadataStore.load(_stateKey(heroId));
+    if (metadata == null || record.revision != metadata.remoteRevision) {
+      return false;
+    }
+    return heroStateContentHash(state) != metadata.localHash;
   }
 
   /// Übernimmt Remote-Helden einzeln und isoliert Fehler pro Datensatz.
@@ -521,17 +549,17 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
         return;
       }
       await local.saveHero(remoteHero);
-      await _saveMetadata(
-        key: key,
-        localHash: remoteHash,
-        remoteHash: remoteHash,
-        remoteRevision: record.revision,
-      );
+      await _storeHeroMetadata(remoteHero, record);
       return;
     }
 
     final localHash = heroContentHash(localHero);
-    if (localHash == remoteHash) {
+    // Inhaltlich identisch ist auch ein lokaler Stand, der genau der
+    // hiesigen Darstellung des Online-Stands gleicht, selbst wenn der Hash
+    // des Schreibers abweicht (neuere Version, oder eine Basis aus der Zeit
+    // vor Befund ARCH-07-B10). Er ist keine lokale Aenderung; die Basis wird
+    // nachgefuehrt, statt ihn hochzuladen.
+    if (localHash == remoteHash || localHash == heroContentHash(remoteHero)) {
       // Inhaltlich identisch: der Online-Stand ist massgeblich.
       await _adoptRemoteHero(remoteHero, record, localHero: localHero);
       return;
@@ -543,12 +571,7 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
 
     if (metadata != null && localHash == metadata.localHash) {
       await local.saveHero(remoteHero);
-      await _saveMetadata(
-        key: key,
-        localHash: remoteHash,
-        remoteHash: remoteHash,
-        remoteRevision: record.revision,
-      );
+      await _storeHeroMetadata(remoteHero, record);
       return;
     }
 
@@ -774,16 +797,13 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
     final remoteHash = _remoteStateHash(record);
     if (localState == null) {
       await local.saveHeroState(record.heroId, remoteState);
-      await _saveMetadata(
-        key: key,
-        localHash: remoteHash,
-        remoteHash: remoteHash,
-        remoteRevision: record.revision,
-      );
+      await _storeStateMetadata(record.heroId, remoteState, record);
       return;
     }
     final localHash = heroStateContentHash(localState);
-    if (localHash == remoteHash) {
+    // Wie bei den Helden: gleich der hiesigen Darstellung heisst identisch.
+    if (localHash == remoteHash ||
+        localHash == heroStateContentHash(remoteState)) {
       // Inhaltlich identisch: der Online-Stand ist massgeblich.
       await _adoptRemoteState(
         record.heroId,
@@ -795,12 +815,7 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
     }
     if (metadata != null && localHash == metadata.localHash) {
       await local.saveHeroState(record.heroId, remoteState);
-      await _saveMetadata(
-        key: key,
-        localHash: remoteHash,
-        remoteHash: remoteHash,
-        remoteRevision: record.revision,
-      );
+      await _storeStateMetadata(record.heroId, remoteState, record);
       return;
     }
     if (metadata != null && metadata.remoteRevision == record.revision) {
@@ -1324,6 +1339,15 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
     await _storeStateMetadata(heroId, remoteState, record);
   }
 
+  /// Merkt [hero] als abgeglichenen lokalen Stand zu [record].
+  ///
+  /// `localHash` ist der Hash dessen, was diese App lokal haelt, `remoteHash`
+  /// der des Schreibers. Beide weichen ab, wenn diese Version den Online-Stand
+  /// nicht verlustfrei darstellen kann (etwa Felder einer neueren Version in
+  /// nicht bewahrenden Modellen). **Nie den `remoteHash` als `localHash`
+  /// merken:** Die verkuerzte lokale Fassung gaelte dann als lokale Aenderung
+  /// und wuerde im selben Abgleich ohne Konflikt hochgeladen (Befund
+  /// ARCH-07-B10).
   Future<void> _storeHeroMetadata(
     HeroSheet hero,
     RemoteHeroRecord record,
@@ -1337,6 +1361,7 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
     );
   }
 
+  /// Wie [_storeHeroMetadata] fuer den Laufzeitzustand.
   Future<void> _storeStateMetadata(
     String heroId,
     HeroState state,

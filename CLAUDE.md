@@ -40,6 +40,49 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   ist die Implementierung inkompatibel geworden und jeder `enc:`-Katalogwert
   sowie jedes Firestore-Geheimnis waere unlesbar. Die uebrigen Krypto-Tests
   pruefen nur Round-Trips und wuerden das nicht bemerken.
+- `HeroSheet` und `HeroState` bewahren JSON-Felder, die sie nicht kennen, in
+  `unbekannteFelder` und schreiben sie zurueck; Verlaufseintraege unbekannter
+  Steigerungsart bleiben als `UnbekannterVerlaufseintrag` erhalten. Bekannt ist,
+  was in `jsonSchluessel` steht (bei `HeroSheet` einschliesslich der flach
+  eingebetteten Schluessel von `HeroAppearance`/`HeroBackground`). **Jedes neue
+  Feld dort eintragen** — sonst kaeme ein bewusst weggelassener Wert als
+  „unbekannt“ zurueck. Dasselbe gilt fuer die zehn Ausruestungsmodelle
+  (`CombatConfig`, Waffe, Fernkampfprofil, Geschoss, Distanzstufe, Ruestung,
+  Ruestungsstueck, Nebenhand, `HeroInventoryEntry`, `InventoryItemModifier`).
+  Jedes hat eigene `unbekannteFelder` und ein eigenes `jsonSchluessel`, das
+  auch gelesene Altschluessel (`offhand`, `wmFk`, `fkMod`) enthaelt.
+  Bestehende Objekte **nur per `copyWith`** aendern; ein Neuaufbau per
+  Konstruktor verliert die Felder. Andere verschachtelte Objekte und
+  unbekannte Enum-Werte bewahren nichts. Formatregel: nur additiv, eine neue
+  Bedeutung bekommt einen neuen Schluessel
+  (`docs/technical_overview.md` Abschnitt 2.1).
+- Verknuepfte Kampf-/Inventareintraege tragen stabile Slot-IDs in
+  `lib/domain/combat_config/`; das Verweisformat und die Migration liegen in
+  `inventar_verweise.dart`. `HeroSheet.fromJson` vergibt fuer Altdaten
+  deterministische IDs, `HeroActions.saveHero` fuer neue Slots UUIDs.
+  Ein Inventareintrag traegt **zwei** Verweise: `sourceRef` bleibt der
+  Namensverweis (`w:Name` …), weil die bereits veroeffentlichte App nur ihn
+  versteht. Mit einem ID-Verweis dort verwarf ihr Abgleich alle verknuepften
+  Inventardaten. Den ID-Verweis (`w#id` …) traegt `slotRef`. Zugeordnet wird
+  ueber `slotRef`; nur Eintraege ohne `slotRef` gehen ueber den Namen, und
+  die Reihenfolge „manuell, dann Slot-Reihenfolge“ bleibt. Geschossmengen
+  immer mit `slotRef ?? sourceRef` zurueckschreiben. `inventory_sync_rules.dart`
+  gleicht weiterhin beide Darstellungen ab. Das ist der B2/B3-Teilfix, noch
+  nicht das gemeinsame Gegenstandsmodell aus ARCH-03. Formataenderungen
+  aendern Inhalts-Hashes; Bestandsfixtures und Hash-Pins nur gemeinsam mit
+  ihnen aktualisieren. Den Mischbetrieb bildet
+  `test/test_support/veroeffentlichte_app.dart` nach.
+- Die Bestandshelden unter `test/fixtures/heroes/` (ARCH-07) sind genauso
+  festgeschrieben: nie anpassen, ein neues Format bekommt eine neue Datei.
+  `test/domain/bestandshelden_kompatibilitaet_test.dart` pinnt ihre
+  Inhalts-Hashes — bricht einer, bekaeme jeder gleich gespeicherte Held einen
+  neuen Hash und der Konto-Sync meldete Konflikte. Die Regelwerte je Fixture
+  rechnet `buildHeroComputedSnapshot` (reine Funktion hinter
+  `heroComputedProvider`) gegen den echten Katalog
+  (`test/test_support/real_catalog.dart`). Aufgedeckte, bewusst nicht
+  behobene Fehler tragen im Test den Kommentar `Befund ARCH-07-Bx` und stehen
+  mit Folgeauftrag in `docs/architecture_roadmap.md`. Details in
+  `docs/test_strategy.md`.
 - Web-Interop laeuft ueber `package:web` + `dart:js_interop`, nie ueber
   `dart:html` (deprecated und von `dart2wasm` nicht uebersetzbar). Bedingte
   Importe muessen auf `dart.library.js_interop` stehen, **nicht** auf
@@ -526,6 +569,15 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   `RestFirestoreHeroSyncGateway`), `HiveSyncMetadataStore` und die Modelle in
   `lib/domain/sync_models.dart`. Konflikte dürfen nicht still überschrieben
   werden; die UI muss lokal, online oder beide behalten anbieten.
+- Die Sync-Basis ist der **lokale** Stand: Nach dem Übernehmen eines
+  Online-Stands merken `_storeHeroMetadata`/`_storeStateMetadata` den Hash
+  dessen, was lokal liegt. Den Schreiber-Hash (`remoteHash`) **nie** als
+  `localHash` merken: Kann diese Version den Stand nicht verlustfrei
+  darstellen, gälte die verkürzte Fassung sonst als lokale Änderung und würde
+  ohne Konflikt hochgeladen (Befund ARCH-07-B10). Ein lokaler Stand, der der
+  hiesigen Darstellung des Online-Stands gleicht, gilt als identisch. Ein
+  Abgleich allein schreibt nie. Getestet wird das mit
+  `speichereFremdenStand` in `test/data/sync_app_versionen_test.dart`.
 - Entscheidungen zu Offline-Helden (`Offline-Held: …`-Konflikte beim Wechsel in
   ein Konto) müssen persistiert werden, sonst wiederholt sich die Frage bei
   jedem Start: die Konfliktliste lebt nur im Speicher und keiner der drei

@@ -185,9 +185,9 @@ bleibt während der Übergangsphase als Import-/Kompatibilitätshilfe verfügbar
 
 ## ARCH-03 — Gemeinsame Ausrüstungsdaten für Inventar und Kampf
 
-**Ist-Zustand:** Kampfausrüstung und Inventar werden über
+**Ausgangszustand:** Kampfausrüstung und Inventar werden über
 `reconcileInventoryWithCombat` abgeglichen. Verknüpfungsschlüssel für Waffen,
-Rüstung und Geschosse enthalten Namen; es bestehen mehrere Darstellungen eines
+Rüstung und Geschosse enthielten Namen; es bestehen mehrere Darstellungen eines
 Gegenstands mit unterschiedlichen Zuständigkeiten für seine Felder.
 
 **Ziel:** Jeden konkreten Gegenstand einmal mit stabiler Instanz-ID speichern.
@@ -219,6 +219,100 @@ Import-/Exporttests um Migration, Namensgleichheit und Slotwechsel ergänzen.
 **Abhängigkeiten / offene Entscheidungen:** Bestandsfälle aus ARCH-07 nutzen.
 Mengenstapel, aufgeteilte Munition und Identitätsregeln beim Kopieren eines Helden
 vor der Modelländerung klären. Schreibvorgänge mit ARCH-05/06 abstimmen.
+
+**Teilstand 27.09.2026 — B2/B3 behoben:** Kampf-Slots für Waffen,
+Geschosse, Rüstung und Nebenhand tragen stabile IDs. Beim Laden erhalten
+Bestandsdaten deterministische IDs und die Inventar-Namensverweise werden
+in Slot-Reihenfolge migriert; neue Slots bekommen beim Speichern UUIDs.
+Damit bleiben gleichnamige Exemplare nach Entfernen oder Umbenennen
+unabhängig. Domain-Tests pinnen die einmalig geänderten Inhalts-Hashes und
+prüfen den Fixpunkt, Regeltests die beiden Befunde, ein Hive-Test Neustart
+und Export. `flutter analyze --no-pub` und die vollständige Flutter-Suite
+waren grün (2.278 bestanden, drei übersprungen). Die vollständige
+ARCH-03-Abnahme ist damit **nicht** erreicht: Das gemeinsame Gegenstandsmodell,
+Katalog-IDs und die übrigen Schreibabläufe fehlen. Gemischte Bearbeitung
+mit älteren App-Versionen ist wegen der neuen verschachtelten IDs nicht
+abgesichert. Auch eine reine ID-Migration kann bei gleichzeitig geänderter
+Cloud-Version einen sichtbaren Sync-Konflikt auslösen. Der zugehörige
+Fix-Commit ist `f0c9ffc`. *(Überholt durch den Teilstand vom 28.09.2026:
+Das Verweisformat ist jetzt mit der veröffentlichten App verträglich.)*
+
+**Teilstand 28.09.2026 — Versions- und Sync-Kompatibilität der
+Ausrüstungsdaten.** Umgesetzt wurde der Teilumfang „unbekannte verschachtelte
+Felder“, beschränkt auf die Ausrüstung.
+
+*Entscheidung: bewahren statt sperren.* Die Ausrüstungsmodelle sind
+unveränderlich, werden per `copyWith` geändert und haben stabile Slot-IDs.
+Gespeichert wird zentral, und Hash sowie Konflikt-Diff arbeiten auf
+`toJson()`. Damit lassen sich unbekannte Felder verlustfrei erhalten. Eine
+sichtbare Schreibsperre wäre nur für nicht-additive Formatänderungen nötig;
+solche gibt es nicht. Festgehalten ist stattdessen die Formatregel „nur
+additiv, eine neue Bedeutung bekommt einen neuen Schlüssel“
+(technische Übersicht, Abschnitt 2.1). Die veröffentlichte App (`main`) lässt
+sich nicht ändern. Das noch unveröffentlichte Verweisformat wurde deshalb so
+gewählt, dass sie damit verträglich arbeitet.
+
+Drei Commits:
+
+- `f28cb1a` — Zehn Ausrüstungsmodelle bewahren unbekannte Felder:
+  `CombatConfig`, Waffe, Fernkampfprofil, Geschoss, Distanzstufe, Rüstung,
+  Rüstungsstück, Nebenhand, Inventareintrag und Modifikator. Neu aufbauende
+  Wege arbeiten jetzt per `copyWith`: `_mergeEntry` sowie die Editoren für
+  Nebenhand, Geschoss, Distanzstufe und Begleiterrüstung. Katalogschlüssel
+  gelangen nicht in Heldendaten. Die Hash-Pins bleiben unverändert.
+- `192cf41` — Befund B10: Die Sync-Basis ist der lokale Stand. Ein bloßer
+  Abgleich lädt keine verkürzte Fassung mehr hoch.
+- `cc8ffaa` — `sourceRef` bleibt der Namensverweis, der ID-Verweis steht
+  in `slotRef`. Dabei wurde ein Fehler gefunden und behoben: Die Pfeilzahl
+  des zweiten gleichnamigen Bogens landete beim ersten. Die Hash-Pins von
+  f01, f02, f04 und f06 haben sich einmalig geändert.
+
+*Prüfungen.* Getestet ist jeder Weg aus dem Auftrag: Laden, Bearbeiten
+(Abgleich, Editoren, `HeroActions`), Speichern mit echtem Hive samt
+Neustart, Import/Export (überschreiben und als Kopie) und der Zwei-Geräte-Sync
+mit einem Stand einer neueren Version. Dazu kommen eine gleichzeitig
+geänderte Cloud (sichtbarer Konfliktpfad, keepRemote/keepLocal/keepBoth ohne
+stillen Verlust) und der Mischbetrieb mit einer Nachbildung der
+veröffentlichten App (`test/test_support/veroeffentlichte_app.dart`). Die
+Gegenproben scheitern jeweils ohne den Fix. `flutter analyze` war ohne
+Befund, die volle Suite grün (2353 bestanden, 3 übersprungen).
+
+*Verbleibende Risiken, ausdrücklich außerhalb dieses Teilumfangs:*
+
+1. Andere verschachtelte Modelle verlieren unbekannte Felder weiterhin:
+   `OffhandAssignment`, `CombatSpecialRules`, `CombatManualMods`,
+   `WaffenmeisterConfig`, Talente, Zauber, Rituale, die eigenen Felder von
+   `HeroCompanion`, Abenteuer und Notizen. Seit B10 geschieht das erst bei
+   einer echten Änderung, nicht mehr beim bloßen Abgleich. Der Konflikt-Diff
+   zeigt diese Felder nicht.
+2. Unbekannte **Enum-Werte** fallen auf Standardwerte zurück (`itemType`,
+   `source`, `traegerTyp`, `combatType`, Nebenhand-`type`, `shieldSize`,
+   Modifikator-`kind`) und werden bei einer Änderung überschrieben.
+3. Die veröffentlichte App verwirft alles Unbekannte, Slot-IDs und
+   `slotRef`, und nach jedem Upload dieser Version schreibt sie einmal
+   zurück (Echo). Verknüpfungen und Inventardaten überleben; UUIDs und
+   Felder neuerer Versionen nicht. Ihr eigenes B2/B3-Verhalten bleibt. Eine
+   Offline-Änderung, die mit dem Echo zusammenfällt, ergibt einen sichtbaren
+   Konflikt, im Vergleich auch mit geänderten IDs. Verhindern ließe sich das
+   Echo nur serverseitig, etwa über Firestore-Regeln.
+4. Erhaltene Felder können gegenüber hier bearbeiteten Werten veralten;
+   spätere Versionen müssen sie prüfen. `mainWeapon` spiegelt nur die
+   gewählte Waffe. Mehr als fünf Distanzstufen werden weiterhin gekürzt.
+5. Unbekannte Felder des Transfer-Umschlags gehen verloren. Eine höhere
+   `transferSchemaVersion` wird sichtbar abgelehnt.
+6. Vorabdaten dieses Branches (ID in `sourceRef`), die zusätzlich die
+   veröffentlichte App durchlaufen haben, können falsch zugeordnet werden.
+   Das betrifft nur Entwicklergeräte.
+7. B10 setzt voraus, dass Laden ein Fixpunkt ist. Die Fixture-Tests sichern
+   das ab; ein Fehler wie B1 brächte je Abgleich einen stillen Upload zurück.
+8. Befund B9 (neu): Beim Abgleich gehen Typ und Träger verknüpfter Einträge
+   verloren, obwohl der Inventareditor den Träger anbietet.
+
+*Nächster Schritt:* das gemeinsame Gegenstandsmodell nach den
+Abnahmekriterien oben. Dabei B9 beheben: `_mergeEntry` auf den bestehenden
+Eintrag stützen. Außerdem für neue Felder und Enum-Werte die Formatregel
+anwenden. Vor einem nicht-additiven Formatwechsel braucht es eine sichtbare
+Schreibsperre, die ältere Versionen bereits kennen.
 
 ## ARCH-04 — Versionierte Regelprofile und erklärbare Berechnungen
 
@@ -355,13 +449,13 @@ der [Teststrategie](test_strategy.md) bleibt erhalten.
 `test/data/syncing_hero_repository_test.dart`, `test/state/advancement_session_test.dart`,
 `test/ui/smoke/widget_test.dart` und `.github/workflows/flutter-tests.yml`.
 
-- [ ] Kleine, anonymisierte bzw. synthetische Bestandsfixtures mit erwarteten
+- [x] Kleine, anonymisierte bzw. synthetische Bestandsfixtures mit erwarteten
   Ergebnissen anlegen: normale, magische/karmale und epische Helden, eigene
   Textmerkmale, gleichnamige Ausrüstung und ältere Schema-Versionen.
-- [ ] Den Ablauf „importieren → steigern → ausrüsten → Spielaktion → schließen
+- [x] Den Ablauf „importieren → steigern → ausrüsten → Spielaktion → schließen
   → wieder öffnen → exportieren“ auf Erhalt der gespeicherten Daten absichern.
   Tests für jede neue Migration direkt im jeweiligen Modellumbau ergänzen.
-- [ ] Unterbrochenen Sync, Wiederholung und Konflikte zweier Geräte reproduzierbar
+- [x] Unterbrochenen Sync, Wiederholung und Konflikte zweier Geräte reproduzierbar
   testen; automatisierte Prüfungen und nötige manuelle Plattformprüfungen in der
   Teststrategie sowie der CI nachvollziehbar verorten.
 
@@ -374,6 +468,62 @@ Plattformen und verbleibende manuelle Prüfungen sind ausdrücklich dokumentiert
 **Abhängigkeiten / offene Entscheidungen:** Vor ARCH-02/03 mit Fixtures beginnen
 und alle Aufgaben begleiten. Umfang echter Integrationstests, Geräteauswahl und
 CI-Ausführung anhand der betroffenen Plattformpfade konkretisieren.
+
+**Umsetzungsstand 27.09.2026 — Grundausstattung fertig.** Die drei
+Unterpunkte sind erledigt; der Hauptpunkt bleibt offen, weil ARCH-07 jede
+weitere Aufgabe begleitet (neue Migration → neue Fixture). Branch
+`task/2026-09-27-arch07-bestandsfixtures`, Commits `2c82021` (Sync-Fakes
+ausgelagert), `1878edd` (`buildHeroComputedSnapshot` als reine Funktion,
+verhaltensneutral), `a4f13ff` (Fixtures, Domain), `16a9e53` (Regelwerte,
+Ausrüstung), `bb73400` (echter Hive-Ablauf) und der Abschluss-Commit mit dem
+Zwei-Geräte-Sync und dieser Dokumentation.
+
+- **Fixtures:** neun Bestandshelden unter `test/fixtures/heroes/` (normal,
+  magisch, karmal, episch, Freitext-Merkmale, gleichnamige Ausrüstung,
+  handgeschriebener Altstand ohne Schemaversion, Schemaversion 27 mit
+  Historie und eine Variante mit unbekannter Steigerungsart). Die Regeln zu
+  Unveränderlichkeit, Formatwächter-Hashes und Aktualisierung der Regelwerte
+  stehen in der [Teststrategie](test_strategy.md#bestandsfixtures-arch-07).
+- **Ablauf:** `test/data/bestandsheld_ablauf_test.dart` mit echtem Hive über
+  Neustart und Export hinweg, dazu Import → Neustart → Export für jede Fixture.
+- **Zwei Geräte:** `test/data/sync_zwei_geraete_test.dart` mit gemeinsamer
+  Cloud, Netzabbruch mitten im Abgleich, verlorener Antwort, Neustart (auch mit
+  echtem Hive) und allen drei Konfliktauflösungen einschließlich gebundenem
+  Zustand. Das Test-Fake hasht dafür jetzt wie die echten Gateways
+  (`heroContentHash`) und prüft auch bei Zuständen die Vorrevision.
+- **Prüfungen:** `flutter analyze` ohne Befund, vollständige Suite grün.
+  Plattformabdeckung und verbleibende manuelle Prüfungen stehen in der
+  Teststrategie; die CI braucht keine Änderung.
+
+**Befunde.** Das Paket ist verhaltensneutral: Die Tests halten das heutige
+Verhalten mit dem Kommentar `Befund ARCH-07-Bx` fest, behoben wird in eigenen
+Aufträgen.
+
+| ID | Risiko | Befund | Nachweis | Folgeauftrag |
+|---|---|---|---|---|
+| B1 | hoch | Der Inspector schreibt Dauermodifikatoren nach `persistentMods`. Ist `statModifiers` leer, spiegelt `HeroSheet.fromJson` sie dorthin; `derived_stats.dart` zählt beides, die Kampfvorschau nur `persistentMods`. Nach jedem Laden stehen die Werte doppelt (f07: LeP 36 statt 34), im Sync folgt ein zusätzlicher Upload. | Domain-, Regel- und Sync-Test (f05, f07) | Sofortfix empfohlen, vor ARCH-02 |
+| B2 | mittel | Entfernt man die erste von zwei gleichnamigen Waffen, erbt die zweite deren Inventardaten (Wert, Beschreibung, Gewicht). | `bestandshelden_ausruestung_test.dart` | ARCH-03 |
+| B3 | mittel | Umbenennen einer Waffe verliert ihre Inventardaten. | `bestandshelden_ausruestung_test.dart` | ARCH-03 |
+| B4 | niedrig | Ohne Konto stempelt `HiveHeroRepository` `lastModified` nur, wenn es fehlt; geladene Objekte bringen ihren Stempel mit, er bleibt der des ersten Speicherns. Mit Konto stempelt `SyncingHeroRepository` korrekt. Die Konfliktansicht zeigt dadurch nach dem Anmelden veraltete Zeiten für Offline-Helden. | `bestandsheld_ablauf_test.dart` | ARCH-06 oder Kleinfix |
+| B5 | mittel | Eine unbekannte Steigerungsart (`kind`) wirft beim Laden und macht den ganzen Helden unlesbar — etwa nach einem Export aus einer neueren App-Version. | Domain-Test (f08b) | Versionsstrategie vor ARCH-02 |
+| B6 | mittel/hoch | Unbekannte Felder gehen bei `fromJson`/`toJson` verloren. Ein Gerät mit älterer App überschreibt per Sync die neueren Felder. | Domain-Test | Versionsstrategie vor ARCH-02/03 |
+| B7 | mittel/hoch | Nahkampf-AT/PA der Kampfvorschau rechnen mit eigenen Modifikatoren (`combat_rules.dart`: `persistentMods`, Textmodifikatoren, `tempMods`). Wundabzüge fehlen nachweislich, obwohl AT-Basis und Initiative sie enthalten; laut Code fehlen dort auch benannte und Inventar-Modifikatoren (nicht eigens getestet). | Regeltest (f01, f04 mit Wunde) | eigener Regelauftrag, Bezug ARCH-04 |
+| B8 | mittel | Offline geänderte Laufzeitwerte (LeP, AsP, Wunden …) lädt `syncNow` nicht hoch: `_syncHeroStates` überträgt nur Zustände, die online noch fehlen. Erst die nächste Zustandsänderung mit Verbindung holt sie nach; wechselt man vorher das Gerät, sieht es den alten Stand. | `sync_zwei_geraete_test.dart` | eigener Sync-Auftrag, Bezug ARCH-06 |
+| B9 | niedrig/mittel | `_mergeEntry` baut verknüpfte Inventareinträge aus dem Slot neu auf und übernimmt nur eine feste Feldliste. Typ (`typ`) und Träger (`traegerTyp`, `traegerId`) gehen bei jedem Speichern verloren, obwohl der Inventareditor den Träger auch für verknüpfte Einträge anbietet. | Code-Befund (28.09.2026) | ARCH-03, gemeinsames Gegenstandsmodell |
+| B10 | hoch | Nach dem Übernehmen eines Online-Stands merkte sich die Sync-Basis den Hash des Schreibers. Konnte diese Version den Stand nicht verlustfrei darstellen, lud ein bloßer Abgleich die verkürzte Fassung ohne Konflikt hoch und löschte fremde Felder auf allen Geräten. | `sync_app_versionen_test.dart` | behoben (`192cf41`) |
+
+**Aktualisierung 27.09.2026:** B1 (`d5f111c`), B7 (`de36df2`), B8
+(`20102a0`), B4 (`9eebf93`) sowie B5/B6 (`6be321c`) haben Fix-Commits.
+B2/B3 sind im ARCH-03-Teilstand oben behoben. Bei B6 bleiben unbekannte
+Felder *innerhalb* verschachtelter Objekte ungeschützt; der Fix bewahrt
+unbekannte Felder oberster Ebene und unbekannte Steigerungsarten. Nächster
+Architekturschritt ist die Versions- und Sync-Kompatibilität für neue
+verschachtelte Felder, bevor ARCH-03 über den B2/B3-Teilfix hinausgeht.
+
+**Aktualisierung 28.09.2026:** B6 deckt jetzt auch die Ausrüstung ab
+(`f28cb1a`); andere verschachtelte Modelle bleiben ungeschützt, siehe den
+ARCH-03-Teilstand vom 28.09.2026. B10 ist mit `192cf41` behoben, B9 ist neu
+und gehört zu ARCH-03.
 
 ## Abschluss und Übergabe je Aufgabe
 

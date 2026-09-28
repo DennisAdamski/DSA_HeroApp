@@ -136,7 +136,13 @@ class HeroActions {
     );
     final effectiveStartAttributes = computeHeroEffectiveStartAttributes(hero);
 
+    // Neue Slots bekommen eine zufaellige ID, damit sie nie die Inventardaten
+    // eines gerade entfernten Slots erben; geladene tragen ihre schon.
+    final combatConfigMitIds = hero.combatConfig.withStableIds(
+      neueId: () => const Uuid().v4(),
+    );
     final normalizedHero = hero.copyWith(
+      combatConfig: combatConfigMitIds,
       apTotal: normalizedApTotal,
       apSpent: normalizedApSpent,
       apAvailable: calculatedAvailable,
@@ -151,8 +157,13 @@ class HeroActions {
       normalizedHero.inventoryEntries,
       normalizedHero.combatConfig,
     );
+    // Jede Nutzeraenderung bekommt einen frischen Stempel. Hive ergaenzt ihn
+    // nur, wenn er fehlt; ein geladener Held braechte sonst seinen alten mit,
+    // und ohne Konto bliebe der Zeitpunkt des ersten Speicherns stehen
+    // (Befund ARCH-07-B4). Inhalts-Hashes ignorieren das Feld.
     final reconciledHero = normalizedHero.copyWith(
       inventoryEntries: reconciledEntries,
+      lastModified: DateTime.now().toUtc(),
     );
 
     if (expectedContentHash != null) {
@@ -190,7 +201,12 @@ class HeroActions {
   /// Speichert den Laufzeitzustand (LeP, AsP, KaP, Au, temp. Mods) eines Helden.
   Future<void> saveHeroState(String heroId, HeroState state) async {
     final repo = _ref.read(heroRepositoryProvider);
-    await repo.saveHeroState(heroId, state);
+    await repo.saveHeroState(heroId, _gestempelt(state));
+  }
+
+  // Frischer Aenderungszeitpunkt fuer einen Zustand, analog zu [saveHero].
+  HeroState _gestempelt(HeroState state) {
+    return state.copyWith(lastModified: DateTime.now().toUtc());
   }
 
   /// Wendet eine gezielte Änderung auf den frisch geladenen Laufzeitzustand an.
@@ -203,7 +219,7 @@ class HeroActions {
   ) async {
     final repo = _ref.read(heroRepositoryProvider);
     final current = await repo.loadHeroState(heroId) ?? const HeroState.empty();
-    await repo.saveHeroState(heroId, update(current));
+    await repo.saveHeroState(heroId, _gestempelt(update(current)));
   }
 
   // Katalogisierte Vor-/Nachteile sollen nicht als Parser-Restfragmente

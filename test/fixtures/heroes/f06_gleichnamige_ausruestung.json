@@ -1,0 +1,806 @@
+{
+  "kind": "dsa.hero.export",
+  "transferSchemaVersion": 3,
+  "exportedAt": "2026-09-20T18:00:00.000Z",
+  "hero": {
+    "schemaVersion": 28,
+    "id": "bestand-f06",
+    "name": "Jorgan Doppelklinge",
+    "level": 5,
+    "attributes": {
+      "mu": 13,
+      "kl": 11,
+      "inn": 13,
+      "ch": 10,
+      "ff": 14,
+      "ge": 14,
+      "ko": 12,
+      "kk": 12
+    },
+    "rawStartAttributes": {
+      "mu": 13,
+      "kl": 11,
+      "inn": 13,
+      "ch": 10,
+      "ff": 14,
+      "ge": 14,
+      "ko": 12,
+      "kk": 12
+    },
+    "startAttributes": {
+      "mu": 13,
+      "kl": 11,
+      "inn": 13,
+      "ch": 10,
+      "ff": 14,
+      "ge": 14,
+      "ko": 12,
+      "kk": 12
+    },
+    "persistentMods": {
+      "lep": 0,
+      "au": 0,
+      "asp": 0,
+      "kap": 0,
+      "mr": 0,
+      "iniBase": 0,
+      "at": 0,
+      "pa": 0,
+      "fk": 0,
+      "gs": 0,
+      "ausweichen": 0,
+      "rs": 0
+    },
+    "bought": {
+      "lep": 0,
+      "au": 0,
+      "asp": 0,
+      "kap": 0,
+      "mr": 0
+    },
+    "combatConfig": {
+      "mainWeapon": {
+        "name": "Dolch",
+        "talentId": "tal_dolche",
+        "combatType": "melee",
+        "weaponType": "Dolch",
+        "distanceClass": "",
+        "kkBase": 0,
+        "kkThreshold": 1,
+        "breakFactor": 0,
+        "tpDiceCount": 1,
+        "tpDiceSides": 6,
+        "tpFlat": 1,
+        "wmAt": 0,
+        "wmPa": 0,
+        "iniMod": 0,
+        "beTalentMod": 0,
+        "isOneHanded": true,
+        "isArtifact": false,
+        "artifactDescription": "",
+        "isGeweiht": false,
+        "geweihtDescription": "",
+        "rangedProfile": {
+          "reloadTime": 0,
+          "distanceBands": [
+            {
+              "label": "Distanz 1",
+              "tpMod": 0
+            },
+            {
+              "label": "Distanz 2",
+              "tpMod": 0
+            },
+            {
+              "label": "Distanz 3",
+              "tpMod": 0
+            },
+            {
+              "label": "Distanz 4",
+              "tpMod": 0
+            },
+            {
+              "label": "Distanz 5",
+              "tpMod": 0
+            }
+          ],
+          "projectiles": [],
+          "selectedDistanceIndex": 0,
+          "selectedProjectileIndex": -1
+        }
+      },
+      "weapons": [
+        {
+          "name": "Dolch",
+          "talentId": "tal_dolche",
+          "combatType": "melee",
+          "weaponType": "Dolch",
+          "distanceClass": "",
+          "kkBase": 0,
+          "kkThreshold": 1,
+          "breakFactor": 0,
+          "tpDiceCount": 1,
+          "tpDiceSides": 6,
+          "tpFlat": 1,
+          "wmAt": 0,
+          "wmPa": 0,
+          "iniMod": 0,
+          "beTalentMod": 0,
+          "isOneHanded": true,
+          "isArtifact": true,
+          "artifactDescription": "Runenklinge",
+          "isGeweiht": false,
+          "geweihtDescription": "",
+          "rangedProfile": {
+            "reloadTime": 0,
+            "distanceBands": [
+              {
+                "label": "Distanz 1",
+                "tpMod": 0
+              },
+              {
+                "label": "Distanz 2",
+                "tpMod": 0
+              },
+              {
+                "label": "Distanz 3",
+                "tpMod": 0
+              },
+              {
+                "label": "Distanz 4",
+                "tpMod": 0
+              },
+              {
+                "label": "Distanz 5",
+                "tpMod": 0
+              }
+            ],
+            "projectiles": [],
+            "selectedDistanceIndex": 0,
+            "selectedProjectileIndex": -1
+          }
+        },
+        {
+          "name": "Dolch",
+          "talentId": "tal_dolche",
+          "combatType": "melee",
+          "weaponType": "Dolch",
+          "distanceClass": "",
+          "kkBase": 0,
+          "kkThreshold": 1,
+          "breakFactor": 0,
+          "tpDiceCount": 1,
+          "tpDiceSides": 6,
+          "tpFlat": 1,
+          "wmAt": 0,
+          "wmPa": 0,
+          "iniMod": 0,
+          "beTalentMod": 0,
+          "isOneHanded": true,
+          "isArtifact": false,
+          "artifactDescription": "",
+          "isGeweiht": false,
+          "geweihtDescription": "",
+          "rangedProfile": {
+            "reloadTime": 0,
+            "distanceBands": [
+              {
+                "label": "Distanz 1",
+                "tpMod": 0
+              },
+              {
+                "label": "Distanz 2",
+                "tpMod": 0
+              },
+              {
+                "label": "Distanz 3",
+                "tpMod": 0
+              },
+              {
+                "label": "Distanz 4",
+                "tpMod": 0
+              },
+              {
+                "label": "Distanz 5",
+                "tpMod": 0
+              }
+            ],
+            "projectiles": [],
+            "selectedDistanceIndex": 0,
+            "selectedProjectileIndex": -1
+          }
+        },
+        {
+          "name": "Kurzbogen",
+          "talentId": "tal_bogen",
+          "combatType": "ranged",
+          "weaponType": "Kurzbogen",
+          "distanceClass": "",
+          "kkBase": 0,
+          "kkThreshold": 1,
+          "breakFactor": 0,
+          "tpDiceCount": 1,
+          "tpDiceSides": 6,
+          "tpFlat": 4,
+          "wmAt": 0,
+          "wmPa": 0,
+          "iniMod": 0,
+          "beTalentMod": 0,
+          "isOneHanded": false,
+          "isArtifact": false,
+          "artifactDescription": "",
+          "isGeweiht": false,
+          "geweihtDescription": "",
+          "rangedProfile": {
+            "reloadTime": 2,
+            "distanceBands": [
+              {
+                "label": "Distanz 1",
+                "tpMod": 1
+              },
+              {
+                "label": "Distanz 2",
+                "tpMod": 1
+              },
+              {
+                "label": "Distanz 3",
+                "tpMod": 0
+              },
+              {
+                "label": "Distanz 4",
+                "tpMod": 0
+              },
+              {
+                "label": "Distanz 5",
+                "tpMod": -1
+              }
+            ],
+            "projectiles": [
+              {
+                "name": "Jagdpfeil",
+                "count": 20,
+                "tpMod": 0,
+                "iniMod": 0,
+                "atMod": 0,
+                "description": ""
+              }
+            ],
+            "selectedDistanceIndex": 0,
+            "selectedProjectileIndex": 0
+          }
+        },
+        {
+          "name": "Kurzbogen",
+          "talentId": "tal_bogen",
+          "combatType": "ranged",
+          "weaponType": "Kurzbogen",
+          "distanceClass": "",
+          "kkBase": 0,
+          "kkThreshold": 1,
+          "breakFactor": 0,
+          "tpDiceCount": 1,
+          "tpDiceSides": 6,
+          "tpFlat": 4,
+          "wmAt": 0,
+          "wmPa": 0,
+          "iniMod": 0,
+          "beTalentMod": 0,
+          "isOneHanded": false,
+          "isArtifact": false,
+          "artifactDescription": "",
+          "isGeweiht": false,
+          "geweihtDescription": "",
+          "rangedProfile": {
+            "reloadTime": 2,
+            "distanceBands": [
+              {
+                "label": "Distanz 1",
+                "tpMod": 1
+              },
+              {
+                "label": "Distanz 2",
+                "tpMod": 1
+              },
+              {
+                "label": "Distanz 3",
+                "tpMod": 0
+              },
+              {
+                "label": "Distanz 4",
+                "tpMod": 0
+              },
+              {
+                "label": "Distanz 5",
+                "tpMod": -1
+              }
+            ],
+            "projectiles": [
+              {
+                "name": "Jagdpfeil",
+                "count": 12,
+                "tpMod": 0,
+                "iniMod": 0,
+                "atMod": 0,
+                "description": ""
+              }
+            ],
+            "selectedDistanceIndex": 0,
+            "selectedProjectileIndex": 0
+          }
+        }
+      ],
+      "selectedWeaponIndex": 1,
+      "offhandAssignment": {
+        "weaponIndex": -1,
+        "equipmentIndex": -1
+      },
+      "offhandEquipment": [],
+      "armor": {
+        "pieces": [
+          {
+            "name": "Lederzeug",
+            "isActive": true,
+            "rg1Active": false,
+            "rs": 2,
+            "be": 2,
+            "isArtifact": false,
+            "artifactDescription": "",
+            "isGeweiht": false,
+            "geweihtDescription": ""
+          },
+          {
+            "name": "Lederzeug",
+            "isActive": false,
+            "rg1Active": false,
+            "rs": 1,
+            "be": 1,
+            "isArtifact": false,
+            "artifactDescription": "",
+            "isGeweiht": false,
+            "geweihtDescription": ""
+          }
+        ],
+        "globalArmorTrainingLevel": 0
+      },
+      "specialRules": {
+        "kampfreflexe": false,
+        "kampfgespuer": false,
+        "schnellziehen": false,
+        "ausweichenI": false,
+        "ausweichenII": false,
+        "ausweichenIII": false,
+        "schildkampfI": false,
+        "schildkampfII": false,
+        "parierwaffenI": false,
+        "parierwaffenII": false,
+        "linkhandActive": false,
+        "flink": false,
+        "behaebig": false,
+        "axxeleratusActive": false,
+        "klingentaenzer": false,
+        "aufmerksamkeit": false,
+        "activeCombatSpecialAbilityIds": [],
+        "gladiatorStyleTalent": "",
+        "activeManeuvers": []
+      },
+      "manualMods": {
+        "iniMod": 0,
+        "ausweichenMod": 0,
+        "atMod": 0,
+        "paMod": 0,
+        "iniWurf": 0
+      },
+      "waffenmeisterschaften": []
+    },
+    "talents": {
+      "tal_dolche": {
+        "talentValue": 8,
+        "atValue": 5,
+        "paValue": 3,
+        "modifier": 0,
+        "talentModifiers": [],
+        "specialExperiences": 0,
+        "specializations": "",
+        "combatSpecializations": [],
+        "gifted": false,
+        "ebe": 0
+      },
+      "tal_bogen": {
+        "talentValue": 9,
+        "atValue": 9,
+        "paValue": 0,
+        "modifier": 0,
+        "talentModifiers": [],
+        "specialExperiences": 0,
+        "specializations": "",
+        "combatSpecializations": [],
+        "gifted": false,
+        "ebe": 0
+      }
+    },
+    "metaTalents": [],
+    "hiddenTalentIds": [],
+    "talentSpecialAbilities": [],
+    "spells": {},
+    "ritualCategories": [],
+    "representationen": [],
+    "repraesentationsTraditionen": {},
+    "merkmalskenntnisse": [],
+    "magicSpecialAbilities": [],
+    "magicLeadAttribute": "",
+    "sprachen": {},
+    "schriften": {},
+    "muttersprache": "",
+    "geschlecht": "",
+    "alter": "",
+    "groesse": "",
+    "gewicht": "",
+    "haarfarbe": "",
+    "augenfarbe": "",
+    "aussehen": "",
+    "avatarFileName": "",
+    "avatarGallery": [],
+    "primaerbildId": "",
+    "aktivesBildId": "",
+    "rasse": "",
+    "rasseModText": "",
+    "kultur": "",
+    "kulturModText": "",
+    "profession": "",
+    "professionModText": "",
+    "familieHerkunftHintergrund": "",
+    "stand": "",
+    "titel": "",
+    "sozialstatus": 0,
+    "vorteileText": "",
+    "nachteileText": "",
+    "apTotal": 1600,
+    "apSpent": 1400,
+    "apAvailable": 200,
+    "dukaten": "",
+    "resourceActivationConfig": {},
+    "inventoryEntries": [
+      {
+        "gegenstand": "Dolch",
+        "woGetragen": "",
+        "typ": "",
+        "welchesAbenteuer": "",
+        "gewicht": "",
+        "wert": "5",
+        "artefakt": "",
+        "anzahl": "",
+        "amKoerper": "",
+        "woDann": "",
+        "gruppe": "",
+        "beschreibung": "Ersatzklinge im Rucksack",
+        "itemType": "ausruestung",
+        "source": "manuell",
+        "istAusgeruestet": false,
+        "modifiers": [],
+        "gewichtGramm": 0,
+        "wertSilber": 0,
+        "herkunft": "",
+        "isMagisch": false,
+        "magischDescription": "",
+        "isGeweiht": false,
+        "geweihtDescription": "",
+        "traegerTyp": "held"
+      },
+      {
+        "gegenstand": "Dolch",
+        "woGetragen": "",
+        "typ": "",
+        "welchesAbenteuer": "",
+        "gewicht": "",
+        "wert": "30",
+        "artefakt": "Runenklinge",
+        "anzahl": "",
+        "amKoerper": "",
+        "woDann": "",
+        "gruppe": "",
+        "beschreibung": "Erbstück mit Runen",
+        "itemType": "ausruestung",
+        "source": "waffe",
+        "sourceRef": "w:Dolch",
+        "istAusgeruestet": true,
+        "modifiers": [],
+        "gewichtGramm": 400,
+        "wertSilber": 0,
+        "herkunft": "",
+        "isMagisch": true,
+        "magischDescription": "Runenklinge",
+        "isGeweiht": false,
+        "geweihtDescription": "",
+        "traegerTyp": "held"
+      },
+      {
+        "gegenstand": "Dolch",
+        "woGetragen": "",
+        "typ": "",
+        "welchesAbenteuer": "",
+        "gewicht": "",
+        "wert": "8",
+        "artefakt": "",
+        "anzahl": "",
+        "amKoerper": "",
+        "woDann": "",
+        "gruppe": "",
+        "beschreibung": "Beutestück",
+        "itemType": "ausruestung",
+        "source": "waffe",
+        "sourceRef": "w:Dolch",
+        "istAusgeruestet": true,
+        "modifiers": [],
+        "gewichtGramm": 350,
+        "wertSilber": 0,
+        "herkunft": "",
+        "isMagisch": false,
+        "magischDescription": "",
+        "isGeweiht": false,
+        "geweihtDescription": "",
+        "traegerTyp": "held"
+      },
+      {
+        "gegenstand": "Kurzbogen",
+        "woGetragen": "",
+        "typ": "",
+        "welchesAbenteuer": "",
+        "gewicht": "",
+        "wert": "45",
+        "artefakt": "",
+        "anzahl": "",
+        "amKoerper": "",
+        "woDann": "",
+        "gruppe": "",
+        "beschreibung": "Elfenarbeit",
+        "itemType": "ausruestung",
+        "source": "waffe",
+        "sourceRef": "w:Kurzbogen",
+        "istAusgeruestet": true,
+        "modifiers": [],
+        "gewichtGramm": 0,
+        "wertSilber": 0,
+        "herkunft": "",
+        "isMagisch": false,
+        "magischDescription": "",
+        "isGeweiht": false,
+        "geweihtDescription": "",
+        "traegerTyp": "held"
+      },
+      {
+        "gegenstand": "Jagdpfeil",
+        "woGetragen": "",
+        "typ": "",
+        "welchesAbenteuer": "",
+        "gewicht": "",
+        "wert": "",
+        "artefakt": "",
+        "anzahl": "20",
+        "amKoerper": "",
+        "woDann": "",
+        "gruppe": "",
+        "beschreibung": "Köcher links",
+        "itemType": "verbrauchsgegenstand",
+        "source": "geschoss",
+        "sourceRef": "w:Kurzbogen|p:Jagdpfeil",
+        "istAusgeruestet": false,
+        "modifiers": [],
+        "gewichtGramm": 0,
+        "wertSilber": 0,
+        "herkunft": "",
+        "isMagisch": false,
+        "magischDescription": "",
+        "isGeweiht": false,
+        "geweihtDescription": "",
+        "traegerTyp": "held"
+      },
+      {
+        "gegenstand": "Kurzbogen",
+        "woGetragen": "",
+        "typ": "",
+        "welchesAbenteuer": "",
+        "gewicht": "",
+        "wert": "20",
+        "artefakt": "",
+        "anzahl": "",
+        "amKoerper": "",
+        "woDann": "",
+        "gruppe": "",
+        "beschreibung": "Jagdbogen",
+        "itemType": "ausruestung",
+        "source": "waffe",
+        "sourceRef": "w:Kurzbogen",
+        "istAusgeruestet": true,
+        "modifiers": [],
+        "gewichtGramm": 0,
+        "wertSilber": 0,
+        "herkunft": "",
+        "isMagisch": false,
+        "magischDescription": "",
+        "isGeweiht": false,
+        "geweihtDescription": "",
+        "traegerTyp": "held"
+      },
+      {
+        "gegenstand": "Jagdpfeil",
+        "woGetragen": "",
+        "typ": "",
+        "welchesAbenteuer": "",
+        "gewicht": "",
+        "wert": "",
+        "artefakt": "",
+        "anzahl": "12",
+        "amKoerper": "",
+        "woDann": "",
+        "gruppe": "",
+        "beschreibung": "Köcher rechts",
+        "itemType": "verbrauchsgegenstand",
+        "source": "geschoss",
+        "sourceRef": "w:Kurzbogen|p:Jagdpfeil",
+        "istAusgeruestet": false,
+        "modifiers": [],
+        "gewichtGramm": 0,
+        "wertSilber": 0,
+        "herkunft": "",
+        "isMagisch": false,
+        "magischDescription": "",
+        "isGeweiht": false,
+        "geweihtDescription": "",
+        "traegerTyp": "held"
+      },
+      {
+        "gegenstand": "Lederzeug",
+        "woGetragen": "",
+        "typ": "",
+        "welchesAbenteuer": "",
+        "gewicht": "",
+        "wert": "",
+        "artefakt": "",
+        "anzahl": "",
+        "amKoerper": "",
+        "woDann": "",
+        "gruppe": "",
+        "beschreibung": "Getragen",
+        "itemType": "ausruestung",
+        "source": "ruestung",
+        "sourceRef": "a:Lederzeug",
+        "istAusgeruestet": true,
+        "modifiers": [],
+        "gewichtGramm": 0,
+        "wertSilber": 0,
+        "herkunft": "",
+        "isMagisch": false,
+        "magischDescription": "",
+        "isGeweiht": false,
+        "geweihtDescription": "",
+        "traegerTyp": "held"
+      },
+      {
+        "gegenstand": "Lederzeug",
+        "woGetragen": "",
+        "typ": "",
+        "welchesAbenteuer": "",
+        "gewicht": "",
+        "wert": "",
+        "artefakt": "",
+        "anzahl": "",
+        "amKoerper": "",
+        "woDann": "",
+        "gruppe": "",
+        "beschreibung": "Ersatz im Gepäck",
+        "itemType": "ausruestung",
+        "source": "ruestung",
+        "sourceRef": "a:Lederzeug",
+        "istAusgeruestet": false,
+        "modifiers": [],
+        "gewichtGramm": 0,
+        "wertSilber": 0,
+        "herkunft": "",
+        "isMagisch": false,
+        "magischDescription": "",
+        "isGeweiht": false,
+        "geweihtDescription": "",
+        "traegerTyp": "held"
+      }
+    ],
+    "notes": [],
+    "connections": [],
+    "adventures": [],
+    "attributeSePool": {
+      "mu": 0,
+      "kl": 0,
+      "inn": 0,
+      "ch": 0,
+      "ff": 0,
+      "ge": 0,
+      "ko": 0,
+      "kk": 0
+    },
+    "statSePool": {
+      "lep": 0,
+      "au": 0,
+      "asp": 0,
+      "kap": 0,
+      "mr": 0
+    },
+    "companions": [],
+    "gruppen": [],
+    "reisebericht": {
+      "checkedIds": [],
+      "openEntries": {},
+      "wahlSeZuordnungen": {},
+      "appliedRewardIds": []
+    },
+    "statModifiers": {},
+    "attributeModifiers": {},
+    "unknownModifierFragments": [],
+    "isEpisch": false,
+    "epicStartAp": 0,
+    "epicAttributeMaxBonus": {
+      "mu": 0,
+      "kl": 0,
+      "inn": 0,
+      "ch": 0,
+      "ff": 0,
+      "ge": 0,
+      "ko": 0,
+      "kk": 0
+    },
+    "epicMainAttributes": {
+      "mu": 0,
+      "kl": 0,
+      "inn": 0,
+      "ch": 0,
+      "ff": 0,
+      "ge": 0,
+      "ko": 0,
+      "kk": 0
+    },
+    "epicLockedWaffenmeisterCategories": [],
+    "epicUnactivatedTalentIds": [],
+    "lastModified": "2026-09-20T17:55:00.000Z"
+  },
+  "state": {
+    "schemaVersion": 6,
+    "currentLep": 29,
+    "currentAsp": 0,
+    "currentKap": 0,
+    "currentAu": 31,
+    "erschoepfung": 0,
+    "ueberanstrengung": 0,
+    "tempMods": {
+      "lep": 0,
+      "au": 0,
+      "asp": 0,
+      "kap": 0,
+      "mr": 0,
+      "iniBase": 0,
+      "at": 0,
+      "pa": 0,
+      "fk": 0,
+      "gs": 0,
+      "ausweichen": 0,
+      "rs": 0
+    },
+    "tempAttributeMods": {
+      "mu": 0,
+      "kl": 0,
+      "inn": 0,
+      "ch": 0,
+      "ff": 0,
+      "ge": 0,
+      "ko": 0,
+      "kk": 0
+    },
+    "activeSpellEffects": {
+      "activeEffectIds": [],
+      "effectDetails": {}
+    },
+    "wpiZustand": {
+      "wundenProZone": {},
+      "kopfIniMalus": 0
+    },
+    "diceLog": [],
+    "lastModified": "2026-09-20T17:56:00.000Z"
+  }
+}

@@ -111,17 +111,23 @@ class WeaponDef {
       remarks: readCatalogString(json, 'remarks', fallback: ''),
       reloadTime: readCatalogInt(json, 'reloadTime', fallback: 0),
       reloadTimeText: readCatalogString(json, 'reloadTimeText', fallback: ''),
+      // Katalogschluessel sind keine Heldendaten: die Heldenmodelle bewahren
+      // Unbekanntes, das darf beim Uebernehmen einer Katalogwaffe nicht
+      // in den Slot wandern.
       rangedDistanceBands: rawDistanceBands
           .whereType<Map>()
           .map(
             (entry) =>
-                RangedDistanceBand.fromJson(entry.cast<String, dynamic>()),
+                RangedDistanceBand.fromJson(entry.cast<String, dynamic>())
+                    .copyWith(unbekannteFelder: const <String, Object?>{}),
           )
           .toList(growable: false),
       rangedProjectiles: rawProjectiles
           .whereType<Map>()
           .map(
-            (entry) => RangedProjectile.fromJson(entry.cast<String, dynamic>()),
+            (entry) =>
+                RangedProjectile.fromJson(entry.cast<String, dynamic>())
+                    .copyWith(unbekannteFelder: const <String, Object?>{}),
           )
           .toList(growable: false),
       reach: readCatalogString(json, 'reach', fallback: ''),

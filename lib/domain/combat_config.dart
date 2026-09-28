@@ -18,6 +18,7 @@ export 'package:dsa_heldenverwaltung/domain/combat_config/shield_size.dart';
 export 'package:dsa_heldenverwaltung/domain/combat_config/waffenmeister_config.dart';
 
 import 'package:dsa_heldenverwaltung/domain/combat_config/armor_config.dart';
+import 'package:dsa_heldenverwaltung/domain/combat_config/armor_piece.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config/combat_manual_mods.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config/combat_special_rules.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config/main_weapon_slot.dart';
@@ -26,7 +27,9 @@ import 'package:dsa_heldenverwaltung/domain/combat_config/offhand_equipment_entr
 import 'package:dsa_heldenverwaltung/domain/combat_config/offhand_equipment_type.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config/offhand_mode.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config/offhand_slot.dart';
+import 'package:dsa_heldenverwaltung/domain/combat_config/ranged_projectile.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config/waffenmeister_config.dart';
+import 'package:dsa_heldenverwaltung/domain/unbekannte_json_felder.dart';
 
 /// Aggregiert alle Kampfkonfigurationsdaten eines Helden.
 ///
@@ -47,6 +50,7 @@ class CombatConfig {
     this.specialRules = const CombatSpecialRules(),
     this.manualMods = const CombatManualMods(),
     this.waffenmeisterschaften = const <WaffenmeisterConfig>[],
+    this.unbekannteFelder = const <String, Object?>{},
   });
 
   /// Legacy-Hauptwaffe (wird bei [weapons.isEmpty] als einziger Slot verwendet).
@@ -75,6 +79,32 @@ class CombatConfig {
 
   /// Konfigurierte Waffenmeisterschaften (eine pro Waffenart).
   final List<WaffenmeisterConfig> waffenmeisterschaften;
+
+  /// JSON-Felder einer neueren App-Version; bleiben beim Speichern erhalten
+  /// (siehe `unbekannte_json_felder.dart`).
+  ///
+  /// Gilt fuer diese Ebene und die Ausruestung darunter (Waffen samt
+  /// Fernkampfprofil, Ruestung, Nebenhand). [offhandAssignment],
+  /// [specialRules], [manualMods] und [waffenmeisterschaften] bewahren
+  /// Unbekanntes bewusst nicht; sie sind Einstellungen, keine Gegenstaende.
+  final Map<String, Object?> unbekannteFelder;
+
+  /// Alle Schluessel, die [fromJson] liest — einschliesslich des
+  /// Altschluessels `offhand`, der beim Laden in [offhandEquipment]
+  /// aufgeht. Als unbekannt zurueckgeschrieben, kaeme ein geloeschter
+  /// migrierter Schild beim naechsten Laden wieder.
+  static const Set<String> jsonSchluessel = <String>{
+    'mainWeapon',
+    'weapons',
+    'selectedWeaponIndex',
+    'offhandAssignment',
+    'offhandEquipment',
+    'armor',
+    'specialRules',
+    'manualMods',
+    'waffenmeisterschaften',
+    'offhand',
+  };
 
   /// Gibt die normalisierte Waffenliste zurueck.
   ///
@@ -122,6 +152,7 @@ class CombatConfig {
     CombatSpecialRules? specialRules,
     CombatManualMods? manualMods,
     List<WaffenmeisterConfig>? waffenmeisterschaften,
+    Map<String, Object?>? unbekannteFelder,
   }) {
     final nextWeapons = List<MainWeaponSlot>.from(
       weapons ?? weaponSlots,
@@ -160,6 +191,7 @@ class CombatConfig {
       waffenmeisterschaften: waffenmeisterschaften != null
           ? List<WaffenmeisterConfig>.unmodifiable(waffenmeisterschaften)
           : this.waffenmeisterschaften,
+      unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
     );
   }
 
@@ -171,7 +203,7 @@ class CombatConfig {
       slots.length,
     );
     final activeWeapon = index < 0 ? mainWeapon : slots[index];
-    return {
+    return mitUnbekanntenFeldern(<String, dynamic>{
       'mainWeapon': activeWeapon.toJson(),
       'weapons': slots.map((entry) => entry.toJson()).toList(growable: false),
       'selectedWeaponIndex': index,
@@ -190,7 +222,79 @@ class CombatConfig {
       'waffenmeisterschaften': waffenmeisterschaften
           .map((entry) => entry.toJson())
           .toList(growable: false),
-    };
+    }, unbekannteFelder);
+  }
+
+  /// Vergibt stabile IDs an benannte Slots, die noch keine eindeutige haben.
+  ///
+  /// Betrifft Waffen, ihre Geschosse, Ruestungsstuecke und Nebenhand-Teile;
+  /// ueber die ID verweist das Inventar auf sie (`inventar_verweise.dart`).
+  /// Ohne [neueId] entstehen deterministische IDs (`w1`, `a1`, `oh1`, je Waffe
+  /// `p1`, jeweils die kleinste freie Nummer in Listenreihenfolge). Das nutzt
+  /// das Laden: alle Geraete errechnen aus denselben Altdaten dieselben IDs.
+  /// Beim Speichern uebergibt `HeroActions` einen UUID-Erzeuger, damit ein
+  /// neuer Slot nie die ID eines gerade entfernten erbt. Bestehende IDs
+  /// bleiben; bei Doppelungen (etwa nach dem Kopieren eines Slots) behaelt nur
+  /// das erste Vorkommen seine. Unbenannte Slots bleiben ohne ID, sie haben
+  /// keinen Inventareintrag.
+  CombatConfig withStableIds({String Function()? neueId}) {
+    var geaendert = false;
+    final waffen = _mitStabilenIds<MainWeaponSlot>(
+      weaponSlots,
+      praefix: 'w',
+      idVon: (slot) => slot.id,
+      nameVon: (slot) => slot.name,
+      setzeId: (slot, id) => slot.copyWith(id: id),
+      neueId: neueId,
+    );
+    geaendert |= waffen != null;
+    final waffenMitGeschossen = <MainWeaponSlot>[];
+    for (final slot in waffen ?? weaponSlots) {
+      final geschosse = _mitStabilenIds<RangedProjectile>(
+        slot.rangedProfile.projectiles,
+        praefix: 'p',
+        idVon: (geschoss) => geschoss.id,
+        nameVon: (geschoss) => geschoss.name,
+        setzeId: (geschoss, id) => geschoss.copyWith(id: id),
+        neueId: neueId,
+      );
+      if (geschosse == null) {
+        waffenMitGeschossen.add(slot);
+        continue;
+      }
+      geaendert = true;
+      waffenMitGeschossen.add(
+        slot.copyWith(
+          rangedProfile: slot.rangedProfile.copyWith(projectiles: geschosse),
+        ),
+      );
+    }
+    final ruestung = _mitStabilenIds<ArmorPiece>(
+      armor.pieces,
+      praefix: 'a',
+      idVon: (piece) => piece.id,
+      nameVon: (piece) => piece.name,
+      setzeId: (piece, id) => piece.copyWith(id: id),
+      neueId: neueId,
+    );
+    geaendert |= ruestung != null;
+    final nebenhand = _mitStabilenIds<OffhandEquipmentEntry>(
+      offhandEquipment,
+      praefix: 'oh',
+      idVon: (entry) => entry.id,
+      nameVon: (entry) => entry.name,
+      setzeId: (entry, id) => entry.copyWith(id: id),
+      neueId: neueId,
+    );
+    geaendert |= nebenhand != null;
+    if (!geaendert) {
+      return this;
+    }
+    return copyWith(
+      weapons: waffenMitGeschossen,
+      armor: ruestung == null ? armor : armor.copyWith(pieces: ruestung),
+      offhandEquipment: nebenhand,
+    );
   }
 
   /// Deserialisiert eine [CombatConfig] aus einem JSON-Map.
@@ -246,7 +350,7 @@ class CombatConfig {
         ? migrated.equipment
         : parsedOffhandEquipment;
 
-    return CombatConfig(
+    final config = CombatConfig(
       mainWeapon: selectedMain,
       weapons: slots,
       selectedWeaponIndex: selectedIndex,
@@ -261,8 +365,55 @@ class CombatConfig {
       specialRules: CombatSpecialRules.fromJson(readMap('specialRules')),
       manualMods: CombatManualMods.fromJson(readMap('manualMods')),
       waffenmeisterschaften: _parseWaffenmeisterschaften(json),
+      unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
     );
+    // Altdaten ohne Slot-IDs bekommen sie hier deterministisch.
+    return config.withStableIds();
   }
+}
+
+/// Ergaenzt fehlende oder doppelte IDs in [eintraege].
+///
+/// Liefert `null`, wenn nichts zu tun war, damit unveraenderte Listen ihre
+/// Instanz behalten.
+List<T>? _mitStabilenIds<T>(
+  List<T> eintraege, {
+  required String praefix,
+  required String Function(T) idVon,
+  required String Function(T) nameVon,
+  required T Function(T, String) setzeId,
+  String Function()? neueId,
+}) {
+  final vergeben = <String>{};
+  final behaelt = <bool>[
+    for (final eintrag in eintraege)
+      idVon(eintrag).isNotEmpty && vergeben.add(idVon(eintrag)),
+  ];
+  var naechsteNummer = 1;
+  String erzeuge() {
+    if (neueId != null) {
+      return neueId();
+    }
+    while (vergeben.contains('$praefix$naechsteNummer')) {
+      naechsteNummer++;
+    }
+    final id = '$praefix$naechsteNummer';
+    vergeben.add(id);
+    return id;
+  }
+
+  var geaendert = false;
+  final ergebnis = <T>[];
+  for (var i = 0; i < eintraege.length; i++) {
+    final eintrag = eintraege[i];
+    if (behaelt[i] || nameVon(eintrag).trim().isEmpty) {
+      ergebnis.add(eintrag);
+      continue;
+    }
+    geaendert = true;
+    ergebnis.add(setzeId(eintrag, erzeuge()));
+  }
+  return geaendert ? List<T>.unmodifiable(ergebnis) : null;
 }
 
 /// Normalisiert einen Waffenslot-Index auf den gueltigen Bereich.

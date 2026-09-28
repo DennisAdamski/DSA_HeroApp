@@ -76,6 +76,24 @@ void main() {
       expect(reloaded.source, InventoryItemSource.waffe);
     });
 
+    test('slotRef wird nur geschrieben, wenn belegt', () {
+      const entry = HeroInventoryEntry(
+        gegenstand: 'Langschwert',
+        source: InventoryItemSource.waffe,
+        sourceRef: 'w:Langschwert',
+        slotRef: 'w#w1',
+      );
+
+      final reloaded = HeroInventoryEntry.fromJson(entry.toJson());
+      final ohne = reloaded.copyWith(slotRef: null);
+
+      expect(reloaded.slotRef, 'w#w1');
+      expect(reloaded.sourceRef, 'w:Langschwert');
+      expect(ohne.slotRef, isNull);
+      expect(ohne.toJson().containsKey('slotRef'), isFalse);
+      expect(ohne.copyWith(wert: '5').sourceRef, 'w:Langschwert');
+    });
+
     test('abenteuer-Quelle wird korrekt serialisiert und gelesen', () {
       const entry = HeroInventoryEntry(
         gegenstand: 'Silberdolch',

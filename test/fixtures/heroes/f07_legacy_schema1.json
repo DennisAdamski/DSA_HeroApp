@@ -1,0 +1,88 @@
+{
+  "kind": "dsa.hero.export",
+  "transferSchemaVersion": 1,
+  "exportedAt": "2025-03-14T20:15:00.000Z",
+  "hero": {
+    "id": "bestand-f07",
+    "name": "Gerion Altbestand",
+    "level": 0,
+    "attributes": {
+      "mu": 13,
+      "kl": 11,
+      "inn": 12,
+      "ch": 10,
+      "ff": 12,
+      "ge": 13,
+      "ko": 13,
+      "kk": 12
+    },
+    "persistentMods": {
+      "lep": 2,
+      "iniBase": 1
+    },
+    "bought": {
+      "lep": 1
+    },
+    "talents": {
+      "tal_schwerter": {
+        "talentValue": 8,
+        "atValue": 5,
+        "paValue": 3,
+        "specializations": "Langschwert"
+      },
+      "tal_bogen": {
+        "talentValue": 6,
+        "atValue": 6
+      },
+      "tal_klettern": {
+        "talentValue": 4
+      }
+    },
+    "talentSpecialAbilities": "Kulturkunde (Svellttal), Ortskenntnis (Lowangen)",
+    "combatConfig": {
+      "mainWeapon": {
+        "name": "Langschwert",
+        "talentId": "tal_schwerter",
+        "tpDiceCount": 1,
+        "tpDiceSides": 6,
+        "tpFlat": 4
+      },
+      "offhand": {
+        "mode": "shield",
+        "name": "Holzschild",
+        "atMod": -1,
+        "paMod": 2,
+        "iniMod": -1
+      },
+      "specialRules": {
+        "kampfreflexe": true,
+        "schnellladenBogen": true
+      }
+    },
+    "inventoryEntries": [
+      {
+        "gegenstand": "Heiltrank",
+        "anzahl": "2",
+        "artefakt": "Wirkt 1W6 LeP"
+      },
+      {
+        "gegenstand": "Seil",
+        "gewicht": "1 Stein",
+        "wert": "3 Silber"
+      }
+    ],
+    "rasse": "Svelltaler",
+    "rasseModText": "LEP+10, AU+10, MR-4",
+    "kultur": "Svellttal",
+    "profession": "Söldner",
+    "avatarFileName": "bestand-f07.png",
+    "vorteileText": "Herausragende Eigenschaft KK 2",
+    "nachteileText": "Neugier 5",
+    "apTotal": 1500,
+    "apSpent": 1200
+  },
+  "state": {
+    "currentLep": 25,
+    "currentAu": 28
+  }
+}

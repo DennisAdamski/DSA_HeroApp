@@ -27,6 +27,7 @@ class DerivedStats {
     required this.fkBase,
     required this.gs,
     required this.ausweichen,
+    this.modifiers = const StatModifiers(),
   });
 
   final int maxLep;
@@ -40,6 +41,14 @@ class DerivedStats {
   final int fkBase;
   final int gs;
   final int ausweichen;
+
+  /// Summe aller Stat-Modifikatoren, mit der diese Werte gerechnet wurden:
+  /// Inspector (`persistentMods`), benannte Modifikatoren, Textmodifikatoren,
+  /// temporaere, Inventar- und Wundmodifikatoren.
+  ///
+  /// Die Kampfvorschau rechnet damit weiter, damit AT, PA, RS und INI
+  /// dieselben Quellen beruecksichtigen wie die Basiswerte.
+  final StatModifiers modifiers;
 }
 
 /// Berechnet alle abgeleiteten Werte aus Stammdaten und Laufzeitzustand.
@@ -140,5 +149,6 @@ DerivedStats computeDerivedStatsFromInputs({
     // Ausweichen wird nicht mehr als Basiswertformel aus Attributen berechnet.
     // Der abgeleitete Wert spiegelt hier nur explizite Modifikatoren wider.
     ausweichen: mods.ausweichen,
+    modifiers: mods,
   );
 }
