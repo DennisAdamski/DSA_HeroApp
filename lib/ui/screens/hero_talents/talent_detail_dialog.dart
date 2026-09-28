@@ -55,16 +55,18 @@ class _TalentDetailDialogState extends State<_TalentDetailDialog> {
     final state = widget.state;
     final inventoryMod = widget.inventoryMod;
     final activeBaseBe = widget.activeBaseBe;
+    final befund = state?._befundFuer(talent) ?? LernspaltenBefund.keiner;
+    final begabt = befund.istBegabt(gifted: entry.gifted);
     final maxTaw = isCombat
         ? computeCombatTalentMaxValue(
             effectiveAttributes: widget.effectiveAttributes,
             talentType: talent.type,
-            gifted: entry.gifted,
+            gifted: begabt,
           )
         : computeTalentMaxValue(
             effectiveAttributes: widget.effectiveAttributes,
             attributeNames: talent.attributes,
-            gifted: entry.gifted,
+            gifted: begabt,
           );
     // Beruecksichtigt die epische KK-Haupteigenschaft (halbierte eBE bei
     // KK-Talenten); ohne State-Referenz bleibt es beim ungekuerzten Wert.
@@ -206,10 +208,14 @@ class _TalentDetailDialogState extends State<_TalentDetailDialog> {
                   'Begabung',
                   Align(
                     alignment: Alignment.centerLeft,
-                    child: Checkbox(
+                    child: BegabungHaekchen(
+                      checkboxKey: ValueKey<String>(
+                        'talent-detail-gifted-${talent.id}',
+                      ),
                       value: entry.gifted,
+                      befund: befund,
                       onChanged: (next) {
-                        state._updateGifted(talent.id, next ?? false);
+                        state._updateGifted(talent.id, next);
                         if (mounted) setState(() {});
                       },
                     ),
@@ -246,7 +252,20 @@ class _TalentDetailDialogState extends State<_TalentDetailDialog> {
                   _detailRow(theme, 'Modifikator', '${entry.modifier}'),
                 if (entry.specialExperiences > 0)
                   _detailRow(theme, 'SE', '${entry.specialExperiences}'),
-                if (entry.gifted) _detailRow(theme, 'Begabung', 'Ja'),
+                if (begabt)
+                  _detailRow(
+                    theme,
+                    'Begabung',
+                    befund.abgeleitetBegabt
+                        ? befund.begabungsQuellen.join(', ')
+                        : 'Ja',
+                  ),
+                if (befund.unfaehig)
+                  _detailRow(
+                    theme,
+                    'Unfähigkeit',
+                    befund.unfaehigkeitsQuellen.join(', '),
+                  ),
               ],
               _detailRow(theme, 'max TaW', '$maxTaw'),
               if (!isCombat) ...[

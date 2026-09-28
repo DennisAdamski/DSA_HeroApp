@@ -673,6 +673,110 @@ void main() {
   });
 
   testWidgets(
+    'Begabung und Unfähigkeit aus Vor-/Nachteilen wirken abgeleitet',
+    (tester) async {
+      final basis = buildCatalog();
+      final catalog = RulesCatalog(
+        version: basis.version,
+        source: basis.source,
+        talents: basis.talents,
+        spells: basis.spells,
+        weapons: basis.weapons,
+        sprachen: basis.sprachen,
+        schriften: basis.schriften,
+        generalSpecialAbilities: basis.generalSpecialAbilities,
+        karmalSpecialAbilities: basis.karmalSpecialAbilities,
+        advantages: <HeroTraitDef>[
+          HeroTraitDef.fromJson(const <String, dynamic>{
+            'id': 'adv_begabung_anderes_talent',
+            'name': 'Begabung für einzelnes anderes Talent',
+            'traitType': 'advantage',
+            'valueKind': 'choice',
+            'selectionTemplate': 'Begabung für {choice}',
+            'choiceSource': 'talente_sonstige',
+            'choiceFreeText': false,
+            'wirkungen': <Map<String, dynamic>>[
+              <String, dynamic>{
+                'art': 'lernspalte',
+                'ziel': 'talent',
+                'betrag': 1,
+              },
+            ],
+          }),
+        ],
+        disadvantages: <HeroTraitDef>[
+          HeroTraitDef.fromJson(const <String, dynamic>{
+            'id': 'dis_unfaehigkeit_anderes_talent',
+            'name': 'Unfähigkeit für [anderes Talent]',
+            'traitType': 'disadvantage',
+            'valueKind': 'choice',
+            'selectionTemplate': 'Unfähigkeit für {choice}',
+            'choiceSource': 'talente_sonstige',
+            'choiceFreeText': false,
+            'wirkungen': <Map<String, dynamic>>[
+              <String, dynamic>{
+                'art': 'lernspalte',
+                'ziel': 'talent',
+                'betrag': -1,
+              },
+            ],
+          }),
+        ],
+      );
+      final repo = FakeRepository(
+        heroes: [
+          buildHero(
+            talents: const <String, HeroTalentEntry>{
+              'tal_a': HeroTalentEntry(),
+              'tal_b': HeroTalentEntry(),
+            },
+          ).copyWith(
+            vorteileText: 'Begabung für Athletik',
+            nachteileText: 'Unfähigkeit für Boote Fahren',
+          ),
+        ],
+        states: {
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 0,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
+      );
+
+      final actions = await openTalentsTab(tester, repo, catalog);
+      await actions.startEdit();
+      await tester.pumpAndSettle();
+
+      final begabt = tester.widget<Checkbox>(
+        find.byKey(const ValueKey<String>('talents-gifted-tal_a')),
+      );
+      expect(begabt.value, isTrue);
+      expect(begabt.onChanged, isNull);
+      expect(
+        find.byTooltip('Aus Vorteil: Begabung für Athletik'),
+        findsOneWidget,
+      );
+      final unfaehig = tester.widget<Checkbox>(
+        find.byKey(const ValueKey<String>('talents-gifted-tal_b')),
+      );
+      expect(unfaehig.value, isFalse);
+      expect(unfaehig.onChanged, isNotNull);
+      expect(
+        find.byTooltip('Unfähigkeit: Unfähigkeit für Boote Fahren'),
+        findsOneWidget,
+      );
+
+      await actions.save();
+      await tester.pumpAndSettle();
+      final hero = (await repo.listHeroes()).single;
+      // Abgeleitet, nicht gespeichert: das Haekchen bleibt unberuehrt.
+      expect(hero.talents['tal_a']?.gifted, isFalse);
+    },
+  );
+
+  testWidgets(
     'manual talent correction persists without AP or raising actions',
     (tester) async {
       final repo = FakeRepository(

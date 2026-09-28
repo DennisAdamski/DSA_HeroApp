@@ -60,7 +60,10 @@ void main() {
   test('alle bisher per Namen wirkenden Merkmale tragen Wirkungen', () {
     final mitWirkung = <String>{
       for (final trait in alle)
-        if (trait.wirkungen.isNotEmpty) trait.id,
+        if (trait.wirkungen.any(
+          (wirkung) => wirkung.art != HeroTraitEffectArt.lernspalte,
+        ))
+          trait.id,
     };
     expect(mitWirkung, <String>{
       'adv_hohe_lebenskraft',
@@ -82,6 +85,55 @@ void main() {
       'dis_astraler_block_zauberer',
       'dis_astraler_block_viertelzauberer',
     });
+  });
+
+  test('jede Begabung und Unfähigkeit verschiebt die Lernspalte', () {
+    final ziele = <String, String>{
+      for (final trait in alle)
+        for (final wirkung in trait.wirkungen)
+          if (wirkung.art == HeroTraitEffectArt.lernspalte)
+            trait.id: wirkung.ziel,
+    };
+    expect(ziele, <String, String>{
+      'adv_begabung_merkmal': 'merkmal',
+      'adv_begabung_ritual': 'ritual',
+      'adv_begabung_kampf_koerper_talent': 'talent',
+      'adv_begabung_anderes_talent': 'talent',
+      'adv_begabung_talentgruppe_kampf_koerper': 'talentgruppe',
+      'adv_begabung_talentgruppe_natur_gesellschaft_wissen_handwerk':
+          'talentgruppe',
+      'adv_begabung_talentgruppe_sprachen': 'sprachen',
+      'adv_begabung_nahkampf': 'nahkampf',
+      'adv_begabung_fernkampf': 'fernkampf',
+      'adv_begabung_zauber': 'zauber',
+      'dis_unfaehigkeit_merkmal': 'merkmal',
+      'dis_unfaehigkeit_sprachen_schriften': 'sprachgruppe',
+      'dis_unfaehigkeit_kampf_koerper': 'talentgruppe',
+      'dis_unfaehigkeit_gesellschaft_natur_wissen_handwerk': 'talentgruppe',
+      'dis_unfaehigkeit_fernkampf': 'fernkampf',
+      'dis_unfaehigkeit_nahkampf': 'nahkampf',
+      'dis_unfaehigkeit_kampf_koerper_talent': 'talent',
+      'dis_unfaehigkeit_anderes_talent': 'talent',
+    });
+    for (final trait in alle) {
+      for (final wirkung in trait.wirkungen) {
+        if (wirkung.art != HeroTraitEffectArt.lernspalte) {
+          continue;
+        }
+        expect(
+          wirkung.betrag,
+          trait.id.startsWith('adv_') ? 1 : -1,
+          reason: trait.id,
+        );
+        final mitAuswahl = trait.selectionTemplate.contains('{choice}');
+        final festesZiel = const <String>{
+          'nahkampf',
+          'fernkampf',
+          'sprachen',
+        }.contains(wirkung.ziel);
+        expect(mitAuswahl, !festesZiel, reason: trait.id);
+      }
+    }
   });
 
   test('Vorzeichen folgen der Merkmalsart', () {

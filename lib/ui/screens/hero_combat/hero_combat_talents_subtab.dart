@@ -308,10 +308,12 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
     final entry = _entryForTalent(talent.id);
     final isInvalid = _invalidCombatTalentIds.contains(talent.id);
     final complexityResolution = _resolveTalentComplexity(talent, entry);
+    final befund = _befundFuer(talent);
+    final begabt = befund.istBegabt(gifted: entry.gifted);
     final maxTaw = computeCombatTalentMaxValue(
       effectiveAttributes: effectiveAttributes,
       talentType: talent.type,
-      gifted: entry.gifted,
+      gifted: begabt,
     );
 
     final cells = <Widget>[
@@ -352,10 +354,11 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
       cells.add(
         Align(
           alignment: Alignment.centerLeft,
-          child: Checkbox(
-            key: ValueKey<String>('combat-talents-gifted-${talent.id}'),
+          child: BegabungHaekchen(
+            checkboxKey: ValueKey<String>('combat-talents-gifted-${talent.id}'),
             value: entry.gifted,
-            onChanged: (value) => _updateGifted(talent.id, value ?? false),
+            befund: befund,
+            onChanged: (value) => _updateGifted(talent.id, value),
           ),
         ),
       );
@@ -363,7 +366,7 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
 
     final rowColor = isInvalid
         ? Theme.of(context).colorScheme.errorContainer.withValues(alpha: 0.4)
-        : (entry.gifted && isEditing
+        : (begabt && isEditing
               ? Theme.of(context).colorScheme.tertiaryContainer
                     .withValues(alpha: 0.4)
               : null);
@@ -561,7 +564,9 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
                     }
                     final vorgeschlageneKosten = talentSpecializationApCost(
                       basisKomplexitaet: talent.steigerung,
-                      gifted: entry.gifted,
+                      gifted: _befundFuer(talent)
+                          .istBegabt(gifted: entry.gifted),
+                      unfaehigkeitsSchritte: _befundFuer(talent).erhoehung,
                       specializationOrdinal: runningCount + 1,
                     );
                     final erwerb = await showErwerbDialog(

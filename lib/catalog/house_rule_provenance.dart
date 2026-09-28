@@ -80,6 +80,7 @@ class TalentComplexityResolution {
     required this.houseRuleKomplexitaet,
     required this.effectiveKomplexitaet,
     required this.gifted,
+    this.unfaehigkeitsSchritte = 0,
     this.packId = '',
     this.packTitle = '',
   });
@@ -95,6 +96,9 @@ class TalentComplexityResolution {
 
   /// Ob Begabung den Wert weiter reduziert.
   final bool gifted;
+
+  /// Spalten, um die Unfaehigkeiten den Wert vorher verteuern.
+  final int unfaehigkeitsSchritte;
 
   /// Paket-ID der wirksamen Ueberschreibung.
   final String packId;
@@ -126,9 +130,13 @@ class CatalogRuleResolver {
   final HouseRuleProvenanceIndex provenanceIndex;
 
   /// Loest die wirksame Komplexitaet eines Talents inklusive Begabung auf.
+  ///
+  /// [gifted] ist die effektive Begabung (Haekchen oder Vorteil),
+  /// [unfaehigkeitsSchritte] die Verteuerung durch Unfaehigkeiten.
   TalentComplexityResolution resolveTalentComplexity({
     required TalentDef talent,
     required bool gifted,
+    int unfaehigkeitsSchritte = 0,
   }) {
     final section = talent.group.trim() == 'Kampftalent'
         ? CatalogSectionId.combatTalents
@@ -152,8 +160,10 @@ class CatalogRuleResolver {
       effectiveKomplexitaet: effectiveTalentLernkomplexitaet(
         basisKomplexitaet: houseRuleKomplexitaet,
         gifted: gifted,
+        unfaehigkeitsSchritte: unfaehigkeitsSchritte,
       ),
       gifted: gifted,
+      unfaehigkeitsSchritte: unfaehigkeitsSchritte,
       packId: provenance?.packId ?? '',
       packTitle: provenance?.packTitle ?? '',
     );

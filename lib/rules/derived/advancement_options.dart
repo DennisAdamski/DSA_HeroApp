@@ -14,6 +14,7 @@ import 'attribute_start_rules.dart';
 import 'bought_stat_limit_rules.dart';
 import 'combat_special_ability_state.dart';
 import 'cost_text_parsing.dart';
+import 'hero_begabung_rules.dart';
 import 'hero_requirement_context.dart';
 import 'learning_rules.dart';
 import 'magic_rules.dart';
@@ -108,6 +109,12 @@ class AdvancementContext {
 
   /// Regelkatalog der laufenden Sitzung.
   final RulesCatalog catalog;
+
+  /// Begabungen und Unfähigkeiten aus Vor-/Nachteilen, einmal je Durchlauf.
+  late final HeroBegabungen begabungen = ermittleBegabungen(
+    hero,
+    catalog: catalog,
+  );
 
   /// Dauerhafte Eigenschaften für Grenzen und Erwerbsvoraussetzungen.
   late final Attributes permanentAttributes = advancementPermanentAttributes(
