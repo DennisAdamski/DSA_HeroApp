@@ -2172,8 +2172,17 @@ Ohne Katalog rechnen alle Regeln ueber den Text der Liste. Fuer jeden
 unveraendert benannten Katalogeintrag ergibt das dasselbe; der
 Aequivalenztest in `test/rules/hero_merkmal_rules_test.dart` prueft jeden
 wirkenden Eintrag ueber alle Werte und Auswahlen. Katalogabhaengig ist nur
-die Umbenennungsfestigkeit. Ein UI-Aufrufer ohne Katalog rechnet deshalb nie
-falsch, nur namensabhaengig.
+die Umbenennungsfestigkeit. Damit kein Aufrufer den Katalog vergisst,
+verlangen die Einstiegsfunktionen (`parseModifierTextsForHero`,
+`computeEffectiveAttributes`, `computeHeroResourceActivation`,
+`collectRestAbilities`, Startwerte/Maxima, `computeModifierSourceBreakdown`,
+`computeHeroStatInputs`, `applyAdvancementAttributeValue`)
+`required RulesCatalog? catalog`; `null` waehlt bewusst den Textweg und
+steht in `lib/` nirgends. Option und Replay einer Steigerung muessen
+denselben Katalog verwenden, sonst weicht das Startwert-Delta ab.
+Die Sichtbarkeit des Magie-Tabs liest den Katalog ueber
+`laufenderRegelkatalog` (`workspace_tab_spec.dart`), das das Katalogladen
+nicht selbst anstoesst.
 
 **Bearbeitung.** Die Uebersicht haelt einen Entwurf (`null`, solange
 unveraendert). Katalogdialog und Wertedialog erzeugen bzw. aendern Eintraege

@@ -254,12 +254,18 @@ Commits:
 
 *Verbleibende Risiken und nächste Schritte.*
 
-1. Mit Katalog wirkt ein Eintrag über seine ID, ohne Katalog über seinen
-   Namen. Mehrere UI-Direktaufrufer (`computeEffectiveAttributes` in
-   Kampf-, Magie- und Talent-Tab, Rast- und Wunddialoge) rechnen weiter ohne
-   Katalog. Der Äquivalenztest hält die Werte gleich, nur eine Umbenennung
-   wirkt dort erst nach dem Durchreichen des Katalogs. Neue Katalogwirkungen
-   brauchen einen passenden Namensweg oder eine bewusste Ausnahme im Test.
+1. ~~Mehrere UI-Direktaufrufer rechneten ohne Katalog, also über den
+   Namen.~~ *Erledigt mit `63bd0f9`:* Die Einstiegsfunktionen verlangen
+   `required RulesCatalog? catalog`, jeder Aufrufer in `lib/` reicht den
+   Katalog durch (kein `catalog: null` in `lib/`). Dabei fiel ein echter
+   Fehlerweg auf und ist behoben: Das Steigerungs-Replay
+   (`applyAdvancementAttributeValue`) rechnete das Startwert-Delta ohne
+   Katalog, die Option mit — nach einer Umbenennung von „Herausragende
+   Eigenschaft“ hätte es einen falschen Rohwert geschrieben. Die
+   Magie-Tab-Sichtbarkeit nimmt den Katalog über `laufenderRegelkatalog`,
+   ohne das Laden selbst anzustoßen; bis er geladen ist, gilt der Namensweg.
+   Neue Katalogwirkungen brauchen weiterhin einen passenden Namensweg oder
+   eine bewusste Ausnahme im Äquivalenztest.
 2. Die Migration setzt beim Speichern einen geladenen Katalog voraus
    (`rulesCatalogProvider` ohne Warten). Ohne ihn bleibt der Held Bestandsheld
    und wird beim nächsten Speichern migriert. Der Import eines Bestandshelden

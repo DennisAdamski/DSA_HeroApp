@@ -186,7 +186,10 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   Ohne Katalog rechnet alles über den Text der Liste; der Äquivalenztest in
   `test/rules/hero_merkmal_rules_test.dart` hält beide Wege gleich — eine neue
   Katalogwirkung braucht dort einen passenden Namensweg oder eine bewusste
-  Ausnahme. Details in `docs/technical_overview.md` Abschnitt 4.11.
+  Ausnahme. Die Einstiegsfunktionen verlangen `required RulesCatalog?
+  catalog`: in `lib/` immer den vorhandenen Katalog durchreichen,
+  `catalog: null` (Textweg) nur in Tests. Details in
+  `docs/technical_overview.md` Abschnitt 4.11.
 - Mehrfach erwerbbare allgemeine Sonderfertigkeiten (Kulturkunde, Geländekunde,
   Ortskenntnis, Akklimatisierung, Berufsgeheimnis) tragen im Katalog ihre
   Auswahlmöglichkeiten (`mehrfachwaehlbar`, `varianten`, `ap_erstwerb`,
