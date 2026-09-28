@@ -41,6 +41,8 @@ const Map<Bestandsheld, String> _heldenHashes = <Bestandsheld, String>{
       'hnMwYN9ZXVqwdsDvsjKeSZc3WnCNKaGQ8pXMm1Nns7E=',
   Bestandsheld.unbekannteSteigerungsart:
       'OEpxoV0GgDW13q6GaptyPTDx7Tpou3GPtLmwynfwoIc=',
+  Bestandsheld.strukturierteMerkmale:
+      'oVi_I37Cev3C_xYiDd88QIBQpSc11kB81Ol-h3M6pIQ=',
 };
 
 /// Wie [_heldenHashes], fuer den Laufzeitzustand.
@@ -57,6 +59,9 @@ const Map<Bestandsheld, String> _zustandsHashes = <Bestandsheld, String>{
       '-28KqI3XR9AU_NmwHCm2BpNgH4qYPj0C5Py8kuHSbGA=',
   Bestandsheld.unbekannteSteigerungsart:
       '-28KqI3XR9AU_NmwHCm2BpNgH4qYPj0C5Py8kuHSbGA=',
+  // f09 teilt den Laufzeitzustand mit f05.
+  Bestandsheld.strukturierteMerkmale:
+      'n8MYpP6owr0GHvWjIDPcngQdQLvl1Nn19eHGSwXBrBk=',
 };
 
 void main() {

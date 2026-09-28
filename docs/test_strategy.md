@@ -66,6 +66,7 @@ die schon auf Geräten und in der Cloud liegen:
 | `f07_legacy_schema1` | handgeschriebener Altstand: Transferversion 1, ohne `schemaVersion`, nur alte Schlüssel |
 | `f08_steigerungshistorie` | Schemaversion 27 mit übernommener Historie |
 | `f08b_unbekannte_steigerungsart` | wie f08, letzter Verlaufseintrag mit einer Steigerungsart aus einer neueren App-Version |
+| `f09_strukturierte_merkmale` | f05 mit Vor-/Nachteilen im strukturierten Format (ARCH-02): katalogisiert mit Wirkung, frei (`LEP+2`, eigener Tick) und mehrdeutig mit Kandidaten |
 
 Regeln:
 
@@ -88,10 +89,17 @@ Regeln:
   entfernt und benennt einen der beiden gleichnamigen Dolche aus `f06` um
   und prüft Neustart sowie Export. Widgettests stellen sicher, dass die
   Editoren für Geschosse und Nebenhandteile ihre Instanz-ID erhalten.
+- ARCH-02 (strukturierte Vor-/Nachteile) ändert beim Laden nichts; die
+  Hash-Pins bleiben. Migriert wird erst beim Speichern:
+  `test/data/merkmal_migration_test.dart` speichert f01, f02, f03, f05 und f07
+  mit echtem Hive, prüft nach dem Neustart Liste, Projektion, Fixpunkt und
+  gleiche Regelwerte und exportiert/importiert als Kopie. f09 steht für das
+  neue Format; seine Regelwerte sind aus f05 hergeleitet.
 - **Mischbetrieb mit der veröffentlichten App** (`main`, vor ARCH-03) bildet
   `test/test_support/veroeffentlichte_app.dart` nach:
   - `wieVeroeffentlichteApp` entfernt, was sie beim Speichern verliert
-    (Slot-IDs, `slotRef`, unbekannte Felder in jedem verschachtelten Modell)
+    (Slot-IDs, `slotRef`, die Merkmalslisten `vorteilEintraege`/
+    `nachteilEintraege`, unbekannte Felder in jedem verschachtelten Modell)
     und setzt unbekannte Aufzählungswerte auf ihren Ersatz,
     `zustandWieVeroeffentlichteApp` dasselbe für den Laufzeitzustand
     einschließlich unbekannter Wundzonen;
@@ -265,7 +273,10 @@ Die CI (`.github/workflows/flutter-tests.yml`) führt alle Tests auf
 | `test/data/hero_actions_import_export_test.dart` | data | Actions Import/Export |
 | `test/data/bestandsheld_ablauf_test.dart` | data | Echte Hive-Speichergrenze je Bestandsheld und Ablauf Import bis Export mit Neustart, Befunde B4/B9, Felder neuerer Versionen in allen verschachtelten Modellen von Held und Zustand |
 | `test/data/sync_zwei_geraete_test.dart` | data | Zwei Geräte an einer Cloud: Abbruch, verlorene Antwort, Neustart (auch mit Hive), Konfliktauflösungen samt Zustand, Befunde B1/B8 |
-| `test/data/sync_app_versionen_test.dart` | data | Sync mit anderen App-Versionen: Basis gleich lokaler Stand (B10), Felder einer neueren Version in Held und Zustand samt gleichzeitig geänderter Cloud, veröffentlichte App im Mischbetrieb (auch ihr Echo) |
+| `test/data/sync_app_versionen_test.dart` | data | Sync mit anderen App-Versionen: Basis gleich lokaler Stand (B10), Felder einer neueren Version in Held und Zustand samt gleichzeitig geänderter Cloud, veröffentlichte App im Mischbetrieb (auch ihr Echo), geänderter Vor-/Nachteiltext mit und ohne bewahrte Liste (ARCH-02) |
+| `test/data/merkmal_migration_test.dart` | data | ARCH-02: einmalige Migration der Vor-/Nachteiltexte beim Speichern mit echtem Hive, Fixpunkt, gleiche Regelwerte, Export/Import |
+| `test/rules/hero_merkmal_rules_test.dart` | rules | ARCH-02: Zuordnung der Alttexte, Abweichungen, Hinzufügen, Wirkung über die Katalog-ID, Umbenennung, Äquivalenz von Katalog- und Textweg |
+| `test/catalog/trait_effect_catalog_test.dart` | catalog | Deklarative `wirkungen` der Vor-/Nachteile: Arten, Ziele, Vorzeichen, Vollständigkeit |
 | `test/domain/hero_sheet_model_test.dart` | domain | HeroSheet-Kompatibilitaet |
 | `test/domain/hero_transfer_bundle_test.dart` | domain | Transfer-Bundle-Kontrakt |
 | `test/domain/bestandshelden_kompatibilitaet_test.dart` | domain | Bestandsfixtures: Fixpunkt nach einmaligem Laden, Inhalts-Hashes, Altschlüssel, Befunde B1/B5/B6 |

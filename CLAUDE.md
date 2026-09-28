@@ -169,8 +169,24 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   `lib/rules/derived/currency_rules.dart`.
 - Die kanonische Katalogquelle bleibt `assets/catalogs/house_rules_v1/`.
 - Vor- und Nachteile liegen dort katalogisiert in `vorteile.json` und
-  `nachteile.json`; die Heldenübersicht speichert Auswahlen weiterhin
-  kompatibel in `HeroSheet.vorteileText` und `HeroSheet.nachteileText`.
+  `nachteile.json`, ihre Regelwirkungen deklarativ als `wirkungen`
+  (`lib/catalog/hero_trait_effect.dart`). Der Held speichert sie seit ARCH-02
+  strukturiert in `HeroSheet.vorteilEintraege`/`nachteilEintraege`
+  (`HeroMerkmal`: Katalog-ID, Wert, Auswahl, Textfragment). **Die Liste
+  führt**; `vorteileText`/`nachteileText` sind nur ihre Projektion für ältere
+  App-Versionen. Ändert eine ältere Version den Text, meldet
+  `gleicheMerkmaleAb` die Abweichung. Sie wird **nie** still aufgelöst,
+  auch nicht von `saveHero`: Die Übersicht sperrt das Bearbeiten, bis der
+  Nutzer „Text übernehmen“ oder „Liste behalten“ wählt. Listen nur bei
+  Belegung schreiben (Hash-Pins); migriert wird erst in `saveHero`
+  (`merkmaleZumSpeichern`, nur mit geladenem Katalog), zur Laufzeit ohne
+  Speichern. Mehrdeutiges wird nie geraten. Regeln erhalten Vor-/Nachteile
+  nur über `werteMerkmaleAus` (`lib/rules/derived/hero_merkmal_*_rules.dart`):
+  Katalogisiertes wirkt über die ID, Freies über den Textparser, nie beides.
+  Ohne Katalog rechnet alles über den Text der Liste; der Äquivalenztest in
+  `test/rules/hero_merkmal_rules_test.dart` hält beide Wege gleich — eine neue
+  Katalogwirkung braucht dort einen passenden Namensweg oder eine bewusste
+  Ausnahme. Details in `docs/technical_overview.md` Abschnitt 4.11.
 - Mehrfach erwerbbare allgemeine Sonderfertigkeiten (Kulturkunde, Geländekunde,
   Ortskenntnis, Akklimatisierung, Berufsgeheimnis) tragen im Katalog ihre
   Auswahlmöglichkeiten (`mehrfachwaehlbar`, `varianten`, `ap_erstwerb`,
