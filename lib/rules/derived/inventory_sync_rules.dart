@@ -183,41 +183,36 @@ int _passenderEintrag(
   );
 }
 
-/// Uebernimmt die editierbaren Felder aus [existing] in [base].
+/// Aktualisiert [existing] um die Felder, die der Kampf-Slot fuehrt.
 ///
-/// Identitaetsfelder ([gegenstand], [source], [sourceRef], [slotRef],
-/// [itemType]) stammen immer aus [base] (CombatConfig ist die Quelle der Wahrheit fuer den Namen).
-/// Fuer Geschoss-Eintraege wird [anzahl] ebenfalls aus [base] uebernommen.
-/// Unbekannte Felder einer neueren App-Version kommen aus [existing]; [base]
-/// ist frisch gebaut und kennt keine.
+/// Grundlage ist der bestehende Eintrag, damit jedes Feld, das der Slot
+/// nicht kennt, erhalten bleibt — auch Typ und Traeger, die der
+/// Inventareditor fuer verknuepfte Eintraege anbietet (Befund ARCH-07-B9),
+/// und unbekannte Felder einer neueren App-Version.
+///
+/// Aus [base] kommen nur die Slot-Felder: Identitaet ([gegenstand],
+/// [source], [sourceRef], [slotRef], [itemType]) sowie die Markierungen
+/// magisch/geweiht (CombatConfig ist die Quelle der Wahrheit). Bei
+/// Ausruestung kommt [istAusgeruestet] aus dem Slot, bei Geschossen
+/// [anzahl] (bidirektionaler Sync).
 HeroInventoryEntry _mergeEntry({
   required HeroInventoryEntry base,
   required HeroInventoryEntry existing,
 }) {
   final isProjectile = base.source == InventoryItemSource.geschoss;
 
-  return base.copyWith(
-    // Editierbare Felder aus dem bestehenden Eintrag beibehalten
-    woGetragen: existing.woGetragen,
-    welchesAbenteuer: existing.welchesAbenteuer,
-    gewicht: existing.gewicht,
-    wert: existing.wert,
-    artefakt: existing.artefakt,
-    amKoerper: existing.amKoerper,
-    woDann: existing.woDann,
-    gruppe: existing.gruppe,
-    beschreibung: existing.beschreibung,
-    modifiers: existing.modifiers,
-    gewichtGramm: existing.gewichtGramm,
-    wertSilber: existing.wertSilber,
-    herkunft: existing.herkunft,
-    // istAusgeruestet: bei Ausruestung aus Kampf-Config; bei Geschoss beibehalten
-    istAusgeruestet: isProjectile
-        ? existing.istAusgeruestet
-        : base.istAusgeruestet,
-    // anzahl: bei Geschossen immer aus CombatConfig (bidirektionaler Sync)
-    anzahl: isProjectile ? base.anzahl : existing.anzahl,
-    unbekannteFelder: existing.unbekannteFelder,
+  return existing.copyWith(
+    gegenstand: base.gegenstand,
+    itemType: base.itemType,
+    source: base.source,
+    sourceRef: base.sourceRef,
+    slotRef: base.slotRef,
+    isMagisch: base.isMagisch,
+    magischDescription: base.magischDescription,
+    isGeweiht: base.isGeweiht,
+    geweihtDescription: base.geweihtDescription,
+    istAusgeruestet: isProjectile ? null : base.istAusgeruestet,
+    anzahl: isProjectile ? base.anzahl : null,
   );
 }
 

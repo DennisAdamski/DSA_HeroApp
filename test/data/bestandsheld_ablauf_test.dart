@@ -13,6 +13,7 @@ import 'package:dsa_heldenverwaltung/domain/combat_config/ranged_weapon_profile.
 import 'package:dsa_heldenverwaltung/domain/combat_config/weapon_combat_type.dart';
 import 'package:dsa_heldenverwaltung/domain/dice_log_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_advancement_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/domain/sync_models.dart';
@@ -292,6 +293,85 @@ void main() {
       nachher.inventoryEntries.map((entry) => entry.gegenstand),
       contains('Großschild'),
     );
+  });
+
+  test('Befund ARCH-07-B9: Typ und Träger verknüpfter Einträge überstehen '
+      'Speichern, Kampfänderung und Neustart', () async {
+    final pfad = await hiveTempVerzeichnis('arch07_b9_');
+    var speicher = await oeffnen(pfad);
+    final id = await speicher.actions.importHeroBundle(
+      ladeBestandsheld(Bestandsheld.kriegerNormal),
+      resolution: ImportConflictResolution.overwriteExisting,
+    );
+
+    // Wie im Inventareditor: jeder verknüpfte Eintrag bekommt Typ und
+    // Träger, der manuelle bleibt unberührt.
+    await speicher.actions.updateHero(id, (aktuell) {
+      return aktuell.copyWith(
+        inventoryEntries: aktuell.inventoryEntries
+            .map(
+              (entry) => entry.sourceRef == null
+                  ? entry
+                  : entry.copyWith(
+                      typ: 'Typ ${entry.gegenstand}',
+                      traegerTyp: InventoryTraeger.begleiter,
+                      traegerId: 'maultier',
+                    ),
+            )
+            .toList(growable: false),
+      );
+    });
+    // Jede Kampfänderung speichert erneut über den Abgleich.
+    await speicher.actions.updateHero(id, (aktuell) {
+      final waffen = List<MainWeaponSlot>.of(aktuell.combatConfig.weaponSlots);
+      final armbrust = waffen[1];
+      final profil = armbrust.rangedProfile;
+      waffen[0] = waffen[0].copyWith(name: 'Anderthalbhänder');
+      waffen[1] = armbrust.copyWith(
+        rangedProfile: profil.copyWith(
+          projectiles: <RangedProjectile>[
+            profil.projectiles.single.copyWith(count: 3),
+          ],
+        ),
+      );
+      return aktuell.copyWith(
+        combatConfig: aktuell.combatConfig.copyWith(weapons: waffen),
+      );
+    });
+    await speicher.schliessen();
+    speicher = await oeffnen(pfad);
+
+    final nachher = (await speicher.repo.loadHeroById(id))!;
+    final verknuepft = nachher.inventoryEntries
+        .where((entry) => entry.sourceRef != null)
+        .toList(growable: false);
+    expect(verknuepft.map((entry) => entry.gegenstand), <String>[
+      'Anderthalbhänder',
+      'Leichte Armbrust',
+      'Bolzen',
+      'Kettenhemd',
+      'Lederhelm',
+      'Holzschild',
+    ]);
+    for (final entry in verknuepft) {
+      final typ = entry.gegenstand == 'Anderthalbhänder'
+          ? 'Typ Langschwert'
+          : 'Typ ${entry.gegenstand}';
+      expect(entry.typ, typ, reason: entry.gegenstand);
+      expect(
+        entry.traegerTyp,
+        InventoryTraeger.begleiter,
+        reason: entry.gegenstand,
+      );
+      expect(entry.traegerId, 'maultier', reason: entry.gegenstand);
+    }
+    final bolzen = verknuepft.singleWhere((e) => e.gegenstand == 'Bolzen');
+    expect(bolzen.anzahl, '3');
+    final manuell = nachher.inventoryEntries.singleWhere(
+      (entry) => entry.sourceRef == null,
+    );
+    expect(manuell.traegerTyp, InventoryTraeger.held);
+    expect(manuell.traegerId, isNull);
   });
 
   group('Ablauf mit f01', () {
