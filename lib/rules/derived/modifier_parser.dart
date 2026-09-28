@@ -1,9 +1,11 @@
+import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/attribute_modifiers.dart';
 import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
 import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/attribute_trait_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_wirkung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/standard_stat_modifier_rules.dart';
 
 /// Parserergebnis fuer freie Modifikatortexte aus den Basisdaten.
@@ -67,39 +69,65 @@ final Map<String, ModifierParseResult> _modifierParseCache =
 const int _modifierParseCacheMaxEntries = 512;
 
 /// Komfortfunktion: parst alle relevanten Modifikatorfelder eines Helden.
-ModifierParseResult parseModifierTextsForHero(HeroSheet hero) {
+///
+/// Vor- und Nachteile kommen aus [werteMerkmaleAus] (ARCH-02): Mit [catalog]
+/// wirken katalogisierte Eintraege ueber ihre Katalog-ID, nur die frei
+/// wirkenden Fragmente laufen durch den Textparser. Ohne Katalog laeuft der
+/// Text der Merkmalsliste durch den Parser — mit demselben Ergebnis fuer
+/// jeden unveraendert benannten Katalogeintrag.
+ModifierParseResult parseModifierTextsForHero(
+  HeroSheet hero, {
+  RulesCatalog? catalog,
+}) {
+  final merkmale = werteMerkmaleAus(hero, catalog: catalog);
   final key = _buildModifierParseCacheKey(
     rasseModText: hero.background.rasseModText,
     kulturModText: hero.background.kulturModText,
     professionModText: hero.background.professionModText,
-    vorteileText: hero.vorteileText,
-    nachteileText: hero.nachteileText,
+    vorteileText: merkmale.freieVorteile,
+    nachteileText: merkmale.freieNachteile,
   );
-  final cached = _modifierParseCache[key];
-  if (cached != null) {
-    return cached;
+  var parsed = _modifierParseCache[key];
+  if (parsed == null) {
+    parsed = parseModifierTexts(
+      rasseModText: hero.background.rasseModText,
+      kulturModText: hero.background.kulturModText,
+      professionModText: hero.background.professionModText,
+      vorteileText: merkmale.freieVorteile,
+      nachteileText: merkmale.freieNachteile,
+    );
+    if (_modifierParseCache.length >= _modifierParseCacheMaxEntries) {
+      _modifierParseCache.remove(_modifierParseCache.keys.first);
+    }
+    _modifierParseCache[key] = parsed;
   }
+  return mitMerkmalWirkungen(parsed, merkmale.wirkungen);
+}
 
-  final parsed = parseModifierTexts(
-    rasseModText: hero.background.rasseModText,
-    kulturModText: hero.background.kulturModText,
-    professionModText: hero.background.professionModText,
-    vorteileText: hero.vorteileText,
-    nachteileText: hero.nachteileText,
+/// Ergaenzt ein Parserergebnis um die Wirkungen katalogisierter Merkmale.
+ModifierParseResult mitMerkmalWirkungen(
+  ModifierParseResult parsed,
+  MerkmalWirkungen wirkungen,
+) {
+  return ModifierParseResult(
+    attributeMods: parsed.attributeMods + wirkungen.attributeMods,
+    startAttributeMods:
+        parsed.startAttributeMods + wirkungen.startAttributeMods,
+    statMods: parsed.statMods + wirkungen.statMods,
+    hasFlinkFromVorteile: parsed.hasFlinkFromVorteile || wirkungen.flink,
+    hasBehaebigFromNachteile:
+        parsed.hasBehaebigFromNachteile || wirkungen.behaebig,
+    unknownFragments: parsed.unknownFragments,
   );
-  if (_modifierParseCache.length >= _modifierParseCacheMaxEntries) {
-    _modifierParseCache.remove(_modifierParseCache.keys.first);
-  }
-  _modifierParseCache[key] = parsed;
-  return parsed;
 }
 
 /// Berechnet effektive Attribute inklusive Textmodifikatoren.
 Attributes computeEffectiveAttributes(
   HeroSheet hero, {
   AttributeModifiers tempAttributeMods = const AttributeModifiers(),
+  RulesCatalog? catalog,
 }) {
-  final parsed = parseModifierTextsForHero(hero);
+  final parsed = parseModifierTextsForHero(hero, catalog: catalog);
   return applyAttributeModifiers(
     hero.attributes,
     parsed.attributeMods + tempAttributeMods,

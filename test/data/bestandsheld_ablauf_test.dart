@@ -463,7 +463,27 @@ void main() {
         'level',
         'advancementHistory',
         'lastModified',
+        // Erstes Speichern mit dieser Version: Vor-/Nachteile werden
+        // einmalig strukturiert (ARCH-02), der Text wird ihre Projektion.
+        'vorteileText',
+        'nachteileText',
+        'vorteilEintraege',
+        'nachteilEintraege',
       }, grund: 'Steigern veränderte fremde Felder');
+      expect(nachSteigern['vorteileText'], 'Eisern; Richtungssinn');
+      expect(nachSteigern['nachteileText'], 'Jähzorn 6; Arroganz 5');
+      expect(
+        (nachSteigern['vorteilEintraege'] as List).map(
+          (entry) => (entry as Map)['katalogId'],
+        ),
+        <String>['adv_eisern', 'adv_richtungssinn'],
+      );
+      expect(
+        (nachSteigern['nachteilEintraege'] as List).map(
+          (entry) => (entry as Map)['katalogId'],
+        ),
+        <String>['dis_jaehzorn', 'dis_arroganz'],
+      );
       expect(nachSteigern['apSpent'], 2650 + 150 + 12);
       expect(nachSteigern['level'], 8, reason: 'Stufe folgt den AP');
       expect(
