@@ -1,3 +1,4 @@
+import 'package:dsa_heldenverwaltung/domain/unbekannte_json_felder.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_rituals/hero_ritual_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_rituals/hero_ritual_field.dart';
 
@@ -17,6 +18,7 @@ class HeroRitualKnowledge {
     required this.name,
     this.value = 3,
     this.learningComplexity = 'E',
+    this.unbekannteFelder = const <String, Object?>{},
   });
 
   /// Anzeigename der Ritualkenntnis; wird mit dem Kategorienamen synchronisiert.
@@ -28,26 +30,39 @@ class HeroRitualKnowledge {
   /// Lernkomplexitaet der Ritualkenntnis auf der Skala `A-H`.
   final String learningComplexity;
 
+  /// JSON-Felder einer neueren App-Version; bleiben beim Speichern erhalten
+  /// (siehe `unbekannte_json_felder.dart`).
+  final Map<String, Object?> unbekannteFelder;
+
+  /// Alle Schluessel, die [fromJson] liest; alles andere bleibt erhalten.
+  static const Set<String> jsonSchluessel = <String>{
+    'name',
+    'value',
+    'learningComplexity',
+  };
+
   /// Erstellt eine Kopie mit geaenderten Feldern.
   HeroRitualKnowledge copyWith({
     String? name,
     int? value,
     String? learningComplexity,
+    Map<String, Object?>? unbekannteFelder,
   }) {
     return HeroRitualKnowledge(
       name: name ?? this.name,
       value: value ?? this.value,
       learningComplexity: learningComplexity ?? this.learningComplexity,
+      unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
     );
   }
 
   /// Serialisiert die Ritualkenntnis fuer Persistenz und Export.
   Map<String, dynamic> toJson() {
-    return {
+    return mitUnbekanntenFeldern(<String, dynamic>{
       'name': name,
       'value': value,
       'learningComplexity': learningComplexity,
-    };
+    }, unbekannteFelder);
   }
 
   /// Liest eine Ritualkenntnis tolerant aus JSON.
@@ -56,6 +71,7 @@ class HeroRitualKnowledge {
       name: (json['name'] as String?) ?? '',
       value: (json['value'] as num?)?.toInt() ?? 3,
       learningComplexity: (json['learningComplexity'] as String?) ?? 'E',
+      unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
     );
   }
 
@@ -65,10 +81,16 @@ class HeroRitualKnowledge {
       other is HeroRitualKnowledge &&
           name == other.name &&
           value == other.value &&
-          learningComplexity == other.learningComplexity;
+          learningComplexity == other.learningComplexity &&
+          unbekannteFelderGleich(unbekannteFelder, other.unbekannteFelder);
 
   @override
-  int get hashCode => Object.hash(name, value, learningComplexity);
+  int get hashCode => Object.hash(
+    name,
+    value,
+    learningComplexity,
+    unbekannteFelderHash(unbekannteFelder),
+  );
 }
 
 /// Heldenspezifische Ritualkategorie mit eigener Ritualliste.
@@ -82,6 +104,7 @@ class HeroRitualCategory {
     this.derivedTalentIds = const <String>[],
     this.additionalFieldDefs = const <HeroRitualFieldDef>[],
     this.rituals = const <HeroRitualEntry>[],
+    this.unbekannteFelder = const <String, Object?>{},
   });
 
   /// Stabile ID der Kategorie innerhalb des Helden.
@@ -105,6 +128,21 @@ class HeroRitualCategory {
   /// Alle Rituale dieser Kategorie.
   final List<HeroRitualEntry> rituals;
 
+  /// JSON-Felder einer neueren App-Version; bleiben beim Speichern erhalten
+  /// (siehe `unbekannte_json_felder.dart`).
+  final Map<String, Object?> unbekannteFelder;
+
+  /// Alle Schluessel, die [fromJson] liest; alles andere bleibt erhalten.
+  static const Set<String> jsonSchluessel = <String>{
+    'id',
+    'name',
+    'knowledgeMode',
+    'ownKnowledge',
+    'derivedTalentIds',
+    'additionalFieldDefs',
+    'rituals',
+  };
+
   /// Erstellt eine Kopie mit geaenderten Feldern.
   HeroRitualCategory copyWith({
     String? id,
@@ -114,6 +152,7 @@ class HeroRitualCategory {
     List<String>? derivedTalentIds,
     List<HeroRitualFieldDef>? additionalFieldDefs,
     List<HeroRitualEntry>? rituals,
+    Map<String, Object?>? unbekannteFelder,
   }) {
     return HeroRitualCategory(
       id: id ?? this.id,
@@ -125,12 +164,13 @@ class HeroRitualCategory {
       derivedTalentIds: derivedTalentIds ?? this.derivedTalentIds,
       additionalFieldDefs: additionalFieldDefs ?? this.additionalFieldDefs,
       rituals: rituals ?? this.rituals,
+      unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
     );
   }
 
   /// Serialisiert die Ritualkategorie fuer Persistenz und Export.
   Map<String, dynamic> toJson() {
-    return {
+    return mitUnbekanntenFeldern(<String, dynamic>{
       'id': id,
       'name': name,
       'knowledgeMode': _ritualKnowledgeModeToJson(knowledgeMode),
@@ -140,7 +180,7 @@ class HeroRitualCategory {
           .map((entry) => entry.toJson())
           .toList(growable: false),
       'rituals': rituals.map((entry) => entry.toJson()).toList(growable: false),
-    };
+    }, unbekannteFelder);
   }
 
   /// Liest eine Ritualkategorie tolerant aus JSON.
@@ -176,6 +216,7 @@ class HeroRitualCategory {
             (entry) => HeroRitualEntry.fromJson(entry.cast<String, dynamic>()),
           )
           .toList(growable: false),
+      unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
     );
   }
 
@@ -189,7 +230,8 @@ class HeroRitualCategory {
           ownKnowledge == other.ownKnowledge &&
           _ritualListEqual(derivedTalentIds, other.derivedTalentIds) &&
           _ritualListEqual(additionalFieldDefs, other.additionalFieldDefs) &&
-          _ritualListEqual(rituals, other.rituals);
+          _ritualListEqual(rituals, other.rituals) &&
+          unbekannteFelderGleich(unbekannteFelder, other.unbekannteFelder);
 
   @override
   int get hashCode => Object.hashAll([
@@ -200,6 +242,7 @@ class HeroRitualCategory {
     ...derivedTalentIds,
     ...additionalFieldDefs,
     ...rituals,
+    unbekannteFelderHash(unbekannteFelder),
   ]);
 }
 

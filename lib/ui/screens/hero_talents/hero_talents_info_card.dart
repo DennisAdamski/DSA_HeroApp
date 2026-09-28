@@ -420,8 +420,13 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
                       }
                       apKosten = erwerb.apKosten;
                     }
+                    // Per `copyWith`, damit unbekannte Felder bleiben.
                     onSave(
-                      TalentSpecialAbility(name: name, note: draftNote.trim()),
+                      existing?.copyWith(name: name, note: draftNote.trim()) ??
+                          TalentSpecialAbility(
+                            name: name,
+                            note: draftNote.trim(),
+                          ),
                       apKosten,
                     );
                     if (dialogContext.mounted) {

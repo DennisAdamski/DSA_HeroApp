@@ -269,6 +269,10 @@ class _SpellDetailsDialogState extends State<_SpellDetailsDialog> {
         widget.def.modifications,
       ),
       variants: listEquals(variants, widget.def.variants) ? null : variants,
+      // Felder einer neueren App-Version bleiben beim Bearbeiten erhalten.
+      unbekannteFelder:
+          widget.entry.textOverrides?.unbekannteFelder ??
+          const <String, Object?>{},
     );
     return overrides.isEmpty ? null : overrides;
   }
