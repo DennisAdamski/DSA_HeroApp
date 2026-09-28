@@ -292,8 +292,9 @@ Helden eine Entscheidung offen, wartet der Zustand darauf.
 (Befund ARCH-07-B10, seit 2026-09-27). Jeder Online-Datensatz bringt den
 Inhalts-Hash seines Schreibers mit. Diese App liest ihn aber mit ihrem eigenen
 `fromJson`. Stammt der Stand von einer neueren Version, deren Felder hier
-nicht bewahrt werden — ausserhalb der Ausruestung oder als unbekannter
-Enum-Wert —, weicht die lokale Darstellung von diesem Hash ab. Frueher merkte
+nicht bewahrt werden (vor 2026-09-28 alles ausserhalb der Ausruestung und
+unbekannte Enum-Werte, heute nur noch, was eine Normalisierung verwirft),
+weicht die lokale Darstellung von diesem Hash ab. Frueher merkte
 sich die Basis nach dem Uebernehmen den **Schreiber-Hash** als `localHash`.
 Die verkuerzte lokale Fassung galt danach als lokale Aenderung und wurde im
 selben `syncNow()` ohne Konflikt hochgeladen: Ein blosser Abgleich loeschte
@@ -497,9 +498,36 @@ mit älterer App per Sync die Felder einer neueren (Befunde ARCH-07-B5/B6):
   Beschreibung, Ritualkategorien ohne oder mit doppelter ID, Zusatzfelder
   ohne Bezeichnung und ungültige Gesichtsbefunde fallen samt ihren
   unbekannten Feldern weg. `mainWeapon` spiegelt nur die gewählte Waffe.
-- Ungeschützt sind weiterhin **unbekannte Werte** bekannter Felder: Ein
-  unbekannter Enum-Wert fällt auf den Standard zurück, eine unbekannte
-  Wundzone entfällt.
+- **Unbekannte Aufzählungswerte** bleiben ebenfalls erhalten. Kennt diese
+  Version einen Wert nicht, rechnen Modell und Regeln mit dem Ersatzwert;
+  den Rohwert hält das Modell in `unbekannteEnumWerte` (JSON-Schlüssel →
+  Rohwert, getrennt von `unbekannteFelder`), und `toJson` schreibt ihn
+  anstelle des Ersatzes zurück. Fehlende oder leere Angaben gelten wie
+  bisher als fehlend. Betroffen sind 18 Felder: `HeroInventoryEntry`
+  (`itemType`, `source`, `traegerTyp`), `InventoryItemModifier` (`kind`),
+  `MainWeaponSlot` (`combatType`), `OffhandEquipmentEntry` (`type`,
+  `shieldSize`), `WaffenmeisterBonus` (`type`), `HeroRitualCategory`
+  (`knowledgeMode`), `HeroRitualFieldDef` (`type`), `HeroCompanion` (`typ`),
+  `HeroAdventureEntry` (`status`), `HeroAdventureSeReward` (`targetType`),
+  `HeroAdventureLootEntry` (`itemType`), `SpellDuration` (`unit`),
+  `DiceLogEntry` (`type`, `automaticOutcome`) und `AventurianDate`
+  (`month`). Muster beim Lesen: `leseEnumWert` mit einer Erkennerfunktion,
+  die `null` für Unbekanntes liefert, dann `festeEnumWerte`; beim Schreiben
+  `mitUnbekanntenEnumWerten` über `mitUnbekanntenFeldern`.
+  **Änderungsregel:** `copyWith` mit einem *anderen* Wert überschreibt den
+  Rohwert (`ohneGeaenderteEnumWerte`), derselbe Wert lässt ihn stehen —
+  Dialoge, die alle Felder neu durchreichen, verlieren ihn also nicht.
+  Unbekannte Wundzonen hält `WundZustand.unbekannteZonen` je Map
+  (`wundenProZone`, `unterdrueckteWundenProZone`); sie zählen nicht mit
+  und entfallen erst bei der vollen Rast. Zwei Stellen berücksichtigen
+  den Rohwert ausdrücklich, weil der Ersatz Daten verlöre:
+  `MainWeaponSlot.fuehrtGeschosse` behandelt eine unbekannte Kampfart wie
+  Fernkampf, damit Verweise und Abgleich die Geschosse samt Inventardaten
+  behalten (Befund ARCH-07-B13), und der Inventarabgleich lässt einen
+  Eintrag mit Verweis, aber unbekannter Quelle unverändert stehen und
+  legt für seinen Slot keinen zweiten an (B12). Sonst rechnet alles mit
+  dem Ersatz; verknüpfte Einträge übernehmen `itemType` und `source` beim
+  Abgleich aus ihrem Slot.
 
 **Formatregel für künftige Versionen:** Änderungen am gespeicherten Format
 bleiben additiv. Erhalten wird nur, was eine ältere Version nicht versteht;

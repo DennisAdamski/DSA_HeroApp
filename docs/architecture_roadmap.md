@@ -286,10 +286,10 @@ Befund, die volle Suite grün (2353 bestanden, 3 übersprungen).
    einer echten Änderung, nicht mehr beim bloßen Abgleich. Der Konflikt-Diff
    zeigt diese Felder nicht.~~ *Erledigt im Teilstand „Alle verschachtelten
    Modelle“ unten.*
-2. Unbekannte **Enum-Werte** fallen auf Standardwerte zurück (`itemType`,
+2. ~~Unbekannte **Enum-Werte** fallen auf Standardwerte zurück (`itemType`,
    `source`, `traegerTyp`, `combatType`, Nebenhand-`type`, `shieldSize`,
-   Modifikator-`kind`) und werden bei einer Änderung überschrieben.
-   *In Arbeit: Konzept liegt vor, siehe Teilstand unten.*
+   Modifikator-`kind`) und werden bei einer Änderung überschrieben.~~
+   *Erledigt im Teilstand „Unbekannte Aufzählungswerte“ unten.*
 3. Die veröffentlichte App verwirft alles Unbekannte, Slot-IDs und
    `slotRef`, und nach jedem Upload dieser Version schreibt sie einmal
    zurück (Echo). Verknüpfungen und Inventardaten überleben; UUIDs und
@@ -367,8 +367,9 @@ der Bestandshelden sind unverändert.
 
 *Verbleibende Risiken:*
 
-1. Unbekannte **Enum-Werte** (Restrisiko 2 oben) und unbekannte
-   Wundzonen. Konzept vorgelegt, Umsetzung nach Bestätigung.
+1. ~~Unbekannte **Enum-Werte** (Restrisiko 2 oben) und unbekannte
+   Wundzonen. Konzept vorgelegt, Umsetzung nach Bestätigung.~~ *Erledigt im
+   Teilstand „Unbekannte Aufzählungswerte“ unten.*
 2. Was eine bestehende Normalisierung verwirft, verliert auch seine
    unbekannten Felder: Personen, SE-Zeilen und Beute ohne Inhalt,
    Talentmodifikatoren ohne Beschreibung, Ritualkategorien ohne oder mit
@@ -379,7 +380,78 @@ der Bestandshelden sind unverändert.
    Talentbezug, Zauber-Overrides auf den Katalog), nimmt die Felder des
    entfallenden Objekts mit; bleibt das Objekt bestehen, bleiben sie.
 
-*Nächster Schritt:* unbekannte Enum-Werte nach bestätigtem Konzept.
+*Nächster Schritt:* unbekannte Enum-Werte nach bestätigtem Konzept (siehe
+folgenden Teilstand).
+
+**Teilstand 28.09.2026 (3) — Unbekannte Aufzählungswerte.** Restrisiko 2
+des ersten und Restrisiko 1 des zweiten Teilstands sind erledigt. Damit
+bewahrt diese Version alles, was eine neuere Version in Held und Zustand
+schreibt, soweit es kein bestehendes Normalisieren verwirft (Restrisiko 2
+des zweiten Teilstands).
+
+*Konzept (bestätigt).* Kennt diese Version einen Aufzählungswert nicht,
+rechnet sie wie bisher mit dem Ersatzwert. Den Rohwert merkt sich das Modell
+in `unbekannteEnumWerte` (JSON-Schlüssel → Rohwert, eine eigene Map neben
+`unbekannteFelder`) und schreibt ihn in `toJson` anstelle des Ersatzes
+zurück. Fehlende und leere Angaben gelten wie bisher als fehlend, es wird
+nichts geschrieben, was vorher nicht dastand; Laden bleibt ein Fixpunkt, die
+Hash-Pins der Bestandshelden sind unverändert. Änderungsregel: Ein `copyWith`
+mit einem **anderen** Wert überschreibt den Rohwert, derselbe Wert (etwa
+ein Dialog, der alle Felder neu durchreicht) lässt ihn stehen. Werkzeuge in
+`unbekannte_json_felder.dart`: `leseEnumWert`, `enumNachName`,
+`festeEnumWerte`, `mitUnbekanntenEnumWerten`, `ohneGeaenderteEnumWerte`.
+
+*Umfang.* 18 Felder in 14 Modellen: Inventareintrag (`itemType`, `source`,
+`traegerTyp`), Inventarmodifikator (`kind`), Waffenslot (`combatType`),
+Nebenhand (`type`, `shieldSize`), Waffenmeister-Bonus (`type`),
+Ritualkategorie (`knowledgeMode`) und ihr Zusatzfeld (`type`), Begleiter
+(`typ`), Abenteuer (`status`) mit SE-Belohnung (`targetType`) und Beute
+(`itemType`), Wirkungsdauer (`unit`), Würfelprotokoll (`type`,
+`automaticOutcome`) und der Monat des aventurischen Datums. Unbekannte
+Wundzonen hält `WundZustand.unbekannteZonen`: Sie zählen nicht mit, bleiben
+beim Bearbeiten bekannter Zonen stehen und heilen bei der vollen Rast.
+Dazu die Befunde B12 und B13 als Kleinfixe (Befundtabelle unten): beide
+hätten sonst mit dem Ersatzwert Daten verloren bzw. verdoppelt.
+
+Commit: `9d2aeaa`.
+
+*Prüfungen.* `zukunftsfelder.dart` setzt zusätzlich an 15 Stellen im Helden
+und 4 im Zustand einen unbekannten Wert (`zukunftsWert`, eine Wundzone
+`zukunftsZone`); `veroeffentlichte_app.dart` schreibt dort wie die
+veröffentlichte App den Ersatz. Ein Tabellentest je Feld prüft Ersatz,
+Rohwert, Fixpunkt, beide Zweige der Änderungsregel und unverändertes
+Verhalten bekannter, fehlender und leerer Werte. Die Ablauf-, Hive-,
+Import/Export- und Zwei-Geräte-Proben aus Teilstand (2) laufen mit denselben
+Helden und decken die Aufzählungen dadurch mit ab. Gegenproben: Ohne das
+Merken in `leseEnumWert` scheitern 40 Tabellen- und Sync-Proben sowie die
+Ablaufprobe; ohne `unbekannteZonen` die Wundprobe, der Sync und der Ablauf;
+ohne B12- bzw. B13-Fix die jeweilige Abgleichprobe (B13 auch der Ablauf).
+Eine Änderungsregel „nie überschreiben“ bzw. „immer löschen“ lässt je 16
+Proben scheitern (das Würfelprotokoll hat kein `copyWith`). Die Hash-Pins
+der Bestandshelden sind unverändert; `flutter analyze --no-pub` und die
+volle Suite sind grün (2673 bestanden, 3 übersprungen).
+
+*Verbleibende Risiken:*
+
+1. Regeln rechnen mit dem Ersatz. Ein Modifikator unbekannter Art wirkt
+   etwa als Eigenschaftsmodifikator (`stat`) auf sein `targetId`, eine
+   unbekannte Kampfart als Nahkampf, ein unbekannter Abenteuerstatus als
+   laufend. Die Anzeige zeigt den Ersatz, nicht den Rohwert.
+2. Verknüpfte Inventareinträge übernehmen `itemType` und `source` bei jedem
+   Abgleich aus ihrem Slot; ein unbekannter Typ dort wird deshalb durch
+   den Slottyp ersetzt. Ein verknüpfter Eintrag mit unbekannter Quelle
+   bleibt nach B12 unverändert, folgt aber auch keinen Slotänderungen mehr.
+3. Abgedeckt sind alle Stellen, an denen Held und Zustand einen
+   Aufzählungswert parsen; ausgenommen bleiben das nur gelesene
+   `OffhandSlot.mode` und die Steigerungsart, die B5 schon bewahrt.
+   Eigenschaftskürzel, Repräsentationen und ähnliche Kennungen liegen als
+   Text im Modell und bleiben ohnehin roh. Zahlen, die beim Laden begrenzt
+   werden (etwa Zoom und Fokus der Bilder), zählen zu den Normalisierungen
+   aus Restrisiko 2 des zweiten Teilstands.
+4. Restrisiken 2 bis 4 des zweiten Teilstands gelten unverändert.
+
+*Nächster Schritt:* das gemeinsame Gegenstandsmodell nach den
+Abnahmekriterien oben. Dieser Stand muss vorher veröffentlicht sein.
 
 ## ARCH-04 — Versionierte Regelprofile und erklärbare Berechnungen
 
@@ -579,6 +651,8 @@ Aufträgen.
 | B9 | niedrig/mittel | `_mergeEntry` baut verknüpfte Inventareinträge aus dem Slot neu auf und übernimmt nur eine feste Feldliste. Typ (`typ`) und Träger (`traegerTyp`, `traegerId`) gehen bei jedem Speichern verloren, obwohl der Inventareditor den Träger auch für verknüpfte Einträge anbietet. | `bestandsheld_ablauf_test.dart` (f01) | behoben (Kleinfix, siehe Aktualisierung) |
 | B10 | hoch | Nach dem Übernehmen eines Online-Stands merkte sich die Sync-Basis den Hash des Schreibers. Konnte diese Version den Stand nicht verlustfrei darstellen, lud ein bloßer Abgleich die verkürzte Fassung ohne Konflikt hoch und löschte fremde Felder auf allen Geräten. | `sync_app_versionen_test.dart` | behoben (`192cf41`) |
 | B11 | mittel | Der Angriffsdialog der Begleiter baute einen bearbeiteten Angriff neu auf und setzte die gekauften AT/PA-Steigerungen (`steigerungAt`/`steigerungPa`) auf 0 zurück; die ausgegebenen AP blieben gebucht. | `test/ui/begleiter/begleiter_angriff_test.dart` | behoben (Kleinfix, `a8bde70`) |
+| B12 | mittel | Ein verknüpfter Inventareintrag mit unbekannter Quelle (`source`) galt über den Ersatz `manuell` als manueller Eintrag; der Abgleich legte für seinen Slot einen zweiten, verknüpften Eintrag an. | `unbekannte_verschachtelte_felder_test.dart` (Inventarabgleich) | behoben (minimal abgesichert, `9d2aeaa`) |
+| B13 | mittel | Ein Waffenslot mit unbekannter Kampfart fiel auf Nahkampf zurück; Verweismigration und Abgleich verwarfen seine Geschosse samt Inventardaten, Mengenänderungen liefen ins Leere. | `unbekannte_verschachtelte_felder_test.dart`, `bestandsheld_ablauf_test.dart` | behoben (Kleinfix, `9d2aeaa`) |
 
 **Aktualisierung 27.09.2026:** B1 (`d5f111c`), B7 (`de36df2`), B8
 (`20102a0`), B4 (`9eebf93`) sowie B5/B6 (`6be321c`) haben Fix-Commits.
@@ -606,6 +680,13 @@ Hash-Pins bleiben unverändert, keine trägt Typ oder Träger.
 verschachtelten Modelle von Held und Zustand ab, siehe ARCH-03-Teilstand
 „Alle verschachtelten Modelle“. Neu ist B11, als Kleinfix behoben, weil
 jedes Bearbeiten eines Begleiterangriffs gekaufte Steigerungen verlor.
+
+**Aktualisierung 28.09.2026 (Aufzählungswerte):** B6 bewahrt jetzt auch
+unbekannte Aufzählungswerte und Wundzonen, siehe ARCH-03-Teilstand
+„Unbekannte Aufzählungswerte“. B12 und B13 traten erst mit dem Ersatzwert
+zutage und sind mit `9d2aeaa` behoben: B12 minimal (der Eintrag deckt seinen
+Slot ab und bleibt unverändert), B13 über `MainWeaponSlot.fuehrtGeschosse`,
+das auch eine unbekannte Kampfart als geschossführend behandelt.
 
 ## Abschluss und Übergabe je Aufgabe
 
