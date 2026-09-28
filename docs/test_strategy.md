@@ -91,7 +91,8 @@ Regeln:
 - **Mischbetrieb mit der veröffentlichten App** (`main`, vor ARCH-03) bildet
   `test/test_support/veroeffentlichte_app.dart` nach:
   - `wieVeroeffentlichteApp` entfernt, was sie beim Speichern verliert
-    (Slot-IDs, `slotRef`, unbekannte Felder);
+    (Slot-IDs, `slotRef`, unbekannte Felder in jedem verschachtelten Modell),
+    `zustandWieVeroeffentlichteApp` dasselbe für den Laufzeitzustand;
   - `zuordnungWieVeroeffentlichteApp` portiert ihre Namenszuordnung auf JSON.
 
   `test/domain/inventar_verweise_test.dart` prüft damit die Ladetabelle der
@@ -100,16 +101,34 @@ Regeln:
   `sync_app_versionen_test.dart` prüft ihre Änderungen und ihr Echo über den
   Konto-Sync.
 - **Felder einer neueren App-Version** simuliert
-  `test/test_support/zukunftsfelder.dart`. `mitZukunftsfeldern` setzt in f01
-  an jeder Ebene der Ausrüstung ein `zukunftsfeld`: Kampfkonfiguration,
-  nicht gewählte Waffe, Fernkampfprofil, Distanzstufe, Geschoss, Rüstung,
-  Nebenhand, Inventareinträge und Modifikator. Es liefert die Pfade im Format
-  von `jsonUnterschiede`. Eine neue Fixture ist dafür nicht nötig: Das Format
-  ist dasselbe, nur um fremde Felder ergänzt.
-  `test/domain/unbekannte_ausruestungsfelder_test.dart` prüft die zehn Modelle
-  einzeln, dazu Altschlüssel, Gleichheit, Katalogschutz und den Fixpunkt. Die
-  Regel-, Widget- und Hive-Tests prüfen Abgleich, Editoren sowie Import,
-  Bearbeiten, Neustart und Export.
+  `test/test_support/zukunftsfelder.dart`. `mitZukunftsfeldern` ergänzt f01
+  im heutigen Format um Beispielinhalte, die die Fixture nicht belegt
+  (Waffenmeisterschaft, Talentmodifikator, Meta-Talent, Zauber mit
+  Overrides, Ritualkategorie, Begleiter, Abenteuerinhalte, Kontakt, Gruppe,
+  Reiseberichtseintrag, Geburtsdatum, Bild, Schnappschuss, Verlaufseintrag),
+  und setzt an jeder verschachtelten Ebene ein `zukunftsfeld` — 71 Stellen
+  von der Ausrüstung bis zum Gesichtsbefund.
+  `zustandMitZukunftsfeldern` macht dasselbe für den Laufzeitzustand
+  (Modifikatoren, Zaubereffekt samt Dauer, Wunden, Würfelprotokoll). Beide
+  liefern die Pfade im Format von `jsonUnterschiede`; eine neue Fixture ist
+  nicht nötig, weil das Format dasselbe bleibt. `bearbeiteVerschachtelteModelle`
+  und `bearbeiteZustand` ändern je Modell ein bekanntes Feld per `copyWith`,
+  wie es die Editoren tun.
+  `test/domain/unbekannte_ausruestungsfelder_test.dart` und
+  `test/domain/unbekannte_verschachtelte_felder_test.dart` prüfen die Modelle
+  einzeln (bekannte Schlüssel, Laden, Bearbeiten, unverändertes JSON ohne
+  Zukunftsfeld), dazu Altschlüssel, Sonderfälle und den Fixpunkt. Der
+  **Vollständigkeitswächter** dort setzt in jede Objektebene eines voll
+  belegten Helden und Zustands sowie aller Bestandshelden einzeln ein
+  Zukunftsfeld; ein künftiges Modell ohne `unbekannteFelder` fällt so ohne
+  Tabellenpflege auf. Hive-Ablauf (Import überschreibend und als Kopie,
+  Bearbeiten über `HeroActions`, Neustart, Export), Zwei-Geräte-Sync mit dem
+  Stand einer neueren Version (auch Zustand und gleichzeitig geänderte Cloud)
+  und Widgettests der Editoren (Ritual, Talentmodifikator, Begleiterangriff,
+  Abenteuerblatt, Übersicht, Zaubereffekte) prüfen die Wege.
+- **Gegenproben**: Jeder dieser Tests scheitert ohne den Fix. Nachgewiesen
+  wird das, indem man die Editor-Dateien einzeln per `git stash` zurücksetzt
+  oder `sammleUnbekannteFelder` vorübergehend eine leere Map liefern lässt.
 - Fehler, die diese Tests aufdecken, werden nicht nebenbei behoben: Der Test
   hält das heutige Verhalten mit dem Kommentar `Befund ARCH-07-Bx` fest, der
   Befund steht mit Folgeauftrag in `docs/architecture_roadmap.md`.
@@ -231,13 +250,14 @@ Die CI (`.github/workflows/flutter-tests.yml`) führt alle Tests auf
 | `test/data/catalog_loader_test.dart` | data | Katalog-Loading/Validierung |
 | `test/data/catalog_model_test.dart` | data | Katalogmodell Roundtrip |
 | `test/data/hero_actions_import_export_test.dart` | data | Actions Import/Export |
-| `test/data/bestandsheld_ablauf_test.dart` | data | Echte Hive-Speichergrenze je Bestandsheld und Ablauf Import bis Export mit Neustart, Befunde B4/B9, Felder neuerer Versionen in der Ausrüstung |
+| `test/data/bestandsheld_ablauf_test.dart` | data | Echte Hive-Speichergrenze je Bestandsheld und Ablauf Import bis Export mit Neustart, Befunde B4/B9, Felder neuerer Versionen in allen verschachtelten Modellen von Held und Zustand |
 | `test/data/sync_zwei_geraete_test.dart` | data | Zwei Geräte an einer Cloud: Abbruch, verlorene Antwort, Neustart (auch mit Hive), Konfliktauflösungen samt Zustand, Befunde B1/B8 |
-| `test/data/sync_app_versionen_test.dart` | data | Sync mit anderen App-Versionen: Basis gleich lokaler Stand (B10), Ausrüstungsfelder einer neueren Version samt gleichzeitig geänderter Cloud, veröffentlichte App im Mischbetrieb |
+| `test/data/sync_app_versionen_test.dart` | data | Sync mit anderen App-Versionen: Basis gleich lokaler Stand (B10), Felder einer neueren Version in Held und Zustand samt gleichzeitig geänderter Cloud, veröffentlichte App im Mischbetrieb (auch ihr Echo) |
 | `test/domain/hero_sheet_model_test.dart` | domain | HeroSheet-Kompatibilitaet |
 | `test/domain/hero_transfer_bundle_test.dart` | domain | Transfer-Bundle-Kontrakt |
 | `test/domain/bestandshelden_kompatibilitaet_test.dart` | domain | Bestandsfixtures: Fixpunkt nach einmaligem Laden, Inhalts-Hashes, Altschlüssel, Befunde B1/B5/B6 |
 | `test/domain/unbekannte_ausruestungsfelder_test.dart` | domain | Unbekannte Felder in den zehn Ausrüstungsmodellen, Altschlüssel, Katalogschutz, Fixpunkt mit f01 |
+| `test/domain/unbekannte_verschachtelte_felder_test.dart` | domain | Unbekannte Felder in allen übrigen Modellen von Held und Zustand, Altschlüssel, Sonderfälle, Vollständigkeitswächter über jede Objektebene |
 | `test/domain/inventar_verweise_test.dart` | domain | Ladetabelle `sourceRef`/`slotRef`, Vorabfassung, Mischbetrieb mit der veröffentlichten App |
 | `test/workspace/workspace_area_registry_test.dart` | workspace | Area-Registry |
 | `test/workspace/workspace_tab_edit_controller_test.dart` | workspace | Tab-Edit-Controller |

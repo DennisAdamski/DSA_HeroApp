@@ -279,15 +279,17 @@ Befund, die volle Suite grün (2353 bestanden, 3 übersprungen).
 
 *Verbleibende Risiken, ausdrücklich außerhalb dieses Teilumfangs:*
 
-1. Andere verschachtelte Modelle verlieren unbekannte Felder weiterhin:
+1. ~~Andere verschachtelte Modelle verlieren unbekannte Felder weiterhin:
    `OffhandAssignment`, `CombatSpecialRules`, `CombatManualMods`,
    `WaffenmeisterConfig`, Talente, Zauber, Rituale, die eigenen Felder von
    `HeroCompanion`, Abenteuer und Notizen. Seit B10 geschieht das erst bei
    einer echten Änderung, nicht mehr beim bloßen Abgleich. Der Konflikt-Diff
-   zeigt diese Felder nicht.
+   zeigt diese Felder nicht.~~ *Erledigt im Teilstand „Alle verschachtelten
+   Modelle“ unten.*
 2. Unbekannte **Enum-Werte** fallen auf Standardwerte zurück (`itemType`,
    `source`, `traegerTyp`, `combatType`, Nebenhand-`type`, `shieldSize`,
    Modifikator-`kind`) und werden bei einer Änderung überschrieben.
+   *In Arbeit: Konzept liegt vor, siehe Teilstand unten.*
 3. Die veröffentlichte App verwirft alles Unbekannte, Slot-IDs und
    `slotRef`, und nach jedem Upload dieser Version schreibt sie einmal
    zurück (Echo). Verknüpfungen und Inventardaten überleben; UUIDs und
@@ -312,6 +314,72 @@ Befund, die volle Suite grün (2353 bestanden, 3 übersprungen).
 Abnahmekriterien oben. Außerdem für neue Felder und Enum-Werte die Formatregel
 anwenden. Vor einem nicht-additiven Formatwechsel braucht es eine sichtbare
 Schreibsperre, die ältere Versionen bereits kennen.
+
+**Teilstand 28.09.2026 (2) — Alle verschachtelten Modelle bewahren
+unbekannte Felder.** Restrisiko 1 des vorigen Teilstands ist erledigt.
+Hintergrund: ARCH-02 und ARCH-03 bringen neue verschachtelte Felder, und nur
+Geräte, die bereits eine Version mit diesem Schutz haben, verlieren sie
+nicht. Dieser Stand muss deshalb veröffentlicht sein, bevor ein neues Format
+kommt.
+
+*Umfang.* Jedes Modell, das im JSON von `HeroSheet` oder `HeroState` steht,
+trägt jetzt eigene `unbekannteFelder` und ein eigenes `jsonSchluessel`
+(Liste in der technischen Übersicht, Abschnitt 2.1) — 61 Modelle
+einschließlich der zehn aus `f28cb1a`. Ausgenommen ist nur `OffhandSlot`,
+das nie geschrieben wird. Neuaufbauten per Konstruktor sind auf `copyWith`
+umgestellt: Normalisierung der Nebenhand-Auswahl und der
+Talentmodifikatoren, die Modifikator-, Ritual-, Meta-Talent-, SF-,
+Zauberdetail-, Abenteuer-, Begleiter-, Übersichts- und Zaubereffekt-Dialoge,
+das Abenteuerblatt, Wunden und volle Rast sowie die in `saveHero` neu
+errechneten Startwerte (`Attributes.uebernimmWerte`; ohne das erbten sie die
+Felder der Rohstartwerte). Objekte, die nur Felder einer neueren Version
+tragen, gelten nicht mehr als leer (Text-Overrides, Effekt-Zusatzdaten,
+Geburtsdatum).
+
+Commits:
+
+- `0512fac` — Kampf-Rest (Nebenhand-Auswahl, Kampf-SF, manuelle
+  Modifikatoren, Waffenmeister samt Bonus).
+- `ea8db81` — Talente, Zauber, Rituale, Sprachen, Sonderfertigkeiten.
+- `a8bde70` — Begleiter, Abenteuer, Notizen, Kontakte, Gruppen,
+  Reisebericht; dazu Befund B11 (Kleinfix).
+- `9db8406` — Eigenschaften, Grundwerte, SE-Pools, Ressourcenschalter,
+  Geburtsdatum, Bilder, Schnappschuss, Steigerungsverlauf.
+- `177b4a3` — Laufzeitzustand: Zaubereffekte, Wirkungsdauer, Wunden,
+  Würfelprotokoll, temporäre Modifikatoren.
+- `66a7c70` — Vollständigkeitswächter über jede Objektebene.
+
+*Prüfungen.* `zukunftsfelder.dart` deckt jetzt 71 Stellen im Helden
+und 7 im Zustand ab, `veroeffentlichte_app.dart` bildet den Verlust in
+allen Modellen nach. Geprüft sind Laden (Tabellentest je Modell,
+Vollständigkeitswächter über jede Objektebene eines voll belegten Helden
+und aller Bestandshelden), Bearbeiten über `HeroActions` und die Editoren
+(Widgettests), echtes Hive mit Neustart, Import/Export überschreibend und
+als Kopie, Zwei-Geräte-Sync mit Held und Zustand einer neueren Version
+einschließlich gleichzeitig geänderter Cloud sowie der Mischbetrieb mit dem
+Echo der veröffentlichten App. Gegenproben: Mit vorübergehend leerem
+`sammleUnbekannteFelder` scheitern alle Modell- und Ablaufproben; mit
+einzeln zurückgesetzten Editoren scheitert jeweils der zugehörige
+Widgettest. Dabei fiel auf, dass der Sync-Test den Stand der neueren
+Version bisher durch das hiesige Modell schickte und ohne Fix nicht
+scheiterte; die Felder werden jetzt direkt ins JSON gesetzt. Die Hash-Pins
+der Bestandshelden sind unverändert.
+
+*Verbleibende Risiken:*
+
+1. Unbekannte **Enum-Werte** (Restrisiko 2 oben) und unbekannte
+   Wundzonen. Konzept vorgelegt, Umsetzung nach Bestätigung.
+2. Was eine bestehende Normalisierung verwirft, verliert auch seine
+   unbekannten Felder: Personen, SE-Zeilen und Beute ohne Inhalt,
+   Talentmodifikatoren ohne Beschreibung, Ritualkategorien ohne oder mit
+   doppelter ID, Zusatzfelder ohne Bezeichnung, ungültige Gesichtsbefunde.
+3. Restrisiken 3 bis 7 des vorigen Teilstands gelten unverändert; die
+   veröffentlichte App verwirft jetzt nachweislich in allen Modellen.
+4. Ein Nutzer, der einen Wert bewusst zurücksetzt (Ritualkategorie auf
+   Talentbezug, Zauber-Overrides auf den Katalog), nimmt die Felder des
+   entfallenden Objekts mit; bleibt das Objekt bestehen, bleiben sie.
+
+*Nächster Schritt:* unbekannte Enum-Werte nach bestätigtem Konzept.
 
 ## ARCH-04 — Versionierte Regelprofile und erklärbare Berechnungen
 
@@ -510,6 +578,7 @@ Aufträgen.
 | B8 | mittel | Offline geänderte Laufzeitwerte (LeP, AsP, Wunden …) lädt `syncNow` nicht hoch: `_syncHeroStates` überträgt nur Zustände, die online noch fehlen. Erst die nächste Zustandsänderung mit Verbindung holt sie nach; wechselt man vorher das Gerät, sieht es den alten Stand. | `sync_zwei_geraete_test.dart` | eigener Sync-Auftrag, Bezug ARCH-06 |
 | B9 | niedrig/mittel | `_mergeEntry` baut verknüpfte Inventareinträge aus dem Slot neu auf und übernimmt nur eine feste Feldliste. Typ (`typ`) und Träger (`traegerTyp`, `traegerId`) gehen bei jedem Speichern verloren, obwohl der Inventareditor den Träger auch für verknüpfte Einträge anbietet. | `bestandsheld_ablauf_test.dart` (f01) | behoben (Kleinfix, siehe Aktualisierung) |
 | B10 | hoch | Nach dem Übernehmen eines Online-Stands merkte sich die Sync-Basis den Hash des Schreibers. Konnte diese Version den Stand nicht verlustfrei darstellen, lud ein bloßer Abgleich die verkürzte Fassung ohne Konflikt hoch und löschte fremde Felder auf allen Geräten. | `sync_app_versionen_test.dart` | behoben (`192cf41`) |
+| B11 | mittel | Der Angriffsdialog der Begleiter baute einen bearbeiteten Angriff neu auf und setzte die gekauften AT/PA-Steigerungen (`steigerungAt`/`steigerungPa`) auf 0 zurück; die ausgegebenen AP blieben gebucht. | `test/ui/begleiter/begleiter_angriff_test.dart` | behoben (Kleinfix, `a8bde70`) |
 
 **Aktualisierung 27.09.2026:** B1 (`d5f111c`), B7 (`de36df2`), B8
 (`20102a0`), B4 (`9eebf93`) sowie B5/B6 (`6be321c`) haben Fix-Commits.
@@ -532,6 +601,11 @@ magisch/geweiht, `istAusgeruestet` (Ausrüstung) und `anzahl` (Geschosse).
 Der Test in `bestandsheld_ablauf_test.dart` setzt an f01 Typ und Träger,
 speichert, ändert den Kampf und prüft nach dem Neustart. Die Fixtures und
 Hash-Pins bleiben unverändert, keine trägt Typ oder Träger.
+
+**Aktualisierung 28.09.2026 (verschachtelte Modelle):** B6 deckt jetzt alle
+verschachtelten Modelle von Held und Zustand ab, siehe ARCH-03-Teilstand
+„Alle verschachtelten Modelle“. Neu ist B11, als Kleinfix behoben, weil
+jedes Bearbeiten eines Begleiterangriffs gekaufte Steigerungen verlor.
 
 ## Abschluss und Übergabe je Aufgabe
 

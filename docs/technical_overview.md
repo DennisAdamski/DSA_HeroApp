@@ -435,34 +435,71 @@ mit älterer App per Sync die Felder einer neueren (Befunde ARCH-07-B5/B6):
   `UnbekannterVerlaufseintrag` an ihrer Position erhalten, statt den Helden
   unlesbar zu machen. Sie werden nicht ausgewertet; der Verlauf nennt ihre
   Anzahl.
-- **Ausrüstung** bewahrt Unbekanntes auf jeder Ebene. Jedes der zehn Modelle
-  trägt dafür einen eigenen Satz `unbekannteFelder` und ein eigenes
-  `jsonSchluessel`:
-  - `CombatConfig`;
-  - Waffen: `MainWeaponSlot`, `RangedWeaponProfile`, `RangedProjectile`,
-    `RangedDistanceBand`;
-  - Rüstung: `ArmorConfig`, `ArmorPiece`;
-  - Nebenhand: `OffhandEquipmentEntry`;
-  - Inventar: `HeroInventoryEntry`, `InventoryItemModifier`.
+- **Jedes verschachtelte Modell** bewahrt Unbekanntes auf seiner Ebene
+  (Teilstände ARCH-03 vom 28.09.2026). Jedes trägt dafür einen eigenen Satz
+  `unbekannteFelder` und ein eigenes `jsonSchluessel`:
+  - Ausrüstung: `CombatConfig`, `MainWeaponSlot`, `RangedWeaponProfile`,
+    `RangedProjectile`, `RangedDistanceBand`, `ArmorConfig`, `ArmorPiece`,
+    `OffhandEquipmentEntry`, `HeroInventoryEntry`, `InventoryItemModifier`;
+  - Kampfeinstellungen: `OffhandAssignment`, `CombatSpecialRules`,
+    `CombatManualMods`, `WaffenmeisterConfig`, `WaffenmeisterBonus`;
+  - Talente und Magie: `HeroTalentEntry`, `HeroTalentModifier` (auch in
+    `statModifiers`/`attributeModifiers`), `HeroMetaTalent`,
+    `TalentSpecialAbility`, `HeroSpellEntry`, `HeroSpellTextOverrides`,
+    `HeroRitualCategory`, `HeroRitualKnowledge`, `HeroRitualEntry`,
+    `HeroRitualFieldDef`, `HeroRitualFieldValue`, `MagicSpecialAbility`,
+    `HeroLanguageEntry`, `HeroScriptEntry`;
+  - Begleiter und Chronik: `HeroCompanion`, `HeroCompanionAttack`,
+    `HeroCompanionSonderfertigkeit`, `HeroCompanionSpeed`,
+    `HeroAdventureEntry`, `HeroAdventureSeReward`, `HeroAdventureDateValue`,
+    `HeroAdventurePersonEntry`, `HeroAdventureLootEntry`, `HeroNoteEntry`,
+    `HeroConnectionEntry`, `HeroReisebericht`, `ReiseberichtOpenItem`,
+    `HeroGruppenMitgliedschaft`;
+  - Werte, Bilder, Verlauf: `Attributes` (alle fünf Verwendungen),
+    `StatModifiers`, `BoughtStats`, `HeroAttributeSePool`, `HeroStatSePool`,
+    `HeroResourceActivationConfig`, `AventurianDate` (Geburtsdatum),
+    `AvatarGalleryEntry`, `AvatarGesichtsbefund`, `AvatarGesichtsrahmen`,
+    `AvatarSnapshot`, `HeroAdvancementEntry`;
+  - Laufzeitzustand: `AttributeModifiers`, `ActiveSpellEffectsState`,
+    `ActiveSpellEffectDetail`, `SpellDuration`, `WundZustand`, `DiceLogEntry`.
 
-  Zwei Regeln halten das dicht:
+  Ausgenommen ist nur `OffhandSlot`: der Altschlüssel `offhand` wird beim
+  Laden migriert und nie geschrieben. Drei Regeln halten das dicht:
   1. **Jeder gelesene Altschlüssel gehört in den Schlüsselsatz.** Das betrifft
-     `offhand`, `wmFk` und `fkMod`, die beim Laden in neue Felder aufgehen.
-     Als „unbekannt“ zurückgeschrieben, käme etwa ein gelöschter migrierter
-     Schild beim nächsten Laden wieder.
+     `offhand`, `wmFk`, `fkMod` (Geschoss und manuelle Modifikatoren),
+     `schnellladenBogen`/`schnellladenArmbrust`, `eigenAp`, `vorNachteile`
+     und den Alias `note` der magischen SF. Als „unbekannt“
+     zurückgeschrieben, käme etwa ein gelöschter migrierter Schild beim
+     nächsten Laden wieder.
   2. **Bestehende Objekte ändert man nur per `copyWith`.** Wer sie per
-     Konstruktor neu aufbaut, verliert die Felder. Deshalb bauen
-     `_mergeEntry` im Inventarabgleich und die Editoren für Nebenhand,
-     Geschoss, Distanzstufe und Begleiterrüstung auf der Bestandsinstanz auf.
+     Konstruktor neu aufbaut, verliert die Felder. Editoren arbeiten deshalb
+     auf der Bestandsinstanz — auch zeilenweise Dialoge wie die
+     Modifikatorlisten, die dafür das Original je Zeile mitführen. Neu
+     errechnete oder aus Formularen gelesene Werte übernimmt
+     `Attributes.uebernimmWerte` bzw. `AttributeModifiers.uebernimmWerte` in
+     die vorhandene Instanz (effektive Startwerte in `saveHero`, epische
+     Werte, Attributo). Ohne das erbten die Startwerte die Felder der
+     Rohstartwerte.
+  3. **Felder einer neueren Version zählen als Inhalt.** Text-Overrides,
+     Zusatzdaten eines Zaubereffekts und das Geburtsdatum werden nur
+     geschrieben, wenn sie belegt sind; Objekte, die ausschließlich
+     unbekannte Felder tragen, gelten dabei als belegt. Ein Objekt ohne
+     beides schreibt weiterhin nichts.
 
   Katalogwaffen setzen die Felder ihrer Geschosse und Stufen beim Laden leer
   (`weapon_def.dart`). Katalogschlüssel sind keine Heldendaten.
-- Unbekannte Felder in `OffhandAssignment`, `CombatSpecialRules`,
-  `CombatManualMods`, `WaffenmeisterConfig` und allen übrigen verschachtelten
-  Objekten gehen weiterhin verloren. Das betrifft etwa Talente, Zauber,
-  Rituale, die eigenen Felder von `HeroCompanion`, Abenteuer und Notizen.
-  Ebenso ungeschützt sind **unbekannte Werte** bekannter Felder: Ein
-  unbekannter Enum-Wert fällt auf den Standard zurück.
+  `test/domain/unbekannte_verschachtelte_felder_test.dart` prüft neben den
+  Modellen einzeln jede Objektebene eines voll belegten Helden und aller
+  Bestandshelden (Vollständigkeitswächter); ein neues Modell ohne
+  `unbekannteFelder` fällt dort auf.
+- Nicht erhalten bleibt, was eine bestehende **Normalisierung verwirft**:
+  Personen, SE-Zeilen und Beute ohne Inhalt, Talentmodifikatoren ohne
+  Beschreibung, Ritualkategorien ohne oder mit doppelter ID, Zusatzfelder
+  ohne Bezeichnung und ungültige Gesichtsbefunde fallen samt ihren
+  unbekannten Feldern weg. `mainWeapon` spiegelt nur die gewählte Waffe.
+- Ungeschützt sind weiterhin **unbekannte Werte** bekannter Felder: Ein
+  unbekannter Enum-Wert fällt auf den Standard zurück, eine unbekannte
+  Wundzone entfällt.
 
 **Formatregel für künftige Versionen:** Änderungen am gespeicherten Format
 bleiben additiv. Erhalten wird nur, was eine ältere Version nicht versteht;
