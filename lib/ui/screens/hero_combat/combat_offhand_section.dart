@@ -580,8 +580,10 @@ class _OffhandEditorPanelState extends State<_OffhandEditorPanel> {
     final parsedIni = int.tryParse(_iniController.text.trim()) ?? 0;
     final parsedAt = int.tryParse(_atController.text.trim()) ?? 0;
     final parsedPa = int.tryParse(_paController.text.trim()) ?? 0;
+    // Auf dem Ausgangseintrag aufbauen: ID und Felder neuerer App-Versionen
+    // bleiben so erhalten.
     widget.onSave(
-      OffhandEquipmentEntry(
+      widget.initialEntry.copyWith(
         name: _nameController.text.trim(),
         type: _type,
         breakFactor: parsedBreakFactor < 0 ? 0 : parsedBreakFactor,

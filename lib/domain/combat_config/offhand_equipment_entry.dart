@@ -1,9 +1,11 @@
 import 'package:dsa_heldenverwaltung/domain/combat_config/offhand_equipment_type.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config/shield_size.dart';
+import 'package:dsa_heldenverwaltung/domain/unbekannte_json_felder.dart';
 
 /// Beschreibt ein Schild oder eine Parierwaffe im Kampf-Inventar.
 class OffhandEquipmentEntry {
   const OffhandEquipmentEntry({
+    this.id = '',
     this.name = '',
     this.type = OffhandEquipmentType.parryWeapon,
     this.breakFactor = 0,
@@ -15,7 +17,11 @@ class OffhandEquipmentEntry {
     this.artifactDescription = '',
     this.isGeweiht = false,
     this.geweihtDescription = '',
+    this.unbekannteFelder = const <String, Object?>{},
   });
+
+  /// Stabile Kennung des Nebenhand-Teils (siehe `CombatConfig.withStableIds`).
+  final String id;
 
   /// Anzeigename des Eintrags.
   final String name;
@@ -50,11 +56,32 @@ class OffhandEquipmentEntry {
   /// Freitext-Beschreibung fuer den geweihten Gegenstand.
   final String geweihtDescription;
 
+  /// JSON-Felder einer neueren App-Version; bleiben beim Speichern erhalten
+  /// (siehe `unbekannte_json_felder.dart`).
+  final Map<String, Object?> unbekannteFelder;
+
+  /// Alle Schluessel, die [fromJson] liest; alles andere bleibt erhalten.
+  static const Set<String> jsonSchluessel = <String>{
+    'id',
+    'name',
+    'type',
+    'breakFactor',
+    'shieldSize',
+    'iniMod',
+    'atMod',
+    'paMod',
+    'isArtifact',
+    'artifactDescription',
+    'isGeweiht',
+    'geweihtDescription',
+  };
+
   /// Gibt an, ob der Eintrag ein Schild ist.
   bool get isShield => type == OffhandEquipmentType.shield;
 
   /// Gibt eine Kopie mit selektiv ueberschriebenen Feldern zurueck.
   OffhandEquipmentEntry copyWith({
+    String? id,
     String? name,
     OffhandEquipmentType? type,
     int? breakFactor,
@@ -66,8 +93,10 @@ class OffhandEquipmentEntry {
     String? artifactDescription,
     bool? isGeweiht,
     String? geweihtDescription,
+    Map<String, Object?>? unbekannteFelder,
   }) {
     return OffhandEquipmentEntry(
+      id: id ?? this.id,
       name: name ?? this.name,
       type: type ?? this.type,
       breakFactor: breakFactor ?? this.breakFactor,
@@ -79,12 +108,14 @@ class OffhandEquipmentEntry {
       artifactDescription: artifactDescription ?? this.artifactDescription,
       isGeweiht: isGeweiht ?? this.isGeweiht,
       geweihtDescription: geweihtDescription ?? this.geweihtDescription,
+      unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
     );
   }
 
   /// Serialisiert den Eintrag zu einem JSON-kompatiblen Map.
   Map<String, dynamic> toJson() {
-    return {
+    return mitUnbekanntenFeldern(<String, dynamic>{
+      if (id.isNotEmpty) 'id': id,
       'name': name,
       'type': offhandEquipmentTypeToJson(type),
       'breakFactor': breakFactor,
@@ -96,13 +127,14 @@ class OffhandEquipmentEntry {
       'artifactDescription': artifactDescription,
       'isGeweiht': isGeweiht,
       'geweihtDescription': geweihtDescription,
-    };
+    }, unbekannteFelder);
   }
 
   /// Deserialisiert einen Eintrag aus einem JSON-Map.
   static OffhandEquipmentEntry fromJson(Map<String, dynamic> json) {
     int getInt(String key) => (json[key] as num?)?.toInt() ?? 0;
     return OffhandEquipmentEntry(
+      id: (json['id'] as String?) ?? '',
       name: (json['name'] as String?) ?? '',
       type: offhandEquipmentTypeFromJson((json['type'] as String?) ?? ''),
       breakFactor: getInt('breakFactor'),
@@ -114,6 +146,7 @@ class OffhandEquipmentEntry {
       artifactDescription: (json['artifactDescription'] as String?) ?? '',
       isGeweiht: (json['isGeweiht'] as bool?) ?? false,
       geweihtDescription: (json['geweihtDescription'] as String?) ?? '',
+      unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
     );
   }
 }

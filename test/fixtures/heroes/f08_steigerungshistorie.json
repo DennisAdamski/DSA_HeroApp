@@ -1,0 +1,472 @@
+{
+  "kind": "dsa.hero.export",
+  "transferSchemaVersion": 3,
+  "exportedAt": "2026-09-20T18:00:00.000Z",
+  "hero": {
+    "schemaVersion": 27,
+    "id": "bestand-f08",
+    "name": "Lares Wegkundiger",
+    "level": 6,
+    "attributes": {
+      "mu": 13,
+      "kl": 12,
+      "inn": 13,
+      "ch": 11,
+      "ff": 12,
+      "ge": 13,
+      "ko": 12,
+      "kk": 11
+    },
+    "rawStartAttributes": {
+      "mu": 12,
+      "kl": 12,
+      "inn": 13,
+      "ch": 11,
+      "ff": 12,
+      "ge": 13,
+      "ko": 12,
+      "kk": 11
+    },
+    "startAttributes": {
+      "mu": 12,
+      "kl": 12,
+      "inn": 13,
+      "ch": 11,
+      "ff": 12,
+      "ge": 13,
+      "ko": 12,
+      "kk": 11
+    },
+    "persistentMods": {
+      "lep": 0,
+      "au": 0,
+      "asp": 0,
+      "kap": 0,
+      "mr": 0,
+      "iniBase": 0,
+      "at": 0,
+      "pa": 0,
+      "fk": 0,
+      "gs": 0,
+      "ausweichen": 0,
+      "rs": 0
+    },
+    "bought": {
+      "lep": 0,
+      "au": 0,
+      "asp": 0,
+      "kap": 0,
+      "mr": 0
+    },
+    "combatConfig": {
+      "mainWeapon": {
+        "name": "",
+        "talentId": "",
+        "combatType": "melee",
+        "weaponType": "",
+        "distanceClass": "",
+        "kkBase": 0,
+        "kkThreshold": 1,
+        "breakFactor": 0,
+        "tpDiceCount": 1,
+        "tpDiceSides": 6,
+        "tpFlat": 0,
+        "wmAt": 0,
+        "wmPa": 0,
+        "iniMod": 0,
+        "beTalentMod": 0,
+        "isOneHanded": true,
+        "isArtifact": false,
+        "artifactDescription": "",
+        "isGeweiht": false,
+        "geweihtDescription": "",
+        "rangedProfile": {
+          "reloadTime": 0,
+          "distanceBands": [
+            {
+              "label": "Distanz 1",
+              "tpMod": 0
+            },
+            {
+              "label": "Distanz 2",
+              "tpMod": 0
+            },
+            {
+              "label": "Distanz 3",
+              "tpMod": 0
+            },
+            {
+              "label": "Distanz 4",
+              "tpMod": 0
+            },
+            {
+              "label": "Distanz 5",
+              "tpMod": 0
+            }
+          ],
+          "projectiles": [],
+          "selectedDistanceIndex": 0,
+          "selectedProjectileIndex": -1
+        }
+      },
+      "weapons": [
+        {
+          "name": "",
+          "talentId": "",
+          "combatType": "melee",
+          "weaponType": "",
+          "distanceClass": "",
+          "kkBase": 0,
+          "kkThreshold": 1,
+          "breakFactor": 0,
+          "tpDiceCount": 1,
+          "tpDiceSides": 6,
+          "tpFlat": 0,
+          "wmAt": 0,
+          "wmPa": 0,
+          "iniMod": 0,
+          "beTalentMod": 0,
+          "isOneHanded": true,
+          "isArtifact": false,
+          "artifactDescription": "",
+          "isGeweiht": false,
+          "geweihtDescription": "",
+          "rangedProfile": {
+            "reloadTime": 0,
+            "distanceBands": [
+              {
+                "label": "Distanz 1",
+                "tpMod": 0
+              },
+              {
+                "label": "Distanz 2",
+                "tpMod": 0
+              },
+              {
+                "label": "Distanz 3",
+                "tpMod": 0
+              },
+              {
+                "label": "Distanz 4",
+                "tpMod": 0
+              },
+              {
+                "label": "Distanz 5",
+                "tpMod": 0
+              }
+            ],
+            "projectiles": [],
+            "selectedDistanceIndex": 0,
+            "selectedProjectileIndex": -1
+          }
+        }
+      ],
+      "selectedWeaponIndex": 0,
+      "offhandAssignment": {
+        "weaponIndex": -1,
+        "equipmentIndex": -1
+      },
+      "offhandEquipment": [],
+      "armor": {
+        "pieces": [],
+        "globalArmorTrainingLevel": 0
+      },
+      "specialRules": {
+        "kampfreflexe": true,
+        "kampfgespuer": false,
+        "schnellziehen": false,
+        "ausweichenI": false,
+        "ausweichenII": false,
+        "ausweichenIII": false,
+        "schildkampfI": false,
+        "schildkampfII": false,
+        "parierwaffenI": false,
+        "parierwaffenII": false,
+        "linkhandActive": false,
+        "flink": false,
+        "behaebig": false,
+        "axxeleratusActive": false,
+        "klingentaenzer": false,
+        "aufmerksamkeit": false,
+        "activeCombatSpecialAbilityIds": [],
+        "gladiatorStyleTalent": "",
+        "activeManeuvers": [
+          "man_finte"
+        ]
+      },
+      "manualMods": {
+        "iniMod": 0,
+        "ausweichenMod": 0,
+        "atMod": 0,
+        "paMod": 0,
+        "iniWurf": 0
+      },
+      "waffenmeisterschaften": []
+    },
+    "talents": {
+      "tal_klettern": {
+        "talentValue": 5,
+        "atValue": 0,
+        "paValue": 0,
+        "modifier": 0,
+        "talentModifiers": [],
+        "specialExperiences": 0,
+        "specializations": "",
+        "combatSpecializations": [],
+        "gifted": false,
+        "ebe": 0
+      },
+      "tal_orientierung": {
+        "talentValue": 7,
+        "atValue": 0,
+        "paValue": 0,
+        "modifier": 0,
+        "talentModifiers": [],
+        "specialExperiences": 0,
+        "specializations": "",
+        "combatSpecializations": [],
+        "gifted": false,
+        "ebe": 0
+      },
+      "tal_bogen": {
+        "talentValue": 6,
+        "atValue": 6,
+        "paValue": 0,
+        "modifier": 0,
+        "talentModifiers": [],
+        "specialExperiences": 0,
+        "specializations": "",
+        "combatSpecializations": [],
+        "gifted": false,
+        "ebe": 0
+      }
+    },
+    "metaTalents": [],
+    "hiddenTalentIds": [],
+    "talentSpecialAbilities": [],
+    "spells": {},
+    "ritualCategories": [],
+    "representationen": [],
+    "repraesentationsTraditionen": {},
+    "merkmalskenntnisse": [],
+    "magicSpecialAbilities": [],
+    "magicLeadAttribute": "",
+    "sprachen": {
+      "spr_garethi": {
+        "wert": 11,
+        "modifier": 0
+      }
+    },
+    "schriften": {},
+    "muttersprache": "",
+    "geschlecht": "",
+    "alter": "",
+    "geburtsdatum": {
+      "day": "3",
+      "month": "rondra",
+      "year": "1016"
+    },
+    "groesse": "",
+    "gewicht": "",
+    "haarfarbe": "",
+    "augenfarbe": "",
+    "aussehen": "",
+    "avatarFileName": "",
+    "avatarGallery": [],
+    "primaerbildId": "",
+    "aktivesBildId": "",
+    "rasse": "",
+    "rasseModText": "",
+    "kultur": "",
+    "kulturModText": "",
+    "profession": "Kundschafter",
+    "professionModText": "",
+    "familieHerkunftHintergrund": "",
+    "stand": "",
+    "titel": "",
+    "sozialstatus": 0,
+    "vorteileText": "",
+    "nachteileText": "",
+    "apTotal": 2000,
+    "apSpent": 1700,
+    "apAvailable": 300,
+    "dukaten": "",
+    "resourceActivationConfig": {},
+    "inventoryEntries": [],
+    "notes": [],
+    "connections": [],
+    "adventures": [],
+    "advancementHistory": [
+      {
+        "id": "adv-1",
+        "sessionId": "runde-1",
+        "createdAt": "2026-08-30T19:00:00.000Z",
+        "kind": "attribute",
+        "targetId": "mu",
+        "label": "Mut",
+        "fromValue": 12,
+        "toValue": 13,
+        "apCost": 150,
+        "seSpent": 0,
+        "options": {}
+      },
+      {
+        "id": "adv-2",
+        "sessionId": "runde-1",
+        "createdAt": "2026-08-30T19:00:00.000Z",
+        "kind": "talent",
+        "targetId": "tal_klettern",
+        "label": "Klettern",
+        "fromValue": 4,
+        "toValue": 5,
+        "apCost": 8,
+        "seSpent": 0,
+        "options": {}
+      },
+      {
+        "id": "adv-3",
+        "sessionId": "runde-1",
+        "createdAt": "2026-08-30T19:00:00.000Z",
+        "kind": "talent",
+        "targetId": "tal_orientierung",
+        "label": "Orientierung",
+        "fromValue": -1,
+        "toValue": 0,
+        "apCost": 5,
+        "seSpent": 0,
+        "options": {}
+      },
+      {
+        "id": "adv-4",
+        "sessionId": "runde-1",
+        "createdAt": "2026-08-30T19:00:00.000Z",
+        "kind": "maneuver",
+        "targetId": "man_finte",
+        "label": "Finte",
+        "apCost": 100,
+        "seSpent": 0,
+        "options": {}
+      },
+      {
+        "id": "adv-5",
+        "sessionId": "runde-1",
+        "createdAt": "2026-08-30T19:00:00.000Z",
+        "kind": "combatAbility",
+        "targetId": "ksf_kampfreflexe",
+        "label": "Kampfreflexe",
+        "apCost": 300,
+        "seSpent": 0,
+        "options": {}
+      },
+      {
+        "id": "adv-6",
+        "sessionId": "runde-1",
+        "createdAt": "2026-08-30T19:00:00.000Z",
+        "kind": "language",
+        "targetId": "spr_garethi",
+        "label": "Garethi",
+        "fromValue": 10,
+        "toValue": 11,
+        "apCost": 20,
+        "seSpent": 0,
+        "options": {}
+      }
+    ],
+    "attributeSePool": {
+      "mu": 0,
+      "kl": 0,
+      "inn": 0,
+      "ch": 0,
+      "ff": 0,
+      "ge": 0,
+      "ko": 0,
+      "kk": 0
+    },
+    "statSePool": {
+      "lep": 0,
+      "au": 0,
+      "asp": 0,
+      "kap": 0,
+      "mr": 0
+    },
+    "companions": [],
+    "gruppen": [],
+    "reisebericht": {
+      "checkedIds": [],
+      "openEntries": {},
+      "wahlSeZuordnungen": {},
+      "appliedRewardIds": []
+    },
+    "statModifiers": {},
+    "attributeModifiers": {},
+    "unknownModifierFragments": [],
+    "isEpisch": false,
+    "epicStartAp": 0,
+    "epicAttributeMaxBonus": {
+      "mu": 0,
+      "kl": 0,
+      "inn": 0,
+      "ch": 0,
+      "ff": 0,
+      "ge": 0,
+      "ko": 0,
+      "kk": 0
+    },
+    "epicMainAttributes": {
+      "mu": 0,
+      "kl": 0,
+      "inn": 0,
+      "ch": 0,
+      "ff": 0,
+      "ge": 0,
+      "ko": 0,
+      "kk": 0
+    },
+    "epicLockedWaffenmeisterCategories": [],
+    "epicUnactivatedTalentIds": [],
+    "lastModified": "2026-09-20T17:55:00.000Z"
+  },
+  "state": {
+    "schemaVersion": 6,
+    "currentLep": 27,
+    "currentAsp": 0,
+    "currentKap": 0,
+    "currentAu": 30,
+    "erschoepfung": 0,
+    "ueberanstrengung": 0,
+    "tempMods": {
+      "lep": 0,
+      "au": 0,
+      "asp": 0,
+      "kap": 0,
+      "mr": 0,
+      "iniBase": 0,
+      "at": 0,
+      "pa": 0,
+      "fk": 0,
+      "gs": 0,
+      "ausweichen": 0,
+      "rs": 0
+    },
+    "tempAttributeMods": {
+      "mu": 0,
+      "kl": 0,
+      "inn": 0,
+      "ch": 0,
+      "ff": 0,
+      "ge": 0,
+      "ko": 0,
+      "kk": 0
+    },
+    "activeSpellEffects": {
+      "activeEffectIds": [],
+      "effectDetails": {}
+    },
+    "wpiZustand": {
+      "wundenProZone": {},
+      "kopfIniMalus": 0
+    },
+    "diceLog": [],
+    "lastModified": "2026-09-20T17:56:00.000Z"
+  }
+}

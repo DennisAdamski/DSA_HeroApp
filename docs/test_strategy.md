@@ -49,6 +49,154 @@ technische UI-Aspekte getrennt getestet werden.
   Variantenkosten, Kampfboni, aufgelöste Manövernamen, Scrollbarkeit und
   passwortgeschützte Regeltexte im Detaildialog.
 
+## Bestandsfixtures (ARCH-07)
+
+Unter `test/fixtures/heroes/` liegen synthetische Bestandshelden als
+Transfer-Bundles, genau so, wie die App sie exportiert. Sie vertreten Daten,
+die schon auf Geräten und in der Cloud liegen:
+
+| Datei | Deckt ab |
+|---|---|
+| `f01_krieger_normal` | Nah- und Fernkampfwaffe mit Geschossen, Schild, Rüstung, benannte Modifikatoren, Notiz, laufendes Abenteuer, Wunde, Würfelprotokoll |
+| `f02_geode_magisch` | Repräsentation mit Traditionswahl, Zauber, Rituale, aktiver Armatrutz, Altname `Eiserner Wille I / II` |
+| `f03_geweihter_karmal` | KaP aus der Profession, abgeschaltete Magie, karmale SF |
+| `f04_episch` | epische Felder, Haupteigenschaften, Aktivierungsregel |
+| `f05_freitext_merkmale` | unerkannte Freitext-Merkmale, Dauermodifikator nur in `persistentMods` |
+| `f06_gleichnamige_ausruestung` | je zwei gleichnamige Waffen, Geschosse und Rüstungsteile mit verschiedenen Inventardaten |
+| `f07_legacy_schema1` | handgeschriebener Altstand: Transferversion 1, ohne `schemaVersion`, nur alte Schlüssel |
+| `f08_steigerungshistorie` | Schemaversion 27 mit übernommener Historie |
+| `f08b_unbekannte_steigerungsart` | wie f08, letzter Verlaufseintrag mit einer Steigerungsart aus einer neueren App-Version |
+
+Regeln:
+
+- **Fixtures werden nie angepasst.** Bricht ein Test daran, ist der Code
+  inkompatibel zu vorhandenen Daten geworden — wie bei den Krypto-Goldens.
+  Ein neues Format bekommt eine neue Datei.
+- Eine neue Migration bringt eine eigene Fixture mit altem Stand mit, dazu
+  einen Test, dass erneutes Laden nichts weiter verändert.
+- `bestandshelden_kompatibilitaet_test.dart` pinnt die Inhalts-Hashes jeder
+  Fixture. Ändert sich einer, bekäme jeder gleich gespeicherte Held einen
+  neuen Hash und der Konto-Sync meldete Konflikte. Anpassen nur zusammen mit
+  einer bewusst eingeführten Migration.
+- Der B2/B3-Teilfix vergibt beim Laden deterministische Kampf-Slot-IDs und
+  ergänzt verknüpfte Inventareinträge um `slotRef`. `sourceRef` bleibt der
+  Namensverweis für die veröffentlichte App. Die Fixture-Dateien bleiben
+  unverändert; Hash-Pins wurden nur für betroffene Helden aktualisiert
+  (f01, f02, f04, f06). Der Domain-Test begrenzt die JSON-Änderungen auf IDs
+  und `slotRef` und prüft den Fixpunkt nach erneutem Laden sowie gemischte
+  ID-/Namensverweise. Ein Hive-Test
+  entfernt und benennt einen der beiden gleichnamigen Dolche aus `f06` um
+  und prüft Neustart sowie Export. Widgettests stellen sicher, dass die
+  Editoren für Geschosse und Nebenhandteile ihre Instanz-ID erhalten.
+- **Mischbetrieb mit der veröffentlichten App** (`main`, vor ARCH-03) bildet
+  `test/test_support/veroeffentlichte_app.dart` nach:
+  - `wieVeroeffentlichteApp` entfernt, was sie beim Speichern verliert
+    (Slot-IDs, `slotRef`, unbekannte Felder);
+  - `zuordnungWieVeroeffentlichteApp` portiert ihre Namenszuordnung auf JSON.
+
+  `test/domain/inventar_verweise_test.dart` prüft damit die Ladetabelle der
+  Verweise, die Vorabfassung und, dass sie jede Fixture vollständig und in
+  Reihenfolge zuordnet — auch nach Entfernen, Umbenennen und Hinzufügen.
+  `sync_app_versionen_test.dart` prüft ihre Änderungen und ihr Echo über den
+  Konto-Sync.
+- **Felder einer neueren App-Version** simuliert
+  `test/test_support/zukunftsfelder.dart`. `mitZukunftsfeldern` setzt in f01
+  an jeder Ebene der Ausrüstung ein `zukunftsfeld`: Kampfkonfiguration,
+  nicht gewählte Waffe, Fernkampfprofil, Distanzstufe, Geschoss, Rüstung,
+  Nebenhand, Inventareinträge und Modifikator. Es liefert die Pfade im Format
+  von `jsonUnterschiede`. Eine neue Fixture ist dafür nicht nötig: Das Format
+  ist dasselbe, nur um fremde Felder ergänzt.
+  `test/domain/unbekannte_ausruestungsfelder_test.dart` prüft die zehn Modelle
+  einzeln, dazu Altschlüssel, Gleichheit, Katalogschutz und den Fixpunkt. Die
+  Regel-, Widget- und Hive-Tests prüfen Abgleich, Editoren sowie Import,
+  Bearbeiten, Neustart und Export.
+- Fehler, die diese Tests aufdecken, werden nicht nebenbei behoben: Der Test
+  hält das heutige Verhalten mit dem Kommentar `Befund ARCH-07-Bx` fest, der
+  Befund steht mit Folgeauftrag in `docs/architecture_roadmap.md`.
+
+Laden über `test/test_support/hero_fixtures.dart` (`Bestandsheld`,
+`ladeBestandsheld`, `expectNurGeaendert` mit reihenfolgestrengem Pfad-Diff).
+
+Die Regelwerte je Fixture (`test/rules/bestandshelden_regelwerte_test.dart`)
+rechnet `buildHeroComputedSnapshot` gegen den **echten** Katalog
+(`test/test_support/real_catalog.dart`: alle eingebauten Hausregel-Pakete
+aktiv, ohne Inhaltspasswort, einmal pro Test-Isolat geladen). Die
+Erwartungen stehen als Dart-Map im Test, damit Befundkommentare daneben
+stehen können. Aktualisiert werden sie nur im selben Commit wie eine gewollte
+Regel- oder Kataloganpassung, mit Zeilenkommentar zum Grund — nie per Kopie
+der Ist-Ausgabe.
+
+### Ablauf über echte Speichergrenzen
+
+`test/data/bestandsheld_ablauf_test.dart` arbeitet mit `HiveHeroRepository`
+in einem temporären Verzeichnis statt mit `FakeRepository`. Für jede Fixture
+prüft er Import → Schließen → Neu öffnen → Export, für f01 zusätzlich den
+ganzen Ablauf mit Steigerungsrunde, Ausrüstungswechsel, Treffer samt Wunde,
+langer Rast, Neustart und Re-Import als neuer Held. Jeder Schritt vergleicht
+den gespeicherten Stand mit `expectNurGeaendert` gegen die Felder, die er
+ändern darf.
+
+Fallstricke mit echtem Hive:
+
+- Boxnamen gelten pro Isolat. Ein Repository, das ein Test nicht schließt,
+  liefert dem nächsten Test dieselbe offene Box — auch mit anderem Pfad.
+  Deshalb registriert jeder Test sein Schließen per `addTearDown`, und das
+  temporäre Verzeichnis (`hiveTempVerzeichnis`) wird vorher registriert, also
+  erst danach gelöscht. Unter Windows scheitert das Löschen sonst an offenen
+  Dateien.
+- Wie in der App zuerst den `ProviderContainer` verwerfen, dann das
+  Repository schließen.
+- `FakeRepository` setzt kein `lastModified`, Hive schon — Vergleiche über
+  beide Repositories hinweg laufen über `ohneZeitstempel` oder die
+  Inhalts-Hashes.
+
+### Zwei Geräte am Konto-Sync
+
+`test/data/sync_zwei_geraete_test.dart` hängt zwei `SyncingHeroRepository`
+an eine gemeinsame In-Memory-Cloud (`test/test_support/sync_geraete.dart`):
+
+- `GeteilteCloud` zählt Schreibvorgänge je Held und Zustand — so lässt sich
+  „die Wiederholung bucht nichts doppelt“ nachweisen.
+- `GeraeteRemote` ist die Leitung eines Geräts: `offline`,
+  `schreibvorgaengeBisAbbruch` (Abbruch mitten im Abgleich) und
+  `naechsteAntwortVerlieren` (Schreibvorgang kommt an, Antwort nicht). Nutzdaten
+  gehen wie bei Firestore als JSON über die Leitung.
+- `JsonHeroRepository` speichert lokal wie Hive nur JSON; `FakeRepository`
+  gäbe dieselbe Objektinstanz zurück und verdeckte Effekte des Ladens.
+- `SyncTestGeraet.neustart()` baut das Repository neu, Speicher und
+  Metadaten bleiben.
+
+Das Cloud-Fake (`fake_remote_hero_sync_gateway.dart`) hasht wie die echten
+Gateways mit `heroContentHash` und prüft auch bei Zuständen die Vorrevision.
+Mit dem früheren Hash inklusive `lastModified` wäre jede Runde ein Upload
+gewesen.
+
+Weil das Fake mit dem Hash dieser App rechnet, sieht es nie einen Stand, den
+die App nicht verlustfrei darstellt. Dafür gibt es
+`speichereFremdenStand`/`speichereFremdenZustand`: Sie legen JSON einer
+**anderen App-Version** ab und rechnen den Hash wie Firestore über das rohe
+JSON des Schreibers. Gelesen wird aber mit dem `fromJson` dieser App.
+`GeteilteCloud` zählt diese Schreibvorgänge mit.
+`test/data/sync_app_versionen_test.dart` prüft damit Befund B10: kein
+Rückschrieb beim bloßen Abgleich, Konflikt statt Überschreiben, eine vor B10
+gemerkte Basis und einen Zustand mit neuerer Schemaversion. Mit
+`mitZukunftsfeldern` prüft er außerdem Felder einer neueren Version in der
+Ausrüstung: verlustfrei darstellbar, Bearbeiten über `HeroActions` mit echtem
+Katalog, gleichzeitig geänderte Cloud mit sichtbarem Feld im Konflikt-Diff
+und alle drei Auflösungen.
+
+### Plattformabdeckung
+
+Die CI (`.github/workflows/flutter-tests.yml`) führt alle Tests auf
+`ubuntu-latest` aus, die Hive-Tests also mit echtem Dateisystem. Automatisch
+**nicht** abgedeckt sind und bleiben manuell zu prüfen:
+
+- Web: Hive auf IndexedDB, Avatar-Cache, Datei-Upload im Regel-Nachschlag;
+- Android, iOS und Windows mit ihren echten Speicherpfaden;
+- Dateiauswahl für Import und Export (`file_picker`);
+- Konto-Sync gegen ein echtes Firebase-Backend, nativ und über REST
+  (Windows), einschließlich Storage-CORS.
+
 ## Zuordnungsmatrix
 
 | Testdatei | Gruppe | Zweck |
@@ -63,6 +211,8 @@ technische UI-Aspekte getrennt getestet werden.
 | `test/rules/meta_talent_rules_test.dart` | rules | Meta-Talent-Mittelwerte, Validierung und Aktivierung |
 | `test/rules/talent_be_rules_test.dart` | rules | Talent-BE-Regeln |
 | `test/rules/talent_value_rules_test.dart` | rules | Formel `TaW + Mod + eBE` |
+| `test/rules/bestandshelden_regelwerte_test.dart` | rules | Abgeleitete Werte der Bestandsfixtures gegen den echten Katalog, epische Wundhalbierung, Befunde B1/B7 |
+| `test/rules/bestandshelden_ausruestung_test.dart` | rules | Inventar-Kampf-Abgleich mit gleichnamigen Exemplaren, Befunde B2/B3, Felder neuerer Versionen im Abgleich |
 | `test/ui/combat/hero_combat_tab_test.dart` | ui | Combat-UI-Interaktion/Struktur |
 | `test/ui/combat/hero_combat_talents_tab_test.dart` | ui | Combat-Talents-UI-Validierungsfluss |
 | `test/ui/talents/hero_talents_tab_test.dart` | ui | Talents-UI-Interaktion |
@@ -81,8 +231,14 @@ technische UI-Aspekte getrennt getestet werden.
 | `test/data/catalog_loader_test.dart` | data | Katalog-Loading/Validierung |
 | `test/data/catalog_model_test.dart` | data | Katalogmodell Roundtrip |
 | `test/data/hero_actions_import_export_test.dart` | data | Actions Import/Export |
+| `test/data/bestandsheld_ablauf_test.dart` | data | Echte Hive-Speichergrenze je Bestandsheld und Ablauf Import bis Export mit Neustart, Befund B4, Felder neuerer Versionen in der Ausrüstung |
+| `test/data/sync_zwei_geraete_test.dart` | data | Zwei Geräte an einer Cloud: Abbruch, verlorene Antwort, Neustart (auch mit Hive), Konfliktauflösungen samt Zustand, Befunde B1/B8 |
+| `test/data/sync_app_versionen_test.dart` | data | Sync mit anderen App-Versionen: Basis gleich lokaler Stand (B10), Ausrüstungsfelder einer neueren Version samt gleichzeitig geänderter Cloud, veröffentlichte App im Mischbetrieb |
 | `test/domain/hero_sheet_model_test.dart` | domain | HeroSheet-Kompatibilitaet |
 | `test/domain/hero_transfer_bundle_test.dart` | domain | Transfer-Bundle-Kontrakt |
+| `test/domain/bestandshelden_kompatibilitaet_test.dart` | domain | Bestandsfixtures: Fixpunkt nach einmaligem Laden, Inhalts-Hashes, Altschlüssel, Befunde B1/B5/B6 |
+| `test/domain/unbekannte_ausruestungsfelder_test.dart` | domain | Unbekannte Felder in den zehn Ausrüstungsmodellen, Altschlüssel, Katalogschutz, Fixpunkt mit f01 |
+| `test/domain/inventar_verweise_test.dart` | domain | Ladetabelle `sourceRef`/`slotRef`, Vorabfassung, Mischbetrieb mit der veröffentlichten App |
 | `test/workspace/workspace_area_registry_test.dart` | workspace | Area-Registry |
 | `test/workspace/workspace_tab_edit_controller_test.dart` | workspace | Tab-Edit-Controller |
 | `test/ui2/shell/app_root_switch_test.dart` | ui2 | Weiche zwischen bestehender und neuer Oberfläche |

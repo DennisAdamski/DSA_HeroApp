@@ -329,7 +329,9 @@ class _RuestungsPieceDialogState extends State<_RuestungsPieceDialog> {
     super.dispose();
   }
 
-  ArmorPiece _buildPiece() => ArmorPiece(
+  // Baut auf dem Ausgangsstueck auf, damit nicht bearbeitbare Felder (ID,
+  // Artefakt-/Weihe-Angaben, Felder neuerer App-Versionen) erhalten bleiben.
+  ArmorPiece _buildPiece() => (widget.initial ?? const ArmorPiece()).copyWith(
     name: _nameCtrl.text.trim(),
     rs: int.tryParse(_rsCtrl.text) ?? 0,
     be: int.tryParse(_beCtrl.text) ?? 0,

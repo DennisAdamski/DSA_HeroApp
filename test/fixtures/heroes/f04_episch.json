@@ -1,0 +1,429 @@
+{
+  "kind": "dsa.hero.export",
+  "transferSchemaVersion": 3,
+  "exportedAt": "2026-09-20T18:00:00.000Z",
+  "hero": {
+    "schemaVersion": 28,
+    "id": "bestand-f04",
+    "name": "Rondrika Sturmfels",
+    "level": 22,
+    "attributes": {
+      "mu": 17,
+      "kl": 16,
+      "inn": 15,
+      "ch": 14,
+      "ff": 14,
+      "ge": 16,
+      "ko": 18,
+      "kk": 17
+    },
+    "rawStartAttributes": {
+      "mu": 15,
+      "kl": 14,
+      "inn": 14,
+      "ch": 13,
+      "ff": 13,
+      "ge": 14,
+      "ko": 15,
+      "kk": 15
+    },
+    "startAttributes": {
+      "mu": 15,
+      "kl": 14,
+      "inn": 14,
+      "ch": 13,
+      "ff": 13,
+      "ge": 14,
+      "ko": 15,
+      "kk": 15
+    },
+    "persistentMods": {
+      "lep": 0,
+      "au": 0,
+      "asp": 0,
+      "kap": 0,
+      "mr": 0,
+      "iniBase": 0,
+      "at": 0,
+      "pa": 0,
+      "fk": 0,
+      "gs": 0,
+      "ausweichen": 0,
+      "rs": 0
+    },
+    "bought": {
+      "lep": 0,
+      "au": 0,
+      "asp": 0,
+      "kap": 0,
+      "mr": 0
+    },
+    "combatConfig": {
+      "mainWeapon": {
+        "name": "Langschwert",
+        "talentId": "tal_schwerter",
+        "combatType": "melee",
+        "weaponType": "Langschwert",
+        "distanceClass": "",
+        "kkBase": 11,
+        "kkThreshold": 4,
+        "breakFactor": 0,
+        "tpDiceCount": 1,
+        "tpDiceSides": 6,
+        "tpFlat": 4,
+        "wmAt": 1,
+        "wmPa": 1,
+        "iniMod": 0,
+        "beTalentMod": 0,
+        "isOneHanded": true,
+        "isArtifact": false,
+        "artifactDescription": "",
+        "isGeweiht": false,
+        "geweihtDescription": "",
+        "rangedProfile": {
+          "reloadTime": 0,
+          "distanceBands": [
+            {
+              "label": "Distanz 1",
+              "tpMod": 0
+            },
+            {
+              "label": "Distanz 2",
+              "tpMod": 0
+            },
+            {
+              "label": "Distanz 3",
+              "tpMod": 0
+            },
+            {
+              "label": "Distanz 4",
+              "tpMod": 0
+            },
+            {
+              "label": "Distanz 5",
+              "tpMod": 0
+            }
+          ],
+          "projectiles": [],
+          "selectedDistanceIndex": 0,
+          "selectedProjectileIndex": -1
+        }
+      },
+      "weapons": [
+        {
+          "name": "Langschwert",
+          "talentId": "tal_schwerter",
+          "combatType": "melee",
+          "weaponType": "Langschwert",
+          "distanceClass": "",
+          "kkBase": 11,
+          "kkThreshold": 4,
+          "breakFactor": 0,
+          "tpDiceCount": 1,
+          "tpDiceSides": 6,
+          "tpFlat": 4,
+          "wmAt": 1,
+          "wmPa": 1,
+          "iniMod": 0,
+          "beTalentMod": 0,
+          "isOneHanded": true,
+          "isArtifact": false,
+          "artifactDescription": "",
+          "isGeweiht": false,
+          "geweihtDescription": "",
+          "rangedProfile": {
+            "reloadTime": 0,
+            "distanceBands": [
+              {
+                "label": "Distanz 1",
+                "tpMod": 0
+              },
+              {
+                "label": "Distanz 2",
+                "tpMod": 0
+              },
+              {
+                "label": "Distanz 3",
+                "tpMod": 0
+              },
+              {
+                "label": "Distanz 4",
+                "tpMod": 0
+              },
+              {
+                "label": "Distanz 5",
+                "tpMod": 0
+              }
+            ],
+            "projectiles": [],
+            "selectedDistanceIndex": 0,
+            "selectedProjectileIndex": -1
+          }
+        }
+      ],
+      "selectedWeaponIndex": 0,
+      "offhandAssignment": {
+        "weaponIndex": -1,
+        "equipmentIndex": -1
+      },
+      "offhandEquipment": [],
+      "armor": {
+        "pieces": [],
+        "globalArmorTrainingLevel": 0
+      },
+      "specialRules": {
+        "kampfreflexe": true,
+        "kampfgespuer": false,
+        "schnellziehen": false,
+        "ausweichenI": true,
+        "ausweichenII": true,
+        "ausweichenIII": false,
+        "schildkampfI": false,
+        "schildkampfII": false,
+        "parierwaffenI": false,
+        "parierwaffenII": false,
+        "linkhandActive": false,
+        "flink": false,
+        "behaebig": false,
+        "axxeleratusActive": false,
+        "klingentaenzer": false,
+        "aufmerksamkeit": false,
+        "activeCombatSpecialAbilityIds": [],
+        "gladiatorStyleTalent": "",
+        "activeManeuvers": []
+      },
+      "manualMods": {
+        "iniMod": 0,
+        "ausweichenMod": 0,
+        "atMod": 0,
+        "paMod": 0,
+        "iniWurf": 0
+      },
+      "waffenmeisterschaften": []
+    },
+    "talents": {
+      "tal_schwerter": {
+        "talentValue": 18,
+        "atValue": 10,
+        "paValue": 8,
+        "modifier": 0,
+        "talentModifiers": [],
+        "specialExperiences": 0,
+        "specializations": "",
+        "combatSpecializations": [],
+        "gifted": false,
+        "ebe": 0
+      },
+      "tal_klettern": {
+        "talentValue": 10,
+        "atValue": 0,
+        "paValue": 0,
+        "modifier": 0,
+        "talentModifiers": [],
+        "specialExperiences": 0,
+        "specializations": "",
+        "combatSpecializations": [],
+        "gifted": false,
+        "ebe": 0
+      },
+      "tal_zechen": {
+        "talentValue": 4,
+        "atValue": 0,
+        "paValue": 0,
+        "modifier": 0,
+        "talentModifiers": [],
+        "specialExperiences": 0,
+        "specializations": "",
+        "combatSpecializations": [],
+        "gifted": false,
+        "ebe": 0
+      },
+      "tal_koerperbeherrschung": {
+        "talentValue": 12,
+        "atValue": 0,
+        "paValue": 0,
+        "modifier": 0,
+        "talentModifiers": [],
+        "specialExperiences": 0,
+        "specializations": "",
+        "combatSpecializations": [],
+        "gifted": false,
+        "ebe": 0
+      }
+    },
+    "metaTalents": [],
+    "hiddenTalentIds": [],
+    "talentSpecialAbilities": [],
+    "spells": {},
+    "ritualCategories": [],
+    "representationen": [],
+    "repraesentationsTraditionen": {},
+    "merkmalskenntnisse": [],
+    "magicSpecialAbilities": [],
+    "magicLeadAttribute": "",
+    "sprachen": {},
+    "schriften": {},
+    "muttersprache": "",
+    "geschlecht": "",
+    "alter": "",
+    "groesse": "",
+    "gewicht": "",
+    "haarfarbe": "",
+    "augenfarbe": "",
+    "aussehen": "",
+    "avatarFileName": "",
+    "avatarGallery": [],
+    "primaerbildId": "",
+    "aktivesBildId": "",
+    "rasse": "Thorwaler",
+    "rasseModText": "LEP+11, AU+11, MR-5",
+    "kultur": "",
+    "kulturModText": "",
+    "profession": "Schwertmeisterin",
+    "professionModText": "",
+    "familieHerkunftHintergrund": "",
+    "stand": "",
+    "titel": "",
+    "sozialstatus": 0,
+    "vorteileText": "Eisern",
+    "nachteileText": "",
+    "apTotal": 25000,
+    "apSpent": 23500,
+    "apAvailable": 1500,
+    "dukaten": "",
+    "resourceActivationConfig": {},
+    "inventoryEntries": [
+      {
+        "gegenstand": "Langschwert",
+        "woGetragen": "",
+        "typ": "",
+        "welchesAbenteuer": "",
+        "gewicht": "",
+        "wert": "",
+        "artefakt": "",
+        "anzahl": "",
+        "amKoerper": "",
+        "woDann": "",
+        "gruppe": "",
+        "beschreibung": "",
+        "itemType": "ausruestung",
+        "source": "waffe",
+        "sourceRef": "w:Langschwert",
+        "istAusgeruestet": true,
+        "modifiers": [],
+        "gewichtGramm": 0,
+        "wertSilber": 0,
+        "herkunft": "",
+        "isMagisch": false,
+        "magischDescription": "",
+        "isGeweiht": false,
+        "geweihtDescription": "",
+        "traegerTyp": "held"
+      }
+    ],
+    "notes": [],
+    "connections": [],
+    "adventures": [],
+    "attributeSePool": {
+      "mu": 0,
+      "kl": 0,
+      "inn": 0,
+      "ch": 0,
+      "ff": 0,
+      "ge": 0,
+      "ko": 0,
+      "kk": 0
+    },
+    "statSePool": {
+      "lep": 0,
+      "au": 0,
+      "asp": 0,
+      "kap": 0,
+      "mr": 0
+    },
+    "companions": [],
+    "gruppen": [],
+    "reisebericht": {
+      "checkedIds": [],
+      "openEntries": {},
+      "wahlSeZuordnungen": {},
+      "appliedRewardIds": []
+    },
+    "statModifiers": {},
+    "attributeModifiers": {},
+    "unknownModifierFragments": [],
+    "isEpisch": true,
+    "epicStartAp": 21000,
+    "epicAttributeMaxBonus": {
+      "mu": 0,
+      "kl": 0,
+      "inn": 0,
+      "ch": 0,
+      "ff": 0,
+      "ge": 1,
+      "ko": 2,
+      "kk": 2
+    },
+    "epicMainAttributes": {
+      "mu": 0,
+      "kl": 1,
+      "inn": 0,
+      "ch": 0,
+      "ff": 0,
+      "ge": 0,
+      "ko": 1,
+      "kk": 0
+    },
+    "epicActivationPolicy": "standard",
+    "epicLockedWaffenmeisterCategories": [
+      "Schwerter"
+    ],
+    "epicUnactivatedTalentIds": [
+      "tal_zechen"
+    ],
+    "lastModified": "2026-09-20T17:55:00.000Z"
+  },
+  "state": {
+    "schemaVersion": 6,
+    "currentLep": 40,
+    "currentAsp": 0,
+    "currentKap": 0,
+    "currentAu": 45,
+    "erschoepfung": 0,
+    "ueberanstrengung": 0,
+    "tempMods": {
+      "lep": 0,
+      "au": 0,
+      "asp": 0,
+      "kap": 0,
+      "mr": 0,
+      "iniBase": 0,
+      "at": 0,
+      "pa": 0,
+      "fk": 0,
+      "gs": 0,
+      "ausweichen": 0,
+      "rs": 0
+    },
+    "tempAttributeMods": {
+      "mu": 0,
+      "kl": 0,
+      "inn": 0,
+      "ch": 0,
+      "ff": 0,
+      "ge": 0,
+      "ko": 0,
+      "kk": 0
+    },
+    "activeSpellEffects": {
+      "activeEffectIds": [],
+      "effectDetails": {}
+    },
+    "wpiZustand": {
+      "wundenProZone": {},
+      "kopfIniMalus": 0
+    },
+    "diceLog": [],
+    "lastModified": "2026-09-20T17:56:00.000Z"
+  }
+}

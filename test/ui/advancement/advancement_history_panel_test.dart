@@ -120,6 +120,35 @@ void main() {
     expect(find.textContaining('Erst beim Übernehmen'), findsOneWidget);
   });
 
+  testWidgets('Einträge einer neueren App-Version werden erwähnt', (
+    tester,
+  ) async {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+    container
+        .read(advancementSessionProvider('hero').notifier)
+        .start(
+          hero: hero.copyWith(
+            unbekannteVerlaufseintraege: const <UnbekannterVerlaufseintrag>[
+              UnbekannterVerlaufseintrag(
+                position: 0,
+                json: <String, Object?>{'kind': 'companion'},
+              ),
+            ],
+          ),
+          catalog: catalog,
+        );
+    await pumpPanel(tester, container);
+    final hinweis = find.byKey(const ValueKey('advancement-history-unbekannt'));
+    await tester.scrollUntilVisible(hinweis, 200);
+
+    expect(hinweis, findsOneWidget);
+    expect(
+      find.text('Noch keine übernommene Steigerungshistorie vorhanden.'),
+      findsNothing,
+    );
+  });
+
   testWidgets('die neue Oberflaeche zeigt die AP-Bilanz nicht doppelt', (
     tester,
   ) async {

@@ -4,6 +4,23 @@ import 'package:dsa_heldenverwaltung/domain/aventurian_date.dart';
 
 /// Aeussere Erscheinung eines Helden.
 class HeroAppearance {
+  /// Schluessel, die [fromJson] aus dem flachen Helden-JSON liest.
+  static const Set<String> jsonSchluessel = <String>{
+    'geschlecht',
+    'alter',
+    'groesse',
+    'gewicht',
+    'haarfarbe',
+    'augenfarbe',
+    'aussehen',
+    'avatarFileName',
+    'avatarGallery',
+    'primaerbildId',
+    'aktivesBildId',
+    'avatarSnapshot',
+    'geburtsdatum',
+  };
+
   const HeroAppearance({
     this.geschlecht = '',
     this.alter = '',

@@ -1,5 +1,6 @@
 import 'package:dsa_heldenverwaltung/domain/combat_config/ranged_distance_band.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config/ranged_projectile.dart';
+import 'package:dsa_heldenverwaltung/domain/unbekannte_json_felder.dart';
 
 /// Zusatzprofil fuer Fernkampfwaffen mit Distanzstufen und Geschossen.
 class RangedWeaponProfile {
@@ -15,6 +16,7 @@ class RangedWeaponProfile {
     this.projectiles = const <RangedProjectile>[],
     this.selectedDistanceIndex = 0,
     this.selectedProjectileIndex = -1,
+    this.unbekannteFelder = const <String, Object?>{},
   });
 
   /// Feste Ladezeit der Fernkampfwaffe.
@@ -31,6 +33,19 @@ class RangedWeaponProfile {
 
   /// Persistiertes aktives Geschoss; -1 bedeutet keines.
   final int selectedProjectileIndex;
+
+  /// JSON-Felder einer neueren App-Version; bleiben beim Speichern erhalten
+  /// (siehe `unbekannte_json_felder.dart`).
+  final Map<String, Object?> unbekannteFelder;
+
+  /// Alle Schluessel, die [fromJson] liest; alles andere bleibt erhalten.
+  static const Set<String> jsonSchluessel = <String>{
+    'reloadTime',
+    'distanceBands',
+    'projectiles',
+    'selectedDistanceIndex',
+    'selectedProjectileIndex',
+  };
 
   /// Gibt die aktive Distanzstufe tolerant zurueck.
   RangedDistanceBand get selectedDistanceBand {
@@ -62,6 +77,7 @@ class RangedWeaponProfile {
     List<RangedProjectile>? projectiles,
     int? selectedDistanceIndex,
     int? selectedProjectileIndex,
+    Map<String, Object?>? unbekannteFelder,
   }) {
     final nextBands = _normalizeDistanceBands(
       distanceBands ?? this.distanceBands,
@@ -80,6 +96,7 @@ class RangedWeaponProfile {
         selectedProjectileIndex ?? this.selectedProjectileIndex,
         nextProjectiles.length,
       ),
+      unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
     );
   }
 
@@ -87,7 +104,7 @@ class RangedWeaponProfile {
   Map<String, dynamic> toJson() {
     final normalizedBands = _normalizeDistanceBands(distanceBands);
     final normalizedProjectiles = _normalizeProjectiles(projectiles);
-    return {
+    return mitUnbekanntenFeldern(<String, dynamic>{
       'reloadTime': reloadTime,
       'distanceBands': normalizedBands
           .map((entry) => entry.toJson())
@@ -100,7 +117,7 @@ class RangedWeaponProfile {
         selectedProjectileIndex,
         normalizedProjectiles.length,
       ),
-    };
+    }, unbekannteFelder);
   }
 
   /// Liest ein Fernkampfprofil tolerant aus JSON.
@@ -131,6 +148,7 @@ class RangedWeaponProfile {
           (json['selectedDistanceIndex'] as num?)?.toInt() ?? 0,
       selectedProjectileIndex:
           (json['selectedProjectileIndex'] as num?)?.toInt() ?? -1,
+      unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
     );
   }
 }

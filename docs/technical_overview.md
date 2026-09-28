@@ -188,6 +188,12 @@ entgegen:
   jedem Speichern einen frischen Wert, `HiveHeroRepository.saveHeroState`
   ergaenzt ihn offline, falls er fehlt. Die Online-Seite kam schon vorher als
   `RemoteHeroStateRecord.updatedAt` an und wurde nur nicht durchgereicht.
+- Ohne Konto blieb der Stempel trotzdem stehen: Hive ergaenzt ihn nur, und
+  jeder geladene Held oder Zustand brachte seinen alten mit (Befund
+  ARCH-07-B4). Seit 2026-09-27 stempeln deshalb `HeroActions.saveHero`,
+  `saveHeroState` und `updateHeroState` jede Nutzeraenderung frisch. Hive
+  bleibt beim Ergaenzen, damit uebernommene Online-Staende ihren Zeitpunkt
+  behalten.
 
 Wichtig dabei: Der Zeitstempel darf nicht in die Konflikterkennung geraten,
 sonst meldet jedes Neuspeichern einen Scheinkonflikt. Dafuer gibt es
@@ -198,6 +204,44 @@ Zustand hashen, muessen diese Funktion verwenden, nicht `stableContentHash` auf
 vier Stellen in `syncing_hero_repository.dart`. Bestandsdaten haben zunaechst
 kein `lastModified` und zeigen bis zum naechsten Speichern weiterhin
 `Unbekannt`; das ist gewollt, geraten wird nichts.
+
+`syncNow` laedt einen lokal geaenderten Zustand auch dann hoch, wenn es ihn
+online schon gibt: Weicht sein Hash vom zuletzt abgeglichenen ab, waehrend die
+Online-Revision noch der Basis entspricht, wartet er auf den Upload
+(`_hasPendingLocalStateChange`, Gegenstueck zur Heldenpruefung in
+`_syncHeroes`). Vorher erreichten offline geaenderte LeP, AsP oder Wunden die
+Cloud erst mit der naechsten Zustandsaenderung (Befund ARCH-07-B8). Ist zum
+Helden eine Entscheidung offen, wartet der Zustand darauf.
+
+**Die Sync-Basis ist der lokale Stand, nicht der des Schreibers**
+(Befund ARCH-07-B10, seit 2026-09-27). Jeder Online-Datensatz bringt den
+Inhalts-Hash seines Schreibers mit. Diese App liest ihn aber mit ihrem eigenen
+`fromJson`. Stammt der Stand von einer neueren Version, deren Felder hier
+nicht bewahrt werden — ausserhalb der Ausruestung oder als unbekannter
+Enum-Wert —, weicht die lokale Darstellung von diesem Hash ab. Frueher merkte
+sich die Basis nach dem Uebernehmen den **Schreiber-Hash** als `localHash`.
+Die verkuerzte lokale Fassung galt danach als lokale Aenderung und wurde im
+selben `syncNow()` ohne Konflikt hochgeladen: Ein blosser Abgleich loeschte
+die fremden Felder auf allen Geraeten.
+
+Heute gilt:
+
+- Nach dem Uebernehmen merken `_storeHeroMetadata`/`_storeStateMetadata` den
+  Hash dessen, was lokal liegt. `remoteHash` bleibt der des Schreibers. Nie
+  den `remoteHash` als `localHash` speichern.
+- Als inhaltlich identisch gilt auch ein lokaler Stand, der genau der
+  hiesigen Darstellung des Online-Stands gleicht. Das greift nach einem
+  App-Update, dessen Laden Altdaten umstellt, und bei Basen aus der Zeit vor
+  dem Fix: Die Basis wird nachgefuehrt, hochgeladen wird nichts.
+- Ein Abgleich allein schreibt also nie. Hochgeladen wird erst bei einer
+  echten Aenderung, und dann in der Fassung dieser Version. Fuer nicht
+  bewahrte Felder bleibt das ein Verlust, aber nur noch durch eine
+  Nutzeraenderung und bei gleichzeitig geaendertem Online-Stand als
+  sichtbarer Konflikt.
+- Die bereits veroeffentlichte App (Stand `main` vor diesem Fix) verhaelt
+  sich weiter wie frueher. Nach jedem Upload einer neueren Version schreibt
+  sie einmal ihre Fassung zurueck (Echo). Diese Version uebernimmt das Echo
+  ohne erneuten Upload, ein Ping-Pong entsteht nicht.
 
 Seit 2026-08-31 wird ein Zustands-Konflikt nicht mehr unabhaengig vom Helden
 entschieden. Ein `HeroState` gehoert zu genau einem Heldenblatt; zwei getrennte
@@ -296,10 +340,65 @@ Feldern; `?? Standardwert` für jedes Feld).
 
 ### 2.1 `HeroSheet` — Persistierte Heldendaten
 
-**Datei:** `lib/domain/hero_sheet.dart` | **Schema-Version:** 23
+**Datei:** `lib/domain/hero_sheet.dart` | **Schema-Version:** 28
 
 `HeroSheet` enthält alle dauerhaft gespeicherten Heldendaten. Laufzeitwerte
 (aktuelle LeP etc.) werden separat in `HeroState` gespeichert.
+
+**Daten neuerer App-Versionen.** `fromJson` bewahrt, was diese Version nicht
+kennt, und `toJson` schreibt es unverändert zurück — sonst löschte ein Gerät
+mit älterer App per Sync die Felder einer neueren (Befunde ARCH-07-B5/B6):
+
+- Schlüssel oberster Ebene, die nicht in `HeroSheet.jsonSchluessel` stehen,
+  landen in `unbekannteFelder` (`lib/domain/unbekannte_json_felder.dart`);
+  `HeroState` macht es genauso. Der Satz umfasst auch die flach eingebetteten
+  Schlüssel von `HeroAppearance` und `HeroBackground` sowie alle nur bedingt
+  geschriebenen. **Jedes neue Feld muss dort eingetragen werden**, sonst käme
+  ein bewusst weggelassener Wert als „unbekannt“ zurück; ein Test in
+  `test/domain/bestandshelden_kompatibilitaet_test.dart` prüft das.
+- Verlaufseinträge mit unbekannter Steigerungsart bleiben als
+  `UnbekannterVerlaufseintrag` an ihrer Position erhalten, statt den Helden
+  unlesbar zu machen. Sie werden nicht ausgewertet; der Verlauf nennt ihre
+  Anzahl.
+- **Ausrüstung** bewahrt Unbekanntes auf jeder Ebene. Jedes der zehn Modelle
+  trägt dafür einen eigenen Satz `unbekannteFelder` und ein eigenes
+  `jsonSchluessel`:
+  - `CombatConfig`;
+  - Waffen: `MainWeaponSlot`, `RangedWeaponProfile`, `RangedProjectile`,
+    `RangedDistanceBand`;
+  - Rüstung: `ArmorConfig`, `ArmorPiece`;
+  - Nebenhand: `OffhandEquipmentEntry`;
+  - Inventar: `HeroInventoryEntry`, `InventoryItemModifier`.
+
+  Zwei Regeln halten das dicht:
+  1. **Jeder gelesene Altschlüssel gehört in den Schlüsselsatz.** Das betrifft
+     `offhand`, `wmFk` und `fkMod`, die beim Laden in neue Felder aufgehen.
+     Als „unbekannt“ zurückgeschrieben, käme etwa ein gelöschter migrierter
+     Schild beim nächsten Laden wieder.
+  2. **Bestehende Objekte ändert man nur per `copyWith`.** Wer sie per
+     Konstruktor neu aufbaut, verliert die Felder. Deshalb bauen
+     `_mergeEntry` im Inventarabgleich und die Editoren für Nebenhand,
+     Geschoss, Distanzstufe und Begleiterrüstung auf der Bestandsinstanz auf.
+
+  Katalogwaffen setzen die Felder ihrer Geschosse und Stufen beim Laden leer
+  (`weapon_def.dart`). Katalogschlüssel sind keine Heldendaten.
+- Unbekannte Felder in `OffhandAssignment`, `CombatSpecialRules`,
+  `CombatManualMods`, `WaffenmeisterConfig` und allen übrigen verschachtelten
+  Objekten gehen weiterhin verloren. Das betrifft etwa Talente, Zauber,
+  Rituale, die eigenen Felder von `HeroCompanion`, Abenteuer und Notizen.
+  Ebenso ungeschützt sind **unbekannte Werte** bekannter Felder: Ein
+  unbekannter Enum-Wert fällt auf den Standard zurück.
+
+**Formatregel für künftige Versionen:** Änderungen am gespeicherten Format
+bleiben additiv. Erhalten wird nur, was eine ältere Version nicht versteht;
+ändert sich dagegen die Bedeutung eines vorhandenen Schlüssels, schriebe sie
+ihn nach ihrem alten Verständnis fort. Eine neue Bedeutung bekommt deshalb
+einen neuen Schlüssel. Nur ein Formatwechsel, der sich so nicht ausdrücken
+lässt, bräuchte eine sichtbare Schreibsperre in älteren Versionen — die gibt
+es bisher nicht.
+
+Bestandsdaten enthalten nichts Unbekanntes, ihr JSON und ihre Inhalts-Hashes
+ändern sich dadurch nicht.
 
 #### Felder
 
@@ -312,7 +411,7 @@ Feldern; `?? Standardwert` für jedes Feld).
 | `rawStartAttributes` | `Attributes` | Beim Anlegen erfasste Roh-Startwerte vor R/K/P-Modifikatoren |
 | `attributes` | `Attributes` | Aktuelle Eigenschaftswerte (8 Werte) |
 | `startAttributes` | `Attributes` | Abgeleitet: `computeHeroEffectiveStartAttributes`. Nie als Basis einer erneuten Modifikation verwenden (Abschnitt 4.10) |
-| `persistentMods` | `StatModifiers` | Dauerhafte Modifikatoren (aus Vor-/Nachteilen) |
+| `persistentMods` | `StatModifiers` | Schnellmodifikatoren des Inspectors (±-Knöpfe für Ini, GS, AW, AT, PA, RS); zählen zusätzlich zu `statModifiers` |
 | `bought` | `BoughtStats` | Gekaufte Ressourcenerhöhungen |
 | `combatConfig` | `CombatConfig` | Gesamte Kampfkonfiguration |
 | `combatConfig.waffenmeisterschaften` | `List<WaffenmeisterConfig>` | Waffenmeister-Baukasten mit Waffenart, Boni und Voraussetzungen |
@@ -444,8 +543,17 @@ Quellen. Unterstützt feldweises Addieren via `operator +`.
 | `gs` | Geschwindigkeits-Modifikator |
 | `ausweichen` | Ausweichen-Modifikator |
 
-In `HeroSheet` werden `persistentMods` (aus geparsten Vor-/Nachteilen, dauerhaft) und in
-`HeroState` `tempMods` (temporär, z. B. durch Zauber) unterschieden.
+In `HeroSheet` stehen `persistentMods` (Inspector-Schnellmodifikatoren) und
+die benannten `statModifiers` (mit Beschreibung, gepflegt im Modifikator-Dialog
+der Übersicht) nebeneinander und zählen beide; in `HeroState` liegen die
+temporären `tempMods` (z. B. durch Zauber). Textmodifikatoren aus Herkunft und
+Vor-/Nachteilen werden nicht gespeichert, sondern bei jeder Berechnung geparst.
+
+`HeroSheet.fromJson` kopiert `persistentMods` **nicht** nach `statModifiers`.
+Von März bis September 2026 tat es das, sobald `statModifiers` leer war, und
+jeder Inspector-Wert zählte danach doppelt (Befund ARCH-07-B1). Beim Laden
+entfällt deshalb ein benannter Eintrag „Manuell“, der genau dem Inspector-Wert
+desselben Feldes entspricht; abweichende Einträge bleiben stehen.
 
 **`BoughtStats`** (`lib/domain/bought_stats.dart`): Durch AP erkaufte Ressourcenerhöhungen.
 
@@ -759,7 +867,8 @@ Inventarfelder fuer Quelle, Gewicht, Wert, Modifier und magisch/geweiht.
 | `beschreibung` | Beschreibung |
 | `itemType` | Typisierte Inventarkategorie (`ausruestung`, `verbrauchsgegenstand`, `wertvolles`, `sonstiges`) |
 | `source` | Herkunft des Eintrags (`manuell`, Kampf-Sync oder `abenteuer`) |
-| `sourceRef` | Stabile Referenz fuer synchronisierte oder abenteuerbezogene Eintraege |
+| `sourceRef` | Namensverweis auf einen Kampf-Slot (`w:<Name>` …), den auch die veröffentlichte App versteht, oder Verweis auf Abenteuerbeute |
+| `slotRef` | Stabiler ID-Verweis auf den Kampf-Slot (`w#<id>` …); nur geschrieben, wenn belegt |
 | `istAusgeruestet` | Steuert, ob Modifier des Eintrags aktiv wirken |
 | `modifiers` | Typisierte Inventar-Modifikatoren |
 | `gewichtGramm` | Numerisches Gewicht in Gramm |
@@ -768,6 +877,76 @@ Inventarfelder fuer Quelle, Gewicht, Wert, Modifier und magisch/geweiht.
 | `isMagisch` / `magischDescription` | Magische Markierung und Beschreibung |
 | `isGeweiht` / `geweihtDescription` | Geweihte Markierung und Beschreibung |
 | `traegerTyp` / `traegerId` | Zuordnung zum Helden oder zu einem Begleiter |
+
+**Kampf-/Inventarverweise (ARCH-03, Teilfix B2/B3).** Waffen, Geschosse,
+Ruestungsstuecke und Nebenhand-Teile speichern eine Slot-ID.
+`CombatConfig.fromJson` vergibt fehlende IDs deterministisch in
+Listenreihenfolge (`w1`, `p1`, `a1`, `oh1`). `HeroActions.saveHero` gibt neu
+angelegten Slots UUIDs, damit ein geloeschter Slot seine ID nicht an einen
+neuen Namensvetter vererbt. Die Editoren fuer Geschosse und Nebenhand-Teile
+tragen die bestehende ID beim Speichern weiter.
+
+Ein verknuepfter Inventareintrag traegt **zwei Verweise**
+(`lib/domain/combat_config/inventar_verweise.dart`):
+
+- `sourceRef` ist der Namensverweis (`w:<Name>`, `a:<Name>`, `oh:<Name>`,
+  `w:<Waffe>|p:<Geschoss>`). Nur ihn kennt die bereits veroeffentlichte App
+  (`main`, Stand vor ARCH-03). Ihr Abgleich laeuft bei jedem Speichern und
+  verwirft Eintraege, deren Verweis er nicht zuordnen kann. Eine Vorabfassung
+  mit ID-Verweis in `sourceRef` haette dort alle verknuepften Inventardaten
+  geloescht.
+- `slotRef` ist der ID-Verweis (`w#<id>`, `a#<id>`, `oh#<id>`,
+  `w#<waffen-id>|p#<geschoss-id>`). Er unterscheidet gleichnamige Exemplare.
+  Die veroeffentlichte App verwirft ihn beim Speichern, zusammen mit den
+  Slot-IDs.
+
+Zuordnung beim **Abgleich** (`reconcileInventoryWithCombat`) und bei der
+Uebernahme magischer/geweihter Angaben (`applyLinkedInventoryDetailsToConfig`):
+
+1. Ein Eintrag mit `slotRef` passt nur ueber diesen. Verweist er auf einen
+   entfernten Slot, faellt er weg. Er wandert nie ueber den Namen zu einem
+   gleichnamigen Exemplar weiter (Befund B2).
+2. Ein Eintrag ohne `slotRef` passt ueber den Namen, auf den ersten freien
+   gleichnamigen Slot in Slot-Reihenfolge — genau wie in der
+   veroeffentlichten App.
+3. Die Ausgabe bleibt „manuelle Eintraege, dann verknuepfte in
+   Slot-Reihenfolge“. Die veroeffentlichte App paart gleichnamige Eintraege
+   ueber diese Reihenfolge; sie darf sich nicht aendern.
+
+Geschossmengen gehen ueber `slotRef ?? sourceRef` zurueck in die
+Kampfkonfiguration. Mit dem Namen allein bekaeme bei zwei gleichnamigen
+Boegen immer der erste die Menge.
+
+**Beim Laden** ergaenzt `migriereInventarVerweise` den ID-Verweis. Die
+Migration ist deterministisch und ein Fixpunkt:
+
+| Eintrag | Ergebnis |
+|---|---|
+| mit `slotRef` | unveraendert |
+| Vorabfassung, ID-Verweis in `sourceRef`, Slot vorhanden | `slotRef` = ID, `sourceRef` = Name des Slots |
+| Vorabfassung, Slot entfernt | `slotRef` = ID, `sourceRef` bleibt; der naechste Abgleich verwirft ihn |
+| Namensverweis ohne `slotRef` | `slotRef` des ersten freien gleichnamigen Slots |
+| Namensverweis ohne freien Slot, manuell, Abenteuerbeute | unveraendert |
+
+**Mischbetrieb mit der veroeffentlichten App.** Speichert sie einen Helden,
+entfallen Slot-IDs, `slotRef` und alle unbekannten Felder. Diese Version
+leitet die IDs danach deterministisch neu ab (`w1` …) und ordnet die
+Eintraege ueber den Namen wieder zu. Jeder Slot behaelt so seine
+Inventardaten; UUIDs und Felder neuerer Versionen gehen dort verloren.
+Innerhalb der veroeffentlichten App gilt weiter ihr eigenes Verhalten bei
+gleichnamigen Exemplaren (B2/B3). Nach jedem Upload dieser Version schreibt
+sie einmal ihre Fassung zurueck (Echo). Diese Version uebernimmt das Echo
+ohne erneuten Upload (Abschnitt Konto-Sync, Befund B10). Faellt eine
+Offline-Aenderung hier mit dem Echo zusammen, entsteht ein sichtbarer
+Konflikt; im Vergleich erscheinen dann auch die geaenderten IDs.
+
+Das Format aendert die Helden-Inhalts-Hashes der Bestandshelden mit
+verknuepfter Ausruestung (f01, f02, f04, f06). Fixtures, Hash-Pins,
+Domain-, Regel-, Widget-, Hive- und Sync-Tests sichern es ab. Kampfkonfiguration
+und Inventar bleiben zwei Darstellungen: Ein gemeinsames Gegenstandsmodell,
+Katalog-IDs und die vollstaendige ARCH-03-Migration sind noch offen. Beim
+Abgleich gehen Typ und Traeger verknuepfter Eintraege weiterhin verloren
+(Befund B9).
 
 ---
 
@@ -1100,7 +1279,12 @@ Alle Regeln sind **pure Dart-Funktionen** ohne Seiteneffekte in `lib/rules/deriv
 | MaxKaP | `bought.kap + Mod` (kein Eigenschaftsanteil) |
 | MR | `round((MU + KL + KO) / 5) + bought.mr + Mod` |
 
-`Mod` = Summe aus `persistentMods` + `tempMods` für den jeweiligen Wert.
+`Mod` = Summe aus `persistentMods` (Inspector-Schnellmodifikatoren), benannten
+Stat-Modifikatoren, Textmodifikatoren aus Herkunft und Vor-/Nachteilen,
+`tempMods`, ausgerüstetem Inventar und Wunden für den jeweiligen Wert.
+`DerivedStats.modifiers` trägt diese Summe; die Kampfvorschau rechnet AT-/PA-
+Basis, RS und Eigenschafts-INI damit weiter, sodass etwa eine Wunde AT, PA
+und Ausweichen genauso senkt wie die Basiswerte.
 
 **Zukauf-Grenzen:** `lib/rules/derived/bought_stat_limit_rules.dart`
 begrenzt den AP-Zukauf im Steigerungsdialog fuer Grundwerte. LeP duerfen bis
@@ -1880,6 +2064,12 @@ heroComputedProvider(heroId):
   ─────────────────────────────────────────────────────
   → HeroComputedSnapshot (unveränderlich, alle Werte in einem Pass)
 ```
+
+Die Schritte 4–7 liegen als reine Funktion `buildHeroComputedSnapshot`
+(`hero`, `state`, `catalog`, `epicAdvantagesActive`) in derselben Datei. Der
+Provider beobachtet nur die Eingaben und ruft sie auf; Tests rechnen damit
+dieselben Werte ohne `ProviderContainer` (z. B. die Regelwerte der
+Bestandshelden unter `test/rules/`).
 
 `HeroComputedSnapshot`-Felder:
 

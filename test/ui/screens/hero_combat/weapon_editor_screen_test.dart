@@ -241,6 +241,78 @@ void main() {
     expect(saved!.tpFlat, 4);
   });
 
+  testWidgets('editing a projectile keeps its instance ID', (tester) async {
+    MainWeaponSlot? saved;
+    await pumpEditor(
+      tester,
+      initialWeapon: const MainWeaponSlot(
+        id: 'waffe-1',
+        name: 'Kurzbogen',
+        talentId: 'tal_fern',
+        combatType: WeaponCombatType.ranged,
+        weaponType: 'Kurzbogen',
+        unbekannteFelder: <String, Object?>{'zukunftsfeld': 'waffe'},
+        rangedProfile: RangedWeaponProfile(
+          distanceBands: <RangedDistanceBand>[
+            RangedDistanceBand(
+              label: 'Nah',
+              unbekannteFelder: <String, Object?>{'zukunftsfeld': 'band'},
+            ),
+          ],
+          projectiles: <RangedProjectile>[
+            RangedProjectile(
+              id: 'geschoss-1',
+              name: 'Jagdpfeil',
+              count: 20,
+              unbekannteFelder: <String, Object?>{'zukunftsfeld': 'pfeil'},
+            ),
+          ],
+        ),
+      ),
+      onSaved: (slot) => saved = slot,
+    );
+
+    final band = find.byKey(
+      const ValueKey<String>('combat-weapon-form-distance-label-0'),
+    );
+    await tester.ensureVisible(band);
+    await tester.enterText(band, 'Sehr nah');
+
+    final edit = find.byKey(
+      const ValueKey<String>('combat-weapon-form-projectile-edit-0'),
+    );
+    await tester.ensureVisible(edit);
+    await tester.tap(edit);
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const ValueKey<String>('combat-projectile-form-count')),
+      '15',
+    );
+    await tester.tap(
+      find.byKey(const ValueKey<String>('combat-projectile-form-save')),
+    );
+    await tester.pumpAndSettle();
+    final save = find.byKey(const ValueKey<String>('combat-weapon-form-save'));
+    await tester.ensureVisible(save);
+    await tester.tap(save);
+    await tester.pumpAndSettle();
+
+    expect(saved, isNotNull);
+    expect(saved!.rangedProfile.projectiles.single.id, 'geschoss-1');
+    expect(saved!.rangedProfile.projectiles.single.count, 15);
+    // Felder einer neueren App-Version überstehen alle drei Editoren.
+    expect(saved!.unbekannteFelder, <String, Object?>{'zukunftsfeld': 'waffe'});
+    expect(
+      saved!.rangedProfile.projectiles.single.unbekannteFelder,
+      <String, Object?>{'zukunftsfeld': 'pfeil'},
+    );
+    final ersteStufe = saved!.rangedProfile.distanceBands.first;
+    expect(ersteStufe.label, 'Sehr nah');
+    expect(ersteStufe.unbekannteFelder, <String, Object?>{
+      'zukunftsfeld': 'band',
+    });
+  });
+
   testWidgets('cancel with unsaved changes opens discard dialog', (
     tester,
   ) async {

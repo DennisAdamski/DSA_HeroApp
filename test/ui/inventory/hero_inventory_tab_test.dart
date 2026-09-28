@@ -460,6 +460,87 @@ void main() {
       );
     });
 
+    testWidgets('Munition des zweiten gleichnamigen Bogens landet bei ihm', (
+      tester,
+    ) async {
+      MainWeaponSlot bogen(String id, int pfeile) {
+        return MainWeaponSlot(
+          id: id,
+          name: 'Kurzbogen',
+          combatType: WeaponCombatType.ranged,
+          rangedProfile: RangedWeaponProfile(
+            projectiles: [
+              RangedProjectile(id: 'p', name: 'Pfeil', count: pfeile),
+            ],
+          ),
+        );
+      }
+
+      HeroInventoryEntry pfeile(String bogenId, String anzahl) {
+        return HeroInventoryEntry(
+          gegenstand: 'Pfeil',
+          anzahl: anzahl,
+          itemType: InventoryItemType.verbrauchsgegenstand,
+          source: InventoryItemSource.geschoss,
+          sourceRef: 'w:Kurzbogen|p:Pfeil',
+          slotRef: 'w#$bogenId|p#p',
+        );
+      }
+
+      HeroInventoryEntry bogenEintrag(String bogenId) {
+        return HeroInventoryEntry(
+          gegenstand: 'Kurzbogen',
+          itemType: InventoryItemType.ausruestung,
+          source: InventoryItemSource.waffe,
+          sourceRef: 'w:Kurzbogen',
+          slotRef: 'w#$bogenId',
+          istAusgeruestet: true,
+        );
+      }
+
+      final repo = FakeRepository(
+        heroes: <HeroSheet>[
+          _buildHero(
+            combatConfig: CombatConfig(
+              weapons: [bogen('a', 10), bogen('b', 20)],
+            ),
+            inventoryEntries: <HeroInventoryEntry>[
+              bogenEintrag('a'),
+              pfeile('a', '10'),
+              bogenEintrag('b'),
+              pfeile('b', '20'),
+            ],
+          ),
+        ],
+      );
+
+      await _openTab(tester, repo);
+      await tester.tap(
+        find.byKey(const ValueKey<String>('inventory-row-open-3')),
+      );
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byKey(const ValueKey<String>('inventory-editor-quantity')),
+        '25',
+      );
+      await tester.tap(
+        find.byKey(const ValueKey<String>('inventory-editor-save')),
+      );
+      await tester.pumpAndSettle();
+
+      // Der Namensverweis traefe beide Male den ersten Bogen.
+      final hero = (await repo.listHeroes()).single;
+      final boegen = hero.combatConfig.weaponSlots;
+      expect(boegen[0].rangedProfile.projectiles.single.count, 10);
+      expect(boegen[1].rangedProfile.projectiles.single.count, 25);
+      expect(hero.inventoryEntries.map((entry) => entry.anzahl), <String>[
+        '',
+        '10',
+        '',
+        '25',
+      ]);
+    });
+
     testWidgets('manuellen Eintrag löschen entfernt ihn nach Bestätigung', (
       tester,
     ) async {
