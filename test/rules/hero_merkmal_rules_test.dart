@@ -87,6 +87,27 @@ void main() {
         null,
         'KK',
       ),
+      (
+        'Herausragende Eigenschaft: Gewandtheit: 1',
+        true,
+        'adv_herausragende_eigenschaft',
+        1,
+        'GE',
+      ),
+      (
+        'Herausragende Eigenschaft Gewandtheit 1',
+        true,
+        'adv_herausragende_eigenschaft',
+        1,
+        'GE',
+      ),
+      (
+        'Herausragende Eigenschaft: GE: 1',
+        true,
+        'adv_herausragende_eigenschaft',
+        1,
+        'GE',
+      ),
       ('Geweiht Peraine', true, 'adv_geweiht', null, 'Peraine'),
       ('Angst vor Spinnen 5', false, 'dis_angst_vor', 5, 'Spinnen'),
       ('Goldgier 6', false, 'dis_goldgier', 6, ''),
@@ -119,6 +140,16 @@ void main() {
       expect(eintrag.istKatalogisiert, isFalse);
       expect(eintrag.kandidatenIds.length, greaterThan(1));
       expect(eintrag.brauchtPruefung, isTrue);
+    });
+
+    test('eine unbekannte Eigenschaft wird nicht zugeordnet', () {
+      final eintrag = ordneMerkmalZu(
+        'Herausragende Eigenschaft Schönheit 2',
+        vorteile,
+      );
+
+      expect(eintrag.istKatalogisiert, isFalse);
+      expect(eintrag.kandidatenIds, isEmpty);
     });
 
     test('Freie Texte und Codes bleiben frei', () {
@@ -330,6 +361,35 @@ void main() {
       final parsed = parseModifierTextsForHero(hero, catalog: catalog);
       expect(parsed.statMods.lep, 5);
       expect(werteMerkmaleAus(hero, catalog: catalog).freieVorteile, 'LEP+2');
+    });
+
+    test('„Gewandtheit“ mit Doppelpunkten wirkt auf beiden Wegen', () {
+      const text = 'Herausragende Eigenschaft: Gewandtheit: 1';
+      final textweg = parseModifierTextsForHero(
+        held(vorteileText: text),
+        catalog: null,
+      );
+      final gespeichert = merkmaleZumSpeichern(
+        held(vorteileText: text),
+        katalog: katalog,
+      );
+      final katalogweg = parseModifierTextsForHero(
+        gespeichert,
+        catalog: catalog,
+      );
+
+      expect(textweg.attributeMods.ge, 1);
+      expect(textweg.startAttributeMods.ge, 1);
+      expect(
+        gespeichert.vorteilEintraege.single.katalogId,
+        'adv_herausragende_eigenschaft',
+      );
+      expect(katalogweg.attributeMods.ge, 1);
+      expect(katalogweg.startAttributeMods.ge, 1);
+      expect(
+        merkmaleZumSpeichern(gespeichert, katalog: katalog).toJson(),
+        gespeichert.toJson(),
+      );
     });
 
     test('ein umbenannter Katalogeintrag wirkt unverändert', () {

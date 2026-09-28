@@ -20,6 +20,7 @@ library;
 
 import 'package:dsa_heldenverwaltung/catalog/hero_trait_text.dart';
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
+import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_merkmal.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 
@@ -358,9 +359,17 @@ _Treffer? _passe(String normalisiert, HeroTraitDef def) {
   if (treffer == null) {
     return null;
   }
-  final auswahl = muster.auswahlGruppe == 0
+  var auswahl = muster.auswahlGruppe == 0
       ? ''
       : (treffer.group(muster.auswahlGruppe) ?? '').trim();
+  if (auswahl.isNotEmpty && def.choiceSource == 'eigenschaften') {
+    // Gespeichert wird das Kuerzel, das auch die Auswahlliste anbietet.
+    final code = parseAttributeCode(auswahl);
+    if (code == null) {
+      return null;
+    }
+    auswahl = attributeCodeKey(code);
+  }
   if (auswahl.isNotEmpty && !_auswahlErlaubt(def, auswahl)) {
     return null;
   }
@@ -468,8 +477,10 @@ String _template(HeroTraitDef def) {
   return template.isEmpty ? def.name.trim() : template;
 }
 
+// Doppelpunkte trennen wie im Modifikator-Parser (`Name: Auswahl: Wert`);
+// kein Katalog-Template enthaelt einen.
 String _normalisiere(String text) {
-  return text.trim().replaceAll(RegExp(r'\s+'), ' ');
+  return text.replaceAll(':', ' ').trim().replaceAll(RegExp(r'\s+'), ' ');
 }
 
 /// Bereitet die Vor- und Nachteile von [hero] zum Speichern vor.
