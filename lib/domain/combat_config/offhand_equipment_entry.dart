@@ -18,6 +18,7 @@ class OffhandEquipmentEntry {
     this.isGeweiht = false,
     this.geweihtDescription = '',
     this.unbekannteFelder = const <String, Object?>{},
+    this.unbekannteEnumWerte = const <String, Object?>{},
   });
 
   /// Stabile Kennung des Nebenhand-Teils (siehe `CombatConfig.withStableIds`).
@@ -60,6 +61,12 @@ class OffhandEquipmentEntry {
   /// (siehe `unbekannte_json_felder.dart`).
   final Map<String, Object?> unbekannteFelder;
 
+  /// Unbekannte Aufzaehlungswerte einer neueren App-Version (JSON-Schluessel
+  /// -> Rohwert). Die Felder tragen den Ersatzwert, mit dem Regeln rechnen;
+  /// geschrieben wird der Rohwert, bis jemand das Feld auf einen anderen Wert
+  /// setzt (siehe `unbekannte_json_felder.dart`).
+  final Map<String, Object?> unbekannteEnumWerte;
+
   /// Alle Schluessel, die [fromJson] liest; alles andere bleibt erhalten.
   static const Set<String> jsonSchluessel = <String>{
     'id',
@@ -94,6 +101,7 @@ class OffhandEquipmentEntry {
     bool? isGeweiht,
     String? geweihtDescription,
     Map<String, Object?>? unbekannteFelder,
+    Map<String, Object?>? unbekannteEnumWerte,
   }) {
     return OffhandEquipmentEntry(
       id: id ?? this.id,
@@ -109,36 +117,58 @@ class OffhandEquipmentEntry {
       isGeweiht: isGeweiht ?? this.isGeweiht,
       geweihtDescription: geweihtDescription ?? this.geweihtDescription,
       unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
+      unbekannteEnumWerte:
+          unbekannteEnumWerte ??
+          ohneGeaenderteEnumWerte(this.unbekannteEnumWerte, {
+            'type': type != null && type != this.type,
+            'shieldSize': shieldSize != null && shieldSize != this.shieldSize,
+          }),
     );
   }
 
   /// Serialisiert den Eintrag zu einem JSON-kompatiblen Map.
   Map<String, dynamic> toJson() {
-    return mitUnbekanntenFeldern(<String, dynamic>{
-      if (id.isNotEmpty) 'id': id,
-      'name': name,
-      'type': offhandEquipmentTypeToJson(type),
-      'breakFactor': breakFactor,
-      'shieldSize': shieldSizeToJson(shieldSize),
-      'iniMod': iniMod,
-      'atMod': atMod,
-      'paMod': paMod,
-      'isArtifact': isArtifact,
-      'artifactDescription': artifactDescription,
-      'isGeweiht': isGeweiht,
-      'geweihtDescription': geweihtDescription,
-    }, unbekannteFelder);
+    return mitUnbekanntenEnumWerten(
+      mitUnbekanntenFeldern(<String, dynamic>{
+        if (id.isNotEmpty) 'id': id,
+        'name': name,
+        'type': offhandEquipmentTypeToJson(type),
+        'breakFactor': breakFactor,
+        'shieldSize': shieldSizeToJson(shieldSize),
+        'iniMod': iniMod,
+        'atMod': atMod,
+        'paMod': paMod,
+        'isArtifact': isArtifact,
+        'artifactDescription': artifactDescription,
+        'isGeweiht': isGeweiht,
+        'geweihtDescription': geweihtDescription,
+      }, unbekannteFelder),
+      unbekannteEnumWerte,
+    );
   }
 
   /// Deserialisiert einen Eintrag aus einem JSON-Map.
   static OffhandEquipmentEntry fromJson(Map<String, dynamic> json) {
+    final enumRoh = <String, Object?>{};
     int getInt(String key) => (json[key] as num?)?.toInt() ?? 0;
     return OffhandEquipmentEntry(
       id: (json['id'] as String?) ?? '',
       name: (json['name'] as String?) ?? '',
-      type: offhandEquipmentTypeFromJson((json['type'] as String?) ?? ''),
+      type: leseEnumWert(
+        json['type'],
+        'type',
+        erkenne: offhandEquipmentTypeErkennen,
+        ersatz: OffhandEquipmentType.parryWeapon,
+        unbekannt: enumRoh,
+      ),
       breakFactor: getInt('breakFactor'),
-      shieldSize: shieldSizeFromJson((json['shieldSize'] as String?) ?? ''),
+      shieldSize: leseEnumWert(
+        json['shieldSize'],
+        'shieldSize',
+        erkenne: shieldSizeErkennen,
+        ersatz: ShieldSize.small,
+        unbekannt: enumRoh,
+      ),
       iniMod: getInt('iniMod'),
       atMod: getInt('atMod'),
       paMod: getInt('paMod'),
@@ -147,6 +177,7 @@ class OffhandEquipmentEntry {
       isGeweiht: (json['isGeweiht'] as bool?) ?? false,
       geweihtDescription: (json['geweihtDescription'] as String?) ?? '',
       unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
+      unbekannteEnumWerte: festeEnumWerte(enumRoh),
     );
   }
 }

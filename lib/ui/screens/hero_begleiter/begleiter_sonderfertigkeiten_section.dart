@@ -208,10 +208,16 @@ class _SonderfertigkeitDialogState extends State<_SonderfertigkeitDialog> {
     }
     Navigator.of(context).pop(
       _SonderfertigkeitErwerb(
-        sf: HeroCompanionSonderfertigkeit(
-          name: name,
-          beschreibung: _beschreibung.text.trim(),
-        ),
+        // Per `copyWith`, damit unbekannte Felder erhalten bleiben.
+        sf:
+            widget.initial?.copyWith(
+              name: name,
+              beschreibung: _beschreibung.text.trim(),
+            ) ??
+            HeroCompanionSonderfertigkeit(
+              name: name,
+              beschreibung: _beschreibung.text.trim(),
+            ),
         apKosten: apKosten,
       ),
     );

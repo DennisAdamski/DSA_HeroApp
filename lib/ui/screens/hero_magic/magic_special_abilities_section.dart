@@ -308,10 +308,16 @@ class _MagicSpecialAbilityDialogState
     }
     Navigator.of(context).pop(
       _MagicSpecialAbilityErwerb(
-        ability: MagicSpecialAbility(
-          name: name,
-          beschreibung: _beschreibungController.text.trim(),
-        ),
+        // Per `copyWith`, damit unbekannte Felder erhalten bleiben.
+        ability:
+            widget.initial?.copyWith(
+              name: name,
+              beschreibung: _beschreibungController.text.trim(),
+            ) ??
+            MagicSpecialAbility(
+              name: name,
+              beschreibung: _beschreibungController.text.trim(),
+            ),
         apKosten: apKosten,
       ),
     );

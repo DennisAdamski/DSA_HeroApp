@@ -367,7 +367,15 @@ HeroState buildFullRestoreState({
     currentAu: derivedStats.maxAu,
     erschoepfung: 0,
     ueberanstrengung: 0,
-    wpiZustand: const WundZustand(),
+    // Alle Wunden heilen, auch in Zonen einer neueren App-Version;
+    // unbekannte Felder bleiben erhalten.
+    wpiZustand: currentState.wpiZustand.copyWith(
+      wundenProZone: const <WundZone, int>{},
+      kopfIniMalus: 0,
+      unterdrueckteWundenProZone: const <WundZone, int>{},
+      kampfunfaehigIgnoriert: false,
+      unbekannteZonen: const <String, Object?>{},
+    ),
   );
 }
 

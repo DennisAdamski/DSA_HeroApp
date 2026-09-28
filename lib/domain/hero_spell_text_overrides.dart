@@ -1,3 +1,5 @@
+import 'package:dsa_heldenverwaltung/domain/unbekannte_json_felder.dart';
+
 /// Heldenspezifische Text-Overrides fuer importierte Zauberdetails.
 ///
 /// `null` bedeutet stets: Katalogwert verwenden. Leere Strings oder eine leere
@@ -13,6 +15,7 @@ class HeroSpellTextOverrides {
     this.wirkung,
     this.modifications,
     this.variants,
+    this.unbekannteFelder = const <String, Object?>{},
   });
 
   final String? aspCost;
@@ -24,9 +27,29 @@ class HeroSpellTextOverrides {
   final String? modifications;
   final List<String>? variants;
 
+  /// JSON-Felder einer neueren App-Version; bleiben beim Speichern erhalten
+  /// (siehe `unbekannte_json_felder.dart`).
+  final Map<String, Object?> unbekannteFelder;
+
+  /// Alle Schluessel, die [fromJsonValue] liest; alles andere bleibt erhalten.
+  static const Set<String> jsonSchluessel = <String>{
+    'aspCost',
+    'targetObject',
+    'range',
+    'duration',
+    'castingTime',
+    'wirkung',
+    'modifications',
+    'variants',
+  };
+
   /// Gibt `true` zurueck, wenn keinerlei heldenspezifische Werte gesetzt sind.
+  ///
+  /// Felder einer neueren App-Version zaehlen als Wert: ein Objekt, das nur
+  /// sie traegt, wird weiter gespeichert.
   bool get isEmpty {
-    return aspCost == null &&
+    return unbekannteFelder.isEmpty &&
+        aspCost == null &&
         targetObject == null &&
         range == null &&
         duration == null &&
@@ -38,7 +61,7 @@ class HeroSpellTextOverrides {
 
   /// Serialisiert nur die Override-Felder des aktivierten Zaubers.
   Map<String, dynamic> toJson() {
-    return {
+    return mitUnbekanntenFeldern(<String, dynamic>{
       'aspCost': aspCost,
       'targetObject': targetObject,
       'range': range,
@@ -47,7 +70,7 @@ class HeroSpellTextOverrides {
       'wirkung': wirkung,
       'modifications': modifications,
       'variants': variants,
-    };
+    }, unbekannteFelder);
   }
 
   /// Liest ein Override-Objekt rueckwaertskompatibel aus JSON.
@@ -65,6 +88,7 @@ class HeroSpellTextOverrides {
       wirkung: _readNullableString(json, 'wirkung'),
       modifications: _readNullableString(json, 'modifications'),
       variants: _readNullableStringList(json, 'variants'),
+      unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
     );
     return overrides.isEmpty ? null : overrides;
   }

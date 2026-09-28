@@ -1,3 +1,5 @@
+import 'package:dsa_heldenverwaltung/domain/unbekannte_json_felder.dart';
+
 /// Persistierter Reisebericht-Zustand eines Helden.
 ///
 /// Speichert welche Eintraege abgehakt, welche offenen Sammlungseintraege
@@ -8,6 +10,7 @@ class HeroReisebericht {
     this.openEntries = const <String, List<ReiseberichtOpenItem>>{},
     this.wahlSeZuordnungen = const <String, String>{},
     this.appliedRewardIds = const <String>{},
+    this.unbekannteFelder = const <String, Object?>{},
   });
 
   /// IDs aller abgehakten Eintraege und Sub-Items.
@@ -22,22 +25,36 @@ class HeroReisebericht {
   /// IDs fuer die Belohnungen bereits angewendet wurden (Idempotenz-Guard).
   final Set<String> appliedRewardIds;
 
+  /// JSON-Felder einer neueren App-Version; bleiben beim Speichern erhalten
+  /// (siehe `unbekannte_json_felder.dart`).
+  final Map<String, Object?> unbekannteFelder;
+
+  /// Alle Schluessel, die [fromJson] liest; alles andere bleibt erhalten.
+  static const Set<String> jsonSchluessel = <String>{
+    'checkedIds',
+    'openEntries',
+    'wahlSeZuordnungen',
+    'appliedRewardIds',
+  };
+
   HeroReisebericht copyWith({
     Set<String>? checkedIds,
     Map<String, List<ReiseberichtOpenItem>>? openEntries,
     Map<String, String>? wahlSeZuordnungen,
     Set<String>? appliedRewardIds,
+    Map<String, Object?>? unbekannteFelder,
   }) {
     return HeroReisebericht(
       checkedIds: checkedIds ?? this.checkedIds,
       openEntries: openEntries ?? this.openEntries,
       wahlSeZuordnungen: wahlSeZuordnungen ?? this.wahlSeZuordnungen,
       appliedRewardIds: appliedRewardIds ?? this.appliedRewardIds,
+      unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
     );
   }
 
   Map<String, dynamic> toJson() {
-    return <String, dynamic>{
+    return mitUnbekanntenFeldern(<String, dynamic>{
       'checkedIds': checkedIds.toList(growable: false),
       'openEntries': openEntries.map(
         (key, value) => MapEntry(
@@ -47,7 +64,7 @@ class HeroReisebericht {
       ),
       'wahlSeZuordnungen': wahlSeZuordnungen,
       'appliedRewardIds': appliedRewardIds.toList(growable: false),
-    };
+    }, unbekannteFelder);
   }
 
   static HeroReisebericht fromJson(Map<String, dynamic> json) {
@@ -80,6 +97,7 @@ class HeroReisebericht {
               .toList(growable: false),
         );
       }),
+      unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
     );
   }
 }
@@ -90,6 +108,7 @@ class ReiseberichtOpenItem {
     required this.name,
     this.klassifikation = '',
     this.ap = 0,
+    this.unbekannteFelder = const <String, Object?>{},
   });
 
   /// Anzeigename (z. B. Kulturname, Katastrophenbezeichnung).
@@ -101,15 +120,29 @@ class ReiseberichtOpenItem {
   /// Berechneter AP-Wert aus der Klassifikation.
   final int ap;
 
+  /// JSON-Felder einer neueren App-Version; bleiben beim Speichern erhalten
+  /// (siehe `unbekannte_json_felder.dart`).
+  final Map<String, Object?> unbekannteFelder;
+
+  /// Alle Schluessel, die [fromJson] liest — einschliesslich der nur bedingt
+  /// geschriebenen; alles andere bleibt erhalten.
+  static const Set<String> jsonSchluessel = <String>{
+    'name',
+    'klassifikation',
+    'ap',
+  };
+
   ReiseberichtOpenItem copyWith({
     String? name,
     String? klassifikation,
     int? ap,
+    Map<String, Object?>? unbekannteFelder,
   }) {
     return ReiseberichtOpenItem(
       name: name ?? this.name,
       klassifikation: klassifikation ?? this.klassifikation,
       ap: ap ?? this.ap,
+      unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
     );
   }
 
@@ -117,7 +150,7 @@ class ReiseberichtOpenItem {
     final result = <String, dynamic>{'name': name};
     if (klassifikation.isNotEmpty) result['klassifikation'] = klassifikation;
     if (ap > 0) result['ap'] = ap;
-    return result;
+    return mitUnbekanntenFeldern(result, unbekannteFelder);
   }
 
   static ReiseberichtOpenItem fromJson(Map<String, dynamic> json) {
@@ -125,6 +158,7 @@ class ReiseberichtOpenItem {
       name: (json['name'] as String?) ?? '',
       klassifikation: (json['klassifikation'] as String?) ?? '',
       ap: (json['ap'] as num?)?.toInt() ?? 0,
+      unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
     );
   }
 }

@@ -844,7 +844,12 @@ Map<String, List<HeroTalentModifier>> _ohneGespiegelteInspectorWerte(
   var geaendert = false;
   final result = <String, List<HeroTalentModifier>>{};
   for (final entry in benannt.entries) {
-    final inspectorWert = (inspectorWerte[entry.key] as int?) ?? 0;
+    // Unbekannte Felder einer neueren Version koennen hier beliebige Werte
+    // tragen; gespiegelt wurden nur die bekannten Zahlenwerte.
+    final rohwert = StatModifiers.jsonSchluessel.contains(entry.key)
+        ? inspectorWerte[entry.key]
+        : null;
+    final inspectorWert = rohwert is int ? rohwert : 0;
     final kopieIndex = inspectorWert == 0
         ? -1
         : entry.value.indexWhere(

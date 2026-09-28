@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config/main_weapon_slot.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config/ranged_projectile.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/sync_models.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 
@@ -94,11 +95,11 @@ void main() {
     await cloud.speichereFremdenStand(json, previousRevision: aktuell.revision);
   }
 
-  // Eine Aenderung mit einem Feld, das diese App nicht bewahren kann:
-  // `specialRules` gehoert nicht zu den Ausruestungsmodellen.
+  // Eine Aenderung, die diese App nicht verlustfrei darstellt: doppelte
+  // ausgeblendete Talente fasst sie beim Laden zusammen. Unbekannte Felder
+  // bewahrt sie inzwischen in allen verschachtelten Modellen.
   void verlustbehaftet(Map<String, dynamic> json) {
-    final kampf = json['combatConfig'] as Map<String, dynamic>;
-    (kampf['specialRules'] as Map<String, dynamic>)['zukunftsRegel'] = 1;
+    json['hiddenTalentIds'] = <String>['tal_zechen', 'tal_zechen'];
     json['dukaten'] = '99';
   }
 
@@ -134,12 +135,10 @@ void main() {
       await b.repo.syncNow();
 
       expect(cloud.heldSchreibvorgaenge[_krieger], vorher + 1);
-      // Restrisiko ausserhalb der Ausruestung: `specialRules` bewahrt nichts,
-      // hochgeladen wird die hiesige Fassung ohne das fremde Feld.
+      // Hochgeladen wird die hiesige, zusammengefasste Fassung.
       final online = (await cloud.loadHero(_krieger))!;
       expect(online.contentHash, await b.heldHash(_krieger));
-      final kampf = online.hero!.toJson()['combatConfig'] as Map;
-      expect(kampf['specialRules'], isNot(contains('zukunftsRegel')));
+      expect(online.hero!.toJson()['hiddenTalentIds'], <String>['tal_zechen']);
     });
 
     test('eine gleichzeitige fremde Änderung wird zum Konflikt statt '
@@ -230,9 +229,10 @@ void main() {
     });
   });
 
-  group('neuere Version mit Feldern in der Ausrüstung', () {
+  group('neuere Version mit Feldern in verschachtelten Modellen', () {
     late EchterKatalog katalog;
     late Zukunftsheld zukunft;
+    late Zukunftsheld zukunftsZustand;
 
     setUpAll(() async {
       katalog = await ladeEchtenRegelkatalog();
@@ -244,16 +244,32 @@ void main() {
         (roh['hero'] as Map).cast<String, dynamic>(),
       );
       // So schreibt die neuere Version: heutiges Format samt Slot-IDs,
-      // dazu ihre eigenen Felder an denselben Stellen.
-      zukunft = (
-        basis: basis.basis,
-        json: HeroSheet.fromJson(basis.json).toJson(),
-        pfade: basis.pfade,
-      );
+      // dazu ihre eigenen Felder an denselben Stellen. Gesetzt werden sie ins
+      // JSON, nicht ueber das hiesige Modell, das sie sonst schon verloere.
+      final heutig = HeroSheet.fromJson(basis.basis).toJson();
+      for (final pfad in basis.pfade) {
+        final trenner = pfad.lastIndexOf('/');
+        (wertAn(heutig, pfad.substring(0, trenner)) as Map)[pfad.substring(
+          trenner + 1,
+        )] = wertAn(
+          basis.json,
+          pfad,
+        );
+      }
+      zukunft = (basis: basis.basis, json: heutig, pfade: basis.pfade);
       final aktuell = (await cloud.loadHero(_krieger))!;
       await cloud.speichereFremdenStand(
         zukunft.json,
         previousRevision: aktuell.revision,
+      );
+      zukunftsZustand = zustandMitZukunftsfeldern(
+        (roh['state'] as Map).cast<String, dynamic>(),
+      );
+      final zustand = (await cloud.loadHeroState(_krieger))!;
+      await cloud.speichereFremdenZustand(
+        _krieger,
+        zukunftsZustand.json,
+        previousRevision: zustand.revision,
       );
       await a.repo.syncNow();
       await b.repo.syncNow();
@@ -272,9 +288,74 @@ void main() {
 
     test('der Stand ist hier verlustfrei darstellbar', () async {
       final online = (await cloud.loadHero(_krieger))!;
+      final zustand = (await cloud.loadHeroState(_krieger))!;
 
       expect(await b.heldHash(_krieger), online.contentHash);
       expect(await a.heldHash(_krieger), online.contentHash);
+      for (final geraet in <SyncTestGeraet>[a, b]) {
+        final lokal = (await geraet.lokal.loadHeroState(_krieger))!;
+        expect(heroStateContentHash(lokal), zustand.contentHash);
+      }
+    });
+
+    test('Mischbetrieb: das Echo der veröffentlichten App wird ohne Upload '
+        'und ohne Konflikt übernommen', () async {
+      final aktuell = (await cloud.loadHero(_krieger))!;
+      final echo = wieVeroeffentlichteApp(aktuell.hero!.toJson());
+      // Die veroeffentlichte App verwirft die Felder und schreibt fuer
+      // unbekannte Aufzaehlungswerte den Ersatz (Restrisiko 3); diese
+      // Version bewahrt, was sie vorfindet, und stellt nichts wieder her.
+      for (final pfad in zukunft.pfade) {
+        expect(
+          wertAn(echo, pfad),
+          isNot(wertAn(zukunft.json, pfad)),
+          reason: pfad,
+        );
+      }
+      await cloud.speichereFremdenStand(
+        echo,
+        previousRevision: aktuell.revision,
+      );
+      final zustand = (await cloud.loadHeroState(_krieger))!;
+      final zustandsEcho = zustandWieVeroeffentlichteApp(
+        zustand.state!.toJson(),
+      );
+      for (final pfad in zukunftsZustand.pfade) {
+        expect(
+          wertAn(zustandsEcho, pfad),
+          isNot(wertAn(zukunftsZustand.json, pfad)),
+          reason: pfad,
+        );
+      }
+      await cloud.speichereFremdenZustand(
+        _krieger,
+        zustandsEcho,
+        previousRevision: zustand.revision,
+      );
+      final schreibvorgaenge = cloud.schreibvorgaenge;
+
+      for (var runde = 0; runde < 2; runde++) {
+        await a.repo.syncNow();
+        await b.repo.syncNow();
+      }
+
+      expect(cloud.schreibvorgaenge, schreibvorgaenge);
+      expect(a.konflikte, isEmpty);
+      expect(b.konflikte, isEmpty);
+      expect(await a.heldHash(_krieger), await b.heldHash(_krieger));
+      final lokal = (await b.lokal.loadHeroById(_krieger))!.toJson();
+      for (final pfad in zukunft.pfade) {
+        expect(wertAn(lokal, pfad), wertAn(echo, pfad), reason: pfad);
+      }
+      final lokalerZustand = (await b.lokal.loadHeroState(_krieger))!;
+      expect(heroStateContentHash(lokalerZustand), isNotEmpty);
+      for (final pfad in zukunftsZustand.pfade) {
+        expect(
+          wertAn(lokalerZustand.toJson(), pfad),
+          wertAn(zustandsEcho, pfad),
+          reason: pfad,
+        );
+      }
     });
 
     test('Bearbeiten über HeroActions und Abgleich erhalten die Felder auf '
@@ -298,10 +379,15 @@ void main() {
             ],
           ),
         );
-        return held.copyWith(
-          combatConfig: held.combatConfig.copyWith(weapons: waffen),
+        return bearbeiteVerschachtelteModelle(
+          held.copyWith(
+            combatConfig: held.combatConfig.copyWith(weapons: waffen),
+          ),
         );
       });
+      await container
+          .read(heroActionsProvider)
+          .updateHeroState(_krieger, bearbeiteZustand);
       await b.repo.syncNow();
       await a.repo.syncNow();
 
@@ -312,6 +398,21 @@ void main() {
       expectZukunftsfelder(online.toJson(), 'Cloud');
       expectZukunftsfelder(aufA.toJson(), 'Gerät A');
       expectZukunftsfelder(aufB.toJson(), 'Gerät B');
+      final zustaende = <String, HeroState>{
+        'Cloud': (await cloud.loadHeroState(_krieger))!.state!,
+        'Gerät A': (await a.lokal.loadHeroState(_krieger))!,
+        'Gerät B': (await b.lokal.loadHeroState(_krieger))!,
+      };
+      for (final eintrag in zustaende.entries) {
+        expect(eintrag.value.tempMods.at, 1, reason: eintrag.key);
+        for (final pfad in zukunftsZustand.pfade) {
+          expect(
+            wertAn(eintrag.value.toJson(), pfad),
+            wertAn(zukunftsZustand.json, pfad),
+            reason: '${eintrag.key}: $pfad',
+          );
+        }
+      }
       expect(a.konflikte, isEmpty);
       expect(b.konflikte, isEmpty);
     });

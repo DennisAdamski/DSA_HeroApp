@@ -134,14 +134,16 @@ class HeroAppearance {
 
   /// Serialisiert als flache Map (Felder auf Root-Ebene).
   ///
-  /// `geburtsdatum` wird bewusst nur bei belegtem Wert geschrieben: Die Map
+  /// `geburtsdatum` wird bewusst nur bei belegtem Wert (oder mit Feldern einer
+  /// neueren App-Version) geschrieben: Die Map
   /// landet flach im Helden-JSON und geht damit in `heroContentHash` ein. Ein
   /// bedingungslos emittiertes Feld wuerde jeden Bestandshelden veraendern und
   /// beim naechsten Speichern eine Sync-Konfliktwelle ausloesen.
   Map<String, dynamic> toJson() => {
     'geschlecht': geschlecht,
     'alter': alter,
-    if (geburtsdatum.hasContent) 'geburtsdatum': geburtsdatum.toJson(),
+    if (geburtsdatum.hasContent || geburtsdatum.unbekannteFelder.isNotEmpty)
+      'geburtsdatum': geburtsdatum.toJson(),
     'groesse': groesse,
     'gewicht': gewicht,
     'haarfarbe': haarfarbe,

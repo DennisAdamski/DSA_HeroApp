@@ -1,3 +1,4 @@
+import 'package:dsa_heldenverwaltung/domain/unbekannte_json_felder.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_rituals/hero_ritual_field.dart';
 
 /// Einzelnes Ritual innerhalb einer Ritualkategorie.
@@ -14,6 +15,7 @@ class HeroRitualEntry {
     this.reichweite = '',
     this.technik = '',
     this.additionalFieldValues = const <HeroRitualFieldValue>[],
+    this.unbekannteFelder = const <String, Object?>{},
   });
 
   /// Anzeigename des Rituals.
@@ -46,6 +48,24 @@ class HeroRitualEntry {
   /// Werte der frei konfigurierten Zusatzfelder.
   final List<HeroRitualFieldValue> additionalFieldValues;
 
+  /// JSON-Felder einer neueren App-Version; bleiben beim Speichern erhalten
+  /// (siehe `unbekannte_json_felder.dart`).
+  final Map<String, Object?> unbekannteFelder;
+
+  /// Alle Schluessel, die [fromJson] liest; alles andere bleibt erhalten.
+  static const Set<String> jsonSchluessel = <String>{
+    'name',
+    'wirkung',
+    'kosten',
+    'wirkungsdauer',
+    'merkmale',
+    'zauberdauer',
+    'zielobjekt',
+    'reichweite',
+    'technik',
+    'additionalFieldValues',
+  };
+
   /// Erstellt eine Kopie mit geaenderten Feldern.
   HeroRitualEntry copyWith({
     String? name,
@@ -58,6 +78,7 @@ class HeroRitualEntry {
     String? reichweite,
     String? technik,
     List<HeroRitualFieldValue>? additionalFieldValues,
+    Map<String, Object?>? unbekannteFelder,
   }) {
     return HeroRitualEntry(
       name: name ?? this.name,
@@ -71,12 +92,13 @@ class HeroRitualEntry {
       technik: technik ?? this.technik,
       additionalFieldValues:
           additionalFieldValues ?? this.additionalFieldValues,
+      unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
     );
   }
 
   /// Serialisiert das Ritual fuer Persistenz und Export.
   Map<String, dynamic> toJson() {
-    return {
+    return mitUnbekanntenFeldern(<String, dynamic>{
       'name': name,
       'wirkung': wirkung,
       'kosten': kosten,
@@ -89,7 +111,7 @@ class HeroRitualEntry {
       'additionalFieldValues': additionalFieldValues
           .map((entry) => entry.toJson())
           .toList(growable: false),
-    };
+    }, unbekannteFelder);
   }
 
   /// Liest ein Ritual tolerant aus JSON.
@@ -113,6 +135,7 @@ class HeroRitualEntry {
                 HeroRitualFieldValue.fromJson(entry.cast<String, dynamic>()),
           )
           .toList(growable: false),
+      unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
     );
   }
 
@@ -129,7 +152,11 @@ class HeroRitualEntry {
           zielobjekt == other.zielobjekt &&
           reichweite == other.reichweite &&
           technik == other.technik &&
-          _ritualListEqual(additionalFieldValues, other.additionalFieldValues);
+          _ritualListEqual(
+            additionalFieldValues,
+            other.additionalFieldValues,
+          ) &&
+          unbekannteFelderGleich(unbekannteFelder, other.unbekannteFelder);
 
   @override
   int get hashCode => Object.hashAll([
@@ -143,6 +170,7 @@ class HeroRitualEntry {
     reichweite,
     technik,
     ...additionalFieldValues,
+    unbekannteFelderHash(unbekannteFelder),
   ]);
 }
 

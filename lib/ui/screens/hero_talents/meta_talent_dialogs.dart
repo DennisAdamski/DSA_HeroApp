@@ -252,15 +252,20 @@ class _MetaTalentEditorDialogState extends State<_MetaTalentEditorDialog> {
         .map((entry) => entry?.trim() ?? '')
         .where((entry) => entry.isNotEmpty)
         .toList(growable: false);
-    final candidate = HeroMetaTalent(
-      id:
-          widget.initialValue?.id ??
-          'meta_${DateTime.now().microsecondsSinceEpoch}',
-      name: _nameController.text.trim(),
-      componentTalentIds: componentTalentIds,
-      attributes: normalizedAttributes,
-      be: _beController.text.trim(),
-    );
+    // Ein vorhandenes Meta-Talent wird per `copyWith` geaendert, damit
+    // Felder einer neueren App-Version erhalten bleiben.
+    final candidate =
+        (widget.initialValue ??
+                HeroMetaTalent(
+                  id: 'meta_${DateTime.now().microsecondsSinceEpoch}',
+                  name: '',
+                ))
+            .copyWith(
+              name: _nameController.text.trim(),
+              componentTalentIds: componentTalentIds,
+              attributes: normalizedAttributes,
+              be: _beController.text.trim(),
+            );
     final issues = validateHeroMetaTalent(
       metaTalent: candidate,
       allowedTalentIds: _allowedTalentIds,

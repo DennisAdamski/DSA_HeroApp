@@ -995,19 +995,22 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
                   ),
               ],
               onChanged: (value) {
+                // Per `copyWith`, damit unbekannte Felder erhalten bleiben.
+                final bisher = _draftCombatConfig.offhandAssignment;
                 final nextAssignment = switch (value ?? 'none') {
-                  'none' => const OffhandAssignment(),
-                  final raw when raw.startsWith('weapon:') => OffhandAssignment(
+                  final raw when raw.startsWith('weapon:') => bisher.copyWith(
                     weaponIndex:
                         int.tryParse(raw.substring('weapon:'.length)) ?? -1,
+                    equipmentIndex: -1,
                   ),
                   final raw when raw.startsWith('equipment:') =>
-                    OffhandAssignment(
+                    bisher.copyWith(
+                      weaponIndex: -1,
                       equipmentIndex:
                           int.tryParse(raw.substring('equipment:'.length)) ??
                           -1,
                     ),
-                  _ => const OffhandAssignment(),
+                  _ => bisher.copyWith(weaponIndex: -1, equipmentIndex: -1),
                 };
                 _applyCombatConfigChange(
                   nextConfig: _draftCombatConfig.copyWith(
