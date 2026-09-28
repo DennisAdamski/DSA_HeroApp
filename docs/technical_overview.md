@@ -1318,11 +1318,24 @@ vorliegt.
 | `source` | Kurze Quellenreferenz |
 | `ruleMeta` | Optionale Herkunfts-, Beleg- und Paketmetadaten |
 | `active` | Im App verfügbar? |
+| `wirkungen` | Deklarative Regelwirkungen (`HeroTraitEffect`, `lib/catalog/hero_trait_effect.dart`), nur geschrieben, wenn belegt |
 
 `HeroTraitDef` speichert bewusst nur katalogisierbare Fakten und keine
-Langregeltexte. Die Heldenübersicht erzeugt daraus parserkompatible Fragmente
-für `HeroSheet.vorteileText` und `HeroSheet.nachteileText`; bestehende
-Regelwirkungen bleiben dadurch bei den vorhandenen Parsern und Regelmodulen.
+Langregeltexte. Regelwirkungen stehen deklarativ in `wirkungen` und werden
+über die Katalog-ID ausgewertet (ARCH-02), nicht über den Anzeigenamen:
+
+| `art` | Felder | Wirkung | Beispiele |
+|---|---|---|---|
+| `basiswert` | `ziel` (`lep`, `au`, `asp`, `kap`, `mr`, `ini`, `gs`, `ausweichen`), `jeWert`, `max`, optional `standard` | Wert × `jeWert`, Betrag auf `max` gekappt | Hohe Lebenskraft, Kurzatmig |
+| `eigenschaft` | `standard`, `max`, `startwert` | Eigenschaft aus der Auswahl (`{choice}`), mit `startwert` auch Startwert und Maximum | Herausragende Eigenschaft |
+| `schalter` | `ziel` (`flink`, `behaebig`) | feste Wirkung wie bisher (GS ±1, Ausweichen ±1) | Flink, Behäbig |
+| `wundschwelle` | `betrag` | fester Bonus auf alle Wundschwellenstufen | Eisern, Glasknochen |
+| `rast` | `ziel` (`lepStufe`, `aspStufe`, `schlechteRegeneration`, `astralerBlock`), `standard`, `max` | Regenerationsstufe bzw. -einschränkung | Schnelle Heilung, Astraler Block |
+
+Eine unbekannte `art` bleibt beim Laden roh erhalten und wirkt nicht.
+`test/catalog/trait_effect_catalog_test.dart` prüft Arten, Ziele und
+Vorzeichen gegen den echten Katalog. Hausregel-Pakete können `wirkungen` per
+`setFields` ersetzen.
 
 ### Split-JSON-Struktur & Ladevorgang
 
