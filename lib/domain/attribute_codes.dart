@@ -68,6 +68,7 @@ AttributeCode? parseAttributeCode(String raw) {
     case 'fingerfertigkeit':
       return AttributeCode.ff;
     case 'ge':
+    case 'gewandtheit':
     case 'gewandheit':
       return AttributeCode.ge;
     case 'ko':
