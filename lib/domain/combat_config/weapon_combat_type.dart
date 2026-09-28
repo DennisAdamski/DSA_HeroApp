@@ -9,14 +9,21 @@ enum WeaponCombatType {
 
 /// Liest einen [WeaponCombatType] tolerant aus persistierten Strings.
 WeaponCombatType weaponCombatTypeFromJson(String raw) {
+  return weaponCombatTypeErkennen(raw) ?? WeaponCombatType.melee;
+}
+
+/// Erkennt einen [WeaponCombatType]; unbekannte Werte ergeben `null`.
+WeaponCombatType? weaponCombatTypeErkennen(Object? raw) {
+  if (raw is! String) return null;
   switch (raw.trim().toLowerCase()) {
     case 'ranged':
     case 'fernkampf':
       return WeaponCombatType.ranged;
     case 'melee':
     case 'nahkampf':
-    default:
       return WeaponCombatType.melee;
+    default:
+      return null;
   }
 }
 

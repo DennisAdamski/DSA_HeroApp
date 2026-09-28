@@ -9,11 +9,20 @@ enum OffhandEquipmentType {
 
 /// Deserialisiert einen JSON-String zu einem [OffhandEquipmentType].
 OffhandEquipmentType offhandEquipmentTypeFromJson(String value) {
+  return offhandEquipmentTypeErkennen(value) ??
+      OffhandEquipmentType.parryWeapon;
+}
+
+/// Erkennt einen [OffhandEquipmentType]; unbekannte Werte ergeben `null`.
+OffhandEquipmentType? offhandEquipmentTypeErkennen(Object? value) {
+  if (value is! String) return null;
   switch (value.trim()) {
     case 'shield':
       return OffhandEquipmentType.shield;
-    default:
+    case 'parryWeapon':
       return OffhandEquipmentType.parryWeapon;
+    default:
+      return null;
   }
 }
 

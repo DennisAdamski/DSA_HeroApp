@@ -41,6 +41,7 @@ class SpellDuration {
     required this.unit,
     int? remaining,
     this.unbekannteFelder = const <String, Object?>{},
+    this.unbekannteEnumWerte = const <String, Object?>{},
   }) : amount = amount < 0 ? 0 : amount,
        remaining = _clampRemaining(remaining ?? amount, amount);
 
@@ -56,6 +57,12 @@ class SpellDuration {
   /// JSON-Felder einer neueren App-Version; bleiben beim Speichern erhalten
   /// (siehe `unbekannte_json_felder.dart`).
   final Map<String, Object?> unbekannteFelder;
+
+  /// Unbekannte Aufzaehlungswerte einer neueren App-Version (JSON-Schluessel
+  /// -> Rohwert). Die Felder tragen den Ersatzwert, mit dem Regeln rechnen;
+  /// geschrieben wird der Rohwert, bis jemand das Feld auf einen anderen Wert
+  /// setzt (siehe `unbekannte_json_felder.dart`).
+  final Map<String, Object?> unbekannteEnumWerte;
 
   /// Alle Schluessel, die [fromJson] liest; alles andere bleibt erhalten.
   static const Set<String> jsonSchluessel = <String>{
@@ -80,6 +87,7 @@ class SpellDuration {
     int? remaining,
     SpellDurationUnit? unit,
     Map<String, Object?>? unbekannteFelder,
+    Map<String, Object?>? unbekannteEnumWerte,
   }) {
     final nextAmount = amount ?? this.amount;
     final nextRemaining = remaining ?? amount ?? this.remaining;
@@ -88,25 +96,36 @@ class SpellDuration {
       remaining: nextRemaining,
       unit: unit ?? this.unit,
       unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
+      unbekannteEnumWerte:
+          unbekannteEnumWerte ??
+          ohneGeaenderteEnumWerte(this.unbekannteEnumWerte, {
+            'unit': unit != null && unit != this.unit,
+          }),
     );
   }
 
   /// Serialisiert die Wirkungsdauer fuer Persistenz und Sync.
   Map<String, dynamic> toJson() {
-    return mitUnbekanntenFeldern(<String, dynamic>{
-      'amount': amount,
-      'remaining': remaining,
-      'unit': unit.name,
-    }, unbekannteFelder);
+    return mitUnbekanntenEnumWerten(
+      mitUnbekanntenFeldern(<String, dynamic>{
+        'amount': amount,
+        'remaining': remaining,
+        'unit': unit.name,
+      }, unbekannteFelder),
+      unbekannteEnumWerte,
+    );
   }
 
   /// Laedt eine Wirkungsdauer robust aus JSON; unbekannte Einheiten fallen
   /// auf Kampfrunden zurueck, weil das die haeufigste Angabe ist.
   static SpellDuration fromJson(Map<String, dynamic> json) {
-    final rawUnit = json['unit']?.toString() ?? '';
-    final unit = SpellDurationUnit.values.firstWhere(
-      (candidate) => candidate.name == rawUnit,
-      orElse: () => SpellDurationUnit.kampfrunden,
+    final enumRoh = <String, Object?>{};
+    final unit = leseEnumWert(
+      json['unit'],
+      'unit',
+      erkenne: (roh) => enumNachName(SpellDurationUnit.values, roh),
+      ersatz: SpellDurationUnit.kampfrunden,
+      unbekannt: enumRoh,
     );
     final amount = (json['amount'] as num?)?.toInt() ?? 0;
     final rawRemaining = (json['remaining'] as num?)?.toInt();
@@ -115,6 +134,7 @@ class SpellDuration {
       remaining: rawRemaining,
       unit: unit,
       unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
+      unbekannteEnumWerte: festeEnumWerte(enumRoh),
     );
   }
 
@@ -124,7 +144,8 @@ class SpellDuration {
         other.amount == amount &&
         other.remaining == remaining &&
         other.unit == unit &&
-        unbekannteFelderGleich(unbekannteFelder, other.unbekannteFelder);
+        unbekannteFelderGleich(unbekannteFelder, other.unbekannteFelder) &&
+        unbekannteFelderGleich(unbekannteEnumWerte, other.unbekannteEnumWerte);
   }
 
   @override
@@ -133,6 +154,7 @@ class SpellDuration {
     remaining,
     unit,
     unbekannteFelderHash(unbekannteFelder),
+    unbekannteFelderHash(unbekannteEnumWerte),
   );
 }
 

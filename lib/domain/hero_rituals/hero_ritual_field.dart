@@ -17,6 +17,7 @@ class HeroRitualFieldDef {
     required this.label,
     required this.type,
     this.unbekannteFelder = const <String, Object?>{},
+    this.unbekannteEnumWerte = const <String, Object?>{},
   });
 
   /// Stabile ID der Felddefinition innerhalb einer Kategorie.
@@ -32,6 +33,12 @@ class HeroRitualFieldDef {
   /// (siehe `unbekannte_json_felder.dart`).
   final Map<String, Object?> unbekannteFelder;
 
+  /// Unbekannte Aufzaehlungswerte einer neueren App-Version (JSON-Schluessel
+  /// -> Rohwert). Die Felder tragen den Ersatzwert, mit dem Regeln rechnen;
+  /// geschrieben wird der Rohwert, bis jemand das Feld auf einen anderen Wert
+  /// setzt (siehe `unbekannte_json_felder.dart`).
+  final Map<String, Object?> unbekannteEnumWerte;
+
   /// Alle Schluessel, die [fromJson] liest; alles andere bleibt erhalten.
   static const Set<String> jsonSchluessel = <String>{'id', 'label', 'type'};
 
@@ -41,31 +48,48 @@ class HeroRitualFieldDef {
     String? label,
     HeroRitualFieldType? type,
     Map<String, Object?>? unbekannteFelder,
+    Map<String, Object?>? unbekannteEnumWerte,
   }) {
     return HeroRitualFieldDef(
       id: id ?? this.id,
       label: label ?? this.label,
       type: type ?? this.type,
       unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
+      unbekannteEnumWerte:
+          unbekannteEnumWerte ??
+          ohneGeaenderteEnumWerte(this.unbekannteEnumWerte, {
+            'type': type != null && type != this.type,
+          }),
     );
   }
 
   /// Serialisiert die Felddefinition fuer Persistenz und Export.
   Map<String, dynamic> toJson() {
-    return mitUnbekanntenFeldern(<String, dynamic>{
-      'id': id,
-      'label': label,
-      'type': _ritualFieldTypeToJson(type),
-    }, unbekannteFelder);
+    return mitUnbekanntenEnumWerten(
+      mitUnbekanntenFeldern(<String, dynamic>{
+        'id': id,
+        'label': label,
+        'type': _ritualFieldTypeToJson(type),
+      }, unbekannteFelder),
+      unbekannteEnumWerte,
+    );
   }
 
   /// Liest eine Felddefinition tolerant aus JSON.
   static HeroRitualFieldDef fromJson(Map<String, dynamic> json) {
+    final enumRoh = <String, Object?>{};
     return HeroRitualFieldDef(
       id: (json['id'] as String?) ?? '',
       label: (json['label'] as String?) ?? '',
-      type: _ritualFieldTypeFromJson(json['type']),
+      type: leseEnumWert(
+        json['type'],
+        'type',
+        erkenne: _ritualFieldTypeErkennen,
+        ersatz: HeroRitualFieldType.text,
+        unbekannt: enumRoh,
+      ),
       unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
+      unbekannteEnumWerte: festeEnumWerte(enumRoh),
     );
   }
 
@@ -76,11 +100,20 @@ class HeroRitualFieldDef {
           id == other.id &&
           label == other.label &&
           type == other.type &&
-          unbekannteFelderGleich(unbekannteFelder, other.unbekannteFelder);
+          unbekannteFelderGleich(unbekannteFelder, other.unbekannteFelder) &&
+          unbekannteFelderGleich(
+            unbekannteEnumWerte,
+            other.unbekannteEnumWerte,
+          );
 
   @override
-  int get hashCode =>
-      Object.hash(id, label, type, unbekannteFelderHash(unbekannteFelder));
+  int get hashCode => Object.hash(
+    id,
+    label,
+    type,
+    unbekannteFelderHash(unbekannteFelder),
+    unbekannteFelderHash(unbekannteEnumWerte),
+  );
 }
 
 /// Konkreter Wert eines Zusatzfelds an einem einzelnen Ritual.
@@ -179,13 +212,14 @@ String _ritualFieldTypeToJson(HeroRitualFieldType value) {
   }
 }
 
-HeroRitualFieldType _ritualFieldTypeFromJson(Object? raw) {
+HeroRitualFieldType? _ritualFieldTypeErkennen(Object? raw) {
   switch (raw) {
     case 'threeAttributes':
       return HeroRitualFieldType.threeAttributes;
     case 'text':
-    default:
       return HeroRitualFieldType.text;
+    default:
+      return null;
   }
 }
 

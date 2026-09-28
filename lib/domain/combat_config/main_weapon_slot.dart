@@ -32,6 +32,7 @@ class MainWeaponSlot {
     this.geweihtDescription = '',
     this.rangedProfile = const RangedWeaponProfile(),
     this.unbekannteFelder = const <String, Object?>{},
+    this.unbekannteEnumWerte = const <String, Object?>{},
   });
 
   /// Stabile Kennung des Slots innerhalb der Kampfkonfiguration.
@@ -108,6 +109,12 @@ class MainWeaponSlot {
   /// (siehe `unbekannte_json_felder.dart`).
   final Map<String, Object?> unbekannteFelder;
 
+  /// Unbekannte Aufzaehlungswerte einer neueren App-Version (JSON-Schluessel
+  /// -> Rohwert). Die Felder tragen den Ersatzwert, mit dem Regeln rechnen;
+  /// geschrieben wird der Rohwert, bis jemand das Feld auf einen anderen Wert
+  /// setzt (siehe `unbekannte_json_felder.dart`).
+  final Map<String, Object?> unbekannteEnumWerte;
+
   /// Alle Schluessel, die [fromJson] liest — einschliesslich des
   /// Altschluessels `wmFk`, der beim Laden in [wmAt] aufgeht und deshalb
   /// nicht als unbekannt zurueckgeschrieben werden darf.
@@ -140,6 +147,15 @@ class MainWeaponSlot {
   /// Gibt an, ob es sich um eine Fernkampfwaffe handelt.
   bool get isRanged => combatType == WeaponCombatType.ranged;
 
+  /// Ob die Geschosse dieses Slots samt ihren Inventareintraegen gelten.
+  ///
+  /// Fuer Fernkampfwaffen und fuer eine Kampfart einer neueren App-Version:
+  /// Regeln rechnen dort mit dem Ersatz Nahkampf, Verweise und Abgleich
+  /// behalten die Geschosse aber, sonst gingen deren Inventardaten verloren
+  /// (Befund ARCH-07-B13).
+  bool get fuehrtGeschosse =>
+      isRanged || unbekannteEnumWerte.containsKey('combatType');
+
   /// Gibt eine Kopie mit selektiv ueberschriebenen Feldern zurueck.
   ///
   /// Hinweis: [tpDiceSides] ist immer 6 und wird ignoriert.
@@ -167,6 +183,7 @@ class MainWeaponSlot {
     String? geweihtDescription,
     RangedWeaponProfile? rangedProfile,
     Map<String, Object?>? unbekannteFelder,
+    Map<String, Object?>? unbekannteEnumWerte,
   }) {
     return MainWeaponSlot(
       id: id ?? this.id,
@@ -193,42 +210,51 @@ class MainWeaponSlot {
       geweihtDescription: geweihtDescription ?? this.geweihtDescription,
       rangedProfile: rangedProfile ?? this.rangedProfile,
       unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
+      unbekannteEnumWerte:
+          unbekannteEnumWerte ??
+          ohneGeaenderteEnumWerte(this.unbekannteEnumWerte, {
+            'combatType': combatType != null && combatType != this.combatType,
+          }),
     );
   }
 
   /// Serialisiert den Slot zu einem JSON-kompatiblen Map.
   Map<String, dynamic> toJson() {
-    return mitUnbekanntenFeldern(<String, dynamic>{
-      if (id.isNotEmpty) 'id': id,
-      'name': name,
-      'talentId': talentId,
-      'combatType': weaponCombatTypeToJson(combatType),
-      'weaponType': weaponType,
-      'distanceClass': distanceClass,
-      'kkBase': kkBase,
-      'kkThreshold': kkThreshold,
-      'breakFactor': breakFactor,
-      'tpDiceCount': tpDiceCount,
-      // Als W6 persistiert fuer Schema-Kompatibilitaet.
-      'tpDiceSides': 6,
-      'tpFlat': tpFlat,
-      'wmAt': wmAt,
-      'wmPa': wmPa,
-      'iniMod': iniMod,
-      'beTalentMod': beTalentMod,
-      'isOneHanded': isOneHanded,
-      'isArtifact': isArtifact,
-      'artifactDescription': artifactDescription,
-      'isGeweiht': isGeweiht,
-      'geweihtDescription': geweihtDescription,
-      'rangedProfile': rangedProfile.toJson(),
-    }, unbekannteFelder);
+    return mitUnbekanntenEnumWerten(
+      mitUnbekanntenFeldern(<String, dynamic>{
+        if (id.isNotEmpty) 'id': id,
+        'name': name,
+        'talentId': talentId,
+        'combatType': weaponCombatTypeToJson(combatType),
+        'weaponType': weaponType,
+        'distanceClass': distanceClass,
+        'kkBase': kkBase,
+        'kkThreshold': kkThreshold,
+        'breakFactor': breakFactor,
+        'tpDiceCount': tpDiceCount,
+        // Als W6 persistiert fuer Schema-Kompatibilitaet.
+        'tpDiceSides': 6,
+        'tpFlat': tpFlat,
+        'wmAt': wmAt,
+        'wmPa': wmPa,
+        'iniMod': iniMod,
+        'beTalentMod': beTalentMod,
+        'isOneHanded': isOneHanded,
+        'isArtifact': isArtifact,
+        'artifactDescription': artifactDescription,
+        'isGeweiht': isGeweiht,
+        'geweihtDescription': geweihtDescription,
+        'rangedProfile': rangedProfile.toJson(),
+      }, unbekannteFelder),
+      unbekannteEnumWerte,
+    );
   }
 
   /// Deserialisiert einen [MainWeaponSlot] aus einem JSON-Map.
   ///
   /// Tolerant bei fehlenden Feldern (Standardwerte werden gesetzt).
   static MainWeaponSlot fromJson(Map<String, dynamic> json) {
+    final enumRoh = <String, Object?>{};
     int getInt(String key, int fallback) =>
         (json[key] as num?)?.toInt() ?? fallback;
     String getString(String key) => (json[key] as String?) ?? '';
@@ -243,7 +269,13 @@ class MainWeaponSlot {
       return const <String, dynamic>{};
     }
 
-    final combatType = weaponCombatTypeFromJson(getString('combatType'));
+    final combatType = leseEnumWert(
+      json['combatType'],
+      'combatType',
+      erkenne: weaponCombatTypeErkennen,
+      ersatz: WeaponCombatType.melee,
+      unbekannt: enumRoh,
+    );
     final hasWmAt = json.containsKey('wmAt') && json['wmAt'] != null;
     return MainWeaponSlot(
       id: (json['id'] as String?) ?? '',
@@ -274,6 +306,7 @@ class MainWeaponSlot {
       geweihtDescription: getString('geweihtDescription'),
       rangedProfile: RangedWeaponProfile.fromJson(getMap('rangedProfile')),
       unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
+      unbekannteEnumWerte: festeEnumWerte(enumRoh),
     );
   }
 }

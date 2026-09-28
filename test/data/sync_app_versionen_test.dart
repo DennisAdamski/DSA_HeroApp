@@ -248,8 +248,10 @@ void main() {
       // JSON, nicht ueber das hiesige Modell, das sie sonst schon verloere.
       final heutig = HeroSheet.fromJson(basis.basis).toJson();
       for (final pfad in basis.pfade) {
-        final eltern = pfad.substring(0, pfad.lastIndexOf('/'));
-        (wertAn(heutig, eltern) as Map)[zukunftsfeld] = wertAn(
+        final trenner = pfad.lastIndexOf('/');
+        (wertAn(heutig, pfad.substring(0, trenner)) as Map)[pfad.substring(
+          trenner + 1,
+        )] = wertAn(
           basis.json,
           pfad,
         );
@@ -300,10 +302,15 @@ void main() {
         'und ohne Konflikt übernommen', () async {
       final aktuell = (await cloud.loadHero(_krieger))!;
       final echo = wieVeroeffentlichteApp(aktuell.hero!.toJson());
-      // Die veroeffentlichte App verwirft die Felder (Restrisiko 3); diese
+      // Die veroeffentlichte App verwirft die Felder und schreibt fuer
+      // unbekannte Aufzaehlungswerte den Ersatz (Restrisiko 3); diese
       // Version bewahrt, was sie vorfindet, und stellt nichts wieder her.
       for (final pfad in zukunft.pfade) {
-        expect(wertAn(echo, pfad), isNull, reason: pfad);
+        expect(
+          wertAn(echo, pfad),
+          isNot(wertAn(zukunft.json, pfad)),
+          reason: pfad,
+        );
       }
       await cloud.speichereFremdenStand(
         echo,
@@ -314,7 +321,11 @@ void main() {
         zustand.state!.toJson(),
       );
       for (final pfad in zukunftsZustand.pfade) {
-        expect(wertAn(zustandsEcho, pfad), isNull, reason: pfad);
+        expect(
+          wertAn(zustandsEcho, pfad),
+          isNot(wertAn(zukunftsZustand.json, pfad)),
+          reason: pfad,
+        );
       }
       await cloud.speichereFremdenZustand(
         _krieger,
@@ -334,12 +345,16 @@ void main() {
       expect(await a.heldHash(_krieger), await b.heldHash(_krieger));
       final lokal = (await b.lokal.loadHeroById(_krieger))!.toJson();
       for (final pfad in zukunft.pfade) {
-        expect(wertAn(lokal, pfad), isNull, reason: pfad);
+        expect(wertAn(lokal, pfad), wertAn(echo, pfad), reason: pfad);
       }
       final lokalerZustand = (await b.lokal.loadHeroState(_krieger))!;
       expect(heroStateContentHash(lokalerZustand), isNotEmpty);
       for (final pfad in zukunftsZustand.pfade) {
-        expect(wertAn(lokalerZustand.toJson(), pfad), isNull, reason: pfad);
+        expect(
+          wertAn(lokalerZustand.toJson(), pfad),
+          wertAn(zustandsEcho, pfad),
+          reason: pfad,
+        );
       }
     });
 

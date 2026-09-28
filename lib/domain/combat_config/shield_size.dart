@@ -12,13 +12,21 @@ enum ShieldSize {
 
 /// Deserialisiert einen JSON-String zu einer [ShieldSize].
 ShieldSize shieldSizeFromJson(String value) {
+  return shieldSizeErkennen(value) ?? ShieldSize.small;
+}
+
+/// Erkennt eine [ShieldSize]; unbekannte Werte ergeben `null`.
+ShieldSize? shieldSizeErkennen(Object? value) {
+  if (value is! String) return null;
   switch (value.trim()) {
+    case 'small':
+      return ShieldSize.small;
     case 'large':
       return ShieldSize.large;
     case 'veryLarge':
       return ShieldSize.veryLarge;
     default:
-      return ShieldSize.small;
+      return null;
   }
 }
 

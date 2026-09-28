@@ -60,6 +60,7 @@ class WaffenmeisterBonus {
     this.description = '',
     this.customPointCost = 2,
     this.unbekannteFelder = const <String, Object?>{},
+    this.unbekannteEnumWerte = const <String, Object?>{},
   });
 
   /// Typ des Bonus.
@@ -81,6 +82,12 @@ class WaffenmeisterBonus {
   /// (siehe `unbekannte_json_felder.dart`).
   final Map<String, Object?> unbekannteFelder;
 
+  /// Unbekannte Aufzaehlungswerte einer neueren App-Version (JSON-Schluessel
+  /// -> Rohwert). Die Felder tragen den Ersatzwert, mit dem Regeln rechnen;
+  /// geschrieben wird der Rohwert, bis jemand das Feld auf einen anderen Wert
+  /// setzt (siehe `unbekannte_json_felder.dart`).
+  final Map<String, Object?> unbekannteEnumWerte;
+
   /// Alle Schluessel, die [fromJson] liest; alles andere bleibt erhalten.
   static const Set<String> jsonSchluessel = <String>{
     'type',
@@ -98,6 +105,7 @@ class WaffenmeisterBonus {
     String? description,
     int? customPointCost,
     Map<String, Object?>? unbekannteFelder,
+    Map<String, Object?>? unbekannteEnumWerte,
   }) {
     return WaffenmeisterBonus(
       type: type ?? this.type,
@@ -106,31 +114,47 @@ class WaffenmeisterBonus {
       description: description ?? this.description,
       customPointCost: customPointCost ?? this.customPointCost,
       unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
+      unbekannteEnumWerte:
+          unbekannteEnumWerte ??
+          ohneGeaenderteEnumWerte(this.unbekannteEnumWerte, {
+            'type': type != null && type != this.type,
+          }),
     );
   }
 
   /// Serialisiert den Bonus zu einem JSON-kompatiblen Map.
   Map<String, dynamic> toJson() {
-    return mitUnbekanntenFeldern(<String, dynamic>{
-      'type': waffenmeisterBonusTypeToJson(type),
-      'value': value,
-      'targetManeuver': targetManeuver,
-      'description': description,
-      'customPointCost': customPointCost,
-    }, unbekannteFelder);
+    return mitUnbekanntenEnumWerten(
+      mitUnbekanntenFeldern(<String, dynamic>{
+        'type': waffenmeisterBonusTypeToJson(type),
+        'value': value,
+        'targetManeuver': targetManeuver,
+        'description': description,
+        'customPointCost': customPointCost,
+      }, unbekannteFelder),
+      unbekannteEnumWerte,
+    );
   }
 
   /// Deserialisiert einen [WaffenmeisterBonus] aus einem JSON-Map.
   ///
   /// Tolerant bei fehlenden Feldern (Standardwerte werden gesetzt).
   static WaffenmeisterBonus fromJson(Map<String, dynamic> json) {
+    final enumRoh = <String, Object?>{};
     return WaffenmeisterBonus(
-      type: waffenmeisterBonusTypeFromJson((json['type'] as String?) ?? ''),
+      type: leseEnumWert(
+        json['type'],
+        'type',
+        erkenne: (roh) => enumNachName(WaffenmeisterBonusType.values, roh),
+        ersatz: WaffenmeisterBonusType.customAdvantage,
+        unbekannt: enumRoh,
+      ),
       value: (json['value'] as num?)?.toInt() ?? 0,
       targetManeuver: (json['targetManeuver'] as String?) ?? '',
       description: (json['description'] as String?) ?? '',
       customPointCost: (json['customPointCost'] as num?)?.toInt() ?? 2,
       unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
+      unbekannteEnumWerte: festeEnumWerte(enumRoh),
     );
   }
 }
