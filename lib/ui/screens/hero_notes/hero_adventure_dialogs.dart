@@ -56,19 +56,23 @@ Future<_AdventurePersonDialogResult?> _showAdventurePersonDialog({
 
 class _AdventureDateDraft {
   _AdventureDateDraft.world(HeroAdventureDateValue initial)
-    : _usesAventurianMonthPicker = false,
+    : _initial = initial,
+      _usesAventurianMonthPicker = false,
       dayController = TextEditingController(text: initial.day),
       monthController = TextEditingController(text: initial.month),
       yearController = TextEditingController(text: initial.year),
       selectedMonth = '';
 
   _AdventureDateDraft.aventurian(HeroAdventureDateValue initial)
-    : _usesAventurianMonthPicker = true,
+    : _initial = initial,
+      _usesAventurianMonthPicker = true,
       dayController = TextEditingController(text: initial.day),
       monthController = null,
       yearController = TextEditingController(text: initial.year),
       selectedMonth = _normalizeAventurianMonthValue(initial.month);
 
+  // Ausgangswert; ueber ihn bleiben unbekannte Felder erhalten.
+  final HeroAdventureDateValue _initial;
   final bool _usesAventurianMonthPicker;
   final TextEditingController dayController;
   final TextEditingController? monthController;
@@ -76,7 +80,7 @@ class _AdventureDateDraft {
   String selectedMonth;
 
   HeroAdventureDateValue buildValue() {
-    return HeroAdventureDateValue(
+    return _initial.copyWith(
       day: dayController.text.trim(),
       month: _usesAventurianMonthPicker
           ? selectedMonth.trim()
@@ -1008,7 +1012,10 @@ class _AdventureNoteDialogState extends State<_AdventureNoteDialog> {
 
     Navigator.of(context).pop(
       _AdventureNoteDialogResult(
-        entry: HeroNoteEntry(title: title, description: description),
+        // Per `copyWith`, damit unbekannte Felder erhalten bleiben.
+        entry:
+            widget.existing?.copyWith(title: title, description: description) ??
+            HeroNoteEntry(title: title, description: description),
       ),
     );
   }

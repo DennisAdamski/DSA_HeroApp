@@ -3,8 +3,14 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_adventure_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_companion.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_connection_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_gruppen_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_language_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_meta_talent.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_note_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_reisebericht.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_rituals.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_spell_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_spell_text_overrides.dart';
@@ -282,6 +288,199 @@ final _talenteUndMagie = <_Modell>[
   ),
 ];
 
+final _begleiterAbenteuerNotizen = <_Modell>[
+  _Modell(
+    'HeroCompanion',
+    schluessel: HeroCompanion.jsonSchluessel,
+    voll: () => const HeroCompanion(
+      id: 'b1',
+      mu: 1,
+      kl: 1,
+      inn: 1,
+      ch: 1,
+      ff: 1,
+      ge: 1,
+      ko: 1,
+      kk: 1,
+      ini: 1,
+      magieresistenz: 1,
+      loyalitaet: 1,
+      apGesamt: 1,
+      apAusgegeben: 1,
+      maxLep: 1,
+      maxAup: 1,
+      maxAsp: 1,
+      gw: 1,
+      au: 1,
+      ritualCategories: <HeroRitualCategory>[
+        HeroRitualCategory(
+          id: 'rk',
+          name: 'R',
+          knowledgeMode: HeroRitualKnowledgeMode.derivedTalents,
+        ),
+      ],
+      steigerungen: <String, int>{'mu': 1},
+      startLep: 1,
+      startAup: 1,
+      startAsp: 1,
+      startMr: 1,
+    ).toJson(),
+    lade: (json) => HeroCompanion.fromJson(json).toJson(),
+    bearbeite: (json) =>
+        HeroCompanion.fromJson(json).copyWith(name: 'Krähe').toJson(),
+    unbekannt: (json) => HeroCompanion.fromJson(json).unbekannteFelder,
+  ),
+  _Modell(
+    'HeroCompanionAttack',
+    schluessel: HeroCompanionAttack.jsonSchluessel,
+    voll: () => const HeroCompanionAttack(
+      id: 'a1',
+      at: 10,
+      pa: 5,
+      steigerungAt: 1,
+      steigerungPa: 1,
+    ).toJson(),
+    lade: (json) => HeroCompanionAttack.fromJson(json).toJson(),
+    bearbeite: (json) =>
+        HeroCompanionAttack.fromJson(json).copyWith(tp: '1W6').toJson(),
+    unbekannt: (json) => HeroCompanionAttack.fromJson(json).unbekannteFelder,
+  ),
+  _Modell(
+    'HeroCompanionSonderfertigkeit',
+    schluessel: HeroCompanionSonderfertigkeit.jsonSchluessel,
+    voll: () => const HeroCompanionSonderfertigkeit(name: 'SF').toJson(),
+    lade: (json) => HeroCompanionSonderfertigkeit.fromJson(json).toJson(),
+    bearbeite: (json) =>
+        HeroCompanionSonderfertigkeit.fromJson(json)
+            .copyWith(beschreibung: 'Neu')
+            .toJson(),
+    unbekannt: (json) =>
+        HeroCompanionSonderfertigkeit.fromJson(json).unbekannteFelder,
+  ),
+  _Modell(
+    'HeroCompanionSpeed',
+    schluessel: HeroCompanionSpeed.jsonSchluessel,
+    voll: () => const HeroCompanionSpeed(art: 'Fliegen', wert: 12).toJson(),
+    lade: (json) => HeroCompanionSpeed.fromJson(json).toJson(),
+    bearbeite: (json) =>
+        HeroCompanionSpeed.fromJson(json).copyWith(wert: 14).toJson(),
+    unbekannt: (json) => HeroCompanionSpeed.fromJson(json).unbekannteFelder,
+  ),
+  _Modell(
+    'HeroAdventureEntry',
+    schluessel: HeroAdventureEntry.jsonSchluessel,
+    voll: () => const HeroAdventureEntry(id: 'ab1', title: 'T').toJson(),
+    lade: (json) => HeroAdventureEntry.fromJson(json).toJson(),
+    bearbeite: (json) =>
+        HeroAdventureEntry.fromJson(json).copyWith(summary: 'S').toJson(),
+    unbekannt: (json) => HeroAdventureEntry.fromJson(json).unbekannteFelder,
+  ),
+  _Modell(
+    'HeroAdventureSeReward',
+    schluessel: HeroAdventureSeReward.jsonSchluessel,
+    voll: () => const HeroAdventureSeReward(targetId: 'tal_a').toJson(),
+    lade: (json) => HeroAdventureSeReward.fromJson(json).toJson(),
+    bearbeite: (json) =>
+        HeroAdventureSeReward.fromJson(json).copyWith(count: 2).toJson(),
+    unbekannt: (json) => HeroAdventureSeReward.fromJson(json).unbekannteFelder,
+  ),
+  _Modell(
+    'HeroAdventureDateValue',
+    schluessel: HeroAdventureDateValue.jsonSchluessel,
+    voll: () => const HeroAdventureDateValue(
+      day: '1',
+      month: 'praios',
+      year: '1040',
+    ).toJson(),
+    lade: (json) => HeroAdventureDateValue.fromJson(json).toJson(),
+    bearbeite: (json) =>
+        HeroAdventureDateValue.fromJson(json).copyWith(day: '2').toJson(),
+    unbekannt: (json) => HeroAdventureDateValue.fromJson(json).unbekannteFelder,
+  ),
+  _Modell(
+    'HeroAdventurePersonEntry',
+    schluessel: HeroAdventurePersonEntry.jsonSchluessel,
+    voll: () =>
+        const HeroAdventurePersonEntry(id: 'p1', name: 'Answin').toJson(),
+    lade: (json) => HeroAdventurePersonEntry.fromJson(json).toJson(),
+    bearbeite: (json) =>
+        HeroAdventurePersonEntry.fromJson(json)
+            .copyWith(description: 'D')
+            .toJson(),
+    unbekannt: (json) =>
+        HeroAdventurePersonEntry.fromJson(json).unbekannteFelder,
+  ),
+  _Modell(
+    'HeroAdventureLootEntry',
+    schluessel: HeroAdventureLootEntry.jsonSchluessel,
+    voll: () => const HeroAdventureLootEntry(id: 'l1', name: 'Kette').toJson(),
+    lade: (json) => HeroAdventureLootEntry.fromJson(json).toJson(),
+    bearbeite: (json) =>
+        HeroAdventureLootEntry.fromJson(json).copyWith(quantity: '2').toJson(),
+    unbekannt: (json) => HeroAdventureLootEntry.fromJson(json).unbekannteFelder,
+  ),
+  _Modell(
+    'HeroNoteEntry',
+    schluessel: HeroNoteEntry.jsonSchluessel,
+    voll: () => const HeroNoteEntry(title: 'T').toJson(),
+    lade: (json) => HeroNoteEntry.fromJson(json).toJson(),
+    bearbeite: (json) =>
+        HeroNoteEntry.fromJson(json).copyWith(description: 'D').toJson(),
+    unbekannt: (json) => HeroNoteEntry.fromJson(json).unbekannteFelder,
+  ),
+  _Modell(
+    'HeroConnectionEntry',
+    schluessel: HeroConnectionEntry.jsonSchluessel,
+    voll: () => const HeroConnectionEntry(name: 'Answin').toJson(),
+    lade: (json) => HeroConnectionEntry.fromJson(json).toJson(),
+    bearbeite: (json) =>
+        HeroConnectionEntry.fromJson(json).copyWith(ort: 'Punin').toJson(),
+    unbekannt: (json) => HeroConnectionEntry.fromJson(json).unbekannteFelder,
+  ),
+  _Modell(
+    'HeroReisebericht',
+    schluessel: HeroReisebericht.jsonSchluessel,
+    voll: () => const HeroReisebericht(
+      checkedIds: <String>{'a'},
+      wahlSeZuordnungen: <String, String>{'b': 'tal_a'},
+    ).toJson(),
+    lade: (json) => HeroReisebericht.fromJson(json).toJson(),
+    bearbeite: (json) =>
+        HeroReisebericht.fromJson(json)
+            .copyWith(appliedRewardIds: <String>{'c'})
+            .toJson(),
+    unbekannt: (json) => HeroReisebericht.fromJson(json).unbekannteFelder,
+  ),
+  _Modell(
+    'ReiseberichtOpenItem',
+    schluessel: ReiseberichtOpenItem.jsonSchluessel,
+    voll: () => const ReiseberichtOpenItem(
+      name: 'Thorwal',
+      klassifikation: 'normal',
+      ap: 10,
+    ).toJson(),
+    lade: (json) => ReiseberichtOpenItem.fromJson(json).toJson(),
+    bearbeite: (json) =>
+        ReiseberichtOpenItem.fromJson(json).copyWith(ap: 15).toJson(),
+    unbekannt: (json) => ReiseberichtOpenItem.fromJson(json).unbekannteFelder,
+  ),
+  _Modell(
+    'HeroGruppenMitgliedschaft',
+    schluessel: HeroGruppenMitgliedschaft.jsonSchluessel,
+    voll: () => const HeroGruppenMitgliedschaft(
+      gruppenCode: 'g1',
+      externeHeldIds: <String>['x'],
+    ).toJson(),
+    lade: (json) => HeroGruppenMitgliedschaft.fromJson(json).toJson(),
+    bearbeite: (json) =>
+        HeroGruppenMitgliedschaft.fromJson(json)
+            .copyWith(gruppenName: 'N')
+            .toJson(),
+    unbekannt: (json) =>
+        HeroGruppenMitgliedschaft.fromJson(json).unbekannteFelder,
+  ),
+];
+
 // Voll belegtes JSON eines Modells samt Zukunftsfeld, frisch kopiert.
 Map<String, dynamic> _mitZukunft(_Modell modell) {
   final json = jsonDecode(jsonEncode(modell.voll())) as Map<String, dynamic>;
@@ -325,6 +524,28 @@ void main() {
     'Talente, Zauber und Rituale bewahren unbekannte Felder',
     _talenteUndMagie,
   );
+
+  _pruefeModelle(
+    'Begleiter, Abenteuer, Notizen und Reisebericht bewahren unbekannte '
+    'Felder',
+    _begleiterAbenteuerNotizen,
+  );
+
+  group('Begleiter: Altschlüssel', () {
+    test('eigenAp und vorNachteile gehen beim Laden auf', () {
+      final begleiter = HeroCompanion.fromJson(<String, dynamic>{
+        'id': 'b1',
+        'eigenAp': 30,
+        'vorNachteile': 'Treu',
+      });
+
+      expect(begleiter.apGesamt, 30);
+      expect(begleiter.vorteile, 'Treu');
+      expect(begleiter.unbekannteFelder, isEmpty);
+      expect(begleiter.toJson().containsKey('eigenAp'), isFalse);
+      expect(begleiter.toJson().containsKey('vorNachteile'), isFalse);
+    });
+  });
 
   group('Talente, Zauber und Rituale: Sonderfälle', () {
     test('Overrides nur mit unbekannten Feldern gelten nicht als leer', () {

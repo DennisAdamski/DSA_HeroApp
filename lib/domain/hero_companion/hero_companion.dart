@@ -8,6 +8,7 @@ import 'package:dsa_heldenverwaltung/domain/combat_config.dart' show ArmorPiece;
 import 'package:dsa_heldenverwaltung/domain/hero_companion/hero_companion_attack.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_companion/hero_companion_sonderfertigkeit.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_companion/hero_companion_speed.dart';
+import 'package:dsa_heldenverwaltung/domain/unbekannte_json_felder.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_rituals.dart'
     show HeroRitualCategory;
 
@@ -88,6 +89,7 @@ class HeroCompanion {
     this.startAup,
     this.startAsp,
     this.startMr,
+    this.unbekannteFelder = const <String, Object?>{},
   });
 
   /// Stabiler Schluessel des Begleiters.
@@ -241,6 +243,61 @@ class HeroCompanion {
   /// Startwert fuer MR (analog zu startLep).
   final int? startMr;
 
+  /// JSON-Felder einer neueren App-Version; bleiben beim Speichern erhalten
+  /// (siehe `unbekannte_json_felder.dart`).
+  final Map<String, Object?> unbekannteFelder;
+
+  /// Alle Schluessel, die [fromJson] liest — einschliesslich der nur bedingt
+  /// geschriebenen und der Altschluessel `eigenAp` und `vorNachteile`.
+  static const Set<String> jsonSchluessel = <String>{
+    'id',
+    'name',
+    'typ',
+    'familie',
+    'aussehen',
+    'gattung',
+    'gewicht',
+    'groesse',
+    'alter',
+    'mu',
+    'kl',
+    'inn',
+    'ch',
+    'ff',
+    'ge',
+    'ko',
+    'kk',
+    'ini',
+    'magieresistenz',
+    'loyalitaet',
+    'apGesamt',
+    'eigenAp',
+    'apAusgegeben',
+    'geschwindigkeiten',
+    'maxLep',
+    'maxAup',
+    'maxAsp',
+    'tragkraft',
+    'zugkraft',
+    'ausbildung',
+    'futterbedarf',
+    'vorteile',
+    'vorNachteile',
+    'nachteile',
+    'gw',
+    'au',
+    'angriffe',
+    'sonderfertigkeiten',
+    'ruestungsTeile',
+    'ruestungsgewoehnung',
+    'ritualCategories',
+    'steigerungen',
+    'startLep',
+    'startAup',
+    'startAsp',
+    'startMr',
+  };
+
   HeroCompanion copyWith({
     String? id,
     String? name,
@@ -286,6 +343,7 @@ class HeroCompanion {
     Object? startAup = _keepNull,
     Object? startAsp = _keepNull,
     Object? startMr = _keepNull,
+    Map<String, Object?>? unbekannteFelder,
   }) {
     return HeroCompanion(
       id: id ?? this.id,
@@ -346,11 +404,12 @@ class HeroCompanion {
           ? this.startAsp
           : startAsp as int?,
       startMr: identical(startMr, _keepNull) ? this.startMr : startMr as int?,
+      unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
     );
   }
 
   Map<String, dynamic> toJson() {
-    return {
+    return mitUnbekanntenFeldern(<String, dynamic>{
       'id': id,
       'name': name,
       'typ': typ.name,
@@ -404,7 +463,7 @@ class HeroCompanion {
       if (startAup != null) 'startAup': startAup,
       if (startAsp != null) 'startAsp': startAsp,
       if (startMr != null) 'startMr': startMr,
-    };
+    }, unbekannteFelder);
   }
 
   static HeroCompanion fromJson(Map<String, dynamic> json) {
@@ -491,6 +550,7 @@ class HeroCompanion {
       startAup: (json['startAup'] as num?)?.toInt(),
       startAsp: (json['startAsp'] as num?)?.toInt(),
       startMr: (json['startMr'] as num?)?.toInt(),
+      unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
     );
   }
 
@@ -541,7 +601,8 @@ class HeroCompanion {
           startLep == other.startLep &&
           startAup == other.startAup &&
           startAsp == other.startAsp &&
-          startMr == other.startMr;
+          startMr == other.startMr &&
+          unbekannteFelderGleich(unbekannteFelder, other.unbekannteFelder);
 
   @override
   int get hashCode => Object.hashAll([
@@ -589,6 +650,7 @@ class HeroCompanion {
     startAup,
     startAsp,
     startMr,
+    unbekannteFelderHash(unbekannteFelder),
   ]);
 }
 
