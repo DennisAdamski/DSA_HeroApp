@@ -1,4 +1,3 @@
-import 'package:dsa_heldenverwaltung/catalog/hero_trait_def.dart';
 import 'package:dsa_heldenverwaltung/catalog/hero_trait_effect.dart';
 import 'package:dsa_heldenverwaltung/catalog/hero_trait_text.dart';
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
