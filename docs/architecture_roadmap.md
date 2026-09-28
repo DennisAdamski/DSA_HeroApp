@@ -291,9 +291,12 @@ Commits:
    `lernspalte` auf ihre Ziele (Talent, Talentgruppe, Nah-/Fernkampf,
    Sprachen/Schriften, Zauber, Merkmal je Treffer, Ritualkenntnis),
    abgeleitet in `hero_begabung_rules.dart` und nicht gespeichert.
-   „Begabung für X“ wird über die aufgelöste Auswahlliste eindeutig. Offen:
-   Die Katalogvorschau beim Hinzufügen eines Talents oder Zaubers zeigt die
-   Basisspalte ohne Begabung. Zauberspezialisierungen zählen jede Begabung
+   „Begabung für X“ wird über die aufgelöste Auswahlliste eindeutig. Katalogvorschauen
+   (Talente, Kampftalente, Zauber, Repräsentationsdialog) zeigen die
+   wirksame Spalte samt Quelle; Widget-Tests decken Talente, beide
+   Kampftalent-Ansichten, Zauber, Zauberkatalog und Rituale ab
+   (`test/test_support/begabung_katalog.dart` lädt dafür die echten
+   Katalogeinträge). Offen: Zauberspezialisierungen zählen jede Begabung
    wie das Häkchen als eine Spalte (wie bisher ohne Merkmal, Hauszauber und
    Unfähigkeit). Der Textweg (ohne Katalog) kennt keine Lernspalten, das ist
    die bewusste Ausnahme im Äquivalenztest.
