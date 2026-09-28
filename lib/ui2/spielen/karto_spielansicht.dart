@@ -1,6 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:dsa_heldenverwaltung/ui2/merkmale/karto_merkmalsblatt.dart';
+import 'package:dsa_heldenverwaltung/ui2/merkmale/karto_merkmal_karten.dart';
+import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
+import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_zuordnung_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_wirkung_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_anzeige_rules.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_merkmal.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_breakpoints.dart';
@@ -38,7 +46,7 @@ class KartoSpielansicht extends ConsumerWidget {
     required this.heroId,
     required this.bestand,
     required this.aktion,
-    required this.vorAbenteuerbearbeitung,
+    required this.vorHeldenbearbeitung,
   });
 
   /// ID im gemeinsam genutzten Heldenspeicher.
@@ -50,12 +58,12 @@ class KartoSpielansicht extends ConsumerWidget {
   /// Geschützter Ausführungsweg für Dialoge und Bestandsaktionen.
   final KartoLaufzeitAktion aktion;
 
-  /// Prüft vor dem Abenteuerblatt einen offenen Verwaltungsentwurf.
+  /// Prüft vor Abenteuer- und Merkmalsblatt einen offenen Verwaltungsentwurf.
   ///
-  /// Der Notizen-Tab speichert seinen ganzen Entwurf über den Helden; ohne
-  /// diese Prüfung überschriebe ein späteres Speichern dort die Einträge aus
-  /// dem Blatt. `false` bricht das Öffnen ab.
-  final Future<bool> Function() vorAbenteuerbearbeitung;
+  /// Notizen- und Übersichts-Tab speichern ihren ganzen Entwurf über den
+  /// Helden; ohne diese Prüfung überschriebe ein späteres Speichern dort die
+  /// Einträge aus dem Blatt. `false` bricht das Öffnen ab.
+  final Future<bool> Function() vorHeldenbearbeitung;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -157,7 +165,7 @@ class KartoSpielansicht extends ConsumerWidget {
       tippHinweis: 'Abenteuer öffnen',
       tippSchluessel: const ValueKey<String>('karto-spiel-abenteuer'),
       onTap: () => aktion(() async {
-        if (!await vorAbenteuerbearbeitung() || !context.mounted) return;
+        if (!await vorHeldenbearbeitung() || !context.mounted) return;
         await zeigeAbenteuerblatt(
           context: context,
           heroId: heroId,
@@ -204,7 +212,48 @@ class KartoSpielansicht extends ConsumerWidget {
         hinweis: 'Ein Tippen würfelt die Probe',
         child: bestand.spielEigenschaftsproben(heroId: heroId, werte: werte),
       ),
+      _merkmale(context, ref, werte),
     ];
+  }
+
+  // Vor- und Nachteile kompakt; bearbeitet wird im Merkmalsblatt, nach
+  // derselben Editorprüfung wie beim Abenteuerblatt.
+  Widget _merkmale(
+    BuildContext context,
+    WidgetRef ref,
+    HeroComputedSnapshot werte,
+  ) {
+    final catalog = ref.watch(rulesCatalogProvider).valueOrNull;
+    // Ohne geladenen Katalog zeigt die Übersicht die gespeicherten Texte;
+    // bearbeitet werden kann erst mit Katalog.
+    final katalog = catalog == null
+        ? MerkmalKatalog(vorteile: const [], nachteile: const [])
+        : MerkmalKatalog.von(catalog);
+    final abgleich = werteMerkmaleAus(werte.hero, catalog: catalog).abgleich;
+    List<MerkmalAnzeige> aufbereiten(List<HeroMerkmal> liste, bool vorteil) {
+      return [
+        for (final eintrag in liste)
+          beschreibeMerkmal(eintrag, katalog, vorteil: vorteil),
+      ];
+    }
+
+    return KartoAbschnitt(
+      titel: 'Vor- und Nachteile',
+      aktion: TextButton(
+        key: const ValueKey<String>('karto-spiel-merkmale'),
+        onPressed: catalog == null
+            ? null
+            : () => aktion(() async {
+                if (!await vorHeldenbearbeitung() || !context.mounted) return;
+                await zeigeMerkmalsblatt(context: context, heroId: heroId);
+              }),
+        child: const Text('Bearbeiten'),
+      ),
+      child: KartoMerkmalsuebersicht(
+        vorteile: aufbereiten(abgleich.vorteile, true),
+        nachteile: aufbereiten(abgleich.nachteile, false),
+      ),
+    );
   }
 
   // Auf breiten Fenstern steht diese Spalte neben den Spielaktionen; auf

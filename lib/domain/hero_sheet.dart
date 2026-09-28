@@ -12,6 +12,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_companion.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_connection_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_language_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_merkmal.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_meta_talent.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_note_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_reisebericht.dart';
@@ -61,6 +62,8 @@ class HeroSheet {
     this.background = const HeroBackground(),
     this.vorteileText = '',
     this.nachteileText = '',
+    this.vorteilEintraege = const <HeroMerkmal>[],
+    this.nachteilEintraege = const <HeroMerkmal>[],
     this.apTotal = 0,
     this.apSpent = 0,
     this.apAvailable = 0,
@@ -137,6 +140,18 @@ class HeroSheet {
   final HeroBackground background;
   final String vorteileText;
   final String nachteileText;
+
+  /// Erworbene Vorteile mit Katalog-ID, Wert und Auswahl (ARCH-02).
+  ///
+  /// Ist die Liste belegt, ist sie maßgeblich; [vorteileText] ist dann nur
+  /// ihre Projektion fuer aeltere App-Versionen. Weicht der Text davon ab,
+  /// hat eine aeltere Version ihn geaendert — das wird zur Pruefung
+  /// angezeigt, nie still uebernommen (`hero_merkmal_rules.dart`). Leer bei
+  /// Bestandshelden, bis sie mit dieser Version gespeichert werden.
+  final List<HeroMerkmal> vorteilEintraege;
+
+  /// Erworbene Nachteile; Gegenstueck zu [vorteilEintraege].
+  final List<HeroMerkmal> nachteilEintraege;
   final int apTotal;
   final int apSpent;
   final int apAvailable;
@@ -240,6 +255,8 @@ class HeroSheet {
     HeroBackground? background,
     String? vorteileText,
     String? nachteileText,
+    List<HeroMerkmal>? vorteilEintraege,
+    List<HeroMerkmal>? nachteilEintraege,
     int? apTotal,
     int? apSpent,
     int? apAvailable,
@@ -304,6 +321,8 @@ class HeroSheet {
       background: background ?? this.background,
       vorteileText: vorteileText ?? this.vorteileText,
       nachteileText: nachteileText ?? this.nachteileText,
+      vorteilEintraege: vorteilEintraege ?? this.vorteilEintraege,
+      nachteilEintraege: nachteilEintraege ?? this.nachteilEintraege,
       apTotal: apTotal ?? this.apTotal,
       apSpent: apSpent ?? this.apSpent,
       apAvailable: apAvailable ?? this.apAvailable,
@@ -380,6 +399,8 @@ class HeroSheet {
     'muttersprache',
     'vorteileText',
     'nachteileText',
+    'vorteilEintraege',
+    'nachteilEintraege',
     'apTotal',
     'apSpent',
     'apAvailable',
@@ -450,6 +471,15 @@ class HeroSheet {
       ...background.toJson(),
       'vorteileText': vorteileText,
       'nachteileText': nachteileText,
+      // Nur bei belegter Liste: Bestandshelden behalten ihren Inhalts-Hash.
+      if (vorteilEintraege.isNotEmpty)
+        'vorteilEintraege': vorteilEintraege
+            .map((entry) => entry.toJson())
+            .toList(growable: false),
+      if (nachteilEintraege.isNotEmpty)
+        'nachteilEintraege': nachteilEintraege
+            .map((entry) => entry.toJson())
+            .toList(growable: false),
       'apTotal': apTotal,
       'apSpent': apSpent,
       'apAvailable': apAvailable,
@@ -652,6 +682,8 @@ class HeroSheet {
       background: HeroBackground.fromJson(json),
       vorteileText: getString('vorteileText'),
       nachteileText: getString('nachteileText'),
+      vorteilEintraege: leseHeroMerkmale(json['vorteilEintraege']),
+      nachteilEintraege: leseHeroMerkmale(json['nachteilEintraege']),
       apTotal: getInt('apTotal'),
       apSpent: getInt('apSpent'),
       apAvailable: getInt('apAvailable'),

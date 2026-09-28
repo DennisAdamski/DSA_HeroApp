@@ -266,7 +266,7 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
       );
     }
 
-    _management.syncHero(hero);
+    _management.syncHero(hero, catalog: laufenderRegelkatalog(ref));
     _scheduleCatalogPrewarmIfNeeded();
 
     final apple = isApplePlatform(context);

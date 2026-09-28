@@ -169,8 +169,37 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   `lib/rules/derived/currency_rules.dart`.
 - Die kanonische Katalogquelle bleibt `assets/catalogs/house_rules_v1/`.
 - Vor- und Nachteile liegen dort katalogisiert in `vorteile.json` und
-  `nachteile.json`; die Heldenübersicht speichert Auswahlen weiterhin
-  kompatibel in `HeroSheet.vorteileText` und `HeroSheet.nachteileText`.
+  `nachteile.json`, ihre Regelwirkungen deklarativ als `wirkungen`
+  (`lib/catalog/hero_trait_effect.dart`). Der Held speichert sie seit ARCH-02
+  strukturiert in `HeroSheet.vorteilEintraege`/`nachteilEintraege`
+  (`HeroMerkmal`: Katalog-ID, Wert, Auswahl, Textfragment). **Die Liste
+  führt**; `vorteileText`/`nachteileText` sind nur ihre Projektion für ältere
+  App-Versionen. Ändert eine ältere Version den Text, meldet
+  `gleicheMerkmaleAb` die Abweichung. Sie wird **nie** still aufgelöst,
+  auch nicht von `saveHero`: Die Übersicht sperrt das Bearbeiten, bis der
+  Nutzer „Text übernehmen“ oder „Liste behalten“ wählt. Listen nur bei
+  Belegung schreiben (Hash-Pins); migriert wird erst in `saveHero`
+  (`merkmaleZumSpeichern`, nur mit geladenem Katalog), zur Laufzeit ohne
+  Speichern. Mehrdeutiges wird nie geraten. Regeln erhalten Vor-/Nachteile
+  nur über `werteMerkmaleAus` (`lib/rules/derived/hero_merkmal_*_rules.dart`):
+  Katalogisiertes wirkt über die ID, Freies über den Textparser, nie beides.
+  Ohne Katalog rechnet alles über den Text der Liste; der Äquivalenztest in
+  `test/rules/hero_merkmal_rules_test.dart` hält beide Wege gleich — eine neue
+  Katalogwirkung braucht dort einen passenden Namensweg oder eine bewusste
+  Ausnahme. Die Einstiegsfunktionen verlangen `required RulesCatalog?
+  catalog`: in `lib/` immer den vorhandenen Katalog durchreichen,
+  `catalog: null` (Textweg) nur in Tests. Details in
+  `docs/technical_overview.md` Abschnitt 4.11.
+- Begabungen und Unfähigkeiten wirken über die Katalogwirkung `lernspalte`
+  auf ihre Ziele; `ermittleBegabungen` (`hero_begabung_rules.dart`) liefert
+  je Talent, Zauber, Sprache/Schrift und Ritualkenntnis einen
+  `LernspaltenBefund`. **Abgeleitet, nie am Ziel gespeichert**: das Häkchen
+  `gifted` bleibt daneben, eine Begabung aus Vorteil erscheint gesperrt
+  (`BegabungHaekchen`). Begabung wirkt wie das Häkchen (eine Spalte,
+  Maximum +5), Merkmale je passendem Merkmal; Unfähigkeit verteuert um eine
+  Spalte. Neue Kostenstellen nehmen den Befund, nie `entry.gifted` allein.
+  Der Textweg kennt keine Lernspalten (bewusste Ausnahme im
+  Äquivalenztest).
 - Mehrfach erwerbbare allgemeine Sonderfertigkeiten (Kulturkunde, Geländekunde,
   Ortskenntnis, Akklimatisierung, Berufsgeheimnis) tragen im Katalog ihre
   Auswahlmöglichkeiten (`mehrfachwaehlbar`, `varianten`, `ap_erstwerb`,
@@ -329,11 +358,25 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   den `HeroComputedSnapshot` an alle Abschnitte weiter — auch an die
   Adaptermethoden, damit die Brücke für dieselben Werte keine zweite
   Providerbeobachtung aufmacht. Die Reihenfolge ist überall Ressourcen,
-  Schnellaktionen, Eigenschaften, Kampf, Effekte, Zustand, Würfelprotokoll; ab
+  Schnellaktionen, Eigenschaften, Vor- und Nachteile, Kampf, Effekte, Zustand,
+  Würfelprotokoll; ab
   `KartoBreite.breit` wandern Kampf, Effekte und Zustand in eine Seitenspalte,
   das Protokoll bleibt der letzte Abschnitt beider Anordnungen. Den
   Re-Entrancy-Guard reicht `KartoWorkspace` als `KartoLaufzeitAktion` herein;
   die Spielansicht macht keinen zweiten Fehlerweg auf.
+- **Vor- und Nachteile bearbeitet UI2 im Merkmalsblatt**
+  (`lib/ui2/merkmale/`), nach dem Muster des Abenteuerblatts: modal, eigener
+  Schreibweg über `HeroActions.updateHero` und `aendereMerkmale`
+  (nur die Merkmalslisten samt Projektion), Fehler im Blatt, bei offener
+  Planung schreibgeschützt. Eine Abweichung durch eine ältere App löst es nur
+  über die beiden Knöpfe (`loeseMerkmalAbweichung`); bis dahin ist Anlegen und
+  Ändern dieser Art gesperrt, `aendereMerkmale` wirft sonst. Karteninhalt
+  (Katalogname, Stufe/Auswahl, Wirkungstexte, Herkunft) liefert
+  `beschreibeMerkmal` (`hero_merkmal_anzeige_rules.dart`) aus denselben
+  Beträgen wie die Rechnung. Einstieg ist der Abschnitt „Vor- und Nachteile“
+  der Spielansicht; vor Abenteuer- und Merkmalsblatt läuft dieselbe
+  Editorprüfung `vorHeldenbearbeitung`. Der Übersichts-Tab der Verwaltung
+  bleibt parallel bestehen.
 - `KartoRessourcenwert` ist rein darstellend. Der Balkenanteil wird auf 0..1
   begrenzt, der **gespeicherte Wert nie**: negative Lebenspunkte, Überheilung
   und Maximum 0 bleiben unverkürzt lesbar. AsP und KaP zeigt

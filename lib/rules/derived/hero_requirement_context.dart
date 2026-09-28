@@ -7,13 +7,13 @@
 /// mit Klarnamen formulieren (`TaW Magiekunde 11`).
 library;
 
-import 'package:dsa_heldenverwaltung/catalog/hero_trait_text.dart';
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_rituals.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/combat_special_ability_state.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_wirkung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ini_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/kampfbasis_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/requirement_evaluation_rules.dart';
@@ -36,6 +36,9 @@ HeroRequirementContext buildHeroRequirementContext(
   StatModifiers mods = const StatModifiers(),
 }) {
   final ritualkenntnisse = _ritualkenntnisse(hero, catalog: catalog);
+  // Vor-/Nachteile mit aktuellem Katalognamen und gespeichertem Text
+  // (ARCH-02); ein umbenannter Eintrag erfuellt so weiter seine Forderung.
+  final merkmale = werteMerkmaleAus(hero, catalog: catalog);
   return HeroRequirementContext(
     eigenschaften: <String, int>{
       for (final code in AttributeCode.values)
@@ -64,8 +67,8 @@ HeroRequirementContext buildHeroRequirementContext(
       ritualkenntnisse: ritualkenntnisse.keys,
     ),
     merkmalskenntnisse: hero.merkmalskenntnisse,
-    vorteile: splitHeroTraitText(hero.vorteileText),
-    nachteile: splitHeroTraitText(hero.nachteileText),
+    vorteile: merkmale.vorteilNamen,
+    nachteile: merkmale.nachteilNamen,
     rasse: hero.background.rasse,
     leiteigenschaftOverride: hero.magicLeadAttribute,
     basiswerte: <String, int>{

@@ -36,7 +36,7 @@ class KartoFigurenkarte extends StatelessWidget {
     final anzeige = name.trim().isEmpty ? 'Ohne Namen' : name.trim();
     final rolle = beschreibung.trim();
 
-    return _TippbareKarte(
+    return KartoTippbareKarte(
       onTap: onTap,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -100,7 +100,7 @@ class KartoNotizkarte extends StatelessWidget {
     final ueberschrift = titel.trim();
     final inhalt = text.trim();
 
-    return _TippbareKarte(
+    return KartoTippbareKarte(
       onTap: onTap,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -195,11 +195,18 @@ class KartoFreieKachel extends StatelessWidget {
   }
 }
 
-/// Hervortretende Karte mit Tippflaeche ueber die ganze Kante.
-class _TippbareKarte extends StatelessWidget {
-  const _TippbareKarte({required this.child, this.onTap});
+/// Hervortretende Karte (`feld`) mit Tippflaeche ueber die ganze Kante.
+///
+/// Geteilt von Abenteuer- und Merkmalskarten, damit alle Karten im
+/// `KartoKartenraster` dieselbe Flaeche, Kante und Tippflaeche haben.
+class KartoTippbareKarte extends StatelessWidget {
+  /// Erstellt eine Karte; ohne [onTap] ist sie nur zum Lesen.
+  const KartoTippbareKarte({super.key, required this.child, this.onTap});
 
+  /// Karteninhalt.
   final Widget child;
+
+  /// Oeffnet die Bearbeitung; `null` zeigt die Karte nur an.
   final VoidCallback? onTap;
 
   @override

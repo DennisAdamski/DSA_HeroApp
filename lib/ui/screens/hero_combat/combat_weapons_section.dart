@@ -127,6 +127,7 @@ class _CombatWeaponsSectionState extends State<CombatWeaponsSection> {
       catalogTalents: widget.catalog.talents,
       catalogManeuvers: widget.catalog.maneuvers,
       catalogCombatSpecialAbilities: widget.catalog.combatSpecialAbilities,
+      catalog: widget.catalog,
     );
   }
 

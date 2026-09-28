@@ -62,7 +62,10 @@ class _AdvancementSkillTreeViewState extends State<AdvancementSkillTreeView> {
     final hero = widget.session.preview;
     final visible = visibleAdvancementAbilityOptions(
       options: widget.options,
-      activation: computeHeroResourceActivation(hero),
+      activation: computeHeroResourceActivation(
+        hero,
+        catalog: widget.session.catalog,
+      ),
       showInapplicable: hero.showInapplicableSpecialAbilities,
       plannedTargets: {
         for (final entry in widget.session.entries)

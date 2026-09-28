@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/resource_activation_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/special_ability_visibility_rules.dart';
 
 import 'special_ability_visibility_toggle.dart';
 
-import 'package:dsa_heldenverwaltung/catalog/special_ability_def.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/requirement_evaluation_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/special_ability_chain_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/special_ability_variant_rules.dart';
@@ -56,6 +56,7 @@ Future<void> showSpecialAbilityPicker({
   HeroRequirementContext? requirementContext,
   HeroSheet? hero,
   Future<void> Function(bool)? onShowInapplicableChanged,
+  required RulesCatalog? rulesCatalog,
 }) {
   return showAdaptiveDetailSheet<void>(
     context: context,
@@ -72,6 +73,7 @@ Future<void> showSpecialAbilityPicker({
       requirementContext: requirementContext,
       hero: hero,
       onShowInapplicableChanged: onShowInapplicableChanged,
+      rulesCatalog: rulesCatalog,
     ),
   );
 }
@@ -90,6 +92,7 @@ class _SpecialAbilityPickerScreen extends StatefulWidget {
     required this.requirementContext,
     required this.hero,
     required this.onShowInapplicableChanged,
+    required this.rulesCatalog,
   });
 
   final String title;
@@ -109,6 +112,10 @@ class _SpecialAbilityPickerScreen extends StatefulWidget {
   final HeroRequirementContext? requirementContext;
   final HeroSheet? hero;
   final Future<void> Function(bool)? onShowInapplicableChanged;
+
+  /// Regelkatalog fuer die Ressourcenaktivierung: Vor- und Nachteile wirken
+  /// darueber per Katalog-ID (ARCH-02).
+  final RulesCatalog? rulesCatalog;
 
   @override
   State<_SpecialAbilityPickerScreen> createState() =>
@@ -260,7 +267,7 @@ class _SpecialAbilityPickerScreenState
     final hero = widget.hero;
     final activation = hero == null
         ? null
-        : computeHeroResourceActivation(hero);
+        : computeHeroResourceActivation(hero, catalog: widget.rulesCatalog);
     final visible = widget.catalog.where((ability) {
       return activation == null ||
           isSpecialAbilityVisible(

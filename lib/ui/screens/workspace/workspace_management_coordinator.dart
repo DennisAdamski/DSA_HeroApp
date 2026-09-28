@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_navigation_guard.dart';
@@ -77,7 +78,9 @@ class WorkspaceManagementCoordinator extends ChangeNotifier {
   }
 
   /// Synchronisiert Registry und Sichtbarkeit mit dem aktuellen Helden.
-  void syncHero(HeroSheet hero) {
+  ///
+  /// [catalog] entscheidet mit, ob der Magie-Tab sichtbar ist (ARCH-02).
+  void syncHero(HeroSheet hero, {required RulesCatalog? catalog}) {
     final allTabs = buildWorkspaceTabs(
       heroId: heroId,
       callbacksForTab: callbacksForTab,
@@ -86,7 +89,11 @@ class WorkspaceManagementCoordinator extends ChangeNotifier {
         .where((tab) => tab.isEditable)
         .map((tab) => tab.id);
     _registry.setEditableTabs(editableTabIds);
-    final visibleTabs = visibleWorkspaceTabsForHero(hero: hero, tabs: allTabs);
+    final visibleTabs = visibleWorkspaceTabsForHero(
+      hero: hero,
+      tabs: allTabs,
+      catalog: catalog,
+    );
     _syncVisibleTabs(visibleTabs);
   }
 

@@ -276,7 +276,8 @@ List<SpellAvailabilityEntry> allLearningOptionsForHero(
 ///
 /// Hauszauber, passende Merkmalskenntnisse und Begabung summieren sich jeweils
 /// um eine Reduktionsstufe. Fremdrepr. erhoeht die Basis vorher um 2 Stufen.
-/// Minimum ist `A*`.
+/// [zusatzReduktion]/[zusatzErhoehung] tragen Begabungen und Unfaehigkeiten
+/// aus Vor-/Nachteilen (`hero_begabung_rules.dart`). Minimum ist `A*`.
 String effectiveSteigerung({
   required String basisSteigerung,
   required bool istHauszauber,
@@ -284,6 +285,8 @@ String effectiveSteigerung({
   required List<String> heldMerkmalskenntnisse,
   bool istBegabt = false,
   int fremdReprPenaltySteps = 0,
+  int zusatzReduktion = 0,
+  int zusatzErhoehung = 0,
 }) {
   return effectiveSpellLernkomplexitaet(
     basisKomplexitaet: basisSteigerung,
@@ -291,7 +294,8 @@ String effectiveSteigerung({
     zauberMerkmale: zauberMerkmale,
     heldMerkmalskenntnisse: heldMerkmalskenntnisse,
     gifted: istBegabt,
-    penaltySteps: fremdReprPenaltySteps,
+    penaltySteps: fremdReprPenaltySteps + zusatzErhoehung,
+    zusatzReduktion: zusatzReduktion,
   );
 }
 

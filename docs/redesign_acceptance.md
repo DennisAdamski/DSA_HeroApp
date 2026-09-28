@@ -31,7 +31,7 @@ genutzten Ansichten; die UI2-Tests prüfen zusätzlich deren echte Verdrahtung.
 | Eigenschaften-, Talent-, Kampf- und Zauberproben | Spielen → Schnellproben / Probe suchen / Strg+K | `karto_spielaktionen_test.dart`, Bestandsbrückentests, Journey; bestehende Probe-Tests |
 | Rast und aktive Effekte | Spielen → Rast / Effekte | `karto_spielverlauf_test.dart`, bestehende Rast- und Effektprüfungen |
 | Würfelhistorie und Filter | Spielen → Würfelprotokoll am Ende | Journey, `karto_spielverlauf_test.dart`, `dice_log_filter_test.dart` |
-| Stammdaten, Herkunft, Merkmale, Avatar | Held verwalten → Übersicht | `karto_verwaltung_test.dart`, Journey, `test/ui/overview/`, `avatar_gallery_image_test.dart` |
+| Stammdaten, Herkunft, Merkmale, Avatar | Held verwalten → Übersicht; Vor- und Nachteile zusätzlich Spielen → „Vor- und Nachteile“ → Merkmalsblatt | `karto_verwaltung_test.dart`, Journey, `test/ui/overview/`, `avatar_gallery_image_test.dart`, `test/ui2/merkmale/karto_merkmalsblatt_test.dart` |
 | Talente, Sprachen, Schriften, Sonderfertigkeiten | Held verwalten → Talente | Verwaltungskategorien-Test, `test/ui/talents/` |
 | Waffen, Rüstung, Kampftalente, Manöver, Rechner | Held verwalten → Kampf | Verwaltungskategorien-Test, `test/ui/combat/` |
 | Zauber, magische Fähigkeiten | Held verwalten → Magie bei bestehender Ressourcenaktivierung | Sichtbarkeitstest, `test/ui/magic/`; Rituale behalten ihren bisherigen Weg |
@@ -181,7 +181,7 @@ Der SDK-Cache benötigt Zugriff außerhalb des Repositorys. Es wurde kein
 | Schaden und Rücknahme | Ressourcen-/Wundendialoge erreichbar | ARCH-01/05/06: fachlicher Schadensablauf, atomare Operation, konfliktfeste Korrektur |
 | Gemeinsamer Kampfrundenzähler | Bestehende Effektlaufzeiten bedienbar | Rundensemantik und Umfang festlegen |
 | Persönliche Favoriten | Schnellproben und vollständige Suche | Persistenz, Umfang und Sync festlegen |
-| Strukturierte Merkmale | Katalogauswahl und Freitext bleiben erhalten | ARCH-02: Modell und Migration |
+| Strukturierte Merkmale | Umgesetzt mit ARCH-02: Modell, Migration, Wirkung über die Katalog-ID und UI2-Merkmalsblatt mit Karten wie im Mockup | Herkunftsmerkmale (Rasse/Kultur/Profession) als Folgeschritt |
 | Identische Inventarinstanzen | Bestehende Inventar-/Kampfzuordnung | ARCH-03: Instanz-IDs und Migration |
 | Regelprofil und vollständige Herleitung | Tatsächlich vorhandene Einstellungen/Vorschauen | ARCH-04: Versionierung und nachvollziehbare Ergebnisse |
 | Offline-/Sync-Anzeige | Keine erfundenen Statusangaben | ARCH-06: persistente Outbox und Konfliktmodell |

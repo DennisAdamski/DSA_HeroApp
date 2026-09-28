@@ -104,6 +104,7 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
                       allTalents: allCombatTalents,
                       activeTalentIds: localActiveIds,
                       ruleResolver: _latestCatalogRuleResolver,
+                      begabungen: _begabungen(),
                       onToggleTalent: (id, activate) {
                         _toggleCombatTalent(id, activate);
                         setSheetState(() {
@@ -308,17 +309,19 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
     final entry = _entryForTalent(talent.id);
     final isInvalid = _invalidCombatTalentIds.contains(talent.id);
     final complexityResolution = _resolveTalentComplexity(talent, entry);
+    final befund = _befundFuer(talent);
+    final begabt = befund.istBegabt(gifted: entry.gifted);
     final maxTaw = computeCombatTalentMaxValue(
       effectiveAttributes: effectiveAttributes,
       talentType: talent.type,
-      gifted: entry.gifted,
+      gifted: begabt,
     );
 
     final cells = <Widget>[
       _textCell(talent.name, key: ValueKey<String>('talents-row-${talent.id}')),
       _textCell(_fallback(talent.weaponCategory)),
       _textCell(_fallback(talent.alternatives)),
-      _complexityCell(complexityResolution),
+      _complexityCell(complexityResolution, befund: _befundFuer(talent)),
       _textCell(_fallback(talent.be)),
       _intInputCell(
         talentId: talent.id,
@@ -352,10 +355,11 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
       cells.add(
         Align(
           alignment: Alignment.centerLeft,
-          child: Checkbox(
-            key: ValueKey<String>('combat-talents-gifted-${talent.id}'),
+          child: BegabungHaekchen(
+            checkboxKey: ValueKey<String>('combat-talents-gifted-${talent.id}'),
             value: entry.gifted,
-            onChanged: (value) => _updateGifted(talent.id, value ?? false),
+            befund: befund,
+            onChanged: (value) => _updateGifted(talent.id, value),
           ),
         ),
       );
@@ -363,7 +367,7 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
 
     final rowColor = isInvalid
         ? Theme.of(context).colorScheme.errorContainer.withValues(alpha: 0.4)
-        : (entry.gifted && isEditing
+        : (begabt && isEditing
               ? Theme.of(context).colorScheme.tertiaryContainer
                     .withValues(alpha: 0.4)
               : null);
@@ -392,7 +396,11 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
     );
   }
 
-  Widget _complexityCell(TalentComplexityResolution resolution, {Key? key}) {
+  Widget _complexityCell(
+    TalentComplexityResolution resolution, {
+    Key? key,
+    LernspaltenBefund befund = LernspaltenBefund.keiner,
+  }) {
     final theme = Theme.of(context);
     final highlighted =
         resolution.effectiveKomplexitaet != resolution.baseKomplexitaet;
@@ -411,6 +419,7 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(resolution.effectiveKomplexitaet, style: style),
+            LernspaltenMarke(befund: befund),
             if (resolution.houseRuleHint != null) ...[
               const SizedBox(width: 4),
               Tooltip(
@@ -561,7 +570,9 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
                     }
                     final vorgeschlageneKosten = talentSpecializationApCost(
                       basisKomplexitaet: talent.steigerung,
-                      gifted: entry.gifted,
+                      gifted: _befundFuer(talent)
+                          .istBegabt(gifted: entry.gifted),
+                      unfaehigkeitsSchritte: _befundFuer(talent).erhoehung,
                       specializationOrdinal: runningCount + 1,
                     );
                     final erwerb = await showErwerbDialog(

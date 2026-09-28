@@ -1,5 +1,11 @@
 part of 'package:dsa_heldenverwaltung/ui/screens/hero_overview_tab.dart';
 
+/// Vor- und Nachteile der Uebersicht (ARCH-02).
+///
+/// Bearbeitet wird die strukturierte Liste (`HeroMerkmal` mit Katalog-ID,
+/// Wert und Auswahl); `vorteileText`/`nachteileText` entstehen beim Speichern
+/// als Projektion. Solange nichts geaendert wurde, bleibt der Entwurf `null`
+/// und der Held unberuehrt — die Migration uebernimmt dann `saveHero`.
 extension _HeroOverviewTraitsSection on _HeroOverviewTabState {
   Widget _buildTraitSelectionSection() {
     final catalogAsync = ref.watch(rulesCatalogProvider);
@@ -15,6 +21,7 @@ extension _HeroOverviewTraitsSection on _HeroOverviewTabState {
           singularLabel: 'Vorteil',
           keyName: 'vorteile',
           traits: advantages,
+          catalog: catalog,
           isCatalogLoading: catalogAsync.isLoading,
         ),
         _buildTraitPanel(
@@ -22,6 +29,7 @@ extension _HeroOverviewTraitsSection on _HeroOverviewTabState {
           singularLabel: 'Nachteil',
           keyName: 'nachteile',
           traits: disadvantages,
+          catalog: catalog,
           isCatalogLoading: catalogAsync.isLoading,
         ),
       ],
@@ -33,12 +41,17 @@ extension _HeroOverviewTraitsSection on _HeroOverviewTabState {
     required String singularLabel,
     required String keyName,
     required List<HeroTraitDef> traits,
+    required RulesCatalog? catalog,
     required bool isCatalogLoading,
   }) {
-    final fragments = splitHeroTraitText(_field(keyName).text);
+    final eintraege = _merkmale(keyName, catalog);
+    final abweichung = _merkmalAbweichung(keyName);
     final isEditing = _editController.isEditing;
     final sortedTraits = traits.where((entry) => entry.active).toList()
       ..sort((a, b) => a.name.compareTo(b.name));
+    // Erst entscheiden, dann bearbeiten: sonst ueberschriebe ein Speichern
+    // die Aenderung der aelteren App-Version stillschweigend.
+    final gesperrt = abweichung != null;
 
     return Column(
       key: ValueKey<String>('overview-traits-$keyName'),
@@ -52,32 +65,44 @@ extension _HeroOverviewTraitsSection on _HeroOverviewTabState {
             if (isEditing)
               TextButton(
                 key: ValueKey<String>('overview-add-trait-$keyName'),
-                onPressed: isCatalogLoading
+                onPressed: isCatalogLoading || gesperrt
                     ? null
-                    : () => _addTraitFragment(
+                    : () => _addTraitEntry(
                         keyName: keyName,
                         singularLabel: singularLabel,
                         traits: sortedTraits,
+                        catalog: catalog,
                       ),
                 child: Text('+ $singularLabel'),
               ),
           ],
         ),
         const SizedBox(height: 8),
-        if (fragments.isEmpty)
+        if (abweichung != null) ...[
+          _buildTraitDeviation(
+            keyName: keyName,
+            abweichung: abweichung,
+            traits: sortedTraits,
+            catalog: catalog,
+            isEditing: isEditing,
+          ),
+          const SizedBox(height: 8),
+        ],
+        if (eintraege.isEmpty)
           Text('Keine Einträge', style: Theme.of(context).textTheme.bodyMedium)
         else
           Wrap(
             spacing: 8,
             runSpacing: 8,
             children: [
-              for (var index = 0; index < fragments.length; index++)
+              for (var index = 0; index < eintraege.length; index++)
                 _buildTraitChip(
                   keyName: keyName,
-                  fragments: fragments,
-                  fragmentIndex: index,
+                  eintraege: eintraege,
+                  index: index,
                   traits: sortedTraits,
-                  isEditing: isEditing,
+                  catalog: catalog,
+                  isEditing: isEditing && !gesperrt,
                 ),
             ],
           ),
@@ -87,40 +112,110 @@ extension _HeroOverviewTraitsSection on _HeroOverviewTabState {
 
   Widget _buildTraitChip({
     required String keyName,
-    required List<String> fragments,
-    required int fragmentIndex,
+    required List<HeroMerkmal> eintraege,
+    required int index,
     required List<HeroTraitDef> traits,
+    required RulesCatalog? catalog,
     required bool isEditing,
   }) {
-    final fragment = fragments[fragmentIndex];
-    final isKnown = isKnownHeroTraitFragment(fragment, traits);
-    final label = Text(fragment);
+    final eintrag = eintraege[index];
+    final label = Text(eintrag.text);
+    final Widget? avatar = eintrag.istKatalogisiert
+        ? const Icon(Icons.check, size: 16)
+        : eintrag.brauchtPruefung
+        ? const Tooltip(
+            message: 'Mehrdeutig – bitte Katalogeintrag wählen',
+            child: Icon(Icons.help_outline, size: 16),
+          )
+        : null;
     if (!isEditing) {
-      return Chip(label: label, visualDensity: VisualDensity.compact);
+      return Chip(
+        label: label,
+        avatar: eintrag.brauchtPruefung ? avatar : null,
+        visualDensity: VisualDensity.compact,
+      );
     }
-    final inputChip = InputChip(
-      key: ValueKey<String>('overview-trait-chip-$keyName-$fragmentIndex'),
+    return InputChip(
+      key: ValueKey<String>('overview-trait-chip-$keyName-$index'),
       label: label,
-      avatar: isKnown ? const Icon(Icons.check, size: 16) : null,
+      avatar: avatar,
       visualDensity: VisualDensity.compact,
-      onPressed: () => _editTraitFragment(
+      onPressed: () => _editTraitEntry(
         keyName: keyName,
-        fragments: fragments,
-        fragmentIndex: fragmentIndex,
+        eintraege: eintraege,
+        index: index,
+        traits: traits,
+        catalog: catalog,
       ),
-      onDeleted: () => _removeTraitFragment(
-        keyName: keyName,
-        fragments: fragments,
-        fragmentIndex: fragmentIndex,
+      onDeleted: () => _setzeMerkmale(
+        keyName,
+        List<HeroMerkmal>.of(eintraege)..removeAt(index),
       ),
     );
-    return inputChip;
   }
 
-  Future<void> _addTraitFragment({
+  /// Wirksame Liste: Entwurf, sonst Abgleich des gespeicherten Helden.
+  List<HeroMerkmal> _merkmale(String keyName, RulesCatalog? catalog) {
+    final entwurf = keyName == 'vorteile' ? _draftVorteile : _draftNachteile;
+    if (entwurf != null) {
+      return entwurf;
+    }
+    final hero = _latestHero;
+    if (hero == null) {
+      return const <HeroMerkmal>[];
+    }
+    final abgleich = werteMerkmaleAus(hero, catalog: catalog).abgleich;
+    return keyName == 'vorteile' ? abgleich.vorteile : abgleich.nachteile;
+  }
+
+  /// Abweichung durch eine aeltere App-Version; ein Entwurf loest sie auf.
+  MerkmalAbweichung? _merkmalAbweichung(String keyName) {
+    final hero = _latestHero;
+    final entwurf = keyName == 'vorteile' ? _draftVorteile : _draftNachteile;
+    if (hero == null || entwurf != null) {
+      return null;
+    }
+    final abgleich = gleicheMerkmaleAb(hero);
+    return keyName == 'vorteile'
+        ? abgleich.vorteilAbweichung
+        : abgleich.nachteilAbweichung;
+  }
+
+  void _setzeMerkmale(String keyName, List<HeroMerkmal> eintraege) {
+    final liste = List<HeroMerkmal>.unmodifiable(eintraege);
+    if (keyName == 'vorteile') {
+      _draftVorteile = liste;
+    } else {
+      _draftNachteile = liste;
+    }
+    _onFieldChanged('');
+  }
+
+  /// Uebernimmt einen Merkmalsentwurf in [hero]: Liste plus Projektion.
+  HeroSheet _mitMerkmalEntwurf(HeroSheet hero) {
+    var ergebnis = hero;
+    final vorteile = _draftVorteile;
+    if (vorteile != null) {
+      ergebnis = ergebnis.copyWith(
+        vorteilEintraege: vorteile,
+        vorteileText: projiziereMerkmalText(vorteile),
+      );
+    }
+    final nachteile = _draftNachteile;
+    if (nachteile != null) {
+      ergebnis = ergebnis.copyWith(
+        nachteilEintraege: nachteile,
+        nachteileText: projiziereMerkmalText(nachteile),
+      );
+    }
+    return ergebnis;
+  }
+
+  Future<void> _addTraitEntry({
     required String keyName,
     required String singularLabel,
     required List<HeroTraitDef> traits,
+    required RulesCatalog? catalog,
   }) async {
     final pick = await _showTraitCatalogDialog(
       singularLabel: singularLabel,
@@ -129,425 +224,123 @@ extension _HeroOverviewTraitsSection on _HeroOverviewTabState {
     if (pick == null) {
       return;
     }
-
-    final fragment = pick.isFreeEntry
-        ? await _showFreeTraitDialog(singularLabel: singularLabel)
-        : await _showTraitValueDialog(pick.trait!);
-    if (fragment == null || fragment.trim().isEmpty) {
-      return;
+    final HeroMerkmal neu;
+    final def = pick.trait;
+    if (def == null) {
+      final text = await _showFreeTraitDialog(singularLabel: singularLabel);
+      if (text == null || text.trim().isEmpty) {
+        return;
+      }
+      neu = HeroMerkmal(
+        text: text.trim(),
+        zuordnung: HeroMerkmalZuordnung.frei,
+      );
+    } else {
+      final wahl = await _showTraitValueDialog(def);
+      if (wahl == null) {
+        return;
+      }
+      neu = HeroMerkmal(
+        katalogId: def.id,
+        text: merkmalTextFuer(def, auswahl: wahl.auswahl, wert: wahl.wert),
+        wert: wahl.wert,
+        auswahl: wahl.auswahl,
+      );
     }
-    final existing = splitHeroTraitText(_field(keyName).text).toList();
-    final fragments = pick.trait == null
-        ? (existing..add(fragment))
-        : mergeHeroTraitFragment(
-            fragments: existing,
-            fragment: fragment,
-            trait: pick.trait!,
-          );
-    _writeTraitFragments(keyName, fragments);
-  }
-
-  Future<_TraitCatalogPick?> _showTraitCatalogDialog({
-    required String singularLabel,
-    required List<HeroTraitDef> traits,
-  }) {
-    final searchController = TextEditingController();
-    return showDialog<_TraitCatalogPick>(
-      context: context,
-      builder: (dialogContext) {
-        return StatefulBuilder(
-          builder: (context, setDialogState) {
-            final query = searchController.text.trim().toLowerCase();
-            final filtered = traits
-                .where((trait) {
-                  if (query.isEmpty) {
-                    return true;
-                  }
-                  final haystack = [
-                    trait.name,
-                    trait.costText,
-                    trait.source,
-                    ...trait.markers,
-                  ].join(' ').toLowerCase();
-                  return haystack.contains(query);
-                })
-                .take(80)
-                .toList(growable: false);
-
-            return AlertDialog(
-              title: Text('$singularLabel auswählen'),
-              content: SizedBox(
-                width: 520,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    TextField(
-                      controller: searchController,
-                      decoration: const InputDecoration(
-                        labelText: 'Suche',
-                        prefixIcon: Icon(Icons.search),
-                        border: OutlineInputBorder(),
-                        isDense: true,
-                      ),
-                      onChanged: (_) => setDialogState(() {}),
-                    ),
-                    const SizedBox(height: 12),
-                    SizedBox(
-                      height: 260,
-                      child: ListView.builder(
-                        itemCount: filtered.length + 1,
-                        itemBuilder: (context, index) {
-                          if (index == 0) {
-                            return ListTile(
-                              leading: const Icon(Icons.edit_note),
-                              title: const Text('Freier Eintrag'),
-                              onTap: () =>
-                                  Navigator.of(dialogContext)
-                                      .pop(const _TraitCatalogPick.freeEntry()),
-                            );
-                          }
-                          final trait = filtered[index - 1];
-                          final subtitleParts = <String>[
-                            if (trait.costText.isNotEmpty) trait.costText,
-                            if (trait.markers.isNotEmpty)
-                              trait.markers.join(', '),
-                            if (trait.source.isNotEmpty) trait.source,
-                          ];
-                          return ListTile(
-                            title: Text(trait.name),
-                            subtitle: subtitleParts.isEmpty
-                                ? null
-                                : Text(subtitleParts.join(' · ')),
-                            onTap: () =>
-                                Navigator.of(dialogContext)
-                                    .pop(_TraitCatalogPick.trait(trait)),
-                          );
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(dialogContext).pop(),
-                  child: const Text('Abbrechen'),
-                ),
-              ],
-            );
-          },
-        );
-      },
+    _setzeMerkmale(
+      keyName,
+      fuegeMerkmalHinzu(_merkmale(keyName, catalog), neu, def: def),
     );
   }
 
-  Future<String?> _showTraitValueDialog(HeroTraitDef trait) async {
-    final needsChoice = trait.selectionTemplate.contains('{choice}');
-    final needsValue =
+  Future<void> _editTraitEntry({
+    required String keyName,
+    required List<HeroMerkmal> eintraege,
+    required int index,
+    required List<HeroTraitDef> traits,
+    required RulesCatalog? catalog,
+  }) async {
+    final eintrag = eintraege[index];
+    final def = eintrag.istKatalogisiert
+        ? catalog == null
+              ? null
+              : MerkmalKatalog.von(catalog)
+                    .eintrag(eintrag.katalogId, vorteil: keyName == 'vorteile')
+        : null;
+    HeroMerkmal? ersetzt;
+    if (def != null && _brauchtTraitWahl(def)) {
+      final wahl = await _showTraitValueDialog(
+        def,
+        initialChoice: eintrag.auswahl,
+        initialValue: eintrag.wert,
+      );
+      if (wahl == null) {
+        return;
+      }
+      ersetzt = eintrag.copyWith(
+        text: merkmalTextFuer(def, auswahl: wahl.auswahl, wert: wahl.wert),
+        wert: wahl.wert,
+        auswahl: wahl.auswahl,
+        zuordnung: HeroMerkmalZuordnung.katalog,
+      );
+    } else if (eintrag.brauchtPruefung) {
+      ersetzt = await _waehleMerkmalKandidat(eintrag, traits);
+    } else {
+      final text = await _showEditTraitTextDialog(eintrag.text);
+      if (text == null || text.trim().isEmpty) {
+        return;
+      }
+      // Ein getippter Katalogname wird zugeordnet, alles andere bleibt frei.
+      final zugeordnet = ordneMerkmalZu(text, traits);
+      ersetzt = eintrag.copyWith(
+        katalogId: zugeordnet.katalogId,
+        text: zugeordnet.text,
+        wert: zugeordnet.wert,
+        auswahl: zugeordnet.auswahl,
+        kandidatenIds: zugeordnet.kandidatenIds,
+        zuordnung: zugeordnet.istKatalogisiert
+            ? HeroMerkmalZuordnung.katalog
+            : zugeordnet.zuordnung,
+      );
+    }
+    if (ersetzt == null) {
+      return;
+    }
+    _setzeMerkmale(keyName, List<HeroMerkmal>.of(eintraege)..[index] = ersetzt);
+  }
+
+  bool _brauchtTraitWahl(HeroTraitDef trait) {
+    return trait.selectionTemplate.contains('{choice}') ||
         trait.selectionTemplate.contains('{value}') ||
         trait.valueKind == 'level' ||
         trait.valueKind == 'points';
-    if (!needsChoice && !needsValue) {
-      return buildHeroTraitSelectionText(trait: trait);
-    }
+  }
 
+  Future<_TraitWahl?> _showTraitValueDialog(
+    HeroTraitDef trait, {
+    String initialChoice = '',
+    int? initialValue,
+  }) async {
+    final needsChoice = trait.selectionTemplate.contains('{choice}');
+    if (!_brauchtTraitWahl(trait)) {
+      return (auswahl: '', wert: null);
+    }
     final catalog = ref.read(rulesCatalogProvider).valueOrNull;
-    return showDialog<String>(
+    return showDialog<_TraitWahl>(
       context: context,
       builder: (dialogContext) => _TraitValueDialog(
         trait: trait,
         needsChoice: needsChoice,
-        needsValue: needsValue,
+        needsValue:
+            trait.selectionTemplate.contains('{value}') ||
+            trait.valueKind == 'level' ||
+            trait.valueKind == 'points',
         choices: needsChoice
             ? resolveTraitChoices(trait, catalog)
             : const <String>[],
+        initialChoice: initialChoice,
+        initialValue: initialValue,
       ),
-    );
-  }
-
-  Future<String?> _showFreeTraitDialog({required String singularLabel}) {
-    final controller = TextEditingController();
-    return showDialog<String>(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: Text('$singularLabel erfassen'),
-          content: SizedBox(
-            width: 420,
-            child: TextField(
-              controller: controller,
-              autofocus: true,
-              decoration: const InputDecoration(
-                labelText: 'Eintrag',
-                border: OutlineInputBorder(),
-                isDense: true,
-              ),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(),
-              child: const Text('Abbrechen'),
-            ),
-            FilledButton(
-              onPressed: () =>
-                  Navigator.of(dialogContext).pop(controller.text.trim()),
-              child: const Text('Übernehmen'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Future<void> _editTraitFragment({
-    required String keyName,
-    required List<String> fragments,
-    required int fragmentIndex,
-  }) async {
-    final controller = TextEditingController(text: fragments[fragmentIndex]);
-    final updated = await showDialog<String>(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: const Text('Eintrag bearbeiten'),
-          content: SizedBox(
-            width: 420,
-            child: TextField(
-              controller: controller,
-              autofocus: true,
-              decoration: const InputDecoration(
-                labelText: 'Eintrag',
-                border: OutlineInputBorder(),
-                isDense: true,
-              ),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(),
-              child: const Text('Abbrechen'),
-            ),
-            FilledButton(
-              onPressed: () =>
-                  Navigator.of(dialogContext).pop(controller.text.trim()),
-              child: const Text('Übernehmen'),
-            ),
-          ],
-        );
-      },
-    );
-    if (updated == null) {
-      return;
-    }
-    final nextFragments = fragments.toList();
-    nextFragments[fragmentIndex] = updated;
-    _writeTraitFragments(keyName, nextFragments);
-  }
-
-  Future<void> _removeTraitFragment({
-    required String keyName,
-    required List<String> fragments,
-    required int fragmentIndex,
-  }) async {
-    final nextFragments = fragments.toList()..removeAt(fragmentIndex);
-    _writeTraitFragments(keyName, nextFragments);
-  }
-
-  void _writeTraitFragments(String keyName, List<String> fragments) {
-    final serialized = serializeHeroTraitFragments(fragments);
-    _setFieldText(keyName, serialized);
-    _onFieldChanged(serialized);
-  }
-}
-
-class _TraitCatalogPick {
-  const _TraitCatalogPick.trait(this.trait) : isFreeEntry = false;
-
-  const _TraitCatalogPick.freeEntry() : trait = null, isFreeEntry = true;
-
-  final HeroTraitDef? trait;
-  final bool isFreeEntry;
-}
-
-/// Sentinel des Auswahl-Dropdowns fuer den Eintrag „Eigene Eingabe…".
-const String _kTraitFreeChoiceSentinel = '__freitext__';
-
-/// Klemmt einen Dialogwert gegen `minValue`/`maxValue` des Katalogeintrags.
-int _clampTraitValue(int? rawValue, HeroTraitDef trait) {
-  final min = trait.minValue ?? 1;
-  final max = trait.maxValue;
-  var value = rawValue ?? min;
-  if (value < min) {
-    value = min;
-  }
-  if (max != null && value > max) {
-    value = max;
-  }
-  return value;
-}
-
-/// Erfasst Auswahl und Zahlenwert eines katalogisierten Vor-/Nachteils.
-///
-/// Eigener [StatefulWidget], damit die Controller erst mit der Dialog-Route
-/// entsorgt werden. Ein `dispose()` direkt nach `await showDialog` waere zu
-/// frueh: die Route baut waehrend ihrer Schliess-Animation noch einmal auf.
-class _TraitValueDialog extends StatefulWidget {
-  const _TraitValueDialog({
-    required this.trait,
-    required this.needsChoice,
-    required this.needsValue,
-    required this.choices,
-  });
-
-  final HeroTraitDef trait;
-  final bool needsChoice;
-  final bool needsValue;
-  final List<String> choices;
-
-  @override
-  State<_TraitValueDialog> createState() => _TraitValueDialogState();
-}
-
-class _TraitValueDialogState extends State<_TraitValueDialog> {
-  late final TextEditingController _choiceController;
-  late final TextEditingController _valueController;
-  late String _selectedChoice;
-
-  /// Ohne Vorschlagsliste bleibt es beim reinen Textfeld wie bisher; ein
-  /// Dropdown mit nur dem Freitext-Eintrag waere ein Klick ohne Nutzen.
-  bool get _useDropdown => widget.choices.isNotEmpty;
-
-  bool get _isFreeChoice => _selectedChoice == _kTraitFreeChoiceSentinel;
-
-  String get _resolvedChoice => _isFreeChoice || !_useDropdown
-      ? _choiceController.text.trim()
-      : _selectedChoice.trim();
-
-  String get _choiceLabel => widget.trait.choiceLabel.trim().isEmpty
-      ? 'Spezialisierung'
-      : widget.trait.choiceLabel.trim();
-
-  @override
-  void initState() {
-    super.initState();
-    _choiceController = TextEditingController();
-    _valueController = TextEditingController(
-      text: (widget.trait.minValue ?? 1).toString(),
-    );
-    // Ist Freitext gesperrt, steht die erste Option vor; sonst startet der
-    // Dialog leer, damit keine Auswahl versehentlich uebernommen wird.
-    _selectedChoice = _useDropdown && !widget.trait.choiceFreeText
-        ? widget.choices.first
-        : '';
-  }
-
-  @override
-  void dispose() {
-    _choiceController.dispose();
-    _valueController.dispose();
-    super.dispose();
-  }
-
-  Widget _buildChoiceTextField() {
-    return TextField(
-      key: const Key('trait-choice-freetext'),
-      controller: _choiceController,
-      decoration: InputDecoration(
-        labelText: _choiceLabel,
-        border: const OutlineInputBorder(),
-        isDense: true,
-      ),
-      autofocus: true,
-      onChanged: (_) => setState(() {}),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final canSubmit = !widget.needsChoice || _resolvedChoice.isNotEmpty;
-
-    return AlertDialog(
-      title: Text(widget.trait.name),
-      content: SizedBox(
-        width: 420,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (widget.needsChoice && _useDropdown)
-              DropdownButtonFormField<String>(
-                key: const Key('trait-choice-dropdown'),
-                initialValue: _selectedChoice.isEmpty ? null : _selectedChoice,
-                isExpanded: true,
-                decoration: InputDecoration(
-                  labelText: _choiceLabel,
-                  border: const OutlineInputBorder(),
-                  isDense: true,
-                ),
-                items: [
-                  for (final choice in widget.choices)
-                    DropdownMenuItem<String>(
-                      value: choice,
-                      child: Text(choice, overflow: TextOverflow.ellipsis),
-                    ),
-                  if (widget.trait.choiceFreeText)
-                    const DropdownMenuItem<String>(
-                      value: _kTraitFreeChoiceSentinel,
-                      child: Text('Eigene Eingabe…'),
-                    ),
-                ],
-                onChanged: (value) {
-                  setState(() => _selectedChoice = value ?? '');
-                },
-              ),
-            if (widget.needsChoice && !_useDropdown) _buildChoiceTextField(),
-            if (widget.needsChoice && _useDropdown && _isFreeChoice) ...[
-              const SizedBox(height: 12),
-              _buildChoiceTextField(),
-            ],
-            if (widget.needsChoice && widget.needsValue)
-              const SizedBox(height: 12),
-            if (widget.needsValue)
-              TextField(
-                controller: _valueController,
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-                  labelText: widget.trait.unit.isEmpty
-                      ? 'Wert'
-                      : widget.trait.unit,
-                  border: const OutlineInputBorder(),
-                  isDense: true,
-                ),
-                autofocus: !widget.needsChoice,
-              ),
-          ],
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Abbrechen'),
-        ),
-        FilledButton(
-          onPressed: canSubmit
-              ? () {
-                  final parsedValue = int.tryParse(
-                    _valueController.text.trim(),
-                  );
-                  final value = widget.needsValue
-                      ? _clampTraitValue(parsedValue, widget.trait)
-                      : null;
-                  final fragment = buildHeroTraitSelectionText(
-                    trait: widget.trait,
-                    choice: widget.needsChoice ? _resolvedChoice : '',
-                    value: value,
-                  );
-                  Navigator.of(context).pop(fragment);
-                }
-              : null,
-          child: const Text('Übernehmen'),
-        ),
-      ],
     );
   }
 }

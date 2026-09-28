@@ -58,7 +58,7 @@ void main() {
         vorteileText: 'KL+3',
         nachteileText: 'KK-1',
       );
-      final breakdown = computeModifierSourceBreakdown(hero);
+      final breakdown = computeModifierSourceBreakdown(hero, catalog: null);
 
       expect(breakdown.rasseStatMods.lep, 2);
       expect(breakdown.kulturAttributeMods.mu, 1);
@@ -75,8 +75,8 @@ void main() {
         vorteileText: 'KL+1, LE+3',
         nachteileText: 'GS-1',
       );
-      final breakdown = computeModifierSourceBreakdown(hero);
-      final aggregated = parseModifierTextsForHero(hero);
+      final breakdown = computeModifierSourceBreakdown(hero, catalog: null);
+      final aggregated = parseModifierTextsForHero(hero, catalog: null);
 
       final totalLep =
           breakdown.rasseStatMods.lep +
@@ -105,7 +105,7 @@ void main() {
 
     test('leere Texte erzeugen Null-Breakdown', () {
       final hero = _makeHero();
-      final breakdown = computeModifierSourceBreakdown(hero);
+      final breakdown = computeModifierSourceBreakdown(hero, catalog: null);
 
       expect(breakdown.rasseStatMods.lep, 0);
       expect(breakdown.vorteileAttributeMods.mu, 0);
@@ -116,7 +116,7 @@ void main() {
         vorteileText: 'Hohe Lebenskraft 2, Astralmacht 3',
         nachteileText: 'Kurzatmig 4, Niedrige Magieresistenz 1',
       );
-      final breakdown = computeModifierSourceBreakdown(hero);
+      final breakdown = computeModifierSourceBreakdown(hero, catalog: null);
 
       expect(breakdown.vorteileStatMods.lep, 2);
       expect(breakdown.vorteileStatMods.asp, 3);
@@ -193,7 +193,7 @@ void main() {
     test('erscheint als Vorteils-Quelle', () {
       final hero = _makeHero(vorteileText: 'Herausragende Eigenschaft KK 2');
 
-      final breakdown = computeModifierSourceBreakdown(hero);
+      final breakdown = computeModifierSourceBreakdown(hero, catalog: null);
 
       expect(breakdown.vorteileAttributeMods.kk, 2);
       expect(breakdown.nachteileAttributeMods.kk, 0);
@@ -208,11 +208,14 @@ void main() {
         vorteileText: 'Herausragende Eigenschaft KK 2',
       );
 
-      final breakdown = computeModifierSourceBreakdown(hero);
+      final breakdown = computeModifierSourceBreakdown(hero, catalog: null);
 
       expect(breakdown.rasseAttributeMods.kk, 1);
       expect(breakdown.vorteileAttributeMods.kk, 2);
-      expect(parseModifierTextsForHero(hero).attributeMods.kk, 3);
+      expect(
+        parseModifierTextsForHero(hero, catalog: null).attributeMods.kk,
+        3,
+      );
     });
   });
 }

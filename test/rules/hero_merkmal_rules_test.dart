@@ -1,0 +1,853 @@
+import 'package:dsa_heldenverwaltung/catalog/hero_trait_effect.dart';
+import 'package:dsa_heldenverwaltung/catalog/hero_trait_text.dart';
+import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
+import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
+import 'package:dsa_heldenverwaltung/domain/attributes.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_merkmal.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/advancement_attribute_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/attribute_start_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_anzeige_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_wirkung_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_zuordnung_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/hero_requirement_context.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/resource_activation_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/rest_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/wund_rules.dart';
+import 'package:flutter_test/flutter_test.dart';
+
+import '../catalog/catalog_reference_names.dart';
+
+/// Strukturierte Vor- und Nachteile (ARCH-02): Zuordnung der Alttexte,
+/// Abweichungen durch aeltere App-Versionen und Wirkung ueber die Katalog-ID.
+void main() {
+  final vorteile = ladeKatalogDatei('vorteile.json')
+      .map(HeroTraitDef.fromJson)
+      .toList(growable: false);
+  final nachteile = ladeKatalogDatei('nachteile.json')
+      .map(HeroTraitDef.fromJson)
+      .toList(growable: false);
+  final catalog = RulesCatalog(
+    version: 'house_rules_v1',
+    source: 'test',
+    talents: const [],
+    spells: const [],
+    weapons: const [],
+    advantages: vorteile,
+    disadvantages: nachteile,
+  );
+  final katalog = MerkmalKatalog.von(catalog);
+
+  HeroSheet held({
+    String vorteileText = '',
+    String nachteileText = '',
+    List<HeroMerkmal> vorteilEintraege = const <HeroMerkmal>[],
+    List<HeroMerkmal> nachteilEintraege = const <HeroMerkmal>[],
+  }) {
+    return HeroSheet(
+      id: 'h',
+      name: 'Test',
+      level: 1,
+      attributes: const Attributes(
+        mu: 12,
+        kl: 12,
+        inn: 12,
+        ch: 12,
+        ff: 12,
+        ge: 12,
+        ko: 12,
+        kk: 12,
+      ),
+      vorteileText: vorteileText,
+      nachteileText: nachteileText,
+      vorteilEintraege: vorteilEintraege,
+      nachteilEintraege: nachteilEintraege,
+    );
+  }
+
+  group('Zuordnung von Alttexten', () {
+    final faelle = <(String, bool, String, int?, String)>[
+      ('Eisern', true, 'adv_eisern', null, ''),
+      ('eisern', true, 'adv_eisern', null, ''),
+      ('Hohe Lebenskraft 3', true, 'adv_hohe_lebenskraft', 3, ''),
+      ('Hohe Lebenskraft', true, 'adv_hohe_lebenskraft', null, ''),
+      ('Schnelle Heilung II', true, 'adv_schnelle_heilung', 2, ''),
+      (
+        'Herausragende Eigenschaft KK 2',
+        true,
+        'adv_herausragende_eigenschaft',
+        2,
+        'KK',
+      ),
+      (
+        'Herausragende Eigenschaft KK',
+        true,
+        'adv_herausragende_eigenschaft',
+        null,
+        'KK',
+      ),
+      (
+        'Herausragende Eigenschaft: Gewandtheit: 1',
+        true,
+        'adv_herausragende_eigenschaft',
+        1,
+        'GE',
+      ),
+      (
+        'Herausragende Eigenschaft Gewandtheit 1',
+        true,
+        'adv_herausragende_eigenschaft',
+        1,
+        'GE',
+      ),
+      (
+        'Herausragende Eigenschaft: GE: 1',
+        true,
+        'adv_herausragende_eigenschaft',
+        1,
+        'GE',
+      ),
+      ('Geweiht Peraine', true, 'adv_geweiht', null, 'Peraine'),
+      ('Angst vor Spinnen 5', false, 'dis_angst_vor', 5, 'Spinnen'),
+      ('Goldgier 6', false, 'dis_goldgier', 6, ''),
+      ('Astraler Block', false, 'dis_astraler_block_zauberer', null, ''),
+      (
+        'Astraler Block, Viertelzauberer',
+        false,
+        'dis_astraler_block_viertelzauberer',
+        null,
+        '',
+      ),
+    ];
+    for (final (text, istVorteil, id, wert, auswahl) in faelle) {
+      test('„$text“ → $id', () {
+        final eintrag = ordneMerkmalZu(
+          text,
+          katalog.liste(vorteil: istVorteil),
+        );
+        expect(eintrag.katalogId, id);
+        expect(eintrag.wert, wert);
+        expect(eintrag.auswahl, auswahl);
+        expect(eintrag.text, text);
+        expect(eintrag.zuordnung, HeroMerkmalZuordnung.migration);
+      });
+    }
+
+    test('Mehrdeutiges bleibt frei und nennt die Kandidaten', () {
+      final eintrag = ordneMerkmalZu('Begabung für Schwerter', vorteile);
+
+      expect(eintrag.istKatalogisiert, isFalse);
+      expect(eintrag.kandidatenIds.length, greaterThan(1));
+      expect(eintrag.brauchtPruefung, isTrue);
+    });
+
+    test('eine unbekannte Eigenschaft wird nicht zugeordnet', () {
+      final eintrag = ordneMerkmalZu(
+        'Herausragende Eigenschaft Schönheit 2',
+        vorteile,
+      );
+
+      expect(eintrag.istKatalogisiert, isFalse);
+      expect(eintrag.kandidatenIds, isEmpty);
+    });
+
+    test('Freie Texte und Codes bleiben frei', () {
+      for (final text in [
+        'LEP+2',
+        'Glückspilz der Gilde',
+        'Nachtsicht nach Absprache',
+      ]) {
+        final eintrag = ordneMerkmalZu(text, vorteile);
+        expect(eintrag.istKatalogisiert, isFalse, reason: text);
+        expect(eintrag.kandidatenIds, isEmpty, reason: text);
+        expect(eintrag.zuordnung, HeroMerkmalZuordnung.frei, reason: text);
+      }
+    });
+
+    test('Komma-Templates werden wieder zusammengefügt', () {
+      final eintraege = migriereMerkmale(
+        'Adlig, Adliges Erbe, Eisern; Tierempathie, allgemein',
+        vorteile,
+      );
+
+      expect(eintraege.map((e) => e.katalogId), [
+        'adv_adlig_erbe',
+        'adv_eisern',
+        'adv_tierempathie_allgemein',
+      ]);
+    });
+
+    test('Migration ist deterministisch und erhält die Fragmente', () {
+      const texte = <String>[
+        'Zäher Hund, Richtungssinn, Glückspilz der Gilde, LEP+2, '
+            'Nachtsicht nach Absprache',
+        'Herausragende Eigenschaft KK 2',
+        'Adlig, Adliges Erbe, Eisern',
+      ];
+      for (final text in texte) {
+        final einmal = migriereMerkmale(text, vorteile);
+        final projektion = projiziereMerkmalText(einmal);
+
+        expect(migriereMerkmale(projektion, vorteile), einmal);
+        expect(
+          splitHeroTraitText(projektion).toSet(),
+          splitHeroTraitText(text).toSet(),
+        );
+      }
+    });
+  });
+
+  group('Die Liste führt, Abweichungen werden gemeldet', () {
+    const liste = <HeroMerkmal>[
+      HeroMerkmal(katalogId: 'adv_eisern', text: 'Eisern'),
+      HeroMerkmal(katalogId: 'adv_richtungssinn', text: 'Richtungssinn'),
+    ];
+
+    test('gleicher Inhalt mit anderen Trennzeichen ist keine Abweichung', () {
+      final abgleich = gleicheMerkmaleAb(
+        held(vorteileText: 'Eisern, Richtungssinn', vorteilEintraege: liste),
+        katalog: katalog,
+      );
+
+      expect(abgleich.hatAbweichung, isFalse);
+      expect(abgleich.vorteile, liste);
+    });
+
+    test('ein von einer älteren App ergänzter Text wird gemeldet, '
+        'aber nicht wirksam', () {
+      final hero = held(
+        vorteileText: 'Eisern, Richtungssinn, Flink',
+        vorteilEintraege: liste,
+      );
+      final abgleich = gleicheMerkmaleAb(hero, katalog: katalog);
+
+      expect(abgleich.vorteilAbweichung!.hinzugefuegt, ['Flink']);
+      expect(abgleich.vorteilAbweichung!.entfernt, isEmpty);
+      expect(abgleich.vorteile, liste);
+      expect(
+        parseModifierTextsForHero(hero, catalog: catalog).hasFlinkFromVorteile,
+        isFalse,
+      );
+      // Auch ohne Katalog rechnet der Parser mit der Liste.
+      expect(
+        parseModifierTextsForHero(hero, catalog: null).hasFlinkFromVorteile,
+        isFalse,
+      );
+    });
+
+    test('ein entfernter Eintrag wird gemeldet', () {
+      final abgleich = gleicheMerkmaleAb(
+        held(vorteileText: 'Eisern', vorteilEintraege: liste),
+        katalog: katalog,
+      );
+
+      expect(abgleich.vorteilAbweichung!.entfernt, ['Richtungssinn']);
+    });
+
+    test('Speichern löst eine Abweichung nicht still auf', () {
+      final hero = held(vorteileText: 'Eisern, Flink', vorteilEintraege: liste);
+      final gespeichert = merkmaleZumSpeichern(hero, katalog: katalog);
+
+      expect(gespeichert.vorteileText, 'Eisern, Flink');
+      expect(gespeichert.vorteilEintraege, liste);
+    });
+
+    test('Speichern migriert einen Alttext einmalig und ist ein Fixpunkt', () {
+      final hero = held(
+        vorteileText: 'Eisern, Hohe Lebenskraft 2, LEP+2',
+        nachteileText: 'Goldgier 6',
+      );
+      final einmal = merkmaleZumSpeichern(hero, katalog: katalog);
+      final zweimal = merkmaleZumSpeichern(einmal, katalog: katalog);
+
+      expect(einmal.vorteilEintraege.map((e) => e.katalogId), [
+        'adv_eisern',
+        'adv_hohe_lebenskraft',
+        '',
+      ]);
+      expect(einmal.vorteileText, 'Eisern; Hohe Lebenskraft 2; LEP+2');
+      expect(zweimal.vorteilEintraege, einmal.vorteilEintraege);
+      expect(zweimal.vorteileText, einmal.vorteileText);
+      expect(
+        merkmaleZumSpeichern(hero).vorteilEintraege,
+        isEmpty,
+        reason: 'ohne Katalog wird nicht migriert',
+      );
+    });
+
+    test('Text übernehmen behält bestehende Zuordnungen', () {
+      final ergebnis = uebernimmMerkmalText('Eisern, Flink', const [
+        HeroMerkmal(
+          katalogId: 'adv_eisern',
+          text: 'Eisern',
+          zuordnung: HeroMerkmalZuordnung.katalog,
+        ),
+      ], vorteile);
+
+      expect(ergebnis.first.zuordnung, HeroMerkmalZuordnung.katalog);
+      expect(ergebnis.last.katalogId, 'adv_flink');
+    });
+  });
+
+  group('Hinzufügen im Dialog', () {
+    HeroTraitDef def(String id) => katalog.eintrag(id, vorteil: false)!;
+
+    test('gleiche Auswahl desselben Eintrags summiert den Wert', () {
+      final angst = def('dis_angst_vor');
+      final liste = fuegeMerkmalHinzu(
+        const [
+          HeroMerkmal(
+            katalogId: 'dis_angst_vor',
+            text: 'Angst vor Spinnen 2',
+            wert: 2,
+            auswahl: 'Spinnen',
+          ),
+        ],
+        const HeroMerkmal(
+          katalogId: 'dis_angst_vor',
+          text: 'Angst vor Spinnen 3',
+          wert: 3,
+          auswahl: 'Spinnen',
+        ),
+        def: angst,
+      );
+
+      expect(liste.single.wert, 5);
+      expect(liste.single.text, 'Angst vor Spinnen 5');
+    });
+
+    test('andere Auswahl und freie Einträge werden angehängt, '
+        'identische Texte nicht verdoppelt', () {
+      final angst = def('dis_angst_vor');
+      var liste = fuegeMerkmalHinzu(
+        const [],
+        const HeroMerkmal(
+          katalogId: 'dis_angst_vor',
+          text: 'Angst vor Ratten 1',
+          wert: 1,
+          auswahl: 'Ratten',
+        ),
+        def: angst,
+      );
+      liste = fuegeMerkmalHinzu(
+        liste,
+        const HeroMerkmal(
+          katalogId: 'dis_angst_vor',
+          text: 'Angst vor Feuer 2',
+          wert: 2,
+          auswahl: 'Feuer',
+        ),
+        def: angst,
+      );
+      liste = fuegeMerkmalHinzu(liste, const HeroMerkmal(text: 'Tick'));
+      liste = fuegeMerkmalHinzu(liste, const HeroMerkmal(text: 'Tick'));
+
+      expect(liste.map((e) => e.text), [
+        'Angst vor Ratten 1',
+        'Angst vor Feuer 2',
+        'Tick',
+      ]);
+    });
+  });
+
+  group('Wirkung über die Katalog-ID', () {
+    test('keine Doppelanwendung von Katalog- und Textweg', () {
+      final hero = merkmaleZumSpeichern(
+        held(vorteileText: 'Hohe Lebenskraft 3, LEP+2, Eisern'),
+        katalog: katalog,
+      );
+
+      final parsed = parseModifierTextsForHero(hero, catalog: catalog);
+      expect(parsed.statMods.lep, 5);
+      expect(werteMerkmaleAus(hero, catalog: catalog).freieVorteile, 'LEP+2');
+    });
+
+    test('„Gewandtheit“ mit Doppelpunkten wirkt auf beiden Wegen', () {
+      const text = 'Herausragende Eigenschaft: Gewandtheit: 1';
+      final textweg = parseModifierTextsForHero(
+        held(vorteileText: text),
+        catalog: null,
+      );
+      final gespeichert = merkmaleZumSpeichern(
+        held(vorteileText: text),
+        katalog: katalog,
+      );
+      final katalogweg = parseModifierTextsForHero(
+        gespeichert,
+        catalog: catalog,
+      );
+
+      expect(textweg.attributeMods.ge, 1);
+      expect(textweg.startAttributeMods.ge, 1);
+      expect(
+        gespeichert.vorteilEintraege.single.katalogId,
+        'adv_herausragende_eigenschaft',
+      );
+      expect(katalogweg.attributeMods.ge, 1);
+      expect(katalogweg.startAttributeMods.ge, 1);
+      expect(
+        merkmaleZumSpeichern(gespeichert, katalog: katalog).toJson(),
+        gespeichert.toJson(),
+      );
+    });
+
+    test('ein umbenannter Katalogeintrag wirkt unverändert', () {
+      HeroTraitDef umbenannt(HeroTraitDef def) {
+        if (def.id != 'adv_hohe_lebenskraft') {
+          return def;
+        }
+        return HeroTraitDef.fromJson(<String, dynamic>{
+          ...def.toJson(),
+          'name': 'Robuste Konstitution',
+          'selectionTemplate': 'Robuste Konstitution {value}',
+        });
+      }
+
+      final neuerKatalog = RulesCatalog(
+        version: 'house_rules_v1',
+        source: 'test',
+        talents: const [],
+        spells: const [],
+        weapons: const [],
+        advantages: vorteile.map(umbenannt).toList(),
+        disadvantages: nachteile,
+      );
+      // Nach dem Umbenennen neu bearbeitet: Der Text trägt den neuen Namen,
+      // den der alte Namensparser nicht kennt.
+      final hero = held(
+        vorteileText: 'Robuste Konstitution 3',
+        vorteilEintraege: const [
+          HeroMerkmal(
+            katalogId: 'adv_hohe_lebenskraft',
+            text: 'Robuste Konstitution 3',
+            wert: 3,
+          ),
+        ],
+      );
+
+      expect(
+        parseModifierTextsForHero(hero, catalog: neuerKatalog).statMods.lep,
+        3,
+      );
+      // Die Voraussetzungsprüfung kennt den neuen und den alten Namen.
+      final kontext = buildHeroRequirementContext(hero, catalog: neuerKatalog);
+      expect(kontext.vorteile, contains('Robuste Konstitution 3'));
+      expect(
+        parseModifierTextsForHero(hero, catalog: null).statMods.lep,
+        0,
+        reason: 'ohne Katalog kennt der Namensparser den Eintrag nicht',
+      );
+    });
+
+    test('Steigerungs-Replay und Option rechnen nach einer Umbenennung '
+        'gleich', () {
+      HeroTraitDef umbenannt(HeroTraitDef def) {
+        if (def.id != 'adv_herausragende_eigenschaft') {
+          return def;
+        }
+        return HeroTraitDef.fromJson(<String, dynamic>{
+          ...def.toJson(),
+          'name': 'Überragende Eigenschaft',
+          'selectionTemplate': 'Überragende Eigenschaft {choice} {value}',
+        });
+      }
+
+      final neuerKatalog = RulesCatalog(
+        version: 'house_rules_v1',
+        source: 'test',
+        talents: const [],
+        spells: const [],
+        weapons: const [],
+        advantages: vorteile.map(umbenannt).toList(),
+        disadvantages: nachteile,
+      );
+      final hero = held(
+        vorteileText: 'Überragende Eigenschaft KK 2',
+        vorteilEintraege: const [
+          HeroMerkmal(
+            katalogId: 'adv_herausragende_eigenschaft',
+            text: 'Überragende Eigenschaft KK 2',
+            wert: 2,
+            auswahl: 'KK',
+          ),
+        ],
+      );
+      // Die Option plant auf Effektivebene: Rohwert 12 plus Vorteil 2.
+      final start = parseStartAttributeModifiers(hero, catalog: neuerKatalog);
+      expect(start.kk, 2);
+
+      final gesteigert = applyAdvancementAttributeValue(
+        hero,
+        AttributeCode.kk,
+        15,
+        catalog: neuerKatalog,
+      );
+      expect(gesteigert.attributes.kk, 13);
+      expect(
+        computeEffectiveAttributes(gesteigert, catalog: neuerKatalog).kk,
+        15,
+      );
+      // Gegenprobe: Der Namensweg kennt den neuen Namen nicht und schriebe
+      // den Vorteil in den Rohwert.
+      expect(
+        applyAdvancementAttributeValue(
+          hero,
+          AttributeCode.kk,
+          15,
+          catalog: null,
+        ).attributes.kk,
+        15,
+      );
+    });
+
+    test('eine unbekannte Katalog-ID wirkt über ihren Text', () {
+      final hero = held(
+        vorteileText: 'Hohe Lebenskraft 2',
+        vorteilEintraege: const [
+          HeroMerkmal(katalogId: 'adv_entfernt', text: 'Hohe Lebenskraft 2'),
+        ],
+      );
+
+      expect(parseModifierTextsForHero(hero, catalog: catalog).statMods.lep, 2);
+    });
+  });
+
+  group('Äquivalenz: Katalog-ID und Textweg rechnen gleich', () {
+    // Bewusste Ausnahme: `lernspalte` (Begabung/Unfähigkeit) wirkt nur über
+    // die Katalog-ID. Der Textweg kannte nie Lernspalten; freie oder
+    // mehrdeutige Begabungstexte wirken erst nach der Zuordnung
+    // (`test/rules/hero_begabung_rules_test.dart`).
+    bool wirktUeberText(HeroTraitDef def) => def.wirkungen.any(
+      (wirkung) => wirkung.art != HeroTraitEffectArt.lernspalte,
+    );
+    final wirkende = <(HeroTraitDef, bool)>[
+      for (final def in vorteile)
+        if (wirktUeberText(def)) (def, true),
+      for (final def in nachteile)
+        if (wirktUeberText(def)) (def, false),
+    ];
+
+    for (final (def, istVorteil) in wirkende) {
+      test(def.id, () {
+        final template = def.selectionTemplate;
+        final auswahlen = template.contains('{choice}')
+            ? <String>[for (final code in AttributeCode.values) code.name]
+            : <String>[''];
+        final hatWert = template.contains('{value}');
+        final grenze = def.maxValue ?? 6;
+        final werte = hatWert
+            ? <int?>[for (var w = 1; w <= grenze + 1; w++) w]
+            : <int?>[null];
+        final rast = def.wirkungen.any((w) => w.art == HeroTraitEffectArt.rast);
+
+        for (final auswahl in auswahlen) {
+          for (final wert in werte) {
+            if (rast && wert != null && wert > 3) {
+              continue; // Der Namensweg kennt nur I–III bzw. 1–3.
+            }
+            final text = merkmalTextFuer(def, auswahl: auswahl, wert: wert);
+            final eintrag = HeroMerkmal(
+              katalogId: def.id,
+              text: text,
+              wert: wert,
+              auswahl: auswahl,
+            );
+            final alt = istVorteil
+                ? held(vorteileText: text)
+                : held(nachteileText: text);
+            final neu = istVorteil
+                ? held(vorteileText: text, vorteilEintraege: [eintrag])
+                : held(nachteileText: text, nachteilEintraege: [eintrag]);
+            final grund = '$text (${def.id})';
+
+            final a = parseModifierTextsForHero(alt, catalog: null);
+            final b = parseModifierTextsForHero(neu, catalog: catalog);
+            expect(
+              b.attributeMods.toJson(),
+              a.attributeMods.toJson(),
+              reason: grund,
+            );
+            expect(
+              b.startAttributeMods.toJson(),
+              a.startAttributeMods.toJson(),
+              reason: grund,
+            );
+            expect(b.statMods.toJson(), a.statMods.toJson(), reason: grund);
+            expect(b.hasFlinkFromVorteile, a.hasFlinkFromVorteile);
+            expect(b.hasBehaebigFromNachteile, a.hasBehaebigFromNachteile);
+
+            final restA = collectRestAbilities(alt, catalog: null);
+            final restB = collectRestAbilities(neu, catalog: catalog);
+            expect(
+              restB.fastHealingLevel,
+              restA.fastHealingLevel,
+              reason: grund,
+            );
+            expect(
+              restB.astralRegenerationLevel,
+              restA.astralRegenerationLevel,
+              reason: grund,
+            );
+            expect(restB.hasPoorRegeneration, restA.hasPoorRegeneration);
+            expect(restB.hasAstralBlock, restA.hasAstralBlock, reason: grund);
+
+            final merkmale = werteMerkmaleAus(neu, catalog: catalog);
+            final wundA = computeWundschwellenStufen(
+              ko: 12,
+              vorteileText: alt.vorteileText,
+              nachteileText: alt.nachteileText,
+            );
+            final wundB = computeWundschwellenStufen(
+              ko: 12,
+              vorteileText: merkmale.freieVorteile,
+              nachteileText: merkmale.freieNachteile,
+              merkmalBonus: merkmale.wirkungen.wundschwelleBonus,
+            );
+            expect(wundB.ko, wundA.ko, reason: grund);
+
+            expect(
+              computeHeroResourceActivation(
+                neu,
+                catalog: catalog,
+              ).magic.autoEnabled,
+              computeHeroResourceActivation(
+                alt,
+                catalog: null,
+              ).magic.autoEnabled,
+              reason: grund,
+            );
+          }
+        }
+      });
+    }
+  });
+
+  group('Gezielt ändern und Abweichung lösen (Merkmalsblatt)', () {
+    test('die erste Änderung eines Bestandshelden speichert alles '
+        'strukturiert', () {
+      final hero = held(vorteileText: 'Eisern, LEP+2');
+
+      final geaendert = aendereMerkmale(
+        hero,
+        vorteil: true,
+        katalog: katalog,
+        aenderung: (liste) => fuegeMerkmalHinzu(
+          liste,
+          const HeroMerkmal(katalogId: 'adv_flink', text: 'Flink'),
+        ),
+      );
+
+      expect(geaendert.vorteilEintraege.map((e) => e.katalogId), [
+        'adv_eisern',
+        '',
+        'adv_flink',
+      ]);
+      expect(geaendert.vorteileText, 'Eisern; LEP+2; Flink');
+      expect(geaendert.nachteilEintraege, isEmpty);
+    });
+
+    test('unbekannte Felder der Einträge bleiben erhalten', () {
+      final hero = held(
+        vorteileText: 'Eisern',
+        vorteilEintraege: const [
+          HeroMerkmal(
+            katalogId: 'adv_eisern',
+            text: 'Eisern',
+            unbekannteFelder: <String, Object?>{'zukunft': 1},
+          ),
+        ],
+      );
+
+      final geaendert = aendereMerkmale(
+        hero,
+        vorteil: true,
+        katalog: katalog,
+        aenderung: (liste) => [
+          ...liste,
+          const HeroMerkmal(text: 'Tick', zuordnung: HeroMerkmalZuordnung.frei),
+        ],
+      );
+
+      expect(geaendert.vorteilEintraege.first.unbekannteFelder, {'zukunft': 1});
+    });
+
+    test('eine offene Abweichung wird nicht nebenbei aufgelöst', () {
+      final hero = held(
+        vorteileText: 'Eisern, Flink',
+        vorteilEintraege: const [
+          HeroMerkmal(katalogId: 'adv_eisern', text: 'Eisern'),
+        ],
+      );
+
+      expect(
+        () => aendereMerkmale(
+          hero,
+          vorteil: true,
+          katalog: katalog,
+          aenderung: (liste) => liste,
+        ),
+        throwsStateError,
+      );
+      // Die andere Art ist davon nicht betroffen.
+      expect(
+        aendereMerkmale(
+          hero,
+          vorteil: false,
+          katalog: katalog,
+          aenderung: (liste) => [
+            ...liste,
+            const HeroMerkmal(
+              katalogId: 'dis_goldgier',
+              text: 'Goldgier 3',
+              wert: 3,
+            ),
+          ],
+        ).nachteileText,
+        'Goldgier 3',
+      );
+    });
+
+    test('Abweichung: Text übernehmen oder Liste behalten', () {
+      final hero = held(
+        vorteileText: 'Eisern, Flink',
+        vorteilEintraege: const [
+          HeroMerkmal(
+            katalogId: 'adv_eisern',
+            text: 'Eisern',
+            zuordnung: HeroMerkmalZuordnung.katalog,
+          ),
+        ],
+      );
+
+      final text = loeseMerkmalAbweichung(
+        hero,
+        vorteil: true,
+        katalog: katalog,
+        textUebernehmen: true,
+      );
+      expect(text.vorteilEintraege.map((e) => e.katalogId), [
+        'adv_eisern',
+        'adv_flink',
+      ]);
+      expect(text.vorteileText, 'Eisern; Flink');
+
+      final liste = loeseMerkmalAbweichung(
+        hero,
+        vorteil: true,
+        katalog: katalog,
+        textUebernehmen: false,
+      );
+      expect(liste.vorteilEintraege, hero.vorteilEintraege);
+      expect(liste.vorteileText, 'Eisern');
+      expect(gleicheMerkmaleAb(liste).hatAbweichung, isFalse);
+    });
+  });
+
+  group('Anzeige der Merkmalskarten', () {
+    MerkmalAnzeige zeige(HeroMerkmal eintrag, {bool vorteil = true}) =>
+        beschreibeMerkmal(eintrag, katalog, vorteil: vorteil);
+
+    test('Katalogname, Detail und Wirkung', () {
+      final lk = zeige(
+        const HeroMerkmal(
+          katalogId: 'adv_hohe_lebenskraft',
+          text: 'Hohe Lebenskraft 8',
+          wert: 8,
+        ),
+      );
+      expect(lk.art, 'Vorteil');
+      expect(lk.name, 'Hohe Lebenskraft');
+      expect(lk.detail, 'Stufe 8');
+      expect(lk.wirkungen, ['LeP +6'], reason: 'wie die Rechnung gekappt');
+      expect(lk.herkunft, MerkmalHerkunft.katalog);
+
+      final he = zeige(
+        const HeroMerkmal(
+          katalogId: 'adv_herausragende_eigenschaft',
+          text: 'Herausragende Eigenschaft KK 2',
+          wert: 2,
+          auswahl: 'KK',
+        ),
+      );
+      expect(he.detail, 'Stufe 2 · Auswahl: KK');
+      expect(he.wirkungen, ['KK +2 (auch Startwert)']);
+
+      expect(
+        zeige(
+          const HeroMerkmal(
+            katalogId: 'dis_kurzatmig',
+            text: 'Kurzatmig 2',
+            wert: 2,
+          ),
+          vorteil: false,
+        ).wirkungen,
+        ['AuP −2'],
+      );
+      expect(
+        zeige(const HeroMerkmal(katalogId: 'adv_eisern', text: 'Eisern'))
+            .wirkungen,
+        ['Wundschwellen +2'],
+      );
+      expect(
+        zeige(const HeroMerkmal(katalogId: 'adv_richtungssinn', text: 'R'))
+            .wirkungen,
+        isEmpty,
+      );
+    });
+
+    test('Wirkungstext und Rechnung stimmen für jeden Basiswert überein', () {
+      for (final def in [...vorteile, ...nachteile]) {
+        final istVorteil = def.traitType == 'advantage';
+        for (final wirkung in def.wirkungen) {
+          if (wirkung.art != HeroTraitEffectArt.basiswert) continue;
+          for (var wert = 1; wert <= (wirkung.max ?? 6) + 1; wert++) {
+            final eintrag = HeroMerkmal(
+              katalogId: def.id,
+              text: merkmalTextFuer(def, wert: wert),
+              wert: wert,
+            );
+            final hero = istVorteil
+                ? held(vorteileText: eintrag.text, vorteilEintraege: [eintrag])
+                : held(
+                    nachteileText: eintrag.text,
+                    nachteilEintraege: [eintrag],
+                  );
+            final stats = parseModifierTextsForHero(
+              hero,
+              catalog: catalog,
+            ).statMods.toJson();
+            final betrag = stats.values.whereType<int>().firstWhere(
+              (v) => v != 0,
+            );
+            final text = zeige(eintrag, vorteil: istVorteil).wirkungen.single;
+            final zahl = betrag < 0 ? '−${-betrag}' : '+$betrag';
+            expect(text, endsWith(zahl), reason: '${def.id} $wert');
+          }
+        }
+      }
+    });
+
+    test('frei, mehrdeutig und unbekannt', () {
+      expect(
+        zeige(const HeroMerkmal(text: 'LEP+2')).herkunft,
+        MerkmalHerkunft.frei,
+      );
+      expect(
+        zeige(
+          const HeroMerkmal(
+            text: 'Begabung für Schwerter',
+            kandidatenIds: ['a', 'b'],
+          ),
+        ).herkunft,
+        MerkmalHerkunft.pruefen,
+      );
+      final weg = zeige(
+        const HeroMerkmal(katalogId: 'adv_entfernt', text: 'Altlast'),
+      );
+      expect(weg.herkunft, MerkmalHerkunft.unbekannt);
+      expect(weg.name, 'Altlast');
+      expect(weg.herkunftText, 'Nicht im Katalog');
+    });
+  });
+}

@@ -44,6 +44,8 @@ import 'package:dsa_heldenverwaltung/ui/screens/shared/protected_content_helpers
 import 'package:dsa_heldenverwaltung/ui/screens/shared/special_ability_picker.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/erwerb_dialog.dart';
 import 'package:uuid/uuid.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/hero_begabung_rules.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/begabung_haekchen.dart';
 
 part 'hero_magic/magic_active_spells_table.dart';
 part 'hero_magic/magic_header_section.dart';
@@ -88,6 +90,9 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
   final ProtectedContentCache _protectedContentCache = ProtectedContentCache();
 
   HeroSheet? _latestHero;
+
+  /// Begabungen des zuletzt gebauten Helden fuer Katalog und Dialoge.
+  HeroBegabungen _latestBegabungen = HeroBegabungen.leer;
   bool? _lastContentUnlocked;
   String? _lastContentPassword;
 
@@ -347,7 +352,12 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
         final spellDefsById = <String, SpellDef>{
           for (final spell in catalog.spells) spell.id: spell,
         };
-        final effectiveAttributes = computeEffectiveAttributes(hero);
+        final begabungen = ermittleBegabungen(hero, catalog: catalog);
+        _latestBegabungen = begabungen;
+        final effectiveAttributes = computeEffectiveAttributes(
+          hero,
+          catalog: catalog,
+        );
         final contentUnlocked = ref.watch(catalogContentVisibleProvider);
         final contentPassword = ref.watch(catalogContentPasswordProvider);
         _syncProtectedContentCache(
@@ -402,6 +412,7 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
                             ),
                           ),
                           _MagicActiveSpellsTable(
+                            begabungen: begabungen,
                             activeSpellIds: activeSpellIds,
                             spellEntries: _draftSpells,
                             spellDefs: spellDefsById,
@@ -479,6 +490,7 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
                         padding: const EdgeInsets.fromLTRB(0, 8, 0, 12),
                         children: [
                           _MagicRitualsSection(
+                            begabungen: begabungen,
                             ritualCategories: _draftRitualCategories,
                             catalogTalents: catalog.talents,
                             heroTalents: hero.talents,
@@ -529,6 +541,7 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
                             isEditing: _editController.isEditing,
                             onChanged: _updateMagicSpecialAbilities,
                             catalogAbilities: catalog.magicSpecialAbilities,
+                            rulesCatalog: catalog,
                             verfuegbareAp: _verfuegbareApImDraft(hero),
                             episch: hero.isEpisch,
                             requirementContext: _buildRequirementContext(

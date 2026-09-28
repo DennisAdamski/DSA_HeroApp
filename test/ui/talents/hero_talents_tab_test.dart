@@ -22,6 +22,8 @@ import 'package:dsa_heldenverwaltung/ui/screens/hero_talents_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/codex_section_card.dart';
 
+import '../../test_support/begabung_katalog.dart';
+
 void main() {
   var tabOpenCounter = 0;
 
@@ -670,6 +672,111 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('19'), findsOneWidget);
+  });
+
+  testWidgets(
+    'Begabung und Unfähigkeit aus Vor-/Nachteilen wirken abgeleitet',
+    (tester) async {
+      final catalog = mitKatalogMerkmalen(
+        buildCatalog(),
+        vorteilIds: const ['adv_begabung_anderes_talent'],
+        nachteilIds: const ['dis_unfaehigkeit_anderes_talent'],
+      );
+      final repo = FakeRepository(
+        heroes: [
+          buildHero(
+            talents: const <String, HeroTalentEntry>{
+              'tal_a': HeroTalentEntry(),
+              'tal_b': HeroTalentEntry(),
+            },
+          ).copyWith(
+            vorteileText: 'Begabung für Athletik',
+            nachteileText: 'Unfähigkeit für Boote Fahren',
+          ),
+        ],
+        states: {
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 0,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
+      );
+
+      final actions = await openTalentsTab(tester, repo, catalog);
+      await actions.startEdit();
+      await tester.pumpAndSettle();
+
+      final begabt = tester.widget<Checkbox>(
+        find.byKey(const ValueKey<String>('talents-gifted-tal_a')),
+      );
+      expect(begabt.value, isTrue);
+      expect(begabt.onChanged, isNull);
+      expect(
+        find.byTooltip('Aus Vorteil: Begabung für Athletik'),
+        findsOneWidget,
+      );
+      final unfaehig = tester.widget<Checkbox>(
+        find.byKey(const ValueKey<String>('talents-gifted-tal_b')),
+      );
+      expect(unfaehig.value, isFalse);
+      expect(unfaehig.onChanged, isNotNull);
+      expect(
+        find.byTooltip('Unfähigkeit: Unfähigkeit für Boote Fahren'),
+        findsOneWidget,
+      );
+
+      await actions.save();
+      await tester.pumpAndSettle();
+      final hero = (await repo.listHeroes()).single;
+      // Abgeleitet, nicht gespeichert: das Haekchen bleibt unberuehrt.
+      expect(hero.talents['tal_a']?.gifted, isFalse);
+    },
+  );
+
+  testWidgets('Talentkatalog zeigt die Begabung eines neuen Talents', (
+    tester,
+  ) async {
+    final repo = FakeRepository(
+      heroes: [
+        buildHero(
+          talents: const <String, HeroTalentEntry>{'tal_a': HeroTalentEntry()},
+        ).copyWith(vorteileText: 'Begabung für Boote Fahren'),
+      ],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+    final catalog = mitKatalogMerkmalen(
+      buildCatalog(),
+      vorteilIds: const ['adv_begabung_anderes_talent'],
+    );
+
+    final actions = await openTalentsTab(tester, repo, catalog);
+    await actions.startEdit();
+    await tester.pumpAndSettle();
+    expect(find.byTooltip('Begabung für Boote Fahren'), findsNothing);
+
+    await tester.tap(
+      find.byKey(const ValueKey<String>('talents-catalog-open')),
+    );
+    await tester.pumpAndSettle();
+
+    // Boote Fahren (Basis B) steht noch nicht auf dem Bogen, die Vorschau
+    // zeigt trotzdem die wirksame Spalte samt Quelle.
+    final marke = find.byTooltip('Begabung für Boote Fahren');
+    expect(marke, findsOneWidget);
+    final zeile = find.ancestor(of: marke, matching: find.byType(Row)).first;
+    expect(
+      find.descendant(of: zeile, matching: find.text('A')),
+      findsOneWidget,
+    );
   });
 
   testWidgets(

@@ -22,6 +22,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_companion.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_connection_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_gruppen_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_language_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_merkmal.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_meta_talent.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_note_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_reisebericht.dart';
@@ -526,6 +527,28 @@ final _eintrag = HeroAdvancementEntry(
   toValue: 2,
   apCost: 3,
 );
+
+// Voll belegter Merkmalseintrag (alle bedingten Felder gesetzt).
+HeroMerkmal _merkmal() => const HeroMerkmal(
+  katalogId: 'adv_hohe_lebenskraft',
+  text: 'Hohe Lebenskraft 3',
+  wert: 3,
+  auswahl: 'A',
+  kandidatenIds: <String>['adv_a'],
+  zuordnung: HeroMerkmalZuordnung.migration,
+);
+
+final _merkmale = <_Modell>[
+  _Modell(
+    'HeroMerkmal',
+    schluessel: HeroMerkmal.jsonSchluessel,
+    voll: () => _merkmal().toJson(),
+    lade: (json) => HeroMerkmal.fromJson(json).toJson(),
+    bearbeite: (json) =>
+        HeroMerkmal.fromJson(json).copyWith(wert: 4, text: 'X 4').toJson(),
+    unbekannt: (json) => HeroMerkmal.fromJson(json).unbekannteFelder,
+  ),
+];
 
 final _grundwerteAvatarVerlauf = <_Modell>[
   _Modell(
@@ -1035,6 +1058,23 @@ final _enumFelder = <_EnumFeld>[
     erwarteterErsatz: InventoryItemType.sonstiges,
   ),
   _EnumFeld(
+    'HeroMerkmal.zuordnung',
+    'zuordnung',
+    voll: () => _merkmal().toJson(),
+    lade: (json) => HeroMerkmal.fromJson(json).toJson(),
+    gleich: (json) {
+      final m = HeroMerkmal.fromJson(json);
+      return m.copyWith(zuordnung: m.zuordnung, wert: 5).toJson();
+    },
+    anders: (json) =>
+        HeroMerkmal.fromJson(json)
+            .copyWith(zuordnung: HeroMerkmalZuordnung.frei)
+            .toJson(),
+    andersJson: 'frei',
+    ersatz: (json) => HeroMerkmal.fromJson(json).zuordnung,
+    erwarteterErsatz: HeroMerkmalZuordnung.katalog,
+  ),
+  _EnumFeld(
     'SpellDuration.unit',
     'unit',
     voll: () => _dauer().toJson(),
@@ -1251,6 +1291,8 @@ void main() {
     'Felder',
     _begleiterAbenteuerNotizen,
   );
+
+  _pruefeModelle('Vor- und Nachteile bewahren unbekannte Felder', _merkmale);
 
   _pruefeModelle(
     'Eigenschaften, Grundwerte, Bilder und Verlauf bewahren unbekannte Felder',

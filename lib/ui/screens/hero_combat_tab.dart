@@ -55,6 +55,8 @@ import 'package:dsa_heldenverwaltung/ui/screens/shared/special_ability_chain_car
 import 'package:dsa_heldenverwaltung/ui/widgets/erwerb_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/karto_variante.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/requirement_checklist.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/hero_begabung_rules.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/begabung_haekchen.dart';
 
 part 'hero_combat/hero_combat_talents_subtab.dart';
 part 'hero_combat/combat_talent_catalog_table.dart';
@@ -102,6 +104,7 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
 
   HeroSheet? _latestHero;
   CatalogRuleResolver _latestCatalogRuleResolver = const CatalogRuleResolver();
+  RulesCatalog? _latestCatalog;
   Map<String, HeroTalentEntry> _draftTalents = <String, HeroTalentEntry>{};
   Set<String> _invalidCombatTalentIds = <String>{};
   CombatConfig _draftCombatConfig = const CombatConfig();
@@ -264,13 +267,28 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
     });
   }
 
+  /// Begabungen/Unfaehigkeiten aus Vor-/Nachteilen des Helden.
+  HeroBegabungen _begabungen() {
+    final hero = _latestHero;
+    if (hero == null) {
+      return HeroBegabungen.leer;
+    }
+    return ermittleBegabungen(hero, catalog: _latestCatalog);
+  }
+
+  /// Begabung/Unfaehigkeit aus Vor-/Nachteilen fuer [talent].
+  LernspaltenBefund _befundFuer(TalentDef talent) =>
+      _begabungen().talent(talent);
+
   TalentComplexityResolution _resolveTalentComplexity(
     TalentDef talent,
     HeroTalentEntry entry,
   ) {
+    final befund = _befundFuer(talent);
     return _latestCatalogRuleResolver.resolveTalentComplexity(
       talent: talent,
-      gifted: entry.gifted,
+      gifted: befund.istBegabt(gifted: entry.gifted),
+      unfaehigkeitsSchritte: befund.erhoehung,
     );
   }
 
@@ -303,6 +321,7 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
             Center(child: Text('Katalog-Fehler: $error')),
         data: (catalog) {
           _latestCatalogRuleResolver = catalog.ruleResolver;
+          _latestCatalog = catalog;
           return ValueListenableBuilder<int>(
             valueListenable: _viewRevision,
             builder: (context, revision, child) {
@@ -325,6 +344,7 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
                 catalogTalents: catalog.talents,
                 catalogManeuvers: catalog.maneuvers,
                 catalogCombatSpecialAbilities: catalog.combatSpecialAbilities,
+                catalog: catalog,
                 epicAdvantagesRuleActive: ref.watch(
                   isHouseRuleActiveProvider(EpicRuleKeys.advantages),
                 ),
@@ -332,6 +352,7 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
               final effectiveAttributes = computeEffectiveAttributes(
                 hero,
                 tempAttributeMods: state.tempAttributeMods,
+                catalog: catalog,
               );
 
               return Column(

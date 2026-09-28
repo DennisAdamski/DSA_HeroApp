@@ -13,6 +13,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_companion.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_connection_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_gruppen_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_language_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_merkmal.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_meta_talent.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_note_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_reisebericht.dart';
@@ -79,6 +80,7 @@ Zukunftsheld mitZukunftsfeldern(Map<String, dynamic> heldJson) {
     ..._talenteUndMagie(basis),
     ..._begleiterAbenteuerNotizen(basis),
     ..._grundwerteAvatarVerlauf(basis),
+    ..._merkmale(basis),
   ];
   return _mitFeldern(basis, pfade, werte: _aufzaehlungen(basis));
 }
@@ -107,7 +109,44 @@ Map<String, Object?> _aufzaehlungen(Map<String, dynamic> basis) {
     'adventures/0/seRewards/0/targetType': zukunftsWert,
     'adventures/0/lootRewards/0/itemType': zukunftsWert,
     'geburtsdatum/month': zukunftsWert,
+    'vorteilEintraege/1/zuordnung': zukunftsWert,
   };
+}
+
+/// Strukturierte Vor- und Nachteile (ARCH-02) passend zu den Texten von f01;
+/// der Text bleibt, wie er ist, und gleicht der Projektion der Liste.
+List<String> _merkmale(Map<String, dynamic> basis) {
+  _pruefe(
+    basis['vorteileText'] == 'Eisern, Richtungssinn' &&
+        basis['nachteileText'] == 'Jähzorn 6, Arroganz 5',
+    'Vor-/Nachteile von f01',
+  );
+  _pruefe(!basis.containsKey('vorteilEintraege'), 'keine Merkmalsliste');
+  basis['vorteilEintraege'] = <Object?>[
+    const HeroMerkmal(katalogId: 'adv_eisern', text: 'Eisern').toJson(),
+    const HeroMerkmal(
+      katalogId: 'adv_richtungssinn',
+      text: 'Richtungssinn',
+    ).toJson(),
+  ];
+  basis['nachteilEintraege'] = <Object?>[
+    const HeroMerkmal(
+      katalogId: 'dis_jaehzorn',
+      text: 'Jähzorn 6',
+      wert: 6,
+    ).toJson(),
+    const HeroMerkmal(
+      katalogId: 'dis_arroganz',
+      text: 'Arroganz 5',
+      wert: 5,
+    ).toJson(),
+  ];
+  return const <String>[
+    'vorteilEintraege/0',
+    'vorteilEintraege/1',
+    'nachteilEintraege/0',
+    'nachteilEintraege/1',
+  ];
 }
 
 /// ID des Zaubers, den die Basis ergaenzt.

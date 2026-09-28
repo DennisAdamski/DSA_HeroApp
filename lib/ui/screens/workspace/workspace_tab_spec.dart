@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
+import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/resource_activation_rules.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
@@ -86,7 +88,13 @@ typedef WorkspaceTabHeaderActionsBuilder =
     });
 
 /// Prueft, ob ein Tab fuer den aktuellen Helden sichtbar sein soll.
-typedef WorkspaceTabVisibilityPredicate = bool Function(HeroSheet hero);
+///
+/// [catalog] ist der Regelkatalog, sofern geladen; Vor- und Nachteile wirken
+/// damit ueber ihre Katalog-ID (ARCH-02).
+typedef WorkspaceTabVisibilityPredicate = bool Function(
+  HeroSheet hero,
+  RulesCatalog? catalog,
+);
 
 /// Zentrale Definition eines Workspace-Tabs.
 class WorkspaceTabSpec {
@@ -185,7 +193,8 @@ List<WorkspaceTabSpec> buildWorkspaceTabs({
       label: 'Magie',
       icon: Icons.bolt_outlined,
       helper: 'Katalogansicht für Zauber',
-      isVisible: (hero) => computeHeroResourceActivation(hero).magic.isEnabled,
+      isVisible: (hero, catalog) =>
+          computeHeroResourceActivation(hero, catalog: catalog).magic.isEnabled,
       buildContent: ({required heroId, required callbacks}) => HeroMagicTab(
         heroId: heroId,
         onDirtyChanged: callbacks.onDirtyChanged,
@@ -269,8 +278,23 @@ List<WorkspaceTabSpec> buildWorkspaceTabs({
 List<WorkspaceTabSpec> visibleWorkspaceTabsForHero({
   required HeroSheet hero,
   required Iterable<WorkspaceTabSpec> tabs,
+  required RulesCatalog? catalog,
 }) {
-  return tabs.where((tab) => tab.isVisible(hero)).toList(growable: false);
+  return tabs
+      .where((tab) => tab.isVisible(hero, catalog))
+      .toList(growable: false);
+}
+
+/// Regelkatalog, sofern er bereits geladen wird, sonst `null`.
+///
+/// Die Hosts der Heldenverwaltung sollen das Katalogladen nicht selbst
+/// anstossen (es wird nach dem ersten Frame vorgewaermt); sobald es laeuft,
+/// bauen sie bei seinem Abschluss neu.
+RulesCatalog? laufenderRegelkatalog(WidgetRef ref) {
+  if (!ref.exists(rulesCatalogProvider)) {
+    return null;
+  }
+  return ref.watch(rulesCatalogProvider).valueOrNull;
 }
 
 List<WorkspaceHeaderAction> _buildTalentsHeaderActions({
@@ -323,4 +347,4 @@ List<WorkspaceHeaderAction> _buildNoHeaderActions({
   return const <WorkspaceHeaderAction>[];
 }
 
-bool _alwaysVisible(HeroSheet hero) => true;
+bool _alwaysVisible(HeroSheet hero, RulesCatalog? catalog) => true;

@@ -6,6 +6,8 @@ import 'package:dsa_heldenverwaltung/domain/combat_config/ranged_projectile.dart
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/sync_models.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_wirkung_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_zuordnung_rules.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 
 import '../test_support/hero_fixtures.dart';
@@ -604,6 +606,108 @@ void main() {
       String ohneId(String zeile) => zeile.substring(zeile.indexOf(' '));
       expect((await datenJeSlot(a)).map(ohneId), vorEcho.map(ohneId));
       expect(await datenJeSlot(b), await datenJeSlot(a));
+    });
+  });
+
+  group('strukturierte Vor- und Nachteile (ARCH-02)', () {
+    late EchterKatalog katalog;
+
+    setUpAll(() async {
+      katalog = await ladeEchtenRegelkatalog();
+    });
+
+    // Gerät A speichert den Helden mit dieser Version: Die Alttexte werden
+    // strukturiert, beide Geräte gleichen ab.
+    setUp(() async {
+      await _aendere(
+        a,
+        _krieger,
+        (held) => merkmaleZumSpeichern(
+          held,
+          katalog: MerkmalKatalog.von(katalog.catalog),
+        ),
+      );
+      await a.repo.syncNow();
+      await b.repo.syncNow();
+    });
+
+    test('die veröffentlichte App verwirft die Liste; ihr Text wird ohne '
+        'Upload übernommen und neu zugeordnet', () async {
+      await fremdSchreiben((json) {
+        final alt = wieVeroeffentlichteApp(json);
+        json
+          ..clear()
+          ..addAll(alt)
+          ..['vorteileText'] = 'Eisern, Richtungssinn, Flink';
+      });
+      final schreibvorgaenge = cloud.schreibvorgaenge;
+
+      for (var runde = 0; runde < 2; runde++) {
+        await a.repo.syncNow();
+        await b.repo.syncNow();
+      }
+
+      expect(cloud.schreibvorgaenge, schreibvorgaenge);
+      expect(a.konflikte, isEmpty);
+      expect(b.konflikte, isEmpty);
+      final held = (await b.lokal.loadHeroById(_krieger))!;
+      expect(held.vorteilEintraege, isEmpty);
+      final auswertung = werteMerkmaleAus(held, catalog: katalog.catalog);
+      expect(auswertung.abgleich.vorteile.map((e) => e.katalogId), [
+        'adv_eisern',
+        'adv_richtungssinn',
+        'adv_flink',
+      ]);
+      expect(auswertung.wirkungen.flink, isTrue);
+    });
+
+    test('eine Version, die die Liste bewahrt, aber nur den Text ändert, '
+        'erzeugt eine sichtbare Abweichung statt stiller Übernahme', () async {
+      await fremdSchreiben((json) {
+        json['vorteileText'] = 'Eisern, Richtungssinn, Flink';
+      });
+      final schreibvorgaenge = cloud.schreibvorgaenge;
+
+      for (var runde = 0; runde < 2; runde++) {
+        await a.repo.syncNow();
+        await b.repo.syncNow();
+      }
+
+      expect(cloud.schreibvorgaenge, schreibvorgaenge);
+      expect(b.konflikte, isEmpty);
+      var held = (await b.lokal.loadHeroById(_krieger))!;
+      expect(held.vorteilEintraege.map((e) => e.katalogId), [
+        'adv_eisern',
+        'adv_richtungssinn',
+      ]);
+      final abgleich = gleicheMerkmaleAb(held);
+      expect(abgleich.vorteilAbweichung!.hinzugefuegt, ['Flink']);
+      expect(
+        werteMerkmaleAus(held, catalog: katalog.catalog).wirkungen.flink,
+        isFalse,
+      );
+
+      // Eine fremde Änderung auf Gerät B löst die Abweichung nicht auf.
+      final container = ProviderContainer(
+        overrides: [
+          heroRepositoryProvider.overrideWithValue(b.repo),
+          ...katalog.overrides,
+        ],
+      );
+      addTearDown(container.dispose);
+      await container
+          .read(heroActionsProvider)
+          .saveHero(
+            held.copyWith(dukaten: '12'),
+            validationCatalog: katalog.catalog,
+          );
+      await b.repo.syncNow();
+      await a.repo.syncNow();
+
+      held = (await a.lokal.loadHeroById(_krieger))!;
+      expect(held.dukaten, '12');
+      expect(held.vorteileText, 'Eisern, Richtungssinn, Flink');
+      expect(held.vorteilEintraege, hasLength(2));
     });
   });
 }

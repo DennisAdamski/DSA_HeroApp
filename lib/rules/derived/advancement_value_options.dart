@@ -6,11 +6,14 @@ AdvancementOption? _attributeOption(AdvancementContext context, String id) {
   final code = parseAttributeCode(id);
   if (code == null) return null;
   final delta = attributeModValue(
-    parseStartAttributeModifiers(hero),
+    parseStartAttributeModifiers(hero, catalog: context.catalog),
     code.name,
   );
   final value = readAttributeValue(hero.attributes, code) + delta;
-  final maximum = readAttributeValue(computeHeroAttributeMaximums(hero), code);
+  final maximum = readAttributeValue(
+    computeHeroAttributeMaximums(hero, catalog: context.catalog),
+    code,
+  );
   return AdvancementOption(
     kind: AdvancementKind.attribute,
     targetId: code.name,
@@ -20,7 +23,7 @@ AdvancementOption? _attributeOption(AdvancementContext context, String id) {
     seAvailable: hero.attributeSePool.valueFor(code),
     learnCost: kEigenschaftKomplexitaet,
     startValue: readAttributeValue(
-      computeHeroEffectiveStartAttributes(hero),
+      computeHeroEffectiveStartAttributes(hero, catalog: context.catalog),
       code,
     ),
     isMainAttribute: readAttributeValue(hero.epicMainAttributes, code) > 0,
@@ -75,6 +78,8 @@ AdvancementOption? _talentOption(AdvancementContext context, String id) {
     return null;
   }
   final entry = hero.talents[id] ?? const HeroTalentEntry();
+  final befund = context.begabungen.talent(def);
+  final begabt = befund.istBegabt(gifted: entry.gifted);
   final combat =
       def.group == 'Kampftalent' ||
       def.type == 'nahkampf' ||
@@ -85,12 +90,12 @@ AdvancementOption? _talentOption(AdvancementContext context, String id) {
       ? computeCombatTalentMaxValue(
           effectiveAttributes: attrs,
           talentType: def.type,
-          gifted: entry.gifted,
+          gifted: begabt,
         )
       : computeTalentMaxValue(
           effectiveAttributes: attrs,
           attributeNames: def.attributes,
-          gifted: entry.gifted,
+          gifted: begabt,
         );
   if (hero.isEpisch && hero.epicUnactivatedTalentIds.contains(id)) {
     final names = combat
@@ -106,7 +111,8 @@ AdvancementOption? _talentOption(AdvancementContext context, String id) {
   }
   final complexity = effectiveTalentLernkomplexitaet(
     basisKomplexitaet: def.steigerung,
-    gifted: entry.gifted,
+    gifted: begabt,
+    unfaehigkeitsSchritte: befund.erhoehung,
   );
   final cost = learnCostFromKomplexitaet(complexity);
   final value = entry.talentValue ?? -1;
@@ -163,18 +169,20 @@ AdvancementOption? _spellOption(
     learnedRepresentation: chosen['learnedRepresentation'] ?? repr,
     learnedTradition: chosen['learnedTradition'] ?? tradition,
   );
+  final befund = context.begabungen.zauber(def);
   final complexity = effectiveSpellLernkomplexitaet(
     basisKomplexitaet: def.steigerung,
     istHauszauber: entry.hauszauber,
     zauberMerkmale: parseSpellTraits(def.traits),
     heldMerkmalskenntnisse: hero.merkmalskenntnisse,
-    gifted: entry.gifted,
-    penaltySteps: foreign ? 2 : 0,
+    gifted: entry.gifted || befund.begabungen.isNotEmpty,
+    penaltySteps: (foreign ? 2 : 0) + befund.erhoehung,
+    zusatzReduktion: befund.zusatzBegabungen.length,
   );
   final maximum = computeTalentMaxValue(
     effectiveAttributes: context.permanentAttributes,
     attributeNames: def.attributes,
-    gifted: entry.gifted,
+    gifted: befund.istBegabt(gifted: entry.gifted),
   );
   final cost = learnCostFromKomplexitaet(complexity);
   return AdvancementOption(
@@ -207,7 +215,10 @@ AdvancementOption? _languageOption(AdvancementContext context, String id) {
       .where((item) => item.id == hero.muttersprache)
       .firstOrNull;
   final sameFamily = mother != null && mother.familie == def.familie;
-  final complexity = def.steigerung == 'B' || !sameFamily ? 'B' : 'A';
+  final complexity = _mitBefund(
+    def.steigerung == 'B' || !sameFamily ? 'B' : 'A',
+    context.begabungen.sprachen(),
+  );
   final value = hero.sprachen[id]?.wert ?? -1;
   return AdvancementOption(
     kind: AdvancementKind.language,
@@ -234,8 +245,22 @@ AdvancementOption? _scriptOption(AdvancementContext context, String id) {
     label: def.name,
     currentValue: value,
     maxValue: def.maxWert,
-    learnCost: learnCostFromKomplexitaet(def.steigerung),
+    learnCost: learnCostFromKomplexitaet(
+      _mitBefund(def.steigerung, context.begabungen.schriften()),
+    ),
     isOwned: hero.schriften.containsKey(id),
     unavailableReason: value >= def.maxWert ? 'Maximum erreicht' : null,
+  );
+}
+
+// Sprachen und Schriften: Begabung/Unfaehigkeit wie bei Talenten.
+String _mitBefund(String komplexitaet, LernspaltenBefund befund) {
+  if (!befund.wirkt) {
+    return komplexitaet;
+  }
+  return effectiveTalentLernkomplexitaet(
+    basisKomplexitaet: komplexitaet,
+    gifted: befund.begabungen.isNotEmpty,
+    unfaehigkeitsSchritte: befund.erhoehung,
   );
 }

@@ -161,12 +161,14 @@ strukturierten Angaben.
 `lib/rules/derived/hero_stat_inputs.dart`,
 `assets/catalogs/house_rules_v1/vorteile.json` und `nachteile.json` im selben Ordner.
 
-- [ ] Ein Modell für erworbene Merkmale samt Stufe, Auswahl, Herkunft und
+- [x] Ein Modell für erworbene Merkmale samt Stufe, Auswahl, Herkunft und
   Verknüpfung mit dem Katalog definieren; zunächst Vor- und Nachteile abdecken.
-- [ ] Eine versionierte Migration aus den Textfeldern entwickeln: eindeutige
+  *(Herkunft als Zuordnungsweg; Herkunft aus Rasse/Kultur/Profession ist
+  Folgeschritt, siehe Teilstand.)*
+- [x] Eine versionierte Migration aus den Textfeldern entwickeln: eindeutige
   Treffer zuordnen, Mehrdeutigkeiten und unbekannte Texte unverändert erhalten
   und zur Prüfung anzeigen. Migration darf beim erneuten Laden nichts verdoppeln.
-- [ ] Regelauswertung, Erwerbsprüfung und Bearbeitung auf strukturierte Einträge
+- [x] Regelauswertung, Erwerbsprüfung und Bearbeitung auf strukturierte Einträge
   umstellen; doppelte Anwendung aus Alttext und neuem Eintrag ausschließen.
 
 **Abnahme:** Umbenennung eines Katalogeintrags verändert seine Wirkung nicht.
@@ -182,6 +184,122 @@ Katalogtests unter `test/catalog/`, Modelltests unter `test/domain/` sowie
 Schema, Behandlung eigener regelwirksamer Merkmale und Übergangsformat sind zu
 entscheiden. Herkunftsmerkmale als eigenen Folgeschritt abgrenzen. Der Parser
 bleibt während der Übergangsphase als Import-/Kompatibilitätshilfe verfügbar.
+
+**Teilstand 28.09.2026 — Vor- und Nachteile strukturiert.** Alle drei
+Unterpunkte sind umgesetzt, die Abnahmekriterien geprüft. Der Hauptpunkt
+bleibt offen, bis Herkunftsmerkmale (Rasse, Kultur, Profession) als
+Folgeschritt entschieden sind und die manuelle Bedienprüfung vorliegt.
+
+*Entscheidungen (mit dem Nutzer abgestimmt).*
+
+- **Die Liste führt.** `HeroSheet.vorteilEintraege`/`nachteilEintraege`
+  (`HeroMerkmal`) sind maßgeblich. `vorteileText`/`nachteileText` bleiben
+  als Projektion für die veröffentlichte App bestehen, die nur sie kennt.
+  Ändert eine ältere Version den Text, wird die Abweichung angezeigt. Sie wird
+  nie still übernommen oder verworfen, auch nicht von `saveHero`; der Nutzer
+  entscheidet zwischen „Text übernehmen“ und „Liste behalten“.
+- **Wirkungen deklarativ im Katalog** (`wirkungen`: `basiswert`,
+  `eigenschaft`, `schalter`, `wundschwelle`, `rast`), ausgewertet über die
+  Katalog-ID in `hero_merkmal_wirkung_rules.dart`. 18 Einträge tragen
+  Wirkungen, genau die bisher per Namen wirkenden.
+- Eigene regelwirksame Merkmale (`LEP+2`) und unbekannte Texte bleiben freie
+  Einträge und wirken weiter über den Parser. Mehrdeutige Alttexte werden
+  nicht geraten: Sie bleiben frei, tragen ihre Kandidaten und lassen sich
+  in der Übersicht zuordnen.
+- Übergangsformat: additiv, nur bei Belegung geschrieben. Laden bleibt ein
+  Fixpunkt, die Hash-Pins der Bestandshelden sind unverändert. Migriert wird
+  zur Laufzeit ohne Speichern und persistent erst beim nächsten `saveHero`
+  (mit geladenem Katalog).
+
+Commits:
+
+- `8143e44` — Katalog: `HeroTraitEffect`, `wirkungen` an 18 Einträgen,
+  Katalogtest.
+- `76916d8` — Domain: `HeroMerkmal`, neue Listen in `HeroSheet`, Wächter
+  für unbekannte Felder und Aufzählungswerte, Nachbildung der
+  veröffentlichten App verwirft die Listen.
+- `0566a54` (+ `26a2cac`) — Regeln: Zuordnung, Projektion,
+  Abweichungserkennung, Migration beim Speichern und Wirkung über die
+  Katalog-ID. Umgestellt sind Parser, Wundschwelle, Rast,
+  Ressourcenaktivierung, Quellenaufschlüsselung, Startwerte und
+  Voraussetzungen.
+- `3423c83` — Übersicht bearbeitet die Liste. Katalogbezug bleibt beim
+  Ändern erhalten, Abweichung und Kandidatenwahl sind sichtbar.
+- `e56b90f` — Fixture f09, Hive-, Sync- und Widgettests, Dokumentation
+  (technische Übersicht 4.11).
+
+*Prüfungen.*
+
+- Äquivalenztest: Für jeden wirkenden Katalogeintrag rechnen Katalog- und
+  Textweg über alle Werte und Auswahlen gleich (Modifikatoren, Rast,
+  Wundschwelle, Magieaktivierung).
+- Umbenennungstest: Neuer Name im Katalog und im Text wirkt über die ID
+  weiter; der reine Namensweg rechnet dann 0.
+- Weitere Proben: Zuordnungstabelle einschließlich Komma-Templates,
+  römischer Stufen und fester Auswahllisten; Idempotenz; keine
+  Doppelanwendung.
+- Hive: f01, f02, f03, f05 und f07 werden einmal migriert, danach bleibt der
+  Stand fest bei gleichen Regelwerten; Export und Import als Kopie erhalten
+  die Liste.
+- Sync: Die veröffentlichte App verwirft die Liste; ihr Text wird ohne
+  Upload und Konflikt neu zugeordnet. Eine Version, die die Liste bewahrt und
+  nur den Text ändert, erzeugt eine sichtbare Abweichung. Ein fremdes
+  Speichern löst sie nicht auf.
+- Widgettests: Katalogbezug, unveränderte Merkmale bei Speichern ohne
+  Änderung, beide Auflösungen der Abweichung, Kandidatenwahl.
+- Gegenprobe: Ohne Abweichungserkennung scheitern sechs Proben (Sync, Regeln,
+  Übersicht).
+- `flutter analyze --no-pub` ohne Befund, volle Suite grün (2749 bestanden,
+  3 übersprungen). Eine manuelle Bedienprüfung auf Geräten steht aus.
+
+*Verbleibende Risiken und nächste Schritte.*
+
+1. ~~Mehrere UI-Direktaufrufer rechneten ohne Katalog, also über den
+   Namen.~~ *Erledigt mit `63bd0f9`:* Die Einstiegsfunktionen verlangen
+   `required RulesCatalog? catalog`, jeder Aufrufer in `lib/` reicht den
+   Katalog durch (kein `catalog: null` in `lib/`). Dabei fiel ein echter
+   Fehlerweg auf und ist behoben: Das Steigerungs-Replay
+   (`applyAdvancementAttributeValue`) rechnete das Startwert-Delta ohne
+   Katalog, die Option mit — nach einer Umbenennung von „Herausragende
+   Eigenschaft“ hätte es einen falschen Rohwert geschrieben. Die
+   Magie-Tab-Sichtbarkeit nimmt den Katalog über `laufenderRegelkatalog`,
+   ohne das Laden selbst anzustoßen; bis er geladen ist, gilt der Namensweg.
+   Neue Katalogwirkungen brauchen weiterhin einen passenden Namensweg oder
+   eine bewusste Ausnahme im Äquivalenztest.
+2. Die Migration setzt beim Speichern einen geladenen Katalog voraus
+   (`rulesCatalogProvider` ohne Warten). Ohne ihn bleibt der Held Bestandsheld
+   und wird beim nächsten Speichern migriert. Der Import eines Bestandshelden
+   migriert deshalb nur, wenn der Katalog schon geladen ist.
+3. Die veröffentlichte App verwirft die Listen bei jedem eigenen Speichern.
+   Danach wird neu migriert; manuell zugeordnete Kandidaten gehen dabei
+   verloren und erscheinen erneut zur Prüfung.
+4. Herkunftsmerkmale (`rasseModText`, `kulturModText`,
+   `professionModText`), die `Herkunft` eines Merkmals aus der Generierung
+   und AP-Buchung für nachträgliche Vor-/Nachteile sind nicht Teil dieses
+   Teilstands. `trait_ap_cost_rules.dart` bleibt ungenutzt.
+5. ~~UI2 bearbeitet Vor-/Nachteile nur über die Bestandsbrücke.~~
+   *Erledigt:* Das UI2-Merkmalsblatt (`lib/ui2/merkmale/`, Commits
+   `fbe7cd4` Regeln, `71a5a3b` Oberfläche) zeigt Merkmalskarten wie im
+   Mockup und bearbeitet sie mit Katalogbezug. Einstieg ist der Abschnitt
+   „Vor- und Nachteile“ der Spielansicht; der Übersichts-Tab bleibt.
+6. `AvatarSnapshot` vergleicht weiter Texte. Nach der ersten Migration
+   unterscheiden sich nur Trennzeichen, nicht die Fragmente.
+7. *Nachtrag (Commits `c2b1b54`, `f0afcb6`):* `parseAttributeCode` kannte
+   „Gewandtheit“ nur falsch geschrieben; die Zuordnung liest jetzt
+   Doppelpunkte als Trenner und speichert Eigenschaften als Kürzel.
+   Begabungen und Unfähigkeiten wirken über die neue Wirkungsart
+   `lernspalte` auf ihre Ziele (Talent, Talentgruppe, Nah-/Fernkampf,
+   Sprachen/Schriften, Zauber, Merkmal je Treffer, Ritualkenntnis),
+   abgeleitet in `hero_begabung_rules.dart` und nicht gespeichert.
+   „Begabung für X“ wird über die aufgelöste Auswahlliste eindeutig. Katalogvorschauen
+   (Talente, Kampftalente, Zauber, Repräsentationsdialog) zeigen die
+   wirksame Spalte samt Quelle; Widget-Tests decken Talente, beide
+   Kampftalent-Ansichten, Zauber, Zauberkatalog und Rituale ab
+   (`test/test_support/begabung_katalog.dart` lädt dafür die echten
+   Katalogeinträge). Offen: Zauberspezialisierungen zählen jede Begabung
+   wie das Häkchen als eine Spalte (wie bisher ohne Merkmal, Hauszauber und
+   Unfähigkeit). Der Textweg (ohne Katalog) kennt keine Lernspalten, das ist
+   die bewusste Ausnahme im Äquivalenztest.
 
 ## ARCH-03 — Gemeinsame Ausrüstungsdaten für Inventar und Kampf
 

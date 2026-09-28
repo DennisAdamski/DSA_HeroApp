@@ -53,12 +53,19 @@ String increaseLernkomplexitaet({
 }
 
 /// Berechnet die effektive Lernkomplexitaet eines Talents.
+///
+/// [unfaehigkeitsSchritte] verteuert zuerst (bis `H`), danach senkt eine
+/// Begabung um eine Spalte (bis `A*`) — dieselbe Reihenfolge wie bei Zaubern.
 String effectiveTalentLernkomplexitaet({
   required String basisKomplexitaet,
   required bool gifted,
+  int unfaehigkeitsSchritte = 0,
 }) {
   return reduceLernkomplexitaet(
-    basisKomplexitaet: basisKomplexitaet,
+    basisKomplexitaet: increaseLernkomplexitaet(
+      basisKomplexitaet: basisKomplexitaet,
+      increaseSteps: unfaehigkeitsSchritte,
+    ),
     reductionSteps: gifted ? 1 : 0,
   );
 }
@@ -66,7 +73,9 @@ String effectiveTalentLernkomplexitaet({
 /// Berechnet die effektive Lernkomplexitaet eines Zaubers.
 ///
 /// Hauszauber, passende Merkmalskenntnisse und Begabung summieren sich jeweils
-/// als eigene Reduktionsstufe.
+/// als eigene Reduktionsstufe. [zusatzReduktion] traegt weitere Stufen (je
+/// begabtem Merkmal), [penaltySteps] die Verteuerungen (fremde
+/// Repraesentation, je unfaehigem Merkmal); verteuert wird zuerst.
 String effectiveSpellLernkomplexitaet({
   required String basisKomplexitaet,
   required bool istHauszauber,
@@ -74,6 +83,7 @@ String effectiveSpellLernkomplexitaet({
   required List<String> heldMerkmalskenntnisse,
   required bool gifted,
   int penaltySteps = 0,
+  int zusatzReduktion = 0,
 }) {
   final hatMerkmalReduktion = zauberMerkmale.any(
     heldMerkmalskenntnisse.contains,
@@ -81,7 +91,8 @@ String effectiveSpellLernkomplexitaet({
   final reductionSteps =
       (istHauszauber ? 1 : 0) +
       (hatMerkmalReduktion ? 1 : 0) +
-      (gifted ? 1 : 0);
+      (gifted ? 1 : 0) +
+      zusatzReduktion;
   final penalizedKomplexitaet = increaseLernkomplexitaet(
     basisKomplexitaet: basisKomplexitaet,
     increaseSteps: penaltySteps,
@@ -179,10 +190,12 @@ int talentSpecializationApCost({
   required String basisKomplexitaet,
   required bool gifted,
   required int specializationOrdinal,
+  int unfaehigkeitsSchritte = 0,
 }) {
   final komplexitaet = effectiveTalentLernkomplexitaet(
     basisKomplexitaet: basisKomplexitaet,
     gifted: gifted,
+    unfaehigkeitsSchritte: unfaehigkeitsSchritte,
   );
   final faktor = kAktivierungsfaktoren[komplexitaet] ?? 1;
   return 20 * faktor * specializationOrdinal;

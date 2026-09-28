@@ -45,14 +45,23 @@ import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
 /// Was die veroeffentlichte App von [heldJson] uebrig laesst, wenn sie den
 /// Helden laedt und wieder speichert.
 ///
-/// Sie kennt weder Slot-IDs noch `slotRef` und bewahrt keine unbekannten
+/// Sie kennt weder Slot-IDs noch `slotRef` noch strukturierte Vor- und
+/// Nachteile (`vorteilEintraege`/`nachteilEintraege`) und bewahrt keine unbekannten
 /// Felder, weder oben noch verschachtelt. Nachgebildet mit den
 /// Schluesselsaetzen dieser Version ohne `id` und `slotRef`; Felder, die erst
 /// nach ihr dazukamen, bleiben damit stehen — fuer die hier geprueften
 /// Modelle spielt das keine Rolle.
 Map<String, dynamic> wieVeroeffentlichteApp(Map<String, dynamic> heldJson) {
   final json = jsonDecode(jsonEncode(heldJson)) as Map<String, dynamic>;
-  _behalte(json, HeroSheet.jsonSchluessel);
+  // Strukturierte Vor-/Nachteile (ARCH-02) kennt sie nicht; sie bearbeitet
+  // nur `vorteileText`/`nachteileText`.
+  _behalte(
+    json,
+    HeroSheet.jsonSchluessel.difference(const {
+      'vorteilEintraege',
+      'nachteilEintraege',
+    }),
+  );
   final kampf = json['combatConfig'] as Map<String, dynamic>?;
   if (kampf != null) {
     _behalte(kampf, CombatConfig.jsonSchluessel);

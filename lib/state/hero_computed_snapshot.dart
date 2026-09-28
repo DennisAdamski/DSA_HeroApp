@@ -7,6 +7,7 @@ import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/attribute_start_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/combat_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_wirkung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_stat_inputs.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/resource_activation_rules.dart';
@@ -84,14 +85,25 @@ HeroComputedSnapshot buildHeroComputedSnapshot({
     state: state,
     talents: catalogTalents,
     epicAdvantagesActive: epicAdvantagesActive,
+    catalog: catalog,
   );
   final parsed = inputs.parsed;
+  final merkmale = werteMerkmaleAus(hero, catalog: catalog);
   final inventoryMods = inputs.inventory;
   final effective = inputs.effective;
   final wundEffekte = inputs.wounds;
-  final resourceActivation = computeHeroResourceActivation(hero);
-  final effectiveStartAttributes = computeHeroEffectiveStartAttributes(hero);
-  final attributeMaximums = computeHeroAttributeMaximums(hero);
+  final resourceActivation = computeHeroResourceActivation(
+    hero,
+    catalog: catalog,
+  );
+  final effectiveStartAttributes = computeHeroEffectiveStartAttributes(
+    hero,
+    catalog: catalog,
+  );
+  final attributeMaximums = computeHeroAttributeMaximums(
+    hero,
+    catalog: catalog,
+  );
   final wundschwelleMods = hero.statModifiers['wundschwelle'] ?? const [];
   final wundschwelle = computeWundschwelle(
     ko: effective.ko,
@@ -100,8 +112,9 @@ HeroComputedSnapshot buildHeroComputedSnapshot({
   final wundschwellenStufen = computeWundschwellenStufen(
     ko: effective.ko,
     mods: wundschwelleMods,
-    vorteileText: hero.vorteileText,
-    nachteileText: hero.nachteileText,
+    vorteileText: merkmale.freieVorteile,
+    nachteileText: merkmale.freieNachteile,
+    merkmalBonus: merkmale.wirkungen.wundschwelleBonus,
   );
 
   final derived = inputs.derive(hero, state);

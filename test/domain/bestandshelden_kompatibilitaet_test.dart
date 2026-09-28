@@ -8,6 +8,7 @@ import 'package:dsa_heldenverwaltung/domain/combat_config/offhand_equipment_type
 import 'package:dsa_heldenverwaltung/domain/combat_config/inventar_verweise.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_advancement_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_merkmal.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
@@ -40,6 +41,8 @@ const Map<Bestandsheld, String> _heldenHashes = <Bestandsheld, String>{
       'hnMwYN9ZXVqwdsDvsjKeSZc3WnCNKaGQ8pXMm1Nns7E=',
   Bestandsheld.unbekannteSteigerungsart:
       'OEpxoV0GgDW13q6GaptyPTDx7Tpou3GPtLmwynfwoIc=',
+  Bestandsheld.strukturierteMerkmale:
+      'oVi_I37Cev3C_xYiDd88QIBQpSc11kB81Ol-h3M6pIQ=',
 };
 
 /// Wie [_heldenHashes], fuer den Laufzeitzustand.
@@ -56,6 +59,9 @@ const Map<Bestandsheld, String> _zustandsHashes = <Bestandsheld, String>{
       '-28KqI3XR9AU_NmwHCm2BpNgH4qYPj0C5Py8kuHSbGA=',
   Bestandsheld.unbekannteSteigerungsart:
       '-28KqI3XR9AU_NmwHCm2BpNgH4qYPj0C5Py8kuHSbGA=',
+  // f09 teilt den Laufzeitzustand mit f05.
+  Bestandsheld.strukturierteMerkmale:
+      'n8MYpP6owr0GHvWjIDPcngQdQLvl1Nn19eHGSwXBrBk=',
 };
 
 void main() {
@@ -417,6 +423,10 @@ void main() {
       final voll = basis.copyWith(
         showInapplicableSpecialAbilities: true,
         epicActivationPolicy: 'standard',
+        vorteilEintraege: const <HeroMerkmal>[
+          HeroMerkmal(katalogId: 'adv_eisern', text: 'Eisern'),
+        ],
+        nachteilEintraege: const <HeroMerkmal>[HeroMerkmal(text: 'Tick')],
         appearance: basis.appearance.copyWith(
           avatarSnapshot: () => AvatarSnapshot(erstelltAm: '2026-09-27'),
         ),

@@ -450,6 +450,7 @@ mit älterer App per Sync die Felder einer neueren (Befunde ARCH-07-B5/B6):
     `HeroRitualCategory`, `HeroRitualKnowledge`, `HeroRitualEntry`,
     `HeroRitualFieldDef`, `HeroRitualFieldValue`, `MagicSpecialAbility`,
     `HeroLanguageEntry`, `HeroScriptEntry`;
+  - Vor- und Nachteile: `HeroMerkmal` (`vorteilEintraege`/`nachteilEintraege`, ARCH-02);
   - Begleiter und Chronik: `HeroCompanion`, `HeroCompanionAttack`,
     `HeroCompanionSonderfertigkeit`, `HeroCompanionSpeed`,
     `HeroAdventureEntry`, `HeroAdventureSeReward`, `HeroAdventureDateValue`,
@@ -572,7 +573,8 @@ Bestandsdaten enthalten nichts Unbekanntes, ihr JSON und ihre Inhalts-Hashes
 | `stand`, `titel` | `String` | Sozialer Stand und Titel |
 | `familieHerkunftHintergrund` | `String` | Familiengeschichte/Herkunft |
 | `sozialstatus` | `int` | Numerischer Sozialstatus |
-| `vorteileText` / `nachteileText` | `String` | Parserkompatible Vor-/Nachteile-Fragmente; in der Heldenübersicht katalogbasiert auswählbar und weiterhin als Text gespeichert |
+| `vorteilEintraege` / `nachteilEintraege` | `List<HeroMerkmal>` | Erworbene Vor-/Nachteile mit Katalog-ID, Wert, Auswahl und Textfragment (ARCH-02, Abschnitt 4.11). Maßgeblich, sobald belegt; nur dann geschrieben |
+| `vorteileText` / `nachteileText` | `String` | Projektion der Listen für ältere App-Versionen (`; `-getrennt); bei Bestandshelden ohne Liste der Alttext, der beim nächsten Speichern migriert wird |
 | `apTotal` | `int` | Gesamte Abenteuerpunkte |
 | `apSpent` | `int` | Ausgegebene Abenteuerpunkte |
 | `apAvailable` | `int` | Verfügbare AP (= apTotal − apSpent) |
@@ -1318,11 +1320,24 @@ vorliegt.
 | `source` | Kurze Quellenreferenz |
 | `ruleMeta` | Optionale Herkunfts-, Beleg- und Paketmetadaten |
 | `active` | Im App verfügbar? |
+| `wirkungen` | Deklarative Regelwirkungen (`HeroTraitEffect`, `lib/catalog/hero_trait_effect.dart`), nur geschrieben, wenn belegt |
 
 `HeroTraitDef` speichert bewusst nur katalogisierbare Fakten und keine
-Langregeltexte. Die Heldenübersicht erzeugt daraus parserkompatible Fragmente
-für `HeroSheet.vorteileText` und `HeroSheet.nachteileText`; bestehende
-Regelwirkungen bleiben dadurch bei den vorhandenen Parsern und Regelmodulen.
+Langregeltexte. Regelwirkungen stehen deklarativ in `wirkungen` und werden
+über die Katalog-ID ausgewertet (ARCH-02), nicht über den Anzeigenamen:
+
+| `art` | Felder | Wirkung | Beispiele |
+|---|---|---|---|
+| `basiswert` | `ziel` (`lep`, `au`, `asp`, `kap`, `mr`, `ini`, `gs`, `ausweichen`), `jeWert`, `max`, optional `standard` | Wert × `jeWert`, Betrag auf `max` gekappt | Hohe Lebenskraft, Kurzatmig |
+| `eigenschaft` | `standard`, `max`, `startwert` | Eigenschaft aus der Auswahl (`{choice}`), mit `startwert` auch Startwert und Maximum | Herausragende Eigenschaft |
+| `schalter` | `ziel` (`flink`, `behaebig`) | feste Wirkung wie bisher (GS ±1, Ausweichen ±1) | Flink, Behäbig |
+| `wundschwelle` | `betrag` | fester Bonus auf alle Wundschwellenstufen | Eisern, Glasknochen |
+| `rast` | `ziel` (`lepStufe`, `aspStufe`, `schlechteRegeneration`, `astralerBlock`), `standard`, `max` | Regenerationsstufe bzw. -einschränkung | Schnelle Heilung, Astraler Block |
+
+Eine unbekannte `art` bleibt beim Laden roh erhalten und wirkt nicht.
+`test/catalog/trait_effect_catalog_test.dart` prüft Arten, Ziele und
+Vorzeichen gegen den echten Katalog. Hausregel-Pakete können `wirkungen` per
+`setFields` ersetzen.
 
 ### Split-JSON-Struktur & Ladevorgang
 
@@ -1664,8 +1679,10 @@ diesem Fall entfallen TP/KK- und INI/GE-Berechnungen fuer die Waffe.
 
 **Datei:** `lib/rules/derived/modifier_parser.dart`
 
-Parst Freitext-Felder (`vorteileText`, `nachteileText`, `rasseModText`, …) in strukturierte
-Modifikatoren.
+Parst Freitext-Felder (`rasseModText`, …) und die frei wirkenden Vor-/Nachteil-
+Fragmente (Abschnitt 4.11) in strukturierte Modifikatoren. Katalogisierte
+Vor-/Nachteile wirken mit Katalog ueber ihre Katalog-ID, nicht ueber diesen
+Parser.
 
 **Syntax:** `CODE+N` oder `CODE−N` (beliebige Groß-/Kleinschreibung)
 
@@ -2051,8 +2068,9 @@ draussen. `test/catalog/trait_choice_catalog_test.dart` loest jede Quelle
 gegen den echten Katalog auf; ein Tippfehler faellt sonst erst im Betrieb
 auf, und dort nur als leeres Dropdown.
 
-**Speicherformat.** Unveraendert Freitext in `HeroSheet.vorteileText` /
-`nachteileText`. `parseTraitFragmentParts` ist die Umkehrung von
+**Speicherformat.** Strukturiert in `HeroSheet.vorteilEintraege` /
+`nachteilEintraege`, die Texte sind deren Projektion (Abschnitt 4.11).
+`parseTraitFragmentParts` ist die Umkehrung von
 `buildHeroTraitSelectionText` und liefert Auswahl **und** Wert. Eine
 Klammergruppe, die nur `{choice}` enthaelt, ist beim Zurueckparsen optional
 und wird beim Bauen entfernt, wenn die Auswahl leer bleibt — sonst haette
@@ -2102,6 +2120,123 @@ Wertumbau: ob der Punkt schon im eingetragenen Wert steckt, weiss nur der
 Nutzer. Der Hinweis steht in der Uebersicht und verschwindet erst nach
 ausdruecklicher Quittierung („Verstanden – Werte geprueft"), die
 `schemaVersion` auf 28 hebt.
+
+### 4.11 Strukturierte Vor- und Nachteile (ARCH-02)
+
+**Dateien:** `lib/domain/hero_merkmal.dart`,
+`lib/catalog/hero_trait_effect.dart`,
+`lib/rules/derived/hero_merkmal_zuordnung_rules.dart`,
+`lib/rules/derived/hero_merkmal_wirkung_rules.dart`,
+`lib/ui/screens/hero_overview/hero_overview_traits_section.dart`,
+`lib/ui/screens/hero_overview/hero_overview_trait_dialogs.dart`
+
+**Modell.** `HeroMerkmal` traegt `katalogId` (leer = freier Eintrag), `wert`,
+`auswahl`, `text` (sein Fragment in der Projektion), `kandidatenIds`
+(mehrdeutiger Alttext) und `zuordnung` (`katalog`, `migration`, `frei`), dazu
+wie jedes verschachtelte Modell `unbekannteFelder`/`unbekannteEnumWerte`.
+
+**Die Liste fuehrt.** Ist `vorteilEintraege` belegt, gilt sie;
+`vorteileText` ist ihre Projektion (`projiziereMerkmalText`). Die
+veroeffentlichte App kennt nur den Text. Aendert eine aeltere Version ihn,
+erkennt `gleicheMerkmaleAb` die Abweichung (Fragmentmengen nach
+`splitHeroTraitText`, Trennzeichen und Reihenfolge zaehlen nicht). Die Liste
+bleibt dann wirksam, nichts wird still uebernommen oder verworfen. Die
+Uebersicht zeigt die Abweichung und bietet „Geaenderten Text uebernehmen“
+(`uebernimmMerkmalText`, bestehende Zuordnungen bleiben) oder „Liste
+behalten“ an. Bis dahin ist das Bearbeiten gesperrt, und `saveHero` laesst
+Liste und Text unveraendert. Verwirft eine aeltere Version die Liste ganz,
+ist der Held wieder ein Bestandsheld und wird neu migriert.
+
+**Migration.** Bestandshelden laden unveraendert (Hash-Pins bleiben), die
+Regeln migrieren zur Laufzeit. Erst `saveHero` schreibt die Liste
+(`merkmaleZumSpeichern`), und nur mit geladenem Katalog; gewartet wird darauf
+nicht. `zerlegeMerkmalText` fuegt durch Komma getrennte Teile wieder
+zusammen, wenn sie gemeinsam ein Template mit Komma treffen (`Adlig, Adliges
+Erbe`). `ordneMerkmalZu` vergleicht ohne Gross-/Kleinschreibung, erlaubt ein
+fehlendes abschliessendes `{value}` und roemische Stufen und beachtet feste
+Auswahllisten. Doppelpunkte gelten wie im Modifikator-Parser als Trenner
+(`Herausragende Eigenschaft: Gewandtheit: 1`), und eine ausgeschriebene
+Eigenschaft wird als Kuerzel gespeichert (`GE`). Ein Template ohne
+Platzhalter schlaegt eines mit. Teilen sich mehrere Eintraege ein Template
+(`Begabung für {choice}` gibt es fuenfmal), gewinnen die, deren aufgeloeste
+Auswahlliste (`resolveTraitChoices`, gemerkt von `MerkmalKatalog.von`) die
+Auswahl fuehrt: „Begabung für Abrichten“ ist dann das Talent, „Begabung für
+Objekt“ das Merkmal. Ohne diese Bestaetigung wird nicht geraten: Der Eintrag
+bleibt frei, nennt seine Kandidaten und laesst sich in der Uebersicht
+zuordnen. Bereits gespeicherte Kandidaten bleiben unangetastet. Die
+Migration ist deterministisch und ein Fixpunkt.
+
+**Wirkung.** `werteMerkmaleAus(hero, catalog:)` loest je Held und Katalog
+einmal auf (gemerkt per `Expando`). Katalogisierte Eintraege wirken ueber
+die `wirkungen` ihres Katalogeintrags, gefunden ueber die Katalog-ID. Freie
+Eintraege und solche mit unbekannter ID laufen als `freieVorteile`/
+`freieNachteile` durch den bisherigen Textparser. Jedes Fragment nimmt genau
+einen der beiden Wege. Umgestellt sind `parseModifierTextsForHero`,
+Wundschwellenstufen (`merkmalBonus`), Rast (`collectRestAbilities`),
+Ressourcenaktivierung, Quellenaufschluesselung, Startwerte/Maxima und
+Erwerbsvoraussetzungen (aktueller Katalogname **und** gespeicherter Text).
+Ohne Katalog rechnen alle Regeln ueber den Text der Liste. Fuer jeden
+unveraendert benannten Katalogeintrag ergibt das dasselbe; der
+Aequivalenztest in `test/rules/hero_merkmal_rules_test.dart` prueft jeden
+wirkenden Eintrag ueber alle Werte und Auswahlen. Katalogabhaengig ist nur
+die Umbenennungsfestigkeit. Damit kein Aufrufer den Katalog vergisst,
+verlangen die Einstiegsfunktionen (`parseModifierTextsForHero`,
+`computeEffectiveAttributes`, `computeHeroResourceActivation`,
+`collectRestAbilities`, Startwerte/Maxima, `computeModifierSourceBreakdown`,
+`computeHeroStatInputs`, `applyAdvancementAttributeValue`)
+`required RulesCatalog? catalog`; `null` waehlt bewusst den Textweg und
+steht in `lib/` nirgends. Option und Replay einer Steigerung muessen
+denselben Katalog verwenden, sonst weicht das Startwert-Delta ab.
+Die Sichtbarkeit des Magie-Tabs liest den Katalog ueber
+`laufenderRegelkatalog` (`workspace_tab_spec.dart`), das das Katalogladen
+nicht selbst anstoesst.
+
+**Bearbeitung.** Die Uebersicht haelt einen Entwurf (`null`, solange
+unveraendert). Katalogdialog und Wertedialog erzeugen bzw. aendern Eintraege
+mit Katalogbezug; `fuegeMerkmalHinzu` summiert gleiche Auswahl desselben
+Eintrags. Ein getippter Text wird per `ordneMerkmalZu` zugeordnet.
+
+**UI2-Merkmalsblatt.** `lib/ui2/merkmale/karto_merkmalsblatt.dart` schreibt
+ohne Entwurf direkt: `HeroActions.updateHero` mit `aendereMerkmale` (eine
+Merkmalsart, Ausgangsliste ist die wirksame, bei Bestandshelden also die
+Laufzeitmigration) bzw. `loeseMerkmalAbweichung`. `aendereMerkmale` wirft bei
+offener Abweichung, damit kein Schreibweg sie nebenbei aufloest. Geaendert
+wird ein Eintrag ueber Gleichheit im frisch geladenen Stand; fehlt er
+inzwischen, meldet das Blatt einen Fehler statt zu raten. Die Karten baut
+`beschreibeMerkmal` (`hero_merkmal_anzeige_rules.dart`); Wirkungstexte nutzen
+`merkmalBasiswertBetrag`, `merkmalEigenschaftBetrag` und `merkmalRastStufe`
+aus `hero_merkmal_wirkung_rules.dart` wie die Rechnung selbst.
+
+**Begabung und Unfaehigkeit.** Die 18 Begabungs- und Unfaehigkeitseintraege
+tragen die Wirkungsart `lernspalte` (`betrag` +1 = eine Spalte guenstiger,
+-1 = teurer; Ziele `talent`, `talentgruppe`, `nahkampf`, `fernkampf`,
+`sprachen`, `sprachgruppe`, `zauber`, `merkmal`, `ritual`).
+`werteMerkmaleAus` sammelt sie als `MerkmalWirkungen.lernspalten`;
+`ermittleBegabungen(hero, catalog:)` (`hero_begabung_rules.dart`) liefert je
+Ziel einen `LernspaltenBefund`. Abgeleitet wird zur Laufzeit, am Ziel wird
+nichts gespeichert; das Haekchen `gifted` bleibt daneben und wirkt wieder,
+wenn der Vorteil entfernt ist.
+- Talent-, Gruppen-, Kampfart- und Zauber-Begabung wirken wie das Haekchen:
+  zusammen hoechstens eine Spalte guenstiger, Maximum +5 statt +3.
+- Merkmals-Begabungen zaehlen je passendem Merkmal eines Zaubers eine
+  weitere Spalte (Vergleich wie Merkmalskenntnis, exakter Name aus
+  `parseSpellTraits`); Merkmals-Unfaehigkeiten spiegelbildlich.
+- Uebrige Unfaehigkeiten verteuern zusammen eine Spalte, das Maximum bleibt.
+  Verteuert wird zuerst (bis `H`), dann verbilligt (bis `A*`).
+- Sprachen/Schriften verschieben die Spalte der Steigerungsoption.
+- Eine Ritual-Begabung verbilligt die eigene Ritualkenntnis der Kategorie,
+  die das Ritual fuehrt oder deren Name der Traditionsritual-SF mit diesem
+  Ritual entspricht (Untergrenze `A`); das Ritual traegt eine Marke.
+Verbraucher: `AdvancementContext.begabungen` (einmal je Optionsaufbau),
+`CatalogRuleResolver.resolveTalentComplexity` (`unfaehigkeitsSchritte`),
+Talente-, Kampf- und Magie-Tab samt ihren Katalogvorschauen und dem
+Repraesentationsdialog (dort zaehlt nur der Befund, nicht das Haekchen, weil
+das Ziel noch nicht auf dem Bogen steht). Abgeleitete Begabung zeigt
+`BegabungHaekchen` (`lib/ui/widgets/begabung_haekchen.dart`) als gesetztes,
+gesperrtes Haekchen mit Quelle; `LernspaltenMarke` erklaert jede
+verschobene Spalte per Tooltip. Der Textweg kennt
+keine Lernspalten: freie und mehrdeutige Texte wirken nicht, und der
+Aequivalenztest nimmt `lernspalte` bewusst aus.
 
 ## 5. Zustandsverwaltung (State Layer)
 
@@ -2631,6 +2766,8 @@ ueber die Settings-Katalogverwaltung bearbeitet.
   (Fernkampf); `IN` wird dabei nicht beruecksichtigt.
 - Zauber addieren Hauszauber, passende Merkmalskenntnis und Begabung jeweils
   als eigene Reduktionsstufe; die Untergrenze ist `A*`.
+- Seit ARCH-02 kommen Begabung und Unfaehigkeit auch aus Vor-/Nachteilen
+  (Abschnitt 4.11, `hero_begabung_rules.dart`).
 
 ### Update 2026-03-08: Zauber-Repraesentation und Verbreitung
 

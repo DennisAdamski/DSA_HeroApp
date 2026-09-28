@@ -167,7 +167,7 @@ void main() {
       nachteileText: 'KO-2, KK+5',
     );
 
-    final effective = computeEffectiveAttributes(hero);
+    final effective = computeEffectiveAttributes(hero, catalog: null);
 
     expect(effective.mu, 11);
     expect(effective.kl, 9);
