@@ -22,6 +22,7 @@ extension _MagicManagementHelpers on _HeroMagicTabState {
       baseLernkomplexitaet: spell.steigerung,
       zauberMerkmale: parseSpellTraits(spell.traits),
       heldMerkmalskenntnisse: _draftMerkmalskenntnisse,
+      befund: _latestBegabungen.zauber(spell),
     );
   }
 
@@ -148,6 +149,8 @@ extension _MagicManagementHelpers on _HeroMagicTabState {
                       allSpells: allSpells,
                       activeSpellIds: localActiveIds,
                       heroRepresentationen: _draftRepresentationen,
+                      merkmalskenntnisse: _draftMerkmalskenntnisse,
+                      begabungen: _latestBegabungen,
                       onActivateSpell: (spell) async {
                         final activated = await _activateSpell(ctx, spell);
                         if (!activated) {

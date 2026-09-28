@@ -40,11 +40,15 @@ class _CombatTalentCatalogTable extends StatefulWidget {
     required this.activeTalentIds,
     required this.ruleResolver,
     required this.onToggleTalent,
+    this.begabungen,
   });
 
   final List<TalentDef> allTalents;
   final Set<String> activeTalentIds;
   final CatalogRuleResolver ruleResolver;
+
+  /// Begabungen aus Vor-/Nachteilen fuer die Vorschau; `null` wirkt nicht.
+  final HeroBegabungen? begabungen;
   final void Function(String talentId, bool activate) onToggleTalent;
 
   @override
@@ -161,10 +165,16 @@ class _CombatTalentCatalogTableState extends State<_CombatTalentCatalogTable> {
                             final isActive = widget.activeTalentIds.contains(
                               talent.id,
                             );
+                            // Das Haekchen zaehlt hier nicht: das Talent
+                            // steht noch nicht auf dem Bogen.
+                            final befund =
+                                widget.begabungen?.talent(talent) ??
+                                LernspaltenBefund.keiner;
                             final complexityResolution = widget.ruleResolver
                                 .resolveTalentComplexity(
                                   talent: talent,
-                                  gifted: false,
+                                  gifted: befund.abgeleitetBegabt,
+                                  unfaehigkeitsSchritte: befund.erhoehung,
                                 );
                             return DataRow(
                               cells: [
@@ -217,6 +227,7 @@ class _CombatTalentCatalogTableState extends State<_CombatTalentCatalogTable> {
                                             .effectiveKomplexitaet,
                                         style: theme.textTheme.bodySmall,
                                       ),
+                                      LernspaltenMarke(befund: befund),
                                       if (complexityResolution.houseRuleHint !=
                                           null) ...[
                                         const SizedBox(width: 4),

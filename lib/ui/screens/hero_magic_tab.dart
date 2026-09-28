@@ -90,6 +90,9 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
   final ProtectedContentCache _protectedContentCache = ProtectedContentCache();
 
   HeroSheet? _latestHero;
+
+  /// Begabungen des zuletzt gebauten Helden fuer Katalog und Dialoge.
+  HeroBegabungen _latestBegabungen = HeroBegabungen.leer;
   bool? _lastContentUnlocked;
   String? _lastContentPassword;
 
@@ -350,6 +353,7 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
           for (final spell in catalog.spells) spell.id: spell,
         };
         final begabungen = ermittleBegabungen(hero, catalog: catalog);
+        _latestBegabungen = begabungen;
         final effectiveAttributes = computeEffectiveAttributes(
           hero,
           catalog: catalog,

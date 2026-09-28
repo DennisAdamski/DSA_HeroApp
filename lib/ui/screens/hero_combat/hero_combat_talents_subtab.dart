@@ -104,6 +104,7 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
                       allTalents: allCombatTalents,
                       activeTalentIds: localActiveIds,
                       ruleResolver: _latestCatalogRuleResolver,
+                      begabungen: _begabungen(),
                       onToggleTalent: (id, activate) {
                         _toggleCombatTalent(id, activate);
                         setSheetState(() {
@@ -320,7 +321,7 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
       _textCell(talent.name, key: ValueKey<String>('talents-row-${talent.id}')),
       _textCell(_fallback(talent.weaponCategory)),
       _textCell(_fallback(talent.alternatives)),
-      _complexityCell(complexityResolution),
+      _complexityCell(complexityResolution, befund: _befundFuer(talent)),
       _textCell(_fallback(talent.be)),
       _intInputCell(
         talentId: talent.id,
@@ -395,7 +396,11 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
     );
   }
 
-  Widget _complexityCell(TalentComplexityResolution resolution, {Key? key}) {
+  Widget _complexityCell(
+    TalentComplexityResolution resolution, {
+    Key? key,
+    LernspaltenBefund befund = LernspaltenBefund.keiner,
+  }) {
     final theme = Theme.of(context);
     final highlighted =
         resolution.effectiveKomplexitaet != resolution.baseKomplexitaet;
@@ -414,6 +419,7 @@ extension _HeroCombatTalentsSubtab on _HeroCombatTabState {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(resolution.effectiveKomplexitaet, style: style),
+            LernspaltenMarke(befund: befund),
             if (resolution.houseRuleHint != null) ...[
               const SizedBox(width: 4),
               Tooltip(

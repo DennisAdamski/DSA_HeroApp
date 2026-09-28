@@ -364,7 +364,7 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
         key: ValueKey<String>('talents-field-${talent.id}-computed-taw'),
         highlighted: true,
       ),
-      _complexityCell(complexityResolution),
+      _complexityCell(complexityResolution, befund: _befundFuer(talent)),
       _textCell(
         _formatWholeNumber(ebe),
         key: ValueKey<String>('talents-field-${talent.id}-ebe-display'),
@@ -459,7 +459,7 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
       ),
       _textCell(_fallback(talent.weaponCategory)),
       _textCell(_fallback(talent.alternatives)),
-      _complexityCell(complexityResolution),
+      _complexityCell(complexityResolution, befund: _befundFuer(talent)),
       _intInputCell(
         talentId: talent.id,
         field: 'talentValue',
