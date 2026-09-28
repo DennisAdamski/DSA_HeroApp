@@ -1,5 +1,6 @@
 import 'package:dsa_heldenverwaltung/domain/hero_note_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
+import 'package:dsa_heldenverwaltung/domain/unbekannte_json_felder.dart';
 
 /// Status eines Abenteuers in der Heldenchronik.
 enum HeroAdventureStatus {
@@ -30,6 +31,7 @@ class HeroAdventureSeReward {
     this.targetId = '',
     this.targetLabel = '',
     this.count = 1,
+    this.unbekannteFelder = const <String, Object?>{},
   });
 
   /// Typ des Zielwerts.
@@ -49,29 +51,43 @@ class HeroAdventureSeReward {
     return targetId.trim().isNotEmpty && count > 0;
   }
 
+  /// JSON-Felder einer neueren App-Version; bleiben beim Speichern erhalten
+  /// (siehe `unbekannte_json_felder.dart`).
+  final Map<String, Object?> unbekannteFelder;
+
+  /// Alle Schluessel, die [fromJson] liest; alles andere bleibt erhalten.
+  static const Set<String> jsonSchluessel = <String>{
+    'targetType',
+    'targetId',
+    'targetLabel',
+    'count',
+  };
+
   /// Liefert eine Kopie mit gezielt ersetzten Feldern.
   HeroAdventureSeReward copyWith({
     HeroAdventureSeTargetType? targetType,
     String? targetId,
     String? targetLabel,
     int? count,
+    Map<String, Object?>? unbekannteFelder,
   }) {
     return HeroAdventureSeReward(
       targetType: targetType ?? this.targetType,
       targetId: targetId ?? this.targetId,
       targetLabel: targetLabel ?? this.targetLabel,
       count: _normalizeCount(count ?? this.count),
+      unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
     );
   }
 
   /// Serialisiert die Zeile fuer Persistenz und Export.
   Map<String, dynamic> toJson() {
-    return <String, dynamic>{
+    return mitUnbekanntenFeldern(<String, dynamic>{
       'targetType': targetType.name,
       'targetId': targetId,
       'targetLabel': targetLabel,
       'count': count,
-    };
+    }, unbekannteFelder);
   }
 
   /// Laedt eine SE-Zeile tolerant gegenueber fehlenden Feldern.
@@ -81,6 +97,7 @@ class HeroAdventureSeReward {
       targetId: (json['targetId'] as String?) ?? '',
       targetLabel: (json['targetLabel'] as String?) ?? '',
       count: _normalizeCount((json['count'] as num?)?.toInt() ?? 1),
+      unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
     );
   }
 }
@@ -92,6 +109,7 @@ class HeroAdventureDateValue {
     this.day = '',
     this.month = '',
     this.year = '',
+    this.unbekannteFelder = const <String, Object?>{},
   });
 
   /// Tag des Datums.
@@ -110,18 +128,35 @@ class HeroAdventureDateValue {
         year.trim().isNotEmpty;
   }
 
+  /// JSON-Felder einer neueren App-Version; bleiben beim Speichern erhalten
+  /// (siehe `unbekannte_json_felder.dart`).
+  final Map<String, Object?> unbekannteFelder;
+
+  /// Alle Schluessel, die [fromJson] liest; alles andere bleibt erhalten.
+  static const Set<String> jsonSchluessel = <String>{'day', 'month', 'year'};
+
   /// Liefert eine Kopie mit gezielt ersetzten Feldern.
-  HeroAdventureDateValue copyWith({String? day, String? month, String? year}) {
+  HeroAdventureDateValue copyWith({
+    String? day,
+    String? month,
+    String? year,
+    Map<String, Object?>? unbekannteFelder,
+  }) {
     return HeroAdventureDateValue(
       day: day ?? this.day,
       month: month ?? this.month,
       year: year ?? this.year,
+      unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
     );
   }
 
   /// Serialisiert das Datum fuer Persistenz und Export.
   Map<String, dynamic> toJson() {
-    return <String, dynamic>{'day': day, 'month': month, 'year': year};
+    return mitUnbekanntenFeldern(<String, dynamic>{
+      'day': day,
+      'month': month,
+      'year': year,
+    }, unbekannteFelder);
   }
 
   /// Laedt ein Abenteuerdatum tolerant gegenueber fehlenden Feldern.
@@ -132,6 +167,7 @@ class HeroAdventureDateValue {
       day: getString('day'),
       month: getString('month'),
       year: getString('year'),
+      unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
     );
   }
 
@@ -153,6 +189,7 @@ class HeroAdventurePersonEntry {
     required this.id,
     this.name = '',
     this.description = '',
+    this.unbekannteFelder = const <String, Object?>{},
   });
 
   /// Stabile ID der Person innerhalb des Abenteuers.
@@ -169,26 +206,39 @@ class HeroAdventurePersonEntry {
     return name.trim().isNotEmpty || description.trim().isNotEmpty;
   }
 
+  /// JSON-Felder einer neueren App-Version; bleiben beim Speichern erhalten
+  /// (siehe `unbekannte_json_felder.dart`).
+  final Map<String, Object?> unbekannteFelder;
+
+  /// Alle Schluessel, die [fromJson] liest; alles andere bleibt erhalten.
+  static const Set<String> jsonSchluessel = <String>{
+    'id',
+    'name',
+    'description',
+  };
+
   /// Liefert eine Kopie mit gezielt ersetzten Feldern.
   HeroAdventurePersonEntry copyWith({
     String? id,
     String? name,
     String? description,
+    Map<String, Object?>? unbekannteFelder,
   }) {
     return HeroAdventurePersonEntry(
       id: id ?? this.id,
       name: name ?? this.name,
       description: description ?? this.description,
+      unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
     );
   }
 
   /// Serialisiert die Person fuer Persistenz und Export.
   Map<String, dynamic> toJson() {
-    return <String, dynamic>{
+    return mitUnbekanntenFeldern(<String, dynamic>{
       'id': id,
       'name': name,
       'description': description,
-    };
+    }, unbekannteFelder);
   }
 
   /// Laedt einen Personeneintrag tolerant gegenueber fehlenden Feldern.
@@ -199,6 +249,7 @@ class HeroAdventurePersonEntry {
       id: getString('id'),
       name: getString('name'),
       description: getString('description'),
+      unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
     );
   }
 }
@@ -220,6 +271,7 @@ class HeroAdventureLootEntry {
     this.isGeweiht = false,
     this.geweihtDescription = '',
     this.modifiers = const <InventoryItemModifier>[],
+    this.unbekannteFelder = const <String, Object?>{},
   });
 
   /// Stabile ID der Beutezeile innerhalb des Abenteuers.
@@ -274,6 +326,27 @@ class HeroAdventureLootEntry {
         modifiers.isNotEmpty;
   }
 
+  /// JSON-Felder einer neueren App-Version; bleiben beim Speichern erhalten
+  /// (siehe `unbekannte_json_felder.dart`).
+  final Map<String, Object?> unbekannteFelder;
+
+  /// Alle Schluessel, die [fromJson] liest; alles andere bleibt erhalten.
+  static const Set<String> jsonSchluessel = <String>{
+    'id',
+    'name',
+    'quantity',
+    'itemType',
+    'weightGramm',
+    'valueSilver',
+    'origin',
+    'description',
+    'isMagisch',
+    'magischDescription',
+    'isGeweiht',
+    'geweihtDescription',
+    'modifiers',
+  };
+
   /// Liefert eine Kopie mit gezielt ersetzten Feldern.
   HeroAdventureLootEntry copyWith({
     String? id,
@@ -289,6 +362,7 @@ class HeroAdventureLootEntry {
     bool? isGeweiht,
     String? geweihtDescription,
     List<InventoryItemModifier>? modifiers,
+    Map<String, Object?>? unbekannteFelder,
   }) {
     return HeroAdventureLootEntry(
       id: id ?? this.id,
@@ -304,12 +378,13 @@ class HeroAdventureLootEntry {
       isGeweiht: isGeweiht ?? this.isGeweiht,
       geweihtDescription: geweihtDescription ?? this.geweihtDescription,
       modifiers: modifiers ?? this.modifiers,
+      unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
     );
   }
 
   /// Serialisiert die Beutezeile fuer Persistenz und Export.
   Map<String, dynamic> toJson() {
-    return <String, dynamic>{
+    return mitUnbekanntenFeldern(<String, dynamic>{
       'id': id,
       'name': name,
       'quantity': quantity,
@@ -323,7 +398,7 @@ class HeroAdventureLootEntry {
       'isGeweiht': isGeweiht,
       'geweihtDescription': geweihtDescription,
       'modifiers': modifiers.map((m) => m.toJson()).toList(),
-    };
+    }, unbekannteFelder);
   }
 
   /// Laedt eine Beutezeile tolerant gegenueber fehlenden Feldern.
@@ -360,6 +435,7 @@ class HeroAdventureLootEntry {
       isGeweiht: json['isGeweiht'] as bool? ?? false,
       geweihtDescription: getString('geweihtDescription'),
       modifiers: modifiers,
+      unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
     );
   }
 }
@@ -384,6 +460,7 @@ class HeroAdventureEntry {
     this.dukatenReward = 0,
     this.lootRewards = const <HeroAdventureLootEntry>[],
     this.rewardsApplied = false,
+    this.unbekannteFelder = const <String, Object?>{},
   });
 
   /// Stabile ID des Abenteuers.
@@ -469,6 +546,30 @@ class HeroAdventureEntry {
         lootRewards.any((entry) => entry.hasContent);
   }
 
+  /// JSON-Felder einer neueren App-Version; bleiben beim Speichern erhalten
+  /// (siehe `unbekannte_json_felder.dart`).
+  final Map<String, Object?> unbekannteFelder;
+
+  /// Alle Schluessel, die [fromJson] liest; alles andere bleibt erhalten.
+  static const Set<String> jsonSchluessel = <String>{
+    'id',
+    'status',
+    'title',
+    'summary',
+    'notes',
+    'people',
+    'startWorldDate',
+    'startAventurianDate',
+    'endWorldDate',
+    'endAventurianDate',
+    'currentAventurianDate',
+    'apReward',
+    'seRewards',
+    'dukatenReward',
+    'lootRewards',
+    'rewardsApplied',
+  };
+
   /// Liefert eine Kopie mit gezielt ersetzten Feldern.
   HeroAdventureEntry copyWith({
     String? id,
@@ -487,6 +588,7 @@ class HeroAdventureEntry {
     double? dukatenReward,
     List<HeroAdventureLootEntry>? lootRewards,
     bool? rewardsApplied,
+    Map<String, Object?>? unbekannteFelder,
   }) {
     return HeroAdventureEntry(
       id: id ?? this.id,
@@ -508,12 +610,13 @@ class HeroAdventureEntry {
       ),
       lootRewards: lootRewards ?? this.lootRewards,
       rewardsApplied: rewardsApplied ?? this.rewardsApplied,
+      unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
     );
   }
 
   /// Serialisiert das Abenteuer fuer Persistenz und Export.
   Map<String, dynamic> toJson() {
-    return <String, dynamic>{
+    return mitUnbekanntenFeldern(<String, dynamic>{
       'id': id,
       'status': status.name,
       'title': title,
@@ -534,7 +637,7 @@ class HeroAdventureEntry {
           .map((entry) => entry.toJson())
           .toList(growable: false),
       'rewardsApplied': rewardsApplied,
-    };
+    }, unbekannteFelder);
   }
 
   /// Laedt ein Abenteuer tolerant gegenueber fehlenden Feldern.
@@ -592,6 +695,7 @@ class HeroAdventureEntry {
           .where((entry) => entry.hasContent)
           .toList(growable: false),
       rewardsApplied: json['rewardsApplied'] as bool? ?? false,
+      unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
     );
   }
 }

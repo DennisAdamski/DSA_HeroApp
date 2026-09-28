@@ -1,3 +1,5 @@
+import 'package:dsa_heldenverwaltung/domain/unbekannte_json_felder.dart';
+
 /// Einzelner Angriffsmodus eines Begleiters (z.B. Beißen, Krallen, Sturzflug).
 class HeroCompanionAttack {
   const HeroCompanionAttack({
@@ -10,6 +12,7 @@ class HeroCompanionAttack {
     this.beschreibung = '',
     this.steigerungAt = 0,
     this.steigerungPa = 0,
+    this.unbekannteFelder = const <String, Object?>{},
   });
 
   /// Stabiler Schluessel des Angriffs.
@@ -39,6 +42,23 @@ class HeroCompanionAttack {
   /// Gekaufte PA-Steigerungen (Komplexitaet F).
   final int steigerungPa;
 
+  /// JSON-Felder einer neueren App-Version; bleiben beim Speichern erhalten
+  /// (siehe `unbekannte_json_felder.dart`).
+  final Map<String, Object?> unbekannteFelder;
+
+  /// Alle Schluessel, die [fromJson] liest; alles andere bleibt erhalten.
+  static const Set<String> jsonSchluessel = <String>{
+    'id',
+    'name',
+    'dk',
+    'at',
+    'pa',
+    'tp',
+    'beschreibung',
+    'steigerungAt',
+    'steigerungPa',
+  };
+
   HeroCompanionAttack copyWith({
     String? id,
     String? name,
@@ -49,6 +69,7 @@ class HeroCompanionAttack {
     String? beschreibung,
     int? steigerungAt,
     int? steigerungPa,
+    Map<String, Object?>? unbekannteFelder,
   }) {
     return HeroCompanionAttack(
       id: id ?? this.id,
@@ -60,10 +81,11 @@ class HeroCompanionAttack {
       beschreibung: beschreibung ?? this.beschreibung,
       steigerungAt: steigerungAt ?? this.steigerungAt,
       steigerungPa: steigerungPa ?? this.steigerungPa,
+      unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
     );
   }
 
-  Map<String, dynamic> toJson() => {
+  Map<String, dynamic> toJson() => mitUnbekanntenFeldern(<String, dynamic>{
     'id': id,
     'name': name,
     'dk': dk,
@@ -73,7 +95,7 @@ class HeroCompanionAttack {
     'beschreibung': beschreibung,
     if (steigerungAt != 0) 'steigerungAt': steigerungAt,
     if (steigerungPa != 0) 'steigerungPa': steigerungPa,
-  };
+  }, unbekannteFelder);
 
   static HeroCompanionAttack fromJson(Map<String, dynamic> json) {
     return HeroCompanionAttack(
@@ -86,6 +108,7 @@ class HeroCompanionAttack {
       beschreibung: (json['beschreibung'] as String?) ?? '',
       steigerungAt: (json['steigerungAt'] as num?)?.toInt() ?? 0,
       steigerungPa: (json['steigerungPa'] as num?)?.toInt() ?? 0,
+      unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
     );
   }
 
@@ -101,7 +124,8 @@ class HeroCompanionAttack {
           tp == other.tp &&
           beschreibung == other.beschreibung &&
           steigerungAt == other.steigerungAt &&
-          steigerungPa == other.steigerungPa;
+          steigerungPa == other.steigerungPa &&
+          unbekannteFelderGleich(unbekannteFelder, other.unbekannteFelder);
 
   @override
   int get hashCode => Object.hash(
@@ -114,6 +138,7 @@ class HeroCompanionAttack {
     beschreibung,
     steigerungAt,
     steigerungPa,
+    unbekannteFelderHash(unbekannteFelder),
   );
 }
 

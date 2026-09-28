@@ -1,3 +1,5 @@
+import 'package:dsa_heldenverwaltung/domain/unbekannte_json_felder.dart';
+
 /// Beschreibt eine wichtige Verbindung oder Kontaktperson eines Helden.
 class HeroConnectionEntry {
   /// Erzeugt einen persistierbaren Verbindungseintrag.
@@ -8,6 +10,7 @@ class HeroConnectionEntry {
     this.loyalitaet = '',
     this.beschreibung = '',
     this.adventureId = '',
+    this.unbekannteFelder = const <String, Object?>{},
   });
 
   /// Anzeigename der Verbindung.
@@ -28,6 +31,20 @@ class HeroConnectionEntry {
   /// Optionale Referenz auf ein zugeordnetes Abenteuer.
   final String adventureId;
 
+  /// JSON-Felder einer neueren App-Version; bleiben beim Speichern erhalten
+  /// (siehe `unbekannte_json_felder.dart`).
+  final Map<String, Object?> unbekannteFelder;
+
+  /// Alle Schluessel, die [fromJson] liest; alles andere bleibt erhalten.
+  static const Set<String> jsonSchluessel = <String>{
+    'name',
+    'ort',
+    'sozialstatus',
+    'loyalitaet',
+    'beschreibung',
+    'adventureId',
+  };
+
   /// Liefert eine neue Instanz mit gezielt ersetzten Feldern.
   HeroConnectionEntry copyWith({
     String? name,
@@ -36,6 +53,7 @@ class HeroConnectionEntry {
     String? loyalitaet,
     String? beschreibung,
     String? adventureId,
+    Map<String, Object?>? unbekannteFelder,
   }) {
     return HeroConnectionEntry(
       name: name ?? this.name,
@@ -44,19 +62,20 @@ class HeroConnectionEntry {
       loyalitaet: loyalitaet ?? this.loyalitaet,
       beschreibung: beschreibung ?? this.beschreibung,
       adventureId: adventureId ?? this.adventureId,
+      unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
     );
   }
 
   /// Serialisiert den Eintrag fuer Persistenz und Export.
   Map<String, dynamic> toJson() {
-    return <String, dynamic>{
+    return mitUnbekanntenFeldern(<String, dynamic>{
       'name': name,
       'ort': ort,
       'sozialstatus': sozialstatus,
       'loyalitaet': loyalitaet,
       'beschreibung': beschreibung,
       'adventureId': adventureId,
-    };
+    }, unbekannteFelder);
   }
 
   /// Laedt einen Verbindungseintrag tolerant gegenueber fehlenden Feldern.
@@ -70,6 +89,7 @@ class HeroConnectionEntry {
       loyalitaet: getString('loyalitaet'),
       beschreibung: getString('beschreibung'),
       adventureId: getString('adventureId'),
+      unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
     );
   }
 }

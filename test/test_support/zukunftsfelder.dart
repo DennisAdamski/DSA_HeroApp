@@ -1,13 +1,20 @@
 import 'dart:convert';
 
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_adventure_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_companion.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_connection_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_gruppen_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_language_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_meta_talent.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_note_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_reisebericht.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_rituals.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_spell_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_spell_text_overrides.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
 import 'package:dsa_heldenverwaltung/domain/magic_special_ability.dart';
 import 'package:dsa_heldenverwaltung/domain/talent_special_ability.dart';
 
@@ -37,14 +44,18 @@ const String zukunftsfeld = 'zukunftsfeld';
 /// Was f01 nicht belegt, ergaenzt die Basis im heutigen Format: einen
 /// Inventar-Modifikator am manuellen Eintrag, eine Waffenmeisterschaft mit
 /// Bonus, einen Talentmodifikator, ein Meta-Talent, einen Zauber mit
-/// Text-Overrides, eine Ritualkategorie mit Zusatzfeld und Ritual sowie eine
-/// magische Sonderfertigkeit.
+/// Text-Overrides, eine Ritualkategorie mit Zusatzfeld und Ritual, eine
+/// magische Sonderfertigkeit, Personen, Notiz, SE und Beute im laufenden
+/// Abenteuer, einen Kontakt, einen Begleiter mit Angriff, Bewegung, SF,
+/// Ruestung und Ritualkategorie, eine Gruppe und einen offenen
+/// Reiseberichtseintrag.
 Zukunftsheld mitZukunftsfeldern(Map<String, dynamic> heldJson) {
   final basis = _tiefeKopie(heldJson);
   final pfade = <String>[
     ..._ausruestung(basis),
     ..._kampfEinstellungen(basis),
     ..._talenteUndMagie(basis),
+    ..._begleiterAbenteuerNotizen(basis),
   ];
   return _mitFeldern(basis, pfade);
 }
@@ -146,7 +157,60 @@ HeroSheet bearbeiteVerschachtelteModelle(HeroSheet held) {
   final schrift = held.schriften.entries.first;
   final basiswert = held.statModifiers.entries.first;
   final eigenschaft = held.attributeModifiers.entries.first;
+  final abenteuer = held.adventures.first;
+  final begleiter = held.companions.single;
+  final offen = held.reisebericht.openEntries[_zukunftsReise]!.single;
   return held.copyWith(
+    notes: <HeroNoteEntry>[
+      held.notes.first.copyWith(description: 'Schuldet 10 Dukaten.'),
+      ...held.notes.skip(1),
+    ],
+    adventures: <HeroAdventureEntry>[
+      abenteuer.copyWith(
+        summary: 'In Gareth angekommen.',
+        notes: <HeroNoteEntry>[
+          abenteuer.notes.single.copyWith(title: 'Fährte'),
+        ],
+        people: <HeroAdventurePersonEntry>[
+          abenteuer.people.single.copyWith(description: 'Händler'),
+        ],
+        currentAventurianDate: abenteuer.currentAventurianDate.copyWith(
+          day: '19',
+        ),
+        seRewards: <HeroAdventureSeReward>[
+          abenteuer.seRewards.single.copyWith(count: 2),
+        ],
+        lootRewards: <HeroAdventureLootEntry>[
+          abenteuer.lootRewards.single.copyWith(quantity: '2'),
+        ],
+      ),
+      ...held.adventures.skip(1),
+    ],
+    connections: <HeroConnectionEntry>[
+      held.connections.single.copyWith(ort: 'Punin'),
+    ],
+    companions: <HeroCompanion>[
+      begleiter.copyWith(
+        name: 'Krähe',
+        geschwindigkeiten: <HeroCompanionSpeed>[
+          begleiter.geschwindigkeiten.single.copyWith(wert: 14),
+        ],
+        angriffe: <HeroCompanionAttack>[
+          begleiter.angriffe.single.copyWith(at: 11),
+        ],
+        sonderfertigkeiten: <HeroCompanionSonderfertigkeit>[
+          begleiter.sonderfertigkeiten.single.copyWith(beschreibung: 'Neu'),
+        ],
+      ),
+    ],
+    gruppen: <HeroGruppenMitgliedschaft>[
+      held.gruppen.single.copyWith(gruppenName: 'Sichelträger'),
+    ],
+    reisebericht: held.reisebericht.copyWith(
+      openEntries: <String, List<ReiseberichtOpenItem>>{
+        _zukunftsReise: <ReiseberichtOpenItem>[offen.copyWith(ap: 15)],
+      },
+    ),
     talents: <String, HeroTalentEntry>{
       ...held.talents,
       _zukunftsTalent: talent.copyWith(
@@ -318,6 +382,120 @@ List<String> _talenteUndMagie(Map<String, dynamic> basis) {
     'schriften/$schrift',
     'statModifiers/$basiswert/0',
     'attributeModifiers/$eigenschaft/0',
+  ];
+}
+
+/// Schluessel des offenen Reiseberichtseintrags, den die Basis ergaenzt.
+const String _zukunftsReise = 'rb_kulturen';
+
+/// Pfade von Begleitern, Abenteuern, Notizen, Kontakten, Gruppen und
+/// Reisebericht.
+List<String> _begleiterAbenteuerNotizen(Map<String, dynamic> basis) {
+  _pruefe((basis['notes'] as List).isNotEmpty, 'Notiz');
+  final abenteuer = (basis['adventures'] as List).first as Map<String, dynamic>;
+  abenteuer
+    ..['notes'] = <Object?>[
+      const HeroNoteEntry(title: 'Spur', description: 'Nach Norden').toJson(),
+    ]
+    ..['people'] = <Object?>[
+      const HeroAdventurePersonEntry(
+        id: 'person-1',
+        name: 'Answin',
+        description: 'Gläubiger',
+      ).toJson(),
+    ]
+    ..['seRewards'] = <Object?>[
+      const HeroAdventureSeReward(
+        targetId: 'tal_klettern',
+        targetLabel: 'Klettern',
+      ).toJson(),
+    ]
+    ..['lootRewards'] = <Object?>[
+      const HeroAdventureLootEntry(
+        id: 'beute-1',
+        name: 'Silberkette',
+        modifiers: <InventoryItemModifier>[
+          InventoryItemModifier(
+            kind: InventoryModifierKind.stat,
+            targetId: 'mr',
+            wert: 1,
+          ),
+        ],
+      ).toJson(),
+    ];
+  _pruefe((basis['connections'] as List).isEmpty, 'keine Kontakte');
+  basis['connections'] = <Object?>[
+    const HeroConnectionEntry(name: 'Answin', ort: 'Gareth').toJson(),
+  ];
+  _pruefe((basis['companions'] as List).isEmpty, 'keine Begleiter');
+  basis['companions'] = <Object?>[
+    const HeroCompanion(
+      id: 'begleiter-1',
+      name: 'Rabe',
+      typ: BegleiterTyp.vertrauter,
+      mu: 12,
+      geschwindigkeiten: <HeroCompanionSpeed>[
+        HeroCompanionSpeed(art: 'Fliegen', wert: 12),
+      ],
+      angriffe: <HeroCompanionAttack>[
+        HeroCompanionAttack(id: 'angriff-1', name: 'Schnabel', at: 10),
+      ],
+      sonderfertigkeiten: <HeroCompanionSonderfertigkeit>[
+        HeroCompanionSonderfertigkeit(name: 'Ausweichen I'),
+      ],
+      ruestungsTeile: <ArmorPiece>[ArmorPiece(name: 'Halsband', rs: 1)],
+      ritualCategories: <HeroRitualCategory>[
+        HeroRitualCategory(
+          id: 'vertrautenmagie',
+          name: 'Vertrautenmagie',
+          knowledgeMode: HeroRitualKnowledgeMode.ownKnowledge,
+          ownKnowledge: HeroRitualKnowledge(name: 'Vertrautenmagie'),
+        ),
+      ],
+    ).toJson(),
+  ];
+  _pruefe((basis['gruppen'] as List).isEmpty, 'keine Gruppen');
+  basis['gruppen'] = <Object?>[
+    const HeroGruppenMitgliedschaft(
+      gruppenCode: 'gruppe-1',
+      gruppenName: 'Die Sichelträger',
+    ).toJson(),
+  ];
+  final reise = basis['reisebericht'] as Map<String, dynamic>;
+  _pruefe((reise['openEntries'] as Map).isEmpty, 'kein offener Eintrag');
+  reise['openEntries'] = <String, dynamic>{
+    _zukunftsReise: <Object?>[
+      const ReiseberichtOpenItem(
+        name: 'Thorwal',
+        klassifikation: 'normal',
+        ap: 10,
+      ).toJson(),
+    ],
+  };
+  return const <String>[
+    'notes/0',
+    'adventures/0',
+    'adventures/0/notes/0',
+    'adventures/0/people/0',
+    'adventures/0/startWorldDate',
+    'adventures/0/startAventurianDate',
+    'adventures/0/endWorldDate',
+    'adventures/0/endAventurianDate',
+    'adventures/0/currentAventurianDate',
+    'adventures/0/seRewards/0',
+    'adventures/0/lootRewards/0',
+    'adventures/0/lootRewards/0/modifiers/0',
+    'connections/0',
+    'companions/0',
+    'companions/0/geschwindigkeiten/0',
+    'companions/0/angriffe/0',
+    'companions/0/sonderfertigkeiten/0',
+    'companions/0/ruestungsTeile/0',
+    'companions/0/ritualCategories/0',
+    'companions/0/ritualCategories/0/ownKnowledge',
+    'gruppen/0',
+    'reisebericht',
+    'reisebericht/openEntries/$_zukunftsReise/0',
   ];
 }
 

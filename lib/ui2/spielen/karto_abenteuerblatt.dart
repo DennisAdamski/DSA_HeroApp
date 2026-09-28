@@ -315,7 +315,8 @@ class _KartoAbenteuerblattState extends ConsumerState<KartoAbenteuerblatt> {
       if (ergebnis.loeschen) {
         notizen.removeAt(index);
       } else {
-        notizen[index] = HeroNoteEntry(
+        // Per `copyWith`, damit unbekannte Felder erhalten bleiben.
+        notizen[index] = notizen[index].copyWith(
           title: ergebnis.erstes,
           description: ergebnis.zweites,
         );
@@ -788,7 +789,7 @@ class _DatumDialogState extends State<_DatumDialog> {
         ),
         FilledButton(
           onPressed: () => Navigator.of(context).pop(
-            HeroAdventureDateValue(
+            widget.initial.copyWith(
               day: _tag.text.trim(),
               month: _monat,
               year: _jahr.text.trim(),

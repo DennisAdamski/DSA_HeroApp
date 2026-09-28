@@ -1,9 +1,15 @@
 import 'dart:convert';
 
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_adventure_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_companion.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_connection_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_gruppen_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_language_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_meta_talent.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_note_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_reisebericht.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_rituals.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_spell_entry.dart';
@@ -79,7 +85,77 @@ Map<String, dynamic> wieVeroeffentlichteApp(Map<String, dynamic> heldJson) {
     }
   }
   _talenteUndMagie(json);
+  _begleiterAbenteuerNotizen(json);
   return json;
+}
+
+// Begleiter, Abenteuer, Notizen, Kontakte, Gruppen und Reisebericht.
+void _begleiterAbenteuerNotizen(Map<String, dynamic> json) {
+  for (final notiz in _maps(json['notes'])) {
+    _behalte(notiz, HeroNoteEntry.jsonSchluessel);
+  }
+  for (final abenteuer in _maps(json['adventures'])) {
+    _behalte(abenteuer, HeroAdventureEntry.jsonSchluessel);
+    for (final notiz in _maps(abenteuer['notes'])) {
+      _behalte(notiz, HeroNoteEntry.jsonSchluessel);
+    }
+    for (final person in _maps(abenteuer['people'])) {
+      _behalte(person, HeroAdventurePersonEntry.jsonSchluessel);
+    }
+    for (final datum in const <String>[
+      'startWorldDate',
+      'startAventurianDate',
+      'endWorldDate',
+      'endAventurianDate',
+      'currentAventurianDate',
+    ]) {
+      _behalteIn(abenteuer[datum], HeroAdventureDateValue.jsonSchluessel);
+    }
+    for (final se in _maps(abenteuer['seRewards'])) {
+      _behalte(se, HeroAdventureSeReward.jsonSchluessel);
+    }
+    for (final beute in _maps(abenteuer['lootRewards'])) {
+      _behalte(beute, HeroAdventureLootEntry.jsonSchluessel);
+      for (final modifikator in _maps(beute['modifiers'])) {
+        _behalte(modifikator, InventoryItemModifier.jsonSchluessel);
+      }
+    }
+  }
+  for (final kontakt in _maps(json['connections'])) {
+    _behalte(kontakt, HeroConnectionEntry.jsonSchluessel);
+  }
+  for (final begleiter in _maps(json['companions'])) {
+    _behalte(begleiter, HeroCompanion.jsonSchluessel);
+    for (final tempo in _maps(begleiter['geschwindigkeiten'])) {
+      _behalte(tempo, HeroCompanionSpeed.jsonSchluessel);
+    }
+    for (final angriff in _maps(begleiter['angriffe'])) {
+      _behalte(angriff, HeroCompanionAttack.jsonSchluessel);
+    }
+    for (final sf in _maps(begleiter['sonderfertigkeiten'])) {
+      _behalte(sf, HeroCompanionSonderfertigkeit.jsonSchluessel);
+    }
+    for (final stueck in _maps(begleiter['ruestungsTeile'])) {
+      _behalteOhneId(stueck, ArmorPiece.jsonSchluessel);
+    }
+    for (final kategorie in _maps(begleiter['ritualCategories'])) {
+      _behalte(kategorie, HeroRitualCategory.jsonSchluessel);
+      _behalteIn(kategorie['ownKnowledge'], HeroRitualKnowledge.jsonSchluessel);
+    }
+  }
+  for (final gruppe in _maps(json['gruppen'])) {
+    _behalte(gruppe, HeroGruppenMitgliedschaft.jsonSchluessel);
+  }
+  final reise = json['reisebericht'];
+  if (reise is Map<String, dynamic>) {
+    _behalte(reise, HeroReisebericht.jsonSchluessel);
+    for (final liste
+        in (reise['openEntries'] as Map?)?.values ?? const <Object?>[]) {
+      for (final eintrag in _maps(liste)) {
+        _behalte(eintrag, ReiseberichtOpenItem.jsonSchluessel);
+      }
+    }
+  }
 }
 
 // Talente, Zauber, Rituale, Sprachen und benannte Modifikatoren.
