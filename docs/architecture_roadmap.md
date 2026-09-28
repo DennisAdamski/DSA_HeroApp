@@ -305,12 +305,11 @@ Befund, die volle Suite grün (2353 bestanden, 3 übersprungen).
    Das betrifft nur Entwicklergeräte.
 7. B10 setzt voraus, dass Laden ein Fixpunkt ist. Die Fixture-Tests sichern
    das ab; ein Fehler wie B1 brächte je Abgleich einen stillen Upload zurück.
-8. Befund B9 (neu): Beim Abgleich gehen Typ und Träger verknüpfter Einträge
-   verloren, obwohl der Inventareditor den Träger anbietet.
+8. Befund B9 ist als Kleinfix behoben: `_mergeEntry` stützt sich auf den
+   bestehenden Eintrag, Typ und Träger verknüpfter Einträge bleiben erhalten.
 
 *Nächster Schritt:* das gemeinsame Gegenstandsmodell nach den
-Abnahmekriterien oben. Dabei B9 beheben: `_mergeEntry` auf den bestehenden
-Eintrag stützen. Außerdem für neue Felder und Enum-Werte die Formatregel
+Abnahmekriterien oben. Außerdem für neue Felder und Enum-Werte die Formatregel
 anwenden. Vor einem nicht-additiven Formatwechsel braucht es eine sichtbare
 Schreibsperre, die ältere Versionen bereits kennen.
 
@@ -509,7 +508,7 @@ Aufträgen.
 | B6 | mittel/hoch | Unbekannte Felder gehen bei `fromJson`/`toJson` verloren. Ein Gerät mit älterer App überschreibt per Sync die neueren Felder. | Domain-Test | Versionsstrategie vor ARCH-02/03 |
 | B7 | mittel/hoch | Nahkampf-AT/PA der Kampfvorschau rechnen mit eigenen Modifikatoren (`combat_rules.dart`: `persistentMods`, Textmodifikatoren, `tempMods`). Wundabzüge fehlen nachweislich, obwohl AT-Basis und Initiative sie enthalten; laut Code fehlen dort auch benannte und Inventar-Modifikatoren (nicht eigens getestet). | Regeltest (f01, f04 mit Wunde) | eigener Regelauftrag, Bezug ARCH-04 |
 | B8 | mittel | Offline geänderte Laufzeitwerte (LeP, AsP, Wunden …) lädt `syncNow` nicht hoch: `_syncHeroStates` überträgt nur Zustände, die online noch fehlen. Erst die nächste Zustandsänderung mit Verbindung holt sie nach; wechselt man vorher das Gerät, sieht es den alten Stand. | `sync_zwei_geraete_test.dart` | eigener Sync-Auftrag, Bezug ARCH-06 |
-| B9 | niedrig/mittel | `_mergeEntry` baut verknüpfte Inventareinträge aus dem Slot neu auf und übernimmt nur eine feste Feldliste. Typ (`typ`) und Träger (`traegerTyp`, `traegerId`) gehen bei jedem Speichern verloren, obwohl der Inventareditor den Träger auch für verknüpfte Einträge anbietet. | Code-Befund (28.09.2026) | ARCH-03, gemeinsames Gegenstandsmodell |
+| B9 | niedrig/mittel | `_mergeEntry` baut verknüpfte Inventareinträge aus dem Slot neu auf und übernimmt nur eine feste Feldliste. Typ (`typ`) und Träger (`traegerTyp`, `traegerId`) gehen bei jedem Speichern verloren, obwohl der Inventareditor den Träger auch für verknüpfte Einträge anbietet. | `bestandsheld_ablauf_test.dart` (f01) | behoben (Kleinfix, siehe Aktualisierung) |
 | B10 | hoch | Nach dem Übernehmen eines Online-Stands merkte sich die Sync-Basis den Hash des Schreibers. Konnte diese Version den Stand nicht verlustfrei darstellen, lud ein bloßer Abgleich die verkürzte Fassung ohne Konflikt hoch und löschte fremde Felder auf allen Geräten. | `sync_app_versionen_test.dart` | behoben (`192cf41`) |
 
 **Aktualisierung 27.09.2026:** B1 (`d5f111c`), B7 (`de36df2`), B8
@@ -524,6 +523,15 @@ verschachtelte Felder, bevor ARCH-03 über den B2/B3-Teilfix hinausgeht.
 (`f28cb1a`); andere verschachtelte Modelle bleiben ungeschützt, siehe den
 ARCH-03-Teilstand vom 28.09.2026. B10 ist mit `192cf41` behoben, B9 ist neu
 und gehört zu ARCH-03.
+
+**Aktualisierung 28.09.2026 (B9):** Vorgezogen als Kleinfix, weil jedes
+Speichern Daten verlor. `_mergeEntry` (`inventory_sync_rules.dart`) baut
+verknüpfte Einträge nicht mehr aus dem Slot neu auf, sondern ändert den
+bestehenden Eintrag per `copyWith`; aus dem Slot kommen nur Identität,
+magisch/geweiht, `istAusgeruestet` (Ausrüstung) und `anzahl` (Geschosse).
+Der Test in `bestandsheld_ablauf_test.dart` setzt an f01 Typ und Träger,
+speichert, ändert den Kampf und prüft nach dem Neustart. Die Fixtures und
+Hash-Pins bleiben unverändert, keine trägt Typ oder Träger.
 
 ## Abschluss und Übergabe je Aufgabe
 
