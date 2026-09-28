@@ -2229,9 +2229,12 @@ wenn der Vorteil entfernt ist.
   Ritual entspricht (Untergrenze `A`); das Ritual traegt eine Marke.
 Verbraucher: `AdvancementContext.begabungen` (einmal je Optionsaufbau),
 `CatalogRuleResolver.resolveTalentComplexity` (`unfaehigkeitsSchritte`),
-Talente-, Kampf- und Magie-Tab. Abgeleitete Begabung zeigt
+Talente-, Kampf- und Magie-Tab samt ihren Katalogvorschauen und dem
+Repraesentationsdialog (dort zaehlt nur der Befund, nicht das Haekchen, weil
+das Ziel noch nicht auf dem Bogen steht). Abgeleitete Begabung zeigt
 `BegabungHaekchen` (`lib/ui/widgets/begabung_haekchen.dart`) als gesetztes,
-gesperrtes Haekchen mit Quelle; Unfaehigkeit als Marke. Der Textweg kennt
+gesperrtes Haekchen mit Quelle; `LernspaltenMarke` erklaert jede
+verschobene Spalte per Tooltip. Der Textweg kennt
 keine Lernspalten: freie und mehrdeutige Texte wirken nicht, und der
 Aequivalenztest nimmt `lernspalte` bewusst aus.
 
