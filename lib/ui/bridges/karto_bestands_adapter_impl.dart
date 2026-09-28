@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:dsa_heldenverwaltung/rules/derived/avatar_rahmung_rules.dart';
 import 'package:dsa_heldenverwaltung/state/auth_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/bridges/karto_compat_theme.dart';
 import 'package:dsa_heldenverwaltung/ui/bridges/karto_spiel_bruecke.dart';
@@ -246,6 +247,7 @@ class KartoBestandsAdapterImpl implements KartoBestandsAdapter {
         heroId: heroId,
         fileName: dateiname,
         placeholder: ersatz,
+        rahmung: AvatarRahmung.portraet,
       ),
     );
   }

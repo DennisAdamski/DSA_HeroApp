@@ -121,6 +121,9 @@ abstract interface class KartoBestandsAdapter {
   /// bei jedem Rebuild verfehlt wird. Ein eigenes Bildwidget in UI2 auf
   /// `avatarBytesProvider` waere der naheliegende, aber falsche Weg.
   ///
+  /// Der Ausschnitt richtet sich am erkannten Gesicht aus (Rahmung
+  /// `portraet`), damit der runde Ring den Kopf zeigt und nicht die Brust.
+  ///
   /// [ersatz] erscheint, solange kein Bild vorliegt oder es nicht ladbar ist.
   Widget heldenbild({
     required String heroId,

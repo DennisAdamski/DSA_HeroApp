@@ -73,6 +73,7 @@ flutter:
     - assets/catalogs/house_rules_v1/packs/regelwerk_ueberarbeitung_v1_talents_learning/manifest.json
     - assets/catalogs/reiseberichte/house_rules_v1/
     - assets/heroes/
+    - assets/models/
     - assets/ui/codex/
   fonts:
     # Bestehende Oberflaeche. Faellt mit ihr weg.
