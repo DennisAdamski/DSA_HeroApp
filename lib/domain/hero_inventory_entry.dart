@@ -48,6 +48,7 @@ class HeroInventoryEntry {
     this.traegerTyp = InventoryTraeger.held,
     this.traegerId,
     this.unbekannteFelder = const <String, Object?>{},
+    this.unbekannteEnumWerte = const <String, Object?>{},
   });
 
   // --- Bestehende 12 String-Felder (unveraendert, rueckwaertskompatibel) ---
@@ -136,6 +137,12 @@ class HeroInventoryEntry {
   /// (siehe `unbekannte_json_felder.dart`).
   final Map<String, Object?> unbekannteFelder;
 
+  /// Unbekannte Aufzaehlungswerte einer neueren App-Version (JSON-Schluessel
+  /// -> Rohwert). Die Felder tragen den Ersatzwert, mit dem Regeln rechnen;
+  /// geschrieben wird der Rohwert, bis jemand das Feld auf einen anderen Wert
+  /// setzt (siehe `unbekannte_json_felder.dart`).
+  final Map<String, Object?> unbekannteEnumWerte;
+
   /// Alle Schluessel, die [fromJson] liest — einschliesslich der nur bedingt
   /// geschriebenen; alles andere bleibt erhalten.
   static const Set<String> jsonSchluessel = <String>{
@@ -198,6 +205,7 @@ class HeroInventoryEntry {
     InventoryTraeger? traegerTyp,
     Object? traegerId = keepFieldValue,
     Map<String, Object?>? unbekannteFelder,
+    Map<String, Object?>? unbekannteEnumWerte,
   }) {
     return HeroInventoryEntry(
       gegenstand: gegenstand ?? this.gegenstand,
@@ -232,6 +240,13 @@ class HeroInventoryEntry {
           ? this.traegerId
           : traegerId as String?,
       unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
+      unbekannteEnumWerte:
+          unbekannteEnumWerte ??
+          ohneGeaenderteEnumWerte(this.unbekannteEnumWerte, {
+            'itemType': itemType != null && itemType != this.itemType,
+            'source': source != null && source != this.source,
+            'traegerTyp': traegerTyp != null && traegerTyp != this.traegerTyp,
+          }),
     );
   }
 
@@ -244,56 +259,46 @@ class HeroInventoryEntry {
       legacyArtifact: artefakt.trim(),
     );
 
-    return mitUnbekanntenFeldern(<String, dynamic>{
-      'gegenstand': gegenstand,
-      'woGetragen': woGetragen,
-      'typ': typ,
-      'welchesAbenteuer': welchesAbenteuer,
-      'gewicht': gewicht,
-      'wert': wert,
-      'artefakt': legacyArtifactValue,
-      'anzahl': anzahl,
-      'amKoerper': amKoerper,
-      'woDann': woDann,
-      'gruppe': gruppe,
-      'beschreibung': beschreibung,
-      // v16
-      'itemType': itemType.name,
-      'source': source.name,
-      if (sourceRef != null) 'sourceRef': sourceRef,
-      if (slotRef != null) 'slotRef': slotRef,
-      'istAusgeruestet': istAusgeruestet,
-      'modifiers': modifiers.map((m) => m.toJson()).toList(),
-      'gewichtGramm': gewichtGramm,
-      'wertSilber': wertSilber,
-      'herkunft': herkunft,
-      'isMagisch': isMagisch,
-      'magischDescription': normalizedMagischDescription,
-      'isGeweiht': isGeweiht,
-      'geweihtDescription': geweihtDescription,
-      // v19
-      'traegerTyp': traegerTyp.name,
-      if (traegerId != null) 'traegerId': traegerId,
-    }, unbekannteFelder);
+    return mitUnbekanntenEnumWerten(
+      mitUnbekanntenFeldern(<String, dynamic>{
+        'gegenstand': gegenstand,
+        'woGetragen': woGetragen,
+        'typ': typ,
+        'welchesAbenteuer': welchesAbenteuer,
+        'gewicht': gewicht,
+        'wert': wert,
+        'artefakt': legacyArtifactValue,
+        'anzahl': anzahl,
+        'amKoerper': amKoerper,
+        'woDann': woDann,
+        'gruppe': gruppe,
+        'beschreibung': beschreibung,
+        // v16
+        'itemType': itemType.name,
+        'source': source.name,
+        if (sourceRef != null) 'sourceRef': sourceRef,
+        if (slotRef != null) 'slotRef': slotRef,
+        'istAusgeruestet': istAusgeruestet,
+        'modifiers': modifiers.map((m) => m.toJson()).toList(),
+        'gewichtGramm': gewichtGramm,
+        'wertSilber': wertSilber,
+        'herkunft': herkunft,
+        'isMagisch': isMagisch,
+        'magischDescription': normalizedMagischDescription,
+        'isGeweiht': isGeweiht,
+        'geweihtDescription': geweihtDescription,
+        // v19
+        'traegerTyp': traegerTyp.name,
+        if (traegerId != null) 'traegerId': traegerId,
+      }, unbekannteFelder),
+      unbekannteEnumWerte,
+    );
   }
 
   /// Deserialisiert einen Inventar-Eintrag aus einem JSON-Map.
   static HeroInventoryEntry fromJson(Map<String, dynamic> json) {
+    final enumRoh = <String, Object?>{};
     String getString(String key) => (json[key] as String?) ?? '';
-
-    InventoryItemType parseItemType(String? raw) {
-      return InventoryItemType.values.firstWhere(
-        (e) => e.name == raw,
-        orElse: () => InventoryItemType.sonstiges,
-      );
-    }
-
-    InventoryItemSource parseSource(String? raw) {
-      return InventoryItemSource.values.firstWhere(
-        (e) => e.name == raw,
-        orElse: () => InventoryItemSource.manuell,
-      );
-    }
 
     final modifiersRaw = json['modifiers'];
     final modifiers = modifiersRaw is List
@@ -328,8 +333,20 @@ class HeroInventoryEntry {
       gruppe: getString('gruppe'),
       beschreibung: getString('beschreibung'),
       // v16 – lenient defaults
-      itemType: parseItemType(json['itemType'] as String?),
-      source: parseSource(json['source'] as String?),
+      itemType: leseEnumWert(
+        json['itemType'],
+        'itemType',
+        erkenne: (roh) => enumNachName(InventoryItemType.values, roh),
+        ersatz: InventoryItemType.sonstiges,
+        unbekannt: enumRoh,
+      ),
+      source: leseEnumWert(
+        json['source'],
+        'source',
+        erkenne: (roh) => enumNachName(InventoryItemSource.values, roh),
+        ersatz: InventoryItemSource.manuell,
+        unbekannt: enumRoh,
+      ),
       sourceRef: json['sourceRef'] as String?,
       slotRef: json['slotRef'] as String?,
       istAusgeruestet: (json['istAusgeruestet'] as bool?) ?? false,
@@ -342,12 +359,16 @@ class HeroInventoryEntry {
       isGeweiht: (json['isGeweiht'] as bool?) ?? false,
       geweihtDescription: getString('geweihtDescription'),
       // v19 – lenient defaults
-      traegerTyp: InventoryTraeger.values.firstWhere(
-        (e) => e.name == json['traegerTyp'],
-        orElse: () => InventoryTraeger.held,
+      traegerTyp: leseEnumWert(
+        json['traegerTyp'],
+        'traegerTyp',
+        erkenne: (roh) => enumNachName(InventoryTraeger.values, roh),
+        ersatz: InventoryTraeger.held,
+        unbekannt: enumRoh,
       ),
       traegerId: json['traegerId'] as String?,
       unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
+      unbekannteEnumWerte: festeEnumWerte(enumRoh),
     );
   }
 }

@@ -13,6 +13,8 @@ import 'package:dsa_heldenverwaltung/domain/bought_stats.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/dice_log_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_advancement_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_adventure_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_adventure_se_pools.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_appearance.dart';
@@ -37,6 +39,7 @@ import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
 import 'package:dsa_heldenverwaltung/domain/talent_special_ability.dart';
 import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/inventory_sync_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/rest_rules.dart';
 
 import '../test_support/hero_fixtures.dart';
@@ -748,6 +751,354 @@ final _zustand = <_Modell>[
   ),
 ];
 
+/// Ein Aufzaehlungsfeld im Tabellentest.
+///
+/// [lade] laedt und schreibt, [gleich] setzt per `copyWith` denselben
+/// (Ersatz-)Wert und aendert ein anderes Feld, [anders] setzt einen anderen
+/// Wert, dessen JSON [andersJson] ist; [ersatz] liefert den geladenen Wert,
+/// mit dem Regeln rechnen.
+class _EnumFeld {
+  const _EnumFeld(
+    this.name,
+    this.schluessel, {
+    required this.voll,
+    required this.lade,
+    required this.gleich,
+    required this.ersatz,
+    required this.erwarteterErsatz,
+    this.anders,
+    this.andersJson,
+  });
+
+  final String name;
+  final String schluessel;
+  final Map<String, dynamic> Function() voll;
+  final Map<String, dynamic> Function(Map<String, dynamic>) lade;
+  final Map<String, dynamic> Function(Map<String, dynamic>) gleich;
+  final Map<String, dynamic> Function(Map<String, dynamic>)? anders;
+  final Object? andersJson;
+  final Object? Function(Map<String, dynamic>) ersatz;
+  final Object? erwarteterErsatz;
+}
+
+final _enumFelder = <_EnumFeld>[
+  for (final (schluessel, anders, andersJson, ersatz)
+      in <
+        (
+          String,
+          HeroInventoryEntry Function(HeroInventoryEntry),
+          String,
+          Object,
+        )
+      >[
+        (
+          'itemType',
+          (e) => e.copyWith(itemType: InventoryItemType.wertvolles),
+          'wertvolles',
+          InventoryItemType.sonstiges,
+        ),
+        (
+          'source',
+          (e) => e.copyWith(source: InventoryItemSource.ruestung),
+          'ruestung',
+          InventoryItemSource.manuell,
+        ),
+        (
+          'traegerTyp',
+          (e) => e.copyWith(traegerTyp: InventoryTraeger.begleiter),
+          'begleiter',
+          InventoryTraeger.held,
+        ),
+      ])
+    _EnumFeld(
+      'HeroInventoryEntry.$schluessel',
+      schluessel,
+      voll: () => const HeroInventoryEntry(gegenstand: 'Seil').toJson(),
+      lade: (json) => HeroInventoryEntry.fromJson(json).toJson(),
+      gleich: (json) {
+        final e = HeroInventoryEntry.fromJson(json);
+        return e
+            .copyWith(
+              itemType: e.itemType,
+              source: e.source,
+              traegerTyp: e.traegerTyp,
+              wert: '3',
+            )
+            .toJson();
+      },
+      anders: (json) => anders(HeroInventoryEntry.fromJson(json)).toJson(),
+      andersJson: andersJson,
+      ersatz: (json) => switch (schluessel) {
+        'itemType' => HeroInventoryEntry.fromJson(json).itemType,
+        'source' => HeroInventoryEntry.fromJson(json).source,
+        _ => HeroInventoryEntry.fromJson(json).traegerTyp,
+      },
+      erwarteterErsatz: ersatz,
+    ),
+  _EnumFeld(
+    'InventoryItemModifier.kind',
+    'kind',
+    voll: () => const InventoryItemModifier(
+      kind: InventoryModifierKind.stat,
+      targetId: 'gs',
+      wert: 1,
+    ).toJson(),
+    lade: (json) => InventoryItemModifier.fromJson(json).toJson(),
+    gleich: (json) {
+      final m = InventoryItemModifier.fromJson(json);
+      return m.copyWith(kind: m.kind, wert: 2).toJson();
+    },
+    anders: (json) =>
+        InventoryItemModifier.fromJson(json)
+            .copyWith(kind: InventoryModifierKind.talent)
+            .toJson(),
+    andersJson: 'talent',
+    ersatz: (json) => InventoryItemModifier.fromJson(json).kind,
+    erwarteterErsatz: InventoryModifierKind.stat,
+  ),
+  _EnumFeld(
+    'MainWeaponSlot.combatType',
+    'combatType',
+    voll: () => const MainWeaponSlot(name: 'Bogen').toJson(),
+    lade: (json) => MainWeaponSlot.fromJson(json).toJson(),
+    gleich: (json) {
+      final w = MainWeaponSlot.fromJson(json);
+      return w.copyWith(combatType: w.combatType, name: 'Neu').toJson();
+    },
+    anders: (json) =>
+        MainWeaponSlot.fromJson(json)
+            .copyWith(combatType: WeaponCombatType.ranged)
+            .toJson(),
+    andersJson: 'ranged',
+    ersatz: (json) => MainWeaponSlot.fromJson(json).combatType,
+    erwarteterErsatz: WeaponCombatType.melee,
+  ),
+  _EnumFeld(
+    'OffhandEquipmentEntry.type',
+    'type',
+    voll: () => const OffhandEquipmentEntry(name: 'Schild').toJson(),
+    lade: (json) => OffhandEquipmentEntry.fromJson(json).toJson(),
+    gleich: (json) {
+      final o = OffhandEquipmentEntry.fromJson(json);
+      return o.copyWith(type: o.type, paMod: 1).toJson();
+    },
+    anders: (json) =>
+        OffhandEquipmentEntry.fromJson(json)
+            .copyWith(type: OffhandEquipmentType.shield)
+            .toJson(),
+    andersJson: 'shield',
+    ersatz: (json) => OffhandEquipmentEntry.fromJson(json).type,
+    erwarteterErsatz: OffhandEquipmentType.parryWeapon,
+  ),
+  _EnumFeld(
+    'OffhandEquipmentEntry.shieldSize',
+    'shieldSize',
+    voll: () => const OffhandEquipmentEntry(name: 'Schild').toJson(),
+    lade: (json) => OffhandEquipmentEntry.fromJson(json).toJson(),
+    gleich: (json) {
+      final o = OffhandEquipmentEntry.fromJson(json);
+      return o.copyWith(shieldSize: o.shieldSize, paMod: 1).toJson();
+    },
+    anders: (json) =>
+        OffhandEquipmentEntry.fromJson(json)
+            .copyWith(shieldSize: ShieldSize.large)
+            .toJson(),
+    andersJson: 'large',
+    ersatz: (json) => OffhandEquipmentEntry.fromJson(json).shieldSize,
+    erwarteterErsatz: ShieldSize.small,
+  ),
+  _EnumFeld(
+    'WaffenmeisterBonus.type',
+    'type',
+    voll: () => const WaffenmeisterBonus().toJson(),
+    lade: (json) => WaffenmeisterBonus.fromJson(json).toJson(),
+    gleich: (json) {
+      final b = WaffenmeisterBonus.fromJson(json);
+      return b.copyWith(type: b.type, value: 1).toJson();
+    },
+    anders: (json) =>
+        WaffenmeisterBonus.fromJson(json)
+            .copyWith(type: WaffenmeisterBonusType.iniBonus)
+            .toJson(),
+    andersJson: 'iniBonus',
+    ersatz: (json) => WaffenmeisterBonus.fromJson(json).type,
+    erwarteterErsatz: WaffenmeisterBonusType.customAdvantage,
+  ),
+  _EnumFeld(
+    'HeroRitualCategory.knowledgeMode',
+    'knowledgeMode',
+    voll: () => const HeroRitualCategory(
+      id: 'rk',
+      name: 'R',
+      knowledgeMode: HeroRitualKnowledgeMode.ownKnowledge,
+    ).toJson(),
+    lade: (json) => HeroRitualCategory.fromJson(json).toJson(),
+    gleich: (json) {
+      final k = HeroRitualCategory.fromJson(json);
+      return k.copyWith(knowledgeMode: k.knowledgeMode, name: 'N').toJson();
+    },
+    anders: (json) =>
+        HeroRitualCategory.fromJson(json)
+            .copyWith(knowledgeMode: HeroRitualKnowledgeMode.derivedTalents)
+            .toJson(),
+    andersJson: 'derivedTalents',
+    ersatz: (json) => HeroRitualCategory.fromJson(json).knowledgeMode,
+    erwarteterErsatz: HeroRitualKnowledgeMode.ownKnowledge,
+  ),
+  _EnumFeld(
+    'HeroRitualFieldDef.type',
+    'type',
+    voll: () => const HeroRitualFieldDef(
+      id: 'f',
+      label: 'F',
+      type: HeroRitualFieldType.text,
+    ).toJson(),
+    lade: (json) => HeroRitualFieldDef.fromJson(json).toJson(),
+    gleich: (json) {
+      final f = HeroRitualFieldDef.fromJson(json);
+      return f.copyWith(type: f.type, label: 'G').toJson();
+    },
+    anders: (json) =>
+        HeroRitualFieldDef.fromJson(json)
+            .copyWith(type: HeroRitualFieldType.threeAttributes)
+            .toJson(),
+    andersJson: 'threeAttributes',
+    ersatz: (json) => HeroRitualFieldDef.fromJson(json).type,
+    erwarteterErsatz: HeroRitualFieldType.text,
+  ),
+  _EnumFeld(
+    'HeroCompanion.typ',
+    'typ',
+    voll: () => const HeroCompanion(id: 'b1').toJson(),
+    lade: (json) => HeroCompanion.fromJson(json).toJson(),
+    gleich: (json) {
+      final b = HeroCompanion.fromJson(json);
+      return b.copyWith(typ: b.typ, name: 'Rabe').toJson();
+    },
+    anders: (json) =>
+        HeroCompanion.fromJson(json)
+            .copyWith(typ: BegleiterTyp.reittier)
+            .toJson(),
+    andersJson: 'reittier',
+    ersatz: (json) => HeroCompanion.fromJson(json).typ,
+    erwarteterErsatz: BegleiterTyp.sonstigerBegleiter,
+  ),
+  _EnumFeld(
+    'HeroAdventureEntry.status',
+    'status',
+    voll: () => const HeroAdventureEntry(id: 'a1').toJson(),
+    lade: (json) => HeroAdventureEntry.fromJson(json).toJson(),
+    gleich: (json) {
+      final a = HeroAdventureEntry.fromJson(json);
+      return a.copyWith(status: a.status, title: 'T').toJson();
+    },
+    anders: (json) =>
+        HeroAdventureEntry.fromJson(json)
+            .copyWith(status: HeroAdventureStatus.completed)
+            .toJson(),
+    andersJson: 'completed',
+    ersatz: (json) => HeroAdventureEntry.fromJson(json).status,
+    erwarteterErsatz: HeroAdventureStatus.current,
+  ),
+  _EnumFeld(
+    'HeroAdventureSeReward.targetType',
+    'targetType',
+    voll: () => const HeroAdventureSeReward(targetId: 'x').toJson(),
+    lade: (json) => HeroAdventureSeReward.fromJson(json).toJson(),
+    gleich: (json) {
+      final r = HeroAdventureSeReward.fromJson(json);
+      return r.copyWith(targetType: r.targetType, count: 2).toJson();
+    },
+    anders: (json) =>
+        HeroAdventureSeReward.fromJson(json)
+            .copyWith(targetType: HeroAdventureSeTargetType.grundwert)
+            .toJson(),
+    andersJson: 'grundwert',
+    ersatz: (json) => HeroAdventureSeReward.fromJson(json).targetType,
+    erwarteterErsatz: HeroAdventureSeTargetType.talent,
+  ),
+  _EnumFeld(
+    'HeroAdventureLootEntry.itemType',
+    'itemType',
+    voll: () => const HeroAdventureLootEntry(id: 'l', name: 'K').toJson(),
+    lade: (json) => HeroAdventureLootEntry.fromJson(json).toJson(),
+    gleich: (json) {
+      final l = HeroAdventureLootEntry.fromJson(json);
+      return l.copyWith(itemType: l.itemType, quantity: '2').toJson();
+    },
+    anders: (json) =>
+        HeroAdventureLootEntry.fromJson(json)
+            .copyWith(itemType: InventoryItemType.wertvolles)
+            .toJson(),
+    andersJson: 'wertvolles',
+    ersatz: (json) => HeroAdventureLootEntry.fromJson(json).itemType,
+    erwarteterErsatz: InventoryItemType.sonstiges,
+  ),
+  _EnumFeld(
+    'SpellDuration.unit',
+    'unit',
+    voll: () => _dauer().toJson(),
+    lade: (json) => SpellDuration.fromJson(json).toJson(),
+    gleich: (json) {
+      final d = SpellDuration.fromJson(json);
+      return d.copyWith(unit: d.unit, remaining: 1).toJson();
+    },
+    anders: (json) =>
+        SpellDuration.fromJson(json)
+            .copyWith(unit: SpellDurationUnit.minuten)
+            .toJson(),
+    andersJson: 'minuten',
+    ersatz: (json) => SpellDuration.fromJson(json).unit,
+    erwarteterErsatz: SpellDurationUnit.kampfrunden,
+  ),
+  for (final (schluessel, ersatz) in <(String, Object)>[
+    ('type', ProbeType.attribute),
+    ('automaticOutcome', AutomaticOutcome.none),
+  ])
+    _EnumFeld(
+      'DiceLogEntry.$schluessel',
+      schluessel,
+      voll: () => DiceLogEntry(
+        timestamp: DateTime.utc(2026, 9, 28),
+        type: ProbeType.talent,
+        title: 'T',
+        subtitle: '',
+        success: true,
+        diceValues: const <int>[1],
+        automaticOutcome: AutomaticOutcome.success,
+      ).toJson(),
+      lade: (json) => DiceLogEntry.fromJson(json).toJson(),
+      // Unveraenderlich: bearbeitet wird der Zustand, der ihn traegt.
+      gleich: (json) =>
+          (HeroState.fromJson(<String, dynamic>{
+                        'diceLog': <Object?>[json],
+                      }).copyWith(currentLep: 3).toJson()['diceLog']
+                      as List)
+                  .single
+              as Map<String, dynamic>,
+      ersatz: (json) => schluessel == 'type'
+          ? DiceLogEntry.fromJson(json).type
+          : DiceLogEntry.fromJson(json).automaticOutcome,
+      erwarteterErsatz: ersatz,
+    ),
+  _EnumFeld(
+    'AventurianDate.month',
+    'month',
+    voll: () =>
+        const AventurianDate(day: '3', month: 'rondra', year: '1016').toJson(),
+    lade: (json) => AventurianDate.fromJson(json).toJson(),
+    gleich: (json) {
+      final d = AventurianDate.fromJson(json);
+      return d.copyWith(month: d.month, day: '4').toJson();
+    },
+    anders: (json) =>
+        AventurianDate.fromJson(json).copyWith(month: 'phex').toJson(),
+    andersJson: 'phex',
+    ersatz: (json) => AventurianDate.fromJson(json).month,
+    erwarteterErsatz: '',
+  ),
+];
+
 // Voll belegtes JSON eines Modells samt Zukunftsfeld, frisch kopiert.
 Map<String, dynamic> _mitZukunft(_Modell modell) {
   final json = jsonDecode(jsonEncode(modell.voll())) as Map<String, dynamic>;
@@ -1049,6 +1400,155 @@ void main() {
 
       expect(neu.remaining, 6);
       expect(neu.unbekannteFelder, feld);
+    });
+  });
+
+  group('Unbekannte Aufzählungswerte bleiben erhalten', () {
+    for (final feld in _enumFelder) {
+      Map<String, dynamic> mitRohwert() =>
+          jsonDecode(jsonEncode(feld.voll())) as Map<String, dynamic>
+            ..[feld.schluessel] = 'zukunftsWert';
+
+      test('${feld.name}: Regeln sehen den Ersatz, geschrieben wird der '
+          'Rohwert', () {
+        final json = mitRohwert();
+
+        expect(feld.ersatz(json), feld.erwarteterErsatz);
+        expect(feld.lade(json)[feld.schluessel], 'zukunftsWert');
+        expect(feld.lade(feld.lade(json)), feld.lade(json), reason: 'Fixpunkt');
+      });
+
+      test(
+        '${feld.name}: derselbe Wert und andere Felder lassen ihn stehen',
+        () {
+          expect(feld.gleich(mitRohwert())[feld.schluessel], 'zukunftsWert');
+        },
+      );
+
+      if (feld.anders != null) {
+        test('${feld.name}: ein anderer Wert überschreibt ihn', () {
+          expect(feld.anders!(mitRohwert())[feld.schluessel], feld.andersJson);
+        });
+      }
+
+      test('${feld.name}: bekannte Werte und fehlende Angaben wie bisher', () {
+        final json = feld.voll();
+        final ohne = Map<String, dynamic>.of(json)..remove(feld.schluessel);
+        final leer = Map<String, dynamic>.of(json)..[feld.schluessel] = '';
+
+        expect(feld.lade(json), json);
+        expect(feld.lade(ohne)[feld.schluessel], isNot('zukunftsWert'));
+        // Leer gilt als fehlend: Ersatz, kein Rohwert.
+        expect(feld.ersatz(leer), feld.erwarteterErsatz);
+        if (feld.erwarteterErsatz != '') {
+          expect(feld.lade(leer)[feld.schluessel], isNot(''));
+        }
+      });
+    }
+
+    test('Wundzonen einer neueren Version bleiben, zählen nicht und heilen '
+        'bei der vollen Rast', () {
+      final zustand = HeroState.fromJson(<String, dynamic>{
+        'wpiZustand': <String, dynamic>{
+          'wundenProZone': <String, dynamic>{'brust': 1, 'schwanz': 2},
+          'unterdrueckteWundenProZone': <String, dynamic>{'schwanz': 1},
+          'kopfIniMalus': 0,
+        },
+      });
+      final wunden = zustand.wpiZustand;
+
+      expect(wunden.gesamtWunden, 1);
+      final bearbeitet = wunden
+          .mitWundeHinzu(WundZone.kopf, iniWuerfelWert: 3)
+          .mitWundeEntfernt(WundZone.brust)
+          .mitUnterdrueckung(WundZone.kopf, 1)
+          .toJson();
+      expect(bearbeitet['wundenProZone'], <String, dynamic>{
+        'kopf': 1,
+        'schwanz': 2,
+      });
+      expect(bearbeitet['unterdrueckteWundenProZone'], <String, dynamic>{
+        'kopf': 1,
+        'schwanz': 1,
+      });
+
+      final nachRast = buildFullRestoreState(
+        currentState: zustand,
+        derivedStats: const DerivedStats(
+          maxLep: 30,
+          maxAu: 30,
+          maxAsp: 0,
+          maxKap: 0,
+          mr: 0,
+          iniBase: 0,
+          atBase: 0,
+          paBase: 0,
+          fkBase: 0,
+          gs: 0,
+          ausweichen: 0,
+        ),
+      );
+      expect(nachRast.wpiZustand.toJson(), <String, dynamic>{
+        'wundenProZone': <String, dynamic>{},
+        'kopfIniMalus': 0,
+      });
+    });
+
+    group('Inventarabgleich', () {
+      late HeroSheet held;
+
+      setUp(() {
+        final roh = ladeBestandsheldJson(Bestandsheld.kriegerNormal);
+        held = HeroSheet.fromJson((roh['hero'] as Map).cast<String, dynamic>());
+      });
+
+      List<HeroInventoryEntry> gleicheAb(HeroSheet h) =>
+          reconcileInventoryWithCombat(h.inventoryEntries, h.combatConfig);
+
+      test('Befund ARCH-07-B12: ein verknüpfter Eintrag mit unbekannter '
+          'Quelle bleibt unverändert und bekommt keinen Doppelgänger', () {
+        final json = held.toJson();
+        final eintraege = json['inventoryEntries'] as List;
+        final index = eintraege.indexWhere(
+          (e) => (e as Map)['gegenstand'] == 'Leichte Armbrust',
+        );
+        (eintraege[index] as Map)['source'] = 'zukunftsWert';
+        final zukunft = HeroSheet.fromJson(json);
+        final vorher = zukunft.inventoryEntries[index];
+
+        final ergebnis = gleicheAb(zukunft);
+
+        final armbrust = ergebnis
+            .where((e) => e.gegenstand == 'Leichte Armbrust')
+            .toList();
+        expect(armbrust, hasLength(1));
+        expect(armbrust.single.toJson(), vorher.toJson());
+        expect(armbrust.single.toJson()['source'], 'zukunftsWert');
+        expect(ergebnis, hasLength(zukunft.inventoryEntries.length));
+      });
+
+      test('Befund ARCH-07-B13: eine unbekannte Kampfart behält die '
+          'Geschosse samt Inventardaten', () {
+        final json = held.toJson();
+        final waffen = (json['combatConfig'] as Map)['weapons'] as List;
+        (waffen[1] as Map)['combatType'] = 'zukunftsWert';
+        final zukunft = HeroSheet.fromJson(json);
+
+        final ergebnis = gleicheAb(zukunft);
+
+        expect(zukunft.combatConfig.weaponSlots[1].isRanged, isFalse);
+        expect(
+          ergebnis.where((e) => e.gegenstand == 'Bolzen').single.slotRef,
+          isNotNull,
+        );
+        expect(
+          HeroSheet.fromJson(
+            zukunft.copyWith(inventoryEntries: ergebnis).toJson(),
+          ).toJson(),
+          zukunft.toJson(),
+          reason: 'Laden und Abgleich ändern nichts',
+        );
+      });
     });
   });
 

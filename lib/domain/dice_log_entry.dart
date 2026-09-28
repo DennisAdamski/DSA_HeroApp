@@ -19,6 +19,7 @@ class DiceLogEntry {
     this.total,
     this.isNeutral = false,
     this.unbekannteFelder = const <String, Object?>{},
+    this.unbekannteEnumWerte = const <String, Object?>{},
   });
 
   /// Zeitpunkt der Probe (UTC empfohlen).
@@ -55,6 +56,12 @@ class DiceLogEntry {
   /// (siehe `unbekannte_json_felder.dart`).
   final Map<String, Object?> unbekannteFelder;
 
+  /// Unbekannte Aufzaehlungswerte einer neueren App-Version (JSON-Schluessel
+  /// -> Rohwert). Die Felder tragen den Ersatzwert, mit dem Regeln rechnen;
+  /// geschrieben wird der Rohwert, bis jemand das Feld auf einen anderen Wert
+  /// setzt (siehe `unbekannte_json_felder.dart`).
+  final Map<String, Object?> unbekannteEnumWerte;
+
   /// Alle Schluessel, die [fromJson] liest — einschliesslich der nur bedingt
   /// geschriebenen; alles andere bleibt erhalten. Eintraege sind
   /// unveraenderlich und werden nur angehaengt oder verdraengt.
@@ -72,24 +79,34 @@ class DiceLogEntry {
   };
 
   Map<String, dynamic> toJson() {
-    return mitUnbekanntenFeldern(<String, dynamic>{
-      'timestamp': timestamp.toIso8601String(),
-      'type': type.name,
-      'title': title,
-      'subtitle': subtitle,
-      'success': success,
-      'diceValues': List<int>.from(diceValues),
-      if (targetValue != null) 'targetValue': targetValue,
-      'automaticOutcome': automaticOutcome.name,
-      if (total != null) 'total': total,
-      if (isNeutral) 'isNeutral': true,
-    }, unbekannteFelder);
+    return mitUnbekanntenEnumWerten(
+      mitUnbekanntenFeldern(<String, dynamic>{
+        'timestamp': timestamp.toIso8601String(),
+        'type': type.name,
+        'title': title,
+        'subtitle': subtitle,
+        'success': success,
+        'diceValues': List<int>.from(diceValues),
+        if (targetValue != null) 'targetValue': targetValue,
+        'automaticOutcome': automaticOutcome.name,
+        if (total != null) 'total': total,
+        if (isNeutral) 'isNeutral': true,
+      }, unbekannteFelder),
+      unbekannteEnumWerte,
+    );
   }
 
   static DiceLogEntry fromJson(Map<String, dynamic> json) {
+    final enumRoh = <String, Object?>{};
     return DiceLogEntry(
       timestamp: DateTime.parse(json['timestamp'] as String).toUtc(),
-      type: _probeTypeFromName(json['type'] as String?),
+      type: leseEnumWert(
+        json['type'],
+        'type',
+        erkenne: (roh) => enumNachName(ProbeType.values, roh),
+        ersatz: ProbeType.attribute,
+        unbekannt: enumRoh,
+      ),
       title: json['title'] as String? ?? '',
       subtitle: json['subtitle'] as String? ?? '',
       success: json['success'] as bool? ?? false,
@@ -97,12 +114,17 @@ class DiceLogEntry {
           .map((e) => (e as num).toInt())
           .toList(growable: false),
       targetValue: (json['targetValue'] as num?)?.toInt(),
-      automaticOutcome: _automaticOutcomeFromName(
-        json['automaticOutcome'] as String?,
+      automaticOutcome: leseEnumWert(
+        json['automaticOutcome'],
+        'automaticOutcome',
+        erkenne: (roh) => enumNachName(AutomaticOutcome.values, roh),
+        ersatz: AutomaticOutcome.none,
+        unbekannt: enumRoh,
       ),
       total: (json['total'] as num?)?.toInt(),
       isNeutral: json['isNeutral'] as bool? ?? false,
       unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
+      unbekannteEnumWerte: festeEnumWerte(enumRoh),
     );
   }
 }
@@ -185,18 +207,4 @@ DiceLogEntry diceLogEntryFromSimpleCheck({
     automaticOutcome: automaticOutcome,
     total: null,
   );
-}
-
-ProbeType _probeTypeFromName(String? name) {
-  for (final value in ProbeType.values) {
-    if (value.name == name) return value;
-  }
-  return ProbeType.attribute;
-}
-
-AutomaticOutcome _automaticOutcomeFromName(String? name) {
-  for (final value in AutomaticOutcome.values) {
-    if (value.name == name) return value;
-  }
-  return AutomaticOutcome.none;
 }

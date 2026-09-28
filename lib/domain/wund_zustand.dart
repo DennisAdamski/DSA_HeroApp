@@ -1,5 +1,16 @@
 import 'package:dsa_heldenverwaltung/domain/unbekannte_json_felder.dart';
 
+// Eintraege einer Zonen-Map, deren Schluessel keine bekannte Zone ist.
+Map<String, Object?>? _unbekannteZonen(Object? roh) {
+  if (roh is! Map) return null;
+  final bekannt = WundZone.values.map((zone) => zone.name).toSet();
+  final unbekannt = sammleUnbekannteFelder(
+    roh.cast<String, dynamic>(),
+    bekannt,
+  );
+  return unbekannt.isEmpty ? null : unbekannt;
+}
+
 /// Koerperzone fuer das Wunden-Tracking.
 enum WundZone {
   kopf,
@@ -38,6 +49,7 @@ class WundZustand {
     this.unterdrueckteWundenProZone = const <WundZone, int>{},
     this.kampfunfaehigIgnoriert = false,
     this.unbekannteFelder = const <String, Object?>{},
+    this.unbekannteZonen = const <String, Object?>{},
   });
 
   /// Anzahl Wunden je Zone (0–3). Fehlende Zonen = 0 Wunden.
@@ -63,6 +75,13 @@ class WundZustand {
   /// JSON-Felder einer neueren App-Version; bleiben beim Speichern erhalten
   /// (siehe `unbekannte_json_felder.dart`).
   final Map<String, Object?> unbekannteFelder;
+
+  /// Wundzonen einer neueren App-Version, je Zonen-Map (`wundenProZone`,
+  /// `unterdrueckteWundenProZone`) mit ihren Rohwerten.
+  ///
+  /// Regeln zaehlen sie nicht mit. Sie bleiben bei jeder Aenderung bekannter
+  /// Zonen erhalten; nur die volle Rast (alle Wunden heilen) entfernt sie.
+  final Map<String, Object?> unbekannteZonen;
 
   /// Alle Schluessel, die [fromJson] liest — einschliesslich der nur bedingt
   /// geschriebenen; alles andere bleibt erhalten.
@@ -112,6 +131,7 @@ class WundZustand {
     Map<WundZone, int>? unterdrueckteWundenProZone,
     bool? kampfunfaehigIgnoriert,
     Map<String, Object?>? unbekannteFelder,
+    Map<String, Object?>? unbekannteZonen,
   }) {
     return WundZustand(
       wundenProZone: wundenProZone ?? this.wundenProZone,
@@ -121,6 +141,7 @@ class WundZustand {
       kampfunfaehigIgnoriert:
           kampfunfaehigIgnoriert ?? this.kampfunfaehigIgnoriert,
       unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
+      unbekannteZonen: unbekannteZonen ?? this.unbekannteZonen,
     );
   }
 
@@ -201,6 +222,12 @@ class WundZustand {
         unterdruecktMap[entry.key.name] = entry.value;
       }
     }
+    // Unbekannte Zonen stehen nach den bekannten, ohne sie zu ersetzen.
+    mitUnbekanntenFeldern(zonenMap, _zonenVon('wundenProZone'));
+    mitUnbekanntenFeldern(
+      unterdruecktMap,
+      _zonenVon('unterdrueckteWundenProZone'),
+    );
     return mitUnbekanntenFeldern(<String, dynamic>{
       'wundenProZone': zonenMap,
       'kopfIniMalus': kopfIniMalus,
@@ -208,6 +235,14 @@ class WundZustand {
         'unterdrueckteWundenProZone': unterdruecktMap,
       if (kampfunfaehigIgnoriert) 'kampfunfaehigIgnoriert': true,
     }, unbekannteFelder);
+  }
+
+  // Unbekannte Zonen einer Zonen-Map als JSON-Felder.
+  Map<String, Object?> _zonenVon(String schluessel) {
+    final zonen = unbekannteZonen[schluessel];
+    return zonen is Map
+        ? zonen.cast<String, Object?>()
+        : const <String, Object?>{};
   }
 
   /// Robust gegen fehlende oder unbekannte Schluessel.
@@ -239,6 +274,13 @@ class WundZustand {
       kampfunfaehigIgnoriert:
           (json['kampfunfaehigIgnoriert'] as bool?) ?? false,
       unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
+      unbekannteZonen: festeEnumWerte(<String, Object?>{
+        for (final schluessel in const <String>[
+          'wundenProZone',
+          'unterdrueckteWundenProZone',
+        ])
+          schluessel: ?_unbekannteZonen(json[schluessel]),
+      }),
     );
   }
 }

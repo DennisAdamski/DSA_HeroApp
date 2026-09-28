@@ -104,7 +104,7 @@ List<SlotVerweis> erwarteteVerweise(CombatConfig config) {
   for (final slot in config.weaponSlots) {
     if (slot.name.trim().isEmpty) continue;
     verweise.add(verweisFuerWaffe(slot));
-    if (!slot.isRanged) continue;
+    if (!slot.fuehrtGeschosse) continue;
     for (final geschoss in slot.rangedProfile.projectiles) {
       if (geschoss.name.trim().isEmpty) continue;
       verweise.add(verweisFuerGeschoss(slot, geschoss));

@@ -48,7 +48,7 @@ List<HeroInventoryEntry> buildExpectedLinkedEntries(CombatConfig config) {
       ),
     );
 
-    if (slot.isRanged) {
+    if (slot.fuehrtGeschosse) {
       for (final proj in slot.rangedProfile.projectiles) {
         final projName = proj.name.trim();
         if (projName.isEmpty) continue;
@@ -142,6 +142,10 @@ List<HeroInventoryEntry> reconcileInventoryWithCombat(
 
   // Kopie der verlinkten Eintraege, aus der gefundene Matches entfernt werden
   final unmatched = existing.where(_isCombatLinkedInventoryEntry).toList();
+  // Eintraege mit Verweis, aber unbekannter Quelle (Befund ARCH-07-B12):
+  // Sie bleiben unveraendert stehen und decken ihren Slot ab, damit kein
+  // zweiter Eintrag fuer ihn entsteht.
+  final fremdVerknuepft = existing.where(_istFremdVerknuepft).toList();
 
   final expected = buildExpectedLinkedEntries(config);
   final merged = <HeroInventoryEntry>[];
@@ -154,6 +158,11 @@ List<HeroInventoryEntry> reconcileInventoryWithCombat(
       final existing_ = unmatched.removeAt(matchIdx);
       merged.add(_mergeEntry(base: expectedEntry, existing: existing_));
     } else {
+      final fremdIdx = _passenderEintrag(fremdVerknuepft, expectedEntry);
+      if (fremdIdx >= 0) {
+        fremdVerknuepft.removeAt(fremdIdx);
+        continue;
+      }
       merged.add(expectedEntry);
     }
   }
@@ -214,6 +223,16 @@ HeroInventoryEntry _mergeEntry({
     istAusgeruestet: isProjectile ? null : base.istAusgeruestet,
     anzahl: isProjectile ? base.anzahl : null,
   );
+}
+
+/// Verweist [entry] auf einen Slot, traegt aber eine Quelle, die diese
+/// Version nicht kennt (Rohwert in `unbekannteEnumWerte`)?
+///
+/// Solche Eintraege gelten mit dem Ersatzwert `manuell` als manuell und
+/// bleiben unberuehrt; zugleich decken sie ihren Slot ab.
+bool _istFremdVerknuepft(HeroInventoryEntry entry) {
+  return entry.unbekannteEnumWerte.containsKey('source') &&
+      (entry.sourceRef != null || entry.slotRef != null);
 }
 
 bool _isCombatLinkedInventoryEntry(HeroInventoryEntry entry) {
@@ -419,7 +438,7 @@ CombatConfig applyAmmoCountChangeToConfig(
   final slotIdx = slots.indexWhere(
     (slot) => istIdVerweis ? slot.id == waffe : slot.name.trim() == waffe,
   );
-  if (slotIdx < 0 || !slots[slotIdx].isRanged) return null;
+  if (slotIdx < 0 || !slots[slotIdx].fuehrtGeschosse) return null;
   final projIdx = slots[slotIdx].rangedProfile.projectiles.indexWhere(
     (proj) => istIdVerweis ? proj.id == geschoss : proj.name.trim() == geschoss,
   );

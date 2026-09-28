@@ -32,6 +32,7 @@ class HeroAdventureSeReward {
     this.targetLabel = '',
     this.count = 1,
     this.unbekannteFelder = const <String, Object?>{},
+    this.unbekannteEnumWerte = const <String, Object?>{},
   });
 
   /// Typ des Zielwerts.
@@ -55,6 +56,12 @@ class HeroAdventureSeReward {
   /// (siehe `unbekannte_json_felder.dart`).
   final Map<String, Object?> unbekannteFelder;
 
+  /// Unbekannte Aufzaehlungswerte einer neueren App-Version (JSON-Schluessel
+  /// -> Rohwert). Die Felder tragen den Ersatzwert, mit dem Regeln rechnen;
+  /// geschrieben wird der Rohwert, bis jemand das Feld auf einen anderen Wert
+  /// setzt (siehe `unbekannte_json_felder.dart`).
+  final Map<String, Object?> unbekannteEnumWerte;
+
   /// Alle Schluessel, die [fromJson] liest; alles andere bleibt erhalten.
   static const Set<String> jsonSchluessel = <String>{
     'targetType',
@@ -70,6 +77,7 @@ class HeroAdventureSeReward {
     String? targetLabel,
     int? count,
     Map<String, Object?>? unbekannteFelder,
+    Map<String, Object?>? unbekannteEnumWerte,
   }) {
     return HeroAdventureSeReward(
       targetType: targetType ?? this.targetType,
@@ -77,27 +85,43 @@ class HeroAdventureSeReward {
       targetLabel: targetLabel ?? this.targetLabel,
       count: _normalizeCount(count ?? this.count),
       unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
+      unbekannteEnumWerte:
+          unbekannteEnumWerte ??
+          ohneGeaenderteEnumWerte(this.unbekannteEnumWerte, {
+            'targetType': targetType != null && targetType != this.targetType,
+          }),
     );
   }
 
   /// Serialisiert die Zeile fuer Persistenz und Export.
   Map<String, dynamic> toJson() {
-    return mitUnbekanntenFeldern(<String, dynamic>{
-      'targetType': targetType.name,
-      'targetId': targetId,
-      'targetLabel': targetLabel,
-      'count': count,
-    }, unbekannteFelder);
+    return mitUnbekanntenEnumWerten(
+      mitUnbekanntenFeldern(<String, dynamic>{
+        'targetType': targetType.name,
+        'targetId': targetId,
+        'targetLabel': targetLabel,
+        'count': count,
+      }, unbekannteFelder),
+      unbekannteEnumWerte,
+    );
   }
 
   /// Laedt eine SE-Zeile tolerant gegenueber fehlenden Feldern.
   static HeroAdventureSeReward fromJson(Map<String, dynamic> json) {
+    final enumRoh = <String, Object?>{};
     return HeroAdventureSeReward(
-      targetType: _parseAdventureSeTargetType(json['targetType']),
+      targetType: leseEnumWert(
+        json['targetType'],
+        'targetType',
+        erkenne: _erkenneAdventureSeTargetType,
+        ersatz: HeroAdventureSeTargetType.talent,
+        unbekannt: enumRoh,
+      ),
       targetId: (json['targetId'] as String?) ?? '',
       targetLabel: (json['targetLabel'] as String?) ?? '',
       count: _normalizeCount((json['count'] as num?)?.toInt() ?? 1),
       unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
+      unbekannteEnumWerte: festeEnumWerte(enumRoh),
     );
   }
 }
@@ -272,6 +296,7 @@ class HeroAdventureLootEntry {
     this.geweihtDescription = '',
     this.modifiers = const <InventoryItemModifier>[],
     this.unbekannteFelder = const <String, Object?>{},
+    this.unbekannteEnumWerte = const <String, Object?>{},
   });
 
   /// Stabile ID der Beutezeile innerhalb des Abenteuers.
@@ -330,6 +355,12 @@ class HeroAdventureLootEntry {
   /// (siehe `unbekannte_json_felder.dart`).
   final Map<String, Object?> unbekannteFelder;
 
+  /// Unbekannte Aufzaehlungswerte einer neueren App-Version (JSON-Schluessel
+  /// -> Rohwert). Die Felder tragen den Ersatzwert, mit dem Regeln rechnen;
+  /// geschrieben wird der Rohwert, bis jemand das Feld auf einen anderen Wert
+  /// setzt (siehe `unbekannte_json_felder.dart`).
+  final Map<String, Object?> unbekannteEnumWerte;
+
   /// Alle Schluessel, die [fromJson] liest; alles andere bleibt erhalten.
   static const Set<String> jsonSchluessel = <String>{
     'id',
@@ -363,6 +394,7 @@ class HeroAdventureLootEntry {
     String? geweihtDescription,
     List<InventoryItemModifier>? modifiers,
     Map<String, Object?>? unbekannteFelder,
+    Map<String, Object?>? unbekannteEnumWerte,
   }) {
     return HeroAdventureLootEntry(
       id: id ?? this.id,
@@ -379,30 +411,39 @@ class HeroAdventureLootEntry {
       geweihtDescription: geweihtDescription ?? this.geweihtDescription,
       modifiers: modifiers ?? this.modifiers,
       unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
+      unbekannteEnumWerte:
+          unbekannteEnumWerte ??
+          ohneGeaenderteEnumWerte(this.unbekannteEnumWerte, {
+            'itemType': itemType != null && itemType != this.itemType,
+          }),
     );
   }
 
   /// Serialisiert die Beutezeile fuer Persistenz und Export.
   Map<String, dynamic> toJson() {
-    return mitUnbekanntenFeldern(<String, dynamic>{
-      'id': id,
-      'name': name,
-      'quantity': quantity,
-      'itemType': itemType.name,
-      'weightGramm': weightGramm,
-      'valueSilver': valueSilver,
-      'origin': origin,
-      'description': description,
-      'isMagisch': isMagisch,
-      'magischDescription': magischDescription,
-      'isGeweiht': isGeweiht,
-      'geweihtDescription': geweihtDescription,
-      'modifiers': modifiers.map((m) => m.toJson()).toList(),
-    }, unbekannteFelder);
+    return mitUnbekanntenEnumWerten(
+      mitUnbekanntenFeldern(<String, dynamic>{
+        'id': id,
+        'name': name,
+        'quantity': quantity,
+        'itemType': itemType.name,
+        'weightGramm': weightGramm,
+        'valueSilver': valueSilver,
+        'origin': origin,
+        'description': description,
+        'isMagisch': isMagisch,
+        'magischDescription': magischDescription,
+        'isGeweiht': isGeweiht,
+        'geweihtDescription': geweihtDescription,
+        'modifiers': modifiers.map((m) => m.toJson()).toList(),
+      }, unbekannteFelder),
+      unbekannteEnumWerte,
+    );
   }
 
   /// Laedt eine Beutezeile tolerant gegenueber fehlenden Feldern.
   static HeroAdventureLootEntry fromJson(Map<String, dynamic> json) {
+    final enumRoh = <String, Object?>{};
     String getString(String key) => json[key]?.toString() ?? '';
 
     final modifiersRaw = json['modifiers'];
@@ -421,7 +462,13 @@ class HeroAdventureLootEntry {
       id: getString('id'),
       name: getString('name'),
       quantity: getString('quantity'),
-      itemType: _parseInventoryItemType(json['itemType']),
+      itemType: leseEnumWert(
+        json['itemType'],
+        'itemType',
+        erkenne: (roh) => enumNachName(InventoryItemType.values, roh),
+        ersatz: InventoryItemType.sonstiges,
+        unbekannt: enumRoh,
+      ),
       weightGramm: _normalizeReward(
         (json['weightGramm'] as num?)?.toInt() ?? 0,
       ),
@@ -436,6 +483,7 @@ class HeroAdventureLootEntry {
       geweihtDescription: getString('geweihtDescription'),
       modifiers: modifiers,
       unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
+      unbekannteEnumWerte: festeEnumWerte(enumRoh),
     );
   }
 }
@@ -461,6 +509,7 @@ class HeroAdventureEntry {
     this.lootRewards = const <HeroAdventureLootEntry>[],
     this.rewardsApplied = false,
     this.unbekannteFelder = const <String, Object?>{},
+    this.unbekannteEnumWerte = const <String, Object?>{},
   });
 
   /// Stabile ID des Abenteuers.
@@ -550,6 +599,12 @@ class HeroAdventureEntry {
   /// (siehe `unbekannte_json_felder.dart`).
   final Map<String, Object?> unbekannteFelder;
 
+  /// Unbekannte Aufzaehlungswerte einer neueren App-Version (JSON-Schluessel
+  /// -> Rohwert). Die Felder tragen den Ersatzwert, mit dem Regeln rechnen;
+  /// geschrieben wird der Rohwert, bis jemand das Feld auf einen anderen Wert
+  /// setzt (siehe `unbekannte_json_felder.dart`).
+  final Map<String, Object?> unbekannteEnumWerte;
+
   /// Alle Schluessel, die [fromJson] liest; alles andere bleibt erhalten.
   static const Set<String> jsonSchluessel = <String>{
     'id',
@@ -589,6 +644,7 @@ class HeroAdventureEntry {
     List<HeroAdventureLootEntry>? lootRewards,
     bool? rewardsApplied,
     Map<String, Object?>? unbekannteFelder,
+    Map<String, Object?>? unbekannteEnumWerte,
   }) {
     return HeroAdventureEntry(
       id: id ?? this.id,
@@ -611,37 +667,46 @@ class HeroAdventureEntry {
       lootRewards: lootRewards ?? this.lootRewards,
       rewardsApplied: rewardsApplied ?? this.rewardsApplied,
       unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
+      unbekannteEnumWerte:
+          unbekannteEnumWerte ??
+          ohneGeaenderteEnumWerte(this.unbekannteEnumWerte, {
+            'status': status != null && status != this.status,
+          }),
     );
   }
 
   /// Serialisiert das Abenteuer fuer Persistenz und Export.
   Map<String, dynamic> toJson() {
-    return mitUnbekanntenFeldern(<String, dynamic>{
-      'id': id,
-      'status': status.name,
-      'title': title,
-      'summary': summary,
-      'notes': notes.map((entry) => entry.toJson()).toList(growable: false),
-      'people': people.map((entry) => entry.toJson()).toList(growable: false),
-      'startWorldDate': startWorldDate.toJson(),
-      'startAventurianDate': startAventurianDate.toJson(),
-      'endWorldDate': endWorldDate.toJson(),
-      'endAventurianDate': endAventurianDate.toJson(),
-      'currentAventurianDate': currentAventurianDate.toJson(),
-      'apReward': apReward,
-      'seRewards': seRewards
-          .map((entry) => entry.toJson())
-          .toList(growable: false),
-      'dukatenReward': dukatenReward,
-      'lootRewards': lootRewards
-          .map((entry) => entry.toJson())
-          .toList(growable: false),
-      'rewardsApplied': rewardsApplied,
-    }, unbekannteFelder);
+    return mitUnbekanntenEnumWerten(
+      mitUnbekanntenFeldern(<String, dynamic>{
+        'id': id,
+        'status': status.name,
+        'title': title,
+        'summary': summary,
+        'notes': notes.map((entry) => entry.toJson()).toList(growable: false),
+        'people': people.map((entry) => entry.toJson()).toList(growable: false),
+        'startWorldDate': startWorldDate.toJson(),
+        'startAventurianDate': startAventurianDate.toJson(),
+        'endWorldDate': endWorldDate.toJson(),
+        'endAventurianDate': endAventurianDate.toJson(),
+        'currentAventurianDate': currentAventurianDate.toJson(),
+        'apReward': apReward,
+        'seRewards': seRewards
+            .map((entry) => entry.toJson())
+            .toList(growable: false),
+        'dukatenReward': dukatenReward,
+        'lootRewards': lootRewards
+            .map((entry) => entry.toJson())
+            .toList(growable: false),
+        'rewardsApplied': rewardsApplied,
+      }, unbekannteFelder),
+      unbekannteEnumWerte,
+    );
   }
 
   /// Laedt ein Abenteuer tolerant gegenueber fehlenden Feldern.
   static HeroAdventureEntry fromJson(Map<String, dynamic> json) {
+    final enumRoh = <String, Object?>{};
     final rawNotes = (json['notes'] as List?) ?? const <dynamic>[];
     final rawPeople = (json['people'] as List?) ?? const <dynamic>[];
     final rawSeRewards = (json['seRewards'] as List?) ?? const <dynamic>[];
@@ -649,7 +714,13 @@ class HeroAdventureEntry {
 
     return HeroAdventureEntry(
       id: (json['id'] as String?) ?? '',
-      status: _parseAdventureStatus(json['status']),
+      status: leseEnumWert(
+        json['status'],
+        'status',
+        erkenne: _erkenneAdventureStatus,
+        ersatz: HeroAdventureStatus.current,
+        unbekannt: enumRoh,
+      ),
       title: (json['title'] as String?) ?? '',
       summary: (json['summary'] as String?) ?? '',
       notes: rawNotes
@@ -696,22 +767,25 @@ class HeroAdventureEntry {
           .toList(growable: false),
       rewardsApplied: json['rewardsApplied'] as bool? ?? false,
       unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
+      unbekannteEnumWerte: festeEnumWerte(enumRoh),
     );
   }
 }
 
-HeroAdventureStatus _parseAdventureStatus(dynamic raw) {
-  return switch ((raw as String?)?.trim().toLowerCase()) {
+HeroAdventureStatus? _erkenneAdventureStatus(Object? raw) {
+  return switch (raw is String ? raw.trim().toLowerCase() : null) {
     'completed' => HeroAdventureStatus.completed,
-    _ => HeroAdventureStatus.current,
+    'current' => HeroAdventureStatus.current,
+    _ => null,
   };
 }
 
-HeroAdventureSeTargetType _parseAdventureSeTargetType(dynamic raw) {
-  return switch ((raw as String?)?.trim().toLowerCase()) {
+HeroAdventureSeTargetType? _erkenneAdventureSeTargetType(Object? raw) {
+  return switch (raw is String ? raw.trim().toLowerCase() : null) {
+    'talent' => HeroAdventureSeTargetType.talent,
     'grundwert' => HeroAdventureSeTargetType.grundwert,
     'eigenschaft' => HeroAdventureSeTargetType.eigenschaft,
-    _ => HeroAdventureSeTargetType.talent,
+    _ => null,
   };
 }
 
@@ -720,13 +794,6 @@ HeroAdventureDateValue _parseAdventureDateValue(dynamic raw) {
     return HeroAdventureDateValue.fromJson(raw.cast<String, dynamic>());
   }
   return const HeroAdventureDateValue();
-}
-
-InventoryItemType _parseInventoryItemType(dynamic raw) {
-  return InventoryItemType.values.firstWhere(
-    (entry) => entry.name == raw,
-    orElse: () => InventoryItemType.sonstiges,
-  );
 }
 
 bool _hasAdventureNoteContent(HeroNoteEntry entry) {

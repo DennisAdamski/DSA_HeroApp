@@ -45,6 +45,16 @@ typedef Zukunftsheld = ({
 /// Name des Feldes, das die gedachte neuere Version schreibt.
 const String zukunftsfeld = 'zukunftsfeld';
 
+/// Aufzaehlungswert, den die gedachte neuere Version schreibt und den diese
+/// Version nicht kennt.
+const String zukunftsWert = 'zukunftsWert';
+
+/// Unbekannte Wundzone der gedachten neueren Version.
+const String zukunftsZone = 'zukunftsZone';
+
+/// Ist [pfad] ein Aufzaehlungspfad (Rohwert statt Zukunftsfeld)?
+bool istZukunftsWertPfad(String pfad) => !pfad.endsWith('/$zukunftsfeld');
+
 /// Baut aus dem Helden-JSON [heldJson] einen [Zukunftsheld].
 ///
 /// Erwartet den Aufbau von f01: eine nicht gewaehlte Fernkampfwaffe an
@@ -70,7 +80,34 @@ Zukunftsheld mitZukunftsfeldern(Map<String, dynamic> heldJson) {
     ..._begleiterAbenteuerNotizen(basis),
     ..._grundwerteAvatarVerlauf(basis),
   ];
-  return _mitFeldern(basis, pfade);
+  return _mitFeldern(basis, pfade, werte: _aufzaehlungen(basis));
+}
+
+/// Aufzaehlungsfelder, an denen die neuere Version einen unbekannten Wert
+/// schreibt. Gewaehlt sind Stellen, die kein Abgleich aus anderen Daten
+/// neu setzt (verknuepfte Inventareintraege uebernehmen Typ und Quelle aus
+/// ihrem Slot).
+Map<String, Object?> _aufzaehlungen(Map<String, dynamic> basis) {
+  final eintraege = basis['inventoryEntries'] as List<dynamic>;
+  final manuell = eintraege.indexWhere(
+    (entry) => (entry as Map)['source'] == 'manuell',
+  );
+  return <String, Object?>{
+    for (final feld in const <String>['itemType', 'source', 'traegerTyp'])
+      'inventoryEntries/$manuell/$feld': zukunftsWert,
+    'inventoryEntries/$manuell/modifiers/0/kind': zukunftsWert,
+    'combatConfig/weapons/1/combatType': zukunftsWert,
+    'combatConfig/offhandEquipment/0/type': zukunftsWert,
+    'combatConfig/offhandEquipment/0/shieldSize': zukunftsWert,
+    'combatConfig/waffenmeisterschaften/0/bonuses/0/type': zukunftsWert,
+    'ritualCategories/0/knowledgeMode': zukunftsWert,
+    'ritualCategories/0/additionalFieldDefs/0/type': zukunftsWert,
+    'companions/0/typ': zukunftsWert,
+    'adventures/0/status': zukunftsWert,
+    'adventures/0/seRewards/0/targetType': zukunftsWert,
+    'adventures/0/lootRewards/0/itemType': zukunftsWert,
+    'geburtsdatum/month': zukunftsWert,
+  };
 }
 
 /// ID des Zaubers, den die Basis ergaenzt.
@@ -620,15 +657,25 @@ Zukunftsheld zustandMitZukunftsfeldern(Map<String, dynamic> zustandJson) {
         ),
       )
       .toJson();
-  return _mitFeldern(basis, const <String>[
-    'tempMods',
-    'tempAttributeMods',
-    'activeSpellEffects',
-    'activeSpellEffects/effectDetails/$zukunftsEffekt',
-    'activeSpellEffects/effectDetails/$zukunftsEffekt/duration',
-    'wpiZustand',
-    'diceLog/0',
-  ]);
+  return _mitFeldern(
+    basis,
+    const <String>[
+      'tempMods',
+      'tempAttributeMods',
+      'activeSpellEffects',
+      'activeSpellEffects/effectDetails/$zukunftsEffekt',
+      'activeSpellEffects/effectDetails/$zukunftsEffekt/duration',
+      'wpiZustand',
+      'diceLog/0',
+    ],
+    werte: const <String, Object?>{
+      'activeSpellEffects/effectDetails/$zukunftsEffekt/duration/unit':
+          zukunftsWert,
+      'wpiZustand/wundenProZone/$zukunftsZone': 2,
+      'diceLog/0/type': zukunftsWert,
+      'diceLog/0/automaticOutcome': zukunftsWert,
+    },
+  );
 }
 
 /// Bearbeitet in [zustand] je Modell an einem Zukunftspfad ein bekanntes
@@ -662,9 +709,20 @@ HeroState bearbeiteZustand(HeroState zustand) {
       );
 }
 
-// Setzt an jedem Pfad ein Zukunftsfeld und liefert den fertigen Helden.
-Zukunftsheld _mitFeldern(Map<String, dynamic> basis, List<String> pfade) {
+// Setzt die [werte] an ihren Pfaden (Aufzaehlungen) und an jedem Pfad aus
+// [pfade] ein Zukunftsfeld; liefert den fertigen Helden.
+Zukunftsheld _mitFeldern(
+  Map<String, dynamic> basis,
+  List<String> pfade, {
+  Map<String, Object?> werte = const <String, Object?>{},
+}) {
   final json = _tiefeKopie(basis);
+  for (final eintrag in werte.entries) {
+    final trenner = eintrag.key.lastIndexOf('/');
+    final eltern = wertAn(json, eintrag.key.substring(0, trenner));
+    _pruefe(eltern is Map, 'Objekt an ${eintrag.key}');
+    (eltern as Map)[eintrag.key.substring(trenner + 1)] = eintrag.value;
+  }
   for (final pfad in pfade) {
     final ziel = wertAn(json, pfad);
     _pruefe(ziel is Map, 'Objekt an $pfad');
@@ -676,7 +734,10 @@ Zukunftsheld _mitFeldern(Map<String, dynamic> basis, List<String> pfade) {
   return (
     basis: basis,
     json: json,
-    pfade: <String>[for (final pfad in pfade) '$pfad/$zukunftsfeld'],
+    pfade: <String>[
+      for (final pfad in pfade) '$pfad/$zukunftsfeld',
+      ...werte.keys,
+    ],
   );
 }
 

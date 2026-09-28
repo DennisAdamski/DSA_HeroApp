@@ -29,6 +29,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_spell_text_overrides.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/magic_special_ability.dart';
+import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/domain/spell_duration.dart';
 import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
 import 'package:dsa_heldenverwaltung/domain/talent_special_ability.dart';
@@ -103,7 +104,118 @@ Map<String, dynamic> wieVeroeffentlichteApp(Map<String, dynamic> heldJson) {
   _talenteUndMagie(json);
   _begleiterAbenteuerNotizen(json);
   _grundwerteAvatarVerlauf(json);
+  _aufzaehlungen(json);
   return json;
+}
+
+// Unbekannte Aufzaehlungswerte kennt sie nicht; sie schreibt den Ersatz.
+void _aufzaehlungen(Map<String, dynamic> json) {
+  for (final eintrag in _maps(json['inventoryEntries'])) {
+    _ersatz(eintrag, 'itemType', _namen(InventoryItemType.values), 'sonstiges');
+    _ersatz(eintrag, 'source', _namen(InventoryItemSource.values), 'manuell');
+    _ersatz(eintrag, 'traegerTyp', _namen(InventoryTraeger.values), 'held');
+    for (final modifikator in _maps(eintrag['modifiers'])) {
+      _ersatz(
+        modifikator,
+        'kind',
+        _namen(InventoryModifierKind.values),
+        'stat',
+      );
+    }
+  }
+  final kampf = json['combatConfig'];
+  if (kampf is Map<String, dynamic>) {
+    for (final waffe in <Object?>[
+      kampf['mainWeapon'],
+      ...(kampf['weapons'] as List? ?? const <Object?>[]),
+    ].whereType<Map<String, dynamic>>()) {
+      _ersatz(waffe, 'combatType', const <String>{
+        'melee',
+        'ranged',
+        'nahkampf',
+        'fernkampf',
+      }, 'melee');
+    }
+    for (final teil in _maps(kampf['offhandEquipment'])) {
+      _ersatz(teil, 'type', const <String>{
+        'shield',
+        'parryWeapon',
+      }, 'parryWeapon');
+      _ersatz(teil, 'shieldSize', _namen(ShieldSize.values), 'small');
+    }
+    for (final meister in _maps(kampf['waffenmeisterschaften'])) {
+      for (final bonus in _maps(meister['bonuses'])) {
+        _ersatz(
+          bonus,
+          'type',
+          _namen(WaffenmeisterBonusType.values),
+          'customAdvantage',
+        );
+      }
+    }
+  }
+  for (final kategorie in <Map<String, dynamic>>[
+    ..._maps(json['ritualCategories']),
+    for (final begleiter in _maps(json['companions']))
+      ..._maps(begleiter['ritualCategories']),
+  ]) {
+    _ersatz(kategorie, 'knowledgeMode', const <String>{
+      'ownKnowledge',
+      'derivedTalents',
+    }, 'ownKnowledge');
+    for (final feld in _maps(kategorie['additionalFieldDefs'])) {
+      _ersatz(feld, 'type', const <String>{'text', 'threeAttributes'}, 'text');
+    }
+  }
+  for (final begleiter in _maps(json['companions'])) {
+    _ersatz(
+      begleiter,
+      'typ',
+      _namen(BegleiterTyp.values),
+      'sonstigerBegleiter',
+    );
+  }
+  for (final abenteuer in _maps(json['adventures'])) {
+    _ersatz(abenteuer, 'status', const <String>{
+      'current',
+      'completed',
+    }, 'current');
+    for (final se in _maps(abenteuer['seRewards'])) {
+      _ersatz(se, 'targetType', const <String>{
+        'talent',
+        'grundwert',
+        'eigenschaft',
+      }, 'talent');
+    }
+    for (final beute in _maps(abenteuer['lootRewards'])) {
+      _ersatz(beute, 'itemType', _namen(InventoryItemType.values), 'sonstiges');
+    }
+  }
+  final geburtsdatum = json['geburtsdatum'];
+  if (geburtsdatum is Map<String, dynamic>) {
+    _ersatz(geburtsdatum, 'month', <String>{
+      '',
+      for (final monat in aventurianMonths) monat.value,
+    }, '');
+  }
+}
+
+// Namen aller Werte einer Aufzaehlung.
+Set<String> _namen(List<Enum> werte) {
+  return <String>{for (final wert in werte) wert.name};
+}
+
+// Setzt [schluessel] auf [ersatz], wenn der Wert nicht in [bekannt] steht.
+void _ersatz(
+  Map<String, dynamic> json,
+  String schluessel,
+  Set<String> bekannt,
+  String ersatz,
+) {
+  final wert = json[schluessel];
+  if (wert != null && !bekannt.contains(wert)) {
+    json[schluessel] = ersatz;
+  }
 }
 
 // Eigenschaften, Grundwerte, SE-Pools, Ressourcenschalter, Bilder, Verlauf.
@@ -282,12 +394,32 @@ Map<String, dynamic> zustandWieVeroeffentlichteApp(
     _behalte(effekte, ActiveSpellEffectsState.jsonSchluessel);
     for (final detail in _werte(effekte['effectDetails'])) {
       _behalte(detail, ActiveSpellEffectDetail.jsonSchluessel);
-      _behalteIn(detail['duration'], SpellDuration.jsonSchluessel);
+      final dauer = detail['duration'];
+      if (dauer is Map<String, dynamic>) {
+        _behalte(dauer, SpellDuration.jsonSchluessel);
+        _ersatz(dauer, 'unit', _namen(SpellDurationUnit.values), 'kampfrunden');
+      }
     }
   }
-  _behalteIn(json['wpiZustand'], WundZustand.jsonSchluessel);
+  final wunden = json['wpiZustand'];
+  if (wunden is Map<String, dynamic>) {
+    _behalte(wunden, WundZustand.jsonSchluessel);
+    for (final zonen in const <String>[
+      'wundenProZone',
+      'unterdrueckteWundenProZone',
+    ]) {
+      _behalteIn(wunden[zonen], _namen(WundZone.values));
+    }
+  }
   for (final eintrag in _maps(json['diceLog'])) {
     _behalte(eintrag, DiceLogEntry.jsonSchluessel);
+    _ersatz(eintrag, 'type', _namen(ProbeType.values), 'attribute');
+    _ersatz(
+      eintrag,
+      'automaticOutcome',
+      _namen(AutomaticOutcome.values),
+      'none',
+    );
   }
   return json;
 }
