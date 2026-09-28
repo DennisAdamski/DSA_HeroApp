@@ -101,10 +101,12 @@ Examples:
   - Contain `HeroTraitDef` entries for catalogized advantages and
     disadvantages.
   - Store short facts only: name, cost text, value/choice metadata, markers,
-    source and optional `ruleMeta`.
-  - The hero overview serializes selections back into
-    `HeroSheet.vorteileText` and `HeroSheet.nachteileText`, so existing
-    modifier parsers and exports stay compatible.
+    source, optional `ruleMeta` and optional declarative `wirkungen`
+    (rule effects evaluated by catalog ID, schema in
+    `docs/technical_overview.md`, section `HeroTraitDef`).
+  - Heroes store selections as structured entries (catalog ID, value,
+    choice); `HeroSheet.vorteileText` and `HeroSheet.nachteileText` remain a
+    projection for older app versions (ARCH-02).
   - The settings catalog management uses the JSON editor for these sections
     because many entries need value, choice or specialization metadata.
 - Catalog entries for talents, weapons, spells, maneuvers, special abilities,

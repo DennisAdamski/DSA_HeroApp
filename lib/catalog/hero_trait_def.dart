@@ -1,12 +1,15 @@
 import 'package:dsa_heldenverwaltung/catalog/catalog_json_helpers.dart';
+import 'package:dsa_heldenverwaltung/catalog/hero_trait_effect.dart';
 import 'package:dsa_heldenverwaltung/catalog/rule_meta.dart';
 
 /// Katalogisierte Definition eines Vorteils oder Nachteils.
 ///
-/// Der Typ speichert bewusst nur Auswahl- und Referenzdaten. Regelwirkungen
-/// bleiben in den bestehenden Parsern und Regelmodulen, damit die Helden-
-/// Speicherung weiterhin kompatibel über `vorteileText` und `nachteileText`
-/// funktioniert.
+/// Neben Auswahl- und Referenzdaten traegt der Eintrag seine Regelwirkungen
+/// deklarativ in [wirkungen]. Gerechnet wird damit ausschliesslich in
+/// `lib/rules/derived/hero_merkmal_rules.dart`; der Held speichert erworbene
+/// Merkmale ueber die stabile [id] (`HeroSheet.vorteilEintraege`/
+/// `nachteilEintraege`) und schreibt `vorteileText`/`nachteileText` nur noch
+/// als Projektion fuer aeltere App-Versionen.
 class HeroTraitDef {
   const HeroTraitDef({
     required this.id,
@@ -26,6 +29,7 @@ class HeroTraitDef {
     this.source = '',
     this.active = true,
     this.ruleMeta,
+    this.wirkungen = const <HeroTraitEffect>[],
   });
 
   /// Stabile Katalog-ID.
@@ -82,6 +86,9 @@ class HeroTraitDef {
   /// Strukturierte Herkunfts- und Freischaltmetadaten.
   final RuleMeta? ruleMeta;
 
+  /// Deklarative Regelwirkungen; leer bei rein beschreibenden Merkmalen.
+  final List<HeroTraitEffect> wirkungen;
+
   /// Deserialisiert einen Vorteil/Nachteil tolerant aus JSON.
   factory HeroTraitDef.fromJson(Map<String, dynamic> json) {
     final ruleMetaJson = readCatalogObject(json, 'ruleMeta');
@@ -107,6 +114,10 @@ class HeroTraitDef {
       source: readCatalogString(json, 'source', fallback: ''),
       active: readCatalogBool(json, 'active', fallback: true),
       ruleMeta: ruleMetaJson == null ? null : RuleMeta.fromJson(ruleMetaJson),
+      wirkungen: readCatalogObjectList(
+        json,
+        'wirkungen',
+      ).map(HeroTraitEffect.fromJson).toList(growable: false),
     );
   }
 
@@ -130,6 +141,8 @@ class HeroTraitDef {
       'source': source,
       'active': active,
       if (ruleMeta != null) 'ruleMeta': ruleMeta!.toJson(),
+      if (wirkungen.isNotEmpty)
+        'wirkungen': wirkungen.map((wirkung) => wirkung.toJson()).toList(),
     };
   }
 }
