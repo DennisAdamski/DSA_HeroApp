@@ -1019,9 +1019,10 @@ Das Format aendert die Helden-Inhalts-Hashes der Bestandshelden mit
 verknuepfter Ausruestung (f01, f02, f04, f06). Fixtures, Hash-Pins,
 Domain-, Regel-, Widget-, Hive- und Sync-Tests sichern es ab. Kampfkonfiguration
 und Inventar bleiben zwei Darstellungen: Ein gemeinsames Gegenstandsmodell,
-Katalog-IDs und die vollstaendige ARCH-03-Migration sind noch offen. Beim
-Abgleich gehen Typ und Traeger verknuepfter Eintraege weiterhin verloren
-(Befund B9).
+Katalog-IDs und die vollstaendige ARCH-03-Migration sind noch offen. Der
+Abgleich aendert bestehende verknuepfte Eintraege nur per `copyWith` und
+uebernimmt aus dem Slot allein dessen Felder; Typ und Traeger bleiben
+erhalten (Befund B9 behoben).
 
 ---
 
