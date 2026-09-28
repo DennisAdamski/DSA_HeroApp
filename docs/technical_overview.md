@@ -573,7 +573,8 @@ Bestandsdaten enthalten nichts Unbekanntes, ihr JSON und ihre Inhalts-Hashes
 | `stand`, `titel` | `String` | Sozialer Stand und Titel |
 | `familieHerkunftHintergrund` | `String` | Familiengeschichte/Herkunft |
 | `sozialstatus` | `int` | Numerischer Sozialstatus |
-| `vorteileText` / `nachteileText` | `String` | Parserkompatible Vor-/Nachteile-Fragmente; in der Heldenübersicht katalogbasiert auswählbar und weiterhin als Text gespeichert |
+| `vorteilEintraege` / `nachteilEintraege` | `List<HeroMerkmal>` | Erworbene Vor-/Nachteile mit Katalog-ID, Wert, Auswahl und Textfragment (ARCH-02, Abschnitt 4.11). Maßgeblich, sobald belegt; nur dann geschrieben |
+| `vorteileText` / `nachteileText` | `String` | Projektion der Listen für ältere App-Versionen (`; `-getrennt); bei Bestandshelden ohne Liste der Alttext, der beim nächsten Speichern migriert wird |
 | `apTotal` | `int` | Gesamte Abenteuerpunkte |
 | `apSpent` | `int` | Ausgegebene Abenteuerpunkte |
 | `apAvailable` | `int` | Verfügbare AP (= apTotal − apSpent) |
@@ -1678,8 +1679,10 @@ diesem Fall entfallen TP/KK- und INI/GE-Berechnungen fuer die Waffe.
 
 **Datei:** `lib/rules/derived/modifier_parser.dart`
 
-Parst Freitext-Felder (`vorteileText`, `nachteileText`, `rasseModText`, …) in strukturierte
-Modifikatoren.
+Parst Freitext-Felder (`rasseModText`, …) und die frei wirkenden Vor-/Nachteil-
+Fragmente (Abschnitt 4.11) in strukturierte Modifikatoren. Katalogisierte
+Vor-/Nachteile wirken mit Katalog ueber ihre Katalog-ID, nicht ueber diesen
+Parser.
 
 **Syntax:** `CODE+N` oder `CODE−N` (beliebige Groß-/Kleinschreibung)
 
@@ -2065,8 +2068,9 @@ draussen. `test/catalog/trait_choice_catalog_test.dart` loest jede Quelle
 gegen den echten Katalog auf; ein Tippfehler faellt sonst erst im Betrieb
 auf, und dort nur als leeres Dropdown.
 
-**Speicherformat.** Unveraendert Freitext in `HeroSheet.vorteileText` /
-`nachteileText`. `parseTraitFragmentParts` ist die Umkehrung von
+**Speicherformat.** Strukturiert in `HeroSheet.vorteilEintraege` /
+`nachteilEintraege`, die Texte sind deren Projektion (Abschnitt 4.11).
+`parseTraitFragmentParts` ist die Umkehrung von
 `buildHeroTraitSelectionText` und liefert Auswahl **und** Wert. Eine
 Klammergruppe, die nur `{choice}` enthaelt, ist beim Zurueckparsen optional
 und wird beim Bauen entfernt, wenn die Auswahl leer bleibt — sonst haette
@@ -2116,6 +2120,65 @@ Wertumbau: ob der Punkt schon im eingetragenen Wert steckt, weiss nur der
 Nutzer. Der Hinweis steht in der Uebersicht und verschwindet erst nach
 ausdruecklicher Quittierung („Verstanden – Werte geprueft"), die
 `schemaVersion` auf 28 hebt.
+
+### 4.11 Strukturierte Vor- und Nachteile (ARCH-02)
+
+**Dateien:** `lib/domain/hero_merkmal.dart`,
+`lib/catalog/hero_trait_effect.dart`,
+`lib/rules/derived/hero_merkmal_zuordnung_rules.dart`,
+`lib/rules/derived/hero_merkmal_wirkung_rules.dart`,
+`lib/ui/screens/hero_overview/hero_overview_traits_section.dart`,
+`lib/ui/screens/hero_overview/hero_overview_trait_dialogs.dart`
+
+**Modell.** `HeroMerkmal` traegt `katalogId` (leer = freier Eintrag), `wert`,
+`auswahl`, `text` (sein Fragment in der Projektion), `kandidatenIds`
+(mehrdeutiger Alttext) und `zuordnung` (`katalog`, `migration`, `frei`), dazu
+wie jedes verschachtelte Modell `unbekannteFelder`/`unbekannteEnumWerte`.
+
+**Die Liste fuehrt.** Ist `vorteilEintraege` belegt, gilt sie;
+`vorteileText` ist ihre Projektion (`projiziereMerkmalText`). Die
+veroeffentlichte App kennt nur den Text. Aendert eine aeltere Version ihn,
+erkennt `gleicheMerkmaleAb` die Abweichung (Fragmentmengen nach
+`splitHeroTraitText`, Trennzeichen und Reihenfolge zaehlen nicht). Die Liste
+bleibt dann wirksam, nichts wird still uebernommen oder verworfen. Die
+Uebersicht zeigt die Abweichung und bietet „Geaenderten Text uebernehmen“
+(`uebernimmMerkmalText`, bestehende Zuordnungen bleiben) oder „Liste
+behalten“ an. Bis dahin ist das Bearbeiten gesperrt, und `saveHero` laesst
+Liste und Text unveraendert. Verwirft eine aeltere Version die Liste ganz,
+ist der Held wieder ein Bestandsheld und wird neu migriert.
+
+**Migration.** Bestandshelden laden unveraendert (Hash-Pins bleiben), die
+Regeln migrieren zur Laufzeit. Erst `saveHero` schreibt die Liste
+(`merkmaleZumSpeichern`), und nur mit geladenem Katalog; gewartet wird darauf
+nicht. `zerlegeMerkmalText` fuegt durch Komma getrennte Teile wieder
+zusammen, wenn sie gemeinsam ein Template mit Komma treffen (`Adlig, Adliges
+Erbe`). `ordneMerkmalZu` vergleicht ohne Gross-/Kleinschreibung, erlaubt ein
+fehlendes abschliessendes `{value}` und roemische Stufen und beachtet feste
+Auswahllisten. Ein Template ohne Platzhalter schlaegt eines mit. Mehrdeutiges
+(`Begabung für {choice}` gibt es fuenfmal) wird nicht geraten: Der Eintrag
+bleibt frei, nennt seine Kandidaten und laesst sich in der Uebersicht
+zuordnen. Die Migration ist deterministisch und ein Fixpunkt.
+
+**Wirkung.** `werteMerkmaleAus(hero, catalog:)` loest je Held und Katalog
+einmal auf (gemerkt per `Expando`). Katalogisierte Eintraege wirken ueber
+die `wirkungen` ihres Katalogeintrags, gefunden ueber die Katalog-ID. Freie
+Eintraege und solche mit unbekannter ID laufen als `freieVorteile`/
+`freieNachteile` durch den bisherigen Textparser. Jedes Fragment nimmt genau
+einen der beiden Wege. Umgestellt sind `parseModifierTextsForHero`,
+Wundschwellenstufen (`merkmalBonus`), Rast (`collectRestAbilities`),
+Ressourcenaktivierung, Quellenaufschluesselung, Startwerte/Maxima und
+Erwerbsvoraussetzungen (aktueller Katalogname **und** gespeicherter Text).
+Ohne Katalog rechnen alle Regeln ueber den Text der Liste. Fuer jeden
+unveraendert benannten Katalogeintrag ergibt das dasselbe; der
+Aequivalenztest in `test/rules/hero_merkmal_rules_test.dart` prueft jeden
+wirkenden Eintrag ueber alle Werte und Auswahlen. Katalogabhaengig ist nur
+die Umbenennungsfestigkeit. Ein UI-Aufrufer ohne Katalog rechnet deshalb nie
+falsch, nur namensabhaengig.
+
+**Bearbeitung.** Die Uebersicht haelt einen Entwurf (`null`, solange
+unveraendert). Katalogdialog und Wertedialog erzeugen bzw. aendern Eintraege
+mit Katalogbezug; `fuegeMerkmalHinzu` summiert gleiche Auswahl desselben
+Eintrags. Ein getippter Text wird per `ordneMerkmalZu` zugeordnet.
 
 ## 5. Zustandsverwaltung (State Layer)
 

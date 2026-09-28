@@ -347,12 +347,14 @@ void main() {
         advantages: vorteile.map(umbenannt).toList(),
         disadvantages: nachteile,
       );
+      // Nach dem Umbenennen neu bearbeitet: Der Text trägt den neuen Namen,
+      // den der alte Namensparser nicht kennt.
       final hero = held(
-        vorteileText: 'Hohe Lebenskraft 3',
+        vorteileText: 'Robuste Konstitution 3',
         vorteilEintraege: const [
           HeroMerkmal(
             katalogId: 'adv_hohe_lebenskraft',
-            text: 'Hohe Lebenskraft 3',
+            text: 'Robuste Konstitution 3',
             wert: 3,
           ),
         ],
@@ -365,7 +367,11 @@ void main() {
       // Die Voraussetzungsprüfung kennt den neuen und den alten Namen.
       final kontext = buildHeroRequirementContext(hero, catalog: neuerKatalog);
       expect(kontext.vorteile, contains('Robuste Konstitution 3'));
-      expect(kontext.vorteile, contains('Hohe Lebenskraft 3'));
+      expect(
+        parseModifierTextsForHero(hero).statMods.lep,
+        0,
+        reason: 'ohne Katalog kennt der Namensparser den Eintrag nicht',
+      );
     });
 
     test('eine unbekannte Katalog-ID wirkt über ihren Text', () {
