@@ -1,4 +1,5 @@
 import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
+import 'package:dsa_heldenverwaltung/domain/unbekannte_json_felder.dart';
 
 /// Persistenter SE-Pool fuer Eigenschaften.
 class HeroAttributeSePool {
@@ -12,6 +13,7 @@ class HeroAttributeSePool {
     this.ge = 0,
     this.ko = 0,
     this.kk = 0,
+    this.unbekannteFelder = const <String, Object?>{},
   });
 
   /// Verfuegbare Sondererfahrungen fuer Mut.
@@ -67,6 +69,22 @@ class HeroAttributeSePool {
     };
   }
 
+  /// JSON-Felder einer neueren App-Version; bleiben beim Speichern erhalten
+  /// (siehe `unbekannte_json_felder.dart`).
+  final Map<String, Object?> unbekannteFelder;
+
+  /// Alle Schluessel, die [fromJson] liest; alles andere bleibt erhalten.
+  static const Set<String> jsonSchluessel = <String>{
+    'mu',
+    'kl',
+    'inn',
+    'ch',
+    'ff',
+    'ge',
+    'ko',
+    'kk',
+  };
+
   /// Liefert eine Kopie mit gezielt ersetzten Feldern.
   HeroAttributeSePool copyWith({
     int? mu,
@@ -77,6 +95,7 @@ class HeroAttributeSePool {
     int? ge,
     int? ko,
     int? kk,
+    Map<String, Object?>? unbekannteFelder,
   }) {
     return HeroAttributeSePool(
       mu: mu ?? this.mu,
@@ -87,6 +106,7 @@ class HeroAttributeSePool {
       ge: ge ?? this.ge,
       ko: ko ?? this.ko,
       kk: kk ?? this.kk,
+      unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
     );
   }
 
@@ -107,7 +127,7 @@ class HeroAttributeSePool {
 
   /// Serialisiert den Pool fuer Persistenz und Export.
   Map<String, dynamic> toJson() {
-    return <String, dynamic>{
+    return mitUnbekanntenFeldern(<String, dynamic>{
       'mu': mu,
       'kl': kl,
       'inn': inn,
@@ -116,7 +136,7 @@ class HeroAttributeSePool {
       'ge': ge,
       'ko': ko,
       'kk': kk,
-    };
+    }, unbekannteFelder);
   }
 
   /// Laedt einen SE-Pool tolerant gegenueber fehlenden Feldern.
@@ -133,6 +153,7 @@ class HeroAttributeSePool {
       ge: getInt('ge'),
       ko: getInt('ko'),
       kk: getInt('kk'),
+      unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
     );
   }
 }
@@ -146,6 +167,7 @@ class HeroStatSePool {
     this.asp = 0,
     this.kap = 0,
     this.mr = 0,
+    this.unbekannteFelder = const <String, Object?>{},
   });
 
   /// Verfuegbare Sondererfahrungen fuer LeP.
@@ -175,14 +197,35 @@ class HeroStatSePool {
     };
   }
 
+  /// JSON-Felder einer neueren App-Version; bleiben beim Speichern erhalten
+  /// (siehe `unbekannte_json_felder.dart`).
+  final Map<String, Object?> unbekannteFelder;
+
+  /// Alle Schluessel, die [fromJson] liest; alles andere bleibt erhalten.
+  static const Set<String> jsonSchluessel = <String>{
+    'lep',
+    'au',
+    'asp',
+    'kap',
+    'mr',
+  };
+
   /// Liefert eine Kopie mit gezielt ersetzten Feldern.
-  HeroStatSePool copyWith({int? lep, int? au, int? asp, int? kap, int? mr}) {
+  HeroStatSePool copyWith({
+    int? lep,
+    int? au,
+    int? asp,
+    int? kap,
+    int? mr,
+    Map<String, Object?>? unbekannteFelder,
+  }) {
     return HeroStatSePool(
       lep: lep ?? this.lep,
       au: au ?? this.au,
       asp: asp ?? this.asp,
       kap: kap ?? this.kap,
       mr: mr ?? this.mr,
+      unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
     );
   }
 
@@ -202,13 +245,13 @@ class HeroStatSePool {
 
   /// Serialisiert den Pool fuer Persistenz und Export.
   Map<String, dynamic> toJson() {
-    return <String, dynamic>{
+    return mitUnbekanntenFeldern(<String, dynamic>{
       'lep': lep,
       'au': au,
       'asp': asp,
       'kap': kap,
       'mr': mr,
-    };
+    }, unbekannteFelder);
   }
 
   /// Laedt einen SE-Pool tolerant gegenueber fehlenden Feldern.
@@ -222,6 +265,7 @@ class HeroStatSePool {
       asp: getInt('asp'),
       kap: getInt('kap'),
       mr: getInt('mr'),
+      unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
     );
   }
 }

@@ -1,3 +1,5 @@
+import 'package:dsa_heldenverwaltung/domain/unbekannte_json_felder.dart';
+
 /// Ein Monat des aventurischen Kalenders.
 ///
 /// [value] ist der persistierte Schluessel, [label] der Anzeigename.
@@ -49,7 +51,12 @@ const int aventurianNamenloseTageCount = 5;
 /// Auswertung uebernimmt `lib/rules/derived/aventurian_age_rules.dart`.
 class AventurianDate {
   /// Erzeugt ein persistierbares aventurisches Datum.
-  const AventurianDate({this.day = '', this.month = '', this.year = ''});
+  const AventurianDate({
+    this.day = '',
+    this.month = '',
+    this.year = '',
+    this.unbekannteFelder = const <String, Object?>{},
+  });
 
   /// Erzeugt ein Datum aus einzelnen, moeglicherweise ungetrimmten Teilen.
   factory AventurianDate.fromParts(String day, String month, String year) {
@@ -76,18 +83,35 @@ class AventurianDate {
         year.trim().isNotEmpty;
   }
 
+  /// JSON-Felder einer neueren App-Version; bleiben beim Speichern erhalten
+  /// (siehe `unbekannte_json_felder.dart`).
+  final Map<String, Object?> unbekannteFelder;
+
+  /// Alle Schluessel, die [fromJson] liest; alles andere bleibt erhalten.
+  static const Set<String> jsonSchluessel = <String>{'day', 'month', 'year'};
+
   /// Liefert eine Kopie mit gezielt ersetzten Feldern.
-  AventurianDate copyWith({String? day, String? month, String? year}) {
+  AventurianDate copyWith({
+    String? day,
+    String? month,
+    String? year,
+    Map<String, Object?>? unbekannteFelder,
+  }) {
     return AventurianDate(
       day: day ?? this.day,
       month: month ?? this.month,
       year: year ?? this.year,
+      unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
     );
   }
 
   /// Serialisiert das Datum fuer Persistenz und Export.
   Map<String, dynamic> toJson() {
-    return <String, dynamic>{'day': day, 'month': month, 'year': year};
+    return mitUnbekanntenFeldern(<String, dynamic>{
+      'day': day,
+      'month': month,
+      'year': year,
+    }, unbekannteFelder);
   }
 
   /// Laedt ein Datum tolerant gegenueber fehlenden Feldern.
@@ -98,6 +122,7 @@ class AventurianDate {
       day: getString('day'),
       month: normalizeAventurianMonth(getString('month')),
       year: getString('year'),
+      unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
     );
   }
 
@@ -106,11 +131,13 @@ class AventurianDate {
     return other is AventurianDate &&
         other.day == day &&
         other.month == month &&
-        other.year == year;
+        other.year == year &&
+        unbekannteFelderGleich(unbekannteFelder, other.unbekannteFelder);
   }
 
   @override
-  int get hashCode => Object.hash(day, month, year);
+  int get hashCode =>
+      Object.hash(day, month, year, unbekannteFelderHash(unbekannteFelder));
 
   @override
   String toString() => 'AventurianDate($day, $month, $year)';

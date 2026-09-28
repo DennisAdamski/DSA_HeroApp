@@ -1,3 +1,5 @@
+import 'package:dsa_heldenverwaltung/domain/unbekannte_json_felder.dart';
+
 /// Aggregierte Modifikatoren fuer abgeleitete Kampf-/Ressourcenwerte.
 ///
 /// Die Werte werden aus verschiedenen Quellen addiert:
@@ -18,6 +20,7 @@ class StatModifiers {
     this.gs = 0,
     this.ausweichen = 0,
     this.rs = 0,
+    this.unbekannteFelder = const <String, Object?>{},
   });
 
   final int lep;
@@ -35,6 +38,26 @@ class StatModifiers {
   /// Direkter Ruestungsschutz-Modifikator (z. B. durch Zauber wie Eisenhaut).
   final int rs;
 
+  /// JSON-Felder einer neueren App-Version; bleiben beim Speichern erhalten
+  /// (siehe `unbekannte_json_felder.dart`).
+  final Map<String, Object?> unbekannteFelder;
+
+  /// Alle Schluessel, die [fromJson] liest; alles andere bleibt erhalten.
+  static const Set<String> jsonSchluessel = <String>{
+    'lep',
+    'au',
+    'asp',
+    'kap',
+    'mr',
+    'iniBase',
+    'at',
+    'pa',
+    'fk',
+    'gs',
+    'ausweichen',
+    'rs',
+  };
+
   /// Erstellt eine angepasste Kopie mit selektiv ueberschriebenen Feldern.
   StatModifiers copyWith({
     int? lep,
@@ -49,6 +72,7 @@ class StatModifiers {
     int? gs,
     int? ausweichen,
     int? rs,
+    Map<String, Object?>? unbekannteFelder,
   }) {
     return StatModifiers(
       lep: lep ?? this.lep,
@@ -63,6 +87,7 @@ class StatModifiers {
       gs: gs ?? this.gs,
       ausweichen: ausweichen ?? this.ausweichen,
       rs: rs ?? this.rs,
+      unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
     );
   }
 
@@ -86,7 +111,7 @@ class StatModifiers {
 
   /// Serialisierung fuer Persistenz/Transfer.
   Map<String, dynamic> toJson() {
-    return {
+    return mitUnbekanntenFeldern(<String, dynamic>{
       'lep': lep,
       'au': au,
       'asp': asp,
@@ -99,7 +124,7 @@ class StatModifiers {
       'gs': gs,
       'ausweichen': ausweichen,
       'rs': rs,
-    };
+    }, unbekannteFelder);
   }
 
   /// Robust gegen fehlende Schluessel: nicht vorhandene Felder werden `0`.
@@ -118,6 +143,7 @@ class StatModifiers {
       gs: getInt('gs'),
       ausweichen: getInt('ausweichen'),
       rs: getInt('rs'),
+      unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
     );
   }
 }

@@ -211,6 +211,92 @@ void main() {
     expect(saved.apSpent, 0);
   });
 
+  testWidgets('Speichern erhält Felder einer neueren App-Version', (
+    tester,
+  ) async {
+    const feld = <String, Object?>{'zukunftsfeld': 1};
+    WorkspaceTabEditActions? editActions;
+    final held = buildHero();
+    final repo = FakeRepository(
+      heroes: <HeroSheet>[
+        held.copyWith(
+          attributes: held.attributes.copyWith(unbekannteFelder: feld),
+          startAttributes: held.startAttributes.copyWith(
+            unbekannteFelder: feld,
+          ),
+          bought: const BoughtStats(unbekannteFelder: feld),
+          resourceActivationConfig: held.resourceActivationConfig.copyWith(
+            unbekannteFelder: feld,
+          ),
+          appearance: held.appearance.copyWith(
+            geburtsdatum: const AventurianDate(
+              day: '1',
+              month: 'praios',
+              year: '1010',
+              unbekannteFelder: feld,
+            ),
+          ),
+        ),
+      ],
+      states: <String, HeroState>{
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          heroRepositoryProvider.overrideWithValue(repo),
+          rulesCatalogProvider.overrideWith(
+            (ref) async => _buildRulesCatalog(),
+          ),
+        ],
+        child: MaterialApp(
+          home: Scaffold(
+            body: HeroOverviewTab(
+              heroId: 'demo',
+              onDirtyChanged: (_) {},
+              onEditingChanged: (_) {},
+              onRegisterDiscard: (_) {},
+              onRegisterEditActions: (actions) {
+                editActions = actions;
+              },
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await editActions!.startEdit();
+    await tester.pumpAndSettle();
+
+    final field = find.byKey(
+      const ValueKey<String>('overview-derived-bought-b_lep'),
+    );
+    await tester.scrollUntilVisible(
+      field,
+      240,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.enterText(field, '2');
+    await editActions!.save();
+    await tester.pumpAndSettle();
+
+    final saved = (await repo.loadHeroById('demo'))!;
+    expect(saved.bought.lep, 2);
+    expect(saved.bought.unbekannteFelder, feld);
+    expect(saved.attributes.unbekannteFelder, feld);
+    expect(saved.startAttributes.unbekannteFelder, feld);
+    expect(saved.resourceActivationConfig.unbekannteFelder, feld);
+    expect(saved.appearance.geburtsdatum.day, '1');
+    expect(saved.appearance.geburtsdatum.unbekannteFelder, feld);
+  });
+
   testWidgets('advantage chips can be selected from catalog and saved', (
     tester,
   ) async {

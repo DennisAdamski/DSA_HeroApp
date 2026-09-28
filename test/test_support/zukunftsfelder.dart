@@ -1,6 +1,11 @@
 import 'dart:convert';
 
+import 'package:dsa_heldenverwaltung/domain/avatar_gallery_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/avatar_gesichtsbefund.dart';
+import 'package:dsa_heldenverwaltung/domain/avatar_snapshot.dart';
+import 'package:dsa_heldenverwaltung/domain/aventurian_date.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_advancement_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_adventure_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_companion.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_connection_entry.dart';
@@ -47,8 +52,9 @@ const String zukunftsfeld = 'zukunftsfeld';
 /// Text-Overrides, eine Ritualkategorie mit Zusatzfeld und Ritual, eine
 /// magische Sonderfertigkeit, Personen, Notiz, SE und Beute im laufenden
 /// Abenteuer, einen Kontakt, einen Begleiter mit Angriff, Bewegung, SF,
-/// Ruestung und Ritualkategorie, eine Gruppe und einen offenen
-/// Reiseberichtseintrag.
+/// Ruestung und Ritualkategorie, eine Gruppe, einen offenen
+/// Reiseberichtseintrag, ein Geburtsdatum, ein Galeriebild mit Gesichtsbefund,
+/// einen Avatar-Schnappschuss und einen Verlaufseintrag.
 Zukunftsheld mitZukunftsfeldern(Map<String, dynamic> heldJson) {
   final basis = _tiefeKopie(heldJson);
   final pfade = <String>[
@@ -56,6 +62,7 @@ Zukunftsheld mitZukunftsfeldern(Map<String, dynamic> heldJson) {
     ..._kampfEinstellungen(basis),
     ..._talenteUndMagie(basis),
     ..._begleiterAbenteuerNotizen(basis),
+    ..._grundwerteAvatarVerlauf(basis),
   ];
   return _mitFeldern(basis, pfade);
 }
@@ -160,7 +167,20 @@ HeroSheet bearbeiteVerschachtelteModelle(HeroSheet held) {
   final abenteuer = held.adventures.first;
   final begleiter = held.companions.single;
   final offen = held.reisebericht.openEntries[_zukunftsReise]!.single;
+  final bild = held.appearance.avatarGallery.single;
   return held.copyWith(
+    attributes: held.attributes.copyWith(ko: held.attributes.ko + 1),
+    persistentMods: held.persistentMods.copyWith(gs: 1),
+    bought: held.bought.copyWith(mr: held.bought.mr + 1),
+    attributeSePool: held.attributeSePool.copyWith(mu: 1),
+    statSePool: held.statSePool.copyWith(lep: 1),
+    resourceActivationConfig: held.resourceActivationConfig.copyWith(
+      divineEnabledOverride: false,
+    ),
+    appearance: held.appearance.copyWith(
+      geburtsdatum: held.appearance.geburtsdatum.copyWith(day: '4'),
+      avatarGallery: <AvatarGalleryEntry>[bild.copyWith(headerZoom: 2)],
+    ),
     notes: <HeroNoteEntry>[
       held.notes.first.copyWith(description: 'Schuldet 10 Dukaten.'),
       ...held.notes.skip(1),
@@ -496,6 +516,75 @@ List<String> _begleiterAbenteuerNotizen(Map<String, dynamic> basis) {
     'gruppen/0',
     'reisebericht',
     'reisebericht/openEntries/$_zukunftsReise/0',
+  ];
+}
+
+/// Pfade von Eigenschaften, Grundwerten, SE-Pools, Ressourcenschaltern,
+/// Geburtsdatum, Bildern und Steigerungsverlauf.
+List<String> _grundwerteAvatarVerlauf(Map<String, dynamic> basis) {
+  _pruefe(!basis.containsKey('geburtsdatum'), 'kein Geburtsdatum');
+  basis['geburtsdatum'] = const AventurianDate(
+    day: '3',
+    month: 'rondra',
+    year: '1016',
+  ).toJson();
+  _pruefe((basis['avatarGallery'] as List).isEmpty, 'keine Bilder');
+  basis['avatarGallery'] = <Object?>[
+    const AvatarGalleryEntry(
+      id: 'bild-1',
+      fileName: 'bild-1.png',
+      headerZoom: 1.5,
+      gesichtsbefund: AvatarGesichtsbefund(
+        bildBreite: 400,
+        bildHoehe: 600,
+        gesicht: AvatarGesichtsrahmen(
+          links: 0.25,
+          oben: 0.25,
+          breite: 0.5,
+          hoehe: 0.5,
+        ),
+        konfidenz: 0.75,
+      ),
+      gesichtsbefundVersion: 1,
+    ).toJson(),
+  ];
+  basis['aktivesBildId'] = 'bild-1';
+  basis['primaerbildId'] = 'bild-1';
+  basis['avatarSnapshot'] = AvatarSnapshot(
+    erstelltAm: '2026-09-20T18:00:00.000Z',
+    attributes: const <String, int>{'MU': 14},
+  ).toJson();
+  _pruefe(!basis.containsKey('advancementHistory'), 'kein Verlauf');
+  basis['advancementHistory'] = <Object?>[
+    HeroAdvancementEntry(
+      id: 'verlauf-1',
+      sessionId: 'runde-1',
+      createdAt: DateTime.utc(2026, 9, 20, 18),
+      kind: AdvancementKind.talent,
+      targetId: 'tal_zechen',
+      label: 'Zechen',
+      fromValue: 2,
+      toValue: 3,
+      apCost: 4,
+    ).toJson(),
+  ];
+  return const <String>[
+    'attributes',
+    'rawStartAttributes',
+    'startAttributes',
+    'persistentMods',
+    'bought',
+    'attributeSePool',
+    'statSePool',
+    'resourceActivationConfig',
+    'epicAttributeMaxBonus',
+    'epicMainAttributes',
+    'geburtsdatum',
+    'avatarGallery/0',
+    'avatarGallery/0/gesicht',
+    'avatarGallery/0/gesicht/g',
+    'avatarSnapshot',
+    'advancementHistory/0',
   ];
 }
 

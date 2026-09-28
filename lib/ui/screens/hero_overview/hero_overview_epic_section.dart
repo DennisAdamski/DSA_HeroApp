@@ -171,8 +171,13 @@ extension _HeroOverviewEpicSection on _HeroOverviewTabState {
     final updated = hero.copyWith(
       isEpisch: true,
       epicStartAp: hero.apSpent,
-      epicAttributeMaxBonus: result.maxBonus,
-      epicMainAttributes: result.mainAttributes,
+      // Per `uebernimmWerte`, damit unbekannte Felder erhalten bleiben.
+      epicAttributeMaxBonus: hero.epicAttributeMaxBonus.uebernimmWerte(
+        result.maxBonus,
+      ),
+      epicMainAttributes: hero.epicMainAttributes.uebernimmWerte(
+        result.mainAttributes,
+      ),
       epicActivationPolicy: result.policy,
       epicUnactivatedTalentIds: Set<String>.unmodifiable(unactivatedTalentIds),
     );
@@ -211,8 +216,13 @@ extension _HeroOverviewEpicSection on _HeroOverviewTabState {
     if (result == null || !mounted) return;
 
     final updated = hero.copyWith(
-      epicAttributeMaxBonus: result.maxBonus,
-      epicMainAttributes: result.mainAttributes,
+      // Per `uebernimmWerte`, damit unbekannte Felder erhalten bleiben.
+      epicAttributeMaxBonus: hero.epicAttributeMaxBonus.uebernimmWerte(
+        result.maxBonus,
+      ),
+      epicMainAttributes: hero.epicMainAttributes.uebernimmWerte(
+        result.mainAttributes,
+      ),
       epicActivationPolicy: result.policy,
     );
     await ref.read(heroActionsProvider).saveHero(updated);

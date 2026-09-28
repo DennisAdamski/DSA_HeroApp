@@ -2,8 +2,17 @@ import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:dsa_heldenverwaltung/domain/attributes.dart';
+import 'package:dsa_heldenverwaltung/domain/avatar_gallery_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/avatar_gesichtsbefund.dart';
+import 'package:dsa_heldenverwaltung/domain/avatar_snapshot.dart';
+import 'package:dsa_heldenverwaltung/domain/aventurian_date.dart';
+import 'package:dsa_heldenverwaltung/domain/bought_stats.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_advancement_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_adventure_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_adventure_se_pools.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_appearance.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_companion.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_connection_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_gruppen_config.dart';
@@ -11,11 +20,14 @@ import 'package:dsa_heldenverwaltung/domain/hero_language_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_meta_talent.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_note_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_reisebericht.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_resource_activation_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_rituals.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_spell_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_spell_text_overrides.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/magic_special_ability.dart';
+import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
 import 'package:dsa_heldenverwaltung/domain/talent_special_ability.dart';
 
 /// Ein verschachteltes Heldenmodell im Tabellentest: voll belegte Instanz,
@@ -481,6 +493,163 @@ final _begleiterAbenteuerNotizen = <_Modell>[
   ),
 ];
 
+const _rahmen = AvatarGesichtsrahmen(
+  links: 0.25,
+  oben: 0.25,
+  breite: 0.5,
+  hoehe: 0.5,
+);
+
+final _eintrag = HeroAdvancementEntry(
+  id: 'e1',
+  sessionId: 's1',
+  createdAt: DateTime.utc(2026, 9, 20),
+  kind: AdvancementKind.talent,
+  targetId: 'tal_a',
+  label: 'A',
+  fromValue: 1,
+  toValue: 2,
+  apCost: 3,
+);
+
+final _grundwerteAvatarVerlauf = <_Modell>[
+  _Modell(
+    'Attributes',
+    schluessel: Attributes.jsonSchluessel,
+    voll: () => const Attributes.zero().toJson(),
+    lade: (json) => Attributes.fromJson(json).toJson(),
+    bearbeite: (json) => Attributes.fromJson(json).copyWith(mu: 14).toJson(),
+    unbekannt: (json) => Attributes.fromJson(json).unbekannteFelder,
+  ),
+  _Modell(
+    'BoughtStats',
+    schluessel: BoughtStats.jsonSchluessel,
+    voll: () => const BoughtStats(lep: 1).toJson(),
+    lade: (json) => BoughtStats.fromJson(json).toJson(),
+    bearbeite: (json) => BoughtStats.fromJson(json).copyWith(mr: 2).toJson(),
+    unbekannt: (json) => BoughtStats.fromJson(json).unbekannteFelder,
+  ),
+  _Modell(
+    'StatModifiers',
+    schluessel: StatModifiers.jsonSchluessel,
+    voll: () => const StatModifiers(gs: 1).toJson(),
+    lade: (json) => StatModifiers.fromJson(json).toJson(),
+    bearbeite: (json) => StatModifiers.fromJson(json).copyWith(rs: 2).toJson(),
+    unbekannt: (json) => StatModifiers.fromJson(json).unbekannteFelder,
+  ),
+  _Modell(
+    'HeroAttributeSePool',
+    schluessel: HeroAttributeSePool.jsonSchluessel,
+    voll: () => const HeroAttributeSePool(mu: 1).toJson(),
+    lade: (json) => HeroAttributeSePool.fromJson(json).toJson(),
+    bearbeite: (json) =>
+        HeroAttributeSePool.fromJson(json).copyWith(kl: 2).toJson(),
+    unbekannt: (json) => HeroAttributeSePool.fromJson(json).unbekannteFelder,
+  ),
+  _Modell(
+    'HeroStatSePool',
+    schluessel: HeroStatSePool.jsonSchluessel,
+    voll: () => const HeroStatSePool(lep: 1).toJson(),
+    lade: (json) => HeroStatSePool.fromJson(json).toJson(),
+    bearbeite: (json) => HeroStatSePool.fromJson(json).copyWith(mr: 2).toJson(),
+    unbekannt: (json) => HeroStatSePool.fromJson(json).unbekannteFelder,
+  ),
+  _Modell(
+    'HeroResourceActivationConfig',
+    schluessel: HeroResourceActivationConfig.jsonSchluessel,
+    voll: () => const HeroResourceActivationConfig(
+      magicEnabledOverride: true,
+      divineEnabledOverride: false,
+    ).toJson(),
+    lade: (json) => HeroResourceActivationConfig.fromJson(json).toJson(),
+    bearbeite: (json) =>
+        HeroResourceActivationConfig.fromJson(json)
+            .copyWith(magicEnabledOverride: null)
+            .toJson(),
+    unbekannt: (json) =>
+        HeroResourceActivationConfig.fromJson(json).unbekannteFelder,
+  ),
+  _Modell(
+    'AventurianDate',
+    schluessel: AventurianDate.jsonSchluessel,
+    voll: () =>
+        const AventurianDate(day: '3', month: 'rondra', year: '1016').toJson(),
+    lade: (json) => AventurianDate.fromJson(json).toJson(),
+    bearbeite: (json) =>
+        AventurianDate.fromJson(json).copyWith(day: '4').toJson(),
+    unbekannt: (json) => AventurianDate.fromJson(json).unbekannteFelder,
+  ),
+  _Modell(
+    'AvatarGalleryEntry',
+    schluessel: AvatarGalleryEntry.jsonSchluessel,
+    voll: () => const AvatarGalleryEntry(
+      id: 'b1',
+      fileName: 'b1.png',
+      headerFocusX: 0.5,
+      headerFocusY: 0.5,
+      headerZoom: 1.5,
+      gesichtsbefund: AvatarGesichtsbefund(bildBreite: 4, bildHoehe: 6),
+    ).toJson(),
+    lade: (json) => AvatarGalleryEntry.fromJson(json).toJson(),
+    bearbeite: (json) =>
+        AvatarGalleryEntry.fromJson(json).copyWith(headerZoom: 2).toJson(),
+    unbekannt: (json) => AvatarGalleryEntry.fromJson(json).unbekannteFelder,
+  ),
+  _Modell(
+    'AvatarGesichtsbefund',
+    schluessel: AvatarGesichtsbefund.jsonSchluessel,
+    voll: () => const AvatarGesichtsbefund(
+      bildBreite: 4,
+      bildHoehe: 6,
+      gesicht: _rahmen,
+      konfidenz: 0.5,
+    ).toJson(),
+    lade: (json) => AvatarGesichtsbefund.fromJson(json)!.toJson(),
+    // Ohne copyWith: bearbeitet wird der Galerieeintrag, der den Befund traegt.
+    bearbeite: (json) =>
+        AvatarGalleryEntry.fromJson(<String, dynamic>{
+              'id': 'b1',
+              'fileName': 'b1.png',
+              'gesicht': json,
+            }).copyWith(headerZoom: 2).toJson()['gesicht']
+            as Map<String, dynamic>,
+    unbekannt: (json) => AvatarGesichtsbefund.fromJson(json)!.unbekannteFelder,
+  ),
+  _Modell(
+    'AvatarGesichtsrahmen',
+    schluessel: AvatarGesichtsrahmen.jsonSchluessel,
+    voll: () => _rahmen.toJson(),
+    lade: (json) => AvatarGesichtsrahmen.fromJson(json)!.toJson(),
+    bearbeite: (json) => AvatarGesichtsrahmen.fromJson(json)!.toJson(),
+    unbekannt: (json) => AvatarGesichtsrahmen.fromJson(json)!.unbekannteFelder,
+  ),
+  _Modell(
+    'AvatarSnapshot',
+    schluessel: AvatarSnapshot.jsonSchluessel,
+    voll: () => AvatarSnapshot(
+      erstelltAm: 'x',
+      attributes: const <String, int>{'MU': 1},
+    ).toJson(),
+    lade: (json) => AvatarSnapshot.fromJson(json).toJson(),
+    // Unveraenderlich: bearbeitet wird das Aussehen, das ihn traegt.
+    bearbeite: (json) =>
+        HeroAppearance.fromJson(<String, dynamic>{'avatarSnapshot': json})
+                .copyWith(haarfarbe: 'schwarz')
+                .toJson()['avatarSnapshot']
+            as Map<String, dynamic>,
+    unbekannt: (json) => AvatarSnapshot.fromJson(json).unbekannteFelder,
+  ),
+  _Modell(
+    'HeroAdvancementEntry',
+    schluessel: HeroAdvancementEntry.jsonSchluessel,
+    voll: () => _eintrag.toJson(),
+    lade: (json) => HeroAdvancementEntry.fromJson(json).toJson(),
+    // Unveraenderlicher Erwerbsnachweis: er wird nur neu geschrieben.
+    bearbeite: (json) => HeroAdvancementEntry.fromJson(json).toJson(),
+    unbekannt: (json) => HeroAdvancementEntry.fromJson(json).unbekannteFelder,
+  ),
+];
+
 // Voll belegtes JSON eines Modells samt Zukunftsfeld, frisch kopiert.
 Map<String, dynamic> _mitZukunft(_Modell modell) {
   final json = jsonDecode(jsonEncode(modell.voll())) as Map<String, dynamic>;
@@ -530,6 +699,74 @@ void main() {
     'Felder',
     _begleiterAbenteuerNotizen,
   );
+
+  _pruefeModelle(
+    'Eigenschaften, Grundwerte, Bilder und Verlauf bewahren unbekannte Felder',
+    _grundwerteAvatarVerlauf,
+  );
+
+  group('Grundwerte und Bilder: Sonderfälle', () {
+    test('ein Geburtsdatum nur mit unbekannten Feldern wird geschrieben', () {
+      final aussehen = HeroAppearance.fromJson(<String, dynamic>{
+        'geburtsdatum': <String, dynamic>{'zukunftsfeld': 1},
+      });
+
+      expect(aussehen.toJson()['geburtsdatum'], <String, dynamic>{
+        'day': '',
+        'month': '',
+        'year': '',
+        'zukunftsfeld': 1,
+      });
+    });
+
+    test('ein leeres Geburtsdatum schreibt weiterhin nichts', () {
+      final aussehen = HeroAppearance.fromJson(<String, dynamic>{
+        'geburtsdatum': <String, dynamic>{'day': '', 'month': '', 'year': ''},
+      });
+
+      expect(aussehen.toJson().containsKey('geburtsdatum'), isFalse);
+    });
+
+    test('effektive Startwerte behalten die Felder der Startwerte', () {
+      const feld = <String, Object?>{'zukunftsfeld': 1};
+      const start = Attributes(
+        mu: 1,
+        kl: 1,
+        inn: 1,
+        ch: 1,
+        ff: 1,
+        ge: 1,
+        ko: 1,
+        kk: 1,
+        unbekannteFelder: feld,
+      );
+
+      final neu = start.uebernimmWerte(const Attributes.zero());
+
+      expect(neu.mu, 0);
+      expect(neu.unbekannteFelder, feld);
+    });
+
+    test('ein nicht numerisches Zukunftsfeld in persistentMods stört das '
+        'Laden der benannten Modifikatoren nicht', () {
+      final held = HeroSheet.fromJson(<String, dynamic>{
+        'id': 'h1',
+        'persistentMods': <String, dynamic>{
+          'ws': <String, dynamic>{'wert': 1},
+        },
+        'statModifiers': <String, dynamic>{
+          'ws': <Object?>[
+            <String, dynamic>{'modifier': 1, 'description': 'Manuell'},
+          ],
+        },
+      });
+
+      expect(held.persistentMods.unbekannteFelder['ws'], <String, dynamic>{
+        'wert': 1,
+      });
+      expect(held.statModifiers['ws']!.single.modifier, 1);
+    });
+  });
 
   group('Begleiter: Altschlüssel', () {
     test('eigenAp und vorNachteile gehen beim Laden auf', () {
