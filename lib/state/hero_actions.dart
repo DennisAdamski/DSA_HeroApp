@@ -23,6 +23,7 @@ import 'package:dsa_heldenverwaltung/domain/sync_models.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ap_level_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/attribute_start_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/avatar_rahmung_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_zuordnung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/inventory_sync_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 import 'package:dsa_heldenverwaltung/data/avatar_gesicht/avatar_gesichtserkennung.dart'
@@ -138,19 +139,34 @@ class HeroActions {
       normalizedApTotal,
       normalizedApSpent,
     );
-    final parsed = parseModifierTextsForHero(hero);
+    // Vor-/Nachteile: Alttext beim ersten Speichern migrieren, sonst den
+    // Text als Projektion der Liste schreiben (ARCH-02). Ohne geladenen
+    // Katalog wird nicht migriert; gewartet wird darauf bewusst nicht.
+    final catalog =
+        validationCatalog ?? _ref.read(rulesCatalogProvider).valueOrNull;
+    final heroMitMerkmalen = merkmaleZumSpeichern(
+      hero,
+      katalog: catalog == null ? null : MerkmalKatalog.von(catalog),
+    );
+    final parsed = parseModifierTextsForHero(
+      heroMitMerkmalen,
+      catalog: catalog,
+    );
     final unknownModifierFragments = await _filterKnownTraitWarnings(
       parsed.unknownFragments,
-      catalog: validationCatalog,
+      catalog: catalog,
     );
-    final effectiveStartAttributes = computeHeroEffectiveStartAttributes(hero);
+    final effectiveStartAttributes = computeHeroEffectiveStartAttributes(
+      heroMitMerkmalen,
+      catalog: catalog,
+    );
 
     // Neue Slots bekommen eine zufaellige ID, damit sie nie die Inventardaten
     // eines gerade entfernten Slots erben; geladene tragen ihre schon.
     final combatConfigMitIds = hero.combatConfig.withStableIds(
       neueId: () => const Uuid().v4(),
     );
-    final normalizedHero = hero.copyWith(
+    final normalizedHero = heroMitMerkmalen.copyWith(
       combatConfig: combatConfigMitIds,
       apTotal: normalizedApTotal,
       apSpent: normalizedApSpent,

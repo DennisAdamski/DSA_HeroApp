@@ -72,7 +72,11 @@ extension _HeroTalentsCells on _HeroTalentTableTabState {
     );
   }
 
-  Widget _complexityCell(TalentComplexityResolution resolution, {Key? key}) {
+  Widget _complexityCell(
+    TalentComplexityResolution resolution, {
+    Key? key,
+    LernspaltenBefund befund = LernspaltenBefund.keiner,
+  }) {
     final theme = Theme.of(context);
     final highlighted =
         resolution.effectiveKomplexitaet != resolution.baseKomplexitaet;
@@ -91,6 +95,7 @@ extension _HeroTalentsCells on _HeroTalentTableTabState {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(resolution.effectiveKomplexitaet, style: style),
+            LernspaltenMarke(befund: befund),
             if (resolution.houseRuleHint != null) ...[
               const SizedBox(width: 4),
               Tooltip(
@@ -214,7 +219,9 @@ extension _HeroTalentsCells on _HeroTalentTableTabState {
                     }
                     final vorgeschlageneKosten = talentSpecializationApCost(
                       basisKomplexitaet: talent.steigerung,
-                      gifted: entry.gifted,
+                      gifted: _befundFuer(talent)
+                          .istBegabt(gifted: entry.gifted),
+                      unfaehigkeitsSchritte: _befundFuer(talent).erhoehung,
                       specializationOrdinal: runningCount + 1,
                     );
                     final erwerb = await showErwerbDialog(
@@ -471,7 +478,8 @@ extension _HeroTalentsCells on _HeroTalentTableTabState {
     }
     final vorgeschlageneKosten = talentSpecializationApCost(
       basisKomplexitaet: talent.steigerung,
-      gifted: entry.gifted,
+      gifted: _befundFuer(talent).istBegabt(gifted: entry.gifted),
+      unfaehigkeitsSchritte: _befundFuer(talent).erhoehung,
       specializationOrdinal: currentSpecs.length + 1,
     );
     final erwerb = await showErwerbDialog(
@@ -501,13 +509,15 @@ extension _HeroTalentsCells on _HeroTalentTableTabState {
     required String talentId,
     required bool value,
     required bool isEditing,
+    required LernspaltenBefund befund,
   }) {
     return Align(
       alignment: Alignment.centerLeft,
-      child: Checkbox(
-        key: ValueKey<String>('talents-gifted-$talentId'),
+      child: BegabungHaekchen(
+        checkboxKey: ValueKey<String>('talents-gifted-$talentId'),
         value: value,
-        onChanged: isEditing ? (next) => _updateGifted(talentId, next!) : null,
+        befund: befund,
+        onChanged: isEditing ? (next) => _updateGifted(talentId, next) : null,
       ),
     );
   }

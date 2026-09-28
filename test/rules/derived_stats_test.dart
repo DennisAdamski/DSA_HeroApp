@@ -220,8 +220,8 @@ void main() {
     final erhoeht = computeDerivedStats(mit, state);
 
     expect(
-      computeEffectiveAttributes(mit).ko,
-      computeEffectiveAttributes(ohne).ko + 2,
+      computeEffectiveAttributes(mit, catalog: null).ko,
+      computeEffectiveAttributes(ohne, catalog: null).ko + 2,
     );
     expect(erhoeht.maxLep, greaterThan(basis.maxLep));
     expect(erhoeht.maxAu, greaterThan(basis.maxAu));

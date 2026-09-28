@@ -69,6 +69,7 @@ Future<SpellAvailabilityEntry?> _showSpellRepresentationDialog({
   required String baseLernkomplexitaet,
   required List<String> zauberMerkmale,
   required List<String> heldMerkmalskenntnisse,
+  LernspaltenBefund befund = LernspaltenBefund.keiner,
 }) {
   return showAdaptiveDetailSheet<SpellAvailabilityEntry>(
     context: context,
@@ -79,6 +80,7 @@ Future<SpellAvailabilityEntry?> _showSpellRepresentationDialog({
         baseLernkomplexitaet: baseLernkomplexitaet,
         zauberMerkmale: zauberMerkmale,
         heldMerkmalskenntnisse: heldMerkmalskenntnisse,
+        befund: befund,
       );
     },
   );
@@ -91,6 +93,7 @@ class _SpellRepresentationDialog extends StatefulWidget {
     required this.baseLernkomplexitaet,
     required this.zauberMerkmale,
     required this.heldMerkmalskenntnisse,
+    this.befund = LernspaltenBefund.keiner,
   });
 
   final String spellName;
@@ -98,6 +101,9 @@ class _SpellRepresentationDialog extends StatefulWidget {
   final String baseLernkomplexitaet;
   final List<String> zauberMerkmale;
   final List<String> heldMerkmalskenntnisse;
+
+  /// Begabung/Unfaehigkeit aus Vor-/Nachteilen fuer diesen Zauber.
+  final LernspaltenBefund befund;
 
   @override
   State<_SpellRepresentationDialog> createState() =>
@@ -122,19 +128,32 @@ class _SpellRepresentationDialogState
     final matchingMerkmale = widget.zauberMerkmale
         .where(widget.heldMerkmalskenntnisse.contains)
         .toList(growable: false);
+    final befund = widget.befund;
     final effLernkomplexitaet = effectiveSpellLernkomplexitaet(
       basisKomplexitaet: widget.baseLernkomplexitaet,
       istHauszauber: false,
       zauberMerkmale: widget.zauberMerkmale,
       heldMerkmalskenntnisse: widget.heldMerkmalskenntnisse,
-      gifted: false,
+      gifted: befund.begabungen.isNotEmpty,
+      penaltySteps: befund.erhoehung,
+      zusatzReduktion: befund.zusatzBegabungen.length,
     );
+    final gruende = <String>[
+      if (matchingMerkmale.isNotEmpty)
+        '-1 durch Merkmal "${matchingMerkmale.join(', ')}"',
+      if (befund.abgeleitetBegabt)
+        'Begabung: ${befund.begabungsQuellen.join(', ')}',
+      if (befund.unfaehig)
+        'Unfähigkeit: ${befund.unfaehigkeitsQuellen.join(', ')}',
+    ];
     final reduced = effLernkomplexitaet != widget.baseLernkomplexitaet;
     final lernkomplexitaetText = reduced
         ? 'Lernkomplexität: $effLernkomplexitaet '
-              '(Basis ${widget.baseLernkomplexitaet}, '
-              '-1 durch Merkmal "${matchingMerkmale.join(', ')}")'
-        : 'Lernkomplexität: ${widget.baseLernkomplexitaet}';
+              '(Basis ${widget.baseLernkomplexitaet}, ${gruende.join(', ')})'
+        : gruende.isEmpty
+        ? 'Lernkomplexität: ${widget.baseLernkomplexitaet}'
+        : 'Lernkomplexität: ${widget.baseLernkomplexitaet} '
+              '(${gruende.join(', ')})';
 
     return AlertDialog(
       key: const ValueKey<String>('magic-spell-representation-dialog'),

@@ -220,6 +220,7 @@ extension _HeroTalentEditActions on _HeroTalentTableTabState {
                       activeTalentIds: localActiveIds,
                       lockedTalentIds: lockedTalentIds,
                       ruleResolver: _latestCatalogRuleResolver,
+                      begabungen: _begabungen(),
                       onToggleTalent: (id, activate) {
                         _toggleTalent(id, activate);
                         setSheetState(() {

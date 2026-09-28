@@ -69,6 +69,7 @@ void main() {
           onRegisterEditActions: _noopEditActions,
         ),
       ),
+      catalog: null,
     ).map((tab) => tab.label).toList(growable: false);
   }
 

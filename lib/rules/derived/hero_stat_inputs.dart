@@ -1,4 +1,4 @@
-import 'package:dsa_heldenverwaltung/catalog/talent_def.dart';
+import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
@@ -46,8 +46,9 @@ HeroStatInputs computeHeroStatInputs({
   required HeroState state,
   required List<TalentDef> talents,
   required bool epicAdvantagesActive,
+  required RulesCatalog? catalog,
 }) {
-  final parsed = parseModifierTextsForHero(hero);
+  final parsed = parseModifierTextsForHero(hero, catalog: catalog);
   // Inventar-Modifikatoren aus ausgeruesteten Items aggregieren
   final inventoryMods = aggregateInventoryModifiers(
     hero.inventoryEntries,

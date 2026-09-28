@@ -101,16 +101,20 @@ int computeWundschwelle({
 /// Berechnet die vier im Wundendialog angezeigten Wundschwellenstufen.
 ///
 /// Die KO-basierten Faktoren 0,5 und 1,5 werden kaufmaennisch gerundet.
-/// Zusatzmodifikatoren aus `mods` wirken auf alle vier Stufen. Der Vorteil
-/// `Eisern` gibt pauschal `+2`, der Nachteil `Glasknochen` pauschal `-2`.
+/// Zusatzmodifikatoren aus `mods` wirken auf alle vier Stufen. Katalogisierte
+/// Vor-/Nachteile bringen ihren Bonus als [merkmalBonus] mit (Katalogwirkung
+/// `wundschwelle`, ARCH-02); in den frei wirkenden Texten gibt `Eisern`
+/// weiterhin pauschal `+2` und `Glasknochen` pauschal `-2`.
 WundschwellenStufen computeWundschwellenStufen({
   required int ko,
   List<HeroTalentModifier> mods = const [],
   String vorteileText = '',
   String nachteileText = '',
+  int merkmalBonus = 0,
 }) {
   final modSumme = _sumWundschwelleMods(mods);
   final namedBonus =
+      merkmalBonus +
       (_containsNamedToken(vorteileText, const {'eisern'}) ? 2 : 0) +
       (_containsNamedToken(nachteileText, const {'glasknochen'}) ? -2 : 0);
   final gesamtBonus = modSumme + namedBonus;

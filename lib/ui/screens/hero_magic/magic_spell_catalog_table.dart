@@ -41,11 +41,19 @@ class _MagicSpellCatalogTable extends StatefulWidget {
     required this.heroRepresentationen,
     required this.onActivateSpell,
     required this.onDeactivateSpell,
+    this.merkmalskenntnisse = const <String>[],
+    this.begabungen,
   });
 
   final List<SpellDef> allSpells;
   final Set<String> activeSpellIds;
   final List<String> heroRepresentationen;
+
+  /// Merkmalskenntnisse des Helden fuer die Vorschau der Spalte.
+  final List<String> merkmalskenntnisse;
+
+  /// Begabungen aus Vor-/Nachteilen; `null` wirkt nicht.
+  final HeroBegabungen? begabungen;
   final Future<bool> Function(SpellDef spell) onActivateSpell;
   final void Function(String spellId) onDeactivateSpell;
 
@@ -55,6 +63,28 @@ class _MagicSpellCatalogTable extends StatefulWidget {
 }
 
 class _MagicSpellCatalogTableState extends State<_MagicSpellCatalogTable> {
+  // Wirksame Spalte ohne Hauszauber und fremde Repraesentation (die steht
+  // als eigene Marke daneben): Merkmalskenntnis, Begabung, Unfaehigkeit.
+  Widget _vorschauSpalte(SpellDef spell, TextStyle? style) {
+    final befund = widget.begabungen?.zauber(spell) ?? LernspaltenBefund.keiner;
+    final spalte = effectiveSteigerung(
+      basisSteigerung: spell.steigerung,
+      istHauszauber: false,
+      zauberMerkmale: parseSpellTraits(spell.traits),
+      heldMerkmalskenntnisse: widget.merkmalskenntnisse,
+      istBegabt: befund.begabungen.isNotEmpty,
+      zusatzReduktion: befund.zusatzBegabungen.length,
+      zusatzErhoehung: befund.erhoehung,
+    );
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(spalte, style: style),
+        LernspaltenMarke(befund: befund),
+      ],
+    );
+  }
+
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
   bool _showAll = false;
@@ -299,9 +329,9 @@ class _MagicSpellCatalogTableState extends State<_MagicSpellCatalogTable> {
                                   ),
                                 ),
                                 DataCell(
-                                  Text(
-                                    spell.steigerung,
-                                    style: theme.textTheme.bodySmall,
+                                  _vorschauSpalte(
+                                    spell,
+                                    theme.textTheme.bodySmall,
                                   ),
                                 ),
                               ],

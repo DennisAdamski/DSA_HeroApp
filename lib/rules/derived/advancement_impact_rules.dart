@@ -61,16 +61,18 @@ AdvancementImpact computeAdvancementImpact({
     state: state,
     talents: catalog.talents,
     epicAdvantagesActive: epicAdvantagesActive,
+    catalog: catalog,
   );
   final newInputs = computeHeroStatInputs(
     hero: after,
     state: state,
     talents: catalog.talents,
     epicAdvantagesActive: epicAdvantagesActive,
+    catalog: catalog,
   );
   final oldStats = oldInputs.derive(before, state);
   final newStats = newInputs.derive(after, state);
-  final activation = computeHeroResourceActivation(after);
+  final activation = computeHeroResourceActivation(after, catalog: catalog);
   return AdvancementImpact(
     stats: [
       AdvancementStatChange('LeP', oldStats.maxLep, newStats.maxLep),
@@ -100,7 +102,12 @@ AdvancementImpact computeAttributeAdvancementImpact({
   required int targetValue,
   required bool epicAdvantagesActive,
 }) {
-  final after = applyAdvancementAttributeValue(hero, attribute, targetValue);
+  final after = applyAdvancementAttributeValue(
+    hero,
+    attribute,
+    targetValue,
+    catalog: catalog,
+  );
   final stats = computeAdvancementImpact(
     before: hero,
     after: after,

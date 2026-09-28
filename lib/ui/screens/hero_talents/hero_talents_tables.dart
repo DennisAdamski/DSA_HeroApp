@@ -364,7 +364,7 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
         key: ValueKey<String>('talents-field-${talent.id}-computed-taw'),
         highlighted: true,
       ),
-      _complexityCell(complexityResolution),
+      _complexityCell(complexityResolution, befund: _befundFuer(talent)),
       _textCell(
         _formatWholeNumber(ebe),
         key: ValueKey<String>('talents-field-${talent.id}-ebe-display'),
@@ -400,11 +400,13 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
           talentId: talent.id,
           value: entry.gifted,
           isEditing: isEditing,
+          befund: _befundFuer(talent),
         ),
       );
     }
 
-    final giftedColor = entry.gifted && isEditing
+    final giftedColor =
+        (entry.gifted || _befundFuer(talent).abgeleitetBegabt) && isEditing
         ? Theme.of(context).colorScheme.tertiaryContainer.withValues(alpha: 0.4)
         : null;
     return TableRow(
@@ -422,7 +424,7 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
     final complexityResolution = _resolveTalentComplexity(talent, entry);
 
     final effective = _latestHero != null
-        ? computeEffectiveAttributes(_latestHero!)
+        ? computeEffectiveAttributes(_latestHero!, catalog: _latestCatalog)
         : const Attributes(
             mu: 0,
             kl: 0,
@@ -457,7 +459,7 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
       ),
       _textCell(_fallback(talent.weaponCategory)),
       _textCell(_fallback(talent.alternatives)),
-      _complexityCell(complexityResolution),
+      _complexityCell(complexityResolution, befund: _befundFuer(talent)),
       _intInputCell(
         talentId: talent.id,
         field: 'talentValue',
@@ -484,6 +486,7 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
           talentId: talent.id,
           value: entry.gifted,
           isEditing: isEditing,
+          befund: _befundFuer(talent),
         ),
       _combatSpecializationCell(
         talent: talent,
@@ -494,7 +497,7 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
 
     final rowColor = isInvalid
         ? Theme.of(context).colorScheme.errorContainer.withValues(alpha: 0.4)
-        : (entry.gifted && isEditing
+        : ((entry.gifted || _befundFuer(talent).abgeleitetBegabt) && isEditing
               ? Theme.of(context).colorScheme.tertiaryContainer
                     .withValues(alpha: 0.4)
               : null);
@@ -653,7 +656,7 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
       key: ValueKey<String>('talents-mobile-card-${talent.id}'),
       title: talent.name,
       isEditing: isEditing,
-      isGifted: entry.gifted,
+      isGifted: _befundFuer(talent).istBegabt(gifted: entry.gifted),
       primaryLabel: 'TaW*',
       primaryValue: _formatWholeNumber(computedTaw),
       inlineMeta: _compactAttributeLabel(attributeLabel),
@@ -751,7 +754,7 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
     final isInvalid = _invalidCombatTalentIds.contains(talent.id);
     final complexityResolution = _resolveTalentComplexity(talent, entry);
     final effective = _latestHero != null
-        ? computeEffectiveAttributes(_latestHero!)
+        ? computeEffectiveAttributes(_latestHero!, catalog: _latestCatalog)
         : const Attributes(
             mu: 0,
             kl: 0,
@@ -787,7 +790,7 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
       key: ValueKey<String>('combat-talents-mobile-card-${talent.id}'),
       title: talent.name,
       isEditing: isEditing,
-      isGifted: entry.gifted,
+      isGifted: _befundFuer(talent).istBegabt(gifted: entry.gifted),
       isError: isInvalid,
       primaryLabel: 'TaW',
       primaryValue: '${entry.talentValue ?? 0}',

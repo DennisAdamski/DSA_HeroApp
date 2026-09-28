@@ -1,3 +1,6 @@
+import 'dart:math' as math;
+
+import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
@@ -5,6 +8,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/talent_special_ability.dart';
 import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_wirkung_rules.dart';
 
 /// Art des Zustandsabbaus fuer Erschöpfung und Überanstrengung.
 enum RestConditionMode { rast, schlaf }
@@ -173,21 +177,32 @@ class RestConditionRecoveryResult {
 }
 
 /// Erkennt alle für Rast relevanten Vorteile, Nachteile und SF.
-RestAbilitySummary collectRestAbilities(HeroSheet hero) {
-  final vorteile = hero.vorteileText;
-  final nachteile = hero.nachteileText;
+///
+/// Katalogisierte Vor-/Nachteile wirken über ihre Katalogwirkung `rast`
+/// (ARCH-02), frei wirkende Texte wie bisher über ihren Namen.
+RestAbilitySummary collectRestAbilities(
+  HeroSheet hero, {
+  required RulesCatalog? catalog,
+}) {
+  final merkmale = werteMerkmaleAus(hero, catalog: catalog);
+  final wirkungen = merkmale.wirkungen;
+  final vorteile = merkmale.freieVorteile;
+  final nachteile = merkmale.freieNachteile;
   return RestAbilitySummary(
-    fastHealingLevel: _maxNamedLevel(vorteile, 'schnelle heilung', 3),
-    astralRegenerationLevel: _maxNamedLevel(
-      vorteile,
-      'astrale regeneration',
-      3,
+    fastHealingLevel: math.max(
+      wirkungen.lepStufe,
+      _maxNamedLevel(vorteile, 'schnelle heilung', 3),
     ),
-    hasPoorRegeneration: _containsNamedEntry(
-      nachteile,
-      'schlechte regeneration',
+    astralRegenerationLevel: math.max(
+      wirkungen.aspStufe,
+      _maxNamedLevel(vorteile, 'astrale regeneration', 3),
     ),
-    hasAstralBlock: _containsNamedEntry(nachteile, 'astraler block'),
+    hasPoorRegeneration:
+        wirkungen.schlechteRegeneration ||
+        _containsNamedEntry(nachteile, 'schlechte regeneration'),
+    hasAstralBlock:
+        wirkungen.astralerBlock ||
+        _containsNamedEntry(nachteile, 'astraler block'),
     talentRegenerationLevel: _maxNamedAbilityLevel(
       hero.talentSpecialAbilities,
       'regeneration',

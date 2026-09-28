@@ -1,7 +1,9 @@
+import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
 import 'package:dsa_heldenverwaltung/domain/attribute_modifiers.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_zuordnung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_source_breakdown.dart';
 
@@ -11,8 +13,11 @@ import 'package:dsa_heldenverwaltung/rules/derived/modifier_source_breakdown.dar
 /// startwerterhoehende Vorteile wie `Herausragende Eigenschaft`. Freie
 /// `CODE+N`-Fragmente aus Vor-/Nachteilen bleiben bewusst draussen — die
 /// beschreiben laufende Effekte, keine Generierungswerte.
-AttributeModifiers parseStartAttributeModifiers(HeroSheet hero) {
-  return parseModifierTextsForHero(hero).startAttributeMods;
+AttributeModifiers parseStartAttributeModifiers(
+  HeroSheet hero, {
+  required RulesCatalog? catalog,
+}) {
+  return parseModifierTextsForHero(hero, catalog: catalog).startAttributeMods;
 }
 
 /// Berechnet die effektiven Starteigenschaften aus Rohstart und Herkunftsmods.
@@ -29,10 +34,13 @@ Attributes computeEffectiveStartAttributes(
 /// Detail: `HeroSheet.startAttributes` traegt bereits das Ergebnis dieser
 /// Rechnung, und wer es erneut modifiziert, addiert die Herkunftsmods ein
 /// zweites Mal.
-Attributes computeHeroEffectiveStartAttributes(HeroSheet hero) {
+Attributes computeHeroEffectiveStartAttributes(
+  HeroSheet hero, {
+  required RulesCatalog? catalog,
+}) {
   return computeEffectiveStartAttributes(
     hero.rawStartAttributes,
-    parseStartAttributeModifiers(hero),
+    parseStartAttributeModifiers(hero, catalog: catalog),
   );
 }
 
@@ -58,9 +66,12 @@ Attributes computeAttributeMaximums(
 }
 
 /// Eigenschaftsmaxima eines Helden inklusive epischem Obergrenzenbonus.
-Attributes computeHeroAttributeMaximums(HeroSheet hero) {
+Attributes computeHeroAttributeMaximums(
+  HeroSheet hero, {
+  required RulesCatalog? catalog,
+}) {
   return computeAttributeMaximums(
-    computeHeroEffectiveStartAttributes(hero),
+    computeHeroEffectiveStartAttributes(hero, catalog: catalog),
     epicBonus: hero.epicAttributeMaxBonus,
   );
 }
@@ -89,7 +100,11 @@ List<String> pendingAttributeTraitNotices(HeroSheet hero) {
     rasseModText: '',
     kulturModText: '',
     professionModText: '',
-    vorteileText: hero.vorteileText,
+    // Die Liste fuehrt (ARCH-02); der Hinweis betrifft nur Bestandshelden.
+    vorteileText: wirksamerMerkmalText(
+      hero.vorteileText,
+      hero.vorteilEintraege,
+    ),
     nachteileText: '',
   ).startAttributeMods;
 

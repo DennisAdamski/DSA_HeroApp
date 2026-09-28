@@ -45,7 +45,12 @@ enum Bestandsheld {
   /// Wie [steigerungshistorie], der letzte Verlaufseintrag hat aber eine
   /// Steigerungsart aus einer neueren App-Version. Bis zur Behebung von
   /// Befund ARCH-07-B5 machte er den ganzen Helden unlesbar.
-  unbekannteSteigerungsart('f08b_unbekannte_steigerungsart');
+  unbekannteSteigerungsart('f08b_unbekannte_steigerungsart'),
+
+  /// Vor- und Nachteile im strukturierten Format (ARCH-02): katalogisierte
+  /// Eintraege mit Wirkung, freie Fragmente (`LEP+2`, eigener Tick) und ein
+  /// mehrdeutiger Alttext mit Kandidaten. Text = Projektion der Liste.
+  strukturierteMerkmale('f09_strukturierte_merkmale');
 
   const Bestandsheld(this.datei);
 

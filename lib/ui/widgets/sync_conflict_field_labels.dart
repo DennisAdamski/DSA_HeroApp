@@ -40,6 +40,8 @@ const Map<String, String> syncFieldLabels = <String, String>{
   'muttersprache': 'Muttersprache',
   'vorteileText': 'Vorteile',
   'nachteileText': 'Nachteile',
+  'vorteilEintraege': 'Vorteile (strukturiert)',
+  'nachteilEintraege': 'Nachteile (strukturiert)',
   'apTotal': 'AP gesamt',
   'apSpent': 'AP ausgegeben',
   'apAvailable': 'AP frei',

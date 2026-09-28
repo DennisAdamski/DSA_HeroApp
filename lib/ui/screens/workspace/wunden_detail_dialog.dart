@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/epic_wound_relief.dart';
 import 'package:dsa_heldenverwaltung/domain/dice_log_entry.dart';
@@ -415,7 +416,10 @@ class _SbProbeSection extends StatelessWidget {
         FilledButton.tonalIcon(
           onPressed: hatSb
               ? () {
-                  final effectiveAttrs = computeEffectiveAttributes(hero);
+                  final effectiveAttrs = computeEffectiveAttributes(
+                    hero,
+                    catalog: ref.read(rulesCatalogProvider).valueOrNull,
+                  );
                   const sbCodes = [
                     AttributeCode.mu,
                     AttributeCode.ko,

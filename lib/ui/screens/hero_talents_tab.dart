@@ -49,6 +49,8 @@ import 'package:dsa_heldenverwaltung/ui/widgets/erwerb_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_edit_controller.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/karto_variante.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/hero_begabung_rules.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/begabung_haekchen.dart';
 
 part 'hero_talents/hero_talents_cells.dart';
 part 'hero_talents/hero_talents_edit_actions.dart';
@@ -133,6 +135,10 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
   /// demselben Grund wie [_tabellenAnsicht] in `build` gelesen.
   bool _epicAdvantagesActive = false;
   CatalogRuleResolver _latestCatalogRuleResolver = const CatalogRuleResolver();
+
+  /// Zuletzt gebauter Regelkatalog; die Tabellen rechnen Vor-/Nachteile damit
+  /// ueber ihre Katalog-ID (ARCH-02).
+  RulesCatalog? _latestCatalog;
   Map<String, HeroTalentEntry> _draftTalents = <String, HeroTalentEntry>{};
   List<HeroMetaTalent> _draftMetaTalents = <HeroMetaTalent>[];
   Set<String> _invalidCombatTalentIds = <String>{};
@@ -232,6 +238,7 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
             Center(child: Text('Katalog-Fehler: $error')),
         data: (catalog) {
           _latestCatalogRuleResolver = catalog.ruleResolver;
+          _latestCatalog = catalog;
           final combatBaseBe = widget.scope == _TalentTabScope.nonCombat
               ? computeCombatPreviewStats(
                   hero,
@@ -239,6 +246,7 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
                   catalogTalents: catalog.talents,
                   catalogManeuvers: catalog.maneuvers,
                   catalogCombatSpecialAbilities: catalog.combatSpecialAbilities,
+                  catalog: catalog,
                 ).beKampf
               : null;
           final talentBeOverride = ref.watch(talentBeOverrideProvider(hero.id));
@@ -252,6 +260,7 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
               ? computeEffectiveAttributes(
                   hero,
                   tempAttributeMods: state.tempAttributeMods,
+                  catalog: catalog,
                 )
               : null;
           return ValueListenableBuilder<int>(

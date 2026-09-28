@@ -3,6 +3,7 @@ part of '../hero_magic_tab.dart';
 /// Sektion zur Verwaltung heldenspezifischer Ritualkategorien und Rituale.
 class _MagicRitualsSection extends StatelessWidget {
   const _MagicRitualsSection({
+    this.begabungen,
     required this.ritualCategories,
     required this.catalogTalents,
     required this.heroTalents,
@@ -13,6 +14,9 @@ class _MagicRitualsSection extends StatelessWidget {
     this.episch = false,
     this.onApKostenBestaetigt,
   });
+
+  /// Begabungen aus Vor-/Nachteilen; `null` wirkt nicht.
+  final HeroBegabungen? begabungen;
 
   final List<HeroRitualCategory> ritualCategories;
   final List<TalentDef> catalogTalents;
@@ -25,6 +29,10 @@ class _MagicRitualsSection extends StatelessWidget {
 
   /// Wird nach einem bestaetigten Erwerbsdialog aufgerufen.
   final ValueChanged<int>? onApKostenBestaetigt;
+
+  LernspaltenBefund _befundFuer(HeroRitualCategory category) {
+    return begabungen?.ritualkenntnis(category) ?? LernspaltenBefund.keiner;
+  }
 
   Future<void> _addCategory(BuildContext context) async {
     await onEnsureEditing?.call();
@@ -199,7 +207,11 @@ class _MagicRitualsSection extends StatelessWidget {
                   childrenPadding: const EdgeInsets.only(bottom: 8),
                   title: Text(category.name),
                   subtitle: Text(
-                    _buildCategorySummary(category, resolvedTalents),
+                    _buildCategorySummary(
+                      category,
+                      resolvedTalents,
+                      _befundFuer(category),
+                    ),
                     style: theme.textTheme.bodySmall,
                   ),
                   trailing: isEditing
@@ -232,6 +244,7 @@ class _MagicRitualsSection extends StatelessWidget {
                       context,
                       category: category,
                       resolvedTalents: resolvedTalents,
+                      befund: _befundFuer(category),
                     ),
                     if (category.additionalFieldDefs.isNotEmpty) ...[
                       const SizedBox(height: 8),
@@ -297,7 +310,14 @@ class _MagicRitualsSection extends StatelessWidget {
                           ),
                           dense: true,
                           contentPadding: EdgeInsets.zero,
-                          title: Text(ritual.name),
+                          title: _ritualTitel(
+                            ritual.name,
+                            begabungen?.ritualBegabungen(ritual.name) ??
+                                const <String>[],
+                            key: ValueKey<String>(
+                              'magic-ritual-begabt-$categoryIndex-$ritualIndex',
+                            ),
+                          ),
                           subtitle: Text(
                             _buildRitualSummary(ritual),
                             style: theme.textTheme.bodySmall,
@@ -361,6 +381,7 @@ Widget _buildKnowledgeSummary(
   BuildContext context, {
   required HeroRitualCategory category,
   required List<ResolvedRitualTalent> resolvedTalents,
+  required LernspaltenBefund befund,
 }) {
   final theme = Theme.of(context);
   if (category.knowledgeMode == HeroRitualKnowledgeMode.ownKnowledge) {
@@ -371,7 +392,8 @@ Widget _buildKnowledgeSummary(
       contentPadding: EdgeInsets.zero,
       title: const Text('Ritualkenntnis'),
       subtitle: Text(
-        'TaW ${ownKnowledge.value}  |  Komplexitaet ${ownKnowledge.learningComplexity}',
+        'TaW ${ownKnowledge.value}  |  '
+        'Komplexitaet ${_komplexitaetText(ownKnowledge, befund)}',
         style: theme.textTheme.bodySmall,
       ),
     );
@@ -400,11 +422,13 @@ Widget _buildKnowledgeSummary(
 String _buildCategorySummary(
   HeroRitualCategory category,
   List<ResolvedRitualTalent> resolvedTalents,
+  LernspaltenBefund befund,
 ) {
   if (category.knowledgeMode == HeroRitualKnowledgeMode.ownKnowledge) {
     final knowledge =
         category.ownKnowledge ?? buildDefaultRitualKnowledge(category.name);
-    return 'Ritualkenntnis, TaW ${knowledge.value}, Kompl. ${knowledge.learningComplexity}';
+    return 'Ritualkenntnis, TaW ${knowledge.value}, '
+        'Kompl. ${_komplexitaetText(knowledge, befund)}';
   }
   if (resolvedTalents.isEmpty) {
     return 'Talentbasiert, keine Talente verknuepft';
@@ -438,4 +462,46 @@ String _ritualFieldTypeLabel(HeroRitualFieldType type) {
     case HeroRitualFieldType.threeAttributes:
       return '3 Eigenschaften';
   }
+}
+
+// Wirksame Komplexitaet; eine Verschiebung nennt Basis und Quelle.
+String _komplexitaetText(
+  HeroRitualKnowledge knowledge,
+  LernspaltenBefund befund,
+) {
+  final basis = knowledge.learningComplexity;
+  final wirksam = effektiveRitualkenntnisKomplexitaet(
+    basisKomplexitaet: basis,
+    befund: befund,
+  );
+  if (wirksam == basis) {
+    return basis;
+  }
+  final quellen = <String>[
+    ...befund.begabungsQuellen,
+    ...befund.unfaehigkeitsQuellen,
+  ].join(', ');
+  return '$wirksam (Basis $basis; $quellen)';
+}
+
+// Ritualname, bei Begabung mit Marke und Quelle als Tooltip.
+Widget _ritualTitel(String name, List<String> begabungen, {required Key key}) {
+  if (begabungen.isEmpty) {
+    return Text(name);
+  }
+  return Row(
+    children: [
+      Flexible(child: Text(name)),
+      const SizedBox(width: 4),
+      Tooltip(
+        key: key,
+        message: 'Begabung: ${begabungen.join(', ')}',
+        child: const Icon(
+          Icons.auto_awesome,
+          size: 16,
+          semanticLabel: 'Begabung',
+        ),
+      ),
+    ],
+  );
 }

@@ -1,3 +1,4 @@
+import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
@@ -58,8 +59,14 @@ class DerivedStats {
 /// 2. Attributmodifikatoren auf Basisattribute anwenden
 /// 3. Stat-Modifikatoren aus persistent + geparst + temporaer zusammenfuehren
 /// 4. Einzelformeln aus Ressourcen-/Kampfbasis-/Ini-Regeln auswerten
-DerivedStats computeDerivedStats(HeroSheet sheet, HeroState state) {
-  final parsed = parseModifierTextsForHero(sheet);
+///
+/// Mit [catalog] wirken Vor- und Nachteile über ihre Katalog-ID (ARCH-02).
+DerivedStats computeDerivedStats(
+  HeroSheet sheet,
+  HeroState state, {
+  RulesCatalog? catalog,
+}) {
+  final parsed = parseModifierTextsForHero(sheet, catalog: catalog);
   final namedAttrMods = aggregateNamedAttributeModifiers(
     sheet.attributeModifiers,
   );

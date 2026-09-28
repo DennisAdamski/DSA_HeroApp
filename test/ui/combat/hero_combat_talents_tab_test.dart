@@ -13,6 +13,8 @@ import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_talents_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 
+import '../../test_support/begabung_katalog.dart';
+
 void main() {
   HeroSheet buildHero({
     Attributes attributes = const Attributes(
@@ -199,6 +201,69 @@ void main() {
       await tester.pumpAndSettle();
     },
   );
+
+  testWidgets('Nahkampf-Begabung und Fernkampf-Unfähigkeit aus Merkmalen', (
+    tester,
+  ) async {
+    final repo = FakeRepository(
+      heroes: [
+        buildHero(
+          talents: const <String, HeroTalentEntry>{
+            'tal_nah': HeroTalentEntry(),
+            'tal_fern': HeroTalentEntry(),
+          },
+        ).copyWith(
+          vorteileText: 'Begabung für Nahkampf-Talente',
+          nachteileText: 'Unfähigkeit Fernkampf-Talente',
+        ),
+      ],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+    final catalog = mitKatalogMerkmalen(
+      buildCatalog(),
+      vorteilIds: const ['adv_begabung_nahkampf'],
+      nachteilIds: const ['dis_unfaehigkeit_fernkampf'],
+    );
+
+    final actions = await openCombatTab(tester, repo, catalog);
+
+    // Basis D: Dolche eine Spalte günstiger, Boegen eine teurer.
+    expect(find.text('C'), findsOneWidget);
+    expect(find.text('E'), findsOneWidget);
+    expect(find.byTooltip('Begabung für Nahkampf-Talente'), findsOneWidget);
+    expect(find.byTooltip('Unfähigkeit Fernkampf-Talente'), findsOneWidget);
+
+    // Maximum: GE/KK 13 + 5 bei Begabung, + 3 bei Unfähigkeit.
+    await tester.tap(find.text('Dolche'));
+    await tester.pumpAndSettle();
+    expect(find.text('18'), findsOneWidget);
+    await tester.tap(find.text('Schließen'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Boegen'));
+    await tester.pumpAndSettle();
+    expect(find.text('16'), findsOneWidget);
+    await tester.tap(find.text('Schließen'));
+    await tester.pumpAndSettle();
+
+    await actions.startEdit();
+    await tester.pumpAndSettle();
+    final haekchen = tester.widget<Checkbox>(
+      find.byKey(const ValueKey<String>('talents-gifted-tal_nah')),
+    );
+    expect(haekchen.value, isTrue);
+    expect(haekchen.onChanged, isNull);
+    expect(
+      find.byTooltip('Aus Vorteil: Begabung für Nahkampf-Talente'),
+      findsOneWidget,
+    );
+  });
 
   testWidgets('only shows combat talents present in hero.talents', (
     tester,
