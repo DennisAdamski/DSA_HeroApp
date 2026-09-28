@@ -224,7 +224,11 @@ void main() {
     final zukunft = mitZukunftsfeldern(
       (roh['hero'] as Map).cast<String, dynamic>(),
     );
+    final zukunftsZustand = zustandMitZukunftsfeldern(
+      (roh['state'] as Map).cast<String, dynamic>(),
+    );
     roh['hero'] = zukunft.json;
+    roh['state'] = zukunftsZustand.json;
     final bundle = await speicher.actions.parseImportJson(jsonEncode(roh));
     final id = await speicher.actions.importHeroBundle(
       bundle,
@@ -265,6 +269,7 @@ void main() {
         ),
       );
     });
+    await speicher.actions.updateHeroState(id, bearbeiteZustand);
     await speicher.schliessen();
     speicher = await oeffnen(pfad);
 
@@ -278,7 +283,17 @@ void main() {
           reason: '$heldId: $feldPfad',
         );
       }
+      for (final feldPfad in zukunftsZustand.pfade) {
+        expect(
+          wertAn(export['state'], feldPfad),
+          wertAn(zukunftsZustand.json, feldPfad),
+          reason: '$heldId (Zustand): $feldPfad',
+        );
+      }
     }
+    final zustand = (await speicher.repo.loadHeroState(id))!;
+    expect(zustand.tempMods.at, 1);
+    expect(zustand.diceLog, hasLength(2));
     final nachher = (await speicher.repo.loadHeroById(id))!;
     final armbrust = nachher.combatConfig.weaponSlots[1];
     expect(nachher.combatConfig.weaponSlots.map((slot) => slot.id), idsVorher);

@@ -1,3 +1,5 @@
+import 'package:dsa_heldenverwaltung/domain/unbekannte_json_felder.dart';
+
 /// Koerperzone fuer das Wunden-Tracking.
 enum WundZone {
   kopf,
@@ -35,6 +37,7 @@ class WundZustand {
     this.kopfIniMalus = 0,
     this.unterdrueckteWundenProZone = const <WundZone, int>{},
     this.kampfunfaehigIgnoriert = false,
+    this.unbekannteFelder = const <String, Object?>{},
   });
 
   /// Anzahl Wunden je Zone (0–3). Fehlende Zonen = 0 Wunden.
@@ -56,6 +59,19 @@ class WundZustand {
   /// Ob der Held Kampfunfaehigkeit (durch niedrige LeP oder 0 AuP)
   /// aktuell ignoriert. Rein informativ — kein Rundentracking.
   final bool kampfunfaehigIgnoriert;
+
+  /// JSON-Felder einer neueren App-Version; bleiben beim Speichern erhalten
+  /// (siehe `unbekannte_json_felder.dart`).
+  final Map<String, Object?> unbekannteFelder;
+
+  /// Alle Schluessel, die [fromJson] liest — einschliesslich der nur bedingt
+  /// geschriebenen; alles andere bleibt erhalten.
+  static const Set<String> jsonSchluessel = <String>{
+    'wundenProZone',
+    'kopfIniMalus',
+    'unterdrueckteWundenProZone',
+    'kampfunfaehigIgnoriert',
+  };
 
   /// Gibt die Wundenanzahl in der angegebenen [zone] zurueck.
   int wundenInZone(WundZone zone) => wundenProZone[zone] ?? 0;
@@ -95,6 +111,7 @@ class WundZustand {
     int? kopfIniMalus,
     Map<WundZone, int>? unterdrueckteWundenProZone,
     bool? kampfunfaehigIgnoriert,
+    Map<String, Object?>? unbekannteFelder,
   }) {
     return WundZustand(
       wundenProZone: wundenProZone ?? this.wundenProZone,
@@ -103,6 +120,7 @@ class WundZustand {
           unterdrueckteWundenProZone ?? this.unterdrueckteWundenProZone,
       kampfunfaehigIgnoriert:
           kampfunfaehigIgnoriert ?? this.kampfunfaehigIgnoriert,
+      unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
     );
   }
 
@@ -132,12 +150,7 @@ class WundZustand {
     final naechsterIniMalus = zone == WundZone.kopf
         ? kopfIniMalus + iniWuerfelWert
         : kopfIniMalus;
-    return WundZustand(
-      wundenProZone: naechste,
-      kopfIniMalus: naechsterIniMalus,
-      unterdrueckteWundenProZone: unterdrueckteWundenProZone,
-      kampfunfaehigIgnoriert: kampfunfaehigIgnoriert,
-    );
+    return copyWith(wundenProZone: naechste, kopfIniMalus: naechsterIniMalus);
   }
 
   /// Entfernt eine Wunde aus [zone] (min 0).
@@ -167,11 +180,10 @@ class WundZustand {
         naechsteUnterdrueckt.remove(zone);
       }
     }
-    return WundZustand(
+    return copyWith(
       wundenProZone: naechste,
       kopfIniMalus: naechsterIniMalus,
       unterdrueckteWundenProZone: naechsteUnterdrueckt,
-      kampfunfaehigIgnoriert: kampfunfaehigIgnoriert,
     );
   }
 
@@ -189,13 +201,13 @@ class WundZustand {
         unterdruecktMap[entry.key.name] = entry.value;
       }
     }
-    return {
+    return mitUnbekanntenFeldern(<String, dynamic>{
       'wundenProZone': zonenMap,
       'kopfIniMalus': kopfIniMalus,
       if (unterdruecktMap.isNotEmpty)
         'unterdrueckteWundenProZone': unterdruecktMap,
       if (kampfunfaehigIgnoriert) 'kampfunfaehigIgnoriert': true,
-    };
+    }, unbekannteFelder);
   }
 
   /// Robust gegen fehlende oder unbekannte Schluessel.
@@ -226,6 +238,7 @@ class WundZustand {
       unterdrueckteWundenProZone: unterdruecktMap,
       kampfunfaehigIgnoriert:
           (json['kampfunfaehigIgnoriert'] as bool?) ?? false,
+      unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
     );
   }
 }

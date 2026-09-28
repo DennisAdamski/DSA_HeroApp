@@ -69,11 +69,12 @@ class _SpellDurationFieldState extends State<SpellDurationField> {
       widget.onChanged(null);
       return;
     }
+    final neueMenge = isPermanent && amount <= 0 ? 1 : amount;
+    // Eine vorhandene Dauer wird per `copyWith` geaendert, damit unbekannte
+    // Felder erhalten bleiben; eine neue Menge laeuft wie bisher voll.
     widget.onChanged(
-      SpellDuration(
-        amount: isPermanent && amount <= 0 ? 1 : amount,
-        unit: _unit,
-      ),
+      widget.initialDuration?.copyWith(amount: neueMenge, unit: _unit) ??
+          SpellDuration(amount: neueMenge, unit: _unit),
     );
   }
 

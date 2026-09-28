@@ -1,4 +1,5 @@
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
+import 'package:dsa_heldenverwaltung/domain/unbekannte_json_felder.dart';
 
 /// Eintrag im pro Held persistierten Wuerfelprotokoll.
 ///
@@ -17,6 +18,7 @@ class DiceLogEntry {
     this.automaticOutcome = AutomaticOutcome.none,
     this.total,
     this.isNeutral = false,
+    this.unbekannteFelder = const <String, Object?>{},
   });
 
   /// Zeitpunkt der Probe (UTC empfohlen).
@@ -49,8 +51,28 @@ class DiceLogEntry {
   /// Kennzeichnet Wuerfe ohne Erfolgs-/Misslingenslogik.
   final bool isNeutral;
 
+  /// JSON-Felder einer neueren App-Version; bleiben beim Speichern erhalten
+  /// (siehe `unbekannte_json_felder.dart`).
+  final Map<String, Object?> unbekannteFelder;
+
+  /// Alle Schluessel, die [fromJson] liest — einschliesslich der nur bedingt
+  /// geschriebenen; alles andere bleibt erhalten. Eintraege sind
+  /// unveraenderlich und werden nur angehaengt oder verdraengt.
+  static const Set<String> jsonSchluessel = <String>{
+    'timestamp',
+    'type',
+    'title',
+    'subtitle',
+    'success',
+    'diceValues',
+    'targetValue',
+    'automaticOutcome',
+    'total',
+    'isNeutral',
+  };
+
   Map<String, dynamic> toJson() {
-    return <String, dynamic>{
+    return mitUnbekanntenFeldern(<String, dynamic>{
       'timestamp': timestamp.toIso8601String(),
       'type': type.name,
       'title': title,
@@ -61,7 +83,7 @@ class DiceLogEntry {
       'automaticOutcome': automaticOutcome.name,
       if (total != null) 'total': total,
       if (isNeutral) 'isNeutral': true,
-    };
+    }, unbekannteFelder);
   }
 
   static DiceLogEntry fromJson(Map<String, dynamic> json) {
@@ -80,6 +102,7 @@ class DiceLogEntry {
       ),
       total: (json['total'] as num?)?.toInt(),
       isNeutral: json['isNeutral'] as bool? ?? false,
+      unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
     );
   }
 }

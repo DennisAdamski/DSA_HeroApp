@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dsa_heldenverwaltung/domain/active_spell_effects_state.dart';
+import 'package:dsa_heldenverwaltung/domain/attribute_modifiers.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
@@ -141,6 +142,80 @@ void main() {
     expect(detail.duration?.amount, 2);
     expect(detail.duration?.remaining, 2);
     expect(detail.duration?.unit, SpellDurationUnit.spielrunden);
+  });
+
+  testWidgets('Bearbeiten und Abschalten erhalten Felder einer neueren '
+      'App-Version', (tester) async {
+    const feld = <String, Object?>{'zukunftsfeld': 1};
+    final effects = const ActiveSpellEffectsState(unbekannteFelder: feld)
+        .withToggled(activeSpellEffectArmatrutz, true)
+        .withToggled(activeSpellEffectAttributo, true)
+        .withDetail(
+          activeSpellEffectArmatrutz,
+          ActiveSpellEffectDetail(
+            amount: 3,
+            duration: SpellDuration(
+              amount: 4,
+              unit: SpellDurationUnit.spielrunden,
+              unbekannteFelder: feld,
+            ),
+            unbekannteFelder: feld,
+          ),
+        );
+    final repo = await openDialog(
+      tester,
+      initialState: const HeroState(
+        currentLep: 30,
+        currentAsp: 30,
+        currentKap: 0,
+        currentAu: 20,
+        tempAttributeMods: AttributeModifiers(kk: 2, unbekannteFelder: feld),
+      ).copyWith(activeSpellEffects: effects),
+    );
+
+    await tester.tap(
+      find.byKey(
+        const ValueKey<String>(
+          'active-spell-edit-value-effect_spell_armatrutz',
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const ValueKey<String>('armatrutz-input-rs')),
+      '5',
+    );
+    await tester.enterText(
+      find.byKey(const ValueKey<String>('armatrutz-duration-amount')),
+      '6',
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(const ValueKey<String>('armatrutz-input-confirm')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(
+        const ValueKey<String>('active-spell-toggle-effect_spell_attributo'),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final state = (await repo.loadHeroState('demo'))!;
+    final detail = state.activeSpellEffects.detailFor(
+      activeSpellEffectArmatrutz,
+    );
+    expect(detail.amount, 5);
+    expect(detail.duration?.amount, 6);
+    expect(detail.unbekannteFelder, feld);
+    expect(detail.duration?.unbekannteFelder, feld);
+    expect(state.activeSpellEffects.unbekannteFelder, feld);
+    expect(
+      state.activeSpellEffects.isActive(activeSpellEffectAttributo),
+      isFalse,
+    );
+    expect(state.tempAttributeMods.kk, 0);
+    expect(state.tempAttributeMods.unbekannteFelder, feld);
   });
 
   testWidgets('Der Kostenhinweis folgt der Eingabe von RS und ZfP*', (

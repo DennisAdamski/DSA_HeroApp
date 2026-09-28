@@ -1,10 +1,12 @@
 import 'dart:convert';
 
+import 'package:dsa_heldenverwaltung/domain/active_spell_effects_state.dart';
 import 'package:dsa_heldenverwaltung/domain/avatar_gallery_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/avatar_gesichtsbefund.dart';
 import 'package:dsa_heldenverwaltung/domain/avatar_snapshot.dart';
 import 'package:dsa_heldenverwaltung/domain/aventurian_date.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
+import 'package:dsa_heldenverwaltung/domain/dice_log_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_advancement_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_adventure_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_companion.dart';
@@ -18,10 +20,14 @@ import 'package:dsa_heldenverwaltung/domain/hero_rituals.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_spell_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_spell_text_overrides.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
 import 'package:dsa_heldenverwaltung/domain/magic_special_ability.dart';
+import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
+import 'package:dsa_heldenverwaltung/domain/spell_duration.dart';
 import 'package:dsa_heldenverwaltung/domain/talent_special_ability.dart';
+import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
 
 /// Ein Held im heutigen Format und derselbe Held, wie ihn eine gedachte
 /// neuere App-Version mit zusaetzlichen verschachtelten Feldern schreibt.
@@ -586,6 +592,74 @@ List<String> _grundwerteAvatarVerlauf(Map<String, dynamic> basis) {
     'avatarSnapshot',
     'advancementHistory/0',
   ];
+}
+
+/// Laufender Zaubereffekt, den die Zustandsbasis ergaenzt (Armatrutz).
+const String zukunftsEffekt = 'effect_spell_armatrutz';
+
+/// Wie [mitZukunftsfeldern] fuer den Laufzeitzustand [zustandJson] von f01.
+///
+/// Ergaenzt einen laufenden Armatrutz mit Wert und Wirkungsdauer; Wunde,
+/// Wuerfelprotokoll und Modifikatoren bringt f01 selbst mit.
+Zukunftsheld zustandMitZukunftsfeldern(Map<String, dynamic> zustandJson) {
+  final basis = _tiefeKopie(zustandJson);
+  _pruefe((basis['diceLog'] as List).isNotEmpty, 'Würfelprotokoll');
+  _pruefe(basis['wpiZustand'] is Map, 'Wundenzustand');
+  final effekte = basis['activeSpellEffects'] as Map<String, dynamic>;
+  _pruefe((effekte['activeEffectIds'] as List).isEmpty, 'keine Effekte');
+  basis['activeSpellEffects'] = const ActiveSpellEffectsState()
+      .withToggled(zukunftsEffekt, true)
+      .withDetail(
+        zukunftsEffekt,
+        ActiveSpellEffectDetail(
+          amount: 2,
+          duration: SpellDuration(
+            amount: 4,
+            unit: SpellDurationUnit.kampfrunden,
+          ),
+        ),
+      )
+      .toJson();
+  return _mitFeldern(basis, const <String>[
+    'tempMods',
+    'tempAttributeMods',
+    'activeSpellEffects',
+    'activeSpellEffects/effectDetails/$zukunftsEffekt',
+    'activeSpellEffects/effectDetails/$zukunftsEffekt/duration',
+    'wpiZustand',
+    'diceLog/0',
+  ]);
+}
+
+/// Bearbeitet in [zustand] je Modell an einem Zukunftspfad ein bekanntes
+/// Feld, wie es Inspector, Zauberdialog und Wundenkarte tun.
+HeroState bearbeiteZustand(HeroState zustand) {
+  final effekte = zustand.activeSpellEffects;
+  final detail = effekte.detailFor(zukunftsEffekt);
+  return zustand
+      .copyWith(
+        tempMods: zustand.tempMods.copyWith(at: 1),
+        tempAttributeMods: zustand.tempAttributeMods.copyWith(ge: 1),
+        activeSpellEffects: effekte.withDetail(
+          zukunftsEffekt,
+          detail.copyWith(
+            amount: 3,
+            duration: detail.duration!.copyWith(remaining: 3),
+          ),
+        ),
+        wpiZustand: zustand.wpiZustand.mitWundeHinzu(WundZone.brust),
+      )
+      .withAppendedDiceLog(
+        DiceLogEntry(
+          timestamp: DateTime.utc(2026, 9, 28, 20),
+          type: ProbeType.attribute,
+          title: 'Mut',
+          subtitle: '',
+          success: true,
+          diceValues: const <int>[3],
+          targetValue: 14,
+        ),
+      );
 }
 
 // Setzt an jedem Pfad ein Zukunftsfeld und liefert den fertigen Helden.

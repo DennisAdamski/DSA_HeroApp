@@ -9,12 +9,20 @@
 /// Bestandsdaten enthalten keine unbekannten Schluessel; ihr JSON und damit
 /// ihr Inhalts-Hash bleiben unveraendert.
 ///
-/// Neben `HeroSheet` und `HeroState` tragen die Ausruestungsmodelle
-/// (`CombatConfig` mit Waffen, Fernkampfprofil, Geschossen, Distanzstufen,
-/// Ruestung und Nebenhand sowie `HeroInventoryEntry` mit seinen
-/// Modifikatoren) je einen eigenen Satz. Das wirkt nur, solange Aenderungen
-/// ueber `copyWith` der vorhandenen Instanz laufen; wer ein bestehendes
-/// Objekt per Konstruktor neu aufbaut, verliert die Felder.
+/// Neben `HeroSheet` und `HeroState` traegt **jedes** verschachtelte Modell,
+/// das in ihrem JSON steht, einen eigenen Satz und ein eigenes
+/// `jsonSchluessel` (Ausruestung, Kampfeinstellungen, Talente, Zauber,
+/// Rituale, Sprachen, Sonderfertigkeiten, Begleiter, Abenteuer, Notizen,
+/// Kontakte, Gruppen, Reisebericht, Eigenschaften und Grundwerte, SE-Pools,
+/// Bilder, Steigerungsverlauf sowie die Teilmodelle des Laufzeitzustands).
+/// Das wirkt nur, solange Aenderungen ueber `copyWith` der vorhandenen
+/// Instanz laufen; wer ein bestehendes Objekt per Konstruktor neu aufbaut,
+/// verliert die Felder. Neu errechnete Werte werden deshalb per `copyWith`
+/// (bzw. `uebernimmWerte` bei `Attributes`/`AttributeModifiers`) in die
+/// vorhandene Instanz uebernommen.
+///
+/// Ausgenommen ist nur `OffhandSlot`: der Altschluessel `offhand` wird beim
+/// Laden migriert und nie geschrieben.
 library;
 
 /// Liefert alle Eintraege aus [json], deren Schluessel nicht in [bekannt]
