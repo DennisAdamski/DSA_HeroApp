@@ -97,7 +97,7 @@ void main() {
               heroId: held.id,
               bestand: bestand ?? TestBestand(),
               aktion: (auftrag) => auftrag(),
-              vorAbenteuerbearbeitung: vorAbenteuer ?? () async => true,
+              vorHeldenbearbeitung: vorAbenteuer ?? () async => true,
             ),
           ),
         ),
@@ -290,6 +290,56 @@ void main() {
       expect(tester.takeException(), isNull);
     });
   }
+
+  group('Vor- und Nachteile', () {
+    testWidgets('stehen nach den Eigenschaften und vor dem Kampf', (
+      tester,
+    ) async {
+      await zeige(
+        tester,
+        held: weltlich().copyWith(
+          vorteileText: 'Flink',
+          nachteileText: 'Goldgier 6',
+        ),
+      );
+      final titel = find.text('Vor- und Nachteile');
+      expect(titel, findsOneWidget);
+      expect(find.textContaining('Flink'), findsOneWidget);
+      expect(find.textContaining('Goldgier 6'), findsOneWidget);
+      final oben = tester.getTopLeft(find.text('Eigenschaften')).dy;
+      final mitte = tester.getTopLeft(titel).dy;
+      final unten = tester.getTopLeft(find.text('Kampf')).dy;
+      expect(oben < mitte && mitte < unten, isTrue);
+    });
+
+    testWidgets('Bearbeiten prüft zuerst die Verwaltung', (tester) async {
+      var geprueft = 0;
+      await zeige(
+        tester,
+        held: weltlich(),
+        breite: 1024,
+        vorAbenteuer: () async {
+          geprueft++;
+          return false;
+        },
+      );
+      await tester.tap(find.byKey(const ValueKey('karto-spiel-merkmale')));
+      await tester.pumpAndSettle();
+      expect(geprueft, 1);
+      expect(find.byType(BottomSheet), findsNothing);
+    });
+
+    testWidgets('Bearbeiten öffnet das Merkmalsblatt', (tester) async {
+      await zeige(tester, held: weltlich(), breite: 1024);
+      await tester.tap(find.byKey(const ValueKey('karto-spiel-merkmale')));
+      await tester.pumpAndSettle();
+      expect(find.byType(BottomSheet), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('karto-merkmal-neu-vorteile')),
+        findsOneWidget,
+      );
+    });
+  });
 
   testWidgets('dunkle Palette rendert dieselbe Anordnung', (tester) async {
     await zeige(

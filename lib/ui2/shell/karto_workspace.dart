@@ -325,7 +325,7 @@ class _KartoWorkspaceState extends ConsumerState<KartoWorkspace> {
     bestand: widget.bestand,
     aktion: _laufzeitAktion,
     // Dieselbe Editorprüfung wie vor aufgelegten Screens.
-    vorAbenteuerbearbeitung: _pruefeEditor,
+    vorHeldenbearbeitung: _pruefeEditor,
   );
 
   // Während einer Sitzung bleiben sämtliche manuellen Schreibwege gesperrt.

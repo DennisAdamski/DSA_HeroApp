@@ -37,6 +37,7 @@ class MerkmalAnzeige {
     required this.detail,
     required this.wirkungen,
     required this.herkunft,
+    required this.kurz,
     this.def,
   });
 
@@ -54,6 +55,10 @@ class MerkmalAnzeige {
 
   /// Herkunft des Eintrags.
   final MerkmalHerkunft herkunft;
+
+  /// Kurzform fuer Uebersichten, z. B. `Jähzorn 6`: mit aktuellem
+  /// Katalognamen gebildet, bei freien Eintraegen der gespeicherte Text.
+  final String kurz;
 
   /// Zugehoeriger Katalogeintrag, sofern vorhanden.
   final HeroTraitDef? def;
@@ -83,6 +88,7 @@ MerkmalAnzeige beschreibeMerkmal(
       name: eintrag.text,
       detail: '',
       wirkungen: const <String>[],
+      kurz: eintrag.text,
       herkunft: eintrag.istKatalogisiert
           ? MerkmalHerkunft.unbekannt
           : eintrag.brauchtPruefung
@@ -104,6 +110,7 @@ MerkmalAnzeige beschreibeMerkmal(
           .whereType<String>(),
     ),
     herkunft: MerkmalHerkunft.katalog,
+    kurz: merkmalTextFuer(def, auswahl: eintrag.auswahl, wert: eintrag.wert),
     def: def,
   );
 }
