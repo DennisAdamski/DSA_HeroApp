@@ -39,6 +39,9 @@ import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/rest_rules.dart';
 
+import '../test_support/hero_fixtures.dart';
+import '../test_support/zukunftsfelder.dart';
+
 /// Ein verschachteltes Heldenmodell im Tabellentest: voll belegte Instanz,
 /// Laden und eine Bearbeitung ueber `copyWith`.
 ///
@@ -782,7 +785,110 @@ void _pruefeModelle(String gruppe, List<_Modell> modelle) {
   });
 }
 
+/// JSON-Stellen, die Woerterbuecher (Schluessel → Wert) sind und keine
+/// Modelle: dort ist jeder Schluessel ein Eintrag, kein Feld.
+final _woerterbuecher = <RegExp>[
+  RegExp(r'^(talents|spells|sprachen|schriften)$'),
+  RegExp(r'^(repraesentationsTraditionen|statModifiers|attributeModifiers)$'),
+  RegExp(r'^reisebericht/(openEntries|wahlSeZuordnungen)$'),
+  RegExp(r'^companions/\d+/steigerungen$'),
+  RegExp(r'^advancementHistory/\d+/options$'),
+  RegExp(r'^avatarSnapshot/attributes$'),
+  RegExp(r'^activeSpellEffects/effectDetails$'),
+  RegExp(r'^wpiZustand/(wundenProZone|unterdrueckteWundenProZone)$'),
+  // Spiegelt nur die gewaehlte Waffe und wird aus ihr neu geschrieben.
+  RegExp(r'^combatConfig/mainWeapon(/|$)'),
+];
+
+// Alle Pfade in [json], an denen ein Modell (eine Map) steht.
+List<String> _objektPfade(Object? json, [String pfad = '']) {
+  if (json is Map) {
+    return <String>[
+      if (pfad.isNotEmpty && !_woerterbuecher.any((m) => m.hasMatch(pfad)))
+        pfad,
+      for (final eintrag in json.entries)
+        ..._objektPfade(
+          eintrag.value,
+          pfad.isEmpty ? '${eintrag.key}' : '$pfad/${eintrag.key}',
+        ),
+    ];
+  }
+  if (json is List) {
+    return <String>[
+      for (var i = 0; i < json.length; i++)
+        ..._objektPfade(json[i], pfad.isEmpty ? '$i' : '$pfad/$i'),
+    ];
+  }
+  return const <String>[];
+}
+
+// Prueft fuer jede Objektebene von [json], ob [lade] ein dort gesetztes
+// Zukunftsfeld zurueckschreibt; liefert die Pfade, an denen es verloren geht.
+List<String> _verloreneEbenen(
+  Map<String, dynamic> json,
+  Map<String, dynamic> Function(Map<String, dynamic>) lade,
+) {
+  final verloren = <String>[];
+  for (final pfad in _objektPfade(json)) {
+    final kopie = jsonDecode(jsonEncode(json)) as Map<String, dynamic>;
+    (wertAn(kopie, pfad) as Map)['zukunftsfeld'] = 1;
+    if (wertAn(lade(kopie), '$pfad/zukunftsfeld') != 1) {
+      verloren.add(pfad);
+    }
+  }
+  return verloren;
+}
+
 void main() {
+  group('Vollständigkeit: jede Objektebene bewahrt unbekannte Felder', () {
+    test('Held (f01 samt allen Beispielinhalten)', () {
+      final roh = ladeBestandsheldJson(Bestandsheld.kriegerNormal);
+      final basis = mitZukunftsfeldern(
+        (roh['hero'] as Map).cast<String, dynamic>(),
+      ).basis;
+      final json = HeroSheet.fromJson(basis).toJson();
+      final pfade = _objektPfade(json);
+
+      // Das Werkzeug deckt jede Objektebene ab, die der Held hat.
+      expect(pfade.length, greaterThan(60));
+      expect(
+        _verloreneEbenen(json, (j) => HeroSheet.fromJson(j).toJson()),
+        isEmpty,
+      );
+    });
+
+    test('Laufzeitzustand (f01 samt Zaubereffekt)', () {
+      final roh = ladeBestandsheldJson(Bestandsheld.kriegerNormal);
+      final basis = zustandMitZukunftsfeldern(
+        (roh['state'] as Map).cast<String, dynamic>(),
+      ).basis;
+      final json = HeroState.fromJson(basis).toJson();
+
+      expect(_objektPfade(json), hasLength(greaterThan(6)));
+      expect(
+        _verloreneEbenen(json, (j) => HeroState.fromJson(j).toJson()),
+        isEmpty,
+      );
+    });
+
+    for (final held in Bestandsheld.values) {
+      test('${held.datei}: jede vorhandene Objektebene', () {
+        final bundle = ladeBestandsheld(held);
+        final heldJson = bundle.hero.toJson();
+        final zustandJson = bundle.state.toJson();
+
+        expect(
+          _verloreneEbenen(heldJson, (j) => HeroSheet.fromJson(j).toJson()),
+          isEmpty,
+        );
+        expect(
+          _verloreneEbenen(zustandJson, (j) => HeroState.fromJson(j).toJson()),
+          isEmpty,
+        );
+      });
+    }
+  });
+
   _pruefeModelle('Kampfeinstellungen bewahren unbekannte Felder', _kampf);
   _pruefeModelle(
     'Talente, Zauber und Rituale bewahren unbekannte Felder',
