@@ -1,3 +1,5 @@
+import 'package:dsa_heldenverwaltung/domain/unbekannte_json_felder.dart';
+
 /// Typ eines Waffenmeister-Bonus im 15-Punkte-Baukasten.
 enum WaffenmeisterBonusType {
   /// Manoever-Erschwernis-Verminderung (1 Punkt pro -1).
@@ -57,6 +59,7 @@ class WaffenmeisterBonus {
     this.targetManeuver = '',
     this.description = '',
     this.customPointCost = 2,
+    this.unbekannteFelder = const <String, Object?>{},
   });
 
   /// Typ des Bonus.
@@ -74,6 +77,19 @@ class WaffenmeisterBonus {
   /// Manuell gesetzte Punktekosten (nur bei [customAdvantage], 2-5).
   final int customPointCost;
 
+  /// JSON-Felder einer neueren App-Version; bleiben beim Speichern erhalten
+  /// (siehe `unbekannte_json_felder.dart`).
+  final Map<String, Object?> unbekannteFelder;
+
+  /// Alle Schluessel, die [fromJson] liest; alles andere bleibt erhalten.
+  static const Set<String> jsonSchluessel = <String>{
+    'type',
+    'value',
+    'targetManeuver',
+    'description',
+    'customPointCost',
+  };
+
   /// Gibt eine Kopie mit selektiv ueberschriebenen Feldern zurueck.
   WaffenmeisterBonus copyWith({
     WaffenmeisterBonusType? type,
@@ -81,6 +97,7 @@ class WaffenmeisterBonus {
     String? targetManeuver,
     String? description,
     int? customPointCost,
+    Map<String, Object?>? unbekannteFelder,
   }) {
     return WaffenmeisterBonus(
       type: type ?? this.type,
@@ -88,18 +105,19 @@ class WaffenmeisterBonus {
       targetManeuver: targetManeuver ?? this.targetManeuver,
       description: description ?? this.description,
       customPointCost: customPointCost ?? this.customPointCost,
+      unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
     );
   }
 
   /// Serialisiert den Bonus zu einem JSON-kompatiblen Map.
   Map<String, dynamic> toJson() {
-    return {
+    return mitUnbekanntenFeldern(<String, dynamic>{
       'type': waffenmeisterBonusTypeToJson(type),
       'value': value,
       'targetManeuver': targetManeuver,
       'description': description,
       'customPointCost': customPointCost,
-    };
+    }, unbekannteFelder);
   }
 
   /// Deserialisiert einen [WaffenmeisterBonus] aus einem JSON-Map.
@@ -112,6 +130,7 @@ class WaffenmeisterBonus {
       targetManeuver: (json['targetManeuver'] as String?) ?? '',
       description: (json['description'] as String?) ?? '',
       customPointCost: (json['customPointCost'] as num?)?.toInt() ?? 2,
+      unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
     );
   }
 }
@@ -134,6 +153,7 @@ class WaffenmeisterConfig {
     this.requiredAttribute1Value = 13,
     this.requiredAttribute2 = 'KK',
     this.requiredAttribute2Value = 13,
+    this.unbekannteFelder = const <String, Object?>{},
   });
 
   /// Kampftalent-ID (z.B. "tal_schwerter").
@@ -169,6 +189,25 @@ class WaffenmeisterConfig {
   /// Mindestwert der zweiten Eigenschaft.
   final int requiredAttribute2Value;
 
+  /// JSON-Felder einer neueren App-Version; bleiben beim Speichern erhalten
+  /// (siehe `unbekannte_json_felder.dart`).
+  final Map<String, Object?> unbekannteFelder;
+
+  /// Alle Schluessel, die [fromJson] liest; alles andere bleibt erhalten.
+  static const Set<String> jsonSchluessel = <String>{
+    'talentId',
+    'weaponType',
+    'isSchild',
+    'bonuses',
+    'additionalWeaponTypes',
+    'styleName',
+    'masterName',
+    'requiredAttribute1',
+    'requiredAttribute1Value',
+    'requiredAttribute2',
+    'requiredAttribute2Value',
+  };
+
   /// Gibt eine Kopie mit selektiv ueberschriebenen Feldern zurueck.
   WaffenmeisterConfig copyWith({
     String? talentId,
@@ -182,6 +221,7 @@ class WaffenmeisterConfig {
     int? requiredAttribute1Value,
     String? requiredAttribute2,
     int? requiredAttribute2Value,
+    Map<String, Object?>? unbekannteFelder,
   }) {
     return WaffenmeisterConfig(
       talentId: talentId ?? this.talentId,
@@ -201,12 +241,13 @@ class WaffenmeisterConfig {
       requiredAttribute2: requiredAttribute2 ?? this.requiredAttribute2,
       requiredAttribute2Value:
           requiredAttribute2Value ?? this.requiredAttribute2Value,
+      unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
     );
   }
 
   /// Serialisiert die Waffenmeisterschaft zu einem JSON-kompatiblen Map.
   Map<String, dynamic> toJson() {
-    return {
+    return mitUnbekanntenFeldern(<String, dynamic>{
       'talentId': talentId,
       'weaponType': weaponType,
       'isSchild': isSchild,
@@ -218,7 +259,7 @@ class WaffenmeisterConfig {
       'requiredAttribute1Value': requiredAttribute1Value,
       'requiredAttribute2': requiredAttribute2,
       'requiredAttribute2Value': requiredAttribute2Value,
-    };
+    }, unbekannteFelder);
   }
 
   /// Deserialisiert eine [WaffenmeisterConfig] aus einem JSON-Map.
@@ -252,6 +293,7 @@ class WaffenmeisterConfig {
       requiredAttribute2: (json['requiredAttribute2'] as String?) ?? 'KK',
       requiredAttribute2Value:
           (json['requiredAttribute2Value'] as num?)?.toInt() ?? 13,
+      unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
     );
   }
 }

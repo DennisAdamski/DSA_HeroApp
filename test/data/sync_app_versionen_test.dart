@@ -94,11 +94,11 @@ void main() {
     await cloud.speichereFremdenStand(json, previousRevision: aktuell.revision);
   }
 
-  // Eine Aenderung mit einem Feld, das diese App nicht bewahren kann:
-  // `specialRules` gehoert nicht zu den Ausruestungsmodellen.
+  // Eine Aenderung, die diese App nicht verlustfrei darstellt: doppelte
+  // ausgeblendete Talente fasst sie beim Laden zusammen. Unbekannte Felder
+  // bewahrt sie inzwischen in allen verschachtelten Modellen.
   void verlustbehaftet(Map<String, dynamic> json) {
-    final kampf = json['combatConfig'] as Map<String, dynamic>;
-    (kampf['specialRules'] as Map<String, dynamic>)['zukunftsRegel'] = 1;
+    json['hiddenTalentIds'] = <String>['tal_zechen', 'tal_zechen'];
     json['dukaten'] = '99';
   }
 
@@ -134,12 +134,10 @@ void main() {
       await b.repo.syncNow();
 
       expect(cloud.heldSchreibvorgaenge[_krieger], vorher + 1);
-      // Restrisiko ausserhalb der Ausruestung: `specialRules` bewahrt nichts,
-      // hochgeladen wird die hiesige Fassung ohne das fremde Feld.
+      // Hochgeladen wird die hiesige, zusammengefasste Fassung.
       final online = (await cloud.loadHero(_krieger))!;
       expect(online.contentHash, await b.heldHash(_krieger));
-      final kampf = online.hero!.toJson()['combatConfig'] as Map;
-      expect(kampf['specialRules'], isNot(contains('zukunftsRegel')));
+      expect(online.hero!.toJson()['hiddenTalentIds'], <String>['tal_zechen']);
     });
 
     test('eine gleichzeitige fremde Änderung wird zum Konflikt statt '
@@ -230,7 +228,7 @@ void main() {
     });
   });
 
-  group('neuere Version mit Feldern in der Ausrüstung', () {
+  group('neuere Version mit Feldern in verschachtelten Modellen', () {
     late EchterKatalog katalog;
     late Zukunftsheld zukunft;
 
@@ -244,12 +242,17 @@ void main() {
         (roh['hero'] as Map).cast<String, dynamic>(),
       );
       // So schreibt die neuere Version: heutiges Format samt Slot-IDs,
-      // dazu ihre eigenen Felder an denselben Stellen.
-      zukunft = (
-        basis: basis.basis,
-        json: HeroSheet.fromJson(basis.json).toJson(),
-        pfade: basis.pfade,
-      );
+      // dazu ihre eigenen Felder an denselben Stellen. Gesetzt werden sie ins
+      // JSON, nicht ueber das hiesige Modell, das sie sonst schon verloere.
+      final heutig = HeroSheet.fromJson(basis.basis).toJson();
+      for (final pfad in basis.pfade) {
+        final eltern = pfad.substring(0, pfad.lastIndexOf('/'));
+        (wertAn(heutig, eltern) as Map)[zukunftsfeld] = wertAn(
+          basis.json,
+          pfad,
+        );
+      }
+      zukunft = (basis: basis.basis, json: heutig, pfade: basis.pfade);
       final aktuell = (await cloud.loadHero(_krieger))!;
       await cloud.speichereFremdenStand(
         zukunft.json,
@@ -277,6 +280,36 @@ void main() {
       expect(await a.heldHash(_krieger), online.contentHash);
     });
 
+    test('Mischbetrieb: das Echo der veröffentlichten App wird ohne Upload '
+        'und ohne Konflikt übernommen', () async {
+      final aktuell = (await cloud.loadHero(_krieger))!;
+      final echo = wieVeroeffentlichteApp(aktuell.hero!.toJson());
+      // Die veroeffentlichte App verwirft die Felder (Restrisiko 3); diese
+      // Version bewahrt, was sie vorfindet, und stellt nichts wieder her.
+      for (final pfad in zukunft.pfade) {
+        expect(wertAn(echo, pfad), isNull, reason: pfad);
+      }
+      await cloud.speichereFremdenStand(
+        echo,
+        previousRevision: aktuell.revision,
+      );
+      final schreibvorgaenge = cloud.schreibvorgaenge;
+
+      for (var runde = 0; runde < 2; runde++) {
+        await a.repo.syncNow();
+        await b.repo.syncNow();
+      }
+
+      expect(cloud.schreibvorgaenge, schreibvorgaenge);
+      expect(a.konflikte, isEmpty);
+      expect(b.konflikte, isEmpty);
+      expect(await a.heldHash(_krieger), await b.heldHash(_krieger));
+      final lokal = (await b.lokal.loadHeroById(_krieger))!.toJson();
+      for (final pfad in zukunft.pfade) {
+        expect(wertAn(lokal, pfad), isNull, reason: pfad);
+      }
+    });
+
     test('Bearbeiten über HeroActions und Abgleich erhalten die Felder auf '
         'beiden Geräten', () async {
       final container = ProviderContainer(
@@ -298,8 +331,10 @@ void main() {
             ],
           ),
         );
-        return held.copyWith(
-          combatConfig: held.combatConfig.copyWith(weapons: waffen),
+        return bearbeiteVerschachtelteModelle(
+          held.copyWith(
+            combatConfig: held.combatConfig.copyWith(weapons: waffen),
+          ),
         );
       });
       await b.repo.syncNow();

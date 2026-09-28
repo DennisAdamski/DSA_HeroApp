@@ -83,10 +83,10 @@ class CombatConfig {
   /// JSON-Felder einer neueren App-Version; bleiben beim Speichern erhalten
   /// (siehe `unbekannte_json_felder.dart`).
   ///
-  /// Gilt fuer diese Ebene und die Ausruestung darunter (Waffen samt
-  /// Fernkampfprofil, Ruestung, Nebenhand). [offhandAssignment],
-  /// [specialRules], [manualMods] und [waffenmeisterschaften] bewahren
-  /// Unbekanntes bewusst nicht; sie sind Einstellungen, keine Gegenstaende.
+  /// Gilt nur fuer diese Ebene; jedes Teilmodell darunter (Waffen samt
+  /// Fernkampfprofil, Ruestung, Nebenhand, [offhandAssignment],
+  /// [specialRules], [manualMods], [waffenmeisterschaften]) traegt einen
+  /// eigenen Satz.
   final Map<String, Object?> unbekannteFelder;
 
   /// Alle Schluessel, die [fromJson] liest — einschliesslich des
@@ -450,16 +450,23 @@ OffhandAssignment _normalizeOffhandAssignment(
       value.equipmentIndex >= 0 && value.equipmentIndex < equipmentCount
       ? value.equipmentIndex
       : -1;
+  // Per `copyWith`, damit unbekannte Felder der Auswahl erhalten bleiben.
   if (normalizedWeaponIndex == selectedWeaponIndex) {
-    return const OffhandAssignment();
+    return value.copyWith(weaponIndex: -1, equipmentIndex: -1);
   }
   if (normalizedWeaponIndex >= 0) {
-    return OffhandAssignment(weaponIndex: normalizedWeaponIndex);
+    return value.copyWith(
+      weaponIndex: normalizedWeaponIndex,
+      equipmentIndex: -1,
+    );
   }
   if (normalizedEquipmentIndex >= 0) {
-    return OffhandAssignment(equipmentIndex: normalizedEquipmentIndex);
+    return value.copyWith(
+      weaponIndex: -1,
+      equipmentIndex: normalizedEquipmentIndex,
+    );
   }
-  return const OffhandAssignment();
+  return value.copyWith(weaponIndex: -1, equipmentIndex: -1);
 }
 
 ({OffhandAssignment assignment, List<OffhandEquipmentEntry> equipment})

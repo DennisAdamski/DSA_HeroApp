@@ -1,12 +1,15 @@
 import 'dart:convert';
 
+import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
+
 /// Ein Held im heutigen Format und derselbe Held, wie ihn eine gedachte
 /// neuere App-Version mit zusaetzlichen verschachtelten Feldern schreibt.
 ///
-/// [basis] ist die Fixture samt einem Inventar-Modifikator am manuellen
-/// Eintrag (die Fixtures haben keinen), [json] traegt zusaetzlich an jeder
-/// Ebene der Ausruestung ein Feld `zukunftsfeld`. [pfade] nennt genau diese
-/// Stellen im Format von `jsonUnterschiede`.
+/// [basis] ist die Fixture samt Beispielinhalten an den Stellen, die sie
+/// selbst nicht belegt (siehe [mitZukunftsfeldern]); [json] traegt zusaetzlich
+/// an jeder verschachtelten Ebene ein Feld `zukunftsfeld`. [pfade] nennt genau
+/// diese Stellen im Format von `jsonUnterschiede`.
 typedef Zukunftsheld = ({
   Map<String, dynamic> basis,
   Map<String, dynamic> json,
@@ -22,8 +25,18 @@ const String zukunftsfeld = 'zukunftsfeld';
 /// Position 1 mit Geschoss, ein Ruestungsstueck, ein Nebenhand-Teil, einen
 /// manuellen und einen mit dieser Waffe verknuepften Inventareintrag. Die
 /// gewaehlte Waffe bleibt unberuehrt, weil `mainWeapon` nur sie spiegelt.
+///
+/// Was f01 nicht belegt, ergaenzt die Basis im heutigen Format: einen
+/// Inventar-Modifikator am manuellen Eintrag und eine Waffenmeisterschaft mit
+/// Bonus.
 Zukunftsheld mitZukunftsfeldern(Map<String, dynamic> heldJson) {
   final basis = _tiefeKopie(heldJson);
+  final pfade = <String>[..._ausruestung(basis), ..._kampfEinstellungen(basis)];
+  return _mitFeldern(basis, pfade);
+}
+
+/// Pfade der zehn Ausruestungsmodelle (Teilstand ARCH-03 vom 28.09.2026).
+List<String> _ausruestung(Map<String, dynamic> basis) {
   final eintraege = basis['inventoryEntries'] as List<dynamic>;
   final manuell = eintraege.indexWhere(
     (entry) => (entry as Map)['source'] == 'manuell',
@@ -54,7 +67,7 @@ Zukunftsheld mitZukunftsfeldern(Map<String, dynamic> heldJson) {
   );
   _pruefe(verknuepft >= 0, 'Inventareintrag zu Waffe 1');
 
-  final pfade = <String>[
+  return <String>[
     'combatConfig',
     'combatConfig/weapons/1',
     'combatConfig/weapons/1/rangedProfile',
@@ -67,10 +80,72 @@ Zukunftsheld mitZukunftsfeldern(Map<String, dynamic> heldJson) {
     'inventoryEntries/$manuell/modifiers/0',
     'inventoryEntries/$verknuepft',
   ];
+}
+
+/// Pfade der Kampfeinstellungen neben der Ausruestung.
+List<String> _kampfEinstellungen(Map<String, dynamic> basis) {
+  final kampf = basis['combatConfig'] as Map<String, dynamic>;
+  _pruefe(kampf['offhandAssignment'] is Map, 'Nebenhand-Auswahl');
+  _pruefe(kampf['specialRules'] is Map, 'Kampf-Sonderfertigkeiten');
+  _pruefe(kampf['manualMods'] is Map, 'manuelle Kampfmodifikatoren');
+  _pruefe(
+    (kampf['waffenmeisterschaften'] as List).isEmpty,
+    'keine Waffenmeisterschaft',
+  );
+  kampf['waffenmeisterschaften'] = <Object?>[
+    const WaffenmeisterConfig(
+      talentId: 'tal_schwerter',
+      weaponType: 'Langschwert',
+      bonuses: <WaffenmeisterBonus>[
+        WaffenmeisterBonus(type: WaffenmeisterBonusType.iniBonus, value: 1),
+      ],
+    ).toJson(),
+  ];
+  return const <String>[
+    'combatConfig/offhandAssignment',
+    'combatConfig/specialRules',
+    'combatConfig/manualMods',
+    'combatConfig/waffenmeisterschaften/0',
+    'combatConfig/waffenmeisterschaften/0/bonuses/0',
+  ];
+}
+
+/// Bearbeitet in [held] je Modell an einem Zukunftspfad ein bekanntes Feld,
+/// wie es die Editoren tun: per `copyWith` auf der vorhandenen Instanz.
+///
+/// Ergaenzt die Ausruestungsaenderungen der Ablauftests um die uebrigen
+/// Modelle. Die Aenderungen sind so gewaehlt, dass kein Regelabgleich sie
+/// wieder zuruecknimmt.
+HeroSheet bearbeiteVerschachtelteModelle(HeroSheet held) {
+  final kampf = held.combatConfig;
+  final meister = kampf.waffenmeisterschaften.single;
+  return held.copyWith(
+    combatConfig: kampf.copyWith(
+      offhandAssignment: kampf.offhandAssignment.copyWith(
+        weaponIndex: -1,
+        equipmentIndex: 0,
+      ),
+      specialRules: kampf.specialRules.copyWith(flink: true),
+      manualMods: kampf.manualMods.copyWith(iniWurf: 4),
+      waffenmeisterschaften: <WaffenmeisterConfig>[
+        meister.copyWith(
+          styleName: 'Garether Schule',
+          bonuses: <WaffenmeisterBonus>[
+            meister.bonuses.single.copyWith(value: 2),
+          ],
+        ),
+      ],
+    ),
+  );
+}
+
+// Setzt an jedem Pfad ein Zukunftsfeld und liefert den fertigen Helden.
+Zukunftsheld _mitFeldern(Map<String, dynamic> basis, List<String> pfade) {
   final json = _tiefeKopie(basis);
   for (final pfad in pfade) {
-    final ziel = wertAn(json, pfad) as Map<String, dynamic>;
-    ziel[zukunftsfeld] = <String, dynamic>{
+    final ziel = wertAn(json, pfad);
+    _pruefe(ziel is Map, 'Objekt an $pfad');
+    (ziel as Map)[zukunftsfeld] = <String, dynamic>{
       'ebene': pfad,
       'liste': <Object?>[1, 'zwei', null],
     };
