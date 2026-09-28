@@ -2189,6 +2189,17 @@ unveraendert). Katalogdialog und Wertedialog erzeugen bzw. aendern Eintraege
 mit Katalogbezug; `fuegeMerkmalHinzu` summiert gleiche Auswahl desselben
 Eintrags. Ein getippter Text wird per `ordneMerkmalZu` zugeordnet.
 
+**UI2-Merkmalsblatt.** `lib/ui2/merkmale/karto_merkmalsblatt.dart` schreibt
+ohne Entwurf direkt: `HeroActions.updateHero` mit `aendereMerkmale` (eine
+Merkmalsart, Ausgangsliste ist die wirksame, bei Bestandshelden also die
+Laufzeitmigration) bzw. `loeseMerkmalAbweichung`. `aendereMerkmale` wirft bei
+offener Abweichung, damit kein Schreibweg sie nebenbei aufloest. Geaendert
+wird ein Eintrag ueber Gleichheit im frisch geladenen Stand; fehlt er
+inzwischen, meldet das Blatt einen Fehler statt zu raten. Die Karten baut
+`beschreibeMerkmal` (`hero_merkmal_anzeige_rules.dart`); Wirkungstexte nutzen
+`merkmalBasiswertBetrag`, `merkmalEigenschaftBetrag` und `merkmalRastStufe`
+aus `hero_merkmal_wirkung_rules.dart` wie die Rechnung selbst.
+
 ## 5. Zustandsverwaltung (State Layer)
 
 ### 5.1 Provider-Übersicht

@@ -231,8 +231,9 @@ in Mempalace im Wing `flutter_application_1` ablegen.
 an alle Abschnitte weiter, auch an die Adaptermethoden. Der provisorische
 `InspectorPanel` aus R1 ist damit abgelöst.
 
-**Anordnung.** Ressourcen, Schnellaktionen, Eigenschaften, Kampf, Effekte,
-Zustand, Würfelprotokoll. Ab `KartoBreite.breit` stehen Kampf, Effekte und
+**Anordnung.** Ressourcen, Schnellaktionen, Eigenschaften, Vor- und Nachteile
+(seit dem UI2-Merkmalsblatt, ARCH-02), Kampf, Effekte, Zustand,
+Würfelprotokoll. Ab `KartoBreite.breit` stehen Kampf, Effekte und
 Zustand in einer Seitenspalte (280 dp, ab `sehrBreit` 320 dp); das Protokoll
 schließt beide Anordnungen ab.
 

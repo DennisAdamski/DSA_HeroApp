@@ -277,8 +277,11 @@ Commits:
    `professionModText`), die `Herkunft` eines Merkmals aus der Generierung
    und AP-Buchung für nachträgliche Vor-/Nachteile sind nicht Teil dieses
    Teilstands. `trait_ap_cost_rules.dart` bleibt ungenutzt.
-5. UI2 bearbeitet Vor-/Nachteile weiter über die Bestandsbrücke
-   (Übersichts-Tab); ein eigener Editor fehlt.
+5. ~~UI2 bearbeitet Vor-/Nachteile nur über die Bestandsbrücke.~~
+   *Erledigt:* Das UI2-Merkmalsblatt (`lib/ui2/merkmale/`, Commits
+   `fbe7cd4` Regeln, `71a5a3b` Oberfläche) zeigt Merkmalskarten wie im
+   Mockup und bearbeitet sie mit Katalogbezug. Einstieg ist der Abschnitt
+   „Vor- und Nachteile“ der Spielansicht; der Übersichts-Tab bleibt.
 6. `AvatarSnapshot` vergleicht weiter Texte. Nach der ersten Migration
    unterscheiden sich nur Trennzeichen, nicht die Fragmente.
 

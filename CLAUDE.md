@@ -348,11 +348,25 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   den `HeroComputedSnapshot` an alle Abschnitte weiter — auch an die
   Adaptermethoden, damit die Brücke für dieselben Werte keine zweite
   Providerbeobachtung aufmacht. Die Reihenfolge ist überall Ressourcen,
-  Schnellaktionen, Eigenschaften, Kampf, Effekte, Zustand, Würfelprotokoll; ab
+  Schnellaktionen, Eigenschaften, Vor- und Nachteile, Kampf, Effekte, Zustand,
+  Würfelprotokoll; ab
   `KartoBreite.breit` wandern Kampf, Effekte und Zustand in eine Seitenspalte,
   das Protokoll bleibt der letzte Abschnitt beider Anordnungen. Den
   Re-Entrancy-Guard reicht `KartoWorkspace` als `KartoLaufzeitAktion` herein;
   die Spielansicht macht keinen zweiten Fehlerweg auf.
+- **Vor- und Nachteile bearbeitet UI2 im Merkmalsblatt**
+  (`lib/ui2/merkmale/`), nach dem Muster des Abenteuerblatts: modal, eigener
+  Schreibweg über `HeroActions.updateHero` und `aendereMerkmale`
+  (nur die Merkmalslisten samt Projektion), Fehler im Blatt, bei offener
+  Planung schreibgeschützt. Eine Abweichung durch eine ältere App löst es nur
+  über die beiden Knöpfe (`loeseMerkmalAbweichung`); bis dahin ist Anlegen und
+  Ändern dieser Art gesperrt, `aendereMerkmale` wirft sonst. Karteninhalt
+  (Katalogname, Stufe/Auswahl, Wirkungstexte, Herkunft) liefert
+  `beschreibeMerkmal` (`hero_merkmal_anzeige_rules.dart`) aus denselben
+  Beträgen wie die Rechnung. Einstieg ist der Abschnitt „Vor- und Nachteile“
+  der Spielansicht; vor Abenteuer- und Merkmalsblatt läuft dieselbe
+  Editorprüfung `vorHeldenbearbeitung`. Der Übersichts-Tab der Verwaltung
+  bleibt parallel bestehen.
 - `KartoRessourcenwert` ist rein darstellend. Der Balkenanteil wird auf 0..1
   begrenzt, der **gespeicherte Wert nie**: negative Lebenspunkte, Überheilung
   und Maximum 0 bleiben unverkürzt lesbar. AsP und KaP zeigt
