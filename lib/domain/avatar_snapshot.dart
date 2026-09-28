@@ -1,3 +1,5 @@
+import 'package:dsa_heldenverwaltung/domain/unbekannte_json_felder.dart';
+
 /// Snapshot der Heldendaten zum Zeitpunkt der Primaerbild-Festlegung.
 ///
 /// Wird gespeichert, um bei erneuter KI-Generierung Abweichungen
@@ -22,6 +24,7 @@ class AvatarSnapshot {
     this.geschlecht = '',
     this.haarfarbe = '',
     this.augenfarbe = '',
+    this.unbekannteFelder = const <String, Object?>{},
   }) : attributes = attributes == null
            ? const <String, int>{}
            : Map<String, int>.unmodifiable(attributes);
@@ -55,12 +58,29 @@ class AvatarSnapshot {
   /// Augenfarbe zum Snapshot-Zeitpunkt.
   final String augenfarbe;
 
+  /// JSON-Felder einer neueren App-Version; bleiben beim Speichern erhalten
+  /// (siehe `unbekannte_json_felder.dart`).
+  final Map<String, Object?> unbekannteFelder;
+
+  /// Alle Schluessel, die [fromJson] liest; alles andere bleibt erhalten.
+  static const Set<String> jsonSchluessel = <String>{
+    'erstelltAm',
+    'attributes',
+    'alter',
+    'vorteileText',
+    'nachteileText',
+    'rasse',
+    'geschlecht',
+    'haarfarbe',
+    'augenfarbe',
+  };
+
   /// Serialisiert den Snapshot als flache Map.
   ///
   /// [attributes] wird als einfache Kopie herausgegeben, damit Konsumenten
   /// (Hive-Writer, `jsonEncode`, Sync-Payload) keine unveraenderliche
   /// Sicht auf interne Daten zu sehen bekommen.
-  Map<String, dynamic> toJson() => {
+  Map<String, dynamic> toJson() => mitUnbekanntenFeldern(<String, dynamic>{
     'erstelltAm': erstelltAm,
     'attributes': Map<String, int>.of(attributes),
     'alter': alter,
@@ -70,7 +90,7 @@ class AvatarSnapshot {
     'geschlecht': geschlecht,
     'haarfarbe': haarfarbe,
     'augenfarbe': augenfarbe,
-  };
+  }, unbekannteFelder);
 
   /// Liest einen Snapshot aus einer flachen Map.
   static AvatarSnapshot fromJson(Map<String, dynamic> json) {
@@ -98,6 +118,7 @@ class AvatarSnapshot {
       geschlecht: (json['geschlecht'] as String?) ?? '',
       haarfarbe: (json['haarfarbe'] as String?) ?? '',
       augenfarbe: (json['augenfarbe'] as String?) ?? '',
+      unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
     );
   }
 }

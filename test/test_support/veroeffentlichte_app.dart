@@ -1,7 +1,15 @@
 import 'dart:convert';
 
+import 'package:dsa_heldenverwaltung/domain/attributes.dart';
+import 'package:dsa_heldenverwaltung/domain/avatar_gallery_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/avatar_gesichtsbefund.dart';
+import 'package:dsa_heldenverwaltung/domain/avatar_snapshot.dart';
+import 'package:dsa_heldenverwaltung/domain/aventurian_date.dart';
+import 'package:dsa_heldenverwaltung/domain/bought_stats.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_advancement_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_adventure_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_adventure_se_pools.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_companion.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_connection_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_gruppen_config.dart';
@@ -10,12 +18,14 @@ import 'package:dsa_heldenverwaltung/domain/hero_language_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_meta_talent.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_note_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_reisebericht.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_resource_activation_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_rituals.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_spell_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_spell_text_overrides.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/magic_special_ability.dart';
+import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
 import 'package:dsa_heldenverwaltung/domain/talent_special_ability.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
 
@@ -86,7 +96,42 @@ Map<String, dynamic> wieVeroeffentlichteApp(Map<String, dynamic> heldJson) {
   }
   _talenteUndMagie(json);
   _begleiterAbenteuerNotizen(json);
+  _grundwerteAvatarVerlauf(json);
   return json;
+}
+
+// Eigenschaften, Grundwerte, SE-Pools, Ressourcenschalter, Bilder, Verlauf.
+void _grundwerteAvatarVerlauf(Map<String, dynamic> json) {
+  for (final schluessel in const <String>[
+    'attributes',
+    'rawStartAttributes',
+    'startAttributes',
+    'epicAttributeMaxBonus',
+    'epicMainAttributes',
+  ]) {
+    _behalteIn(json[schluessel], Attributes.jsonSchluessel);
+  }
+  _behalteIn(json['persistentMods'], StatModifiers.jsonSchluessel);
+  _behalteIn(json['bought'], BoughtStats.jsonSchluessel);
+  _behalteIn(json['attributeSePool'], HeroAttributeSePool.jsonSchluessel);
+  _behalteIn(json['statSePool'], HeroStatSePool.jsonSchluessel);
+  _behalteIn(
+    json['resourceActivationConfig'],
+    HeroResourceActivationConfig.jsonSchluessel,
+  );
+  _behalteIn(json['geburtsdatum'], AventurianDate.jsonSchluessel);
+  for (final bild in _maps(json['avatarGallery'])) {
+    _behalte(bild, AvatarGalleryEntry.jsonSchluessel);
+    final gesicht = bild['gesicht'];
+    if (gesicht is Map<String, dynamic>) {
+      _behalte(gesicht, AvatarGesichtsbefund.jsonSchluessel);
+      _behalteIn(gesicht['g'], AvatarGesichtsrahmen.jsonSchluessel);
+    }
+  }
+  _behalteIn(json['avatarSnapshot'], AvatarSnapshot.jsonSchluessel);
+  for (final eintrag in _maps(json['advancementHistory'])) {
+    _behalte(eintrag, HeroAdvancementEntry.jsonSchluessel);
+  }
 }
 
 // Begleiter, Abenteuer, Notizen, Kontakte, Gruppen und Reisebericht.

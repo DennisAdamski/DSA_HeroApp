@@ -156,7 +156,10 @@ class HeroActions {
       apSpent: normalizedApSpent,
       apAvailable: calculatedAvailable,
       level: calculatedLevel,
-      startAttributes: effectiveStartAttributes,
+      // Neu errechnet; `uebernimmWerte` behaelt unbekannte Felder.
+      startAttributes: hero.startAttributes.uebernimmWerte(
+        effectiveStartAttributes,
+      ),
       ritualCategories: normalizeRitualCategories(hero.ritualCategories),
       unknownModifierFragments: unknownModifierFragments,
     );

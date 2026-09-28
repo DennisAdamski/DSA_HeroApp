@@ -1,3 +1,5 @@
+import 'package:dsa_heldenverwaltung/domain/unbekannte_json_felder.dart';
+
 /// Zielart eines geplanten oder übernommenen Steigerungsschritts.
 enum AdvancementKind {
   attribute,
@@ -34,6 +36,7 @@ class HeroAdvancementEntry {
     required this.apCost,
     this.seSpent = 0,
     Map<String, String> options = const {},
+    this.unbekannteFelder = const <String, Object?>{},
   }) : options = Map<String, String>.unmodifiable(options);
 
   final String id;
@@ -48,8 +51,28 @@ class HeroAdvancementEntry {
   final int seSpent;
   final Map<String, String> options;
 
+  /// JSON-Felder einer neueren App-Version; bleiben beim Speichern erhalten
+  /// (siehe `unbekannte_json_felder.dart`).
+  final Map<String, Object?> unbekannteFelder;
+
+  /// Alle Schluessel, die [fromJson] liest — einschliesslich der nur bedingt
+  /// geschriebenen; alles andere bleibt erhalten.
+  static const Set<String> jsonSchluessel = <String>{
+    'id',
+    'sessionId',
+    'createdAt',
+    'kind',
+    'targetId',
+    'label',
+    'fromValue',
+    'toValue',
+    'apCost',
+    'seSpent',
+    'options',
+  };
+
   /// Serialisiert den vollständigen Erwerbsnachweis für Export und Persistenz.
-  Map<String, dynamic> toJson() => {
+  Map<String, dynamic> toJson() => mitUnbekanntenFeldern(<String, dynamic>{
     'id': id,
     'sessionId': sessionId,
     'createdAt': createdAt.toUtc().toIso8601String(),
@@ -61,7 +84,7 @@ class HeroAdvancementEntry {
     'apCost': apCost,
     'seSpent': seSpent,
     'options': options,
-  };
+  }, unbekannteFelder);
 
   /// Lädt einen Erwerbsnachweis, ohne fehlende Historie zu erfinden.
   static HeroAdvancementEntry fromJson(Map<String, dynamic> json) {
@@ -78,6 +101,7 @@ class HeroAdvancementEntry {
       apCost: (json['apCost'] as num?)?.toInt() ?? 0,
       seSpent: (json['seSpent'] as num?)?.toInt() ?? 0,
       options: rawOptions.map((key, value) => MapEntry('$key', '$value')),
+      unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
     );
   }
 }
