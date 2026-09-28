@@ -8,6 +8,7 @@ import 'package:dsa_heldenverwaltung/domain/combat_config/offhand_equipment_type
 import 'package:dsa_heldenverwaltung/domain/combat_config/inventar_verweise.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_advancement_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_merkmal.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
@@ -417,6 +418,10 @@ void main() {
       final voll = basis.copyWith(
         showInapplicableSpecialAbilities: true,
         epicActivationPolicy: 'standard',
+        vorteilEintraege: const <HeroMerkmal>[
+          HeroMerkmal(katalogId: 'adv_eisern', text: 'Eisern'),
+        ],
+        nachteilEintraege: const <HeroMerkmal>[HeroMerkmal(text: 'Tick')],
         appearance: basis.appearance.copyWith(
           avatarSnapshot: () => AvatarSnapshot(erstelltAm: '2026-09-27'),
         ),

@@ -450,6 +450,7 @@ mit älterer App per Sync die Felder einer neueren (Befunde ARCH-07-B5/B6):
     `HeroRitualCategory`, `HeroRitualKnowledge`, `HeroRitualEntry`,
     `HeroRitualFieldDef`, `HeroRitualFieldValue`, `MagicSpecialAbility`,
     `HeroLanguageEntry`, `HeroScriptEntry`;
+  - Vor- und Nachteile: `HeroMerkmal` (`vorteilEintraege`/`nachteilEintraege`, ARCH-02);
   - Begleiter und Chronik: `HeroCompanion`, `HeroCompanionAttack`,
     `HeroCompanionSonderfertigkeit`, `HeroCompanionSpeed`,
     `HeroAdventureEntry`, `HeroAdventureSeReward`, `HeroAdventureDateValue`,
