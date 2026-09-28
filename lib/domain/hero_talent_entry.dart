@@ -1,4 +1,5 @@
 import 'package:dsa_heldenverwaltung/domain/copy_with_sentinel.dart';
+import 'package:dsa_heldenverwaltung/domain/unbekannte_json_felder.dart';
 
 // [MermaidChart: ff341120-63ae-42dd-88e7-391a12fcef7f]
 /// Einzelner Modifikatorbaustein eines Talents.
@@ -7,23 +8,41 @@ import 'package:dsa_heldenverwaltung/domain/copy_with_sentinel.dart';
 /// begrenzt. Leere Beschreibungen werden bei der Listen-Normalisierung
 /// verworfen.
 class HeroTalentModifier {
-  HeroTalentModifier({required this.modifier, required String description})
-    : description = _normalizeModifierDescription(description);
+  HeroTalentModifier({
+    required this.modifier,
+    required String description,
+    this.unbekannteFelder = const <String, Object?>{},
+  }) : description = _normalizeModifierDescription(description);
 
   final int modifier;
   final String description;
 
+  /// JSON-Felder einer neueren App-Version; bleiben beim Speichern erhalten
+  /// (siehe `unbekannte_json_felder.dart`).
+  final Map<String, Object?> unbekannteFelder;
+
+  /// Alle Schluessel, die [fromJson] liest; alles andere bleibt erhalten.
+  static const Set<String> jsonSchluessel = <String>{'modifier', 'description'};
+
   /// Erstellt eine Kopie mit geaendertem Wert oder Text.
-  HeroTalentModifier copyWith({int? modifier, String? description}) {
+  HeroTalentModifier copyWith({
+    int? modifier,
+    String? description,
+    Map<String, Object?>? unbekannteFelder,
+  }) {
     return HeroTalentModifier(
       modifier: modifier ?? this.modifier,
       description: description ?? this.description,
+      unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
     );
   }
 
   /// Serialisiert den Modifikator fuer Persistenz und Export.
   Map<String, dynamic> toJson() {
-    return {'modifier': modifier, 'description': description};
+    return mitUnbekanntenFeldern(<String, dynamic>{
+      'modifier': modifier,
+      'description': description,
+    }, unbekannteFelder);
   }
 
   /// Liest einen Modifikator robust aus JSON.
@@ -37,6 +56,7 @@ class HeroTalentModifier {
     return HeroTalentModifier(
       modifier: (json['modifier'] as num?)?.toInt() ?? 0,
       description: description,
+      unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
     );
   }
 }
@@ -67,6 +87,7 @@ class HeroTalentEntry {
     this.combatSpecializations = const <String>[],
     this.gifted = false,
     this.ebe = 0,
+    this.unbekannteFelder = const <String, Object?>{},
   }) : _legacyModifier = modifier;
 
   final int? talentValue;
@@ -79,6 +100,24 @@ class HeroTalentEntry {
   final List<String> combatSpecializations;
   final bool gifted;
   final int ebe;
+
+  /// JSON-Felder einer neueren App-Version; bleiben beim Speichern erhalten
+  /// (siehe `unbekannte_json_felder.dart`).
+  final Map<String, Object?> unbekannteFelder;
+
+  /// Alle Schluessel, die [fromJson] liest; alles andere bleibt erhalten.
+  static const Set<String> jsonSchluessel = <String>{
+    'talentValue',
+    'atValue',
+    'paValue',
+    'modifier',
+    'talentModifiers',
+    'specialExperiences',
+    'specializations',
+    'combatSpecializations',
+    'gifted',
+    'ebe',
+  };
 
   /// Aggregierter Talentmodifikator aus allen Modifikatorbausteinen.
   int get modifier {
@@ -105,6 +144,7 @@ class HeroTalentEntry {
     List<String>? combatSpecializations,
     bool? gifted,
     int? ebe,
+    Map<String, Object?>? unbekannteFelder,
   }) {
     final nextTalentModifiers = _normalizeTalentModifiers(
       talentModifiers ?? this.talentModifiers,
@@ -136,6 +176,7 @@ class HeroTalentEntry {
       combatSpecializations: nextCombatSpecializations,
       gifted: gifted ?? this.gifted,
       ebe: ebe ?? this.ebe,
+      unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
     );
   }
 
@@ -156,7 +197,7 @@ class HeroTalentEntry {
         ? specializations
         : normalizedCombatSpecializations.join(', ');
 
-    return {
+    return mitUnbekanntenFeldern(<String, dynamic>{
       'talentValue': talentValue,
       'atValue': atValue,
       'paValue': paValue,
@@ -169,7 +210,7 @@ class HeroTalentEntry {
       'combatSpecializations': normalizedCombatSpecializations,
       'gifted': gifted,
       'ebe': ebe,
-    };
+    }, unbekannteFelder);
   }
 
   /// Laedt einen Eintrag aus einer JSON-Map (rueckwaertskompatibel).
@@ -233,6 +274,7 @@ class HeroTalentEntry {
       combatSpecializations: mergedCombatSpecializations,
       gifted: json['gifted'] as bool? ?? false,
       ebe: getInt('ebe'),
+      unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
     );
   }
 }
@@ -257,9 +299,8 @@ List<HeroTalentModifier> _normalizeTalentModifiers(
     if (description.isEmpty) {
       continue;
     }
-    normalized.add(
-      HeroTalentModifier(modifier: value.modifier, description: description),
-    );
+    // Per `copyWith`, damit unbekannte Felder erhalten bleiben.
+    normalized.add(value.copyWith(description: description));
   }
   return List<HeroTalentModifier>.unmodifiable(normalized);
 }

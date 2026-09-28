@@ -127,15 +127,31 @@ class _RitualEntryDialogState extends State<_RitualEntryDialog> {
       return;
     }
 
+    // Vorhandene Werte werden per `copyWith` geaendert, damit Felder einer
+    // neueren App-Version erhalten bleiben.
+    final bisherigeWerte = <String, HeroRitualFieldValue>{
+      for (final value
+          in widget.existing?.additionalFieldValues ??
+              const <HeroRitualFieldValue>[])
+        value.fieldDefId: value,
+    };
     final additionalFieldValues = <HeroRitualFieldValue>[];
     for (final draft in _fieldDrafts) {
       final fieldDef = draft.fieldDef;
+      final bisher = bisherigeWerte[fieldDef.id];
       switch (fieldDef.type) {
         case HeroRitualFieldType.text:
           final value = draft.textController.text.trim();
           if (value.isNotEmpty) {
             additionalFieldValues.add(
-              HeroRitualFieldValue(fieldDefId: fieldDef.id, textValue: value),
+              bisher?.copyWith(
+                    textValue: value,
+                    attributeCodes: const <String>[],
+                  ) ??
+                  HeroRitualFieldValue(
+                    fieldDefId: fieldDef.id,
+                    textValue: value,
+                  ),
             );
           }
         case HeroRitualFieldType.threeAttributes:
@@ -154,27 +170,32 @@ class _RitualEntryDialogState extends State<_RitualEntryDialog> {
           }
           if (normalizedCodes.isNotEmpty) {
             additionalFieldValues.add(
-              HeroRitualFieldValue(
-                fieldDefId: fieldDef.id,
-                attributeCodes: normalizedCodes,
-              ),
+              bisher?.copyWith(
+                    textValue: '',
+                    attributeCodes: normalizedCodes,
+                  ) ??
+                  HeroRitualFieldValue(
+                    fieldDefId: fieldDef.id,
+                    attributeCodes: normalizedCodes,
+                  ),
             );
           }
       }
     }
 
-    final builtEntry = HeroRitualEntry(
-      name: name,
-      wirkung: wirkung,
-      kosten: kosten,
-      wirkungsdauer: wirkungsdauer,
-      merkmale: merkmale,
-      zauberdauer: _zauberdauerController.text.trim(),
-      zielobjekt: _zielobjektController.text.trim(),
-      reichweite: _reichweiteController.text.trim(),
-      technik: _technikController.text.trim(),
-      additionalFieldValues: additionalFieldValues,
-    );
+    final builtEntry = (widget.existing ?? HeroRitualEntry(name: name))
+        .copyWith(
+          name: name,
+          wirkung: wirkung,
+          kosten: kosten,
+          wirkungsdauer: wirkungsdauer,
+          merkmale: merkmale,
+          zauberdauer: _zauberdauerController.text.trim(),
+          zielobjekt: _zielobjektController.text.trim(),
+          reichweite: _reichweiteController.text.trim(),
+          technik: _technikController.text.trim(),
+          additionalFieldValues: additionalFieldValues,
+        );
     Navigator.of(context).pop(
       normalizeRitualEntry(
         builtEntry,

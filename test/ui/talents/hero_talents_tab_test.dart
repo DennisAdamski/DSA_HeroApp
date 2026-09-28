@@ -1116,6 +1116,80 @@ void main() {
     },
   );
 
+  testWidgets('modifier dialog keeps fields of a newer app version', (
+    tester,
+  ) async {
+    const feld = <String, Object?>{'zukunftsfeld': 1};
+    final repo = FakeRepository(
+      heroes: [
+        buildHero(
+          talents: <String, HeroTalentEntry>{
+            'tal_a': HeroTalentEntry(
+              talentValue: 5,
+              talentModifiers: <HeroTalentModifier>[
+                HeroTalentModifier(
+                  modifier: 1,
+                  description: 'Sichtbonus',
+                  unbekannteFelder: feld,
+                ),
+              ],
+              unbekannteFelder: feld,
+            ),
+          },
+        ),
+      ],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    final actions = await openTalentsTab(tester, repo, buildCatalog());
+    await actions.startEdit();
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(
+      find.byKey(const ValueKey<String>('talents-field-tal_a-modifier-total')),
+    );
+    await tester.tap(
+      find.byKey(const ValueKey<String>('talents-field-tal_a-modifier-total')),
+    );
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const ValueKey<String>('talent-modifier-value-0')),
+      '3',
+    );
+    await tester.tap(
+      find.byKey(const ValueKey<String>('talent-modifiers-add')),
+    );
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const ValueKey<String>('talent-modifier-value-1')),
+      '-1',
+    );
+    await tester.enterText(
+      find.byKey(const ValueKey<String>('talent-modifier-description-1')),
+      'Nebel',
+    );
+    await tester.tap(
+      find.byKey(const ValueKey<String>('talent-modifiers-save')),
+    );
+    await tester.pumpAndSettle();
+    await actions.save();
+    await tester.pumpAndSettle();
+
+    final hero = (await repo.loadHeroById('demo'))!;
+    final eintrag = hero.talents['tal_a']!;
+    expect(eintrag.modifier, 2);
+    expect(eintrag.unbekannteFelder, feld);
+    expect(eintrag.talentModifiers.first.modifier, 3);
+    expect(eintrag.talentModifiers.first.unbekannteFelder, feld);
+    expect(eintrag.talentModifiers.last.unbekannteFelder, isEmpty);
+  });
+
   testWidgets(
     'inventory talent modifiers are shown directly in the mod column',
     (tester) async {

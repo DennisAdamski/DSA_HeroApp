@@ -1,3 +1,5 @@
+import 'package:dsa_heldenverwaltung/domain/unbekannte_json_felder.dart';
+
 /// Persistierte Definition eines heldenspezifischen Meta-Talents.
 ///
 /// Meta-Talente werden nicht aus dem globalen Regelkatalog geladen, sondern
@@ -11,6 +13,7 @@ class HeroMetaTalent {
     this.componentTalentIds = const <String>[],
     this.attributes = const <String>[],
     this.be = '',
+    this.unbekannteFelder = const <String, Object?>{},
   });
 
   /// Stabile ID innerhalb des Helden.
@@ -28,6 +31,19 @@ class HeroMetaTalent {
   /// Optionale BE-Regel im gleichen Format wie bei Katalogtalenten.
   final String be;
 
+  /// JSON-Felder einer neueren App-Version; bleiben beim Speichern erhalten
+  /// (siehe `unbekannte_json_felder.dart`).
+  final Map<String, Object?> unbekannteFelder;
+
+  /// Alle Schluessel, die [fromJson] liest; alles andere bleibt erhalten.
+  static const Set<String> jsonSchluessel = <String>{
+    'id',
+    'name',
+    'componentTalentIds',
+    'attributes',
+    'be',
+  };
+
   /// Erstellt eine Kopie mit geaenderten Feldern.
   HeroMetaTalent copyWith({
     String? id,
@@ -35,6 +51,7 @@ class HeroMetaTalent {
     List<String>? componentTalentIds,
     List<String>? attributes,
     String? be,
+    Map<String, Object?>? unbekannteFelder,
   }) {
     return HeroMetaTalent(
       id: id ?? this.id,
@@ -44,18 +61,19 @@ class HeroMetaTalent {
       ),
       attributes: _normalizeAttributes(attributes ?? this.attributes),
       be: be ?? this.be,
+      unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
     );
   }
 
   /// Serialisiert das Meta-Talent fuer Persistenz und Export.
   Map<String, dynamic> toJson() {
-    return {
+    return mitUnbekanntenFeldern(<String, dynamic>{
       'id': id,
       'name': name,
       'componentTalentIds': _normalizeComponentTalentIds(componentTalentIds),
       'attributes': _normalizeAttributes(attributes),
       'be': be,
-    };
+    }, unbekannteFelder);
   }
 
   /// Laedt ein Meta-Talent tolerant aus JSON.
@@ -70,6 +88,7 @@ class HeroMetaTalent {
       ),
       attributes: _normalizeAttributes(_readStringList(json['attributes'])),
       be: getString('be'),
+      unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
     );
   }
 }

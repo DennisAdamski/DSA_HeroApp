@@ -2,7 +2,15 @@ import 'dart:convert';
 
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_language_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_meta_talent.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_rituals.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_spell_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_spell_text_overrides.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/magic_special_ability.dart';
+import 'package:dsa_heldenverwaltung/domain/talent_special_ability.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
 
 /// Nachbildung der bereits veroeffentlichten App-Version (`main`, Stand
@@ -70,7 +78,67 @@ Map<String, dynamic> wieVeroeffentlichteApp(Map<String, dynamic> heldJson) {
       _behalte(modifikator, InventoryItemModifier.jsonSchluessel);
     }
   }
+  _talenteUndMagie(json);
   return json;
+}
+
+// Talente, Zauber, Rituale, Sprachen und benannte Modifikatoren.
+void _talenteUndMagie(Map<String, dynamic> json) {
+  for (final talent in _werte(json['talents'])) {
+    _behalte(talent, HeroTalentEntry.jsonSchluessel);
+    for (final mod in _maps(talent['talentModifiers'])) {
+      _behalte(mod, HeroTalentModifier.jsonSchluessel);
+    }
+  }
+  for (final meta in _maps(json['metaTalents'])) {
+    _behalte(meta, HeroMetaTalent.jsonSchluessel);
+  }
+  for (final sf in _maps(json['talentSpecialAbilities'])) {
+    _behalte(sf, TalentSpecialAbility.jsonSchluessel);
+  }
+  for (final zauber in _werte(json['spells'])) {
+    _behalte(zauber, HeroSpellEntry.jsonSchluessel);
+    _behalteIn(zauber['textOverrides'], HeroSpellTextOverrides.jsonSchluessel);
+  }
+  for (final kategorie in _maps(json['ritualCategories'])) {
+    _behalte(kategorie, HeroRitualCategory.jsonSchluessel);
+    _behalteIn(kategorie['ownKnowledge'], HeroRitualKnowledge.jsonSchluessel);
+    for (final feld in _maps(kategorie['additionalFieldDefs'])) {
+      _behalte(feld, HeroRitualFieldDef.jsonSchluessel);
+    }
+    for (final ritual in _maps(kategorie['rituals'])) {
+      _behalte(ritual, HeroRitualEntry.jsonSchluessel);
+      for (final wert in _maps(ritual['additionalFieldValues'])) {
+        _behalte(wert, HeroRitualFieldValue.jsonSchluessel);
+      }
+    }
+  }
+  for (final sf in _maps(json['magicSpecialAbilities'])) {
+    _behalte(sf, MagicSpecialAbility.jsonSchluessel);
+  }
+  for (final sprache in _werte(json['sprachen'])) {
+    _behalte(sprache, HeroLanguageEntry.jsonSchluessel);
+  }
+  for (final schrift in _werte(json['schriften'])) {
+    _behalte(schrift, HeroScriptEntry.jsonSchluessel);
+  }
+  for (final schluessel in const <String>[
+    'statModifiers',
+    'attributeModifiers',
+  ]) {
+    for (final liste
+        in (json[schluessel] as Map?)?.values ?? const <Object?>[]) {
+      for (final mod in _maps(liste)) {
+        _behalte(mod, HeroTalentModifier.jsonSchluessel);
+      }
+    }
+  }
+}
+
+// Alle Map-Werte einer JSON-Map (etwa `talents` nach ID).
+Iterable<Map<String, dynamic>> _werte(Object? map) {
+  if (map is! Map) return const <Map<String, dynamic>>[];
+  return map.values.whereType<Map<String, dynamic>>();
 }
 
 /// Namenszuordnung aus dem Abgleich der veroeffentlichten App, auf JSON.

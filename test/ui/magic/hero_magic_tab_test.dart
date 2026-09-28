@@ -1273,6 +1273,120 @@ void main() {
     },
   );
 
+  testWidgets('Ritual-Editoren erhalten Felder einer neueren App-Version', (
+    tester,
+  ) async {
+    const feld = <String, Object?>{'zukunftsfeld': 1};
+    final repo = FakeRepository(
+      heroes: <HeroSheet>[
+        buildHero(
+          ritualCategories: const <HeroRitualCategory>[
+            HeroRitualCategory(
+              id: 'ritcat-1',
+              name: 'Flueche',
+              knowledgeMode: HeroRitualKnowledgeMode.ownKnowledge,
+              ownKnowledge: HeroRitualKnowledge(
+                name: 'Flueche',
+                unbekannteFelder: feld,
+              ),
+              additionalFieldDefs: <HeroRitualFieldDef>[
+                HeroRitualFieldDef(
+                  id: 'ausloeser',
+                  label: 'Ausloeser',
+                  type: HeroRitualFieldType.text,
+                  unbekannteFelder: feld,
+                ),
+              ],
+              rituals: <HeroRitualEntry>[
+                HeroRitualEntry(
+                  name: 'Hexenfluch',
+                  wirkung: 'Unheil',
+                  kosten: '7 AsP',
+                  wirkungsdauer: '7 Tage',
+                  merkmale: 'Einfluss',
+                  additionalFieldValues: <HeroRitualFieldValue>[
+                    HeroRitualFieldValue(
+                      fieldDefId: 'ausloeser',
+                      textValue: 'Vollmond',
+                      unbekannteFelder: feld,
+                    ),
+                  ],
+                  unbekannteFelder: feld,
+                ),
+              ],
+              unbekannteFelder: feld,
+            ),
+          ],
+        ),
+      ],
+      states: <String, HeroState>{
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 10,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+    final opened = await openMagicTab(tester, repo: repo);
+
+    await opened.actions.startEdit();
+    await _pumpAndSettleIgnoringKnownOverflow(tester);
+    await tester.tap(find.text('Rituale'));
+    await _pumpAndSettleIgnoringKnownOverflow(tester);
+
+    await tester.tap(
+      find.byKey(const ValueKey<String>('magic-ritual-category-edit-0')),
+    );
+    await _pumpAndSettleIgnoringKnownOverflow(tester);
+    await tester.enterText(
+      find.byKey(const ValueKey<String>('magic-ritual-category-value-field')),
+      '6',
+    );
+    await tester.enterText(
+      find.byKey(const ValueKey<String>('magic-ritual-category-field-label-0')),
+      'Auslöser',
+    );
+    await tester.tap(
+      find.byKey(const ValueKey<String>('magic-ritual-category-save')),
+    );
+    await _pumpAndSettleIgnoringKnownOverflow(tester);
+
+    await tester.tap(
+      find.byKey(const ValueKey<String>('magic-ritual-edit-0-0')),
+    );
+    await _pumpAndSettleIgnoringKnownOverflow(tester);
+    await tester.enterText(
+      find.byKey(const ValueKey<String>('magic-ritual-entry-kosten-field')),
+      '8 AsP',
+    );
+    await tester.enterText(
+      find.byKey(const ValueKey<String>('magic-ritual-entry-extra-text-0')),
+      'Neumond',
+    );
+    await tester.tap(
+      find.byKey(const ValueKey<String>('magic-ritual-entry-save')),
+    );
+    await _pumpAndSettleIgnoringKnownOverflow(tester);
+
+    await opened.actions.save();
+    await _pumpAndSettleIgnoringKnownOverflow(tester);
+
+    final kategorie = (await opened.repo.loadHeroById('demo'))!
+        .ritualCategories
+        .single;
+    final ritual = kategorie.rituals.single;
+    expect(kategorie.ownKnowledge?.value, 6);
+    expect(kategorie.additionalFieldDefs.single.label, 'Auslöser');
+    expect(ritual.kosten, '8 AsP');
+    expect(ritual.additionalFieldValues.single.textValue, 'Neumond');
+    expect(kategorie.unbekannteFelder, feld);
+    expect(kategorie.ownKnowledge?.unbekannteFelder, feld);
+    expect(kategorie.additionalFieldDefs.single.unbekannteFelder, feld);
+    expect(ritual.unbekannteFelder, feld);
+    expect(ritual.additionalFieldValues.single.unbekannteFelder, feld);
+  });
+
   testWidgets(
     'edit mode creates ritual with dynamic text and attribute fields',
     (tester) async {

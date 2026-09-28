@@ -61,6 +61,10 @@ class _AttributeModifierDetailDialogState
   late List<TextEditingController> _modifierControllers;
   late List<TextEditingController> _descriptionControllers;
 
+  // Bearbeitete Eintraege je Zeile, `null` fuer neue; ueber sie bleiben
+  // unbekannte Felder beim Speichern erhalten.
+  late List<HeroTalentModifier?> _originale;
+
   @override
   void initState() {
     super.initState();
@@ -70,6 +74,7 @@ class _AttributeModifierDetailDialogState
     _descriptionControllers = widget.namedModifiers
         .map((entry) => TextEditingController(text: entry.description))
         .toList(growable: true);
+    _originale = List<HeroTalentModifier?>.of(widget.namedModifiers);
   }
 
   @override
@@ -91,6 +96,7 @@ class _AttributeModifierDetailDialogState
       _descriptionControllers = List<TextEditingController>.from(
         _descriptionControllers,
       )..add(TextEditingController());
+      _originale = List<HeroTalentModifier?>.of(_originale)..add(null);
     });
   }
 
@@ -104,6 +110,7 @@ class _AttributeModifierDetailDialogState
       _descriptionControllers = List<TextEditingController>.from(
         _descriptionControllers,
       )..removeAt(index);
+      _originale = List<HeroTalentModifier?>.of(_originale)..removeAt(index);
     });
     modifierController.dispose();
     descriptionController.dispose();
@@ -118,8 +125,11 @@ class _AttributeModifierDetailDialogState
       }
       final modifier =
           int.tryParse(_modifierControllers[index].text.trim()) ?? 0;
+      final original = _originale[index];
       modifiers.add(
-        HeroTalentModifier(modifier: modifier, description: description),
+        original == null
+            ? HeroTalentModifier(modifier: modifier, description: description)
+            : original.copyWith(modifier: modifier, description: description),
       );
     }
     return modifiers;

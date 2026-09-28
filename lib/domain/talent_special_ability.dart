@@ -1,7 +1,13 @@
+import 'package:dsa_heldenverwaltung/domain/unbekannte_json_felder.dart';
+
 /// Strukturierte talentbezogene Sonderfertigkeit (Name + optionale Notiz).
 class TalentSpecialAbility {
   /// Erzeugt eine persistierte Talent-Sonderfertigkeit.
-  const TalentSpecialAbility({required this.name, this.note = ''});
+  const TalentSpecialAbility({
+    required this.name,
+    this.note = '',
+    this.unbekannteFelder = const <String, Object?>{},
+  });
 
   /// Anzeigename der Sonderfertigkeit.
   final String name;
@@ -9,17 +15,32 @@ class TalentSpecialAbility {
   /// Optionale freie Zusatznotiz, z. B. Stufe oder Spezialisierung.
   final String note;
 
+  /// JSON-Felder einer neueren App-Version; bleiben beim Speichern erhalten
+  /// (siehe `unbekannte_json_felder.dart`).
+  final Map<String, Object?> unbekannteFelder;
+
+  /// Alle Schluessel, die [fromJson] liest; alles andere bleibt erhalten.
+  static const Set<String> jsonSchluessel = <String>{'name', 'note'};
+
   /// Liefert eine gezielte immutable Aktualisierung.
-  TalentSpecialAbility copyWith({String? name, String? note}) {
+  TalentSpecialAbility copyWith({
+    String? name,
+    String? note,
+    Map<String, Object?>? unbekannteFelder,
+  }) {
     return TalentSpecialAbility(
       name: name ?? this.name,
       note: note ?? this.note,
+      unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
     );
   }
 
   /// Serialisiert die Sonderfertigkeit in JSON.
   Map<String, dynamic> toJson() {
-    return {'name': name, 'note': note};
+    return mitUnbekanntenFeldern(<String, dynamic>{
+      'name': name,
+      'note': note,
+    }, unbekannteFelder);
   }
 
   /// Liest eine Sonderfertigkeit robust aus JSON.
@@ -27,6 +48,7 @@ class TalentSpecialAbility {
     return TalentSpecialAbility(
       name: (json['name'] as String?) ?? '',
       note: (json['note'] as String?) ?? '',
+      unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
     );
   }
 
@@ -37,11 +59,13 @@ class TalentSpecialAbility {
     }
     return other is TalentSpecialAbility &&
         other.name == name &&
-        other.note == note;
+        other.note == note &&
+        unbekannteFelderGleich(unbekannteFelder, other.unbekannteFelder);
   }
 
   @override
-  int get hashCode => Object.hash(name, note);
+  int get hashCode =>
+      Object.hash(name, note, unbekannteFelderHash(unbekannteFelder));
 }
 
 /// Zerlegt Legacy-Freitext in strukturierte Talent-Sonderfertigkeiten.
