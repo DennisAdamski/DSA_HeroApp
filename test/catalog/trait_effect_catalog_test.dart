@@ -10,12 +10,12 @@ import 'catalog_reference_names.dart';
 /// gar nicht; ein fehlender Eintrag liesse einen Bestandshelden nach der
 /// Umstellung auf Katalog-IDs Werte verlieren.
 void main() {
-  final advantages = ladeKatalogDatei(
-    'vorteile.json',
-  ).map(HeroTraitDef.fromJson).toList(growable: false);
-  final disadvantages = ladeKatalogDatei(
-    'nachteile.json',
-  ).map(HeroTraitDef.fromJson).toList(growable: false);
+  final advantages = ladeKatalogDatei('vorteile.json')
+      .map(HeroTraitDef.fromJson)
+      .toList(growable: false);
+  final disadvantages = ladeKatalogDatei('nachteile.json')
+      .map(HeroTraitDef.fromJson)
+      .toList(growable: false);
   final alle = <HeroTraitDef>[...advantages, ...disadvantages];
 
   test('jede Wirkung hat eine bekannte Art und ein bekanntes Ziel', () {
@@ -114,6 +114,9 @@ void main() {
       'ziel': 'x',
     });
     expect(unbekannt.art, HeroTraitEffectArt.unbekannt);
-    expect(unbekannt.toJson(), <String, dynamic>{'art': 'zukunft', 'ziel': 'x'});
+    expect(unbekannt.toJson(), <String, dynamic>{
+      'art': 'zukunft',
+      'ziel': 'x',
+    });
   });
 }

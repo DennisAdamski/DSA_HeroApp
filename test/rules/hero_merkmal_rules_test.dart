@@ -253,6 +253,67 @@ void main() {
     });
   });
 
+  group('Hinzufügen im Dialog', () {
+    HeroTraitDef def(String id) => katalog.eintrag(id, vorteil: false)!;
+
+    test('gleiche Auswahl desselben Eintrags summiert den Wert', () {
+      final angst = def('dis_angst_vor');
+      final liste = fuegeMerkmalHinzu(
+        const [
+          HeroMerkmal(
+            katalogId: 'dis_angst_vor',
+            text: 'Angst vor Spinnen 2',
+            wert: 2,
+            auswahl: 'Spinnen',
+          ),
+        ],
+        const HeroMerkmal(
+          katalogId: 'dis_angst_vor',
+          text: 'Angst vor Spinnen 3',
+          wert: 3,
+          auswahl: 'Spinnen',
+        ),
+        def: angst,
+      );
+
+      expect(liste.single.wert, 5);
+      expect(liste.single.text, 'Angst vor Spinnen 5');
+    });
+
+    test('andere Auswahl und freie Einträge werden angehängt, '
+        'identische Texte nicht verdoppelt', () {
+      final angst = def('dis_angst_vor');
+      var liste = fuegeMerkmalHinzu(
+        const [],
+        const HeroMerkmal(
+          katalogId: 'dis_angst_vor',
+          text: 'Angst vor Ratten 1',
+          wert: 1,
+          auswahl: 'Ratten',
+        ),
+        def: angst,
+      );
+      liste = fuegeMerkmalHinzu(
+        liste,
+        const HeroMerkmal(
+          katalogId: 'dis_angst_vor',
+          text: 'Angst vor Feuer 2',
+          wert: 2,
+          auswahl: 'Feuer',
+        ),
+        def: angst,
+      );
+      liste = fuegeMerkmalHinzu(liste, const HeroMerkmal(text: 'Tick'));
+      liste = fuegeMerkmalHinzu(liste, const HeroMerkmal(text: 'Tick'));
+
+      expect(liste.map((e) => e.text), [
+        'Angst vor Ratten 1',
+        'Angst vor Feuer 2',
+        'Tick',
+      ]);
+    });
+  });
+
   group('Wirkung über die Katalog-ID', () {
     test('keine Doppelanwendung von Katalog- und Textweg', () {
       final hero = merkmaleZumSpeichern(

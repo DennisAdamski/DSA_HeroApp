@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/aventurian_date.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_merkmal.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
@@ -16,6 +17,8 @@ import 'package:dsa_heldenverwaltung/rules/derived/aventurian_age_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/avatar_rahmung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/epic_main_attribute_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_wirkung_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_zuordnung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_source_breakdown.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/resource_activation_rules.dart';
@@ -42,8 +45,7 @@ import 'package:dsa_heldenverwaltung/ui/widgets/edit_aware_table_cell.dart';
 import 'package:file_picker/file_picker.dart';
 
 import 'package:dsa_heldenverwaltung/catalog/hero_trait_choices.dart';
-import 'package:dsa_heldenverwaltung/catalog/hero_trait_def.dart';
-import 'package:dsa_heldenverwaltung/catalog/hero_trait_text.dart';
+import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/avatar_gallery_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/avatar_gesichtsbefund.dart';
 import 'package:dsa_heldenverwaltung/state/avatar_providers.dart';
@@ -62,6 +64,7 @@ part 'hero_overview/hero_overview_ap_resources_section.dart';
 part 'hero_overview/hero_overview_stats_section.dart';
 part 'hero_overview/hero_overview_form_fields.dart';
 part 'hero_overview/hero_overview_traits_section.dart';
+part 'hero_overview/hero_overview_trait_dialogs.dart';
 part 'hero_overview/hero_overview_epic_section.dart';
 
 const double _pagePadding = 16;
@@ -121,6 +124,10 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
   /// Entwurfswert des Geburtsmonats; der Monat kommt aus einem Dropdown und
   /// laesst sich deshalb nicht wie die uebrigen Felder als Text puffern.
   String _draftGeburtsmonat = '';
+
+  /// Entwurf der Vor-/Nachteile; `null`, solange unveraendert (ARCH-02).
+  List<HeroMerkmal>? _draftVorteile;
+  List<HeroMerkmal>? _draftNachteile;
 
   @override
   void initState() {
@@ -194,8 +201,8 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
     _field('titel').text = hero.background.titel;
     _field('familie').text = hero.background.familieHerkunftHintergrund;
     _field('sozialstatus').text = hero.background.sozialstatus.toString();
-    _field('vorteile').text = hero.vorteileText;
-    _field('nachteile').text = hero.nachteileText;
+    _draftVorteile = null;
+    _draftNachteile = null;
     _field('ap_total').text = hero.apTotal.toString();
     _field('ap_spent').text = hero.apSpent.toString();
     _field('ap_total_add').clear();
@@ -245,17 +252,6 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
     return parsed;
   }
 
-  void _setFieldText(String key, String value) {
-    final controller = _field(key);
-    if (controller.text == value) {
-      return;
-    }
-    controller.value = TextEditingValue(
-      text: value,
-      selection: TextSelection.collapsed(offset: value.length),
-    );
-  }
-
   Future<void> _startEdit() async {
     _editController.startEdit();
   }
@@ -267,7 +263,7 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
       return;
     }
 
-    final updatedHero = hero.copyWith(
+    final updatedHero = _mitMerkmalEntwurf(hero).copyWith(
       name: _field('name').text.trim().isEmpty
           ? 'Unbenannter Held'
           : _field('name').text.trim(),
@@ -294,8 +290,6 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
         familieHerkunftHintergrund: _field('familie').text.trim(),
         sozialstatus: _readInt('sozialstatus', min: 0, max: 999),
       ),
-      vorteileText: _field('vorteile').text.trim(),
-      nachteileText: _field('nachteile').text.trim(),
       apTotal: _readInt('ap_total', min: 0),
       apSpent: _readInt('ap_spent', min: 0),
       // Vorhandene Werte werden per `copyWith` geaendert, damit Felder einer
@@ -427,19 +421,21 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
         ),
       );
     }
-    final draftHero = hero.copyWith(
+    final draftHero = _mitMerkmalEntwurf(hero).copyWith(
       background: hero.background.copyWith(
         rasseModText: _field('rasse_mod').text.trim(),
         kulturModText: _field('kultur_mod').text.trim(),
         professionModText: _field('profession_mod').text.trim(),
       ),
-      vorteileText: _field('vorteile').text.trim(),
       resourceActivationConfig: hero.resourceActivationConfig.copyWith(
         magicEnabledOverride: magicEnabledOverride,
         divineEnabledOverride: divineEnabledOverride,
       ),
     );
-    return computeHeroResourceActivation(draftHero);
+    return computeHeroResourceActivation(
+      draftHero,
+      catalog: ref.read(rulesCatalogProvider).valueOrNull,
+    );
   }
 
   /// Uebernimmt Ressourcen-Overrides in den Draft des Overview-Tabs.
