@@ -6,11 +6,14 @@ AdvancementOption? _attributeOption(AdvancementContext context, String id) {
   final code = parseAttributeCode(id);
   if (code == null) return null;
   final delta = attributeModValue(
-    parseStartAttributeModifiers(hero),
+    parseStartAttributeModifiers(hero, catalog: context.catalog),
     code.name,
   );
   final value = readAttributeValue(hero.attributes, code) + delta;
-  final maximum = readAttributeValue(computeHeroAttributeMaximums(hero), code);
+  final maximum = readAttributeValue(
+    computeHeroAttributeMaximums(hero, catalog: context.catalog),
+    code,
+  );
   return AdvancementOption(
     kind: AdvancementKind.attribute,
     targetId: code.name,
@@ -20,7 +23,7 @@ AdvancementOption? _attributeOption(AdvancementContext context, String id) {
     seAvailable: hero.attributeSePool.valueFor(code),
     learnCost: kEigenschaftKomplexitaet,
     startValue: readAttributeValue(
-      computeHeroEffectiveStartAttributes(hero),
+      computeHeroEffectiveStartAttributes(hero, catalog: context.catalog),
       code,
     ),
     isMainAttribute: readAttributeValue(hero.epicMainAttributes, code) > 0,

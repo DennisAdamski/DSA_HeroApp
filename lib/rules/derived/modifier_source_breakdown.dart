@@ -1,7 +1,9 @@
+import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/attribute_modifiers.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_wirkung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 
 /// Pro-Quellen-Aufschluesselung der geparsten Modifikatoren.
@@ -33,9 +35,14 @@ class ModifierSourceBreakdown {
 
 /// Berechnet die per-Quellen-Aufschluesselung fuer einen Helden.
 ///
-/// Wird nur on-tap berechnet (kein Caching noetig).
-ModifierSourceBreakdown computeModifierSourceBreakdown(HeroSheet hero) {
+/// Wird nur on-tap berechnet (kein Caching noetig). Vor- und Nachteile
+/// kommen wie in [parseModifierTextsForHero] aus [werteMerkmaleAus].
+ModifierSourceBreakdown computeModifierSourceBreakdown(
+  HeroSheet hero, {
+  RulesCatalog? catalog,
+}) {
   const empty = '';
+  final merkmale = werteMerkmaleAus(hero, catalog: catalog);
   final rasse = parseModifierTexts(
     rasseModText: hero.background.rasseModText,
     kulturModText: empty,
@@ -57,19 +64,25 @@ ModifierSourceBreakdown computeModifierSourceBreakdown(HeroSheet hero) {
     vorteileText: empty,
     nachteileText: empty,
   );
-  final vorteile = parseModifierTexts(
-    rasseModText: empty,
-    kulturModText: empty,
-    professionModText: empty,
-    vorteileText: hero.vorteileText,
-    nachteileText: empty,
+  final vorteile = mitMerkmalWirkungen(
+    parseModifierTexts(
+      rasseModText: empty,
+      kulturModText: empty,
+      professionModText: empty,
+      vorteileText: merkmale.freieVorteile,
+      nachteileText: empty,
+    ),
+    merkmale.vorteilWirkungen,
   );
-  final nachteile = parseModifierTexts(
-    rasseModText: empty,
-    kulturModText: empty,
-    professionModText: empty,
-    vorteileText: empty,
-    nachteileText: hero.nachteileText,
+  final nachteile = mitMerkmalWirkungen(
+    parseModifierTexts(
+      rasseModText: empty,
+      kulturModText: empty,
+      professionModText: empty,
+      vorteileText: empty,
+      nachteileText: merkmale.freieNachteile,
+    ),
+    merkmale.nachteilWirkungen,
   );
 
   return ModifierSourceBreakdown(

@@ -1,3 +1,5 @@
+import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_wirkung_rules.dart';
+import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_resource_activation_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
@@ -40,9 +42,18 @@ class HeroResourceActivation {
 }
 
 /// Berechnet den effektiven Aktivierungsstatus eines Helden.
-HeroResourceActivation computeHeroResourceActivation(HeroSheet hero) {
-  final autoMagicEnabled = hasAutomaticMagicActivation(hero);
-  final autoDivineEnabled = hasAutomaticDivineActivation(hero);
+///
+/// Mit [catalog] zaehlen katalogisierte Vorteile ueber ihre Wirkung
+/// (`Astralmacht`), sonst ueber ihren Text (ARCH-02).
+HeroResourceActivation computeHeroResourceActivation(
+  HeroSheet hero, {
+  RulesCatalog? catalog,
+}) {
+  final autoMagicEnabled = hasAutomaticMagicActivation(hero, catalog: catalog);
+  final autoDivineEnabled = hasAutomaticDivineActivation(
+    hero,
+    catalog: catalog,
+  );
   final config = hero.resourceActivationConfig;
   return HeroResourceActivation(
     magic: ResourceActivationStatus(
@@ -59,24 +70,27 @@ HeroResourceActivation computeHeroResourceActivation(HeroSheet hero) {
 }
 
 /// Prueft die automatische Aktivierung von Magie anhand der Stammdaten.
-bool hasAutomaticMagicActivation(HeroSheet hero) {
+bool hasAutomaticMagicActivation(HeroSheet hero, {RulesCatalog? catalog}) {
   return _hasOriginOrAdvantageModifier(
     hero,
     recognizedCodes: const <String>{'ASP'},
+    catalog: catalog,
   );
 }
 
 /// Prueft die automatische Aktivierung goettlicher Ressourcen.
-bool hasAutomaticDivineActivation(HeroSheet hero) {
+bool hasAutomaticDivineActivation(HeroSheet hero, {RulesCatalog? catalog}) {
   return _hasOriginOrAdvantageModifier(
     hero,
     recognizedCodes: const <String>{'KAP'},
+    catalog: catalog,
   );
 }
 
 bool _hasOriginOrAdvantageModifier(
   HeroSheet hero, {
   required Set<String> recognizedCodes,
+  RulesCatalog? catalog,
 }) {
   final originTexts = <String>[
     hero.background.rasseModText,
@@ -90,7 +104,10 @@ bool _hasOriginOrAdvantageModifier(
     }
   }
 
-  final advantageCodes = extractNormalizedStatModifierCodes(hero.vorteileText);
+  final merkmale = werteMerkmaleAus(hero, catalog: catalog);
+  final advantageCodes = extractNormalizedStatModifierCodes(
+    merkmale.freieVorteile,
+  );
   if (advantageCodes.any(recognizedCodes.contains)) {
     return true;
   }
@@ -99,9 +116,18 @@ bool _hasOriginOrAdvantageModifier(
     rasseModText: '',
     kulturModText: '',
     professionModText: '',
-    vorteileText: hero.vorteileText,
+    vorteileText: merkmale.freieVorteile,
     nachteileText: '',
   ).statMods;
+  // Katalogisierte Vorteile zaehlen ueber ihre Wirkung (`Astralmacht`);
+  // Nachteile aktivieren wie bisher nie.
+  final vorteilMods = merkmale.vorteilWirkungen.statMods;
+  if (recognizedCodes.contains('ASP') && vorteilMods.asp != 0) {
+    return true;
+  }
+  if (recognizedCodes.contains('KAP') && vorteilMods.kap != 0) {
+    return true;
+  }
   if (recognizedCodes.contains('ASP') && advantageMods.asp != 0) {
     return true;
   }

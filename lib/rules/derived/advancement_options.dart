@@ -112,6 +112,7 @@ class AdvancementContext {
   /// Dauerhafte Eigenschaften für Grenzen und Erwerbsvoraussetzungen.
   late final Attributes permanentAttributes = advancementPermanentAttributes(
     hero,
+    catalog: catalog,
   );
 
   /// Namen aller erworbenen Sonderfertigkeiten über alle Speicherorte hinweg.
@@ -250,8 +251,11 @@ AdvancementOption? resolveAdvancementOptionIn({
 }
 
 /// Dauerhafte Eigenschaften für Grenzen und Erwerbsvoraussetzungen.
-Attributes advancementPermanentAttributes(HeroSheet hero) {
-  final parsed = parseModifierTextsForHero(hero);
+Attributes advancementPermanentAttributes(
+  HeroSheet hero, {
+  RulesCatalog? catalog,
+}) {
+  final parsed = parseModifierTextsForHero(hero, catalog: catalog);
   final named = aggregateNamedAttributeModifiers(hero.attributeModifiers);
   return applyAttributeModifiers(hero.attributes, parsed.attributeMods + named);
 }
