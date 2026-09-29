@@ -23,8 +23,13 @@ class InspectorValueRow extends StatelessWidget {
   final String label;
   final int modifier;
   final int result;
-  final VoidCallback onDecrement;
-  final VoidCallback onIncrement;
+
+  /// Verringert den Wert; `null` sperrt den Knopf (etwa während einer
+  /// Planung).
+  final VoidCallback? onDecrement;
+
+  /// Erhöht den Wert; `null` sperrt den Knopf.
+  final VoidCallback? onIncrement;
   final VoidCallback? onReset;
 
   static const double _columnGap = 2;
