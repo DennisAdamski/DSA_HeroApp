@@ -105,10 +105,6 @@ HeroComputedSnapshot buildHeroComputedSnapshot({
     catalog: catalog,
   );
   final wundschwelleMods = hero.statModifiers['wundschwelle'] ?? const [];
-  final wundschwelle = computeWundschwelle(
-    ko: effective.ko,
-    mods: wundschwelleMods,
-  );
   final wundschwellenStufen = computeWundschwellenStufen(
     ko: effective.ko,
     mods: wundschwelleMods,
@@ -116,6 +112,7 @@ HeroComputedSnapshot buildHeroComputedSnapshot({
     nachteileText: merkmale.freieNachteile,
     merkmalBonus: merkmale.wirkungen.wundschwelleBonus,
   );
+  final wundschwelle = wundschwellenStufen.halbKo;
 
   final derived = inputs.derive(hero, state);
   final combat = computeCombatPreviewStats(

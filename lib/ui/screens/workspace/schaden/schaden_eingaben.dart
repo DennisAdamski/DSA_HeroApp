@@ -16,21 +16,20 @@ extension _SchadenInhalt on _SchadenPanelState {
     final sp = tp == null || tp < 0
         ? null
         : berechneSchadenspunkte(tp: tp, rs: rsWert);
-    final wsMod = lebensenergie ? (_zahl(_wsMod) ?? 0) : 0;
-    final vorschlag = sp == null || !lebensenergie
+    final echteSp = sp == null ? null : echteSchadenspunkte(art: _art, sp: sp);
+    final wsMod = _zahl(_wsMod) ?? 0;
+    final vorschlag = echteSp == null
         ? null
         : schlageWundenVor(
-            sp: sp,
+            sp: echteSp,
             stufen: computed.wundschwellenStufen,
             angriffsModifikator: wsMod,
           );
-    final zone = lebensenergie ? _zone : null;
+    final zone = _zone;
     final wundZustand = state.wpiZustand;
     final frei = zone == null ? 0 : freieWundplaetze(wundZustand, zone);
     final vorgeschlagen = vorschlag?.wunden ?? 0;
-    final int wunden = lebensenergie
-        ? (_wundenUeberschrieben ?? vorgeschlagen).clamp(0, frei)
-        : 0;
+    final int wunden = (_wundenUeberschrieben ?? vorgeschlagen).clamp(0, frei);
     final bisherige = zone == null ? 0 : wundZustand.wundenInZone(zone);
     final zusatzwuerfe = zone == null
         ? const <SchadensZusatzwurf>[]
@@ -133,59 +132,62 @@ extension _SchadenInhalt on _SchadenPanelState {
         ),
         const SizedBox(height: 8),
         Text(
-          sp == null ? 'TP eintragen' : '$sp ${lebensenergie ? 'SP' : 'SP(A)'}',
+          sp == null
+              ? 'TP eintragen'
+              : lebensenergie
+              ? '$sp SP'
+              : '$sp SP(A) · $echteSp SP auf LeP',
           key: const ValueKey<String>('schaden-sp'),
           style: theme.textTheme.titleMedium,
         ),
-        if (lebensenergie) ...[
-          const SizedBox(height: 12),
-          _zonenZeile(context, zone),
-          const SizedBox(height: 8),
-          TextField(
-            key: const ValueKey<String>('schaden-ws-mod'),
-            controller: _wsMod,
-            keyboardType: const TextInputType.numberWithOptions(signed: true),
-            inputFormatters: [
-              FilteringTextInputFormatter.allow(RegExp(r'[-−0-9]')),
-            ],
-            decoration: const InputDecoration(
-              labelText: 'Wundschwelle des Angriffs',
-              helperText: 'z. B. Pfeile −2',
-            ),
-            onChanged: (_) => _eingabeGeaendert(),
-          ),
-          if (vorschlag != null) ...[
-            const SizedBox(height: 8),
-            Text(
-              'Schwellen ${vorschlag.schwellen.join(' / ')} · $sp SP → '
-              'Vorschlag: ${_wundenText(vorschlag.wunden)}',
-              key: const ValueKey<String>('schaden-vorschlag'),
-            ),
+        const SizedBox(height: 12),
+        _zonenZeile(context, zone),
+        const SizedBox(height: 8),
+        TextField(
+          key: const ValueKey<String>('schaden-ws-mod'),
+          controller: _wsMod,
+          keyboardType: const TextInputType.numberWithOptions(signed: true),
+          inputFormatters: [
+            FilteringTextInputFormatter.allow(RegExp(r'[-−0-9]')),
           ],
-          if (zone == null && vorgeschlagen > 0)
-            _hinweis(
-              theme,
-              'schaden-zone-fehlt',
-              'Für Wunden eine Trefferzone wählen.',
-            ),
-          if (zone != null && vorgeschlagen > frei)
-            _hinweis(
-              theme,
-              'schaden-zone-voll',
-              '${wundZoneLabel[zone]} hat nur noch Platz für '
-                  '${_wundenText(frei)}; weitere verfallen.',
-            ),
+          decoration: const InputDecoration(
+            labelText: 'Wundschwelle des Angriffs',
+            helperText: 'z. B. Armbrustbolzen −2, waffenlos +2',
+          ),
+          onChanged: (_) => _eingabeGeaendert(),
+        ),
+        if (vorschlag != null) ...[
           const SizedBox(height: 8),
-          _wundenZeile(theme, wunden, frei),
-          for (var i = 0; i < zusatzwuerfe.length; i++)
-            _zusatzZeile(i, zusatzwuerfe[i], zusatzFelder[i]),
+          Text(
+            'Schwellen ${vorschlag.schwellen.join(' / ')} · $echteSp SP → '
+            'Vorschlag: ${_wundenText(vorschlag.wunden)}',
+            key: const ValueKey<String>('schaden-vorschlag'),
+          ),
         ],
+        if (zone == null && vorgeschlagen > 0)
+          _hinweis(
+            theme,
+            'schaden-zone-fehlt',
+            'Für Wunden eine Trefferzone wählen.',
+          ),
+        if (zone != null && vorgeschlagen > frei)
+          _hinweis(
+            theme,
+            'schaden-zone-voll',
+            '${wundZoneLabel[zone]} hat nur noch Platz für '
+                '${_wundenText(frei)}; weitere verfallen.',
+          ),
+        const SizedBox(height: 8),
+        _wundenZeile(theme, wunden, frei),
+        for (var i = 0; i < zusatzwuerfe.length; i++)
+          _zusatzZeile(i, zusatzwuerfe[i], zusatzFelder[i]),
         const SizedBox(height: 12),
         if (vorschau != null)
           Text(
             lebensenergie
                 ? 'LeP ${state.currentLep} → ${vorschau.currentLep}'
-                : 'AuP ${state.currentAu} → ${vorschau.currentAu}',
+                : 'AuP ${state.currentAu} → ${vorschau.currentAu} · '
+                      'LeP ${state.currentLep} → ${vorschau.currentLep}',
             key: const ValueKey<String>('schaden-vorschau'),
             style: theme.textTheme.titleMedium,
           ),

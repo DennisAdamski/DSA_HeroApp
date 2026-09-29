@@ -8,7 +8,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/wund_rules.dart';
 
 import '../test_support/hero_fixtures.dart';
 
-// KO 14: 7 / 14 / 21 / 28.
+// KO 14: 7 / 14 / 21.
 final _stufen = computeWundschwellenStufen(ko: 14);
 
 const _zustand = HeroState(
@@ -38,8 +38,9 @@ void main() {
         21: 2,
         22: 3,
         28: 3,
-        29: 4,
-        60: 4,
+        // Eine vierte Stufe gibt es nicht (WdS S. 58).
+        29: 3,
+        60: 3,
       };
       erwartet.forEach((sp, wunden) {
         expect(
@@ -56,9 +57,20 @@ void main() {
         stufen: _stufen,
         angriffsModifikator: -2,
       );
-      expect(vorschlag.schwellen, [5, 12, 19, 26]);
+      expect(vorschlag.schwellen, [5, 12, 19]);
       expect(vorschlag.wunden, 2);
       expect(schlageWundenVor(sp: 13, stufen: _stufen).wunden, 1);
+    });
+
+    test('Beispiele aus WdS S. 58 (KO 13)', () {
+      final eisern = computeWundschwellenStufen(ko: 13, merkmalBonus: 2);
+      expect(schlageWundenVor(sp: 0, stufen: eisern).schwellen, [9, 15, 22]);
+      final bolzen = schlageWundenVor(
+        sp: 0,
+        stufen: computeWundschwellenStufen(ko: 13),
+        angriffsModifikator: -2,
+      );
+      expect(bolzen.schwellen, [5, 11, 18]);
     });
 
     test('Eisern hebt die Stufen über den Merkmalsbonus', () {
@@ -136,24 +148,29 @@ void main() {
         () => SchadensBuchung(art: SchadensArt.lebensenergie, tp: -1, rs: 0),
         throwsArgumentError,
       );
-      expect(
-        () => SchadensBuchung(
+      for (final art in SchadensArt.values) {
+        expect(
+          () => SchadensBuchung(art: art, tp: 20, rs: 0, wunden: 1),
+          throwsArgumentError,
+          reason: art.name,
+        );
+      }
+    });
+
+    test('TP(A): die Hälfte der SP(A) sind echte SP, kaufmännisch', () {
+      final erwartet = <int, int>{0: 0, 1: 1, 3: 2, 4: 2, 5: 3, 22: 11};
+      erwartet.forEach((spA, echte) {
+        final buchung = SchadensBuchung(
           art: SchadensArt.ausdauer,
-          tp: 5,
+          tp: spA,
           rs: 0,
-          zone: WundZone.brust,
-          wunden: 1,
-        ),
-        throwsArgumentError,
-      );
+        );
+        expect(buchung.sp, spA);
+        expect(buchung.echteSp, echte, reason: 'SP(A) $spA');
+      });
       expect(
-        () => SchadensBuchung(
-          art: SchadensArt.lebensenergie,
-          tp: 20,
-          rs: 0,
-          wunden: 1,
-        ),
-        throwsArgumentError,
+        SchadensBuchung(art: SchadensArt.lebensenergie, tp: 5, rs: 0).echteSp,
+        5,
       );
     });
   });
@@ -243,22 +260,45 @@ void main() {
       expect(anwendung.zustand.currentLep, 26);
     });
 
-    test('Ausdauer: nur AuP, höchstens bis 0', () {
+    test('Ausdauer: AuP um die SP(A), LeP um die Hälfte', () {
       final anwendung = wendeSchadenAn(
         _zustand,
         SchadensBuchung(art: SchadensArt.ausdauer, tp: 9, rs: 2),
       );
       expect(anwendung.zustand.currentAu, 13);
+      expect(anwendung.zustand.currentLep, 26);
       expectNurGeaendert(_zustand.toJson(), anwendung.zustand.toJson(), {
         'currentAu',
+        'currentLep',
       });
+    });
 
+    test('Ausdauer: AuP höchstens bis 0, kein Überlauf auf LeP', () {
       final leer = wendeSchadenAn(
         _zustand,
         SchadensBuchung(art: SchadensArt.ausdauer, tp: 40, rs: 0),
       );
       expect(leer.zustand.currentAu, 0);
-      expect(leer.zustand.currentLep, 30);
+      expect(leer.zustand.currentLep, 10);
+    });
+
+    test('Ausdauer: echte SP schlagen Wunden samt Zusatzschaden', () {
+      final anwendung = wendeSchadenAn(
+        _zustand,
+        SchadensBuchung(
+          art: SchadensArt.ausdauer,
+          tp: 20,
+          rs: 0,
+          zone: WundZone.bauch,
+          wunden: 1,
+          zusatzSchaden: 3,
+          angriffsModifikator: 2,
+        ),
+      );
+      expect(anwendung.zustand.currentAu, 0);
+      expect(anwendung.zustand.currentLep, 30 - 10 - 3);
+      expect(anwendung.zustand.wpiZustand.wundenInZone(WundZone.bauch), 1);
+      expect(anwendung.hinzugefuegteWunden, 1);
     });
   });
 }

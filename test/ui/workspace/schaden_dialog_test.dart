@@ -17,7 +17,7 @@ import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/schaden/schaden_dialog.dart';
 
-// KO 12: Wundschwellen 6 / 12 / 18 / 24.
+// KO 12: Wundschwellen 6 / 12 / 18.
 const _held = HeroSheet(
   id: 'demo',
   name: 'Rondra',
@@ -137,7 +137,7 @@ void main() {
     await tester.pump();
     expect(find.text('14 SP'), findsOneWidget);
     expect(
-      find.text('Schwellen 6 / 12 / 18 / 24 · 14 SP → Vorschlag: 2 Wunden'),
+      find.text('Schwellen 6 / 12 / 18 · 14 SP → Vorschlag: 2 Wunden'),
       findsOneWidget,
     );
     expect(_key('schaden-zone-fehlt'), findsOneWidget);
@@ -184,7 +184,7 @@ void main() {
     await tester.enterText(_key('schaden-ws-mod'), '-2');
     await tester.pump();
     expect(
-      find.text('Schwellen 4 / 10 / 16 / 22 · 11 SP → Vorschlag: 2 Wunden'),
+      find.text('Schwellen 4 / 10 / 16 · 11 SP → Vorschlag: 2 Wunden'),
       findsOneWidget,
     );
     expect(tester.widget<Text>(_key('schaden-wunden')).data, '2');
@@ -232,27 +232,70 @@ void main() {
     );
   });
 
-  testWidgets('Ausdauerschaden zieht nur AuP ab', (tester) async {
+  testWidgets('Ausdauerschaden zieht AuP und die Hälfte als LeP ab', (
+    tester,
+  ) async {
     final repo = FakeRepository(heroes: [_held], states: {'demo': _zustand});
     await zeigePanel(tester, repo);
 
     await tester.tap(find.text('Ausdauer (TP(A))'));
     await tester.pumpAndSettle();
-    expect(_key('schaden-zone'), findsNothing);
-    expect(_key('schaden-wunden'), findsNothing);
+    // TP(A) heben die Wundschwelle üblicherweise um 2 (WdS S. 58).
+    expect(
+      tester.widget<TextField>(_key('schaden-ws-mod')).controller!.text,
+      '2',
+    );
 
     await tester.enterText(_key('schaden-tp'), '8');
     await tester.enterText(_key('schaden-rs'), '2');
     await tester.pump();
-    expect(find.text('AuP 20 → 14'), findsOneWidget);
+    expect(find.text('6 SP(A) · 3 SP auf LeP'), findsOneWidget);
+    expect(find.text('AuP 20 → 14 · LeP 30 → 27'), findsOneWidget);
 
     await tester.tap(_uebernehmen);
     await tester.pumpAndSettle();
 
     final gespeichert = (await repo.loadHeroState('demo'))!;
     expect(gespeichert.currentAu, 14);
-    expect(gespeichert.currentLep, 30);
-    expect(gespeichert.diceLog.single.subtitle, 'TP(A) 8 − RS 2 = 6 SP(A)');
+    expect(gespeichert.currentLep, 27);
+    expect(
+      gespeichert.diceLog.single.subtitle,
+      'TP(A) 8 − RS 2 = 6 SP(A) · 3 SP auf LeP · WS +2',
+    );
+  });
+
+  testWidgets('Ausdauerschaden schlägt über die echten SP Wunden', (
+    tester,
+  ) async {
+    final repo = FakeRepository(heroes: [_held], states: {'demo': _zustand});
+    await zeigePanel(tester, repo);
+
+    await tester.tap(find.text('Ausdauer (TP(A))'));
+    await tester.pumpAndSettle();
+    await tester.enterText(_key('schaden-tp'), '18');
+    await tester.enterText(_key('schaden-rs'), '0');
+    await waehleZone(tester, 'Linker Arm');
+    expect(
+      find.text('Schwellen 8 / 14 / 20 · 9 SP → Vorschlag: 1 Wunde'),
+      findsOneWidget,
+    );
+    expect(tester.widget<Text>(_key('schaden-wunden')).data, '1');
+
+    await tester.tap(_uebernehmen);
+    await tester.pumpAndSettle();
+
+    final gespeichert = (await repo.loadHeroState('demo'))!;
+    expect(gespeichert.currentAu, 2);
+    expect(gespeichert.currentLep, 21);
+    expect(gespeichert.wpiZustand.wundenInZone(WundZone.linkerArm), 1);
+
+    // Zurück zur Lebensenergie setzt den Modifikator wieder auf 0.
+    await tester.tap(find.text('Lebensenergie'));
+    await tester.pumpAndSettle();
+    expect(
+      tester.widget<TextField>(_key('schaden-ws-mod')).controller!.text,
+      '0',
+    );
   });
 
   testWidgets('ein Speicherfehler erscheint im Panel', (tester) async {
