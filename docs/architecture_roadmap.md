@@ -87,6 +87,9 @@ die Flutter-Umsetzung und die vollständige Funktionszuordnung bleiben offen.
   die Spielansicht um direkten Zugriff auf häufige Aktionen ergänzen.
 - [ ] „Schaden erhalten“ als zusammenhängenden Ablauf mit Ressourcenänderung,
   gegebenenfalls Wunden und nachvollziehbarer Korrekturmöglichkeit anbieten.
+  *(Ablauf, Dialog und UI2-Schnellaktion umgesetzt, siehe ARCH-05 Teilstand
+  (3). Korrigiert wird bisher von Hand anhand des Protokolleintrags; eine
+  Rücknahme hängt an ARCH-06, deshalb bleibt der Punkt offen.)*
 
 **Abnahme:** Häufige Spielaktionen sind direkt aus der Spielansicht erreichbar.
 Manuelle Korrektur und AP-pflichtige Entwicklung bleiben unterscheidbar. Ein
@@ -135,9 +138,9 @@ Commit-IDs und Abgrenzungen stehen unter „R1: Übergabe“ in den
 **ARCH-01 bleibt trotzdem offen.** Die Spielanordnung mit echten Werten und
 Bestandsaktionen ist umgesetzt (R2), ebenso die gestalterische Integration der
 Fachansichten und der Entwicklungsbereich samt Gesamtabnahme (R3, siehe
-[redesign_acceptance.md](redesign_acceptance.md)). „Schaden erhalten“ als
-zusammenhängender Ablauf mit nachvollziehbarer Korrektur fehlt weiterhin — er
-hängt an ARCH-05 und ARCH-06 und ist kein UI-Teilumfang.
+[redesign_acceptance.md](redesign_acceptance.md)). „Schaden erhalten“ gibt es
+seit dem ARCH-05-Teilstand (3) als geführten Ablauf in beiden Oberflächen;
+es fehlt noch die nachvollziehbare Rücknahme, die an ARCH-06 hängt.
 
 **Abhängigkeiten / offene Entscheidungen:** Schreibende Spielaktionen auf
 ARCH-05/06 aufbauen. Navigation, Favoritenverhalten und Korrekturbedienung sind
@@ -733,8 +736,8 @@ Commits:
    - ~~die Snapshot-Schreibwege des Zustands: Ressourcen, Zaubereffekte,
      Würfelprotokoll per `unawaited`, Wunden~~ *Erledigt im Teilstand
      „Snapshot-Schreibwege des Zustands“ unten.*
-   - danach „Schaden erhalten“ als eigener Ablauf (Voraussetzung für
-     ARCH-01)
+   - ~~danach „Schaden erhalten“ als eigener Ablauf (Voraussetzung für
+     ARCH-01)~~ *Erledigt im Teilstand „Schaden erhalten“ unten.*
    - ~~`_filterKnownTraitWarnings` wartet mit `rulesCatalogProvider.future`
      und kann bei einem Katalogfehler hängen.~~ *Erledigt als Kleinfix:*
      `saveHero` wartet über ein Abo mit Zeitlimit (20 s) und speichert bei
@@ -827,10 +830,10 @@ Commits:
    nutzen denselben Einstieg wie der geprüfte Stepper.
 4. Snapshot-Schreibwege des **Bogens** bleiben: Dauermodifikatoren,
    Wundschwelle, Inventar, Kampf und die Sofortaktionen der Übersicht.
-5. Nächster Schritt: „Schaden erhalten“ als eigener Ablauf. Er kann jetzt auf
+5. ~~Nächster Schritt: „Schaden erhalten“ als eigener Ablauf. Er kann jetzt auf
    `aendereGespeichertenZustand` und `aendereWundZustand` aufsetzen und ist
    die Voraussetzung für ARCH-01. Die Korrekturmöglichkeit bleibt an ARCH-06
-   gebunden.
+   gebunden.~~ *Erledigt im Teilstand „Schaden erhalten“ unten.*
 
 *Nachtrag 29.09.2026 — schnelles Tippen mit Konto-Sync.* Eine manuelle
 Prüfung zeigte: Wer schnell viele AsP verbraucht, bekommt eine Fehlermeldung
@@ -901,6 +904,92 @@ nach dem Umschalten liefe.
    nicht mehr dazugehört, bleiben dafür nur lokale Speicherfehler.
 4. Der Bogen (`saveHero`) wartet weiter auf seinen Upload; schnelle
    Bogenänderungen (Inventar) laufen nicht über die Bündelung.
+
+**Teilstand 29.09.2026 (3) — „Schaden erhalten“ als Ablauf.** Der
+Hauptpunkt bleibt offen: Die Bogen-Schreibwege stehen noch aus.
+
+*Entscheidungen (mit dem Nutzer abgestimmt).*
+
+- **Wunden sind ein Vorschlag.** Ob ein Treffer Wunden schlägt, hängt auch
+  vom Angriff ab (Pfeile senken die Wundschwelle um 2). Der Dialog fragt
+  diesen Modifikator ab und schlägt je echt überschrittener
+  Wundschwellenstufe (0,5 KO, KO, 1,5 KO, 2 KO, jeweils mit Eisern bzw.
+  Glasknochen) eine Wunde vor. Der Nutzer entscheidet über die Zahl.
+- **Zone:** wählbar oder per W20 über `resolveTrefferzone`. Die Zusatzwürfe
+  (Kopf 2W6 INI-Malus, Brust/Bauch 1W6 SP je Wunde, dritte Kopfwunde 2W6 SP)
+  kommen aus der vorhandenen Trefferzonentabelle; `TrefferzonenZusatzwurf`
+  trägt dafür jetzt seine Wirkung.
+- **TP(A) als Umschalter:** Ausdauerschaden senkt nur AuP, höchstens bis 0,
+  und schlägt keine Wunden. Ein Überlauf auf LeP ist nicht vorgesehen.
+- **LeP ohne Untergrenze,** wie bei der Anzeige in UI2. RS kommt vorbelegt
+  aus der Kampfvorschau (Gesamt-RS, Zonenrüstung gibt es im Modell nicht)
+  und ist änderbar.
+- **Korrektur:** Jede Buchung erzeugt einen Protokolleintrag mit
+  `ProbeType.damage` und allen Werten; einen neuen Aufzählungswert gibt es
+  bewusst nicht. Eine Rücknahme gehört zu ARCH-06.
+- **Oberfläche:** Der Dialog liegt im Bestand (`workspace/schaden/`), weil
+  Würfel und Wundunterdrückung dort liegen. UI2 öffnet ihn über die neue
+  Brückenmethode `KartoBestandsAdapter.schadenErhalten` als dritte
+  Schnellaktion. Nach neuen Wunden folgt die vorhandene Unterdrückungsabfrage
+  (`bieteWundUnterdrueckungAn`, aus `fuegeWundeHinzu` herausgelöst).
+
+Commits:
+
+- `83c3567` — Regel `schaden_rules.dart` mit Tests, Wirkung der
+  Zusatzwürfe.
+- `41d1070` — Ablauf `SchadenErhalten`, Protokoll, Provider, Ablauftests.
+- `fc37de6` — Dialog im Inspector-Vitals-Tab mit Widgettests.
+- `7a05c3d` — UI2-Schnellaktion über die Brücke, Adapter- und
+  Spielansichtstests; der Test gegen erfundene Bedienelemente prüft weiter
+  Rundenzähler und Rücknahme.
+- Abschluss-Commit mit Dokumentation.
+
+*Prüfungen.*
+
+- Regeltests (`test/rules/schaden_rules_test.dart`): SP-Grenze, „echt
+  größer“ an jeder Stufe, Angriffsmodifikator, Merkmalsbonus, vier Wunden,
+  Kappung an der vollen Zone, Kopf-INI, Brust-Zusatz, negative LeP, AuP bis
+  0, nur die eigenen Felder ändern sich, widersprüchliche Buchungen werden
+  abgewiesen.
+- Ablauftests (`test/ablaeufe/schaden_erhalten_test.dart`): nur LeP, Wunden,
+  Protokoll und Stempel ändern sich; Protokolltext; Ausdauer; eine
+  Zwischenänderung (LeP, AsP, Wunde, Wurf) bleibt erhalten, und die Kappung
+  richtet sich nach dem gespeicherten Stand; fehlender Zustand;
+  Fehlerweitergabe.
+- Widgettests (`test/ui/workspace/schaden_dialog_test.dart`): vorbelegter
+  RS, Vorschlag und W20-Zone mit Zusatzwurf, überstimmter Vorschlag mit
+  Angriffsmodifikator, volle Zone, Ausdauer, Fehler im Panel, Sperre während
+  des Speicherns, Dialog schließt sich und bietet die Unterdrückung an. Dazu
+  der Brückentest im Kompatibilitätstheme und die UI2-Schnellaktion.
+- Gegenproben: Ohne Kappung an den freien Plätzen scheitern der Regeltest
+  „volle Zone“ und der Ablauftest mit Zwischenänderung. Rechnet der Ablauf
+  auf einem veralteten statt dem frischen Stand, scheitern der
+  Zwischenänderungs- und der Leerzustandstest.
+- `flutter analyze --no-pub` ohne Befund, volle Suite grün (2913
+  bestanden, 3 übersprungen). Die Hash-Pins der Bestandshelden sind
+  unverändert. Eine manuelle Bedienprüfung auf Geräten steht aus.
+
+*Verbleibende Risiken und nächste Schritte.*
+
+1. Keine Rücknahme; eine falsche Buchung korrigiert der Nutzer von Hand
+   (ARCH-06).
+2. Die Unterdrückungsabfrage erscheint nach einem Treffer einmal und
+   unterdrückt höchstens eine Wunde; ihre Erschwernis rechnet mit einer
+   neuen Wunde (`computeSbUnterdrueckungErschwernis` kennt mehr, der Dialog
+   nutzt es nicht).
+3. Wundschwellen und RS stammen aus dem berechneten Snapshot. Die
+   Zusatzwürfe beziehen sich auf die angezeigte Wundzahl der Zone; kappt der
+   gespeicherte Stand die Wunden stärker, bleibt der eingetragene
+   Zusatzschaden trotzdem gebucht.
+4. Befund: Das einzelne `computeWundschwelle` (Inspector „WS n“) rechnet
+   KO/2 abgerundet ohne den Eisern/Glasknochen-Bonus, die Stufen rechnen
+   kaufmännisch gerundet mit ihm. Der Ablauf nutzt die Stufen; die Anzeige
+   kann bei ungeradem KO oder mit Eisern abweichen. Nicht behoben.
+5. Kein Encounter: Schaden wird nicht aus einem Angriff übergeben, sondern
+   eingetragen (Spielmodus-Konzept Phase 3).
+6. Nächster Schritt: die Snapshot-Schreibwege des **Bogens**
+   (Dauermodifikatoren, Wundschwelle, Inventar, Kampf, Sofortaktionen der
+   Übersicht).
 
 ## ARCH-06 — Zusammengehörige Änderungen gemeinsam speichern und synchronisieren
 
