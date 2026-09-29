@@ -42,7 +42,7 @@ void main() {
           current: 10,
           max: 20,
           kind: VitalKind.lep,
-          onChanged: (v) => captured = v,
+          onChanged: (v) => captured = v.wendeAn(10),
         ),
       ),
     );
@@ -61,7 +61,7 @@ void main() {
           current: 10,
           max: 20,
           kind: VitalKind.lep,
-          onChanged: (v) => captured = v,
+          onChanged: (v) => captured = v.wendeAn(10),
         ),
       ),
     );
@@ -82,7 +82,7 @@ void main() {
           current: 38,
           max: 38,
           kind: VitalKind.lep,
-          onChanged: (v) => captured = v,
+          onChanged: (v) => captured = v.wendeAn(38),
         ),
       ),
     );
@@ -103,7 +103,7 @@ void main() {
           current: 38,
           max: 38,
           kind: VitalKind.lep,
-          onChanged: (v) => captured = v,
+          onChanged: (v) => captured = v.wendeAn(38),
         ),
       ),
     );
@@ -122,7 +122,7 @@ void main() {
           current: -10,
           max: 20,
           kind: VitalKind.lep,
-          onChanged: (v) => captured = v,
+          onChanged: (v) => captured = v.wendeAn(-10),
         ),
       ),
     );
@@ -145,7 +145,7 @@ void main() {
           current: -7,
           max: 20,
           kind: VitalKind.lep,
-          onChanged: (v) => captured = v,
+          onChanged: (v) => captured = v.wendeAn(-7),
         ),
       ),
     );
@@ -164,7 +164,7 @@ void main() {
           current: 10,
           max: 20,
           kind: VitalKind.lep,
-          onChanged: (v) => captured = v,
+          onChanged: (v) => captured = v.wendeAn(10),
         ),
       ),
     );

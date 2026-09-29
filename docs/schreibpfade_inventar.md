@@ -1,6 +1,7 @@
 # Schreibpfade der Heldenverwaltung (ARCH-05)
 
-Stand: 29.09.2026. Bestandsaufnahme für
+Stand: 29.09.2026, nachgeführt nach dem zweiten ARCH-05-Teilstand
+(Snapshot-Schreibwege des Zustands). Bestandsaufnahme für
 [ARCH-05 — Schreibende Aktionen fachlich aufteilen](architecture_roadmap.md#arch-05--schreibende-aktionen-fachlich-aufteilen).
 Sie beschreibt, **wo** Heldendaten heute geschrieben werden, mit welchen
 Eingaben, Vorbedingungen, Seiteneffekten und Speichergrenzen. Zeilenangaben
@@ -21,7 +22,12 @@ Begriffe:
 - Jeder Heldenschreibweg endet in `HeroRepository.saveHero` bzw.
   `saveHeroState` (`lib/data/hero_repository.dart`). Mit Konto liegt
   `SyncingHeroRepository` als Dekorator davor und überträgt selbst; kein
-  Ablauf ruft den Sync ausdrücklich auf.
+  Ablauf ruft den Sync ausdrücklich auf. Beim **Zustand** endet
+  `saveHeroState` nach dem lokalen Speichern; den Upload bündelt
+  `GebuendelteLaeufe` (`lib/data/sync/gebuendelte_laeufe.dart`) je Held im
+  Hintergrund, immer mit dem neuesten lokalen Stand. Online-Stände, die
+  währenddessen eintreffen, bewertet das Repository erst danach. Der Bogen
+  wartet weiterhin auf seinen Upload.
 - Bogen und Zustand sind **getrennte** Schreibvorgänge. Es gibt keine
   Transaktion über beide und keine über Laden → Ändern → Schreiben.
 - Avatarbilder liegen außerhalb des Heldenmodells (`AvatarFileStorage`,
@@ -37,7 +43,21 @@ Abhängigkeiten per Konstruktor; die Provider liegen in
 | Ablauf | Einstieg | Schreibt | Stand |
 |---|---|---|---|
 | Rast abschließen | `RastAbschliessen` (`lib/ablaeufe/rast_abschliessen.dart`) | Zustand, frisch | extrahiert |
-| Zustand frisch ändern | `aendereGespeichertenZustand` (`lib/ablaeufe/zustand_schreiben.dart`) | Zustand, frisch | Baustein, `HeroActions.updateHeroState` delegiert |
+| Zustand frisch ändern | `aendereGespeichertenZustand` (`lib/ablaeufe/zustand_schreiben.dart`) | Zustand, frisch, je Held nacheinander | Baustein, `HeroActions.updateHeroState` delegiert |
+
+`aendereGespeichertenZustand` reiht Änderungen desselben Helden über
+denselben Speicher ein: Jede lädt erst, wenn die vorige gespeichert oder
+gescheitert ist. Die Warteschlange hängt per `Expando` am Speicherobjekt.
+Schreibwege, die an der Funktion vorbei speichern (`saveHeroState`), sind
+nicht eingereiht.
+
+In der Oberfläche ist `aendereZustandMitMeldung`
+(`lib/ui/screens/shared/zustand_aendern.dart`) der gemeinsame Einstieg:
+frisch über `updateHeroState`, Fehler „… nicht gespeichert“ im nächsten
+`ZustandFehlerBereich` (Blatt, Dialog, Inspector-Tab), sonst als Snackbar.
+Wunden nutzen darüber `aendereWundZustand` und `fuegeWundeHinzu`
+(`lib/ui/screens/workspace/wund_zustand_speichern.dart`), Zaubereffekte die
+Regeln aus `lib/rules/derived/active_spell_state_rules.dart`.
 
 ## `HeroActions` (`lib/state/hero_actions.dart`)
 
@@ -69,7 +89,7 @@ Jeder Bogenschreibweg über `HeroActions` durchläuft `saveHero`:
 | `saveHero` | Bogen | Normalisierung oben |
 | `updateHero` | Bogen, frisch | wie `saveHero`; keine Transaktion |
 | `saveHeroState` | Zustand, Snapshot des Aufrufers | stempelt `lastModified` |
-| `updateHeroState` | Zustand, frisch | delegiert an `aendereGespeichertenZustand` |
+| `updateHeroState` | Zustand, frisch | delegiert an `aendereGespeichertenZustand`, liefert den gespeicherten Zustand |
 | `deleteHero` | löscht Bogen und Zustand, Auswahl | — |
 | `buildExportJson` / `parseImportJson` | nichts | Avatar und Galerie als Base64, eigene Katalogeinträge |
 | `importHeroBundle` | eigener Katalog, Bogen, Zustand, Galeriedateien, Auswahl | Heldenlimit; bis zu drei `saveHero`; lädt den Katalog neu |
@@ -90,12 +110,13 @@ Domainlogik.
 | Anzeige nicht passender SF | `setShowInapplicableSpecialAbilities` (ebd.) | Bogen **direkt über das Repository**, ohne Normalisierung | Hash-Prüfung | ja | nein |
 | Inventar | `hero_inventory/inventory_mutations.dart` (`_saveEntries`, `_saveDukaten`) | Bogen | Snapshot | teilweise | Verknüpfungs- und Geschossabgleich |
 | Kampfkonfiguration | `hero_combat/combat_state_helpers.dart` (Sofortspeichern und Editor) | Bogen | Snapshot | teilweise | Slotprüfung, Talentverteilung, AP-Delta |
-| Ressourcen (LeP, Au, AsP, KaP) | `resource_stepper_dialog.dart`, `inspector_vitals_tab.dart`, `inspector_magie_tab.dart`, `inspector_belastung_section.dart` | Zustand | Snapshot | nein | Stepper-Grenzen |
-| Ressourcen UI2 | `ui/bridges/karto_spiel_bruecke.dart` | Zustand | frisch (`updateHeroState`) | ja | nein |
+| Ressourcen (LeP, Au, AsP, KaP) | `resource_stepper_dialog.dart`, `inspector_vitals_tab.dart`, `inspector_magie_tab.dart` | Zustand | frisch, Schritt vom gespeicherten Wert (`RessourcenAenderung`) | ja (im Blatt bzw. Tab) | Grenzen nur in Schrittrichtung |
+| Belastung | `inspector_belastung_section.dart` | Zustand | frisch, zählt vom gespeicherten Wert | ja (im Inspector-Tab bzw. Zustandsblock) | Untergrenze 0 |
+| Ressourcen UI2 | `ui/bridges/karto_spiel_bruecke.dart` | Zustand | frisch, Schritt vom gespeicherten Wert | ja (im Blatt) | nein |
 | Dauermodifikatoren | `inspector_statuswerte_block.dart` | Bogen | Snapshot | nein | — |
-| Wunden | `wunden_detail_dialog.dart`, `inspector_wunden_card.dart` (zwei fast gleiche Wege) | Zustand (+ Bogen für Wundschwelle) | Provider-Stand kurz vor dem Schreiben | nein | Wundeffekte, Unterdrückung |
-| Zaubereffekte | `shared/active_spell_effects_dialog.dart` | Zustand | Snapshot | nein | — |
-| Würfelprotokoll | `shared/dice_log_persistence.dart` (`persistDiceLogEntries`, oft per `unawaited`) | Zustand | Provider-Stand | nein | — |
+| Wunden | `wunden_detail_dialog.dart`, `inspector_wunden_card.dart` über `wund_zustand_speichern.dart` | Zustand (+ Bogen für Wundschwelle, Snapshot) | Zustand frisch, zählt vom gespeicherten Wundzustand | ja (im Dialog bzw. Tab) | Wundeffekte für den Unterdrückungsdialog |
+| Zaubereffekte | `shared/active_spell_effects_dialog.dart` | Zustand | frisch, Regeln aus `active_spell_state_rules.dart` | ja (im Dialog) | nein |
+| Würfelprotokoll | `shared/dice_log_persistence.dart` (`persistDiceLogEntries`, oft per `unawaited`) | Zustand | frisch, je Held nacheinander | ja (Snackbar in `showLoggedProbeDialog`) | — |
 | Abenteuerblatt UI2 | `ui2/spielen/karto_abenteuerblatt.dart` | Bogen | frisch (`updateHero`) | ja, im Blatt | `ersetzeAbenteuer` (UI2) |
 | Abenteuer (Bestand) | `hero_notes_tab.dart` (Editor, Abschluss, Wiedereröffnen) | Bogen | Editorentwurf | teilweise | Belohnungen buchen/zurücknehmen |
 | Reisebericht | `hero_reisebericht_tab.dart` | Bogen | Editorentwurf | teilweise | Belohnungen |
@@ -136,11 +157,15 @@ Domainlogik.
 
 ## Befunde für Folgeaufträge
 
-1. **Snapshot-Schreibwege im Zustand.** Ressourcen-Stepper, Inspector-Tabs,
+1. ~~**Snapshot-Schreibwege im Zustand.** Ressourcen-Stepper, Inspector-Tabs,
    Zaubereffekte und das Würfelprotokoll schreiben einen vorher erfassten
    Zustand vollständig zurück. Zwei kurz nacheinander protokollierte Würfe
-   (`unawaited`) können sich gegenseitig überschreiben. Nächster Kandidat
-   für einen Ablauf nach dem Rast-Muster.
+   (`unawaited`) können sich gegenseitig überschreiben.~~ *Behoben im
+   zweiten ARCH-05-Teilstand:* Alle genannten Wege und die Wunden schreiben
+   frisch und je Held nacheinander. Snapshot-Schreibwege des Zustands gibt
+   es nur noch im Übersichtseditor (Editorentwurf, Befund 3), beim
+   Anlegen und beim Import. Snapshot-Schreibwege des **Bogens** bleiben
+   (Dauermodifikatoren, Wundschwelle, Inventar, Kampf, Übersicht).
 2. ~~**`_filterKnownTraitWarnings` wartet mit `rulesCatalogProvider.future`**~~
    *Behoben:* `saveHero` wartet jetzt über ein Abo auf den Katalog
    (`HeroActions._warteAufRegelkatalog`), höchstens

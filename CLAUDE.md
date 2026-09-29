@@ -111,6 +111,32 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   an das auch `HeroActions.updateHeroState` delegiert). Ablaeufe fangen
   Fehler nicht, die aufrufende Oberflaeche zeigt sie. Bestandsaufnahme aller
   Schreibwege: `docs/schreibpfade_inventar.md`.
+- `aendereGespeichertenZustand` reiht Aenderungen je Speicher und Held ein
+  (Warteschlange per `Expando` am Repository); zwei nicht abgewartete Aufrufe
+  ueberschreiben einander so nicht. Laufzeitwerte werden in der Oberflaeche
+  **nie** als beim Rendern erfasster Gesamtzustand geschrieben
+  (`saveHeroState` bleibt Editor, Anlegen und Import vorbehalten), sondern
+  ueber `aendereZustandMitMeldung` (`lib/ui/screens/shared/zustand_aendern.dart`):
+  frisch laden, nur die eigenen Felder ersetzen. Fehler erscheinen im
+  naechsten `ZustandFehlerBereich` an der `ZustandFehlerAnzeige` (Blatt,
+  Dialog, Inspector-Tab, UI2-Zustandsblock) — eine Snackbar laege hinter dem
+  Blatt, auf iOS/macOS verdeckt; sie ist nur Rueckfall. Wunden laufen
+  darueber in `wund_zustand_speichern.dart`, Zaubereffekte ueber
+  `rules/derived/active_spell_state_rules.dart`. Bedienung zaehlt **immer**
+  vom gespeicherten Wert, damit jeder schnelle Klick zaehlt: Ressourcenknoepfe
+  melden eine `RessourcenAenderung` (`rules/derived/ressourcen_aenderung_rules.dart`,
+  Schritt mit Grenzen nur in Schrittrichtung oder Setzen), nie einen
+  fertigen Wert. `test/ui/shared/zustand_frisch_schreiben_test.dart` prueft
+  jeden Weg gegen eine Zwischenaenderung und schnelle Klicks.
+- Mit Konto endet `SyncingHeroRepository.saveHeroState` nach dem **lokalen**
+  Speichern; `GebuendelteLaeufe` (`lib/data/sync/gebuendelte_laeufe.dart`)
+  laedt je Held im Hintergrund hoch, nie zwei gleichzeitig, immer den
+  neuesten Stand. Parallele Uploads auf derselben Basisrevision meldeten
+  sonst Konflikte mit sich selbst. Online-Staende, die waehrenddessen
+  eintreffen (auch das eigene Echo), werden erst nach dem Upload bewertet;
+  `syncNow` wartet vorher auf laufende Uploads. Tests, die danach die Cloud
+  pruefen oder die Leitung umschalten, warten mit `warteAufUebertragungen()`
+  (`test/data/zustand_schnell_tippen_sync_test.dart`).
 - `CodexPageScaffold` legt eine transparente `Material`-Fläche über den
   Seitenhintergrund, damit `ListTile`-/`ExpansionTile`-Hintergründe und
   Ink-Effekte sichtbar bleiben. Der Regressionstest liegt unter

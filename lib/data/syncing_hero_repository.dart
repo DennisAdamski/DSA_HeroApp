@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 
 import 'package:dsa_heldenverwaltung/data/hero_repository.dart';
+import 'package:dsa_heldenverwaltung/data/sync/gebuendelte_laeufe.dart';
 import 'package:dsa_heldenverwaltung/data/sync/offline_hero_review_store.dart';
 import 'package:dsa_heldenverwaltung/data/sync/remote_hero_sync_gateway.dart';
 import 'package:dsa_heldenverwaltung/data/sync/sync_metadata_store.dart';
@@ -96,6 +97,18 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
 
   StreamSubscription<List<RemoteHeroRecord>>? _heroSubscription;
   StreamSubscription<List<RemoteHeroStateRecord>>? _stateSubscription;
+
+  /// Zustands-Uploads je Held: nie zwei gleichzeitig, schnelle Folgen gebündelt.
+  late final GebuendelteLaeufe _zustandsUploads = GebuendelteLaeufe(
+    nachLauf: _uebernimmZurueckgestelltenZustand,
+  );
+
+  /// Online-Stände, die während eines Zustands-Uploads eintrafen, je Held
+  /// der neueste. Sie werden erst nach dem Upload bewertet: Solange er läuft,
+  /// ist der lokale Stand der Übertragung voraus, und das Echo des eigenen
+  /// Uploads sähe wie eine fremde Änderung aus.
+  final Map<String, RemoteHeroStateRecord> _zurueckgestellteZustaende =
+      <String, RemoteHeroStateRecord>{};
 
   SyncStatusSnapshot _status = const SyncStatusSnapshot();
 
@@ -457,6 +470,8 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
     if (stateGateway == null) {
       return 0;
     }
+    // Erst laufende Uploads abwarten: sonst sähe der Abgleich ihre Echos.
+    await _zustandsUploads.warteAufAlle();
     final records = await stateGateway.loadAllHeroStates();
     final applyFailures = await _applyRemoteStateRecords(records);
 
@@ -473,7 +488,9 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
           !await _hasPendingLocalStateChange(hero.id, state, record)) {
         continue;
       }
-      await _pushHeroStateIfSafe(hero.id, state);
+      // Über dieselbe Bündelung wie beim Speichern, damit ein Klick während
+      // des Abgleichs keinen zweiten, parallelen Upload startet.
+      await _zustandsUploads.stosseAn(hero.id, () => _ladeZustandHoch(hero.id));
     }
     return applyFailures;
   }
@@ -767,6 +784,10 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
   }
 
   Future<void> _applyRemoteStateRecord(RemoteHeroStateRecord record) async {
+    if (_zustandsUploads.laeuft(record.heroId)) {
+      _zurueckgestellteZustaende[record.heroId] = record;
+      return;
+    }
     final key = _stateKey(record.heroId);
     final metadata = await metadataStore.load(key);
     final localState = await local.loadHeroState(record.heroId);
@@ -1569,18 +1590,84 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
     );
   }
 
+  /// Speichert den Zustand lokal und überträgt ihn im Hintergrund.
+  ///
+  /// Die Zukunft endet nach dem **lokalen** Speichern. Laufzeitwerte ändern
+  /// sich am Spieltisch in schneller Folge (zehnmal AsP −1); jede Änderung
+  /// auf die Cloud warten zu lassen, ließe die Anzeige Sekunden hinterherlaufen.
+  /// Die Übertragung läuft je Held gebündelt ([GebuendelteLaeufe]) und nimmt
+  /// jeweils den neuesten lokalen Stand. Scheitert sie, bleibt der lokale Stand
+  /// gültig; der Fehler landet im Sync-Status und [syncNow] holt den Upload
+  /// nach (Befund ARCH-07-B8). Auf die Übertragung warten:
+  /// [warteAufUebertragungen].
   @override
   Future<void> saveHeroState(String heroId, HeroState state) async {
     // Frischer Stempel bei jedem Speichern, analog zu [saveHero]. Er bleibt
     // aus [heroStateContentHash] heraus und loest deshalb keinen Konflikt aus.
     final stamped = state.copyWith(lastModified: DateTime.now().toUtc());
     await local.saveHeroState(heroId, stamped);
-    await _pushRemoteBestEffort(
-      () => _pushHeroStateIfSafe(heroId, stamped),
-      context:
-          'Zustand von Held $heroId konnte nicht in die Cloud '
-          'uebertragen werden',
+    unawaited(
+      _zustandsUploads.stosseAn(
+        heroId,
+        () => _ladeZustandHochImHintergrund(heroId),
+      ),
     );
+  }
+
+  /// Wartet, bis alle angestoßenen Zustands-Uploads übertragen sind.
+  ///
+  /// Für Abläufe, die danach die Cloud lesen (Tests, Abmelden).
+  Future<void> warteAufUebertragungen() => _zustandsUploads.warteAufAlle();
+
+  // Überträgt den neuesten lokalen Zustand; Fehler reicht er weiter.
+  Future<void> _ladeZustandHoch(String heroId) async {
+    final state = await local.loadHeroState(heroId);
+    if (state == null) {
+      return;
+    }
+    await _pushHeroStateIfSafe(heroId, state);
+  }
+
+  // Wie [_ladeZustandHoch], aber ohne Aufrufer: jeder Fehler wird gemeldet
+  // und im Sync-Status vermerkt, nie geworfen.
+  Future<void> _ladeZustandHochImHintergrund(String heroId) async {
+    try {
+      await _pushRemoteBestEffort(
+        () => _ladeZustandHoch(heroId),
+        context:
+            'Zustand von Held $heroId konnte nicht in die Cloud '
+            'uebertragen werden',
+      );
+    } on Object catch (error, stackTrace) {
+      FlutterError.reportError(
+        FlutterErrorDetails(
+          exception: error,
+          stack: stackTrace,
+          library: 'syncing_hero_repository',
+          context: ErrorDescription(
+            'Zustand von Held $heroId konnte nicht in die Cloud '
+            'uebertragen werden',
+          ),
+        ),
+      );
+      _emitStatus(
+        _status.copyWith(
+          lastFailure: SyncFailure.fromError(
+            error,
+            occurredAt: DateTime.now().toUtc(),
+          ),
+        ),
+      );
+    }
+  }
+
+  // Bewertet den neuesten Online-Stand, der während des Uploads eintraf.
+  Future<void> _uebernimmZurueckgestelltenZustand(String heroId) async {
+    final record = _zurueckgestellteZustaende.remove(heroId);
+    if (record == null) {
+      return;
+    }
+    await _applyRemoteStateRecords(<RemoteHeroStateRecord>[record]);
   }
 
   /// Fuehrt einen Remote-Push local-first aus.

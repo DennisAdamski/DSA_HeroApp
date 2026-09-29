@@ -9,11 +9,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/ressourcen_aenderung_rules.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/config/ui_spacing.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/zustand_aendern.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/inspector/widgets/inspector_belastung_section.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/inspector/widgets/inspector_statuswerte_block.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/inspector/widgets/inspector_vital_block.dart';
@@ -33,7 +35,9 @@ Future<void> zeigeRessourcenBlatt({
 }) {
   return showAdaptiveDetailSheet<void>(
     context: context,
-    builder: (_) => _RessourcenBlatt(heroId: heroId, ressource: ressource),
+    builder: (_) => ZustandFehlerBereich(
+      child: _RessourcenBlatt(heroId: heroId, ressource: ressource),
+    ),
   );
 }
 
@@ -79,18 +83,21 @@ class _RessourcenBlatt extends ConsumerWidget {
     KartoRessource.karma => state.copyWith(currentKap: wert),
   };
 
-  // Ein fehlgeschlagener Write darf nie als stille Uebernahme erscheinen.
-  Future<void> _speichere(BuildContext context, WidgetRef ref, int wert) async {
-    final bote = ScaffoldMessenger.of(context);
-    try {
-      await ref
-          .read(heroActionsProvider)
-          .updateHeroState(heroId, (current) => _mitWert(current, wert));
-    } catch (fehler) {
-      bote.showSnackBar(
-        SnackBar(content: Text('$_kurz nicht gespeichert: $fehler')),
-      );
-    }
+  // Gemeinsamer Schreibweg: frisch laden, die Änderung auf den gespeicherten
+  // Wert anwenden und nur diese Ressource ersetzen.
+  Future<void> _speichere(
+    BuildContext context,
+    WidgetRef ref,
+    RessourcenAenderung aenderung,
+  ) async {
+    await aendereZustandMitMeldung(
+      context: context,
+      ref: ref,
+      heroId: heroId,
+      was: _kurz,
+      aenderung: (current) =>
+          _mitWert(current, aenderung.wendeAn(_aktuell(current))),
+    );
   }
 
   @override
@@ -130,6 +137,7 @@ class _RessourcenBlatt extends ConsumerWidget {
                   kind: _art,
                   onChanged: (naechster) => _speichere(context, ref, naechster),
                 ),
+              const ZustandFehlerAnzeige(),
               const SizedBox(height: 8),
               Align(
                 alignment: Alignment.centerRight,
@@ -168,28 +176,32 @@ class KartoZustandsblock extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        InspectorBelastungSection(heroId: heroId, heroState: werte.state),
-        const SizedBox(height: 14),
-        InspectorWundenSection(
-          heroId: heroId,
-          heroState: werte.state,
-          wundEffekte: werte.wundEffekte,
-          wundschwelle: werte.wundschwelle,
-        ),
-        const SizedBox(height: 14),
-        InspectorStatuswerteBlock(
-          heroId: heroId,
-          hero: werte.hero,
-          derived: werte.derivedStats,
-          combat: werte.combatPreviewStats,
-          // Der Zustand ist bereits ein Abschnitt; eine eigene Karte darin
-          // waere eine Karte in der Karte.
-          eingebettet: true,
-        ),
-      ],
+    // Belastung und Wunden melden Speicherfehler hier, nicht als Snackbar.
+    return ZustandFehlerBereich(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const ZustandFehlerAnzeige(),
+          InspectorBelastungSection(heroId: heroId, heroState: werte.state),
+          const SizedBox(height: 14),
+          InspectorWundenSection(
+            heroId: heroId,
+            heroState: werte.state,
+            wundEffekte: werte.wundEffekte,
+            wundschwelle: werte.wundschwelle,
+          ),
+          const SizedBox(height: 14),
+          InspectorStatuswerteBlock(
+            heroId: heroId,
+            hero: werte.hero,
+            derived: werte.derivedStats,
+            combat: werte.combatPreviewStats,
+            // Der Zustand ist bereits ein Abschnitt; eine eigene Karte darin
+            // waere eine Karte in der Karte.
+            eingebettet: true,
+          ),
+        ],
+      ),
     );
   }
 }

@@ -255,12 +255,14 @@ class HeroActions {
   ///
   /// Kompatibilitätseinstieg für [aendereGespeichertenZustand] (ARCH-05).
   /// Erhält Felder, die seit dem letzten UI-Aufbau geändert wurden. Dies ist
-  /// keine Transaktion gegenüber gleichzeitig laufenden Repository-Schreibwegen.
-  Future<void> updateHeroState(
+  /// keine Transaktion gegenüber gleichzeitig laufenden Repository-Schreibwegen;
+  /// Aufrufe über diesen Einstieg laufen je Held aber nacheinander. Liefert
+  /// den gespeicherten Zustand.
+  Future<HeroState> updateHeroState(
     String heroId,
     HeroState Function(HeroState current) update,
-  ) async {
-    await aendereGespeichertenZustand(
+  ) {
+    return aendereGespeichertenZustand(
       repository: _ref.read(heroRepositoryProvider),
       heroId: heroId,
       aenderung: update,

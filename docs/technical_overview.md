@@ -2995,6 +2995,46 @@ ueber die Settings-Katalogverwaltung bearbeitet.
   der Fullrestore liest sie erst nach der Bestätigung. Eine zwischenzeitliche
   Änderung von `tempMods` fließt erst mit dem nächsten Aufbau ein.
 
+### Update 2026-09-29: Laufzeitzustand frisch schreiben (ARCH-05)
+
+- `aendereGespeichertenZustand` (`lib/ablaeufe/zustand_schreiben.dart`)
+  reiht Änderungen je Speicher und Held ein. Die Warteschlange liegt in einem
+  `Expando` am Repository-Objekt; jede Änderung lädt erst, wenn die vorige
+  gespeichert oder gescheitert ist. `HeroActions.updateHeroState` delegiert
+  darauf und liefert den gespeicherten Zustand.
+- `aendereZustandMitMeldung` (`lib/ui/screens/shared/zustand_aendern.dart`)
+  ist der UI-Einstieg für Laufzeitwerte: frisch laden, nur die eigenen
+  Felder ersetzen, Fehler als Snackbar „… nicht gespeichert“. Ihn nutzen
+  Ressourcen-Stepper, Inspector-Vitals und -Magie, Belastung, Zaubereffekte,
+  Wunden und die UI2-Ressourcenbrücke. `persistDiceLogEntries` hängt über
+  `updateHeroState` an; `showLoggedProbeDialog` meldet Fehler des nicht
+  abgewarteten Protokollierens als Snackbar.
+- Wunden: `aendereWundZustand`, `schalteWundUnterdrueckung` und
+  `fuegeWundeHinzu` (`lib/ui/screens/workspace/wund_zustand_speichern.dart`)
+  ersetzen die drei fast gleichen Wege aus Detaildialog, Inspector-Sektion und
+  Inspector-Karte. Sie zählen vom gespeicherten Wundzustand; der
+  Unterdrückungsdialog sieht den tatsächlich gespeicherten Stand.
+- Zaubereffekte: `lib/rules/derived/active_spell_state_rules.dart`
+  (`schalteZaubereffekt`, `aktiviereAttributo`, `aktiviereArmatrutz`,
+  `setzeZaubereffektDauer`, `zaehleZaubereffektDauer`) ändert nur den
+  jeweiligen Effekt; beim Ausschalten des Attributo fallen seine Boni in
+  `tempAttributeMods` weg.
+- Bedienung zählt vom gespeicherten Wert: Ressourcenknöpfe melden eine
+  `RessourcenAenderung` (`lib/rules/derived/ressourcen_aenderung_rules.dart`,
+  Schritt mit Grenzen nur in Schrittrichtung oder Setzen), Belastung, Wunden
+  und Restdauer zählen ebenso. So zählt jeder schnelle Klick.
+- Fehler erscheinen im nächsten `ZustandFehlerBereich` an der
+  `ZustandFehlerAnzeige` (Stepper, UI2-Ressourcenblatt, Zaubereffekt- und
+  Wundendialog, Inspector-Tabs Vitals und Magie, UI2-Zustandsblock); ohne
+  Bereich als Snackbar.
+- Konto-Sync: `SyncingHeroRepository.saveHeroState` endet nach dem lokalen
+  Speichern. `GebuendelteLaeufe` (`lib/data/sync/gebuendelte_laeufe.dart`)
+  lädt je Held höchstens einen Stand gleichzeitig hoch, immer den neuesten;
+  Anstöße während eines Uploads ergeben genau einen Folgelauf. Online-Stände,
+  die währenddessen eintreffen, stellt das Repository zurück und bewertet
+  sie danach (`nachLauf`). `syncNow` wartet auf laufende Uploads und lädt
+  über dieselbe Bündelung hoch. Auf Uploads warten: `warteAufUebertragungen`.
+
 ### Update 2026-08-23: Aventurischer Kalender und aktuelles Alter
 
 **Kalender (`lib/domain/aventurian_date.dart`)**
