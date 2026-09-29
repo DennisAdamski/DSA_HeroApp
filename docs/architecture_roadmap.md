@@ -979,26 +979,94 @@ Commits:
    `computeSbUnterdrueckungErschwernis` mit der Zahl neuer Wunden (+8 bzw.
    +12). Widgettest „alle Wunden eines Angriffs werden gemeinsam
    unterdrückt“; mit Unterdrückung nur einer Wunde scheitert er.
-7. **Noch per dsa-rules-MCP am Rechner zu validieren** (in dieser Umgebung
+7. ~~**Noch per dsa-rules-MCP am Rechner zu validieren** (in dieser Umgebung
    war der Server nicht erreichbar): LeP ohne Untergrenze; TP(A) mit
    RS-Abzug und ohne Überlauf auf LeP; Wunden über die freien Plätze einer
    Zone verfallen. Außerdem die Rundung der Wundschwellen: Gelten sie als
    reale (gebrochene) Werte, z. B. 6,5 bei KO 13, oder werden sie immer
    aufgerundet? Heute rundet `computeWundschwelle` ab, die Stufen runden
-   kaufmännisch (Befund 4); je nach Ergebnis beide angleichen.
+   kaufmännisch (Befund 4); je nach Ergebnis beide angleichen.~~
+   *Validiert und korrigiert in Teilstand (4):* TP(A) trifft zur Hälfte auch
+   die LeP; Wundschwellen sind ganzzahlig und kaufmännisch gerundet.
 3. Wundschwellen und RS stammen aus dem berechneten Snapshot. Die
    Zusatzwürfe beziehen sich auf die angezeigte Wundzahl der Zone; kappt der
    gespeicherte Stand die Wunden stärker, bleibt der eingetragene
    Zusatzschaden trotzdem gebucht.
-4. Befund: Das einzelne `computeWundschwelle` (Inspector „WS n“) rechnet
+4. ~~Befund: Das einzelne `computeWundschwelle` (Inspector „WS n“) rechnet
    KO/2 abgerundet ohne den Eisern/Glasknochen-Bonus, die Stufen rechnen
    kaufmännisch gerundet mit ihm. Der Ablauf nutzt die Stufen; die Anzeige
-   kann bei ungeradem KO oder mit Eisern abweichen. Nicht behoben.
+   kann bei ungeradem KO oder mit Eisern abweichen. Nicht behoben.~~
+   *Behoben in Teilstand (4):* `computeWundschwelle` ist die erste Stufe.
 5. Kein Encounter: Schaden wird nicht aus einem Angriff übergeben, sondern
    eingetragen (Spielmodus-Konzept Phase 3).
 6. Nächster Schritt: die Snapshot-Schreibwege des **Bogens**
    (Dauermodifikatoren, Wundschwelle, Inventar, Kampf, Sofortaktionen der
    Übersicht).
+
+**Teilstand 29.09.2026 (4) — Schadensregeln per dsa-rules-MCP validiert.**
+Die offenen Annahmen aus Teilstand (3) sind gegen *Wege des Schwerts* (WdS),
+das *Basisregelwerk* (BRW) und die Hausregeln im dsa-rules-MCP geprüft.
+Der Hauptpunkt von ARCH-05 bleibt offen (Bogen-Schreibwege).
+
+*Befunde.*
+
+| Annahme aus (3) | Befund | Quelle |
+| --- | --- | --- |
+| LeP ohne Untergrenze | bestätigt; LE ≤ 0 lebensbedrohlich, unter −KO tot (Zäher Hund 1,5 × KO) | WdS S. 57 |
+| TP(A): RS wird abgezogen | bestätigt | WdS S. 57, 88 |
+| TP(A) senkt nur AuP | **falsch:** SP(A) von der AuP, zusätzlich die Hälfte als echte SP von der LeP | WdS S. 57, 88; BRW S. 138 |
+| TP(A) schlägt keine Wunden | **falsch:** die echten SP schlagen Wunden, WS dabei üblicherweise +2 | WdS S. 58, 88; BRW S. 139 |
+| kein Überlauf AuP → LeP | bestätigt; bei 0 AuP kampfunfähig | WdS S. 57, 84 |
+| Wunden über den freien Plätzen verfallen | bestätigt; höchstens 3 je Zone, SP gehen voll von der Gesamt-LE | WdS S. 109 |
+| Rundung der Wundschwellen | ganzzahlig, kaufmännisch („halbe KO ist gerundet 7“ bei KO 13) | WdS S. 58; BRW S. 139; WdZ S. 7 |
+| Stufen 0,5 / 1 / 1,5 / 2 KO | **teilweise falsch:** nur drei Stufen, höchstens 3 Wunden je Treffer; für 2 KO keine Quelle, auch nicht in den Hausregeln | WdS S. 58 |
+| Eisern/Glasknochen ±2 auf alle Stufen | bestätigt, kumulativ mit dem Angriffsmodifikator | WdS S. 58 |
+| „Pfeile −2“ | nicht belegt; genannt sind Armbrustbolzen, Gezielter Stich und „bestimmte Waffen“ (−2), waffenlos und Stumpfer Schlag (+2) | WdS S. 58 |
+| Zusatzwürfe der Zonen | bestätigt (Kopf 2W6 INI, Brust/Bauch 1W6 SP je Wunde, dritte Kopfwunde 2W6 SP) | WdS S. 109 |
+| SB-Unterdrückung | bestätigt (4 je Gesamtwunde; mehrere aus einem Treffer gemeinsam, +8/+12) | WdS S. 83 |
+
+*Korrekturen (Nutzerentscheidungen: TP(A) nach WdS, 2-KO-Stufe überall
+entfernen).*
+
+- `echteSchadenspunkte`/`SchadensBuchung.echteSp`: bei TP(A) die Hälfte der
+  SP(A), kaufmännisch gerundet. `wendeSchadenAn` senkt bei TP(A) die AuP um
+  die SP(A) bis 0 **und** die LeP um die echten SP plus Zusatzschaden; Wunden
+  laufen für beide Arten gleich. Die Sperre „Ausdauerschaden verursacht keine
+  Wunden“ ist entfallen.
+- Dialog: Zone, Modifikator, Wunden und Zusatzwürfe auch bei TP(A); der
+  Modifikator wird beim Wechsel mit +2 (TP(A)) bzw. 0 vorbelegt. Die
+  Vorschau zeigt AuP und LeP. Hilfetext „Armbrustbolzen −2, waffenlos +2“.
+- Protokoll bei TP(A): `TP(A) 8 − RS 1 = 7 SP(A) · 4 SP auf LeP`, `total`
+  ist der LeP-Verlust.
+- `WundschwellenStufen` hat nur noch drei Stufen; der Vorschlag reicht bis 3,
+  der Wunden-Detaildialog zeigt „2 KO“ nicht mehr.
+- `computeWundschwelle` ist die erste Stufe (kaufmännisch, samt
+  Eisern/Glasknochen); Befund 4 ist damit behoben.
+
+*Prüfungen.* Regeltests (`schaden_rules_test.dart`: Rundung der echten SP,
+AuP und LeP bei TP(A), Wunden aus echten SP, höchstens 3 Wunden, Beispiele
+KO 13 aus WdS S. 58; `wund_rules_test.dart`: KO 15 → 8, Gleichheit mit der
+ersten Stufe), Ablauftests (TP(A) mit und ohne Wunde samt Protokoll) und
+Widgettests (TP(A)-Vorschau, Vorbelegung, Wundvorschlag, Rückwechsel).
+`bestandshelden_regelwerte_test.dart`: Die Wundschwelle von f01 (7 → 9) und
+f04 (9 → 11, drei Fälle) zählt jetzt Eisern mit, f02 und f07 (6 → 7) runden
+KO 13 kaufmännisch; die Fixtures und die Hash-Pins sind unverändert.
+Gegenproben: Mit `KO ~/ 2` scheitern beide `computeWundschwelle`-Tests,
+ohne den LeP-Anteil die drei TP(A)-Regeltests. `flutter analyze --no-pub`
+ohne Befund, volle Suite grün (2921 bestanden, 3 übersprungen).
+
+*Randbefunde, bewusst ohne Änderung (Folgeaufträge).*
+
+1. Die Hausregel „Mindestschaden“ ist eine Sammlung von Überlegungen ohne
+   Entscheidung; `berechneSchadenspunkte` bleibt bei `max(0, TP − RS)`.
+2. Kritische Treffer schlagen automatisch eine Wunde mehr, sobald die WS
+   überschritten ist (WdS S. 85). Das deckt die änderbare Wundzahl ab.
+3. Mit Trefferzonen *ersetzen* die Zonenwunden (WdS S. 109) die pauschalen
+   −2 je Wunde (S. 57); `computeWundEffekte` addiert beide. Das ist eigens
+   gegen Regelwerk und Hausregeln zu prüfen.
+4. Die Tabelle der Zonenwunden kennt weitere Folgen (Kopf: MU/KL/IN −2;
+   Brust/Bauch: KO/KK −1; dritte Wunde: Bewusstlosigkeit und 1 LeP je KR),
+   die das Modell nicht abbildet.
 
 ## ARCH-06 — Zusammengehörige Änderungen gemeinsam speichern und synchronisieren
 
