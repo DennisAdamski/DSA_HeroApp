@@ -184,6 +184,8 @@ void main() {
         ]) {
           await _importiere(a, held);
         }
+        // Zustände laden im Hintergrund hoch: noch offline scheitern lassen.
+        await a.repo.warteAufUebertragungen();
         a.remote
           ..offline = false
           ..schreibvorgaengeBisAbbruch = 1;
@@ -359,6 +361,8 @@ void main() {
           _krieger,
           zustand.copyWith(currentLep: lep),
         );
+        // Der Hintergrund-Upload soll noch offline scheitern.
+        await geraet.repo.warteAufUebertragungen();
       }
       a.remote.offline = false;
       b.remote.offline = false;
