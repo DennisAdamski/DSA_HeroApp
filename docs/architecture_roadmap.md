@@ -734,9 +734,13 @@ Commits:
      Würfelprotokoll per `unawaited`, Wunden
    - danach „Schaden erhalten“ als eigener Ablauf (Voraussetzung für
      ARCH-01)
-   - `_filterKnownTraitWarnings` wartet mit `rulesCatalogProvider.future`
-     und kann bei einem Katalogfehler hängen; das gehört in einen eigenen
-     Kleinfix.
+   - ~~`_filterKnownTraitWarnings` wartet mit `rulesCatalogProvider.future`
+     und kann bei einem Katalogfehler hängen.~~ *Erledigt als Kleinfix:*
+     `saveHero` wartet über ein Abo mit Zeitlimit (20 s) und speichert bei
+     Fehler oder Zeitüberschreitung mit ungefilterten Restfragmenten.
+     Nachgewiesen und abgesichert ist der Hänger bei einem nie fertigen
+     Katalog (`test/state/hero_actions_katalog_warten_test.dart`). Weitere
+     `.future`-Wartestellen stehen im Inventar (Befund 2).
 
 ## ARCH-06 — Zusammengehörige Änderungen gemeinsam speichern und synchronisieren
 
