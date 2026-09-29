@@ -181,7 +181,10 @@ void main() {
 
   test('verschiedene Helden warten nicht aufeinander', () async {
     final repo = _Repository(
-      heroes: [_held, _held.copyWith(id: 'b')],
+      heroes: [
+        _held,
+        _held.copyWith(id: 'b'),
+      ],
       haltLaden: {'held'},
     );
 

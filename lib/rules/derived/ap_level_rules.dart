@@ -1,5 +1,29 @@
 import 'dart:math' as math;
 
+import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
+
+/// Die beiden direkt buchbaren AP-Konten des Helden.
+enum ApKonto {
+  /// Insgesamt erhaltene AP (`apTotal`).
+  gesamt,
+
+  /// Ausgegebene AP (`apSpent`).
+  ausgegeben,
+}
+
+/// Verschiebt das AP-[konto] des Helden um [schritt] (ARCH-05).
+///
+/// Gerechnet wird ab dem Wert in [held], also dem gespeicherten Stand, damit
+/// jeder schnelle Klick auf „+“ zählt. Freie AP und Stufe rechnet die
+/// Normalisierung beim Speichern neu aus, die dort auch negative Werte auf 0
+/// hebt.
+HeroSheet mitApSchritt(HeroSheet held, ApKonto konto, int schritt) {
+  return switch (konto) {
+    ApKonto.gesamt => held.copyWith(apTotal: held.apTotal + schritt),
+    ApKonto.ausgegeben => held.copyWith(apSpent: held.apSpent + schritt),
+  };
+}
+
 /// Berechnet die Heldenstufe aus ausgegebenen Abenteuerpunkten.
 ///
 /// Formel: level = floor(sqrt(apSpent / 50 + 0.25) + 0.5)
