@@ -269,11 +269,15 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
     var dialogDivineEnabledOverride = _editController.isEditing
         ? _draftDivineEnabledOverride
         : hero.resourceActivationConfig.divineEnabledOverride;
+    // Gespeichert wird nur, was im Dialog umgestellt wurde (ARCH-05).
+    final magieVorher = dialogMagicEnabledOverride;
+    final goettlichVorher = dialogDivineEnabledOverride;
 
     await showAdaptiveDetailSheet<void>(
       context: context,
-      builder: (dialogContext) {
-        return StatefulBuilder(
+      // Speicherfehler erscheinen im Blatt; eine Snackbar läge dahinter.
+      builder: (_) => ZustandFehlerBereich(
+        child: StatefulBuilder(
           builder: (dialogContext, setDialogState) {
             final resourceActivation = _buildResourceActivationForOverrides(
               hero,
@@ -289,6 +293,7 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    const ZustandFehlerAnzeige(),
                     _buildResourceActivationRow(
                       label: 'Magie',
                       keySuffix: 'magic',
@@ -328,11 +333,17 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
                         divineEnabledOverride: dialogDivineEnabledOverride,
                       );
                     } else {
-                      await _saveResourceActivationOverrides(
-                        hero,
-                        magicEnabledOverride: dialogMagicEnabledOverride,
-                        divineEnabledOverride: dialogDivineEnabledOverride,
-                      );
+                      final gespeichert =
+                          await _saveResourceActivationOverrides(
+                            meldeKontext: dialogContext,
+                            magieVorher: magieVorher,
+                            goettlichVorher: goettlichVorher,
+                            magicEnabledOverride: dialogMagicEnabledOverride,
+                            divineEnabledOverride: dialogDivineEnabledOverride,
+                          );
+                      if (!gespeichert) {
+                        return;
+                      }
                     }
                     if (!dialogContext.mounted) {
                       return;
@@ -344,8 +355,8 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
               ],
             );
           },
-        );
-      },
+        ),
+      ),
     );
   }
 
@@ -814,6 +825,7 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
   ) {
     final theme = Theme.of(context);
     return InkWell(
+      key: ValueKey<String>('overview-stat-modifier-${entry.statKey}'),
       onTap: () => _openStatModifierDialog(entry, hero, state, snapshot),
       child: Padding(
         padding: const EdgeInsets.fromLTRB(8, 8, 8, 8),
@@ -940,16 +952,14 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
     if (result == null || !mounted) {
       return;
     }
-    final updatedMap = Map<String, List<HeroTalentModifier>>.from(
-      hero.statModifiers,
+    // Frisch: nur dieser Grundwert wird ersetzt (ARCH-05).
+    await aendereHeldMitMeldung(
+      context: context,
+      ref: ref,
+      heroId: widget.heroId,
+      was: '${entry.label}-Modifikatoren',
+      aenderung: (held) => mitBenanntenStatModifikatoren(held, statKey, result),
     );
-    if (result.isEmpty) {
-      updatedMap.remove(statKey);
-    } else {
-      updatedMap[statKey] = result;
-    }
-    final updatedHero = hero.copyWith(statModifiers: updatedMap);
-    await ref.read(heroActionsProvider).saveHero(updatedHero);
   }
 
   Future<void> _openAttributeModifierDialog({
@@ -1007,16 +1017,15 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
     if (result == null || !mounted) {
       return;
     }
-    final updatedMap = Map<String, List<HeroTalentModifier>>.from(
-      hero.attributeModifiers,
+    // Frisch: nur diese Eigenschaft wird ersetzt (ARCH-05).
+    await aendereHeldMitMeldung(
+      context: context,
+      ref: ref,
+      heroId: widget.heroId,
+      was: '$label-Modifikatoren',
+      aenderung: (held) =>
+          mitBenanntenEigenschaftsModifikatoren(held, attrKey, result),
     );
-    if (result.isEmpty) {
-      updatedMap.remove(attrKey);
-    } else {
-      updatedMap[attrKey] = result;
-    }
-    final updatedHero = hero.copyWith(attributeModifiers: updatedMap);
-    await ref.read(heroActionsProvider).saveHero(updatedHero);
   }
 
   int _effectiveValueByKey(Attributes effective, String key) {

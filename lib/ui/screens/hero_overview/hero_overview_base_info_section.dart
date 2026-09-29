@@ -340,7 +340,7 @@ extension _HeroOverviewBaseInfoSection on _HeroOverviewTabState {
             alignment: Alignment.centerRight,
             child: FilledButton(
               key: const ValueKey<String>('attribute-trait-notice-ack'),
-              onPressed: () => _acknowledgeAttributeTraitNotice(hero),
+              onPressed: _acknowledgeAttributeTraitNotice,
               child: const Text('Verstanden – Werte geprüft'),
             ),
           ),
@@ -349,12 +349,15 @@ extension _HeroOverviewBaseInfoSection on _HeroOverviewTabState {
     );
   }
 
-  Future<void> _acknowledgeAttributeTraitNotice(HeroSheet hero) async {
-    await ref
-        .read(heroActionsProvider)
-        .saveHero(
-          hero.copyWith(schemaVersion: kAttributeTraitEffectSchemaVersion),
-        );
+  // Quittiert frisch; eine höhere Schemaversion einer neueren App bleibt.
+  Future<void> _acknowledgeAttributeTraitNotice() async {
+    await aendereHeldMitMeldung(
+      context: context,
+      ref: ref,
+      heroId: widget.heroId,
+      was: 'Bestätigung',
+      aenderung: quittiereEigenschaftsHinweis,
+    );
   }
 
   Widget _buildParserWarningsSection(HeroSheet hero) {
