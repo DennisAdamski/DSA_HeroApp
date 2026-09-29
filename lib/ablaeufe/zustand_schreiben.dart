@@ -1,3 +1,4 @@
+import 'package:dsa_heldenverwaltung/ablaeufe/reihenfolge_je_held.dart';
 import 'package:dsa_heldenverwaltung/data/hero_repository.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 
@@ -10,13 +11,11 @@ HeroState mitAenderungszeitpunkt(HeroState zustand, DateTime zeitpunkt) {
   return zustand.copyWith(lastModified: zeitpunkt.toUtc());
 }
 
-/// Laufende Zustandsänderungen je Speicher und Held.
-///
-/// Am Speicherobjekt statt global, damit getrennte Speicher (Tests, Profil-
-/// oder Kontowechsel) einander nicht blockieren und nichts überdauert, was
-/// der Speicher selbst nicht überdauert.
-final Expando<Map<String, Future<void>>> _laufendeAenderungen =
-    Expando<Map<String, Future<void>>>('laufendeZustandsaenderungen');
+/// Laufende Zustandsänderungen je Speicher und Held; getrennt von der
+/// Warteschlange des Bogens (`held_schreiben.dart`).
+final ReihenfolgeJeHeld _zustandsReihenfolge = ReihenfolgeJeHeld(
+  'laufendeZustandsaenderungen',
+);
 
 /// Ändert den gespeicherten Laufzeitzustand eines Helden gezielt.
 ///
@@ -41,26 +40,16 @@ Future<HeroState> aendereGespeichertenZustand({
   required HeroState Function(HeroState aktuell) aenderung,
   required DateTime Function() uhr,
 }) {
-  final proHeld = _laufendeAenderungen[repository] ??= <String, Future<void>>{};
-  final vorige = proHeld[heroId] ?? Future<void>.value();
-  final ergebnis = vorige.then(
-    (_) => _aendereJetzt(
+  return _zustandsReihenfolge.reiheEin(
+    speicher: repository,
+    heroId: heroId,
+    vorgang: () => _aendereJetzt(
       repository: repository,
       heroId: heroId,
       aenderung: aenderung,
       uhr: uhr,
     ),
   );
-  // Das Kettenglied schluckt den Fehler, damit die nächste Änderung läuft;
-  // der Aufrufer bekommt ihn über [ergebnis].
-  final erledigt = ergebnis.then<void>((_) {}, onError: (Object _) {});
-  proHeld[heroId] = erledigt;
-  erledigt.then((_) {
-    if (identical(proHeld[heroId], erledigt)) {
-      proHeld.remove(heroId);
-    }
-  });
-  return ergebnis;
 }
 
 // Lädt, ändert, stempelt und speichert ohne Rücksicht auf andere Aufrufe.
