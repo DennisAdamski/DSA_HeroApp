@@ -3035,6 +3035,56 @@ ueber die Settings-Katalogverwaltung bearbeitet.
   sie danach (`nachLauf`). `syncNow` wartet auf laufende Uploads und lädt
   über dieselbe Bündelung hoch. Auf Uploads warten: `warteAufUebertragungen`.
 
+### Update 2026-09-29: Schaden erhalten als Anwendungsablauf (ARCH-05)
+
+- `lib/rules/derived/schaden_rules.dart` rechnet rein:
+  `berechneSchadenspunkte` (TP − RS, nie negativ), `echteSchadenspunkte`
+  (bei TP(A) die Hälfte, kaufmännisch), `schlageWundenVor` (je echt
+  überschrittene Wundschwellenstufe eine Wunde, 0 bis 3; ein
+  Angriffsmodifikator wie „Armbrustbolzen −2“ oder „TP(A) +2“ verschiebt alle
+  drei Stufen),
+  `freieWundplaetze`, `schadensZusatzwuerfe` (aus der Standard-
+  Trefferzonentabelle: Kopf 2W6 INI-Malus, Brust/Bauch 1W6 SP je neuer
+  Wunde, beim Erreichen der dritten Kopfwunde 2W6 SP) und `wendeSchadenAn`.
+  Die Wundzahl ist nur ein **Vorschlag**, die Entscheidung trifft der
+  Nutzer; die Stufen kommen aus `HeroComputedSnapshot.wundschwellenStufen`
+  (mit Eisern/Glasknochen).
+- `wendeSchadenAn`: senkt LeP um die echten SP plus Zusatzschaden ohne
+  Untergrenze und trägt Wunden bis zur vollen Zone ein (der INI-Wurf zählt
+  zur ersten Kopfwunde, der Rest verfällt und wird gemeldet). Bei Ausdauer
+  (`SchadensArt.ausdauer`, TP(A)) sinken zusätzlich die AuP um die SP(A),
+  höchstens bis 0, ohne Überlauf auf LeP; die echten SP sind die Hälfte der
+  SP(A) und können Wunden schlagen (WdS S. 57 f.). Der Dialog belegt dafür
+  den Angriffsmodifikator mit +2 vor.
+- Wundschwellen (`wund_rules.dart`): drei Stufen 0,5 / 1 / 1,5 KO,
+  kaufmännisch gerundet, Eisern/Glasknochen ±2 auf alle (WdS S. 58).
+  `computeWundschwelle` (Inspector „WS n“) ist genau die erste Stufe.
+  Eine vierte Stufe bei 2 KO gab es früher; das Regelwerk kennt sie nicht.
+  Alle Annahmen sind per dsa-rules-MCP validiert, Belege in
+  `docs/architecture_roadmap.md` (ARCH-05, Teilstand 4).
+- `TrefferzonenZusatzwurf.wirkung` (`TrefferzonenZusatzwirkung`) sagt, ob ein
+  Zusatzwurf Schaden oder den Kopf-INI-Malus liefert.
+- `lib/ablaeufe/schaden_erhalten.dart` (`SchadenErhalten`, Provider
+  `schadenErhaltenProvider`) bucht über `aendereGespeichertenZustand` auf den
+  frischen Zustand und hängt einen Protokolleintrag an
+  (`schaden_protokoll.dart`, Titel „Schaden erhalten“, `ProbeType.damage`,
+  Unterzeile etwa `TP 14 − RS 3 = 11 SP · Brust · WS −2 · 1 Wunde · +4 SP
+  Zusatz`, bei TP(A) `TP(A) 8 − RS 1 = 7 SP(A) · 4 SP auf LeP`, `total` =
+  LeP-Verlust). Kein neuer Aufzählungswert, damit ältere
+  Versionen den Eintrag lesen.
+- Dialog: `showSchadenDialog` / `SchadenPanel`
+  (`lib/ui/screens/workspace/schaden/`) mit TP, vorbelegtem RS
+  (`combatPreviewStats.rsTotal`), Zone per Auswahl oder W20, Angriffsmodifikator,
+  Vorschlag samt Schwellen, änderbarer Wundzahl, Zusatzwürfen und Vorschau.
+  Fehler im Panel, Sperre während des Speicherns. Nach neuen Wunden folgt
+  `bieteWundUnterdrueckungAn`: Alle Wunden eines Angriffs werden nur
+  gemeinsam unterdrückt (eine Abfrage, ein Speichervorgang, Erschwernis
+  über `computeSbUnterdrueckungErschwernis(neueWunden: n)`). Einstiege: Knopf im
+  Inspector-Vitals-Tab und die UI2-Schnellaktion über
+  `KartoBestandsAdapter.schadenErhalten`.
+- Keine Rücknahme: korrigiert wird von Hand anhand des Protokolleintrags;
+  eine echte Rücknahme gehört zu ARCH-06.
+
 ### Update 2026-08-23: Aventurischer Kalender und aktuelles Alter
 
 **Kalender (`lib/domain/aventurian_date.dart`)**

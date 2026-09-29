@@ -178,6 +178,7 @@ Technischer Stack:
 - Dauerhafte Verwaltung von Erschoepfung und Ueberanstrengung im `HeroState`
 - Optionaler Fullrestore fuer lange Abwesenheiten: alle Vitalwerte auf Maximum und keine Wunden mehr
 - Vorschau und Sammeluebernahme der Rast-Ergebnisse direkt im Workspace
+- „Schaden erhalten“ in den Vitalwerten und als Schnellaktion der Spielansicht: TP abzueglich RS, Trefferzone per Auswahl oder W20, Wundvorschlag aus den Wundschwellen samt Angriffsmodifikator (die Wundzahl entscheidet der Nutzer), Zusatzwuerfe der Zone, Ausdauerschaden (TP(A)) und ein nachvollziehbarer Protokolleintrag
 - Tablet-Layouts fuer iPad und breite Fenster: Icon-Rail im Portrait, permanenter Inspector im Landscape und ein kompakter zweizeiliger Workspace-Header mit aktivem Bereich, Bildausschnitt und Kernwerten
 - Proben-Schnellsuche in der Workspace-AppBar: durchsucht Eigenschaften, Kampfwerte, Talente und Zauber des Helden und oeffnet direkt den Probendialog inklusive Wuerfelprotokoll
 - Wuerfelprotokoll mit Filter-Chips nach Probeart (Eigenschaft, Talent, Zauber, Kampf) und sessiontauglichem Umfang von 50 Eintraegen
@@ -292,7 +293,7 @@ Grundprinzipien des Projekts:
 - Domain-Modelle sind immutable und serialisierbar
 - Regellogik liegt ausschliesslich in `lib/rules/derived/`
 - UI und Provider rufen Regelmodule auf, rechnen aber nicht selbst
-- Schreibende Ablaeufe wie „Rast abschliessen“ liegen als eigene
+- Schreibende Ablaeufe wie „Rast abschliessen“ und „Schaden erhalten“ liegen als eigene
   Anwendungsablaeufe in `lib/ablaeufe/`: frisch laden, ueber Regeln rechnen,
   stempeln, speichern; Fehler zeigt die aufrufende Oberflaeche
   (Bestandsaufnahme in `docs/schreibpfade_inventar.md`)

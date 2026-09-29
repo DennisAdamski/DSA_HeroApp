@@ -311,7 +311,6 @@ class _WundschwellenStufenText extends StatelessWidget {
       '0,5 KO: ${stufen.halbKo}',
       'KO: ${stufen.ko}',
       '1,5 KO: ${stufen.einhalbKo}',
-      '2 KO: ${stufen.zweiKo}',
     ];
 
     return Text(

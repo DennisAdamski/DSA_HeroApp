@@ -441,9 +441,25 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   `lib/rules/derived/active_spell_display_rules.dart` — eigene Datei, weil
   `active_spell_rules.dart` von `combat_rules` und `magic_rules` importiert
   wird und sie deshalb nicht zurückholen darf.
-- Nicht enthalten und bewusst nicht erfunden: pauschaler Schadens- und
-  Rücknahmeknopf, KR-Zähler, persistente Favoriten, Offline-/Sync-Status ohne
-  echten Providerzustand. Ein Test in `test/ui2/spielen/` hält das fest.
+- „Schaden erhalten“ ist ein geführter Ablauf (ARCH-05):
+  `rules/derived/schaden_rules.dart` rechnet SP, **Vorschlag** der Wundzahl
+  (je echt überschrittene Wundschwellenstufe, verschoben um den
+  Angriffsmodifikator, z. B. Armbrustbolzen −2) und Zusatzwürfe der Zone;
+  `ablaeufe/schaden_erhalten.dart` bucht frisch mit Protokolleintrag
+  (`ProbeType.damage`). Die Wundzahl entscheidet der Nutzer im Dialog
+  (`ui/screens/workspace/schaden/`), UI2 öffnet ihn über
+  `KartoBestandsAdapter.schadenErhalten`. Die Regeln sind per
+  dsa-rules-MCP gegen WdS S. 57 f. validiert (Belege: Roadmap ARCH-05,
+  Teilstand 4): LeP haben keine Untergrenze. TP(A) senken die AuP bis 0
+  **und** zur Hälfte (kaufmännisch) als echte SP die LeP; diese können
+  Wunden schlagen (WS dann +2, im Dialog vorbelegt). Es gibt genau **drei**
+  Wundschwellen (0,5 / 1 / 1,5 KO, ganzzahlig kaufmännisch gerundet,
+  Eisern/Glasknochen ±2), also höchstens 3 Wunden je Treffer;
+  `computeWundschwelle` ist die erste davon. Wunden eines Angriffs werden nur **gemeinsam** unterdrückt
+  (`bieteWundUnterdrueckungAn(neueWunden: n)`), nie einzeln.
+- Nicht enthalten und bewusst nicht erfunden: Rücknahmeknopf (ARCH-06),
+  KR-Zähler, persistente Favoriten, Offline-/Sync-Status ohne echten
+  Providerzustand. Ein Test in `test/ui2/spielen/` hält das fest.
 - Der Kopf von `WorkspaceManagementBody` (nur UI2) ist der
   `KartoSeitenkopf`: Kontext „Heldenbogen“ (schmal ohne), Tab als Titel,
   Helfertext als Unterzeile; `management-active-title`/`-helper` hängen über

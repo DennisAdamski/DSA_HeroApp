@@ -38,7 +38,7 @@ Future<HeroState?> aendereWundZustand({
   );
 }
 
-/// Schaltet eine Unterdrückung in [zone] um eine Stufe weiter.
+/// Schaltet eine Unterdrückung in [zone] um [anzahl] Stufen weiter.
 ///
 /// [unterdruecken] erhöht, sonst senkt es die Zahl unterdrückter Wunden;
 /// `WundZustand.mitUnterdrueckung` hält sie in den Grenzen der Zone.
@@ -48,8 +48,9 @@ Future<HeroState?> schalteWundUnterdrueckung({
   required String heroId,
   required WundZone zone,
   required bool unterdruecken,
+  int anzahl = 1,
 }) {
-  final schritt = unterdruecken ? 1 : -1;
+  final schritt = unterdruecken ? anzahl : -anzahl;
   return aendereWundZustand(
     context: context,
     ref: ref,
@@ -94,7 +95,30 @@ Future<void> fuegeWundeHinzu({
     diceLogEntries: diceLogEntries,
   );
   if (gespeichert == null || !context.mounted) return;
+  await bieteWundUnterdrueckungAn(
+    context: context,
+    ref: ref,
+    heroId: heroId,
+    zone: zone,
+    gespeichert: gespeichert,
+  );
+}
 
+/// Bietet für gerade gespeicherte Wunden in [zone] die Unterdrückung an.
+///
+/// [neueWunden] sind alle Wunden desselben Angriffs. Sie werden nur
+/// gemeinsam unterdrückt, in einem Speichervorgang. [gespeichert] ist der
+/// Zustand nach dem Speichern, damit der Dialog den tatsächlich
+/// gespeicherten Wundzustand sieht. Gemeinsam genutzt von [fuegeWundeHinzu]
+/// und dem Ablauf „Schaden erhalten“.
+Future<void> bieteWundUnterdrueckungAn({
+  required BuildContext context,
+  required WidgetRef ref,
+  required String heroId,
+  required WundZone zone,
+  required HeroState gespeichert,
+  int neueWunden = 1,
+}) async {
   final hero = ref.read(heroByIdProvider(heroId));
   if (hero == null) return;
   final neuerZustand = gespeichert.wpiZustand;
@@ -110,6 +134,7 @@ Future<void> fuegeWundeHinzu({
     wundEffekte: effekte,
     ref: ref,
     heroId: heroId,
+    neueWunden: neueWunden,
   );
   if (unterdruecken != true || !context.mounted) return;
   await schalteWundUnterdrueckung(
@@ -118,5 +143,6 @@ Future<void> fuegeWundeHinzu({
     heroId: heroId,
     zone: zone,
     unterdruecken: true,
+    anzahl: neueWunden,
   );
 }

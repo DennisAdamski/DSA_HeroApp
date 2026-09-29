@@ -107,7 +107,8 @@ _erwartet = <String, Map<String, Object?>>{
       'ko': 20,
       'kk': 21,
     },
-    'wundschwelle': 7,
+    // KO 14 / 2 + Eisern 2 (WdS S. 58); bis ARCH-05 (4) ohne Eisern: 7.
+    'wundschwelle': 9,
     'wundProbenMalus': -3,
     'magie': false,
     'karma': false,
@@ -167,7 +168,9 @@ _erwartet = <String, Map<String, Object?>>{
       'ko': 20,
       'kk': 18,
     },
-    'wundschwelle': 6,
+    // KO 13 / 2 = 6,5, kaufmännisch 7 (WdS S. 58); bis ARCH-05 (4)
+    // abgerundet: 6.
+    'wundschwelle': 7,
     'wundProbenMalus': 0,
     'magie': true,
     'karma': false,
@@ -281,7 +284,8 @@ _erwartet = <String, Map<String, Object?>>{
       'ko': 25,
       'kk': 25,
     },
-    'wundschwelle': 9,
+    // KO 18 / 2 + Eisern 2 (WdS S. 58); bis ARCH-05 (4) ohne Eisern: 9.
+    'wundschwelle': 11,
     'wundProbenMalus': 0,
     'magie': false,
     'karma': false,
@@ -517,7 +521,9 @@ _erwartet = <String, Map<String, Object?>>{
       'ko': 20,
       'kk': 21,
     },
-    'wundschwelle': 6,
+    // KO 13 / 2 = 6,5, kaufmännisch 7 (WdS S. 58); bis ARCH-05 (4)
+    // abgerundet: 6.
+    'wundschwelle': 7,
     'wundProbenMalus': 0,
     'magie': false,
     'karma': false,
@@ -689,7 +695,8 @@ _erwartet = <String, Map<String, Object?>>{
       'ko': 25,
       'kk': 25,
     },
-    'wundschwelle': 9,
+    // KO 18 / 2 + Eisern 2 (WdS S. 58); bis ARCH-05 (4) ohne Eisern: 9.
+    'wundschwelle': 11,
     'wundProbenMalus': -1,
     'magie': false,
     'karma': false,
@@ -747,7 +754,8 @@ _erwartet = <String, Map<String, Object?>>{
       'ko': 25,
       'kk': 25,
     },
-    'wundschwelle': 9,
+    // KO 18 / 2 + Eisern 2 (WdS S. 58); bis ARCH-05 (4) ohne Eisern: 9.
+    'wundschwelle': 11,
     'wundProbenMalus': -3,
     'magie': false,
     'karma': false,
