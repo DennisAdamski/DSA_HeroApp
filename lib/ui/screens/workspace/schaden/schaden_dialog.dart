@@ -33,7 +33,8 @@ class SchadenDialogErgebnis {
 /// Öffnet den Dialog „Schaden erhalten“ für einen Helden.
 ///
 /// Der Dialog schließt sich nach dem Übernehmen selbst. Wurden Wunden
-/// eingetragen, folgt die vorhandene Unterdrückungsabfrage.
+/// eingetragen, folgt die vorhandene Unterdrückungsabfrage, einmal für alle
+/// Wunden dieses Angriffs gemeinsam.
 /// [wuerfler] ersetzt in Tests die Zufallswürfe.
 Future<void> showSchadenDialog({
   required BuildContext context,
@@ -79,6 +80,7 @@ Future<void> showSchadenDialog({
     heroId: heroId,
     zone: zone,
     gespeichert: ergebnis.anwendung.zustand,
+    neueWunden: ergebnis.anwendung.hinzugefuegteWunden,
   );
 }
 

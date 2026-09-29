@@ -449,7 +449,9 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   (`ProbeType.damage`). Die Wundzahl entscheidet der Nutzer im Dialog
   (`ui/screens/workspace/schaden/`), UI2 öffnet ihn über
   `KartoBestandsAdapter.schadenErhalten`. LeP haben keine Untergrenze,
-  TP(A) senkt nur AuP bis 0.
+  TP(A) senkt nur AuP bis 0 (beides noch per dsa-rules-MCP zu
+  validieren). Wunden eines Angriffs werden nur **gemeinsam** unterdrückt
+  (`bieteWundUnterdrueckungAn(neueWunden: n)`), nie einzeln.
 - Nicht enthalten und bewusst nicht erfunden: Rücknahmeknopf (ARCH-06),
   KR-Zähler, persistente Favoriten, Offline-/Sync-Status ohne echten
   Providerzustand. Ein Test in `test/ui2/spielen/` hält das fest.

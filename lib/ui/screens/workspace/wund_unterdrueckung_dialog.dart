@@ -13,11 +13,15 @@ import 'package:dsa_heldenverwaltung/rules/derived/wund_rules.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/dice_log_persistence.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/probe_request_factory.dart';
 
-/// Zeigt nach dem Hinzufuegen einer Wunde einen Dialog, der sofortige
+/// Zeigt nach neuen Wunden eines Angriffs einen Dialog, der sofortige
 /// Unterdrueckung via SB-Probe oder direkte Bestaetigung anbietet.
 ///
-/// Gibt `true` zurueck wenn die Wunde unterdrueckt werden soll,
-/// `false` oder `null` wenn sie aktiv bleibt.
+/// [neueWunden] sind alle Wunden, die derselbe Angriff geschlagen hat; sie
+/// werden nur gemeinsam unterdrueckt, nie einzeln. Die Erschwernis folgt
+/// `computeSbUnterdrueckungErschwernis`.
+///
+/// Gibt `true` zurueck wenn die Wunden unterdrueckt werden sollen,
+/// `false` oder `null` wenn sie aktiv bleiben.
 Future<bool?> showWundUnterdrueckungDialog({
   required BuildContext context,
   required dynamic hero,
@@ -26,6 +30,7 @@ Future<bool?> showWundUnterdrueckungDialog({
   required WundEffekte wundEffekte,
   required WidgetRef ref,
   required String heroId,
+  int neueWunden = 1,
 }) {
   return showDialog<bool>(
     context: context,
@@ -36,6 +41,7 @@ Future<bool?> showWundUnterdrueckungDialog({
       wundEffekte: wundEffekte,
       ref: ref,
       heroId: heroId,
+      neueWunden: neueWunden,
     ),
   );
 }
@@ -48,6 +54,7 @@ class _WundUnterdrueckungDialog extends StatelessWidget {
     required this.wundEffekte,
     required this.ref,
     required this.heroId,
+    required this.neueWunden,
   });
 
   final dynamic hero;
@@ -56,13 +63,18 @@ class _WundUnterdrueckungDialog extends StatelessWidget {
   final WundEffekte wundEffekte;
   final WidgetRef ref;
   final String heroId;
+  final int neueWunden;
 
   @override
   Widget build(BuildContext context) {
     final gesamtWunden = wpiZustand.gesamtWunden;
     final erschwernis = computeSbUnterdrueckungErschwernis(
       gesamtWunden: gesamtWunden,
+      neueWunden: neueWunden,
     );
+    final herleitung = neueWunden == 1
+        ? '4 × $gesamtWunden = $erschwernis'
+        : '$erschwernis ($neueWunden Wunden aus einem Treffer)';
 
     final sbEntry =
         (hero.talents
@@ -79,14 +91,17 @@ class _WundUnterdrueckungDialog extends StatelessWidget {
     final zoneLabel = wundZoneLabel[zone] ?? zone.name;
 
     return AlertDialog(
-      title: const Text('Wunde unterdrücken?'),
+      title: Text(
+        neueWunden == 1
+            ? 'Wunde unterdrücken?'
+            : '$neueWunden Wunden unterdrücken?',
+      ),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '$zoneLabel — SB-Probe erschwert um '
-            '4 × $gesamtWunden = $erschwernis',
+            '$zoneLabel — SB-Probe erschwert um $herleitung',
             style: Theme.of(context).textTheme.bodyMedium,
           ),
           const SizedBox(height: 12),

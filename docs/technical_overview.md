@@ -3066,7 +3066,9 @@ ueber die Settings-Katalogverwaltung bearbeitet.
   (`combatPreviewStats.rsTotal`), Zone per Auswahl oder W20, Angriffsmodifikator,
   Vorschlag samt Schwellen, änderbarer Wundzahl, Zusatzwürfen und Vorschau.
   Fehler im Panel, Sperre während des Speicherns. Nach neuen Wunden folgt
-  `bieteWundUnterdrueckungAn` (einmal, für eine Wunde). Einstiege: Knopf im
+  `bieteWundUnterdrueckungAn`: Alle Wunden eines Angriffs werden nur
+  gemeinsam unterdrückt (eine Abfrage, ein Speichervorgang, Erschwernis
+  über `computeSbUnterdrueckungErschwernis(neueWunden: n)`). Einstiege: Knopf im
   Inspector-Vitals-Tab und die UI2-Schnellaktion über
   `KartoBestandsAdapter.schadenErhalten`.
 - Keine Rücknahme: korrigiert wird von Hand anhand des Protokolleintrags;
