@@ -46,6 +46,27 @@ class RestEnvironmentInput {
 
   /// Krankheit blockiert LeP-Regeneration und reduziert AsP stark.
   final bool isIll;
+
+  /// Liefert eine Kopie mit einzeln ersetzten Umständen.
+  RestEnvironmentInput copyWith({
+    int? weatherModifier,
+    int? sleepSiteModifier,
+    bool? hasBadCamp,
+    bool? hasNightDisturbance,
+    bool? hasWatchDuty,
+    int? extraModifier,
+    bool? isIll,
+  }) {
+    return RestEnvironmentInput(
+      weatherModifier: weatherModifier ?? this.weatherModifier,
+      sleepSiteModifier: sleepSiteModifier ?? this.sleepSiteModifier,
+      hasBadCamp: hasBadCamp ?? this.hasBadCamp,
+      hasNightDisturbance: hasNightDisturbance ?? this.hasNightDisturbance,
+      hasWatchDuty: hasWatchDuty ?? this.hasWatchDuty,
+      extraModifier: extraModifier ?? this.extraModifier,
+      isIll: isIll ?? this.isIll,
+    );
+  }
 }
 
 /// Erfasste Vorteile, Nachteile und Sonderfertigkeiten fuer Rast.
