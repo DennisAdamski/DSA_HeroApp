@@ -18,7 +18,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/domain/sync_models.dart';
 import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
-import 'package:dsa_heldenverwaltung/rules/derived/rest_rules.dart';
+import 'package:dsa_heldenverwaltung/state/ablauf_providers.dart';
 import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
 import 'package:dsa_heldenverwaltung/state/avatar_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
@@ -601,13 +601,10 @@ void main() {
         catalog: katalog.catalog,
         epicAdvantagesActive: katalog.epicAdvantagesActive,
       ).derivedStats;
-      await speicher.actions.saveHeroState(
-        id,
-        buildFullRestoreState(
-          currentState: zustandFuerRast,
-          derivedStats: werte,
-        ),
-      );
+      // Fullrestore über den Anwendungsablauf auf echtem Hive (ARCH-05).
+      await speicher.container
+          .read(rastAbschliessenProvider)
+          .vollstaendigeErholung(heroId: id, werte: werte);
       final nachRast = await gespeicherterZustand(speicher, id);
       expectNurGeaendert(nachTreffer, nachRast, const <String>{
         'currentLep',
