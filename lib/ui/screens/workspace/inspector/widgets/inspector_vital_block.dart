@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:dsa_heldenverwaltung/rules/derived/ressourcen_aenderung_rules.dart';
 import 'package:dsa_heldenverwaltung/ui/theme/codex_theme.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/karto_variante.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_stroke.dart';
@@ -15,8 +16,10 @@ enum VitalKind { lep, aup, asp, kap }
 /// Prominente Vitalwert-Karte mit ±5/±1-Steppern, Reset und Bar.
 ///
 /// Repliziert das Layout aus dem Polished-Codex-Mockup. Anpassungen
-/// werden via [onChanged] mit dem neuen Wert delegiert; Persistenz
-/// liegt beim Caller.
+/// werden via [onChanged] als [RessourcenAenderung] delegiert, nicht als
+/// fertiger Wert: Der Aufrufer wendet sie auf den **gespeicherten** Wert an,
+/// damit jeder Klick zählt, auch wenn die Anzeige den vorigen noch nicht
+/// zeigt. Persistenz liegt beim Caller.
 ///
 /// Unter Kartograph ([kartoVariante]) dieselbe Bedienung in den Token der
 /// Spielansicht: Ressourcenfarbe am Balken wie bei `KartoRessourcenwert`, der
@@ -37,9 +40,14 @@ class InspectorVitalBlock extends StatelessWidget {
   final int current;
   final int max;
   final VitalKind kind;
-  final void Function(int next) onChanged;
 
-  int _clampFloor(int next) => next < kVitalFloor ? kVitalFloor : next;
+  /// Meldet die gewünschte Änderung: Schritte ±1/±5 (nach unten bis
+  /// [kVitalFloor]) oder Zurücksetzen auf [max].
+  final void Function(RessourcenAenderung aenderung) onChanged;
+
+  // Verbrauch endet an der Untergrenze, Heilung darf überheilen.
+  static RessourcenAenderung _schritt(int schritt) =>
+      RessourcenAenderung.schritt(schritt, untergrenze: kVitalFloor);
 
   @override
   Widget build(BuildContext context) {
@@ -128,7 +136,8 @@ class InspectorVitalBlock extends StatelessWidget {
                           iconSize: 16,
                           visualDensity: VisualDensity.compact,
                           icon: const Icon(Icons.replay),
-                          onPressed: () => onChanged(max),
+                          onPressed: () =>
+                              onChanged(RessourcenAenderung.setzen(max)),
                         )
                       : null,
                 ),
@@ -150,25 +159,25 @@ class InspectorVitalBlock extends StatelessWidget {
                 _StepButton(
                   key: const ValueKey('vital-block-minus-5'),
                   label: '-5',
-                  onPressed: () => onChanged(_clampFloor(current - 5)),
+                  onPressed: () => onChanged(_schritt(-5)),
                 ),
                 const SizedBox(width: 4),
                 _StepButton(
                   key: const ValueKey('vital-block-minus-1'),
                   label: '-1',
-                  onPressed: () => onChanged(_clampFloor(current - 1)),
+                  onPressed: () => onChanged(_schritt(-1)),
                 ),
                 const Spacer(),
                 _StepButton(
                   key: const ValueKey('vital-block-plus-1'),
                   label: '+1',
-                  onPressed: () => onChanged(current + 1),
+                  onPressed: () => onChanged(_schritt(1)),
                 ),
                 const SizedBox(width: 4),
                 _StepButton(
                   key: const ValueKey('vital-block-plus-5'),
                   label: '+5',
-                  onPressed: () => onChanged(current + 5),
+                  onPressed: () => onChanged(_schritt(5)),
                 ),
               ],
             ),

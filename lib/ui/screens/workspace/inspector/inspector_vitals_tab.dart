@@ -59,87 +59,101 @@ class InspectorVitalsTab extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final showMagic = resourceActivation?.magic.isEnabled ?? false;
     final showDivine = resourceActivation?.divine.isEnabled ?? false;
-    return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(12, 12, 12, 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          InspectorVitalBlock(
-            label: 'LeP',
-            subtitle: 'Lebenspunkte',
-            current: heroState.currentLep,
-            max: derived.maxLep,
-            kind: VitalKind.lep,
-            onChanged: (next) => _save(
-              context,
-              ref,
-              'LeP',
-              (aktuell) => aktuell.copyWith(currentLep: next),
-            ),
-          ),
-          const SizedBox(height: 8),
-          InspectorVitalBlock(
-            label: 'AuP',
-            subtitle: 'Ausdauer',
-            current: heroState.currentAu,
-            max: derived.maxAu,
-            kind: VitalKind.aup,
-            onChanged: (next) => _save(
-              context,
-              ref,
-              'AuP',
-              (aktuell) => aktuell.copyWith(currentAu: next),
-            ),
-          ),
-          if (showMagic) ...[
-            const SizedBox(height: 8),
-            InspectorVitalBlock(
-              label: 'AsP',
-              subtitle: 'Astralpunkte',
-              current: heroState.currentAsp,
-              max: derived.maxAsp,
-              kind: VitalKind.asp,
-              onChanged: (next) => _save(
-                context,
-                ref,
-                'AsP',
-                (aktuell) => aktuell.copyWith(currentAsp: next),
+    // Innerer Kontext, damit die Schreibwege den Bereich finden.
+    return ZustandFehlerBereich(
+      child: Builder(
+        builder: (context) => SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(12, 12, 12, 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const ZustandFehlerAnzeige(),
+              InspectorVitalBlock(
+                label: 'LeP',
+                subtitle: 'Lebenspunkte',
+                current: heroState.currentLep,
+                max: derived.maxLep,
+                kind: VitalKind.lep,
+                onChanged: (next) => _save(
+                  context,
+                  ref,
+                  'LeP',
+                  (aktuell) => aktuell.copyWith(
+                    currentLep: next.wendeAn(aktuell.currentLep),
+                  ),
+                ),
               ),
-            ),
-          ],
-          if (showDivine) ...[
-            const SizedBox(height: 8),
-            InspectorVitalBlock(
-              label: 'KaP',
-              subtitle: 'Karmapunkte',
-              current: heroState.currentKap,
-              max: derived.maxKap,
-              kind: VitalKind.kap,
-              onChanged: (next) => _save(
-                context,
-                ref,
-                'KaP',
-                (aktuell) => aktuell.copyWith(currentKap: next),
+              const SizedBox(height: 8),
+              InspectorVitalBlock(
+                label: 'AuP',
+                subtitle: 'Ausdauer',
+                current: heroState.currentAu,
+                max: derived.maxAu,
+                kind: VitalKind.aup,
+                onChanged: (next) => _save(
+                  context,
+                  ref,
+                  'AuP',
+                  (aktuell) => aktuell.copyWith(
+                    currentAu: next.wendeAn(aktuell.currentAu),
+                  ),
+                ),
               ),
-            ),
-          ],
-          const SizedBox(height: 14),
-          InspectorBelastungSection(heroId: heroId, heroState: heroState),
-          const SizedBox(height: 14),
-          InspectorWundenSection(
-            heroId: heroId,
-            heroState: heroState,
-            wundEffekte: wundEffekte,
-            wundschwelle: wundschwelle,
+              if (showMagic) ...[
+                const SizedBox(height: 8),
+                InspectorVitalBlock(
+                  label: 'AsP',
+                  subtitle: 'Astralpunkte',
+                  current: heroState.currentAsp,
+                  max: derived.maxAsp,
+                  kind: VitalKind.asp,
+                  onChanged: (next) => _save(
+                    context,
+                    ref,
+                    'AsP',
+                    (aktuell) => aktuell.copyWith(
+                      currentAsp: next.wendeAn(aktuell.currentAsp),
+                    ),
+                  ),
+                ),
+              ],
+              if (showDivine) ...[
+                const SizedBox(height: 8),
+                InspectorVitalBlock(
+                  label: 'KaP',
+                  subtitle: 'Karmapunkte',
+                  current: heroState.currentKap,
+                  max: derived.maxKap,
+                  kind: VitalKind.kap,
+                  onChanged: (next) => _save(
+                    context,
+                    ref,
+                    'KaP',
+                    (aktuell) => aktuell.copyWith(
+                      currentKap: next.wendeAn(aktuell.currentKap),
+                    ),
+                  ),
+                ),
+              ],
+              const SizedBox(height: 14),
+              InspectorBelastungSection(heroId: heroId, heroState: heroState),
+              const SizedBox(height: 14),
+              InspectorWundenSection(
+                heroId: heroId,
+                heroState: heroState,
+                wundEffekte: wundEffekte,
+                wundschwelle: wundschwelle,
+              ),
+              const SizedBox(height: 14),
+              InspectorStatuswerteBlock(
+                heroId: heroId,
+                hero: hero,
+                derived: derived,
+                combat: combat,
+              ),
+            ],
           ),
-          const SizedBox(height: 14),
-          InspectorStatuswerteBlock(
-            heroId: heroId,
-            hero: hero,
-            derived: derived,
-            combat: combat,
-          ),
-        ],
+        ),
       ),
     );
   }

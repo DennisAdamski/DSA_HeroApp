@@ -22,7 +22,9 @@ Future<void> showActiveSpellEffectsDialog({
   return showAdaptiveDetailSheet<void>(
     context: context,
     builder: (dialogContext) {
-      return _ActiveSpellEffectsDialog(heroId: heroId);
+      return ZustandFehlerBereich(
+        child: _ActiveSpellEffectsDialog(heroId: heroId),
+      );
     },
   );
 }
@@ -213,6 +215,7 @@ class _ActiveSpellEffectsDialogState
                       onResetDuration: () =>
                           _changeRemainingDuration(effect, reset: true),
                     ),
+                  const ZustandFehlerAnzeige(),
                 ],
               ),
       ),

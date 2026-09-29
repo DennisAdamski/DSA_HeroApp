@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/ressourcen_aenderung_rules.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
@@ -19,7 +20,9 @@ Future<void> showResourceStepperDialog({
 }) {
   return showAdaptiveDetailSheet<void>(
     context: context,
-    builder: (_) => _ResourceStepperDialog(heroId: heroId, resource: resource),
+    builder: (_) => ZustandFehlerBereich(
+      child: _ResourceStepperDialog(heroId: heroId, resource: resource),
+    ),
   );
 }
 
@@ -75,7 +78,11 @@ class _ResourceStepperDialog extends ConsumerWidget {
               children: [
                 IconButton.filled(
                   onPressed: current > 0 && state != null
-                      ? () => _save(context, ref, current - 1)
+                      ? () => _save(
+                          context,
+                          ref,
+                          const RessourcenAenderung.schritt(-1, untergrenze: 0),
+                        )
                       : null,
                   icon: const Icon(Icons.remove),
                 ),
@@ -96,12 +103,17 @@ class _ResourceStepperDialog extends ConsumerWidget {
                 const SizedBox(width: 16),
                 IconButton.filled(
                   onPressed: current < max && state != null
-                      ? () => _save(context, ref, current + 1)
+                      ? () => _save(
+                          context,
+                          ref,
+                          RessourcenAenderung.schritt(1, obergrenze: max),
+                        )
                       : null,
                   icon: const Icon(Icons.add),
                 ),
               ],
             ),
+            const ZustandFehlerAnzeige(),
             const SizedBox(height: 24),
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
@@ -113,19 +125,31 @@ class _ResourceStepperDialog extends ConsumerWidget {
     );
   }
 
-  // Ersetzt nur diese Ressource im frisch geladenen Zustand; alle übrigen
-  // Felder bleiben, wie sie gespeichert sind.
-  Future<void> _save(BuildContext context, WidgetRef ref, int newValue) async {
+  // Wendet den Schritt auf den gespeicherten Wert an und ersetzt nur diese
+  // Ressource: schnelle Klicks zählen alle, übrige Felder bleiben.
+  Future<void> _save(
+    BuildContext context,
+    WidgetRef ref,
+    RessourcenAenderung aenderung,
+  ) async {
     await aendereZustandMitMeldung(
       context: context,
       ref: ref,
       heroId: heroId,
       was: _label,
       aenderung: (aktuell) => switch (resource) {
-        ResourceType.lep => aktuell.copyWith(currentLep: newValue),
-        ResourceType.au => aktuell.copyWith(currentAu: newValue),
-        ResourceType.asp => aktuell.copyWith(currentAsp: newValue),
-        ResourceType.kap => aktuell.copyWith(currentKap: newValue),
+        ResourceType.lep => aktuell.copyWith(
+          currentLep: aenderung.wendeAn(aktuell.currentLep),
+        ),
+        ResourceType.au => aktuell.copyWith(
+          currentAu: aenderung.wendeAn(aktuell.currentAu),
+        ),
+        ResourceType.asp => aktuell.copyWith(
+          currentAsp: aenderung.wendeAn(aktuell.currentAsp),
+        ),
+        ResourceType.kap => aktuell.copyWith(
+          currentKap: aenderung.wendeAn(aktuell.currentKap),
+        ),
       },
     );
   }

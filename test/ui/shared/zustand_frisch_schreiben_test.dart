@@ -18,11 +18,15 @@ import 'package:dsa_heldenverwaltung/rules/derived/active_spell_state_rules.dart
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
+import 'package:dsa_heldenverwaltung/ui/bridges/karto_spiel_bruecke.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/active_spell_effects_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/dice_log_persistence.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/zustand_aendern.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/inspector/widgets/inspector_belastung_section.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/workspace/inspector/widgets/inspector_vital_block.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/resource_stepper_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/wunden_detail_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui2/shell/karto_bestands_adapter.dart';
 
 // Snapshot-Schreibwege des Laufzeitzustands (ARCH-05, Befund 1 im
 // Schreibpfad-Inventar): Jede Bedienung muss auf dem gespeicherten Stand
@@ -213,7 +217,23 @@ void main() {
       _expectFremdesErhalten(gespeichert);
     });
 
-    testWidgets('ein Speicherfehler erscheint als Snackbar', (tester) async {
+    testWidgets('fünf schnelle Klicks zählen alle', (tester) async {
+      final repo = _Repository();
+      await zeige(tester, repo, stepperKnopf());
+      await tester.tap(find.text('los'));
+      await tester.pumpAndSettle();
+
+      // Alle Klicks, bevor die Anzeige den ersten Stand zeigt.
+      for (var i = 0; i < 5; i++) {
+        await tester.tap(find.byIcon(Icons.remove));
+      }
+      await tester.pumpAndSettle();
+
+      expect((await repo.loadHeroState('demo'))!.currentLep, 15);
+    });
+
+    testWidgets('ein Speicherfehler erscheint im Blatt und verschwindet '
+        'nach dem nächsten Erfolg', (tester) async {
       final repo = _Repository();
       await zeige(tester, repo, stepperKnopf());
       await tester.tap(find.text('los'));
@@ -223,8 +243,69 @@ void main() {
       await tester.tap(find.byIcon(Icons.remove));
       await tester.pumpAndSettle();
 
+      final meldung = find.byKey(kZustandFehlerSchluessel);
+      expect(
+        find.descendant(of: find.byType(Dialog), matching: meldung),
+        findsOneWidget,
+      );
       expect(find.textContaining('LeP nicht gespeichert'), findsOneWidget);
+      expect(find.byType(SnackBar), findsNothing);
       expect((await repo.loadHeroState('demo'))!.currentLep, 20);
+
+      repo.schreibFehler = false;
+      await tester.tap(find.byIcon(Icons.remove));
+      await tester.pumpAndSettle();
+
+      expect(meldung, findsNothing);
+      expect((await repo.loadHeroState('demo'))!.currentLep, 19);
+    });
+  });
+
+  group('Ressourcenblatt (UI2)', () {
+    Widget blattKnopf() => knopf(
+      (context, ref) => zeigeRessourcenBlatt(
+        context: context,
+        heroId: 'demo',
+        ressource: KartoRessource.lebensenergie,
+      ),
+    );
+
+    testWidgets('schnelle Klicks zählen alle, auch unter 0', (tester) async {
+      final repo = _Repository(zustand: _angezeigt.copyWith(currentLep: 2));
+      await zeige(tester, repo, blattKnopf());
+      await tester.tap(find.text('los'));
+      await tester.pumpAndSettle();
+      repo.fremdeAenderung = _fremd;
+
+      final minusFuenf = find.byKey(const ValueKey('vital-block-minus-5'));
+      await tester.tap(minusFuenf);
+      await tester.tap(minusFuenf);
+      await tester.tap(minusFuenf);
+      await tester.pumpAndSettle();
+
+      final gespeichert = (await repo.loadHeroState('demo'))!;
+      // 2 − 15 endet an der Untergrenze −10.
+      expect(gespeichert.currentLep, kVitalFloor);
+      _expectFremdesErhalten(gespeichert);
+    });
+
+    testWidgets('ein Speicherfehler erscheint im Blatt', (tester) async {
+      final repo = _Repository()..schreibFehler = true;
+      await zeige(tester, repo, blattKnopf());
+      await tester.tap(find.text('los'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const ValueKey('vital-block-minus-1')));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.descendant(
+          of: find.byType(Dialog),
+          matching: find.byKey(kZustandFehlerSchluessel),
+        ),
+        findsOneWidget,
+      );
+      expect(find.byType(SnackBar), findsNothing);
     });
   });
 
@@ -325,6 +406,43 @@ void main() {
       expect(detail.duration?.remaining, 2);
       expect(detail.amount, 3);
     });
+  });
+
+  testWidgets('Zaubereffekt: ein Speicherfehler erscheint im Dialog', (
+    tester,
+  ) async {
+    final repo = _Repository()..schreibFehler = true;
+    await zeige(
+      tester,
+      repo,
+      knopf(
+        (context, ref) =>
+            showActiveSpellEffectsDialog(context: context, heroId: 'demo'),
+      ),
+    );
+    await tester.tap(find.text('los'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(
+      find.byKey(
+        const ValueKey<String>(
+          'active-spell-toggle-$activeSpellEffectAxxeleratus',
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.descendant(
+        of: find.byType(AlertDialog),
+        matching: find.byKey(kZustandFehlerSchluessel),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.textContaining('Zaubereffekt nicht gespeichert'),
+      findsOneWidget,
+    );
   });
 
   testWidgets('Wunde hinzufügen zählt vom gespeicherten Wundzustand', (
