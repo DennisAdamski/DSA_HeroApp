@@ -3,9 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/ressourcen_aenderung_rules.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/zustand_aendern.dart';
 
 /// Ressource-Typ fuer den Stepper-Dialog.
 enum ResourceType { lep, au, asp, kap }
@@ -18,7 +20,9 @@ Future<void> showResourceStepperDialog({
 }) {
   return showAdaptiveDetailSheet<void>(
     context: context,
-    builder: (_) => _ResourceStepperDialog(heroId: heroId, resource: resource),
+    builder: (_) => ZustandFehlerBereich(
+      child: _ResourceStepperDialog(heroId: heroId, resource: resource),
+    ),
   );
 }
 
@@ -74,7 +78,11 @@ class _ResourceStepperDialog extends ConsumerWidget {
               children: [
                 IconButton.filled(
                   onPressed: current > 0 && state != null
-                      ? () => _save(ref, state, current - 1)
+                      ? () => _save(
+                          context,
+                          ref,
+                          const RessourcenAenderung.schritt(-1, untergrenze: 0),
+                        )
                       : null,
                   icon: const Icon(Icons.remove),
                 ),
@@ -95,12 +103,17 @@ class _ResourceStepperDialog extends ConsumerWidget {
                 const SizedBox(width: 16),
                 IconButton.filled(
                   onPressed: current < max && state != null
-                      ? () => _save(ref, state, current + 1)
+                      ? () => _save(
+                          context,
+                          ref,
+                          RessourcenAenderung.schritt(1, obergrenze: max),
+                        )
                       : null,
                   icon: const Icon(Icons.add),
                 ),
               ],
             ),
+            const ZustandFehlerAnzeige(),
             const SizedBox(height: 24),
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
@@ -112,13 +125,32 @@ class _ResourceStepperDialog extends ConsumerWidget {
     );
   }
 
-  Future<void> _save(WidgetRef ref, HeroState state, int newValue) async {
-    final updated = switch (resource) {
-      ResourceType.lep => state.copyWith(currentLep: newValue),
-      ResourceType.au => state.copyWith(currentAu: newValue),
-      ResourceType.asp => state.copyWith(currentAsp: newValue),
-      ResourceType.kap => state.copyWith(currentKap: newValue),
-    };
-    await ref.read(heroActionsProvider).saveHeroState(heroId, updated);
+  // Wendet den Schritt auf den gespeicherten Wert an und ersetzt nur diese
+  // Ressource: schnelle Klicks zählen alle, übrige Felder bleiben.
+  Future<void> _save(
+    BuildContext context,
+    WidgetRef ref,
+    RessourcenAenderung aenderung,
+  ) async {
+    await aendereZustandMitMeldung(
+      context: context,
+      ref: ref,
+      heroId: heroId,
+      was: _label,
+      aenderung: (aktuell) => switch (resource) {
+        ResourceType.lep => aktuell.copyWith(
+          currentLep: aenderung.wendeAn(aktuell.currentLep),
+        ),
+        ResourceType.au => aktuell.copyWith(
+          currentAu: aenderung.wendeAn(aktuell.currentAu),
+        ),
+        ResourceType.asp => aktuell.copyWith(
+          currentAsp: aenderung.wendeAn(aktuell.currentAsp),
+        ),
+        ResourceType.kap => aktuell.copyWith(
+          currentKap: aenderung.wendeAn(aktuell.currentKap),
+        ),
+      },
+    );
   }
 }

@@ -3,8 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
-import 'package:dsa_heldenverwaltung/ui/screens/workspace/epic_wound_relief.dart';
-import 'package:dsa_heldenverwaltung/domain/dice_log_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
@@ -16,8 +14,8 @@ import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_overview/stat_modifier_detail_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/dice_log_persistence.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/probe_request_factory.dart';
-import 'package:dsa_heldenverwaltung/ui/screens/workspace/wund_ini_dialog.dart';
-import 'package:dsa_heldenverwaltung/ui/screens/workspace/wund_unterdrueckung_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/zustand_aendern.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/workspace/wund_zustand_speichern.dart';
 
 /// Oeffnet den Wunden-Detail-Dialog als Fullscreen-Dialog.
 Future<void> showWundenDetailDialog({
@@ -26,7 +24,8 @@ Future<void> showWundenDetailDialog({
 }) {
   return showDialog<void>(
     context: context,
-    builder: (_) => _WundenDetailDialog(heroId: heroId),
+    builder: (_) =>
+        ZustandFehlerBereich(child: _WundenDetailDialog(heroId: heroId)),
   );
 }
 
@@ -53,78 +52,34 @@ class _WundenDetailDialog extends ConsumerWidget {
     final wundschwelle = computed.wundschwelle;
     final wundschwellenStufen = computed.wundschwellenStufen;
 
-    Future<void> speichereWundZustand(
-      WundZustand neuerZustand, {
-      List<DiceLogEntry> diceLogEntries = const <DiceLogEntry>[],
-    }) async {
-      final baseState =
-          ref.read(heroStateProvider(heroId)).valueOrNull ?? heroState;
-      final nextState = baseState
-          .copyWith(wpiZustand: neuerZustand)
-          .withAppendedDiceLogEntries(diceLogEntries);
-      await ref.read(heroActionsProvider).saveHeroState(heroId, nextState);
-    }
-
-    Future<void> wundeHinzufuegen(WundZone zone) async {
-      if (wpiZustand.wundenInZone(zone) >= maxWundenProZone) return;
-
-      WundZustand neuerZustand;
-      var diceLogEntries = const <DiceLogEntry>[];
-      if (zone == WundZone.kopf) {
-        final iniResult = await showWundIniDialog(context);
-        if (iniResult == null || !context.mounted) return;
-        neuerZustand = wpiZustand.mitWundeHinzu(
-          zone,
-          iniWuerfelWert: iniResult.value,
-        );
-        diceLogEntries = <DiceLogEntry>[iniResult.logEntry];
-      } else {
-        neuerZustand = wpiZustand.mitWundeHinzu(zone);
-      }
-
-      await speichereWundZustand(neuerZustand, diceLogEntries: diceLogEntries);
-
-      if (!context.mounted) return;
-      final effekte = computeWundEffekte(
-        neuerZustand,
-        halbierteProbenErschwernis: isEpicWoundReliefActive(ref, hero),
-      );
-      final unterdruecken = await showWundUnterdrueckungDialog(
-        context: context,
-        hero: hero,
-        wpiZustand: neuerZustand,
-        zone: zone,
-        wundEffekte: effekte,
-        ref: ref,
-        heroId: heroId,
-      );
-      if (unterdruecken == true) {
-        final aktUnterdrueckt = neuerZustand.unterdrueckteInZone(zone);
-        await speichereWundZustand(
-          neuerZustand.mitUnterdrueckung(zone, aktUnterdrueckt + 1),
-        );
-      }
-    }
+    Future<void> wundeHinzufuegen(WundZone zone) => fuegeWundeHinzu(
+      context: context,
+      ref: ref,
+      heroId: heroId,
+      zone: zone,
+      angezeigt: wpiZustand,
+    );
 
     Future<void> wundeEntfernen(WundZone zone) async {
       if (wpiZustand.wundenInZone(zone) <= 0) return;
-      await speichereWundZustand(wpiZustand.mitWundeEntfernt(zone));
+      await aendereWundZustand(
+        context: context,
+        ref: ref,
+        heroId: heroId,
+        aenderung: (aktuell) => aktuell.mitWundeEntfernt(zone),
+      );
     }
 
+    // Ein aktiver Pip wird unterdrückt, ein unterdrückter wieder aktiv.
     void toggleUnterdrueckung(WundZone zone, int pipIndex) {
       final effektive = wpiZustand.effektiveWundenInZone(zone);
-      final unterdrueckte = wpiZustand.unterdrueckteInZone(zone);
-      if (pipIndex < effektive) {
-        // Aktiver Pip → unterdruecken
-        speichereWundZustand(
-          wpiZustand.mitUnterdrueckung(zone, unterdrueckte + 1),
-        );
-      } else {
-        // Unterdrueckter Pip → wieder aktivieren
-        speichereWundZustand(
-          wpiZustand.mitUnterdrueckung(zone, unterdrueckte - 1),
-        );
-      }
+      schalteWundUnterdrueckung(
+        context: context,
+        ref: ref,
+        heroId: heroId,
+        zone: zone,
+        unterdruecken: pipIndex < effektive,
+      );
     }
 
     return AlertDialog(
@@ -173,6 +128,8 @@ class _WundenDetailDialog extends ConsumerWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              // Oben, weil der Inhalt scrollt und unten verdeckt sein kann.
+              const ZustandFehlerAnzeige(),
               _WundschwellenStufenText(stufen: wundschwellenStufen),
               const SizedBox(height: 8),
 
@@ -240,8 +197,12 @@ class _WundenDetailDialog extends ConsumerWidget {
                 const Divider(height: 24),
                 _KampfunfaehigIgnoriertToggle(
                   ignoriert: wpiZustand.kampfunfaehigIgnoriert,
-                  onChanged: (v) => speichereWundZustand(
-                    wpiZustand.copyWith(kampfunfaehigIgnoriert: v),
+                  onChanged: (v) => aendereWundZustand(
+                    context: context,
+                    ref: ref,
+                    heroId: heroId,
+                    aenderung: (aktuell) =>
+                        aktuell.copyWith(kampfunfaehigIgnoriert: v),
                   ),
                 ),
               ],

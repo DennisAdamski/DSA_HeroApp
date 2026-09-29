@@ -213,6 +213,11 @@ an eine gemeinsame In-Memory-Cloud (`test/test_support/sync_geraete.dart`):
   gäbe dieselbe Objektinstanz zurück und verdeckte Effekte des Ladens.
 - `SyncTestGeraet.neustart()` baut das Repository neu, Speicher und
   Metadaten bleiben.
+- `SyncingHeroRepository.saveHeroState` endet nach dem **lokalen** Speichern,
+  der Upload läuft gebündelt im Hintergrund. Ein Test, der danach die Cloud
+  prüft oder die Leitung umschaltet („offline gespeichert, dann online“),
+  wartet vorher mit `warteAufUebertragungen()`, sonst läuft der Upload erst
+  nach dem Umschalten.
 
 Das Cloud-Fake (`fake_remote_hero_sync_gateway.dart`) hasht wie die echten
 Gateways mit `heroContentHash` und prüft auch bei Zuständen die Vorrevision.
@@ -281,6 +286,8 @@ Die CI (`.github/workflows/flutter-tests.yml`) führt alle Tests auf
 | `test/data/hero_actions_import_export_test.dart` | data | Actions Import/Export |
 | `test/data/bestandsheld_ablauf_test.dart` | data | Echte Hive-Speichergrenze je Bestandsheld und Ablauf Import bis Export mit Neustart, Befunde B4/B9, Felder neuerer Versionen in allen verschachtelten Modellen von Held und Zustand |
 | `test/data/sync_zwei_geraete_test.dart` | data | Zwei Geräte an einer Cloud: Abbruch, verlorene Antwort, Neustart (auch mit Hive), Konfliktauflösungen samt Zustand, Befunde B1/B8 |
+| `test/data/zustand_schnell_tippen_sync_test.dart` | data | Schnelles Tippen mit Konto-Sync gegen eine verzögerte Cloud mit Echo: jeder Klick zählt, lokal ohne Wartezeit, gebündelte Uploads, kein Konflikt mit sich selbst, offline nachgeholt, fremde Änderung übernommen bzw. als Konflikt gemeldet |
+| `test/data/sync/gebuendelte_laeufe_test.dart` | data | Bündelung der Zustands-Uploads: ein Folgelauf, unabhängige Schlüssel, Fehler, `nachLauf` |
 | `test/data/sync_app_versionen_test.dart` | data | Sync mit anderen App-Versionen: Basis gleich lokaler Stand (B10), Felder einer neueren Version in Held und Zustand samt gleichzeitig geänderter Cloud, veröffentlichte App im Mischbetrieb (auch ihr Echo), geänderter Vor-/Nachteiltext mit und ohne bewahrte Liste (ARCH-02) |
 | `test/data/merkmal_migration_test.dart` | data | ARCH-02: einmalige Migration der Vor-/Nachteiltexte beim Speichern mit echtem Hive, Fixpunkt, gleiche Regelwerte, Export/Import |
 | `test/rules/hero_merkmal_rules_test.dart` | rules | ARCH-02: Zuordnung der Alttexte, Abweichungen, Hinzufügen, Wirkung über die Katalog-ID, Umbenennung, Äquivalenz von Katalog- und Textweg |
