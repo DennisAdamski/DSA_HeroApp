@@ -820,9 +820,9 @@ Commits:
 1. Snapshot-Schreibwege des Zustands bleiben im Übersichtseditor
    (Editorentwurf, Bogen und Zustand getrennt), beim Anlegen und beim
    Import. Wer `HeroActions.saveHeroState` nutzt, ist nicht eingereiht.
-2. Ressourcen bleiben absolut: Zwei Klicks, bevor die Oberfläche den ersten
-   Stand zeigt, ergeben einen Schritt statt zwei. Das betrifft nur sehr
-   schnelle Doppelklicks.
+2. ~~Ressourcen bleiben absolut: Zwei Klicks, bevor die Oberfläche den ersten
+   Stand zeigt, ergeben einen Schritt statt zwei.~~ *Erledigt im Nachtrag
+   unten.*
 3. Der Inspector-Vitals- und -Magie-Tab haben keinen eigenen Widgettest. Sie
    nutzen denselben Einstieg wie der geprüfte Stepper.
 4. Snapshot-Schreibwege des **Bogens** bleiben: Dauermodifikatoren,
@@ -831,6 +831,76 @@ Commits:
    `aendereGespeichertenZustand` und `aendereWundZustand` aufsetzen und ist
    die Voraussetzung für ARCH-01. Die Korrekturmöglichkeit bleibt an ARCH-06
    gebunden.
+
+*Nachtrag 29.09.2026 — schnelles Tippen mit Konto-Sync.* Eine manuelle
+Prüfung zeigte: Wer schnell viele AsP verbraucht, bekommt eine Fehlermeldung
+hinter dem Blatt und Sync-Konflikte. Nachgestellt mit einer verzögerten Cloud,
+die jeden Schreibvorgang als Echo zurückschickt:
+
+- Ohne Warteschlange (Stand `main`) kamen von zehn Klicks vier in der Cloud
+  an. Die Uploads liefen parallel auf derselben Basisrevision; der zweite
+  und das Echo des ersten sahen wie eine fremde Änderung aus, es entstand
+  ein Konflikt mit sich selbst.
+- Mit der Warteschlange dieses Teilstands gab es keinen Konflikt mehr, aber
+  jeder Klick wartete zwei Netzwege ab. Die Anzeige lief hinterher, und
+  Klicks auf den veralteten angezeigten Wert gingen verloren.
+
+*Entscheidungen (mit dem Nutzer abgestimmt: Fehler wie beim Rastpanel,
+jede Eingabe soll sicher verarbeitet werden).*
+
+- **Lokal sofort, Cloud gebündelt:** `SyncingHeroRepository.saveHeroState`
+  endet nach dem lokalen Speichern. `GebuendelteLaeufe` lädt je Held im
+  Hintergrund hoch, nie zwei gleichzeitig, immer den neuesten lokalen Stand;
+  zehn Klicks ergeben höchstens zwei Uploads. Online-Stände, die während
+  eines Uploads eintreffen, werden erst danach bewertet: Solange er läuft,
+  ist der lokale Stand voraus, und das eigene Echo sähe fremd aus. `syncNow`
+  wartet auf laufende Uploads und lädt über dieselbe Bündelung hoch. Der
+  Bogen (`saveHero`) wartet weiterhin auf seinen Upload.
+- **Jeder Klick zählt:** Ressourcenknöpfe melden eine `RessourcenAenderung`
+  (`ressourcen_aenderung_rules.dart`) statt eines fertigen Werts: ein Schritt
+  vom gespeicherten Wert oder Setzen (Zurücksetzen auf das Maximum). Grenzen
+  gelten nur in Schrittrichtung; ein −1 hebt gespeicherte negative LeP
+  nicht auf 0, ein +1 senkt keine Überheilung.
+- **Fehler dort, wo bedient wird:** `ZustandFehlerBereich` und
+  `ZustandFehlerAnzeige` zeigen „… nicht gespeichert“ im Stepper, im
+  UI2-Ressourcenblatt, im Zaubereffekt- und Wundendialog, in den
+  Inspector-Tabs Vitals und Magie sowie im UI2-Zustandsblock; der nächste
+  Erfolg blendet die Meldung aus. Die Snackbar bleibt Rückfall. Netzfehler
+  erreichen diese Anzeige nicht mehr, sie stehen im Sync-Status und
+  `syncNow` holt den Upload nach.
+
+Commits: `b744dcd` (Sync), `02693f2` (Regel und Oberfläche) und der
+Dokumentations-Commit.
+
+*Prüfungen.* `test/data/zustand_schnell_tippen_sync_test.dart` (Cloud mit
+40 ms Laufzeit, Echo vor der Antwort): Zehn Klicks stehen lokal ohne
+Wartezeit, weniger als zehn Uploads, kein Konflikt. Offline bleibt jeder Klick
+lokal und `syncNow` holt ihn nach. Eine gemeldete fremde Änderung wird
+übernommen, eine nicht gemeldete wird ein Konflikt. Dazu
+`gebuendelte_laeufe_test.dart`, `ressourcen_aenderung_rules_test.dart` und
+Widgettests für fünf schnelle Klicks im Stepper, drei −5 im UI2-Blatt bis
+zur Untergrenze und Fehler im Blatt bzw. Dialog. Gegenproben: Mit dem alten
+Sync-Code scheitert der Latenztest (877 ms). Ohne Zurückstellen der Echos
+entsteht der Selbstkonflikt. Mit absolutem Setzen scheitern beide
+Schnellklick-Tests. Zwei Zwei-Geräte-Tests warten jetzt im Offline-Abschnitt
+auf den Hintergrund-Upload (`warteAufUebertragungen`), weil er sonst erst
+nach dem Umschalten liefe.
+
+*Verbleibende Risiken.*
+
+1. Zwischen lokalem Speichern und Upload liegt jetzt ein Fenster. Wird die
+   App darin beendet, holt der nächste `syncNow` den Stand nach (wie offline).
+   Ein anderes Gerät sieht ihn erst dann.
+2. Ein Upload, der offline angestoßen wurde und erst wieder online läuft,
+   überträgt den Zustand vor dem nächsten Abgleich des Helden. Ändern zwei
+   Geräte offline Held **und** Zustand, kann der Zustands-Konflikt dann als
+   eigener Eintrag statt gebunden an den Helden erscheinen, wie schon
+   bisher beim Speichern mit Verbindung.
+3. Fehler beim Protokollieren eines Wurfs erscheinen weiter als Snackbar,
+   weil der Probendialog keinen eigenen Fehlerbereich hat. Da der Upload
+   nicht mehr dazugehört, bleiben dafür nur lokale Speicherfehler.
+4. Der Bogen (`saveHero`) wartet weiter auf seinen Upload; schnelle
+   Bogenänderungen (Inventar) laufen nicht über die Bündelung.
 
 ## ARCH-06 — Zusammengehörige Änderungen gemeinsam speichern und synchronisieren
 

@@ -3019,8 +3019,21 @@ ueber die Settings-Katalogverwaltung bearbeitet.
   `setzeZaubereffektDauer`, `zaehleZaubereffektDauer`) ändert nur den
   jeweiligen Effekt; beim Ausschalten des Attributo fallen seine Boni in
   `tempAttributeMods` weg.
-- Ressourcen setzen den angezeigten Wert absolut, zählende Bedienung
-  (Belastung, Wunden, Restdauer) zählt vom gespeicherten Wert.
+- Bedienung zählt vom gespeicherten Wert: Ressourcenknöpfe melden eine
+  `RessourcenAenderung` (`lib/rules/derived/ressourcen_aenderung_rules.dart`,
+  Schritt mit Grenzen nur in Schrittrichtung oder Setzen), Belastung, Wunden
+  und Restdauer zählen ebenso. So zählt jeder schnelle Klick.
+- Fehler erscheinen im nächsten `ZustandFehlerBereich` an der
+  `ZustandFehlerAnzeige` (Stepper, UI2-Ressourcenblatt, Zaubereffekt- und
+  Wundendialog, Inspector-Tabs Vitals und Magie, UI2-Zustandsblock); ohne
+  Bereich als Snackbar.
+- Konto-Sync: `SyncingHeroRepository.saveHeroState` endet nach dem lokalen
+  Speichern. `GebuendelteLaeufe` (`lib/data/sync/gebuendelte_laeufe.dart`)
+  lädt je Held höchstens einen Stand gleichzeitig hoch, immer den neuesten;
+  Anstöße während eines Uploads ergeben genau einen Folgelauf. Online-Stände,
+  die währenddessen eintreffen, stellt das Repository zurück und bewertet
+  sie danach (`nachLauf`). `syncNow` wartet auf laufende Uploads und lädt
+  über dieselbe Bündelung hoch. Auf Uploads warten: `warteAufUebertragungen`.
 
 ### Update 2026-08-23: Aventurischer Kalender und aktuelles Alter
 
