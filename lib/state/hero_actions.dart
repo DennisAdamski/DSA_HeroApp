@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
+import 'package:dsa_heldenverwaltung/ablaeufe/zustand_schreiben.dart';
 import 'package:dsa_heldenverwaltung/catalog/catalog_runtime_data.dart';
 import 'package:dsa_heldenverwaltung/catalog/catalog_section_id.dart';
 import 'package:dsa_heldenverwaltung/catalog/hero_trait_text.dart';
@@ -229,25 +230,27 @@ class HeroActions {
   /// Speichert den Laufzeitzustand (LeP, AsP, KaP, Au, temp. Mods) eines Helden.
   Future<void> saveHeroState(String heroId, HeroState state) async {
     final repo = _ref.read(heroRepositoryProvider);
-    await repo.saveHeroState(heroId, _gestempelt(state));
-  }
-
-  // Frischer Aenderungszeitpunkt fuer einen Zustand, analog zu [saveHero].
-  HeroState _gestempelt(HeroState state) {
-    return state.copyWith(lastModified: DateTime.now().toUtc());
+    await repo.saveHeroState(
+      heroId,
+      mitAenderungszeitpunkt(state, DateTime.now()),
+    );
   }
 
   /// Wendet eine gezielte Änderung auf den frisch geladenen Laufzeitzustand an.
   ///
+  /// Kompatibilitätseinstieg für [aendereGespeichertenZustand] (ARCH-05).
   /// Erhält Felder, die seit dem letzten UI-Aufbau geändert wurden. Dies ist
   /// keine Transaktion gegenüber gleichzeitig laufenden Repository-Schreibwegen.
   Future<void> updateHeroState(
     String heroId,
     HeroState Function(HeroState current) update,
   ) async {
-    final repo = _ref.read(heroRepositoryProvider);
-    final current = await repo.loadHeroState(heroId) ?? const HeroState.empty();
-    await repo.saveHeroState(heroId, _gestempelt(update(current)));
+    await aendereGespeichertenZustand(
+      repository: _ref.read(heroRepositoryProvider),
+      heroId: heroId,
+      aenderung: update,
+      uhr: DateTime.now,
+    );
   }
 
   // Katalogisierte Vor-/Nachteile sollen nicht als Parser-Restfragmente
