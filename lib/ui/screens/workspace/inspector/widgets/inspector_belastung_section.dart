@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
-import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/zustand_aendern.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/inspector/widgets/inspector_value_row.dart';
 
 /// Auf-/zuklappbare Belastungs-Sektion (Überanstrengung, Erschöpfung).
@@ -25,9 +25,23 @@ class _InspectorBelastungSectionState
     extends ConsumerState<InspectorBelastungSection> {
   bool _expanded = false;
 
-  Future<void> _save(HeroState updated) async {
-    await ref.read(heroActionsProvider).saveHeroState(widget.heroId, updated);
+  // Zählt vom gespeicherten Wert aus, nicht vom Stand beim Rendern: zwei
+  // schnelle Klicks zählen so zweimal, andere Felder bleiben unberührt.
+  Future<void> _save(
+    String was,
+    HeroState Function(HeroState aktuell) aenderung,
+  ) async {
+    await aendereZustandMitMeldung(
+      context: context,
+      ref: ref,
+      heroId: widget.heroId,
+      was: was,
+      aenderung: aenderung,
+    );
   }
+
+  // Belastungsstufen fallen nie unter 0.
+  static int _einsWeniger(int wert) => wert > 0 ? wert - 1 : 0;
 
   @override
   Widget build(BuildContext context) {
@@ -100,16 +114,21 @@ class _InspectorBelastungSectionState
             modifier: state.erschoepfung,
             result: state.erschoepfung,
             onDecrement: () => _save(
-              state.copyWith(
-                erschoepfung: state.erschoepfung > 0
-                    ? state.erschoepfung - 1
-                    : 0,
+              'Erschöpfung',
+              (aktuell) => aktuell.copyWith(
+                erschoepfung: _einsWeniger(aktuell.erschoepfung),
               ),
             ),
-            onIncrement: () =>
-                _save(state.copyWith(erschoepfung: state.erschoepfung + 1)),
+            onIncrement: () => _save(
+              'Erschöpfung',
+              (aktuell) =>
+                  aktuell.copyWith(erschoepfung: aktuell.erschoepfung + 1),
+            ),
             onReset: state.erschoepfung != 0
-                ? () => _save(state.copyWith(erschoepfung: 0))
+                ? () => _save(
+                    'Erschöpfung',
+                    (aktuell) => aktuell.copyWith(erschoepfung: 0),
+                  )
                 : null,
           ),
           const SizedBox(height: 4),
@@ -119,17 +138,22 @@ class _InspectorBelastungSectionState
             modifier: state.ueberanstrengung,
             result: state.ueberanstrengung,
             onDecrement: () => _save(
-              state.copyWith(
-                ueberanstrengung: state.ueberanstrengung > 0
-                    ? state.ueberanstrengung - 1
-                    : 0,
+              'Überanstrengung',
+              (aktuell) => aktuell.copyWith(
+                ueberanstrengung: _einsWeniger(aktuell.ueberanstrengung),
               ),
             ),
             onIncrement: () => _save(
-              state.copyWith(ueberanstrengung: state.ueberanstrengung + 1),
+              'Überanstrengung',
+              (aktuell) => aktuell.copyWith(
+                ueberanstrengung: aktuell.ueberanstrengung + 1,
+              ),
             ),
             onReset: state.ueberanstrengung != 0
-                ? () => _save(state.copyWith(ueberanstrengung: 0))
+                ? () => _save(
+                    'Überanstrengung',
+                    (aktuell) => aktuell.copyWith(ueberanstrengung: 0),
+                  )
                 : null,
           ),
         ],

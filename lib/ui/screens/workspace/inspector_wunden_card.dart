@@ -1,15 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:dsa_heldenverwaltung/domain/dice_log_entry.dart';
-import 'package:dsa_heldenverwaltung/ui/screens/workspace/epic_wound_relief.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/wund_rules.dart';
-import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
-import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
-import 'package:dsa_heldenverwaltung/ui/screens/workspace/wund_ini_dialog.dart';
-import 'package:dsa_heldenverwaltung/ui/screens/workspace/wund_unterdrueckung_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/workspace/wund_zustand_speichern.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/wunden_detail_dialog.dart';
 
 /// Einbettbare Wunden-Sektion fuer die Vitalwerte-Card.
@@ -39,67 +34,22 @@ class _InspectorWundenSectionState
     extends ConsumerState<InspectorWundenSection> {
   bool _expanded = false;
 
-  Future<void> _speichereWundZustand(
-    WundZustand neuerZustand, {
-    List<DiceLogEntry> diceLogEntries = const <DiceLogEntry>[],
-  }) async {
-    final baseState =
-        ref.read(heroStateProvider(widget.heroId)).valueOrNull ??
-        widget.heroState;
-    final nextState = baseState
-        .copyWith(wpiZustand: neuerZustand)
-        .withAppendedDiceLogEntries(diceLogEntries);
-    await ref.read(heroActionsProvider).saveHeroState(widget.heroId, nextState);
-  }
-
-  Future<void> _wundeHinzufuegen(WundZone zone) async {
-    final zustand = widget.heroState.wpiZustand;
-    if (zustand.wundenInZone(zone) >= maxWundenProZone) return;
-
-    WundZustand neuerZustand;
-    var diceLogEntries = const <DiceLogEntry>[];
-    if (zone == WundZone.kopf) {
-      final iniResult = await showWundIniDialog(context);
-      if (iniResult == null || !mounted) return;
-      neuerZustand = zustand.mitWundeHinzu(
-        zone,
-        iniWuerfelWert: iniResult.value,
-      );
-      diceLogEntries = <DiceLogEntry>[iniResult.logEntry];
-    } else {
-      neuerZustand = zustand.mitWundeHinzu(zone);
-    }
-
-    await _speichereWundZustand(neuerZustand, diceLogEntries: diceLogEntries);
-
-    if (!mounted) return;
-    final hero = ref.read(heroByIdProvider(widget.heroId));
-    if (hero == null) return;
-    final effekte = computeWundEffekte(
-      neuerZustand,
-      halbierteProbenErschwernis: isEpicWoundReliefActive(ref, hero),
-    );
-    final unterdruecken = await showWundUnterdrueckungDialog(
-      context: context,
-      hero: hero,
-      wpiZustand: neuerZustand,
-      zone: zone,
-      wundEffekte: effekte,
-      ref: ref,
-      heroId: widget.heroId,
-    );
-    if (unterdruecken == true) {
-      final aktUnterdrueckt = neuerZustand.unterdrueckteInZone(zone);
-      await _speichereWundZustand(
-        neuerZustand.mitUnterdrueckung(zone, aktUnterdrueckt + 1),
-      );
-    }
-  }
+  Future<void> _wundeHinzufuegen(WundZone zone) => fuegeWundeHinzu(
+    context: context,
+    ref: ref,
+    heroId: widget.heroId,
+    zone: zone,
+    angezeigt: widget.heroState.wpiZustand,
+  );
 
   Future<void> _wundeEntfernen(WundZone zone) async {
-    final zustand = widget.heroState.wpiZustand;
-    if (zustand.wundenInZone(zone) <= 0) return;
-    await _speichereWundZustand(zustand.mitWundeEntfernt(zone));
+    if (widget.heroState.wpiZustand.wundenInZone(zone) <= 0) return;
+    await aendereWundZustand(
+      context: context,
+      ref: ref,
+      heroId: widget.heroId,
+      aenderung: (aktuell) => aktuell.mitWundeEntfernt(zone),
+    );
   }
 
   @override
@@ -206,76 +156,30 @@ class InspectorWundenCard extends ConsumerWidget {
   final WundEffekte wundEffekte;
   final int wundschwelle;
 
-  Future<void> _speichereWundZustand(
-    WidgetRef ref,
-    WundZustand neuerZustand, {
-    List<DiceLogEntry> diceLogEntries = const <DiceLogEntry>[],
-  }) async {
-    final baseState =
-        ref.read(heroStateProvider(heroId)).valueOrNull ?? heroState;
-    final nextState = baseState
-        .copyWith(wpiZustand: neuerZustand)
-        .withAppendedDiceLogEntries(diceLogEntries);
-    await ref.read(heroActionsProvider).saveHeroState(heroId, nextState);
-  }
-
   Future<void> _wundeHinzufuegen(
     BuildContext context,
     WidgetRef ref,
     WundZone zone,
+  ) => fuegeWundeHinzu(
+    context: context,
+    ref: ref,
+    heroId: heroId,
+    zone: zone,
+    angezeigt: heroState.wpiZustand,
+  );
+
+  Future<void> _wundeEntfernen(
+    BuildContext context,
+    WidgetRef ref,
+    WundZone zone,
   ) async {
-    final zustand = heroState.wpiZustand;
-    if (zustand.wundenInZone(zone) >= maxWundenProZone) return;
-
-    WundZustand neuerZustand;
-    var diceLogEntries = const <DiceLogEntry>[];
-    if (zone == WundZone.kopf) {
-      final iniResult = await showWundIniDialog(context);
-      if (iniResult == null || !context.mounted) return;
-      neuerZustand = zustand.mitWundeHinzu(
-        zone,
-        iniWuerfelWert: iniResult.value,
-      );
-      diceLogEntries = <DiceLogEntry>[iniResult.logEntry];
-    } else {
-      neuerZustand = zustand.mitWundeHinzu(zone);
-    }
-
-    await _speichereWundZustand(
-      ref,
-      neuerZustand,
-      diceLogEntries: diceLogEntries,
-    );
-
-    if (!context.mounted) return;
-    final hero = ref.read(heroByIdProvider(heroId));
-    if (hero == null) return;
-    final effekte = computeWundEffekte(
-      neuerZustand,
-      halbierteProbenErschwernis: isEpicWoundReliefActive(ref, hero),
-    );
-    final unterdruecken = await showWundUnterdrueckungDialog(
+    if (heroState.wpiZustand.wundenInZone(zone) <= 0) return;
+    await aendereWundZustand(
       context: context,
-      hero: hero,
-      wpiZustand: neuerZustand,
-      zone: zone,
-      wundEffekte: effekte,
       ref: ref,
       heroId: heroId,
+      aenderung: (aktuell) => aktuell.mitWundeEntfernt(zone),
     );
-    if (unterdruecken == true) {
-      final aktUnterdrueckt = neuerZustand.unterdrueckteInZone(zone);
-      await _speichereWundZustand(
-        ref,
-        neuerZustand.mitUnterdrueckung(zone, aktUnterdrueckt + 1),
-      );
-    }
-  }
-
-  Future<void> _wundeEntfernen(WidgetRef ref, WundZone zone) async {
-    final zustand = heroState.wpiZustand;
-    if (zustand.wundenInZone(zone) <= 0) return;
-    await _speichereWundZustand(ref, zustand.mitWundeEntfernt(zone));
   }
 
   @override
@@ -327,7 +231,7 @@ class InspectorWundenCard extends ConsumerWidget {
               wunden: zustand.wundenInZone(zone),
               unterdrueckte: zustand.unterdrueckteInZone(zone),
               onHinzufuegen: () => _wundeHinzufuegen(context, ref, zone),
-              onEntfernen: () => _wundeEntfernen(ref, zone),
+              onEntfernen: () => _wundeEntfernen(context, ref, zone),
             ),
         ],
       ),

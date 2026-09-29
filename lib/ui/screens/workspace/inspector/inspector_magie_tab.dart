@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/resource_activation_rules.dart';
-import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/zustand_aendern.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/inspector/widgets/inspector_arcane_effects_block.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/inspector/widgets/inspector_vital_block.dart';
 
@@ -26,8 +26,20 @@ class InspectorMagieTab extends ConsumerWidget {
   final DerivedStats derived;
   final HeroResourceActivation? resourceActivation;
 
-  Future<void> _save(WidgetRef ref, HeroState updated) async {
-    await ref.read(heroActionsProvider).saveHeroState(heroId, updated);
+  // Ersetzt nur die eine Ressource im frisch geladenen Zustand.
+  Future<void> _save(
+    BuildContext context,
+    WidgetRef ref,
+    String was,
+    HeroState Function(HeroState aktuell) aenderung,
+  ) async {
+    await aendereZustandMitMeldung(
+      context: context,
+      ref: ref,
+      heroId: heroId,
+      was: was,
+      aenderung: aenderung,
+    );
   }
 
   @override
@@ -48,8 +60,12 @@ class InspectorMagieTab extends ConsumerWidget {
               current: heroState.currentAsp,
               max: derived.maxAsp,
               kind: VitalKind.asp,
-              onChanged: (next) =>
-                  _save(ref, heroState.copyWith(currentAsp: next)),
+              onChanged: (next) => _save(
+                context,
+                ref,
+                'AsP',
+                (aktuell) => aktuell.copyWith(currentAsp: next),
+              ),
             ),
             const SizedBox(height: 8),
           ] else
@@ -70,8 +86,12 @@ class InspectorMagieTab extends ConsumerWidget {
               current: heroState.currentKap,
               max: derived.maxKap,
               kind: VitalKind.kap,
-              onChanged: (next) =>
-                  _save(ref, heroState.copyWith(currentKap: next)),
+              onChanged: (next) => _save(
+                context,
+                ref,
+                'KaP',
+                (aktuell) => aktuell.copyWith(currentKap: next),
+              ),
             ),
             const SizedBox(height: 12),
           ],
