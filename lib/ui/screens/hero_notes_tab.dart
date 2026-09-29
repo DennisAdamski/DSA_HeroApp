@@ -15,6 +15,7 @@ import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/config/ui_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/inventory_modifier_editor.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/zustand_aendern.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_edit_controller.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/codex_tab_header.dart';
@@ -335,37 +336,26 @@ class _HeroNotesTabState extends ConsumerState<HeroNotesTab>
       return;
     }
 
-    final sanitizedAdventure = _sanitizeAdventure(completionEntry);
-    final preparedHero = hero.copyWith(
-      adventures: _replaceAdventure(
-        hero.adventures,
-        adventureId: adventureId,
-        nextAdventure: sanitizedAdventure,
+    // Gebucht wird auf den gespeicherten Helden (ARCH-05): Ist das Abenteuer
+    // dort schon abgeschlossen, bucht nichts doppelt; der Grund erscheint.
+    final abschluss = _sanitizeAdventure(completionEntry);
+    final gespeichert = await aendereHeldMitMeldung(
+      context: context,
+      ref: ref,
+      heroId: widget.heroId,
+      was: 'Abschluss von „${_adventureTitle(adventure)}“',
+      aenderung: (held) => schliesseAbenteuerAb(
+        held: held,
+        abenteuerId: adventureId,
+        abschluss: abschluss,
       ),
     );
-    final applyCheck = canApplyAdventureRewards(
-      hero: preparedHero,
-      adventureId: adventureId,
-    );
-    if (!applyCheck.isAllowed) {
-      if (applyCheck.reason.trim().isNotEmpty) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(applyCheck.reason)));
-      }
+    if (gespeichert == null || !mounted) {
       return;
     }
 
-    final updatedHero = applyAdventureRewards(
-      hero: preparedHero,
-      adventureId: adventureId,
-    );
-    await ref.read(heroActionsProvider).saveHero(updatedHero);
-    if (!mounted) {
-      return;
-    }
-
-    _latestHero = updatedHero;
-    _syncDraftFromHero(updatedHero, force: true);
+    _latestHero = gespeichert;
+    _syncDraftFromHero(gespeichert, force: true);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('${_adventureTitle(adventure)} abgeschlossen')),
     );
@@ -377,6 +367,8 @@ class _HeroNotesTabState extends ConsumerState<HeroNotesTab>
       return;
     }
 
+    // Die Anzeige prüft vorab für schnelle Rückmeldung; entschieden wird am
+    // gespeicherten Helden.
     final check = canRevokeAdventureRewards(
       hero: hero,
       adventureId: adventureId,
@@ -389,18 +381,21 @@ class _HeroNotesTabState extends ConsumerState<HeroNotesTab>
       return;
     }
 
-    final updatedHero = revokeAdventureRewards(
-      hero: hero,
-      adventureId: adventureId,
+    final adventure = _findAdventureById(hero.adventures, adventureId);
+    final gespeichert = await aendereHeldMitMeldung(
+      context: context,
+      ref: ref,
+      heroId: widget.heroId,
+      was: 'Rücknahme von „${_adventureTitle(adventure)}“',
+      aenderung: (held) =>
+          oeffneAbenteuerWieder(held: held, abenteuerId: adventureId),
     );
-    await ref.read(heroActionsProvider).saveHero(updatedHero);
-    if (!mounted) {
+    if (gespeichert == null || !mounted) {
       return;
     }
 
-    final adventure = _findAdventureById(hero.adventures, adventureId);
-    _latestHero = updatedHero;
-    _syncDraftFromHero(updatedHero, force: true);
+    _latestHero = gespeichert;
+    _syncDraftFromHero(gespeichert, force: true);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('${_adventureTitle(adventure)} wieder geöffnet')),
     );
@@ -428,16 +423,6 @@ class _HeroNotesTabState extends ConsumerState<HeroNotesTab>
       return '';
     }
     return _adventureTitle(adventure);
-  }
-
-  List<HeroAdventureEntry> _replaceAdventure(
-    List<HeroAdventureEntry> adventures, {
-    required String adventureId,
-    required HeroAdventureEntry nextAdventure,
-  }) {
-    return adventures
-        .map((entry) => entry.id == adventureId ? nextAdventure : entry)
-        .toList(growable: false);
   }
 
   List<_AdventureTargetOption> _buildTalentTargetOptions(

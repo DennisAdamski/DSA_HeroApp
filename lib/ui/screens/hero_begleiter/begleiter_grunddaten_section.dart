@@ -124,7 +124,6 @@ class _BegleiterDetailView extends StatelessWidget {
     required this.onBack,
     required this.onChanged,
     required this.onDelete,
-    required this.onSaveImmediate,
     this.onRaiseRegular,
     this.onRaisePool,
     this.onRaiseAngriffAt,
@@ -139,7 +138,6 @@ class _BegleiterDetailView extends StatelessWidget {
   final VoidCallback onBack;
   final ValueChanged<HeroCompanion> onChanged;
   final VoidCallback onDelete;
-  final ValueChanged<HeroCompanion> onSaveImmediate;
   final void Function(String key, String label)? onRaiseRegular;
   final void Function(String key, String label)? onRaisePool;
   final void Function(String attackId)? onRaiseAngriffAt;
