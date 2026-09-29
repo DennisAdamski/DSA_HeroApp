@@ -45,6 +45,7 @@ final TrefferzonenTabelle humanoidTrefferzonenTabelle = TrefferzonenTabelle(
           label: 'INI-Malus',
           diceCount: 2,
           multipliziertMitWunden: true,
+          wirkung: TrefferzonenZusatzwirkung.iniMalus,
         ),
       ],
       zusatzwuerfeDritteWunde: <TrefferzonenZusatzwurf>[

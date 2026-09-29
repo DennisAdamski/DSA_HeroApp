@@ -14,6 +14,15 @@ class TrefferSubZone {
 /// Typ-Alias fuer die Subzonen-Aufloesung anhand des W20-Wurfs.
 typedef SubZoneResolver = TrefferSubZone Function(int roll);
 
+/// Worauf ein Zusatzwurf einer Trefferzone wirkt.
+enum TrefferzonenZusatzwirkung {
+  /// Zusaetzliche Schadenspunkte auf die Lebensenergie.
+  schaden,
+
+  /// Gewuerfelter INI-Malus einer Kopfwunde (`WundZustand.kopfIniMalus`).
+  iniMalus,
+}
+
 /// Strukturierter Zusatzwurf einer Trefferzone, der separat gewuerfelt wird.
 class TrefferzonenZusatzwurf {
   const TrefferzonenZusatzwurf({
@@ -22,6 +31,7 @@ class TrefferzonenZusatzwurf {
     this.diceSides = 6,
     this.modifier = 0,
     this.multipliziertMitWunden = false,
+    this.wirkung = TrefferzonenZusatzwirkung.schaden,
   });
 
   /// Anzeigename des Effekts, z. B. `Extraschaden` oder `INI-Malus`.
@@ -38,6 +48,9 @@ class TrefferzonenZusatzwurf {
 
   /// Multipliziert den Effekt mit der gewaehlten Wundenanzahl.
   final bool multipliziertMitWunden;
+
+  /// Worauf das Wurfergebnis wirkt.
+  final TrefferzonenZusatzwirkung wirkung;
 }
 
 /// Ein einzelner Eintrag in einer Trefferzonen-Tabelle.
