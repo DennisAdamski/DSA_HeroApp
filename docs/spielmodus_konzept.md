@@ -42,7 +42,7 @@ Vorschlag: neuer Workspace-Bereich **„Kampf" (Encounter)**:
 - **Teilnehmer**: eigener Held (volle Werte), externe Helden aus der Gruppe (Visitenkarten-Niveau), frei angelegte Gegner (Name, INI-Basis, LeP, RS, AT/PA optional). Gegner als leichtgewichtiges neues Modell `EncounterOpponent`, optional als wiederverwendbare Vorlagen gespeichert.
 - **Initiative**: INI-Wurf über die bestehende Probe-Engine (für den eigenen Helden inkl. aller Modifikatoren), manuelle Eingabe für andere; sortierte Reihenfolge, Rundenzähler, „Nächster"-Button.
 - **Aktionen am Zug**: für den eigenen Helden die bestehenden AT/PA-/Manöver-Dialoge (`combat_at_pa_dialog.dart`, `combat_maneuver_dialog.dart`) direkt aus dem Tracker aufrufen; Schadenswurf → geführte Übernahme beim Ziel.
-- **Schaden erhalten**: geführter Dialog TP → RS-Abzug (Zone via `trefferzonen_rules`) → SP → Wundschwelle → Wunde in `WundZustand` übernehmen, LeP/Au im `HeroState` abziehen. Alles über bestehende Regeln, nur orchestriert.
+- **Schaden erhalten**: geführter Dialog TP → RS-Abzug (Zone via `trefferzonen_rules`) → SP → Wundschwelle → Wunde in `WundZustand` übernehmen, LeP/Au im `HeroState` abziehen. Alles über bestehende Regeln, nur orchestriert. *Umgesetzt (ARCH-05, 29.09.2026) als eigenständiger Ablauf ohne Encounter:* `schaden_rules.dart`, `lib/ablaeufe/schaden_erhalten.dart`, Dialog im Inspector und als UI2-Schnellaktion. Die Wundzahl ist ein Vorschlag, der Angriffsmodifikator der Wundschwelle wird abgefragt; TP(A) senkt nur AuP. Eine Rücknahme fehlt (ARCH-06).
 - **Effekt-Dauern**: aktive Zauber/Effekte (`ActiveSpellEffectsState`) bekommen optional eine Dauer in KR und zählen beim Rundenwechsel herunter, mit Hinweis beim Ablauf.
 - **Persistenz**: laufender Kampf in eigener Hive-Box (`encounters`), damit App-Neustart mitten im Kampf unkritisch ist. Kein Cloud-Sync in der ersten Ausbaustufe (Windows-Einschränkung bei Firestore beachten).
 
@@ -84,7 +84,7 @@ Urheberrecht: Volltexte offizieller Regelwerke sind für den Privatgebrauch auf 
 **Phase 2 — Kampf-Tracker MVP (mittel):**
 4. Encounter-Modell + Hive-Persistenz + Teilnehmerverwaltung (Held, externe Helden, einfache Gegner)
 5. INI-Reihenfolge, Rundenzähler, Zugreihenfolge
-6. „Schaden erhalten"-Flow (TP → SP → Wunde → HeroState)
+6. ~~„Schaden erhalten"-Flow (TP → SP → Wunde → HeroState)~~ *vorgezogen und umgesetzt (ARCH-05), noch ohne Schadensübergabe aus dem Tracker*
 
 **Phase 3 — Tiefe (nach Bedarf):**
 7. AT/PA-/Manöver-Dialoge aus dem Tracker, Schadensübergabe an Ziele

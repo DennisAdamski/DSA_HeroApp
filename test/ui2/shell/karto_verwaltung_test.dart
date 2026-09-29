@@ -201,20 +201,83 @@ void main() {
     expect(compat?.panel, kartoHell.feld);
     expect(compat?.showDecoration, isFalse);
   });
+
+  testWidgets('opens the damage flow with the compatibility theme', (
+    tester,
+  ) async {
+    final repository = FakeRepository(heroes: <HeroSheet>[hero()]);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          heroRepositoryProvider.overrideWithValue(repository),
+          rulesCatalogProvider.overrideWith((ref) async => catalog),
+        ],
+        child: MaterialApp(
+          theme: buildKartoTheme(
+            brightness: Brightness.light,
+            centerAppBarTitle: false,
+          ),
+          home: _DialogLauncher(adapter: adapter),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Schaden öffnen'));
+    await tester.pumpAndSettle();
+
+    final dialog = find.byKey(const ValueKey<String>('schaden-dialog'));
+    expect(dialog, findsOneWidget);
+    final compat = Theme.of(tester.element(dialog)).extension<CodexTheme>();
+    expect(compat?.panel, kartoHell.feld);
+
+    await tester.enterText(
+      find.byKey(const ValueKey<String>('schaden-tp')),
+      '4',
+    );
+    await tester.enterText(
+      find.byKey(const ValueKey<String>('schaden-rs')),
+      '0',
+    );
+    await tester.pump();
+    final uebernehmen = find.byKey(
+      const ValueKey<String>('schaden-uebernehmen'),
+    );
+    await tester.ensureVisible(uebernehmen);
+    await tester.pumpAndSettle();
+    await tester.tap(uebernehmen);
+    await tester.pumpAndSettle();
+
+    expect(dialog, findsNothing);
+    final gespeichert = (await repository.loadHeroState('demo'))!;
+    expect(gespeichert.diceLog.single.title, 'Schaden erhalten');
+  });
 }
 
-class _DialogLauncher extends StatelessWidget {
+class _DialogLauncher extends ConsumerWidget {
   const _DialogLauncher({required this.adapter});
 
   final KartoBestandsAdapter adapter;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       body: Center(
-        child: FilledButton(
-          onPressed: () => adapter.rast(context: context, heroId: 'demo'),
-          child: const Text('Rast öffnen'),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            FilledButton(
+              onPressed: () => adapter.rast(context: context, heroId: 'demo'),
+              child: const Text('Rast öffnen'),
+            ),
+            FilledButton(
+              onPressed: () => adapter.schadenErhalten(
+                context: context,
+                ref: ref,
+                heroId: 'demo',
+              ),
+              child: const Text('Schaden öffnen'),
+            ),
+          ],
         ),
       ),
     );

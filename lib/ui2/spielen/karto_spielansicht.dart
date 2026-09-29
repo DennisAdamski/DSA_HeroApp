@@ -205,6 +205,13 @@ class KartoSpielansicht extends ConsumerWidget {
           ),
           onRast: () =>
               aktion(() => bestand.rast(context: context, heroId: heroId)),
+          onSchaden: () => aktion(
+            () => bestand.schadenErhalten(
+              context: context,
+              ref: ref,
+              heroId: heroId,
+            ),
+          ),
         ),
       ),
       KartoAbschnitt(

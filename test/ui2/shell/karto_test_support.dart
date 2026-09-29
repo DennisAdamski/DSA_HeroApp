@@ -133,6 +133,15 @@ class TestBestand implements KartoBestandsAdapter {
   }
 
   @override
+  Future<void> schadenErhalten({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String heroId,
+  }) async {
+    aufrufe.add('schadenErhalten:$heroId');
+  }
+
+  @override
   Future<void> effekte({
     required BuildContext context,
     required String heroId,

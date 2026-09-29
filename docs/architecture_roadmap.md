@@ -87,6 +87,9 @@ die Flutter-Umsetzung und die vollständige Funktionszuordnung bleiben offen.
   die Spielansicht um direkten Zugriff auf häufige Aktionen ergänzen.
 - [ ] „Schaden erhalten“ als zusammenhängenden Ablauf mit Ressourcenänderung,
   gegebenenfalls Wunden und nachvollziehbarer Korrekturmöglichkeit anbieten.
+  *(Ablauf, Dialog und UI2-Schnellaktion umgesetzt, siehe ARCH-05 Teilstand
+  (3). Korrigiert wird bisher von Hand anhand des Protokolleintrags; eine
+  Rücknahme hängt an ARCH-06, deshalb bleibt der Punkt offen.)*
 
 **Abnahme:** Häufige Spielaktionen sind direkt aus der Spielansicht erreichbar.
 Manuelle Korrektur und AP-pflichtige Entwicklung bleiben unterscheidbar. Ein
@@ -135,9 +138,9 @@ Commit-IDs und Abgrenzungen stehen unter „R1: Übergabe“ in den
 **ARCH-01 bleibt trotzdem offen.** Die Spielanordnung mit echten Werten und
 Bestandsaktionen ist umgesetzt (R2), ebenso die gestalterische Integration der
 Fachansichten und der Entwicklungsbereich samt Gesamtabnahme (R3, siehe
-[redesign_acceptance.md](redesign_acceptance.md)). „Schaden erhalten“ als
-zusammenhängender Ablauf mit nachvollziehbarer Korrektur fehlt weiterhin — er
-hängt an ARCH-05 und ARCH-06 und ist kein UI-Teilumfang.
+[redesign_acceptance.md](redesign_acceptance.md)). „Schaden erhalten“ gibt es
+seit dem ARCH-05-Teilstand (3) als geführten Ablauf in beiden Oberflächen;
+es fehlt noch die nachvollziehbare Rücknahme, die an ARCH-06 hängt.
 
 **Abhängigkeiten / offene Entscheidungen:** Schreibende Spielaktionen auf
 ARCH-05/06 aufbauen. Navigation, Favoritenverhalten und Korrekturbedienung sind
@@ -733,8 +736,8 @@ Commits:
    - ~~die Snapshot-Schreibwege des Zustands: Ressourcen, Zaubereffekte,
      Würfelprotokoll per `unawaited`, Wunden~~ *Erledigt im Teilstand
      „Snapshot-Schreibwege des Zustands“ unten.*
-   - danach „Schaden erhalten“ als eigener Ablauf (Voraussetzung für
-     ARCH-01)
+   - ~~danach „Schaden erhalten“ als eigener Ablauf (Voraussetzung für
+     ARCH-01)~~ *Erledigt im Teilstand „Schaden erhalten“ unten.*
    - ~~`_filterKnownTraitWarnings` wartet mit `rulesCatalogProvider.future`
      und kann bei einem Katalogfehler hängen.~~ *Erledigt als Kleinfix:*
      `saveHero` wartet über ein Abo mit Zeitlimit (20 s) und speichert bei
@@ -827,10 +830,10 @@ Commits:
    nutzen denselben Einstieg wie der geprüfte Stepper.
 4. Snapshot-Schreibwege des **Bogens** bleiben: Dauermodifikatoren,
    Wundschwelle, Inventar, Kampf und die Sofortaktionen der Übersicht.
-5. Nächster Schritt: „Schaden erhalten“ als eigener Ablauf. Er kann jetzt auf
+5. ~~Nächster Schritt: „Schaden erhalten“ als eigener Ablauf. Er kann jetzt auf
    `aendereGespeichertenZustand` und `aendereWundZustand` aufsetzen und ist
    die Voraussetzung für ARCH-01. Die Korrekturmöglichkeit bleibt an ARCH-06
-   gebunden.
+   gebunden.~~ *Erledigt im Teilstand „Schaden erhalten“ unten.*
 
 *Nachtrag 29.09.2026 — schnelles Tippen mit Konto-Sync.* Eine manuelle
 Prüfung zeigte: Wer schnell viele AsP verbraucht, bekommt eine Fehlermeldung
@@ -901,6 +904,169 @@ nach dem Umschalten liefe.
    nicht mehr dazugehört, bleiben dafür nur lokale Speicherfehler.
 4. Der Bogen (`saveHero`) wartet weiter auf seinen Upload; schnelle
    Bogenänderungen (Inventar) laufen nicht über die Bündelung.
+
+**Teilstand 29.09.2026 (3) — „Schaden erhalten“ als Ablauf.** Der
+Hauptpunkt bleibt offen: Die Bogen-Schreibwege stehen noch aus.
+
+*Entscheidungen (mit dem Nutzer abgestimmt).*
+
+- **Wunden sind ein Vorschlag.** Ob ein Treffer Wunden schlägt, hängt auch
+  vom Angriff ab (Pfeile senken die Wundschwelle um 2). Der Dialog fragt
+  diesen Modifikator ab und schlägt je echt überschrittener
+  Wundschwellenstufe (0,5 KO, KO, 1,5 KO, 2 KO, jeweils mit Eisern bzw.
+  Glasknochen) eine Wunde vor. Der Nutzer entscheidet über die Zahl.
+- **Zone:** wählbar oder per W20 über `resolveTrefferzone`. Die Zusatzwürfe
+  (Kopf 2W6 INI-Malus, Brust/Bauch 1W6 SP je Wunde, dritte Kopfwunde 2W6 SP)
+  kommen aus der vorhandenen Trefferzonentabelle; `TrefferzonenZusatzwurf`
+  trägt dafür jetzt seine Wirkung.
+- **TP(A) als Umschalter:** Ausdauerschaden senkt nur AuP, höchstens bis 0,
+  und schlägt keine Wunden. Ein Überlauf auf LeP ist nicht vorgesehen.
+- **LeP ohne Untergrenze,** wie bei der Anzeige in UI2. RS kommt vorbelegt
+  aus der Kampfvorschau (Gesamt-RS, Zonenrüstung gibt es im Modell nicht)
+  und ist änderbar.
+- **Korrektur:** Jede Buchung erzeugt einen Protokolleintrag mit
+  `ProbeType.damage` und allen Werten; einen neuen Aufzählungswert gibt es
+  bewusst nicht. Eine Rücknahme gehört zu ARCH-06.
+- **Oberfläche:** Der Dialog liegt im Bestand (`workspace/schaden/`), weil
+  Würfel und Wundunterdrückung dort liegen. UI2 öffnet ihn über die neue
+  Brückenmethode `KartoBestandsAdapter.schadenErhalten` als dritte
+  Schnellaktion. Nach neuen Wunden folgt die vorhandene Unterdrückungsabfrage
+  (`bieteWundUnterdrueckungAn`, aus `fuegeWundeHinzu` herausgelöst).
+
+Commits:
+
+- `83c3567` — Regel `schaden_rules.dart` mit Tests, Wirkung der
+  Zusatzwürfe.
+- `41d1070` — Ablauf `SchadenErhalten`, Protokoll, Provider, Ablauftests.
+- `fc37de6` — Dialog im Inspector-Vitals-Tab mit Widgettests.
+- `7a05c3d` — UI2-Schnellaktion über die Brücke, Adapter- und
+  Spielansichtstests; der Test gegen erfundene Bedienelemente prüft weiter
+  Rundenzähler und Rücknahme.
+- Abschluss-Commit mit Dokumentation.
+
+*Prüfungen.*
+
+- Regeltests (`test/rules/schaden_rules_test.dart`): SP-Grenze, „echt
+  größer“ an jeder Stufe, Angriffsmodifikator, Merkmalsbonus, vier Wunden,
+  Kappung an der vollen Zone, Kopf-INI, Brust-Zusatz, negative LeP, AuP bis
+  0, nur die eigenen Felder ändern sich, widersprüchliche Buchungen werden
+  abgewiesen.
+- Ablauftests (`test/ablaeufe/schaden_erhalten_test.dart`): nur LeP, Wunden,
+  Protokoll und Stempel ändern sich; Protokolltext; Ausdauer; eine
+  Zwischenänderung (LeP, AsP, Wunde, Wurf) bleibt erhalten, und die Kappung
+  richtet sich nach dem gespeicherten Stand; fehlender Zustand;
+  Fehlerweitergabe.
+- Widgettests (`test/ui/workspace/schaden_dialog_test.dart`): vorbelegter
+  RS, Vorschlag und W20-Zone mit Zusatzwurf, überstimmter Vorschlag mit
+  Angriffsmodifikator, volle Zone, Ausdauer, Fehler im Panel, Sperre während
+  des Speicherns, Dialog schließt sich und bietet die Unterdrückung an. Dazu
+  der Brückentest im Kompatibilitätstheme und die UI2-Schnellaktion.
+- Gegenproben: Ohne Kappung an den freien Plätzen scheitern der Regeltest
+  „volle Zone“ und der Ablauftest mit Zwischenänderung. Rechnet der Ablauf
+  auf einem veralteten statt dem frischen Stand, scheitern der
+  Zwischenänderungs- und der Leerzustandstest.
+- `flutter analyze --no-pub` ohne Befund, volle Suite grün (2913
+  bestanden, 3 übersprungen). Die Hash-Pins der Bestandshelden sind
+  unverändert. Eine manuelle Bedienprüfung auf Geräten steht aus.
+
+*Verbleibende Risiken und nächste Schritte.*
+
+1. Keine Rücknahme; eine falsche Buchung korrigiert der Nutzer von Hand
+   (ARCH-06).
+2. ~~Die Unterdrückungsabfrage unterdrückte höchstens eine Wunde.~~
+   *Behoben (Nutzervorgabe):* Alle Wunden eines Angriffs werden nur
+   gemeinsam unterdrückt, in einem Speichervorgang; die Erschwernis nimmt
+   `computeSbUnterdrueckungErschwernis` mit der Zahl neuer Wunden (+8 bzw.
+   +12). Widgettest „alle Wunden eines Angriffs werden gemeinsam
+   unterdrückt“; mit Unterdrückung nur einer Wunde scheitert er.
+7. ~~**Noch per dsa-rules-MCP am Rechner zu validieren** (in dieser Umgebung
+   war der Server nicht erreichbar): LeP ohne Untergrenze; TP(A) mit
+   RS-Abzug und ohne Überlauf auf LeP; Wunden über die freien Plätze einer
+   Zone verfallen. Außerdem die Rundung der Wundschwellen: Gelten sie als
+   reale (gebrochene) Werte, z. B. 6,5 bei KO 13, oder werden sie immer
+   aufgerundet? Heute rundet `computeWundschwelle` ab, die Stufen runden
+   kaufmännisch (Befund 4); je nach Ergebnis beide angleichen.~~
+   *Validiert und korrigiert in Teilstand (4):* TP(A) trifft zur Hälfte auch
+   die LeP; Wundschwellen sind ganzzahlig und kaufmännisch gerundet.
+3. Wundschwellen und RS stammen aus dem berechneten Snapshot. Die
+   Zusatzwürfe beziehen sich auf die angezeigte Wundzahl der Zone; kappt der
+   gespeicherte Stand die Wunden stärker, bleibt der eingetragene
+   Zusatzschaden trotzdem gebucht.
+4. ~~Befund: Das einzelne `computeWundschwelle` (Inspector „WS n“) rechnet
+   KO/2 abgerundet ohne den Eisern/Glasknochen-Bonus, die Stufen rechnen
+   kaufmännisch gerundet mit ihm. Der Ablauf nutzt die Stufen; die Anzeige
+   kann bei ungeradem KO oder mit Eisern abweichen. Nicht behoben.~~
+   *Behoben in Teilstand (4):* `computeWundschwelle` ist die erste Stufe.
+5. Kein Encounter: Schaden wird nicht aus einem Angriff übergeben, sondern
+   eingetragen (Spielmodus-Konzept Phase 3).
+6. Nächster Schritt: die Snapshot-Schreibwege des **Bogens**
+   (Dauermodifikatoren, Wundschwelle, Inventar, Kampf, Sofortaktionen der
+   Übersicht).
+
+**Teilstand 29.09.2026 (4) — Schadensregeln per dsa-rules-MCP validiert.**
+Die offenen Annahmen aus Teilstand (3) sind gegen *Wege des Schwerts* (WdS),
+das *Basisregelwerk* (BRW) und die Hausregeln im dsa-rules-MCP geprüft.
+Der Hauptpunkt von ARCH-05 bleibt offen (Bogen-Schreibwege).
+
+*Befunde.*
+
+| Annahme aus (3) | Befund | Quelle |
+| --- | --- | --- |
+| LeP ohne Untergrenze | bestätigt; LE ≤ 0 lebensbedrohlich, unter −KO tot (Zäher Hund 1,5 × KO) | WdS S. 57 |
+| TP(A): RS wird abgezogen | bestätigt | WdS S. 57, 88 |
+| TP(A) senkt nur AuP | **falsch:** SP(A) von der AuP, zusätzlich die Hälfte als echte SP von der LeP | WdS S. 57, 88; BRW S. 138 |
+| TP(A) schlägt keine Wunden | **falsch:** die echten SP schlagen Wunden, WS dabei üblicherweise +2 | WdS S. 58, 88; BRW S. 139 |
+| kein Überlauf AuP → LeP | bestätigt; bei 0 AuP kampfunfähig | WdS S. 57, 84 |
+| Wunden über den freien Plätzen verfallen | bestätigt; höchstens 3 je Zone, SP gehen voll von der Gesamt-LE | WdS S. 109 |
+| Rundung der Wundschwellen | ganzzahlig, kaufmännisch („halbe KO ist gerundet 7“ bei KO 13) | WdS S. 58; BRW S. 139; WdZ S. 7 |
+| Stufen 0,5 / 1 / 1,5 / 2 KO | **teilweise falsch:** nur drei Stufen, höchstens 3 Wunden je Treffer; für 2 KO keine Quelle, auch nicht in den Hausregeln | WdS S. 58 |
+| Eisern/Glasknochen ±2 auf alle Stufen | bestätigt, kumulativ mit dem Angriffsmodifikator | WdS S. 58 |
+| „Pfeile −2“ | nicht belegt; genannt sind Armbrustbolzen, Gezielter Stich und „bestimmte Waffen“ (−2), waffenlos und Stumpfer Schlag (+2) | WdS S. 58 |
+| Zusatzwürfe der Zonen | bestätigt (Kopf 2W6 INI, Brust/Bauch 1W6 SP je Wunde, dritte Kopfwunde 2W6 SP) | WdS S. 109 |
+| SB-Unterdrückung | bestätigt (4 je Gesamtwunde; mehrere aus einem Treffer gemeinsam, +8/+12) | WdS S. 83 |
+
+*Korrekturen (Nutzerentscheidungen: TP(A) nach WdS, 2-KO-Stufe überall
+entfernen).*
+
+- `echteSchadenspunkte`/`SchadensBuchung.echteSp`: bei TP(A) die Hälfte der
+  SP(A), kaufmännisch gerundet. `wendeSchadenAn` senkt bei TP(A) die AuP um
+  die SP(A) bis 0 **und** die LeP um die echten SP plus Zusatzschaden; Wunden
+  laufen für beide Arten gleich. Die Sperre „Ausdauerschaden verursacht keine
+  Wunden“ ist entfallen.
+- Dialog: Zone, Modifikator, Wunden und Zusatzwürfe auch bei TP(A); der
+  Modifikator wird beim Wechsel mit +2 (TP(A)) bzw. 0 vorbelegt. Die
+  Vorschau zeigt AuP und LeP. Hilfetext „Armbrustbolzen −2, waffenlos +2“.
+- Protokoll bei TP(A): `TP(A) 8 − RS 1 = 7 SP(A) · 4 SP auf LeP`, `total`
+  ist der LeP-Verlust.
+- `WundschwellenStufen` hat nur noch drei Stufen; der Vorschlag reicht bis 3,
+  der Wunden-Detaildialog zeigt „2 KO“ nicht mehr.
+- `computeWundschwelle` ist die erste Stufe (kaufmännisch, samt
+  Eisern/Glasknochen); Befund 4 ist damit behoben.
+
+*Prüfungen.* Regeltests (`schaden_rules_test.dart`: Rundung der echten SP,
+AuP und LeP bei TP(A), Wunden aus echten SP, höchstens 3 Wunden, Beispiele
+KO 13 aus WdS S. 58; `wund_rules_test.dart`: KO 15 → 8, Gleichheit mit der
+ersten Stufe), Ablauftests (TP(A) mit und ohne Wunde samt Protokoll) und
+Widgettests (TP(A)-Vorschau, Vorbelegung, Wundvorschlag, Rückwechsel).
+`bestandshelden_regelwerte_test.dart`: Die Wundschwelle von f01 (7 → 9) und
+f04 (9 → 11, drei Fälle) zählt jetzt Eisern mit, f02 und f07 (6 → 7) runden
+KO 13 kaufmännisch; die Fixtures und die Hash-Pins sind unverändert.
+Gegenproben: Mit `KO ~/ 2` scheitern beide `computeWundschwelle`-Tests,
+ohne den LeP-Anteil die drei TP(A)-Regeltests. `flutter analyze --no-pub`
+ohne Befund, volle Suite grün (2921 bestanden, 3 übersprungen).
+
+*Randbefunde, bewusst ohne Änderung (Folgeaufträge).*
+
+1. Die Hausregel „Mindestschaden“ ist eine Sammlung von Überlegungen ohne
+   Entscheidung; `berechneSchadenspunkte` bleibt bei `max(0, TP − RS)`.
+2. Kritische Treffer schlagen automatisch eine Wunde mehr, sobald die WS
+   überschritten ist (WdS S. 85). Das deckt die änderbare Wundzahl ab.
+3. Mit Trefferzonen *ersetzen* die Zonenwunden (WdS S. 109) die pauschalen
+   −2 je Wunde (S. 57); `computeWundEffekte` addiert beide. Das ist eigens
+   gegen Regelwerk und Hausregeln zu prüfen.
+4. Die Tabelle der Zonenwunden kennt weitere Folgen (Kopf: MU/KL/IN −2;
+   Brust/Bauch: KO/KK −1; dritte Wunde: Bewusstlosigkeit und 1 LeP je KR),
+   die das Modell nicht abbildet.
 
 ## ARCH-06 — Zusammengehörige Änderungen gemeinsam speichern und synchronisieren
 

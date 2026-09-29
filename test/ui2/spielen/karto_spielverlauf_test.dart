@@ -113,7 +113,9 @@ void main() {
     expect(bestand.aufrufe, ['effekte:rondra']);
   });
 
-  testWidgets('kein erfundener Rundenzähler und kein Schadensknopf', (
+  // „Schaden erhalten“ ist seit ARCH-05 ein geführter Ablauf; eine Rücknahme
+  // gibt es weiterhin nicht (ARCH-06).
+  testWidgets('kein erfundener Rundenzähler und kein Rücknahmeknopf', (
     tester,
   ) async {
     await zeige(
@@ -123,7 +125,6 @@ void main() {
     );
     expect(find.textContaining('Nächste Kampfrunde'), findsNothing);
     expect(find.textContaining('KR '), findsNothing);
-    expect(find.textContaining('Schaden erhalten'), findsNothing);
     expect(find.textContaining('zurücknehmen'), findsNothing);
     expect(find.textContaining('Offline'), findsNothing);
   });

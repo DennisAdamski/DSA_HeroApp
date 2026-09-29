@@ -106,6 +106,7 @@ Domainlogik.
 | Ablauf | Einstieg | Schreibt | Stand | Fehler → UI | Regelrechnung inline |
 |---|---|---|---|---|---|
 | Rast abschließen | `RestPanel` (`workspace/rest_dialog.dart`) → `RastAbschliessen` | Zustand | frisch | ja, im Panel | nein (seit ARCH-05) |
+| Schaden erhalten | `SchadenPanel` (`workspace/schaden/schaden_dialog.dart`, Inspector-Vitals und UI2-Schnellaktion) → `SchadenErhalten` | Zustand | frisch, je Held nacheinander | ja, im Panel | nein, `schaden_rules.dart` |
 | Steigerung übernehmen | `AdvancementSessionController.commit` (`state/advancement_providers.dart`) | Bogen | Hash-Prüfung | ja (Snackbar) | nein, `commitAdvancements` |
 | Anzeige nicht passender SF | `setShowInapplicableSpecialAbilities` (ebd.) | Bogen **direkt über das Repository**, ohne Normalisierung | Hash-Prüfung | ja | nein |
 | Inventar | `hero_inventory/inventory_mutations.dart` (`_saveEntries`, `_saveDukaten`) | Bogen | Snapshot | teilweise | Verknüpfungs- und Geschossabgleich |
@@ -154,6 +155,25 @@ Domainlogik.
   `tempAttributeMods` des Zustands einbezieht. Ändert sich einer dieser Werte
   zwischen letzter Anzeige und Übernehmen, rechnet die Rast mit dem alten
   Maximum. Laden, Ändern und Schreiben ist keine Transaktion (ARCH-06).
+
+## Ablauf „Schaden erhalten“ im Detail
+
+- **Eingaben:** Art (Lebensenergie oder Ausdauer/TP(A)), TP, RS (vorbelegt
+  aus der Kampfvorschau), Trefferzone (Auswahl oder W20),
+  Wundschwellen-Modifikator des Angriffs, vom Nutzer bestätigte Wundzahl,
+  Zusatzwürfe der Zone (Extraschaden, Kopf-INI-Malus).
+- **Regel:** `schaden_rules.dart` — Vorschlag aus den Wundschwellenstufen,
+  `wendeSchadenAn` ersetzt genau `currentLep` und `wpiZustand` bzw.
+  `currentAu`.
+- **Ablauf:** `SchadenErhalten.uebernehmeSchaden` lädt frisch, wendet an,
+  hängt einen Protokolleintrag an und stempelt mit demselben Zeitpunkt.
+  Wunden über die freien Plätze der gespeicherten Zone verfallen und stehen
+  im Ergebnis.
+- **Fehler:** werden nicht gefangen; das Panel zeigt sie und bleibt offen.
+- **Grenzen:** Wundschwellen und RS stammen aus dem berechneten Snapshot.
+  Die Zusatzwürfe beziehen sich auf die angezeigte Wundzahl der Zone; ändert
+  ein anderer Weg sie zwischendurch, bleibt der eingetragene Zusatzschaden
+  trotzdem gebucht. Keine Rücknahme (ARCH-06).
 
 ## Befunde für Folgeaufträge
 
