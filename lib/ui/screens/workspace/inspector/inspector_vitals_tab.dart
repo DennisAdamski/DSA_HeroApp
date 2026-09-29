@@ -12,8 +12,10 @@ import 'package:dsa_heldenverwaltung/ui/screens/workspace/inspector/widgets/insp
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/inspector/widgets/inspector_statuswerte_block.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/inspector/widgets/inspector_vital_block.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/inspector_wunden_card.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/workspace/schaden/schaden_dialog.dart';
 
-/// Vitals-Tab: LeP/AuP-Bars, Wunden, Belastung, Statuswerte.
+/// Vitals-Tab: LeP/AuP-Bars, „Schaden erhalten“, Wunden, Belastung,
+/// Statuswerte.
 ///
 /// AsP/KaP werden bewusst auch hier gerendert (zusaetzlich zum Magie-Tab),
 /// damit alle Ressourcen auf einen Blick sichtbar bleiben.
@@ -135,6 +137,20 @@ class InspectorVitalsTab extends ConsumerWidget {
                   ),
                 ),
               ],
+              const SizedBox(height: 8),
+              Align(
+                alignment: Alignment.centerRight,
+                child: OutlinedButton.icon(
+                  key: const ValueKey<String>('inspector-schaden-erhalten'),
+                  onPressed: () => showSchadenDialog(
+                    context: context,
+                    ref: ref,
+                    heroId: heroId,
+                  ),
+                  icon: const Icon(Icons.heart_broken_outlined),
+                  label: const Text('Schaden erhalten'),
+                ),
+              ),
               const SizedBox(height: 14),
               InspectorBelastungSection(heroId: heroId, heroState: heroState),
               const SizedBox(height: 14),
