@@ -141,10 +141,21 @@ Domainlogik.
    Zustand vollständig zurück. Zwei kurz nacheinander protokollierte Würfe
    (`unawaited`) können sich gegenseitig überschreiben. Nächster Kandidat
    für einen Ablauf nach dem Rast-Muster.
-2. **`_filterKnownTraitWarnings` wartet mit `rulesCatalogProvider.future`**,
-   wenn kein Katalog übergeben wird. Das widerspricht der Regel in CLAUDE.md
-   (Riverpod 3.2 erfüllt diese Future bei einem Fehler nie) und kann
-   `saveHero` bei einem Katalogfehler hängen lassen.
+2. ~~**`_filterKnownTraitWarnings` wartet mit `rulesCatalogProvider.future`**~~
+   *Behoben:* `saveHero` wartet jetzt über ein Abo auf den Katalog
+   (`HeroActions._warteAufRegelkatalog`), höchstens
+   `kKatalogWartezeitBeimSpeichern` (20 s). Bei Fehler oder
+   Zeitüberschreitung bleiben die Parser-Restfragmente ungefiltert,
+   gespeichert wird trotzdem. Nachgewiesen war der Hänger für einen Katalog,
+   der nie fertig wird; ein direkt scheiternder Katalog beendete `.future`
+   schon bisher mit Fehler. Dasselbe Warten per `.future` steht noch an
+   weiteren Stellen und ist ein Folgekandidat:
+   `hero_talents/hero_talents_edit_actions.dart` und
+   `hero_combat/combat_state_helpers.dart` (Editor-Speichern),
+   `hero_workspace_screen.dart` (Vorwärmen), `HeroActions.buildExportJson`
+   und `importHeroBundle` (`catalogRuntimeDataProvider.future`),
+   `HeroActions._resolveHeroStoragePath` (`heroStorageLocationProvider.future`),
+   `house_rule_pack_admin_providers.dart` und `catalog_unlock_dialog.dart`.
 3. **Bogen und Zustand im Übersichtseditor** werden nacheinander, nicht
    gemeinsam geschrieben (ARCH-06).
 4. **`createHero` und der Startimport** schreiben den Zustand ohne
