@@ -341,6 +341,63 @@ void main() {
     expect(gespeichert.wpiZustand.wundenInZone(WundZone.linkerArm), 1);
     expect(gespeichert.wpiZustand.unterdrueckteInZone(WundZone.linkerArm), 0);
   });
+
+  testWidgets('alle Wunden eines Angriffs werden gemeinsam unterdrückt', (
+    tester,
+  ) async {
+    tester.view.devicePixelRatio = 1.0;
+    tester.view.physicalSize = const Size(1200, 2400);
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final repo = FakeRepository(heroes: [_held], states: {'demo': _zustand});
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          heroRepositoryProvider.overrideWithValue(repo),
+          rulesCatalogProvider.overrideWith((ref) async => _leererKatalog),
+        ],
+        child: MaterialApp(
+          home: Scaffold(
+            body: Consumer(
+              builder: (context, ref, _) => TextButton(
+                onPressed: () => showSchadenDialog(
+                  context: context,
+                  ref: ref,
+                  heroId: 'demo',
+                ),
+                child: const Text('öffnen'),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('öffnen'));
+    await tester.pumpAndSettle();
+
+    // 14 SP bei KO 12: Vorschlag 2 Wunden.
+    await tester.enterText(_key('schaden-tp'), '14');
+    await tester.enterText(_key('schaden-rs'), '0');
+    await waehleZone(tester, 'Linker Arm');
+    expect(tester.widget<Text>(_key('schaden-wunden')).data, '2');
+    await tester.tap(_uebernehmen);
+    await tester.pumpAndSettle();
+
+    expect(find.text('2 Wunden unterdrücken?'), findsOneWidget);
+    expect(
+      find.text(
+        'Linker Arm — SB-Probe erschwert um 8 (2 Wunden aus einem Treffer)',
+      ),
+      findsOneWidget,
+    );
+    await tester.tap(find.text('Ja'));
+    await tester.pumpAndSettle();
+
+    final gespeichert = (await repo.loadHeroState('demo'))!;
+    expect(gespeichert.wpiZustand.wundenInZone(WundZone.linkerArm), 2);
+    expect(gespeichert.wpiZustand.unterdrueckteInZone(WundZone.linkerArm), 2);
+  });
 }
 
 /// Repository mit zählbarem, optional gesperrtem oder scheiterndem

@@ -973,10 +973,16 @@ Commits:
 
 1. Keine Rücknahme; eine falsche Buchung korrigiert der Nutzer von Hand
    (ARCH-06).
-2. Die Unterdrückungsabfrage erscheint nach einem Treffer einmal und
-   unterdrückt höchstens eine Wunde; ihre Erschwernis rechnet mit einer
-   neuen Wunde (`computeSbUnterdrueckungErschwernis` kennt mehr, der Dialog
-   nutzt es nicht).
+2. ~~Die Unterdrückungsabfrage unterdrückte höchstens eine Wunde.~~
+   *Behoben (Nutzervorgabe):* Alle Wunden eines Angriffs werden nur
+   gemeinsam unterdrückt, in einem Speichervorgang; die Erschwernis nimmt
+   `computeSbUnterdrueckungErschwernis` mit der Zahl neuer Wunden (+8 bzw.
+   +12). Widgettest „alle Wunden eines Angriffs werden gemeinsam
+   unterdrückt“; mit Unterdrückung nur einer Wunde scheitert er.
+7. **Noch per dsa-rules-MCP am Rechner zu validieren** (in dieser Umgebung
+   war der Server nicht erreichbar): LeP ohne Untergrenze; TP(A) mit
+   RS-Abzug und ohne Überlauf auf LeP; Wunden über die freien Plätze einer
+   Zone verfallen.
 3. Wundschwellen und RS stammen aus dem berechneten Snapshot. Die
    Zusatzwürfe beziehen sich auf die angezeigte Wundzahl der Zone; kappt der
    gespeicherte Stand die Wunden stärker, bleibt der eingetragene
