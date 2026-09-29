@@ -10,6 +10,14 @@ HeroState mitAenderungszeitpunkt(HeroState zustand, DateTime zeitpunkt) {
   return zustand.copyWith(lastModified: zeitpunkt.toUtc());
 }
 
+/// Laufende Zustandsänderungen je Speicher und Held.
+///
+/// Am Speicherobjekt statt global, damit getrennte Speicher (Tests, Profil-
+/// oder Kontowechsel) einander nicht blockieren und nichts überdauert, was
+/// der Speicher selbst nicht überdauert.
+final Expando<Map<String, Future<void>>> _laufendeAenderungen =
+    Expando<Map<String, Future<void>>>('laufendeZustandsaenderungen');
+
 /// Ändert den gespeicherten Laufzeitzustand eines Helden gezielt.
 ///
 /// Lädt den Zustand frisch aus [repository] (fehlt er, gilt
@@ -18,10 +26,45 @@ HeroState mitAenderungszeitpunkt(HeroState zustand, DateTime zeitpunkt) {
 /// gespeichert wurden, bleiben so erhalten, solange [aenderung] sie nicht
 /// selbst ersetzt. Liefert den gespeicherten Zustand.
 ///
+/// Änderungen desselben Helden über dasselbe [repository] laufen streng
+/// nacheinander: Jede lädt erst, wenn die vorige gespeichert oder
+/// gescheitert ist. Zwei nicht abgewartete Aufrufe (etwa zwei schnell
+/// protokollierte Würfe) können sich so nicht gegenseitig überschreiben.
+///
 /// Fehler beim Laden oder Speichern werden unverändert an den Aufrufer
-/// weitergereicht. Dies ist keine Transaktion gegenüber gleichzeitig
-/// laufenden Schreibwegen (ARCH-06).
+/// weitergereicht und halten folgende Änderungen nicht auf. Schreibwege, die
+/// an dieser Funktion vorbei speichern, sind nicht eingereiht; dies ist
+/// keine Transaktion gegenüber ihnen (ARCH-06).
 Future<HeroState> aendereGespeichertenZustand({
+  required HeroRepository repository,
+  required String heroId,
+  required HeroState Function(HeroState aktuell) aenderung,
+  required DateTime Function() uhr,
+}) {
+  final proHeld = _laufendeAenderungen[repository] ??= <String, Future<void>>{};
+  final vorige = proHeld[heroId] ?? Future<void>.value();
+  final ergebnis = vorige.then(
+    (_) => _aendereJetzt(
+      repository: repository,
+      heroId: heroId,
+      aenderung: aenderung,
+      uhr: uhr,
+    ),
+  );
+  // Das Kettenglied schluckt den Fehler, damit die nächste Änderung läuft;
+  // der Aufrufer bekommt ihn über [ergebnis].
+  final erledigt = ergebnis.then<void>((_) {}, onError: (Object _) {});
+  proHeld[heroId] = erledigt;
+  erledigt.then((_) {
+    if (identical(proHeld[heroId], erledigt)) {
+      proHeld.remove(heroId);
+    }
+  });
+  return ergebnis;
+}
+
+// Lädt, ändert, stempelt und speichert ohne Rücksicht auf andere Aufrufe.
+Future<HeroState> _aendereJetzt({
   required HeroRepository repository,
   required String heroId,
   required HeroState Function(HeroState aktuell) aenderung,
