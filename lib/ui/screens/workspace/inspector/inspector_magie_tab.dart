@@ -48,55 +48,65 @@ class InspectorMagieTab extends ConsumerWidget {
     final showMagic = resourceActivation?.magic.isEnabled ?? false;
     final showDivine = resourceActivation?.divine.isEnabled ?? false;
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(12, 12, 12, 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          if (showMagic) ...[
-            InspectorVitalBlock(
-              label: 'AsP',
-              subtitle: 'Astralpunkte',
-              current: heroState.currentAsp,
-              max: derived.maxAsp,
-              kind: VitalKind.asp,
-              onChanged: (next) => _save(
-                context,
-                ref,
-                'AsP',
-                (aktuell) => aktuell.copyWith(currentAsp: next),
-              ),
-            ),
-            const SizedBox(height: 8),
-          ] else
-            Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: Text(
-                'Held verfügt nicht über eigene Astralpunkte.',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                  fontStyle: FontStyle.italic,
+    // Innerer Kontext, damit die Schreibwege den Bereich finden.
+    return ZustandFehlerBereich(
+      child: Builder(
+        builder: (context) => SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(12, 12, 12, 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const ZustandFehlerAnzeige(),
+              if (showMagic) ...[
+                InspectorVitalBlock(
+                  label: 'AsP',
+                  subtitle: 'Astralpunkte',
+                  current: heroState.currentAsp,
+                  max: derived.maxAsp,
+                  kind: VitalKind.asp,
+                  onChanged: (next) => _save(
+                    context,
+                    ref,
+                    'AsP',
+                    (aktuell) => aktuell.copyWith(
+                      currentAsp: next.wendeAn(aktuell.currentAsp),
+                    ),
+                  ),
                 ),
-              ),
-            ),
-          if (showDivine) ...[
-            InspectorVitalBlock(
-              label: 'KaP',
-              subtitle: 'Karmapunkte',
-              current: heroState.currentKap,
-              max: derived.maxKap,
-              kind: VitalKind.kap,
-              onChanged: (next) => _save(
-                context,
-                ref,
-                'KaP',
-                (aktuell) => aktuell.copyWith(currentKap: next),
-              ),
-            ),
-            const SizedBox(height: 12),
-          ],
-          InspectorArcaneEffectsBlock(heroId: heroId),
-        ],
+                const SizedBox(height: 8),
+              ] else
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Text(
+                    'Held verfügt nicht über eigene Astralpunkte.',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                ),
+              if (showDivine) ...[
+                InspectorVitalBlock(
+                  label: 'KaP',
+                  subtitle: 'Karmapunkte',
+                  current: heroState.currentKap,
+                  max: derived.maxKap,
+                  kind: VitalKind.kap,
+                  onChanged: (next) => _save(
+                    context,
+                    ref,
+                    'KaP',
+                    (aktuell) => aktuell.copyWith(
+                      currentKap: next.wendeAn(aktuell.currentKap),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+              ],
+              InspectorArcaneEffectsBlock(heroId: heroId),
+            ],
+          ),
+        ),
       ),
     );
   }

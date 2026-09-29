@@ -14,6 +14,7 @@ import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_overview/stat_modifier_detail_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/dice_log_persistence.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/probe_request_factory.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/zustand_aendern.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/wund_zustand_speichern.dart';
 
 /// Oeffnet den Wunden-Detail-Dialog als Fullscreen-Dialog.
@@ -23,7 +24,8 @@ Future<void> showWundenDetailDialog({
 }) {
   return showDialog<void>(
     context: context,
-    builder: (_) => _WundenDetailDialog(heroId: heroId),
+    builder: (_) =>
+        ZustandFehlerBereich(child: _WundenDetailDialog(heroId: heroId)),
   );
 }
 
@@ -126,6 +128,8 @@ class _WundenDetailDialog extends ConsumerWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              // Oben, weil der Inhalt scrollt und unten verdeckt sein kann.
+              const ZustandFehlerAnzeige(),
               _WundschwellenStufenText(stufen: wundschwellenStufen),
               const SizedBox(height: 8),
 
