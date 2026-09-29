@@ -59,21 +59,35 @@ extension _HeroInventoryMutations on _HeroInventoryTabState {
       return;
     }
 
-    final nextEntries = List<HeroInventoryEntry>.from(_entries)
-      ..removeAt(index);
-    final nextSelectedIndex = _selectedIndex == null
+    // Die Auswahl über den Inhalt merken: Positionen können sich durch einen
+    // anderen Schreibweg verschoben haben.
+    final auswahl = _selectedIndex;
+    final ausgewaehlt = auswahl == null || auswahl == index
         ? null
-        : _selectedIndex == index
-        ? null
-        : _selectedIndex! > index
-        ? _selectedIndex! - 1
-        : _selectedIndex;
-
-    await _saveEntries(
-      nextEntries,
-      nextSelectedIndex: nextSelectedIndex,
-      clearPendingEntry: true,
+        : _entries.elementAtOrNull(auswahl);
+    // Frisch: nur dieser Eintrag verschwindet; Kampf und Geschossmengen
+    // bleiben, wie sie gespeichert sind (ARCH-05).
+    final gespeichert = await aendereHeldMitMeldung(
+      context: context,
+      ref: ref,
+      heroId: widget.heroId,
+      was: 'Löschen von „${_entryName(entry)}“',
+      aenderung: (held) => ohneInventarEintrag(held, entry),
     );
+    if (gespeichert == null || !mounted) {
+      return;
+    }
+    final neueAuswahl = ausgewaehlt == null
+        ? -1
+        : findeGleichenInventarEintrag(
+            gespeichert.inventoryEntries,
+            ausgewaehlt,
+          );
+    setState(() {
+      _selectedIndex = neueAuswahl < 0 ? null : neueAuswahl;
+      _pendingNewEntry = null;
+      _editorRevision++;
+    });
   }
 
   Future<void> _saveEntries(
@@ -149,20 +163,26 @@ extension _HeroInventoryMutations on _HeroInventoryTabState {
     return entries.where((entry) => !_isCombatLinkedEntry(entry)).length;
   }
 
+  /// Setzt einen eingetippten Geldbetrag frisch am gespeicherten Helden.
   Future<void> _saveDukaten(String value) async {
-    final hero = _latestHero;
-    if (hero == null) {
-      return;
-    }
+    await aendereHeldMitMeldung(
+      context: context,
+      ref: ref,
+      heroId: widget.heroId,
+      was: 'Dukaten',
+      aenderung: (held) => mitDukaten(held, value),
+    );
+  }
 
-    final normalized = value.trim();
-    if (normalized == hero.dukaten.trim()) {
-      return;
-    }
-
-    await ref
-        .read(heroActionsProvider)
-        .saveHero(hero.copyWith(dukaten: normalized));
+  /// Verschiebt den gespeicherten Geldbetrag um einen Münzschritt.
+  Future<void> _verschiebeDukaten(int deltaKreuzer) async {
+    await aendereHeldMitMeldung(
+      context: context,
+      ref: ref,
+      heroId: widget.heroId,
+      was: 'Dukaten',
+      aenderung: (held) => mitDukatenSchritt(held, deltaKreuzer),
+    );
   }
 
   bool _isCombatLinkedEntry(HeroInventoryEntry entry) {

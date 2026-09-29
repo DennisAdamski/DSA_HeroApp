@@ -6,9 +6,11 @@ import 'package:dsa_heldenverwaltung/domain/hero_companion.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/inventar_aenderung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/inventory_sync_rules.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/zustand_aendern.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/dukaten_field.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/inventory_filter_bar.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/inventory_item_editor.dart';
@@ -180,6 +182,7 @@ class _HeroInventoryTabState extends ConsumerState<HeroInventoryTab>
               key: const ValueKey<String>('inventory-dukaten-field'),
               value: hero.dukaten,
               onCommit: _saveDukaten,
+              onSchritt: _verschiebeDukaten,
             ),
           ),
           const SizedBox(height: 8),
@@ -237,6 +240,7 @@ class _HeroInventoryTabState extends ConsumerState<HeroInventoryTab>
             key: const ValueKey<String>('inventory-dukaten-field'),
             value: hero.dukaten,
             onCommit: _saveDukaten,
+            onSchritt: _verschiebeDukaten,
           ),
         ),
         const SizedBox(height: 8),

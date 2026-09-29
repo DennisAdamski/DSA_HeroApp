@@ -9,6 +9,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_companion.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_rituals.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ap_level_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/begleiter_aenderung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/companion_steigerung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ruestung_be_rules.dart';
 import 'package:dsa_heldenverwaltung/catalog/vertrautenmagie_preset.dart';
@@ -16,6 +17,7 @@ import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/protected_content_helpers.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/zustand_aendern.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/config/ui_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_edit_controller.dart';
@@ -134,30 +136,15 @@ class _HeroBegleiterTabState extends ConsumerState<HeroBegleiterTab>
     _editController.startEdit();
   }
 
-  /// Initialisiert Startwerte fuer Pool-Steigerungen, falls noch nicht gesetzt.
-  HeroCompanion _initStartwerte(HeroCompanion c) {
-    var updated = c;
-    if (updated.startLep == null && updated.maxLep != null) {
-      updated = updated.copyWith(startLep: updated.maxLep);
-    }
-    if (updated.startAup == null && updated.maxAup != null) {
-      updated = updated.copyWith(startAup: updated.maxAup);
-    }
-    if (updated.startAsp == null && updated.maxAsp != null) {
-      updated = updated.copyWith(startAsp: updated.maxAsp);
-    }
-    if (updated.startMr == null && updated.magieresistenz != null) {
-      updated = updated.copyWith(startMr: updated.magieresistenz);
-    }
-    return updated;
-  }
-
   Future<void> _saveChanges() async {
     final hero = _latestHero;
     if (hero == null) return;
     // Startwerte fuer Vertraute initialisieren.
     final finalized = _draftCompanions
-        .map((c) => c.typ == BegleiterTyp.vertrauter ? _initStartwerte(c) : c)
+        .map(
+          (c) =>
+              c.typ == BegleiterTyp.vertrauter ? mitBegleiterStartwerten(c) : c,
+        )
         .toList();
     _draftCompanions = finalized;
     // Vertrautenmagie aus Hero-Ritualkategorien entfernen (lebt jetzt im Companion).
@@ -191,30 +178,44 @@ class _HeroBegleiterTabState extends ConsumerState<HeroBegleiterTab>
 
   void _markFieldChanged() => _editController.markFieldChanged();
 
-  /// Speichert einen gestiegerten Companion sofort persistent, ohne den
-  /// Edit-Mode-Draft zu beruehren. Wird von der Steigerungs-Sektion
-  /// aufgerufen, damit AP-Verbrauch nicht verloren geht.
-  Future<void> _saveCompanionImmediate(HeroCompanion updated) async {
-    final hero = _latestHero;
-    if (hero == null) return;
-    final initialized = _initStartwerte(updated);
-    setState(() {
-      _draftCompanions = _draftCompanions
-          .map((c) => c.id == initialized.id ? initialized : c)
-          .toList();
-    });
-    final heroRituals = hero.ritualCategories
-        .where((c) => c.id != 'vertrautenmagie')
-        .toList();
-    await ref
-        .read(heroActionsProvider)
-        .saveHero(
-          hero.copyWith(
-            companions: List.unmodifiable(_draftCompanions),
-            ritualCategories: List.unmodifiable(heroRituals),
-          ),
-        );
-    if (!mounted) return;
+  /// Bucht eine Vertrauten-Steigerung sofort, ohne den Editor zu speichern.
+  ///
+  /// Gebucht wird auf den gespeicherten Begleiter (ARCH-05): Hat ihn ein
+  /// anderer Weg inzwischen gesteigert, passen die Kosten nicht mehr, und die
+  /// Buchung wird mit Meldung abgewiesen. Danach übernimmt der Entwurf den
+  /// gespeicherten Stand dieses Begleiters.
+  Future<void> _bucheSteigerung(
+    HeroCompanion angezeigt, {
+    required BegleiterSteigerungsziel ziel,
+    required int erwarteterStand,
+    required int neuerStand,
+    required int apKosten,
+  }) async {
+    final gespeichert = await aendereHeldMitMeldung(
+      context: context,
+      ref: ref,
+      heroId: widget.heroId,
+      was: 'Steigerung',
+      aenderung: (held) => bucheBegleiterSteigerung(
+        held,
+        begleiterId: angezeigt.id,
+        ziel: ziel,
+        erwarteterStand: erwarteterStand,
+        neuerStand: neuerStand,
+        apKosten: apKosten,
+      ),
+    );
+    if (gespeichert == null || !mounted) return;
+    final begleiter = gespeichert.companions
+        .where((c) => c.id == angezeigt.id)
+        .firstOrNull;
+    if (begleiter != null) {
+      setState(() {
+        _draftCompanions = _draftCompanions
+            .map((c) => c.id == begleiter.id ? begleiter : c)
+            .toList();
+      });
+    }
     ScaffoldMessenger.of(context)
         .showSnackBar(const SnackBar(content: Text('Steigerung gespeichert')));
   }
@@ -339,13 +340,12 @@ class _HeroBegleiterTabState extends ConsumerState<HeroBegleiterTab>
       verfuegbareAp: apVerf,
     );
     if (result == null) return;
-    final neueSteigerungen = Map<String, int>.from(c.steigerungen);
-    neueSteigerungen[key] = result.neuerWert - basis;
-    _saveCompanionImmediate(
-      c.copyWith(
-        steigerungen: neueSteigerungen,
-        apAusgegeben: (c.apAusgegeben ?? 0) + result.apKosten,
-      ),
+    await _bucheSteigerung(
+      c,
+      ziel: BegleiterSteigerungsziel.wert(key),
+      erwarteterStand: stg,
+      neuerStand: result.neuerWert - basis,
+      apKosten: result.apKosten,
     );
   }
 
@@ -372,13 +372,12 @@ class _HeroBegleiterTabState extends ConsumerState<HeroBegleiterTab>
       verfuegbareAp: apVerf,
     );
     if (result == null) return;
-    final neueSteigerungen = Map<String, int>.from(c.steigerungen);
-    neueSteigerungen[key] = result.neuerWert;
-    _saveCompanionImmediate(
-      c.copyWith(
-        steigerungen: neueSteigerungen,
-        apAusgegeben: (c.apAusgegeben ?? 0) + result.apKosten,
-      ),
+    await _bucheSteigerung(
+      c,
+      ziel: BegleiterSteigerungsziel.wert(key),
+      erwarteterStand: stg,
+      neuerStand: result.neuerWert,
+      apKosten: result.apKosten,
     );
   }
 
@@ -403,18 +402,12 @@ class _HeroBegleiterTabState extends ConsumerState<HeroBegleiterTab>
       verfuegbareAp: apVerf,
     );
     if (result == null) return;
-    final neueSteigerungAt = result.neuerWert - basisAt;
-    final updatedAngriffe = c.angriffe
-        .map(
-          (a) =>
-              a.id == attackId ? a.copyWith(steigerungAt: neueSteigerungAt) : a,
-        )
-        .toList();
-    _saveCompanionImmediate(
-      c.copyWith(
-        angriffe: updatedAngriffe,
-        apAusgegeben: (c.apAusgegeben ?? 0) + result.apKosten,
-      ),
+    await _bucheSteigerung(
+      c,
+      ziel: BegleiterSteigerungsziel.angriff(attackId, parade: false),
+      erwarteterStand: angriff.steigerungAt,
+      neuerStand: result.neuerWert - basisAt,
+      apKosten: result.apKosten,
     );
   }
 
@@ -439,18 +432,12 @@ class _HeroBegleiterTabState extends ConsumerState<HeroBegleiterTab>
       verfuegbareAp: apVerf,
     );
     if (result == null) return;
-    final neueSteigerungPa = result.neuerWert - basisPa;
-    final updatedAngriffe = c.angriffe
-        .map(
-          (a) =>
-              a.id == attackId ? a.copyWith(steigerungPa: neueSteigerungPa) : a,
-        )
-        .toList();
-    _saveCompanionImmediate(
-      c.copyWith(
-        angriffe: updatedAngriffe,
-        apAusgegeben: (c.apAusgegeben ?? 0) + result.apKosten,
-      ),
+    await _bucheSteigerung(
+      c,
+      ziel: BegleiterSteigerungsziel.angriff(attackId, parade: true),
+      erwarteterStand: angriff.steigerungPa,
+      neuerStand: result.neuerWert - basisPa,
+      apKosten: result.apKosten,
     );
   }
 
@@ -480,13 +467,12 @@ class _HeroBegleiterTabState extends ConsumerState<HeroBegleiterTab>
       verfuegbareAp: apVerf,
     );
     if (result == null) return;
-    final neueSteigerungen = Map<String, int>.from(c.steigerungen);
-    neueSteigerungen['rk'] = result.neuerWert - basisRk;
-    _saveCompanionImmediate(
-      c.copyWith(
-        steigerungen: neueSteigerungen,
-        apAusgegeben: (c.apAusgegeben ?? 0) + result.apKosten,
-      ),
+    await _bucheSteigerung(
+      c,
+      ziel: const BegleiterSteigerungsziel.wert('rk'),
+      erwarteterStand: stg,
+      neuerStand: result.neuerWert - basisRk,
+      apKosten: result.apKosten,
     );
   }
 
@@ -535,7 +521,6 @@ class _HeroBegleiterTabState extends ConsumerState<HeroBegleiterTab>
               onBack: _navigateBack,
               onChanged: _updateCompanion,
               onDelete: () => _deleteCompanion(activeCompanion.id),
-              onSaveImmediate: _saveCompanionImmediate,
               onRaiseRegular: canRaise ? _raiseRegular : null,
               onRaisePool: canRaise ? _raisePool : null,
               onRaiseAngriffAt: canRaise ? _raiseAngriffAt : null,
