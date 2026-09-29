@@ -982,7 +982,10 @@ Commits:
 7. **Noch per dsa-rules-MCP am Rechner zu validieren** (in dieser Umgebung
    war der Server nicht erreichbar): LeP ohne Untergrenze; TP(A) mit
    RS-Abzug und ohne Überlauf auf LeP; Wunden über die freien Plätze einer
-   Zone verfallen.
+   Zone verfallen. Außerdem die Rundung der Wundschwellen: Gelten sie als
+   reale (gebrochene) Werte, z. B. 6,5 bei KO 13, oder werden sie immer
+   aufgerundet? Heute rundet `computeWundschwelle` ab, die Stufen runden
+   kaufmännisch (Befund 4); je nach Ergebnis beide angleichen.
 3. Wundschwellen und RS stammen aus dem berechneten Snapshot. Die
    Zusatzwürfe beziehen sich auf die angezeigte Wundzahl der Zone; kappt der
    gespeicherte Stand die Wunden stärker, bleibt der eingetragene
