@@ -94,7 +94,27 @@ Future<void> fuegeWundeHinzu({
     diceLogEntries: diceLogEntries,
   );
   if (gespeichert == null || !context.mounted) return;
+  await bieteWundUnterdrueckungAn(
+    context: context,
+    ref: ref,
+    heroId: heroId,
+    zone: zone,
+    gespeichert: gespeichert,
+  );
+}
 
+/// Bietet für eine gerade gespeicherte Wunde in [zone] die Unterdrückung an.
+///
+/// [gespeichert] ist der Zustand nach dem Speichern, damit der Dialog den
+/// tatsächlich gespeicherten Wundzustand sieht. Gemeinsam genutzt von
+/// [fuegeWundeHinzu] und dem Ablauf „Schaden erhalten“.
+Future<void> bieteWundUnterdrueckungAn({
+  required BuildContext context,
+  required WidgetRef ref,
+  required String heroId,
+  required WundZone zone,
+  required HeroState gespeichert,
+}) async {
   final hero = ref.read(heroByIdProvider(heroId));
   if (hero == null) return;
   final neuerZustand = gespeichert.wpiZustand;
