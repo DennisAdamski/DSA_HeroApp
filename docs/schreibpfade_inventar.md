@@ -22,7 +22,12 @@ Begriffe:
 - Jeder Heldenschreibweg endet in `HeroRepository.saveHero` bzw.
   `saveHeroState` (`lib/data/hero_repository.dart`). Mit Konto liegt
   `SyncingHeroRepository` als Dekorator davor und überträgt selbst; kein
-  Ablauf ruft den Sync ausdrücklich auf.
+  Ablauf ruft den Sync ausdrücklich auf. Beim **Zustand** endet
+  `saveHeroState` nach dem lokalen Speichern; den Upload bündelt
+  `GebuendelteLaeufe` (`lib/data/sync/gebuendelte_laeufe.dart`) je Held im
+  Hintergrund, immer mit dem neuesten lokalen Stand. Online-Stände, die
+  währenddessen eintreffen, bewertet das Repository erst danach. Der Bogen
+  wartet weiterhin auf seinen Upload.
 - Bogen und Zustand sind **getrennte** Schreibvorgänge. Es gibt keine
   Transaktion über beide und keine über Laden → Ändern → Schreiben.
 - Avatarbilder liegen außerhalb des Heldenmodells (`AvatarFileStorage`,
@@ -48,7 +53,8 @@ nicht eingereiht.
 
 In der Oberfläche ist `aendereZustandMitMeldung`
 (`lib/ui/screens/shared/zustand_aendern.dart`) der gemeinsame Einstieg:
-frisch über `updateHeroState`, Fehler als Snackbar „… nicht gespeichert“.
+frisch über `updateHeroState`, Fehler „… nicht gespeichert“ im nächsten
+`ZustandFehlerBereich` (Blatt, Dialog, Inspector-Tab), sonst als Snackbar.
 Wunden nutzen darüber `aendereWundZustand` und `fuegeWundeHinzu`
 (`lib/ui/screens/workspace/wund_zustand_speichern.dart`), Zaubereffekte die
 Regeln aus `lib/rules/derived/active_spell_state_rules.dart`.
@@ -104,12 +110,12 @@ Domainlogik.
 | Anzeige nicht passender SF | `setShowInapplicableSpecialAbilities` (ebd.) | Bogen **direkt über das Repository**, ohne Normalisierung | Hash-Prüfung | ja | nein |
 | Inventar | `hero_inventory/inventory_mutations.dart` (`_saveEntries`, `_saveDukaten`) | Bogen | Snapshot | teilweise | Verknüpfungs- und Geschossabgleich |
 | Kampfkonfiguration | `hero_combat/combat_state_helpers.dart` (Sofortspeichern und Editor) | Bogen | Snapshot | teilweise | Slotprüfung, Talentverteilung, AP-Delta |
-| Ressourcen (LeP, Au, AsP, KaP) | `resource_stepper_dialog.dart`, `inspector_vitals_tab.dart`, `inspector_magie_tab.dart` | Zustand | frisch, ersetzt nur die Ressource (absoluter Wert) | ja (Snackbar) | Stepper-Grenzen |
-| Belastung | `inspector_belastung_section.dart` | Zustand | frisch, zählt vom gespeicherten Wert | ja (Snackbar) | Untergrenze 0 |
-| Ressourcen UI2 | `ui/bridges/karto_spiel_bruecke.dart` | Zustand | frisch (`aendereZustandMitMeldung`) | ja | nein |
+| Ressourcen (LeP, Au, AsP, KaP) | `resource_stepper_dialog.dart`, `inspector_vitals_tab.dart`, `inspector_magie_tab.dart` | Zustand | frisch, Schritt vom gespeicherten Wert (`RessourcenAenderung`) | ja (im Blatt bzw. Tab) | Grenzen nur in Schrittrichtung |
+| Belastung | `inspector_belastung_section.dart` | Zustand | frisch, zählt vom gespeicherten Wert | ja (im Inspector-Tab bzw. Zustandsblock) | Untergrenze 0 |
+| Ressourcen UI2 | `ui/bridges/karto_spiel_bruecke.dart` | Zustand | frisch, Schritt vom gespeicherten Wert | ja (im Blatt) | nein |
 | Dauermodifikatoren | `inspector_statuswerte_block.dart` | Bogen | Snapshot | nein | — |
-| Wunden | `wunden_detail_dialog.dart`, `inspector_wunden_card.dart` über `wund_zustand_speichern.dart` | Zustand (+ Bogen für Wundschwelle, Snapshot) | Zustand frisch, zählt vom gespeicherten Wundzustand | ja (Snackbar) | Wundeffekte für den Unterdrückungsdialog |
-| Zaubereffekte | `shared/active_spell_effects_dialog.dart` | Zustand | frisch, Regeln aus `active_spell_state_rules.dart` | ja (Snackbar) | nein |
+| Wunden | `wunden_detail_dialog.dart`, `inspector_wunden_card.dart` über `wund_zustand_speichern.dart` | Zustand (+ Bogen für Wundschwelle, Snapshot) | Zustand frisch, zählt vom gespeicherten Wundzustand | ja (im Dialog bzw. Tab) | Wundeffekte für den Unterdrückungsdialog |
+| Zaubereffekte | `shared/active_spell_effects_dialog.dart` | Zustand | frisch, Regeln aus `active_spell_state_rules.dart` | ja (im Dialog) | nein |
 | Würfelprotokoll | `shared/dice_log_persistence.dart` (`persistDiceLogEntries`, oft per `unawaited`) | Zustand | frisch, je Held nacheinander | ja (Snackbar in `showLoggedProbeDialog`) | — |
 | Abenteuerblatt UI2 | `ui2/spielen/karto_abenteuerblatt.dart` | Bogen | frisch (`updateHero`) | ja, im Blatt | `ersetzeAbenteuer` (UI2) |
 | Abenteuer (Bestand) | `hero_notes_tab.dart` (Editor, Abschluss, Wiedereröffnen) | Bogen | Editorentwurf | teilweise | Belohnungen buchen/zurücknehmen |
