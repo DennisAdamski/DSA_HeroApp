@@ -441,9 +441,18 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   `lib/rules/derived/active_spell_display_rules.dart` — eigene Datei, weil
   `active_spell_rules.dart` von `combat_rules` und `magic_rules` importiert
   wird und sie deshalb nicht zurückholen darf.
-- Nicht enthalten und bewusst nicht erfunden: pauschaler Schadens- und
-  Rücknahmeknopf, KR-Zähler, persistente Favoriten, Offline-/Sync-Status ohne
-  echten Providerzustand. Ein Test in `test/ui2/spielen/` hält das fest.
+- „Schaden erhalten“ ist ein geführter Ablauf (ARCH-05):
+  `rules/derived/schaden_rules.dart` rechnet SP, **Vorschlag** der Wundzahl
+  (je echt überschrittene Wundschwellenstufe, verschoben um den
+  Angriffsmodifikator, z. B. Pfeile −2) und Zusatzwürfe der Zone;
+  `ablaeufe/schaden_erhalten.dart` bucht frisch mit Protokolleintrag
+  (`ProbeType.damage`). Die Wundzahl entscheidet der Nutzer im Dialog
+  (`ui/screens/workspace/schaden/`), UI2 öffnet ihn über
+  `KartoBestandsAdapter.schadenErhalten`. LeP haben keine Untergrenze,
+  TP(A) senkt nur AuP bis 0.
+- Nicht enthalten und bewusst nicht erfunden: Rücknahmeknopf (ARCH-06),
+  KR-Zähler, persistente Favoriten, Offline-/Sync-Status ohne echten
+  Providerzustand. Ein Test in `test/ui2/spielen/` hält das fest.
 - Der Kopf von `WorkspaceManagementBody` (nur UI2) ist der
   `KartoSeitenkopf`: Kontext „Heldenbogen“ (schmal ohne), Tab als Titel,
   Helfertext als Unterzeile; `management-active-title`/`-helper` hängen über

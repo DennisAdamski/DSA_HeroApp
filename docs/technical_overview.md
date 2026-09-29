@@ -3035,6 +3035,43 @@ ueber die Settings-Katalogverwaltung bearbeitet.
   sie danach (`nachLauf`). `syncNow` wartet auf laufende Uploads und lädt
   über dieselbe Bündelung hoch. Auf Uploads warten: `warteAufUebertragungen`.
 
+### Update 2026-09-29: Schaden erhalten als Anwendungsablauf (ARCH-05)
+
+- `lib/rules/derived/schaden_rules.dart` rechnet rein:
+  `berechneSchadenspunkte` (TP − RS, nie negativ), `schlageWundenVor` (je
+  echt überschrittene Wundschwellenstufe eine Wunde, 0 bis 4; ein
+  Angriffsmodifikator wie „Pfeile −2“ verschiebt alle vier Stufen),
+  `freieWundplaetze`, `schadensZusatzwuerfe` (aus der Standard-
+  Trefferzonentabelle: Kopf 2W6 INI-Malus, Brust/Bauch 1W6 SP je neuer
+  Wunde, beim Erreichen der dritten Kopfwunde 2W6 SP) und `wendeSchadenAn`.
+  Die Wundzahl ist nur ein **Vorschlag**, die Entscheidung trifft der
+  Nutzer; die Stufen kommen aus `HeroComputedSnapshot.wundschwellenStufen`
+  (mit Eisern/Glasknochen).
+- `wendeSchadenAn`: Lebensenergie senkt LeP um SP plus Zusatzschaden ohne
+  Untergrenze und trägt Wunden bis zur vollen Zone ein (der INI-Wurf zählt
+  zur ersten Kopfwunde, der Rest verfällt und wird gemeldet). Ausdauer
+  (`SchadensArt.ausdauer`, TP(A)) senkt nur AuP, höchstens bis 0, ohne
+  Wunden.
+- `TrefferzonenZusatzwurf.wirkung` (`TrefferzonenZusatzwirkung`) sagt, ob ein
+  Zusatzwurf Schaden oder den Kopf-INI-Malus liefert.
+- `lib/ablaeufe/schaden_erhalten.dart` (`SchadenErhalten`, Provider
+  `schadenErhaltenProvider`) bucht über `aendereGespeichertenZustand` auf den
+  frischen Zustand und hängt einen Protokolleintrag an
+  (`schaden_protokoll.dart`, Titel „Schaden erhalten“, `ProbeType.damage`,
+  Unterzeile etwa `TP 14 − RS 3 = 11 SP · Brust · WS −2 · 1 Wunde · +4 SP
+  Zusatz`, `total` = Gesamtverlust). Kein neuer Aufzählungswert, damit ältere
+  Versionen den Eintrag lesen.
+- Dialog: `showSchadenDialog` / `SchadenPanel`
+  (`lib/ui/screens/workspace/schaden/`) mit TP, vorbelegtem RS
+  (`combatPreviewStats.rsTotal`), Zone per Auswahl oder W20, Angriffsmodifikator,
+  Vorschlag samt Schwellen, änderbarer Wundzahl, Zusatzwürfen und Vorschau.
+  Fehler im Panel, Sperre während des Speicherns. Nach neuen Wunden folgt
+  `bieteWundUnterdrueckungAn` (einmal, für eine Wunde). Einstiege: Knopf im
+  Inspector-Vitals-Tab und die UI2-Schnellaktion über
+  `KartoBestandsAdapter.schadenErhalten`.
+- Keine Rücknahme: korrigiert wird von Hand anhand des Protokolleintrags;
+  eine echte Rücknahme gehört zu ARCH-06.
+
 ### Update 2026-08-23: Aventurischer Kalender und aktuelles Alter
 
 **Kalender (`lib/domain/aventurian_date.dart`)**
