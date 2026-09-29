@@ -23,6 +23,14 @@ technische UI-Aspekte getrennt getestet werden.
 - `test/data/`: Loader/Transfer/Repository-nahe Tests
 - `test/domain/`: Serialisierung/Model-Roundtrips
 - `test/workspace/`: Workspace-Koordinationslogik
+- `test/ablaeufe/`: Anwendungsabläufe aus `lib/ablaeufe/` (ARCH-05) ohne
+  Oberfläche und ohne Riverpod, direkt mit `FakeRepository`; Uhr und
+  Fehlerfälle werden hereingereicht. `abhaengigkeiten_test.dart` ist der
+  Importwächter der Schicht. Rechenerwartungen bleiben in `test/rules/`
+  (für die Rast `rest_outcome_rules_test.dart`), die Abläufe prüfen frisches
+  Laden, nur die erwarteten geänderten Felder, Protokoll, Stempel und
+  Fehlerweitergabe. Die Bedienung (Fehleranzeige, Sperre während des
+  Speicherns) prüft `test/ui/workspace/rest_panel_test.dart`.
 - Steigerungsrunden: `test/rules/advancement_rules_test.dart` prüft Replay und
   Abhängigkeiten; `test/domain/hero_advancement_entry_test.dart` die persistierte
   Historie; `test/state/advancement_session_test.dart` Planung, Entfernen,

@@ -264,6 +264,7 @@ Die App folgt einer klar getrennten Schichtenarchitektur:
 ```text
 UI (lib/ui/)
   -> State Layer mit Riverpod (lib/state/)
+    -> Anwendungsablaeufe ohne Riverpod (lib/ablaeufe/)
     -> Domain-Modelle (lib/domain/)
     -> Regelmodule (lib/rules/derived/)
     -> Repository/Data Layer (lib/data/)
@@ -291,6 +292,10 @@ Grundprinzipien des Projekts:
 - Domain-Modelle sind immutable und serialisierbar
 - Regellogik liegt ausschliesslich in `lib/rules/derived/`
 - UI und Provider rufen Regelmodule auf, rechnen aber nicht selbst
+- Schreibende Ablaeufe wie „Rast abschliessen“ liegen als eigene
+  Anwendungsablaeufe in `lib/ablaeufe/`: frisch laden, ueber Regeln rechnen,
+  stempeln, speichern; Fehler zeigt die aufrufende Oberflaeche
+  (Bestandsaufnahme in `docs/schreibpfade_inventar.md`)
 - Katalogdaten werden zur Laufzeit aus Split-JSON geladen
 - `HeroSheet` nutzt Schema-Version `23`, `HeroState` Schema-Version `5`
 

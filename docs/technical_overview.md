@@ -55,7 +55,10 @@ UI (flutter_riverpod ConsumerWidgets)
         │  .watch() / .read()
         ▼
 State Layer (Riverpod Providers — lib/state/)
-        │  liest/schreibt
+        │  liest/schreibt, bindet Abläufe (lib/state/ablauf_providers.dart)
+        ▼
+Anwendungsabläufe (lib/ablaeufe/, ohne Riverpod; ARCH-05)
+        │  laden frisch, rechnen über Regeln, stempeln, speichern
         ▼
 Domain Models (lib/domain/)  ←→  Rules (lib/rules/derived/)
         │
@@ -67,7 +70,12 @@ Domain Models (lib/domain/)  ←→  Rules (lib/rules/derived/)
 
 **Kernprinzip:** Domain-Modelle sind reine, unveränderliche Dart-Klassen ohne
 Flutter-Abhängigkeiten. Regelberechnungen sind seiteneffektfreie Funktionen. Der
-State Layer verbindet beides reaktiv über Riverpod.
+State Layer verbindet beides reaktiv über Riverpod. Fachlich benannte
+Schreibabläufe liegen seit ARCH-05 in `lib/ablaeufe/`: Sie hängen nur von
+Domain, Regeln, Katalog und der `HeroRepository`-Schnittstelle ab (Wächter:
+`test/ablaeufe/abhaengigkeiten_test.dart`), bekommen ihre Abhängigkeiten per
+Konstruktor und reichen Fehler an die Oberfläche durch. Die Bestandsaufnahme
+aller Schreibwege steht in [schreibpfade_inventar.md](schreibpfade_inventar.md).
 
 ### App-Start (`lib/main.dart`)
 
@@ -2260,6 +2268,7 @@ Aequivalenztest nimmt `lernspalte` bewusst aus.
 | `derivedStatsProvider(id)` | `Provider.family<AsyncValue<DerivedStats>>` | Abgeleitete Werte |
 | `combatPreviewProvider(id)` | `Provider.family<AsyncValue<CombatPreviewStats>>` | Kampfvorschau |
 | `heroActionsProvider` | `Provider<HeroActions>` | Schreiboperationen |
+| `rastAbschliessenProvider` | `Provider<RastAbschliessen>` | Ablauf „Rast abschließen“ auf dem aktiven Repository (`lib/state/ablauf_providers.dart`) |
 | `catalogLoaderProvider` | `Provider<CatalogLoader>` | Katalog-Lader |
 | `customCatalogRepositoryProvider` | `Provider<CustomCatalogRepository>` | Datei-I/O fuer synchronisierbare Custom-Kataloge |
 | `baseCatalogSourceDataProvider` | `FutureProvider<CatalogSourceData>` | Roh-Sektionen aus Assets (mit `enc:`-Praefixen) |
@@ -2960,6 +2969,31 @@ ueber die Settings-Katalogverwaltung bearbeitet.
   `Ueberanstrengung` jetzt direkt in den editierbaren Vitalwerten.
 - Das Lagerfeuer-Symbol sitzt oben rechts in derselben Vitalwerte-Karte und
   oeffnet `rest_dialog.dart` mit Vorschau und Sammeluebernahme.
+
+### Update 2026-09-29: Rast als Anwendungsablauf (ARCH-05)
+
+- `lib/rules/derived/rest_outcome_rules.dart` rechnet das Rastergebnis rein:
+  `RestActivity` (kurze Rast, Schlaf, Bettruhe, nur ausruhen) bestimmt über
+  `RestActivityRules` Ausdauer, Zustandsabbau (Tempo, Stunden) und die Zahl
+  der Regenerationsphasen; `isRestProbeSuccessful` wertet die W20-Proben;
+  `computeRestOutcome` bildet Ausdauer, Zustandsabbau und bis zu zwei
+  Phasen samt Begrenzung auf das Maximum nach; `applyRestOutcome` ersetzt
+  genau LeP, Au, AsP, Überanstrengung und Erschöpfung. Würfe tragen einen
+  `RestRollSlot`; `applicableRestRollSlots` nennt die geltenden in
+  Protokollreihenfolge. Ein negatives Maximum gilt als 0.
+- `lib/ablaeufe/rast_abschliessen.dart` (`RastAbschliessen`) lädt den
+  Zustand frisch, rechnet auf den gespeicherten Werten, hängt das
+  Würfelprotokoll (`rast_protokoll.dart`) an und stempelt Protokoll und
+  `lastModified` mit demselben Zeitpunkt. `vollstaendigeErholung` wendet
+  `buildFullRestoreState` auf den frischen Zustand an. Zwischenzeitlich
+  gespeicherte Wunden, Effekte und Protokolleinträge bleiben erhalten.
+- `RestPanel` (`rest_dialog.dart`, Teildateien unter `workspace/rest/`)
+  sammelt nur Eingaben. Ein Speicherfehler erscheint im Panel
+  (`rest-dialog-save-error`), der Dialog bleibt offen; während des
+  Speicherns sind Übernehmen und Fullrestore gesperrt.
+- Grenze: Maxima und KO/IN-Zielwerte stammen aus `heroComputedProvider`,
+  der Fullrestore liest sie erst nach der Bestätigung. Eine zwischenzeitliche
+  Änderung von `tempMods` fließt erst mit dem nächsten Aufbau ein.
 
 ### Update 2026-08-23: Aventurischer Kalender und aktuelles Alter
 
