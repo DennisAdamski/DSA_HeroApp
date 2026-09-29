@@ -102,6 +102,15 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   ueberhaupt feuern und wie breit `dart format` umbricht — ein SDK-Bump zieht
   beides nach sich.
 - Regellogik gehoert nach `lib/rules/derived/`.
+- Fachlich benannte Anwendungsablaeufe (ARCH-05) liegen in `lib/ablaeufe/`:
+  ohne Riverpod und Flutter, Abhaengigkeiten per Konstruktor, aus `data/`
+  nur die `HeroRepository`-Schnittstelle — der Waechter
+  `test/ablaeufe/abhaengigkeiten_test.dart` prueft das. Provider dazu stehen
+  in `lib/state/ablauf_providers.dart`. Muster: frisch laden → Regel aus
+  `rules/derived/` → stempeln → speichern (`aendereGespeichertenZustand`,
+  an das auch `HeroActions.updateHeroState` delegiert). Ablaeufe fangen
+  Fehler nicht, die aufrufende Oberflaeche zeigt sie. Bestandsaufnahme aller
+  Schreibwege: `docs/schreibpfade_inventar.md`.
 - `CodexPageScaffold` legt eine transparente `Material`-Fläche über den
   Seitenhintergrund, damit `ListTile`-/`ExpansionTile`-Hintergründe und
   Ink-Effekte sichtbar bleiben. Der Regressionstest liegt unter
