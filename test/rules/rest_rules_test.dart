@@ -165,6 +165,23 @@ void main() {
     expect(result.aspRecovered, 1);
   });
 
+  test('RestEnvironmentInput.copyWith ersetzt nur die genannten Umstände', () {
+    const umgebung = RestEnvironmentInput(
+      weatherModifier: -2,
+      hasBadCamp: true,
+      extraModifier: 1,
+    );
+
+    final kopie = umgebung.copyWith(isIll: true, weatherModifier: -3);
+
+    expect(kopie.weatherModifier, -3);
+    expect(kopie.isIll, isTrue);
+    expect(kopie.hasBadCamp, isTrue);
+    expect(kopie.extraModifier, 1);
+    expect(kopie.sleepSiteModifier, 0);
+    expect(computeRestEnvironmentModifier(kopie), -3);
+  });
+
   test('environment modifier is clamped to allowed range', () {
     final modifier = computeRestEnvironmentModifier(
       const RestEnvironmentInput(
