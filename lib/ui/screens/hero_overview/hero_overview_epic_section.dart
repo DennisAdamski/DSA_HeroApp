@@ -162,28 +162,22 @@ extension _HeroOverviewEpicSection on _HeroOverviewTabState {
       ),
     );
     if (result == null || !mounted) return;
-    final unactivatedTalentIds = <String>{};
-    for (final entry in hero.talents.entries) {
-      if (entry.value.talentValue == null) {
-        unactivatedTalentIds.add(entry.key);
-      }
-    }
-    final updated = hero.copyWith(
-      isEpisch: true,
-      epicStartAp: hero.apSpent,
-      // Per `uebernimmWerte`, damit unbekannte Felder erhalten bleiben.
-      epicAttributeMaxBonus: hero.epicAttributeMaxBonus.uebernimmWerte(
-        result.maxBonus,
+    // Start-AP und offene Talente kommen aus dem gespeicherten Helden
+    // (ARCH-05), nicht aus dem Stand beim Öffnen des Dialogs.
+    final gespeichert = await aendereHeldMitMeldung(
+      context: context,
+      ref: ref,
+      heroId: widget.heroId,
+      was: 'Epischer Status',
+      aenderung: (held) => aktiviereEpischenStatus(
+        held,
+        obergrenzenBonus: result.maxBonus,
+        haupteigenschaften: result.mainAttributes,
+        policy: result.policy,
       ),
-      epicMainAttributes: hero.epicMainAttributes.uebernimmWerte(
-        result.mainAttributes,
-      ),
-      epicActivationPolicy: result.policy,
-      epicUnactivatedTalentIds: Set<String>.unmodifiable(unactivatedTalentIds),
     );
-    await ref.read(heroActionsProvider).saveHero(updated);
-    if (!mounted) return;
-    _latestHero = updated;
+    if (gespeichert == null || !mounted) return;
+    _latestHero = gespeichert;
     _viewRevision.value++;
     ScaffoldMessenger.of(
       context,
@@ -215,19 +209,20 @@ extension _HeroOverviewEpicSection on _HeroOverviewTabState {
     );
     if (result == null || !mounted) return;
 
-    final updated = hero.copyWith(
-      // Per `uebernimmWerte`, damit unbekannte Felder erhalten bleiben.
-      epicAttributeMaxBonus: hero.epicAttributeMaxBonus.uebernimmWerte(
-        result.maxBonus,
+    final gespeichert = await aendereHeldMitMeldung(
+      context: context,
+      ref: ref,
+      heroId: widget.heroId,
+      was: 'Epischer Status',
+      aenderung: (held) => korrigiereEpischenStatus(
+        held,
+        obergrenzenBonus: result.maxBonus,
+        haupteigenschaften: result.mainAttributes,
+        policy: result.policy,
       ),
-      epicMainAttributes: hero.epicMainAttributes.uebernimmWerte(
-        result.mainAttributes,
-      ),
-      epicActivationPolicy: result.policy,
     );
-    await ref.read(heroActionsProvider).saveHero(updated);
-    if (!mounted) return;
-    _latestHero = updated;
+    if (gespeichert == null || !mounted) return;
+    _latestHero = gespeichert;
     _viewRevision.value++;
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Epischer Status aktualisiert')),
