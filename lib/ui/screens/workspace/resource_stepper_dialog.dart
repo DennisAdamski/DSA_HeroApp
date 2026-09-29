@@ -6,6 +6,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/zustand_aendern.dart';
 
 /// Ressource-Typ fuer den Stepper-Dialog.
 enum ResourceType { lep, au, asp, kap }
@@ -74,7 +75,7 @@ class _ResourceStepperDialog extends ConsumerWidget {
               children: [
                 IconButton.filled(
                   onPressed: current > 0 && state != null
-                      ? () => _save(ref, state, current - 1)
+                      ? () => _save(context, ref, current - 1)
                       : null,
                   icon: const Icon(Icons.remove),
                 ),
@@ -95,7 +96,7 @@ class _ResourceStepperDialog extends ConsumerWidget {
                 const SizedBox(width: 16),
                 IconButton.filled(
                   onPressed: current < max && state != null
-                      ? () => _save(ref, state, current + 1)
+                      ? () => _save(context, ref, current + 1)
                       : null,
                   icon: const Icon(Icons.add),
                 ),
@@ -112,13 +113,20 @@ class _ResourceStepperDialog extends ConsumerWidget {
     );
   }
 
-  Future<void> _save(WidgetRef ref, HeroState state, int newValue) async {
-    final updated = switch (resource) {
-      ResourceType.lep => state.copyWith(currentLep: newValue),
-      ResourceType.au => state.copyWith(currentAu: newValue),
-      ResourceType.asp => state.copyWith(currentAsp: newValue),
-      ResourceType.kap => state.copyWith(currentKap: newValue),
-    };
-    await ref.read(heroActionsProvider).saveHeroState(heroId, updated);
+  // Ersetzt nur diese Ressource im frisch geladenen Zustand; alle übrigen
+  // Felder bleiben, wie sie gespeichert sind.
+  Future<void> _save(BuildContext context, WidgetRef ref, int newValue) async {
+    await aendereZustandMitMeldung(
+      context: context,
+      ref: ref,
+      heroId: heroId,
+      was: _label,
+      aenderung: (aktuell) => switch (resource) {
+        ResourceType.lep => aktuell.copyWith(currentLep: newValue),
+        ResourceType.au => aktuell.copyWith(currentAu: newValue),
+        ResourceType.asp => aktuell.copyWith(currentAsp: newValue),
+        ResourceType.kap => aktuell.copyWith(currentKap: newValue),
+      },
+    );
   }
 }

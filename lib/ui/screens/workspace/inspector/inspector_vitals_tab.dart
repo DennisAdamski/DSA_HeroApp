@@ -7,7 +7,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/combat_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/resource_activation_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/wund_rules.dart';
-import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/zustand_aendern.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/inspector/widgets/inspector_belastung_section.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/inspector/widgets/inspector_statuswerte_block.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/inspector/widgets/inspector_vital_block.dart';
@@ -39,8 +39,20 @@ class InspectorVitalsTab extends ConsumerWidget {
   final WundEffekte wundEffekte;
   final int wundschwelle;
 
-  Future<void> _save(WidgetRef ref, HeroState updated) async {
-    await ref.read(heroActionsProvider).saveHeroState(heroId, updated);
+  // Ersetzt nur die eine Ressource im frisch geladenen Zustand.
+  Future<void> _save(
+    BuildContext context,
+    WidgetRef ref,
+    String was,
+    HeroState Function(HeroState aktuell) aenderung,
+  ) async {
+    await aendereZustandMitMeldung(
+      context: context,
+      ref: ref,
+      heroId: heroId,
+      was: was,
+      aenderung: aenderung,
+    );
   }
 
   @override
@@ -58,8 +70,12 @@ class InspectorVitalsTab extends ConsumerWidget {
             current: heroState.currentLep,
             max: derived.maxLep,
             kind: VitalKind.lep,
-            onChanged: (next) =>
-                _save(ref, heroState.copyWith(currentLep: next)),
+            onChanged: (next) => _save(
+              context,
+              ref,
+              'LeP',
+              (aktuell) => aktuell.copyWith(currentLep: next),
+            ),
           ),
           const SizedBox(height: 8),
           InspectorVitalBlock(
@@ -68,8 +84,12 @@ class InspectorVitalsTab extends ConsumerWidget {
             current: heroState.currentAu,
             max: derived.maxAu,
             kind: VitalKind.aup,
-            onChanged: (next) =>
-                _save(ref, heroState.copyWith(currentAu: next)),
+            onChanged: (next) => _save(
+              context,
+              ref,
+              'AuP',
+              (aktuell) => aktuell.copyWith(currentAu: next),
+            ),
           ),
           if (showMagic) ...[
             const SizedBox(height: 8),
@@ -79,8 +99,12 @@ class InspectorVitalsTab extends ConsumerWidget {
               current: heroState.currentAsp,
               max: derived.maxAsp,
               kind: VitalKind.asp,
-              onChanged: (next) =>
-                  _save(ref, heroState.copyWith(currentAsp: next)),
+              onChanged: (next) => _save(
+                context,
+                ref,
+                'AsP',
+                (aktuell) => aktuell.copyWith(currentAsp: next),
+              ),
             ),
           ],
           if (showDivine) ...[
@@ -91,8 +115,12 @@ class InspectorVitalsTab extends ConsumerWidget {
               current: heroState.currentKap,
               max: derived.maxKap,
               kind: VitalKind.kap,
-              onChanged: (next) =>
-                  _save(ref, heroState.copyWith(currentKap: next)),
+              onChanged: (next) => _save(
+                context,
+                ref,
+                'KaP',
+                (aktuell) => aktuell.copyWith(currentKap: next),
+              ),
             ),
           ],
           const SizedBox(height: 14),

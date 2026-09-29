@@ -14,6 +14,7 @@ import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/config/ui_spacing.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/zustand_aendern.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/inspector/widgets/inspector_belastung_section.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/inspector/widgets/inspector_statuswerte_block.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/inspector/widgets/inspector_vital_block.dart';
@@ -79,18 +80,16 @@ class _RessourcenBlatt extends ConsumerWidget {
     KartoRessource.karma => state.copyWith(currentKap: wert),
   };
 
-  // Ein fehlgeschlagener Write darf nie als stille Uebernahme erscheinen.
+  // Gemeinsamer Schreibweg: frisch laden, nur diese Ressource ersetzen,
+  // Fehler als Snackbar.
   Future<void> _speichere(BuildContext context, WidgetRef ref, int wert) async {
-    final bote = ScaffoldMessenger.of(context);
-    try {
-      await ref
-          .read(heroActionsProvider)
-          .updateHeroState(heroId, (current) => _mitWert(current, wert));
-    } catch (fehler) {
-      bote.showSnackBar(
-        SnackBar(content: Text('$_kurz nicht gespeichert: $fehler')),
-      );
-    }
+    await aendereZustandMitMeldung(
+      context: context,
+      ref: ref,
+      heroId: heroId,
+      was: _kurz,
+      aenderung: (current) => _mitWert(current, wert),
+    );
   }
 
   @override

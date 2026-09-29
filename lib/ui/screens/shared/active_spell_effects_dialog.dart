@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:dsa_heldenverwaltung/domain/attribute_modifiers.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/active_spell_rules.dart';
-import 'package:dsa_heldenverwaltung/rules/derived/spell_duration_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/active_spell_state_rules.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
@@ -13,6 +12,7 @@ import 'package:dsa_heldenverwaltung/ui/screens/shared/active_spell_effect_tile.
 import 'package:dsa_heldenverwaltung/ui/screens/shared/armatrutz_input_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/attributo_input_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/spell_duration_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/zustand_aendern.dart';
 
 /// Oeffnet den gemeinsamen Dialog fuer wichtige aktive Zaubereffekte.
 Future<void> showActiveSpellEffectsDialog({
@@ -44,10 +44,18 @@ class _ActiveSpellEffectsDialog extends ConsumerStatefulWidget {
 
 class _ActiveSpellEffectsDialogState
     extends ConsumerState<_ActiveSpellEffectsDialog> {
-  /// Speichert einen neuen Laufzeitzustand fuer den Helden.
-  Future<void> _save(HeroState updatedState) {
-    final actions = ref.read(heroActionsProvider);
-    return actions.saveHeroState(widget.heroId, updatedState);
+  /// Wendet [aenderung] auf den frisch gespeicherten Zustand an.
+  ///
+  /// Nie den Stand beim Rendern zurückschreiben: sonst gingen Würfe, Wunden
+  /// oder Ressourcen verloren, die seit dem Öffnen gespeichert wurden.
+  Future<void> _aendere(HeroState Function(HeroState aktuell) aenderung) {
+    return aendereZustandMitMeldung(
+      context: context,
+      ref: ref,
+      heroId: widget.heroId,
+      was: 'Zaubereffekt',
+      aenderung: aenderung,
+    );
   }
 
   /// Liest den aktuellen Laufzeitzustand; `null`, solange er nicht geladen ist.
@@ -55,68 +63,30 @@ class _ActiveSpellEffectsDialogState
       ref.read(heroStateProvider(widget.heroId)).valueOrNull;
 
   Future<void> _toggleEffect(String effectId, bool value) async {
-    final state = _state;
-    if (state == null) {
-      return;
-    }
-    final updatedState = state.copyWith(
-      activeSpellEffects: state.activeSpellEffects.withToggled(effectId, value),
+    await _aendere(
+      (aktuell) => schalteZaubereffekt(aktuell, effectId, aktiv: value),
     );
-    await _save(updatedState);
   }
 
   /// Aktiviert den Attributo erst nach Eingabe der Eigenschaftsboni.
   Future<void> _toggleAttributo(bool value) async {
-    final state = _state;
-    if (state == null) {
-      return;
-    }
-
     if (!value) {
-      final updatedState = state.copyWith(
-        // Nur die Werte zuruecksetzen; unbekannte Felder bleiben erhalten.
-        tempAttributeMods: state.tempAttributeMods.uebernimmWerte(
-          const AttributeModifiers(),
-        ),
-        activeSpellEffects: state.activeSpellEffects.withToggled(
-          activeSpellEffectAttributo,
-          false,
-        ),
-      );
-      await _save(updatedState);
+      await _toggleEffect(activeSpellEffectAttributo, false);
       return;
     }
-
     final bonuses = await showAttributoInputDialog(context: context);
     if (bonuses == null || !mounted) {
       return;
     }
-    final updatedState = state.copyWith(
-      tempAttributeMods: state.tempAttributeMods.uebernimmWerte(bonuses),
-      activeSpellEffects: state.activeSpellEffects.withToggled(
-        activeSpellEffectAttributo,
-        true,
-      ),
-    );
-    await _save(updatedState);
+    await _aendere((aktuell) => aktiviereAttributo(aktuell, bonuses));
   }
 
   /// Aktiviert den Armatrutz erst nach Eingabe von RS und Wirkungsdauer.
   Future<void> _toggleArmatrutz(bool value) async {
-    final state = _state;
-    if (state == null) {
-      return;
-    }
-
     if (!value) {
-      final effects = state.activeSpellEffects.withToggled(
-        activeSpellEffectArmatrutz,
-        false,
-      );
-      await _save(state.copyWith(activeSpellEffects: effects));
+      await _toggleEffect(activeSpellEffectArmatrutz, false);
       return;
     }
-
     await _editArmatrutzValues(activateFirst: true);
   }
 
@@ -136,14 +106,7 @@ class _ActiveSpellEffectsDialogState
     if (detail == null || !mounted) {
       return;
     }
-    final latest = _state;
-    if (latest == null) {
-      return;
-    }
-    final effects = latest.activeSpellEffects
-        .withToggled(activeSpellEffectArmatrutz, true)
-        .withDetail(activeSpellEffectArmatrutz, detail);
-    await _save(latest.copyWith(activeSpellEffects: effects));
+    await _aendere((aktuell) => aktiviereArmatrutz(aktuell, detail));
   }
 
   /// Fragt die Wirkungsdauer eines beliebigen Effekts ab.
@@ -162,18 +125,9 @@ class _ActiveSpellEffectsDialogState
     if (result == null || !mounted) {
       return;
     }
-    final latest = _state;
-    if (latest == null) {
-      return;
-    }
-    final updatedDetail = result.duration == null
-        ? current.copyWith(clearDuration: true)
-        : current.copyWith(duration: result.duration);
-    final effects = latest.activeSpellEffects.withDetail(
-      effect.id,
-      updatedDetail,
+    await _aendere(
+      (aktuell) => setzeZaubereffektDauer(aktuell, effect.id, result.duration),
     );
-    await _save(latest.copyWith(activeSpellEffects: effects));
   }
 
   /// Zieht eine Zeiteinheit von der Restlaufzeit ab bzw. setzt sie zurueck.
@@ -181,23 +135,10 @@ class _ActiveSpellEffectsDialogState
     ActiveSpellEffectDefinition effect, {
     required bool reset,
   }) async {
-    final state = _state;
-    if (state == null) {
-      return;
-    }
-    final current = state.activeSpellEffects.detailFor(effect.id);
-    final duration = current.duration;
-    if (duration == null) {
-      return;
-    }
-    final nextDuration = reset
-        ? resetSpellDuration(duration)
-        : advanceSpellDuration(duration);
-    final effects = state.activeSpellEffects.withDetail(
-      effect.id,
-      current.copyWith(duration: nextDuration),
+    await _aendere(
+      (aktuell) =>
+          zaehleZaubereffektDauer(aktuell, effect.id, zuruecksetzen: reset),
     );
-    await _save(state.copyWith(activeSpellEffects: effects));
   }
 
   /// Ordnet jedem Effekt seine Umschaltlogik zu.
