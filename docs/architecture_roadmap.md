@@ -628,10 +628,13 @@ Regelmodulen. Riverpod bindet die Abläufe an die Oberfläche.
 `lib/data/syncing_hero_repository.dart`,
 `lib/ui/screens/workspace/rest_dialog.dart` und `lib/rules/derived/advancement_apply.dart`.
 
-- [ ] Schreibpfade inventarisieren und pro Ablauf Eingaben, Ergebnis,
+- [x] Schreibpfade inventarisieren und pro Ablauf Eingaben, Ergebnis,
   Vorbedingungen, Seiteneffekte und Speichergrenzen festhalten.
-- [ ] Einen abgegrenzten Ablauf zunächst ohne Verhaltensänderung extrahieren,
+  *([schreibpfade_inventar.md](schreibpfade_inventar.md))*
+- [x] Einen abgegrenzten Ablauf zunächst ohne Verhaltensänderung extrahieren,
   mit expliziten Abhängigkeiten statt uneingeschränktem Zugriff auf alle Provider.
+  *(„Rast abschließen“; bewusst mit zwei kleinen Verhaltensänderungen, siehe
+  Teilstand.)*
 - [ ] Weitere Abläufe nach demselben Prinzip entflechten; bestehende Aufrufer
   schrittweise migrieren und benötigte Kompatibilitätseinstiege erhalten.
 
@@ -647,6 +650,97 @@ aufrufende Oberfläche weitergegeben; bisheriges Verhalten bleibt abgesichert.
 Extraktion beginnen. Zuschnitt und Ablage der Anwendungsschicht am ersten
 konkreten Ablauf festlegen; keine zusätzlichen Schichten ohne klaren Nutzen.
 Operationsgrenzen bilden die Grundlage für ARCH-06.
+
+**Teilstand 29.09.2026 — Schreibpfade inventarisiert, „Rast abschließen“
+als erster Ablauf.** Die ersten beiden Unterpunkte sind umgesetzt. Der
+Hauptpunkt bleibt offen, bis weitere Abläufe entflochten sind.
+
+*Entscheidungen (mit dem Nutzer abgestimmt).*
+
+- **Ablage:** `lib/ablaeufe/` für Anwendungsabläufe ohne Riverpod und
+  Flutter. Abhängigkeiten kommen per Konstruktor, aus `data/` nur die
+  `HeroRepository`-Schnittstelle. Ein Wächtertest prüft die Importe
+  (`test/ablaeufe/abhaengigkeiten_test.dart`). Die Riverpod-Bindung liegt
+  in `lib/state/ablauf_providers.dart`. `HeroActions` bleibt als
+  Kompatibilitätseinstieg bestehen.
+- **Erster Ablauf „Rast abschließen“, nicht streng verhaltensneutral:**
+  - Der Ablauf lädt den Zustand frisch und ersetzt nur die Rastfelder, statt
+    den beim Rendern erfassten Zustand zurückzuschreiben. Das entspricht dem
+    `updateHeroState`-Muster. Zuvor gingen Würfelprotokolle, Wunden oder
+    Effekte verloren, die zwischen Öffnen und Übernehmen gespeichert wurden.
+  - Speicherfehler erscheinen im Panel, und beide Aktionen sind gesperrt,
+    solange gespeichert wird. Vorher gab es weder Fehleranzeige noch Schutz
+    vor doppeltem Übernehmen.
+  - Die Rast rechnet auf den gespeicherten Werten. Ohne Zwischenänderung ist
+    das Ergebnis dasselbe wie bisher.
+- **Regel statt Widget:** Die Vorschau- und Phasenrechnung, die Zuordnung
+  von Aktivität zu Teilregeln und die Probenauswertung stehen jetzt in
+  `rest_outcome_rules.dart`. Einzige bewusste Rechenabweichung: Ein
+  negatives Maximum gilt als 0. Bisher warf `clamp` dort einen Fehler.
+
+Commits:
+
+- `7b08cd1` — Regel: `computeRestOutcome`, `RestActivity`,
+  `isRestProbeSuccessful`, `RestRollSlot`, `applyRestOutcome`.
+- `63935d3` — `lib/ablaeufe/zustand_schreiben.dart`
+  (`aendereGespeichertenZustand`). `HeroActions.saveHeroState` und
+  `updateHeroState` stempeln bzw. delegieren darüber. Dazu der Wächtertest
+  und der Eintrag in CLAUDE.md.
+- `3ee08b9` — `RastAbschliessen`, `baueRastProtokoll`,
+  `rastAbschliessenProvider`. Der Hive-Ablauftest führt den Fullrestore
+  jetzt über den Ablauf.
+- `80b2944` — `RestPanel` nutzt Regel und Ablauf und zeigt Fehler an; dazu
+  der Widgettest `rest_panel_test.dart`.
+- `5597211` — Aufteilung in Teildateien unter `workspace/rest/`,
+  verhaltensfrei. `rest_dialog.dart` schrumpft von 1574 auf 637 Zeilen.
+- Abschluss-Commit mit Inventar und Dokumentation.
+
+*Prüfungen.*
+
+- Regeltests für jede Aktivität, darunter Bettruhe mit und ohne zweite
+  Phase, außerdem Krankheit, fehlende Würfe, Probengrenzen, Begrenzung auf
+  das Maximum, die bisherigen Eigenheiten und das negative Maximum.
+- Ablauftests mit `FakeRepository`:
+  - Zwischenänderungen bleiben erhalten; es ändern sich nur die erwarteten
+    Felder (`expectNurGeaendert`).
+  - Protokoll: Reihenfolge, Texte, Zeitstempel und Grenze.
+  - fehlender Zustand und Fehlerweitergabe.
+- Widgettests:
+  - Übernehmen schreibt Werte und Protokoll.
+  - Fehleranzeige bei Übernehmen und Fullrestore.
+  - Sperre während des Speicherns.
+  - Fullrestore mit Bestätigung und Abbruch.
+  - Die bestehenden Workspace-Tests laufen unverändert.
+- Gegenproben:
+  - Ohne Sperre scheitert der Sperrtest.
+  - Mit einem verbotenen Import scheitert der Wächter.
+- `flutter analyze --no-pub` ohne Befund, volle Suite grün (2842
+  bestanden, 3 übersprungen); die Hash-Pins der Bestandshelden sind
+  unverändert. Eine manuelle Bedienprüfung auf Geräten steht aus.
+
+*Verbleibende Risiken und nächste Schritte.*
+
+1. Maxima und KO/IN-Zielwerte kommen aus dem berechneten Snapshot, der
+   `tempMods` des Zustands einbezieht. Ändern sie sich zwischen letzter
+   Anzeige und Übernehmen, rechnet die Rast mit dem alten Wert. Ein
+   Neuberechnen im Ablauf bräuchte Katalog und Hausregeln (ARCH-06).
+2. Laden, Ändern und Schreiben ist keine Transaktion gegen parallele
+   Schreibwege, wie bei `updateHeroState`.
+3. Die Würfelprotokolleinträge der Rast tragen jetzt den Zeitpunkt des
+   Speicherns statt den ihres Aufbaus. Der Unterschied liegt im
+   Millisekundenbereich.
+4. Nächste Kandidaten nach demselben Muster (Befunde im Inventar):
+   - die Snapshot-Schreibwege des Zustands: Ressourcen, Zaubereffekte,
+     Würfelprotokoll per `unawaited`, Wunden
+   - danach „Schaden erhalten“ als eigener Ablauf (Voraussetzung für
+     ARCH-01)
+   - ~~`_filterKnownTraitWarnings` wartet mit `rulesCatalogProvider.future`
+     und kann bei einem Katalogfehler hängen.~~ *Erledigt als Kleinfix:*
+     `saveHero` wartet über ein Abo mit Zeitlimit (20 s) und speichert bei
+     Fehler oder Zeitüberschreitung mit ungefilterten Restfragmenten.
+     Nachgewiesen und abgesichert ist der Hänger bei einem nie fertigen
+     Katalog (`test/state/hero_actions_katalog_warten_test.dart`). Weitere
+     `.future`-Wartestellen stehen im Inventar (Befund 2).
 
 ## ARCH-06 — Zusammengehörige Änderungen gemeinsam speichern und synchronisieren
 

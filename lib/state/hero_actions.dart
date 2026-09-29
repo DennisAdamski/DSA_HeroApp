@@ -1,9 +1,11 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
+import 'package:dsa_heldenverwaltung/ablaeufe/zustand_schreiben.dart';
 import 'package:dsa_heldenverwaltung/catalog/catalog_runtime_data.dart';
 import 'package:dsa_heldenverwaltung/catalog/catalog_section_id.dart';
 import 'package:dsa_heldenverwaltung/catalog/hero_trait_text.dart';
@@ -49,6 +51,12 @@ import 'package:dsa_heldenverwaltung/state/hero_providers.dart'
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart'
     show heroStorageLocationProvider;
 
+/// Höchstdauer, die das Speichern eines Helden auf den Regelkatalog wartet.
+///
+/// Wie beim Öffnen eines Helden im Home-Screen; danach wird ohne
+/// Katalogfilter der Parser-Restfragmente gespeichert.
+const Duration kKatalogWartezeitBeimSpeichern = Duration(seconds: 20);
+
 /// Steuert, wie beim Import eines bereits vorhandenen Helden verfahren wird.
 enum ImportConflictResolution {
   /// Ueberschreibt den vorhandenen Helden mit den importierten Daten.
@@ -64,9 +72,17 @@ enum ImportConflictResolution {
 /// zu. Normalisiert AP-Werte, Level und Modifier-Fragmente vor dem Speichern.
 /// Instanzen werden ausschliesslich ueber [heroActionsProvider] bezogen.
 class HeroActions {
-  HeroActions(this._ref);
+  /// Erzeugt die Aktionen; [katalogWartezeit] begrenzt das Warten auf den
+  /// Regelkatalog beim Speichern (Tests setzen sie herab).
+  HeroActions(
+    this._ref, {
+    this.katalogWartezeit = kKatalogWartezeitBeimSpeichern,
+  });
 
   final Ref _ref;
+
+  /// Höchstdauer, die [saveHero] auf einen noch ladenden Regelkatalog wartet.
+  final Duration katalogWartezeit;
 
   /// Legt einen neuen Helden mit Standardattributen an.
   ///
@@ -229,30 +245,32 @@ class HeroActions {
   /// Speichert den Laufzeitzustand (LeP, AsP, KaP, Au, temp. Mods) eines Helden.
   Future<void> saveHeroState(String heroId, HeroState state) async {
     final repo = _ref.read(heroRepositoryProvider);
-    await repo.saveHeroState(heroId, _gestempelt(state));
-  }
-
-  // Frischer Aenderungszeitpunkt fuer einen Zustand, analog zu [saveHero].
-  HeroState _gestempelt(HeroState state) {
-    return state.copyWith(lastModified: DateTime.now().toUtc());
+    await repo.saveHeroState(
+      heroId,
+      mitAenderungszeitpunkt(state, DateTime.now()),
+    );
   }
 
   /// Wendet eine gezielte Änderung auf den frisch geladenen Laufzeitzustand an.
   ///
+  /// Kompatibilitätseinstieg für [aendereGespeichertenZustand] (ARCH-05).
   /// Erhält Felder, die seit dem letzten UI-Aufbau geändert wurden. Dies ist
   /// keine Transaktion gegenüber gleichzeitig laufenden Repository-Schreibwegen.
   Future<void> updateHeroState(
     String heroId,
     HeroState Function(HeroState current) update,
   ) async {
-    final repo = _ref.read(heroRepositoryProvider);
-    final current = await repo.loadHeroState(heroId) ?? const HeroState.empty();
-    await repo.saveHeroState(heroId, _gestempelt(update(current)));
+    await aendereGespeichertenZustand(
+      repository: _ref.read(heroRepositoryProvider),
+      heroId: heroId,
+      aenderung: update,
+      uhr: DateTime.now,
+    );
   }
 
   // Katalogisierte Vor-/Nachteile sollen nicht als Parser-Restfragmente
-  // erscheinen; bei Test- oder Bootstrap-Kontexten ohne Katalog bleibt der
-  // bisherige Parserzustand unverändert.
+  // erscheinen. Ohne Katalog (Fehler, Zeitüberschreitung, Test- oder
+  // Bootstrap-Kontext) bleiben die Fragmente ungefiltert.
   Future<List<String>> _filterKnownTraitWarnings(
     List<String> fragments, {
     RulesCatalog? catalog,
@@ -261,11 +279,9 @@ class HeroActions {
       return fragments;
     }
     try {
-      final RulesCatalog resolvedCatalog;
-      if (catalog != null) {
-        resolvedCatalog = catalog;
-      } else {
-        resolvedCatalog = await _ref.read(rulesCatalogProvider.future);
+      final resolvedCatalog = catalog ?? await _warteAufRegelkatalog();
+      if (resolvedCatalog == null) {
+        return fragments;
       }
       return filterKnownHeroTraitFragments(
         fragments: fragments,
@@ -275,6 +291,31 @@ class HeroActions {
     } on Object {
       return fragments;
     }
+  }
+
+  // Wartet auf den Regelkatalog, liefert bei Fehler oder nach
+  // [katalogWartezeit] aber `null`. Bewusst über ein Abo statt über
+  // `rulesCatalogProvider.future`: jene Future endet in Riverpod 3 nicht
+  // immer (CLAUDE.md), und ein hängendes Laden ließe jedes Speichern hängen.
+  // Das Abo hält die Katalogkette zugleich am Leben.
+  Future<RulesCatalog?> _warteAufRegelkatalog() {
+    final ergebnis = Completer<RulesCatalog?>();
+    final abo = _ref.listen<AsyncValue<RulesCatalog>>(rulesCatalogProvider, (
+      _,
+      naechster,
+    ) {
+      if (ergebnis.isCompleted) {
+        return;
+      }
+      if (naechster.hasValue) {
+        ergebnis.complete(naechster.value);
+      } else if (naechster.hasError) {
+        ergebnis.complete(null);
+      }
+    }, fireImmediately: true);
+    return ergebnis.future
+        .timeout(katalogWartezeit, onTimeout: () => null)
+        .whenComplete(abo.close);
   }
 
   /// Loescht einen Helden und seinen Zustand dauerhaft aus dem Repository.
