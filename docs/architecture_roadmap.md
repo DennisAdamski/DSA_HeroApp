@@ -730,8 +730,9 @@ Commits:
    Speicherns statt den ihres Aufbaus. Der Unterschied liegt im
    Millisekundenbereich.
 4. Nächste Kandidaten nach demselben Muster (Befunde im Inventar):
-   - die Snapshot-Schreibwege des Zustands: Ressourcen, Zaubereffekte,
-     Würfelprotokoll per `unawaited`, Wunden
+   - ~~die Snapshot-Schreibwege des Zustands: Ressourcen, Zaubereffekte,
+     Würfelprotokoll per `unawaited`, Wunden~~ *Erledigt im Teilstand
+     „Snapshot-Schreibwege des Zustands“ unten.*
    - danach „Schaden erhalten“ als eigener Ablauf (Voraussetzung für
      ARCH-01)
    - ~~`_filterKnownTraitWarnings` wartet mit `rulesCatalogProvider.future`
@@ -741,6 +742,95 @@ Commits:
      Nachgewiesen und abgesichert ist der Hänger bei einem nie fertigen
      Katalog (`test/state/hero_actions_katalog_warten_test.dart`). Weitere
      `.future`-Wartestellen stehen im Inventar (Befund 2).
+
+**Teilstand 29.09.2026 (2) — Snapshot-Schreibwege des Zustands.** Befund 1
+des [Schreibpfad-Inventars](schreibpfade_inventar.md) ist behoben. Der
+Hauptpunkt bleibt offen: Die Bogen-Schreibwege und „Schaden erhalten“
+stehen noch aus.
+
+*Befund.* Würfelprotokoll, Ressourcen-Stepper, Inspector-Vitals und -Magie,
+Belastung, Zaubereffekte und Wunden schrieben einen beim Rendern erfassten
+Zustand vollständig zurück. Was ein anderer Schreibweg in der Zwischenzeit
+gespeichert hatte, ging dabei verloren: etwa ein Wurf, der während eines
+offenen Dialogs protokolliert wurde. Selbst `updateHeroState` schützte nicht
+vor zwei nicht abgewarteten Aufrufen. Beide lasen denselben Stand, der
+zweite überschrieb den ersten. Nachgewiesen ist das für zwei direkt
+nacheinander protokollierte Würfe.
+
+*Entscheidungen.*
+
+- **Reihenfolge statt Transaktion:** `aendereGespeichertenZustand` reiht
+  Änderungen je Speicher und Held ein. Die Warteschlange hängt per
+  `Expando` am Speicherobjekt statt an einem globalen oder Riverpod-Zustand.
+  Dadurch profitieren alle bestehenden Aufrufer ohne Umbau, auch
+  `RastAbschliessen`, und getrennte Speicher blockieren einander nicht. Ein
+  Fehler hält die folgenden Änderungen nicht auf. Keine Transaktion
+  gegenüber Schreibwegen an der Funktion vorbei (ARCH-06).
+- **Ein UI-Einstieg:** `aendereZustandMitMeldung`
+  (`lib/ui/screens/shared/zustand_aendern.dart`) lädt frisch, ersetzt nur
+  die eigenen Felder und zeigt Fehler als Snackbar „… nicht gespeichert“.
+  Die UI2-Ressourcenbrücke nutzt denselben Weg.
+- **Absolut oder relativ:** Ressourcen bleiben absolut (der angezeigte Wert
+  ±1 bzw. ±5), wie in der UI2-Brücke. Der Stepper klemmt auf `0..max`; ein
+  relativer Schritt vom gespeicherten Wert könnte ein gespeichertes
+  negatives LeP sonst auf 0 heben. Belastung, Wunden, Unterdrückung und
+  Restdauer zählen dagegen vom gespeicherten Wert, dort gibt es keine
+  solche Grenze.
+- **Regel statt Widget:** Die Zustandsänderungen der Zaubereffekte stehen in
+  `active_spell_state_rules.dart`. Die drei fast gleichen Wege „Wunde
+  hinzufügen“ (Detaildialog, Inspector-Sektion, Inspector-Karte) sind jetzt
+  einer (`fuegeWundeHinzu`).
+- **Kleine Verhaltensänderungen:** Ist der Zustand im Provider noch nicht
+  geladen, schreiben Würfelprotokoll und Zaubereffekte trotzdem, statt still
+  nichts zu tun. `HeroActions.updateHeroState` liefert den gespeicherten
+  Zustand; der Unterdrückungsdialog sieht dadurch den tatsächlich
+  gespeicherten Wundzustand.
+
+Commits:
+
+- `93ebab4` — Reihenfolge je Held in `aendereGespeichertenZustand`, dazu
+  `updateHeroState` mit Rückgabewert.
+- `53700fa` — Regel `active_spell_state_rules.dart` mit Tests.
+- `3dedf8d` — Oberfläche: alle genannten Schreibwege frisch, Fehler
+  sichtbar, Wundabläufe zusammengeführt.
+- Abschluss-Commit mit Inventar und Dokumentation.
+
+*Prüfungen.*
+
+- Ablauftests (`test/ablaeufe/zustand_schreiben_test.dart`): Zwei
+  gleichzeitige Änderungen bleiben beide erhalten; ein Fehler hält die
+  folgende Änderung nicht auf; verschiedene Helden warten nicht aufeinander.
+- Regeltests (`test/rules/active_spell_state_rules_test.dart`): jede
+  Funktion; nur die eigenen Felder ändern sich; Zählen ist wiederholbar.
+- Widgettests (`test/ui/shared/zustand_frisch_schreiben_test.dart`): Ein
+  anderer Schreibweg speichert nach dem Aufbau Wurf, KaP und Bauchwunde.
+  Geprüft wird, dass sie nach jeder Bedienung erhalten bleiben: zwei nicht
+  abgewartete Würfe, Stepper, Belastung mit zwei schnellen Klicks,
+  Zaubereffekt umschalten, Restdauer zählen und Wunde hinzufügen samt
+  Unterdrückungsdialog. Dazu Fehleranzeigen für Stepper und Würfelprotokoll.
+- Gegenproben: Ohne Warteschlange scheitert der Ablauftest mit zwei
+  gleichzeitigen Änderungen. Mit dem alten Oberflächencode scheitern alle
+  acht Widgettests.
+- `flutter analyze --no-pub` ohne Befund, volle Suite grün (2864
+  bestanden, 3 übersprungen). Die Hash-Pins der Bestandshelden sind
+  unverändert. Eine manuelle Bedienprüfung auf Geräten steht aus.
+
+*Verbleibende Risiken und nächste Schritte.*
+
+1. Snapshot-Schreibwege des Zustands bleiben im Übersichtseditor
+   (Editorentwurf, Bogen und Zustand getrennt), beim Anlegen und beim
+   Import. Wer `HeroActions.saveHeroState` nutzt, ist nicht eingereiht.
+2. Ressourcen bleiben absolut: Zwei Klicks, bevor die Oberfläche den ersten
+   Stand zeigt, ergeben einen Schritt statt zwei. Das betrifft nur sehr
+   schnelle Doppelklicks.
+3. Der Inspector-Vitals- und -Magie-Tab haben keinen eigenen Widgettest. Sie
+   nutzen denselben Einstieg wie der geprüfte Stepper.
+4. Snapshot-Schreibwege des **Bogens** bleiben: Dauermodifikatoren,
+   Wundschwelle, Inventar, Kampf und die Sofortaktionen der Übersicht.
+5. Nächster Schritt: „Schaden erhalten“ als eigener Ablauf. Er kann jetzt auf
+   `aendereGespeichertenZustand` und `aendereWundZustand` aufsetzen und ist
+   die Voraussetzung für ARCH-01. Die Korrekturmöglichkeit bleibt an ARCH-06
+   gebunden.
 
 ## ARCH-06 — Zusammengehörige Änderungen gemeinsam speichern und synchronisieren
 

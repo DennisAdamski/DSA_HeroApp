@@ -111,6 +111,18 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   an das auch `HeroActions.updateHeroState` delegiert). Ablaeufe fangen
   Fehler nicht, die aufrufende Oberflaeche zeigt sie. Bestandsaufnahme aller
   Schreibwege: `docs/schreibpfade_inventar.md`.
+- `aendereGespeichertenZustand` reiht Aenderungen je Speicher und Held ein
+  (Warteschlange per `Expando` am Repository); zwei nicht abgewartete Aufrufe
+  ueberschreiben einander so nicht. Laufzeitwerte werden in der Oberflaeche
+  **nie** als beim Rendern erfasster Gesamtzustand geschrieben
+  (`saveHeroState` bleibt Editor, Anlegen und Import vorbehalten), sondern
+  ueber `aendereZustandMitMeldung` (`lib/ui/screens/shared/zustand_aendern.dart`):
+  frisch laden, nur die eigenen Felder ersetzen, Fehler als Snackbar. Wunden
+  laufen darueber in `wund_zustand_speichern.dart`, Zaubereffekte ueber
+  `rules/derived/active_spell_state_rules.dart`. Zaehlende Bedienung
+  (Belastung, Wunden, Restdauer) zaehlt vom gespeicherten Wert, Ressourcen
+  setzen den angezeigten Wert absolut. `test/ui/shared/zustand_frisch_schreiben_test.dart`
+  prueft jeden Weg gegen eine Zwischenaenderung.
 - `CodexPageScaffold` legt eine transparente `Material`-Fläche über den
   Seitenhintergrund, damit `ListTile`-/`ExpansionTile`-Hintergründe und
   Ink-Effekte sichtbar bleiben. Der Regressionstest liegt unter
