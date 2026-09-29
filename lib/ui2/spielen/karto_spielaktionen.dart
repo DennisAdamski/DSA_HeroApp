@@ -17,6 +17,7 @@ class KartoSpielaktionen extends StatelessWidget {
     super.key,
     required this.onProbeSuchen,
     required this.onRast,
+    required this.onSchaden,
     this.kuerzelHinweis,
   });
 
@@ -25,6 +26,9 @@ class KartoSpielaktionen extends StatelessWidget {
 
   /// Öffnet die vorhandene Rastbedienung.
   final VoidCallback onRast;
+
+  /// Öffnet den geführten Ablauf „Schaden erhalten“.
+  final VoidCallback onSchaden;
 
   /// Tastaturkürzel, das dieselbe Suche öffnet, etwa `Strg K`.
   final String? kuerzelHinweis;
@@ -50,6 +54,12 @@ class KartoSpielaktionen extends StatelessWidget {
           onPressed: onRast,
           icon: const Icon(Icons.hotel_outlined),
           label: const Text('Rast'),
+        ),
+        OutlinedButton.icon(
+          key: const ValueKey<String>('karto-spiel-schaden'),
+          onPressed: onSchaden,
+          icon: const Icon(Icons.heart_broken_outlined),
+          label: const Text('Schaden erhalten'),
         ),
         if (kuerzelHinweis != null)
           DecoratedBox(

@@ -98,6 +98,16 @@ abstract interface class KartoBestandsAdapter {
   /// Öffnet die vorhandene Rastbedienung.
   Future<void> rast({required BuildContext context, required String heroId});
 
+  /// Öffnet den geführten Ablauf „Schaden erhalten“.
+  ///
+  /// Gerechnet und gespeichert wird im Bestand (`schaden_rules.dart`,
+  /// Ablauf `SchadenErhalten`); UI2 kennt keine Würfel- oder Wundlogik.
+  Future<void> schadenErhalten({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String heroId,
+  });
+
   /// Öffnet die vorhandene Verwaltung laufender Effekte.
   Future<void> effekte({required BuildContext context, required String heroId});
 
