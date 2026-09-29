@@ -63,16 +63,18 @@ class WundEffekte {
   final int unterdrueckteGesamt;
 }
 
-/// Vier Anzeige-Schwellen fuer die Wunden-UI auf Basis von KO.
+/// Die drei Wundschwellen eines Helden (WdS S. 58).
+///
+/// Mehr SP als [halbKo] schlagen eine Wunde, mehr als [ko] zwei und mehr als
+/// [einhalbKo] drei. Eine vierte Stufe kennt das Regelwerk nicht.
 class WundschwellenStufen {
   const WundschwellenStufen({
     required this.halbKo,
     required this.ko,
     required this.einhalbKo,
-    required this.zweiKo,
   });
 
-  /// Wundschwelle bei 0,5 KO.
+  /// Wundschwelle bei 0,5 KO; die Wundschwelle im engeren Sinn.
   final int halbKo;
 
   /// Wundschwelle bei 1,0 KO.
@@ -80,28 +82,32 @@ class WundschwellenStufen {
 
   /// Wundschwelle bei 1,5 KO.
   final int einhalbKo;
-
-  /// Wundschwelle bei 2,0 KO.
-  final int zweiKo;
 }
 
-/// Berechnet die Wundschwelle des Helden: KO/2 (abgerundet) + Modifikatoren.
+/// Berechnet die Wundschwelle des Helden, also die erste der
+/// [computeWundschwellenStufen]: KO/2 kaufmaennisch gerundet samt
+/// Modifikatoren und Eisern/Glasknochen.
 int computeWundschwelle({
   required int ko,
   List<HeroTalentModifier> mods = const [],
+  String vorteileText = '',
+  String nachteileText = '',
+  int merkmalBonus = 0,
 }) {
-  final basis = ko ~/ 2;
-  var modSumme = 0;
-  for (final m in mods) {
-    modSumme += m.modifier;
-  }
-  return basis + modSumme;
+  return computeWundschwellenStufen(
+    ko: ko,
+    mods: mods,
+    vorteileText: vorteileText,
+    nachteileText: nachteileText,
+    merkmalBonus: merkmalBonus,
+  ).halbKo;
 }
 
-/// Berechnet die vier im Wundendialog angezeigten Wundschwellenstufen.
+/// Berechnet die drei Wundschwellenstufen (WdS S. 58).
 ///
-/// Die KO-basierten Faktoren 0,5 und 1,5 werden kaufmaennisch gerundet.
-/// Zusatzmodifikatoren aus `mods` wirken auf alle vier Stufen. Katalogisierte
+/// Die KO-basierten Faktoren 0,5 und 1,5 werden kaufmaennisch gerundet; das
+/// Regelwerk rechnet mit ganzen Zahlen („halbe KO ist gerundet 7“ bei KO 13).
+/// Zusatzmodifikatoren aus `mods` wirken auf alle Stufen. Katalogisierte
 /// Vor-/Nachteile bringen ihren Bonus als [merkmalBonus] mit (Katalogwirkung
 /// `wundschwelle`, ARCH-02); in den frei wirkenden Texten gibt `Eisern`
 /// weiterhin pauschal `+2` und `Glasknochen` pauschal `-2`.
@@ -123,7 +129,6 @@ WundschwellenStufen computeWundschwellenStufen({
     halbKo: _roundKaufmaennisch(ko * 0.5) + gesamtBonus,
     ko: ko + gesamtBonus,
     einhalbKo: _roundKaufmaennisch(ko * 1.5) + gesamtBonus,
-    zweiKo: ko * 2 + gesamtBonus,
   );
 }
 

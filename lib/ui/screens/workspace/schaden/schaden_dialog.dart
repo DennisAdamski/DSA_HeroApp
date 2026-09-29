@@ -186,9 +186,12 @@ class _SchadenPanelState extends ConsumerState<SchadenPanel> {
     _w20Geaendert(_w20.text);
   }
 
+  // TP(A)-Treffer schlagen seltener Wunden: die Wundschwelle ist
+  // üblicherweise um 2 erhöht (WdS S. 58). Der Wert bleibt änderbar.
   void _setzeArt(SchadensArt art) {
     setState(() {
       _art = art;
+      _wsMod.text = art == SchadensArt.ausdauer ? '2' : '0';
       _wundenUeberschrieben = null;
     });
   }

@@ -83,7 +83,7 @@ void main() {
     expect(eintrag.timestamp, _jetzt);
   });
 
-  test('Ausdauerschaden ändert nur AuP', () async {
+  test('Ausdauerschaden senkt AuP und mit der Hälfte die LeP', () async {
     final repo = FakeRepository(states: {'held': _startzustand});
 
     await _ablauf(repo).uebernehmeSchaden(
@@ -93,12 +93,44 @@ void main() {
 
     final gespeichert = (await repo.loadHeroState('held'))!;
     expect(gespeichert.currentAu, 18);
-    expect(gespeichert.diceLog.single.subtitle, 'TP(A) 8 − RS 1 = 7 SP(A)');
+    // 7 SP(A): die Hälfte, kaufmännisch gerundet, trifft die LeP.
+    expect(gespeichert.currentLep, 26);
+    final eintrag = gespeichert.diceLog.single;
+    expect(eintrag.subtitle, 'TP(A) 8 − RS 1 = 7 SP(A) · 4 SP auf LeP');
+    expect(eintrag.total, 4);
     expectNurGeaendert(_startzustand.toJson(), gespeichert.toJson(), {
       'currentAu',
+      'currentLep',
       'diceLog',
       'lastModified',
     });
+  });
+
+  test('Ausdauerschaden kann über die echten SP Wunden schlagen', () async {
+    final repo = FakeRepository(states: {'held': _startzustand});
+
+    await _ablauf(repo).uebernehmeSchaden(
+      heroId: 'held',
+      buchung: SchadensBuchung(
+        art: SchadensArt.ausdauer,
+        tp: 22,
+        rs: 0,
+        zone: WundZone.kopf,
+        wunden: 1,
+        kopfIniWurf: 5,
+        angriffsModifikator: 2,
+      ),
+    );
+
+    final gespeichert = (await repo.loadHeroState('held'))!;
+    expect(gespeichert.currentAu, 3);
+    expect(gespeichert.currentLep, 19);
+    expect(gespeichert.wpiZustand.wundenInZone(WundZone.kopf), 1);
+    expect(
+      gespeichert.diceLog.single.subtitle,
+      'TP(A) 22 − RS 0 = 22 SP(A) · 11 SP auf LeP · Kopf · WS +2 · 1 Wunde · '
+      'INI −5',
+    );
   });
 
   test(

@@ -9,10 +9,11 @@ const String schadenProtokollTitel = 'Schaden erhalten';
 /// Baut den Würfelprotokolleintrag einer Schadensbuchung.
 ///
 /// Der Eintrag macht die Buchung nachvollziehbar, damit sie von Hand
-/// korrigiert werden kann: TP, RS, SP, Zone, tatsächlich eingetragene
-/// Wunden, Zusatzschaden und INI-Wurf. Er nutzt die vorhandene Probeart
-/// [ProbeType.damage], damit ältere App-Versionen keinen unbekannten Typ
-/// lesen. `total` ist der Gesamtverlust der Ressource.
+/// korrigiert werden kann: TP, RS, SP (bei TP(A) SP(A) und die echten SP
+/// auf LeP), Zone, tatsächlich eingetragene Wunden, Zusatzschaden und
+/// INI-Wurf. Er nutzt die vorhandene Probeart [ProbeType.damage], damit
+/// ältere App-Versionen keinen unbekannten Typ lesen. `total` ist der
+/// LeP-Verlust.
 DiceLogEntry baueSchadensProtokoll({
   required SchadensBuchung buchung,
   required int hinzugefuegteWunden,
@@ -22,9 +23,10 @@ DiceLogEntry baueSchadensProtokoll({
   final teile = <String>[
     '${ausdauer ? 'TP(A)' : 'TP'} ${buchung.tp} − RS ${buchung.rs} = '
         '${buchung.sp} ${ausdauer ? 'SP(A)' : 'SP'}',
+    if (ausdauer) '${buchung.echteSp} SP auf LeP',
   ];
   final zone = buchung.zone;
-  if (!ausdauer && zone != null) {
+  if (zone != null) {
     teile.add(wundZoneLabel[zone]!);
   }
   if (buchung.angriffsModifikator != 0) {

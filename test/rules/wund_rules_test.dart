@@ -6,10 +6,24 @@ import 'package:dsa_heldenverwaltung/rules/derived/wund_rules.dart';
 
 void main() {
   group('computeWundschwelle', () {
-    test('Basis = KO/2 abgerundet', () {
+    test('Basis = KO/2 kaufmaennisch gerundet (WdS S. 58)', () {
       expect(computeWundschwelle(ko: 14), 7);
-      expect(computeWundschwelle(ko: 15), 7);
+      expect(computeWundschwelle(ko: 15), 8);
+      expect(computeWundschwelle(ko: 13), 7);
       expect(computeWundschwelle(ko: 10), 5);
+    });
+
+    test('entspricht der ersten Stufe samt Eisern und Glasknochen', () {
+      expect(computeWundschwelle(ko: 13, vorteileText: 'Eisern'), 9);
+      expect(computeWundschwelle(ko: 13, merkmalBonus: 2), 9);
+      expect(computeWundschwelle(ko: 14, nachteileText: 'Glasknochen'), 5);
+      for (final ko in [7, 12, 13, 15, 18]) {
+        expect(
+          computeWundschwelle(ko: ko, vorteileText: 'Eisern'),
+          computeWundschwellenStufen(ko: ko, vorteileText: 'Eisern').halbKo,
+          reason: 'KO $ko',
+        );
+      }
     });
 
     test('mit positiven Modifikatoren', () {
@@ -55,7 +69,6 @@ void main() {
       expect(stufen.halbKo, 7);
       expect(stufen.ko, 14);
       expect(stufen.einhalbKo, 21);
-      expect(stufen.zweiKo, 28);
     });
 
     test('ungerade KO rundet 0,5 und 1,5 kaufmaennisch', () {
@@ -64,7 +77,6 @@ void main() {
       expect(stufen.halbKo, 8);
       expect(stufen.ko, 15);
       expect(stufen.einhalbKo, 23);
-      expect(stufen.zweiKo, 30);
     });
 
     test('Eisern gibt +2 auf alle Stufen', () {
@@ -76,7 +88,6 @@ void main() {
       expect(stufen.halbKo, 9);
       expect(stufen.ko, 16);
       expect(stufen.einhalbKo, 23);
-      expect(stufen.zweiKo, 30);
     });
 
     test('Glasknochen gibt -2 auf alle Stufen', () {
@@ -88,7 +99,6 @@ void main() {
       expect(stufen.halbKo, 5);
       expect(stufen.ko, 12);
       expect(stufen.einhalbKo, 19);
-      expect(stufen.zweiKo, 26);
     });
 
     test('kombiniert Textbonus mit benannten Wundschwelle-Modifikatoren', () {
@@ -104,7 +114,6 @@ void main() {
       expect(stufen.halbKo, 10);
       expect(stufen.ko, 17);
       expect(stufen.einhalbKo, 25);
-      expect(stufen.zweiKo, 32);
     });
   });
 
