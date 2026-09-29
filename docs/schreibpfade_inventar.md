@@ -1,7 +1,7 @@
 # Schreibpfade der Heldenverwaltung (ARCH-05)
 
-Stand: 29.09.2026, nachgeführt nach dem zweiten ARCH-05-Teilstand
-(Snapshot-Schreibwege des Zustands). Bestandsaufnahme für
+Stand: 29.09.2026, nachgeführt nach dem fünften ARCH-05-Teilstand
+(Sofortaktionen des Bogens). Bestandsaufnahme für
 [ARCH-05 — Schreibende Aktionen fachlich aufteilen](architecture_roadmap.md#arch-05--schreibende-aktionen-fachlich-aufteilen).
 Sie beschreibt, **wo** Heldendaten heute geschrieben werden, mit welchen
 Eingaben, Vorbedingungen, Seiteneffekten und Speichergrenzen. Zeilenangaben
@@ -29,7 +29,10 @@ Begriffe:
   währenddessen eintreffen, bewertet das Repository erst danach. Der Bogen
   wartet weiterhin auf seinen Upload.
 - Bogen und Zustand sind **getrennte** Schreibvorgänge. Es gibt keine
-  Transaktion über beide und keine über Laden → Ändern → Schreiben.
+  Transaktion über beide und keine über Laden → Ändern → Schreiben. Beide
+  haben aber je eine Warteschlange je Held (`ReihenfolgeJeHeld`), sodass
+  Schreibwege über `HeroActions` einander nicht zwischen Laden und Speichern
+  überholen.
 - Avatarbilder liegen außerhalb des Heldenmodells (`AvatarFileStorage`,
   Firebase Storage), Gruppen in Firestore und `ExterneHeldenRepository`.
 
@@ -43,13 +46,24 @@ Abhängigkeiten per Konstruktor; die Provider liegen in
 | Ablauf | Einstieg | Schreibt | Stand |
 |---|---|---|---|
 | Rast abschließen | `RastAbschliessen` (`lib/ablaeufe/rast_abschliessen.dart`) | Zustand, frisch | extrahiert |
+| Schaden erhalten | `SchadenErhalten` (`lib/ablaeufe/schaden_erhalten.dart`) | Zustand, frisch | extrahiert |
 | Zustand frisch ändern | `aendereGespeichertenZustand` (`lib/ablaeufe/zustand_schreiben.dart`) | Zustand, frisch, je Held nacheinander | Baustein, `HeroActions.updateHeroState` delegiert |
+| Bogen frisch ändern | `aendereGespeichertenHelden`, `reiheBogenvorgangEin` (`lib/ablaeufe/held_schreiben.dart`) | Bogen, frisch, je Held nacheinander | Baustein, `HeroActions.updateHero` delegiert, `saveHero` reiht sich ein |
 
 `aendereGespeichertenZustand` reiht Änderungen desselben Helden über
 denselben Speicher ein: Jede lädt erst, wenn die vorige gespeichert oder
-gescheitert ist. Die Warteschlange hängt per `Expando` am Speicherobjekt.
-Schreibwege, die an der Funktion vorbei speichern (`saveHeroState`), sind
-nicht eingereiht.
+gescheitert ist. Die Warteschlange (`ReihenfolgeJeHeld`,
+`lib/ablaeufe/reihenfolge_je_held.dart`) hängt per `Expando` am
+Speicherobjekt. Schreibwege, die an der Funktion vorbei speichern
+(`saveHeroState`), sind nicht eingereiht.
+
+Für den Bogen gilt dasselbe mit einer eigenen Warteschlange:
+`aendereGespeichertenHelden` lädt frisch, ändert und speichert über die
+injizierte Normalisierung von `HeroActions`. Gibt die Änderung dasselbe
+Objekt zurück, wird nichts gespeichert. Anders als beim Zustand reiht sich
+auch das direkte `saveHero` (Editoren, Steigerungsübernahme) ein; es
+überholt eine laufende frische Änderung also nicht, und die Hash-Prüfung
+der Steigerungsrunde sieht jede eingereihte Änderung.
 
 In der Oberfläche ist `aendereZustandMitMeldung`
 (`lib/ui/screens/shared/zustand_aendern.dart`) der gemeinsame Einstieg:
@@ -58,6 +72,12 @@ frisch über `updateHeroState`, Fehler „… nicht gespeichert“ im nächsten
 Wunden nutzen darüber `aendereWundZustand` und `fuegeWundeHinzu`
 (`lib/ui/screens/workspace/wund_zustand_speichern.dart`), Zaubereffekte die
 Regeln aus `lib/rules/derived/active_spell_state_rules.dart`.
+
+Für Sofortaktionen am Bogen ist `aendereHeldMitMeldung` (dieselbe Datei)
+der Einstieg: frisch über `updateHero`, derselbe Fehlerweg. Bei offener
+Steigerungsrunde schreibt er nicht und meldet „Während einer Planung ist der
+Heldenbogen gesperrt.“; Inspector-Statuswerte und das Wundschwellen-Zahnrad
+sind dann zusätzlich sichtbar gesperrt.
 
 ## `HeroActions` (`lib/state/hero_actions.dart`)
 
@@ -86,8 +106,8 @@ Jeder Bogenschreibweg über `HeroActions` durchläuft `saveHero`:
 | Methode | Schreibt | Vorbedingungen / Seiteneffekte |
 |---|---|---|
 | `createHero` | Bogen (über `saveHero`), Zustand direkt über das Repository (ohne Zeitstempel), Auswahl | Heldenlimit, neue UUID, Standardtalente, wählt den Helden aus |
-| `saveHero` | Bogen | Normalisierung oben |
-| `updateHero` | Bogen, frisch | wie `saveHero`; keine Transaktion |
+| `saveHero` | Bogen | Normalisierung oben; je Held eingereiht (`reiheBogenvorgangEin`), liefert den gespeicherten Helden |
+| `updateHero` | Bogen, frisch, je Held nacheinander | delegiert an `aendereGespeichertenHelden`; dasselbe Objekt zurück heißt: nichts speichern; liefert den gespeicherten Helden; keine Transaktion |
 | `saveHeroState` | Zustand, Snapshot des Aufrufers | stempelt `lastModified` |
 | `updateHeroState` | Zustand, frisch | delegiert an `aendereGespeichertenZustand`, liefert den gespeicherten Zustand |
 | `deleteHero` | löscht Bogen und Zustand, Auswahl | — |
@@ -109,22 +129,25 @@ Domainlogik.
 | Schaden erhalten | `SchadenPanel` (`workspace/schaden/schaden_dialog.dart`, Inspector-Vitals und UI2-Schnellaktion) → `SchadenErhalten` | Zustand | frisch, je Held nacheinander | ja, im Panel | nein, `schaden_rules.dart` |
 | Steigerung übernehmen | `AdvancementSessionController.commit` (`state/advancement_providers.dart`) | Bogen | Hash-Prüfung | ja (Snackbar) | nein, `commitAdvancements` |
 | Anzeige nicht passender SF | `setShowInapplicableSpecialAbilities` (ebd.) | Bogen **direkt über das Repository**, ohne Normalisierung | Hash-Prüfung | ja | nein |
-| Inventar | `hero_inventory/inventory_mutations.dart` (`_saveEntries`, `_saveDukaten`) | Bogen | Snapshot | teilweise | Verknüpfungs- und Geschossabgleich |
-| Kampfkonfiguration | `hero_combat/combat_state_helpers.dart` (Sofortspeichern und Editor) | Bogen | Snapshot | teilweise | Slotprüfung, Talentverteilung, AP-Delta |
+| Inventar (Löschen, Dukaten) | `hero_inventory/inventory_mutations.dart` (`_deleteEntry`, `_saveDukaten`, `_verschiebeDukaten`) | Bogen | frisch, je Held nacheinander; Löschen findet den Eintrag über den Inhalt, Münzknöpfe zählen vom gespeicherten Betrag | ja (Snackbar) | nein, `inventar_aenderung_rules.dart` |
+| Inventar (Editor) | `hero_inventory/inventory_mutations.dart` (`_saveEntries`) | Bogen | Snapshot, eingereiht | ja, im Editor | Verknüpfungs- und Geschossabgleich |
+| Kampfkonfiguration | `hero_combat/combat_state_helpers.dart` (Sofortspeichern und Editor) | Bogen | Snapshot, eingereiht | teilweise | Slotprüfung, Talentverteilung, AP-Delta |
 | Ressourcen (LeP, Au, AsP, KaP) | `resource_stepper_dialog.dart`, `inspector_vitals_tab.dart`, `inspector_magie_tab.dart` | Zustand | frisch, Schritt vom gespeicherten Wert (`RessourcenAenderung`) | ja (im Blatt bzw. Tab) | Grenzen nur in Schrittrichtung |
 | Belastung | `inspector_belastung_section.dart` | Zustand | frisch, zählt vom gespeicherten Wert | ja (im Inspector-Tab bzw. Zustandsblock) | Untergrenze 0 |
 | Ressourcen UI2 | `ui/bridges/karto_spiel_bruecke.dart` | Zustand | frisch, Schritt vom gespeicherten Wert | ja (im Blatt) | nein |
-| Dauermodifikatoren | `inspector_statuswerte_block.dart` | Bogen | Snapshot | nein | — |
-| Wunden | `wunden_detail_dialog.dart`, `inspector_wunden_card.dart` über `wund_zustand_speichern.dart` | Zustand (+ Bogen für Wundschwelle, Snapshot) | Zustand frisch, zählt vom gespeicherten Wundzustand | ja (im Dialog bzw. Tab) | Wundeffekte für den Unterdrückungsdialog |
+| Dauermodifikatoren | `inspector_statuswerte_block.dart` | Bogen | frisch, Schritt vom gespeicherten Wert; bei offener Planung gesperrt | ja (im Inspector-Tab bzw. Zustandsblock) | nein, `modifikator_aenderung_rules.dart` |
+| Wunden | `wunden_detail_dialog.dart`, `inspector_wunden_card.dart` über `wund_zustand_speichern.dart` | Zustand (+ Bogen für Wundschwelle) | Zustand frisch, zählt vom gespeicherten Wundzustand; Wundschwelle frisch, bei offener Planung gesperrt | ja (im Dialog bzw. Tab) | Wundeffekte für den Unterdrückungsdialog |
 | Zaubereffekte | `shared/active_spell_effects_dialog.dart` | Zustand | frisch, Regeln aus `active_spell_state_rules.dart` | ja (im Dialog) | nein |
 | Würfelprotokoll | `shared/dice_log_persistence.dart` (`persistDiceLogEntries`, oft per `unawaited`) | Zustand | frisch, je Held nacheinander | ja (Snackbar in `showLoggedProbeDialog`) | — |
 | Abenteuerblatt UI2 | `ui2/spielen/karto_abenteuerblatt.dart` | Bogen | frisch (`updateHero`) | ja, im Blatt | `ersetzeAbenteuer` (UI2) |
-| Abenteuer (Bestand) | `hero_notes_tab.dart` (Editor, Abschluss, Wiedereröffnen) | Bogen | Editorentwurf | teilweise | Belohnungen buchen/zurücknehmen |
+| Abenteuer (Bestand) | `hero_notes_tab.dart` (Editor) | Bogen | Editorentwurf, eingereiht | teilweise | — |
+| Abenteuer abschließen / wiedereröffnen | `hero_notes_tab.dart` (`_completeAdventureFor`, `_reopenAdventureFor`) | Bogen | frisch, nie doppelt gebucht | ja (Snackbar) | nein, `schliesseAbenteuerAb`/`oeffneAbenteuerWieder` |
 | Reisebericht | `hero_reisebericht_tab.dart` | Bogen | Editorentwurf | teilweise | Belohnungen |
 | Merkmalsblatt UI2 | `ui2/merkmale/karto_merkmalsblatt.dart` | Bogen | frisch (`updateHero`) | ja, im Blatt | Merkmalsänderung über Regeln |
 | Übersicht (Editor) | `hero_overview_tab.dart` | Bogen **und** Zustand, zwei getrennte Schreibvorgänge | Editorentwurf | teilweise | Merkmalsentwurf, Zahlengrenzen |
-| Übersicht (Sofortaktionen) | `hero_overview_tab.dart`, `hero_overview_stats_section.dart`, `hero_overview_epic_section.dart`, `hero_overview_base_info_section.dart` | Bogen | Snapshot | teilweise | Epik-Start-AP |
-| Talente / Magie / Begleiter (Editor) | `hero_talents_edit_actions.dart`, `hero_magic_tab.dart`, `hero_begleiter_tab.dart` | Bogen | Editorentwurf | teilweise | Talentverteilung, Meta-Talente, AP-Delta |
+| Übersicht (Sofortaktionen) | `hero_overview_tab.dart`, `hero_overview_stats_section.dart`, `hero_overview_epic_section.dart`, `hero_overview_base_info_section.dart` | Bogen | frisch; AP als Schritt, Ressourcenschalter nur umgestellte | ja (Ressourcenblatt im Blatt, sonst Snackbar) | nein, u. a. `epic_status_rules.dart` |
+| Talente / Magie / Begleiter (Editor) | `hero_talents_edit_actions.dart`, `hero_magic_tab.dart`, `hero_begleiter_tab.dart` | Bogen | Editorentwurf, eingereiht | teilweise | Talentverteilung, Meta-Talente, AP-Delta |
+| Vertrauten-Steigerung | `hero_begleiter_tab.dart` (`_bucheSteigerung`) | Bogen | frisch; abgewiesen, wenn der Ausgangsstand sich geändert hat | ja (Snackbar) | nein, `begleiter_aenderung_rules.dart` |
 | Avatar | `hero_overview/hero_avatar_section.dart`, `avatar_generation_dialog.dart` | Datei + Bogen | frisch | ja | — |
 | Gruppen | `hero_gruppe/` | Firestore + Bogen | frisch | ja | — |
 | Anlegen / Löschen / Import / Export | `heroes_home_screen.dart`, `workspace_import_export_actions.dart` | Bogen, Zustand | — | ja | — |
@@ -186,6 +209,11 @@ Domainlogik.
    es nur noch im Übersichtseditor (Editorentwurf, Befund 3), beim
    Anlegen und beim Import. Snapshot-Schreibwege des **Bogens** bleiben
    (Dauermodifikatoren, Wundschwelle, Inventar, Kampf, Übersicht).
+   *Teilweise behoben im fünften ARCH-05-Teilstand:* Die Sofortaktionen des
+   Bogens (Dauermodifikatoren, Wundschwelle, Übersicht, Inventar-Löschen und
+   Dukaten, Abenteuerabschluss, Vertrauten-Steigerung) schreiben frisch und je
+   Held nacheinander; `saveHero` ist eingereiht. Snapshots bleiben
+   Inventareditor, Kampf-Sofortspeichern und die Editorentwürfe.
 2. ~~**`_filterKnownTraitWarnings` wartet mit `rulesCatalogProvider.future`**~~
    *Behoben:* `saveHero` wartet jetzt über ein Abo auf den Katalog
    (`HeroActions._warteAufRegelkatalog`), höchstens
@@ -211,4 +239,8 @@ Domainlogik.
 6. **Regelrechnung in Widgets** vor dem Schreiben: Inventar-/Kampfabgleich,
    Talentverteilung, Wundeffekte, Abenteuer- und Reiseberichtbelohnungen,
    Epik-Start-AP. Die Regelfunktionen existieren, nur die Orchestrierung
-   liegt im Widget.
+   liegt im Widget. *Teilweise behoben:* Epik-Start-AP
+   (`epic_status_rules.dart`), Abenteuerabschluss und -rücknahme
+   (`schliesseAbenteuerAb`, `oeffneAbenteuerWieder`) und die
+   Vertrauten-Steigerung (`begleiter_aenderung_rules.dart`) liegen jetzt als
+   Regeln vor.

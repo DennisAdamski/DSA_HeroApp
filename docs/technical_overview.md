@@ -2205,7 +2205,8 @@ mit Katalogbezug; `fuegeMerkmalHinzu` summiert gleiche Auswahl desselben
 Eintrags. Ein getippter Text wird per `ordneMerkmalZu` zugeordnet.
 
 **UI2-Merkmalsblatt.** `lib/ui2/merkmale/karto_merkmalsblatt.dart` schreibt
-ohne Entwurf direkt: `HeroActions.updateHero` mit `aendereMerkmale` (eine
+ohne Entwurf direkt: `HeroActions.updateHero` (frisch, je Held eingereiht)
+mit `aendereMerkmale` (eine
 Merkmalsart, Ausgangsliste ist die wirksame, bei Bestandshelden also die
 Laufzeitmigration) bzw. `loeseMerkmalAbweichung`. `aendereMerkmale` wirft bei
 offener Abweichung, damit kein Schreibweg sie nebenbei aufloest. Geaendert
@@ -3004,7 +3005,8 @@ ueber die Settings-Katalogverwaltung bearbeitet.
   darauf und liefert den gespeicherten Zustand.
 - `aendereZustandMitMeldung` (`lib/ui/screens/shared/zustand_aendern.dart`)
   ist der UI-Einstieg für Laufzeitwerte: frisch laden, nur die eigenen
-  Felder ersetzen, Fehler als Snackbar „… nicht gespeichert“. Ihn nutzen
+  Felder ersetzen, Fehler „… nicht gespeichert“ im Fehlerbereich (siehe
+  unten). Ihn nutzen
   Ressourcen-Stepper, Inspector-Vitals und -Magie, Belastung, Zaubereffekte,
   Wunden und die UI2-Ressourcenbrücke. `persistDiceLogEntries` hängt über
   `updateHeroState` an; `showLoggedProbeDialog` meldet Fehler des nicht
@@ -3084,6 +3086,61 @@ ueber die Settings-Katalogverwaltung bearbeitet.
   `KartoBestandsAdapter.schadenErhalten`.
 - Keine Rücknahme: korrigiert wird von Hand anhand des Protokolleintrags;
   eine echte Rücknahme gehört zu ARCH-06.
+
+### Update 2026-09-29: Bogen-Sofortaktionen frisch schreiben (ARCH-05)
+
+- Warteschlange: `ReihenfolgeJeHeld` (`lib/ablaeufe/reihenfolge_je_held.dart`)
+  ist der gemeinsame Baustein: Vorgänge je Speicher und Held nacheinander,
+  per `Expando` am Repository. Zustand und Bogen haben je eine eigene
+  Instanz, weil sie getrennt gespeichert werden.
+- `aendereGespeichertenHelden` (`lib/ablaeufe/held_schreiben.dart`) lädt den
+  Bogen frisch, wendet die Änderung an und speichert über die injizierte
+  Normalisierung (`BogenSpeichern`). Gibt die Änderung dasselbe Objekt
+  zurück, wird nichts gespeichert. `reiheBogenvorgangEin` reiht beliebige
+  Bogenvorgänge ein.
+- `HeroActions.saveHero` läuft ebenfalls durch diese Warteschlange und liefert
+  den normalisierten, gespeicherten Helden; der eigentliche Rumpf ist
+  `_speichereNormalisiert`. So landet ein Editorentwurf nie zwischen Laden und
+  Schreiben einer frischen Änderung, und die Hash-Prüfung der
+  Steigerungsrunde sieht jede eingereihte Änderung. `updateHero` delegiert an
+  `aendereGespeichertenHelden` und liefert den gespeicherten Helden. Eine
+  Änderung darf selbst nie `saveHero`/`updateHero` aufrufen, sie wartete auf
+  sich selbst.
+- UI-Einstieg: `aendereHeldMitMeldung` (`lib/ui/screens/shared/zustand_aendern.dart`)
+  neben `aendereZustandMitMeldung`, mit demselben Fehlerweg
+  (`ZustandFehlerBereich`, sonst Snackbar; `StateError` ohne „Bad state:“).
+  Bei offener Steigerungsrunde schreibt er nicht, sondern meldet
+  `kBogenWaehrendPlanungGesperrt`.
+- Regeln (alle ändern nur ihre Felder, rechnen vom gespeicherten Stand):
+  `modifikator_aenderung_rules.dart` (`Dauermodifikator`,
+  `mitDauermodifikator` mit `RessourcenAenderung`, `mitBenanntenStatModifikatoren`,
+  `mitBenanntenEigenschaftsModifikatoren`), `mitApSchritt`
+  (`ap_level_rules.dart`), `mitRessourcenSchaltern` (nur umgestellte
+  Schalter, `resource_activation_rules.dart`), `quittiereEigenschaftsHinweis`
+  (senkt nie eine neuere Schemaversion, `attribute_start_rules.dart`),
+  `epic_status_rules.dart` (`aktiviereEpischenStatus` mit Start-AP und
+  offenen Talenten des gespeicherten Helden, nie doppelt;
+  `korrigiereEpischenStatus`), `inventar_aenderung_rules.dart`
+  (`ohneInventarEintrag` findet den Eintrag über seinen Inhalt statt die
+  Position und lässt die Kampfkonfiguration unberührt, `mitDukaten`,
+  `mitDukatenSchritt`), `schliesseAbenteuerAb`/`oeffneAbenteuerWieder`
+  (`adventure_rewards_rules.dart`, nie doppelt gebucht, Notizen des
+  gespeicherten Abenteuers bleiben), `steigereBegleiter` samt
+  `BegleiterSteigerungsziel` (`companion_steigerung_rules.dart`, prüft den
+  Ausgangsstand) und `begleiter_aenderung_rules.dart`
+  (`bucheBegleiterSteigerung`, `mitVertrautenmagieAmBegleiter`,
+  `mitBegleiterStartwerten`).
+- Umgestellte Sofortaktionen: Inspector-Statuswerte (Schritt vom
+  gespeicherten Wert; bei offener Planung gesperrt mit Hinweis, BE bleibt),
+  Wundschwellen-Zahnrad im Wundendialog (bei Planung gesperrt),
+  Übersicht (Ressourcenschalter, AP addieren, Grundwert- und
+  Eigenschaftsmodifikatoren, Epik, Hinweisquittung), Inventar (Löschen,
+  Dukaten; Münzknöpfe melden `onSchritt`), Abenteuer abschließen und
+  wiedereröffnen, Vertrauten-Steigerung. Der Ressourcendialog zeigt Fehler im
+  Blatt und bleibt offen.
+- Snapshots bleiben: Editorentwürfe (Übersicht, Talente, Magie, Begleiter,
+  Notizen, Reisebericht), Inventareditor und Kampf-Sofortspeichern. Sie sind
+  aber eingereiht.
 
 ### Update 2026-08-23: Aventurischer Kalender und aktuelles Alter
 

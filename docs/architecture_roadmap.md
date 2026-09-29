@@ -640,6 +640,9 @@ Regelmodulen. Riverpod bindet die Abläufe an die Oberfläche.
   Teilstand.)*
 - [ ] Weitere Abläufe nach demselben Prinzip entflechten; bestehende Aufrufer
   schrittweise migrieren und benötigte Kompatibilitätseinstiege erhalten.
+  *(Stand 29.09.2026: Rast, Laufzeitzustand, Schaden erhalten und die
+  Sofortaktionen des Bogens sind frisch; offen sind Inventareditor, Kampf
+  und die Editorentwürfe, siehe Teilstände (1) bis (5).)*
 
 **Abnahme:** Abläufe sind ohne gerenderte Oberfläche prüfbar. Normalisierung und
 Validierung haben je eine klare Zuständigkeit. Widgets und Provider enthalten
@@ -830,6 +833,8 @@ Commits:
    nutzen denselben Einstieg wie der geprüfte Stepper.
 4. Snapshot-Schreibwege des **Bogens** bleiben: Dauermodifikatoren,
    Wundschwelle, Inventar, Kampf und die Sofortaktionen der Übersicht.
+   *Die Sofortaktionen sind im Teilstand (5) behoben; Inventareditor und
+   Kampf bleiben.*
 5. ~~Nächster Schritt: „Schaden erhalten“ als eigener Ablauf. Er kann jetzt auf
    `aendereGespeichertenZustand` und `aendereWundZustand` aufsetzen und ist
    die Voraussetzung für ARCH-01. Die Korrekturmöglichkeit bleibt an ARCH-06
@@ -999,9 +1004,10 @@ Commits:
    *Behoben in Teilstand (4):* `computeWundschwelle` ist die erste Stufe.
 5. Kein Encounter: Schaden wird nicht aus einem Angriff übergeben, sondern
    eingetragen (Spielmodus-Konzept Phase 3).
-6. Nächster Schritt: die Snapshot-Schreibwege des **Bogens**
+6. ~~Nächster Schritt: die Snapshot-Schreibwege des **Bogens**
    (Dauermodifikatoren, Wundschwelle, Inventar, Kampf, Sofortaktionen der
-   Übersicht).
+   Übersicht).~~ *Sofortaktionen erledigt im Teilstand (5); Inventareditor
+   und Kampf sind der nächste Schritt.*
 
 **Teilstand 29.09.2026 (4) — Schadensregeln per dsa-rules-MCP validiert.**
 Die offenen Annahmen aus Teilstand (3) sind gegen *Wege des Schwerts* (WdS),
@@ -1063,10 +1069,166 @@ ohne Befund, volle Suite grün (2921 bestanden, 3 übersprungen).
    überschritten ist (WdS S. 85). Das deckt die änderbare Wundzahl ab.
 3. Mit Trefferzonen *ersetzen* die Zonenwunden (WdS S. 109) die pauschalen
    −2 je Wunde (S. 57); `computeWundEffekte` addiert beide. Das ist eigens
-   gegen Regelwerk und Hausregeln zu prüfen.
+   gegen Regelwerk und Hausregeln zu prüfen. *Geprüft im Teilstand (5),
+   siehe Folgeauftrag „Zonenwunden nach WdS“ unten.*
 4. Die Tabelle der Zonenwunden kennt weitere Folgen (Kopf: MU/KL/IN −2;
    Brust/Bauch: KO/KK −1; dritte Wunde: Bewusstlosigkeit und 1 LeP je KR),
-   die das Modell nicht abbildet.
+   die das Modell nicht abbildet. *Ebenfalls Teil des Folgeauftrags.*
+
+**Teilstand 29.09.2026 (5) — Sofortaktionen des Bogens frisch.** Befund 1
+des [Schreibpfad-Inventars](schreibpfade_inventar.md) ist für die
+Sofortaktionen des Bogens behoben. Der Hauptpunkt bleibt offen, weil der
+Inventareditor, das Kampf-Sofortspeichern und die Editorentwürfe weiter
+Snapshots schreiben.
+
+*Befund.* Dauermodifikatoren, Wundschwelle, die Sofortaktionen der
+Übersicht, Inventar-Löschen und Dukaten, Abenteuerabschluss und
+Vertrauten-Steigerung schrieben einen beim Rendern erfassten Bogen ganz
+zurück. Was ein anderer Weg (UI2-Blatt, Editor, anderes Gerät) zwischendurch
+gespeichert hatte, ging verloren. Zwei schnelle Klicks auf „GS +“ zählten
+einmal, Fehler blieben meist unsichtbar. `updateHero` lud zwar frisch, war
+aber nicht eingereiht. Eine offene Steigerungsrunde brach jede dieser
+Änderungen still („Der Held wurde inzwischen geändert“). Das Löschen im
+Inventar schrieb außerdem die Geschossmengen des Snapshots zurück, und der
+Abenteuerabschluss prüfte den Doppelabschluss nur an der Anzeige.
+
+*Entscheidungen (mit dem Nutzer abgestimmt: Umfang „Sofortaktionen“,
+Planung „gesperrt mit Hinweis“).*
+
+- **Warteschlange für den Bogen, auch für `saveHero`:**
+  `aendereGespeichertenHelden` (`lib/ablaeufe/held_schreiben.dart`) lädt
+  frisch und speichert über die injizierte Normalisierung. `updateHero`
+  delegiert daran; `saveHero` reiht sich über `reiheBogenvorgangEin` in
+  dieselbe Warteschlange ein. So überholt ein Editorentwurf keine laufende
+  frische Änderung, und die Hash-Prüfung der Steigerungsrunde sieht jede
+  eingereihte Änderung. Beide liefern den normalisierten, gespeicherten
+  Helden. Den `Expando`-Baustein teilen sich Zustand und Bogen
+  (`ReihenfolgeJeHeld`) mit getrennten Warteschlangen. Gibt eine Änderung
+  dasselbe Objekt zurück, wird nichts gespeichert.
+- **Ein UI-Einstieg:** `aendereHeldMitMeldung` neben
+  `aendereZustandMitMeldung`, mit demselben Fehlerweg; fachliche Gründe
+  erscheinen ohne „Bad state:“.
+- **Planung:** Bei offener Steigerungsrunde schreibt der Einstieg nichts und
+  meldet den Grund. Inspector-Statuswerte und das Wundschwellen-Zahnrad sind
+  zusätzlich sichtbar gesperrt (Hinweiszeile bzw. Tooltip); BE bleibt, sie
+  liegt nur im Arbeitsspeicher. Die übrigen Wege liegen in der Verwaltung,
+  die während einer Planung ohnehin gesperrt ist.
+- **Schritt statt Wert:** Dauermodifikatoren (über `RessourcenAenderung`),
+  AP addieren und die Münzknöpfe zählen vom gespeicherten Wert. Eingetippte
+  Beträge und Dialogergebnisse (Modifikatorlisten, Epik) bleiben absolut,
+  ersetzen aber nur ihren Schlüssel. Der Ressourcendialog schreibt nur
+  umgestellte Schalter.
+- **Regel statt Widget:** `modifikator_aenderung_rules.dart`,
+  `epic_status_rules.dart`, `inventar_aenderung_rules.dart`,
+  `begleiter_aenderung_rules.dart`, dazu `mitApSchritt`,
+  `mitRessourcenSchaltern`, `quittiereEigenschaftsHinweis`,
+  `schliesseAbenteuerAb`/`oeffneAbenteuerWieder` und `steigereBegleiter`.
+- **Keine Doppelbuchung:** Epik wird nie zweimal aktiviert, ein gespeichert
+  schon abgeschlossenes Abenteuer nicht erneut gebucht, eine
+  Vertrauten-Steigerung auf einen inzwischen geänderten Ausgangsstand
+  abgewiesen. Inventar-Löschen findet den Eintrag über seinen Inhalt; ist er
+  geändert oder fort, erscheint ein Fehler statt eines falschen Treffers.
+- **Nebenbei behoben:** Der AP-Betragsdialog entsorgte seinen Controller vor
+  dem Ende der Schließanimation und warf. Der nie aufgerufene Weg
+  `onSaveImmediate` im Begleiter-Tab ist entfernt.
+
+Commits:
+
+- `598d490` — Ablauf `aendereGespeichertenHelden`, `ReihenfolgeJeHeld`,
+  `saveHero`/`updateHero` eingereiht mit Rückgabewert, Ablauftests.
+- `ba40066` — Regeln samt Tests.
+- `3d26d97` — `aendereHeldMitMeldung`, Inspector-Statuswerte und
+  Wundschwelle, Planungssperre.
+- `758c9d6` — Übersicht-Sofortaktionen, AP-Dialog.
+- `1297737` — Inventar, Abenteuerabschluss, Vertrauten-Steigerung.
+- Abschluss-Commit mit Dokumentation.
+
+*Prüfungen.*
+
+- Ablauftests (`test/ablaeufe/held_schreiben_test.dart`): frisches Laden,
+  Rückgabe der Normalisierung, fehlender Held, „nichts zu speichern“, zwei
+  nicht abgewartete Änderungen, ein eingereihter Vorgang wartet, Fehler hält
+  nicht auf, verschiedene Helden sowie Bogen und Zustand warten nicht
+  aufeinander. `hero_actions_update_hero_test.dart`: normalisierter
+  Rückgabewert, zwei schnelle Schritte, `saveHero` überholt keine laufende
+  Änderung, Hash-Prüfung sieht eine eingereihte Änderung.
+- Regeltests: `bogen_sofortaenderung_rules_test.dart`,
+  `begleiter_aenderung_rules_test.dart`, `abenteuer_abschluss_rules_test.dart`.
+- Widgettests gegen eine Zwischenänderung (`BogenTestRepository`, die
+  Oberfläche liest über den Index, nur frisches Laden sieht sie):
+  `test/ui/shared/held_frisch_schreiben_test.dart` (Statuswerte: Schritt,
+  drei schnelle Klicks, Zurücksetzen, Fehler im Zustandsblock, Sperre;
+  Wundschwelle: Schlüssel, Fehler im Dialog, Sperre; zentraler Einstieg bei
+  Planung), `test/ui/overview/uebersicht_frisch_schreiben_test.dart` (AP,
+  Ressourcenschalter samt Fehler im Blatt, beide Modifikatordialoge, Epik
+  samt Doppelaktivierung, Hinweisquittung),
+  `test/ui/inventory/inventar_frisch_schreiben_test.dart` (Löschen nach
+  Verschiebung, geänderter Eintrag, schnelle Münzschritte, Tippen,
+  Tippen plus Münzschritt, Fehler) und
+  `test/ui/shared/verwaltung_frisch_schreiben_test.dart` (Abenteuer auf dem
+  gespeicherten Stand, kein Doppelabschluss, Vertrauten-Steigerung,
+  abgewiesener Ausgangsstand).
+- Gegenproben: Ohne Warteschlange scheitern sechs Ablauf- und
+  `HeroActions`-Proben. Mit dem alten Oberflächencode scheitern 8 von 9
+  Spielansichtsproben, alle 9 Übersichtsproben und 9 von 10 Inventar-,
+  Abenteuer- und Begleiterproben; die jeweils bestehende prüft Verhalten,
+  das schon vorher stimmte.
+- `flutter analyze --no-pub` ohne Befund, Zeilenbudget eingehalten, volle
+  Suite grün (2993 bestanden, 3 übersprungen). Die Hash-Pins der
+  Bestandshelden sind unverändert. Eine manuelle Bedienprüfung auf Geräten
+  steht aus.
+
+*Verbleibende Risiken und nächste Schritte.*
+
+1. Inventareditor und Kampf-Sofortspeichern (Waffenwahl, Geschosse ±,
+   Slots) schreiben weiter Snapshots, ebenso alle Editorentwürfe. Sie sind
+   jetzt eingereiht, überholen also keine frische Änderung, aber der zuletzt
+   ausgelöste Schreibvorgang gewinnt. Nächster Schritt: Inventareditor
+   (Einträge ohne ID, ARCH-03) und Kampf.
+2. Der Bogen wartet weiter auf seinen Upload; mit Konto laufen schnelle
+   Klicks auf „GS +“ je Netzweg nach, gehen aber nicht verloren. Eine
+   Bündelung wie beim Zustand (`GebuendelteLaeufe`) wäre ein eigener
+   Sync-Auftrag.
+3. Die Warteschlange hält auch während der Normalisierung, die bis zu 20 s
+   auf den Katalog warten kann, wenn er fehlt und Parser-Restfragmente da
+   sind.
+4. Keine Transaktion gegen Schreibwege an der Warteschlange vorbei:
+   `setShowInapplicableSpecialAbilities` (direkt über das Repository), der
+   Startimport und Sync-Übernahmen (ARCH-06).
+5. Eine Änderung, die selbst `saveHero` oder `updateHero` aufruft, wartete
+   auf sich selbst. Kein Weg tut das; es steht in CLAUDE.md.
+6. Das Abschließen eines Abenteuers verwirft wie bisher einen offenen
+   Notizentwurf (`_syncDraftFromHero(force: true)`); der Knopf steht nur
+   außerhalb des Bearbeitens.
+
+**Folgeauftrag „Zonenwunden nach WdS“ (per dsa-rules-MCP geprüft,
+29.09.2026).** Randbefund 3 aus Teilstand (4) ist bestätigt. Die Hausregeln
+kennen kein eigenes Wundsystem; „Schmerzlos“ (Erweiterung und Überarbeitung
+des Regelwerks, S. 8: „alle ersten bzw. auch alle zweiten Wunden in einer
+Zone ignorieren“) setzt Zonenwunden voraus.
+
+| Befund | Quelle |
+| --- | --- |
+| Nicht lokalisierte Wunde: AT, PA, FK, INI-Basis und GE je −2, GS −1 | WdS S. 58; BRW S. 194 |
+| „Die folgenden Regelungen **ersetzen** die Angaben zu nicht-lokalisierten Wunden“ | WdS S. 109 |
+| Wundbedingte Eigenschaftsverluste wirken nicht auf AT-, PA-, FK- und INI-Basiswerte; GS nie unter 1 | WdS S. 111 |
+| Kopf: MU, KL, IN, INI-Basis −2, INI −2W6; dritte: +2W6 SP, bewusstlos | WdS S. 108 f. |
+| Brust (auch Rücken): AT, PA, KO, KK −1, +1W6 SP; dritte: bewusstlos | WdS S. 108 f. |
+| Arm: AT, PA, KK, FF −2 **mit diesem Arm**; dritte: Arm handlungsunfähig | WdS S. 108 f. |
+| Bauch: AT, PA, KO, KK, GS, INI-Basis −1, +1W6 SP; dritte: bewusstlos | WdS S. 108 f. |
+| Bein: AT, PA, GE, INI-Basis −2, GS −1; dritte: Sturz, kein Nahkampf | WdS S. 108 f. |
+| Pauschal −3 auf Talent- und Zauberproben je Wunde | keine Quelle (Regelwerk und Hausregeln) |
+
+`computeWundEffekte` addiert heute die pauschalen −2 **und** eigene
+Zonenwerte, die zu keiner Zone der Tabelle passen (etwa Arm: AT/PA −4 und
+FK −6 insgesamt, Kopf AT/PA/FK −1 und Zauber −3). Offene Entscheidungen vor
+der Umsetzung: Gilt immer das Zonensystem (das Modell kennt keine
+unlokalisierten Wunden)? Wie werden FK (in der Tabelle nicht genannt) und
+der Armbezug („mit diesem Arm“, Schwert- oder Schildarm) behandelt? Werden
+Eigenschaftsverluste (MU, KL, IN, KO, KK, GE, FF) als Modifikatoren
+modelliert, ohne auf die Basiswerte zu wirken? Entfällt die pauschale
+Probenerschwernis, und was bedeutet dann die epische KO-Halbierung? Die
+Regelwerte der Bestandshelden mit Wunden (f01, f04) ändern sich dabei.
 
 ## ARCH-06 — Zusammengehörige Änderungen gemeinsam speichern und synchronisieren
 

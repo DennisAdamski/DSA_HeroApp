@@ -138,7 +138,18 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   frischen Aenderung, und die Hash-Pruefung der Steigerungsrunde sieht jede
   eingereihte Aenderung. Eine Aenderung darf **nie** selbst `saveHero` oder
   `updateHero` aufrufen — sie wartete auf sich selbst. Gibt sie dasselbe
-  Objekt zurueck, wird nichts gespeichert.
+  Objekt zurueck, wird nichts gespeichert. Sofortaktionen am Bogen
+  (Inspector-Statuswerte, Wundschwelle, Uebersicht, Inventar-Loeschen und
+  Dukaten, Abenteuerabschluss, Vertrauten-Steigerung) laufen ueber
+  `aendereHeldMitMeldung` (neben `aendereZustandMitMeldung`): nur die eigenen
+  Felder, Schritte vom gespeicherten Wert, Regeln aus `rules/derived/`
+  (u. a. `modifikator_aenderung_rules.dart`, `epic_status_rules.dart`,
+  `inventar_aenderung_rules.dart`, `begleiter_aenderung_rules.dart`). Bei
+  offener Steigerungsrunde schreibt der Einstieg nicht; Statuswerte und
+  Wundschwellen-Zahnrad sind dann sichtbar gesperrt. Snapshots bleiben
+  Inventareditor, Kampf und Editorentwuerfe. Pruefung:
+  `test/ui/shared/held_frisch_schreiben_test.dart` und Geschwister mit
+  `test/test_support/bogen_test_repository.dart`.
 - Mit Konto endet `SyncingHeroRepository.saveHeroState` nach dem **lokalen**
   Speichern; `GebuendelteLaeufe` (`lib/data/sync/gebuendelte_laeufe.dart`)
   laedt je Held im Hintergrund hoch, nie zwei gleichzeitig, immer den
