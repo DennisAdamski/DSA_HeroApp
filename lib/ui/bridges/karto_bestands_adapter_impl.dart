@@ -20,6 +20,7 @@ import 'package:dsa_heldenverwaltung/ui/screens/workspace/inspector/widgets/insp
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/inspector/widgets/inspector_dice_log_section.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/probe_quick_search.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/rest_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/workspace/schaden/schaden_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_management_body.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/avatar_gallery_image.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_bestands_adapter.dart';
@@ -200,6 +201,20 @@ class KartoBestandsAdapterImpl implements KartoBestandsAdapter {
     return _withKartoCompatContext(
       context,
       (themedContext) => showRestDialog(context: themedContext, heroId: heroId),
+    );
+  }
+
+  /// Öffnet den geführten Ablauf „Schaden erhalten“.
+  @override
+  Future<void> schadenErhalten({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String heroId,
+  }) {
+    return _withKartoCompatContext(
+      context,
+      (themedContext) =>
+          showSchadenDialog(context: themedContext, ref: ref, heroId: heroId),
     );
   }
 

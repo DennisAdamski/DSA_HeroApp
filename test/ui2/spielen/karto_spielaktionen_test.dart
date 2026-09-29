@@ -74,6 +74,13 @@ void main() {
     expect(bestand.aufrufe, ['rast:rondra']);
   });
 
+  testWidgets('„Schaden erhalten“ ruft den Bestandsablauf auf', (tester) async {
+    final bestand = await zeige(tester);
+    await tester.tap(find.byKey(const ValueKey('karto-spiel-schaden')));
+    await tester.pumpAndSettle();
+    expect(bestand.aufrufe, ['schadenErhalten:rondra']);
+  });
+
   testWidgets('Strg+K öffnet dieselbe Suche im Spielen-Bereich', (
     tester,
   ) async {
