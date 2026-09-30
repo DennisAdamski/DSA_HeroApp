@@ -1067,13 +1067,18 @@ ohne Befund, volle Suite grün (2921 bestanden, 3 übersprungen).
    Entscheidung; `berechneSchadenspunkte` bleibt bei `max(0, TP − RS)`.
 2. Kritische Treffer schlagen automatisch eine Wunde mehr, sobald die WS
    überschritten ist (WdS S. 85). Das deckt die änderbare Wundzahl ab.
+   *Korrigiert in Teilstand (6):* Die Hausregel „Erweiterung und
+   Überarbeitung des Regelwerks“ (S. 3) hebt das auf: „Kritische Treffer
+   richten aber keine zusätzliche Wunde an.“
 3. Mit Trefferzonen *ersetzen* die Zonenwunden (WdS S. 109) die pauschalen
    −2 je Wunde (S. 57); `computeWundEffekte` addiert beide. Das ist eigens
    gegen Regelwerk und Hausregeln zu prüfen. *Geprüft im Teilstand (5),
-   siehe Folgeauftrag „Zonenwunden nach WdS“ unten.*
+   siehe Folgeauftrag „Zonenwunden nach WdS“ unten; umgesetzt in
+   Teilstand (6).*
 4. Die Tabelle der Zonenwunden kennt weitere Folgen (Kopf: MU/KL/IN −2;
    Brust/Bauch: KO/KK −1; dritte Wunde: Bewusstlosigkeit und 1 LeP je KR),
-   die das Modell nicht abbildet. *Ebenfalls Teil des Folgeauftrags.*
+   die das Modell nicht abbildet. *Ebenfalls Teil des Folgeauftrags;
+   umgesetzt in Teilstand (6).*
 
 **Teilstand 29.09.2026 (5) — Sofortaktionen des Bogens frisch.** Befund 1
 des [Schreibpfad-Inventars](schreibpfade_inventar.md) ist für die
@@ -1229,6 +1234,124 @@ Eigenschaftsverluste (MU, KL, IN, KO, KK, GE, FF) als Modifikatoren
 modelliert, ohne auf die Basiswerte zu wirken? Entfällt die pauschale
 Probenerschwernis, und was bedeutet dann die epische KO-Halbierung? Die
 Regelwerte der Bestandshelden mit Wunden (f01, f04) ändern sich dabei.
+*Per dsa-rules-MCP geklärt und umgesetzt in Teilstand (6).* Die Annahme
+oben, die Hausregeln kennten kein eigenes Wundsystem, war falsch: Sie
+verlangen die kombinierte Wirkung beider Systeme.
+
+**Teilstand 30.09.2026 (6) — Zonenwunden nach WdS.** Der Folgeauftrag ist
+umgesetzt. Der Hauptpunkt von ARCH-05 bleibt offen (Inventareditor, Kampf,
+Editorentwürfe).
+
+*Nachprüfung per dsa-rules-MCP.* Die offenen Fragen des Folgeauftrags sind
+gegen Regelwerk und Hausregeln geprüft:
+
+| Frage | Befund | Quelle |
+| --- | --- | --- |
+| Zonensystem statt Gesamtsystem? | **beides:** „Wunden haben die kombinierte Wirkung einer Wunde nach Zonensystem und nach Gesamtsystem“ | Hausregel „Erweiterung und Überarbeitung des Regelwerks“ S. 3 |
+| Gesamtsystem je Wunde | AT, PA, FK, INI-Basis, GE −2; GS −1; die GE-Änderung wirkt auf keinen Basiswert | WdS S. 58; BRW S. 194 |
+| Zonentabelle | wie im Folgeauftrag; Brust gilt auch für den Rücken | WdS S. 108 f. |
+| FK bei Armwunden | in der Zonentabelle nicht genannt; FK sinkt nur allgemein | WdS S. 108 f. |
+| Armbezug | „wenn er diesen Arm benutzt“; Schwert- und Schildarm werden unterschieden | WdS S. 108 f. |
+| Eigenschaftsverluste | wirken nicht auf AT-, PA-, FK- und INI-Basis; GS durch Wunden nie unter 1 | WdS S. 111 |
+| Pauschal −3 auf Proben je Wunde | keine Quelle | Regelwerk und Hausregeln |
+| Epische KO | „Die Erschwernis und die resultierende Erschöpfung durch das Unterdrücken von Wunden sind halbiert“ | Epische Stufen S. 4 |
+| Unterdrücken | SB +4 je Gesamtwunde, +8/+12 für mehrere aus einem Treffer; nach dem Kampf 1W6 Erschöpfung | WdS S. 83 |
+| Kopf-INI 2W6 | Verlust des **aktuellen** Initiativewerts | WdS S. 109 |
+
+*Entscheidungen (mit dem Nutzer abgestimmt).*
+
+- **Kombiniert und additiv:** allgemeine Abzüge plus Zonenabzüge,
+  gerechnet in `wund_zonen_rules.dart` als Daten
+  (`kWundAllgemein`, `wundZonenWirkung`).
+- **Keine pauschale Proben-Erschwernis mehr.** Wunden senken die
+  Eigenschaften nur für Proben (`HeroComputedSnapshot.probenEigenschaften`,
+  `wendeWundVerlusteAn`). Abgeleitete Werte (AT/PA/FK/INI-Basis, LeP,
+  AuP, AsP, MR, Wundschwelle, TP/KK) rechnen mit den effektiven Werten.
+- **Armwunden armgebunden:** rechter Arm = Schwertarm (AT/PA der
+  Hauptwaffe im Nahkampf), linker Arm = Schildarm (Nebenhandwaffe,
+  Schild-PA). Mit dem Vorteil Linkshänder umgekehrt, über den neuen
+  Katalogschalter `linkshaender` (ARCH-02-Muster wie Flink). KK/FF −2
+  wirken auf Proben mit Hinweis „nur mit diesem Arm“. Kein FK-Armanteil.
+- **Kopf-2W6 nur als Hinweis:** `kopfIniMalus` bleibt gespeichert
+  (Format unverändert), senkt aber nicht mehr die INI-Basis.
+- **Epische KO** halbiert die SB-Erschwernis beim Unterdrücken, die
+  Erschöpfung erscheint halbiert als Hinweis. Die frühere Halbierung der
+  Probenabzüge entfällt; ihr Text in `epic_main_attribute_rules.dart` ist
+  korrigiert.
+- **Dritte Wunde:** nur Kopf, Brust, Rücken und Bauch machen kampfunfähig;
+  Arm aktionsunfähig, Bein Sturz und kein Nahkampf, jeweils als Hinweis.
+- **Annahmen:** Eine Parierwaffe hat keinen eigenen PA-Wert; die Haupt-PA
+  trägt nur den Schwertarm. Beidhändige Helden gelten wie Rechtshänder.
+  Die SB-Probe zählt die neuen Wunden bereits mit. Rast-Proben bleiben ohne
+  Wundverluste, weil die Rast Wunden im selben Schritt heilt.
+
+Commits:
+
+- `c517f0e` — Linkshänder als Katalogschalter (`adv_linkshaender`,
+  `hasLinkshaenderFromVorteile`, Äquivalenztest).
+- `7477b8f` — Regeln: `wund_zonen_rules.dart`, `WundEffekte` neu,
+  Probenwerte, Armmalus in der Kampfvorschau, GS-Grenze, epische KO,
+  Trefferzonen mit Linkshänder, alle Probenaufrufer; Bestandshelden-Werte.
+- `786317b` — Oberfläche: Zusammenfassung über
+  `wund_anzeige_rules.dart`, Armrollen, Wundmarkierung an Eigenschaftswerten,
+  Schritt „Wunden Schwertarm“ in der Waffenrechnung, W20 im Schadensdialog.
+- Abschluss-Commit mit Dokumentation.
+
+*Prüfungen.*
+
+- Regeltests: `wund_zonen_rules_test.dart` (je Zone, Linkshänder, dritte
+  Wunde, Unterdrückung und Erschöpfung, SB-Halbierung, Probenwerte,
+  GS-Grenze, Anzeige), `wund_arm_kampf_test.dart` (Schwert-/Schildarm,
+  Linkshänder, Nebenhand, Fernkampf, Parierwaffe, Ersatzpfad gleich
+  Snapshot, keine Wirkung auf abgeleitete Werte, GS ≥ 1),
+  `epic_main_attribute_rules_test.dart`, `trefferzonen_rules_test.dart`,
+  Äquivalenz- und Parsertests für Linkshänder.
+- Bestandshelden (`bestandshelden_regelwerte_test.dart`), von Hand
+  hergeleitet: f01 (Armwunde links + Holzschild) AT-/PA-Basis 4 → 6,
+  FK-Basis 1 → 5, Kampf-AT/PA 9/8 → 11/10, Ausweichen 0 → 2, Schild-PA 7
+  unverändert; neu „f01 mit Linkshänder“ (Kampf-AT/PA 9/8, Schild-PA 9);
+  f04 mit Brustwunde FK-Basis 6 → 7, SB-Erschwernis episch 2, sonst 4.
+  Neu projiziert: `wundEigenschaften`, `sbErschwernis`, `kampf.schildPa`.
+  Fixtures und Hash-Pins sind unverändert.
+- Widgettests: `test/ui/workspace/wunden_dialog_test.dart`
+  (Zusammenfassung, Armrollen, Linkshänder, SB-Probe gegen Probenwerte ohne
+  Startabzug, epische Halbierung, Schnellsuche), Linkshänder-W20 und
+  epische Unterdrückung in `schaden_dialog_test.dart`, Wundmarkierung der
+  Eigenschaftskarte in `karto_spiel_bruecke_test.dart`.
+- Gegenproben: Armanteil pauschal in `atMalus` → 9 Proben scheitern;
+  Linkshänder ignoriert → 2; Verluste in `effectiveAttributes` → 12;
+  2W6 in der INI-Basis → Kopfprobe; ohne GS-Grenze → 2; ohne Halbierung →
+  SB-Regel, f04 und die epische Unterdrückung im Dialog; Textweg ohne Token
+  → Äquivalenztest `adv_linkshaender`; SB-Probe bzw. Schnellsuche mit
+  effektiven Werten, W20 ohne Linkshänder, Karte ohne Grundwerte → je der
+  zugehörige Widgettest.
+- `flutter analyze --no-pub` ohne Befund, `dart format` ohne Änderung,
+  Zeilenbudget eingehalten, volle Suite grün (3009 bestanden,
+  3 übersprungen). Ein Zwischenlauf scheiterte einmal an
+  `rules_index_search_io_test.dart`, weil der laufende dsa-rules-MCP-Server
+  `index_remote.sqlite` offen hielt; unabhängig von dieser Änderung, der
+  nächste Lauf war grün. Eine manuelle Bedienprüfung auf Geräten steht aus.
+
+*Verbleibende Risiken und Folgeaufträge.*
+
+1. Die Vorschau des Kampf-Tabs (`hero_combat_tab.dart`,
+   `combat_weapons_section.dart`, `combat_weapons_overview_table.dart`)
+   rechnet ohne `derivedStats` und damit ohne jede Wunde (Rest von B7).
+   `computeCombatPreviewStats` nimmt jetzt `wunden`; die Aufrufer reichen
+   sie noch nicht durch. Eigener Folgeauftrag.
+2. Paraden mit einer Parierwaffe werden nicht gesondert gerechnet; ein
+   Schildarm-Abzug trifft sie nicht.
+3. KK/FF −2 einer Armwunde gelten für alle Proben; ob der Arm beteiligt
+   ist, entscheidet der Tisch (Hinweis im Wundendialog).
+4. Talent- und Magie-Tab bauen ihre Probenwerte aus eigenen effektiven
+   Eigenschaften, die Inventar-, benannte und temporäre Modifikatoren nicht
+   kennen (vorbestehend); die Wundverluste kommen jetzt hinzu.
+5. Hausregel „mehr als KO×2 TP(A) → 3 Wunden in der Zone“ (S. 3) und der
+   Vorteil Schmerzlos (S. 8) sind nicht modelliert; der Wundvorschlag bleibt
+   änderbar. Die Obergrenze „Wunden ≤ KO/2, darüber handlungsunfähig“ (BRW
+   S. 194) steht nicht im Modell.
+6. Der Kopf-INI-Wurf gilt nur im laufenden Kampf; wer die Kampf-INI der
+   App nutzt, zieht ihn selbst ab (Hinweis im Wundendialog).
 
 ## ARCH-06 — Zusammengehörige Änderungen gemeinsam speichern und synchronisieren
 

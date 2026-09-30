@@ -1445,10 +1445,13 @@ Alle Regeln sind **pure Dart-Funktionen** ohne Seiteneffekte in `lib/rules/deriv
 
 `Mod` = Summe aus `persistentMods` (Inspector-Schnellmodifikatoren), benannten
 Stat-Modifikatoren, Textmodifikatoren aus Herkunft und Vor-/Nachteilen,
-`tempMods`, ausgerüstetem Inventar und Wunden für den jeweiligen Wert.
-`DerivedStats.modifiers` trägt diese Summe; die Kampfvorschau rechnet AT-/PA-
-Basis, RS und Eigenschafts-INI damit weiter, sodass etwa eine Wunde AT, PA
-und Ausweichen genauso senkt wie die Basiswerte.
+`tempMods`, ausgerüstetem Inventar und den armunabhängigen Wundabzügen für
+den jeweiligen Wert. `DerivedStats.modifiers` trägt diese Summe; die
+Kampfvorschau rechnet AT-/PA-Basis, RS und Eigenschafts-INI damit weiter,
+sodass etwa eine Wunde AT, PA und Ausweichen genauso senkt wie die
+Basiswerte. Armgebundene Wundabzüge rechnet erst die Waffe im jeweiligen Arm
+an, wundbedingte Eigenschaftsverluste gelten nur für Proben
+(`probenEigenschaften`, siehe „Zonenwunden nach WdS“ unten).
 
 **Zukauf-Grenzen:** `lib/rules/derived/bought_stat_limit_rules.dart`
 begrenzt den AP-Zukauf im Steigerungsdialog fuer Grundwerte. LeP duerfen bis
@@ -2727,14 +2730,15 @@ ueber die Settings-Katalogverwaltung bearbeitet.
   Verdrahtet in Talent-Tabelle und -Karten, Talent-Detail-Sheet und
   Proben-Schnellsuche. **Rundung:** die Behinderung wird abgerundet, also
   zugunsten des Helden — gleiche Richtung wie `computeAtEbePart`.
-- **KO: Wund-Erschwernis halbiert.** `computeWundEffekte` kennt
-  `halbierteProbenErschwernis`. **Bewusst enge Auslegung:** halbiert werden
-  nur `talentProbeMalus` und `zauberExtraMalus` — genau die Felder, die
-  `WundEffekte` als *Erschwernis* führt. Die AT/PA/FK/INI/GS-*Abzüge* bleiben
-  unberührt. Gerundet wird Richtung Null (−3 → −1, −6 → −3). Der zentrale
-  Snapshot (`hero_providers.dart`) und die drei Wunden-Vorschauen teilen sich
-  das Gate über `isEpicWoundReliefActive`
-  (`lib/ui/screens/workspace/epic_wound_relief.dart`).
+- **KO: Unterdrücken von Wunden halbiert.** Laut „Epische Stufen“ S. 4
+  sind „die Erschwernis und die resultierende Erschöpfung durch das
+  Unterdrücken von Wunden halbiert“, nicht die Probenabzüge (bis ARCH-05 (6)
+  halbierte die App fälschlich eine pauschale Proben-Erschwernis).
+  `computeHeroWundEffekte` (`hero_stat_inputs.dart`) setzt
+  `WundEffekte.unterdrueckungHalbiert`; `computeSbUnterdrueckungErschwernis
+  (halbiert: true)` teilt 4n bzw. +8/+12 ohne Rest. Die Erschöpfung (1W6 nach
+  dem Kampf) erscheint als Hinweis. Snapshot und Unterdrückungsdialog nutzen
+  dieselbe Funktion.
 - **IN: Fintenhinweis.** Der Bonus wirkt auf die Probe des *Gegners* und ist
   deshalb kein Heldenwert. Er folgt dem Muster von
   `buildAxxeleratusDefenseHint` (`magic_rules.dart`):
@@ -3086,6 +3090,41 @@ ueber die Settings-Katalogverwaltung bearbeitet.
   `KartoBestandsAdapter.schadenErhalten`.
 - Keine Rücknahme: korrigiert wird von Hand anhand des Protokolleintrags;
   eine echte Rücknahme gehört zu ARCH-06.
+
+### Update 2026-09-30: Zonenwunden nach WdS (ARCH-05)
+
+- **Kombiniertes System.** Die Hausregel „Erweiterung und Überarbeitung des
+  Regelwerks“ (S. 3) lässt Wunden nach Gesamt- **und** Zonensystem wirken.
+  `lib/rules/derived/wund_zonen_rules.dart` hält beides als Daten:
+  `kWundAllgemein` (AT/PA/FK/INI-Basis/GE −2, GS −1, WdS S. 58) und
+  `wundZonenWirkung` (WdS S. 108 f.: Kopf INI-Basis −2 und MU/KL/IN −2;
+  Brust = Rücken AT/PA −1, KO/KK −1; Bauch zusätzlich INI-Basis und GS −1;
+  Arm AT/PA −2 armgebunden, KK/FF −2; Bein AT/PA/INI-Basis −2, GS −1,
+  GE −2), dazu `dritteWundeFolge` und `dritteWundeMachtKampfunfaehig`
+  (nur Kopf, Brust, Rücken, Bauch). Eine pauschale Proben-Erschwernis gibt
+  es nicht mehr (keine Quelle).
+- **`WundEffekte`** (`wund_rules.dart`): `atMalus`/`paMalus`/`fkMalus`/
+  `iniBasisMalus`/`gsMalus` gehen über `wundEffekteToStatModifiers` in die
+  Basiswerte; `schwertarmAtPaMalus`/`schildarmAtPaMalus` rechnet die
+  Kampfvorschau je Waffe an (`CombatPreviewStats.schwertarmWundMalus`,
+  Nebenhand und `computeOffhandModifierSnapshot(schildarmWundMalus:)`; nicht
+  bei Fernkampf, eine Parierwaffe hat keine eigene PA);
+  `eigenschaftsVerluste` gelten nur für Proben; `aktuellerIniMalus` (Kopf-2W6)
+  ist Hinweis. `computeHeroWundEffekte` liest Linkshänder
+  (`ModifierParseResult.hasLinkshaenderFromVorteile`) und epische KO.
+- **Probenwerte.** `HeroComputedSnapshot.probenEigenschaften` =
+  `wendeWundVerlusteAn(effectiveAttributes, wundEffekte)`. Eigenschafts-,
+  Talent-, Zauber- und SB-Proben würfeln dagegen (Schnellsuche, Talent- und
+  Magie-Tab, Inspector, UI2-Brücke, Kopfleiste, Übersicht, Wundendialoge);
+  `buildTalentProbeRequest` kennt statt `wundMalus` nur noch
+  `initialSituationalModifier` (SB-Erschwernis). Spielflächen markieren den
+  Abzug („Wunden −2“), die Verwaltungstabellen zeigen weiter effektive Werte.
+- **GS** sinkt durch Wunden nie unter 1: `computeDerivedStatsFromInputs`
+  rechnet die GS-Kette mit und ohne Wundanteil, `begrenzeWundGs` entscheidet.
+- **Trefferzonen:** `resolveTrefferzone(linkshaender:)` spiegelt die Armzone,
+  das Label bleibt die Armrolle; der Schadensdialog reicht den Schalter durch.
+- Belege, Entscheidungen und Restrisiken: `docs/architecture_roadmap.md`
+  (ARCH-05, Teilstand 6).
 
 ### Update 2026-09-29: Bogen-Sofortaktionen frisch schreiben (ARCH-05)
 
