@@ -62,6 +62,7 @@ class MerkmalWirkungen {
     this.statMods = const StatModifiers(),
     this.flink = false,
     this.behaebig = false,
+    this.linkshaender = false,
     this.wundschwelleBonus = 0,
     this.lepStufe = 0,
     this.aspStufe = 0,
@@ -84,6 +85,9 @@ class MerkmalWirkungen {
 
   /// Behaebig: GS -1 und Ausweichen -1.
   final bool behaebig;
+
+  /// Linkshaender: der linke Arm ist der Schwertarm (Armwunden, WdS S. 108).
+  final bool linkshaender;
 
   /// Bonus auf alle Wundschwellenstufen.
   final int wundschwelleBonus;
@@ -111,6 +115,7 @@ class MerkmalWirkungen {
       statMods: statMods + andere.statMods,
       flink: flink || andere.flink,
       behaebig: behaebig || andere.behaebig,
+      linkshaender: linkshaender || andere.linkshaender,
       wundschwelleBonus: wundschwelleBonus + andere.wundschwelleBonus,
       lepStufe: math.max(lepStufe, andere.lepStufe),
       aspStufe: math.max(aspStufe, andere.aspStufe),
@@ -254,6 +259,7 @@ class _Rechner {
   var _stats = const StatModifiers();
   var _flink = false;
   var _behaebig = false;
+  var _linkshaender = false;
   var _lepStufe = 0;
   var _aspStufe = 0;
   var _schlechteRegeneration = false;
@@ -310,6 +316,8 @@ class _Rechner {
           _flink = true;
         } else if (wirkung.ziel == 'behaebig') {
           _behaebig = true;
+        } else if (wirkung.ziel == 'linkshaender') {
+          _linkshaender = true;
         }
       case HeroTraitEffectArt.wundschwelle:
         _wundschwelle[def.id] = wirkung.betrag;
@@ -353,6 +361,7 @@ class _Rechner {
       statMods: _stats,
       flink: _flink,
       behaebig: _behaebig,
+      linkshaender: _linkshaender,
       wundschwelleBonus: _wundschwelle.values.fold(0, (a, b) => a + b),
       lepStufe: _lepStufe,
       aspStufe: _aspStufe,

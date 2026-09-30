@@ -1338,7 +1338,7 @@ Langregeltexte. Regelwirkungen stehen deklarativ in `wirkungen` und werden
 |---|---|---|---|
 | `basiswert` | `ziel` (`lep`, `au`, `asp`, `kap`, `mr`, `ini`, `gs`, `ausweichen`), `jeWert`, `max`, optional `standard` | Wert × `jeWert`, Betrag auf `max` gekappt | Hohe Lebenskraft, Kurzatmig |
 | `eigenschaft` | `standard`, `max`, `startwert` | Eigenschaft aus der Auswahl (`{choice}`), mit `startwert` auch Startwert und Maximum | Herausragende Eigenschaft |
-| `schalter` | `ziel` (`flink`, `behaebig`) | feste Wirkung wie bisher (GS ±1, Ausweichen ±1) | Flink, Behäbig |
+| `schalter` | `ziel` (`flink`, `behaebig`, `linkshaender`) | feste Wirkung: GS ±1 und Ausweichen ±1 bzw. linker Arm als Schwertarm für Armwunden (`ModifierParseResult.hasLinkshaenderFromVorteile`) | Flink, Behäbig, Linkshänder |
 | `wundschwelle` | `betrag` | fester Bonus auf alle Wundschwellenstufen | Eisern, Glasknochen |
 | `rast` | `ziel` (`lepStufe`, `aspStufe`, `schlechteRegeneration`, `astralerBlock`), `standard`, `max` | Regenerationsstufe bzw. -einschränkung | Schnelle Heilung, Astraler Block |
 

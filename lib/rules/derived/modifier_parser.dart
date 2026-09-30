@@ -19,6 +19,7 @@ class ModifierParseResult {
     this.statMods = const StatModifiers(),
     this.hasFlinkFromVorteile = false,
     this.hasBehaebigFromNachteile = false,
+    this.hasLinkshaenderFromVorteile = false,
     this.unknownFragments = const <String>[],
   });
 
@@ -36,6 +37,9 @@ class ModifierParseResult {
   final StatModifiers statMods;
   final bool hasFlinkFromVorteile;
   final bool hasBehaebigFromNachteile;
+
+  /// Vorteil Linkshaender: der linke Arm ist der Schwertarm (Armwunden).
+  final bool hasLinkshaenderFromVorteile;
   final List<String> unknownFragments;
 }
 
@@ -117,6 +121,8 @@ ModifierParseResult mitMerkmalWirkungen(
     hasFlinkFromVorteile: parsed.hasFlinkFromVorteile || wirkungen.flink,
     hasBehaebigFromNachteile:
         parsed.hasBehaebigFromNachteile || wirkungen.behaebig,
+    hasLinkshaenderFromVorteile:
+        parsed.hasLinkshaenderFromVorteile || wirkungen.linkshaender,
     unknownFragments: parsed.unknownFragments,
   );
 }
@@ -168,6 +174,11 @@ ModifierParseResult parseModifierTexts({
   final hasBehaebigFromNachteile = _containsNamedToken(nachteileText, const {
     'behaebig',
     'behabig',
+  });
+  // Umlaute werden zu `a` normalisiert: `Linkshänder` wird `linkshander`.
+  final hasLinkshaenderFromVorteile = _containsNamedToken(vorteileText, const {
+    'linkshander',
+    'linkshaender',
   });
 
   final allTexts = [
@@ -288,6 +299,7 @@ ModifierParseResult parseModifierTexts({
     statMods: statMods,
     hasFlinkFromVorteile: hasFlinkFromVorteile,
     hasBehaebigFromNachteile: hasBehaebigFromNachteile,
+    hasLinkshaenderFromVorteile: hasLinkshaenderFromVorteile,
     unknownFragments: List<String>.unmodifiable(unknown),
   );
 }

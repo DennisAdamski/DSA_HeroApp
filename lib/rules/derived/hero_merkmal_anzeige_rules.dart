@@ -132,6 +132,7 @@ String? _wirkungstext(HeroTraitEffect wirkung, HeroMerkmal eintrag) {
       return switch (wirkung.ziel) {
         'flink' => 'GS +1, Ausweichen +1',
         'behaebig' => 'GS −1, Ausweichen −1',
+        'linkshaender' => 'Schwertarm links (Wunden)',
         _ => null,
       };
     case HeroTraitEffectArt.wundschwelle:
