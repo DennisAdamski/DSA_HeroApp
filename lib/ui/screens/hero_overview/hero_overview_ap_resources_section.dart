@@ -116,44 +116,10 @@ extension _HeroOverviewApResourcesSection on _HeroOverviewTabState {
     required String targetKey,
     required String label,
   }) async {
-    final dialogController = TextEditingController();
     final result = await showDialog<int>(
       context: context,
-      builder: (ctx) {
-        return AlertDialog(
-          title: Text('$label addieren'),
-          content: TextField(
-            controller: dialogController,
-            autofocus: true,
-            keyboardType: TextInputType.number,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-            decoration: const InputDecoration(
-              labelText: 'Betrag',
-              border: OutlineInputBorder(),
-              isDense: true,
-            ),
-            onSubmitted: (v) {
-              final n = int.tryParse(v.trim());
-              if (n != null && n > 0) Navigator.of(ctx).pop(n);
-            },
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(),
-              child: const Text('Abbrechen'),
-            ),
-            TextButton(
-              onPressed: () {
-                final n = int.tryParse(dialogController.text.trim());
-                if (n != null && n > 0) Navigator.of(ctx).pop(n);
-              },
-              child: const Text('Addieren'),
-            ),
-          ],
-        );
-      },
+      builder: (_) => _ApBetragDialog(label: label),
     );
-    dialogController.dispose();
     if (result == null || !mounted) return;
     await _applyApIncrement(
       targetKey: targetKey,
@@ -234,6 +200,67 @@ extension _HeroOverviewApResourcesSection on _HeroOverviewTabState {
           ],
         );
       },
+    );
+  }
+}
+
+/// Fragt den AP-Betrag ab, der addiert werden soll.
+///
+/// Eigenes Widget, damit der Controller erst mit dem Dialog selbst entsorgt
+/// wird: Die Schließanimation baut das Textfeld nach dem `pop` noch einmal
+/// auf, ein vorher entsorgter Controller wirft dann.
+class _ApBetragDialog extends StatefulWidget {
+  const _ApBetragDialog({required this.label});
+
+  final String label;
+
+  @override
+  State<_ApBetragDialog> createState() => _ApBetragDialogState();
+}
+
+class _ApBetragDialogState extends State<_ApBetragDialog> {
+  final TextEditingController _betrag = TextEditingController();
+
+  @override
+  void dispose() {
+    _betrag.dispose();
+    super.dispose();
+  }
+
+  // Schließt mit dem Betrag, wenn er eine positive ganze Zahl ist.
+  void _uebernehmen(String text) {
+    final betrag = int.tryParse(text.trim());
+    if (betrag != null && betrag > 0) {
+      Navigator.of(context).pop(betrag);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text('${widget.label} addieren'),
+      content: TextField(
+        controller: _betrag,
+        autofocus: true,
+        keyboardType: TextInputType.number,
+        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+        decoration: const InputDecoration(
+          labelText: 'Betrag',
+          border: OutlineInputBorder(),
+          isDense: true,
+        ),
+        onSubmitted: _uebernehmen,
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Abbrechen'),
+        ),
+        TextButton(
+          onPressed: () => _uebernehmen(_betrag.text),
+          child: const Text('Addieren'),
+        ),
+      ],
     );
   }
 }

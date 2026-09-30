@@ -7,8 +7,10 @@ import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/modifikator_aenderung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/talent_value_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/wund_rules.dart';
+import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_overview/stat_modifier_detail_dialog.dart';
@@ -82,6 +84,33 @@ class _WundenDetailDialog extends ConsumerWidget {
       );
     }
 
+    // Die Wundschwelle liegt im Bogen; während einer Planung ruht sie wie
+    // alle Bogen-Sofortaktionen. Die Wunden selbst (Zustand) bleiben
+    // bedienbar.
+    final planungOffen = ref.watch(advancementSessionProvider(heroId)) != null;
+
+    Future<void> wundschwelleBearbeiten() async {
+      final result = await showStatModifierDetailDialog(
+        context: context,
+        statLabel: 'Wundschwelle',
+        namedModifiers: hero.statModifiers['wundschwelle'] ?? const [],
+        parsedSources: const [],
+        total: wundschwelle,
+      );
+      if (result == null || !context.mounted) {
+        return;
+      }
+      // Frisch: nur dieser Schlüssel wird ersetzt (ARCH-05).
+      await aendereHeldMitMeldung(
+        context: context,
+        ref: ref,
+        heroId: heroId,
+        was: 'Wundschwelle-Modifikatoren',
+        aenderung: (held) =>
+            mitBenanntenStatModifikatoren(held, 'wundschwelle', result),
+      );
+    }
+
     return AlertDialog(
       title: Row(
         children: [
@@ -91,33 +120,12 @@ class _WundenDetailDialog extends ConsumerWidget {
             style: Theme.of(context).textTheme.titleSmall,
           ),
           IconButton(
-            tooltip: 'Wundschwelle-Modifikatoren',
+            key: const ValueKey<String>('wunden-wundschwelle-modifikatoren'),
+            tooltip: planungOffen
+                ? 'Wundschwelle-Modifikatoren – während der Planung gesperrt'
+                : 'Wundschwelle-Modifikatoren',
             icon: const Icon(Icons.settings, size: 20),
-            onPressed: () async {
-              final currentMods =
-                  hero.statModifiers['wundschwelle'] ?? const [];
-              final result = await showStatModifierDetailDialog(
-                context: context,
-                statLabel: 'Wundschwelle',
-                namedModifiers: currentMods,
-                parsedSources: const [],
-                total: wundschwelle,
-              );
-              if (result != null) {
-                final updatedModifiers =
-                    Map<String, List<HeroTalentModifier>>.of(
-                      hero.statModifiers,
-                    );
-                if (result.isEmpty) {
-                  updatedModifiers.remove('wundschwelle');
-                } else {
-                  updatedModifiers['wundschwelle'] = result;
-                }
-                await ref
-                    .read(heroActionsProvider)
-                    .saveHero(hero.copyWith(statModifiers: updatedModifiers));
-              }
-            },
+            onPressed: planungOffen ? null : wundschwelleBearbeiten,
           ),
         ],
       ),

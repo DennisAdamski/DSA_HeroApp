@@ -19,7 +19,8 @@ import 'package:dsa_heldenverwaltung/ui/screens/workspace/wund_unterdrueckung_di
 /// dadurch vom gespeicherten Stand aus, und Würfe, Ressourcen oder
 /// Zaubereffekte, die seit dem Aufbau gespeichert wurden, bleiben erhalten.
 /// [diceLogEntries] werden im selben Speichervorgang angehängt. Fehler
-/// erscheinen als Snackbar, das Ergebnis ist dann `null`.
+/// erscheinen im nächsten `ZustandFehlerBereich` (sonst als Snackbar), das
+/// Ergebnis ist dann `null`.
 Future<HeroState?> aendereWundZustand({
   required BuildContext context,
   required WidgetRef ref,

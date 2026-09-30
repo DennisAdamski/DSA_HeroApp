@@ -9,17 +9,18 @@ import 'package:dsa_heldenverwaltung/domain/aventurian_date.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_merkmal.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
-import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 
 import 'package:dsa_heldenverwaltung/rules/derived/ap_level_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/attribute_start_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/aventurian_age_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/avatar_rahmung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/epic_main_attribute_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/epic_status_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_wirkung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_zuordnung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_source_breakdown.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/modifikator_aenderung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/resource_activation_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/house_rules/house_rule_registry.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
@@ -32,6 +33,7 @@ import 'package:dsa_heldenverwaltung/ui/config/ui_feature_flags.dart';
 import 'package:dsa_heldenverwaltung/ui/debug/ui_rebuild_observer.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/dice_log_persistence.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/probe_request_factory.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/zustand_aendern.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_edit_controller.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/adaptive_table_columns.dart';
@@ -451,63 +453,90 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
     }
   }
 
-  /// Speichert Ressourcen-Overrides direkt am Helden ausserhalb des Edit-Modus.
-  Future<void> _saveResourceActivationOverrides(
-    HeroSheet hero, {
+  /// Speichert die im Dialog umgestellten Ressourcen-Overrides ausserhalb des
+  /// Edit-Modus frisch am gespeicherten Helden (ARCH-05).
+  ///
+  /// Fehler erscheinen im Fehlerbereich von [meldeKontext]; das Ergebnis ist
+  /// dann `false`, und der Dialog bleibt offen.
+  Future<bool> _saveResourceActivationOverrides({
+    required BuildContext meldeKontext,
+    required bool? magieVorher,
+    required bool? goettlichVorher,
     required bool? magicEnabledOverride,
     required bool? divineEnabledOverride,
   }) async {
-    final updatedHero = hero.copyWith(
-      resourceActivationConfig: hero.resourceActivationConfig.copyWith(
-        magicEnabledOverride: magicEnabledOverride,
-        divineEnabledOverride: divineEnabledOverride,
+    final gespeichert = await aendereHeldMitMeldung(
+      context: meldeKontext,
+      ref: ref,
+      heroId: widget.heroId,
+      was: 'Ressourcen-Einstellungen',
+      aenderung: (held) => mitRessourcenSchaltern(
+        held,
+        magieVorher: magieVorher,
+        magie: magicEnabledOverride,
+        goettlichVorher: goettlichVorher,
+        goettlich: divineEnabledOverride,
       ),
     );
-    await ref.read(heroActionsProvider).saveHero(updatedHero);
-    if (!mounted) {
-      return;
+    if (gespeichert == null) {
+      return false;
     }
-    _latestHero = updatedHero;
-    _draftMagicEnabledOverride = magicEnabledOverride;
-    _draftDivineEnabledOverride = divineEnabledOverride;
+    if (!mounted) {
+      return true;
+    }
+    final config = gespeichert.resourceActivationConfig;
+    _latestHero = gespeichert;
+    _draftMagicEnabledOverride = config.magicEnabledOverride;
+    _draftDivineEnabledOverride = config.divineEnabledOverride;
     _viewRevision.value++;
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Ressourcen-Einstellungen gespeichert')),
     );
+    return true;
   }
 
+  /// Bucht AP über die Plus-Knöpfe.
+  ///
+  /// Beim Bearbeiten ändert der Knopf nur den Entwurf. Sonst zählt der Schritt
+  /// vom gespeicherten Konto (ARCH-05), damit jeder schnelle Klick zählt; das
+  /// Feld zeigt danach den gespeicherten Stand.
   Future<void> _applyApIncrement({
     required String targetKey,
     required String label,
     required int increment,
   }) async {
-    final updatedValue = _readInt(targetKey, min: 0) + increment;
-    _field(targetKey)
-      ..text = updatedValue.toString()
-      ..selection = TextSelection.collapsed(
-        offset: updatedValue.toString().length,
-      );
-    if (!_editController.isEditing) {
-      final hero = _latestHero;
-      if (hero == null) {
-        return;
-      }
-      final updatedHero = switch (targetKey) {
-        'ap_total' => hero.copyWith(apTotal: updatedValue),
-        'ap_spent' => hero.copyWith(apSpent: updatedValue),
-        _ => hero,
-      };
-      await ref.read(heroActionsProvider).saveHero(updatedHero);
-      if (!mounted) {
-        return;
-      }
-      _latestHero = updatedHero;
-      _viewRevision.value++;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('$label aktualisiert')));
+    if (_editController.isEditing) {
+      final updatedValue = _readInt(targetKey, min: 0) + increment;
+      _field(targetKey)
+        ..text = updatedValue.toString()
+        ..selection = TextSelection.collapsed(
+          offset: updatedValue.toString().length,
+        );
+      _onFieldChanged(updatedValue.toString());
       return;
     }
-    _onFieldChanged(updatedValue.toString());
+    final konto = switch (targetKey) {
+      'ap_total' => ApKonto.gesamt,
+      'ap_spent' => ApKonto.ausgegeben,
+      _ => null,
+    };
+    if (konto == null) {
+      return;
+    }
+    final gespeichert = await aendereHeldMitMeldung(
+      context: context,
+      ref: ref,
+      heroId: widget.heroId,
+      was: label,
+      aenderung: (held) => mitApSchritt(held, konto, increment),
+    );
+    if (gespeichert == null || !mounted) {
+      return;
+    }
+    _latestHero = gespeichert;
+    _viewRevision.value++;
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text('$label aktualisiert')));
   }
 
   @override
