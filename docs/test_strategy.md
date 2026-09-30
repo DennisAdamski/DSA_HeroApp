@@ -264,7 +264,10 @@ Die CI (`.github/workflows/flutter-tests.yml`) führt alle Tests auf
 | `test/rules/meta_talent_rules_test.dart` | rules | Meta-Talent-Mittelwerte, Validierung und Aktivierung |
 | `test/rules/talent_be_rules_test.dart` | rules | Talent-BE-Regeln |
 | `test/rules/talent_value_rules_test.dart` | rules | Formel `TaW + Mod + eBE` |
-| `test/rules/bestandshelden_regelwerte_test.dart` | rules | Abgeleitete Werte der Bestandsfixtures gegen den echten Katalog, epische Wundhalbierung, Befunde B1/B7 |
+| `test/rules/bestandshelden_regelwerte_test.dart` | rules | Abgeleitete Werte der Bestandsfixtures gegen den echten Katalog, Zonenwunden (f01 Schildarm samt Linkshänder-Variante, f04 Brustwunde), epische Halbierung der SB-Erschwernis, Befunde B1/B7 |
+| `test/rules/wund_zonen_rules_test.dart` | rules | Wunden nach Gesamt- und Zonensystem je Zone, Armrollen, dritte Wunde, Unterdrückung, Probenwerte, GS-Grenze, Anzeige |
+| `test/rules/wund_arm_kampf_test.dart` | rules | Armwunden in der Kampfvorschau (Schwert-/Schildarm, Linkshänder, Nebenhand, Fernkampf, Parierwaffe), keine Wirkung auf abgeleitete Werte |
+| `test/ui/workspace/wunden_dialog_test.dart` | ui | Wundendialog (Zusammenfassung, Armrollen), SB-Probe gegen Probenwerte, epische Halbierung, Schnellsuche mit gesenkten Werten |
 | `test/rules/bestandshelden_ausruestung_test.dart` | rules | Inventar-Kampf-Abgleich mit gleichnamigen Exemplaren, Befunde B2/B3, Felder neuerer Versionen im Abgleich |
 | `test/ui/combat/hero_combat_tab_test.dart` | ui | Combat-UI-Interaktion/Struktur |
 | `test/ui/combat/hero_combat_talents_tab_test.dart` | ui | Combat-Talents-UI-Validierungsfluss |
