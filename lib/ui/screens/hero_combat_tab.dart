@@ -319,6 +319,13 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
 
     final stateAsync = ref.watch(heroStateProvider(widget.heroId));
     final catalogAsync = ref.watch(rulesCatalogProvider);
+    // Dieselben Eingaben wie Inspector und Spielansicht, samt Wunden.
+    final berechnet = ref
+        .watch(heroComputedProvider(widget.heroId))
+        .valueOrNull;
+    final epicAdvantagesActive = ref.watch(
+      isHouseRuleActiveProvider(EpicRuleKeys.advantages),
+    );
 
     return stateAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
@@ -344,18 +351,14 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
                   iniWurf: effectiveIniRoll,
                 ),
               );
-              final preview = computeCombatPreviewStats(
-                hero,
-                state,
+              final preview = kampfvorschau(
+                hero: hero,
+                state: state,
+                berechnet: berechnet,
+                catalog: catalog,
                 overrideConfig: previewConfig,
                 overrideTalents: _draftTalents,
-                catalogTalents: catalog.talents,
-                catalogManeuvers: catalog.maneuvers,
-                catalogCombatSpecialAbilities: catalog.combatSpecialAbilities,
-                catalog: catalog,
-                epicAdvantagesRuleActive: ref.watch(
-                  isHouseRuleActiveProvider(EpicRuleKeys.advantages),
-                ),
+                epicAdvantagesRuleActive: epicAdvantagesActive,
               );
               final effectiveAttributes = computeEffectiveAttributes(
                 hero,
@@ -427,6 +430,8 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
                             effectiveAttributes: effectiveAttributes,
                             hero: hero,
                             heroState: state,
+                            berechnet: berechnet,
+                            epicAdvantagesRuleActive: epicAdvantagesActive,
                             draftCombatConfig: _draftCombatConfig,
                             draftTalents: _draftTalents,
                             weaponFilterTalentId: _weaponFilterTalentId,

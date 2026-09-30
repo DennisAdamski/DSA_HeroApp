@@ -6,6 +6,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/combat_rules.dart';
+import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_combat/combat_helpers.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/adaptive_table_columns.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/flexible_table.dart';
@@ -46,6 +47,8 @@ class CombatWeaponsOverviewTable extends StatelessWidget {
     required this.catalog,
     required this.hero,
     required this.heroState,
+    required this.berechnet,
+    required this.epicAdvantagesRuleActive,
     required this.draftCombatConfig,
     required this.draftTalents,
     required this.weaponFilterTalentId,
@@ -66,6 +69,13 @@ class CombatWeaponsOverviewTable extends StatelessWidget {
   final RulesCatalog catalog;
   final HeroSheet hero;
   final HeroState heroState;
+
+  /// Snapshot des gespeicherten Helden; liefert Basiswerte und Wunden der
+  /// Zeilenwerte (siehe [kampfvorschau]).
+  final HeroComputedSnapshot? berechnet;
+
+  /// Ob die Hausregel für epische Vorteile aktiv ist.
+  final bool epicAdvantagesRuleActive;
   final CombatConfig draftCombatConfig;
   final Map<String, HeroTalentEntry> draftTalents;
   final String weaponFilterTalentId;
@@ -542,9 +552,11 @@ class CombatWeaponsOverviewTable extends StatelessWidget {
   }
 
   CombatPreviewStats _previewForSlot(int slotIndex, MainWeaponSlot slot) {
-    return computeCombatPreviewStats(
-      hero,
-      heroState,
+    return kampfvorschau(
+      hero: hero,
+      state: heroState,
+      berechnet: berechnet,
+      catalog: catalog,
       overrideConfig: draftCombatConfig.copyWith(
         selectedWeaponIndex: slotIndex,
         mainWeapon: slot,
@@ -553,10 +565,7 @@ class CombatWeaponsOverviewTable extends StatelessWidget {
         ),
       ),
       overrideTalents: draftTalents,
-      catalogTalents: catalog.talents,
-      catalogManeuvers: catalog.maneuvers,
-      catalogCombatSpecialAbilities: catalog.combatSpecialAbilities,
-      catalog: catalog,
+      epicAdvantagesRuleActive: epicAdvantagesRuleActive,
     );
   }
 
