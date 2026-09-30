@@ -146,8 +146,13 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   (u. a. `modifikator_aenderung_rules.dart`, `epic_status_rules.dart`,
   `inventar_aenderung_rules.dart`, `begleiter_aenderung_rules.dart`). Bei
   offener Steigerungsrunde schreibt der Einstieg nicht; Statuswerte und
-  Wundschwellen-Zahnrad sind dann sichtbar gesperrt. Snapshots bleiben
-  Inventareditor, Kampf und Editorentwuerfe. Pruefung:
+  Wundschwellen-Zahnrad sind dann sichtbar gesperrt. Das Sofortspeichern
+  des Kampf-Tabs laeuft ueber einen Einstieg `_aendereKampf`
+  (`hero_combat/combat_state_helpers.dart`, Regeln in
+  `kampf_aenderung_rules.dart`): Slots werden ueber ihre ID getroffen, nie
+  ueber die Position, und die Sektionen melden den **angezeigten** Slot;
+  ein Editorergebnis auf einen inzwischen geaenderten Slot wird abgewiesen.
+  Snapshots bleiben Inventareditor und Editorentwuerfe. Pruefung:
   `test/ui/shared/held_frisch_schreiben_test.dart` und Geschwister mit
   `test/test_support/bogen_test_repository.dart`.
 - Mit Konto endet `SyncingHeroRepository.saveHeroState` nach dem **lokalen**
