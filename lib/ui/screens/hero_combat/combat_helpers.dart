@@ -1,6 +1,56 @@
 // Gemeinsame Hilfsfunktionen fuer die Kampf-Subtab-Widgets.
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/combat_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/hero_stat_inputs.dart';
+import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
+
+/// Kampfvorschau des Kampf-Tabs mit denselben Eingaben wie Inspector und
+/// Spielansicht.
+///
+/// Modifikatoren, effektive Eigenschaften, Basiswerte und Wunden kommen aus
+/// [berechnet], dem Snapshot des gespeicherten Helden
+/// (`heroComputedProvider`). Ohne sie fehlten die Wunden in AT, PA, FK und
+/// INI. Entwurfswerte des Tabs wirken über [overrideConfig] und
+/// [overrideTalents]. Liegt noch kein Snapshot vor, werden dieselben
+/// Eingaben aus [hero] und [state] berechnet.
+CombatPreviewStats kampfvorschau({
+  required HeroSheet hero,
+  required HeroState state,
+  required HeroComputedSnapshot? berechnet,
+  required RulesCatalog catalog,
+  required CombatConfig overrideConfig,
+  required Map<String, HeroTalentEntry> overrideTalents,
+  required bool epicAdvantagesRuleActive,
+}) {
+  final eingaben = berechnet == null
+      ? computeHeroStatInputs(
+          hero: hero,
+          state: state,
+          talents: catalog.talents,
+          epicAdvantagesActive: epicAdvantagesRuleActive,
+          catalog: catalog,
+        )
+      : null;
+  return computeCombatPreviewStats(
+    hero,
+    state,
+    overrideConfig: overrideConfig,
+    overrideTalents: overrideTalents,
+    catalogTalents: catalog.talents,
+    catalogManeuvers: catalog.maneuvers,
+    catalogCombatSpecialAbilities: catalog.combatSpecialAbilities,
+    parsedModifiers: berechnet?.modifierParse ?? eingaben!.parsed,
+    effectiveAttributes: berechnet?.effectiveAttributes ?? eingaben!.effective,
+    derivedStats: berechnet?.derivedStats ?? eingaben!.derive(hero, state),
+    wunden: berechnet?.wundEffekte ?? eingaben!.wounds,
+    epicAdvantagesRuleActive: epicAdvantagesRuleActive,
+    catalog: catalog,
+  );
+}
 
 /// Gibt den deutschen Anzeige-Label fuer einen Waffenkampftyp zurueck.
 String combatTypeLabel(WeaponCombatType combatType) {
