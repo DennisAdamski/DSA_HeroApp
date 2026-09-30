@@ -11,9 +11,11 @@ import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/probe_engine_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/house_rules/house_rule_registry.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/state/house_rules_providers.dart';
 import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/schaden/schaden_dialog.dart';
 
@@ -168,6 +170,32 @@ void main() {
     );
     expect(uebernommen.single.zone, WundZone.brust);
     expect(uebernommen.single.anwendung.hinzugefuegteWunden, 2);
+  });
+
+  testWidgets('W20 9 trifft den Schildarm, beim Linkshänder rechts', (
+    tester,
+  ) async {
+    await zeigePanel(
+      tester,
+      FakeRepository(heroes: [_held], states: {'demo': _zustand}),
+      wuerfe: [9],
+    );
+    await tester.tap(_key('schaden-w20-wuerfeln'));
+    await tester.pumpAndSettle();
+    expect(_key('schaden-zone-linkerArm'), findsOneWidget);
+
+    await tester.pumpWidget(const SizedBox());
+    await zeigePanel(
+      tester,
+      FakeRepository(
+        heroes: [_held.copyWith(vorteileText: 'Linkshänder')],
+        states: {'demo': _zustand},
+      ),
+      wuerfe: [9],
+    );
+    await tester.tap(_key('schaden-w20-wuerfeln'));
+    await tester.pumpAndSettle();
+    expect(_key('schaden-zone-rechterArm'), findsOneWidget);
   });
 
   testWidgets('Angriffsmodifikator ändert den Vorschlag, Nutzer entscheidet', (
@@ -432,6 +460,84 @@ void main() {
       find.text(
         'Linker Arm — SB-Probe erschwert um 8 (2 Wunden aus einem Treffer)',
       ),
+      findsOneWidget,
+    );
+    await tester.tap(find.text('Ja'));
+    await tester.pumpAndSettle();
+
+    final gespeichert = (await repo.loadHeroState('demo'))!;
+    expect(gespeichert.wpiZustand.wundenInZone(WundZone.linkerArm), 2);
+    expect(gespeichert.wpiZustand.unterdrueckteInZone(WundZone.linkerArm), 2);
+  });
+
+  testWidgets('epische KO halbiert die Erschwernis und die Erschöpfung', (
+    tester,
+  ) async {
+    tester.view.devicePixelRatio = 1.0;
+    tester.view.physicalSize = const Size(1200, 2400);
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    // KO als Haupteigenschaft (Epische Stufen S. 4).
+    final episch = _held.copyWith(
+      isEpisch: true,
+      epicMainAttributes: const Attributes(
+        mu: 0,
+        kl: 1,
+        inn: 0,
+        ch: 0,
+        ff: 0,
+        ge: 0,
+        ko: 1,
+        kk: 0,
+      ),
+    );
+    final repo = FakeRepository(heroes: [episch], states: {'demo': _zustand});
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          heroRepositoryProvider.overrideWithValue(repo),
+          rulesCatalogProvider.overrideWith((ref) async => _leererKatalog),
+          isHouseRuleActiveProvider(EpicRuleKeys.advantages)
+              .overrideWithValue(true),
+        ],
+        child: MaterialApp(
+          home: Scaffold(
+            body: Consumer(
+              builder: (context, ref, _) => TextButton(
+                onPressed: () => showSchadenDialog(
+                  context: context,
+                  ref: ref,
+                  heroId: 'demo',
+                ),
+                child: const Text('öffnen'),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('öffnen'));
+    await tester.pumpAndSettle();
+
+    // 14 SP bei KO 12: Vorschlag 2 Wunden.
+    await tester.enterText(_key('schaden-tp'), '14');
+    await tester.enterText(_key('schaden-rs'), '0');
+    await waehleZone(tester, 'Linker Arm');
+    expect(tester.widget<Text>(_key('schaden-wunden')).data, '2');
+    await tester.tap(_uebernehmen);
+    await tester.pumpAndSettle();
+
+    expect(find.text('2 Wunden unterdrücken?'), findsOneWidget);
+    expect(
+      find.text(
+        'Linker Arm — SB-Probe erschwert um 8 (2 Wunden aus einem Treffer), '
+        'halbiert 4',
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.text('Nach dem Kampf: 1W6 Erschöpfung, halbiert (epische KO)'),
       findsOneWidget,
     );
     await tester.tap(find.text('Ja'));

@@ -258,7 +258,10 @@ List<ProbeQuickSearchCandidate> _buildCandidates({
   required bool epicAdvantagesActive,
 }) {
   final candidates = <ProbeQuickSearchCandidate>[
-    ..._buildAttributeCandidates(snapshot.probenEigenschaften),
+    ..._buildAttributeCandidates(
+      snapshot.probenEigenschaften,
+      snapshot.effectiveAttributes,
+    ),
     ..._buildCombatCandidates(snapshot),
     ..._buildTalentCandidates(
       hero: hero,
@@ -277,19 +280,22 @@ List<ProbeQuickSearchCandidate> _buildCandidates({
 }
 
 /// Baut die acht Eigenschafts-Schnellproben aus den Probenwerten (Wunden
-/// eingerechnet).
+/// eingerechnet); [grundwerte] zeigen den Abzug an.
 List<ProbeQuickSearchCandidate> _buildAttributeCandidates(
   Attributes probenEigenschaften,
+  Attributes grundwerte,
 ) {
   final candidates = <ProbeQuickSearchCandidate>[];
   for (final code in AttributeCode.values) {
     final label = attributeCodeKey(code);
     final value = readAttributeValue(probenEigenschaften, code);
+    final abzug = value - readAttributeValue(grundwerte, code);
+    final wundText = abzug == 0 ? '' : ' (Wunden −${-abzug})';
     candidates.add(
       ProbeQuickSearchCandidate(
         category: ProbeQuickSearchCategory.attribute,
         name: label,
-        detail: 'Eigenschaftsprobe · Wert $value',
+        detail: 'Eigenschaftsprobe · Wert $value$wundText',
         buildRequest: () =>
             buildAttributeProbeRequest(label: label, effectiveValue: value),
       ),

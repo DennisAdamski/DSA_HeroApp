@@ -72,6 +72,7 @@ class KartoBestandsAdapterImpl implements KartoBestandsAdapter {
       child: InspectorAttributeProbes(
         heroId: heroId,
         probenEigenschaften: werte.probenEigenschaften,
+        grundwerte: werte.effectiveAttributes,
       ),
     );
   }

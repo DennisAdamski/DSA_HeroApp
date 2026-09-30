@@ -21,6 +21,7 @@ class InspectorAttributeProbes extends ConsumerWidget {
     super.key,
     required this.heroId,
     required this.probenEigenschaften,
+    this.grundwerte,
   });
 
   /// ID fuer das Protokollieren des Ergebnisses.
@@ -30,8 +31,17 @@ class InspectorAttributeProbes extends ConsumerWidget {
   /// Wundverluste eingerechnet.
   final Attributes probenEigenschaften;
 
+  /// Effektive Werte ohne Wunden; mit ihnen markieren die Karten den
+  /// Wundabzug. Ohne Angabe gibt es keine Markierung.
+  final Attributes? grundwerte;
+
   /// Reihenfolge der acht Eigenschaften, wie auf dem Heldenbogen.
-  List<AttributeProbeEintrag> get entries => <AttributeProbeEintrag>[
+  List<AttributeProbeEintrag> get entries => _entriesFuer(probenEigenschaften);
+
+  // Die acht Werte in Heldenbogen-Reihenfolge.
+  static List<AttributeProbeEintrag> _entriesFuer(
+    Attributes probenEigenschaften,
+  ) => <AttributeProbeEintrag>[
     (label: 'MU', value: probenEigenschaften.mu),
     (label: 'KL', value: probenEigenschaften.kl),
     (label: 'IN', value: probenEigenschaften.inn),
@@ -44,12 +54,18 @@ class InspectorAttributeProbes extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final basis = grundwerte;
+    final ohneWunden = <String, int>{
+      if (basis != null)
+        for (final eintrag in _entriesFuer(basis)) eintrag.label: eintrag.value,
+    };
     return _AttributeGrid(
       entries: entries,
       itemBuilder: (entry) => InspectorAttributeCard(
         key: ValueKey('inspector-probe-attr-${entry.label}'),
         label: entry.label,
         value: entry.value,
+        wundAbzug: entry.value - (ohneWunden[entry.label] ?? entry.value),
         onTap: () => showLoggedProbeDialog(
           context: context,
           ref: ref,
