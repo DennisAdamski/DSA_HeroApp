@@ -13,23 +13,14 @@ import 'package:dsa_heldenverwaltung/ui/screens/hero_combat/weapon_catalog_table
 import 'package:dsa_heldenverwaltung/ui/screens/hero_combat/weapon_editor/helpers_catalog_slot.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_combat/weapon_editor_screen.dart';
 
-/// Callback-Typ fuer Inline-Aenderungen an einem Waffen-Slot.
-typedef WeaponSlotUpdater = void Function(
-  int index,
-  MainWeaponSlot Function(MainWeaponSlot current) update,
-);
-
-/// Callback-Typ fuer Filter-Aenderungen.
-typedef WeaponFilterChanged = void Function({
-  String? talentId,
-  String? combatType,
-  String? weaponType,
-  String? distanceClass,
-});
-
 /// Persistiert einen Waffen-Draft als neuen oder bestehenden Slot.
-typedef WeaponSaveCallback = Future<void> Function(
+///
+/// [ausgang] ist der Slot beim Öffnen des Editors, `null` bei einer neuen
+/// Waffe; an ihm erkennt der Aufrufer eine inzwischen anderswo geänderte
+/// Waffe. Liefert, ob gespeichert wurde.
+typedef WeaponSaveCallback = Future<bool> Function(
   MainWeaponSlot slot, {
+  MainWeaponSlot? ausgang,
   int? slotIndex,
 });
 
@@ -73,7 +64,7 @@ class CombatWeaponsSection extends StatefulWidget {
   final String weaponFilterType;
   final String weaponFilterDistanceClass;
   final WeaponSaveCallback onWeaponSave;
-  final void Function(int index) onWeaponRemove;
+  final WeaponRemoveCallback onWeaponRemove;
   final WeaponSlotUpdater onWeaponSlotUpdate;
   final WeaponFilterChanged onFilterChanged;
 
@@ -216,7 +207,11 @@ class _CombatWeaponsSectionState extends State<CombatWeaponsSection> {
     if (result == null) {
       return;
     }
-    await widget.onWeaponSave(result, slotIndex: slotIndex);
+    await widget.onWeaponSave(
+      result,
+      ausgang: slotIndex == null ? null : sourceSlot,
+      slotIndex: slotIndex,
+    );
   }
 
   void _closeWideEditor() {
@@ -228,8 +223,15 @@ class _CombatWeaponsSectionState extends State<CombatWeaponsSection> {
   }
 
   Future<void> _saveWideEditor(MainWeaponSlot slot) async {
-    await widget.onWeaponSave(slot, slotIndex: _editingSlotIndex);
-    if (!mounted) {
+    final slotIndex = _editingSlotIndex;
+    final gespeichert = await widget.onWeaponSave(
+      slot,
+      ausgang: slotIndex == null ? null : _editorSeedWeapon,
+      slotIndex: slotIndex,
+    );
+    // Gescheitert bleibt der Editor offen, damit die Eingaben nicht verloren
+    // gehen; die Meldung nennt den Grund.
+    if (!gespeichert || !mounted) {
       return;
     }
     _closeWideEditor();

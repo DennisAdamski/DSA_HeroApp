@@ -16,6 +16,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/combat_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/combat_special_ability_state.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/cost_text_parsing.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_requirement_context.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/kampf_aenderung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/learning_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/maneuver_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
@@ -36,6 +37,7 @@ import 'package:dsa_heldenverwaltung/ui/debug/ui_rebuild_observer.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_area_registry.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/dice_log_persistence.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/probe_request_factory.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/zustand_aendern.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_edit_controller.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_combat/combat_armor_section.dart';
@@ -70,6 +72,7 @@ part 'hero_combat/combat_special_rules_helpers.dart';
 part 'hero_combat/combat_maneuver_helpers.dart';
 part 'hero_combat/combat_maneuver_dialog.dart';
 part 'hero_combat/combat_state_helpers.dart';
+part 'hero_combat/combat_sofort_aenderungen.dart';
 
 class HeroCombatTab extends ConsumerStatefulWidget {
   const HeroCombatTab({
@@ -121,6 +124,11 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
   /// `_draftApSpentDelta` in `hero_talents_tab.dart`.
   int _draftApSpentDelta = 0;
   int? _temporaryIniRoll;
+
+  /// Steigt, wenn eine Sofortänderung scheitert, und baut die Unterreiter
+  /// Kampfwerte, Waffen und Rüstung neu auf: Auswahlfelder zeigen dann
+  /// wieder den gespeicherten statt des gewählten Werts.
+  int _steuerRevision = 0;
   TwoWeaponActionType _selectedTwoWeaponAction = TwoWeaponActionType.none;
   String _weaponFilterTalentId = '';
   String _weaponFilterCombatType = '';
@@ -383,15 +391,23 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
                       controller: _subTabController,
                       children: [
                         // Tab 0: Kampfwerte (Spieltisch-Schnellansicht)
-                        _buildCombatPreviewSubTab(
-                          combatTalents: combatTalents,
-                          catalog: catalog,
-                          hero: hero,
-                          heroState: state,
-                          preview: preview,
+                        KeyedSubtree(
+                          key: ValueKey<String>(
+                            'combat-kampfwerte-$_steuerRevision',
+                          ),
+                          child: _buildCombatPreviewSubTab(
+                            combatTalents: combatTalents,
+                            catalog: catalog,
+                            hero: hero,
+                            heroState: state,
+                            preview: preview,
+                          ),
                         ),
                         // Tab 1: Waffen (Tabelle + responsiver Editor)
                         Padding(
+                          key: ValueKey<String>(
+                            'combat-waffen-$_steuerRevision',
+                          ),
                           padding: const EdgeInsets.all(12),
                           child: CombatWeaponsSection(
                             weapons: _draftCombatConfig.weaponSlots,
@@ -418,28 +434,25 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
                             weaponFilterType: _weaponFilterType,
                             weaponFilterDistanceClass:
                                 _weaponFilterDistanceClass,
-                            onWeaponSave: (slot, {slotIndex}) =>
-                                _saveWeaponSlot(
-                                  slot: slot,
-                                  catalog: catalog,
-                                  combatTalents: sortedCombatTalents(
-                                    combatTalents,
-                                  ),
+                            onWeaponSave: (slot, {ausgang, slotIndex}) =>
+                                _speichereWaffe(
+                                  slot,
+                                  ausgang: ausgang,
                                   slotIndex: slotIndex,
+                                  catalog: catalog,
                                 ),
-                            onWeaponRemove: (index) => _removeWeaponSlotAt(
-                              index,
-                              catalog: catalog,
-                              combatTalents: sortedCombatTalents(combatTalents),
-                            ),
-                            onWeaponSlotUpdate: (index, update) =>
-                                _updateWeaponSlot(
+                            onWeaponRemove: (index, angezeigt) =>
+                                _entferneWaffe(
                                   index,
+                                  angezeigt,
+                                  catalog: catalog,
+                                ),
+                            onWeaponSlotUpdate: (index, angezeigt, update) =>
+                                _aendereWaffenfeld(
+                                  index,
+                                  angezeigt,
                                   update,
                                   catalog: catalog,
-                                  combatTalents: sortedCombatTalents(
-                                    combatTalents,
-                                  ),
                                 ),
                             onFilterChanged:
                                 ({
@@ -468,17 +481,26 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
                         ),
                         // Tab 2: Ruestung & Verteidigung
                         ListView(
+                          key: ValueKey<String>(
+                            'combat-ruestung-$_steuerRevision',
+                          ),
                           padding: const EdgeInsets.all(12),
                           children: [
                             CombatArmorSection(
                               armor: _draftCombatConfig.armor,
-                              onArmorChanged: (armor) => _setArmorConfig(
-                                armor,
-                                catalog: catalog,
-                                combatTalents: sortedCombatTalents(
-                                  combatTalents,
-                                ),
-                              ),
+                              onPieceSaved: (neu, {ausgang, index}) =>
+                                  _speichereRuestungsteil(
+                                    neu,
+                                    ausgang: ausgang,
+                                    index: index,
+                                    catalog: catalog,
+                                  ),
+                              onPieceRemoved: (index, angezeigt) =>
+                                  _entferneRuestungsteil(
+                                    index,
+                                    angezeigt,
+                                    catalog: catalog,
+                                  ),
                               previewRsTotal: preview.rsTotal,
                               previewBeTotalRaw: preview.beTotalRaw,
                               previewRgReduction: preview.rgReduction,
@@ -491,13 +513,18 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
                             CombatOffhandSection(
                               offhandEquipment:
                                   _draftCombatConfig.offhandEquipment,
-                              onOffhandEquipmentChanged: (entries) =>
-                                  _setOffhandEquipmentEntries(
-                                    entries,
+                              onEntrySaved: (neu, {ausgang, index}) =>
+                                  _speichereNebenhandTeil(
+                                    neu,
+                                    ausgang: ausgang,
+                                    index: index,
                                     catalog: catalog,
-                                    combatTalents: sortedCombatTalents(
-                                      combatTalents,
-                                    ),
+                                  ),
+                              onEntryRemoved: (index, angezeigt) =>
+                                  _entferneNebenhandTeil(
+                                    index,
+                                    angezeigt,
+                                    catalog: catalog,
                                   ),
                             ),
                           ],
