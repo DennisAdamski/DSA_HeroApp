@@ -72,6 +72,7 @@ void main() {
       'adv_hohe_magieresistenz',
       'adv_herausragende_eigenschaft',
       'adv_flink',
+      'adv_linkshaender',
       'adv_eisern',
       'adv_schnelle_heilung',
       'adv_astrale_regeneration',

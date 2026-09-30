@@ -143,6 +143,22 @@ void main() {
     expect(parsed.hasBehaebigFromNachteile, isFalse);
   });
 
+  test('erkennt Linkshänder mit und ohne Umlaut, nur in den Vorteilen', () {
+    ModifierParseResult parse(String vorteile, [String nachteile = '']) =>
+        parseModifierTexts(
+          rasseModText: '',
+          kulturModText: '',
+          professionModText: '',
+          vorteileText: vorteile,
+          nachteileText: nachteile,
+        );
+
+    expect(parse('Eisern, Linkshänder').hasLinkshaenderFromVorteile, isTrue);
+    expect(parse('LINKSHAENDER').hasLinkshaenderFromVorteile, isTrue);
+    expect(parse('Rechtshänder').hasLinkshaenderFromVorteile, isFalse);
+    expect(parse('', 'Linkshänder').hasLinkshaenderFromVorteile, isFalse);
+  });
+
   test('computes effective attributes from all modifier text fields', () {
     const hero = HeroSheet(
       id: 'h-1',
