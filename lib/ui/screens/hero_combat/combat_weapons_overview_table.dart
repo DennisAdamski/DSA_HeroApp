@@ -11,11 +11,23 @@ import 'package:dsa_heldenverwaltung/ui/widgets/adaptive_table_columns.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/flexible_table.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/resizable_table_columns.dart';
 
+/// Ändert einzelne Felder eines Waffen-Slots.
+///
+/// [angezeigt] ist der Slot, wie ihn die Zeile zeigt; [update] bekommt den
+/// gespeicherten Stand und setzt nur die bedienten Felder.
 typedef WeaponSlotUpdater = void Function(
   int index,
-  MainWeaponSlot Function(MainWeaponSlot current) update,
+  MainWeaponSlot angezeigt,
+  MainWeaponSlot Function(MainWeaponSlot gespeichert) update,
 );
 
+/// Entfernt den angezeigten Waffen-Slot [angezeigt] an Position [index].
+typedef WeaponRemoveCallback = void Function(
+  int index,
+  MainWeaponSlot angezeigt,
+);
+
+/// Callback-Typ fuer Filter-Aenderungen.
 typedef WeaponFilterChanged = void Function({
   String? talentId,
   String? combatType,
@@ -63,7 +75,7 @@ class CombatWeaponsOverviewTable extends StatelessWidget {
   final void Function(int index) onWeaponEdit;
   final VoidCallback onWeaponAdd;
   final VoidCallback onWeaponCatalog;
-  final void Function(int index) onWeaponRemove;
+  final WeaponRemoveCallback onWeaponRemove;
   final WeaponSlotUpdater onWeaponSlotUpdate;
   final WeaponFilterChanged onFilterChanged;
 
@@ -462,6 +474,7 @@ class CombatWeaponsOverviewTable extends StatelessWidget {
                       : slot.name;
                   onWeaponSlotUpdate(
                     entry.index,
+                    slot,
                     (current) => current.copyWith(
                       talentId: nextTalentId,
                       weaponType: nextWeaponType,
@@ -500,6 +513,7 @@ class CombatWeaponsOverviewTable extends StatelessWidget {
                   final parsed = int.tryParse(raw.trim()) ?? slot.breakFactor;
                   onWeaponSlotUpdate(
                     entry.index,
+                    slot,
                     (current) =>
                         current.copyWith(breakFactor: parsed < 0 ? 0 : parsed),
                   );
@@ -518,7 +532,7 @@ class CombatWeaponsOverviewTable extends StatelessWidget {
                 tooltip: 'Waffe entfernen',
                 onPressed: weapons.length <= 1
                     ? null
-                    : () => onWeaponRemove(entry.index),
+                    : () => onWeaponRemove(entry.index, slot),
                 icon: const Icon(Icons.delete),
               ),
             ],
