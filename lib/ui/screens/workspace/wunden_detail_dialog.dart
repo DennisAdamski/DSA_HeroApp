@@ -10,6 +10,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/talent_value_rules.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/wund_anzeige_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/wund_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/wund_zonen_rules.dart';
 import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
@@ -145,6 +146,10 @@ class _WundenDetailDialog extends ConsumerWidget {
               for (final zone in WundZone.values) ...[
                 _ZonenZeile(
                   zone: zone,
+                  armRolle: armRolleFuer(
+                    zone,
+                    linkshaender: wundEffekte.linkshaender,
+                  ),
                   wunden: wpiZustand.wundenInZone(zone),
                   unterdrueckte: wpiZustand.unterdrueckteInZone(zone),
                   onHinzufuegen: () => wundeHinzufuegen(zone),
@@ -232,6 +237,7 @@ class _WundenDetailDialog extends ConsumerWidget {
 class _ZonenZeile extends StatelessWidget {
   const _ZonenZeile({
     required this.zone,
+    required this.armRolle,
     required this.wunden,
     required this.unterdrueckte,
     required this.onHinzufuegen,
@@ -240,6 +246,9 @@ class _ZonenZeile extends StatelessWidget {
   });
 
   final WundZone zone;
+
+  /// Schwert- oder Schildarm; `null` für andere Zonen.
+  final ArmRolle? armRolle;
   final int wunden;
   final int unterdrueckte;
   final VoidCallback onHinzufuegen;
@@ -255,12 +264,29 @@ class _ZonenZeile extends StatelessWidget {
       children: [
         SizedBox(
           width: 100,
-          child: Text(
-            label,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: istKritisch ? Theme.of(context).colorScheme.error : null,
-            ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                label,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: istKritisch
+                      ? Theme.of(context).colorScheme.error
+                      : null,
+                ),
+              ),
+              // Armwunden wirken nur auf die Waffe in diesem Arm.
+              if (armRolle != null)
+                Text(
+                  armRolleLabel[armRolle]!,
+                  key: ValueKey<String>('wunden-armrolle-${zone.name}'),
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+            ],
           ),
         ),
         // Drei-Zustand-Pips: rot = aktiv, bernstein = unterdrueckt, grau = leer

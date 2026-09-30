@@ -5,6 +5,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/wund_anzeige_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/wund_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/wund_zonen_rules.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/wund_zustand_speichern.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/wunden_detail_dialog.dart';
 
@@ -111,6 +112,7 @@ class _InspectorWundenSectionState
           for (final zone in WundZone.values)
             _WundZoneCompactRow(
               zone: zone,
+              linkshaender: widget.wundEffekte.linkshaender,
               wunden: zustand.wundenInZone(zone),
               unterdrueckte: zustand.unterdrueckteInZone(zone),
               onHinzufuegen: () => _wundeHinzufuegen(zone),
@@ -229,6 +231,7 @@ class InspectorWundenCard extends ConsumerWidget {
           for (final zone in WundZone.values)
             _WundZoneCompactRow(
               zone: zone,
+              linkshaender: wundEffekte.linkshaender,
               wunden: zustand.wundenInZone(zone),
               unterdrueckte: zustand.unterdrueckteInZone(zone),
               onHinzufuegen: () => _wundeHinzufuegen(context, ref, zone),
@@ -291,6 +294,7 @@ class _WundEffekteSubtitle extends StatelessWidget {
 class _WundZoneCompactRow extends StatelessWidget {
   const _WundZoneCompactRow({
     required this.zone,
+    required this.linkshaender,
     required this.wunden,
     required this.unterdrueckte,
     required this.onHinzufuegen,
@@ -298,6 +302,9 @@ class _WundZoneCompactRow extends StatelessWidget {
   });
 
   final WundZone zone;
+
+  /// Der linke Arm ist der Schwertarm (Vorteil Linkshänder).
+  final bool linkshaender;
   final int wunden;
   final int unterdrueckte;
   final VoidCallback onHinzufuegen;
@@ -305,7 +312,7 @@ class _WundZoneCompactRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final label = wundZoneLabel[zone] ?? zone.name;
+    final label = wundZonenAnzeige(zone, linkshaender: linkshaender);
     final kritisch = wunden >= maxWundenProZone;
     final effektive = wunden - unterdrueckte;
     return SizedBox(

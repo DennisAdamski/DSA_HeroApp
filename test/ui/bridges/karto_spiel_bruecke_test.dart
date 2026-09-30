@@ -4,10 +4,12 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
+import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
 import 'package:dsa_heldenverwaltung/ui/bridges/karto_bestands_adapter_impl.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/workspace/inspector/widgets/inspector_attribute_card.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_bestands_adapter.dart';
 
 import '../../ui2/shell/karto_test_support.dart';
@@ -143,12 +145,18 @@ void main() {
     );
   });
   group('Eigenschafts-Schnellproben über die Brücke', () {
-    Future<FakeRepository> zeigeProben(WidgetTester tester) async {
+    Future<FakeRepository> zeigeProben(
+      WidgetTester tester, {
+      HeroState? zustand,
+    }) async {
       tester.view.devicePixelRatio = 1;
       tester.view.physicalSize = const Size(900, 1200);
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
-      final repo = FakeRepository(heroes: [testHero()]);
+      final repo = FakeRepository(
+        heroes: [testHero()],
+        states: {'rondra': ?zustand},
+      );
       final container = ProviderContainer(
         overrides: [
           heroRepositoryProvider.overrideWithValue(repo),
@@ -206,6 +214,39 @@ void main() {
       final zustand = await repo.loadHeroState('rondra');
       expect(zustand!.diceLog, isNotEmpty);
       expect(zustand.diceLog.last.title, contains('MU'));
+    });
+
+    testWidgets('Wunden senken den Probenwert und sind markiert', (
+      tester,
+    ) async {
+      await zeigeProben(tester);
+      final ohne = tester.widget<InspectorAttributeCard>(
+        find.byKey(const ValueKey('inspector-probe-attr-GE')),
+      );
+      await tester.pumpWidget(const SizedBox());
+
+      // Eine Beinwunde: GE −2 allgemein und −2 aus der Zone (WdS S. 108 f.).
+      await zeigeProben(
+        tester,
+        zustand: const HeroState.empty().copyWith(
+          wpiZustand: const WundZustand(
+            wundenProZone: <WundZone, int>{WundZone.linkesBein: 1},
+          ),
+        ),
+      );
+      final ge = tester.widget<InspectorAttributeCard>(
+        find.byKey(const ValueKey('inspector-probe-attr-GE')),
+      );
+      expect(ge.value, ohne.value - 4);
+      expect(ge.wundAbzug, -4);
+      expect(
+        find.byTooltip('Wunden −4 (ohne Wunden ${ohne.value})'),
+        findsOneWidget,
+      );
+      final mu = tester.widget<InspectorAttributeCard>(
+        find.byKey(const ValueKey('inspector-probe-attr-MU')),
+      );
+      expect(mu.wundAbzug, 0);
     });
 
     testWidgets('alle acht Eigenschaften stehen zur Verfügung', (tester) async {
