@@ -12,6 +12,7 @@ class OffhandModifierSnapshot {
     this.isParryWeapon = false,
     this.requiresLinkhandViolation = false,
     this.displayName = '',
+    this.schildarmWundMalus = 0,
   });
 
   /// AT-Modifikator auf die Hauptwaffe.
@@ -40,13 +41,21 @@ class OffhandModifierSnapshot {
 
   /// Anzeigename des aktiven Nebenhand-Eintrags.
   final String displayName;
+
+  /// Wundabzug des Schildarms, der in [shieldPa] eingerechnet wurde.
+  final int schildarmWundMalus;
 }
 
 /// Berechnet die Modifikatoren eines Schilds oder einer Parierwaffe.
+///
+/// [schildarmWundMalus] (≤ 0) sind die Armwunden des Schildarms; sie senken
+/// die Schild-Parade (WdS S. 109: „wenn er diesen Arm benutzt“). Eine
+/// Parierwaffe hat keinen eigenen PA-Wert und bleibt davon unberührt.
 OffhandModifierSnapshot computeOffhandModifierSnapshot({
   required OffhandEquipmentEntry? equipment,
   required CombatSpecialRules specialRules,
   required int paBase,
+  int schildarmWundMalus = 0,
 }) {
   if (equipment == null) {
     return const OffhandModifierSnapshot();
@@ -56,10 +65,11 @@ OffhandModifierSnapshot computeOffhandModifierSnapshot({
     return OffhandModifierSnapshot(
       atMod: equipment.atMod,
       iniMod: equipment.iniMod,
-      shieldPa: paBase + equipment.paMod + shieldSfBonus,
+      shieldPa: paBase + equipment.paMod + shieldSfBonus + schildarmWundMalus,
       shieldPaBonus: equipment.paMod + shieldSfBonus,
       isShield: true,
       displayName: equipment.name,
+      schildarmWundMalus: schildarmWundMalus,
     );
   }
   final hasLinkhand = specialRules.linkhandActive;

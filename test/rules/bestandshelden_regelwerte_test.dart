@@ -4,6 +4,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/attribute_start_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/wund_rules.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 
 import '../test_support/hero_fixtures.dart';
@@ -40,7 +41,17 @@ Map<String, Object?> _projektion(
     'startwerte': snapshot.effectiveStartAttributes.toJson(),
     'maxima': snapshot.attributeMaximums.toJson(),
     'wundschwelle': snapshot.wundschwelle,
-    'wundProbenMalus': snapshot.wundEffekte.talentProbeMalus,
+    // Wunden wirken auf Proben über Eigenschaftsverluste (WdS S. 108 f.).
+    'wundEigenschaften': <String, Object?>{
+      for (final eintrag
+          in snapshot.wundEffekte.eigenschaftsVerluste.toJson().entries)
+        if (eintrag.value != 0) eintrag.key: eintrag.value,
+    },
+    // Unterdrücken aller bestehenden Wunden (WdS S. 83), episch halbiert.
+    'sbErschwernis': computeSbUnterdrueckungErschwernis(
+      gesamtWunden: zustand.wpiZustand.gesamtWunden,
+      halbiert: snapshot.wundEffekte.unterdrueckungHalbiert,
+    ),
     'magie': snapshot.resourceActivation.magic.isEnabled,
     'karma': snapshot.resourceActivation.divine.isEnabled,
     'kampf': <String, Object?>{
@@ -50,6 +61,7 @@ Map<String, Object?> _projektion(
       'pa': kampf.pa,
       'ini': kampf.initiative,
       'ausweichen': kampf.ausweichen,
+      'schildPa': kampf.shieldPa,
       'tp': kampf.tpExpression,
     },
     'hinweise': pendingAttributeTraitNotices(held),
@@ -72,9 +84,12 @@ _erwartet = <String, Map<String, Object?>>{
     'maxKap': 0,
     'mr': 5,
     'iniBase': 13,
-    'atBase': 4,
-    'paBase': 4,
-    'fkBase': 1,
+    // Eine Wunde am linken Arm (Schildarm): allgemein AT/PA/FK −2, der
+    // Armanteil AT/PA −2 trifft nur den Schild (WdS S. 58, 108 f.). Bis
+    // ARCH-05 (6) rechnete sie AT/PA −4 und FK −6 für alle Waffen: 4/4/1.
+    'atBase': 6,
+    'paBase': 6,
+    'fkBase': 5,
     'gs': 3,
     'ausweichen': 0,
     'eigenschaften': <String, Object?>{
@@ -109,19 +124,90 @@ _erwartet = <String, Map<String, Object?>>{
     },
     // KO 14 / 2 + Eisern 2 (WdS S. 58); bis ARCH-05 (4) ohne Eisern: 7.
     'wundschwelle': 9,
-    'wundProbenMalus': -3,
+    // Statt pauschal Proben −3: GE −2 allgemein, FF/KK −2 vom Arm.
+    'wundEigenschaften': <String, Object?>{'ff': -2, 'ge': -2, 'kk': -2},
+    'sbErschwernis': 4,
     'magie': false,
     'karma': false,
-    // Die Armwunde zieht AT/PA je 4 ab, wie AT-Basis und Initiative;
-    // Ausweichen baut auf der PA-Basis auf und sinkt mit (bis zur
-    // Behebung von Befund ARCH-07-B7 fehlte sie hier: 13/12/4).
+    // Die Hauptwaffe liegt im Schwertarm und trägt nur die allgemeinen −2
+    // (bis ARCH-05 (6): 9/8, vor ARCH-07-B7: 13/12). Ausweichen folgt der
+    // PA-Basis: 6 − BE 4 = 2 (bis ARCH-05 (6): 0). Der Holzschild trägt den
+    // Armanteil: PA-Basis 6 + 3 − 2 = 7.
+    'kampf': <String, Object?>{
+      'rs': 4,
+      'be': 4,
+      'at': 11,
+      'pa': 10,
+      'ini': 10,
+      'ausweichen': 2,
+      'schildPa': 7,
+      'tp': '1W6+4',
+    },
+    'hinweise': <String>[],
+  },
+  'f01_krieger_normal mit Linkshänder': <String, Object?>{
+    'maxLep': 42,
+    'maxAu': 48,
+    'maxAsp': 33,
+    'maxKap': 0,
+    'mr': 5,
+    'iniBase': 13,
+    // Eine Wunde am linken Arm (Schildarm): allgemein AT/PA/FK −2, der
+    // Armanteil AT/PA −2 trifft nur den Schild (WdS S. 58, 108 f.). Bis
+    // ARCH-05 (6) rechnete sie AT/PA −4 und FK −6 für alle Waffen: 4/4/1.
+    'atBase': 6,
+    'paBase': 6,
+    'fkBase': 5,
+    'gs': 3,
+    'ausweichen': 0,
+    'eigenschaften': <String, Object?>{
+      'mu': 15,
+      'kl': 10,
+      'inn': 12,
+      'ch': 11,
+      'ff': 11,
+      'ge': 13,
+      'ko': 14,
+      'kk': 14,
+    },
+    'startwerte': <String, Object?>{
+      'mu': 13,
+      'kl': 10,
+      'inn': 12,
+      'ch': 11,
+      'ff': 11,
+      'ge': 12,
+      'ko': 13,
+      'kk': 14,
+    },
+    'maxima': <String, Object?>{
+      'mu': 20,
+      'kl': 15,
+      'inn': 18,
+      'ch': 17,
+      'ff': 17,
+      'ge': 18,
+      'ko': 20,
+      'kk': 21,
+    },
+    // KO 14 / 2 + Eisern 2 (WdS S. 58); bis ARCH-05 (4) ohne Eisern: 7.
+    'wundschwelle': 9,
+    // Statt pauschal Proben −3: GE −2 allgemein, FF/KK −2 vom Arm.
+    'wundEigenschaften': <String, Object?>{'ff': -2, 'ge': -2, 'kk': -2},
+    'sbErschwernis': 4,
+    'magie': false,
+    'karma': false,
+    // Linkshänder: Der verwundete linke Arm ist der Schwertarm. Die
+    // Hauptwaffe trägt den Armanteil (11/10 − 2), der Schild nicht
+    // (PA-Basis 6 + 3 = 9).
     'kampf': <String, Object?>{
       'rs': 4,
       'be': 4,
       'at': 9,
       'pa': 8,
       'ini': 10,
-      'ausweichen': 0,
+      'ausweichen': 2,
+      'schildPa': 9,
       'tp': '1W6+4',
     },
     'hinweise': <String>[],
@@ -171,7 +257,8 @@ _erwartet = <String, Map<String, Object?>>{
     // KO 13 / 2 = 6,5, kaufmännisch 7 (WdS S. 58); bis ARCH-05 (4)
     // abgerundet: 6.
     'wundschwelle': 7,
-    'wundProbenMalus': 0,
+    'wundEigenschaften': <String, Object?>{},
+    'sbErschwernis': 0,
     'magie': true,
     'karma': false,
     'kampf': <String, Object?>{
@@ -181,6 +268,7 @@ _erwartet = <String, Map<String, Object?>>{
       'pa': 9,
       'ini': 8,
       'ausweichen': 7,
+      'schildPa': 0,
       'tp': '1W6+13',
     },
     'hinweise': <String>[],
@@ -228,7 +316,8 @@ _erwartet = <String, Map<String, Object?>>{
       'kk': 17,
     },
     'wundschwelle': 6,
-    'wundProbenMalus': 0,
+    'wundEigenschaften': <String, Object?>{},
+    'sbErschwernis': 0,
     'magie': false,
     'karma': true,
     'kampf': <String, Object?>{
@@ -238,6 +327,7 @@ _erwartet = <String, Map<String, Object?>>{
       'pa': 7,
       'ini': 8,
       'ausweichen': 7,
+      'schildPa': 0,
       'tp': '1W6+11',
     },
     'hinweise': <String>[],
@@ -286,7 +376,8 @@ _erwartet = <String, Map<String, Object?>>{
     },
     // KO 18 / 2 + Eisern 2 (WdS S. 58); bis ARCH-05 (4) ohne Eisern: 9.
     'wundschwelle': 11,
-    'wundProbenMalus': 0,
+    'wundEigenschaften': <String, Object?>{},
+    'sbErschwernis': 0,
     'magie': false,
     'karma': false,
     'kampf': <String, Object?>{
@@ -296,6 +387,7 @@ _erwartet = <String, Map<String, Object?>>{
       'pa': 19,
       'ini': 17,
       'ausweichen': 16,
+      'schildPa': 0,
       'tp': '1W6+5',
     },
     'hinweise': <String>[],
@@ -344,7 +436,8 @@ _erwartet = <String, Map<String, Object?>>{
       'kk': 18,
     },
     'wundschwelle': 6,
-    'wundProbenMalus': 0,
+    'wundEigenschaften': <String, Object?>{},
+    'sbErschwernis': 0,
     'magie': false,
     'karma': false,
     'kampf': <String, Object?>{
@@ -354,6 +447,7 @@ _erwartet = <String, Map<String, Object?>>{
       'pa': 7,
       'ini': 9,
       'ausweichen': 7,
+      'schildPa': 0,
       'tp': '1W6+12',
     },
     'hinweise': <String>[],
@@ -406,7 +500,8 @@ _erwartet = <String, Map<String, Object?>>{
       'kk': 18,
     },
     'wundschwelle': 6,
-    'wundProbenMalus': 0,
+    'wundEigenschaften': <String, Object?>{},
+    'sbErschwernis': 0,
     'magie': false,
     'karma': false,
     'kampf': <String, Object?>{
@@ -416,6 +511,7 @@ _erwartet = <String, Map<String, Object?>>{
       'pa': 7,
       'ini': 9,
       'ausweichen': 8,
+      'schildPa': 0,
       'tp': '1W6+12',
     },
     'hinweise': <String>[],
@@ -463,7 +559,8 @@ _erwartet = <String, Map<String, Object?>>{
       'kk': 18,
     },
     'wundschwelle': 6,
-    'wundProbenMalus': 0,
+    'wundEigenschaften': <String, Object?>{},
+    'sbErschwernis': 0,
     'magie': false,
     'karma': false,
     'kampf': <String, Object?>{
@@ -473,6 +570,7 @@ _erwartet = <String, Map<String, Object?>>{
       'pa': 10,
       'ini': 8,
       'ausweichen': 6,
+      'schildPa': 0,
       'tp': '1W6+13',
     },
     'hinweise': <String>[],
@@ -524,7 +622,8 @@ _erwartet = <String, Map<String, Object?>>{
     // KO 13 / 2 = 6,5, kaufmännisch 7 (WdS S. 58); bis ARCH-05 (4)
     // abgerundet: 6.
     'wundschwelle': 7,
-    'wundProbenMalus': 0,
+    'wundEigenschaften': <String, Object?>{},
+    'sbErschwernis': 0,
     'magie': false,
     'karma': false,
     'kampf': <String, Object?>{
@@ -534,6 +633,8 @@ _erwartet = <String, Map<String, Object?>>{
       'pa': 12,
       'ini': 12,
       'ausweichen': 8,
+      // Alt-Nebenhand `offhand` (Holzschild): PA-Basis 8 + 2, ohne Schild-SF.
+      'schildPa': 10,
       'tp': '1W6+18',
     },
     'hinweise': <String>['KK +2'],
@@ -581,7 +682,8 @@ _erwartet = <String, Map<String, Object?>>{
       'kk': 17,
     },
     'wundschwelle': 6,
-    'wundProbenMalus': 0,
+    'wundEigenschaften': <String, Object?>{},
+    'sbErschwernis': 0,
     'magie': false,
     'karma': false,
     'kampf': <String, Object?>{
@@ -591,6 +693,7 @@ _erwartet = <String, Map<String, Object?>>{
       'pa': 7,
       'ini': 12,
       'ausweichen': 7,
+      'schildPa': 0,
       'tp': '1W6+11',
     },
     'hinweise': <String>[],
@@ -639,7 +742,8 @@ _erwartet = <String, Map<String, Object?>>{
       'kk': 17,
     },
     'wundschwelle': 6,
-    'wundProbenMalus': 0,
+    'wundEigenschaften': <String, Object?>{},
+    'sbErschwernis': 0,
     'magie': false,
     'karma': false,
     'kampf': <String, Object?>{
@@ -649,6 +753,7 @@ _erwartet = <String, Map<String, Object?>>{
       'pa': 7,
       'ini': 12,
       'ausweichen': 7,
+      'schildPa': 0,
       'tp': '1W6+11',
     },
     'hinweise': <String>[],
@@ -662,7 +767,8 @@ _erwartet = <String, Map<String, Object?>>{
     'iniBase': 15,
     'atBase': 7,
     'paBase': 7,
-    'fkBase': 6,
+    // Brustwunde: FK nur allgemein −2 (bis ARCH-05 (6): −3, also 6).
+    'fkBase': 7,
     'gs': 8,
     'ausweichen': 0,
     'eigenschaften': <String, Object?>{
@@ -697,7 +803,10 @@ _erwartet = <String, Map<String, Object?>>{
     },
     // KO 18 / 2 + Eisern 2 (WdS S. 58); bis ARCH-05 (4) ohne Eisern: 9.
     'wundschwelle': 11,
-    'wundProbenMalus': -1,
+    // Statt pauschal Proben −3 (episch −1): GE −2, KO/KK −1.
+    'wundEigenschaften': <String, Object?>{'ge': -2, 'ko': -1, 'kk': -1},
+    // Epische KO: SB-Erschwernis 4 halbiert (Epische Stufen S. 4).
+    'sbErschwernis': 2,
     'magie': false,
     'karma': false,
     // Brustwunde: AT/PA/Ausweichen je −3 (vor ARCH-07-B7: 21/19/16).
@@ -708,6 +817,7 @@ _erwartet = <String, Map<String, Object?>>{
       'pa': 16,
       'ini': 15,
       'ausweichen': 13,
+      'schildPa': 0,
       'tp': '1W6+5',
     },
     'hinweise': <String>[],
@@ -721,7 +831,8 @@ _erwartet = <String, Map<String, Object?>>{
     'iniBase': 15,
     'atBase': 7,
     'paBase': 7,
-    'fkBase': 6,
+    // Brustwunde: FK nur allgemein −2 (bis ARCH-05 (6): −3, also 6).
+    'fkBase': 7,
     'gs': 8,
     'ausweichen': 0,
     'eigenschaften': <String, Object?>{
@@ -756,7 +867,9 @@ _erwartet = <String, Map<String, Object?>>{
     },
     // KO 18 / 2 + Eisern 2 (WdS S. 58); bis ARCH-05 (4) ohne Eisern: 9.
     'wundschwelle': 11,
-    'wundProbenMalus': -3,
+    // Statt pauschal Proben −3 (episch −1): GE −2, KO/KK −1.
+    'wundEigenschaften': <String, Object?>{'ge': -2, 'ko': -1, 'kk': -1},
+    'sbErschwernis': 4,
     'magie': false,
     'karma': false,
     // Brustwunde: AT/PA/Ausweichen je −3, unabhängig von epischen Vorteilen.
@@ -767,6 +880,7 @@ _erwartet = <String, Map<String, Object?>>{
       'pa': 16,
       'ini': 15,
       'ausweichen': 13,
+      'schildPa': 0,
       'tp': '1W6+5',
     },
     'hinweise': <String>[],
@@ -787,14 +901,16 @@ void main() {
     Bestandsheld held, {
     required bool episch,
     WundZustand? wunden,
+    HeroSheet Function(HeroSheet held)? aendern,
   }) {
     test(name, () {
       final bundle = ladeBestandsheld(held);
       final zustand = wunden == null
           ? bundle.state
           : bundle.state.copyWith(wpiZustand: wunden);
+      final heldImTest = aendern == null ? bundle.hero : aendern(bundle.hero);
       final ist = _projektion(
-        bundle.hero,
+        heldImTest,
         zustand,
         katalog,
         epischeVorteile: episch,
@@ -811,8 +927,19 @@ void main() {
     pruefe(held.datei, held, episch: true);
   }
 
+  // Nur im Speicher: Mit Linkshänder ist der verwundete linke Arm von f01
+  // der Schwertarm (Katalogschalter `linkshaender`); die Fixture bleibt.
+  pruefe(
+    '${Bestandsheld.kriegerNormal.datei} mit Linkshänder',
+    Bestandsheld.kriegerNormal,
+    episch: true,
+    aendern: (held) =>
+        held.copyWith(vorteileText: '${held.vorteileText}, Linkshänder'),
+  );
+
   // KO ist bei f04 Haupteigenschaft: Mit dem Hausregel-Paket fuer epische
-  // Vorteile halbiert sich die Wund-Probenerschwernis, ohne es nicht.
+  // Vorteile halbiert sich die SB-Erschwernis beim Unterdruecken, ohne es
+  // nicht.
   const brustwunde = WundZustand(wundenProZone: {WundZone.brust: 1});
   pruefe(
     '${Bestandsheld.episch.datei} mit Brustwunde',

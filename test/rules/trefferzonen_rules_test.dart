@@ -48,6 +48,35 @@ void main() {
       }
     });
 
+    test('Arme: der Schildarm liegt beim Linkshänder rechts', () {
+      final rechtshaender = resolveTrefferzone(
+        roll: 9,
+        tabelle: humanoidTrefferzonenTabelle,
+      )!;
+      expect(rechtshaender.label, 'Schildarm');
+      expect(rechtshaender.zone, WundZone.linkerArm);
+      final linkshaender = resolveTrefferzone(
+        roll: 9,
+        tabelle: humanoidTrefferzonenTabelle,
+        linkshaender: true,
+      )!;
+      expect(linkshaender.label, 'Schildarm');
+      expect(linkshaender.zone, WundZone.rechterArm);
+      final schwertarm = resolveTrefferzone(
+        roll: 10,
+        tabelle: humanoidTrefferzonenTabelle,
+        linkshaender: true,
+      )!;
+      expect(schwertarm.label, 'Schwertarm');
+      expect(schwertarm.zone, WundZone.linkerArm);
+      final kopf = resolveTrefferzone(
+        roll: 20,
+        tabelle: humanoidTrefferzonenTabelle,
+        linkshaender: true,
+      )!;
+      expect(kopf.zone, WundZone.kopf, reason: 'andere Zonen bleiben');
+    });
+
     test('Brust: 15-18', () {
       for (var roll = 15; roll <= 18; roll++) {
         final ergebnis = resolveTrefferzone(

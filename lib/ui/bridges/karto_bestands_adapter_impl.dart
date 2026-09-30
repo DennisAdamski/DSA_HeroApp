@@ -71,7 +71,7 @@ class KartoBestandsAdapterImpl implements KartoBestandsAdapter {
     return _KartoCompatHost(
       child: InspectorAttributeProbes(
         heroId: heroId,
-        effectiveAttributes: werte.effectiveAttributes,
+        probenEigenschaften: werte.probenEigenschaften,
       ),
     );
   }

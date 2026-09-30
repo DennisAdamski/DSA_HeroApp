@@ -258,7 +258,7 @@ List<ProbeQuickSearchCandidate> _buildCandidates({
   required bool epicAdvantagesActive,
 }) {
   final candidates = <ProbeQuickSearchCandidate>[
-    ..._buildAttributeCandidates(snapshot.effectiveAttributes),
+    ..._buildAttributeCandidates(snapshot.probenEigenschaften),
     ..._buildCombatCandidates(snapshot),
     ..._buildTalentCandidates(
       hero: hero,
@@ -276,14 +276,15 @@ List<ProbeQuickSearchCandidate> _buildCandidates({
   return candidates;
 }
 
-/// Baut die acht Eigenschafts-Schnellproben.
+/// Baut die acht Eigenschafts-Schnellproben aus den Probenwerten (Wunden
+/// eingerechnet).
 List<ProbeQuickSearchCandidate> _buildAttributeCandidates(
-  Attributes effectiveAttributes,
+  Attributes probenEigenschaften,
 ) {
   final candidates = <ProbeQuickSearchCandidate>[];
   for (final code in AttributeCode.values) {
     final label = attributeCodeKey(code);
-    final value = readAttributeValue(effectiveAttributes, code);
+    final value = readAttributeValue(probenEigenschaften, code);
     candidates.add(
       ProbeQuickSearchCandidate(
         category: ProbeQuickSearchCategory.attribute,
@@ -350,7 +351,6 @@ List<ProbeQuickSearchCandidate> _buildTalentCandidates({
 }) {
   final activeTalentBe =
       talentBeOverride ?? snapshot.combatPreviewStats.beKampf;
-  final wundMalus = snapshot.wundEffekte.talentProbeMalus;
   final candidates = <ProbeQuickSearchCandidate>[];
   for (final talent in catalogTalents) {
     final entry = hero.talents[talent.id];
@@ -358,7 +358,7 @@ List<ProbeQuickSearchCandidate> _buildTalentCandidates({
       continue;
     }
     final targets = _buildProbeTargets(
-      snapshot.effectiveAttributes,
+      snapshot.probenEigenschaften,
       talent.attributes,
     );
     if (targets.length != 3) {
@@ -394,7 +394,6 @@ List<ProbeQuickSearchCandidate> _buildTalentCandidates({
           targets: targets,
           basePool: computedTaw,
           hasSpecialization: hasSpecialization,
-          wundMalus: wundMalus,
         ),
       ),
     );
@@ -414,7 +413,6 @@ List<ProbeQuickSearchCandidate> _buildSpellCandidates({
   if (hero.spells.isEmpty) {
     return const <ProbeQuickSearchCandidate>[];
   }
-  final wundMalus = snapshot.wundEffekte.zauberProbeMalus;
   final spellDefsById = <String, SpellDef>{
     for (final spell in catalogSpells) spell.id: spell,
   };
@@ -426,7 +424,7 @@ List<ProbeQuickSearchCandidate> _buildSpellCandidates({
     }
     final entry = spellEntry.value;
     final targets = _buildProbeTargets(
-      snapshot.effectiveAttributes,
+      snapshot.probenEigenschaften,
       spell.attributes,
     );
     if (targets.isEmpty) {
@@ -443,7 +441,6 @@ List<ProbeQuickSearchCandidate> _buildSpellCandidates({
           title: spell.name,
           targets: targets,
           basePool: basePool,
-          wundMalus: wundMalus,
         ),
       ),
     );

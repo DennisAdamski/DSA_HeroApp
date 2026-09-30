@@ -11,6 +11,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/magic_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_source_breakdown.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ressourcen_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ruestung_be_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/wund_rules.dart';
 
 import 'modifier_parser.dart';
 
@@ -123,17 +124,10 @@ DerivedStats computeDerivedStatsFromInputs({
     activePieces: activeArmorPieces,
   );
   final beKampf = computeBeKampf(beTotalRaw, rgReduction);
-  final baseGs = computeGs(effectiveSheet, mods, beKampf: beKampf);
   final axxeleratusActive = isAxxeleratusEffectActive(
     sheet: sheet,
     state: state,
   );
-  final gs = computeAxxeleratusGs(
-    gs: baseGs,
-    axxeleratusActive: axxeleratusActive,
-  );
-  final iniBase = computeIniBase(effectiveSheet, mods);
-  final iniBaseBonus = computeIniBaseBonus(sheet.combatConfig.specialRules);
   var gsBonus = 0;
   if (parsedModifiers.hasFlinkFromVorteile) {
     gsBonus += 1;
@@ -141,6 +135,24 @@ DerivedStats computeDerivedStatsFromInputs({
   if (parsedModifiers.hasBehaebigFromNachteile) {
     gsBonus -= 1;
   }
+  // Dieselbe GS-Kette mit und ohne Wundanteil: Wunden senken die GS nie
+  // unter 1 (WdS S. 111).
+  int gsFuer(StatModifiers gsMods) {
+    final baseGs = computeGs(effectiveSheet, gsMods, beKampf: beKampf);
+    final gs = computeAxxeleratusGs(
+      gs: baseGs,
+      axxeleratusActive: axxeleratusActive,
+    );
+    return gs + gsBonus;
+  }
+
+  final gsOhneWundModifikatoren = mods.copyWith(gs: mods.gs - wundStatMods.gs);
+  final gs = begrenzeWundGs(
+    ohneWunden: gsFuer(gsOhneWundModifikatoren),
+    mitWunden: gsFuer(mods),
+  );
+  final iniBase = computeIniBase(effectiveSheet, mods);
+  final iniBaseBonus = computeIniBaseBonus(sheet.combatConfig.specialRules);
 
   return DerivedStats(
     maxLep: computeMaxLep(permanentSheet, mods),
@@ -152,7 +164,7 @@ DerivedStats computeDerivedStatsFromInputs({
     atBase: computeAt(effectiveSheet, mods),
     paBase: computePa(effectiveSheet, mods),
     fkBase: computeFk(effectiveSheet, mods),
-    gs: gs + gsBonus,
+    gs: gs,
     // Ausweichen wird nicht mehr als Basiswertformel aus Attributen berechnet.
     // Der abgeleitete Wert spiegelt hier nur explizite Modifikatoren wider.
     ausweichen: mods.ausweichen,

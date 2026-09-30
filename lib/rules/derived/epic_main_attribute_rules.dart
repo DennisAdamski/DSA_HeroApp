@@ -131,8 +131,13 @@ const List<EpicMainAttributeBonus> epicMainAttributeBonuses =
       ),
       EpicMainAttributeBonus(
         code: AttributeCode.ko,
-        text: 'Wund-Erschwernis auf Proben halbiert',
+        text: 'Wunden unterdrücken: SB-Erschwernis halbiert',
         umsetzung: EpicBonusUmsetzung.automatisch,
+      ),
+      EpicMainAttributeBonus(
+        code: AttributeCode.ko,
+        text: 'Erschöpfung durch unterdrückte Wunden halbiert',
+        umsetzung: EpicBonusUmsetzung.hinweis,
       ),
       EpicMainAttributeBonus(
         code: AttributeCode.kk,
