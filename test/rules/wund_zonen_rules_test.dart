@@ -240,6 +240,22 @@ void main() {
       expect(e.unterdrueckungHalbiert, isTrue);
     });
 
+    test('SB-Erschwernis zählt alle bisher erlittenen Wunden (WdS S. 83)', () {
+      // Beispiel aus WdS S. 111: zwei Brustwunden, dann eine Kopfwunde → +12.
+      expect(computeSbUnterdrueckungErschwernis(gesamtWunden: 3), 12);
+      // Kampfverlauf: R2 eine Wunde (unterdrückt), R3 eine weitere, R4 zwei
+      // aus einem Treffer. Unterdrückte Wunden zählen mit.
+      expect(computeSbUnterdrueckungErschwernis(gesamtWunden: 1), 4);
+      expect(computeSbUnterdrueckungErschwernis(gesamtWunden: 2), 8);
+      expect(
+        computeSbUnterdrueckungErschwernis(gesamtWunden: 4, neueWunden: 2),
+        8,
+        reason: 'mehrere Wunden aus einem Treffer: pauschal +8',
+      );
+      // Vor Kampfbeginn alle vier Wunden ignorieren: vierfache Anzahl.
+      expect(computeSbUnterdrueckungErschwernis(gesamtWunden: 4), 16);
+    });
+
     test('SB-Erschwernis: 4 je Wunde, +8/+12, episch halbiert', () {
       expect(computeSbUnterdrueckungErschwernis(gesamtWunden: 3), 12);
       expect(
@@ -262,10 +278,17 @@ void main() {
         ),
         6,
       );
-      expect(sbUnterdrueckungHerleitung(gesamtWunden: 3), '4 × 3 = 12');
+      expect(
+        sbUnterdrueckungHerleitung(gesamtWunden: 3),
+        '4 × 3 Wunden insgesamt = 12',
+      );
+      expect(
+        sbUnterdrueckungHerleitung(gesamtWunden: 1),
+        '4 × 1 Wunde insgesamt = 4',
+      );
       expect(
         sbUnterdrueckungHerleitung(gesamtWunden: 3, halbiert: true),
-        '4 × 3 = 12, halbiert 6',
+        '4 × 3 Wunden insgesamt = 12, halbiert 6',
       );
       expect(
         sbUnterdrueckungHerleitung(gesamtWunden: 2, neueWunden: 2),

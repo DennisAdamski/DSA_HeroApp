@@ -1353,6 +1353,20 @@ Commits:
 6. Der Kopf-INI-Wurf gilt nur im laufenden Kampf; wer die Kampf-INI der
    App nutzt, zieht ihn selbst ab (Hinweis im Wundendialog).
 
+*Nachtrag 30.09.2026 — SB-Erschwernis beim Unterdrücken.* Eine Rückmeldung
+hielt es für falsch, dass beim Unterdrücken alle Wunden zählen und nicht nur
+die des aktuellen Angriffs. Erneut per dsa-rules-MCP geprüft (keine Errata,
+keine Hausregel dazu): WdS S. 83 erschwert die Probe „pro insgesamt
+erlittener Wunde um 4 Punkte“, mehrere Wunden aus einem Treffer pauschal
+um +8/+12; WdS S. 111 zählt ausdrücklich alle bisherigen Wunden („zwei
+Wunden in der Brust … dann eine Wunde im Kopf … Selbstbeherrschungs-Probe
++12“); vor Kampfbeginn gilt „die vierfache Anzahl der Wunden“. **Mit dem
+Nutzer entschieden: nach WdS.** Unterdrückte Wunden zählen also mit
+(Kampfverlauf: eine Wunde +4, die nächste einzelne +8, zwei aus einem
+Treffer +8). Die Rechnung war richtig; geändert ist nur die Anzeige
+(`4 × 3 Wunden insgesamt = 12`, Hinweis im Wundendialog) samt Regeltest
+für den Kampfverlauf.
+
 ## ARCH-06 — Zusammengehörige Änderungen gemeinsam speichern und synchronisieren
 
 **Ist-Zustand:** Heldenblatt und Spielzustand werden getrennt gespeichert und

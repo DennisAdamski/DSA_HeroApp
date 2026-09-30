@@ -416,6 +416,12 @@ class _SbProbeSection extends StatelessWidget {
           style: Theme.of(context).textTheme.bodySmall,
         ),
         Text(
+          'Zählt alle bisher erlittenen Wunden, auch unterdrückte '
+          '(WdS S. 83, 111).',
+          style: Theme.of(context).textTheme.bodySmall
+              ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+        ),
+        Text(
           mehrfach,
           style: Theme.of(context).textTheme.bodySmall
               ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),

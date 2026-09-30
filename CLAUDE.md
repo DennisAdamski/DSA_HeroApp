@@ -478,7 +478,11 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   Wundschwellen (0,5 / 1 / 1,5 KO, ganzzahlig kaufmännisch gerundet,
   Eisern/Glasknochen ±2), also höchstens 3 Wunden je Treffer;
   `computeWundschwelle` ist die erste davon. Wunden eines Angriffs werden nur **gemeinsam** unterdrückt
-  (`bieteWundUnterdrueckungAn(neueWunden: n)`), nie einzeln.
+  (`bieteWundUnterdrueckungAn(neueWunden: n)`), nie einzeln. Die
+  SB-Erschwernis zählt nach WdS S. 83/111 **alle bisher erlittenen Wunden,
+  auch unterdrückte** (4 je Wunde), mehrere aus einem Treffer pauschal
+  +8/+12 — nicht nur die neuen; so mit dem Nutzer entschieden (Roadmap
+  ARCH-05, Nachtrag zu Teilstand 6).
 - **Wunden wirken nach Gesamt- und Zonensystem** (Hausregel „Erweiterung und
   Überarbeitung“ S. 3, per dsa-rules-MCP belegt, Roadmap ARCH-05 Teilstand 6):
   je Wunde allgemein AT/PA/FK/INI-Basis/GE −2, GS −1, dazu die Zonentabelle

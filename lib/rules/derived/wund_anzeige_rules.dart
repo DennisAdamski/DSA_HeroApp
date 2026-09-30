@@ -32,9 +32,12 @@ List<String> beschreibeWundAbzuege(WundEffekte effekte) {
 
 /// Herleitung der SB-Erschwernis beim Unterdrücken von Wunden (WdS S. 83).
 ///
-/// Einzelwunde: `4 × 3 = 12`; mehrere aus einem Treffer:
-/// `8 (2 Wunden aus einem Treffer)`. Mit [halbiert] (epische KO) folgt
-/// `, halbiert 6`. Der Wert entspricht `computeSbUnterdrueckungErschwernis`.
+/// Einzelwunde: `4 × 3 Wunden insgesamt = 12`. Gezählt werden alle bisher
+/// erlittenen Wunden, auch unterdrückte (WdS S. 111); der Text sagt das
+/// ausdrücklich, weil es sonst wie ein Rechenfehler aussieht. Mehrere aus
+/// einem Treffer: `8 (2 Wunden aus einem Treffer)`. Mit [halbiert] (epische
+/// KO) folgt `, halbiert 6`. Der Wert entspricht
+/// `computeSbUnterdrueckungErschwernis`.
 String sbUnterdrueckungHerleitung({
   required int gesamtWunden,
   int neueWunden = 1,
@@ -44,8 +47,9 @@ String sbUnterdrueckungHerleitung({
     gesamtWunden: gesamtWunden,
     neueWunden: neueWunden,
   );
+  final wunden = gesamtWunden == 1 ? '1 Wunde' : '$gesamtWunden Wunden';
   final basis = neueWunden == 1
-      ? '4 × $gesamtWunden = $voll'
+      ? '4 × $wunden insgesamt = $voll'
       : '$voll ($neueWunden Wunden aus einem Treffer)';
   if (!halbiert) {
     return basis;

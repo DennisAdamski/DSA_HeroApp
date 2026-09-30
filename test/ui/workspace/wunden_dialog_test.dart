@@ -172,7 +172,17 @@ void main() {
   ) async {
     await zeigeWunden(tester);
 
-    expect(find.text('SB-Probe erschwert um 4 × 2 = 8'), findsOneWidget);
+    expect(
+      find.text('SB-Probe erschwert um 4 × 2 Wunden insgesamt = 8'),
+      findsOneWidget,
+    );
+    expect(
+      find.text(
+        'Zählt alle bisher erlittenen Wunden, auch unterdrückte '
+        '(WdS S. 83, 111).',
+      ),
+      findsOneWidget,
+    );
     await tester.tap(find.text('SB-Probe (TaW 7)'));
     await tester.pumpAndSettle();
 
@@ -203,7 +213,7 @@ void main() {
     );
 
     expect(
-      find.text('SB-Probe erschwert um 4 × 2 = 8, halbiert 4'),
+      find.text('SB-Probe erschwert um 4 × 2 Wunden insgesamt = 8, halbiert 4'),
       findsOneWidget,
     );
     expect(
