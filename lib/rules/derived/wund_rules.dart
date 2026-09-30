@@ -1,67 +1,115 @@
+import 'package:dsa_heldenverwaltung/domain/attribute_modifiers.dart';
+import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
 import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
-import 'package:dsa_heldenverwaltung/rules/derived/excel_rounding.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/wund_zonen_rules.dart';
 
-/// Ergebniscontainer fuer alle aggregierten Wundauswirkungen.
+/// Aggregierte Wundauswirkungen nach Gesamt- **und** Zonensystem.
+///
+/// Die Hausregel „Erweiterung und Überarbeitung des Regelwerks“ (S. 3) lässt
+/// jede Wunde kombiniert wirken: die allgemeinen Abzüge (WdS S. 58) plus die
+/// der Zone (WdS S. 108 f.), siehe `wund_zonen_rules.dart`. Nur effektive,
+/// also nicht unterdrückte Wunden wirken.
+///
+/// Zuständigkeiten: [atMalus] bis [gsMalus] gehen über
+/// [wundEffekteToStatModifiers] in die Basiswerte. Die armgebundenen Abzüge
+/// ([schwertarmAtPaMalus], [schildarmAtPaMalus]) rechnet erst die
+/// Kampfvorschau der Waffe im jeweiligen Arm an. [eigenschaftsVerluste]
+/// gelten ausschließlich für Proben ([wendeWundVerlusteAn]), nie für
+/// abgeleitete Werte (WdS S. 111).
 class WundEffekte {
+  /// Erstellt ein Ergebnis; ohne Angaben wirkt nichts.
   const WundEffekte({
     this.atMalus = 0,
     this.paMalus = 0,
     this.fkMalus = 0,
-    this.iniMalus = 0,
-    this.kopfIniWuerfelMalus = 0,
+    this.iniBasisMalus = 0,
     this.gsMalus = 0,
-    this.talentProbeMalus = 0,
-    this.zauberExtraMalus = 0,
+    this.schwertarmAtPaMalus = 0,
+    this.schildarmAtPaMalus = 0,
+    this.eigenschaftsVerluste = const AttributeModifiers(),
+    this.aktuellerIniMalus = 0,
     this.hinweise = const <String>[],
     this.kampfunfaehig = false,
-    this.kampfunfaehigeZonen = const <WundZone>[],
+    this.zonenMitDritterWunde = const <WundZone>[],
     this.unterdrueckteGesamt = 0,
+    this.unterdrueckungHalbiert = false,
+    this.linkshaender = false,
   });
 
-  /// Summe aller AT-Abzuege (Basis + zonenspezifisch).
+  /// AT-Abzug, der unabhängig vom Arm gilt (≤ 0).
   final int atMalus;
 
-  /// Summe aller PA-Abzuege.
+  /// PA-Abzug, der unabhängig vom Arm gilt (≤ 0).
   final int paMalus;
 
-  /// Summe aller FK-Abzuege.
+  /// FK-Abzug (≤ 0). Armwunden erhöhen ihn nicht.
   final int fkMalus;
 
-  /// Fester INI-Malus aus Basiswunden und zonenspezifischen festen Abzuegen.
-  final int iniMalus;
+  /// Abzug auf den INI-Basiswert (≤ 0).
+  final int iniBasisMalus;
 
-  /// Gewuerfelter INI-Malus aus Kopfwunden (kumulierter 2W6-Wert).
-  final int kopfIniWuerfelMalus;
-
-  /// Gesamter INI-Malus (fest + gewuerfelt). Beide Werte sind negativ oder 0.
-  int get iniGesamt => iniMalus - kopfIniWuerfelMalus;
-
-  /// GS-Abzuege.
+  /// GS-Abzug (≤ 0); die GS sinkt dadurch nie unter 1 ([begrenzeWundGs]).
   final int gsMalus;
 
-  /// Erschwernis fuer Talent- und Zauberproben (Basis).
-  final int talentProbeMalus;
+  /// AT- und PA-Abzug der Waffe im Schwertarm (≤ 0).
+  final int schwertarmAtPaMalus;
 
-  /// Zusaetzliche Zauberproben-Erschwernis durch Kopfwunden.
-  final int zauberExtraMalus;
+  /// AT- und PA-Abzug von Schild, Parier- oder Nebenhandwaffe im
+  /// Schildarm (≤ 0).
+  final int schildarmAtPaMalus;
 
-  /// Gesamte Zauberproben-Erschwernis.
-  int get zauberProbeMalus => talentProbeMalus + zauberExtraMalus;
+  /// Eigenschaftsverluste für Proben (GE je Wunde, dazu die Zonen).
+  final AttributeModifiers eigenschaftsVerluste;
 
-  /// Informationstexte (z.B. "+W6 SP bei Brustwunde").
+  /// Gewürfelter Verlust der **aktuellen** INI durch Kopfwunden (≥ 0).
+  ///
+  /// Gilt laut WdS S. 109 nur im laufenden Kampf und senkt deshalb keinen
+  /// gespeicherten Wert; die App zeigt ihn als Hinweis.
+  final int aktuellerIniMalus;
+
+  /// Informationstexte (Zusatzschaden, dritte Wunden, Unterdrückung).
   final List<String> hinweise;
 
-  /// Mindestens eine Zone hat 3 Wunden.
+  /// Eine dritte Wunde an Kopf, Brust, Rücken oder Bauch.
   final bool kampfunfaehig;
 
-  /// Zonen mit 3 Wunden (nicht mehr verwendbar).
-  final List<WundZone> kampfunfaehigeZonen;
+  /// Alle Zonen mit drei Wunden, auch Arme und Beine.
+  final List<WundZone> zonenMitDritterWunde;
 
-  /// Anzahl insgesamt unterdrueckter Wunden (fuer UI-Anzeige).
+  /// Anzahl insgesamt unterdrückter Wunden (für die Anzeige).
   final int unterdrueckteGesamt;
+
+  /// Epische KO-Haupteigenschaft: Unterdrücken ist halb so schwer und
+  /// erschöpft halb so sehr („Epische Stufen“ S. 4).
+  final bool unterdrueckungHalbiert;
+
+  /// Der linke Arm ist der Schwertarm (Vorteil Linkshänder).
+  final bool linkshaender;
+
+  /// Ob überhaupt ein Abzug wirkt (Hinweise zählen nicht mit).
+  bool get hatAbzuege =>
+      atMalus != 0 ||
+      paMalus != 0 ||
+      fkMalus != 0 ||
+      iniBasisMalus != 0 ||
+      gsMalus != 0 ||
+      schwertarmAtPaMalus != 0 ||
+      schildarmAtPaMalus != 0 ||
+      !_istLeer(eigenschaftsVerluste);
 }
+
+// Ob keine Eigenschaft verändert wird.
+bool _istLeer(AttributeModifiers mods) =>
+    mods.mu == 0 &&
+    mods.kl == 0 &&
+    mods.inn == 0 &&
+    mods.ch == 0 &&
+    mods.ff == 0 &&
+    mods.ge == 0 &&
+    mods.ko == 0 &&
+    mods.kk == 0;
 
 /// Die drei Wundschwellen eines Helden (WdS S. 58).
 ///
@@ -134,173 +182,216 @@ WundschwellenStufen computeWundschwellenStufen({
 
 /// Berechnet alle aggregierten Wundeffekte aus dem aktuellen Wundenzustand.
 ///
-/// Unterdrueckte Wunden verursachen keine Abzuege, zaehlen aber weiterhin
-/// fuer Kampfunfaehigkeit (Zone >= 3 Wunden).
-///
-/// [halbierteProbenErschwernis] deckt die epische KO-Haupteigenschaft ab
-/// (Kap. 2.1: „Wund-Erschwernis halbiert"). Bewusst enge Auslegung: halbiert
-/// werden nur [WundEffekte.talentProbeMalus] und
-/// [WundEffekte.zauberExtraMalus] -- also genau die Werte, die dieser Typ als
-/// *Erschwernis* fuehrt. Die AT/PA/FK/INI/GS-*Abzuege* bleiben unberuehrt.
-/// Gerundet wird Richtung Null, also zugunsten des Helden.
+/// Unterdrückte Wunden verursachen keine Abzüge, zählen aber weiter für die
+/// dritte Wunde einer Zone (die Wunde besteht). [linkshaender] macht den
+/// linken Arm zum Schwertarm. [halbierteUnterdrueckung] deckt die epische
+/// KO-Haupteigenschaft ab; beide Schalter bleiben auch ohne Wunden gesetzt,
+/// damit eine spätere Unterdrückungsprobe sie kennt.
 WundEffekte computeWundEffekte(
   WundZustand zustand, {
-  bool halbierteProbenErschwernis = false,
+  bool linkshaender = false,
+  bool halbierteUnterdrueckung = false,
 }) {
-  final gesamt = zustand.gesamtWunden;
-  if (gesamt == 0) return const WundEffekte();
-
-  final effektiv = zustand.gesamtEffektiveWunden;
-  final unterdrueckt = zustand.gesamtUnterdrueckt;
-
-  // --- Basisabzuege: pro effektiver (nicht unterdrueckter) Wunde ---
-  var atMalus = effektiv * -2;
-  var paMalus = effektiv * -2;
-  var fkMalus = effektiv * -2;
-  var iniMalus = effektiv * -2;
-  var gsMalus = effektiv * -1;
-  final talentProbeMalusRoh = effektiv * -3;
-
-  // --- Zonenspezifische Zusatzabzuege (nur effektive Wunden) ---
-  var zauberExtraMalus = 0;
-  final hinweise = <String>[];
-  final kampfunfaehigeZonen = <WundZone>[];
-
-  for (final zone in WundZone.values) {
-    final wundenTotal = zustand.wundenInZone(zone);
-    if (wundenTotal <= 0) continue;
-    final wundenEffektiv = zustand.effektiveWundenInZone(zone);
-
-    // Zonenspezifische Abzuege nur fuer effektive Wunden.
-    if (wundenEffektiv > 0) {
-      switch (zone) {
-        case WundZone.kopf:
-          atMalus += wundenEffektiv * -1;
-          paMalus += wundenEffektiv * -1;
-          fkMalus += wundenEffektiv * -1;
-          zauberExtraMalus += wundenEffektiv * -3;
-
-        case WundZone.brust:
-        case WundZone.bauch:
-        case WundZone.ruecken:
-          atMalus += wundenEffektiv * -1;
-          paMalus += wundenEffektiv * -1;
-          fkMalus += wundenEffektiv * -1;
-
-        case WundZone.linkerArm:
-        case WundZone.rechterArm:
-          atMalus += wundenEffektiv * -2;
-          paMalus += wundenEffektiv * -2;
-          fkMalus += wundenEffektiv * -4;
-
-        case WundZone.linkesBein:
-        case WundZone.rechtesBein:
-          atMalus += wundenEffektiv * -1;
-          paMalus += wundenEffektiv * -1;
-          fkMalus += wundenEffektiv * -2;
-          gsMalus += wundenEffektiv * -2;
-      }
-    }
-
-    // Extraschaden-Hinweise basieren auf Gesamtwunden (physisch vorhanden).
-    if (zone == WundZone.brust ||
-        zone == WundZone.bauch ||
-        zone == WundZone.ruecken) {
-      hinweise.add(
-        '+${wundenTotal}W6 SP Extraschaden (${wundZoneLabel[zone]})',
-      );
-    }
-
-    // Kampfunfaehigkeit basiert auf Gesamtwunden (Wunde existiert physisch).
-    if (wundenTotal >= maxWundenProZone) {
-      kampfunfaehigeZonen.add(zone);
-    }
-  }
-
-  // Folgeschaden-Hinweise fuer Kopf- und Torso-Zonen ab 3 Wunden
-  for (final zone in kampfunfaehigeZonen) {
-    final label = wundZoneLabel[zone] ?? zone.name;
-    switch (zone) {
-      case WundZone.kopf:
-      case WundZone.brust:
-      case WundZone.bauch:
-      case WundZone.ruecken:
-        hinweise.add('$label: 1 SP/KR Folgeschaden');
-      case WundZone.linkerArm:
-      case WundZone.rechterArm:
-      case WundZone.linkesBein:
-      case WundZone.rechtesBein:
-        hinweise.add('$label: nicht mehr verwendbar');
-    }
-  }
-
-  if (unterdrueckt > 0) {
-    hinweise.add(
-      '$unterdrueckt Wunde${unterdrueckt > 1 ? 'n' : ''}'
-      ' unterdrückt',
+  if (zustand.gesamtWunden == 0) {
+    return WundEffekte(
+      unterdrueckungHalbiert: halbierteUnterdrueckung,
+      linkshaender: linkshaender,
     );
   }
 
-  // Epische KO-Haupteigenschaft: halbiert ausschliesslich die
-  // Proben-Erschwernis, nicht die Kampf-Abzuege.
-  final talentProbeMalus = halbierteProbenErschwernis
-      ? roundDownTowardsZero(talentProbeMalusRoh / 2)
-      : talentProbeMalusRoh;
-  final zauberExtraMalusEffektiv = halbierteProbenErschwernis
-      ? roundDownTowardsZero(zauberExtraMalus / 2)
-      : zauberExtraMalus;
+  var at = 0;
+  var pa = 0;
+  var fk = 0;
+  var iniBasis = 0;
+  var gs = 0;
+  var schwertarm = 0;
+  var schildarm = 0;
+  var eigenschaften = const AttributeModifiers();
+  final zonenMitDritterWunde = <WundZone>[];
 
-  // kopfIniWuerfelMalus proportional zu effektiven Kopfwunden.
-  final kopfTotal = zustand.wundenInZone(WundZone.kopf);
-  final kopfEffektiv = zustand.effektiveWundenInZone(WundZone.kopf);
-  final effektiverKopfIniMalus = kopfTotal > 0 && kopfEffektiv > 0
-      ? (zustand.kopfIniMalus * kopfEffektiv / kopfTotal).ceil()
-      : 0;
+  for (final zone in WundZone.values) {
+    final effektiv = zustand.effektiveWundenInZone(zone);
+    if (effektiv > 0) {
+      final zonal = wundZonenWirkung(zone);
+      // Armgebundene AT/PA wirken nur auf die Waffe in diesem Arm.
+      final zonalAt = zonal.armgebunden ? 0 : zonal.at;
+      final zonalPa = zonal.armgebunden ? 0 : zonal.pa;
+      at += (kWundAllgemein.at + zonalAt) * effektiv;
+      pa += (kWundAllgemein.pa + zonalPa) * effektiv;
+      fk += (kWundAllgemein.fk + zonal.fk) * effektiv;
+      iniBasis += (kWundAllgemein.iniBasis + zonal.iniBasis) * effektiv;
+      gs += (kWundAllgemein.gs + zonal.gs) * effektiv;
+      final verluste = kWundAllgemein.eigenschaften + zonal.eigenschaften;
+      eigenschaften = eigenschaften + skaliereEigenschaften(verluste, effektiv);
+      final rolle = armRolleFuer(zone, linkshaender: linkshaender);
+      if (rolle == ArmRolle.schwertarm) {
+        schwertarm += zonal.at * effektiv;
+      } else if (rolle == ArmRolle.schildarm) {
+        schildarm += zonal.at * effektiv;
+      }
+    }
+    // Die dritte Wunde zählt, auch wenn sie unterdrückt ist.
+    if (zustand.wundenInZone(zone) >= maxWundenProZone) {
+      zonenMitDritterWunde.add(zone);
+    }
+  }
 
+  final aktuellerIniMalus = _aktuellerKopfIniMalus(zustand);
   return WundEffekte(
-    atMalus: atMalus,
-    paMalus: paMalus,
-    fkMalus: fkMalus,
-    iniMalus: iniMalus,
-    kopfIniWuerfelMalus: effektiverKopfIniMalus,
-    gsMalus: gsMalus,
-    talentProbeMalus: talentProbeMalus,
-    zauberExtraMalus: zauberExtraMalusEffektiv,
-    hinweise: hinweise,
-    kampfunfaehig: kampfunfaehigeZonen.isNotEmpty,
-    kampfunfaehigeZonen: kampfunfaehigeZonen,
-    unterdrueckteGesamt: unterdrueckt,
+    atMalus: at,
+    paMalus: pa,
+    fkMalus: fk,
+    iniBasisMalus: iniBasis,
+    gsMalus: gs,
+    schwertarmAtPaMalus: schwertarm,
+    schildarmAtPaMalus: schildarm,
+    eigenschaftsVerluste: eigenschaften,
+    aktuellerIniMalus: aktuellerIniMalus,
+    hinweise: _wundHinweise(
+      zustand,
+      linkshaender: linkshaender,
+      zonenMitDritterWunde: zonenMitDritterWunde,
+      aktuellerIniMalus: aktuellerIniMalus,
+      halbierteUnterdrueckung: halbierteUnterdrueckung,
+    ),
+    kampfunfaehig: zonenMitDritterWunde.any(dritteWundeMachtKampfunfaehig),
+    zonenMitDritterWunde: List<WundZone>.unmodifiable(zonenMitDritterWunde),
+    unterdrueckteGesamt: zustand.gesamtUnterdrueckt,
+    unterdrueckungHalbiert: halbierteUnterdrueckung,
+    linkshaender: linkshaender,
   );
 }
 
-/// Berechnet die SB-Erschwernis fuer das Unterdruecken von Wunden.
+// Anteil des gespeicherten Kopf-INI-Wurfs, der auf effektive Kopfwunden
+// entfällt (aufgerundet); unterdrückte Kopfwunden wirken nicht.
+int _aktuellerKopfIniMalus(WundZustand zustand) {
+  final kopfTotal = zustand.wundenInZone(WundZone.kopf);
+  final kopfEffektiv = zustand.effektiveWundenInZone(WundZone.kopf);
+  if (kopfTotal <= 0 || kopfEffektiv <= 0) {
+    return 0;
+  }
+  return (zustand.kopfIniMalus * kopfEffektiv / kopfTotal).ceil();
+}
+
+// Hinweise in fester Reihenfolge: Zusatzschaden, aktuelle INI, armgebundene
+// Eigenschaften, dritte Wunden, Unterdrückung.
+List<String> _wundHinweise(
+  WundZustand zustand, {
+  required bool linkshaender,
+  required List<WundZone> zonenMitDritterWunde,
+  required int aktuellerIniMalus,
+  required bool halbierteUnterdrueckung,
+}) {
+  final hinweise = <String>[];
+  String anzeige(WundZone zone) =>
+      wundZonenAnzeige(zone, linkshaender: linkshaender);
+
+  // Erinnerung: von Hand eingetragene Wunden würfeln keinen Zusatzschaden.
+  const rumpf = [WundZone.brust, WundZone.bauch, WundZone.ruecken];
+  for (final zone in rumpf) {
+    final wunden = zustand.wundenInZone(zone);
+    if (wunden > 0) {
+      hinweise.add('+${wunden}W6 SP Extraschaden (${anzeige(zone)})');
+    }
+  }
+  if (aktuellerIniMalus > 0) {
+    hinweise.add('Kopf: aktuelle INI −$aktuellerIniMalus (laufender Kampf)');
+  }
+  for (final zone in const [WundZone.rechterArm, WundZone.linkerArm]) {
+    final effektiv = zustand.effektiveWundenInZone(zone);
+    if (effektiv > 0) {
+      final betrag = -wundZonenWirkung(zone).eigenschaften.kk * effektiv;
+      hinweise.add(
+        '${anzeige(zone)}: KK und FF −$betrag gelten nur für Handlungen '
+        'mit diesem Arm',
+      );
+    }
+  }
+  for (final zone in zonenMitDritterWunde) {
+    hinweise.add('${anzeige(zone)}, 3. Wunde: ${dritteWundeFolge(zone)}');
+  }
+  final unterdrueckt = zustand.gesamtUnterdrueckt;
+  if (unterdrueckt > 0) {
+    final plural = unterdrueckt > 1 ? 'n' : '';
+    hinweise.add('$unterdrueckt Wunde$plural unterdrückt');
+    hinweise.add(wundErschoepfungHinweis(halbiert: halbierteUnterdrueckung));
+  }
+  return hinweise;
+}
+
+/// Erschöpfung nach einem Kampf mit unterdrückten Wunden (WdS S. 83).
+///
+/// Die epische KO-Haupteigenschaft halbiert sie („Epische Stufen“ S. 4);
+/// gewürfelt wird am Spieltisch.
+String wundErschoepfungHinweis({required bool halbiert}) {
+  return halbiert
+      ? 'Nach dem Kampf: 1W6 Erschöpfung, halbiert (epische KO)'
+      : 'Nach dem Kampf: 1W6 Erschöpfung';
+}
+
+/// Berechnet die SB-Erschwernis für das Unterdrücken von Wunden (WdS S. 83).
 ///
 /// [gesamtWunden] = alle Wunden inkl. der neuen.
 /// [neueWunden] = 1 (normal), 2 oder 3 (Mehrfachwunden aus einem Treffer).
 ///
-/// Bei Einzelwunden: 4 × Gesamtwunden.
-/// Bei Mehrfachwunden aus einem Treffer: pauschal +8 (2) bzw. +12 (3).
+/// Bei Einzelwunden: 4 × Gesamtwunden. Bei Mehrfachwunden aus einem Treffer
+/// pauschal +8 (2) bzw. +12 (3). [halbiert] (epische KO) halbiert das
+/// Ergebnis; alle Werte sind gerade, es entsteht kein Rest.
 int computeSbUnterdrueckungErschwernis({
   required int gesamtWunden,
   int neueWunden = 1,
-}) => switch (neueWunden) {
-  1 => 4 * gesamtWunden,
-  2 => 8,
-  3 => 12,
-  _ => 4 * gesamtWunden,
-};
+  bool halbiert = false,
+}) {
+  final voll = switch (neueWunden) {
+    2 => 8,
+    3 => 12,
+    _ => 4 * gesamtWunden,
+  };
+  return halbiert ? voll ~/ 2 : voll;
+}
 
-/// Konvertiert aggregierte Wundeffekte in [StatModifiers] fuer die
+/// Wendet die wundbedingten Eigenschaftsverluste auf [basis] an.
+///
+/// Ergebnis sind die **Probenwerte**: Eigenschafts-, Talent- und
+/// Zauberproben würfeln gegen sie. Abgeleitete Werte rechnen weiter mit
+/// [basis] (WdS S. 111). Die Werte werden nicht begrenzt.
+Attributes wendeWundVerlusteAn(Attributes basis, WundEffekte wunden) {
+  final mods = wunden.eigenschaftsVerluste;
+  return basis.copyWith(
+    mu: basis.mu + mods.mu,
+    kl: basis.kl + mods.kl,
+    inn: basis.inn + mods.inn,
+    ch: basis.ch + mods.ch,
+    ff: basis.ff + mods.ff,
+    ge: basis.ge + mods.ge,
+    ko: basis.ko + mods.ko,
+    kk: basis.kk + mods.kk,
+  );
+}
+
+/// Begrenzt die GS so, dass Wunden sie nie unter 1 senken (WdS S. 111).
+///
+/// [ohneWunden] ist die GS ohne den Wundanteil, [mitWunden] mit ihm. Eine
+/// GS, die schon ohne Wunden unter 1 liegt (hohe BE), wird nicht angehoben.
+int begrenzeWundGs({required int ohneWunden, required int mitWunden}) {
+  if (mitWunden >= ohneWunden || mitWunden >= 1) {
+    return mitWunden;
+  }
+  return ohneWunden < 1 ? ohneWunden : 1;
+}
+
+/// Konvertiert aggregierte Wundeffekte in [StatModifiers] für die
 /// zentrale Berechnungspipeline.
 ///
-/// Talent-/Zauberproben-Mali werden hier NICHT abgebildet, da sie
-/// ueber `initialSituationalModifier` an Proben uebergeben werden.
+/// Nur die armunabhängigen Abzüge: Armgebundene AT/PA rechnet die
+/// Kampfvorschau je Waffe an, Eigenschaftsverluste gelten nur für Proben,
+/// und der Kopf-INI-Wurf betrifft nur den laufenden Kampf.
 StatModifiers wundEffekteToStatModifiers(WundEffekte effekte) {
   return StatModifiers(
     at: effekte.atMalus,
     pa: effekte.paMalus,
     fk: effekte.fkMalus,
-    iniBase: effekte.iniMalus - effekte.kopfIniWuerfelMalus,
+    iniBase: effekte.iniBasisMalus,
     gs: effekte.gsMalus,
   );
 }

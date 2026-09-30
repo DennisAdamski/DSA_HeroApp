@@ -92,6 +92,9 @@ class WorkspaceHeaderStatRail extends ConsumerWidget {
     final effectiveAttributes =
         computed?.effectiveAttributes ??
         computeEffectiveAttributes(hero, catalog: catalog);
+    // Gewürfelt wird gegen die Probenwerte (Wunden eingerechnet), angezeigt
+    // bleibt der effektive Eigenschaftswert.
+    final probe = computed?.probenEigenschaften ?? effectiveAttributes;
     final state = computed?.state;
     final derived = computed?.derivedStats;
     final resourceActivation =
@@ -135,49 +138,49 @@ class WorkspaceHeaderStatRail extends ConsumerWidget {
         label: debugModus ? 'mu' : 'MU',
         value: effectiveAttributes.mu.toString(),
         icon: Icons.bolt_outlined,
-        onTap: attributeTap('MU', effectiveAttributes.mu),
+        onTap: attributeTap('MU', probe.mu),
       ),
       _WorkspaceHeaderStatItem(
         label: debugModus ? 'kl' : 'KL',
         value: effectiveAttributes.kl.toString(),
         icon: Icons.menu_book_outlined,
-        onTap: attributeTap('KL', effectiveAttributes.kl),
+        onTap: attributeTap('KL', probe.kl),
       ),
       _WorkspaceHeaderStatItem(
         label: debugModus ? 'inn' : 'IN',
         value: effectiveAttributes.inn.toString(),
         icon: Icons.visibility_outlined,
-        onTap: attributeTap('IN', effectiveAttributes.inn),
+        onTap: attributeTap('IN', probe.inn),
       ),
       _WorkspaceHeaderStatItem(
         label: debugModus ? 'ch' : 'CH',
         value: effectiveAttributes.ch.toString(),
         icon: Icons.record_voice_over_outlined,
-        onTap: attributeTap('CH', effectiveAttributes.ch),
+        onTap: attributeTap('CH', probe.ch),
       ),
       _WorkspaceHeaderStatItem(
         label: debugModus ? 'ff' : 'FF',
         value: effectiveAttributes.ff.toString(),
         icon: Icons.back_hand_outlined,
-        onTap: attributeTap('FF', effectiveAttributes.ff),
+        onTap: attributeTap('FF', probe.ff),
       ),
       _WorkspaceHeaderStatItem(
         label: debugModus ? 'ge' : 'GE',
         value: effectiveAttributes.ge.toString(),
         icon: Icons.directions_run_outlined,
-        onTap: attributeTap('GE', effectiveAttributes.ge),
+        onTap: attributeTap('GE', probe.ge),
       ),
       _WorkspaceHeaderStatItem(
         label: debugModus ? 'ko' : 'KO',
         value: effectiveAttributes.ko.toString(),
         icon: Icons.health_and_safety_outlined,
-        onTap: attributeTap('KO', effectiveAttributes.ko),
+        onTap: attributeTap('KO', probe.ko),
       ),
       _WorkspaceHeaderStatItem(
         label: debugModus ? 'kk' : 'KK',
         value: effectiveAttributes.kk.toString(),
         icon: Icons.sports_martial_arts_outlined,
-        onTap: attributeTap('KK', effectiveAttributes.kk),
+        onTap: attributeTap('KK', probe.kk),
       ),
       _WorkspaceHeaderStatItem(
         label: debugModus ? 'currentLep/maxLep' : 'LeP',

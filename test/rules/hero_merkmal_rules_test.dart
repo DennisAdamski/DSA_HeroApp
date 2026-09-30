@@ -576,6 +576,11 @@ void main() {
             expect(b.statMods.toJson(), a.statMods.toJson(), reason: grund);
             expect(b.hasFlinkFromVorteile, a.hasFlinkFromVorteile);
             expect(b.hasBehaebigFromNachteile, a.hasBehaebigFromNachteile);
+            expect(
+              b.hasLinkshaenderFromVorteile,
+              a.hasLinkshaenderFromVorteile,
+              reason: grund,
+            );
 
             final restA = collectRestAbilities(alt, catalog: null);
             final restB = collectRestAbilities(neu, catalog: catalog);
@@ -793,6 +798,12 @@ void main() {
         zeige(const HeroMerkmal(katalogId: 'adv_richtungssinn', text: 'R'))
             .wirkungen,
         isEmpty,
+      );
+      expect(
+        zeige(
+          const HeroMerkmal(katalogId: 'adv_linkshaender', text: 'Linkshänder'),
+        ).wirkungen,
+        ['Schwertarm links (Wunden)'],
       );
     });
 

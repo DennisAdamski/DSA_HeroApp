@@ -1,6 +1,18 @@
 part of 'package:dsa_heldenverwaltung/ui/screens/hero_talents_tab.dart';
 
 extension _HeroTalentsTables on _HeroTalentTableTabState {
+  // Probenwerte: Die Wunden des gespeicherten Zustands senken die
+  // Eigenschaften nur für den Wurf; Anzeige und Rechnung der Tabelle bleiben
+  // bei den effektiven Werten (WdS S. 111).
+  Attributes _probenEigenschaften(Attributes effectiveAttributes) {
+    final computed = ref.read(heroComputedProvider(widget.heroId));
+    final wunden = computed.asData?.value.wundEffekte;
+    if (wunden == null) {
+      return effectiveAttributes;
+    }
+    return wendeWundVerlusteAn(effectiveAttributes, wunden);
+  }
+
   // Meta-Talente haben eine andere Struktur, daher eigene Spaltenspezifikationen
   static const List<AdaptiveTableColumnSpec> _metaTalentColumnSpecs =
       <AdaptiveTableColumnSpec>[
@@ -338,19 +350,11 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
             request: buildTalentProbeRequest(
               title: talent.name,
               targets: _buildProbeTargets(
-                effectiveAttributes,
+                _probenEigenschaften(effectiveAttributes),
                 talent.attributes,
               ),
               basePool: computedTaw,
               hasSpecialization: hasSpecialization,
-              wundMalus:
-                  ref
-                      .read(heroComputedProvider(widget.heroId))
-                      .asData
-                      ?.value
-                      .wundEffekte
-                      .talentProbeMalus ??
-                  0,
             ),
           ),
           icon: const Icon(Icons.casino_outlined),
@@ -528,14 +532,6 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
       componentTalentIds: metaTalent.componentTalentIds,
     );
     final computedTaw = computeMetaTalentComputedTaw(baseTaw: rawTaw, ebe: ebe);
-    final talentProbeMalus =
-        ref
-            .read(heroComputedProvider(widget.heroId))
-            .asData
-            ?.value
-            .wundEffekte
-            .talentProbeMalus ??
-        0;
 
     return TableRow(
       children: [
@@ -566,11 +562,10 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
               request: buildTalentProbeRequest(
                 title: metaTalent.name,
                 targets: _buildProbeTargets(
-                  effectiveAttributes,
+                  _probenEigenschaften(effectiveAttributes),
                   metaTalent.attributes,
                 ),
                 basePool: computedTaw,
-                wundMalus: talentProbeMalus,
               ),
             ),
             icon: const Icon(Icons.casino_outlined),
@@ -696,19 +691,11 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
             request: buildTalentProbeRequest(
               title: talent.name,
               targets: _buildProbeTargets(
-                effectiveAttributes,
+                _probenEigenschaften(effectiveAttributes),
                 talent.attributes,
               ),
               basePool: computedTaw,
               hasSpecialization: hasSpecialization,
-              wundMalus:
-                  ref
-                      .read(heroComputedProvider(widget.heroId))
-                      .asData
-                      ?.value
-                      .wundEffekte
-                      .talentProbeMalus ??
-                  0,
             ),
           ),
           icon: const Icon(Icons.casino_outlined),
@@ -835,14 +822,6 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
       componentTalentIds: metaTalent.componentTalentIds,
     );
     final computedTaw = computeMetaTalentComputedTaw(baseTaw: rawTaw, ebe: ebe);
-    final talentProbeMalus =
-        ref
-            .read(heroComputedProvider(widget.heroId))
-            .asData
-            ?.value
-            .wundEffekte
-            .talentProbeMalus ??
-        0;
     final attributeLabel = _buildShortAttributeLabel(
       effectiveAttributes,
       metaTalent.attributes,
@@ -888,11 +867,10 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
           request: buildTalentProbeRequest(
             title: metaTalent.name,
             targets: _buildProbeTargets(
-              effectiveAttributes,
+              _probenEigenschaften(effectiveAttributes),
               metaTalent.attributes,
             ),
             basePool: computedTaw,
-            wundMalus: talentProbeMalus,
           ),
         ),
         icon: const Icon(Icons.casino_outlined),

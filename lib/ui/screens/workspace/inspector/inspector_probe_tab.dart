@@ -18,13 +18,19 @@ class InspectorProbeTab extends StatelessWidget {
     super.key,
     required this.heroId,
     required this.heroState,
-    required this.effectiveAttributes,
+    required this.probenEigenschaften,
+    required this.grundwerte,
     required this.combat,
   });
 
   final String heroId;
   final HeroState heroState;
-  final Attributes effectiveAttributes;
+
+  /// Eigenschaftswerte fuer Proben, Wundverluste eingerechnet.
+  final Attributes probenEigenschaften;
+
+  /// Effektive Eigenschaften ohne Wunden (für die Markierung).
+  final Attributes grundwerte;
   final CombatPreviewStats combat;
 
   @override
@@ -39,7 +45,8 @@ class InspectorProbeTab extends StatelessWidget {
             subtitle: 'Eigenschaft',
             child: InspectorAttributeProbes(
               heroId: heroId,
-              effectiveAttributes: effectiveAttributes,
+              probenEigenschaften: probenEigenschaften,
+              grundwerte: grundwerte,
             ),
           ),
           const SizedBox(height: 12),

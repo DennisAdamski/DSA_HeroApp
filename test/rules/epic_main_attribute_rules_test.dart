@@ -268,6 +268,24 @@ void main() {
       );
     });
 
+    test('KO halbiert das Unterdrücken von Wunden, nicht die Proben', () {
+      // Epische Stufen S. 4: „Die Erschwernis und die resultierende
+      // Erschöpfung durch das Unterdrücken von Wunden sind halbiert.“
+      final boni = epicMainAttributeBonusesFor(AttributeCode.ko);
+      expect(
+        boni
+            .where((b) => b.umsetzung == EpicBonusUmsetzung.automatisch)
+            .map((b) => b.text),
+        <String>['Wunden unterdrücken: SB-Erschwernis halbiert'],
+      );
+      expect(
+        boni
+            .where((b) => b.umsetzung == EpicBonusUmsetzung.hinweis)
+            .map((b) => b.text),
+        <String>['Erschöpfung durch unterdrückte Wunden halbiert'],
+      );
+    });
+
     test('IN-Finte ist als Hinweis ausgewiesen', () {
       final boni = activeEpicMainAttributeBonuses(
         ruleActive: true,

@@ -20,35 +20,52 @@ class InspectorAttributeProbes extends ConsumerWidget {
   const InspectorAttributeProbes({
     super.key,
     required this.heroId,
-    required this.effectiveAttributes,
+    required this.probenEigenschaften,
+    this.grundwerte,
   });
 
   /// ID fuer das Protokollieren des Ergebnisses.
   final String heroId;
 
-  /// Bereits berechnete effektive Eigenschaften.
-  final Attributes effectiveAttributes;
+  /// Eigenschaftswerte fuer Proben (`HeroComputedSnapshot.probenEigenschaften`),
+  /// Wundverluste eingerechnet.
+  final Attributes probenEigenschaften;
+
+  /// Effektive Werte ohne Wunden; mit ihnen markieren die Karten den
+  /// Wundabzug. Ohne Angabe gibt es keine Markierung.
+  final Attributes? grundwerte;
 
   /// Reihenfolge der acht Eigenschaften, wie auf dem Heldenbogen.
-  List<AttributeProbeEintrag> get entries => <AttributeProbeEintrag>[
-    (label: 'MU', value: effectiveAttributes.mu),
-    (label: 'KL', value: effectiveAttributes.kl),
-    (label: 'IN', value: effectiveAttributes.inn),
-    (label: 'CH', value: effectiveAttributes.ch),
-    (label: 'FF', value: effectiveAttributes.ff),
-    (label: 'GE', value: effectiveAttributes.ge),
-    (label: 'KO', value: effectiveAttributes.ko),
-    (label: 'KK', value: effectiveAttributes.kk),
+  List<AttributeProbeEintrag> get entries => _entriesFuer(probenEigenschaften);
+
+  // Die acht Werte in Heldenbogen-Reihenfolge.
+  static List<AttributeProbeEintrag> _entriesFuer(
+    Attributes probenEigenschaften,
+  ) => <AttributeProbeEintrag>[
+    (label: 'MU', value: probenEigenschaften.mu),
+    (label: 'KL', value: probenEigenschaften.kl),
+    (label: 'IN', value: probenEigenschaften.inn),
+    (label: 'CH', value: probenEigenschaften.ch),
+    (label: 'FF', value: probenEigenschaften.ff),
+    (label: 'GE', value: probenEigenschaften.ge),
+    (label: 'KO', value: probenEigenschaften.ko),
+    (label: 'KK', value: probenEigenschaften.kk),
   ];
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final basis = grundwerte;
+    final ohneWunden = <String, int>{
+      if (basis != null)
+        for (final eintrag in _entriesFuer(basis)) eintrag.label: eintrag.value,
+    };
     return _AttributeGrid(
       entries: entries,
       itemBuilder: (entry) => InspectorAttributeCard(
         key: ValueKey('inspector-probe-attr-${entry.label}'),
         label: entry.label,
         value: entry.value,
+        wundAbzug: entry.value - (ohneWunden[entry.label] ?? entry.value),
         onTap: () => showLoggedProbeDialog(
           context: context,
           ref: ref,

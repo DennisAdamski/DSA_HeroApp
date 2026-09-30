@@ -23,6 +23,7 @@ class HeroComputedSnapshot {
     required this.effectiveStartAttributes,
     required this.attributeMaximums,
     required this.effectiveAttributes,
+    required this.probenEigenschaften,
     required this.derivedStats,
     required this.combatPreviewStats,
     required this.wundEffekte,
@@ -40,10 +41,15 @@ class HeroComputedSnapshot {
   final Attributes effectiveStartAttributes;
   final Attributes attributeMaximums;
   final Attributes effectiveAttributes;
+
+  /// Eigenschaftswerte für Eigenschafts-, Talent- und Zauberproben:
+  /// [effectiveAttributes] abzüglich der wundbedingten Verluste. Abgeleitete
+  /// Werte (AT/PA/FK/INI-Basis, LeP, MR, Wundschwelle) rechnen nie damit.
+  final Attributes probenEigenschaften;
   final DerivedStats derivedStats;
   final CombatPreviewStats combatPreviewStats;
 
-  /// Aggregierte Wundeffekte (Mali auf AT, PA, FK, INI, GS, Proben).
+  /// Aggregierte Wundeffekte (Gesamt- und Zonensystem, WdS S. 58/108 f.).
   final WundEffekte wundEffekte;
 
   /// Effektive Wundschwelle (KO/2 + Modifikatoren).
@@ -124,6 +130,7 @@ HeroComputedSnapshot buildHeroComputedSnapshot({
     parsedModifiers: parsed,
     effectiveAttributes: effective,
     derivedStats: derived,
+    wunden: wundEffekte,
     epicAdvantagesRuleActive: epicAdvantagesActive,
   );
 
@@ -135,6 +142,7 @@ HeroComputedSnapshot buildHeroComputedSnapshot({
     effectiveStartAttributes: effectiveStartAttributes,
     attributeMaximums: attributeMaximums,
     effectiveAttributes: effective,
+    probenEigenschaften: inputs.probenEigenschaften,
     derivedStats: derived,
     combatPreviewStats: combat,
     wundEffekte: wundEffekte,

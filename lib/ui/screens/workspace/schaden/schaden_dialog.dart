@@ -173,9 +173,12 @@ class _SchadenPanelState extends ConsumerState<SchadenPanel> {
     if (wurf == null || wurf < 1 || wurf > 20) {
       return;
     }
+    // Beim Linkshänder liegt der Schildarm rechts.
+    final computed = ref.read(heroComputedProvider(widget.heroId)).valueOrNull;
     final ergebnis = resolveTrefferzone(
       roll: wurf,
       tabelle: humanoidTrefferzonenTabelle,
+      linkshaender: computed?.wundEffekte.linkshaender ?? false,
     );
     _setzeZone(ergebnis?.zone);
   }

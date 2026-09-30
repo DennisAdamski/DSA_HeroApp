@@ -3,6 +3,7 @@ import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
+import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
 
 import 'derived_stats.dart';
 import 'epic_main_attribute_rules.dart';
@@ -26,6 +27,10 @@ class HeroStatInputs {
   final Attributes permanent;
   final Attributes effective;
   final WundEffekte wounds;
+
+  /// Eigenschaftswerte für Proben: [effective] abzüglich der wundbedingten
+  /// Eigenschaftsverluste. Abgeleitete Werte rechnen nie damit (WdS S. 111).
+  Attributes get probenEigenschaften => wendeWundVerlusteAn(effective, wounds);
 
   /// Wendet die zentralen Basiswertregeln auf die vorbereiteten Eingaben an.
   DerivedStats derive(HeroSheet hero, HeroState state) =>
@@ -73,16 +78,11 @@ HeroStatInputs computeHeroStatInputs({
         state.tempAttributeMods +
         inventoryMods.attributeMods,
   );
-  // Wundberechnung -- die epische KO-Haupteigenschaft halbiert die
-  // Proben-Erschwernis (Kap. 2.1).
-  final wundEffekte = computeWundEffekte(
-    state.wpiZustand,
-    halbierteProbenErschwernis: isEpicMainAttributeBonusActive(
-      ruleActive: epicAdvantagesActive,
-      isEpisch: hero.isEpisch,
-      mainAttributes: hero.epicMainAttributes,
-      code: AttributeCode.ko,
-    ),
+  final wundEffekte = computeHeroWundEffekte(
+    hero: hero,
+    zustand: state.wpiZustand,
+    epicAdvantagesActive: epicAdvantagesActive,
+    parsed: parsed,
   );
   return HeroStatInputs(
     parsed: parsed,
@@ -90,5 +90,30 @@ HeroStatInputs computeHeroStatInputs({
     permanent: permanent,
     effective: effective,
     wounds: wundEffekte,
+  );
+}
+
+/// Berechnet die Wundeffekte eines Helden für [zustand].
+///
+/// Liest die beiden heldenbezogenen Schalter an einer Stelle: Linkshänder
+/// (Katalogschalter `linkshaender`, ARCH-02) macht den linken Arm zum
+/// Schwertarm, die epische KO-Haupteigenschaft halbiert das Unterdrücken von
+/// Wunden („Epische Stufen“ S. 4). Snapshot und Unterdrückungsdialog nutzen
+/// dieselbe Funktion, damit sie nie auseinanderlaufen.
+WundEffekte computeHeroWundEffekte({
+  required HeroSheet hero,
+  required WundZustand zustand,
+  required bool epicAdvantagesActive,
+  required ModifierParseResult parsed,
+}) {
+  return computeWundEffekte(
+    zustand,
+    linkshaender: parsed.hasLinkshaenderFromVorteile,
+    halbierteUnterdrueckung: isEpicMainAttributeBonusActive(
+      ruleActive: epicAdvantagesActive,
+      isEpisch: hero.isEpisch,
+      mainAttributes: hero.epicMainAttributes,
+      code: AttributeCode.ko,
+    ),
   );
 }
