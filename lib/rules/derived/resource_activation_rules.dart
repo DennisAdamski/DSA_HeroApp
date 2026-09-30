@@ -143,6 +143,35 @@ bool _hasOriginOrAdvantageModifier(
   return false;
 }
 
+/// Übernimmt die im Dialog umgestellten Magie- und Karmaschalter (ARCH-05).
+///
+/// Geschrieben wird nur ein Schalter, dessen neuer Wert von dem beim Öffnen
+/// gezeigten ([magieVorher] bzw. [goettlichVorher]) abweicht. Den anderen
+/// kann seitdem ein anderer Weg geändert haben; er bleibt, wie er
+/// gespeichert ist. `null` bedeutet Automatik. Wurde nichts umgestellt, kommt
+/// [held] selbst zurück, damit nichts gespeichert wird.
+HeroSheet mitRessourcenSchaltern(
+  HeroSheet held, {
+  required bool? magieVorher,
+  required bool? magie,
+  required bool? goettlichVorher,
+  required bool? goettlich,
+}) {
+  final magieUmgestellt = magie != magieVorher;
+  final goettlichUmgestellt = goettlich != goettlichVorher;
+  if (!magieUmgestellt && !goettlichUmgestellt) {
+    return held;
+  }
+  var config = held.resourceActivationConfig;
+  if (magieUmgestellt) {
+    config = config.copyWith(magicEnabledOverride: magie);
+  }
+  if (goettlichUmgestellt) {
+    config = config.copyWith(divineEnabledOverride: goettlich);
+  }
+  return held.copyWith(resourceActivationConfig: config);
+}
+
 /// Baut eine Persistenz-Konfiguration aus den uebergebenen Override-Werten.
 HeroResourceActivationConfig buildResourceActivationConfig({
   bool? magicEnabledOverride,

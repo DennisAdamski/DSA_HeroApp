@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
+import 'package:dsa_heldenverwaltung/ablaeufe/held_schreiben.dart';
 import 'package:dsa_heldenverwaltung/ablaeufe/zustand_schreiben.dart';
 import 'package:dsa_heldenverwaltung/catalog/catalog_runtime_data.dart';
 import 'package:dsa_heldenverwaltung/catalog/catalog_section_id.dart';
@@ -141,13 +142,39 @@ class HeroActions {
   /// überschreibt, die während ihrer Planung oder Normalisierung gespeichert wurden.
   /// [validationCatalog] hält die Katalogprüfung einer Steigerungsrunde stabil
   /// und vermeidet ein erneutes asynchrones Laden beim Übernehmen.
-  Future<void> saveHero(
+  ///
+  /// Das Speichern reiht sich hinter laufende Bogenänderungen desselben
+  /// Helden ein (`reiheBogenvorgangEin`, ARCH-05): Ein Editorentwurf landet so
+  /// nie zwischen Laden und Schreiben einer frischen Änderung, und die
+  /// Hash-Prüfung sieht jede vorher eingereihte Änderung. Liefert den
+  /// normalisierten, gespeicherten Helden.
+  Future<HeroSheet> saveHero(
+    HeroSheet hero, {
+    String? expectedContentHash,
+    RulesCatalog? validationCatalog,
+  }) {
+    final repo = _ref.read(heroRepositoryProvider);
+    return reiheBogenvorgangEin(
+      repository: repo,
+      heroId: hero.id,
+      vorgang: () => _speichereNormalisiert(
+        repo,
+        hero,
+        expectedContentHash: expectedContentHash,
+        validationCatalog: validationCatalog,
+      ),
+    );
+  }
+
+  // Normalisiert und speichert ohne Warteschlange. Nur aus einem bereits
+  // eingereihten Bogenvorgang aufrufen; ein erneutes Einreihen darin wartete
+  // auf sich selbst.
+  Future<HeroSheet> _speichereNormalisiert(
+    HeroRepository repo,
     HeroSheet hero, {
     String? expectedContentHash,
     RulesCatalog? validationCatalog,
   }) async {
-    final repo = _ref.read(heroRepositoryProvider);
-
     final normalizedApTotal = hero.apTotal < 0 ? 0 : hero.apTotal;
     final normalizedApSpent = hero.apSpent < 0 ? 0 : hero.apSpent;
     final calculatedLevel = computeLevelFromSpentAp(normalizedApSpent);
@@ -220,26 +247,32 @@ class HeroActions {
       }
     }
     await repo.saveHero(reconciledHero);
+    return reconciledHero;
   }
 
   /// Wendet eine gezielte Änderung auf den frisch geladenen Helden an.
   ///
-  /// Gegenstück zu [updateHeroState] für den Heldenbogen: Felder, die seit dem
-  /// letzten UI-Aufbau anderswo gespeichert wurden, bleiben erhalten, weil
-  /// [update] den Stand aus dem Repository bekommt statt eines beim Rendern
-  /// erfassten Snapshots. Gespeichert wird über [saveHero], die Normalisierung
-  /// bleibt also dieselbe. Dies ist keine Transaktion gegenüber gleichzeitig
-  /// laufenden Repository-Schreibwegen.
-  Future<void> updateHero(
+  /// Kompatibilitätseinstieg für [aendereGespeichertenHelden] (ARCH-05),
+  /// Gegenstück zu [updateHeroState]: Felder, die seit dem letzten UI-Aufbau
+  /// anderswo gespeichert wurden, bleiben erhalten, weil [update] den Stand
+  /// aus dem Repository bekommt statt eines beim Rendern erfassten Snapshots.
+  /// Die Normalisierung ist dieselbe wie bei [saveHero]. Aufrufe laufen je
+  /// Held nacheinander, auch gegenüber [saveHero]; liefert [update] dasselbe
+  /// Objekt zurück, wird nichts gespeichert. Liefert den gespeicherten Helden.
+  ///
+  /// [update] darf selbst weder [saveHero] noch [updateHero] aufrufen: beide
+  /// warten auf den laufenden Vorgang und damit auf sich selbst.
+  Future<HeroSheet> updateHero(
     String heroId,
     HeroSheet Function(HeroSheet current) update,
-  ) async {
+  ) {
     final repo = _ref.read(heroRepositoryProvider);
-    final current = await repo.loadHeroById(heroId);
-    if (current == null) {
-      throw StateError('Der Held wurde nicht gefunden.');
-    }
-    await saveHero(update(current));
+    return aendereGespeichertenHelden(
+      repository: repo,
+      heroId: heroId,
+      aenderung: update,
+      speichere: (geaendert) => _speichereNormalisiert(repo, geaendert),
+    );
   }
 
   /// Speichert den Laufzeitzustand (LeP, AsP, KaP, Au, temp. Mods) eines Helden.

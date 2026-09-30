@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import 'package:dsa_heldenverwaltung/rules/derived/currency_rules.dart';
@@ -5,16 +7,27 @@ import 'package:dsa_heldenverwaltung/rules/derived/currency_rules.dart';
 /// Direkt speicherndes Geldfeld fuer den Inventar-Tab.
 ///
 /// Das Feld bleibt als Freitext editierbar, bietet aber zusätzliche
-/// Münzschritte für Dukaten, Silber und Kreuzer.
+/// Münzschritte für Dukaten, Silber und Kreuzer. Ein eingetippter Betrag wird
+/// als Ganzes gesetzt, ein Münzknopf meldet nur seinen Schritt: angewendet
+/// wird er auf den gespeicherten Geldstand (ARCH-05), damit jeder schnelle
+/// Klick zählt. Das Feld zeigt danach den gespeicherten Stand.
 class DukatenField extends StatefulWidget {
-  /// Erstellt ein Geldfeld mit aktuellem Wert und Speicher-Callback.
-  const DukatenField({super.key, required this.value, required this.onCommit});
+  /// Erstellt ein Geldfeld mit aktuellem Wert und Speicher-Callbacks.
+  const DukatenField({
+    super.key,
+    required this.value,
+    required this.onCommit,
+    required this.onSchritt,
+  });
 
   /// Aktuell gespeicherter Geldwert des Helden.
   final String value;
 
-  /// Speichert einen normalisierten oder manuell eingegebenen Geldwert.
+  /// Speichert einen manuell eingegebenen Geldwert.
   final Future<void> Function(String value) onCommit;
+
+  /// Verschiebt den gespeicherten Geldwert um den Kreuzerbetrag.
+  final Future<void> Function(int deltaKreuzer) onSchritt;
 
   @override
   State<DukatenField> createState() => _DukatenFieldState();
@@ -64,27 +77,35 @@ class _DukatenFieldState extends State<DukatenField> {
     }
   }
 
+  // Betrag, dessen Speichern gerade läuft. Ein Fokusverlust in diesem
+  // Fenster darf ihn nicht ein zweites Mal setzen: das zweite Setzen landete
+  // hinter einem inzwischen eingereihten Münzschritt und überschriebe ihn.
+  String? _laufenderBetrag;
+
   Future<void> _commitIfChanged() async {
     final nextValue = _controller.text.trim();
-    if (nextValue == widget.value.trim()) {
+    if (nextValue == widget.value.trim() || nextValue == _laufenderBetrag) {
       return;
     }
-    await widget.onCommit(nextValue);
+    _laufenderBetrag = nextValue;
+    try {
+      await widget.onCommit(nextValue);
+    } finally {
+      _laufenderBetrag = null;
+    }
   }
 
   Future<void> _adjustBy(int deltaKreuzer) async {
-    final adjusted = adjustDsaCurrencyText(
-      rawValue: _controller.text,
-      deltaKreuzer: deltaKreuzer,
-    );
-    if (adjusted == null) {
+    if (parseDsaCurrencyToKreuzer(_controller.text) == null) {
       _showInvalidMoneySnackBar();
       return;
     }
-
-    _controller.text = adjusted;
-    _controller.selection = TextSelection.collapsed(offset: adjusted.length);
-    await _commitIfChanged();
+    // Ein getippter, noch nicht übernommener Betrag gilt zuerst; beide
+    // Schreibvorgänge reihen sich in dieser Reihenfolge ein. Ohne Fokus zeigt
+    // das Feld danach den gespeicherten Stand (`didUpdateWidget`).
+    unawaited(_commitIfChanged());
+    _focusNode.unfocus();
+    await widget.onSchritt(deltaKreuzer);
   }
 
   void _showInvalidMoneySnackBar() {

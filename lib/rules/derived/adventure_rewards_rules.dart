@@ -342,6 +342,75 @@ HeroSheet revokeAdventureRewards({
   );
 }
 
+/// Schliesst das Abenteuer [abenteuerId] des gespeicherten Helden ab und
+/// bucht seine Belohnungen (ARCH-05).
+///
+/// [abschluss] ist das Ergebnis des Abschlussdialogs. Von ihm werden nur die
+/// Abschlussangaben (Enddaten, AP, SE, Dukaten, Beute) auf das
+/// **gespeicherte** Abenteuer uebertragen; Titel, Notizen und Personen, die
+/// seit dem Oeffnen des Dialogs anderswo gespeichert wurden, bleiben stehen.
+///
+/// Wirft einen [StateError] mit dem Grund, wenn das Abenteuer fehlt, im
+/// gespeicherten Stand schon abgeschlossen ist oder
+/// [canApplyAdventureRewards] den Abschluss verbietet. So bucht weder ein
+/// Doppelklick noch ein zweites Geraet die Belohnungen doppelt.
+HeroSheet schliesseAbenteuerAb({
+  required HeroSheet held,
+  required String abenteuerId,
+  required HeroAdventureEntry abschluss,
+}) {
+  final index = _findAdventureIndex(held, abenteuerId);
+  if (index < 0) {
+    throw StateError('Abenteuer nicht gefunden.');
+  }
+  final gespeichert = held.adventures[index];
+  if (gespeichert.rewardsApplied) {
+    throw StateError('Das Abenteuer wurde bereits abgeschlossen.');
+  }
+  final vorbereitet = gespeichert.copyWith(
+    endWorldDate: abschluss.endWorldDate,
+    endAventurianDate: abschluss.endAventurianDate,
+    apReward: abschluss.apReward,
+    seRewards: abschluss.seRewards,
+    dukatenReward: abschluss.dukatenReward,
+    lootRewards: abschluss.lootRewards,
+  );
+  final heldVorbereitet = held.copyWith(
+    adventures: _replaceAdventureAt(held.adventures, index, vorbereitet),
+  );
+  final pruefung = canApplyAdventureRewards(
+    hero: heldVorbereitet,
+    adventureId: abenteuerId,
+  );
+  if (!pruefung.isAllowed) {
+    throw StateError(pruefung.reason);
+  }
+  return applyAdventureRewards(hero: heldVorbereitet, adventureId: abenteuerId);
+}
+
+/// Nimmt den Abschluss des Abenteuers [abenteuerId] am gespeicherten Helden
+/// zurueck (ARCH-05).
+///
+/// Wirft einen [StateError] mit dem Grund aus [canRevokeAdventureRewards],
+/// etwa wenn das Abenteuer inzwischen schon wieder geoeffnet ist; so wird
+/// nichts doppelt abgezogen.
+HeroSheet oeffneAbenteuerWieder({
+  required HeroSheet held,
+  required String abenteuerId,
+}) {
+  final pruefung = canRevokeAdventureRewards(
+    hero: held,
+    adventureId: abenteuerId,
+  );
+  if (!pruefung.isAllowed) {
+    final grund = pruefung.reason.trim();
+    throw StateError(
+      grund.isEmpty ? 'Der Abschluss lässt sich nicht zurücknehmen.' : grund,
+    );
+  }
+  return revokeAdventureRewards(hero: held, adventureId: abenteuerId);
+}
+
 /// Entfernt Abenteuer-Referenzen aus Kontakten, die nicht mehr gueltig sind.
 List<HeroConnectionEntry> cleanupAdventureReferences({
   required List<HeroConnectionEntry> connections,

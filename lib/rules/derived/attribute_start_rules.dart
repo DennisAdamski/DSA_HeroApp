@@ -87,6 +87,19 @@ int _computeAttributeMaximum(int startValue) {
 /// umzurechnen zeigt die App einen Hinweis, den der Nutzer quittiert.
 const int kAttributeTraitEffectSchemaVersion = 28;
 
+/// Quittiert den Hinweis auf neu wirksame Eigenschaftsboni.
+///
+/// Hebt `schemaVersion` auf [kAttributeTraitEffectSchemaVersion]. Trägt der
+/// Held schon diese oder eine höhere Version (etwa von einer neueren App),
+/// kommt er unverändert zurück: die Version wird nie gesenkt, und es gibt
+/// nichts zu speichern.
+HeroSheet quittiereEigenschaftsHinweis(HeroSheet held) {
+  if (held.schemaVersion >= kAttributeTraitEffectSchemaVersion) {
+    return held;
+  }
+  return held.copyWith(schemaVersion: kAttributeTraitEffectSchemaVersion);
+}
+
 /// Eigenschaftsboni, die durch die Regelaenderung neu wirksam geworden sind.
 ///
 /// Liefert Eintraege der Form `KK +2`. Leer, wenn der Held keinen betroffenen

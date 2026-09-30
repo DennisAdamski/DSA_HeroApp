@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
+import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 
 /// Schlüssel der eingeblendeten Fehlermeldung ([ZustandFehlerAnzeige]).
@@ -29,17 +31,70 @@ Future<HeroState?> aendereZustandMitMeldung({
   required String heroId,
   required String was,
   required HeroState Function(HeroState aktuell) aenderung,
+}) {
+  final aktionen = ref.read(heroActionsProvider);
+  return _schreibeMitMeldung(
+    context: context,
+    was: was,
+    schreibe: () => aktionen.updateHeroState(heroId, aenderung),
+  );
+}
+
+/// Ändert den gespeicherten Heldenbogen frisch und meldet Fehler sichtbar.
+///
+/// Gegenstück zu [aendereZustandMitMeldung] für Sofortaktionen am Bogen
+/// (Dauermodifikatoren, Wundschwelle, Übersicht, Dukaten …): [aenderung]
+/// bekommt den **gespeicherten** Helden und ersetzt nur ihre eigenen Felder;
+/// ein beim Rendern erfasster Bogen wird nie zurückgeschrieben (ARCH-05).
+/// Änderungen desselben Helden laufen nacheinander (`updateHero`), auch
+/// gegenüber einem Speichern aus einem Editor.
+///
+/// Solange eine Steigerungsrunde offen ist, wird nichts geschrieben: jede
+/// Heldenänderung bräche den Inhalts-Hash der Runde und damit ihre
+/// Übernahme. Die Meldung erscheint dann wie ein Speicherfehler. Das
+/// Ergebnis ist bei einem Fehler `null`, sonst der gespeicherte Held.
+Future<HeroSheet?> aendereHeldMitMeldung({
+  required BuildContext context,
+  required WidgetRef ref,
+  required String heroId,
+  required String was,
+  required HeroSheet Function(HeroSheet aktuell) aenderung,
+}) {
+  final aktionen = ref.read(heroActionsProvider);
+  final planungOffen = ref.read(advancementSessionProvider(heroId)) != null;
+  return _schreibeMitMeldung(
+    context: context,
+    was: was,
+    schreibe: () {
+      if (planungOffen) {
+        throw StateError(kBogenWaehrendPlanungGesperrt);
+      }
+      return aktionen.updateHero(heroId, aenderung);
+    },
+  );
+}
+
+/// Grund, aus dem Sofortaktionen am Bogen während einer Planung ruhen.
+const String kBogenWaehrendPlanungGesperrt =
+    'Während einer Planung ist der Heldenbogen gesperrt.';
+
+// Gemeinsamer Fehlerweg beider Einstiege. [schreibe] läuft synchron beim
+// Aufruf an, damit schnelle, nicht abgewartete Klicks in ihrer Reihenfolge
+// eingereiht werden.
+Future<T?> _schreibeMitMeldung<T>({
+  required BuildContext context,
+  required String was,
+  required Future<T> Function() schreibe,
 }) async {
   // Vor dem Warten greifen: das Bedienelement kann danach abgebaut sein.
   final bereich = ZustandFehlerBereich._meldungVon(context);
   final bote = bereich == null ? ScaffoldMessenger.maybeOf(context) : null;
-  final aktionen = ref.read(heroActionsProvider);
   try {
-    final gespeichert = await aktionen.updateHeroState(heroId, aenderung);
+    final gespeichert = await schreibe();
     bereich?.melde(null);
     return gespeichert;
   } catch (fehler) {
-    final text = '$was nicht gespeichert: $fehler';
+    final text = '$was nicht gespeichert: ${_fehlertext(fehler)}';
     if (bereich != null) {
       bereich.melde(text);
     } else {
@@ -49,8 +104,16 @@ Future<HeroState?> aendereZustandMitMeldung({
   }
 }
 
+// Fachliche Gründe (`StateError`) ohne das technische „Bad state:“.
+String _fehlertext(Object fehler) {
+  if (fehler is StateError) {
+    return fehler.message;
+  }
+  return '$fehler';
+}
+
 /// Bereich eines Blatts, Dialogs oder Panels, in dem Speicherfehler von
-/// [aendereZustandMitMeldung] erscheinen.
+/// [aendereZustandMitMeldung] und [aendereHeldMitMeldung] erscheinen.
 ///
 /// Eine Snackbar läge hinter einem geöffneten Blatt oder Dialog, auf
 /// iOS/macOS sogar vollständig verdeckt. Der Bereich hält deshalb die letzte
