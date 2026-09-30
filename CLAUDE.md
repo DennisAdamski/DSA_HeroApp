@@ -478,7 +478,26 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   Wundschwellen (0,5 / 1 / 1,5 KO, ganzzahlig kaufmännisch gerundet,
   Eisern/Glasknochen ±2), also höchstens 3 Wunden je Treffer;
   `computeWundschwelle` ist die erste davon. Wunden eines Angriffs werden nur **gemeinsam** unterdrückt
-  (`bieteWundUnterdrueckungAn(neueWunden: n)`), nie einzeln.
+  (`bieteWundUnterdrueckungAn(neueWunden: n)`), nie einzeln. Die
+  SB-Erschwernis zählt nach WdS S. 83/111 **alle bisher erlittenen Wunden,
+  auch unterdrückte** (4 je Wunde), mehrere aus einem Treffer pauschal
+  +8/+12 — nicht nur die neuen; so mit dem Nutzer entschieden (Roadmap
+  ARCH-05, Nachtrag zu Teilstand 6).
+- **Wunden wirken nach Gesamt- und Zonensystem** (Hausregel „Erweiterung und
+  Überarbeitung“ S. 3, per dsa-rules-MCP belegt, Roadmap ARCH-05 Teilstand 6):
+  je Wunde allgemein AT/PA/FK/INI-Basis/GE −2, GS −1, dazu die Zonentabelle
+  aus `rules/derived/wund_zonen_rules.dart` (WdS S. 108 f.). Eine pauschale
+  Proben-Erschwernis gibt es nicht. Eigenschaftsverluste wirken **nur auf
+  Proben**: über `HeroComputedSnapshot.probenEigenschaften` bzw.
+  `wendeWundVerlusteAn`, **nie** über `effectiveAttributes` (WdS S. 111: nicht
+  auf Basiswerte; die App lässt auch LeP, MR und Wundschwelle unberührt). Wer
+  würfelt, nimmt die Probenwerte. Armwunden sind armgebunden
+  (`schwertarmAtPaMalus` auf die Hauptwaffe, `schildarmAtPaMalus` auf
+  Nebenhandwaffe und Schild-PA, nicht auf Fernkampf); rechts ist der
+  Schwertarm, mit dem Katalogschalter `linkshaender` (Vorteil Linkshänder)
+  links. Die gespeicherten 2W6 der Kopfwunde (`kopfIniMalus`) betreffen nur die
+  aktuelle INI und sind Hinweis, kein Basisabzug. Wunden senken die GS nie
+  unter 1 (`begrenzeWundGs`). Anzeige über `wund_anzeige_rules.dart`.
 - Nicht enthalten und bewusst nicht erfunden: Rücknahmeknopf (ARCH-06),
   KR-Zähler, persistente Favoriten, Offline-/Sync-Status ohne echten
   Providerzustand. Ein Test in `test/ui2/spielen/` hält das fest.
@@ -860,8 +879,11 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
 - Die Haupteigenschafts-Boni aus Kap. 2.1 liegen als
   `epicMainAttributeBonuses` mit `EpicBonusUmsetzung` je Einzelbonus vor.
   Gerechnet werden nur zwei: eBE-Halbierung bei KK-Talenten
-  (`epicTalentEbeMultiplier` → `computeTalentEbe`) und die halbierte
-  Wund-Proben-Erschwernis bei KO (`computeWundEffekte`). Die IN-Finte
+  (`epicTalentEbeMultiplier` → `computeTalentEbe`) und bei KO die halbierte
+  SB-Erschwernis beim Unterdrücken von Wunden
+  (`computeSbUnterdrueckungErschwernis(halbiert:)`, Schalter
+  `WundEffekte.unterdrueckungHalbiert`, gesetzt in `computeHeroWundEffekte`);
+  die halbierte Erschöpfung ist nur Hinweis. Die IN-Finte
   erscheint als Hinweis in der Kampfvorschau (Muster:
   `buildAxxeleratusDefenseHint`). Alle uebrigen Boni sind in der UI
   ausdruecklich als `manuell` gekennzeichnet — mangels Modell fuer

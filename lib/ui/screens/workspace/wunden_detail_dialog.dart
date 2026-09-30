@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
-import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifikator_aenderung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/talent_value_rules.dart';
+import 'package:dsa_heldenverwaltung/domain/attributes.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/wund_anzeige_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/wund_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/wund_zonen_rules.dart';
 import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
@@ -145,6 +146,10 @@ class _WundenDetailDialog extends ConsumerWidget {
               for (final zone in WundZone.values) ...[
                 _ZonenZeile(
                   zone: zone,
+                  armRolle: armRolleFuer(
+                    zone,
+                    linkshaender: wundEffekte.linkshaender,
+                  ),
                   wunden: wpiZustand.wundenInZone(zone),
                   unterdrueckte: wpiZustand.unterdrueckteInZone(zone),
                   onHinzufuegen: () => wundeHinzufuegen(zone),
@@ -197,6 +202,7 @@ class _WundenDetailDialog extends ConsumerWidget {
                   hero: hero,
                   wpiZustand: wpiZustand,
                   wundEffekte: wundEffekte,
+                  probenEigenschaften: computed.probenEigenschaften,
                 ),
               ],
 
@@ -231,6 +237,7 @@ class _WundenDetailDialog extends ConsumerWidget {
 class _ZonenZeile extends StatelessWidget {
   const _ZonenZeile({
     required this.zone,
+    required this.armRolle,
     required this.wunden,
     required this.unterdrueckte,
     required this.onHinzufuegen,
@@ -239,6 +246,9 @@ class _ZonenZeile extends StatelessWidget {
   });
 
   final WundZone zone;
+
+  /// Schwert- oder Schildarm; `null` für andere Zonen.
+  final ArmRolle? armRolle;
   final int wunden;
   final int unterdrueckte;
   final VoidCallback onHinzufuegen;
@@ -254,12 +264,29 @@ class _ZonenZeile extends StatelessWidget {
       children: [
         SizedBox(
           width: 100,
-          child: Text(
-            label,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: istKritisch ? Theme.of(context).colorScheme.error : null,
-            ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                label,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: istKritisch
+                      ? Theme.of(context).colorScheme.error
+                      : null,
+                ),
+              ),
+              // Armwunden wirken nur auf die Waffe in diesem Arm.
+              if (armRolle != null)
+                Text(
+                  armRolleLabel[armRolle]!,
+                  key: ValueKey<String>('wunden-armrolle-${zone.name}'),
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+            ],
           ),
         ),
         // Drei-Zustand-Pips: rot = aktiv, bernstein = unterdrueckt, grau = leer
@@ -336,6 +363,7 @@ class _SbProbeSection extends StatelessWidget {
     required this.hero,
     required this.wpiZustand,
     required this.wundEffekte,
+    required this.probenEigenschaften,
   });
 
   final WidgetRef ref;
@@ -344,12 +372,24 @@ class _SbProbeSection extends StatelessWidget {
   final WundZustand wpiZustand;
   final WundEffekte wundEffekte;
 
+  /// Eigenschaften mit Wundverlusten; gegen sie wird die SB-Probe gewürfelt.
+  final Attributes probenEigenschaften;
+
   @override
   Widget build(BuildContext context) {
     final gesamtWunden = wpiZustand.gesamtWunden;
+    final halbiert = wundEffekte.unterdrueckungHalbiert;
     final erschwernis = computeSbUnterdrueckungErschwernis(
       gesamtWunden: gesamtWunden,
+      halbiert: halbiert,
     );
+    final herleitung = sbUnterdrueckungHerleitung(
+      gesamtWunden: gesamtWunden,
+      halbiert: halbiert,
+    );
+    final mehrfach = halbiert
+        ? 'Bei 2 Wunden aus einem Treffer: +4; bei 3: +6 (halbiert)'
+        : 'Bei 2 Wunden aus einem Treffer: +8; bei 3: +12';
 
     final sbEntry =
         (hero.talents
@@ -372,11 +412,17 @@ class _SbProbeSection extends StatelessWidget {
         ),
         const SizedBox(height: 4),
         Text(
-          'SB-Probe erschwert um 4 × $gesamtWunden Wunden = $erschwernis',
+          'SB-Probe erschwert um $herleitung',
           style: Theme.of(context).textTheme.bodySmall,
         ),
         Text(
-          'Bei 2 Wunden aus einem Treffer: +8; bei 3: +12',
+          'Zählt alle bisher erlittenen Wunden, auch unterdrückte '
+          '(WdS S. 83, 111).',
+          style: Theme.of(context).textTheme.bodySmall
+              ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+        ),
+        Text(
+          mehrfach,
           style: Theme.of(context).textTheme.bodySmall
               ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
         ),
@@ -384,10 +430,6 @@ class _SbProbeSection extends StatelessWidget {
         FilledButton.tonalIcon(
           onPressed: hatSb
               ? () {
-                  final effectiveAttrs = computeEffectiveAttributes(
-                    hero,
-                    catalog: ref.read(rulesCatalogProvider).valueOrNull,
-                  );
                   const sbCodes = [
                     AttributeCode.mu,
                     AttributeCode.ko,
@@ -397,7 +439,7 @@ class _SbProbeSection extends StatelessWidget {
                       .map(
                         (code) => ProbeTargetValue(
                           label: code.name.toUpperCase(),
-                          value: readAttributeValue(effectiveAttrs, code),
+                          value: readAttributeValue(probenEigenschaften, code),
                         ),
                       )
                       .toList();
@@ -409,7 +451,7 @@ class _SbProbeSection extends StatelessWidget {
                       title: 'Selbstbeherrschung (Wunde unterdrücken)',
                       targets: targets,
                       basePool: sbTaw,
-                      wundMalus: wundEffekte.talentProbeMalus + (-erschwernis),
+                      initialSituationalModifier: -erschwernis,
                     ),
                   );
                 }
@@ -464,29 +506,13 @@ class _EffekteZusammenfassung extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (effekte.atMalus == 0 &&
-        effekte.paMalus == 0 &&
-        effekte.fkMalus == 0 &&
-        effekte.iniGesamt == 0 &&
-        effekte.gsMalus == 0 &&
-        effekte.talentProbeMalus == 0) {
+    final teile = beschreibeWundAbzuege(effekte);
+    if (teile.isEmpty) {
       return Text(
         'Keine Wundeffekte aktiv.',
         style: Theme.of(context).textTheme.bodySmall
             ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
       );
-    }
-    final teile = <String>[];
-    if (effekte.atMalus != 0) teile.add('AT ${effekte.atMalus}');
-    if (effekte.paMalus != 0) teile.add('PA ${effekte.paMalus}');
-    if (effekte.fkMalus != 0) teile.add('FK ${effekte.fkMalus}');
-    if (effekte.iniGesamt != 0) teile.add('INI ${effekte.iniGesamt}');
-    if (effekte.gsMalus != 0) teile.add('GS ${effekte.gsMalus}');
-    if (effekte.talentProbeMalus != 0) {
-      teile.add('Proben ${effekte.talentProbeMalus}');
-    }
-    if (effekte.zauberExtraMalus != 0) {
-      teile.add('Zauber extra ${effekte.zauberExtraMalus}');
     }
     return Text(
       teile.join('  '),

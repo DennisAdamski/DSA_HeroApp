@@ -9,6 +9,7 @@ import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/talent_value_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/wund_anzeige_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/wund_rules.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/dice_log_persistence.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/probe_request_factory.dart';
@@ -18,7 +19,9 @@ import 'package:dsa_heldenverwaltung/ui/screens/shared/probe_request_factory.dar
 ///
 /// [neueWunden] sind alle Wunden, die derselbe Angriff geschlagen hat; sie
 /// werden nur gemeinsam unterdrueckt, nie einzeln. Die Erschwernis folgt
-/// `computeSbUnterdrueckungErschwernis`.
+/// `computeSbUnterdrueckungErschwernis`, halbiert bei epischer KO
+/// ([WundEffekte.unterdrueckungHalbiert]). Gewuerfelt wird gegen die
+/// Probenwerte einschliesslich der neuen Wunden.
 ///
 /// Gibt `true` zurueck wenn die Wunden unterdrueckt werden sollen,
 /// `false` oder `null` wenn sie aktiv bleiben.
@@ -68,13 +71,17 @@ class _WundUnterdrueckungDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final gesamtWunden = wpiZustand.gesamtWunden;
+    final halbiert = wundEffekte.unterdrueckungHalbiert;
     final erschwernis = computeSbUnterdrueckungErschwernis(
       gesamtWunden: gesamtWunden,
       neueWunden: neueWunden,
+      halbiert: halbiert,
     );
-    final herleitung = neueWunden == 1
-        ? '4 × $gesamtWunden = $erschwernis'
-        : '$erschwernis ($neueWunden Wunden aus einem Treffer)';
+    final herleitung = sbUnterdrueckungHerleitung(
+      gesamtWunden: gesamtWunden,
+      neueWunden: neueWunden,
+      halbiert: halbiert,
+    );
 
     final sbEntry =
         (hero.talents
@@ -104,13 +111,24 @@ class _WundUnterdrueckungDialog extends StatelessWidget {
             '$zoneLabel — SB-Probe erschwert um $herleitung',
             style: Theme.of(context).textTheme.bodyMedium,
           ),
+          Text(
+            wundErschoepfungHinweis(halbiert: halbiert),
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
           const SizedBox(height: 12),
           FilledButton.tonalIcon(
             onPressed: hatSb
                 ? () {
-                    final effectiveAttrs = computeEffectiveAttributes(
-                      hero,
-                      catalog: ref.read(rulesCatalogProvider).valueOrNull,
+                    // Probenwerte: Wundverluste einschliesslich der neuen
+                    // Wunden (WdS S. 83 zaehlt sie schon mit).
+                    final effectiveAttrs = wendeWundVerlusteAn(
+                      computeEffectiveAttributes(
+                        hero,
+                        catalog: ref.read(rulesCatalogProvider).valueOrNull,
+                      ),
+                      wundEffekte,
                     );
                     const sbCodes = [
                       AttributeCode.mu,
@@ -133,8 +151,7 @@ class _WundUnterdrueckungDialog extends StatelessWidget {
                         title: 'Selbstbeherrschung (Wunde unterdrücken)',
                         targets: targets,
                         basePool: sbTaw,
-                        wundMalus:
-                            wundEffekte.talentProbeMalus + (-erschwernis),
+                        initialSituationalModifier: -erschwernis,
                       ),
                     );
                   }

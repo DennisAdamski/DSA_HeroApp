@@ -52,6 +52,7 @@ extension _WeaponDetailExpansion on _HeroCombatTabState {
                                   preview.waffenmeisterAtBonus -
                                   (preview.specBonus) -
                                   preview.offhandAtMod -
+                                  preview.schwertarmWundMalus -
                                   manual.atMod -
                                   _atEbePart(preview.ebe),
                             ),
@@ -66,6 +67,11 @@ extension _WeaponDetailExpansion on _HeroCombatTabState {
                               _calcStep('Spezialisierung', preview.specBonus),
                             if (preview.offhandAtMod != 0)
                               _calcStep('Nebenhand AT', preview.offhandAtMod),
+                            if (preview.schwertarmWundMalus != 0)
+                              _calcStep(
+                                'Wunden Schwertarm',
+                                preview.schwertarmWundMalus,
+                              ),
                             if (manual.atMod != 0)
                               _calcStep('Manueller Mod', manual.atMod),
                           ],
@@ -94,6 +100,11 @@ extension _WeaponDetailExpansion on _HeroCombatTabState {
                             _calcStep('eBE PA-Anteil', _paEbePart(preview.ebe)),
                             if (preview.offhandPaBonus != 0)
                               _calcStep('Nebenhand PA', preview.offhandPaBonus),
+                            if (preview.schwertarmWundMalus != 0)
+                              _calcStep(
+                                'Wunden Schwertarm',
+                                preview.schwertarmWundMalus,
+                              ),
                             if (manual.paMod != 0)
                               _calcStep('Manueller Mod', manual.paMod),
                             if (preview.iniParadeMod != 0)

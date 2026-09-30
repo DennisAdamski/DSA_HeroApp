@@ -179,6 +179,11 @@ Technischer Stack:
 - Optionaler Fullrestore fuer lange Abwesenheiten: alle Vitalwerte auf Maximum und keine Wunden mehr
 - Vorschau und Sammeluebernahme der Rast-Ergebnisse direkt im Workspace
 - „Schaden erhalten“ in den Vitalwerten und als Schnellaktion der Spielansicht: TP abzueglich RS, Trefferzone per Auswahl oder W20, Wundvorschlag aus den Wundschwellen samt Angriffsmodifikator (die Wundzahl entscheidet der Nutzer), Zusatzwuerfe der Zone, Ausdauerschaden (TP(A)) und ein nachvollziehbarer Protokolleintrag
+- Wunden wirken nach Gesamt- und Zonensystem (Hausregel, WdS S. 58 und
+  108 f.): allgemeine Abzuege plus die Zone, Armwunden nur auf die Waffe
+  in diesem Arm (Schwert- bzw. Schildarm, Linkshaender beruecksichtigt),
+  Eigenschaftsverluste nur auf Proben; Hinweise zu dritten Wunden und
+  zum Kopf-INI-Wurf
 - Tablet-Layouts fuer iPad und breite Fenster: Icon-Rail im Portrait, permanenter Inspector im Landscape und ein kompakter zweizeiliger Workspace-Header mit aktivem Bereich, Bildausschnitt und Kernwerten
 - Proben-Schnellsuche in der Workspace-AppBar: durchsucht Eigenschaften, Kampfwerte, Talente und Zauber des Helden und oeffnet direkt den Probendialog inklusive Wuerfelprotokoll
 - Wuerfelprotokoll mit Filter-Chips nach Probeart (Eigenschaft, Talent, Zauber, Kampf) und sessiontauglichem Umfang von 50 Eintraegen
@@ -223,7 +228,8 @@ Technischer Stack:
   AP-Aufschlag und sind ueber `AP und Level > Stern-Symbol` nachtraeglich
   korrigierbar
 - Von den Haupteigenschafts-Boni rechnet die App die eBE-Halbierung bei
-  KK-Talenten und die halbierte Wund-Proben-Erschwernis bei KO; die
+  KK-Talenten und bei KO die halbierte SB-Erschwernis beim Unterdruecken
+  von Wunden (die halbierte Erschoepfung erscheint als Hinweis); die
   IN-Finte erscheint als Hinweis in der Kampfvorschau. Alle uebrigen Boni
   sind in der Heldenuebersicht ausdruecklich als `manuell` gekennzeichnet
 - Breite Datenlisten lassen sich unter `Einstellungen > Darstellung` sowie im

@@ -179,6 +179,7 @@ class _InspectorTabBodies extends ConsumerWidget {
     final derived = computed?.derivedStats;
     final combat = computed?.combatPreviewStats;
     final resourceActivation = computed?.resourceActivation;
+    final probenEigenschaften = computed?.probenEigenschaften;
     final effectiveAttributes = computed?.effectiveAttributes;
     final wundEffekte = computed?.wundEffekte ?? const WundEffekte();
     final wundschwelle = computed?.wundschwelle ?? 0;
@@ -187,6 +188,7 @@ class _InspectorTabBodies extends ConsumerWidget {
         heroState == null ||
         derived == null ||
         combat == null ||
+        probenEigenschaften == null ||
         effectiveAttributes == null) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -219,7 +221,8 @@ class _InspectorTabBodies extends ConsumerWidget {
         InspectorProbeTab(
           heroId: heroId,
           heroState: heroState,
-          effectiveAttributes: effectiveAttributes,
+          probenEigenschaften: probenEigenschaften,
+          grundwerte: effectiveAttributes,
           combat: combat,
         ),
       ],

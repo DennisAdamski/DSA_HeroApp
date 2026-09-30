@@ -13,7 +13,8 @@ enum HeroTraitEffectArt {
   /// Eigenschaft aus der Auswahl (`{choice}` = Kuerzel wie `KK`).
   eigenschaft,
 
-  /// Benannter Schalter mit fester Regelwirkung (`flink`, `behaebig`).
+  /// Benannter Schalter mit fester Regelwirkung (`flink`, `behaebig`,
+  /// `linkshaender`).
   schalter,
 
   /// Fester Bonus auf alle Wundschwellenstufen.
@@ -125,7 +126,11 @@ const Map<HeroTraitEffectArt, Set<String>> kHeroTraitEffectZiele =
         'ausweichen',
       },
       HeroTraitEffectArt.eigenschaft: <String>{''},
-      HeroTraitEffectArt.schalter: <String>{'flink', 'behaebig'},
+      HeroTraitEffectArt.schalter: <String>{
+        'flink',
+        'behaebig',
+        'linkshaender',
+      },
       HeroTraitEffectArt.wundschwelle: <String>{''},
       HeroTraitEffectArt.rast: <String>{
         'lepStufe',

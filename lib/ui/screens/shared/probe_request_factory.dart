@@ -19,14 +19,17 @@ ResolvedProbeRequest buildAttributeProbeRequest({
 
 /// Baut eine aufgeloeste Talentprobe.
 ///
-/// [wundMalus] wird als negativer Startwert fuer die situative Erschwernis
-/// gesetzt (Wundabzuege auf Talent- und Zauberproben).
+/// Wunden wirken ueber die Eigenschaftswerte in [targets]
+/// (`HeroComputedSnapshot.probenEigenschaften`), nicht als pauschale
+/// Erschwernis. [initialSituationalModifier] ist der Startwert der
+/// situativen Erschwernis (negativ = erschwert), etwa die Erschwernis beim
+/// Unterdruecken von Wunden.
 ResolvedProbeRequest buildTalentProbeRequest({
   required String title,
   required List<ProbeTargetValue> targets,
   required int basePool,
   bool hasSpecialization = false,
-  int wundMalus = 0,
+  int initialSituationalModifier = 0,
 }) {
   return ResolvedProbeRequest(
     type: ProbeType.talent,
@@ -37,19 +40,18 @@ ResolvedProbeRequest buildTalentProbeRequest({
     targets: targets,
     basePool: basePool,
     specializationBonus: hasSpecialization ? 2 : 0,
-    initialSituationalModifier: wundMalus,
+    initialSituationalModifier: initialSituationalModifier,
   );
 }
 
 /// Baut eine aufgeloeste Zauberprobe.
 ///
-/// [wundMalus] wird als negativer Startwert fuer die situative Erschwernis
-/// gesetzt (Wundabzuege auf Zauberproben inkl. Kopfwunden-Extramalus).
+/// Wunden wirken ueber die Eigenschaftswerte in [targets]
+/// (`HeroComputedSnapshot.probenEigenschaften`).
 ResolvedProbeRequest buildSpellProbeRequest({
   required String title,
   required List<ProbeTargetValue> targets,
   required int basePool,
-  int wundMalus = 0,
 }) {
   return ResolvedProbeRequest(
     type: ProbeType.spell,
@@ -59,7 +61,6 @@ ResolvedProbeRequest buildSpellProbeRequest({
     diceSpec: const DiceSpec(count: 3, sides: 20),
     targets: targets,
     basePool: basePool,
-    initialSituationalModifier: wundMalus,
   );
 }
 
