@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/wund_anzeige_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/wund_rules.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/wund_zustand_speichern.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/wunden_detail_dialog.dart';
@@ -246,15 +247,7 @@ class _WundEffekteSubtitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final teile = <String>[];
-    if (effekte.atMalus != 0) teile.add('AT ${effekte.atMalus}');
-    if (effekte.paMalus != 0) teile.add('PA ${effekte.paMalus}');
-    if (effekte.fkMalus != 0) teile.add('FK ${effekte.fkMalus}');
-    if (effekte.iniGesamt != 0) teile.add('INI ${effekte.iniGesamt}');
-    if (effekte.gsMalus != 0) teile.add('GS ${effekte.gsMalus}');
-    if (effekte.talentProbeMalus != 0) {
-      teile.add('Proben ${effekte.talentProbeMalus}');
-    }
+    final teile = beschreibeWundAbzuege(effekte);
     final children = <Widget>[];
     if (teile.isNotEmpty) {
       children.add(

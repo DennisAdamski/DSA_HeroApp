@@ -23,6 +23,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/two_weapon_combat_rules.dart'
 import 'package:dsa_heldenverwaltung/rules/derived/waffenmeister_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/unarmed_style_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/waffen_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/wund_rules.dart';
 
 class CombatPreviewStats {
   const CombatPreviewStats({
@@ -108,6 +109,8 @@ class CombatPreviewStats {
     required this.waffenmeisterAdditionalManeuvers,
     required this.waffenmeisterReloadTimeHalved,
     required this.waffenmeisterManeuverReductions,
+    this.schwertarmWundMalus = 0,
+    this.schildarmWundMalus = 0,
     this.offhandPreview,
     this.twoWeaponCombat,
   });
@@ -153,6 +156,14 @@ class CombatPreviewStats {
   final int paBase;
   final int axxPaBaseBonus;
   final int offhandPaBonus;
+
+  /// Armgebundener Wundabzug auf AT und PA der Hauptwaffe (Schwertarm,
+  /// WdS S. 109). Bereits in [at] und [pa] enthalten; 0 bei Fernkampf.
+  final int schwertarmWundMalus;
+
+  /// Armgebundener Wundabzug auf Schild und Nebenhandwaffe (Schildarm).
+  /// Bereits in [shieldPa] bzw. der Nebenhand-Vorschau enthalten.
+  final int schildarmWundMalus;
   final int offhandAtMod;
   final int offhandIniMod;
   final int? offhandWeaponInitiative;
@@ -265,6 +276,7 @@ class OffhandCombatPreview {
     this.falseHandAtMod,
     this.falseHandPaMod,
     this.falseHandLabel,
+    this.schildarmWundMalus = 0,
   });
 
   final String displayName;
@@ -290,6 +302,10 @@ class OffhandCombatPreview {
   final String? activeDistanceLabel;
   final String? activeProjectileName;
   final int? activeProjectileCount;
+
+  /// Armgebundener Wundabzug des Schildarms, bereits in AT/PA bzw. Schild-PA
+  /// enthalten (WdS S. 109).
+  final int schildarmWundMalus;
 
   // Modifikator-basiert (Parierwaffe/Schild)
   final int? mainPaMod;
@@ -327,6 +343,7 @@ CombatPreviewStats computeCombatPreviewStats(
   ModifierParseResult? parsedModifiers,
   Attributes? effectiveAttributes,
   DerivedStats? derivedStats,
+  WundEffekte wunden = const WundEffekte(),
   bool epicAdvantagesRuleActive = true,
   RulesCatalog? catalog,
 }) {
@@ -348,6 +365,7 @@ CombatPreviewStats computeCombatPreviewStats(
         state: state,
         parsedModifiers: parsed,
         effectiveAttributes: effective,
+        wundStatMods: wundEffekteToStatModifiers(wunden),
       );
   // Dieselbe Modifikatorsumme wie die Basiswerte (benannte, Inventar- und
   // Wundmodifikatoren eingeschlossen); eine eigene, kleinere Summe liess
@@ -487,6 +505,7 @@ CombatPreviewStats computeCombatPreviewStats(
     paBase:
         computePa(effectiveSheet, mods) +
         computeAxxeleratusPaBaseBonus(axxeleratusActive: axxeleratusActive),
+    schildarmWundMalus: wunden.schildarmAtPaMalus,
   );
 
   // --- Kampfbasiswerte (kampfbasis_rules) ---
@@ -504,6 +523,8 @@ CombatPreviewStats computeCombatPreviewStats(
   final talentAt = talentEntry?.atValue ?? 0;
   final talentPa = talentEntry?.paValue ?? 0;
   final rangedAtBase = isRangedWeapon ? derived.fkBase : 0;
+  // Armwunden treffen AT/PA im Nahkampf, nicht den Fernkampf (WdS S. 109).
+  final schwertarmWundMalus = isRangedWeapon ? 0 : wunden.schwertarmAtPaMalus;
   final at = isRangedWeapon
       ? computeRangedAtValue(
           rangedAtBase: rangedAtBase,
@@ -522,6 +543,7 @@ CombatPreviewStats computeCombatPreviewStats(
             atSpecBonus +
             unarmedStyleEffects.atBonus +
             offhandModifiers.atMod +
+            schwertarmWundMalus +
             manualMods.atMod;
   final pa = isRangedWeapon
       ? 0
@@ -533,6 +555,7 @@ CombatPreviewStats computeCombatPreviewStats(
             paSpecBonus +
             unarmedStyleEffects.paBonus +
             offhandModifiers.mainPaMod +
+            schwertarmWundMalus +
             manualMods.paMod;
 
   // --- Initiative-Kette (ini_rules) ---
@@ -627,6 +650,7 @@ CombatPreviewStats computeCombatPreviewStats(
     iniParadeMod: iniParadeMod,
     axxeleratusActive: axxeleratusActive,
     axxTpBonus: axxTpBonus,
+    schildarmWundMalus: wunden.schildarmAtPaMalus,
   );
   final offhandAttackTarget = offhandPreview?.at;
   final offhandParryTarget =
@@ -743,6 +767,8 @@ CombatPreviewStats computeCombatPreviewStats(
     waffenmeisterManeuverReductions: wmEffects.maneuverReductions,
     offhandPreview: offhandPreview,
     twoWeaponCombat: twoWeaponCombat,
+    schwertarmWundMalus: schwertarmWundMalus,
+    schildarmWundMalus: wunden.schildarmAtPaMalus,
   );
 }
 
@@ -766,6 +792,7 @@ OffhandCombatPreview? _buildOffhandPreview({
   required int iniParadeMod,
   required bool axxeleratusActive,
   required int axxTpBonus,
+  required int schildarmWundMalus,
 }) {
   if (offhandWeapon != null) {
     return _computeOffhandWeaponPreview(
@@ -782,6 +809,7 @@ OffhandCombatPreview? _buildOffhandPreview({
       iniParadeMod: iniParadeMod,
       axxeleratusActive: axxeleratusActive,
       axxTpBonus: axxTpBonus,
+      schildarmWundMalus: schildarmWundMalus,
     );
   }
   if (offhandEquipment != null) {
@@ -807,6 +835,7 @@ OffhandCombatPreview _computeOffhandWeaponPreview({
   required int iniParadeMod,
   required bool axxeleratusActive,
   required int axxTpBonus,
+  required int schildarmWundMalus,
 }) {
   final selectedTalent = _findTalentDefById(catalogTalents, slot.talentId);
   final legacyRanged = isRangedCombatTalent(selectedTalent);
@@ -878,6 +907,8 @@ OffhandCombatPreview _computeOffhandWeaponPreview({
   final talentPa = talentEntry?.paValue ?? 0;
   final rangedAtBase = isRanged ? derived.fkBase : 0;
   final rangedAtEbePart = isRanged ? ebe : atEbePart;
+  // Die Nebenhandwaffe liegt im Schildarm; Fernkampf bleibt unberührt.
+  final armMalus = isRanged ? 0 : schildarmWundMalus;
 
   final at = isRanged
       ? computeRangedAtValue(
@@ -895,7 +926,8 @@ OffhandCombatPreview _computeOffhandWeaponPreview({
             wmEffects.atWmBonus +
             atEbePart +
             atSpecBonus +
-            falseHandModifiers.atMod;
+            falseHandModifiers.atMod +
+            armMalus;
   final pa = isRanged
       ? 0
       : talentPa +
@@ -904,7 +936,8 @@ OffhandCombatPreview _computeOffhandWeaponPreview({
             wmEffects.paWmBonus +
             paEbePart +
             paSpecBonus +
-            falseHandModifiers.paMod;
+            falseHandModifiers.paMod +
+            armMalus;
   final paMitIniParadeMod = isRanged ? 0 : pa + iniParadeMod;
 
   // Ladezeit
@@ -961,6 +994,7 @@ OffhandCombatPreview _computeOffhandWeaponPreview({
     falseHandAtMod: isRanged ? null : falseHandModifiers.atMod,
     falseHandPaMod: isRanged ? null : falseHandModifiers.paMod,
     falseHandLabel: isRanged ? null : falseHandModifiers.label,
+    schildarmWundMalus: armMalus,
   );
 }
 
@@ -981,6 +1015,9 @@ OffhandCombatPreview _computeOffhandEquipmentPreview({
     atMod: offhandModifiers.atMod != 0 ? offhandModifiers.atMod : null,
     iniMod: offhandModifiers.iniMod != 0 ? offhandModifiers.iniMod : null,
     requiresLinkhandViolation: offhandModifiers.requiresLinkhandViolation,
+    schildarmWundMalus: offhandModifiers.isShield
+        ? offhandModifiers.schildarmWundMalus
+        : 0,
   );
 }
 

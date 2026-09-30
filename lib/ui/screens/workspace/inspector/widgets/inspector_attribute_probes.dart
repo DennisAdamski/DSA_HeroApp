@@ -20,25 +20,26 @@ class InspectorAttributeProbes extends ConsumerWidget {
   const InspectorAttributeProbes({
     super.key,
     required this.heroId,
-    required this.effectiveAttributes,
+    required this.probenEigenschaften,
   });
 
   /// ID fuer das Protokollieren des Ergebnisses.
   final String heroId;
 
-  /// Bereits berechnete effektive Eigenschaften.
-  final Attributes effectiveAttributes;
+  /// Eigenschaftswerte fuer Proben (`HeroComputedSnapshot.probenEigenschaften`),
+  /// Wundverluste eingerechnet.
+  final Attributes probenEigenschaften;
 
   /// Reihenfolge der acht Eigenschaften, wie auf dem Heldenbogen.
   List<AttributeProbeEintrag> get entries => <AttributeProbeEintrag>[
-    (label: 'MU', value: effectiveAttributes.mu),
-    (label: 'KL', value: effectiveAttributes.kl),
-    (label: 'IN', value: effectiveAttributes.inn),
-    (label: 'CH', value: effectiveAttributes.ch),
-    (label: 'FF', value: effectiveAttributes.ff),
-    (label: 'GE', value: effectiveAttributes.ge),
-    (label: 'KO', value: effectiveAttributes.ko),
-    (label: 'KK', value: effectiveAttributes.kk),
+    (label: 'MU', value: probenEigenschaften.mu),
+    (label: 'KL', value: probenEigenschaften.kl),
+    (label: 'IN', value: probenEigenschaften.inn),
+    (label: 'CH', value: probenEigenschaften.ch),
+    (label: 'FF', value: probenEigenschaften.ff),
+    (label: 'GE', value: probenEigenschaften.ge),
+    (label: 'KO', value: probenEigenschaften.ko),
+    (label: 'KK', value: probenEigenschaften.kk),
   ];
 
   @override

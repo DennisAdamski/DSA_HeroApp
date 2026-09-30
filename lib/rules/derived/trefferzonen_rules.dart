@@ -75,7 +75,7 @@ final TrefferzonenTabelle humanoidTrefferzonenTabelle = TrefferzonenTabelle(
       rollMin: 9,
       rollMax: 14,
       wundEffektBeschreibung: 'AT, PA, KK, FF -2 mit diesem Arm',
-      dritteWundeBeschreibung: 'Arm handlungsunfähig',
+      dritteWundeBeschreibung: 'Arm aktionsunfähig, Waffe fällt',
       subZoneResolver: _resolveArm,
     ),
     TrefferzonenEintrag(
@@ -101,7 +101,7 @@ final TrefferzonenTabelle humanoidTrefferzonenTabelle = TrefferzonenTabelle(
       rollMin: 1,
       rollMax: 6,
       wundEffektBeschreibung: 'AT, PA, GE, INI-Basis -2; GS -1',
-      dritteWundeBeschreibung: 'Sturz, kampfunfähig',
+      dritteWundeBeschreibung: 'Sturz, kein Nahkampf',
       subZoneResolver: _resolveBein,
     ),
   ],
@@ -134,9 +134,14 @@ class TrefferzonenZusatzwurfErgebnis {
 /// Wendet [tabelle.rollModifier] an und clampt das Ergebnis auf 1-20.
 /// Gibt `null` zurueck, falls kein Eintrag den effektiven Wurf abdeckt
 /// (sollte bei korrekten Tabellen nicht vorkommen).
+///
+/// Die Tabelle wuerfelt Schild- und Schwertarm (WdS S. 108). Welcher
+/// Koerperseite sie entsprechen, haengt am Getroffenen: Bei einem
+/// [linkshaender] ist der Schildarm rechts. Das Label bleibt die Armrolle.
 TrefferzonenErgebnis? resolveTrefferzone({
   required int roll,
   required TrefferzonenTabelle tabelle,
+  bool linkshaender = false,
 }) {
   final effektiv = (roll + tabelle.rollModifier).clamp(1, 20);
 
@@ -144,11 +149,12 @@ TrefferzonenErgebnis? resolveTrefferzone({
     if (!eintrag.matchesRoll(effektiv)) continue;
 
     final sub = eintrag.subZoneResolver?.call(effektiv);
+    final zone = sub?.zone ?? eintrag.zone;
     return TrefferzonenErgebnis(
       roll: roll,
       effektiverRoll: effektiv,
       eintrag: eintrag,
-      zone: sub?.zone ?? eintrag.zone,
+      zone: linkshaender ? _spiegeleArm(zone) : zone,
       label: sub?.label ?? eintrag.label,
     );
   }
@@ -223,4 +229,13 @@ String _buildZusatzwurfDetailText({
     modifier: basiswurf.modifier,
   );
   return '${basisSpec.label} je Wunde • ${diceSpec.label} bei $wundenLabel';
+}
+
+// Tauscht linken und rechten Arm; andere Zonen bleiben.
+WundZone _spiegeleArm(WundZone zone) {
+  return switch (zone) {
+    WundZone.linkerArm => WundZone.rechterArm,
+    WundZone.rechterArm => WundZone.linkerArm,
+    _ => zone,
+  };
 }

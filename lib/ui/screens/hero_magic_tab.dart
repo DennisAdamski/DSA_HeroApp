@@ -21,6 +21,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/learning_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/magic_acquisition_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/magic_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/wund_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/requirement_evaluation_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ritual_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/tradition_rules.dart';
@@ -447,6 +448,19 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
                               _showZauberKatalog(context, catalog.spells);
                             },
                             onRollSpell: (_, spell, entry) {
+                              // Wunden senken die Eigenschaften nur für
+                              // den Wurf (WdS S. 111).
+                              final wundEffekte = ref
+                                  .read(heroComputedProvider(widget.heroId))
+                                  .asData
+                                  ?.value
+                                  .wundEffekte;
+                              final probenWerte = wundEffekte == null
+                                  ? effectiveAttributes
+                                  : wendeWundVerlusteAn(
+                                      effectiveAttributes,
+                                      wundEffekte,
+                                    );
                               final targets = <ProbeTargetValue>[];
                               for (final raw in spell.attributes) {
                                 final code = parseAttributeCode(raw);
@@ -457,17 +471,12 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
                                   ProbeTargetValue(
                                     label: raw.toUpperCase(),
                                     value: readAttributeValue(
-                                      effectiveAttributes,
+                                      probenWerte,
                                       code,
                                     ),
                                   ),
                                 );
                               }
-                              final wundEffekte = ref
-                                  .read(heroComputedProvider(widget.heroId))
-                                  .asData
-                                  ?.value
-                                  .wundEffekte;
                               showLoggedProbeDialog(
                                 context: context,
                                 ref: ref,
@@ -477,9 +486,6 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
                                   targets: targets,
                                   basePool:
                                       (entry.spellValue ?? 0) + entry.modifier,
-                                  wundMalus:
-                                      (wundEffekte?.talentProbeMalus ?? 0) +
-                                      (wundEffekte?.zauberExtraMalus ?? 0),
                                 ),
                               );
                             },

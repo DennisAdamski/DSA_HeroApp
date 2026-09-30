@@ -882,9 +882,13 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
                 context: context,
                 ref: ref,
                 heroId: widget.heroId,
+                // Wunden senken die Eigenschaft nur für den Wurf.
                 request: buildAttributeProbeRequest(
                   label: label,
-                  effectiveValue: effective,
+                  effectiveValue: _effectiveValueByKey(
+                    snapshot.probenEigenschaften,
+                    attrKey,
+                  ),
                 ),
               ),
               icon: const Icon(Icons.casino_outlined),

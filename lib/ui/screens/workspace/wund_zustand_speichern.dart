@@ -4,10 +4,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dsa_heldenverwaltung/domain/dice_log_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
-import 'package:dsa_heldenverwaltung/rules/derived/wund_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/hero_stat_inputs.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
+import 'package:dsa_heldenverwaltung/rules/house_rules/house_rule_registry.dart';
+import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
+import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/state/house_rules_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/zustand_aendern.dart';
-import 'package:dsa_heldenverwaltung/ui/screens/workspace/epic_wound_relief.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/wund_ini_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/wund_unterdrueckung_dialog.dart';
 
@@ -123,9 +127,16 @@ Future<void> bieteWundUnterdrueckungAn({
   final hero = ref.read(heroByIdProvider(heroId));
   if (hero == null) return;
   final neuerZustand = gespeichert.wpiZustand;
-  final effekte = computeWundEffekte(
-    neuerZustand,
-    halbierteProbenErschwernis: isEpicWoundReliefActive(ref, hero),
+  // Dieselbe Rechnung wie der Snapshot, aber auf dem gerade gespeicherten
+  // Zustand: Linkshänder und epische KO kommen vom Helden.
+  final catalog = ref.read(rulesCatalogProvider).valueOrNull;
+  final effekte = computeHeroWundEffekte(
+    hero: hero,
+    zustand: neuerZustand,
+    epicAdvantagesActive: ref.read(
+      isHouseRuleActiveProvider(EpicRuleKeys.advantages),
+    ),
+    parsed: parseModifierTextsForHero(hero, catalog: catalog),
   );
   final unterdruecken = await showWundUnterdrueckungDialog(
     context: context,
