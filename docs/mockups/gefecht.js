@@ -1368,7 +1368,6 @@ function zoneEffekte(h) {
 
 function zoneAngriff(h, g, v) {
   const w = v.waffe;
-  const andere = h.waffen.filter((x) => x.id !== w.id);
   let kern;
   if (v.nah) {
     const ers = erschwernis(h, g, v, 'at');
@@ -1401,19 +1400,12 @@ function zoneAngriff(h, g, v) {
   if (v.axx && v.nah) hinweise.push('Abwehr des beschleunigten Nahkampfangriffs: Automatische Finte +2');
   if (h.nebenhand && !v.schildNutzbar) hinweise.push(`${h.nebenhand.name}: mit ${w.name} (${w.hand}) nicht nutzbar.`);
   return `<section class="zone akzent" aria-labelledby="z-angriff">
-    ${zoneKopf(v.nah ? 'sword' : 'bow', '<span id="z-angriff">Angriff</span>', '<span class="chip-marke">Haupthand</span>')}
+    ${zoneKopf(v.nah ? 'sword' : 'bow', '<span id="z-angriff">Angriff</span>', '<button type="button" class="btn btn-leise btn-klein" data-action="ausruestung" data-bereich="waffen">Waffe wechseln</button>')}
     <div class="waffe-name"><span class="titel" style="font-size:22px">${esc(w.name)}</span></div>
     <div class="waffe-meta">${esc(w.talent)}${w.dk ? ` · DK ${w.dk}` : ''} · ${w.hand} · INI ${vz(w.ini)}</div>
     ${kern}
     ${hinweise.length ? `<div class="hinweise">${hinweise.map((t) => `<p class="hinweis-zeile">${icon('info')}<span>${esc(t)}</span></p>`).join('')}</div>` : ''}
-    ${andere.length ? `<details class="waffen-details"><summary>Waffe wechseln <span class="leise">(${andere.length})</span>${icon('chevron')}</summary>
-    <div class="zeilen">${andere.map((x) => {
-      const werte = x.art === 'nah' ? `AT ${x.at} · PA ${x.pa}` : `FK ${x.fk} · Ladezeit ${x.ladezeit}`;
-      const z = ZIEHEN[x.scheide];
-      const n = h.schnellziehen ? z.schnell : z.normal;
-      return `<div class="zeile">${icon(x.art === 'nah' ? 'sword' : 'bow')}<div class="zeile-text"><b>${esc(x.name)}</b><small>${werte} · ${z.text}: ${n === 0 ? 'Freie Aktion' : aktionenText(n)}</small></div>
-        <div class="rechts"><button type="button" class="btn btn-sekundaer btn-klein" data-action="ziehen" data-id="${x.id}">${icon('swap')}Ziehen</button></div></div>`;
-    }).join('')}</div></details>` : ''}
+
   </section>`;
 }
 
@@ -1471,13 +1463,12 @@ function zoneVerteidigung(h, g, v) {
     ${zoneKopf('shield', '<span id="z-vert">Verteidigung</span>')}
     <div class="werte" style="margin-top:0">${felder.join('')}</div>
     ${klingenwand}
-    <div class="unterkopf"><span class="etikett">Rüstung</span></div>
+    <div class="unterkopf"><span class="etikett">Rüstung</span><button type="button" class="btn btn-leise btn-klein" data-action="ausruestung" data-bereich="ruestung">Teile wechseln</button></div>
     <div class="werte" style="margin-top:0">
       ${wertfeld({ etikett: 'Rüstungsschutz', wert: v.rs, zusatz: v.armatrutz ? `Armatrutz ${vz(v.armatrutz)}` : 'aus angelegten Teilen' })}
       ${wertfeld({ etikett: 'Behinderung', wert: v.be, zusatz: h.ruestungsgewoehnung ? `BE ${v.beRoh}, Rüstungsgewöhnung ${minus(-h.ruestungsgewoehnung)}` : 'BE gesamt' })}
     </div>
-    <div class="zeilen" style="margin-top:8px">${h.ruestung.map((r) => `<div class="zeile">${icon('armor')}<div class="zeile-text"><b>${esc(r.name)}</b><small>RS ${r.rs} · BE ${r.be}</small></div>
-      <div class="rechts"><span class="etikett">${r.an ? 'angelegt' : 'abgelegt'}</span><button type="button" class="schalter" role="switch" aria-checked="${r.an}" aria-label="${esc(r.name)} angelegt" data-action="ruestung" data-id="${r.id}"></button></div></div>`).join('')}</div>
+
   </section>`;
 }
 
@@ -1796,6 +1787,12 @@ const abbrechen = (text = 'Abbrechen') => `<button type="button" class="btn btn-
 
 function dialogIni() {
   const h = S.held;
+  // Gewünschter Startablauf wie in der App: Aufmerksamkeit setzt den maximalen Wurf.
+  if (h.aufmerksamkeit) {
+    beginneGefecht(h.iniSeiten);
+    zeigeToast('Aufmerksamkeit: INI mit 6 statt 1W6 angesetzt.', 'compass');
+    return;
+  }
   const v = berechne(h, null);
   let wurfWert = null;
   oeffneDialog(`<div class="dlg-inhalt">
@@ -1806,7 +1803,6 @@ function dialogIni() {
         <input class="eingabe" id="ini-wurf" type="number" min="1" max="${h.iniSeiten}" inputmode="numeric" placeholder="1–${h.iniSeiten}">
         <button type="button" class="btn btn-sekundaer" data-dlg="wuerfeln">${icon('dice')}Würfeln</button></div>
       <div class="ergebnis" id="ini-ergebnis"></div>
-      ${h.aufmerksamkeit ? '<p class="legende">Aufmerksamkeit hebt die INI nicht schon beim Wurf, sondern über die Aktion Orientieren (1 Aktion, ohne Probe) aufs Maximum (WdS S. 74).</p>' : ''}
     </div>
     <div class="dlg-aktionen">${abbrechen()}<button type="button" class="btn btn-primaer" data-dlg="start" id="ini-start" disabled>${icon('sword')}Gefecht beginnen</button></div>`, {
     wuerfeln: () => { $('#ini-wurf').value = wuerfel(h.iniSeiten); dlg.beiEingabe(); },
@@ -1994,7 +1990,14 @@ app.addEventListener('click', (e) => {
     case 'marke':
       if (g.verbraucht[el.dataset.id]) { delete g.verbraucht[el.dataset.id]; delete g.lang[el.dataset.id]; } else { fixiereIniBoni(); g.verbraucht[el.dataset.id] = 'von Hand'; }
       render(); break;
-    case 'umwandeln': g.umwandeln = el.dataset.wert; if (g.umwandeln === 'pa-at') g.zweiSchildparaden = false; render(); break;
+    case 'umwandeln': {
+      const { plan } = aktuellerPlan();
+      if (ansageGesperrt(h, g, plan)) break;
+      g.umwandeln = el.dataset.wert;
+      if (g.umwandeln === 'pa-at') g.zweiSchildparaden = false;
+      render(); break;
+    }
+    case 'ausruestung': dialogAusruestung(el.dataset.bereich); break;
     case 'zwei-schild': g.zweiSchildparaden = !g.zweiSchildparaden; render(); break;
     case 'ini': g.iniVerlust = Math.max(0, g.iniVerlust + Number(el.dataset.wert)); render(); break;
     case 'haltung': g.haltung = el.dataset.wert; render(); break;
@@ -2110,6 +2113,6 @@ window.addEventListener('resize', () => render());
   frame.style.width = `${S.breite}px`;
   frame.dataset.breite = String(S.breite);
   frame.dataset.theme = S.thema;
-  if (teile.includes('gefecht')) beginneGefecht(5);
+  if (teile.includes('gefecht')) beginneGefecht(S.held.aufmerksamkeit ? S.held.iniSeiten : 5);
   else render();
 }());

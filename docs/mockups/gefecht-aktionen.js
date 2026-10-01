@@ -120,7 +120,8 @@ function kompakterTakt(h, g, v, plan) {
     { wert: 'at-pa', text: `2 PA (${um.gesperrt ? '–' : vz(um.atPa.erschw)})`, gesperrt: Boolean(um.gesperrt) },
     { wert: 'pa-at', text: `2 AT (${um.gesperrt ? '–' : vz(um.paAt.erschw)})`, gesperrt: Boolean(um.gesperrt || g.zweiSchildparaden || v.iniAktuell < 8) },
   ];
-  const umwandeln = taktAuswahl('Umwandeln', 'umwandeln', g.umwandeln, optionen, Boolean(sperre));
+  const umKnopf = (e) => `<button type="button" data-action="umwandeln" data-wert="${e.wert}" aria-pressed="${g.umwandeln === e.wert}" ${sperre || e.gesperrt ? 'disabled' : ''}>${esc(e.text)}</button>`;
+  const umwandeln = `<div class="takt-umwandeln"><span class="etikett">Umwandeln</span><div class="seg" role="group" aria-label="Aktionen umwandeln">${optionen.map(umKnopf).join('')}</div></div>`;
   const haltungen = ['stehend', 'kniend', 'liegend'].map((x) => ({ wert: x, text: x }));
   const gegner = [1, 2, 3, 4].map((x) => ({ wert: x, text: x === 4 ? '4+' : String(x) }));
   const dk = [{ wert: '', text: 'offen' }, ...['H', 'N', 'S', 'P'].map((x) => ({ wert: x, text: x }))];

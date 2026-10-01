@@ -289,6 +289,17 @@ h1, h2, h3, p { margin: 0; }
 .takt-unten { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px 14px; margin-top: 10px; padding-top: 10px; border-top: var(--s-hoehenlinie) solid var(--hoehenlinie); }
 .takt-auswahl { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
 .takt-auswahl > span { font-size: 11px; color: var(--schrift-leise); }
+.takt-umwandeln { display: flex; flex-direction: column; gap: 3px; }
+.takt-umwandeln > .etikett { font-size: 11px; }
+.takt-umwandeln .seg { flex-wrap: nowrap; }
+.takt-umwandeln .seg button { min-height: 36px; }
+.ausruestung-tabs { margin: 12px 0; }
+.ausruestung-tabs button { display: inline-flex; align-items: center; gap: 6px; }
+.ausruestung-tabs .icon { width: 16px; height: 16px; }
+.ausruestung-liste { margin-top: 14px; }
+.ausruestung-zeile { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: var(--s-hoehenlinie) solid var(--hoehenlinie); }
+.ausruestung-zeile > .icon { color: var(--messing); }
+.ausruestung-summe { margin-top: 14px; font-size: 13px; color: var(--schrift-leise); }
 .takt-auswahl select { min-height: 36px; max-width: 100%; padding: 4px 24px 4px 8px; color: var(--schrift); background: var(--feld); border: var(--s-grat) solid var(--grat); border-radius: var(--r-klein); font: inherit; font-size: 13px; }
 .takt-auswahl select:disabled { color: var(--schrift-leise); }
 .takt-unten .check { min-height: 36px; }
@@ -332,6 +343,9 @@ h1, h2, h3, p { margin: 0; }
   .rundenwechsel { grid-column: 3; grid-row: 1; padding-inline: 8px; }
   .rundenwechsel .icon { width: 16px; }
   .takt-unten { gap: 8px; }
+  .takt-umwandeln { flex-basis: 100%; flex-direction: row; align-items: center; gap: 8px; }
+  .takt-umwandeln .seg { flex: 1; }
+  .takt-umwandeln .seg button { flex: 1; min-height: 40px; padding: 6px; font-size: 12px; }
   .takt-auswahl select { min-height: 40px; padding: 4px 6px; }
   .takt-auswahl:nth-child(1) select { width: 100px; }
   .takt-auswahl:nth-child(2) select { width: 82px; }
