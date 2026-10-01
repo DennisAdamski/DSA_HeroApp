@@ -93,24 +93,30 @@ setzen, z. B. `gefecht.html#magier,390,dunkel,gefecht`.
 
 Der [Arbeitsplan für das Gefecht](gefecht-plan.md) hält Anordnung,
 Regelbelege, offene Annahmen und die nächsten Designentscheidungen fest.
-Dateien: `gefecht.html`, `gefecht.css`, `gefecht.js` und
-`gefecht-aktionen.js` (gemeinsame Freigaben und kompakte Rundensteuerung).
-Geprüfte Vorschauen: [Desktop](gefecht-desktop.png), [Handy](gefecht-handy.png).
+Dateien: `gefecht.html`, `gefecht.css`, `gefecht.js`,
+`gefecht-aktionen.js` (Freigaben und Rundensteuerung) und
+`gefecht-ausruestung.js` (Ausrüstungsdialog).
+Geprüfte Vorschauen: [Desktop](gefecht-desktop.png), [Handy](gefecht-handy.png),
+[Ausrüstungspopup](gefecht-ausruestung.png).
 
 Gezeigt werden:
 
 - Spielansicht in Ruhe mit kompakter Kampfzusammenfassung und
-  „Gefecht beginnen“, danach die INI-Wahl (würfeln oder echten Wurf
-  eintragen) und der Vollbild-Screen. „Zurück“ lässt das Gefecht laufen,
+  „Gefecht beginnen“. Mit Aufmerksamkeit geht es direkt mit 6 statt 1W6
+  in den Vollbild-Screen; sonst bleibt die INI-Wahl (würfeln oder echten
+  Wurf eintragen). Diese gewünschte Abkürzung folgt dem App-Modell; die
+  Abweichung zum WdS-Orientieren ist im Plan ausdrücklich dokumentiert. „Zurück“ lässt das Gefecht laufen,
   die Spielansicht zeigt dann ein Band „Gefecht läuft“.
 - Kompakter Takt über die gesamte Breite: INI, Aktionsmarken und Rundenwechsel;
-  darunter Auswahlfelder für Umwandeln, Haltung, Gegnerzahl und tatsächliche
-  DK. Aufschlüsselung und Regelhinweise öffnen sich über den INI-Knopf.
+  darunter drei direkte Umwandlungsschalter sowie Auswahlfelder für Haltung,
+  Gegnerzahl und tatsächliche DK. Aufschlüsselung und Regelhinweise öffnen sich über den INI-Knopf.
   Nur wirksame Sonderzustände und laufende Handlungen brauchen Zusatzplatz.
 - Angriff, sichtbare Manöver und Abwehr stehen vor den Ressourcen. Manöver
   zeigen „bereit“, „prüfen“ oder „gesperrt“ mit Grund, Nutzen und Aktionsarten.
   Am Handy ist „Durchhalten“ zunächst eingeklappt; Wunden oder niedrige LE
-  öffnen es. Waffenwechsel und die vollständige SF-Liste sind Details.
+  öffnen es. Die vollständige SF-Liste bleibt in Details. Waffen und
+  Rüstungsteile wechseln in einem eigenen Popup; Ziehkosten bleiben erhalten,
+  Rüstungsdauer wird noch manuell berücksichtigt.
 - Aktionsmenü nach WdS S. 55: Position, Bewegen, Orientieren, Waffe ziehen,
   Nachladen, Sprinten, Gegenstand benutzen, Talent einsetzen, Mirakel und
   die Freien Aktionen (Rufen, Schritt, Drehen, Artefakt, Waffe fallen
@@ -166,8 +172,10 @@ Liturgieprobe fällt wie die Zauberprobe zu Beginn; „Position und
 Orientieren in einer Aktion“ (Hausregel) verlangt weiter die IN-Probe des
 Orientierens; ein Mirakel auf Ausweichen wirkt wie auf eine Eigenschaft.
 
-Diese Iteration wurde am 01.10.2026 mit 18 Browserprüfungen und 22
-isolierten Verhaltensprüfungen geprüft. Die geprüften Layouts zeigen keinen
+Die erste Iteration wurde am 01.10.2026 mit 18 Browserprüfungen und 22
+isolierten Verhaltensprüfungen geprüft. Die zweite Iteration ergänzt den
+INI-Start, direkte Umwandlung und das Ausrüstungspopup; ihre 28 Browserprüfungen
+und acht isolierten Prüfungen bestehen ebenfalls. Die geprüften Layouts zeigen keinen
 horizontalen Überlauf; JavaScript-Laufzeitfehler wurden nicht beobachtet.
 Die genauen Fälle und bewusst offenen Regelsituationen stehen im
 [Gefecht-Plan](gefecht-plan.md#6-prüfnachweis-dieser-iteration).

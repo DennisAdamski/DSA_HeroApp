@@ -8,7 +8,24 @@ Wir entwickeln zunächst Plan und Mockup weiter. Die Flutter-App wird erst nach
 Abnahme des Entwurfs angepasst. Beispielrechnungen und Zufallswürfe im Browser
 sind keine neue produktive Regelimplementierung.
 
-Geprüfte Vorschauen: [Desktop](gefecht-desktop.png), [Handy](gefecht-handy.png).
+Geprüfte Vorschauen: [Desktop](gefecht-desktop.png), [Handy](gefecht-handy.png),
+[Ausrüstungsdialog](gefecht-ausruestung.png).
+
+### Gefecht beginnen
+
+Vor der INI-Abfrage wird die SF **Aufmerksamkeit** geprüft. Mit ihr wird im
+gewünschten Startablauf der maximale Wurf angesetzt (in den Beispielen 6 statt
+1W6) und direkt das Gefecht geöffnet. Ohne Aufmerksamkeit bleibt der Dialog zum
+Würfeln oder Eintragen des echten Wurfs. Der Beispieldirektstart über die Adresse
+berücksichtigt dieselbe SF.
+
+Das folgt dem vorhandenen App-Modell in `lib/rules/derived/combat_rules.dart`
+(`initiativeFixedRollTotal`), ist aber keine durch WdS bestätigte Startregel:
+WdS S. 56, MCP-Chunk 6973, setzt das Maximum durch die Aktion Orientieren;
+Aufmerksamkeit verkürzt diese auf eine Aktion ohne Probe. Orientieren vor
+Kampfbeginn ist dort ausgeschlossen. Die Abweichung ist eine ausdrücklich
+gewünschte Produktentscheidung für diesen Entwurf. Kampfreflexe und Kampfgespür
+werden nicht mit dem Ersatz des Wurfs verwechselt.
 
 ## 1. Anordnung
 
@@ -20,9 +37,11 @@ Eine gemeinsame Leiste bündelt:
 1. **INI, offene Aktionsmarken, KR und Rundenwechsel.** Marken zeigen Angriff,
    Abwehr, freie Aktionen und gegebenenfalls Zusatzparaden. Verbrauch und Sperre
    bleiben direkt erkennbar.
-2. **Umwandeln, Haltung, Gegnerzahl und aktuelle DK** als beschriftete kompakte
-   Auswahlfelder. „1 AT · 1 PA“ bezeichnet den normalen Rundenplan;
+2. **Umwandeln** als drei direkt erreichbare Schaltflächen, ohne Pickliste.
+   „1 AT · 1 PA“ bezeichnet den normalen Rundenplan;
    „2 PA“ beziehungsweise „2 AT“ zeigt den Umwandlungszuschlag an.
+   Die aktive Option ist markiert; gesperrte Optionen sind deaktiviert.
+   **Haltung, Gegnerzahl und aktuelle DK** bleiben kompakte Auswahlfelder.
    Zwei Schildparaden und „Weitere Aktionen“ stehen daneben und brechen bei
    Bedarf in die nächste Zeile um.
 
@@ -47,7 +66,22 @@ Die DK-Auswahl beginnt mit „offen“; die Waffen-DK ersetzt keine erfasste Kam
 Am Handy beginnt „Durchhalten“ eingeklappt mit LeP und Wundenzahl. Bei Wunden
 oder einem aktiven Malus durch niedrige LE öffnet sich der Bereich automatisch.
 Die Schnellaktionen bleiben unten erreichbar und spiegeln die Freigaben der
-Hauptbereiche. Waffenwechsel und die vollständige SF-Liste stehen in Details.
+Hauptbereiche. Nur die vollständige SF-Liste steht in Details.
+
+### Ausrüstung im eigenen Popup
+
+„Waffe wechseln“ im Angriff und „Teile wechseln“ unter Rüstung öffnen denselben
+Ausrüstungsdialog im passenden Bereich. Zwei direkte Bereichsschalter führen
+zwischen Waffen und Rüstungsteilen. Die Hauptansicht enthält die geführte Waffe
+sowie RS und BE; Ersatzwaffen und einzelne Rüstungsschalter entfallen dort.
+
+Waffen zeigen Werte, Ziehkosten und den aktuellen Zustand. Ziehen verwendet
+die bisherige Aktionssimulation; ein längerer Wechsel wird als Handlung
+fortgesetzt, nicht sofort abgeschlossen. Ohne passende Aktion ist er gesperrt.
+Rüstungsteile lassen sich im Popup an- und ablegen, und RS/BE werden aktualisiert.
+Das korrigiert den erfassten Ausrüstungszustand; An- und Ablegedauer werden noch
+nicht automatisch als Kampfhandlungen simuliert und bleiben vor der App-Abnahme
+zu klären. Ein Hinweis im Dialog erinnert an den Zeitbedarf am Spieltisch.
 
 ## 2. Erkennbare Freigaben
 
@@ -75,6 +109,10 @@ werden. Der Entwurf beansprucht keine vollständige automatische Regelprüfung.
 
 - [x] Rundenbeginn-Ansage, Haltung und Gegnerzahl verdichten; freie Seitenflächen
   der bisherigen Taktkarte beseitigen.
+- [x] Umwandeln über drei direkte Schaltflächen anbieten, ohne Pickliste.
+- [x] Mit Aufmerksamkeit die INI-Abfrage überspringen und den maximalen
+  Wurf ansetzen; ohne die SF manuelle Wahl beibehalten.
+- [x] Waffen und Rüstungsteile in ein separates Popup verlagern.
 - [x] Manöver sichtbar vor Ressourcen anordnen; Nutzen und Freigabe anzeigen.
 - [x] Anzeige und Ausführung verwenden gemeinsame Aktionskostenprüfungen.
   Ohne passende Marke entsteht kein Kampf- oder Ausweichwurf.
@@ -150,7 +188,7 @@ ungeprüft in Widget, Provider oder Domain-Modell übernommen.
 
 ## 6. Prüfnachweis dieser Iteration
 
-Am 01.10.2026: 18 Browserprüfungen mit lokalem Edge über das DevTools-Protokoll,
+Erste Iteration am 01.10.2026: 18 Browserprüfungen mit lokalem Edge über das DevTools-Protokoll,
 darunter fünf Layoutvarianten (390/820/1200/1440, Hell/Dunkel, drei Beispielhelden),
 Haltung und Gegnerzahl, explizite DK, INI-Dialog, Umwandlungszielwert,
 Aktionsverbrauch, Rundenwechsel und gesperrter Hammerschlag. Keine
@@ -166,3 +204,11 @@ Sie sind Nachweise für diesen Stand, keine produktive Testsuite.
 Zusätzliche Projektprüfung: `flutter analyze` ohne Befunde;
 `flutter test test/rules/combat_rules_test.dart test/ui/combat/hero_combat_tab_test.dart`
 mit 123 erfolgreichen Tests. Flutter-Dateien wurden nicht geändert.
+
+Zweite Iteration am 01.10.2026: 28 Browserprüfungen ohne Laufzeitfehler oder
+horizontalen Überlauf in den fünf geprüften Layoutvarianten. Zusätzlich zur
+ersten Browsermatrix geprüft: INI-Start mit/ohne Aufmerksamkeit und manuellem
+Wurf, direkte Umwandlungsoptionen, ausgelagerte Ausrüstung, Rüstungsschalter
+samt BE-Aktualisierung sowie Waffenwechsel mit zwei tatsächlich verbrauchten
+Aktionen. Acht isolierte Prüfungen decken dieselben neuen Abläufe ab.
+Vorschauen für Desktop, Handy und Ausrüstungsdialog wurden aktualisiert.
