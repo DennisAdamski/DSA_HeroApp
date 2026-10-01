@@ -71,12 +71,108 @@ Regelprofil sind Bestandteile des dargestellten Zielbilds.
 - `hero-workspace-redesign.css`: Gestaltung, lokale Schrift und Breakpoints.
 - `hero-workspace-redesign.js`: Beispieldaten und flüchtiger Interaktionszustand.
 - `hero-workspace-redesign-*.png`: überprüfte Vorschaubilder.
+- `gefecht.html`, `gefecht.css`, `gefecht.js`: Gefecht-Entwurf (siehe unten),
+  Struktur, Gestaltung sowie Beispieldaten und flüchtiger Zustand.
 
 Das bestehende `combat-tracker-mockup.html` bleibt ein separater Entwurf.
 Die neuen Redesign-Dateien und diese Anleitung werden gezielt versioniert;
 die allgemeine Ignore-Regel für sonstige lokale Mockups bleibt bestehen.
 Vor einer Umsetzung in Flutter die Roadmap-Abhängigkeiten, vollständige
 Funktionsabdeckung und noch offenen Produktentscheidungen prüfen.
+
+## Gefecht-Entwurf (Stand 01.10.2026)
+
+[gefecht.html](gefecht.html) ist der Entwurf für einen eigenen Kampf-Screen
+„Gefecht“ in Kartograph-Optik. Farben, Schriften (Spectral, Inter Tight),
+Abstände und Linienstärken entsprechen `lib/ui2/theme/` und
+`lib/ui2/foundation/`. Die Datei direkt im Browser öffnen. Über die Leiste
+oben lassen sich der Held (Kriegerin mit Schild und Bogen, Kampfmagier mit
+Stab, Rondra-Geweihte mit Liturgien), die Breite (Handy 390, Tablet 820, Breit 1200, Sehr breit 1440) und
+Hell/Dunkel umschalten. Ein Startzustand lässt sich auch über die Adresse
+setzen, z. B. `gefecht.html#magier,390,dunkel,gefecht`.
+
+Der [Arbeitsplan für das Gefecht](gefecht-plan.md) hält Anordnung,
+Regelbelege, offene Annahmen und die nächsten Designentscheidungen fest.
+Dateien: `gefecht.html`, `gefecht.css`, `gefecht.js` und
+`gefecht-aktionen.js` (gemeinsame Freigaben und kompakte Rundensteuerung).
+Geprüfte Vorschauen: [Desktop](gefecht-desktop.png), [Handy](gefecht-handy.png).
+
+Gezeigt werden:
+
+- Spielansicht in Ruhe mit kompakter Kampfzusammenfassung und
+  „Gefecht beginnen“, danach die INI-Wahl (würfeln oder echten Wurf
+  eintragen) und der Vollbild-Screen. „Zurück“ lässt das Gefecht laufen,
+  die Spielansicht zeigt dann ein Band „Gefecht läuft“.
+- Kompakter Takt über die gesamte Breite: INI, Aktionsmarken und Rundenwechsel;
+  darunter Auswahlfelder für Umwandeln, Haltung, Gegnerzahl und tatsächliche
+  DK. Aufschlüsselung und Regelhinweise öffnen sich über den INI-Knopf.
+  Nur wirksame Sonderzustände und laufende Handlungen brauchen Zusatzplatz.
+- Angriff, sichtbare Manöver und Abwehr stehen vor den Ressourcen. Manöver
+  zeigen „bereit“, „prüfen“ oder „gesperrt“ mit Grund, Nutzen und Aktionsarten.
+  Am Handy ist „Durchhalten“ zunächst eingeklappt; Wunden oder niedrige LE
+  öffnen es. Waffenwechsel und die vollständige SF-Liste sind Details.
+- Aktionsmenü nach WdS S. 55: Position, Bewegen, Orientieren, Waffe ziehen,
+  Nachladen, Sprinten, Gegenstand benutzen, Talent einsetzen, Mirakel und
+  die Freien Aktionen (Rufen, Schritt, Drehen, Artefakt, Waffe fallen
+  lassen, sich zu Boden werfen). Was mehrere Aktionen dauert, läuft als
+  längerfristige Handlung über die Runden; jede andere Aktion außer Schritt
+  und Drehen fragt vor dem Unterbrechen nach.
+- Ausweichen als eigener Dialog: gewöhnliches Ausweichen verbraucht eine
+  Freie Aktion, kostet immer INI −4 und lässt bei Gelingen desorientiert
+  zurück; Gezieltes Ausweichen (nur mit SF Ausweichen I) verbraucht die
+  Abwehraktion und kostet nur bei Misslingen INI −2. Distanzklasse,
+  Gegnerzahl, Haltung und Mirakel gehen in den Zielwert ein. Bei unbekannter
+  DK wartet der Würfelknopf auf eine ausdrückliche Auswahl.
+- Würfe mit Folgen: Patzer mit Bestätigung und Patzertabelle (INI-Verlust,
+  Sturz, Rest der Runde verloren), bestätigte glückliche Parade zählt nicht
+  als Aktion, misslungene Ansage erschwert die nächste Aktion, misslungene
+  Abwehr bietet „Schaden erhalten“ an.
+- Durchhalten mit Kampfunfähigkeit (LE 1–5, einmal pro Kampf mit
+  Selbstbeherrschung +12 zu ignorieren), Lebensgefahr (Frist W6 × KO KR, die
+  mit jeder Kampfrunde sinkt) und der Optionalregel „niedrige LE“, die sich
+  oben in der Leiste abschalten lässt.
+- Angriff, Manöver, Verteidigung, Effekte und Würfelprotokoll;
+  Waffenwechsel heißt jetzt „Ziehen“ und kostet je nach Scheide Aktionen.
+- Zauber, Rituale und Liturgien: Der Bereich erscheint nur bei Helden, die
+  so etwas besitzen, und benennt sich nach dem Inhalt. Jeder Eintrag öffnet
+  ein Detailblatt. Die Probe fällt zu Beginn des Wirkens; ein misslungener
+  Zauber wird nach der halben Dauer bemerkt und kostet die Hälfte, eine
+  misslungene Liturgie ein Fünftel. Liturgien tragen ihren Grad
+  (Probenzuschlag, Kosten). Wiederholungen sind um +3 je Fehlversuch
+  erschwert (die Begrenzung auf eine SR ist noch offen), aufrechterhaltene
+  Zauber erschweren Kampfwürfe (+1) und
+  Zauberproben (+3). Ein Treffer während des Wirkens verlangt eine
+  Selbstbeherrschungs-Probe +SP. Die Geweihte zeigt dazu das Mirakel.
+
+Regelstellen (über den lokalen dsa-rules-Index geprüft): WdS S. 53–58
+(Kampfablauf, Aktionen, Orientieren, Kampfunfähigkeit, Haltung), S. 66–70
+(Ausweichen, Klingenwand), S. 72 f. und 78 (Zusatzaktionen), S. 74
+(Aufmerksamkeit), S. 79 (Optional: hohe Initiative-Werte), S. 81 f.
+(Umwandeln, Überzahl), S. 84 (Kampfunfähigkeit ignorieren), S. 209
+(Kurzreferenz); Basisregelwerk S. 296 (Patzer, glückliche Würfe);
+Errata WdS; LC S. 5 und WdZ S. 14 f. (Zaubern im Kampf, Störungen,
+aufrechterhaltene Zauber); WdG S. 251 und LL S. 9–13, 84 f., 134
+(Liturgien, Mirakel); Hausregel „Erweiterung und Überarbeitung“ S. 2 f.
+(Ausweichen, INI zu Beginn der ersten Aktion, Ausdauer).
+
+Alle Zahlen sind Beispieldaten, die Rechnung ist bewusst vereinfacht.
+Würfe sind Zufallszahlen im Browser; die App würfelt weiterhin über ihren
+Probendialog. Die Zauberdaten stammen aus `magie.json`, die Beschreibungen
+der karmalen Sonderfertigkeiten aus `karmale_sonderfertigkeiten.json`.
+Rituale sind Einträge in Ritualkategorien, wie der Held sie in der App
+anlegt; die beiden Liturgien tragen Grad, Dauer und Wirkungsdauer aus dem
+Liber Liturgium. Annahmen, die der Entwurf sichtbar macht: Die
+Liturgieprobe fällt wie die Zauberprobe zu Beginn; „Position und
+Orientieren in einer Aktion“ (Hausregel) verlangt weiter die IN-Probe des
+Orientierens; ein Mirakel auf Ausweichen wirkt wie auf eine Eigenschaft.
+
+Diese Iteration wurde am 01.10.2026 mit 18 Browserprüfungen und 22
+isolierten Verhaltensprüfungen geprüft. Die geprüften Layouts zeigen keinen
+horizontalen Überlauf; JavaScript-Laufzeitfehler wurden nicht beobachtet.
+Die genauen Fälle und bewusst offenen Regelsituationen stehen im
+[Gefecht-Plan](gefecht-plan.md#6-prüfnachweis-dieser-iteration).
+Plan und Mockup bleiben die Grundlage für weitere gemeinsame Entwurfsarbeit.
+Die produktive App wird in dieser Iteration nicht geändert.
 
 ## Übergang zur Flutter-Umsetzung
 
