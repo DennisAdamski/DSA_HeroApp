@@ -82,6 +82,10 @@ Funktionsabdeckung und noch offenen Produktentscheidungen prüfen.
 
 ## Gefecht-Entwurf (Stand 01.10.2026)
 
+Die erste Flutter-Version dieses freigegebenen Entwurfs ist im Bereich Spielen
+angebunden. [Umsetzung, Grenzen und Prüfungen](../gefecht_implementation.md)
+halten den aktuellen App-Stand getrennt von diesem Beispieldaten-Prototyp fest.
+
 [gefecht.html](gefecht.html) ist der Entwurf für einen eigenen Kampf-Screen
 „Gefecht“ in Kartograph-Optik. Farben, Schriften (Spectral, Inter Tight),
 Abstände und Linienstärken entsprechen `lib/ui2/theme/` und

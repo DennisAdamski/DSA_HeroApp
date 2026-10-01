@@ -1,16 +1,89 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/gefecht_ablauf_rules.dart';
 
 void main() {
+  test(
+    'Kampfgespür kann eine noch unbenutzte Parade später in AT umwandeln',
+    () {
+      const w = Gefechtswerte(
+        iniBasis: 18,
+        at: 14,
+        pa: 12,
+        ausweichen: 10,
+        kampfgespuer: true,
+      );
+      final s = beginneGefecht(6)
+          .copyWith(angriffeVerbraucht: 1, regulaereAttacke: true);
+      expect(
+        wandleGefechtUm(
+          s,
+          Gefechtsumwandlung.zweiteAttacke,
+          werte: w,
+        ).umwandlung,
+        Gefechtsumwandlung.zweiteAttacke,
+      );
+      expect(
+        () => wandleGefechtUm(s, Gefechtsumwandlung.zweiteParade, werte: w),
+        throwsStateError,
+      );
+    },
+  );
+  test('Längere Handlung bezahlt keine Voraussetzung für Zusatzattacke', () {
+    const w = Gefechtswerte(
+      iniBasis: 10,
+      at: 14,
+      pa: 12,
+      ausweichen: 10,
+      zusatzaktionen: 1,
+    );
+    final s = beginneGefecht(6);
+    final h = pruefeManuelleGefechtsaktion(s, w, kosten: 2);
+    final nach = verbraucheGefechtsaktion(s, w, h);
+    expect(
+      pruefeGefechtsaktion(nach, w, Gefechtsaktion.zusatzaktion).status,
+      Gefechtsfreigabe.gesperrt,
+    );
+  });
+  test('Kostenfreie Korrektur fixiert noch keinen INI-Bonus', () {
+    const w = Gefechtswerte(iniBasis: 18, at: 14, pa: 12, ausweichen: 10);
+    final s = beginneGefecht(6);
+    final p = pruefeManuelleGefechtsaktion(s, w, kosten: 0);
+    expect(verbraucheGefechtsaktion(s, w, p).fixierterIniBonus, isNull);
+  });
+  test(
+    'Kostenfreie bestätigte Handlung nach regulärem Budget bleibt möglich',
+    () {
+      const w = Gefechtswerte(iniBasis: 10, at: 14, pa: 12, ausweichen: 10);
+      final s = beginneGefecht(6)
+          .copyWith(angriffeVerbraucht: 1, paradenVerbraucht: 1);
+      expect(
+        pruefeManuelleGefechtsaktion(s, w, kosten: 0).status,
+        Gefechtsfreigabe.pruefen,
+      );
+      expect(
+        pruefeManuelleGefechtsaktion(s, w, kosten: 1).status,
+        Gefechtsfreigabe.gesperrt,
+      );
+    },
+  );
   test('SK II zweite Parade setzt erste Schildparade voraus', () {
-    const w = Gefechtswerte(iniBasis: 12, at: 14, pa: 12, ausweichen: 10,
-      schildPa: 14, schildkampf2: true);
+    const w = Gefechtswerte(
+      iniBasis: 12,
+      at: 14,
+      pa: 12,
+      ausweichen: 10,
+      schildPa: 14,
+      schildkampf2: true,
+    );
     final s = beginneGefecht(6);
     final p = pruefeGefechtsaktion(s, w, Gefechtsaktion.parade);
     final nach = verbraucheGefechtsaktion(s, w, p);
-    expect(pruefeGefechtsaktion(nach, w, Gefechtsaktion.schildparade).status,
-      Gefechtsfreigabe.gesperrt);
+    expect(
+      pruefeGefechtsaktion(nach, w, Gefechtsaktion.schildparade).status,
+      Gefechtsfreigabe.gesperrt,
+    );
   });
   const kontext = Gefechtswerte(iniBasis: 18, at: 15, pa: 12, ausweichen: 10);
   test('Umwandlung bindet Ansage und erschwert die zweite Attacke', () {
