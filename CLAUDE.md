@@ -13,6 +13,9 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
 - Das [Codex-Mockup](docs/mockups/README.md) zeigt den geplanten Workspace mit
   drei Arbeitsbereichen als eigenständigen HTML/CSS/JavaScript-Prototyp.
   Es nutzt ausschließlich flüchtige Beispieldaten und keine produktive Regellogik.
+  Der [Gefecht-Plan](docs/mockups/gefecht-plan.md) ergänzt das klickbare
+  Gefechts-Mockup. `gefecht-aktionen.js` bündelt dessen Freigaben und kompakte
+  Rundensteuerung; die Flutter-Umsetzung wartet auf die gemeinsame Designabnahme.
 - [Redesign umsetzen](docs/redesign_implementation.md) enthält drei aufeinander
   aufbauende Agentenpläne, Startprompts und die gemeinsame Umsetzungsspezifikation
   unter `docs/superpowers/`. Ausgangspunkt ist das vorhandene UI2-Fundament;
