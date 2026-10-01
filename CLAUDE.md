@@ -16,7 +16,13 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   Der [Gefecht-Plan](docs/mockups/gefecht-plan.md) ergänzt das klickbare
   Gefechts-Mockup. `gefecht-aktionen.js` bündelt dessen Freigaben und kompakte
   Rundensteuerung, `gefecht-ausruestung.js` enthält das separate Ausrüstungspopup.
-  Die Flutter-Umsetzung wartet auf die gemeinsame Designabnahme.
+  Die freigegebene Flutter-Umsetzung wird in
+  [docs/gefecht_implementation.md](docs/gefecht_implementation.md) nachgeführt.
+  `domain/gefecht.dart` enthält ausschließlich flüchtige Typen,
+  `state/gefecht_provider.dart` hält Sitzungen je Held; `gefecht_rules.dart`
+  und `gefecht_held_rules.dart` unter `rules/derived` entscheiden Freigaben.
+  Die gezielte `KartoGefechtsAdapter`-Brücke ergänzt einmalige Probeauswertung
+  und frische Ausrüstungsschreibwege, ohne bestehende Aufrufer zu verändern.
 - [Redesign umsetzen](docs/redesign_implementation.md) enthält drei aufeinander
   aufbauende Agentenpläne, Startprompts und die gemeinsame Umsetzungsspezifikation
   unter `docs/superpowers/`. Ausgangspunkt ist das vorhandene UI2-Fundament;
