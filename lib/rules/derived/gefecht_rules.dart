@@ -1,0 +1,300 @@
+import 'package:dsa_heldenverwaltung/domain/gefecht.dart';
+
+/// Aufgelöste Kampfwerte ohne Regelberechnungen im Widget oder Provider.
+class Gefechtswerte {
+  /// Nimmt abgeleitete Heldenwerte und bekannte Ausrüstungsvoraussetzungen auf.
+  const Gefechtswerte({
+    required this.iniBasis,
+    required this.at,
+    required this.pa,
+    required this.ausweichen,
+    this.be = 0,
+    this.schildPa,
+    this.schildkampf2 = false,
+    this.turmschild = false,
+    this.ausweichen1 = false,
+    this.aufmerksamkeit = false,
+    this.stabUmwandlung = false,
+    this.waffeVorhanden = true,
+    this.fernkampf = false,
+    this.waffenDk = '',
+    this.zusatzaktionen = 0,
+  });
+  final int iniBasis, at, pa, ausweichen, be, zusatzaktionen;
+  final int? schildPa;
+  final bool schildkampf2, turmschild, ausweichen1, aufmerksamkeit;
+  final bool stabUmwandlung, waffeVorhanden, fernkampf;
+  final String waffenDk;
+}
+
+/// Startet eine Sitzung mit dem bereits regelgerecht ermittelten INI-Wurf.
+Gefechtszustand beginneGefecht(int wurf) => Gefechtszustand(iniWurf: wurf);
+
+/// Aktuelle Initiative ersetzt den im Helden gespeicherten Vorschauwurf.
+int gefechtsInitiative(Gefechtszustand s, Gefechtswerte w) =>
+    w.iniBasis + s.iniWurf - s.iniVerlust;
+
+/// Hohe INI gilt ab der ersten tatsächlich verbrauchten Aktion bis Rundenende.
+int gefechtsIniBonus(Gefechtszustand s, Gefechtswerte w) {
+  if (s.fixierterIniBonus != null) return s.fixierterIniBonus!;
+  final ini = gefechtsInitiative(s, w);
+  return ini > 40
+      ? 3
+      : ini > 30
+      ? 2
+      : ini > 20
+      ? 1
+      : 0;
+}
+
+/// Noch nutzbare reguläre Angriffsmarken nach verbindlicher Umwandlung.
+int gefechtsAngriffe(Gefechtszustand s) {
+  final anzahl = s.umwandlung == Gefechtsumwandlung.zweiteParade
+      ? 0
+      : s.umwandlung == Gefechtsumwandlung.zweiteAttacke
+      ? 2
+      : 1;
+  return anzahl - s.angriffeVerbraucht;
+}
+
+/// Noch nutzbare reguläre Verteidigungsmarken; SK II ist separat zu prüfen.
+int gefechtsParaden(Gefechtszustand s, Gefechtswerte w) {
+  final schildDoppelt = w.schildkampf2 && w.be <= 4 && !w.turmschild;
+  final anzahl = s.umwandlung == Gefechtsumwandlung.zweiteAttacke
+      ? 0
+      : s.umwandlung == Gefechtsumwandlung.zweiteParade || schildDoppelt
+      ? 2
+      : 1;
+  return anzahl - s.paradenVerbraucht;
+}
+
+/// Ansagen sind verbindlich; Phasenprüfung erfolgt im Bedienablauf ausdrücklich.
+Gefechtszustand wandleGefechtUm(Gefechtszustand s, Gefechtsumwandlung u) {
+  if (s.ansageGebunden ||
+      s.auftrag != null ||
+      s.angriffeVerbraucht > 0 ||
+      s.paradenVerbraucht > 0 ||
+      s.handlung != null) {
+    throw StateError(
+      'Ansage ist bereits gebunden. Manuelle Korrektur verwenden.',
+    );
+  }
+  return s.copyWith(umwandlung: u, ansageGebunden: true);
+}
+
+/// Setzt ausschließlich Rundenmarken zurück und erhält laufende Handlungen.
+Gefechtszustand naechsteGefechtsrunde(Gefechtszustand s) {
+  if (s.auftrag != null) throw StateError('Aktionsauftrag zuerst abschließen.');
+  return s.copyWith(
+    runde: s.runde + 1,
+    angriffeVerbraucht: 0,
+    paradenVerbraucht: 0,
+    schildparadenVerbraucht: 0,
+    freieVerbraucht: 0,
+    zusatzVerbraucht: 0,
+    umwandlung: Gefechtsumwandlung.normal,
+    ansageGebunden: false,
+    resetBonus: true,
+  );
+}
+
+/// Prüft Budget, Haltung und bekannte Ausrüstung vor jeder Probe erneut.
+Gefechtspruefung pruefeGefechtsaktion(
+  Gefechtszustand s,
+  Gefechtswerte w,
+  Gefechtsaktion aktion, {
+  int zuschlag = 0,
+  int? manuellerZielwert,
+  List<String> pruefGruende = const [],
+  List<String> sperrGruende = const [],
+  bool eigenerAuftrag = false,
+}) {
+  final pruefen = <String>[...pruefGruende];
+  final sperren = <String>[...sperrGruende];
+  var a = 0, p = 0, f = 0, z = 0, erschwernis = zuschlag;
+  int? ziel = manuellerZielwert;
+  final bonus = gefechtsIniBonus(s, w);
+  if (s.auftrag != null && !eigenerAuftrag) {
+    sperren.add('Ein Aktionsauftrag läuft.');
+  }
+  final verteidigung =
+      aktion == Gefechtsaktion.parade ||
+      aktion == Gefechtsaktion.schildparade ||
+      aktion == Gefechtsaktion.gezieltesAusweichen;
+  final ausweichen =
+      aktion == Gefechtsaktion.freiesAusweichen ||
+      aktion == Gefechtsaktion.gezieltesAusweichen;
+  if (s.desorientiert && !ausweichen && aktion != Gefechtsaktion.position) {
+    sperren.add('Nach freiem Ausweichen zunächst Position ausführen.');
+  }
+  switch (aktion) {
+    case Gefechtsaktion.angriff:
+      a = 1;
+      ziel ??= w.at;
+      if (!w.waffeVorhanden) sperren.add('Keine geführte Waffe.');
+      if (!w.fernkampf) {
+        if (s.dk == null) {
+          pruefen.add('Aktuelle Distanzklasse festlegen.');
+        } else if (!w.waffenDk.contains(s.dk!)) {
+          pruefen.add('Waffe/DK und Distanzänderung prüfen.');
+        }
+      } else {
+        pruefen.add('Entfernung, Sicht, Munition und Ladezustand prüfen.');
+      }
+      if (s.umwandlung == Gefechtsumwandlung.zweiteAttacke &&
+          s.angriffeVerbraucht > 0) {
+        erschwernis += w.stabUmwandlung ? 0 : 4;
+        if (gefechtsInitiative(s, w) - 8 < 0) {
+          sperren.add('Zweite AT läge unter INI 0.');
+        }
+        pruefen.add('Zweite Attacke bei INI −8; Zeitpunkt prüfen.');
+      }
+    case Gefechtsaktion.parade:
+    case Gefechtsaktion.schildparade:
+      p = 1;
+      ziel ??= aktion == Gefechtsaktion.schildparade ? w.schildPa : w.pa;
+      if (aktion == Gefechtsaktion.schildparade && w.schildPa == null) {
+        sperren.add('Kein Schild geführt.');
+      }
+      if (aktion == Gefechtsaktion.parade && !w.waffeVorhanden) {
+        sperren.add('Keine geführte Waffe.');
+      }
+      if (s.umwandlung == Gefechtsumwandlung.normal &&
+          s.paradenVerbraucht > 0 &&
+          (aktion != Gefechtsaktion.schildparade ||
+              s.schildparadenVerbraucht != 1)) {
+        sperren.add('Zweite SK-II-Parade nur mit Schild.');
+      }
+      if (s.umwandlung == Gefechtsumwandlung.zweiteParade &&
+          s.paradenVerbraucht > 0) {
+        erschwernis += aktion == Gefechtsaktion.schildparade || w.stabUmwandlung
+            ? 0
+            : 4;
+      }
+      ziel = ziel == null ? null : ziel + bonus;
+      pruefen.add('Angriffsart und gegnerische Paradeverbote prüfen.');
+    case Gefechtsaktion.freiesAusweichen:
+      f = 1;
+      ziel ??= w.ausweichen + bonus;
+      pruefen.add(
+        'INI −4 bei Erfolg und Misslingen; Erfolg erfordert Position.',
+      );
+    case Gefechtsaktion.gezieltesAusweichen:
+      p = 1;
+      ziel ??= w.ausweichen + bonus;
+      if (!w.ausweichen1) sperren.add('Ausweichen I fehlt.');
+      if (s.dk == null) pruefen.add('DK für gezieltes Ausweichen festlegen.');
+      erschwernis += switch (s.dk) {
+        'H' => 8,
+        'N' => 4,
+        'S' => 2,
+        _ => 0,
+      };
+      pruefen.add(
+        'Rückweichen um eine DK, optional zwei (+4), manuell prüfen.',
+      );
+    case Gefechtsaktion.position:
+    case Gefechtsaktion.orientieren:
+    case Gefechtsaktion.handlung:
+      if (gefechtsAngriffe(s) > 0) {
+        a = 1;
+      } else {
+        p = 1;
+      }
+      pruefen.add('Zeitpunkt, Dauer und Wirkung ausdrücklich bestätigen.');
+    case Gefechtsaktion.freieAktion:
+      f = 1;
+      pruefen.add('Art der freien Aktion ausdrücklich bestätigen.');
+    case Gefechtsaktion.zusatzaktion:
+      z = 1;
+      if (s.angriffeVerbraucht == 0 && s.paradenVerbraucht == 0) {
+        sperren.add('Zusatzaktion erst nach entsprechender regulärer Aktion.');
+      }
+      pruefen.add(
+        'Waffenbindung, Sonderfertigkeit und Art der Zusatzaktion prüfen.',
+      );
+  }
+  if (ausweichen) {
+    if (s.haltung == Gefechtshaltung.liegend) {
+      sperren.add('Liegend kein Ausweichen.');
+    }
+    if (s.gegner >= 4) {
+      sperren.add('Bei vier oder mehr Gegnern kein Ausweichen.');
+    }
+    erschwernis += w.be + (s.gegner - 1) * 2;
+  } else if (s.haltung != Gefechtshaltung.stehend) {
+    pruefen.add('Haltungsmodifikatoren manuell festlegen.');
+  }
+  if (s.handlung != null && aktion != Gefechtsaktion.handlung && !ausweichen) {
+    sperren.add('Laufende Handlung zunächst abschließen oder abbrechen.');
+  }
+  if (a > gefechtsAngriffe(s)) sperren.add('Keine Angriffsaktion verfügbar.');
+  if (p > gefechtsParaden(s, w)) {
+    sperren.add('Keine Verteidigungsaktion verfügbar.');
+  }
+  if (f > 2 + bonus - s.freieVerbraucht) {
+    sperren.add('Keine freie Aktion verfügbar.');
+  }
+  if (z > w.zusatzaktionen - s.zusatzVerbraucht) {
+    sperren.add('Keine Zusatzaktion verfügbar.');
+  }
+  if (verteidigung &&
+      s.umwandlung != Gefechtsumwandlung.normal &&
+      w.schildkampf2 &&
+      s.paradenVerbraucht > 0) {
+    pruefen.add('Umwandlung schließt die zusätzliche SK-II-Parade aus.');
+  }
+  if (ziel != null) ziel -= erschwernis;
+  final status = sperren.isNotEmpty
+      ? Gefechtsfreigabe.gesperrt
+      : pruefen.isNotEmpty
+      ? Gefechtsfreigabe.pruefen
+      : Gefechtsfreigabe.bereit;
+  return Gefechtspruefung(
+    aktion: aktion,
+    status: status,
+    gruende: List.unmodifiable([...sperren, ...pruefen]),
+    zielwert: ziel,
+    angriffe: a,
+    paraden: p,
+    freie: f,
+    zusatz: z,
+    erschwernis: erschwernis,
+  );
+}
+
+/// Bucht einen abgeschlossenen Auftrag einmal und wendet bestätigte Folgen an.
+Gefechtszustand verbraucheGefechtsaktion(
+  Gefechtszustand s,
+  Gefechtswerte w,
+  Gefechtspruefung pruefung, {
+  bool? erfolg,
+}) {
+  if (pruefung.status == Gefechtsfreigabe.gesperrt) {
+    throw StateError('Aktion gesperrt.');
+  }
+  var iniVerlust = s.iniVerlust;
+  var desorientiert = s.desorientiert;
+  if (pruefung.aktion == Gefechtsaktion.freiesAusweichen) {
+    iniVerlust += 4;
+    if (erfolg == true) desorientiert = true;
+  }
+  if (pruefung.aktion == Gefechtsaktion.gezieltesAusweichen && erfolg == false) {
+    iniVerlust += 2;
+  }
+  if (pruefung.aktion == Gefechtsaktion.position) desorientiert = false;
+  return s.copyWith(
+    angriffeVerbraucht: s.angriffeVerbraucht + pruefung.angriffe,
+    paradenVerbraucht: s.paradenVerbraucht + pruefung.paraden,
+    schildparadenVerbraucht:
+        s.schildparadenVerbraucht +
+        (pruefung.aktion == Gefechtsaktion.schildparade ? 1 : 0),
+    freieVerbraucht: s.freieVerbraucht + pruefung.freie,
+    zusatzVerbraucht: s.zusatzVerbraucht + pruefung.zusatz,
+    fixierterIniBonus: gefechtsIniBonus(s, w),
+    iniVerlust: iniVerlust,
+    desorientiert: desorientiert,
+    ohneAuftrag: true,
+    revision: s.revision + 1,
+  );
+}
