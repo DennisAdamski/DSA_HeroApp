@@ -1,3 +1,6 @@
+import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
+import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
+
 /// Verlässlichkeit einer Aktionsfreigabe; Prüfen benötigt eine Bestätigung.
 enum Gefechtsfreigabe { bereit, pruefen, gesperrt }
 
@@ -29,11 +32,15 @@ class Gefechtshandlung {
     required this.verbleibend,
     this.waffenId,
     this.waffenIndex,
+    this.probe,
+    this.waffe,
   });
   final String titel;
   final int verbleibend;
   final String? waffenId;
   final int? waffenIndex;
+  final ResolvedProbeRequest? probe;
+  final MainWeaponSlot? waffe;
 }
 
 /// Ausschließlich flüchtiger, unveränderlicher Zustand eines Gefechts.
@@ -48,6 +55,8 @@ class Gefechtszustand {
     this.schildparadenVerbraucht = 0,
     this.freieVerbraucht = 0,
     this.zusatzVerbraucht = 0,
+    this.regulaereAttacke = false,
+    this.regulaereParade = false,
     this.umwandlung = Gefechtsumwandlung.normal,
     this.ansageGebunden = false,
     this.haltung = Gefechtshaltung.stehend,
@@ -67,6 +76,7 @@ class Gefechtszustand {
       zusatzVerbraucht;
   final Gefechtsumwandlung umwandlung;
   final bool ansageGebunden;
+  final bool regulaereAttacke, regulaereParade;
   final Gefechtshaltung haltung;
   final int gegner;
   final String? dk;
@@ -88,6 +98,8 @@ class Gefechtszustand {
     int? zusatzVerbraucht,
     Gefechtsumwandlung? umwandlung,
     bool? ansageGebunden,
+    bool? regulaereAttacke,
+    bool? regulaereParade,
     Gefechtshaltung? haltung,
     int? gegner,
     String? dk,
@@ -111,6 +123,8 @@ class Gefechtszustand {
     zusatzVerbraucht: zusatzVerbraucht ?? this.zusatzVerbraucht,
     umwandlung: umwandlung ?? this.umwandlung,
     ansageGebunden: ansageGebunden ?? this.ansageGebunden,
+    regulaereAttacke: regulaereAttacke ?? this.regulaereAttacke,
+    regulaereParade: regulaereParade ?? this.regulaereParade,
     haltung: haltung ?? this.haltung,
     gegner: gegner ?? this.gegner,
     dk: dk ?? this.dk,

@@ -146,6 +146,17 @@ Technischer Stack:
 
 ### Kampf
 
+- Im Bereich Spielen startet „Gefecht beginnen“ eine flüchtige Sitzung je Held;
+  die bisherige Kampfverwaltung bleibt erreichbar. Navigation erhält die Sitzung,
+  Beenden oder ein App-Neustart verwirft sie.
+- Die Gefechtsansicht führt Runden, INI, Umwandlung, Haltung, DK und getrennte
+  Aktionsmarken. „Prüfen“ verlangt eine Bestätigung; erkannte Sperren bleiben
+  verbindlich. Ausrüstung wechselt im eigenen Popup, längere Ziehhandlungen
+  werden erst nach Abschluss wirksam.
+- Proben, Ressourcen, Wunden und Effekte verwenden die bisherigen Fachwege.
+  [Umfang und Prüfungen der ersten Version](docs/gefecht_implementation.md)
+  dokumentieren die verbleibenden manuellen Regeln.
+
 - Pflege von Nah- und Fernkampfwaffen in einer gemeinsamen Kampfkonfiguration
 - Unterstuetzung fuer Nebenhand, Parierwaffen, Schilde und Ruestungen
 - Kampfvorschau mit AT, PA, TP, INI, Ladezeit, Distanzstufen und Geschossen

@@ -30,3 +30,63 @@ Die Umsetzung und ihre Prüfungen werden je Teilpaket hier nachgeführt.
 - Zustand/Freigaben und einmaliger Probe-Modus implementiert. Erste Tests
   decken Umwandlung, INI-Fixierung, Ausweichsperren, SK-II-Paraden, Abbruch,
   Doppelbuchung und die bisherigen Probeaufrufer ab.
+- Einstieg und responsive Ansicht implementiert. Die Rundenleiste läuft über
+  die ganze Breite; Haltung, Gegner und DK stehen neben der direkten Ansage.
+  Manöver sind suchbar und ihre Liste bleibt in der Höhe begrenzt. Auf dem
+  Handy stehen Angriff, Manöver und Verteidigung vor Durchhalten.
+- Ausrüstung und Fachdialoge verbunden: verzögerter Waffenwechsel, frische
+  Slot-Auswahl, Rüstungskorrektur mit Konfliktprüfung, Schaden, Ressourcen,
+  Wunden, Effekte und das bestehende Protokoll.
+
+## Bedienung und bewusste manuelle Abläufe
+
+„Gefecht läuft“ öffnet die erhaltene Sitzung ohne neuen INI-Wurf. Reguläre,
+freie und Zusatzmarken bleiben getrennt. Die hohen INI-Boni werden bei der
+ersten verbrauchten Marke fixiert. Zusätzliche Waffenaktionen benötigen eine
+tatsächlich ausgeführte passende reguläre Aktion und eine verfügbare
+Ausrüstungsoption. Schildkampf II erlaubt die zweite gewöhnliche Schildparade
+nur nach einer ersten Schildparade; längere Handlungen verwenden dieses Budget
+nicht. Umwandlung wird verbindlich bestätigt, Korrekturen sind separat.
+
+Manöver zeigen Katalogtext, Voraussetzungen und Zielwert. Eindeutig bezifferte
+Katalogzuschläge werden vorbelegt, variable Zuschläge und nicht automatisierte
+Kosten/Folgen werden bestätigt. Bekannte Lern-, Talent-, Waffen- und
+Gegnersperren (einschließlich Hammerschlag) bleiben verbindlich. Die vollständige
+Manöverwirkung am Gegner wird nicht simuliert. Abwehrmanöver verbrauchen PA;
+Gegenhalten verwendet dabei AT ohne hohen INI-Paradebonus (WdS 69–70, DSA-MCP).
+Aktuelle Kopf-INI-Verluste kommen zusätzlich zu den bereits berechneten Wundmali
+zur Anwendung. Waffenmeister-Erleichterungen werden ausdrücklich im Dialog zur
+Prüfung genannt; zusätzliche freigegebene Manöver erweitern die Waffenfreigabe.
+
+Orientieren verwendet einen ausdrücklich manuellen Ablauf: Dauer und erforderliche
+IN-Probe nach WdS/Hausregel festlegen, danach INI-Wurf einschließlich bestätigtem
+Orientierungsbonus und Verlust über die getrennte Korrektur übernehmen. Freies
+Ausweichen verliert vier INI, bei Erfolg wird Position erforderlich; gezieltes
+Ausweichen berücksichtigt DK und verliert bei Misslingen zwei INI. Rückweichen
+und weitere Gegnerfolgen bleiben manuell.
+
+Zauber und Liturgiekenntnis stammen aus gelernten Heldendaten und dem aktuellen
+Katalog; die Probe benutzt die gemeinsame Engine. Längere Zauber können erst am
+Ende ihrer bestätigten Dauer ausgewertet werden. KaP/AsP-Kosten und Wirkungen
+werden über die vorhandenen Ressource-/Effektdialoge geführt. Fehlende Katalog-
+oder Probeninformationen erhalten einen manuellen Zielwert, keine angenommene Formel.
+
+## Verifikation
+
+Regel-, State-, Probe- und Widgettests prüfen Umwandlung, hohe INI, Haltung,
+Ausweichvarianten, Zusatzaktionen, Schildparaden, bekannte Manöversperren,
+Aufmerksamkeit/Klingentänzer, Abbruch, doppelte Ergebnisbuchung und Navigation.
+Die Ausrüstungstests verwenden den echten Bestandsadapter und einen zweiten
+Schreibweg: verschobene Slots, neue fremde Daten und unbekannte Felder bleiben
+erhalten. Bei Speicherfehlern bleiben Abschluss und Aktionsmarke offen.
+
+Das Raster prüft 390/820/1200/1440 Pixel in Hell/Dunkel mit echten Karto-Schriften,
+hoher INI und offenen Aktions-/Ausrüstungspopups. Aufnahmen lassen sich reproduzieren:
+
+```powershell
+flutter test test/ui2/spielen/gefecht_visual_test.dart --dart-define=GEFECHT_SCREENSHOT_DIR=<Verzeichnis>
+```
+
+Stand der Abnahmeprüfung: `flutter analyze` ohne Befund, 326 relevante Tests
+bestanden, zusätzlich acht Rastertests mit 24 gerenderten Zuständen. Bestehende
+Kampfverwaltung und bisherige Probendialoge sind in der Regression enthalten.

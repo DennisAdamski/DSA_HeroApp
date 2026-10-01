@@ -23,6 +23,9 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   und `gefecht_held_rules.dart` unter `rules/derived` entscheiden Freigaben.
   Die gezielte `KartoGefechtsAdapter`-Brücke ergänzt einmalige Probeauswertung
   und frische Ausrüstungsschreibwege, ohne bestehende Aufrufer zu verändern.
+  `ui2/gefecht/` trennt Einstieg, Rundenleiste, Ansicht, Aktionsdialog,
+  Manöverliste, Ausrüstung und Magie. Weitere Gefechtsregelmodule betreffen
+  Auftragsprüfung, Dauerhandlungen und echte Talent-/Zauberproben.
 - [Redesign umsetzen](docs/redesign_implementation.md) enthält drei aufeinander
   aufbauende Agentenpläne, Startprompts und die gemeinsame Umsetzungsspezifikation
   unter `docs/superpowers/`. Ausgangspunkt ist das vorhandene UI2-Fundament;

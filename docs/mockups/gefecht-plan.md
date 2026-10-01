@@ -1,11 +1,14 @@
 # Gefecht: Arbeitsplan und Design
 
-Stand: 01.10.2026 · Entwurfsphase
+Stand: 01.10.2026 · Abgenommener Entwurf
+
+Die erste Flutter-Umsetzung und ihre Grenzen sind in
+[gefecht_implementation.md](../gefecht_implementation.md) dokumentiert.
+Die folgenden Entwurfsentscheidungen bleiben als Grundlage erhalten.
 
 Der [klickbare Entwurf](gefecht.html) soll am Spieltisch beantworten:
 **Was kann ich jetzt tun, was bringt es, was kostet es und was folgt danach?**
-Wir entwickeln zunächst Plan und Mockup weiter. Die Flutter-App wird erst nach
-Abnahme des Entwurfs angepasst. Beispielrechnungen und Zufallswürfe im Browser
+Plan und Mockup dienten der Abnahme vor der Flutter-Umsetzung. Beispielrechnungen und Zufallswürfe im Browser
 sind keine neue produktive Regelimplementierung.
 
 Geprüfte Vorschauen: [Desktop](gefecht-desktop.png), [Handy](gefecht-handy.png),
