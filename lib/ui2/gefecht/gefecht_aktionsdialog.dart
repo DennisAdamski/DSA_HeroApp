@@ -68,9 +68,14 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
     super.dispose();
   }
 
+  // Auch alte Aufrufer erhalten den fachlich richtigen Abwehrkontext.
+  Gefechtsaktion get _aktion => widget.manoever == null
+      ? widget.aktion
+      : gefechtsManoeveraktion(widget.manoever!);
+
   // Das Formular liefert Daten; Freigaben und Zielwertrechnung bleiben im Modul.
   GefechtAuftrag _auftrag() => GefechtAuftrag(
-    aktion: widget.aktion,
+    aktion: _aktion,
     titel: widget.titel,
     zuschlag: int.tryParse(_zuschlag.text) ?? 0,
     zielwert: int.tryParse(_ziel.text),
@@ -99,12 +104,12 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
         widget.manuell ||
         widget.manoever != null ||
         widget.probe != null ||
-        widget.aktion == Gefechtsaktion.zusatzaktion;
+        _aktion == Gefechtsaktion.zusatzaktion;
     final gueltig =
         int.tryParse(_zuschlag.text) != null &&
         auftrag.dauer >= 1 &&
-        (!(widget.manuell || widget.aktion == Gefechtsaktion.zusatzaktion) ||
-            widget.aktion == Gefechtsaktion.orientieren ||
+        (!(widget.manuell || _aktion == Gefechtsaktion.zusatzaktion) ||
+            _aktion == Gefechtsaktion.orientieren ||
             auftrag.zielwert != null ||
             widget.probe != null);
     return AlertDialog(
@@ -116,14 +121,14 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              if (widget.aktion == Gefechtsaktion.orientieren)
+              if (_aktion == Gefechtsaktion.orientieren)
                 const Text(
                   'Orientieren wird manuell geführt: WdS 56 verlangt zwei Aktionen und '
                   'eine IN-Probe; Aufmerksamkeit verkürzt auf eine Aktion ohne IN-Probe. '
                   'Die Hausregel kann die Dauer ändern. Zielwert nur bei erforderlicher Probe '
                   'eintragen. INI-Maximum und Kriegskunstbonus danach über „Manuelle Korrektur“ übernehmen.',
                 ),
-              if (widget.aktion == Gefechtsaktion.zusatzaktion)
+              if (_aktion == Gefechtsaktion.zusatzaktion)
                 DropdownButtonFormField<bool>(
                   initialValue: _zusatzParade,
                   decoration: const InputDecoration(
@@ -155,7 +160,7 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
                   child: Text('• $grund'),
                 ),
               const SizedBox(height: 16),
-              if (widget.aktion == Gefechtsaktion.angriff &&
+              if (_aktion == Gefechtsaktion.angriff &&
                   !widget.werte.combatPreviewStats.isRangedWeapon)
                 DropdownButtonFormField<int>(
                   isExpanded: true,
@@ -187,7 +192,7 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
                     _bestaetigt = false;
                   }),
                 ),
-              if (widget.aktion == Gefechtsaktion.angriff &&
+              if (_aktion == Gefechtsaktion.angriff &&
                   widget.werte.combatPreviewStats.isRangedWeapon)
                 GefechtFernkampffelder(
                   kontext: _kontext,
@@ -198,7 +203,7 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
                 ),
               GefechtKontextfelder(
                 kontext: _kontext,
-                aktion: widget.aktion,
+                aktion: _aktion,
                 onChanged: (k) => setState(() {
                   _kontext = k;
                   _bestaetigt = false;
@@ -297,7 +302,7 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
                   _bestaetigt &&
                   gefechtsPflichtkontextErfasst(
                     _kontext,
-                    widget.aktion,
+                    _aktion,
                     fernkampf: widget.werte.combatPreviewStats.isRangedWeapon,
                   ) &&
                   (!gefechtAuftragBrauchtDk(

@@ -10,6 +10,7 @@ import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_held_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/gefecht_orientieren_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_auftrag_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_ablauf_rules.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_bestands_adapter.dart';
@@ -234,6 +235,13 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
     );
     final p = katalog == null
         ? null
+        : aktion == Gefechtsaktion.orientieren ||
+              aktion == Gefechtsaktion.position && s.desorientiert
+        ? pruefeOrientierung(
+            s,
+            gefechtswerteFuer(snapshot, katalog: katalog),
+            position: aktion == Gefechtsaktion.position,
+          )
         : pruefeGefechtAuftrag(s, snapshot, katalog, auftrag);
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
@@ -322,7 +330,7 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
       : GefechtManoeverliste(
           manoever: gefechtsManoeverliste(s, snapshot, k),
           knopf: (m) =>
-              _knopf(s, snapshot, k, Gefechtsaktion.angriff, m.name, m: m),
+              _knopf(s, snapshot, k, gefechtsManoeveraktion(m), m.name, m: m),
         );
   Widget _weitere(
     Gefechtszustand s,

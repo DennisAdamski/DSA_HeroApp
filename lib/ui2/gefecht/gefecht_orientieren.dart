@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_orientieren_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_held_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/gefecht_wirken_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/gefecht_rules.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_provider.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_gefechts_adapter.dart';
@@ -19,6 +21,13 @@ Future<void> zeigeOrientieren({
   final s = ref.read(gefechtProvider(heroId));
   if (snapshot == null || s == null) return;
   final plan = orientierungFuer(snapshot, position: position);
+  final werte = gefechtswerteFuer(snapshot);
+  final danach = uebernimmOrientierung(
+    s,
+    maximum: orientierungsmaximum(snapshot),
+    erfolg: true,
+    position: position,
+  );
   final p = pruefeOrientierung(
     s,
     gefechtswerteFuer(snapshot),
@@ -31,6 +40,9 @@ Future<void> zeigeOrientieren({
       content: Text(
         '${plan.dauer} reguläre Aktionen. '
         '${plan.probe?.subtitle ?? 'Aufmerksamkeit: ohne Probe.'}\n'
+        '${plan.probe == null ? '' : 'IN-Zielwert: ${plan.probe!.targets.single.value}\n'}'
+        'INI: ${gefechtsInitiative(s, werte)} → '
+        '${gefechtsInitiative(danach, werte)} bei Erfolg.\n'
         'Erfolg übernimmt das INI-Maximum und behebt Kampfverluste. '
         'Wund- und Zaubermali bleiben erhalten.\n'
         '${p.gruende.join('\n')}',
@@ -124,8 +136,18 @@ Future<void> fuehreOrientierungFort({
         context: context,
         ref: ref,
         heroId: heroId,
-        request: plan.probe!,
-        onResolved: (r) => buchen(r.success),
+        request: gefechtsProbeMitBonus(plan.probe!, s.mirakelbonus),
+        onResolved: (r) {
+          if (ref.read(gefechtProvider(heroId))?.auftrag != id) return;
+          buchen(r.success);
+          if (gefechtsBonusPasst(plan.probe!, s.mirakelbonus)) {
+            controller.setzen(
+              ref
+                  .read(gefechtProvider(heroId))!
+                  .copyWith(ohneMirakelbonus: true),
+            );
+          }
+        },
       );
     }
   } finally {

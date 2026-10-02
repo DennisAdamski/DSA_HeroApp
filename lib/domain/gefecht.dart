@@ -55,6 +55,7 @@ class Gefechtshandlung {
     this.wirken,
     this.kostenUebernommen = false,
     this.gescheitert = false,
+    this.abbruchKosten,
   });
   final Gefechtshandlungsart art;
   final ProbeResult? ergebnis;
@@ -68,12 +69,16 @@ class Gefechtshandlung {
   final GefechtsWirkprofil? wirken;
   final bool kostenUebernommen, gescheitert;
 
+  /// Ausdrücklich manuell geklärte Unterbrechungskosten ohne angenommene Formel.
+  final int? abbruchKosten;
+
   /// Fortschritt erhält die bestätigten Eingaben und das einmalige Ergebnis.
   Gefechtshandlung copyWith({
     int? verbleibend,
     ProbeResult? ergebnis,
     bool? kostenUebernommen,
     bool? gescheitert,
+    int? abbruchKosten,
   }) => Gefechtshandlung(
     titel: titel,
     verbleibend: verbleibend ?? this.verbleibend,
@@ -87,6 +92,7 @@ class Gefechtshandlung {
     ergebnis: ergebnis ?? this.ergebnis,
     kostenUebernommen: kostenUebernommen ?? this.kostenUebernommen,
     gescheitert: gescheitert ?? this.gescheitert,
+    abbruchKosten: abbruchKosten ?? this.abbruchKosten,
   );
 }
 

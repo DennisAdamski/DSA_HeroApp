@@ -13,6 +13,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/gefecht_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/probe_engine_rules.dart';
 import 'package:dsa_heldenverwaltung/ui2/gefecht/gefecht_wirken.dart';
 import 'package:dsa_heldenverwaltung/ui2/gefecht/gefecht_wirkabschluss.dart';
+import 'package:dsa_heldenverwaltung/ui2/gefecht/gefecht_unterbrechung.dart';
 
 import '../shell/karto_test_support.dart';
 import 'gefecht_test_support.dart';
@@ -54,6 +55,84 @@ class _Repo extends FakeRepository {
 }
 
 void main() {
+  testWidgets('Liturgie-Endprobe: Abbruch klärt Kosten ohne erfundenen Wurf', (
+    tester,
+  ) async {
+    final repo = _Repo();
+    final container = ProviderContainer(
+      overrides: [
+        heroRepositoryProvider.overrideWithValue(repo),
+        rulesCatalogProvider.overrideWith((ref) async => testCatalog),
+      ],
+    );
+    addTearDown(container.dispose);
+    late WidgetRef ref;
+    late BuildContext context;
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: MaterialApp(
+          home: Scaffold(
+            body: Consumer(
+              builder: (c, r, _) {
+                context = c;
+                ref = r;
+                r.watch(heroComputedProvider('rondra'));
+                return const SizedBox();
+              },
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    container.read(gefechtProvider('rondra').notifier).beginnen(6);
+    final bestand = GefechtsTestBestand();
+    await starteGefechtsWirken(
+      context: context,
+      ref: ref,
+      heroId: 'rondra',
+      bestand: bestand,
+      art: Gefechtshandlungsart.liturgie,
+      profil: const GefechtsWirkprofil(
+        probe: _probe,
+        dauer: 3,
+        kosten: 10,
+        karmal: true,
+        endprobe: true,
+      ),
+    );
+    final abbruch = brecheGefechtsHandlungAb(
+      context: context,
+      ref: ref,
+      heroId: 'rondra',
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Abbruch bestätigen'));
+    await tester.pumpAndSettle();
+    expect(find.text('Bestätigte Unterbrechungskosten (KaP)'), findsOneWidget);
+    await tester.enterText(find.byType(TextField), '3');
+    await tester.tap(find.text('Unterbrechungsfolgen am Spieltisch geklärt'));
+    await tester.pump();
+    await tester.tap(find.text('Manuellen Abschluss vorbereiten'));
+    await tester.pumpAndSettle();
+    expect(bestand.anfragen, isEmpty);
+    expect(
+      container.read(gefechtProvider('rondra'))!.handlung!.ergebnis,
+      isNull,
+    );
+    await tester.tap(find.text('Weitere Folgen am Spieltisch bestätigt'));
+    await tester.pump();
+    await tester.tap(find.text('Kosten und Folgen übernehmen'));
+    await tester.pumpAndSettle();
+    await abbruch;
+    expect((await repo.loadHeroState('rondra'))!.currentKap, 12);
+    final s = container.read(gefechtProvider('rondra'))!;
+    expect(s.handlung, isNull);
+    expect(s.karmaleFehlversuche, isEmpty);
+    expect(s.angriffeVerbraucht + s.paradenVerbraucht, 1);
+    expect(tester.takeException(), isNull);
+  });
   for (final abbruch in [false, true]) {
     testWidgets('Startprobe genau einmal; Abbruch vor Ergebnis=$abbruch', (
       tester,
@@ -88,6 +167,11 @@ void main() {
       await tester.pumpAndSettle();
       final ctl = container.read(gefechtProvider('rondra').notifier);
       ctl.beginnen(6);
+      ctl.setzen(
+        container
+            .read(gefechtProvider('rondra'))!
+            .copyWith(mirakelbonus: const GefechtsProbenbonus('IN', 3)),
+      );
       final bestand = GefechtsTestBestand()
         ..doppelt = true
         ..abbrechen = abbruch;
@@ -105,6 +189,11 @@ void main() {
         ),
       );
       expect(bestand.anfragen.length, 1);
+      expect(bestand.anfragen.single.targets.last.value, 16);
+      expect(
+        container.read(gefechtProvider('rondra'))!.mirakelbonus == null,
+        !abbruch,
+      );
       if (abbruch) {
         expect(container.read(gefechtProvider('rondra'))!.handlung, isNull);
         expect(

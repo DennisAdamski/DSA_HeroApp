@@ -100,6 +100,8 @@ Future<void> starteGefechtsWirken({
           .read(gefechtProvider(heroId))!
           .copyWith(
             karmaleFehlversuche: profil.neueSpielrunde ? {} : null,
+            ohneMirakelbonus:
+                r != null && gefechtsBonusPasst(profil.probe, s.mirakelbonus),
             handlung: Gefechtshandlung(
               titel: profil.probe.title,
               verbleibend: dauer - 1,
@@ -119,7 +121,7 @@ Future<void> starteGefechtsWirken({
         context: context,
         ref: ref,
         heroId: heroId,
-        request: profil.probe,
+        request: gefechtsProbeMitBonus(profil.probe, s.mirakelbonus),
         onResolved: buchen,
       );
     }
@@ -175,6 +177,9 @@ Future<void> setzeGefechtsWirkenFort({
           .read(gefechtProvider(heroId))!
           .copyWith(
             handlung: h.copyWith(verbleibend: h.verbleibend - 1, ergebnis: r),
+            ohneMirakelbonus:
+                r != null &&
+                gefechtsBonusPasst(h.wirken!.probe, s.mirakelbonus),
           ),
     );
   }
@@ -185,7 +190,7 @@ Future<void> setzeGefechtsWirkenFort({
         context: context,
         ref: ref,
         heroId: heroId,
-        request: h.wirken!.probe,
+        request: gefechtsProbeMitBonus(h.wirken!.probe, s.mirakelbonus),
         onResolved: buchen,
       );
     } else {

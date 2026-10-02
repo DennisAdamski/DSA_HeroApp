@@ -168,12 +168,11 @@ Gefechtspruefung pruefeGefechtsmanoever(
   if (m.nurEpisch && !snapshot.hero.isEpisch) {
     sperren.add('Nur für epische Helden.');
   }
-  final typ = m.typ.toLowerCase();
-  final parade = typ.contains('parade') || typ.contains('abwehr');
+  final aktion = gefechtsManoeveraktion(m);
   return pruefeGefechtsaktion(
     s,
-    gefechtswerteFuer(snapshot),
-    parade ? Gefechtsaktion.parade : Gefechtsaktion.angriff,
+    gefechtswerteFuer(snapshot, katalog: katalog),
+    aktion,
     zuschlag:
         zuschlag -
         (snapshot.combatPreviewStats.waffenmeisterManeuverReductions[m.id] ??
@@ -192,6 +191,14 @@ Gefechtspruefung pruefeGefechtsmanoever(
       if (m.name.toLowerCase().contains('hammerschlag')) 'Alle nicht freien Aktionen müssen ungenutzt sein; Talent, Gegnergröße und Schild prüfen.',
     ],
   );
+}
+
+/// Ordnet das Manöver für Budget, Pflichtkontext und Bedienung identisch ein.
+Gefechtsaktion gefechtsManoeveraktion(ManeuverDef m) {
+  final typ = m.typ.toLowerCase();
+  return typ.contains('parade') || typ.contains('abwehr')
+      ? Gefechtsaktion.parade
+      : Gefechtsaktion.angriff;
 }
 
 /// Sortiert nutzbare und zu prüfende Manöver vor die erklärbaren Sperren.
