@@ -18,8 +18,12 @@ class GefechtFernkampffelder extends StatelessWidget {
         initialValue: kontext.entfernung?.toString(),
         decoration: const InputDecoration(labelText: 'Entfernung in Schritt'),
         keyboardType: TextInputType.number,
-        onChanged: (v) =>
-            onChanged(kontext.copyWith(entfernung: int.tryParse(v))),
+        onChanged: (v) => onChanged(
+          kontext.copyWith(
+            entfernung: int.tryParse(v),
+            ohneEntfernung: int.tryParse(v) == null,
+          ),
+        ),
       ),
       TextFormField(
         initialValue: kontext.situationsZuschlag?.toString(),
@@ -27,8 +31,12 @@ class GefechtFernkampffelder extends StatelessWidget {
           labelText: 'Zielgröße, Bewegung, Sicht/Deckung: Zuschlag (0 möglich)',
         ),
         keyboardType: const TextInputType.numberWithOptions(signed: true),
-        onChanged: (v) =>
-            onChanged(kontext.copyWith(situationsZuschlag: int.tryParse(v))),
+        onChanged: (v) => onChanged(
+          kontext.copyWith(
+            situationsZuschlag: int.tryParse(v),
+            ohneSituationsZuschlag: int.tryParse(v) == null,
+          ),
+        ),
       ),
       DropdownButtonFormField<bool>(
         initialValue: kontext.geladen,

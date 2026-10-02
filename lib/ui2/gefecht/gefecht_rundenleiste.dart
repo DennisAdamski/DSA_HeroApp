@@ -73,7 +73,8 @@ class GefechtRundenleiste extends StatelessWidget {
                               context: context,
                               builder: (context) => AlertDialog(
                                 title: const Text('Ansage zu Rundenbeginn'),
-                                content: const Text(
+                                content: Text(
+                                  '${werte.defensiverKampfstil && u == Gefechtsumwandlung.zweiteParade ? 'Defensiver Kampfstil: zwingend zu Rundenbeginn ansagen. ' : ''}'
                                   'Zulässigen Ansagezeitpunkt prüfen: ohne globale '
                                   'Phasenuhr wird er nicht automatisch erkannt. Diese Ansage ist verbindlich.',
                                 ),

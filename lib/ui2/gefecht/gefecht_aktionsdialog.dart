@@ -204,6 +204,18 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
                   _bestaetigt = false;
                 }),
               ),
+              if (gefechtswerteFuer(widget.werte).halbschwert)
+                CheckboxListTile(
+                  value: _kontext.halbschwert,
+                  title: const Text('Aktuell in Halbschwertführung'),
+                  subtitle: const Text(
+                    'Führung und geeignete Waffe bestätigen',
+                  ),
+                  onChanged: (v) => setState(() {
+                    _kontext = _kontext.copyWith(halbschwert: v);
+                    _bestaetigt = false;
+                  }),
+                ),
               for (final m in p.modifikatoren)
                 Text('${m.name}: ${m.wert >= 0 ? '+' : ''}${m.wert}'),
               DropdownButtonFormField<String>(
@@ -221,7 +233,10 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
                   _bestaetigt = false;
                 }),
               ),
-              _zahl(_zuschlag, 'Gesamte Erschwernis (negativ = Erleichterung)'),
+              _zahl(
+                _zuschlag,
+                'Weitere Erschwernis / Manöveransage (ohne automatische Anteile)',
+              ),
               if (sonder) ...[
                 if (widget.probe == null)
                   _zahl(_ziel, 'Manuell bestätigter Grundzielwert (optional)'),

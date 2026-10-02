@@ -11,6 +11,10 @@ import 'package:dsa_heldenverwaltung/ui2/shell/karto_gefechts_adapter.dart';
 
 import 'gefecht_orientieren.dart';
 import 'gefecht_schuss.dart';
+import 'gefecht_ziehdialog.dart';
+
+import 'package:dsa_heldenverwaltung/rules/derived/gefecht_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/combat_special_ability_state.dart';
 
 /// Waffen und Rüstungsteile erscheinen ausschließlich in diesem Wechselpopup.
 Future<void> zeigeGefechtsausruestung({
@@ -113,8 +117,16 @@ class _AusruestungState extends ConsumerState<_Ausruestung> {
                               onPressed: _busy || s?.handlung != null
                                   ? null
                                   : () => _run(() async {
-                                      final dauer = await _ziehdauer(context);
-                                      if (dauer == null || !context.mounted) {
+                                      final plan =
+                                          await zeigeGefechtsZiehkontext(
+                                            context,
+                                            schnellziehen:
+                                                isCombatSpecialAbilityActive(
+                                                  snapshot.hero.combatConfig,
+                                                  'ksf_schnellziehen',
+                                                ),
+                                          );
+                                      if (plan == null || !context.mounted) {
                                         return true;
                                       }
                                       return starteGefechtswaffenwechsel(
@@ -124,12 +136,44 @@ class _AusruestungState extends ConsumerState<_Ausruestung> {
                                         bestand: widget.bestand,
                                         waffe: eintrag.value,
                                         index: eintrag.key,
-                                        dauer: dauer,
+                                        dauer: plan.dauer,
+                                        freieMarke: plan.freieMarke,
                                       );
                                     }),
                               child: const Text('Ziehen'),
                             ),
                     ),
+                if (snapshot != null)
+                  for (final teil
+                      in snapshot.hero.combatConfig.offhandEquipment)
+                    if (teil.type == OffhandEquipmentType.shield)
+                      TextButton(
+                        onPressed: _busy || s?.handlung != null
+                            ? null
+                            : () => _run(() async {
+                                final plan = await zeigeGefechtsZiehkontext(
+                                  context,
+                                  schnellziehen: isCombatSpecialAbilityActive(
+                                    snapshot.hero.combatConfig,
+                                    'ksf_schnellziehen',
+                                  ),
+                                  schild: true,
+                                );
+                                if (plan == null || !context.mounted) {
+                                  return true;
+                                }
+                                return starteGefechtswaffenwechsel(
+                                  context: context,
+                                  ref: ref,
+                                  heroId: widget.heroId,
+                                  bestand: widget.bestand,
+                                  nebenhand: teil,
+                                  index: 0,
+                                  dauer: plan.dauer,
+                                );
+                              }),
+                        child: Text('${teil.name} vom Rücken'),
+                      ),
                 const Divider(),
                 Text(
                   'Rüstungsteile',
@@ -201,57 +245,6 @@ class _AusruestungState extends ConsumerState<_Ausruestung> {
       ),
     );
   }
-
-  // Kein ungespeicherter Scheidenkontext wird als sichere Ziehregel angenommen.
-  Future<int?> _ziehdauer(BuildContext context) async {
-    final dauer = TextEditingController(text: '1');
-    var bestaetigt = false;
-    final ergebnis = await showDialog<int>(
-      context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) => AlertDialog(
-          title: const Text('Waffe ziehen'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: dauer,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: 'Bestätigte Ziehdauer in Aktionen (0 erlaubt)',
-                ),
-                onChanged: (_) => setState(() {}),
-              ),
-              CheckboxListTile(
-                value: bestaetigt,
-                title: const Text(
-                  'Sonderfertigkeit, Scheide und Griffbereitschaft geprüft',
-                ),
-                onChanged: (v) => setState(() {
-                  bestaetigt = v!;
-                }),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Abbrechen'),
-            ),
-            FilledButton(
-              onPressed: bestaetigt && (int.tryParse(dauer.text) ?? -1) >= 0
-                  ? () => Navigator.pop(context, int.parse(dauer.text))
-                  : null,
-              child: const Text('Wechsel beginnen'),
-            ),
-          ],
-        ),
-      ),
-    );
-    await Future<void>.delayed(const Duration(milliseconds: 300));
-    dauer.dispose();
-    return ergebnis;
-  }
 }
 
 /// Buchung beginnt erst nach Dauerprüfung; eine lange Ziehhandlung wirkt später.
@@ -260,18 +253,26 @@ Future<bool> starteGefechtswaffenwechsel({
   required WidgetRef ref,
   required String heroId,
   required KartoGefechtsAdapter bestand,
-  required MainWeaponSlot waffe,
+  MainWeaponSlot? waffe,
+  OffhandEquipmentEntry? nebenhand,
   required int index,
   required int dauer,
+  bool freieMarke = false,
 }) async {
   final controller = ref.read(gefechtProvider(heroId).notifier);
   final s = ref.read(gefechtProvider(heroId));
   final snapshot = ref.read(heroComputedProvider(heroId)).asData?.value;
-  if (s == null || snapshot == null || s.handlung != null || dauer < 0) {
+  if (s == null ||
+      snapshot == null ||
+      s.handlung != null ||
+      dauer < 1 ||
+      (waffe == null && nebenhand == null)) {
     return false;
   }
   final w = gefechtswerteFuer(snapshot);
-  final p = pruefeManuelleGefechtsaktion(s, w, kosten: dauer == 0 ? 0 : 1);
+  final p = freieMarke
+      ? pruefeGefechtsaktion(s, w, Gefechtsaktion.freieAktion)
+      : pruefeManuelleGefechtsaktion(s, w, kosten: dauer == 0 ? 0 : 1);
   if (p.status == Gefechtsfreigabe.gesperrt) {
     throw StateError(p.gruende.join(' '));
   }
@@ -283,17 +284,20 @@ Future<bool> starteGefechtswaffenwechsel({
         context: context,
         ref: ref,
         heroId: heroId,
-        aenderung: (config) => mitAktiverWaffe(config, waffe, index: index),
+        aenderung: (config) => nebenhand != null
+            ? mitNebenhand(config, teil: nebenhand)
+            : mitAktiverWaffe(config, waffe, index: index),
       );
       if (!gespeichert) return false;
     }
     if (!controller.abschliessen(id, w, p)) return false;
     final h = beginneGefechtsHandlung(
-      titel: '${waffe.name} ziehen',
+      titel: '${waffe?.name ?? nebenhand!.name} ziehen',
       dauer: dauer,
-      waffenId: waffe.id,
+      waffenId: waffe?.id,
       waffenIndex: index,
       waffe: waffe,
+      nebenhand: nebenhand,
     );
     if (h != null) {
       controller.setzen(
@@ -360,13 +364,14 @@ Future<void> setzeGefechtsausruestungFort({
   }
 
   try {
-    if (h.verbleibend == 1 && h.waffe != null) {
+    if (h.verbleibend == 1 && (h.waffe != null || h.nebenhand != null)) {
       final ok = await bestand.gefechtsAusruestung(
         context: context,
         ref: ref,
         heroId: heroId,
-        aenderung: (config) =>
-            mitAktiverWaffe(config, h.waffe, index: h.waffenIndex),
+        aenderung: (config) => h.nebenhand != null
+            ? mitNebenhand(config, teil: h.nebenhand)
+            : mitAktiverWaffe(config, h.waffe, index: h.waffenIndex),
       );
       if (!ok) {
         throw StateError(

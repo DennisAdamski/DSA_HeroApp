@@ -93,6 +93,7 @@ Gefechtshandlung? beginneGefechtsHandlung({
   int? waffenIndex,
   ResolvedProbeRequest? probe,
   MainWeaponSlot? waffe,
+  OffhandEquipmentEntry? nebenhand,
   int verbraucht = 1,
 }) {
   if (dauer <= verbraucht) return null;
@@ -103,6 +104,10 @@ Gefechtshandlung? beginneGefechtsHandlung({
     waffenIndex: waffenIndex,
     probe: probe,
     waffe: waffe,
+    nebenhand: nebenhand,
+    art: waffe != null || nebenhand != null
+        ? Gefechtshandlungsart.ziehen
+        : Gefechtshandlungsart.manuell,
   );
 }
 
@@ -118,6 +123,7 @@ Gefechtshandlung? setzeGefechtsHandlungFort(Gefechtshandlung h) {
     waffe: h.waffe,
     art: h.art,
     ergebnis: h.ergebnis,
+    nebenhand: h.nebenhand,
   );
 }
 

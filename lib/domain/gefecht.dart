@@ -50,6 +50,7 @@ class Gefechtshandlung {
     this.waffe,
     this.art = Gefechtshandlungsart.manuell,
     this.ergebnis,
+    this.nebenhand,
   });
   final Gefechtshandlungsart art;
   final ProbeResult? ergebnis;
@@ -59,6 +60,7 @@ class Gefechtshandlung {
   final int? waffenIndex;
   final ResolvedProbeRequest? probe;
   final MainWeaponSlot? waffe;
+  final OffhandEquipmentEntry? nebenhand;
 }
 
 /// Ausschließlich flüchtiger, unveränderlicher Zustand eines Gefechts.

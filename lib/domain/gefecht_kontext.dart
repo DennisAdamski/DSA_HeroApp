@@ -42,6 +42,8 @@ class Gefechtskontext {
     int? situationsZuschlag,
     bool? weitereRegelnGeprueft,
     bool? halbschwert,
+    bool ohneEntfernung = false,
+    bool ohneSituationsZuschlag = false,
   }) => Gefechtskontext(
     kontakt: kontakt,
     gegnerzahl: gegnerzahl,
@@ -54,11 +56,13 @@ class Gefechtskontext {
     grosserSchild: grosserSchild,
     halbschwert: halbschwert ?? this.halbschwert,
     weitereRegelnGeprueft: weitereRegelnGeprueft ?? this.weitereRegelnGeprueft,
-    entfernung: entfernung ?? this.entfernung,
+    entfernung: ohneEntfernung ? null : entfernung ?? this.entfernung,
     geladen: geladen ?? this.geladen,
     getuemmel: getuemmel ?? this.getuemmel,
     kontrollbereich: kontrollbereich ?? this.kontrollbereich,
-    situationsZuschlag: situationsZuschlag ?? this.situationsZuschlag,
+    situationsZuschlag: ohneSituationsZuschlag
+        ? null
+        : situationsZuschlag ?? this.situationsZuschlag,
   );
 
   /// Ein abgewehrter Angriff hinterlässt keine Finte für den folgenden Angriff.
