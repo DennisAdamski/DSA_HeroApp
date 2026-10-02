@@ -113,3 +113,14 @@ der ausdrückliche Fortsetzen-Pfad darf die bestehende Handlung weiterführen.
 Regel-/Ablaufregressionen einschließlich verzögerter Zauberproben und Abbrüchen
 bestehen; `flutter analyze` meldet keine Probleme. Die dokumentierten manuellen
 Grenzen bleiben Bestandteil dieser ersten Version.
+
+### Waffen-SF und Ziehen (Folgepakete 3a/3b)
+
+Defensiver Kampfstil und talentgebundene Man?ver werden ?ber stabile IDs gelesen.
+Waffenmeister reduziert den best?tigten Man?verzuschlag automatisch einmal.
+Halbschwert ben?tigt die best?tigte F?hrung; Klingenwand/-sturm werden nicht als
+einfache Einzelprobe abgewickelt. Bekannte Katalogl?ngen ?ber zwei Schritt und
+improvisierte Waffen sperren Umwandlungen; fehlende Profile bleiben manuell.
+Das Ziehpopup fragt Trageposition, Griffbereitschaft und freie H?nde.
+Schnellziehen vom G?rtel/Arm/Brust bezahlt eine freie Marke; R?cken und Schild
+erhalten die WdS-Dauer. Schilde vom R?cken sind eigene Nebenhandhandlungen.

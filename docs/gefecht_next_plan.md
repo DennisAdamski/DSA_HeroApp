@@ -28,11 +28,11 @@ geschützte Handlungen bleiben erhalten. Keine neue Gefechtspersistenz.
 - [x] 2b Fernkampf: Entfernung/Entfernungsband, Größe, Bewegung, Sicht/Deckung,
   Getümmel, Ladezustand/Munition; Getümmel-SF und Kontrollbereichshinweis.
   Tests: Bandgrenzen, fehlendes Profil, leere Waffe, frische Munitionsbuchung.
-- [ ] 3a Waffen-SF: Defensiver Kampfstil, Umwandlungsverbote/-ausnahmen,
+- [x] 3a Waffen-SF: Defensiver Kampfstil, Umwandlungsverbote/-ausnahmen,
   Waffenmeister, Zusatzaktionen und bestätigte Halbschwertführung. Klingenwand
   und Klingensturm weiterhin manuell, keine vorgetäuschte Einzelprobe.
   Tests: SF aktiv/inaktiv, Ansagezeitpunkt, Halbschwert-DK, Zusatzbudgets.
-- [ ] 3b Ziehen: Scheide/Griffbereitschaft/Handbelegung statt pauschaler Dauer.
+- [x] 3b Ziehen: Scheide/Griffbereitschaft/Handbelegung statt pauschaler Dauer.
   Schnellziehen bezahlt freie Marke; Schild vom Rücken eigene Handlung.
   Ungewöhnliche Wechsel manuell; Rüstung bleibt Statuskorrektur.
   Tests: Kostenmatrix, freie Marken, Resthandlung, Slot-ID, Schreibfehler.

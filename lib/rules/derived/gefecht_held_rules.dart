@@ -9,13 +9,24 @@ import 'ausweichen_rules.dart';
 import 'hero_requirement_context.dart';
 import 'requirement_evaluation_rules.dart';
 import 'two_weapon_combat_rules.dart';
+import 'waffenmeister_rules.dart';
 
 /// Ersetzt Vorschau-INI durch Sitzungswerte und übernimmt aktuelle Heldendaten.
-Gefechtswerte gefechtswerteFuer(HeroComputedSnapshot snapshot) {
+Gefechtswerte gefechtswerteFuer(
+  HeroComputedSnapshot snapshot, {
+  RulesCatalog? katalog,
+}) {
   final c = snapshot.combatPreviewStats;
   final config = snapshot.hero.combatConfig;
   final waffe = config.selectedWeaponOrNull;
+  final definition = katalog?.weapons
+      .where((w) => w.name == waffe?.weaponType)
+      .firstOrNull;
+  final laenge = int.tryParse(definition?.length ?? '');
   bool sf(String id) => isCombatSpecialAbilityActive(config, id);
+  final manoever = normalizeManeuverIds(config.specialRules.activeManeuvers);
+  bool kennt(String id) =>
+      manoever.contains(id) || manoever.contains('$id::${waffe?.talentId}');
   return Gefechtswerte(
     iniBasis:
         c.kampfInitiative -
@@ -68,10 +79,18 @@ Gefechtswerte gefechtswerteFuer(HeroComputedSnapshot snapshot) {
     fernkampf: c.isRangedWeapon,
     waffenDk: waffe?.distanceClass ?? '',
     waffe: waffe,
-    scharfschuetze: sf('ksf_scharfschuetze'),
-    meisterschuetze: sf('ksf_meisterschuetze'),
-    waffenmeister:
-        snapshot.combatPreviewStats.waffenmeisterAdditionalManeuvers.isNotEmpty,
+    scharfschuetze: kennt('man_scharfschuetze'),
+    meisterschuetze: kennt('man_meisterschuetze'),
+    waffenmeister: computeWaffenmeisterEffects(
+      waffenmeisterschaften: config.waffenmeisterschaften,
+      activeWeaponType: waffe?.weaponType ?? '',
+      activeTalentId: waffe?.talentId ?? '',
+    ).isActive,
+    defensiverKampfstil: kennt('man_defensiver_kampfstil'),
+    halbschwert: kennt('man_halbschwert'),
+    umwandlungVerboten:
+        (laenge != null && laenge > 200) ||
+        (definition?.name.toLowerCase().contains('improvisiert') ?? false),
   );
 }
 
@@ -89,6 +108,16 @@ Gefechtspruefung pruefeGefechtsmanoever(
   final config = snapshot.hero.combatConfig;
   final waffe = config.selectedWeapon;
   final sperren = <String>[];
+  final name = m.name.toLowerCase();
+  if (name.contains('klingenwand') || name.contains('klingensturm')) {
+    sperren.add(
+      'Geteilte Pools und geordnete Einzelangriffe am Spieltisch '
+      'führen; keine vollständige Abwicklung als Einzelprobe.',
+    );
+  }
+  if (distanzSchritte != 0 && !name.contains('finte')) {
+    sperren.add('Distanzänderung nur ohne Manöver oder mit bestätigter Finte.');
+  }
   final gelernt = learnedManeuverIds(config, katalog);
   final talentGelernt = gelernt.contains('${m.id}::${waffe.talentId}');
   if (m.mussSeparatErlerntWerden && !gelernt.contains(m.id) && !talentGelernt) {
@@ -145,7 +174,10 @@ Gefechtspruefung pruefeGefechtsmanoever(
     s,
     gefechtswerteFuer(snapshot),
     parade ? Gefechtsaktion.parade : Gefechtsaktion.angriff,
-    zuschlag: zuschlag,
+    zuschlag:
+        zuschlag -
+        (snapshot.combatPreviewStats.waffenmeisterManeuverReductions[m.id] ??
+            0),
     manuellerZielwert: zielwert,
     abwehrAufAttacke: m.name.toLowerCase() == 'gegenhalten',
     sperrGruende: sperren,
@@ -155,7 +187,7 @@ Gefechtspruefung pruefeGefechtsmanoever(
       'Manövervoraussetzungen, Aktionskosten und Folgen manuell prüfen.',
       if (snapshot.combatPreviewStats.waffenmeisterManeuverReductions
           .containsKey(m.id))
-        'Waffenmeister-Erleichterung in der bestätigten Erschwernis berücksichtigen.',
+        'Waffenmeister-Erleichterung wurde automatisch genau einmal abgezogen.',
       if (m.voraussetzungen.isNotEmpty) m.voraussetzungen,
       if (m.name.toLowerCase().contains('hammerschlag')) 'Alle nicht freien Aktionen müssen ungenutzt sein; Talent, Gegnergröße und Schild prüfen.',
     ],

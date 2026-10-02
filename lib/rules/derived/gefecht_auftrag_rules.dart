@@ -16,7 +16,7 @@ Gefechtspruefung pruefeGefechtAuftrag(
   bool eigenerAuftrag = false,
 }) {
   final zustand = s.copyWith(dk: auftrag.dk, kontext: auftrag.kontext);
-  final w = gefechtswerteFuer(snapshot);
+  final w = gefechtswerteFuer(snapshot, katalog: katalog);
   final m = auftrag.manoever;
   Gefechtspruefung p;
   if (m != null) {

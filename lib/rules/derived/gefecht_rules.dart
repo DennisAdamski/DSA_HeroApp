@@ -32,6 +32,9 @@ class Gefechtswerte {
     this.scharfschuetze = false,
     this.meisterschuetze = false,
     this.waffenmeister = false,
+    this.defensiverKampfstil = false,
+    this.halbschwert = false,
+    this.umwandlungVerboten = false,
   });
   final int iniBasis, at, pa, ausweichen, be, zusatzaktionen;
   final int? schildPa;
@@ -45,6 +48,7 @@ class Gefechtswerte {
   final String waffenDk;
   final MainWeaponSlot? waffe;
   final bool scharfschuetze, meisterschuetze, waffenmeister;
+  final bool defensiverKampfstil, halbschwert, umwandlungVerboten;
 }
 
 /// Startet eine Sitzung mit dem bereits regelgerecht ermittelten INI-Wurf.
@@ -125,6 +129,12 @@ bool gefechtUmwandlungMoeglich(
   Gefechtswerte? werte,
 }) {
   if (s.ansageGebunden || s.auftrag != null || s.handlung != null) return false;
+  if (werte?.umwandlungVerboten == true) return false;
+  if (u == Gefechtsumwandlung.zweiteAttacke &&
+      werte != null &&
+      gefechtsInitiative(s, werte) < 8) {
+    return false;
+  }
   final benutzt = s.angriffeVerbraucht > 0 || s.paradenVerbraucht > 0;
   if (benutzt &&
       !(werte?.kampfgespuer == true || werte?.aufmerksamkeit == true)) {
@@ -174,6 +184,9 @@ Gefechtspruefung pruefeGefechtsaktion(
 }) {
   final pruefen = <String>[...pruefGruende];
   final sperren = <String>[...sperrGruende];
+  if (s.kontext.halbschwert && !w.halbschwert) {
+    sperren.add('Halbschwertführung ohne aktive Sonderfertigkeit.');
+  }
   var a = 0, p = 0, f = 0, z = 0, erschwernis = zuschlag;
   int? ziel = manuellerZielwert;
   final bonus = gefechtsIniBonus(s, w);
@@ -271,7 +284,10 @@ Gefechtspruefung pruefeGefechtsaktion(
       }
       if (s.umwandlung == Gefechtsumwandlung.zweiteParade &&
           s.paradenVerbraucht > 0) {
-        erschwernis += aktion == Gefechtsaktion.schildparade || w.stabUmwandlung
+        erschwernis +=
+            aktion == Gefechtsaktion.schildparade ||
+                w.stabUmwandlung ||
+                w.defensiverKampfstil
             ? 0
             : 4;
       }
