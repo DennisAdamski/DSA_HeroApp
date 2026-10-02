@@ -1,126 +1,318 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
-import 'package:dsa_heldenverwaltung/domain/hero_resource_activation_config.dart';
-import 'package:dsa_heldenverwaltung/domain/hero_spell_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/gefecht.dart';
+import 'package:dsa_heldenverwaltung/domain/gefecht_wirken.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
+import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_provider.dart';
-import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
-import 'package:dsa_heldenverwaltung/ui2/gefecht/gefecht_ansicht.dart';
+import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/gefecht_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/probe_engine_rules.dart';
+import 'package:dsa_heldenverwaltung/ui2/gefecht/gefecht_wirken.dart';
+import 'package:dsa_heldenverwaltung/ui2/gefecht/gefecht_wirkabschluss.dart';
 
 import '../shell/karto_test_support.dart';
 import 'gefecht_test_support.dart';
 
-void main() {
-  for (final kosten in [1, 2]) {
-    for (final abbrechen in [false, true]) {
-      testWidgets('Zauber Dauer zwei und Kosten $kosten: Abbruch=$abbrechen', (
-        tester,
-      ) async {
-        tester.view.physicalSize = const Size(1200, 1400);
-        tester.view.devicePixelRatio = 1;
-        addTearDown(tester.view.resetPhysicalSize);
-        addTearDown(tester.view.resetDevicePixelRatio);
-        final katalog = RulesCatalog(
-          version: 'test',
-          source: 'test',
-          talents: [],
-          weapons: [],
-          maneuvers: [],
-          spells: [
-            SpellDef.fromJson({
-              'id': 'spell_blitz',
-              'name': 'Blitz',
-              'attributes': ['MU', 'KL', 'IN'],
-              'castingTime': '2 Aktionen',
-            }),
-          ],
-        );
-        final snapshot = buildHeroComputedSnapshot(
-          hero: testHero().copyWith(
-            resourceActivationConfig: const HeroResourceActivationConfig(
-              magicEnabledOverride: true,
-            ),
-            spells: {
-              'spell_blitz': const HeroSpellEntry(spellValue: 7, modifier: 2),
-            },
+const _probe = ResolvedProbeRequest(
+  type: ProbeType.spell,
+  title: 'Testzauber',
+  subtitle: '',
+  ruleHint: '',
+  diceSpec: DiceSpec(count: 3, sides: 20),
+  basePool: 8,
+  targets: [
+    ProbeTargetValue(label: 'MU', value: 14),
+    ProbeTargetValue(label: 'KL', value: 12),
+    ProbeTargetValue(label: 'IN', value: 13),
+  ],
+);
+
+class _Repo extends FakeRepository {
+  _Repo()
+    : super(
+        heroes: [testHero()],
+        states: {
+          'rondra': const HeroState(
+            currentLep: 20,
+            currentAsp: 20,
+            currentKap: 15,
+            currentAu: 30,
+            unbekannteFelder: {'future': 42},
           ),
-          state: const HeroState.empty(),
-          catalog: katalog,
-          epicAdvantagesActive: false,
-        );
-        final container = ProviderContainer(
-          overrides: [
-            heroComputedProvider('rondra')
-                .overrideWith((ref) => AsyncData(snapshot)),
-            rulesCatalogProvider.overrideWith((ref) async => katalog),
-          ],
-        );
-        addTearDown(container.dispose);
-        container.read(gefechtProvider('rondra').notifier).beginnen(6);
-        final bestand = GefechtsTestBestand()
-          ..abbrechen = abbrechen
-          ..doppelt = true;
-        await tester.pumpWidget(
-          UncontrolledProviderScope(
-            container: container,
-            child: MaterialApp(
-              home: GefechtAnsicht(heroId: 'rondra', bestand: bestand),
-            ),
-          ),
-        );
-        await tester.pumpAndSettle();
-        await tester.ensureVisible(find.text('Blitz · prüfen'));
-        await tester.tap(find.text('Blitz · prüfen'));
-        await tester.pumpAndSettle();
-        await tester.tap(find.text('Weiter'));
-        await tester.pumpAndSettle();
-        final zahlen = find.descendant(
-          of: find.byType(AlertDialog),
-          matching: find.byType(TextField),
-        );
-        await tester.enterText(zahlen.at(1), '2');
-        await tester.enterText(zahlen.at(2), '$kosten');
-        await tester.ensureVisible(
-          find.byKey(const ValueKey('gefecht-kontext-bestaetigen')),
-        );
-        await tester.tap(
-          find.byKey(const ValueKey('gefecht-kontext-bestaetigen')),
-        );
-        await tester.pumpAndSettle();
-        await tester.tap(find.byKey(const ValueKey('gefecht-auftrag-starten')));
-        await tester.pumpAndSettle();
-        if (kosten == 1) {
-          expect(bestand.anfragen, isEmpty);
-          expect(
-            container.read(gefechtProvider('rondra'))!.handlung!.probe,
-            isNotNull,
-          );
-          await tester.ensureVisible(find.text('Fortsetzen'));
-          await tester.tap(find.text('Fortsetzen'));
-          await tester.pumpAndSettle();
-        }
-        expect(bestand.anfragen.length, 1);
-        expect(bestand.anfragen.single.basePool, 9);
-        expect(bestand.anfragen.single.targets.map((t) => t.value), [
-          14,
-          12,
-          13,
-        ]);
-        final s = container.read(gefechtProvider('rondra'))!;
-        expect(s.angriffeVerbraucht, kosten == 1 || !abbrechen ? 1 : 0);
-        expect(s.paradenVerbraucht, abbrechen ? 0 : 1);
-        if (kosten == 1 && abbrechen) {
-          expect(s.handlung!.verbleibend, 1);
-        } else {
-          expect(s.handlung, isNull);
-        }
-        expect(s.auftrag, isNull);
-        expect(tester.takeException(), isNull);
-      });
-    }
+        },
+      );
+  bool fehler = false;
+  @override
+  Future<void> saveHeroState(String id, HeroState s) async {
+    if (fehler) throw StateError('Speicherfehler');
+    await super.saveHeroState(id, s);
   }
+}
+
+void main() {
+  for (final abbruch in [false, true]) {
+    testWidgets('Startprobe genau einmal; Abbruch vor Ergebnis=$abbruch', (
+      tester,
+    ) async {
+      final repo = _Repo();
+      final container = ProviderContainer(
+        overrides: [
+          heroRepositoryProvider.overrideWithValue(repo),
+          rulesCatalogProvider.overrideWith((ref) async => testCatalog),
+        ],
+      );
+      addTearDown(container.dispose);
+      late WidgetRef ref;
+      late BuildContext context;
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: MaterialApp(
+            home: Scaffold(
+              body: Consumer(
+                builder: (c, r, _) {
+                  context = c;
+                  ref = r;
+                  r.watch(heroComputedProvider('rondra'));
+                  return const SizedBox();
+                },
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final ctl = container.read(gefechtProvider('rondra').notifier);
+      ctl.beginnen(6);
+      final bestand = GefechtsTestBestand()
+        ..doppelt = true
+        ..abbrechen = abbruch;
+      await starteGefechtsWirken(
+        context: context,
+        ref: ref,
+        heroId: 'rondra',
+        bestand: bestand,
+        art: Gefechtshandlungsart.zauber,
+        profil: const GefechtsWirkprofil(
+          probe: _probe,
+          dauer: 5,
+          kosten: 5,
+          karmal: false,
+        ),
+      );
+      expect(bestand.anfragen.length, 1);
+      if (abbruch) {
+        expect(container.read(gefechtProvider('rondra'))!.handlung, isNull);
+        expect(
+          container.read(gefechtProvider('rondra'))!.angriffeVerbraucht,
+          0,
+        );
+      } else {
+        final original = container
+            .read(gefechtProvider('rondra'))!
+            .handlung!
+            .ergebnis;
+        expect(original, isNotNull);
+        expect(
+          container.read(gefechtProvider('rondra'))!.handlung!.verbleibend,
+          4,
+        );
+        await setzeGefechtsWirkenFort(
+          context: context,
+          ref: ref,
+          heroId: 'rondra',
+          bestand: bestand,
+        );
+        ctl.setzen(
+          naechsteGefechtsrunde(container.read(gefechtProvider('rondra'))!),
+        );
+        await setzeGefechtsWirkenFort(
+          context: context,
+          ref: ref,
+          heroId: 'rondra',
+          bestand: bestand,
+        );
+        expect(bestand.anfragen.length, 1);
+        expect(
+          container.read(gefechtProvider('rondra'))!.handlung!.ergebnis,
+          same(original),
+        );
+      }
+      expect(container.read(gefechtProvider('rondra'))!.auftrag, isNull);
+      expect(tester.takeException(), isNull);
+    });
+  }
+  testWidgets(
+    'Gescheiterter Zauber endet nach halber Dauer ohne zweite Probe',
+    (tester) async {
+      final repo = _Repo();
+      final container = ProviderContainer(
+        overrides: [
+          heroRepositoryProvider.overrideWithValue(repo),
+          rulesCatalogProvider.overrideWith((ref) async => testCatalog),
+        ],
+      );
+      addTearDown(container.dispose);
+      late WidgetRef ref;
+      late BuildContext context;
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: MaterialApp(
+            home: Scaffold(
+              body: Consumer(
+                builder: (c, r, _) {
+                  context = c;
+                  ref = r;
+                  r.watch(heroComputedProvider('rondra'));
+                  return const SizedBox();
+                },
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      container.read(gefechtProvider('rondra').notifier).beginnen(6);
+      final bestand = GefechtsTestBestand()
+        ..w20Wert = 19
+        ..doppelt = true;
+      await starteGefechtsWirken(
+        context: context,
+        ref: ref,
+        heroId: 'rondra',
+        bestand: bestand,
+        art: Gefechtshandlungsart.zauber,
+        profil: const GefechtsWirkprofil(
+          probe: _probe,
+          dauer: 5,
+          kosten: 5,
+          karmal: false,
+        ),
+      );
+      final h = container.read(gefechtProvider('rondra'))!.handlung!;
+      expect(h.verbleibend, 2);
+      expect(h.ergebnis!.success, false);
+      expect(bestand.anfragen.length, 1);
+    },
+  );
+  testWidgets(
+    'Übernahme retry, frische Änderung, keine doppelte Kostenbuchung',
+    (tester) async {
+      final repo = _Repo();
+      final container = ProviderContainer(
+        overrides: [
+          heroRepositoryProvider.overrideWithValue(repo),
+          rulesCatalogProvider.overrideWith((ref) async => testCatalog),
+        ],
+      );
+      addTearDown(container.dispose);
+      late WidgetRef ref;
+      late BuildContext context;
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: MaterialApp(
+            home: Scaffold(
+              body: Consumer(
+                builder: (c, r, _) {
+                  context = c;
+                  ref = r;
+                  r.watch(heroComputedProvider('rondra'));
+                  return const SizedBox();
+                },
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final ctl = container.read(gefechtProvider('rondra').notifier);
+      ctl.beginnen(6);
+      final ergebnis = evaluateProbe(
+        _probe,
+        const ProbeRollInput(
+          mode: ProbeRollMode.manual,
+          diceValues: [10, 10, 10],
+          situationalModifier: 0,
+          specializationApplied: false,
+        ),
+      );
+      ctl.setzen(
+        container
+            .read(gefechtProvider('rondra'))!
+            .copyWith(
+              handlung: Gefechtshandlung(
+                titel: 'Testzauber',
+                verbleibend: 0,
+                art: Gefechtshandlungsart.zauber,
+                ergebnis: ergebnis,
+                wirken: const GefechtsWirkprofil(
+                  probe: _probe,
+                  dauer: 1,
+                  kosten: 5,
+                  karmal: false,
+                ),
+              ),
+            ),
+      );
+      repo.fehler = true;
+      expect(
+        await uebernimmGefechtsWirkfolgen(
+          context: context,
+          ref: ref,
+          heroId: 'rondra',
+        ),
+        false,
+      );
+      expect(
+        container.read(gefechtProvider('rondra'))!.handlung!.ergebnis,
+        same(ergebnis),
+      );
+      repo.fehler = false;
+      final fremd = (await repo.loadHeroState('rondra'))!
+          .copyWith(currentLep: 13, currentAsp: 18);
+      await repo.saveHeroState('rondra', fremd);
+      expect(
+        await uebernimmGefechtsWirkfolgen(
+          context: context,
+          ref: ref,
+          heroId: 'rondra',
+          abschliessen: false,
+        ),
+        true,
+      );
+      expect((await repo.loadHeroState('rondra'))!.currentAsp, 13);
+      expect(
+        container.read(gefechtProvider('rondra'))!.handlung!.kostenUebernommen,
+        true,
+      );
+      expect(
+        await uebernimmGefechtsWirkfolgen(
+          context: context,
+          ref: ref,
+          heroId: 'rondra',
+        ),
+        true,
+      );
+      expect(
+        await uebernimmGefechtsWirkfolgen(
+          context: context,
+          ref: ref,
+          heroId: 'rondra',
+        ),
+        false,
+      );
+      final neu = (await repo.loadHeroState('rondra'))!;
+      expect(neu.currentAsp, 13);
+      expect(neu.currentLep, 13);
+      expect(neu.unbekannteFelder['future'], 42);
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+    },
+  );
 }

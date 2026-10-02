@@ -36,18 +36,18 @@ geschützte Handlungen bleiben erhalten. Keine neue Gefechtspersistenz.
   Schnellziehen bezahlt freie Marke; Schild vom Rücken eigene Handlung.
   Ungewöhnliche Wechsel manuell; Rüstung bleibt Statuskorrektur.
   Tests: Kostenmatrix, freie Marken, Resthandlung, Slot-ID, Schreibfehler.
-- [ ] 4a Zauberprobe zu Beginn einfrieren, Wirkung erst nach Dauer. Scheitern
+- [x] 4a Zauberprobe zu Beginn einfrieren, Wirkung erst nach Dauer. Scheitern
   nach halber Dauer (angebrochene Aktionen aufrunden, App-Konvention), mit
   Zauberkontrolle eine Aktion. Störungen über Selbstbeherrschung führen.
   Tests: Dauer 1/2/5, beide Ergebnisse, SF, Störung, Navigation, Abbruch.
-- [ ] 4b Kosten/Folgen: bestehende Ressourcen-/Effektdialoge vorbelegen;
+- [x] 4b Kosten/Folgen: bestehende Ressourcen-/Effektdialoge vorbelegen;
   frischer gemeinsamer Zustandsvorgang für unterstützte Folgen. Wiederaufnahme
   nach Fehler ohne erneuten Wurf/Verbrauch; unzureichende Energie nicht klemmen.
   Tests: halbe Kosten aufrunden, Paralleländerung, Schreibfehler, Doppelbuchung.
-- [ ] 4c Mirakel/Liturgien getrennt führen, gottspezifische Probe, Gradkosten,
+- [x] 4c Mirakel/Liturgien getrennt führen, gottspezifische Probe, Gradkosten,
   Wiederholung derselben Handlung binnen bestätigter SR (+3 je Fehlschlag).
   Tests: Gottheiten, Grade I–VI, Erfolg/Scheitern, SR-Grenze, einmaliger Bonus.
-- [ ] Mockup: Orientierung, bedingte Kontextfragen, Ziehkontext, eingefrorene
+- [x] Mockup: Orientierung, bedingte Kontextfragen, Ziehkontext, eingefrorene
   Probe/Restdauer, Störung/Abbruch, Abschluss und erneute Übernahme.
 
 ## Schnittstellen
@@ -104,3 +104,24 @@ Ausgangsstand: Analyse ohne Befund, 71 gezielte Tests bestanden. Umsetzung läuf
 frische Munitionsübernahme integriert. Größe/Bewegung/Sicht/Deckung bleiben ein
 bestätigter Situationszuschlag; kein zweiter vollständiger Fernkampfrechner.
 Ruling: frei benannte Entfernungsbänder werden nicht als Zahlen interpretiert.
+
+### Wirkpfad: Abgrenzung der Automatisierung
+
+Zauber erhalten eine Startprobe und best?tigte Aktionsdauer. Niedrige LE/AU
+und eine best?tigte Zahl aufrechterhaltener Zauber werden berechnet;
+Repr?sentation, MR, spontane Modifikationen und sonstige Komponenten werden
+gezielt best?tigt. Die Anzahl aufrechterhaltener Zauber wird nicht aus den
+Effektchips geraten. Mirakel und Liturgie verwenden getrennte Profile;
+unbekannte Kulte ben?tigen eine g?ltige best?tigte Eigenschaftskette.
+Die genaue Liturgie und Mirakelzielkennung identifizieren Wiederholungen;
+die SR-Grenze bleibt ausdr?cklich best?tigt. Bei variablen nicht durch f?nf
+teilbaren Liturgiekosten wird eine Fehlversuchskostenangabe verlangt.
+Mirakelboni bleiben wegen der offenen Rundung best?tigt, wirken aber auf
+genau eine passende Gefechtsprobe. Lange Rituale, permanente Kosten und
+Unterbrechungsfolgen ohne vollst?ndiges Profil bleiben manuell.
+
+Unterst?tzte eigene Effekte (Armatrutz, Attributo, Axxeleratus) k?nnen mit
+den Kosten frisch zusammen ?bernommen werden; die bestehenden Eingabedialoge
+werden verwendet. Der Ressourcendialog hat einen optionalen Abschlussmodus.
+Kosten k?nnen vor ?brigen Folgen ?bernommen werden; ein Fehler erh?lt Probe
+und offene Handlung. Ausweichen beendet laufendes Wirken nicht stillschweigend.

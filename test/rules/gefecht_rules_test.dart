@@ -4,6 +4,18 @@ import 'package:dsa_heldenverwaltung/rules/derived/gefecht_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_ablauf_rules.dart';
 
 void main() {
+  test('Negative Initiative erlaubt eine reguläre Reaktion, keine zwei Daueraktionen', () {
+    const w = Gefechtswerte(iniBasis: -10, at: 14, pa: 12, ausweichen: 10);
+    final s = beginneGefecht(6);
+    final eine = pruefeManuelleGefechtsaktion(s, w, kosten: 1);
+    expect(eine.status, isNot(Gefechtsfreigabe.gesperrt));
+    expect(eine.angriffe, 0);
+    expect(eine.paraden, 1);
+    expect(
+      pruefeManuelleGefechtsaktion(s, w, kosten: 2).status,
+      Gefechtsfreigabe.gesperrt,
+    );
+  });
   test('SK-II-Zusatzparade bezahlt weder Ausweichen noch Position', () {
     const w = Gefechtswerte(
       iniBasis: 12,

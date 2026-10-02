@@ -32,6 +32,11 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   `gefecht_kontext.dart` hält ausschließlich flüchtige Kontakt-/Angriffsdaten.
   Kontext- und Fernkampfregelmodule liefern gemeinsame DK-Sperren und
   Modifikatoranteile; ein gewürfelter Schuss hält seine offene Munitionsübernahme.
+  `gefecht_ziehen_rules.dart` liefert best?tigte Standardkosten und Markenarten.
+  `gefecht_wirken.dart` enth?lt ausschlie?lich fl?chtige Wirkprofile; das
+  Wirkregelmodul berechnet Dauer, Kosten, Kulteigenschaften und einmalige Boni.
+  Aktionsausf?hrung, Handlungskarte, Wirkdialog, Unterbrechung und Abschluss
+  sind eigenst?ndige Bausteine unter `ui2/gefecht/`.
 - [Redesign umsetzen](docs/redesign_implementation.md) enthält drei aufeinander
   aufbauende Agentenpläne, Startprompts und die gemeinsame Umsetzungsspezifikation
   unter `docs/superpowers/`. Ausgangspunkt ist das vorhandene UI2-Fundament;

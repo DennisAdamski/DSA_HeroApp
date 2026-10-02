@@ -215,3 +215,43 @@ Wurf, direkte Umwandlungsoptionen, ausgelagerte Ausrüstung, Rüstungsschalter
 samt BE-Aktualisierung sowie Waffenwechsel mit zwei tatsächlich verbrauchten
 Aktionen. Acht isolierte Prüfungen decken dieselben neuen Abläufe ab.
 Vorschauen für Desktop, Handy und Ausrüstungsdialog wurden aktualisiert.
+
+## Folgeausbau ab 1b79203 (02.10.2026)
+
+Der verbindliche Paketplan steht in [gefecht_next_plan.md](../gefecht_next_plan.md).
+Im klickbaren Entwurf ?ffnet **Neue Bedienabl?ufe** in der Vorschauleiste
+Orientieren, Gegnerkontext, Ziehen und den Wirkabschluss. Die neue Datei
+`gefecht-folgeablaeufe.js` zeigt Dialogabl?ufe mit fl?chtigen Beispielen;
+sie ver?ndert keine Heldendaten und simuliert keine produktive Speicherung.
+Die alten Bildschirmaufnahmen belegen den Entwurf vom 01.10., nicht diese Dialoge.
+
+- **Orientieren:** Dauer und Kriegskunstbonus vorbelegen, Ungest?rtheit best?tigen,
+  INI vorher/nachher ohne nachgeschaltete Korrektureingabe. Position + Orientieren
+  kostet nach Hausregel eine Aktion; die IN-Probe bleibt ohne Aufmerksamkeit n?tig.
+- **Kontext:** Aktion w?hlen, nur relevante unbekannte Werte erfassen; Finte pro
+  Angriff, DK getrennt von Waffen-DK. Zielwert zeigt seine Anteile. Kontaktwechsel
+  verwirft Angriffsdaten. Distanz?nderung verursacht keinen Schaden und wartet bei
+  Ann?herung auf die gegnerische Abwehrbest?tigung.
+- **Ziehpopup:** SF automatisch, Trageposition und Griffbereitschaft/Handbelegung
+  gezielt best?tigen. Schnellziehen vom G?rtel bezahlt eine freie Marke.
+  Restdauer sch?tzt die gew?hlte stabile Slot-ID bis zur frischen ?bernahme.
+- **Wirken:** Repr?sentation, eindeutige Dauer/Kosten und weitere Modifikatoren
+  best?tigen. Startprobe einmal auswerten; Resthandlung zeigt eingefrorenes
+  Ergebnis, Fortsetzen, St?rung und ausdr?cklich best?tigten Abbruch.
+- **Abschluss:** Kosten und unterst?tzte eigene Effekte zusammen ?bernehmen;
+  Ressourcendialog mit Abschlusskosten, bestehende Effektwerteingaben. Getrennt
+  ?bernommene Kosten bleiben markiert, w?hrend ?brige Folgen offen sind.
+  Speicherfehler bietet erneute ?bernahme ohne Wurf oder Doppelbuchung.
+
+Regelbelege: WdS 55?56 (6972?6973), 67?68 (7006?7007), 80 (7040?7041);
+Hausregel S.2?3 (25817?25818); WdZ 13?17 (4972?4976,4981?4982);
+LL 9?14 (25843?25845) und karmale Hausregel S.25?26 (25835).
+Aufmerksamkeit-Start, Klingent?nzer-Maximum 12 beim Orientieren und Aufrundung
+halber Aktionsmarken sind App-Konventionen. Liturgieprobenzeitpunkt,
+Unterbrechungsfolgen, permanente Kosten, Mirakel-Bonusrundung/AW-Zuordnung,
+Repr?sentationsausnahmen und Patzer bleiben ohne vollst?ndiges Profil manuell.
+Der fr?here Browsertext mit einem angenommenen Liturgieprobenzeitpunkt ist
+keine Regelbest?tigung; das Folgeprofil verlangt eine explizite Best?tigung.
+
+Keine neue Hauptkarte und keine Persistenz laufender Gefechte. Die globale
+Initiativphasensteuerung bleibt ein eigenes sp?teres Paket mit mehreren Teilnehmern.

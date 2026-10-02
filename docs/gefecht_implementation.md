@@ -124,3 +124,18 @@ improvisierte Waffen sperren Umwandlungen; fehlende Profile bleiben manuell.
 Das Ziehpopup fragt Trageposition, Griffbereitschaft und freie H?nde.
 Schnellziehen vom G?rtel/Arm/Brust bezahlt eine freie Marke; R?cken und Schild
 erhalten die WdS-Dauer. Schilde vom R?cken sind eigene Nebenhandhandlungen.
+
+### Zauber und Karma (Folgepakete 4a?4c)
+
+Die fr?here Endprobe f?r Zauber ist ersetzt: Ergebnis am Anfang einfrieren,
+Dauer bezahlen, dann Kosten/Folgen ?bernehmen. Erfolg bindet volle Dauer;
+Misserfolg halbe Dauer aufgerundet, mit Zauberkontrolle eine Aktion.
+St?rung verwendet Selbstbeherrschung mit Konzentrationsst?rke; zus?tzliche
+Auswirkungen auf ZfP* bleiben ausdr?cklich am Spieltisch gepr?ft.
+Mirakel/Liturgien nutzen die Hausregel-Kulteigenschaften und separate Profile.
+Liturgiezeitpunkt, konkrete Dauer und permanente Kosten sind manuell best?tigt.
+Der Wirkabschluss verwendet den vorhandenen frischen Zustandsweg und bestehende
+Armatrutz-/Attributo-Dialoge. Kosten und unterst?tzte Effekte sind ein Write;
+Wiederholung einer ?bernahme erzeugt keinen zweiten Wurf. Separate Kosten?bernahme
+im Ressourcendialog merkt sich die Buchung bis zum Folgenabschluss.
+Alle neuen Wirk-, Wiederholungs- und Mirakelbonusdaten bleiben fl?chtig.

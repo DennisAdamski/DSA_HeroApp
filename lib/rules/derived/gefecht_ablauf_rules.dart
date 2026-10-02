@@ -18,7 +18,10 @@ Gefechtspruefung pruefeManuelleGefechtsaktion(
 }) {
   final basis = pruefeGefechtsaktion(
     // Das explizite Budget wird unten geprüft; Grundsperren bleiben erhalten.
-    s.copyWith(angriffeVerbraucht: 0, paradenVerbraucht: 0),
+    s.copyWith(
+      angriffeVerbraucht: gefechtsInitiative(s, w) < 0 ? 1 : 0,
+      paradenVerbraucht: 0,
+    ),
     w,
     Gefechtsaktion.handlung,
     manuellerZielwert: zielwert,
@@ -32,7 +35,7 @@ Gefechtspruefung pruefeManuelleGefechtsaktion(
     sperren.add('Kosten müssen zwischen 0 und 2 liegen.');
   }
   for (var i = 0; i < kosten; i++) {
-    if (a < gefechtsAngriffe(s)) {
+    if (a < gefechtsAngriffe(s) && gefechtsInitiative(s, w) >= 0) {
       a++;
     } else {
       p++;

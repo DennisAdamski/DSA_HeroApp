@@ -4,6 +4,7 @@ import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
 
 import 'hero_requirement_context.dart';
+import 'gefecht_wirken_rules.dart';
 
 /// Baut eine tatsächliche Zauberprobe; Dauer und Kosten bleiben separat geprüft.
 ResolvedProbeRequest? gefechtsZauberprobe(
@@ -38,12 +39,16 @@ ResolvedProbeRequest? gefechtsZauberprobe(
 /// Verwendet die tatsächlich gelernte Liturgiekenntnis samt drei Eigenschaften.
 ResolvedProbeRequest? gefechtsLiturgieprobe(
   HeroComputedSnapshot snapshot,
-  TalentDef talent,
-) {
+  TalentDef talent, {
+  List<String>? eigenschaften,
+}) {
   final entry = snapshot.hero.talents[talent.id];
   if (entry?.talentValue == null || talent.attributes.length != 3) return null;
   final targets = <ProbeTargetValue>[];
-  for (final name in talent.attributes) {
+  for (final name
+      in eigenschaften ??
+          gefechtsEigenschaftenFuerKult(talent.name) ??
+          talent.attributes) {
     final code = parseAttributeCode(name);
     if (code == null) return null;
     targets.add(
@@ -53,6 +58,7 @@ ResolvedProbeRequest? gefechtsLiturgieprobe(
       ),
     );
   }
+  if (targets.length != 3) return null;
   return ResolvedProbeRequest(
     type: ProbeType.talent,
     title: talent.name,
@@ -62,6 +68,43 @@ ResolvedProbeRequest? gefechtsLiturgieprobe(
     targets: targets,
     basePool: entry!.talentValue! + entry.modifier,
   );
+}
+
+/// Baut eine Talentprobe aus denselben frischen Eigenschaften wie die Liturgie.
+ResolvedProbeRequest? gefechtsTalentprobe(
+  HeroComputedSnapshot snapshot,
+  TalentDef talent,
+) => gefechtsLiturgieprobe(snapshot, talent, eigenschaften: talent.attributes);
+
+/// Erkennt eindeutige Kulte aus der tatsächlichen Liturgiekenntnis.
+List<String>? gefechtsEigenschaftenFuerKult(String name) {
+  final matches =
+      [
+            'praios',
+            'ucuri',
+            'rondra',
+            'kor',
+            'swafnir',
+            'efferd',
+            'travia',
+            'boron',
+            'hesinde',
+            'nandus',
+            'firun',
+            'ifirn',
+            'tsa',
+            'phex',
+            'aves',
+            'peraine',
+            'ingerimm',
+            'rahja',
+          ]
+          .where(
+            (k) =>
+                RegExp('(^|[^a-z])$k([^a-z]|\$)').hasMatch(name.toLowerCase()),
+          )
+          .toList();
+  return matches.length == 1 ? gefechtsKultEigenschaften(matches.single) : null;
 }
 
 /// Erlernte karmale Sonderfertigkeiten werden über vorhandene Namen aufgelöst.
