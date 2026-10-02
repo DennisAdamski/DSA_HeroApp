@@ -13,6 +13,7 @@ void main() {
     );
     final s = beginneGefecht(6).copyWith(
       umwandlung: Gefechtsumwandlung.zweiteParade,
+      defensiverStil: true,
       paradenVerbraucht: 1,
     );
     expect(pruefeGefechtsaktion(s, w, Gefechtsaktion.parade).erschwernis, 0);

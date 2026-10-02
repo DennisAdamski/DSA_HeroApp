@@ -119,7 +119,17 @@ Gefechtszustand wandleGefechtUm(
       'Ansage ist bereits gebunden. Manuelle Korrektur verwenden.',
     );
   }
-  return s.copyWith(umwandlung: u, ansageGebunden: true);
+  return s.copyWith(
+    umwandlung: u,
+    ansageGebunden: true,
+    defensiverStil:
+        u == Gefechtsumwandlung.zweiteParade &&
+        werte?.defensiverKampfstil == true &&
+        s.angriffeVerbraucht == 0 &&
+        s.paradenVerbraucht == 0 &&
+        s.freieVerbraucht == 0 &&
+        s.zusatzVerbraucht == 0,
+  );
 }
 
 /// Vorhandene SF erlauben spätere Ansagen; der tatsächliche Zeitpunkt bleibt geprüft.
@@ -163,6 +173,7 @@ Gefechtszustand naechsteGefechtsrunde(Gefechtszustand s) {
     regulaereParade: false,
     umwandlung: Gefechtsumwandlung.normal,
     ansageGebunden: false,
+    defensiverStil: false,
     resetBonus: true,
   );
 }
@@ -184,6 +195,9 @@ Gefechtspruefung pruefeGefechtsaktion(
 }) {
   final pruefen = <String>[...pruefGruende];
   final sperren = <String>[...sperrGruende];
+  if (w.umwandlungVerboten && s.umwandlung != Gefechtsumwandlung.normal) {
+    sperren.add('Geführte Waffe verbietet die angesagte Umwandlung.');
+  }
   if (s.kontext.halbschwert && !w.halbschwert) {
     sperren.add('Halbschwertführung ohne aktive Sonderfertigkeit.');
   }
@@ -287,7 +301,7 @@ Gefechtspruefung pruefeGefechtsaktion(
         erschwernis +=
             aktion == Gefechtsaktion.schildparade ||
                 w.stabUmwandlung ||
-                w.defensiverKampfstil
+                s.defensiverStil
             ? 0
             : 4;
       }
@@ -312,7 +326,7 @@ Gefechtspruefung pruefeGefechtsaktion(
     case Gefechtsaktion.position:
     case Gefechtsaktion.orientieren:
     case Gefechtsaktion.handlung:
-      if (gefechtsAngriffe(s) > 0) {
+      if (gefechtsAngriffe(s) > 0 && gefechtsInitiative(s, w) >= 0) {
         a = 1;
       } else {
         p = 1;
@@ -351,6 +365,11 @@ Gefechtspruefung pruefeGefechtsaktion(
       !(aktion == Gefechtsaktion.handlung && handlungFortsetzen) &&
       !ausweichen) {
     sperren.add('Laufende Handlung zunächst abschließen oder abbrechen.');
+  }
+  if (s.handlung?.wirken != null && !handlungFortsetzen) {
+    sperren.add(
+      'Laufendes Wirken ausdrücklich auf Störung oder Abbruch prüfen.',
+    );
   }
   if (a > gefechtsAngriffe(s)) sperren.add('Keine Angriffsaktion verfügbar.');
   final paradenBudget = aktion == Gefechtsaktion.schildparade

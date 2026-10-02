@@ -480,3 +480,9 @@ Build-Tools-Instanz die Komponente `C++ ATL/MFC` nachinstallieren.
   separater Runtime-Katalog ausserhalb der editierbaren Settings-Sektionen.
 - Excel-Dateien im Repo-Root sind Upstream-Quellen fuer die Katalogaufbereitung.
 - Platzhalter- und Legacy-Dateien werden bewusst nicht automatisch entfernt.
+
+Die Gefechtsansicht f?hrt Orientieren, Gegner-/Distanzkontext, Ziehen und
+best?tigte Zauber-/Karmahandlungen ?ber gemeinsame Regelpr?fungen. Laufende
+Gefechte bleiben fl?chtig; Ressourcen und unterst?tzte Folgen werden ?ber
+bestehende frische Schreibwege ?bernommen. Regelquellen und manuelle Grenzen:
+[Gefechtsausbau](docs/gefecht_next_plan.md), [Implementierung](docs/gefecht_implementation.md).

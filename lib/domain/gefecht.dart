@@ -2,6 +2,7 @@ import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 
 import 'gefecht_kontext.dart';
+import 'gefecht_wirken.dart';
 
 /// Verlässlichkeit einer Aktionsfreigabe; Prüfen benötigt eine Bestätigung.
 enum Gefechtsfreigabe { bereit, pruefen, gesperrt }
@@ -51,6 +52,9 @@ class Gefechtshandlung {
     this.art = Gefechtshandlungsart.manuell,
     this.ergebnis,
     this.nebenhand,
+    this.wirken,
+    this.kostenUebernommen = false,
+    this.gescheitert = false,
   });
   final Gefechtshandlungsart art;
   final ProbeResult? ergebnis;
@@ -61,6 +65,29 @@ class Gefechtshandlung {
   final ResolvedProbeRequest? probe;
   final MainWeaponSlot? waffe;
   final OffhandEquipmentEntry? nebenhand;
+  final GefechtsWirkprofil? wirken;
+  final bool kostenUebernommen, gescheitert;
+
+  /// Fortschritt erhält die bestätigten Eingaben und das einmalige Ergebnis.
+  Gefechtshandlung copyWith({
+    int? verbleibend,
+    ProbeResult? ergebnis,
+    bool? kostenUebernommen,
+    bool? gescheitert,
+  }) => Gefechtshandlung(
+    titel: titel,
+    verbleibend: verbleibend ?? this.verbleibend,
+    art: art,
+    waffenId: waffenId,
+    waffenIndex: waffenIndex,
+    waffe: waffe,
+    nebenhand: nebenhand,
+    probe: probe,
+    wirken: wirken,
+    ergebnis: ergebnis ?? this.ergebnis,
+    kostenUebernommen: kostenUebernommen ?? this.kostenUebernommen,
+    gescheitert: gescheitert ?? this.gescheitert,
+  );
 }
 
 /// Ausschließlich flüchtiger, unveränderlicher Zustand eines Gefechts.
@@ -90,6 +117,9 @@ class Gefechtszustand {
     this.auftrag,
     this.revision = 0,
     this.kontext = const Gefechtskontext(),
+    this.karmaleFehlversuche = const {},
+    this.mirakelbonus,
+    this.defensiverStil = false,
   });
   final int runde, iniWurf, iniVerlust;
   final int geschuetzterIniVerlust, ungeklaerterIniVerlust;
@@ -110,6 +140,9 @@ class Gefechtszustand {
   final String? auftrag;
   final int revision;
   final Gefechtskontext kontext;
+  final Map<String, int> karmaleFehlversuche;
+  final GefechtsProbenbonus? mirakelbonus;
+  final bool defensiverStil;
 
   /// Ändert nur benannte Sitzungsteile; kein JSON oder Heldenformat betroffen.
   Gefechtszustand copyWith({
@@ -140,6 +173,10 @@ class Gefechtszustand {
     int? revision,
     bool ohneDk = false,
     Gefechtskontext? kontext,
+    Map<String, int>? karmaleFehlversuche,
+    GefechtsProbenbonus? mirakelbonus,
+    bool ohneMirakelbonus = false,
+    bool? defensiverStil,
   }) => Gefechtszustand(
     runde: runde ?? this.runde,
     iniWurf: iniWurf ?? this.iniWurf,
@@ -162,6 +199,9 @@ class Gefechtszustand {
     gegner: gegner ?? this.gegner,
     dk: ohneDk ? null : dk ?? this.dk,
     kontext: kontext ?? this.kontext,
+    karmaleFehlversuche: karmaleFehlversuche ?? this.karmaleFehlversuche,
+    mirakelbonus: ohneMirakelbonus ? null : mirakelbonus ?? this.mirakelbonus,
+    defensiverStil: defensiverStil ?? this.defensiverStil,
     fixierterIniBonus: resetBonus
         ? null
         : fixierterIniBonus ?? this.fixierterIniBonus,

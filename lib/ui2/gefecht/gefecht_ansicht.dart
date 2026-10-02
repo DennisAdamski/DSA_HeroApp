@@ -22,10 +22,11 @@ import 'gefecht_rundenleiste.dart';
 import 'gefecht_ausruestung.dart';
 import 'gefecht_magie.dart';
 import 'gefecht_manoeverliste.dart';
-import 'gefecht_orientieren.dart';
-import 'gefecht_schuss.dart';
+import 'gefecht_wirken.dart';
+import 'gefecht_aktion_ausfuehren.dart';
 
-import 'package:dsa_heldenverwaltung/rules/derived/gefecht_kontext_rules.dart';
+import 'gefecht_handlungskarte.dart';
+import 'gefecht_unterbrechung.dart';
 
 /// Responsive Spielansicht eines flüchtigen Gefechts mit echten Heldendaten.
 class GefechtAnsicht extends ConsumerStatefulWidget {
@@ -43,7 +44,6 @@ class GefechtAnsicht extends ConsumerStatefulWidget {
 
 class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
   bool _busy = false;
-  int _nummer = 0;
   GefechtsController get _controller =>
       ref.read(gefechtProvider(widget.heroId).notifier);
   KartoGefechtsAdapter get _bruecke => widget.bestand as KartoGefechtsAdapter;
@@ -97,7 +97,7 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
               )
             : LayoutBuilder(
                 builder: (context, constraints) {
-                  final w = gefechtswerteFuer(snapshot);
+                  final w = gefechtswerteFuer(snapshot, katalog: katalog);
                   final angriff = _angriff(s, snapshot, katalog);
                   final verteidigung = _verteidigung(s, snapshot, katalog);
                   final manoever = _manoever(s, snapshot, katalog);
@@ -106,6 +106,24 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
                     werte: snapshot,
                     katalog: katalog,
                     gesperrt: _busy,
+                    onZauber: (z) => _run(
+                      () => zeigeGefechtsWirken(
+                        context: context,
+                        ref: ref,
+                        heroId: widget.heroId,
+                        bestand: _bruecke,
+                        zauber: z,
+                      ),
+                    ),
+                    onKarma: (t) => _run(
+                      () => zeigeGefechtsWirken(
+                        context: context,
+                        ref: ref,
+                        heroId: widget.heroId,
+                        bestand: _bruecke,
+                        talent: t,
+                      ),
+                    ),
                     onAuftrag: (titel, probe, beschreibung) => _run(
                       () => _aktion(
                         s,
@@ -429,7 +447,6 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
     ),
   );
 
-  // Ergebnisbuchung erfolgt beim Abschluss der Probe, auch vor Schließen des Dialogs.
   Future<void> _aktion(
     Gefechtszustand s,
     HeroComputedSnapshot snapshot,
@@ -441,200 +458,51 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
     bool manuell = false,
     String? beschreibung,
   }) async {
-    if (k == null) return;
-    if (aktion == Gefechtsaktion.orientieren ||
-        aktion == Gefechtsaktion.position && s.desorientiert) {
-      await zeigeOrientieren(
-        context: context,
-        ref: ref,
-        heroId: widget.heroId,
-        bestand: _bruecke,
-        position: aktion == Gefechtsaktion.position,
-      );
-      return;
-    }
-    if (beschreibung != null) {
-      await showDialog<void>(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text(titel),
-          content: SingleChildScrollView(child: Text(beschreibung)),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Weiter'),
-            ),
-          ],
-        ),
-      );
-      if (!mounted) return;
-    }
-    final auftrag = await showDialog<GefechtAuftrag>(
+    await fuehreGefechtsaktionAus(
       context: context,
-      builder: (_) => GefechtAktionsdialog(
-        zustand: s,
-        werte: snapshot,
-        katalog: k,
-        aktion: aktion,
-        titel: titel,
-        manoever: m,
-        probe: probe,
-        manuell: manuell,
-      ),
-    );
-    if (auftrag == null || !mounted) return;
-    final frisch = ref.read(heroComputedProvider(widget.heroId)).asData?.value;
-    final aktuell = ref.read(gefechtProvider(widget.heroId));
-    if (frisch == null || aktuell == null) return;
-    final p = pruefeGefechtAuftrag(aktuell, frisch, k, auftrag);
-    if (p.status == Gefechtsfreigabe.gesperrt) {
-      throw StateError(p.gruende.join(' '));
-    }
-    _controller.setzen(
-      aktuell.copyWith(dk: auftrag.dk, kontext: auftrag.kontext),
-    );
-    final id = 'auftrag-${_nummer++}';
-    if (!_controller.reservieren(id)) return;
-    final request = gefechtRequestFuerAuftrag(auftrag, p);
-    final restHandlung = gefechtHandlungNachAuftrag(
+      ref: ref,
+      heroId: widget.heroId,
+      bestand: _bruecke,
+      s: s,
+      snapshot: snapshot,
+      k: k,
+      aktion: aktion,
       titel: titel,
-      dauer: auftrag.dauer,
-      pruefung: p,
-      probe: probe != null ? request : null,
+      m: m,
+      probe: probe,
+      manuell: manuell,
+      beschreibung: beschreibung,
     );
-    ProbeResult? gewuerfelt;
-    void buchen([ProbeResult? result]) {
-      gewuerfelt ??= result;
-      final w = gefechtswerteFuer(frisch);
-      if (!_controller.abschliessen(id, w, p, erfolg: result?.success)) return;
-      final jetzt = ref.read(gefechtProvider(widget.heroId))!;
-      if (restHandlung != null) {
-        _controller.setzen(jetzt.copyWith(handlung: restHandlung));
-      }
-      if (result != null &&
-          frisch.combatPreviewStats.isRangedWeapon &&
-          auftrag.aktion == Gefechtsaktion.angriff) {
-        _controller.setzen(
-          jetzt.copyWith(
-            handlung: Gefechtshandlung(
-              titel: 'Schuss · Munition übernehmen',
-              verbleibend: 0,
-              art: Gefechtshandlungsart.fernkampf,
-              ergebnis: result,
-              waffe: frisch.hero.combatConfig.selectedWeapon,
-            ),
-          ),
-        );
-      }
-    }
-
-    try {
-      // Längere Zauber werden erst nach ihrer bestätigten Dauer ausgewertet.
-      if (request == null || probe != null && restHandlung != null) {
-        buchen();
-      } else {
-        await _bruecke.gefechtsProbe(
-          context: context,
-          ref: ref,
-          heroId: widget.heroId,
-          request: request,
-          onResolved: buchen,
-        );
-      }
-      if (gewuerfelt?.success == true && auftrag.distanzSchritte > 0) {
-        _controller.setzen(
-          ref
-              .read(gefechtProvider(widget.heroId))!
-              .copyWith(
-                dk: naechsteGefechtsDk(auftrag.dk, auftrag.distanzSchritte),
-              ),
-        );
-      }
-      if (gewuerfelt?.success == true &&
-          auftrag.distanzSchritte < 0 &&
-          mounted) {
-        final abgewehrt = await showDialog<bool>(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('Annäherung abwickeln'),
-            content: const Text(
-              'Kein Schaden. Hat der Gegner erfolgreich abgewehrt? Die freie Aktion Schritt am Spieltisch berücksichtigen.',
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, true),
-                child: const Text('Abgewehrt'),
-              ),
-              FilledButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: const Text('Nicht abgewehrt'),
-              ),
-            ],
-          ),
-        );
-        if (abgewehrt == false) {
-          _controller.setzen(
-            ref
-                .read(gefechtProvider(widget.heroId))!
-                .copyWith(
-                  dk: naechsteGefechtsDk(auftrag.dk, auftrag.distanzSchritte),
-                ),
-          );
-        }
-      }
-    } finally {
-      _controller.abbrechen(id);
-    }
-    if (ref.read(gefechtProvider(widget.heroId))?.handlung?.art ==
-            Gefechtshandlungsart.fernkampf &&
-        mounted) {
-      await uebernimmGefechtsSchuss(
-        context: context,
-        ref: ref,
-        heroId: widget.heroId,
-        bestand: _bruecke,
-      );
-    }
   }
 
-  Widget _handlung(Gefechtszustand s, HeroComputedSnapshot snapshot) => Card(
-    child: Padding(
-      padding: const EdgeInsets.all(12),
-      child: Wrap(
-        spacing: 12,
-        runSpacing: 8,
-        crossAxisAlignment: WrapCrossAlignment.center,
-        children: [
-          Text(
-            '${s.handlung!.titel} · noch ${s.handlung!.verbleibend} Aktionen',
+  Widget _handlung(Gefechtszustand s, HeroComputedSnapshot snapshot) =>
+      gefechtsHandlungskarte(
+        s,
+        gesperrt: _busy,
+        onFortsetzen: () => _run(
+          () => setzeGefechtsausruestungFort(
+            context: context,
+            ref: ref,
+            heroId: widget.heroId,
+            bestand: _bruecke,
           ),
-          FilledButton.tonal(
-            onPressed: _busy
-                ? null
-                : () => _run(
-                    () => setzeGefechtsausruestungFort(
-                      context: context,
-                      ref: ref,
-                      heroId: widget.heroId,
-                      bestand: _bruecke,
-                    ),
-                  ),
-            child: Text(
-              s.handlung!.verbleibend == 0
-                  ? 'Übernahme erneut versuchen'
-                  : 'Fortsetzen',
-            ),
+        ),
+        onAbbruch: () => _run(
+          () => brecheGefechtsHandlungAb(
+            context: context,
+            ref: ref,
+            heroId: widget.heroId,
           ),
-          TextButton(
-            onPressed: _busy
-                ? null
-                : () => _controller.setzen(s.copyWith(ohneHandlung: true)),
-            child: const Text('Handlung abbrechen'),
+        ),
+        onStoerung: () => _run(
+          () => stoereGefechtsWirken(
+            context: context,
+            ref: ref,
+            heroId: widget.heroId,
+            bestand: _bruecke,
           ),
-        ],
-      ),
-    ),
-  );
+        ),
+      );
   Future<void> _schaden(HeroComputedSnapshot snapshot) async {
     await _bruecke.gefechtsProbe(
       context: context,
@@ -652,6 +520,11 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
   }
 
   Future<void> _beenden() async {
+    if (ref.read(gefechtProvider(widget.heroId))?.handlung != null) {
+      throw StateError(
+        'Laufende Handlung zuerst abschließen oder Abbruch bestätigen.',
+      );
+    }
     final ok = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(

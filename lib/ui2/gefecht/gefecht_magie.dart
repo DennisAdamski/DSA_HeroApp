@@ -14,10 +14,14 @@ class GefechtMagie extends StatelessWidget {
     required this.katalog,
     required this.gesperrt,
     required this.onAuftrag,
+    this.onZauber,
+    this.onKarma,
   });
   final HeroComputedSnapshot werte;
   final RulesCatalog? katalog;
   final bool gesperrt;
+  final ValueChanged<SpellDef>? onZauber;
+  final ValueChanged<TalentDef>? onKarma;
   final void Function(
     String titel,
     ResolvedProbeRequest? probe,
@@ -43,13 +47,15 @@ class GefechtMagie extends StatelessWidget {
               TextButton(
                 onPressed: gesperrt
                     ? null
-                    : () => onAuftrag(
-                        zauber.name,
-                        gefechtsZauberprobe(werte, zauber),
-                        '${zauber.wirkung}\n'
-                        'Dauer: ${zauber.castingTime}\nKosten: ${zauber.aspCost}\n'
-                        'Reichweite: ${zauber.range}\nZiel: ${zauber.targetObject}',
-                      ),
+                    : () => onZauber != null
+                          ? onZauber!(zauber)
+                          : onAuftrag(
+                              zauber.name,
+                              gefechtsZauberprobe(werte, zauber),
+                              '${zauber.wirkung}\n'
+                              'Dauer: ${zauber.castingTime}\nKosten: ${zauber.aspCost}\n'
+                              'Reichweite: ${zauber.range}\nZiel: ${zauber.targetObject}',
+                            ),
                 child: Text('${zauber.name} · prüfen'),
               ),
           if (werte.resourceActivation.divine.isEnabled) ...[
@@ -59,12 +65,14 @@ class GefechtMagie extends StatelessWidget {
                 TextButton(
                   onPressed: gesperrt
                       ? null
-                      : () => onAuftrag(
-                          talent.name,
-                          gefechtsLiturgieprobe(werte, talent),
-                          'Tatsächliche Liturgiekenntnis; Liturgie, Grad, Modifikatoren, Zeitpunkt, '
-                          'Dauer und KaP-Kosten ausdrücklich bestätigen.',
-                        ),
+                      : () => onKarma != null
+                            ? onKarma!(talent)
+                            : onAuftrag(
+                                talent.name,
+                                gefechtsLiturgieprobe(werte, talent),
+                                'Tatsächliche Liturgiekenntnis; Liturgie, Grad, Modifikatoren, Zeitpunkt, '
+                                'Dauer und KaP-Kosten ausdrücklich bestätigen.',
+                              ),
                   child: Text('${talent.name} · prüfen'),
                 ),
             for (final sf

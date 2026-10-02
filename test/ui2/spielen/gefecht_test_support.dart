@@ -12,6 +12,7 @@ class GefechtsTestBestand extends TestBestand implements KartoGefechtsAdapter {
   final anfragen = <ResolvedProbeRequest>[];
   bool abbrechen = false;
   bool doppelt = false;
+  int w20Wert = 10;
   Future<void>? vorErgebnis;
   @override
   Future<ProbeResult?> gefechtsProbe({
@@ -30,7 +31,7 @@ class GefechtsTestBestand extends TestBestand implements KartoGefechtsAdapter {
         mode: ProbeRollMode.manual,
         diceValues: List.filled(
           request.diceSpec.count,
-          request.diceSpec.sides == 6 ? 6 : 10,
+          request.diceSpec.sides == 6 ? 6 : w20Wert,
         ),
         situationalModifier: request.initialSituationalModifier,
         specializationApplied: false,
