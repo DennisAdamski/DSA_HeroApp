@@ -3,6 +3,7 @@ import 'package:dsa_heldenverwaltung/domain/gefecht.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_ablauf_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_orientieren_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/gefecht_kontext_rules.dart';
 
 /// Platzsparende Rundensteuerung mit direkter, verbindlicher Umwandlungsansage.
 class GefechtRundenleiste extends StatelessWidget {
@@ -164,6 +165,16 @@ class GefechtRundenleiste extends StatelessWidget {
                 TextButton(
                   onPressed: gesperrt
                       ? null
+                      : () => onAktion(() => _kontakt(context)),
+                  child: Text(
+                    zustand.kontext.kontakt.isEmpty
+                        ? 'Gegnerkontakt'
+                        : zustand.kontext.kontakt,
+                  ),
+                ),
+                TextButton(
+                  onPressed: gesperrt
+                      ? null
                       : () => onAktion(() => _korrigieren(context)),
                   child: const Text('Manuelle Korrektur'),
                 ),
@@ -180,6 +191,36 @@ class GefechtRundenleiste extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  // Die Korrektur ist bewusst getrennt von der verbindlichen Ansage.
+  Future<void> _kontakt(BuildContext context) async {
+    final text = TextEditingController(text: zustand.kontext.kontakt);
+    final name = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Aktiver Gegnerkontakt'),
+        content: TextField(
+          controller: text,
+          decoration: const InputDecoration(labelText: 'Name / Beschreibung'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Abbrechen'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, text.text),
+            child: const Text('Kontakt wechseln'),
+          ),
+        ],
+      ),
+    );
+    if (name != null && name.trim() != zustand.kontext.kontakt) {
+      onAendern(wechsleGefechtskontakt(zustand, name));
+    }
+    await Future<void>.delayed(const Duration(milliseconds: 300));
+    text.dispose();
   }
 
   // Die Korrektur ist bewusst getrennt von der verbindlichen Ansage.

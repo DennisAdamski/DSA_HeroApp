@@ -2,6 +2,7 @@ import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 
 import 'gefecht.dart';
 import 'probe_engine.dart';
+import 'gefecht_kontext.dart';
 
 /// Geprüfter Auftrag; die Ausführung validiert ihn auf aktuellen Werten erneut.
 class GefechtAuftrag {
@@ -20,6 +21,8 @@ class GefechtAuftrag {
     this.grosserGegner = false,
     this.grosserSchild = false,
     this.zusatzParade = false,
+    this.kontext,
+    this.distanzSchritte = 0,
   });
   final Gefechtsaktion aktion;
   final String titel;
@@ -29,4 +32,6 @@ class GefechtAuftrag {
   final ManeuverDef? manoever;
   final ResolvedProbeRequest? probe;
   final bool manuell, grosserGegner, grosserSchild, zusatzParade;
+  final Gefechtskontext? kontext;
+  final int distanzSchritte;
 }

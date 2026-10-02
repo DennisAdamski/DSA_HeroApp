@@ -23,6 +23,9 @@ import 'gefecht_ausruestung.dart';
 import 'gefecht_magie.dart';
 import 'gefecht_manoeverliste.dart';
 import 'gefecht_orientieren.dart';
+import 'gefecht_schuss.dart';
+
+import 'package:dsa_heldenverwaltung/rules/derived/gefecht_kontext_rules.dart';
 
 /// Responsive Spielansicht eines flüchtigen Gefechts mit echten Heldendaten.
 class GefechtAnsicht extends ConsumerStatefulWidget {
@@ -487,7 +490,9 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
     if (p.status == Gefechtsfreigabe.gesperrt) {
       throw StateError(p.gruende.join(' '));
     }
-    _controller.setzen(aktuell.copyWith(dk: auftrag.dk));
+    _controller.setzen(
+      aktuell.copyWith(dk: auftrag.dk, kontext: auftrag.kontext),
+    );
     final id = 'auftrag-${_nummer++}';
     if (!_controller.reservieren(id)) return;
     final request = gefechtRequestFuerAuftrag(auftrag, p);
@@ -497,12 +502,29 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
       pruefung: p,
       probe: probe != null ? request : null,
     );
+    ProbeResult? gewuerfelt;
     void buchen([ProbeResult? result]) {
+      gewuerfelt ??= result;
       final w = gefechtswerteFuer(frisch);
       if (!_controller.abschliessen(id, w, p, erfolg: result?.success)) return;
       final jetzt = ref.read(gefechtProvider(widget.heroId))!;
       if (restHandlung != null) {
         _controller.setzen(jetzt.copyWith(handlung: restHandlung));
+      }
+      if (result != null &&
+          frisch.combatPreviewStats.isRangedWeapon &&
+          auftrag.aktion == Gefechtsaktion.angriff) {
+        _controller.setzen(
+          jetzt.copyWith(
+            handlung: Gefechtshandlung(
+              titel: 'Schuss · Munition übernehmen',
+              verbleibend: 0,
+              art: Gefechtshandlungsart.fernkampf,
+              ergebnis: result,
+              waffe: frisch.hero.combatConfig.selectedWeapon,
+            ),
+          ),
+        );
       }
     }
 
@@ -519,8 +541,59 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
           onResolved: buchen,
         );
       }
+      if (gewuerfelt?.success == true && auftrag.distanzSchritte > 0) {
+        _controller.setzen(
+          ref
+              .read(gefechtProvider(widget.heroId))!
+              .copyWith(
+                dk: naechsteGefechtsDk(auftrag.dk, auftrag.distanzSchritte),
+              ),
+        );
+      }
+      if (gewuerfelt?.success == true &&
+          auftrag.distanzSchritte < 0 &&
+          mounted) {
+        final abgewehrt = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Annäherung abwickeln'),
+            content: const Text(
+              'Kein Schaden. Hat der Gegner erfolgreich abgewehrt? Die freie Aktion Schritt am Spieltisch berücksichtigen.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text('Abgewehrt'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Nicht abgewehrt'),
+              ),
+            ],
+          ),
+        );
+        if (abgewehrt == false) {
+          _controller.setzen(
+            ref
+                .read(gefechtProvider(widget.heroId))!
+                .copyWith(
+                  dk: naechsteGefechtsDk(auftrag.dk, auftrag.distanzSchritte),
+                ),
+          );
+        }
+      }
     } finally {
       _controller.abbrechen(id);
+    }
+    if (ref.read(gefechtProvider(widget.heroId))?.handlung?.art ==
+            Gefechtshandlungsart.fernkampf &&
+        mounted) {
+      await uebernimmGefechtsSchuss(
+        context: context,
+        ref: ref,
+        heroId: widget.heroId,
+        bestand: _bruecke,
+      );
     }
   }
 
@@ -546,7 +619,11 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
                       bestand: _bruecke,
                     ),
                   ),
-            child: const Text('Fortsetzen'),
+            child: Text(
+              s.handlung!.verbleibend == 0
+                  ? 'Übernahme erneut versuchen'
+                  : 'Fortsetzen',
+            ),
           ),
           TextButton(
             onPressed: _busy

@@ -7,6 +7,12 @@ import 'package:dsa_heldenverwaltung/rules/derived/gefecht_auftrag_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_ablauf_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_held_rules.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
+import 'package:dsa_heldenverwaltung/domain/gefecht_kontext.dart';
+
+import 'gefecht_kontextfelder.dart';
+import 'gefecht_fernkampffelder.dart';
+
+import 'package:dsa_heldenverwaltung/rules/derived/gefecht_kontext_rules.dart';
 
 /// Fragt fehlenden Kontext ab, ohne erkannte Sperren übergehen zu können.
 class GefechtAktionsdialog extends StatefulWidget {
@@ -42,10 +48,13 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
   String? _dk;
   bool _bestaetigt = false, _grosserGegner = false, _grosserSchild = false;
   bool _zusatzParade = false;
+  late Gefechtskontext _kontext;
+  int _distanzSchritte = 0;
   @override
   void initState() {
     super.initState();
     _dk = widget.zustand.dk;
+    _kontext = widget.zustand.kontext;
     if (widget.manoever != null) {
       _zuschlag.text = '${gefechtsManoeverZuschlag(widget.manoever!)}';
     }
@@ -74,6 +83,8 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
     grosserGegner: _grosserGegner,
     grosserSchild: _grosserSchild,
     zusatzParade: _zusatzParade,
+    kontext: _kontext.copyWith(weitereRegelnGeprueft: _bestaetigt),
+    distanzSchritte: _distanzSchritte,
   );
   @override
   Widget build(BuildContext context) {
@@ -144,6 +155,57 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
                   child: Text('• $grund'),
                 ),
               const SizedBox(height: 16),
+              if (widget.aktion == Gefechtsaktion.angriff &&
+                  !widget.werte.combatPreviewStats.isRangedWeapon)
+                DropdownButtonFormField<int>(
+                  isExpanded: true,
+                  initialValue: _distanzSchritte,
+                  decoration: const InputDecoration(
+                    labelText: 'Angriffsabsicht',
+                  ),
+                  items: const [
+                    DropdownMenuItem(value: 0, child: Text('Treffer')),
+                    DropdownMenuItem(
+                      value: -1,
+                      child: Text('Eine DK annähern (kein Schaden)'),
+                    ),
+                    DropdownMenuItem(
+                      value: -2,
+                      child: Text('Zwei DK annähern (+8)'),
+                    ),
+                    DropdownMenuItem(
+                      value: 1,
+                      child: Text('Eine DK entfernen (+4)'),
+                    ),
+                    DropdownMenuItem(
+                      value: 2,
+                      child: Text('Zwei DK entfernen (+8)'),
+                    ),
+                  ],
+                  onChanged: (v) => setState(() {
+                    _distanzSchritte = v!;
+                    _bestaetigt = false;
+                  }),
+                ),
+              if (widget.aktion == Gefechtsaktion.angriff &&
+                  widget.werte.combatPreviewStats.isRangedWeapon)
+                GefechtFernkampffelder(
+                  kontext: _kontext,
+                  onChanged: (k) => setState(() {
+                    _kontext = k;
+                    _bestaetigt = false;
+                  }),
+                ),
+              GefechtKontextfelder(
+                kontext: _kontext,
+                aktion: widget.aktion,
+                onChanged: (k) => setState(() {
+                  _kontext = k;
+                  _bestaetigt = false;
+                }),
+              ),
+              for (final m in p.modifikatoren)
+                Text('${m.name}: ${m.wert >= 0 ? '+' : ''}${m.wert}'),
               DropdownButtonFormField<String>(
                 isExpanded: true,
                 initialValue: _dk,
@@ -218,6 +280,11 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
               gueltig &&
                   p.status != Gefechtsfreigabe.gesperrt &&
                   _bestaetigt &&
+                  gefechtsPflichtkontextErfasst(
+                    _kontext,
+                    widget.aktion,
+                    fernkampf: widget.werte.combatPreviewStats.isRangedWeapon,
+                  ) &&
                   (!gefechtAuftragBrauchtDk(
                         auftrag,
                         gefechtswerteFuer(widget.werte),

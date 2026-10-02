@@ -29,6 +29,9 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   Der Folgeplan steht in [docs/gefecht_next_plan.md](docs/gefecht_next_plan.md).
   `gefecht_orientieren_rules.dart` trennt Kampfverluste von geschützten und
   ungeklärten Korrekturen; der Orientierungsdialog nutzt frische Heldendaten.
+  `gefecht_kontext.dart` hält ausschließlich flüchtige Kontakt-/Angriffsdaten.
+  Kontext- und Fernkampfregelmodule liefern gemeinsame DK-Sperren und
+  Modifikatoranteile; ein gewürfelter Schuss hält seine offene Munitionsübernahme.
 - [Redesign umsetzen](docs/redesign_implementation.md) enthält drei aufeinander
   aufbauende Agentenpläne, Startprompts und die gemeinsame Umsetzungsspezifikation
   unter `docs/superpowers/`. Ausgangspunkt ist das vorhandene UI2-Fundament;

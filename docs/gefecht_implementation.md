@@ -19,6 +19,13 @@ Magie- und Karmaregeln müssen ausdrücklich geprüft werden. Bekannte Sperren
 bleiben dabei verbindlich. Dauerhafte Änderungen verwenden die bestehenden
 Schreibwege auf dem frisch geladenen Helden.
 
+Der Ausbau nach `1b79203` ist in `gefecht_next_plan.md` nachgeführt. Kontakt und
+Angriffsart werden flüchtig erfasst. AT/PA und Ausweichen prüfen tatsächliche DK;
+Finte wird nach einer Abwehr nicht in den nächsten Angriff übernommen. Fernkampf
+verwendet numerische Entfernungsprofile, bestätigte Situation und Ladezustand.
+Ein gewürfelter Schuss hält seine offene Munitionsübernahme bei Schreibfehlern,
+statt eine zweite Probe zu verlangen. Sonderangriffe bleiben manuell geprüft.
+
 Aufmerksamkeit übernimmt den vorhandenen festen INI-Wurf (einschließlich
 Klingentänzer) und überspringt den Dialog. Das ist die gewünschte App-Regel;
 WdS gewährt das Maximum erst beim Orientieren.

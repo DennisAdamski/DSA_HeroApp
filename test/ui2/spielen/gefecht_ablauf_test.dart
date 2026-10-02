@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
@@ -118,6 +121,8 @@ void main() {
         final bestand = GefechtsTestBestand()
           ..abbrechen = abbrechen
           ..doppelt = true;
+        final freigabe = Completer<void>();
+        bestand.vorErgebnis = freigabe.future;
         await tester.pumpWidget(
           UncontrolledProviderScope(
             container: container,
@@ -137,7 +142,11 @@ void main() {
         );
         await tester.pumpAndSettle();
         await tester.tap(find.byKey(const ValueKey('gefecht-auftrag-starten')));
-        await tester.tap(find.byKey(const ValueKey('gefecht-auftrag-starten')));
+        await tester.pump(const Duration(milliseconds: 400));
+        await tester.ensureVisible(find.textContaining('Angreifen').first);
+        await tester.tap(find.textContaining('Angreifen').first);
+        expect(bestand.anfragen.length, 1);
+        freigabe.complete();
         await tester.pumpAndSettle();
         expect(bestand.anfragen.length, 1);
         expect(
