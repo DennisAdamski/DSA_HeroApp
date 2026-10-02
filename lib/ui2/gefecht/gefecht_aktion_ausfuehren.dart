@@ -104,7 +104,7 @@ Future<void> fuehreGefechtsaktionAus({
   ProbeResult? gewuerfelt;
   void buchen([ProbeResult? result]) {
     gewuerfelt ??= result;
-    final w = gefechtswerteFuer(frisch);
+    final w = gefechtswerteFuer(frisch, katalog: k, kampfmittel: auftrag.kampfmittel);
     if (!controller.abschliessen(id, w, p, erfolg: result?.success)) return;
     if (result != null &&
         request != null &&

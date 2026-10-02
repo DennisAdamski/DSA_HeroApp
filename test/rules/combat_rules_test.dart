@@ -775,7 +775,7 @@ void main() {
     },
   );
 
-  test('parry weapon applies only its new main-hand modifiers', () {
+  test('parry weapon changes parade but keeps main-hand attack unchanged', () {
     final noOffhand = hero(
       talents: const {'tal_waffe': HeroTalentEntry(atValue: 6, paValue: 6)},
       combatConfig: const CombatConfig(
@@ -804,7 +804,8 @@ void main() {
     final noOffhandResult = preview(noOffhand);
     final withOffhandResult = preview(withOffhand);
 
-    expect(withOffhandResult.at, noOffhandResult.at + 2);
+    // WdS 71: Der AT-WM der Parierwaffe gilt für ihren eigenen Angriff.
+    expect(withOffhandResult.at, noOffhandResult.at);
     expect(withOffhandResult.pa, noOffhandResult.pa - 1);
   });
 

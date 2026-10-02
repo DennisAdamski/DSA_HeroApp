@@ -23,6 +23,7 @@ class GefechtAuftrag {
     this.zusatzParade = false,
     this.kontext,
     this.distanzSchritte = 0,
+    this.kampfmittel,
   });
   final Gefechtsaktion aktion;
   final String titel;
@@ -34,4 +35,5 @@ class GefechtAuftrag {
   final bool manuell, grosserGegner, grosserSchild, zusatzParade;
   final Gefechtskontext? kontext;
   final int distanzSchritte;
+  final GefechtsKampfmittelwahl? kampfmittel;
 }

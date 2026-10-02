@@ -56,6 +56,7 @@ OffhandModifierSnapshot computeOffhandModifierSnapshot({
   required CombatSpecialRules specialRules,
   required int paBase,
   int schildarmWundMalus = 0,
+  int paradeBehinderung = 0,
 }) {
   if (equipment == null) {
     return const OffhandModifierSnapshot();
@@ -65,7 +66,12 @@ OffhandModifierSnapshot computeOffhandModifierSnapshot({
     return OffhandModifierSnapshot(
       atMod: equipment.atMod,
       iniMod: equipment.iniMod,
-      shieldPa: paBase + equipment.paMod + shieldSfBonus + schildarmWundMalus,
+      shieldPa:
+          paBase +
+          equipment.paMod +
+          shieldSfBonus +
+          schildarmWundMalus +
+          paradeBehinderung,
       shieldPaBonus: equipment.paMod + shieldSfBonus,
       isShield: true,
       displayName: equipment.name,
@@ -75,7 +81,7 @@ OffhandModifierSnapshot computeOffhandModifierSnapshot({
   final hasLinkhand = specialRules.linkhandActive;
   if (!hasLinkhand) {
     return OffhandModifierSnapshot(
-      atMod: equipment.atMod,
+      atMod: 0,
       iniMod: equipment.iniMod,
       isParryWeapon: true,
       requiresLinkhandViolation: true,
@@ -83,7 +89,7 @@ OffhandModifierSnapshot computeOffhandModifierSnapshot({
     );
   }
   return OffhandModifierSnapshot(
-    atMod: equipment.atMod,
+    atMod: 0,
     iniMod: equipment.iniMod,
     mainPaMod: equipment.paMod + computeParryWeaponSfBonus(specialRules),
     isParryWeapon: true,

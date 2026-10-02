@@ -506,6 +506,7 @@ CombatPreviewStats computeCombatPreviewStats(
         computePa(effectiveSheet, mods) +
         computeAxxeleratusPaBaseBonus(axxeleratusActive: axxeleratusActive),
     schildarmWundMalus: wunden.schildarmAtPaMalus,
+    paradeBehinderung: paEbePart,
   );
 
   // --- Kampfbasiswerte (kampfbasis_rules) ---

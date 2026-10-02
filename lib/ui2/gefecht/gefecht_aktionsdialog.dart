@@ -13,6 +13,7 @@ import 'gefecht_kontextfelder.dart';
 import 'gefecht_fernkampffelder.dart';
 
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_kontext_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/gefecht_kampfmittel_rules.dart';
 
 /// Fragt fehlenden Kontext ab, ohne erkannte Sperren übergehen zu können.
 class GefechtAktionsdialog extends StatefulWidget {
@@ -27,6 +28,7 @@ class GefechtAktionsdialog extends StatefulWidget {
     this.manoever,
     this.probe,
     this.manuell = false,
+    this.kampfmittel,
   });
   final Gefechtszustand zustand;
   final HeroComputedSnapshot werte;
@@ -36,6 +38,7 @@ class GefechtAktionsdialog extends StatefulWidget {
   final ManeuverDef? manoever;
   final ResolvedProbeRequest? probe;
   final bool manuell;
+  final GefechtsKampfmittelwahl? kampfmittel;
   @override
   State<GefechtAktionsdialog> createState() => _GefechtAktionsdialogState();
 }
@@ -50,11 +53,20 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
   bool _zusatzParade = false;
   late Gefechtskontext _kontext;
   int _distanzSchritte = 0;
+  GefechtsKampfmittelwahl? _mittel;
   @override
   void initState() {
     super.initState();
     _dk = widget.zustand.dk;
     _kontext = widget.zustand.kontext;
+    _mittel =
+        widget.kampfmittel ??
+        gefechtsStandardKampfmittel(
+          widget.werte,
+          widget.manoever == null
+              ? widget.aktion
+              : gefechtsManoeveraktion(widget.manoever!),
+        );
     if (widget.manoever != null) {
       _zuschlag.text = '${gefechtsManoeverZuschlag(widget.manoever!)}';
     }
@@ -69,14 +81,19 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
   }
 
   // Auch alte Aufrufer erhalten den fachlich richtigen Abwehrkontext.
-  Gefechtsaktion get _aktion => widget.manoever == null
-      ? widget.aktion
-      : gefechtsManoeveraktion(widget.manoever!);
+  Gefechtsaktion get _aktion => gefechtsAktionMitKampfmittel(
+    widget.manoever == null
+        ? widget.aktion
+        : gefechtsManoeveraktion(widget.manoever!),
+    _mittel,
+  );
 
   // Das Formular liefert Daten; Freigaben und Zielwertrechnung bleiben im Modul.
   GefechtAuftrag _auftrag() => GefechtAuftrag(
     aktion: _aktion,
-    titel: widget.titel,
+    titel: _mittel == null || widget.manuell
+        ? widget.titel
+        : '${widget.titel} · ${gefechtsKampfmittelFuer(widget.werte, _mittel)?.name}',
     zuschlag: int.tryParse(_zuschlag.text) ?? 0,
     zielwert: int.tryParse(_ziel.text),
     dk: _dk,
@@ -90,10 +107,19 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
     zusatzParade: _zusatzParade,
     kontext: _kontext.copyWith(weitereRegelnGeprueft: _bestaetigt),
     distanzSchritte: _distanzSchritte,
+    kampfmittel: _mittel,
   );
   @override
   Widget build(BuildContext context) {
     final auftrag = _auftrag();
+    final mittel = gefechtsKampfmittelFuer(widget.werte, _mittel);
+    final abwehr =
+        _aktion == Gefechtsaktion.parade ||
+        _aktion == Gefechtsaktion.schildparade;
+    final waehlen = abwehr || _aktion == Gefechtsaktion.angriff;
+    final profile = gefechtsKampfmittelprofile(widget.werte)
+        .where((p) => abwehr ? p.pa != null : p.at != null)
+        .toList();
     final p = pruefeGefechtAuftrag(
       widget.zustand,
       widget.werte,
@@ -121,6 +147,33 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              if (waehlen && profile.isNotEmpty)
+                DropdownButtonFormField<GefechtsKampfmittelArt>(
+                  key: const ValueKey('gefecht-kampfmittel'),
+                  isExpanded: true,
+                  initialValue: _mittel?.art,
+                  decoration: const InputDecoration(
+                    labelText: 'Verwendetes Kampfmittel',
+                  ),
+                  items: [
+                    for (final profil in profile)
+                      DropdownMenuItem(
+                        value: profil.wahl.art,
+                        enabled: profil.sperren.isEmpty,
+                        child: Text(
+                          '${profil.name} · ${abwehr ? 'PA ${profil.pa}' : 'AT ${profil.at}'}',
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                  ],
+                  onChanged: (art) => setState(() {
+                    _mittel = profile.firstWhere((p) => p.wahl.art == art).wahl;
+                    _bestaetigt = false;
+                  }),
+                ),
+              if (mittel != null && waehlen) ...[
+                for (final anteil in mittel.anteile) Text(anteil),
+              ],
               if (_aktion == Gefechtsaktion.orientieren)
                 const Text(
                   'Orientieren wird manuell geführt: WdS 56 verlangt zwei Aktionen und '

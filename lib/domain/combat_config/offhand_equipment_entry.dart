@@ -39,7 +39,7 @@ class OffhandEquipmentEntry {
   /// INI-Modifikator auf die Hauptwaffe.
   final int iniMod;
 
-  /// AT-Modifikator auf die Hauptwaffe.
+  /// Schild: AT-Modifikator der Hauptwaffe; Parierwaffe: deren eigener Angriff.
   final int atMod;
 
   /// PA-Modifikator des Eintrags.

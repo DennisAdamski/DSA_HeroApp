@@ -16,6 +16,17 @@ enum Gefechtshaltung { stehend, kniend, liegend }
 /// Fachliche Handrolle; verändert keine gespeicherten Ausrüstungsschemata.
 enum GefechtsHand { haupthand, nebenhand }
 
+/// Verwendetes Kampfmittel, unabhängig von Aktionsmarken und sichtbaren Titeln.
+enum GefechtsKampfmittelArt { hauptwaffe, nebenwaffe, schild, parierwaffe }
+
+/// Flüchtige Identität der bestätigten Ausrüstung für die erneute Prüfung.
+class GefechtsKampfmittelwahl {
+  /// IDs treffen vorhandene Einträge unabhängig von ihrer Listenposition.
+  const GefechtsKampfmittelwahl(this.art, this.id);
+  final GefechtsKampfmittelArt art;
+  final String id;
+}
+
 /// Vom Gefecht geführte Grundaktionen; Sonderaktionen bleiben explizit manuell.
 enum Gefechtsaktion {
   angriff,
