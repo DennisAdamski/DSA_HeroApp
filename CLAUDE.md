@@ -23,6 +23,9 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   und `gefecht_held_rules.dart` unter `rules/derived` entscheiden Freigaben.
   Die gezielte `KartoGefechtsAdapter`-Brücke ergänzt einmalige Probeauswertung
   und frische Ausrüstungsschreibwege, ohne bestehende Aufrufer zu verändern.
+  `gefecht_hand_rules.dart` prüft Haupt-/Nebenhandbelegungen vor Normalisierung
+  und frischem Speichern; `gefecht_handwahl.dart` enthält Auswahl und bestätigtes
+  Wegstecken. Ziehhandlungen merken ihre Zielhand.
   `ui2/gefecht/` trennt Einstieg, Rundenleiste, Ansicht, Aktionsdialog,
   Manöverliste, Ausrüstung und Magie. Weitere Gefechtsregelmodule betreffen
   Auftragsprüfung, Dauerhandlungen und echte Talent-/Zauberproben.

@@ -486,3 +486,6 @@ bestätigte Zauber-/Karmahandlungen über gemeinsame Regelprüfungen. Laufende
 Gefechte bleiben flüchtig; Ressourcen und unterstützte Folgen werden über
 bestehende frische Schreibwege übernommen. Regelquellen und manuelle Grenzen:
 [Gefechtsausbau](docs/gefecht_next_plan.md), [Implementierung](docs/gefecht_implementation.md).
+
+Im Gefecht sind Haupt- und Nebenhand ausdrücklich wählbar; Ziehen und
+Wegstecken wirken erst nach ihrer bestätigten Dauer.

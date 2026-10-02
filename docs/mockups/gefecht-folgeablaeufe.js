@@ -5,13 +5,22 @@
 function dialogFolgeablaeufe(art = 'orientieren', schritt = 0, fehler = false) {
   const h = S.held;
   const titel = { orientieren: 'Orientieren', kontext: 'Angriff / Verteidigung',
-    ziehen: 'Geführtes Ziehen', wirken: 'Wirken und Abschluss' }[art];
+    ziehen: 'Geführtes Ziehen', wirken: 'Wirken und Abschluss', haende: 'Hauptwaffe und Nebenhand' }[art];
   const navigation = Object.entries({ orientieren: 'Orientieren', kontext: 'Kontext',
-    ziehen: 'Ziehen', wirken: 'Wirken' }).map(([key, name]) =>
+    ziehen: 'Ziehen', wirken: 'Wirken', haende: 'Hände' }).map(([key, name]) =>
     `<button type="button" data-dlg="ablauf" data-typ="${key}">${name}</button>`).join('');
   let inhalt = '';
   let weiter = 'Bestätigen';
-  if (art === 'orientieren') {
+  if (art === 'haende') {
+    inhalt = `<label>Haupthand<select class="eingabe"><option>Schwert</option><option>Leer</option></select></label>
+      <label>Nebenhand<select class="eingabe"><option>Leer</option><option>Dolch</option>
+        <option>Schild</option><option>Linkhanddolch</option></select></label>
+      <p>Eine zweihändige Hauptwaffe belegt beide Hände. Derselbe Eintrag kann nur eine Hand belegen.</p>
+      <label><input type="checkbox" id="folge-geprueft"> Ziehkontext / Wegsteckdauer bestätigt</label>
+      <p>Neue Belegung erst nach Dauer und frischer Speicherung. Hauptwaffenparade,
+      Schildparade und Parierwaffenparade zeigen getrennte Werte; zweite Waffen haben eigene AT/PA.</p>`;
+    weiter = 'Handwechsel beginnen (Beispiel)';
+  } else if (art === 'orientieren') {
     const bonus = Math.floor(Math.max(0, h.kriegskunst) / 2);
     inhalt = `<dl class="tabelle-kv"><dt>Dauer</dt><dd>${h.aufmerksamkeit ? 1 : 2} reguläre Aktionen</dd>
       <dt>Probe</dt><dd>${h.aufmerksamkeit ? 'Aufmerksamkeit: keine Probe' : `IN ${h.eigenschaften.IN} + Kriegskunst ${bonus}`}</dd>

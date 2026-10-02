@@ -13,6 +13,9 @@ enum Gefechtsumwandlung { normal, zweiteAttacke, zweiteParade }
 /// Körperhaltung für die Bewertung verfügbarer Kampfaktionen.
 enum Gefechtshaltung { stehend, kniend, liegend }
 
+/// Fachliche Handrolle; verändert keine gespeicherten Ausrüstungsschemata.
+enum GefechtsHand { haupthand, nebenhand }
+
 /// Vom Gefecht geführte Grundaktionen; Sonderaktionen bleiben explizit manuell.
 enum Gefechtsaktion {
   angriff,
@@ -56,6 +59,7 @@ class Gefechtshandlung {
     this.kostenUebernommen = false,
     this.gescheitert = false,
     this.abbruchKosten,
+    this.zielHand,
   });
   final Gefechtshandlungsart art;
   final ProbeResult? ergebnis;
@@ -71,6 +75,9 @@ class Gefechtshandlung {
 
   /// Ausdrücklich manuell geklärte Unterbrechungskosten ohne angenommene Formel.
   final int? abbruchKosten;
+
+  /// Ziel eines verzögerten Ziehens oder bestätigten Wegsteckens.
+  final GefechtsHand? zielHand;
 
   /// Fortschritt erhält die bestätigten Eingaben und das einmalige Ergebnis.
   Gefechtshandlung copyWith({
@@ -93,6 +100,7 @@ class Gefechtshandlung {
     kostenUebernommen: kostenUebernommen ?? this.kostenUebernommen,
     gescheitert: gescheitert ?? this.gescheitert,
     abbruchKosten: abbruchKosten ?? this.abbruchKosten,
+    zielHand: zielHand,
   );
 }
 

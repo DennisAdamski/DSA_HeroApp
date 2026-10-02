@@ -150,3 +150,25 @@ Gesamtsuite: 3.153 Tests bestanden, drei bestehende Tests übersprungen.
 Die zuletzt ergänzte INI-Vorschau und Armatrutz-Regel bestehen zusätzlich in
 zehn gezielten Prüfungen; Mockup-JavaScript besteht `node --check`.
 Pakete 2–4: Commits `4bd2185`, `7de1146`, `dd54046`; Bedienprototyp `1c22b6a`.
+
+## Ergänzung: Hauptwaffe und Nebenhand (ab `d0fcb36`)
+
+Freigegebener Umfang: Hauptwaffe plus zweite Waffe, Schild oder Parierwaffe;
+kein allgemeines Modell für zwei Schilde, keine neue Persistenz. Drei Pakete:
+
+1. Handbelegung: kompakte Anzeige, Haupt-/Nebenhandauswahl, Leer, Zielhand der
+   Ziehhandlung; Doppelbelegung und Zweihandkonflikte vor Normalisierung sperren.
+2. Abwehrmittel: getrennte Hauptwaffen-/Parierwaffen-/Schild-/Nebenhandprofile,
+   konkrete Auswahl und benannte Modifikatoren; gemeinsame frische Prüfung.
+3. Nebenhandaktionen: automatisch berechnete Zusatzattacken/-paraden mit
+   gemeinsamem Budget und vorgeschriebener vorheriger regulärer Aktion.
+
+Schnittstellenprüfung: Paket 1 produziert bestätigte `zielHand` und bestehende
+`OffhandAssignment`; Paket 2 konsumiert diese unverändert. Paket 2 liefert
+typisierte Kampfmittel samt stabiler ID; Paket 3 verwendet dieselbe Auswahl
+für Budget und Ergebnisbuchung. Kein zweiter Namens-/Index-Schreibweg.
+
+Paket 1: Regel-, frische Schreib- und Layoutregressionen (15 Tests) bestanden.
+Bekannte Zieländerungen verlangen erneute Bestätigung; reine unbekannte
+Zusatzfelder werden erhalten. Wegstecken benötigt bestätigte Dauer und wirkt
+erst beim Abschluss. Keine automatische Entfernung kollidierender Ausrüstung.
