@@ -316,7 +316,12 @@ Future<void> setzeGefechtsausruestungFort({
   final h = s?.handlung;
   if (s == null || h == null || snapshot == null) return;
   final w = gefechtswerteFuer(snapshot);
-  final p = pruefeManuelleGefechtsaktion(s, w, kosten: 1);
+  final p = pruefeManuelleGefechtsaktion(
+    s,
+    w,
+    kosten: 1,
+    handlungFortsetzen: true,
+  );
   if (p.status == Gefechtsfreigabe.gesperrt) {
     throw StateError(p.gruende.join(' '));
   }

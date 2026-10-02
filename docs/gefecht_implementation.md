@@ -87,6 +87,20 @@ hoher INI und offenen Aktions-/Ausrüstungspopups. Aufnahmen lassen sich reprodu
 flutter test test/ui2/spielen/gefecht_visual_test.dart --dart-define=GEFECHT_SCREENSHOT_DIR=<Verzeichnis>
 ```
 
-Stand der Abnahmeprüfung: `flutter analyze` ohne Befund, 326 relevante Tests
+Stand der Abnahmeprüfung: `flutter analyze` ohne Befund, 332 relevante Tests
 bestanden, zusätzlich acht Rastertests mit 24 gerenderten Zuständen. Bestehende
 Kampfverwaltung und bisherige Probendialoge sind in der Regression enthalten.
+
+Die Abschlusskorrektur trennt die zusätzliche SK-II-Schildparade von regulären
+Reaktionen: Sie kann weder Position noch gezieltes Ausweichen bezahlen. Zauber
+werden bei vollständig bezahlter Dauer sofort genau einmal ausgewertet; Abbruch
+vor der Auswertung verbraucht auch bei zwei Aktionen keine Marke. Beide Fälle
+sind durch zuerst fehlschlagende Regressionstests abgesichert.
+
+Abschlussreview vom 2. Oktober 2026: drei relevante Befunde behoben. Zusätzlich
+zu Budget und Zauberabschluss schützt eine gemeinsame Sperre bestehende
+Resthandlungen vor neuen kurzen/längeren Zaubern und manuellen Aufträgen. Nur
+der ausdrückliche Fortsetzen-Pfad darf die bestehende Handlung weiterführen.
+Regel-/Ablaufregressionen einschließlich verzögerter Zauberproben und Abbrüchen
+bestehen; `flutter analyze` meldet keine Probleme. Die dokumentierten manuellen
+Grenzen bleiben Bestandteil dieser ersten Version.

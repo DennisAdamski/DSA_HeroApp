@@ -65,9 +65,21 @@ int gefechtsAngriffe(Gefechtszustand s) {
   return anzahl - s.angriffeVerbraucht;
 }
 
-/// Noch nutzbare reguläre Verteidigungsmarken; SK II ist separat zu prüfen.
+/// Verbleibende reguläre Reaktionen schließen das waffengebundene SK-II-Budget aus.
+int gefechtsRegulaereParaden(Gefechtszustand s) {
+  final anzahl = s.umwandlung == Gefechtsumwandlung.zweiteAttacke
+      ? 0
+      : s.umwandlung == Gefechtsumwandlung.zweiteParade
+      ? 2
+      : 1;
+  final rest = anzahl - s.paradenVerbraucht;
+  return rest < 0 ? 0 : rest;
+}
+
+/// Noch nutzbare Verteidigungsmarken einschließlich gebundener SK-II-Parade.
 int gefechtsParaden(Gefechtszustand s, Gefechtswerte w) {
-  final schildDoppelt = w.schildkampf2 && w.be <= 4 && !w.turmschild;
+  final schildDoppelt =
+      w.schildkampf2 && w.schildPa != null && w.be <= 4 && !w.turmschild;
   final anzahl = s.umwandlung == Gefechtsumwandlung.zweiteAttacke
       ? 0
       : s.umwandlung == Gefechtsumwandlung.zweiteParade || schildDoppelt
@@ -139,6 +151,7 @@ Gefechtspruefung pruefeGefechtsaktion(
   List<String> pruefGruende = const [],
   List<String> sperrGruende = const [],
   bool eigenerAuftrag = false,
+  bool handlungFortsetzen = false,
   bool zusatzParade = false,
   bool abwehrAufAttacke = false,
 }) {
@@ -270,11 +283,16 @@ Gefechtspruefung pruefeGefechtsaktion(
   } else if (s.haltung != Gefechtshaltung.stehend) {
     pruefen.add('Haltungsmodifikatoren manuell festlegen.');
   }
-  if (s.handlung != null && aktion != Gefechtsaktion.handlung && !ausweichen) {
+  if (s.handlung != null &&
+      !(aktion == Gefechtsaktion.handlung && handlungFortsetzen) &&
+      !ausweichen) {
     sperren.add('Laufende Handlung zunächst abschließen oder abbrechen.');
   }
   if (a > gefechtsAngriffe(s)) sperren.add('Keine Angriffsaktion verfügbar.');
-  if (p > gefechtsParaden(s, w)) {
+  final paradenBudget = aktion == Gefechtsaktion.schildparade
+      ? gefechtsParaden(s, w)
+      : gefechtsRegulaereParaden(s);
+  if (p > paradenBudget) {
     sperren.add('Keine Verteidigungsaktion verfügbar.');
   }
   if (f > 2 + bonus - s.freieVerbraucht) {
