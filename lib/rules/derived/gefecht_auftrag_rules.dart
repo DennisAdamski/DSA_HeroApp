@@ -6,6 +6,7 @@ import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 import 'gefecht_ablauf_rules.dart';
 import 'gefecht_held_rules.dart';
 import 'gefecht_rules.dart';
+import 'gefecht_kampfmittel_rules.dart';
 
 /// Identische Prüfung vor Anzeige und Ausführung, mit bekannten Gegnersperren.
 Gefechtspruefung pruefeGefechtAuftrag(
@@ -16,7 +17,22 @@ Gefechtspruefung pruefeGefechtAuftrag(
   bool eigenerAuftrag = false,
 }) {
   final zustand = s.copyWith(dk: auftrag.dk, kontext: auftrag.kontext);
-  final w = gefechtswerteFuer(snapshot, katalog: katalog);
+  final wahl =
+      auftrag.kampfmittel ??
+      gefechtsStandardKampfmittel(snapshot, auftrag.aktion);
+  final profil = gefechtsKampfmittelFuer(snapshot, wahl);
+  final relevanteAktion = gefechtsAktionMitKampfmittel(auftrag.aktion, wahl);
+  final sperren = <String>[
+    if (auftrag.kampfmittel != null && profil == null)
+      'Gewähltes Kampfmittel inzwischen nicht mehr geführt.',
+    if (profil != null) ...profil.sperren,
+    if (profil != null &&
+        (relevanteAktion == Gefechtsaktion.parade ||
+            relevanteAktion == Gefechtsaktion.schildparade) &&
+        profil.pa == null)
+      'Keine Parade mit diesem Kampfmittel.',
+  ];
+  final w = gefechtswerteFuer(snapshot, katalog: katalog, kampfmittel: wahl);
   final m = auftrag.manoever;
   Gefechtspruefung p;
   if (m != null) {
@@ -29,6 +45,7 @@ Gefechtspruefung pruefeGefechtAuftrag(
       zielwert: auftrag.zielwert,
       eigenerAuftrag: eigenerAuftrag,
       distanzSchritte: auftrag.distanzSchritte,
+      kampfmittel: wahl,
     );
   } else if (auftrag.manuell || auftrag.probe != null) {
     p = pruefeManuelleGefechtsaktion(
@@ -44,7 +61,7 @@ Gefechtspruefung pruefeGefechtAuftrag(
     p = pruefeGefechtsaktion(
       zustand,
       w,
-      auftrag.aktion,
+      relevanteAktion,
       zuschlag: auftrag.zuschlag,
       manuellerZielwert: auftrag.zielwert,
       zusatzParade: auftrag.zusatzParade,
@@ -52,7 +69,6 @@ Gefechtspruefung pruefeGefechtAuftrag(
       distanzSchritte: auftrag.distanzSchritte,
     );
   }
-  final sperren = <String>[];
   if (snapshot.wundEffekte.kampfunfaehig) {
     sperren.add('Durch Wunden kampfunfähig.');
   }

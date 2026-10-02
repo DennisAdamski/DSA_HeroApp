@@ -172,3 +172,11 @@ Paket 1: Regel-, frische Schreib- und Layoutregressionen (15 Tests) bestanden.
 Bekannte Zieländerungen verlangen erneute Bestätigung; reine unbekannte
 Zusatzfelder werden erhalten. Wegstecken benötigt bestätigte Dauer und wirkt
 erst beim Abschluss. Keine automatische Entfernung kollidierender Ausrüstung.
+
+Paket 1: Commit `284bb58`. Paket 2: getrennte Kampfmittelprofile und Dialogauswahl;
+81 neue/bestehende Kampf-, Armwund-, Quellen- und Layoutprüfungen bestanden.
+WdS 71 (MCP 7015–7016) bestätigt Parierwaffen-WM/SF auf Hauptwaffen-PA und
+unveränderte Hauptwaffen-AT; Schild-PA berücksichtigt eBE. Der alte Test, der
+den Parierwaffen-AT-WM der Hauptwaffe zuschlug, wurde entsprechend korrigiert.
+Die optionale Schildverbesserung bei Hauptwaffen-PA 15/18/21 wird nicht neu
+aktiviert; individuelle bestätigte Abweichungen bleiben explizite Zuschläge.

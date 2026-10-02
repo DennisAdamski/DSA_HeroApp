@@ -147,3 +147,8 @@ Das Ausrüstungspopup bietet beide Handrollen, Waffen in beiden Händen und
 Schilde/Parierwaffen in der Nebenhand. Leer führt über bestätigtes Wegstecken.
 Ziehhandlungen speichern ihre Zielhand flüchtig und wechseln erst beim frischen
 Abschluss. Doppelbelegung, Zweihandkonflikte und geänderte Ziele sperren sichtbar.
+
+Abwehrdialoge zeigen das verwendete Kampfmittel: Schild vor zulässiger
+Parierwaffe vor Hauptwaffe. Hauptwaffen- und Parierwaffenparade sind getrennt;
+Nebenhandwaffen verwenden ihre eigene Vorschau einschließlich Falsche-Hand-Mali.
+Schild-eBE ist enthalten, der AT-WM einer Parierwaffe wirkt nicht auf Haupt-AT.

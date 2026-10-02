@@ -10,15 +10,18 @@ import 'hero_requirement_context.dart';
 import 'requirement_evaluation_rules.dart';
 import 'two_weapon_combat_rules.dart';
 import 'waffenmeister_rules.dart';
+import 'gefecht_kampfmittel_rules.dart';
 
 /// Ersetzt Vorschau-INI durch Sitzungswerte und übernimmt aktuelle Heldendaten.
 Gefechtswerte gefechtswerteFuer(
   HeroComputedSnapshot snapshot, {
   RulesCatalog? katalog,
+  GefechtsKampfmittelwahl? kampfmittel,
 }) {
   final c = snapshot.combatPreviewStats;
   final config = snapshot.hero.combatConfig;
-  final waffe = config.selectedWeaponOrNull;
+  final profil = gefechtsKampfmittelFuer(snapshot, kampfmittel);
+  final waffe = profil?.waffe ?? config.selectedWeaponOrNull;
   final definition = katalog?.weapons
       .where((w) => w.name == waffe?.weaponType)
       .firstOrNull;
@@ -32,8 +35,8 @@ Gefechtswerte gefechtswerteFuer(
         c.kampfInitiative -
         c.iniWurfEffective -
         snapshot.wundEffekte.aktuellerIniMalus,
-    at: c.at,
-    pa: c.pa,
+    at: profil?.at ?? c.at,
+    pa: profil?.pa ?? c.pa,
     ausweichen: computeAusweichen(
       paBase: c.paBase,
       sfAusweichenBonus: c.sfAusweichenBonus,
@@ -76,7 +79,9 @@ Gefechtswerte gefechtswerteFuer(
         ) ==
         true,
     waffeVorhanden: waffe != null && waffe.name.trim().isNotEmpty,
-    fernkampf: c.isRangedWeapon,
+    fernkampf: kampfmittel?.art == GefechtsKampfmittelArt.nebenwaffe
+        ? c.offhandPreview?.isRangedWeapon == true
+        : c.isRangedWeapon,
     waffenDk: waffe?.distanceClass ?? '',
     waffe: waffe,
     scharfschuetze: kennt('man_scharfschuetze'),
@@ -104,9 +109,11 @@ Gefechtspruefung pruefeGefechtsmanoever(
   int? zielwert,
   bool eigenerAuftrag = false,
   int distanzSchritte = 0,
+  GefechtsKampfmittelwahl? kampfmittel,
 }) {
   final config = snapshot.hero.combatConfig;
-  final waffe = config.selectedWeapon;
+  final profil = gefechtsKampfmittelFuer(snapshot, kampfmittel);
+  final waffe = profil?.waffe ?? config.selectedWeapon;
   final sperren = <String>[];
   final name = m.name.toLowerCase();
   if (name.contains('klingenwand') || name.contains('klingensturm')) {
@@ -141,7 +148,13 @@ Gefechtspruefung pruefeGefechtsmanoever(
       .firstOrNull;
   final katalogWaffe = katalog.weapons
       .where(
-        (w) => w.name == waffe.weaponType && w.combatSkill == talentDef?.name,
+        (w) =>
+            w.name ==
+                (kampfmittel?.art == GefechtsKampfmittelArt.schild
+                    ? profil?.name
+                    : waffe.weaponType) &&
+            (kampfmittel?.art == GefechtsKampfmittelArt.schild ||
+                w.combatSkill == talentDef?.name),
       )
       .firstOrNull;
   if (katalogWaffe != null && katalogWaffe.possibleManeuvers.isNotEmpty) {
@@ -168,15 +181,25 @@ Gefechtspruefung pruefeGefechtsmanoever(
   if (m.nurEpisch && !snapshot.hero.isEpisch) {
     sperren.add('Nur für epische Helden.');
   }
-  final aktion = gefechtsManoeveraktion(m);
+  final aktion = gefechtsAktionMitKampfmittel(
+    gefechtsManoeveraktion(m),
+    kampfmittel,
+  );
   return pruefeGefechtsaktion(
     s,
-    gefechtswerteFuer(snapshot, katalog: katalog),
+    gefechtswerteFuer(snapshot, katalog: katalog, kampfmittel: kampfmittel),
     aktion,
     zuschlag:
         zuschlag -
-        (snapshot.combatPreviewStats.waffenmeisterManeuverReductions[m.id] ??
-            0),
+        (kampfmittel?.art == GefechtsKampfmittelArt.nebenwaffe
+            ? snapshot
+                      .combatPreviewStats
+                      .offhandPreview
+                      ?.waffenmeisterManeuverReductions[m.id] ??
+                  0
+            : snapshot.combatPreviewStats.waffenmeisterManeuverReductions[m
+                      .id] ??
+                  0),
     manuellerZielwert: zielwert,
     abwehrAufAttacke: m.name.toLowerCase() == 'gegenhalten',
     sperrGruende: sperren,
