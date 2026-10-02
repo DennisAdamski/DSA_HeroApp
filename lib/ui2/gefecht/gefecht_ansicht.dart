@@ -10,6 +10,7 @@ import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_held_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/gefecht_hand_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_orientieren_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_auftrag_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_ablauf_rules.dart';
@@ -444,9 +445,7 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(snapshot.hero.combatConfig.selectedWeapon.name),
-        if (snapshot.combatPreviewStats.offhandName.isNotEmpty)
-          Text(snapshot.combatPreviewStats.offhandName),
+        Text(gefechtsHandbelegung(snapshot.hero.combatConfig)),
         Text(
           'RS ${snapshot.combatPreviewStats.rsTotal} · BE ${snapshot.combatPreviewStats.beKampf}',
         ),

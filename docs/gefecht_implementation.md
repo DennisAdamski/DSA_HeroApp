@@ -140,3 +140,10 @@ Armatrutz-/Attributo-Dialoge. Kosten und unterstützte Effekte sind ein Write;
 Wiederholung einer übernahme erzeugt keinen zweiten Wurf. Separate Kostenübernahme
 im Ressourcendialog merkt sich die Buchung bis zum Folgenabschluss.
 Alle neuen Wirk-, Wiederholungs- und Mirakelbonusdaten bleiben flüchtig.
+
+## Hauptwaffe und Nebenhand
+
+Das Ausrüstungspopup bietet beide Handrollen, Waffen in beiden Händen und
+Schilde/Parierwaffen in der Nebenhand. Leer führt über bestätigtes Wegstecken.
+Ziehhandlungen speichern ihre Zielhand flüchtig und wechseln erst beim frischen
+Abschluss. Doppelbelegung, Zweihandkonflikte und geänderte Ziele sperren sichtbar.

@@ -98,6 +98,7 @@ Gefechtshandlung? beginneGefechtsHandlung({
   MainWeaponSlot? waffe,
   OffhandEquipmentEntry? nebenhand,
   int verbraucht = 1,
+  GefechtsHand? zielHand,
 }) {
   if (dauer <= verbraucht) return null;
   return Gefechtshandlung(
@@ -108,7 +109,8 @@ Gefechtshandlung? beginneGefechtsHandlung({
     probe: probe,
     waffe: waffe,
     nebenhand: nebenhand,
-    art: waffe != null || nebenhand != null
+    zielHand: zielHand,
+    art: waffe != null || nebenhand != null || zielHand != null
         ? Gefechtshandlungsart.ziehen
         : Gefechtshandlungsart.manuell,
   );
@@ -117,17 +119,7 @@ Gefechtshandlung? beginneGefechtsHandlung({
 /// Reduziert nur die Dauer; die aufrufende Brücke bestätigt die Abschlusswirkung.
 Gefechtshandlung? setzeGefechtsHandlungFort(Gefechtshandlung h) {
   if (h.verbleibend <= 1) return null;
-  return Gefechtshandlung(
-    titel: h.titel,
-    verbleibend: h.verbleibend - 1,
-    waffenId: h.waffenId,
-    waffenIndex: h.waffenIndex,
-    probe: h.probe,
-    waffe: h.waffe,
-    art: h.art,
-    ergebnis: h.ergebnis,
-    nebenhand: h.nebenhand,
-  );
+  return h.copyWith(verbleibend: h.verbleibend - 1);
 }
 
 /// Explizite Korrektur ist kein erneutes Umwandeln und bleibt sichtbar getrennt.

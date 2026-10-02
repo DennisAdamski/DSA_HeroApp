@@ -260,3 +260,7 @@ Beim Abbruch eines bestätigten karmalen Endprobenprofils folgt ein kleiner Dial
 für manuell geklärte Unterbrechungskosten und Folgen. Er bereitet den bestehenden
 Abschluss vor, ohne ein Ergebnis zu erfinden. Bereits verbrauchte Aktionen bleiben
 verbraucht; offene Kosten werden frisch übernommen und bei Fehlern erneut angeboten.
+
+Die Ergänzung **Hände** im Folgeablauf und Ausrüstungspopup zeigt Hauptwaffe
+plus Nebenhandwaffe/Schild/Parierwaffe. Leer benötigt bestätigtes Wegstecken.
+Es gelten gemeinsame Belegungssperren und ein verzögerter frischer Abschluss.

@@ -69,9 +69,11 @@ function dialogAusruestung(bereich = 'waffen') {
         ${icon('armor')}Rüstungsteile</button>
     </div>
     <p class="legende">${hinweis}</p>
+    <button type="button" class="btn btn-sekundaer" data-dlg="haende">Haupthand und Nebenhand · Folgeablauf</button>
     <div class="ausruestung-liste">${inhalt || '<p class="legende">Keine Einträge.</p>'}</div>
     ${summe}</div><div class="dlg-aktionen">${abbrechen('Fertig')}</div>`, {
       waffen: () => dialogAusruestung('waffen'),
+      haende: () => dialogFolgeablaeufe('haende'),
       teile: () => dialogAusruestung('ruestung'),
       ziehen: (b) => { dlg.close(); fuehreAktionAus(`ziehen:${b.dataset.id}`); },
       ruestung: (b) => {
