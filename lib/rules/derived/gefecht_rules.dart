@@ -1,4 +1,10 @@
 import 'package:dsa_heldenverwaltung/domain/gefecht.dart';
+import 'package:dsa_heldenverwaltung/domain/gefecht_kontext.dart';
+
+import 'gefecht_kontext_rules.dart';
+import 'gefecht_fernkampf_rules.dart';
+
+import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 
 /// Aufgelöste Kampfwerte ohne Regelberechnungen im Widget oder Provider.
 class Gefechtswerte {
@@ -22,6 +28,10 @@ class Gefechtswerte {
     this.zusatzaktionen = 0,
     this.zusatzAttacke = true,
     this.zusatzParade = true,
+    this.waffe,
+    this.scharfschuetze = false,
+    this.meisterschuetze = false,
+    this.waffenmeister = false,
   });
   final int iniBasis, at, pa, ausweichen, be, zusatzaktionen;
   final int? schildPa;
@@ -33,6 +43,8 @@ class Gefechtswerte {
   final bool stabUmwandlung, waffeVorhanden, fernkampf;
   final bool zusatzAttacke, zusatzParade;
   final String waffenDk;
+  final MainWeaponSlot? waffe;
+  final bool scharfschuetze, meisterschuetze, waffenmeister;
 }
 
 /// Startet eine Sitzung mit dem bereits regelgerecht ermittelten INI-Wurf.
@@ -158,12 +170,49 @@ Gefechtspruefung pruefeGefechtsaktion(
   bool handlungFortsetzen = false,
   bool zusatzParade = false,
   bool abwehrAufAttacke = false,
+  int distanzSchritte = 0,
 }) {
   final pruefen = <String>[...pruefGruende];
   final sperren = <String>[...sperrGruende];
   var a = 0, p = 0, f = 0, z = 0, erschwernis = zuschlag;
   int? ziel = manuellerZielwert;
   final bonus = gefechtsIniBonus(s, w);
+  final kontext = pruefeGefechtskontext(
+    s,
+    aktion,
+    w.waffenDk,
+    fernkampf: w.fernkampf,
+    distanzAenderung: distanzSchritte != 0,
+  );
+  pruefen.addAll(kontext.fehlend);
+  sperren.addAll(kontext.sperren);
+  erschwernis += kontext.zuschlag;
+  final fk = w.fernkampf && aktion == Gefechtsaktion.angriff
+      ? pruefeGefechtsFernkampf(
+          s,
+          w.waffe,
+          scharfschuetze: w.scharfschuetze,
+          meisterschuetze: w.meisterschuetze,
+          waffenmeister: w.waffenmeister,
+        )
+      : const Gefechtskontextpruefung([], [], []);
+  erschwernis += fk.zuschlag;
+  pruefen.addAll(fk.fehlend);
+  sperren.addAll(fk.sperren);
+  if (distanzSchritte != 0) {
+    f = 1;
+    if (w.fernkampf ||
+        s.dk == null ||
+        distanzSchritte.abs() > 2 ||
+        naechsteGefechtsDk(s.dk, distanzSchritte) == null) {
+      sperren.add('Diese Distanzänderung ist nicht möglich.');
+    }
+    erschwernis += distanzSchritte > 0
+        ? distanzSchritte * 4
+        : distanzSchritte == -2
+        ? 8
+        : 0;
+  }
   if (s.auftrag != null && !eigenerAuftrag) {
     sperren.add('Ein Aktionsauftrag läuft.');
   }
@@ -185,8 +234,6 @@ Gefechtspruefung pruefeGefechtsaktion(
       if (!w.fernkampf) {
         if (s.dk == null) {
           pruefen.add('Aktuelle Distanzklasse festlegen.');
-        } else if (!w.waffenDk.contains(s.dk!)) {
-          pruefen.add('Waffe/DK und Distanzänderung prüfen.');
         }
       } else {
         pruefen.add('Entfernung, Sicht, Munition und Ladezustand prüfen.');
@@ -229,13 +276,9 @@ Gefechtspruefung pruefeGefechtsaktion(
             : 4;
       }
       if (!abwehrAufAttacke) ziel = ziel == null ? null : ziel + bonus;
-      pruefen.add('Angriffsart und gegnerische Paradeverbote prüfen.');
     case Gefechtsaktion.freiesAusweichen:
       f = 1;
       ziel ??= w.ausweichen + bonus;
-      pruefen.add(
-        'INI −4 bei Erfolg und Misslingen; Erfolg erfordert Position.',
-      );
     case Gefechtsaktion.gezieltesAusweichen:
       p = 1;
       ziel ??= w.ausweichen + bonus;
@@ -280,10 +323,11 @@ Gefechtspruefung pruefeGefechtsaktion(
     if (s.haltung == Gefechtshaltung.liegend) {
       sperren.add('Liegend kein Ausweichen.');
     }
-    if (s.gegner >= 4) {
+    final gegner = s.kontext.gegnerzahl ?? s.gegner;
+    if (gegner >= 4) {
       sperren.add('Bei vier oder mehr Gegnern kein Ausweichen.');
     }
-    erschwernis += w.be + (s.gegner - 1) * 2;
+    erschwernis += w.be + (gegner - 1) * 2;
   } else if (s.haltung != Gefechtshaltung.stehend) {
     pruefen.add('Haltungsmodifikatoren manuell festlegen.');
   }
@@ -311,6 +355,11 @@ Gefechtspruefung pruefeGefechtsaktion(
       s.paradenVerbraucht > 0) {
     pruefen.add('Umwandlung schließt die zusätzliche SK-II-Parade aus.');
   }
+  if (gefechtsInitiative(s, w) < 0 && a > 0) {
+    sperren.add(
+      'Negative INI: nur eine reguläre Reaktion/Daueraktion verfügbar.',
+    );
+  }
   if (ziel != null) ziel -= erschwernis;
   final status = sperren.isNotEmpty
       ? Gefechtsfreigabe.gesperrt
@@ -327,6 +376,14 @@ Gefechtspruefung pruefeGefechtsaktion(
     freie: f,
     zusatz: z,
     erschwernis: erschwernis,
+    modifikatoren: [
+      ...kontext.modifikatoren,
+      ...fk.modifikatoren,
+      Gefechtsmodifikator(
+        'Weitere Zuschläge/Budget/BE',
+        erschwernis - kontext.zuschlag - fk.zuschlag,
+      ),
+    ],
   );
 }
 
@@ -377,5 +434,8 @@ Gefechtszustand verbraucheGefechtsaktion(
     desorientiert: desorientiert,
     ohneAuftrag: true,
     revision: s.revision + 1,
+    kontext: pruefung.paraden > 0 || pruefung.freie > 0
+        ? s.kontext.ohneAngriff()
+        : s.kontext,
   );
 }

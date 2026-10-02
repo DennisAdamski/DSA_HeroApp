@@ -15,7 +15,7 @@ Gefechtspruefung pruefeGefechtAuftrag(
   GefechtAuftrag auftrag, {
   bool eigenerAuftrag = false,
 }) {
-  final zustand = s.copyWith(dk: auftrag.dk);
+  final zustand = s.copyWith(dk: auftrag.dk, kontext: auftrag.kontext);
   final w = gefechtswerteFuer(snapshot);
   final m = auftrag.manoever;
   Gefechtspruefung p;
@@ -28,6 +28,7 @@ Gefechtspruefung pruefeGefechtAuftrag(
       zuschlag: auftrag.zuschlag,
       zielwert: auftrag.zielwert,
       eigenerAuftrag: eigenerAuftrag,
+      distanzSchritte: auftrag.distanzSchritte,
     );
   } else if (auftrag.manuell || auftrag.probe != null) {
     p = pruefeManuelleGefechtsaktion(
@@ -48,6 +49,7 @@ Gefechtspruefung pruefeGefechtAuftrag(
       manuellerZielwert: auftrag.zielwert,
       zusatzParade: auftrag.zusatzParade,
       eigenerAuftrag: eigenerAuftrag,
+      distanzSchritte: auftrag.distanzSchritte,
     );
   }
   final sperren = <String>[];

@@ -1,6 +1,8 @@
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 
+import 'gefecht_kontext.dart';
+
 /// Verlässlichkeit einer Aktionsfreigabe; Prüfen benötigt eine Bestätigung.
 enum Gefechtsfreigabe { bereit, pruefen, gesperrt }
 
@@ -33,6 +35,7 @@ enum Gefechtshandlungsart {
   zauber,
   liturgie,
   mirakel,
+  fernkampf,
 }
 
 /// Mehrteilige Handlung, deren Wirkung erst nach Abschluss eintritt.
@@ -84,6 +87,7 @@ class Gefechtszustand {
     this.handlung,
     this.auftrag,
     this.revision = 0,
+    this.kontext = const Gefechtskontext(),
   });
   final int runde, iniWurf, iniVerlust;
   final int geschuetzterIniVerlust, ungeklaerterIniVerlust;
@@ -103,6 +107,7 @@ class Gefechtszustand {
   final Gefechtshandlung? handlung;
   final String? auftrag;
   final int revision;
+  final Gefechtskontext kontext;
 
   /// Ändert nur benannte Sitzungsteile; kein JSON oder Heldenformat betroffen.
   Gefechtszustand copyWith({
@@ -131,6 +136,8 @@ class Gefechtszustand {
     String? auftrag,
     bool ohneAuftrag = false,
     int? revision,
+    bool ohneDk = false,
+    Gefechtskontext? kontext,
   }) => Gefechtszustand(
     runde: runde ?? this.runde,
     iniWurf: iniWurf ?? this.iniWurf,
@@ -151,7 +158,8 @@ class Gefechtszustand {
     regulaereParade: regulaereParade ?? this.regulaereParade,
     haltung: haltung ?? this.haltung,
     gegner: gegner ?? this.gegner,
-    dk: dk ?? this.dk,
+    dk: ohneDk ? null : dk ?? this.dk,
+    kontext: kontext ?? this.kontext,
     fixierterIniBonus: resetBonus
         ? null
         : fixierterIniBonus ?? this.fixierterIniBonus,
@@ -175,10 +183,12 @@ class Gefechtspruefung {
     this.freie = 0,
     this.zusatz = 0,
     this.erschwernis = 0,
+    this.modifikatoren = const [],
   });
   final Gefechtsaktion aktion;
   final Gefechtsfreigabe status;
   final List<String> gruende;
   final int? zielwert;
   final int angriffe, paraden, freie, zusatz, erschwernis;
+  final List<Gefechtsmodifikator> modifikatoren;
 }

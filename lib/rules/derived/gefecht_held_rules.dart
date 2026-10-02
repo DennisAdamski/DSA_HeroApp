@@ -67,6 +67,11 @@ Gefechtswerte gefechtswerteFuer(HeroComputedSnapshot snapshot) {
     waffeVorhanden: waffe != null && waffe.name.trim().isNotEmpty,
     fernkampf: c.isRangedWeapon,
     waffenDk: waffe?.distanceClass ?? '',
+    waffe: waffe,
+    scharfschuetze: sf('ksf_scharfschuetze'),
+    meisterschuetze: sf('ksf_meisterschuetze'),
+    waffenmeister:
+        snapshot.combatPreviewStats.waffenmeisterAdditionalManeuvers.isNotEmpty,
   );
 }
 
@@ -79,6 +84,7 @@ Gefechtspruefung pruefeGefechtsmanoever(
   required int zuschlag,
   int? zielwert,
   bool eigenerAuftrag = false,
+  int distanzSchritte = 0,
 }) {
   final config = snapshot.hero.combatConfig;
   final waffe = config.selectedWeapon;
@@ -144,6 +150,7 @@ Gefechtspruefung pruefeGefechtsmanoever(
     abwehrAufAttacke: m.name.toLowerCase() == 'gegenhalten',
     sperrGruende: sperren,
     eigenerAuftrag: eigenerAuftrag,
+    distanzSchritte: distanzSchritte,
     pruefGruende: [
       'Manövervoraussetzungen, Aktionskosten und Folgen manuell prüfen.',
       if (snapshot.combatPreviewStats.waffenmeisterManeuverReductions

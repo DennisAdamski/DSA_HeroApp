@@ -12,6 +12,7 @@ class GefechtsTestBestand extends TestBestand implements KartoGefechtsAdapter {
   final anfragen = <ResolvedProbeRequest>[];
   bool abbrechen = false;
   bool doppelt = false;
+  Future<void>? vorErgebnis;
   @override
   Future<ProbeResult?> gefechtsProbe({
     required BuildContext context,
@@ -21,6 +22,7 @@ class GefechtsTestBestand extends TestBestand implements KartoGefechtsAdapter {
     void Function(ProbeResult)? onResolved,
   }) async {
     anfragen.add(request);
+    await vorErgebnis;
     if (abbrechen) return null;
     final result = evaluateProbe(
       request,

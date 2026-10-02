@@ -19,13 +19,13 @@ geschützte Handlungen bleiben erhalten. Keine neue Gefechtspersistenz.
 - [x] 1b Position + Orientieren: eine reguläre Aktion nach freiem Ausweichen;
   Position beendet Desorientierung auch bei gescheiterter IN-Probe. Zusatzparade
   kann die Handlung nicht bezahlen. Tests: beide Ergebnisse, Budget, Abbruch.
-- [ ] 2a Flüchtiger benannter Gegnerkontakt; tatsächliche DK, gegnerische
+- [x] 2a Flüchtiger benannter Gegnerkontakt; tatsächliche DK, gegnerische
   Angriffsdaten, Finte und besondere Verbote nur bei Abhängigkeit abfragen.
   Standardwerte sind keine Bestätigung. Kontaktwechsel löscht Angriffsdaten.
   AT-/PA-DK-Mali, einfache/doppelte Ausweichmali, explizite Distanzänderungen
   ohne Schaden. Tests: alle DK, Mehrfach-DK, Finte einmal, Hausregelausnahmen,
   Kontaktwechsel, unbekannter Kontext und gesperrte Voraussetzungen.
-- [ ] 2b Fernkampf: Entfernung/Entfernungsband, Größe, Bewegung, Sicht/Deckung,
+- [x] 2b Fernkampf: Entfernung/Entfernungsband, Größe, Bewegung, Sicht/Deckung,
   Getümmel, Ladezustand/Munition; Getümmel-SF und Kontrollbereichshinweis.
   Tests: Bandgrenzen, fehlendes Profil, leere Waffe, frische Munitionsbuchung.
 - [ ] 3a Waffen-SF: Defensiver Kampfstil, Umwandlungsverbote/-ausnahmen,
@@ -97,3 +97,10 @@ INI-Budgetgrenzen schon jetzt prüfen. Keine Persistenz und eigene Bedienabnahme
 ## Fortschrittsnachweis
 
 Ausgangsstand: Analyse ohne Befund, 71 gezielte Tests bestanden. Umsetzung läuft.
+
+1a/1b: Regeln und Orientierungsdialog mit später einmaliger Probe integriert;
+32 Regel-/State-/Layoutprüfungen und Analyse bestanden, Commit `456c332`.
+2a/2b: DK-Matrix, freies Ausweichen, Finte, Kontaktwechsel, Schusskontext und
+frische Munitionsübernahme integriert. Größe/Bewegung/Sicht/Deckung bleiben ein
+bestätigter Situationszuschlag; kein zweiter vollständiger Fernkampfrechner.
+Ruling: frei benannte Entfernungsbänder werden nicht als Zahlen interpretiert.
