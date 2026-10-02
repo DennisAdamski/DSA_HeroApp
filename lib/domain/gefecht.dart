@@ -24,6 +24,17 @@ enum Gefechtsaktion {
   zusatzaktion,
 }
 
+/// Fachliche Identität einer Resthandlung, unabhängig vom sichtbaren Titel.
+enum Gefechtshandlungsart {
+  manuell,
+  ziehen,
+  orientieren,
+  positionOrientieren,
+  zauber,
+  liturgie,
+  mirakel,
+}
+
 /// Mehrteilige Handlung, deren Wirkung erst nach Abschluss eintritt.
 class Gefechtshandlung {
   /// Merkt Dauer und gegebenenfalls die stabile Identität einer Zielwaffe.
@@ -34,7 +45,11 @@ class Gefechtshandlung {
     this.waffenIndex,
     this.probe,
     this.waffe,
+    this.art = Gefechtshandlungsart.manuell,
+    this.ergebnis,
   });
+  final Gefechtshandlungsart art;
+  final ProbeResult? ergebnis;
   final String titel;
   final int verbleibend;
   final String? waffenId;
@@ -50,6 +65,8 @@ class Gefechtszustand {
     required this.iniWurf,
     this.runde = 1,
     this.iniVerlust = 0,
+    this.geschuetzterIniVerlust = 0,
+    this.ungeklaerterIniVerlust = 0,
     this.angriffeVerbraucht = 0,
     this.paradenVerbraucht = 0,
     this.schildparadenVerbraucht = 0,
@@ -69,6 +86,7 @@ class Gefechtszustand {
     this.revision = 0,
   });
   final int runde, iniWurf, iniVerlust;
+  final int geschuetzterIniVerlust, ungeklaerterIniVerlust;
   final int schildparadenVerbraucht;
   final int angriffeVerbraucht,
       paradenVerbraucht,
@@ -91,6 +109,8 @@ class Gefechtszustand {
     int? runde,
     int? iniWurf,
     int? iniVerlust,
+    int? geschuetzterIniVerlust,
+    int? ungeklaerterIniVerlust,
     int? angriffeVerbraucht,
     int? paradenVerbraucht,
     int? schildparadenVerbraucht,
@@ -115,6 +135,10 @@ class Gefechtszustand {
     runde: runde ?? this.runde,
     iniWurf: iniWurf ?? this.iniWurf,
     iniVerlust: iniVerlust ?? this.iniVerlust,
+    geschuetzterIniVerlust:
+        geschuetzterIniVerlust ?? this.geschuetzterIniVerlust,
+    ungeklaerterIniVerlust:
+        ungeklaerterIniVerlust ?? this.ungeklaerterIniVerlust,
     angriffeVerbraucht: angriffeVerbraucht ?? this.angriffeVerbraucht,
     paradenVerbraucht: paradenVerbraucht ?? this.paradenVerbraucht,
     schildparadenVerbraucht:

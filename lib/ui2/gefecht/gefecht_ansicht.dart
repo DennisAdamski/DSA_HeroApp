@@ -22,6 +22,7 @@ import 'gefecht_rundenleiste.dart';
 import 'gefecht_ausruestung.dart';
 import 'gefecht_magie.dart';
 import 'gefecht_manoeverliste.dart';
+import 'gefecht_orientieren.dart';
 
 /// Responsive Spielansicht eines flüchtigen Gefechts mit echten Heldendaten.
 class GefechtAnsicht extends ConsumerStatefulWidget {
@@ -311,7 +312,13 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _knopf(s, snapshot, k, Gefechtsaktion.position, 'Position'),
+        _knopf(
+          s,
+          snapshot,
+          k,
+          Gefechtsaktion.position,
+          s.desorientiert ? 'Position + Orientieren' : 'Position',
+        ),
         _knopf(
           s,
           snapshot,
@@ -432,6 +439,17 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
     String? beschreibung,
   }) async {
     if (k == null) return;
+    if (aktion == Gefechtsaktion.orientieren ||
+        aktion == Gefechtsaktion.position && s.desorientiert) {
+      await zeigeOrientieren(
+        context: context,
+        ref: ref,
+        heroId: widget.heroId,
+        bestand: _bruecke,
+        position: aktion == Gefechtsaktion.position,
+      );
+      return;
+    }
     if (beschreibung != null) {
       await showDialog<void>(
         context: context,

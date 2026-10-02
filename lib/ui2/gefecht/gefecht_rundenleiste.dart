@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_ablauf_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/gefecht_orientieren_rules.dart';
 
 /// Platzsparende Rundensteuerung mit direkter, verbindlicher Umwandlungsansage.
 class GefechtRundenleiste extends StatelessWidget {
@@ -183,9 +184,12 @@ class GefechtRundenleiste extends StatelessWidget {
 
   // Die Korrektur ist bewusst getrennt von der verbindlichen Ansage.
   Future<void> _korrigieren(BuildContext context) async {
-    final verlust = TextEditingController(text: '${zustand.iniVerlust}');
+    final verlust = TextEditingController(
+      text: '${zustand.ungeklaerterIniVerlust}',
+    );
     final wurf = TextEditingController(text: '${zustand.iniWurf}');
     var u = zustand.umwandlung;
+    var art = IniVerlustart.ungeklaert;
     final neu = await showDialog<Gefechtszustand>(
       context: context,
       builder: (context) => StatefulBuilder(
@@ -196,6 +200,26 @@ class GefechtRundenleiste extends StatelessWidget {
             children: [
               const Text(
                 'Korrigiert eine Fehleingabe; ersetzt keine zulässige neue Ansage.',
+              ),
+              Text(
+                'Kampfverluste: ${zustand.iniVerlust}; geschützt: ${zustand.geschuetzterIniVerlust}',
+              ),
+              DropdownButton<IniVerlustart>(
+                value: art,
+                items: [
+                  for (final a in IniVerlustart.values)
+                    DropdownMenuItem(
+                      value: a,
+                      child: Text(switch (a) {
+                        IniVerlustart.kampf => 'Kampfverlust (rückgewinnbar)',
+                        IniVerlustart.geschuetzt => 'Geschützter Verlust',
+                        IniVerlustart.ungeklaert => 'Ungeklärter Verlust',
+                      }),
+                    ),
+                ],
+                onChanged: (v) => setState(() {
+                  art = v!;
+                }),
               ),
               TextField(
                 controller: wurf,
@@ -240,12 +264,11 @@ class GefechtRundenleiste extends StatelessWidget {
                 if (n != null && n >= 0 && iw != null && iw >= 0) {
                   Navigator.pop(
                     context,
-                    korrigiereGefecht(
+                    korrigiereIniVerlust(
                       zustand,
-                      iniVerlust: n,
-                      umwandlung: u,
-                      iniWurf: iw,
-                    ),
+                      n,
+                      art,
+                    ).copyWith(umwandlung: u, iniWurf: iw),
                   );
                 }
               },

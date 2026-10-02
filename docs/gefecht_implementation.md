@@ -58,9 +58,11 @@ Aktuelle Kopf-INI-Verluste kommen zusätzlich zu den bereits berechneten Wundmal
 zur Anwendung. Waffenmeister-Erleichterungen werden ausdrücklich im Dialog zur
 Prüfung genannt; zusätzliche freigegebene Manöver erweitern die Waffenfreigabe.
 
-Orientieren verwendet einen ausdrücklich manuellen Ablauf: Dauer und erforderliche
-IN-Probe nach WdS/Hausregel festlegen, danach INI-Wurf einschließlich bestätigtem
-Orientierungsbonus und Verlust über die getrennte Korrektur übernehmen. Freies
+Orientieren wird regelgeführt: zwei Aktionen und IN-Probe mit Kriegskunstbonus,
+mit Aufmerksamkeit eine Aktion ohne Probe. Das Ergebnis übernimmt INI-Maximum
+und rückgewinnbare Kampfverluste automatisch. Position + Orientieren nach freiem
+Ausweichen bezahlt gemäß Hausregel eine Aktion. Ungeklärte Korrekturen müssen
+zuerst zugeordnet werden; Wund-/Zaubermali bleiben erhalten. Freies
 Ausweichen verliert vier INI, bei Erfolg wird Position erforderlich; gezieltes
 Ausweichen berücksichtigt DK und verliert bei Misslingen zwei INI. Rückweichen
 und weitere Gegnerfolgen bleiben manuell.

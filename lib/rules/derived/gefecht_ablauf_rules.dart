@@ -116,6 +116,8 @@ Gefechtshandlung? setzeGefechtsHandlungFort(Gefechtshandlung h) {
     waffenIndex: h.waffenIndex,
     probe: h.probe,
     waffe: h.waffe,
+    art: h.art,
+    ergebnis: h.ergebnis,
   );
 }
 
@@ -126,7 +128,8 @@ Gefechtszustand korrigiereGefecht(
   required Gefechtsumwandlung umwandlung,
   int? iniWurf,
 }) => s.copyWith(
-  iniVerlust: iniVerlust,
+  iniVerlust: 0,
+  ungeklaerterIniVerlust: iniVerlust,
   umwandlung: umwandlung,
   iniWurf: iniWurf,
 );
