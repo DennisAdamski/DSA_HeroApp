@@ -96,7 +96,7 @@ INI-Budgetgrenzen schon jetzt prüfen. Keine Persistenz und eigene Bedienabnahme
 
 ## Fortschrittsnachweis
 
-Ausgangsstand: Analyse ohne Befund, 71 gezielte Tests bestanden. Umsetzung läuft.
+Ausgangsstand: Analyse ohne Befund, 71 gezielte Tests bestanden.
 
 1a/1b: Regeln und Orientierungsdialog mit später einmaliger Probe integriert;
 32 Regel-/State-/Layoutprüfungen und Analyse bestanden, Commit `456c332`.
@@ -107,21 +107,46 @@ Ruling: frei benannte Entfernungsbänder werden nicht als Zahlen interpretiert.
 
 ### Wirkpfad: Abgrenzung der Automatisierung
 
-Zauber erhalten eine Startprobe und best?tigte Aktionsdauer. Niedrige LE/AU
-und eine best?tigte Zahl aufrechterhaltener Zauber werden berechnet;
-Repr?sentation, MR, spontane Modifikationen und sonstige Komponenten werden
-gezielt best?tigt. Die Anzahl aufrechterhaltener Zauber wird nicht aus den
+Zauber erhalten eine Startprobe und bestätigte Aktionsdauer. Niedrige LE/AU
+und eine bestätigte Zahl aufrechterhaltener Zauber werden berechnet;
+Repräsentation, MR, spontane Modifikationen und sonstige Komponenten werden
+gezielt bestätigt. Die Anzahl aufrechterhaltener Zauber wird nicht aus den
 Effektchips geraten. Mirakel und Liturgie verwenden getrennte Profile;
-unbekannte Kulte ben?tigen eine g?ltige best?tigte Eigenschaftskette.
+unbekannte Kulte benötigen eine gültige bestätigte Eigenschaftskette.
 Die genaue Liturgie und Mirakelzielkennung identifizieren Wiederholungen;
-die SR-Grenze bleibt ausdr?cklich best?tigt. Bei variablen nicht durch f?nf
+die SR-Grenze bleibt ausdrücklich bestätigt. Bei variablen nicht durch fünf
 teilbaren Liturgiekosten wird eine Fehlversuchskostenangabe verlangt.
-Mirakelboni bleiben wegen der offenen Rundung best?tigt, wirken aber auf
+Mirakelboni bleiben wegen der offenen Rundung bestätigt, wirken aber auf
 genau eine passende Gefechtsprobe. Lange Rituale, permanente Kosten und
-Unterbrechungsfolgen ohne vollst?ndiges Profil bleiben manuell.
+Unterbrechungsfolgen ohne vollständiges Profil bleiben manuell.
 
-Unterst?tzte eigene Effekte (Armatrutz, Attributo, Axxeleratus) k?nnen mit
-den Kosten frisch zusammen ?bernommen werden; die bestehenden Eingabedialoge
+Unterstützte eigene Effekte (Armatrutz, Attributo, Axxeleratus) können mit
+den Kosten frisch zusammen übernommen werden; die bestehenden Eingabedialoge
 werden verwendet. Der Ressourcendialog hat einen optionalen Abschlussmodus.
-Kosten k?nnen vor ?brigen Folgen ?bernommen werden; ein Fehler erh?lt Probe
+Kosten können vor übrigen Folgen übernommen werden; ein Fehler erhält Probe
 und offene Handlung. Ausweichen beendet laufendes Wirken nicht stillschweigend.
+
+### Abschlussreview und Korrekturen
+
+Das unabhängige Abschlussreview fand keine Critical-, aber fünf Important-Befunde.
+Alle wurden durch zuvor fehlschlagende Regressionen nachgewiesen und korrigiert:
+
+1. Position + Orientieren darf die eigene Desorientierung überwinden; vollständiger
+   Dialogablauf mit Erfolg/Misserfolg, genau einer Marke und fixiertem INI-Bonus.
+2. Abwehrmanöver verwenden in Liste, Auftrag, Dialog und Pflichtprüfung dieselbe
+   fachliche Aktionsart. Unbekannte Finte/Angriffsart/Paradeverbote bleiben Pflichtangaben.
+3. Einmalige Mirakelboni erreichen auch Orientierungs-, Start-, End- und Störungsproben;
+   Abbruch vor einem Ergebnis verbraucht den Bonus nicht.
+4. Karmale Endprobenhandlungen können über ausdrücklich bestätigte Unterbrechungskosten
+   ohne erfundenen Wurf abgeschlossen werden. Abbruch allein zählt nicht als misslungene
+   Liturgieprobe; tatsächlich misslungene eingefrorene Proben bleiben Fehlversuche.
+5. Manöver berücksichtigen die frische Katalogwaffe einschließlich Umwandlungssperren.
+
+Die Minor-Befunde (veralteter Endprobenhinweis, beschädigte Umlaute und falsche
+Angriffsabsichten bei Abwehr) sind ebenfalls korrigiert; keine Reviewbefunde zurückgestellt.
+Zusätzlich erhält der Armatrutz-Abschluss unbekannte frische Effekt-/Dauerdaten.
+Gefechtsregressionen: 82 Tests bestanden; Analyse und LOC-Budget ohne Befund.
+Gesamtsuite: 3.153 Tests bestanden, drei bestehende Tests übersprungen.
+Die zuletzt ergänzte INI-Vorschau und Armatrutz-Regel bestehen zusätzlich in
+zehn gezielten Prüfungen; Mockup-JavaScript besteht `node --check`.
+Pakete 2–4: Commits `4bd2185`, `7de1146`, `dd54046`; Bedienprototyp `1c22b6a`.

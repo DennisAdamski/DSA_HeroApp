@@ -16,6 +16,49 @@ import 'package:dsa_heldenverwaltung/rules/derived/gefecht_rules.dart';
 import '../ui2/shell/karto_test_support.dart';
 
 void main() {
+  test(
+    'Manöver erhält Umwandlungssperre der frisch gewählten langen Waffe',
+    () {
+      final m = ManeuverDef.fromJson({
+        'id': 'man_binden',
+        'name': 'Binden',
+        'typ': 'Abwehraktion',
+      });
+      final k = RulesCatalog(
+        version: 'test',
+        source: 'test',
+        talents: [],
+        spells: [],
+        weapons: [
+          WeaponDef.fromJson({'name': 'Langwaffe', 'length': '250'}),
+        ],
+      );
+      final snap = buildHeroComputedSnapshot(
+        hero: testHero().copyWith(
+          combatConfig: const CombatConfig(
+            weapons: [
+              MainWeaponSlot(
+                name: 'Langwaffe',
+                weaponType: 'Langwaffe',
+                distanceClass: 'N',
+              ),
+            ],
+            specialRules: CombatSpecialRules(activeManeuvers: ['man_binden']),
+          ),
+        ),
+        state: const HeroState.empty(),
+        catalog: k,
+        epicAdvantagesActive: false,
+      );
+      final s = beginneGefecht(6)
+          .copyWith(umwandlung: Gefechtsumwandlung.zweiteParade, dk: 'N');
+      expect(
+        pruefeGefechtsmanoever(s, snap, k, m, zuschlag: 0).status,
+        Gefechtsfreigabe.gesperrt,
+      );
+    },
+  );
+
   test('Neue kurze oder lange Zauber und manuelle Aufträge verdrängen keine Resthandlung', () {
     final snapshot = buildHeroComputedSnapshot(
       hero: testHero(),

@@ -2,7 +2,39 @@ import 'package:dsa_heldenverwaltung/domain/gefecht.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht_wirken.dart';
+import 'package:dsa_heldenverwaltung/domain/active_spell_effects_state.dart';
+
+import 'active_spell_rules.dart';
+import 'active_spell_state_rules.dart';
+
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
+
+/// Übernimmt Eingabewerte, erhält aber unbekannte Felder des frischen Effekts.
+HeroState uebernimmGefechtsArmatrutz(
+  HeroState aktuell,
+  ActiveSpellEffectDetail eingabe,
+) {
+  final detail = aktuell.activeSpellEffects.detailFor(
+    activeSpellEffectArmatrutz,
+  );
+  final dauer = eingabe.duration;
+  final frisch = detail.duration;
+  final neueDauer = dauer == null || frisch == null
+      ? dauer
+      : frisch.copyWith(
+          amount: dauer.amount,
+          remaining: dauer.remaining,
+          unit: dauer.unit,
+        );
+  return aktiviereArmatrutz(
+    aktuell,
+    detail.copyWith(
+      amount: eingabe.amount,
+      duration: neueDauer,
+      clearDuration: dauer == null,
+    ),
+  );
+}
 
 /// WdZ 15: niedrige LE/AU und bestätigte aufrechterhaltene Zauber, ohne Wunddoppelung.
 int gefechtsZauberZuschlag(

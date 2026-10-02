@@ -77,7 +77,7 @@ Gefechtspruefung pruefeOrientierung(
   bool eigenerAuftrag = false,
 }) {
   final p = pruefeGefechtsaktion(
-    s,
+    position ? s.copyWith(desorientiert: false) : s,
     w,
     fortsetzen ? Gefechtsaktion.handlung : Gefechtsaktion.position,
     handlungFortsetzen: fortsetzen,

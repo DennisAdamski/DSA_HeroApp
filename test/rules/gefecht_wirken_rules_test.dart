@@ -1,11 +1,33 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
+import 'package:dsa_heldenverwaltung/domain/active_spell_effects_state.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/active_spell_rules.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht_wirken.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_wirken_rules.dart';
 
 void main() {
+  test('Neue Armatrutz-Werte erhalten frische unbekannte Effektdaten', () {
+    final state = HeroState.empty().copyWith(
+      activeSpellEffects: const ActiveSpellEffectsState(
+        activeEffectIds: [activeSpellEffectArmatrutz],
+        effectDetails: {
+          activeSpellEffectArmatrutz: ActiveSpellEffectDetail(
+            amount: 2,
+            unbekannteFelder: {'future': 42},
+          ),
+        },
+      ),
+    );
+    final neu = uebernimmGefechtsArmatrutz(
+      state,
+      const ActiveSpellEffectDetail(amount: 5),
+    );
+    final detail = neu.activeSpellEffects.detailFor(activeSpellEffectArmatrutz);
+    expect(detail.amount, 5);
+    expect(detail.unbekannteFelder['future'], 42);
+  });
   test('Karmale Kultketten, Wiederholungen und Vorzeichen', () {
     for (final k in ['Boron', 'Hesinde', 'Nandus']) {
       expect(gefechtsKultEigenschaften(k), ['MU', 'KL', 'IN']);

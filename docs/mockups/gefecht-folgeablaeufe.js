@@ -62,6 +62,14 @@ function dialogFolgeablaeufe(art = 'orientieren', schritt = 0, fehler = false) {
       <p>Selbstbeherrschung: bestätigte SP/Zuschläge, Konzentrationsstärke −7.
       Weitere ZfP*-Folgen am Spieltisch prüfen.</p>`;
     weiter = 'Restdauer fortsetzen (Beispiel)';
+  } else if (schritt === 3) {
+    inhalt = `<p>Unterbrechung manuell klären · besonders bei karmaler Endprobe ohne Ergebnis.</p>
+      <label>Bestätigte Unterbrechungskosten (KaP / AsP)
+        <input class="eingabe" type="number" min="0" placeholder="Keine angenommene Formel"></label>
+      <label><input type="checkbox" id="folge-geprueft"> Unterbrechungsfolgen am Spieltisch geklärt</label>
+      <p>Der Kosten-/Folgenabschluss bleibt offen und kann erneut übernommen werden.
+      Kein erfundener Wurf; bereits verbrauchte Aktionen bleiben verbraucht.</p>`;
+    weiter = 'Manuellen Abschluss vorbereiten';
   } else {
     inhalt = `<p class="ergebnis">Eingefrorene Probe · Kosten 7 AsP · Folgen offen</p>
       ${fehler ? '<p class="ergebnis gefahr">Speicherfehler: Ergebnis und offene Folgen bleiben erhalten.</p>' : ''}
@@ -85,7 +93,7 @@ function dialogFolgeablaeufe(art = 'orientieren', schritt = 0, fehler = false) {
     },
     fehler: () => dialogFolgeablaeufe('wirken', 2, true),
     stoerung: () => dialogFolgeablaeufe('wirken', 1),
-    abbruch: () => dialogFolgeablaeufe('wirken', 2),
+    abbruch: () => dialogFolgeablaeufe('wirken', 3),
   });
 }
 $('#ctl-flow').addEventListener('click', () => dialogFolgeablaeufe());

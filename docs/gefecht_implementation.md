@@ -75,8 +75,9 @@ Ausweichen berücksichtigt DK und verliert bei Misslingen zwei INI. Rückweichen
 und weitere Gegnerfolgen bleiben manuell.
 
 Zauber und Liturgiekenntnis stammen aus gelernten Heldendaten und dem aktuellen
-Katalog; die Probe benutzt die gemeinsame Engine. Längere Zauber können erst am
-Ende ihrer bestätigten Dauer ausgewertet werden. KaP/AsP-Kosten und Wirkungen
+Katalog; die Probe benutzt die gemeinsame Engine. Zauber werden zu Beginn
+einmal ausgewertet; ihre Wirkung tritt nach der bestätigten Dauer ein.
+Liturgieprobenzeitpunkte werden anhand des konkreten Profils bestätigt. KaP/AsP-Kosten und Wirkungen
 werden über die vorhandenen Ressource-/Effektdialoge geführt. Fehlende Katalog-
 oder Probeninformationen erhalten einen manuellen Zielwert, keine angenommene Formel.
 
@@ -116,26 +117,26 @@ Grenzen bleiben Bestandteil dieser ersten Version.
 
 ### Waffen-SF und Ziehen (Folgepakete 3a/3b)
 
-Defensiver Kampfstil und talentgebundene Man?ver werden ?ber stabile IDs gelesen.
-Waffenmeister reduziert den best?tigten Man?verzuschlag automatisch einmal.
-Halbschwert ben?tigt die best?tigte F?hrung; Klingenwand/-sturm werden nicht als
-einfache Einzelprobe abgewickelt. Bekannte Katalogl?ngen ?ber zwei Schritt und
+Defensiver Kampfstil und talentgebundene Manöver werden über stabile IDs gelesen.
+Waffenmeister reduziert den bestätigten Manöverzuschlag automatisch einmal.
+Halbschwert benötigt die bestätigte Führung; Klingenwand/-sturm werden nicht als
+einfache Einzelprobe abgewickelt. Bekannte Kataloglängen über zwei Schritt und
 improvisierte Waffen sperren Umwandlungen; fehlende Profile bleiben manuell.
-Das Ziehpopup fragt Trageposition, Griffbereitschaft und freie H?nde.
-Schnellziehen vom G?rtel/Arm/Brust bezahlt eine freie Marke; R?cken und Schild
-erhalten die WdS-Dauer. Schilde vom R?cken sind eigene Nebenhandhandlungen.
+Das Ziehpopup fragt Trageposition, Griffbereitschaft und freie Hände.
+Schnellziehen vom Gürtel/Arm/Brust bezahlt eine freie Marke; Rücken und Schild
+erhalten die WdS-Dauer. Schilde vom Rücken sind eigene Nebenhandhandlungen.
 
-### Zauber und Karma (Folgepakete 4a?4c)
+### Zauber und Karma (Folgepakete 4a–4c)
 
-Die fr?here Endprobe f?r Zauber ist ersetzt: Ergebnis am Anfang einfrieren,
-Dauer bezahlen, dann Kosten/Folgen ?bernehmen. Erfolg bindet volle Dauer;
+Die frühere Endprobe für Zauber ist ersetzt: Ergebnis am Anfang einfrieren,
+Dauer bezahlen, dann Kosten/Folgen übernehmen. Erfolg bindet volle Dauer;
 Misserfolg halbe Dauer aufgerundet, mit Zauberkontrolle eine Aktion.
-St?rung verwendet Selbstbeherrschung mit Konzentrationsst?rke; zus?tzliche
-Auswirkungen auf ZfP* bleiben ausdr?cklich am Spieltisch gepr?ft.
+Störung verwendet Selbstbeherrschung mit Konzentrationsstärke; zusätzliche
+Auswirkungen auf ZfP* bleiben ausdrücklich am Spieltisch geprüft.
 Mirakel/Liturgien nutzen die Hausregel-Kulteigenschaften und separate Profile.
-Liturgiezeitpunkt, konkrete Dauer und permanente Kosten sind manuell best?tigt.
+Liturgiezeitpunkt, konkrete Dauer und permanente Kosten sind manuell bestätigt.
 Der Wirkabschluss verwendet den vorhandenen frischen Zustandsweg und bestehende
-Armatrutz-/Attributo-Dialoge. Kosten und unterst?tzte Effekte sind ein Write;
-Wiederholung einer ?bernahme erzeugt keinen zweiten Wurf. Separate Kosten?bernahme
+Armatrutz-/Attributo-Dialoge. Kosten und unterstützte Effekte sind ein Write;
+Wiederholung einer übernahme erzeugt keinen zweiten Wurf. Separate Kostenübernahme
 im Ressourcendialog merkt sich die Buchung bis zum Folgenabschluss.
-Alle neuen Wirk-, Wiederholungs- und Mirakelbonusdaten bleiben fl?chtig.
+Alle neuen Wirk-, Wiederholungs- und Mirakelbonusdaten bleiben flüchtig.

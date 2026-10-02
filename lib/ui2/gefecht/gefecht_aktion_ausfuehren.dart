@@ -20,7 +20,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/gefecht_wirken_rules.dart';
 
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_kontext_rules.dart';
 
-/// Verwendet dieselbe Freigabe f?r Kontextdialog, einmalige Probe und Folgen.
+/// Verwendet dieselbe Freigabe für Kontextdialog, einmalige Probe und Folgen.
 Future<void> fuehreGefechtsaktionAus({
   required BuildContext context,
   required WidgetRef ref,

@@ -50,13 +50,21 @@ Future<void> brecheGefechtsHandlungAb({
   if (ok != true || !context.mounted) return;
   final controller = ref.read(gefechtProvider(heroId).notifier);
   if (h.wirken != null) {
-    if (h.ergebnis == null) {
-      throw StateError(
-        'Karmale Unterbrechungsfolgen und Probe manuell klären.',
-      );
+    // Unbelegte Unterbrechungsregeln werden explizit geklärt, nicht geraten.
+    final kosten = await _abbruchKosten(context, h.wirken!.karmal);
+    if (kosten == null || !context.mounted) return;
+    final aktuell = ref.read(gefechtProvider(heroId));
+    if (aktuell == null || aktuell.handlung != h || aktuell.auftrag != null) {
+      return;
     }
     controller.setzen(
-      s.copyWith(handlung: h.copyWith(verbleibend: 0, gescheitert: true)),
+      aktuell.copyWith(
+        handlung: h.copyWith(
+          verbleibend: 0,
+          gescheitert: true,
+          abbruchKosten: kosten,
+        ),
+      ),
     );
     await zeigeGefechtsWirkabschluss(
       context: context,
@@ -66,6 +74,65 @@ Future<void> brecheGefechtsHandlungAb({
   } else {
     controller.setzen(s.copyWith(ohneHandlung: true));
   }
+}
+
+// Ein Abbruchprofil benötigt bestätigte Kosten und Folgen, aber keinen Wurf.
+Future<int?> _abbruchKosten(BuildContext context, bool karmal) async {
+  final eingabe = TextEditingController();
+  var bestaetigt = false;
+  final kosten = await showDialog<int>(
+    context: context,
+    builder: (context) => StatefulBuilder(
+      builder: (context, aktualisieren) {
+        final wert = int.tryParse(eingabe.text);
+        return AlertDialog(
+          title: const Text('Unterbrechung manuell klären'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: eingabe,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    labelText:
+                        'Bestätigte Unterbrechungskosten (${karmal ? 'KaP' : 'AsP'})',
+                  ),
+                  onChanged: (_) => aktualisieren(() {
+                    bestaetigt = false;
+                  }),
+                ),
+                CheckboxListTile(
+                  value: bestaetigt,
+                  title: const Text(
+                    'Unterbrechungsfolgen am Spieltisch geklärt',
+                  ),
+                  onChanged: (v) => aktualisieren(() {
+                    bestaetigt = v!;
+                  }),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Fortführen'),
+            ),
+            FilledButton(
+              onPressed: bestaetigt && wert != null && wert >= 0
+                  ? () => Navigator.pop(context, wert)
+                  : null,
+              child: const Text('Manuellen Abschluss vorbereiten'),
+            ),
+          ],
+        );
+      },
+    ),
+  );
+  await Future<void>.delayed(const Duration(milliseconds: 300));
+  eingabe.dispose();
+  return kosten;
 }
 
 /// Störungen würfeln Selbstbeherrschung und erhalten die ursprüngliche Zauberprobe.
@@ -161,14 +228,22 @@ Future<void> stoereGefechtsWirken({
       context: context,
       ref: ref,
       heroId: heroId,
-      request: modifiziereGefechtsWirkprobe(
-        request,
-        gefechtsStoerungszuschlag(zuschlag, konzentrationsstaerke: konz),
+      request: gefechtsProbeMitBonus(
+        modifiziereGefechtsWirkprobe(
+          request,
+          gefechtsStoerungszuschlag(zuschlag, konzentrationsstaerke: konz),
+        ),
+        s.mirakelbonus,
       ),
       onResolved: (r) {
         if (abgewickelt) return;
         abgewickelt = true;
         ctl.abbrechen(id);
+        if (gefechtsBonusPasst(request, s.mirakelbonus)) {
+          ctl.setzen(
+            ref.read(gefechtProvider(heroId))!.copyWith(ohneMirakelbonus: true),
+          );
+        }
         if (!r.success) {
           ctl.setzen(
             ref

@@ -37,7 +37,7 @@ Future<bool> uebernimmGefechtsWirkfolgen({
   if (s == null ||
       h?.wirken == null ||
       h!.verbleibend != 0 ||
-      h.ergebnis == null ||
+      (h.ergebnis == null && h.abbruchKosten == null) ||
       s.auftrag != null) {
     return false;
   }
@@ -45,11 +45,13 @@ Future<bool> uebernimmGefechtsWirkfolgen({
   final id = UniqueKey().toString();
   if (!controller.reservieren(id)) return false;
   try {
-    final erfolg = h.ergebnis!.success && !h.gescheitert;
-    final kosten = erfolg
-        ? h.wirken!.kosten
-        : h.wirken!.misserfolgKosten ??
-              gefechtsWirkkosten(h.wirken!.kosten, h.art, erfolg: false);
+    final erfolg = h.ergebnis?.success == true && !h.gescheitert;
+    final kosten =
+        h.abbruchKosten ??
+        (erfolg
+            ? h.wirken!.kosten
+            : h.wirken!.misserfolgKosten ??
+                  gefechtsWirkkosten(h.wirken!.kosten, h.art, erfolg: false));
     final ok = await aendereZustandMitMeldung(
       context: context,
       ref: ref,
@@ -71,7 +73,7 @@ Future<bool> uebernimmGefechtsWirkfolgen({
     controller.abbrechen(id);
     final aktuell = ref.read(gefechtProvider(heroId))!;
     final fehlversuche = Map<String, int>.of(aktuell.karmaleFehlversuche);
-    if (abschliessen && !erfolg && h.wirken!.karmal) {
+    if (abschliessen && h.ergebnis?.success == false && h.wirken!.karmal) {
       final key = h.wirken!.identitaet;
       fehlversuche[key] = (fehlversuche[key] ?? 0) + 1;
     }
@@ -113,7 +115,7 @@ class _AbschlussState extends ConsumerState<_Abschluss> {
     final n = h.titel.toLowerCase();
     if (n.startsWith('armatrutz')) {
       final d = await showArmatrutzInputDialog(context: context);
-      return d == null ? null : (s) => aktiviereArmatrutz(s, d);
+      return d == null ? null : (s) => uebernimmGefechtsArmatrutz(s, d);
     }
     if (n.startsWith('attributo')) {
       final b = await showAttributoInputDialog(context: context);
@@ -160,14 +162,16 @@ class _AbschlussState extends ConsumerState<_Abschluss> {
   Widget build(BuildContext context) {
     final h = ref.watch(gefechtProvider(widget.heroId))?.handlung;
     final state = ref.watch(heroStateProvider(widget.heroId)).asData?.value;
-    if (h?.wirken == null || h!.ergebnis == null) {
+    if (h?.wirken == null || (h!.ergebnis == null && h.abbruchKosten == null)) {
       return const SizedBox.shrink();
     }
-    final erfolg = h.ergebnis!.success && !h.gescheitert;
-    final kosten = erfolg
-        ? h.wirken!.kosten
-        : h.wirken!.misserfolgKosten ??
-              gefechtsWirkkosten(h.wirken!.kosten, h.art, erfolg: false);
+    final erfolg = h.ergebnis?.success == true && !h.gescheitert;
+    final kosten =
+        h.abbruchKosten ??
+        (erfolg
+            ? h.wirken!.kosten
+            : h.wirken!.misserfolgKosten ??
+                  gefechtsWirkkosten(h.wirken!.kosten, h.art, erfolg: false));
     final unterstuetzt = [
       'armatrutz',
       'attributo',
@@ -185,7 +189,9 @@ class _AbschlussState extends ConsumerState<_Abschluss> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Text(
-                  erfolg
+                  h.abbruchKosten != null
+                      ? 'Abgebrochen · Kosten manuell bestätigt'
+                      : erfolg
                       ? 'Erfolgreich · Ergebnis eingefroren'
                       : 'Gescheitert · Ergebnis eingefroren',
                 ),
