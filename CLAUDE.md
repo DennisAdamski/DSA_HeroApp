@@ -26,6 +26,9 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   `ui2/gefecht/` trennt Einstieg, Rundenleiste, Ansicht, Aktionsdialog,
   Manöverliste, Ausrüstung und Magie. Weitere Gefechtsregelmodule betreffen
   Auftragsprüfung, Dauerhandlungen und echte Talent-/Zauberproben.
+  Der Folgeplan steht in [docs/gefecht_next_plan.md](docs/gefecht_next_plan.md).
+  `gefecht_orientieren_rules.dart` trennt Kampfverluste von geschützten und
+  ungeklärten Korrekturen; der Orientierungsdialog nutzt frische Heldendaten.
 - [Redesign umsetzen](docs/redesign_implementation.md) enthält drei aufeinander
   aufbauende Agentenpläne, Startprompts und die gemeinsame Umsetzungsspezifikation
   unter `docs/superpowers/`. Ausgangspunkt ist das vorhandene UI2-Fundament;

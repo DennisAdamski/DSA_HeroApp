@@ -9,6 +9,8 @@ import 'package:dsa_heldenverwaltung/rules/derived/gefecht_held_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/kampf_aenderung_rules.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_gefechts_adapter.dart';
 
+import 'gefecht_orientieren.dart';
+
 /// Waffen und Rüstungsteile erscheinen ausschließlich in diesem Wechselpopup.
 Future<void> zeigeGefechtsausruestung({
   required BuildContext context,
@@ -315,6 +317,16 @@ Future<void> setzeGefechtsausruestungFort({
   final snapshot = ref.read(heroComputedProvider(heroId)).asData?.value;
   final h = s?.handlung;
   if (s == null || h == null || snapshot == null) return;
+  if (h.art == Gefechtshandlungsart.orientieren ||
+      h.art == Gefechtshandlungsart.positionOrientieren) {
+    await fuehreOrientierungFort(
+      context: context,
+      ref: ref,
+      heroId: heroId,
+      bestand: bestand,
+    );
+    return;
+  }
   final w = gefechtswerteFuer(snapshot);
   final p = pruefeManuelleGefechtsaktion(
     s,

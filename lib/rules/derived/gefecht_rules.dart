@@ -40,7 +40,11 @@ Gefechtszustand beginneGefecht(int wurf) => Gefechtszustand(iniWurf: wurf);
 
 /// Aktuelle Initiative ersetzt den im Helden gespeicherten Vorschauwurf.
 int gefechtsInitiative(Gefechtszustand s, Gefechtswerte w) =>
-    w.iniBasis + s.iniWurf - s.iniVerlust;
+    w.iniBasis +
+    s.iniWurf -
+    s.iniVerlust -
+    s.geschuetzterIniVerlust -
+    s.ungeklaerterIniVerlust;
 
 /// Hohe INI gilt ab der ersten tatsächlich verbrauchten Aktion bis Rundenende.
 int gefechtsIniBonus(Gefechtszustand s, Gefechtswerte w) {
