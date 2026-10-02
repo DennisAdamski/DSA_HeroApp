@@ -31,6 +31,7 @@ Gefechtswerte gefechtswerteFuer(
   bool kennt(String id) =>
       manoever.contains(id) || manoever.contains('$id::${waffe?.talentId}');
   return Gefechtswerte(
+    konkreteKampfmittel: true,
     iniBasis:
         c.kampfInitiative -
         c.iniWurfEffective -
@@ -48,6 +49,9 @@ Gefechtswerte gefechtswerteFuer(
     ),
     be: c.beKampf,
     schildPa: c.offhandIsShield ? c.shieldPa : null,
+    schildWm: c.offhandIsShield
+        ? config.offhandEquipment[config.offhandAssignment.equipmentIndex].paMod
+        : 0,
     schildkampf2: sf('ksf_schildkampf_ii'),
     turmschild: c.offhandName.toLowerCase().contains('turmschild'),
     ausweichen1: sf('ksf_ausweichen_i'),
@@ -57,13 +61,19 @@ Gefechtswerte gefechtswerteFuer(
         waffe?.talentId == 'tal_staebe' &&
         (snapshot.hero.talents['tal_staebe']?.talentValue ?? 0) >= 10,
     zusatzaktionen:
-        c.twoWeaponCombat?.options.any(
-              (o) =>
-                  o.isAvailable &&
-                  (o.type == TwoWeaponActionType.extraOffhandAttack ||
-                      o.type == TwoWeaponActionType.extraOffhandParry),
-            ) ==
-            true
+        (c.offhandIsShield &&
+                sf('ksf_schildkampf_ii') &&
+                waffe != null &&
+                waffe.isOneHanded &&
+                c.beKampf <= 4 &&
+                !c.offhandName.toLowerCase().contains('turmschild')) ||
+            c.twoWeaponCombat?.options.any(
+                  (o) =>
+                      o.isAvailable &&
+                      (o.type == TwoWeaponActionType.extraOffhandAttack ||
+                          o.type == TwoWeaponActionType.extraOffhandParry),
+                ) ==
+                true
         ? 1
         : 0,
     zusatzAttacke:
@@ -116,7 +126,11 @@ Gefechtspruefung pruefeGefechtsmanoever(
   final waffe = profil?.waffe ?? config.selectedWeapon;
   final sperren = <String>[];
   final name = m.name.toLowerCase();
-  if (name.contains('klingenwand') || name.contains('klingensturm')) {
+  final schild = gefechtsSchildmanoever(snapshot, m.name);
+  sperren.addAll(schild.sperren);
+  if (name.contains('klingenwand') ||
+      name.contains('klingensturm') ||
+      name.contains('doppelangriff')) {
     sperren.add(
       'Geteilte Pools und geordnete Einzelangriffe am Spieltisch '
       'führen; keine vollständige Abwicklung als Einzelprobe.',
@@ -190,7 +204,8 @@ Gefechtspruefung pruefeGefechtsmanoever(
     gefechtswerteFuer(snapshot, katalog: katalog, kampfmittel: kampfmittel),
     aktion,
     zuschlag:
-        zuschlag -
+        zuschlag +
+        schild.zuschlag -
         (kampfmittel?.art == GefechtsKampfmittelArt.nebenwaffe
             ? snapshot
                       .combatPreviewStats
@@ -206,6 +221,8 @@ Gefechtspruefung pruefeGefechtsmanoever(
     eigenerAuftrag: eigenerAuftrag,
     distanzSchritte: distanzSchritte,
     pruefGruende: [
+      if (schild.zuschlag != 0)
+        'Schildführung: zusätzlicher Manöverzuschlag +${schild.zuschlag}; AT-WM bereits im Grundwert.',
       'Manövervoraussetzungen, Aktionskosten und Folgen manuell prüfen.',
       if (snapshot.combatPreviewStats.waffenmeisterManeuverReductions
           .containsKey(m.id))

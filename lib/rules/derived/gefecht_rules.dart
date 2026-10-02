@@ -16,6 +16,7 @@ class Gefechtswerte {
     required this.ausweichen,
     this.be = 0,
     this.schildPa,
+    this.schildWm = 0,
     this.schildkampf2 = false,
     this.turmschild = false,
     this.ausweichen1 = false,
@@ -35,9 +36,13 @@ class Gefechtswerte {
     this.defensiverKampfstil = false,
     this.halbschwert = false,
     this.umwandlungVerboten = false,
+    this.konkreteKampfmittel = false,
   });
   final int iniBasis, at, pa, ausweichen, be, zusatzaktionen;
   final int? schildPa;
+
+  /// Reiner Schild-WM; SF und Heldenmali werden bei Kettenwaffen nicht entfernt.
+  final int schildWm;
   final bool schildkampf2,
       turmschild,
       ausweichen1,
@@ -49,6 +54,7 @@ class Gefechtswerte {
   final MainWeaponSlot? waffe;
   final bool scharfschuetze, meisterschuetze, waffenmeister;
   final bool defensiverKampfstil, halbschwert, umwandlungVerboten;
+  final bool konkreteKampfmittel;
 }
 
 /// Startet eine Sitzung mit dem bereits regelgerecht ermittelten INI-Wurf.
@@ -99,7 +105,11 @@ int gefechtsRegulaereParaden(Gefechtszustand s) {
 /// Noch nutzbare Verteidigungsmarken einschließlich gebundener SK-II-Parade.
 int gefechtsParaden(Gefechtszustand s, Gefechtswerte w) {
   final schildDoppelt =
-      w.schildkampf2 && w.schildPa != null && w.be <= 4 && !w.turmschild;
+      !w.konkreteKampfmittel &&
+      w.schildkampf2 &&
+      w.schildPa != null &&
+      w.be <= 4 &&
+      !w.turmschild;
   final anzahl = s.umwandlung == Gefechtsumwandlung.zweiteAttacke
       ? 0
       : s.umwandlung == Gefechtsumwandlung.zweiteParade || schildDoppelt
@@ -164,6 +174,7 @@ Gefechtszustand naechsteGefechtsrunde(Gefechtszustand s) {
   if (s.auftrag != null) throw StateError('Aktionsauftrag zuerst abschließen.');
   return s.copyWith(
     runde: s.runde + 1,
+    resetKampfmittel: true,
     angriffeVerbraucht: 0,
     paradenVerbraucht: 0,
     schildparadenVerbraucht: 0,
@@ -204,6 +215,11 @@ Gefechtspruefung pruefeGefechtsaktion(
   var a = 0, p = 0, f = 0, z = 0, erschwernis = zuschlag;
   int? ziel = manuellerZielwert;
   final bonus = gefechtsIniBonus(s, w);
+  final schildAbzug =
+      aktion == Gefechtsaktion.schildparade &&
+          s.kontext.schildWmWirksam == false
+      ? w.schildWm
+      : 0;
   final kontext = pruefeGefechtskontext(
     s,
     aktion,
@@ -214,6 +230,14 @@ Gefechtspruefung pruefeGefechtsaktion(
   pruefen.addAll(kontext.fehlend);
   sperren.addAll(kontext.sperren);
   erschwernis += kontext.zuschlag;
+  erschwernis += schildAbzug;
+  if (aktion == Gefechtsaktion.schildparade &&
+      w.konkreteKampfmittel &&
+      s.kontext.schildWmWirksam == null) {
+    pruefen.add(
+      'Schild-WM gegen Kettenstab, Kettenwaffe oder Peitsche klären.',
+    );
+  }
   final fk = w.fernkampf && aktion == Gefechtsaktion.angriff
       ? pruefeGefechtsFernkampf(
           s,
@@ -414,9 +438,11 @@ Gefechtspruefung pruefeGefechtsaktion(
     modifikatoren: [
       ...kontext.modifikatoren,
       ...fk.modifikatoren,
+      if (schildAbzug != 0)
+        Gefechtsmodifikator('Schild-WM entfällt', schildAbzug),
       Gefechtsmodifikator(
         'Weitere Zuschläge/Budget/BE',
-        erschwernis - kontext.zuschlag - fk.zuschlag,
+        erschwernis - kontext.zuschlag - fk.zuschlag - schildAbzug,
       ),
     ],
   );
@@ -443,7 +469,17 @@ Gefechtszustand verbraucheGefechtsaktion(
     iniVerlust += 2;
   }
   if (pruefung.aktion == Gefechtsaktion.position) desorientiert = false;
+  final regulaerePa =
+      pruefung.paraden > 0 &&
+      (pruefung.aktion == Gefechtsaktion.parade ||
+          pruefung.aktion == Gefechtsaktion.schildparade);
+  final regulaereAt =
+      pruefung.angriffe > 0 && pruefung.aktion == Gefechtsaktion.angriff;
   return s.copyWith(
+    regulaeresAngriffspaar: regulaereAt ? pruefung.ausruestungspaar : null,
+    regulaeresParadepaar: regulaerePa ? pruefung.ausruestungspaar : null,
+    regulaeresParademittel: regulaerePa ? pruefung.kampfmittel : null,
+    paradeMitAnsage: regulaerePa ? pruefung.mitAnsage : null,
     angriffeVerbraucht: s.angriffeVerbraucht + pruefung.angriffe,
     paradenVerbraucht: s.paradenVerbraucht + pruefung.paraden,
     schildparadenVerbraucht:

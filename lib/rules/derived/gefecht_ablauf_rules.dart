@@ -70,7 +70,7 @@ ResolvedProbeRequest gefechtsProbenauftrag(
   Gefechtspruefung p, {
   bool abwehrAufAttacke = false,
 }) {
-  final type = switch (p.aktion) {
+  final type = switch (p.probenart ?? p.aktion) {
     Gefechtsaktion.angriff => ProbeType.combatAttack,
     Gefechtsaktion.parade ||
     Gefechtsaktion.schildparade => ProbeType.combatParry,

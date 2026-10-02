@@ -145,6 +145,10 @@ class Gefechtszustand {
     this.karmaleFehlversuche = const {},
     this.mirakelbonus,
     this.defensiverStil = false,
+    this.regulaeresAngriffspaar,
+    this.regulaeresParadepaar,
+    this.regulaeresParademittel,
+    this.paradeMitAnsage = false,
   });
   final int runde, iniWurf, iniVerlust;
   final int geschuetzterIniVerlust, ungeklaerterIniVerlust;
@@ -168,6 +172,9 @@ class Gefechtszustand {
   final Map<String, int> karmaleFehlversuche;
   final GefechtsProbenbonus? mirakelbonus;
   final bool defensiverStil;
+  final String? regulaeresAngriffspaar, regulaeresParadepaar;
+  final GefechtsKampfmittelwahl? regulaeresParademittel;
+  final bool paradeMitAnsage;
 
   /// Ändert nur benannte Sitzungsteile; kein JSON oder Heldenformat betroffen.
   Gefechtszustand copyWith({
@@ -202,6 +209,11 @@ class Gefechtszustand {
     GefechtsProbenbonus? mirakelbonus,
     bool ohneMirakelbonus = false,
     bool? defensiverStil,
+    String? regulaeresAngriffspaar,
+    String? regulaeresParadepaar,
+    GefechtsKampfmittelwahl? regulaeresParademittel,
+    bool? paradeMitAnsage,
+    bool resetKampfmittel = false,
   }) => Gefechtszustand(
     runde: runde ?? this.runde,
     iniWurf: iniWurf ?? this.iniWurf,
@@ -227,6 +239,18 @@ class Gefechtszustand {
     karmaleFehlversuche: karmaleFehlversuche ?? this.karmaleFehlversuche,
     mirakelbonus: ohneMirakelbonus ? null : mirakelbonus ?? this.mirakelbonus,
     defensiverStil: defensiverStil ?? this.defensiverStil,
+    regulaeresAngriffspaar: resetKampfmittel
+        ? null
+        : regulaeresAngriffspaar ?? this.regulaeresAngriffspaar,
+    regulaeresParadepaar: resetKampfmittel
+        ? null
+        : regulaeresParadepaar ?? this.regulaeresParadepaar,
+    regulaeresParademittel: resetKampfmittel
+        ? null
+        : regulaeresParademittel ?? this.regulaeresParademittel,
+    paradeMitAnsage: resetKampfmittel
+        ? false
+        : paradeMitAnsage ?? this.paradeMitAnsage,
     fixierterIniBonus: resetBonus
         ? null
         : fixierterIniBonus ?? this.fixierterIniBonus,
@@ -251,6 +275,10 @@ class Gefechtspruefung {
     this.zusatz = 0,
     this.erschwernis = 0,
     this.modifikatoren = const [],
+    this.kampfmittel,
+    this.ausruestungspaar,
+    this.mitAnsage = false,
+    this.probenart,
   });
   final Gefechtsaktion aktion;
   final Gefechtsfreigabe status;
@@ -258,4 +286,8 @@ class Gefechtspruefung {
   final int? zielwert;
   final int angriffe, paraden, freie, zusatz, erschwernis;
   final List<Gefechtsmodifikator> modifikatoren;
+  final GefechtsKampfmittelwahl? kampfmittel;
+  final String? ausruestungspaar;
+  final bool mitAnsage;
+  final Gefechtsaktion? probenart;
 }

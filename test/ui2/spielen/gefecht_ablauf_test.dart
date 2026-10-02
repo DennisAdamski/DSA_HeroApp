@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
+import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_provider.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
@@ -17,6 +18,85 @@ import '../shell/karto_test_support.dart';
 import 'gefecht_test_support.dart';
 
 void main() {
+  testWidgets(
+    'Nebenhand-Zusatzattacke verwendet berechnete AT und bucht Doppelcallback einmal',
+    (tester) async {
+      final snapshot = buildHeroComputedSnapshot(
+        hero: testHero().copyWith(
+          combatConfig: const CombatConfig(
+            weapons: [
+              MainWeaponSlot(id: 'a', name: 'Schwert', distanceClass: 'N'),
+              MainWeaponSlot(
+                id: 'b',
+                name: 'Dolch',
+                distanceClass: 'N',
+                wmAt: 2,
+              ),
+            ],
+            offhandAssignment: OffhandAssignment(weaponIndex: 1),
+            specialRules: CombatSpecialRules(
+              activeCombatSpecialAbilityIds: ['ksf_beidhaendiger_kampf_ii'],
+            ),
+          ),
+        ),
+        state: const HeroState.empty(),
+        catalog: testCatalog,
+        epicAdvantagesActive: false,
+      );
+      final container = ProviderContainer(
+        overrides: [
+          heroComputedProvider('rondra')
+              .overrideWith((ref) => AsyncData(snapshot)),
+          rulesCatalogProvider.overrideWith((ref) async => testCatalog),
+        ],
+      );
+      addTearDown(container.dispose);
+      final controller = container.read(gefechtProvider('rondra').notifier)
+        ..beginnen(6);
+      controller.setzen(
+        container.read(gefechtProvider('rondra'))!.copyWith(dk: 'N'),
+      );
+      final bestand = GefechtsTestBestand()..doppelt = true;
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: MaterialApp(
+            home: GefechtAnsicht(heroId: 'rondra', bestand: bestand),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      for (final label in ['Angreifen', 'Zusätzliche Nebenhandattacke']) {
+        final button = find.textContaining(label).first;
+        await tester.ensureVisible(button);
+        await tester.tap(button);
+        await tester.pumpAndSettle();
+        expect(
+          find.text('Manuell bestätigter Grundzielwert (optional)'),
+          findsNothing,
+        );
+        final bestaetigen = find.byKey(
+          const ValueKey('gefecht-kontext-bestaetigen'),
+        );
+        await tester.ensureVisible(bestaetigen);
+        await tester.tap(bestaetigen);
+        await tester.pumpAndSettle();
+        await tester.tap(find.byKey(const ValueKey('gefecht-auftrag-starten')));
+        await tester.pumpAndSettle();
+      }
+      expect(bestand.anfragen.length, 2);
+      expect(bestand.anfragen.last.type, ProbeType.combatAttack);
+      expect(
+        bestand.anfragen.last.targets.single.value,
+        snapshot.combatPreviewStats.offhandPreview!.at,
+      );
+      expect(bestand.anfragen.last.title, contains('Dolch'));
+      final s = container.read(gefechtProvider('rondra'))!;
+      expect(s.angriffeVerbraucht, 1);
+      expect(s.zusatzVerbraucht, 1);
+      expect(tester.takeException(), isNull);
+    },
+  );
   for (final aufmerksamkeit in [false, true]) {
     for (final klingentaenzer in [false, true]) {
       testWidgets(

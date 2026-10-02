@@ -14,6 +14,7 @@ import 'gefecht_fernkampffelder.dart';
 
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_kontext_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_kampfmittel_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/gefecht_zusatz_rules.dart';
 
 /// Fragt fehlenden Kontext ab, ohne erkannte Sperren übergehen zu können.
 class GefechtAktionsdialog extends StatefulWidget {
@@ -29,6 +30,7 @@ class GefechtAktionsdialog extends StatefulWidget {
     this.probe,
     this.manuell = false,
     this.kampfmittel,
+    this.zusatzParade = false,
   });
   final Gefechtszustand zustand;
   final HeroComputedSnapshot werte;
@@ -39,6 +41,7 @@ class GefechtAktionsdialog extends StatefulWidget {
   final ResolvedProbeRequest? probe;
   final bool manuell;
   final GefechtsKampfmittelwahl? kampfmittel;
+  final bool zusatzParade;
   @override
   State<GefechtAktionsdialog> createState() => _GefechtAktionsdialogState();
 }
@@ -58,6 +61,7 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
   void initState() {
     super.initState();
     _dk = widget.zustand.dk;
+    _zusatzParade = widget.zusatzParade;
     _kontext = widget.zustand.kontext;
     _mittel =
         widget.kampfmittel ??
@@ -67,6 +71,13 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
               ? widget.aktion
               : gefechtsManoeveraktion(widget.manoever!),
         );
+    if (widget.aktion == Gefechtsaktion.zusatzaktion &&
+        widget.kampfmittel == null) {
+      _mittel = gefechtsZusatzoptionen(widget.werte)
+          .where((o) => o.parade == _zusatzParade)
+          .firstOrNull
+          ?.kampfmittel;
+    }
     if (widget.manoever != null) {
       _zuschlag.text = '${gefechtsManoeverZuschlag(widget.manoever!)}';
     }
@@ -97,7 +108,9 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
     zuschlag: int.tryParse(_zuschlag.text) ?? 0,
     zielwert: int.tryParse(_ziel.text),
     dk: _dk,
-    dauer: int.tryParse(_dauer.text) ?? 0,
+    dauer: _aktion == Gefechtsaktion.zusatzaktion
+        ? 1
+        : int.tryParse(_dauer.text) ?? 0,
     kosten: int.tryParse(_kosten.text) ?? -1,
     manoever: widget.manoever,
     probe: widget.probe,
@@ -113,10 +126,18 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
   Widget build(BuildContext context) {
     final auftrag = _auftrag();
     final mittel = gefechtsKampfmittelFuer(widget.werte, _mittel);
+    final werte = gefechtswerteFuer(widget.werte, kampfmittel: _mittel);
+    final kontextAktion = _aktion == Gefechtsaktion.zusatzaktion
+        ? _zusatzParade
+              ? _mittel?.art == GefechtsKampfmittelArt.schild
+                    ? Gefechtsaktion.schildparade
+                    : Gefechtsaktion.parade
+              : Gefechtsaktion.angriff
+        : _aktion;
     final abwehr =
-        _aktion == Gefechtsaktion.parade ||
-        _aktion == Gefechtsaktion.schildparade;
-    final waehlen = abwehr || _aktion == Gefechtsaktion.angriff;
+        kontextAktion == Gefechtsaktion.parade ||
+        kontextAktion == Gefechtsaktion.schildparade;
+    final waehlen = abwehr || kontextAktion == Gefechtsaktion.angriff;
     final profile = gefechtsKampfmittelprofile(widget.werte)
         .where((p) => abwehr ? p.pa != null : p.at != null)
         .toList();
@@ -127,14 +148,11 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
       auftrag,
     );
     final sonder =
-        widget.manuell ||
-        widget.manoever != null ||
-        widget.probe != null ||
-        _aktion == Gefechtsaktion.zusatzaktion;
+        widget.manuell || widget.manoever != null || widget.probe != null;
     final gueltig =
         int.tryParse(_zuschlag.text) != null &&
         auftrag.dauer >= 1 &&
-        (!(widget.manuell || _aktion == Gefechtsaktion.zusatzaktion) ||
+        (!widget.manuell ||
             _aktion == Gefechtsaktion.orientieren ||
             auftrag.zielwert != null ||
             widget.probe != null);
@@ -196,6 +214,10 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
                   ],
                   onChanged: (v) => setState(() {
                     _zusatzParade = v!;
+                    _mittel = gefechtsZusatzoptionen(widget.werte)
+                        .where((o) => o.parade == v)
+                        .firstOrNull
+                        ?.kampfmittel;
                     _bestaetigt = false;
                   }),
                 ),
@@ -213,8 +235,7 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
                   child: Text('• $grund'),
                 ),
               const SizedBox(height: 16),
-              if (_aktion == Gefechtsaktion.angriff &&
-                  !widget.werte.combatPreviewStats.isRangedWeapon)
+              if (_aktion == Gefechtsaktion.angriff && !werte.fernkampf)
                 DropdownButtonFormField<int>(
                   isExpanded: true,
                   initialValue: _distanzSchritte,
@@ -245,8 +266,7 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
                     _bestaetigt = false;
                   }),
                 ),
-              if (_aktion == Gefechtsaktion.angriff &&
-                  widget.werte.combatPreviewStats.isRangedWeapon)
+              if (_aktion == Gefechtsaktion.angriff && werte.fernkampf)
                 GefechtFernkampffelder(
                   kontext: _kontext,
                   onChanged: (k) => setState(() {
@@ -256,13 +276,13 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
                 ),
               GefechtKontextfelder(
                 kontext: _kontext,
-                aktion: _aktion,
+                aktion: kontextAktion,
                 onChanged: (k) => setState(() {
                   _kontext = k;
                   _bestaetigt = false;
                 }),
               ),
-              if (gefechtswerteFuer(widget.werte).halbschwert)
+              if (werte.halbschwert)
                 CheckboxListTile(
                   value: _kontext.halbschwert,
                   title: const Text('Aktuell in Halbschwertführung'),
@@ -296,7 +316,7 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
                 'Weitere Erschwernis / Manöveransage (ohne automatische Anteile)',
               ),
               if (sonder) ...[
-                if (widget.probe == null)
+                if (widget.probe == null && widget.manuell)
                   _zahl(_ziel, 'Manuell bestätigter Grundzielwert (optional)'),
                 _zahl(_dauer, 'Gesamtdauer in Aktionen'),
                 if (widget.manuell || widget.manoever != null)
@@ -355,14 +375,10 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
                   _bestaetigt &&
                   gefechtsPflichtkontextErfasst(
                     _kontext,
-                    _aktion,
-                    fernkampf: widget.werte.combatPreviewStats.isRangedWeapon,
+                    kontextAktion,
+                    fernkampf: werte.fernkampf,
                   ) &&
-                  (!gefechtAuftragBrauchtDk(
-                        auftrag,
-                        gefechtswerteFuer(widget.werte),
-                      ) ||
-                      _dk != null)
+                  (!gefechtAuftragBrauchtDk(auftrag, werte) || _dk != null)
               ? () => Navigator.pop(context, auftrag)
               : null,
           child: Text(

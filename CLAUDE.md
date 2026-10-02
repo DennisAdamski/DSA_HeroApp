@@ -28,6 +28,8 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   Wegstecken. Ziehhandlungen merken ihre Zielhand.
   `gefecht_kampfmittel_rules.dart` löst konkrete Kampfmittel auf; ihre getrennten
   Grundwerte werden von Anzeige, Dialog und frischer Auftragsprüfung verwendet.
+  `gefecht_zusatz_rules.dart` verbindet konkrete Zusatzproben mit Ausrüstung,
+  vorherigen regulären Aktionen und derselben nicht kumulativen Zusatzmarke.
   `ui2/gefecht/` trennt Einstieg, Rundenleiste, Ansicht, Aktionsdialog,
   Manöverliste, Ausrüstung und Magie. Weitere Gefechtsregelmodule betreffen
   Auftragsprüfung, Dauerhandlungen und echte Talent-/Zauberproben.

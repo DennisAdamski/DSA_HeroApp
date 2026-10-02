@@ -35,6 +35,8 @@ Future<void> fuehreGefechtsaktionAus({
   ResolvedProbeRequest? probe,
   bool manuell = false,
   String? beschreibung,
+  GefechtsKampfmittelwahl? kampfmittel,
+  bool zusatzParade = false,
 }) async {
   final controller = ref.read(gefechtProvider(heroId).notifier);
 
@@ -77,6 +79,8 @@ Future<void> fuehreGefechtsaktionAus({
       manoever: m,
       probe: probe,
       manuell: manuell,
+      kampfmittel: kampfmittel,
+      zusatzParade: zusatzParade,
     ),
   );
   if (auftrag == null || !context.mounted) return;
@@ -84,6 +88,11 @@ Future<void> fuehreGefechtsaktionAus({
   final aktuell = ref.read(gefechtProvider(heroId));
   if (frisch == null || aktuell == null) return;
   final p = pruefeGefechtAuftrag(aktuell, frisch, k, auftrag);
+  final w = gefechtswerteFuer(
+    frisch,
+    katalog: k,
+    kampfmittel: auftrag.kampfmittel,
+  );
   if (p.status == Gefechtsfreigabe.gesperrt) {
     throw StateError(p.gruende.join(' '));
   }
@@ -104,7 +113,6 @@ Future<void> fuehreGefechtsaktionAus({
   ProbeResult? gewuerfelt;
   void buchen([ProbeResult? result]) {
     gewuerfelt ??= result;
-    final w = gefechtswerteFuer(frisch, katalog: k, kampfmittel: auftrag.kampfmittel);
     if (!controller.abschliessen(id, w, p, erfolg: result?.success)) return;
     if (result != null &&
         request != null &&
@@ -118,7 +126,7 @@ Future<void> fuehreGefechtsaktionAus({
       controller.setzen(jetzt.copyWith(handlung: restHandlung));
     }
     if (result != null &&
-        frisch.combatPreviewStats.isRangedWeapon &&
+        w.fernkampf &&
         auftrag.aktion == Gefechtsaktion.angriff) {
       controller.setzen(
         jetzt.copyWith(
@@ -127,7 +135,7 @@ Future<void> fuehreGefechtsaktionAus({
             verbleibend: 0,
             art: Gefechtshandlungsart.fernkampf,
             ergebnis: result,
-            waffe: frisch.hero.combatConfig.selectedWeapon,
+            waffe: w.waffe,
           ),
         ),
       );

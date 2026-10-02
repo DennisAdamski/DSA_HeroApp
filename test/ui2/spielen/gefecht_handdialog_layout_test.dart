@@ -17,9 +17,11 @@ import 'gefecht_test_support.dart';
 void main() {
   for (final breite in [390.0, 820.0, 1200.0, 1440.0]) {
     for (final hell in Brightness.values) {
-      for (final popup in [false, true]) {
+      for (final modus in [0, 1, 2]) {
+        final popup = modus == 1;
+        final zusatz = modus == 2;
         testWidgets(
-          'Hand-/Abwehrdialog $breite $hell Popup=$popup mit Tastatur',
+          'Hand-/Abwehrdialog $breite $hell Modus=$modus mit Tastatur',
           (tester) async {
             tester.view.physicalSize = Size(breite, 1000);
             tester.view.devicePixelRatio = 1;
@@ -94,7 +96,10 @@ void main() {
                                 zustand: zustand,
                                 werte: snapshot,
                                 katalog: testCatalog,
-                                aktion: Gefechtsaktion.parade,
+                                aktion: zusatz
+                                    ? Gefechtsaktion.zusatzaktion
+                                    : Gefechtsaktion.parade,
+                                zusatzParade: zusatz,
                                 titel: 'Parieren',
                               ),
                       );
@@ -121,6 +126,13 @@ void main() {
               await tester.pumpAndSettle();
               await offen;
             } else {
+              if (zusatz) {
+                expect(find.text('Gesamtdauer in Aktionen'), findsNothing);
+                expect(
+                  find.text('Manuell bestätigter Grundzielwert (optional)'),
+                  findsNothing,
+                );
+              }
               final dropdown = find.byKey(
                 const ValueKey('gefecht-kampfmittel'),
               );

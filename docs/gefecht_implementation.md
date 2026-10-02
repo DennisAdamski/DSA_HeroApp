@@ -152,3 +152,24 @@ Abwehrdialoge zeigen das verwendete Kampfmittel: Schild vor zulässiger
 Parierwaffe vor Hauptwaffe. Hauptwaffen- und Parierwaffenparade sind getrennt;
 Nebenhandwaffen verwenden ihre eigene Vorschau einschließlich Falsche-Hand-Mali.
 Schild-eBE ist enthalten, der AT-WM einer Parierwaffe wirkt nicht auf Haupt-AT.
+Zusatzattacken/-paraden zeigen das konkrete Mittel und den berechneten Zielwert.
+Die Probeengine erhält AT/PA statt einer allgemeinen Eigenschaftsprobe. Das
+flüchtige Rundenmodell merkt Ausrüstungspaar, reguläres Abwehrmittel und Ansage.
+Eine Zusatzmarke steht nur nach der passenden regulären Aktion mit derselben
+Ausrüstung zur Verfügung; Schild-/Parierwaffenparaden benötigen jeweils vorher
+dieselbe Abwehrart. Rundenwechsel löscht die Bindung, erhält laufende Handlungen.
+SK-II-Zusatzparaden bezahlen keine reguläre Dauerhandlung. Zwei PW-Paraden
+bleiben ohne Ansage und Umwandlung. Doppelangriff/geteilte Pools bleiben manuell.
+
+WdS 71 (DSA MCP 7015–7017), Errata WdS S.3–4 (25631), geprüft 2026-10-02:
+Schildführung sperrt einschlägige Manöver auch mit der Hauptwaffe; Finte/Ausfall
+erhalten den belegten Zusatz, kleine Schilde die Finte-Ausnahme. Schildparaden
+fragen je Angriff, ob der Schild-WM wirkt; bei Kettenwaffe/-stab oder Peitsche
+entfällt nur der WM, nicht SF/Heldenanteile. Fernkampf-Munitionsabschluss verwendet
+die gewählte Waffen-ID auch für eine normale Nebenhandwaffe.
+
+Manuell bleiben improvisierte bzw. zugleich als Schild/Parierwaffe verwendete
+Sonderprofile und Bruchtests. Tod von Links wird bei fehlendem Angriffsprofil des
+bestehenden Parierwaffen-Eintrags erklärt gesperrt; es wird kein Hauptwaffen-AT
+als Ersatz erfunden. Ein vollständiges eigenes Angriffsprofil erfordert eine
+Waffe mit Talent und Waffenwerten im vorhandenen Waffeninventar.
