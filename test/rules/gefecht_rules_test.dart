@@ -4,6 +4,33 @@ import 'package:dsa_heldenverwaltung/rules/derived/gefecht_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_ablauf_rules.dart';
 
 void main() {
+  test('SK-II-Zusatzparade bezahlt weder Ausweichen noch Position', () {
+    const w = Gefechtswerte(
+      iniBasis: 12,
+      at: 14,
+      pa: 12,
+      ausweichen: 10,
+      schildPa: 14,
+      schildkampf2: true,
+      ausweichen1: true,
+    );
+    final s = beginneGefecht(6).copyWith(
+      dk: 'N',
+      angriffeVerbraucht: 1,
+      paradenVerbraucht: 1,
+      schildparadenVerbraucht: 1,
+    );
+    for (final a in [
+      Gefechtsaktion.gezieltesAusweichen,
+      Gefechtsaktion.position,
+    ]) {
+      expect(pruefeGefechtsaktion(s, w, a).status, Gefechtsfreigabe.gesperrt);
+    }
+    expect(
+      pruefeGefechtsaktion(s, w, Gefechtsaktion.schildparade).status,
+      Gefechtsfreigabe.pruefen,
+    );
+  });
   test(
     'Kampfgespür kann eine noch unbenutzte Parade später in AT umwandeln',
     () {

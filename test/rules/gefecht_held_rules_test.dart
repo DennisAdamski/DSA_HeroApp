@@ -3,6 +3,7 @@ import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht_auftrag.dart';
+import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
@@ -15,6 +16,52 @@ import 'package:dsa_heldenverwaltung/rules/derived/gefecht_rules.dart';
 import '../ui2/shell/karto_test_support.dart';
 
 void main() {
+  test('Neue kurze oder lange Zauber und manuelle Aufträge verdrängen keine Resthandlung', () {
+    final snapshot = buildHeroComputedSnapshot(
+      hero: testHero(),
+      state: const HeroState.empty(),
+      catalog: testCatalog,
+      epicAdvantagesActive: false,
+    );
+    const probe = ResolvedProbeRequest(
+      type: ProbeType.spell,
+      title: 'Zauber',
+      subtitle: '',
+      ruleHint: '',
+      diceSpec: DiceSpec(count: 3, sides: 20),
+      targets: [],
+      basePool: 7,
+    );
+    for (final h in [
+      const Gefechtshandlung(
+        titel: 'Waffe ziehen',
+        verbleibend: 2,
+        waffenId: 'w2',
+      ),
+      const Gefechtshandlung(titel: 'Zauber', verbleibend: 2, probe: probe),
+    ]) {
+      final s = beginneGefecht(6).copyWith(handlung: h);
+      for (final dauer in [1, 3]) {
+        for (final zauber in [false, true]) {
+          final a = GefechtAuftrag(
+            aktion: Gefechtsaktion.handlung,
+            titel: 'Neuer Auftrag',
+            zuschlag: 0,
+            dk: null,
+            dauer: dauer,
+            kosten: 1,
+            zielwert: zauber ? null : 14,
+            manuell: true,
+            probe: zauber ? probe : null,
+          );
+          expect(
+            pruefeGefechtAuftrag(s, snapshot, testCatalog, a).status,
+            Gefechtsfreigabe.gesperrt,
+          );
+        }
+      }
+    }
+  });
   test('Abwehraktion verwendet die Verteidigungsmarke und Katalogzuschlag', () {
     final m = ManeuverDef.fromJson({
       'id': 'man_binden',

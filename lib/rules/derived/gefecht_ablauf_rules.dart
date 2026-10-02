@@ -13,6 +13,7 @@ Gefechtspruefung pruefeManuelleGefechtsaktion(
   int? zielwert,
   int zuschlag = 0,
   bool eigenerAuftrag = false,
+  bool handlungFortsetzen = false,
   List<String> gruende = const [],
 }) {
   final basis = pruefeGefechtsaktion(
@@ -22,6 +23,7 @@ Gefechtspruefung pruefeManuelleGefechtsaktion(
     Gefechtsaktion.handlung,
     manuellerZielwert: zielwert,
     eigenerAuftrag: eigenerAuftrag,
+    handlungFortsetzen: handlungFortsetzen,
     pruefGruende: gruende,
   );
   var a = 0, p = 0;

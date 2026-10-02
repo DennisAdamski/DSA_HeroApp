@@ -473,22 +473,24 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
     final id = 'auftrag-${_nummer++}';
     if (!_controller.reservieren(id)) return;
     final request = gefechtRequestFuerAuftrag(auftrag, p);
+    final restHandlung = gefechtHandlungNachAuftrag(
+      titel: titel,
+      dauer: auftrag.dauer,
+      pruefung: p,
+      probe: probe != null ? request : null,
+    );
     void buchen([ProbeResult? result]) {
       final w = gefechtswerteFuer(frisch);
       if (!_controller.abschliessen(id, w, p, erfolg: result?.success)) return;
       final jetzt = ref.read(gefechtProvider(widget.heroId))!;
-      final h = gefechtHandlungNachAuftrag(
-        titel: titel,
-        dauer: auftrag.dauer,
-        pruefung: p,
-        probe: probe != null && auftrag.dauer > 1 ? request : null,
-      );
-      if (h != null) _controller.setzen(jetzt.copyWith(handlung: h));
+      if (restHandlung != null) {
+        _controller.setzen(jetzt.copyWith(handlung: restHandlung));
+      }
     }
 
     try {
       // Längere Zauber werden erst nach ihrer bestätigten Dauer ausgewertet.
-      if (request == null || probe != null && auftrag.dauer > 1) {
+      if (request == null || probe != null && restHandlung != null) {
         buchen();
       } else {
         await _bruecke.gefechtsProbe(
