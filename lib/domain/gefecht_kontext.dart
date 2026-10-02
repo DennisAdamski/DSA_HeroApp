@@ -21,6 +21,7 @@ class Gefechtskontext {
     this.getuemmel = false,
     this.kontrollbereich = false,
     this.situationsZuschlag,
+    this.schildWmWirksam,
   });
   final String kontakt;
   final int? gegnerzahl, finte, entfernung, situationsZuschlag;
@@ -31,6 +32,9 @@ class Gefechtskontext {
       sehrGross,
       grosserSchild,
       geladen;
+
+  /// Für diesen Angriff: Kettenstab, Kettenwaffe oder Peitsche hebt den WM auf.
+  final bool? schildWmWirksam;
   final bool halbschwert, weitereRegelnGeprueft, getuemmel, kontrollbereich;
 
   /// Ändert nur benannte Kontextwerte; Angriffsdaten werden separat gelöscht.
@@ -42,6 +46,7 @@ class Gefechtskontext {
     int? situationsZuschlag,
     bool? weitereRegelnGeprueft,
     bool? halbschwert,
+    bool? schildWmWirksam,
     bool ohneEntfernung = false,
     bool ohneSituationsZuschlag = false,
   }) => Gefechtskontext(
@@ -63,6 +68,7 @@ class Gefechtskontext {
     situationsZuschlag: ohneSituationsZuschlag
         ? null
         : situationsZuschlag ?? this.situationsZuschlag,
+    schildWmWirksam: schildWmWirksam ?? this.schildWmWirksam,
   );
 
   /// Ein abgewehrter Angriff hinterlässt keine Finte für den folgenden Angriff.

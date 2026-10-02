@@ -180,3 +180,24 @@ unveränderte Hauptwaffen-AT; Schild-PA berücksichtigt eBE. Der alte Test, der
 den Parierwaffen-AT-WM der Hauptwaffe zuschlug, wurde entsprechend korrigiert.
 Die optionale Schildverbesserung bei Hauptwaffen-PA 15/18/21 wird nicht neu
 aktiviert; individuelle bestätigte Abweichungen bleiben explizite Zuschläge.
+
+Paket 2: Commit `849acfb`. Paket 3 verbindet die konkrete Zusatzaktion mit
+vorheriger regulärer Aktion, Ausrüstungspaar und einmaliger AT-/PA-Probe.
+SK-II-Paraden erhalten dieselbe Zusatzmarke wie andere Quellen; keine zweite
+reguläre Parade, keine Zahlung einer Dauerhandlung. PW-II verlangt gewöhnliche
+Paraden ohne Ansage/Umwandlung. Bindungen werden beim Rundenwechsel gelöscht.
+Frische Auswahl bestimmt auch Fernkampfkontext und Munitions-ID.
+
+Ergänzende MCP-Prüfung 2026-10-02: WdS 71, 7017 (Schild-Manöververbote,
+Finte-/Ausfallzuschläge, kleine Schilde, Aufhebung des Schild-WM); Errata WdS
+S.3–4, 25631 (Hauptwaffenbindung, Reihenfolge und gewöhnliche PW-Paraden).
+Optionale/improvisierte Doppelrollen und Bruchtests bleiben manuell.
+Tod von Links benötigt ein eigenes AT-Profil; vorhandene reine
+Parierwaffen-Einträge enthalten weder Waffentalent noch vollständige Angriffswerte.
+Die vorhandene Sperre bleibt mit Erklärung sichtbar. Kein neues persistiertes
+Hand-/Waffenmodell und keine unbelegte Übernahme der Hauptwaffenattacke.
+
+Zusatzaktionsdialoge enthalten keine manuelle Zielwert-/Dauereingabe.
+Regressionen prüfen konkrete Zielwerte, Finte/INI genau einmal, SF, Waffenwechsel,
+PW-/Schildbindung, Rundenreset, nicht kumulative Marken, Doppelcallback und
+Layoutmatrix 390/820/1200/1440, Hell/Dunkel mit Tastatur.

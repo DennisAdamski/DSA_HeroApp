@@ -11,6 +11,7 @@ import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_held_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_hand_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/gefecht_zusatz_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_orientieren_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_auftrag_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_ablauf_rules.dart';
@@ -223,6 +224,8 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
     String titel, {
     ManeuverDef? m,
     bool manuell = false,
+    GefechtsKampfmittelwahl? kampfmittel,
+    bool zusatzParade = false,
   }) {
     final auftrag = GefechtAuftrag(
       aktion: aktion,
@@ -233,6 +236,8 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
       kosten: 1,
       manoever: m,
       manuell: manuell,
+      kampfmittel: kampfmittel,
+      zusatzParade: zusatzParade,
     );
     final p = katalog == null
         ? null
@@ -258,6 +263,8 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
                   titel,
                   m: m,
                   manuell: manuell,
+                  kampfmittel: kampfmittel,
+                  zusatzParade: zusatzParade,
                 ),
               ),
         child: Padding(
@@ -358,13 +365,16 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
           manuell: true,
         ),
         _knopf(s, snapshot, k, Gefechtsaktion.freieAktion, 'Freie Aktion'),
-        _knopf(
-          s,
-          snapshot,
-          k,
-          Gefechtsaktion.zusatzaktion,
-          'Waffengebundene Zusatzaktion',
-        ),
+        for (final option in gefechtsZusatzoptionen(snapshot))
+          _knopf(
+            s,
+            snapshot,
+            k,
+            Gefechtsaktion.zusatzaktion,
+            option.titel,
+            kampfmittel: option.kampfmittel,
+            zusatzParade: option.parade,
+          ),
         _knopf(
           s,
           snapshot,
@@ -464,6 +474,8 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
     ResolvedProbeRequest? probe,
     bool manuell = false,
     String? beschreibung,
+    GefechtsKampfmittelwahl? kampfmittel,
+    bool zusatzParade = false,
   }) async {
     await fuehreGefechtsaktionAus(
       context: context,
@@ -479,6 +491,8 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
       probe: probe,
       manuell: manuell,
       beschreibung: beschreibung,
+      kampfmittel: kampfmittel,
+      zusatzParade: zusatzParade,
     );
   }
 

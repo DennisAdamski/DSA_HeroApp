@@ -7,6 +7,8 @@ import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_kampfmittel_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_auftrag_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/gefecht_held_rules.dart';
+import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 
 import '../ui2/shell/karto_test_support.dart';
 
@@ -39,6 +41,27 @@ HeroComputedSnapshot _snapshot({bool linkhand = true, bool schild = false}) =>
     );
 
 void main() {
+  test(
+    'Schild sperrt Entwaffnen auch mit Hauptwaffe; Meisterparade braucht SK II',
+    () {
+      final snap = _snapshot(schild: true);
+      const s = Gefechtszustand(iniWurf: 6, dk: 'N');
+      for (final name in ['Entwaffnen', 'Meisterparade']) {
+        final p = pruefeGefechtsmanoever(
+          s,
+          snap,
+          testCatalog,
+          ManeuverDef(id: 'test', name: name, typ: 'Parade'),
+          zuschlag: 0,
+          kampfmittel: const GefechtsKampfmittelwahl(
+            GefechtsKampfmittelArt.hauptwaffe,
+            'main',
+          ),
+        );
+        expect(p.status, Gefechtsfreigabe.gesperrt);
+      }
+    },
+  );
   test('Parierwaffe verändert eigene Parade, nicht Hauptwaffenattacke', () {
     final s = _snapshot();
     final frei = buildHeroComputedSnapshot(

@@ -7,6 +7,7 @@ import 'gefecht_ablauf_rules.dart';
 import 'gefecht_held_rules.dart';
 import 'gefecht_rules.dart';
 import 'gefecht_kampfmittel_rules.dart';
+import 'gefecht_zusatz_rules.dart';
 
 /// Identische Prüfung vor Anzeige und Ausführung, mit bekannten Gegnersperren.
 Gefechtspruefung pruefeGefechtAuftrag(
@@ -33,6 +34,16 @@ Gefechtspruefung pruefeGefechtAuftrag(
       'Keine Parade mit diesem Kampfmittel.',
   ];
   final w = gefechtswerteFuer(snapshot, katalog: katalog, kampfmittel: wahl);
+  if (auftrag.aktion == Gefechtsaktion.zusatzaktion) {
+    return pruefeGefechtsZusatzauftrag(
+      zustand,
+      snapshot,
+      katalog,
+      auftrag,
+      wahl,
+      eigenerAuftrag: eigenerAuftrag,
+    );
+  }
   final m = auftrag.manoever;
   Gefechtspruefung p;
   if (m != null) {
@@ -134,7 +145,9 @@ Gefechtspruefung pruefeGefechtAuftrag(
       erschwernis: p.erschwernis,
     );
   }
-  if (sperren.isEmpty) return p;
+  if (sperren.isEmpty) {
+    return gefechtsPruefungMitKampfmittel(p, snapshot, auftrag, wahl);
+  }
   return Gefechtspruefung(
     aktion: p.aktion,
     status: Gefechtsfreigabe.gesperrt,

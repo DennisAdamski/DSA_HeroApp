@@ -39,6 +39,9 @@ bool gefechtsPflichtkontextErfasst(
       (k.angriffsart == null || k.finte == null || k.paradeVerboten == null)) {
     return false;
   }
+  if (aktion == Gefechtsaktion.schildparade && k.schildWmWirksam == null) {
+    return false;
+  }
   if (aw &&
       (k.angriffsart == null ||
           k.finte == null ||

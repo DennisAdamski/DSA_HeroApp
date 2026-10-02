@@ -264,3 +264,12 @@ verbraucht; offene Kosten werden frisch übernommen und bei Fehlern erneut angeb
 Die Ergänzung **Hände** im Folgeablauf und Ausrüstungspopup zeigt Hauptwaffe
 plus Nebenhandwaffe/Schild/Parierwaffe. Leer benötigt bestätigtes Wegstecken.
 Es gelten gemeinsame Belegungssperren und ein verzögerter frischer Abschluss.
+
+Im Abwehrdialog steht „Verwendetes Kampfmittel“ mit getrennten PA-Werten.
+Schild, zulässige Parierwaffe, dann Hauptwaffe ist die Vorbelegung. Die Wahl
+verwirft Bestätigungen; Finte gilt nur für den einzelnen gegnerischen Angriff.
+Beim Schild wird dessen wirksamer WM ausdrücklich geklärt (Kettenwaffe/-stab,
+Peitsche). Zusatzaktionen zeigen konkrete Nebenhand-AT/PA und eine Zusatzmarke,
+benötigen keine Zahleneingabe und verlangen die passende vorherige Aktion.
+Doppelangriff, geteilte Pools und fehlende Angriffsprofile bleiben manuell.
+Regelbelege: WdS 71 (7015–7017), Errata WdS S.3–4 (25631).

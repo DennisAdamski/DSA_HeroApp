@@ -3,6 +3,7 @@ import 'package:dsa_heldenverwaltung/domain/gefecht.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 
 import 'gefecht_hand_rules.dart';
+import 'combat_special_ability_state.dart';
 
 /// Automatisch berechenbares Kampfmittel; Gründe erklären bekannte Sperren.
 class GefechtsKampfmittelprofil {
@@ -157,3 +158,37 @@ Gefechtsaktion gefechtsAktionMitKampfmittel(
           ? Gefechtsaktion.schildparade
           : Gefechtsaktion.parade
     : a;
+
+/// WdS 71: Schildführung beschränkt auch Manöver mit der Hauptwaffe.
+({int zuschlag, List<String> sperren}) gefechtsSchildmanoever(
+  HeroComputedSnapshot s,
+  String manoever,
+) {
+  final c = s.hero.combatConfig;
+  if (!s.combatPreviewStats.offhandIsShield) return (zuschlag: 0, sperren: []);
+  final schild = c.offhandEquipment[c.offhandAssignment.equipmentIndex];
+  final name = manoever.toLowerCase();
+  final klein = schild.shieldSize == ShieldSize.small;
+  final gesperrt = [
+    'doppelangriff',
+    'entwaffnen',
+    'klingensturm',
+    'tod von links',
+    'umreißen',
+    'umreissen',
+    'waffe zerbrechen',
+  ].any(name.contains);
+  final sk2 = isCombatSpecialAbilityActive(c, 'ksf_schildkampf_ii');
+  return (
+    zuschlag: name.contains('ausfall') || (name.contains('finte') && !klein)
+        ? 2
+        : 0,
+    sperren: [
+      if (gesperrt) 'Schildführung verbietet dieses Manöver (WdS 71).',
+      if (name.contains('meisterparade') && !sk2)
+        'Meisterparade mit Schild benötigt Schildkampf II.',
+      if (name.contains('windmühle') && !klein)
+        'Windmühle nur mit kleinem Schild.',
+    ],
+  );
+}

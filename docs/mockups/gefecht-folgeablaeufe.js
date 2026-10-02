@@ -19,6 +19,15 @@ function dialogFolgeablaeufe(art = 'orientieren', schritt = 0, fehler = false) {
       <label><input type="checkbox" id="folge-geprueft"> Ziehkontext / Wegsteckdauer bestätigt</label>
       <p>Neue Belegung erst nach Dauer und frischer Speicherung. Hauptwaffenparade,
       Schildparade und Parierwaffenparade zeigen getrennte Werte; zweite Waffen haben eigene AT/PA.</p>`;
+    inhalt += `<label>Verwendetes Abwehrmittel<select class="eingabe"><option>Schild · eigene PA</option>
+      <option>Linkhanddolch · Haupt-PA + WM/SF</option><option>Schwert · Haupt-PA ohne PW-Anteil</option></select></label>
+      <label>Schild-WM wirksam?<select class="eingabe"><option>Unbekannt</option><option>Ja</option>
+      <option>Nein: Kettenwaffe/-stab oder Peitsche</option></select></label>
+      <p>Zusätzliche Nebenhandattacke / Nebenhandparade / Schildparade: Zielwert aus dem gewählten Mittel,
+      eine gemeinsame Zusatzmarke. Erst nach passender regulärer Aktion mit derselben Ausrüstung.</p>
+      <p>PW-II: gewöhnliche Paraden ohne Ansage/Umwandlung. Doppelangriff und fehlende eigene Angriffsprofile manuell.</p>
+      <details><summary>Regelbelege</summary>WdS 71 (7015–7017), Errata WdS (25631).
+      Dieser Dialog zeigt den Ablauf mit Beispieldaten; keine produktive Berechnung.</details>`;
     weiter = 'Handwechsel beginnen (Beispiel)';
   } else if (art === 'orientieren') {
     const bonus = Math.floor(Math.max(0, h.kriegskunst) / 2);

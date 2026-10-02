@@ -47,6 +47,7 @@ class GefechtKontextfelder extends StatelessWidget {
         getuemmel: k.getuemmel,
         kontrollbereich: k.kontrollbereich,
         situationsZuschlag: k.situationsZuschlag,
+        schildWmWirksam: k.schildWmWirksam,
       ),
     );
     return Column(
@@ -95,6 +96,7 @@ class GefechtKontextfelder extends StatelessWidget {
                 getuemmel: k.getuemmel,
                 kontrollbereich: k.kontrollbereich,
                 situationsZuschlag: k.situationsZuschlag,
+                schildWmWirksam: k.schildWmWirksam,
               ),
             ),
           ),
@@ -104,6 +106,14 @@ class GefechtKontextfelder extends StatelessWidget {
             'Parade erlaubt?',
             k.paradeVerboten == null ? null : !k.paradeVerboten!,
             (v) => aendern(verbot: !v),
+          ),
+        if (aktion == Gefechtsaktion.schildparade)
+          _wahl(
+            'Schild-WM wirksam? (Nein bei Kettenwaffe/-stab oder Peitsche)',
+            k.schildWmWirksam,
+            (v) => onChanged(
+              k.copyWith(schildWmWirksam: v, weitereRegelnGeprueft: false),
+            ),
           ),
         if (aw) ...[
           DropdownButtonFormField<int>(
