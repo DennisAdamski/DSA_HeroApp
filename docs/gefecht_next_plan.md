@@ -242,3 +242,10 @@ Fernkampfansage 7089, Umwandlung 7046/7047, Klingentänzer 7030,
 Hammerschlag 6996, Gezielter Stich 6995, Todesstoß 7002, Klingensturm 6997.
 Komplexe Hammerschlag-/Todesstoßfolgen bleiben konkret am Tisch bestätigt,
 anstatt aus Textschlagwörtern automatisch freigegeben zu werden.
+
+Reviewkorrektur I1: Erfolgsfolgen sind zentral nach unterstütztem Waffenschaden,
+keinem Schaden und manueller Abwicklung eingeteilt. Entwaffnen/Umreißen bieten
+keinen Schadensrequest; ungeklärte Varianten erhalten keine gewöhnlichen
+Waffen-TP. Regel- und Widgetregressionen prüfen diese Grenze sowie den einzelnen
+Abschluss bei weiteren offenen Treffern. Hammerschlag behält gebundene Ansagen
+und den ausdrücklich manuellen Multiplikator der gesamten TP.

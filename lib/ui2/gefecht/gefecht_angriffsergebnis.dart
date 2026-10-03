@@ -24,42 +24,57 @@ class GefechtAngriffsergebnisAnzeige extends ConsumerWidget {
 
   /// Die Ergebnis-ID hält selbst doppelte Rückmeldungen beim richtigen Angriff.
   @override
-  Widget build(BuildContext context, WidgetRef ref) => Column(
-    crossAxisAlignment: CrossAxisAlignment.stretch,
-    children: [
-      Text('Erfolgreicher Angriff · ${ergebnis.waffenname}'),
-      Text(
-        'Gegnerische Abwehr: +${ergebnis.abwehrmalus} · TP-Bonus: +${ergebnis.tpBonus}',
-      ),
-      Text(ergebnis.hinweis),
-      TextButton(
-        key: const ValueKey('gefecht-angriffsschaden'),
-        onPressed: gesperrt
-            ? null
-            : () => onAktion(() async {
-                await bestand.gefechtsProbe(
-                  context: context,
-                  ref: ref,
-                  heroId: heroId,
-                  request: gefechtsSchadenFuerAngriff(ergebnis),
-                  onResolved: (_) {
-                    final s = ref.read(gefechtProvider(heroId));
-                    if (s == null) {
-                      return;
-                    }
-                    ref
-                        .read(gefechtProvider(heroId).notifier)
-                        .setzen(
-                          entferneGefechtsAngriffsergebnis(
-                            s,
-                            ergebnis.auftragId,
-                          ),
-                        );
-                  },
-                );
-              }),
-        child: Text('Schaden dieses Angriffs · ${ergebnis.schaden.label}'),
-      ),
-    ],
-  );
+  Widget build(BuildContext context, WidgetRef ref) {
+    final request = gefechtsSchadenFuerAngriff(ergebnis);
+    // Würfelabschluss und manuelle Abwicklung entfernen dieselbe konkrete ID.
+    void abschliessen() {
+      final s = ref.read(gefechtProvider(heroId));
+      if (s == null) return;
+      ref
+          .read(gefechtProvider(heroId).notifier)
+          .setzen(entferneGefechtsAngriffsergebnis(s, ergebnis.auftragId));
+    }
+
+    final titel = ergebnis.manoevername.isEmpty
+        ? 'Erfolgreicher Angriff'
+        : '${ergebnis.manoevername} gelungen';
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text('$titel · ${ergebnis.waffenname}'),
+        Text('Gegnerische Abwehr: +${ergebnis.abwehrmalus}'),
+        if (request != null)
+          Text('TP-Bonus: +${ergebnis.tpBonus}')
+        else if (ergebnis.tpBonus != 0)
+          Text('TP-Ansage: +${ergebnis.tpBonus} · Folgen manuell festlegen'),
+        Text(ergebnis.hinweis),
+        if (request != null)
+          TextButton(
+            key: const ValueKey('gefecht-angriffsschaden'),
+            onPressed: gesperrt
+                ? null
+                : () => onAktion(() async {
+                    await bestand.gefechtsProbe(
+                      context: context,
+                      ref: ref,
+                      heroId: heroId,
+                      request: request,
+                      onResolved: (_) => abschliessen(),
+                    );
+                  }),
+            child: Text('Schaden dieses Angriffs · ${request.diceSpec.label}'),
+          )
+        else
+          TextButton(
+            key: const ValueKey('gefecht-angriffsfolgen-abschliessen'),
+            onPressed: gesperrt ? null : abschliessen,
+            child: Text(
+              ergebnis.schadensfolge == GefechtsSchadensfolge.keinSchaden
+                  ? 'Folgen am Tisch abgewickelt'
+                  : 'Manuelle Folgen erledigt',
+            ),
+          ),
+      ],
+    );
+  }
 }

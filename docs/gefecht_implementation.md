@@ -64,9 +64,18 @@ genau einmal angewandt. Normaler Angriff und Sturmangriff erlauben beide
 Ansagen gleichzeitig. Der Sturmangriff benötigt auch die Abwehraktion,
 GS mindestens 4 und eine konkrete Bestätigung für vier Schritt Anlauf.
 
-Ein erfolgreich gebuchter Angriff hält Kampfmittelidentität, Waffenname,
-eingefrorenes Schadensprofil, TP-Bonus und Finte-Abwehrmalus. Sein eigener
-Schadensbutton verbraucht nur dieses Ergebnis nach der Probe. Mehrere offene
+Ein erfolgreich gebuchter Angriff hält Kampfmittelidentität, Waffenname und
+Finte-Abwehrmalus. `gefechtsSchadensfolgeFuerAuftrag` klassifiziert zentral
+unterstützten Waffenschaden, keinen Schaden oder manuelle Folgen. Normaler
+Angriff, Finte, Wuchtschlag, Sturmangriff, Hammerschlag, Todesstoß, Gezielter
+Stich und Niederwerfen behalten eingefrorenes Schadensprofil und TP-Bonus.
+Entwaffnen und Umreißen liefern keinen Schaden. Unbekannte Manöver und manuelle
+Probevarianten erhalten eine ausdrückliche manuelle Schadensfolge; gebundene
+Finte-/TP-Metadaten bleiben dabei erhalten, ohne gewöhnlichen Schaden vorzugeben.
+`gefechtsSchadenFuerAngriff` liefert für schadenslose/manuelle Folgen `null`.
+Nur unterstützter Waffenschaden bietet einen Schadensbutton; andere Folgen
+werden nach Abwicklung am Tisch einzeln abgeschlossen. Beides entfernt nur
+die zugehörige Auftrags-ID. Mehrere offene
 Treffer bleiben erhalten; ein späterer Fehlschlag löscht keinen Treffer. Ein allgemeiner
 Schadenswurf erhält keinen alten Bonus; Waffenwechsel verändert das eingefrorene
 Profil nicht. Fehlgeschlagene oder doppelt zurückgemeldete Angriffe erzeugen
