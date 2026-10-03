@@ -21,6 +21,9 @@ import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abschnitt.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_ressourcenleiste.dart';
 
 import 'gefecht_aktionsdialog.dart';
+
+import 'package:dsa_heldenverwaltung/rules/derived/gefecht_filter_rules.dart';
+
 import 'gefecht_rundenleiste.dart';
 import 'gefecht_ausruestung.dart';
 import 'gefecht_magie.dart';
@@ -230,7 +233,7 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
     final auftrag = GefechtAuftrag(
       aktion: aktion,
       titel: titel,
-      zuschlag: m == null ? 0 : gefechtsManoeverZuschlag(m),
+      zuschlag: 0,
       dk: s.dk,
       dauer: 1,
       kosten: 1,
@@ -318,7 +321,8 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
       children: [
         for (final eintrag in {
           Gefechtsaktion.parade: 'Parieren',
-          Gefechtsaktion.schildparade: 'Schildparade',
+          if (gefechtsSchildparadeSichtbar(snapshot))
+            Gefechtsaktion.schildparade: 'Schildparade',
           Gefechtsaktion.freiesAusweichen: 'Freies Ausweichen',
           Gefechtsaktion.gezieltesAusweichen: 'Gezieltes Ausweichen',
         }.entries)
@@ -337,6 +341,23 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
         )
       : GefechtManoeverliste(
           manoever: gefechtsManoeverliste(s, snapshot, k),
+          erlernt: (m) => gefechtsManoeverErlernt(m, snapshot, k),
+          gesperrt: (m) =>
+              pruefeGefechtAuftrag(
+                s,
+                snapshot,
+                k,
+                GefechtAuftrag(
+                  aktion: gefechtsManoeveraktion(m),
+                  titel: m.name,
+                  zuschlag: 0,
+                  dk: s.dk,
+                  dauer: 1,
+                  kosten: 1,
+                  manoever: m,
+                ),
+              ).status ==
+              Gefechtsfreigabe.gesperrt,
           knopf: (m) =>
               _knopf(s, snapshot, k, gefechtsManoeveraktion(m), m.name, m: m),
         );

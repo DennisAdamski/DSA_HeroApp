@@ -177,7 +177,11 @@ void main() {
     expect(q.zielwert, snap.combatPreviewStats.offhandPreview!.pa! + 2 - 3);
     expect(q.paraden, 0);
     expect(q.zusatz, 1);
+    s = s.copyWith(kontext: _kontext.copyWith(schildWmWirksam: false));
     s = verbraucheGefechtsaktion(s, gefechtswerteFuer(snap), q);
+    expect(s.kontext.finte, isNull);
+    expect(s.kontext.paradeVerboten, isNull);
+    expect(s.kontext.schildWmWirksam, isNull);
     expect(
       pruefeGefechtAuftrag(s, snap, testCatalog, auftrag).status,
       Gefechtsfreigabe.gesperrt,

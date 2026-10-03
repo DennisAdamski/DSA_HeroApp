@@ -24,6 +24,8 @@ class GefechtAuftrag {
     this.kontext,
     this.distanzSchritte = 0,
     this.kampfmittel,
+    this.eingabefehler = const [],
+    this.bestaetigteEntscheidungen = const [],
   });
   final Gefechtsaktion aktion;
   final String titel;
@@ -36,4 +38,10 @@ class GefechtAuftrag {
   final Gefechtskontext? kontext;
   final int distanzSchritte;
   final GefechtsKampfmittelwahl? kampfmittel;
+
+  /// Ungültige Formularzahlen bleiben auch bei erneuter Prüfung sichtbar.
+  final List<String> eingabefehler;
+
+  /// Einzelne nicht automatisierbare Entscheidungen, keine pauschale Freigabe.
+  final List<String> bestaetigteEntscheidungen;
 }

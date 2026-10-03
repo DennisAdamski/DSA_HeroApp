@@ -4,7 +4,6 @@ import 'package:dsa_heldenverwaltung/domain/gefecht.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht_auftrag.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_auftrag_rules.dart';
-import 'package:dsa_heldenverwaltung/rules/derived/gefecht_ablauf_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_held_rules.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht_kontext.dart';
@@ -52,7 +51,8 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
   final _dauer = TextEditingController(text: '1');
   final _kosten = TextEditingController(text: '1');
   String? _dk;
-  bool _bestaetigt = false, _grosserGegner = false, _grosserSchild = false;
+  bool _grosserGegner = false, _grosserSchild = false;
+  final _entscheidungen = <String>{};
   bool _zusatzParade = false;
   late Gefechtskontext _kontext;
   int _distanzSchritte = 0;
@@ -77,9 +77,6 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
           .where((o) => o.parade == _zusatzParade)
           .firstOrNull
           ?.kampfmittel;
-    }
-    if (widget.manoever != null) {
-      _zuschlag.text = '${gefechtsManoeverZuschlag(widget.manoever!)}';
     }
   }
 
@@ -118,7 +115,18 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
     grosserGegner: _grosserGegner,
     grosserSchild: _grosserSchild,
     zusatzParade: _zusatzParade,
-    kontext: _kontext.copyWith(weitereRegelnGeprueft: _bestaetigt),
+    kontext: _kontext,
+    bestaetigteEntscheidungen: _entscheidungen.toList(),
+    eingabefehler: [
+      if (int.tryParse(_zuschlag.text) == null)
+        'Weitere Erschwernis muss eine ganze Zahl sein.',
+      if (_ziel.text.isNotEmpty && int.tryParse(_ziel.text) == null)
+        'Grundzielwert muss eine ganze Zahl sein.',
+      if (int.tryParse(_dauer.text) == null)
+        'Gesamtdauer muss eine ganze Zahl sein.',
+      if (int.tryParse(_kosten.text) == null)
+        'Kosten müssen eine ganze Zahl sein.',
+    ],
     distanzSchritte: _distanzSchritte,
     kampfmittel: _mittel,
   );
@@ -139,7 +147,11 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
         kontextAktion == Gefechtsaktion.schildparade;
     final waehlen = abwehr || kontextAktion == Gefechtsaktion.angriff;
     final profile = gefechtsKampfmittelprofile(widget.werte)
-        .where((p) => abwehr ? p.pa != null : p.at != null)
+        .where(
+          (p) =>
+              p.wahl.art == _mittel?.art ||
+              (abwehr ? p.pa != null : p.at != null),
+        )
         .toList();
     final p = pruefeGefechtAuftrag(
       widget.zustand,
@@ -149,13 +161,6 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
     );
     final sonder =
         widget.manuell || widget.manoever != null || widget.probe != null;
-    final gueltig =
-        int.tryParse(_zuschlag.text) != null &&
-        auftrag.dauer >= 1 &&
-        (!widget.manuell ||
-            _aktion == Gefechtsaktion.orientieren ||
-            auftrag.zielwert != null ||
-            widget.probe != null);
     return AlertDialog(
       title: Text(widget.titel),
       content: SizedBox(
@@ -177,7 +182,9 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
                     for (final profil in profile)
                       DropdownMenuItem(
                         value: profil.wahl.art,
-                        enabled: profil.sperren.isEmpty,
+                        enabled:
+                            profil.sperren.isEmpty &&
+                            (abwehr ? profil.pa != null : profil.at != null),
                         child: Text(
                           '${profil.name} · ${abwehr ? 'PA ${profil.pa}' : 'AT ${profil.at}'}',
                           overflow: TextOverflow.ellipsis,
@@ -186,7 +193,7 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
                   ],
                   onChanged: (art) => setState(() {
                     _mittel = profile.firstWhere((p) => p.wahl.art == art).wahl;
-                    _bestaetigt = false;
+                    _entscheidungen.clear();
                   }),
                 ),
               if (mittel != null && waehlen) ...[
@@ -218,18 +225,21 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
                         .where((o) => o.parade == v)
                         .firstOrNull
                         ?.kampfmittel;
-                    _bestaetigt = false;
+                    _entscheidungen.clear();
                   }),
                 ),
               if (widget.manoever != null) ...[
                 Text(widget.manoever!.erklarung),
-                Text('Katalogzuschlag: ${widget.manoever!.erschwernis}'),
+                Text(
+                  'Fester Manöverzuschlag: +${gefechtsManoeverZuschlag(widget.manoever!)}',
+                ),
+                Text('Katalog: ${widget.manoever!.erschwernis}'),
                 Text(widget.manoever!.quelle),
               ],
               Text(
                 '${freigabeText(p.status)}${p.zielwert == null ? '' : ' · Zielwert ${p.zielwert}'}',
               ),
-              for (final grund in p.gruende)
+              for (final grund in p.hinweise)
                 Padding(
                   padding: const EdgeInsets.only(top: 6),
                   child: Text('• $grund'),
@@ -263,7 +273,7 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
                   ],
                   onChanged: (v) => setState(() {
                     _distanzSchritte = v!;
-                    _bestaetigt = false;
+                    _entscheidungen.clear();
                   }),
                 ),
               if (_aktion == Gefechtsaktion.angriff && werte.fernkampf)
@@ -271,7 +281,7 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
                   kontext: _kontext,
                   onChanged: (k) => setState(() {
                     _kontext = k;
-                    _bestaetigt = false;
+                    _entscheidungen.clear();
                   }),
                 ),
               GefechtKontextfelder(
@@ -279,7 +289,7 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
                 aktion: kontextAktion,
                 onChanged: (k) => setState(() {
                   _kontext = k;
-                  _bestaetigt = false;
+                  _entscheidungen.clear();
                 }),
               ),
               if (werte.halbschwert)
@@ -291,7 +301,7 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
                   ),
                   onChanged: (v) => setState(() {
                     _kontext = _kontext.copyWith(halbschwert: v);
-                    _bestaetigt = false;
+                    _entscheidungen.clear();
                   }),
                 ),
               for (final m in p.modifikatoren)
@@ -304,11 +314,14 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
                 ),
                 items: [
                   for (final dk in ['H', 'N', 'S', 'P'])
-                    DropdownMenuItem(value: dk, child: Text(dk)),
+                    DropdownMenuItem(
+                      value: dk,
+                      child: Text(gefechtsDistanzname(dk)),
+                    ),
                 ],
                 onChanged: (v) => setState(() {
                   _dk = v;
-                  _bestaetigt = false;
+                  _entscheidungen.clear();
                 }),
               ),
               _zahl(
@@ -347,38 +360,39 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
                   }),
                 ),
               ],
-              CheckboxListTile(
-                key: const ValueKey('gefecht-kontext-bestaetigen'),
-                contentPadding: EdgeInsets.zero,
-                title: const Text(
-                  'Voraussetzungen, Zeitpunkt und Folgen geprüft',
+              for (final entscheidung in p.entscheidungen)
+                CheckboxListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(entscheidung),
+                  value: false,
+                  onChanged: (v) => setState(() {
+                    if (v == true) _entscheidungen.add(entscheidung);
+                  }),
                 ),
-                value: _bestaetigt,
-                onChanged: (v) => setState(() {
-                  _bestaetigt = v!;
-                }),
-              ),
             ],
           ),
         ),
       ),
       actions: [
+        if (!p.ausfuehrbar)
+          Padding(
+            key: const ValueKey('gefecht-ausfuehrung-gruende'),
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Text(
+              [
+                ...p.sperrgruende,
+                ...p.fehlendeAngaben,
+                ...p.entscheidungen,
+              ].join('\n'),
+            ),
+          ),
         TextButton(
           onPressed: () => Navigator.pop(context),
           child: const Text('Abbrechen'),
         ),
         FilledButton(
           key: const ValueKey('gefecht-auftrag-starten'),
-          onPressed:
-              gueltig &&
-                  p.status != Gefechtsfreigabe.gesperrt &&
-                  _bestaetigt &&
-                  gefechtsPflichtkontextErfasst(
-                    _kontext,
-                    kontextAktion,
-                    fernkampf: werte.fernkampf,
-                  ) &&
-                  (!gefechtAuftragBrauchtDk(auftrag, werte) || _dk != null)
+          onPressed: p.ausfuehrbar
               ? () => Navigator.pop(context, auftrag)
               : null,
           child: Text(
@@ -399,7 +413,7 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
       keyboardType: const TextInputType.numberWithOptions(signed: true),
       decoration: InputDecoration(labelText: label),
       onChanged: (_) => setState(() {
-        _bestaetigt = false;
+        _entscheidungen.clear();
       }),
     ),
   );

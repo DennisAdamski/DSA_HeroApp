@@ -17,9 +17,9 @@ import 'gefecht_test_support.dart';
 void main() {
   for (final breite in [390.0, 820.0, 1200.0, 1440.0]) {
     for (final hell in Brightness.values) {
-      for (final modus in [0, 1, 2]) {
+      for (final modus in [0, 1, 2, 3]) {
         final popup = modus == 1;
-        final zusatz = modus == 2;
+        final zusatz = modus >= 2;
         testWidgets(
           'Hand-/Abwehrdialog $breite $hell Modus=$modus mit Tastatur',
           (tester) async {
@@ -99,7 +99,7 @@ void main() {
                                 aktion: zusatz
                                     ? Gefechtsaktion.zusatzaktion
                                     : Gefechtsaktion.parade,
-                                zusatzParade: zusatz,
+                                zusatzParade: modus == 2,
                                 titel: 'Parieren',
                               ),
                       );
@@ -136,6 +136,30 @@ void main() {
               final dropdown = find.byKey(
                 const ValueKey('gefecht-kampfmittel'),
               );
+              if (modus == 2) {
+                final art = find.byWidgetPredicate(
+                  (w) =>
+                      w is DropdownButtonFormField<bool> &&
+                      w.decoration.labelText == 'Art der Zusatzaktion',
+                );
+                tester.widget<DropdownButtonFormField<bool>>(art).onChanged!(
+                  false,
+                );
+                await tester.pumpAndSettle();
+                expect(tester.takeException(), isNull);
+                expect(
+                  find.textContaining('Aktiviere Beidhändiger Kampf II'),
+                  findsOneWidget,
+                );
+                expect(
+                  tester
+                      .widget<FilledButton>(
+                        find.byKey(const ValueKey('gefecht-auftrag-starten')),
+                      )
+                      .onPressed,
+                  isNull,
+                );
+              }
               expect(
                 tester
                     .widget<DropdownButtonFormField<GefechtsKampfmittelArt>>(

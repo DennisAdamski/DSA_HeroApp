@@ -8,6 +8,7 @@ import 'gefecht_held_rules.dart';
 import 'gefecht_rules.dart';
 import 'gefecht_kampfmittel_rules.dart';
 import 'gefecht_zusatz_rules.dart';
+import 'gefecht_freigabe_rules.dart';
 
 /// Identische Prüfung vor Anzeige und Ausführung, mit bekannten Gegnersperren.
 Gefechtspruefung pruefeGefechtAuftrag(
@@ -17,7 +18,29 @@ Gefechtspruefung pruefeGefechtAuftrag(
   GefechtAuftrag auftrag, {
   bool eigenerAuftrag = false,
 }) {
-  final zustand = s.copyWith(dk: auftrag.dk, kontext: auftrag.kontext);
+  final basis = _pruefeGefechtAuftrag(
+    s,
+    snapshot,
+    katalog,
+    auftrag,
+    eigenerAuftrag: eigenerAuftrag,
+  );
+  return ergaenzeGefechtsfreigabe(basis, auftrag);
+}
+
+// Fachprüfung bleibt von Formularpflichten getrennt und wird identisch wiederverwendet.
+Gefechtspruefung _pruefeGefechtAuftrag(
+  Gefechtszustand s,
+  HeroComputedSnapshot snapshot,
+  RulesCatalog katalog,
+  GefechtAuftrag auftrag, {
+  bool eigenerAuftrag = false,
+}) {
+  final zustand = s.copyWith(
+    dk: auftrag.dk,
+    ohneDk: auftrag.dk == null,
+    kontext: auftrag.kontext,
+  );
   final wahl =
       auftrag.kampfmittel ??
       gefechtsStandardKampfmittel(snapshot, auftrag.aktion);
@@ -114,6 +137,14 @@ Gefechtspruefung pruefeGefechtAuftrag(
           ? Gefechtsfreigabe.gesperrt
           : Gefechtsfreigabe.pruefen,
       gruende: [...sperren, ...p.gruende],
+      sperrgruende: [...sperren, ...p.sperrgruende],
+      fehlendeAngaben: p.fehlendeAngaben,
+      entscheidungen: p.entscheidungen,
+      hinweise: p.hinweise,
+      modifikatoren: p.modifikatoren,
+      kampfmittel: wahl,
+      ausruestungspaar: gefechtsAusruestungspaar(snapshot),
+      mitAnsage: true,
       zielwert: p.zielwert,
       angriffe: gefechtsAngriffe(s),
       paraden: s.umwandlung == Gefechtsumwandlung.zweiteAttacke
@@ -139,6 +170,14 @@ Gefechtspruefung pruefeGefechtAuftrag(
       aktion: p.aktion,
       status: kosten.status,
       gruende: [...p.gruende, ...kosten.gruende],
+      sperrgruende: [...p.sperrgruende, ...kosten.sperrgruende],
+      fehlendeAngaben: p.fehlendeAngaben,
+      entscheidungen: p.entscheidungen,
+      hinweise: p.hinweise,
+      modifikatoren: p.modifikatoren,
+      kampfmittel: wahl,
+      ausruestungspaar: gefechtsAusruestungspaar(snapshot),
+      mitAnsage: true,
       zielwert: p.zielwert,
       angriffe: kosten.angriffe,
       paraden: kosten.paraden,
@@ -152,6 +191,14 @@ Gefechtspruefung pruefeGefechtAuftrag(
     aktion: p.aktion,
     status: Gefechtsfreigabe.gesperrt,
     gruende: [...sperren, ...p.gruende],
+    sperrgruende: [...sperren, ...p.sperrgruende],
+    fehlendeAngaben: p.fehlendeAngaben,
+    entscheidungen: p.entscheidungen,
+    hinweise: p.hinweise,
+    modifikatoren: p.modifikatoren,
+    kampfmittel: wahl,
+    ausruestungspaar: gefechtsAusruestungspaar(snapshot),
+    mitAnsage: auftrag.manoever != null || auftrag.zuschlag != 0,
     zielwert: p.zielwert,
     angriffe: p.angriffe,
     paraden: p.paraden,

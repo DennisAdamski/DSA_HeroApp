@@ -201,3 +201,21 @@ Zusatzaktionsdialoge enthalten keine manuelle Zielwert-/Dauereingabe.
 Regressionen prüfen konkrete Zielwerte, Finte/INI genau einmal, SF, Waffenwechsel,
 PW-/Schildbindung, Rundenreset, nicht kumulative Marken, Doppelcallback und
 Layoutmatrix 390/820/1200/1440, Hell/Dunkel mit Tastatur.
+
+Paket 3: Commit `47f53d0`; 128 Gefechtsregressionen und Analyse bestanden.
+Das unabhängige Abschlussreview meldete zwei Important-Befunde, keine Critical:
+Zusatzparaden löschten Angriffsdaten nicht und gesperrte PW-Zusatzattacken
+erzeugten eine ungültige Dropdown-Auswahl. Beide wurden zuerst als rote
+Regression nachgewiesen und korrigiert; die Zusatzmarke bleibt dabei unverändert.
+Die Gesamtsuite deckte außerdem zwei alte Bestandswerte ohne Schild-eBE auf.
+Der Krieger-Schild folgt nun nach WdS 71 der Rechnung 6 + WM 3 − Armwunde 2
+− eBE-PA-Anteil 1 = 6, beim Linkshänder ohne Schildarmwunde 8.
+
+## Ausbau vom 3. Oktober 2026: Paket 1
+
+Gemeinsame strukturierte Freigabe, kombinierbare Manöverfilter, bedingte
+Schildsichtbarkeit, konkrete Pflichtangaben statt allgemeinem Haken, freie Werte
+ab 0 mit einmaligen festen Zuschlägen und ausgeschriebene Distanznamen sind
+implementiert. Die Paketregressionen und Layoutmatrix umfassen 86 bestandene
+Tests. Diese Teilabnahme umfasst noch keine getrennten Finte-/Wuchtschlag-/
+Fernkampfansagen, neuen Ergebnisboni, spontane Umwandlung oder Ladehandlungen.

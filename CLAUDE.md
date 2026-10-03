@@ -21,6 +21,9 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   `domain/gefecht.dart` enthält ausschließlich flüchtige Typen,
   `state/gefecht_provider.dart` hält Sitzungen je Held; `gefecht_rules.dart`
   und `gefecht_held_rules.dart` unter `rules/derived` entscheiden Freigaben.
+  `gefecht_freigabe_rules.dart` ergänzt konkrete Formularpflichten und offene
+  Entscheidungen; `gefecht_filter_rules.dart` ordnet AT/PA/Sonstige zu und
+  verknüpft Such-, Lernstands- und Sperrfilter ohne Regelrechnung im Widget.
   Die gezielte `KartoGefechtsAdapter`-Brücke ergänzt einmalige Probeauswertung
   und frische Ausrüstungsschreibwege, ohne bestehende Aufrufer zu verändern.
   `gefecht_hand_rules.dart` prüft Haupt-/Nebenhandbelegungen vor Normalisierung

@@ -47,13 +47,10 @@ void main() {
       expect(find.text('Gegnerische Finte (0 erlaubt)'), findsOneWidget);
       expect(find.text('Parade erlaubt?'), findsOneWidget);
       expect(find.text('Angriffsabsicht'), findsNothing);
-      await tester.ensureVisible(
+      expect(
         find.byKey(const ValueKey('gefecht-kontext-bestaetigen')),
+        findsNothing,
       );
-      await tester.tap(
-        find.byKey(const ValueKey('gefecht-kontext-bestaetigen')),
-      );
-      await tester.pump();
       expect(
         tester
             .widget<FilledButton>(

@@ -429,6 +429,23 @@ Gefechtspruefung pruefeGefechtsaktion(
     aktion: aktion,
     status: status,
     gruende: List.unmodifiable([...sperren, ...pruefen]),
+    sperrgruende: sperren,
+    entscheidungen: kontext.fehlend
+        .where((g) => g.startsWith('Fernkampf-/Sonderangriff:'))
+        .toList(),
+    fehlendeAngaben: [
+      ...kontext.fehlend.where(
+        (g) => !g.startsWith('Fernkampf-/Sonderangriff:'),
+      ),
+      ...fk.fehlend,
+      if (aktion == Gefechtsaktion.schildparade &&
+          w.konkreteKampfmittel &&
+          s.kontext.schildWmWirksam == null)
+        'Schild-WM gegen Kettenstab, Kettenwaffe oder Peitsche klären.',
+    ],
+    hinweise: pruefen
+        .where((g) => !kontext.fehlend.contains(g) && !fk.fehlend.contains(g))
+        .toList(),
     zielwert: ziel,
     angriffe: a,
     paraden: p,
@@ -505,7 +522,11 @@ Gefechtszustand verbraucheGefechtsaktion(
     desorientiert: desorientiert,
     ohneAuftrag: true,
     revision: s.revision + 1,
-    kontext: pruefung.paraden > 0 || pruefung.freie > 0
+    kontext:
+        pruefung.paraden > 0 ||
+            pruefung.freie > 0 ||
+            pruefung.probenart == Gefechtsaktion.parade ||
+            pruefung.probenart == Gefechtsaktion.schildparade
         ? s.kontext.ohneAngriff()
         : s.kontext,
   );

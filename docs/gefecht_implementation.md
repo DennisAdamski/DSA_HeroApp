@@ -56,7 +56,8 @@ nur nach einer ersten Schildparade; längere Handlungen verwenden dieses Budget
 nicht. Umwandlung wird verbindlich bestätigt, Korrekturen sind separat.
 
 Manöver zeigen Katalogtext, Voraussetzungen und Zielwert. Eindeutig bezifferte
-Katalogzuschläge werden vorbelegt, variable Zuschläge und nicht automatisierte
+Katalogzuschläge werden getrennt automatisch angewendet, freie Zusatzwerte
+beginnen bei 0. Variable Zuschläge und nicht automatisierte
 Kosten/Folgen werden bestätigt. Bekannte Lern-, Talent-, Waffen- und
 Gegnersperren (einschließlich Hammerschlag) bleiben verbindlich. Die vollständige
 Manöverwirkung am Gegner wird nicht simuliert. Abwehrmanöver verbrauchen PA;
@@ -173,3 +174,29 @@ Sonderprofile und Bruchtests. Tod von Links wird bei fehlendem Angriffsprofil de
 bestehenden Parierwaffen-Eintrags erklärt gesperrt; es wird kein Hauptwaffen-AT
 als Ersatz erfunden. Ein vollständiges eigenes Angriffsprofil erfordert eine
 Waffe mit Talent und Waffenwerten im vorhandenen Waffeninventar.
+
+Nach Zusatzparaden werden Finte, Angriffsart, Paradeverbot und die gegnerische
+Schild-WM-Ausnahme gelöscht. Auch gesperrte Kampfmittel bleiben im Dialog
+darstellbar und erklären ihre fehlenden Voraussetzungen, ohne einen Wurf zuzulassen.
+
+## Gemeinsame Freigabe und Bedienung (3. Oktober 2026)
+
+`pruefeGefechtAuftrag` unterscheidet Sperrgründe, fehlende Angaben, offene
+Entscheidungen und Hinweise. Dieselbe Prüfung läuft in Aktionsliste, Dialog und
+erneut mit aktuellen Heldendaten unmittelbar vor Ausführung. Der allgemeine
+Pflichthaken entfällt; Hinweise allein sperren keine Aktion. Konkrete manuelle
+Entscheidungen werden einzeln bestätigt. Ungültige Zahlen, Dauer/Kosten,
+fehlender manueller Zielwert und fehlende tatsächliche Distanz stehen unmittelbar
+beim deaktivierten Ausführen-Button.
+
+Die Manöverliste kombiniert Suchtext, Alle/Angriff/Verteidigung/Sonstige,
+„Nur erlernte“ und „Ohne bekannte Sperre“. Gemischte AT/PA gehören in beide
+Kategorien. Passive SF erhalten keine ausführbare Attacke; bekannte aktive
+Katalogeinträge ohne Typ werden ausdrücklich über ihre stabilen IDs zugeordnet.
+Schildparade wird nur bei einem grundsätzlich nutzbaren geführten Schildprofil
+angezeigt; situative Budget- und Gegnersperren bleiben sichtbar. Handgemenge,
+Nahkampf, Stangenwaffen und Piken ersetzen die sichtbaren Einzelbuchstaben.
+
+Paketprüfung: 86 Regel-/Widget-/Ablauftests einschließlich 390/820/1200/1440
+Pixeln, Hell/Dunkel und geöffneter Tastatur bestanden. Getrennte Ansagen,
+Ergebnisboni, spontane Umwandlung und Laden gehören zu den Folgepaketen.

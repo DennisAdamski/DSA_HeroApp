@@ -97,9 +97,6 @@ Gefechtskontextpruefung pruefeGefechtskontext(
       aktion == Gefechtsaktion.freiesAusweichen ||
       aktion == Gefechtsaktion.gezieltesAusweichen;
   if (!at && !pa && !aw) return const Gefechtskontextpruefung([], [], []);
-  if (!k.weitereRegelnGeprueft) {
-    fehlend.add('Sicht, Gelände und Sonderregeln prüfen.');
-  }
   if (!fernkampf &&
       !distanzAenderung &&
       (at || aktion == Gefechtsaktion.parade)) {
@@ -156,3 +153,12 @@ Gefechtskontextpruefung pruefeGefechtskontext(
   }
   return Gefechtskontextpruefung(mods, fehlend, sperren);
 }
+
+/// Vollständige Distanznamen für alle Anzeigen bei unveränderten internen IDs.
+String gefechtsDistanzname(String? dk) => switch (dk) {
+  'H' => 'Handgemenge',
+  'N' => 'Nahkampf',
+  'S' => 'Stangenwaffen',
+  'P' => 'Piken',
+  _ => 'Unbekannt',
+};

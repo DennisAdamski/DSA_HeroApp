@@ -4,7 +4,7 @@ import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'gefecht_kontext.dart';
 import 'gefecht_wirken.dart';
 
-/// Verlässlichkeit einer Aktionsfreigabe; Prüfen benötigt eine Bestätigung.
+/// Verlässlichkeit einer Aktionsfreigabe; Hinweise allein sperren keine Aktion.
 enum Gefechtsfreigabe { bereit, pruefen, gesperrt }
 
 /// Verbindliche Verteilung der regulären Aktionen dieser Runde.
@@ -279,6 +279,10 @@ class Gefechtspruefung {
     this.ausruestungspaar,
     this.mitAnsage = false,
     this.probenart,
+    this.sperrgruende = const [],
+    this.fehlendeAngaben = const [],
+    this.entscheidungen = const [],
+    this.hinweise = const [],
   });
   final Gefechtsaktion aktion;
   final Gefechtsfreigabe status;
@@ -290,4 +294,12 @@ class Gefechtspruefung {
   final String? ausruestungspaar;
   final bool mitAnsage;
   final Gefechtsaktion? probenart;
+  final List<String> sperrgruende, fehlendeAngaben, entscheidungen, hinweise;
+
+  /// Nur konkrete Sperren, fehlende Angaben oder offene Entscheidungen blockieren.
+  bool get ausfuehrbar =>
+      status != Gefechtsfreigabe.gesperrt &&
+      sperrgruende.isEmpty &&
+      fehlendeAngaben.isEmpty &&
+      entscheidungen.isEmpty;
 }

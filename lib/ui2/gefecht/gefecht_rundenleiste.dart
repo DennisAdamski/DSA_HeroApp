@@ -147,16 +147,21 @@ class GefechtRundenleiste extends StatelessWidget {
                   ),
                 ),
                 SizedBox(
-                  width: 85,
+                  width: 205,
                   child: DropdownButtonFormField<String>(
                     isExpanded: true,
                     key: ValueKey(s.dk),
                     initialValue: s.dk,
-                    decoration: const InputDecoration(labelText: 'DK'),
+                    decoration: const InputDecoration(
+                      labelText: 'Distanzklasse',
+                    ),
                     hint: const Text('?'),
                     items: [
                       for (final dk in ['H', 'N', 'S', 'P'])
-                        DropdownMenuItem(value: dk, child: Text(dk)),
+                        DropdownMenuItem(
+                          value: dk,
+                          child: Text(gefechtsDistanzname(dk)),
+                        ),
                     ],
                     onChanged: gesperrt
                         ? null
