@@ -219,3 +219,26 @@ ab 0 mit einmaligen festen Zuschlägen und ausgeschriebene Distanznamen sind
 implementiert. Die Paketregressionen und Layoutmatrix umfassen 86 bestandene
 Tests. Diese Teilabnahme umfasst noch keine getrennten Finte-/Wuchtschlag-/
 Fernkampfansagen, neuen Ergebnisboni, spontane Umwandlung oder Ladehandlungen.
+
+### Paket 2: Ansagen und spontane Umwandlung (3. Oktober 2026)
+
+Getrennte Ansagen und Erfolgsprofile sind implementiert. Finte/Wuchtschlag ohne
+SF behalten die gerundete halbe Wirkung; normale Attacke und Sturmangriff
+erlauben beide Anteile. Feste Zuschläge, Schild und Waffenmeister wirken einmal.
+Schadensboni gehören zu einzeln erhaltenen erfolgreichen Angriffen mit eingefrorenem Profil;
+der allgemeine Schadenswurf bleibt unabhängig. Spontanes Umwandeln erhält
+verbrauchte Budgets, Quellenverbote und INI-Grenzen. Klingentänzer wird aktiv
+mit eigener BE-Grenze geführt; Kampfgespür bleibt Quelle der späten Umwandlung.
+
+Paket 3 konsumiert `Gefechtszielstand` und `gefechtsFernkampfansage`: bezahlte
+zusätzliche Ansagezeit ist an Kampfmittel, Geschoss, vollständigen Profilkey,
+Zielkontakt und Ansage gebunden. Der gebuchte Schuss verbraucht den Stand;
+Rundenwechsel erhält ihn. Bis zum bezahlenden Bedienpfad bleiben entsprechende
+FK-Ansagen mit konkretem Grund nicht ausführbar. Laden/kurzes Zielen/allgemeines
+optionales Zielen sind weiterhin das nächste Paket.
+
+Quellen erneut im DSA-MCP gelesen: Finte 6994, Wuchtschlag 7003/7004,
+Fernkampfansage 7089, Umwandlung 7046/7047, Klingentänzer 7030,
+Hammerschlag 6996, Gezielter Stich 6995, Todesstoß 7002, Klingensturm 6997.
+Komplexe Hammerschlag-/Todesstoßfolgen bleiben konkret am Tisch bestätigt,
+anstatt aus Textschlagwörtern automatisch freigegeben zu werden.

@@ -58,6 +58,7 @@ Gefechtswerte gefechtswerteFuer(
     ausweichen1: sf('ksf_ausweichen_i'),
     aufmerksamkeit: sf('ksf_aufmerksamkeit'),
     kampfgespuer: sf('ksf_kampfgespuer'),
+    klingentaenzerAktiv: sf('ksf_klingentaenzer') && c.beKampf <= 2,
     stabUmwandlung:
         waffe?.talentId == 'tal_staebe' &&
         (snapshot.hero.talents['tal_staebe']?.talentValue ?? 0) >= 10,
@@ -105,7 +106,7 @@ Gefechtswerte gefechtswerteFuer(
     defensiverKampfstil: kennt('man_defensiver_kampfstil'),
     halbschwert: kennt('man_halbschwert'),
     umwandlungVerboten:
-        (laenge != null && laenge > 200) ||
+        (laenge != null && laenge >= 200) ||
         (definition?.name.toLowerCase().contains('improvisiert') ?? false),
   );
 }
@@ -148,8 +149,12 @@ Gefechtspruefung pruefeGefechtsmanoever(
     sperren.add('Distanzänderung nur ohne Manöver oder mit bestätigter Finte.');
   }
   final gelernt = learnedManeuverIds(config, katalog);
+  final basisAnsage = m.id == 'man_finte' || m.id == 'man_wuchtschlag';
   final talentGelernt = gelernt.contains('${m.id}::${waffe.talentId}');
-  if (m.mussSeparatErlerntWerden && !gelernt.contains(m.id) && !talentGelernt) {
+  if (!basisAnsage &&
+      m.mussSeparatErlerntWerden &&
+      !gelernt.contains(m.id) &&
+      !talentGelernt) {
     sperren.add('Manöver nicht erlernt.');
   }
   final voraussetzungen = evaluateRequirements(
@@ -161,7 +166,7 @@ Gefechtspruefung pruefeGefechtsmanoever(
     ),
   );
   for (final v in voraussetzungen) {
-    if (v.status == RequirementStatus.nichtErfuellt) {
+    if (!basisAnsage && v.status == RequirementStatus.nichtErfuellt) {
       sperren.add('${v.sollText}: ${v.istText}');
     }
   }

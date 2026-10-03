@@ -26,6 +26,9 @@ class GefechtAuftrag {
     this.kampfmittel,
     this.eingabefehler = const [],
     this.bestaetigteEntscheidungen = const [],
+    this.finte = 0,
+    this.wuchtschlag = 0,
+    this.fernkampfansage = 0,
   });
   final Gefechtsaktion aktion;
   final String titel;
@@ -44,4 +47,7 @@ class GefechtAuftrag {
 
   /// Einzelne nicht automatisierbare Entscheidungen, keine pauschale Freigabe.
   final List<String> bestaetigteEntscheidungen;
+
+  /// Unabhängige Ansagen; weitere Erschwernisse erzeugen keine Trefferfolgen.
+  final int finte, wuchtschlag, fernkampfansage;
 }

@@ -10,6 +10,9 @@ import 'package:dsa_heldenverwaltung/domain/gefecht_kontext.dart';
 
 import 'gefecht_kontextfelder.dart';
 import 'gefecht_fernkampffelder.dart';
+import 'gefecht_ansagefelder.dart';
+
+import 'package:dsa_heldenverwaltung/rules/derived/gefecht_ansage_rules.dart';
 
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_kontext_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_kampfmittel_rules.dart';
@@ -50,6 +53,9 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
   final _ziel = TextEditingController();
   final _dauer = TextEditingController(text: '1');
   final _kosten = TextEditingController(text: '1');
+  final _finte = TextEditingController(text: '0');
+  final _wuchtschlag = TextEditingController(text: '0');
+  final _fernkampfansage = TextEditingController(text: '0');
   String? _dk;
   bool _grosserGegner = false, _grosserSchild = false;
   final _entscheidungen = <String>{};
@@ -82,7 +88,15 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
 
   @override
   void dispose() {
-    for (final c in [_zuschlag, _ziel, _dauer, _kosten]) {
+    for (final c in [
+      _zuschlag,
+      _ziel,
+      _dauer,
+      _kosten,
+      _finte,
+      _wuchtschlag,
+      _fernkampfansage,
+    ]) {
       c.dispose();
     }
     super.dispose();
@@ -103,6 +117,9 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
         ? widget.titel
         : '${widget.titel} · ${gefechtsKampfmittelFuer(widget.werte, _mittel)?.name}',
     zuschlag: int.tryParse(_zuschlag.text) ?? 0,
+    finte: int.tryParse(_finte.text) ?? 0,
+    wuchtschlag: int.tryParse(_wuchtschlag.text) ?? 0,
+    fernkampfansage: int.tryParse(_fernkampfansage.text) ?? 0,
     zielwert: int.tryParse(_ziel.text),
     dk: _dk,
     dauer: _aktion == Gefechtsaktion.zusatzaktion
@@ -118,6 +135,13 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
     kontext: _kontext,
     bestaetigteEntscheidungen: _entscheidungen.toList(),
     eingabefehler: [
+      for (final e in [
+        (_finte, 'Finte'),
+        (_wuchtschlag, 'Wuchtschlag'),
+        (_fernkampfansage, 'Fernkampfansage'),
+      ])
+        if (int.tryParse(e.$1.text) == null)
+          '${e.$2} muss eine ganze Zahl sein.',
       if (int.tryParse(_zuschlag.text) == null)
         'Weitere Erschwernis muss eine ganze Zahl sein.',
       if (_ziel.text.isNotEmpty && int.tryParse(_ziel.text) == null)
@@ -155,6 +179,11 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
         .toList();
     final p = pruefeGefechtAuftrag(
       widget.zustand,
+      widget.werte,
+      widget.katalog,
+      auftrag,
+    );
+    final wirkung = gefechtsAnsagewirkung(
       widget.werte,
       widget.katalog,
       auftrag,
@@ -245,6 +274,16 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
                   child: Text('• $grund'),
                 ),
               const SizedBox(height: 16),
+              if (kontextAktion == Gefechtsaktion.angriff)
+                GefechtAnsagefelder(
+                  finte: _finte,
+                  wuchtschlag: _wuchtschlag,
+                  fernkampfansage: _fernkampfansage,
+                  fernkampf: werte.fernkampf,
+                  abwehrmalus: wirkung.abwehrmalus,
+                  tpBonus: wirkung.tpBonus,
+                  onChanged: () => setState(_entscheidungen.clear),
+                ),
               if (_aktion == Gefechtsaktion.angriff && !werte.fernkampf)
                 DropdownButtonFormField<int>(
                   isExpanded: true,
@@ -324,10 +363,7 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
                   _entscheidungen.clear();
                 }),
               ),
-              _zahl(
-                _zuschlag,
-                'Weitere Erschwernis / Manöveransage (ohne automatische Anteile)',
-              ),
+              _zahl(_zuschlag, 'Weitere Erschwernis'),
               if (sonder) ...[
                 if (widget.probe == null && widget.manuell)
                   _zahl(_ziel, 'Manuell bestätigter Grundzielwert (optional)'),

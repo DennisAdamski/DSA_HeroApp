@@ -3,6 +3,7 @@ import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 
 import 'gefecht_kontext.dart';
 import 'gefecht_wirken.dart';
+import 'gefecht_angriff.dart';
 
 /// Verlässlichkeit einer Aktionsfreigabe; Hinweise allein sperren keine Aktion.
 enum Gefechtsfreigabe { bereit, pruefen, gesperrt }
@@ -149,6 +150,9 @@ class Gefechtszustand {
     this.regulaeresParadepaar,
     this.regulaeresParademittel,
     this.paradeMitAnsage = false,
+    this.angriffsergebnisse = const [],
+    this.zielstand,
+    this.umgewandelteAktionOffen = true,
   });
   final int runde, iniWurf, iniVerlust;
   final int geschuetzterIniVerlust, ungeklaerterIniVerlust;
@@ -175,6 +179,19 @@ class Gefechtszustand {
   final String? regulaeresAngriffspaar, regulaeresParadepaar;
   final GefechtsKampfmittelwahl? regulaeresParademittel;
   final bool paradeMitAnsage;
+
+  /// Erfolgsfolgen gehören zu einem Angriff, nie zur allgemeinen Schadensprobe.
+  final List<Gefechtsangriffsergebnis> angriffsergebnisse;
+
+  /// Letzter offener Treffer für bestehende gezielte Ergebnisanzeigen.
+  Gefechtsangriffsergebnis? get angriffsergebnis =>
+      angriffsergebnisse.lastOrNull;
+
+  /// Über Runden erhaltener Nachweis tatsächlich bezahlter FK-Ansagezeit.
+  final Gefechtszielstand? zielstand;
+
+  /// Bereits bezahlte Quellmarken werden beim Umverteilen nie erneut nutzbar.
+  final bool umgewandelteAktionOffen;
 
   /// Ändert nur benannte Sitzungsteile; kein JSON oder Heldenformat betroffen.
   Gefechtszustand copyWith({
@@ -214,6 +231,10 @@ class Gefechtszustand {
     GefechtsKampfmittelwahl? regulaeresParademittel,
     bool? paradeMitAnsage,
     bool resetKampfmittel = false,
+    List<Gefechtsangriffsergebnis>? angriffsergebnisse,
+    Gefechtszielstand? zielstand,
+    bool ohneZielstand = false,
+    bool? umgewandelteAktionOffen,
   }) => Gefechtszustand(
     runde: runde ?? this.runde,
     iniWurf: iniWurf ?? this.iniWurf,
@@ -258,6 +279,10 @@ class Gefechtszustand {
     handlung: ohneHandlung ? null : handlung ?? this.handlung,
     auftrag: ohneAuftrag ? null : auftrag ?? this.auftrag,
     revision: revision ?? this.revision,
+    angriffsergebnisse: angriffsergebnisse ?? this.angriffsergebnisse,
+    zielstand: ohneZielstand ? null : zielstand ?? this.zielstand,
+    umgewandelteAktionOffen:
+        umgewandelteAktionOffen ?? this.umgewandelteAktionOffen,
   );
 }
 

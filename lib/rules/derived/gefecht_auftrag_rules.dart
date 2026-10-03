@@ -9,6 +9,7 @@ import 'gefecht_rules.dart';
 import 'gefecht_kampfmittel_rules.dart';
 import 'gefecht_zusatz_rules.dart';
 import 'gefecht_freigabe_rules.dart';
+import 'gefecht_ansage_rules.dart';
 
 /// Identische Prüfung vor Anzeige und Ausführung, mit bekannten Gegnersperren.
 Gefechtspruefung pruefeGefechtAuftrag(
@@ -25,7 +26,8 @@ Gefechtspruefung pruefeGefechtAuftrag(
     auftrag,
     eigenerAuftrag: eigenerAuftrag,
   );
-  return ergaenzeGefechtsfreigabe(basis, auftrag);
+  final ansagen = ergaenzeGefechtsansagen(basis, s, snapshot, katalog, auftrag);
+  return ergaenzeGefechtsfreigabe(ansagen, auftrag);
 }
 
 // Fachprüfung bleibt von Formularpflichten getrennt und wird identisch wiederverwendet.

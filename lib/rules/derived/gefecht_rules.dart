@@ -37,6 +37,7 @@ class Gefechtswerte {
     this.halbschwert = false,
     this.umwandlungVerboten = false,
     this.konkreteKampfmittel = false,
+    this.klingentaenzerAktiv = false,
   });
   final int iniBasis, at, pa, ausweichen, be, zusatzaktionen;
   final int? schildPa;
@@ -55,6 +56,10 @@ class Gefechtswerte {
   final bool scharfschuetze, meisterschuetze, waffenmeister;
   final bool defensiverKampfstil, halbschwert, umwandlungVerboten;
   final bool konkreteKampfmittel;
+
+  /// Eigene Klingentänzer-Fähigkeiten gelten nur aktiv und bei BE höchstens 2.
+  /// Spontanes Umwandeln stammt unabhängig davon aus aktivem Kampfgespür.
+  final bool klingentaenzerAktiv;
 }
 
 /// Startet eine Sitzung mit dem bereits regelgerecht ermittelten INI-Wurf.
@@ -88,7 +93,8 @@ int gefechtsAngriffe(Gefechtszustand s) {
       : s.umwandlung == Gefechtsumwandlung.zweiteAttacke
       ? 2
       : 1;
-  return anzahl - s.angriffeVerbraucht;
+  final rest = anzahl - s.angriffeVerbraucht;
+  return rest < 0 ? 0 : rest;
 }
 
 /// Verbleibende reguläre Reaktionen schließen das waffengebundene SK-II-Budget aus.
@@ -123,6 +129,7 @@ Gefechtszustand wandleGefechtUm(
   Gefechtszustand s,
   Gefechtsumwandlung u, {
   Gefechtswerte? werte,
+  bool rundenbeginn = true,
 }) {
   if (!gefechtUmwandlungMoeglich(s, u, werte: werte)) {
     throw StateError(
@@ -132,7 +139,21 @@ Gefechtszustand wandleGefechtUm(
   return s.copyWith(
     umwandlung: u,
     ansageGebunden: true,
+    angriffeVerbraucht: u == Gefechtsumwandlung.zweiteAttacke
+        ? s.angriffeVerbraucht + s.paradenVerbraucht
+        : u == Gefechtsumwandlung.zweiteParade
+        ? 0
+        : s.angriffeVerbraucht,
+    paradenVerbraucht: u == Gefechtsumwandlung.zweiteParade
+        ? s.angriffeVerbraucht + s.paradenVerbraucht
+        : u == Gefechtsumwandlung.zweiteAttacke
+        ? 0
+        : s.paradenVerbraucht,
+    umgewandelteAktionOffen: u == Gefechtsumwandlung.zweiteAttacke
+        ? s.paradenVerbraucht == 0
+        : u == Gefechtsumwandlung.zweiteParade && s.angriffeVerbraucht == 0,
     defensiverStil:
+        rundenbeginn &&
         u == Gefechtsumwandlung.zweiteParade &&
         werte?.defensiverKampfstil == true &&
         s.angriffeVerbraucht == 0 &&
@@ -150,21 +171,32 @@ bool gefechtUmwandlungMoeglich(
 }) {
   if (s.ansageGebunden || s.auftrag != null || s.handlung != null) return false;
   if (werte?.umwandlungVerboten == true) return false;
+  const verboteneTalente = {
+    'tal_kettenwaffen',
+    'tal_peitschen',
+    'tal_zweihandflegel',
+    'tal_zweihand_hiebwaffen',
+  };
+  if (verboteneTalente.contains(werte?.waffe?.talentId)) return false;
+  if (u == Gefechtsumwandlung.zweiteAttacke && werte?.schildPa != null) {
+    return false;
+  }
   if (u == Gefechtsumwandlung.zweiteAttacke &&
       werte != null &&
       gefechtsInitiative(s, werte) < 8) {
     return false;
   }
-  final benutzt = s.angriffeVerbraucht > 0 || s.paradenVerbraucht > 0;
-  if (benutzt &&
-      !(werte?.kampfgespuer == true || werte?.aufmerksamkeit == true)) {
-    return false;
-  }
-  if (u == Gefechtsumwandlung.zweiteAttacke && s.paradenVerbraucht > 0) {
-    return false;
-  }
-  if (u == Gefechtsumwandlung.zweiteParade && s.angriffeVerbraucht > 0) {
-    return false;
+  final benutzt =
+      s.angriffeVerbraucht > 0 ||
+      s.paradenVerbraucht > 0 ||
+      s.freieVerbraucht > 0 ||
+      s.zusatzVerbraucht > 0;
+  if (benutzt && werte?.kampfgespuer != true) {
+    if (werte?.aufmerksamkeit != true ||
+        s.angriffeVerbraucht > 0 ||
+        s.regulaereAttacke) {
+      return false;
+    }
   }
   return true;
 }
@@ -185,6 +217,7 @@ Gefechtszustand naechsteGefechtsrunde(Gefechtszustand s) {
     umwandlung: Gefechtsumwandlung.normal,
     ansageGebunden: false,
     defensiverStil: false,
+    umgewandelteAktionOffen: true,
     resetBonus: true,
   );
 }
@@ -290,6 +323,7 @@ Gefechtspruefung pruefeGefechtsaktion(
         pruefen.add('Entfernung, Sicht, Munition und Ladezustand prüfen.');
       }
       if (s.umwandlung == Gefechtsumwandlung.zweiteAttacke &&
+          s.umgewandelteAktionOffen &&
           s.angriffeVerbraucht > 0) {
         erschwernis += w.stabUmwandlung ? 0 : 4;
         if (gefechtsInitiative(s, w) - 8 < 0) {
@@ -321,6 +355,7 @@ Gefechtspruefung pruefeGefechtsaktion(
         sperren.add('Zweite SK-II-Parade nur mit Schild.');
       }
       if (s.umwandlung == Gefechtsumwandlung.zweiteParade &&
+          s.umgewandelteAktionOffen &&
           s.paradenVerbraucht > 0) {
         erschwernis +=
             aktion == Gefechtsaktion.schildparade ||
