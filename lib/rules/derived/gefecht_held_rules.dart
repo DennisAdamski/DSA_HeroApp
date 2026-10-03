@@ -244,15 +244,13 @@ Gefechtspruefung pruefeGefechtsmanoever(
 
 /// Ordnet das Manöver für Budget, Pflichtkontext und Bedienung identisch ein.
 Gefechtsaktion gefechtsManoeveraktion(ManeuverDef m) {
-  if (gefechtsManoeverkategorien(m).contains(GefechtsManoeverfilter.sonstige)) {
-    return Gefechtsaktion.handlung;
+  final kategorien = gefechtsManoeverkategorien(m);
+  if (kategorien.contains(GefechtsManoeverfilter.verteidigung)) {
+    return Gefechtsaktion.parade;
   }
-  final typ = m.typ.toLowerCase();
-  return typ.contains('parade') ||
-          typ.contains('abwehr') ||
-          RegExp(r'(^|\W)pa($|\W)').hasMatch(typ)
-      ? Gefechtsaktion.parade
-      : Gefechtsaktion.angriff;
+  return kategorien.contains(GefechtsManoeverfilter.angriff)
+      ? Gefechtsaktion.angriff
+      : Gefechtsaktion.handlung;
 }
 
 /// Sortiert nutzbare und zu prüfende Manöver vor die erklärbaren Sperren.

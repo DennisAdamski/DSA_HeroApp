@@ -6,9 +6,12 @@ import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht_auftrag.dart';
+import 'package:dsa_heldenverwaltung/domain/gefecht_kontext.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_auftrag_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_filter_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/gefecht_held_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/gefecht_rules.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 
 import '../ui2/shell/karto_test_support.dart';
@@ -78,6 +81,74 @@ void main() {
     a,
   );
 
+  for (final id in ['man_formations_parade', 'man_seitenwechsel']) {
+    test('$id ohne Typ verwendet PA-Zielwert und verbraucht nur PA', () {
+      final json = jsonDecode(
+        File('assets/catalogs/house_rules_v1/manoever.json').readAsStringSync(),
+      ) as List;
+      final katalog = json
+          .map((m) => ManeuverDef.fromJson(m as Map<String, dynamic>))
+          .toList();
+      final m = katalog.singleWhere((m) => m.id == id);
+      final hero = testHero();
+      const k = RulesCatalog(
+        version: 'test',
+        source: 'test',
+        talents: [],
+        spells: [],
+        weapons: [],
+        combatSpecialAbilities: [
+          CombatSpecialAbilityDef(
+            id: 'ksf_klingentaenzer',
+            name: 'Klingentänzer',
+          ),
+        ],
+      );
+      final snap = buildHeroComputedSnapshot(
+        hero: hero.copyWith(
+          attributes: hero.attributes.copyWith(ge: 18),
+          combatConfig: const CombatConfig(
+            weapons: [
+              MainWeaponSlot(id: 'a', name: 'Schwert', distanceClass: 'N'),
+            ],
+            specialRules: CombatSpecialRules(klingentaenzer: true),
+          ),
+        ),
+        state: const HeroState.empty(),
+        catalog: k,
+        epicAdvantagesActive: false,
+      );
+      const s = Gefechtszustand(
+        iniWurf: 6,
+        dk: 'N',
+        kontext: Gefechtskontext(
+          angriffsart: Gefechtsangriffsart.nahkampf,
+          finte: 3,
+          paradeVerboten: false,
+        ),
+      );
+      expect(m.typ, isEmpty);
+      expect(gefechtsManoeverkategorien(m), {
+        GefechtsManoeverfilter.verteidigung,
+      });
+      expect(gefechtsManoeveraktion(m), Gefechtsaktion.parade);
+      final p = pruefeGefechtAuftrag(s, snap, k, auftrag(m: m));
+      final w = gefechtswerteFuer(snap, katalog: k);
+      final pa = pruefeGefechtsaktion(s, w, Gefechtsaktion.parade);
+      final at = pruefeGefechtsaktion(s, w, Gefechtsaktion.angriff);
+      expect(p.aktion, Gefechtsaktion.parade);
+      expect(p.ausfuehrbar, isTrue, reason: p.gruende.join(' '));
+      expect(p.zielwert, pa.zielwert);
+      expect(p.zielwert, isNot(at.zielwert));
+      final nachher = verbraucheGefechtsaktion(s, w, p, erfolg: true);
+      expect(nachher.paradenVerbraucht, 1);
+      expect(nachher.angriffeVerbraucht, 0);
+      expect(nachher.regulaereParade, isTrue);
+      expect(nachher.regulaereAttacke, isFalse);
+      expect(nachher.kontext.finte, isNull);
+    });
+  }
+
   test('Fehlende DK bleibt auch nach Kostenänderung konkret fehlend', () {
     const m = ManeuverDef(id: 'a', name: 'Attacke', typ: 'Attacke');
     final p = pruefen(auftrag(m: m, dk: null, kosten: 2));
@@ -106,6 +177,7 @@ void main() {
         name: 'Gemischt',
         typ: 'Ringen-AT / Ringen-PA',
       );
+      expect(gefechtsManoeveraktion(m), Gefechtsaktion.parade);
       for (final k in [
         GefechtsManoeverfilter.angriff,
         GefechtsManoeverfilter.verteidigung,
