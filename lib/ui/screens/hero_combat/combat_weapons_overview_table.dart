@@ -6,16 +6,29 @@ import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/combat_rules.dart';
+import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_combat/combat_helpers.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/adaptive_table_columns.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/flexible_table.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/resizable_table_columns.dart';
 
+/// Ändert einzelne Felder eines Waffen-Slots.
+///
+/// [angezeigt] ist der Slot, wie ihn die Zeile zeigt; [update] bekommt den
+/// gespeicherten Stand und setzt nur die bedienten Felder.
 typedef WeaponSlotUpdater = void Function(
   int index,
-  MainWeaponSlot Function(MainWeaponSlot current) update,
+  MainWeaponSlot angezeigt,
+  MainWeaponSlot Function(MainWeaponSlot gespeichert) update,
 );
 
+/// Entfernt den angezeigten Waffen-Slot [angezeigt] an Position [index].
+typedef WeaponRemoveCallback = void Function(
+  int index,
+  MainWeaponSlot angezeigt,
+);
+
+/// Callback-Typ fuer Filter-Aenderungen.
 typedef WeaponFilterChanged = void Function({
   String? talentId,
   String? combatType,
@@ -34,6 +47,8 @@ class CombatWeaponsOverviewTable extends StatelessWidget {
     required this.catalog,
     required this.hero,
     required this.heroState,
+    required this.berechnet,
+    required this.epicAdvantagesRuleActive,
     required this.draftCombatConfig,
     required this.draftTalents,
     required this.weaponFilterTalentId,
@@ -54,6 +69,13 @@ class CombatWeaponsOverviewTable extends StatelessWidget {
   final RulesCatalog catalog;
   final HeroSheet hero;
   final HeroState heroState;
+
+  /// Snapshot des gespeicherten Helden; liefert Basiswerte und Wunden der
+  /// Zeilenwerte (siehe [kampfvorschau]).
+  final HeroComputedSnapshot? berechnet;
+
+  /// Ob die Hausregel für epische Vorteile aktiv ist.
+  final bool epicAdvantagesRuleActive;
   final CombatConfig draftCombatConfig;
   final Map<String, HeroTalentEntry> draftTalents;
   final String weaponFilterTalentId;
@@ -63,7 +85,7 @@ class CombatWeaponsOverviewTable extends StatelessWidget {
   final void Function(int index) onWeaponEdit;
   final VoidCallback onWeaponAdd;
   final VoidCallback onWeaponCatalog;
-  final void Function(int index) onWeaponRemove;
+  final WeaponRemoveCallback onWeaponRemove;
   final WeaponSlotUpdater onWeaponSlotUpdate;
   final WeaponFilterChanged onFilterChanged;
 
@@ -462,6 +484,7 @@ class CombatWeaponsOverviewTable extends StatelessWidget {
                       : slot.name;
                   onWeaponSlotUpdate(
                     entry.index,
+                    slot,
                     (current) => current.copyWith(
                       talentId: nextTalentId,
                       weaponType: nextWeaponType,
@@ -500,6 +523,7 @@ class CombatWeaponsOverviewTable extends StatelessWidget {
                   final parsed = int.tryParse(raw.trim()) ?? slot.breakFactor;
                   onWeaponSlotUpdate(
                     entry.index,
+                    slot,
                     (current) =>
                         current.copyWith(breakFactor: parsed < 0 ? 0 : parsed),
                   );
@@ -518,7 +542,7 @@ class CombatWeaponsOverviewTable extends StatelessWidget {
                 tooltip: 'Waffe entfernen',
                 onPressed: weapons.length <= 1
                     ? null
-                    : () => onWeaponRemove(entry.index),
+                    : () => onWeaponRemove(entry.index, slot),
                 icon: const Icon(Icons.delete),
               ),
             ],
@@ -528,9 +552,11 @@ class CombatWeaponsOverviewTable extends StatelessWidget {
   }
 
   CombatPreviewStats _previewForSlot(int slotIndex, MainWeaponSlot slot) {
-    return computeCombatPreviewStats(
-      hero,
-      heroState,
+    return kampfvorschau(
+      hero: hero,
+      state: heroState,
+      berechnet: berechnet,
+      catalog: catalog,
       overrideConfig: draftCombatConfig.copyWith(
         selectedWeaponIndex: slotIndex,
         mainWeapon: slot,
@@ -539,10 +565,7 @@ class CombatWeaponsOverviewTable extends StatelessWidget {
         ),
       ),
       overrideTalents: draftTalents,
-      catalogTalents: catalog.talents,
-      catalogManeuvers: catalog.maneuvers,
-      catalogCombatSpecialAbilities: catalog.combatSpecialAbilities,
-      catalog: catalog,
+      epicAdvantagesRuleActive: epicAdvantagesRuleActive,
     );
   }
 

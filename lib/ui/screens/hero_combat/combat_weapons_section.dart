@@ -7,29 +7,22 @@ import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/combat_rules.dart';
+import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 import 'package:dsa_heldenverwaltung/ui/debug/ui_rebuild_observer.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_combat/combat_helpers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_combat/combat_weapons_overview_table.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_combat/weapon_catalog_table.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_combat/weapon_editor/helpers_catalog_slot.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_combat/weapon_editor_screen.dart';
 
-/// Callback-Typ fuer Inline-Aenderungen an einem Waffen-Slot.
-typedef WeaponSlotUpdater = void Function(
-  int index,
-  MainWeaponSlot Function(MainWeaponSlot current) update,
-);
-
-/// Callback-Typ fuer Filter-Aenderungen.
-typedef WeaponFilterChanged = void Function({
-  String? talentId,
-  String? combatType,
-  String? weaponType,
-  String? distanceClass,
-});
-
 /// Persistiert einen Waffen-Draft als neuen oder bestehenden Slot.
-typedef WeaponSaveCallback = Future<void> Function(
+///
+/// [ausgang] ist der Slot beim Öffnen des Editors, `null` bei einer neuen
+/// Waffe; an ihm erkennt der Aufrufer eine inzwischen anderswo geänderte
+/// Waffe. Liefert, ob gespeichert wurde.
+typedef WeaponSaveCallback = Future<bool> Function(
   MainWeaponSlot slot, {
+  MainWeaponSlot? ausgang,
   int? slotIndex,
 });
 
@@ -46,6 +39,8 @@ class CombatWeaponsSection extends StatefulWidget {
     required this.effectiveAttributes,
     required this.hero,
     required this.heroState,
+    required this.berechnet,
+    required this.epicAdvantagesRuleActive,
     required this.draftCombatConfig,
     required this.draftTalents,
     required this.weaponFilterTalentId,
@@ -66,6 +61,13 @@ class CombatWeaponsSection extends StatefulWidget {
   final Attributes effectiveAttributes;
   final HeroSheet hero;
   final HeroState heroState;
+
+  /// Snapshot des gespeicherten Helden; liefert Basiswerte und Wunden der
+  /// Vorschau (siehe [kampfvorschau]).
+  final HeroComputedSnapshot? berechnet;
+
+  /// Ob die Hausregel für epische Vorteile aktiv ist.
+  final bool epicAdvantagesRuleActive;
   final CombatConfig draftCombatConfig;
   final Map<String, HeroTalentEntry> draftTalents;
   final String weaponFilterTalentId;
@@ -73,7 +75,7 @@ class CombatWeaponsSection extends StatefulWidget {
   final String weaponFilterType;
   final String weaponFilterDistanceClass;
   final WeaponSaveCallback onWeaponSave;
-  final void Function(int index) onWeaponRemove;
+  final WeaponRemoveCallback onWeaponRemove;
   final WeaponSlotUpdater onWeaponSlotUpdate;
   final WeaponFilterChanged onFilterChanged;
 
@@ -119,15 +121,14 @@ class _CombatWeaponsSectionState extends State<CombatWeaponsSection> {
         iniWurf: effectiveIni,
       ),
     );
-    return computeCombatPreviewStats(
-      widget.hero,
-      widget.heroState,
+    return kampfvorschau(
+      hero: widget.hero,
+      state: widget.heroState,
+      berechnet: widget.berechnet,
+      catalog: widget.catalog,
       overrideConfig: previewConfig,
       overrideTalents: widget.draftTalents,
-      catalogTalents: widget.catalog.talents,
-      catalogManeuvers: widget.catalog.maneuvers,
-      catalogCombatSpecialAbilities: widget.catalog.combatSpecialAbilities,
-      catalog: widget.catalog,
+      epicAdvantagesRuleActive: widget.epicAdvantagesRuleActive,
     );
   }
 
@@ -216,7 +217,11 @@ class _CombatWeaponsSectionState extends State<CombatWeaponsSection> {
     if (result == null) {
       return;
     }
-    await widget.onWeaponSave(result, slotIndex: slotIndex);
+    await widget.onWeaponSave(
+      result,
+      ausgang: slotIndex == null ? null : sourceSlot,
+      slotIndex: slotIndex,
+    );
   }
 
   void _closeWideEditor() {
@@ -228,8 +233,15 @@ class _CombatWeaponsSectionState extends State<CombatWeaponsSection> {
   }
 
   Future<void> _saveWideEditor(MainWeaponSlot slot) async {
-    await widget.onWeaponSave(slot, slotIndex: _editingSlotIndex);
-    if (!mounted) {
+    final slotIndex = _editingSlotIndex;
+    final gespeichert = await widget.onWeaponSave(
+      slot,
+      ausgang: slotIndex == null ? null : _editorSeedWeapon,
+      slotIndex: slotIndex,
+    );
+    // Gescheitert bleibt der Editor offen, damit die Eingaben nicht verloren
+    // gehen; die Meldung nennt den Grund.
+    if (!gespeichert || !mounted) {
       return;
     }
     _closeWideEditor();
@@ -245,6 +257,8 @@ class _CombatWeaponsSectionState extends State<CombatWeaponsSection> {
       catalog: widget.catalog,
       hero: widget.hero,
       heroState: widget.heroState,
+      berechnet: widget.berechnet,
+      epicAdvantagesRuleActive: widget.epicAdvantagesRuleActive,
       draftCombatConfig: widget.draftCombatConfig,
       draftTalents: widget.draftTalents,
       weaponFilterTalentId: widget.weaponFilterTalentId,

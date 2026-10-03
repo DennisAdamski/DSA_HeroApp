@@ -146,6 +146,17 @@ Technischer Stack:
 
 ### Kampf
 
+- Im Bereich Spielen startet „Gefecht beginnen“ eine flüchtige Sitzung je Held;
+  die bisherige Kampfverwaltung bleibt erreichbar. Navigation erhält die Sitzung,
+  Beenden oder ein App-Neustart verwirft sie.
+- Die Gefechtsansicht führt Runden, INI, Umwandlung, Haltung, DK und getrennte
+  Aktionsmarken. „Prüfen“ verlangt eine Bestätigung; erkannte Sperren bleiben
+  verbindlich. Ausrüstung wechselt im eigenen Popup, längere Ziehhandlungen
+  werden erst nach Abschluss wirksam.
+- Proben, Ressourcen, Wunden und Effekte verwenden die bisherigen Fachwege.
+  [Umfang und Prüfungen der ersten Version](docs/gefecht_implementation.md)
+  dokumentieren die verbleibenden manuellen Regeln.
+
 - Pflege von Nah- und Fernkampfwaffen in einer gemeinsamen Kampfkonfiguration
 - Unterstuetzung fuer Nebenhand, Parierwaffen, Schilde und Ruestungen
 - Kampfvorschau mit AT, PA, TP, INI, Ladezeit, Distanzstufen und Geschossen
@@ -469,3 +480,33 @@ Build-Tools-Instanz die Komponente `C++ ATL/MFC` nachinstallieren.
   separater Runtime-Katalog ausserhalb der editierbaren Settings-Sektionen.
 - Excel-Dateien im Repo-Root sind Upstream-Quellen fuer die Katalogaufbereitung.
 - Platzhalter- und Legacy-Dateien werden bewusst nicht automatisch entfernt.
+
+Die Gefechtsansicht führt Orientieren, Gegner-/Distanzkontext, Ziehen und
+bestätigte Zauber-/Karmahandlungen über gemeinsame Regelprüfungen. Laufende
+Gefechte bleiben flüchtig; Ressourcen und unterstützte Folgen werden über
+bestehende frische Schreibwege übernommen. Regelquellen und manuelle Grenzen:
+[Gefechtsausbau](docs/gefecht_next_plan.md), [Implementierung](docs/gefecht_implementation.md).
+
+Manöver lassen sich nach Angriff, Verteidigung oder Sonstige, Lernstand und
+bekannten Sperren filtern. Finte, Wuchtschlag und Fernkampfansage haben getrennte
+Eingaben; ohne die ersten beiden SF wirkt die aufgerundete halbe Ansage.
+Unterstützte Schadenangriffe bieten einen eigenen, waffengebundenen Schadenswurf.
+Entwaffnen und Umreißen erzeugen keinen Schaden; ungeklärte Varianten verlangen
+eine manuelle Abwicklung ohne vorgegebenen Waffenschaden. Jede Angriffsfolge wird
+einzeln abgeschlossen. „Schaden würfeln“ bleibt eine allgemeine Probe. FK-Ansagen verlangen bezahlte
+zusätzliche Zielzeit: „Zusatz-Zielen beginnen“ und „Fortsetzen“ bezahlen reguläre
+Aktionen über Runden, danach führt „Schuss ausführen“ den gehaltenen Auftrag aus.
+„Laden / Vorbereiten“ erfragt einen unbekannten Anfang pro geführter Fernkampfwaffe.
+Bezahlte Ladezeit bleibt bei geänderter Dauer erhalten; Waffen- oder Geschosswechsel
+übertragen keinen Fortschritt. Munition wird einmal beim ausgeführten Schuss
+übernommen. Ein Speicherfehler bietet Übernahme-Retry ohne erneuten Wurf.
+Kampfgespür erlaubt spontane Umwandlung unter Erhalt aller verbrauchten Marken.
+
+Ausführbare Aktionen benötigen konkrete Angaben
+und gegebenenfalls einzelne manuelle Entscheidungen; Regelhinweise allein
+sperren keine Probe. Freie Zusatzwerte starten bei 0, feste Katalogzuschläge
+werden getrennt einmal angewendet. Distanzklassen stehen mit vollständigem Namen
+in Rundenleiste und Aktionsdialog.
+
+Im Gefecht sind Haupt- und Nebenhand ausdrücklich wählbar; Ziehen und
+Wegstecken wirken erst nach ihrer bestätigten Dauer.

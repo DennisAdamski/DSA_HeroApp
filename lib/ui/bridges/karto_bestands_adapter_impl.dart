@@ -25,11 +25,59 @@ import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_management_b
 import 'package:dsa_heldenverwaltung/ui/widgets/avatar_gallery_image.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_bestands_adapter.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
+import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/kampf_aenderung_rules.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/zustand_aendern.dart';
+import 'package:dsa_heldenverwaltung/ui2/shell/karto_gefechts_adapter.dart';
+
+import 'karto_gefechts_bruecke.dart';
 
 /// Bindet den neuen Rahmen an die vorhandenen, fachlich vollständigen Ansichten.
-class KartoBestandsAdapterImpl implements KartoBestandsAdapter {
+class KartoBestandsAdapterImpl
+    implements KartoBestandsAdapter, KartoGefechtsAdapter {
   /// Erstellt die vorübergehende Brücke ohne eigenes Repository.
   const KartoBestandsAdapterImpl();
+
+  /// Verwendet einmalige Probeauswertung unter dem kompatiblen Dialogtheme.
+  @override
+  Future<ProbeResult?> gefechtsProbe({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String heroId,
+    required ResolvedProbeRequest request,
+    void Function(ProbeResult)? onResolved,
+  }) async {
+    ProbeResult? result;
+    await _withKartoCompatContext(context, (themedContext) async {
+      result = await zeigeGefechtsprobe(
+        context: themedContext,
+        ref: ref,
+        heroId: heroId,
+        request: request,
+        onResolved: onResolved,
+      );
+    });
+    return result;
+  }
+
+  /// Erhält fremde Daten und vorhandene Speicher-/Konfliktprüfungen.
+  @override
+  Future<bool> gefechtsAusruestung({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String heroId,
+    required CombatConfig Function(CombatConfig) aenderung,
+  }) async {
+    final held = await aendereHeldMitMeldung(
+      context: context,
+      ref: ref,
+      heroId: heroId,
+      was: 'Gefechtsausrüstung',
+      aenderung: (held) => mitKampfAenderung(held, aenderung),
+    );
+    return held != null;
+  }
 
   /// Baut die gemeinsame Verwaltungsfläche und reicht den Leave-Guard weiter.
   @override

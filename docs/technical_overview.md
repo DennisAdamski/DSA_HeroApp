@@ -1633,9 +1633,14 @@ Dabei gilt:
   berechnet und als `1 Aktion` / `N Aktionen` angezeigt.
 - `Schnellladen (Bogen)` verkuerzt die Ladezeit um `1`; bei bereits besessener
   SF reduziert Axxeleratus die Ladezeit um einen weiteren Punkt.
-- `Schnellladen (Armbrust)` reduziert die Ladezeit um `3/4` der Basis-
-  Ladezeit, echt gerundet; bei bereits besessener SF reduziert Axxeleratus
+- `Schnellladen (Armbrust)` setzt die Ladezeit auf `3/4` der Basis-
+  Ladezeit, echt gerundet (4 → 3, 8 → 6, 5 → 4); bei bereits besessener SF reduziert Axxeleratus
   anschliessend um einen weiteren Punkt.
+- Gefecht-Ladehandlungen verwenden dieselbe aktuelle effektive Vorschau
+  einschließlich Waffenmeister. Bezahlte reguläre Aktionen bleiben erhalten;
+  Restdauer ist `max(0, aktuelle Ladezeit - bezahlt)`. Der vollständig bezahlte
+  Abschluss verlangt keine weitere Marke. Ladung ist flüchtig pro Waffen-ID;
+  Waffen-/Geschossprofiländerungen verlangen konkrete erneute Vorbereitung.
 - `maneuver_rules.dart` normalisiert Manoever-Namen und UI-Texte auf stabile
   IDs, damit Kampfmeisterschaften dieselben Referenzen wie Katalog und UI
   nutzen koennen.
@@ -3178,8 +3183,49 @@ ueber die Settings-Katalogverwaltung bearbeitet.
   wiedereröffnen, Vertrauten-Steigerung. Der Ressourcendialog zeigt Fehler im
   Blatt und bleibt offen.
 - Snapshots bleiben: Editorentwürfe (Übersicht, Talente, Magie, Begleiter,
-  Notizen, Reisebericht), Inventareditor und Kampf-Sofortspeichern. Sie sind
-  aber eingereiht.
+  Notizen, Reisebericht) und der Inventareditor. Sie sind aber eingereiht.
+  Das Kampf-Sofortspeichern schreibt seit dem folgenden Update frisch.
+
+### Update 2026-09-30: Kampf-Tab frisch schreiben (ARCH-05)
+
+- Im Lesemodus speichert der Kampf-Tab jede Bedienung sofort: Waffen- und
+  Nebenhandwahl, Entfernung, Geschosswahl und -bestand (Kampfwerte),
+  Editorergebnis, Entfernen, Talent und BF (Waffen) sowie Rüstungs- und
+  Nebenhandteile. Alle laufen über den einen Einstieg `_aendereKampf`
+  (`hero_combat/combat_state_helpers.dart`). Im Bearbeitungsmodus ändert er
+  nur den Entwurf, gespeichert wird wie bisher mit „Speichern“. Im Lesemodus
+  ruft er `aendereHeldMitMeldung` mit `mitKampfAenderung`; die Slotprüfung
+  (`_validateWeaponSlotsForConfig`) läuft dabei auf dem frischen Ergebnis und
+  meldet sich als `StateError`. Die Einstiege je Bedienelement liegen in
+  `hero_combat/combat_sofort_aenderungen.dart`.
+- Regeln: `lib/rules/derived/kampf_aenderung_rules.dart` (`mitAktiverWaffe`,
+  `aendereWaffe`, `mitEntfernung`, `mitGeschossWahl`, `mitGeschossSchritt`,
+  `mitNeuerWaffe`, `ersetzeWaffe`, `ohneWaffe`, `mitNebenhand`,
+  `mitRuestungsteil`, `ohneRuestungsteil`, `mitNebenhandTeil`,
+  `ohneNebenhandTeil`). Slots werden über ihre stabile ID gefunden. Ohne ID
+  zählt der Inhalt ohne IDs, die angezeigte Position hilft nur dabei. Ein
+  Editorergebnis auf einen inzwischen geänderten Slot wird abgewiesen.
+  Geschossschritte zählen vom gespeicherten Bestand (0 bis
+  `kGeschossHoechstbestand`). Beim Entfernen rücken aktive Waffe und
+  Nebenhand (`weaponIndex`/`equipmentIndex`) nach; vorher verlor die
+  Nebenhand ihre Waffe oder zeigte auf das falsche Teil.
+- Die Sektionen melden den **angezeigten** Slot: `WeaponSaveCallback` mit
+  `ausgang` (liefert `bool`, der breite Editor bleibt bei Fehlern offen),
+  `WeaponRemoveCallback`, `WeaponSlotUpdater` mit `angezeigt`, dazu
+  `onPieceSaved`/`onPieceRemoved` (Rüstung) und
+  `onEntrySaved`/`onEntryRemoved` (Nebenhand) statt ganzer Listen.
+- Die Anzeige folgt dem gespeicherten Wert, der Entwurf wird im Lesemodus
+  nicht vorab gesetzt. Scheitert eine Änderung, steigt `_steuerRevision`
+  und baut Kampfwerte, Waffen und Rüstung neu auf; Auswahlfelder zeigen dann
+  wieder den gespeicherten Stand.
+- Vorschau: `kampfvorschau` (`hero_combat/combat_helpers.dart`) reicht
+  Modifikatoren, effektive Eigenschaften, Basiswerte und Wunden aus
+  `heroComputedProvider` an `computeCombatPreviewStats` durch. Kampfwerte,
+  Waffentabelle und Waffeneditor rechnen damit dieselben Werte wie Inspector
+  und Spielansicht; vorher fehlten dort die Wunden.
+- Prüfung: `test/rules/kampf_aenderung_rules_test.dart`,
+  `test/ui/combat/kampf_frisch_schreiben_test.dart` (mit
+  `BogenTestRepository`) und `test/ui/combat/kampfvorschau_wunden_test.dart`.
 
 ### Update 2026-08-23: Aventurischer Kalender und aktuelles Alter
 
