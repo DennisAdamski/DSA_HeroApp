@@ -487,5 +487,12 @@ Gefechte bleiben flüchtig; Ressourcen und unterstützte Folgen werden über
 bestehende frische Schreibwege übernommen. Regelquellen und manuelle Grenzen:
 [Gefechtsausbau](docs/gefecht_next_plan.md), [Implementierung](docs/gefecht_implementation.md).
 
+Manöver lassen sich nach Angriff, Verteidigung oder Sonstige, Lernstand und
+bekannten Sperren filtern. Ausführbare Aktionen benötigen konkrete Angaben
+und gegebenenfalls einzelne manuelle Entscheidungen; Regelhinweise allein
+sperren keine Probe. Freie Zusatzwerte starten bei 0, feste Katalogzuschläge
+werden getrennt einmal angewendet. Distanzklassen stehen mit vollständigem Namen
+in Rundenleiste und Aktionsdialog.
+
 Im Gefecht sind Haupt- und Nebenhand ausdrücklich wählbar; Ziehen und
 Wegstecken wirken erst nach ihrer bestätigten Dauer.

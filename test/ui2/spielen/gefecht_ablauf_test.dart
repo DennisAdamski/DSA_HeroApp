@@ -75,12 +75,6 @@ void main() {
           find.text('Manuell bestätigter Grundzielwert (optional)'),
           findsNothing,
         );
-        final bestaetigen = find.byKey(
-          const ValueKey('gefecht-kontext-bestaetigen'),
-        );
-        await tester.ensureVisible(bestaetigen);
-        await tester.tap(bestaetigen);
-        await tester.pumpAndSettle();
         await tester.tap(find.byKey(const ValueKey('gefecht-auftrag-starten')));
         await tester.pumpAndSettle();
       }
@@ -213,13 +207,6 @@ void main() {
         );
         await tester.pumpAndSettle();
         await tester.tap(find.textContaining('Angreifen').first);
-        await tester.pumpAndSettle();
-        await tester.ensureVisible(
-          find.byKey(const ValueKey('gefecht-kontext-bestaetigen')),
-        );
-        await tester.tap(
-          find.byKey(const ValueKey('gefecht-kontext-bestaetigen')),
-        );
         await tester.pumpAndSettle();
         await tester.tap(find.byKey(const ValueKey('gefecht-auftrag-starten')));
         await tester.pump(const Duration(milliseconds: 400));

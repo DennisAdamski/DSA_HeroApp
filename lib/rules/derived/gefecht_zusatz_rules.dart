@@ -117,6 +117,10 @@ Gefechtspruefung gefechtsPruefungMitKampfmittel(
   aktion: p.aktion,
   status: p.status,
   gruende: p.gruende,
+  sperrgruende: p.sperrgruende,
+  fehlendeAngaben: p.fehlendeAngaben,
+  entscheidungen: p.entscheidungen,
+  hinweise: p.hinweise,
   zielwert: p.zielwert,
   angriffe: p.angriffe,
   paraden: p.paraden,
@@ -168,7 +172,7 @@ Gefechtspruefung pruefeGefechtsZusatzauftrag(
   final vorher = pa ? s.regulaeresParadepaar : s.regulaeresAngriffspaar;
   final sperren = <String>[
     if (snap.wundEffekte.kampfunfaehig) 'Durch Wunden kampfunfähig.',
-    if (basis.status == Gefechtsfreigabe.gesperrt) ...basis.gruende,
+    ...basis.sperrgruende,
     if (profil == null) 'Kampfmittel nicht mehr geführt.',
     if (profil != null) ...profil.sperren,
     if (option?.verfuegbar != true)
@@ -203,6 +207,10 @@ Gefechtspruefung pruefeGefechtsZusatzauftrag(
       ...sperren,
       if (basis.status != Gefechtsfreigabe.gesperrt) ...basis.gruende,
     ],
+    sperrgruende: sperren,
+    fehlendeAngaben: basis.fehlendeAngaben,
+    entscheidungen: basis.entscheidungen,
+    hinweise: basis.hinweise,
     zielwert: basis.zielwert,
     zusatz: 1,
     erschwernis: basis.erschwernis,

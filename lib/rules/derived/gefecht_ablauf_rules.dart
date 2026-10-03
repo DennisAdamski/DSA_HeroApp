@@ -57,6 +57,10 @@ Gefechtspruefung pruefeManuelleGefechtsaktion(
         ? Gefechtsfreigabe.gesperrt
         : Gefechtsfreigabe.pruefen,
     gruende: [...sperren, ...basis.gruende],
+    sperrgruende: [...sperren, ...basis.sperrgruende],
+    fehlendeAngaben: basis.fehlendeAngaben,
+    entscheidungen: basis.entscheidungen,
+    hinweise: basis.hinweise,
     zielwert: zielwert == null ? null : zielwert - zuschlag,
     erschwernis: zuschlag,
     angriffe: a,

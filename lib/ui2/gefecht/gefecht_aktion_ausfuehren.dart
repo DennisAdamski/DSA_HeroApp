@@ -10,6 +10,7 @@ import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_held_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_auftrag_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_ablauf_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/gefecht_kontext_rules.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_gefechts_adapter.dart';
 
 import 'gefecht_aktionsdialog.dart';
@@ -17,8 +18,6 @@ import 'gefecht_orientieren.dart';
 import 'gefecht_schuss.dart';
 
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_wirken_rules.dart';
-
-import 'package:dsa_heldenverwaltung/rules/derived/gefecht_kontext_rules.dart';
 
 /// Verwendet dieselbe Freigabe für Kontextdialog, einmalige Probe und Folgen.
 Future<void> fuehreGefechtsaktionAus({
@@ -93,7 +92,7 @@ Future<void> fuehreGefechtsaktionAus({
     katalog: k,
     kampfmittel: auftrag.kampfmittel,
   );
-  if (p.status == Gefechtsfreigabe.gesperrt) {
+  if (!p.ausfuehrbar) {
     throw StateError(p.gruende.join(' '));
   }
   controller.setzen(aktuell.copyWith(dk: auftrag.dk, kontext: auftrag.kontext));

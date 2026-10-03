@@ -11,6 +11,7 @@ import 'requirement_evaluation_rules.dart';
 import 'two_weapon_combat_rules.dart';
 import 'waffenmeister_rules.dart';
 import 'gefecht_kampfmittel_rules.dart';
+import 'gefecht_filter_rules.dart';
 
 /// Ersetzt Vorschau-INI durch Sitzungswerte und übernimmt aktuelle Heldendaten.
 Gefechtswerte gefechtswerteFuer(
@@ -125,12 +126,19 @@ Gefechtspruefung pruefeGefechtsmanoever(
   final profil = gefechtsKampfmittelFuer(snapshot, kampfmittel);
   final waffe = profil?.waffe ?? config.selectedWeapon;
   final sperren = <String>[];
+  if (m.typ.trim().isEmpty &&
+      gefechtsManoeverkategorien(m).contains(GefechtsManoeverfilter.sonstige)) {
+    sperren.add(
+      'Diese Sonderfertigkeit besitzt keine ausführbare Einzelaktion.',
+    );
+  }
   final name = m.name.toLowerCase();
   final schild = gefechtsSchildmanoever(snapshot, m.name);
   sperren.addAll(schild.sperren);
   if (name.contains('klingenwand') ||
       name.contains('klingensturm') ||
-      name.contains('doppelangriff')) {
+      name.contains('doppelangriff') ||
+      m.id == 'man_eisenhagel') {
     sperren.add(
       'Geteilte Pools und geordnete Einzelangriffe am Spieltisch '
       'führen; keine vollständige Abwicklung als Einzelprobe.',
@@ -205,6 +213,7 @@ Gefechtspruefung pruefeGefechtsmanoever(
     aktion,
     zuschlag:
         zuschlag +
+        gefechtsManoeverZuschlag(m) +
         schild.zuschlag -
         (kampfmittel?.art == GefechtsKampfmittelArt.nebenwaffe
             ? snapshot
@@ -235,8 +244,13 @@ Gefechtspruefung pruefeGefechtsmanoever(
 
 /// Ordnet das Manöver für Budget, Pflichtkontext und Bedienung identisch ein.
 Gefechtsaktion gefechtsManoeveraktion(ManeuverDef m) {
+  if (gefechtsManoeverkategorien(m).contains(GefechtsManoeverfilter.sonstige)) {
+    return Gefechtsaktion.handlung;
+  }
   final typ = m.typ.toLowerCase();
-  return typ.contains('parade') || typ.contains('abwehr')
+  return typ.contains('parade') ||
+          typ.contains('abwehr') ||
+          RegExp(r'(^|\W)pa($|\W)').hasMatch(typ)
       ? Gefechtsaktion.parade
       : Gefechtsaktion.angriff;
 }
@@ -249,13 +263,7 @@ List<ManeuverDef> gefechtsManoeverliste(
 ) {
   final status = <String, Gefechtsfreigabe>{
     for (final m in katalog.maneuvers)
-      m.id: pruefeGefechtsmanoever(
-        s,
-        snapshot,
-        katalog,
-        m,
-        zuschlag: gefechtsManoeverZuschlag(m),
-      ).status,
+      m.id: pruefeGefechtsmanoever(s, snapshot, katalog, m, zuschlag: 0).status,
   };
   final liste = List<ManeuverDef>.of(katalog.maneuvers);
   liste.sort((a, b) {

@@ -127,7 +127,7 @@ void main() {
       werte,
       testCatalog,
       m,
-      zuschlag: gefechtsManoeverZuschlag(m),
+      zuschlag: 0,
     );
     expect(gefechtsManoeverZuschlag(m), 4);
     expect(p.paraden, 1);
@@ -158,7 +158,7 @@ void main() {
         snapshot,
         testCatalog,
         m,
-        zuschlag: 4,
+        zuschlag: 0,
       );
       expect(p.paraden, 1);
       expect(p.angriffe, 0);
@@ -231,6 +231,7 @@ void main() {
   );
   final hammer = ManeuverDef.fromJson({
     'id': 'man_hammerschlag',
+    'typ': 'Angriffsaktion',
     'name': 'Hammerschlag',
     'muss_separat_erlernt_werden': true,
   });
