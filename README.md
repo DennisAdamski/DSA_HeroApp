@@ -496,6 +496,7 @@ eine manuelle Abwicklung ohne vorgegebenen Waffenschaden. Jede Angriffsfolge wir
 einzeln abgeschlossen. „Schaden würfeln“ bleibt eine allgemeine Probe. FK-Ansagen verlangen bezahlte
 zusätzliche Zielzeit: „Zusatz-Zielen beginnen“ und „Fortsetzen“ bezahlen reguläre
 Aktionen über Runden, danach führt „Schuss ausführen“ den gehaltenen Auftrag aus.
+Aktuelle DK und Sitzungskontext bleiben beim Schuss und bei Probeabbruch erhalten.
 „Laden / Vorbereiten“ erfragt einen unbekannten Anfang pro geführter Fernkampfwaffe.
 Bezahlte Ladezeit bleibt bei geänderter Dauer erhalten; Waffen- oder Geschosswechsel
 übertragen keinen Fortschritt. Munition wird einmal beim ausgeführten Schuss
@@ -505,8 +506,9 @@ Kampfgespür erlaubt spontane Umwandlung unter Erhalt aller verbrauchten Marken.
 Ausführbare Aktionen benötigen konkrete Angaben
 und gegebenenfalls einzelne manuelle Entscheidungen; Regelhinweise allein
 sperren keine Probe. Freie Zusatzwerte starten bei 0, feste Katalogzuschläge
-werden getrennt einmal angewendet. Distanzklassen stehen mit vollständigem Namen
-in Rundenleiste und Aktionsdialog.
+werden getrennt einmal angewendet. Eine später geleerte oder ungültige
+FK-Zahleingabe bleibt offen, auch nach Waffenwechsel. Distanzklassen stehen
+mit vollständigem Namen in Rundenleiste und Aktionsdialog.
 
 Im Gefecht sind Haupt- und Nebenhand ausdrücklich wählbar; Ziehen und
 Wegstecken wirken erst nach ihrer bestätigten Dauer.

@@ -260,13 +260,14 @@ Gefechtszustand bezahleGefechtsVorbereitung(
   final bezahlt = p.bezahlt + (p.rest > 0 ? 1 : 0);
   final rest = p.dauer > bezahlt ? p.dauer - bezahlt : 0;
   final w = gefechtsKampfmittelFuer(snap, v.kampfmittel)!.waffe!;
+  // Eine PA-Marke für Vorbereitung wickelt keinen gegnerischen Angriff ab.
   final neu = p.rest == 0
       ? s
       : verbraucheGefechtsaktion(
           s,
           gefechtswerteFuer(snap, kampfmittel: v.kampfmittel),
           p.buchung,
-        );
+        ).copyWith(kontext: s.kontext);
   if (h.art == Gefechtshandlungsart.laden && rest == 0) {
     return bestaetigeGefechtsLadung(neu, w, true).copyWith(ohneHandlung: true);
   }
@@ -295,7 +296,6 @@ Gefechtspruefung pruefeGefechtsZielschuss(
   HeroComputedSnapshot snap,
   RulesCatalog k,
 ) {
-  final v = s.handlung!.vorbereitung!;
   final zeit = pruefeGefechtsVorbereitung(s, snap);
   if (!zeit.ausfuehrbar || zeit.rest > 0) {
     final gruende = [
@@ -314,6 +314,34 @@ Gefechtspruefung pruefeGefechtsZielschuss(
     s.copyWith(ohneHandlung: true),
     snap,
     k,
-    v.schussauftrag!,
+    gefechtsAktuellerZielauftrag(s),
+  );
+}
+
+/// Erhält den gebundenen Schuss, nutzt aber aktuellen DK- und Sitzungskontext.
+GefechtAuftrag gefechtsAktuellerZielauftrag(Gefechtszustand s) {
+  final a = s.handlung!.vorbereitung!.schussauftrag!;
+  return GefechtAuftrag(
+    aktion: a.aktion,
+    titel: a.titel,
+    zuschlag: a.zuschlag,
+    dk: s.dk,
+    dauer: a.dauer,
+    kosten: a.kosten,
+    zielwert: a.zielwert,
+    manoever: a.manoever,
+    probe: a.probe,
+    manuell: a.manuell,
+    grosserGegner: a.grosserGegner,
+    grosserSchild: a.grosserSchild,
+    zusatzParade: a.zusatzParade,
+    kontext: s.kontext,
+    distanzSchritte: a.distanzSchritte,
+    kampfmittel: a.kampfmittel,
+    eingabefehler: a.eingabefehler,
+    bestaetigteEntscheidungen: a.bestaetigteEntscheidungen,
+    finte: a.finte,
+    wuchtschlag: a.wuchtschlag,
+    fernkampfansage: a.fernkampfansage,
   );
 }

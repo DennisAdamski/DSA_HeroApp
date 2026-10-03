@@ -94,8 +94,10 @@ konkreten Zielkontakt und Ansage. Allgemeines optionales Zielen senkt den
 Ansagezuschlag nicht. „Zusatz-Zielen beginnen“ bucht reguläre Aktionen; die
 Handlung hält den ursprünglichen Schussauftrag über Runden fest. „Fortsetzen“
 bezahlt weitere Zielzeit. Erst „Schuss ausführen“ prüft aktuelle Ausrüstung,
-Angaben und eigenes Schussbudget erneut. Ein abgebrochener Probedialog erhält
-die bezahlte Vorbereitung ohne neue Zahlung. Beim gebuchten Schuss wird der
+Angaben und eigenes Schussbudget erneut. Der ursprüngliche Auftrag bindet Waffe,
+Geschoss, Zielkontakt und Ansagen; DK und Sitzungskontext stammen dagegen aus
+dem aktuellen Gefecht. Ein abgebrochener Probedialog erhält den DK-Wechsel
+während Zielen und die bezahlte Vorbereitung ohne neue Zahlung. Beim gebuchten Schuss wird der
 Zielstand verbraucht; Rundenschritte erhalten ihn.
 
 ### Laden und Vorbereiten (3. Oktober 2026)
@@ -120,7 +122,10 @@ verwendet unverändert das komplette Task-2-Waffenprofil samt Bestand.
 
 Schnellladen Armbrust erhält echt gerundete drei Viertel der Basisladezeit,
 statt drei Viertel abzuziehen: Basis4→3, Basis8→6, Basis5→4. Eine bereits besessene
-SF zusammen mit Axxeleratus spart zusätzlich eine Aktion; Waffenmeister wird
+SF zusammen mit Axxeleratus spart zusätzlich eine Aktion. Schnellladen wirkt
+bei effektiver Rüstungs-BE nach Rüstungsgewöhnung bis einschließlich 4, sowohl
+besessen als auch durch Axxeleratus verliehen. Bei BE 5 entfallen Schnellladen
+und der Kombinationsbonus; Schnellziehen bleibt unverändert. Waffenmeister wird
 weiterhin genau einmal in der zentralen Vorschau gerechnet.
 
 Bezahltes fertiges Zielen bleibt als bereiter Schuss sichtbar. Kampfgespür kann

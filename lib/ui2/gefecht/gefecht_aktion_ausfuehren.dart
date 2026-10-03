@@ -113,48 +113,59 @@ Future<void> fuehreGefechtsAuftragAus({
       aktuell.handlung!.vorbereitung!.schussauftrag != auftrag) {
     throw StateError('Vorbereiteter Schuss gehört zum ursprünglichen Auftrag.');
   }
+  final aktuellerAuftrag = zielhandlung
+      ? gefechtsAktuellerZielauftrag(aktuell)
+      : auftrag;
   final p = zielhandlung
       ? pruefeGefechtsZielschuss(aktuell, frisch, k)
-      : pruefeGefechtAuftrag(aktuell, frisch, k, auftrag);
+      : pruefeGefechtAuftrag(aktuell, frisch, k, aktuellerAuftrag);
   final w = gefechtswerteFuer(
     frisch,
     katalog: k,
-    kampfmittel: auftrag.kampfmittel,
+    kampfmittel: aktuellerAuftrag.kampfmittel,
   );
   if (!p.ausfuehrbar) {
-    if (!zielhandlung && w.fernkampf && auftrag.fernkampfansage > 0) {
-      final beginn = pruefeGefechtsZielbeginn(aktuell, frisch, k, auftrag);
+    if (!zielhandlung && w.fernkampf && aktuellerAuftrag.fernkampfansage > 0) {
+      final beginn = pruefeGefechtsZielbeginn(
+        aktuell,
+        frisch,
+        k,
+        aktuellerAuftrag,
+      );
       if (beginn.ausfuehrbar) {
-        controller.setzen(beginneGefechtsZielen(aktuell, frisch, k, auftrag));
+        controller.setzen(
+          beginneGefechtsZielen(aktuell, frisch, k, aktuellerAuftrag),
+        );
         return;
       }
     }
     throw StateError(p.gruende.join(' '));
   }
   final waffe =
-      gefechtsKampfmittelFuer(frisch, auftrag.kampfmittel)?.waffe ?? w.waffe;
+      gefechtsKampfmittelFuer(frisch, aktuellerAuftrag.kampfmittel)?.waffe ??
+      w.waffe;
   final bestaetigt = w.fernkampf && waffe != null
       ? bestaetigeGefechtsLadung(aktuell, waffe, true)
       : aktuell;
   controller.setzen(
     bestaetigt.copyWith(
-      dk: auftrag.dk,
-      kontext: auftrag.kontext,
+      dk: aktuellerAuftrag.dk,
+      kontext: aktuellerAuftrag.kontext,
       ohneHandlung: zielhandlung,
     ),
   );
   final id = UniqueKey().toString();
   if (!controller.reservieren(id)) return;
-  final basisRequest = gefechtRequestFuerAuftrag(auftrag, p);
+  final basisRequest = gefechtRequestFuerAuftrag(aktuellerAuftrag, p);
   final bonus = aktuell.mirakelbonus;
   final request = basisRequest == null
       ? null
       : gefechtsProbeMitBonus(basisRequest, bonus);
   final restHandlung = gefechtHandlungNachAuftrag(
-    titel: auftrag.titel,
-    dauer: auftrag.dauer,
+    titel: aktuellerAuftrag.titel,
+    dauer: aktuellerAuftrag.dauer,
     pruefung: p,
-    probe: auftrag.probe != null ? request : null,
+    probe: aktuellerAuftrag.probe != null ? request : null,
   );
   ProbeResult? gewuerfelt;
   void buchen([ProbeResult? result]) {
@@ -166,11 +177,12 @@ Future<void> fuehreGefechtsAuftragAus({
       erfolg: result?.success == true,
       snapshot: frisch,
       katalog: k,
-      auftrag: auftrag,
+      auftrag: aktuellerAuftrag,
       pruefung: p,
     );
     if (p.aktion == Gefechtsaktion.angriff ||
-        p.aktion == Gefechtsaktion.zusatzaktion && !auftrag.zusatzParade) {
+        p.aktion == Gefechtsaktion.zusatzaktion &&
+            !aktuellerAuftrag.zusatzParade) {
       controller.setzen(
         ergaenzeGefechtsAngriffsergebnis(
           ref.read(gefechtProvider(heroId))!,
@@ -191,7 +203,7 @@ Future<void> fuehreGefechtsAuftragAus({
     }
     if (result != null &&
         w.fernkampf &&
-        auftrag.aktion == Gefechtsaktion.angriff) {
+        aktuellerAuftrag.aktion == Gefechtsaktion.angriff) {
       controller.setzen(
         jetzt.copyWith(
           handlung: Gefechtshandlung(
@@ -208,7 +220,8 @@ Future<void> fuehreGefechtsAuftragAus({
 
   try {
     // Längere Zauber werden erst nach ihrer bestätigten Dauer ausgewertet.
-    if (request == null || auftrag.probe != null && restHandlung != null) {
+    if (request == null ||
+        aktuellerAuftrag.probe != null && restHandlung != null) {
       buchen();
     } else {
       await bestand.gefechtsProbe(
@@ -219,17 +232,20 @@ Future<void> fuehreGefechtsAuftragAus({
         onResolved: buchen,
       );
     }
-    if (gewuerfelt?.success == true && auftrag.distanzSchritte > 0) {
+    if (gewuerfelt?.success == true && aktuellerAuftrag.distanzSchritte > 0) {
       controller.setzen(
         ref
             .read(gefechtProvider(heroId))!
             .copyWith(
-              dk: naechsteGefechtsDk(auftrag.dk, auftrag.distanzSchritte),
+              dk: naechsteGefechtsDk(
+                aktuellerAuftrag.dk,
+                aktuellerAuftrag.distanzSchritte,
+              ),
             ),
       );
     }
     if (gewuerfelt?.success == true &&
-        auftrag.distanzSchritte < 0 &&
+        aktuellerAuftrag.distanzSchritte < 0 &&
         context.mounted) {
       final abgewehrt = await showDialog<bool>(
         context: context,
@@ -255,7 +271,10 @@ Future<void> fuehreGefechtsAuftragAus({
           ref
               .read(gefechtProvider(heroId))!
               .copyWith(
-                dk: naechsteGefechtsDk(auftrag.dk, auftrag.distanzSchritte),
+                dk: naechsteGefechtsDk(
+                  aktuellerAuftrag.dk,
+                  aktuellerAuftrag.distanzSchritte,
+                ),
               ),
         );
       }

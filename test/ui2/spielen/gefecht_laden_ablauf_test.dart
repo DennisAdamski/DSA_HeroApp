@@ -14,6 +14,7 @@ import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui2/gefecht/gefecht_ansicht.dart';
 
 import '../../rules/gefecht_laden_rules_test.dart' as fixture;
+import '../../rules/gefecht_laden_review_test.dart' as review;
 import '../shell/karto_test_support.dart';
 import 'gefecht_test_support.dart';
 
@@ -88,6 +89,126 @@ Future<ProviderContainer> _oeffnen(
 }
 
 void main() {
+  testWidgets(
+    'I1 BE-Wechsel während echter Ladezahlung erhält Fortschritt und RG-Abschluss',
+    (t) async {
+      final b = _Munition(review.reviewLadeSnapshot());
+      final c = await _oeffnen(t, b);
+      await t.tap(find.text('Laden / Vorbereiten · Armbrust'));
+      await t.pumpAndSettle();
+      await t.tap(find.byKey(const ValueKey('gefecht-laden-anfang')));
+      await t.pumpAndSettle();
+      await t.tap(find.text('Nicht geladen / nicht bereit').last);
+      await t.pumpAndSettle();
+      await t.tap(find.byKey(const ValueKey('gefecht-laden-starten')));
+      await t.pumpAndSettle();
+      await t.ensureVisible(find.text('Fortsetzen'));
+      await t.tap(find.text('Fortsetzen'));
+      await t.pumpAndSettle();
+      expect(
+        c
+            .read(gefechtProvider('rondra'))!
+            .handlung!
+            .vorbereitung!
+            .bezahlteAktionen,
+        2,
+      );
+      b.aktuell = review.reviewLadeSnapshot(be: 5);
+      c.invalidate(heroComputedProvider('rondra'));
+      await t.pumpAndSettle();
+      expect(find.text('2 bezahlt · aktuell 4 Aktionen'), findsOneWidget);
+      final ctl = c.read(gefechtProvider('rondra').notifier);
+      ctl.setzen(naechsteGefechtsrunde(c.read(gefechtProvider('rondra'))!));
+      await t.pumpAndSettle();
+      await t.ensureVisible(find.text('Fortsetzen'));
+      await t.tap(find.text('Fortsetzen'));
+      await t.pumpAndSettle();
+      final bezahlt = c.read(gefechtProvider('rondra'))!;
+      expect(bezahlt.handlung!.vorbereitung!.bezahlteAktionen, 3);
+      expect(
+        gefechtsLadezustand(
+          bezahlt,
+          b.aktuell.hero.combatConfig.selectedWeapon,
+        ),
+        false,
+      );
+      b.aktuell = review.reviewLadeSnapshot(be: 5, training: 2);
+      c.invalidate(heroComputedProvider('rondra'));
+      await t.pumpAndSettle();
+      await t.ensureVisible(find.text('Laden abschließen'));
+      await t.tap(find.text('Laden abschließen'));
+      await t.pumpAndSettle();
+      final fertig = c.read(gefechtProvider('rondra'))!;
+      expect(fertig.handlung, isNull);
+      expect(fertig.angriffeVerbraucht, bezahlt.angriffeVerbraucht);
+      expect(fertig.paradenVerbraucht, bezahlt.paradenVerbraucht);
+      expect(
+        gefechtsLadezustand(fertig, b.aktuell.hero.combatConfig.selectedWeapon),
+        true,
+      );
+      expect(b.anfragen, isEmpty);
+      expect(b.uebernahmen, 0);
+      expect(t.takeException(), isNull);
+    },
+  );
+  for (final abbrechen in [false, true]) {
+    testWidgets(
+      'I2 DK-Wechsel in Rundenleiste bleibt bei Schuss Abbruch=$abbrechen erhalten',
+      (t) async {
+        final b = _Munition(fixture.ladeSnapshot())
+          ..abbrechen = abbrechen
+          ..w20Wert = 1
+          ..fehler = false;
+        final c = await _oeffnen(t, b, geladen: true);
+        final ctl = c.read(gefechtProvider('rondra').notifier);
+        // Der Auftrag entsteht aus dem echten Aktionsdialog mit der alten DK S.
+        ctl.setzen(c.read(gefechtProvider('rondra'))!.copyWith(dk: 'S'));
+        await t.pumpAndSettle();
+        await t.tap(find.text('Angreifen'));
+        await t.pumpAndSettle();
+        final ansage = find.byKey(const ValueKey('gefecht-fk-ansage'));
+        await t.ensureVisible(ansage);
+        await t.enterText(ansage, '5');
+        await t.pumpAndSettle();
+        await t.tap(find.byKey(const ValueKey('gefecht-auftrag-starten')));
+        await t.pumpAndSettle();
+        var s = c.read(gefechtProvider('rondra'))!;
+        final original = s.handlung!.vorbereitung!.schussauftrag!;
+        expect(original.dk, 'S');
+        s = bezahleGefechtsVorbereitung(s, b.aktuell);
+        s = bezahleGefechtsVorbereitung(naechsteGefechtsrunde(s), b.aktuell);
+        ctl.setzen(naechsteGefechtsrunde(s));
+        await t.pumpAndSettle();
+        // Erreichbarer Live-DK-Wechsel während der vorbereiteten Handlung.
+        expect(c.read(gefechtProvider('rondra'))!.dk, 'S');
+        final dk = find.byType(DropdownButtonFormField<String>);
+        await t.ensureVisible(dk);
+        await t.tap(dk);
+        await t.pumpAndSettle();
+        await t.tap(find.text('Nahkampf').last);
+        await t.pumpAndSettle();
+        expect(c.read(gefechtProvider('rondra'))!.dk, 'N');
+        await t.ensureVisible(find.text('Schuss ausführen'));
+        await t.tap(find.text('Schuss ausführen'));
+        await t.pumpAndSettle();
+        final nachher = c.read(gefechtProvider('rondra'))!;
+        expect(nachher.dk, 'N');
+        expect(nachher.kontext.kontakt, 'Ork');
+        expect(b.anfragen, hasLength(1));
+        if (abbrechen) {
+          expect(nachher.handlung!.vorbereitung!.schussauftrag, same(original));
+          expect(nachher.zielstand!.bezahlteAktionen, 3);
+          expect(nachher.angriffeVerbraucht, 0);
+          expect(b.uebernahmen, 0);
+        } else {
+          expect(nachher.handlung, isNull);
+          expect(nachher.angriffeVerbraucht, 1);
+          expect(b.uebernahmen, 1);
+        }
+        expect(t.takeException(), isNull);
+      },
+    );
+  }
   testWidgets(
     'KG wandelt verbleibende PA nach Zielen spontan für vorbereiteten Schuss um',
     (t) async {

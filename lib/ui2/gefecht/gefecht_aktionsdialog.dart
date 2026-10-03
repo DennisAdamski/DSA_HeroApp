@@ -69,7 +69,9 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
     super.initState();
     _dk = widget.zustand.dk;
     _zusatzParade = widget.zusatzParade;
-    _kontext = widget.zustand.kontext;
+    _kontext = widget.zustand.kontext.copyWith(
+      situationsZuschlag: widget.zustand.kontext.situationsZuschlag ?? 0,
+    );
     _mittel =
         widget.kampfmittel ??
         gefechtsStandardKampfmittel(
@@ -95,7 +97,6 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
     _kontext = _kontext.copyWith(
       geladen: geladen,
       ohneLadezustand: geladen == null,
-      situationsZuschlag: _kontext.situationsZuschlag ?? 0,
     );
   }
 
