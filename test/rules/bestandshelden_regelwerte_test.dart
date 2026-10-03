@@ -132,7 +132,8 @@ _erwartet = <String, Map<String, Object?>>{
     // Die Hauptwaffe liegt im Schwertarm und trägt nur die allgemeinen −2
     // (bis ARCH-05 (6): 9/8, vor ARCH-07-B7: 13/12). Ausweichen folgt der
     // PA-Basis: 6 − BE 4 = 2 (bis ARCH-05 (6): 0). Der Holzschild trägt den
-    // Armanteil: PA-Basis 6 + 3 − 2 = 7.
+    // Armanteil und eBE-PA-Anteil 1 (WdS 71, MCP 7016):
+    // PA-Basis 6 + Schild-WM 3 − Armwunde 2 − eBE 1 = 6; bisher ohne eBE: 7.
     'kampf': <String, Object?>{
       'rs': 4,
       'be': 4,
@@ -140,7 +141,7 @@ _erwartet = <String, Map<String, Object?>>{
       'pa': 10,
       'ini': 10,
       'ausweichen': 2,
-      'schildPa': 7,
+      'schildPa': 6,
       'tp': '1W6+4',
     },
     'hinweise': <String>[],
@@ -199,7 +200,7 @@ _erwartet = <String, Map<String, Object?>>{
     'karma': false,
     // Linkshänder: Der verwundete linke Arm ist der Schwertarm. Die
     // Hauptwaffe trägt den Armanteil (11/10 − 2), der Schild nicht
-    // (PA-Basis 6 + 3 = 9).
+    // (PA-Basis 6 + Schild-WM 3 − eBE-PA-Anteil 1 = 8; WdS 71 / 7016).
     'kampf': <String, Object?>{
       'rs': 4,
       'be': 4,
@@ -207,7 +208,7 @@ _erwartet = <String, Map<String, Object?>>{
       'pa': 8,
       'ini': 10,
       'ausweichen': 2,
-      'schildPa': 9,
+      'schildPa': 8,
       'tp': '1W6+4',
     },
     'hinweise': <String>[],
