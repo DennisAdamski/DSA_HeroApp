@@ -127,7 +127,7 @@ void main() {
         );
         await tester.pumpAndSettle();
         expect(tester.takeException(), isNull);
-        await _capture(
+        await captureGefechtsTestbild(
           tester,
           boundary,
           '${breite.toInt()}-${helligkeit.name}',
@@ -137,7 +137,7 @@ void main() {
         await tester.pumpAndSettle();
         expect(find.text('Ausrüstung wechseln'), findsOneWidget);
         expect(tester.takeException(), isNull);
-        await _capture(
+        await captureGefechtsTestbild(
           tester,
           boundary,
           '${breite.toInt()}-${helligkeit.name}-ausruestung',
@@ -149,7 +149,7 @@ void main() {
         await tester.pumpAndSettle();
         expect(find.text('Aktuelle Distanzklasse'), findsOneWidget);
         expect(tester.takeException(), isNull);
-        await _capture(
+        await captureGefechtsTestbild(
           tester,
           boundary,
           '${breite.toInt()}-${helligkeit.name}-aktion',
@@ -159,8 +159,12 @@ void main() {
   }
 }
 
-// Opt-in Rasteraufnahmen verwenden denselben Weg wie die übrigen UI2-Abnahmen.
-Future<void> _capture(WidgetTester tester, GlobalKey key, String name) async {
+/// Opt-in Rasteraufnahmen für Gefechtsszenen ohne produktiven Exportpfad.
+Future<void> captureGefechtsTestbild(
+  WidgetTester tester,
+  GlobalKey key,
+  String name,
+) async {
   const pfad = String.fromEnvironment('GEFECHT_SCREENSHOT_DIR');
   if (pfad.isEmpty) return;
   await tester.runAsync(() async {

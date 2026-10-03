@@ -233,9 +233,9 @@ mit eigener BE-Grenze geführt; Kampfgespür bleibt Quelle der späten Umwandlun
 Paket 3 konsumiert `Gefechtszielstand` und `gefechtsFernkampfansage`: bezahlte
 zusätzliche Ansagezeit ist an Kampfmittel, Geschoss, vollständigen Profilkey,
 Zielkontakt und Ansage gebunden. Der gebuchte Schuss verbraucht den Stand;
-Rundenwechsel erhält ihn. Bis zum bezahlenden Bedienpfad bleiben entsprechende
-FK-Ansagen mit konkretem Grund nicht ausführbar. Laden/kurzes Zielen/allgemeines
-optionales Zielen sind weiterhin das nächste Paket.
+Rundenwechsel erhält ihn. Der bezahlende Bedienpfad ist in Paket 3 implementiert;
+fehlende Zahlungen sperren weiterhin den unmittelbaren Schuss. Allgemeines
+optionales Zielen zur Senkung anderer Zuschläge bleibt manuell abgegrenzt.
 
 Quellen erneut im DSA-MCP gelesen: Finte 6994, Wuchtschlag 7003/7004,
 Fernkampfansage 7089, Umwandlung 7046/7047, Klingentänzer 7030,
@@ -249,3 +249,28 @@ keinen Schadensrequest; ungeklärte Varianten erhalten keine gewöhnlichen
 Waffen-TP. Regel- und Widgetregressionen prüfen diese Grenze sowie den einzelnen
 Abschluss bei weiteren offenen Treffern. Hammerschlag behält gebundene Ansagen
 und den ausdrücklich manuellen Multiplikator der gesamten TP.
+
+### Paket 3: Laden und bezahltes Zusatz-Zielen (3. Oktober 2026)
+
+Eigene flüchtige Lade-/Zielhandlungen verwenden echte reguläre Marken über Runden.
+Ladung gilt pro physischer Waffen-ID für Haupt- und Nebenhand, nicht global pro
+Gegnerkontakt. Unbekannter Anfang wird konkret erfragt; bekannte Entladung bleibt
+verbindlich. Fortschritt ist an Geschoss/Profil gebunden und wird weder durch
+Waffenwechsel noch Abbruch übertragen oder erstattet. Aktuelle Ladezeit aus
+derselben Combat-Vorschau kann sich ändern; bereits bezahlte Aktionen bleiben
+erhalten. Bei Rest0 kostet der Ladeabschluss keine neue Aktion.
+
+Die Armbrust-Schnellladenrechnung erhält nun gerundete drei Viertel statt ein
+Viertel der Basis. Rechner, Anzeige, Tests und technische Übersicht sind angepasst.
+Zusatz-Zielen hält den vollständigen ursprünglichen Schussauftrag. Vor dem Schuss
+werden Profil, Zielkontakt, Zahlung und eigenes Budget erneut geprüft. Fertig
+bezahltes Zielen erlaubt spontane Kampfgespür-Umwandlung ohne Markenrückzahlung.
+Abgebrochene Probe erhält Zielauftrag; gewürfelte Schüsse erhalten offene
+Munitionsübernahme ohne Abbruch. Retry würfelt nicht erneut und konsumiert das
+eingefrorene Geschoss einmal; Endkampf bestätigt keine zwischenzeitliche offene
+Übernahme weg.
+
+Lade-/FK-Ansagedialog, laufende Zielhandlung und drei offene Treffer samt langem
+Hammerschlag-Hinweis werden bei390/820/1200/1440Pixeln, Hell/Dunkel und Tastatur
+0/250 geprüft. Opt-in-PNGs nutzen denselben GEFECHT_SCREENSHOT_DIR-Testweg.
+Die Gesamtsuite und unabhängige Gesamtprüfung stehen nach der Paketprüfung noch aus.

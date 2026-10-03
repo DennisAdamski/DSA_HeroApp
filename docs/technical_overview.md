@@ -1633,9 +1633,14 @@ Dabei gilt:
   berechnet und als `1 Aktion` / `N Aktionen` angezeigt.
 - `Schnellladen (Bogen)` verkuerzt die Ladezeit um `1`; bei bereits besessener
   SF reduziert Axxeleratus die Ladezeit um einen weiteren Punkt.
-- `Schnellladen (Armbrust)` reduziert die Ladezeit um `3/4` der Basis-
-  Ladezeit, echt gerundet; bei bereits besessener SF reduziert Axxeleratus
+- `Schnellladen (Armbrust)` setzt die Ladezeit auf `3/4` der Basis-
+  Ladezeit, echt gerundet (4 → 3, 8 → 6, 5 → 4); bei bereits besessener SF reduziert Axxeleratus
   anschliessend um einen weiteren Punkt.
+- Gefecht-Ladehandlungen verwenden dieselbe aktuelle effektive Vorschau
+  einschließlich Waffenmeister. Bezahlte reguläre Aktionen bleiben erhalten;
+  Restdauer ist `max(0, aktuelle Ladezeit - bezahlt)`. Der vollständig bezahlte
+  Abschluss verlangt keine weitere Marke. Ladung ist flüchtig pro Waffen-ID;
+  Waffen-/Geschossprofiländerungen verlangen konkrete erneute Vorbereitung.
 - `maneuver_rules.dart` normalisiert Manoever-Namen und UI-Texte auf stabile
   IDs, damit Kampfmeisterschaften dieselben Referenzen wie Katalog und UI
   nutzen koennen.

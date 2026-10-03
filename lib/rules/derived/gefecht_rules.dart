@@ -169,7 +169,16 @@ bool gefechtUmwandlungMoeglich(
   Gefechtsumwandlung u, {
   Gefechtswerte? werte,
 }) {
-  if (s.ansageGebunden || s.auftrag != null || s.handlung != null) return false;
+  final zielBereit =
+      s.handlung?.art == Gefechtshandlungsart.zielen &&
+      s.handlung?.vorbereitung != null &&
+      s.handlung?.verbleibend == 0 &&
+      s.handlung?.ergebnis == null;
+  if (s.ansageGebunden ||
+      s.auftrag != null ||
+      s.handlung != null && !zielBereit) {
+    return false;
+  }
   if (werte?.umwandlungVerboten == true) return false;
   const verboteneTalente = {
     'tal_kettenwaffen',

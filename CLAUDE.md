@@ -32,6 +32,13 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   Klasse liefert einen Schadensrequest; die anderen werden einzeln am Tisch
   abgewickelt und abgeschlossen. Kleine Ansage-/Ergebniswidgets
   lassen die allgemeine Schadensprobe unverändert unabhängig.
+  `domain/gefecht_laden.dart` hält flüchtige Ladestände pro physischer Waffen-ID
+  und bezahlte Vorbereitungsaufträge. `gefecht_ladezustand_rules.dart` bindet
+  Ladung an Waffen-/Geschossprofil, `gefecht_laden_rules.dart` prüft aktuelle
+  Restdauer, echte reguläre Zahlung und den gehaltenen Ziel-/Schussauftrag.
+  `gefecht_ladedialog.dart` erfragt den unbekannten Anfang; `gefecht_laden.dart`
+  verbindet den Dialog mit der flüchtigen Sitzung. Ladezeit stammt zentral aus
+  der bestehenden Combat-Vorschau, einschließlich Effekten und Waffenmeister.
   Die gezielte `KartoGefechtsAdapter`-Brücke ergänzt einmalige Probeauswertung
   und frische Ausrüstungsschreibwege, ohne bestehende Aufrufer zu verändern.
   `gefecht_hand_rules.dart` prüft Haupt-/Nebenhandbelegungen vor Normalisierung

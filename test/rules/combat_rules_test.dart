@@ -641,7 +641,7 @@ void main() {
     expect(preview(base, catalogTalents: catalogTalents).reloadTime, 4);
     expect(
       preview(withOwnedAbility, catalogTalents: catalogTalents).reloadTime,
-      1,
+      3,
     );
     expect(
       preview(
@@ -649,7 +649,7 @@ void main() {
         catalogTalents: catalogTalents,
         heroState: stateWithAxx,
       ).reloadTime,
-      1,
+      3,
     );
     expect(
       preview(
@@ -657,7 +657,7 @@ void main() {
         catalogTalents: catalogTalents,
         heroState: stateWithAxx,
       ).reloadTime,
-      1,
+      2,
     );
   });
 

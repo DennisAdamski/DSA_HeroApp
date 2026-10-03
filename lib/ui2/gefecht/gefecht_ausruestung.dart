@@ -14,6 +14,11 @@ import 'gefecht_schuss.dart';
 import 'gefecht_wirken.dart';
 import 'gefecht_ziehdialog.dart';
 import 'gefecht_handwahl.dart';
+import 'gefecht_laden.dart';
+import 'gefecht_aktion_ausfuehren.dart';
+
+import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/gefecht_laden_rules.dart';
 
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_hand_rules.dart';
 
@@ -312,6 +317,24 @@ Future<void> setzeGefechtsausruestungFort({
   final snapshot = ref.read(heroComputedProvider(heroId)).asData?.value;
   final h = s?.handlung;
   if (s == null || h == null || snapshot == null) return;
+  if (h.vorbereitung != null) {
+    final p = pruefeGefechtsVorbereitung(s, snapshot);
+    if (h.art == Gefechtshandlungsart.zielen && p.rest == 0) {
+      final k = ref.read(rulesCatalogProvider).asData?.value;
+      if (k == null) throw StateError('Regelkatalog wird geladen.');
+      await fuehreGefechtsAuftragAus(
+        context: context,
+        ref: ref,
+        heroId: heroId,
+        bestand: bestand,
+        k: k,
+        auftrag: h.vorbereitung!.schussauftrag!,
+      );
+    } else {
+      setzeGefechtsVorbereitungFort(ref, heroId);
+    }
+    return;
+  }
   if (h.wirken != null) {
     await setzeGefechtsWirkenFort(
       context: context,

@@ -158,8 +158,8 @@ int _computeArmbrustReloadTime({
 }) {
   var result = clampNonNegative(baseReloadTime);
   if (hasActiveAbility) {
-    final reduction = excelRound(baseReloadTime * 3 / 4);
-    result -= reduction;
+    // WdS 96: Drei Viertel bleiben als Ladezeit bestehen.
+    result = excelRound(baseReloadTime * 3 / 4);
   }
   if (hasOwnedAbility && axxeleratusActive) {
     result -= 1;
