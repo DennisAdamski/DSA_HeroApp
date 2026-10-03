@@ -4,6 +4,9 @@ import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht_auftrag.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
+
+import 'gefecht_angriffsergebnis.dart';
+
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_provider.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
@@ -303,6 +306,14 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
         Text('TP ${snapshot.combatPreviewStats.tpExpression}'),
         const SizedBox(height: 8),
         _knopf(s, snapshot, k, Gefechtsaktion.angriff, 'Angreifen'),
+        for (final ergebnis in s.angriffsergebnisse)
+          GefechtAngriffsergebnisAnzeige(
+            ergebnis: ergebnis,
+            heroId: widget.heroId,
+            bestand: _bruecke,
+            gesperrt: _busy || s.handlung != null,
+            onAktion: _run,
+          ),
         TextButton(
           onPressed: _busy ? null : () => _run(() => _schaden(snapshot)),
           child: const Text('Schaden würfeln'),

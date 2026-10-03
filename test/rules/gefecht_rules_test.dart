@@ -63,10 +63,14 @@ void main() {
         ).umwandlung,
         Gefechtsumwandlung.zweiteAttacke,
       );
-      expect(
-        () => wandleGefechtUm(s, Gefechtsumwandlung.zweiteParade, werte: w),
-        throwsStateError,
+      final verteilt = wandleGefechtUm(
+        s,
+        Gefechtsumwandlung.zweiteParade,
+        werte: w,
       );
+      expect(gefechtsRegulaereParaden(verteilt), 1);
+      expect(gefechtsAngriffe(verteilt), 0);
+      expect(verteilt.umgewandelteAktionOffen, isFalse);
     },
   );
   test('Längere Handlung bezahlt keine Voraussetzung für Zusatzattacke', () {

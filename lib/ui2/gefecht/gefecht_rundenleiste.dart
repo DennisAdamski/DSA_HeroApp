@@ -56,6 +56,10 @@ class GefechtRundenleiste extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 8),
+            if (werte.klingentaenzerAktiv)
+              const Text(
+                'Klingentänzer-Fähigkeiten aktiv (BE höchstens 2). Spontane Umwandlung benötigt Kampfgespür.',
+              ),
             Wrap(
               spacing: 8,
               runSpacing: 8,
@@ -68,34 +72,7 @@ class GefechtRundenleiste extends StatelessWidget {
                         gesperrt ||
                             !gefechtUmwandlungMoeglich(s, u, werte: werte)
                         ? null
-                        : () => onAktion(() async {
-                            final ok = await showDialog<bool>(
-                              context: context,
-                              builder: (context) => AlertDialog(
-                                title: const Text('Ansage zu Rundenbeginn'),
-                                content: Text(
-                                  '${werte.defensiverKampfstil && u == Gefechtsumwandlung.zweiteParade ? 'Defensiver Kampfstil: zwingend zu Rundenbeginn ansagen. ' : ''}'
-                                  'Zulässigen Ansagezeitpunkt prüfen: ohne globale '
-                                  'Phasenuhr wird er nicht automatisch erkannt. Diese Ansage ist verbindlich.',
-                                ),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () =>
-                                        Navigator.pop(context, false),
-                                    child: const Text('Abbrechen'),
-                                  ),
-                                  FilledButton(
-                                    onPressed: () =>
-                                        Navigator.pop(context, true),
-                                    child: const Text('Zeitpunkt geprüft'),
-                                  ),
-                                ],
-                              ),
-                            );
-                            if (ok == true) {
-                              onAendern(wandleGefechtUm(s, u, werte: werte));
-                            }
-                          }),
+                        : () => onAktion(() => _umwandeln(context, u)),
                     child: Text(
                       '${s.umwandlung == u ? '✓ ' : ''}${switch (u) {
                         Gefechtsumwandlung.normal => 'AT + PA',
@@ -197,6 +174,66 @@ class GefechtRundenleiste extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  // Kampfgespür benötigt keinen pauschalen Zeitpunktdialog; andere Wege benennen ihn.
+  Future<void> _umwandeln(BuildContext context, Gefechtsumwandlung u) async {
+    final s = zustand;
+    final unbenutzt =
+        s.angriffeVerbraucht == 0 &&
+        s.paradenVerbraucht == 0 &&
+        s.freieVerbraucht == 0 &&
+        s.zusatzVerbraucht == 0;
+    final stil =
+        werte.defensiverKampfstil &&
+        u == Gefechtsumwandlung.zweiteParade &&
+        unbenutzt;
+    if (werte.kampfgespuer && !stil) {
+      onAendern(wandleGefechtUm(s, u, werte: werte, rundenbeginn: false));
+      return;
+    }
+    final rundenbeginn = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Umwandlung ansagen'),
+        content: Text(
+          stil
+              ? 'Defensiver Kampfstil gilt nur bei Ansage zu Rundenbeginn. Eine spätere Umwandlung erhält keine Stil-Erleichterung.'
+              : werte.aufmerksamkeit
+              ? 'Aufmerksamkeit erlaubt die Ansage bis zur eigenen ersten INI-Phase. Der konkrete Zeitpunkt wird am Spieltisch geführt.'
+              : 'Ohne Aufmerksamkeit oder Kampfgespür ist die Ansage nur zu Rundenbeginn zulässig.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Abbrechen'),
+          ),
+          if (unbenutzt)
+            FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: Text(
+                stil
+                    ? 'Rundenbeginn · Defensiver Kampfstil'
+                    : 'Zu Rundenbeginn',
+              ),
+            ),
+          if (werte.kampfgespuer || werte.aufmerksamkeit)
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text(
+                werte.kampfgespuer
+                    ? 'Spontan umwandeln'
+                    : 'Vor eigener erster INI-Phase',
+              ),
+            ),
+        ],
+      ),
+    );
+    if (rundenbeginn != null) {
+      onAendern(
+        wandleGefechtUm(s, u, werte: werte, rundenbeginn: rundenbeginn),
+      );
+    }
   }
 
   // Die Korrektur ist bewusst getrennt von der verbindlichen Ansage.

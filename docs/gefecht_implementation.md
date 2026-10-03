@@ -55,6 +55,47 @@ Ausrüstungsoption. Schildkampf II erlaubt die zweite gewöhnliche Schildparade
 nur nach einer ersten Schildparade; längere Handlungen verwenden dieses Budget
 nicht. Umwandlung wird verbindlich bestätigt, Korrekturen sind separat.
 
+Finte und Wuchtschlag sind unabhängige Ansagen (Standard 0), zusätzlich zur
+weiteren Erschwernis. Ihre Summe ist durch TaW und AT begrenzt; Waffentalent,
+Finte-BE und Schildführung werden geprüft. Ohne erlernte SF gilt die über
+`excelRound` gerundete halbe Wirkung, mit SF die volle Wirkung. Feste
+Manöverzuschläge, Schildzuschläge und Waffenmeister-Erleichterungen werden
+genau einmal angewandt. Normaler Angriff und Sturmangriff erlauben beide
+Ansagen gleichzeitig. Der Sturmangriff benötigt auch die Abwehraktion,
+GS mindestens 4 und eine konkrete Bestätigung für vier Schritt Anlauf.
+
+Ein erfolgreich gebuchter Angriff hält Kampfmittelidentität, Waffenname,
+eingefrorenes Schadensprofil, TP-Bonus und Finte-Abwehrmalus. Sein eigener
+Schadensbutton verbraucht nur dieses Ergebnis nach der Probe. Mehrere offene
+Treffer bleiben erhalten; ein späterer Fehlschlag löscht keinen Treffer. Ein allgemeiner
+Schadenswurf erhält keinen alten Bonus; Waffenwechsel verändert das eingefrorene
+Profil nicht. Fehlgeschlagene oder doppelt zurückgemeldete Angriffe erzeugen
+keinen zusätzlichen Erfolgsbonus. Offene Munitionsübernahme erhält das Ergebnis.
+Gegnerische Abwehr und weitere Manöverfolgen bleiben am Tisch: insbesondere
+verlangt Hammerschlag die manuelle Verdreifachung der gesamten TP einschließlich
+TP-Ansage; Todesstoß verlangt konkrete Klärung von RS/Schild/Wundfolgen.
+Die zentrale Kombinationstabelle unterscheidet erlaubt, verboten und einzeln
+zu klären; eine bloße Beschreibung ist keine automatische Kombinationsfreigabe.
+
+FK-Ansage: Grenze TaW, bei Meisterschütze FK; halbe TP normal, volle TP bei
+Scharf-/Meisterschütze. Zusätzlich bezahlt werden gerundete halbe Ansageaktionen,
+bei Scharfschütze zwei weniger (mindestens eine), bei Meisterschütze genau eine.
+`Gefechtszielstand` bindet die Zahlung an Waffe, Geschoss, vollständiges Profil,
+konkreten Zielkontakt und Ansage. Allgemeines optionales Zielen senkt den
+Ansagezuschlag nicht. Bis der Zielzeit-Bedienablauf implementiert ist, sperren
+fehlende Zahlungen die FK-Ansage; eine Dauereingabe oder Bestätigung ersetzt sie
+nicht. Beim gebuchten Schuss wird der Stand verbraucht, über Runden erhalten.
+
+Kampfgespür erlaubt spätes Umwandeln ohne pauschalen Zeitpunktdialog. Verbrauchte
+reguläre Marken werden auf die neue Verteilung angerechnet; bereits verbrauchte
+Quellmarken erzeugen keine weitere umgewandelte Aktion. Aufmerksamkeit reicht
+nicht nach eigener Attacke. Schild verbietet PA→AT; Waffenverbote und INI−8
+bleiben bindend. Defensiver Kampfstil wird nur bei konkreter Rundenbeginnansage
+aktiviert. Aktiver Klingentänzer und BE≤2 kennzeichnen seine eigenen Fähigkeiten;
+spontane Umwandlung stammt weiterhin aus aktivem Kampfgespür, auch bei BE>2.
+Inkonsistente Daten mit Klingentänzer ohne Kampfgespür ergänzen keine Voraussetzung
+stillschweigend (WdS 75/82; MCP 7030/7046/7047).
+
 Manöver zeigen Katalogtext, Voraussetzungen und Zielwert. Eindeutig bezifferte
 Katalogzuschläge werden getrennt automatisch angewendet, freie Zusatzwerte
 beginnen bei 0. Variable Zuschläge und nicht automatisierte

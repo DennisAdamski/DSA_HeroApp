@@ -11,6 +11,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/gefecht_held_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_auftrag_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_ablauf_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_kontext_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/gefecht_angriff_rules.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_gefechts_adapter.dart';
 
 import 'gefecht_aktionsdialog.dart';
@@ -111,8 +112,26 @@ Future<void> fuehreGefechtsaktionAus({
   );
   ProbeResult? gewuerfelt;
   void buchen([ProbeResult? result]) {
-    gewuerfelt ??= result;
     if (!controller.abschliessen(id, w, p, erfolg: result?.success)) return;
+    gewuerfelt ??= result;
+    final angriff = gefechtsAngriffsergebnisNachBuchung(
+      auftragId: id,
+      buchungErfolgreich: true,
+      erfolg: result?.success == true,
+      snapshot: frisch,
+      katalog: k,
+      auftrag: auftrag,
+      pruefung: p,
+    );
+    if (p.aktion == Gefechtsaktion.angriff ||
+        p.aktion == Gefechtsaktion.zusatzaktion && !auftrag.zusatzParade) {
+      controller.setzen(
+        ergaenzeGefechtsAngriffsergebnis(
+          ref.read(gefechtProvider(heroId))!,
+          angriff,
+        ).copyWith(ohneZielstand: w.fernkampf),
+      );
+    }
     if (result != null &&
         request != null &&
         gefechtsBonusPasst(request, bonus)) {

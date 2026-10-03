@@ -24,6 +24,11 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   `gefecht_freigabe_rules.dart` ergänzt konkrete Formularpflichten und offene
   Entscheidungen; `gefecht_filter_rules.dart` ordnet AT/PA/Sonstige zu und
   verknüpft Such-, Lernstands- und Sperrfilter ohne Regelrechnung im Widget.
+  `gefecht_ansage_rules.dart` prüft getrennte Finte/Wuchtschlag/FK-Ansagen,
+  Kombinationen und bezahlte Zusatz-Zielzeit. `domain/gefecht_angriff.dart`
+  hält flüchtige Zielzahlungen und Erfolgsprofile; `gefecht_angriff_rules.dart`
+  bindet TP-Boni an das eingefrorene Kampfmittel. Kleine Ansage-/Ergebniswidgets
+  lassen die allgemeine Schadensprobe unverändert unabhängig.
   Die gezielte `KartoGefechtsAdapter`-Brücke ergänzt einmalige Probeauswertung
   und frische Ausrüstungsschreibwege, ohne bestehende Aufrufer zu verändern.
   `gefecht_hand_rules.dart` prüft Haupt-/Nebenhandbelegungen vor Normalisierung

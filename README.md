@@ -488,7 +488,14 @@ bestehende frische Schreibwege übernommen. Regelquellen und manuelle Grenzen:
 [Gefechtsausbau](docs/gefecht_next_plan.md), [Implementierung](docs/gefecht_implementation.md).
 
 Manöver lassen sich nach Angriff, Verteidigung oder Sonstige, Lernstand und
-bekannten Sperren filtern. Ausführbare Aktionen benötigen konkrete Angaben
+bekannten Sperren filtern. Finte, Wuchtschlag und Fernkampfansage haben getrennte
+Eingaben; ohne die ersten beiden SF wirkt die aufgerundete halbe Ansage.
+Der erfolgreiche Angriff bietet einen eigenen, waffengebundenen Schadenswurf;
+„Schaden würfeln“ bleibt eine allgemeine Probe. FK-Ansagen verlangen bezahlte
+zusätzliche Zielzeit; deren Bedienablauf folgt im nächsten Ausbaupaket.
+Kampfgespür erlaubt spontane Umwandlung unter Erhalt aller verbrauchten Marken.
+
+Ausführbare Aktionen benötigen konkrete Angaben
 und gegebenenfalls einzelne manuelle Entscheidungen; Regelhinweise allein
 sperren keine Probe. Freie Zusatzwerte starten bei 0, feste Katalogzuschläge
 werden getrennt einmal angewendet. Distanzklassen stehen mit vollständigem Namen
