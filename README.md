@@ -494,7 +494,12 @@ Unterstützte Schadenangriffe bieten einen eigenen, waffengebundenen Schadenswur
 Entwaffnen und Umreißen erzeugen keinen Schaden; ungeklärte Varianten verlangen
 eine manuelle Abwicklung ohne vorgegebenen Waffenschaden. Jede Angriffsfolge wird
 einzeln abgeschlossen. „Schaden würfeln“ bleibt eine allgemeine Probe. FK-Ansagen verlangen bezahlte
-zusätzliche Zielzeit; deren Bedienablauf folgt im nächsten Ausbaupaket.
+zusätzliche Zielzeit: „Zusatz-Zielen beginnen“ und „Fortsetzen“ bezahlen reguläre
+Aktionen über Runden, danach führt „Schuss ausführen“ den gehaltenen Auftrag aus.
+„Laden / Vorbereiten“ erfragt einen unbekannten Anfang pro geführter Fernkampfwaffe.
+Bezahlte Ladezeit bleibt bei geänderter Dauer erhalten; Waffen- oder Geschosswechsel
+übertragen keinen Fortschritt. Munition wird einmal beim ausgeführten Schuss
+übernommen. Ein Speicherfehler bietet Übernahme-Retry ohne erneuten Wurf.
 Kampfgespür erlaubt spontane Umwandlung unter Erhalt aller verbrauchten Marken.
 
 Ausführbare Aktionen benötigen konkrete Angaben

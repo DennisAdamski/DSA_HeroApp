@@ -4,6 +4,7 @@ import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'gefecht_kontext.dart';
 import 'gefecht_wirken.dart';
 import 'gefecht_angriff.dart';
+import 'gefecht_laden.dart';
 
 /// Verlässlichkeit einer Aktionsfreigabe; Hinweise allein sperren keine Aktion.
 enum Gefechtsfreigabe { bereit, pruefen, gesperrt }
@@ -52,6 +53,8 @@ enum Gefechtshandlungsart {
   liturgie,
   mirakel,
   fernkampf,
+  laden,
+  zielen,
 }
 
 /// Mehrteilige Handlung, deren Wirkung erst nach Abschluss eintritt.
@@ -72,6 +75,7 @@ class Gefechtshandlung {
     this.gescheitert = false,
     this.abbruchKosten,
     this.zielHand,
+    this.vorbereitung,
   });
   final Gefechtshandlungsart art;
   final ProbeResult? ergebnis;
@@ -91,6 +95,9 @@ class Gefechtshandlung {
   /// Ziel eines verzögerten Ziehens oder bestätigten Wegsteckens.
   final GefechtsHand? zielHand;
 
+  /// Waffen-/Geschossbindung und bezahlte Zeit einer Lade- oder Zielhandlung.
+  final Gefechtsvorbereitung? vorbereitung;
+
   /// Fortschritt erhält die bestätigten Eingaben und das einmalige Ergebnis.
   Gefechtshandlung copyWith({
     int? verbleibend,
@@ -98,6 +105,7 @@ class Gefechtshandlung {
     bool? kostenUebernommen,
     bool? gescheitert,
     int? abbruchKosten,
+    Gefechtsvorbereitung? vorbereitung,
   }) => Gefechtshandlung(
     titel: titel,
     verbleibend: verbleibend ?? this.verbleibend,
@@ -113,6 +121,7 @@ class Gefechtshandlung {
     gescheitert: gescheitert ?? this.gescheitert,
     abbruchKosten: abbruchKosten ?? this.abbruchKosten,
     zielHand: zielHand,
+    vorbereitung: vorbereitung ?? this.vorbereitung,
   );
 }
 
@@ -153,6 +162,7 @@ class Gefechtszustand {
     this.angriffsergebnisse = const [],
     this.zielstand,
     this.umgewandelteAktionOffen = true,
+    this.ladestaende = const {},
   });
   final int runde, iniWurf, iniVerlust;
   final int geschuetzterIniVerlust, ungeklaerterIniVerlust;
@@ -192,6 +202,9 @@ class Gefechtszustand {
 
   /// Bereits bezahlte Quellmarken werden beim Umverteilen nie erneut nutzbar.
   final bool umgewandelteAktionOffen;
+
+  /// Ladung gehört der physischen Waffen-ID, unabhängig von der aktuellen Hand.
+  final Map<String, Gefechtsladestand> ladestaende;
 
   /// Ändert nur benannte Sitzungsteile; kein JSON oder Heldenformat betroffen.
   Gefechtszustand copyWith({
@@ -235,6 +248,7 @@ class Gefechtszustand {
     Gefechtszielstand? zielstand,
     bool ohneZielstand = false,
     bool? umgewandelteAktionOffen,
+    Map<String, Gefechtsladestand>? ladestaende,
   }) => Gefechtszustand(
     runde: runde ?? this.runde,
     iniWurf: iniWurf ?? this.iniWurf,
@@ -283,6 +297,7 @@ class Gefechtszustand {
     zielstand: ohneZielstand ? null : zielstand ?? this.zielstand,
     umgewandelteAktionOffen:
         umgewandelteAktionOffen ?? this.umgewandelteAktionOffen,
+    ladestaende: ladestaende ?? this.ladestaende,
   );
 }
 

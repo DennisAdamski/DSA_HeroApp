@@ -36,6 +36,10 @@ import 'gefecht_aktion_ausfuehren.dart';
 
 import 'gefecht_handlungskarte.dart';
 import 'gefecht_unterbrechung.dart';
+import 'gefecht_laden.dart';
+
+import 'package:dsa_heldenverwaltung/rules/derived/gefecht_laden_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/gefecht_kampfmittel_rules.dart';
 
 /// Responsive Spielansicht eines flüchtigen Gefechts mit echten Heldendaten.
 class GefechtAnsicht extends ConsumerStatefulWidget {
@@ -306,6 +310,21 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
         Text('TP ${snapshot.combatPreviewStats.tpExpression}'),
         const SizedBox(height: 8),
         _knopf(s, snapshot, k, Gefechtsaktion.angriff, 'Angreifen'),
+        for (final profil in gefechtsKampfmittelprofile(snapshot))
+          if (profil.waffe?.isRanged == true)
+            OutlinedButton(
+              onPressed: _busy
+                  ? null
+                  : () => _run(
+                      () => zeigeGefechtsLaden(
+                        context: context,
+                        ref: ref,
+                        heroId: widget.heroId,
+                        kampfmittel: profil.wahl,
+                      ),
+                    ),
+              child: Text('Laden / Vorbereiten · ${profil.name}'),
+            ),
         for (final ergebnis in s.angriffsergebnisse)
           GefechtAngriffsergebnisAnzeige(
             ergebnis: ergebnis,
@@ -528,34 +547,55 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
     );
   }
 
-  Widget _handlung(Gefechtszustand s, HeroComputedSnapshot snapshot) =>
-      gefechtsHandlungskarte(
-        s,
-        gesperrt: _busy,
-        onFortsetzen: () => _run(
-          () => setzeGefechtsausruestungFort(
-            context: context,
-            ref: ref,
-            heroId: widget.heroId,
-            bestand: _bruecke,
-          ),
+  Widget _handlung(Gefechtszustand s, HeroComputedSnapshot snapshot) {
+    final vorbereitet = s.handlung!.vorbereitung != null;
+    final p = vorbereitet ? pruefeGefechtsVorbereitung(s, snapshot) : null;
+    final k = ref.watch(rulesCatalogProvider).asData?.value;
+    final schuss =
+        s.handlung!.art == Gefechtshandlungsart.zielen && p?.rest == 0;
+    final schusspruefung = schuss && k != null
+        ? pruefeGefechtsZielschuss(s, snapshot, k)
+        : null;
+    final gruende = schuss
+        ? k == null
+              ? ['Regelkatalog wird geladen.']
+              : [
+                  ...schusspruefung!.sperrgruende,
+                  ...schusspruefung.fehlendeAngaben,
+                  ...schusspruefung.entscheidungen,
+                ]
+        : <String>[];
+    return gefechtsHandlungskarte(
+      s,
+      gesperrt: _busy,
+      vorbereitung: p,
+      schussgruende: gruende,
+      onFortsetzen: () => _run(
+        () => setzeGefechtsausruestungFort(
+          context: context,
+          ref: ref,
+          heroId: widget.heroId,
+          bestand: _bruecke,
         ),
-        onAbbruch: () => _run(
-          () => brecheGefechtsHandlungAb(
-            context: context,
-            ref: ref,
-            heroId: widget.heroId,
-          ),
+      ),
+      onAbbruch: () => _run(
+        () => brecheGefechtsHandlungAb(
+          context: context,
+          ref: ref,
+          heroId: widget.heroId,
         ),
-        onStoerung: () => _run(
-          () => stoereGefechtsWirken(
-            context: context,
-            ref: ref,
-            heroId: widget.heroId,
-            bestand: _bruecke,
-          ),
+      ),
+      onStoerung: () => _run(
+        () => stoereGefechtsWirken(
+          context: context,
+          ref: ref,
+          heroId: widget.heroId,
+          bestand: _bruecke,
         ),
-      );
+      ),
+    );
+  }
+
   Future<void> _schaden(HeroComputedSnapshot snapshot) async {
     await _bruecke.gefechtsProbe(
       context: context,
@@ -599,6 +639,12 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
       ),
     );
     if (ok == true && mounted) {
+      final aktuell = ref.read(gefechtProvider(widget.heroId));
+      if (aktuell?.handlung != null || aktuell?.auftrag != null) {
+        throw StateError(
+          'Laufende Handlung oder Übernahme zuerst abschließen.',
+        );
+      }
       _controller.beenden();
       Navigator.pop(context);
     }

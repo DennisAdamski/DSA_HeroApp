@@ -72,7 +72,16 @@ Future<void> brecheGefechtsHandlungAb({
       heroId: heroId,
     );
   } else {
-    controller.setzen(s.copyWith(ohneHandlung: true));
+    final aktuell = ref.read(gefechtProvider(heroId));
+    if (aktuell == null || aktuell.handlung != h || aktuell.auftrag != null) {
+      return;
+    }
+    controller.setzen(
+      aktuell.copyWith(
+        ohneHandlung: true,
+        ohneZielstand: h.art == Gefechtshandlungsart.zielen,
+      ),
+    );
   }
 }
 

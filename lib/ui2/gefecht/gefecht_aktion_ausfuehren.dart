@@ -18,6 +18,9 @@ import 'gefecht_aktionsdialog.dart';
 import 'gefecht_orientieren.dart';
 import 'gefecht_schuss.dart';
 
+import 'package:dsa_heldenverwaltung/rules/derived/gefecht_laden_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/gefecht_kampfmittel_rules.dart';
+
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_wirken_rules.dart';
 
 /// Verwendet dieselbe Freigabe für Kontextdialog, einmalige Probe und Folgen.
@@ -38,8 +41,6 @@ Future<void> fuehreGefechtsaktionAus({
   GefechtsKampfmittelwahl? kampfmittel,
   bool zusatzParade = false,
 }) async {
-  final controller = ref.read(gefechtProvider(heroId).notifier);
-
   if (k == null) return;
   if (aktion == Gefechtsaktion.orientieren ||
       aktion == Gefechtsaktion.position && s.desorientiert) {
@@ -84,19 +85,64 @@ Future<void> fuehreGefechtsaktionAus({
     ),
   );
   if (auftrag == null || !context.mounted) return;
+  await fuehreGefechtsAuftragAus(
+    context: context,
+    ref: ref,
+    heroId: heroId,
+    bestand: bestand,
+    k: k,
+    auftrag: auftrag,
+  );
+}
+
+/// Führt auch einen fertig bezahlten Zielauftrag mit frischen Werten einmal aus.
+Future<void> fuehreGefechtsAuftragAus({
+  required BuildContext context,
+  required WidgetRef ref,
+  required String heroId,
+  required KartoGefechtsAdapter bestand,
+  required RulesCatalog k,
+  required GefechtAuftrag auftrag,
+}) async {
+  final controller = ref.read(gefechtProvider(heroId).notifier);
   final frisch = ref.read(heroComputedProvider(heroId)).asData?.value;
   final aktuell = ref.read(gefechtProvider(heroId));
   if (frisch == null || aktuell == null) return;
-  final p = pruefeGefechtAuftrag(aktuell, frisch, k, auftrag);
+  final zielhandlung = aktuell.handlung?.art == Gefechtshandlungsart.zielen;
+  if (zielhandlung &&
+      aktuell.handlung!.vorbereitung!.schussauftrag != auftrag) {
+    throw StateError('Vorbereiteter Schuss gehört zum ursprünglichen Auftrag.');
+  }
+  final p = zielhandlung
+      ? pruefeGefechtsZielschuss(aktuell, frisch, k)
+      : pruefeGefechtAuftrag(aktuell, frisch, k, auftrag);
   final w = gefechtswerteFuer(
     frisch,
     katalog: k,
     kampfmittel: auftrag.kampfmittel,
   );
   if (!p.ausfuehrbar) {
+    if (!zielhandlung && w.fernkampf && auftrag.fernkampfansage > 0) {
+      final beginn = pruefeGefechtsZielbeginn(aktuell, frisch, k, auftrag);
+      if (beginn.ausfuehrbar) {
+        controller.setzen(beginneGefechtsZielen(aktuell, frisch, k, auftrag));
+        return;
+      }
+    }
     throw StateError(p.gruende.join(' '));
   }
-  controller.setzen(aktuell.copyWith(dk: auftrag.dk, kontext: auftrag.kontext));
+  final waffe =
+      gefechtsKampfmittelFuer(frisch, auftrag.kampfmittel)?.waffe ?? w.waffe;
+  final bestaetigt = w.fernkampf && waffe != null
+      ? bestaetigeGefechtsLadung(aktuell, waffe, true)
+      : aktuell;
+  controller.setzen(
+    bestaetigt.copyWith(
+      dk: auftrag.dk,
+      kontext: auftrag.kontext,
+      ohneHandlung: zielhandlung,
+    ),
+  );
   final id = UniqueKey().toString();
   if (!controller.reservieren(id)) return;
   final basisRequest = gefechtRequestFuerAuftrag(auftrag, p);
@@ -105,10 +151,10 @@ Future<void> fuehreGefechtsaktionAus({
       ? null
       : gefechtsProbeMitBonus(basisRequest, bonus);
   final restHandlung = gefechtHandlungNachAuftrag(
-    titel: titel,
+    titel: auftrag.titel,
     dauer: auftrag.dauer,
     pruefung: p,
-    probe: probe != null ? request : null,
+    probe: auftrag.probe != null ? request : null,
   );
   ProbeResult? gewuerfelt;
   void buchen([ProbeResult? result]) {
@@ -162,7 +208,7 @@ Future<void> fuehreGefechtsaktionAus({
 
   try {
     // Längere Zauber werden erst nach ihrer bestätigten Dauer ausgewertet.
-    if (request == null || probe != null && restHandlung != null) {
+    if (request == null || auftrag.probe != null && restHandlung != null) {
       buchen();
     } else {
       await bestand.gefechtsProbe(
@@ -216,6 +262,14 @@ Future<void> fuehreGefechtsaktionAus({
     }
   } finally {
     controller.abbrechen(id);
+    final nachher = ref.read(gefechtProvider(heroId));
+    if (zielhandlung &&
+        gewuerfelt == null &&
+        nachher != null &&
+        nachher.handlung == null &&
+        nachher.auftrag == null) {
+      controller.setzen(nachher.copyWith(handlung: aktuell.handlung));
+    }
   }
   if (ref.read(gefechtProvider(heroId))?.handlung?.art ==
           Gefechtshandlungsart.fernkampf &&

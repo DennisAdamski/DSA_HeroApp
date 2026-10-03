@@ -1,8 +1,23 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:dsa_heldenverwaltung/domain/combat_config/ranged_distance_band.dart';
+import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
+import 'package:dsa_heldenverwaltung/domain/gefecht.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_fernkampf_rules.dart';
 
 void main() {
+  test('Fehlende stabile Waffen-/Geschoss-ID erklärt die Schusssperre', () {
+    final p = pruefeGefechtsFernkampf(
+      const Gefechtszustand(iniWurf: 6),
+      const MainWeaponSlot(
+        combatType: WeaponCombatType.ranged,
+        rangedProfile: RangedWeaponProfile(
+          selectedProjectileIndex: 0,
+          projectiles: [RangedProjectile(name: 'Bolzen', count: 2)],
+        ),
+      ),
+    );
+    expect(p.fehlend.join(' '), contains('Waffen-ID'));
+    expect(p.fehlend.join(' '), contains('Geschoss-ID'));
+  });
   const bands = [
     RangedDistanceBand(label: '5'),
     RangedDistanceBand(label: '10'),

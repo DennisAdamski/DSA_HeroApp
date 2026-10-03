@@ -17,6 +17,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/gefecht_ansage_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_kontext_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_kampfmittel_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_zusatz_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/gefecht_laden_rules.dart';
 
 /// Fragt fehlenden Kontext ab, ohne erkannte Sperren übergehen zu können.
 class GefechtAktionsdialog extends StatefulWidget {
@@ -84,6 +85,18 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
           .firstOrNull
           ?.kampfmittel;
     }
+    _waffenkontext();
+  }
+
+  // Ladung wird ausschließlich von dieser physischen Waffe übernommen.
+  void _waffenkontext() {
+    final w = gefechtsKampfmittelFuer(widget.werte, _mittel)?.waffe;
+    final geladen = gefechtsLadezustand(widget.zustand, w);
+    _kontext = _kontext.copyWith(
+      geladen: geladen,
+      ohneLadezustand: geladen == null,
+      situationsZuschlag: _kontext.situationsZuschlag ?? 0,
+    );
   }
 
   @override
@@ -188,6 +201,16 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
       widget.katalog,
       auftrag,
     );
+    final zielbeginn = werte.fernkampf && auftrag.fernkampfansage > 0
+        ? pruefeGefechtsZielbeginn(
+            widget.zustand,
+            widget.werte,
+            widget.katalog,
+            auftrag,
+          )
+        : null;
+    final zielen = !p.ausfuehrbar && zielbeginn?.ausfuehrbar == true;
+    final freigabe = zielen ? zielbeginn! : p;
     final sonder =
         widget.manuell || widget.manoever != null || widget.probe != null;
     return AlertDialog(
@@ -222,6 +245,7 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
                   ],
                   onChanged: (art) => setState(() {
                     _mittel = profile.firstWhere((p) => p.wahl.art == art).wahl;
+                    _waffenkontext();
                     _entscheidungen.clear();
                   }),
                 ),
@@ -317,7 +341,12 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
                 ),
               if (_aktion == Gefechtsaktion.angriff && werte.fernkampf)
                 GefechtFernkampffelder(
+                  key: ValueKey('fk-${_mittel?.art}-${_mittel?.id}'),
                   kontext: _kontext,
+                  ladezustandBekannt:
+                      widget.zustand.ladestaende.containsKey(_mittel?.id) &&
+                      gefechtsLadezustand(widget.zustand, mittel?.waffe) !=
+                          null,
                   onChanged: (k) => setState(() {
                     _kontext = k;
                     _entscheidungen.clear();
@@ -410,15 +439,15 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
         ),
       ),
       actions: [
-        if (!p.ausfuehrbar)
+        if (!freigabe.ausfuehrbar)
           Padding(
             key: const ValueKey('gefecht-ausfuehrung-gruende'),
             padding: const EdgeInsets.only(bottom: 8),
             child: Text(
               [
-                ...p.sperrgruende,
-                ...p.fehlendeAngaben,
-                ...p.entscheidungen,
+                ...freigabe.sperrgruende,
+                ...freigabe.fehlendeAngaben,
+                ...freigabe.entscheidungen,
               ].join('\n'),
             ),
           ),
@@ -428,11 +457,13 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
         ),
         FilledButton(
           key: const ValueKey('gefecht-auftrag-starten'),
-          onPressed: p.ausfuehrbar
+          onPressed: freigabe.ausfuehrbar
               ? () => Navigator.pop(context, auftrag)
               : null,
           child: Text(
-            p.zielwert != null || widget.probe != null
+            zielen
+                ? 'Zusatz-Zielen beginnen'
+                : p.zielwert != null || widget.probe != null
                 ? 'Probe ausführen'
                 : 'Aktion ausführen',
           ),

@@ -91,9 +91,49 @@ Scharf-/Meisterschütze. Zusätzlich bezahlt werden gerundete halbe Ansageaktion
 bei Scharfschütze zwei weniger (mindestens eine), bei Meisterschütze genau eine.
 `Gefechtszielstand` bindet die Zahlung an Waffe, Geschoss, vollständiges Profil,
 konkreten Zielkontakt und Ansage. Allgemeines optionales Zielen senkt den
-Ansagezuschlag nicht. Bis der Zielzeit-Bedienablauf implementiert ist, sperren
-fehlende Zahlungen die FK-Ansage; eine Dauereingabe oder Bestätigung ersetzt sie
-nicht. Beim gebuchten Schuss wird der Stand verbraucht, über Runden erhalten.
+Ansagezuschlag nicht. „Zusatz-Zielen beginnen“ bucht reguläre Aktionen; die
+Handlung hält den ursprünglichen Schussauftrag über Runden fest. „Fortsetzen“
+bezahlt weitere Zielzeit. Erst „Schuss ausführen“ prüft aktuelle Ausrüstung,
+Angaben und eigenes Schussbudget erneut. Ein abgebrochener Probedialog erhält
+die bezahlte Vorbereitung ohne neue Zahlung. Beim gebuchten Schuss wird der
+Zielstand verbraucht; Rundenschritte erhalten ihn.
+
+### Laden und Vorbereiten (3. Oktober 2026)
+
+Geführte Fernkampfwaffen beider Hände bieten „Laden / Vorbereiten“. Ein unbekannter
+anfänglicher Ladezustand muss konkret bestätigt werden. Ein bereits bekannter
+entladener Zustand kann nicht durch ein neues „Ja“ die Ladezahlung umgehen.
+Ladung gehört zur physischen Waffen-ID, bleibt beim Wechsel derselben Waffe
+zwischen Händen erhalten und wird nie auf eine andere ID übertragen.
+
+`Gefechtshandlung.vorbereitung` hält Kampfmittel-/Geschoss-ID, Profilkey,
+bezahlte Aktionen und ursprüngliche Dauer. Laden verwendet bei jedem Fortsetzen
+die aktuelle effektive Combat-Ladezeit einschließlich Effekten/Waffenmeister.
+`Rest = max(0, aktuelle Dauer − bezahlt)`; geänderte Dauer und erhaltene Zahlung
+werden angezeigt. Vollständig bezahltes Laden wirkt auch bei leerem Budget ohne
+weitere Marke. Nur reguläre Marken bezahlen Laden/Zielen, keine freien Aktionen,
+SK-II- oder anderen Zusatzparaden. Unterbrochene Vorbereitung erstattet keine
+Aktionen und überträgt keinen Fortschritt. Geänderte Profile, Geschosse, Bestände,
+fehlende stabile IDs/Munition und andere Zielkontakte erklären konkrete Sperren.
+Ladebindung ignoriert ausschließlich die veränderbare Basisladezeit; Zielbindung
+verwendet unverändert das komplette Task-2-Waffenprofil samt Bestand.
+
+Schnellladen Armbrust erhält echt gerundete drei Viertel der Basisladezeit,
+statt drei Viertel abzuziehen: Basis4→3, Basis8→6, Basis5→4. Eine bereits besessene
+SF zusammen mit Axxeleratus spart zusätzlich eine Aktion; Waffenmeister wird
+weiterhin genau einmal in der zentralen Vorschau gerechnet.
+
+Bezahltes fertiges Zielen bleibt als bereiter Schuss sichtbar. Kampfgespür kann
+danach eine verbliebene PA spontan umwandeln: kein Refund, Umwandlungszuschlag
+und INI−8 bleiben. Laufende Resthandlungen und offene Munitionsübernahme sperren
+diese Umwandlung weiterhin. Ohne passende SF bleibt späte Umwandlung gesperrt.
+
+Munition wird ausschließlich beim tatsächlich gewürfelten Schuss übernommen.
+Doppelte Probe-Callbacks buchen einmal. Fehlgeschlagene Übernahme erhält Probe,
+Ergebnis und offenen Schuss; Retry würfelt nicht erneut. Abschluss entlädt nur
+die betreffende Waffe und konsumiert das eingefrorene Geschoss einmal über den
+frischen Ausrüstungsschreibweg. Ein gewürfelter Schuss besitzt keinen Abbruchbutton;
+der Abbruchguard und die erneute Endkampfprüfung erhalten die offene Übernahme.
 
 Kampfgespür erlaubt spätes Umwandeln ohne pauschalen Zeitpunktdialog. Verbrauchte
 reguläre Marken werden auf die neue Verteilung angerechnet; bereits verbrauchte

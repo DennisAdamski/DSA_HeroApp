@@ -49,6 +49,7 @@ class Gefechtskontext {
     bool? schildWmWirksam,
     bool ohneEntfernung = false,
     bool ohneSituationsZuschlag = false,
+    bool ohneLadezustand = false,
   }) => Gefechtskontext(
     kontakt: kontakt,
     gegnerzahl: gegnerzahl,
@@ -62,7 +63,7 @@ class Gefechtskontext {
     halbschwert: halbschwert ?? this.halbschwert,
     weitereRegelnGeprueft: weitereRegelnGeprueft ?? this.weitereRegelnGeprueft,
     entfernung: ohneEntfernung ? null : entfernung ?? this.entfernung,
-    geladen: geladen ?? this.geladen,
+    geladen: ohneLadezustand ? null : geladen ?? this.geladen,
     getuemmel: getuemmel ?? this.getuemmel,
     kontrollbereich: kontrollbereich ?? this.kontrollbereich,
     situationsZuschlag: ohneSituationsZuschlag

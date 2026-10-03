@@ -4,6 +4,7 @@ import 'package:dsa_heldenverwaltung/domain/gefecht_kontext.dart';
 
 import 'gefecht_kontext_rules.dart';
 import 'kampf_aenderung_rules.dart';
+import 'gefecht_ladezustand_rules.dart';
 
 /// Liest ausschließlich eindeutig numerische, aufsteigende Entfernungsgrenzen.
 int? gefechtsEntfernungsband(List<RangedDistanceBand> bands, int entfernung) {
@@ -47,10 +48,21 @@ Gefechtskontextpruefung pruefeGefechtsFernkampf(
   final mods = <Gefechtsmodifikator>[];
   final fehlend = <String>[];
   final sperren = <String>[];
-  if (k.geladen == null) fehlend.add('Ladezustand bestätigen.');
-  if (k.geladen == false) sperren.add('Waffe ist nicht geladen.');
+  if (waffe == null || waffe.id.trim().isEmpty) {
+    fehlend.add('Stabile Waffen-ID fehlt; Ausrüstung korrigieren.');
+  }
+  final geladen = s.ladestaende.containsKey(waffe?.id)
+      ? gefechtsLadezustand(s, waffe)
+      : k.geladen;
+  if (geladen == null) fehlend.add('Ladezustand dieser Waffe bestätigen.');
+  if (geladen == false) {
+    sperren.add('Waffe ist nicht geladen; zuerst laden / vorbereiten.');
+  }
   final geschoss = waffe?.rangedProfile.selectedProjectileOrNull;
   if (geschoss == null) fehlend.add('Geschoss in der Ausrüstung auswählen.');
+  if (geschoss != null && geschoss.id.trim().isEmpty) {
+    fehlend.add('Stabile Geschoss-ID fehlt; Geschossprofil korrigieren.');
+  }
   if (geschoss != null && geschoss.count <= 0) {
     sperren.add('Keine Munition verfügbar.');
   }

@@ -8,9 +8,11 @@ class GefechtFernkampffelder extends StatelessWidget {
     super.key,
     required this.kontext,
     required this.onChanged,
+    this.ladezustandBekannt = false,
   });
   final Gefechtskontext kontext;
   final ValueChanged<Gefechtskontext> onChanged;
+  final bool ladezustandBekannt;
   @override
   Widget build(BuildContext context) => Column(
     children: [
@@ -47,7 +49,9 @@ class GefechtFernkampffelder extends StatelessWidget {
           DropdownMenuItem(value: true, child: Text('Ja')),
           DropdownMenuItem(value: false, child: Text('Nein')),
         ],
-        onChanged: (v) => onChanged(kontext.copyWith(geladen: v)),
+        onChanged: ladezustandBekannt
+            ? null
+            : (v) => onChanged(kontext.copyWith(geladen: v)),
       ),
       CheckboxListTile(
         value: kontext.getuemmel,
