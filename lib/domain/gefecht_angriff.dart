@@ -1,7 +1,10 @@
 import 'gefecht.dart';
 import 'probe_engine.dart';
 
-/// Gebuchter erfolgreicher Angriff mit eingefrorenem Schadensprofil.
+/// Umfang der bekannten Schadensfolge eines erfolgreichen Angriffs.
+enum GefechtsSchadensfolge { waffenschaden, keinSchaden, manuell }
+
+/// Gebuchter Angriff mit bekannter Schadensfolge und gebundenen Ansagemetadaten.
 class Gefechtsangriffsergebnis {
   /// Die Auftrags-ID verhindert die Vermischung verschiedener Angriffe.
   const Gefechtsangriffsergebnis({
@@ -11,13 +14,19 @@ class Gefechtsangriffsergebnis {
     required this.schaden,
     required this.abwehrmalus,
     required this.tpBonus,
+    this.schadensfolge = GefechtsSchadensfolge.waffenschaden,
+    this.manoevername = '',
     this.hinweis = 'Gegnerische Abwehr, RS und Wunden am Tisch abwickeln.',
   });
   final String auftragId, waffenname;
   final GefechtsKampfmittelwahl kampfmittel;
-  final DiceSpec schaden;
+
+  /// Nur unterstützte Schadensangriffe halten ein ausführbares Würfelprofil.
+  final DiceSpec? schaden;
   final int abwehrmalus, tpBonus;
   final String hinweis;
+  final GefechtsSchadensfolge schadensfolge;
+  final String manoevername;
 }
 
 /// Bezahlte zusätzliche Zielaktionen für genau einen angesagten Schuss.

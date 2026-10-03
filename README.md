@@ -490,8 +490,10 @@ bestehende frische Schreibwege übernommen. Regelquellen und manuelle Grenzen:
 Manöver lassen sich nach Angriff, Verteidigung oder Sonstige, Lernstand und
 bekannten Sperren filtern. Finte, Wuchtschlag und Fernkampfansage haben getrennte
 Eingaben; ohne die ersten beiden SF wirkt die aufgerundete halbe Ansage.
-Der erfolgreiche Angriff bietet einen eigenen, waffengebundenen Schadenswurf;
-„Schaden würfeln“ bleibt eine allgemeine Probe. FK-Ansagen verlangen bezahlte
+Unterstützte Schadenangriffe bieten einen eigenen, waffengebundenen Schadenswurf.
+Entwaffnen und Umreißen erzeugen keinen Schaden; ungeklärte Varianten verlangen
+eine manuelle Abwicklung ohne vorgegebenen Waffenschaden. Jede Angriffsfolge wird
+einzeln abgeschlossen. „Schaden würfeln“ bleibt eine allgemeine Probe. FK-Ansagen verlangen bezahlte
 zusätzliche Zielzeit; deren Bedienablauf folgt im nächsten Ausbaupaket.
 Kampfgespür erlaubt spontane Umwandlung unter Erhalt aller verbrauchten Marken.
 

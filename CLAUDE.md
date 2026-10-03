@@ -27,7 +27,10 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   `gefecht_ansage_rules.dart` prüft getrennte Finte/Wuchtschlag/FK-Ansagen,
   Kombinationen und bezahlte Zusatz-Zielzeit. `domain/gefecht_angriff.dart`
   hält flüchtige Zielzahlungen und Erfolgsprofile; `gefecht_angriff_rules.dart`
-  bindet TP-Boni an das eingefrorene Kampfmittel. Kleine Ansage-/Ergebniswidgets
+  bindet TP-Boni an das eingefrorene Kampfmittel und klassifiziert Schadensfolgen:
+  unterstützter Waffenschaden, kein Schaden oder manuell zu klären. Nur die erste
+  Klasse liefert einen Schadensrequest; die anderen werden einzeln am Tisch
+  abgewickelt und abgeschlossen. Kleine Ansage-/Ergebniswidgets
   lassen die allgemeine Schadensprobe unverändert unabhängig.
   Die gezielte `KartoGefechtsAdapter`-Brücke ergänzt einmalige Probeauswertung
   und frische Ausrüstungsschreibwege, ohne bestehende Aufrufer zu verändern.
