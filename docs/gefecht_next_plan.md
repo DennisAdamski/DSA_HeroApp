@@ -262,8 +262,12 @@ erhalten. Bei Rest0 kostet der Ladeabschluss keine neue Aktion.
 
 Die Armbrust-Schnellladenrechnung erhält nun gerundete drei Viertel statt ein
 Viertel der Basis. Rechner, Anzeige, Tests und technische Übersicht sind angepasst.
+Schnellladen einschließlich der durch Axxeleratus verliehenen Wirkung gilt in
+beiden Händen nur bis effektiver Rüstungs-BE 4 nach Rüstungsgewöhnung; BE 5
+deaktiviert auch den Kombinationsbonus einer besessenen SF mit Axxeleratus.
 Zusatz-Zielen hält den vollständigen ursprünglichen Schussauftrag. Vor dem Schuss
-werden Profil, Zielkontakt, Zahlung und eigenes Budget erneut geprüft. Fertig
+werden Profil, Zielkontakt, Zahlung und eigenes Budget erneut geprüft. Dabei
+bleiben aktuelle DK und Sitzungskontext auch nach Probeabbruch erhalten. Fertig
 bezahltes Zielen erlaubt spontane Kampfgespür-Umwandlung ohne Markenrückzahlung.
 Abgebrochene Probe erhält Zielauftrag; gewürfelte Schüsse erhalten offene
 Munitionsübernahme ohne Abbruch. Retry würfelt nicht erneut und konsumiert das

@@ -30,7 +30,9 @@ class GefechtFernkampffelder extends StatelessWidget {
       TextFormField(
         initialValue: kontext.situationsZuschlag?.toString(),
         decoration: const InputDecoration(
-          labelText: 'Zielgröße, Bewegung, Sicht/Deckung: Zuschlag (0 möglich)',
+          labelText: 'Situationszuschlag',
+          helperText: 'Zielgröße, Bewegung, Sicht und Deckung; 0 ist möglich.',
+          helperMaxLines: 3,
         ),
         keyboardType: const TextInputType.numberWithOptions(signed: true),
         onChanged: (v) => onChanged(

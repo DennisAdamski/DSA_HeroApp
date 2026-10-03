@@ -39,6 +39,10 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   `gefecht_ladedialog.dart` erfragt den unbekannten Anfang; `gefecht_laden.dart`
   verbindet den Dialog mit der flüchtigen Sitzung. Ladezeit stammt zentral aus
   der bestehenden Combat-Vorschau, einschließlich Effekten und Waffenmeister.
+  Beide Hände übergeben effektive Rüstungs-BE nach Rüstungsgewöhnung; Schnellladen
+  einschließlich Axxeleratus wirkt nur bis BE 4. Vorbereitete Schüsse behalten
+  ihren ursprünglichen Auftrag, verwenden aber aktuelle DK und Sitzungskontext
+  für die abschließende Prüfung und Probe.
   Die gezielte `KartoGefechtsAdapter`-Brücke ergänzt einmalige Probeauswertung
   und frische Ausrüstungsschreibwege, ohne bestehende Aufrufer zu verändern.
   `gefecht_hand_rules.dart` prüft Haupt-/Nebenhandbelegungen vor Normalisierung

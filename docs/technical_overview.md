@@ -1631,6 +1631,11 @@ Dabei gilt:
 - `reloadTime` wird fuer Boegen und Armbrueste ueber
   `lib/rules/derived/fernkampf_ladezeit_rules.dart` als effektive Ladezeit
   berechnet und als `1 Aktion` / `N Aktionen` angezeigt.
+- Beide Hände liefern `computeRangedReloadTime` die effektive Rüstungs-BE nach
+  Rüstungsgewöhnung (`beKampf`, keine talentbezogene eBE). Schnellladen wirkt
+  bis BE 4; bei BE 5 ist auch die durch Axxeleratus verliehene Wirkung inaktiv.
+  Der zusätzliche Axxeleratus-Kombinationsbonus setzt eine wirksame besessene
+  Schnellladen-SF voraus. Schnellziehen bleibt von dieser Ladegrenze unabhängig.
 - `Schnellladen (Bogen)` verkuerzt die Ladezeit um `1`; bei bereits besessener
   SF reduziert Axxeleratus die Ladezeit um einen weiteren Punkt.
 - `Schnellladen (Armbrust)` setzt die Ladezeit auf `3/4` der Basis-
@@ -1641,6 +1646,11 @@ Dabei gilt:
   Restdauer ist `max(0, aktuelle Ladezeit - bezahlt)`. Der vollständig bezahlte
   Abschluss verlangt keine weitere Marke. Ladung ist flüchtig pro Waffen-ID;
   Waffen-/Geschossprofiländerungen verlangen konkrete erneute Vorbereitung.
+- Der vorbereitete Schuss bindet den ursprünglichen Auftrag einschließlich
+  Waffe, Geschoss, Zielkontakt und Ansagen. Die abschließende Prüfung und Probe
+  verwenden aktuelle DK und Sitzungskontext; ein Probeabbruch erhält diese
+  aktuellen Werte und den bezahlten ursprünglichen Auftrag. Auch Vorbereitung
+  mit einer PA-Marke erhält den Sitzungskontext.
 - `maneuver_rules.dart` normalisiert Manoever-Namen und UI-Texte auf stabile
   IDs, damit Kampfmeisterschaften dieselben Referenzen wie Katalog und UI
   nutzen koennen.

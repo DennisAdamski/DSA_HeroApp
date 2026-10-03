@@ -30,9 +30,10 @@ class GefechtAnsagefelder extends StatelessWidget {
         _feld(wuchtschlag, 'Wuchtschlag', 'wuchtschlag'),
       ],
       Text('Bei erfolgreichem Angriff: Abwehr +$abwehrmalus · TP +$tpBonus.'),
-      const Text(
-        'Ohne erlernte Finte/Wuchtschlag wirkt die aufgerundete halbe Ansage. Weitere Erschwernisse erzeugen keinen Bonus.',
-      ),
+      if (!fernkampf)
+        const Text(
+          'Ohne erlernte Finte/Wuchtschlag wirkt die aufgerundete halbe Ansage. Weitere Erschwernisse erzeugen keinen Bonus.',
+        ),
     ],
   );
 
