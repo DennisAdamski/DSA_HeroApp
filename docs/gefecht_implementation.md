@@ -200,3 +200,11 @@ Nahkampf, Stangenwaffen und Piken ersetzen die sichtbaren Einzelbuchstaben.
 Paketprüfung: 86 Regel-/Widget-/Ablauftests einschließlich 390/820/1200/1440
 Pixeln, Hell/Dunkel und geöffneter Tastatur bestanden. Getrennte Ansagen,
 Ergebnisboni, spontane Umwandlung und Laden gehören zu den Folgepaketen.
+
+Der Paketreview zeigte eine abweichende Aktionszuordnung bei Formations-Parade
+und Seitenwechsel ohne Katalogtyp. Die Ausführung verwendet nun dieselben
+Kategorien einschließlich der ID-Fallbacks wie die Liste; Verteidigung hat bei
+gemischten AT/PA Vorrang. Zwei Regressionen laden die echten Split-Einträge,
+prüfen den PA-Zielwert mit gegnerischer Finte und die ausschließliche PA-Buchung.
+Ein Widgettest aktiviert Kategorie und beide Statuschips und prüft die tatsächlich
+verbleibenden Manöver. Der erweiterte Paketlauf umfasst 89 bestandene Tests.
