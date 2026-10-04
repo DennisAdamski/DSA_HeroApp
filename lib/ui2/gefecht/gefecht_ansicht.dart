@@ -236,6 +236,7 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
     bool manuell = false,
     GefechtsKampfmittelwahl? kampfmittel,
     bool zusatzParade = false,
+    GefechtsDialogzweck zweck = GefechtsDialogzweck.aktion,
   }) {
     final auftrag = GefechtAuftrag(
       aktion: aktion,
@@ -248,6 +249,7 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
       manuell: manuell,
       kampfmittel: kampfmittel,
       zusatzParade: zusatzParade,
+      distanzSchritte: zweck == GefechtsDialogzweck.distanzklasse ? -1 : 0,
     );
     final p = katalog == null
         ? null
@@ -275,6 +277,7 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
                   manuell: manuell,
                   kampfmittel: kampfmittel,
                   zusatzParade: zusatzParade,
+                  zweck: zweck,
                 ),
               ),
         child: Padding(
@@ -310,6 +313,14 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
         Text('TP ${snapshot.combatPreviewStats.tpExpression}'),
         const SizedBox(height: 8),
         _knopf(s, snapshot, k, Gefechtsaktion.angriff, 'Angreifen'),
+        _knopf(
+          s,
+          snapshot,
+          k,
+          Gefechtsaktion.angriff,
+          'Distanzklasse ändern',
+          zweck: GefechtsDialogzweck.distanzklasse,
+        ),
         for (final profil in gefechtsKampfmittelprofile(snapshot))
           if (profil.waffe?.isRanged == true)
             OutlinedButton(
@@ -520,6 +531,7 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
     String? beschreibung,
     GefechtsKampfmittelwahl? kampfmittel,
     bool zusatzParade = false,
+    GefechtsDialogzweck zweck = GefechtsDialogzweck.aktion,
   }) async {
     await fuehreGefechtsaktionAus(
       context: context,
@@ -537,6 +549,7 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
       beschreibung: beschreibung,
       kampfmittel: kampfmittel,
       zusatzParade: zusatzParade,
+      zweck: zweck,
     );
   }
 

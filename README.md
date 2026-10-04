@@ -514,6 +514,12 @@ sperren keine Probe. Freie Zusatzwerte starten bei 0, feste Katalogzuschläge
 werden getrennt einmal angewendet. Eine später geleerte oder ungültige
 FK-Zahleingabe bleibt offen, auch nach Waffenwechsel. Distanzklassen stehen
 mit vollständigem Namen in Rundenleiste und Aktionsdialog.
+„Distanzklasse ändern“ öffnet einen eigenen Dialog für Annäherung/Entfernung
+um eine oder zwei Klassen, mit Finte, ohne Schaden und mit AT plus freiem Schritt.
+Der normale Angriff enthält keine DK-Wechselwahl.
 
 Im Gefecht sind Haupt- und Nebenhand ausdrücklich wählbar; Ziehen und
 Wegstecken wirken erst nach ihrer bestätigten Dauer.
+Bogen und gewöhnliche Armbrust belegen auch bei alten einhändigen Standardwerten
+beide Hände. Die Waffenart Balestrina bleibt einhändig; Wurfwaffen behalten ihre
+Metadaten. Unzulässige Nebenhandbelegungen sperren auch Zusatzaktionen.

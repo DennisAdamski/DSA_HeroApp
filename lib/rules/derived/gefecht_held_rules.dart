@@ -12,6 +12,7 @@ import 'two_weapon_combat_rules.dart';
 import 'waffenmeister_rules.dart';
 import 'gefecht_kampfmittel_rules.dart';
 import 'gefecht_filter_rules.dart';
+import 'gefecht_hand_rules.dart';
 
 /// Ersetzt Vorschau-INI durch Sitzungswerte und übernimmt aktuelle Heldendaten.
 Gefechtswerte gefechtswerteFuer(
@@ -23,6 +24,11 @@ Gefechtswerte gefechtswerteFuer(
   final config = snapshot.hero.combatConfig;
   final profil = gefechtsKampfmittelFuer(snapshot, kampfmittel);
   final waffe = profil?.waffe ?? config.selectedWeaponOrNull;
+  final haupt = config.selectedWeaponOrNull;
+  final zusatzBelegung =
+      haupt != null &&
+      gefechtsWaffeEinhaendig(haupt) &&
+      gefechtsKampfmittelprofile(snapshot).every((p) => p.sperren.isEmpty);
   final definition = katalog?.weapons
       .where((w) => w.name == waffe?.weaponType)
       .firstOrNull;
@@ -31,6 +37,26 @@ Gefechtswerte gefechtswerteFuer(
   final manoever = normalizeManeuverIds(config.specialRules.activeManeuvers);
   bool kennt(String id) =>
       manoever.contains(id) || manoever.contains('$id::${waffe?.talentId}');
+  final schildZusatz =
+      zusatzBelegung &&
+      c.offhandIsShield &&
+      sf('ksf_schildkampf_ii') &&
+      waffe != null &&
+      gefechtsWaffeEinhaendig(waffe) &&
+      c.beKampf <= 4 &&
+      !c.offhandName.toLowerCase().contains('turmschild');
+  final nebenAttacke =
+      zusatzBelegung &&
+      c.twoWeaponCombat
+              ?.optionFor(TwoWeaponActionType.extraOffhandAttack)
+              ?.isAvailable ==
+          true;
+  final nebenParade =
+      zusatzBelegung &&
+      c.twoWeaponCombat
+              ?.optionFor(TwoWeaponActionType.extraOffhandParry)
+              ?.isAvailable ==
+          true;
   return Gefechtswerte(
     konkreteKampfmittel: true,
     iniBasis:
@@ -62,34 +88,9 @@ Gefechtswerte gefechtswerteFuer(
     stabUmwandlung:
         waffe?.talentId == 'tal_staebe' &&
         (snapshot.hero.talents['tal_staebe']?.talentValue ?? 0) >= 10,
-    zusatzaktionen:
-        (c.offhandIsShield &&
-                sf('ksf_schildkampf_ii') &&
-                waffe != null &&
-                waffe.isOneHanded &&
-                c.beKampf <= 4 &&
-                !c.offhandName.toLowerCase().contains('turmschild')) ||
-            c.twoWeaponCombat?.options.any(
-                  (o) =>
-                      o.isAvailable &&
-                      (o.type == TwoWeaponActionType.extraOffhandAttack ||
-                          o.type == TwoWeaponActionType.extraOffhandParry),
-                ) ==
-                true
-        ? 1
-        : 0,
-    zusatzAttacke:
-        c.twoWeaponCombat?.options.any(
-          (o) =>
-              o.isAvailable && o.type == TwoWeaponActionType.extraOffhandAttack,
-        ) ==
-        true,
-    zusatzParade:
-        c.twoWeaponCombat?.options.any(
-          (o) =>
-              o.isAvailable && o.type == TwoWeaponActionType.extraOffhandParry,
-        ) ==
-        true,
+    zusatzaktionen: schildZusatz || nebenAttacke || nebenParade ? 1 : 0,
+    zusatzAttacke: nebenAttacke,
+    zusatzParade: nebenParade,
     waffeVorhanden: waffe != null && waffe.name.trim().isNotEmpty,
     fernkampf: kampfmittel?.art == GefechtsKampfmittelArt.nebenwaffe
         ? c.offhandPreview?.isRangedWeapon == true

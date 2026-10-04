@@ -272,6 +272,26 @@ Schilde/Parierwaffen in der Nebenhand. Leer führt über bestätigtes Wegstecken
 Ziehhandlungen speichern ihre Zielhand flüchtig und wechseln erst beim frischen
 Abschluss. Doppelbelegung, Zweihandkonflikte und geänderte Ziele sperren sichtbar.
 
+Die effektive Handbelegung wird zentral aus Kampftalent und Waffenart bestimmt.
+Bogen und gewöhnliche Armbrust benötigen beide Hände, auch bei historischen
+`isOneHanded: true`-Standardwerten. Die Waffenart Balestrina bleibt gemäß Arsenal
+(DSA MCP 70) einhändig; ein frei geänderter Anzeigename allein genügt nicht für
+diese Ausnahme. Wurfwaffen und unbekannte Waffen behalten ihre gespeicherte
+Belegung. Es erfolgt keine Datenmigration. Anzeige, frische Handzuweisung,
+Kampfmittelprofile und Zusatzmarken teilen diese Prüfung; widersprüchliche alte
+Nebenhandkonfigurationen erlauben auch keine SK-II-Restmarke.
+
+„Distanzklasse ändern“ ist ein eigener Einstieg mit eigener Richtungswahl
+(eine/zwei DK annähern oder entfernen). Der normale Angriff bietet diesen
+Wechsel nicht an. Der Dialog zeigt Finte, keine Schadensansagen. Die bestehende
+AT-/Auftragsprüfung bezahlt eine AT und einen freien Schritt; aktuelle
+Waffen-DK-Mali gelten dabei nicht. WdS 80 (DSA MCP 7041): zwei DK annähern +8,
+eine DK entfernen +4, zwei DK entfernen +8; drei DK sind ausgeschlossen.
+Der Wechsel verursacht keinen Schaden. Erfolgreiches Entfernen wirkt sofort,
+Annäherung erst nach bestätigter fehlender gegnerischer Abwehr. Formular- oder
+Probeabbruch verbraucht keine Marken; Misslingen verbraucht die bestätigten
+Kosten ohne DK-Wechsel. Fehlende freie Schritte bleiben sichtbar gesperrt.
+
 Abwehrdialoge zeigen das verwendete Kampfmittel: Schild vor zulässiger
 Parierwaffe vor Hauptwaffe. Hauptwaffen- und Parierwaffenparade sind getrennt;
 Nebenhandwaffen verwenden ihre eigene Vorschau einschließlich Falsche-Hand-Mali.
@@ -356,9 +376,9 @@ Die drei Formatblocker sind lokal korrigiert. Ein neuer Remote-Lauf steht für
 die noch lokalen Commits aus; lokale Prüfungen gelten nicht als Remote-CI-Erfolg.
 
 Die zusätzliche Testnotiz zum Zahlenfokus ist behoben. Vitalwerte und die
-konkrete Paradeprüfung sind im Folgepaket umgesetzt. Waffenbezogene
-Zweihändigkeit, ein eigenständiger Bedienpfad für Distanzklassenwechsel und
-Meisterparade sind im [Folgeplan](gefecht_next_plan.md) separat vorgemerkt.
+konkrete Paradeprüfung sowie waffenbezogene Handbelegung und der eigene
+Distanzklassenwechsel sind im Folgepaket umgesetzt. Meisterparade bleibt im
+[Folgeplan](gefecht_next_plan.md) separat vorgemerkt.
 Allgemeines optionales Zielen, komplexe Gegnerfolgen und globale INI-Phasen bleiben wie vereinbart
 abgegrenzt. Ein nicht bestimmbarer tatsächlicher Distanz-TP-Modifikator erzeugt
 keinen automatischen gebundenen Schadenswurf; unbrauchbare Entfernungsprofile

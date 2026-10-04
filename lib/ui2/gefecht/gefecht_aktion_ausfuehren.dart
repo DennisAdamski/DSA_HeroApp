@@ -40,6 +40,7 @@ Future<void> fuehreGefechtsaktionAus({
   String? beschreibung,
   GefechtsKampfmittelwahl? kampfmittel,
   bool zusatzParade = false,
+  GefechtsDialogzweck zweck = GefechtsDialogzweck.aktion,
 }) async {
   if (k == null) return;
   if (aktion == Gefechtsaktion.orientieren ||
@@ -82,6 +83,7 @@ Future<void> fuehreGefechtsaktionAus({
       manuell: manuell,
       kampfmittel: kampfmittel,
       zusatzParade: zusatzParade,
+      zweck: zweck,
     ),
   );
   if (auftrag == null || !context.mounted) return;

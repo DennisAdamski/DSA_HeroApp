@@ -129,6 +129,11 @@ Gefechtspruefung ergaenzeGefechtsansagen(
   if ((nah || fk) && !angreifen) {
     sperren.add('Ansagen benötigen einen Angriff.');
   }
+  if (a.distanzSchritte != 0 && (a.wuchtschlag != 0 || fk)) {
+    sperren.add(
+      'Distanzklassenwechsel erlaubt keine TP- oder Fernkampfansage.',
+    );
+  }
   if (nah && w.fernkampf || fk && !w.fernkampf) {
     sperren.add('Ansage passt nicht zur verwendeten Waffe.');
   }
