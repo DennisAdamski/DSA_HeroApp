@@ -62,6 +62,9 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
   final _finte = TextEditingController(text: '0');
   final _wuchtschlag = TextEditingController(text: '0');
   final _fernkampfansage = TextEditingController(text: '0');
+  final _meisterparade = TextEditingController(text: '0');
+  final _schildgrenze = TextEditingController();
+  Gefechtsaktion? _manuelleKampfaktion;
   String? _dk;
   bool _grosserGegner = false, _grosserSchild = false;
   final _entscheidungen = <String>{};
@@ -116,6 +119,8 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
       _finte,
       _wuchtschlag,
       _fernkampfansage,
+      _meisterparade,
+      _schildgrenze,
     ]) {
       c.dispose();
     }
@@ -143,6 +148,9 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
     finte: int.tryParse(_finte.text) ?? 0,
     wuchtschlag: int.tryParse(_wuchtschlag.text) ?? 0,
     fernkampfansage: int.tryParse(_fernkampfansage.text) ?? 0,
+    meisterparadeAnsage: int.tryParse(_meisterparade.text) ?? 0,
+    schildAnsagegrenze: int.tryParse(_schildgrenze.text),
+    manuelleKampfaktion: _manuelleKampfaktion,
     zielwert: int.tryParse(_ziel.text),
     dk: _dk,
     dauer: _aktion == Gefechtsaktion.zusatzaktion
@@ -162,11 +170,15 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
         (_finte, 'Finte'),
         (_wuchtschlag, 'Wuchtschlag'),
         (_fernkampfansage, 'Fernkampfansage'),
+        (_meisterparade, 'Meisterparade-Ansage'),
       ])
         if (int.tryParse(e.$1.text) == null)
           '${e.$2} muss eine ganze Zahl sein.',
       if (int.tryParse(_zuschlag.text) == null)
         'Weitere Erschwernis muss eine ganze Zahl sein.',
+      if (_schildgrenze.text.isNotEmpty &&
+          int.tryParse(_schildgrenze.text) == null)
+        'Zulässige Schild-Ansagegrenze muss eine ganze Zahl sein.',
       if (_ziel.text.isNotEmpty && int.tryParse(_ziel.text) == null)
         'Grundzielwert muss eine ganze Zahl sein.',
       if (int.tryParse(_dauer.text) == null)
@@ -308,6 +320,29 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
                   child: Text('• $grund'),
                 ),
               const SizedBox(height: 16),
+              if (widget.manoever?.id == 'man_meisterparade') ...[
+                _zahl(
+                  _meisterparade,
+                  'Meisterparade-Ansage',
+                  key: 'gefecht-meisterparade-ansage',
+                ),
+                const Text(
+                  'Eigene PA erschwert; bei Erfolg einmaliger Bonus auf die '
+                  'nächste Angriffs- oder Abwehraktion. Keine zusätzlichen TP.',
+                ),
+                if (_mittel?.art == GefechtsKampfmittelArt.schild) ...[
+                  _zahl(
+                    _schildgrenze,
+                    'Zulässige Schild-Ansagegrenze',
+                    key: 'gefecht-schild-ansagegrenze',
+                  ),
+                  const Text(
+                    'Schilde haben keinen eigenen TaW. Für eine positive Ansage '
+                    'die am Tisch geklärte Grenze eintragen; zusätzlich gilt '
+                    'die aktuelle Schild-PA.',
+                  ),
+                ],
+              ],
               if (kontextAktion == Gefechtsaktion.angriff && !_distanzwechsel)
                 GefechtAnsagefelder(
                   key: const ValueKey('gefecht-ansagefelder'),
@@ -412,6 +447,30 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
               ),
               _zahl(_zuschlag, 'Weitere Erschwernis'),
               if (sonder) ...[
+                if (widget.manuell && widget.probe == null)
+                  DropdownButtonFormField<Gefechtsaktion>(
+                    key: const ValueKey('gefecht-manuelle-kampfaktion'),
+                    initialValue:
+                        _manuelleKampfaktion ?? Gefechtsaktion.handlung,
+                    decoration: const InputDecoration(
+                      labelText: 'Manuelle Aktion einordnen',
+                    ),
+                    items: const [
+                      DropdownMenuItem(
+                        value: Gefechtsaktion.handlung,
+                        child: Text('Sonstige Handlung'),
+                      ),
+                      DropdownMenuItem(
+                        value: Gefechtsaktion.angriff,
+                        child: Text('Angriffsaktion'),
+                      ),
+                      DropdownMenuItem(
+                        value: Gefechtsaktion.parade,
+                        child: Text('Abwehraktion'),
+                      ),
+                    ],
+                    onChanged: (v) => setState(() => _manuelleKampfaktion = v),
+                  ),
                 if (widget.probe == null && widget.manuell)
                   _zahl(_ziel, 'Manuell bestätigter Grundzielwert (optional)'),
                 _zahl(_dauer, 'Gesamtdauer in Aktionen'),

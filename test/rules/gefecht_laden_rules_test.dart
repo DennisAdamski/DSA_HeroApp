@@ -21,12 +21,18 @@ HeroComputedSnapshot ladeSnapshot({
   int geschoss = 0,
   bool nebenhand = false,
   bool kampfgespuer = false,
+  String? art,
 }) {
   final b = fixture.ansageSnapshot();
+  final waffenart = art ?? (nebenhand ? 'Balestrina' : 'Armbrust');
   final w = b.hero.combatConfig.selectedWeapon.copyWith(
     id: id,
-    name: 'Armbrust',
-    weaponType: 'Armbrust',
+    // Die Nebenhandprüfung nutzt die belegte einhändige Armbrust-Ausnahme.
+    name: waffenart,
+    weaponType: waffenart,
+    talentId: waffenart == 'Balestrina'
+        ? 'tal_armbrust'
+        : b.hero.combatConfig.selectedWeapon.talentId,
     combatType: WeaponCombatType.ranged,
     rangedProfile: RangedWeaponProfile(
       reloadTime: dauer,
@@ -134,7 +140,8 @@ void main() {
     );
   });
   test('Ladung derselben physischen Waffe bleibt beim Handwechsel; fremde ID unbekannt', () {
-    final snap = ladeSnapshot(dauer: 1);
+    // Derselbe gültige Waffentyp bleibt beim tatsächlichen Handwechsel erhalten.
+    final snap = ladeSnapshot(dauer: 1, art: 'Balestrina');
     final geladen = beginneGefechtsLaden(
       const Gefechtszustand(iniWurf: 6),
       snap,

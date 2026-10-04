@@ -17,6 +17,7 @@ import 'package:dsa_heldenverwaltung/ui2/shell/karto_gefechts_adapter.dart';
 import 'gefecht_aktionsdialog.dart';
 import 'gefecht_orientieren.dart';
 import 'gefecht_schuss.dart';
+import 'gefecht_meisterparade.dart';
 
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_laden_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_kampfmittel_rules.dart';
@@ -291,6 +292,11 @@ Future<void> fuehreGefechtsAuftragAus({
         nachher.auftrag == null) {
       controller.setzen(nachher.copyWith(handlung: aktuell.handlung));
     }
+  }
+  if (gewuerfelt?.success == false &&
+      aktuellerAuftrag.manoever?.id == 'man_meisterparade' &&
+      context.mounted) {
+    await zeigeMeisterparadeFehlschlag(context, aktuellerAuftrag, frisch);
   }
   if (ref.read(gefechtProvider(heroId))?.handlung?.art ==
           Gefechtshandlungsart.fernkampf &&

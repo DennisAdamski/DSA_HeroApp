@@ -25,7 +25,12 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   Entscheidungen; `gefecht_filter_rules.dart` ordnet AT/PA/Sonstige zu und
   verknüpft Such-, Lernstands- und Sperrfilter ohne Regelrechnung im Widget.
   `gefecht_ansage_rules.dart` prüft getrennte Finte/Wuchtschlag/FK-Ansagen,
-  Kombinationen und bezahlte Zusatz-Zielzeit. `domain/gefecht_angriff.dart`
+  Kombinationen und bezahlte Zusatz-Zielzeit.
+  `gefecht_meisterparade_rules.dart` ergänzt die getrennte PA-Ansage und den
+  eigenen flüchtigen Erfolgsbonus. Prüfmetadaten binden Erleichterung und einmalige
+  Buchung; Schilde benötigen eine konkrete manuelle Ansagegrenze plus aktuelle PA.
+  `gefecht_meisterparade.dart` zeigt die gebuchte manuelle Fehlmanöverfolge.
+  `domain/gefecht_angriff.dart`
   hält flüchtige Zielzahlungen und Erfolgsprofile; `gefecht_angriff_rules.dart`
   bindet TP-Boni an das eingefrorene Kampfmittel und klassifiziert Schadensfolgen:
   unterstützter Waffenschaden, kein Schaden oder manuell zu klären. Nur die erste

@@ -311,6 +311,12 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
       children: [
         Text('Geführt: ${snapshot.hero.combatConfig.selectedWeapon.name}'),
         Text('TP ${snapshot.combatPreviewStats.tpExpression}'),
+        if (s.meisterparadeBonus > 0)
+          Text(
+            'Meisterparade: nächste Angriffs- oder Abwehraktion '
+            'um ${s.meisterparadeBonus} erleichtert.',
+            key: const ValueKey('gefecht-meisterparade-bonus'),
+          ),
         const SizedBox(height: 8),
         _knopf(s, snapshot, k, Gefechtsaktion.angriff, 'Angreifen'),
         _knopf(

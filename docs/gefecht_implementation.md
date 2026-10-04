@@ -377,9 +377,55 @@ die noch lokalen Commits aus; lokale Prüfungen gelten nicht als Remote-CI-Erfol
 
 Die zusätzliche Testnotiz zum Zahlenfokus ist behoben. Vitalwerte und die
 konkrete Paradeprüfung sowie waffenbezogene Handbelegung und der eigene
-Distanzklassenwechsel sind im Folgepaket umgesetzt. Meisterparade bleibt im
-[Folgeplan](gefecht_next_plan.md) separat vorgemerkt.
+Distanzklassenwechsel und Meisterparade sind im Folgepaket umgesetzt.
 Allgemeines optionales Zielen, komplexe Gegnerfolgen und globale INI-Phasen bleiben wie vereinbart
 abgegrenzt. Ein nicht bestimmbarer tatsächlicher Distanz-TP-Modifikator erzeugt
 keinen automatischen gebundenen Schadenswurf; unbrauchbare Entfernungsprofile
 erhalten keine neue Freigabeausnahme. Gefechte bleiben flüchtig.
+
+## Meisterparade im Folgepaket (4. Oktober 2026)
+
+`gefecht_meisterparade_rules.dart` prüft die eigene Ansage getrennt von freier
+Erschwernis und gegnerischer Finte. Die gemeinsame Auftragsfreigabe enthält
+den endgültigen Zielwert sowie den verbrauchten alten Bonus und die neue Ansage.
+Die einmalige Buchung übernimmt beides atomar: Erfolg erzeugt einen Bonus in
+Ansagehöhe, Misslingen keinen. Verkettete Meisterparaden verbrauchen zuerst den
+alten Bonus. Dialog-/Probeabbruch verändert ihn nicht. Er gilt für die nächste
+eigene Angriffs- oder Abwehraktion, einschließlich DK, Gegenhalten, gezieltem
+Ausweichen und tatsächlicher Zusatzabwehr. Freies Ausweichen, Hilfsaktionen,
+Rundenwechsel und bezahltes Laden/Zielen verbrauchen ihn nicht. Der tatsächliche
+Schuss verwendet den dann aktuellen Bonus. Keine TP-/Finte-Wirkung und kein
+Überschreiben des separaten Mirakelbonus; Beenden/Neustart verwirft beide.
+
+Die Grenze folgt dem TaW und der PA des konkreten Kampfmittels vor eigener
+Ansage, Gegnerfinte und Situationszuschlägen. Gelernte SF, effektive Rüstungs-BE
+nach Rüstungsgewöhnung höchstens 4, Katalog-/Paradeverbote und der Ausschluss
+von Kettenwaffen/Zweihandflegeln bleiben verbindlich (WdS 69, Chunk 7014).
+Parierwaffen verwenden das vorhandene kombinierte PA-Profil mit Linkhandpflicht.
+Für Schilde ist SK II nötig. Weil das Modell keinen eigenen Schild-TaW kennt,
+verlangt eine positive Schildansage eine konkrete, am Tisch festgelegte numerische
+„Zulässige Schild-Ansagegrenze“. Die Hauptwaffe liefert dafür keinen angenommenen
+TaW. Zusätzlich gilt die aktuelle Schild-PA, einschließlich bekannt entfallenem
+Schild-WM gegen Kettenstab/Kettenwaffe/Peitsche (WdS 71). Das Eingabefeld bleibt
+im flüchtigen Auftrag; Nullansage verlangt keine erfundene Grenze.
+
+Der Bonus ist in der Ansicht und in den Modifikatoren sichtbar. Eine manuelle
+Sonderaktion kann ausdrücklich als einzelne Angriffs-/Abwehraktion eingeordnet
+werden; erst ihre bestätigte Buchung verbraucht den Bonus. Sonstige manuelle
+Handlungen und Fachproben sind keine automatische Kampfeinordnung.
+
+Nach einer gebuchten misslungenen Meisterparade zeigt `gefecht_meisterparade.dart`
+Ansage, Treffer und konkreten manuellen Folgemalus: gesamte Ansage auf alle
+Proben einschließlich freier Aktionen bis einschließlich nächster eigener AT/PA;
+Orientieren beendet, Klingentänzer halbiert aufgerundet (WdS 59/69, Chunk 6985).
+Die allgemeine Fehlmanöverfolge bleibt wie vereinbart manuell. Es entsteht keine
+globale automatische Malusverwaltung.
+
+Die neuen Regeln und tatsächlichen UI-Buchungen werden in
+`gefecht_meisterparade_rules_test.dart` und `gefecht_meisterparade_test.dart`
+geprüft: Ansagegrenzen, Lern-/BE-/Waffen-/Schildsperren, Finte, Bonusketten,
+Abbruch/Doppelcallback, frische Ausführung, Runden/Hilfsaktionen, FK-Vorbereitung,
+DK/Gegenhalten/Ausweichen, manuelle Abschlüsse und stabiler Zahlenfokus.
+Die bisherigen Nebenhand-Lade-/Distanzschadensfixtures verwenden die belegte
+Balestrina-Ausnahme. Der Handwechseltest führt dabei denselben Typ vor und nach
+dem Wechsel; eine gewöhnliche Armbrust erhält keine Nebenhandfreigabe.
