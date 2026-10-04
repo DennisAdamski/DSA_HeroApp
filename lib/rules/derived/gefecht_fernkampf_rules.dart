@@ -51,9 +51,8 @@ Gefechtskontextpruefung pruefeGefechtsFernkampf(
   if (waffe == null || waffe.id.trim().isEmpty) {
     fehlend.add('Stabile Waffen-ID fehlt; Ausrüstung korrigieren.');
   }
-  final geladen = s.ladestaende.containsKey(waffe?.id)
-      ? gefechtsLadezustand(s, waffe)
-      : k.geladen;
+  // Veraltete Profile sind unbekannt; ein passendes Nein bleibt verbindlich.
+  final geladen = gefechtsLadezustand(s, waffe) ?? k.geladen;
   if (geladen == null) fehlend.add('Ladezustand dieser Waffe bestätigen.');
   if (geladen == false) {
     sperren.add('Waffe ist nicht geladen; zuerst laden / vorbereiten.');

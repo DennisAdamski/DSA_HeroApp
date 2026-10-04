@@ -490,7 +490,10 @@ bestehende frische Schreibwege übernommen. Regelquellen und manuelle Grenzen:
 Manöver lassen sich nach Angriff, Verteidigung oder Sonstige, Lernstand und
 bekannten Sperren filtern. Finte, Wuchtschlag und Fernkampfansage haben getrennte
 Eingaben; ohne die ersten beiden SF wirkt die aufgerundete halbe Ansage.
+Tastaturfokus und Cursor bleiben auch bei wechselnden Hinweisen erhalten.
 Unterstützte Schadenangriffe bieten einen eigenen, waffengebundenen Schadenswurf.
+FK-Schaden verwendet das Band der eingegebenen Schussentfernung; lässt es sich
+nicht bestimmen, muss der TP-Distanzanteil am Tisch geklärt werden.
 Entwaffnen und Umreißen erzeugen keinen Schaden; ungeklärte Varianten verlangen
 eine manuelle Abwicklung ohne vorgegebenen Waffenschaden. Jede Angriffsfolge wird
 einzeln abgeschlossen. „Schaden würfeln“ bleibt eine allgemeine Probe. FK-Ansagen verlangen bezahlte
@@ -498,6 +501,8 @@ zusätzliche Zielzeit: „Zusatz-Zielen beginnen“ und „Fortsetzen“ bezahle
 Aktionen über Runden, danach führt „Schuss ausführen“ den gehaltenen Auftrag aus.
 Aktuelle DK und Sitzungskontext bleiben beim Schuss und bei Probeabbruch erhalten.
 „Laden / Vorbereiten“ erfragt einen unbekannten Anfang pro geführter Fernkampfwaffe.
+Nach einem Profilwechsel kann der unbekannte Ladezustand auch im Schussdialog
+frisch bestätigt werden. Eine passend bekannte ungeladene Waffe bleibt gesperrt.
 Bezahlte Ladezeit bleibt bei geänderter Dauer erhalten; Waffen- oder Geschosswechsel
 übertragen keinen Fortschritt. Munition wird einmal beim ausgeführten Schuss
 übernommen. Ein Speicherfehler bietet Übernahme-Retry ohne erneuten Wurf.

@@ -7,6 +7,7 @@ import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 
 import 'gefecht_ansage_rules.dart';
 import 'gefecht_kampfmittel_rules.dart';
+import 'gefecht_fernkampf_rules.dart';
 
 /// Ordnet bekannte Folgen über stabile IDs ein; Ungeklärtes erfindet keine TP.
 GefechtsSchadensfolge gefechtsSchadensfolgeFuerAuftrag(GefechtAuftrag a) {
@@ -94,11 +95,30 @@ Gefechtsangriffsergebnis? gefechtsAngriffsergebnisNachBuchung({
   final profil = gefechtsKampfmittelFuer(snapshot, pruefung.kampfmittel);
   if (profil == null || profil.waffe == null) return null;
   final neben = profil.wahl.art == GefechtsKampfmittelArt.nebenwaffe;
-  final folge = gefechtsSchadensfolgeFuerAuftrag(auftrag);
+  var folge = gefechtsSchadensfolgeFuerAuftrag(auftrag);
   final dice = neben
       ? snapshot.combatPreviewStats.offhandPreview?.damageDiceSpec
       : snapshot.combatPreviewStats.damageDiceSpec;
   if (folge == GefechtsSchadensfolge.waffenschaden && dice == null) return null;
+  var distanzKorrektur = 0;
+  var hinweis = _schadenshinweis(folge, auftrag.manoever?.id);
+  if (folge == GefechtsSchadensfolge.waffenschaden && profil.waffe!.isRanged) {
+    final ranged = profil.waffe!.rangedProfile;
+    final entfernung = auftrag.kontext?.entfernung;
+    final band = entfernung == null
+        ? null
+        : gefechtsEntfernungsband(ranged.distanceBands, entfernung);
+    if (band == null || band < 0) {
+      folge = GefechtsSchadensfolge.manuell;
+      hinweis =
+          'Schadensfolge manuell: TP-Modifikator der tatsächlichen '
+          'Entfernung am Tisch bestimmen; die Vorschau-Distanz gilt nicht für diesen Schuss.';
+    } else {
+      // Vorschau enthält alle übrigen TP-Anteile bereits, auch Geschoss/Effekte.
+      distanzKorrektur =
+          ranged.distanceBands[band].tpMod - ranged.selectedDistanceBand.tpMod;
+    }
+  }
   final wirkung = gefechtsAnsagewirkung(snapshot, katalog, auftrag);
   return Gefechtsangriffsergebnis(
     auftragId: auftragId,
@@ -108,14 +128,14 @@ Gefechtsangriffsergebnis? gefechtsAngriffsergebnisNachBuchung({
         ? DiceSpec(
             count: dice!.count,
             sides: dice.sides,
-            modifier: dice.modifier + wirkung.tpBonus,
+            modifier: dice.modifier + distanzKorrektur + wirkung.tpBonus,
           )
         : null,
     abwehrmalus: wirkung.abwehrmalus,
     tpBonus: folge == GefechtsSchadensfolge.keinSchaden ? 0 : wirkung.tpBonus,
     schadensfolge: folge,
     manoevername: auftrag.manoever?.name ?? '',
-    hinweis: _schadenshinweis(folge, auftrag.manoever?.id),
+    hinweis: hinweis,
   );
 }
 
