@@ -292,32 +292,72 @@ geprüft. Die nachfolgenden ursprünglichen Testnotizen bleiben erhalten.
   Profilwechsel und gebundene Fernkampf-TP aus der tatsächlichen Schussdistanz.
   Der gezielte Abschlussreview für `aac4425..81cece0` ist ohne offene Befunde.
 
-GitHub wurde ebenfalls geprüft: Die letzten Flutter-CI-Läufe auf `90967bb`
+Die beim Abschluss des elfteiligen Ausbaus geprüften GitHub-Läufe auf `90967bb`
 scheiterten am Formatcheck; Tests und Android-Build wurden deshalb übersprungen.
 LOC und Firebase-Preview bestanden. Die drei betroffenen Formatdateien sind
 lokal korrigiert; der identische Check mit Flutter 3.47.1 besteht jetzt.
-Die neueren Commits sind lokal; ein neuer GitHub-Lauf ist noch ausstehend.
+Der neuere GitHub-Stand wird in der nachfolgenden Folgepaket-Abnahme festgehalten.
 
-### Verbleibende Regelgrenzen und Folgeplan
+### Regelgrenzen und abgeschlossenes Folgepaket
 
 Allgemeines optionales Zielen, komplexe Gegner-/Manöverfolgen und ein globaler
 INI-Phasenablauf bleiben wie vereinbart abgegrenzt. Unbekannte tatsächliche
 Entfernungs-TP erzeugen keinen automatischen Schadenswurf; bei unbrauchbarem
 Entfernungsprofil bleibt die vorhandene Schussfreigabe gesperrt.
 
-Die Testnotiz zum Zahlenfokus ist erledigt. Die weiteren Testnotizen sind
-als eigenes Folgepaket vorgemerkt:
+Die Testnotiz zum Zahlenfokus ist erledigt. Das anschließend freigegebene
+Folgepaket ist umgesetzt und geprüft:
 1. Waffenbezogene Zweihändigkeit für Bogen/Armbrust und zulässige Ausnahmen
-   prüfen; keine pauschale Umklassifizierung sämtlicher Fernkampfwaffen.
-2. Distanzklassenwechsel als eigene Aktion anbieten; Bedienpfad und
-   Aktionskosten anhand der geltenden Regeln vor der Umsetzung abgrenzen.
-3. „Durchhalten“ in „Vitalwerte“ umbenennen und eine kompakte geschlossene
-   Ansicht mit LeP, AsP und vorhandenen Wunden vorsehen.
-4. Die Abfrage „Parade erlaubt?“ entfernen; bekannte regelbedingte Sperren
-   und konkret benötigte Angriffsdaten weiterhin nachvollziehbar prüfen.
-5. Meisterparade mit vorab gewählter eigener PA-Erschwernis und gebundenem
-   Bonus für die nächste zulässige Aktion abwickeln; Regelgrenzen prüfen.
+   zentral umgesetzt; keine pauschale Umklassifizierung sämtlicher Fernkampfwaffen.
+2. Distanzklassenwechsel als eigene Aktion angeboten; AT- und freie
+   Aktionskosten sowie gegnerische Bestätigung bleiben regelgemäß erhalten.
+3. „Durchhalten“ in „Vitalwerte“ umbenannt; kompakte geschlossene Ansicht
+   zeigt LeP, aktivierte AsP und tatsächliche vorhandene Wunden.
+4. Die Abfrage „Parade erlaubt?“ entfernt; bekannte regelbedingte Sperren
+   und konkret benötigte Angriffsdaten bleiben verbindlich.
+5. Meisterparade mit vorab gewählter eigener PA-Erschwernis und einmaligem
+   Bonus für die nächste zulässige Aktion abgewickelt; Grenzen dokumentiert.
 
 Diese fünf Punkte erweitern den ursprünglichen elfteiligen Auftrag. Ihre
 ursprünglichen Notizen bleiben separat erhalten; es gibt keine neue Persistenz,
 keine Katalogmigration und keine ungeprüfte Änderung ihrer Aktionskosten.
+
+
+### Folgepaket-Abnahme vom 4. Oktober 2026
+
+- Vitalwerte zeigt geschlossen nur LeP, aktivierte AsP und tatsächliche Wunden;
+  manuelles Auf-/Zuklappen bleibt bei Ressourcenänderungen erhalten.
+- Die allgemeine Paradefrage entfällt. Bekannte Verbote und konkret fehlende
+  Angriffsdaten bleiben in der gemeinsamen Prüfung verbindlich.
+- Bogen und gewöhnliche Armbrust belegen zentral beide Hände, auch bei alten
+  Standardwerten. Balestrina bleibt einhändig; Wurfwaffen werden nicht pauschal
+  umklassifiziert. Keine Änderung gespeicherter Waffenfelder.
+- Distanzklasse ändern hat einen eigenen Bedienpfad. Regelgemäße AT, freier
+  Schritt, Finte, gegnerische Bestätigung und schadensfreier Wechsel bleiben.
+- Meisterparade fragt ihre eigene Ansage vorher ab. Erfolg erzeugt einen
+  einmaligen Bonus auf die nächste geeignete Angriffs-/Abwehraktion; Abbruch,
+  Rundenwechsel und Verkettung behalten die geprüfte Zuordnung. Keine TP-Boni
+  und keine Vermischung mit Mirakelbonus. Eine positive Schild-Ansage benötigt
+  wegen der unklaren TaW-Grenze eine konkrete manuelle Obergrenze, zusätzlich PA.
+
+Frische Gesamtsuite: 3.381 bestanden, 3 bestehende Tests übersprungen.
+Analyse, vollständiger CI-Formatcheck, tatsächlicher CI-LOC-Check und Gefechts-LOC
+bestanden. Paketreviews und Gesamtreview einschließlich nötiger Korrekturen sind
+abgeschlossen. Produktstand der Abnahme: `51955b5`.
+
+Allgemeine Folgen misslungener Ansagemanöver bleiben manuell; Meisterparade nennt
+die gewählte Ansage und den Folgemalus ausdrücklich. Die unveränderte zusätzliche
+breite UI2-LOC-Prüfung findet weiterhin die bestehende 803-Zeilen-Abenteuerdatei.
+Ein nicht blockierender Testnachtrag bleibt: ausdrückliche Buchung einer zulässigen
+Zusatzabwehr mit offenem Meisterparadebonus. Der geprüfte Integrationspfad ist korrekt.
+
+GitHub hat inzwischen den veröffentlichten Stand `50241f2` geprüft:
+Die Läufe `37198239552` und `37198240229` bestehen Format, Analyse, LOC und Android-
+Debug-Build; der Testjob scheitert. Firebase-Preview besteht. Die vollständigen
+Fehlerlogs sind per API mit HTTP 403 geschützt; die konkrete Remote-Fehlerausgabe
+konnte deshalb nicht unabhängig gelesen werden. Lokal wurden die alten unzulässigen
+Nebenhand-Armbrust-Testdaten reproduziert und in `51955b5` auf eine zulässige
+Balestrina korrigiert, ohne die Hand- oder Profilregeln aufzuweichen. Der frische
+Gesamtlauf dieses neueren Stands besteht; sein GitHub-Lauf steht noch aus.
+Der Agent hat keinen Push oder Deployment ausgeführt. Die ursprünglichen Nutzernotizen
+bleiben unverändert und außerhalb der Agenten-Commits erhalten.
