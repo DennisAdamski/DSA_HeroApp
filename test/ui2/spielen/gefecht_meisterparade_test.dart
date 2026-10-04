@@ -30,6 +30,102 @@ const meisterparade = ManeuverDef(
 
 void main() {
   testWidgets(
+    'Ansagefolge: echte Fehl-AT, freie Probe, Abbruch und einmalige PA',
+    (tester) async {
+      final (container, bestand) = await _ansicht(tester, bonus: 0);
+      final ctl = container.read(gefechtProvider('rondra').notifier);
+      bestand.w20Wert = 20;
+      bestand.doppelt = true;
+      await _oeffnen(tester, 'Angreifen');
+      await tester.enterText(find.byKey(const ValueKey('gefecht-finte')), '5');
+      await tester.pump();
+      await tester.tap(find.byKey(const ValueKey('gefecht-auftrag-starten')));
+      await tester.pumpAndSettle();
+      var s = container.read(gefechtProvider('rondra'))!;
+      expect(s.ansageFolgemalus, 5);
+      expect(s.angriffeVerbraucht, 1);
+      expect(
+        find.byKey(const ValueKey('gefecht-ansagefolgemalus')),
+        findsOneWidget,
+      );
+      ctl.setzen(
+        s.copyWith(
+          kontext: const Gefechtskontext(
+            angriffsart: Gefechtsangriffsart.nahkampf,
+            finte: 0,
+            schildWmWirksam: true,
+            situationsZuschlag: 0,
+            gegnerzahl: 1,
+            platzZumAusweichen: true,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await _oeffnen(tester, 'Freies Ausweichen');
+      await tester.tap(find.byKey(const ValueKey('gefecht-auftrag-starten')));
+      await tester.pumpAndSettle();
+      s = container.read(gefechtProvider('rondra'))!;
+      expect(s.ansageFolgemalus, 5);
+      expect(s.freieVerbraucht, 1);
+      expect(s.paradenVerbraucht, 0);
+      expect(bestand.anfragen.last.ruleHint, contains('Ansagefolgemalus'));
+      ctl.setzen(
+        s.copyWith(
+          kontext: const Gefechtskontext(
+            angriffsart: Gefechtsangriffsart.nahkampf,
+            finte: 0,
+            schildWmWirksam: true,
+            situationsZuschlag: 0,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final vor = container.read(gefechtProvider('rondra'))!;
+      final snap = mp.mpSnapshot();
+      const a = GefechtAuftrag(
+        aktion: Gefechtsaktion.parade,
+        titel: 'Parieren',
+        zuschlag: 0,
+        dk: 'N',
+        dauer: 1,
+        kosten: 1,
+      );
+      final ohne = pruefeGefechtAuftrag(
+        vor.copyWith(ansageFolgemalus: 0),
+        snap,
+        testCatalog,
+        a,
+      );
+      bestand.abbrechen = true;
+      bestand.w20Wert = 1;
+      await _oeffnen(tester, 'Parieren');
+      await tester.tap(find.byKey(const ValueKey('gefecht-auftrag-starten')));
+      await tester.pumpAndSettle();
+      expect(bestand.anfragen.last.targets.single.value, ohne.zielwert! - 5);
+      expect(container.read(gefechtProvider('rondra'))!.ansageFolgemalus, 5);
+      expect(container.read(gefechtProvider('rondra'))!.paradenVerbraucht, 0);
+      var entfernt = 0;
+      final sub = container.listen(gefechtProvider('rondra'), (alt, neu) {
+        if (alt?.ansageFolgemalus == 5 && neu?.ansageFolgemalus == 0) {
+          entfernt++;
+        }
+      });
+      addTearDown(sub.close);
+      bestand.abbrechen = false;
+      await _oeffnen(tester, 'Parieren');
+      await tester.tap(find.byKey(const ValueKey('gefecht-auftrag-starten')));
+      await tester.pumpAndSettle();
+      s = container.read(gefechtProvider('rondra'))!;
+      expect(bestand.anfragen.last.targets.single.value, ohne.zielwert! - 5);
+      expect(s.ansageFolgemalus, 0);
+      expect(s.angriffeVerbraucht, 1);
+      expect(s.paradenVerbraucht, 1);
+      expect(s.freieVerbraucht, 1);
+      expect(entfernt, 1);
+      expect(tester.takeException(), isNull);
+    },
+  );
+  testWidgets(
     'Schild-Meisterparade erleichtert echte Zusatzabwehr und bucht genau einmal',
     (tester) async {
       final (container, bestand) = await _ansicht(
@@ -294,7 +390,14 @@ void main() {
       if (fall == 'Misslingen') {
         expect(find.text('Meisterparade misslungen'), findsOneWidget);
         expect(find.textContaining('Folgemalus +3'), findsOneWidget);
-        expect(find.textContaining('bis einschließlich'), findsOneWidget);
+        expect(
+          find.descendant(
+            of: find.byType(AlertDialog),
+            matching: find.textContaining('bis einschließlich'),
+          ),
+          findsOneWidget,
+        );
+        expect(state.ansageFolgemalus, 3);
         await tester.tap(find.text('Am Tisch berücksichtigen'));
         await tester.pumpAndSettle();
       }

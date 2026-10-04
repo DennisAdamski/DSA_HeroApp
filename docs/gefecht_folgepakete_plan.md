@@ -54,16 +54,27 @@ Flüchtiger, sichtbarer Folgemalus aus tatsächlicher misslungener Buchung.
 WdS 6985 (MCP-Seite 60): gesamte freiwillige und geforderte Ansage auf Proben
 bis einschließlich nächster Angriffs-/Abwehraktion; freie Proben erhalten ihn,
 Orientieren beendet ihn; Klingentänzer halbiert. Abbruch verändert ihn nicht.
-Vor Implementierung sind Überschneidung mehrerer Folgen, Fachprobenpfade und
-die Abgrenzung von FK-Sonderregeln konkret zu prüfen.
+Überschneidung mehrerer Folgen, Fachprobenpfade und FK-Abgrenzung sind geprüft.
 
-Vorgelegter Entwurf, Bestätigung ausstehend: unterstützte Nahkampf-Ansagemanöver
+Bestätigter und umgesetzter Umfang (5. Oktober 2026): Nahkampf-Ansagemanöver
 setzen den Folgemalus nur beim tatsächlichen misslungenen Abschluss. Die nächste
 gebuchte AT/PA erhält ihn noch und beendet ihn; eine dort neue misslungene Ansage
 setzt anschließend ihre eigene Folge. Freie und Fachproben erhalten ihn ebenfalls,
 Schadenswürfe nicht. Orientieren beendet ihn nach Abschluss; Abbruch und wiederholte
 Callbacks ändern nichts. Fernkampf-Sonderansagen bleiben ohne belegte Grundlage
-ausgenommen. Regeltests und echte Buchungs-/Probeabläufe müssen diese Grenzen prüfen.
+ausgenommen. Elf neue Regeltests und der echte Fehl-AT-/Ausweichen-/PA-Ablauf
+prüfen diese Grenzen. 51 relevante Tests sind grün. Das unabhängige Review hat
+keine offenen Laufzeitbefunde. Die bestehende Sperre mehrteiliger manueller
+AT/PA bleibt erhalten; es entsteht keine neue Freigabe für unbekannte Abläufe.
+Abschlussprüfung: Analyse ohne Befund, vollständige Suite 3406 bestanden und drei
+bestehende Ausnahmen (`--concurrency=1`, eigener Regelindex-Cache). Formatprüfung
+über 1004 Dateien ohne Änderung, CI-Screen-LOC (21 Dateien), Gefechts-LOC (25)
+und die erweiterte Widgettestdatei innerhalb 700 Zeilen. Die bekannte unveränderte
+breite UI2-Überschreitung des Abenteuerblatts (803 Zeilen) bleibt offen.
+Der erste Gesamtlauf deckte eine bestehende Identitätsprüfung beim misslungenen
+Orientieren ohne Folgemalus auf; der unveränderte Zustand wird wieder direkt
+zurückgegeben. Nach Korrektur sind die betroffenen Tests und die gesamte
+Wiederholung grün. Paket 2 ist als eigener Commit abgeschlossen, ohne Push/Merge.
 
 ## 3. Globale Initiative und Phasen
 

@@ -428,3 +428,28 @@ Inventarisierung im ursprünglichen Checkout bleiben erhalten und außerhalb des
 Commits. Der oben belegte Remote-CI-Stand nach PR #208 ist weiterhin der zuletzt
 geprüfte veröffentlichte Stand; für Paket 1 gibt es keinen neuen Remote-Lauf.
 Kein Push, Merge oder Deployment. Die Pakete 2–6 sind noch nicht abgeschlossen.
+
+## Ansagefolgemalus: weiteres Paket 2 (5. Oktober 2026)
+
+Der bestätigte Umfang ist umgesetzt: gebuchte misslungene unterstützte Nahkampf-
+Ansagen setzen ihren eigenen flüchtigen Folgemalus. Er wirkt auf freie und
+Fachproben, endet nach der nächsten tatsächlichen AT/PA oder abgeschlossenem
+Orientieren und wird bei einer neuen Fehlansage anschließend neu gesetzt.
+Klingentänzer halbiert nach bestehender Aktivprüfung aufgerundet. Abbruch erhält
+Malus und Budget, Doppelcallback bucht und entfernt nur einmal. Schadenswürfe
+und unbelegte FK-Sonderfolgen bleiben getrennt; bisher gesperrte mehrteilige
+manuelle AT/PA werden nicht neu freigegeben.
+
+Elf neue Regeltests und der echte Fehl-AT-/freie-Ausweichprobe-/PA-Pfad sind grün,
+insgesamt 51 relevante Tests. Analyse ohne Befund, vollständige Suite 3406 bestanden,
+drei bestehende Ausnahmen, Format über 1004 Dateien ohne Änderung. CI-Screen-LOC,
+Gefechts-LOC und Widgettest-LOC bestehen. Das unveränderte Abenteuerblatt mit 803
+Zeilen bleibt außerhalb dieses Pakets. Der erste Gesamtlauf fand eine verletzte
+bestehende Identitätsprüfung beim Orientieren ohne Malus; nach gezielter Korrektur
+und erfolgreichen betroffenen Tests besteht die vollständige Wiederholung.
+Unabhängiges Review ohne offene Laufzeitbefunde, betroffene Anleitungen geprüft.
+
+Nur lokale Prüfungen: kein neuer Remote-CI-Lauf, Push, Merge oder Deployment.
+Nutzernotizen und parallele Inventarisierung im ursprünglichen Checkout bleiben
+unverändert und außerhalb des Gefechtscommits. Die bisherigen Prüfergebnisse
+oben bleiben historische Nachweise. Die Pakete 3–6 sind noch nicht abgeschlossen.

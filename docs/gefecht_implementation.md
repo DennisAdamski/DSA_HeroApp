@@ -415,7 +415,8 @@ Sonderaktion kann ausdrücklich als einzelne Angriffs-/Abwehraktion eingeordnet
 werden; erst ihre bestätigte Buchung verbraucht den Bonus. Sonstige manuelle
 Handlungen und Fachproben sind keine automatische Kampfeinordnung.
 
-Nach einer gebuchten misslungenen Meisterparade zeigt `gefecht_meisterparade.dart`
+Historischer Umfang vor Paket 2: Nach einer gebuchten misslungenen Meisterparade
+zeigt `gefecht_meisterparade.dart`
 Ansage, Treffer und konkreten manuellen Folgemalus: gesamte Ansage auf alle
 Proben einschließlich freier Aktionen bis einschließlich nächster eigener AT/PA;
 Orientieren beendet, Klingentänzer halbiert aufgerundet (WdS 59/69, Chunk 6985).
@@ -469,3 +470,36 @@ Zahlung über Runden, Ziel-/Profilwechsel, aktuellen Zuschlag, Probeabbruch,
 Abbruch ohne Refund und genau einen Schuss-/Munitionsabschluss. Die vorhandene
 Layoutmatrix deckt den erweiterten Dialog in vier Breiten, Hell/Dunkel und mit
 Tastatur ab. Es gibt keine neue Gefechtspersistenz oder Inventarschnittstelle.
+
+## Folgen misslungener Ansagen (weiteres Paket 2)
+
+Der bestätigte Umfang vom 5. Oktober 2026 ergänzt die zuvor manuelle eigene
+Fehlmanöverfolge. WdS Chunk 6985, MCP-Seite 60: freiwillige und geforderte Ansage
+erschweren alle Proben bis einschließlich der nächsten eigenen AT/PA. Aktiver
+Klingentänzer halbiert aufgerundet; die vorhandene Aktivprüfung berücksichtigt
+die BE-Grenze. Der neue flüchtige `ansageFolgemalus` entsteht ausschließlich bei
+einer tatsächlich gebuchten misslungenen unterstützten Nahkampf-Ansage. Eindeutige
+feste Katalogzuschläge sowie bereits verwendete Schild-/Waffenmeister-Anpassungen
+werden berücksichtigt; Gegnerfinte, Umwandlung, Distanz und weitere freie
+Situationszuschläge erzeugen keine eigene Ansagefolge.
+
+Die gemeinsame Auftragsprüfung zeigt den Malus einmal in Zielwert und
+Modifikatoren. Freie Aktionen, allgemeine Fachproben, Wirken, Orientieren und
+Störungsproben erhalten ihn ebenfalls. Schadens- und INI-Würfe bleiben getrennt.
+Der nächste tatsächliche AT/PA-Abschluss trägt den alten Malus noch, entfernt
+ihn und setzt gegebenenfalls danach die neue misslungene eigene Ansage. Auch
+zusätzliche Abwehren und Gegenhalten verwenden ihre vorhandene fachliche
+Kampfeinordnung. Freies Ausweichen, Laden, Zielen und Rundenwechsel erhalten
+die Folge. Abbruch erhält Malus und Budget; doppelte Abschlussmeldungen buchen
+weiterhin nur einmal. Orientieren beendet ihn beim abgeschlossenen Einsatz,
+auch wenn die IN-Probe misslingt; ein Probeabbruch beendet ihn nicht.
+
+Die vorhandenen einzelnen bestätigten manuellen AT/PA können die Folge
+beenden, auch bei ausdrücklich bestätigten Kosten 0. Mehrteilige manuelle
+AT/PA oder Fachproben mit manueller Kampfeinordnung bleiben wie zuvor gesperrt.
+Manuelle Aktionen erzeugen mangels strukturierter eigener Ansage keine neue
+automatische Folge. Variable Katalogtexte werden nicht neu interpretiert.
+Fernkampf-Sonderansagen erzeugen ohne belegte Grundlage keine Nahkampffolge,
+können aber als nächste AT einen vorhandenen Malus tragen und beenden.
+Gegnerische Trefferfolgen, globale Phasen und persistierte Heldenwerte sind
+weiterhin getrennt. Prüfstand und Paketabschluss stehen im Folgeplan.

@@ -164,6 +164,7 @@ class Gefechtszustand {
     this.umgewandelteAktionOffen = true,
     this.ladestaende = const {},
     this.meisterparadeBonus = 0,
+    this.ansageFolgemalus = 0,
   });
   final int runde, iniWurf, iniVerlust;
   final int geschuetzterIniVerlust, ungeklaerterIniVerlust;
@@ -210,6 +211,9 @@ class Gefechtszustand {
   /// Einmalige Erleichterung der nächsten eigenen Angriffs-/Abwehraktion.
   final int meisterparadeBonus;
 
+  /// WdS 60: misslungene Ansage erschwert Proben bis einschließlich nächster AT/PA.
+  final int ansageFolgemalus;
+
   /// Ändert nur benannte Sitzungsteile; kein JSON oder Heldenformat betroffen.
   Gefechtszustand copyWith({
     int? runde,
@@ -254,6 +258,7 @@ class Gefechtszustand {
     bool? umgewandelteAktionOffen,
     Map<String, Gefechtsladestand>? ladestaende,
     int? meisterparadeBonus,
+    int? ansageFolgemalus,
   }) => Gefechtszustand(
     runde: runde ?? this.runde,
     iniWurf: iniWurf ?? this.iniWurf,
@@ -304,6 +309,7 @@ class Gefechtszustand {
         umgewandelteAktionOffen ?? this.umgewandelteAktionOffen,
     ladestaende: ladestaende ?? this.ladestaende,
     meisterparadeBonus: meisterparadeBonus ?? this.meisterparadeBonus,
+    ansageFolgemalus: ansageFolgemalus ?? this.ansageFolgemalus,
   );
 }
 
@@ -331,6 +337,8 @@ class Gefechtspruefung {
     this.hinweise = const [],
     this.meisterparadeAnsage = 0,
     this.verbrauchterMeisterparadeBonus = 0,
+    this.ansageFehlmalus = 0,
+    this.beendetAnsageFolgemalus = false,
   });
   final Gefechtsaktion aktion;
   final Gefechtsfreigabe status;
@@ -349,6 +357,12 @@ class Gefechtspruefung {
 
   /// Erfolgreiche Buchung erzeugt die neue Ansage nach Verbrauch des alten Bonus.
   final int meisterparadeAnsage;
+
+  /// Eigene Folge entsteht erst beim tatsächlich misslungenen Abschluss.
+  final int ansageFehlmalus;
+
+  /// Dieser Abschluss hat die letzte Probe der nächsten AT/PA tatsächlich geführt.
+  final bool beendetAnsageFolgemalus;
 
   /// Nur konkrete Sperren, fehlende Angaben oder offene Entscheidungen blockieren.
   bool get ausfuehrbar =>

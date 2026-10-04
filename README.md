@@ -155,8 +155,10 @@ Technischer Stack:
   werden erst nach Abschluss wirksam.
 - Proben, Ressourcen, Wunden und Effekte verwenden die bisherigen Fachwege.
   Meisterparade erfragt eine eigene Ansage und erleichtert bei Erfolg einmalig
-  die nächste Angriffs-/Abwehraktion; Fehlmanöverfolgen bleiben konkret angezeigt
-  manuell. Bei positiver Schildansage wird die am Tisch geklärte Grenze erfragt.
+  die nächste Angriffs-/Abwehraktion. Misslungene unterstützte Nahkampf-Ansagen
+  setzen einen sichtbaren Folgemalus bis einschließlich nächster AT/PA oder
+  Orientieren. Gegnerische Trefferfolgen bleiben manuell. Bei positiver
+  Schildansage wird die am Tisch geklärte Grenze erfragt.
   Optionales Zielen baut bis zu vier Punkte anderer Fernkampfzuschläge ab und
   bezahlt dafür reguläre Aktionen; Ansage und Gezielter Schuss bleiben unverändert.
   [Umfang und Prüfungen der ersten Version](docs/gefecht_implementation.md)

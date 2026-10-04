@@ -29,6 +29,8 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   Kombinationen und bezahlte Zusatz-Zielzeit.
   `gefecht_zielen_rules.dart` ergänzt optionales Zielen (0–4 Punkte) mit eigener
   bezahlter Zeit, Profilbindung und Abbau ausschließlich sonstiger FK-Zuschläge.
+  `gefecht_ansagefolge_rules.dart` führt eigene misslungene Nahkampf-Ansagen als
+  flüchtigen Probenmalus bis einschließlich nächster AT/PA oder Orientieren.
   Die weiteren Pakete stehen in `docs/gefecht_folgepakete_plan.md`.
   `gefecht_meisterparade_rules.dart` ergänzt die getrennte PA-Ansage und den
   eigenen flüchtigen Erfolgsbonus. Prüfmetadaten binden Erleichterung und einmalige

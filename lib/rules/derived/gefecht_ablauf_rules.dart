@@ -197,7 +197,7 @@ ResolvedProbeRequest? gefechtRequestFuerAuftrag(
     specializationBonus: original.specializationBonus,
     initialSpecializationApplied: original.initialSpecializationApplied,
     initialSituationalModifier:
-        original.initialSituationalModifier - auftrag.zuschlag,
+        original.initialSituationalModifier - p.erschwernis,
     fixedRollTotal: original.fixedRollTotal,
   );
 }
