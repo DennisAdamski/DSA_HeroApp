@@ -526,3 +526,10 @@ Wegstecken wirken erst nach ihrer bestätigten Dauer.
 Bogen und gewöhnliche Armbrust belegen auch bei alten einhändigen Standardwerten
 beide Hände. Die Waffenart Balestrina bleibt einhändig; Wurfwaffen behalten ihre
 Metadaten. Unzulässige Nebenhandbelegungen sperren auch Zusatzaktionen.
+
+## Web-CI und Testversion
+
+`test` veröffentlicht nach erfolgreichen Prüfungen auf https://heldensync-test.web.app;
+`main` veröffentlicht die produktive Version. Arbeitsbranches werden nur bei
+offenen PRs nach `test` oder `main` geprüft. Beide Versionen teilen Firebase-Daten.
+Details: [Web-Veröffentlichung](docs/web_deployment.md).
