@@ -1,5 +1,17 @@
 {
   "projects": {
     "default": "heldensync-ccf0b"
+  },
+  "targets": {
+    "heldensync-ccf0b": {
+      "hosting": {
+        "production": [
+          "heldensync-ccf0b"
+        ],
+        "test": [
+          "heldensync-test"
+        ]
+      }
+    }
   }
 }
