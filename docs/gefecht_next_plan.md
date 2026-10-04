@@ -277,4 +277,47 @@ eingefrorene Geschoss einmal; Endkampf bestätigt keine zwischenzeitliche offene
 Lade-/FK-Ansagedialog, laufende Zielhandlung und drei offene Treffer samt langem
 Hammerschlag-Hinweis werden bei390/820/1200/1440Pixeln, Hell/Dunkel und Tastatur
 0/250 geprüft. Opt-in-PNGs nutzen denselben GEFECHT_SCREENSHOT_DIR-Testweg.
-Die Gesamtsuite und unabhängige Gesamtprüfung stehen nach der Paketprüfung noch aus.
+Die elf Punkte des freigegebenen Ausbaus sind implementiert und unabhängig
+geprüft. Die nachfolgenden ursprünglichen Testnotizen bleiben erhalten.
+
+### Gesamtabnahme vom 4. Oktober 2026
+
+- 255 frische Gefechtsregressionen bestanden.
+- 454 relevante Gefecht-, Kampf- und Ladezeitprüfungen bestanden.
+- Gesamtsuite: 3.318 Tests bestanden; drei bestehende Tests übersprungen.
+- `flutter analyze`, beide LOC-Prüfungen und der vollständige CI-Formatcheck
+  (`lib test tool`, 991 Dateien, keine Änderungen) bestanden.
+- Alle Paketbefunde und die drei Befunde des Gesamtreviews sind behoben:
+  stabiler Zahlenfokus einschließlich Cursor, wirksame Ladungsbestätigung nach
+  Profilwechsel und gebundene Fernkampf-TP aus der tatsächlichen Schussdistanz.
+  Der gezielte Abschlussreview für `aac4425..81cece0` ist ohne offene Befunde.
+
+GitHub wurde ebenfalls geprüft: Die letzten Flutter-CI-Läufe auf `90967bb`
+scheiterten am Formatcheck; Tests und Android-Build wurden deshalb übersprungen.
+LOC und Firebase-Preview bestanden. Die drei betroffenen Formatdateien sind
+lokal korrigiert; der identische Check mit Flutter 3.47.1 besteht jetzt.
+Die neueren Commits sind lokal; ein neuer GitHub-Lauf ist noch ausstehend.
+
+### Verbleibende Regelgrenzen und Folgeplan
+
+Allgemeines optionales Zielen, komplexe Gegner-/Manöverfolgen und ein globaler
+INI-Phasenablauf bleiben wie vereinbart abgegrenzt. Unbekannte tatsächliche
+Entfernungs-TP erzeugen keinen automatischen Schadenswurf; bei unbrauchbarem
+Entfernungsprofil bleibt die vorhandene Schussfreigabe gesperrt.
+
+Die Testnotiz zum Zahlenfokus ist erledigt. Die weiteren Testnotizen sind
+als eigenes Folgepaket vorgemerkt:
+1. Waffenbezogene Zweihändigkeit für Bogen/Armbrust und zulässige Ausnahmen
+   prüfen; keine pauschale Umklassifizierung sämtlicher Fernkampfwaffen.
+2. Distanzklassenwechsel als eigene Aktion anbieten; Bedienpfad und
+   Aktionskosten anhand der geltenden Regeln vor der Umsetzung abgrenzen.
+3. „Durchhalten“ in „Vitalwerte“ umbenennen und eine kompakte geschlossene
+   Ansicht mit LeP, AsP und vorhandenen Wunden vorsehen.
+4. Die Abfrage „Parade erlaubt?“ entfernen; bekannte regelbedingte Sperren
+   und konkret benötigte Angriffsdaten weiterhin nachvollziehbar prüfen.
+5. Meisterparade mit vorab gewählter eigener PA-Erschwernis und gebundenem
+   Bonus für die nächste zulässige Aktion abwickeln; Regelgrenzen prüfen.
+
+Diese fünf Punkte erweitern den ursprünglichen elfteiligen Auftrag. Ihre
+ursprünglichen Notizen bleiben separat erhalten; es gibt keine neue Persistenz,
+keine Katalogmigration und keine ungeprüfte Änderung ihrer Aktionskosten.

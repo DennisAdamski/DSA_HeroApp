@@ -316,3 +316,35 @@ gemischten AT/PA Vorrang. Zwei Regressionen laden die echten Split-Einträge,
 prüfen den PA-Zielwert mit gegnerischer Finte und die ausschließliche PA-Buchung.
 Ein Widgettest aktiviert Kategorie und beide Statuschips und prüft die tatsächlich
 verbleibenden Manöver. Der erweiterte Paketlauf umfasst 89 bestandene Tests.
+
+## Gesamtabnahme des elfteiligen Ausbaus (4. Oktober 2026)
+
+Alle drei Implementierungspakete und ihre unabhängigen Reviews sind abgeschlossen.
+Der Gesamtreview fand zusätzlich Fokusverlust bei dynamischen Formularabschnitten,
+eine unwirksame Ladungsbestätigung nach Profilwechsel und Distanz-TP aus dem
+gespeicherten statt dem tatsächlichen Schussband. Die gemeinsame Korrektur
+`81cece0` behebt alle drei mit echten Regressionen; der gezielte Abschlussreview
+meldet keine offenen Befunde. Die erhaltenen Schild-eBE-Testwerte wurden separat
+als `aac4425` committed.
+
+Frische Abschlussprüfungen: 255 Gefechtsregressionen und 454 relevante
+Gefecht-/Kampf-/Ladezeitprüfungen bestanden. Die vollständige Suite besteht mit
+3.318 Tests und drei bestehenden übersprungenen Tests. Analyse und beide
+LOC-Prüfungen sind ohne Befund; der vollständige CI-Formatcheck prüft 991 Dateien
+ohne Änderungsbedarf. Die Layoutmatrix umfasst 390/820/1200/1440 Pixel,
+Hell/Dunkel und Tastatur; die schmale Fernkampfansicht wurde zusätzlich visuell
+geprüft.
+
+Der letzte veröffentlichte GitHub-Stand `90967bb` scheiterte am Formatcheck;
+Tests und Android-Build wurden übersprungen, LOC und Firebase-Preview bestanden.
+Die drei Formatblocker sind lokal korrigiert. Ein neuer Remote-Lauf steht für
+die noch lokalen Commits aus; lokale Prüfungen gelten nicht als Remote-CI-Erfolg.
+
+Die zusätzliche Testnotiz zum Zahlenfokus ist behoben. Waffenbezogene
+Zweihändigkeit, ein eigenständiger Bedienpfad für Distanzklassenwechsel und die
+später ergänzten Notizen zu Vitalwerten, Parade-Abfrage und Meisterparade sind
+im [Folgeplan](gefecht_next_plan.md) separat vorgemerkt. Allgemeines optionales
+Zielen, komplexe Gegnerfolgen und globale INI-Phasen bleiben wie vereinbart
+abgegrenzt. Ein nicht bestimmbarer tatsächlicher Distanz-TP-Modifikator erzeugt
+keinen automatischen gebundenen Schadenswurf; unbrauchbare Entfernungsprofile
+erhalten keine neue Freigabeausnahme. Gefechte bleiben flüchtig.
