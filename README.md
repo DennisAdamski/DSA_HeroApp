@@ -469,3 +469,10 @@ Build-Tools-Instanz die Komponente `C++ ATL/MFC` nachinstallieren.
   separater Runtime-Katalog ausserhalb der editierbaren Settings-Sektionen.
 - Excel-Dateien im Repo-Root sind Upstream-Quellen fuer die Katalogaufbereitung.
 - Platzhalter- und Legacy-Dateien werden bewusst nicht automatisch entfernt.
+
+## Web-CI und Testversion
+
+`test` veröffentlicht nach erfolgreichen Prüfungen auf https://heldensync-test.web.app;
+`main` veröffentlicht die produktive Version. Arbeitsbranches werden nur bei
+offenen PRs nach `test` oder `main` geprüft. Beide Versionen teilen Firebase-Daten.
+Details: [Web-Veröffentlichung](docs/web_deployment.md).
