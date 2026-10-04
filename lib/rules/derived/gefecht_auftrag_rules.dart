@@ -12,6 +12,7 @@ import 'gefecht_freigabe_rules.dart';
 import 'gefecht_ansage_rules.dart';
 import 'gefecht_meisterparade_rules.dart';
 import 'gefecht_zielen_rules.dart';
+import 'gefecht_ansagefolge_rules.dart';
 
 /// Identische Prüfung vor Anzeige und Ausführung, mit bekannten Gegnersperren.
 Gefechtspruefung pruefeGefechtAuftrag(
@@ -31,7 +32,14 @@ Gefechtspruefung pruefeGefechtAuftrag(
   final ansagen = ergaenzeGefechtsansagen(basis, s, snapshot, katalog, auftrag);
   final zielen = ergaenzeGefechtsZielen(ansagen, s, snapshot, auftrag);
   final freigabe = ergaenzeGefechtsfreigabe(zielen, auftrag);
-  return ergaenzeGefechtsMeisterparade(freigabe, s, snapshot, katalog, auftrag);
+  final mp = ergaenzeGefechtsMeisterparade(
+    freigabe,
+    s,
+    snapshot,
+    katalog,
+    auftrag,
+  );
+  return ergaenzeGefechtsAnsagefolge(mp, s, snapshot, auftrag);
 }
 
 // Fachprüfung bleibt von Formularpflichten getrennt und wird identisch wiederverwendet.

@@ -109,8 +109,11 @@ Gefechtszustand uebernimmOrientierung(
   required bool erfolg,
   bool position = false,
 }) {
-  if (!erfolg && !position) return s;
-  return s.copyWith(
+  final bereinigt = s.ansageFolgemalus == 0
+      ? s
+      : s.copyWith(ansageFolgemalus: 0);
+  if (!erfolg && !position) return bereinigt;
+  return bereinigt.copyWith(
     iniWurf: erfolg ? maximum : s.iniWurf,
     iniVerlust: erfolg ? 0 : s.iniVerlust,
     desorientiert: position ? false : s.desorientiert,

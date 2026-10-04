@@ -243,6 +243,7 @@ Future<void> stoereGefechtsWirken({
           gefechtsStoerungszuschlag(zuschlag, konzentrationsstaerke: konz),
         ),
         s.mirakelbonus,
+        ansageFolgemalus: s.ansageFolgemalus,
       ),
       onResolved: (r) {
         if (abgewickelt) return;
