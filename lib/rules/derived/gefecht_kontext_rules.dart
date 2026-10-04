@@ -35,8 +35,7 @@ bool gefechtsPflichtkontextErfasst(
   final aw =
       aktion == Gefechtsaktion.freiesAusweichen ||
       aktion == Gefechtsaktion.gezieltesAusweichen;
-  if (pa &&
-      (k.angriffsart == null || k.finte == null || k.paradeVerboten == null)) {
+  if (pa && (k.angriffsart == null || k.finte == null)) {
     return false;
   }
   if (aktion == Gefechtsaktion.schildparade && k.schildWmWirksam == null) {
@@ -124,7 +123,8 @@ Gefechtskontextpruefung pruefeGefechtskontext(
     } else {
       mods.add(Gefechtsmodifikator('Gegnerische Finte', k.finte!));
     }
-    if (pa && k.paradeVerboten == null) fehlend.add('Paradeverbot klären.');
+    // Normale Nahkampf-PA braucht keine allgemeine Bestätigung; bekannte
+    // Verbote und konkrete unbekannte Angriffsdaten bleiben verbindlich.
     if (pa && k.paradeVerboten == true) {
       sperren.add('Dieser Angriff kann nicht pariert werden.');
     }

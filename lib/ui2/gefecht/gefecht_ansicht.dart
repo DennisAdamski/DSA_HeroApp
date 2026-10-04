@@ -17,7 +17,6 @@ import 'package:dsa_heldenverwaltung/rules/derived/gefecht_hand_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_zusatz_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_orientieren_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_auftrag_rules.dart';
-import 'package:dsa_heldenverwaltung/rules/derived/gefecht_ablauf_rules.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_bestands_adapter.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_gefechts_adapter.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abschnitt.dart';
@@ -37,6 +36,7 @@ import 'gefecht_aktion_ausfuehren.dart';
 import 'gefecht_handlungskarte.dart';
 import 'gefecht_unterbrechung.dart';
 import 'gefecht_laden.dart';
+import 'gefecht_vitalwerte.dart';
 
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_laden_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_kampfmittel_rules.dart';
@@ -114,7 +114,7 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
                   final angriff = _angriff(s, snapshot, katalog);
                   final verteidigung = _verteidigung(s, snapshot, katalog);
                   final manoever = _manoever(s, snapshot, katalog);
-                  final ressourcen = _durchhalten(snapshot);
+                  final ressourcen = _vitalwerte(snapshot);
                   final magie = GefechtMagie(
                     werte: snapshot,
                     katalog: katalog,
@@ -437,18 +437,11 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
       ],
     ),
   );
-  Widget _durchhalten(HeroComputedSnapshot snapshot) => Card(
-    child: ExpansionTile(
-      key: ValueKey(
-        'durchhalten-${snapshot.wundEffekte.hatAbzuege}-${snapshot.state.currentLep}',
-      ),
-      title: const Text('Durchhalten'),
-      initiallyExpanded: gefechtDurchhaltenOeffnen(
-        wundAbzuege: snapshot.wundEffekte.hatAbzuege,
-        lep: snapshot.state.currentLep,
-        maxLep: snapshot.derivedStats.maxLep,
-      ),
-      childrenPadding: const EdgeInsets.all(12),
+  // Fachdialoge behalten die vorhandenen Schreibwege und den gemeinsamen Guard.
+  Widget _vitalwerte(HeroComputedSnapshot snapshot) => GefechtVitalwerte(
+    heroId: widget.heroId,
+    werte: snapshot,
+    child: Column(
       children: [
         KartoRessourcenleiste(
           werte: snapshot,

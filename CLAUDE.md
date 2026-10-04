@@ -61,6 +61,11 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   `ui2/gefecht/` trennt Einstieg, Rundenleiste, Ansicht, Aktionsdialog,
   Manöverliste, Ausrüstung und Magie. Weitere Gefechtsregelmodule betreffen
   Auftragsprüfung, Dauerhandlungen und echte Talent-/Zauberproben.
+  `gefecht_vitalwerte.dart` zeigt geschlossen LeP, aktivierte AsP und tatsächliche
+  Wunden; seine stabile Heldenidentität erhält die Expansion bei Ressourcenänderung.
+  Geöffnet nutzt die Ansicht dieselben bisherigen Fachdialoge und Schreibwege.
+  Normale Nahkampf-PA benötigt keine allgemeine Paradebestätigung; bekannte
+  Verbote und konkrete fehlende Angriffsdaten bleiben in den Kontextregeln wirksam.
   Der Folgeplan steht in [docs/gefecht_next_plan.md](docs/gefecht_next_plan.md).
   `gefecht_orientieren_rules.dart` trennt Kampfverluste von geschützten und
   ungeklärten Korrekturen; der Orientierungsdialog nutzt frische Heldendaten.

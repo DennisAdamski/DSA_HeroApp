@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht.dart';
+import 'package:dsa_heldenverwaltung/domain/gefecht_kontext.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 import 'package:dsa_heldenverwaltung/ui2/gefecht/gefecht_aktionsdialog.dart';
@@ -80,6 +81,56 @@ void main() {
     catalog: testCatalog,
     epicAdvantagesActive: false,
   );
+  for (final verboten in [null, true]) {
+    testWidgets('Nahkampf-PA ohne allgemeine Paradefrage, Verbot $verboten', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: GefechtAktionsdialog(
+              zustand: Gefechtszustand(
+                iniWurf: 6,
+                dk: 'N',
+                kontext: Gefechtskontext(
+                  angriffsart: Gefechtsangriffsart.nahkampf,
+                  finte: 0,
+                  paradeVerboten: verboten,
+                ),
+              ),
+              werte: snapshot,
+              katalog: testCatalog,
+              aktion: Gefechtsaktion.parade,
+              titel: 'Parieren',
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Parade erlaubt?'), findsNothing);
+      expect(find.text('Angriff gegen mich'), findsOneWidget);
+      expect(find.text('Gegnerische Finte (0 erlaubt)'), findsOneWidget);
+      final starten = tester.widget<FilledButton>(
+        find.byKey(const ValueKey('gefecht-auftrag-starten')),
+      );
+      expect(starten.onPressed != null, verboten != true);
+      if (verboten == true) {
+        expect(
+          find.textContaining('Dieser Angriff kann nicht pariert werden.'),
+          findsWidgets,
+        );
+        await tester.enterText(
+          find.widgetWithText(TextFormField, 'Gegnerische Finte (0 erlaubt)'),
+          '2',
+        );
+        await tester.pumpAndSettle();
+        final nachAenderung = tester.widget<FilledButton>(
+          find.byKey(const ValueKey('gefecht-auftrag-starten')),
+        );
+        expect(nachAenderung.onPressed, isNull);
+      }
+    });
+  }
   Future<void> dialog(
     WidgetTester tester, {
     ManeuverDef? m,

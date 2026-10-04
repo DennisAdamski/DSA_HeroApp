@@ -28,7 +28,6 @@ class GefechtKontextfelder extends StatelessWidget {
       int? gegner,
       int? finte,
       Gefechtsangriffsart? art,
-      bool? verbot,
       bool? platz,
     }) => onChanged(
       Gefechtskontext(
@@ -37,7 +36,7 @@ class GefechtKontextfelder extends StatelessWidget {
         gegnerzahl: gegner ?? k.gegnerzahl,
         finte: finte ?? k.finte,
         angriffsart: art ?? k.angriffsart,
-        paradeVerboten: verbot ?? k.paradeVerboten,
+        paradeVerboten: k.paradeVerboten,
         platzZumAusweichen: platz ?? k.platzZumAusweichen,
         sehrGross: k.sehrGross,
         grosserSchild: k.grosserSchild,
@@ -101,12 +100,6 @@ class GefechtKontextfelder extends StatelessWidget {
             ),
           ),
         ],
-        if (pa)
-          _wahl(
-            'Parade erlaubt?',
-            k.paradeVerboten == null ? null : !k.paradeVerboten!,
-            (v) => aendern(verbot: !v),
-          ),
         if (aktion == Gefechtsaktion.schildparade)
           _wahl(
             'Schild-WM wirksam? (Nein bei Kettenwaffe/-stab oder Peitsche)',
