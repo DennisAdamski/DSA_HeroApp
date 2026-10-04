@@ -128,7 +128,10 @@ Future<void> fuehreGefechtsAuftragAus({
     kampfmittel: aktuellerAuftrag.kampfmittel,
   );
   if (!p.ausfuehrbar) {
-    if (!zielhandlung && w.fernkampf && aktuellerAuftrag.fernkampfansage > 0) {
+    final zielwahl =
+        aktuellerAuftrag.fernkampfansage > 0 ||
+        aktuellerAuftrag.zielErleichterung > 0;
+    if (!zielhandlung && w.fernkampf && zielwahl) {
       final beginn = pruefeGefechtsZielbeginn(
         aktuell,
         frisch,

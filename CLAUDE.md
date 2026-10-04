@@ -27,6 +27,9 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   verknüpft Such-, Lernstands- und Sperrfilter ohne Regelrechnung im Widget.
   `gefecht_ansage_rules.dart` prüft getrennte Finte/Wuchtschlag/FK-Ansagen,
   Kombinationen und bezahlte Zusatz-Zielzeit.
+  `gefecht_zielen_rules.dart` ergänzt optionales Zielen (0–4 Punkte) mit eigener
+  bezahlter Zeit, Profilbindung und Abbau ausschließlich sonstiger FK-Zuschläge.
+  Die weiteren Pakete stehen in `docs/gefecht_folgepakete_plan.md`.
   `gefecht_meisterparade_rules.dart` ergänzt die getrennte PA-Ansage und den
   eigenen flüchtigen Erfolgsbonus. Prüfmetadaten binden Erleichterung und einmalige
   Buchung; Schilde benötigen eine konkrete manuelle Ansagegrenze plus aktuelle PA.

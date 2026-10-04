@@ -157,6 +157,8 @@ Technischer Stack:
   Meisterparade erfragt eine eigene Ansage und erleichtert bei Erfolg einmalig
   die nächste Angriffs-/Abwehraktion; Fehlmanöverfolgen bleiben konkret angezeigt
   manuell. Bei positiver Schildansage wird die am Tisch geklärte Grenze erfragt.
+  Optionales Zielen baut bis zu vier Punkte anderer Fernkampfzuschläge ab und
+  bezahlt dafür reguläre Aktionen; Ansage und Gezielter Schuss bleiben unverändert.
   [Umfang und Prüfungen der ersten Version](docs/gefecht_implementation.md)
   dokumentieren die verbleibenden manuellen Regeln.
 
@@ -502,6 +504,8 @@ eine manuelle Abwicklung ohne vorgegebenen Waffenschaden. Jede Angriffsfolge wir
 einzeln abgeschlossen. „Schaden würfeln“ bleibt eine allgemeine Probe. FK-Ansagen verlangen bezahlte
 zusätzliche Zielzeit: „Zusatz-Zielen beginnen“ und „Fortsetzen“ bezahlen reguläre
 Aktionen über Runden, danach führt „Schuss ausführen“ den gehaltenen Auftrag aus.
+Optionales Zielen wird mit „Zielen beginnen“ auf demselben Weg bezahlt und baut
+bis zu vier Punkte anderer Zuschläge ab; FK-Ansage und Gezielter Schuss bleiben.
 Aktuelle DK und Sitzungskontext bleiben beim Schuss und bei Probeabbruch erhalten.
 „Laden / Vorbereiten“ erfragt einen unbekannten Anfang pro geführter Fernkampfwaffe.
 Nach einem Profilwechsel kann der unbekannte Ladezustand auch im Schussdialog
