@@ -1413,7 +1413,7 @@ nativen und REST-Sync-Pfade berücksichtigen.
 
 **Ist-Zustand:** Regel-, Domain-, Daten-, Provider- und Widgettests sind bereits
 getrennt vorhanden. Die CI prüft unter anderem Analyse, Tests und einen
-Android-Build. Für den Umbau braucht es zusätzlich gezielte Nachweise über
+Web-Release-Build. Für den Umbau braucht es zusätzlich gezielte Nachweise über
 vollständige Abläufe, alte Datenformate und unterbrochene Synchronisierung.
 
 **Ziel:** Repräsentative Bestandshelden und kritische Nutzerabläufe sichern die
