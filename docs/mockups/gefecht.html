@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>Gefecht – Kartograph-Entwurf</title>
+  <link rel="stylesheet" href="gefecht.css">
+  <script src="gefecht-aktionen.js" defer></script>
+  <script src="gefecht-ausruestung.js" defer></script>
+  <script src="gefecht.js" defer></script>
+  <script src="gefecht-folgeablaeufe.js" defer></script>
+</head>
+<body>
+  <svg class="icon-library" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <symbol id="i-back" viewBox="0 0 24 24"><path d="M20 12H4m6-6-6 6 6 6"/></symbol>
+    <symbol id="i-next" viewBox="0 0 24 24"><path d="M4 12h16m-6-6 6 6-6 6"/></symbol>
+    <symbol id="i-sword" viewBox="0 0 24 24"><path d="m14 3 7-1-1 7L9 20l-5-5L14 3ZM4 11l9 9M2 22l5-5"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 2 3 6v6c0 5 5 8 9 10 4-2 9-5 9-10V6l-9-4Z"/></symbol>
+    <symbol id="i-free" viewBox="0 0 24 24"><path d="m12 3 2 6.5L20.5 12 14 14.5 12 21l-2-6.5L3.5 12 10 9.5 12 3Z"/></symbol>
+    <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3M4.9 4.9 7 7m10 10 2.1 2.1M4.9 19.1 7 17m10-10 2.1-2.1"/></symbol>
+    <symbol id="i-dice" viewBox="0 0 24 24"><path d="m12 2 10 7-4 12H6L2 9 10 2Zm0 0L6 21 22 9H2l16 12L12 2Z"/></symbol>
+    <symbol id="i-heart" viewBox="0 0 24 24"><path d="M20.8 4.6a5.6 5.6 0 0 0-8 0L12 5.4l-.8-.8a5.6 5.6 0 0 0-8 8L12 22l8.8-9.4a5.6 5.6 0 0 0 0-8Z"/></symbol>
+    <symbol id="i-wind" viewBox="0 0 24 24"><path d="M3 8h11a3 3 0 1 0-3-3M3 12h16a3 3 0 1 1-3 3M3 16h7"/></symbol>
+    <symbol id="i-star" viewBox="0 0 24 24"><path d="m12 2 2.8 7.2L22 12l-7.2 2.8L12 22l-2.8-7.2L2 12l7.2-2.8L12 2Z"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10" cy="10" r="6"/><path d="m15 15 6 6"/></symbol>
+    <symbol id="i-flag" viewBox="0 0 24 24"><path d="M5 21V4m0 0h11l-2 4 2 4H5"/></symbol>
+    <symbol id="i-bow" viewBox="0 0 24 24"><path d="M5 3c8 2 14 8 16 16M5 3l16 16M5 3v6m0-6h6M14 14l5-1-1 5"/></symbol>
+    <symbol id="i-armor" viewBox="0 0 24 24"><path d="M8 3h8l4 4-2 3v10H6V10L4 7l4-4Zm0 0 4 3 4-3M6 13h12"/></symbol>
+    <symbol id="i-hourglass" viewBox="0 0 24 24"><path d="M6 3h12M6 21h12M7 3c0 5 5 6 5 9s-5 4-5 9m10-18c0 5-5 6-5 9s5 4 5 9"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3 2 20h20L12 3Zm0 6v5m0 3v.5"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-9v.5"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M6 18 18 6"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="i-compass" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m16 8-3 5-5 3 3-5 5-3Z"/></symbol>
+    <symbol id="i-book" viewBox="0 0 24 24"><path d="M12 5C8 2 4 3 2 4v16c4-2 7-1 10 1 3-2 6-3 10-1V4c-3-1-7-2-10 1Zm0 0v16"/></symbol>
+    <symbol id="i-grow" viewBox="0 0 24 24"><path d="M12 21V9m0 6c-6 0-8-4-8-9 6 0 8 4 8 9Zm0-4c0-6 4-9 8-9 0 6-3 9-8 9Z"/></symbol>
+    <symbol id="i-person" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/></symbol>
+    <symbol id="i-swap" viewBox="0 0 24 24"><path d="M4 8h14l-4-4m6 12H6l4 4"/></symbol>
+  </svg>
+
+  <header class="preview-bar">
+    <div class="preview-title">
+      <strong>Kartograph</strong><span class="preview-divider" aria-hidden="true"></span>Gefecht-Entwurf
+    </div>
+    <div class="preview-controls">
+      <label class="preview-field">Held
+        <select id="ctl-held">
+          <option value="kriegerin">Kriegerin mit Schild und Bogen</option>
+          <option value="magier">Kampfmagier mit Stab</option>
+          <option value="geweihte">Rondra-Geweihte mit Liturgien</option>
+        </select>
+      </label>
+      <div class="preview-seg" role="group" aria-label="Fensterbreite" id="ctl-breite">
+        <button type="button" data-breite="390">Handy</button>
+        <button type="button" data-breite="820">Tablet</button>
+        <button type="button" data-breite="1200">Breit</button>
+        <button type="button" data-breite="1440">Sehr breit</button>
+      </div>
+      <div class="preview-seg" role="group" aria-label="Darstellung" id="ctl-thema">
+        <button type="button" data-thema="hell">Hell</button>
+        <button type="button" data-thema="dunkel">Dunkel</button>
+      </div>
+      <label class="preview-field" title="Optionalregel WdS S. 58: Abzüge bei weniger als 1/2, 1/3, 1/4 der LE"><input type="checkbox" id="ctl-le" checked> Optionalregel niedrige LE</label>
+      <button type="button" class="preview-reset" id="ctl-reset">Zurücksetzen</button>
+      <button type="button" class="preview-reset" id="ctl-flow">Neue Bedienabläufe</button>
+    </div>
+    <span class="preview-disclaimer">Beispieldaten · vereinfachte Rechnung · keine Regelengine</span>
+  </header>
+
+  <div class="stage" id="stage">
+    <div class="frame" id="frame" data-theme="hell">
+      <div class="frame-scroll" id="app"></div>
+      <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+      <dialog class="karto-dialog" id="dlg" aria-labelledby="dlg-titel"></dialog>
+    </div>
+  </div>
+</body>
+</html>

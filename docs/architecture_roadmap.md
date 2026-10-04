@@ -640,9 +640,9 @@ Regelmodulen. Riverpod bindet die Abläufe an die Oberfläche.
   Teilstand.)*
 - [ ] Weitere Abläufe nach demselben Prinzip entflechten; bestehende Aufrufer
   schrittweise migrieren und benötigte Kompatibilitätseinstiege erhalten.
-  *(Stand 29.09.2026: Rast, Laufzeitzustand, Schaden erhalten und die
-  Sofortaktionen des Bogens sind frisch; offen sind Inventareditor, Kampf
-  und die Editorentwürfe, siehe Teilstände (1) bis (5).)*
+  *(Stand 30.09.2026: Rast, Laufzeitzustand, Schaden erhalten sowie die
+  Sofortaktionen des Bogens und des Kampf-Tabs sind frisch; offen sind der
+  Inventareditor und die Editorentwürfe, siehe Teilstände (1) bis (7).)*
 
 **Abnahme:** Abläufe sind ohne gerenderte Oberfläche prüfbar. Normalisierung und
 Validierung haben je eine klare Zuständigkeit. Widgets und Provider enthalten
@@ -1189,7 +1189,8 @@ Commits:
    Slots) schreiben weiter Snapshots, ebenso alle Editorentwürfe. Sie sind
    jetzt eingereiht, überholen also keine frische Änderung, aber der zuletzt
    ausgelöste Schreibvorgang gewinnt. Nächster Schritt: Inventareditor
-   (Einträge ohne ID, ARCH-03) und Kampf.
+   (Einträge ohne ID, ARCH-03) und Kampf. *Kampf erledigt im Teilstand (7);
+   der Inventareditor bleibt.*
 2. Der Bogen wartet weiter auf seinen Upload; mit Konto laufen schnelle
    Klicks auf „GS +“ je Netzweg nach, gehen aber nicht verloren. Eine
    Bündelung wie beim Zustand (`GebuendelteLaeufe`) wäre ein eigener
@@ -1334,11 +1335,11 @@ Commits:
 
 *Verbleibende Risiken und Folgeaufträge.*
 
-1. Die Vorschau des Kampf-Tabs (`hero_combat_tab.dart`,
+1. ~~Die Vorschau des Kampf-Tabs (`hero_combat_tab.dart`,
    `combat_weapons_section.dart`, `combat_weapons_overview_table.dart`)
    rechnet ohne `derivedStats` und damit ohne jede Wunde (Rest von B7).
    `computeCombatPreviewStats` nimmt jetzt `wunden`; die Aufrufer reichen
-   sie noch nicht durch. Eigener Folgeauftrag.
+   sie noch nicht durch. Eigener Folgeauftrag.~~ *Erledigt im Teilstand (7).*
 2. Paraden mit einer Parierwaffe werden nicht gesondert gerechnet; ein
    Schildarm-Abzug trifft sie nicht.
 3. KK/FF −2 einer Armwunde gelten für alle Proben; ob der Arm beteiligt
@@ -1366,6 +1367,120 @@ Nutzer entschieden: nach WdS.** Unterdrückte Wunden zählen also mit
 Treffer +8). Die Rechnung war richtig; geändert ist nur die Anzeige
 (`4 × 3 Wunden insgesamt = 12`, Hinweis im Wundendialog) samt Regeltest
 für den Kampfverlauf.
+
+**Teilstand 30.09.2026 (7) — Kampf-Tab frisch, Kampfvorschau mit Wunden.**
+Das Kampf-Sofortspeichern (Risiko 1 aus Teilstand 5) und Folgeauftrag 1 aus
+Teilstand (6) sind umgesetzt. Der Hauptpunkt von ARCH-05 bleibt offen
+(Inventareditor, Editorentwürfe).
+
+*Befund.* Im Lesemodus schrieb der Kampf-Tab bei jeder Bedienung den beim
+Rendern erfassten Helden samt ganzer Kampfkonfiguration zurück
+(`_persistCombatConfigIfReadonly`). Betroffen waren Waffen- und
+Nebenhandwahl, Entfernung, Geschosswahl und -bestand, Editorergebnisse,
+Entfernen, Talent und BF in der Waffentabelle sowie Rüstungs- und
+Nebenhandteile. Folgen:
+
+- Was ein anderer Weg zwischendurch speicherte, ging verloren.
+- Schnelle Klicks auf „Geschosse ±“ konnten verloren gehen. Nach dem ersten
+  Speichern setzte der Rebuild den Entwurf zurück, obwohl der zweite Klick
+  noch ausstand.
+- Die Bedienung traf Slots über ihre Position.
+
+Außerdem verschob das Entfernen einer Waffe bzw. eines Nebenhandteils die
+Nebenhandzuordnung nicht. Die Nebenhand fiel dann weg oder zeigte auf ein
+anderes Teil; das war vorbestehend, nicht erst durch Nebenläufigkeit.
+Die Vorschau im Kampf-Tab (Kampfwerte, Waffentabelle, Waffeneditor)
+rechnete ohne Basiswerte und damit ohne Wunden.
+
+*Entscheidungen.*
+
+- **Muster aus Teilstand (5):** Die Bedienung läuft über einen Einstieg
+  `_aendereKampf`. Im Lesemodus schreibt er frisch über
+  `aendereHeldMitMeldung`, im Bearbeitungsmodus ändert er wie bisher nur den
+  Entwurf. Die Anzeige folgt dem gespeicherten Wert, der Entwurf wird nicht
+  vorab gesetzt. Fehler erscheinen als Snackbar „… nicht gespeichert“, und
+  die Auswahlfelder springen auf den gespeicherten Stand zurück.
+- **Identität statt Position:** Die Regeln in `kampf_aenderung_rules.dart`
+  finden Waffen, Geschosse, Rüstungs- und Nebenhandteile über ihre stabile
+  ID (ARCH-03 B2/B3). Ohne ID zählt der Inhalt ohne IDs, weil das Speichern
+  benannten Slots erst dabei eine vergibt. Die Sektionen melden dafür den
+  angezeigten Slot statt nur seiner Position.
+- **Editorergebnisse:** Hat sich der gespeicherte Slot seit dem Öffnen des
+  Editors geändert (etwa sein Geschossbestand), wird das Ergebnis
+  abgewiesen statt überschrieben, wie bei der Vertrauten-Steigerung. Der
+  breite Editor bleibt dann offen.
+- **Schritt statt Wert:** Geschossbestände zählen vom gespeicherten Bestand
+  (0 bis 9999). Getroffen wird das angezeigte Geschoss, nicht das
+  inzwischen gewählte.
+- **Nebenbei behoben:** Beim Entfernen rücken aktive Waffe und Nebenhand
+  nach. Die toten Controller `combat-main-*` werden nicht mehr nachgeführt.
+- **Vorschau:** Der Helfer `kampfvorschau` reicht Modifikatoren, effektive
+  Eigenschaften, Basiswerte und Wunden aus `heroComputedProvider` durch.
+  Kampf-Tab, Inspector und Spielansicht rechnen damit dieselben Werte. Die
+  Sektionen bekommen auch die Hausregel für epische Vorteile, die dort
+  bisher immer als aktiv galt.
+
+Commits:
+
+- `923f869` — Regeln `kampf_aenderung_rules.dart` mit Tests.
+- `5c8d551` — Kampf-Tab schreibt Sofortänderungen frisch, Widgettests.
+- `c15d0a2` — Kampfvorschau mit Wunden.
+- Abschluss-Commit mit Dokumentation.
+
+*Prüfungen.*
+
+- Regeltests (`test/rules/kampf_aenderung_rules_test.dart`, 40 Proben):
+  - Suche über ID bzw. Inhalt samt Positionshilfe; nachträglich vergebene
+    IDs; geänderte oder entfernte Slots werden gemeldet.
+  - Gleicher Held bei „nichts geändert“.
+  - Geschossschritt vom gespeicherten Bestand mit Grenzen, getroffen wird
+    das angezeigte Geschoss.
+  - Ersetzen wird bei geändertem Ausgang abgewiesen.
+  - Entfernen verschiebt aktive Waffe und Nebenhand (Waffe und Teil); die
+    letzte Waffe bleibt.
+  - Unbekannte Felder bleiben erhalten.
+- Widgettests (`test/ui/combat/kampf_frisch_schreiben_test.dart`) mit
+  `BogenTestRepository`:
+  - Waffenwahl nach einer Einfügung davor, die fremde Änderung bleibt.
+  - Drei schnelle „Geschosse +“ ab einem fremd gesetzten Bestand.
+  - Nebenhandwahl.
+  - Speicherfehler samt Zurückspringen der Auswahl.
+  - Bearbeitungsmodus schreibt erst mit Speichern.
+  - Entfernen mit Nebenhand.
+  - BF in der Tabelle.
+  - Editorergebnis auf eine geänderte Waffe.
+  - Rüstungs- und Nebenhandteil entfernen.
+- `test/ui/combat/kampfvorschau_wunden_test.dart`: Kampfwerte (AT, PA,
+  Kampf-INI) und Waffentabelle (INI) gleichen mit Bauchwunde dem Snapshot,
+  der ohne Wunde höher liegt.
+- Gegenproben:
+  - Mit dem alten Oberflächencode scheitern 9 von 10 Widgettests; es besteht
+    nur der Bearbeitungsmodus, dessen Verhalten gleich bleibt.
+  - Ohne Nachrücken der Verweise scheitern drei Regelproben.
+  - Ohne Zurücksetzen der Auswahlfelder scheitert der Fehlertest.
+  - Mit der alten Vorschau scheitern beide Vorschau-Widgettests.
+- Die bestehenden Kampf-Tab- und Rebuild-Tests laufen unverändert.
+- `flutter analyze --no-pub` ohne Befund, `dart format` ohne Änderung,
+  Zeilenbudget eingehalten. Volle Suite grün (3063 bestanden, 3 übersprungen). Die Hash-Pins der
+  Bestandshelden sind unverändert. Eine manuelle Bedienprüfung auf Geräten
+  steht aus.
+
+*Verbleibende Risiken und nächste Schritte.*
+
+1. Inventareditor (`_saveEntries`) und alle Editorentwürfe schreiben weiter
+   Snapshots, eingereiht. Der Inventareditor ist der nächste Schritt; seine
+   Einträge haben keine ID (ARCH-03).
+2. Der Bogen wartet weiter auf seinen Upload. Mit Konto laufen schnelle
+   Geschossklicks je Netzweg nach, gehen aber nicht verloren (wie „GS +“).
+3. Entfernungsstufen haben keine ID und werden über die Position gewählt.
+   Es sind immer genau fünf.
+4. Ein Geschoss ohne ID (unbenannt) wird über seinen Inhalt samt Bestand
+   gefunden. Ändert ein anderer Weg den Bestand zwischendurch, meldet der
+   nächste Klick „inzwischen geändert“, statt falsch zu zählen.
+5. Die Slotprüfung (`_validateWeaponSlotsForConfig`) liegt weiter im Widget
+   und läuft bei jeder Sofortänderung auf der ganzen Konfiguration. Eine
+   bereits gespeicherte ungültige Konfiguration sperrt deshalb alle
+   Sofortänderungen, wie bisher.
 
 ## ARCH-06 — Zusammengehörige Änderungen gemeinsam speichern und synchronisieren
 

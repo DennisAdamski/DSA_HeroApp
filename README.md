@@ -146,6 +146,20 @@ Technischer Stack:
 
 ### Kampf
 
+- Im Bereich Spielen startet „Gefecht beginnen“ eine flüchtige Sitzung je Held;
+  die bisherige Kampfverwaltung bleibt erreichbar. Navigation erhält die Sitzung,
+  Beenden oder ein App-Neustart verwirft sie.
+- Die Gefechtsansicht führt Runden, INI, Umwandlung, Haltung, DK und getrennte
+  Aktionsmarken. „Prüfen“ verlangt eine Bestätigung; erkannte Sperren bleiben
+  verbindlich. Ausrüstung wechselt im eigenen Popup, längere Ziehhandlungen
+  werden erst nach Abschluss wirksam.
+- Proben, Ressourcen, Wunden und Effekte verwenden die bisherigen Fachwege.
+  Meisterparade erfragt eine eigene Ansage und erleichtert bei Erfolg einmalig
+  die nächste Angriffs-/Abwehraktion; Fehlmanöverfolgen bleiben konkret angezeigt
+  manuell. Bei positiver Schildansage wird die am Tisch geklärte Grenze erfragt.
+  [Umfang und Prüfungen der ersten Version](docs/gefecht_implementation.md)
+  dokumentieren die verbleibenden manuellen Regeln.
+
 - Pflege von Nah- und Fernkampfwaffen in einer gemeinsamen Kampfkonfiguration
 - Unterstuetzung fuer Nebenhand, Parierwaffen, Schilde und Ruestungen
 - Kampfvorschau mit AT, PA, TP, INI, Ladezeit, Distanzstufen und Geschossen
@@ -469,6 +483,49 @@ Build-Tools-Instanz die Komponente `C++ ATL/MFC` nachinstallieren.
   separater Runtime-Katalog ausserhalb der editierbaren Settings-Sektionen.
 - Excel-Dateien im Repo-Root sind Upstream-Quellen fuer die Katalogaufbereitung.
 - Platzhalter- und Legacy-Dateien werden bewusst nicht automatisch entfernt.
+
+Die Gefechtsansicht führt Orientieren, Gegner-/Distanzkontext, Ziehen und
+bestätigte Zauber-/Karmahandlungen über gemeinsame Regelprüfungen. Laufende
+Gefechte bleiben flüchtig; Ressourcen und unterstützte Folgen werden über
+bestehende frische Schreibwege übernommen. Regelquellen und manuelle Grenzen:
+[Gefechtsausbau](docs/gefecht_next_plan.md), [Implementierung](docs/gefecht_implementation.md).
+
+Manöver lassen sich nach Angriff, Verteidigung oder Sonstige, Lernstand und
+bekannten Sperren filtern. Finte, Wuchtschlag und Fernkampfansage haben getrennte
+Eingaben; ohne die ersten beiden SF wirkt die aufgerundete halbe Ansage.
+Tastaturfokus und Cursor bleiben auch bei wechselnden Hinweisen erhalten.
+Unterstützte Schadenangriffe bieten einen eigenen, waffengebundenen Schadenswurf.
+FK-Schaden verwendet das Band der eingegebenen Schussentfernung; lässt es sich
+nicht bestimmen, muss der TP-Distanzanteil am Tisch geklärt werden.
+Entwaffnen und Umreißen erzeugen keinen Schaden; ungeklärte Varianten verlangen
+eine manuelle Abwicklung ohne vorgegebenen Waffenschaden. Jede Angriffsfolge wird
+einzeln abgeschlossen. „Schaden würfeln“ bleibt eine allgemeine Probe. FK-Ansagen verlangen bezahlte
+zusätzliche Zielzeit: „Zusatz-Zielen beginnen“ und „Fortsetzen“ bezahlen reguläre
+Aktionen über Runden, danach führt „Schuss ausführen“ den gehaltenen Auftrag aus.
+Aktuelle DK und Sitzungskontext bleiben beim Schuss und bei Probeabbruch erhalten.
+„Laden / Vorbereiten“ erfragt einen unbekannten Anfang pro geführter Fernkampfwaffe.
+Nach einem Profilwechsel kann der unbekannte Ladezustand auch im Schussdialog
+frisch bestätigt werden. Eine passend bekannte ungeladene Waffe bleibt gesperrt.
+Bezahlte Ladezeit bleibt bei geänderter Dauer erhalten; Waffen- oder Geschosswechsel
+übertragen keinen Fortschritt. Munition wird einmal beim ausgeführten Schuss
+übernommen. Ein Speicherfehler bietet Übernahme-Retry ohne erneuten Wurf.
+Kampfgespür erlaubt spontane Umwandlung unter Erhalt aller verbrauchten Marken.
+
+Ausführbare Aktionen benötigen konkrete Angaben
+und gegebenenfalls einzelne manuelle Entscheidungen; Regelhinweise allein
+sperren keine Probe. Freie Zusatzwerte starten bei 0, feste Katalogzuschläge
+werden getrennt einmal angewendet. Eine später geleerte oder ungültige
+FK-Zahleingabe bleibt offen, auch nach Waffenwechsel. Distanzklassen stehen
+mit vollständigem Namen in Rundenleiste und Aktionsdialog.
+„Distanzklasse ändern“ öffnet einen eigenen Dialog für Annäherung/Entfernung
+um eine oder zwei Klassen, mit Finte, ohne Schaden und mit AT plus freiem Schritt.
+Der normale Angriff enthält keine DK-Wechselwahl.
+
+Im Gefecht sind Haupt- und Nebenhand ausdrücklich wählbar; Ziehen und
+Wegstecken wirken erst nach ihrer bestätigten Dauer.
+Bogen und gewöhnliche Armbrust belegen auch bei alten einhändigen Standardwerten
+beide Hände. Die Waffenart Balestrina bleibt einhändig; Wurfwaffen behalten ihre
+Metadaten. Unzulässige Nebenhandbelegungen sperren auch Zusatzaktionen.
 
 ## Web-CI und Testversion
 

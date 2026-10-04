@@ -17,20 +17,34 @@ Future<void> showResourceStepperDialog({
   required BuildContext context,
   required String heroId,
   required ResourceType resource,
+  int? abschlussKosten,
+  Future<bool> Function()? onAbschlussUebernehmen,
 }) {
   return showAdaptiveDetailSheet<void>(
     context: context,
     builder: (_) => ZustandFehlerBereich(
-      child: _ResourceStepperDialog(heroId: heroId, resource: resource),
+      child: _ResourceStepperDialog(
+        heroId: heroId,
+        resource: resource,
+        abschlussKosten: abschlussKosten,
+        onAbschlussUebernehmen: onAbschlussUebernehmen,
+      ),
     ),
   );
 }
 
 class _ResourceStepperDialog extends ConsumerWidget {
-  const _ResourceStepperDialog({required this.heroId, required this.resource});
+  const _ResourceStepperDialog({
+    required this.heroId,
+    required this.resource,
+    this.abschlussKosten,
+    this.onAbschlussUebernehmen,
+  });
 
   final String heroId;
   final ResourceType resource;
+  final int? abschlussKosten;
+  final Future<bool> Function()? onAbschlussUebernehmen;
 
   String get _label => switch (resource) {
     ResourceType.lep => 'LeP',
@@ -113,6 +127,18 @@ class _ResourceStepperDialog extends ConsumerWidget {
                 ),
               ],
             ),
+            if (abschlussKosten != null) ...[
+              Text('Bestätigte Abschlusskosten: $abschlussKosten $_label'),
+              FilledButton(
+                onPressed: onAbschlussUebernehmen == null
+                    ? null
+                    : () async {
+                        final ok = await onAbschlussUebernehmen!();
+                        if (ok && context.mounted) Navigator.pop(context);
+                      },
+                child: const Text('Abschlusskosten übernehmen'),
+              ),
+            ],
             const ZustandFehlerAnzeige(),
             const SizedBox(height: 24),
             TextButton(
