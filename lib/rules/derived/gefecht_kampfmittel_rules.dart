@@ -33,7 +33,7 @@ List<GefechtsKampfmittelprofil> gefechtsKampfmittelprofile(
   final haupt = config.selectedWeaponOrNull;
   final neben = config.offhandAssignment;
   final konflikte = <String>[];
-  if (haupt != null && !haupt.isOneHanded && !neben.isNone) {
+  if (haupt != null && !gefechtsWaffeEinhaendig(haupt) && !neben.isNone) {
     konflikte.add(
       'Zweihändige Hauptwaffe und belegte Nebenhand widersprechen sich.',
     );
@@ -68,7 +68,7 @@ List<GefechtsKampfmittelprofil> gefechtsKampfmittelprofile(
             : c.offhandPreview?.pa,
         sperren: [
           ...konflikte,
-          if (!config.weaponSlots[neben.weaponIndex].isOneHanded)
+          if (!gefechtsWaffeEinhaendig(config.weaponSlots[neben.weaponIndex]))
             'Nebenhandwaffe nicht einhändig.',
         ],
         anteile: [

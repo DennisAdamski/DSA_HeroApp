@@ -3,11 +3,33 @@ import 'package:dsa_heldenverwaltung/domain/gefecht.dart';
 import 'package:dsa_heldenverwaltung/domain/sync_models.dart';
 
 import 'kampf_aenderung_rules.dart';
+import 'string_normalize.dart';
+
+/// Bekannte Schusswaffen benötigen beide Hände; Arsenal (MCP 70) erlaubt Balestrina.
+/// Waffenart bleibt bei umbenannten Slots stabil. Unbekannte und Wurfwaffen
+/// verwenden ihre gespeicherte Belegung, ohne persistierte Daten zu verändern.
+bool gefechtsWaffeEinhaendig(MainWeaponSlot waffe) {
+  final typ = normalizeCombatToken(waffe.weaponType);
+  if (typ == 'balestrina') return true;
+  final talent = normalizeCombatToken(waffe.talentId);
+  const schusstalente = {'talboegen', 'talbogen', 'talarmbrust'};
+  final schusswaffe =
+      schusstalente.contains(talent) ||
+      typ.contains('bogen') ||
+      typ.contains('armbrust') ||
+      typ == 'eisenwalder' ||
+      typ == 'ballaester' ||
+      typ == 'balestra' ||
+      typ.startsWith('arbal');
+  return schusswaffe ? false : waffe.isOneHanded;
+}
 
 /// Anzeigename der beiden tatsächlich belegten Hände.
 String gefechtsHandbelegung(CombatConfig c) {
   final haupt = c.selectedWeaponOrNull;
-  if (haupt != null && !haupt.isOneHanded) return '${haupt.name} · beide Hände';
+  if (haupt != null && !gefechtsWaffeEinhaendig(haupt)) {
+    return '${haupt.name} · beide Hände';
+  }
   return '${haupt?.name ?? 'Leer'} · ${gefechtsNebenhandname(c)}';
 }
 
@@ -76,7 +98,7 @@ CombatConfig mitGefechtsHandbelegung(
         c.weaponSlots[neben.weaponIndex] == frisch) {
       throw StateError('Diese Waffe liegt bereits in der Nebenhand.');
     }
-    if (frisch != null && !frisch.isOneHanded && !neben.isNone) {
+    if (frisch != null && !gefechtsWaffeEinhaendig(frisch) && !neben.isNone) {
       throw StateError(
         'Zweihändige Waffe benötigt beide Hände; Nebenhand zuerst wegstecken.',
       );
@@ -84,13 +106,13 @@ CombatConfig mitGefechtsHandbelegung(
     return mitAktiverWaffe(c, waffe, index: index);
   }
   if (waffe != null || teil != null) {
-    if (haupt != null && !haupt.isOneHanded) {
+    if (haupt != null && !gefechtsWaffeEinhaendig(haupt)) {
       throw StateError('Hauptwaffe belegt beide Hände.');
     }
     if (frisch != null && frisch == haupt) {
       throw StateError('Diese Waffe liegt bereits in der Haupthand.');
     }
-    if (frisch != null && !frisch.isOneHanded) {
+    if (frisch != null && !gefechtsWaffeEinhaendig(frisch)) {
       throw StateError('Nebenhandwaffe muss einhändig geführt werden.');
     }
   }

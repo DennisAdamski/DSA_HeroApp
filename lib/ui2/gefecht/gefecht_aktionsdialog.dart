@@ -19,6 +19,9 @@ import 'package:dsa_heldenverwaltung/rules/derived/gefecht_kampfmittel_rules.dar
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_zusatz_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_laden_rules.dart';
 
+/// Trennt den Bedienzweck vom unveränderten zentralen AT-/Budgetauftrag.
+enum GefechtsDialogzweck { aktion, distanzklasse }
+
 /// Fragt fehlenden Kontext ab, ohne erkannte Sperren übergehen zu können.
 class GefechtAktionsdialog extends StatefulWidget {
   /// Baut einen Dialog aus denselben Regeln wie die Aktionskarte.
@@ -34,6 +37,7 @@ class GefechtAktionsdialog extends StatefulWidget {
     this.manuell = false,
     this.kampfmittel,
     this.zusatzParade = false,
+    this.zweck = GefechtsDialogzweck.aktion,
   });
   final Gefechtszustand zustand;
   final HeroComputedSnapshot werte;
@@ -45,6 +49,7 @@ class GefechtAktionsdialog extends StatefulWidget {
   final bool manuell;
   final GefechtsKampfmittelwahl? kampfmittel;
   final bool zusatzParade;
+  final GefechtsDialogzweck zweck;
   @override
   State<GefechtAktionsdialog> createState() => _GefechtAktionsdialogState();
 }
@@ -68,6 +73,7 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
   void initState() {
     super.initState();
     _dk = widget.zustand.dk;
+    _distanzSchritte = _distanzwechsel ? -1 : 0;
     _zusatzParade = widget.zusatzParade;
     _kontext = widget.zustand.kontext.copyWith(
       situationsZuschlag: widget.zustand.kontext.situationsZuschlag ?? 0,
@@ -115,6 +121,9 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
     }
     super.dispose();
   }
+
+  // Ein eigener Bedienzweck hält die AT-/Budgetregel unverändert gemeinsam.
+  bool get _distanzwechsel => widget.zweck == GefechtsDialogzweck.distanzklasse;
 
   // Auch alte Aufrufer erhalten den fachlich richtigen Abwehrkontext.
   Gefechtsaktion get _aktion => gefechtsAktionMitKampfmittel(
@@ -299,7 +308,7 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
                   child: Text('• $grund'),
                 ),
               const SizedBox(height: 16),
-              if (kontextAktion == Gefechtsaktion.angriff)
+              if (kontextAktion == Gefechtsaktion.angriff && !_distanzwechsel)
                 GefechtAnsagefelder(
                   key: const ValueKey('gefecht-ansagefelder'),
                   finte: _finte,
@@ -310,16 +319,17 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
                   tpBonus: wirkung.tpBonus,
                   onChanged: () => setState(_entscheidungen.clear),
                 ),
-              if (_aktion == Gefechtsaktion.angriff && !werte.fernkampf)
+              if (_distanzwechsel) ...[
+                _zahl(_finte, 'Finte', key: 'gefecht-finte'),
+                Text('Abwehr +${wirkung.abwehrmalus} · Kein Schaden.'),
                 DropdownButtonFormField<int>(
-                  key: const ValueKey('gefecht-angriffsabsicht'),
+                  key: const ValueKey('gefecht-distanzschritte'),
                   isExpanded: true,
                   initialValue: _distanzSchritte,
                   decoration: const InputDecoration(
-                    labelText: 'Angriffsabsicht',
+                    labelText: 'Distanzklasse ändern',
                   ),
                   items: const [
-                    DropdownMenuItem(value: 0, child: Text('Treffer')),
                     DropdownMenuItem(
                       value: -1,
                       child: Text('Eine DK annähern (kein Schaden)'),
@@ -342,7 +352,10 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
                     _entscheidungen.clear();
                   }),
                 ),
-              if (_aktion == Gefechtsaktion.angriff && werte.fernkampf)
+              ],
+              if (_aktion == Gefechtsaktion.angriff &&
+                  werte.fernkampf &&
+                  !_distanzwechsel)
                 GefechtFernkampffelder(
                   key: ValueKey('fk-${_mittel?.art}-${_mittel?.id}'),
                   kontext: _kontext,
@@ -478,10 +491,11 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
   }
 
   // Änderungen machen die Bestätigung ungültig und zeigen die neue Freigabe.
-  Widget _zahl(TextEditingController c, String label) => Padding(
+  Widget _zahl(TextEditingController c, String label, {String? key}) => Padding(
     key: ObjectKey(c),
     padding: const EdgeInsets.only(top: 12),
     child: TextField(
+      key: key == null ? null : ValueKey(key),
       controller: c,
       keyboardType: const TextInputType.numberWithOptions(signed: true),
       decoration: InputDecoration(labelText: label),

@@ -6,6 +6,7 @@ import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 
 import 'combat_special_ability_state.dart';
 import 'gefecht_kampfmittel_rules.dart';
+import 'gefecht_hand_rules.dart';
 import 'gefecht_held_rules.dart';
 import 'gefecht_rules.dart';
 import 'two_weapon_combat_rules.dart';
@@ -42,7 +43,7 @@ List<GefechtsZusatzoption> gefechtsZusatzoptionen(HeroComputedSnapshot s) {
     final ok =
         sf &&
         haupt != null &&
-        haupt.isOneHanded &&
+        gefechtsWaffeEinhaendig(haupt) &&
         c.beKampf <= 4 &&
         !c.offhandName.toLowerCase().contains('turmschild') &&
         neben.sperren.isEmpty;
@@ -69,7 +70,7 @@ List<GefechtsZusatzoption> gefechtsZusatzoptionen(HeroComputedSnapshot s) {
             option?.isAvailable == true &&
             wert != null &&
             haupt != null &&
-            haupt.isOneHanded &&
+            gefechtsWaffeEinhaendig(haupt) &&
             neben.sperren.isEmpty;
         return GefechtsZusatzoption(
           pa ? 'Zusätzliche Nebenhandparade' : 'Zusätzliche Nebenhandattacke',

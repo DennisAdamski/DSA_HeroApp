@@ -54,6 +54,13 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   `gefecht_hand_rules.dart` prüft Haupt-/Nebenhandbelegungen vor Normalisierung
   und frischem Speichern; `gefecht_handwahl.dart` enthält Auswahl und bestätigtes
   Wegstecken. Ziehhandlungen merken ihre Zielhand.
+  Effektive Einhändigkeit wird dort zentral aus Talent/Waffenart bestimmt:
+  Bogen und gewöhnliche Armbrust brauchen beide Hände, Balestrina ist die
+  belegte Ausnahme. Anzeigenamen und gespeicherte Standardwerte eröffnen keine
+  Ausnahme; Metadaten bleiben unverändert. Kampfmittel und Zusatzbudgets nutzen
+  dieselbe Prüfung. `GefechtsDialogzweck.distanzklasse` öffnet den eigenen
+  DK-Einstieg mit Finte und ±1/±2; AT, freier Schritt und Folgen bleiben im
+  vorhandenen zentralen Auftrags-/Ausführungspfad.
   `gefecht_kampfmittel_rules.dart` löst konkrete Kampfmittel auf; ihre getrennten
   Grundwerte werden von Anzeige, Dialog und frischer Auftragsprüfung verwendet.
   `gefecht_zusatz_rules.dart` verbindet konkrete Zusatzproben mit Ausrüstung,
