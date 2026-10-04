@@ -341,6 +341,20 @@ Import-/Exporttests um Migration, Namensgleichheit und Slotwechsel ergänzen.
 Mengenstapel, aufgeteilte Munition und Identitätsregeln beim Kopieren eines Helden
 vor der Modelländerung klären. Schreibvorgänge mit ARCH-05/06 abstimmen.
 
+**Entscheidungen vom 04.10.2026 (Dennis):**
+
+1. *Mengenstapel und Munition:* Ein Stapel ist **ein** Gegenstand mit einer
+   Instanz-ID und einer Menge (auch Waffen und Rüstung, sofern Menge > 1).
+   Teilt man einen Stapel (z. B. 10 Pfeile am Bogen, 10 im Rucksack),
+   entsteht ein zweiter Stapel mit neuer Instanz-ID; Kampf-Slots verweisen
+   auf den jeweiligen Stapel. Die heutige Freitext-Menge `anzahl` und die
+   Geschossmengen am Slot bleiben als Altdarstellung lesbar (nur additive
+   Formatänderung, neue Menge unter neuem Schlüssel).
+2. *Identität beim Kopieren eines Helden:* Instanz- und Slot-IDs bleiben
+   erhalten. Sie sind nur innerhalb eines Helden eindeutig; die Kopie
+   bekommt nur eine neue Helden-ID (wie bisher in `HeroActions`). Kein
+   Umschreiben von Verweisen.
+
 **Teilstand 27.09.2026 — B2/B3 behoben:** Kampf-Slots für Waffen,
 Geschosse, Rüstung und Nebenhand tragen stabile IDs. Beim Laden erhalten
 Bestandsdaten deterministische IDs und die Inventar-Namensverweise werden
