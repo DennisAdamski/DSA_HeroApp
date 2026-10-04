@@ -301,6 +301,7 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
               const SizedBox(height: 16),
               if (kontextAktion == Gefechtsaktion.angriff)
                 GefechtAnsagefelder(
+                  key: const ValueKey('gefecht-ansagefelder'),
                   finte: _finte,
                   wuchtschlag: _wuchtschlag,
                   fernkampfansage: _fernkampfansage,
@@ -311,6 +312,7 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
                 ),
               if (_aktion == Gefechtsaktion.angriff && !werte.fernkampf)
                 DropdownButtonFormField<int>(
+                  key: const ValueKey('gefecht-angriffsabsicht'),
                   isExpanded: true,
                   initialValue: _distanzSchritte,
                   decoration: const InputDecoration(
@@ -354,6 +356,7 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
                   }),
                 ),
               GefechtKontextfelder(
+                key: const ValueKey('gefecht-kontextfelder'),
                 kontext: _kontext,
                 aktion: kontextAktion,
                 onChanged: (k) => setState(() {
@@ -376,6 +379,7 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
               for (final m in p.modifikatoren)
                 Text('${m.name}: ${m.wert >= 0 ? '+' : ''}${m.wert}'),
               DropdownButtonFormField<String>(
+                key: const ValueKey('gefecht-distanzklasse'),
                 isExpanded: true,
                 initialValue: _dk,
                 decoration: const InputDecoration(
@@ -475,6 +479,7 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
 
   // Änderungen machen die Bestätigung ungültig und zeigen die neue Freigabe.
   Widget _zahl(TextEditingController c, String label) => Padding(
+    key: ObjectKey(c),
     padding: const EdgeInsets.only(top: 12),
     child: TextField(
       controller: c,

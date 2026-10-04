@@ -1645,12 +1645,20 @@ Dabei gilt:
   einschließlich Waffenmeister. Bezahlte reguläre Aktionen bleiben erhalten;
   Restdauer ist `max(0, aktuelle Ladezeit - bezahlt)`. Der vollständig bezahlte
   Abschluss verlangt keine weitere Marke. Ladung ist flüchtig pro Waffen-ID;
-  Waffen-/Geschossprofiländerungen verlangen konkrete erneute Vorbereitung.
+  Waffen-/Geschossprofiländerungen machen den Ladestand unbekannt und verlangen
+  erneute konkrete Bestätigung oder Vorbereitung. Eine frische Bestätigung im
+  Schussdialog gilt nur für das aktuelle Profil; passend bekannte Entladung
+  kann nicht übergangen werden.
 - Der vorbereitete Schuss bindet den ursprünglichen Auftrag einschließlich
   Waffe, Geschoss, Zielkontakt und Ansagen. Die abschließende Prüfung und Probe
   verwenden aktuelle DK und Sitzungskontext; ein Probeabbruch erhält diese
   aktuellen Werte und den bezahlten ursprünglichen Auftrag. Auch Vorbereitung
   mit einer PA-Marke erhält den Sitzungskontext.
+- Gebundener FK-Schaden ersetzt in beiden Händen ausschließlich den bereits
+  enthaltenen TP-Anteil des Vorschau-Distanzbands durch das numerisch aufgelöste
+  Band der tatsächlichen Schussentfernung. Ansagebonus und übrige Vorschauanteile
+  wirken einmal. Bei unbekanntem Band klassifiziert der Ergebnisbinder Schaden
+  als manuell und gibt keinen automatischen Schadensrequest aus.
 - `maneuver_rules.dart` normalisiert Manoever-Namen und UI-Texte auf stabile
   IDs, damit Kampfmeisterschaften dieselben Referenzen wie Katalog und UI
   nutzen koennen.

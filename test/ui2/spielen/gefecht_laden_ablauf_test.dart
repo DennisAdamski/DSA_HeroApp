@@ -90,6 +90,62 @@ Future<ProviderContainer> _oeffnen(
 
 void main() {
   testWidgets(
+    'I2 frische Dialogbestätigung schießt nur das aktuelle Geschoss',
+    (t) async {
+      final b = _Munition(fixture.ladeSnapshot())
+        ..fehler = false
+        ..w20Wert = 1;
+      final c = await _oeffnen(t, b, geladen: true);
+      final alterStand = c.read(gefechtProvider('rondra'))!.ladestaende['a']!;
+      b.aktuell = fixture.ladeSnapshot(geschoss: 1);
+      c.invalidate(heroComputedProvider('rondra'));
+      await t.pumpAndSettle();
+      expect(
+        gefechtsLadezustand(
+          c.read(gefechtProvider('rondra'))!,
+          b.aktuell.hero.combatConfig.selectedWeapon,
+        ),
+        isNull,
+      );
+      await t.tap(find.text('Angreifen'));
+      await t.pumpAndSettle();
+      final feld = find.byWidgetPredicate(
+        (w) =>
+            w is DropdownButtonFormField<bool> &&
+            w.decoration.labelText == 'Waffe geladen / wurfbereit?',
+      );
+      await t.ensureVisible(feld);
+      await t.tap(feld);
+      await t.pumpAndSettle();
+      await t.tap(find.text('Ja').last);
+      await t.pumpAndSettle();
+      await t.tap(find.byKey(const ValueKey('gefecht-auftrag-starten')));
+      await t.pumpAndSettle();
+      final nachher = c.read(gefechtProvider('rondra'))!;
+      final geschosse =
+          b.aktuell.hero.combatConfig.selectedWeapon.rangedProfile.projectiles;
+      expect(b.anfragen, hasLength(1));
+      expect(b.uebernahmen, 1);
+      expect(nachher.angriffeVerbraucht, 1);
+      expect(nachher.handlung, isNull);
+      expect(geschosse[0].count, 5);
+      expect(geschosse[1].count, 4);
+      expect(nachher.ladestaende['a']!.geschossId, 'p2');
+      expect(
+        nachher.ladestaende['a']!.waffenprofilKey,
+        isNot(alterStand.waffenprofilKey),
+      );
+      expect(
+        gefechtsLadezustand(
+          nachher,
+          b.aktuell.hero.combatConfig.selectedWeapon,
+        ),
+        false,
+      );
+      expect(t.takeException(), isNull);
+    },
+  );
+  testWidgets(
     'I1 BE-Wechsel während echter Ladezahlung erhält Fortschritt und RG-Abschluss',
     (t) async {
       final b = _Munition(review.reviewLadeSnapshot());

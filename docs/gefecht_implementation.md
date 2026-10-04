@@ -85,6 +85,16 @@ verlangt Hammerschlag die manuelle Verdreifachung der gesamten TP einschließlic
 TP-Ansage; Todesstoß verlangt konkrete Klärung von RS/Schild/Wundfolgen.
 Die zentrale Kombinationstabelle unterscheidet erlaubt, verboten und einzeln
 zu klären; eine bloße Beschreibung ist keine automatische Kombinationsfreigabe.
+Gebundener FK-Schaden ersetzt den TP-Anteil des gespeicherten Vorschau-Distanzbands
+genau einmal durch den Anteil der eingegebenen Schussentfernung, für beide Hände.
+Geschoss-, Effekt- und übrige Vorschauanteile bleiben erhalten; der Ansagebonus
+kommt einmal hinzu. Kann das tatsächliche Band nicht bestimmt werden, hält der
+Ergebnisbinder Waffenidentität und Ansagebonus mit einer manuellen Schadensfolge
+fest und bietet keinen automatischen Schadenswurf. Die bestehende Schussfreigabe
+bei fehlendem Entfernungsprofil wird dadurch nicht aufgehoben.
+Ganze Formularabschnitte besitzen stabile Identitäten: wechselnde Hinweise,
+Modifikatoren und Entscheidungen erhalten Tastaturfokus und Cursor bei
+mehrstelliger Eingabe sowie beim Wechsel zwischen ungültigen und gültigen Werten.
 
 FK-Ansage: Grenze TaW, bei Meisterschütze FK; halbe TP normal, volle TP bei
 Scharf-/Meisterschütze. Zusätzlich bezahlt werden gerundete halbe Ansageaktionen,
@@ -105,6 +115,9 @@ Zielstand verbraucht; Rundenschritte erhalten ihn.
 Geführte Fernkampfwaffen beider Hände bieten „Laden / Vorbereiten“. Ein unbekannter
 anfänglicher Ladezustand muss konkret bestätigt werden. Ein bereits bekannter
 entladener Zustand kann nicht durch ein neues „Ja“ die Ladezahlung umgehen.
+Ein veralteter Ladestand nach Waffen-/Geschossprofilwechsel ist unbekannt und
+kann im Schussdialog ausdrücklich frisch bestätigt werden. Ein passender
+bekannter entladener Zustand hat weiterhin Vorrang vor Formulareingaben.
 Ladung gehört zur physischen Waffen-ID, bleibt beim Wechsel derselben Waffe
 zwischen Händen erhalten und wird nie auf eine andere ID übertragen.
 

@@ -16,6 +16,7 @@ class GefechtLadedialog extends StatefulWidget {
   final Gefechtszustand zustand;
   final HeroComputedSnapshot snapshot;
   final GefechtsKampfmittelwahl kampfmittel;
+
   /// Erhält die ausdrückliche Anfangswahl während der Profil- und Budgetprüfung.
   @override
   State<GefechtLadedialog> createState() => _LadedialogState();

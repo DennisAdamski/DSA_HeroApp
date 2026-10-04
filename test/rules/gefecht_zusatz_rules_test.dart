@@ -133,10 +133,7 @@ void main() {
           final q = pruefeGefechtAuftrag(neu, snap, testCatalog, ohneWm);
           expect(
             q.zielwert,
-            snap.combatPreviewStats.shieldPa -
-                3 +
-                gefechtsIniBonus(neu, w) -
-                3,
+            snap.combatPreviewStats.shieldPa - 3 + gefechtsIniBonus(neu, w) - 3,
           );
         } else {
           final ansage = s.copyWith(zusatzVerbraucht: 0, paradeMitAnsage: true);

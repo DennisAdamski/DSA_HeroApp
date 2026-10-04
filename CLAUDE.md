@@ -32,10 +32,16 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   Klasse liefert einen Schadensrequest; die anderen werden einzeln am Tisch
   abgewickelt und abgeschlossen. Kleine Ansage-/Ergebniswidgets
   lassen die allgemeine Schadensprobe unverändert unabhängig.
+  Gebundener FK-Schaden ersetzt ausschließlich den Vorschau-Distanzanteil durch
+  das Band der eingegebenen Schussentfernung; unbekannte Bänder bleiben manuell.
+  Dynamische Formularhinweise erhalten die Identität ganzer Eingabeabschnitte,
+  damit Tastaturfokus und Cursor beim Tippen bestehen bleiben.
   `domain/gefecht_laden.dart` hält flüchtige Ladestände pro physischer Waffen-ID
   und bezahlte Vorbereitungsaufträge. `gefecht_ladezustand_rules.dart` bindet
   Ladung an Waffen-/Geschossprofil, `gefecht_laden_rules.dart` prüft aktuelle
   Restdauer, echte reguläre Zahlung und den gehaltenen Ziel-/Schussauftrag.
+  Profile ohne passenden Ladestand dürfen im Schussdialog frisch bestätigt werden;
+  ein passender bekannter entladener Zustand bleibt verbindlich.
   `gefecht_ladedialog.dart` erfragt den unbekannten Anfang; `gefecht_laden.dart`
   verbindet den Dialog mit der flüchtigen Sitzung. Ladezeit stammt zentral aus
   der bestehenden Combat-Vorschau, einschließlich Effekten und Waffenmeister.
