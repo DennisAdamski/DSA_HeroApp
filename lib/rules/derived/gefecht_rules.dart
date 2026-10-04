@@ -6,6 +6,8 @@ import 'gefecht_fernkampf_rules.dart';
 
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 
+import 'gefecht_meisterparade_rules.dart';
+
 /// Aufgelöste Kampfwerte ohne Regelberechnungen im Widget oder Provider.
 class Gefechtswerte {
   /// Nimmt abgeleitete Heldenwerte und bekannte Ausrüstungsvoraussetzungen auf.
@@ -538,6 +540,11 @@ Gefechtszustand verbraucheGefechtsaktion(
       pruefung.angriffe > 0 && pruefung.aktion == Gefechtsaktion.angriff;
   return s.copyWith(
     regulaeresAngriffspaar: regulaereAt ? pruefung.ausruestungspaar : null,
+    meisterparadeBonus: gefechtsMeisterparadeBonusNachBuchung(
+      s,
+      pruefung,
+      erfolg,
+    ),
     regulaeresParadepaar: regulaerePa ? pruefung.ausruestungspaar : null,
     regulaeresParademittel: regulaerePa ? pruefung.kampfmittel : null,
     paradeMitAnsage: regulaerePa ? pruefung.mitAnsage : null,

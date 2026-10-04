@@ -343,5 +343,8 @@ GefechtAuftrag gefechtsAktuellerZielauftrag(Gefechtszustand s) {
     finte: a.finte,
     wuchtschlag: a.wuchtschlag,
     fernkampfansage: a.fernkampfansage,
+    meisterparadeAnsage: a.meisterparadeAnsage,
+    schildAnsagegrenze: a.schildAnsagegrenze,
+    manuelleKampfaktion: a.manuelleKampfaktion,
   );
 }

@@ -29,6 +29,9 @@ class GefechtAuftrag {
     this.finte = 0,
     this.wuchtschlag = 0,
     this.fernkampfansage = 0,
+    this.meisterparadeAnsage = 0,
+    this.schildAnsagegrenze,
+    this.manuelleKampfaktion,
   });
   final Gefechtsaktion aktion;
   final String titel;
@@ -50,4 +53,13 @@ class GefechtAuftrag {
 
   /// Unabhängige Ansagen; weitere Erschwernisse erzeugen keine Trefferfolgen.
   final int finte, wuchtschlag, fernkampfansage;
+
+  /// Eigene PA-Ansage; erzeugt ausschließlich den einmaligen Erfolgsbonus.
+  final int meisterparadeAnsage;
+
+  /// Am Tisch geklärte Schildgrenze, weil Schilde keinen eigenen TaW haben.
+  final int? schildAnsagegrenze;
+
+  /// Ausdrückliche Einordnung manueller Abschlüsse als Angriff oder Abwehr.
+  final Gefechtsaktion? manuelleKampfaktion;
 }

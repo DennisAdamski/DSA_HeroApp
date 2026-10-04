@@ -163,6 +163,7 @@ class Gefechtszustand {
     this.zielstand,
     this.umgewandelteAktionOffen = true,
     this.ladestaende = const {},
+    this.meisterparadeBonus = 0,
   });
   final int runde, iniWurf, iniVerlust;
   final int geschuetzterIniVerlust, ungeklaerterIniVerlust;
@@ -205,6 +206,9 @@ class Gefechtszustand {
 
   /// Ladung gehört der physischen Waffen-ID, unabhängig von der aktuellen Hand.
   final Map<String, Gefechtsladestand> ladestaende;
+
+  /// Einmalige Erleichterung der nächsten eigenen Angriffs-/Abwehraktion.
+  final int meisterparadeBonus;
 
   /// Ändert nur benannte Sitzungsteile; kein JSON oder Heldenformat betroffen.
   Gefechtszustand copyWith({
@@ -249,6 +253,7 @@ class Gefechtszustand {
     bool ohneZielstand = false,
     bool? umgewandelteAktionOffen,
     Map<String, Gefechtsladestand>? ladestaende,
+    int? meisterparadeBonus,
   }) => Gefechtszustand(
     runde: runde ?? this.runde,
     iniWurf: iniWurf ?? this.iniWurf,
@@ -298,6 +303,7 @@ class Gefechtszustand {
     umgewandelteAktionOffen:
         umgewandelteAktionOffen ?? this.umgewandelteAktionOffen,
     ladestaende: ladestaende ?? this.ladestaende,
+    meisterparadeBonus: meisterparadeBonus ?? this.meisterparadeBonus,
   );
 }
 
@@ -323,6 +329,8 @@ class Gefechtspruefung {
     this.fehlendeAngaben = const [],
     this.entscheidungen = const [],
     this.hinweise = const [],
+    this.meisterparadeAnsage = 0,
+    this.verbrauchterMeisterparadeBonus = 0,
   });
   final Gefechtsaktion aktion;
   final Gefechtsfreigabe status;
@@ -335,6 +343,12 @@ class Gefechtspruefung {
   final bool mitAnsage;
   final Gefechtsaktion? probenart;
   final List<String> sperrgruende, fehlendeAngaben, entscheidungen, hinweise;
+
+  /// Erst die bestätigte Buchung verbraucht den geprüften alten Bonus.
+  final int verbrauchterMeisterparadeBonus;
+
+  /// Erfolgreiche Buchung erzeugt die neue Ansage nach Verbrauch des alten Bonus.
+  final int meisterparadeAnsage;
 
   /// Nur konkrete Sperren, fehlende Angaben oder offene Entscheidungen blockieren.
   bool get ausfuehrbar =>

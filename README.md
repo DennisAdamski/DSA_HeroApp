@@ -154,6 +154,9 @@ Technischer Stack:
   verbindlich. Ausrüstung wechselt im eigenen Popup, längere Ziehhandlungen
   werden erst nach Abschluss wirksam.
 - Proben, Ressourcen, Wunden und Effekte verwenden die bisherigen Fachwege.
+  Meisterparade erfragt eine eigene Ansage und erleichtert bei Erfolg einmalig
+  die nächste Angriffs-/Abwehraktion; Fehlmanöverfolgen bleiben konkret angezeigt
+  manuell. Bei positiver Schildansage wird die am Tisch geklärte Grenze erfragt.
   [Umfang und Prüfungen der ersten Version](docs/gefecht_implementation.md)
   dokumentieren die verbleibenden manuellen Regeln.
 
