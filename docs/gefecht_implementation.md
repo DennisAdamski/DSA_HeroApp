@@ -429,3 +429,17 @@ DK/Gegenhalten/Ausweichen, manuelle Abschlüsse und stabiler Zahlenfokus.
 Die bisherigen Nebenhand-Lade-/Distanzschadensfixtures verwenden die belegte
 Balestrina-Ausnahme. Der Handwechseltest führt dabei denselben Typ vor und nach
 dem Wechsel; eine gewöhnliche Armbrust erhält keine Nebenhandfreigabe.
+
+### Integrationstestnachtrag nach PR #208 (4. Oktober 2026)
+
+Der zusätzliche Test in `gefecht_meisterparade_test.dart` durchläuft die echte
+Ansicht, Auftragsfreigabe, Probeengine und Providerbuchung: erfolgreiche reguläre
+Schild-Meisterparade mit Ansage 3, frischer Nahkampfangriff mit Finte 1, danach
+zulässige zusätzliche Schildparade mit Schildkampf II. Der Bonus erhöht Prüfung,
+Dialogzielwert und tatsächliches Probenziel genau einmal um 3. Dialog-/Probeabbruch
+erhalten Bonus und alle Budgets. Bei doppeltem Abschlusscallback zählt der Test
+genau eine Zusatzbuchung und eine Bonusentfernung, ohne eine weitere reguläre PA
+zu verbrauchen. Nur das Würfelergebnis und die Callbackwiederholung sind steuerbar;
+der Produktionspfad bleibt unverändert. Prüfungen und aktueller Remote-CI-Stand
+sind im [Folgeplan](gefecht_next_plan.md#testnachtrag-nach-pr-208-4-oktober-2026)
+nachgeführt; frühere Abnahmeergebnisse bleiben historische Nachweise.

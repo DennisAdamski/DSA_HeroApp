@@ -3,6 +3,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht.dart';
+import 'package:dsa_heldenverwaltung/domain/gefecht_auftrag.dart';
+import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/gefecht_auftrag_rules.dart';
 import 'package:dsa_heldenverwaltung/ui2/gefecht/gefecht_aktionsdialog.dart';
 import 'package:dsa_heldenverwaltung/ui2/gefecht/gefecht_ansicht.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht_kontext.dart';
@@ -26,6 +29,150 @@ const meisterparade = ManeuverDef(
 );
 
 void main() {
+  testWidgets(
+    'Schild-Meisterparade erleichtert echte Zusatzabwehr und bucht genau einmal',
+    (tester) async {
+      final (container, bestand) = await _ansicht(
+        tester,
+        bonus: 0,
+        schild: true,
+      );
+      final snap = mp.mpSnapshot(schild: true);
+      final schildPa = snap.combatPreviewStats.shieldPa;
+      final ctl = container.read(gefechtProvider('rondra').notifier);
+      await _oeffnen(tester, 'Meisterparade');
+      await tester.enterText(
+        find.byKey(const ValueKey('gefecht-meisterparade-ansage')),
+        '3',
+      );
+      await tester.enterText(
+        find.byKey(const ValueKey('gefecht-schild-ansagegrenze')),
+        '3',
+      );
+      await tester.pump();
+      final starten = find.byKey(const ValueKey('gefecht-auftrag-starten'));
+      expect(tester.widget<FilledButton>(starten).onPressed, isNotNull);
+      await tester.tap(starten);
+      await tester.pumpAndSettle();
+      final nachMeisterparade = container.read(gefechtProvider('rondra'))!;
+      expect(bestand.anfragen.single.type, ProbeType.combatParry);
+      expect(bestand.anfragen.single.title, contains('Schild'));
+      expect(bestand.anfragen.single.targets.single.value, schildPa - 3);
+      expect(nachMeisterparade.paradenVerbraucht, 1);
+      expect(nachMeisterparade.zusatzVerbraucht, 0);
+      expect(nachMeisterparade.meisterparadeBonus, 3);
+      expect(
+        nachMeisterparade.regulaeresParademittel?.art,
+        GefechtsKampfmittelArt.schild,
+      );
+      expect(nachMeisterparade.regulaeresParadepaar, isNotNull);
+      expect(nachMeisterparade.kontext.finte, isNull);
+
+      // Ein neuer Angriff ist nötig: die reguläre PA hat die Angriffsdaten gelöscht.
+      const kontext = Gefechtskontext(
+        angriffsart: Gefechtsangriffsart.nahkampf,
+        finte: 1,
+        schildWmWirksam: true,
+        situationsZuschlag: 0,
+      );
+      ctl.setzen(nachMeisterparade.copyWith(kontext: kontext));
+      await tester.pumpAndSettle();
+      final vorZusatz = container.read(gefechtProvider('rondra'))!;
+      final auftrag = GefechtAuftrag(
+        aktion: Gefechtsaktion.zusatzaktion,
+        titel: 'Zusätzliche Schildparade',
+        zuschlag: 0,
+        dk: 'N',
+        dauer: 1,
+        kosten: 1,
+        zusatzParade: true,
+        kampfmittel: nachMeisterparade.regulaeresParademittel,
+        kontext: kontext,
+      );
+      final pruefung = pruefeGefechtAuftrag(
+        vorZusatz,
+        snap,
+        testCatalog,
+        auftrag,
+      );
+      final ohneBonus = pruefeGefechtAuftrag(
+        vorZusatz.copyWith(meisterparadeBonus: 0),
+        snap,
+        testCatalog,
+        auftrag,
+      );
+      expect(pruefung.ausfuehrbar, true);
+      expect(ohneBonus.ausfuehrbar, true);
+      expect(pruefung.zielwert, ohneBonus.zielwert! + 3);
+      expect(pruefung.zielwert, schildPa - 1 + 3);
+      final bonusMods = pruefung.modifikatoren
+          .where((m) => m.name == 'Meisterparade-Bonus')
+          .toList();
+      expect(bonusMods, hasLength(1));
+      expect(bonusMods.single.wert, -3);
+      expect(pruefung.zusatz, 1);
+      expect(pruefung.paraden, 0);
+
+      for (final dialogAbbruch in [true, false]) {
+        bestand.abbrechen = !dialogAbbruch;
+        await _oeffnen(tester, 'Zusätzliche Schildparade');
+        expect(
+          find.textContaining('Zielwert ${pruefung.zielwert}'),
+          findsOneWidget,
+        );
+        expect(tester.widget<FilledButton>(starten).onPressed, isNotNull);
+        await tester.tap(dialogAbbruch ? find.text('Abbrechen') : starten);
+        await tester.pumpAndSettle();
+        final abgebrochen = container.read(gefechtProvider('rondra'))!;
+        expect(abgebrochen.meisterparadeBonus, 3);
+        expect(abgebrochen.paradenVerbraucht, 1);
+        expect(abgebrochen.zusatzVerbraucht, 0);
+        expect(abgebrochen.angriffeVerbraucht, vorZusatz.angriffeVerbraucht);
+        expect(abgebrochen.freieVerbraucht, vorZusatz.freieVerbraucht);
+        expect(abgebrochen.kontext.finte, 1);
+        expect(abgebrochen.auftrag, isNull);
+      }
+      expect(bestand.anfragen, hasLength(2));
+      expect(bestand.anfragen.last.targets.single.value, pruefung.zielwert);
+
+      // Zählt echte Zustandsübergänge, einschließlich des wiederholten Callbacks.
+      var bonusEntfernungen = 0;
+      var zusatzBuchungen = 0;
+      final subscription = container.listen(gefechtProvider('rondra'), (
+        vorher,
+        nachher,
+      ) {
+        if (vorher?.meisterparadeBonus == 3 &&
+            nachher?.meisterparadeBonus == 0) {
+          bonusEntfernungen++;
+        }
+        if (vorher?.zusatzVerbraucht == 0 && nachher?.zusatzVerbraucht == 1) {
+          zusatzBuchungen++;
+        }
+      });
+      addTearDown(subscription.close);
+      bestand.abbrechen = false;
+      bestand.doppelt = true;
+      await _oeffnen(tester, 'Zusätzliche Schildparade');
+      await tester.tap(starten);
+      await tester.pumpAndSettle();
+      final gebucht = container.read(gefechtProvider('rondra'))!;
+      expect(bestand.anfragen, hasLength(3));
+      expect(bestand.anfragen.last.type, ProbeType.combatParry);
+      expect(bestand.anfragen.last.title, contains('Schild'));
+      expect(bestand.anfragen.last.targets.single.value, pruefung.zielwert);
+      expect(gebucht.paradenVerbraucht, 1);
+      expect(gebucht.zusatzVerbraucht, 1);
+      expect(gebucht.meisterparadeBonus, 0);
+      expect(gebucht.angriffeVerbraucht, vorZusatz.angriffeVerbraucht);
+      expect(gebucht.freieVerbraucht, vorZusatz.freieVerbraucht);
+      expect(gebucht.kontext.finte, isNull);
+      expect(gebucht.auftrag, isNull);
+      expect(bonusEntfernungen, 1);
+      expect(zusatzBuchungen, 1);
+      expect(tester.takeException(), isNull);
+    },
+  );
   testWidgets('Meisterparade verlangt eigene Zahl und sperrt ungültigen Text', (
     tester,
   ) async {
@@ -357,12 +504,13 @@ void main() {
 Future<(ProviderContainer, GefechtsTestBestand)> _ansicht(
   WidgetTester tester, {
   int bonus = 4,
+  bool schild = false,
 }) async {
   tester.view.physicalSize = const Size(1200, 1200);
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.resetPhysicalSize);
   addTearDown(tester.view.resetDevicePixelRatio);
-  final snap = mp.mpSnapshot();
+  final snap = mp.mpSnapshot(schild: schild);
   const katalog = RulesCatalog(
     version: 'test',
     source: 'test',
@@ -388,6 +536,7 @@ Future<(ProviderContainer, GefechtsTestBestand)> _ansicht(
           kontext: const Gefechtskontext(
             angriffsart: Gefechtsangriffsart.nahkampf,
             finte: 0,
+            schildWmWirksam: true,
             situationsZuschlag: 0,
           ),
         ),

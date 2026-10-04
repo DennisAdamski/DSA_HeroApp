@@ -340,7 +340,7 @@ keine Katalogmigration und keine ungeprüfte Änderung ihrer Aktionskosten.
   und keine Vermischung mit Mirakelbonus. Eine positive Schild-Ansage benötigt
   wegen der unklaren TaW-Grenze eine konkrete manuelle Obergrenze, zusätzlich PA.
 
-Frische Gesamtsuite: 3.381 bestanden, 3 bestehende Tests übersprungen.
+Historische Abnahmeprüfung auf `51955b5`: 3.381 bestanden, 3 bestehende Tests übersprungen.
 Analyse, vollständiger CI-Formatcheck, tatsächlicher CI-LOC-Check und Gefechts-LOC
 bestanden. Paketreviews und Gesamtreview einschließlich nötiger Korrekturen sind
 abgeschlossen. Produktstand der Abnahme: `51955b5`.
@@ -348,10 +348,11 @@ abgeschlossen. Produktstand der Abnahme: `51955b5`.
 Allgemeine Folgen misslungener Ansagemanöver bleiben manuell; Meisterparade nennt
 die gewählte Ansage und den Folgemalus ausdrücklich. Die unveränderte zusätzliche
 breite UI2-LOC-Prüfung findet weiterhin die bestehende 803-Zeilen-Abenteuerdatei.
-Ein nicht blockierender Testnachtrag bleibt: ausdrückliche Buchung einer zulässigen
-Zusatzabwehr mit offenem Meisterparadebonus. Der geprüfte Integrationspfad ist korrekt.
+Zum damaligen Abnahmestand blieb ein nicht blockierender Testnachtrag offen:
+ausdrückliche Buchung einer zulässigen Zusatzabwehr mit offenem Meisterparadebonus.
+Dieser Nachtrag ist in der nachfolgenden Prüfung abgeschlossen.
 
-GitHub hat inzwischen den veröffentlichten Stand `50241f2` geprüft:
+Historischer GitHub-Prüfstand auf `50241f2`:
 Die Läufe `37198239552` und `37198240229` bestehen Format, Analyse, LOC und Android-
 Debug-Build; der Testjob scheitert. Firebase-Preview besteht. Die vollständigen
 Fehlerlogs sind per API mit HTTP 403 geschützt; die konkrete Remote-Fehlerausgabe
@@ -361,3 +362,46 @@ Balestrina korrigiert, ohne die Hand- oder Profilregeln aufzuweichen. Der frisch
 Gesamtlauf dieses neueren Stands besteht; sein GitHub-Lauf steht noch aus.
 Der Agent hat keinen Push oder Deployment ausgeführt. Die ursprünglichen Nutzernotizen
 bleiben unverändert und außerhalb der Agenten-Commits erhalten.
+
+### Testnachtrag nach PR #208 (4. Oktober 2026)
+
+PR [#208](https://github.com/DennisAdamski/DSA_HeroApp/pull/208) wurde am
+4. Oktober 2026 um 17:54 Uhr MESZ nach `test` gemergt (`e289938`). Der lokale
+Arbeitsbranch enthält denselben Dateiinhalt wie dieser Merge-Stand und wird
+gemäß AGENTS.md weiterverwendet; es erfolgt kein neuer Merge.
+
+- [x] Der Integrationstest in `gefecht_meisterparade_test.dart` führt mit
+  einhändiger Hauptwaffe, geführtem Schild und Schildkampf II eine erfolgreiche
+  reguläre Schild-Meisterparade mit Ansage 3 und bestätigter Schildgrenze 3 aus.
+- [x] Nach dem Löschen der ersten Angriffsdaten wird ein frischer Nahkampfangriff
+  mit Finte 1 und wirksamem Schild-WM bereitgestellt. Die gemeinsame Prüfung,
+  Dialogvorschau und tatsächliche PA-Probe verwenden genau einmal den Bonus +3.
+- [x] Dialog- und Probeabbruch erhalten Bonus sowie reguläres, freies und
+  zusätzliches Budget. Der folgende echte Abschluss mit doppeltem Callback
+  verbraucht genau eine Zusatzmarke und entfernt den Bonus genau einmal;
+  die bereits gebuchte reguläre PA bleibt bei einer Marke.
+
+Keine Produktionsänderung und keine zusätzliche Regelautomatisierung nötig.
+Die bestehenden manuellen Grenzen, insbesondere Schild-Ansagegrenze und
+Fehlmanöverfolgen, bleiben bestehen.
+
+Frische lokale Prüfungen des Testnachtrags:
+- `flutter analyze`: ohne Befund.
+- 42 relevante Meisterparade-/Zusatzaktions-/Provider-/Ablauftests bestanden.
+- Vollständige Suite: 3.382 bestanden, 3 bestehende Tests übersprungen.
+- CI-Formatcheck `dart format --output=none --set-exit-if-changed lib test tool`:
+  1.000 Dateien geprüft, keine Änderungen.
+- CI-LOC (21 Screens), Gefechts-LOC (25 Dateien) und ergänzte Testdatei: ≤700 Zeilen.
+- Breite UI2-LOC-Prüfung: unverändert bestehender Befund
+  `lib/ui2/spielen/karto_abenteuerblatt.dart` mit 803 Zeilen; außerhalb des Scopes.
+- Unabhängiges Abschlussreview des Test- und Dokumentationsnachtrags: ohne Befund.
+
+AGENTS.md, CLAUDE.md, README.md und betroffene Dokumentation sind geprüft.
+Es entsteht kein neues Konzept oder geändertes Produktionsverhalten; der
+Prüfnachweis wird nur hier und in `gefecht_implementation.md` ergänzt.
+
+Aktueller veröffentlichter CI-Stand: [Lauf 37214771631](https://github.com/DennisAdamski/DSA_HeroApp/actions/runs/37214771631)
+auf `e289938` ist erfolgreich abgeschlossen: Format, Analyse, LOC, Unit-/Widgettests,
+Web-Release-Build und Firebase-Hosting. Das ist der bereits erfolgte Remote-Lauf
+nach PR #208; für diesen lokalen Testnachtrag existiert noch kein Remote-CI-Lauf.
+Kein Push, weiterer Merge oder Deployment durch den Agenten.
