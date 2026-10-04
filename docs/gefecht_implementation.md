@@ -40,12 +40,27 @@ Die Umsetzung und ihre Prüfungen werden je Teilpaket hier nachgeführt.
 - Einstieg und responsive Ansicht implementiert. Die Rundenleiste läuft über
   die ganze Breite; Haltung, Gegner und DK stehen neben der direkten Ansage.
   Manöver sind suchbar und ihre Liste bleibt in der Höhe begrenzt. Auf dem
-  Handy stehen Angriff, Manöver und Verteidigung vor Durchhalten.
+  Handy stehen Angriff, Manöver und Verteidigung vor den Vitalwerten.
 - Ausrüstung und Fachdialoge verbunden: verzögerter Waffenwechsel, frische
   Slot-Auswahl, Rüstungskorrektur mit Konfliktprüfung, Schaden, Ressourcen,
   Wunden, Effekte und das bestehende Protokoll.
 
 ## Bedienung und bewusste manuelle Abläufe
+
+Die Gefechtskarte „Vitalwerte“ zeigt geschlossen nur LeP, aktivierte AsP und
+vorhandene Wunden mit ihrer Körperzone. Auch unterdrückte Wunden bleiben
+sichtbar, weil die Anzeige den gespeicherten Wundenzustand verwendet.
+Geöffnet bleiben alle bisherigen Ressourcen-, Schadens-, Wunden- und
+Effektfunktionen erreichbar. Eine stabile Heldenidentität erhält den
+Aufklappzustand bei Ressourcenänderungen; die bisherige automatische Öffnung
+bei Wundabzügen oder höchstens halben LeP gilt nur beim ersten Aufbau.
+
+„Parade erlaubt?“ wird nicht mehr abgefragt. Für eine normale Nahkampfparade
+genügen konkrete Angriffsart und gegnerische Finte, zusätzlich zur üblichen
+DK-, Ausrüstungs- und Budgetprüfung. Ein bekanntes Paradeverbot bleibt gesperrt
+und wird bei Änderungen anderer Kontextfelder erhalten. Fernkampf- und
+Sonderangriffe bleiben manuell zu prüfen; Schildparaden benötigen weiterhin
+den konkreten Schild-WM-Kontext.
 
 „Gefecht läuft“ öffnet die erhaltene Sitzung ohne neuen INI-Wurf. Reguläre,
 freie und Zusatzmarken bleiben getrennt. Die hohen INI-Boni werden bei der
@@ -340,11 +355,11 @@ Tests und Android-Build wurden übersprungen, LOC und Firebase-Preview bestanden
 Die drei Formatblocker sind lokal korrigiert. Ein neuer Remote-Lauf steht für
 die noch lokalen Commits aus; lokale Prüfungen gelten nicht als Remote-CI-Erfolg.
 
-Die zusätzliche Testnotiz zum Zahlenfokus ist behoben. Waffenbezogene
-Zweihändigkeit, ein eigenständiger Bedienpfad für Distanzklassenwechsel und die
-später ergänzten Notizen zu Vitalwerten, Parade-Abfrage und Meisterparade sind
-im [Folgeplan](gefecht_next_plan.md) separat vorgemerkt. Allgemeines optionales
-Zielen, komplexe Gegnerfolgen und globale INI-Phasen bleiben wie vereinbart
+Die zusätzliche Testnotiz zum Zahlenfokus ist behoben. Vitalwerte und die
+konkrete Paradeprüfung sind im Folgepaket umgesetzt. Waffenbezogene
+Zweihändigkeit, ein eigenständiger Bedienpfad für Distanzklassenwechsel und
+Meisterparade sind im [Folgeplan](gefecht_next_plan.md) separat vorgemerkt.
+Allgemeines optionales Zielen, komplexe Gegnerfolgen und globale INI-Phasen bleiben wie vereinbart
 abgegrenzt. Ein nicht bestimmbarer tatsächlicher Distanz-TP-Modifikator erzeugt
 keinen automatischen gebundenen Schadenswurf; unbrauchbare Entfernungsprofile
 erhalten keine neue Freigabeausnahme. Gefechte bleiben flüchtig.

@@ -45,7 +45,7 @@ void main() {
       );
       expect(find.text('Angriff gegen mich'), findsOneWidget);
       expect(find.text('Gegnerische Finte (0 erlaubt)'), findsOneWidget);
-      expect(find.text('Parade erlaubt?'), findsOneWidget);
+      expect(find.text('Parade erlaubt?'), findsNothing);
       expect(find.text('Angriffsabsicht'), findsNothing);
       expect(
         find.byKey(const ValueKey('gefecht-kontext-bestaetigen')),

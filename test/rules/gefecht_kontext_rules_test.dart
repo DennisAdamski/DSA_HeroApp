@@ -12,6 +12,52 @@ void main() {
     ausweichen: 12,
     waffenDk: 'N',
   );
+  for (final aktion in [Gefechtsaktion.parade, Gefechtsaktion.schildparade]) {
+    test('$aktion benötigt keine allgemeine Paradebestätigung', () {
+      const kontext = Gefechtskontext(
+        angriffsart: Gefechtsangriffsart.nahkampf,
+        finte: 2,
+        schildWmWirksam: true,
+      );
+      const s = Gefechtszustand(iniWurf: 6, dk: 'N', kontext: kontext);
+      final p = pruefeGefechtskontext(s, aktion, 'N');
+      expect(p.fehlend, isEmpty);
+      expect(p.sperren, isEmpty);
+      expect(p.zuschlag, 2);
+      expect(gefechtsPflichtkontextErfasst(kontext, aktion), isTrue);
+    });
+    test('$aktion erhält ein bekanntes Paradeverbot', () {
+      const s = Gefechtszustand(
+        iniWurf: 6,
+        dk: 'N',
+        kontext: Gefechtskontext(
+          angriffsart: Gefechtsangriffsart.nahkampf,
+          finte: 0,
+          paradeVerboten: true,
+          schildWmWirksam: true,
+        ),
+      );
+      final p = pruefeGefechtsaktion(s, w, aktion);
+      expect(p.status, Gefechtsfreigabe.gesperrt);
+      expect(
+        p.sperrgruende,
+        contains('Dieser Angriff kann nicht pariert werden.'),
+      );
+    });
+  }
+  test('Parade benötigt weiterhin konkrete Angriffsart und Finte', () {
+    const s = Gefechtszustand(iniWurf: 6, dk: 'N');
+    final p = pruefeGefechtskontext(s, Gefechtsaktion.parade, 'N');
+    expect(p.fehlend, contains('Aktuelle Angriffsart festlegen.'));
+    expect(
+      p.fehlend,
+      contains('Gegnerische Finte für diesen Angriff erfassen (0 möglich).'),
+    );
+    expect(
+      gefechtsPflichtkontextErfasst(s.kontext, Gefechtsaktion.parade),
+      isFalse,
+    );
+  });
   test('DK sperrt unmögliche AT und berechnet AT/PA unterschiedlich', () {
     for (final dk in ['H', 'N', 'S', 'P']) {
       final s = Gefechtszustand(

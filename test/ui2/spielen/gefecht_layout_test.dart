@@ -52,12 +52,12 @@ void main() {
           await tester.pumpAndSettle();
           expect(find.text('Runde 1'), findsOneWidget);
           expect(find.text('Angriff'), findsWidgets);
-          expect(find.text('Durchhalten'), findsOneWidget);
+          expect(find.text('Vitalwerte'), findsOneWidget);
           expect(tester.takeException(), isNull);
           if (breite == 390) {
             expect(
               tester.getTopLeft(find.text('Angriff').first).dy,
-              lessThan(tester.getTopLeft(find.text('Durchhalten')).dy),
+              lessThan(tester.getTopLeft(find.text('Vitalwerte')).dy),
             );
           }
         },
