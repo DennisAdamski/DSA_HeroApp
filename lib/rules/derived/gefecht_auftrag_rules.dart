@@ -11,6 +11,7 @@ import 'gefecht_zusatz_rules.dart';
 import 'gefecht_freigabe_rules.dart';
 import 'gefecht_ansage_rules.dart';
 import 'gefecht_meisterparade_rules.dart';
+import 'gefecht_zielen_rules.dart';
 
 /// Identische Prüfung vor Anzeige und Ausführung, mit bekannten Gegnersperren.
 Gefechtspruefung pruefeGefechtAuftrag(
@@ -28,7 +29,8 @@ Gefechtspruefung pruefeGefechtAuftrag(
     eigenerAuftrag: eigenerAuftrag,
   );
   final ansagen = ergaenzeGefechtsansagen(basis, s, snapshot, katalog, auftrag);
-  final freigabe = ergaenzeGefechtsfreigabe(ansagen, auftrag);
+  final zielen = ergaenzeGefechtsZielen(ansagen, s, snapshot, auftrag);
+  final freigabe = ergaenzeGefechtsfreigabe(zielen, auftrag);
   return ergaenzeGefechtsMeisterparade(freigabe, s, snapshot, katalog, auftrag);
 }
 

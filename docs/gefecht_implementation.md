@@ -115,8 +115,9 @@ FK-Ansage: Grenze TaW, bei Meisterschütze FK; halbe TP normal, volle TP bei
 Scharf-/Meisterschütze. Zusätzlich bezahlt werden gerundete halbe Ansageaktionen,
 bei Scharfschütze zwei weniger (mindestens eine), bei Meisterschütze genau eine.
 `Gefechtszielstand` bindet die Zahlung an Waffe, Geschoss, vollständiges Profil,
-konkreten Zielkontakt und Ansage. Allgemeines optionales Zielen senkt den
-Ansagezuschlag nicht. „Zusatz-Zielen beginnen“ bucht reguläre Aktionen; die
+konkreten Zielkontakt und Ansage. Allgemeines optionales Zielen wird separat
+bezahlt und senkt den Ansagezuschlag nicht. „Zusatz-Zielen beginnen“ bucht reguläre
+Aktionen; die
 Handlung hält den ursprünglichen Schussauftrag über Runden fest. „Fortsetzen“
 bezahlt weitere Zielzeit. Erst „Schuss ausführen“ prüft aktuelle Ausrüstung,
 Angaben und eigenes Schussbudget erneut. Der ursprüngliche Auftrag bindet Waffe,
@@ -443,3 +444,28 @@ zu verbrauchen. Nur das Würfelergebnis und die Callbackwiederholung sind steuer
 der Produktionspfad bleibt unverändert. Prüfungen und aktueller Remote-CI-Stand
 sind im [Folgeplan](gefecht_next_plan.md#testnachtrag-nach-pr-208-4-oktober-2026)
 nachgeführt; frühere Abnahmeergebnisse bleiben historische Nachweise.
+
+## Optionales Zielen (weiteres Paket 1)
+
+Im Fernkampfdialog beginnt „Optionales Zielen: Erleichterung (0–4)“ bei 0.
+„Zielen beginnen“ bezahlt zwei reguläre Aktionen je gewünschtem Punkt, mit
+talentgebundener Scharf-/Meisterschütze-SF eine. Eine zusätzliche FK-Ansage
+bezahlt ihre bisherige eigene Dauer zusätzlich; ihre Erschwernis und die des
+Gezielten Schusses werden nicht reduziert (WdS 7089/7324, MCP-Seiten 98/200).
+Aktuelle Entfernung, bestätigte Zielsituation, Kampfgetümmel und weitere
+Erschwernis begrenzen den Abbau; es entsteht kein Bonus über den Abbau des
+vorhandenen Gesamtzuschlags hinaus. Heldenmali und andere Boni bleiben separat.
+
+Der vorhandene flüchtige Zielauftrag bindet beide Wahlen an Waffe, Geschoss,
+vollständiges Profil und benannten Kontakt. Fortsetzen zahlt über Runden;
+vorzeitiger Schuss bleibt gesperrt. Ein geänderter Situationszuschlag wird vor
+dem Schuss neu berücksichtigt. Probeabbruch erhält Zahlung und Schussbudget;
+„Handlung abbrechen“ verwirft die Zielzeit ohne Rückzahlung. Eine Störung des
+Zielens wird über diesen expliziten Abbruch geführt (WdS 7082, MCP-Seite 95).
+Die bestehenden Munitions-/Retry-/Doppelcallbackschutzwege bleiben unverändert.
+
+Regel- und echte Widgettests prüfen getrennte Dauer, aktive talentgebundene SF,
+Zahlung über Runden, Ziel-/Profilwechsel, aktuellen Zuschlag, Probeabbruch,
+Abbruch ohne Refund und genau einen Schuss-/Munitionsabschluss. Die vorhandene
+Layoutmatrix deckt den erweiterten Dialog in vier Breiten, Hell/Dunkel und mit
+Tastatur ab. Es gibt keine neue Gefechtspersistenz oder Inventarschnittstelle.

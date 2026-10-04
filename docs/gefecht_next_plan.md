@@ -405,3 +405,26 @@ auf `e289938` ist erfolgreich abgeschlossen: Format, Analyse, LOC, Unit-/Widgett
 Web-Release-Build und Firebase-Hosting. Das ist der bereits erfolgte Remote-Lauf
 nach PR #208; für diesen lokalen Testnachtrag existiert noch kein Remote-CI-Lauf.
 Kein Push, weiterer Merge oder Deployment durch den Agenten.
+
+## Weitere Gefechtspakete ab `3e42deb`
+
+Der Auftrag vom 4. Oktober 2026 führt die sechs neuen Themen nacheinander in
+eigenen Commits aus. [Paketplan und Grenzen](gefecht_folgepakete_plan.md).
+Paket 1 ergänzt optionales Zielen mit 0–4 Punkten, separat bezahlter Zielzeit
+und unveränderten FK-Ansage-/Gezielter-Schuss-Zuschlägen. Die weiter oben
+genannten manuellen Grenzen beziehen sich auf die jeweiligen historischen
+Abnahmestände; die folgenden Pakete ändern sie nur ausdrücklich und belegt.
+
+Paket 1 ist lokal abgeschlossen: Analyse ohne Befund, zehn Zielregeltests,
+Zahlungs-/Schussabläufe und Dialoglayout grün; vollständige Suite 3394 bestanden,
+drei bestehende Ausnahmen. Formatprüfung (1002 Dateien), CI-Screen-LOC und
+Gefechts-LOC bestehen. Die unveränderte breite UI2-LOC-Überschreitung des
+Abenteuerblatts (803 Zeilen) bleibt offen. Der abschließende Gesamtlauf verwendet
+einen eigenen Regelindex-Cache und keine parallelen Testdateien, nachdem ein
+paralleler Wiederholungslauf an einer gemeinsam gesperrten Cachedatei scheiterte.
+Unabhängiges Review ohne schwerwiegenden Befund, beide kleinen Hinweise umgesetzt.
+Die Änderungen sind im separaten Worktree `gefecht-folgepakete`; Nutzernotizen und
+Inventarisierung im ursprünglichen Checkout bleiben erhalten und außerhalb des
+Commits. Der oben belegte Remote-CI-Stand nach PR #208 ist weiterhin der zuletzt
+geprüfte veröffentlichte Stand; für Paket 1 gibt es keinen neuen Remote-Lauf.
+Kein Push, Merge oder Deployment. Die Pakete 2–6 sind noch nicht abgeschlossen.

@@ -29,6 +29,7 @@ class GefechtAuftrag {
     this.finte = 0,
     this.wuchtschlag = 0,
     this.fernkampfansage = 0,
+    this.zielErleichterung = 0,
     this.meisterparadeAnsage = 0,
     this.schildAnsagegrenze,
     this.manuelleKampfaktion,
@@ -53,6 +54,9 @@ class GefechtAuftrag {
 
   /// Unabhängige Ansagen; weitere Erschwernisse erzeugen keine Trefferfolgen.
   final int finte, wuchtschlag, fernkampfansage;
+
+  /// Gewünschter Abbau anderer FK-Zuschläge durch separat bezahltes Zielen.
+  final int zielErleichterung;
 
   /// Eigene PA-Ansage; erzeugt ausschließlich den einmaligen Erfolgsbonus.
   final int meisterparadeAnsage;
