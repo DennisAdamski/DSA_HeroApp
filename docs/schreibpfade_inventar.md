@@ -130,7 +130,7 @@ Domainlogik.
 | Steigerung übernehmen | `AdvancementSessionController.commit` (`state/advancement_providers.dart`) | Bogen | Hash-Prüfung | ja (Snackbar) | nein, `commitAdvancements` |
 | Anzeige nicht passender SF | `setShowInapplicableSpecialAbilities` (ebd.) | Bogen **direkt über das Repository**, ohne Normalisierung | Hash-Prüfung | ja | nein |
 | Inventar (Löschen, Dukaten) | `hero_inventory/inventory_mutations.dart` (`_deleteEntry`, `_saveDukaten`, `_verschiebeDukaten`) | Bogen | frisch, je Held nacheinander; Löschen findet den Eintrag über den Inhalt, Münzknöpfe zählen vom gespeicherten Betrag | ja (Snackbar) | nein, `inventar_aenderung_rules.dart` |
-| Inventar (Editor) | `hero_inventory/inventory_mutations.dart` (`_saveEntries`) | Bogen | Snapshot, eingereiht | ja, im Editor | Verknüpfungs- und Geschossabgleich |
+| Inventar (Editor) | `hero_inventory/inventory_mutations.dart` (`_saveNewEntry`, `_saveUpdatedEntry`) über `aendereHeldImEditor` | Bogen | frisch, je Held nacheinander; trifft den geöffneten Gegenstand über seinen Inhalt, ein inzwischen geänderter wird abgewiesen; bei offener Planung gesperrt | ja, im Editor | nein, `inventar_aenderung_rules.dart` |
 | Kampf (Sofortspeichern) | `hero_combat/combat_sofort_aenderungen.dart` über `_aendereKampf` (`combat_state_helpers.dart`) | Bogen | frisch, je Held nacheinander; Slots über ihre ID, Geschosse zählen vom gespeicherten Bestand, Editorergebnisse auf geänderte Slots werden abgewiesen | ja (Snackbar) | Slotprüfung auf dem frischen Ergebnis; sonst `kampf_aenderung_rules.dart` |
 | Kampf (Editor) | `hero_combat/combat_state_helpers.dart` (`_saveChanges`) | Bogen | Editorentwurf, eingereiht | teilweise | Slotprüfung, Talentverteilung, AP-Delta |
 | Ressourcen (LeP, Au, AsP, KaP) | `resource_stepper_dialog.dart`, `inspector_vitals_tab.dart`, `inspector_magie_tab.dart` | Zustand | frisch, Schritt vom gespeicherten Wert (`RessourcenAenderung`) | ja (im Blatt bzw. Tab) | Grenzen nur in Schrittrichtung |
@@ -219,6 +219,9 @@ Domainlogik.
    (Waffen- und Nebenhandwahl, Entfernung, Geschosse, Waffen-, Rüstungs- und
    Nebenhandteile) schreibt frisch über `kampf_aenderung_rules.dart`.
    Snapshots bleiben der Inventareditor und die Editorentwürfe.
+   *Im achten ARCH-05-Teilstand behoben:* der Inventareditor (Anlegen und
+   Bearbeiten) schreibt frisch über `inventar_aenderung_rules.dart`.
+   Snapshots bleiben nur noch die Editorentwürfe.
 2. ~~**`_filterKnownTraitWarnings` wartet mit `rulesCatalogProvider.future`**~~
    *Behoben:* `saveHero` wartet jetzt über ein Abo auf den Katalog
    (`HeroActions._warteAufRegelkatalog`), höchstens
@@ -248,4 +251,5 @@ Domainlogik.
    (`epic_status_rules.dart`), Abenteuerabschluss und -rücknahme
    (`schliesseAbenteuerAb`, `oeffneAbenteuerWieder`) und die
    Vertrauten-Steigerung (`begleiter_aenderung_rules.dart`) liegen jetzt als
-   Regeln vor.
+   Regeln vor; ebenso der Inventar-/Kampfabgleich des Inventareditors
+   (`mitGeaendertemInventarEintrag`).

@@ -3,38 +3,84 @@
 part of '../hero_inventory_tab.dart';
 
 extension _HeroInventoryMutations on _HeroInventoryTabState {
+  /// Hängt einen im Editor angelegten Gegenstand frisch an (ARCH-05).
+  ///
+  /// Fehler gehen an den Editor, der sie anzeigt und offen bleibt.
   Future<void> _saveNewEntry(HeroInventoryEntry entry) async {
-    final hero = _latestHero;
-    if (hero == null) {
-      return;
-    }
-
-    final nextEntries = List<HeroInventoryEntry>.from(_entries)..add(entry);
-    final nextSelectedIndex = _manualEntryCount(nextEntries) - 1;
-
-    await _saveEntries(
-      nextEntries,
+    final gespeichert = await aendereHeldImEditor(
+      ref: ref,
+      heroId: widget.heroId,
+      aenderung: (held) => mitNeuemInventarEintrag(held, entry),
+    );
+    _nachEditorSpeichern(
+      gespeichert.inventoryEntries,
+      findeLetztenGleichenInventarEintrag(gespeichert.inventoryEntries, entry),
       changedEntry: entry,
-      nextSelectedIndex: nextSelectedIndex,
-      clearPendingEntry: true,
     );
   }
 
-  Future<void> _saveUpdatedEntry(int index, HeroInventoryEntry entry) async {
-    final hero = _latestHero;
-    if (hero == null || index < 0 || index >= _entries.length) {
+  /// Schreibt das Editorergebnis [entry] frisch über den Gegenstand, mit dem
+  /// der Editor geöffnet wurde ([angezeigt]).
+  ///
+  /// Getroffen wird der Eintrag über seinen Inhalt, nicht über seine
+  /// Position. Hat ein anderer Weg ihn inzwischen geändert, wird das Ergebnis
+  /// abgewiesen; der Editor zeigt den Grund und bleibt offen.
+  Future<void> _saveUpdatedEntry(
+    HeroInventoryEntry angezeigt,
+    HeroInventoryEntry entry,
+  ) async {
+    final gespeichert = await aendereHeldImEditor(
+      ref: ref,
+      heroId: widget.heroId,
+      aenderung: (held) =>
+          mitGeaendertemInventarEintrag(held, angezeigt, entry),
+    );
+    _nachEditorSpeichern(
+      gespeichert.inventoryEntries,
+      _findeGespeichertenEintrag(gespeichert.inventoryEntries, entry),
+      changedEntry: entry,
+    );
+  }
+
+  void _nachEditorSpeichern(
+    List<HeroInventoryEntry> gespeicherteEintraege,
+    int auswahl, {
+    required HeroInventoryEntry changedEntry,
+  }) {
+    if (!mounted) {
       return;
     }
+    final shouldResetFilter =
+        _filter != InventoryFilter.alle &&
+        !matchesInventoryFilter(
+          changedEntry.itemType,
+          changedEntry.source,
+          _filter,
+        );
 
-    final nextEntries = List<HeroInventoryEntry>.from(_entries);
-    nextEntries[index] = entry;
+    setState(() {
+      if (shouldResetFilter) {
+        _filter = InventoryFilter.alle;
+      }
+      _waehleAus(gespeicherteEintraege, auswahl);
+      _pendingNewEntry = null;
+      _editorRevision++;
+    });
+  }
 
-    await _saveEntries(
-      nextEntries,
-      changedEntry: entry,
-      nextSelectedIndex: index,
-      clearPendingEntry: true,
-    );
+  // Position des gespeicherten Gegenstands nach dem Speichern. Verknüpfte
+  // Einträge gleicht das Speichern an ihren Slot an; sie werden notfalls
+  // über ihren ID-Verweis gefunden.
+  int _findeGespeichertenEintrag(
+    List<HeroInventoryEntry> eintraege,
+    HeroInventoryEntry eintrag,
+  ) {
+    final perInhalt = findeGleichenInventarEintrag(eintraege, eintrag);
+    final slotRef = eintrag.slotRef;
+    if (perInhalt >= 0 || slotRef == null) {
+      return perInhalt;
+    }
+    return eintraege.indexWhere((kandidat) => kandidat.slotRef == slotRef);
   }
 
   Future<void> _deleteEntry(int index) async {
@@ -61,10 +107,7 @@ extension _HeroInventoryMutations on _HeroInventoryTabState {
 
     // Die Auswahl über den Inhalt merken: Positionen können sich durch einen
     // anderen Schreibweg verschoben haben.
-    final auswahl = _selectedIndex;
-    final ausgewaehlt = auswahl == null || auswahl == index
-        ? null
-        : _entries.elementAtOrNull(auswahl);
+    final ausgewaehlt = _selectedIndex == index ? null : _bearbeiteterEintrag;
     // Frisch: nur dieser Eintrag verschwindet; Kampf und Geschossmengen
     // bleiben, wie sie gespeichert sind (ARCH-05).
     final gespeichert = await aendereHeldMitMeldung(
@@ -84,83 +127,21 @@ extension _HeroInventoryMutations on _HeroInventoryTabState {
             ausgewaehlt,
           );
     setState(() {
-      _selectedIndex = neueAuswahl < 0 ? null : neueAuswahl;
+      _waehleAus(gespeichert.inventoryEntries, neueAuswahl);
       _pendingNewEntry = null;
       _editorRevision++;
     });
   }
 
-  Future<void> _saveEntries(
-    List<HeroInventoryEntry> entries, {
-    HeroInventoryEntry? changedEntry,
-    int? nextSelectedIndex,
-    bool clearPendingEntry = false,
-  }) async {
-    final hero = _latestHero;
-    if (hero == null) {
-      return;
-    }
-
-    final updatedHero = hero.copyWith(
-      inventoryEntries: entries,
-      combatConfig: _applyInventoryChangesToCombat(hero, entries),
-    );
-    await ref.read(heroActionsProvider).saveHero(updatedHero);
-    if (!mounted) {
-      return;
-    }
-
-    final shouldResetFilter =
-        changedEntry != null &&
-        _filter != InventoryFilter.alle &&
-        !matchesInventoryFilter(
-          changedEntry.itemType,
-          changedEntry.source,
-          _filter,
-        );
-
-    setState(() {
-      if (shouldResetFilter) {
-        _filter = InventoryFilter.alle;
-      }
-      _selectedIndex = nextSelectedIndex;
-      if (clearPendingEntry) {
-        _pendingNewEntry = null;
-      }
-      _editorRevision++;
-    });
-  }
-
-  CombatConfig _applyInventoryChangesToCombat(
-    HeroSheet hero,
-    List<HeroInventoryEntry> entries,
-  ) {
-    var updatedConfig = applyLinkedInventoryDetailsToConfig(
-      hero.combatConfig,
-      entries,
-    );
-    for (final entry in entries) {
-      final isProjectile =
-          entry.source == InventoryItemSource.geschoss &&
-          entry.sourceRef != null;
-      if (!isProjectile) {
-        continue;
-      }
-
-      final count = int.tryParse(entry.anzahl) ?? 0;
-      // Der ID-Verweis zuerst: der Namensverweis traefe bei zwei gleichnamigen
-      // Boegen immer den ersten.
-      updatedConfig = applyAmmoCountChangeToConfig(
-        updatedConfig,
-        entry.slotRef ?? entry.sourceRef!,
-        count,
-      );
-    }
-    return updatedConfig;
-  }
-
-  int _manualEntryCount(List<HeroInventoryEntry> entries) {
-    return entries.where((entry) => !_isCombatLinkedEntry(entry)).length;
+  /// Wählt den Eintrag an [index] für den Editor aus; `-1` schließt ihn.
+  ///
+  /// Der Editor arbeitet auf dem hier gemerkten Eintrag, nicht auf der
+  /// Position: Verschiebt ein anderer Weg die Liste, bleibt er beim
+  /// geöffneten Gegenstand.
+  void _waehleAus(List<HeroInventoryEntry> eintraege, int index) {
+    final gueltig = index >= 0 && index < eintraege.length;
+    _selectedIndex = gueltig ? index : null;
+    _bearbeiteterEintrag = gueltig ? eintraege[index] : null;
   }
 
   /// Setzt einen eingetippten Geldbetrag frisch am gespeicherten Helden.
