@@ -21,6 +21,7 @@ Future<void> showProbeDialog({
   void Function(ProbeResult result)? onResolved,
   void Function(DiceLogEntry entry)? onDiceLogEntry,
   bool singleResolution = false,
+  bool modifikatorGesperrt = false,
 }) {
   return showAdaptiveDetailSheet<void>(
     context: context,
@@ -29,6 +30,7 @@ Future<void> showProbeDialog({
       onResolved: onResolved,
       onDiceLogEntry: onDiceLogEntry,
       singleResolution: singleResolution,
+      modifikatorGesperrt: modifikatorGesperrt,
     ),
   );
 }
@@ -43,6 +45,7 @@ class ProbeDialog extends StatefulWidget {
     this.onResolved,
     this.onDiceLogEntry,
     this.singleResolution = false,
+    this.modifikatorGesperrt = false,
   });
 
   /// Aufgeloeste Probe inklusive Zielwerte und Wuerfelkonfiguration.
@@ -50,6 +53,13 @@ class ProbeDialog extends StatefulWidget {
 
   /// Friert eine abgeschlossene Gefechtsprobe ein; Standardaufrufer bleiben frei.
   final bool singleResolution;
+
+  /// Der situative Modifikator wurde bereits vorher festgelegt (Gefecht).
+  ///
+  /// Das Feld zeigt den übernommenen Wert schreibgeschützt; so gibt es nur
+  /// einen Ort für Erschwernisse und keine zweite, ungezählte Eingabe mit
+  /// umgekehrtem Vorzeichen.
+  final bool modifikatorGesperrt;
 
   /// Optionale Test-Hook fuer deterministische Trefferzonen-Wuerfe.
   final int Function()? rollTrefferzone;
@@ -407,15 +417,17 @@ class _ProbeDialogState extends State<ProbeDialog> {
         TextField(
           key: const ValueKey<String>('probe-dialog-modifier'),
           controller: _modifierController,
-          enabled: !_locked && !_isAnimating,
+          enabled: !_locked && !_isAnimating && !widget.modifikatorGesperrt,
           keyboardType: TextInputType.number,
           inputFormatters: <TextInputFormatter>[
             FilteringTextInputFormatter.allow(RegExp(r'-?[0-9]*')),
           ],
-          decoration: const InputDecoration(
+          decoration: InputDecoration(
             labelText: 'Situativer Modifikator',
-            border: OutlineInputBorder(),
-            helperText: 'Positive Werte erleichtern, negative erschweren.',
+            border: const OutlineInputBorder(),
+            helperText: widget.modifikatorGesperrt
+                ? 'Im Gefecht festgelegt.'
+                : 'Positive Werte erleichtern, negative erschweren.',
           ),
           onChanged: (_) => _liveRefresh(),
         ),

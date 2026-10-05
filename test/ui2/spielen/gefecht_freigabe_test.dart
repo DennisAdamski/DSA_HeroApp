@@ -191,18 +191,23 @@ void main() {
         find.byKey(const ValueKey('gefecht-ausfuehrung-gruende')),
         findsOneWidget,
       );
-      final dropdown = find.byType(DropdownButtonFormField<String>);
-      final texte = tester
-          .widget<DropdownButton<String>>(
-            find.descendant(
-              of: dropdown,
-              matching: find.byType(DropdownButton<String>),
-            ),
-          )
-          .items!
-          .map((item) => (item.child as Text).data)
-          .toList();
+      final texte = [
+        for (final dk in ['H', 'N', 'S', 'P'])
+          ((tester.widget<ChoiceChip>(find.byKey(ValueKey('gefecht-dk-$dk'))))
+                      .label
+                  as Text)
+              .data,
+      ];
       expect(texte, ['Handgemenge', 'Nahkampf', 'Stangenwaffen', 'Piken']);
+      // Eine Wahl setzt die DK direkt, ohne Auswahlmenü.
+      await tester.tap(find.byKey(const ValueKey('gefecht-dk-N')));
+      await tester.pumpAndSettle();
+      expect(
+        tester
+            .widget<ChoiceChip>(find.byKey(const ValueKey('gefecht-dk-N')))
+            .selected,
+        isTrue,
+      );
     },
   );
 }

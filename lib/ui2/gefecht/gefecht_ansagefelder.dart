@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'gefecht_zahlfeld.dart';
+
 /// Unabhängige Ansagen bleiben von freien situativen Erschwernissen getrennt.
 class GefechtAnsagefelder extends StatelessWidget {
   /// Die Auftragsprüfung liefert die wirksamen TP-/Abwehranteile.
@@ -38,14 +40,13 @@ class GefechtAnsagefelder extends StatelessWidget {
   );
 
   // Ein gemeinsamer Eingabeweg lässt alle Pflichtprüfungen erneut ausführen.
-  Widget _feld(TextEditingController c, String name, String key) => Padding(
-    padding: const EdgeInsets.only(top: 12),
-    child: TextField(
-      key: ValueKey('gefecht-$key'),
-      controller: c,
-      decoration: InputDecoration(labelText: name),
-      keyboardType: TextInputType.number,
-      onChanged: (_) => onChanged(),
-    ),
-  );
+  Widget _feld(TextEditingController c, String name, String key) =>
+      GefechtZahlfeld(
+        key: ObjectKey(c),
+        controller: c,
+        label: name,
+        feldKey: ValueKey('gefecht-$key'),
+        minimum: 0,
+        onChanged: onChanged,
+      );
 }

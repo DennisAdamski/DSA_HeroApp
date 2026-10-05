@@ -555,3 +555,26 @@ Eine natürliche 20 auf Nahkampf-AT/PA öffnet die Patzerkontrolle und sperrt
 weitere Aktionen bis zur Klärung. Ohne offene Folge zeigt die Ansicht nur den
 Einstieg „Bruchtest“; die Erklärung steht im Bruchtestdialog. Die neuen
 Gefechtskarten lösen die Gefechtsbrücke erst beim Bedienen auf.
+
+## Aktionsdialog (Vervollständigung G2, 5. Oktober 2026)
+
+Der Aktionsdialog ordnet Eingaben nach Wichtigkeit: Kampfmittel, Status und
+Zielwert, Distanzklasse als Chipreihe mit ausgeschriebenen Namen (bei Schüssen
+ausgeblendet), Ansagen, Fernkampf- und Abwehrkontext, „Weitere Erschwernis“.
+Zahlenfelder haben −/+ (`gefecht_zahlfeld.dart`); das Textfeld bleibt Quelle der
+Wahrheit, Ansagen enden bei 0, die Erschwernis darf negativ werden.
+Zielwertanteile, Modifikatoren, Manöverbeschreibung, Katalogtext und Quelle
+stehen eingeklappt unter „Berechnung und Regeltext“
+(`gefecht_dialogabschnitte.dart`). Bestätigte Entscheidungen bleiben als
+angehakte Kachel sichtbar und lassen sich zurücknehmen. Der Hauptknopf nennt
+den Zielwert („Würfeln · 14“) und erhält den Fokus.
+
+Erschwernisse werden nur noch an einer Stelle erfasst: Für AT, PA, Ausweichen,
+Zauber und Talente zeigt der Probendialog den „Situativen Modifikator“
+schreibgeschützt mit „Im Gefecht festgelegt.“ (`kGefechtsprobenMitFestemModifikator`
+in `ui/bridges/karto_gefechts_bruecke.dart`, Parameter `modifikatorGesperrt` in
+`probe_dialog.dart`). Zuvor war dort ein zweiter Zuschlag mit umgekehrtem
+Vorzeichen möglich. Eigenschafts-, INI- und Schadenswürfe behalten das Feld.
+Der Grundzielwert manueller Sonderaktionen ist tatsächlich optional: ohne Wert
+wird die Aktion ohne Probe gebucht. Prüfung:
+`test/ui2/spielen/gefecht_dialog_bedienung_test.dart`.

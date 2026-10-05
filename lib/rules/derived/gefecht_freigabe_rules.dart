@@ -16,11 +16,6 @@ Gefechtspruefung ergaenzeGefechtsfreigabe(
     ...a.eingabefehler,
     if (a.dauer < 1) 'Gesamtdauer muss mindestens eine Aktion betragen.',
     if (a.kosten < 0 || a.kosten > 2) 'Kosten müssen zwischen 0 und 2 liegen.',
-    if (a.manuell &&
-        a.probe == null &&
-        a.zielwert == null &&
-        a.aktion != Gefechtsaktion.orientieren)
-      'Grundzielwert für die manuelle Probe eintragen.',
   ];
   final entscheidungen = <String>[
     ...p.entscheidungen,
