@@ -640,9 +640,9 @@ Regelmodulen. Riverpod bindet die Abläufe an die Oberfläche.
   Teilstand.)*
 - [ ] Weitere Abläufe nach demselben Prinzip entflechten; bestehende Aufrufer
   schrittweise migrieren und benötigte Kompatibilitätseinstiege erhalten.
-  *(Stand 30.09.2026: Rast, Laufzeitzustand, Schaden erhalten sowie die
-  Sofortaktionen des Bogens und des Kampf-Tabs sind frisch; offen sind der
-  Inventareditor und die Editorentwürfe, siehe Teilstände (1) bis (7).)*
+  *(Stand 05.10.2026: Rast, Laufzeitzustand, Schaden erhalten, die
+  Sofortaktionen des Bogens und des Kampf-Tabs sowie der Inventareditor sind
+  frisch; offen sind die Editorentwürfe, siehe Teilstände (1) bis (8).)*
 
 **Abnahme:** Abläufe sind ohne gerenderte Oberfläche prüfbar. Normalisierung und
 Validierung haben je eine klare Zuständigkeit. Widgets und Provider enthalten
@@ -1467,9 +1467,10 @@ Commits:
 
 *Verbleibende Risiken und nächste Schritte.*
 
-1. Inventareditor (`_saveEntries`) und alle Editorentwürfe schreiben weiter
+1. ~~Inventareditor (`_saveEntries`) und alle Editorentwürfe schreiben weiter
    Snapshots, eingereiht. Der Inventareditor ist der nächste Schritt; seine
-   Einträge haben keine ID (ARCH-03).
+   Einträge haben keine ID (ARCH-03).~~ *Inventareditor erledigt im
+   Teilstand (8); die Editorentwürfe bleiben.*
 2. Der Bogen wartet weiter auf seinen Upload. Mit Konto laufen schnelle
    Geschossklicks je Netzweg nach, gehen aber nicht verloren (wie „GS +“).
 3. Entfernungsstufen haben keine ID und werden über die Position gewählt.
@@ -1481,6 +1482,100 @@ Commits:
    und läuft bei jeder Sofortänderung auf der ganzen Konfiguration. Eine
    bereits gespeicherte ungültige Konfiguration sperrt deshalb alle
    Sofortänderungen, wie bisher.
+
+**Teilstand 05.10.2026 (8) — Inventareditor frisch.** Risiko 1 aus
+Teilstand (7) ist für den Inventareditor umgesetzt. Der Hauptpunkt von
+ARCH-05 bleibt offen (Editorentwürfe).
+
+*Befund.* `_saveEntries` schrieb beim Anlegen und Bearbeiten den beim Rendern
+erfassten Helden per `saveHero` zurück. Dazu leitete es die ganze
+Kampfkonfiguration neu ab. Folgen:
+
+- Was ein anderer Weg zwischendurch speicherte, ging verloren. Besonders
+  betroffen waren Geschossbestände aus dem Kampf-Tab:
+  `_applyInventoryChangesToCombat` schrieb **alle** Geschossmengen des alten
+  Inventars zurück.
+- Bearbeiten traf den Eintrag über seine Position. Der breite Editor blieb
+  an seiner Position stehen, auch wenn sich die Liste darunter verschob. Sein
+  Entwurf landete dann auf einem anderen Gegenstand.
+- Ein Editorergebnis auf einen inzwischen geänderten Gegenstand überschrieb
+  diesen, statt abgewiesen zu werden.
+
+*Entscheidungen.*
+
+- **Muster aus Teilstand (7):** Ein Eintrag wird über seinen Inhalt
+  gefunden, weil Inventareinträge keine ID haben (ARCH-03). Ein
+  Editorergebnis auf einen geänderten oder entfernten Gegenstand wird
+  abgewiesen (`mitGeaendertemInventarEintrag`). Der Tab merkt sich den
+  geöffneten Gegenstand (`_bearbeiteterEintrag`), nicht nur seine Position.
+- **Fehler im Editor:** Der neue Einstieg `aendereHeldImEditor`
+  (`zustand_aendern.dart`) prüft die Planung wie `aendereHeldMitMeldung`,
+  reicht Fehler aber an den Aufrufer weiter. `InventoryItemEditor` zeigt sie
+  wie bisher selbst, ohne „Bad state:“, und bleibt offen.
+  `aendereHeldMitMeldung` nutzt denselben Einstieg.
+- **Kampfabgleich als Regel:** Ein verknüpfter Eintrag gibt seine
+  Markierungen an den Slot weiter. Eine im Editor geänderte Geschossmenge
+  geht nur an das eigene Geschoss (`slotRef ?? sourceRef`). Ein manueller
+  Eintrag lässt den Kampf unberührt. Der Abgleich liegt damit nicht mehr im
+  Widget (Befund 6 des Schreibpfad-Inventars, teilweise).
+- **Auswahl nach dem Speichern:** über den Inhalt im gespeicherten Helden,
+  neue Einträge von hinten (gleiche Gegenstände), verknüpfte notfalls über
+  `slotRef`.
+
+Commits:
+
+- `0d692cb` — Regeln `mitNeuemInventarEintrag` und
+  `mitGeaendertemInventarEintrag` mit Tests.
+- `55bdcc6` — Inventareditor schreibt frisch, Widgettests.
+- Abschluss-Commit mit Dokumentation.
+
+*Prüfungen.*
+
+- Regeltests (`test/rules/inventar_aenderung_rules_test.dart`):
+  - Anhängen lässt den Kampf stehen; ein neuer Eintrag ist bei Gleichheit der
+    hintere.
+  - Ersetzen trifft den Eintrag nach einer Verschiebung; ein geänderter oder
+    entfernter Eintrag wird abgewiesen; „nichts geändert“ liefert denselben
+    Helden.
+  - Ein manueller Eintrag lässt den Kampf unverändert.
+  - Die Geschossmenge erreicht nur den eigenen von zwei gleichnamigen Bögen,
+    eine abweichende fremde Menge bleibt, eine unveränderte Menge schreibt
+    nicht.
+  - Markierungen gehen an den Slot; unbekannte Felder bleiben.
+- Widgettests (`test/ui/inventory/inventar_frisch_schreiben_test.dart`) mit
+  `BogenTestRepository`, schmal und breit:
+  - Ein neuer Gegenstand nach einer fremden Kampfänderung lässt diese stehen.
+  - Bearbeiten nach einer Einfügung davor trifft den geöffneten Gegenstand.
+  - Ein fremd geänderter Gegenstand wird abgewiesen; die Meldung steht im
+    breiten Editor, der Entwurf bleibt.
+  - Der breite Editor bleibt beim geöffneten Gegenstand, wenn sich die Liste
+    sichtbar verschiebt.
+  - Eine Geschossmenge erreicht nur ihren eigenen Bogen, fremde Bestände
+    bleiben.
+  - Ein Speicherfehler bleibt im Editor.
+- `test/ui/shared/held_frisch_schreiben_test.dart`: `aendereHeldImEditor`
+  reicht die Planungssperre an den Aufrufer weiter und schreibt nichts.
+- Gegenprobe: Mit dem alten Oberflächenstand des Inventars scheitern alle
+  sechs neuen Editortests; die bestehenden Lösch- und Dukatentests bestehen.
+- Die bestehenden Inventar-, Abgleichs- und Frisch-Schreib-Tests laufen
+  unverändert.
+- `flutter analyze --no-pub` ohne Befund, `dart format` ohne Änderung,
+  Zeilenbudget eingehalten. Volle Suite grün (3400 bestanden,
+  3 übersprungen). Die Hash-Pins der Bestandshelden sind
+  unverändert. Eine manuelle Bedienprüfung auf Geräten steht aus.
+
+*Verbleibende Risiken und nächste Schritte.*
+
+1. Die Editorentwürfe (Übersicht, Talente, Magie, Begleiter, Notizen,
+   Reisebericht, Kampf-Editor) schreiben weiter Snapshots, eingereiht. Sie
+   sind der nächste Schritt von ARCH-05.
+2. Zwei inhaltlich gleiche Einträge sind nicht unterscheidbar. Bearbeitet
+   wird dann der erste; das Ergebnis ist dasselbe wie beim Löschen.
+3. Ein verknüpfter Eintrag, dessen Slot ein anderer Weg zwischendurch
+   geändert hat (etwa Geschossbestand), wird abgewiesen. Der Nutzer muss den
+   Editor schließen und neu öffnen.
+4. Eine nicht als Zahl lesbare Geschossmenge setzt den Bestand wie bisher auf
+   0.
 
 ## ARCH-06 — Zusammengehörige Änderungen gemeinsam speichern und synchronisieren
 
