@@ -38,23 +38,31 @@ Set<GefechtsManoeverfilter> gefechtsManoeverkategorien(ManeuverDef m) {
   };
 }
 
-/// Verknüpft Kategorie, Suchtext, Lernstand und bekannte Sperren mit UND.
+/// Verknüpft Kategorie, Suchtext und bekannte Sperren mit UND.
 bool gefechtsManoeverImFilter(
   ManeuverDef m, {
   GefechtsManoeverfilter kategorie = GefechtsManoeverfilter.alle,
   String suche = '',
-  bool nurErlernte = false,
   bool ohneSperre = false,
-  bool erlernt = true,
   bool gesperrt = false,
 }) =>
     (kategorie == GefechtsManoeverfilter.alle ||
         gefechtsManoeverkategorien(m).contains(kategorie)) &&
     m.name.toLowerCase().contains(suche.toLowerCase()) &&
-    (!nurErlernte || erlernt) &&
     (!ohneSperre || !gesperrt);
 
-/// Lernt auch talentbezogene Varianten; allgemeine Grundaktionen benötigen kein AP.
+/// Finte und Wuchtschlag darf jeder ansagen, ohne SF mit halber Wirkung
+/// (WdS S. 62/66); alle übrigen Manöver setzen die Sonderfertigkeit voraus.
+const kGefechtsBasismanoever = {'man_finte', 'man_wuchtschlag'};
+
+/// Erlernt (auch talentbezogen) oder ohne Sonderfertigkeit ausführbar.
+bool gefechtsManoeverVerfuegbar(
+  ManeuverDef m,
+  HeroComputedSnapshot s,
+  RulesCatalog k,
+) => kGefechtsBasismanoever.contains(m.id) || gefechtsManoeverErlernt(m, s, k);
+
+/// Lernt auch talentbezogene Varianten über `id::talentId`.
 bool gefechtsManoeverErlernt(
   ManeuverDef m,
   HeroComputedSnapshot s,
