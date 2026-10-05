@@ -59,6 +59,65 @@ void main() {
     },
   );
 
+  test('Manöverliste zeigt nur erlernte und allgemein verfügbare Manöver', () {
+    const k = RulesCatalog(
+      version: 'test',
+      source: 'test',
+      talents: [],
+      spells: [],
+      weapons: [],
+      maneuvers: [
+        ManeuverDef(id: 'man_finte', name: 'Finte', typ: 'Angriffsaktion'),
+        ManeuverDef(
+          id: 'man_wuchtschlag',
+          name: 'Wuchtschlag',
+          typ: 'Angriffsaktion',
+        ),
+        ManeuverDef(id: 'man_binden', name: 'Binden', typ: 'Abwehraktion'),
+        ManeuverDef(
+          id: 'man_meisterparade',
+          name: 'Meisterparade',
+          typ: 'Abwehraktion',
+        ),
+        ManeuverDef(
+          id: 'man_scharfschuetze',
+          name: 'Scharfschütze',
+          mussSeparatErlerntWerden: true,
+        ),
+      ],
+    );
+    final snap = buildHeroComputedSnapshot(
+      hero: testHero().copyWith(
+        combatConfig: const CombatConfig(
+          weapons: [
+            MainWeaponSlot(
+              name: 'Bogen',
+              talentId: 'tal_bogen',
+              distanceClass: 'N',
+            ),
+          ],
+          specialRules: CombatSpecialRules(
+            activeManeuvers: ['man_binden', 'man_scharfschuetze::tal_bogen'],
+          ),
+        ),
+      ),
+      state: const HeroState.empty(),
+      catalog: k,
+      epicAdvantagesActive: false,
+    );
+    final ids = gefechtsManoeverliste(
+      beginneGefecht(6),
+      snap,
+      k,
+    ).map((m) => m.id).toSet();
+    expect(ids, {
+      'man_finte',
+      'man_wuchtschlag',
+      'man_binden',
+      'man_scharfschuetze',
+    });
+  });
+
   test('Neue kurze oder lange Zauber und manuelle Aufträge verdrängen keine Resthandlung', () {
     final snapshot = buildHeroComputedSnapshot(
       hero: testHero(),

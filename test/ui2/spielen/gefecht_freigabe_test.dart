@@ -27,12 +27,12 @@ void main() {
         ),
       ),
     );
-    expect(find.text('Nur erlernte'), findsOneWidget);
+    expect(find.text('Nur erlernte'), findsNothing);
     expect(find.text('Ohne bekannte Sperre'), findsOneWidget);
     expect(find.text('Sonstige'), findsOneWidget);
   });
   testWidgets(
-    'Kategorie und beide Statusfilter begrenzen sichtbare Manöver gemeinsam',
+    'Kategorie und Sperrfilter begrenzen sichtbare Manöver gemeinsam',
     (tester) async {
       await tester.pumpWidget(
         MaterialApp(
@@ -41,10 +41,9 @@ void main() {
               manoever: const [
                 ManeuverDef(id: 'a', name: 'Erlernt frei', typ: 'Parade'),
                 ManeuverDef(id: 'b', name: 'Erlernt gesperrt', typ: 'Parade'),
-                ManeuverDef(id: 'c', name: 'Ungelernt frei', typ: 'Parade'),
+                ManeuverDef(id: 'c', name: 'Basis frei', typ: 'Parade'),
                 ManeuverDef(id: 'd', name: 'Angriff frei', typ: 'Attacke'),
               ],
-              erlernt: (m) => m.id != 'c',
               gesperrt: (m) => m.id == 'b',
               knopf: (m) => Text(m.name),
             ),
@@ -55,10 +54,7 @@ void main() {
       await tester.tap(find.widgetWithText(ChoiceChip, 'Verteidigung'));
       await tester.pumpAndSettle();
       expect(find.text('Angriff frei'), findsNothing);
-      expect(find.text('Ungelernt frei'), findsOneWidget);
-      await tester.tap(find.widgetWithText(FilterChip, 'Nur erlernte'));
-      await tester.pumpAndSettle();
-      expect(find.text('Ungelernt frei'), findsNothing);
+      expect(find.text('Basis frei'), findsOneWidget);
       expect(find.text('Erlernt gesperrt'), findsOneWidget);
       await tester.tap(find.widgetWithText(FilterChip, 'Ohne bekannte Sperre'));
       await tester.pumpAndSettle();
@@ -67,7 +63,7 @@ void main() {
       await tester.tap(find.widgetWithText(ChoiceChip, 'Alle'));
       await tester.pumpAndSettle();
       expect(find.text('Angriff frei'), findsOneWidget);
-      expect(find.text('Ungelernt frei'), findsNothing);
+      expect(find.text('Basis frei'), findsOneWidget);
       expect(find.text('Erlernt gesperrt'), findsNothing);
     },
   );

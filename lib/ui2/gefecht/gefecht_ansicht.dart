@@ -402,7 +402,6 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
         )
       : GefechtManoeverliste(
           manoever: gefechtsManoeverliste(s, snapshot, k),
-          erlernt: (m) => gefechtsManoeverErlernt(m, snapshot, k),
           gesperrt: (m) =>
               pruefeGefechtAuftrag(
                 s,
