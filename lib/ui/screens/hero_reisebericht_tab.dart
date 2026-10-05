@@ -4,11 +4,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dsa_heldenverwaltung/catalog/reisebericht_def.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_reisebericht.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/editor_entwurf_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/reisebericht_rules.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/editor_entwurf_speichern.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_edit_controller.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/codex_tab_header.dart';
@@ -48,6 +50,10 @@ class _HeroReiseberichtTabState extends ConsumerState<HeroReiseberichtTab>
 
   HeroSheet? _latestHero;
   HeroReisebericht _draft = const HeroReisebericht();
+
+  /// Held, aus dem der Entwurf gefüllt wurde; Ausgang des Abgleichs beim
+  /// Speichern (ARCH-05).
+  HeroSheet? _entwurfBasis;
 
   static const _kategorieKeys = [
     'kampferfahrungen',
@@ -97,6 +103,7 @@ class _HeroReiseberichtTabState extends ConsumerState<HeroReiseberichtTab>
 
   void _syncDraftFromHero(HeroSheet hero, {bool force = false}) {
     if (!_editController.shouldSync(hero, force: force)) return;
+    _entwurfBasis = hero;
     _draft = hero.reisebericht;
   }
 
@@ -109,8 +116,8 @@ class _HeroReiseberichtTabState extends ConsumerState<HeroReiseberichtTab>
   }
 
   Future<void> _saveChanges() async {
-    final hero = _latestHero;
-    if (hero == null) return;
+    final basis = _entwurfBasis;
+    if (basis == null) return;
 
     final catalog = ref.read(rulesCatalogProvider).valueOrNull;
     if (catalog == null) return;
@@ -120,14 +127,21 @@ class _HeroReiseberichtTabState extends ConsumerState<HeroReiseberichtTab>
       state: _draft,
     );
 
-    final updatedHero = applyReiseberichtRewards(
-      hero: hero,
-      rewards: rewards,
-      updatedState: _draft,
+    // Belohnungen werden auf den gespeicherten Helden gebucht, nie doppelt.
+    final entwurf = _draft;
+    final gespeichert = await speichereEditorEntwurf(
+      context: context,
+      ref: ref,
+      heroId: widget.heroId,
+      abgleich: (aktuell, erzwungen) => bucheReiseberichtEntwurf(
+        basis: basis,
+        aktuell: aktuell,
+        entwurf: entwurf,
+        belohnungen: rewards,
+        erzwingen: erzwungen.contains('reisebericht'),
+      ),
     );
-
-    await ref.read(heroActionsProvider).saveHero(updatedHero);
-    if (!mounted) return;
+    if (!gespeichert || !mounted) return;
 
     _editController.markSaved();
 
