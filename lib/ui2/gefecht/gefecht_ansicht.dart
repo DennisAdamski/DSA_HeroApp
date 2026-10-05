@@ -36,6 +36,7 @@ import 'gefecht_aktion_ausfuehren.dart';
 import 'gefecht_handlungskarte.dart';
 import 'gefecht_unterbrechung.dart';
 import 'gefecht_laden.dart';
+import 'gefecht_geschosse.dart';
 import 'gefecht_vitalwerte.dart';
 
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_laden_rules.dart';
@@ -348,6 +349,13 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
                     ),
               child: Text('Laden / Vorbereiten · ${profil.name}'),
             ),
+        GefechtGeschossbereich(
+          werte: snapshot,
+          heroId: widget.heroId,
+          bruecke: () => _bruecke,
+          gesperrt: _busy || s.handlung != null,
+          onAktion: _run,
+        ),
         for (final ergebnis in s.angriffsergebnisse)
           GefechtAngriffsergebnisAnzeige(
             ergebnis: ergebnis,
