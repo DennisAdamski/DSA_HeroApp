@@ -242,4 +242,47 @@ void main() {
       expect(json['anzahl'], '2');
     });
   });
+
+  // Das Speichern vergibt fehlende Instanz-IDs (ARCH-03). Ein Eintrag, der
+  // vorher ohne ID angezeigt wurde, ist dadurch nicht geändert.
+  group('beim Speichern vergebene Instanz-ID', () {
+    final seilMitId = _seil.copyWith(instanzId: 'i-seil');
+
+    test('ein Eintrag ohne ID findet sich mit ID wieder', () {
+      final eintraege = [_fackel, seilMitId];
+      expect(findeGleichenInventarEintrag(eintraege, _seil), 1);
+      expect(findeLetztenGleichenInventarEintrag(eintraege, _seil), 1);
+    });
+
+    test('eine andere ID bleibt ein anderer Eintrag', () {
+      final anderesSeil = _seil.copyWith(instanzId: 'i-anderes');
+      expect(findeGleichenInventarEintrag([seilMitId], anderesSeil), -1);
+    });
+
+    test('Bearbeiten trifft den Eintrag und behält seine ID', () {
+      final gespeichert = _held.copyWith(
+        inventoryEntries: [_fackel, seilMitId],
+      );
+
+      final ergebnis = mitGeaendertemInventarEintrag(
+        gespeichert,
+        _seil,
+        _seil.copyWith(gegenstand: 'Seil, 20 m'),
+      );
+
+      final seil = ergebnis.inventoryEntries[1];
+      expect(seil.gegenstand, 'Seil, 20 m');
+      expect(seil.instanzId, 'i-seil');
+    });
+
+    test('Löschen trifft den Eintrag', () {
+      final gespeichert = _held.copyWith(
+        inventoryEntries: [_fackel, seilMitId],
+      );
+
+      final ergebnis = ohneInventarEintrag(gespeichert, _seil);
+
+      expect(ergebnis.inventoryEntries.map((e) => e.gegenstand), ['Fackel']);
+    });
+  });
 }
