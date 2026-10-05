@@ -195,6 +195,22 @@ extension _GefechtAnsichtTeile on _GefechtAnsichtState {
           'RS ${snapshot.combatPreviewStats.rsTotal} · BE ${snapshot.combatPreviewStats.beKampf}',
         ),
         const Text('Waffen und Rüstungsteile im Ausrüstungspopup wechseln.'),
+        const SizedBox(height: 8),
+        OutlinedButton.icon(
+          key: const ValueKey('gefecht-inventar'),
+          onPressed: _busy
+              ? null
+              : () => _run(
+                  () => zeigeGefechtsInventar(
+                    context: context,
+                    ref: ref,
+                    heroId: widget.heroId,
+                    bestand: _bruecke,
+                  ),
+                ),
+          icon: const Icon(Icons.backpack_outlined),
+          label: const Text('Inventar · Gegenstand benutzen'),
+        ),
       ],
     ),
   );

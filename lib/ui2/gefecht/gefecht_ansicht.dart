@@ -12,6 +12,8 @@ import 'gefecht_anordnung.dart';
 import 'gefecht_schnellleiste.dart';
 import 'gefecht_probenwahl.dart';
 import 'gefecht_aktionswahl.dart';
+import 'gefecht_begleiter.dart';
+import 'gefecht_inventar.dart';
 import 'gefecht_gegner.dart';
 import 'gefecht_initiative.dart';
 import 'gefecht_beenden.dart';
@@ -250,6 +252,9 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
                                 GefechtInitiativkarte(
                                   heroId: widget.heroId,
                                   gesperrt: _busy,
+                                ),
+                                GefechtBegleiter(
+                                  begleiter: snapshot.hero.companions,
                                 ),
                               ],
                               ausruestung: _ausruestung(snapshot),
