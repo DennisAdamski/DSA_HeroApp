@@ -3201,8 +3201,8 @@ ueber die Settings-Katalogverwaltung bearbeitet.
   wiedereröffnen, Vertrauten-Steigerung. Der Ressourcendialog zeigt Fehler im
   Blatt und bleibt offen.
 - Snapshots bleiben: Editorentwürfe (Übersicht, Talente, Magie, Begleiter,
-  Notizen, Reisebericht) und der Inventareditor. Sie sind aber eingereiht.
-  Das Kampf-Sofortspeichern schreibt seit dem folgenden Update frisch.
+  Notizen, Reisebericht). Sie sind aber eingereiht. Das Kampf-Sofortspeichern
+  und der Inventareditor schreiben seit den folgenden Updates frisch.
 
 ### Update 2026-09-30: Kampf-Tab frisch schreiben (ARCH-05)
 
@@ -3244,6 +3244,34 @@ ueber die Settings-Katalogverwaltung bearbeitet.
 - Prüfung: `test/rules/kampf_aenderung_rules_test.dart`,
   `test/ui/combat/kampf_frisch_schreiben_test.dart` (mit
   `BogenTestRepository`) und `test/ui/combat/kampfvorschau_wunden_test.dart`.
+
+### Update 2026-10-05: Inventareditor frisch schreiben (ARCH-05)
+
+- Anlegen und Bearbeiten im Inventareditor (schmal als eigene Seite, breit als
+  Seitenpanel) schreiben frisch über `aendereHeldImEditor`
+  (`lib/ui/screens/shared/zustand_aendern.dart`). Der Einstieg prüft wie
+  `aendereHeldMitMeldung` die offene Steigerungsrunde, fängt Fehler aber
+  nicht: `InventoryItemEditor` zeigt sie selbst und bleibt offen.
+  `aendereHeldMitMeldung` nutzt denselben Einstieg.
+- Regeln in `inventar_aenderung_rules.dart`: `mitNeuemInventarEintrag` hängt
+  an den gespeicherten Stand an und lässt den Kampf unberührt.
+  `mitGeaendertemInventarEintrag` findet den Gegenstand, mit dem der Editor
+  geöffnet wurde, über seinen Inhalt; wurde er inzwischen geändert oder
+  entfernt, gibt es einen `StateError`. Ein verknüpfter Eintrag gibt seine
+  Markierungen (magisch, geweiht) an seinen Slot weiter; eine im Editor
+  geänderte Geschossmenge geht nur an das eigene Geschoss
+  (`slotRef ?? sourceRef`). Vorher schrieb der Tab alle Geschossmengen des
+  beim Rendern erfassten Inventars zurück und setzte so Bestände aus dem
+  Kampf-Tab zurück.
+- Der Tab merkt sich den geöffneten Gegenstand (`_bearbeiteterEintrag`) statt
+  nur seiner Position. Verschiebt ein anderer Weg die Liste, bleibt der
+  breite Editor bei seinem Gegenstand. Nach dem Speichern wird die Auswahl im
+  gespeicherten Helden über den Inhalt bestimmt (neue Einträge von hinten,
+  verknüpfte notfalls über `slotRef`).
+- Prüfung: `test/rules/inventar_aenderung_rules_test.dart`,
+  `test/ui/inventory/inventar_frisch_schreiben_test.dart` (mit
+  `BogenTestRepository`, schmal und breit) und die Planungssperre in
+  `test/ui/shared/held_frisch_schreiben_test.dart`.
 
 ### Update 2026-08-23: Aventurischer Kalender und aktuelles Alter
 
