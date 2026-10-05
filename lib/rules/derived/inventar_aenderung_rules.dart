@@ -20,13 +20,18 @@ import 'package:dsa_heldenverwaltung/rules/derived/inventory_sync_rules.dart';
 /// Verglichen wird das vollständige JSON einschließlich unbekannter Felder.
 /// Zwei gleiche Einträge sind nicht unterscheidbar; das Entfernen des ersten
 /// ergibt dann dieselbe Liste wie das des zweiten.
+///
+/// Trägt [gesucht] keine Instanz-ID, zählt sie auch bei den Einträgen nicht:
+/// Das Speichern vergibt fehlende IDs (ARCH-03), ein inzwischen gespeicherter
+/// Eintrag ist dadurch nicht geändert.
 int findeGleichenInventarEintrag(
   List<HeroInventoryEntry> eintraege,
   HeroInventoryEntry gesucht,
 ) {
-  final gesuchterHash = stableContentHash(gesucht.toJson());
+  final gesuchterHash = _inhalt(gesucht);
+  final ohneId = gesucht.instanzId == null;
   for (var index = 0; index < eintraege.length; index++) {
-    if (stableContentHash(eintraege[index].toJson()) == gesuchterHash) {
+    if (_inhalt(eintraege[index], ohneInstanzId: ohneId) == gesuchterHash) {
       return index;
     }
   }
@@ -37,18 +42,29 @@ int findeGleichenInventarEintrag(
 /// gleicht, sonst `-1`.
 ///
 /// Für einen gerade angehängten Gegenstand: Gleicht er einem älteren
-/// Eintrag, ist er der hintere der beiden.
+/// Eintrag, ist er der hintere der beiden. Instanz-IDs wie bei
+/// [findeGleichenInventarEintrag].
 int findeLetztenGleichenInventarEintrag(
   List<HeroInventoryEntry> eintraege,
   HeroInventoryEntry gesucht,
 ) {
-  final gesuchterHash = stableContentHash(gesucht.toJson());
+  final gesuchterHash = _inhalt(gesucht);
+  final ohneId = gesucht.instanzId == null;
   for (var index = eintraege.length - 1; index >= 0; index--) {
-    if (stableContentHash(eintraege[index].toJson()) == gesuchterHash) {
+    if (_inhalt(eintraege[index], ohneInstanzId: ohneId) == gesuchterHash) {
       return index;
     }
   }
   return -1;
+}
+
+// Inhalts-Hash eines Eintrags, auf Wunsch ohne seine Instanz-ID.
+String _inhalt(HeroInventoryEntry eintrag, {bool ohneInstanzId = false}) {
+  final json = Map<String, dynamic>.of(eintrag.toJson());
+  if (ohneInstanzId) {
+    json.remove('instanzId');
+  }
+  return stableContentHash(json);
 }
 
 /// Hängt den im Editor angelegten Gegenstand [neu] an das gespeicherte
@@ -72,6 +88,9 @@ HeroSheet mitNeuemInventarEintrag(HeroSheet held, HeroInventoryEntry neu) {
 /// fremde Änderung zu überschreiben. Gleicht [neu] dem angezeigten Stand,
 /// kommt [held] selbst zurück, damit nichts gespeichert wird.
 ///
+/// Hat das Speichern dem Gegenstand inzwischen eine Instanz-ID gegeben, die
+/// [neu] noch nicht kennt, behält er sie.
+///
 /// Ein mit dem Kampf verknüpfter Eintrag gibt seine Markierungen (magisch,
 /// geweiht) an seinen Slot weiter. Ein Geschoss schreibt seine Menge nur,
 /// wenn sie sich im Editor geändert hat, und nur an sein eigenes Geschoss;
@@ -90,7 +109,10 @@ HeroSheet mitGeaendertemInventarEintrag(
     return held;
   }
   final eintraege = List<HeroInventoryEntry>.of(held.inventoryEntries);
-  eintraege[index] = neu;
+  final gespeicherteId = eintraege[index].instanzId;
+  eintraege[index] = neu.instanzId == null && gespeicherteId != null
+      ? neu.copyWith(instanzId: gespeicherteId)
+      : neu;
   final verknuepft =
       _istMitKampfVerknuepft(angezeigt) || _istMitKampfVerknuepft(neu);
   return held.copyWith(
