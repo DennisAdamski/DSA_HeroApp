@@ -122,13 +122,14 @@ class _HeroReiseberichtTabState extends ConsumerState<HeroReiseberichtTab>
     final catalog = ref.read(rulesCatalogProvider).valueOrNull;
     if (catalog == null) return;
 
-    final rewards = computePendingRewards(
-      catalog: catalog.reisebericht,
-      state: _draft,
-    );
-
-    // Belohnungen werden auf den gespeicherten Helden gebucht, nie doppelt.
+    // Gebucht und zurückgenommen wird auf dem gespeicherten Helden, nie
+    // doppelt; die Vorschau dient nur der Meldung.
     final entwurf = _draft;
+    final vorschau = berechneReiseberichtBuchung(
+      catalog: catalog.reisebericht,
+      gebucht: basis.reisebericht,
+      entwurf: entwurf,
+    );
     final gespeichert = await speichereEditorEntwurf(
       context: context,
       ref: ref,
@@ -137,7 +138,7 @@ class _HeroReiseberichtTabState extends ConsumerState<HeroReiseberichtTab>
         basis: basis,
         aktuell: aktuell,
         entwurf: entwurf,
-        belohnungen: rewards,
+        katalog: catalog.reisebericht,
         erzwingen: erzwungen.contains('reisebericht'),
       ),
     );
@@ -145,28 +146,35 @@ class _HeroReiseberichtTabState extends ConsumerState<HeroReiseberichtTab>
 
     _editController.markSaved();
 
-    if (!rewards.isEmpty) {
-      final parts = <String>[];
-      if (rewards.ap > 0) parts.add('+${rewards.ap} AP');
-      if (rewards.seRewards.isNotEmpty) {
-        parts.add('${rewards.seRewards.length}x SE');
-      }
-      if (rewards.talentBoni.isNotEmpty) {
-        parts.add('${rewards.talentBoni.length}x Talentbonus');
-      }
-      if (rewards.eigenschaftsBoni.isNotEmpty) {
-        parts.add('${rewards.eigenschaftsBoni.length}x Eigenschaftsbonus');
-      }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Reisebericht gespeichert: ${parts.join(', ')}'),
+    final parts = <String>[
+      ..._buchungsteile(vorschau.neu, zurueck: false),
+      ..._buchungsteile(vorschau.zurueck, zurueck: true),
+    ];
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          parts.isEmpty
+              ? 'Reisebericht gespeichert'
+              : 'Reisebericht gespeichert: ${parts.join(', ')}',
         ),
-      );
-    } else {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Reisebericht gespeichert')));
-    }
+      ),
+    );
+  }
+
+  List<String> _buchungsteile(
+    ReiseberichtRewards rewards, {
+    required bool zurueck,
+  }) {
+    final zusatz = zurueck ? ' zurückgenommen' : '';
+    return <String>[
+      if (rewards.ap > 0) '${zurueck ? '−' : '+'}${rewards.ap} AP',
+      if (rewards.seRewards.isNotEmpty)
+        '${rewards.seRewards.length}x SE$zusatz',
+      if (rewards.talentBoni.isNotEmpty)
+        '${rewards.talentBoni.length}x Talentbonus$zusatz',
+      if (rewards.eigenschaftsBoni.isNotEmpty)
+        '${rewards.eigenschaftsBoni.length}x Eigenschaftsbonus$zusatz',
+    ];
   }
 
   Future<void> _cancelChanges() async {
@@ -184,57 +192,55 @@ class _HeroReiseberichtTabState extends ConsumerState<HeroReiseberichtTab>
 
   void _toggleChecked(String id) {
     final next = Set<String>.of(_draft.checkedIds);
-    if (next.contains(id)) {
-      // Ruecknahme-Pruefung
-      if (_draft.appliedRewardIds.contains(id)) {
-        _showRevokeConfirmation(id);
-        return;
-      }
-      next.remove(id);
-    } else {
+    if (!next.remove(id)) {
       next.add(id);
     }
-    setState(() {
-      _draft = _draft.copyWith(checkedIds: next);
-    });
-    _editController.markFieldChanged();
+    _aendereEntwurf(_draft.copyWith(checkedIds: next));
   }
 
-  void _showRevokeConfirmation(String id) {
+  void _updateDraft(HeroReisebericht newDraft) => _aendereEntwurf(newDraft);
+
+  /// Übernimmt [nachher] in den Entwurf.
+  ///
+  /// Nimmt die Änderung bereits gebuchte Belohnungen zurück (ein entfernter
+  /// Haken, ein gelöschter offener Eintrag, eine dadurch unterschrittene
+  /// Schwelle), fragt der Tab vorher nach. Gebucht und zurückgenommen wird
+  /// erst beim Speichern; bis dahin zeigt der Entwurf die zurückgenommenen
+  /// Belohnungen schon als offen an.
+  Future<void> _aendereEntwurf(HeroReisebericht nachher) async {
+    final basis = _entwurfBasis;
     final catalog = ref.read(rulesCatalogProvider).valueOrNull;
-    if (catalog == null) return;
-    final def = catalog.reisebericht.where((d) => d.id == id).firstOrNull;
-    if (def == null) return;
-
-    final revoke = computeRevocationRewards(
-      def: def,
-      catalog: catalog.reisebericht,
-      state: _draft,
-    );
-
-    showDialog<bool>(
-      context: context,
-      builder: (ctx) =>
-          _RevokeConfirmDialog(rewards: revoke, entryName: def.name),
-    ).then((confirmed) {
-      if (confirmed == true) {
-        final hero = _latestHero;
-        if (hero == null) return;
-
-        final next = Set<String>.of(_draft.checkedIds)..remove(id);
-        final cleaned = Set<String>.of(_draft.appliedRewardIds)
-          ..removeAll(revoke.newAppliedIds);
-        setState(() {
-          _draft = _draft.copyWith(checkedIds: next, appliedRewardIds: cleaned);
-        });
-        _editController.markFieldChanged();
+    var neu = nachher;
+    if (basis != null && catalog != null) {
+      final aenderung = reiseberichtBuchungsaenderung(
+        catalog: catalog.reisebericht,
+        gebucht: basis.reisebericht,
+        vorher: _draft,
+        nachher: nachher,
+      );
+      if (!aenderung.zurueck.isEmpty) {
+        final bestaetigt = await showDialog<bool>(
+          context: context,
+          builder: (ctx) => _RevokeConfirmDialog(buchung: aenderung),
+        );
+        if (bestaetigt != true || !mounted) return;
       }
-    });
-  }
-
-  void _updateDraft(HeroReisebericht newDraft) {
+      final buchung = berechneReiseberichtBuchung(
+        catalog: catalog.reisebericht,
+        gebucht: basis.reisebericht,
+        entwurf: nachher,
+      );
+      final entfaellt = buchung.zurueck.newAppliedIds.difference(
+        buchung.neu.newAppliedIds,
+      );
+      neu = nachher.copyWith(
+        appliedRewardIds: basis.reisebericht.appliedRewardIds.difference(
+          entfaellt,
+        ),
+      );
+    }
     setState(() {
-      _draft = newDraft;
+      _draft = neu;
     });
     _editController.markFieldChanged();
   }

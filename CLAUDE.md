@@ -248,8 +248,8 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   (`rules/derived/editor_entwurf_rules.dart`) gleicht Basis, Entwurf und
   frischen Helden je oberstem JSON-Schluessel ab, AP sind Zaehler.
   Beidseitig verschieden Geaendertes fragt nach („Weiter bearbeiten“ /
-  „Meine Fassung speichern“); eine Buchung (Abenteuerabschluss,
-  Reisebericht-Belohnungen) wird nie zurueckgenommen. Uebernimmt ein Entwurf
+  „Meine Fassung speichern“); Erzwingen nimmt nie eine fremde Buchung
+  (Abenteuerabschluss, Reisebericht-Belohnungen) zurueck. Uebernimmt ein Entwurf
   waehrend der Bearbeitung frisch Gespeichertes, rueckt auch die Basis nach.
   Kein Bogenschreibweg schreibt mehr einen Snapshot. Pruefung:
   `test/ui/shared/held_frisch_schreiben_test.dart`,
@@ -1010,6 +1010,13 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   Gates nur auf `heroStoragePath` — jede andere Einstellung (etwa eine
   gespeicherte Spaltenbreite) darf dort kein `setState` ausloesen.
 - Reisebericht-Daten bleiben separat unter `assets/catalogs/reiseberichte/house_rules_v1/`.
+  Buchen und Zuruecknehmen der Reisebericht-Belohnungen haben eine Quelle:
+  die Posten in `reisebericht_rules.dart` (ID, Inhalt, Bedingung).
+  `berechneReiseberichtBuchung` bucht Neues und nimmt zurueck, was
+  enthakt, geloescht oder unterschritten wurde (auch Schwellen-, Gruppen-
+  und Meta-Boni). Altdaten werden nie rueckwirkend korrigiert. Neue
+  Belohnungsarten gehoeren in `_buchungsposten`, nie in eine eigene
+  Buchungsfunktion.
 - Geschuetzte Katalog-Felder (Wirkung/Varianten von Zaubern, Erklaerungstexte
   von Manoevern und Kampf-Sonderfertigkeiten) sind v3-verschluesselt
   (AES-GCM, globaler Salt im Manifest `catalog_salt_v3`). Beim Unlock

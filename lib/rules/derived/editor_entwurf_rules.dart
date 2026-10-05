@@ -9,6 +9,7 @@
 
 import 'dart:convert';
 
+import 'package:dsa_heldenverwaltung/catalog/reisebericht_def.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_reisebericht.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/sync_models.dart';
@@ -152,28 +153,30 @@ HeroSheet uebernimmEditorEntwurf({
 
 /// Bucht einen Reisebericht-Entwurf auf den gespeicherten Helden.
 ///
-/// [belohnungen] sind die aus [entwurf] errechneten, noch nicht angewendeten
-/// Belohnungen. Sie werden auf [aktuell] gebucht (AP, SE, Boni als
-/// Zuschlag), sodass inzwischen gespeicherte Talent- oder AP-Änderungen
-/// erhalten bleiben.
+/// Gebucht wird über [berechneReiseberichtBuchung] gegen den Reisebericht
+/// von [aktuell]: Neu erfüllte Posten werden gebucht, im Entwurf nicht mehr
+/// erfüllte zurückgenommen (AP, SE, Talent- und Eigenschaftsboni).
+/// Inzwischen gespeicherte Talent- oder AP-Änderungen bleiben erhalten,
+/// weil nur Zu- und Abschläge gebucht werden.
 ///
 /// Wurde der Reisebericht seit [basis] anderswo geändert, entsteht ein
 /// [EditorEntwurfKonflikt]. Er ist nur erzwingbar ([erzwingen]), solange
 /// die angewendeten Belohnungen gleich geblieben sind; sonst bekäme der
-/// Held dieselben Belohnungen ein zweites Mal. Ist der Entwurf unverändert,
-/// kommt [aktuell] selbst zurück.
+/// Held dieselben Belohnungen ein zweites Mal oder verlöre fremde. Ist der
+/// Entwurf unverändert, wird nur noch Offenes des gespeicherten Stands
+/// gebucht; ohne solches kommt [aktuell] selbst zurück.
 HeroSheet bucheReiseberichtEntwurf({
   required HeroSheet basis,
   required HeroSheet aktuell,
   required HeroReisebericht entwurf,
-  required ReiseberichtRewards belohnungen,
+  required List<ReiseberichtDef> katalog,
   bool erzwingen = false,
 }) {
   final basisHash = stableContentHash(basis.reisebericht.toJson());
   final entwurfHash = stableContentHash(entwurf.toJson());
   final aktuellHash = stableContentHash(aktuell.reisebericht.toJson());
-  if (entwurfHash == basisHash && belohnungen.isEmpty) {
-    return aktuell;
+  if (entwurfHash == basisHash) {
+    return _bucheReisebericht(aktuell, katalog, aktuell.reisebericht);
   }
   if (aktuellHash != basisHash && aktuellHash != entwurfHash) {
     final gleicheBuchungen = _gleicheMengen(
@@ -187,10 +190,29 @@ HeroSheet bucheReiseberichtEntwurf({
       );
     }
   }
-  return applyReiseberichtRewards(
-    hero: aktuell,
-    rewards: belohnungen,
-    updatedState: entwurf,
+  return _bucheReisebericht(aktuell, katalog, entwurf);
+}
+
+// Bucht [entwurf] gegen den gespeicherten Reisebericht von [held].
+HeroSheet _bucheReisebericht(
+  HeroSheet held,
+  List<ReiseberichtDef> katalog,
+  HeroReisebericht entwurf,
+) {
+  final gebucht = held.reisebericht;
+  final buchung = berechneReiseberichtBuchung(
+    catalog: katalog,
+    gebucht: gebucht,
+    entwurf: entwurf,
+  );
+  if (buchung.istLeer && identical(entwurf, gebucht)) {
+    return held;
+  }
+  return bucheReisebericht(
+    hero: held,
+    buchung: buchung,
+    gebucht: gebucht,
+    entwurf: entwurf,
   );
 }
 
