@@ -236,7 +236,11 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   `kampf_aenderung_rules.dart`): Slots werden ueber ihre ID getroffen, nie
   ueber die Position, und die Sektionen melden den **angezeigten** Slot;
   ein Editorergebnis auf einen inzwischen geaenderten Slot wird abgewiesen.
-  Snapshots bleiben Inventareditor und Editorentwuerfe. Pruefung:
+  Der Inventareditor schreibt ueber `aendereHeldImEditor` (Fehler zeigt
+  der Editor selbst) und `inventar_aenderung_rules.dart`: Er trifft den
+  geoeffneten Gegenstand ueber seinen Inhalt, nie ueber die Position, und
+  schreibt in den Kampf nur dessen eigene Geschossmenge.
+  Snapshots bleiben nur die Editorentwuerfe. Pruefung:
   `test/ui/shared/held_frisch_schreiben_test.dart` und Geschwister mit
   `test/test_support/bogen_test_repository.dart`.
 - Mit Konto endet `SyncingHeroRepository.saveHeroState` nach dem **lokalen**

@@ -301,4 +301,39 @@ void main() {
       findsOneWidget,
     );
   });
+
+  testWidgets('der Editor-Einstieg reicht die Planungssperre weiter', (
+    tester,
+  ) async {
+    Object? fehler;
+    await zeige(
+      tester,
+      Consumer(
+        builder: (context, ref, _) => TextButton(
+          onPressed: () => unawaited(
+            aendereHeldImEditor(
+              ref: ref,
+              heroId: 'rondra',
+              aenderung: (held) => held.copyWith(name: 'Neu'),
+            ).then<void>((_) {}, onError: (Object grund) => fehler = grund),
+          ),
+          child: const Text('los'),
+        ),
+      ),
+    );
+    starteRunde();
+
+    await tester.tap(find.text('los'));
+    await tester.pumpAndSettle();
+
+    expect(repo.bogenSpeicherungen, 0);
+    expect(
+      fehler,
+      isA<StateError>().having(
+        (grund) => grund.message,
+        'message',
+        kBogenWaehrendPlanungGesperrt,
+      ),
+    );
+  });
 }
