@@ -20,7 +20,15 @@ Write-Host '== flutter pub get =='
 flutter pub get
 
 Write-Host '== flutter build web --release =='
-flutter build web --release --no-wasm-dry-run
+# Commit und Bauzeit erscheinen in der App unter Einstellungen.
+$commit = git rev-parse HEAD
+if (git status --porcelain) { $commit = "$commit-dirty" }
+$buildTime = [DateTime]::UtcNow.ToString(
+    "yyyy-MM-dd'T'HH:mm:ss'Z'",
+    [Globalization.CultureInfo]::InvariantCulture)
+flutter build web --release --no-wasm-dry-run `
+    "--dart-define=BUILD_COMMIT=$commit" `
+    "--dart-define=BUILD_TIME=$buildTime"
 
 $manifest = 'build/web/assets/AssetManifest.bin.json'
 if (-not (Test-Path $manifest)) {

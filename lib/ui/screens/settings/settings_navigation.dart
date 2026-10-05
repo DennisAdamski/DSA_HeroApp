@@ -180,6 +180,12 @@ class _SettingsNavigationPane extends ConsumerWidget {
             ],
           ),
         ),
+        const SizedBox(height: 16),
+        SelectableText(
+          'Version: ${AppBuildInfo.aktuell.anzeige}',
+          key: const ValueKey<String>('settings-build-info'),
+          style: theme.textTheme.bodySmall,
+        ),
       ],
     );
   }
