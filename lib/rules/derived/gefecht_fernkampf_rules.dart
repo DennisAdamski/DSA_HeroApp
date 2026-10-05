@@ -128,3 +128,31 @@ CombatConfig verbraucheGefechtsGeschoss(
     geschossIndex: angezeigt.rangedProfile.selectedProjectileIndex,
   );
 }
+
+/// Legt [anzahl] aufgehobene Geschosse auf den gespeicherten Bestand.
+///
+/// Gezählt wird vom frischen Stand, gedeckelt bei [kGeschossHoechstbestand].
+CombatConfig nimmGefechtsGeschosseAuf(
+  CombatConfig config,
+  MainWeaponSlot angezeigt,
+  RangedProjectile geschoss,
+  int anzahl, {
+  int? geschossIndex,
+}) {
+  if (anzahl <= 0) {
+    throw ArgumentError.value(anzahl, 'anzahl', 'Mindestens ein Geschoss.');
+  }
+  final frisch = config.weaponSlots
+      .where((w) => w.id == angezeigt.id)
+      .firstOrNull;
+  if (frisch == null || frisch.id.isEmpty) {
+    throw StateError('Waffe nicht mehr eindeutig vorhanden.');
+  }
+  return mitGeschossSchritt(
+    config,
+    angezeigt,
+    geschoss,
+    anzahl,
+    geschossIndex: geschossIndex,
+  );
+}

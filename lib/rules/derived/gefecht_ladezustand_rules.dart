@@ -46,3 +46,34 @@ Gefechtszustand bestaetigeGefechtsLadung(
     },
   );
 }
+
+/// Führt einen bekannten Ladezustand über eine reine Bestandsänderung mit.
+///
+/// Der Profilschlüssel enthält den Geschossbestand; ohne Übertrag wäre eine
+/// geladene Waffe nach dem Aufheben von Geschossen wieder „unbekannt“.
+/// Ändert sich mehr als der Bestand, bleibt der Ladezustand unbekannt.
+Gefechtszustand uebertrageGefechtsLadestand(
+  Gefechtszustand s, {
+  required MainWeaponSlot vorher,
+  required MainWeaponSlot nachher,
+}) {
+  final stand = s.ladestaende[vorher.id];
+  if (stand == null ||
+      vorher.id != nachher.id ||
+      stand.waffenprofilKey != gefechtsLadeprofilKey(vorher) ||
+      _ohneBestand(vorher) != _ohneBestand(nachher)) {
+    return s;
+  }
+  return bestaetigeGefechtsLadung(s, nachher, stand.geladen);
+}
+
+String _ohneBestand(MainWeaponSlot waffe) {
+  final profil = waffe.rangedProfile;
+  return gefechtsLadeprofilKey(
+    waffe.copyWith(
+      rangedProfile: profil.copyWith(
+        projectiles: [for (final g in profil.projectiles) g.copyWith(count: 0)],
+      ),
+    ),
+  );
+}
