@@ -770,3 +770,5 @@ Absicherung). Bekanntes Restrisiko ohne heutigen Auslöser: Rundenleiste,
 Reservekarte und Störungsdialog schreiben die Sitzung aus dem beim Rendern
 erfassten Stand; modale Dialoge, `_busy` und die `setzen`-Sperre während
 eines Auftrags verhindern heute jede Zwischenänderung.
+
+Abschlussprüfung (6. Oktober 2026, nach Review und beiden Restschulden): `flutter analyze` ohne Befund; vollständige Suite 3.630 bestanden, 3 bestehende Tests übersprungen; Format über 1.089 Dateien ohne Änderung; CI-Screen-LOC (21 Dateien) und breite UI2-LOC-Prüfung (87 Dateien) ≤ 700 Zeilen, ebenso `test/ui2/spielen` und `test/ui/bridges`. Commits: `7789c1e` Review-Befunde, `d243601` Wirkabschluss über die Gefechtsbrücke, `e2d01b3` Abenteuerblatt-Teildatei. Nur lokal; kein Push.
