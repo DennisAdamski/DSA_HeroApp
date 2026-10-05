@@ -456,3 +456,15 @@ Nur lokale Prüfungen: kein neuer Remote-CI-Lauf, Push, Merge oder Deployment.
 Nutzernotizen und parallele Inventarisierung im ursprünglichen Checkout bleiben
 unverändert und außerhalb des Gefechtscommits. Die bisherigen Prüfergebnisse
 oben bleiben historische Nachweise. Die Pakete 3–6 sind noch nicht abgeschlossen.
+
+## Vervollständigung für Spieler (5. Oktober 2026)
+
+Nach Review der Bedienung umgesetzt (Details in `gefecht_implementation.md`):
+G1 Vorgaben statt Pflichtfelder, G2 Aktionsdialog (Stepper, DK-Chips, ein
+Modifikatorort), G3 Ansicht mit Gründen am Knopf und Schnellleiste, G4
+Talent- und Eigenschaftsproben mit Zeitbedarf, G5 Lagebanner und benannte
+Aktionen (WdS S. 55), G6 Inventar/Gegenstand benutzen und Begleiter, G7
+Zauberliste und weniger Haken, G8 Bedienabnahme. Der zuvor in einer
+Folgesitzung begonnene Stand (Gegner, gemeinsame Initiative, Klingenwand/
+-sturm, Patzer, Fremdwirkung) ist stabilisiert und einbezogen.
+

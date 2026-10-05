@@ -695,3 +695,18 @@ importiert weiterhin `zustand_aendern.dart`, die Armatrutz-/Attributo-Dialoge
 und den Ressourcendialog aus `lib/ui/`. Die Verlagerung hinter
 `KartoGefechtsAdapter` braucht eigene Adaptermethoden samt Tests.
 Prüfung: `test/rules/gefecht_zauberliste_rules_test.dart`.
+
+## Bedienabnahme der Vervollständigung (G8, 5. Oktober 2026)
+
+`test/ui2/spielen/gefecht_bedienabnahme_test.dart` beginnt ein Gefecht über den
+echten Einstieg (INI-Wurf über die Brücke, Start-DK aus der Waffe), führt
+Attacke und Parade ohne jede Formulareingabe mit je zwei Taps aus (Knopf und
+„Würfeln · Zielwert“; der echte Probendialog fügt „Würfeln“ und „Schließen“
+hinzu), würfelt eine reaktive Eigenschaftsprobe ohne Aktionskosten, wechselt
+die Runde und beendet das Gefecht. Zusammen mit den Paketprüfungen deckt das
+Nahkampf, Fernkampf (bestehende Lade-/Schusstests), Zauber, Talentproben,
+Inventar, Begleiter, benannte Aktionen und die Layoutmatrix ab.
+
+Bewusst außerhalb: Gefechtspersistenz, Begleiterproben und -LeP, Rituale im
+Gefecht. Offen ohne Bedienwirkung: Verlagerung der `lib/ui`-Importe von
+`gefecht_wirkabschluss.dart` hinter die Gefechtsbrücke.

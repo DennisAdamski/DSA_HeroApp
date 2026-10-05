@@ -54,3 +54,5 @@ Abwarten/Umwandlung); Hausregel 25819 (Seite 3: kritischer Bruchtest).
 - Erledigt im Vervollständigungspaket „Ansicht und Handy“: Gegner und
   gemeinsame Initiative stehen im Abschnitt „Begegnung“, Abwarten bei den
   weiteren Aktionen; schmal hält eine Schnellleiste die häufigsten Aktionen.
+- Vervollständigung G1–G8 am 5. Oktober 2026 abgeschlossen; Stand und
+  Prüfungen in `gefecht_implementation.md` und `gefecht_next_plan.md`.
