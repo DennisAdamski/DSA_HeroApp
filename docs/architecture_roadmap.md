@@ -1750,12 +1750,78 @@ Commits:
 4. Wählt der Nutzer beim Verlassen „Speichern“ und dann „Weiter
    bearbeiten“, meldet die Verwaltung wie bisher „weiterhin als
    ungespeichert markiert“.
-5. Randbefund, nicht behoben: Das Zurücknehmen eines Reisebericht-Hakens
+5. ~~Randbefund, nicht behoben: Das Zurücknehmen eines Reisebericht-Hakens
    entfernt nur die Kennung aus den angewendeten Belohnungen.
    `revokeReiseberichtRewards` wird nirgends aufgerufen; AP und Boni
-   bleiben also. Vor einer Behebung fachlich klären.
+   bleiben also. Vor einer Behebung fachlich klären.~~ *Mit dem Nutzer
+   geklärt und behoben im Nachtrag unten: Enthaken nimmt die Belohnungen
+   zurück.*
 6. Talente- und Kampf-Editor warten beim Speichern weiter mit
    `rulesCatalogProvider.future` (Befund 2 des Schreibpfad-Inventars).
+
+*Nachtrag 05.10.2026 — Reisebericht: Enthaken nimmt zurück.* Vom Nutzer
+entschieden: Wer einen Haken entfernt, verliert die daraus gebuchten
+Belohnungen wieder.
+
+*Befund.* Die Rücknahme entfernte nur die Kennung aus den angewendeten
+Belohnungen; AP, SE, Talent- und Eigenschaftsboni blieben gebucht.
+`computeRevocationRewards` kannte nur Checkpoints, Mehrfach-Anforderungen
+und Gruppenstufen. Teilanforderungen und Sammlungseinträge ließen sich
+nach dem Buchen gar nicht enthaken; der Dialog fand ihren Katalogeintrag
+nicht. Gelöschte offene Einträge wurden ebenfalls nie zurückgebucht.
+
+*Umsetzung.*
+
+- **Eine Quelle für Buchen und Zurücknehmen:** `reisebericht_rules.dart`
+  zählt alle buchbaren Posten des Katalogs auf: ID, Inhalt (AP, SE,
+  Talent- und Eigenschaftsboni) und ob ihre Bedingung erfüllt ist.
+  `computePendingRewards` bucht wie bisher erfüllte, noch nicht angewendete
+  Posten; die bestehenden Tests laufen unverändert.
+- **Abgleich:** `berechneReiseberichtBuchung` vergleicht den Entwurf mit dem
+  gebuchten Stand.
+  - Zurückgenommen wird jeder angewendete Posten, der dort erfüllt war und
+    im Entwurf nicht mehr ist. Das gilt auch für abhängige Belohnungen:
+    Sammlungsschwelle und -bonus, Gruppenbonus, Meta-Eintrag samt
+    Eigenschaftsbonus.
+  - Ändert sich der Inhalt eines angewendeten Postens (gewählte SE, AP
+    eines offenen Eintrags nach dem Löschen eines davor), wird
+    umgebucht.
+  - Was schon vorher angewendet und nicht mehr erfüllt war (Altdaten aus
+    der bisherigen Rücknahme), bleibt unangetastet. Unbekannte angewendete
+    IDs bleiben ebenso.
+- **Buchen:** `bucheReisebericht` nimmt erst zurück und bucht dann neu;
+  `bucheReiseberichtEntwurf` tut das auf dem frisch geladenen Helden.
+  `computeRevocationRewards` entfällt.
+- **Tab:** Entfernt das Enthaken oder das Löschen eines offenen Eintrags
+  Gebuchtes, fragt „Belohnungen zurücknehmen?“ nach und zeigt Rücknahmen
+  und Umbuchungen (`reiseberichtBuchungsaenderung`). Gebucht wird erst
+  beim Speichern; die Meldung nennt Zu- und Abgänge.
+
+*Prüfungen.*
+
+- Regeltests (`test/rules/reisebericht_rules_test.dart`):
+  - Checkpoint, Schwelle samt Talentbonus, Teilanforderung,
+    Gruppenbonus, Meta mit Eigenschaftsbonus;
+  - Umbuchung beim Löschen eines offenen Eintrags;
+  - Altdaten bleiben, erneutes Abhaken hebt die Rücknahme auf;
+  - nur die zusätzliche Wirkung einer Änderung;
+  - Rücknehmen und Buchen am Helden mit fremder ID.
+- `test/rules/editor_entwurf_rules_test.dart`: Enthaken auf dem
+  gespeicherten Helden.
+- `test/ui/shared/editor_entwurf_frisch_test.dart`: Rückfrage,
+  Zurücknehmen samt Speichern, Abbrechen.
+- Gegenprobe: Mit dem bisherigen Code scheitert der Rücknahmetest im Tab.
+- `flutter analyze --no-pub` ohne Befund, `dart format` ohne Änderung,
+  Zeilenbudget eingehalten. Volle Suite grün (3483 bestanden,
+  3 übersprungen).
+
+*Risiken.*
+
+1. Zurückgenommen wird mit dem heutigen Katalog. Hat sich der Wert eines
+   Postens seit dem Buchen geändert, wird der neue abgezogen.
+2. Eine zurückgenommene SE wird abgezogen, auch wenn sie schon für eine
+   Steigerung verwendet wurde (nicht unter 0). AP gesamt fallen nicht unter
+   0, freie AP können negativ werden.
 
 ## ARCH-06 — Zusammengehörige Änderungen gemeinsam speichern und synchronisieren
 

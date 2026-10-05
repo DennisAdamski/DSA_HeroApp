@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:dsa_heldenverwaltung/catalog/reisebericht_def.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_adventure_entry.dart';
@@ -11,7 +12,6 @@ import 'package:dsa_heldenverwaltung/domain/hero_reisebericht.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/editor_entwurf_rules.dart';
-import 'package:dsa_heldenverwaltung/rules/derived/reisebericht_rules.dart';
 
 // Editorentwürfe (ARCH-05): Der Entwurf wird beim Speichern mit dem frisch
 // geladenen Helden abgeglichen. Was anderswo inzwischen gespeichert wurde,
@@ -351,14 +351,17 @@ void main() {
   });
 
   group('bucheReiseberichtEntwurf', () {
-    const belohnung = ReiseberichtRewards(
-      ap: 10,
-      seRewards: [
-        ReiseberichtSeReward(sourceId: 'r1', talentName: 'tal_klettern'),
-      ],
-      newAppliedIds: {'r1'},
-    );
-    final entwurf = const HeroReisebericht(checkedIds: {'r1'});
+    const katalog = <ReiseberichtDef>[
+      ReiseberichtDef(
+        id: 'r1',
+        name: 'Erster Ork',
+        kategorie: 'kampferfahrungen',
+        typ: 'checkpoint',
+        ap: 10,
+        se: [ReiseberichtSeDef(ziel: 'talent', name: 'tal_klettern')],
+      ),
+    ];
+    const entwurf = HeroReisebericht(checkedIds: {'r1'});
 
     test('bucht auf den gespeicherten Helden', () {
       final aktuell = _mitKlettern(_basis, 9).copyWith(apTotal: 1100);
@@ -367,7 +370,7 @@ void main() {
         basis: _basis,
         aktuell: aktuell,
         entwurf: entwurf,
-        belohnungen: belohnung,
+        katalog: katalog,
       );
 
       expect(ergebnis.apTotal, 1110);
@@ -376,16 +379,51 @@ void main() {
       expect(ergebnis.reisebericht.appliedRewardIds, {'r1'});
     });
 
+    test('Enthaken nimmt auf dem gespeicherten Helden zurück', () {
+      final gebucht = _gespeichert(
+        _held.copyWith(
+          apTotal: 1010,
+          talents: const {
+            'tal_klettern': HeroTalentEntry(
+              talentValue: 4,
+              specialExperiences: 1,
+            ),
+          },
+          reisebericht: const HeroReisebericht(
+            checkedIds: {'r1'},
+            appliedRewardIds: {'r1'},
+          ),
+        ),
+      );
+      // Inzwischen anderswo: 100 AP dazu.
+      final aktuell = gebucht.copyWith(apTotal: 1110);
+
+      final ergebnis = bucheReiseberichtEntwurf(
+        basis: gebucht,
+        aktuell: aktuell,
+        entwurf: const HeroReisebericht(),
+        katalog: katalog,
+      );
+
+      expect(ergebnis.apTotal, 1100);
+      expect(ergebnis.talents['tal_klettern']!.specialExperiences, 0);
+      expect(ergebnis.reisebericht.checkedIds, isEmpty);
+      expect(ergebnis.reisebericht.appliedRewardIds, isEmpty);
+    });
+
     test('ein unveränderter Entwurf lässt den gespeicherten Stand', () {
       final aktuell = _basis.copyWith(
-        reisebericht: const HeroReisebericht(checkedIds: {'r2'}),
+        reisebericht: const HeroReisebericht(
+          checkedIds: {'r2'},
+          appliedRewardIds: {'r2'},
+        ),
       );
 
       final ergebnis = bucheReiseberichtEntwurf(
         basis: _basis,
         aktuell: aktuell,
         entwurf: _basis.reisebericht,
-        belohnungen: const ReiseberichtRewards(),
+        katalog: katalog,
       );
 
       expect(identical(ergebnis, aktuell), isTrue);
@@ -406,7 +444,7 @@ void main() {
             basis: _basis,
             aktuell: aktuell,
             entwurf: entwurf,
-            belohnungen: belohnung,
+            katalog: katalog,
             erzwingen: erzwingen,
           ),
         );
@@ -425,7 +463,7 @@ void main() {
           basis: _basis,
           aktuell: aktuell,
           entwurf: entwurf,
-          belohnungen: belohnung,
+          katalog: katalog,
         ),
       );
       expect(konflikt.erzwingbar, isTrue);
@@ -434,7 +472,7 @@ void main() {
         basis: _basis,
         aktuell: aktuell,
         entwurf: entwurf,
-        belohnungen: belohnung,
+        katalog: katalog,
         erzwingen: true,
       );
       expect(ergebnis.reisebericht.checkedIds, {'r1'});

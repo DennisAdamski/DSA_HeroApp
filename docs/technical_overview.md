@@ -3309,7 +3309,15 @@ ueber die Settings-Katalogverwaltung bearbeitet.
   seit der Basis geändert hat, und geänderte angewendete
   Reisebericht-Belohnungen.
 - Der Reisebericht bucht über `bucheReiseberichtEntwurf` auf den
-  gespeicherten Helden (AP, SE, Boni als Zuschlag) und nie doppelt.
+  gespeicherten Helden (AP, SE, Boni als Zu- und Abschlag) und nie doppelt.
+  Grundlage ist `berechneReiseberichtBuchung` (`reisebericht_rules.dart`).
+  Alle buchbaren Posten des Katalogs haben eine ID, einen Inhalt und eine
+  Bedingung. Neu gebucht wird, was im Entwurf erfüllt und nicht angewendet
+  ist. Zurückgenommen wird, was gebucht war und im Entwurf nicht mehr
+  erfüllt ist: Enthaken, gelöschte offene Einträge, dadurch unterschrittene
+  Schwellen, Gruppen- und Meta-Boni. Ein geänderter Inhalt wird umgebucht.
+  Altdaten (angewendet, aber schon vorher nicht erfüllt) bleiben. Vor einer
+  Rücknahme fragt der Tab nach (`reiseberichtBuchungsaenderung`).
 - Die Übersicht schreibt nur noch den Bogen. Ihre nie angezeigten
   LeP-/AuP-/AsP-/KaP-Felder setzten bisher den Laufzeitzustand vom
   Bearbeitungsbeginn zurück und machten negative LeP zu 0.

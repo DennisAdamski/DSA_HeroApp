@@ -203,13 +203,14 @@ void main() {
     WidgetTester tester,
     _Tab tab, {
     int lebenspunkte = 10,
+    HeroSheet held = _held,
   }) async {
     tester.view.devicePixelRatio = 1;
     tester.view.physicalSize = const Size(1600, 1400);
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
     repo = BogenTestRepository(
-      heroes: [_held],
+      heroes: [held],
       states: {
         'demo': HeroState(
           currentLep: lebenspunkte,
@@ -377,6 +378,59 @@ void main() {
       await tester.tap(find.byType(Checkbox).first);
       await _pumpOhneUeberlauf(tester);
     }
+
+    // Der Ork ist bereits abgehakt und seine 10 AP sind gebucht.
+    final mitGebuchtemOrk = _held.copyWith(
+      apTotal: 1010,
+      reisebericht: const HeroReisebericht(
+        checkedIds: {'rb_ork'},
+        appliedRewardIds: {'rb_ork'},
+      ),
+    );
+
+    testWidgets('Enthaken nimmt die Belohnung beim Speichern zurück', (
+      tester,
+    ) async {
+      await zeige(tester, _reisebericht, held: mitGebuchtemOrk);
+      await hakeOrkAb(tester);
+      expect(find.text('Belohnungen zurücknehmen?'), findsOneWidget);
+      expect(find.text('10 AP'), findsOneWidget);
+      await tester.tap(find.text('Zurücknehmen'));
+      await _pumpOhneUeberlauf(tester);
+      expect(
+        tester.widget<Checkbox>(find.byType(Checkbox).first).value,
+        isFalse,
+      );
+      repo.fremdeAenderung = (held) => held.copyWith(name: 'Rondra die Kühne');
+
+      await speichere(tester);
+      await laufendesSpeichern;
+
+      final gespeichert = await repo.gespeichert('demo');
+      expect(gespeichert.apTotal, 1000);
+      expect(gespeichert.reisebericht.checkedIds, isEmpty);
+      expect(gespeichert.reisebericht.appliedRewardIds, isEmpty);
+      expect(gespeichert.name, 'Rondra die Kühne');
+    });
+
+    testWidgets('Abbrechen lässt den Haken und die Buchung stehen', (
+      tester,
+    ) async {
+      await zeige(tester, _reisebericht, held: mitGebuchtemOrk);
+      await hakeOrkAb(tester);
+      await tester.tap(find.text('Abbrechen'));
+      await _pumpOhneUeberlauf(tester);
+      expect(
+        tester.widget<Checkbox>(find.byType(Checkbox).first).value,
+        isTrue,
+      );
+
+      await speichere(tester);
+      await laufendesSpeichern;
+
+      expect(repo.bogenSpeicherungen, 0);
+      expect((await repo.gespeichert('demo')).apTotal, 1010);
+    });
 
     testWidgets('bucht die Belohnung auf den gespeicherten Helden', (
       tester,
