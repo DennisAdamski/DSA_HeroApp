@@ -77,8 +77,8 @@ extension _CombatStateHelpers on _HeroCombatTabState {
   }
 
   Future<void> _saveChanges() async {
-    final hero = _latestHero;
-    if (hero == null) {
+    final basis = _entwurfBasis;
+    if (basis == null) {
       return;
     }
 
@@ -113,12 +113,29 @@ extension _CombatStateHelpers on _HeroCombatTabState {
       return;
     }
 
-    final updatedHero = hero.copyWith(
+    final entwurf = basis.copyWith(
       talents: Map<String, HeroTalentEntry>.from(_draftTalents),
       combatConfig: _draftCombatConfig,
-      apSpent: hero.apSpent + _draftApSpentDelta,
+      apSpent: basis.apSpent + _draftApSpentDelta,
     );
-    await ref.read(heroActionsProvider).saveHero(updatedHero);
+    if (!mounted) {
+      return;
+    }
+    final gespeichert = await speichereEditorEntwurf(
+      context: context,
+      ref: ref,
+      heroId: widget.heroId,
+      abgleich: (aktuell, erzwungen) => uebernimmEditorEntwurf(
+        basis: basis,
+        entwurf: entwurf,
+        aktuell: aktuell,
+        erzwungen: erzwungen,
+        neueId: neueEditorSlotId,
+      ),
+    );
+    if (!gespeichert) {
+      return;
+    }
     _draftApSpentDelta = 0;
     if (!mounted) {
       return;

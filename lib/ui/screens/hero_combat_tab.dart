@@ -15,6 +15,7 @@ import 'package:dsa_heldenverwaltung/domain/validation/combat_talent_validation.
 import 'package:dsa_heldenverwaltung/rules/derived/combat_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/combat_special_ability_state.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/cost_text_parsing.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/editor_entwurf_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_requirement_context.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/kampf_aenderung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/learning_rules.dart';
@@ -36,6 +37,7 @@ import 'package:dsa_heldenverwaltung/ui/config/ui_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui/debug/ui_rebuild_observer.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_area_registry.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/dice_log_persistence.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/editor_entwurf_speichern.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/probe_request_factory.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/zustand_aendern.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_edit_controller.dart';
@@ -119,10 +121,14 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
   /// liest den Helden unconditional aus `heroByIdProvider` und ueberschreibt
   /// `_latestHero` bei jedem Rebuild (z. B. ausgeloest durch
   /// `_markFieldChanged()`), bevor `_saveChanges()` laeuft. Wie die anderen
-  /// `_draftXxx`-Felder wird dieser Delta-Wert erst beim Speichern auf den
-  /// dann aktuellen `hero.apSpent` angewendet. Gleiche Begruendung wie
+  /// `_draftXxx`-Felder wird dieser Delta-Wert erst beim Speichern als
+  /// Differenz auf die gespeicherten AP angewendet. Gleiche Begruendung wie
   /// `_draftApSpentDelta` in `hero_talents_tab.dart`.
   int _draftApSpentDelta = 0;
+
+  /// Held, aus dem der Entwurf gefüllt wurde; Ausgang des Abgleichs beim
+  /// Speichern (ARCH-05).
+  HeroSheet? _entwurfBasis;
   int? _temporaryIniRoll;
 
   /// Steigt, wenn eine Sofortänderung scheitert, und baut die Unterreiter
@@ -193,6 +199,7 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
     }
 
     _resetControllers();
+    _entwurfBasis = hero;
     _draftTalents = Map<String, HeroTalentEntry>.from(hero.talents);
     _invalidCombatTalentIds = <String>{};
     _draftCombatConfig = hero.combatConfig;

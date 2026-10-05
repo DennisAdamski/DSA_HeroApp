@@ -16,6 +16,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/magic_special_ability.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/cost_text_parsing.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/editor_entwurf_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_requirement_context.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/learning_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/magic_acquisition_rules.dart';
@@ -32,6 +33,7 @@ import 'package:dsa_heldenverwaltung/ui/config/ui_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui/debug/ui_rebuild_observer.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/active_spell_effects_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/dice_log_persistence.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/editor_entwurf_speichern.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/probe_request_factory.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_edit_controller.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
@@ -113,6 +115,10 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
   /// (build() ueberschreibt `_latestHero` unconditional aus dem Provider).
   int _draftApSpentDelta = 0;
 
+  /// Held, aus dem der Entwurf gefüllt wurde; Ausgang des Abgleichs beim
+  /// Speichern (ARCH-05).
+  HeroSheet? _entwurfBasis;
+
   @override
   void initState() {
     super.initState();
@@ -161,6 +167,7 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
       return;
     }
     _resetCellControllers();
+    _entwurfBasis = hero;
     _draftSpells = Map<String, HeroSpellEntry>.from(hero.spells);
     _draftRitualCategories = List<HeroRitualCategory>.from(
       hero.ritualCategories,
@@ -220,11 +227,11 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
   }
 
   Future<void> _saveChanges() async {
-    final hero = _latestHero;
-    if (hero == null) {
+    final basis = _entwurfBasis;
+    if (basis == null) {
       return;
     }
-    final updatedHero = hero.copyWith(
+    final entwurf = basis.copyWith(
       spells: Map<String, HeroSpellEntry>.from(_draftSpells),
       ritualCategories: List<HeroRitualCategory>.from(_draftRitualCategories),
       representationen: List<String>.from(_draftRepresentationen),
@@ -236,10 +243,21 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
         _draftMagicSpecialAbilities,
       ),
       magicLeadAttribute: _draftMagicLeadAttribute,
-      apSpent: hero.apSpent + _draftApSpentDelta,
+      apSpent: basis.apSpent + _draftApSpentDelta,
     );
-    await ref.read(heroActionsProvider).saveHero(updatedHero);
-    if (!mounted) {
+    final gespeichert = await speichereEditorEntwurf(
+      context: context,
+      ref: ref,
+      heroId: widget.heroId,
+      abgleich: (aktuell, erzwungen) => uebernimmEditorEntwurf(
+        basis: basis,
+        entwurf: entwurf,
+        aktuell: aktuell,
+        erzwungen: erzwungen,
+        neueId: neueEditorSlotId,
+      ),
+    );
+    if (!gespeichert || !mounted) {
       return;
     }
     _editController.markSaved();
