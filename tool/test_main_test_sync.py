@@ -41,10 +41,15 @@ class SyncTests(unittest.TestCase):
         self.git(self.writer, "add", name)
         self.git(self.writer, "commit", "-m", message)
 
-    def run_sync(self):
+    def run_sync(self, extra_env=None):
         self.output.write_text("", encoding="utf-8")
         env = dict(os.environ, GITHUB_OUTPUT=str(self.output))
-        return subprocess.run([BASH, str(SCRIPT)], cwd=self.clone, env=env, capture_output=True, text=True, encoding="utf-8")
+        env.update(extra_env or {})
+        command = [BASH, str(SCRIPT)]
+        if extra_env:
+            env["SYNC_SCRIPT"] = SCRIPT.as_posix()
+            command = [BASH, "-c", 'git() { bash "$SYNC_WRAPPER/git" "$@"; }; source "$SYNC_SCRIPT"']
+        return subprocess.run(command, cwd=self.clone, env=env, capture_output=True, text=True, encoding="utf-8")
 
     def test_main_only_change_and_second_run_is_noop(self):
         self.commit("main.txt", "main change", "main update")
@@ -85,6 +90,36 @@ class SyncTests(unittest.TestCase):
         self.assertIn("::error::Merge conflict", result.stdout)
         self.assertEqual(before, self.git(self.remote, "rev-parse", "test"))
         self.assertNotIn("changed=true", self.output.read_text())
+
+    def test_concurrent_test_push_is_preserved_on_retry(self):
+        self.commit("main.txt", "main change", "main update")
+        self.git(self.writer, "push", "origin", "main")
+        wrapper = self.root / "wrapper"
+        wrapper.mkdir()
+        shim = wrapper / "git"
+        shim.write_text("""#!/usr/bin/env bash
+set -e
+if [ "$1" = push ] && [ ! -f "$SYNC_MARKER" ]; then
+  touch "$SYNC_MARKER"
+  "$SYNC_REAL_GIT" -C "$SYNC_WRITER" switch test
+  printf 'concurrent change' > "$SYNC_WRITER/race.txt"
+  "$SYNC_REAL_GIT" -C "$SYNC_WRITER" add race.txt
+  "$SYNC_REAL_GIT" -C "$SYNC_WRITER" commit -m concurrent
+  "$SYNC_REAL_GIT" -C "$SYNC_WRITER" push origin test
+fi
+exec "$SYNC_REAL_GIT" "$@"
+""", encoding="utf-8")
+        shim.chmod(0o755)
+        result = self.run_sync({
+            "SYNC_WRAPPER": wrapper.as_posix(),
+            "SYNC_REAL_GIT": Path(shutil.which("git")).as_posix(),
+            "SYNC_WRITER": self.writer.as_posix(),
+            "SYNC_MARKER": (self.root / "marker").as_posix(),
+        })
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("Remote test changed", result.stdout)
+        self.assertEqual(self.git(self.remote, "show", "test:race.txt"), "concurrent change")
+        self.assertEqual(self.git(self.remote, "show", "test:main.txt"), "main change")
 
     def test_rejected_push_stops_after_three_attempts(self):
         self.commit("main.txt", "main change", "main update")
