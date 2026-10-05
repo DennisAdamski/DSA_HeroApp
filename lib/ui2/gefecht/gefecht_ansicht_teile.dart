@@ -69,6 +69,12 @@ extension _GefechtAnsichtTeile on _GefechtAnsichtState {
           ),
         ),
         GefechtSchnellaktion(
+          titel: 'Probe',
+          symbol: Icons.search,
+          schluessel: 'gefecht-leiste-probe',
+          onPressed: _busy ? null : _probe,
+        ),
+        GefechtSchnellaktion(
           titel: 'Neue Runde',
           symbol: Icons.update,
           schluessel: 'gefecht-leiste-runde',
@@ -77,6 +83,16 @@ extension _GefechtAnsichtTeile on _GefechtAnsichtState {
       ],
     );
   }
+
+  // Talent- und Eigenschaftsproben laufen über denselben Guard wie Aktionen.
+  void _probe() => _run(
+    () => zeigeGefechtsTalentprobe(
+      context: context,
+      ref: ref,
+      heroId: widget.heroId,
+      bestand: _bruecke,
+    ),
+  );
 
   // Rundenwechsel für Leiste und Rundenleiste mit denselben Sperren.
   void _naechsteRunde(Gefechtszustand s) {

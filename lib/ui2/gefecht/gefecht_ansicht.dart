@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht.dart';
@@ -9,6 +10,7 @@ import 'gefecht_angriffsergebnis.dart';
 import 'gefecht_aktionsknopf.dart';
 import 'gefecht_anordnung.dart';
 import 'gefecht_schnellleiste.dart';
+import 'gefecht_probenwahl.dart';
 import 'gefecht_gegner.dart';
 import 'gefecht_initiative.dart';
 import 'gefecht_beenden.dart';
@@ -102,143 +104,161 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
     final s = ref.watch(gefechtMitInitiativeProvider(widget.heroId));
     final katalog = ref.watch(rulesCatalogProvider).asData?.value;
     final snapshot = geladen.asData?.value;
-    return PopScope(
-      canPop: !_busy,
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Gefecht'),
-          actions: [
-            TextButton(
-              onPressed: _busy ? null : () => _run(_beenden),
-              child: const Text('Beenden'),
+    // Strg/Cmd+K öffnet wie im Spielbereich die Probenauswahl, hier aber
+    // gefechtsbewusst; die Route liegt außerhalb des Workspace-Kürzels.
+    return CallbackShortcuts(
+      bindings: <ShortcutActivator, VoidCallback>{
+        const SingleActivator(LogicalKeyboardKey.keyK, control: true): _probe,
+        const SingleActivator(LogicalKeyboardKey.keyK, meta: true): _probe,
+      },
+      child: Focus(
+        autofocus: true,
+        child: PopScope(
+          canPop: !_busy,
+          child: Scaffold(
+            appBar: AppBar(
+              title: const Text('Gefecht'),
+              actions: [
+                TextButton.icon(
+                  key: const ValueKey('gefecht-probe'),
+                  onPressed: _busy || s == null ? null : _probe,
+                  icon: const Icon(Icons.search),
+                  label: const Text('Probe'),
+                ),
+                TextButton(
+                  onPressed: _busy ? null : () => _run(_beenden),
+                  child: const Text('Beenden'),
+                ),
+              ],
             ),
-          ],
-        ),
-        bottomNavigationBar:
-            s != null &&
-                snapshot != null &&
-                MediaQuery.sizeOf(context).width < kGefechtZweispaltig
-            ? _schnellleiste(s, snapshot, katalog)
-            : null,
-        body: s == null
-            ? const Center(child: Text('Kein laufendes Gefecht.'))
-            : snapshot == null
-            ? Center(
-                child: geladen.hasError
-                    ? Text('Spielwerte nicht geladen: ${geladen.error}')
-                    : const CircularProgressIndicator(),
-              )
-            : LayoutBuilder(
-                builder: (context, constraints) {
-                  final w = gefechtswerteFuer(snapshot, katalog: katalog);
-                  final angriff = _angriff(s, snapshot, katalog);
-                  final verteidigung = _verteidigung(s, snapshot, katalog);
-                  final manoever = _manoever(s, snapshot, katalog);
-                  final ressourcen = _vitalwerte(snapshot);
-                  final magie = GefechtMagie(
-                    werte: snapshot,
-                    katalog: katalog,
-                    gesperrt: _busy,
-                    onZauber: (z) => _run(
-                      () => zeigeGefechtsWirken(
-                        context: context,
-                        ref: ref,
-                        heroId: widget.heroId,
-                        bestand: _bruecke,
-                        zauber: z,
-                      ),
-                    ),
-                    onKarma: (t) => _run(
-                      () => zeigeGefechtsWirken(
-                        context: context,
-                        ref: ref,
-                        heroId: widget.heroId,
-                        bestand: _bruecke,
-                        talent: t,
-                      ),
-                    ),
-                    onAuftrag: (titel, probe, beschreibung) => _run(
-                      () => _aktion(
-                        s,
-                        snapshot,
-                        katalog,
-                        Gefechtsaktion.handlung,
-                        titel,
-                        probe: probe,
-                        manuell: true,
-                        beschreibung: beschreibung,
-                      ),
-                    ),
-                  );
-                  return SingleChildScrollView(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Text(
-                          snapshot.hero.name,
-                          style: Theme.of(context).textTheme.headlineSmall,
+            bottomNavigationBar:
+                s != null &&
+                    snapshot != null &&
+                    MediaQuery.sizeOf(context).width < kGefechtZweispaltig
+                ? _schnellleiste(s, snapshot, katalog)
+                : null,
+            body: s == null
+                ? const Center(child: Text('Kein laufendes Gefecht.'))
+                : snapshot == null
+                ? Center(
+                    child: geladen.hasError
+                        ? Text('Spielwerte nicht geladen: ${geladen.error}')
+                        : const CircularProgressIndicator(),
+                  )
+                : LayoutBuilder(
+                    builder: (context, constraints) {
+                      final w = gefechtswerteFuer(snapshot, katalog: katalog);
+                      final angriff = _angriff(s, snapshot, katalog);
+                      final verteidigung = _verteidigung(s, snapshot, katalog);
+                      final manoever = _manoever(s, snapshot, katalog);
+                      final ressourcen = _vitalwerte(snapshot);
+                      final magie = GefechtMagie(
+                        werte: snapshot,
+                        katalog: katalog,
+                        gesperrt: _busy,
+                        onZauber: (z) => _run(
+                          () => zeigeGefechtsWirken(
+                            context: context,
+                            ref: ref,
+                            heroId: widget.heroId,
+                            bestand: _bruecke,
+                            zauber: z,
+                          ),
                         ),
-                        const SizedBox(height: 12),
-                        GefechtRundenleiste(
-                          onAktion: _run,
-                          zustand: s,
-                          werte: w,
-                          gesperrt: _busy,
-                          onAendern: _controller.setzen,
-                          onRunde: () => _run(() async => _naechsteRunde(s)),
+                        onKarma: (t) => _run(
+                          () => zeigeGefechtsWirken(
+                            context: context,
+                            ref: ref,
+                            heroId: widget.heroId,
+                            bestand: _bruecke,
+                            talent: t,
+                          ),
                         ),
-                        if (_fehler != null) _fehlerhinweis(_fehler!),
-                        const SizedBox(height: 12),
-                        GefechtPatzer(
-                          heroId: widget.heroId,
-                          bestand: () => _bruecke,
-                          gesperrt: _busy,
-                          onAktion: _run,
+                        onAuftrag: (titel, probe, beschreibung) => _run(
+                          () => _aktion(
+                            s,
+                            snapshot,
+                            katalog,
+                            Gefechtsaktion.handlung,
+                            titel,
+                            probe: probe,
+                            manuell: true,
+                            beschreibung: beschreibung,
+                          ),
                         ),
-                        if (s.handlung != null) _handlung(s, snapshot),
-                        GefechtKlingenkarte(
-                          heroId: widget.heroId,
-                          bestand: () => _bruecke,
-                          gesperrt: _busy,
-                          onAktion: _run,
-                        ),
-                        GefechtAnordnung(
-                          breite: constraints.maxWidth,
-                          vitalwerte: ressourcen,
-                          angriff: angriff,
-                          verteidigung: verteidigung,
-                          manoever: manoever,
-                          magie: magie,
-                          weitere: [
-                            _weitere(s, snapshot, katalog),
-                            GefechtReservekarte(
+                      );
+                      return SingleChildScrollView(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Text(
+                              snapshot.hero.name,
+                              style: Theme.of(context).textTheme.headlineSmall,
+                            ),
+                            const SizedBox(height: 12),
+                            GefechtRundenleiste(
+                              onAktion: _run,
+                              zustand: s,
+                              werte: w,
+                              gesperrt: _busy,
+                              onAendern: _controller.setzen,
+                              onRunde: () =>
+                                  _run(() async => _naechsteRunde(s)),
+                            ),
+                            if (_fehler != null) _fehlerhinweis(_fehler!),
+                            const SizedBox(height: 12),
+                            GefechtPatzer(
                               heroId: widget.heroId,
                               bestand: () => _bruecke,
                               gesperrt: _busy,
                               onAktion: _run,
                             ),
-                          ],
-                          begegnung: [
-                            GefechtGegnerkarte(
+                            if (s.handlung != null) _handlung(s, snapshot),
+                            GefechtKlingenkarte(
                               heroId: widget.heroId,
-                              waffenDk: w.waffenDk,
-                              fernkampf: w.fernkampf,
+                              bestand: () => _bruecke,
                               gesperrt: _busy,
+                              onAktion: _run,
                             ),
-                            GefechtInitiativkarte(
-                              heroId: widget.heroId,
-                              gesperrt: _busy,
+                            GefechtAnordnung(
+                              breite: constraints.maxWidth,
+                              vitalwerte: ressourcen,
+                              angriff: angriff,
+                              verteidigung: verteidigung,
+                              manoever: manoever,
+                              magie: magie,
+                              weitere: [
+                                _weitere(s, snapshot, katalog),
+                                GefechtReservekarte(
+                                  heroId: widget.heroId,
+                                  bestand: () => _bruecke,
+                                  gesperrt: _busy,
+                                  onAktion: _run,
+                                ),
+                              ],
+                              begegnung: [
+                                GefechtGegnerkarte(
+                                  heroId: widget.heroId,
+                                  waffenDk: w.waffenDk,
+                                  fernkampf: w.fernkampf,
+                                  gesperrt: _busy,
+                                ),
+                                GefechtInitiativkarte(
+                                  heroId: widget.heroId,
+                                  gesperrt: _busy,
+                                ),
+                              ],
+                              ausruestung: _ausruestung(snapshot),
                             ),
+                            widget.bestand.spielProtokoll(snapshot),
                           ],
-                          ausruestung: _ausruestung(snapshot),
                         ),
-                        widget.bestand.spielProtokoll(snapshot),
-                      ],
-                    ),
-                  );
-                },
-              ),
+                      );
+                    },
+                  ),
+          ),
+        ),
       ),
     );
   }

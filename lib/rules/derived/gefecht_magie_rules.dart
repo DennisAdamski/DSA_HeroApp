@@ -5,6 +5,7 @@ import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
 
 import 'hero_requirement_context.dart';
 import 'gefecht_wirken_rules.dart';
+import 'talent_probe_rules.dart';
 
 /// Baut eine tatsächliche Zauberprobe; Dauer und Kosten bleiben separat geprüft.
 ResolvedProbeRequest? gefechtsZauberprobe(
@@ -37,44 +38,55 @@ ResolvedProbeRequest? gefechtsZauberprobe(
 }
 
 /// Verwendet die tatsächlich gelernte Liturgiekenntnis samt drei Eigenschaften.
+///
+/// TaW* kommt aus `talentProbenwertFuer` (Behinderung, Inventarboni,
+/// Modifikator) wie in der Probensuche; die Kette folgt der Gottheit.
 ResolvedProbeRequest? gefechtsLiturgieprobe(
   HeroComputedSnapshot snapshot,
   TalentDef talent, {
   List<String>? eigenschaften,
+  bool epicAdvantagesActive = false,
 }) {
-  final entry = snapshot.hero.talents[talent.id];
-  if (entry?.talentValue == null || talent.attributes.length != 3) return null;
-  final targets = <ProbeTargetValue>[];
-  for (final name
-      in eigenschaften ??
-          gefechtsEigenschaftenFuerKult(talent.name) ??
-          talent.attributes) {
-    final code = parseAttributeCode(name);
-    if (code == null) return null;
-    targets.add(
-      ProbeTargetValue(
-        label: name,
-        value: readAttributeValue(snapshot.probenEigenschaften, code),
-      ),
-    );
+  if (snapshot.hero.talents[talent.id]?.talentValue == null ||
+      talent.attributes.length != 3) {
+    return null;
   }
-  if (targets.length != 3) return null;
+  final wert = talentProbenwertFuer(
+    snapshot: snapshot,
+    talent: talent,
+    epicAdvantagesActive: epicAdvantagesActive,
+    eigenschaften:
+        eigenschaften ??
+        gefechtsEigenschaftenFuerKult(talent.name) ??
+        talent.attributes,
+  );
+  if (wert == null) return null;
   return ResolvedProbeRequest(
     type: ProbeType.talent,
     title: talent.name,
     subtitle: 'Liturgiekenntnis · Grad und Modifikatoren prüfen',
     ruleHint: 'Zeitpunkt, Grad, Dauer, Ziel, KaP-Kosten und Wirkung manuell bestätigen.',
     diceSpec: const DiceSpec(count: 3, sides: 20),
-    targets: targets,
-    basePool: entry!.talentValue! + entry.modifier,
+    targets: wert.ziele,
+    basePool: wert.taw,
   );
 }
 
-/// Baut eine Talentprobe aus denselben frischen Eigenschaften wie die Liturgie.
+/// Gelernte Talentprobe im Gefecht mit derselben TaW*-Rechnung wie die Suche.
+///
+/// `null`, wenn der Held das Talent nicht mit Wert führt.
 ResolvedProbeRequest? gefechtsTalentprobe(
   HeroComputedSnapshot snapshot,
-  TalentDef talent,
-) => gefechtsLiturgieprobe(snapshot, talent, eigenschaften: talent.attributes);
+  TalentDef talent, {
+  bool epicAdvantagesActive = false,
+}) {
+  if (snapshot.hero.talents[talent.id]?.talentValue == null) return null;
+  return talentprobeFuer(
+    snapshot: snapshot,
+    talent: talent,
+    epicAdvantagesActive: epicAdvantagesActive,
+  );
+}
 
 /// Erkennt eindeutige Kulte aus der tatsächlichen Liturgiekenntnis.
 List<String>? gefechtsEigenschaftenFuerKult(String name) {

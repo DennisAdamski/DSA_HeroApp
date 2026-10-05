@@ -116,7 +116,8 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   erreichbar. Dialoge nutzen `gefecht_zahlfeld.dart` (−/+), `gefecht_dkwahl.dart`
   und eingeklappte Herleitung (`gefecht_dialogabschnitte.dart`). Gefechtsproben
   mit eigenem Erschwernisfeld sperren den zweiten Modifikator im Probendialog
-  (`kGefechtsprobenMitFestemModifikator`).
+  (`kGefechtsprobenMitFestemModifikator`). Talent- und Eigenschaftsproben im
+  Gefecht: `gefecht_probenwahl.dart` mit Zeitbedarf aus `gefecht_talent_rules.dart`.
 - [Redesign umsetzen](docs/redesign_implementation.md) enthält drei aufeinander
   aufbauende Agentenpläne, Startprompts und die gemeinsame Umsetzungsspezifikation
   unter `docs/superpowers/`. Ausgangspunkt ist das vorhandene UI2-Fundament;
@@ -580,7 +581,9 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   `InspectorAttributeProbes` und `InspectorCombatProbes` in
   `inspector/widgets/`; `InspectorProbeTab` ist nur noch ihre Zusammenstellung.
   Beide Oberflächen benutzen dieselben Bausteine und dieselben Widget-Keys.
-  Requests entstehen ausschließlich über `probe_request_factory.dart`,
+  Requests entstehen ausschließlich über `probe_request_factory.dart`
+  (Re-Export von `rules/derived/probe_request_rules.dart`; TaW* je Talent
+  liefert `talent_probe_rules.dart` für Probensuche und Gefecht),
   gewürfelt und protokolliert wird über `showLoggedProbeDialog` — UI2 kennt
   keine W20-/W6-Simulation. Strg/Cmd+K öffnet dieselbe Suche, aber nur im
   Bereich Spielen: der `IndexedStack` hält die anderen Bereiche am Leben,
