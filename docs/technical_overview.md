@@ -1811,10 +1811,15 @@ erhalten keine rückwirkend erfundene Historie. Ein leeres Historienfeld wird be
 der JSON-Ausgabe ausgelassen, damit bestehende Sync-Hashes gleich bleiben. Die
 Helden-Serialisierung übernimmt Import/Export und Sync.
 
-Vor dem Schreiben wird die Sitzungsbasis mit dem aktuellen Repository verglichen.
-`HeroActions.saveHero(expectedContentHash: ...)` prüft nochmals nach der
-asynchronen Normalisierung. Bei Konflikten oder Speicherfehlern bleibt die Runde
-erhalten. Die AP- und History-Ansicht erscheint auf breiten Geräten im Inspektor
+Die Buchung übernimmt der Ablauf `SteigerungsrundeUebernehmen`
+(`lib/ablaeufe/steigerungsrunde_uebernehmen.dart`, ARCH-05); der Controller hält
+nur Planung und Sitzungszustand. Vor dem Schreiben wird die Sitzungsbasis mit dem
+aktuellen Repository verglichen. `HeroActions.saveHero(expectedContentHash: ...)`
+prüft nochmals nach der asynchronen Normalisierung, unmittelbar vor dem Schreiben.
+Bei Konflikten oder Speicherfehlern bleibt die Runde erhalten. Die Anzeige nicht
+passender Sonderfertigkeiten speichert derselbe Ablauf
+(`speichereSfAnzeige`): eingereiht hinter andere Bogenvorgänge, ohne
+Normalisierung und bei offener Runde nur auf unveränderter Basis. Die AP- und History-Ansicht erscheint auf breiten Geräten im Inspektor
 und mobil im **Detailpanel**. Das Verlassen einer geänderten Runde bietet
 Weiterplanen, Verwerfen und bei gültigen Einträgen Übernehmen an.
 

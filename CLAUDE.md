@@ -281,7 +281,9 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   `lib/ui/screens/advancement/` bietet Katalog und Inspector-Historie;
   `workspace/workspace_advancement.dart` verbindet sie mit dem Workspace.
   Nur Übernehmen schreibt Werte, AP/SE und `HeroSheet.advancementHistory`
-  gemeinsam. Alte Einträge sind nicht entfernbar; ungültige Folgeeinträge
+  gemeinsam, über den Ablauf `SteigerungsrundeUebernehmen`
+  (`lib/ablaeufe/steigerungsrunde_uebernehmen.dart`, auch für die
+  SF-Anzeige). Alte Einträge sind nicht entfernbar; ungültige Folgeeinträge
   blockieren die Übernahme. Leere Historie darf nicht ins JSON geschrieben
   werden (Bestands-Sync-Hashes). `HeroActions.saveHero` prüft für Sitzungen
   zusätzlich den erwarteten Inhalt vor dem Schreiben.

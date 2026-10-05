@@ -63,7 +63,9 @@ injizierte Normalisierung von `HeroActions`. Gibt die Änderung dasselbe
 Objekt zurück, wird nichts gespeichert. Anders als beim Zustand reiht sich
 auch das direkte `saveHero` (Editoren, Steigerungsübernahme) ein; es
 überholt eine laufende frische Änderung also nicht, und die Hash-Prüfung
-der Steigerungsrunde sieht jede eingereihte Änderung.
+der Steigerungsrunde sieht jede eingereihte Änderung. Seit dem zehnten
+ARCH-05-Teilstand gilt das auch für die Anzeige nicht passender SF, die
+ohne Normalisierung direkt ins Repository schreibt.
 
 In der Oberfläche ist `aendereZustandMitMeldung`
 (`lib/ui/screens/shared/zustand_aendern.dart`) der gemeinsame Einstieg:
@@ -145,8 +147,8 @@ Domainlogik.
 |---|---|---|---|---|---|
 | Rast abschließen | `RestPanel` (`workspace/rest_dialog.dart`) → `RastAbschliessen` | Zustand | frisch | ja, im Panel | nein (seit ARCH-05) |
 | Schaden erhalten | `SchadenPanel` (`workspace/schaden/schaden_dialog.dart`, Inspector-Vitals und UI2-Schnellaktion) → `SchadenErhalten` | Zustand | frisch, je Held nacheinander | ja, im Panel | nein, `schaden_rules.dart` |
-| Steigerung übernehmen | `AdvancementSessionController.commit` (`state/advancement_providers.dart`) | Bogen | Hash-Prüfung | ja (Snackbar) | nein, `commitAdvancements` |
-| Anzeige nicht passender SF | `setShowInapplicableSpecialAbilities` (ebd.) | Bogen **direkt über das Repository**, ohne Normalisierung | Hash-Prüfung | ja | nein |
+| Steigerung übernehmen | `AdvancementSessionController.commit` (`state/advancement_providers.dart`) → `SteigerungsrundeUebernehmen.uebernehmeRunde` | Bogen | Hash-Prüfung gegen die Sitzungsbasis, erneut in `saveHero` vor dem Schreiben | ja (Snackbar) | nein, `commitAdvancements` |
+| Anzeige nicht passender SF | `setShowInapplicableSpecialAbilities` (ebd.) → `SteigerungsrundeUebernehmen.speichereSfAnzeige` | Bogen direkt über das Repository, ohne Normalisierung | frisch, je Held nacheinander; bei offener Runde Hash-Prüfung | ja | nein |
 | Inventar (Löschen, Dukaten) | `hero_inventory/inventory_mutations.dart` (`_deleteEntry`, `_saveDukaten`, `_verschiebeDukaten`) | Bogen | frisch, je Held nacheinander; Löschen findet den Eintrag über den Inhalt, Münzknöpfe zählen vom gespeicherten Betrag | ja (Snackbar) | nein, `inventar_aenderung_rules.dart` |
 | Inventar (Editor) | `hero_inventory/inventory_mutations.dart` (`_saveNewEntry`, `_saveUpdatedEntry`) über `aendereHeldImEditor` | Bogen | frisch, je Held nacheinander; trifft den geöffneten Gegenstand über seinen Inhalt, ein inzwischen geänderter wird abgewiesen; bei offener Planung gesperrt | ja, im Editor | nein, `inventar_aenderung_rules.dart` |
 | Kampf (Sofortspeichern) | `hero_combat/combat_sofort_aenderungen.dart` über `_aendereKampf` (`combat_state_helpers.dart`) | Bogen | frisch, je Held nacheinander; Slots über ihre ID, Geschosse zählen vom gespeicherten Bestand, Editorergebnisse auf geänderte Slots werden abgewiesen | ja (Snackbar) | Slotprüfung auf dem frischen Ergebnis; sonst `kampf_aenderung_rules.dart` |

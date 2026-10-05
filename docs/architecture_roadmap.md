@@ -671,9 +671,9 @@ Regelmodulen. Riverpod bindet die Abläufe an die Oberfläche.
   *(Stand 05.10.2026: Rast, Laufzeitzustand, Schaden erhalten, die
   Sofortaktionen des Bogens und des Kampf-Tabs, der Inventareditor und alle
   Editorentwürfe sind frisch; kein Bogenschreibweg schreibt mehr einen
-  Snapshot. Offen sind benannte Abläufe wie „Steigerungsrunde übernehmen“
-  und „Held importieren“ sowie die Slotprüfung im Widget, siehe Teilstände
-  (1) bis (9).)*
+  Snapshot. „Steigerungsrunde übernehmen“ ist ein benannter Ablauf. Offen
+  sind „Held importieren“ und die Slotprüfung im Widget, siehe Teilstände
+  (1) bis (10).)*
 
 **Abnahme:** Abläufe sind ohne gerenderte Oberfläche prüfbar. Normalisierung und
 Validierung haben je eine klare Zuständigkeit. Widgets und Provider enthalten
@@ -1230,8 +1230,9 @@ Commits:
    auf den Katalog warten kann, wenn er fehlt und Parser-Restfragmente da
    sind.
 4. Keine Transaktion gegen Schreibwege an der Warteschlange vorbei:
-   `setShowInapplicableSpecialAbilities` (direkt über das Repository), der
-   Startimport und Sync-Übernahmen (ARCH-06).
+   ~~`setShowInapplicableSpecialAbilities` (direkt über das Repository),~~
+   der Startimport und Sync-Übernahmen (ARCH-06). *Die SF-Anzeige ist seit
+   Teilstand (10) eingereiht.*
 5. Eine Änderung, die selbst `saveHero` oder `updateHero` aufruft, wartete
    auf sich selbst. Kein Weg tut das; es steht in CLAUDE.md.
 6. Das Abschließen eines Abenteuers verwirft wie bisher einen offenen
@@ -1822,6 +1823,74 @@ nicht. Gelöschte offene Einträge wurden ebenfalls nie zurückgebucht.
 2. Eine zurückgenommene SE wird abgezogen, auch wenn sie schon für eine
    Steigerung verwendet wurde (nicht unter 0). AP gesamt fallen nicht unter
    0, freie AP können negativ werden.
+
+**Teilstand 05.10.2026 (10) — Steigerungsrunde übernehmen als Ablauf.**
+Der erste benannte Ablauf am Bogen. Der Hauptpunkt von ARCH-05 bleibt
+offen („Held importieren“, Slotprüfung im Widget). Gearbeitet wurde direkt
+auf `test`.
+
+*Befund.* `AdvancementSessionController` (`state/advancement_providers.dart`)
+lud, prüfte und speicherte selbst; prüfbar war das nur mit einem
+`ProviderContainer`. Die Anzeige nicht passender SF
+(`setShowInapplicableSpecialAbilities`) schrieb als einziger Bogenweg des
+Controllers direkt ins Repository und an der Bogen-Warteschlange vorbei. Sie
+konnte so eine laufende frische Änderung überholen; eine der beiden ging
+verloren (Restrisiko 4 aus Teilstand (5)).
+
+*Umsetzung.*
+
+- **Ablauf:** `SteigerungsrundeUebernehmen`
+  (`lib/ablaeufe/steigerungsrunde_uebernehmen.dart`), ohne Riverpod und
+  Flutter, Abhängigkeiten per Konstruktor: `HeroRepository` und
+  `SteigerungSpeichern`, das genau dem Tear-off `HeroActions.saveHero`
+  entspricht. Die Normalisierung bleibt damit in `HeroActions`; dort ändert
+  sich nichts. Provider: `steigerungsrundeUebernehmenProvider` in
+  `lib/state/ablauf_providers.dart`.
+- **`uebernehmeRunde`:** dieselbe Logik wie bisher `commit()` — frisch
+  laden, geschlossene Runde melden, Hash gegen die Sitzungsbasis,
+  `commitAdvancements`, speichern mit `expectedContentHash` und dem Katalog
+  der Runde. Die zweite Prüfung in `saveHero` bleibt nötig: Der Konto-Sync
+  schreibt Online-Stände an der Warteschlange vorbei. Weil `speichere` sich
+  selbst einreiht, ruft der Ablauf es nie aus einem eingereihten Vorgang auf.
+  Meldungen sind unverändert.
+- **`speichereSfAnzeige`:** wie bisher frisch, ohne Normalisierung und bei
+  offener Runde nur auf unveränderter Basis — **neu eingereiht**
+  (`reiheBogenvorgangEin`). Das ist die einzige Verhaltensänderung.
+- **Controller:** behält Planung, `canCommit`, `isSaving`, Wiederherstellen
+  bei Fehler und das Leeren nach Erfolg. Ob die Runde inzwischen geschlossen
+  wurde, meldet er dem Ablauf über `istGeschlossen`.
+
+Commits:
+
+- `b3eef18` — Ablauf, Provider, Controller und Tests.
+- Abschluss-Commit mit Dokumentation.
+
+*Prüfungen.*
+
+- `test/ablaeufe/steigerungsrunde_uebernehmen_test.dart` (10 Proben, ohne
+  Riverpod): gemeinsame Buchung samt Hash und Katalog an `speichere`,
+  Zwischenänderung, fehlender Held, geschlossene Runde, ungültiger Eintrag,
+  durchgereichter Speicherfehler; SF-Anzeige nur als Präferenz auf dem
+  frischen Helden, Basisprüfung, fehlender Held und geschlossene Runde,
+  Einreihung hinter eine laufende Bogenänderung.
+- Gegenprobe: Ohne Warteschlange scheitert der Einreihungstest (die
+  Anzeige überholt die laufende Änderung).
+- `test/state/advancement_session_test.dart` (13 Fälle) läuft unverändert,
+  ebenso `test/ablaeufe/` samt Abhängigkeitswächter, die UI2-Entwicklung, die
+  Workspace-Journey und `bestandsheld_ablauf_test.dart`.
+- `flutter analyze --no-pub` ohne Befund, `dart format` ohne Änderung
+  (1018 Dateien). Volle Suite grün (3497 bestanden,
+  3 übersprungen). Kein Modell geändert, die
+  Hash-Pins der Bestandshelden sind unverändert.
+
+*Risiken und nächster Schritt.*
+
+1. Die erste Prüfung läuft wie bisher außerhalb der Warteschlange. Ist
+   beim Übernehmen noch eine Bogenänderung eingereiht, scheitert die Runde
+   erst an der zweiten Prüfung, mit der Meldung aus `saveHero`.
+2. Nächster Schritt: „Held importieren“ (`importHeroBundle`: eigener
+   Katalog, bis zu drei `saveHero`, Zustand, Galeriedateien) als Ablauf;
+   danach die Slotprüfung des Kampf-Tabs aus dem Widget.
 
 ## ARCH-06 — Zusammengehörige Änderungen gemeinsam speichern und synchronisieren
 
