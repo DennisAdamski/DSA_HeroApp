@@ -468,3 +468,21 @@ Zauberliste und weniger Haken, G8 Bedienabnahme. Der zuvor in einer
 Folgesitzung begonnene Stand (Gegner, gemeinsame Initiative, Klingenwand/
 -sturm, Patzer, Fremdwirkung) ist stabilisiert und einbezogen.
 
+## Review und Restschulden (6. Oktober 2026)
+
+Unabhängiges Review von `6881684^..500c5bb` mit 13 belegten Befunden (R1–R13,
+je zuerst roter Regressionstest, Details in `gefecht_implementation.md`,
+Abschnitt „Review der Vervollständigung“). Zwei Nutzerentscheidungen:
+leere/kleingeschriebene Waffen-DK gilt als Nahkampf mit Hinweis; die
+Klingen-Aufteilung folgt den Vorgaben.
+
+Restschulden erledigt: `gefecht_wirkabschluss.dart` erreicht den Bestand nur
+noch über `KartoGefechtsAdapter` (Wächter gegen ui2→ui-Importe);
+`karto_abenteuerblatt.dart` ist ohne Verhaltensänderung auf eine Teildatei
+aufgeteilt, die breite UI2-LOC-Prüfung ist ohne Befund.
+
+Commits: `7789c1e` Review-Befunde, `d243601` Wirkabschluss über die Gefechtsbrücke, `e2d01b3` Abenteuerblatt-Teildatei.
+
+Prüfungen: `flutter analyze` ohne Befund; vollständige Suite 3.630 bestanden, 3 bestehende Tests übersprungen; Format über 1.089 Dateien ohne Änderung; CI-Screen-LOC (21 Dateien) und breite UI2-LOC-Prüfung (87 Dateien) ≤ 700 Zeilen, ebenso `test/ui2/spielen` und `test/ui/bridges`.
+
+Nur lokale Prüfungen: kein Push, Merge oder Deployment.
