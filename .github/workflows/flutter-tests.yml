@@ -122,7 +122,7 @@ jobs:
         run: |
           test -f build/web/assets/AssetManifest.bin.json
           test -n "$(ls -A build/web/assets/assets/heroes 2>/dev/null)"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: web-release
           path: build/web
