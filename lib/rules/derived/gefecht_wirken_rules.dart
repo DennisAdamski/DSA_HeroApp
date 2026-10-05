@@ -6,6 +6,7 @@ import 'package:dsa_heldenverwaltung/domain/active_spell_effects_state.dart';
 
 import 'active_spell_rules.dart';
 import 'active_spell_state_rules.dart';
+import 'gefecht_ansagefolge_rules.dart';
 
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 
@@ -67,11 +68,13 @@ int gefechtsZauberZuschlag(
 bool gefechtsBonusPasst(ResolvedProbeRequest p, GefechtsProbenbonus? b) =>
     b != null && (p.title == b.ziel || p.targets.any((t) => t.label == b.ziel));
 
-/// Talentboni erhöhen den Pool, Eigenschafts-/Kampfboni den passenden Zielwert.
+/// Folgemalus bleibt Probenzuschlag; Mirakelbonus erhöht Pool oder passenden Zielwert.
 ResolvedProbeRequest gefechtsProbeMitBonus(
   ResolvedProbeRequest p,
-  GefechtsProbenbonus? b,
-) {
+  GefechtsProbenbonus? b, {
+  int ansageFolgemalus = 0,
+}) {
+  p = gefechtsProbeMitAnsagefolgemalus(p, ansageFolgemalus);
   if (!gefechtsBonusPasst(p, b)) return p;
   final pool =
       p.title == b!.ziel &&

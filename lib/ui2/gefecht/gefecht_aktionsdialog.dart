@@ -62,6 +62,7 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
   final _finte = TextEditingController(text: '0');
   final _wuchtschlag = TextEditingController(text: '0');
   final _fernkampfansage = TextEditingController(text: '0');
+  final _zielErleichterung = TextEditingController(text: '0');
   final _meisterparade = TextEditingController(text: '0');
   final _schildgrenze = TextEditingController();
   Gefechtsaktion? _manuelleKampfaktion;
@@ -119,6 +120,7 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
       _finte,
       _wuchtschlag,
       _fernkampfansage,
+      _zielErleichterung,
       _meisterparade,
       _schildgrenze,
     ]) {
@@ -148,6 +150,7 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
     finte: int.tryParse(_finte.text) ?? 0,
     wuchtschlag: int.tryParse(_wuchtschlag.text) ?? 0,
     fernkampfansage: int.tryParse(_fernkampfansage.text) ?? 0,
+    zielErleichterung: int.tryParse(_zielErleichterung.text) ?? 0,
     meisterparadeAnsage: int.tryParse(_meisterparade.text) ?? 0,
     schildAnsagegrenze: int.tryParse(_schildgrenze.text),
     manuelleKampfaktion: _manuelleKampfaktion,
@@ -170,6 +173,7 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
         (_finte, 'Finte'),
         (_wuchtschlag, 'Wuchtschlag'),
         (_fernkampfansage, 'Fernkampfansage'),
+        (_zielErleichterung, 'Optionale Zielerleichterung'),
         (_meisterparade, 'Meisterparade-Ansage'),
       ])
         if (int.tryParse(e.$1.text) == null)
@@ -223,7 +227,9 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
       widget.katalog,
       auftrag,
     );
-    final zielbeginn = werte.fernkampf && auftrag.fernkampfansage > 0
+    final zielwahl =
+        auftrag.fernkampfansage > 0 || auftrag.zielErleichterung > 0;
+    final zielbeginn = werte.fernkampf && zielwahl
         ? pruefeGefechtsZielbeginn(
             widget.zustand,
             widget.werte,
@@ -390,6 +396,19 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
               ],
               if (_aktion == Gefechtsaktion.angriff &&
                   werte.fernkampf &&
+                  !_distanzwechsel) ...[
+                _zahl(
+                  _zielErleichterung,
+                  'Optionales Zielen: Erleichterung (0–4)',
+                  key: 'gefecht-optionales-zielen',
+                ),
+                const Text(
+                  'Zusätzliche Zielzeit senkt andere Zuschläge, '
+                  'nicht die Fernkampfansage oder den Gezielten Schuss.',
+                ),
+              ],
+              if (_aktion == Gefechtsaktion.angriff &&
+                  werte.fernkampf &&
                   !_distanzwechsel)
                 GefechtFernkampffelder(
                   key: ValueKey('fk-${_mittel?.art}-${_mittel?.id}'),
@@ -539,7 +558,9 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
               : null,
           child: Text(
             zielen
-                ? 'Zusatz-Zielen beginnen'
+                ? auftrag.zielErleichterung > 0
+                      ? 'Zielen beginnen'
+                      : 'Zusatz-Zielen beginnen'
                 : p.zielwert != null || widget.probe != null
                 ? 'Probe ausführen'
                 : 'Aktion ausführen',

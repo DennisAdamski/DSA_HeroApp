@@ -121,7 +121,11 @@ Future<void> starteGefechtsWirken({
         context: context,
         ref: ref,
         heroId: heroId,
-        request: gefechtsProbeMitBonus(profil.probe, s.mirakelbonus),
+        request: gefechtsProbeMitBonus(
+          profil.probe,
+          s.mirakelbonus,
+          ansageFolgemalus: s.ansageFolgemalus,
+        ),
         onResolved: buchen,
       );
     }
@@ -190,7 +194,11 @@ Future<void> setzeGefechtsWirkenFort({
         context: context,
         ref: ref,
         heroId: heroId,
-        request: gefechtsProbeMitBonus(h.wirken!.probe, s.mirakelbonus),
+        request: gefechtsProbeMitBonus(
+          h.wirken!.probe,
+          s.mirakelbonus,
+          ansageFolgemalus: s.ansageFolgemalus,
+        ),
         onResolved: buchen,
       );
     } else {

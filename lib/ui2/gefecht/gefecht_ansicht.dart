@@ -311,6 +311,12 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
       children: [
         Text('Geführt: ${snapshot.hero.combatConfig.selectedWeapon.name}'),
         Text('TP ${snapshot.combatPreviewStats.tpExpression}'),
+        if (s.ansageFolgemalus > 0)
+          Text(
+            'Ansagefolgemalus +${s.ansageFolgemalus} auf Proben bis einschließlich '
+            'nächster AT/PA; Orientieren beendet ihn.',
+            key: const ValueKey('gefecht-ansagefolgemalus'),
+          ),
         if (s.meisterparadeBonus > 0)
           Text(
             'Meisterparade: nächste Angriffs- oder Abwehraktion '
