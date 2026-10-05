@@ -779,7 +779,8 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   Einen Knopf gibt es dafür nicht: `KartoSeitenkopf.onTap` macht den ganzen
   Abenteuerkopf antippbar (Pfeil hinter dem Titel, Tooltip „Abenteuer öffnen“,
   Key `karto-spiel-abenteuer`). Er öffnet das Abenteuerblatt
-  (`lib/ui2/spielen/karto_abenteuerblatt.dart`): Datum, Zusammenfassung,
+  (`lib/ui2/spielen/karto_abenteuerblatt.dart`, Dialoge in der Teildatei
+  `karto_abenteuer_dialoge.dart`): Datum, Zusammenfassung,
   Notizen und Personen lesen und pflegen, Abschluss und Belohnungen bleiben in
   der Verwaltung. Das Blatt ist eine eigene Seite (Grund `blatt`); Personen
   und Notizen stehen als `feld`-Karten im `KartoKartenraster`
