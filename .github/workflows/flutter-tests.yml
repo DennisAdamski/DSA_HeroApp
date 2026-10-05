@@ -10,11 +10,25 @@ on:
       - main
       - test
 
+  workflow_call:
+    inputs:
+      ref:
+        description: Exakter Commit des automatisch synchronisierten Teststands
+        required: true
+        type: string
+      branch:
+        description: Zielbranch der wiederverwendeten CI
+        required: true
+        type: string
+    secrets:
+      FIREBASE_SERVICE_ACCOUNT_HELDENSYNC_CCF0B:
+        required: true
+
 permissions:
   contents: read
 
 concurrency:
-  group: web-ci-${{ github.event.pull_request.number || github.ref }}
+  group: web-ci-${{ github.event.pull_request.number || inputs.branch || github.ref_name }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
@@ -25,6 +39,8 @@ jobs:
     steps:
       - name: Repository auschecken
         uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref || github.sha }}
 
       - name: Flutter einrichten
         uses: subosito/flutter-action@v2
@@ -50,6 +66,8 @@ jobs:
     steps:
       - name: Repository auschecken
         uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref || github.sha }}
 
       - name: Flutter einrichten
         uses: subosito/flutter-action@v2
@@ -71,11 +89,16 @@ jobs:
     steps:
       - name: Repository auschecken
         uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref || github.sha }}
 
       - name: Python einrichten
         uses: actions/setup-python@v7
         with:
           python-version: '3.x'
+
+      - name: Main-Test-Sync testen
+        run: python tool/test_main_test_sync.py
 
       - name: LOC-Budget pruefen
         run: python tool/check_screen_loc_budget.py --max-lines 700
@@ -86,6 +109,8 @@ jobs:
     needs: analyze
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref || github.sha }}
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
@@ -107,15 +132,17 @@ jobs:
 
   deploy:
     name: Firebase Hosting veröffentlichen
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' && (inputs.branch == '' || inputs.branch == 'test')
     needs: [analyze, test, loc-budget, web-build]
     runs-on: ubuntu-latest
     # Serialisierung verhindert parallele Veröffentlichungen auf dieselbe Site.
     concurrency:
-      group: hosting-${{ github.ref_name }}
+      group: hosting-${{ inputs.branch || github.ref_name }}
       cancel-in-progress: false
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref || github.sha }}
       - uses: actions/download-artifact@v4
         with:
           name: web-release
@@ -124,8 +151,8 @@ jobs:
         id: current
         env:
           GH_TOKEN: ${{ github.token }}
-          EXPECTED_SHA: ${{ github.sha }}
-          BRANCH: ${{ github.ref_name }}
+          EXPECTED_SHA: ${{ inputs.ref || github.sha }}
+          BRANCH: ${{ inputs.branch || github.ref_name }}
         run: |
           current_sha="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/$BRANCH" --jq '.object.sha')"
           if [ "$current_sha" = "$EXPECTED_SHA" ]; then
@@ -141,10 +168,11 @@ jobs:
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_HELDENSYNC_CCF0B }}
           projectId: heldensync-ccf0b
           channelId: live
-          target: ${{ github.ref_name == 'test' && 'test' || 'production' }}
+          target: ${{ (inputs.branch || github.ref_name) == 'test' && 'test' || 'production' }}
       - name: Hosting-URL dokumentieren
         if: steps.current.outputs.deploy == 'true'
         env:
-          SITE_URL: ${{ github.ref_name == 'test' && 'https://heldensync-test.web.app' || 'https://heldensync-ccf0b.web.app' }}
+          DEPLOYED_SHA: ${{ inputs.ref || github.sha }}
+          SITE_URL: ${{ (inputs.branch || github.ref_name) == 'test' && 'https://heldensync-test.web.app' || 'https://heldensync-ccf0b.web.app' }}
         run: |
-          echo "Web-Version ($GITHUB_SHA): $SITE_URL" >> "$GITHUB_STEP_SUMMARY"
+          echo "Web-Version ($DEPLOYED_SHA): $SITE_URL" >> "$GITHUB_STEP_SUMMARY"
