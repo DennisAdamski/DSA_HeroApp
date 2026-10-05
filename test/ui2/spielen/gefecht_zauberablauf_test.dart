@@ -106,6 +106,7 @@ void main() {
       context: context,
       ref: ref,
       heroId: 'rondra',
+      bestand: bestand,
     );
     await tester.pumpAndSettle();
     await tester.tap(find.text('Abbruch bestätigen'));
@@ -355,6 +356,7 @@ void main() {
           context: context,
           ref: ref,
           heroId: 'rondra',
+          bestand: GefechtsTestBestand(),
         ),
         false,
       );
@@ -371,6 +373,7 @@ void main() {
           context: context,
           ref: ref,
           heroId: 'rondra',
+          bestand: GefechtsTestBestand(),
           abschliessen: false,
         ),
         true,
@@ -385,6 +388,7 @@ void main() {
           context: context,
           ref: ref,
           heroId: 'rondra',
+          bestand: GefechtsTestBestand(),
         ),
         true,
       );
@@ -393,6 +397,7 @@ void main() {
           context: context,
           ref: ref,
           heroId: 'rondra',
+          bestand: GefechtsTestBestand(),
         ),
         false,
       );

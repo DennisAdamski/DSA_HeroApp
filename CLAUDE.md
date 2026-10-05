@@ -63,7 +63,11 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   ihren ursprünglichen Auftrag, verwenden aber aktuelle DK und Sitzungskontext
   für die abschließende Prüfung und Probe.
   Die gezielte `KartoGefechtsAdapter`-Brücke ergänzt einmalige Probeauswertung
-  und frische Ausrüstungsschreibwege, ohne bestehende Aufrufer zu verändern.
+  und frische Ausrüstungsschreibwege, ohne bestehende Aufrufer zu verändern;
+  der Wirkabschluss nutzt zusätzlich `gefechtsZustand`,
+  `gefechtsFehlerBereich`, Armatrutz-/Attributo-Eingabe und
+  `gefechtsWirkkosten`. Außer `karto_app_root.dart` importiert `lib/ui2`
+  nichts aus `lib/ui` (`test/ui2/shell/ui2_import_richtung_test.dart`).
   `gefecht_hand_rules.dart` prüft Haupt-/Nebenhandbelegungen vor Normalisierung
   und frischem Speichern; `gefecht_handwahl.dart` enthält Auswahl und bestätigtes
   Wegstecken. Ziehhandlungen merken ihre Zielhand.

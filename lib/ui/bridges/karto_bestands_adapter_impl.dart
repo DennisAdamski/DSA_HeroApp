@@ -29,6 +29,12 @@ import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/kampf_aenderung_rules.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/zustand_aendern.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/armatrutz_input_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/attributo_input_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/workspace/resource_stepper_dialog.dart';
+import 'package:dsa_heldenverwaltung/domain/active_spell_effects_state.dart';
+import 'package:dsa_heldenverwaltung/domain/attribute_modifiers.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_gefechts_adapter.dart';
 
 import 'karto_gefechts_bruecke.dart';
@@ -78,6 +84,55 @@ class KartoBestandsAdapterImpl
     );
     return held != null;
   }
+
+  /// Schreibt frisch über den gemeinsamen Zustandsweg der Bedienelemente.
+  @override
+  Future<HeroState?> gefechtsZustand({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String heroId,
+    required String was,
+    required HeroState Function(HeroState aktuell) aenderung,
+  }) => aendereZustandMitMeldung(
+    context: context,
+    ref: ref,
+    heroId: heroId,
+    was: was,
+    aenderung: aenderung,
+  );
+
+  /// Legt den Fehlerbereich des Zustandswegs um den Inhalt.
+  @override
+  Widget gefechtsFehlerBereich({
+    required Widget Function(Widget fehleranzeige) builder,
+  }) => ZustandFehlerBereich(child: builder(const ZustandFehlerAnzeige()));
+
+  /// Verwendet die vorhandene Armatrutz-Eingabe ohne frühes Speichern.
+  @override
+  Future<ActiveSpellEffectDetail?> gefechtsArmatrutzWerte(
+    BuildContext context,
+  ) => showArmatrutzInputDialog(context: context);
+
+  /// Verwendet die vorhandene Attributo-Eingabe ohne frühes Speichern.
+  @override
+  Future<AttributeModifiers?> gefechtsAttributoWerte(BuildContext context) =>
+      showAttributoInputDialog(context: context);
+
+  /// Öffnet den vorhandenen Ressourcendialog mit Abschlusskosten.
+  @override
+  Future<void> gefechtsWirkkosten({
+    required BuildContext context,
+    required String heroId,
+    required bool karmal,
+    required int? kosten,
+    required Future<bool> Function(BuildContext blatt) onUebernehmen,
+  }) => showResourceStepperDialog(
+    context: context,
+    heroId: heroId,
+    resource: karmal ? ResourceType.kap : ResourceType.asp,
+    abschlussKosten: kosten,
+    onAbschlussUebernehmen: onUebernehmen,
+  );
 
   /// Baut die gemeinsame Verwaltungsfläche und reicht den Leave-Guard weiter.
   @override

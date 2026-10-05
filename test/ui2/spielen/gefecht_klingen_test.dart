@@ -1,3 +1,5 @@
+import 'package:dsa_heldenverwaltung/domain/attribute_modifiers.dart';
+import 'package:dsa_heldenverwaltung/domain/active_spell_effects_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -522,4 +524,36 @@ class _Adapter implements KartoGefechtsAdapter {
     required String heroId,
     required CombatConfig Function(CombatConfig) aenderung,
   }) async => true;
+
+  @override
+  Future<HeroState?> gefechtsZustand({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String heroId,
+    required String was,
+    required HeroState Function(HeroState aktuell) aenderung,
+  }) => throw UnimplementedError();
+
+  @override
+  Widget gefechtsFehlerBereich({
+    required Widget Function(Widget fehleranzeige) builder,
+  }) => throw UnimplementedError();
+
+  @override
+  Future<ActiveSpellEffectDetail?> gefechtsArmatrutzWerte(
+    BuildContext context,
+  ) => throw UnimplementedError();
+
+  @override
+  Future<AttributeModifiers?> gefechtsAttributoWerte(BuildContext context) =>
+      throw UnimplementedError();
+
+  @override
+  Future<void> gefechtsWirkkosten({
+    required BuildContext context,
+    required String heroId,
+    required bool karmal,
+    required int? kosten,
+    required Future<bool> Function(BuildContext blatt) onUebernehmen,
+  }) => throw UnimplementedError();
 }

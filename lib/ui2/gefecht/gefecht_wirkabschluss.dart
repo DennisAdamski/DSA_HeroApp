@@ -10,21 +10,28 @@ import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_wirken_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/active_spell_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/active_spell_state_rules.dart';
-import 'package:dsa_heldenverwaltung/ui/screens/shared/zustand_aendern.dart';
-import 'package:dsa_heldenverwaltung/ui/screens/shared/armatrutz_input_dialog.dart';
-import 'package:dsa_heldenverwaltung/ui/screens/shared/attributo_input_dialog.dart';
-import 'package:dsa_heldenverwaltung/ui/screens/workspace/resource_stepper_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui2/shell/karto_gefechts_adapter.dart';
 
 import 'gefecht_fremdwirkung.dart';
 
 /// Abschlüsse können nach Abbruch des Dialogs ohne erneute Probe geöffnet werden.
+///
+/// Schreibwege und Eingabedialoge des Bestands erreicht der Abschluss
+/// ausschließlich über [bestand].
 Future<void> zeigeGefechtsWirkabschluss({
   required BuildContext context,
   required WidgetRef ref,
   required String heroId,
+  required KartoGefechtsAdapter bestand,
 }) => showDialog<void>(
   context: context,
-  builder: (_) => ZustandFehlerBereich(child: _Abschluss(heroId: heroId)),
+  builder: (_) => bestand.gefechtsFehlerBereich(
+    builder: (fehleranzeige) => _Abschluss(
+      heroId: heroId,
+      bestand: bestand,
+      fehleranzeige: fehleranzeige,
+    ),
+  ),
 );
 
 /// Kosten und unterstützte eigene Effekte teilen einen frischen Schreibvorgang.
@@ -32,6 +39,7 @@ Future<bool> uebernimmGefechtsWirkfolgen({
   required BuildContext context,
   required WidgetRef ref,
   required String heroId,
+  required KartoGefechtsAdapter bestand,
   HeroState Function(HeroState)? effekt,
   bool abschliessen = true,
   GefechtsProbenbonus? bonus,
@@ -67,7 +75,7 @@ Future<bool> uebernimmGefechtsWirkfolgen({
       return false;
     }
     final kosten = gefechtsAbschlusskosten(h);
-    final ok = await aendereZustandMitMeldung(
+    final ok = await bestand.gefechtsZustand(
       context: context,
       ref: ref,
       heroId: heroId,
@@ -125,8 +133,16 @@ Future<bool> uebernimmGefechtsWirkfolgen({
 }
 
 class _Abschluss extends ConsumerStatefulWidget {
-  const _Abschluss({required this.heroId});
+  const _Abschluss({
+    required this.heroId,
+    required this.bestand,
+    required this.fehleranzeige,
+  });
   final String heroId;
+  final KartoGefechtsAdapter bestand;
+
+  /// Anzeige der Speicherfehler aus [KartoGefechtsAdapter.gefechtsZustand].
+  final Widget fehleranzeige;
   @override
   ConsumerState<_Abschluss> createState() => _AbschlussState();
 }
@@ -147,11 +163,11 @@ class _AbschlussState extends ConsumerState<_Abschluss> {
     if (!_eigenerEffekt) return null;
     final n = h.titel.toLowerCase();
     if (n.startsWith('armatrutz')) {
-      final d = await showArmatrutzInputDialog(context: context);
+      final d = await widget.bestand.gefechtsArmatrutzWerte(context);
       return d == null ? null : (s) => uebernimmGefechtsArmatrutz(s, d);
     }
     if (n.startsWith('attributo')) {
-      final b = await showAttributoInputDialog(context: context);
+      final b = await widget.bestand.gefechtsAttributoWerte(context);
       return b == null ? null : (s) => aktiviereAttributo(s, b);
     }
     return (s) =>
@@ -178,6 +194,7 @@ class _AbschlussState extends ConsumerState<_Abschluss> {
         context: context,
         ref: ref,
         heroId: widget.heroId,
+        bestand: widget.bestand,
         effekt: effekt,
         abschliessen: !nurKosten,
         bonus: bonus,
@@ -321,7 +338,7 @@ class _AbschlussState extends ConsumerState<_Abschluss> {
                             _folgen = v!;
                           }),
                   ),
-                const ZustandFehlerAnzeige(),
+                widget.fehleranzeige,
               ],
             ),
           ),
@@ -335,20 +352,18 @@ class _AbschlussState extends ConsumerState<_Abschluss> {
             TextButton(
               onPressed: _busy
                   ? null
-                  : () => showResourceStepperDialog(
+                  : () => widget.bestand.gefechtsWirkkosten(
                       context: context,
                       heroId: widget.heroId,
-                      resource: h.wirken!.karmal
-                          ? ResourceType.kap
-                          : ResourceType.asp,
-                      abschlussKosten: kosten,
-                      onAbschlussUebernehmen: (blatt) =>
-                          uebernimmGefechtsWirkfolgen(
-                            context: blatt,
-                            ref: ref,
-                            heroId: widget.heroId,
-                            abschliessen: false,
-                          ),
+                      karmal: h.wirken!.karmal,
+                      kosten: kosten,
+                      onUebernehmen: (blatt) => uebernimmGefechtsWirkfolgen(
+                        context: blatt,
+                        ref: ref,
+                        heroId: widget.heroId,
+                        bestand: widget.bestand,
+                        abschliessen: false,
+                      ),
                     ),
               child: const Text('Kosten jetzt übernehmen'),
             ),
