@@ -645,3 +645,31 @@ Rundenmarken (`bewegt`, `gesprintet`) setzt der Rundenwechsel zurück. Der
 allgemeine Knopf „Freie Aktion“ bleibt für Sonstiges. Prüfung:
 `test/rules/gefecht_aktionskatalog_rules_test.dart`,
 `test/ui2/spielen/gefecht_aktionswahl_test.dart`.
+
+## Inventar und Begleiter (Vervollständigung G6, 5. Oktober 2026)
+
+„Inventar · Gegenstand benutzen“ in der Ausrüstungskarte zeigt das Inventar
+gruppiert nach Verbrauchsgütern, am Körper, Gepäck und beim Begleiter
+(`gefecht_inventar_rules.dart`); kampfverknüpfte Einträge erscheinen nur zur
+Orientierung. Verbrauchsgüter und magische Gegenstände lassen sich benutzen
+(WdS S. 55, MCP 6971): griffbereit eine Aktion, Gürteltasche 10, Rucksack 20
+Aktionen (Vorbelegung aus „Wo getragen“), eine gelungene FF-Probe halbiert
+die Zeit (aufgerundet, App-Konvention), ein getragenes Artefakt kostet eine
+freie Aktion. Die erste Aktion wird sofort bezahlt; längere Benutzungen
+bleiben als Handlung mit Gegenstandsverweis offen. Erst beim Abschluss fragt
+die App, ob ein Stück abgebucht wird.
+
+Die Abbuchung (`inventar_verbrauch_rules.dart`) folgt der ARCH-03-Entscheidung:
+`menge` hat Vorrang, der Freitext `anzahl` folgt, wenn er dieselbe Zahl zeigt
+oder allein die Menge trägt; eine unklare Menge wird nie geraten. Geschrieben
+wird frisch über `HeroActions.updateHero` und `mitGeaendertemInventarEintrag`
+(Treffer über den Inhalt, Fehler bei zwischenzeitlicher Änderung); bei 0
+bleibt der Eintrag stehen, bei offener Steigerungsrunde wird nichts geändert.
+
+Der Abschnitt „Begleiter“ (`gefecht_begleiter.dart`) zeigt je Begleiter Typ,
+INI, RS/BE, MR, LeP-/AuP-/AsP-Maxima, Geschwindigkeiten und Angriffe mit
+wirksamer AT/PA (`begleiter_kampfprofil_rules.dart`, auch vom klassischen
+Begleiter-Tab genutzt) sowie Sonderfertigkeiten und Vertrautenmagie. Nur
+Anzeige, keine Proben und keine LeP-Zählung. Prüfung:
+`test/rules/gefecht_inventar_rules_test.dart`,
+`test/ui2/spielen/gefecht_inventar_test.dart`.

@@ -6,6 +6,7 @@ import 'gefecht_wirken.dart';
 import 'gefecht_angriff.dart';
 import 'gefecht_laden.dart';
 import 'gefecht_klingen.dart';
+import 'hero_inventory_entry.dart';
 import 'gefecht_fremdwirkung.dart';
 
 /// Verlässlichkeit einer Aktionsfreigabe; Hinweise allein sperren keine Aktion.
@@ -80,8 +81,12 @@ class Gefechtshandlung {
     this.vorbereitung,
     this.wirkungId,
     this.fremdwirkungswurf,
+    this.gegenstand,
   });
   final Gefechtshandlungsart art;
+
+  /// Benutzter Inventargegenstand; wird erst beim Abschluss abgebucht.
+  final HeroInventoryEntry? gegenstand;
   final ProbeResult? ergebnis;
   final String titel;
   final int verbleibend;
@@ -127,6 +132,7 @@ class Gefechtshandlung {
     wirken: wirken,
     wirkungId: wirkungId,
     fremdwirkungswurf: fremdwirkungswurf ?? this.fremdwirkungswurf,
+    gegenstand: gegenstand,
     ergebnis: ergebnis ?? this.ergebnis,
     kostenUebernommen: kostenUebernommen ?? this.kostenUebernommen,
     gescheitert: gescheitert ?? this.gescheitert,

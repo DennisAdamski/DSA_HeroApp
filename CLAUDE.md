@@ -120,7 +120,11 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   Gefecht: `gefecht_probenwahl.dart` mit Zeitbedarf aus `gefecht_talent_rules.dart`.
   Benannte Handlungen (WdS S. 55) liefert `gefecht_aktionskatalog_rules.dart`
   mit `gefecht_aktionswahl.dart`; die LeP-/AuP-Lage (`gefecht_lage_rules.dart`)
-  erscheint nur als Banner.
+  erscheint nur als Banner. Inventar und „Gegenstand benutzen“:
+  `gefecht_inventar.dart` mit `gefecht_inventar_rules.dart`; abgebucht wird
+  erst beim Abschluss nach Bestätigung über `inventar_verbrauch_rules.dart`
+  (`menge` vor `anzahl`, frisch über `updateHero`). Begleiter nur ansehen:
+  `gefecht_begleiter.dart` mit `begleiter_kampfprofil_rules.dart`.
 - [Redesign umsetzen](docs/redesign_implementation.md) enthält drei aufeinander
   aufbauende Agentenpläne, Startprompts und die gemeinsame Umsetzungsspezifikation
   unter `docs/superpowers/`. Ausgangspunkt ist das vorhandene UI2-Fundament;

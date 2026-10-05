@@ -10,6 +10,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_rituals.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ap_level_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/begleiter_aenderung_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/begleiter_kampfprofil_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/companion_steigerung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/editor_entwurf_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ruestung_be_rules.dart';

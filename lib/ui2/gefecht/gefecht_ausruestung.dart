@@ -15,6 +15,7 @@ import 'gefecht_schuss.dart';
 import 'gefecht_wirken.dart';
 import 'gefecht_ziehdialog.dart';
 import 'gefecht_handwahl.dart';
+import 'gefecht_inventar.dart';
 import 'gefecht_laden.dart';
 import 'gefecht_aktion_ausfuehren.dart';
 
@@ -424,5 +425,17 @@ Future<void> setzeGefechtsausruestungFort({
     }
   } finally {
     controller.abbrechen(id);
+  }
+  // Eine abgeschlossene Gegenstandsbenutzung fragt erst jetzt nach Abbuchung.
+  final gegenstand = h.gegenstand;
+  if (gegenstand != null &&
+      context.mounted &&
+      ref.read(gefechtProvider(heroId))?.handlung == null) {
+    await schliesseGefechtsGegenstandAb(
+      context: context,
+      ref: ref,
+      heroId: heroId,
+      eintrag: gegenstand,
+    );
   }
 }
