@@ -349,32 +349,13 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
                     ),
               child: Text('Laden / Vorbereiten · ${profil.name}'),
             ),
-        for (final profil in gefechtsKampfmittelprofile(snapshot))
-          if (profil.waffe?.isRanged == true)
-            GefechtGeschosse(
-              waffe: profil.waffe!,
-              gesperrt: _busy || s.handlung != null,
-              onWaehlen: (i) => _run(
-                () => waehleGefechtsGeschoss(
-                  context: context,
-                  ref: ref,
-                  heroId: widget.heroId,
-                  bestand: _bruecke,
-                  waffe: profil.waffe!,
-                  geschossIndex: i,
-                ),
-              ),
-              onAufheben: (i) => _run(
-                () => zeigeGefechtsGeschosseAufheben(
-                  context: context,
-                  ref: ref,
-                  heroId: widget.heroId,
-                  bestand: _bruecke,
-                  waffe: profil.waffe!,
-                  geschossIndex: i,
-                ),
-              ),
-            ),
+        GefechtGeschossbereich(
+          werte: snapshot,
+          heroId: widget.heroId,
+          bestand: _bruecke,
+          gesperrt: _busy || s.handlung != null,
+          onAktion: _run,
+        ),
         for (final ergebnis in s.angriffsergebnisse)
           GefechtAngriffsergebnisAnzeige(
             ergebnis: ergebnis,
