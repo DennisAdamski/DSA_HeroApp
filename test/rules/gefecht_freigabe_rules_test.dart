@@ -187,19 +187,12 @@ void main() {
             m,
             kategorie: k,
             suche: 'gem',
-            nurErlernte: true,
             ohneSperre: true,
-            erlernt: true,
           ),
           isTrue,
         );
         expect(
-          gefechtsManoeverImFilter(
-            m,
-            kategorie: k,
-            nurErlernte: true,
-            erlernt: false,
-          ),
+          gefechtsManoeverImFilter(m, kategorie: k, suche: 'xyz'),
           isFalse,
         );
         expect(
