@@ -84,6 +84,26 @@ extension _GefechtAnsichtTeile on _GefechtAnsichtState {
     );
   }
 
+  // LeP-/AuP-Lage (WdS S. 11) und wundbedingte Kampfunfähigkeit, gut sichtbar.
+  List<Widget> _lagebanner(HeroComputedSnapshot snapshot) {
+    final texte = [
+      if (snapshot.wundEffekte.kampfunfaehig)
+        'Durch Wunden kampfunfähig; Kampfaktionen sind gesperrt.',
+      ?gefechtsLagetext(gefechtsLage(snapshot)),
+    ];
+    return [
+      for (final t in texte)
+        Card(
+          key: ValueKey('gefecht-lage-$t'),
+          color: Theme.of(context).colorScheme.errorContainer,
+          child: ListTile(
+            leading: const Icon(Icons.warning_amber_rounded),
+            title: Text(t),
+          ),
+        ),
+    ];
+  }
+
   // Talent- und Eigenschaftsproben laufen über denselben Guard wie Aktionen.
   void _probe() => _run(
     () => zeigeGefechtsTalentprobe(

@@ -11,6 +11,7 @@ import 'gefecht_aktionsknopf.dart';
 import 'gefecht_anordnung.dart';
 import 'gefecht_schnellleiste.dart';
 import 'gefecht_probenwahl.dart';
+import 'gefecht_aktionswahl.dart';
 import 'gefecht_gegner.dart';
 import 'gefecht_initiative.dart';
 import 'gefecht_beenden.dart';
@@ -25,6 +26,7 @@ import 'package:dsa_heldenverwaltung/state/gefecht_initiative_provider.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/gefecht_lage_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_patzer_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_held_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_hand_rules.dart';
@@ -207,6 +209,7 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
                                   _run(() async => _naechsteRunde(s)),
                             ),
                             if (_fehler != null) _fehlerhinweis(_fehler!),
+                            ..._lagebanner(snapshot),
                             const SizedBox(height: 12),
                             GefechtPatzer(
                               heroId: widget.heroId,
@@ -482,6 +485,23 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
           Gefechtsaktion.orientieren,
           'Orientieren',
           manuell: true,
+        ),
+        Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: OutlinedButton(
+            key: const ValueKey('gefecht-aktionswahl'),
+            onPressed: _busy
+                ? null
+                : () => _run(
+                    () => zeigeGefechtsBenannteAktion(
+                      context: context,
+                      ref: ref,
+                      heroId: widget.heroId,
+                      bestand: _bruecke,
+                    ),
+                  ),
+            child: const Text('Aktion wählen · Bewegen, Sprinten, Rufen …'),
+          ),
         ),
         _knopf(s, snapshot, k, Gefechtsaktion.freieAktion, 'Freie Aktion'),
         for (final option in gefechtsZusatzoptionen(snapshot))

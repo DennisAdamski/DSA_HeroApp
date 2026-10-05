@@ -623,3 +623,25 @@ und Liturgiekenntnis die bisher fehlenden Anteile. Die Probenbauer liegen in
 exportiert sie unverändert für alle bisherigen Aufrufer. Prüfung:
 `test/rules/gefecht_talentprobe_rules_test.dart`,
 `test/ui2/spielen/gefecht_talentprobe_test.dart`.
+
+## Lage und benannte Aktionen (Vervollständigung G5, 5. Oktober 2026)
+
+`gefecht_lage_rules.dart` leitet aus LeP und AuP die Lage ab (WdS S. 11,
+MCP 6860): LeP ≤ 5 kampfunfähig (keine Kampfaktionen, kein Zaubern, kaum
+Talente), LeP ≤ 0 Lebensgefahr, AuP 0 handlungsunfähig. Die Ansicht zeigt sie
+zusammen mit der wundbedingten Kampfunfähigkeit als Banner. Nur die
+wundbedingte Kampfunfähigkeit sperrt Aktionen (unverändert); die LeP-Lage
+bleibt ein Hinweis, weil Sonderregeln am Tisch fallen und Helden ohne
+gespeicherten Zustand 0 LeP zeigen.
+
+„Aktion wählen“ bei den weiteren Aktionen bietet die benannten Handlungen aus
+WdS S. 55 (MCP 6970/6971, `gefecht_aktionskatalog_rules.dart`): als freie
+Aktion Rufen, Schritt, Drehen, Fallenlassen, Artefakt aktivieren und Sich zu
+Boden werfen (GE-Probe; misslungen 1W6 INI in der Sitzung und 1W6 AuP frisch
+im Heldenzustand, AuP nicht unter 0; danach liegend), Bewegen als eine Aktion
+(AT, PA, Schildparade und gezieltes Ausweichen dieser Runde +4) und Sprinten
+als zwei Aktionen (keine Angriffs- oder Abwehraktion dieser Runde). Beide
+Rundenmarken (`bewegt`, `gesprintet`) setzt der Rundenwechsel zurück. Der
+allgemeine Knopf „Freie Aktion“ bleibt für Sonstiges. Prüfung:
+`test/rules/gefecht_aktionskatalog_rules_test.dart`,
+`test/ui2/spielen/gefecht_aktionswahl_test.dart`.
