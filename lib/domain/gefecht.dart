@@ -177,6 +177,8 @@ class Gefechtszustand {
     this.meisterparadeBonus = 0,
     this.ansageFolgemalus = 0,
     this.aufrechterhalteneZauber = 0,
+    this.bewegt = false,
+    this.gesprintet = false,
     this.gemeinsameInitiative = false,
     this.initiativphase,
     this.zeitpunktAbgeschlossen = false,
@@ -239,6 +241,12 @@ class Gefechtszustand {
 
   /// Zuletzt angegebene Zahl aufrechterhaltener Zauber; belegt das Wirken vor.
   final int aufrechterhalteneZauber;
+
+  /// WdS S. 55: nach „Bewegen“ sind Kampfaktionen dieser Runde um 4 erschwert.
+  final bool bewegt;
+
+  /// WdS S. 55: nach „Sprinten“ keine Angriffs- oder Abwehraktion dieser Runde.
+  final bool gesprintet;
 
   /// Nur abgeleitete Phasenprüfung, keine zusätzliche Gefechtspersistenz.
   final bool gemeinsameInitiative, zeitpunktAbgeschlossen, regulaerePhaseOffen;
@@ -309,6 +317,8 @@ class Gefechtszustand {
     int? meisterparadeBonus,
     int? ansageFolgemalus,
     int? aufrechterhalteneZauber,
+    bool? bewegt,
+    bool? gesprintet,
     bool? gemeinsameInitiative,
     int? initiativphase,
     bool ohneInitiativphase = false,
@@ -378,6 +388,8 @@ class Gefechtszustand {
     ansageFolgemalus: ansageFolgemalus ?? this.ansageFolgemalus,
     aufrechterhalteneZauber:
         aufrechterhalteneZauber ?? this.aufrechterhalteneZauber,
+    bewegt: bewegt ?? this.bewegt,
+    gesprintet: gesprintet ?? this.gesprintet,
     gemeinsameInitiative: gemeinsameInitiative ?? this.gemeinsameInitiative,
     initiativphase: ohneInitiativphase
         ? null
@@ -447,6 +459,37 @@ class Gefechtspruefung {
 
   /// Dieser Abschluss hat die letzte Probe der nächsten AT/PA tatsächlich geführt.
   final bool beendetAnsageFolgemalus;
+
+  /// Ergänzt Status und Gründe, ohne Budget- oder Zielwertmetadaten zu verlieren.
+  Gefechtspruefung copyWith({
+    Gefechtsfreigabe? status,
+    List<String>? gruende,
+    List<String>? entscheidungen,
+    List<String>? hinweise,
+  }) => Gefechtspruefung(
+    aktion: aktion,
+    status: status ?? this.status,
+    gruende: gruende ?? this.gruende,
+    zielwert: zielwert,
+    angriffe: angriffe,
+    paraden: paraden,
+    freie: freie,
+    zusatz: zusatz,
+    erschwernis: erschwernis,
+    modifikatoren: modifikatoren,
+    kampfmittel: kampfmittel,
+    ausruestungspaar: ausruestungspaar,
+    mitAnsage: mitAnsage,
+    probenart: probenart,
+    sperrgruende: sperrgruende,
+    fehlendeAngaben: fehlendeAngaben,
+    entscheidungen: entscheidungen ?? this.entscheidungen,
+    hinweise: hinweise ?? this.hinweise,
+    meisterparadeAnsage: meisterparadeAnsage,
+    verbrauchterMeisterparadeBonus: verbrauchterMeisterparadeBonus,
+    ansageFehlmalus: ansageFehlmalus,
+    beendetAnsageFolgemalus: beendetAnsageFolgemalus,
+  );
 
   /// Nur konkrete Sperren, fehlende Angaben oder offene Entscheidungen blockieren.
   bool get ausfuehrbar =>

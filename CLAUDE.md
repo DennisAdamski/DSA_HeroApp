@@ -118,6 +118,9 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   mit eigenem Erschwernisfeld sperren den zweiten Modifikator im Probendialog
   (`kGefechtsprobenMitFestemModifikator`). Talent- und Eigenschaftsproben im
   Gefecht: `gefecht_probenwahl.dart` mit Zeitbedarf aus `gefecht_talent_rules.dart`.
+  Benannte Handlungen (WdS S. 55) liefert `gefecht_aktionskatalog_rules.dart`
+  mit `gefecht_aktionswahl.dart`; die LeP-/AuP-Lage (`gefecht_lage_rules.dart`)
+  erscheint nur als Banner.
 - [Redesign umsetzen](docs/redesign_implementation.md) enthält drei aufeinander
   aufbauende Agentenpläne, Startprompts und die gemeinsame Umsetzungsspezifikation
   unter `docs/superpowers/`. Ausgangspunkt ist das vorhandene UI2-Fundament;

@@ -245,6 +245,8 @@ Gefechtszustand naechsteGefechtsrunde(Gefechtszustand s) {
     resetBonus: true,
     ohneKlingen: s.klingen?.parade == true,
     reserveBereit: false,
+    bewegt: false,
+    gesprintet: false,
   );
 }
 
@@ -348,6 +350,19 @@ Gefechtspruefung pruefeGefechtsaktion(
   final ausweichen =
       aktion == Gefechtsaktion.freiesAusweichen ||
       aktion == Gefechtsaktion.gezieltesAusweichen;
+  final kampfaktion =
+      aktion == Gefechtsaktion.angriff ||
+      aktion == Gefechtsaktion.parade ||
+      aktion == Gefechtsaktion.schildparade ||
+      aktion == Gefechtsaktion.gezieltesAusweichen;
+  // WdS S. 55: Bewegen erschwert Kampfaktionen derselben Runde um 4.
+  final bewegenZuschlag = s.bewegt && kampfaktion ? 4 : 0;
+  erschwernis += bewegenZuschlag;
+  if (s.gesprintet && (kampfaktion || ausweichen)) {
+    sperren.add(
+      'Nach Sprinten keine Angriffs- oder Abwehraktion in dieser Runde.',
+    );
+  }
   if (s.desorientiert && !ausweichen && aktion != Gefechtsaktion.position) {
     sperren.add('Nach freiem Ausweichen zunächst Position ausführen.');
   }
@@ -533,9 +548,15 @@ Gefechtspruefung pruefeGefechtsaktion(
       ...fk.modifikatoren,
       if (schildAbzug != 0)
         Gefechtsmodifikator('Schild-WM entfällt', schildAbzug),
+      if (bewegenZuschlag != 0)
+        Gefechtsmodifikator('Nach Bewegen', bewegenZuschlag),
       Gefechtsmodifikator(
         'Weitere Zuschläge/Budget/BE',
-        erschwernis - kontext.zuschlag - fk.zuschlag - schildAbzug,
+        erschwernis -
+            kontext.zuschlag -
+            fk.zuschlag -
+            schildAbzug -
+            bewegenZuschlag,
       ),
     ],
   );
