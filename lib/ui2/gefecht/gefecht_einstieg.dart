@@ -21,7 +21,15 @@ class GefechtEinstieg extends ConsumerWidget {
     required this.bestand,
     required this.aktion,
     required this.vorBearbeitung,
+    this.hervorgehoben = false,
+    this.knopfKey = const ValueKey('gefecht-beginnen'),
   });
+
+  /// Gefüllter Knopf mit Symbol, etwa unter den Schnellaktionen.
+  final bool hervorgehoben;
+
+  /// Schlüssel des Knopfs; mehrere Einstiege brauchen verschiedene Schlüssel.
+  final Key knopfKey;
   final String heroId;
   final HeroComputedSnapshot werte;
   final KartoBestandsAdapter bestand;
@@ -30,49 +38,53 @@ class GefechtEinstieg extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final laeuft = ref.watch(gefechtMitInitiativeProvider(heroId)) != null;
-    return TextButton(
-      key: const ValueKey('gefecht-beginnen'),
-      onPressed: () => aktion(() async {
-        if (!await vorBearbeitung() || !context.mounted) return;
-        final controller = ref.read(gefechtProvider(heroId).notifier);
-        if (!laeuft) {
-          final c = werte.combatPreviewStats;
-          int? wurf = c.initiativeFixedRollTotal;
-          if (wurf == null) {
-            if (bestand is! KartoGefechtsAdapter) {
-              throw StateError('Gefechtsbrücke fehlt.');
-            }
-            final probe = await (bestand as KartoGefechtsAdapter).gefechtsProbe(
-              context: context,
-              ref: ref,
-              heroId: heroId,
-              request: ResolvedProbeRequest(
-                type: ProbeType.initiative,
-                title: 'Gefecht beginnen · Initiative',
-                subtitle: c.initiativeDiceSpec.label,
-                ruleHint: 'INI-Wurf einmalig würfeln oder manuell eingeben.',
-                diceSpec: c.initiativeDiceSpec,
-                targets: const [],
-              ),
-            );
-            if (probe == null || !context.mounted) return;
-            wurf = probe.total;
+    final text = Text(laeuft ? 'Gefecht läuft' : 'Gefecht beginnen');
+    void oeffnen() => aktion(() async {
+      if (!await vorBearbeitung() || !context.mounted) return;
+      final controller = ref.read(gefechtProvider(heroId).notifier);
+      if (!laeuft) {
+        final c = werte.combatPreviewStats;
+        int? wurf = c.initiativeFixedRollTotal;
+        if (wurf == null) {
+          if (bestand is! KartoGefechtsAdapter) {
+            throw StateError('Gefechtsbrücke fehlt.');
           }
-          controller.beginnen(
-            wurf,
-            dk: gefechtsStartDkFuer(
-              werte.hero.combatConfig.selectedWeaponOrNull,
+          final probe = await (bestand as KartoGefechtsAdapter).gefechtsProbe(
+            context: context,
+            ref: ref,
+            heroId: heroId,
+            request: ResolvedProbeRequest(
+              type: ProbeType.initiative,
+              title: 'Gefecht beginnen · Initiative',
+              subtitle: c.initiativeDiceSpec.label,
+              ruleHint: 'INI-Wurf einmalig würfeln oder manuell eingeben.',
+              diceSpec: c.initiativeDiceSpec,
+              targets: const [],
             ),
           );
+          if (probe == null || !context.mounted) return;
+          wurf = probe.total;
         }
-        if (!context.mounted) return;
-        await Navigator.of(context).push(
-          MaterialPageRoute<void>(
-            builder: (_) => GefechtAnsicht(heroId: heroId, bestand: bestand),
-          ),
+        controller.beginnen(
+          wurf,
+          dk: gefechtsStartDkFuer(werte.hero.combatConfig.selectedWeaponOrNull),
         );
-      }),
-      child: Text(laeuft ? 'Gefecht läuft' : 'Gefecht beginnen'),
-    );
+      }
+      if (!context.mounted) return;
+      await Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (_) => GefechtAnsicht(heroId: heroId, bestand: bestand),
+        ),
+      );
+    });
+    if (hervorgehoben) {
+      return FilledButton.tonalIcon(
+        key: knopfKey,
+        onPressed: oeffnen,
+        icon: Icon(laeuft ? Icons.play_arrow : Icons.shield_outlined),
+        label: text,
+      );
+    }
+    return TextButton(key: knopfKey, onPressed: oeffnen, child: text);
   }
 }

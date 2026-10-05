@@ -6,6 +6,9 @@ import 'package:dsa_heldenverwaltung/domain/gefecht_auftrag.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 
 import 'gefecht_angriffsergebnis.dart';
+import 'gefecht_aktionsknopf.dart';
+import 'gefecht_anordnung.dart';
+import 'gefecht_schnellleiste.dart';
 import 'gefecht_gegner.dart';
 import 'gefecht_initiative.dart';
 import 'gefecht_beenden.dart';
@@ -51,6 +54,8 @@ import 'gefecht_vitalwerte.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_laden_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_kampfmittel_rules.dart';
 
+part 'gefecht_ansicht_teile.dart';
+
 /// Responsive Spielansicht eines flüchtigen Gefechts mit echten Heldendaten.
 class GefechtAnsicht extends ConsumerStatefulWidget {
   /// Bindet Navigation und Fachdialoge an dieselbe Heldenidentität.
@@ -67,6 +72,7 @@ class GefechtAnsicht extends ConsumerStatefulWidget {
 
 class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
   bool _busy = false;
+  String? _fehler;
   GefechtsController get _controller =>
       ref.read(gefechtProvider(widget.heroId).notifier);
   KartoGefechtsAdapter get _bruecke => widget.bestand as KartoGefechtsAdapter;
@@ -75,14 +81,12 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
     if (_busy) return;
     setState(() {
       _busy = true;
+      _fehler = null;
     });
     try {
       await aktion();
     } catch (fehler) {
-      if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('$fehler')));
-      }
+      if (mounted) setState(() => _fehler = '$fehler');
     } finally {
       if (mounted) {
         setState(() {
@@ -110,6 +114,12 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
             ),
           ],
         ),
+        bottomNavigationBar:
+            s != null &&
+                snapshot != null &&
+                MediaQuery.sizeOf(context).width < kGefechtZweispaltig
+            ? _schnellleiste(s, snapshot, katalog)
+            : null,
         body: s == null
             ? const Center(child: Text('Kein laufendes Gefecht.'))
             : snapshot == null
@@ -160,19 +170,6 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
                       ),
                     ),
                   );
-                  final links = [ressourcen, _ausruestung(snapshot)];
-                  final mitte = [angriff, manoever, magie];
-                  final rechts = [verteidigung, _weitere(s, snapshot, katalog)];
-                  Widget spalte(List<Widget> kinder) => Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      for (final k in kinder)
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 16),
-                          child: k,
-                        ),
-                    ],
-                  );
                   return SingleChildScrollView(
                     padding: const EdgeInsets.all(16),
                     child: Column(
@@ -189,23 +186,9 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
                           werte: w,
                           gesperrt: _busy,
                           onAendern: _controller.setzen,
-                          onRunde: () => _run(() async {
-                            if (gefechtFolgewuerfeOffen(
-                              ref.read(gefechtPatzerProvider(widget.heroId)),
-                            )) {
-                              throw StateError(
-                                'Offene Patzer-/Bruchfolgen zuerst abschließen.',
-                              );
-                            }
-                            if (s.gemeinsameInitiative) {
-                              ref
-                                  .read(gefechtInitiativeProvider.notifier)
-                                  .naechsteRunde();
-                            } else {
-                              _controller.setzen(naechsteGefechtsrunde(s));
-                            }
-                          }),
+                          onRunde: () => _run(() async => _naechsteRunde(s)),
                         ),
+                        if (_fehler != null) _fehlerhinweis(_fehler!),
                         const SizedBox(height: 12),
                         GefechtPatzer(
                           heroId: widget.heroId,
@@ -220,52 +203,36 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
                           gesperrt: _busy,
                           onAktion: _run,
                         ),
-                        GefechtInitiativkarte(
-                          heroId: widget.heroId,
-                          gesperrt: _busy,
-                        ),
-                        GefechtReservekarte(
-                          heroId: widget.heroId,
-                          bestand: () => _bruecke,
-                          gesperrt: _busy,
-                          onAktion: _run,
-                        ),
-                        GefechtGegnerkarte(
-                          heroId: widget.heroId,
-                          waffenDk: w.waffenDk,
-                          fernkampf: w.fernkampf,
-                          gesperrt: _busy,
-                        ),
-                        if (constraints.maxWidth < 744)
-                          spalte([
-                            angriff,
-                            manoever,
-                            verteidigung,
+                        GefechtAnordnung(
+                          breite: constraints.maxWidth,
+                          vitalwerte: ressourcen,
+                          angriff: angriff,
+                          verteidigung: verteidigung,
+                          manoever: manoever,
+                          magie: magie,
+                          weitere: [
                             _weitere(s, snapshot, katalog),
-                            magie,
-                            ressourcen,
-                            _ausruestung(snapshot),
-                          ])
-                        else if (constraints.maxWidth < 1100)
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Expanded(child: spalte(mitte)),
-                              const SizedBox(width: 16),
-                              Expanded(child: spalte([...rechts, ...links])),
-                            ],
-                          )
-                        else
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Expanded(flex: 3, child: spalte(links)),
-                              const SizedBox(width: 16),
-                              Expanded(flex: 4, child: spalte(mitte)),
-                              const SizedBox(width: 16),
-                              Expanded(flex: 3, child: spalte(rechts)),
-                            ],
-                          ),
+                            GefechtReservekarte(
+                              heroId: widget.heroId,
+                              bestand: () => _bruecke,
+                              gesperrt: _busy,
+                              onAktion: _run,
+                            ),
+                          ],
+                          begegnung: [
+                            GefechtGegnerkarte(
+                              heroId: widget.heroId,
+                              waffenDk: w.waffenDk,
+                              fernkampf: w.fernkampf,
+                              gesperrt: _busy,
+                            ),
+                            GefechtInitiativkarte(
+                              heroId: widget.heroId,
+                              gesperrt: _busy,
+                            ),
+                          ],
+                          ausruestung: _ausruestung(snapshot),
+                        ),
                         widget.bestand.spielProtokoll(snapshot),
                       ],
                     ),
@@ -312,44 +279,42 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
             position: aktion == Gefechtsaktion.position,
           )
         : pruefeGefechtAuftrag(s, snapshot, katalog, auftrag);
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: OutlinedButton(
-        onPressed: _busy || katalog == null
-            ? null
-            : () => _run(
-                () => _aktion(
-                  s,
-                  snapshot,
-                  katalog,
-                  aktion,
-                  titel,
-                  m: m,
-                  manuell: manuell,
-                  kampfmittel: kampfmittel,
-                  zusatzParade: zusatzParade,
-                  zweck: zweck,
-                ),
+    return GefechtAktionsknopf(
+      titel: titel,
+      pruefung: p,
+      onPressed: _busy || katalog == null
+          ? null
+          : () => _run(
+              () => _aktion(
+                s,
+                snapshot,
+                katalog,
+                aktion,
+                titel,
+                m: m,
+                manuell: manuell,
+                kampfmittel: kampfmittel,
+                zusatzParade: zusatzParade,
+                zweck: zweck,
               ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 4),
-          child: Row(
-            children: [
-              Expanded(child: Text(titel)),
-              const SizedBox(width: 8),
-              Flexible(
-                child: Text(
-                  p == null
-                      ? 'Lädt'
-                      : '${freigabeText(p.status)}${p.zielwert == null ? '' : ' · ${p.zielwert}'}',
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+            ),
     );
   }
+
+  // Fehler bleiben sichtbar, bis die nächste Aktion beginnt oder er geschlossen wird.
+  Widget _fehlerhinweis(String text) => Card(
+    key: const ValueKey('gefecht-fehler'),
+    color: Theme.of(context).colorScheme.errorContainer,
+    child: ListTile(
+      leading: const Icon(Icons.error_outline),
+      title: Text(text),
+      trailing: IconButton(
+        tooltip: 'Hinweis schließen',
+        onPressed: () => setState(() => _fehler = null),
+        icon: const Icon(Icons.close),
+      ),
+    ),
+  );
 
   Widget _angriff(
     Gefechtszustand s,
@@ -453,23 +418,26 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
       : GefechtManoeverliste(
           manoever: gefechtsManoeverliste(s, snapshot, k),
           gesperrt: (m) =>
+              !kGefechtsBasismanoever.contains(m.id) &&
               pruefeGefechtAuftrag(
-                s,
-                snapshot,
-                k,
-                GefechtAuftrag(
-                  aktion: gefechtsManoeveraktion(m),
-                  titel: m.name,
-                  zuschlag: 0,
-                  dk: s.dk,
-                  dauer: 1,
-                  kosten: 1,
-                  manoever: m,
-                ),
-              ).status ==
-              Gefechtsfreigabe.gesperrt,
-          knopf: (m) =>
-              _knopf(s, snapshot, k, gefechtsManoeveraktion(m), m.name, m: m),
+                    s,
+                    snapshot,
+                    k,
+                    GefechtAuftrag(
+                      aktion: gefechtsManoeveraktion(m),
+                      titel: m.name,
+                      zuschlag: 0,
+                      dk: s.dk,
+                      dauer: 1,
+                      kosten: 1,
+                      manoever: m,
+                    ),
+                  ).status ==
+                  Gefechtsfreigabe.gesperrt,
+          // Finte und Wuchtschlag sind Ansagen der Attacke, keine eigene Aktion.
+          knopf: (m) => kGefechtsBasismanoever.contains(m.id)
+              ? _knopf(s, snapshot, k, Gefechtsaktion.angriff, m.name)
+              : _knopf(s, snapshot, k, gefechtsManoeveraktion(m), m.name, m: m),
         );
   Widget _weitere(
     Gefechtszustand s,
@@ -517,77 +485,6 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
       ],
     ),
   );
-  // Fachdialoge behalten die vorhandenen Schreibwege und den gemeinsamen Guard.
-  Widget _vitalwerte(HeroComputedSnapshot snapshot) => GefechtVitalwerte(
-    heroId: widget.heroId,
-    werte: snapshot,
-    child: Column(
-      children: [
-        KartoRessourcenleiste(
-          werte: snapshot,
-          onBearbeiten: (r) => _run(
-            () => widget.bestand.ressourceBearbeiten(
-              context: context,
-              heroId: widget.heroId,
-              ressource: r,
-            ),
-          ),
-        ),
-        TextButton(
-          onPressed: _busy
-              ? null
-              : () => _run(
-                  () => widget.bestand.schadenErhalten(
-                    context: context,
-                    ref: ref,
-                    heroId: widget.heroId,
-                  ),
-                ),
-          child: const Text('Schaden erhalten'),
-        ),
-        widget.bestand.spielZustand(heroId: widget.heroId, werte: snapshot),
-        TextButton(
-          onPressed: _busy
-              ? null
-              : () => _run(
-                  () => widget.bestand.effekte(
-                    context: context,
-                    heroId: widget.heroId,
-                  ),
-                ),
-          child: const Text('Effekte verwalten'),
-        ),
-        widget.bestand.spielEffekte(heroId: widget.heroId, werte: snapshot),
-      ],
-    ),
-  );
-  Widget _ausruestung(HeroComputedSnapshot snapshot) => KartoAbschnitt(
-    titel: 'Geführte Ausrüstung',
-    aktion: TextButton(
-      onPressed: _busy
-          ? null
-          : () => _run(
-              () => zeigeGefechtsausruestung(
-                context: context,
-                ref: ref,
-                heroId: widget.heroId,
-                bestand: _bruecke,
-              ),
-            ),
-      child: const Text('Wechseln'),
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(gefechtsHandbelegung(snapshot.hero.combatConfig)),
-        Text(
-          'RS ${snapshot.combatPreviewStats.rsTotal} · BE ${snapshot.combatPreviewStats.beKampf}',
-        ),
-        const Text('Waffen und Rüstungsteile im Ausrüstungspopup wechseln.'),
-      ],
-    ),
-  );
-
   Future<void> _aktion(
     Gefechtszustand s,
     HeroComputedSnapshot snapshot,

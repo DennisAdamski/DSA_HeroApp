@@ -578,3 +578,24 @@ Vorzeichen möglich. Eigenschafts-, INI- und Schadenswürfe behalten das Feld.
 Der Grundzielwert manueller Sonderaktionen ist tatsächlich optional: ohne Wert
 wird die Aktion ohne Probe gebucht. Prüfung:
 `test/ui2/spielen/gefecht_dialog_bedienung_test.dart`.
+
+## Ansicht und Handy (Vervollständigung G3, 5. Oktober 2026)
+
+Jeder Aktionsknopf (`gefecht_aktionsknopf.dart`) zeigt rechts „Würfeln ·
+Zielwert“, „Angabe fehlt“, „Klären“ oder „Gesperrt“ und darunter den
+wichtigsten Grund aus `gefechtsHauptgrund` (Sperre vor fehlender Angabe vor
+Entscheidung vor Hinweis, `gefecht_freigabe_rules.dart`). Gesperrte Knöpfe
+bleiben antippbar, der Dialog erklärt alle Gründe. `gefecht_anordnung.dart`
+ordnet die Abschnitte: schmal Vitalwerte, Angriff, Verteidigung, Manöver,
+Magie, weitere Aktionen (mit Abwarten), Begegnung (Gegner, gemeinsame
+Initiative), Ausrüstung; breit dieselben Gruppen in zwei bzw. drei Spalten.
+Unter 744 Pixeln hält eine feste Schnellleiste (`gefecht_schnellleiste.dart`)
+Attacke, Parade, Ausweichen und „Neue Runde“ erreichbar; sie nutzt dieselben
+Prüfungen und denselben Guard wie die Abschnittsknöpfe. Fehler einer Aktion
+erscheinen als schließbarer Hinweis oben in der Ansicht statt als Snackbar.
+Finte und Wuchtschlag öffnen aus der Manöverliste „Angreifen“, weil sie dort
+als Ansage geführt werden. Die Spielansicht bietet „Gefecht beginnen /
+Gefecht läuft“ zusätzlich als hervorgehobene Schnellaktion. Schnellleiste,
+Rundenwechsel, Vitalwerte und Ausrüstung stehen in `gefecht_ansicht_teile.dart`
+(`part` der Ansicht). Prüfung: `test/ui2/spielen/gefecht_ansicht_bedienung_test.dart`
+und die erweiterte Layoutmatrix.

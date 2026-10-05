@@ -200,6 +200,15 @@ class KartoSpielansicht extends ConsumerWidget {
         titel: 'Schnellaktionen',
         child: KartoSpielaktionen(
           kuerzelHinweis: 'Strg K',
+          gefecht: GefechtEinstieg(
+            heroId: heroId,
+            werte: werte,
+            bestand: bestand,
+            aktion: aktion,
+            vorBearbeitung: vorHeldenbearbeitung,
+            hervorgehoben: true,
+            knopfKey: const ValueKey('karto-spiel-gefecht'),
+          ),
           onProbeSuchen: () => aktion(
             () =>
                 bestand.probeSuchen(context: context, ref: ref, heroId: heroId),

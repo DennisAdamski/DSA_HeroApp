@@ -110,6 +110,13 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   verbindet ausdrücklich gewählte Helden. Klingenwand/-sturm, Patzer und
   Bruchtest, Manöverfolgen und Fremdwirkung haben je eigene Regelmodule;
   alles bleibt flüchtig. Stand und Grenzen: [docs/gefecht_abschluss_entwurf.md](docs/gefecht_abschluss_entwurf.md).
+  Bedienung: `gefecht_aktionsknopf.dart` zeigt Status und Hauptgrund
+  (`gefechtsHauptgrund`), `gefecht_anordnung.dart` ordnet die Abschnitte,
+  `gefecht_schnellleiste.dart` hält schmal Attacke/Parade/Ausweichen/Runde
+  erreichbar. Dialoge nutzen `gefecht_zahlfeld.dart` (−/+), `gefecht_dkwahl.dart`
+  und eingeklappte Herleitung (`gefecht_dialogabschnitte.dart`). Gefechtsproben
+  mit eigenem Erschwernisfeld sperren den zweiten Modifikator im Probendialog
+  (`kGefechtsprobenMitFestemModifikator`).
 - [Redesign umsetzen](docs/redesign_implementation.md) enthält drei aufeinander
   aufbauende Agentenpläne, Startprompts und die gemeinsame Umsetzungsspezifikation
   unter `docs/superpowers/`. Ausgangspunkt ist das vorhandene UI2-Fundament;

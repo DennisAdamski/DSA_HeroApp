@@ -51,7 +51,6 @@ Abwarten/Umwandlung); Hausregel 25819 (Seite 3: kritischer Bruchtest).
   Analyse, Format und LOC-Prüfung bestehen; die frühere Grenze „Gegner bleiben
   unmodelliert“ aus dem Vervollständigungsplan ist durch diesen bestätigten
   Umfang ersetzt.
-- Offen für die Bedienung: Die zusätzlichen Karten stehen derzeit oberhalb der
-  Aktionen und verdrängen auf schmalen Fenstern „Angreifen“ unter den Falz.
-  Die Neuordnung der Ansicht (Aktionsleiste, „Mehr“-Blatt) folgt im
-  Vervollständigungspaket „Ansicht und Handy“.
+- Erledigt im Vervollständigungspaket „Ansicht und Handy“: Gegner und
+  gemeinsame Initiative stehen im Abschnitt „Begegnung“, Abwarten bei den
+  weiteren Aktionen; schmal hält eine Schnellleiste die häufigsten Aktionen.
