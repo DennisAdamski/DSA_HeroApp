@@ -5,6 +5,18 @@ import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/dice_log_persistence.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/probe_dialog.dart';
 
+/// Probenarten, deren Erschwernis der Gefechtsdialog bereits festlegt.
+///
+/// Eigenschafts-, INI- und Schadenswürfe haben dort kein eigenes Feld und
+/// behalten den freien situativen Modifikator.
+const kGefechtsprobenMitFestemModifikator = {
+  ProbeType.combatAttack,
+  ProbeType.combatParry,
+  ProbeType.dodge,
+  ProbeType.spell,
+  ProbeType.talent,
+};
+
 /// Ein Auftrag ergibt genau eine Probe; Protokollfehler bleiben sichtbar.
 Future<ProbeResult?> zeigeGefechtsprobe({
   required BuildContext context,
@@ -19,6 +31,9 @@ Future<ProbeResult?> zeigeGefechtsprobe({
     context: context,
     request: request,
     singleResolution: true,
+    modifikatorGesperrt: kGefechtsprobenMitFestemModifikator.contains(
+      request.type,
+    ),
     onResolved: (result) {
       if (ergebnis != null) return;
       ergebnis = result;

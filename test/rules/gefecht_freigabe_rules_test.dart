@@ -252,7 +252,8 @@ void main() {
         ),
       );
       expect(bestaetigt.ausfuehrbar, isTrue);
-      expect(pruefen(auftrag(manuell: true)).fehlendeAngaben, isNotEmpty);
+      // Ohne Grundzielwert wird die Sonderaktion ohne Probe gebucht.
+      expect(pruefen(auftrag(manuell: true)).fehlendeAngaben, isEmpty);
     },
   );
   test('Schildsichtbarkeit folgt grundsätzlich nutzbarer Ausrüstung', () {

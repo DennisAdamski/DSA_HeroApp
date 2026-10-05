@@ -11,10 +11,12 @@ import 'package:dsa_heldenverwaltung/domain/gefecht_kontext.dart';
 import 'gefecht_kontextfelder.dart';
 import 'gefecht_fernkampffelder.dart';
 import 'gefecht_ansagefelder.dart';
+import 'gefecht_dialogabschnitte.dart';
+import 'gefecht_dkwahl.dart';
+import 'gefecht_zahlfeld.dart';
 
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_ansage_rules.dart';
 
-import 'package:dsa_heldenverwaltung/rules/derived/gefecht_kontext_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_kampfmittel_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_zusatz_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_laden_rules.dart';
@@ -277,9 +279,6 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
                     _entscheidungen.clear();
                   }),
                 ),
-              if (mittel != null && waehlen) ...[
-                for (final anteil in mittel.anteile) Text(anteil),
-              ],
               if (_aktion == Gefechtsaktion.orientieren)
                 const Text(
                   'Orientieren wird manuell geführt: WdS 56 verlangt zwei Aktionen und '
@@ -309,14 +308,10 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
                     _entscheidungen.clear();
                   }),
                 ),
-              if (widget.manoever != null) ...[
-                Text(widget.manoever!.erklarung),
+              if (widget.manoever != null)
                 Text(
                   'Fester Manöverzuschlag: +${gefechtsManoeverZuschlag(widget.manoever!)}',
                 ),
-                Text('Katalog: ${widget.manoever!.erschwernis}'),
-                Text(widget.manoever!.quelle),
-              ],
               Text(
                 '${freigabeText(p.status)}${p.zielwert == null ? '' : ' · Zielwert ${p.zielwert}'}',
               ),
@@ -325,7 +320,15 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
                   padding: const EdgeInsets.only(top: 6),
                   child: Text('• $grund'),
                 ),
-              const SizedBox(height: 16),
+              if (!(kontextAktion == Gefechtsaktion.angriff && werte.fernkampf))
+                GefechtDkWahl(
+                  key: const ValueKey('gefecht-distanzklasse'),
+                  wert: _dk,
+                  onChanged: (v) => setState(() {
+                    _dk = v;
+                    _entscheidungen.clear();
+                  }),
+                ),
               if (widget.manoever?.id == 'man_meisterparade') ...[
                 _zahl(
                   _meisterparade,
@@ -444,28 +447,7 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
                     _entscheidungen.clear();
                   }),
                 ),
-              for (final m in p.modifikatoren)
-                Text('${m.name}: ${m.wert >= 0 ? '+' : ''}${m.wert}'),
-              DropdownButtonFormField<String>(
-                key: const ValueKey('gefecht-distanzklasse'),
-                isExpanded: true,
-                initialValue: _dk,
-                decoration: const InputDecoration(
-                  labelText: 'Aktuelle Distanzklasse',
-                ),
-                items: [
-                  for (final dk in ['H', 'N', 'S', 'P'])
-                    DropdownMenuItem(
-                      value: dk,
-                      child: Text(gefechtsDistanzname(dk)),
-                    ),
-                ],
-                onChanged: (v) => setState(() {
-                  _dk = v;
-                  _entscheidungen.clear();
-                }),
-              ),
-              _zahl(_zuschlag, 'Weitere Erschwernis'),
+              _zahl(_zuschlag, 'Weitere Erschwernis', minimum: null),
               if (sonder) ...[
                 if (widget.manuell && widget.probe == null)
                   DropdownButtonFormField<Gefechtsaktion>(
@@ -522,15 +504,29 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
                   }),
                 ),
               ],
-              for (final entscheidung in p.entscheidungen)
-                CheckboxListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: Text(entscheidung),
-                  value: false,
-                  onChanged: (v) => setState(() {
-                    if (v == true) _entscheidungen.add(entscheidung);
-                  }),
-                ),
+              GefechtEntscheidungen(
+                offen: freigabe.entscheidungen,
+                bestaetigt: _entscheidungen,
+                onChanged: (e, v) => setState(() {
+                  if (v) {
+                    _entscheidungen.add(e);
+                  } else {
+                    _entscheidungen.remove(e);
+                  }
+                }),
+              ),
+              GefechtBerechnung(
+                zeilen: [
+                  if (mittel != null && waehlen) ...mittel.anteile,
+                  for (final m in p.modifikatoren)
+                    '${m.name}: ${m.wert >= 0 ? '+' : ''}${m.wert}',
+                  if (widget.manoever != null) ...[
+                    widget.manoever!.erklarung,
+                    'Katalog: ${widget.manoever!.erschwernis}',
+                    widget.manoever!.quelle,
+                  ],
+                ],
+              ),
             ],
           ),
         ),
@@ -554,6 +550,7 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
         ),
         FilledButton(
           key: const ValueKey('gefecht-auftrag-starten'),
+          autofocus: true,
           onPressed: freigabe.ausfuehrbar
               ? () => Navigator.pop(context, auftrag)
               : null,
@@ -562,8 +559,10 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
                 ? auftrag.zielErleichterung > 0
                       ? 'Zielen beginnen'
                       : 'Zusatz-Zielen beginnen'
-                : p.zielwert != null || widget.probe != null
-                ? 'Probe ausführen'
+                : p.zielwert != null
+                ? 'Würfeln · ${p.zielwert}'
+                : widget.probe != null
+                ? 'Würfeln'
                 : 'Aktion ausführen',
           ),
         ),
@@ -572,18 +571,18 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
   }
 
   // Änderungen machen die Bestätigung ungültig und zeigen die neue Freigabe.
-  Widget _zahl(TextEditingController c, String label, {String? key}) => Padding(
+  Widget _zahl(
+    TextEditingController c,
+    String label, {
+    String? key,
+    int? minimum = 0,
+  }) => GefechtZahlfeld(
     key: ObjectKey(c),
-    padding: const EdgeInsets.only(top: 12),
-    child: TextField(
-      key: key == null ? null : ValueKey(key),
-      controller: c,
-      keyboardType: const TextInputType.numberWithOptions(signed: true),
-      decoration: InputDecoration(labelText: label),
-      onChanged: (_) => setState(() {
-        _entscheidungen.clear();
-      }),
-    ),
+    controller: c,
+    label: label,
+    feldKey: key == null ? null : ValueKey(key),
+    minimum: minimum,
+    onChanged: () => setState(_entscheidungen.clear),
   );
 }
 
