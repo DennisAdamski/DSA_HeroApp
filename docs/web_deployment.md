@@ -42,3 +42,19 @@ Manuelle Veröffentlichung nur mit explizitem Target:
 Zur Rücknahme in der Firebase-Konsole die vorherige Veröffentlichung der
 betreffenden Site wiederherstellen. Der nächste erfolgreiche Branch-Push
 veröffentlicht wieder automatisch. Keine geplanten oder manuellen Actions-Trigger.
+
+## Automatische Übernahme von main
+
+Jeder Push auf `main` mergt den aktuellen main-Stand automatisch nach `test`.
+Bestehende Teständerungen bleiben erhalten. Ein Merge-Konflikt stoppt den Sync
+mit einer Fehlermeldung in Actions; der entfernte Testbranch bleibt unverändert.
+Der Konflikt muss manuell durch einen Merge von main nach test gelöst werden.
+Bei konkurrierenden Test-Pushes wird bis zu dreimal neu geladen und gemergt;
+es gibt keinen Force-Push. Branch-Schutz kann die Automatik blockieren.
+
+Nach einem erfolgreichen Sync ruft der Workflow die bestehende Web-CI mit dem
+exakten neuen Test-Commit auf. Das ist notwendig, weil ein Push mit dem
+internen GITHUB_TOKEN keinen weiteren Push-Workflow startet. Analyse, Tests,
+LOC-Prüfung und Web-Build bleiben Voraussetzungen für das Test-Deployment.
+Ist main bereits in test enthalten, gibt es keinen neuen Commit oder CI-Lauf.
+Der Sync ist unabhängig vom Erfolg der main-CI; beide Branches prüfen ihren Stand.
