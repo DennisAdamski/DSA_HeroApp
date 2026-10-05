@@ -475,4 +475,5 @@ Build-Tools-Instanz die Komponente `C++ ATL/MFC` nachinstallieren.
 `test` veröffentlicht nach erfolgreichen Prüfungen auf https://heldensync-test.web.app;
 `main` veröffentlicht die produktive Version. Arbeitsbranches werden nur bei
 offenen PRs nach `test` oder `main` geprüft. Beide Versionen teilen Firebase-Daten.
+Pushes auf `main` werden automatisch nach `test` gemergt und dort erneut geprüft.
 Details: [Web-Veröffentlichung](docs/web_deployment.md).

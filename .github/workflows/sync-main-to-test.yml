@@ -1,0 +1,40 @@
+name: Main nach Test synchronisieren
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sync-main-to-test
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    name: Main in Test mergen
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      changed: ${{ steps.merge.outputs.changed }}
+      sha: ${{ steps.merge.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Testbranch aktualisieren
+        id: merge
+        run: bash tool/sync_main_to_test.sh
+
+  test:
+    name: Synchronisierten Teststand prüfen und deployen
+    needs: sync
+    if: needs.sync.outputs.changed == 'true'
+    uses: ./.github/workflows/flutter-tests.yml
+    with:
+      ref: ${{ needs.sync.outputs.sha }}
+      branch: test
+    secrets:
+      FIREBASE_SERVICE_ACCOUNT_HELDENSYNC_CCF0B: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_HELDENSYNC_CCF0B }}
