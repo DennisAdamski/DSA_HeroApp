@@ -15,9 +15,13 @@ import 'package:dsa_heldenverwaltung/rules/derived/gefecht_kampfmittel_rules.dar
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_held_rules.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_gefechts_adapter.dart';
 
+import 'gefecht_dkwahl.dart';
 import 'gefecht_patzer.dart';
+import 'gefecht_zahlfeld.dart';
 
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_wirken_rules.dart';
+
+import 'gefecht_fehlertext.dart';
 
 /// Erfasst vollständige Ziele und Poolverteilung vor der ersten Teilprobe.
 Future<void> zeigeGefechtsKlingenbeginn({
@@ -50,11 +54,14 @@ Future<void> zeigeGefechtsKlingenbeginn({
   final w = gefechtswerteFuer(snapshot, katalog: katalog, kampfmittel: wahl);
   final gegner = ref.read(gefechtBegegnungProvider).gegner;
   if (gegner.length < 2) throw StateError('Mindestens zwei Gegner erfassen.');
-  final ids = <String?>[null, null, null];
-  final dk = <String?>[null, null, null];
-  final normaleAbwehr = [false, false, false];
+  final vorgaben = gefechtsKlingenVorgaben(s, gegner.keys.toList());
+  final ids = vorgaben.gegner;
+  final dk = vorgaben.dk;
+  // Gewöhnlicher Nahkampfangriff ist der Regelfall; sichtbar und abwählbar.
+  final normaleAbwehr = [true, true, true];
   final finte = List.generate(3, (_) => TextEditingController(text: '0'));
   final pool = TextEditingController();
+  final erschwernis = TextEditingController(text: '0');
   var anzahl = 2;
   String? fehler;
   try {
@@ -98,23 +105,24 @@ Future<void> zeigeGefechtsKlingenbeginn({
                   for (var i = 0; i < anzahl; i++) ...[
                     DropdownButtonFormField<String>(
                       initialValue: ids[i],
+                      isExpanded: true,
                       decoration: InputDecoration(labelText: 'Gegner ${i + 1}'),
                       items: [
                         for (final g in gegner.values)
-                          DropdownMenuItem(value: g.id, child: Text(g.name)),
+                          DropdownMenuItem(
+                            value: g.id,
+                            child: Text(
+                              g.name,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
                       ],
                       onChanged: (v) => ids[i] = v,
                     ),
-                    DropdownButtonFormField<String>(
-                      initialValue: dk[i],
-                      decoration: const InputDecoration(
-                        labelText: 'Tatsächliche Distanzklasse',
-                      ),
-                      items: [
-                        for (final d in ['H', 'N', 'S', 'P'])
-                          DropdownMenuItem(value: d, child: Text(d)),
-                      ],
-                      onChanged: (v) => dk[i] = v,
+                    GefechtDkWahl(
+                      key: ValueKey('gefecht-klingen-dk-$i'),
+                      wert: dk[i],
+                      onChanged: (v) => setState(() => dk[i] = v),
                     ),
                     if (parade)
                       TextField(
@@ -134,6 +142,14 @@ Future<void> zeigeGefechtsKlingenbeginn({
                             setState(() => normaleAbwehr[i] = v ?? false),
                       ),
                   ],
+                  GefechtZahlfeld(
+                    controller: erschwernis,
+                    feldKey: const ValueKey('gefecht-klingen-erschwernis'),
+                    label: 'Weitere Erschwernis',
+                    minimum: null,
+                    hilfe: 'Gilt für jede Teilprobe.',
+                    onChanged: () => setState(() {}),
+                  ),
                   if (fehler != null) Text(fehler!),
                 ],
               ),
@@ -174,12 +190,13 @@ Future<void> zeigeGefechtsKlingenbeginn({
                         dk: dk[i]!,
                         zielwert: werte[i],
                         finte: parade ? int.parse(finte[i].text) : 0,
+                        erschwernis: int.parse(erschwernis.text.trim()),
                       ),
                   ];
                   pruefeGefechtsKlingenteile(t, w, parade: parade);
                   Navigator.pop(dialogContext, t);
                 } catch (e) {
-                  setState(() => fehler = '$e');
+                  setState(() => fehler = gefechtsFehlertext(e));
                 }
               },
               child: const Text('Aufteilung bestätigen'),
@@ -225,7 +242,10 @@ Future<void> zeigeGefechtsKlingenbeginn({
           ),
         );
   } finally {
+    // Erst nach dem Ende der Dialoganimation werden die Controller freigegeben.
+    await Future<void>.delayed(const Duration(milliseconds: 300));
     pool.dispose();
+    erschwernis.dispose();
     for (final c in finte) {
       c.dispose();
     }

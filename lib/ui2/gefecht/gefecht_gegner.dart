@@ -10,15 +10,20 @@ import 'package:dsa_heldenverwaltung/state/gefecht_begegnung_provider.dart';
 /// Gemeinsam verfügbare Gegner mit konkreter Zielwahl für diese Heldensitzung.
 class GefechtGegnerkarte extends ConsumerWidget {
   /// Die Waffendistanz bestimmt nur die sichtbare, änderbare Startvorgabe.
+  ///
+  /// [onAktion] ist der gemeinsame Guard der Ansicht: Dialoge öffnen sich nur
+  /// einmal, Fehler erscheinen im Gefechtshinweis.
   const GefechtGegnerkarte({
     super.key,
     required this.heroId,
     required this.waffenDk,
     required this.fernkampf,
     required this.gesperrt,
+    required this.onAktion,
   });
   final String heroId, waffenDk;
   final bool fernkampf, gesperrt;
+  final Future<void> Function(Future<void> Function()) onAktion;
 
   /// IDs statt Namen verbinden Auswahl und spätere Treffer.
   @override
@@ -47,7 +52,7 @@ class GefechtGegnerkarte extends ConsumerWidget {
               children: [
                 Text('Gegner', style: Theme.of(context).textTheme.titleLarge),
                 TextButton(
-                  onPressed: blockiert ? null : bearbeiten,
+                  onPressed: blockiert ? null : () => onAktion(bearbeiten),
                   child: const Text('+ Gegner'),
                 ),
               ],
@@ -76,7 +81,7 @@ class GefechtGegnerkarte extends ConsumerWidget {
                           key: ValueKey('gegner-ziel-${g.id}'),
                           onPressed: blockiert || s == null
                               ? null
-                              : () {
+                              : () => onAktion(() async {
                                   ref
                                       .read(gefechtProvider(heroId).notifier)
                                       .setzen(
@@ -89,19 +94,21 @@ class GefechtGegnerkarte extends ConsumerWidget {
                                           ),
                                         ),
                                       );
-                                },
+                                }),
                           child: Text(
                             s?.kontext.gegnerId == g.id ? '✓ Ziel' : 'Als Ziel',
                           ),
                         ),
                         TextButton(
-                          onPressed: blockiert ? null : () => bearbeiten(g),
+                          onPressed: blockiert
+                              ? null
+                              : () => onAktion(() => bearbeiten(g)),
                           child: const Text('Werte ändern'),
                         ),
                         TextButton(
                           onPressed: blockiert
                               ? null
-                              : () async {
+                              : () => onAktion(() async {
                                   final tp = await showDialog<int>(
                                     context: context,
                                     builder: (_) =>
@@ -114,7 +121,7 @@ class GefechtGegnerkarte extends ConsumerWidget {
                                       tp: tp,
                                     );
                                   }
-                                },
+                                }),
                           child: const Text('Treffer übernehmen'),
                         ),
                       ],

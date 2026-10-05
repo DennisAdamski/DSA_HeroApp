@@ -79,4 +79,21 @@ void main() {
     }
     expect(viele, ['a', 'f', 'e', 'd', 'c']);
   });
+
+  test('Nicht aktivierte Zauber erscheinen nicht mit ZfW* 0', () {
+    // Review R12: ein eingeblendeter Zauber ohne Wert ist nicht wirkbar.
+    final mitOffenem = buildHeroComputedSnapshot(
+      hero: testHero().copyWith(
+        spells: const {
+          'z_armatrutz': HeroSpellEntry(spellValue: 5),
+          'z_fremd': HeroSpellEntry(),
+        },
+      ),
+      state: const HeroState.empty(),
+      catalog: katalog,
+      epicAdvantagesActive: false,
+    );
+    final liste = gefechtsZauberliste(mitOffenem, katalog);
+    expect(liste.map((e) => e.zauber.id), ['z_armatrutz']);
+  });
 }

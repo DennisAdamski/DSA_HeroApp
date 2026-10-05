@@ -85,7 +85,12 @@ class GefechtsinitiativController extends Notifier<Gefechtsinitiative> {
   }
 
   /// Gemeinsamer Rundenwechsel prüft alle Sitzungen vor der ersten Änderung.
-  void naechsteRunde() {
+  ///
+  /// [vonRunde] ist die Runde, die der Aufrufer angezeigt hat. Ein zweiter
+  /// Aufruf derselben Anzeige (Doppeltipp vor dem Neuaufbau) ändert nichts,
+  /// statt alle Teilnehmer eine weitere Runde vorzurücken.
+  void naechsteRunde({required int vonRunde}) {
+    if (state.runde != vonRunde) return;
     _pruefeOffeneAuftraege();
     final neu = <String, Gefechtszustand>{};
     for (final id in state.helden) {

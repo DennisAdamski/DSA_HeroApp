@@ -5,13 +5,18 @@ import 'package:dsa_heldenverwaltung/state/gefecht_initiative_provider.dart';
 /// Gemeinsame Phase, Teilnehmer und ausdrücklich bestätigte Gegnerzeitpunkte.
 class GefechtInitiativkarte extends ConsumerWidget {
   /// Der aktuelle Held tritt nur durch ausdrückliche Auswahl bei.
+  ///
+  /// [onAktion] ist der gemeinsame Guard der Ansicht: Er sperrt parallele
+  /// Bedienung und zeigt Fehler im Gefechtshinweis statt als Snackbar.
   const GefechtInitiativkarte({
     super.key,
     required this.heroId,
     required this.gesperrt,
+    required this.onAktion,
   });
   final String heroId;
   final bool gesperrt;
+  final Future<void> Function(Future<void> Function()) onAktion;
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final gruppe = ref.watch(gefechtInitiativeProvider);
@@ -20,14 +25,6 @@ class GefechtInitiativkarte extends ConsumerWidget {
     final c = ref.read(gefechtInitiativeProvider.notifier);
     final phase = gruppe.phase ?? offen.firstOrNull?.ini;
     final dabei = gruppe.helden.contains(heroId);
-    Future<void> ausfuehren(VoidCallback aktion) async {
-      try {
-        aktion();
-      } catch (fehler) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('$fehler')));
-      }
-    }
 
     return Card(
       child: Padding(
@@ -40,7 +37,7 @@ class GefechtInitiativkarte extends ConsumerWidget {
               TextButton(
                 onPressed: gesperrt
                     ? null
-                    : () async {
+                    : () => onAktion(() async {
                         final vorbei = await showDialog<bool>(
                           context: context,
                           builder: (context) => AlertDialog(
@@ -61,12 +58,9 @@ class GefechtInitiativkarte extends ConsumerWidget {
                           ),
                         );
                         if (vorbei != null) {
-                          await ausfuehren(
-                            () =>
-                                c.hinzufuegen(heroId, zeitpunktVorbei: vorbei),
-                          );
+                          c.hinzufuegen(heroId, zeitpunktVorbei: vorbei);
                         }
-                      },
+                      }),
                 child: const Text('+ Held'),
               ),
             if (dabei) ...[
@@ -92,14 +86,14 @@ class GefechtInitiativkarte extends ConsumerWidget {
                       TextButton(
                         onPressed: gesperrt
                             ? null
-                            : () => ausfuehren(() => c.abschliessen(z.id)),
+                            : () => onAktion(() async => c.abschliessen(z.id)),
                         child: const Text('Zeitpunkt abgewickelt'),
                       ),
                     if (z.ini != phase)
                       TextButton(
                         onPressed: gesperrt
                             ? null
-                            : () async {
+                            : () => onAktion(() async {
                                 final ok = await showDialog<bool>(
                                   context: context,
                                   builder: (context) => AlertDialog(
@@ -122,10 +116,8 @@ class GefechtInitiativkarte extends ConsumerWidget {
                                     ],
                                   ),
                                 );
-                                if (ok == true) {
-                                  await ausfuehren(() => c.phaseSetzen(z.ini));
-                                }
-                              },
+                                if (ok == true) c.phaseSetzen(z.ini);
+                              }),
                         child: const Text('Zeitpunkt klären'),
                       ),
                   ],
@@ -136,13 +128,15 @@ class GefechtInitiativkarte extends ConsumerWidget {
                   FilledButton.tonal(
                     onPressed: gesperrt
                         ? null
-                        : () => ausfuehren(c.naechsteRunde),
+                        : () => onAktion(
+                            () async => c.naechsteRunde(vonRunde: gruppe.runde),
+                          ),
                     child: const Text('Gemeinsame nächste Runde'),
                   ),
                   TextButton(
                     onPressed: gesperrt
                         ? null
-                        : () => ausfuehren(() => c.entfernen(heroId)),
+                        : () => onAktion(() async => c.entfernen(heroId)),
                     child: const Text('Gruppe verlassen'),
                   ),
                 ],

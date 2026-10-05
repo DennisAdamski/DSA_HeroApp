@@ -342,12 +342,13 @@ class _AbschlussState extends ConsumerState<_Abschluss> {
                           ? ResourceType.kap
                           : ResourceType.asp,
                       abschlussKosten: kosten,
-                      onAbschlussUebernehmen: () => uebernimmGefechtsWirkfolgen(
-                        context: context,
-                        ref: ref,
-                        heroId: widget.heroId,
-                        abschliessen: false,
-                      ),
+                      onAbschlussUebernehmen: (blatt) =>
+                          uebernimmGefechtsWirkfolgen(
+                            context: blatt,
+                            ref: ref,
+                            heroId: widget.heroId,
+                            abschliessen: false,
+                          ),
                     ),
               child: const Text('Kosten jetzt übernehmen'),
             ),

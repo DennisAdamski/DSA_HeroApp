@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/gefecht_freigabe_rules.dart';
 
 /// Ein Eintrag der Schnellleiste mit derselben Prüfung wie der Aktionsknopf.
 class GefechtSchnellaktion {
@@ -31,6 +32,13 @@ class GefechtSchnellleiste extends StatelessWidget {
 
   /// Einträge von links nach rechts.
   final List<GefechtSchnellaktion> aktionen;
+
+  // Zielwert nur bei bereiter Aktion; sonst derselbe Status wie am Knopf.
+  static String? _unterzeile(Gefechtspruefung? p) => switch (p?.status) {
+    Gefechtsfreigabe.bereit => p!.zielwert?.toString(),
+    Gefechtsfreigabe.pruefen => gefechtsKnopfstatus(p!),
+    _ => null,
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -65,9 +73,11 @@ class GefechtSchnellleiste extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                           style: texte.labelSmall,
                         ),
-                        if (a.pruefung?.zielwert != null)
+                        if (_unterzeile(a.pruefung) case final zeile?)
                           Text(
-                            '${a.pruefung!.zielwert}',
+                            zeile,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                             style: texte.labelSmall,
                           ),
                       ],

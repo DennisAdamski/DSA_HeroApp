@@ -78,9 +78,25 @@ Future<void> zeigeGefechtsBenannteAktion({
     if (probe == null || !context.mounted) return;
     var ini = 0, aup = 0;
     if (!probe.success) {
-      ini = await _w6(context, ref, heroId, bestand, 'Sturz · INI-Verlust');
-      if (!context.mounted) return;
-      aup = await _w6(context, ref, heroId, bestand, 'Sturz · AuP-Verlust');
+      // Abbruch eines Folgewurfs bucht nichts, wie der Abbruch der GE-Probe.
+      final iniWurf = await _w6(
+        context,
+        ref,
+        heroId,
+        bestand,
+        'Sturz · INI-Verlust',
+      );
+      if (iniWurf == null || !context.mounted) return;
+      final aupWurf = await _w6(
+        context,
+        ref,
+        heroId,
+        bestand,
+        'Sturz · AuP-Verlust',
+      );
+      if (aupWurf == null || !context.mounted) return;
+      ini = iniWurf;
+      aup = aupWurf;
     }
     if (!ctl.abschliessen(id, w, p)) return;
     ctl.setzen(
@@ -104,8 +120,8 @@ Future<void> zeigeGefechtsBenannteAktion({
   }
 }
 
-// Ein W6 über die gemeinsame Probe; Abbruch zählt als 0.
-Future<int> _w6(
+// Ein W6 über die gemeinsame Probe; `null` bei Abbruch.
+Future<int?> _w6(
   BuildContext context,
   WidgetRef ref,
   String heroId,
@@ -125,7 +141,7 @@ Future<int> _w6(
       targets: const [],
     ),
   );
-  return r?.total ?? 0;
+  return r?.total;
 }
 
 // Gruppierte Liste mit Kosten, Regeltext und Sperrgrund je Handlung.

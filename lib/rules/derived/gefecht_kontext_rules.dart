@@ -71,6 +71,10 @@ bool gefechtsPflichtkontextErfasst(
 }
 
 /// WdS 80: Mehrfach-DK verwenden die nächstgelegene erlaubte Distanz.
+///
+/// Die Waffen-DK ist Freitext: Kleinschreibung zählt wie Großschreibung, eine
+/// leere Angabe gilt wie bei der Start-DK als Nahkampf (App-Konvention,
+/// `gefechtsStartDk`); `pruefeGefechtsaktion` nennt das als Hinweis.
 int? gefechtsDkDifferenz(
   String waffenDk,
   String? aktuelleDk, {
@@ -79,9 +83,11 @@ int? gefechtsDkDifferenz(
   const klassen = ['H', 'N', 'S', 'P'];
   final aktuell = klassen.indexOf(aktuelleDk ?? '');
   if (aktuell < 0) return null;
+  final normiert = waffenDk.trim().toUpperCase();
+  final dkDerWaffe = normiert.isEmpty ? 'N' : normiert;
   int? beste;
   for (var i = 0; i < klassen.length; i++) {
-    if (!waffenDk.contains(klassen[i])) continue;
+    if (!dkDerWaffe.contains(klassen[i])) continue;
     final index = halbschwert && i > 0 ? i - 1 : i;
     final differenz = index - aktuell;
     if (beste == null || differenz.abs() < beste.abs()) beste = differenz;

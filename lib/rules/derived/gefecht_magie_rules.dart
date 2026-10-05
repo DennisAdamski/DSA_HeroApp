@@ -154,7 +154,9 @@ class GefechtsZaubereintrag {
 
 /// Gelernte Katalogzauber: zuletzt gewirkte zuerst, danach alphabetisch.
 ///
-/// [suche] filtert ohne Groß-/Kleinschreibung nach dem Namen.
+/// Nur Zauber mit Wert erscheinen: ein eingeblendeter, noch nicht
+/// aktivierter Zauber ist nicht wirkbar (`gefechtsZauberprobe` liefert für
+/// ihn `null`). [suche] filtert ohne Groß-/Kleinschreibung nach dem Namen.
 List<GefechtsZaubereintrag> gefechtsZauberliste(
   HeroComputedSnapshot snapshot,
   RulesCatalog katalog, {
@@ -164,11 +166,11 @@ List<GefechtsZaubereintrag> gefechtsZauberliste(
   final filter = suche.trim().toLowerCase();
   final eintraege = <GefechtsZaubereintrag>[
     for (final z in katalog.spells)
-      if (snapshot.hero.spells[z.id] case final e?)
+      if (snapshot.hero.spells[z.id] case final e? when e.spellValue != null)
         if (filter.isEmpty || z.name.toLowerCase().contains(filter))
           GefechtsZaubereintrag(
             zauber: z,
-            zfw: (e.spellValue ?? 0) + e.modifier,
+            zfw: e.spellValue! + e.modifier,
             zuletzt: zuletzt.contains(z.id),
           ),
   ];

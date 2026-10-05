@@ -107,7 +107,13 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   (`gefecht_gegner_rules.dart`, `state/gefecht_begegnung_provider.dart`)
   tragen stabile IDs; die gemeinsame Initiative
   (`gefecht_initiative_rules.dart`, `state/gefecht_initiative_provider.dart`)
-  verbindet ausdrücklich gewählte Helden. Klingenwand/-sturm, Patzer und
+  verbindet ausdrücklich gewählte Helden; ihr Rundenwechsel nimmt die
+  angezeigte Runde (`naechsteRunde(vonRunde:)`), Gegner- und Initiativkarte
+  laufen wie alle Karten über `onAktion` (Guard und Gefechtshinweis, Text über
+  `gefecht_fehlertext.dart`). Leere oder kleingeschriebene Waffen-DK gilt
+  als Nahkampf mit Hinweis; die Klingen-Aufteilung ist vorbelegt
+  (`gefechtsKlingenVorgaben`) und trägt die einzige Erschwernis ihrer
+  Teilproben. Klingenwand/-sturm, Patzer und
   Bruchtest, Manöverfolgen und Fremdwirkung haben je eigene Regelmodule;
   alles bleibt flüchtig. Stand und Grenzen: [docs/gefecht_abschluss_entwurf.md](docs/gefecht_abschluss_entwurf.md).
   Bedienung: `gefecht_aktionsknopf.dart` zeigt Status und Hauptgrund

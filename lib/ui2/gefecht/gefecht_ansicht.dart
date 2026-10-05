@@ -60,6 +60,8 @@ import 'gefecht_vitalwerte.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_laden_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_kampfmittel_rules.dart';
 
+import 'gefecht_fehlertext.dart';
+
 part 'gefecht_ansicht_teile.dart';
 
 /// Responsive Spielansicht eines flüchtigen Gefechts mit echten Heldendaten.
@@ -92,7 +94,7 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
     try {
       await aktion();
     } catch (fehler) {
-      if (mounted) setState(() => _fehler = '$fehler');
+      if (mounted) setState(() => _fehler = gefechtsFehlertext(fehler));
     } finally {
       if (mounted) {
         setState(() {
@@ -249,10 +251,12 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
                                   waffenDk: w.waffenDk,
                                   fernkampf: w.fernkampf,
                                   gesperrt: _busy,
+                                  onAktion: _run,
                                 ),
                                 GefechtInitiativkarte(
                                   heroId: widget.heroId,
                                   gesperrt: _busy,
+                                  onAktion: _run,
                                 ),
                                 GefechtBegleiter(
                                   begleiter: snapshot.hero.companions,

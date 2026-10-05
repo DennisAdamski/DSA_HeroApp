@@ -96,12 +96,36 @@ Gefechtspruefung pruefeGefechtsKlingenbeginn(
       'Klingenwand zu Beginn der Runde ansagen.',
     if (!wand && w.be > 4) 'Klingensturm benötigt BE höchstens 4.',
   ];
+  // Wie `ergaenzeGefechtsfreigabe`: Hinweise allein ergeben „Bereit“ und
+  // bleiben sichtbar; „Klären“ entsteht nur mit benanntem Grund.
+  final hinweise = p.hinweise.isNotEmpty
+      ? p.hinweise
+      : p.gruende
+            .where(
+              (g) =>
+                  !sperren.contains(g) &&
+                  !p.fehlendeAngaben.contains(g) &&
+                  !p.entscheidungen.contains(g),
+            )
+            .toList();
+  final status = sperren.isNotEmpty
+      ? Gefechtsfreigabe.gesperrt
+      : p.fehlendeAngaben.isNotEmpty || p.entscheidungen.isNotEmpty
+      ? Gefechtsfreigabe.pruefen
+      : Gefechtsfreigabe.bereit;
   return Gefechtspruefung(
     aktion: p.aktion,
-    status: sperren.isNotEmpty ? Gefechtsfreigabe.gesperrt : p.status,
-    gruende: [...sperren, ...p.fehlendeAngaben],
+    status: status,
+    gruende: [
+      ...sperren,
+      ...p.fehlendeAngaben,
+      ...p.entscheidungen,
+      ...hinweise,
+    ],
     sperrgruende: sperren,
     fehlendeAngaben: p.fehlendeAngaben,
+    entscheidungen: p.entscheidungen,
+    hinweise: hinweise,
     zielwert: p.zielwert,
     angriffe: p.angriffe,
     paraden: p.paraden,
@@ -221,6 +245,31 @@ void pruefeGefechtsKlingenfortsetzung(
   }
 }
 
+/// Sichtbare Vorbelegung der Aufteilung (Vorgaben statt Pflichtfelder,
+/// Nutzerentscheidung vom 5. Oktober 2026).
+///
+/// Je Teilprobe die aktuelle Sitzungs-DK und verschiedene Gegner der
+/// Begegnung, das aktuelle Ziel zuerst. Fehlen Gegner oder DK, bleibt der
+/// Eintrag `null` und `pruefeGefechtsKlingenteile` verlangt ihn weiter.
+({List<String?> gegner, List<String?> dk}) gefechtsKlingenVorgaben(
+  Gefechtszustand s,
+  List<String> gegnerIds, {
+  int teile = 3,
+}) {
+  final ziel = s.kontext.gegnerId;
+  final reihenfolge = [
+    if (ziel != null && gegnerIds.contains(ziel)) ziel,
+    ...gegnerIds.where((id) => id != ziel),
+  ];
+  return (
+    gegner: [
+      for (var i = 0; i < teile; i++)
+        i < reihenfolge.length ? reihenfolge[i] : null,
+    ],
+    dk: List<String?>.filled(teile, s.dk),
+  );
+}
+
 /// Getrennte Würfe verwenden den bestätigten Pool und die jeweilige Finte einmal.
 ResolvedProbeRequest gefechtsKlingenrequest(
   GefechtsKlingenstand stand,
@@ -238,7 +287,10 @@ ResolvedProbeRequest gefechtsKlingenrequest(
     ProbeTargetValue(label: stand.parade ? 'PA' : 'AT', value: teil.zielwert),
   ],
   initialSituationalModifier:
-      (stand.parade ? -teil.finte : 0) + meisterparadeBonus - ansageFolgemalus,
+      (stand.parade ? -teil.finte : 0) +
+      meisterparadeBonus -
+      ansageFolgemalus -
+      teil.erschwernis,
 );
 
 /// Änderungen der Waffe oder ihrer aktuellen Werte verlangen neue Bestätigung.

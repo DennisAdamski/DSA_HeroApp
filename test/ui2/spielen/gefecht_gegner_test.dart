@@ -177,6 +177,7 @@ void main() {
                 waffenDk: 'N',
                 fernkampf: false,
                 gesperrt: false,
+                onAktion: _direkt,
               ),
             ),
           ),
@@ -210,6 +211,7 @@ void main() {
               waffenDk: 'N',
               fernkampf: false,
               gesperrt: false,
+              onAktion: _direkt,
             ),
           ),
         ),
@@ -225,3 +227,6 @@ void main() {
     expect(find.textContaining('LeP 20'), findsNothing);
   });
 }
+
+// Führt Kartenaktionen ohne Ansicht direkt aus.
+Future<void> _direkt(Future<void> Function() aktion) => aktion();

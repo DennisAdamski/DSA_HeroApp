@@ -122,7 +122,9 @@ extension _GefechtAnsichtTeile on _GefechtAnsichtState {
       throw StateError('Offene Patzer-/Bruchfolgen zuerst abschließen.');
     }
     if (s.gemeinsameInitiative) {
-      ref.read(gefechtInitiativeProvider.notifier).naechsteRunde();
+      ref
+          .read(gefechtInitiativeProvider.notifier)
+          .naechsteRunde(vonRunde: s.runde);
     } else {
       _controller.setzen(naechsteGefechtsrunde(s));
     }
