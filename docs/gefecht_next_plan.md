@@ -340,7 +340,7 @@ keine Katalogmigration und keine ungeprüfte Änderung ihrer Aktionskosten.
   und keine Vermischung mit Mirakelbonus. Eine positive Schild-Ansage benötigt
   wegen der unklaren TaW-Grenze eine konkrete manuelle Obergrenze, zusätzlich PA.
 
-Frische Gesamtsuite: 3.381 bestanden, 3 bestehende Tests übersprungen.
+Historische Abnahmeprüfung auf `51955b5`: 3.381 bestanden, 3 bestehende Tests übersprungen.
 Analyse, vollständiger CI-Formatcheck, tatsächlicher CI-LOC-Check und Gefechts-LOC
 bestanden. Paketreviews und Gesamtreview einschließlich nötiger Korrekturen sind
 abgeschlossen. Produktstand der Abnahme: `51955b5`.
@@ -348,10 +348,11 @@ abgeschlossen. Produktstand der Abnahme: `51955b5`.
 Allgemeine Folgen misslungener Ansagemanöver bleiben manuell; Meisterparade nennt
 die gewählte Ansage und den Folgemalus ausdrücklich. Die unveränderte zusätzliche
 breite UI2-LOC-Prüfung findet weiterhin die bestehende 803-Zeilen-Abenteuerdatei.
-Ein nicht blockierender Testnachtrag bleibt: ausdrückliche Buchung einer zulässigen
-Zusatzabwehr mit offenem Meisterparadebonus. Der geprüfte Integrationspfad ist korrekt.
+Zum damaligen Abnahmestand blieb ein nicht blockierender Testnachtrag offen:
+ausdrückliche Buchung einer zulässigen Zusatzabwehr mit offenem Meisterparadebonus.
+Dieser Nachtrag ist in der nachfolgenden Prüfung abgeschlossen.
 
-GitHub hat inzwischen den veröffentlichten Stand `50241f2` geprüft:
+Historischer GitHub-Prüfstand auf `50241f2`:
 Die Läufe `37198239552` und `37198240229` bestehen Format, Analyse, LOC und Android-
 Debug-Build; der Testjob scheitert. Firebase-Preview besteht. Die vollständigen
 Fehlerlogs sind per API mit HTTP 403 geschützt; die konkrete Remote-Fehlerausgabe
@@ -361,3 +362,94 @@ Balestrina korrigiert, ohne die Hand- oder Profilregeln aufzuweichen. Der frisch
 Gesamtlauf dieses neueren Stands besteht; sein GitHub-Lauf steht noch aus.
 Der Agent hat keinen Push oder Deployment ausgeführt. Die ursprünglichen Nutzernotizen
 bleiben unverändert und außerhalb der Agenten-Commits erhalten.
+
+### Testnachtrag nach PR #208 (4. Oktober 2026)
+
+PR [#208](https://github.com/DennisAdamski/DSA_HeroApp/pull/208) wurde am
+4. Oktober 2026 um 17:54 Uhr MESZ nach `test` gemergt (`e289938`). Der lokale
+Arbeitsbranch enthält denselben Dateiinhalt wie dieser Merge-Stand und wird
+gemäß AGENTS.md weiterverwendet; es erfolgt kein neuer Merge.
+
+- [x] Der Integrationstest in `gefecht_meisterparade_test.dart` führt mit
+  einhändiger Hauptwaffe, geführtem Schild und Schildkampf II eine erfolgreiche
+  reguläre Schild-Meisterparade mit Ansage 3 und bestätigter Schildgrenze 3 aus.
+- [x] Nach dem Löschen der ersten Angriffsdaten wird ein frischer Nahkampfangriff
+  mit Finte 1 und wirksamem Schild-WM bereitgestellt. Die gemeinsame Prüfung,
+  Dialogvorschau und tatsächliche PA-Probe verwenden genau einmal den Bonus +3.
+- [x] Dialog- und Probeabbruch erhalten Bonus sowie reguläres, freies und
+  zusätzliches Budget. Der folgende echte Abschluss mit doppeltem Callback
+  verbraucht genau eine Zusatzmarke und entfernt den Bonus genau einmal;
+  die bereits gebuchte reguläre PA bleibt bei einer Marke.
+
+Keine Produktionsänderung und keine zusätzliche Regelautomatisierung nötig.
+Die bestehenden manuellen Grenzen, insbesondere Schild-Ansagegrenze und
+Fehlmanöverfolgen, bleiben bestehen.
+
+Frische lokale Prüfungen des Testnachtrags:
+- `flutter analyze`: ohne Befund.
+- 42 relevante Meisterparade-/Zusatzaktions-/Provider-/Ablauftests bestanden.
+- Vollständige Suite: 3.382 bestanden, 3 bestehende Tests übersprungen.
+- CI-Formatcheck `dart format --output=none --set-exit-if-changed lib test tool`:
+  1.000 Dateien geprüft, keine Änderungen.
+- CI-LOC (21 Screens), Gefechts-LOC (25 Dateien) und ergänzte Testdatei: ≤700 Zeilen.
+- Breite UI2-LOC-Prüfung: unverändert bestehender Befund
+  `lib/ui2/spielen/karto_abenteuerblatt.dart` mit 803 Zeilen; außerhalb des Scopes.
+- Unabhängiges Abschlussreview des Test- und Dokumentationsnachtrags: ohne Befund.
+
+AGENTS.md, CLAUDE.md, README.md und betroffene Dokumentation sind geprüft.
+Es entsteht kein neues Konzept oder geändertes Produktionsverhalten; der
+Prüfnachweis wird nur hier und in `gefecht_implementation.md` ergänzt.
+
+Aktueller veröffentlichter CI-Stand: [Lauf 37214771631](https://github.com/DennisAdamski/DSA_HeroApp/actions/runs/37214771631)
+auf `e289938` ist erfolgreich abgeschlossen: Format, Analyse, LOC, Unit-/Widgettests,
+Web-Release-Build und Firebase-Hosting. Das ist der bereits erfolgte Remote-Lauf
+nach PR #208; für diesen lokalen Testnachtrag existiert noch kein Remote-CI-Lauf.
+Kein Push, weiterer Merge oder Deployment durch den Agenten.
+
+## Weitere Gefechtspakete ab `3e42deb`
+
+Der Auftrag vom 4. Oktober 2026 führt die sechs neuen Themen nacheinander in
+eigenen Commits aus. [Paketplan und Grenzen](gefecht_folgepakete_plan.md).
+Paket 1 ergänzt optionales Zielen mit 0–4 Punkten, separat bezahlter Zielzeit
+und unveränderten FK-Ansage-/Gezielter-Schuss-Zuschlägen. Die weiter oben
+genannten manuellen Grenzen beziehen sich auf die jeweiligen historischen
+Abnahmestände; die folgenden Pakete ändern sie nur ausdrücklich und belegt.
+
+Paket 1 ist lokal abgeschlossen: Analyse ohne Befund, zehn Zielregeltests,
+Zahlungs-/Schussabläufe und Dialoglayout grün; vollständige Suite 3394 bestanden,
+drei bestehende Ausnahmen. Formatprüfung (1002 Dateien), CI-Screen-LOC und
+Gefechts-LOC bestehen. Die unveränderte breite UI2-LOC-Überschreitung des
+Abenteuerblatts (803 Zeilen) bleibt offen. Der abschließende Gesamtlauf verwendet
+einen eigenen Regelindex-Cache und keine parallelen Testdateien, nachdem ein
+paralleler Wiederholungslauf an einer gemeinsam gesperrten Cachedatei scheiterte.
+Unabhängiges Review ohne schwerwiegenden Befund, beide kleinen Hinweise umgesetzt.
+Die Änderungen sind im separaten Worktree `gefecht-folgepakete`; Nutzernotizen und
+Inventarisierung im ursprünglichen Checkout bleiben erhalten und außerhalb des
+Commits. Der oben belegte Remote-CI-Stand nach PR #208 ist weiterhin der zuletzt
+geprüfte veröffentlichte Stand; für Paket 1 gibt es keinen neuen Remote-Lauf.
+Kein Push, Merge oder Deployment. Die Pakete 2–6 sind noch nicht abgeschlossen.
+
+## Ansagefolgemalus: weiteres Paket 2 (5. Oktober 2026)
+
+Der bestätigte Umfang ist umgesetzt: gebuchte misslungene unterstützte Nahkampf-
+Ansagen setzen ihren eigenen flüchtigen Folgemalus. Er wirkt auf freie und
+Fachproben, endet nach der nächsten tatsächlichen AT/PA oder abgeschlossenem
+Orientieren und wird bei einer neuen Fehlansage anschließend neu gesetzt.
+Klingentänzer halbiert nach bestehender Aktivprüfung aufgerundet. Abbruch erhält
+Malus und Budget, Doppelcallback bucht und entfernt nur einmal. Schadenswürfe
+und unbelegte FK-Sonderfolgen bleiben getrennt; bisher gesperrte mehrteilige
+manuelle AT/PA werden nicht neu freigegeben.
+
+Elf neue Regeltests und der echte Fehl-AT-/freie-Ausweichprobe-/PA-Pfad sind grün,
+insgesamt 51 relevante Tests. Analyse ohne Befund, vollständige Suite 3406 bestanden,
+drei bestehende Ausnahmen, Format über 1004 Dateien ohne Änderung. CI-Screen-LOC,
+Gefechts-LOC und Widgettest-LOC bestehen. Das unveränderte Abenteuerblatt mit 803
+Zeilen bleibt außerhalb dieses Pakets. Der erste Gesamtlauf fand eine verletzte
+bestehende Identitätsprüfung beim Orientieren ohne Malus; nach gezielter Korrektur
+und erfolgreichen betroffenen Tests besteht die vollständige Wiederholung.
+Unabhängiges Review ohne offene Laufzeitbefunde, betroffene Anleitungen geprüft.
+
+Nur lokale Prüfungen: kein neuer Remote-CI-Lauf, Push, Merge oder Deployment.
+Nutzernotizen und parallele Inventarisierung im ursprünglichen Checkout bleiben
+unverändert und außerhalb des Gefechtscommits. Die bisherigen Prüfergebnisse
+oben bleiben historische Nachweise. Die Pakete 3–6 sind noch nicht abgeschlossen.

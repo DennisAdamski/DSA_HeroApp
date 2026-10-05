@@ -136,7 +136,11 @@ Future<void> fuehreOrientierungFort({
         context: context,
         ref: ref,
         heroId: heroId,
-        request: gefechtsProbeMitBonus(plan.probe!, s.mirakelbonus),
+        request: gefechtsProbeMitBonus(
+          plan.probe!,
+          s.mirakelbonus,
+          ansageFolgemalus: s.ansageFolgemalus,
+        ),
         onResolved: (r) {
           if (ref.read(gefechtProvider(heroId))?.auftrag != id) return;
           buchen(r.success);

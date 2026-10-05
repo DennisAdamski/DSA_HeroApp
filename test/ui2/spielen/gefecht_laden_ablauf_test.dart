@@ -15,6 +15,7 @@ import 'package:dsa_heldenverwaltung/ui2/gefecht/gefecht_ansicht.dart';
 
 import '../../rules/gefecht_laden_rules_test.dart' as fixture;
 import '../../rules/gefecht_laden_review_test.dart' as review;
+import '../../rules/gefecht_zielen_rules_test.dart' as optional;
 import '../shell/karto_test_support.dart';
 import 'gefecht_test_support.dart';
 
@@ -89,6 +90,90 @@ Future<ProviderContainer> _oeffnen(
 }
 
 void main() {
+  testWidgets(
+    'Optionales Zielen ohne Ansage zahlt, erhält Probeabbruch und schießt einmal',
+    (t) async {
+      final b = _Munition(fixture.ladeSnapshot())
+        ..fehler = false
+        ..w20Wert = 1;
+      final c = await _oeffnen(t, b, geladen: true);
+      final ctl = c.read(gefechtProvider('rondra').notifier);
+      ctl.setzen(
+        c
+            .read(gefechtProvider('rondra'))!
+            .copyWith(
+              kontext: const Gefechtskontext(
+                kontakt: 'Ork',
+                entfernung: 20,
+                geladen: true,
+                situationsZuschlag: 0,
+              ),
+            ),
+      );
+      await t.pumpAndSettle();
+      await t.tap(find.text('Angreifen'));
+      await t.pumpAndSettle();
+      final feld = find.byKey(const ValueKey('gefecht-optionales-zielen'));
+      expect(feld, findsOneWidget);
+      await t.enterText(feld, '2');
+      await t.pumpAndSettle();
+      expect(find.text('Zielen beginnen'), findsOneWidget);
+      await t.tap(find.byKey(const ValueKey('gefecht-auftrag-starten')));
+      await t.pumpAndSettle();
+      expect(c.read(gefechtProvider('rondra'))!.handlung!.verbleibend, 3);
+      expect(b.anfragen, isEmpty);
+      for (var i = 0; i < 3; i++) {
+        final s = c.read(gefechtProvider('rondra'))!;
+        if (s.angriffeVerbraucht + s.paradenVerbraucht == 2) {
+          ctl.setzen(naechsteGefechtsrunde(s));
+          await t.pumpAndSettle();
+        }
+        await t.ensureVisible(find.text('Fortsetzen'));
+        await t.tap(find.text('Fortsetzen'));
+        await t.pumpAndSettle();
+      }
+      final bezahlt = c.read(gefechtProvider('rondra'))!;
+      expect(bezahlt.zielstand!.bezahlteAktionen, 4);
+      expect(bezahlt.zielstand!.ansage, 0);
+      ctl.setzen(naechsteGefechtsrunde(bezahlt));
+      await t.pumpAndSettle();
+      b.abbrechen = true;
+      await t.ensureVisible(find.text('Schuss ausführen'));
+      await t.tap(find.text('Schuss ausführen'));
+      await t.pumpAndSettle();
+      final abgebrochen = c.read(gefechtProvider('rondra'))!;
+      expect(abgebrochen.zielstand!.bezahlteAktionen, 4);
+      expect(abgebrochen.angriffeVerbraucht, 0);
+      expect(abgebrochen.handlung, isNotNull);
+      expect(b.uebernahmen, 0);
+      b.abbrechen = false;
+      b.doppelt = true;
+      await t.tap(find.text('Schuss ausführen'));
+      await t.pumpAndSettle();
+      final fertig = c.read(gefechtProvider('rondra'))!;
+      expect(fertig.angriffeVerbraucht, 1);
+      expect(fertig.zielstand, isNull);
+      expect(fertig.handlung, isNull);
+      expect(b.anfragen, hasLength(2));
+      expect(
+        b.anfragen.last.targets.single.value,
+        b.aktuell.combatPreviewStats.at - 2,
+      );
+      expect(b.uebernahmen, 1);
+      expect(
+        b
+            .aktuell
+            .hero
+            .combatConfig
+            .selectedWeapon
+            .rangedProfile
+            .selectedProjectileOrNull!
+            .count,
+        4,
+      );
+      expect(t.takeException(), isNull);
+    },
+  );
   testWidgets(
     'I2 frische Dialogbestätigung schießt nur das aktuelle Geschoss',
     (t) async {
@@ -504,30 +589,33 @@ void main() {
       expect(t.takeException(), isNull);
     },
   );
-  testWidgets('Abbruch verwirft Zielzahlung und erstattet keine Marken', (
-    t,
-  ) async {
-    final b = _Munition(fixture.ladeSnapshot());
-    final c = await _oeffnen(t, b, geladen: true);
-    final ctl = c.read(gefechtProvider('rondra').notifier);
-    ctl.setzen(
-      beginneGefechtsZielen(
-        c.read(gefechtProvider('rondra'))!,
-        b.aktuell,
-        testCatalog,
-        fixture.zielauftrag,
-      ),
+  for (final optionalesZielen in [false, true]) {
+    testWidgets(
+      'Abbruch verwirft Zielzahlung und erstattet keine Marken optional=$optionalesZielen',
+      (t) async {
+        final b = _Munition(fixture.ladeSnapshot());
+        final c = await _oeffnen(t, b, geladen: true);
+        final ctl = c.read(gefechtProvider('rondra').notifier);
+        ctl.setzen(
+          beginneGefechtsZielen(
+            c.read(gefechtProvider('rondra'))!,
+            b.aktuell,
+            testCatalog,
+            optionalesZielen ? optional.zielauftrag() : fixture.zielauftrag,
+          ),
+        );
+        await t.pumpAndSettle();
+        await t.ensureVisible(find.text('Handlung abbrechen'));
+        await t.tap(find.text('Handlung abbrechen'));
+        await t.pumpAndSettle();
+        await t.tap(find.text('Abbruch bestätigen'));
+        await t.pumpAndSettle();
+        final s = c.read(gefechtProvider('rondra'))!;
+        expect(s.handlung, isNull);
+        expect(s.zielstand, isNull);
+        expect(s.angriffeVerbraucht, 1);
+        expect(b.anfragen, isEmpty);
+      },
     );
-    await t.pumpAndSettle();
-    await t.ensureVisible(find.text('Handlung abbrechen'));
-    await t.tap(find.text('Handlung abbrechen'));
-    await t.pumpAndSettle();
-    await t.tap(find.text('Abbruch bestätigen'));
-    await t.pumpAndSettle();
-    final s = c.read(gefechtProvider('rondra'))!;
-    expect(s.handlung, isNull);
-    expect(s.zielstand, isNull);
-    expect(s.angriffeVerbraucht, 1);
-    expect(b.anfragen, isEmpty);
-  });
+  }
 }

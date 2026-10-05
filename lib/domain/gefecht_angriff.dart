@@ -37,12 +37,16 @@ class Gefechtszielstand {
     required this.zielkontakt,
     required this.ansage,
     required this.bezahlteAktionen,
+    this.zielErleichterung = 0,
     this.geschossId = '',
     this.waffenprofilKey = '',
   });
   final GefechtsKampfmittelwahl kampfmittel;
   final String zielkontakt;
   final int ansage, bezahlteAktionen;
+
+  /// Separate Wahl für optionales Zielen, keine Reduktion der TP-Ansage.
+  final int zielErleichterung;
 
   /// Geschosswechsel und geänderte Profile verwerfen die alte Zielzahlung.
   final String geschossId, waffenprofilKey;

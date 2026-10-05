@@ -13,6 +13,7 @@ import 'gefecht_held_rules.dart';
 import 'gefecht_kampfmittel_rules.dart';
 import 'gefecht_rules.dart';
 import 'gefecht_ladezustand_rules.dart';
+import 'gefecht_zielen_rules.dart';
 
 export 'gefecht_ladezustand_rules.dart';
 
@@ -64,13 +65,19 @@ int _ladezeit(HeroComputedSnapshot snap, GefechtsKampfmittelwahl wahl) =>
 /// Die Zusatzzeit folgt derselben Ansageregel wie die Schussfreigabe.
 int gefechtsZieldauer(HeroComputedSnapshot snap, GefechtAuftrag a) {
   final w = gefechtswerteFuer(snap, kampfmittel: a.kampfmittel);
-  return gefechtsFernkampfansage(
+  final ansage = gefechtsFernkampfansage(
     a.fernkampfansage,
     taw: snap.hero.talents[w.waffe?.talentId]?.talentValue ?? 0,
     fk: w.at,
     scharfschuetze: w.scharfschuetze,
     meisterschuetze: w.meisterschuetze,
   ).zielaktionen;
+  final optional = gefechtsOptionaleZieldauer(
+    a.zielErleichterung,
+    scharfschuetze: w.scharfschuetze,
+    meisterschuetze: w.meisterschuetze,
+  );
+  return ansage + optional;
 }
 
 /// Prüft nur den Beginn bezahlten Zielens; dieser Nachweis erlaubt keinen Schuss.
@@ -88,6 +95,7 @@ Gefechtspruefung pruefeGefechtsZielbeginn(
           kampfmittel: wahl,
           zielkontakt: a.kontext?.kontakt ?? s.kontext.kontakt,
           ansage: a.fernkampfansage,
+          zielErleichterung: a.zielErleichterung,
           bezahlteAktionen: gefechtsZieldauer(snap, a),
           geschossId: w.rangedProfile.selectedProjectileOrNull?.id ?? '',
           waffenprofilKey: gefechtsZielprofilKey(w),
@@ -104,13 +112,15 @@ Gefechtspruefung pruefeGefechtsZielbeginn(
     gefechtswerteFuer(snap, kampfmittel: wahl),
     kosten: 1,
   );
+  final ohneZielwahl = a.fernkampfansage <= 0 && a.zielErleichterung <= 0;
   final gruende = [
     ...p.sperrgruende,
     ...p.fehlendeAngaben,
     ...p.entscheidungen,
     ...zahlen.sperrgruende,
-    if (a.fernkampfansage <= 0)
-      'Positive Fernkampfansage für Zusatz-Zielen erforderlich.',
+    if (ohneZielwahl)
+      'Positive Fernkampfansage oder optionale Erleichterung '
+          'für Zielen erforderlich.',
     if (wahl != null) ..._profilgruende(snap, wahl),
   ];
   return Gefechtspruefung(
@@ -277,6 +287,7 @@ Gefechtszustand bezahleGefechtsVorbereitung(
           kampfmittel: v.kampfmittel,
           zielkontakt: v.schussauftrag!.kontext!.kontakt,
           ansage: v.schussauftrag!.fernkampfansage,
+          zielErleichterung: v.schussauftrag!.zielErleichterung,
           bezahlteAktionen: bezahlt,
           geschossId: v.geschossId,
           waffenprofilKey: v.waffenprofilKey,
@@ -343,6 +354,7 @@ GefechtAuftrag gefechtsAktuellerZielauftrag(Gefechtszustand s) {
     finte: a.finte,
     wuchtschlag: a.wuchtschlag,
     fernkampfansage: a.fernkampfansage,
+    zielErleichterung: a.zielErleichterung,
     meisterparadeAnsage: a.meisterparadeAnsage,
     schildAnsagegrenze: a.schildAnsagegrenze,
     manuelleKampfaktion: a.manuelleKampfaktion,

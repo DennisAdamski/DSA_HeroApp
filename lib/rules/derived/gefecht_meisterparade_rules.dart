@@ -5,7 +5,8 @@ import 'package:dsa_heldenverwaltung/domain/gefecht_kontext.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 
 import 'combat_special_ability_state.dart';
-import 'excel_rounding.dart';
+import 'gefecht_ansagefolge_rules.dart';
+import 'gefecht_held_rules.dart';
 import 'gefecht_kampfmittel_rules.dart';
 import 'maneuver_rules.dart';
 
@@ -182,23 +183,21 @@ int gefechtsMeisterparadeBonusNachBuchung(
       : rest;
 }
 
-/// WdS 59/69: konkrete manuelle Fehlmanöverfolge ohne globale Malusautomation.
+/// WdS 60/69: automatischer eigener Folgemalus, gegnerische Trefferfolgen manuell.
 String gefechtsMeisterparadeFehlschlag(
   GefechtAuftrag a,
   HeroComputedSnapshot snap,
 ) {
   final gesamt = a.meisterparadeAnsage;
-  final halbiert = isCombatSpecialAbilityActive(
-    snap.hero.combatConfig,
-    'ksf_klingentaenzer',
-  );
-  final malus = halbiert ? excelRound(gesamt / 2) : gesamt;
+  final halbiert = gefechtswerteFuer(snap).klingentaenzerAktiv;
+  final malus = gefechtsAnsageFehlmalus(snap, a);
   final halbierung = halbiert
       ? ' (Klingentänzer: halbe Ansage, aufgerundet)'
       : '';
   return 'Meisterparade mit Ansage +$gesamt misslungen: Der Angriff trifft. '
       'Kein Erfolgsbonus. Folgemalus +$malus$halbierung '
-      'manuell auf alle Proben, einschließlich freier Aktionen, bis einschließlich '
-      'der nächsten eigenen AT oder PA anwenden. Orientieren beendet den Malus. '
+      'wird automatisch auf Gefechtsproben, einschließlich freier Aktionen, '
+      'bis einschließlich der nächsten eigenen AT oder PA angewandt. '
+      'Orientieren beendet den Malus. '
       'Weitere Folgen des gegnerischen Treffers am Tisch abwickeln (WdS 59/69).';
 }
