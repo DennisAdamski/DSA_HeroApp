@@ -37,7 +37,7 @@ class _WirkdialogState extends State<GefechtWirkdialog> {
   Gefechtshandlungsart _art = Gefechtshandlungsart.zauber;
   String? _rep;
   int _grad = 1, _mirakelklasse = 0;
-  bool _bestaetigt = false, _neueSr = false, _endprobe = false;
+  bool _neueSr = false, _endprobe = false;
   @override
   void initState() {
     super.initState();
@@ -77,11 +77,8 @@ class _WirkdialogState extends State<GefechtWirkdialog> {
     super.dispose();
   }
 
-  // Jede Änderung verwirft die bisherige Bestätigung.
-  void _aendern(VoidCallback aenderung) => setState(() {
-    aenderung();
-    _bestaetigt = false;
-  });
+  // Jede Änderung baut Freigabe und Vorschau neu auf.
+  void _aendern(VoidCallback aenderung) => setState(aenderung);
   @override
   Widget build(BuildContext context) {
     final karmal = widget.zauber == null;
@@ -312,18 +309,15 @@ class _WirkdialogState extends State<GefechtWirkdialog> {
               Text(
                 'Fehlversuch: ${fehl ?? standardFehl ?? 'bestätigen'} ${karmal ? 'KaP' : 'AsP'}',
               ),
-              CheckboxListTile(
-                value: _bestaetigt,
-                title: const Text(
-                  'Dauer, Ziel, Modifikatoren, Kosten und Folgen geprüft',
+              // Der Startknopf ist die Bestätigung; die Sonderfälle bleiben
+              // als Hinweis sichtbar statt als Pflichthaken.
+              const Padding(
+                padding: EdgeInsets.only(top: 8),
+                child: Text(
+                  'Repräsentationsausnahmen, Störungen, Patzer und permanente '
+                  'Kosten gezielt am Tisch prüfen. Angebrochene halbe '
+                  'Zauberaktionen: aufrunden (App).',
                 ),
-                subtitle: const Text(
-                  'Repräsentationsausnahmen, Störungen, Patzer und permanente Kosten '
-                  'gezielt manuell prüfen. Angebrochene halbe Zauberaktionen: aufrunden (App).',
-                ),
-                onChanged: (v) => setState(() {
-                  _bestaetigt = v!;
-                }),
               ),
             ],
           ),
@@ -337,7 +331,6 @@ class _WirkdialogState extends State<GefechtWirkdialog> {
         FilledButton(
           onPressed:
               gueltig &&
-                  _bestaetigt &&
                   (!gefechtsFremdprofilUnterstuetzt(widget.zauber?.id ?? '') ||
                       fehl != null)
               ? () => Navigator.pop(context, (

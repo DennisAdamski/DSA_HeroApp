@@ -72,7 +72,9 @@ void main() {
           final start = tester.widget<FilledButton>(
             find.widgetWithText(FilledButton, 'Wirken beginnen'),
           );
-          expect(start.onPressed, isNull);
+          // Eindeutige Katalogwerte füllen Dauer und Kosten vor; der Zauber
+          // ist ohne Pflichthaken startbereit, die Liturgie braucht Angaben.
+          expect(start.onPressed, karma ? isNull : isNotNull);
           final textfelder = find.byType(TextField);
           await tester.ensureVisible(textfelder.last);
           await tester.enterText(textfelder.last, '-1');

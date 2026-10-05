@@ -12,6 +12,7 @@ import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_ablauf_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_held_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_wirken_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/gefecht_magie_rules.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_gefechts_adapter.dart';
 
 import 'gefecht_wirkdialog.dart';
@@ -64,12 +65,20 @@ Future<void> zeigeGefechtsWirken({
     throw StateError('Held inzwischen geändert; Wirkprofil erneut bestätigen.');
   }
   // Die angegebene Zahl aufrechterhaltener Zauber gilt für das ganze Gefecht.
+  // Der begonnene Zauber steht danach oben in der Liste.
   final aufrecht = profil.$2.aufrechterhalteneZauber;
   final aktuell = ref.read(gefechtMitInitiativeProvider(heroId));
-  if (aufrecht != null && aktuell != null && aktuell.auftrag == null) {
+  if (aktuell != null && aktuell.auftrag == null) {
     ref
         .read(gefechtProvider(heroId).notifier)
-        .setzen(aktuell.copyWith(aufrechterhalteneZauber: aufrecht));
+        .setzen(
+          aktuell.copyWith(
+            aufrechterhalteneZauber: aufrecht,
+            zuletztGewirkt: zauber == null
+                ? null
+                : gefechtsZuletztGewirkt(aktuell.zuletztGewirkt, zauber.id),
+          ),
+        );
   }
   await starteGefechtsWirken(
     context: context,
