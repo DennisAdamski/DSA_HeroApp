@@ -13,12 +13,16 @@ import 'package:dsa_heldenverwaltung/ui/screens/shared/zustand_aendern.dart';
 enum ResourceType { lep, au, asp, kap }
 
 /// Zeigt einen kompakten Stepper-Dialog zum Anpassen einer Ressource.
+///
+/// [onAbschlussUebernehmen] bekommt den Kontext des Blatts, damit ein
+/// Speicherfehler in dessen [ZustandFehlerAnzeige] erscheint und nicht im
+/// darunterliegenden, verdeckten Dialog.
 Future<void> showResourceStepperDialog({
   required BuildContext context,
   required String heroId,
   required ResourceType resource,
   int? abschlussKosten,
-  Future<bool> Function()? onAbschlussUebernehmen,
+  Future<bool> Function(BuildContext blatt)? onAbschlussUebernehmen,
 }) {
   return showAdaptiveDetailSheet<void>(
     context: context,
@@ -44,7 +48,7 @@ class _ResourceStepperDialog extends ConsumerWidget {
   final String heroId;
   final ResourceType resource;
   final int? abschlussKosten;
-  final Future<bool> Function()? onAbschlussUebernehmen;
+  final Future<bool> Function(BuildContext blatt)? onAbschlussUebernehmen;
 
   String get _label => switch (resource) {
     ResourceType.lep => 'LeP',
@@ -133,7 +137,7 @@ class _ResourceStepperDialog extends ConsumerWidget {
                 onPressed: onAbschlussUebernehmen == null
                     ? null
                     : () async {
-                        final ok = await onAbschlussUebernehmen!();
+                        final ok = await onAbschlussUebernehmen!(context);
                         if (ok && context.mounted) Navigator.pop(context);
                       },
                 child: const Text('Abschlusskosten übernehmen'),

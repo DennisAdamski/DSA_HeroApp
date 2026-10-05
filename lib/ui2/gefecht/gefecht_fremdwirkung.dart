@@ -29,6 +29,7 @@ Future<GefechtsFremdwirkung?> zeigeGefechtsFremdziel({
               children: [
                 DropdownButtonFormField<String>(
                   initialValue: id,
+                  isExpanded: true,
                   decoration: const InputDecoration(
                     labelText: 'Ursprüngliches Ziel',
                   ),
@@ -36,7 +37,10 @@ Future<GefechtsFremdwirkung?> zeigeGefechtsFremdziel({
                     for (final g in gegner)
                       DropdownMenuItem(
                         value: g.id,
-                        child: Text('${g.name} · ${g.lep} LeP'),
+                        child: Text(
+                          '${g.name} · ${g.lep} LeP',
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
                   ],
                   onChanged: (value) => setState(() {
@@ -142,22 +146,24 @@ Future<GefechtsFremdwirkungswurf?> zeigeGefechtsFremdwirkungswurf({
           title: const Text('Fulminictus · Schadenswurf'),
           content: SizedBox(
             width: 420,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Text(
-                  'Ursprüngliche Probe: ${probe.remainingPool} ZfP*. '
-                  'Zwei W6 am Spieltisch würfeln und eintragen.',
-                ),
-                wuerfel('Erster W6', erster, (v) => erster = v),
-                wuerfel('Zweiter W6', zweiter, (v) => zweiter = v),
-                if (wurf != null)
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
                   Text(
-                    '${wurf.schaden} direkte SP · '
-                    '${wurf.kosten} AsP. Auf die Startenergie begrenzt.',
+                    'Ursprüngliche Probe: ${probe.remainingPool} ZfP*. '
+                    'Zwei W6 am Spieltisch würfeln und eintragen.',
                   ),
-              ],
+                  wuerfel('Erster W6', erster, (v) => erster = v),
+                  wuerfel('Zweiter W6', zweiter, (v) => zweiter = v),
+                  if (wurf != null)
+                    Text(
+                      '${wurf.schaden} direkte SP · '
+                      '${wurf.kosten} AsP. Auf die Startenergie begrenzt.',
+                    ),
+                ],
+              ),
             ),
           ),
           actions: [

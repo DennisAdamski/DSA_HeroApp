@@ -117,4 +117,31 @@ void main() {
     final mitDk = wechsleGefechtskontakt(s, 'Wolf', startDk: 'N');
     expect(mitDk.dk, 'N');
   });
+
+  // Review R8: leere oder kleingeschriebene Waffen-DK darf die vorbelegte
+  // Start-DK nicht dauerhaft als „Angabe fehlt“ melden.
+  for (final waffenDk in ['', 'ns', ' n ']) {
+    test('Waffen-DK "$waffenDk" mit Sitzungs-DK N fehlt nicht', () {
+      const s = Gefechtszustand(iniWurf: 6, dk: 'N');
+      final k = pruefeGefechtskontext(s, Gefechtsaktion.angriff, waffenDk);
+      expect(k.fehlend, isEmpty);
+      expect(k.sperren, isEmpty);
+      expect(gefechtsDkDifferenz(waffenDk, 'N'), 0);
+    });
+  }
+  test('Unbekannte Waffen-DK gilt als Nahkampf und bleibt sichtbar', () {
+    const ohneDk = Gefechtswerte(
+      iniBasis: 10,
+      at: 15,
+      pa: 14,
+      ausweichen: 12,
+      waffenDk: '',
+    );
+    const s = Gefechtszustand(iniWurf: 6, dk: 'N');
+    final p = pruefeGefechtsaktion(s, ohneDk, Gefechtsaktion.angriff);
+    expect(p.fehlendeAngaben, isEmpty);
+    expect(p.hinweise, contains('Waffen-DK unbekannt, Nahkampf angenommen.'));
+    expect(gefechtsDkDifferenz('ns', 'S'), 0);
+    expect(gefechtsDkDifferenz('', 'S'), -1);
+  });
 }

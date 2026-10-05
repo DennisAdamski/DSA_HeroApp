@@ -286,62 +286,67 @@ class GefechtRundenleiste extends StatelessWidget {
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
           title: const Text('Manuelle Korrektur'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text(
-                'Korrigiert eine Fehleingabe; ersetzt keine zulässige neue Ansage.',
-              ),
-              Text(
-                'Kampfverluste: ${zustand.iniVerlust}; geschützt: ${zustand.geschuetzterIniVerlust}',
-              ),
-              DropdownButton<IniVerlustart>(
-                value: art,
-                items: [
-                  for (final a in IniVerlustart.values)
-                    DropdownMenuItem(
-                      value: a,
-                      child: Text(switch (a) {
-                        IniVerlustart.kampf => 'Kampfverlust (rückgewinnbar)',
-                        IniVerlustart.geschuetzt => 'Geschützter Verlust',
-                        IniVerlustart.ungeklaert => 'Ungeklärter Verlust',
-                      }),
-                    ),
-                ],
-                onChanged: (v) => setState(() {
-                  art = v!;
-                }),
-              ),
-              TextField(
-                controller: wurf,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: 'INI-Wurf einschließlich Orientierungsbonus',
+          // Schmale Telefone: lange Auswahltexte kürzen, Inhalt scrollt.
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'Korrigiert eine Fehleingabe; ersetzt keine zulässige neue Ansage.',
                 ),
-              ),
-              TextField(
-                controller: verlust,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: 'INI-Verlust'),
-              ),
-              DropdownButton<Gefechtsumwandlung>(
-                value: u,
-                items: [
-                  for (final v in Gefechtsumwandlung.values)
-                    DropdownMenuItem(
-                      value: v,
-                      child: Text(switch (v) {
-                        Gefechtsumwandlung.normal => 'AT + PA',
-                        Gefechtsumwandlung.zweiteAttacke => '2 AT',
-                        Gefechtsumwandlung.zweiteParade => '2 PA',
-                      }),
-                    ),
-                ],
-                onChanged: (v) => setState(() {
-                  u = v!;
-                }),
-              ),
-            ],
+                Text(
+                  'Kampfverluste: ${zustand.iniVerlust}; geschützt: ${zustand.geschuetzterIniVerlust}',
+                ),
+                DropdownButton<IniVerlustart>(
+                  value: art,
+                  isExpanded: true,
+                  items: [
+                    for (final a in IniVerlustart.values)
+                      DropdownMenuItem(
+                        value: a,
+                        child: Text(switch (a) {
+                          IniVerlustart.kampf => 'Kampfverlust (rückgewinnbar)',
+                          IniVerlustart.geschuetzt => 'Geschützter Verlust',
+                          IniVerlustart.ungeklaert => 'Ungeklärter Verlust',
+                        }),
+                      ),
+                  ],
+                  onChanged: (v) => setState(() {
+                    art = v!;
+                  }),
+                ),
+                TextField(
+                  controller: wurf,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: 'INI-Wurf einschließlich Orientierungsbonus',
+                  ),
+                ),
+                TextField(
+                  controller: verlust,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(labelText: 'INI-Verlust'),
+                ),
+                DropdownButton<Gefechtsumwandlung>(
+                  value: u,
+                  isExpanded: true,
+                  items: [
+                    for (final v in Gefechtsumwandlung.values)
+                      DropdownMenuItem(
+                        value: v,
+                        child: Text(switch (v) {
+                          Gefechtsumwandlung.normal => 'AT + PA',
+                          Gefechtsumwandlung.zweiteAttacke => '2 AT',
+                          Gefechtsumwandlung.zweiteParade => '2 PA',
+                        }),
+                      ),
+                  ],
+                  onChanged: (v) => setState(() {
+                    u = v!;
+                  }),
+                ),
+              ],
+            ),
           ),
           actions: [
             TextButton(

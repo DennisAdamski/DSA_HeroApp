@@ -47,6 +47,15 @@ Future<void> zeigeGefechtsInventar({
   final s = ref.read(gefechtMitInitiativeProvider(heroId));
   if (s == null) return;
   final w = gefechtswerteFuer(snapshot, katalog: katalog);
+  // Freie Aktion oder erste reguläre Aktion; die FF-Probe ändert nur die
+  // Restdauer, nie diese Art. Gesperrt wird deshalb vor dem Würfeln.
+  Gefechtspruefung pruefung(Gefechtszustand z, int dauer) => dauer == 0
+      ? pruefeGefechtsaktion(z, w, Gefechtsaktion.freieAktion)
+      : pruefeManuelleGefechtsaktion(z, w, kosten: 1);
+  final vorher = pruefung(s, gefechtsBenutzungsdauer(ort));
+  if (vorher.status == Gefechtsfreigabe.gesperrt) {
+    throw StateError(vorher.gruende.join(' '));
+  }
   var ffGelungen = false;
   if (ffProbe) {
     final ff = readAttributeValue(
@@ -67,10 +76,9 @@ Future<void> zeigeGefechtsInventar({
     ffGelungen = r.success;
   }
   final dauer = gefechtsBenutzungsdauer(ort, ffGelungen: ffGelungen);
-  final frisch = ref.read(gefechtMitInitiativeProvider(heroId))!;
-  final p = dauer == 0
-      ? pruefeGefechtsaktion(frisch, w, Gefechtsaktion.freieAktion)
-      : pruefeManuelleGefechtsaktion(frisch, w, kosten: 1);
+  final frisch = ref.read(gefechtMitInitiativeProvider(heroId));
+  if (frisch == null) return;
+  final p = pruefung(frisch, dauer);
   if (p.status == Gefechtsfreigabe.gesperrt) {
     throw StateError(p.gruende.join(' '));
   }
@@ -161,7 +169,10 @@ class _Inventarliste extends StatelessWidget {
   Widget build(BuildContext context) {
     final texte = Theme.of(context).textTheme;
     final gruppen = <GefechtsInventargruppe, List<GefechtsInventarposten>>{};
+    // Gleichnamige Gegenstände sind häufig; der Schlüssel folgt der Position.
+    final nummer = <GefechtsInventarposten, int>{};
     for (final p in posten) {
+      nummer[p] = nummer.length;
       (gruppen[p.gruppe] ??= []).add(p);
     }
     return Dialog(
@@ -193,7 +204,8 @@ class _Inventarliste extends StatelessWidget {
                                 style: texte.titleSmall,
                               ),
                             ),
-                            for (final p in g.value) _zeile(context, p),
+                            for (final p in g.value)
+                              _zeile(context, p, nummer[p]!),
                           ],
                         ],
                       ),
@@ -216,7 +228,7 @@ class _Inventarliste extends StatelessWidget {
   }
 
   // Name, Menge und Ort; Begleitergepäck nennt den Träger.
-  Widget _zeile(BuildContext context, GefechtsInventarposten p) {
+  Widget _zeile(BuildContext context, GefechtsInventarposten p, int nummer) {
     final e = p.eintrag;
     final details = [
       if (p.menge != null)
@@ -228,7 +240,7 @@ class _Inventarliste extends StatelessWidget {
       if (e.isMagisch) 'magisch',
     ].join(' · ');
     return ListTile(
-      key: ValueKey('gefecht-inventar-${e.gegenstand}'),
+      key: ValueKey('gefecht-inventar-${e.instanzId ?? nummer}'),
       title: Text(e.gegenstand.isEmpty ? 'Unbenannt' : e.gegenstand),
       subtitle: details.isEmpty ? null : Text(details),
       trailing: p.benutzbar
@@ -266,44 +278,46 @@ class _BenutzungState extends State<_Benutzung> {
       title: Text('${widget.posten.eintrag.gegenstand} benutzen'),
       content: SizedBox(
         width: 460,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Wrap(
-              spacing: 8,
-              runSpacing: 4,
-              children: [
-                for (final o in GefechtsAufbewahrung.values)
-                  ChoiceChip(
-                    key: ValueKey('gefecht-aufbewahrung-${o.name}'),
-                    label: Text(gefechtsAufbewahrungName(o)),
-                    selected: _ort == o,
-                    onSelected: (_) => setState(() => _ort = o),
-                  ),
-              ],
-            ),
-            if (halbierbar)
-              CheckboxListTile(
-                contentPadding: EdgeInsets.zero,
-                value: _ff,
-                title: const Text('FF-Probe würfeln (halbiert die Zeit)'),
-                onChanged: (v) => setState(() => _ff = v ?? false),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Wrap(
+                spacing: 8,
+                runSpacing: 4,
+                children: [
+                  for (final o in GefechtsAufbewahrung.values)
+                    ChoiceChip(
+                      key: ValueKey('gefecht-aufbewahrung-${o.name}'),
+                      label: Text(gefechtsAufbewahrungName(o)),
+                      selected: _ort == o,
+                      onSelected: (_) => setState(() => _ort = o),
+                    ),
+                ],
               ),
-            const SizedBox(height: 8),
-            Text(
-              dauer == 0
-                  ? 'Dauer: freie Aktion.'
-                  : 'Dauer: $dauer Aktion${dauer == 1 ? '' : 'en'}'
-                        '${halbierbar && _ff ? ' (bei gelungener FF-Probe halbiert)' : ''}; '
-                        'die erste wird jetzt bezahlt.',
-            ),
-            Text(
-              abbuchbar
-                  ? 'Beim Abschluss wird gefragt, ob ein Stück abgebucht wird.'
-                  : 'Menge nicht eindeutig: keine Abbuchung.',
-            ),
-          ],
+              if (halbierbar)
+                CheckboxListTile(
+                  contentPadding: EdgeInsets.zero,
+                  value: _ff,
+                  title: const Text('FF-Probe würfeln (halbiert die Zeit)'),
+                  onChanged: (v) => setState(() => _ff = v ?? false),
+                ),
+              const SizedBox(height: 8),
+              Text(
+                dauer == 0
+                    ? 'Dauer: freie Aktion.'
+                    : 'Dauer: $dauer Aktion${dauer == 1 ? '' : 'en'}'
+                          '${halbierbar && _ff ? ' (bei gelungener FF-Probe halbiert)' : ''}; '
+                          'die erste wird jetzt bezahlt.',
+              ),
+              Text(
+                abbuchbar
+                    ? 'Beim Abschluss wird gefragt, ob ein Stück abgebucht wird.'
+                    : 'Menge nicht eindeutig: keine Abbuchung.',
+              ),
+            ],
+          ),
         ),
       ),
       actions: [

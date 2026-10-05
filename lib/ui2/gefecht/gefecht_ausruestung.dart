@@ -27,6 +27,8 @@ import 'package:dsa_heldenverwaltung/rules/derived/gefecht_hand_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/combat_special_ability_state.dart';
 
+import 'gefecht_fehlertext.dart';
+
 /// Waffen und Rüstungsteile erscheinen ausschließlich in diesem Wechselpopup.
 Future<void> zeigeGefechtsausruestung({
   required BuildContext context,
@@ -66,7 +68,7 @@ class _AusruestungState extends ConsumerState<_Ausruestung> {
     } catch (e) {
       if (mounted) {
         setState(() {
-          _fehler = '$e';
+          _fehler = gefechtsFehlertext(e);
         });
       }
     } finally {

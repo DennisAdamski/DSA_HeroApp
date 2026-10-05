@@ -47,7 +47,7 @@ class _Profil extends StatelessWidget {
       if (p.lep != null) 'LeP ${p.lep}',
     ].join(' · ');
     return ExpansionTile(
-      key: ValueKey('gefecht-begleiter-${p.name}'),
+      key: ValueKey('gefecht-begleiter-${p.id}'),
       tilePadding: EdgeInsets.zero,
       childrenPadding: const EdgeInsets.only(bottom: 8),
       expandedCrossAxisAlignment: CrossAxisAlignment.start,

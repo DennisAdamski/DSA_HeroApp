@@ -29,6 +29,7 @@ class BegleiterAngriffsprofil {
 class BegleiterKampfprofil {
   /// Alle Werte sind bereits mit Steigerungen und Rüstung verrechnet.
   const BegleiterKampfprofil({
+    required this.id,
     required this.name,
     required this.typ,
     required this.ini,
@@ -43,6 +44,9 @@ class BegleiterKampfprofil {
     required this.sonderfertigkeiten,
     required this.vertrautenmagie,
   });
+
+  /// Stabile Begleiter-ID; Namen dürfen sich wiederholen.
+  final String id;
   final String name, typ;
   final int? ini, mr, lep, aup, asp;
   final int rs, be;
@@ -64,6 +68,7 @@ BegleiterKampfprofil begleiterKampfprofil(HeroCompanion c) {
     ),
   );
   return BegleiterKampfprofil(
+    id: c.id,
     name: c.name.trim().isEmpty ? 'Unbenannter Begleiter' : c.name,
     typ: c.typ.label,
     ini: companionEffektivwert(c, 'ini'),

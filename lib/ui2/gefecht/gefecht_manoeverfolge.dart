@@ -253,6 +253,7 @@ class _GegenprofilState extends State<_Gegenprofil> {
             if (widget.umreissen)
               DropdownButtonFormField<int>(
                 initialValue: 0,
+                isExpanded: true,
                 decoration: const InputDecoration(
                   labelText: 'Standvorteil des Gegners',
                 ),

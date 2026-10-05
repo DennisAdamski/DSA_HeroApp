@@ -9,10 +9,15 @@ class GefechtsKlingenteil {
     required this.dk,
     required this.zielwert,
     this.finte = 0,
+    this.erschwernis = 0,
     this.ergebnis,
   });
   final String gegnerId, dk;
   final int zielwert, finte;
+
+  /// Weitere situative Erschwernis der Aufteilung; der Probendialog sperrt
+  /// den freien Modifikator für AT/PA, das hier ist ihr einziger Ort.
+  final int erschwernis;
   final ProbeResult? ergebnis;
 
   /// Einmalige Ergebnisse bleiben bei Navigation und erneutem Callback erhalten.
@@ -21,6 +26,7 @@ class GefechtsKlingenteil {
     dk: dk,
     zielwert: zielwert,
     finte: finte,
+    erschwernis: erschwernis,
     ergebnis: r,
   );
 }

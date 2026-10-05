@@ -77,7 +77,7 @@ void main() {
         gefechtsZeitsperre(s, w, Gefechtsaktion.angriff),
         contains('Spielwerte'),
       );
-      expect(() => gruppe.naechsteRunde(), throwsStateError);
+      expect(() => gruppe.naechsteRunde(vonRunde: 1), throwsStateError);
       expect(c.read(gefechtProvider('a'))!.runde, 1);
       c.read(status.notifier).state = AsyncData(snap);
       expect(
@@ -206,10 +206,10 @@ void main() {
       expect(phase, isNot(99));
       final a = c.read(gefechtProvider('a').notifier);
       expect(a.reservieren('offen'), isTrue);
-      expect(() => gruppe.naechsteRunde(), throwsStateError);
+      expect(() => gruppe.naechsteRunde(vonRunde: 1), throwsStateError);
       expect(c.read(gefechtProvider('b'))!.runde, 1);
       a.abbrechen('offen');
-      gruppe.naechsteRunde();
+      gruppe.naechsteRunde(vonRunde: 1);
       expect(c.read(gefechtProvider('a'))!.runde, 2);
       expect(c.read(gefechtProvider('b'))!.runde, 2);
       expect(c.read(gefechtMitInitiativeProvider('a'))!.initiativphase, 99);

@@ -710,3 +710,59 @@ Inventar, Begleiter, benannte Aktionen und die Layoutmatrix ab.
 Bewusst außerhalb: Gefechtspersistenz, Begleiterproben und -LeP, Rituale im
 Gefecht. Offen ohne Bedienwirkung: Verlagerung der `lib/ui`-Importe von
 `gefecht_wirkabschluss.dart` hinter die Gefechtsbrücke.
+
+## Review der Vervollständigung (6. Oktober 2026)
+
+Unabhängiges Review von `6881684^..500c5bb` (G1–G8 sowie Gegner, gemeinsame
+Initiative, Patzer und Fremdwirkung) mit den Schwerpunkten frische
+Schreibwege, doppelte Callbacks, Vorgaben statt Pflichtfelder und schmale
+Layouts. Jeder Befund wurde zuerst mit einem fehlschlagenden Regressionstest
+belegt (`test/ui2/spielen/gefecht_review_test.dart`,
+`gefecht_review_layout_test.dart`, ergänzte Regeltests) und dann behoben:
+
+- R1 Gleichnamige Begleiter oder Inventareinträge stürzten mit doppelten
+  Widget-Keys ab; Keys folgen jetzt Begleiter-ID bzw. Instanz/Position.
+- R2 „Gegenstand benutzen“ würfelte die FF-Probe vor der Budgetprüfung;
+  gesperrte Benutzungen würfeln jetzt nichts.
+- R3 Gegner- und Initiativkarte laufen über den gemeinsamen Guard `_run`
+  (`onAktion`): Fehler erscheinen im Gefechtshinweis statt als Snackbar.
+  Der gemeinsame Rundenwechsel nimmt die angezeigte Runde
+  (`naechsteRunde(vonRunde:)`), ein Doppeltipp rückt nicht zwei Runden vor.
+- R4 Der Gefechtshinweis zeigt fachliche Gründe ohne „Bad state:“
+  (`gefecht_fehlertext.dart`, auch Ausrüstung und Klingen-Aufteilung).
+- R5 Klingenwand/-sturm: Die G2-Modifikatorsperre ließ keinen Ort für eine
+  situative Erschwernis; die Aufteilung hat jetzt „Weitere Erschwernis“, die
+  jede Teilprobe trägt.
+- R6 Die Aufteilung folgt den Vorgaben (Nutzerentscheidung): Sitzungs-DK je
+  Teil als DK-Chips, Gegner vorbelegt (aktuelles Ziel zuerst,
+  `gefechtsKlingenVorgaben`), gewöhnlicher Nahkampfangriff angehakt. Dabei
+  fiel auf, dass die Dialog-Controller schon während der Schließanimation
+  entsorgt wurden; sie werden jetzt danach freigegeben.
+- R7 Der Klingen-Knopf zeigte „Klären“ ohne Grund; Hinweise werden
+  weitergereicht und ergeben allein „Bereit“.
+- R8 Leere oder kleingeschriebene Waffen-DK (Katalog: Gruufhai,
+  improvisierter Ast) meldete dauerhaft „Angabe fehlt“. `gefechtsDkDifferenz`
+  normalisiert jetzt; eine leere Waffen-DK gilt wie die Start-DK als Nahkampf
+  und erscheint als Hinweis „Waffen-DK unbekannt, Nahkampf angenommen.“
+  (Nutzerentscheidung).
+- R9 Die Schnellleiste zeigte den Zielwert auch bei „Angabe fehlt“/„Klären“;
+  sie zeigt jetzt denselben Status wie der Aktionsknopf.
+- R10 „Sich zu Boden werfen“: Ein abgebrochener W6 buchte Aktion und 0
+  Verlust; Abbruch bucht jetzt nichts.
+- R11 Fehler beim Übernehmen der Abschlusskosten erschienen im verdeckten
+  Abschlussdialog; der Ressourcendialog reicht seinen Blattkontext weiter.
+- R12 Die Zauberliste zeigte nicht aktivierte Zauber als „ZfW* 0“; sie listet
+  nur noch Zauber mit Wert.
+- R13 Bei 320 px liefen Manuelle Korrektur, Inventar-Benutzung,
+  Umreißen-Gegenprobe und beide Fulminictus-Dialoge über
+  (`isExpanded`, scrollbarer Inhalt).
+
+Geprüft ohne Befund: alle `onResolved`-Pfade (Flag, `abschliessen` oder
+Reservierungsprüfung), alle Held-/Zustandsschreibwege (frisch, relativ,
+Inhaltstreffer), BF-Schreibweg (Nachweis-Hash), Gegnerschaden (Buchungs-ID)
+und die Vorgaben bei Start, Kontakt-/Gegnerwechsel und Abwehrende. Ein
+Doppeltipp auf „Treffer übernehmen“ ließ sich nicht auslösen (Test bleibt als
+Absicherung). Bekanntes Restrisiko ohne heutigen Auslöser: Rundenleiste,
+Reservekarte und Störungsdialog schreiben die Sitzung aus dem beim Rendern
+erfassten Stand; modale Dialoge, `_busy` und die `setzen`-Sperre während
+eines Auftrags verhindern heute jede Zwischenänderung.

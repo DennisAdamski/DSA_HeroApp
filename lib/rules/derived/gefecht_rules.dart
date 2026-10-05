@@ -250,6 +250,9 @@ Gefechtszustand naechsteGefechtsrunde(Gefechtszustand s) {
   );
 }
 
+/// Hinweis für Waffen ohne gepflegte Distanzklasse (`gefechtsDkDifferenz`).
+const kGefechtWaffenDkAngenommen = 'Waffen-DK unbekannt, Nahkampf angenommen.';
+
 /// Prüft Budget, Haltung und bekannte Ausrüstung vor jeder Probe erneut.
 Gefechtspruefung pruefeGefechtsaktion(
   Gefechtszustand s,
@@ -371,6 +374,9 @@ Gefechtspruefung pruefeGefechtsaktion(
       a = 1;
       ziel ??= w.at;
       if (!w.waffeVorhanden) sperren.add('Keine geführte Waffe.');
+      if (w.waffeVorhanden && !w.fernkampf && w.waffenDk.trim().isEmpty) {
+        pruefen.add(kGefechtWaffenDkAngenommen);
+      }
       // Entfernung, Zielsituation, Munition und Ladung prüft
       // `pruefeGefechtsFernkampf` einzeln; ein Sammelhinweis entfällt.
       if (!w.fernkampf && s.dk == null) {
@@ -398,6 +404,12 @@ Gefechtspruefung pruefeGefechtsaktion(
       }
       if (aktion == Gefechtsaktion.parade && !w.waffeVorhanden) {
         sperren.add('Keine geführte Waffe.');
+      }
+      if (aktion == Gefechtsaktion.parade &&
+          w.waffeVorhanden &&
+          !w.fernkampf &&
+          w.waffenDk.trim().isEmpty) {
+        pruefen.add(kGefechtWaffenDkAngenommen);
       }
       if (aktion == Gefechtsaktion.parade && w.fernkampf) {
         sperren.add('Geführte Fernkampfwaffe erlaubt keine Waffenparade.');
