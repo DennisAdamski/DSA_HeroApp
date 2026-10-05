@@ -6,7 +6,9 @@ import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/app_settings.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_adventure_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_companion.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_reisebericht.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
@@ -16,6 +18,9 @@ import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_begleiter_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_combat_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_magic_tab.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_notes_tab.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_overview_tab.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_reisebericht_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_talents_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/editor_entwurf_speichern.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
@@ -51,6 +56,21 @@ const _katalog = RulesCatalog(
   ],
   spells: <SpellDef>[],
   weapons: <WeaponDef>[],
+  reisebericht: <ReiseberichtDef>[
+    ReiseberichtDef(
+      id: 'rb_ork',
+      name: 'Erster Ork',
+      kategorie: 'kampferfahrungen',
+      typ: 'checkpoint',
+      ap: 10,
+    ),
+  ],
+);
+
+const _abenteuer = HeroAdventureEntry(
+  id: 'adv_1',
+  title: 'Feuer im Nebel',
+  apReward: 40,
 );
 
 const _schwert = MainWeaponSlot(
@@ -89,6 +109,7 @@ const _held = HeroSheet(
   talents: <String, HeroTalentEntry>{'tal_a': HeroTalentEntry(talentValue: 4)},
   combatConfig: CombatConfig(weapons: <MainWeaponSlot>[_schwert]),
   companions: <HeroCompanion>[_rabe],
+  adventures: <HeroAdventureEntry>[_abenteuer],
 );
 
 typedef _Tab = Widget Function(
@@ -140,21 +161,58 @@ Widget _kampf(
   onRegisterEditActions: registriere,
 );
 
+Widget _uebersicht(
+  ValueChanged<WorkspaceTabEditActions> registriere,
+  ValueChanged<bool> bearbeitet,
+) => HeroOverviewTab(
+  heroId: 'demo',
+  onDirtyChanged: (_) {},
+  onEditingChanged: bearbeitet,
+  onRegisterDiscard: (_) {},
+  onRegisterEditActions: registriere,
+);
+
+Widget _notizen(
+  ValueChanged<WorkspaceTabEditActions> registriere,
+  ValueChanged<bool> bearbeitet,
+) => HeroNotesTab(
+  heroId: 'demo',
+  onDirtyChanged: (_) {},
+  onEditingChanged: bearbeitet,
+  onRegisterDiscard: (_) {},
+  onRegisterEditActions: registriere,
+);
+
+Widget _reisebericht(
+  ValueChanged<WorkspaceTabEditActions> registriere,
+  ValueChanged<bool> bearbeitet,
+) => HeroReiseberichtTab(
+  heroId: 'demo',
+  onDirtyChanged: (_) {},
+  onEditingChanged: bearbeitet,
+  onRegisterDiscard: (_) {},
+  onRegisterEditActions: registriere,
+);
+
 void main() {
   late BogenTestRepository repo;
   late WorkspaceTabEditActions aktionen;
   late bool bearbeitet;
 
-  Future<void> zeige(WidgetTester tester, _Tab tab) async {
+  Future<void> zeige(
+    WidgetTester tester,
+    _Tab tab, {
+    int lebenspunkte = 10,
+  }) async {
     tester.view.devicePixelRatio = 1;
     tester.view.physicalSize = const Size(1600, 1400);
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
     repo = BogenTestRepository(
       heroes: [_held],
-      states: const {
+      states: {
         'demo': HeroState(
-          currentLep: 10,
+          currentLep: lebenspunkte,
           currentAsp: 10,
           currentKap: 0,
           currentAu: 10,
@@ -263,6 +321,117 @@ void main() {
           ['Schwert', 'Axt'],
         ),
       );
+    });
+
+    testWidgets('Übersicht', (tester) async {
+      await pruefe(
+        tester,
+        _uebersicht,
+        eigenerBereich: (held) =>
+            held.copyWith(attributes: held.attributes.copyWith(mu: 14)),
+        erwarte: (held) => expect(held.attributes.mu, 14),
+      );
+    });
+
+    testWidgets('Notizen: ein inzwischen abgeschlossenes Abenteuer bleibt', (
+      tester,
+    ) async {
+      await pruefe(
+        tester,
+        _notizen,
+        eigenerBereich: (held) => held.copyWith(
+          adventures: [
+            _abenteuer.copyWith(
+              status: HeroAdventureStatus.completed,
+              rewardsApplied: true,
+            ),
+          ],
+        ),
+        erwarte: (held) {
+          final abenteuer = held.adventures.single;
+          expect(abenteuer.status, HeroAdventureStatus.completed);
+          expect(abenteuer.rewardsApplied, isTrue);
+        },
+      );
+    });
+  });
+
+  testWidgets('die Übersicht lässt den Laufzeitzustand unberührt', (
+    tester,
+  ) async {
+    await zeige(tester, _uebersicht, lebenspunkte: -3);
+    await tester.enterText(
+      find.byKey(const ValueKey<String>('overview-field-name')),
+      'Rondrian',
+    );
+
+    await speichere(tester);
+    await laufendesSpeichern;
+
+    expect((await repo.gespeichert('demo')).name, 'Rondrian');
+    expect((await repo.loadHeroState('demo'))!.currentLep, -3);
+  });
+
+  group('Reisebericht', () {
+    Future<void> hakeOrkAb(WidgetTester tester) async {
+      await tester.tap(find.byType(Checkbox).first);
+      await _pumpOhneUeberlauf(tester);
+    }
+
+    testWidgets('bucht die Belohnung auf den gespeicherten Helden', (
+      tester,
+    ) async {
+      await zeige(tester, _reisebericht);
+      await hakeOrkAb(tester);
+      repo.fremdeAenderung = (held) =>
+          held.copyWith(name: 'Rondra die Kühne', apTotal: 1100);
+
+      await speichere(tester);
+      await laufendesSpeichern;
+
+      final gespeichert = await repo.gespeichert('demo');
+      expect(gespeichert.apTotal, 1110);
+      expect(gespeichert.name, 'Rondra die Kühne');
+      expect(gespeichert.reisebericht.appliedRewardIds, {'rb_ork'});
+    });
+
+    testWidgets('anderswo Gebuchtes wird nicht doppelt gebucht', (
+      tester,
+    ) async {
+      await zeige(tester, _reisebericht);
+      await hakeOrkAb(tester);
+      repo.fremdeAenderung = (held) => held.copyWith(
+        apTotal: 1010,
+        reisebericht: const HeroReisebericht(
+          checkedIds: {'rb_ork'},
+          appliedRewardIds: {'rb_ork'},
+        ),
+      );
+
+      await speichere(tester);
+      expect(find.text(kEditorEntwurfErzwingen), findsNothing);
+      await tester.tap(find.text(kEditorEntwurfWeiter));
+      await _pumpOhneUeberlauf(tester);
+      await laufendesSpeichern;
+
+      expect(repo.bogenSpeicherungen, 0);
+      expect(bearbeitet, isTrue);
+    });
+
+    testWidgets('ohne Änderung wird nichts überschrieben', (tester) async {
+      await zeige(tester, _reisebericht);
+      repo.fremdeAenderung = (held) => held.copyWith(
+        reisebericht: const HeroReisebericht(
+          checkedIds: {'rb_ork'},
+          appliedRewardIds: {'rb_ork'},
+        ),
+      );
+
+      await speichere(tester);
+      await laufendesSpeichern;
+
+      expect(repo.bogenSpeicherungen, 0);
+      expect(bearbeitet, isFalse);
     });
   });
 
