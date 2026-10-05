@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_fernkampf_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/gefecht_kampfmittel_rules.dart';
+import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_ladezustand_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/kampf_aenderung_rules.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_provider.dart';
@@ -313,6 +315,69 @@ class _AufhebedialogState extends State<GefechtAufhebedialog> {
               : () => Navigator.pop(context, anzahl),
           child: const Text('Aufheben'),
         ),
+      ],
+    );
+  }
+}
+
+/// Geschosslisten aller geführten Fernkampfwaffen samt Schreibwegen.
+class GefechtGeschossbereich extends ConsumerWidget {
+  /// Bedienungen laufen über [onAktion], den Guard der Gefechtsansicht.
+  const GefechtGeschossbereich({
+    super.key,
+    required this.werte,
+    required this.heroId,
+    required this.bestand,
+    required this.gesperrt,
+    required this.onAktion,
+  });
+
+  /// Aktuelle Spielwerte, aus denen die geführten Waffen stammen.
+  final HeroComputedSnapshot werte;
+
+  /// Held, dessen Ausrüstung geschrieben wird.
+  final String heroId;
+
+  /// Brücke für frische Ausrüstungsänderungen.
+  final KartoGefechtsAdapter bestand;
+
+  /// Sperrt alle Bedienungen.
+  final bool gesperrt;
+
+  /// Re-Entrancy-Guard der Ansicht.
+  final Future<void> Function(Future<void> Function()) onAktion;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        for (final profil in gefechtsKampfmittelprofile(werte))
+          if (profil.waffe?.isRanged == true)
+            GefechtGeschosse(
+              waffe: profil.waffe!,
+              gesperrt: gesperrt,
+              onWaehlen: (i) => onAktion(
+                () => waehleGefechtsGeschoss(
+                  context: context,
+                  ref: ref,
+                  heroId: heroId,
+                  bestand: bestand,
+                  waffe: profil.waffe!,
+                  geschossIndex: i,
+                ),
+              ),
+              onAufheben: (i) => onAktion(
+                () => zeigeGefechtsGeschosseAufheben(
+                  context: context,
+                  ref: ref,
+                  heroId: heroId,
+                  bestand: bestand,
+                  waffe: profil.waffe!,
+                  geschossIndex: i,
+                ),
+              ),
+            ),
       ],
     );
   }
