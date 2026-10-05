@@ -54,11 +54,26 @@ void main() {
           expect(find.text('Angriff'), findsWidgets);
           expect(find.text('Vitalwerte'), findsOneWidget);
           expect(tester.takeException(), isNull);
+          final leiste = find.byKey(const ValueKey('gefecht-leiste-attacke'));
           if (breite == 390) {
+            // Schmal: Vitalwerte vor den Aktionen, Verteidigung direkt nach
+            // dem Angriff und eine feste Schnellleiste.
+            double oben(Finder f) => tester.getTopLeft(f).dy;
             expect(
-              tester.getTopLeft(find.text('Angriff').first).dy,
-              lessThan(tester.getTopLeft(find.text('Vitalwerte')).dy),
+              oben(find.text('Vitalwerte')),
+              lessThan(oben(find.text('Angriff').first)),
             );
+            expect(
+              oben(find.text('Angriff').first),
+              lessThan(oben(find.text('Verteidigung').first)),
+            );
+            expect(
+              oben(find.text('Verteidigung').first),
+              lessThan(oben(find.text('Manöver').first)),
+            );
+            expect(leiste, findsOneWidget);
+          } else {
+            expect(leiste, findsNothing);
           }
         },
       );

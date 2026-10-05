@@ -59,3 +59,29 @@ Gefechtspruefung ergaenzeGefechtsfreigabe(
     probenart: p.probenart,
   );
 }
+
+/// Wichtigster sichtbare Grund einer Prüfung für Knopf und Leiste.
+///
+/// Reihenfolge: Sperre, fehlende Angabe, offene Entscheidung, Hinweis. Ohne
+/// Grund ist die Aktion ohne weitere Klärung ausführbar (`null`).
+String? gefechtsHauptgrund(Gefechtspruefung p) {
+  for (final liste in [
+    p.sperrgruende,
+    if (p.status == Gefechtsfreigabe.gesperrt) p.gruende,
+    p.fehlendeAngaben,
+    p.entscheidungen,
+    p.hinweise,
+  ]) {
+    if (liste.isNotEmpty) return liste.first;
+  }
+  return null;
+}
+
+/// Kurzer Statustext eines Aktionsknopfs: Würfeln mit Zielwert, sonst Status.
+String gefechtsKnopfstatus(Gefechtspruefung p) => switch (p.status) {
+  Gefechtsfreigabe.gesperrt => 'Gesperrt',
+  Gefechtsfreigabe.pruefen =>
+    p.fehlendeAngaben.isNotEmpty ? 'Angabe fehlt' : 'Klären',
+  Gefechtsfreigabe.bereit =>
+    p.zielwert == null ? 'Bereit' : 'Würfeln · ${p.zielwert}',
+};
