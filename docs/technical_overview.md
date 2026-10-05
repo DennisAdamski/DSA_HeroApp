@@ -3200,9 +3200,10 @@ ueber die Settings-Katalogverwaltung bearbeitet.
   Dukaten; Münzknöpfe melden `onSchritt`), Abenteuer abschließen und
   wiedereröffnen, Vertrauten-Steigerung. Der Ressourcendialog zeigt Fehler im
   Blatt und bleibt offen.
-- Snapshots bleiben: Editorentwürfe (Übersicht, Talente, Magie, Begleiter,
-  Notizen, Reisebericht). Sie sind aber eingereiht. Das Kampf-Sofortspeichern
-  und der Inventareditor schreiben seit den folgenden Updates frisch.
+- Snapshots blieben hier noch die Editorentwürfe (Übersicht, Talente,
+  Magie, Begleiter, Notizen, Reisebericht), eingereiht. Das
+  Kampf-Sofortspeichern, der Inventareditor und die Editorentwürfe schreiben
+  seit den folgenden Updates frisch.
 
 ### Update 2026-09-30: Kampf-Tab frisch schreiben (ARCH-05)
 
@@ -3268,10 +3269,58 @@ ueber die Settings-Katalogverwaltung bearbeitet.
   breite Editor bei seinem Gegenstand. Nach dem Speichern wird die Auswahl im
   gespeicherten Helden über den Inhalt bestimmt (neue Einträge von hinten,
   verknüpfte notfalls über `slotRef`).
+- Instanz-IDs (ARCH-03): `saveHero` vergibt fehlenden Einträgen eine ID.
+  Trägt der gesuchte Eintrag keine, zählt sie bei der Inhaltssuche
+  (`findeGleichenInventarEintrag`, `findeLetztenGleichenInventarEintrag`)
+  auch bei den Kandidaten nicht; ein bearbeiteter Eintrag behält seine
+  gespeicherte ID.
 - Prüfung: `test/rules/inventar_aenderung_rules_test.dart`,
   `test/ui/inventory/inventar_frisch_schreiben_test.dart` (mit
   `BogenTestRepository`, schmal und breit) und die Planungssperre in
   `test/ui/shared/held_frisch_schreiben_test.dart`.
+
+### Update 2026-10-05: Editorentwürfe frisch speichern (ARCH-05)
+
+- Alle sieben Editorentwürfe der Verwaltung (Übersicht, Talente, Magie,
+  Begleiter, Notizen, Reisebericht, Kampf-Editor) speichern über
+  `speichereEditorEntwurf` (`lib/ui/screens/shared/editor_entwurf_speichern.dart`):
+  frisch über `aendereHeldImEditor`, eingereiht und bei offener Planung
+  gesperrt.
+- Jeder Tab merkt sich in `_entwurfBasis` den Helden, aus dem er seinen
+  Entwurf gefüllt hat, und baut den Entwurf beim Speichern auf dieser Basis.
+  `uebernimmEditorEntwurf` (`lib/rules/derived/editor_entwurf_rules.dart`)
+  gleicht Basis, Entwurf und frisch geladenen Helden je oberstem
+  JSON-Schlüssel ab:
+  - Im Entwurf Unverändertes nimmt den gespeicherten Wert.
+  - Nur im Entwurf Geändertes gewinnt.
+  - `apTotal` und `apSpent` sind Zähler, die Differenz des Entwurfs wird
+    addiert.
+  - `level`, `apAvailable` und `unknownModifierFragments` rechnet
+    `saveHero` neu.
+
+  Ohne fremde Änderung seit der Basis wird der Entwurf unverändert
+  gespeichert (bisheriges Verhalten). Sonst entsteht der Held über JSON;
+  neue Kampf-Slots bekommen vorher eine UUID.
+- Beidseitig verschieden geänderte Schlüssel ergeben `EditorEntwurfKonflikt`.
+  Der Dialog bietet „Weiter bearbeiten“ (nichts gespeichert) oder „Meine
+  Fassung speichern“ (erneuter frischer Abgleich, der Entwurf gewinnt nur in
+  den bestätigten Schlüsseln). Nicht erzwingbar ist ein Konflikt, der eine
+  Buchung zurücknähme: Abenteuer, deren Status oder `rewardsApplied` sich
+  seit der Basis geändert hat, und geänderte angewendete
+  Reisebericht-Belohnungen.
+- Der Reisebericht bucht über `bucheReiseberichtEntwurf` auf den
+  gespeicherten Helden (AP, SE, Boni als Zuschlag) und nie doppelt.
+- Die Übersicht schreibt nur noch den Bogen. Ihre nie angezeigten
+  LeP-/AuP-/AsP-/KaP-Felder setzten bisher den Laufzeitzustand vom
+  Bearbeitungsbeginn zurück und machten negative LeP zu 0.
+- Notizen übernehmen unberührte Listen (dieselben Einträge wie in der Basis)
+  ungefiltert, damit die Bereinigung keine fremde Änderung überschreibt.
+- Nach einer Vertrauten-Steigerung werden Entwurf und Basis aus dem
+  gespeicherten Helden neu gefüllt.
+- Prüfung: `test/rules/editor_entwurf_rules_test.dart`,
+  `test/ui/shared/editor_entwurf_speichern_test.dart` und
+  `test/ui/shared/editor_entwurf_frisch_test.dart` (alle sieben Tabs mit
+  `BogenTestRepository`).
 
 ### Update 2026-08-23: Aventurischer Kalender und aktuelles Alter
 
