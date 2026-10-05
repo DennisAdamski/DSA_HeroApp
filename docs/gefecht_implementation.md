@@ -673,3 +673,25 @@ Begleiter-Tab genutzt) sowie Sonderfertigkeiten und Vertrautenmagie. Nur
 Anzeige, keine Proben und keine LeP-Zählung. Prüfung:
 `test/rules/gefecht_inventar_rules_test.dart`,
 `test/ui2/spielen/gefecht_inventar_test.dart`.
+
+## Magie und Karma (Vervollständigung G7, 5. Oktober 2026)
+
+Der Abschnitt „Magie und Karma“ listet gelernte Katalogzauber mit ZfW*,
+Zauberdauer und Kosten (`gefechtsZauberliste` in `gefecht_magie_rules.dart`);
+die zuletzt begonnenen Zauber dieses Gefechts stehen vorn (Sitzungsfeld
+`zuletztGewirkt`, höchstens fünf), der Rest alphabetisch. Ab sieben Zaubern
+gibt es eine Suche. Dauer und Kosten werden wie bisher nur bei eindeutigen
+Katalogangaben vorbelegt (`gefechtsFesteAktionen`, `gefechtsFesteKosten`).
+
+Der Wirkdialog hat keinen Pflichthaken mehr: „Wirken beginnen“ ist die
+Bestätigung, die Sonderfälle (Repräsentationsausnahmen, Störungen, Patzer,
+permanente Kosten) stehen als Hinweis darunter. Beim Abschluss verlangt nur
+noch ein Profil mit permanenten Kosten (Grad ≥ 5) den Haken „Weitere Folgen am
+Spieltisch bestätigt“. Die Zahl aufrechterhaltener Zauber wird für das
+Gefecht gemerkt.
+
+Offen (Architektur, ohne Bedienwirkung): `gefecht_wirkabschluss.dart`
+importiert weiterhin `zustand_aendern.dart`, die Armatrutz-/Attributo-Dialoge
+und den Ressourcendialog aus `lib/ui/`. Die Verlagerung hinter
+`KartoGefechtsAdapter` braucht eigene Adaptermethoden samt Tests.
+Prüfung: `test/rules/gefecht_zauberliste_rules_test.dart`.

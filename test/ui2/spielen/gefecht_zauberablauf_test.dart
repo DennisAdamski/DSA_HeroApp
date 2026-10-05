@@ -121,8 +121,8 @@ void main() {
       container.read(gefechtProvider('rondra'))!.handlung!.ergebnis,
       isNull,
     );
-    await tester.tap(find.text('Weitere Folgen am Spieltisch bestätigt'));
-    await tester.pump();
+    // Ohne permanente Kosten genügt der Abschlussknopf als Bestätigung.
+    expect(find.text('Weitere Folgen am Spieltisch bestätigt'), findsNothing);
     await tester.tap(find.text('Kosten und Folgen übernehmen'));
     await tester.pumpAndSettle();
     await abbruch;

@@ -159,6 +159,7 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
                       final magie = GefechtMagie(
                         werte: snapshot,
                         katalog: katalog,
+                        zuletzt: s.zuletztGewirkt,
                         gesperrt: _busy,
                         onZauber: (z) => _run(
                           () => zeigeGefechtsWirken(

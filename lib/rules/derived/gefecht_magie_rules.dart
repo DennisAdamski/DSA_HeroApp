@@ -129,3 +129,62 @@ List<SpecialAbilityDef> gefechtKarmaleFertigkeiten(
       .where((sf) => namen.contains(sf.name))
       .toList();
 }
+
+/// Ein gelernter Zauber in der Gefechtsliste.
+class GefechtsZaubereintrag {
+  /// [zfw] ist ZfW* (Wert + Modifikator) wie in der Probensuche.
+  const GefechtsZaubereintrag({
+    required this.zauber,
+    required this.zfw,
+    required this.zuletzt,
+  });
+  final SpellDef zauber;
+  final int zfw;
+
+  /// Gehört zu den zuletzt begonnenen Zaubern dieses Gefechts.
+  final bool zuletzt;
+
+  /// Kurzzeile mit ZfW*, Zauberdauer und Kosten aus dem Katalog.
+  String get detail => [
+    'ZfW* $zfw',
+    if (zauber.castingTime.trim().isNotEmpty) zauber.castingTime.trim(),
+    if (zauber.aspCost.trim().isNotEmpty) zauber.aspCost.trim(),
+  ].join(' · ');
+}
+
+/// Gelernte Katalogzauber: zuletzt gewirkte zuerst, danach alphabetisch.
+///
+/// [suche] filtert ohne Groß-/Kleinschreibung nach dem Namen.
+List<GefechtsZaubereintrag> gefechtsZauberliste(
+  HeroComputedSnapshot snapshot,
+  RulesCatalog katalog, {
+  List<String> zuletzt = const [],
+  String suche = '',
+}) {
+  final filter = suche.trim().toLowerCase();
+  final eintraege = <GefechtsZaubereintrag>[
+    for (final z in katalog.spells)
+      if (snapshot.hero.spells[z.id] case final e?)
+        if (filter.isEmpty || z.name.toLowerCase().contains(filter))
+          GefechtsZaubereintrag(
+            zauber: z,
+            zfw: (e.spellValue ?? 0) + e.modifier,
+            zuletzt: zuletzt.contains(z.id),
+          ),
+  ];
+  int rang(GefechtsZaubereintrag e) {
+    final i = zuletzt.indexOf(e.zauber.id);
+    return i < 0 ? zuletzt.length : i;
+  }
+
+  eintraege.sort((a, b) {
+    final r = rang(a).compareTo(rang(b));
+    if (r != 0) return r;
+    return a.zauber.name.toLowerCase().compareTo(b.zauber.name.toLowerCase());
+  });
+  return eintraege;
+}
+
+/// Merkt einen begonnenen Zauber vorn und hält höchstens fünf Einträge.
+List<String> gefechtsZuletztGewirkt(List<String> bisher, String zauberId) =>
+    [zauberId, ...bisher.where((id) => id != zauberId)].take(5).toList();

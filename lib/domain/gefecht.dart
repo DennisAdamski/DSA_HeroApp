@@ -185,6 +185,7 @@ class Gefechtszustand {
     this.aufrechterhalteneZauber = 0,
     this.bewegt = false,
     this.gesprintet = false,
+    this.zuletztGewirkt = const [],
     this.gemeinsameInitiative = false,
     this.initiativphase,
     this.zeitpunktAbgeschlossen = false,
@@ -253,6 +254,9 @@ class Gefechtszustand {
 
   /// WdS S. 55: nach „Sprinten“ keine Angriffs- oder Abwehraktion dieser Runde.
   final bool gesprintet;
+
+  /// Katalog-IDs der zuletzt begonnenen Zauber, neueste zuerst (höchstens 5).
+  final List<String> zuletztGewirkt;
 
   /// Nur abgeleitete Phasenprüfung, keine zusätzliche Gefechtspersistenz.
   final bool gemeinsameInitiative, zeitpunktAbgeschlossen, regulaerePhaseOffen;
@@ -325,6 +329,7 @@ class Gefechtszustand {
     int? aufrechterhalteneZauber,
     bool? bewegt,
     bool? gesprintet,
+    List<String>? zuletztGewirkt,
     bool? gemeinsameInitiative,
     int? initiativphase,
     bool ohneInitiativphase = false,
@@ -396,6 +401,7 @@ class Gefechtszustand {
         aufrechterhalteneZauber ?? this.aufrechterhalteneZauber,
     bewegt: bewegt ?? this.bewegt,
     gesprintet: gesprintet ?? this.gesprintet,
+    zuletztGewirkt: zuletztGewirkt ?? this.zuletztGewirkt,
     gemeinsameInitiative: gemeinsameInitiative ?? this.gemeinsameInitiative,
     initiativphase: ohneInitiativphase
         ? null

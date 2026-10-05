@@ -300,7 +300,13 @@ class _AbschlussState extends ConsumerState<_Abschluss> {
                     onChanged: (_) => setState(() {}),
                   ),
                 ],
-                if (h.wirken!.fremdwirkung == null)
+                if (h.wirken!.fremdwirkung == null &&
+                    !h.wirken!.permanentManuell)
+                  const Text(
+                    'Fremde Zielwirkungen, Patzer und Sonderfälle am Tisch prüfen.',
+                  ),
+                if (h.wirken!.fremdwirkung == null &&
+                    h.wirken!.permanentManuell)
                   CheckboxListTile(
                     value: _folgen,
                     title: const Text('Weitere Folgen am Spieltisch bestätigt'),
@@ -346,7 +352,12 @@ class _AbschlussState extends ConsumerState<_Abschluss> {
               child: const Text('Kosten jetzt übernehmen'),
             ),
           FilledButton(
-            onPressed: _busy || (!_folgen && h.wirken!.fremdwirkung == null)
+            // Nur permanente Kosten verlangen eine eigene Bestätigung.
+            onPressed:
+                _busy ||
+                    (!_folgen &&
+                        h.wirken!.fremdwirkung == null &&
+                        h.wirken!.permanentManuell)
                 ? null
                 : () => _uebernehmen(h),
             child: Text(
