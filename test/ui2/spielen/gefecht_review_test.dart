@@ -522,6 +522,7 @@ void main() {
       context: kontext,
       ref: referenz,
       heroId: 'rondra',
+      bestand: GefechtsTestBestand(),
     );
     await tester.pumpAndSettle();
     await tester.tap(find.text('Kosten jetzt übernehmen'));

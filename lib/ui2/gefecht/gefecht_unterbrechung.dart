@@ -17,6 +17,7 @@ Future<void> brecheGefechtsHandlungAb({
   required BuildContext context,
   required WidgetRef ref,
   required String heroId,
+  required KartoGefechtsAdapter bestand,
 }) async {
   final s = ref.read(gefechtMitInitiativeProvider(heroId));
   final h = s?.handlung;
@@ -71,6 +72,7 @@ Future<void> brecheGefechtsHandlungAb({
       context: context,
       ref: ref,
       heroId: heroId,
+      bestand: bestand,
     );
   } else {
     final aktuell = ref.read(gefechtMitInitiativeProvider(heroId));
@@ -278,6 +280,7 @@ Future<void> stoereGefechtsWirken({
       context: context,
       ref: ref,
       heroId: heroId,
+      bestand: bestand,
     );
   }
 }

@@ -13,6 +13,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/gefecht_fremdwirkung_rules.da
 import 'package:dsa_heldenverwaltung/ui2/gefecht/gefecht_wirkabschluss.dart';
 
 import '../shell/karto_test_support.dart';
+import 'gefecht_test_support.dart';
 
 import 'package:dsa_heldenverwaltung/domain/gefecht_gegner.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht_fremdwirkung.dart';
@@ -119,6 +120,7 @@ void main() {
           context: context,
           ref: ref,
           heroId: 'rondra',
+          bestand: GefechtsTestBestand(),
         ),
         false,
       );
@@ -138,6 +140,7 @@ void main() {
           context: context,
           ref: ref,
           heroId: 'rondra',
+          bestand: GefechtsTestBestand(),
           abschliessen: false,
         ),
         true,
@@ -152,6 +155,7 @@ void main() {
           context: context,
           ref: ref,
           heroId: 'rondra',
+          bestand: GefechtsTestBestand(),
         ),
         true,
       );
@@ -160,6 +164,7 @@ void main() {
           context: context,
           ref: ref,
           heroId: 'rondra',
+          bestand: GefechtsTestBestand(),
         ),
         false,
       );

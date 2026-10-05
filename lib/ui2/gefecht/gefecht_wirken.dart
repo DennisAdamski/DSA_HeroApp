@@ -178,6 +178,7 @@ Future<void> starteGefechtsWirken({
       context: context,
       ref: ref,
       heroId: heroId,
+      bestand: bestand,
     );
   }
 }
@@ -198,6 +199,7 @@ Future<void> setzeGefechtsWirkenFort({
       context: context,
       ref: ref,
       heroId: heroId,
+      bestand: bestand,
     );
     return;
   }
@@ -254,6 +256,7 @@ Future<void> setzeGefechtsWirkenFort({
       context: context,
       ref: ref,
       heroId: heroId,
+      bestand: bestand,
     );
   }
 }

@@ -690,10 +690,13 @@ noch ein Profil mit permanenten Kosten (Grad ≥ 5) den Haken „Weitere Folgen 
 Spieltisch bestätigt“. Die Zahl aufrechterhaltener Zauber wird für das
 Gefecht gemerkt.
 
-Offen (Architektur, ohne Bedienwirkung): `gefecht_wirkabschluss.dart`
-importiert weiterhin `zustand_aendern.dart`, die Armatrutz-/Attributo-Dialoge
-und den Ressourcendialog aus `lib/ui/`. Die Verlagerung hinter
-`KartoGefechtsAdapter` braucht eigene Adaptermethoden samt Tests.
+Der Abschluss erreicht Zustandsschreibweg, Fehlerbereich, Armatrutz-/
+Attributo-Eingabe und Ressourcendialog seit dem 6. Oktober 2026 nur noch über
+`KartoGefechtsAdapter` (`gefechtsZustand`, `gefechtsFehlerBereich`,
+`gefechtsArmatrutzWerte`, `gefechtsAttributoWerte`, `gefechtsWirkkosten`);
+`lib/ui2` importiert außer `karto_app_root.dart` nichts mehr aus `lib/ui`
+(Wächter `test/ui2/shell/ui2_import_richtung_test.dart`, Brücke
+`test/ui/bridges/karto_gefechts_bruecke_test.dart`).
 Prüfung: `test/rules/gefecht_zauberliste_rules_test.dart`.
 
 ## Bedienabnahme der Vervollständigung (G8, 5. Oktober 2026)
@@ -708,8 +711,9 @@ Nahkampf, Fernkampf (bestehende Lade-/Schusstests), Zauber, Talentproben,
 Inventar, Begleiter, benannte Aktionen und die Layoutmatrix ab.
 
 Bewusst außerhalb: Gefechtspersistenz, Begleiterproben und -LeP, Rituale im
-Gefecht. Offen ohne Bedienwirkung: Verlagerung der `lib/ui`-Importe von
-`gefecht_wirkabschluss.dart` hinter die Gefechtsbrücke.
+Gefecht. Die damals offene Verlagerung der `lib/ui`-Importe von
+`gefecht_wirkabschluss.dart` hinter die Gefechtsbrücke ist am 6. Oktober 2026
+erledigt (siehe G7).
 
 ## Review der Vervollständigung (6. Oktober 2026)
 

@@ -605,6 +605,7 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
           context: context,
           ref: ref,
           heroId: widget.heroId,
+          bestand: _bruecke,
         ),
       ),
       onStoerung: () => _run(
