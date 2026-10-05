@@ -327,7 +327,7 @@ class GefechtGeschossbereich extends ConsumerWidget {
     super.key,
     required this.werte,
     required this.heroId,
-    required this.bestand,
+    required this.bruecke,
     required this.gesperrt,
     required this.onAktion,
   });
@@ -338,8 +338,8 @@ class GefechtGeschossbereich extends ConsumerWidget {
   /// Held, dessen Ausrüstung geschrieben wird.
   final String heroId;
 
-  /// Brücke für frische Ausrüstungsänderungen.
-  final KartoGefechtsAdapter bestand;
+  /// Brücke für frische Ausrüstungsänderungen; erst beim Bedienen aufgelöst.
+  final KartoGefechtsAdapter Function() bruecke;
 
   /// Sperrt alle Bedienungen.
   final bool gesperrt;
@@ -362,7 +362,7 @@ class GefechtGeschossbereich extends ConsumerWidget {
                   context: context,
                   ref: ref,
                   heroId: heroId,
-                  bestand: bestand,
+                  bestand: bruecke(),
                   waffe: profil.waffe!,
                   geschossIndex: i,
                 ),
@@ -372,7 +372,7 @@ class GefechtGeschossbereich extends ConsumerWidget {
                   context: context,
                   ref: ref,
                   heroId: heroId,
-                  bestand: bestand,
+                  bestand: bruecke(),
                   waffe: profil.waffe!,
                   geschossIndex: i,
                 ),

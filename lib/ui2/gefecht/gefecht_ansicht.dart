@@ -352,7 +352,7 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
         GefechtGeschossbereich(
           werte: snapshot,
           heroId: widget.heroId,
-          bestand: _bruecke,
+          bruecke: () => _bruecke,
           gesperrt: _busy || s.handlung != null,
           onAktion: _run,
         ),
