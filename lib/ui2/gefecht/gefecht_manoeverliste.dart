@@ -3,19 +3,18 @@ import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abschnitt.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_filter_rules.dart';
 
-/// Suchbare Manöverliste hält Verteidigung auch bei großen Katalogen erreichbar.
+/// Suchbare Liste der erlernten und allgemein verfügbaren Manöver.
 class GefechtManoeverliste extends StatefulWidget {
   /// Die Reihenfolge stammt aus den Regeln; Darstellung berechnet keine Freigaben.
   const GefechtManoeverliste({
     super.key,
     required this.manoever,
     required this.knopf,
-    this.erlernt,
     this.gesperrt,
   });
   final List<ManeuverDef> manoever;
   final Widget Function(ManeuverDef) knopf;
-  final bool Function(ManeuverDef)? erlernt, gesperrt;
+  final bool Function(ManeuverDef)? gesperrt;
   @override
   State<GefechtManoeverliste> createState() => _GefechtManoeverlisteState();
 }
@@ -23,7 +22,7 @@ class GefechtManoeverliste extends StatefulWidget {
 class _GefechtManoeverlisteState extends State<GefechtManoeverliste> {
   String _suche = '';
   GefechtsManoeverfilter _kategorie = GefechtsManoeverfilter.alle;
-  bool _nurErlernte = false, _ohneSperre = false;
+  bool _ohneSperre = false;
   @override
   Widget build(BuildContext context) => KartoAbschnitt(
     titel: 'Manöver',
@@ -57,13 +56,6 @@ class _GefechtManoeverlisteState extends State<GefechtManoeverliste> {
                 }),
               ),
             FilterChip(
-              label: const Text('Nur erlernte'),
-              selected: _nurErlernte,
-              onSelected: (v) => setState(() {
-                _nurErlernte = v;
-              }),
-            ),
-            FilterChip(
               label: const Text('Ohne bekannte Sperre'),
               selected: _ohneSperre,
               onSelected: (v) => setState(() {
@@ -73,7 +65,7 @@ class _GefechtManoeverlisteState extends State<GefechtManoeverliste> {
           ],
         ),
         if (widget.manoever.isEmpty)
-          const Text('Keine Manöver im aktuellen Katalog.'),
+          const Text('Keine erlernten oder allgemein verfügbaren Manöver.'),
         ConstrainedBox(
           constraints: const BoxConstraints(maxHeight: 420),
           child: SingleChildScrollView(
@@ -85,9 +77,7 @@ class _GefechtManoeverlisteState extends State<GefechtManoeverliste> {
                     m,
                     kategorie: _kategorie,
                     suche: _suche,
-                    nurErlernte: _nurErlernte,
                     ohneSperre: _ohneSperre,
-                    erlernt: widget.erlernt?.call(m) ?? false,
                     gesperrt: widget.gesperrt?.call(m) ?? false,
                   ))
                     widget.knopf(m),

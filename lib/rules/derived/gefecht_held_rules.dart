@@ -150,7 +150,7 @@ Gefechtspruefung pruefeGefechtsmanoever(
     sperren.add('Distanzänderung nur ohne Manöver oder mit bestätigter Finte.');
   }
   final gelernt = learnedManeuverIds(config, katalog);
-  final basisAnsage = m.id == 'man_finte' || m.id == 'man_wuchtschlag';
+  final basisAnsage = kGefechtsBasismanoever.contains(m.id);
   final talentGelernt = gelernt.contains('${m.id}::${waffe.talentId}');
   if (!basisAnsage &&
       m.mussSeparatErlerntWerden &&
@@ -259,17 +259,21 @@ Gefechtsaktion gefechtsManoeveraktion(ManeuverDef m) {
       : Gefechtsaktion.handlung;
 }
 
-/// Sortiert nutzbare und zu prüfende Manöver vor die erklärbaren Sperren.
+/// Zeigt nur erlernte und allgemein verfügbare Manöver; nutzbare und zu
+/// prüfende stehen vor den erklärbaren Sperren.
 List<ManeuverDef> gefechtsManoeverliste(
   Gefechtszustand s,
   HeroComputedSnapshot snapshot,
   RulesCatalog katalog,
 ) {
-  final status = <String, Gefechtsfreigabe>{
+  final liste = [
     for (final m in katalog.maneuvers)
+      if (gefechtsManoeverVerfuegbar(m, snapshot, katalog)) m,
+  ];
+  final status = <String, Gefechtsfreigabe>{
+    for (final m in liste)
       m.id: pruefeGefechtsmanoever(s, snapshot, katalog, m, zuschlag: 0).status,
   };
-  final liste = List<ManeuverDef>.of(katalog.maneuvers);
   liste.sort((a, b) {
     final sortierung = status[a.id]!.index.compareTo(status[b.id]!.index);
     return sortierung != 0 ? sortierung : a.name.compareTo(b.name);
