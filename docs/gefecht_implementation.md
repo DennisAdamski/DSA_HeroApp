@@ -599,3 +599,27 @@ Gefecht läuft“ zusätzlich als hervorgehobene Schnellaktion. Schnellleiste,
 Rundenwechsel, Vitalwerte und Ausrüstung stehen in `gefecht_ansicht_teile.dart`
 (`part` der Ansicht). Prüfung: `test/ui2/spielen/gefecht_ansicht_bedienung_test.dart`
 und die erweiterte Layoutmatrix.
+
+## Talentproben im Gefecht (Vervollständigung G4, 5. Oktober 2026)
+
+„Probe“ (Kopfleiste, Schnellleiste, Strg/Cmd+K innerhalb des Gefechts) öffnet
+eine durchsuchbare Auswahl aller geführten Nicht-Kampftalente mit TaW* und der
+acht Eigenschaften (`gefecht_probenwahl.dart`). AT, PA und Zauber laufen über
+ihre eigenen Gefechtsaktionen. Danach wählt der Spieler den Zeitbedarf nach
+WdS S. 55 (`gefecht_talent_rules.dart`): ohne Aktion (Reaktion), freie Aktion,
+eine Aktion (Vorgabe für Talente; die meisten geforderten Proben wie
+Körperbeherrschung) oder Talenteinsatz über geplante Aktionen. Ein
+Talenteinsatz wird zu Beginn gewürfelt; übrig behaltene TaP* verkürzen die
+Dauer (mindestens eine Aktion, App-Konvention), der Rest bleibt als Handlung
+mit „Fortsetzen“ offen. Die Erschwernis wird im Dialog erfasst; jede Probe
+trägt Ansagefolgemalus und einen passenden Mirakelbonus. Abbruch bucht nichts.
+
+TaW* stammt für Probensuche und Gefecht aus `talent_probe_rules.dart`
+(`talentProbenwertFuer`: TaW + Modifikator + eBE aus Kampf-BE bzw. der
+vorübergehenden Talentansicht + Inventarbonus, epische KK-Halbierung,
+Spezialisierung). Damit erhalten auch die Selbstbeherrschung bei Störung
+und Liturgiekenntnis die bisher fehlenden Anteile. Die Probenbauer liegen in
+`rules/derived/probe_request_rules.dart`; `ui/screens/shared/probe_request_factory.dart`
+exportiert sie unverändert für alle bisherigen Aufrufer. Prüfung:
+`test/rules/gefecht_talentprobe_rules_test.dart`,
+`test/ui2/spielen/gefecht_talentprobe_test.dart`.
