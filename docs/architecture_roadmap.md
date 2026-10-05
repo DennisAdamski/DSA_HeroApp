@@ -341,6 +341,34 @@ Import-/Exporttests um Migration, Namensgleichheit und Slotwechsel ergänzen.
 Mengenstapel, aufgeteilte Munition und Identitätsregeln beim Kopieren eines Helden
 vor der Modelländerung klären. Schreibvorgänge mit ARCH-05/06 abstimmen.
 
+**Entscheidungen vom 04.10.2026 (Dennis):**
+
+1. *Mengenstapel und Munition:* Ein Stapel ist **ein** Gegenstand mit einer
+   Instanz-ID und einer Menge (auch Waffen und Rüstung, sofern Menge > 1).
+   Teilt man einen Stapel (z. B. 10 Pfeile am Bogen, 10 im Rucksack),
+   entsteht ein zweiter Stapel mit neuer Instanz-ID; Kampf-Slots verweisen
+   auf den jeweiligen Stapel. Die heutige Freitext-Menge `anzahl` und die
+   Geschossmengen am Slot bleiben als Altdarstellung lesbar (nur additive
+   Formatänderung, neue Menge unter neuem Schlüssel).
+2. *Identität beim Kopieren eines Helden:* Instanz- und Slot-IDs bleiben
+   erhalten. Sie sind nur innerhalb eines Helden eindeutig; die Kopie
+   bekommt nur eine neue Helden-ID (wie bisher in `HeroActions`). Kein
+   Umschreiben von Verweisen.
+
+**Teilstand 04.10.2026 — Instanz-ID und Menge im Inventareintrag.**
+`HeroInventoryEntry` trägt additiv `instanzId` und `menge`; beide stehen nur
+bei belegtem Wert im JSON und in `jsonSchluessel`. `vergibInstanzIds`
+(`rules/derived/inventar_instanz_rules.dart`) vergibt fehlende oder doppelte
+IDs ausschließlich in `HeroActions.saveHero`, nie beim Laden, damit die
+Hash-Pins der Bestandshelden stehen bleiben. Das erste Speichern ändert je
+Eintrag nur diesen Schlüssel; `bestandsheld_ablauf_test.dart` erlaubt genau
+diese Pfade. Noch nicht umgesetzt: Kampf-Slots verweisen weiter über
+`slotRef`/`sourceRef`, `anzahl` bleibt Freitext, Umbenennen/Ablegen/Verkaufen
+laufen noch über den alten Abgleich. Risiko: Die veröffentlichte App verwirft
+`instanzId` beim Zurückschreiben; die nächste Speicherung dieser Version
+vergibt dann eine neue ID. Verweise müssen deshalb weiter über `slotRef`
+laufen, bis eine Version mit dem Feld verbreitet ist. Volle Suite grün.
+
 **Teilstand 27.09.2026 — B2/B3 behoben:** Kampf-Slots für Waffen,
 Geschosse, Rüstung und Nebenhand tragen stabile IDs. Beim Laden erhalten
 Bestandsdaten deterministische IDs und die Inventar-Namensverweise werden
