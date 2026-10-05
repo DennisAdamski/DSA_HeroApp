@@ -129,7 +129,9 @@ class _InventoryItemEditorState extends State<InventoryItemEditor> {
       await widget.onSaved(updated);
     } catch (error) {
       if (mounted) {
-        setState(() => _speicherFehler = 'Speichern fehlgeschlagen: $error');
+        // Fachliche Gründe (`StateError`) ohne das technische „Bad state:“.
+        final grund = error is StateError ? error.message : '$error';
+        setState(() => _speicherFehler = 'Speichern fehlgeschlagen: $grund');
       }
     } finally {
       if (mounted) {
