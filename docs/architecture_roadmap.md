@@ -669,8 +669,11 @@ Regelmodulen. Riverpod bindet die Abläufe an die Oberfläche.
 - [ ] Weitere Abläufe nach demselben Prinzip entflechten; bestehende Aufrufer
   schrittweise migrieren und benötigte Kompatibilitätseinstiege erhalten.
   *(Stand 05.10.2026: Rast, Laufzeitzustand, Schaden erhalten, die
-  Sofortaktionen des Bogens und des Kampf-Tabs sowie der Inventareditor sind
-  frisch; offen sind die Editorentwürfe, siehe Teilstände (1) bis (8).)*
+  Sofortaktionen des Bogens und des Kampf-Tabs, der Inventareditor und alle
+  Editorentwürfe sind frisch; kein Bogenschreibweg schreibt mehr einen
+  Snapshot. Offen sind benannte Abläufe wie „Steigerungsrunde übernehmen“
+  und „Held importieren“ sowie die Slotprüfung im Widget, siehe Teilstände
+  (1) bis (9).)*
 
 **Abnahme:** Abläufe sind ohne gerenderte Oberfläche prüfbar. Normalisierung und
 Validierung haben je eine klare Zuständigkeit. Widgets und Provider enthalten
@@ -1594,9 +1597,9 @@ Commits:
 
 *Verbleibende Risiken und nächste Schritte.*
 
-1. Die Editorentwürfe (Übersicht, Talente, Magie, Begleiter, Notizen,
+1. ~~Die Editorentwürfe (Übersicht, Talente, Magie, Begleiter, Notizen,
    Reisebericht, Kampf-Editor) schreiben weiter Snapshots, eingereiht. Sie
-   sind der nächste Schritt von ARCH-05.
+   sind der nächste Schritt von ARCH-05.~~ *Erledigt im Teilstand (9).*
 2. Zwei inhaltlich gleiche Einträge sind nicht unterscheidbar. Bearbeitet
    wird dann der erste; das Ergebnis ist dasselbe wie beim Löschen.
 3. Ein verknüpfter Eintrag, dessen Slot ein anderer Weg zwischendurch
@@ -1604,6 +1607,155 @@ Commits:
    Editor schließen und neu öffnen.
 4. Eine nicht als Zahl lesbare Geschossmenge setzt den Bestand wie bisher auf
    0.
+
+**Teilstand 05.10.2026 (9) — Editorentwürfe frisch.** Risiko 1 aus
+Teilstand (8) ist umgesetzt: Alle sieben Editorentwürfe speichern frisch.
+Damit schreibt kein Bogenschreibweg mehr einen Snapshot. Der Hauptpunkt von
+ARCH-05 bleibt offen (benannte Abläufe, Slotprüfung im Widget). Gearbeitet
+wurde direkt auf `test`.
+
+*Befund.* Übersicht, Talente, Magie, Begleiter, Notizen, Reisebericht und
+Kampf-Editor speicherten `_latestHero.copyWith(<ganze Entwurfsbereiche>)`
+per `saveHero`. Folgen:
+
+- Felder außerhalb des Entwurfs kamen aus dem zuletzt gerenderten Helden.
+  Was ein anderer Weg gerade gespeichert hatte, ging verloren.
+- Entwurfsbereiche wurden immer ganz geschrieben, auch unverändert. Ein
+  anderes Gerät, das UI2-Abenteuerblatt oder eine Sofortaktion verloren
+  ihre Änderung. Der Notizen-Tab konnte so ein inzwischen abgeschlossenes
+  Abenteuer zurücksetzen; ein erneuter Abschluss hätte doppelt gebucht.
+- Der Reisebericht rechnete seine Belohnungen gegen die angewendeten
+  Belohnungen vom Bearbeitungsbeginn. Was anderswo schon gebucht war, wurde
+  noch einmal gebucht.
+- Die Übersicht schrieb zusätzlich per `saveHeroState` LeP, AuP, AsP und KaP
+  vom Bearbeitungsbeginn zurück. Diese Felder wurden nie angezeigt; es ging
+  also nur der Zwischenstand verloren. Wegen der Untergrenze 0 wurden
+  negative LeP dabei zu 0.
+
+*Entscheidungen (Konfliktverhalten und Push mit dem Nutzer abgestimmt).*
+
+- **Drei-Wege-Abgleich je JSON-Schlüssel:** `uebernimmEditorEntwurf`
+  (`lib/rules/derived/editor_entwurf_rules.dart`) vergleicht drei Stände je
+  oberstem Schlüssel von `HeroSheet.toJson()`: die Basis (der Held, aus dem
+  der Entwurf gefüllt wurde), den Entwurf und den frisch geladenen Helden.
+  - Unverändert im Entwurf: der gespeicherte Wert.
+  - Nur im Entwurf geändert (oder beidseitig gleich): der Entwurf.
+  - Beidseitig verschieden: Konflikt.
+
+  Appearance und Background liegen dort flach, das ist fein genug. Ein
+  fehlender Schlüssel ist ein eigener Wert.
+- **Zähler:** AP-Gesamt und ausgegebene AP addieren die Differenz des
+  Entwurfs zum gespeicherten Wert. Das deckt die AP-Deltas der
+  Erwerbsdialoge und die absoluten AP-Felder der Übersicht ab. Stufe, freie
+  AP und Restfragmente rechnet `saveHero` neu.
+- **Bisheriges Speichern bleibt:** Hat sich seit der Basis nichts geändert,
+  wird der Entwurf unverändert gespeichert, auch ohne eigene Änderung (samt
+  Merkmalsmigration). Sonst entsteht der Held über JSON; neue Kampf-Slots
+  bekommen vorher eine UUID, weil `fromJson` sonst deterministische IDs
+  vergäbe.
+- **Konflikt:** `speichereEditorEntwurf`
+  (`lib/ui/screens/shared/editor_entwurf_speichern.dart`) fragt nach.
+  - „Weiter bearbeiten“ speichert nichts und lässt den Entwurf offen.
+  - „Meine Fassung speichern“ gleicht erneut frisch ab und lässt den
+    Entwurf nur in den bestätigten Bereichen gewinnen; neue
+    Überschneidungen werden erneut erfragt.
+
+  Gespeichert wird über `aendereHeldImEditor`: eingereiht und bei offener
+  Planung gesperrt.
+- **Buchungen sind nie erzwingbar:** Bei zwei Konflikten bleibt nur „Weiter
+  bearbeiten“:
+  - auf den Abenteuern, wenn inzwischen eines abgeschlossen oder wieder
+    geöffnet wurde;
+  - wenn sich die angewendeten Reisebericht-Belohnungen geändert haben.
+
+  Der Reisebericht bucht über `bucheReiseberichtEntwurf` auf den
+  gespeicherten Helden; gleichzeitige Talent- und AP-Änderungen bleiben.
+- **Basis:** Jeder Tab setzt `_entwurfBasis` dort, wo er seinen Entwurf
+  tatsächlich füllt. Nach einer Vertrauten-Steigerung (nur ohne offene
+  Änderungen möglich) werden Entwurf und Basis aus dem gespeicherten Helden
+  neu gefüllt.
+- **Übersicht ohne Laufzeitzustand:** Sie schreibt nur noch den Bogen
+  (Befund 3 des Schreibpfad-Inventars entfällt). LeP & Co. pflegen Inspector
+  und Ressourcenblatt.
+- **Notizen:** Unberührte Listen (dieselben Einträge wie in der Basis)
+  bleiben, wie sie gespeichert sind. Die Bereinigung leerer Einträge allein
+  ist keine Änderung und überschreibt keine fremde.
+- **Nebenbei behoben (Wechselwirkung auf `test`):** Seit ARCH-03 vergibt
+  `saveHero` Instanz-IDs an Inventareinträge, der Inventareditor aus
+  Teilstand (8) suchte über den vollständigen Inhalt. Nach dem
+  Zusammenführen auf `test` hatte das zwei Folgen:
+  - Der breite Editor verlor nach dem Speichern seine Auswahl; der
+    Widgettest scheiterte schon auf `20eafb1`.
+  - Ein vor einem Zwischenspeichern ohne ID angezeigter Eintrag galt beim
+    Bearbeiten oder Löschen als „inzwischen geändert“.
+
+  Trägt der gesuchte Eintrag keine ID, zählt sie jetzt auch bei den
+  Kandidaten nicht; ein bearbeiteter Eintrag behält seine gespeicherte ID.
+
+Commits:
+
+- `7bc8085` — Regeln `uebernimmEditorEntwurf` und `bucheReiseberichtEntwurf`
+  mit Tests.
+- `3594bea` — Einstieg `speichereEditorEntwurf` mit Rückfrage; Talente,
+  Magie, Begleiter und Kampf-Editor; Widgettests.
+- `43b9c81` — Übersicht, Notizen und Reisebericht; Widgettests.
+- `33d4406` — Inventarsuche übersieht beim Speichern vergebene Instanz-IDs.
+- Abschluss-Commit mit Dokumentation.
+
+*Prüfungen.*
+
+- Regeltests (`test/rules/editor_entwurf_rules_test.dart`, 18 Proben):
+  - schneller Weg, getrennte Änderungen, Konflikt samt Schlüssel, gleiche
+    Änderung beidseitig;
+  - Erzwingen nur bestätigter Schlüssel, neue Konflikte, AP-Zähler;
+  - nur bei Belegung geschriebene und geleerte Felder, UUID für neue
+    Kampf-Slots, unbekannte Felder beider Seiten;
+  - Abenteuerbuchung nicht erzwingbar, Reisebericht auf den frischen Helden
+    und nie doppelt.
+- `test/ui/shared/editor_entwurf_speichern_test.dart`: fremde Änderung
+  bleibt, „Weiter bearbeiten“, „Meine Fassung speichern“, nicht erzwingbare
+  Buchung, Planungssperre.
+- `test/ui/shared/editor_entwurf_frisch_test.dart` mit
+  `BogenTestRepository`:
+  - Alle sieben Tabs lassen eine fremde Änderung stehen, auch im eigenen
+    Bereich (Notizen: das abgeschlossene Abenteuer bleibt abgeschlossen).
+  - Talente mit eigener Änderung: daneben bleibt alles, AP zählen dazu;
+    Rückfrage mit beiden Antworten.
+  - Die Übersicht lässt negative LeP stehen.
+  - Der Reisebericht bucht auf den gespeicherten Helden und Gebuchtes nie
+    doppelt; ohne Änderung wird nichts überschrieben.
+- Gegenproben: Mit dem alten Oberflächencode scheitern alle 13
+  Tab-Widgettests.
+- Die bestehenden Tab-, Verwaltungs-, Workspace- und Frisch-Schreib-Tests
+  laufen unverändert.
+- `flutter analyze --no-pub` ohne Befund, `dart format` ohne Änderung,
+  Zeilenbudget eingehalten. Volle Suite grün (3472 bestanden,
+  3 übersprungen). Die Hash-Pins der Bestandshelden
+  sind unverändert. Eine manuelle Bedienprüfung auf Geräten steht aus.
+
+*Verbleibende Risiken und nächste Schritte.*
+
+1. Ein Abgleich je oberstem Schlüssel ist grob. Ändern Entwurf und ein
+   anderer Weg verschiedene Einträge derselben Liste (zwei Abenteuer, zwei
+   Waffen), entsteht eine Rückfrage statt einer Zusammenführung. Ein
+   Abgleich je Eintrags-ID wäre der nächste Schritt, sobald er gebraucht
+   wird.
+2. Normalisierungen beim Speichern zählen als Entwurfsänderung, wenn sie
+   etwas ändern: fehlende Startwerte eines Vertrauten, die alte
+   Vertrautenmagie am Helden. Eine Rückfrage folgt daraus nur, wenn ein
+   anderer Weg denselben Bereich gleichzeitig ändert.
+3. „Meine Fassung speichern“ kann eine fremde Vertrauten-Steigerung
+   zurücknehmen; die AP bleiben dann ausgegeben. Nur Abenteuer und
+   Reisebericht sind als Buchungen geschützt.
+4. Wählt der Nutzer beim Verlassen „Speichern“ und dann „Weiter
+   bearbeiten“, meldet die Verwaltung wie bisher „weiterhin als
+   ungespeichert markiert“.
+5. Randbefund, nicht behoben: Das Zurücknehmen eines Reisebericht-Hakens
+   entfernt nur die Kennung aus den angewendeten Belohnungen.
+   `revokeReiseberichtRewards` wird nirgends aufgerufen; AP und Boni
+   bleiben also. Vor einer Behebung fachlich klären.
+6. Talente- und Kampf-Editor warten beim Speichern weiter mit
+   `rulesCatalogProvider.future` (Befund 2 des Schreibpfad-Inventars).
 
 ## ARCH-06 — Zusammengehörige Änderungen gemeinsam speichern und synchronisieren
 

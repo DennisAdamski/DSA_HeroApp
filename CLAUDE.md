@@ -239,9 +239,21 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   Der Inventareditor schreibt ueber `aendereHeldImEditor` (Fehler zeigt
   der Editor selbst) und `inventar_aenderung_rules.dart`: Er trifft den
   geoeffneten Gegenstand ueber seinen Inhalt, nie ueber die Position, und
-  schreibt in den Kampf nur dessen eigene Geschossmenge.
-  Snapshots bleiben nur die Editorentwuerfe. Pruefung:
-  `test/ui/shared/held_frisch_schreiben_test.dart` und Geschwister mit
+  schreibt in den Kampf nur dessen eigene Geschossmenge; eine beim Speichern
+  vergebene Instanz-ID zaehlt dabei nicht als Aenderung.
+  Editorentwuerfe speichern ueber `speichereEditorEntwurf`
+  (`shared/editor_entwurf_speichern.dart`): Jeder Tab merkt sich in
+  `_entwurfBasis` den Helden, aus dem er den Entwurf gefuellt hat, und baut
+  den Entwurf auf dieser Basis. `uebernimmEditorEntwurf`
+  (`rules/derived/editor_entwurf_rules.dart`) gleicht Basis, Entwurf und
+  frischen Helden je oberstem JSON-Schluessel ab, AP sind Zaehler.
+  Beidseitig verschieden Geaendertes fragt nach („Weiter bearbeiten“ /
+  „Meine Fassung speichern“); eine Buchung (Abenteuerabschluss,
+  Reisebericht-Belohnungen) wird nie zurueckgenommen. Uebernimmt ein Entwurf
+  waehrend der Bearbeitung frisch Gespeichertes, rueckt auch die Basis nach.
+  Kein Bogenschreibweg schreibt mehr einen Snapshot. Pruefung:
+  `test/ui/shared/held_frisch_schreiben_test.dart`,
+  `test/ui/shared/editor_entwurf_frisch_test.dart` und Geschwister mit
   `test/test_support/bogen_test_repository.dart`.
 - Mit Konto endet `SyncingHeroRepository.saveHeroState` nach dem **lokalen**
   Speichern; `GebuendelteLaeufe` (`lib/data/sync/gebuendelte_laeufe.dart`)

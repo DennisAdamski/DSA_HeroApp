@@ -79,6 +79,24 @@ Steigerungsrunde schreibt er nicht und meldet „Während einer Planung ist der
 Heldenbogen gesperrt.“; Inspector-Statuswerte und das Wundschwellen-Zahnrad
 sind dann zusätzlich sichtbar gesperrt.
 
+Editorentwürfe speichern über `speichereEditorEntwurf`
+(`lib/ui/screens/shared/editor_entwurf_speichern.dart`), seit dem neunten
+ARCH-05-Teilstand. Jeder Editor merkt sich den Helden, aus dem er seinen
+Entwurf gefüllt hat (Basis). `uebernimmEditorEntwurf`
+(`lib/rules/derived/editor_entwurf_rules.dart`) gleicht Basis, Entwurf und
+frisch geladenen Helden je oberstem JSON-Schlüssel ab:
+
+- Im Entwurf Unverändertes nimmt den gespeicherten Wert.
+- Nur im Entwurf Geändertes gewinnt.
+- AP-Gesamt und ausgegebene AP sind Zähler.
+- Beidseitig verschieden Geändertes ist ein Konflikt; der Dialog bietet
+  „Weiter bearbeiten“ oder „Meine Fassung speichern“ (nur diese Bereiche).
+
+Nie erzwingbar ist, was eine Buchung zurücknähme: ein inzwischen
+abgeschlossenes oder wieder geöffnetes Abenteuer und angewendete
+Reisebericht-Belohnungen. Der Reisebericht bucht seine Belohnungen über
+`bucheReiseberichtEntwurf` auf den gespeicherten Helden.
+
 ## `HeroActions` (`lib/state/hero_actions.dart`)
 
 `HeroActions(this._ref)` liest bis zu 16 Provider über `Ref`; bezogen wird es
@@ -132,7 +150,7 @@ Domainlogik.
 | Inventar (Löschen, Dukaten) | `hero_inventory/inventory_mutations.dart` (`_deleteEntry`, `_saveDukaten`, `_verschiebeDukaten`) | Bogen | frisch, je Held nacheinander; Löschen findet den Eintrag über den Inhalt, Münzknöpfe zählen vom gespeicherten Betrag | ja (Snackbar) | nein, `inventar_aenderung_rules.dart` |
 | Inventar (Editor) | `hero_inventory/inventory_mutations.dart` (`_saveNewEntry`, `_saveUpdatedEntry`) über `aendereHeldImEditor` | Bogen | frisch, je Held nacheinander; trifft den geöffneten Gegenstand über seinen Inhalt, ein inzwischen geänderter wird abgewiesen; bei offener Planung gesperrt | ja, im Editor | nein, `inventar_aenderung_rules.dart` |
 | Kampf (Sofortspeichern) | `hero_combat/combat_sofort_aenderungen.dart` über `_aendereKampf` (`combat_state_helpers.dart`) | Bogen | frisch, je Held nacheinander; Slots über ihre ID, Geschosse zählen vom gespeicherten Bestand, Editorergebnisse auf geänderte Slots werden abgewiesen | ja (Snackbar) | Slotprüfung auf dem frischen Ergebnis; sonst `kampf_aenderung_rules.dart` |
-| Kampf (Editor) | `hero_combat/combat_state_helpers.dart` (`_saveChanges`) | Bogen | Editorentwurf, eingereiht | teilweise | Slotprüfung, Talentverteilung, AP-Delta |
+| Kampf (Editor) | `hero_combat/combat_state_helpers.dart` (`_saveChanges`) über `speichereEditorEntwurf` | Bogen | frisch, Abgleich mit dem Bearbeitungsbeginn (`uebernimmEditorEntwurf`); bei Überschneidung Rückfrage; bei offener Planung gesperrt | ja (Dialog bzw. Snackbar) | Slotprüfung, Talentverteilung; AP-Delta als Zähler |
 | Ressourcen (LeP, Au, AsP, KaP) | `resource_stepper_dialog.dart`, `inspector_vitals_tab.dart`, `inspector_magie_tab.dart` | Zustand | frisch, Schritt vom gespeicherten Wert (`RessourcenAenderung`) | ja (im Blatt bzw. Tab) | Grenzen nur in Schrittrichtung |
 | Belastung | `inspector_belastung_section.dart` | Zustand | frisch, zählt vom gespeicherten Wert | ja (im Inspector-Tab bzw. Zustandsblock) | Untergrenze 0 |
 | Ressourcen UI2 | `ui/bridges/karto_spiel_bruecke.dart` | Zustand | frisch, Schritt vom gespeicherten Wert | ja (im Blatt) | nein |
@@ -141,13 +159,13 @@ Domainlogik.
 | Zaubereffekte | `shared/active_spell_effects_dialog.dart` | Zustand | frisch, Regeln aus `active_spell_state_rules.dart` | ja (im Dialog) | nein |
 | Würfelprotokoll | `shared/dice_log_persistence.dart` (`persistDiceLogEntries`, oft per `unawaited`) | Zustand | frisch, je Held nacheinander | ja (Snackbar in `showLoggedProbeDialog`) | — |
 | Abenteuerblatt UI2 | `ui2/spielen/karto_abenteuerblatt.dart` | Bogen | frisch (`updateHero`) | ja, im Blatt | `ersetzeAbenteuer` (UI2) |
-| Abenteuer (Bestand) | `hero_notes_tab.dart` (Editor) | Bogen | Editorentwurf, eingereiht | teilweise | — |
+| Abenteuer (Bestand) | `hero_notes_tab.dart` (Editor) über `speichereEditorEntwurf` | Bogen | frisch, Abgleich mit dem Bearbeitungsbeginn; unberührte Listen bleiben gespeichert; ein inzwischen abgeschlossenes Abenteuer ist nie überschreibbar | ja (Dialog bzw. Snackbar) | Bereinigung leerer Einträge |
 | Abenteuer abschließen / wiedereröffnen | `hero_notes_tab.dart` (`_completeAdventureFor`, `_reopenAdventureFor`) | Bogen | frisch, nie doppelt gebucht | ja (Snackbar) | nein, `schliesseAbenteuerAb`/`oeffneAbenteuerWieder` |
-| Reisebericht | `hero_reisebericht_tab.dart` | Bogen | Editorentwurf | teilweise | Belohnungen |
+| Reisebericht | `hero_reisebericht_tab.dart` über `speichereEditorEntwurf` | Bogen | frisch; Belohnungen auf den gespeicherten Helden (`bucheReiseberichtEntwurf`), nie doppelt | ja (Dialog bzw. Snackbar) | Belohnungen errechnet `computePendingRewards` |
 | Merkmalsblatt UI2 | `ui2/merkmale/karto_merkmalsblatt.dart` | Bogen | frisch (`updateHero`) | ja, im Blatt | Merkmalsänderung über Regeln |
-| Übersicht (Editor) | `hero_overview_tab.dart` | Bogen **und** Zustand, zwei getrennte Schreibvorgänge | Editorentwurf | teilweise | Merkmalsentwurf, Zahlengrenzen |
+| Übersicht (Editor) | `hero_overview_tab.dart` über `speichereEditorEntwurf` | Bogen (seit Teilstand 9 kein Zustand mehr) | frisch, Abgleich mit dem Bearbeitungsbeginn; AP als Zähler | ja (Dialog bzw. Snackbar) | Merkmalsentwurf, Zahlengrenzen |
 | Übersicht (Sofortaktionen) | `hero_overview_tab.dart`, `hero_overview_stats_section.dart`, `hero_overview_epic_section.dart`, `hero_overview_base_info_section.dart` | Bogen | frisch; AP als Schritt, Ressourcenschalter nur umgestellte | ja (Ressourcenblatt im Blatt, sonst Snackbar) | nein, u. a. `epic_status_rules.dart` |
-| Talente / Magie / Begleiter (Editor) | `hero_talents_edit_actions.dart`, `hero_magic_tab.dart`, `hero_begleiter_tab.dart` | Bogen | Editorentwurf, eingereiht | teilweise | Talentverteilung, Meta-Talente, AP-Delta |
+| Talente / Magie / Begleiter (Editor) | `hero_talents_edit_actions.dart`, `hero_magic_tab.dart`, `hero_begleiter_tab.dart` über `speichereEditorEntwurf` | Bogen | frisch, Abgleich mit dem Bearbeitungsbeginn; bei Überschneidung Rückfrage; bei offener Planung gesperrt | ja (Dialog bzw. Snackbar) | Talentverteilung, Meta-Talente; AP-Delta als Zähler |
 | Vertrauten-Steigerung | `hero_begleiter_tab.dart` (`_bucheSteigerung`) | Bogen | frisch; abgewiesen, wenn der Ausgangsstand sich geändert hat | ja (Snackbar) | nein, `begleiter_aenderung_rules.dart` |
 | Avatar | `hero_overview/hero_avatar_section.dart`, `avatar_generation_dialog.dart` | Datei + Bogen | frisch | ja | — |
 | Gruppen | `hero_gruppe/` | Firestore + Bogen | frisch | ja | — |
@@ -222,6 +240,12 @@ Domainlogik.
    *Im achten ARCH-05-Teilstand behoben:* der Inventareditor (Anlegen und
    Bearbeiten) schreibt frisch über `inventar_aenderung_rules.dart`.
    Snapshots bleiben nur noch die Editorentwürfe.
+   *Im neunten ARCH-05-Teilstand behoben:* Alle sieben Editorentwürfe
+   (Übersicht, Talente, Magie, Begleiter, Notizen, Reisebericht,
+   Kampf-Editor) gleichen beim Speichern gegen den frisch geladenen Helden ab
+   (`editor_entwurf_rules.dart`, `speichereEditorEntwurf`). Der Bogen hat
+   damit keinen Snapshot-Schreibweg mehr; beim Zustand bleiben Anlegen und
+   Import.
 2. ~~**`_filterKnownTraitWarnings` wartet mit `rulesCatalogProvider.future`**~~
    *Behoben:* `saveHero` wartet jetzt über ein Abo auf den Katalog
    (`HeroActions._warteAufRegelkatalog`), höchstens
@@ -237,8 +261,11 @@ Domainlogik.
    und `importHeroBundle` (`catalogRuntimeDataProvider.future`),
    `HeroActions._resolveHeroStoragePath` (`heroStorageLocationProvider.future`),
    `house_rule_pack_admin_providers.dart` und `catalog_unlock_dialog.dart`.
-3. **Bogen und Zustand im Übersichtseditor** werden nacheinander, nicht
-   gemeinsam geschrieben (ARCH-06).
+3. ~~**Bogen und Zustand im Übersichtseditor** werden nacheinander, nicht
+   gemeinsam geschrieben (ARCH-06).~~ *Entfallen im neunten
+   ARCH-05-Teilstand:* Der Übersichtseditor schreibt nur noch den Bogen. Seine
+   LeP-/AuP-/AsP-/KaP-Felder wurden nie angezeigt und setzten den Zustand vom
+   Bearbeitungsbeginn zurück (negative LeP wurden 0).
 4. **`createHero` und der Startimport** schreiben den Zustand ohne
    Zeitstempel; der Startimport umgeht zusätzlich die Normalisierung.
 5. **Probenlogik doppelt:** `isRestProbeSuccessful` und
