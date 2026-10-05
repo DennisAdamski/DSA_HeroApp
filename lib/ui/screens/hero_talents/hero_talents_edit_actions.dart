@@ -21,6 +21,7 @@ extension _HeroTalentEditActions on _HeroTalentTableTabState {
       return;
     }
     _resetCellControllers();
+    _entwurfBasis = hero;
     _draftMetaTalents = List<HeroMetaTalent>.from(hero.metaTalents);
     _draftTalents = activateReferencedMetaTalentComponents(
       talents: hero.talents,
@@ -71,8 +72,8 @@ extension _HeroTalentEditActions on _HeroTalentTableTabState {
   }
 
   Future<void> _saveChanges() async {
-    final hero = _latestHero;
-    if (hero == null) {
+    final basis = _entwurfBasis;
+    if (basis == null) {
       return;
     }
     if (widget.scope == _TalentTabScope.combat) {
@@ -96,7 +97,7 @@ extension _HeroTalentEditActions on _HeroTalentTableTabState {
       }
       _invalidCombatTalentIds = <String>{};
     }
-    final updatedHero = hero.copyWith(
+    final entwurf = basis.copyWith(
       talents: activateReferencedMetaTalentComponents(
         talents: _draftTalents,
         metaTalents: _draftMetaTalents,
@@ -108,10 +109,24 @@ extension _HeroTalentEditActions on _HeroTalentTableTabState {
       sprachen: Map<String, HeroLanguageEntry>.unmodifiable(_draftSprachen),
       schriften: Map<String, HeroScriptEntry>.unmodifiable(_draftSchriften),
       muttersprache: _draftMuttersprache,
-      apSpent: hero.apSpent + _draftApSpentDelta,
+      apSpent: basis.apSpent + _draftApSpentDelta,
     );
-    await ref.read(heroActionsProvider).saveHero(updatedHero);
     if (!mounted) {
+      return;
+    }
+    final gespeichert = await speichereEditorEntwurf(
+      context: context,
+      ref: ref,
+      heroId: widget.heroId,
+      abgleich: (aktuell, erzwungen) => uebernimmEditorEntwurf(
+        basis: basis,
+        entwurf: entwurf,
+        aktuell: aktuell,
+        erzwungen: erzwungen,
+        neueId: neueEditorSlotId,
+      ),
+    );
+    if (!gespeichert || !mounted) {
       return;
     }
     _editController.markSaved();
