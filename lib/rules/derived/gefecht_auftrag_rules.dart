@@ -13,6 +13,8 @@ import 'gefecht_ansage_rules.dart';
 import 'gefecht_meisterparade_rules.dart';
 import 'gefecht_zielen_rules.dart';
 import 'gefecht_ansagefolge_rules.dart';
+import 'gefecht_klingen_rules.dart';
+import 'gefecht_patzer_rules.dart';
 
 /// Identische Prüfung vor Anzeige und Ausführung, mit bekannten Gegnersperren.
 Gefechtspruefung pruefeGefechtAuftrag(
@@ -22,6 +24,17 @@ Gefechtspruefung pruefeGefechtAuftrag(
   GefechtAuftrag auftrag, {
   bool eigenerAuftrag = false,
 }) {
+  final m = auftrag.manoever;
+  if (m != null && {'man_klingenwand', 'man_klingensturm'}.contains(m.id)) {
+    final p = pruefeGefechtsKlingenbeginn(
+      s,
+      snapshot,
+      katalog,
+      m,
+      kampfmittel: auftrag.kampfmittel,
+    );
+    return ergaenzeGefechtsPatzerfreigabe(p, s, p.kampfmittel);
+  }
   final basis = _pruefeGefechtAuftrag(
     s,
     snapshot,
@@ -39,7 +52,8 @@ Gefechtspruefung pruefeGefechtAuftrag(
     katalog,
     auftrag,
   );
-  return ergaenzeGefechtsAnsagefolge(mp, s, snapshot, auftrag);
+  final folge = ergaenzeGefechtsAnsagefolge(mp, s, snapshot, auftrag);
+  return ergaenzeGefechtsPatzerfreigabe(folge, s, folge.kampfmittel);
 }
 
 // Fachprüfung bleibt von Formularpflichten getrennt und wird identisch wiederverwendet.

@@ -22,6 +22,9 @@ geschützte Handlungen bleiben erhalten. Keine neue Gefechtspersistenz.
 - [x] 2a Flüchtiger benannter Gegnerkontakt; tatsächliche DK, gegnerische
   Angriffsdaten, Finte und besondere Verbote nur bei Abhängigkeit abfragen.
   Standardwerte sind keine Bestätigung. Kontaktwechsel löscht Angriffsdaten.
+  *(Am 5. Oktober 2026 auf Nutzerwunsch ersetzt: sichtbare, änderbare
+  Vorgaben zählen als Werte; siehe „Vorgaben statt Pflichtfelder“ in
+  `gefecht_implementation.md`.)*
   AT-/PA-DK-Mali, einfache/doppelte Ausweichmali, explizite Distanzänderungen
   ohne Schaden. Tests: alle DK, Mehrfach-DK, Finte einmal, Hausregelausnahmen,
   Kontaktwechsel, unbekannter Kontext und gesperrte Voraussetzungen.

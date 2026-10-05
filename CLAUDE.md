@@ -97,6 +97,19 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   Wirkregelmodul berechnet Dauer, Kosten, Kulteigenschaften und einmalige Boni.
   Aktionsausführung, Handlungskarte, Wirkdialog, Unterbrechung und Abschluss
   sind eigenständige Bausteine unter `ui2/gefecht/`.
+  **Vorgaben statt Pflichtfelder** (Nutzerentscheidung 5. Oktober 2026):
+  `gefecht_vorgaben_rules.dart` belegt nur unbekannte Angaben sichtbar vor
+  (Nahkampf, Finte 0, Zielsituation 0, Platz zum Ausweichen, Schild-WM) und
+  liefert Start-DK und Gegnerzahl. Die Regeln behandeln `null` weiterhin als
+  fehlend; Vorgaben setzen nur Gefechtsstart, Kontaktwechsel und das Ende
+  einer Abwehr. Ladezustand und Schussentfernung bleiben bewusst ohne Vorgabe.
+  Hinweise allein ergeben „Bereit“. Gegner der lokalen Begegnung
+  (`gefecht_gegner_rules.dart`, `state/gefecht_begegnung_provider.dart`)
+  tragen stabile IDs; die gemeinsame Initiative
+  (`gefecht_initiative_rules.dart`, `state/gefecht_initiative_provider.dart`)
+  verbindet ausdrücklich gewählte Helden. Klingenwand/-sturm, Patzer und
+  Bruchtest, Manöverfolgen und Fremdwirkung haben je eigene Regelmodule;
+  alles bleibt flüchtig. Stand und Grenzen: [docs/gefecht_abschluss_entwurf.md](docs/gefecht_abschluss_entwurf.md).
 - [Redesign umsetzen](docs/redesign_implementation.md) enthält drei aufeinander
   aufbauende Agentenpläne, Startprompts und die gemeinsame Umsetzungsspezifikation
   unter `docs/superpowers/`. Ausgangspunkt ist das vorhandene UI2-Fundament;

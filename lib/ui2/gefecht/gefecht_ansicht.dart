@@ -6,12 +6,21 @@ import 'package:dsa_heldenverwaltung/domain/gefecht_auftrag.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 
 import 'gefecht_angriffsergebnis.dart';
+import 'gefecht_gegner.dart';
+import 'gefecht_initiative.dart';
+import 'gefecht_beenden.dart';
+import 'gefecht_reserve.dart';
+import 'gefecht_patzer.dart';
+import 'gefecht_klingen.dart';
 
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_provider.dart';
+import 'package:dsa_heldenverwaltung/state/gefecht_patzer_provider.dart';
+import 'package:dsa_heldenverwaltung/state/gefecht_initiative_provider.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/gefecht_patzer_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_held_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_hand_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_zusatz_rules.dart';
@@ -86,7 +95,7 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
   @override
   Widget build(BuildContext context) {
     final geladen = ref.watch(heroComputedProvider(widget.heroId));
-    final s = ref.watch(gefechtProvider(widget.heroId));
+    final s = ref.watch(gefechtMitInitiativeProvider(widget.heroId));
     final katalog = ref.watch(rulesCatalogProvider).asData?.value;
     final snapshot = geladen.asData?.value;
     return PopScope(
@@ -181,11 +190,52 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
                           gesperrt: _busy,
                           onAendern: _controller.setzen,
                           onRunde: () => _run(() async {
-                            _controller.setzen(naechsteGefechtsrunde(s));
+                            if (gefechtFolgewuerfeOffen(
+                              ref.read(gefechtPatzerProvider(widget.heroId)),
+                            )) {
+                              throw StateError(
+                                'Offene Patzer-/Bruchfolgen zuerst abschließen.',
+                              );
+                            }
+                            if (s.gemeinsameInitiative) {
+                              ref
+                                  .read(gefechtInitiativeProvider.notifier)
+                                  .naechsteRunde();
+                            } else {
+                              _controller.setzen(naechsteGefechtsrunde(s));
+                            }
                           }),
                         ),
                         const SizedBox(height: 12),
+                        GefechtPatzer(
+                          heroId: widget.heroId,
+                          bestand: () => _bruecke,
+                          gesperrt: _busy,
+                          onAktion: _run,
+                        ),
                         if (s.handlung != null) _handlung(s, snapshot),
+                        GefechtKlingenkarte(
+                          heroId: widget.heroId,
+                          bestand: () => _bruecke,
+                          gesperrt: _busy,
+                          onAktion: _run,
+                        ),
+                        GefechtInitiativkarte(
+                          heroId: widget.heroId,
+                          gesperrt: _busy,
+                        ),
+                        GefechtReservekarte(
+                          heroId: widget.heroId,
+                          bestand: () => _bruecke,
+                          gesperrt: _busy,
+                          onAktion: _run,
+                        ),
+                        GefechtGegnerkarte(
+                          heroId: widget.heroId,
+                          waffenDk: w.waffenDk,
+                          fernkampf: w.fernkampf,
+                          gesperrt: _busy,
+                        ),
                         if (constraints.maxWidth < 744)
                           spalte([
                             angriff,
@@ -637,41 +687,6 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
     );
   }
 
-  Future<void> _beenden() async {
-    if (ref.read(gefechtProvider(widget.heroId))?.handlung != null) {
-      throw StateError(
-        'Laufende Handlung zuerst abschließen oder Abbruch bestätigen.',
-      );
-    }
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Gefecht beenden?'),
-        content: const Text(
-          'Runde, INI und Aktionsmarken werden verworfen. '
-          'Gespeicherte Ressourcen, Ausrüstung und Protokolle bleiben erhalten.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Weiterkämpfen'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Beenden'),
-          ),
-        ],
-      ),
-    );
-    if (ok == true && mounted) {
-      final aktuell = ref.read(gefechtProvider(widget.heroId));
-      if (aktuell?.handlung != null || aktuell?.auftrag != null) {
-        throw StateError(
-          'Laufende Handlung oder Übernahme zuerst abschließen.',
-        );
-      }
-      _controller.beenden();
-      Navigator.pop(context);
-    }
-  }
+  Future<void> _beenden() =>
+      beendeGefechtsansicht(context: context, ref: ref, heroId: widget.heroId);
 }

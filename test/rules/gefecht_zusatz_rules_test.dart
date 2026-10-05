@@ -176,9 +176,10 @@ void main() {
     expect(q.zusatz, 1);
     s = s.copyWith(kontext: _kontext.copyWith(schildWmWirksam: false));
     s = verbraucheGefechtsaktion(s, gefechtswerteFuer(snap), q);
-    expect(s.kontext.finte, isNull);
+    // Angriffsdaten werden verworfen; es gelten wieder die Vorgaben.
+    expect(s.kontext.finte, 0);
     expect(s.kontext.paradeVerboten, isNull);
-    expect(s.kontext.schildWmWirksam, isNull);
+    expect(s.kontext.schildWmWirksam, isTrue);
     expect(
       pruefeGefechtAuftrag(s, snap, testCatalog, auftrag).status,
       Gefechtsfreigabe.gesperrt,

@@ -8,6 +8,8 @@ import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 
 import 'gefecht_meisterparade_rules.dart';
 import 'gefecht_ansagefolge_rules.dart';
+import 'gefecht_vorgaben_rules.dart';
+import 'gefecht_initiative_rules.dart';
 
 /// Aufgelöste Kampfwerte ohne Regelberechnungen im Widget oder Provider.
 class Gefechtswerte {
@@ -66,7 +68,14 @@ class Gefechtswerte {
 }
 
 /// Startet eine Sitzung mit dem bereits regelgerecht ermittelten INI-Wurf.
-Gefechtszustand beginneGefecht(int wurf) => Gefechtszustand(iniWurf: wurf);
+///
+/// [dk] ist die Start-Distanzklasse (`gefechtsStartDk`); der Kontext beginnt
+/// mit den sichtbaren Vorgaben aus `gefechtsKontextMitVorgaben`.
+Gefechtszustand beginneGefecht(int wurf, {String? dk}) => Gefechtszustand(
+  iniWurf: wurf,
+  dk: dk,
+  kontext: gefechtsKontextMitVorgaben(const Gefechtskontext()),
+);
 
 /// Aktuelle Initiative ersetzt den im Helden gespeicherten Vorschauwurf.
 int gefechtsInitiative(Gefechtszustand s, Gefechtswerte w) =>
@@ -90,14 +99,17 @@ int gefechtsIniBonus(Gefechtszustand s, Gefechtswerte w) {
 }
 
 /// Noch nutzbare reguläre Angriffsmarken nach verbindlicher Umwandlung.
-int gefechtsAngriffe(Gefechtszustand s) {
+int gefechtsAngriffe(Gefechtszustand s, {bool inklusiveReserve = false}) {
   final anzahl = s.umwandlung == Gefechtsumwandlung.zweiteParade
       ? 0
       : s.umwandlung == Gefechtsumwandlung.zweiteAttacke
       ? 2
       : 1;
   final rest = anzahl - s.angriffeVerbraucht;
-  return rest < 0 ? 0 : rest;
+  final bezahlt = inklusiveReserve && s.reserveIni != null && s.reserveBereit
+      ? 1
+      : 0;
+  return (rest < 0 ? 0 : rest) + bezahlt;
 }
 
 /// Verbleibende reguläre Reaktionen schließen das waffengebundene SK-II-Budget aus.
@@ -231,6 +243,8 @@ Gefechtszustand naechsteGefechtsrunde(Gefechtszustand s) {
     defensiverStil: false,
     umgewandelteAktionOffen: true,
     resetBonus: true,
+    ohneKlingen: s.klingen?.parade == true,
+    reserveBereit: false,
   );
 }
 
@@ -250,7 +264,10 @@ Gefechtspruefung pruefeGefechtsaktion(
   int distanzSchritte = 0,
 }) {
   final pruefen = <String>[...pruefGruende];
-  final sperren = <String>[...sperrGruende];
+  final sperren = <String>[
+    ...sperrGruende,
+    if (s.patzerSperre != null) s.patzerSperre!,
+  ];
   if (w.umwandlungVerboten && s.umwandlung != Gefechtsumwandlung.normal) {
     sperren.add('Geführte Waffe verbietet die angesagte Umwandlung.');
   }
@@ -312,6 +329,18 @@ Gefechtspruefung pruefeGefechtsaktion(
   if (s.auftrag != null && !eigenerAuftrag) {
     sperren.add('Ein Aktionsauftrag läuft.');
   }
+  final zeitSperre = gefechtsZeitsperre(s, w, aktion);
+  if (zeitSperre != null) sperren.add(zeitSperre);
+  final reserveSperre = gefechtsReservesperre(s, aktion);
+  if (reserveSperre != null) sperren.add(reserveSperre);
+  if (s.klingen != null &&
+      !eigenerAuftrag &&
+      (s.klingen!.parade
+          ? aktion == Gefechtsaktion.parade ||
+                aktion == Gefechtsaktion.schildparade
+          : aktion == Gefechtsaktion.angriff)) {
+    sperren.add('Geteilte Teilproben zuerst ausführen oder verwerfen.');
+  }
   final verteidigung =
       aktion == Gefechtsaktion.parade ||
       aktion == Gefechtsaktion.schildparade ||
@@ -327,12 +356,10 @@ Gefechtspruefung pruefeGefechtsaktion(
       a = 1;
       ziel ??= w.at;
       if (!w.waffeVorhanden) sperren.add('Keine geführte Waffe.');
-      if (!w.fernkampf) {
-        if (s.dk == null) {
-          pruefen.add('Aktuelle Distanzklasse festlegen.');
-        }
-      } else {
-        pruefen.add('Entfernung, Sicht, Munition und Ladezustand prüfen.');
+      // Entfernung, Zielsituation, Munition und Ladung prüft
+      // `pruefeGefechtsFernkampf` einzeln; ein Sammelhinweis entfällt.
+      if (!w.fernkampf && s.dk == null) {
+        pruefen.add('Aktuelle Distanzklasse festlegen.');
       }
       if (s.umwandlung == Gefechtsumwandlung.zweiteAttacke &&
           s.umgewandelteAktionOffen &&
@@ -405,7 +432,6 @@ Gefechtspruefung pruefeGefechtsaktion(
       pruefen.add('Zeitpunkt, Dauer und Wirkung ausdrücklich bestätigen.');
     case Gefechtsaktion.freieAktion:
       f = 1;
-      pruefen.add('Art der freien Aktion ausdrücklich bestätigen.');
     case Gefechtsaktion.zusatzaktion:
       z = 1;
       if (zusatzParade ? !w.zusatzParade : !w.zusatzAttacke) {
@@ -424,7 +450,7 @@ Gefechtspruefung pruefeGefechtsaktion(
     if (s.haltung == Gefechtshaltung.liegend) {
       sperren.add('Liegend kein Ausweichen.');
     }
-    final gegner = s.kontext.gegnerzahl ?? s.gegner;
+    final gegner = gefechtsGegnerzahl(s);
     if (gegner >= 4) {
       sperren.add('Bei vier oder mehr Gegnern kein Ausweichen.');
     }
@@ -442,7 +468,10 @@ Gefechtspruefung pruefeGefechtsaktion(
       'Laufendes Wirken ausdrücklich auf Störung oder Abbruch prüfen.',
     );
   }
-  if (a > gefechtsAngriffe(s)) sperren.add('Keine Angriffsaktion verfügbar.');
+  if (a >
+      gefechtsAngriffe(s, inklusiveReserve: aktion == Gefechtsaktion.angriff)) {
+    sperren.add('Keine Angriffsaktion verfügbar.');
+  }
   final paradenBudget = aktion == Gefechtsaktion.schildparade
       ? gefechtsParaden(s, w)
       : gefechtsRegulaereParaden(s);
@@ -539,6 +568,7 @@ Gefechtszustand verbraucheGefechtsaktion(
           pruefung.aktion == Gefechtsaktion.schildparade);
   final regulaereAt =
       pruefung.angriffe > 0 && pruefung.aktion == Gefechtsaktion.angriff;
+  final reserveGebucht = regulaereAt && s.reserveIni != null && s.reserveBereit;
   return s.copyWith(
     regulaeresAngriffspaar: regulaereAt ? pruefung.ausruestungspaar : null,
     ansageFolgemalus: gefechtsAnsageFolgemalusNachBuchung(s, pruefung, erfolg),
@@ -550,7 +580,9 @@ Gefechtszustand verbraucheGefechtsaktion(
     regulaeresParadepaar: regulaerePa ? pruefung.ausruestungspaar : null,
     regulaeresParademittel: regulaerePa ? pruefung.kampfmittel : null,
     paradeMitAnsage: regulaerePa ? pruefung.mitAnsage : null,
-    angriffeVerbraucht: s.angriffeVerbraucht + pruefung.angriffe,
+    angriffeVerbraucht:
+        s.angriffeVerbraucht + (reserveGebucht ? 0 : pruefung.angriffe),
+    ohneReserve: reserveGebucht,
     paradenVerbraucht: s.paradenVerbraucht + pruefung.paraden,
     schildparadenVerbraucht:
         s.schildparadenVerbraucht +
@@ -580,7 +612,7 @@ Gefechtszustand verbraucheGefechtsaktion(
             pruefung.freie > 0 ||
             pruefung.probenart == Gefechtsaktion.parade ||
             pruefung.probenart == Gefechtsaktion.schildparade
-        ? s.kontext.ohneAngriff()
+        ? gefechtsKontextMitVorgaben(s.kontext.ohneAngriff())
         : s.kontext,
   );
 }

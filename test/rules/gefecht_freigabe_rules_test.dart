@@ -145,7 +145,8 @@ void main() {
       expect(nachher.angriffeVerbraucht, 0);
       expect(nachher.regulaereParade, isTrue);
       expect(nachher.regulaereAttacke, isFalse);
-      expect(nachher.kontext.finte, isNull);
+      // Die Finte des abgewehrten Angriffs fällt auf die Vorgabe 0 zurück.
+      expect(nachher.kontext.finte, 0);
     });
   }
 

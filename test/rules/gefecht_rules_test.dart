@@ -38,9 +38,10 @@ void main() {
     ]) {
       expect(pruefeGefechtsaktion(s, w, a).status, Gefechtsfreigabe.gesperrt);
     }
+    // Mit den Vorgaben (Nahkampf, Finte 0) fehlt für die Schildparade nichts.
     expect(
       pruefeGefechtsaktion(s, w, Gefechtsaktion.schildparade).status,
-      Gefechtsfreigabe.pruefen,
+      Gefechtsfreigabe.bereit,
     );
   });
   test(

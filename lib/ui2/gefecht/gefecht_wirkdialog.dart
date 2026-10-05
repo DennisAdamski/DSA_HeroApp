@@ -5,6 +5,7 @@ import 'package:dsa_heldenverwaltung/domain/gefecht_wirken.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_magie_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_wirken_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/gefecht_fremdwirkung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_requirement_context.dart';
 
 /// Bestätigt variable Profile und bindet bekannte Dauer/Kosten an die echte Probe.
@@ -44,6 +45,8 @@ class _WirkdialogState extends State<GefechtWirkdialog> {
     if (z != null) {
       _dauer.text = gefechtsFesteAktionen(z.castingTime)?.toString() ?? '';
       _kosten.text = gefechtsFesteKosten(z.aspCost)?.toString() ?? '';
+      if (gefechtsFremdprofilUnterstuetzt(z.id)) _kosten.text = '0';
+      _aufrecht.text = widget.zustand.aufrechterhalteneZauber.toString();
       _rep = widget.snapshot.hero.spells[z.id]?.learnedRepresentation;
       if (_rep == null && widget.snapshot.hero.representationen.length == 1) {
         _rep = widget.snapshot.hero.representationen.single;
@@ -292,6 +295,12 @@ class _WirkdialogState extends State<GefechtWirkdialog> {
                 _kosten,
                 karmal ? 'Geplante KaP-Kosten' : 'Geplante AsP-Kosten',
               ),
+              if (gefechtsFremdprofilUnterstuetzt(widget.zauber?.id ?? ''))
+                const Text(
+                  'Grundform mit Fremdziel: Erfolgskosten werden aus '
+                  '2W6 + ZfP* ermittelt. Fehlversuchskosten ausdrücklich eingeben; '
+                  'die variable Formel wird dafür nicht geraten.',
+                ),
               _text(
                 _zuschlag,
                 'Zusätzlicher Probenzuschlag (bereits enthaltene Mali auslassen)',
@@ -326,7 +335,11 @@ class _WirkdialogState extends State<GefechtWirkdialog> {
           child: const Text('Abbrechen'),
         ),
         FilledButton(
-          onPressed: gueltig && _bestaetigt
+          onPressed:
+              gueltig &&
+                  _bestaetigt &&
+                  (!gefechtsFremdprofilUnterstuetzt(widget.zauber?.id ?? '') ||
+                      fehl != null)
               ? () => Navigator.pop(context, (
                   _art,
                   GefechtsWirkprofil(
@@ -335,6 +348,7 @@ class _WirkdialogState extends State<GefechtWirkdialog> {
                     kosten: kosten,
                     karmal: karmal,
                     repraesentation: _rep ?? '',
+                    aufrechterhalteneZauber: karmal ? null : aufrecht,
                     misserfolgKosten: fehl,
                     endprobe: _endprobe,
                     identitaet: id,

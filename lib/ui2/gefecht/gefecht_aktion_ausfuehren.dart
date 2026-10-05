@@ -5,6 +5,7 @@ import 'package:dsa_heldenverwaltung/domain/gefecht.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht_auftrag.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_provider.dart';
+import 'package:dsa_heldenverwaltung/state/gefecht_initiative_provider.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_held_rules.dart';
@@ -18,6 +19,8 @@ import 'gefecht_aktionsdialog.dart';
 import 'gefecht_orientieren.dart';
 import 'gefecht_schuss.dart';
 import 'gefecht_meisterparade.dart';
+import 'gefecht_patzer.dart';
+import 'gefecht_klingen.dart';
 
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_laden_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_kampfmittel_rules.dart';
@@ -44,6 +47,18 @@ Future<void> fuehreGefechtsaktionAus({
   GefechtsDialogzweck zweck = GefechtsDialogzweck.aktion,
 }) async {
   if (k == null) return;
+  if (m != null && {'man_klingenwand', 'man_klingensturm'}.contains(m.id)) {
+    await zeigeGefechtsKlingenbeginn(
+      context: context,
+      ref: ref,
+      heroId: heroId,
+      katalog: k,
+      manoever: m,
+      snapshot: snapshot,
+      kampfmittel: kampfmittel,
+    );
+    return;
+  }
   if (aktion == Gefechtsaktion.orientieren ||
       aktion == Gefechtsaktion.position && s.desorientiert) {
     await zeigeOrientieren(
@@ -109,7 +124,7 @@ Future<void> fuehreGefechtsAuftragAus({
 }) async {
   final controller = ref.read(gefechtProvider(heroId).notifier);
   final frisch = ref.read(heroComputedProvider(heroId)).asData?.value;
-  final aktuell = ref.read(gefechtProvider(heroId));
+  final aktuell = ref.read(gefechtMitInitiativeProvider(heroId));
   if (frisch == null || aktuell == null) return;
   final zielhandlung = aktuell.handlung?.art == Gefechtshandlungsart.zielen;
   if (zielhandlung &&
@@ -177,6 +192,15 @@ Future<void> fuehreGefechtsAuftragAus({
   void buchen([ProbeResult? result]) {
     if (!controller.abschliessen(id, w, p, erfolg: result?.success)) return;
     gewuerfelt ??= result;
+    if (result != null && !w.fernkampf) {
+      starteGefechtsPatzer(
+        ref: ref,
+        heroId: heroId,
+        auftragId: id,
+        result: result,
+        kampfmittel: p.kampfmittel ?? aktuellerAuftrag.kampfmittel,
+      );
+    }
     final angriff = gefechtsAngriffsergebnisNachBuchung(
       auftragId: id,
       buchungErfolgreich: true,
@@ -191,7 +215,7 @@ Future<void> fuehreGefechtsAuftragAus({
             !aktuellerAuftrag.zusatzParade) {
       controller.setzen(
         ergaenzeGefechtsAngriffsergebnis(
-          ref.read(gefechtProvider(heroId))!,
+          ref.read(gefechtMitInitiativeProvider(heroId))!,
           angriff,
         ).copyWith(ohneZielstand: w.fernkampf),
       );
@@ -200,10 +224,12 @@ Future<void> fuehreGefechtsAuftragAus({
         request != null &&
         gefechtsBonusPasst(request, bonus)) {
       controller.setzen(
-        ref.read(gefechtProvider(heroId))!.copyWith(ohneMirakelbonus: true),
+        ref
+            .read(gefechtMitInitiativeProvider(heroId))!
+            .copyWith(ohneMirakelbonus: true),
       );
     }
-    final jetzt = ref.read(gefechtProvider(heroId))!;
+    final jetzt = ref.read(gefechtMitInitiativeProvider(heroId))!;
     if (restHandlung != null) {
       controller.setzen(jetzt.copyWith(handlung: restHandlung));
     }
@@ -241,7 +267,7 @@ Future<void> fuehreGefechtsAuftragAus({
     if (gewuerfelt?.success == true && aktuellerAuftrag.distanzSchritte > 0) {
       controller.setzen(
         ref
-            .read(gefechtProvider(heroId))!
+            .read(gefechtMitInitiativeProvider(heroId))!
             .copyWith(
               dk: naechsteGefechtsDk(
                 aktuellerAuftrag.dk,
@@ -275,7 +301,7 @@ Future<void> fuehreGefechtsAuftragAus({
       if (abgewehrt == false) {
         controller.setzen(
           ref
-              .read(gefechtProvider(heroId))!
+              .read(gefechtMitInitiativeProvider(heroId))!
               .copyWith(
                 dk: naechsteGefechtsDk(
                   aktuellerAuftrag.dk,
@@ -287,7 +313,7 @@ Future<void> fuehreGefechtsAuftragAus({
     }
   } finally {
     controller.abbrechen(id);
-    final nachher = ref.read(gefechtProvider(heroId));
+    final nachher = ref.read(gefechtMitInitiativeProvider(heroId));
     if (zielhandlung &&
         gewuerfelt == null &&
         nachher != null &&
@@ -301,7 +327,7 @@ Future<void> fuehreGefechtsAuftragAus({
       context.mounted) {
     await zeigeMeisterparadeFehlschlag(context, aktuellerAuftrag, frisch);
   }
-  if (ref.read(gefechtProvider(heroId))?.handlung?.art ==
+  if (ref.read(gefechtMitInitiativeProvider(heroId))?.handlung?.art ==
           Gefechtshandlungsart.fernkampf &&
       context.mounted) {
     await uebernimmGefechtsSchuss(

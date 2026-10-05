@@ -109,6 +109,15 @@ Profile anhand der vorhandenen Katalogdaten und Quellen auswählen, nicht aus
 Beschreibungsschlagwörtern automatisieren. Abschließende Ablaufprüfung mit
 mehreren Angriffen, Waffenwechsel, Laden über Runden und unterbrochenem Zauber.
 
+## Stand der Pakete 3–6 (5. Oktober 2026)
+
+Die Pakete 3–6 sind mit dem bestätigten Umfang „mehrere Gegner mit Name, LeP,
+RS und INI flüchtig führen“ umgesetzt und im [Abschlussentwurf](gefecht_abschluss_entwurf.md)
+sowie in `gefecht_implementation.md` beschrieben: lokale Begegnung und
+gemeinsame Initiative mit Reserve, Klingenwand/Klingensturm, Entwaffnen/Umreißen
+mit Gegenprobe, Patzer und Bruchtest sowie der Fulminictus als erste
+Fremdwirkung. Weitere Magie-/Karmaprofile bleiben einzeln zu belegen.
+
 ## Fortschritt und Grenzen
 
 Die Reihenfolge ist verbindlich; offene fachliche Entscheidungen sind keine

@@ -4,6 +4,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/gefecht_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_ablauf_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_orientieren_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_kontext_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/gefecht_vorgaben_rules.dart';
 
 /// Platzsparende Rundensteuerung mit direkter, verbindlicher Umwandlungsansage.
 class GefechtRundenleiste extends StatelessWidget {
@@ -260,7 +261,13 @@ class GefechtRundenleiste extends StatelessWidget {
       ),
     );
     if (name != null && name.trim() != zustand.kontext.kontakt) {
-      onAendern(wechsleGefechtskontakt(zustand, name));
+      onAendern(
+        wechsleGefechtskontakt(
+          zustand,
+          name,
+          startDk: gefechtsStartDk(werte.waffenDk, fernkampf: werte.fernkampf),
+        ),
+      );
     }
     await Future<void>.delayed(const Duration(milliseconds: 300));
     text.dispose();

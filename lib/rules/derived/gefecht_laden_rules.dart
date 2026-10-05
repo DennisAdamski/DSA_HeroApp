@@ -93,7 +93,7 @@ Gefechtspruefung pruefeGefechtsZielbeginn(
       ? null
       : Gefechtszielstand(
           kampfmittel: wahl,
-          zielkontakt: a.kontext?.kontakt ?? s.kontext.kontakt,
+          zielkontakt: (a.kontext ?? s.kontext).zielkennung,
           ansage: a.fernkampfansage,
           zielErleichterung: a.zielErleichterung,
           bezahlteAktionen: gefechtsZieldauer(snap, a),
@@ -234,7 +234,8 @@ Gefechtsvorbereitungspruefung pruefeGefechtsVorbereitung(
       );
     }
   }
-  if (!laden && s.kontext.kontakt != v.schussauftrag!.kontext?.kontakt) {
+  if (!laden &&
+      s.kontext.zielkennung != v.schussauftrag!.kontext?.zielkennung) {
     gruende.add(
       'Zielkontakt geändert; bezahltes Zielen gilt nur für das ursprüngliche Ziel.',
     );
@@ -285,7 +286,7 @@ Gefechtszustand bezahleGefechtsVorbereitung(
       ? null
       : Gefechtszielstand(
           kampfmittel: v.kampfmittel,
-          zielkontakt: v.schussauftrag!.kontext!.kontakt,
+          zielkontakt: v.schussauftrag!.kontext!.zielkennung,
           ansage: v.schussauftrag!.fernkampfansage,
           zielErleichterung: v.schussauftrag!.zielErleichterung,
           bezahlteAktionen: bezahlt,

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_magie_rules.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_provider.dart';
+import 'package:dsa_heldenverwaltung/state/gefecht_initiative_provider.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_wirken_rules.dart';
@@ -17,7 +18,7 @@ Future<void> brecheGefechtsHandlungAb({
   required WidgetRef ref,
   required String heroId,
 }) async {
-  final s = ref.read(gefechtProvider(heroId));
+  final s = ref.read(gefechtMitInitiativeProvider(heroId));
   final h = s?.handlung;
   if (s == null || h == null || s.auftrag != null) return;
   if (h.art == Gefechtshandlungsart.fernkampf || h.kostenUebernommen) {
@@ -53,7 +54,7 @@ Future<void> brecheGefechtsHandlungAb({
     // Unbelegte Unterbrechungsregeln werden explizit geklärt, nicht geraten.
     final kosten = await _abbruchKosten(context, h.wirken!.karmal);
     if (kosten == null || !context.mounted) return;
-    final aktuell = ref.read(gefechtProvider(heroId));
+    final aktuell = ref.read(gefechtMitInitiativeProvider(heroId));
     if (aktuell == null || aktuell.handlung != h || aktuell.auftrag != null) {
       return;
     }
@@ -72,7 +73,7 @@ Future<void> brecheGefechtsHandlungAb({
       heroId: heroId,
     );
   } else {
-    final aktuell = ref.read(gefechtProvider(heroId));
+    final aktuell = ref.read(gefechtMitInitiativeProvider(heroId));
     if (aktuell == null || aktuell.handlung != h || aktuell.auftrag != null) {
       return;
     }
@@ -151,7 +152,7 @@ Future<void> stoereGefechtsWirken({
   required String heroId,
   required KartoGefechtsAdapter bestand,
 }) async {
-  final s = ref.read(gefechtProvider(heroId));
+  final s = ref.read(gefechtMitInitiativeProvider(heroId));
   final h = s?.handlung;
   final snapshot = ref.read(heroComputedProvider(heroId)).asData?.value;
   final katalog = ref.read(rulesCatalogProvider).asData?.value;
@@ -251,13 +252,15 @@ Future<void> stoereGefechtsWirken({
         ctl.abbrechen(id);
         if (gefechtsBonusPasst(request, s.mirakelbonus)) {
           ctl.setzen(
-            ref.read(gefechtProvider(heroId))!.copyWith(ohneMirakelbonus: true),
+            ref
+                .read(gefechtMitInitiativeProvider(heroId))!
+                .copyWith(ohneMirakelbonus: true),
           );
         }
         if (!r.success) {
           ctl.setzen(
             ref
-                .read(gefechtProvider(heroId))!
+                .read(gefechtMitInitiativeProvider(heroId))!
                 .copyWith(
                   handlung: h.copyWith(verbleibend: 0, gescheitert: true),
                 ),
@@ -269,7 +272,8 @@ Future<void> stoereGefechtsWirken({
     ctl.abbrechen(id);
   }
   if (context.mounted &&
-      ref.read(gefechtProvider(heroId))?.handlung?.gescheitert == true) {
+      ref.read(gefechtMitInitiativeProvider(heroId))?.handlung?.gescheitert ==
+          true) {
     await zeigeGefechtsWirkabschluss(
       context: context,
       ref: ref,

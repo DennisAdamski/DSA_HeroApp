@@ -6,6 +6,7 @@ class Gefechtskontext {
   /// Trennt länger gültige Kontaktwerte von Angaben des aktuellen Angriffs.
   const Gefechtskontext({
     this.kontakt = '',
+    this.gegnerId,
     this.gegnerzahl,
     this.gegnerDk,
     this.angriffsart,
@@ -24,6 +25,12 @@ class Gefechtskontext {
     this.schildWmWirksam,
   });
   final String kontakt;
+
+  /// Stabile ID des ausdrücklich gewählten lokalen Gegners.
+  final String? gegnerId;
+
+  /// Zielzeit ist bei erfassten Gegnern an Identität statt Namen gebunden.
+  String get zielkennung => gegnerId == null ? kontakt : 'gegner:$gegnerId';
   final int? gegnerzahl, finte, entfernung, situationsZuschlag;
   final String? gegnerDk;
   final Gefechtsangriffsart? angriffsart;
@@ -52,6 +59,7 @@ class Gefechtskontext {
     bool ohneLadezustand = false,
   }) => Gefechtskontext(
     kontakt: kontakt,
+    gegnerId: gegnerId,
     gegnerzahl: gegnerzahl,
     gegnerDk: gegnerDk,
     angriffsart: angriffsart,
@@ -73,8 +81,12 @@ class Gefechtskontext {
   );
 
   /// Ein abgewehrter Angriff hinterlässt keine Finte für den folgenden Angriff.
+  ///
+  /// Die eigene Zielsituation im Fernkampf beschreibt das Ziel, nicht den
+  /// gegnerischen Angriff, und bleibt deshalb wie die Entfernung erhalten.
   Gefechtskontext ohneAngriff() => Gefechtskontext(
     kontakt: kontakt,
+    gegnerId: gegnerId,
     gegnerzahl: gegnerzahl,
     gegnerDk: gegnerDk,
     platzZumAusweichen: platzZumAusweichen,
@@ -85,6 +97,7 @@ class Gefechtskontext {
     geladen: geladen,
     getuemmel: getuemmel,
     kontrollbereich: kontrollbereich,
+    situationsZuschlag: situationsZuschlag,
   );
 }
 

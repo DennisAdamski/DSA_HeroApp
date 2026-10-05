@@ -6,6 +6,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/gefecht_held_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_wirken_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_rules.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_provider.dart';
+import 'package:dsa_heldenverwaltung/state/gefecht_initiative_provider.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_gefechts_adapter.dart';
 
@@ -18,7 +19,7 @@ Future<void> zeigeOrientieren({
   bool position = false,
 }) async {
   final snapshot = ref.read(heroComputedProvider(heroId)).asData?.value;
-  final s = ref.read(gefechtProvider(heroId));
+  final s = ref.read(gefechtMitInitiativeProvider(heroId));
   if (snapshot == null || s == null) return;
   final plan = orientierungFuer(snapshot, position: position);
   final werte = gefechtswerteFuer(snapshot);
@@ -63,7 +64,7 @@ Future<void> zeigeOrientieren({
   );
   if (ok != true || !context.mounted) return;
   final controller = ref.read(gefechtProvider(heroId).notifier);
-  final aktuell = ref.read(gefechtProvider(heroId));
+  final aktuell = ref.read(gefechtMitInitiativeProvider(heroId));
   if (aktuell == null || aktuell.handlung != null) return;
   // Nur ein typisierter Fortsetzen-Pfad darf diese Resthandlung bearbeiten.
   controller.setzen(
@@ -92,7 +93,7 @@ Future<void> fuehreOrientierungFort({
   required String heroId,
   required KartoGefechtsAdapter bestand,
 }) async {
-  final s = ref.read(gefechtProvider(heroId));
+  final s = ref.read(gefechtMitInitiativeProvider(heroId));
   final snapshot = ref.read(heroComputedProvider(heroId)).asData?.value;
   final h = s?.handlung;
   if (s == null || snapshot == null || h == null) return;
@@ -108,7 +109,7 @@ Future<void> fuehreOrientierungFort({
   final plan = orientierungFuer(snapshot, position: position);
   void buchen(bool erfolg) {
     if (!controller.abschliessen(id, w, p)) return;
-    var neu = ref.read(gefechtProvider(heroId))!;
+    var neu = ref.read(gefechtMitInitiativeProvider(heroId))!;
     if (h.verbleibend > 1) {
       neu = neu.copyWith(
         handlung: Gefechtshandlung(
@@ -142,12 +143,14 @@ Future<void> fuehreOrientierungFort({
           ansageFolgemalus: s.ansageFolgemalus,
         ),
         onResolved: (r) {
-          if (ref.read(gefechtProvider(heroId))?.auftrag != id) return;
+          if (ref.read(gefechtMitInitiativeProvider(heroId))?.auftrag != id) {
+            return;
+          }
           buchen(r.success);
           if (gefechtsBonusPasst(plan.probe!, s.mirakelbonus)) {
             controller.setzen(
               ref
-                  .read(gefechtProvider(heroId))!
+                  .read(gefechtMitInitiativeProvider(heroId))!
                   .copyWith(ohneMirakelbonus: true),
             );
           }

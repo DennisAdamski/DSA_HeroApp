@@ -256,7 +256,7 @@ Gefechtspruefung ergaenzeGefechtsansagen(
         z.kampfmittel.id == p.kampfmittel?.id &&
         z.kampfmittel.art == p.kampfmittel?.art &&
         z.ansage == a.fernkampfansage &&
-        z.zielkontakt == (a.kontext ?? s.kontext).kontakt &&
+        z.zielkontakt == (a.kontext ?? s.kontext).zielkennung &&
         z.zielkontakt.trim().isNotEmpty &&
         z.geschossId.isNotEmpty &&
         z.geschossId == w.waffe?.rangedProfile.selectedProjectileOrNull?.id &&

@@ -5,6 +5,8 @@ import 'gefecht_kontext.dart';
 import 'gefecht_wirken.dart';
 import 'gefecht_angriff.dart';
 import 'gefecht_laden.dart';
+import 'gefecht_klingen.dart';
+import 'gefecht_fremdwirkung.dart';
 
 /// Verlässlichkeit einer Aktionsfreigabe; Hinweise allein sperren keine Aktion.
 enum Gefechtsfreigabe { bereit, pruefen, gesperrt }
@@ -76,6 +78,8 @@ class Gefechtshandlung {
     this.abbruchKosten,
     this.zielHand,
     this.vorbereitung,
+    this.wirkungId,
+    this.fremdwirkungswurf,
   });
   final Gefechtshandlungsart art;
   final ProbeResult? ergebnis;
@@ -87,6 +91,10 @@ class Gefechtshandlung {
   final MainWeaponSlot? waffe;
   final OffhandEquipmentEntry? nebenhand;
   final GefechtsWirkprofil? wirken;
+
+  /// Stabile Buchungskennung und eingefrorener fremder Schadenswurf für Retry.
+  final String? wirkungId;
+  final GefechtsFremdwirkungswurf? fremdwirkungswurf;
   final bool kostenUebernommen, gescheitert;
 
   /// Ausdrücklich manuell geklärte Unterbrechungskosten ohne angenommene Formel.
@@ -106,6 +114,7 @@ class Gefechtshandlung {
     bool? gescheitert,
     int? abbruchKosten,
     Gefechtsvorbereitung? vorbereitung,
+    GefechtsFremdwirkungswurf? fremdwirkungswurf,
   }) => Gefechtshandlung(
     titel: titel,
     verbleibend: verbleibend ?? this.verbleibend,
@@ -116,6 +125,8 @@ class Gefechtshandlung {
     nebenhand: nebenhand,
     probe: probe,
     wirken: wirken,
+    wirkungId: wirkungId,
+    fremdwirkungswurf: fremdwirkungswurf ?? this.fremdwirkungswurf,
     ergebnis: ergebnis ?? this.ergebnis,
     kostenUebernommen: kostenUebernommen ?? this.kostenUebernommen,
     gescheitert: gescheitert ?? this.gescheitert,
@@ -165,6 +176,18 @@ class Gefechtszustand {
     this.ladestaende = const {},
     this.meisterparadeBonus = 0,
     this.ansageFolgemalus = 0,
+    this.aufrechterhalteneZauber = 0,
+    this.gemeinsameInitiative = false,
+    this.initiativphase,
+    this.zeitpunktAbgeschlossen = false,
+    this.regulaerePhaseOffen = false,
+    this.reserveIni,
+    this.reserveBereit = false,
+    this.reserveHatVorrang = true,
+    this.klingen,
+    this.patzerSperre,
+    this.initiativSperre,
+    this.gesperrteKampfmittel = const {},
   });
   final int runde, iniWurf, iniVerlust;
   final int geschuetzterIniVerlust, ungeklaerterIniVerlust;
@@ -214,6 +237,32 @@ class Gefechtszustand {
   /// WdS 60: misslungene Ansage erschwert Proben bis einschließlich nächster AT/PA.
   final int ansageFolgemalus;
 
+  /// Zuletzt angegebene Zahl aufrechterhaltener Zauber; belegt das Wirken vor.
+  final int aufrechterhalteneZauber;
+
+  /// Nur abgeleitete Phasenprüfung, keine zusätzliche Gefechtspersistenz.
+  final bool gemeinsameInitiative, zeitpunktAbgeschlossen, regulaerePhaseOffen;
+  final int? initiativphase;
+
+  /// Eine bereits bezahlte reguläre Aktion, getrennt von neuen Rundenmarken.
+  final int? reserveIni;
+  final bool reserveBereit;
+
+  /// Frisch abgeleitete Priorität konkurrierender verzögerter Aktionen.
+  final bool reserveHatVorrang;
+
+  /// Geteilte Proben reservieren genau eine eigene reguläre Quellaktion.
+  final GefechtsKlingenstand? klingen;
+
+  /// Frisch abgeleitete Sperre ungeklärter Folgen oder verlorener Rundenaktionen.
+  final String? patzerSperre;
+
+  /// Fehlende Teilnehmerspielwerte unterbrechen aktive Gruppenaktionen.
+  final String? initiativSperre;
+
+  /// Defekte oder verlorene Gegenstände bleiben an ihrer physischen ID gebunden.
+  final Map<String, String> gesperrteKampfmittel;
+
   /// Ändert nur benannte Sitzungsteile; kein JSON oder Heldenformat betroffen.
   Gefechtszustand copyWith({
     int? runde,
@@ -259,6 +308,23 @@ class Gefechtszustand {
     Map<String, Gefechtsladestand>? ladestaende,
     int? meisterparadeBonus,
     int? ansageFolgemalus,
+    int? aufrechterhalteneZauber,
+    bool? gemeinsameInitiative,
+    int? initiativphase,
+    bool ohneInitiativphase = false,
+    bool? zeitpunktAbgeschlossen,
+    bool? regulaerePhaseOffen,
+    int? reserveIni,
+    bool? reserveBereit,
+    bool ohneReserve = false,
+    bool? reserveHatVorrang,
+    GefechtsKlingenstand? klingen,
+    bool ohneKlingen = false,
+    String? patzerSperre,
+    bool ohnePatzerSperre = false,
+    String? initiativSperre,
+    bool ohneInitiativSperre = false,
+    Map<String, String>? gesperrteKampfmittel,
   }) => Gefechtszustand(
     runde: runde ?? this.runde,
     iniWurf: iniWurf ?? this.iniWurf,
@@ -310,6 +376,24 @@ class Gefechtszustand {
     ladestaende: ladestaende ?? this.ladestaende,
     meisterparadeBonus: meisterparadeBonus ?? this.meisterparadeBonus,
     ansageFolgemalus: ansageFolgemalus ?? this.ansageFolgemalus,
+    aufrechterhalteneZauber:
+        aufrechterhalteneZauber ?? this.aufrechterhalteneZauber,
+    gemeinsameInitiative: gemeinsameInitiative ?? this.gemeinsameInitiative,
+    initiativphase: ohneInitiativphase
+        ? null
+        : initiativphase ?? this.initiativphase,
+    zeitpunktAbgeschlossen:
+        zeitpunktAbgeschlossen ?? this.zeitpunktAbgeschlossen,
+    regulaerePhaseOffen: regulaerePhaseOffen ?? this.regulaerePhaseOffen,
+    reserveIni: ohneReserve ? null : reserveIni ?? this.reserveIni,
+    reserveBereit: ohneReserve ? false : reserveBereit ?? this.reserveBereit,
+    reserveHatVorrang: reserveHatVorrang ?? this.reserveHatVorrang,
+    klingen: ohneKlingen ? null : klingen ?? this.klingen,
+    patzerSperre: ohnePatzerSperre ? null : patzerSperre ?? this.patzerSperre,
+    initiativSperre: ohneInitiativSperre
+        ? null
+        : initiativSperre ?? this.initiativSperre,
+    gesperrteKampfmittel: gesperrteKampfmittel ?? this.gesperrteKampfmittel,
   );
 }
 

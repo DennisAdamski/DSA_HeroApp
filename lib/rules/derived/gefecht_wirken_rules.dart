@@ -10,6 +10,23 @@ import 'gefecht_ansagefolge_rules.dart';
 
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 
+/// Variable Grundwirkungen verwenden den eingefrorenen Wurf, niemals neue AsP.
+int gefechtsAbschlusskosten(Gefechtshandlung h) {
+  if (h.abbruchKosten != null) return h.abbruchKosten!;
+  final erfolg = h.ergebnis?.success == true && !h.gescheitert;
+  if (erfolg && h.wirken!.fremdwirkung != null) {
+    final wurf = h.fremdwirkungswurf;
+    if (wurf == null) {
+      throw StateError('Den einmaligen Schadenswurf zuerst festhalten.');
+    }
+    return wurf.kosten;
+  }
+  return erfolg
+      ? h.wirken!.kosten
+      : h.wirken!.misserfolgKosten ??
+            gefechtsWirkkosten(h.wirken!.kosten, h.art, erfolg: false);
+}
+
 /// Übernimmt Eingabewerte, erhält aber unbekannte Felder des frischen Effekts.
 HeroState uebernimmGefechtsArmatrutz(
   HeroState aktuell,
