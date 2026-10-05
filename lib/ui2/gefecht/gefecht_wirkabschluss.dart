@@ -4,6 +4,8 @@ import 'package:dsa_heldenverwaltung/domain/gefecht.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht_wirken.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_provider.dart';
+import 'package:dsa_heldenverwaltung/state/gefecht_begegnung_provider.dart';
+import 'package:dsa_heldenverwaltung/state/gefecht_initiative_provider.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_wirken_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/active_spell_rules.dart';
@@ -12,6 +14,8 @@ import 'package:dsa_heldenverwaltung/ui/screens/shared/zustand_aendern.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/armatrutz_input_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/attributo_input_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/resource_stepper_dialog.dart';
+
+import 'gefecht_fremdwirkung.dart';
 
 /// Abschlüsse können nach Abbruch des Dialogs ohne erneute Probe geöffnet werden.
 Future<void> zeigeGefechtsWirkabschluss({
@@ -32,7 +36,7 @@ Future<bool> uebernimmGefechtsWirkfolgen({
   bool abschliessen = true,
   GefechtsProbenbonus? bonus,
 }) async {
-  final s = ref.read(gefechtProvider(heroId));
+  final s = ref.read(gefechtMitInitiativeProvider(heroId));
   final h = s?.handlung;
   if (s == null ||
       h?.wirken == null ||
@@ -46,12 +50,23 @@ Future<bool> uebernimmGefechtsWirkfolgen({
   if (!controller.reservieren(id)) return false;
   try {
     final erfolg = h.ergebnis?.success == true && !h.gescheitert;
-    final kosten =
-        h.abbruchKosten ??
-        (erfolg
-            ? h.wirken!.kosten
-            : h.wirken!.misserfolgKosten ??
-                  gefechtsWirkkosten(h.wirken!.kosten, h.art, erfolg: false));
+    final fremd = erfolg && h.abbruchKosten == null
+        ? h.fremdwirkungswurf
+        : null;
+    if (erfolg &&
+        h.abbruchKosten == null &&
+        h.wirken!.fremdwirkung != null &&
+        fremd == null) {
+      return false;
+    }
+    if (fremd != null &&
+        !ref
+            .read(gefechtBegegnungProvider)
+            .gegner
+            .containsKey(fremd.ziel.gegnerId)) {
+      return false;
+    }
+    final kosten = gefechtsAbschlusskosten(h);
     final ok = await aendereZustandMitMeldung(
       context: context,
       ref: ref,
@@ -71,7 +86,25 @@ Future<bool> uebernimmGefechtsWirkfolgen({
     if (ok == null) return false;
     // Release the reservation before changing the immutable session state.
     controller.abbrechen(id);
-    final aktuell = ref.read(gefechtProvider(heroId))!;
+    final aktuell = ref.read(gefechtMitInitiativeProvider(heroId))!;
+    // Own costs are marked before a separate transient enemy booking can fail.
+    controller.setzen(
+      aktuell.copyWith(handlung: h.copyWith(kostenUebernommen: true)),
+    );
+    if (abschliessen && fremd != null) {
+      final gegner = ref.read(gefechtBegegnungProvider);
+      if (!gegner.gegner.containsKey(fremd.ziel.gegnerId)) return false;
+      ref
+          .read(gefechtBegegnungProvider.notifier)
+          .schaden(
+            gegnerId: fremd.ziel.gegnerId,
+            buchungId:
+                h.wirkungId ??
+                'wirkung:$heroId:${identityHashCode(h.ergebnis)}',
+            tp: fremd.schaden,
+            direkt: true,
+          );
+    }
     final fehlversuche = Map<String, int>.of(aktuell.karmaleFehlversuche);
     if (abschliessen && h.ergebnis?.success == false && h.wirken!.karmal) {
       final key = h.wirken!.identitaet;
@@ -134,6 +167,7 @@ class _AbschlussState extends ConsumerState<_Abschluss> {
       _busy = true;
     });
     try {
+      if (!await _fremdwurf(h)) return;
       final effekt = nurKosten ? null : await _effekt(h);
       if (!mounted || _eigenerEffekt && !nurKosten && effekt == null) return;
       final b = int.tryParse(_bonus.text);
@@ -158,20 +192,44 @@ class _AbschlussState extends ConsumerState<_Abschluss> {
     }
   }
 
+  // Captures the damage once; reopening the completion never rerolls it.
+  Future<bool> _fremdwurf(Gefechtshandlung h) async {
+    final ziel = h.wirken?.fremdwirkung;
+    if (ziel == null ||
+        h.fremdwirkungswurf != null ||
+        h.ergebnis?.success != true ||
+        h.gescheitert ||
+        h.abbruchKosten != null) {
+      return true;
+    }
+    final wurf = await zeigeGefechtsFremdwirkungswurf(
+      context: context,
+      ziel: ziel,
+      probe: h.ergebnis!,
+    );
+    if (wurf == null || !mounted) return false;
+    final s = ref.read(gefechtMitInitiativeProvider(widget.heroId));
+    if (s?.handlung != h || s!.auftrag != null) return false;
+    ref
+        .read(gefechtProvider(widget.heroId).notifier)
+        .setzen(s.copyWith(handlung: h.copyWith(fremdwirkungswurf: wurf)));
+    return true;
+  }
+
   @override
   Widget build(BuildContext context) {
-    final h = ref.watch(gefechtProvider(widget.heroId))?.handlung;
+    final h = ref.watch(gefechtMitInitiativeProvider(widget.heroId))?.handlung;
     final state = ref.watch(heroStateProvider(widget.heroId)).asData?.value;
     if (h?.wirken == null || (h!.ergebnis == null && h.abbruchKosten == null)) {
       return const SizedBox.shrink();
     }
     final erfolg = h.ergebnis?.success == true && !h.gescheitert;
-    final kosten =
-        h.abbruchKosten ??
-        (erfolg
-            ? h.wirken!.kosten
-            : h.wirken!.misserfolgKosten ??
-                  gefechtsWirkkosten(h.wirken!.kosten, h.art, erfolg: false));
+    final brauchtWurf =
+        erfolg &&
+        h.abbruchKosten == null &&
+        h.wirken!.fremdwirkung != null &&
+        h.fremdwirkungswurf == null;
+    final kosten = brauchtWurf ? null : gefechtsAbschlusskosten(h);
     final unterstuetzt = [
       'armatrutz',
       'attributo',
@@ -196,12 +254,18 @@ class _AbschlussState extends ConsumerState<_Abschluss> {
                       : 'Gescheitert · Ergebnis eingefroren',
                 ),
                 Text(
-                  '${h.wirken!.karmal ? 'KaP' : 'AsP'}: $kosten; verfügbar '
+                  '${h.wirken!.karmal ? 'KaP' : 'AsP'}: ${kosten ?? 'Schadenswurf offen'}; verfügbar '
                   '${h.wirken!.karmal ? state?.currentKap : state?.currentAsp}',
                 ),
                 if (h.kostenUebernommen)
                   const Text(
                     'Kosten bereits übernommen; keine zweite Buchung.',
+                  ),
+                if (h.wirken!.fremdwirkung != null)
+                  Text(
+                    'Ursprüngliches Ziel: ${h.wirken!.fremdwirkung!.gegnerId}. '
+                    'Direkte SP: ${h.fremdwirkungswurf?.schaden ?? 'Wurf offen'}. '
+                    'Kosten und Gegnerfolge werden einmal übernommen.',
                   ),
                 if (erfolg && unterstuetzt)
                   CheckboxListTile(
@@ -236,20 +300,21 @@ class _AbschlussState extends ConsumerState<_Abschluss> {
                     onChanged: (_) => setState(() {}),
                   ),
                 ],
-                CheckboxListTile(
-                  value: _folgen,
-                  title: const Text('Weitere Folgen am Spieltisch bestätigt'),
-                  subtitle: Text(
-                    h.wirken!.permanentManuell
-                        ? 'Permanente KaP, Unterbrechungsfolgen und fremde Ziele manuell übernehmen.'
-                        : 'Fremde Zielwirkungen, Patzer und Sonderfälle gezielt prüfen.',
+                if (h.wirken!.fremdwirkung == null)
+                  CheckboxListTile(
+                    value: _folgen,
+                    title: const Text('Weitere Folgen am Spieltisch bestätigt'),
+                    subtitle: Text(
+                      h.wirken!.permanentManuell
+                          ? 'Permanente KaP, Unterbrechungsfolgen und fremde Ziele manuell übernehmen.'
+                          : 'Fremde Zielwirkungen, Patzer und Sonderfälle gezielt prüfen.',
+                    ),
+                    onChanged: _busy
+                        ? null
+                        : (v) => setState(() {
+                            _folgen = v!;
+                          }),
                   ),
-                  onChanged: _busy
-                      ? null
-                      : (v) => setState(() {
-                          _folgen = v!;
-                        }),
-                ),
                 const ZustandFehlerAnzeige(),
               ],
             ),
@@ -260,7 +325,7 @@ class _AbschlussState extends ConsumerState<_Abschluss> {
             onPressed: _busy ? null : () => Navigator.pop(context),
             child: const Text('Später übernehmen'),
           ),
-          if (!h.kostenUebernommen)
+          if (!h.kostenUebernommen && !brauchtWurf)
             TextButton(
               onPressed: _busy
                   ? null
@@ -281,7 +346,9 @@ class _AbschlussState extends ConsumerState<_Abschluss> {
               child: const Text('Kosten jetzt übernehmen'),
             ),
           FilledButton(
-            onPressed: _busy || !_folgen ? null : () => _uebernehmen(h),
+            onPressed: _busy || (!_folgen && h.wirken!.fremdwirkung == null)
+                ? null
+                : () => _uebernehmen(h),
             child: Text(
               h.kostenUebernommen
                   ? 'Folgen abschließen'

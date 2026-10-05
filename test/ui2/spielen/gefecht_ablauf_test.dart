@@ -206,6 +206,7 @@ void main() {
           ),
         );
         await tester.pumpAndSettle();
+        await tester.ensureVisible(find.textContaining('Angreifen').first);
         await tester.tap(find.textContaining('Angreifen').first);
         await tester.pumpAndSettle();
         await tester.tap(find.byKey(const ValueKey('gefecht-auftrag-starten')));

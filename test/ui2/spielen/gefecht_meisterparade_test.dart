@@ -34,7 +34,8 @@ void main() {
     (tester) async {
       final (container, bestand) = await _ansicht(tester, bonus: 0);
       final ctl = container.read(gefechtProvider('rondra').notifier);
-      bestand.w20Wert = 20;
+      // 19 misslingt ohne Patzer; eine 20 verlangte zuerst die Patzerklärung.
+      bestand.w20Wert = 19;
       bestand.doppelt = true;
       await _oeffnen(tester, 'Angreifen');
       await tester.enterText(find.byKey(const ValueKey('gefecht-finte')), '5');
@@ -162,7 +163,8 @@ void main() {
         GefechtsKampfmittelArt.schild,
       );
       expect(nachMeisterparade.regulaeresParadepaar, isNotNull);
-      expect(nachMeisterparade.kontext.finte, isNull);
+      // Die reguläre PA hat die Finte verworfen; es gilt wieder die Vorgabe 0.
+      expect(nachMeisterparade.kontext.finte, 0);
 
       // Ein neuer Angriff ist nötig: die reguläre PA hat die Angriffsdaten gelöscht.
       const kontext = Gefechtskontext(
@@ -262,7 +264,8 @@ void main() {
       expect(gebucht.meisterparadeBonus, 0);
       expect(gebucht.angriffeVerbraucht, vorZusatz.angriffeVerbraucht);
       expect(gebucht.freieVerbraucht, vorZusatz.freieVerbraucht);
-      expect(gebucht.kontext.finte, isNull);
+      // Die gegnerische Finte 1 ist verbraucht; es gilt wieder die Vorgabe 0.
+      expect(gebucht.kontext.finte, 0);
       expect(gebucht.auftrag, isNull);
       expect(bonusEntfernungen, 1);
       expect(zusatzBuchungen, 1);

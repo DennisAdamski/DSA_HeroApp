@@ -11,7 +11,10 @@ class GefechtsController extends Notifier<Gefechtszustand?> {
   Gefechtszustand? build() => null;
 
   /// Beginnt eine Sitzung, ohne ein laufendes Gefecht zu überschreiben.
-  void beginnen(int wurf) => state ??= beginneGefecht(wurf);
+  ///
+  /// [dk] ist die Start-Distanzklasse; die Sitzung beginnt mit Vorgaben.
+  void beginnen(int wurf, {String? dk}) =>
+      state ??= beginneGefecht(wurf, dk: dk);
 
   /// Verwirft nur diesen flüchtigen Zustand.
   void beenden() => state = null;

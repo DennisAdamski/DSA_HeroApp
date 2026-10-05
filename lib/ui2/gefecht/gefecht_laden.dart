@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_laden_rules.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_provider.dart';
+import 'package:dsa_heldenverwaltung/state/gefecht_initiative_provider.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 
 import 'gefecht_ladedialog.dart';
@@ -14,7 +15,7 @@ Future<void> zeigeGefechtsLaden({
   required String heroId,
   required GefechtsKampfmittelwahl kampfmittel,
 }) async {
-  final s = ref.read(gefechtProvider(heroId));
+  final s = ref.read(gefechtMitInitiativeProvider(heroId));
   final snap = ref.read(heroComputedProvider(heroId)).asData?.value;
   if (s == null || snap == null) return;
   final anfang = await showDialog<bool>(
@@ -23,7 +24,7 @@ Future<void> zeigeGefechtsLaden({
         GefechtLadedialog(zustand: s, snapshot: snap, kampfmittel: kampfmittel),
   );
   if (anfang == null || !context.mounted) return;
-  final aktuell = ref.read(gefechtProvider(heroId));
+  final aktuell = ref.read(gefechtMitInitiativeProvider(heroId));
   final frisch = ref.read(heroComputedProvider(heroId)).asData?.value;
   if (aktuell == null || frisch == null) return;
   ref
@@ -40,7 +41,7 @@ Future<void> zeigeGefechtsLaden({
 
 /// Fortsetzen bleibt synchron und schreibt weder gespeicherte Ausrüstung noch Würfe.
 void setzeGefechtsVorbereitungFort(WidgetRef ref, String heroId) {
-  final s = ref.read(gefechtProvider(heroId));
+  final s = ref.read(gefechtMitInitiativeProvider(heroId));
   final snap = ref.read(heroComputedProvider(heroId)).asData?.value;
   if (s == null || snap == null || s.handlung?.vorbereitung == null) return;
   ref

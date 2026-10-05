@@ -503,3 +503,55 @@ Fernkampf-Sonderansagen erzeugen ohne belegte Grundlage keine Nahkampffolge,
 können aber als nächste AT einen vorhandenen Malus tragen und beenden.
 Gegnerische Trefferfolgen, globale Phasen und persistierte Heldenwerte sind
 weiterhin getrennt. Prüfstand und Paketabschluss stehen im Folgeplan.
+
+## Vorgaben statt Pflichtfelder (5. Oktober 2026)
+
+Auf Nutzerwunsch ersetzen sichtbare, jederzeit änderbare Vorgaben die frühere
+Regel „Standardwerte sind keine Bestätigung“. `gefecht_vorgaben_rules.dart`
+belegt nur unbekannte Angaben: Angriffsart Nahkampf, gegnerische Finte 0,
+Zielsituation im Fernkampf 0, Platz zum Ausweichen und wirksamer Schild-WM.
+Ein ausdrückliches „Nein“ bleibt erhalten. Die Regelmodule behandeln `null`
+unverändert als fehlende Angabe; Vorgaben entstehen nur beim Gefechtsstart,
+beim Kontakt-/Gegnerwechsel und nach jeder Abwehr (die Angriffsdaten des
+abgewehrten Angriffs fallen auf die Vorgaben zurück, Zielsituation und
+Entfernung des eigenen Ziels bleiben). Start-DK ist die DK der geführten
+Hauptwaffe: Nahkampf, wenn sie ihn führt oder keine Nahkampfwaffe geführt wird,
+sonst die erste Klasse in H/N/S/P (App-Konvention). Ausweichen verwendet ohne
+eigene Angabe die Gegnerzahl der Rundenleiste. Bewusst ohne Vorgabe bleiben
+Ladezustand und Schussentfernung, weil eine falsche Annahme Schüsse freigäbe.
+Die zuletzt angegebene Zahl aufrechterhaltener Zauber gilt für das Gefecht.
+
+Hinweise allein ergeben „Bereit“ (sie sperrten die Ausführung schon zuvor
+nicht); „Prüfen“ bleibt fehlenden Angaben und offenen Entscheidungen
+vorbehalten. Der pauschale Fernkampfhinweis und die Bestätigung der Art einer
+freien Aktion entfallen, weil die Einzelprüfungen sie abdecken. Bekannte
+Sperren (Paradeverbot, kein Platz, DK-Abstand, ungeladene Waffe,
+Kampfunfähigkeit) bleiben verbindlich. Prüfung:
+`test/rules/gefecht_vorgaben_rules_test.dart`; bestehende Erwartungen zu
+gelöschter Finte wurden bewusst auf die Vorgabe 0 umgestellt.
+
+## Begegnung, gemeinsame Initiative und Folgepakete (5. Oktober 2026)
+
+Umfang laut [Abschlussentwurf](gefecht_abschluss_entwurf.md): Die lokale
+Begegnung (`state/gefecht_begegnung_provider.dart`) führt mehrere Gegner mit
+stabiler ID, Name, LeP, RS und INI. Eine Heldensitzung wählt ihren Gegner
+ausdrücklich; der Wechsel verwirft Angriffsdaten und alte Zielzahlungen.
+Gewöhnliche Treffer werden nach bestätigter misslungener Abwehr einmalig
+übertragen: SP = max(0, TP − RS), direkte SP umgehen den RS (WdS S. 56).
+Die gemeinsame Initiative verbindet ausdrücklich gewählte Helden; Zeitpunkte
+werden aus frischen INI-Werten abgeleitet, reguläre Aktionen gehen
+umgewandelten derselben Phase vor, eine verzögerte Aktion hält höchstens eine
+bezahlte Reserve (WdS S. 82). Ohne Teilnahme bleibt das Einzelgefecht
+unverändert.
+
+Weitere Module: Klingenwand/Klingensturm mit getrennten Teilproben und genau
+einer Quellmarke (`gefecht_klingen_rules.dart`), Patzerkontrolle,
+Patzertabelle und Bruchtest mit eingefrorenen Würfen und frischem
+BF-Schreibweg ohne automatische Entfernung (`gefecht_patzer_rules.dart`;
+Hausregel: bestandener kritischer Bruchtest erhöht den BF nicht), bestätigte
+Gegenproben für Entwaffnen/Umreißen (`gefecht_manoeverfolgen_rules.dart`) und
+der Fulminictus als erste belegte Fremdwirkung (`gefecht_fremdwirkung_rules.dart`).
+Eine natürliche 20 auf Nahkampf-AT/PA öffnet die Patzerkontrolle und sperrt
+weitere Aktionen bis zur Klärung. Ohne offene Folge zeigt die Ansicht nur den
+Einstieg „Bruchtest“; die Erklärung steht im Bruchtestdialog. Die neuen
+Gefechtskarten lösen die Gefechtsbrücke erst beim Bedienen auf.

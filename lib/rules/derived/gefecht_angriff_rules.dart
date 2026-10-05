@@ -8,6 +8,7 @@ import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 import 'gefecht_ansage_rules.dart';
 import 'gefecht_kampfmittel_rules.dart';
 import 'gefecht_fernkampf_rules.dart';
+import 'maneuver_rules.dart';
 
 /// Ordnet bekannte Folgen über stabile IDs ein; Ungeklärtes erfindet keine TP.
 GefechtsSchadensfolge gefechtsSchadensfolgeFuerAuftrag(GefechtAuftrag a) {
@@ -61,6 +62,21 @@ Gefechtszustand ergaenzeGefechtsAngriffsergebnis(
     angriffsergebnisse: List.unmodifiable([...s.angriffsergebnisse, ergebnis]),
   );
 }
+
+/// Friert den ersten Schadenswurf ein, bis der tatsächliche Treffer bestätigt ist.
+Gefechtszustand friereGefechtsAngriffsschadenEin(
+  Gefechtszustand s,
+  String id,
+  int tp,
+) => s.copyWith(
+  angriffsergebnisse: List.unmodifiable([
+    for (final e in s.angriffsergebnisse)
+      if (e.auftragId == id && e.gewuerfelteTp == null)
+        e.mitSchaden(tp < 0 ? 0 : tp)
+      else
+        e,
+  ]),
+);
 
 /// Entfernt ausschließlich den abgewickelten Treffer, auch bei Doppelcallback.
 Gefechtszustand entferneGefechtsAngriffsergebnis(
@@ -122,6 +138,7 @@ Gefechtsangriffsergebnis? gefechtsAngriffsergebnisNachBuchung({
   final wirkung = gefechtsAnsagewirkung(snapshot, katalog, auftrag);
   return Gefechtsangriffsergebnis(
     auftragId: auftragId,
+    gegnerId: auftrag.kontext?.gegnerId,
     kampfmittel: profil.wahl,
     waffenname: profil.name,
     schaden: folge == GefechtsSchadensfolge.waffenschaden
@@ -135,6 +152,14 @@ Gefechtsangriffsergebnis? gefechtsAngriffsergebnisNachBuchung({
     tpBonus: folge == GefechtsSchadensfolge.keinSchaden ? 0 : wirkung.tpBonus,
     schadensfolge: folge,
     manoevername: auftrag.manoever?.name ?? '',
+    manoeverId: auftrag.manoever?.id,
+    folgewuerfel: auftrag.manoever?.id == 'man_umreissen' ? dice : null,
+    meisterlichesEntwaffnen:
+        learnedManeuverIds(snapshot.hero.combatConfig, katalog).any(
+          (id) =>
+              id == 'man_meisterliches_entwaffnen' ||
+              id.startsWith('man_meisterliches_entwaffnen::'),
+        ),
     hinweis: hinweis,
   );
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_provider.dart';
+import 'package:dsa_heldenverwaltung/state/gefecht_initiative_provider.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_fernkampf_rules.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_gefechts_adapter.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
@@ -14,7 +15,7 @@ Future<void> uebernimmGefechtsSchuss({
   required KartoGefechtsAdapter bestand,
 }) async {
   final c = ref.read(gefechtProvider(heroId).notifier);
-  final h = ref.read(gefechtProvider(heroId))?.handlung;
+  final h = ref.read(gefechtMitInitiativeProvider(heroId))?.handlung;
   if (h?.waffe == null || h?.ergebnis == null) return;
   final id = UniqueKey().toString();
   if (!c.reservieren(id)) return;
@@ -36,7 +37,7 @@ Future<void> uebernimmGefechtsSchuss({
       );
     }
     c.abbrechen(id);
-    final s = ref.read(gefechtProvider(heroId));
+    final s = ref.read(gefechtMitInitiativeProvider(heroId));
     if (s != null) {
       final waffe =
           gespeichert?.weaponSlots

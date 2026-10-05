@@ -95,15 +95,26 @@ void main() {
       7,
     );
   });
-  test('Kontaktwechsel verwirft DK und einzelne Angriffsdaten', () {
+  test('Kontaktwechsel verwirft Angriffsdaten und beginnt mit Vorgaben', () {
     const s = Gefechtszustand(
       iniWurf: 6,
-      dk: 'N',
-      kontext: Gefechtskontext(kontakt: 'Ork', finte: 4),
+      dk: 'S',
+      kontext: Gefechtskontext(
+        kontakt: 'Ork',
+        finte: 4,
+        angriffsart: Gefechtsangriffsart.fernkampf,
+        paradeVerboten: true,
+        entfernung: 20,
+      ),
     );
     final neu = wechsleGefechtskontakt(s, 'Wolf');
     expect(neu.dk, isNull);
-    expect(neu.kontext.finte, isNull);
     expect(neu.kontext.kontakt, 'Wolf');
+    expect(neu.kontext.finte, 0);
+    expect(neu.kontext.angriffsart, Gefechtsangriffsart.nahkampf);
+    expect(neu.kontext.paradeVerboten, isNull);
+    expect(neu.kontext.entfernung, isNull);
+    final mitDk = wechsleGefechtskontakt(s, 'Wolf', startDk: 'N');
+    expect(mitDk.dk, 'N');
   });
 }

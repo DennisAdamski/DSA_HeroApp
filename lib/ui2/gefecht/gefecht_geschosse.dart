@@ -8,6 +8,7 @@ import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_ladezustand_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/kampf_aenderung_rules.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_provider.dart';
+import 'package:dsa_heldenverwaltung/state/gefecht_initiative_provider.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_gefechts_adapter.dart';
 
 /// Geschossbestand einer geführten Fernkampfwaffe mit Wahl und Aufheben.
@@ -190,7 +191,7 @@ Future<void> _schreibe({
   required Future<bool> Function(CombatConfig Function(CombatConfig)) schreiben,
   required CombatConfig Function(CombatConfig) aenderung,
 }) async {
-  final s = ref.read(gefechtProvider(heroId));
+  final s = ref.read(gefechtMitInitiativeProvider(heroId));
   if (s?.handlung != null) {
     throw StateError('Laufende Handlung zuerst abschließen.');
   }
@@ -207,7 +208,7 @@ Future<void> _schreibe({
       return neu;
     });
     c.abbrechen(id);
-    final aktuell = ref.read(gefechtProvider(heroId));
+    final aktuell = ref.read(gefechtMitInitiativeProvider(heroId));
     if (!ok || aktuell == null || vorher == null || nachher == null) return;
     c.setzen(
       uebertrageGefechtsLadestand(aktuell, vorher: vorher!, nachher: nachher!),

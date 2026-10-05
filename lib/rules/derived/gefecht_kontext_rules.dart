@@ -1,9 +1,12 @@
 import 'package:dsa_heldenverwaltung/domain/gefecht.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht_kontext.dart';
 
+import 'gefecht_vorgaben_rules.dart';
+
 /// Bewertet nur Kontextregeln; Aktionsmarken bleiben im gemeinsamen Budget.
 class Gefechtskontextpruefung {
-  /// Fehlende Angaben dürfen nicht durch angenommene Standardwerte verschwinden.
+  /// Unbekannte (`null`) Angaben bleiben fehlend; sichtbare Vorgaben setzt
+  /// ausschließlich `gefechtsKontextMitVorgaben` in der Sitzung.
   const Gefechtskontextpruefung(this.modifikatoren, this.fehlend, this.sperren);
   final List<Gefechtsmodifikator> modifikatoren;
   final List<String> fehlend, sperren;
@@ -12,9 +15,19 @@ class Gefechtskontextpruefung {
   int get zuschlag => modifikatoren.fold(0, (summe, m) => summe + m.wert);
 }
 
-/// Ein neuer Kontakt übernimmt keine unbekannten Werte des vorherigen Gegners.
-Gefechtszustand wechsleGefechtskontakt(Gefechtszustand s, String kontakt) =>
-    s.copyWith(ohneDk: true, kontext: Gefechtskontext(kontakt: kontakt.trim()));
+/// Ein neuer Kontakt übernimmt keine Werte des vorherigen Gegners.
+///
+/// Er beginnt wie ein neues Gefecht mit den sichtbaren Vorgaben und der
+/// Start-DK [startDk]; ohne Angabe ist die DK unbekannt.
+Gefechtszustand wechsleGefechtskontakt(
+  Gefechtszustand s,
+  String kontakt, {
+  String? startDk,
+}) => s.copyWith(
+  dk: startDk,
+  ohneDk: startDk == null,
+  kontext: gefechtsKontextMitVorgaben(Gefechtskontext(kontakt: kontakt.trim())),
+);
 
 /// Bewegt nur innerhalb der vier tatsächlichen Distanzklassen.
 String? naechsteGefechtsDk(String? dk, int schritte) {
@@ -44,7 +57,6 @@ bool gefechtsPflichtkontextErfasst(
   if (aw &&
       (k.angriffsart == null ||
           k.finte == null ||
-          k.gegnerzahl == null ||
           k.platzZumAusweichen == null)) {
     return false;
   }
@@ -130,9 +142,8 @@ Gefechtskontextpruefung pruefeGefechtskontext(
     }
   }
   if (aw) {
-    if (k.gegnerzahl == null) {
-      fehlend.add('Relevante Nahkampfgegner bestätigen.');
-    }
+    // Ohne eigene Angabe gilt die Gegnerzahl der Rundenleiste
+    // (`gefechtsGegnerzahl`); sie ist keine fehlende Angabe.
     if (k.platzZumAusweichen == null) {
       fehlend.add('Platz zum Ausweichen klären.');
     }

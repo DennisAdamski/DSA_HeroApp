@@ -36,9 +36,11 @@ Gefechtspruefung ergaenzeGefechtsfreigabe(
                   !p.entscheidungen.contains(g),
             )
             .toList();
+  // Hinweise allein verhindern kein „Bereit“: sie blockieren die Ausführung
+  // nicht (`Gefechtspruefung.ausfuehrbar`) und bleiben im Dialog sichtbar.
   final status = sperren.isNotEmpty
       ? Gefechtsfreigabe.gesperrt
-      : fehlend.isNotEmpty || entscheidungen.isNotEmpty || hinweise.isNotEmpty
+      : fehlend.isNotEmpty || entscheidungen.isNotEmpty
       ? Gefechtsfreigabe.pruefen
       : Gefechtsfreigabe.bereit;
   return Gefechtspruefung(

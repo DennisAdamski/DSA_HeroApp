@@ -55,7 +55,7 @@ Gefechtspruefung ergaenzeGefechtsZielen(
       z != null &&
       z.kampfmittel.id == p.kampfmittel?.id &&
       z.kampfmittel.art == p.kampfmittel?.art &&
-      z.zielkontakt == (a.kontext ?? s.kontext).kontakt &&
+      z.zielkontakt == (a.kontext ?? s.kontext).zielkennung &&
       z.zielkontakt.trim().isNotEmpty &&
       z.ansage == a.fernkampfansage &&
       z.zielErleichterung == n &&

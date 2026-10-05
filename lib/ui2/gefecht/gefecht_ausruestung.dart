@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_provider.dart';
+import 'package:dsa_heldenverwaltung/state/gefecht_initiative_provider.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_ablauf_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_held_rules.dart';
@@ -82,7 +83,7 @@ class _AusruestungState extends ConsumerState<_Ausruestung> {
         .watch(heroComputedProvider(widget.heroId))
         .asData
         ?.value;
-    final s = ref.watch(gefechtProvider(widget.heroId));
+    final s = ref.watch(gefechtMitInitiativeProvider(widget.heroId));
     return PopScope(
       canPop: !_busy,
       child: AlertDialog(
@@ -238,7 +239,7 @@ Future<bool> starteGefechtswaffenwechsel({
   bool ablegen = false,
 }) async {
   final controller = ref.read(gefechtProvider(heroId).notifier);
-  final s = ref.read(gefechtProvider(heroId));
+  final s = ref.read(gefechtMitInitiativeProvider(heroId));
   final snapshot = ref.read(heroComputedProvider(heroId)).asData?.value;
   if (s == null ||
       snapshot == null ||
@@ -296,7 +297,7 @@ Future<bool> starteGefechtswaffenwechsel({
     );
     if (h != null) {
       controller.setzen(
-        ref.read(gefechtProvider(heroId))!.copyWith(handlung: h),
+        ref.read(gefechtMitInitiativeProvider(heroId))!.copyWith(handlung: h),
       );
     }
     return true;
@@ -313,7 +314,7 @@ Future<void> setzeGefechtsausruestungFort({
   required KartoGefechtsAdapter bestand,
 }) async {
   final controller = ref.read(gefechtProvider(heroId).notifier);
-  final s = ref.read(gefechtProvider(heroId));
+  final s = ref.read(gefechtMitInitiativeProvider(heroId));
   final snapshot = ref.read(heroComputedProvider(heroId)).asData?.value;
   final h = s?.handlung;
   if (s == null || h == null || snapshot == null) return;
@@ -380,7 +381,7 @@ Future<void> setzeGefechtsausruestungFort({
     final neu = setzeGefechtsHandlungFort(h);
     controller.setzen(
       ref
-          .read(gefechtProvider(heroId))!
+          .read(gefechtMitInitiativeProvider(heroId))!
           .copyWith(handlung: neu, ohneHandlung: neu == null),
     );
   }

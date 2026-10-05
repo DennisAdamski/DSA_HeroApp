@@ -5,6 +5,9 @@ import 'package:dsa_heldenverwaltung/domain/gefecht.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht_wirken.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_provider.dart';
+import 'package:dsa_heldenverwaltung/state/gefecht_begegnung_provider.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/gefecht_fremdwirkung_rules.dart';
+import 'package:dsa_heldenverwaltung/state/gefecht_initiative_provider.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_ablauf_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_held_rules.dart';
@@ -13,6 +16,7 @@ import 'package:dsa_heldenverwaltung/ui2/shell/karto_gefechts_adapter.dart';
 
 import 'gefecht_wirkdialog.dart';
 import 'gefecht_wirkabschluss.dart';
+import 'gefecht_fremdwirkung.dart';
 
 /// Der Startdialog liefert ein ausdrücklich bestätigtes, flüchtiges Regelprofil.
 Future<void> zeigeGefechtsWirken({
@@ -24,7 +28,7 @@ Future<void> zeigeGefechtsWirken({
   TalentDef? talent,
 }) async {
   final snapshot = ref.read(heroComputedProvider(heroId)).asData?.value;
-  final s = ref.read(gefechtProvider(heroId));
+  final s = ref.read(gefechtMitInitiativeProvider(heroId));
   if (snapshot == null || s == null || s.handlung != null) return;
   final profil = await showDialog<(Gefechtshandlungsart, GefechtsWirkprofil)>(
     context: context,
@@ -36,11 +40,36 @@ Future<void> zeigeGefechtsWirken({
     ),
   );
   if (profil == null || !context.mounted) return;
+  var wirkprofil = profil.$2;
+  if (zauber != null && gefechtsFremdprofilUnterstuetzt(zauber.id)) {
+    final ziel = await zeigeGefechtsFremdziel(
+      context: context,
+      zauberId: zauber.id,
+      gegner: ref.read(gefechtBegegnungProvider).gegner.values.toList(),
+      verfuegbareAsp: snapshot.state.currentAsp,
+      gegnerId: s.kontext.gegnerId,
+    );
+    if (ziel == null || !context.mounted) return;
+    if (wirkprofil.dauer != 2 || wirkprofil.endprobe || wirkprofil.karmal) {
+      throw StateError(
+        'Fremdzielprofil benötigt die Grundform mit 2 Aktionen und Startprobe.',
+      );
+    }
+    wirkprofil = wirkprofil.mitFremdwirkung(ziel);
+  }
   final frisch = ref.read(heroComputedProvider(heroId)).asData?.value;
   if (frisch == null ||
       frisch.hero != snapshot.hero ||
       frisch.state != snapshot.state) {
     throw StateError('Held inzwischen geändert; Wirkprofil erneut bestätigen.');
+  }
+  // Die angegebene Zahl aufrechterhaltener Zauber gilt für das ganze Gefecht.
+  final aufrecht = profil.$2.aufrechterhalteneZauber;
+  final aktuell = ref.read(gefechtMitInitiativeProvider(heroId));
+  if (aufrecht != null && aktuell != null && aktuell.auftrag == null) {
+    ref
+        .read(gefechtProvider(heroId).notifier)
+        .setzen(aktuell.copyWith(aufrechterhalteneZauber: aufrecht));
   }
   await starteGefechtsWirken(
     context: context,
@@ -48,7 +77,7 @@ Future<void> zeigeGefechtsWirken({
     heroId: heroId,
     bestand: bestand,
     art: profil.$1,
-    profil: profil.$2,
+    profil: wirkprofil,
   );
 }
 
@@ -61,7 +90,7 @@ Future<void> starteGefechtsWirken({
   required Gefechtshandlungsart art,
   required GefechtsWirkprofil profil,
 }) async {
-  final s = ref.read(gefechtProvider(heroId));
+  final s = ref.read(gefechtMitInitiativeProvider(heroId));
   final snapshot = ref.read(heroComputedProvider(heroId)).asData?.value;
   if (s == null || snapshot == null || s.handlung != null || profil.dauer < 1) {
     return;
@@ -75,7 +104,7 @@ Future<void> starteGefechtsWirken({
   final energie = profil.karmal
       ? snapshot.state.currentKap
       : snapshot.state.currentAsp;
-  if (energie < profil.kosten) {
+  if (energie < profil.kosten && profil.fremdwirkung == null) {
     throw StateError('Nicht genügend Energie für die geplanten Kosten.');
   }
   if (art == Gefechtshandlungsart.zauber &&
@@ -97,7 +126,7 @@ Future<void> starteGefechtsWirken({
         : profil.dauer;
     controller.setzen(
       ref
-          .read(gefechtProvider(heroId))!
+          .read(gefechtMitInitiativeProvider(heroId))!
           .copyWith(
             karmaleFehlversuche: profil.neueSpielrunde ? {} : null,
             ohneMirakelbonus:
@@ -108,6 +137,7 @@ Future<void> starteGefechtsWirken({
               art: art,
               wirken: profil,
               ergebnis: r,
+              wirkungId: id,
             ),
           ),
     );
@@ -133,7 +163,8 @@ Future<void> starteGefechtsWirken({
     controller.abbrechen(id);
   }
   if (context.mounted &&
-      ref.read(gefechtProvider(heroId))?.handlung?.verbleibend == 0) {
+      ref.read(gefechtMitInitiativeProvider(heroId))?.handlung?.verbleibend ==
+          0) {
     await zeigeGefechtsWirkabschluss(
       context: context,
       ref: ref,
@@ -149,7 +180,7 @@ Future<void> setzeGefechtsWirkenFort({
   required String heroId,
   required KartoGefechtsAdapter bestand,
 }) async {
-  final s = ref.read(gefechtProvider(heroId));
+  final s = ref.read(gefechtMitInitiativeProvider(heroId));
   final h = s?.handlung;
   final snapshot = ref.read(heroComputedProvider(heroId)).asData?.value;
   if (s == null || h?.wirken == null || snapshot == null) return;
@@ -178,7 +209,7 @@ Future<void> setzeGefechtsWirkenFort({
     if (!controller.abschliessen(id, w, p)) return;
     controller.setzen(
       ref
-          .read(gefechtProvider(heroId))!
+          .read(gefechtMitInitiativeProvider(heroId))!
           .copyWith(
             handlung: h.copyWith(verbleibend: h.verbleibend - 1, ergebnis: r),
             ohneMirakelbonus:
@@ -208,7 +239,8 @@ Future<void> setzeGefechtsWirkenFort({
     controller.abbrechen(id);
   }
   if (context.mounted &&
-      ref.read(gefechtProvider(heroId))?.handlung?.verbleibend == 0) {
+      ref.read(gefechtMitInitiativeProvider(heroId))?.handlung?.verbleibend ==
+          0) {
     await zeigeGefechtsWirkabschluss(
       context: context,
       ref: ref,

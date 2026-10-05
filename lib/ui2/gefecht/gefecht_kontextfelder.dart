@@ -10,10 +10,14 @@ class GefechtKontextfelder extends StatelessWidget {
     required this.kontext,
     required this.aktion,
     required this.onChanged,
+    this.gegnerVorgabe,
   });
   final Gefechtskontext kontext;
   final Gefechtsaktion aktion;
   final ValueChanged<Gefechtskontext> onChanged;
+
+  /// Gegnerzahl der Rundenleiste, solange der Angriff keine eigene nennt.
+  final int? gegnerVorgabe;
   @override
   Widget build(BuildContext context) {
     final k = kontext;
@@ -32,6 +36,7 @@ class GefechtKontextfelder extends StatelessWidget {
     }) => onChanged(
       Gefechtskontext(
         kontakt: k.kontakt,
+        gegnerId: k.gegnerId,
         gegnerDk: k.gegnerDk,
         gegnerzahl: gegner ?? k.gegnerzahl,
         finte: finte ?? k.finte,
@@ -81,6 +86,7 @@ class GefechtKontextfelder extends StatelessWidget {
             onChanged: (v) => onChanged(
               Gefechtskontext(
                 kontakt: k.kontakt,
+                gegnerId: k.gegnerId,
                 gegnerzahl: k.gegnerzahl,
                 gegnerDk: k.gegnerDk,
                 finte: int.tryParse(v),
@@ -110,7 +116,7 @@ class GefechtKontextfelder extends StatelessWidget {
           ),
         if (aw) ...[
           DropdownButtonFormField<int>(
-            initialValue: k.gegnerzahl,
+            initialValue: k.gegnerzahl ?? gegnerVorgabe?.clamp(1, 6),
             decoration: const InputDecoration(
               labelText: 'Relevante Nahkampfgegner',
             ),

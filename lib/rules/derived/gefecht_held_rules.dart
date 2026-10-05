@@ -123,6 +123,7 @@ Gefechtspruefung pruefeGefechtsmanoever(
   bool eigenerAuftrag = false,
   int distanzSchritte = 0,
   GefechtsKampfmittelwahl? kampfmittel,
+  bool geteilteProbe = false,
 }) {
   final config = snapshot.hero.combatConfig;
   final profil = gefechtsKampfmittelFuer(snapshot, kampfmittel);
@@ -137,8 +138,8 @@ Gefechtspruefung pruefeGefechtsmanoever(
   final name = m.name.toLowerCase();
   final schild = gefechtsSchildmanoever(snapshot, m.name);
   sperren.addAll(schild.sperren);
-  if (name.contains('klingenwand') ||
-      name.contains('klingensturm') ||
+  if ((!geteilteProbe &&
+          (name.contains('klingenwand') || name.contains('klingensturm'))) ||
       name.contains('doppelangriff') ||
       m.id == 'man_eisenhagel') {
     sperren.add(
