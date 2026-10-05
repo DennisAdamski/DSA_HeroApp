@@ -243,7 +243,8 @@ und alle drei Auflösungen.
 PRs nach `test`/`main` und Pushes auf diese Branches prüfen Formatierung, Analyse,
 Tests, LOC-Budget und Web-Release-Build. Nur erfolgreiche Push-Läufe
 veröffentlichen das geprüfte Artefakt. Android-Builds und automatische
-Branch-Previews entfallen. Siehe [Web-Veröffentlichung](web_deployment.md).
+Branch-Previews entfallen. Automatische Main-Test-Merges rufen dieselbe CI
+mit dem exakten Test-Commit auf. Siehe [Web-Veröffentlichung](web_deployment.md).
 
 Die CI (`.github/workflows/flutter-tests.yml`) führt alle Tests auf
 `ubuntu-latest` aus, die Hive-Tests also mit echtem Dateisystem. Automatisch

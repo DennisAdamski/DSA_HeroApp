@@ -6,7 +6,9 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
 
 - `AGENTS.md` ist die verbindliche Agentenrichtlinie.
 - `README.md` beschreibt Produktumfang, Architekturueberblick und Standard-Workflows.
-- `docs/web_deployment.md` beschreibt Web-CI, Testbranch und Hosting-Targets.
+- `tool/sync_main_to_test.sh` mergt Main in Test;
+  `tool/test_main_test_sync.py` sichert Erhalt, Konflikte und Wiederholungen ab.
+- `docs/web_deployment.md` beschreibt Web-CI, Testbranch, automatischen Main-Test-Sync und Hosting-Targets.
 - [Architektur-To-dos](docs/architecture_roadmap.md) halten sieben offene
   Verbesserungen mit Ist-Zustand, Abhängigkeiten und Abnahmekriterien fest.
   Bei Architekturarbeiten den Aufgabenstatus prüfen und nach abgeschlossenen
