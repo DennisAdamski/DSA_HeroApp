@@ -476,13 +476,85 @@ Commits:
 
 *Nächster Schritt:*
 
-1. Verweisrichtung Slot → Instanz: `inventarInstanzId` additiv an
+1. ~~Verweisrichtung Slot → Instanz: `inventarInstanzId` additiv an
    Waffe, Geschoss, Rüstungsstück und Nebenhand, gesetzt in `saveHero`; der
-   Abgleich trifft zuerst über die Instanz.
+   Abgleich trifft zuerst über die Instanz.~~ *Erledigt im Teilstand
+   „Verweis Slot → Instanz“ unten.*
 2. Ablegen und Ausrüsten behalten das Exemplar: Ein entfernter Slot
    hinterlässt einen unverknüpften Eintrag mit derselben ID.
 3. Danach den Namensabgleich ablösen; Zusammenführen von Stapeln und
    Verkaufen folgen.
+
+**Teilstand 06.10.2026 (2) — Verweis Slot → Instanz.** Schritt 1 des
+vorigen Teilstands.
+
+*Umsetzung.*
+
+- **Feld:** `inventarInstanzId` an `MainWeaponSlot`, `RangedProjectile`,
+  `ArmorPiece` und `OffhandEquipmentEntry`; additiv, in `jsonSchluessel`,
+  nur bei Belegung geschrieben. Es ist abgeleitet: die Bedienung schreibt
+  es nie.
+- **Setzen:** `bindeSlotsAnInstanzen`
+  (`rules/derived/inventar_slot_instanz_rules.dart`) läuft in `saveHero`
+  nach Abgleich, Mengenüberführung und `vergibInstanzIds`. Quelle ist der
+  Eintrag, der per `slotRef` auf den Slot zeigt; ohne ihn wird ein
+  veralteter Verweis geleert. Laden setzt nichts, die Hash-Pins bleiben.
+- **Abgleich:** `reconcileInventoryWithCombat` und
+  `applyLinkedInventoryDetailsToConfig` teilen jetzt eine Paarung:
+  Instanz, dann `slotRef`, dann Name. Die Instanz zählt nur bei gleicher
+  Quelle und nicht, wenn der Eintrag per `slotRef` zu einem anderen
+  bestehenden Slot gehört (kopierter Slot mit der Instanz seines
+  Vorbilds). Neue Einträge übernehmen die Instanz des Slots nicht.
+- **Abgeleitet, kein Profil:** Die Prüfungen „inzwischen geändert“
+  (`kampf_aenderung_rules.dart`, `gefecht_hand_rules.dart`) und die
+  Gefechts-Fingerabdrücke (Ziel-, Lade-, Bruchprofil) lassen den Verweis
+  über `ohneInstanzverweise` weg. Sonst hätte das erste Speichern nach dem
+  Update eine offene Kampfänderung abgewiesen oder einen gebundenen
+  Ladezustand verworfen.
+- **Bewusst unverändert:** `migriereInventarVerweise` (Laden) ordnet weiter
+  nur über Name und Slot-ID. Einträge ohne `slotRef` mit Instanz-ID
+  entstehen nur mit Versionen, die seit dem 6.10. nicht mehr laufen.
+
+*Prüfungen.*
+
+- Regeltests (`inventar_slot_instanz_rules_test.dart`): Bindung aller vier
+  Slotarten samt gespiegelter aktiver Waffe, Fixpunkt, Leeren veralteter
+  Verweise, Instanz vor Reihenfolge, veralteter `slotRef`, fremder
+  bestehender Slot, Kopie vor dem Vorbild, Quellengrenze, gemeinsame
+  Paarung für Markierungen, Gefechts-Fingerabdrücke.
+- Ablauf über `saveHero` (`hero_actions_slot_instanz_test.dart`):
+  Bindung, erneutes Speichern ohne Änderung, Umbenennen und Umsortieren
+  gleichnamiger Dolche, verlorener `slotRef`, entfernter Slot.
+- Kampf- und Gefechtsvergleiche ignorieren den Verweis (je ein Test).
+- Gegenproben: ohne Instanzpaarung, ohne Wächter, mit übernommener
+  Slot-Instanz, ohne Bindung in `saveHero` und ohne die Ausnahmen in den
+  Vergleichen scheitern jeweils die zugehörigen Tests.
+- `bestandsheld_ablauf_test` erlaubt für die erste Speicherung zusätzlich
+  `inventarInstanzId` je benanntem Slot (`slotInstanzPfade`). Die Hash-Pins
+  der Bestandshelden sind unverändert.
+- `flutter analyze` ohne Befund; Format- und Screen-LOC-Prüfung bestehen.
+  Vollständige Suite (`--concurrency=1`, eigener `DSA_MCP_DATA_DIR`): 3.699
+  bestanden, 3 bestehende übersprungen.
+
+Commit: `646c87c`.
+
+*Verbleibende Risiken:*
+
+1. Zeigen Instanz und `slotRef` auf verschiedene Slots, gewinnt die
+   Instanz, sofern der Eintrag nicht zu einem anderen bestehenden Slot
+   gehört. Ein dann übrig bleibender Eintrag mit passendem `slotRef`, aber
+   anderer Instanz, fällt wie bisher ein Eintrag eines entfernten Slots
+   weg. In eigenen Abläufen dieser Version laufen beide nie auseinander.
+2. Die Restrisiken 1–4 des Teilstands „Menge und Stapel“ gelten
+   unverändert; Risiko 1 (Entfernen löscht das Exemplar) löst erst
+   Schritt 2.
+3. Neue Fingerabdrücke über Slot-JSON müssen den Verweis ebenfalls
+   weglassen (`ohneInstanzverweise`).
+
+*Nächster Schritt:* Schritt 2 oben — Ablegen und Ausrüsten behalten das
+Exemplar. Vorher zu klären: ob Entfernen eines Slots im Kampf-Tab den
+Gegenstand im Inventar behält (dann braucht „wirklich wegwerfen“ einen
+eigenen Weg) und wie ein unverknüpfter Eintrag ausgerüstet wird.
 
 **Teilstand 27.09.2026 — B2/B3 behoben:** Kampf-Slots für Waffen,
 Geschosse, Rüstung und Nebenhand tragen stabile IDs. Beim Laden erhalten
