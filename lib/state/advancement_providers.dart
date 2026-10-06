@@ -4,8 +4,8 @@ import 'package:uuid/uuid.dart';
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_advancement_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
-import 'package:dsa_heldenverwaltung/domain/sync_models.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/advancement_rules.dart';
+import 'package:dsa_heldenverwaltung/state/ablauf_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 
 /// Ungespeicherte Steigerungsrunde mit fester Basis und geprüfter Vorschau.
@@ -128,6 +128,8 @@ class AdvancementSessionController extends Notifier<AdvancementSession?> {
 
   /// Speichert die Anzeige je Held und erhält eine offene Steigerungsrunde.
   /// Nur diese Präferenz wird persistiert; geplante Erwerbe bleiben im Entwurf.
+  /// Laden, Prüfen und Speichern übernimmt
+  /// `SteigerungsrundeUebernehmen.speichereSfAnzeige`.
   Future<void> setShowInapplicableSpecialAbilities(bool value) async {
     final current = state == null ? null : _editableSession();
     if (current != null) {
@@ -139,21 +141,16 @@ class AdvancementSessionController extends Notifier<AdvancementSession?> {
       );
     }
     try {
-      final repo = ref.read(heroRepositoryProvider);
-      final latest = await repo.loadHeroById(heroId);
-      if (!ref.mounted ||
-          (current != null && state?.sessionId != current.sessionId)) {
-        throw StateError('Die Steigerungsrunde wurde inzwischen geschlossen.');
-      }
-      if (latest == null ||
-          (current != null &&
-              heroContentHash(latest) != heroContentHash(current.base))) {
-        throw StateError('Der Held wurde inzwischen geändert.');
-      }
-      final updated = latest.copyWith(showInapplicableSpecialAbilities: value);
-      // Eine reine Anzeigepräferenz darf weder AP normalisieren noch Inventar
-      // abgleichen. Das Repository übernimmt wie üblich Sync und Benachrichtigung.
-      await repo.saveHero(updated);
+      final updated = await ref
+          .read(steigerungsrundeUebernehmenProvider)
+          .speichereSfAnzeige(
+            heroId: heroId,
+            anzeigen: value,
+            basis: current?.base,
+            istGeschlossen: () =>
+                !ref.mounted ||
+                (current != null && state?.sessionId != current.sessionId),
+          );
       if (current != null &&
           ref.mounted &&
           state?.sessionId == current.sessionId) {
@@ -182,7 +179,8 @@ class AdvancementSessionController extends Notifier<AdvancementSession?> {
   /// Speichert Werte, AP, SE und feste Historie gemeinsam nach Konfliktprüfung.
   ///
   /// Bei einem Fehler bleibt die Runde vollständig erhalten. Ein mittlerweile
-  /// geänderter Held wird nicht mit der alten Sitzungsbasis überschrieben.
+  /// geänderter Held wird nicht mit der alten Sitzungsbasis überschrieben;
+  /// Prüfung und Buchung übernimmt `SteigerungsrundeUebernehmen`.
   Future<void> commit() async {
     final current = _editableSession();
     if (!current.canCommit) {
@@ -191,29 +189,14 @@ class AdvancementSessionController extends Notifier<AdvancementSession?> {
     final replay = _replay(current, current.entries);
     state = _updated(current, current.entries, replay, isSaving: true);
     try {
-      final repo = ref.read(heroRepositoryProvider);
-      final latest = await repo.loadHeroById(heroId);
-      if (!ref.mounted || state?.sessionId != current.sessionId) {
-        throw StateError('Die Steigerungsrunde wurde inzwischen geschlossen.');
-      }
-      final expectedHash = heroContentHash(current.base);
-      if (latest == null || heroContentHash(latest) != expectedHash) {
-        throw StateError(
-          'Der Held wurde inzwischen geändert. Bitte verwirf diese Runde '
-          'und plane mit dem aktuellen Helden erneut.',
-        );
-      }
-      final updated = commitAdvancements(
-        base: current.base,
-        entries: current.entries,
-        catalog: current.catalog,
-      );
       await ref
-          .read(heroActionsProvider)
-          .saveHero(
-            updated,
-            expectedContentHash: expectedHash,
-            validationCatalog: current.catalog,
+          .read(steigerungsrundeUebernehmenProvider)
+          .uebernehmeRunde(
+            basis: current.base,
+            eintraege: current.entries,
+            katalog: current.catalog,
+            istGeschlossen: () =>
+                !ref.mounted || state?.sessionId != current.sessionId,
           );
       if (ref.mounted && state?.sessionId == current.sessionId) state = null;
     } catch (_) {

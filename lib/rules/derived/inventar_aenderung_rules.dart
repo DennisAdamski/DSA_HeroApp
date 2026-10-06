@@ -1,16 +1,18 @@
-// Sofortänderungen im Inventar-Tab: Gegenstand löschen und Geldstand
-// (ARCH-05).
+// Änderungen im Inventar-Tab: Gegenstand anlegen, bearbeiten und löschen
+// sowie Geldstand (ARCH-05).
 //
-// Beide arbeiten auf dem gespeicherten Helden. Inventareinträge haben keine
+// Alle arbeiten auf dem gespeicherten Helden. Inventareinträge haben keine
 // eigene ID; ein Eintrag wird deshalb über seinen Inhalt wiedergefunden,
 // nicht über seine Position, die sich durch einen anderen Schreibweg
 // verschoben haben kann.
 
+import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
 import 'package:dsa_heldenverwaltung/domain/sync_models.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/currency_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/inventory_sync_rules.dart';
 
 /// Position des ersten Eintrags in [eintraege], der inhaltlich [gesucht]
 /// gleicht, sonst `-1`.
@@ -18,17 +20,134 @@ import 'package:dsa_heldenverwaltung/rules/derived/currency_rules.dart';
 /// Verglichen wird das vollständige JSON einschließlich unbekannter Felder.
 /// Zwei gleiche Einträge sind nicht unterscheidbar; das Entfernen des ersten
 /// ergibt dann dieselbe Liste wie das des zweiten.
+///
+/// Trägt [gesucht] keine Instanz-ID, zählt sie auch bei den Einträgen nicht:
+/// Das Speichern vergibt fehlende IDs (ARCH-03), ein inzwischen gespeicherter
+/// Eintrag ist dadurch nicht geändert.
 int findeGleichenInventarEintrag(
   List<HeroInventoryEntry> eintraege,
   HeroInventoryEntry gesucht,
 ) {
-  final gesuchterHash = stableContentHash(gesucht.toJson());
+  final gesuchterHash = _inhalt(gesucht);
+  final ohneId = gesucht.instanzId == null;
   for (var index = 0; index < eintraege.length; index++) {
-    if (stableContentHash(eintraege[index].toJson()) == gesuchterHash) {
+    if (_inhalt(eintraege[index], ohneInstanzId: ohneId) == gesuchterHash) {
       return index;
     }
   }
   return -1;
+}
+
+/// Position des letzten Eintrags in [eintraege], der inhaltlich [gesucht]
+/// gleicht, sonst `-1`.
+///
+/// Für einen gerade angehängten Gegenstand: Gleicht er einem älteren
+/// Eintrag, ist er der hintere der beiden. Instanz-IDs wie bei
+/// [findeGleichenInventarEintrag].
+int findeLetztenGleichenInventarEintrag(
+  List<HeroInventoryEntry> eintraege,
+  HeroInventoryEntry gesucht,
+) {
+  final gesuchterHash = _inhalt(gesucht);
+  final ohneId = gesucht.instanzId == null;
+  for (var index = eintraege.length - 1; index >= 0; index--) {
+    if (_inhalt(eintraege[index], ohneInstanzId: ohneId) == gesuchterHash) {
+      return index;
+    }
+  }
+  return -1;
+}
+
+// Inhalts-Hash eines Eintrags, auf Wunsch ohne seine Instanz-ID.
+String _inhalt(HeroInventoryEntry eintrag, {bool ohneInstanzId = false}) {
+  final json = Map<String, dynamic>.of(eintrag.toJson());
+  if (ohneInstanzId) {
+    json.remove('instanzId');
+  }
+  return stableContentHash(json);
+}
+
+/// Hängt den im Editor angelegten Gegenstand [neu] an das gespeicherte
+/// Inventar an.
+///
+/// Neue Gegenstände sind manuelle Einträge; die Kampfkonfiguration bleibt,
+/// wie sie gespeichert ist.
+HeroSheet mitNeuemInventarEintrag(HeroSheet held, HeroInventoryEntry neu) {
+  return held.copyWith(
+    inventoryEntries: List<HeroInventoryEntry>.unmodifiable(
+      <HeroInventoryEntry>[...held.inventoryEntries, neu],
+    ),
+  );
+}
+
+/// Ersetzt den Gegenstand, mit dem der Editor geöffnet wurde ([angezeigt]),
+/// im gespeicherten Inventar durch das Editorergebnis [neu].
+///
+/// Wurde der Gegenstand inzwischen geändert oder entfernt, wirft die
+/// Funktion einen [StateError], statt einen anderen zu treffen oder die
+/// fremde Änderung zu überschreiben. Gleicht [neu] dem angezeigten Stand,
+/// kommt [held] selbst zurück, damit nichts gespeichert wird.
+///
+/// Hat das Speichern dem Gegenstand inzwischen eine Instanz-ID gegeben, die
+/// [neu] noch nicht kennt, behält er sie.
+///
+/// Ein mit dem Kampf verknüpfter Eintrag gibt seine Markierungen (magisch,
+/// geweiht) an seinen Slot weiter. Ein Geschoss schreibt seine Menge nur,
+/// wenn sie sich im Editor geändert hat, und nur an sein eigenes Geschoss;
+/// alle übrigen Mengen bleiben, wie sie gespeichert sind.
+HeroSheet mitGeaendertemInventarEintrag(
+  HeroSheet held,
+  HeroInventoryEntry angezeigt,
+  HeroInventoryEntry neu,
+) {
+  final index = findeGleichenInventarEintrag(held.inventoryEntries, angezeigt);
+  if (index < 0) {
+    throw StateError('Der Gegenstand wurde inzwischen geändert oder entfernt.');
+  }
+  if (stableContentHash(neu.toJson()) ==
+      stableContentHash(angezeigt.toJson())) {
+    return held;
+  }
+  final eintraege = List<HeroInventoryEntry>.of(held.inventoryEntries);
+  final gespeicherteId = eintraege[index].instanzId;
+  eintraege[index] = neu.instanzId == null && gespeicherteId != null
+      ? neu.copyWith(instanzId: gespeicherteId)
+      : neu;
+  final verknuepft =
+      _istMitKampfVerknuepft(angezeigt) || _istMitKampfVerknuepft(neu);
+  return held.copyWith(
+    inventoryEntries: List<HeroInventoryEntry>.unmodifiable(eintraege),
+    combatConfig: verknuepft
+        ? _kampfMitEintrag(held.combatConfig, eintraege, angezeigt, neu)
+        : held.combatConfig,
+  );
+}
+
+bool _istMitKampfVerknuepft(HeroInventoryEntry eintrag) {
+  return eintrag.sourceRef != null &&
+      isCombatLinkedInventorySource(eintrag.source);
+}
+
+CombatConfig _kampfMitEintrag(
+  CombatConfig kampf,
+  List<HeroInventoryEntry> eintraege,
+  HeroInventoryEntry vorher,
+  HeroInventoryEntry neu,
+) {
+  var ergebnis = applyLinkedInventoryDetailsToConfig(kampf, eintraege);
+  final verweis = neu.slotRef ?? neu.sourceRef;
+  final istGeschoss =
+      neu.source == InventoryItemSource.geschoss && neu.sourceRef != null;
+  if (istGeschoss && verweis != null && neu.anzahl != vorher.anzahl) {
+    // Der ID-Verweis zuerst: der Namensverweis träfe bei zwei gleichnamigen
+    // Bögen immer den ersten.
+    ergebnis = applyAmmoCountChangeToConfig(
+      ergebnis,
+      verweis,
+      int.tryParse(neu.anzahl.trim()) ?? 0,
+    );
+  }
+  return ergebnis;
 }
 
 /// Entfernt den angezeigten Gegenstand [angezeigt] aus dem gespeicherten

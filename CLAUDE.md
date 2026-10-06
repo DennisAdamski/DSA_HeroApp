@@ -16,6 +16,125 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
 - Das [Codex-Mockup](docs/mockups/README.md) zeigt den geplanten Workspace mit
   drei Arbeitsbereichen als eigenständigen HTML/CSS/JavaScript-Prototyp.
   Es nutzt ausschließlich flüchtige Beispieldaten und keine produktive Regellogik.
+  Der [Gefecht-Plan](docs/mockups/gefecht-plan.md) ergänzt das klickbare
+  Gefechts-Mockup. `gefecht-aktionen.js` bündelt dessen Freigaben und kompakte
+  Rundensteuerung, `gefecht-ausruestung.js` enthält das separate Ausrüstungspopup.
+  Die freigegebene Flutter-Umsetzung wird in
+  [docs/gefecht_implementation.md](docs/gefecht_implementation.md) nachgeführt.
+  `domain/gefecht.dart` enthält ausschließlich flüchtige Typen,
+  `state/gefecht_provider.dart` hält Sitzungen je Held; `gefecht_rules.dart`
+  und `gefecht_held_rules.dart` unter `rules/derived` entscheiden Freigaben.
+  `gefecht_freigabe_rules.dart` ergänzt konkrete Formularpflichten und offene
+  Entscheidungen; `gefecht_filter_rules.dart` ordnet AT/PA/Sonstige zu und
+  verknüpft Such-, Lernstands- und Sperrfilter ohne Regelrechnung im Widget.
+  `gefecht_ansage_rules.dart` prüft getrennte Finte/Wuchtschlag/FK-Ansagen,
+  Kombinationen und bezahlte Zusatz-Zielzeit.
+  `gefecht_zielen_rules.dart` ergänzt optionales Zielen (0–4 Punkte) mit eigener
+  bezahlter Zeit, Profilbindung und Abbau ausschließlich sonstiger FK-Zuschläge.
+  `gefecht_ansagefolge_rules.dart` führt eigene misslungene Nahkampf-Ansagen als
+  flüchtigen Probenmalus bis einschließlich nächster AT/PA oder Orientieren.
+  Die weiteren Pakete stehen in `docs/gefecht_folgepakete_plan.md`.
+  `gefecht_meisterparade_rules.dart` ergänzt die getrennte PA-Ansage und den
+  eigenen flüchtigen Erfolgsbonus. Prüfmetadaten binden Erleichterung und einmalige
+  Buchung; Schilde benötigen eine konkrete manuelle Ansagegrenze plus aktuelle PA.
+  `gefecht_meisterparade.dart` zeigt die gebuchte manuelle Fehlmanöverfolge.
+  `domain/gefecht_angriff.dart`
+  hält flüchtige Zielzahlungen und Erfolgsprofile; `gefecht_angriff_rules.dart`
+  bindet TP-Boni an das eingefrorene Kampfmittel und klassifiziert Schadensfolgen:
+  unterstützter Waffenschaden, kein Schaden oder manuell zu klären. Nur die erste
+  Klasse liefert einen Schadensrequest; die anderen werden einzeln am Tisch
+  abgewickelt und abgeschlossen. Kleine Ansage-/Ergebniswidgets
+  lassen die allgemeine Schadensprobe unverändert unabhängig.
+  Gebundener FK-Schaden ersetzt ausschließlich den Vorschau-Distanzanteil durch
+  das Band der eingegebenen Schussentfernung; unbekannte Bänder bleiben manuell.
+  Dynamische Formularhinweise erhalten die Identität ganzer Eingabeabschnitte,
+  damit Tastaturfokus und Cursor beim Tippen bestehen bleiben.
+  `domain/gefecht_laden.dart` hält flüchtige Ladestände pro physischer Waffen-ID
+  und bezahlte Vorbereitungsaufträge. `gefecht_ladezustand_rules.dart` bindet
+  Ladung an Waffen-/Geschossprofil, `gefecht_laden_rules.dart` prüft aktuelle
+  Restdauer, echte reguläre Zahlung und den gehaltenen Ziel-/Schussauftrag.
+  Profile ohne passenden Ladestand dürfen im Schussdialog frisch bestätigt werden;
+  ein passender bekannter entladener Zustand bleibt verbindlich.
+  `gefecht_ladedialog.dart` erfragt den unbekannten Anfang; `gefecht_laden.dart`
+  verbindet den Dialog mit der flüchtigen Sitzung. Ladezeit stammt zentral aus
+  der bestehenden Combat-Vorschau, einschließlich Effekten und Waffenmeister.
+  Beide Hände übergeben effektive Rüstungs-BE nach Rüstungsgewöhnung; Schnellladen
+  einschließlich Axxeleratus wirkt nur bis BE 4. Vorbereitete Schüsse behalten
+  ihren ursprünglichen Auftrag, verwenden aber aktuelle DK und Sitzungskontext
+  für die abschließende Prüfung und Probe.
+  Die gezielte `KartoGefechtsAdapter`-Brücke ergänzt einmalige Probeauswertung
+  und frische Ausrüstungsschreibwege, ohne bestehende Aufrufer zu verändern;
+  der Wirkabschluss nutzt zusätzlich `gefechtsZustand`,
+  `gefechtsFehlerBereich`, Armatrutz-/Attributo-Eingabe und
+  `gefechtsWirkkosten`. Außer `karto_app_root.dart` importiert `lib/ui2`
+  nichts aus `lib/ui` (`test/ui2/shell/ui2_import_richtung_test.dart`).
+  `gefecht_hand_rules.dart` prüft Haupt-/Nebenhandbelegungen vor Normalisierung
+  und frischem Speichern; `gefecht_handwahl.dart` enthält Auswahl und bestätigtes
+  Wegstecken. Ziehhandlungen merken ihre Zielhand.
+  Effektive Einhändigkeit wird dort zentral aus Talent/Waffenart bestimmt:
+  Bogen und gewöhnliche Armbrust brauchen beide Hände, Balestrina ist die
+  belegte Ausnahme. Anzeigenamen und gespeicherte Standardwerte eröffnen keine
+  Ausnahme; Metadaten bleiben unverändert. Kampfmittel und Zusatzbudgets nutzen
+  dieselbe Prüfung. `GefechtsDialogzweck.distanzklasse` öffnet den eigenen
+  DK-Einstieg mit Finte und ±1/±2; AT, freier Schritt und Folgen bleiben im
+  vorhandenen zentralen Auftrags-/Ausführungspfad.
+  `gefecht_kampfmittel_rules.dart` löst konkrete Kampfmittel auf; ihre getrennten
+  Grundwerte werden von Anzeige, Dialog und frischer Auftragsprüfung verwendet.
+  `gefecht_zusatz_rules.dart` verbindet konkrete Zusatzproben mit Ausrüstung,
+  vorherigen regulären Aktionen und derselben nicht kumulativen Zusatzmarke.
+  `ui2/gefecht/` trennt Einstieg, Rundenleiste, Ansicht, Aktionsdialog,
+  Manöverliste, Ausrüstung und Magie. Weitere Gefechtsregelmodule betreffen
+  Auftragsprüfung, Dauerhandlungen und echte Talent-/Zauberproben.
+  `gefecht_vitalwerte.dart` zeigt geschlossen LeP, aktivierte AsP und tatsächliche
+  Wunden; seine stabile Heldenidentität erhält die Expansion bei Ressourcenänderung.
+  Geöffnet nutzt die Ansicht dieselben bisherigen Fachdialoge und Schreibwege.
+  Normale Nahkampf-PA benötigt keine allgemeine Paradebestätigung; bekannte
+  Verbote und konkrete fehlende Angriffsdaten bleiben in den Kontextregeln wirksam.
+  Der Folgeplan steht in [docs/gefecht_next_plan.md](docs/gefecht_next_plan.md).
+  `gefecht_orientieren_rules.dart` trennt Kampfverluste von geschützten und
+  ungeklärten Korrekturen; der Orientierungsdialog nutzt frische Heldendaten.
+  `gefecht_kontext.dart` hält ausschließlich flüchtige Kontakt-/Angriffsdaten.
+  Kontext- und Fernkampfregelmodule liefern gemeinsame DK-Sperren und
+  Modifikatoranteile; ein gewürfelter Schuss hält seine offene Munitionsübernahme.
+  `gefecht_ziehen_rules.dart` liefert bestätigte Standardkosten und Markenarten.
+  `gefecht_wirken.dart` enthält ausschließlich flüchtige Wirkprofile; das
+  Wirkregelmodul berechnet Dauer, Kosten, Kulteigenschaften und einmalige Boni.
+  Aktionsausführung, Handlungskarte, Wirkdialog, Unterbrechung und Abschluss
+  sind eigenständige Bausteine unter `ui2/gefecht/`.
+  **Vorgaben statt Pflichtfelder** (Nutzerentscheidung 5. Oktober 2026):
+  `gefecht_vorgaben_rules.dart` belegt nur unbekannte Angaben sichtbar vor
+  (Nahkampf, Finte 0, Zielsituation 0, Platz zum Ausweichen, Schild-WM) und
+  liefert Start-DK und Gegnerzahl. Die Regeln behandeln `null` weiterhin als
+  fehlend; Vorgaben setzen nur Gefechtsstart, Kontaktwechsel und das Ende
+  einer Abwehr. Ladezustand und Schussentfernung bleiben bewusst ohne Vorgabe.
+  Hinweise allein ergeben „Bereit“. Gegner der lokalen Begegnung
+  (`gefecht_gegner_rules.dart`, `state/gefecht_begegnung_provider.dart`)
+  tragen stabile IDs; die gemeinsame Initiative
+  (`gefecht_initiative_rules.dart`, `state/gefecht_initiative_provider.dart`)
+  verbindet ausdrücklich gewählte Helden; ihr Rundenwechsel nimmt die
+  angezeigte Runde (`naechsteRunde(vonRunde:)`), Gegner- und Initiativkarte
+  laufen wie alle Karten über `onAktion` (Guard und Gefechtshinweis, Text über
+  `gefecht_fehlertext.dart`). Leere oder kleingeschriebene Waffen-DK gilt
+  als Nahkampf mit Hinweis; die Klingen-Aufteilung ist vorbelegt
+  (`gefechtsKlingenVorgaben`) und trägt die einzige Erschwernis ihrer
+  Teilproben. Klingenwand/-sturm, Patzer und
+  Bruchtest, Manöverfolgen und Fremdwirkung haben je eigene Regelmodule;
+  alles bleibt flüchtig. Stand und Grenzen: [docs/gefecht_abschluss_entwurf.md](docs/gefecht_abschluss_entwurf.md).
+  Bedienung: `gefecht_aktionsknopf.dart` zeigt Status und Hauptgrund
+  (`gefechtsHauptgrund`), `gefecht_anordnung.dart` ordnet die Abschnitte,
+  `gefecht_schnellleiste.dart` hält schmal Attacke/Parade/Ausweichen/Runde
+  erreichbar. Dialoge nutzen `gefecht_zahlfeld.dart` (−/+), `gefecht_dkwahl.dart`
+  und eingeklappte Herleitung (`gefecht_dialogabschnitte.dart`). Gefechtsproben
+  mit eigenem Erschwernisfeld sperren den zweiten Modifikator im Probendialog
+  (`kGefechtsprobenMitFestemModifikator`). Talent- und Eigenschaftsproben im
+  Gefecht: `gefecht_probenwahl.dart` mit Zeitbedarf aus `gefecht_talent_rules.dart`.
+  Benannte Handlungen (WdS S. 55) liefert `gefecht_aktionskatalog_rules.dart`
+  mit `gefecht_aktionswahl.dart`; die LeP-/AuP-Lage (`gefecht_lage_rules.dart`)
+  erscheint nur als Banner. Inventar und „Gegenstand benutzen“:
+  `gefecht_inventar.dart` mit `gefecht_inventar_rules.dart`; abgebucht wird
+  erst beim Abschluss nach Bestätigung über `inventar_verbrauch_rules.dart`
+  (`menge` vor `anzahl`, frisch über `updateHero`). Begleiter nur ansehen:
+  `gefecht_begleiter.dart` mit `begleiter_kampfprofil_rules.dart`.
 - [Redesign umsetzen](docs/redesign_implementation.md) enthält drei aufeinander
   aufbauende Agentenpläne, Startprompts und die gemeinsame Umsetzungsspezifikation
   unter `docs/superpowers/`. Ausgangspunkt ist das vorhandene UI2-Fundament;
@@ -149,9 +268,30 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   (u. a. `modifikator_aenderung_rules.dart`, `epic_status_rules.dart`,
   `inventar_aenderung_rules.dart`, `begleiter_aenderung_rules.dart`). Bei
   offener Steigerungsrunde schreibt der Einstieg nicht; Statuswerte und
-  Wundschwellen-Zahnrad sind dann sichtbar gesperrt. Snapshots bleiben
-  Inventareditor, Kampf und Editorentwuerfe. Pruefung:
-  `test/ui/shared/held_frisch_schreiben_test.dart` und Geschwister mit
+  Wundschwellen-Zahnrad sind dann sichtbar gesperrt. Das Sofortspeichern
+  des Kampf-Tabs laeuft ueber einen Einstieg `_aendereKampf`
+  (`hero_combat/combat_state_helpers.dart`, Regeln in
+  `kampf_aenderung_rules.dart`): Slots werden ueber ihre ID getroffen, nie
+  ueber die Position, und die Sektionen melden den **angezeigten** Slot;
+  ein Editorergebnis auf einen inzwischen geaenderten Slot wird abgewiesen.
+  Der Inventareditor schreibt ueber `aendereHeldImEditor` (Fehler zeigt
+  der Editor selbst) und `inventar_aenderung_rules.dart`: Er trifft den
+  geoeffneten Gegenstand ueber seinen Inhalt, nie ueber die Position, und
+  schreibt in den Kampf nur dessen eigene Geschossmenge; eine beim Speichern
+  vergebene Instanz-ID zaehlt dabei nicht als Aenderung.
+  Editorentwuerfe speichern ueber `speichereEditorEntwurf`
+  (`shared/editor_entwurf_speichern.dart`): Jeder Tab merkt sich in
+  `_entwurfBasis` den Helden, aus dem er den Entwurf gefuellt hat, und baut
+  den Entwurf auf dieser Basis. `uebernimmEditorEntwurf`
+  (`rules/derived/editor_entwurf_rules.dart`) gleicht Basis, Entwurf und
+  frischen Helden je oberstem JSON-Schluessel ab, AP sind Zaehler.
+  Beidseitig verschieden Geaendertes fragt nach („Weiter bearbeiten“ /
+  „Meine Fassung speichern“); Erzwingen nimmt nie eine fremde Buchung
+  (Abenteuerabschluss, Reisebericht-Belohnungen) zurueck. Uebernimmt ein Entwurf
+  waehrend der Bearbeitung frisch Gespeichertes, rueckt auch die Basis nach.
+  Kein Bogenschreibweg schreibt mehr einen Snapshot. Pruefung:
+  `test/ui/shared/held_frisch_schreiben_test.dart`,
+  `test/ui/shared/editor_entwurf_frisch_test.dart` und Geschwister mit
   `test/test_support/bogen_test_repository.dart`.
 - Mit Konto endet `SyncingHeroRepository.saveHeroState` nach dem **lokalen**
   Speichern; `GebuendelteLaeufe` (`lib/data/sync/gebuendelte_laeufe.dart`)
@@ -179,7 +319,9 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   `lib/ui/screens/advancement/` bietet Katalog und Inspector-Historie;
   `workspace/workspace_advancement.dart` verbindet sie mit dem Workspace.
   Nur Übernehmen schreibt Werte, AP/SE und `HeroSheet.advancementHistory`
-  gemeinsam. Alte Einträge sind nicht entfernbar; ungültige Folgeeinträge
+  gemeinsam, über den Ablauf `SteigerungsrundeUebernehmen`
+  (`lib/ablaeufe/steigerungsrunde_uebernehmen.dart`, auch für die
+  SF-Anzeige). Alte Einträge sind nicht entfernbar; ungültige Folgeeinträge
   blockieren die Übernahme. Leere Historie darf nicht ins JSON geschrieben
   werden (Bestands-Sync-Hashes). `HeroActions.saveHero` prüft für Sitzungen
   zusätzlich den erwarteten Inhalt vor dem Schreiben.
@@ -456,7 +598,9 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   `InspectorAttributeProbes` und `InspectorCombatProbes` in
   `inspector/widgets/`; `InspectorProbeTab` ist nur noch ihre Zusammenstellung.
   Beide Oberflächen benutzen dieselben Bausteine und dieselben Widget-Keys.
-  Requests entstehen ausschließlich über `probe_request_factory.dart`,
+  Requests entstehen ausschließlich über `probe_request_factory.dart`
+  (Re-Export von `rules/derived/probe_request_rules.dart`; TaW* je Talent
+  liefert `talent_probe_rules.dart` für Probensuche und Gefecht),
   gewürfelt und protokolliert wird über `showLoggedProbeDialog` — UI2 kennt
   keine W20-/W6-Simulation. Strg/Cmd+K öffnet dieselbe Suche, aber nur im
   Bereich Spielen: der `IndexedStack` hält die anderen Bereiche am Leben,
@@ -635,7 +779,8 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   Einen Knopf gibt es dafür nicht: `KartoSeitenkopf.onTap` macht den ganzen
   Abenteuerkopf antippbar (Pfeil hinter dem Titel, Tooltip „Abenteuer öffnen“,
   Key `karto-spiel-abenteuer`). Er öffnet das Abenteuerblatt
-  (`lib/ui2/spielen/karto_abenteuerblatt.dart`): Datum, Zusammenfassung,
+  (`lib/ui2/spielen/karto_abenteuerblatt.dart`, Dialoge in der Teildatei
+  `karto_abenteuer_dialoge.dart`): Datum, Zusammenfassung,
   Notizen und Personen lesen und pflegen, Abschluss und Belohnungen bleiben in
   der Verwaltung. Das Blatt ist eine eigene Seite (Grund `blatt`); Personen
   und Notizen stehen als `feld`-Karten im `KartoKartenraster`
@@ -908,6 +1053,13 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   Gates nur auf `heroStoragePath` — jede andere Einstellung (etwa eine
   gespeicherte Spaltenbreite) darf dort kein `setState` ausloesen.
 - Reisebericht-Daten bleiben separat unter `assets/catalogs/reiseberichte/house_rules_v1/`.
+  Buchen und Zuruecknehmen der Reisebericht-Belohnungen haben eine Quelle:
+  die Posten in `reisebericht_rules.dart` (ID, Inhalt, Bedingung).
+  `berechneReiseberichtBuchung` bucht Neues und nimmt zurueck, was
+  enthakt, geloescht oder unterschritten wurde (auch Schwellen-, Gruppen-
+  und Meta-Boni). Altdaten werden nie rueckwirkend korrigiert. Neue
+  Belohnungsarten gehoeren in `_buchungsposten`, nie in eine eigene
+  Buchungsfunktion.
 - Geschuetzte Katalog-Felder (Wirkung/Varianten von Zaubern, Erklaerungstexte
   von Manoevern und Kampf-Sonderfertigkeiten) sind v3-verschluesselt
   (AES-GCM, globaler Salt im Manifest `catalog_salt_v3`). Beim Unlock

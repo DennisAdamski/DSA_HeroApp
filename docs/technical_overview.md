@@ -1631,11 +1631,34 @@ Dabei gilt:
 - `reloadTime` wird fuer Boegen und Armbrueste ueber
   `lib/rules/derived/fernkampf_ladezeit_rules.dart` als effektive Ladezeit
   berechnet und als `1 Aktion` / `N Aktionen` angezeigt.
+- Beide Hände liefern `computeRangedReloadTime` die effektive Rüstungs-BE nach
+  Rüstungsgewöhnung (`beKampf`, keine talentbezogene eBE). Schnellladen wirkt
+  bis BE 4; bei BE 5 ist auch die durch Axxeleratus verliehene Wirkung inaktiv.
+  Der zusätzliche Axxeleratus-Kombinationsbonus setzt eine wirksame besessene
+  Schnellladen-SF voraus. Schnellziehen bleibt von dieser Ladegrenze unabhängig.
 - `Schnellladen (Bogen)` verkuerzt die Ladezeit um `1`; bei bereits besessener
   SF reduziert Axxeleratus die Ladezeit um einen weiteren Punkt.
-- `Schnellladen (Armbrust)` reduziert die Ladezeit um `3/4` der Basis-
-  Ladezeit, echt gerundet; bei bereits besessener SF reduziert Axxeleratus
+- `Schnellladen (Armbrust)` setzt die Ladezeit auf `3/4` der Basis-
+  Ladezeit, echt gerundet (4 → 3, 8 → 6, 5 → 4); bei bereits besessener SF reduziert Axxeleratus
   anschliessend um einen weiteren Punkt.
+- Gefecht-Ladehandlungen verwenden dieselbe aktuelle effektive Vorschau
+  einschließlich Waffenmeister. Bezahlte reguläre Aktionen bleiben erhalten;
+  Restdauer ist `max(0, aktuelle Ladezeit - bezahlt)`. Der vollständig bezahlte
+  Abschluss verlangt keine weitere Marke. Ladung ist flüchtig pro Waffen-ID;
+  Waffen-/Geschossprofiländerungen machen den Ladestand unbekannt und verlangen
+  erneute konkrete Bestätigung oder Vorbereitung. Eine frische Bestätigung im
+  Schussdialog gilt nur für das aktuelle Profil; passend bekannte Entladung
+  kann nicht übergangen werden.
+- Der vorbereitete Schuss bindet den ursprünglichen Auftrag einschließlich
+  Waffe, Geschoss, Zielkontakt und Ansagen. Die abschließende Prüfung und Probe
+  verwenden aktuelle DK und Sitzungskontext; ein Probeabbruch erhält diese
+  aktuellen Werte und den bezahlten ursprünglichen Auftrag. Auch Vorbereitung
+  mit einer PA-Marke erhält den Sitzungskontext.
+- Gebundener FK-Schaden ersetzt in beiden Händen ausschließlich den bereits
+  enthaltenen TP-Anteil des Vorschau-Distanzbands durch das numerisch aufgelöste
+  Band der tatsächlichen Schussentfernung. Ansagebonus und übrige Vorschauanteile
+  wirken einmal. Bei unbekanntem Band klassifiziert der Ergebnisbinder Schaden
+  als manuell und gibt keinen automatischen Schadensrequest aus.
 - `maneuver_rules.dart` normalisiert Manoever-Namen und UI-Texte auf stabile
   IDs, damit Kampfmeisterschaften dieselben Referenzen wie Katalog und UI
   nutzen koennen.
@@ -1788,10 +1811,15 @@ erhalten keine rückwirkend erfundene Historie. Ein leeres Historienfeld wird be
 der JSON-Ausgabe ausgelassen, damit bestehende Sync-Hashes gleich bleiben. Die
 Helden-Serialisierung übernimmt Import/Export und Sync.
 
-Vor dem Schreiben wird die Sitzungsbasis mit dem aktuellen Repository verglichen.
-`HeroActions.saveHero(expectedContentHash: ...)` prüft nochmals nach der
-asynchronen Normalisierung. Bei Konflikten oder Speicherfehlern bleibt die Runde
-erhalten. Die AP- und History-Ansicht erscheint auf breiten Geräten im Inspektor
+Die Buchung übernimmt der Ablauf `SteigerungsrundeUebernehmen`
+(`lib/ablaeufe/steigerungsrunde_uebernehmen.dart`, ARCH-05); der Controller hält
+nur Planung und Sitzungszustand. Vor dem Schreiben wird die Sitzungsbasis mit dem
+aktuellen Repository verglichen. `HeroActions.saveHero(expectedContentHash: ...)`
+prüft nochmals nach der asynchronen Normalisierung, unmittelbar vor dem Schreiben.
+Bei Konflikten oder Speicherfehlern bleibt die Runde erhalten. Die Anzeige nicht
+passender Sonderfertigkeiten speichert derselbe Ablauf
+(`speichereSfAnzeige`): eingereiht hinter andere Bogenvorgänge, ohne
+Normalisierung und bei offener Runde nur auf unveränderter Basis. Die AP- und History-Ansicht erscheint auf breiten Geräten im Inspektor
 und mobil im **Detailpanel**. Das Verlassen einer geänderten Runde bietet
 Weiterplanen, Verwerfen und bei gültigen Einträgen Übernehmen an.
 
@@ -3177,9 +3205,135 @@ ueber die Settings-Katalogverwaltung bearbeitet.
   Dukaten; Münzknöpfe melden `onSchritt`), Abenteuer abschließen und
   wiedereröffnen, Vertrauten-Steigerung. Der Ressourcendialog zeigt Fehler im
   Blatt und bleibt offen.
-- Snapshots bleiben: Editorentwürfe (Übersicht, Talente, Magie, Begleiter,
-  Notizen, Reisebericht), Inventareditor und Kampf-Sofortspeichern. Sie sind
-  aber eingereiht.
+- Snapshots blieben hier noch die Editorentwürfe (Übersicht, Talente,
+  Magie, Begleiter, Notizen, Reisebericht), eingereiht. Das
+  Kampf-Sofortspeichern, der Inventareditor und die Editorentwürfe schreiben
+  seit den folgenden Updates frisch.
+
+### Update 2026-09-30: Kampf-Tab frisch schreiben (ARCH-05)
+
+- Im Lesemodus speichert der Kampf-Tab jede Bedienung sofort: Waffen- und
+  Nebenhandwahl, Entfernung, Geschosswahl und -bestand (Kampfwerte),
+  Editorergebnis, Entfernen, Talent und BF (Waffen) sowie Rüstungs- und
+  Nebenhandteile. Alle laufen über den einen Einstieg `_aendereKampf`
+  (`hero_combat/combat_state_helpers.dart`). Im Bearbeitungsmodus ändert er
+  nur den Entwurf, gespeichert wird wie bisher mit „Speichern“. Im Lesemodus
+  ruft er `aendereHeldMitMeldung` mit `mitKampfAenderung`; die Slotprüfung
+  (`_validateWeaponSlotsForConfig`) läuft dabei auf dem frischen Ergebnis und
+  meldet sich als `StateError`. Die Einstiege je Bedienelement liegen in
+  `hero_combat/combat_sofort_aenderungen.dart`.
+- Regeln: `lib/rules/derived/kampf_aenderung_rules.dart` (`mitAktiverWaffe`,
+  `aendereWaffe`, `mitEntfernung`, `mitGeschossWahl`, `mitGeschossSchritt`,
+  `mitNeuerWaffe`, `ersetzeWaffe`, `ohneWaffe`, `mitNebenhand`,
+  `mitRuestungsteil`, `ohneRuestungsteil`, `mitNebenhandTeil`,
+  `ohneNebenhandTeil`). Slots werden über ihre stabile ID gefunden. Ohne ID
+  zählt der Inhalt ohne IDs, die angezeigte Position hilft nur dabei. Ein
+  Editorergebnis auf einen inzwischen geänderten Slot wird abgewiesen.
+  Geschossschritte zählen vom gespeicherten Bestand (0 bis
+  `kGeschossHoechstbestand`). Beim Entfernen rücken aktive Waffe und
+  Nebenhand (`weaponIndex`/`equipmentIndex`) nach; vorher verlor die
+  Nebenhand ihre Waffe oder zeigte auf das falsche Teil.
+- Die Sektionen melden den **angezeigten** Slot: `WeaponSaveCallback` mit
+  `ausgang` (liefert `bool`, der breite Editor bleibt bei Fehlern offen),
+  `WeaponRemoveCallback`, `WeaponSlotUpdater` mit `angezeigt`, dazu
+  `onPieceSaved`/`onPieceRemoved` (Rüstung) und
+  `onEntrySaved`/`onEntryRemoved` (Nebenhand) statt ganzer Listen.
+- Die Anzeige folgt dem gespeicherten Wert, der Entwurf wird im Lesemodus
+  nicht vorab gesetzt. Scheitert eine Änderung, steigt `_steuerRevision`
+  und baut Kampfwerte, Waffen und Rüstung neu auf; Auswahlfelder zeigen dann
+  wieder den gespeicherten Stand.
+- Vorschau: `kampfvorschau` (`hero_combat/combat_helpers.dart`) reicht
+  Modifikatoren, effektive Eigenschaften, Basiswerte und Wunden aus
+  `heroComputedProvider` an `computeCombatPreviewStats` durch. Kampfwerte,
+  Waffentabelle und Waffeneditor rechnen damit dieselben Werte wie Inspector
+  und Spielansicht; vorher fehlten dort die Wunden.
+- Prüfung: `test/rules/kampf_aenderung_rules_test.dart`,
+  `test/ui/combat/kampf_frisch_schreiben_test.dart` (mit
+  `BogenTestRepository`) und `test/ui/combat/kampfvorschau_wunden_test.dart`.
+
+### Update 2026-10-05: Inventareditor frisch schreiben (ARCH-05)
+
+- Anlegen und Bearbeiten im Inventareditor (schmal als eigene Seite, breit als
+  Seitenpanel) schreiben frisch über `aendereHeldImEditor`
+  (`lib/ui/screens/shared/zustand_aendern.dart`). Der Einstieg prüft wie
+  `aendereHeldMitMeldung` die offene Steigerungsrunde, fängt Fehler aber
+  nicht: `InventoryItemEditor` zeigt sie selbst und bleibt offen.
+  `aendereHeldMitMeldung` nutzt denselben Einstieg.
+- Regeln in `inventar_aenderung_rules.dart`: `mitNeuemInventarEintrag` hängt
+  an den gespeicherten Stand an und lässt den Kampf unberührt.
+  `mitGeaendertemInventarEintrag` findet den Gegenstand, mit dem der Editor
+  geöffnet wurde, über seinen Inhalt; wurde er inzwischen geändert oder
+  entfernt, gibt es einen `StateError`. Ein verknüpfter Eintrag gibt seine
+  Markierungen (magisch, geweiht) an seinen Slot weiter; eine im Editor
+  geänderte Geschossmenge geht nur an das eigene Geschoss
+  (`slotRef ?? sourceRef`). Vorher schrieb der Tab alle Geschossmengen des
+  beim Rendern erfassten Inventars zurück und setzte so Bestände aus dem
+  Kampf-Tab zurück.
+- Der Tab merkt sich den geöffneten Gegenstand (`_bearbeiteterEintrag`) statt
+  nur seiner Position. Verschiebt ein anderer Weg die Liste, bleibt der
+  breite Editor bei seinem Gegenstand. Nach dem Speichern wird die Auswahl im
+  gespeicherten Helden über den Inhalt bestimmt (neue Einträge von hinten,
+  verknüpfte notfalls über `slotRef`).
+- Instanz-IDs (ARCH-03): `saveHero` vergibt fehlenden Einträgen eine ID.
+  Trägt der gesuchte Eintrag keine, zählt sie bei der Inhaltssuche
+  (`findeGleichenInventarEintrag`, `findeLetztenGleichenInventarEintrag`)
+  auch bei den Kandidaten nicht; ein bearbeiteter Eintrag behält seine
+  gespeicherte ID.
+- Prüfung: `test/rules/inventar_aenderung_rules_test.dart`,
+  `test/ui/inventory/inventar_frisch_schreiben_test.dart` (mit
+  `BogenTestRepository`, schmal und breit) und die Planungssperre in
+  `test/ui/shared/held_frisch_schreiben_test.dart`.
+
+### Update 2026-10-05: Editorentwürfe frisch speichern (ARCH-05)
+
+- Alle sieben Editorentwürfe der Verwaltung (Übersicht, Talente, Magie,
+  Begleiter, Notizen, Reisebericht, Kampf-Editor) speichern über
+  `speichereEditorEntwurf` (`lib/ui/screens/shared/editor_entwurf_speichern.dart`):
+  frisch über `aendereHeldImEditor`, eingereiht und bei offener Planung
+  gesperrt.
+- Jeder Tab merkt sich in `_entwurfBasis` den Helden, aus dem er seinen
+  Entwurf gefüllt hat, und baut den Entwurf beim Speichern auf dieser Basis.
+  `uebernimmEditorEntwurf` (`lib/rules/derived/editor_entwurf_rules.dart`)
+  gleicht Basis, Entwurf und frisch geladenen Helden je oberstem
+  JSON-Schlüssel ab:
+  - Im Entwurf Unverändertes nimmt den gespeicherten Wert.
+  - Nur im Entwurf Geändertes gewinnt.
+  - `apTotal` und `apSpent` sind Zähler, die Differenz des Entwurfs wird
+    addiert.
+  - `level`, `apAvailable` und `unknownModifierFragments` rechnet
+    `saveHero` neu.
+
+  Ohne fremde Änderung seit der Basis wird der Entwurf unverändert
+  gespeichert (bisheriges Verhalten). Sonst entsteht der Held über JSON;
+  neue Kampf-Slots bekommen vorher eine UUID.
+- Beidseitig verschieden geänderte Schlüssel ergeben `EditorEntwurfKonflikt`.
+  Der Dialog bietet „Weiter bearbeiten“ (nichts gespeichert) oder „Meine
+  Fassung speichern“ (erneuter frischer Abgleich, der Entwurf gewinnt nur in
+  den bestätigten Schlüsseln). Nicht erzwingbar ist ein Konflikt, der eine
+  Buchung zurücknähme: Abenteuer, deren Status oder `rewardsApplied` sich
+  seit der Basis geändert hat, und geänderte angewendete
+  Reisebericht-Belohnungen.
+- Der Reisebericht bucht über `bucheReiseberichtEntwurf` auf den
+  gespeicherten Helden (AP, SE, Boni als Zu- und Abschlag) und nie doppelt.
+  Grundlage ist `berechneReiseberichtBuchung` (`reisebericht_rules.dart`).
+  Alle buchbaren Posten des Katalogs haben eine ID, einen Inhalt und eine
+  Bedingung. Neu gebucht wird, was im Entwurf erfüllt und nicht angewendet
+  ist. Zurückgenommen wird, was gebucht war und im Entwurf nicht mehr
+  erfüllt ist: Enthaken, gelöschte offene Einträge, dadurch unterschrittene
+  Schwellen, Gruppen- und Meta-Boni. Ein geänderter Inhalt wird umgebucht.
+  Altdaten (angewendet, aber schon vorher nicht erfüllt) bleiben. Vor einer
+  Rücknahme fragt der Tab nach (`reiseberichtBuchungsaenderung`).
+- Die Übersicht schreibt nur noch den Bogen. Ihre nie angezeigten
+  LeP-/AuP-/AsP-/KaP-Felder setzten bisher den Laufzeitzustand vom
+  Bearbeitungsbeginn zurück und machten negative LeP zu 0.
+- Notizen übernehmen unberührte Listen (dieselben Einträge wie in der Basis)
+  ungefiltert, damit die Bereinigung keine fremde Änderung überschreibt.
+- Nach einer Vertrauten-Steigerung werden Entwurf und Basis aus dem
+  gespeicherten Helden neu gefüllt.
+- Prüfung: `test/rules/editor_entwurf_rules_test.dart`,
+  `test/ui/shared/editor_entwurf_speichern_test.dart` und
+  `test/ui/shared/editor_entwurf_frisch_test.dart` (alle sieben Tabs mit
+  `BogenTestRepository`).
 
 ### Update 2026-08-23: Aventurischer Kalender und aktuelles Alter
 

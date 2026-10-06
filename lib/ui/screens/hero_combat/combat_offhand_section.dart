@@ -12,20 +12,38 @@ import 'package:dsa_heldenverwaltung/ui/widgets/adaptive_table_columns.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/flexible_table.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/resizable_table_columns.dart';
 
+/// Übernimmt ein Nebenhandteil aus dem Editor: neu ohne [ausgang], sonst als
+/// Ersatz des beim Öffnen angezeigten Teils [ausgang] an Position [index].
+typedef OffhandEntrySaveCallback = void Function(
+  OffhandEquipmentEntry neu, {
+  OffhandEquipmentEntry? ausgang,
+  int? index,
+});
+
+/// Entfernt das angezeigte Nebenhandteil [angezeigt] an Position [index].
+typedef OffhandEntryRemoveCallback = void Function(
+  int index,
+  OffhandEquipmentEntry angezeigt,
+);
+
 /// Verwaltet Nebenhand-Eintraege und oeffnet den Editor auf breiten Layouts rechts.
 class CombatOffhandSection extends StatefulWidget {
   /// Erstellt die Nebenhand-Sektion fuer den Kampf-Tab.
   const CombatOffhandSection({
     super.key,
     required this.offhandEquipment,
-    required this.onOffhandEquipmentChanged,
+    required this.onEntrySaved,
+    required this.onEntryRemoved,
   });
 
   /// Aktuelle Nebenhand-Ausruestungsliste.
   final List<OffhandEquipmentEntry> offhandEquipment;
 
-  /// Callback: gesamte Liste wurde geaendert (hinzufuegen/bearbeiten/entfernen).
-  final void Function(List<OffhandEquipmentEntry>) onOffhandEquipmentChanged;
+  /// Callback: Nebenhandteil angelegt oder bearbeitet.
+  final OffhandEntrySaveCallback onEntrySaved;
+
+  /// Callback: Nebenhandteil entfernt.
+  final OffhandEntryRemoveCallback onEntryRemoved;
 
   @override
   State<CombatOffhandSection> createState() => _CombatOffhandSectionState();
@@ -219,12 +237,11 @@ class _CombatOffhandSectionState extends State<CombatOffhandSection> {
   }
 
   void _removeEntry(int index) {
-    final entries = List<OffhandEquipmentEntry>.from(widget.offhandEquipment);
+    final entries = widget.offhandEquipment;
     if (index < 0 || index >= entries.length) {
       return;
     }
-    entries.removeAt(index);
-    widget.onOffhandEquipmentChanged(entries);
+    widget.onEntryRemoved(index, entries[index]);
     if (_editingEntryIndex == null) {
       return;
     }
@@ -273,7 +290,11 @@ class _CombatOffhandSectionState extends State<CombatOffhandSection> {
     if (result == null) {
       return;
     }
-    _applyEntry(result, entryIndex: entryIndex);
+    _applyEntry(
+      result,
+      ausgang: entryIndex == null ? null : source,
+      entryIndex: entryIndex,
+    );
   }
 
   void _closeWideEditor() {
@@ -284,20 +305,22 @@ class _CombatOffhandSectionState extends State<CombatOffhandSection> {
   }
 
   void _saveEntry(OffhandEquipmentEntry entry) {
-    _applyEntry(entry, entryIndex: _editingEntryIndex);
+    final entryIndex = _editingEntryIndex;
+    _applyEntry(
+      entry,
+      ausgang: entryIndex == null ? null : _editorSeedEntry,
+      entryIndex: entryIndex,
+    );
     _closeWideEditor();
   }
 
-  void _applyEntry(OffhandEquipmentEntry entry, {required int? entryIndex}) {
-    final nextEntries = List<OffhandEquipmentEntry>.from(
-      widget.offhandEquipment,
-    );
-    if (entryIndex == null) {
-      nextEntries.add(entry);
-    } else if (entryIndex >= 0 && entryIndex < nextEntries.length) {
-      nextEntries[entryIndex] = entry;
-    }
-    widget.onOffhandEquipmentChanged(nextEntries);
+  // Meldet das Editorergebnis samt dem beim Öffnen angezeigten Teil.
+  void _applyEntry(
+    OffhandEquipmentEntry entry, {
+    required OffhandEquipmentEntry? ausgang,
+    required int? entryIndex,
+  }) {
+    widget.onEntrySaved(entry, ausgang: ausgang, index: entryIndex);
   }
 
   Widget _tappableNameCell(

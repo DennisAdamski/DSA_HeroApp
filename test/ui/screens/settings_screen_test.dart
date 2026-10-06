@@ -185,6 +185,20 @@ void main() {
       expect(repository.load().debugModus, isTrue);
       expect(debugModeTile, findsOneWidget);
       expect(find.text('Aktiver Heldenspeicher'), findsNothing);
+
+      // Ohne --dart-define läuft der Test als lokaler Entwicklungsstand.
+      final buildInfo = find.byKey(
+        const ValueKey<String>('settings-build-info'),
+      );
+      await tester.scrollUntilVisible(
+        buildInfo,
+        100,
+        scrollable: navigationScrollable,
+      );
+      expect(
+        find.text('Version: Lokaler Entwicklungsstand', findRichText: true),
+        findsOneWidget,
+      );
     },
   );
 }
