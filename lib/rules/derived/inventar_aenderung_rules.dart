@@ -1,10 +1,9 @@
 // Änderungen im Inventar-Tab: Gegenstand anlegen, bearbeiten und löschen
 // sowie Geldstand (ARCH-05).
 //
-// Alle arbeiten auf dem gespeicherten Helden. Inventareinträge haben keine
-// eigene ID; ein Eintrag wird deshalb über seinen Inhalt wiedergefunden,
-// nicht über seine Position, die sich durch einen anderen Schreibweg
-// verschoben haben kann.
+// Alle arbeiten auf dem gespeicherten Helden. Ein Eintrag wird über seine
+// Instanz-ID wiedergefunden (ARCH-03), Altdaten ohne ID über ihren Inhalt —
+// nie über die Position, die ein anderer Schreibweg verschoben haben kann.
 
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
@@ -56,6 +55,31 @@ int findeLetztenGleichenInventarEintrag(
     }
   }
   return -1;
+}
+
+/// Position des gespeicherten Eintrags, den eine Änderung an [angezeigt]
+/// treffen soll, sonst `-1`.
+///
+/// Mit Instanz-ID wird über sie gesucht, damit inhaltsgleiche Stapel
+/// unterscheidbar bleiben; ohne über den Inhalt
+/// ([findeGleichenInventarEintrag]). In beiden Fällen muss der gespeicherte
+/// Eintrag noch [angezeigt] gleichen: Hat ein anderer Weg ihn inzwischen
+/// geändert, ergibt das `-1`, statt die fremde Änderung zu überschreiben.
+int findeInventarEintragZurAenderung(
+  List<HeroInventoryEntry> eintraege,
+  HeroInventoryEntry angezeigt,
+) {
+  final id = angezeigt.instanzId;
+  if (id == null) {
+    return findeGleichenInventarEintrag(eintraege, angezeigt);
+  }
+  final index = eintraege.indexWhere((eintrag) => eintrag.instanzId == id);
+  if (index < 0) {
+    return -1;
+  }
+  final gleich =
+      _inhalt(_wieGesucht(eintraege[index], angezeigt)) == _inhalt(angezeigt);
+  return gleich ? index : -1;
 }
 
 // [kandidat] ohne die Ergänzungen des Speicherns, die [gesucht] fehlen.
@@ -115,7 +139,10 @@ HeroSheet mitGeaendertemInventarEintrag(
   HeroInventoryEntry angezeigt,
   HeroInventoryEntry neu,
 ) {
-  final index = findeGleichenInventarEintrag(held.inventoryEntries, angezeigt);
+  final index = findeInventarEintragZurAenderung(
+    held.inventoryEntries,
+    angezeigt,
+  );
   if (index < 0) {
     throw StateError('Der Gegenstand wurde inzwischen geändert oder entfernt.');
   }
@@ -184,7 +211,10 @@ HeroSheet ohneInventarEintrag(HeroSheet held, HeroInventoryEntry angezeigt) {
       'Mit dem Kampf verknüpfte Gegenstände werden im Kampf-Tab entfernt.',
     );
   }
-  final index = findeGleichenInventarEintrag(held.inventoryEntries, angezeigt);
+  final index = findeInventarEintragZurAenderung(
+    held.inventoryEntries,
+    angezeigt,
+  );
   if (index < 0) {
     throw StateError('Der Gegenstand wurde inzwischen geändert oder entfernt.');
   }
