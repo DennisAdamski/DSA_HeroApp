@@ -120,8 +120,10 @@ Jeder Bogenschreibweg über `HeroActions` durchläuft `saveHero`:
 8. Rein ganzzahlige `anzahl` ohne `menge` überführt
    (`ueberfuehreInventarMengen`), danach fehlende oder doppelte Instanz-IDs
    vergeben (`vergibInstanzIds`, ARCH-03; beides nie beim Laden).
-9. `lastModified` frisch gestempelt.
-10. Optional: `expectedContentHash` gegen den gespeicherten Stand geprüft
+9. Jeder verknüpfte Slot bekommt die Instanz-ID seines Eintrags als
+   `inventarInstanzId` (`bindeSlotsAnInstanzen`, ARCH-03; nie beim Laden).
+10. `lastModified` frisch gestempelt.
+11. Optional: `expectedContentHash` gegen den gespeicherten Stand geprüft
    (optimistische Sperre der Steigerungsrunde).
 
 ### Öffentliche Methoden

@@ -6,6 +6,7 @@ import 'package:dsa_heldenverwaltung/domain/unbekannte_json_felder.dart';
 class OffhandEquipmentEntry {
   const OffhandEquipmentEntry({
     this.id = '',
+    this.inventarInstanzId = '',
     this.name = '',
     this.type = OffhandEquipmentType.parryWeapon,
     this.breakFactor = 0,
@@ -23,6 +24,13 @@ class OffhandEquipmentEntry {
 
   /// Stabile Kennung des Nebenhand-Teils (siehe `CombatConfig.withStableIds`).
   final String id;
+
+  /// Instanz-ID des Inventareintrags, der dieses Exemplar ist (ARCH-03).
+  ///
+  /// Verweis Slot → Instanz; leer, bis `HeroActions.saveHero` ihn aus dem
+  /// verknuepften Eintrag setzt (`bindeSlotsAnInstanzen`). Abgeleitet, nie
+  /// von der Bedienung geschrieben; nur geschrieben, wenn belegt.
+  final String inventarInstanzId;
 
   /// Anzeigename des Eintrags.
   final String name;
@@ -70,6 +78,7 @@ class OffhandEquipmentEntry {
   /// Alle Schluessel, die [fromJson] liest; alles andere bleibt erhalten.
   static const Set<String> jsonSchluessel = <String>{
     'id',
+    'inventarInstanzId',
     'name',
     'type',
     'breakFactor',
@@ -89,6 +98,7 @@ class OffhandEquipmentEntry {
   /// Gibt eine Kopie mit selektiv ueberschriebenen Feldern zurueck.
   OffhandEquipmentEntry copyWith({
     String? id,
+    String? inventarInstanzId,
     String? name,
     OffhandEquipmentType? type,
     int? breakFactor,
@@ -105,6 +115,7 @@ class OffhandEquipmentEntry {
   }) {
     return OffhandEquipmentEntry(
       id: id ?? this.id,
+      inventarInstanzId: inventarInstanzId ?? this.inventarInstanzId,
       name: name ?? this.name,
       type: type ?? this.type,
       breakFactor: breakFactor ?? this.breakFactor,
@@ -131,6 +142,8 @@ class OffhandEquipmentEntry {
     return mitUnbekanntenEnumWerten(
       mitUnbekanntenFeldern(<String, dynamic>{
         if (id.isNotEmpty) 'id': id,
+        if (inventarInstanzId.isNotEmpty)
+          'inventarInstanzId': inventarInstanzId,
         'name': name,
         'type': offhandEquipmentTypeToJson(type),
         'breakFactor': breakFactor,
@@ -153,6 +166,7 @@ class OffhandEquipmentEntry {
     int getInt(String key) => (json[key] as num?)?.toInt() ?? 0;
     return OffhandEquipmentEntry(
       id: (json['id'] as String?) ?? '',
+      inventarInstanzId: (json['inventarInstanzId'] as String?) ?? '',
       name: (json['name'] as String?) ?? '',
       type: leseEnumWert(
         json['type'],

@@ -131,11 +131,8 @@ void main() {
             bundle.hero.toJson(),
             held1,
             held.istAktuellesFormat
-                ? {
-                    'lastModified',
-                    ...ersteSpeicherungPfade(bundle.hero.inventoryEntries),
-                  }
-                : _importNormalisierung,
+                ? {'lastModified', ...ersteSpeicherungPfade(bundle.hero)}
+                : {..._importNormalisierung, ...slotInstanzPfade(bundle.hero)},
             grund: 'Import veränderte mehr als die Normalisierung',
           );
           expectNurGeaendert(bundle.state.toJson(), zustand1, const {
@@ -412,8 +409,8 @@ void main() {
       expectNurGeaendert(
         ohneZeitstempel(fixture.hero.toJson()),
         ohneZeitstempel(nachImport),
-        ersteSpeicherungPfade(fixture.hero.inventoryEntries),
-        grund: 'Import im aktuellen Format: nur Instanz-ID/Menge neu',
+        ersteSpeicherungPfade(fixture.hero),
+        grund: 'Import im aktuellen Format: nur Instanz-IDs/Menge neu',
       );
 
       // 2. Steigern: MU 14 → 15 und Klettern 5 → 6 in einer Runde.

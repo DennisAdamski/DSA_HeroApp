@@ -349,6 +349,25 @@ void main() {
       expect(_namen(ergebnis), ['Axt', 'Langschwert', 'Kurzbogen']);
     });
 
+    test('den beim Speichern gesetzten Instanzverweis zählt sie nicht', () {
+      // Angezeigt vor dem ersten Speichern, gespeichert danach (ARCH-03).
+      final gebunden = _bogen.copyWith(
+        inventarInstanzId: 'i1',
+        rangedProfile: _bogen.rangedProfile.copyWith(
+          projectiles: [
+            _pfeile.copyWith(inventarInstanzId: 'i2'),
+            _jagdpfeile,
+          ],
+        ),
+      );
+      final ergebnis = ersetzeWaffe(
+        _config(waffen: [_schwert, gebunden]),
+        ausgang: _bogen,
+        neu: _bogen.copyWith(name: 'Langbogen'),
+      );
+      expect(_namen(ergebnis), ['Schwert', 'Langbogen']);
+    });
+
     test('ersetzeWaffe weist eine inzwischen geänderte Waffe ab', () {
       final gespeichert = _config(
         waffen: [_schwert, _bogen.copyWith(breakFactor: 3)],

@@ -24,6 +24,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_transfer_bundle.dart';
 import 'package:dsa_heldenverwaltung/domain/sync_models.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/inventar_instanz_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/inventar_slot_instanz_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/inventar_menge_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ap_level_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/attribute_start_rules.dart';
@@ -234,11 +235,17 @@ class HeroActions {
     // nur, wenn er fehlt; ein geladener Held braechte sonst seinen alten mit,
     // und ohne Konto bliebe der Zeitpunkt des ersten Speicherns stehen
     // (Befund ARCH-07-B4). Inhalts-Hashes ignorieren das Feld.
+    // Menge und Instanz-IDs erst hier, nie beim Laden (ARCH-03, Hash-Pins).
+    final entriesMitInstanzen = vergibInstanzIds(
+      ueberfuehreInventarMengen(reconciledEntries),
+      neueId: () => const Uuid().v4(),
+    );
     final reconciledHero = normalizedHero.copyWith(
-      // Menge und Instanz-IDs erst hier, nie beim Laden (ARCH-03, Hash-Pins).
-      inventoryEntries: vergibInstanzIds(
-        ueberfuehreInventarMengen(reconciledEntries),
-        neueId: () => const Uuid().v4(),
+      inventoryEntries: entriesMitInstanzen,
+      // Verweis Slot → Instanz aus dem abgeglichenen Inventar (ARCH-03).
+      combatConfig: bindeSlotsAnInstanzen(
+        normalizedHero.combatConfig,
+        entriesMitInstanzen,
       ),
       lastModified: DateTime.now().toUtc(),
     );

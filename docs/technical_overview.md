@@ -730,6 +730,7 @@ desselben Feldes entspricht; abweichende Einträge bleiben stehen.
 | Feld | Typ | Bedeutung |
 |---|---|---|
 | `name` | `String` | Anzeigename |
+| `inventarInstanzId` | `String` | Verweis Slot → Inventarinstanz (ARCH-03); abgeleitet, gesetzt nur in `saveHero`, nur geschrieben, wenn belegt. Gilt ebenso für `RangedProjectile`, `ArmorPiece` und `OffhandEquipmentEntry` |
 | `talentId` | `String` | Zugehöriges Kampftalent (ID aus Katalog) |
 | `combatType` | `WeaponCombatType` | Explizite Einordnung als Nah- oder Fernkampfwaffe |
 | `weaponType` | `String` | Waffenkategorie |
@@ -1053,8 +1054,17 @@ Ein verknuepfter Inventareintrag traegt **zwei Verweise**
   Slot-IDs.
 
 Zuordnung beim **Abgleich** (`reconcileInventoryWithCombat`) und bei der
-Uebernahme magischer/geweihter Angaben (`applyLinkedInventoryDetailsToConfig`):
+Uebernahme magischer/geweihter Angaben (`applyLinkedInventoryDetailsToConfig`;
+beide nutzen dieselbe Paarung):
 
+0. **Instanz zuerst** (ARCH-03, Verweis Slot → Instanz): Traegt der Slot eine
+   `inventarInstanzId`, passt der verknuepfte Eintrag derselben Quelle mit
+   dieser Instanz-ID — es sei denn, sein `slotRef` zeigt auf einen *anderen
+   bestehenden* Slot (etwa weil der Slot eine Kopie ist, die die Instanz
+   ihres Vorbilds mitgenommen hat). Ohne `slotRef` oder mit einem auf einen
+   entfernten Slot entscheidet die Instanz. Jeder Eintrag wird einmal
+   vergeben; ein neu angelegter Eintrag uebernimmt die Instanz des Slots
+   nicht, er bekommt seine eigene erst in `vergibInstanzIds`.
 1. Ein Eintrag mit `slotRef` passt nur ueber diesen. Verweist er auf einen
    entfernten Slot, faellt er weg. Er wandert nie ueber den Namen zu einem
    gleichnamigen Exemplar weiter (Befund B2).
@@ -1100,6 +1110,19 @@ Katalog-IDs und die vollstaendige ARCH-03-Migration sind noch offen. Der
 Abgleich aendert bestehende verknuepfte Eintraege nur per `copyWith` und
 uebernimmt aus dem Slot allein dessen Felder; Typ und Traeger bleiben
 erhalten (Befund B9 behoben).
+
+**Verweis Slot → Instanz (ARCH-03, Teilstand 06.10.2026).** Waffe,
+Geschoss, Ruestungsstueck und Nebenhand-Teil tragen `inventarInstanzId`, die
+Instanz-ID ihres verknuepften Eintrags. `bindeSlotsAnInstanzen`
+(`rules/derived/inventar_slot_instanz_rules.dart`) setzt sie in `saveHero`
+nach Abgleich und Instanzvergabe, nie beim Laden; ohne Eintrag wird ein
+veralteter Verweis geleert. Der Verweis ist abgeleitet und kein Profil:
+Inhaltsvergleiche gegen „inzwischen geaendert“ (`kampf_aenderung_rules.dart`,
+`gefecht_hand_rules.dart`) und Gefechts-Fingerabdruecke (Ziel-, Lade- und
+Bruchprofil) lassen ihn ueber `ohneInstanzverweise` weg. Sonst verloere etwa
+ein gebundener Ladezustand beim ersten Speichern nach dem Update seine Waffe.
+`slotRef` am Eintrag bleibt bestehen; die Ladermigration
+(`migriereInventarVerweise`) ordnet weiterhin nur ueber Name und Slot-ID zu.
 
 **Menge und Stapel (ARCH-03, Entscheidungen vom 04. und 06.10.2026).** Ein
 Stapel ist ein Gegenstand mit einer Instanz-ID und einer Menge. Die Lesart
