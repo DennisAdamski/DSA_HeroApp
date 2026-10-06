@@ -68,3 +68,11 @@ internen GITHUB_TOKEN keinen weiteren Push-Workflow startet. Analyse, Tests,
 LOC-Prüfung und Web-Build bleiben Voraussetzungen für das Test-Deployment.
 Ist main bereits in test enthalten, gibt es keinen neuen Commit oder CI-Lauf.
 Der Sync ist unabhängig vom Erfolg der main-CI; beide Branches prüfen ihren Stand.
+
+Der Aufruf `uses: ./.github/workflows/flutter-tests.yml` lädt die Workflow-Datei
+aus dem Commit des aufrufenden Laufs, also immer von `main`. Das übergebene
+`ref` bestimmt nur, welcher Code ausgecheckt und gebaut wird. CI-Änderungen,
+die nur auf `test` liegen, wirken in Abgleichsläufen deshalb erst nach dem
+nächsten Release. Beobachtet: Der Test-Build `e784f4e` (Abgleich vor PR #221)
+zeigte „Lokaler Entwicklungsstand“, weil `main` damals noch ohne
+`--dart-define=BUILD_COMMIT` baute.

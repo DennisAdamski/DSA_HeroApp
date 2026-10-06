@@ -369,6 +369,15 @@ laufen noch über den alten Abgleich. Risiko: Die veröffentlichte App verwirft
 vergibt dann eine neue ID. Verweise müssen deshalb weiter über `slotRef`
 laufen, bis eine Version mit dem Feld verbreitet ist. Volle Suite grün.
 
+*Veröffentlicht* mit dem Merge-Commit `2ecfb48` (PR #221, 6.10.2026, Release
+`test` → `main`, Production-Deploy grün). Präzisierung des Risikos: Die
+Web-Produktion bewahrt unbekannte Felder schon seit PR #199–#201
+(28./29.09.2026) und hätte `instanzId` also erhalten. Verworfen hätte es nur
+ein Build vor dem 28.09. (Stand `7f0f830`, den
+`test/test_support/veroeffentlichte_app.dart` nachbildet). Laut Dennis läuft
+seit dem 6.10. keine ältere App mehr, weder nativ noch im Web; die
+Instanz-ID darf damit führende Identität werden.
+
 **Teilstand 27.09.2026 — B2/B3 behoben:** Kampf-Slots für Waffen,
 Geschosse, Rüstung und Nebenhand tragen stabile IDs. Beim Laden erhalten
 Bestandsdaten deterministische IDs und die Inventar-Namensverweise werden
