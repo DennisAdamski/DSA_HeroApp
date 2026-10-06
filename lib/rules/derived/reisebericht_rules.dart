@@ -176,205 +176,345 @@ class ReiseberichtEigenschaftsBonus {
 }
 
 /// Berechnet alle noch nicht angewendeten Belohnungen.
+///
+/// Gebucht wird jeder Posten, dessen Bedingung in [state] erfüllt ist und
+/// dessen ID noch nicht unter den angewendeten Belohnungen steht.
 ReiseberichtRewards computePendingRewards({
   required List<ReiseberichtDef> catalog,
   required HeroReisebericht state,
 }) {
-  var totalAp = 0;
-  final seRewards = <ReiseberichtSeReward>[];
+  return _summe(
+    _buchungsposten(catalog, state).where(
+      (posten) =>
+          posten.erfuellt && !state.appliedRewardIds.contains(posten.id),
+    ),
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Buchungsabgleich: neu buchen und zurücknehmen
+// ---------------------------------------------------------------------------
+
+/// Was ein Reisebericht-Entwurf am gebuchten Stand ändert.
+class ReiseberichtBuchung {
+  /// Erstellt den Abgleich.
+  const ReiseberichtBuchung({
+    this.neu = const ReiseberichtRewards(),
+    this.zurueck = const ReiseberichtRewards(),
+  });
+
+  /// Neu zu buchende Belohnungen; [ReiseberichtRewards.newAppliedIds] sind
+  /// die neu angewendeten IDs.
+  final ReiseberichtRewards neu;
+
+  /// Zurückzunehmende Belohnungen; [ReiseberichtRewards.newAppliedIds] sind
+  /// die IDs, die aus den angewendeten Belohnungen entfallen.
+  final ReiseberichtRewards zurueck;
+
+  /// Ob der Entwurf am gebuchten Stand nichts ändert.
+  bool get istLeer =>
+      neu.isEmpty &&
+      neu.newAppliedIds.isEmpty &&
+      zurueck.isEmpty &&
+      zurueck.newAppliedIds.isEmpty;
+}
+
+/// Gleicht den Reisebericht-[entwurf] mit dem gebuchten Stand [gebucht] ab.
+///
+/// Neu gebucht wird jeder Posten, der im Entwurf erfüllt und noch nicht
+/// angewendet ist. Zurückgenommen wird jeder angewendete Posten, der in
+/// [gebucht] erfüllt war und es im Entwurf nicht mehr ist: ein entfernter
+/// Haken, eine unterschrittene Schwelle, ein gelöschter offener Eintrag samt
+/// davon abhängiger Gruppen- und Meta-Boni. Ändert sich der Inhalt eines
+/// angewendeten Postens (gewählte SE, AP eines offenen Eintrags), wird der
+/// alte Inhalt zurückgenommen und der neue gebucht.
+///
+/// Maßgeblich für das Gebuchte sind ausschließlich die angewendeten IDs in
+/// [gebucht]; die des Entwurfs zählen nicht. Was schon vorher angewendet,
+/// aber nicht mehr erfüllt war, bleibt unangetastet: Zurückgenommen wird
+/// nur, was dieser Entwurf ändert.
+ReiseberichtBuchung berechneReiseberichtBuchung({
+  required List<ReiseberichtDef> catalog,
+  required HeroReisebericht gebucht,
+  required HeroReisebericht entwurf,
+}) {
+  final schritte = _buchungsschritte(catalog, gebucht, entwurf);
+  return ReiseberichtBuchung(
+    neu: _summe(schritte.neu),
+    zurueck: _summe(schritte.zurueck),
+  );
+}
+
+/// Was der Wechsel des Entwurfs von [vorher] zu [nachher] an der Buchung
+/// zusätzlich bewirkt, gemessen am gebuchten Stand [gebucht].
+///
+/// Für die Rückfrage beim Entfernen eines Hakens oder offenen Eintrags:
+/// Enthält das Ergebnis Zurücknahmen, nimmt die Änderung bereits gebuchte
+/// Belohnungen zurück.
+ReiseberichtBuchung reiseberichtBuchungsaenderung({
+  required List<ReiseberichtDef> catalog,
+  required HeroReisebericht gebucht,
+  required HeroReisebericht vorher,
+  required HeroReisebericht nachher,
+}) {
+  final alt = _buchungsschritte(catalog, gebucht, vorher);
+  final neu = _buchungsschritte(catalog, gebucht, nachher);
+  final alteNeu = {for (final posten in alt.neu) posten.schluessel};
+  final alteZurueck = {for (final posten in alt.zurueck) posten.schluessel};
+  return ReiseberichtBuchung(
+    neu: _summe(neu.neu.where((p) => !alteNeu.contains(p.schluessel))),
+    zurueck: _summe(
+      neu.zurueck.where((p) => !alteZurueck.contains(p.schluessel)),
+    ),
+  );
+}
+
+/// Bucht den Abgleich [buchung] auf [hero] und übernimmt den [entwurf].
+///
+/// Erst wird zurückgenommen, dann neu gebucht; die angewendeten IDs ergeben
+/// sich aus [gebucht] ohne die zurückgenommenen und mit den neuen.
+HeroSheet bucheReisebericht({
+  required HeroSheet hero,
+  required ReiseberichtBuchung buchung,
+  required HeroReisebericht gebucht,
+  required HeroReisebericht entwurf,
+}) {
+  final zustand = entwurf.copyWith(appliedRewardIds: gebucht.appliedRewardIds);
+  final zurueckgenommen = revokeReiseberichtRewards(
+    hero: hero,
+    rewards: buchung.zurueck,
+    updatedState: zustand,
+  );
+  return applyReiseberichtRewards(
+    hero: zurueckgenommen,
+    rewards: buchung.neu,
+    updatedState: zurueckgenommen.reisebericht,
+  );
+}
+
+// Ein buchbarer Posten: eine Belohnungs-ID, ihr Inhalt und ob ihre Bedingung
+// im betrachteten Stand erfüllt ist.
+class _Posten {
+  _Posten(
+    this.id, {
+    required this.erfuellt,
+    this.ap = 0,
+    this.se = const <ReiseberichtSeReward>[],
+    this.talentBoni = const <ReiseberichtTalentBonus>[],
+    this.eigenschaftsBoni = const <ReiseberichtEigenschaftsBonus>[],
+  });
+
+  final String id;
+  final bool erfuellt;
+  final int ap;
+  final List<ReiseberichtSeReward> se;
+  final List<ReiseberichtTalentBonus> talentBoni;
+  final List<ReiseberichtEigenschaftsBonus> eigenschaftsBoni;
+
+  // Inhalt ohne Bedingung; gleich, wenn dieselbe Buchung entstünde.
+  late final String inhalt = [
+    ap,
+    for (final eintrag in se) 'se:${eintrag.talentName}',
+    for (final bonus in talentBoni)
+      'tb:${bonus.talentName}:${bonus.wert}:${bonus.beschreibung}',
+    for (final bonus in eigenschaftsBoni)
+      'eb:${bonus.eigenschaft}:${bonus.wert}',
+  ].join('|');
+
+  late final String schluessel = '$id#$inhalt';
+}
+
+// Neu zu buchende und zurückzunehmende Posten eines Entwurfs.
+({List<_Posten> neu, List<_Posten> zurueck}) _buchungsschritte(
+  List<ReiseberichtDef> catalog,
+  HeroReisebericht gebucht,
+  HeroReisebericht entwurf,
+) {
+  final angewendet = gebucht.appliedRewardIds;
+  final imGebuchten = {
+    for (final posten in _buchungsposten(catalog, gebucht)) posten.id: posten,
+  };
+  final imEntwurf = {
+    for (final posten in _buchungsposten(catalog, entwurf)) posten.id: posten,
+  };
+  final neu = <_Posten>[];
+  final zurueck = <_Posten>[];
+  for (final vorher in imGebuchten.values) {
+    if (!vorher.erfuellt || !angewendet.contains(vorher.id)) {
+      continue;
+    }
+    final nachher = imEntwurf[vorher.id];
+    if (nachher == null || !nachher.erfuellt) {
+      zurueck.add(vorher);
+    } else if (nachher.inhalt != vorher.inhalt) {
+      zurueck.add(vorher);
+      neu.add(nachher);
+    }
+  }
+  for (final posten in imEntwurf.values) {
+    if (posten.erfuellt && !angewendet.contains(posten.id)) {
+      neu.add(posten);
+    }
+  }
+  return (neu: neu, zurueck: zurueck);
+}
+
+ReiseberichtRewards _summe(Iterable<_Posten> posten) {
+  var ap = 0;
+  final se = <ReiseberichtSeReward>[];
   final talentBoni = <ReiseberichtTalentBonus>[];
   final eigenschaftsBoni = <ReiseberichtEigenschaftsBonus>[];
-  final newAppliedIds = <String>{};
+  final ids = <String>{};
+  for (final eintrag in posten) {
+    ap += eintrag.ap;
+    se.addAll(eintrag.se);
+    talentBoni.addAll(eintrag.talentBoni);
+    eigenschaftsBoni.addAll(eintrag.eigenschaftsBoni);
+    ids.add(eintrag.id);
+  }
+  return ReiseberichtRewards(
+    ap: ap,
+    seRewards: se,
+    talentBoni: talentBoni,
+    eigenschaftsBoni: eigenschaftsBoni,
+    newAppliedIds: ids,
+  );
+}
+
+// Alle buchbaren Posten des Katalogs in Katalogreihenfolge.
+List<_Posten> _buchungsposten(
+  List<ReiseberichtDef> catalog,
+  HeroReisebericht state,
+) {
+  final posten = <_Posten>[];
+  bool abgehakt(String id) => state.checkedIds.contains(id);
+  List<ReiseberichtSeReward> seVon(String id, List<ReiseberichtSeDef> defs) {
+    final ergebnis = <ReiseberichtSeReward>[];
+    _collectSeRewards(id, defs, state, ergebnis);
+    return ergebnis;
+  }
+
+  List<ReiseberichtTalentBonus> boniVon(
+    String id,
+    List<ReiseberichtTalentBonusDef> defs,
+    String name,
+  ) => [
+    for (final tb in defs)
+      ReiseberichtTalentBonus(
+        sourceId: id,
+        talentName: tb.talentName,
+        wert: tb.wert,
+        beschreibung: 'Reisebericht: $name',
+      ),
+  ];
 
   for (final def in catalog) {
     switch (def.typ) {
       case 'checkpoint':
-        _collectCheckpointRewards(
-          def,
-          state,
-          totalAp,
-          seRewards,
-          newAppliedIds,
-          (ap) => totalAp += ap,
+      case 'grouped_progression':
+        posten.add(
+          _Posten(
+            def.id,
+            erfuellt: abgehakt(def.id),
+            ap: def.ap,
+            se: seVon(def.id, def.se),
+          ),
         );
 
       case 'multi_requirement':
         for (final req in def.anforderungen) {
-          if (state.checkedIds.contains(req.id) &&
-              !state.appliedRewardIds.contains(req.id)) {
-            totalAp += req.ap;
-            _collectSeRewards(req.id, req.se, state, seRewards);
-            newAppliedIds.add(req.id);
-          }
+          posten.add(
+            _Posten(
+              req.id,
+              erfuellt: abgehakt(req.id),
+              ap: req.ap,
+              se: seVon(req.id, req.se),
+            ),
+          );
         }
 
       case 'collection_fixed':
-        _collectFixedCollectionRewards(
-          def,
-          state,
-          seRewards,
-          talentBoni,
-          newAppliedIds,
-          (ap) => totalAp += ap,
-        );
+        for (final eintrag in def.festeEintraege) {
+          posten.add(
+            _Posten(
+              eintrag.id,
+              erfuellt: abgehakt(eintrag.id),
+              ap: def.apProEintrag,
+            ),
+          );
+        }
+        final schwelle = def.schwelleBelohnung;
+        if (schwelle != null) {
+          final id = '${def.id}_schwelle';
+          posten.add(
+            _Posten(
+              id,
+              erfuellt: isFixedCollectionThresholdMet(def, state),
+              ap: schwelle.ap,
+              se: seVon(id, schwelle.se),
+              talentBoni: boniVon(id, schwelle.talentBoni, def.name),
+            ),
+          );
+        }
+        final bonus = def.bonus;
+        if (bonus != null) {
+          final id = bonus.id.isNotEmpty ? bonus.id : '${def.id}_bonus';
+          posten.add(
+            _Posten(
+              id,
+              erfuellt: isFixedCollectionBonusMet(def, state),
+              ap: bonus.ap,
+              se: seVon(id, bonus.se),
+              talentBoni: boniVon(id, bonus.talentBoni, bonus.name),
+            ),
+          );
+        }
 
       case 'collection_open':
-        _collectOpenCollectionRewards(
-          def,
-          state,
-          seRewards,
-          newAppliedIds,
-          (ap) => totalAp += ap,
-        );
-
-      case 'grouped_progression':
-        if (state.checkedIds.contains(def.id) &&
-            !state.appliedRewardIds.contains(def.id)) {
-          totalAp += def.ap;
-          _collectSeRewards(def.id, def.se, state, seRewards);
-          newAppliedIds.add(def.id);
+        // AP je Eintrag über seine Position; die SE alle N Einträge.
+        final items = state.openEntries[def.id] ?? const [];
+        for (var i = 0; i < items.length; i++) {
+          posten.add(
+            _Posten(
+              '${def.id}_item_$i',
+              erfuellt: true,
+              ap: items[i].ap > 0 ? items[i].ap : def.apProEintrag,
+            ),
+          );
+        }
+        if (def.seIntervall > 0) {
+          final seCount = items.length ~/ def.seIntervall;
+          for (var s = 0; s < seCount; s++) {
+            final id = '${def.id}_se_$s';
+            posten.add(_Posten(id, erfuellt: true, se: seVon(id, def.se)));
+          }
         }
 
       case 'grouped_progression_bonus':
-        if (_isProgressionGroupComplete(def.gruppeId, state, catalog) &&
-            !state.appliedRewardIds.contains(def.id)) {
-          _collectSeRewards(def.id, def.se, state, seRewards);
-          newAppliedIds.add(def.id);
-        }
-
-      case 'meta':
-        if (_isMetaComplete(def, state, catalog) &&
-            !state.appliedRewardIds.contains(def.id)) {
-          totalAp += def.ap;
-          _collectSeRewards(def.id, def.se, state, seRewards);
-          for (final eb in def.eigenschaftsBonus) {
-            final resolved = _resolveEigenschaft(eb, state, def.id);
-            if (resolved != null) eigenschaftsBoni.add(resolved);
-          }
-          newAppliedIds.add(def.id);
-        }
-    }
-  }
-
-  return ReiseberichtRewards(
-    ap: totalAp,
-    seRewards: seRewards,
-    talentBoni: talentBoni,
-    eigenschaftsBoni: eigenschaftsBoni,
-    newAppliedIds: newAppliedIds,
-  );
-}
-
-void _collectCheckpointRewards(
-  ReiseberichtDef def,
-  HeroReisebericht state,
-  int currentAp,
-  List<ReiseberichtSeReward> seRewards,
-  Set<String> newAppliedIds,
-  void Function(int) addAp,
-) {
-  if (state.checkedIds.contains(def.id) &&
-      !state.appliedRewardIds.contains(def.id)) {
-    addAp(def.ap);
-    _collectSeRewards(def.id, def.se, state, seRewards);
-    newAppliedIds.add(def.id);
-  }
-}
-
-void _collectFixedCollectionRewards(
-  ReiseberichtDef def,
-  HeroReisebericht state,
-  List<ReiseberichtSeReward> seRewards,
-  List<ReiseberichtTalentBonus> talentBoni,
-  Set<String> newAppliedIds,
-  void Function(int) addAp,
-) {
-  // AP pro abgehaktem Eintrag
-  for (final eintrag in def.festeEintraege) {
-    if (state.checkedIds.contains(eintrag.id) &&
-        !state.appliedRewardIds.contains(eintrag.id)) {
-      addAp(def.apProEintrag);
-      newAppliedIds.add(eintrag.id);
-    }
-  }
-
-  // Schwellen-Belohnung
-  final schwelleId = '${def.id}_schwelle';
-  if (def.schwelleBelohnung != null &&
-      isFixedCollectionThresholdMet(def, state) &&
-      !state.appliedRewardIds.contains(schwelleId)) {
-    addAp(def.schwelleBelohnung!.ap);
-    _collectSeRewards(schwelleId, def.schwelleBelohnung!.se, state, seRewards);
-    for (final tb in def.schwelleBelohnung!.talentBoni) {
-      talentBoni.add(
-        ReiseberichtTalentBonus(
-          sourceId: schwelleId,
-          talentName: tb.talentName,
-          wert: tb.wert,
-          beschreibung: 'Reisebericht: ${def.name}',
-        ),
-      );
-    }
-    newAppliedIds.add(schwelleId);
-  }
-
-  // Bonus (z. B. Stadtkenner extrem)
-  if (def.bonus != null) {
-    final bonusId = def.bonus!.id.isNotEmpty
-        ? def.bonus!.id
-        : '${def.id}_bonus';
-    final bonusSchwelle = def.bonus!.schwelle > 0
-        ? def.bonus!.schwelle
-        : def.festeEintraege.length;
-    if (countFixedCollectionChecked(def, state) >= bonusSchwelle &&
-        !state.appliedRewardIds.contains(bonusId)) {
-      addAp(def.bonus!.ap);
-      _collectSeRewards(bonusId, def.bonus!.se, state, seRewards);
-      for (final tb in def.bonus!.talentBoni) {
-        talentBoni.add(
-          ReiseberichtTalentBonus(
-            sourceId: bonusId,
-            talentName: tb.talentName,
-            wert: tb.wert,
-            beschreibung: 'Reisebericht: ${def.bonus!.name}',
+        posten.add(
+          _Posten(
+            def.id,
+            erfuellt: _isProgressionGroupComplete(def.gruppeId, state, catalog),
+            se: seVon(def.id, def.se),
           ),
         );
-      }
-      newAppliedIds.add(bonusId);
+
+      case 'meta':
+        posten.add(
+          _Posten(
+            def.id,
+            erfuellt: _isMetaComplete(def, state, catalog),
+            ap: def.ap,
+            se: seVon(def.id, def.se),
+            eigenschaftsBoni: [
+              for (final eb in def.eigenschaftsBonus)
+                ?_resolveEigenschaft(eb, state, def.id),
+            ],
+          ),
+        );
     }
   }
-}
-
-void _collectOpenCollectionRewards(
-  ReiseberichtDef def,
-  HeroReisebericht state,
-  List<ReiseberichtSeReward> seRewards,
-  Set<String> newAppliedIds,
-  void Function(int) addAp,
-) {
-  final items = state.openEntries[def.id] ?? const [];
-
-  // AP pro Item (mit eigener ID pro Index)
-  for (var i = 0; i < items.length; i++) {
-    final itemId = '${def.id}_item_$i';
-    if (!state.appliedRewardIds.contains(itemId)) {
-      final itemAp = items[i].ap > 0 ? items[i].ap : def.apProEintrag;
-      addAp(itemAp);
-      newAppliedIds.add(itemId);
-    }
-  }
-
-  // SE-Intervall (alle N Eintraege eine SE)
-  if (def.seIntervall > 0 && items.isNotEmpty) {
-    final seCount = items.length ~/ def.seIntervall;
-    for (var s = 0; s < seCount; s++) {
-      final seId = '${def.id}_se_$s';
-      if (!state.appliedRewardIds.contains(seId)) {
-        _collectSeRewards(seId, def.se, state, seRewards);
-        newAppliedIds.add(seId);
-      }
-    }
-  }
+  return posten;
 }
 
 void _collectSeRewards(
@@ -460,7 +600,14 @@ HeroSheet applyReiseberichtRewards({
   required HeroReisebericht updatedState,
 }) {
   if (rewards.isEmpty) {
-    return hero.copyWith(reisebericht: updatedState);
+    return hero.copyWith(
+      reisebericht: updatedState.copyWith(
+        appliedRewardIds: {
+          ...updatedState.appliedRewardIds,
+          ...rewards.newAppliedIds,
+        },
+      ),
+    );
   }
 
   var apTotal = hero.apTotal + rewards.ap;
@@ -517,7 +664,12 @@ HeroSheet revokeReiseberichtRewards({
   required HeroReisebericht updatedState,
 }) {
   if (rewards.isEmpty) {
-    return hero.copyWith(reisebericht: updatedState);
+    return hero.copyWith(
+      reisebericht: updatedState.copyWith(
+        appliedRewardIds: {...updatedState.appliedRewardIds}
+          ..removeAll(rewards.newAppliedIds),
+      ),
+    );
   }
 
   var apTotal = hero.apTotal - rewards.ap;
@@ -563,84 +715,6 @@ HeroSheet revokeReiseberichtRewards({
     talents: talents,
     attributes: attributes,
     reisebericht: updatedState.copyWith(appliedRewardIds: cleanedApplied),
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Revocation-Berechnung fuer Bestaetigungsdialog
-// ---------------------------------------------------------------------------
-
-/// Berechnet welche Belohnungen bei Ruecknahme eines Eintrags entfernt wuerden.
-ReiseberichtRewards computeRevocationRewards({
-  required ReiseberichtDef def,
-  required List<ReiseberichtDef> catalog,
-  required HeroReisebericht state,
-}) {
-  // Sammle alle IDs die zu diesem Eintrag gehoeren und applied sind
-  final idsToRevoke = <String>{};
-
-  switch (def.typ) {
-    case 'checkpoint':
-      if (state.appliedRewardIds.contains(def.id)) {
-        idsToRevoke.add(def.id);
-      }
-
-    case 'multi_requirement':
-      for (final req in def.anforderungen) {
-        if (state.appliedRewardIds.contains(req.id)) {
-          idsToRevoke.add(req.id);
-        }
-      }
-
-    case 'grouped_progression':
-      if (state.appliedRewardIds.contains(def.id)) {
-        idsToRevoke.add(def.id);
-      }
-      // Prüfe ob Gruppen-Bonus betroffen
-      final gruppenBonus = catalog.where(
-        (d) =>
-            d.typ == 'grouped_progression_bonus' && d.gruppeId == def.gruppeId,
-      );
-      for (final gb in gruppenBonus) {
-        if (state.appliedRewardIds.contains(gb.id)) {
-          idsToRevoke.add(gb.id);
-        }
-      }
-  }
-
-  if (idsToRevoke.isEmpty) return const ReiseberichtRewards();
-
-  // Berechne die zugehoerigen Rewards
-  var totalAp = 0;
-  final seRewards = <ReiseberichtSeReward>[];
-  final talentBoni = <ReiseberichtTalentBonus>[];
-  final eigenschaftsBoni = <ReiseberichtEigenschaftsBonus>[];
-
-  for (final id in idsToRevoke) {
-    final matchDef = catalog.where((d) => d.id == id).firstOrNull;
-    if (matchDef != null) {
-      totalAp += matchDef.ap;
-      _collectSeRewards(id, matchDef.se, state, seRewards);
-    }
-    // Check sub-items
-    for (final d in catalog) {
-      if (d.typ == 'multi_requirement') {
-        for (final req in d.anforderungen) {
-          if (req.id == id) {
-            totalAp += req.ap;
-            _collectSeRewards(id, req.se, state, seRewards);
-          }
-        }
-      }
-    }
-  }
-
-  return ReiseberichtRewards(
-    ap: totalAp,
-    seRewards: seRewards,
-    talentBoni: talentBoni,
-    eigenschaftsBoni: eigenschaftsBoni,
-    newAppliedIds: idsToRevoke,
   );
 }
 

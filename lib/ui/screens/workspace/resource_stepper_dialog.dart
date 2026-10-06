@@ -13,24 +13,42 @@ import 'package:dsa_heldenverwaltung/ui/screens/shared/zustand_aendern.dart';
 enum ResourceType { lep, au, asp, kap }
 
 /// Zeigt einen kompakten Stepper-Dialog zum Anpassen einer Ressource.
+///
+/// [onAbschlussUebernehmen] bekommt den Kontext des Blatts, damit ein
+/// Speicherfehler in dessen [ZustandFehlerAnzeige] erscheint und nicht im
+/// darunterliegenden, verdeckten Dialog.
 Future<void> showResourceStepperDialog({
   required BuildContext context,
   required String heroId,
   required ResourceType resource,
+  int? abschlussKosten,
+  Future<bool> Function(BuildContext blatt)? onAbschlussUebernehmen,
 }) {
   return showAdaptiveDetailSheet<void>(
     context: context,
     builder: (_) => ZustandFehlerBereich(
-      child: _ResourceStepperDialog(heroId: heroId, resource: resource),
+      child: _ResourceStepperDialog(
+        heroId: heroId,
+        resource: resource,
+        abschlussKosten: abschlussKosten,
+        onAbschlussUebernehmen: onAbschlussUebernehmen,
+      ),
     ),
   );
 }
 
 class _ResourceStepperDialog extends ConsumerWidget {
-  const _ResourceStepperDialog({required this.heroId, required this.resource});
+  const _ResourceStepperDialog({
+    required this.heroId,
+    required this.resource,
+    this.abschlussKosten,
+    this.onAbschlussUebernehmen,
+  });
 
   final String heroId;
   final ResourceType resource;
+  final int? abschlussKosten;
+  final Future<bool> Function(BuildContext blatt)? onAbschlussUebernehmen;
 
   String get _label => switch (resource) {
     ResourceType.lep => 'LeP',
@@ -113,6 +131,18 @@ class _ResourceStepperDialog extends ConsumerWidget {
                 ),
               ],
             ),
+            if (abschlussKosten != null) ...[
+              Text('Bestätigte Abschlusskosten: $abschlussKosten $_label'),
+              FilledButton(
+                onPressed: onAbschlussUebernehmen == null
+                    ? null
+                    : () async {
+                        final ok = await onAbschlussUebernehmen!(context);
+                        if (ok && context.mounted) Navigator.pop(context);
+                      },
+                child: const Text('Abschlusskosten übernehmen'),
+              ),
+            ],
             const ZustandFehlerAnzeige(),
             const SizedBox(height: 24),
             TextButton(

@@ -7,9 +7,7 @@ import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
-import 'package:dsa_heldenverwaltung/rules/derived/epic_main_attribute_rules.dart';
-import 'package:dsa_heldenverwaltung/rules/derived/ruestung_be_rules.dart';
-import 'package:dsa_heldenverwaltung/rules/derived/talent_value_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/talent_probe_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/house_rules/house_rule_registry.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
@@ -355,51 +353,32 @@ List<ProbeQuickSearchCandidate> _buildTalentCandidates({
   required int? talentBeOverride,
   required bool epicAdvantagesActive,
 }) {
-  final activeTalentBe =
-      talentBeOverride ?? snapshot.combatPreviewStats.beKampf;
   final candidates = <ProbeQuickSearchCandidate>[];
   for (final talent in catalogTalents) {
-    final entry = hero.talents[talent.id];
-    if (entry == null || talent.group == 'Kampftalent') {
+    if (talent.group == 'Kampftalent') {
       continue;
     }
-    final targets = _buildProbeTargets(
-      snapshot.probenEigenschaften,
-      talent.attributes,
+    // Dieselbe TaW*-Rechnung wie im Gefecht (`talent_probe_rules.dart`).
+    final wert = talentProbenwertFuer(
+      snapshot: snapshot,
+      talent: talent,
+      epicAdvantagesActive: epicAdvantagesActive,
+      talentBeOverride: talentBeOverride,
     );
-    if (targets.length != 3) {
+    if (wert == null) {
       continue;
     }
-    final ebe = computeTalentEbe(
-      baseBe: activeTalentBe,
-      talentBeRule: talent.be,
-      reductionMultiplier: epicTalentEbeMultiplier(
-        ruleActive: epicAdvantagesActive,
-        isEpisch: hero.isEpisch,
-        mainAttributes: hero.epicMainAttributes,
-        talentAttributes: talent.attributes,
-      ),
-    );
-    final computedTaw = computeTalentComputedTaw(
-      talentValue: entry.talentValue,
-      modifier: entry.modifier,
-      ebe: ebe,
-      inventoryMod: snapshot.inventoryTalentMods[talent.id] ?? 0,
-    );
-    final hasSpecialization =
-        entry.combatSpecializations.isNotEmpty ||
-        entry.specializations.trim().isNotEmpty;
-    final chain = targets.map((target) => target.label).join('/');
+    final chain = wert.ziele.map((target) => target.label).join('/');
     candidates.add(
       ProbeQuickSearchCandidate(
         category: ProbeQuickSearchCategory.talent,
         name: talent.name,
-        detail: '$chain · TaW* $computedTaw',
+        detail: '$chain · TaW* ${wert.taw}',
         buildRequest: () => buildTalentProbeRequest(
           title: talent.name,
-          targets: targets,
-          basePool: computedTaw,
-          hasSpecialization: hasSpecialization,
+          targets: wert.ziele,
+          basePool: wert.taw,
+          hasSpecialization: wert.spezialisierung,
         ),
       ),
     );

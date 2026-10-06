@@ -10,11 +10,13 @@ import 'package:dsa_heldenverwaltung/domain/hero_note_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/adventure_rewards_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/editor_entwurf_rules.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/config/ui_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/inventory_modifier_editor.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/editor_entwurf_speichern.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/zustand_aendern.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_edit_controller.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
@@ -76,6 +78,10 @@ class _HeroNotesTabState extends ConsumerState<HeroNotesTab>
   List<HeroAdventureEntry> _draftAdventures = <HeroAdventureEntry>[];
   String _selectedAdventureId = '';
 
+  /// Held, aus dem der Entwurf gefüllt wurde; Ausgang des Abgleichs beim
+  /// Speichern (ARCH-05).
+  HeroSheet? _entwurfBasis;
+
   @override
   void initState() {
     super.initState();
@@ -123,6 +129,7 @@ class _HeroNotesTabState extends ConsumerState<HeroNotesTab>
     if (!_editController.shouldSync(hero, force: force)) {
       return;
     }
+    _entwurfBasis = hero;
     _draftNotes = List<HeroNoteEntry>.from(hero.notes);
     _draftConnections = List<HeroConnectionEntry>.from(hero.connections);
     _draftAdventures = List<HeroAdventureEntry>.from(hero.adventures);
@@ -140,8 +147,8 @@ class _HeroNotesTabState extends ConsumerState<HeroNotesTab>
   }
 
   Future<void> _saveChanges() async {
-    final hero = _latestHero;
-    if (hero == null) {
+    final basis = _entwurfBasis;
+    if (basis == null) {
       return;
     }
 
@@ -161,13 +168,36 @@ class _HeroNotesTabState extends ConsumerState<HeroNotesTab>
       validAdventureIds: validAdventureIds,
     );
 
-    final updatedHero = hero.copyWith(
-      notes: _draftNotes.where(_hasNoteContent).toList(growable: false),
-      connections: sanitizedConnections,
-      adventures: sanitizedAdventures,
+    // Unberührte Listen bleiben, wie sie gespeichert sind: Die Bereinigung
+    // allein ist keine Änderung und darf eine fremde nicht überschreiben.
+    final abenteuerUnberuehrt = _gleicheEintraege(
+      _draftAdventures,
+      basis.adventures,
     );
-    await ref.read(heroActionsProvider).saveHero(updatedHero);
-    if (!mounted) {
+    final entwurf = basis.copyWith(
+      notes: _gleicheEintraege(_draftNotes, basis.notes)
+          ? basis.notes
+          : _draftNotes.where(_hasNoteContent).toList(growable: false),
+      connections:
+          abenteuerUnberuehrt &&
+              _gleicheEintraege(_draftConnections, basis.connections)
+          ? basis.connections
+          : sanitizedConnections,
+      adventures: abenteuerUnberuehrt ? basis.adventures : sanitizedAdventures,
+    );
+    final gespeichert = await speichereEditorEntwurf(
+      context: context,
+      ref: ref,
+      heroId: widget.heroId,
+      abgleich: (aktuell, erzwungen) => uebernimmEditorEntwurf(
+        basis: basis,
+        entwurf: entwurf,
+        aktuell: aktuell,
+        erzwungen: erzwungen,
+        neueId: neueEditorSlotId,
+      ),
+    );
+    if (!gespeichert || !mounted) {
       return;
     }
 
@@ -194,6 +224,19 @@ class _HeroNotesTabState extends ConsumerState<HeroNotesTab>
       _syncDraftFromHero(hero, force: true);
     }
     _editController.markDiscarded();
+  }
+
+  // Ob der Entwurf genau die Einträge der Basis enthält (dieselben Objekte).
+  bool _gleicheEintraege<T>(List<T> entwurf, List<T> basis) {
+    if (entwurf.length != basis.length) {
+      return false;
+    }
+    for (var index = 0; index < entwurf.length; index++) {
+      if (!identical(entwurf[index], basis[index])) {
+        return false;
+      }
+    }
+    return true;
   }
 
   bool _hasNoteContent(HeroNoteEntry entry) {

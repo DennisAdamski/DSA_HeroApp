@@ -23,6 +23,7 @@ import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
 import 'package:dsa_heldenverwaltung/ui2/widgets/karto_flaeche.dart';
 import 'package:dsa_heldenverwaltung/ui2/widgets/karto_ornamente.dart';
 import 'package:dsa_heldenverwaltung/ui2/widgets/karto_seitenkopf.dart';
+import 'package:dsa_heldenverwaltung/ui2/gefecht/gefecht_einstieg.dart';
 
 /// Führt eine Laufzeitaktion aus und meldet Fehler sichtbar.
 ///
@@ -199,6 +200,15 @@ class KartoSpielansicht extends ConsumerWidget {
         titel: 'Schnellaktionen',
         child: KartoSpielaktionen(
           kuerzelHinweis: 'Strg K',
+          gefecht: GefechtEinstieg(
+            heroId: heroId,
+            werte: werte,
+            bestand: bestand,
+            aktion: aktion,
+            vorBearbeitung: vorHeldenbearbeitung,
+            hervorgehoben: true,
+            knopfKey: const ValueKey('karto-spiel-gefecht'),
+          ),
           onProbeSuchen: () => aktion(
             () =>
                 bestand.probeSuchen(context: context, ref: ref, heroId: heroId),
@@ -275,6 +285,13 @@ class KartoSpielansicht extends ConsumerWidget {
     return <Widget>[
       KartoAbschnitt(
         titel: 'Kampf',
+        aktion: GefechtEinstieg(
+          heroId: heroId,
+          werte: werte,
+          bestand: bestand,
+          aktion: aktion,
+          vorBearbeitung: vorHeldenbearbeitung,
+        ),
         stufe: KartoFlaechenstufe.senke,
         symbol: Icons.shield_outlined,
         akzent: KartoAkzent.messing,

@@ -813,11 +813,10 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
                   ),
               ],
               onChanged: (value) {
-                _selectWeaponIndex(
-                  value,
-                  catalog: catalog,
-                  combatTalents: combatTalents,
-                );
+                final waffe = value == null
+                    ? null
+                    : weaponSlots.elementAtOrNull(value);
+                _waehleWaffe(waffe, index: value, catalog: catalog);
               },
             ),
             if (hasActiveWeapon && preview.isRangedWeapon) ...[
@@ -852,7 +851,12 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
                   if (value == null) {
                     return;
                   }
-                  _updateSelectedRangedDistance(value, catalog: catalog);
+                  _waehleEntfernung(
+                    activeWeapon,
+                    value,
+                    index: selectedWeaponIndex,
+                    catalog: catalog,
+                  );
                 },
               ),
               const SizedBox(height: 8),
@@ -890,8 +894,10 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
                     ),
                 ],
                 onChanged: (value) {
-                  _updateSelectedRangedProjectile(
-                    value ?? -1,
+                  _waehleGeschoss(
+                    activeWeapon,
+                    value,
+                    index: selectedWeaponIndex,
                     catalog: catalog,
                   );
                 },
@@ -903,16 +909,24 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
                     key: const ValueKey<String>(
                       'combat-active-weapon-projectile-count-decrement',
                     ),
-                    onPressed: () =>
-                        _adjustSelectedProjectileCount(-1, catalog: catalog),
+                    onPressed: () => _zaehleGeschoss(
+                      activeWeapon,
+                      -1,
+                      index: selectedWeaponIndex,
+                      catalog: catalog,
+                    ),
                     icon: const Icon(Icons.remove),
                   ),
                   IconButton(
                     key: const ValueKey<String>(
                       'combat-active-weapon-projectile-count-increment',
                     ),
-                    onPressed: () =>
-                        _adjustSelectedProjectileCount(1, catalog: catalog),
+                    onPressed: () => _zaehleGeschoss(
+                      activeWeapon,
+                      1,
+                      index: selectedWeaponIndex,
+                      catalog: catalog,
+                    ),
                     icon: const Icon(Icons.add),
                   ),
                   const SizedBox(width: 8),
@@ -952,6 +966,11 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
               ? 'equipment:${assignment.equipmentIndex}'
               : 'none');
     final selectedWeaponIndex = _selectedWeaponIndex();
+    // Die angezeigten Listen: Die Auswahl trifft deren Einträge, auch wenn
+    // der Entwurf bis zum Tippen neu geladen wurde.
+    final waffen = _draftCombatConfig.weaponSlots;
+    final teile = _draftCombatConfig.offhandEquipment;
+    final offhandIndex = assignment.usesWeapon ? assignment.weaponIndex : -1;
 
     return Card(
       child: Padding(
@@ -973,51 +992,29 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
                   value: 'none',
                   child: Text('Keine'),
                 ),
-                for (var i = 0; i < _draftCombatConfig.weaponSlots.length; i++)
+                for (var i = 0; i < waffen.length; i++)
                   if (i != selectedWeaponIndex)
                     DropdownMenuItem<String>(
                       value: 'weapon:$i',
                       child: Text(
-                        'Waffe: ${_draftCombatConfig.weaponSlots[i].name.trim().isEmpty ? 'Waffe ${i + 1}' : _draftCombatConfig.weaponSlots[i].name}',
+                        'Waffe: ${waffen[i].name.trim().isEmpty ? 'Waffe ${i + 1}' : waffen[i].name}',
                       ),
                     ),
-                for (
-                  var i = 0;
-                  i < _draftCombatConfig.offhandEquipment.length;
-                  i++
-                )
+                for (var i = 0; i < teile.length; i++)
                   DropdownMenuItem<String>(
                     value: 'equipment:$i',
                     child: Text(
-                      '${_draftCombatConfig.offhandEquipment[i].isShield ? 'Schild' : 'Parierwaffe'}: '
-                      '${_draftCombatConfig.offhandEquipment[i].name.trim().isEmpty ? 'Eintrag ${i + 1}' : _draftCombatConfig.offhandEquipment[i].name}',
+                      '${teile[i].isShield ? 'Schild' : 'Parierwaffe'}: '
+                      '${teile[i].name.trim().isEmpty ? 'Eintrag ${i + 1}' : teile[i].name}',
                     ),
                   ),
               ],
               onChanged: (value) {
-                // Per `copyWith`, damit unbekannte Felder erhalten bleiben.
-                final bisher = _draftCombatConfig.offhandAssignment;
-                final nextAssignment = switch (value ?? 'none') {
-                  final raw when raw.startsWith('weapon:') => bisher.copyWith(
-                    weaponIndex:
-                        int.tryParse(raw.substring('weapon:'.length)) ?? -1,
-                    equipmentIndex: -1,
-                  ),
-                  final raw when raw.startsWith('equipment:') =>
-                    bisher.copyWith(
-                      weaponIndex: -1,
-                      equipmentIndex:
-                          int.tryParse(raw.substring('equipment:'.length)) ??
-                          -1,
-                    ),
-                  _ => bisher.copyWith(weaponIndex: -1, equipmentIndex: -1),
-                };
-                _applyCombatConfigChange(
-                  nextConfig: _draftCombatConfig.copyWith(
-                    offhandAssignment: nextAssignment,
-                  ),
+                _waehleNebenhand(
+                  value ?? 'none',
+                  waffen: waffen,
+                  teile: teile,
                   catalog: catalog,
-                  combatTalents: combatTalents,
                 );
               },
             ),
@@ -1074,7 +1071,12 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
                     if (value == null) {
                       return;
                     }
-                    _updateOffhandRangedDistance(value, catalog: catalog);
+                    _waehleEntfernung(
+                      offhandWeapon,
+                      value,
+                      index: offhandIndex,
+                      catalog: catalog,
+                    );
                   },
                 ),
                 const SizedBox(height: 8),
@@ -1112,8 +1114,10 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
                       ),
                   ],
                   onChanged: (value) {
-                    _updateOffhandRangedProjectile(
-                      value ?? -1,
+                    _waehleGeschoss(
+                      offhandWeapon,
+                      value,
+                      index: offhandIndex,
                       catalog: catalog,
                     );
                   },
@@ -1125,16 +1129,24 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
                       key: const ValueKey<String>(
                         'combat-offhand-weapon-projectile-count-decrement',
                       ),
-                      onPressed: () =>
-                          _adjustOffhandProjectileCount(-1, catalog: catalog),
+                      onPressed: () => _zaehleGeschoss(
+                        offhandWeapon,
+                        -1,
+                        index: offhandIndex,
+                        catalog: catalog,
+                      ),
                       icon: const Icon(Icons.remove),
                     ),
                     IconButton(
                       key: const ValueKey<String>(
                         'combat-offhand-weapon-projectile-count-increment',
                       ),
-                      onPressed: () =>
-                          _adjustOffhandProjectileCount(1, catalog: catalog),
+                      onPressed: () => _zaehleGeschoss(
+                        offhandWeapon,
+                        1,
+                        index: offhandIndex,
+                        catalog: catalog,
+                      ),
                       icon: const Icon(Icons.add),
                     ),
                   ],

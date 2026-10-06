@@ -20,6 +20,8 @@ Future<void> showProbeDialog({
   required ResolvedProbeRequest request,
   void Function(ProbeResult result)? onResolved,
   void Function(DiceLogEntry entry)? onDiceLogEntry,
+  bool singleResolution = false,
+  bool modifikatorGesperrt = false,
 }) {
   return showAdaptiveDetailSheet<void>(
     context: context,
@@ -27,6 +29,8 @@ Future<void> showProbeDialog({
       request: request,
       onResolved: onResolved,
       onDiceLogEntry: onDiceLogEntry,
+      singleResolution: singleResolution,
+      modifikatorGesperrt: modifikatorGesperrt,
     ),
   );
 }
@@ -40,10 +44,22 @@ class ProbeDialog extends StatefulWidget {
     this.rollTrefferzone,
     this.onResolved,
     this.onDiceLogEntry,
+    this.singleResolution = false,
+    this.modifikatorGesperrt = false,
   });
 
   /// Aufgeloeste Probe inklusive Zielwerte und Wuerfelkonfiguration.
   final ResolvedProbeRequest request;
+
+  /// Friert eine abgeschlossene Gefechtsprobe ein; Standardaufrufer bleiben frei.
+  final bool singleResolution;
+
+  /// Der situative Modifikator wurde bereits vorher festgelegt (Gefecht).
+  ///
+  /// Das Feld zeigt den übernommenen Wert schreibgeschützt; so gibt es nur
+  /// einen Ort für Erschwernisse und keine zweite, ungezählte Eingabe mit
+  /// umgekehrtem Vorzeichen.
+  final bool modifikatorGesperrt;
 
   /// Optionale Test-Hook fuer deterministische Trefferzonen-Wuerfe.
   final int Function()? rollTrefferzone;
@@ -74,6 +90,8 @@ class _ProbeDialogState extends State<ProbeDialog> {
   ProbeResult? _result;
   List<int>? _lastDigitalValues;
   bool _isAnimating = false;
+  bool _resolved = false;
+  bool get _locked => widget.singleResolution && _resolved;
 
   TrefferzonenErgebnis? _trefferzonenErgebnis;
   TrefferzonenErgebnis? _pendingTrefferzonenErgebnis;
@@ -111,7 +129,7 @@ class _ProbeDialogState extends State<ProbeDialog> {
 
   /// Startet den animierten Digitalwurf.
   void _startDigitalRoll() {
-    if (_isAnimating) return;
+    if (_isAnimating || _locked) return;
 
     _resetTrefferzone();
 
@@ -157,8 +175,9 @@ class _ProbeDialogState extends State<ProbeDialog> {
   void _notifyResolved() {
     final result = _result;
     final callback = widget.onResolved;
-    if (result == null || callback == null) return;
-    callback(result);
+    if (result == null || _locked) return;
+    _resolved = true;
+    callback?.call(result);
   }
 
   /// Wertet den letzten Digitalwurf mit den aktuellen Modifikatoren aus.
@@ -178,6 +197,7 @@ class _ProbeDialogState extends State<ProbeDialog> {
   }
 
   void _updateManualResult() {
+    if (_locked) return;
     final values = <int>[];
     for (final controller in _manualDiceControllers) {
       final parsed = int.tryParse(controller.text.trim());
@@ -210,6 +230,7 @@ class _ProbeDialogState extends State<ProbeDialog> {
 
   /// Aktualisiert das Ergebnis ohne einen neuen Digitalwurf auszulösen.
   void _liveRefresh() {
+    if (_locked) return;
     if (_mode == ProbeRollMode.manual) {
       _updateManualResult();
       return;
@@ -221,6 +242,7 @@ class _ProbeDialogState extends State<ProbeDialog> {
   }
 
   void _setMode(ProbeRollMode mode) {
+    if (_locked || _isAnimating) return;
     if (_mode == mode) return;
     if (mode == ProbeRollMode.manual) {
       _diceController.reset();
@@ -238,6 +260,7 @@ class _ProbeDialogState extends State<ProbeDialog> {
   }
 
   void _onActionButton() {
+    if (_locked || _isAnimating) return;
     if (_mode == ProbeRollMode.digital) {
       _startDigitalRoll();
       return;
@@ -343,7 +366,7 @@ class _ProbeDialogState extends State<ProbeDialog> {
           child: const Text('Schließen'),
         ),
         FilledButton.icon(
-          onPressed: _isAnimating ? null : _onActionButton,
+          onPressed: _isAnimating || _locked ? null : _onActionButton,
           icon: const Icon(Icons.casino_outlined),
           label: Text(_mode == ProbeRollMode.digital ? 'Würfeln' : 'Auswerten'),
         ),
@@ -386,20 +409,25 @@ class _ProbeDialogState extends State<ProbeDialog> {
             ),
           ],
           selected: <ProbeRollMode>{_mode},
-          onSelectionChanged: (selection) => _setMode(selection.first),
+          onSelectionChanged: _locked || _isAnimating
+              ? null
+              : (selection) => _setMode(selection.first),
         ),
         const SizedBox(height: 12),
         TextField(
           key: const ValueKey<String>('probe-dialog-modifier'),
           controller: _modifierController,
+          enabled: !_locked && !_isAnimating && !widget.modifikatorGesperrt,
           keyboardType: TextInputType.number,
           inputFormatters: <TextInputFormatter>[
             FilteringTextInputFormatter.allow(RegExp(r'-?[0-9]*')),
           ],
-          decoration: const InputDecoration(
+          decoration: InputDecoration(
             labelText: 'Situativer Modifikator',
-            border: OutlineInputBorder(),
-            helperText: 'Positive Werte erleichtern, negative erschweren.',
+            border: const OutlineInputBorder(),
+            helperText: widget.modifikatorGesperrt
+                ? 'Im Gefecht festgelegt.'
+                : 'Positive Werte erleichtern, negative erschweren.',
           ),
           onChanged: (_) => _liveRefresh(),
         ),
@@ -412,12 +440,14 @@ class _ProbeDialogState extends State<ProbeDialog> {
               'Spezialisierung anwenden (+${widget.request.specializationBonus})',
             ),
             value: _specializationApplied,
-            onChanged: (value) {
-              setState(() {
-                _specializationApplied = value;
-              });
-              _liveRefresh();
-            },
+            onChanged: _locked || _isAnimating
+                ? null
+                : (value) {
+                    setState(() {
+                      _specializationApplied = value;
+                    });
+                    _liveRefresh();
+                  },
           ),
         ],
       ],
@@ -467,6 +497,7 @@ class _ProbeDialogState extends State<ProbeDialog> {
               child: TextField(
                 key: ValueKey<String>('probe-dialog-die-$index'),
                 controller: _manualDiceControllers[index],
+                enabled: !_locked,
                 keyboardType: TextInputType.number,
                 inputFormatters: <TextInputFormatter>[
                   FilteringTextInputFormatter.allow(RegExp(r'[0-9]*')),

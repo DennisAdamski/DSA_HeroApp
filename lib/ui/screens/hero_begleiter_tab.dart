@@ -10,12 +10,15 @@ import 'package:dsa_heldenverwaltung/domain/hero_rituals.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ap_level_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/begleiter_aenderung_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/begleiter_kampfprofil_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/companion_steigerung_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/editor_entwurf_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ruestung_be_rules.dart';
 import 'package:dsa_heldenverwaltung/catalog/vertrautenmagie_preset.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/editor_entwurf_speichern.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/protected_content_helpers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/zustand_aendern.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
@@ -66,6 +69,10 @@ class _HeroBegleiterTabState extends ConsumerState<HeroBegleiterTab>
   HeroSheet? _latestHero;
   List<HeroCompanion> _draftCompanions = <HeroCompanion>[];
 
+  /// Held, aus dem der Entwurf gefüllt wurde; Ausgang des Abgleichs beim
+  /// Speichern (ARCH-05).
+  HeroSheet? _entwurfBasis;
+
   /// ID des aktuell in der Detailansicht gezeigten Begleiters.
   /// null = Auswahl-Seite wird angezeigt.
   String? _activeCompanionId;
@@ -103,6 +110,7 @@ class _HeroBegleiterTabState extends ConsumerState<HeroBegleiterTab>
 
   void _syncDraftFromHero(HeroSheet hero, {bool force = false}) {
     if (!_editController.shouldSync(hero, force: force)) return;
+    _entwurfBasis = hero;
     // Migration: Vertrautenmagie von HeroSheet.ritualCategories zum Companion.
     final altVertrautenmagie = hero.ritualCategories
         .where((c) => c.id == 'vertrautenmagie')
@@ -137,8 +145,8 @@ class _HeroBegleiterTabState extends ConsumerState<HeroBegleiterTab>
   }
 
   Future<void> _saveChanges() async {
-    final hero = _latestHero;
-    if (hero == null) return;
+    final basis = _entwurfBasis;
+    if (basis == null) return;
     // Startwerte fuer Vertraute initialisieren.
     final finalized = _draftCompanions
         .map(
@@ -148,18 +156,26 @@ class _HeroBegleiterTabState extends ConsumerState<HeroBegleiterTab>
         .toList();
     _draftCompanions = finalized;
     // Vertrautenmagie aus Hero-Ritualkategorien entfernen (lebt jetzt im Companion).
-    final heroRituals = hero.ritualCategories
+    final heroRituals = basis.ritualCategories
         .where((c) => c.id != 'vertrautenmagie')
         .toList();
-    await ref
-        .read(heroActionsProvider)
-        .saveHero(
-          hero.copyWith(
-            companions: List.unmodifiable(finalized),
-            ritualCategories: List.unmodifiable(heroRituals),
-          ),
-        );
-    if (!mounted) return;
+    final entwurf = basis.copyWith(
+      companions: List.unmodifiable(finalized),
+      ritualCategories: List.unmodifiable(heroRituals),
+    );
+    final gespeichert = await speichereEditorEntwurf(
+      context: context,
+      ref: ref,
+      heroId: widget.heroId,
+      abgleich: (aktuell, erzwungen) => uebernimmEditorEntwurf(
+        basis: basis,
+        entwurf: entwurf,
+        aktuell: aktuell,
+        erzwungen: erzwungen,
+        neueId: neueEditorSlotId,
+      ),
+    );
+    if (!gespeichert || !mounted) return;
     _editController.markSaved();
     ScaffoldMessenger.of(context)
         .showSnackBar(const SnackBar(content: Text('Begleiter gespeichert')));
@@ -183,7 +199,8 @@ class _HeroBegleiterTabState extends ConsumerState<HeroBegleiterTab>
   /// Gebucht wird auf den gespeicherten Begleiter (ARCH-05): Hat ihn ein
   /// anderer Weg inzwischen gesteigert, passen die Kosten nicht mehr, und die
   /// Buchung wird mit Meldung abgewiesen. Danach übernimmt der Entwurf den
-  /// gespeicherten Stand dieses Begleiters.
+  /// gespeicherten Stand; gesteigert wird nur ohne offene Änderungen, und
+  /// der gespeicherte Held wird die neue Basis des Abgleichs.
   Future<void> _bucheSteigerung(
     HeroCompanion angezeigt, {
     required BegleiterSteigerungsziel ziel,
@@ -206,16 +223,7 @@ class _HeroBegleiterTabState extends ConsumerState<HeroBegleiterTab>
       ),
     );
     if (gespeichert == null || !mounted) return;
-    final begleiter = gespeichert.companions
-        .where((c) => c.id == angezeigt.id)
-        .firstOrNull;
-    if (begleiter != null) {
-      setState(() {
-        _draftCompanions = _draftCompanions
-            .map((c) => c.id == begleiter.id ? begleiter : c)
-            .toList();
-      });
-    }
+    setState(() => _syncDraftFromHero(gespeichert, force: true));
     ScaffoldMessenger.of(context)
         .showSnackBar(const SnackBar(content: Text('Steigerung gespeichert')));
   }

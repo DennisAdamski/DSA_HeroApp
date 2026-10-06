@@ -19,7 +19,11 @@ class KartoSpielaktionen extends StatelessWidget {
     required this.onRast,
     required this.onSchaden,
     this.kuerzelHinweis,
+    this.gefecht,
   });
+
+  /// Einstieg ins Gefecht; steht vor allen übrigen Schnellaktionen.
+  final Widget? gefecht;
 
   /// Öffnet die vorhandene Probensuche.
   final VoidCallback onProbeSuchen;
@@ -43,6 +47,7 @@ class KartoSpielaktionen extends StatelessWidget {
       runSpacing: Abstand.normal,
       crossAxisAlignment: WrapCrossAlignment.center,
       children: [
+        ?gefecht,
         FilledButton.icon(
           key: const ValueKey<String>('karto-spiel-probe'),
           onPressed: onProbeSuchen,

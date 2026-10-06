@@ -43,6 +43,12 @@ const Set<String> _importNormalisierung = <String>{
   'inventoryEntries',
 };
 
+/// Pfade der Instanz-IDs, die das erste Speichern je Inventareintrag vergibt
+/// (ARCH-03); beim Laden entstehen sie nie.
+Set<String> _instanzIdPfade(int anzahl) => <String>{
+  for (var i = 0; i < anzahl; i++) 'inventoryEntries/$i/instanzId',
+};
+
 /// Ein geoeffneter Heldenspeicher: echtes Hive plus Provider wie in der App.
 class _Speicher {
   _Speicher(this.repo, this.container);
@@ -131,7 +137,10 @@ void main() {
             bundle.hero.toJson(),
             held1,
             held.istAktuellesFormat
-                ? const {'lastModified'}
+                ? {
+                    'lastModified',
+                    ..._instanzIdPfade(bundle.hero.inventoryEntries.length),
+                  }
                 : _importNormalisierung,
             grund: 'Import veränderte mehr als die Normalisierung',
           );
@@ -406,13 +415,11 @@ void main() {
         resolution: ImportConflictResolution.overwriteExisting,
       );
       final nachImport = await gespeicherterHeld(speicher, id);
-      expect(
-        jsonUnterschiede(
-          ohneZeitstempel(fixture.hero.toJson()),
-          ohneZeitstempel(nachImport),
-        ),
-        isEmpty,
-        reason: 'aktuelles Format ist beim Import eine Identität',
+      expectNurGeaendert(
+        ohneZeitstempel(fixture.hero.toJson()),
+        ohneZeitstempel(nachImport),
+        _instanzIdPfade(fixture.hero.inventoryEntries.length),
+        grund: 'aktuelles Format ist beim Import bis auf Instanz-IDs identisch',
       );
 
       // 2. Steigern: MU 14 → 15 und Klettern 5 → 6 in einer Runde.

@@ -47,6 +47,9 @@ class HeroInventoryEntry {
     // Träger-Felder (v19)
     this.traegerTyp = InventoryTraeger.held,
     this.traegerId,
+    // Gemeinsames Gegenstandsmodell (ARCH-03)
+    this.instanzId,
+    this.menge,
     this.unbekannteFelder = const <String, Object?>{},
     this.unbekannteEnumWerte = const <String, Object?>{},
   });
@@ -133,6 +136,22 @@ class HeroInventoryEntry {
   /// Null, wenn der Held das Item trägt.
   final String? traegerId;
 
+  // --- Gemeinsames Gegenstandsmodell (ARCH-03) ---
+
+  /// Stabile Instanz-ID dieses Stapels bzw. Exemplars.
+  ///
+  /// Eindeutig nur innerhalb eines Helden und bei einer Heldenkopie
+  /// unverändert (Entscheidung vom 04.10.2026). Wird erst beim Speichern
+  /// vergeben (`HeroActions.saveHero`), nie beim Laden, weil sonst jeder
+  /// Bestandsheld einen neuen Inhalts-Hash bekäme. `null` bei Altdaten.
+  final String? instanzId;
+
+  /// Stückzahl des Stapels. `null`, solange nur der Freitext [anzahl]
+  /// vorliegt; dann gilt die Menge als offen (Altdarstellung). Ein Stapel
+  /// ist ein Gegenstand mit einer Menge; Teilen erzeugt einen zweiten
+  /// Eintrag mit eigener [instanzId].
+  final int? menge;
+
   /// JSON-Felder einer neueren App-Version; bleiben beim Speichern erhalten
   /// (siehe `unbekannte_json_felder.dart`).
   final Map<String, Object?> unbekannteFelder;
@@ -173,6 +192,8 @@ class HeroInventoryEntry {
     'geweihtDescription',
     'traegerTyp',
     'traegerId',
+    'instanzId',
+    'menge',
   };
 
   /// Gibt eine Kopie mit selektiv überschriebenen Feldern zurück.
@@ -204,6 +225,8 @@ class HeroInventoryEntry {
     String? geweihtDescription,
     InventoryTraeger? traegerTyp,
     Object? traegerId = keepFieldValue,
+    Object? instanzId = keepFieldValue,
+    Object? menge = keepFieldValue,
     Map<String, Object?>? unbekannteFelder,
     Map<String, Object?>? unbekannteEnumWerte,
   }) {
@@ -239,6 +262,10 @@ class HeroInventoryEntry {
       traegerId: traegerId == keepFieldValue
           ? this.traegerId
           : traegerId as String?,
+      instanzId: instanzId == keepFieldValue
+          ? this.instanzId
+          : instanzId as String?,
+      menge: menge == keepFieldValue ? this.menge : menge as int?,
       unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
       unbekannteEnumWerte:
           unbekannteEnumWerte ??
@@ -290,6 +317,9 @@ class HeroInventoryEntry {
         // v19
         'traegerTyp': traegerTyp.name,
         if (traegerId != null) 'traegerId': traegerId,
+        // ARCH-03: nur bei belegtem Wert, sonst ändern sich Bestands-Hashes.
+        if (instanzId != null) 'instanzId': instanzId,
+        if (menge != null) 'menge': menge,
       }, unbekannteFelder),
       unbekannteEnumWerte,
     );
@@ -367,6 +397,8 @@ class HeroInventoryEntry {
         unbekannt: enumRoh,
       ),
       traegerId: json['traegerId'] as String?,
+      instanzId: json['instanzId'] as String?,
+      menge: (json['menge'] as num?)?.toInt(),
       unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
       unbekannteEnumWerte: festeEnumWerte(enumRoh),
     );

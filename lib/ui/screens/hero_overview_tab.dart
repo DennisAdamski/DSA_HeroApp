@@ -17,6 +17,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/avatar_rahmung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/epic_main_attribute_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/epic_status_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/editor_entwurf_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_wirkung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_zuordnung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_source_breakdown.dart';
@@ -32,6 +33,7 @@ import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/config/ui_feature_flags.dart';
 import 'package:dsa_heldenverwaltung/ui/debug/ui_rebuild_observer.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/dice_log_persistence.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/editor_entwurf_speichern.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/probe_request_factory.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/zustand_aendern.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_edit_controller.dart';
@@ -113,8 +115,11 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
 
   late final WorkspaceTabEditController _editController;
   HeroSheet? _latestHero;
-  HeroState? _latestState;
   HeroComputedSnapshot? _latestSnapshot;
+
+  /// Held, aus dem die Felder zuletzt gefüllt wurden; Ausgang des Abgleichs
+  /// beim Speichern (ARCH-05).
+  HeroSheet? _entwurfBasis;
 
   /// In `build` gelesene Ansichtseinstellung; die Tabellen werden aus
   /// verschachtelten Buildern heraus gebaut, wo `ref.watch` nicht erlaubt ist.
@@ -174,10 +179,11 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
     return _controllers.putIfAbsent(key, () => TextEditingController());
   }
 
-  void _syncControllers(HeroSheet hero, HeroState state, {bool force = false}) {
-    if (!_editController.shouldSync((hero, state), force: force)) {
+  void _syncControllers(HeroSheet hero, {bool force = false}) {
+    if (!_editController.shouldSync(hero, force: force)) {
       return;
     }
+    _entwurfBasis = hero;
 
     _field('name').text = hero.name;
     _field('rasse').text = hero.background.rasse;
@@ -214,10 +220,6 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
     _field('b_kap').text = hero.bought.kap.toString();
     _field('b_mr').text = hero.bought.mr.toString();
 
-    _field('cur_lep').text = state.currentLep.toString();
-    _field('cur_au').text = state.currentAu.toString();
-    _field('cur_asp').text = state.currentAsp.toString();
-    _field('cur_kap').text = state.currentKap.toString();
     _draftMagicEnabledOverride =
         hero.resourceActivationConfig.magicEnabledOverride;
     _draftDivineEnabledOverride =
@@ -257,14 +259,15 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
     _editController.startEdit();
   }
 
+  // Schreibt nur den Bogen; Laufzeitwerte wie LeP pflegen Inspector und
+  // Ressourcenblatt (ARCH-05).
   Future<void> _saveChanges() async {
-    final hero = _latestHero;
-    final state = _latestState;
-    if (hero == null || state == null) {
+    final hero = _entwurfBasis;
+    if (hero == null) {
       return;
     }
 
-    final updatedHero = _mitMerkmalEntwurf(hero).copyWith(
+    final entwurf = _mitMerkmalEntwurf(hero).copyWith(
       name: _field('name').text.trim().isEmpty
           ? 'Unbenannter Held'
           : _field('name').text.trim(),
@@ -317,18 +320,19 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
         kk: _readInt('kk', min: 0, max: 99),
       ),
     );
-    final updatedState = state.copyWith(
-      currentLep: _readInt('cur_lep', min: 0, max: 99999),
-      currentAu: _readInt('cur_au', min: 0, max: 99999),
-      currentAsp: _readInt('cur_asp', min: 0, max: 99999),
-      currentKap: _readInt('cur_kap', min: 0, max: 99999),
+    final gespeichert = await speichereEditorEntwurf(
+      context: context,
+      ref: ref,
+      heroId: widget.heroId,
+      abgleich: (aktuell, erzwungen) => uebernimmEditorEntwurf(
+        basis: hero,
+        entwurf: entwurf,
+        aktuell: aktuell,
+        erzwungen: erzwungen,
+        neueId: neueEditorSlotId,
+      ),
     );
-
-    await ref.read(heroActionsProvider).saveHero(updatedHero);
-    await ref
-        .read(heroActionsProvider)
-        .saveHeroState(updatedHero.id, updatedState);
-    if (!mounted) {
+    if (!gespeichert || !mounted) {
       return;
     }
 
@@ -343,10 +347,9 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
 
   Future<void> _discardChanges() async {
     final hero = _latestHero;
-    final state = _latestState;
-    if (hero != null && state != null) {
+    if (hero != null) {
       _editController.clearSyncSignature();
-      _syncControllers(hero, state, force: true);
+      _syncControllers(hero, force: true);
     }
     _editController.markDiscarded();
   }
@@ -555,11 +558,9 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (error, stackTrace) => Center(child: Text('Fehler: $error')),
       data: (snapshot) {
-        final state = snapshot.state;
         _latestHero = hero;
-        _latestState = state;
         _latestSnapshot = snapshot;
-        _syncControllers(hero, state);
+        _syncControllers(hero);
         final resourceActivation = _buildCurrentResourceActivation(hero);
         return ValueListenableBuilder<int>(
           valueListenable: _viewRevision,

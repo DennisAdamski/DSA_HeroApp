@@ -2,123 +2,67 @@ part of 'package:dsa_heldenverwaltung/ui/screens/hero_combat_tab.dart';
 
 /// Entkoppelt Draft-State, Persistenz und Validierung vom Tab-Root.
 extension _CombatStateHelpers on _HeroCombatTabState {
-  void _setControllerText(String key, String value) {
-    final controller = _controllerFor(key, value);
-    if (controller.text == value) {
-      return;
-    }
-    controller.value = TextEditingValue(
-      text: value,
-      selection: TextSelection.collapsed(offset: value.length),
-    );
-  }
-
-  void _syncSelectedWeaponControllers(MainWeaponSlot weapon) {
-    _setControllerText('combat-main-name', weapon.name);
-    _setControllerText('combat-main-talent', weapon.talentId);
-    _setControllerText('combat-main-dice-count', weapon.tpDiceCount.toString());
-    _setControllerText('combat-main-dice-sides', weapon.tpDiceSides.toString());
-    _setControllerText('combat-main-tp-flat', weapon.tpFlat.toString());
-    _setControllerText('combat-main-wm-at', weapon.wmAt.toString());
-    _setControllerText('combat-main-wm-pa', weapon.wmPa.toString());
-    _setControllerText('combat-main-ini-mod', weapon.iniMod.toString());
-    _setControllerText('combat-main-be-mod', weapon.beTalentMod.toString());
-  }
-
-  void _setDraftWeapons(
-    List<MainWeaponSlot> slots, {
-    required int selectedIndex,
-    bool markChanged = true,
-  }) {
-    if (slots.isEmpty) {
-      return;
-    }
-    final normalizedIndex = selectedIndex < 0
-        ? -1
-        : (selectedIndex >= slots.length ? slots.length - 1 : selectedIndex);
-    final selectedMainWeapon = normalizedIndex < 0
-        ? _draftCombatConfig.mainWeapon
-        : slots[normalizedIndex];
-    _draftCombatConfig = _draftCombatConfig.copyWith(
-      weapons: slots,
-      selectedWeaponIndex: normalizedIndex,
-      mainWeapon: selectedMainWeapon,
-    );
-    if (normalizedIndex >= 0) {
-      _syncSelectedWeaponControllers(slots[normalizedIndex]);
-    }
-    if (markChanged) {
-      _markFieldChanged();
-    }
-  }
-
-  Future<void> _selectWeaponIndex(
-    int? nextIndex, {
+  /// Einziger Schreibweg der Bedienelemente im Kampf-Tab.
+  ///
+  /// Im Bearbeitungsmodus ändert [aenderung] nur den Entwurf; gespeichert
+  /// wird mit „Speichern“. Sonst trifft sie frisch die **gespeicherte**
+  /// Kampfkonfiguration (ARCH-05): Ein beim Rendern erfasster Stand wird nie
+  /// zurückgeschrieben, Änderungen desselben Helden laufen nacheinander, und
+  /// die Anzeige folgt dem gespeicherten Wert. Die Slotprüfung läuft auf dem
+  /// frischen Ergebnis. Fehler erscheinen als „[was] nicht gespeichert“;
+  /// die Bedienelemente springen dann auf den gespeicherten Stand zurück.
+  /// Liefert, ob die Änderung übernommen wurde.
+  Future<bool> _aendereKampf({
+    required String was,
+    required CombatConfig Function(CombatConfig aktuell) aenderung,
     required RulesCatalog catalog,
-    required List<TalentDef> combatTalents,
-  }) async {
-    final slots = List<MainWeaponSlot>.from(_draftCombatConfig.weaponSlots);
-    _setDraftWeapons(slots, selectedIndex: nextIndex ?? -1, markChanged: true);
-    await _persistCombatConfigIfReadonly(
-      catalog: catalog,
-      combatTalents: combatTalents,
-    );
-  }
-
-  Future<void> _persistCombatConfigIfReadonly({
-    required RulesCatalog catalog,
-    required List<TalentDef> combatTalents,
   }) async {
     if (_editController.isEditing) {
-      return;
+      return _aendereKampfEntwurf(was: was, aenderung: aenderung);
     }
-    final hero = _latestHero;
-    if (hero == null) {
-      return;
-    }
-    final weaponValidation = _validateWeaponSlotsForConfig(
-      config: _draftCombatConfig,
-      catalog: catalog,
-      combatTalents: combatTalents,
-    );
-    if (weaponValidation != null) {
-      if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(weaponValidation)));
-      }
-      _editController.clearSyncSignature();
-      _syncDraftFromHero(hero, force: true);
-      return;
-    }
-    try {
-      final updatedHero = hero.copyWith(
-        combatConfig: _draftCombatConfig,
-        apSpent: hero.apSpent + _draftApSpentDelta,
-      );
-      await ref.read(heroActionsProvider).saveHero(updatedHero);
-      _draftApSpentDelta = 0;
-    } catch (error) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Speichern fehlgeschlagen: $error')),
+    final combatTalents = catalog.talents
+        .where(isCombatTalentDef)
+        .toList(growable: false);
+    final gespeichert = await aendereHeldMitMeldung(
+      context: context,
+      ref: ref,
+      heroId: widget.heroId,
+      was: was,
+      aenderung: (held) => mitKampfAenderung(held, (config) {
+        final neu = aenderung(config);
+        final fehler = _validateWeaponSlotsForConfig(
+          config: neu,
+          catalog: catalog,
+          combatTalents: combatTalents,
         );
-      }
-      _editController.clearSyncSignature();
-      _syncDraftFromHero(hero, force: true);
+        if (fehler != null) {
+          throw StateError(fehler);
+        }
+        return neu;
+      }),
+    );
+    if (gespeichert == null && mounted) {
+      _steuerRevision++;
+      _viewRevision.value++;
     }
+    return gespeichert != null;
   }
 
-  Future<void> _applyCombatConfigChange({
-    required CombatConfig nextConfig,
-    required RulesCatalog catalog,
-    required List<TalentDef> combatTalents,
-  }) async {
-    _draftCombatConfig = nextConfig;
+  // Wendet [aenderung] im Bearbeitungsmodus auf den Entwurf an.
+  bool _aendereKampfEntwurf({
+    required String was,
+    required CombatConfig Function(CombatConfig aktuell) aenderung,
+  }) {
+    try {
+      _draftCombatConfig = aenderung(_draftCombatConfig);
+    } on StateError catch (fehler) {
+      ScaffoldMessenger.maybeOf(context)?.showSnackBar(
+        SnackBar(content: Text('$was nicht übernommen: ${fehler.message}')),
+      );
+      return false;
+    }
     _markFieldChanged();
-    await _persistCombatConfigIfReadonly(
-      catalog: catalog,
-      combatTalents: combatTalents,
-    );
+    return true;
   }
 
   Future<void> _startEdit() async {
@@ -133,8 +77,8 @@ extension _CombatStateHelpers on _HeroCombatTabState {
   }
 
   Future<void> _saveChanges() async {
-    final hero = _latestHero;
-    if (hero == null) {
+    final basis = _entwurfBasis;
+    if (basis == null) {
       return;
     }
 
@@ -169,12 +113,29 @@ extension _CombatStateHelpers on _HeroCombatTabState {
       return;
     }
 
-    final updatedHero = hero.copyWith(
+    final entwurf = basis.copyWith(
       talents: Map<String, HeroTalentEntry>.from(_draftTalents),
       combatConfig: _draftCombatConfig,
-      apSpent: hero.apSpent + _draftApSpentDelta,
+      apSpent: basis.apSpent + _draftApSpentDelta,
     );
-    await ref.read(heroActionsProvider).saveHero(updatedHero);
+    if (!mounted) {
+      return;
+    }
+    final gespeichert = await speichereEditorEntwurf(
+      context: context,
+      ref: ref,
+      heroId: widget.heroId,
+      abgleich: (aktuell, erzwungen) => uebernimmEditorEntwurf(
+        basis: basis,
+        entwurf: entwurf,
+        aktuell: aktuell,
+        erzwungen: erzwungen,
+        neueId: neueEditorSlotId,
+      ),
+    );
+    if (!gespeichert) {
+      return;
+    }
     _draftApSpentDelta = 0;
     if (!mounted) {
       return;
@@ -371,278 +332,6 @@ extension _CombatStateHelpers on _HeroCombatTabState {
   }) {
     return _validateWeaponSlotsForConfig(
       config: _draftCombatConfig,
-      catalog: catalog,
-      combatTalents: combatTalents,
-    );
-  }
-
-  Future<void> _removeWeaponSlotAt(
-    int slotIndex, {
-    required RulesCatalog catalog,
-    required List<TalentDef> combatTalents,
-  }) async {
-    final slots = List<MainWeaponSlot>.from(_draftCombatConfig.weaponSlots);
-    if (slotIndex < 0 || slotIndex >= slots.length || slots.length <= 1) {
-      return;
-    }
-    final selectedIndex = _selectedWeaponIndex();
-    slots.removeAt(slotIndex);
-    final nextSelectedIndex = selectedIndex < 0
-        ? -1
-        : (selectedIndex == slotIndex
-              ? -1
-              : (selectedIndex > slotIndex
-                    ? selectedIndex - 1
-                    : selectedIndex));
-    _setDraftWeapons(
-      slots,
-      selectedIndex: nextSelectedIndex,
-      markChanged: true,
-    );
-    await _persistCombatConfigIfReadonly(
-      catalog: catalog,
-      combatTalents: combatTalents,
-    );
-  }
-
-  Future<void> _updateWeaponSlot(
-    int slotIndex,
-    MainWeaponSlot Function(MainWeaponSlot current) update, {
-    required RulesCatalog catalog,
-    required List<TalentDef> combatTalents,
-  }) async {
-    final slots = List<MainWeaponSlot>.from(_draftCombatConfig.weaponSlots);
-    if (slotIndex < 0 || slotIndex >= slots.length) {
-      return;
-    }
-    slots[slotIndex] = update(slots[slotIndex]);
-    _setDraftWeapons(
-      slots,
-      selectedIndex: _selectedWeaponIndex(),
-      markChanged: true,
-    );
-    await _persistCombatConfigIfReadonly(
-      catalog: catalog,
-      combatTalents: combatTalents,
-    );
-  }
-
-  Future<void> _updateSelectedRangedDistance(
-    int nextDistanceIndex, {
-    required RulesCatalog catalog,
-  }) async {
-    final selectedIndex = _selectedWeaponIndex();
-    final combatTalents = sortedCombatTalents(
-      catalog.talents.where(isCombatTalentDef).toList(growable: false),
-    );
-    await _updateWeaponSlot(
-      selectedIndex,
-      (current) => current.copyWith(
-        rangedProfile: current.rangedProfile.copyWith(
-          selectedDistanceIndex: nextDistanceIndex,
-        ),
-      ),
-      catalog: catalog,
-      combatTalents: combatTalents,
-    );
-  }
-
-  Future<void> _updateSelectedRangedProjectile(
-    int nextProjectileIndex, {
-    required RulesCatalog catalog,
-  }) async {
-    final selectedIndex = _selectedWeaponIndex();
-    final combatTalents = sortedCombatTalents(
-      catalog.talents.where(isCombatTalentDef).toList(growable: false),
-    );
-    await _updateWeaponSlot(
-      selectedIndex,
-      (current) => current.copyWith(
-        rangedProfile: current.rangedProfile.copyWith(
-          selectedProjectileIndex: nextProjectileIndex,
-        ),
-      ),
-      catalog: catalog,
-      combatTalents: combatTalents,
-    );
-  }
-
-  Future<void> _adjustSelectedProjectileCount(
-    int delta, {
-    required RulesCatalog catalog,
-  }) async {
-    final selectedIndex = _selectedWeaponIndex();
-    final activeWeapon = _draftCombatConfig.selectedWeaponOrNull;
-    if (selectedIndex < 0 || activeWeapon == null) {
-      return;
-    }
-    final projectileIndex = activeWeapon.rangedProfile.selectedProjectileIndex;
-    if (projectileIndex < 0 ||
-        projectileIndex >= activeWeapon.rangedProfile.projectiles.length) {
-      return;
-    }
-    final combatTalents = sortedCombatTalents(
-      catalog.talents.where(isCombatTalentDef).toList(growable: false),
-    );
-    await _updateWeaponSlot(
-      selectedIndex,
-      (current) {
-        final updatedProjectiles = List<RangedProjectile>.from(
-          current.rangedProfile.projectiles,
-        );
-        final currentProjectile = updatedProjectiles[projectileIndex];
-        final nextCount = (currentProjectile.count + delta).clamp(0, 9999);
-        updatedProjectiles[projectileIndex] = currentProjectile.copyWith(
-          count: nextCount,
-        );
-        return current.copyWith(
-          rangedProfile: current.rangedProfile.copyWith(
-            projectiles: updatedProjectiles,
-          ),
-        );
-      },
-      catalog: catalog,
-      combatTalents: combatTalents,
-    );
-  }
-
-  // ---------------------------------------------------------------------------
-  // Nebenhand-Fernkampf-Steuerelemente
-  // ---------------------------------------------------------------------------
-
-  int _offhandWeaponIndex() {
-    final assignment = _draftCombatConfig.offhandAssignment;
-    if (!assignment.usesWeapon) {
-      return -1;
-    }
-    return assignment.weaponIndex;
-  }
-
-  Future<void> _updateOffhandRangedDistance(
-    int nextDistanceIndex, {
-    required RulesCatalog catalog,
-  }) async {
-    final idx = _offhandWeaponIndex();
-    final combatTalents = sortedCombatTalents(
-      catalog.talents.where(isCombatTalentDef).toList(growable: false),
-    );
-    await _updateWeaponSlot(
-      idx,
-      (current) => current.copyWith(
-        rangedProfile: current.rangedProfile.copyWith(
-          selectedDistanceIndex: nextDistanceIndex,
-        ),
-      ),
-      catalog: catalog,
-      combatTalents: combatTalents,
-    );
-  }
-
-  Future<void> _updateOffhandRangedProjectile(
-    int nextProjectileIndex, {
-    required RulesCatalog catalog,
-  }) async {
-    final idx = _offhandWeaponIndex();
-    final combatTalents = sortedCombatTalents(
-      catalog.talents.where(isCombatTalentDef).toList(growable: false),
-    );
-    await _updateWeaponSlot(
-      idx,
-      (current) => current.copyWith(
-        rangedProfile: current.rangedProfile.copyWith(
-          selectedProjectileIndex: nextProjectileIndex,
-        ),
-      ),
-      catalog: catalog,
-      combatTalents: combatTalents,
-    );
-  }
-
-  Future<void> _adjustOffhandProjectileCount(
-    int delta, {
-    required RulesCatalog catalog,
-  }) async {
-    final idx = _offhandWeaponIndex();
-    if (idx < 0 || idx >= _draftCombatConfig.weaponSlots.length) {
-      return;
-    }
-    final weapon = _draftCombatConfig.weaponSlots[idx];
-    final projectileIndex = weapon.rangedProfile.selectedProjectileIndex;
-    if (projectileIndex < 0 ||
-        projectileIndex >= weapon.rangedProfile.projectiles.length) {
-      return;
-    }
-    final combatTalents = sortedCombatTalents(
-      catalog.talents.where(isCombatTalentDef).toList(growable: false),
-    );
-    await _updateWeaponSlot(
-      idx,
-      (current) {
-        final updatedProjectiles = List<RangedProjectile>.from(
-          current.rangedProfile.projectiles,
-        );
-        final currentProjectile = updatedProjectiles[projectileIndex];
-        final nextCount = (currentProjectile.count + delta).clamp(0, 9999);
-        updatedProjectiles[projectileIndex] = currentProjectile.copyWith(
-          count: nextCount,
-        );
-        return current.copyWith(
-          rangedProfile: current.rangedProfile.copyWith(
-            projectiles: updatedProjectiles,
-          ),
-        );
-      },
-      catalog: catalog,
-      combatTalents: combatTalents,
-    );
-  }
-
-  Future<void> _saveWeaponSlot({
-    required MainWeaponSlot slot,
-    required RulesCatalog catalog,
-    required List<TalentDef> combatTalents,
-    int? slotIndex,
-  }) async {
-    final slots = List<MainWeaponSlot>.from(_draftCombatConfig.weaponSlots);
-    if (slotIndex == null) {
-      slots.add(slot);
-    } else if (slotIndex >= 0 && slotIndex < slots.length) {
-      slots[slotIndex] = slot;
-    } else {
-      return;
-    }
-    _setDraftWeapons(
-      slots,
-      selectedIndex: _selectedWeaponIndex(),
-      markChanged: true,
-    );
-    await _persistCombatConfigIfReadonly(
-      catalog: catalog,
-      combatTalents: combatTalents,
-    );
-  }
-
-  Future<void> _setOffhandEquipmentEntries(
-    List<OffhandEquipmentEntry> entries, {
-    required RulesCatalog catalog,
-    required List<TalentDef> combatTalents,
-  }) async {
-    await _applyCombatConfigChange(
-      nextConfig: _draftCombatConfig.copyWith(
-        offhandEquipment: List<OffhandEquipmentEntry>.unmodifiable(entries),
-      ),
-      catalog: catalog,
-      combatTalents: combatTalents,
-    );
-  }
-
-  Future<void> _setArmorConfig(
-    ArmorConfig armor, {
-    required RulesCatalog catalog,
-    required List<TalentDef> combatTalents,
-  }) async {
-    await _applyCombatConfigChange(
-      nextConfig: _draftCombatConfig.copyWith(armor: armor),
       catalog: catalog,
       combatTalents: combatTalents,
     );

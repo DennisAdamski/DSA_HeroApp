@@ -474,6 +474,7 @@ CombatPreviewStats computeCombatPreviewStats(
     axxeleratusActive: axxeleratusActive,
     talentName: selectedTalent?.name,
     reloadDivisor: wmEffects.reloadTimeHalved ? 2 : 1,
+    beKampf: beKampf,
   );
   final distanceTpMod = isRangedWeapon ? activeDistanceBand.tpMod : 0;
   final projectileTpMod = isRangedWeapon ? (activeProjectile?.tpMod ?? 0) : 0;
@@ -506,6 +507,7 @@ CombatPreviewStats computeCombatPreviewStats(
         computePa(effectiveSheet, mods) +
         computeAxxeleratusPaBaseBonus(axxeleratusActive: axxeleratusActive),
     schildarmWundMalus: wunden.schildarmAtPaMalus,
+    paradeBehinderung: paEbePart,
   );
 
   // --- Kampfbasiswerte (kampfbasis_rules) ---
@@ -947,6 +949,7 @@ OffhandCombatPreview _computeOffhandWeaponPreview({
     axxeleratusActive: axxeleratusActive,
     talentName: selectedTalent?.name,
     reloadDivisor: wmEffects.reloadTimeHalved ? 2 : 1,
+    beKampf: beKampf,
   );
 
   // Initiative (nur fuer Referenz)

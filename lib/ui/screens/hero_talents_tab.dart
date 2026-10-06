@@ -17,6 +17,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/validation/combat_talent_validation.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/combat_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/cost_text_parsing.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/editor_entwurf_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/epic_main_attribute_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_requirement_context.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/learning_rules.dart';
@@ -42,6 +43,7 @@ import 'package:dsa_heldenverwaltung/ui/widgets/responsive_adaptive_table.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/resizable_table_columns.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_talents/combat_specialization_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/dice_log_persistence.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/editor_entwurf_speichern.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/probe_request_factory.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/special_ability_picker.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/edit_aware_table_cell.dart';
@@ -157,8 +159,12 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
   /// `_latestHero` bei jedem Rebuild (z. B. ausgeloest durch
   /// `_markFieldChanged()`), bevor `_saveChanges()` laeuft. Wie die anderen
   /// `_draftXxx`-Felder wird dieser Delta-Wert erst in `_saveChanges()`
-  /// auf den zu diesem Zeitpunkt aktuellen `hero.apSpent` angewendet.
+  /// als Differenz auf die gespeicherten AP angewendet.
   int _draftApSpentDelta = 0;
+
+  /// Held, aus dem der Entwurf gefüllt wurde; Ausgang des Abgleichs beim
+  /// Speichern (ARCH-05).
+  HeroSheet? _entwurfBasis;
 
   final Map<String, GlobalKey> _groupKeys = {};
   final Set<String> _collapsedGroups = {};
