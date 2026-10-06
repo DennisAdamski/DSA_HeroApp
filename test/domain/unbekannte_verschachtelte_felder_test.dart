@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:dsa_heldenverwaltung/domain/abgelegter_kampfgegenstand.dart';
 import 'package:dsa_heldenverwaltung/domain/active_spell_effects_state.dart';
 import 'package:dsa_heldenverwaltung/domain/attribute_modifiers.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
@@ -83,6 +84,23 @@ const _zukunft = <String, dynamic>{
 };
 
 final _kampf = <_Modell>[
+  _Modell(
+    'AbgelegterKampfgegenstand',
+    schluessel: AbgelegterKampfgegenstand.jsonSchluessel,
+    voll: () => const AbgelegterKampfgegenstand(
+      waffe: MainWeaponSlot(name: 'Dolch'),
+      geschoss: RangedProjectile(name: 'Pfeil'),
+      ruestungsteil: ArmorPiece(name: 'Helm'),
+      nebenhandteil: OffhandEquipmentEntry(name: 'Schild'),
+    ).toJson(),
+    lade: (json) => AbgelegterKampfgegenstand.fromJson(json).toJson(),
+    bearbeite: (json) =>
+        AbgelegterKampfgegenstand.fromJson(json)
+            .copyWith(waffe: const MainWeaponSlot(name: 'Säbel'))
+            .toJson(),
+    unbekannt: (json) =>
+        AbgelegterKampfgegenstand.fromJson(json).unbekannteFelder,
+  ),
   _Modell(
     'OffhandAssignment',
     schluessel: OffhandAssignment.jsonSchluessel,

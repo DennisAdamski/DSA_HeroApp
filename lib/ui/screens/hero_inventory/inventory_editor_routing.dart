@@ -115,6 +115,12 @@ extension _HeroInventoryEditorRouting on _HeroInventoryTabState {
               Navigator.of(routeContext).pop();
             }
           },
+          onKampfUebernehmen: () async {
+            await _uebernehmeInKampf(entry);
+            if (routeContext.mounted) {
+              Navigator.of(routeContext).pop();
+            }
+          },
           onCancelled: () => Navigator.of(routeContext).pop(),
         ),
       ),
@@ -164,6 +170,7 @@ extension _HeroInventoryEditorRouting on _HeroInventoryTabState {
         companions: _companions,
         onSaved: (entry) => _saveUpdatedEntry(bearbeitet, entry),
         onStapelTeilen: (teilung) => _teileStapel(bearbeitet, teilung),
+        onKampfUebernehmen: () => _uebernehmeInKampf(bearbeitet),
         onCancelled: () =>
             setState(() => _waehleAus(const <HeroInventoryEntry>[], -1)),
       );

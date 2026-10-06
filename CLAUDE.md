@@ -208,7 +208,11 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   Geschoss, Ruestungs- und Nebenhandteil tragen `inventarInstanzId`, nur in
   `saveHero` gesetzt (`bindeSlotsAnInstanzen`); der Abgleich paart zuerst
   ueber sie. Der Verweis ist abgeleitet: Inhaltsvergleiche und
-  Gefechts-Fingerabdruecke lassen ihn weg (`ohneInstanzverweise`). Formataenderungen
+  Gefechts-Fingerabdruecke lassen ihn weg (`ohneInstanzverweise`).
+  Entfernen im Kampf-Tab fragt „Nur ablegen“/„Ganz entfernen“
+  (`kampfgegenstand_ablegen_rules.dart`): abgelegt bleibt das Exemplar als
+  manueller Eintrag mit `abgelegt` (gemerkte Kampfwerte), „In Kampfbereich
+  übernehmen“ holt es zurück; Geschosse gehen nie still verloren. Formataenderungen
   aendern Inhalts-Hashes; Bestandsfixtures und Hash-Pins nur gemeinsam mit
   ihnen aktualisieren. Den Mischbetrieb bildet
   `test/test_support/veroeffentlichte_app.dart` nach.

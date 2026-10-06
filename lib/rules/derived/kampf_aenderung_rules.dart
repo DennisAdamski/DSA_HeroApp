@@ -297,6 +297,41 @@ CombatConfig ohneNebenhandTeil(
   );
 }
 
+/// Gespeicherter Stand der angezeigten Waffe [angezeigt].
+///
+/// Gefunden wie bei allen Sofortänderungen über die ID, sonst über Inhalt und
+/// angezeigte Position [index]; wirft einen [StateError], wenn sie
+/// inzwischen entfernt wurde.
+MainWeaponSlot gespeicherteWaffe(
+  CombatConfig config,
+  MainWeaponSlot angezeigt, {
+  int? index,
+}) {
+  return config.weaponSlots[_findeWaffe(config, angezeigt, index: index)];
+}
+
+/// Gespeicherter Stand des angezeigten Rüstungsteils; siehe
+/// [gespeicherteWaffe].
+ArmorPiece gespeichertesRuestungsteil(
+  CombatConfig config,
+  ArmorPiece angezeigt, {
+  int? index,
+}) {
+  final position = _findeRuestungsteil(config, angezeigt, index: index);
+  return config.armor.pieces[position];
+}
+
+/// Gespeicherter Stand des angezeigten Nebenhandteils; siehe
+/// [gespeicherteWaffe].
+OffhandEquipmentEntry gespeichertesNebenhandteil(
+  CombatConfig config,
+  OffhandEquipmentEntry angezeigt, {
+  int? index,
+}) {
+  final position = _findeNebenhandTeil(config, angezeigt, index: index);
+  return config.offhandEquipment[position];
+}
+
 // Position eines Verweises, nachdem der Eintrag an [entfernt] weggefallen
 // ist: dahinter rückt er auf, auf dem entfernten wird er leer (-1).
 int _nachEntfernen(int verweis, int entfernt) {
