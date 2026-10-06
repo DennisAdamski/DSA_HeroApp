@@ -142,6 +142,38 @@ extension _HeroInventoryMutations on _HeroInventoryTabState {
     return true;
   }
 
+  /// Verkauft frisch einen Teil oder den ganzen angezeigten Gegenstand
+  /// (ARCH-03); der Erlös kommt auf den Geldstand. Abbruch ändert nichts;
+  /// Fehler gehen an den Editor. Liefert, ob verkauft wurde.
+  Future<bool> _verkaufe(HeroInventoryEntry angezeigt) async {
+    final wahl = await zeigeVerkaufenDialog(context, angezeigt);
+    if (wahl == null) {
+      return false;
+    }
+    final gespeichert = await aendereHeldImEditor(
+      ref: ref,
+      heroId: widget.heroId,
+      aenderung: (held) => mitVerkauftemGegenstand(
+        held,
+        angezeigt,
+        anzahl: wahl.anzahl,
+        erloesKreuzer: wahl.erloesKreuzer,
+        neueId: () => const Uuid().v4(),
+      ),
+    );
+    final eintraege = gespeichert.inventoryEntries;
+    final id = angezeigt.instanzId;
+    final index = id == null
+        ? -1
+        : eintraege.indexWhere((e) => e.instanzId == id);
+    _nachEditorSpeichern(
+      eintraege,
+      index,
+      changedEntry: index < 0 ? angezeigt : eintraege[index],
+    );
+    return true;
+  }
+
   void _nachEditorSpeichern(
     List<HeroInventoryEntry> gespeicherteEintraege,
     int auswahl, {
