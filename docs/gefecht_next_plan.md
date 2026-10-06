@@ -486,3 +486,12 @@ Commits: `7789c1e` Review-Befunde, `d243601` Wirkabschluss über die Gefechtsbr�
 Prüfungen: `flutter analyze` ohne Befund; vollständige Suite 3.630 bestanden, 3 bestehende Tests übersprungen; Format über 1.089 Dateien ohne Änderung; CI-Screen-LOC (21 Dateien) und breite UI2-LOC-Prüfung (87 Dateien) ≤ 700 Zeilen, ebenso `test/ui2/spielen` und `test/ui/bridges`.
 
 Nur lokale Prüfungen: kein Push, Merge oder Deployment.
+
+## Veröffentlichung (6. Oktober 2026)
+
+Der gesamte Gefechtsstand bis `e2d01b3` samt Review und Restschulden ist mit
+dem Merge-Commit `2ecfb48` veröffentlicht (PR
+[#221](https://github.com/DennisAdamski/DSA_HeroApp/pull/221), Release `test` →
+`main`, 6.10.2026). Der Production-Deploy nach
+https://heldensync-ccf0b.web.app ist grün; `main` und `test` stehen danach auf
+demselben Commit. Die Nachweise oben bleiben historische lokale Prüfstände.
