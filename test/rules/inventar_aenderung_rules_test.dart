@@ -184,6 +184,32 @@ void main() {
       expect(_pfeileVon(ergebnis, 1), 25);
     });
 
+    test('ein Geschoss ohne eindeutige Menge wird abgewiesen', () {
+      // Bisher setzte Freitext den Bestand des Bogens auf 0.
+      final gespeichert = _schuetze();
+
+      expect(
+        () => mitGeaendertemInventarEintrag(
+          gespeichert,
+          _pfeile('b', '20'),
+          _pfeile('b', '12 Pfeile'),
+        ),
+        throwsStateError,
+      );
+    });
+
+    test('die Geschossmenge geht auch über `menge` an den Bogen', () {
+      final gespeichert = _schuetze();
+
+      final ergebnis = mitGeaendertemInventarEintrag(
+        gespeichert,
+        _pfeile('b', '20'),
+        _pfeile('b', '25').copyWith(menge: 25),
+      );
+
+      expect(_pfeileVon(ergebnis, 1), 25);
+    });
+
     test('eine unveränderte Menge schreibt nicht in den Kampf', () {
       final gespeichert = _schuetze(pfeileB: 30);
 

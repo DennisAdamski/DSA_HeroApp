@@ -4,7 +4,9 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dsa_heldenverwaltung/data/hero_transfer_codec.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_transfer_bundle.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/inventar_menge_rules.dart';
 
 /// Synthetische Bestandshelden unter `test/fixtures/heroes/` (ARCH-07).
 ///
@@ -169,4 +171,17 @@ Future<String> hiveTempVerzeichnis(String praefix) async {
     }
   });
   return verzeichnis.path;
+}
+
+/// JSON-Pfade, die das erste Speichern je Inventareintrag ergänzt (ARCH-03):
+/// die Instanz-ID und bei rein ganzzahliger Anzahl die Menge. Laden ergänzt
+/// keinen davon.
+Set<String> ersteSpeicherungPfade(List<HeroInventoryEntry> eintraege) {
+  return <String>{
+    for (var i = 0; i < eintraege.length; i++) ...<String>{
+      'inventoryEntries/$i/instanzId',
+      if (inventarZahlAusText(eintraege[i].anzahl) != null)
+        'inventoryEntries/$i/menge',
+    },
+  };
 }

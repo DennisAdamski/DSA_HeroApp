@@ -17,24 +17,31 @@ const _trank = HeroInventoryEntry(
 );
 
 void main() {
-  test('Menge: menge vor ganzzahliger anzahl, sonst offen', () {
+  test('Menge: ganzzahlige anzahl gilt, sonst offen', () {
     expect(inventarMenge(_trank), 3);
-    expect(inventarMenge(_trank.copyWith(menge: 5)), 5);
+    expect(inventarMenge(_trank.copyWith(menge: 3)), 3);
+    // Weicht `anzahl` ab, hat eine ältere Version sie geändert (ARCH-03).
+    expect(inventarMenge(_trank.copyWith(menge: 5)), 3);
     expect(inventarMenge(_trank.copyWith(anzahl: 'ein paar')), isNull);
     expect(inventarMenge(_trank.copyWith(anzahl: '')), isNull);
   });
 
   test('Verbrauch hält anzahl und menge konsistent', () {
-    expect(inventarEintragNachVerbrauch(_trank).anzahl, '2');
+    final altdaten = inventarEintragNachVerbrauch(_trank);
+    expect(altdaten.anzahl, '2');
+    expect(altdaten.menge, 2);
     final beide = inventarEintragNachVerbrauch(_trank.copyWith(menge: 3));
     expect(beide.menge, 2);
     expect(beide.anzahl, '2');
-    // Abweichender Freitext bleibt unangetastet.
-    final abweichend = inventarEintragNachVerbrauch(
-      _trank.copyWith(menge: 4, anzahl: 'vier kleine'),
+    // Eine Abweichung rechnet mit `anzahl` und ist danach aufgelöst.
+    final abweichend = inventarEintragNachVerbrauch(_trank.copyWith(menge: 5));
+    expect(abweichend.menge, 2);
+    expect(abweichend.anzahl, '2');
+    // Freitext neben einer Menge ist offen und wird nicht abgebucht.
+    expect(
+      inventarAbbuchbar(_trank.copyWith(menge: 4, anzahl: 'vier kleine')),
+      isFalse,
     );
-    expect(abweichend.menge, 3);
-    expect(abweichend.anzahl, 'vier kleine');
     expect(
       () => inventarEintragNachVerbrauch(_trank.copyWith(anzahl: '0')),
       throwsStateError,
