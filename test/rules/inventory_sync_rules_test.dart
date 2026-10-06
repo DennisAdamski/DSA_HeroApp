@@ -1,7 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/inventory_sync_rules.dart';
 
@@ -478,11 +480,44 @@ void main() {
       );
     });
 
-    test('Einträge ohne slotRef werden per Name in Reihenfolge zugeordnet', () {
+    test('der Abgleich ordnet nicht mehr über den Namen zu (ARCH-03)', () {
       final ergebnis = reconcileInventoryWithCombat([
         dolch('B', slotRef: 'w#b'),
         dolch('alt'),
       ], zweiDolche);
+
+      expect(ergebnis.map((e) => e.beschreibung), ['', 'B']);
+      expect(ergebnis.first.slotRef, 'w#a');
+    });
+
+    test('Altdaten ohne slotRef ordnet das Laden über den Namen zu', () {
+      final geladen = HeroSheet.fromJson(
+        HeroSheet(
+          id: 'h',
+          name: 'Alrik',
+          level: 1,
+          attributes: const Attributes(
+            mu: 12,
+            kl: 12,
+            inn: 12,
+            ch: 12,
+            ff: 12,
+            ge: 12,
+            ko: 12,
+            kk: 12,
+          ),
+          combatConfig: zweiDolche,
+          inventoryEntries: [
+            dolch('B', slotRef: 'w#b'),
+            dolch('alt'),
+          ],
+        ).toJson(),
+      );
+
+      final ergebnis = reconcileInventoryWithCombat(
+        geladen.inventoryEntries,
+        geladen.combatConfig,
+      );
 
       expect(ergebnis.map((e) => e.beschreibung), ['alt', 'B']);
       expect(ergebnis.first.slotRef, 'w#a');
