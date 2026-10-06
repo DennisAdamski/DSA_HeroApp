@@ -1022,8 +1022,8 @@ Inventarfelder fuer Quelle, Gewicht, Wert, Modifier und magisch/geweiht.
 | `slotRef` | Stabiler ID-Verweis auf den Kampf-Slot (`w#<id>` …); nur geschrieben, wenn belegt |
 | `istAusgeruestet` | Steuert, ob Modifier des Eintrags aktiv wirken |
 | `modifiers` | Typisierte Inventar-Modifikatoren |
-| `gewichtGramm` | Numerisches Gewicht in Gramm |
-| `wertSilber` | Numerischer Wert in Silbertalern |
+| `gewichtGramm` | Numerisches Gewicht in Gramm **pro Stück** (ARCH-03, 07.10.2026); Summen rechnen Menge × Stückgewicht, offene Menge = 1 Stück (`inventar_summen_rules.dart`) |
+| `wertSilber` | Numerischer Wert in Silbertalern **pro Stück**; Summen wie beim Gewicht |
 | `herkunft` | Fundort, Quelle oder Haendler |
 | `isMagisch` / `magischDescription` | Magische Markierung und Beschreibung |
 | `isGeweiht` / `geweihtDescription` | Geweihte Markierung und Beschreibung |

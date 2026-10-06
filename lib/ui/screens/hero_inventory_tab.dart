@@ -9,6 +9,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/inventar_aenderung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/inventar_stapel_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/inventar_summen_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/kampfgegenstand_ablegen_rules.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
@@ -151,14 +152,9 @@ class _HeroInventoryTabState extends ConsumerState<HeroInventoryTab>
     _latestHero = hero;
 
     final isWide = MediaQuery.sizeOf(context).width >= _widthBreakpoint;
-    final totalWeight = hero.inventoryEntries.fold<int>(
-      0,
-      (sum, entry) => sum + entry.gewichtGramm,
-    );
-    final totalValue = hero.inventoryEntries.fold<int>(
-      0,
-      (sum, entry) => sum + entry.wertSilber,
-    );
+    // Wert und Gewicht gelten pro Stück (ARCH-03).
+    final totalWeight = inventarGesamtgewichtGramm(hero.inventoryEntries);
+    final totalValue = inventarGesamtwertSilber(hero.inventoryEntries);
 
     final filterBar = InventoryFilterBar(
       activeFilter: _filter,
