@@ -204,7 +204,11 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   Weicht ein ganzzahliges `anzahl` ab, gilt es; das wird nie still
   aufgelöst. `saveHero` überführt reine Zahlen, der Abgleich vergibt keine
   Menge (Fixpunkt). Inventarwege treffen Einträge über `instanzId`
-  (`findeInventarEintragZurAenderung`). Formataenderungen
+  (`findeInventarEintragZurAenderung`). Slots verweisen zurueck: Waffe,
+  Geschoss, Ruestungs- und Nebenhandteil tragen `inventarInstanzId`, nur in
+  `saveHero` gesetzt (`bindeSlotsAnInstanzen`); der Abgleich paart zuerst
+  ueber sie. Der Verweis ist abgeleitet: Inhaltsvergleiche und
+  Gefechts-Fingerabdruecke lassen ihn weg (`ohneInstanzverweise`). Formataenderungen
   aendern Inhalts-Hashes; Bestandsfixtures und Hash-Pins nur gemeinsam mit
   ihnen aktualisieren. Den Mischbetrieb bildet
   `test/test_support/veroeffentlichte_app.dart` nach.

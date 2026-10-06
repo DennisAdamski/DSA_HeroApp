@@ -5,6 +5,7 @@ import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht_auftrag.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht_kontext.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/inventar_slot_instanz_rules.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 
 import 'gefecht_held_rules.dart';
@@ -19,7 +20,7 @@ enum GefechtsAnsagekombination { erlaubt, verboten, klaeren }
 /// Bindet Zielzeit an das komplette bestätigte Waffen- und Geschossprofil.
 /// Paket 3 übernimmt diesen Schlüssel beim tatsächlichen Bezahlen der Zielzeit.
 String gefechtsZielprofilKey(MainWeaponSlot waffe) =>
-    jsonEncode(waffe.toJson());
+    jsonEncode(ohneInstanzverweise(waffe.toJson()));
 
 /// Kleine explizite Tabelle statt Freigaben aus Beschreibungsschlagwörtern.
 /// WdS 62/64/66; Sturmangriff zusätzlich gemäß genehmigtem Gefechtsumfang.

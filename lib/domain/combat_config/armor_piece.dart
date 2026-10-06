@@ -6,6 +6,7 @@ import 'package:dsa_heldenverwaltung/domain/unbekannte_json_felder.dart';
 class ArmorPiece {
   const ArmorPiece({
     this.id = '',
+    this.inventarInstanzId = '',
     this.name = '',
     this.isActive = false,
     this.rg1Active = false,
@@ -20,6 +21,13 @@ class ArmorPiece {
 
   /// Stabile Kennung des Ruestungsstuecks (siehe `CombatConfig.withStableIds`).
   final String id;
+
+  /// Instanz-ID des Inventareintrags, der dieses Exemplar ist (ARCH-03).
+  ///
+  /// Verweis Slot → Instanz; leer, bis `HeroActions.saveHero` ihn aus dem
+  /// verknuepften Eintrag setzt (`bindeSlotsAnInstanzen`). Abgeleitet, nie
+  /// von der Bedienung geschrieben; nur geschrieben, wenn belegt.
+  final String inventarInstanzId;
 
   /// Anzeigename des Ruestungsstuecks.
   final String name;
@@ -55,6 +63,7 @@ class ArmorPiece {
   /// Alle Schluessel, die [fromJson] liest; alles andere bleibt erhalten.
   static const Set<String> jsonSchluessel = <String>{
     'id',
+    'inventarInstanzId',
     'name',
     'isActive',
     'rg1Active',
@@ -69,6 +78,7 @@ class ArmorPiece {
   /// Gibt eine Kopie mit selektiv ueberschriebenen Feldern zurueck.
   ArmorPiece copyWith({
     String? id,
+    String? inventarInstanzId,
     String? name,
     bool? isActive,
     bool? rg1Active,
@@ -82,6 +92,7 @@ class ArmorPiece {
   }) {
     return ArmorPiece(
       id: id ?? this.id,
+      inventarInstanzId: inventarInstanzId ?? this.inventarInstanzId,
       name: name ?? this.name,
       isActive: isActive ?? this.isActive,
       rg1Active: rg1Active ?? this.rg1Active,
@@ -99,6 +110,7 @@ class ArmorPiece {
   Map<String, dynamic> toJson() {
     return mitUnbekanntenFeldern(<String, dynamic>{
       if (id.isNotEmpty) 'id': id,
+      if (inventarInstanzId.isNotEmpty) 'inventarInstanzId': inventarInstanzId,
       'name': name,
       'isActive': isActive,
       'rg1Active': rg1Active,
@@ -118,6 +130,7 @@ class ArmorPiece {
     int getInt(String key) => (json[key] as num?)?.toInt() ?? 0;
     return ArmorPiece(
       id: (json['id'] as String?) ?? '',
+      inventarInstanzId: (json['inventarInstanzId'] as String?) ?? '',
       name: (json['name'] as String?) ?? '',
       isActive: (json['isActive'] as bool?) ?? false,
       rg1Active: (json['rg1Active'] as bool?) ?? false,
@@ -136,6 +149,7 @@ class ArmorPiece {
       identical(this, other) ||
       other is ArmorPiece &&
           id == other.id &&
+          inventarInstanzId == other.inventarInstanzId &&
           name == other.name &&
           isActive == other.isActive &&
           rg1Active == other.rg1Active &&
@@ -150,6 +164,7 @@ class ArmorPiece {
   @override
   int get hashCode => Object.hash(
     id,
+    inventarInstanzId,
     name,
     isActive,
     rg1Active,

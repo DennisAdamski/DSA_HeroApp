@@ -10,6 +10,7 @@ import 'package:dsa_heldenverwaltung/domain/unbekannte_json_felder.dart';
 class MainWeaponSlot {
   const MainWeaponSlot({
     this.id = '',
+    this.inventarInstanzId = '',
     this.name = '',
     this.talentId = '',
     this.combatType = WeaponCombatType.melee,
@@ -41,6 +42,13 @@ class MainWeaponSlot {
   /// (siehe `CombatConfig.withStableIds`). Leer bei neu angelegten Slots,
   /// bis sie gespeichert werden.
   final String id;
+
+  /// Instanz-ID des Inventareintrags, der dieses Exemplar ist (ARCH-03).
+  ///
+  /// Verweis Slot → Instanz; leer, bis `HeroActions.saveHero` ihn aus dem
+  /// verknuepften Eintrag setzt (`bindeSlotsAnInstanzen`). Abgeleitet, nie
+  /// von der Bedienung geschrieben; nur geschrieben, wenn belegt.
+  final String inventarInstanzId;
 
   /// Anzeigename der Waffe.
   final String name;
@@ -120,6 +128,7 @@ class MainWeaponSlot {
   /// nicht als unbekannt zurueckgeschrieben werden darf.
   static const Set<String> jsonSchluessel = <String>{
     'id',
+    'inventarInstanzId',
     'name',
     'talentId',
     'combatType',
@@ -161,6 +170,7 @@ class MainWeaponSlot {
   /// Hinweis: [tpDiceSides] ist immer 6 und wird ignoriert.
   MainWeaponSlot copyWith({
     String? id,
+    String? inventarInstanzId,
     String? name,
     String? talentId,
     WeaponCombatType? combatType,
@@ -187,6 +197,7 @@ class MainWeaponSlot {
   }) {
     return MainWeaponSlot(
       id: id ?? this.id,
+      inventarInstanzId: inventarInstanzId ?? this.inventarInstanzId,
       name: name ?? this.name,
       talentId: talentId ?? this.talentId,
       combatType: combatType ?? this.combatType,
@@ -223,6 +234,8 @@ class MainWeaponSlot {
     return mitUnbekanntenEnumWerten(
       mitUnbekanntenFeldern(<String, dynamic>{
         if (id.isNotEmpty) 'id': id,
+        if (inventarInstanzId.isNotEmpty)
+          'inventarInstanzId': inventarInstanzId,
         'name': name,
         'talentId': talentId,
         'combatType': weaponCombatTypeToJson(combatType),
@@ -279,6 +292,7 @@ class MainWeaponSlot {
     final hasWmAt = json.containsKey('wmAt') && json['wmAt'] != null;
     return MainWeaponSlot(
       id: (json['id'] as String?) ?? '',
+      inventarInstanzId: getString('inventarInstanzId'),
       name: getString('name'),
       talentId: getString('talentId'),
       combatType: combatType,

@@ -60,7 +60,11 @@ final _modelle = <_Modell>[
   _Modell(
     'MainWeaponSlot',
     schluessel: MainWeaponSlot.jsonSchluessel,
-    voll: () => const MainWeaponSlot(id: 'w1', name: 'Säbel').toJson(),
+    voll: () => const MainWeaponSlot(
+      id: 'w1',
+      inventarInstanzId: 'i1',
+      name: 'Säbel',
+    ).toJson(),
     lade: (json) => MainWeaponSlot.fromJson(json).toJson(),
     bearbeite: (json) =>
         MainWeaponSlot.fromJson(json).copyWith(name: 'Neu').toJson(),
@@ -78,7 +82,11 @@ final _modelle = <_Modell>[
   _Modell(
     'RangedProjectile',
     schluessel: RangedProjectile.jsonSchluessel,
-    voll: () => const RangedProjectile(id: 'p1', name: 'Pfeil').toJson(),
+    voll: () => const RangedProjectile(
+      id: 'p1',
+      inventarInstanzId: 'i2',
+      name: 'Pfeil',
+    ).toJson(),
     lade: (json) => RangedProjectile.fromJson(json).toJson(),
     bearbeite: (json) =>
         RangedProjectile.fromJson(json).copyWith(count: 7).toJson(),
@@ -107,7 +115,11 @@ final _modelle = <_Modell>[
   _Modell(
     'ArmorPiece',
     schluessel: ArmorPiece.jsonSchluessel,
-    voll: () => const ArmorPiece(id: 'a1', name: 'Helm').toJson(),
+    voll: () => const ArmorPiece(
+      id: 'a1',
+      inventarInstanzId: 'i3',
+      name: 'Helm',
+    ).toJson(),
     lade: (json) => ArmorPiece.fromJson(json).toJson(),
     bearbeite: (json) => ArmorPiece.fromJson(json).copyWith(rs: 3).toJson(),
     unbekannt: (json) => ArmorPiece.fromJson(json).unbekannteFelder,
@@ -115,7 +127,11 @@ final _modelle = <_Modell>[
   _Modell(
     'OffhandEquipmentEntry',
     schluessel: OffhandEquipmentEntry.jsonSchluessel,
-    voll: () => const OffhandEquipmentEntry(id: 'oh1', name: 'Schild').toJson(),
+    voll: () => const OffhandEquipmentEntry(
+      id: 'oh1',
+      inventarInstanzId: 'i4',
+      name: 'Schild',
+    ).toJson(),
     lade: (json) => OffhandEquipmentEntry.fromJson(json).toJson(),
     bearbeite: (json) =>
         OffhandEquipmentEntry.fromJson(json).copyWith(paMod: 2).toJson(),

@@ -414,30 +414,39 @@ int _findePosition<T>(
 }
 
 // Ob der gespeicherte Eintrag noch dem angezeigten gleicht; ohne angezeigte
-// [id] werden IDs nicht mitverglichen (siehe [_findePosition]).
+// [id] werden IDs nicht mitverglichen (siehe [_findePosition]). Den Verweis
+// auf die Inventarinstanz setzt nur das Speichern; er zählt nie als fremde
+// Änderung.
 bool _gleicht(
   Map<String, dynamic> gespeichert,
   Map<String, dynamic> angezeigt,
   String id,
 ) {
-  if (id.isNotEmpty) {
-    return stableContentHash(gespeichert) == stableContentHash(angezeigt);
-  }
-  return stableContentHash(_ohneIds(gespeichert)) ==
-      stableContentHash(_ohneIds(angezeigt));
+  final ohne = id.isNotEmpty ? _abgeleitetBeimSpeichern : _ohneSchluessel;
+  return stableContentHash(_ohne(gespeichert, ohne)) ==
+      stableContentHash(_ohne(angezeigt, ohne));
 }
 
-// JSON ohne `id`-Schlüssel auf jeder Ebene.
-Object? _ohneIds(Object? wert) {
+// Schlüssel, die erst das Speichern ergänzt (ARCH-03).
+const Set<String> _abgeleitetBeimSpeichern = <String>{'inventarInstanzId'};
+
+// Dazu die IDs, die das Speichern neuen Slots vergibt.
+const Set<String> _ohneSchluessel = <String>{'id', 'inventarInstanzId'};
+
+// JSON ohne `id`-Schlüssel und Instanzverweise auf jeder Ebene.
+Object? _ohneIds(Object? wert) => _ohne(wert, _ohneSchluessel);
+
+// [wert] ohne die Schlüssel aus [schluessel], auf jeder Ebene.
+Object? _ohne(Object? wert, Set<String> schluessel) {
   if (wert is Map) {
     return <String, Object?>{
       for (final eintrag in wert.entries)
-        if (eintrag.key != 'id')
-          eintrag.key.toString(): _ohneIds(eintrag.value),
+        if (!schluessel.contains(eintrag.key))
+          eintrag.key.toString(): _ohne(eintrag.value, schluessel),
     };
   }
   if (wert is List) {
-    return wert.map(_ohneIds).toList(growable: false);
+    return wert.map((e) => _ohne(e, schluessel)).toList(growable: false);
   }
   return wert;
 }

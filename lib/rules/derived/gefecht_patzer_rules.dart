@@ -3,6 +3,7 @@ import 'package:dsa_heldenverwaltung/domain/gefecht.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht_patzer.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/domain/sync_models.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/inventar_slot_instanz_rules.dart';
 
 import 'gefecht_rules.dart';
 
@@ -108,7 +109,7 @@ GefechtsBruchprofil? gefechtsBruchprofil(
       w,
       e.name,
       e.breakFactor,
-      stableContentHash(e.toJson()),
+      stableContentHash(ohneInstanzverweise(e.toJson())),
     );
   }
   final liste = c.offhandEquipment.where((e) => e.id == w.id).toList();
@@ -118,7 +119,7 @@ GefechtsBruchprofil? gefechtsBruchprofil(
     w,
     e.name,
     e.breakFactor,
-    stableContentHash(e.toJson()),
+    stableContentHash(ohneInstanzverweise(e.toJson())),
   );
 }
 
