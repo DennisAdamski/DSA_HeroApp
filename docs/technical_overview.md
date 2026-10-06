@@ -1030,6 +1030,7 @@ Inventarfelder fuer Quelle, Gewicht, Wert, Modifier und magisch/geweiht.
 | `traegerTyp` / `traegerId` | Zuordnung zum Helden oder zu einem Begleiter |
 | `instanzId` | Stabile Instanz-ID des Stapels/Exemplars (ARCH-03); nur im Helden eindeutig, bei einer Kopie unverändert; vergeben erst in `saveHero`, nur geschrieben, wenn belegt |
 | `menge` | Strukturierte Stückzahl (ARCH-03); `null` = offen; nur geschrieben, wenn belegt |
+| `abgelegt` | `AbgelegterKampfgegenstand` (`lib/domain/abgelegter_kampfgegenstand.dart`): gemerkte Kampfwerte eines im Kampfbereich nur abgelegten Exemplars — genau einer von `waffe`, `geschoss`, `ruestungsteil`, `nebenhandteil`; nur geschrieben, wenn belegt |
 
 **Kampf-/Inventarverweise (ARCH-03, Teilfix B2/B3).** Waffen, Geschosse,
 Ruestungsstuecke und Nebenhand-Teile speichern eine Slot-ID.
@@ -1123,6 +1124,36 @@ Bruchprofil) lassen ihn ueber `ohneInstanzverweise` weg. Sonst verloere etwa
 ein gebundener Ladezustand beim ersten Speichern nach dem Update seine Waffe.
 `slotRef` am Eintrag bleibt bestehen; die Ladermigration
 (`migriereInventarVerweise`) ordnet weiterhin nur ueber Name und Slot-ID zu.
+
+**Ablegen und Zurückholen (ARCH-03, Entscheidung vom 06.10.2026).** Wer im
+Kampf-Tab eine Waffe, ein Rüstungsteil oder ein Schild bzw. eine Parierwaffe
+entfernt, wird gefragt: „Nur ablegen“ oder „Ganz entfernen“
+(`kampfgegenstand_entfernen_dialog.dart`). Geschosse, die das Ergebnis des
+Waffeneditors nicht mehr führt, fragen dasselbe beim Speichern der Waffe.
+Regeln in `rules/derived/kampfgegenstand_ablegen_rules.dart`:
+
+- *Ablegen* entfernt den Slot und macht seinen verknüpften Eintrag (gefunden
+  über Instanz, `slotRef`, Name) zu einem **manuellen** Eintrag ohne
+  Verweise, mit derselben Instanz-ID, nicht ausgerüstet und mit
+  `abgelegt` = Slot ohne Instanzverweis. Eine abgelegte Waffe merkt sich
+  keine Geschosse. Manuell, weil mehrere Stellen allein an der Quelle
+  „verknüpft“ festmachen; Liste und Filter zeigen ihn über
+  `anzeigeQuelleImInventar` trotzdem als Waffe, Geschoss usw.
+- *Ganz entfernen* entfernt nur den Slot; der Abgleich verwirft den Eintrag
+  wie bisher.
+- **Geschosse gehen nie still verloren:** Eine entfernte Fernkampfwaffe legt
+  ihre benannten Geschosse in beiden Fällen ab, auch mit Bestand 0. Ein
+  Bestand von 0 löscht nirgends einen Eintrag.
+- *In Kampfbereich übernehmen* (Inventareditor,
+  `inventory_kampf_uebernehmen.dart`, `mitUebernommenemKampfgegenstand`)
+  hängt den Slot aus den gemerkten Werten hinten an; Name und
+  magisch/geweiht kommen vom Eintrag, ein Geschoss bekommt die Menge und
+  wählt seine Fernkampfwaffe. Der Eintrag wird wieder verknüpft
+  (`sourceRef` = Namensverweis, ohne `slotRef`); der Abgleich paart ihn über
+  die Instanz, Angaben wie Beschreibung und Gewicht bleiben.
+- Der Kampf-Tab schreibt beides über `_aendereKampfUndInventar`; im
+  Bearbeitungsmodus hält er dafür einen Inventarentwurf (`_draftInventar`),
+  den „Speichern“ zusammen mit der Kampfkonfiguration übernimmt.
 
 **Menge und Stapel (ARCH-03, Entscheidungen vom 04. und 06.10.2026).** Ein
 Stapel ist ein Gegenstand mit einer Instanz-ID und einer Menge. Die Lesart

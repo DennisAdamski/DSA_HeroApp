@@ -1,3 +1,4 @@
+import 'package:dsa_heldenverwaltung/domain/abgelegter_kampfgegenstand.dart';
 import 'package:dsa_heldenverwaltung/domain/copy_with_sentinel.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
 import 'package:dsa_heldenverwaltung/domain/unbekannte_json_felder.dart';
@@ -50,6 +51,7 @@ class HeroInventoryEntry {
     // Gemeinsames Gegenstandsmodell (ARCH-03)
     this.instanzId,
     this.menge,
+    this.abgelegt,
     this.unbekannteFelder = const <String, Object?>{},
     this.unbekannteEnumWerte = const <String, Object?>{},
   });
@@ -152,6 +154,12 @@ class HeroInventoryEntry {
   /// Eintrag mit eigener [instanzId].
   final int? menge;
 
+  /// Gemerkte Kampfwerte, wenn das Exemplar im Kampfbereich nur abgelegt
+  /// wurde; `null` sonst. „In Kampfbereich übernehmen“ legt daraus den Slot
+  /// wieder an (`kampfgegenstand_ablegen_rules.dart`). Nur geschrieben, wenn
+  /// belegt.
+  final AbgelegterKampfgegenstand? abgelegt;
+
   /// JSON-Felder einer neueren App-Version; bleiben beim Speichern erhalten
   /// (siehe `unbekannte_json_felder.dart`).
   final Map<String, Object?> unbekannteFelder;
@@ -194,6 +202,7 @@ class HeroInventoryEntry {
     'traegerId',
     'instanzId',
     'menge',
+    'abgelegt',
   };
 
   /// Gibt eine Kopie mit selektiv überschriebenen Feldern zurück.
@@ -227,6 +236,7 @@ class HeroInventoryEntry {
     Object? traegerId = keepFieldValue,
     Object? instanzId = keepFieldValue,
     Object? menge = keepFieldValue,
+    Object? abgelegt = keepFieldValue,
     Map<String, Object?>? unbekannteFelder,
     Map<String, Object?>? unbekannteEnumWerte,
   }) {
@@ -266,6 +276,9 @@ class HeroInventoryEntry {
           ? this.instanzId
           : instanzId as String?,
       menge: menge == keepFieldValue ? this.menge : menge as int?,
+      abgelegt: abgelegt == keepFieldValue
+          ? this.abgelegt
+          : abgelegt as AbgelegterKampfgegenstand?,
       unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
       unbekannteEnumWerte:
           unbekannteEnumWerte ??
@@ -320,6 +333,7 @@ class HeroInventoryEntry {
         // ARCH-03: nur bei belegtem Wert, sonst ändern sich Bestands-Hashes.
         if (instanzId != null) 'instanzId': instanzId,
         if (menge != null) 'menge': menge,
+        if (abgelegt != null) 'abgelegt': abgelegt!.toJson(),
       }, unbekannteFelder),
       unbekannteEnumWerte,
     );
@@ -342,6 +356,7 @@ class HeroInventoryEntry {
               .toList(growable: false)
         : const <InventoryItemModifier>[];
     final legacyArtifact = getString('artefakt').trim();
+    final abgelegtRoh = json['abgelegt'];
     final hasMagischDescription =
         json.containsKey('magischDescription') &&
         json['magischDescription'] != null;
@@ -399,6 +414,11 @@ class HeroInventoryEntry {
       traegerId: json['traegerId'] as String?,
       instanzId: json['instanzId'] as String?,
       menge: (json['menge'] as num?)?.toInt(),
+      abgelegt: abgelegtRoh is Map
+          ? AbgelegterKampfgegenstand.fromJson(
+              abgelegtRoh.cast<String, dynamic>(),
+            )
+          : null,
       unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
       unbekannteEnumWerte: festeEnumWerte(enumRoh),
     );

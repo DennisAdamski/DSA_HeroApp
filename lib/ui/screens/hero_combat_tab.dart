@@ -7,6 +7,7 @@ import 'package:dsa_heldenverwaltung/state/house_rules_providers.dart';
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
@@ -18,6 +19,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/cost_text_parsing.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/editor_entwurf_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_requirement_context.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/kampf_aenderung_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/kampfgegenstand_ablegen_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/learning_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/maneuver_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
@@ -47,6 +49,7 @@ import 'package:dsa_heldenverwaltung/ui/screens/hero_combat/combat_helpers.dart'
 import 'package:dsa_heldenverwaltung/ui/screens/hero_combat/combat_offhand_section.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_talents/combat_specialization_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_combat/combat_weapons_section.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_combat/kampfgegenstand_entfernen_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/codex_metric_tile.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/codex_section_card.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/codex_tab_header.dart';
@@ -113,6 +116,10 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
   Map<String, HeroTalentEntry> _draftTalents = <String, HeroTalentEntry>{};
   Set<String> _invalidCombatTalentIds = <String>{};
   CombatConfig _draftCombatConfig = const CombatConfig();
+
+  /// Inventar des Entwurfs, sobald eine Entwurfsänderung es betrifft (etwa
+  /// ein abgelegter Gegenstand, ARCH-03); `null` heißt unverändert.
+  List<HeroInventoryEntry>? _draftInventar;
 
   /// Aufsummierte AP-Kosten aus Erwerbs-Dialogen (Kampf-Sonderfertigkeiten,
   /// Manoever, Kampftalent-Spezialisierungen) seit dem letzten Sync/Save.
@@ -203,6 +210,7 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
     _draftTalents = Map<String, HeroTalentEntry>.from(hero.talents);
     _invalidCombatTalentIds = <String>{};
     _draftCombatConfig = hero.combatConfig;
+    _draftInventar = null;
     _draftApSpentDelta = 0;
     _temporaryIniRoll = null;
     _seedCombatControllers();

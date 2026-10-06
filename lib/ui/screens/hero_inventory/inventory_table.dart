@@ -5,7 +5,11 @@ extension _HeroInventoryTable on _HeroInventoryTabState {
     final result = <(int, HeroInventoryEntry)>[];
     for (var index = 0; index < _entries.length; index++) {
       final entry = _entries[index];
-      if (matchesInventoryFilter(entry.itemType, entry.source, _filter)) {
+      if (matchesInventoryFilter(
+        entry.itemType,
+        anzeigeQuelleImInventar(entry),
+        _filter,
+      )) {
         result.add((index, entry));
       }
     }
@@ -72,7 +76,7 @@ extension _HeroInventoryTable on _HeroInventoryTabState {
               ),
             ),
             Text(_typeLabel(entry.itemType)),
-            Text(_sourceLabel(entry.source)),
+            Text(_sourceLabel(anzeigeQuelleImInventar(entry))),
             Text(_traegerName(entry)),
             _zahlenzelle(
               entry.anzahl.trim().isEmpty ? '–' : entry.anzahl.trim(),

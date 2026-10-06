@@ -340,6 +340,9 @@ void main() {
       );
       tester.widget<IconButton>(entfernen).onPressed!();
       await tester.pumpAndSettle();
+      // Rückfrage beim Entfernen (ARCH-03): wie bisher ganz entfernen.
+      await tester.tap(find.text('Ganz entfernen'));
+      await tester.pumpAndSettle();
 
       final gespeichert = await repo.gespeichert('demo');
       final kampf = gespeichert.combatConfig;
@@ -418,6 +421,9 @@ void main() {
       );
       tester.widget<IconButton>(entfernen).onPressed!();
       await tester.pumpAndSettle();
+      // Rückfrage beim Entfernen (ARCH-03): wie bisher ganz entfernen.
+      await tester.tap(find.text('Ganz entfernen'));
+      await tester.pumpAndSettle();
 
       final kampf = await gespeicherterKampf();
       expect(kampf.armor.pieces.map((teil) => teil.name), [
@@ -439,6 +445,9 @@ void main() {
       await bisSichtbar(tester, entfernen);
 
       tester.widget<IconButton>(entfernen).onPressed!();
+      await tester.pumpAndSettle();
+      // Rückfrage beim Entfernen (ARCH-03): wie bisher ganz entfernen.
+      await tester.tap(find.text('Ganz entfernen'));
       await tester.pumpAndSettle();
 
       final kampf = await gespeicherterKampf();

@@ -16,6 +16,24 @@ extension _CombatStateHelpers on _HeroCombatTabState {
     required String was,
     required CombatConfig Function(CombatConfig aktuell) aenderung,
     required RulesCatalog catalog,
+  }) {
+    return _aendereKampfUndInventar(
+      was: was,
+      aenderung: (held) => mitKampfAenderung(held, aenderung),
+      catalog: catalog,
+    );
+  }
+
+  /// Wie [_aendereKampf], für Änderungen, die Kampf **und** Inventar
+  /// treffen, etwa das Ablegen eines Gegenstands (ARCH-03).
+  ///
+  /// Im Bearbeitungsmodus wirkt [aenderung] auf den Entwurf: die
+  /// Kampfkonfiguration und, falls sie sich ändern, die Inventareinträge
+  /// ([_draftInventar]); „Speichern“ übernimmt beide gemeinsam.
+  Future<bool> _aendereKampfUndInventar({
+    required String was,
+    required HeroSheet Function(HeroSheet aktuell) aenderung,
+    required RulesCatalog catalog,
   }) async {
     if (_editController.isEditing) {
       return _aendereKampfEntwurf(was: was, aenderung: aenderung);
@@ -28,10 +46,13 @@ extension _CombatStateHelpers on _HeroCombatTabState {
       ref: ref,
       heroId: widget.heroId,
       was: was,
-      aenderung: (held) => mitKampfAenderung(held, (config) {
-        final neu = aenderung(config);
+      aenderung: (held) {
+        final neu = aenderung(held);
+        if (identical(neu, held)) {
+          return held;
+        }
         final fehler = _validateWeaponSlotsForConfig(
-          config: neu,
+          config: neu.combatConfig,
           catalog: catalog,
           combatTalents: combatTalents,
         );
@@ -39,7 +60,7 @@ extension _CombatStateHelpers on _HeroCombatTabState {
           throw StateError(fehler);
         }
         return neu;
-      }),
+      },
     );
     if (gespeichert == null && mounted) {
       _steuerRevision++;
@@ -51,15 +72,29 @@ extension _CombatStateHelpers on _HeroCombatTabState {
   // Wendet [aenderung] im Bearbeitungsmodus auf den Entwurf an.
   bool _aendereKampfEntwurf({
     required String was,
-    required CombatConfig Function(CombatConfig aktuell) aenderung,
+    required HeroSheet Function(HeroSheet aktuell) aenderung,
   }) {
+    final basis = _entwurfBasis;
+    if (basis == null) {
+      return false;
+    }
+    final inventar = _draftInventar ?? basis.inventoryEntries;
+    final entwurf = basis.copyWith(
+      combatConfig: _draftCombatConfig,
+      inventoryEntries: inventar,
+    );
+    final HeroSheet neu;
     try {
-      _draftCombatConfig = aenderung(_draftCombatConfig);
+      neu = aenderung(entwurf);
     } on StateError catch (fehler) {
       ScaffoldMessenger.maybeOf(context)?.showSnackBar(
         SnackBar(content: Text('$was nicht übernommen: ${fehler.message}')),
       );
       return false;
+    }
+    _draftCombatConfig = neu.combatConfig;
+    if (!identical(neu.inventoryEntries, inventar)) {
+      _draftInventar = neu.inventoryEntries;
     }
     _markFieldChanged();
     return true;
@@ -116,6 +151,7 @@ extension _CombatStateHelpers on _HeroCombatTabState {
     final entwurf = basis.copyWith(
       talents: Map<String, HeroTalentEntry>.from(_draftTalents),
       combatConfig: _draftCombatConfig,
+      inventoryEntries: _draftInventar ?? basis.inventoryEntries,
       apSpent: basis.apSpent + _draftApSpentDelta,
     );
     if (!mounted) {
@@ -137,6 +173,7 @@ extension _CombatStateHelpers on _HeroCombatTabState {
       return;
     }
     _draftApSpentDelta = 0;
+    _draftInventar = null;
     if (!mounted) {
       return;
     }

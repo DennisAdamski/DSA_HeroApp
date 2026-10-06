@@ -122,31 +122,75 @@ extension _CombatSofortAenderungen on _HeroCombatTabState {
 
   /// Übernimmt ein Editorergebnis: neu angelegt ohne [ausgang], sonst als
   /// Ersatz der beim Öffnen angezeigten Waffe.
+  ///
+  /// Führt das Ergebnis Geschosse nicht mehr, fragt der Tab, ob sie nur
+  /// abgelegt oder ganz entfernt werden (ARCH-03); Abbruch speichert nicht.
   Future<bool> _speichereWaffe(
     MainWeaponSlot slot, {
     MainWeaponSlot? ausgang,
     int? slotIndex,
     required RulesCatalog catalog,
-  }) {
+  }) async {
     final bisher = ausgang;
-    return _aendereKampf(
+    if (bisher == null) {
+      return _aendereKampf(
+        was: 'Waffe',
+        aenderung: (config) => mitNeuerWaffe(config, slot),
+        catalog: catalog,
+      );
+    }
+    final weg = entfernteGeschosse(bisher, slot);
+    var wie = KampfgegenstandEntfernen.ganzEntfernen;
+    if (weg.isNotEmpty) {
+      final namen = weg.map((geschoss) => geschoss.name.trim()).toList();
+      final antwort = await frageGeschosseEntfernen(context, namen);
+      if (antwort == null || !mounted) {
+        return false;
+      }
+      wie = antwort;
+    }
+    return _aendereKampfUndInventar(
       was: 'Waffe',
-      aenderung: (config) => bisher == null
-          ? mitNeuerWaffe(config, slot)
-          : ersetzeWaffe(config, ausgang: bisher, neu: slot, index: slotIndex),
+      aenderung: (held) => ersetzeWaffeImKampf(
+        held,
+        ausgang: bisher,
+        neu: slot,
+        index: slotIndex,
+        geschosseAblegen: wie == KampfgegenstandEntfernen.ablegen,
+        neueId: neueEditorSlotId,
+      ),
       catalog: catalog,
     );
   }
 
-  /// Entfernt die angezeigte Waffe.
+  /// Entfernt die angezeigte Waffe nach Rückfrage: nur ablegen oder ganz
+  /// entfernen (ARCH-03). Ihre Geschosse bleiben im Inventar.
   Future<void> _entferneWaffe(
     int index,
     MainWeaponSlot angezeigt, {
     required RulesCatalog catalog,
   }) async {
-    await _aendereKampf(
+    final wie = await frageKampfgegenstandEntfernen(
+      context,
+      titel: 'Waffe entfernen',
+      name: angezeigt.name,
+      art: 'den Waffen',
+      mitGeschossen:
+          angezeigt.fuehrtGeschosse &&
+          angezeigt.rangedProfile.projectiles.isNotEmpty,
+    );
+    if (wie == null || !mounted) {
+      return;
+    }
+    await _aendereKampfUndInventar(
       was: 'Entfernen der Waffe',
-      aenderung: (config) => ohneWaffe(config, angezeigt, index: index),
+      aenderung: (held) => ohneWaffeImKampf(
+        held,
+        angezeigt,
+        index: index,
+        wie: wie,
+        neueId: neueEditorSlotId,
+      ),
       catalog: catalog,
     );
   }
@@ -181,15 +225,31 @@ extension _CombatSofortAenderungen on _HeroCombatTabState {
     );
   }
 
-  /// Entfernt das angezeigte Rüstungsteil.
+  /// Entfernt das angezeigte Rüstungsteil nach Rückfrage: nur ablegen oder
+  /// ganz entfernen (ARCH-03).
   Future<void> _entferneRuestungsteil(
     int index,
     ArmorPiece angezeigt, {
     required RulesCatalog catalog,
   }) async {
-    await _aendereKampf(
+    final wie = await frageKampfgegenstandEntfernen(
+      context,
+      titel: 'Rüstungsteil entfernen',
+      name: angezeigt.name,
+      art: 'der Rüstung',
+    );
+    if (wie == null || !mounted) {
+      return;
+    }
+    await _aendereKampfUndInventar(
       was: 'Entfernen des Rüstungsteils',
-      aenderung: (config) => ohneRuestungsteil(config, angezeigt, index: index),
+      aenderung: (held) => ohneRuestungsteilImKampf(
+        held,
+        angezeigt,
+        index: index,
+        wie: wie,
+        neueId: neueEditorSlotId,
+      ),
       catalog: catalog,
     );
   }
@@ -209,15 +269,31 @@ extension _CombatSofortAenderungen on _HeroCombatTabState {
     );
   }
 
-  /// Entfernt das angezeigte Nebenhandteil.
+  /// Entfernt das angezeigte Nebenhandteil nach Rückfrage: nur ablegen oder
+  /// ganz entfernen (ARCH-03).
   Future<void> _entferneNebenhandTeil(
     int index,
     OffhandEquipmentEntry angezeigt, {
     required RulesCatalog catalog,
   }) async {
-    await _aendereKampf(
+    final wie = await frageKampfgegenstandEntfernen(
+      context,
+      titel: angezeigt.isShield ? 'Schild entfernen' : 'Parierwaffe entfernen',
+      name: angezeigt.name,
+      art: 'der Nebenhand-Ausrüstung',
+    );
+    if (wie == null || !mounted) {
+      return;
+    }
+    await _aendereKampfUndInventar(
       was: 'Entfernen des Nebenhandteils',
-      aenderung: (config) => ohneNebenhandTeil(config, angezeigt, index: index),
+      aenderung: (held) => ohneNebenhandteilImKampf(
+        held,
+        angezeigt,
+        index: index,
+        wie: wie,
+        neueId: neueEditorSlotId,
+      ),
       catalog: catalog,
     );
   }

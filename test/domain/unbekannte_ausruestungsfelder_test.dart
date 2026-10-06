@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dsa_heldenverwaltung/catalog/weapon_def.dart';
+import 'package:dsa_heldenverwaltung/domain/abgelegter_kampfgegenstand.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
@@ -146,6 +147,9 @@ final _modelle = <_Modell>[
       sourceRef: 'w#w1',
       traegerTyp: InventoryTraeger.begleiter,
       traegerId: 'b1',
+      instanzId: 'i1',
+      menge: 1,
+      abgelegt: AbgelegterKampfgegenstand(waffe: MainWeaponSlot(name: 'Säbel')),
     ).toJson(),
     lade: (json) => HeroInventoryEntry.fromJson(json).toJson(),
     bearbeite: (json) =>

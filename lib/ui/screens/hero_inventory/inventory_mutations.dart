@@ -69,6 +69,43 @@ extension _HeroInventoryMutations on _HeroInventoryTabState {
     );
   }
 
+  /// Holt den angezeigten abgelegten Gegenstand frisch in den Kampfbereich
+  /// zurück (ARCH-03). Ein Geschoss fragt nach seiner Fernkampfwaffe;
+  /// Abbruch ändert nichts. Fehler gehen an den Editor.
+  Future<void> _uebernehmeInKampf(HeroInventoryEntry angezeigt) async {
+    String? zielWaffeId;
+    if (istAbgelegtesGeschoss(angezeigt)) {
+      final kampf = _latestHero?.combatConfig ?? const CombatConfig();
+      zielWaffeId = await waehleZielwaffeFuerGeschoss(
+        context,
+        zielwaffenFuerGeschoss(kampf),
+      );
+      if (zielWaffeId == null) {
+        return;
+      }
+    }
+    final gespeichert = await aendereHeldImEditor(
+      ref: ref,
+      heroId: widget.heroId,
+      aenderung: (held) => mitUebernommenemKampfgegenstand(
+        held,
+        angezeigt,
+        zielWaffeId: zielWaffeId,
+        neueId: () => const Uuid().v4(),
+      ),
+    );
+    final eintraege = gespeichert.inventoryEntries;
+    final id = angezeigt.instanzId;
+    final index = id == null
+        ? -1
+        : eintraege.indexWhere((e) => e.instanzId == id);
+    _nachEditorSpeichern(
+      eintraege,
+      index,
+      changedEntry: index < 0 ? angezeigt : eintraege[index],
+    );
+  }
+
   void _nachEditorSpeichern(
     List<HeroInventoryEntry> gespeicherteEintraege,
     int auswahl, {
@@ -81,7 +118,7 @@ extension _HeroInventoryMutations on _HeroInventoryTabState {
         _filter != InventoryFilter.alle &&
         !matchesInventoryFilter(
           changedEntry.itemType,
-          changedEntry.source,
+          anzeigeQuelleImInventar(changedEntry),
           _filter,
         );
 

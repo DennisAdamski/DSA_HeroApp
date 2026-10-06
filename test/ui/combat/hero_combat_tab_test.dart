@@ -2201,6 +2201,8 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(removeButton, warnIfMissed: false);
     await tester.pumpAndSettle();
+    await tester.tap(find.text('Ganz entfernen'));
+    await tester.pumpAndSettle();
 
     final heroes = await repo.listHeroes();
     final hero = heroes.firstWhere((entry) => entry.id == 'demo');

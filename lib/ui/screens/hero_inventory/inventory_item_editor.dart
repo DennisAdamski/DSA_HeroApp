@@ -5,6 +5,8 @@ import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/inventar_menge_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/inventar_stapel_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/kampfgegenstand_ablegen_rules.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/inventory_kampf_uebernehmen.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/inventory_modifier_editor.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/inventory_stapel_teilen.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/list_tile_material.dart';
@@ -28,6 +30,7 @@ class InventoryItemEditor extends StatefulWidget {
     this.isNew = false,
     this.companions = const <HeroCompanion>[],
     this.onStapelTeilen,
+    this.onKampfUebernehmen,
   });
 
   final HeroInventoryEntry entry;
@@ -42,6 +45,10 @@ class InventoryItemEditor extends StatefulWidget {
   /// Spaltet vom angezeigten Stapel ab (ARCH-03); ohne Rückruf und für
   /// nicht teilbare Einträge gibt es keinen Knopf „Stapel teilen“.
   final Future<void> Function(StapelTeilung teilung)? onStapelTeilen;
+
+  /// Holt einen im Kampfbereich abgelegten Gegenstand zurück (ARCH-03);
+  /// ohne Rückruf und für andere Einträge gibt es keinen Knopf.
+  final Future<void> Function()? onKampfUebernehmen;
 
   @override
   State<InventoryItemEditor> createState() => _InventoryItemEditorState();
@@ -329,6 +336,16 @@ class _InventoryItemEditorState extends State<InventoryItemEditor> {
             onPressed: _isSaving ? null : _teileStapel,
             icon: const Icon(Icons.call_split),
             label: const Text('Stapel teilen'),
+          ),
+        ],
+        if (widget.onKampfUebernehmen case final uebernehmen?
+            when istAbgelegterKampfgegenstand(widget.entry)) ...[
+          const SizedBox(height: 8),
+          InventoryKampfUebernehmen(
+            entry: widget.entry,
+            onPressed: _isSaving
+                ? null
+                : () => _fuehreAus('Übernehmen', uebernehmen),
           ),
         ],
         if (_draft.itemType == InventoryItemType.ausruestung) ...[
