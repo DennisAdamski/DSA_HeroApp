@@ -336,12 +336,19 @@ class _InventoryItemEditorState extends State<InventoryItemEditor> {
           ListTileMaterial(
             child: SwitchListTile.adaptive(
               value: _draft.istAusgeruestet,
-              onChanged: (value) => setState(
-                () => _draft = _draft.copyWith(istAusgeruestet: value),
-              ),
+              // Verknüpfte Einträge folgen ihrem Slot; der Abgleich
+              // überschriebe den Schalter beim Speichern still.
+              onChanged: _isLinked
+                  ? null
+                  : (value) => setState(
+                      () => _draft = _draft.copyWith(istAusgeruestet: value),
+                    ),
               title: const Text('Ausgerüstet'),
-              subtitle: const Text(
-                'Modifikatoren wirken nur, wenn das Item ausgerüstet ist.',
+              subtitle: Text(
+                _isLinked
+                    ? 'Wird im Kampf-Tab festgelegt.'
+                    : 'Modifikatoren wirken nur, wenn das Item ausgerüstet '
+                          'ist.',
               ),
               dense: true,
               contentPadding: EdgeInsets.zero,
