@@ -29,6 +29,16 @@ werden nicht während eines Deployments abgebrochen. Fehler belassen die letzte
 Veröffentlichung. Das bestehende Secret
 `FIREBASE_SERVICE_ACCOUNT_HELDENSYNC_CCF0B` bedient beide Sites.
 
+## Angezeigte Version
+
+Der Web-Build bekommt Commit und Bauzeit per `--dart-define=BUILD_COMMIT=…`
+und `--dart-define=BUILD_TIME=…` (CI und `tool/deploy_web.ps1`). Die App zeigt
+sie unter `Einstellungen` unterhalb der Bereichsliste, z. B.
+`Version: e92ff9f · 05.10.2026 14:32` (Bauzeit in Gerätezeit). Stimmt der
+Kurz-Commit mit dem Branch-Stand überein, ist die neueste Fassung geladen.
+Ohne Angaben steht dort `Lokaler Entwicklungsstand`; `-dirty` markiert einen
+manuellen Build mit uncommitteten Änderungen. Logik: `lib/domain/app_build_info.dart`.
+
 ## Betrieb und manuelle Abnahme
 
 Anmeldung, Heldenladen, Cloud-Sync, Avatare und Import/Export im Browser prüfen.

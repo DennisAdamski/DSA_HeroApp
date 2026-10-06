@@ -6,51 +6,60 @@ part of 'package:dsa_heldenverwaltung/ui/screens/hero_reisebericht_tab.dart';
 
 /// Bestaetigungsdialog fuer die Ruecknahme eines bereits angewendeten Eintrags.
 class _RevokeConfirmDialog extends StatelessWidget {
-  const _RevokeConfirmDialog({required this.rewards, required this.entryName});
+  const _RevokeConfirmDialog({required this.buchung});
 
-  final ReiseberichtRewards rewards;
-  final String entryName;
+  /// Was die Änderung an der Buchung bewirkt; [ReiseberichtBuchung.zurueck]
+  /// ist nicht leer.
+  final ReiseberichtBuchung buchung;
+
+  static List<String> _teile(ReiseberichtRewards rewards) {
+    return <String>[
+      if (rewards.ap > 0) '${rewards.ap} AP',
+      for (final se in rewards.seRewards) 'SE auf ${se.talentName}',
+      for (final tb in rewards.talentBoni) '+${tb.wert} ${tb.talentName}',
+      for (final eb in rewards.eigenschaftsBoni)
+        '+${eb.wert} ${eb.eigenschaft.toUpperCase()}',
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {
-    final parts = <String>[];
-    if (rewards.ap > 0) parts.add('${rewards.ap} AP');
-    for (final se in rewards.seRewards) {
-      parts.add('SE auf ${se.talentName}');
-    }
-    for (final tb in rewards.talentBoni) {
-      parts.add('+${tb.wert} ${tb.talentName}');
-    }
-    for (final eb in rewards.eigenschaftsBoni) {
-      parts.add('+${eb.wert} ${eb.eigenschaft.toUpperCase()}');
+    final farben = _ReiseberichtFarben.von(context);
+    final zurueck = _teile(buchung.zurueck);
+    final neu = _teile(buchung.neu);
+
+    Widget zeile(String text, IconData icon, Color farbe) {
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 4),
+        child: Row(
+          children: [
+            Icon(icon, size: 16, color: farbe),
+            const SizedBox(width: 8),
+            Expanded(child: Text(text)),
+          ],
+        ),
+      );
     }
 
     return AlertDialog(
-      title: Text('$entryName zurücknehmen?'),
+      title: const Text('Belohnungen zurücknehmen?'),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Folgende Belohnungen werden rückgängig gemacht:'),
+          const Text(
+            'Beim Speichern werden diese Belohnungen rückgängig gemacht:',
+          ),
           const SizedBox(height: 12),
-          if (parts.isEmpty)
-            const Text('Keine Belohnungen betroffen.')
-          else
-            for (final part in parts)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 4),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.remove_circle_outline,
-                      size: 16,
-                      color: _ReiseberichtFarben.von(context).fehler,
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(child: Text(part)),
-                  ],
-                ),
-              ),
+          for (final teil in zurueck)
+            zeile(teil, Icons.remove_circle_outline, farben.fehler),
+          if (neu.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            const Text('Stattdessen gebucht:'),
+            const SizedBox(height: 8),
+            for (final teil in neu)
+              zeile(teil, Icons.add_circle_outline, farben.erledigt),
+          ],
         ],
       ),
       actions: [

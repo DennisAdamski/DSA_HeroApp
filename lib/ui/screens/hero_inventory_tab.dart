@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_companion.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/inventar_aenderung_rules.dart';
-import 'package:dsa_heldenverwaltung/rules/derived/inventory_sync_rules.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/zustand_aendern.dart';
@@ -56,11 +54,13 @@ class _HeroInventoryTabState extends ConsumerState<HeroInventoryTab>
   HeroSheet? _latestHero;
   InventoryFilter _filter = InventoryFilter.alle;
   int? _selectedIndex;
+  // Gegenstand, mit dem der Editor geöffnet wurde; Grundlage seines Entwurfs.
+  HeroInventoryEntry? _bearbeiteterEintrag;
   HeroInventoryEntry? _pendingNewEntry;
   int _editorRevision = 0;
 
   bool get _isDetailPanelVisible =>
-      _selectedIndex != null || _pendingNewEntry != null;
+      _bearbeiteterEintrag != null || _pendingNewEntry != null;
 
   static const List<AdaptiveTableColumnSpec> _columnSpecs =
       <AdaptiveTableColumnSpec>[

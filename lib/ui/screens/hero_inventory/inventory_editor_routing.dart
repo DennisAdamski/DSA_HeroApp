@@ -53,7 +53,7 @@ extension _HeroInventoryEditorRouting on _HeroInventoryTabState {
     if (isWide) {
       setState(() {
         _pendingNewEntry = entry;
-        _selectedIndex = null;
+        _waehleAus(const <HeroInventoryEntry>[], -1);
         _editorRevision++;
       });
       return;
@@ -86,12 +86,15 @@ extension _HeroInventoryEditorRouting on _HeroInventoryTabState {
     if (isWide) {
       setState(() {
         _pendingNewEntry = null;
-        _selectedIndex = entryIndex;
+        _waehleAus(_entries, entryIndex);
         _editorRevision++;
       });
       return;
     }
 
+    if (entryIndex < 0 || entryIndex >= _entries.length) {
+      return;
+    }
     final entry = _entries[entryIndex];
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
@@ -100,7 +103,7 @@ extension _HeroInventoryEditorRouting on _HeroInventoryTabState {
           showAppBar: true,
           companions: _companions,
           onSaved: (updated) async {
-            await _saveUpdatedEntry(entryIndex, updated);
+            await _saveUpdatedEntry(entry, updated);
             if (routeContext.mounted) {
               Navigator.of(routeContext).pop();
             }
@@ -143,16 +146,18 @@ extension _HeroInventoryEditorRouting on _HeroInventoryTabState {
     }
 
     final selectedIndex = _selectedIndex;
-    if (selectedIndex != null && selectedIndex < _entries.length) {
+    final bearbeitet = _bearbeiteterEintrag;
+    if (bearbeitet != null) {
       return InventoryItemEditor(
         key: ValueKey<String>(
           'inventory-editor-$selectedIndex-$_editorRevision',
         ),
-        entry: _entries[selectedIndex],
+        entry: bearbeitet,
         showAppBar: false,
         companions: _companions,
-        onSaved: (entry) => _saveUpdatedEntry(selectedIndex, entry),
-        onCancelled: () => setState(() => _selectedIndex = null),
+        onSaved: (entry) => _saveUpdatedEntry(bearbeitet, entry),
+        onCancelled: () =>
+            setState(() => _waehleAus(const <HeroInventoryEntry>[], -1)),
       );
     }
 

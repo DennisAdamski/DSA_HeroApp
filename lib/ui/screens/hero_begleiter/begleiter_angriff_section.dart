@@ -158,13 +158,9 @@ class _AngriffRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    // Effektive AT/PA: Basis + Steigerung (nur im View-Modus anzeigen).
-    final effAt = angriff.at != null
-        ? angriff.at! + angriff.steigerungAt
-        : null;
-    final effPa = angriff.pa != null
-        ? angriff.pa! + angriff.steigerungPa
-        : null;
+    // Effektive AT/PA aus der gemeinsamen Regel (nur im View-Modus anzeigen).
+    final effAt = begleiterAngriffAt(angriff);
+    final effPa = begleiterAngriffPa(angriff);
     final showAt = isEditing ? angriff.at : effAt;
     final showPa = isEditing ? angriff.pa : effPa;
     return Padding(

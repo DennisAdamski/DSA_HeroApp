@@ -117,7 +117,14 @@ jobs:
           flutter-version: 3.47.1
           cache: true
       - run: flutter pub get
-      - run: flutter build web --release
+      # Commit und Bauzeit erscheinen in der App unter Einstellungen.
+      - name: Web-Release bauen
+        env:
+          BUILD_COMMIT: ${{ inputs.ref || github.sha }}
+        run: >-
+          flutter build web --release
+          --dart-define=BUILD_COMMIT="$BUILD_COMMIT"
+          --dart-define=BUILD_TIME="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
       - name: Build verifizieren
         run: |
           test -f build/web/assets/AssetManifest.bin.json

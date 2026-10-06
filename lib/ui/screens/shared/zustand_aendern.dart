@@ -60,18 +60,29 @@ Future<HeroSheet?> aendereHeldMitMeldung({
   required String was,
   required HeroSheet Function(HeroSheet aktuell) aenderung,
 }) {
-  final aktionen = ref.read(heroActionsProvider);
-  final planungOffen = ref.read(advancementSessionProvider(heroId)) != null;
   return _schreibeMitMeldung(
     context: context,
     was: was,
-    schreibe: () {
-      if (planungOffen) {
-        throw StateError(kBogenWaehrendPlanungGesperrt);
-      }
-      return aktionen.updateHero(heroId, aenderung);
-    },
+    schreibe: () =>
+        aendereHeldImEditor(ref: ref, heroId: heroId, aenderung: aenderung),
   );
+}
+
+/// Ändert den gespeicherten Heldenbogen frisch und reicht Fehler weiter.
+///
+/// Für Editoren, die einen Fehler selbst anzeigen und dabei offen bleiben
+/// (etwa der Inventareditor); sonst wie [aendereHeldMitMeldung], einschließlich
+/// der Sperre während einer offenen Steigerungsrunde. Liefert den
+/// gespeicherten Helden.
+Future<HeroSheet> aendereHeldImEditor({
+  required WidgetRef ref,
+  required String heroId,
+  required HeroSheet Function(HeroSheet aktuell) aenderung,
+}) {
+  if (ref.read(advancementSessionProvider(heroId)) != null) {
+    return Future<HeroSheet>.error(StateError(kBogenWaehrendPlanungGesperrt));
+  }
+  return ref.read(heroActionsProvider).updateHero(heroId, aenderung);
 }
 
 /// Grund, aus dem Sofortaktionen am Bogen während einer Planung ruhen.

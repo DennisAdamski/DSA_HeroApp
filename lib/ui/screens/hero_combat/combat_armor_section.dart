@@ -12,13 +12,28 @@ import 'package:dsa_heldenverwaltung/ui/widgets/adaptive_table_columns.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/flexible_table.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/resizable_table_columns.dart';
 
+/// Übernimmt ein Rüstungsteil aus dem Editor: neu ohne [ausgang], sonst als
+/// Ersatz des beim Öffnen angezeigten Teils [ausgang] an Position [index].
+typedef ArmorPieceSaveCallback = void Function(
+  ArmorPiece neu, {
+  ArmorPiece? ausgang,
+  int? index,
+});
+
+/// Entfernt das angezeigte Rüstungsteil [angezeigt] an Position [index].
+typedef ArmorPieceRemoveCallback = void Function(
+  int index,
+  ArmorPiece angezeigt,
+);
+
 /// Verwaltet Ruestungsstuecke und oeffnet den Editor auf breiten Layouts rechts.
 class CombatArmorSection extends StatefulWidget {
   /// Erstellt die Ruestungs-Sektion fuer den Kampf-Tab.
   const CombatArmorSection({
     super.key,
     required this.armor,
-    required this.onArmorChanged,
+    required this.onPieceSaved,
+    required this.onPieceRemoved,
     required this.previewRsTotal,
     required this.previewBeTotalRaw,
     required this.previewRgReduction,
@@ -31,8 +46,11 @@ class CombatArmorSection extends StatefulWidget {
   /// Aktuelle Ruestungskonfiguration.
   final ArmorConfig armor;
 
-  /// Callback: Ruestung wurde geaendert.
-  final void Function(ArmorConfig) onArmorChanged;
+  /// Callback: Rüstungsteil angelegt oder bearbeitet.
+  final ArmorPieceSaveCallback onPieceSaved;
+
+  /// Callback: Rüstungsteil entfernt.
+  final ArmorPieceRemoveCallback onPieceRemoved;
 
   /// Preview-Werte fuer die Berechnungsvorschau.
   final int previewRsTotal;
@@ -284,14 +302,11 @@ class _CombatArmorSectionState extends State<CombatArmorSection> {
   }
 
   void _removePiece(int index) {
-    final pieces = List<ArmorPiece>.from(widget.armor.pieces);
+    final pieces = widget.armor.pieces;
     if (index < 0 || index >= pieces.length) {
       return;
     }
-    pieces.removeAt(index);
-    widget.onArmorChanged(
-      widget.armor.copyWith(pieces: List<ArmorPiece>.unmodifiable(pieces)),
-    );
+    widget.onPieceRemoved(index, pieces[index]);
     if (_editingPieceIndex == null) {
       return;
     }
@@ -341,7 +356,11 @@ class _CombatArmorSectionState extends State<CombatArmorSection> {
     if (result == null) {
       return;
     }
-    _applyPiece(result, pieceIndex: pieceIndex);
+    _applyPiece(
+      result,
+      ausgang: pieceIndex == null ? null : sourcePiece,
+      pieceIndex: pieceIndex,
+    );
   }
 
   void _closeWideEditor() {
@@ -352,22 +371,22 @@ class _CombatArmorSectionState extends State<CombatArmorSection> {
   }
 
   void _savePiece(ArmorPiece piece) {
-    _applyPiece(piece, pieceIndex: _editingPieceIndex);
+    final pieceIndex = _editingPieceIndex;
+    _applyPiece(
+      piece,
+      ausgang: pieceIndex == null ? null : _editorSeedPiece,
+      pieceIndex: pieceIndex,
+    );
     _closeWideEditor();
   }
 
-  void _applyPiece(ArmorPiece piece, {required int? pieceIndex}) {
-    final updatedPieces = List<ArmorPiece>.from(widget.armor.pieces);
-    if (pieceIndex == null) {
-      updatedPieces.add(piece);
-    } else if (pieceIndex >= 0 && pieceIndex < updatedPieces.length) {
-      updatedPieces[pieceIndex] = piece;
-    }
-    widget.onArmorChanged(
-      widget.armor.copyWith(
-        pieces: List<ArmorPiece>.unmodifiable(updatedPieces),
-      ),
-    );
+  // Meldet das Editorergebnis samt dem beim Öffnen angezeigten Teil.
+  void _applyPiece(
+    ArmorPiece piece, {
+    required ArmorPiece? ausgang,
+    required int? pieceIndex,
+  }) {
+    widget.onPieceSaved(piece, ausgang: ausgang, index: pieceIndex);
   }
 
   Widget _tappableNameCell(

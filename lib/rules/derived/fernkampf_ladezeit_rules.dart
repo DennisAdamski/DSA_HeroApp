@@ -54,6 +54,7 @@ class RangedReloadTimeResult {
 }
 
 /// Berechnet die effektive Ladezeit einer Fernkampfwaffe.
+/// [beKampf] ist Rüstungs-BE nach Rüstungsgewöhnung, keine talentbezogene eBE.
 RangedReloadTimeResult computeRangedReloadTime({
   required MainWeaponSlot weapon,
   required CombatSpecialRules specialRules,
@@ -61,6 +62,7 @@ RangedReloadTimeResult computeRangedReloadTime({
   required String? talentName,
   int reloadModifier = 0,
   int reloadDivisor = 1,
+  int beKampf = 0,
 }) {
   final baseReloadTime = weapon.rangedProfile.reloadTime;
   final weaponKind = _resolveWeaponReloadKind(
@@ -78,27 +80,29 @@ RangedReloadTimeResult computeRangedReloadTime({
   final ownsArmbrust = specialRules.activeManeuvers.contains(
     'man_schnellladen_armbrust',
   );
+  // WdS 96 begrenzt auch die durch Axxeleratus verliehene Schnellladen-SF.
+  final schnellladenZulaessig = beKampf <= 4;
   final schnellladenBogen = CombatSpecialAbilityStatus(
     isOwned: ownsBogen,
-    isActive: ownsBogen || axxeleratusActive,
-    isTemporary: axxeleratusActive && !ownsBogen,
+    isActive: schnellladenZulaessig && (ownsBogen || axxeleratusActive),
+    isTemporary: schnellladenZulaessig && axxeleratusActive && !ownsBogen,
   );
   final schnellladenArmbrust = CombatSpecialAbilityStatus(
     isOwned: ownsArmbrust,
-    isActive: ownsArmbrust || axxeleratusActive,
-    isTemporary: axxeleratusActive && !ownsArmbrust,
+    isActive: schnellladenZulaessig && (ownsArmbrust || axxeleratusActive),
+    isTemporary: schnellladenZulaessig && axxeleratusActive && !ownsArmbrust,
   );
 
   var effectiveReloadTime = switch (weaponKind) {
     _RangedReloadKind.bogen => _computeBogenReloadTime(
       baseReloadTime: baseReloadTime,
-      hasOwnedAbility: ownsBogen,
+      hasOwnedAbility: ownsBogen && schnellladenZulaessig,
       hasActiveAbility: schnellladenBogen.isActive,
       axxeleratusActive: axxeleratusActive,
     ),
     _RangedReloadKind.armbrust => _computeArmbrustReloadTime(
       baseReloadTime: baseReloadTime,
-      hasOwnedAbility: ownsArmbrust,
+      hasOwnedAbility: ownsArmbrust && schnellladenZulaessig,
       hasActiveAbility: schnellladenArmbrust.isActive,
       axxeleratusActive: axxeleratusActive,
     ),
@@ -158,8 +162,8 @@ int _computeArmbrustReloadTime({
 }) {
   var result = clampNonNegative(baseReloadTime);
   if (hasActiveAbility) {
-    final reduction = excelRound(baseReloadTime * 3 / 4);
-    result -= reduction;
+    // WdS 96: Drei Viertel bleiben als Ladezeit bestehen.
+    result = excelRound(baseReloadTime * 3 / 4);
   }
   if (hasOwnedAbility && axxeleratusActive) {
     result -= 1;
