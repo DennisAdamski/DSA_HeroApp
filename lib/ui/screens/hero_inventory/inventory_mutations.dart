@@ -71,8 +71,9 @@ extension _HeroInventoryMutations on _HeroInventoryTabState {
 
   /// Holt den angezeigten abgelegten Gegenstand frisch in den Kampfbereich
   /// zurück (ARCH-03). Ein Geschoss fragt nach seiner Fernkampfwaffe;
-  /// Abbruch ändert nichts. Fehler gehen an den Editor.
-  Future<void> _uebernehmeInKampf(HeroInventoryEntry angezeigt) async {
+  /// Abbruch ändert nichts. Fehler gehen an den Editor. Liefert, ob
+  /// übernommen wurde.
+  Future<bool> _uebernehmeInKampf(HeroInventoryEntry angezeigt) async {
     String? zielWaffeId;
     if (istAbgelegtesGeschoss(angezeigt)) {
       final kampf = _latestHero?.combatConfig ?? const CombatConfig();
@@ -81,7 +82,7 @@ extension _HeroInventoryMutations on _HeroInventoryTabState {
         zielwaffenFuerGeschoss(kampf),
       );
       if (zielWaffeId == null) {
-        return;
+        return false;
       }
     }
     final gespeichert = await aendereHeldImEditor(
@@ -104,6 +105,41 @@ extension _HeroInventoryMutations on _HeroInventoryTabState {
       index,
       changedEntry: index < 0 ? angezeigt : eintraege[index],
     );
+    return true;
+  }
+
+  /// Ob es für [eintrag] einen Stapel gibt, in den er sich zusammenführen
+  /// lässt.
+  bool _kannZusammenfuehren(HeroInventoryEntry eintrag) {
+    final alle = _latestHero?.inventoryEntries ?? const <HeroInventoryEntry>[];
+    return zusammenfuehrbareZiele(alle, eintrag).isNotEmpty;
+  }
+
+  /// Führt den angezeigten Stapel frisch in einen gewählten gleichen Stapel
+  /// zusammen (ARCH-03) und wählt diesen aus. Abbruch ändert nichts; Fehler
+  /// gehen an den Editor. Liefert, ob zusammengeführt wurde.
+  Future<bool> _fuehreStapelZusammen(HeroInventoryEntry angezeigt) async {
+    final alle = _latestHero?.inventoryEntries ?? const <HeroInventoryEntry>[];
+    final ziel = await waehleZielstapel(
+      context,
+      zusammenfuehrbareZiele(alle, angezeigt),
+    );
+    if (ziel == null) {
+      return false;
+    }
+    final gespeichert = await aendereHeldImEditor(
+      ref: ref,
+      heroId: widget.heroId,
+      aenderung: (held) => mitZusammengefuehrtemStapel(held, angezeigt, ziel),
+    );
+    final eintraege = gespeichert.inventoryEntries;
+    final index = _findeGespeichertenEintrag(eintraege, ziel);
+    _nachEditorSpeichern(
+      eintraege,
+      index,
+      changedEntry: index < 0 ? ziel : eintraege[index],
+    );
+    return true;
   }
 
   void _nachEditorSpeichern(

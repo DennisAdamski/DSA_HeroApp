@@ -19,6 +19,7 @@ import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/inventory_filter_
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/inventory_item_editor.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/inventory_kampf_uebernehmen.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/inventory_stapel_teilen.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/inventory_stapel_zusammenfuehren.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/adaptive_table_columns.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/codex_tab_header.dart';
