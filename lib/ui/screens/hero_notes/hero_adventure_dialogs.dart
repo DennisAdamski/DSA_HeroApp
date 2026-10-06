@@ -916,7 +916,7 @@ class _AdventureLootItemDialogState extends State<_AdventureLootItemDialog> {
                       ),
                       controller: _weightController,
                       decoration: const InputDecoration(
-                        labelText: 'Gewicht (g)',
+                        labelText: 'Gewicht pro Stück (g)',
                         border: OutlineInputBorder(),
                         suffixText: 'g',
                       ),
@@ -929,7 +929,7 @@ class _AdventureLootItemDialogState extends State<_AdventureLootItemDialog> {
                       key: const ValueKey<String>('notes-adventure-loot-value'),
                       controller: _valueController,
                       decoration: const InputDecoration(
-                        labelText: 'Wert (S)',
+                        labelText: 'Wert pro Stück (S)',
                         border: OutlineInputBorder(),
                         suffixText: 'S',
                       ),

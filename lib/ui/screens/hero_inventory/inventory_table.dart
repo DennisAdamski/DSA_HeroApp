@@ -81,8 +81,9 @@ extension _HeroInventoryTable on _HeroInventoryTabState {
             _zahlenzelle(
               entry.anzahl.trim().isEmpty ? '–' : entry.anzahl.trim(),
             ),
-            _zahlenzelle(_formatWeight(entry.gewichtGramm)),
-            _zahlenzelle(_formatValue(entry.wertSilber)),
+            // Der ganze Stapel; der Editor zeigt den Wert pro Stück.
+            _zahlenzelle(_formatWeight(inventarStapelGewichtGramm(entry))),
+            _zahlenzelle(_formatValue(inventarStapelWertSilber(entry))),
             Wrap(
               spacing: 6,
               runSpacing: 6,

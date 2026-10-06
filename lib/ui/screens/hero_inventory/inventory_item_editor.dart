@@ -472,7 +472,7 @@ class _InventoryItemEditorState extends State<InventoryItemEditor> {
             key: const ValueKey<String>('inventory-editor-weight'),
             controller: _gewichtCtrl,
             decoration: const InputDecoration(
-              labelText: 'Gewicht (g)',
+              labelText: 'Gewicht pro Stück (g)',
               hintText: '0 = unbekannt',
               border: OutlineInputBorder(),
               isDense: true,
@@ -487,7 +487,7 @@ class _InventoryItemEditorState extends State<InventoryItemEditor> {
             key: const ValueKey<String>('inventory-editor-value'),
             controller: _wertCtrl,
             decoration: const InputDecoration(
-              labelText: 'Wert (S)',
+              labelText: 'Wert pro Stück (S)',
               hintText: '0 = unbekannt',
               border: OutlineInputBorder(),
               isDense: true,
