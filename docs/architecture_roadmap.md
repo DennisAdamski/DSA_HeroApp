@@ -621,8 +621,58 @@ Commit: `ba43ad0`.
    abgelegte Geschosse als gewöhnliche Gegenstände („Gegenstand benutzen“),
    verschossen wird nur von einer Waffe.
 
-*Nächster Schritt:* Schritt 3 oben — den Namensabgleich ablösen;
-Zusammenführen von Stapeln und Verkaufen folgen.
+*Nächster Schritt:* ~~Schritt 3 oben — den Namensabgleich ablösen;
+Zusammenführen von Stapeln und Verkaufen folgen.~~ *Erledigt im folgenden
+Teilstand.*
+
+**Teilstand 07.10.2026 — Namensabgleich, Stückwerte, Zusammenführen,
+Verkaufen.** Schritt 3.
+
+*Entscheidungen (Dennis, 7.10.2026):* Wert und Gewicht gelten pro Stück.
+Zusammenführen nur bei gleichem Namen, Typ, gleichen Markierungen und
+Modifikatoren; die übrigen Angaben kommen vom Ziel. Verkaufspreis
+vorbelegt mit dem vollen Wert, frei änderbar, auf die Dukaten.
+Ausgerüstetes darf verkauft werden und verlässt dabei den Kampfbereich.
+
+*Umsetzung (vier Commits):*
+
+- `bc56e90` Namensabgleich abgelöst: Abgleich und Ablegen paaren nur über
+  Instanz und `slotRef`; Altdaten ordnet weiter einmalig das Laden über
+  den Namen zu (`migriereInventarVerweise`). Nur Slots ohne ID (allein im
+  Speicher vor dem ersten Speichern) paaren noch über den Namen.
+- `b5ca134` Wert und Gewicht pro Stück (`inventar_summen_rules.dart`):
+  Summen und Tabellenspalten rechnen Menge × Stückwert, offene Menge = 1,
+  Menge 0 = nichts; Felder in Editor und Beutedialog „pro Stück“.
+- `e97a68c` Stapel zusammenführen (`inventar_stapel_rules.dart`, Dialog
+  `inventory_stapel_zusammenfuehren.dart`); Editoraktionen gebündelt in
+  `inventory_eintrag_aktionen.dart`. Verknüpfte Quelle gesperrt
+  (zuerst ablegen), verknüpftes Ziel nur als Geschoss (Slotbestand steigt),
+  Abenteuerbeute ist kein Ziel.
+- `2adb23c` Verkaufen (`inventar_verkauf_rules.dart`, Dialog
+  `inventory_verkaufen_dialog.dart`).
+
+*Prüfungen.* Regeltests je Teil (`inventory_sync_rules_test`,
+`inventar_summen_rules_test`, `inventar_zusammenfuehren_rules_test`,
+`inventar_verkauf_rules_test`), Widgettests für Zusammenführen und
+Verkaufen. `flutter analyze` ohne Befund, Format- und LOC-Prüfung bestehen.
+Vollständige Suite (`--concurrency=1`): 3.750 bestanden, 3 übersprungen.
+
+*Verbleibende Risiken:*
+
+1. Bestehende Stapel mit Menge > 1 zeigen jetzt eine höhere Summe, falls
+   ihr Wert bisher als Stapelwert eingetragen war; es wird nichts
+   umgerechnet.
+2. Abenteuerbeute als Quelle eines Zusammenführens oder Verkaufs sperrt
+   wie ein Löschen das spätere Zurücknehmen des Abenteuers (sichtbar).
+3. Die letzte Waffe lässt sich weiterhin nicht entfernen, also auch nicht
+   verkaufen.
+4. Ein Verkauf wird nicht protokolliert; er ist nur über Inventar und
+   Geldstand nachvollziehbar.
+
+*Nächster Schritt:* die übrige ARCH-03-Abnahme prüfen (Katalog-IDs für
+Gegenstandstypen, Kampfwerte und Inventarmodifikatoren konsequent über die
+ausgerüsteten Exemplare) und danach ARCH-03 abschließen oder den Rest neu
+schneiden.
 
 **Teilstand 27.09.2026 — B2/B3 behoben:** Kampf-Slots für Waffen,
 Geschosse, Rüstung und Nebenhand tragen stabile IDs. Beim Laden erhalten
