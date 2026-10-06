@@ -36,11 +36,14 @@ import 'package:dsa_heldenverwaltung/domain/talent_special_ability.dart';
 import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
 
-/// Nachbildung der bereits veroeffentlichten App-Version (`main`, Stand
-/// `7f0f830`) fuer Tests zum Mischbetrieb.
+/// Nachbildung aelterer App-Versionen fuer Tests zum Mischbetrieb.
 ///
-/// Sie laesst sich nicht mehr aendern; das Datenformat dieser Version muss
-/// deshalb so gewaehlt sein, dass sie damit vertraeglich arbeitet.
+/// Hauptsaechlich `main` im Stand `7f0f830` (PR #195, 27.09.2026), der
+/// letzte Stand ohne Schutz unbekannter Felder. Seit PR #199–#201
+/// (28./29.09.2026) bewahrt die Web-Produktion unbekannte Felder, seit PR #221
+/// (06.10.2026) kennt sie `instanzId` und `menge`. Laut Nutzer laeuft seit dem
+/// 06.10.2026 keine aeltere Version mehr; die Nachbildungen sichern, dass
+/// zurueckgeschriebene Altdaten trotzdem verlustfrei gelesen werden.
 
 /// Was die veroeffentlichte App von [heldJson] uebrig laesst, wenn sie den
 /// Helden laedt und wieder speichert.
@@ -519,4 +522,20 @@ void _behalte(Map<String, dynamic> json, Set<String> bekannt) {
 // Wie [_behalte], zusaetzlich ohne Slot-ID.
 void _behalteOhneId(Map<String, dynamic> json, Set<String> bekannt) {
   _behalte(json, bekannt.difference(const {'id'}));
+}
+
+/// Was eine Version vom 29.09. bis 05.10.2026 aus [heldJson] macht, wenn der
+/// Nutzer dort die Anzahl des Inventareintrags [index] auf [anzahl] setzt.
+///
+/// Sie bewahrt `menge` als unbekanntes Feld, kennt es aber nicht und
+/// schreibt nur `anzahl` (ARCH-03). Danach passen beide nicht mehr zusammen.
+Map<String, dynamic> anzahlWieVersionOhneMenge(
+  Map<String, dynamic> heldJson,
+  int index,
+  String anzahl,
+) {
+  final json = jsonDecode(jsonEncode(heldJson)) as Map<String, dynamic>;
+  final eintraege = json['inventoryEntries'] as List;
+  (eintraege[index] as Map<String, dynamic>)['anzahl'] = anzahl;
+  return json;
 }
