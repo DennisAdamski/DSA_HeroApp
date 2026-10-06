@@ -28,7 +28,7 @@ dependencies:
   sqlite3: ^3.6.0
   web: ^1.1.1
   hive_ce: ^2.20.1
-  hive_ce_flutter: ^2.3.4
+  hive_ce_flutter: ^2.4.0
 
 dev_dependencies:
   flutter_test:
