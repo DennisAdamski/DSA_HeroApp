@@ -2,6 +2,7 @@ import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config/inventar_verweise.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/inventar_menge_rules.dart';
 
 // Das Verweisformat liegt in der Domain, weil `HeroSheet.fromJson` Altdaten
 // schon beim Laden umstellt; Aufrufer erreichen es weiterhin ueber diese Datei.
@@ -203,14 +204,17 @@ int _passenderEintrag(
 /// [source], [sourceRef], [slotRef], [itemType]) sowie die Markierungen
 /// magisch/geweiht (CombatConfig ist die Quelle der Wahrheit). Bei
 /// Ausruestung kommt [istAusgeruestet] aus dem Slot, bei Geschossen
-/// [anzahl] (bidirektionaler Sync).
+/// [anzahl] (bidirektionaler Sync, der Slot fuehrt). Traegt der Eintrag
+/// schon eine `menge`, folgt sie mit; neu vergeben wird sie nur beim
+/// Speichern (`ueberfuehreInventarMengen`), damit der Abgleich auf
+/// Bestandsdaten ein Fixpunkt bleibt.
 HeroInventoryEntry _mergeEntry({
   required HeroInventoryEntry base,
   required HeroInventoryEntry existing,
 }) {
   final isProjectile = base.source == InventoryItemSource.geschoss;
 
-  return existing.copyWith(
+  final merged = existing.copyWith(
     gegenstand: base.gegenstand,
     itemType: base.itemType,
     source: base.source,
@@ -223,6 +227,10 @@ HeroInventoryEntry _mergeEntry({
     istAusgeruestet: isProjectile ? null : base.istAusgeruestet,
     anzahl: isProjectile ? base.anzahl : null,
   );
+  if (!isProjectile || existing.menge == null) {
+    return merged;
+  }
+  return mitInventarMenge(merged, int.parse(base.anzahl));
 }
 
 /// Verweist [entry] auf einen Slot, traegt aber eine Quelle, die diese

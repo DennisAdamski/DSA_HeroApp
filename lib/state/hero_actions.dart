@@ -24,6 +24,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_transfer_bundle.dart';
 import 'package:dsa_heldenverwaltung/domain/sync_models.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/inventar_instanz_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/inventar_menge_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ap_level_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/attribute_start_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/avatar_rahmung_rules.dart';
@@ -234,9 +235,9 @@ class HeroActions {
     // und ohne Konto bliebe der Zeitpunkt des ersten Speicherns stehen
     // (Befund ARCH-07-B4). Inhalts-Hashes ignorieren das Feld.
     final reconciledHero = normalizedHero.copyWith(
-      // Instanz-IDs erst hier, nie beim Laden (ARCH-03, Hash-Pins).
+      // Menge und Instanz-IDs erst hier, nie beim Laden (ARCH-03, Hash-Pins).
       inventoryEntries: vergibInstanzIds(
-        reconciledEntries,
+        ueberfuehreInventarMengen(reconciledEntries),
         neueId: () => const Uuid().v4(),
       ),
       lastModified: DateTime.now().toUtc(),

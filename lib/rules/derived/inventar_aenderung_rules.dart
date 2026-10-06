@@ -12,6 +12,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
 import 'package:dsa_heldenverwaltung/domain/sync_models.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/currency_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/inventar_menge_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/inventory_sync_rules.dart';
 
 /// Position des ersten Eintrags in [eintraege], der inhaltlich [gesucht]
@@ -21,17 +22,17 @@ import 'package:dsa_heldenverwaltung/rules/derived/inventory_sync_rules.dart';
 /// Zwei gleiche Einträge sind nicht unterscheidbar; das Entfernen des ersten
 /// ergibt dann dieselbe Liste wie das des zweiten.
 ///
-/// Trägt [gesucht] keine Instanz-ID, zählt sie auch bei den Einträgen nicht:
-/// Das Speichern vergibt fehlende IDs (ARCH-03), ein inzwischen gespeicherter
+/// Was das Speichern ergänzt (ARCH-03), zählt nicht, solange [gesucht] es
+/// noch nicht kennt: eine fehlende Instanz-ID und die aus einer rein
+/// ganzzahligen Anzahl überführte Menge. Ein inzwischen gespeicherter
 /// Eintrag ist dadurch nicht geändert.
 int findeGleichenInventarEintrag(
   List<HeroInventoryEntry> eintraege,
   HeroInventoryEntry gesucht,
 ) {
   final gesuchterHash = _inhalt(gesucht);
-  final ohneId = gesucht.instanzId == null;
   for (var index = 0; index < eintraege.length; index++) {
-    if (_inhalt(eintraege[index], ohneInstanzId: ohneId) == gesuchterHash) {
+    if (_inhalt(_wieGesucht(eintraege[index], gesucht)) == gesuchterHash) {
       return index;
     }
   }
@@ -42,29 +43,43 @@ int findeGleichenInventarEintrag(
 /// gleicht, sonst `-1`.
 ///
 /// Für einen gerade angehängten Gegenstand: Gleicht er einem älteren
-/// Eintrag, ist er der hintere der beiden. Instanz-IDs wie bei
-/// [findeGleichenInventarEintrag].
+/// Eintrag, ist er der hintere der beiden. Ergänzungen des Speicherns wie
+/// bei [findeGleichenInventarEintrag].
 int findeLetztenGleichenInventarEintrag(
   List<HeroInventoryEntry> eintraege,
   HeroInventoryEntry gesucht,
 ) {
   final gesuchterHash = _inhalt(gesucht);
-  final ohneId = gesucht.instanzId == null;
   for (var index = eintraege.length - 1; index >= 0; index--) {
-    if (_inhalt(eintraege[index], ohneInstanzId: ohneId) == gesuchterHash) {
+    if (_inhalt(_wieGesucht(eintraege[index], gesucht)) == gesuchterHash) {
       return index;
     }
   }
   return -1;
 }
 
-// Inhalts-Hash eines Eintrags, auf Wunsch ohne seine Instanz-ID.
-String _inhalt(HeroInventoryEntry eintrag, {bool ohneInstanzId = false}) {
-  final json = Map<String, dynamic>.of(eintrag.toJson());
-  if (ohneInstanzId) {
-    json.remove('instanzId');
+// [kandidat] ohne die Ergänzungen des Speicherns, die [gesucht] fehlen.
+HeroInventoryEntry _wieGesucht(
+  HeroInventoryEntry kandidat,
+  HeroInventoryEntry gesucht,
+) {
+  var ergebnis = kandidat;
+  if (gesucht.instanzId == null && ergebnis.instanzId != null) {
+    ergebnis = ergebnis.copyWith(instanzId: null);
   }
-  return stableContentHash(json);
+  final ueberfuehrt =
+      gesucht.menge == null &&
+      ergebnis.menge != null &&
+      ergebnis.menge == inventarZahlAusText(gesucht.anzahl);
+  if (ueberfuehrt) {
+    ergebnis = ergebnis.copyWith(menge: null);
+  }
+  return ergebnis;
+}
+
+// Inhalts-Hash eines Eintrags.
+String _inhalt(HeroInventoryEntry eintrag) {
+  return stableContentHash(eintrag.toJson());
 }
 
 /// Hängt den im Editor angelegten Gegenstand [neu] an das gespeicherte
@@ -138,14 +153,16 @@ CombatConfig _kampfMitEintrag(
   final verweis = neu.slotRef ?? neu.sourceRef;
   final istGeschoss =
       neu.source == InventoryItemSource.geschoss && neu.sourceRef != null;
-  if (istGeschoss && verweis != null && neu.anzahl != vorher.anzahl) {
+  final geaendert = neu.anzahl != vorher.anzahl || neu.menge != vorher.menge;
+  if (istGeschoss && verweis != null && geaendert) {
+    // Der Slot führt die Menge; Freitext setzte sie früher still auf 0.
+    final menge = wirksameInventarMenge(neu);
+    if (menge == null) {
+      throw StateError('Geschosse brauchen eine Zahl als Anzahl.');
+    }
     // Der ID-Verweis zuerst: der Namensverweis träfe bei zwei gleichnamigen
     // Bögen immer den ersten.
-    ergebnis = applyAmmoCountChangeToConfig(
-      ergebnis,
-      verweis,
-      int.tryParse(neu.anzahl.trim()) ?? 0,
-    );
+    ergebnis = applyAmmoCountChangeToConfig(ergebnis, verweis, menge);
   }
   return ergebnis;
 }

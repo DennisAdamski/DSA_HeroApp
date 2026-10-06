@@ -75,6 +75,8 @@ void main() {
       expect(entries[1].sourceRef, 'w:Bogen|p:Pfeil');
       expect(entries[1].itemType, InventoryItemType.verbrauchsgegenstand);
       expect(entries[1].anzahl, '20');
+      // `menge` vergibt erst das Speichern; der Abgleich bleibt ein Fixpunkt.
+      expect(entries[1].menge, isNull);
 
       expect(entries[2].gegenstand, 'Brandpfeil');
       expect(entries[2].anzahl, '5');
@@ -230,6 +232,7 @@ void main() {
         sourceRef: 'w:Bogen|p:Pfeil',
         itemType: InventoryItemType.verbrauchsgegenstand,
         anzahl: '5', // veraltet
+        menge: 5,
       );
       final config = _configWithRangedWeapon('Bogen', [
         const RangedProjectile(name: 'Pfeil', count: 20),
@@ -240,6 +243,7 @@ void main() {
         (e) => e.source == InventoryItemSource.geschoss,
       );
       expect(projEntry.anzahl, '20');
+      expect(projEntry.menge, 20);
     });
 
     test(

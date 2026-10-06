@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_companion.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/inventar_menge_rules.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/inventory_modifier_editor.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/list_tile_material.dart';
 
@@ -110,9 +111,9 @@ class _InventoryItemEditorState extends State<InventoryItemEditor> {
       return;
     }
 
-    final updated = _draft.copyWith(
+    // Eine reine Zahl wird zur Menge, alles andere bleibt offener Text.
+    final updated = mitInventarMengeAusText(_draft, _anzahlCtrl.text).copyWith(
       gegenstand: _nameCtrl.text.trim(),
-      anzahl: _anzahlCtrl.text.trim(),
       gewichtGramm: int.tryParse(_gewichtCtrl.text) ?? 0,
       wertSilber: int.tryParse(_wertCtrl.text) ?? 0,
       herkunft: _herkunftCtrl.text.trim(),
@@ -277,6 +278,17 @@ class _InventoryItemEditorState extends State<InventoryItemEditor> {
             ),
           ],
         ),
+        if (inventarMengenstand(widget.entry).ueberholteMenge
+            case final vorher?) ...[
+          const SizedBox(height: 4),
+          Text(
+            'Eine ältere App-Version hat die Anzahl geändert '
+            '(gespeicherte Menge: $vorher). Es gilt die Anzahl; Speichern '
+            'übernimmt sie.',
+            key: const ValueKey<String>('inventory-editor-quantity-hint'),
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+        ],
         if (_draft.itemType == InventoryItemType.ausruestung) ...[
           const SizedBox(height: _fieldSpacing),
           ListTileMaterial(
