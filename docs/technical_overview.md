@@ -1174,9 +1174,17 @@ bleibt; hat ein Geschoss schon eine, hält er sie mit dem Slot synchron, der
 die Menge führt. Ein Geschoss ohne eindeutige Menge wird im Editor
 abgewiesen. **Stapel teilen** (`inventar_stapel_rules.dart`) spaltet einen
 unverknüpften Stapel mit neuer Instanz-ID ab; bei einem verknüpften Geschoss
-sinkt die Menge am eigenen Slot. Inventarwege treffen Einträge über die
-Instanz-ID (`findeInventarEintragZurAenderung`), Altdaten ohne ID über den
-Inhalt. Die Verweisrichtung bleibt vorerst Eintrag → Slot (`slotRef`).
+sinkt die Menge am eigenen Slot. **Zusammenführen** (gleiche Datei,
+Entscheidung vom 07.10.2026) addiert einen Stapel in einen anderen:
+gleicher Name (ohne Groß-/Kleinschreibung), Typ, magisch/geweiht samt
+Beschreibung und Modifikatoren, beide mit eindeutiger Menge; Ort und übrige
+Angaben kommen vom Ziel, gemerkte Kampfwerte eines abgelegten Stapels
+bleiben. Die Quelle darf nicht verknüpft sein; ein verknüpftes Ziel nur als
+Geschoss, dessen Slot dann die Summe führt. Abenteuerbeute ist kein Ziel,
+weil das Zurücknehmen des Abenteuers sie über ihren Verweis entfernt.
+Inventarwege treffen Einträge über die Instanz-ID
+(`findeInventarEintragZurAenderung`), Altdaten ohne ID über den Inhalt.
+Slots verweisen zusätzlich über `inventarInstanzId` auf ihr Exemplar.
 
 ---
 

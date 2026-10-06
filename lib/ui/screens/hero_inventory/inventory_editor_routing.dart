@@ -116,11 +116,19 @@ extension _HeroInventoryEditorRouting on _HeroInventoryTabState {
             }
           },
           onKampfUebernehmen: () async {
-            await _uebernehmeInKampf(entry);
-            if (routeContext.mounted) {
+            final erledigt = await _uebernehmeInKampf(entry);
+            if (erledigt && routeContext.mounted) {
               Navigator.of(routeContext).pop();
             }
           },
+          onZusammenfuehren: _kannZusammenfuehren(entry)
+              ? () async {
+                  final erledigt = await _fuehreStapelZusammen(entry);
+                  if (erledigt && routeContext.mounted) {
+                    Navigator.of(routeContext).pop();
+                  }
+                }
+              : null,
           onCancelled: () => Navigator.of(routeContext).pop(),
         ),
       ),
@@ -171,6 +179,9 @@ extension _HeroInventoryEditorRouting on _HeroInventoryTabState {
         onSaved: (entry) => _saveUpdatedEntry(bearbeitet, entry),
         onStapelTeilen: (teilung) => _teileStapel(bearbeitet, teilung),
         onKampfUebernehmen: () => _uebernehmeInKampf(bearbeitet),
+        onZusammenfuehren: _kannZusammenfuehren(bearbeitet)
+            ? () => _fuehreStapelZusammen(bearbeitet)
+            : null,
         onCancelled: () =>
             setState(() => _waehleAus(const <HeroInventoryEntry>[], -1)),
       );

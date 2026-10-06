@@ -6,7 +6,7 @@ import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/inventar_menge_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/inventar_stapel_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/kampfgegenstand_ablegen_rules.dart';
-import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/inventory_kampf_uebernehmen.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/inventory_eintrag_aktionen.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/inventory_modifier_editor.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/inventory_stapel_teilen.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/list_tile_material.dart';
@@ -31,6 +31,8 @@ class InventoryItemEditor extends StatefulWidget {
     this.companions = const <HeroCompanion>[],
     this.onStapelTeilen,
     this.onKampfUebernehmen,
+    this.onZusammenfuehren,
+    this.onVerkaufen,
   });
 
   final HeroInventoryEntry entry;
@@ -49,6 +51,13 @@ class InventoryItemEditor extends StatefulWidget {
   /// Holt einen im Kampfbereich abgelegten Gegenstand zurück (ARCH-03);
   /// ohne Rückruf und für andere Einträge gibt es keinen Knopf.
   final Future<void> Function()? onKampfUebernehmen;
+
+  /// Führt den Stapel in einen gleichen zusammen (ARCH-03); der Aufrufer
+  /// übergibt ihn nur, wenn es einen passenden Stapel gibt.
+  final Future<void> Function()? onZusammenfuehren;
+
+  /// Verkauft den Gegenstand oder einen Teil des Stapels (ARCH-03).
+  final Future<void> Function()? onVerkaufen;
 
   @override
   State<InventoryItemEditor> createState() => _InventoryItemEditorState();
@@ -137,6 +146,25 @@ class _InventoryItemEditorState extends State<InventoryItemEditor> {
     );
 
     await _fuehreAus('Speichern', () => widget.onSaved(updated));
+  }
+
+  // Aktionen am gespeicherten Eintrag; Fehler bleiben im Editor sichtbar.
+  Widget _buildAktionen() {
+    VoidCallback? als(String was, Future<void> Function()? aktion) =>
+        aktion == null ? null : () => _fuehreAus(was, aktion);
+    final teilbar =
+        widget.onStapelTeilen != null && stapelTeilbar(widget.entry);
+    final abgelegt = istAbgelegterKampfgegenstand(widget.entry);
+    return InventoryEintragAktionen(
+      entry: widget.entry,
+      gesperrt: _isSaving,
+      onTeilen: teilbar ? _teileStapel : null,
+      onZusammenfuehren: als('Zusammenführen', widget.onZusammenfuehren),
+      onVerkaufen: als('Verkaufen', widget.onVerkaufen),
+      onKampfUebernehmen: abgelegt
+          ? als('Übernehmen', widget.onKampfUebernehmen)
+          : null,
+    );
   }
 
   /// Fragt die Teilung ab und spaltet vom gespeicherten Stapel ab.
@@ -327,27 +355,7 @@ class _InventoryItemEditorState extends State<InventoryItemEditor> {
             style: Theme.of(context).textTheme.bodySmall,
           ),
         ],
-        if (!widget.isNew &&
-            widget.onStapelTeilen != null &&
-            stapelTeilbar(widget.entry)) ...[
-          const SizedBox(height: 8),
-          OutlinedButton.icon(
-            key: const ValueKey<String>('inventory-editor-split'),
-            onPressed: _isSaving ? null : _teileStapel,
-            icon: const Icon(Icons.call_split),
-            label: const Text('Stapel teilen'),
-          ),
-        ],
-        if (widget.onKampfUebernehmen case final uebernehmen?
-            when istAbgelegterKampfgegenstand(widget.entry)) ...[
-          const SizedBox(height: 8),
-          InventoryKampfUebernehmen(
-            entry: widget.entry,
-            onPressed: _isSaving
-                ? null
-                : () => _fuehreAus('Übernehmen', uebernehmen),
-          ),
-        ],
+        if (!widget.isNew) _buildAktionen(),
         if (_draft.itemType == InventoryItemType.ausruestung) ...[
           const SizedBox(height: _fieldSpacing),
           ListTileMaterial(
