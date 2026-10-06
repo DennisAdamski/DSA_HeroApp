@@ -480,8 +480,9 @@ Commits:
    Waffe, Geschoss, Rüstungsstück und Nebenhand, gesetzt in `saveHero`; der
    Abgleich trifft zuerst über die Instanz.~~ *Erledigt im Teilstand
    „Verweis Slot → Instanz“ unten.*
-2. Ablegen und Ausrüsten behalten das Exemplar: Ein entfernter Slot
-   hinterlässt einen unverknüpften Eintrag mit derselben ID.
+2. ~~Ablegen und Ausrüsten behalten das Exemplar: Ein entfernter Slot
+   hinterlässt einen unverknüpften Eintrag mit derselben ID.~~ *Erledigt im
+   Teilstand „Ablegen und Zurückholen“ unten.*
 3. Danach den Namensabgleich ablösen; Zusammenführen von Stapeln und
    Verkaufen folgen.
 
@@ -551,10 +552,77 @@ Commit: `646c87c`.
 3. Neue Fingerabdrücke über Slot-JSON müssen den Verweis ebenfalls
    weglassen (`ohneInstanzverweise`).
 
-*Nächster Schritt:* Schritt 2 oben — Ablegen und Ausrüsten behalten das
-Exemplar. Vorher zu klären: ob Entfernen eines Slots im Kampf-Tab den
-Gegenstand im Inventar behält (dann braucht „wirklich wegwerfen“ einen
-eigenen Weg) und wie ein unverknüpfter Eintrag ausgerüstet wird.
+*Nächster Schritt:* ~~Schritt 2 oben — Ablegen und Ausrüsten behalten das
+Exemplar.~~ *Erledigt im folgenden Teilstand.*
+
+**Teilstand 06.10.2026 (3) — Ablegen und Zurückholen.** Schritt 2.
+
+*Entscheidungen (Dennis, 6.10.2026):*
+
+- Entfernen im Kampfbereich fragt „Nur ablegen“ oder „Ganz entfernen“ —
+  für Waffen, Geschosse, Rüstungsteile, Schilde und Parierwaffen.
+- Ein Geschoss bei Bestand 0 behält seinen Inventareintrag.
+- Zurück kommt ein abgelegter Gegenstand über einen Knopf am
+  Inventareintrag, mit den gemerkten Kampfwerten (Variante A).
+
+*Umsetzung.*
+
+- **Modell:** `HeroInventoryEntry.abgelegt` (`AbgelegterKampfgegenstand`,
+  genau einer von Waffe, Geschoss, Rüstungsteil, Nebenhandteil; additiv,
+  eigenes `jsonSchluessel`, nur bei Belegung geschrieben). Die Slots
+  bewahren ihre unbekannten Felder selbst.
+- **Regeln:** `rules/derived/kampfgegenstand_ablegen_rules.dart`.
+  - Ablegen macht den verknüpften Eintrag zum manuellen Eintrag ohne
+    Verweise, mit derselben Instanz-ID und dem Slot als Profil. Manuell,
+    weil mehrere Stellen (Editor, Gefecht, Verbrauch) allein an der Quelle
+    „verknüpft“ festmachen; Liste und Filter zeigen ihn über
+    `anzeigeQuelleImInventar` weiter als Waffe, Geschoss usw.
+  - Eine entfernte Fernkampfwaffe legt ihre Geschosse in beiden Fällen ab;
+    das Profil der abgelegten Waffe enthält keine Geschosse.
+  - Geschosse, die das Ergebnis des Waffeneditors nicht mehr führt, fragen
+    beim Speichern der Waffe; Abbruch speichert nicht.
+  - Zurückholen hängt den Slot hinten an (Name und Markierungen vom
+    Eintrag, Menge bei Geschossen, Zielwaffe wählbar) und verknüpft den
+    Eintrag per Namensverweis; der Abgleich paart über die Instanz.
+- **Kampf-Tab:** `_aendereKampf` delegiert an `_aendereKampfUndInventar`.
+  Im Bearbeitungsmodus hält der Tab einen Inventarentwurf, den
+  „Speichern“ mit der Kampfkonfiguration übernimmt.
+- **Inventar:** Hinweis und Knopf „In Kampfbereich übernehmen“ im Editor
+  (`inventory_kampf_uebernehmen.dart`), Schreibweg `_uebernehmeInKampf`.
+
+*Prüfungen.*
+
+- Regeltests (`kampfgegenstand_ablegen_rules_test.dart`): Ablegen und
+  ganz Entfernen je Art, Geschosse mit Bestand 0, Bogen ohne gemerkte
+  Geschosse, Editor-Geschosse, Zurückholen von Waffe (umbenannt) und
+  Geschoss (Menge, Zielwaffe), geänderter Eintrag, Eintrag ohne Profil.
+- Widgettests: Kampf-Tab „Nur ablegen“, Abbrechen, Bearbeitungsmodus
+  (`kampf_ablegen_test.dart`); Inventar „In Kampfbereich übernehmen“ für
+  Waffe und Geschoss (`inventar_kampf_uebernehmen_test.dart`). Die
+  bisherigen Entfernen-Tests antworten „Ganz entfernen“.
+- Modelltabellen um `AbgelegterKampfgegenstand` und `abgelegt` ergänzt.
+- Gegenproben: ohne Inventarentwurf beim Speichern bzw. ohne
+  Neuverknüpfung scheitern die zugehörigen Tests.
+- `flutter analyze` ohne Befund; Format- und Screen-LOC-Prüfung bestehen.
+  Vollständige Suite (`--concurrency=1`, eigener `DSA_MCP_DATA_DIR`): 3.717
+  bestanden, 3 bestehende übersprungen.
+
+Commit: `ba43ad0`.
+
+*Verbleibende Risiken:*
+
+1. „Ganz entfernen“ im Inventar gibt es weiterhin nur für unverknüpfte
+   Einträge; ein verknüpfter Gegenstand wird über den Kampf-Tab entfernt.
+2. „In Kampfbereich übernehmen“ wirkt auf den gespeicherten Eintrag;
+   ungespeicherte Änderungen im offenen Editor gehen dabei verloren.
+3. Ein abgespaltener Stapel eines abgelegten Geschosses übernimmt dessen
+   Profil; beide Stapel lassen sich getrennt zurückholen.
+4. Abgelegte Gegenstände sind manuelle Einträge: Im Gefecht erscheinen
+   abgelegte Geschosse als gewöhnliche Gegenstände („Gegenstand benutzen“),
+   verschossen wird nur von einer Waffe.
+
+*Nächster Schritt:* Schritt 3 oben — den Namensabgleich ablösen;
+Zusammenführen von Stapeln und Verkaufen folgen.
 
 **Teilstand 27.09.2026 — B2/B3 behoben:** Kampf-Slots für Waffen,
 Geschosse, Rüstung und Nebenhand tragen stabile IDs. Beim Laden erhalten
