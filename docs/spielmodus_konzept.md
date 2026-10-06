@@ -157,6 +157,15 @@ aus dem Tag `sqlite3-3.6.0` ist byte-identisch mit der aus `sqlite3-3.5.2`
 (SHA-256 `13d3f11d…6688a4`); `web/sqlite3.wasm` musste deshalb nicht getauscht
 werden, entspricht aber nachweislich dem neuen Tag.
 
+### Nachtrag 2026-10-06: sqlite3 3.7.0
+
+`package:sqlite3` steht jetzt auf 3.7.0 (Dependabot #213). Das Release
+ergänzt nur APIs (`columnBytes`/`columnBlobInto`, `CommonDatabase.status()`,
+`Database.releaseMemory()`, Hook-`defines` je OS) und betrifft die genutzten
+Aufrufe nicht. Anders als beim Wechsel auf 3.6.0 unterscheidet sich die
+`sqlite3.wasm` diesmal: `web/sqlite3.wasm` ist durch die Datei aus dem Tag
+`sqlite3-3.7.0` ersetzt (SHA-256 `fbcd2e82…be1a1f`, vorher `13d3f11d…6688a4`).
+
 Noch offen — **nicht** weil kein Browser verfügbar wäre (Edge ist installiert
 und läuft headless einwandfrei, `flutter devices` listet es als Web-Device),
 sondern weil der dafür nötige interaktive Browser-Test in der bisherigen
