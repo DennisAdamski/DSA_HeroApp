@@ -198,7 +198,13 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   die Reihenfolge „manuell, dann Slot-Reihenfolge“ bleibt. Geschossmengen
   immer mit `slotRef ?? sourceRef` zurueckschreiben. `inventory_sync_rules.dart`
   gleicht weiterhin beide Darstellungen ab. Das ist der B2/B3-Teilfix, noch
-  nicht das gemeinsame Gegenstandsmodell aus ARCH-03. Formataenderungen
+  nicht das gemeinsame Gegenstandsmodell aus ARCH-03. Menge und Stapel
+  (`inventar_menge_rules.dart`, `inventar_stapel_rules.dart`): `menge` führt,
+  `anzahl` ist ihr Text, beide nur über `mitInventarMenge` schreiben.
+  Weicht ein ganzzahliges `anzahl` ab, gilt es; das wird nie still
+  aufgelöst. `saveHero` überführt reine Zahlen, der Abgleich vergibt keine
+  Menge (Fixpunkt). Inventarwege treffen Einträge über `instanzId`
+  (`findeInventarEintragZurAenderung`). Formataenderungen
   aendern Inhalts-Hashes; Bestandsfixtures und Hash-Pins nur gemeinsam mit
   ihnen aktualisieren. Den Mischbetrieb bildet
   `test/test_support/veroeffentlichte_app.dart` nach.

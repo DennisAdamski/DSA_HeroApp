@@ -1010,7 +1010,7 @@ Inventarfelder fuer Quelle, Gewicht, Wert, Modifier und magisch/geweiht.
 | `gewicht` | Gewicht |
 | `wert` | Wert |
 | `artefakt` | Legacy-Artefakt-Kennzeichnung fuer Altbestaende |
-| `anzahl` | Menge |
+| `anzahl` | Menge als Text; Projektion von `menge`, Freitext bedeutet „Menge offen“ |
 | `amKoerper` | Am Körper getragen? |
 | `woDann` | Aufbewahrungsort |
 | `gruppe` | Gruppe/Kategorie |
@@ -1027,6 +1027,8 @@ Inventarfelder fuer Quelle, Gewicht, Wert, Modifier und magisch/geweiht.
 | `isMagisch` / `magischDescription` | Magische Markierung und Beschreibung |
 | `isGeweiht` / `geweihtDescription` | Geweihte Markierung und Beschreibung |
 | `traegerTyp` / `traegerId` | Zuordnung zum Helden oder zu einem Begleiter |
+| `instanzId` | Stabile Instanz-ID des Stapels/Exemplars (ARCH-03); nur im Helden eindeutig, bei einer Kopie unverändert; vergeben erst in `saveHero`, nur geschrieben, wenn belegt |
+| `menge` | Strukturierte Stückzahl (ARCH-03); `null` = offen; nur geschrieben, wenn belegt |
 
 **Kampf-/Inventarverweise (ARCH-03, Teilfix B2/B3).** Waffen, Geschosse,
 Ruestungsstuecke und Nebenhand-Teile speichern eine Slot-ID.
@@ -1098,6 +1100,27 @@ Katalog-IDs und die vollstaendige ARCH-03-Migration sind noch offen. Der
 Abgleich aendert bestehende verknuepfte Eintraege nur per `copyWith` und
 uebernimmt aus dem Slot allein dessen Felder; Typ und Traeger bleiben
 erhalten (Befund B9 behoben).
+
+**Menge und Stapel (ARCH-03, Entscheidungen vom 04. und 06.10.2026).** Ein
+Stapel ist ein Gegenstand mit einer Instanz-ID und einer Menge. Die Lesart
+liegt in `rules/derived/inventar_menge_rules.dart`:
+
+| `anzahl` | `menge` | wirksame Menge |
+|---|---|---|
+| reine Zahl | fehlt | die Zahl (`saveHero` ergänzt `menge`) |
+| reine Zahl | dieselbe Zahl | die Zahl |
+| reine Zahl | andere Zahl | `anzahl` — eine ältere Version hat geändert; der Editor zeigt die Abweichung, nur eine Bearbeitung des Eintrags löst sie auf |
+| leer oder Freitext | beliebig | offen (`null`), wird nie geraten |
+
+Diese Version schreibt beide immer gemeinsam (`mitInventarMenge`). Der
+Abgleich vergibt keine `menge`, damit er auf Bestandsdaten ein Fixpunkt
+bleibt; hat ein Geschoss schon eine, hält er sie mit dem Slot synchron, der
+die Menge führt. Ein Geschoss ohne eindeutige Menge wird im Editor
+abgewiesen. **Stapel teilen** (`inventar_stapel_rules.dart`) spaltet einen
+unverknüpften Stapel mit neuer Instanz-ID ab; bei einem verknüpften Geschoss
+sinkt die Menge am eigenen Slot. Inventarwege treffen Einträge über die
+Instanz-ID (`findeInventarEintragZurAenderung`), Altdaten ohne ID über den
+Inhalt. Die Verweisrichtung bleibt vorerst Eintrag → Slot (`slotRef`).
 
 ---
 
