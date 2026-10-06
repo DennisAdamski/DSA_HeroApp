@@ -42,6 +42,33 @@ extension _HeroInventoryMutations on _HeroInventoryTabState {
     );
   }
 
+  /// Spaltet vom angezeigten Stapel frisch ab (ARCH-03) und wählt den neuen
+  /// Stapel über seine Instanz-ID aus. Fehler gehen an den Editor.
+  Future<void> _teileStapel(
+    HeroInventoryEntry angezeigt,
+    StapelTeilung teilung,
+  ) async {
+    final neueId = const Uuid().v4();
+    final gespeichert = await aendereHeldImEditor(
+      ref: ref,
+      heroId: widget.heroId,
+      aenderung: (held) => mitGeteiltemStapel(
+        held,
+        angezeigt,
+        abspalten: teilung.anzahl,
+        woGetragen: teilung.woGetragen,
+        neueId: neueId,
+      ),
+    );
+    final eintraege = gespeichert.inventoryEntries;
+    final neu = eintraege.indexWhere((e) => e.instanzId == neueId);
+    _nachEditorSpeichern(
+      eintraege,
+      neu,
+      changedEntry: neu < 0 ? angezeigt : eintraege[neu],
+    );
+  }
+
   void _nachEditorSpeichern(
     List<HeroInventoryEntry> gespeicherteEintraege,
     int auswahl, {
@@ -68,13 +95,23 @@ extension _HeroInventoryMutations on _HeroInventoryTabState {
     });
   }
 
-  // Position des gespeicherten Gegenstands nach dem Speichern. Verknüpfte
-  // Einträge gleicht das Speichern an ihren Slot an; sie werden notfalls
-  // über ihren ID-Verweis gefunden.
+  // Position des gespeicherten Gegenstands nach dem Speichern: über seine
+  // Instanz-ID, sonst über den Inhalt. Verknüpfte Einträge gleicht das
+  // Speichern an ihren Slot an; sie werden notfalls über ihren ID-Verweis
+  // gefunden.
   int _findeGespeichertenEintrag(
     List<HeroInventoryEntry> eintraege,
     HeroInventoryEntry eintrag,
   ) {
+    final id = eintrag.instanzId;
+    if (id != null) {
+      final perId = eintraege.indexWhere(
+        (kandidat) => kandidat.instanzId == id,
+      );
+      if (perId >= 0) {
+        return perId;
+      }
+    }
     final perInhalt = findeGleichenInventarEintrag(eintraege, eintrag);
     final slotRef = eintrag.slotRef;
     if (perInhalt >= 0 || slotRef == null) {
@@ -122,10 +159,7 @@ extension _HeroInventoryMutations on _HeroInventoryTabState {
     }
     final neueAuswahl = ausgewaehlt == null
         ? -1
-        : findeGleichenInventarEintrag(
-            gespeichert.inventoryEntries,
-            ausgewaehlt,
-          );
+        : _findeGespeichertenEintrag(gespeichert.inventoryEntries, ausgewaehlt);
     setState(() {
       _waehleAus(gespeichert.inventoryEntries, neueAuswahl);
       _pendingNewEntry = null;

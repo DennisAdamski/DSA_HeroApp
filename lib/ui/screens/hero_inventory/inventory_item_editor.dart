@@ -4,7 +4,9 @@ import 'package:dsa_heldenverwaltung/domain/hero_companion.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/inventar_menge_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/inventar_stapel_rules.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/inventory_modifier_editor.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/inventory_stapel_teilen.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/list_tile_material.dart';
 
 const double _fieldSpacing = 12;
@@ -25,6 +27,7 @@ class InventoryItemEditor extends StatefulWidget {
     this.showAppBar = true,
     this.isNew = false,
     this.companions = const <HeroCompanion>[],
+    this.onStapelTeilen,
   });
 
   final HeroInventoryEntry entry;
@@ -35,6 +38,10 @@ class InventoryItemEditor extends StatefulWidget {
 
   /// Begleiter des Helden fuer das Traeger-Dropdown.
   final List<HeroCompanion> companions;
+
+  /// Spaltet vom angezeigten Stapel ab (ARCH-03); ohne Rückruf und für
+  /// nicht teilbare Einträge gibt es keinen Knopf „Stapel teilen“.
+  final Future<void> Function(StapelTeilung teilung)? onStapelTeilen;
 
   @override
   State<InventoryItemEditor> createState() => _InventoryItemEditorState();
@@ -122,17 +129,41 @@ class _InventoryItemEditorState extends State<InventoryItemEditor> {
       geweihtDescription: _geweihtDescriptionCtrl.text.trim(),
     );
 
+    await _fuehreAus('Speichern', () => widget.onSaved(updated));
+  }
+
+  /// Fragt die Teilung ab und spaltet vom gespeicherten Stapel ab.
+  Future<void> _teileStapel() async {
+    final teilen = widget.onStapelTeilen;
+    final menge = wirksameInventarMenge(widget.entry);
+    if (teilen == null || menge == null || _isSaving) {
+      return;
+    }
+    final wahl = await zeigeStapelTeilenDialog(
+      context,
+      name: widget.entry.gegenstand,
+      menge: menge,
+      woGetragen: widget.entry.woGetragen,
+    );
+    if (wahl == null || !mounted) {
+      return;
+    }
+    await _fuehreAus('Teilen', () => teilen(wahl));
+  }
+
+  // Führt einen Schreibvorgang aus; ein Fehler bleibt im Editor sichtbar.
+  Future<void> _fuehreAus(String was, Future<void> Function() aktion) async {
     setState(() {
       _isSaving = true;
       _speicherFehler = null;
     });
     try {
-      await widget.onSaved(updated);
+      await aktion();
     } catch (error) {
       if (mounted) {
         // Fachliche Gründe (`StateError`) ohne das technische „Bad state:“.
         final grund = error is StateError ? error.message : '$error';
-        setState(() => _speicherFehler = 'Speichern fehlgeschlagen: $grund');
+        setState(() => _speicherFehler = '$was fehlgeschlagen: $grund');
       }
     } finally {
       if (mounted) {
@@ -287,6 +318,17 @@ class _InventoryItemEditorState extends State<InventoryItemEditor> {
             'übernimmt sie.',
             key: const ValueKey<String>('inventory-editor-quantity-hint'),
             style: Theme.of(context).textTheme.bodySmall,
+          ),
+        ],
+        if (!widget.isNew &&
+            widget.onStapelTeilen != null &&
+            stapelTeilbar(widget.entry)) ...[
+          const SizedBox(height: 8),
+          OutlinedButton.icon(
+            key: const ValueKey<String>('inventory-editor-split'),
+            onPressed: _isSaving ? null : _teileStapel,
+            icon: const Icon(Icons.call_split),
+            label: const Text('Stapel teilen'),
           ),
         ],
         if (_draft.itemType == InventoryItemType.ausruestung) ...[

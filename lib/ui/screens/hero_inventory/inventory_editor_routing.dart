@@ -108,6 +108,13 @@ extension _HeroInventoryEditorRouting on _HeroInventoryTabState {
               Navigator.of(routeContext).pop();
             }
           },
+          // Danach zeigt die Liste beide Stapel; die Seite schließt sich.
+          onStapelTeilen: (teilung) async {
+            await _teileStapel(entry, teilung);
+            if (routeContext.mounted) {
+              Navigator.of(routeContext).pop();
+            }
+          },
           onCancelled: () => Navigator.of(routeContext).pop(),
         ),
       ),
@@ -156,6 +163,7 @@ extension _HeroInventoryEditorRouting on _HeroInventoryTabState {
         showAppBar: false,
         companions: _companions,
         onSaved: (entry) => _saveUpdatedEntry(bearbeitet, entry),
+        onStapelTeilen: (teilung) => _teileStapel(bearbeitet, teilung),
         onCancelled: () =>
             setState(() => _waehleAus(const <HeroInventoryEntry>[], -1)),
       );
