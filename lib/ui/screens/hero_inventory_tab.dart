@@ -10,6 +10,7 @@ import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/inventar_aenderung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/inventar_stapel_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/inventar_summen_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/inventar_verkauf_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/kampfgegenstand_ablegen_rules.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
@@ -20,6 +21,7 @@ import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/inventory_item_ed
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/inventory_kampf_uebernehmen.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/inventory_stapel_teilen.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/inventory_stapel_zusammenfuehren.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/inventory_verkaufen_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/adaptive_table_columns.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/codex_tab_header.dart';

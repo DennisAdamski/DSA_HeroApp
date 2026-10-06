@@ -1186,6 +1186,18 @@ Inventarwege treffen Einträge über die Instanz-ID
 (`findeInventarEintragZurAenderung`), Altdaten ohne ID über den Inhalt.
 Slots verweisen zusätzlich über `inventarInstanzId` auf ihr Exemplar.
 
+**Verkaufen** (`rules/derived/inventar_verkauf_rules.dart`, Dialog
+`inventory_verkaufen_dialog.dart`, Entscheidung vom 07.10.2026) verkauft den
+ganzen Gegenstand oder einen Teil des Stapels; eine offene Menge zählt als
+ein Stück. Der Erlös ist frei wählbar, vorbelegt mit dem vollen Wert (Wert
+pro Stück × Anzahl), und kommt über `mitDukatenSchritt` auf den Geldstand
+(unlesbarer Geldstand: abgewiesen). Unverknüpft sinkt die Menge, der letzte
+Rest entfernt den Eintrag. Ausgerüstete Waffen, Rüstungsteile und
+Nebenhandteile verlassen samt Slot den Kampfbereich (wie „Ganz entfernen“,
+die Geschosse einer Fernkampfwaffe werden abgelegt; die letzte Waffe bleibt
+gesperrt). Pfeile am Bogen senken den Bestand ihres Slots und bleiben bei 0
+stehen.
+
 ---
 
 ### 2.8 `HeroNoteEntry` und `HeroConnectionEntry`

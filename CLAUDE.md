@@ -214,7 +214,8 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   (`kampfgegenstand_ablegen_rules.dart`): abgelegt bleibt das Exemplar als
   manueller Eintrag mit `abgelegt` (gemerkte Kampfwerte), „In Kampfbereich
   übernehmen“ holt es zurück; Geschosse gehen nie still verloren.
-  Zusammenführen gleicher Stapel liegt in `inventar_stapel_rules.dart`;
+  Zusammenführen gleicher Stapel liegt in `inventar_stapel_rules.dart`,
+  Verkaufen (Erlös auf den Geldstand) in `inventar_verkauf_rules.dart`;
   `gewichtGramm`/`wertSilber` gelten pro Stück (`inventar_summen_rules.dart`). Formataenderungen
   aendern Inhalts-Hashes; Bestandsfixtures und Hash-Pins nur gemeinsam mit
   ihnen aktualisieren. Den Mischbetrieb bildet
