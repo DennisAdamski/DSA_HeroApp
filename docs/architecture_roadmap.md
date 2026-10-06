@@ -378,6 +378,112 @@ ein Build vor dem 28.09. (Stand `7f0f830`, den
 seit dem 6.10. keine ältere App mehr, weder nativ noch im Web; die
 Instanz-ID darf damit führende Identität werden.
 
+**Teilstand 06.10.2026 — Menge und Stapel.** Entscheidungen (Dennis,
+6.10.2026):
+
+- a) Es läuft nur noch die Web-App, keine ältere Version. Die Instanz-ID darf
+  führen; `sourceRef` und `slotRef` werden weiter geschrieben.
+- b) Ein rein ganzzahliges `anzahl` wird beim Speichern zu `menge`. Leer und
+  Freitext bleiben offen. Weicht ein ganzzahliges `anzahl` von `menge` ab, hat
+  eine ältere Version es geändert: `anzahl` gilt, die Abweichung wird
+  angezeigt.
+- c) „Stapel teilen“ im Inventareditor spaltet einen unverknüpften Stapel mit
+  neuer ID ab; bei Geschossen sinkt die Menge am Slot.
+
+*Zuständigkeit je Feld.*
+
+- **Identität:** `instanzId`, bei verknüpften Einträgen zusätzlich `slotRef`
+  auf den Slot.
+- **Name:** beim unverknüpften Eintrag der Eintrag, beim verknüpften der Slot.
+- **Magisch/geweiht:** beim verknüpften Eintrag Slot ↔ Editor, bidirektional.
+- **Gewicht, Wert, Ort, Träger, Modifikatoren:** immer der Eintrag.
+- **Menge:** beim unverknüpften Eintrag `menge`, mit `anzahl` als Text. Beim
+  Geschoss führt `count` am Slot, der Eintrag ist Projektion, und der Editor
+  schreibt über `slotRef` zurück. Waffe, Rüstung und Nebenhand sind
+  Einzelstücke.
+- **Ausgerüstet:** beim verknüpften Eintrag der Slot, sonst
+  `istAusgeruestet`.
+- **Verweisrichtung:** bleibt vorerst Eintrag → Slot. Die Umkehr nützt erst
+  zusammen mit „Ablegen behält das Exemplar“.
+
+*Umsetzung.*
+
+- **Mengenlesart** (`inventar_menge_rules.dart`): `inventarMengenstand`,
+  `mitInventarMenge`, `mitInventarMengeAusText`,
+  `ueberfuehreInventarMengen`.
+  - `saveHero` überführt Mengen vor `vergibInstanzIds`, nie beim Laden.
+  - Der Abgleich vergibt keine Menge, damit er auf Bestandsdaten ein
+    Fixpunkt bleibt; eine vorhandene Geschossmenge hält er mit dem Slot
+    synchron.
+  - `inventarMenge` gab `menge` bisher Vorrang und rechnet jetzt mit der
+    wirksamen Menge.
+- **Teilen** (`inventar_stapel_rules.dart`, Dialog
+  `inventory_stapel_teilen.dart`) läuft frisch über `aendereHeldImEditor`.
+- **Treffer:** Inventarwege treffen Einträge über
+  `findeInventarEintragZurAenderung` per Instanz-ID, Altdaten über den
+  Inhalt. Die Inhaltssuche übersieht die beim Speichern ergänzte Menge wie
+  schon die ID.
+- **Kleinfixe** (keine Befundnummer, beide still verlustbehaftet):
+  - Freitext bei einem Geschoss setzte den Bestand des Bogens auf 0.
+  - Der Ausrüsten-Schalter verknüpfter Einträge wurde vom Abgleich
+    überschrieben; er ist jetzt gesperrt.
+
+Commits:
+
+- `52c717e` Release-Nachtrag
+- `8612769` Menge
+- `2800ece` Stapel teilen
+- `37bb7d8` Ausrüsten-Schalter
+- `5325c14`, `f17cab4` Abnahme
+
+*Prüfungen.*
+
+- Je Teil liefen die Regressionsproben zuerst rot. Gegenproben ohne
+  Überführung, mit altem Editor und ohne Slot-Rückschreibung scheitern.
+- Abnahme:
+  - zwei gleichnamige Stapel unabhängig bearbeitbar;
+  - Export und Import, überschreibend und als Kopie, erhalten
+    `instanzId`/`menge`/`slotRef` ausdrücklich;
+  - Zwei-Geräte-Sync S7 (`sync_zwei_geraete_inventar_test.dart`): Teilen
+    kommt vollständig an, gleichzeitiges Teilen und Bearbeiten ergibt einen
+    sichtbaren Konflikt, `keepLocal`/`keepRemote`/`keepBoth` ohne stillen
+    Verlust;
+  - Mischbetrieb mit einer Version, die nur `anzahl` ändert
+    (`anzahlWieVersionOhneMenge`).
+- Die Hash-Pins der Bestandshelden sind unverändert. `bestandsheld_ablauf_test`
+  erlaubt für die erste Speicherung zusätzlich `inventoryEntries/i/menge` bei
+  ganzzahliger Anzahl (f01, f06).
+- `flutter analyze` ohne Befund; Format- und Screen-LOC-Prüfung bestehen.
+  Vollständige Suite (`--concurrency=1`, eigener `DSA_MCP_DATA_DIR`): 3.678
+  bestanden, 3 bestehende übersprungen.
+
+*Verbleibende Risiken:*
+
+1. Die Abnahme „Entfernen hinterlässt keine ungültigen Verweise“ hält
+   weiter nur, weil der Abgleich den Eintrag samt ID und Eigenschaften
+   löscht. Ein Slot, der entfernt und neu angelegt wird, bekommt ein neues
+   Exemplar.
+2. Der abgespaltene Stapel übernimmt unbekannte Felder des Originals. Bedeuten
+   sie für eine neuere Version Identität, wären sie doppelt.
+3. Eine Abweichung bleibt bestehen, bis jemand den Eintrag bearbeitet oder
+   verbraucht. Der Hinweis steht nur im Editor, nicht in Liste oder Gefecht.
+4. Startimport und Sync-Übernahme schreiben ohne Normalisierung; dort
+   entstehen weder IDs noch Mengen. Das ist unverändert und unschädlich, weil
+   das nächste Speichern sie ergänzt.
+5. Restrisiko 3 des Teilstands vom 28.09. (Echo der veröffentlichten App)
+   gilt laut Dennis als erledigt: Seit dem 6.10. läuft kein solcher Client
+   mehr.
+
+*Nächster Schritt:*
+
+1. Verweisrichtung Slot → Instanz: `inventarInstanzId` additiv an
+   Waffe, Geschoss, Rüstungsstück und Nebenhand, gesetzt in `saveHero`; der
+   Abgleich trifft zuerst über die Instanz.
+2. Ablegen und Ausrüsten behalten das Exemplar: Ein entfernter Slot
+   hinterlässt einen unverknüpften Eintrag mit derselben ID.
+3. Danach den Namensabgleich ablösen; Zusammenführen von Stapeln und
+   Verkaufen folgen.
+
 **Teilstand 27.09.2026 — B2/B3 behoben:** Kampf-Slots für Waffen,
 Geschosse, Rüstung und Nebenhand tragen stabile IDs. Beim Laden erhalten
 Bestandsdaten deterministische IDs und die Inventar-Namensverweise werden
