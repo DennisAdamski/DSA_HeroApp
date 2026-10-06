@@ -1069,9 +1069,11 @@ beide nutzen dieselbe Paarung):
 1. Ein Eintrag mit `slotRef` passt nur ueber diesen. Verweist er auf einen
    entfernten Slot, faellt er weg. Er wandert nie ueber den Namen zu einem
    gleichnamigen Exemplar weiter (Befund B2).
-2. Ein Eintrag ohne `slotRef` passt ueber den Namen, auf den ersten freien
-   gleichnamigen Slot in Slot-Reihenfolge — genau wie in der
-   veroeffentlichten App.
+2. Ueber den Namen gleicht der Abgleich nicht mehr ab (ARCH-03, Schritt 3,
+   07.10.2026). Altdaten ohne `slotRef` ordnet einmalig das Laden zu
+   (`migriereInventarVerweise`, Tabelle unten). Nur ein Slot ohne ID — den
+   gibt es allein im Speicher vor dem ersten Speichern — paart noch Eintraege
+   ohne `slotRef` ueber den Namen.
 3. Die Ausgabe bleibt „manuelle Eintraege, dann verknuepfte in
    Slot-Reihenfolge“. Die veroeffentlichte App paart gleichnamige Eintraege
    ueber diese Reihenfolge; sie darf sich nicht aendern.

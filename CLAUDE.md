@@ -194,8 +194,9 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   Namensverweis (`w:Name` …), weil die bereits veroeffentlichte App nur ihn
   versteht. Mit einem ID-Verweis dort verwarf ihr Abgleich alle verknuepften
   Inventardaten. Den ID-Verweis (`w#id` …) traegt `slotRef`. Zugeordnet wird
-  ueber `slotRef`; nur Eintraege ohne `slotRef` gehen ueber den Namen, und
-  die Reihenfolge „manuell, dann Slot-Reihenfolge“ bleibt. Geschossmengen
+  ueber Instanz und `slotRef`; ueber den Namen ordnet nur noch das Laden
+  Altdaten zu (`migriereInventarVerweise`), und die Reihenfolge „manuell,
+  dann Slot-Reihenfolge“ bleibt. Geschossmengen
   immer mit `slotRef ?? sourceRef` zurueckschreiben. `inventory_sync_rules.dart`
   gleicht weiterhin beide Darstellungen ab. Das ist der B2/B3-Teilfix, noch
   nicht das gemeinsame Gegenstandsmodell aus ARCH-03. Menge und Stapel

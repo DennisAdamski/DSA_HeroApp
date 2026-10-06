@@ -142,7 +142,8 @@ String? _instanzOderNull(String instanzId) {
 /// Zugeordnet wird zuerst ueber die Instanz, auf die der Slot verweist
 /// (`inventarInstanzId`, ARCH-03), dann ueber den ID-Verweis `slotRef`
 /// (`inventar_verweise.dart`), sodass gleichnamige Exemplare unabhaengig
-/// bleiben und Umbenennen nichts verliert. Jeder Eintrag traegt danach beide
+/// bleiben und Umbenennen nichts verliert. Ueber den Namen gleicht nur noch
+/// das Laden Altdaten ab (siehe [_passenderEintrag]). Jeder Eintrag traegt danach beide
 /// Verweise; die Reihenfolge bleibt die, ueber die die veroeffentlichte App
 /// gleichnamige Eintraege paart. Ein neu angelegter Eintrag bekommt seine
 /// Instanz-ID erst beim Speichern (`vergibInstanzIds`).
@@ -191,12 +192,14 @@ List<HeroInventoryEntry> reconcileInventoryWithCombat(
 /// Index des Eintrags in [kandidaten], der zu [erwartet] gehoert, oder -1.
 ///
 /// Zuerst zaehlt die Instanz, auf die der Slot verweist
-/// ([_SlotUebersicht.passtPerInstanz]).
-/// Sonst passt ein Eintrag mit `slotRef` nur ueber diesen. Verweist er auf
-/// einen entfernten Slot, faellt er weg, statt ueber den Namen an ein
-/// gleichnamiges Exemplar zu wandern (Befund ARCH-07-B2). Ueber den Namen
-/// zugeordnet werden nur Eintraege ohne `slotRef`, die zuletzt eine aeltere
-/// App-Version gespeichert hat — in Listenreihenfolge wie dort.
+/// ([_SlotUebersicht.passtPerInstanz]), dann der ID-Verweis `slotRef`.
+/// Verweist ein Eintrag auf einen entfernten Slot, faellt er weg, statt ueber
+/// den Namen an ein gleichnamiges Exemplar zu wandern (Befund ARCH-07-B2).
+///
+/// Ueber den Namen wird nicht mehr abgeglichen (ARCH-03, Schritt 3): Altdaten
+/// ohne `slotRef` ordnet einmalig das Laden zu (`migriereInventarVerweise`).
+/// Einzige Ausnahme sind Slots ohne ID; die gibt es nur im Speicher vor dem
+/// ersten Speichern, das ihnen vor dem Abgleich eine vergibt.
 int _passenderEintrag(
   List<HeroInventoryEntry> kandidaten,
   HeroInventoryEntry erwartet,
@@ -208,8 +211,7 @@ int _passenderEintrag(
   if (perInstanz >= 0) return perInstanz;
   final slotRef = erwartet.slotRef;
   if (slotRef != null) {
-    final perId = kandidaten.indexWhere((entry) => entry.slotRef == slotRef);
-    if (perId >= 0) return perId;
+    return kandidaten.indexWhere((entry) => entry.slotRef == slotRef);
   }
   return kandidaten.indexWhere(
     (entry) => entry.slotRef == null && entry.sourceRef == erwartet.sourceRef,

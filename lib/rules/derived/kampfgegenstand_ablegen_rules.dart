@@ -477,7 +477,7 @@ List<HeroInventoryEntry> _legeAb(
 }
 
 // Position des verknüpften Eintrags zum Slot: über seine Instanz, dann über
-// den ID-Verweis, sonst über den Namen; -1 ohne Eintrag.
+// den ID-Verweis; nur ein Slot ohne ID über den Namen. -1 ohne Eintrag.
 int _verknuepfterEintrag(
   List<HeroInventoryEntry> eintraege,
   SlotVerweis verweis,
@@ -494,10 +494,7 @@ int _verknuepfterEintrag(
   }
   final slotRef = verweis.slotRef;
   if (slotRef != null) {
-    final perSlot = eintraege.indexWhere(
-      (e) => verknuepft(e) && e.slotRef == slotRef,
-    );
-    if (perSlot >= 0) return perSlot;
+    return eintraege.indexWhere((e) => verknuepft(e) && e.slotRef == slotRef);
   }
   return eintraege.indexWhere(
     (e) =>
