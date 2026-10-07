@@ -679,7 +679,14 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   links. Die gespeicherten 2W6 der Kopfwunde (`kopfIniMalus`) betreffen nur die
   aktuelle INI und sind Hinweis, kein Basisabzug. Wunden senken die GS nie
   unter 1 (`begrenzeWundGs`). Anzeige über `wund_anzeige_rules.dart`.
-- Nicht enthalten und bewusst nicht erfunden: Rücknahmeknopf (ARCH-06),
+- „Schaden zurücknehmen“ (ARCH-06) gibt es nur am Protokolleintrag einer
+  gebuchten Schadensbuchung: `SchadenErhalten` vermerkt mit der Vorgangs-ID
+  des Dialogs eine `ZustandsBuchung` (`HeroState.buchungen`, nur bei
+  Belegung im JSON) und bucht dieselbe ID nie zweimal. `SchadenZuruecknehmen`
+  bucht die Gegenbuchung: tatsächlich abgezogene LeP/AuP zurück, ohne
+  Obergrenze, Wunden des Treffers soweit noch vorhanden, nur einmal je
+  Buchung. Regeln in `schaden_ruecknahme_rules.dart`.
+- Nicht enthalten und bewusst nicht erfunden: allgemeiner Rücknahmeknopf,
   KR-Zähler, persistente Favoriten, Offline-/Sync-Status ohne echten
   Providerzustand. Ein Test in `test/ui2/spielen/` hält das fest.
 - Der Kopf von `WorkspaceManagementBody` (nur UI2) ist der

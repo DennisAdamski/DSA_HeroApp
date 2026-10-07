@@ -482,7 +482,8 @@ mit älterer App per Sync die Felder einer neueren (Befunde ARCH-07-B5/B6):
     `AvatarGalleryEntry`, `AvatarGesichtsbefund`, `AvatarGesichtsrahmen`,
     `AvatarSnapshot`, `HeroAdvancementEntry`;
   - Laufzeitzustand: `AttributeModifiers`, `ActiveSpellEffectsState`,
-    `ActiveSpellEffectDetail`, `SpellDuration`, `WundZustand`, `DiceLogEntry`.
+    `ActiveSpellEffectDetail`, `SpellDuration`, `WundZustand`, `DiceLogEntry`,
+    `ZustandsBuchung` (ARCH-06).
 
   Ausgenommen ist nur `OffhandSlot`: der Altschlüssel `offhand` wird beim
   Laden migriert und nie geschrieben. Drei Regeln halten das dicht:
@@ -530,8 +531,8 @@ mit älterer App per Sync die Felder einer neueren (Befunde ARCH-07-B5/B6):
   (`knowledgeMode`), `HeroRitualFieldDef` (`type`), `HeroCompanion` (`typ`),
   `HeroAdventureEntry` (`status`), `HeroAdventureSeReward` (`targetType`),
   `HeroAdventureLootEntry` (`itemType`), `SpellDuration` (`unit`),
-  `DiceLogEntry` (`type`, `automaticOutcome`) und `AventurianDate`
-  (`month`). Muster beim Lesen: `leseEnumWert` mit einer Erkennerfunktion,
+  `DiceLogEntry` (`type`, `automaticOutcome`), `ZustandsBuchung` (`art`,
+  `zone`) und `AventurianDate` (`month`). Muster beim Lesen: `leseEnumWert` mit einer Erkennerfunktion,
   die `null` für Unbekanntes liefert, dann `festeEnumWerte`; beim Schreiben
   `mitUnbekanntenEnumWerten` über `mitUnbekanntenFeldern`.
   **Änderungsregel:** `copyWith` mit einem *anderen* Wert überschreibt den
@@ -654,8 +655,16 @@ persistiert (eigene Hive-Box `hero_states_v1`).
 | `ueberanstrengung` | `int` | Aktuelle Überanstrengung; wird vor Erschöpfung abgebaut |
 | `tempMods` | `StatModifiers` | Temporäre Stat-Modifikatoren |
 | `tempAttributeMods` | `AttributeModifiers` | Temporäre Eigenschaftsmodifikatoren |
+| `buchungen` | `List<ZustandsBuchung>` | Fachliche Buchungen (ARCH-06), höchstens `buchungenMax` = 50, nur bei Belegung im JSON |
 
 `HeroState.empty()` liefert einen Standardzustand mit allen Werten = 0.
+
+`ZustandsBuchung` (`lib/domain/zustands_buchung.dart`) hält fest, was ein
+Treffer **tatsächlich** verändert hat (`lepDelta`, `auDelta`, `zone`,
+`wundenDelta`, `kopfIniMalusDelta`, nachgetragen `unterdrueckt`), bzw. als
+Gegenbuchung (`art: schadenRuecknahme`, `ruecknahmeVon`), was eine Rücknahme
+geändert hat. Der zugehörige Protokolleintrag trägt dieselbe ID als
+`DiceLogEntry.buchungId`.
 
 ---
 
@@ -3229,8 +3238,19 @@ ueber die Settings-Katalogverwaltung bearbeitet.
   über `computeSbUnterdrueckungErschwernis(neueWunden: n)`). Einstiege: Knopf im
   Inspector-Vitals-Tab und die UI2-Schnellaktion über
   `KartoBestandsAdapter.schadenErhalten`.
-- Keine Rücknahme: korrigiert wird von Hand anhand des Protokolleintrags;
-  eine echte Rücknahme gehört zu ARCH-06.
+- Rücknahme (ARCH-06 Teilstand 2): Der Dialog vergibt beim ersten
+  Übernehmen eine Vorgangs-ID; `uebernehmeSchaden(vorgangId:)` bucht sie nur
+  einmal und legt eine `ZustandsBuchung` an. Am Protokolleintrag bietet
+  `schadenRuecknahmeAktion` (`schaden/schaden_ruecknahme.dart`) über
+  `InspectorDiceLogSection.aktion` „Zurücknehmen“ an, in beiden
+  Oberflächen. Die Rückfrage zeigt den Plan
+  (`planeSchadensRuecknahme`, `schaden_ruecknahme_rules.dart`), der Ablauf
+  `SchadenZuruecknehmen` bucht die Gegenbuchung auf dem frischen Zustand:
+  LeP/AuP um den tatsächlich abgezogenen Betrag ohne Obergrenze (Hinweis
+  über dem Maximum), Wunden des Treffers soweit noch vorhanden, zuerst seine
+  vermerkten Unterdrückungen, Kopf-INI-Malus um den Wurf bzw. auf 0 mit der
+  letzten Kopfwunde. Eine Buchung lässt sich nur einmal zurücknehmen; die
+  Gegenbuchung selbst nicht.
 
 ### Update 2026-09-30: Zonenwunden nach WdS (ARCH-05)
 

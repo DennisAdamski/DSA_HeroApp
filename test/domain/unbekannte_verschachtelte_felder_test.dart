@@ -40,6 +40,7 @@ import 'package:dsa_heldenverwaltung/domain/spell_duration.dart';
 import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
 import 'package:dsa_heldenverwaltung/domain/talent_special_ability.dart';
 import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
+import 'package:dsa_heldenverwaltung/domain/zustands_buchung.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/inventory_sync_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/rest_rules.dart';
@@ -778,6 +779,7 @@ final _zustand = <_Modell>[
       targetValue: 14,
       total: 3,
       isNeutral: true,
+      buchungId: 'b1',
     ).toJson(),
     lade: (json) => DiceLogEntry.fromJson(json).toJson(),
     // Unveraenderlich: bearbeitet wird der Zustand, der das Protokoll traegt.
@@ -790,7 +792,30 @@ final _zustand = <_Modell>[
             as Map<String, dynamic>,
     unbekannt: (json) => DiceLogEntry.fromJson(json).unbekannteFelder,
   ),
+  _Modell(
+    'ZustandsBuchung',
+    schluessel: ZustandsBuchung.jsonSchluessel,
+    voll: () => _zustandsBuchung().toJson(),
+    lade: (json) => ZustandsBuchung.fromJson(json).toJson(),
+    bearbeite: (json) =>
+        ZustandsBuchung.fromJson(json).copyWith(unterdrueckt: 1).toJson(),
+    unbekannt: (json) => ZustandsBuchung.fromJson(json).unbekannteFelder,
+  ),
 ];
+
+// Eine Buchung, in der alle bedingt geschriebenen Felder belegt sind.
+ZustandsBuchung _zustandsBuchung() => ZustandsBuchung(
+  id: 'b1',
+  art: ZustandsBuchungsArt.schaden,
+  zeitpunkt: DateTime.utc(2026, 10, 7),
+  lepDelta: -7,
+  auDelta: -2,
+  zone: WundZone.brust,
+  wundenDelta: 2,
+  kopfIniMalusDelta: 3,
+  unterdrueckt: 2,
+  ruecknahmeVon: 'b0',
+);
 
 /// Ein Aufzaehlungsfeld im Tabellentest.
 ///
@@ -1137,6 +1162,23 @@ final _enumFelder = <_EnumFeld>[
       ersatz: (json) => schluessel == 'type'
           ? DiceLogEntry.fromJson(json).type
           : DiceLogEntry.fromJson(json).automaticOutcome,
+      erwarteterErsatz: ersatz,
+    ),
+  for (final (schluessel, ersatz) in <(String, Object?)>[
+    ('art', ZustandsBuchungsArt.unbekannt),
+    ('zone', null),
+  ])
+    _EnumFeld(
+      'ZustandsBuchung.$schluessel',
+      schluessel,
+      voll: () => _zustandsBuchung().toJson(),
+      lade: (json) => ZustandsBuchung.fromJson(json).toJson(),
+      // Art und Zone sind unveränderlich; bearbeitet wird die Unterdrückung.
+      gleich: (json) =>
+          ZustandsBuchung.fromJson(json).copyWith(unterdrueckt: 1).toJson(),
+      ersatz: (json) => schluessel == 'art'
+          ? ZustandsBuchung.fromJson(json).art
+          : ZustandsBuchung.fromJson(json).zone,
       erwarteterErsatz: ersatz,
     ),
   _EnumFeld(

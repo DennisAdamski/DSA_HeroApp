@@ -98,7 +98,8 @@ Abhängigkeiten per Konstruktor; die Provider liegen in
 | Ablauf | Einstieg | Schreibt | Stand |
 |---|---|---|---|
 | Rast abschließen | `RastAbschliessen` (`lib/ablaeufe/rast_abschliessen.dart`) | Zustand, frisch | extrahiert |
-| Schaden erhalten | `SchadenErhalten` (`lib/ablaeufe/schaden_erhalten.dart`) | Zustand, frisch | extrahiert |
+| Schaden erhalten | `SchadenErhalten` (`lib/ablaeufe/schaden_erhalten.dart`) | Zustand, frisch, mit Buchung | extrahiert |
+| Schaden zurücknehmen | `SchadenZuruecknehmen` (`lib/ablaeufe/schaden_zuruecknehmen.dart`) | Zustand, frisch, Gegenbuchung | ARCH-06 |
 | Zustand frisch ändern | `aendereGespeichertenZustand` (`lib/ablaeufe/zustand_schreiben.dart`) | Zustand, frisch, je Held nacheinander | Baustein, `HeroActions.updateHeroState` delegiert |
 | Bogen frisch ändern | `aendereGespeichertenHelden`, `reiheBogenvorgangEin` (`lib/ablaeufe/held_schreiben.dart`) | Bogen, frisch, je Held nacheinander | Baustein, `HeroActions.updateHero` delegiert, `saveHero` reiht sich ein |
 | Steigerungsrunde übernehmen | `SteigerungsrundeUebernehmen` (`lib/ablaeufe/steigerungsrunde_uebernehmen.dart`) | Bogen, Hash-Prüfung gegen die Sitzungsbasis | extrahiert, Provider `steigerungsrundeUebernehmenProvider` |
@@ -206,7 +207,8 @@ Domainlogik.
 | Ablauf | Einstieg | Schreibt | Stand | Fehler → UI | Regelrechnung inline |
 |---|---|---|---|---|---|
 | Rast abschließen | `RestPanel` (`workspace/rest_dialog.dart`) → `RastAbschliessen` | Zustand | frisch | ja, im Panel | nein (seit ARCH-05) |
-| Schaden erhalten | `SchadenPanel` (`workspace/schaden/schaden_dialog.dart`, Inspector-Vitals und UI2-Schnellaktion) → `SchadenErhalten` | Zustand | frisch, je Held nacheinander | ja, im Panel | nein, `schaden_rules.dart` |
+| Schaden erhalten | `SchadenPanel` (`workspace/schaden/schaden_dialog.dart`, Inspector-Vitals und UI2-Schnellaktion) → `SchadenErhalten` | Zustand | frisch, je Held nacheinander; Vorgangs-ID bucht nur einmal | ja, im Panel | nein, `schaden_rules.dart` |
+| Schaden zurücknehmen | `schadenRuecknahmeAktion` am Würfelprotokoll (`workspace/schaden/schaden_ruecknahme.dart`) → `SchadenZuruecknehmen` | Zustand | frisch, je Held nacheinander; nur einmal je Buchung | ja, in der Rückfrage | nein, `schaden_ruecknahme_rules.dart` |
 | Steigerung übernehmen | `AdvancementSessionController.commit` (`state/advancement_providers.dart`) → `SteigerungsrundeUebernehmen.uebernehmeRunde` | Bogen | Hash-Prüfung gegen die Sitzungsbasis, erneut in `saveHero` vor dem Schreiben | ja (Snackbar) | nein, `commitAdvancements` |
 | Anzeige nicht passender SF | `setShowInapplicableSpecialAbilities` (ebd.) → `SteigerungsrundeUebernehmen.speichereSfAnzeige` | Bogen direkt über das Repository, ohne Normalisierung | frisch, je Held nacheinander; bei offener Runde Hash-Prüfung | ja | nein |
 | Inventar (Löschen, Dukaten) | `hero_inventory/inventory_mutations.dart` (`_deleteEntry`, `_saveDukaten`, `_verschiebeDukaten`) | Bogen | frisch, je Held nacheinander; Löschen findet den Eintrag über seine Instanz-ID, Altdaten über den Inhalt; Münzknöpfe zählen vom gespeicherten Betrag | ja (Snackbar) | nein, `inventar_aenderung_rules.dart` |
@@ -270,14 +272,34 @@ Domainlogik.
   `wendeSchadenAn` ersetzt genau `currentLep` und `wpiZustand` bzw.
   `currentAu`.
 - **Ablauf:** `SchadenErhalten.uebernehmeSchaden` lädt frisch, wendet an,
-  hängt einen Protokolleintrag an und stempelt mit demselben Zeitpunkt.
-  Wunden über die freien Plätze der gespeicherten Zone verfallen und stehen
-  im Ergebnis.
+  vermerkt eine `ZustandsBuchung` mit den tatsächlichen Änderungen, hängt
+  einen Protokolleintrag mit derselben `buchungId` an und stempelt mit
+  demselben Zeitpunkt. Wunden über die freien Plätze der gespeicherten Zone
+  verfallen und stehen im Ergebnis. Die Vorgangs-ID vergibt der Dialog beim
+  ersten Übernehmen; eine Wiederholung mit derselben ID speichert nichts
+  (ARCH-06). Die anschließende Unterdrückung vermerkt sich an der Buchung.
 - **Fehler:** werden nicht gefangen; das Panel zeigt sie und bleibt offen.
 - **Grenzen:** Wundschwellen und RS stammen aus dem berechneten Snapshot.
   Die Zusatzwürfe beziehen sich auf die angezeigte Wundzahl der Zone; ändert
   ein anderer Weg sie zwischendurch, bleibt der eingetragene Zusatzschaden
-  trotzdem gebucht. Keine Rücknahme (ARCH-06).
+  trotzdem gebucht.
+
+## Ablauf „Schaden zurücknehmen“ im Detail (ARCH-06)
+
+- **Einstieg:** „Zurücknehmen“ am Protokolleintrag einer gebuchten
+  Schadensbuchung (`schadenRuecknahmeAktion`, `InspectorDiceLogSection`,
+  Bestand und UI2). Ältere Einträge ohne Buchung haben keinen Knopf.
+- **Regel:** `schaden_ruecknahme_rules.dart` — `planeSchadensRuecknahme`
+  auf dem aktuellen Zustand, `wendeSchadensRuecknahmeAn` als Gegenbuchung.
+- **Ablauf:** `SchadenZuruecknehmen.nimmZurueck` lädt frisch und prüft dort
+  erneut: schon zurückgenommen, nicht mehr gespeichert oder keine
+  Schadensbuchung wirft einen `StateError` mit deutschem Text. Dieselbe
+  Vorgangs-ID der Gegenbuchung speichert kein zweites Mal.
+- **Fehler:** werden nicht gefangen; die Rückfrage zeigt sie und bleibt offen.
+- **Grenzen:** LeP/AuP steigen ohne Obergrenze (Nutzerentscheidung); eine
+  zwischenzeitliche Heilung bleibt und wird nur angezeigt. Wunden, die
+  bereits geheilt sind, werden genannt, nicht erneut entfernt. Buchungen
+  werden nach 50 verdrängt; dann ist die Rücknahme nicht mehr verfügbar.
 
 ## Befunde für Folgeaufträge
 

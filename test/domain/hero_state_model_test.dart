@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:dsa_heldenverwaltung/domain/dice_log_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
+import 'package:dsa_heldenverwaltung/domain/zustands_buchung.dart';
 
 void main() {
   test('hero state roundtrip keeps exhaustion fields', () {
@@ -230,6 +231,49 @@ void main() {
       final updated = state.copyWith(diceLog: const <DiceLogEntry>[]);
 
       expect(updated.diceLog, isEmpty);
+    });
+  });
+
+  group('buchungen (ARCH-06)', () {
+    const zustand = HeroState(
+      currentLep: 10,
+      currentAsp: 0,
+      currentKap: 0,
+      currentAu: 10,
+    );
+
+    ZustandsBuchung buchung(String id) => ZustandsBuchung(
+      id: id,
+      art: ZustandsBuchungsArt.schaden,
+      zeitpunkt: DateTime.utc(2026, 10, 7),
+      lepDelta: -3,
+    );
+
+    test('ohne Buchungen entsteht kein Schlüssel (Inhalts-Hash)', () {
+      expect(zustand.toJson().containsKey('buchungen'), isFalse);
+      expect(
+        HeroState.fromJson(zustand.toJson()).toJson().containsKey('buchungen'),
+        isFalse,
+      );
+    });
+
+    test('Buchungen überstehen JSON und bleiben in der Reihenfolge', () {
+      final mit = zustand.withBuchung(buchung('a')).withBuchung(buchung('b'));
+      final geladen = HeroState.fromJson(mit.toJson());
+
+      expect(geladen.buchungen.map((b) => b.id), ['a', 'b']);
+      expect(geladen.buchungen.first.lepDelta, -3);
+      expect(geladen.copyWith(currentLep: 4).buchungen, hasLength(2));
+    });
+
+    test('verdrängt die ältesten über dem Maximum', () {
+      var voll = zustand;
+      for (var i = 0; i <= HeroState.buchungenMax; i++) {
+        voll = voll.withBuchung(buchung('b$i'));
+      }
+
+      expect(voll.buchungen, hasLength(HeroState.buchungenMax));
+      expect(voll.buchungen.first.id, 'b1');
     });
   });
 }
