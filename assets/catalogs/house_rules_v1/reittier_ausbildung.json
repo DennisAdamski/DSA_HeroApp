@@ -1,0 +1,809 @@
+{
+  "quelle": "Zoo-Botanica Aventurica S. 32–40",
+  "stufenschritte": [
+    {
+      "von": "ungearbeitet",
+      "nach": "unerfahren",
+      "art": "laendlich",
+      "proben": [
+        {
+          "talentId": "tal_reiten",
+          "talentName": "Reiten",
+          "anzahl": 1,
+          "erschwernis": 3,
+          "alternativeTalentId": "tal_fahrzeug_lenken",
+          "alternativeTalentName": "Fahrzeug Lenken"
+        }
+      ],
+      "hinweis": "Einreiten über zwei bis drei Arbeitseinsätze, je Einsatz eine Probe. Jede misslungene Probe bringt eine Unart nach Meisterwahl."
+    },
+    {
+      "von": "ungearbeitet",
+      "nach": "unerfahren",
+      "art": "fundiert",
+      "modifikationen": {
+        "lo": 2,
+        "kk": 1
+      },
+      "proben": [
+        {
+          "talentId": "tal_abrichten",
+          "talentName": "Abrichten",
+          "anzahl": 3
+        },
+        {
+          "talentId": "tal_tierkunde",
+          "talentName": "Tierkunde",
+          "anzahl": 3
+        },
+        {
+          "talentId": "tal_reiten",
+          "talentName": "Reiten",
+          "anzahl": 3,
+          "alternativeTalentId": "tal_fahrzeug_lenken",
+          "alternativeTalentName": "Fahrzeug Lenken"
+        }
+      ],
+      "hinweis": "Drei bis sechs Monate beim Zureiter. Je drei misslungene Proben bringen eine Unart nach Meisterwahl."
+    },
+    {
+      "von": "unerfahren",
+      "nach": "erprobt",
+      "art": "laendlich",
+      "modifikationen": {
+        "lo": 4,
+        "kk": 3,
+        "auTrab": 2,
+        "auGalopp": 1
+      },
+      "hinweis": "Etwa ein Jahr tägliche Arbeit, Proben entfallen. Nach fundiertem Beginn nur die halben Modifikationen, danach keine Schulung mehr."
+    },
+    {
+      "von": "unerfahren",
+      "nach": "erprobt",
+      "art": "fundiert",
+      "modifikationen": {
+        "lo": 2,
+        "kk": 2,
+        "auTrab": 1
+      },
+      "proben": [
+        {
+          "talentId": "tal_abrichten",
+          "talentName": "Abrichten",
+          "anzahl": 2,
+          "erschwernis": 3
+        },
+        {
+          "talentId": "tal_tierkunde",
+          "talentName": "Tierkunde",
+          "anzahl": 2,
+          "erschwernis": 3
+        },
+        {
+          "talentId": "tal_reiten",
+          "talentName": "Reiten",
+          "anzahl": 2,
+          "erschwernis": 3,
+          "alternativeTalentId": "tal_fahrzeug_lenken",
+          "alternativeTalentName": "Fahrzeug Lenken"
+        }
+      ],
+      "hinweis": "Anderthalb bis zwei Jahre Aufbauarbeit. Je drei misslungene Proben bringen eine Unart nach Meisterwahl."
+    },
+    {
+      "von": "erprobt",
+      "nach": "geschult",
+      "art": "fundiert",
+      "modifikationen": {
+        "lo": 3
+      },
+      "proben": [
+        {
+          "talentId": "tal_abrichten",
+          "talentName": "Abrichten",
+          "anzahl": 2,
+          "erschwernis": 5
+        },
+        {
+          "talentId": "tal_tierkunde",
+          "talentName": "Tierkunde",
+          "anzahl": 2,
+          "erschwernis": 5
+        },
+        {
+          "talentId": "tal_reiten",
+          "talentName": "Reiten",
+          "anzahl": 2,
+          "erschwernis": 5,
+          "alternativeTalentId": "tal_fahrzeug_lenken",
+          "alternativeTalentName": "Fahrzeug Lenken"
+        }
+      ],
+      "hinweis": "Schulung in einer Ausbildungsvariante; deren Modifikationen und Sonderfertigkeiten kommen hinzu. Ländlich erprobte Tiere: Proben um bis zu 5 zusätzlich erschwert."
+    }
+  ],
+  "reitenModifikatoren": [
+    {
+      "stufe": "ungearbeitet",
+      "normal": 3,
+      "imKampf": 6,
+      "imKampfAlsKampfpferd": 6
+    },
+    {
+      "stufe": "unerfahren",
+      "normal": 1,
+      "imKampf": 3,
+      "imKampfAlsKampfpferd": 3
+    },
+    {
+      "stufe": "erprobt",
+      "normal": -1,
+      "imKampf": 0,
+      "imKampfAlsKampfpferd": 0
+    },
+    {
+      "stufe": "geschult",
+      "normal": -2,
+      "imKampf": -1,
+      "imKampfAlsKampfpferd": -3
+    }
+  ],
+  "varianten": [
+    {
+      "id": "pvar_adelsross",
+      "name": "Adelsross",
+      "kategorie": "schaupferd",
+      "sfIds": [
+        "psf_almadaner_schritt",
+        "psf_capriola",
+        "psf_corbetto",
+        "psf_galoppwechsel",
+        "psf_kreisel",
+        "psf_passage",
+        "psf_piaffe",
+        "psf_seitengaenge",
+        "psf_steigen",
+        "psf_weiches_gangwerk"
+      ],
+      "hinweis": "Capriola nicht für zu schwere Rassen."
+    },
+    {
+      "id": "pvar_botenpferd",
+      "name": "Botenpferd",
+      "kategorie": "reitpferd",
+      "modifikationen": {
+        "gsTrab": 2,
+        "gsGalopp": 1,
+        "auTrab": 3,
+        "auGalopp": 2
+      },
+      "sfIds": [
+        "psf_schrecksicher",
+        "psf_gelaendehindernisse",
+        "psf_sprungsicherheit"
+      ]
+    },
+    {
+      "id": "pvar_huetepferd",
+      "name": "Hütepferd",
+      "kategorie": "reitpferd",
+      "modifikationen": {
+        "gsGalopp": 1
+      },
+      "sfIds": [
+        "psf_separieren",
+        "psf_stopp",
+        "psf_galoppwechsel",
+        "psf_steigen",
+        "psf_stillstand",
+        "psf_kehrtwende"
+      ]
+    },
+    {
+      "id": "pvar_lasttragtier",
+      "name": "Lasttragtier",
+      "kategorie": "lasttier",
+      "modifikationen": {
+        "kk": 1,
+        "tkFaktor": 1
+      },
+      "sfIds": [
+        "psf_gelaendehindernisse",
+        "psf_schrecksicher",
+        "psf_kommen_auf_signal"
+      ],
+      "hinweis": "Erhält zusätzlich den Vorteil Trittsicherheit (Geländeart)."
+    },
+    {
+      "id": "pvar_leichtes_streitross",
+      "name": "Leichtes Streitross",
+      "kategorie": "schlachtross",
+      "kampfpferd": true,
+      "modifikationen": {
+        "lo": 1,
+        "at": 1,
+        "tpTritt": 1
+      },
+      "sfIds": [
+        "psf_lanzengang",
+        "psf_kreisel",
+        "psf_steigen",
+        "psf_corbetto",
+        "psf_stopp",
+        "psf_kehrtwende",
+        "psf_capriola",
+        "psf_gezielter_biss",
+        "psf_gezielter_tritt",
+        "psf_sprungsicherheit"
+      ]
+    },
+    {
+      "id": "pvar_linienkutschpferd",
+      "name": "Linienkutschpferd",
+      "kategorie": "zugpferd",
+      "modifikationen": {
+        "gsTrab": 2,
+        "gsGalopp": 1,
+        "auTrab": 3,
+        "auGalopp": 2
+      },
+      "sfIds": [
+        "psf_eingefahren",
+        "psf_mehrspaennig",
+        "psf_schrecksicher",
+        "psf_gelaendehindernisse"
+      ]
+    },
+    {
+      "id": "pvar_magierpferd",
+      "name": "Magierpferd",
+      "kategorie": "magierpferd",
+      "sfIds": [
+        "psf_weiches_gangwerk",
+        "psf_stopp",
+        "psf_kehrtwende",
+        "psf_lenken_ohne_zuegel",
+        "psf_seitengaenge",
+        "psf_stillstand",
+        "psf_schrecksicher"
+      ],
+      "hinweis": "Nur Tulamiden, Firn- oder Paaviponys mit Magiegespür. Reiten −1 für Viertel-, Halb- und Vollzauberer."
+    },
+    {
+      "id": "pvar_mittelschweres_streitross",
+      "name": "Mittelschweres Streitross",
+      "kategorie": "schlachtross",
+      "kampfpferd": true,
+      "modifikationen": {
+        "lo": 1,
+        "at": 1,
+        "tpTritt": 2
+      },
+      "sfIds": [
+        "psf_lanzengang",
+        "psf_kreisel",
+        "psf_steigen",
+        "psf_corbetto",
+        "psf_stopp",
+        "psf_kehrtwende",
+        "psf_gezielter_biss",
+        "psf_gezielter_tritt",
+        "psf_capriola"
+      ]
+    },
+    {
+      "id": "pvar_novadisches_kriegspferd",
+      "name": "Novadisches Kriegspferd",
+      "kategorie": "schlachtross",
+      "kampfpferd": true,
+      "modifikationen": {
+        "lo": 5,
+        "at": 1,
+        "gsTrab": 1,
+        "gsGalopp": 1,
+        "auTrab": 2,
+        "auGalopp": 2
+      },
+      "sfIds": [
+        "psf_kommen_auf_signal",
+        "psf_lanzengang",
+        "psf_stopp",
+        "psf_kehrtwende",
+        "psf_steigen",
+        "psf_kreisel",
+        "psf_hinlegen",
+        "psf_reitertreue",
+        "psf_gezielter_biss",
+        "psf_gezielter_tritt",
+        "psf_wacht",
+        "psf_rastullahs_schwingen",
+        "psf_stille_wacht"
+      ],
+      "hinweis": "Wie das tulamidische Kriegspferd, zusätzlich LO +3, Rastullahs Schwingen und Stille Wacht. Fast nur bei Novadis."
+    },
+    {
+      "id": "pvar_prunkkutschpferd",
+      "name": "Prunkkutschpferd",
+      "kategorie": "zugpferd",
+      "sfIds": [
+        "psf_eingefahren",
+        "psf_gespanngewoehnung",
+        "psf_mehrspaennig",
+        "psf_passage",
+        "psf_almadaner_schritt"
+      ]
+    },
+    {
+      "id": "pvar_rennkutschpferd",
+      "name": "Rennkutschpferd",
+      "kategorie": "zugpferd",
+      "modifikationen": {
+        "gsGalopp": 3,
+        "auGalopp": 1
+      },
+      "sfIds": [
+        "psf_eingefahren",
+        "psf_gespanngewoehnung",
+        "psf_mehrspaennig"
+      ]
+    },
+    {
+      "id": "pvar_rennpferd_renner",
+      "name": "Rennpferd (Renner)",
+      "kategorie": "rennpferd",
+      "modifikationen": {
+        "gsTrab": 3,
+        "gsGalopp": 4,
+        "auTrab": 2,
+        "auGalopp": 2
+      },
+      "hinweis": "Für Kurzstreckenrennen."
+    },
+    {
+      "id": "pvar_rennpferd_steher",
+      "name": "Rennpferd (Steher)",
+      "kategorie": "rennpferd",
+      "modifikationen": {
+        "gsTrab": 1,
+        "gsGalopp": 2,
+        "auTrab": 4,
+        "auGalopp": 4
+      },
+      "hinweis": "Für Langstreckenrennen."
+    },
+    {
+      "id": "pvar_schuetzenpferd",
+      "name": "Schützenpferd",
+      "kategorie": "reitpferd",
+      "kampfpferd": true,
+      "sfIds": [
+        "psf_weiches_gangwerk",
+        "psf_stopp",
+        "psf_kehrtwende",
+        "psf_lenken_ohne_zuegel",
+        "psf_seitengaenge",
+        "psf_stillstand"
+      ]
+    },
+    {
+      "id": "pvar_schweres_streitross",
+      "name": "Schweres Streitross",
+      "kategorie": "schlachtross",
+      "kampfpferd": true,
+      "modifikationen": {
+        "lo": 2,
+        "at": 1,
+        "tpTritt": 3
+      },
+      "sfIds": [
+        "psf_kommen_auf_signal",
+        "psf_lanzengang",
+        "psf_wacht",
+        "psf_steigen",
+        "psf_gezielter_tritt",
+        "psf_gezielter_biss",
+        "psf_corbetto",
+        "psf_kreisel",
+        "psf_trampeln",
+        "psf_reitertreue"
+      ]
+    },
+    {
+      "id": "pvar_streitwagenpferd",
+      "name": "Streitwagenpferd",
+      "kategorie": "zugpferd",
+      "kampfpferd": true,
+      "modifikationen": {
+        "gsTrab": 1,
+        "gsGalopp": 1,
+        "auTrab": 1,
+        "auGalopp": 1
+      },
+      "sfIds": [
+        "psf_eingefahren",
+        "psf_mehrspaennig",
+        "psf_schrecksicher"
+      ]
+    },
+    {
+      "id": "pvar_trosskutschpferd",
+      "name": "Trosskutschpferd",
+      "kategorie": "zugpferd",
+      "modifikationen": {
+        "kk": 2,
+        "zkFaktor": 2
+      },
+      "sfIds": [
+        "psf_eingefahren",
+        "psf_mehrspaennig",
+        "psf_schrecksicher"
+      ]
+    },
+    {
+      "id": "pvar_tulamidisches_kriegspferd",
+      "name": "Tulamidisches Kriegspferd",
+      "kategorie": "schlachtross",
+      "kampfpferd": true,
+      "modifikationen": {
+        "lo": 2,
+        "at": 1,
+        "gsTrab": 1,
+        "gsGalopp": 1,
+        "auTrab": 2,
+        "auGalopp": 2
+      },
+      "sfIds": [
+        "psf_kommen_auf_signal",
+        "psf_lanzengang",
+        "psf_stopp",
+        "psf_kehrtwende",
+        "psf_steigen",
+        "psf_kreisel",
+        "psf_hinlegen",
+        "psf_reitertreue",
+        "psf_gezielter_biss",
+        "psf_gezielter_tritt",
+        "psf_wacht"
+      ]
+    },
+    {
+      "id": "pvar_wanderreitpferd",
+      "name": "Wanderreitpferd",
+      "kategorie": "reitpferd",
+      "modifikationen": {
+        "auTrab": 1
+      },
+      "sfIds": [
+        "psf_gelaendehindernisse",
+        "psf_schrecksicher",
+        "psf_sprungsicherheit",
+        "psf_eingefahren"
+      ]
+    },
+    {
+      "id": "pvar_zirkuspferd",
+      "name": "Zirkuspferd",
+      "kategorie": "schaupferd",
+      "sfIds": [
+        "psf_schrecksicher",
+        "psf_hinlegen",
+        "psf_kniefall",
+        "psf_sprungsicherheit",
+        "psf_steigen",
+        "psf_zaehlen",
+        "psf_eingefahren"
+      ]
+    }
+  ],
+  "sonderfertigkeiten": [
+    {
+      "id": "psf_almadaner_schritt",
+      "name": "Almadaner Schritt",
+      "typ": "speziell",
+      "kurzwirkung": "Stolzierender Schritt mit hoch angehobenen Vorderbeinen."
+    },
+    {
+      "id": "psf_capriola",
+      "name": "Capriola",
+      "typ": "speziell",
+      "kampf": true,
+      "kurzwirkung": "Sprung mit Ausschlagen der Hinterhand, verschafft im Getümmel Platz.",
+      "ausgeschlosseneRassen": [
+        "Tralloper Riese",
+        "Svellttaler Kaltblut",
+        "Norburger Riese",
+        "Tobimora-Falbe"
+      ],
+      "manoever": {
+        "reitAtErschwernis": 5,
+        "dk": "N",
+        "hinweis": "TP doppelt, nur Ausweichen möglich; Getroffene stürzen ohne gelungene KK-Probe erschwert um die SP."
+      }
+    },
+    {
+      "id": "psf_corbetto",
+      "name": "Corbetto",
+      "typ": "speziell",
+      "kampf": true,
+      "kurzwirkung": "Sätze auf der Hinterhand mit schlagenden Vorderläufen.",
+      "manoever": {
+        "reitAtErschwernis": 3,
+        "dk": "HN",
+        "aktionen": 2,
+        "hinweis": "Zwei Tritte je Kampfrunde, bis zu zwei Runden; der Reiter handelt währenddessen nicht selbst."
+      }
+    },
+    {
+      "id": "psf_eingefahren",
+      "name": "Eingefahren",
+      "typ": "speziell",
+      "kurzwirkung": "Lässt sich auch vor einen Wagen spannen."
+    },
+    {
+      "id": "psf_galoppwechsel",
+      "name": "Galoppwechsel",
+      "typ": "allgemein",
+      "kurzwirkung": "Wechselt auf Kommando die Galopprichtung."
+    },
+    {
+      "id": "psf_gelaendehindernisse",
+      "name": "Geländehindernisse",
+      "typ": "allgemein",
+      "kurzwirkung": "Durchquert Brücken, Bäche, Unterholz und Geröll trittsicher; Reiten-Proben dort 3 Punkte weniger erschwert."
+    },
+    {
+      "id": "psf_gespanngewoehnung",
+      "name": "Gespanngewöhnung",
+      "typ": "speziell",
+      "kurzwirkung": "Auf das eigene Gespann eingespielt: Fahrzeug Lenken −3; in fremder Anspannung entfällt das, LO −2."
+    },
+    {
+      "id": "psf_gezielter_biss",
+      "name": "Gezielter Biss",
+      "typ": "allgemein",
+      "kampf": true,
+      "kurzwirkung": "Beißt auf Kommando einen Gegner vor sich.",
+      "manoever": {
+        "reitAtErschwernis": 1,
+        "dk": "H",
+        "hinweis": "Gegner vor dem Pferd; Kamele erreichen DK N."
+      }
+    },
+    {
+      "id": "psf_gezielter_tritt",
+      "name": "Gezielter Tritt",
+      "typ": "speziell",
+      "kampf": true,
+      "kurzwirkung": "Schlägt auf Kommando nach einem Gegner neben oder hinter sich.",
+      "manoever": {
+        "reitAtErschwernis": 1,
+        "dk": "N",
+        "hinweis": "Gegner neben oder hinter dem Pferd; Kamele erreichen DK NS."
+      }
+    },
+    {
+      "id": "psf_hinlegen",
+      "name": "Hinlegen",
+      "typ": "allgemein",
+      "kurzwirkung": "Legt sich auf Kommando hin und bleibt liegen."
+    },
+    {
+      "id": "psf_kehrtwende",
+      "name": "Kehrtwende",
+      "typ": "allgemein",
+      "kurzwirkung": "Wendet nach einem Stopp und läuft sofort wieder an.",
+      "voraussetzungSfIds": [
+        "psf_stopp"
+      ]
+    },
+    {
+      "id": "psf_kniefall",
+      "name": "Kniefall",
+      "typ": "speziell",
+      "kurzwirkung": "Lässt sich auf ein Vorderknie nieder, ein Pferdeknicks."
+    },
+    {
+      "id": "psf_kommen_auf_signal",
+      "name": "Kommen auf Signal",
+      "typ": "allgemein",
+      "kurzwirkung": "Kommt auf Name oder Pfiff zu seinem Herrn."
+    },
+    {
+      "id": "psf_kreisel",
+      "name": "Kreisel",
+      "typ": "speziell",
+      "kampf": true,
+      "kurzwirkung": "Dreht sich kraftvoll um die Hinterhand und drängt Gegner ab.",
+      "manoever": {
+        "reitAtErschwernis": 5,
+        "dk": "N",
+        "hinweis": "Fußkämpfer weichen eine DK zurück und stürzen ohne KK-Probe +GS; bis zu 4 Kampfrunden, der Reiter handelt nicht selbst."
+      }
+    },
+    {
+      "id": "psf_lanzengang",
+      "name": "Lanzengang",
+      "typ": "speziell",
+      "kurzwirkung": "Trägt den Lanzenangriff mit: Reiten-Probe und Lanzen-AT je 3 Punkte erleichtert (Reiter braucht Turnier- oder Kriegsreiterei)."
+    },
+    {
+      "id": "psf_lenken_ohne_zuegel",
+      "name": "Lenken ohne Zügel",
+      "typ": "speziell",
+      "kurzwirkung": "Folgt Gewicht und Schenkeln; Reiten, Zauber und Fernkampf ohne Zusatzerschwernis für freie Hände. Nicht im Nahkampf."
+    },
+    {
+      "id": "psf_mehrspaennig",
+      "name": "Mehrspännig",
+      "typ": "speziell",
+      "kurzwirkung": "Läuft mit mehreren Tieren vor dem Wagen."
+    },
+    {
+      "id": "psf_passage",
+      "name": "Passage",
+      "typ": "speziell",
+      "kurzwirkung": "Schwebender, verlangsamter Trab."
+    },
+    {
+      "id": "psf_piaffe",
+      "name": "Piaffe",
+      "typ": "speziell",
+      "kurzwirkung": "Trab auf der Stelle."
+    },
+    {
+      "id": "psf_rastullahs_schwingen",
+      "name": "Rastullahs Schwingen",
+      "typ": "speziell",
+      "kurzwirkung": "Letzte Reserven: bis zu 3 SR zusätzlicher Galopp, die erste mit GS +1; danach droht Zusammenbruch."
+    },
+    {
+      "id": "psf_reitertreue",
+      "name": "Reitertreue",
+      "typ": "speziell",
+      "kurzwirkung": "Lässt nur seinen Herrn aufsitzen; gegenüber Fremden LO −10."
+    },
+    {
+      "id": "psf_schrecksicher",
+      "name": "Schrecksicher",
+      "typ": "speziell",
+      "kurzwirkung": "Erschrickt nicht vor Lärm oder Flattern; passende Proben 3 Punkte weniger erschwert.",
+      "nervositaetErschwert": true
+    },
+    {
+      "id": "psf_seitengaenge",
+      "name": "Seitengänge",
+      "typ": "allgemein",
+      "kurzwirkung": "Bewegt sich seitwärts."
+    },
+    {
+      "id": "psf_separieren",
+      "name": "Separieren",
+      "typ": "speziell",
+      "kurzwirkung": "Hilft bei der Herdenarbeit mit; passende Proben 5 Punkte weniger erschwert."
+    },
+    {
+      "id": "psf_sprungsicherheit",
+      "name": "Sprungsicherheit",
+      "typ": "speziell",
+      "kurzwirkung": "Überwindet Hindernisse sicher; Reiten-Probe beim Sprung 3 Punkte weniger erschwert."
+    },
+    {
+      "id": "psf_steigen",
+      "name": "Steigen",
+      "typ": "allgemein",
+      "kampf": true,
+      "kurzwirkung": "Steigt auf Kommando und schlägt mit den Vorderhufen.",
+      "manoever": {
+        "reitAtErschwernis": 1,
+        "dk": "H",
+        "hinweis": "Gegner vor dem Pferd; Kamele erreichen DK HN."
+      }
+    },
+    {
+      "id": "psf_stille_wacht",
+      "name": "Stille Wacht",
+      "typ": "speziell",
+      "kurzwirkung": "Weckt seinen Herrn lautlos, wenn sich Fremde nähern (Sinnenschärfe 12, direkt mit W20)."
+    },
+    {
+      "id": "psf_stillstand",
+      "name": "Stillstand",
+      "typ": "allgemein",
+      "kurzwirkung": "Steht auf Kommando still; Zauber und Schüsse vom Rücken ohne Zusatzerschwernis.",
+      "nervositaetErschwert": true
+    },
+    {
+      "id": "psf_stopp",
+      "name": "Stopp",
+      "typ": "allgemein",
+      "kurzwirkung": "Hält aus jeder Gangart abrupt an."
+    },
+    {
+      "id": "psf_trampeln",
+      "name": "Trampeln",
+      "typ": "speziell",
+      "kampf": true,
+      "kurzwirkung": "Tritt gezielt auf einen am Boden liegenden Gegner.",
+      "manoever": {
+        "reitAtErschwernis": 5,
+        "dk": "H",
+        "hinweis": "Nur gegen Liegende; TP des Pferdes doppelt, Ausweichen nur mit einem Ausweichen-Manöver +8."
+      }
+    },
+    {
+      "id": "psf_wacht",
+      "name": "Wacht",
+      "typ": "allgemein",
+      "kurzwirkung": "Wiehert, wenn sich Fremde nähern (Sinnenschärfe 12, direkt mit W20)."
+    },
+    {
+      "id": "psf_weiches_gangwerk",
+      "name": "Weiches Gangwerk",
+      "typ": "speziell",
+      "kurzwirkung": "Besonders weich zu sitzende Gänge; in diesen Gängen GS je −1."
+    },
+    {
+      "id": "psf_zaehlen",
+      "name": "Zählen",
+      "typ": "speziell",
+      "kurzwirkung": "Klopft auf Signal, als würde es zählen."
+    }
+  ],
+  "unarten": [
+    {
+      "id": "punart_aufblasen",
+      "name": "Aufblasen",
+      "kurzwirkung": "Bläht sich beim Satteln auf; der Gurt muss nachgezogen werden."
+    },
+    {
+      "id": "punart_bissigkeit",
+      "name": "Bissigkeit",
+      "lo": -1,
+      "kurzwirkung": "Versucht Menschen in seiner Nähe zu beißen."
+    },
+    {
+      "id": "punart_buckeln",
+      "name": "Buckeln",
+      "kurzwirkung": "Buckelt bei energischen Hilfen; zusätzliche Reiten-Proben."
+    },
+    {
+      "id": "punart_knabbern",
+      "name": "Knabbern",
+      "kurzwirkung": "Kaut alles an; Unterhalt 2 Silber im Monat teurer."
+    },
+    {
+      "id": "punart_kopfscheu",
+      "name": "Kopfscheu",
+      "kurzwirkung": "Schwer aufzuzäumen; weicht dabei mit Wert 10 aus."
+    },
+    {
+      "id": "punart_laut",
+      "name": "Laut",
+      "kurzwirkung": "Wiehert oder schreit besonders laut und oft."
+    },
+    {
+      "id": "punart_sattelzwang",
+      "name": "Sattelzwang",
+      "lo": -2,
+      "kurzwirkung": "Verweigert Satteln und Anschirren; weicht dabei mit 10 aus."
+    },
+    {
+      "id": "punart_scheu",
+      "name": "Scheu",
+      "lo": -2,
+      "kurzwirkung": "Läuft bei jeder Gelegenheit davon."
+    },
+    {
+      "id": "punart_spucken",
+      "name": "Spucken",
+      "kurzwirkung": "Spuckt Fremde an (Kamele)."
+    },
+    {
+      "id": "punart_treten",
+      "name": "Treten",
+      "lo": -1,
+      "kurzwirkung": "Schlägt bei kleinster Missstimmung aus."
+    }
+  ]
+}
