@@ -4,7 +4,10 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dsa_heldenverwaltung/domain/dice_log_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
+import 'package:dsa_heldenverwaltung/ablaeufe/schaden_protokoll.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/schaden_ruecknahme_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/schaden_rules.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
@@ -113,11 +116,10 @@ void main() {
     expect(bestand.aufrufe, ['effekte:rondra']);
   });
 
-  // „Schaden erhalten“ ist seit ARCH-05 ein geführter Ablauf; eine Rücknahme
-  // gibt es weiterhin nicht (ARCH-06).
-  testWidgets('kein erfundener Rundenzähler und kein Rücknahmeknopf', (
-    tester,
-  ) async {
+  // Zurückgenommen wird seit ARCH-06 nur am Protokolleintrag einer
+  // gebuchten Schadensbuchung, nie als allgemeiner Knopf (siehe unten).
+  testWidgets('kein erfundener Rundenzähler und kein allgemeiner '
+      'Rücknahmeknopf', (tester) async {
     await zeige(
       tester,
       heroId: 'rondra',
@@ -126,6 +128,7 @@ void main() {
     expect(find.textContaining('Nächste Kampfrunde'), findsNothing);
     expect(find.textContaining('KR '), findsNothing);
     expect(find.textContaining('zurücknehmen'), findsNothing);
+    expect(find.textContaining('Zurücknehmen'), findsNothing);
     expect(find.textContaining('Offline'), findsNothing);
   });
 
@@ -192,6 +195,59 @@ void main() {
       expect(find.text('Eigenschaftsprobe: MU'), findsOneWidget);
       expect(
         find.byKey(const ValueKey('dice-log-filter-attribute')),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('eine gebuchte Schadensbuchung lässt sich im Protokoll '
+        'zurücknehmen (ARCH-06)', (tester) async {
+      const vorher = HeroState(
+        currentLep: 30,
+        currentAsp: 0,
+        currentKap: 0,
+        currentAu: 30,
+      );
+      final buchung = SchadensBuchung(
+        art: SchadensArt.lebensenergie,
+        tp: 6,
+        rs: 0,
+      );
+      final anwendung = wendeSchadenAn(vorher, buchung);
+      final zeit = DateTime.utc(2026, 10, 7, 12);
+      final repo = await zeigeEcht(
+        tester,
+        zustand: anwendung.zustand
+            .withBuchung(
+              schadensBuchungAus(
+                vorher: vorher,
+                anwendung: anwendung,
+                buchung: buchung,
+                id: 'treffer',
+                zeitpunkt: zeit,
+              ),
+            )
+            .withAppendedDiceLog(
+              baueSchadensProtokoll(
+                buchung: buchung,
+                hinzugefuegteWunden: 0,
+                zeitpunkt: zeit,
+                buchungId: 'treffer',
+              ),
+            ),
+      );
+
+      final knopf = find.byKey(const ValueKey('dice-log-ruecknahme-treffer'));
+      await tester.ensureVisible(knopf);
+      await tester.tap(knopf);
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(const ValueKey('schaden-ruecknahme-bestaetigen')),
+      );
+      await tester.pumpAndSettle();
+
+      expect((await repo.loadHeroState('rondra'))!.currentLep, 30);
+      expect(
+        find.byKey(const ValueKey('dice-log-zurueckgenommen-treffer')),
         findsOneWidget,
       );
     });

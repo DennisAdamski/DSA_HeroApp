@@ -57,10 +57,18 @@ enum DiceLogFilter {
 /// Die Anzeige dreht das intern um, damit der neueste Eintrag oben steht.
 class InspectorDiceLogSection extends StatefulWidget {
   /// Erzeugt die Protokoll-Sektion fuer die uebergebenen Eintraege.
-  const InspectorDiceLogSection({super.key, required this.entries});
+  const InspectorDiceLogSection({
+    super.key,
+    required this.entries,
+    this.aktion,
+  });
 
   /// Protokolleintraege in chronologischer Reihenfolge.
   final List<DiceLogEntry> entries;
+
+  /// Optionale Aktion je Eintrag (etwa „Zurücknehmen“ einer
+  /// Schadensbuchung); `null` heißt: keine. Die Sektion selbst schreibt nie.
+  final Widget? Function(DiceLogEntry entry)? aktion;
 
   @override
   State<InspectorDiceLogSection> createState() =>
@@ -106,7 +114,7 @@ class _InspectorDiceLogSectionState extends State<InspectorDiceLogSection> {
             ),
           ),
         for (final entry in reversed) ...[
-          _DiceLogEntryRow(entry: entry),
+          _DiceLogEntryRow(entry: entry, aktion: widget.aktion?.call(entry)),
           const SizedBox(height: 6),
         ],
       ],
@@ -133,9 +141,10 @@ class _InspectorDiceLogSectionState extends State<InspectorDiceLogSection> {
 }
 
 class _DiceLogEntryRow extends StatelessWidget {
-  const _DiceLogEntryRow({required this.entry});
+  const _DiceLogEntryRow({required this.entry, this.aktion});
 
   final DiceLogEntry entry;
+  final Widget? aktion;
 
   @override
   Widget build(BuildContext context) {
@@ -231,6 +240,7 @@ class _DiceLogEntryRow extends StatelessWidget {
                       color: theme.colorScheme.onSurfaceVariant,
                     ),
                   ),
+                  ?aktion,
                 ],
               ),
             ),

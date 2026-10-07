@@ -21,6 +21,7 @@ import 'package:dsa_heldenverwaltung/ui/screens/workspace/inspector/widgets/insp
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/probe_quick_search.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/rest_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/schaden/schaden_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/workspace/schaden/schaden_ruecknahme.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_management_body.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/avatar_gallery_image.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_bestands_adapter.dart';
@@ -212,7 +213,14 @@ class KartoBestandsAdapterImpl
   /// Baut das vorhandene Würfelprotokoll mit den Einträgen des Zustands.
   @override
   Widget spielProtokoll(HeroComputedSnapshot werte) => _KartoCompatHost(
-    child: InspectorDiceLogSection(entries: werte.state.diceLog),
+    child: InspectorDiceLogSection(
+      entries: werte.state.diceLog,
+      aktion: (eintrag) => schadenRuecknahmeAktion(
+        eintrag: eintrag,
+        heroId: werte.hero.id,
+        zustand: werte.state,
+      ),
+    ),
   );
 
   /// Baut Belastung, Wunden und Statuswerte des Bestands.

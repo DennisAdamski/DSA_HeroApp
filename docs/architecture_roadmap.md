@@ -85,11 +85,10 @@ die Flutter-Umsetzung und die vollständige Funktionszuordnung bleiben offen.
   schmale sowie breite Ansichten entwerfen; aktuelle Funktionen vollständig erfassen.
 - [ ] Bestehende Proben-, Steigerungs- und Inspector-Komponenten wiederverwenden;
   die Spielansicht um direkten Zugriff auf häufige Aktionen ergänzen.
-- [ ] „Schaden erhalten“ als zusammenhängenden Ablauf mit Ressourcenänderung,
+- [x] „Schaden erhalten“ als zusammenhängenden Ablauf mit Ressourcenänderung,
   gegebenenfalls Wunden und nachvollziehbarer Korrekturmöglichkeit anbieten.
   *(Ablauf, Dialog und UI2-Schnellaktion umgesetzt, siehe ARCH-05 Teilstand
-  (3). Korrigiert wird bisher von Hand anhand des Protokolleintrags; eine
-  Rücknahme hängt an ARCH-06, deshalb bleibt der Punkt offen.)*
+  (3); Rücknahme am Protokolleintrag seit ARCH-06 Teilstand 2.)*
 
 **Abnahme:** Häufige Spielaktionen sind direkt aus der Spielansicht erreichbar.
 Manuelle Korrektur und AP-pflichtige Entwicklung bleiben unterscheidbar. Ein
@@ -139,8 +138,8 @@ Commit-IDs und Abgrenzungen stehen unter „R1: Übergabe“ in den
 Bestandsaktionen ist umgesetzt (R2), ebenso die gestalterische Integration der
 Fachansichten und der Entwicklungsbereich samt Gesamtabnahme (R3, siehe
 [redesign_acceptance.md](redesign_acceptance.md)). „Schaden erhalten“ gibt es
-seit dem ARCH-05-Teilstand (3) als geführten Ablauf in beiden Oberflächen;
-es fehlt noch die nachvollziehbare Rücknahme, die an ARCH-06 hängt.
+seit dem ARCH-05-Teilstand (3) als geführten Ablauf in beiden Oberflächen,
+zurücknehmbar seit ARCH-06 Teilstand 2.
 
 **Abhängigkeiten / offene Entscheidungen:** Schreibende Spielaktionen auf
 ARCH-05/06 aufbauen. Navigation, Favoritenverhalten und Korrekturbedienung sind
@@ -2409,7 +2408,7 @@ Der Betrieb ohne Konto oder Netzwerk bleibt möglich.
 
 - [x] Für die Abläufe aus ARCH-05 festlegen, welche Daten gemeinsam verbindlich
   werden müssen, und einen geeigneten Speichervertrag mit Wiederanlauf definieren.
-- [ ] Lokale Änderung und ausstehenden Sync dauerhaft zusammen erfassen;
+- [x] Lokale Änderung und ausstehenden Sync dauerhaft zusammen erfassen;
   wiederholte Übertragung darf eine Aktion nicht erneut anwenden.
 - [ ] Änderungsprotokoll und fachlich gültige Korrekturaktionen ergänzen.
   Unabhängige Änderungen nur nach definierten Konfliktregeln zusammenführen;
@@ -2443,7 +2442,7 @@ abgezogenen Betrag, ohne Obergrenze; Wunden der Buchung werden entfernt,
 soweit noch vorhanden; eine Buchung lässt sich nur einmal zurücknehmen.
 
 **Teilstand 1, 07.10.2026 — Speichervertrag, Vorgangsjournal,
-Wiederanlauf.** Branch `task/2026-10-07-arch06`.
+Wiederanlauf.** Branch `task/2026-10-07-arch06`, Commit `07e7d8c`.
 
 - *Speichervertrag:* Tabelle je Einheit in
   [schreibpfade_inventar.md](schreibpfade_inventar.md#speichervertrag-arch-06).
@@ -2480,6 +2479,53 @@ Wiederanlauf.** Branch `task/2026-10-07-arch06`.
   Re-Import, Journal je Profil). Löschen, Avatar-Operationen und
   Konfliktauflösung laufen ohne Journal. Die fachliche Wiederholung
   (dieselbe Buchung zweimal) schützt erst die Buchungs-ID aus Teilstand 2.
+
+**Teilstand 2, 07.10.2026 — Buchungsprotokoll und Schaden-Rücknahme.**
+
+- *Buchungsprotokoll:* `HeroState.buchungen` (`ZustandsBuchung`,
+  `lib/domain/zustands_buchung.dart`, höchstens 50, nur bei Belegung im JSON —
+  die Hash-Pins der Bestandshelden bleiben). Eine Buchung hält die
+  tatsächlichen Änderungen eines Treffers fest; der Protokolleintrag trägt
+  dieselbe `buchungId`. Unbekannte Felder, Art und Zone bleiben erhalten
+  (Vollständigkeitswächter ergänzt).
+- *Keine Doppelbuchung:* Der Schadensdialog vergibt beim ersten Übernehmen
+  eine Vorgangs-ID und behält sie bis zum Schließen. `SchadenErhalten`
+  speichert eine schon gebuchte ID nicht erneut;
+  `aendereGespeichertenZustand` speichert nichts, wenn die Änderung den
+  gespeicherten Zustand unverändert (dieselbe Instanz) zurückgibt; ein
+  fehlender Zustand wird immer geschrieben. Die anschließende Wundunterdrückung vermerkt sich im
+  selben Speichervorgang an der Buchung.
+- *Korrekturaktion:* `SchadenZuruecknehmen`
+  (`lib/ablaeufe/schaden_zuruecknehmen.dart`) mit den Regeln
+  `schaden_ruecknahme_rules.dart` bucht die Gegenbuchung auf den frischen
+  Zustand, wie entschieden ohne Obergrenze. Sie ist nur einmal je Buchung
+  möglich und erscheint als eigener Protokolleintrag; der ursprüngliche
+  Eintrag bleibt mit der Marke „zurückgenommen“. Bedienung: „Zurücknehmen“ am
+  Würfelprotokoll beider Oberflächen samt Rückfrage mit Plan
+  (`schaden_ruecknahme.dart`).
+- *Zusammenführung:* bleibt dokumentbasiert. Buchen zwei Geräte offline,
+  entsteht wie bisher ein sichtbarer Konflikt; jede gewählte Fassung ist in
+  sich stimmig (LeP passen zu ihren Buchungen). Ein automatisches
+  Zusammenführen unabhängiger Buchungen gibt es nicht; deshalb bleibt der
+  dritte Unterpunkt offen.
+- *Nachweise:* `test/rules/schaden_ruecknahme_rules_test.dart`
+  (tatsächliche Deltas, AuP-Untergrenze, Zusatzschaden, geheilte und fremde
+  Wunden, vermerkte Unterdrückung, Kopf-INI, unbekannte Zone und Art,
+  verdrängtes Original, LeP über dem Maximum),
+  `test/ablaeufe/schaden_erhalten_test.dart` und
+  `schaden_zuruecknehmen_test.dart` (Wiederholung, parallele Rücknahmen,
+  zwischenzeitliche Heilung, Fehler), `test/domain/zustands_buchung_test.dart`,
+  Widgettests `test/ui/workspace/schaden_ruecknahme_test.dart`,
+  `schaden_dialog_test.dart` (erneuter Versuch nach verlorener Antwort) und
+  `test/ui2/spielen/karto_spielverlauf_test.dart`, Zwei-Geräte-Fälle in
+  `test/data/sync_speichervertrag_test.dart` (verlorene Antwort, Rücknahme
+  auf dem anderen Gerät, offline auf beiden Geräten mit `keepLocal` und
+  `keepRemote`).
+- *Restrisiken:* Eine ältere App ohne Feldschutz verwirft `buchungen`; die
+  Rücknahme ist dann „nicht mehr verfügbar“. Ändert der Nutzer nach einem
+  gescheiterten Versuch die Eingaben, bleibt die Vorgangs-ID; hatte der erste
+  Versuch doch gespeichert, gilt dessen Buchung. Rast und andere
+  Zustandsänderungen sind noch nicht zurücknehmbar.
 
 ## ARCH-07 — Nutzerabläufe und Datenmigrationen absichern
 

@@ -18,6 +18,7 @@ class DiceLogEntry {
     this.automaticOutcome = AutomaticOutcome.none,
     this.total,
     this.isNeutral = false,
+    this.buchungId,
     this.unbekannteFelder = const <String, Object?>{},
     this.unbekannteEnumWerte = const <String, Object?>{},
   });
@@ -52,6 +53,11 @@ class DiceLogEntry {
   /// Kennzeichnet Wuerfe ohne Erfolgs-/Misslingenslogik.
   final bool isNeutral;
 
+  /// ID der fachlichen Buchung, die dieser Eintrag protokolliert
+  /// (`HeroState.buchungen`, ARCH-06); `null` bei reinen Würfen und älteren
+  /// Einträgen.
+  final String? buchungId;
+
   /// JSON-Felder einer neueren App-Version; bleiben beim Speichern erhalten
   /// (siehe `unbekannte_json_felder.dart`).
   final Map<String, Object?> unbekannteFelder;
@@ -76,6 +82,7 @@ class DiceLogEntry {
     'automaticOutcome',
     'total',
     'isNeutral',
+    'buchungId',
   };
 
   Map<String, dynamic> toJson() {
@@ -91,6 +98,7 @@ class DiceLogEntry {
         'automaticOutcome': automaticOutcome.name,
         if (total != null) 'total': total,
         if (isNeutral) 'isNeutral': true,
+        'buchungId': ?buchungId,
       }, unbekannteFelder),
       unbekannteEnumWerte,
     );
@@ -123,6 +131,7 @@ class DiceLogEntry {
       ),
       total: (json['total'] as num?)?.toInt(),
       isNeutral: json['isNeutral'] as bool? ?? false,
+      buchungId: json['buchungId'] as String?,
       unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
       unbekannteEnumWerte: festeEnumWerte(enumRoh),
     );
@@ -160,6 +169,7 @@ DiceLogEntry diceLogEntryFromRoll({
   ProbeType type = ProbeType.genericRoll,
   int? total,
   DateTime? timestamp,
+  String? buchungId,
 }) {
   final computedTotal =
       total ??
@@ -175,6 +185,7 @@ DiceLogEntry diceLogEntryFromRoll({
     automaticOutcome: AutomaticOutcome.none,
     total: computedTotal,
     isNeutral: true,
+    buchungId: buchungId,
   );
 }
 

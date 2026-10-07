@@ -342,6 +342,28 @@ void main() {
     expect(tester.widget<FilledButton>(_uebernehmen).onPressed, isNotNull);
   });
 
+  testWidgets('ein erneuter Versuch nach verlorener Antwort bucht nicht '
+      'doppelt (ARCH-06)', (tester) async {
+    final repo = _Repository(antwortVerlieren: true);
+    await zeigePanel(tester, repo);
+
+    await tester.enterText(_key('schaden-tp'), '5');
+    await tester.enterText(_key('schaden-rs'), '0');
+    await tester.pump();
+    await tester.tap(_uebernehmen);
+    await tester.pumpAndSettle();
+    expect(uebernommen, isEmpty);
+
+    await tester.tap(_uebernehmen);
+    await tester.pumpAndSettle();
+
+    expect(uebernommen.single.anwendung.istWiederholung, isTrue);
+    final gespeichert = (await repo.loadHeroState('demo'))!;
+    expect(gespeichert.currentLep, 25);
+    expect(gespeichert.buchungen, hasLength(1));
+    expect(gespeichert.buchungen.single.id, uebernommen.single.buchungId);
+  });
+
   testWidgets('während des Speicherns ist Übernehmen gesperrt', (tester) async {
     final repo = _Repository(sperre: Completer<void>());
     await zeigePanel(tester, repo);
@@ -468,6 +490,9 @@ void main() {
     final gespeichert = (await repo.loadHeroState('demo'))!;
     expect(gespeichert.wpiZustand.wundenInZone(WundZone.linkerArm), 2);
     expect(gespeichert.wpiZustand.unterdrueckteInZone(WundZone.linkerArm), 2);
+    // Die Unterdrückung steht an der Buchung, damit eine Rücknahme sie mit
+    // entfernt (ARCH-06).
+    expect(gespeichert.buchungen.single.unterdrueckt, 2);
   });
 
   testWidgets('epische KO halbiert die Erschwernis und die Erschöpfung', (
@@ -552,10 +577,13 @@ void main() {
 /// Repository mit zählbarem, optional gesperrtem oder scheiterndem
 /// Zustandsschreibweg.
 class _Repository extends FakeRepository {
-  _Repository({this.fehler = false, this.sperre})
+  _Repository({this.fehler = false, this.sperre, this.antwortVerlieren = false})
     : super(heroes: [_held], states: {'demo': _zustand});
 
   final bool fehler;
+
+  /// Der erste Schreibvorgang speichert, meldet aber einen Fehler.
+  bool antwortVerlieren;
   final Completer<void>? sperre;
   int schreibversuche = 0;
 
@@ -569,5 +597,9 @@ class _Repository extends FakeRepository {
       throw StateError('Schreibfehler');
     }
     await super.saveHeroState(heroId, state);
+    if (antwortVerlieren) {
+      antwortVerlieren = false;
+      throw StateError('Zeitüberschreitung');
+    }
   }
 }

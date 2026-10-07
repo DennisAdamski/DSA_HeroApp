@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dsa_heldenverwaltung/ablaeufe/held_importieren.dart';
+import 'package:dsa_heldenverwaltung/ablaeufe/schaden_erhalten.dart';
+import 'package:dsa_heldenverwaltung/ablaeufe/schaden_zuruecknehmen.dart';
 import 'package:dsa_heldenverwaltung/ablaeufe/vorgaenge_wiederaufnehmen.dart';
 import 'package:dsa_heldenverwaltung/data/hero_repository.dart';
 import 'package:dsa_heldenverwaltung/data/hive_hero_repository.dart';
@@ -11,6 +13,9 @@ import 'package:dsa_heldenverwaltung/data/hive_vorgangsjournal.dart';
 import 'package:dsa_heldenverwaltung/data/syncing_hero_repository.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
+import 'package:dsa_heldenverwaltung/domain/sync_models.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/schaden_ruecknahme_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/schaden_rules.dart';
 
 import '../test_support/hero_fixtures.dart';
 import '../test_support/sync_geraete.dart';
@@ -218,5 +223,117 @@ void main() {
       (await b.lokal.loadHeroState(_krieger))!.currentLep,
       bundle.state.currentLep,
     );
+  });
+
+  group('Buchungen auf zwei Geräten (ARCH-06)', () {
+    Future<void> bucheTreffer(SyncTestGeraet geraet, String id, int tp) async {
+      await SchadenErhalten(
+        repository: geraet.repo,
+        uhr: DateTime.now,
+      ).uebernehmeSchaden(
+        heroId: _krieger,
+        buchung: SchadensBuchung(art: SchadensArt.lebensenergie, tp: tp, rs: 0),
+        vorgangId: id,
+      );
+      await geraet.repo.warteAufUebertragungen();
+    }
+
+    Future<HeroState> zustand(SyncTestGeraet geraet) async =>
+        (await geraet.lokal.loadHeroState(_krieger))!;
+
+    // LeP und Buchungen passen zusammen: keine halbe oder doppelte Buchung.
+    void erwarteStimmig(HeroState zustand, int startLep) {
+      final summe = zustand.buchungen.fold<int>(
+        0,
+        (bisher, buchung) => bisher + buchung.lepDelta,
+      );
+      expect(zustand.currentLep, startLep + summe);
+    }
+
+    test('eine verlorene Antwort bucht den Treffer genau einmal', () async {
+      await gemeinsamerStart();
+      final startLep = (await zustand(a)).currentLep;
+      final vorher = cloud.zustandSchreibvorgaenge[_krieger]!;
+      a.remote.naechsteAntwortVerlieren = true;
+
+      await bucheTreffer(a, 't1', 6);
+      // Der Nutzer versucht es erneut: dieselbe Vorgangs-ID.
+      await bucheTreffer(a, 't1', 6);
+      await a.repo.syncNow();
+      await a.repo.syncNow();
+      await b.repo.syncNow();
+
+      expect(cloud.zustandSchreibvorgaenge[_krieger], vorher + 1);
+      expect(a.konflikte, isEmpty);
+      final beiB = await zustand(b);
+      expect(beiB.currentLep, startLep - 6);
+      expect(
+        beiB.buchungen.where((buchung) => buchung.id == 't1'),
+        hasLength(1),
+      );
+    });
+
+    test('B nimmt zurück, A übernimmt die Rücknahme und kann sie nicht '
+        'wiederholen', () async {
+      await gemeinsamerStart();
+      final startLep = (await zustand(a)).currentLep;
+      await bucheTreffer(a, 't1', 6);
+      await a.repo.syncNow();
+      await b.repo.syncNow();
+
+      await SchadenZuruecknehmen(
+        repository: b.repo,
+        uhr: DateTime.now,
+      ).nimmZurueck(heroId: _krieger, buchungId: 't1', vorgangId: 'r1');
+      await b.repo.warteAufUebertragungen();
+      await b.repo.syncNow();
+      await a.repo.syncNow();
+
+      final beiA = await zustand(a);
+      expect(beiA.currentLep, startLep);
+      expect(
+        schadensBuchungsStatus(beiA, 't1'),
+        SchadensBuchungsStatus.zurueckgenommen,
+      );
+      await expectLater(
+        SchadenZuruecknehmen(
+          repository: a.repo,
+          uhr: DateTime.now,
+        ).nimmZurueck(heroId: _krieger, buchungId: 't1', vorgangId: 'r2'),
+        throwsA(isA<StateError>()),
+      );
+    });
+
+    for (final wahl in <SyncResolutionChoice>[
+      SyncResolutionChoice.keepLocal,
+      SyncResolutionChoice.keepRemote,
+    ]) {
+      test('${wahl.name}: offline gebuchte Treffer beider Geräte werden '
+          'sichtbar entschieden und bleiben in sich stimmig', () async {
+        await gemeinsamerStart();
+        final startLep = (await zustand(a)).currentLep;
+        a.remote.offline = true;
+        b.remote.offline = true;
+        await bucheTreffer(a, 'ta', 5);
+        await bucheTreffer(b, 'tb', 7);
+        a.remote.offline = false;
+        b.remote.offline = false;
+        await a.repo.syncNow();
+        await b.repo.syncNow();
+
+        expect(b.konflikte, hasLength(1));
+        await b.repo.resolveConflict(b.konflikte.single.id, wahl);
+        await b.repo.warteAufUebertragungen();
+        await a.repo.syncNow();
+        await b.repo.syncNow();
+
+        final erwartet = wahl == SyncResolutionChoice.keepLocal ? 'tb' : 'ta';
+        for (final geraet in <SyncTestGeraet>[a, b]) {
+          final ergebnis = await zustand(geraet);
+          expect(ergebnis.buchungen.map((buchung) => buchung.id), [erwartet]);
+          erwarteStimmig(ergebnis, startLep);
+        }
+      });
+    }
   });
 }
