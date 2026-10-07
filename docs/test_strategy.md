@@ -198,6 +198,16 @@ Fallstricke mit echtem Hive:
   beide Repositories hinweg laufen über `ohneZeitstempel` oder die
   Inhalts-Hashes.
 
+### Abbruch und Wiederanlauf (ARCH-06)
+
+`test/ablaeufe/vorgaenge_wiederaufnehmen_test.dart` simuliert einen Absturz
+als Schritt, der nie fertig wird (`Completer<void>().future`): Der Import läuft
+nicht abgewartet bis dorthin (`pumpEventQueue`), danach nimmt ein **neues**
+`FakeRepository` auf denselben Listen den Vorgang wieder auf. Ein neues
+Repository ist nötig, weil die Warteschlange je Held am Speicherobjekt hängt
+und der hängende Schritt sie sonst blockierte. Dasselbe Muster mit zwei
+Geräten und echtem Journal steht in `test/data/sync_speichervertrag_test.dart`.
+
 ### Zwei Geräte am Konto-Sync
 
 `test/data/sync_zwei_geraete_test.dart` hängt zwei `SyncingHeroRepository`

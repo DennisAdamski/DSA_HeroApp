@@ -259,6 +259,14 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   an das auch `HeroActions.updateHeroState` delegiert). Ablaeufe fangen
   Fehler nicht, die aufrufende Oberflaeche zeigt sie. Bestandsaufnahme aller
   Schreibwege: `docs/schreibpfade_inventar.md`.
+- Speichervertrag (ARCH-06, `docs/schreibpfade_inventar.md`): Jeder Ablauf
+  schreibt genau ein Dokument, ausser dem Import. Der Import vermerkt sich im
+  `Vorgangsjournal` (`lib/data/vorgangsjournal.dart`, Box `vorgaenge_v1`,
+  `vorgangsjournalProvider`). `VorgaengeWiederaufnehmen` fuehrt ihn beim Start
+  vor `syncNow` zu Ende oder gleicht ihn aus; dasselbe passiert sofort, wenn
+  ein Importschritt scheitert. Ein neuer Ablauf mit mehreren Schreibvorgaengen
+  braucht dasselbe. Der Sync bleibt dokumentbasiert: ausstehend ist, was vom
+  gemerkten Hash abweicht; es gibt keine Operations-Warteschlange.
 - `aendereGespeichertenZustand` reiht Aenderungen je Speicher und Held ein
   (Warteschlange per `Expando` am Repository); zwei nicht abgewartete Aufrufe
   ueberschreiben einander so nicht. Laufzeitwerte werden in der Oberflaeche
