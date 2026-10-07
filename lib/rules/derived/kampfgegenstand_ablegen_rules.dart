@@ -36,8 +36,8 @@ enum KampfgegenstandEntfernen {
 /// Entfernt die angezeigte Waffe aus dem Kampfbereich.
 ///
 /// Abgelegt bleibt ihr Exemplar im Inventar. Ihre Geschosse werden in
-/// beiden Fällen abgelegt, auch mit Bestand 0. Wie [ohneWaffe] lässt sich
-/// die letzte Waffe nicht entfernen.
+/// beiden Fällen abgelegt, auch mit Bestand 0. Ohne die letzte Waffe steht
+/// der Held wie ein neuer da ([ohneWaffe]).
 HeroSheet ohneWaffeImKampf(
   HeroSheet held,
   MainWeaponSlot angezeigt, {

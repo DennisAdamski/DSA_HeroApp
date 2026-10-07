@@ -226,4 +226,27 @@ void main() {
       );
     });
   });
+
+  test('auch die letzte Waffe lässt sich verkaufen', () {
+    final nurSchwert = _held.copyWith(
+      combatConfig: const CombatConfig(
+        weapons: [
+          MainWeaponSlot(id: 'w1', name: 'Schwert', inventarInstanzId: 'i-sw'),
+        ],
+      ),
+      inventoryEntries: [_gespeichert('i-sw')],
+    );
+
+    final held = mitVerkauftemGegenstand(
+      nurSchwert,
+      _gespeichert('i-sw'),
+      anzahl: 1,
+      erloesKreuzer: 5000,
+      neueId: _neueId,
+    );
+
+    expect(held.combatConfig.weapons, isEmpty);
+    expect(held.inventoryEntries, isEmpty);
+    expect(held.dukaten, '15');
+  });
 }

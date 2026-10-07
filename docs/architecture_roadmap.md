@@ -664,8 +664,8 @@ Vollständige Suite (`--concurrency=1`): 3.750 bestanden, 3 übersprungen.
    umgerechnet.
 2. Abenteuerbeute als Quelle eines Zusammenführens oder Verkaufs sperrt
    wie ein Löschen das spätere Zurücknehmen des Abenteuers (sichtbar).
-3. Die letzte Waffe lässt sich weiterhin nicht entfernen, also auch nicht
-   verkaufen.
+3. ~~Die letzte Waffe lässt sich weiterhin nicht entfernen, also auch nicht
+   verkaufen.~~ *Behoben im Nachtrag zum Abschluss unten.*
 4. Ein Verkauf wird nicht protokolliert; er ist nur über Inventar und
    Geldstand nachvollziehbar.
 
@@ -708,9 +708,23 @@ Gegenprobe mit „immer ausgerüstet“ scheitert.
 `flutter analyze` ohne Befund; vollständige Suite (`--concurrency=1`): 3.752
 bestanden, 3 übersprungen. Commit: `5d72ddd`.
 
-*Verbleibende Risiken:* die der Teilstände oben, insbesondere: Ablegen und
-Verkaufen der letzten Waffe sind gesperrt; Bestandswerte pro Stapel werden
-nicht umgerechnet; ein Verkauf wird nicht protokolliert.
+*Verbleibende Risiken:* die der Teilstände oben, insbesondere: Bestandswerte
+pro Stapel werden nicht umgerechnet; ein Verkauf wird nicht protokolliert.
+
+*Nachtrag 07.10.2026 — die letzte Waffe (Wunsch Dennis).* Auch die letzte
+Waffe lässt sich entfernen, ablegen und verkaufen. `ohneWaffe` führt dann in
+den Zustand eines neuen Helden (keine Waffenliste, leerer Platzhalter); der
+Entfernen-Knopf ist nur noch für diesen Platzhalter gesperrt, und
+`mitNeuerWaffe` ersetzt ihn, statt die neue Waffe dahinter zu hängen (die
+alte Macke legte bei einem neuen Helden einen leeren Slot vor die erste
+Waffe). Kleinfix dabei: `_normalizeOffhandAssignment` leerte die Nebenhand,
+sobald keine Hauptwaffe gewählt war (−1 = −1 galt als Doppelbelegung); ein
+Schild bleibt jetzt in der Hand. Bestandsdaten ändern sich nicht (Hash-Pins
+unverändert). Tests: Regeln (Entfernen, Ablegen samt Zurückholen,
+Verkaufen der letzten Waffe, Schild ohne Hauptwaffe) und Kampf-Tab;
+zwei Kampf-Tab-Tests erwarteten die alte Macke und sind angepasst.
+`flutter analyze` ohne Befund; vollständige Suite: 3.758 bestanden,
+3 übersprungen.
 
 **Teilstand 27.09.2026 — B2/B3 behoben:** Kampf-Slots für Waffen,
 Geschosse, Rüstung und Nebenhand tragen stabile IDs. Beim Laden erhalten

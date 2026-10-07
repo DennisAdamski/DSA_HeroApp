@@ -129,8 +129,25 @@ CombatConfig mitGeschossSchritt(
 }
 
 /// Hängt die neu angelegte Waffe [neu] an die gespeicherten Waffen an.
+///
+/// Ohne Waffenliste steht dort nur der leere Platzhalter eines Helden ohne
+/// Waffe ([ohneWaffe], neuer Held); ihn ersetzt die neue Waffe.
 CombatConfig mitNeuerWaffe(CombatConfig config, MainWeaponSlot neu) {
+  if (_ohneWaffen(config)) {
+    return config.copyWith(weapons: [neu]);
+  }
   return config.copyWith(weapons: [...config.weaponSlots, neu]);
+}
+
+// Ob [config] keine Waffe führt: keine Liste, nur ein Platzhalter ohne Daten.
+bool _ohneWaffen(CombatConfig config) {
+  if (config.weapons.isNotEmpty) {
+    return false;
+  }
+  final slot = config.mainWeapon;
+  return slot.name.trim().isEmpty &&
+      slot.talentId.trim().isEmpty &&
+      slot.weaponType.trim().isEmpty;
 }
 
 /// Ersetzt die im Editor bearbeitete Waffe durch das Editorergebnis [neu].
@@ -157,18 +174,24 @@ CombatConfig ersetzeWaffe(
 ///
 /// Aktive Waffe und Nebenhand rücken mit, wenn sie hinter der entfernten
 /// liegen; war die entfernte Waffe aktiv, ist danach keine Waffe gewählt,
-/// war sie die Nebenhand, bleibt die Nebenhand leer. Die letzte Waffe lässt
-/// sich nicht entfernen.
+/// war sie die Nebenhand, bleibt die Nebenhand leer. Ohne die letzte Waffe
+/// steht der Held wie ein neuer da: keine Waffenliste, nur der leere
+/// Platzhalter.
 CombatConfig ohneWaffe(
   CombatConfig config,
   MainWeaponSlot angezeigt, {
   int? index,
 }) {
   final slots = List<MainWeaponSlot>.of(config.weaponSlots);
-  if (slots.length <= 1) {
-    throw StateError('Die letzte Waffe lässt sich nicht entfernen.');
-  }
   final position = _findeWaffe(config, angezeigt, index: index);
+  if (slots.length <= 1) {
+    return config.copyWith(
+      weapons: const <MainWeaponSlot>[],
+      mainWeapon: const MainWeaponSlot(),
+      selectedWeaponIndex: -1,
+      offhandAssignment: config.offhandAssignment.copyWith(weaponIndex: -1),
+    );
+  }
   slots.removeAt(position);
   final gewaehlt = config.hasSelectedWeapon ? config.selectedWeaponIndex : -1;
   final nebenhand = config.offhandAssignment;

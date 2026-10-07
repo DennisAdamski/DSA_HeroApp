@@ -421,4 +421,36 @@ void main() {
       },
     );
   });
+
+  test('auch die letzte Waffe lässt sich ablegen und zurückholen', () {
+    final held = _startheld();
+    final [schwert, bogen] = held.combatConfig.weapons;
+    final nurSchwert = _gespeichert(
+      ohneWaffeImKampf(
+        held,
+        bogen,
+        index: 1,
+        wie: KampfgegenstandEntfernen.ganzEntfernen,
+        neueId: _neueId,
+      ),
+    );
+
+    final ohneWaffe = _gespeichert(
+      ohneWaffeImKampf(
+        nurSchwert,
+        schwert,
+        index: 0,
+        wie: KampfgegenstandEntfernen.ablegen,
+        neueId: _neueId,
+      ),
+    );
+    expect(ohneWaffe.combatConfig.weapons, isEmpty);
+    final eintrag = _eintragMit(ohneWaffe, schwert.inventarInstanzId);
+    expect(istAbgelegterKampfgegenstand(eintrag), isTrue);
+
+    final zurueck = _gespeichert(
+      mitUebernommenemKampfgegenstand(ohneWaffe, eintrag, neueId: _neueId),
+    );
+    expect(zurueck.combatConfig.weaponSlots.map((w) => w.name), ['Schwert']);
+  });
 }

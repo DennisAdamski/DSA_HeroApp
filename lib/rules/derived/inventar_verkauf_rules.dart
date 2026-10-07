@@ -36,8 +36,8 @@ int verkaufsvorschlagKreuzer(HeroInventoryEntry e, int anzahl) {
 /// letzte Rest entfernt den Eintrag. Verknüpft siehe Dateikopf.
 ///
 /// Wirft einen [StateError], wenn der Eintrag inzwischen geändert wurde,
-/// [anzahl] nicht passt, der Erlös negativ oder der Geldstand nicht lesbar
-/// ist oder der Kampfbereich die Entnahme nicht zulässt (letzte Waffe).
+/// [anzahl] nicht passt oder der Erlös negativ oder der Geldstand nicht
+/// lesbar ist.
 HeroSheet mitVerkauftemGegenstand(
   HeroSheet held,
   HeroInventoryEntry angezeigt, {
