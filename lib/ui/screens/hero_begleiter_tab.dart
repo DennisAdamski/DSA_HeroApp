@@ -10,9 +10,14 @@ import 'package:dsa_heldenverwaltung/domain/hero_rituals.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ap_level_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/begleiter_aenderung_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/begleiter_wirkwert_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/companion_steigerung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/editor_entwurf_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/reittier_ausbildung_aenderung_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/reittier_ausbildung_anzeige_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/reittier_ausbildung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ruestung_be_rules.dart';
+import 'package:dsa_heldenverwaltung/catalog/reittier_ausbildung_katalog.dart';
 import 'package:dsa_heldenverwaltung/catalog/vertrautenmagie_preset.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
@@ -39,6 +44,9 @@ part 'hero_begleiter/begleiter_ruestung_section.dart';
 part 'hero_begleiter/begleiter_angriff_section.dart';
 part 'hero_begleiter/begleiter_sonderfertigkeiten_section.dart';
 part 'hero_begleiter/vertrautenmagie_section.dart';
+part 'hero_begleiter/begleiter_ausbildung_section.dart';
+part 'hero_begleiter/begleiter_ausbildung_dialoge.dart';
+part 'hero_begleiter/begleiter_ausbildung_aktionen.dart';
 
 /// Begleiter-Tab mit Auswahl- und Detailansicht fuer Vertraute/Begleiter.
 class HeroBegleiterTab extends ConsumerStatefulWidget {
@@ -222,9 +230,15 @@ class _HeroBegleiterTabState extends ConsumerState<HeroBegleiterTab>
       ),
     );
     if (gespeichert == null || !mounted) return;
-    setState(() => _syncDraftFromHero(gespeichert, force: true));
+    _uebernimmGespeichertenHelden(gespeichert);
     ScaffoldMessenger.of(context)
         .showSnackBar(const SnackBar(content: Text('Steigerung gespeichert')));
+  }
+
+  /// Übernimmt nach einer Sofortbuchung den gespeicherten Helden als neuen
+  /// Entwurf und Abgleichsbasis.
+  void _uebernimmGespeichertenHelden(HeroSheet gespeichert) {
+    setState(() => _syncDraftFromHero(gespeichert, force: true));
   }
 
   Future<void> _addCompanion() async {
@@ -513,6 +527,7 @@ class _HeroBegleiterTabState extends ConsumerState<HeroBegleiterTab>
           .where((c) => c.id == 'vertrautenmagie')
           .firstOrNull;
       final canRaise = _canRaiseFor(activeCompanion);
+      final sofort = _kannSofortBuchen;
       return Column(
         children: [
           const CodexTabHeader(
@@ -534,6 +549,15 @@ class _HeroBegleiterTabState extends ConsumerState<HeroBegleiterTab>
               onRaiseAngriffPa: canRaise ? _raiseAngriffPa : null,
               onRaiseRk: canRaise ? _raiseRk : null,
               vertrautenmagieKategorie: vertrautenmagieKat,
+              onAusbildungsschritt: sofort
+                  ? () => _oeffneAusbildungsschritt(activeCompanion)
+                  : null,
+              onAusbildungsschrittZurueck: sofort
+                  ? () => _nimmAusbildungsschrittZurueck(activeCompanion)
+                  : null,
+              onPferdeSf: sofort
+                  ? () => _oeffnePferdeSf(activeCompanion)
+                  : null,
             ),
           ),
         ],

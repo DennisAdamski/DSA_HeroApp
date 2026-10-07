@@ -76,6 +76,32 @@ prüft; geladen wird er nicht. Gespeicherte Helden verweisen nur über die IDs
   gebucht wurde. AU-Modifikationen erscheinen nur als Hinweis, weil der
   Begleiter einen einzigen AU-Wert führt.
 
+## Oberfläche
+
+Der klassische Begleiter-Tab (`lib/ui/screens/hero_begleiter_tab.dart`), den
+auch der Kartograph-Workspace über `workspace_tab_spec.dart` nutzt, zeigt bei
+Reittieren den Abschnitt „Reittier-Ausbildung“
+(`hero_begleiter/begleiter_ausbildung_section.dart`, Dialoge in
+`begleiter_ausbildung_dialoge.dart`):
+
+- **Editorfelder** (über `speichereEditorEntwurf`): Ausbildung erfassen
+  (Ausgangsstufe, -art, Variante), Ausgangsstand ändern, Unarten (`+ Unart`),
+  Ausbildung entfernen.
+- **Sofortbuchungen** (`begleiter_ausbildung_aktionen.dart`, über
+  `aendereHeldMitMeldung`, bei offener Planung gesperrt): `+ Ausbildungsschritt`,
+  Rücknahme des letzten Schritts und `+ Pferde-SF` im
+  Sonderfertigkeiten-Abschnitt. Sie gehen in der Ansicht und im
+  Bearbeitungsmodus, solange keine ungespeicherten Änderungen offen sind.
+  Gesperrte Schritte und nicht regulär lernbare SF lassen sich nur mit
+  „Trotzdem (Meisterentscheid)“ buchen.
+- **Ansicht:** Eigenschaften, Loyalität, Angriffe (AT, TP), Geschwindigkeiten
+  sowie Trag- und Zugkraft zeigen die Wirkwerte; der Bearbeitungsmodus den
+  eingetragenen Grundwert. Der alte Freitext heißt bei Reittieren
+  „Ausbildung (Notiz)“.
+- **Gefecht (UI2):** eine Zeile mit Stufe, Variante und Reiten-Modifikatoren.
+
+Texte setzt `reittier_ausbildung_anzeige_rules.dart` zusammen.
+
 ## Regelquellen
 
 ### Reit-Sonderfertigkeiten (WdS S. 102)

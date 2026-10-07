@@ -85,7 +85,7 @@ class _EigenschaftenSection extends StatelessWidget {
         for (final (label, key) in defined)
           _AttrChip(
             label: label,
-            value: companionEffektivwert(companion, key) ?? _valueFor(key)!,
+            value: begleiterWirksamerWert(companion, key) ?? _valueFor(key)!,
             hasSteigerung: companionSteigerung(companion, key) > 0,
             onRaise: onRaiseRegular != null
                 ? () => onRaiseRegular!(key, label)

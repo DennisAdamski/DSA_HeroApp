@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_companion.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/begleiter_kampfprofil_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/reittier_ausbildung_anzeige_rules.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abschnitt.dart';
 
 /// Begleiter, Tiere und Vertraute zum Nachschlagen im Gefecht.
@@ -73,6 +74,7 @@ class _Profil extends StatelessWidget {
             ...p.geschwindigkeiten,
           ].join(' · '),
         ),
+        if (p.reittier != null) Text(reittierProfilText(p.reittier!)),
         if (p.sonderfertigkeiten.isNotEmpty)
           Text('Sonderfertigkeiten: ${p.sonderfertigkeiten.join(', ')}'),
         if (p.vertrautenmagie.isNotEmpty)
