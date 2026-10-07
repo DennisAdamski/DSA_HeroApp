@@ -5,6 +5,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
 import 'package:dsa_heldenverwaltung/domain/sync_models.dart';
+import 'package:dsa_heldenverwaltung/domain/sync_zusammenfuehrung.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/inventar_aenderung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/inventar_stapel_rules.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
@@ -119,12 +120,23 @@ void main() {
 
   group('gleichzeitig geändert', () {
     // A teilt den rechten Köcher, B beschreibt den linken; A ist zuerst
-    // wieder online.
-    Future<void> konkurrierend() async {
+    // wieder online. [aBeschreibt] lässt A zusätzlich denselben linken
+    // Köcher anders beschreiben — erst das ist ein echter Konflikt.
+    Future<void> konkurrierend({bool aBeschreibt = false}) async {
       await gemeinsamerStart();
       a.remote.offline = true;
       b.remote.offline = true;
       await _aendere(a, _teileRechts);
+      if (aBeschreibt) {
+        await _aendere(a, (held) {
+          final links = _vorrat(held, 'Köcher links');
+          return mitGeaendertemInventarEintrag(
+            held,
+            links,
+            links.copyWith(beschreibung: 'Köcher links, neu'),
+          );
+        });
+      }
       await _aendere(b, _beschreibeLinks);
       a.remote.offline = false;
       b.remote.offline = false;
@@ -132,11 +144,37 @@ void main() {
       await b.repo.syncNow();
     }
 
-    test('ergibt einen sichtbaren Konflikt', () async {
+    test('verschiedene Änderungen werden ohne Konflikt zusammengeführt '
+        '(ARCH-06)', () async {
       await konkurrierend();
+      await a.repo.syncNow();
+
+      expect(a.konflikte, isEmpty);
+      expect(b.konflikte, isEmpty);
+      expect(await a.heldHash(_id), await b.heldHash(_id));
+      final held = await _held(a);
+      expect(_pfeileAnBoegen(held), [20, 7]);
+      expect(
+        held.inventoryEntries.any((e) => e.instanzId == 'rucksack-pfeile'),
+        isTrue,
+      );
+      expect(
+        _vorrat(held, 'Köcher links').beschreibung,
+        'Köcher links, geflickt',
+      );
+    });
+
+    test('ein widersprüchlich geänderter Wert ergibt einen sichtbaren '
+        'Konflikt, der nur ihn nennt', () async {
+      await konkurrierend(aBeschreibt: true);
 
       expect(a.konflikte, isEmpty);
       expect(b.konflikte.map((k) => k.id), ['hero-$_id']);
+      final vorschau = (await b.repo.konfliktVorschau('hero-$_id'))!;
+      expect(vorschau.felder, hasLength(1));
+      expect(vorschau.felder.single.lokal, 'Köcher links, geflickt');
+      expect(vorschau.felder.single.online, 'Köcher links, neu');
+      expect(vorschau.vonOnline, greaterThan(0));
       // Bis zur Entscheidung behält B seine Fassung.
       final beiB = await _held(b);
       expect(
@@ -146,9 +184,35 @@ void main() {
       expect(_pfeileAnBoegen(beiB), [20, 12]);
     });
 
+    test('Automatisch übernimmt die Teilung und fragt nur nach der '
+        'Beschreibung', () async {
+      await konkurrierend(aBeschreibt: true);
+      final feld = (await b.repo.konfliktVorschau('hero-$_id'))!.felder.single;
+
+      await expectLater(
+        b.repo.resolveConflictAutomatisch('hero-$_id', const {}),
+        throwsA(isA<StateError>()),
+      );
+      await b.repo.resolveConflictAutomatisch('hero-$_id', {
+        feld.schluessel: SyncSeite.lokal,
+      });
+      await a.repo.syncNow();
+      await b.repo.syncNow();
+
+      expect(a.konflikte, isEmpty);
+      expect(b.konflikte, isEmpty);
+      expect(await a.heldHash(_id), await b.heldHash(_id));
+      final held = await _held(a);
+      expect(_pfeileAnBoegen(held), [20, 7]);
+      expect(
+        _vorrat(held, 'Köcher links').beschreibung,
+        'Köcher links, geflickt',
+      );
+    });
+
     for (final wahl in SyncResolutionChoice.values) {
       test('${wahl.name}: nichts geht still verloren', () async {
-        await konkurrierend();
+        await konkurrierend(aBeschreibt: true);
 
         await b.repo.resolveConflict(b.konflikte.single.id, wahl);
         await a.repo.syncNow();
@@ -158,15 +222,15 @@ void main() {
         expect(b.konflikte, isEmpty);
         expect(await a.heldHash(_id), await b.heldHash(_id));
         final held = await _held(b);
-        final geteilt = wahl != SyncResolutionChoice.keepLocal;
-        expect(_pfeileAnBoegen(held), geteilt ? [20, 7] : [20, 12]);
+        final online = wahl != SyncResolutionChoice.keepLocal;
+        expect(_pfeileAnBoegen(held), online ? [20, 7] : [20, 12]);
         expect(
           held.inventoryEntries.any((e) => e.instanzId == 'rucksack-pfeile'),
-          geteilt,
+          online,
         );
         expect(
           _vorrat(held, 'Köcher links').beschreibung,
-          geteilt ? 'Köcher links' : 'Köcher links, geflickt',
+          online ? 'Köcher links, neu' : 'Köcher links, geflickt',
         );
         if (wahl == SyncResolutionChoice.keepBoth) {
           // Die lokale Kopie trägt Bs Fassung samt Instanz-IDs.

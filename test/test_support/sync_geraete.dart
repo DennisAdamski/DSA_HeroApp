@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:dsa_heldenverwaltung/data/sync/in_memory_sync_metadata_store.dart';
 import 'package:dsa_heldenverwaltung/data/sync/remote_hero_sync_gateway.dart';
+import 'package:dsa_heldenverwaltung/data/sync/sync_basis_store.dart';
 import 'package:dsa_heldenverwaltung/data/syncing_hero_repository.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
@@ -332,6 +333,9 @@ class SyncTestGeraet {
   /// Lokale Sync-Metadaten; ueberleben [neustart].
   final InMemorySyncMetadataStore metadaten = InMemorySyncMetadataStore();
 
+  /// Basisstaende fuer die Zusammenfuehrung; ueberleben [neustart].
+  final SpeicherSyncBasisStore basis = SpeicherSyncBasisStore();
+
   /// Das Repository, das die App an dieser Stelle benutzt.
   late SyncingHeroRepository repo;
 
@@ -341,6 +345,7 @@ class SyncTestGeraet {
       local: lokal,
       remote: remote,
       metadataStore: metadaten,
+      basisStore: basis,
       accountId: 'konto-1',
       startRemoteListener: false,
     );

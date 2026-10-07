@@ -13,7 +13,6 @@ import 'package:dsa_heldenverwaltung/data/hive_vorgangsjournal.dart';
 import 'package:dsa_heldenverwaltung/data/syncing_hero_repository.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
-import 'package:dsa_heldenverwaltung/domain/sync_models.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/schaden_ruecknahme_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/schaden_rules.dart';
 
@@ -304,36 +303,35 @@ void main() {
       );
     });
 
-    for (final wahl in <SyncResolutionChoice>[
-      SyncResolutionChoice.keepLocal,
-      SyncResolutionChoice.keepRemote,
-    ]) {
-      test('${wahl.name}: offline gebuchte Treffer beider Geräte werden '
-          'sichtbar entschieden und bleiben in sich stimmig', () async {
-        await gemeinsamerStart();
-        final startLep = (await zustand(a)).currentLep;
-        a.remote.offline = true;
-        b.remote.offline = true;
-        await bucheTreffer(a, 'ta', 5);
-        await bucheTreffer(b, 'tb', 7);
-        a.remote.offline = false;
-        b.remote.offline = false;
-        await a.repo.syncNow();
-        await b.repo.syncNow();
+    test('offline gebuchte Treffer beider Geräte werden ohne Konflikt '
+        'zusammengeführt und bleiben einzeln zurücknehmbar', () async {
+      await gemeinsamerStart();
+      final startLep = (await zustand(a)).currentLep;
+      a.remote.offline = true;
+      b.remote.offline = true;
+      await bucheTreffer(a, 'ta', 5);
+      await bucheTreffer(b, 'tb', 7);
+      a.remote.offline = false;
+      b.remote.offline = false;
+      await a.repo.syncNow();
+      await b.repo.syncNow();
+      await a.repo.syncNow();
 
-        expect(b.konflikte, hasLength(1));
-        await b.repo.resolveConflict(b.konflikte.single.id, wahl);
-        await b.repo.warteAufUebertragungen();
-        await a.repo.syncNow();
-        await b.repo.syncNow();
-
-        final erwartet = wahl == SyncResolutionChoice.keepLocal ? 'tb' : 'ta';
-        for (final geraet in <SyncTestGeraet>[a, b]) {
-          final ergebnis = await zustand(geraet);
-          expect(ergebnis.buchungen.map((buchung) => buchung.id), [erwartet]);
-          erwarteStimmig(ergebnis, startLep);
-        }
-      });
-    }
+      expect(a.konflikte, isEmpty);
+      expect(b.konflikte, isEmpty);
+      for (final geraet in <SyncTestGeraet>[a, b]) {
+        final ergebnis = await zustand(geraet);
+        expect(ergebnis.currentLep, startLep - 12);
+        expect(ergebnis.buchungen.map((buchung) => buchung.id).toSet(), {
+          'ta',
+          'tb',
+        });
+        erwarteStimmig(ergebnis, startLep);
+        expect(
+          schadensBuchungsStatus(ergebnis, 'ta'),
+          SchadensBuchungsStatus.ruecknehmbar,
+        );
+      }
+    });
   });
 }

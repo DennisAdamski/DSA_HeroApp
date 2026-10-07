@@ -357,11 +357,16 @@ class _Lauf {
       return l;
     }
     // Beide Seiten haben verschieden geändert: tiefer suchen, wo möglich.
-    if (l is Map && o is Map && b is Map) {
-      return _maps(b, l, o, schluessel: schluessel, pfad: pfad);
+    // Fehlt der Wert in der Basis (beide Seiten haben ihn neu angelegt),
+    // gilt sie als leer; dann zählt jedes Element einzeln.
+    final basisFehlt = identical(b, _fehlt);
+    if (l is Map && o is Map && (b is Map || basisFehlt)) {
+      final basis = b is Map ? b : const <String, dynamic>{};
+      return _maps(basis, l, o, schluessel: schluessel, pfad: pfad);
     }
-    if (l is List && o is List && b is List) {
-      final zusammen = _listen(b, l, o, schluessel: schluessel, pfad: pfad);
+    if (l is List && o is List && (b is List || basisFehlt)) {
+      final basis = b is List ? b : const <Object?>[];
+      final zusammen = _listen(basis, l, o, schluessel: schluessel, pfad: pfad);
       if (!identical(zusammen, _fehlt)) {
         return zusammen;
       }
