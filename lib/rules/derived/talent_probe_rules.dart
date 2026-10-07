@@ -97,11 +97,15 @@ TalentProbenwert? talentProbenwertFuer({
 }
 
 /// Talentprobe des Helden über den gemeinsamen Probenbauer.
+///
+/// [initialSituationalModifier] belegt den Probendialog vor; negativ heißt
+/// erschwert (Konvention des Probenmodells).
 ResolvedProbeRequest? talentprobeFuer({
   required HeroComputedSnapshot snapshot,
   required TalentDef talent,
   required bool epicAdvantagesActive,
   int? talentBeOverride,
+  int initialSituationalModifier = 0,
 }) {
   final wert = talentProbenwertFuer(
     snapshot: snapshot,
@@ -115,5 +119,6 @@ ResolvedProbeRequest? talentprobeFuer({
     targets: wert.ziele,
     basePool: wert.taw,
     hasSpecialization: wert.spezialisierung,
+    initialSituationalModifier: initialSituationalModifier,
   );
 }
