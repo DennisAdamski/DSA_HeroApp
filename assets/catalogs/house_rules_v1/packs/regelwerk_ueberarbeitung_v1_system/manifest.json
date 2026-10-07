@@ -14,6 +14,26 @@
         "costText": "variabel nach Verbreitung und Häufigkeit der Organisation",
         "source": "Erweiterung und Überarbeitung des Regelwerks S. 2"
       }
+    },
+    {
+      "section": "kampf_sonderfertigkeiten",
+      "selector": {
+        "entryId": "ksf_reiterkampf"
+      },
+      "setFields": {
+        "beschreibung": "Hausregel: Vom Pferd aus Kampfstile, Finte, Gezielter Stich, Halbschwert, Hammerschlag, Niederwerfen, Todesstoß und Wuchtschlag; gegen Fußkämpfer +2 TP mit geeigneten Waffen und AT +3 nur auf geschultem Pferd; Zweihandwaffen +2 (Speere ohne); eBE der Kampftalente halbiert.",
+        "quelle": "Erweiterung und Überarbeitung des Regelwerks S. 19 f."
+      }
+    },
+    {
+      "section": "kampf_sonderfertigkeiten",
+      "selector": {
+        "entryId": "ksf_kriegsreiterei"
+      },
+      "setFields": {
+        "beschreibung": "Hausregel: Nur mit geschultem Pferd, sonst wie Reiterkampf. Zusätzlich Gegenhalten und Zusatzaktionen aus Beidhändiger Kampf II und Schildkampf II; gegen Fußkämpfer AT +3 und +2 TP; Angriff über Kreuz +6; eBE der Kampftalente halbiert.",
+        "quelle": "Erweiterung und Überarbeitung des Regelwerks S. 19 f."
+      }
     }
   ]
 }

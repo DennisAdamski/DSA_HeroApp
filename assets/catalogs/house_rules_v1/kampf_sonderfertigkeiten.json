@@ -322,6 +322,28 @@
     "erklarung_lang": "enc:3:KDg3Dj00QdvJvC8O9OBqtfkAqOjh75p0TRSRJZLZkZbpU5/0AuWc/WKFTudMgkcgsHtfXcpl1Gc/viZRjw9p2tRcvMA05+ohE6ipcxa0VNI2HqlcwBrxnEFKM8DuvOhABfdTzm5bZrTdy/8EHdze/YUA9eMCyhqr1R9owgH8AS/qo0dixEjhnceZsMHHVAUMImFNdlBEZ724FPQ246lHHZXsQKk5o27HPeCsQ43SdmYhk+4n2Xv1ketxQY0td6HiaGik9eQ3DHXkeybbVRbYqJqWxShqmGhtacXADpMoh9r/VFe5EbhsQ+JO9S3ruc7FUW2f17qFe6kB/2Kmap7AZ/zNRDhmto+OkOx5IffiJhcJUxqF50cYqZnweQJR5/KzLB7M7cGu1JEazIwosCEwY2FN6oNoUTY17wXgHmIGowD7Bap7W+TC3h4OJAlLf4tNcXUgDDcSX6dFGTvptJtU7ticmVsS"
   },
   {
+    "id": "ksf_kriegsreiterei",
+    "name": "Kriegsreiterei",
+    "gruppe": "kampf",
+    "typ": "sonderfertigkeit",
+    "seite": "102",
+    "beschreibung": "Viertelt die Reiten-Zuschläge im Kampf; das Pferd pariert um 3 erleichtert und kann Niederreiten, Hufschlag und Trampeln einsetzen.",
+    "voraussetzungen": "TaW Reiten 10, SF Reiterkampf",
+    "voraussetzungen_struktur": [
+      {
+        "art": "talent",
+        "name": "Reiten",
+        "min": 10
+      },
+      {
+        "art": "sonderfertigkeit",
+        "name": "Reiterkampf"
+      }
+    ],
+    "verbreitung": "3, bei Reiterkulturen und Veteranen beritten kämpfender Professionen",
+    "kosten": "300 AP"
+  },
+  {
     "id": "ksf_linkhand",
     "name": "Linkhand",
     "gruppe": "kampf",
@@ -425,6 +447,24 @@
     "verbreitung": "3, bei entsprechenden Kulturen",
     "kosten": "200 AP; für Helden mit dem Vorteil Beidhändig verbilligt (150 AP)",
     "erklarung_lang": "enc:3:9LJMx9i1CgQUjuVzi8spVcACPdP7t4GR5rq/5C9MYAE8lYCiOgF0lP5V0N/Zf5TlWKm78LgK69OZJ7jS9FBs3CUBEQPOt7G7bXj4DSqM8O9stGF0G4Mn1cXODMnYRny9E3VvAUJ1RoPMa7+Nnv1e0/w4e4zRpHixOuvdIqAOEOvscr7e60LqpZ3/8VKQWdWbvizNtz6qISg5ZYLEi/aqWWiHgvBWeF2iP31OSfofVEXz6+PpHyFv6Wmkvl9ec0m5TVjIfWSXXSc6VRe7pwBk4jGWnDHxoaI9cxL8v3yP3LTFdiSBEG6d2q2iOHU2PFSefuWwmcBrK5ar7qK+3oa3Nlr8I9V8M4Zic9wEih2kEtVEaYDppdJpb5VKe0cjViKlDBl6BFyppRoXTA=="
+  },
+  {
+    "id": "ksf_reiterkampf",
+    "name": "Reiterkampf",
+    "gruppe": "kampf",
+    "typ": "sonderfertigkeit",
+    "seite": "102",
+    "beschreibung": "Halbiert die Reiten-Zuschläge im Kampf und erlaubt Manöver vom Pferderücken; gegen Fußkämpfer AT +3 und mit geeigneten Waffen +2 TP.",
+    "voraussetzungen": "TaW Reiten 7 (als Reiterkampf (Streitwagen): Fahrzeug Lenken 7)",
+    "voraussetzungen_struktur": [
+      {
+        "art": "talent",
+        "name": "Reiten",
+        "min": 7
+      }
+    ],
+    "verbreitung": "5, bei Reiterkulturen und berittenen Kämpfern",
+    "kosten": "200 AP"
   },
   {
     "id": "ksf_ruestungsgewoehnung_i",
@@ -627,6 +667,28 @@
     "verbreitung": "3, bei Parierwaffen-Kämpfern (vor allem im Horasreich)",
     "kosten": "100 AP; für Helden mit dem Vorteil Beidhändig verbilligt (75 AP)",
     "erklarung_lang": "enc:3:DrCVv/Dg8dbABGYjoDksg+QYFxE5b6BYATzNzjW+rLGYNxberafmMkUj/ZJZZMtvkOJIeO6CW2qhzOzYLNzXcaTeLXF+xWyAAHN0PhKHQco8xAeVYBdMp2f4HvnXY7809W8Kcsz2jMbZS4QOUFXC68ciD0ptlaFNl9kCkeWcwGRicU63eMkNnEgXQOL96iwlRtggCGE2UgsmqXhG5O786kRDa9eSFszNEPeapUlOqxy86XHiUk9JflLzJfYRrJa02IriFi/EtpsZE2RJXcXWKLj3qnMGHQXa+sG9j1QSjldL/FVc0O5Q1FgnXcCVfEhx8sHhXWPN7+qfTbAH3+Da5Dni62Xe9UqD2CgGTVbh2JSupDzO9bukUUw="
+  },
+  {
+    "id": "ksf_turnierreiterei",
+    "name": "Turnierreiterei",
+    "gruppe": "kampf",
+    "typ": "sonderfertigkeit",
+    "seite": "102",
+    "beschreibung": "Lanzenreiten-Proben um 5 erleichtert; die Reiten-Probe nach einem Turniertreffer ist halbiert; Ansagen bis zur Lanzenreiten-AT.",
+    "voraussetzungen": "TaW Reiten 10, SF Reiterkampf",
+    "voraussetzungen_struktur": [
+      {
+        "art": "talent",
+        "name": "Reiten",
+        "min": 10
+      },
+      {
+        "art": "sonderfertigkeit",
+        "name": "Reiterkampf"
+      }
+    ],
+    "verbreitung": "3, bei klassischen Rittern",
+    "kosten": "100 AP"
   },
   {
     "id": "ksf_unterwasserkampf",
@@ -1615,12 +1677,16 @@
     "typ": "sonderfertigkeit",
     "seite": "Epische Stufen S. 9",
     "beschreibung": "Erlaubt weitere Manöver zu Pferd und verbessert die Werte des Reittiers.",
-    "voraussetzungen": "TaW Reiten 19, kein Zwerg",
+    "voraussetzungen": "TaW Reiten 19, SF Kriegsreiterei, kein Zwerg",
     "voraussetzungen_struktur": [
       {
         "art": "talent",
         "name": "Reiten",
         "min": 19
+      },
+      {
+        "art": "sonderfertigkeit",
+        "name": "Kriegsreiterei"
       },
       {
         "art": "rasse_verboten",

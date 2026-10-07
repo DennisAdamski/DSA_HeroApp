@@ -669,7 +669,10 @@ bleibt der Eintrag stehen, bei offener Steigerungsrunde wird nichts geändert.
 Der Abschnitt „Begleiter“ (`gefecht_begleiter.dart`) zeigt je Begleiter Typ,
 INI, RS/BE, MR, LeP-/AuP-/AsP-Maxima, Geschwindigkeiten und Angriffe mit
 wirksamer AT/PA (`begleiter_kampfprofil_rules.dart`, auch vom klassischen
-Begleiter-Tab genutzt) sowie Sonderfertigkeiten und Vertrautenmagie. Nur
+Begleiter-Tab genutzt) sowie Sonderfertigkeiten und Vertrautenmagie. Bei
+Reittieren mit erfasster Ausbildung enthalten AT, TP (Tritt) und
+Geschwindigkeiten die Ausbildung, und eine Zeile nennt Stufe, Variante und
+die Reiten-Modifikatoren (`reittierProfilText`, `docs/reittier_plan.md`). Nur
 Anzeige, keine Proben und keine LeP-Zählung. Prüfung:
 `test/rules/gefecht_inventar_rules_test.dart`,
 `test/ui2/spielen/gefecht_inventar_test.dart`.

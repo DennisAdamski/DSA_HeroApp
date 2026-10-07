@@ -49,7 +49,9 @@ import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
 /// Helden laedt und wieder speichert.
 ///
 /// Sie kennt weder Slot-IDs noch `slotRef` noch strukturierte Vor- und
-/// Nachteile (`vorteilEintraege`/`nachteilEintraege`) und bewahrt keine unbekannten
+/// Nachteile (`vorteilEintraege`/`nachteilEintraege`) noch die Ausbildung von
+/// Reittieren (`reittierAusbildung`, `katalogId` der Begleiter-SF) und bewahrt
+/// keine unbekannten
 /// Felder, weder oben noch verschachtelt. Nachgebildet mit den
 /// Schluesselsaetzen dieser Version ohne `id` und `slotRef`; Felder, die erst
 /// nach ihr dazukamen, bleiben damit stehen — fuer die hier geprueften
@@ -300,7 +302,10 @@ void _begleiterAbenteuerNotizen(Map<String, dynamic> json) {
     _behalte(kontakt, HeroConnectionEntry.jsonSchluessel);
   }
   for (final begleiter in _maps(json['companions'])) {
-    _behalte(begleiter, HeroCompanion.jsonSchluessel);
+    _behalte(
+      begleiter,
+      HeroCompanion.jsonSchluessel.difference(const {'reittierAusbildung'}),
+    );
     for (final tempo in _maps(begleiter['geschwindigkeiten'])) {
       _behalte(tempo, HeroCompanionSpeed.jsonSchluessel);
     }
@@ -308,7 +313,12 @@ void _begleiterAbenteuerNotizen(Map<String, dynamic> json) {
       _behalte(angriff, HeroCompanionAttack.jsonSchluessel);
     }
     for (final sf in _maps(begleiter['sonderfertigkeiten'])) {
-      _behalte(sf, HeroCompanionSonderfertigkeit.jsonSchluessel);
+      _behalte(
+        sf,
+        HeroCompanionSonderfertigkeit.jsonSchluessel.difference(const {
+          'katalogId',
+        }),
+      );
     }
     for (final stueck in _maps(begleiter['ruestungsTeile'])) {
       _behalteOhneId(stueck, ArmorPiece.jsonSchluessel);

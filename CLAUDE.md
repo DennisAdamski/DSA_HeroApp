@@ -141,6 +141,16 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   erst beim Abschluss nach Bestätigung über `inventar_verbrauch_rules.dart`
   (`menge` vor `anzahl`, frisch über `updateHero`). Begleiter nur ansehen:
   `gefecht_begleiter.dart` mit `begleiter_kampfprofil_rules.dart`.
+- **Reittiere** entwickeln sich nur über die ZBA-Ausbildung, nie über AP
+  ([docs/reittier_plan.md](docs/reittier_plan.md), Pakete P1–P3).
+  `HeroCompanion.reittierAusbildung` hält Ausgangsstand, gebuchte Schritte,
+  Variante und Unarten; die eingetragenen Werte gelten als Werte der
+  Ausgangsstufe, Ausbildungseffekte werden nur abgeleitet
+  (`reittier_ausbildung_rules.dart`, Wirkwerte in
+  `begleiter_wirkwert_rules.dart`), nie in Grundwerte geschrieben.
+  Ausbildungskatalog als Dart-Konstanten (`reittier_ausbildung_katalog.dart`,
+  `pferde_sf_katalog.dart`) mit JSON-Spiegel. Schritte und Pferde-SF bucht der
+  Begleiter-Tab sofort über `aendereHeldMitMeldung`.
 - [Redesign umsetzen](docs/redesign_implementation.md) enthält drei aufeinander
   aufbauende Agentenpläne, Startprompts und die gemeinsame Umsetzungsspezifikation
   unter `docs/superpowers/`. Ausgangspunkt ist das vorhandene UI2-Fundament;

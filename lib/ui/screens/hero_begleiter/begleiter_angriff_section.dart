@@ -85,6 +85,8 @@ class _AngriffseSection extends StatelessWidget {
           for (int i = 0; i < angriffe.length; i++) ...[
             _AngriffRow(
               angriff: angriffe[i],
+              wirkAt: begleiterWirksamerAngriffAt(companion, angriffe[i]),
+              wirkTp: begleiterWirksamerAngriffTp(companion, angriffe[i]),
               isEditing: isEditing,
               onRaiseAt: onRaiseAngriffAt != null
                   ? () => onRaiseAngriffAt!(angriffe[i].id)
@@ -141,6 +143,8 @@ class _AngriffseSection extends StatelessWidget {
 class _AngriffRow extends StatelessWidget {
   const _AngriffRow({
     required this.angriff,
+    required this.wirkAt,
+    required this.wirkTp,
     required this.isEditing,
     required this.onEdit,
     required this.onDelete,
@@ -149,6 +153,10 @@ class _AngriffRow extends StatelessWidget {
   });
 
   final HeroCompanionAttack angriff;
+
+  /// Wirksame AT und TP (Steigerung und Reittier-Ausbildung eingerechnet).
+  final int? wirkAt;
+  final String wirkTp;
   final bool isEditing;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
@@ -158,11 +166,11 @@ class _AngriffRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    // Effektive AT/PA aus der gemeinsamen Regel (nur im View-Modus anzeigen).
-    final effAt = begleiterAngriffAt(angriff);
+    // Wirksame AT/PA/TP aus den gemeinsamen Regeln (nur im View-Modus).
     final effPa = begleiterAngriffPa(angriff);
-    final showAt = isEditing ? angriff.at : effAt;
+    final showAt = isEditing ? angriff.at : wirkAt;
     final showPa = isEditing ? angriff.pa : effPa;
+    final showTp = isEditing ? angriff.tp : wirkTp;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Column(
@@ -226,10 +234,7 @@ class _AngriffRow extends StatelessWidget {
                   ],
                 ),
               ),
-              Expanded(
-                flex: 2,
-                child: Text(angriff.tp.isEmpty ? '–' : angriff.tp),
-              ),
+              Expanded(flex: 2, child: Text(showTp.isEmpty ? '–' : showTp)),
               if (isEditing) ...[
                 IconButton(
                   icon: const Icon(Icons.edit_outlined, size: 18),

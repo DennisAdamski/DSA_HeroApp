@@ -69,7 +69,8 @@ bool istZukunftsWertPfad(String pfad) => !pfad.endsWith('/$zukunftsfeld');
 /// Text-Overrides, eine Ritualkategorie mit Zusatzfeld und Ritual, eine
 /// magische Sonderfertigkeit, Personen, Notiz, SE und Beute im laufenden
 /// Abenteuer, einen Kontakt, einen Begleiter mit Angriff, Bewegung, SF,
-/// Ruestung und Ritualkategorie, eine Gruppe, einen offenen
+/// Ruestung und Ritualkategorie, ein Reittier mit Ausbildungsstand und
+/// Katalog-SF, eine Gruppe, einen offenen
 /// Reiseberichtseintrag, ein Geburtsdatum, ein Galeriebild mit Gesichtsbefund,
 /// einen Avatar-Schnappschuss und einen Verlaufseintrag.
 Zukunftsheld mitZukunftsfeldern(Map<String, dynamic> heldJson) {
@@ -105,6 +106,8 @@ Map<String, Object?> _aufzaehlungen(Map<String, dynamic> basis) {
     'ritualCategories/0/knowledgeMode': zukunftsWert,
     'ritualCategories/0/additionalFieldDefs/0/type': zukunftsWert,
     'companions/0/typ': zukunftsWert,
+    'companions/1/reittierAusbildung/ausgangsstufe': zukunftsWert,
+    'companions/1/reittierAusbildung/schritte/0/art': zukunftsWert,
     'adventures/0/status': zukunftsWert,
     'adventures/0/seRewards/0/targetType': zukunftsWert,
     'adventures/0/lootRewards/0/itemType': zukunftsWert,
@@ -247,7 +250,9 @@ HeroSheet bearbeiteVerschachtelteModelle(HeroSheet held) {
   final basiswert = held.statModifiers.entries.first;
   final eigenschaft = held.attributeModifiers.entries.first;
   final abenteuer = held.adventures.first;
-  final begleiter = held.companions.single;
+  final begleiter = held.companions.first;
+  final reittier = held.companions[1];
+  final ausbildung = reittier.reittierAusbildung!;
   final offen = held.reisebericht.openEntries[_zukunftsReise]!.single;
   final bild = held.appearance.avatarGallery.single;
   return held.copyWith(
@@ -303,6 +308,17 @@ HeroSheet bearbeiteVerschachtelteModelle(HeroSheet held) {
         sonderfertigkeiten: <HeroCompanionSonderfertigkeit>[
           begleiter.sonderfertigkeiten.single.copyWith(beschreibung: 'Neu'),
         ],
+      ),
+      reittier.copyWith(
+        sonderfertigkeiten: <HeroCompanionSonderfertigkeit>[
+          reittier.sonderfertigkeiten.single.copyWith(beschreibung: 'Neu'),
+        ],
+        reittierAusbildung: ausbildung.copyWith(
+          varianteId: 'pvar_mittelschweres_streitross',
+          schritte: <ReittierAusbildungsschritt>[
+            ausbildung.schritte.single.copyWith(notiz: 'Gestüt'),
+          ],
+        ),
       ),
     ],
     gruppen: <HeroGruppenMitgliedschaft>[
@@ -555,6 +571,29 @@ List<String> _begleiterAbenteuerNotizen(Map<String, dynamic> basis) {
         ),
       ],
     ).toJson(),
+    const HeroCompanion(
+      id: 'begleiter-2',
+      name: 'Falbe',
+      typ: BegleiterTyp.reittier,
+      kk: 20,
+      loyalitaet: 12,
+      sonderfertigkeiten: <HeroCompanionSonderfertigkeit>[
+        HeroCompanionSonderfertigkeit(name: 'Stopp', katalogId: 'psf_stopp'),
+      ],
+      reittierAusbildung: ReittierAusbildung(
+        ausgangsstufe: ReittierAusbildungsstufe.erprobt,
+        ausgangsart: ReittierAusbildungsart.fundiert,
+        varianteId: 'pvar_leichtes_streitross',
+        schritte: <ReittierAusbildungsschritt>[
+          ReittierAusbildungsschritt(
+            nach: ReittierAusbildungsstufe.geschult,
+            art: ReittierAusbildungsart.fundiert,
+            ausbilder: 'Zureiter',
+          ),
+        ],
+        unartIds: <String>['punart_treten'],
+      ),
+    ).toJson(),
   ];
   _pruefe((basis['gruppen'] as List).isEmpty, 'keine Gruppen');
   basis['gruppen'] = <Object?>[
@@ -595,6 +634,10 @@ List<String> _begleiterAbenteuerNotizen(Map<String, dynamic> basis) {
     'companions/0/ruestungsTeile/0',
     'companions/0/ritualCategories/0',
     'companions/0/ritualCategories/0/ownKnowledge',
+    'companions/1',
+    'companions/1/sonderfertigkeiten/0',
+    'companions/1/reittierAusbildung',
+    'companions/1/reittierAusbildung/schritte/0',
     'gruppen/0',
     'reisebericht',
     'reisebericht/openEntries/$_zukunftsReise/0',

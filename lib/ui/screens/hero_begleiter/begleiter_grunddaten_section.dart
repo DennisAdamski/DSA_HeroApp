@@ -130,6 +130,9 @@ class _BegleiterDetailView extends StatelessWidget {
     this.onRaiseAngriffPa,
     this.onRaiseRk,
     this.vertrautenmagieKategorie,
+    this.onAusbildungsschritt,
+    this.onAusbildungsschrittZurueck,
+    this.onPferdeSf,
   });
 
   final HeroCompanion companion;
@@ -144,6 +147,11 @@ class _BegleiterDetailView extends StatelessWidget {
   final void Function(String attackId)? onRaiseAngriffPa;
   final VoidCallback? onRaiseRk;
   final HeroRitualCategory? vertrautenmagieKategorie;
+
+  /// Sofortbuchungen der Reittier-Ausbildung; `null`, solange sie ruhen.
+  final VoidCallback? onAusbildungsschritt;
+  final VoidCallback? onAusbildungsschrittZurueck;
+  final VoidCallback? onPferdeSf;
 
   @override
   Widget build(BuildContext context) {
@@ -204,6 +212,16 @@ class _BegleiterDetailView extends StatelessWidget {
                   onRaiseRegular: onRaiseRegular,
                   onRaisePool: onRaisePool,
                 ),
+                if (companion.typ == BegleiterTyp.reittier) ...[
+                  const SizedBox(height: _sectionSpacing),
+                  _AusbildungSection(
+                    companion: companion,
+                    isEditing: isEditing,
+                    onChanged: onChanged,
+                    onSchritt: onAusbildungsschritt,
+                    onSchrittZurueck: onAusbildungsschrittZurueck,
+                  ),
+                ],
                 const SizedBox(height: _sectionSpacing),
                 _AngriffseSection(
                   companion: companion,
@@ -236,6 +254,10 @@ class _BegleiterDetailView extends StatelessWidget {
                   companion: companion,
                   isEditing: isEditing,
                   onChanged: onChanged,
+                  onPferdeSf: companion.typ == BegleiterTyp.reittier
+                      ? onPferdeSf
+                      : null,
+                  zeigePferdeSf: companion.typ == BegleiterTyp.reittier,
                 ),
                 const SizedBox(height: _sectionSpacing),
                 _MerkmaleSection(

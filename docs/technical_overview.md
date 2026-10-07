@@ -479,6 +479,7 @@ mit älterer App per Sync die Felder einer neueren (Befunde ARCH-07-B5/B6):
   - Vor- und Nachteile: `HeroMerkmal` (`vorteilEintraege`/`nachteilEintraege`, ARCH-02);
   - Begleiter und Chronik: `HeroCompanion`, `HeroCompanionAttack`,
     `HeroCompanionSonderfertigkeit`, `HeroCompanionSpeed`,
+    `ReittierAusbildung`, `ReittierAusbildungsschritt`,
     `HeroAdventureEntry`, `HeroAdventureSeReward`, `HeroAdventureDateValue`,
     `HeroAdventurePersonEntry`, `HeroAdventureLootEntry`, `HeroNoteEntry`,
     `HeroConnectionEntry`, `HeroReisebericht`, `ReiseberichtOpenItem`,
@@ -531,11 +532,13 @@ mit älterer App per Sync die Felder einer neueren (Befunde ARCH-07-B5/B6):
   den Rohwert hält das Modell in `unbekannteEnumWerte` (JSON-Schlüssel →
   Rohwert, getrennt von `unbekannteFelder`), und `toJson` schreibt ihn
   anstelle des Ersatzes zurück. Fehlende oder leere Angaben gelten wie
-  bisher als fehlend. Betroffen sind 18 Felder: `HeroInventoryEntry`
+  bisher als fehlend. Betroffen sind 22 Felder: `HeroInventoryEntry`
   (`itemType`, `source`, `traegerTyp`), `InventoryItemModifier` (`kind`),
   `MainWeaponSlot` (`combatType`), `OffhandEquipmentEntry` (`type`,
   `shieldSize`), `WaffenmeisterBonus` (`type`), `HeroRitualCategory`
   (`knowledgeMode`), `HeroRitualFieldDef` (`type`), `HeroCompanion` (`typ`),
+  `ReittierAusbildung` (`ausgangsstufe`, `ausgangsart`),
+  `ReittierAusbildungsschritt` (`nach`, `art`),
   `HeroAdventureEntry` (`status`), `HeroAdventureSeReward` (`targetType`),
   `HeroAdventureLootEntry` (`itemType`), `SpellDuration` (`unit`),
   `DiceLogEntry` (`type`, `automaticOutcome`), `ZustandsBuchung` (`art`,
@@ -2405,6 +2408,36 @@ gesperrtes Haekchen mit Quelle; `LernspaltenMarke` erklaert jede
 verschobene Spalte per Tooltip. Der Textweg kennt
 keine Lernspalten: freie und mehrdeutige Texte wirken nicht, und der
 Aequivalenztest nimmt `lernspalte` bewusst aus.
+
+### 4.12 Reittiere: Ausbildung und Wirkwerte
+
+Reittiere entwickeln sich nur über die Ausbildung nach Zoo-Botanica
+Aventurica S. 32–37, nicht über AP; die AP-Steigerung (Komplexität F) bleibt
+den Vertrauten. Den Stand hält `HeroCompanion.reittierAusbildung`
+(`ReittierAusbildung`, nur bei Belegung im JSON). Die eingetragenen Werte
+des Tiers gelten als Werte der `ausgangsstufe`; erst die in der App
+gebuchten Schritte, die Variante beim Schritt nach „geschult“ (samt LO +3)
+und die Unarten wirken, und zwar abgeleitet:
+
+- `reittier_ausbildung_rules.dart`: Stufe, Modifikationen und Herleitung
+  (ländlich nach fundiert halbiert, abgerundet), nächste Schritte mit
+  Sperrgrund, Reiten-Modifikator je Stufe (Kampfpferd, ländlich, Magierpferd)
+  und Lernbarkeit von Pferde-SF (Abrichten +5, Nervosität +8, Lernfähig −1).
+- `begleiter_wirkwert_rules.dart`: Wirkwert = Grundwert + Steigerung +
+  Ausbildung (KK, LO, AT aller Angriffe, TP nur bei Tritten, GS Trab/Galopp,
+  Trag-/Zugkraftfaktor). `companionEffektivwert` bleibt ohne Ausbildung, weil
+  die Vertrauten-Steigerung darauf aufbaut.
+- `reittier_ausbildung_aenderung_rules.dart`: Sofortbuchungen (Schritt,
+  Rücknahme, Pferde-SF) mit Prüfung des Dialogstands.
+- `reittier_ausbilderprobe_rules.dart`: gewürfelte Ausbilderproben über
+  `talentprobeFuer`.
+
+Die Katalogdaten (Stufenschritte, Varianten, Pferde-SF, Unarten) sind
+Dart-Konstanten in `lib/catalog/reittier_ausbildung_katalog.dart` und
+`pferde_sf_katalog.dart`; `reittier_ausbildung.json` ist nur ihr geprüfter
+Spiegel. Die Reit-SF Reiterkampf, Turnier- und Kriegsreiterei stehen im
+Kampf-SF-Katalog. Regelquellen, Entscheidungen und die Folgepakete
+(Spielansicht, Gefecht) stehen in `docs/reittier_plan.md`.
 
 ## 5. Zustandsverwaltung (State Layer)
 
