@@ -28,10 +28,18 @@ export 'package:dsa_heldenverwaltung/domain/combat_config/inventar_verweise.dart
 /// Die Reihenfolge ist stabil: Waffen → deren Geschosse → Ruestung → Nebenhand.
 /// Jeder Eintrag traegt die Instanz-ID, auf die sein Slot verweist
 /// (`inventarInstanzId`, ARCH-03), sonst keine.
+///
+/// Ausgeruestet — und damit mit wirksamen Inventarmodifikatoren — ist eine
+/// Waffe nur in der Hand (gewaehlte Hauptwaffe oder Nebenhand), ein Schild
+/// bzw. eine Parierwaffe nur in der Nebenhand, ein Ruestungsteil nur
+/// angelegt (Entscheidung vom 07.10.2026). So wirken Modifikatoren auf
+/// dieselben Exemplare wie die Kampfwerte.
 List<HeroInventoryEntry> buildExpectedLinkedEntries(CombatConfig config) {
   final result = <HeroInventoryEntry>[];
+  final slots = config.weaponSlots;
 
-  for (final slot in config.weaponSlots) {
+  for (var index = 0; index < slots.length; index++) {
+    final slot = slots[index];
     final name = slot.name.trim();
     if (name.isEmpty) continue;
 
@@ -44,7 +52,7 @@ List<HeroInventoryEntry> buildExpectedLinkedEntries(CombatConfig config) {
         sourceRef: waffenVerweis.sourceRef,
         slotRef: waffenVerweis.slotRef,
         instanzId: _instanzOderNull(slot.inventarInstanzId),
-        istAusgeruestet: true,
+        istAusgeruestet: _waffeInDerHand(config, index),
         isMagisch: slot.isArtifact,
         magischDescription: slot.artifactDescription,
         isGeweiht: slot.isGeweiht,
@@ -94,7 +102,9 @@ List<HeroInventoryEntry> buildExpectedLinkedEntries(CombatConfig config) {
     );
   }
 
-  for (final equipment in config.offhandEquipment) {
+  final teile = config.offhandEquipment;
+  for (var index = 0; index < teile.length; index++) {
+    final equipment = teile[index];
     final name = equipment.name.trim();
     if (name.isEmpty) continue;
     final nebenhandVerweis = verweisFuerNebenhand(equipment);
@@ -106,7 +116,7 @@ List<HeroInventoryEntry> buildExpectedLinkedEntries(CombatConfig config) {
         sourceRef: nebenhandVerweis.sourceRef,
         slotRef: nebenhandVerweis.slotRef,
         instanzId: _instanzOderNull(equipment.inventarInstanzId),
-        istAusgeruestet: true,
+        istAusgeruestet: config.offhandAssignment.equipmentIndex == index,
         isMagisch: equipment.isArtifact,
         magischDescription: equipment.artifactDescription,
         isGeweiht: equipment.isGeweiht,
@@ -116,6 +126,13 @@ List<HeroInventoryEntry> buildExpectedLinkedEntries(CombatConfig config) {
   }
 
   return result;
+}
+
+// Ob die Waffe an [index] gefuehrt wird: als gewaehlte Hauptwaffe oder in
+// der Nebenhand.
+bool _waffeInDerHand(CombatConfig config, int index) {
+  final haupt = config.hasSelectedWeapon && config.selectedWeaponIndex == index;
+  return haupt || config.offhandAssignment.weaponIndex == index;
 }
 
 // Leere Instanz-ID am Slot heisst „noch nicht gebunden“.

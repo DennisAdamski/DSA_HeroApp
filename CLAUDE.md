@@ -216,7 +216,9 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   übernehmen“ holt es zurück; Geschosse gehen nie still verloren.
   Zusammenführen gleicher Stapel liegt in `inventar_stapel_rules.dart`,
   Verkaufen (Erlös auf den Geldstand) in `inventar_verkauf_rules.dart`;
-  `gewichtGramm`/`wertSilber` gelten pro Stück (`inventar_summen_rules.dart`). Formataenderungen
+  `gewichtGramm`/`wertSilber` gelten pro Stück (`inventar_summen_rules.dart`).
+  Verknüpfte Waffen/Nebenhandteile gelten nur in der Hand als ausgerüstet
+  (Abgleich setzt `istAusgeruestet`), nur dann wirken ihre Modifikatoren. Formataenderungen
   aendern Inhalts-Hashes; Bestandsfixtures und Hash-Pins nur gemeinsam mit
   ihnen aktualisieren. Den Mischbetrieb bildet
   `test/test_support/veroeffentlichte_app.dart` nach.

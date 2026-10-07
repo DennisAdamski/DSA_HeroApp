@@ -5,7 +5,9 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dsa_heldenverwaltung/data/hero_transfer_codec.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
+import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_transfer_bundle.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/inventar_menge_rules.dart';
 
@@ -185,9 +187,21 @@ Set<String> ersteSpeicherungPfade(HeroSheet held) {
       'inventoryEntries/$i/instanzId',
       if (inventarZahlAusText(eintraege[i].anzahl) != null)
         'inventoryEntries/$i/menge',
+      // Waffen und Nebenhandteile gelten seit dem 07.10.2026 nur in der Hand
+      // als ausgerüstet; das erste Speichern gleicht das an.
+      if (_inDerHandAbgeglichen(eintraege[i]))
+        'inventoryEntries/$i/istAusgeruestet',
     },
     ...slotInstanzPfade(held),
   };
+}
+
+// Verknüpfte Waffe oder verknüpftes Nebenhandteil.
+bool _inDerHandAbgeglichen(HeroInventoryEntry e) {
+  final quelle = e.source;
+  return e.sourceRef != null &&
+      (quelle == InventoryItemSource.waffe ||
+          quelle == InventoryItemSource.nebenhand);
 }
 
 /// JSON-Pfade von `inventarInstanzId` an jedem benannten Slot von [held]:

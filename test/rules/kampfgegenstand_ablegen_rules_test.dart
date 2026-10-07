@@ -317,7 +317,8 @@ void main() {
       expect(eintrag.abgelegt, isNull);
       expect(eintrag.beschreibung, 'Erbstück');
       expect(eintrag.gewichtGramm, 1600);
-      expect(eintrag.istAusgeruestet, isTrue);
+      // Zurück in der Waffenliste, aber nicht in der Hand.
+      expect(eintrag.istAusgeruestet, isFalse);
     });
 
     test('ein Geschoss kommt mit seiner Menge an die gewählte Waffe', () {

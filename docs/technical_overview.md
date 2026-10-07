@@ -1020,7 +1020,7 @@ Inventarfelder fuer Quelle, Gewicht, Wert, Modifier und magisch/geweiht.
 | `source` | Herkunft des Eintrags (`manuell`, Kampf-Sync oder `abenteuer`) |
 | `sourceRef` | Namensverweis auf einen Kampf-Slot (`w:<Name>` …), den auch die veröffentlichte App versteht, oder Verweis auf Abenteuerbeute |
 | `slotRef` | Stabiler ID-Verweis auf den Kampf-Slot (`w#<id>` …); nur geschrieben, wenn belegt |
-| `istAusgeruestet` | Steuert, ob Modifier des Eintrags aktiv wirken |
+| `istAusgeruestet` | Steuert, ob Modifier des Eintrags aktiv wirken. Bei verknüpften Einträgen setzt der Abgleich ihn (07.10.2026): Waffe nur in der Hand (gewählte Hauptwaffe oder Nebenhand), Schild/Parierwaffe nur in der Nebenhand, Rüstungsteil nur angelegt |
 | `modifiers` | Typisierte Inventar-Modifikatoren |
 | `gewichtGramm` | Numerisches Gewicht in Gramm **pro Stück** (ARCH-03, 07.10.2026); Summen rechnen Menge × Stückgewicht, offene Menge = 1 Stück (`inventar_summen_rules.dart`) |
 | `wertSilber` | Numerischer Wert in Silbertalern **pro Stück**; Summen wie beim Gewicht |
