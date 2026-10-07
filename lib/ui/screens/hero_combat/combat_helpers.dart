@@ -1,4 +1,14 @@
 // Gemeinsame Hilfsfunktionen fuer die Kampf-Subtab-Widgets.
+
+// Talent- und Waffenartauflösung liegen als Regel bei der Slotprüfung
+// (ARCH-05); die Widgets beziehen sie weiter über diese Datei.
+export 'package:dsa_heldenverwaltung/rules/derived/kampf_slot_pruefung_rules.dart'
+    show
+        combatTypeFromTalent,
+        normalizeToken,
+        parseWeaponCategoryValues,
+        weaponTypeOptionsForTalent;
+
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
@@ -6,6 +16,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/combat_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_stat_inputs.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/kampf_slot_pruefung_rules.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 
 /// Kampfvorschau des Kampf-Tabs mit denselben Eingaben wie Inspector und
@@ -57,13 +68,6 @@ String combatTypeLabel(WeaponCombatType combatType) {
   return combatType == WeaponCombatType.ranged ? 'Fernkampf' : 'Nahkampf';
 }
 
-/// Leitet den Kampftyp eines Talents aus seinem `type`-Feld ab.
-WeaponCombatType combatTypeFromTalent(TalentDef talent) {
-  return talent.type.trim().toLowerCase() == 'fernkampf'
-      ? WeaponCombatType.ranged
-      : WeaponCombatType.melee;
-}
-
 /// Sortiert eine Liste von Kampftalenten alphabetisch nach Name.
 List<TalentDef> sortedCombatTalents(List<TalentDef> combatTalents) {
   final talents = List<TalentDef>.from(combatTalents, growable: false)
@@ -93,69 +97,6 @@ TalentDef? findTalentById(List<TalentDef> talents, String talentId) {
     }
   }
   return null;
-}
-
-/// Normalisiert einen String-Token fuer case-insensitiven Vergleich.
-String normalizeToken(String raw) {
-  var value = raw.trim().toLowerCase();
-  value = value
-      .replaceAll(String.fromCharCode(228), 'ae')
-      .replaceAll(String.fromCharCode(246), 'oe')
-      .replaceAll(String.fromCharCode(252), 'ue')
-      .replaceAll(String.fromCharCode(223), 'ss');
-  return value.replaceAll(RegExp(r'[^a-z0-9]+'), '');
-}
-
-/// Parst Waffen-Kategorien aus einem mehrzeiligen String.
-List<String> parseWeaponCategoryValues(String raw) {
-  final seen = <String>{};
-  final values = <String>[];
-  for (final token in raw.split(RegExp(r'[\n,;]+'))) {
-    final trimmed = token.trim();
-    if (trimmed.isEmpty || seen.contains(trimmed)) {
-      continue;
-    }
-    seen.add(trimmed);
-    values.add(trimmed);
-  }
-  return values;
-}
-
-/// Gibt die Waffenart-Optionen fuer ein Talent zurueck.
-List<String> weaponTypeOptionsForTalent({
-  required TalentDef? talent,
-  required RulesCatalog catalog,
-  required WeaponCombatType combatType,
-}) {
-  if (talent == null) {
-    return const <String>[];
-  }
-  final seen = <String>{};
-  final options = <String>[];
-  final talentNameToken = normalizeToken(talent.name);
-  for (final weapon in catalog.weapons) {
-    if (weaponCombatTypeFromJson(weapon.type) != combatType) {
-      continue;
-    }
-    if (normalizeToken(weapon.combatSkill) != talentNameToken) {
-      continue;
-    }
-    final name = weapon.name.trim();
-    if (name.isEmpty || seen.contains(name)) {
-      continue;
-    }
-    seen.add(name);
-    options.add(name);
-  }
-  for (final fallback in parseWeaponCategoryValues(talent.weaponCategory)) {
-    if (seen.contains(fallback)) {
-      continue;
-    }
-    seen.add(fallback);
-    options.add(fallback);
-  }
-  options.sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
-  return options;
 }
 
 /// Findet die Talent-ID zu einem Kampftalent-Namen aus dem Katalog.
