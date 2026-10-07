@@ -479,6 +479,7 @@ mit älterer App per Sync die Felder einer neueren (Befunde ARCH-07-B5/B6):
   - Vor- und Nachteile: `HeroMerkmal` (`vorteilEintraege`/`nachteilEintraege`, ARCH-02);
   - Begleiter und Chronik: `HeroCompanion`, `HeroCompanionAttack`,
     `HeroCompanionSonderfertigkeit`, `HeroCompanionSpeed`,
+    `ReittierAusbildung`, `ReittierAusbildungsschritt`,
     `HeroAdventureEntry`, `HeroAdventureSeReward`, `HeroAdventureDateValue`,
     `HeroAdventurePersonEntry`, `HeroAdventureLootEntry`, `HeroNoteEntry`,
     `HeroConnectionEntry`, `HeroReisebericht`, `ReiseberichtOpenItem`,
@@ -531,11 +532,13 @@ mit älterer App per Sync die Felder einer neueren (Befunde ARCH-07-B5/B6):
   den Rohwert hält das Modell in `unbekannteEnumWerte` (JSON-Schlüssel →
   Rohwert, getrennt von `unbekannteFelder`), und `toJson` schreibt ihn
   anstelle des Ersatzes zurück. Fehlende oder leere Angaben gelten wie
-  bisher als fehlend. Betroffen sind 18 Felder: `HeroInventoryEntry`
+  bisher als fehlend. Betroffen sind 22 Felder: `HeroInventoryEntry`
   (`itemType`, `source`, `traegerTyp`), `InventoryItemModifier` (`kind`),
   `MainWeaponSlot` (`combatType`), `OffhandEquipmentEntry` (`type`,
   `shieldSize`), `WaffenmeisterBonus` (`type`), `HeroRitualCategory`
   (`knowledgeMode`), `HeroRitualFieldDef` (`type`), `HeroCompanion` (`typ`),
+  `ReittierAusbildung` (`ausgangsstufe`, `ausgangsart`),
+  `ReittierAusbildungsschritt` (`nach`, `art`),
   `HeroAdventureEntry` (`status`), `HeroAdventureSeReward` (`targetType`),
   `HeroAdventureLootEntry` (`itemType`), `SpellDuration` (`unit`),
   `DiceLogEntry` (`type`, `automaticOutcome`), `ZustandsBuchung` (`art`,
