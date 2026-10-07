@@ -276,7 +276,20 @@ void main() {
     for (final heldId in <String>[id, kopieId]) {
       final export = jsonDecode(await speicher.actions.buildExportJson(heldId));
       final heldJson = (export as Map)['hero'];
+      if (heldId == kopieId) {
+        // Der Export trägt keine Bilddaten: Unter neuer ID zeigte der
+        // Galerieeintrag auf die Datei des Originals, der Import lässt ihn
+        // deshalb weg, mit dem Primärbild auch dessen Schnappschuss
+        // (ARCH-05, `HeldImportieren`; wie `removeGalleryImage`).
+        expect(heldJson['avatarGallery'], isEmpty, reason: kopieId);
+        expect(heldJson['avatarSnapshot'], isNull, reason: kopieId);
+      }
       for (final feldPfad in zukunft.pfade) {
+        if (heldId == kopieId &&
+            (feldPfad.startsWith('avatarGallery/') ||
+                feldPfad.startsWith('avatarSnapshot/'))) {
+          continue;
+        }
         expect(
           wertAn(heldJson, feldPfad),
           wertAn(zukunft.json, feldPfad),
