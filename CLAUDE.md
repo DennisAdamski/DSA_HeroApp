@@ -927,7 +927,9 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
 - Dateinamen dürfen nie aus `heroId` und `entryId` rekonstruiert werden:
   Bestandshelden tragen den Legacy-Eintrag `{heroId}_legacy` mit dem Dateinamen
   `{heroId}.png`, der dabei verlorenginge. Maßgeblich ist immer
-  `AvatarGalleryEntry.fileName`.
+  `AvatarGalleryEntry.fileName`. Der Import
+  (`lib/ablaeufe/held_importieren.dart`) übernimmt deshalb den Namen, den die
+  Ablage zurückgibt, nie den aus dem Export.
 - Ob ein Held ein Bild hat, beantwortet `HeroAppearance.hatBild`, welches
   angezeigt wird `HeroAppearance.aktivesBild`. `avatarFileName` bleibt als
   Bestandsfeld im Modell (Entfernen erzeugte auf jedem Gerät einen Helden-Diff
