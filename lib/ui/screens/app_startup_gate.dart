@@ -20,6 +20,7 @@ import 'package:dsa_heldenverwaltung/data/hive_externe_helden_repository.dart';
 import 'package:dsa_heldenverwaltung/data/hive_hero_repository.dart';
 import 'package:dsa_heldenverwaltung/data/hive_offline_hero_review_store.dart';
 import 'package:dsa_heldenverwaltung/data/hive_settings_repository.dart';
+import 'package:dsa_heldenverwaltung/data/hive_sync_basis_store.dart';
 import 'package:dsa_heldenverwaltung/data/hive_sync_metadata_store.dart';
 import 'package:dsa_heldenverwaltung/data/hive_vorgangsjournal.dart';
 import 'package:dsa_heldenverwaltung/data/house_rule_pack_repository.dart';
@@ -83,6 +84,7 @@ class _AppStartupGateState extends State<AppStartupGate> {
   SyncingHeroRepository? _activeSyncingRepository;
   HiveSyncMetadataStore? _activeMetadataStore;
   HiveOfflineHeroReviewStore? _activeOfflineReviewStore;
+  HiveSyncBasisStore? _activeBasisStore;
   HiveVorgangsjournal? _activeVorgangsjournal;
 
   /// Verhindert, dass ein Kontowechsel einen zweiten Backfill startet, waehrend
@@ -145,6 +147,10 @@ class _AppStartupGateState extends State<AppStartupGate> {
     if (offlineReviewStore != null) {
       unawaited(offlineReviewStore.close());
     }
+    final basisStore = _activeBasisStore;
+    if (basisStore != null) {
+      unawaited(basisStore.close());
+    }
     final vorgangsjournal = _activeVorgangsjournal;
     if (vorgangsjournal != null) {
       unawaited(vorgangsjournal.close());
@@ -206,6 +212,11 @@ class _AppStartupGateState extends State<AppStartupGate> {
       if (previousOfflineReviewStore != null) {
         await previousOfflineReviewStore.close();
       }
+      final previousBasisStore = _activeBasisStore;
+      _activeBasisStore = null;
+      if (previousBasisStore != null) {
+        await previousBasisStore.close();
+      }
       final previousVorgangsjournal = _activeVorgangsjournal;
       _activeVorgangsjournal = null;
       if (previousVorgangsjournal != null) {
@@ -252,6 +263,7 @@ class _AppStartupGateState extends State<AppStartupGate> {
       SyncingHeroRepository? syncingRepository;
       HiveSyncMetadataStore? metadataStore;
       HiveOfflineHeroReviewStore? offlineReviewStore;
+      HiveSyncBasisStore? basisStore;
       HeroRepository heroRepository = hive;
       if (authUid != null && widget.firebaseBootstrap.isAccountSyncAvailable) {
         debugPrint('[startup] syncing.create for uid=$authUid');
@@ -262,11 +274,15 @@ class _AppStartupGateState extends State<AppStartupGate> {
         offlineReviewStore = await HiveOfflineHeroReviewStore.create(
           storagePath: heroStoragePath,
         );
+        basisStore = await HiveSyncBasisStore.create(
+          storagePath: heroStoragePath,
+        );
         syncingRepository = SyncingHeroRepository(
           local: hive,
           remote: remoteRepo,
           metadataStore: metadataStore,
           offlineReviewStore: offlineReviewStore,
+          basisStore: basisStore,
           accountId: authUid,
           accountEmail: widget.authUser?.email,
         );
@@ -303,6 +319,9 @@ class _AppStartupGateState extends State<AppStartupGate> {
         if (offlineReviewStore != null) {
           await offlineReviewStore.close();
         }
+        if (basisStore != null) {
+          await basisStore.close();
+        }
         await vorgangsjournal.close();
         await hive.close();
         await externeHeldenRepository.close();
@@ -320,6 +339,7 @@ class _AppStartupGateState extends State<AppStartupGate> {
       _activeSyncingRepository = syncingRepository;
       _activeMetadataStore = metadataStore;
       _activeOfflineReviewStore = offlineReviewStore;
+      _activeBasisStore = basisStore;
       _activeExterneHeldenRepository = externeHeldenRepository;
       debugPrint('[startup] done');
       return _HeroRepositoryBootstrapResult(

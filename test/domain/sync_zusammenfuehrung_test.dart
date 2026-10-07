@@ -354,6 +354,31 @@ void main() {
     });
   });
 
+  test('legen beide Seiten eine Liste neu an, zählt jedes Element', () {
+    final ergebnis = _fuehre(
+      {'name': 'A'},
+      {
+        'name': 'A',
+        'buchungen': [
+          {'id': 'a'},
+        ],
+      },
+      {
+        'name': 'A',
+        'buchungen': [
+          {'id': 'b'},
+        ],
+      },
+      regeln: zustandZusammenfuehrungsRegeln,
+    );
+
+    expect(ergebnis.vollstaendig, isTrue);
+    expect(ergebnis.ergebnis['buchungen'], [
+      {'id': 'a'},
+      {'id': 'b'},
+    ]);
+  });
+
   test('ein Präfix trennt Schlüssel von Held und Zustand', () {
     final ergebnis = fuehreSyncZusammen(
       basis: {'name': 'A'},
