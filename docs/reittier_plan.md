@@ -1,6 +1,6 @@
 # Reittiere: Ausbildung, Reiterkampf, Spiel
 
-Stand: Paket P1 in Arbeit. Dieses Dokument hält die Regelquellen, die getroffenen
+Stand: Paket P1 umgesetzt (8. Oktober 2026), P2 und P3 offen. Dieses Dokument hält die Regelquellen, die getroffenen
 Entscheidungen und die Paketaufteilung für Pferde und andere Reittiere fest.
 Belege stammen aus dem dsa-rules MCP.
 
@@ -14,7 +14,7 @@ an; Ausbildung ist Freitext, und Reiterkampf ist nicht modelliert.
 
 | Paket | Inhalt | Stand |
 |---|---|---|
-| P1 Pferd-Grundlage | Reit-SF im Katalog, Ausbildungskatalog, Ausbildungsmodell am Begleiter, abgeleitete Wirkwerte, Ausbildungsschritte und Pferde-SF im Begleiter-Tab, gewürfelte Ausbildungsproben | in Arbeit |
+| P1 Pferd-Grundlage | Reit-SF im Katalog, Ausbildungskatalog, Ausbildungsmodell am Begleiter, abgeleitete Wirkwerte, Ausbildungsschritte und Pferde-SF im Begleiter-Tab, gewürfelte Ausbildungsproben | umgesetzt |
 | P2 Spielansicht | laufende LeP/AuP/Wunden je Begleiter im `HeroState`, Begleiterkarte in `lib/ui2/spielen/`, LO-Probe, Reiten-Probe mit Stufenmodifikator, Pferdeangriffe würfeln, Rittmeister-Boni | offen |
 | P3 Gefecht | Schalter „Beritten“, Reiter-SF-Boni nach Hausregel, Reit-AT/PA, Pferdemanöver, Sturmangriff zu Pferd, Pferd als Ziel | offen |
 
@@ -109,6 +109,25 @@ Reittieren den Abschnitt „Reittier-Ausbildung“
   Grund im Dialog; gebucht werden kann trotzdem (Zureiter).
 
 Texte setzt `reittier_ausbildung_anzeige_rules.dart` zusammen.
+
+## Offene Punkte nach P1
+
+- **Langtexte der Reit-SF:** `erklarung_lang` fehlt bei Reiterkampf, Turnier-
+  und Kriegsreiterei. Die übrigen Kampf-SF tragen es verschlüsselt; ergänzen
+  nur über `tool/encrypt_catalog_fields.py` mit Katalogpasswort.
+- **Rittmeister:** Boni auf das Pferd (AT/PA/TP, GS, MR je Kategorie) und die
+  Rückfallregel ohne geschultes Pferd kommen mit P2/P3; ein Hausregel-Patch
+  liefe ohne aktives Epik-Paket ins Leere.
+- **AU:** Der Begleiter führt einen einzigen AU-Wert; AU-Modifikationen für
+  Trab/Galopp stehen nur in der Herleitung.
+- **Gangarten:** Trab und Galopp werden am Namen der Geschwindigkeit erkannt.
+  Ein Vorlagenknopf „Gangarten anlegen“ (Schritt/Trab/Galopp) fehlt noch;
+  „Schritt 1,5“ aus der ZBA ist als ganze Zahl nicht darstellbar.
+- **Rassenvorlagen:** Die ZBA-Rasseneinträge nennen Werte und geeignete,
+  mögliche und unmögliche Ausbildungsvarianten. Ein Rassenkatalog zum
+  Vorbelegen ist nicht umgesetzt; der Capriola-Ausschluss prüft nur Familie
+  und Gattung als Text.
+- **Pferde-Vor-/Nachteile** bleiben Freitext.
 
 ## Regelquellen
 
