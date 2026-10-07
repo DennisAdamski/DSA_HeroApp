@@ -3,6 +3,9 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dsa_heldenverwaltung/catalog/catalog_loader.dart';
+import 'package:dsa_heldenverwaltung/catalog/catalog_section_id.dart';
+import 'package:dsa_heldenverwaltung/catalog/house_rule_catalog_resolver.dart';
+import 'package:dsa_heldenverwaltung/catalog/house_rule_pack.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -21,6 +24,43 @@ void main() {
       expect(packIds, contains('epic_rules_v1'));
       expect(packIds, contains('regelwerk_ueberarbeitung_v1'));
       expect(packIds, contains('regelwerk_ueberarbeitung_v1.talents_learning'));
+    },
+  );
+
+  test(
+    'system pack overlays the riding SFs with the house rule (S. 19 f.)',
+    () async {
+      const loader = CatalogLoader();
+      final baseData = await loader.loadDefaultSourceData();
+      final snapshot = await loader.loadBuiltInHouseRulePacks(
+        catalogVersion: baseData.version,
+      );
+      final result = HouseRuleCatalogResolver.resolve(
+        baseData: baseData,
+        packCatalog: HouseRulePackCatalog(packs: snapshot.packs),
+        activePackIds: const <String>{
+          'regelwerk_ueberarbeitung_v1',
+          'regelwerk_ueberarbeitung_v1.system',
+        },
+      );
+      final kampfSf = result.resolvedBaseData.entriesFor(
+        CatalogSectionId.combatSpecialAbilities,
+      );
+      String beschreibung(String id) =>
+          kampfSf.firstWhere((entry) => entry['id'] == id)['beschreibung']
+              as String;
+
+      final meldungen = result.issues.map(
+        (issue) => '${issue.packId} ${issue.entryId}: ${issue.message}',
+      );
+      expect(meldungen, isEmpty);
+      expect(beschreibung('ksf_reiterkampf'), startsWith('Hausregel:'));
+      expect(beschreibung('ksf_kriegsreiterei'), startsWith('Hausregel:'));
+      // Turnierreiterei bleibt laut Hausregel unveraendert.
+      expect(
+        beschreibung('ksf_turnierreiterei'),
+        isNot(startsWith('Hausregel')),
+      );
     },
   );
 
