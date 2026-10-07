@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
+import 'package:dsa_heldenverwaltung/ablaeufe/held_importieren.dart';
 import 'package:dsa_heldenverwaltung/ablaeufe/held_schreiben.dart';
 import 'package:dsa_heldenverwaltung/ablaeufe/zustand_schreiben.dart';
 import 'package:dsa_heldenverwaltung/catalog/catalog_runtime_data.dart';
@@ -457,114 +458,87 @@ class HeroActions {
 
   /// Importiert ein [HeroTransferBundle] gemaess der Konfliktloesung.
   ///
-  /// Bei [ImportConflictResolution.createNewHero] wird eine neue UUID vergeben.
-  /// Gibt die ID des importierten (ggf. neu erstellten) Helden zurueck.
-  ///
-  /// Wirft eine Exception, wenn bei [ImportConflictResolution.createNewHero]
-  /// das Helden-Limit von [maxHeldenProNutzer] erreicht ist.
+  /// Kompatibilitätseinstieg für [importiereHeld]; liefert nur die ID des
+  /// importierten (ggf. neu erstellten) Helden.
   Future<String> importHeroBundle(
     HeroTransferBundle bundle, {
     required ImportConflictResolution resolution,
   }) async {
-    if (resolution == ImportConflictResolution.createNewHero) {
-      final repo = _ref.read(heroRepositoryProvider);
-      final existingHeroes = await repo.listHeroes();
-      if (existingHeroes.length >= maxHeldenProNutzer) {
-        throw Exception(
-          'Maximale Anzahl von $maxHeldenProNutzer Helden erreicht. '
-          'Bitte lösche einen bestehenden Helden, bevor du einen neuen importierst.',
-        );
-      }
-    }
-    const uuid = Uuid();
+    final ergebnis = await importiereHeld(bundle, resolution: resolution);
+    return ergebnis.heroId;
+  }
 
-    var hero = bundle.hero;
-    var heroId = hero.id;
-    if (resolution == ImportConflictResolution.createNewHero) {
-      heroId = uuid.v4();
-      hero = hero.copyWith(id: heroId);
-    }
+  /// Importiert ein [HeroTransferBundle] über den Ablauf [HeldImportieren]
+  /// (ARCH-05) und wählt den Helden aus.
+  ///
+  /// Bei [ImportConflictResolution.createNewHero] wird eine neue UUID
+  /// vergeben. Wirft eine Exception, wenn die Ziel-ID noch nicht existiert
+  /// und das Helden-Limit von [maxHeldenProNutzer] erreicht ist. Bilder, die
+  /// sich nicht speichern lassen, fehlen im Helden und werden im Ergebnis
+  /// gezählt.
+  Future<HeldImportErgebnis> importiereHeld(
+    HeroTransferBundle bundle, {
+    required ImportConflictResolution resolution,
+  }) async {
+    final repo = _ref.read(heroRepositoryProvider);
+    final storage = _ref.read(avatarFileStorageProvider);
+    Future<String>? speicherpfad;
+    Future<String> heroStoragePath() =>
+        speicherpfad ??= _resolveHeroStoragePath();
 
-    final transferCatalogEntries = bundle.catalogEntries;
-    if (transferCatalogEntries != null && transferCatalogEntries.isNotEmpty) {
-      final runtimeData = await _ref.read(catalogRuntimeDataProvider.future);
-      final repository = _ref.read(customCatalogRepositoryProvider);
-      await repository.importTransferEntries(
-        catalogVersion: runtimeData.baseData.version,
-        entries: transferCatalogEntries
-            .map(
-              (entry) => CustomCatalogEntryRecord(
-                section: entry.section,
-                id: entry.id,
-                filePath: '',
-                data: entry.data,
+    final ablauf = HeldImportieren(
+      repository: repo,
+      speichere: saveHero,
+      uebernimmKatalog: _uebernimmTransferKatalog,
+      speichereGaleriebild:
+          ({required heroId, required entryId, required bytes}) async =>
+              storage.saveGalleryImage(
+                heroStoragePath: await heroStoragePath(),
+                heroId: heroId,
+                entryId: entryId,
+                pngBytes: bytes,
               ),
-            )
-            .toList(growable: false),
-      );
-      _ref.read(catalogActionsProvider).reloadCatalog();
-    }
-
-    await saveHero(hero);
-    await saveHeroState(heroId, bundle.state);
-
-    final hasGallery =
-        bundle.galleryImages != null && bundle.galleryImages!.isNotEmpty;
-    final hasLegacyAvatar =
-        bundle.avatarBase64 != null && bundle.avatarBase64!.isNotEmpty;
-
-    if (hasGallery || hasLegacyAvatar) {
-      final heroStoragePath = await _resolveHeroStoragePath();
-      final storage = _ref.read(avatarFileStorageProvider);
-
-      // Gallery-Bilder aus Bundle importieren (falls vorhanden)
-      if (hasGallery) {
-        final restoredGallery = <AvatarGalleryEntry>[];
-        for (final img in bundle.galleryImages!) {
-          final b64 = img['base64'] as String?;
-          if (b64 == null || b64.isEmpty) continue;
-          final entryJson = Map<String, dynamic>.from(img)..remove('base64');
-          final entry = AvatarGalleryEntry.fromJson(entryJson);
-          final pngBytes = base64Decode(b64);
-          await storage.saveGalleryImage(
-            heroStoragePath: heroStoragePath,
+      speichereHauptbild: ({required heroId, required bytes}) async =>
+          storage.saveAvatar(
+            heroStoragePath: await heroStoragePath(),
             heroId: heroId,
-            entryId: entry.id,
-            pngBytes: pngBytes,
-          );
-          restoredGallery.add(entry);
-        }
-        if (restoredGallery.isNotEmpty) {
-          final savedHero = await _loadHeroById(heroId);
-          await saveHero(
-            savedHero.copyWith(
-              appearance: savedHero.appearance.copyWith(
-                avatarGallery: restoredGallery,
-              ),
-            ),
-          );
-        }
-      }
-
-      // Legacy-Avatar aus Bundle importieren (falls vorhanden)
-      if (hasLegacyAvatar) {
-        final pngBytes = base64Decode(bundle.avatarBase64!);
-        final fileName = await storage.saveAvatar(
-          heroStoragePath: heroStoragePath,
-          heroId: heroId,
-          pngBytes: pngBytes,
-        );
-        final savedHero = await _loadHeroById(heroId);
-        await saveHero(
-          savedHero.copyWith(
-            appearance: savedHero.appearance.copyWith(avatarFileName: fileName),
+            pngBytes: bytes,
           ),
-        );
-      }
-    }
+      neueId: () => const Uuid().v4(),
+      uhr: DateTime.now,
+      maxHelden: maxHeldenProNutzer,
+    );
+    final ergebnis = await ablauf.importiere(
+      bundle,
+      neuAnlegen: resolution == ImportConflictResolution.createNewHero,
+    );
+    await _ref
+        .read(selectedHeroSelectionActionsProvider)
+        .selectHero(ergebnis.heroId);
+    return ergebnis;
+  }
 
-    await _ref.read(selectedHeroSelectionActionsProvider).selectHero(heroId);
-    return heroId;
+  // Legt eingebettete eigene Katalogeinträge eines Exports an und lädt den
+  // Katalog neu.
+  Future<void> _uebernimmTransferKatalog(
+    List<HeroTransferCatalogEntry> eintraege,
+  ) async {
+    final runtimeData = await _ref.read(catalogRuntimeDataProvider.future);
+    final repository = _ref.read(customCatalogRepositoryProvider);
+    await repository.importTransferEntries(
+      catalogVersion: runtimeData.baseData.version,
+      entries: eintraege
+          .map(
+            (entry) => CustomCatalogEntryRecord(
+              section: entry.section,
+              id: entry.id,
+              filePath: '',
+              data: entry.data,
+            ),
+          )
+          .toList(growable: false),
+    );
+    _ref.read(catalogActionsProvider).reloadCatalog();
   }
 
   /// Speichert ein KI-generiertes Avatar-Bild und legt einen Gallery-Eintrag an.

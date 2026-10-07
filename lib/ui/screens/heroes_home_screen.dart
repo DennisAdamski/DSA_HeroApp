@@ -573,20 +573,19 @@ class _HeroesHomeScreenState extends ConsumerState<HeroesHomeScreen> {
     required WorkspaceImportExportActions importExportActions,
   }) async {
     try {
-      final heroId = await importExportActions.importHeroData(
+      final ergebnis = await importExportActions.importHeroData(
         context: context,
         ref: ref,
       );
-      if (heroId == null || !context.mounted) {
+      if (ergebnis == null || !context.mounted) {
         return;
       }
-      await _openHeroWorkspace(context, heroId);
+      await _openHeroWorkspace(context, ergebnis.heroId);
       if (!context.mounted) {
         return;
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Held erfolgreich importiert')),
-      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(importMeldung(ergebnis))));
     } on FormatException catch (error) {
       if (!context.mounted) {
         return;
