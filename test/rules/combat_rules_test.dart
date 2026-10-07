@@ -144,7 +144,12 @@ void main() {
 
   test('TP/KK 0/0 disables TP/KK and INI/GE calculations', () {
     const combatConfig = CombatConfig(
-      mainWeapon: MainWeaponSlot(kkBase: 0, kkThreshold: 0, iniMod: 3),
+      mainWeapon: MainWeaponSlot(
+        name: 'Testwaffe',
+        kkBase: 0,
+        kkThreshold: 0,
+        iniMod: 3,
+      ),
     );
     final sheet = heroWithAttributes(
       kk: 18,
@@ -164,7 +169,7 @@ void main() {
 
   test('Ini Parade Mod is never negative', () {
     const baseCombatConfig = CombatConfig(
-      mainWeapon: MainWeaponSlot(kkBase: 15, kkThreshold: 3),
+      mainWeapon: MainWeaponSlot(name: 'Testwaffe', kkBase: 15, kkThreshold: 3),
     );
     final referenceSheet = heroWithAttributes(combatConfig: baseCombatConfig);
     final lowIniSheet = referenceSheet.copyWith(
@@ -303,7 +308,9 @@ void main() {
 
   test('weapon ini mod increases combined initiative linearly', () {
     final baseHero = hero(
-      combatConfig: const CombatConfig(mainWeapon: MainWeaponSlot(iniMod: 0)),
+      combatConfig: const CombatConfig(
+        mainWeapon: MainWeaponSlot(name: 'Testwaffe', iniMod: 0),
+      ),
     );
     final boostedHero = baseHero.copyWith(
       combatConfig: baseHero.combatConfig.copyWith(

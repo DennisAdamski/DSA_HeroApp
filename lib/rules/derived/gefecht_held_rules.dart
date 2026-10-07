@@ -1,4 +1,5 @@
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
+import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 
@@ -13,6 +14,21 @@ import 'waffenmeister_rules.dart';
 import 'gefecht_kampfmittel_rules.dart';
 import 'gefecht_filter_rules.dart';
 import 'gefecht_hand_rules.dart';
+import 'waffenlos_rules.dart';
+
+// Ohne gewähltes Mittel und ohne Waffe in den freien Händen gilt Raufen.
+GefechtsKampfmittelprofil? _profilOderWaffenlos(
+  HeroComputedSnapshot snapshot,
+  GefechtsKampfmittelwahl? kampfmittel,
+) {
+  if (kampfmittel != null) {
+    return gefechtsKampfmittelFuer(snapshot, kampfmittel);
+  }
+  if (!haendeFrei(snapshot.hero.combatConfig)) return null;
+  return gefechtsKampfmittelprofile(snapshot)
+      .where((p) => p.wahl.art == GefechtsKampfmittelArt.waffenlos)
+      .firstOrNull;
+}
 
 /// Ersetzt Vorschau-INI durch Sitzungswerte und übernimmt aktuelle Heldendaten.
 Gefechtswerte gefechtswerteFuer(
@@ -22,9 +38,9 @@ Gefechtswerte gefechtswerteFuer(
 }) {
   final c = snapshot.combatPreviewStats;
   final config = snapshot.hero.combatConfig;
-  final profil = gefechtsKampfmittelFuer(snapshot, kampfmittel);
-  final waffe = profil?.waffe ?? config.selectedWeaponOrNull;
-  final haupt = config.selectedWeaponOrNull;
+  final profil = _profilOderWaffenlos(snapshot, kampfmittel);
+  final haupt = gefuehrteHauptwaffe(config);
+  final waffe = profil?.waffe ?? haupt;
   final zusatzBelegung =
       haupt != null &&
       gefechtsWaffeEinhaendig(haupt) &&
@@ -112,6 +128,52 @@ Gefechtswerte gefechtswerteFuer(
   );
 }
 
+// WdS S. 89 f., AA S. 69 f./97 f.: Waffenlose Manöver gehören zu Raufen oder
+// Ringen, Handgemengewaffen erlauben nur ihre eigenen, und neben einer Waffe
+// zählen nur Manöver der beherrschten Kampftechnik.
+List<String> _waffenloseManoeversperren(
+  HeroComputedSnapshot snapshot,
+  GefechtsKampfmittelprofil? profil,
+  MainWeaponSlot waffe,
+  ManeuverDef m,
+) {
+  final talente = waffenloseManoevertalente(m);
+  if (talente.isEmpty) return const [];
+  final sperren = <String>[];
+  final talent = WaffenlosesTalent.values
+      .where((t) => t.talentId == waffe.talentId.trim())
+      .firstOrNull;
+  if (talent != null && !talente.contains(talent)) {
+    final ziel = talente.first.talentName;
+    sperren.add('$ziel-Manöver: Kampfmittel $ziel (waffenlos) wählen.');
+  }
+  final raufenwaffe = profil?.wahl.art == GefechtsKampfmittelArt.waffenlos
+      ? null
+      : raufenwaffeFuer(waffe);
+  if (raufenwaffe != null &&
+      talent == WaffenlosesTalent.raufen &&
+      talente.contains(WaffenlosesTalent.raufen) &&
+      !raufenwaffe.manoeverIds.contains(m.id)) {
+    sperren.add(
+      '${waffe.name} erlaubt dieses Manöver nicht; ohne die Waffe über '
+      'Raufen (waffenlos) ausführen.',
+    );
+  }
+  final w = gefechtsWaffenlosFuer(snapshot, profil?.wahl);
+  if (w != null && w.nebenWaffe) {
+    if (!w.manoeverIds.contains(m.id)) {
+      sperren.add(
+        'Neben einer Waffe nur Manöver der beherrschten waffenlosen '
+        'Kampftechnik.',
+      );
+    }
+    if (m.id == 'man_wuergegriff') {
+      sperren.add('Würgegriff braucht beide Hände.');
+    }
+  }
+  return sperren;
+}
+
 /// Bewertet bekannte Manöversperren; nicht unterstützte Folgen bleiben manuell.
 Gefechtspruefung pruefeGefechtsmanoever(
   Gefechtszustand s,
@@ -126,7 +188,7 @@ Gefechtspruefung pruefeGefechtsmanoever(
   bool geteilteProbe = false,
 }) {
   final config = snapshot.hero.combatConfig;
-  final profil = gefechtsKampfmittelFuer(snapshot, kampfmittel);
+  final profil = _profilOderWaffenlos(snapshot, kampfmittel);
   final waffe = profil?.waffe ?? config.selectedWeapon;
   final sperren = <String>[];
   if (m.typ.trim().isEmpty &&
@@ -207,6 +269,8 @@ Gefechtspruefung pruefeGefechtsmanoever(
       sperren.add('Manöver für dieses Waffentalent nicht zugelassen.');
     }
   }
+  sperren.addAll(_waffenloseManoeversperren(snapshot, profil, waffe, m));
+  final nebenWaffe = profil?.nebenWaffe ?? false;
   if (m.nurEpisch && !snapshot.hero.isEpisch) {
     sperren.add('Nur für epische Helden.');
   }
@@ -221,7 +285,8 @@ Gefechtspruefung pruefeGefechtsmanoever(
     zuschlag:
         zuschlag +
         gefechtsManoeverZuschlag(m) +
-        schild.zuschlag -
+        schild.zuschlag +
+        (nebenWaffe ? 2 : 0) -
         (kampfmittel?.art == GefechtsKampfmittelArt.nebenwaffe
             ? snapshot
                       .combatPreviewStats
@@ -237,6 +302,7 @@ Gefechtspruefung pruefeGefechtsmanoever(
     eigenerAuftrag: eigenerAuftrag,
     distanzSchritte: distanzSchritte,
     pruefGruende: [
+      if (nebenWaffe) 'Waffenloses Manöver neben einer Waffe: +2 (WdS S. 90); mit der Waffe parierbar.',
       if (schild.zuschlag != 0)
         'Schildführung: zusätzlicher Manöverzuschlag +${schild.zuschlag}; AT-WM bereits im Grundwert.',
       'Manövervoraussetzungen, Aktionskosten und Folgen manuell prüfen.',

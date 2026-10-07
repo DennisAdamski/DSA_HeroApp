@@ -358,8 +358,8 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text('Geführt: ${snapshot.hero.combatConfig.selectedWeapon.name}'),
-        Text('TP ${snapshot.combatPreviewStats.tpExpression}'),
+        Text('Geführt: ${gefechtsAngriffsanzeige(snapshot)?.name ?? '–'}'),
+        Text('TP ${gefechtsAngriffsanzeige(snapshot)?.tp ?? '–'}'),
         if (s.ansageFolgemalus > 0)
           Text(
             'Ansagefolgemalus +${s.ansageFolgemalus} auf Proben bis einschließlich '
@@ -620,6 +620,7 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
   }
 
   Future<void> _schaden(HeroComputedSnapshot snapshot) async {
+    final anzeige = gefechtsAngriffsanzeige(snapshot);
     await _bruecke.gefechtsProbe(
       context: context,
       ref: ref,
@@ -627,9 +628,10 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
       request: ResolvedProbeRequest(
         type: ProbeType.damage,
         title: 'Schaden',
-        subtitle: snapshot.combatPreviewStats.tpExpression,
+        subtitle: anzeige?.tp ?? snapshot.combatPreviewStats.tpExpression,
         ruleHint: 'TP-Wurf; RS, Wunden und Manöverfolgen beim Gegner manuell berücksichtigen.',
-        diceSpec: snapshot.combatPreviewStats.damageDiceSpec,
+        diceSpec:
+            anzeige?.wuerfel ?? snapshot.combatPreviewStats.damageDiceSpec,
         targets: const [],
       ),
     );

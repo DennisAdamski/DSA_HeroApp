@@ -7,7 +7,7 @@ extension _WeaponDetailExpansion on _HeroCombatTabState {
     required CombatPreviewStats preview,
     required bool isEditing,
   }) {
-    final weapon = _draftCombatConfig.selectedWeapon;
+    final weapon = vorschauHauptwaffe(_draftCombatConfig);
     final manual = _draftCombatConfig.manualMods;
     final theme = Theme.of(context);
     final offhandPreview = preview.offhandPreview;

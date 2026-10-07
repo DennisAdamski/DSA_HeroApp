@@ -212,7 +212,7 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
 
   /// Haupthand-spezifische Kampfwerte: AT, PA, TP, eBE, Fernkampf-Chips.
   Widget _buildMainHandValues({required CombatPreviewStats preview}) {
-    final mainName = _draftCombatConfig.selectedWeapon.name.trim();
+    final mainName = vorschauHauptwaffe(_draftCombatConfig).name.trim();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

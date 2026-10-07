@@ -92,14 +92,19 @@ Gefechtszustand verbraucheGefechtsPatzer(
 
 /// Identische Waffen-ID gilt in Haupt- und Nebenhand als derselbe Gegenstand.
 String gefechtsMittelSchluessel(GefechtsKampfmittelwahl w) =>
-    '${w.art == GefechtsKampfmittelArt.hauptwaffe || w.art == GefechtsKampfmittelArt.nebenwaffe ? "waffe" : "nebenhand"}:${w.id}';
+    '${switch (w.art) {
+      GefechtsKampfmittelArt.hauptwaffe || GefechtsKampfmittelArt.nebenwaffe => "waffe",
+      GefechtsKampfmittelArt.waffenlos => "waffenlos",
+      _ => "nebenhand",
+    }}:${w.id}';
 
 /// Findet konkrete Waffen/Schild-ID und bestätigt alle Felder des Einzelprofils.
 GefechtsBruchprofil? gefechtsBruchprofil(
   CombatConfig c,
   GefechtsKampfmittelwahl w,
 ) {
-  if (w.id.isEmpty) return null;
+  // Waffenloser Kampf kennt keinen Bruchtest.
+  if (w.id.isEmpty || w.art == GefechtsKampfmittelArt.waffenlos) return null;
   if (w.art == GefechtsKampfmittelArt.hauptwaffe ||
       w.art == GefechtsKampfmittelArt.nebenwaffe) {
     final liste = c.weaponSlots.where((e) => e.id == w.id).toList();

@@ -71,6 +71,12 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   `gefecht_hand_rules.dart` prüft Haupt-/Nebenhandbelegungen vor Normalisierung
   und frischem Speichern; `gefecht_handwahl.dart` enthält Auswahl und bestätigtes
   Wegstecken. Ziehhandlungen merken ihre Zielhand.
+  Waffenloser Kampf: `waffenlos_slot_rules.dart` (blattartig, auch von
+  `combat_rules` genutzt) definiert Platzhalter, virtuellen Raufen-/Ringen-
+  Slot und `waffenlosKampfbereit` (Hände frei oder nur Raufen-Waffen wie
+  Schlagring); ohne Waffe rechnet die Kampfvorschau Raufen. `waffenlos_rules.dart`
+  liefert die Kampfmittel `waffenlos`, neben einer Waffe nur mit Kampftechnik
+  (`nebenWaffe`, +2). Der leere Waffenplatzhalter zählt nie als Waffe.
   Effektive Einhändigkeit wird dort zentral aus Talent/Waffenart bestimmt:
   Bogen und gewöhnliche Armbrust brauchen beide Hände, Balestrina ist die
   belegte Ausnahme. Anzeigenamen und gespeicherte Standardwerte eröffnen keine

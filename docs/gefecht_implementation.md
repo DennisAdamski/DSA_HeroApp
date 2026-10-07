@@ -772,3 +772,51 @@ erfassten Stand; modale Dialoge, `_busy` und die `setzen`-Sperre während
 eines Auftrags verhindern heute jede Zwischenänderung.
 
 Abschlussprüfung (6. Oktober 2026, nach Review und beiden Restschulden): `flutter analyze` ohne Befund; vollständige Suite 3.630 bestanden, 3 bestehende Tests übersprungen; Format über 1.089 Dateien ohne Änderung; CI-Screen-LOC (21 Dateien) und breite UI2-LOC-Prüfung (87 Dateien) ≤ 700 Zeilen, ebenso `test/ui2/spielen` und `test/ui/bridges`. Commits: `7789c1e` Review-Befunde, `d243601` Wirkabschluss über die Gefechtsbrücke, `e2d01b3` Abenteuerblatt-Teildatei. Nur lokal; kein Push.
+
+## Waffenloser Kampf (7. Oktober 2026)
+
+Seit die letzte Waffe entfernt werden kann, stand ein Held ohne Waffe im
+Gefecht ohne jedes Kampfmittel da. Regelgrundlage per dsa-rules-MCP: WdS
+S. 89–91 (Raufen/Ringen, waffenlose Kampftechniken, waffenlose Manöver im
+bewaffneten Kampf), WdS S. 123/127 und AA S. 69 f., 97 f., 150
+(Handgemengewaffen, Fausthieb 1W6 TP(A), TP/KK 10/3, INI −2).
+
+- **Grundbegriffe** liegen blattartig in `rules/derived/waffenlos_slot_rules.dart`
+  (auch von `combat_rules.dart` genutzt): Der leere Platzhalter (Name, Talent,
+  Waffenart leer, wie `_ohneWaffen` in `kampf_aenderung_rules.dart`) ist keine
+  Waffe (`gefuehrteHauptwaffe`). `waffenloserSlot` ist ein virtueller, nie
+  gespeicherter Slot mit den Werten des Katalogeintrags „Hände“.
+- **Kampfvorschau ohne Waffe:** Mit freien Händen rechnet
+  `computeCombatPreviewStats` mit dem Raufen-Slot (`vorschauHauptwaffe`,
+  `CombatPreviewStats.waffenlos`). Kampf-Tab, Spielansicht und
+  Gefechts-INI zeigen damit Fausthieb-Werte statt eines Platzhalters mit
+  voller KK als TP-Bonus. Die Bestandshelden f03/f05/f08/f08b/f09 (ohne
+  Waffe) haben ihre Pins kommentiert nachgezogen.
+- **Kampfmittel `waffenlos`** (`waffenlos:raufen`, `waffenlos:ringen`) aus
+  `rules/derived/waffenlos_rules.dart`: bei waffenloser Kampfbereitschaft
+  (`waffenlosKampfbereit`: Hände frei oder nur Raufen-/Ringen-Waffen) als
+  gewöhnliche Mittel, Standard Raufen. Talent, eBE, Wunden, Modifikatoren
+  und Kampfstile (je höchstens +2) wirken über die Vorschau.
+- **Neben einer Waffe** (WdS S. 90) nur mit aktiver waffenloser Kampftechnik
+  („… (waffenloses Manöver)“, `nebenWaffe`): nur Manöver dieser Technik,
+  +2, kein Würgegriff, keine gewöhnliche AT/PA, nie Standardmittel, keine
+  Linkhand-Zusatzaktion.
+- **Waffenlos geführte Waffen** (Talent Raufen: Schlagring, Orchidee,
+  Veteranenhand, Panzerarm, Drachenklaue, Bock …) bleiben Hauptwaffe, ihr
+  Träger aber waffenlos kampfbereit. `kRaufenwaffen` begrenzt ihre
+  waffenlosen Manöver (Schlagring: Doppelschlag, Gerade, Handkante,
+  Schwinger; Orchidee ohne Gerade; Veteranenhand, Panzerarm, Drachenklaue:
+  Gerade); übrige Raufen-Manöver laufen über „Raufen (waffenlos)“. Hinweis
+  „bei Paraden gegen Waffen unbewaffnet“; der Bock hat im Index keine
+  Manöverliste und bleibt ohne Einschränkung.
+- **Manöver und Talent:** Ein Manöver vom Typ „Ringen-…“ verlangt ein
+  Ringen-Mittel und umgekehrt, auch bei Handgemengewaffen.
+- **Schaden:** Raufen-Treffer und Waffen mit TP(A) im Katalog (Schlagring,
+  Stoß mit Schild, Turnierwaffen) tragen einen TP(A)-Hinweis; Ringen-Angriffe
+  sind manuell (Schaden nur als Wurf). Waffenlos kein Bruchtest.
+- **Nur Hinweise:** Raufen/Ringen-Wechsel ohne Kampftechnik, optionale
+  Regeln gegen Bewaffnete, Panzerhandschuh/Stiefel/Metallhelm +2 TP(A),
+  Stilbesonderheiten (Unauer Schule: Entwinden −2, Hruruzat-Zat, Mercenario,
+  Hammerfaust, Gladiatorenstil).
+
+Prüfung: `test/rules/waffenlos_rules_test.dart`.
