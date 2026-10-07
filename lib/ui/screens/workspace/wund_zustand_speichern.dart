@@ -6,6 +6,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_stat_inputs.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/schaden_ruecknahme_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/house_rules/house_rule_registry.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
@@ -115,7 +116,9 @@ Future<void> fuegeWundeHinzu({
 /// gemeinsam unterdrückt, in einem Speichervorgang. [gespeichert] ist der
 /// Zustand nach dem Speichern, damit der Dialog den tatsächlich
 /// gespeicherten Wundzustand sieht. Gemeinsam genutzt von [fuegeWundeHinzu]
-/// und dem Ablauf „Schaden erhalten“.
+/// und dem Ablauf „Schaden erhalten“. Mit [buchungId] vermerkt derselbe
+/// Speichervorgang die Unterdrückung an der Schadensbuchung, damit eine
+/// spätere Rücknahme sie mit entfernt (ARCH-06).
 Future<void> bieteWundUnterdrueckungAn({
   required BuildContext context,
   required WidgetRef ref,
@@ -123,6 +126,7 @@ Future<void> bieteWundUnterdrueckungAn({
   required WundZone zone,
   required HeroState gespeichert,
   int neueWunden = 1,
+  String? buchungId,
 }) async {
   final hero = ref.read(heroByIdProvider(heroId));
   if (hero == null) return;
@@ -149,12 +153,31 @@ Future<void> bieteWundUnterdrueckungAn({
     neueWunden: neueWunden,
   );
   if (unterdruecken != true || !context.mounted) return;
-  await schalteWundUnterdrueckung(
+  if (buchungId == null) {
+    await schalteWundUnterdrueckung(
+      context: context,
+      ref: ref,
+      heroId: heroId,
+      zone: zone,
+      unterdruecken: true,
+      anzahl: neueWunden,
+    );
+    return;
+  }
+  await aendereZustandMitMeldung(
     context: context,
     ref: ref,
     heroId: heroId,
-    zone: zone,
-    unterdruecken: true,
-    anzahl: neueWunden,
+    was: 'Wunden',
+    aenderung: (aktuell) {
+      final wunden = aktuell.wpiZustand;
+      final vorher = wunden.unterdrueckteInZone(zone);
+      final neu = wunden.mitUnterdrueckung(zone, vorher + neueWunden);
+      return vermerkeUnterdrueckung(
+        aktuell.copyWith(wpiZustand: neu),
+        buchungId,
+        neu.unterdrueckteInZone(zone) - vorher,
+      );
+    },
   );
 }

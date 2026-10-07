@@ -422,22 +422,43 @@ void main() {
     group('gleichzeitig geänderte Cloud-Version', () {
       const neuerWert = <String, dynamic>{'ebene': 'neu'};
 
-      // B aendert offline, die neuere Version aendert nur ihr eigenes Feld.
-      Future<void> konkurrierendeAenderung() async {
+      // B aendert offline, die neuere Version ihr eigenes Feld und mit
+      // [auchDukaten] zusaetzlich dieselben Dukaten — erst das widerspricht.
+      Future<void> konkurrierendeAenderung({bool auchDukaten = true}) async {
         b.remote.offline = true;
         await _aendere(b, _krieger, (held) => held.copyWith(dukaten: '30'));
         await fremdSchreiben((json) {
           final armbrust = wertAn(json, 'combatConfig/weapons/1') as Map;
           armbrust[zukunftsfeld] = neuerWert;
+          if (auchDukaten) {
+            json['dukaten'] = '40';
+          }
         });
         b.remote.offline = false;
         await b.repo.syncNow();
       }
 
+      test('verschiedene Felder werden zusammengeführt, das neue Feld '
+          'bleibt (ARCH-06)', () async {
+        await konkurrierendeAenderung(auchDukaten: false);
+        await a.repo.syncNow();
+
+        expect(b.konflikte, isEmpty);
+        final online = (await cloud.loadHero(_krieger))!.hero!.toJson();
+        expect(online['dukaten'], '30');
+        expect(
+          wertAn(online, 'combatConfig/weapons/1/$zukunftsfeld'),
+          neuerWert,
+        );
+        expect(await a.heldHash(_krieger), await b.heldHash(_krieger));
+      });
+
       test('ergibt einen Konflikt, der das Feld sichtbar macht', () async {
         await konkurrierendeAenderung();
 
         final konflikt = b.konflikte.single;
+        final vorschau = (await b.repo.konfliktVorschau(konflikt.id))!;
+        expect(vorschau.felder.map((f) => f.schluessel), ['held:dukaten']);
         final diff = b.repo.conflictDiff(konflikt.id)!;
         final pfade = diff.entries.map((eintrag) => eintrag.path.join('/'));
         expect(pfade, contains('dukaten'));
@@ -476,7 +497,7 @@ void main() {
           // keepLocal verwirft die neuere Aenderung bewusst per Entscheidung
           // und schreibt Bs Stand samt dessen altem Feldwert.
           expect(feld, eintrag.value ?? altesFeld);
-          expect(online['dukaten'], eintrag.value == null ? '30' : isNot('30'));
+          expect(online['dukaten'], eintrag.value == null ? '30' : '40');
           expect(await a.heldHash(_krieger), await b.heldHash(_krieger));
 
           if (eintrag.key == SyncResolutionChoice.keepBoth) {

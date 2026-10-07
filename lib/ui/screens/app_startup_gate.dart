@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:dsa_heldenverwaltung/ablaeufe/vorgaenge_wiederaufnehmen.dart';
 import 'package:dsa_heldenverwaltung/data/app_storage_paths.dart';
 import 'package:dsa_heldenverwaltung/data/auth_service.dart';
 import 'package:dsa_heldenverwaltung/data/avatar_backfill_service.dart';
@@ -19,12 +20,15 @@ import 'package:dsa_heldenverwaltung/data/hive_externe_helden_repository.dart';
 import 'package:dsa_heldenverwaltung/data/hive_hero_repository.dart';
 import 'package:dsa_heldenverwaltung/data/hive_offline_hero_review_store.dart';
 import 'package:dsa_heldenverwaltung/data/hive_settings_repository.dart';
+import 'package:dsa_heldenverwaltung/data/hive_sync_basis_store.dart';
 import 'package:dsa_heldenverwaltung/data/hive_sync_metadata_store.dart';
+import 'package:dsa_heldenverwaltung/data/hive_vorgangsjournal.dart';
 import 'package:dsa_heldenverwaltung/data/house_rule_pack_repository.dart';
 import 'package:dsa_heldenverwaltung/data/rest_firestore_hero_sync_gateway.dart';
 import 'package:dsa_heldenverwaltung/data/rest_firestore_secrets_repository.dart';
 import 'package:dsa_heldenverwaltung/data/sync/remote_hero_sync_gateway.dart';
 import 'package:dsa_heldenverwaltung/data/sync/sync_transport.dart';
+import 'package:dsa_heldenverwaltung/data/syncing_avatar_storage.dart';
 import 'package:dsa_heldenverwaltung/data/syncing_hero_repository.dart';
 import 'package:dsa_heldenverwaltung/data/storage_directory_picker.dart';
 import 'package:dsa_heldenverwaltung/data/startup_hero_importer.dart';
@@ -80,6 +84,8 @@ class _AppStartupGateState extends State<AppStartupGate> {
   SyncingHeroRepository? _activeSyncingRepository;
   HiveSyncMetadataStore? _activeMetadataStore;
   HiveOfflineHeroReviewStore? _activeOfflineReviewStore;
+  HiveSyncBasisStore? _activeBasisStore;
+  HiveVorgangsjournal? _activeVorgangsjournal;
 
   /// Verhindert, dass ein Kontowechsel einen zweiten Backfill startet, waehrend
   /// der erste die Marker-Box noch offen haelt.
@@ -141,6 +147,14 @@ class _AppStartupGateState extends State<AppStartupGate> {
     if (offlineReviewStore != null) {
       unawaited(offlineReviewStore.close());
     }
+    final basisStore = _activeBasisStore;
+    if (basisStore != null) {
+      unawaited(basisStore.close());
+    }
+    final vorgangsjournal = _activeVorgangsjournal;
+    if (vorgangsjournal != null) {
+      unawaited(vorgangsjournal.close());
+    }
     final hive = _activeHive;
     if (hive != null) {
       // Die Boxen muessen beim Pfadwechsel sauber geschlossen werden.
@@ -198,6 +212,16 @@ class _AppStartupGateState extends State<AppStartupGate> {
       if (previousOfflineReviewStore != null) {
         await previousOfflineReviewStore.close();
       }
+      final previousBasisStore = _activeBasisStore;
+      _activeBasisStore = null;
+      if (previousBasisStore != null) {
+        await previousBasisStore.close();
+      }
+      final previousVorgangsjournal = _activeVorgangsjournal;
+      _activeVorgangsjournal = null;
+      if (previousVorgangsjournal != null) {
+        await previousVorgangsjournal.close();
+      }
       final previousHive = _activeHive;
       _activeHive = null;
       if (previousHive != null) {
@@ -217,6 +241,13 @@ class _AppStartupGateState extends State<AppStartupGate> {
       final hive = await HiveHeroRepository.create(
         storagePath: heroStoragePath,
       );
+      final vorgangsjournal = await HiveVorgangsjournal.create(
+        storagePath: heroStoragePath,
+      );
+      // Vor Startimport und Sync: Abgebrochene Vorgaenge werden lokal zu Ende
+      // gefuehrt oder ausgeglichen; `syncNow` laedt Nachgetragenes danach
+      // ueber den Hashvergleich hoch.
+      await _nimmVorgaengeWiederAuf(configuredPath, hive, vorgangsjournal);
       if (authUid == null) {
         debugPrint('[startup] importFromAssets…');
         await const StartupHeroImporter().importFromAssets(hive);
@@ -232,6 +263,7 @@ class _AppStartupGateState extends State<AppStartupGate> {
       SyncingHeroRepository? syncingRepository;
       HiveSyncMetadataStore? metadataStore;
       HiveOfflineHeroReviewStore? offlineReviewStore;
+      HiveSyncBasisStore? basisStore;
       HeroRepository heroRepository = hive;
       if (authUid != null && widget.firebaseBootstrap.isAccountSyncAvailable) {
         debugPrint('[startup] syncing.create for uid=$authUid');
@@ -242,11 +274,15 @@ class _AppStartupGateState extends State<AppStartupGate> {
         offlineReviewStore = await HiveOfflineHeroReviewStore.create(
           storagePath: heroStoragePath,
         );
+        basisStore = await HiveSyncBasisStore.create(
+          storagePath: heroStoragePath,
+        );
         syncingRepository = SyncingHeroRepository(
           local: hive,
           remote: remoteRepo,
           metadataStore: metadataStore,
           offlineReviewStore: offlineReviewStore,
+          basisStore: basisStore,
           accountId: authUid,
           accountEmail: widget.authUser?.email,
         );
@@ -283,6 +319,10 @@ class _AppStartupGateState extends State<AppStartupGate> {
         if (offlineReviewStore != null) {
           await offlineReviewStore.close();
         }
+        if (basisStore != null) {
+          await basisStore.close();
+        }
+        await vorgangsjournal.close();
         await hive.close();
         await externeHeldenRepository.close();
         throw StateError('Veralteter Initialisierungslauf für Heldendaten.');
@@ -295,15 +335,18 @@ class _AppStartupGateState extends State<AppStartupGate> {
       }
 
       _activeHive = hive;
+      _activeVorgangsjournal = vorgangsjournal;
       _activeSyncingRepository = syncingRepository;
       _activeMetadataStore = metadataStore;
       _activeOfflineReviewStore = offlineReviewStore;
+      _activeBasisStore = basisStore;
       _activeExterneHeldenRepository = externeHeldenRepository;
       debugPrint('[startup] done');
       return _HeroRepositoryBootstrapResult(
         heroRepository: heroRepository,
         syncController: syncingRepository,
         externeHeldenRepository: externeHeldenRepository,
+        vorgangsjournal: vorgangsjournal,
         // Einmal erzeugt und im Ergebnis gehalten: `_buildScope` reicht die
         // Instanzen per `overrideWithValue` weiter, deshalb muessen sie ueber
         // Rebuilds hinweg dieselben bleiben.
@@ -317,6 +360,45 @@ class _AppStartupGateState extends State<AppStartupGate> {
     } on Object catch (error, stackTrace) {
       debugPrint('[startup] FAILED: $error\n$stackTrace');
       rethrow;
+    }
+  }
+
+  /// Nimmt Vorgaenge wieder auf, die ein Abbruch offen gelassen hat
+  /// (ARCH-06). Darf den Start nie verhindern: Ein Fehler wird nur
+  /// protokolliert, die Eintraege bleiben fuer den naechsten Start.
+  Future<void> _nimmVorgaengeWiederAuf(
+    String? configuredPath,
+    HiveHeroRepository hive,
+    HiveVorgangsjournal journal,
+  ) async {
+    try {
+      if ((await journal.offene()).isEmpty) {
+        return;
+      }
+      // Dieselbe Ablage wie `avatarFileStorageProvider`: lokal und Cloud.
+      final plattform = createAvatarFileStorage();
+      final storage = plattform.isCloudBacked
+          ? plattform
+          : SyncingAvatarStorage(
+              local: plattform,
+              cloud: const FirebaseCloudAvatarStorage(),
+            );
+      // Avatare liegen ausserhalb des Profilpfads.
+      final location = await widget.storagePaths.describeHeroStorageLocation(
+        configuredPath: configuredPath,
+      );
+      final bericht = await VorgaengeWiederaufnehmen(
+        repository: hive,
+        journal: journal,
+        loescheBild: (dateiname) => storage.deleteGalleryImage(
+          heroStoragePath: location.effectivePath,
+          fileName: dateiname,
+        ),
+        uhr: DateTime.now,
+      ).fuehreAus();
+      debugPrint('[startup] $bericht');
+    } on Object catch (error) {
+      debugPrint('[startup] Wiederanlauf fehlgeschlagen: $error');
     }
   }
 
@@ -469,6 +551,7 @@ class _AppStartupGateState extends State<AppStartupGate> {
           repository: result.heroRepository,
           syncController: result.syncController,
           externeHeldenRepository: result.externeHeldenRepository,
+          vorgangsjournal: result.vorgangsjournal,
           customCatalogRepository: result.customCatalogRepository,
           houseRulePackRepository: result.houseRulePackRepository,
           home: SyncConflictGate(
@@ -485,6 +568,7 @@ class _AppStartupGateState extends State<AppStartupGate> {
     HeroRepository? repository,
     AppSyncController? syncController,
     HiveExterneHeldenRepository? externeHeldenRepository,
+    HiveVorgangsjournal? vorgangsjournal,
     CustomCatalogRepository? customCatalogRepository,
     HouseRulePackRepository? houseRulePackRepository,
   }) {
@@ -513,6 +597,9 @@ class _AppStartupGateState extends State<AppStartupGate> {
     if (syncController != null) {
       overrides.add(syncControllerProvider.overrideWithValue(syncController));
     }
+    if (vorgangsjournal != null) {
+      overrides.add(vorgangsjournalProvider.overrideWithValue(vorgangsjournal));
+    }
     if (externeHeldenRepository != null) {
       overrides.add(
         externeHeldenRepositoryProvider.overrideWithValue(
@@ -538,6 +625,7 @@ class _HeroRepositoryBootstrapResult {
     required this.heroRepository,
     required this.syncController,
     required this.externeHeldenRepository,
+    required this.vorgangsjournal,
     required this.customCatalogRepository,
     required this.houseRulePackRepository,
   });
@@ -545,6 +633,7 @@ class _HeroRepositoryBootstrapResult {
   final HeroRepository heroRepository;
   final AppSyncController? syncController;
   final HiveExterneHeldenRepository externeHeldenRepository;
+  final HiveVorgangsjournal vorgangsjournal;
   final CustomCatalogRepository customCatalogRepository;
   final HouseRulePackRepository houseRulePackRepository;
 }

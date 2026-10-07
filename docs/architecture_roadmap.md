@@ -85,11 +85,10 @@ die Flutter-Umsetzung und die vollständige Funktionszuordnung bleiben offen.
   schmale sowie breite Ansichten entwerfen; aktuelle Funktionen vollständig erfassen.
 - [ ] Bestehende Proben-, Steigerungs- und Inspector-Komponenten wiederverwenden;
   die Spielansicht um direkten Zugriff auf häufige Aktionen ergänzen.
-- [ ] „Schaden erhalten“ als zusammenhängenden Ablauf mit Ressourcenänderung,
+- [x] „Schaden erhalten“ als zusammenhängenden Ablauf mit Ressourcenänderung,
   gegebenenfalls Wunden und nachvollziehbarer Korrekturmöglichkeit anbieten.
   *(Ablauf, Dialog und UI2-Schnellaktion umgesetzt, siehe ARCH-05 Teilstand
-  (3). Korrigiert wird bisher von Hand anhand des Protokolleintrags; eine
-  Rücknahme hängt an ARCH-06, deshalb bleibt der Punkt offen.)*
+  (3); Rücknahme am Protokolleintrag seit ARCH-06 Teilstand 2.)*
 
 **Abnahme:** Häufige Spielaktionen sind direkt aus der Spielansicht erreichbar.
 Manuelle Korrektur und AP-pflichtige Entwicklung bleiben unterscheidbar. Ein
@@ -139,8 +138,8 @@ Commit-IDs und Abgrenzungen stehen unter „R1: Übergabe“ in den
 Bestandsaktionen ist umgesetzt (R2), ebenso die gestalterische Integration der
 Fachansichten und der Entwicklungsbereich samt Gesamtabnahme (R3, siehe
 [redesign_acceptance.md](redesign_acceptance.md)). „Schaden erhalten“ gibt es
-seit dem ARCH-05-Teilstand (3) als geführten Ablauf in beiden Oberflächen;
-es fehlt noch die nachvollziehbare Rücknahme, die an ARCH-06 hängt.
+seit dem ARCH-05-Teilstand (3) als geführten Ablauf in beiden Oberflächen,
+zurücknehmbar seit ARCH-06 Teilstand 2.
 
 **Abhängigkeiten / offene Entscheidungen:** Schreibende Spielaktionen auf
 ARCH-05/06 aufbauen. Navigation, Favoritenverhalten und Korrekturbedienung sind
@@ -2352,9 +2351,10 @@ Commits:
 
 *Verbleibende Risiken.*
 
-1. Scheitert das Speichern des Helden nach dem Ablegen der Bilder, bleiben
+1. ~~Scheitert das Speichern des Helden nach dem Ablegen der Bilder, bleiben
    die Bilddateien verwaist (auch in der Cloud). Ein Aufräumen gehört zu
-   ARCH-06 (Wiederanlauf).
+   ARCH-06 (Wiederanlauf).~~ *Behoben in ARCH-06 Teilstand 1:*
+   Vorgangsjournal und Wiederanlauf löschen sie.
 2. Beim Überschreiben bleiben Dateien des vorigen Stands liegen, die der
    Import nicht mehr referenziert (wie bisher).
 3. Der Katalog wird vor dem Helden übernommen. Die Merkmalsmigration beim
@@ -2406,11 +2406,11 @@ Der Betrieb ohne Konto oder Netzwerk bleibt möglich.
 `lib/domain/sync_models.dart`, `lib/domain/hero_advancement_entry.dart` und
 `lib/ui/screens/sync_conflict_gate.dart`.
 
-- [ ] Für die Abläufe aus ARCH-05 festlegen, welche Daten gemeinsam verbindlich
+- [x] Für die Abläufe aus ARCH-05 festlegen, welche Daten gemeinsam verbindlich
   werden müssen, und einen geeigneten Speichervertrag mit Wiederanlauf definieren.
-- [ ] Lokale Änderung und ausstehenden Sync dauerhaft zusammen erfassen;
+- [x] Lokale Änderung und ausstehenden Sync dauerhaft zusammen erfassen;
   wiederholte Übertragung darf eine Aktion nicht erneut anwenden.
-- [ ] Änderungsprotokoll und fachlich gültige Korrekturaktionen ergänzen.
+- [x] Änderungsprotokoll und fachlich gültige Korrekturaktionen ergänzen.
   Unabhängige Änderungen nur nach definierten Konfliktregeln zusammenführen;
   widersprüchliche Änderungen bleiben sichtbar entscheidbar.
 
@@ -2430,6 +2430,152 @@ ARCH-02/03/04 beeinflussen gespeicherte Referenzen. Speichertechnik, Remote-Prot
 Granularität der Zusammenführung und zulässige Korrekturen gesondert entscheiden.
 Ein Datenbankwechsel ist mit dieser Liste nicht beschlossen. Die vorhandenen
 nativen und REST-Sync-Pfade berücksichtigen.
+
+**Entscheidungen 07.10.2026 (Nutzer).** Der Abgleich bleibt
+dokumentbasiert: Bogen und Zustand werden als ganze Dokumente mit Revision
+übertragen; ausstehend ist, was vom gemerkten Hash abweicht. Eine
+Operations-Warteschlange wird nicht gebaut. Zuerst kommen Speichervertrag,
+Vorgangsjournal und Wiederanlauf (Teilstand 1), danach Buchungsprotokoll und
+Rücknahme für „Schaden erhalten“ (Teilstand 2). Die Rücknahme ist eine
+Gegenbuchung auf den aktuellen Stand: LeP/AuP steigen um den tatsächlich
+abgezogenen Betrag, ohne Obergrenze; Wunden der Buchung werden entfernt,
+soweit noch vorhanden; eine Buchung lässt sich nur einmal zurücknehmen.
+
+**Teilstand 1, 07.10.2026 — Speichervertrag, Vorgangsjournal,
+Wiederanlauf.** Branch `task/2026-10-07-arch06`, Commit `07e7d8c`.
+
+- *Speichervertrag:* Tabelle je Einheit in
+  [schreibpfade_inventar.md](schreibpfade_inventar.md#speichervertrag-arch-06).
+  Bis auf den Import schreiben alle ARCH-05-Abläufe genau ein Dokument.
+  Anlegen und Startimport werden durch Nachsehen vollständig: Ein fehlender
+  Zustand gilt als leer bzw. wird nachgetragen (`uebernimmStartheld`).
+  `createHero` schreibt den Zustand jetzt eingereiht und gestempelt.
+- *Vorgangsjournal:* `Vorgangsjournal` (`lib/data/vorgangsjournal.dart`, reine
+  Schnittstelle, im Wächter `test/ablaeufe/abhaengigkeiten_test.dart`
+  zugelassen), `HiveVorgangsjournal` (Box `vorgaenge_v1` im Profilpfad),
+  `vorgangsjournalProvider`. `HeldImportieren` vermerkt Ziel, abgelegte
+  Bilder, Hash des vorigen Helden und den Exportzustand
+  (`ImportVorgang`).
+- *Wiederanlauf:* `VorgaengeWiederaufnehmen` führt einen Import zu Ende
+  (Zustand nachtragen), sobald der Held gespeichert ist, sonst gleicht er aus
+  (unbenutzte Bilder lokal und in der Cloud löschen). `AppStartupGate`
+  ruft ihn nach dem Öffnen von Hive und vor Startimport und `syncNow` auf;
+  der Abgleich lädt Nachgetragenes per Hash hoch. Ein gescheiterter
+  Importschritt nutzt denselben Weg sofort.
+- *Nachweise:* `test/ablaeufe/vorgaenge_wiederaufnehmen_test.dart`
+  simuliert Abstürze als nie endende Schritte und nimmt danach auf demselben
+  Speicher wieder auf (Bild 2, vor und nach dem Bogen, beim Zustand,
+  überschreibender Import, zweiter Lauf, scheiterndes Löschen, unbekannte
+  Einträge). `held_importieren_test.dart` prüft Journal und sofortigen
+  Ausgleich. `hive_vorgangsjournal_test.dart` prüft das Schließen und
+  Wiederöffnen der Box, `startup_hero_importer_test.dart` das
+  Nachtragen. `sync_speichervertrag_test.dart` belegt den Sync-Vertrag mit
+  zwei Geräten: Ein offline geänderter Zustand übersteht den Neustart (auch
+  mit echtem Hive) und wird genau einmal übertragen. Eine verlorene Antwort
+  schreibt einmal und erzeugt keinen Konflikt. Ein abgebrochener Import wird
+  beim Neustart vor dem Abgleich vollständig und einmal hochgeladen.
+- *Restrisiken:* siehe Speichervertrag (Absturz zwischen Bild und Vermerk,
+  Cloud beim Wiederanlauf nicht erreichbar, überschriebene Bilder beim
+  Re-Import, Journal je Profil). Löschen, Avatar-Operationen und
+  Konfliktauflösung laufen ohne Journal. Die fachliche Wiederholung
+  (dieselbe Buchung zweimal) schützt erst die Buchungs-ID aus Teilstand 2.
+
+**Teilstand 2, 07.10.2026 — Buchungsprotokoll und Schaden-Rücknahme.**
+
+- *Buchungsprotokoll:* `HeroState.buchungen` (`ZustandsBuchung`,
+  `lib/domain/zustands_buchung.dart`, höchstens 50, nur bei Belegung im JSON —
+  die Hash-Pins der Bestandshelden bleiben). Eine Buchung hält die
+  tatsächlichen Änderungen eines Treffers fest; der Protokolleintrag trägt
+  dieselbe `buchungId`. Unbekannte Felder, Art und Zone bleiben erhalten
+  (Vollständigkeitswächter ergänzt).
+- *Keine Doppelbuchung:* Der Schadensdialog vergibt beim ersten Übernehmen
+  eine Vorgangs-ID und behält sie bis zum Schließen. `SchadenErhalten`
+  speichert eine schon gebuchte ID nicht erneut;
+  `aendereGespeichertenZustand` speichert nichts, wenn die Änderung den
+  gespeicherten Zustand unverändert (dieselbe Instanz) zurückgibt; ein
+  fehlender Zustand wird immer geschrieben. Die anschließende Wundunterdrückung vermerkt sich im
+  selben Speichervorgang an der Buchung.
+- *Korrekturaktion:* `SchadenZuruecknehmen`
+  (`lib/ablaeufe/schaden_zuruecknehmen.dart`) mit den Regeln
+  `schaden_ruecknahme_rules.dart` bucht die Gegenbuchung auf den frischen
+  Zustand, wie entschieden ohne Obergrenze. Sie ist nur einmal je Buchung
+  möglich und erscheint als eigener Protokolleintrag; der ursprüngliche
+  Eintrag bleibt mit der Marke „zurückgenommen“. Bedienung: „Zurücknehmen“ am
+  Würfelprotokoll beider Oberflächen samt Rückfrage mit Plan
+  (`schaden_ruecknahme.dart`).
+- *Zusammenführung:* bleibt dokumentbasiert. Buchen zwei Geräte offline,
+  entsteht wie bisher ein sichtbarer Konflikt; jede gewählte Fassung ist in
+  sich stimmig (LeP passen zu ihren Buchungen). Ein automatisches
+  Zusammenführen unabhängiger Buchungen gibt es nicht; deshalb bleibt der
+  dritte Unterpunkt offen. *(Nachgeholt in Teilstand 3.)*
+- *Nachweise:* `test/rules/schaden_ruecknahme_rules_test.dart`
+  (tatsächliche Deltas, AuP-Untergrenze, Zusatzschaden, geheilte und fremde
+  Wunden, vermerkte Unterdrückung, Kopf-INI, unbekannte Zone und Art,
+  verdrängtes Original, LeP über dem Maximum),
+  `test/ablaeufe/schaden_erhalten_test.dart` und
+  `schaden_zuruecknehmen_test.dart` (Wiederholung, parallele Rücknahmen,
+  zwischenzeitliche Heilung, Fehler), `test/domain/zustands_buchung_test.dart`,
+  Widgettests `test/ui/workspace/schaden_ruecknahme_test.dart`,
+  `schaden_dialog_test.dart` (erneuter Versuch nach verlorener Antwort) und
+  `test/ui2/spielen/karto_spielverlauf_test.dart`, Zwei-Geräte-Fälle in
+  `test/data/sync_speichervertrag_test.dart` (verlorene Antwort, Rücknahme
+  auf dem anderen Gerät, offline auf beiden Geräten mit `keepLocal` und
+  `keepRemote`).
+- *Restrisiken:* Eine ältere App ohne Feldschutz verwirft `buchungen`; die
+  Rücknahme ist dann „nicht mehr verfügbar“. Ändert der Nutzer nach einem
+  gescheiterten Versuch die Eingaben, bleibt die Vorgangs-ID; hatte der erste
+  Versuch doch gespeichert, gilt dessen Buchung. Rast und andere
+  Zustandsänderungen sind noch nicht zurücknehmbar.
+
+**Teilstand 3, 07.10.2026 — Konflikte nur für echte Widersprüche.**
+Nutzerentscheidung: Gleichzeitiges Spielen an zwei Geräten ist die
+Ausnahme, Laufzeitwerte sind unkritisch, wichtig sind AP, Talente, Inventar
+und Co. Sichtbar werden sollen nur tatsächliche Konflikte, entschieden wird
+„Nur Online“, „Nur Lokal“, „Beide“ oder „Automatisch“. Bleibt bei
+„Automatisch“ etwas offen, wird je Wert nach Online oder Lokal gefragt.
+
+- *Basisstand:* Der Sync legt nach jedem Abgleich den Inhalt des
+  abgeglichenen Stands mit seiner Revision ab (`SyncBasisStore`,
+  `HiveSyncBasisStore`, Box `sync_basis_v1`). Die Basis wird vor den
+  Metadaten geschrieben und gilt nur, wenn ihre Revision zur gemerkten passt.
+  Bestandsabgleiche bekommen sie beim nächsten Abgleich ohne lokale Änderung.
+- *Zusammenführungsregel:* `fuehreSyncZusammen`
+  (`lib/domain/sync_zusammenfuehrung.dart`). Was nur eine Seite geändert
+  hat, wird übernommen; ein echter Konflikt ist nur ein Wert, den beide
+  verschieden geändert haben. Maps werden je Schlüssel verglichen, Listen
+  über `id`/`instanzId` je Element (Inventar, Kampfslots, Verlauf, Abenteuer,
+  Buchungen); legen beide Seiten ein Feld neu an, gilt die Basis als leer.
+  Fachregeln: AP und Ressourcen/Erschöpfung sind Zähler, Stufe und
+  Zeitstempel nehmen den höheren Wert, das Würfelprotokoll ist eine
+  Vereinigung, Protokoll und Buchungen bleiben auf 50 begrenzt.
+- *Sync:* Ohne Widerspruch führt der Sync still zusammen, schreibt online
+  auf die gelesene Revision und lokal und merkt die neue Basis. Hat der
+  Nutzer zwischendurch lokal gespeichert, wird nichts überschrieben, dann
+  entsteht der Konflikt. Ein Zustand an einem offenen Helden-Konflikt wird
+  nicht still zusammengeführt, er folgt der Entscheidung zum Helden.
+  `konfliktVorschau` und `resolveConflictAutomatisch` (am `AppSyncController`)
+  rechnen mit dem frischen lokalen Stand; ändert sich online während der
+  Entscheidung etwas, wird der Konflikt wie bisher neu gestellt.
+- *Oberfläche:* `SyncKonfliktKarte` ersetzt die beiden Kartenvarianten in
+  Gate und Einstellungen. Mit Basis nennt sie, wie viele Änderungen
+  „Automatisch“ von jeder Seite übernimmt, und zeigt nur die
+  widersprüchlichen Werte, sofort aufgeklappt. Die Knöpfe stehen in der
+  Reihenfolge der Spalten: „Nur Online“, „Nur Lokal“, „Beide behalten“,
+  „Automatisch“. Für übrige Widersprüche fragt ein Dialog je Wert („Alle:
+  Online/Lokal“ als Abkürzung).
+- *Nachweise:* `test/domain/sync_zusammenfuehrung_test.dart` (Regel),
+  `test/data/sync_zusammenfuehrung_repository_test.dart` (stilles
+  Zusammenführen, fehlende und nachgetragene Basis, „Automatisch“ samt
+  Zustand, Online-Änderung während der Entscheidung, Hive-Basis),
+  `sync_zwei_geraete_inventar_test.dart` (Teilen und Beschreiben
+  gleichnamiger Stapel ohne Konflikt; echter Widerspruch mit allen vier
+  Entscheidungen), `sync_app_versionen_test.dart` (Felder einer neueren
+  Version bleiben beim Zusammenführen), `sync_speichervertrag_test.dart`
+  (Treffer beider Geräte ohne Konflikt) und die Gate-Tests
+  (Knopfreihenfolge, Vorschau, Feldauswahl, Fehler).
+- *Grenzen:* Listen ohne stabile ID (Notizen, Kontakte) sind unteilbar.
+  Offline-Helden- und Löschkonflikte bleiben ohne „Automatisch“. Die Stufe
+  folgt erst beim nächsten Speichern exakt den zusammengeführten AP.
 
 ## ARCH-07 — Nutzerabläufe und Datenmigrationen absichern
 

@@ -42,6 +42,34 @@ void main() {
     expect(ergebnis.toJson(), gespeichert.toJson());
   });
 
+  test('dieselbe Instanz zurück heißt: nichts speichern (ARCH-06)', () async {
+    final gespeichert = const HeroState.empty().copyWith(currentLep: 10);
+    final repo = FakeRepository(states: {'held': gespeichert});
+
+    final ergebnis = await aendereGespeichertenZustand(
+      repository: repo,
+      heroId: 'held',
+      aenderung: (zustand) => zustand,
+      uhr: () => _jetzt,
+    );
+
+    expect(identical(ergebnis, gespeichert), isTrue);
+    expect((await repo.loadHeroState('held'))!.lastModified, isNull);
+  });
+
+  test('ein fehlender Zustand wird auch leer geschrieben', () async {
+    final repo = FakeRepository();
+
+    await aendereGespeichertenZustand(
+      repository: repo,
+      heroId: 'neu',
+      aenderung: (zustand) => zustand,
+      uhr: () => _jetzt,
+    );
+
+    expect((await repo.loadHeroState('neu'))!.lastModified, _jetzt);
+  });
+
   test('ein fehlender Zustand gilt als leer', () async {
     final repo = FakeRepository();
 

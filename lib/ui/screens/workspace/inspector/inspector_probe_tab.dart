@@ -6,6 +6,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/combat_rules.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/inspector/widgets/inspector_attribute_probes.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/inspector/widgets/inspector_combat_probes.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/inspector/widgets/inspector_dice_log_section.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/workspace/schaden/schaden_ruecknahme.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/codex_section_card.dart';
 
 /// Probe-Tab: Eigenschafts-Schnellproben, Kampfproben und Wuerfelprotokoll.
@@ -59,7 +60,14 @@ class InspectorProbeTab extends StatelessWidget {
           CodexSectionCard(
             title: 'Würfel-Protokoll',
             subtitle: 'Letzte ${HeroState.diceLogMax}',
-            child: InspectorDiceLogSection(entries: heroState.diceLog),
+            child: InspectorDiceLogSection(
+              entries: heroState.diceLog,
+              aktion: (eintrag) => schadenRuecknahmeAktion(
+                eintrag: eintrag,
+                heroId: heroId,
+                zustand: heroState,
+              ),
+            ),
           ),
         ],
       ),

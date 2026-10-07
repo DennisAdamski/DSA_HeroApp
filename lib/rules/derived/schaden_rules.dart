@@ -230,6 +230,7 @@ class SchadensAnwendung {
     required this.zustand,
     required this.hinzugefuegteWunden,
     required this.verfalleneWunden,
+    this.istWiederholung = false,
   });
 
   /// Neuer Zustand.
@@ -240,6 +241,10 @@ class SchadensAnwendung {
 
   /// Gewählte Wunden, für die die Zone keinen Platz mehr hatte.
   final int verfalleneWunden;
+
+  /// `true`, wenn dieselbe Buchung schon gespeichert war und nichts erneut
+  /// gebucht wurde (ARCH-06).
+  final bool istWiederholung;
 }
 
 /// Wendet [buchung] auf den gespeicherten Zustand [zustand] an.

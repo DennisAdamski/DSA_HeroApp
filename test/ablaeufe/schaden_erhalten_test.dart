@@ -45,12 +45,28 @@ DiceLogEntry _fremderEintrag() {
   );
 }
 
+/// Zählt die Speichervorgänge des Zustands.
+class _ZaehlendesRepo extends FakeRepository {
+  _ZaehlendesRepo() : super(states: {'held': _startzustand});
+
+  int speichervorgaenge = 0;
+
+  @override
+  Future<void> saveHeroState(String heroId, HeroState state) async {
+    speichervorgaenge++;
+    await super.saveHeroState(heroId, state);
+  }
+}
+
 void main() {
   test('ersetzt nur LeP, Wunden, Protokoll und Zeitstempel', () async {
     final repo = FakeRepository(states: {'held': _startzustand});
 
-    final anwendung = await _ablauf(repo)
-        .uebernehmeSchaden(heroId: 'held', buchung: _brusttreffer());
+    final anwendung = await _ablauf(repo).uebernehmeSchaden(
+      vorgangId: 'v1',
+      heroId: 'held',
+      buchung: _brusttreffer(),
+    );
 
     final gespeichert = (await repo.loadHeroState('held'))!;
     expect(gespeichert.currentLep, 30 - 11 - 4);
@@ -61,15 +77,67 @@ void main() {
       'currentLep',
       'wpiZustand',
       'diceLog',
+      'buchungen',
       'lastModified',
     });
   });
 
+  test('vermerkt die Buchung und verbindet den Protokolleintrag damit '
+      '(ARCH-06)', () async {
+    final repo = FakeRepository(states: {'held': _startzustand});
+
+    await _ablauf(repo).uebernehmeSchaden(
+      vorgangId: 'treffer-1',
+      heroId: 'held',
+      buchung: _brusttreffer(),
+    );
+
+    final gespeichert = (await repo.loadHeroState('held'))!;
+    final buchung = gespeichert.buchungen.single;
+    expect(buchung.id, 'treffer-1');
+    expect(buchung.lepDelta, -15);
+    expect(buchung.zone, WundZone.brust);
+    expect(buchung.wundenDelta, 1);
+    expect(buchung.zeitpunkt, _jetzt);
+    expect(gespeichert.diceLog.single.buchungId, 'treffer-1');
+  });
+
+  test(
+    'dieselbe Vorgangs-ID bucht nicht doppelt und speichert nicht erneut',
+    () async {
+      final repo = _ZaehlendesRepo();
+      final ablauf = _ablauf(repo);
+
+      await ablauf.uebernehmeSchaden(
+        vorgangId: 'treffer-1',
+        heroId: 'held',
+        buchung: _brusttreffer(),
+      );
+      final wiederholt = await ablauf.uebernehmeSchaden(
+        vorgangId: 'treffer-1',
+        heroId: 'held',
+        buchung: _brusttreffer(),
+      );
+
+      final gespeichert = (await repo.loadHeroState('held'))!;
+      expect(wiederholt.istWiederholung, isTrue);
+      expect(wiederholt.hinzugefuegteWunden, 1);
+      expect(repo.speichervorgaenge, 1);
+      expect(gespeichert.currentLep, 30 - 15);
+      expect(gespeichert.buchungen, hasLength(1));
+      expect(gespeichert.diceLog, hasLength(1));
+      expect(gespeichert.wpiZustand.wundenInZone(WundZone.brust), 1);
+    },
+  );
+
   test('protokolliert die Buchung nachvollziehbar', () async {
     final repo = FakeRepository(states: {'held': _startzustand});
 
-    await _ablauf(repo)
-        .uebernehmeSchaden(heroId: 'held', buchung: _brusttreffer());
+    await _ablauf(repo).uebernehmeSchaden(
+      vorgangId: 'v1',
+      heroId: 'held',
+      buchung: _brusttreffer(),
+    );
 
     final eintrag = (await repo.loadHeroState('held'))!.diceLog.single;
     expect(eintrag.title, schadenProtokollTitel);
@@ -87,6 +155,7 @@ void main() {
     final repo = FakeRepository(states: {'held': _startzustand});
 
     await _ablauf(repo).uebernehmeSchaden(
+      vorgangId: 'v1',
       heroId: 'held',
       buchung: SchadensBuchung(art: SchadensArt.ausdauer, tp: 8, rs: 1),
     );
@@ -102,6 +171,7 @@ void main() {
       'currentAu',
       'currentLep',
       'diceLog',
+      'buchungen',
       'lastModified',
     });
   });
@@ -110,6 +180,7 @@ void main() {
     final repo = FakeRepository(states: {'held': _startzustand});
 
     await _ablauf(repo).uebernehmeSchaden(
+      vorgangId: 'v1',
       heroId: 'held',
       buchung: SchadensBuchung(
         art: SchadensArt.ausdauer,
@@ -153,6 +224,7 @@ void main() {
       );
 
       final anwendung = await _ablauf(repo).uebernehmeSchaden(
+        vorgangId: 'v1',
         heroId: 'held',
         buchung: SchadensBuchung(
           art: SchadensArt.lebensenergie,
@@ -181,6 +253,7 @@ void main() {
     final repo = FakeRepository();
 
     await _ablauf(repo).uebernehmeSchaden(
+      vorgangId: 'v1',
       heroId: 'neu',
       buchung: SchadensBuchung(art: SchadensArt.lebensenergie, tp: 5, rs: 0),
     );
@@ -192,7 +265,11 @@ void main() {
     final repo = _SchreibfehlerRepository();
 
     await expectLater(
-      _ablauf(repo).uebernehmeSchaden(heroId: 'held', buchung: _brusttreffer()),
+      _ablauf(repo).uebernehmeSchaden(
+        vorgangId: 'v1',
+        heroId: 'held',
+        buchung: _brusttreffer(),
+      ),
       throwsStateError,
     );
   });

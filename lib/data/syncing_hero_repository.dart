@@ -7,6 +7,7 @@ import 'package:dsa_heldenverwaltung/data/hero_repository.dart';
 import 'package:dsa_heldenverwaltung/data/sync/gebuendelte_laeufe.dart';
 import 'package:dsa_heldenverwaltung/data/sync/offline_hero_review_store.dart';
 import 'package:dsa_heldenverwaltung/data/sync/remote_hero_sync_gateway.dart';
+import 'package:dsa_heldenverwaltung/data/sync/sync_basis_store.dart';
 import 'package:dsa_heldenverwaltung/data/sync/sync_metadata_store.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
@@ -14,6 +15,9 @@ import 'package:dsa_heldenverwaltung/domain/sync_controller.dart';
 import 'package:dsa_heldenverwaltung/domain/sync_errors.dart';
 import 'package:dsa_heldenverwaltung/domain/sync_models.dart';
 import 'package:dsa_heldenverwaltung/domain/sync_object_diff.dart';
+import 'package:dsa_heldenverwaltung/domain/sync_zusammenfuehrung.dart';
+
+part 'syncing_hero_repository_zusammenfuehrung.dart';
 
 /// HeroRepository-Dekorator mit accountgebundenem Remote-Sync.
 ///
@@ -21,7 +25,9 @@ import 'package:dsa_heldenverwaltung/domain/sync_object_diff.dart';
 /// Dieses Repository spiegelt Aenderungen nach Remote, zieht Remote-Aenderungen
 /// in den lokalen Cache und erzeugt explizite Konflikte statt stiller
 /// Ueberschreibungen, sobald beide Seiten seit der letzten Basisrevision
-/// geaendert wurden.
+/// geaendert wurden. Liegt der Inhalt dieser Basis vor ([basisStore]),
+/// fuehrt es beide Staende vorher zusammen; ein Konflikt entsteht nur noch
+/// fuer Werte, die beide Seiten verschieden geaendert haben (ARCH-06).
 class SyncingHeroRepository implements HeroRepository, AppSyncController {
   /// Erstellt ein synchronisierendes Repository.
   SyncingHeroRepository({
@@ -31,9 +37,11 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
     required this.accountId,
     this.accountEmail,
     OfflineHeroReviewStore? offlineReviewStore,
+    SyncBasisStore? basisStore,
     bool startRemoteListener = true,
   }) : offlineReviewStore =
-           offlineReviewStore ?? InMemoryOfflineHeroReviewStore() {
+           offlineReviewStore ?? InMemoryOfflineHeroReviewStore(),
+       basisStore = basisStore ?? SpeicherSyncBasisStore() {
     if (startRemoteListener) {
       _heroSubscription = remote.watchHeroes().listen(
         (records) => unawaited(_applyRemoteHeroRecords(records)),
@@ -60,6 +68,9 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
 
   /// Speicher fuer bereits getroffene Offline-Helden-Beschluesse.
   final OfflineHeroReviewStore offlineReviewStore;
+
+  /// Inhalte der zuletzt abgeglichenen Staende fuer die Zusammenfuehrung.
+  final SyncBasisStore basisStore;
 
   /// Konto-ID des angemeldeten Users.
   final String accountId;
@@ -187,10 +198,61 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
       return;
     }
 
+    await _loeseKonflikt(
+      conflictId,
+      held: (details) => _resolveHeroConflict(details, resolution),
+      geloescht: (details) => _resolveDeletedHeroConflict(details, resolution),
+      zustand: (details) => _resolveStateConflict(details, resolution),
+    );
+  }
+
+  /// Fuehrt beide Staende eines Konflikts zusammen (ARCH-06).
+  @override
+  Future<void> resolveConflictAutomatisch(
+    String conflictId,
+    Map<String, SyncSeite> entscheidungen,
+  ) {
+    return _loeseKonflikt(
+      conflictId,
+      held: (details) => _loeseHeldAutomatisch(details, entscheidungen),
+      geloescht: (_) => throw StateError(
+        'Ein gelöschter Held lässt sich nicht zusammenführen.',
+      ),
+      zustand: (details) => _loeseZustandAutomatisch(details, entscheidungen),
+    );
+  }
+
+  /// Vorschau der automatischen Zusammenfuehrung eines Konflikts.
+  @override
+  Future<SyncKonfliktVorschau?> konfliktVorschau(String conflictId) async {
+    final plan = await _planeZusammenfuehrung(
+      conflictId,
+      const <String, SyncSeite>{},
+    );
+    if (plan == null) {
+      return null;
+    }
+    return SyncKonfliktVorschau(
+      felder: plan.felder,
+      vonLokal: plan.vonLokal,
+      vonOnline: plan.vonOnline,
+    );
+  }
+
+  // Loest einen Helden-, Loesch- oder Zustandskonflikt ueber den passenden
+  // Weg. Hat sich der Online-Stand waehrend der Entscheidung erneut
+  // geaendert, wird der Konflikt mit dem frischen Stand neu gestellt.
+  Future<void> _loeseKonflikt(
+    String conflictId, {
+    required Future<void> Function(_HeroConflictDetails details) held,
+    required Future<void> Function(_DeletedHeroConflictDetails details)
+    geloescht,
+    required Future<void> Function(_StateConflictDetails details) zustand,
+  }) async {
     final heroConflict = _heroConflicts[conflictId];
     if (heroConflict != null) {
       try {
-        await _resolveHeroConflict(heroConflict, resolution);
+        await held(heroConflict);
         _heroConflicts.remove(conflictId);
         _conflictDiffCache.remove(conflictId);
         _removeConflictFromStatus(conflictId);
@@ -218,7 +280,7 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
     final deletedConflict = _deletedHeroConflicts[conflictId];
     if (deletedConflict != null) {
       try {
-        await _resolveDeletedHeroConflict(deletedConflict, resolution);
+        await geloescht(deletedConflict);
         _deletedHeroConflicts.remove(conflictId);
         _conflictDiffCache.remove(conflictId);
         _removeConflictFromStatus(conflictId);
@@ -242,7 +304,7 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
     final stateConflict = _stateConflicts[conflictId];
     if (stateConflict != null) {
       try {
-        await _resolveStateConflict(stateConflict, resolution);
+        await zustand(stateConflict);
         _stateConflicts.remove(conflictId);
         _conflictDiffCache.remove(conflictId);
         _removeConflictFromStatus(conflictId);
@@ -456,6 +518,8 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
           final localHash = heroContentHash(hero);
           if (localHash != metadata?.localHash) {
             await _pushHeroIfSafe(hero);
+          } else {
+            await _ergaenzeBasis(_heroKey(hero.id), metadata!, hero.toJson());
           }
         }
         continue;
@@ -486,6 +550,7 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
       final record = recordsById[hero.id];
       if (record != null &&
           !await _hasPendingLocalStateChange(hero.id, state, record)) {
+        await _ergaenzeZustandsbasis(hero.id, state, record);
         continue;
       }
       // Über dieselbe Bündelung wie beim Speichern, damit ein Klick während
@@ -735,6 +800,7 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
       localHash: localHash,
       remoteHash: remoteHash,
       remoteRevision: saved.revision,
+      basis: hero.toJson(),
     );
   }
 
@@ -895,6 +961,7 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
       localHash: localHash,
       remoteHash: _remoteStateHash(saved),
       remoteRevision: saved.revision,
+      basis: state.toJson(),
     );
   }
 
@@ -915,6 +982,11 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
       // Online-Version als massgeblich uebernehmen statt den Nutzer eine
       // Scheinentscheidung treffen zu lassen.
       await _adoptRemoteHero(remoteHero, remoteRecord, localHero: localHero);
+      return;
+    }
+    // Hat keine Seite einen Wert der anderen verschieden geaendert, ist es
+    // kein echter Konflikt: still zusammenfuehren (ARCH-06).
+    if (await _fuehreHeldStillZusammen(localHero, remoteRecord)) {
       return;
     }
     _absorbStateConflict(localHero.id);
@@ -1007,6 +1079,9 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
         localState: localState,
         remoteRecord: remoteRecord,
       );
+      return;
+    }
+    if (await _fuehreZustandStillZusammen(heroId, localState, remoteRecord)) {
       return;
     }
     // Die rohe Helden-ID sagt dem Nutzer nichts; der Name steht im lokalen
@@ -1379,6 +1454,7 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
       remoteHash: _remoteHeroHash(record),
       remoteRevision: record.revision,
       isDeleted: record.isDeleted,
+      basis: hero.toJson(),
     );
   }
 
@@ -1394,16 +1470,31 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
       remoteHash: _remoteStateHash(record),
       remoteRevision: record.revision,
       isDeleted: record.isDeleted,
+      basis: state.toJson(),
     );
   }
 
+  /// Merkt den abgeglichenen Stand; [basis] ist sein Inhalt (ARCH-06).
+  ///
+  /// Die Basis wird vor den Metadaten geschrieben und traegt die Revision:
+  /// Bricht die App dazwischen ab, passt sie nicht zur gemerkten Revision
+  /// und wird nicht benutzt. Ohne Inhalt (Loeschungen) entfaellt sie.
   Future<void> _saveMetadata({
     required SyncObjectKey key,
     required String localHash,
     required String remoteHash,
     required String remoteRevision,
     bool isDeleted = false,
+    Map<String, dynamic>? basis,
   }) async {
+    if (basis != null && !isDeleted) {
+      await basisStore.merke(
+        key,
+        SyncBasis(revision: remoteRevision, inhalt: basis),
+      );
+    } else {
+      await basisStore.vergiss(key);
+    }
     await metadataStore.save(
       SyncMetadata(
         key: key,

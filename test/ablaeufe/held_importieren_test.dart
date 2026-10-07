@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dsa_heldenverwaltung/ablaeufe/held_importieren.dart';
 import 'package:dsa_heldenverwaltung/catalog/catalog_section_id.dart';
+import 'package:dsa_heldenverwaltung/data/vorgangsjournal.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/avatar_gallery_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_appearance.dart';
@@ -54,6 +55,13 @@ Map<String, dynamic> _galeriebild(AvatarGalleryEntry eintrag, String bytes) {
 /// bzw. `{heroId}.png` und merkt sich die abgelegten Bytes.
 class _Ablage {
   final Map<String, String> dateien = <String, String>{};
+  final List<String> geloescht = <String>[];
+
+  Future<void> loesche(String name) async {
+    geloescht.add(name);
+    dateien.remove(name);
+  }
+
   final Set<String> scheitert = <String>{};
   bool leererName = false;
 
@@ -86,21 +94,42 @@ class _Ablage {
   }
 }
 
+/// Repository, dessen nächste [zustandsfehler] Zustandsschreibvorgänge
+/// scheitern.
+class _Repo extends FakeRepository {
+  _Repo(List<HeroSheet> helden) : super(heroes: helden);
+
+  int zustandsfehler = 0;
+
+  @override
+  Future<void> saveHeroState(String heroId, HeroState state) async {
+    if (zustandsfehler > 0) {
+      zustandsfehler--;
+      throw StateError('Zustand nicht gespeichert');
+    }
+    await super.saveHeroState(heroId, state);
+  }
+}
+
 class _Aufbau {
   _Aufbau({List<HeroSheet> helden = const <HeroSheet>[], this.maxHelden = 5})
-    : repo = FakeRepository(heroes: List<HeroSheet>.of(helden));
+    : repo = _Repo(List<HeroSheet>.of(helden));
 
-  final FakeRepository repo;
+  final _Repo repo;
   final int maxHelden;
   final _Ablage ablage = _Ablage();
   final List<String> ereignisse = <String>[];
   final List<HeroSheet> gespeichert = <HeroSheet>[];
+  final SpeicherVorgangsjournal journal = SpeicherVorgangsjournal();
+  final List<Map<String, Map<String, Object?>>> journalBeimSpeichern =
+      <Map<String, Map<String, Object?>>>[];
   Object? speicherfehler;
 
   HeldImportieren get ablauf => HeldImportieren(
     repository: repo,
     speichere: (held) async {
       ereignisse.add('held');
+      journalBeimSpeichern.add(await journal.offene());
       final fehler = speicherfehler;
       if (fehler != null) {
         throw fehler;
@@ -114,6 +143,8 @@ class _Aufbau {
     },
     speichereGaleriebild: ablage.galerie,
     speichereHauptbild: ablage.hauptbild,
+    loescheBild: ablage.loesche,
+    journal: journal,
     neueId: () => 'neu',
     uhr: () => _uhr,
     maxHelden: maxHelden,
@@ -388,5 +419,86 @@ void main() {
       throwsA(isA<StateError>()),
     );
     expect(await aufbau.repo.loadHeroState('alt'), isNull);
+    expect(await aufbau.journal.offene(), isEmpty);
+  });
+
+  group('Vorgangsjournal (ARCH-06)', () {
+    const bildA = AvatarGalleryEntry(id: 'a', fileName: 'alt_a.png');
+    final mitGalerie = _held(
+      appearance: const HeroAppearance(avatarGallery: [bildA]),
+    );
+
+    test(
+      'vermerkt den Import vor dem Speichern und erledigt ihn danach',
+      () async {
+        final aufbau = _Aufbau();
+        await aufbau.ablauf.importiere(
+          HeroTransferBundle(
+            exportedAt: _uhr,
+            hero: mitGalerie,
+            state: _zustand,
+            galleryImages: [_galeriebild(bildA, 'A')],
+          ),
+          neuAnlegen: true,
+        );
+
+        final beimSpeichern = aufbau.journalBeimSpeichern.single.values.single;
+        expect(beimSpeichern['heroId'], 'neu');
+        expect(beimSpeichern['schritt'], 'bilderAblegen');
+        expect(beimSpeichern['dateien'], ['neu_a.png']);
+        expect(await aufbau.journal.offene(), isEmpty);
+      },
+    );
+
+    test('scheitert das Speichern eines neuen Helden, werden seine Bilder '
+        'wieder gelöscht', () async {
+      final aufbau = _Aufbau()..speicherfehler = StateError('Speicher voll');
+      await expectLater(
+        aufbau.ablauf.importiere(
+          HeroTransferBundle(
+            exportedAt: _uhr,
+            hero: mitGalerie,
+            state: _zustand,
+            galleryImages: [_galeriebild(bildA, 'A')],
+          ),
+          neuAnlegen: true,
+        ),
+        throwsA(isA<StateError>()),
+      );
+      expect(aufbau.ablage.geloescht, ['neu_a.png']);
+      expect(aufbau.ablage.dateien, isEmpty);
+      expect(await aufbau.journal.offene(), isEmpty);
+    });
+
+    test(
+      'scheitert der Zustand einmal, trägt der zweite Versuch ihn nach',
+      () async {
+        final aufbau = _Aufbau();
+        aufbau.repo.zustandsfehler = 1;
+        final ergebnis = await aufbau.ablauf.importiere(
+          HeroTransferBundle(exportedAt: _uhr, hero: _held(), state: _zustand),
+          neuAnlegen: false,
+        );
+        expect(ergebnis.heroId, 'alt');
+        expect((await aufbau.repo.loadHeroState('alt'))!.currentLep, 21);
+        expect(await aufbau.journal.offene(), isEmpty);
+      },
+    );
+
+    test('scheitert der Zustand dauerhaft, erreicht der Fehler den Aufrufer '
+        'und der Vorgang bleibt für den Neustart offen', () async {
+      final aufbau = _Aufbau();
+      aufbau.repo.zustandsfehler = 2;
+      await expectLater(
+        aufbau.ablauf.importiere(
+          HeroTransferBundle(exportedAt: _uhr, hero: _held(), state: _zustand),
+          neuAnlegen: false,
+        ),
+        throwsA(isA<StateError>()),
+      );
+      final offen = (await aufbau.journal.offene()).values.single;
+      expect(offen['schritt'], 'heldGespeichert');
+      expect(await aufbau.repo.loadHeroById('alt'), isNotNull);
+    });
   });
 }
