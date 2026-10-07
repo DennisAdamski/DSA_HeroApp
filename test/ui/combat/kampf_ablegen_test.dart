@@ -183,6 +183,18 @@ void main() {
     expect(schwert.abgelegt!.waffe!.tpFlat, 4);
   });
 
+  testWidgets('auch die letzte Waffe lässt sich ablegen', (tester) async {
+    await zeige(tester);
+    await reiter(tester, 'Waffen');
+
+    await entferne(tester, 'combat-weapon-remove-1', 'Ganz entfernen');
+    await entferne(tester, 'combat-weapon-remove-0', 'Nur ablegen');
+
+    final gespeichert = await repo.gespeichert('demo');
+    expect(gespeichert.combatConfig.weapons, isEmpty);
+    expect(eintrag(gespeichert, 'i-schwert').abgelegt, isNotNull);
+  });
+
   testWidgets('Abbrechen ändert nichts', (tester) async {
     await zeige(tester);
     await reiter(tester, 'Waffen');

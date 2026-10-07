@@ -1194,8 +1194,10 @@ pro Stück × Anzahl), und kommt über `mitDukatenSchritt` auf den Geldstand
 (unlesbarer Geldstand: abgewiesen). Unverknüpft sinkt die Menge, der letzte
 Rest entfernt den Eintrag. Ausgerüstete Waffen, Rüstungsteile und
 Nebenhandteile verlassen samt Slot den Kampfbereich (wie „Ganz entfernen“,
-die Geschosse einer Fernkampfwaffe werden abgelegt; die letzte Waffe bleibt
-gesperrt). Pfeile am Bogen senken den Bestand ihres Slots und bleiben bei 0
+die Geschosse einer Fernkampfwaffe werden abgelegt). Auch die letzte Waffe
+lässt sich entfernen, ablegen und verkaufen: Der Held steht dann wie ein
+neuer da (`ohneWaffe`: keine Waffenliste, nur der leere Platzhalter, den die
+nächste neue Waffe ersetzt). Pfeile am Bogen senken den Bestand ihres Slots und bleiben bei 0
 stehen.
 
 ---

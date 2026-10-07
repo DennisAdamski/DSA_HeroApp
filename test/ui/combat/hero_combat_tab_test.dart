@@ -1766,7 +1766,7 @@ void main() {
 
     final heroes = await repo.listHeroes();
     final hero = heroes.firstWhere((entry) => entry.id == 'demo');
-    final weapon = hero.combatConfig.weaponSlots[1];
+    final weapon = hero.combatConfig.weaponSlots.single;
     expect(weapon.name, 'Bidenhaender');
     expect(weapon.weaponType, 'Bidenhaender');
     expect(weapon.tpDiceCount, 2);
@@ -2155,8 +2155,9 @@ void main() {
 
     final heroes = await repo.listHeroes();
     final hero = heroes.firstWhere((entry) => entry.id == 'demo');
-    expect(hero.combatConfig.weaponSlots.length, 2);
-    expect(hero.combatConfig.weaponSlots[1].tpDiceCount, 1);
+    // Die erste Waffe ersetzt den leeren Platzhalter des neuen Helden.
+    expect(hero.combatConfig.weaponSlots.length, 1);
+    expect(hero.combatConfig.weaponSlots[0].tpDiceCount, 1);
   });
 
   testWidgets('removing selected weapon sets active selection to none', (

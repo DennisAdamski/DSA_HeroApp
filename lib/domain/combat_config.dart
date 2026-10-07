@@ -451,7 +451,10 @@ OffhandAssignment _normalizeOffhandAssignment(
       ? value.equipmentIndex
       : -1;
   // Per `copyWith`, damit unbekannte Felder der Auswahl erhalten bleiben.
-  if (normalizedWeaponIndex == selectedWeaponIndex) {
+  // Nur eine echte Doppelbelegung leert die Nebenhand; ohne Hauptwaffe
+  // (beide -1) bleibt ein Schild oder eine Parierwaffe in der Hand.
+  if (normalizedWeaponIndex >= 0 &&
+      normalizedWeaponIndex == selectedWeaponIndex) {
     return value.copyWith(weaponIndex: -1, equipmentIndex: -1);
   }
   if (normalizedWeaponIndex >= 0) {
