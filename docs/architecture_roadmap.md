@@ -2410,7 +2410,7 @@ Der Betrieb ohne Konto oder Netzwerk bleibt möglich.
   werden müssen, und einen geeigneten Speichervertrag mit Wiederanlauf definieren.
 - [x] Lokale Änderung und ausstehenden Sync dauerhaft zusammen erfassen;
   wiederholte Übertragung darf eine Aktion nicht erneut anwenden.
-- [ ] Änderungsprotokoll und fachlich gültige Korrekturaktionen ergänzen.
+- [x] Änderungsprotokoll und fachlich gültige Korrekturaktionen ergänzen.
   Unabhängige Änderungen nur nach definierten Konfliktregeln zusammenführen;
   widersprüchliche Änderungen bleiben sichtbar entscheidbar.
 
@@ -2507,7 +2507,7 @@ Wiederanlauf.** Branch `task/2026-10-07-arch06`, Commit `07e7d8c`.
   entsteht wie bisher ein sichtbarer Konflikt; jede gewählte Fassung ist in
   sich stimmig (LeP passen zu ihren Buchungen). Ein automatisches
   Zusammenführen unabhängiger Buchungen gibt es nicht; deshalb bleibt der
-  dritte Unterpunkt offen.
+  dritte Unterpunkt offen. *(Nachgeholt in Teilstand 3.)*
 - *Nachweise:* `test/rules/schaden_ruecknahme_rules_test.dart`
   (tatsächliche Deltas, AuP-Untergrenze, Zusatzschaden, geheilte und fremde
   Wunden, vermerkte Unterdrückung, Kopf-INI, unbekannte Zone und Art,
@@ -2526,6 +2526,56 @@ Wiederanlauf.** Branch `task/2026-10-07-arch06`, Commit `07e7d8c`.
   gescheiterten Versuch die Eingaben, bleibt die Vorgangs-ID; hatte der erste
   Versuch doch gespeichert, gilt dessen Buchung. Rast und andere
   Zustandsänderungen sind noch nicht zurücknehmbar.
+
+**Teilstand 3, 07.10.2026 — Konflikte nur für echte Widersprüche.**
+Nutzerentscheidung: Gleichzeitiges Spielen an zwei Geräten ist die
+Ausnahme, Laufzeitwerte sind unkritisch, wichtig sind AP, Talente, Inventar
+und Co. Sichtbar werden sollen nur tatsächliche Konflikte, entschieden wird
+„Nur Online“, „Nur Lokal“, „Beide“ oder „Automatisch“. Bleibt bei
+„Automatisch“ etwas offen, wird je Wert nach Online oder Lokal gefragt.
+
+- *Basisstand:* Der Sync legt nach jedem Abgleich den Inhalt des
+  abgeglichenen Stands mit seiner Revision ab (`SyncBasisStore`,
+  `HiveSyncBasisStore`, Box `sync_basis_v1`). Die Basis wird vor den
+  Metadaten geschrieben und gilt nur, wenn ihre Revision zur gemerkten passt.
+  Bestandsabgleiche bekommen sie beim nächsten Abgleich ohne lokale Änderung.
+- *Zusammenführungsregel:* `fuehreSyncZusammen`
+  (`lib/domain/sync_zusammenfuehrung.dart`). Was nur eine Seite geändert
+  hat, wird übernommen; ein echter Konflikt ist nur ein Wert, den beide
+  verschieden geändert haben. Maps werden je Schlüssel verglichen, Listen
+  über `id`/`instanzId` je Element (Inventar, Kampfslots, Verlauf, Abenteuer,
+  Buchungen); legen beide Seiten ein Feld neu an, gilt die Basis als leer.
+  Fachregeln: AP und Ressourcen/Erschöpfung sind Zähler, Stufe und
+  Zeitstempel nehmen den höheren Wert, das Würfelprotokoll ist eine
+  Vereinigung, Protokoll und Buchungen bleiben auf 50 begrenzt.
+- *Sync:* Ohne Widerspruch führt der Sync still zusammen, schreibt online
+  auf die gelesene Revision und lokal und merkt die neue Basis. Hat der
+  Nutzer zwischendurch lokal gespeichert, wird nichts überschrieben, dann
+  entsteht der Konflikt. Ein Zustand an einem offenen Helden-Konflikt wird
+  nicht still zusammengeführt, er folgt der Entscheidung zum Helden.
+  `konfliktVorschau` und `resolveConflictAutomatisch` (am `AppSyncController`)
+  rechnen mit dem frischen lokalen Stand; ändert sich online während der
+  Entscheidung etwas, wird der Konflikt wie bisher neu gestellt.
+- *Oberfläche:* `SyncKonfliktKarte` ersetzt die beiden Kartenvarianten in
+  Gate und Einstellungen. Mit Basis nennt sie, wie viele Änderungen
+  „Automatisch“ von jeder Seite übernimmt, und zeigt nur die
+  widersprüchlichen Werte, sofort aufgeklappt. Die Knöpfe stehen in der
+  Reihenfolge der Spalten: „Nur Online“, „Nur Lokal“, „Beide behalten“,
+  „Automatisch“. Für übrige Widersprüche fragt ein Dialog je Wert („Alle:
+  Online/Lokal“ als Abkürzung).
+- *Nachweise:* `test/domain/sync_zusammenfuehrung_test.dart` (Regel),
+  `test/data/sync_zusammenfuehrung_repository_test.dart` (stilles
+  Zusammenführen, fehlende und nachgetragene Basis, „Automatisch“ samt
+  Zustand, Online-Änderung während der Entscheidung, Hive-Basis),
+  `sync_zwei_geraete_inventar_test.dart` (Teilen und Beschreiben
+  gleichnamiger Stapel ohne Konflikt; echter Widerspruch mit allen vier
+  Entscheidungen), `sync_app_versionen_test.dart` (Felder einer neueren
+  Version bleiben beim Zusammenführen), `sync_speichervertrag_test.dart`
+  (Treffer beider Geräte ohne Konflikt) und die Gate-Tests
+  (Knopfreihenfolge, Vorschau, Feldauswahl, Fehler).
+- *Grenzen:* Listen ohne stabile ID (Notizen, Kontakte) sind unteilbar.
+  Offline-Helden- und Löschkonflikte bleiben ohne „Automatisch“. Die Stufe
+  folgt erst beim nächsten Speichern exakt den zusammengeführten AP.
 
 ## ARCH-07 — Nutzerabläufe und Datenmigrationen absichern
 

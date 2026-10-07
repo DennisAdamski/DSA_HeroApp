@@ -4,10 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dsa_heldenverwaltung/data/auth_service.dart';
 import 'package:dsa_heldenverwaltung/domain/sync_controller.dart';
 import 'package:dsa_heldenverwaltung/domain/sync_models.dart';
-import 'package:dsa_heldenverwaltung/domain/sync_object_diff.dart';
 import 'package:dsa_heldenverwaltung/state/auth_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
-import 'package:dsa_heldenverwaltung/ui/widgets/sync_conflict_comparison_table.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/sync_konflikt_karte.dart';
 
 /// Blockiert die App-Nutzung, solange Konto-Sync-Konflikte offen sind.
 ///
@@ -111,8 +110,9 @@ class _SyncConflictScreen extends ConsumerWidget {
             padding: const EdgeInsets.all(24),
             children: [
               Text(
-                'Online- und Offline-Daten unterscheiden sich. '
-                'Wähle pro Eintrag, welche Version erhalten bleibt.',
+                'Beide Geräte haben seit dem letzten Abgleich verschieden '
+                'geändert. Wähle pro Eintrag „Nur Online“, „Nur Lokal“, '
+                '„Beide behalten“ oder „Automatisch“.',
                 style: theme.textTheme.bodyLarge,
               ),
               const SizedBox(height: 8),
@@ -131,12 +131,15 @@ class _SyncConflictScreen extends ConsumerWidget {
               ],
               const SizedBox(height: 16),
               for (final conflict in conflicts) ...[
-                _SyncConflictCard(
-                  conflict: conflict,
-                  diff: controller.conflictDiff(conflict.id),
-                  onResolve: (choice) {
-                    controller.resolveConflict(conflict.id, choice);
-                  },
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: SyncKonfliktKarte(
+                      key: ValueKey<String>('sync-konflikt-${conflict.id}'),
+                      conflict: conflict,
+                      controller: controller,
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 12),
               ],
@@ -225,68 +228,13 @@ class _BulkActions extends StatelessWidget {
                   onPressed: () =>
                       onResolveAll(SyncResolutionChoice.keepRemote),
                   icon: const Icon(Icons.cloud_done_outlined),
-                  label: const Text('Alle: Online behalten'),
+                  label: const Text('Alle: Nur Online'),
                 ),
                 OutlinedButton.icon(
                   onPressed: () => onResolveAll(SyncResolutionChoice.keepLocal),
                   icon: const Icon(Icons.computer),
-                  label: const Text('Alle: Lokal behalten'),
+                  label: const Text('Alle: Nur Lokal'),
                 ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _SyncConflictCard extends StatelessWidget {
-  const _SyncConflictCard({
-    required this.conflict,
-    required this.onResolve,
-    this.diff,
-  });
-
-  final SyncConflict conflict;
-  final ValueChanged<SyncResolutionChoice> onResolve;
-
-  /// Feld-Diff des Konflikts oder `null`, wenn keine Volldaten vorliegen.
-  final SyncObjectDiff? diff;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(conflict.title, style: theme.textTheme.titleMedium),
-            const SizedBox(height: 8),
-            SyncConflictComparisonTable(conflict: conflict, diff: diff),
-            const SizedBox(height: 16),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                OutlinedButton.icon(
-                  onPressed: () => onResolve(SyncResolutionChoice.keepLocal),
-                  icon: const Icon(Icons.computer),
-                  label: const Text('Lokal behalten'),
-                ),
-                OutlinedButton.icon(
-                  onPressed: () => onResolve(SyncResolutionChoice.keepRemote),
-                  icon: const Icon(Icons.cloud_done_outlined),
-                  label: const Text('Online behalten'),
-                ),
-                if (conflict.supportsKeepBoth)
-                  FilledButton.icon(
-                    onPressed: () => onResolve(SyncResolutionChoice.keepBoth),
-                    icon: const Icon(Icons.copy_all_outlined),
-                    label: const Text('Beide behalten'),
-                  ),
               ],
             ),
           ],

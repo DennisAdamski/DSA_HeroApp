@@ -322,15 +322,8 @@ class _AccountSyncSettingsPage extends ConsumerWidget {
                 for (final conflict in syncStatus.openConflicts)
                   _SyncConflictTile(
                     conflict: conflict,
-                    diff: syncController?.conflictDiff(conflict.id),
-                    onResolve: syncController == null
-                        ? null
-                        : (choice) => _resolveConflict(
-                            context: context,
-                            controller: syncController,
-                            conflict: conflict,
-                            choice: choice,
-                          ),
+                    controller: syncController,
+                    onAufgeloest: () => _meldeAufgeloest(context),
                   ),
               ],
             ),
@@ -380,13 +373,7 @@ class _AccountSyncSettingsPage extends ConsumerWidget {
     }
   }
 
-  Future<void> _resolveConflict({
-    required BuildContext context,
-    required AppSyncController controller,
-    required SyncConflict conflict,
-    required SyncResolutionChoice choice,
-  }) async {
-    await controller.resolveConflict(conflict.id, choice);
+  void _meldeAufgeloest(BuildContext context) {
     if (!context.mounted) {
       return;
     }
@@ -549,15 +536,13 @@ class _SyncInfoRow extends StatelessWidget {
 class _SyncConflictTile extends StatelessWidget {
   const _SyncConflictTile({
     required this.conflict,
-    required this.onResolve,
-    this.diff,
+    required this.controller,
+    required this.onAufgeloest,
   });
 
   final SyncConflict conflict;
-  final ValueChanged<SyncResolutionChoice>? onResolve;
-
-  /// Feld-Diff des Konflikts oder `null`, wenn keine Volldaten vorliegen.
-  final SyncObjectDiff? diff;
+  final AppSyncController? controller;
+  final VoidCallback onAufgeloest;
 
   @override
   Widget build(BuildContext context) {
@@ -571,39 +556,11 @@ class _SyncConflictTile extends StatelessWidget {
         ),
         child: Padding(
           padding: const EdgeInsets.all(12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(conflict.title, style: theme.textTheme.titleSmall),
-              const SizedBox(height: 8),
-              SyncConflictComparisonTable(conflict: conflict, diff: diff),
-              const SizedBox(height: 12),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  OutlinedButton(
-                    onPressed: onResolve == null
-                        ? null
-                        : () => onResolve!(SyncResolutionChoice.keepLocal),
-                    child: const Text('Lokal behalten'),
-                  ),
-                  OutlinedButton(
-                    onPressed: onResolve == null
-                        ? null
-                        : () => onResolve!(SyncResolutionChoice.keepRemote),
-                    child: const Text('Online behalten'),
-                  ),
-                  if (conflict.supportsKeepBoth)
-                    FilledButton(
-                      onPressed: onResolve == null
-                          ? null
-                          : () => onResolve!(SyncResolutionChoice.keepBoth),
-                      child: const Text('Beide behalten'),
-                    ),
-                ],
-              ),
-            ],
+          child: SyncKonfliktKarte(
+            key: ValueKey<String>('sync-konflikt-${conflict.id}'),
+            conflict: conflict,
+            controller: controller,
+            onAufgeloest: onAufgeloest,
           ),
         ),
       ),
