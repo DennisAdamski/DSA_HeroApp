@@ -2514,7 +2514,8 @@ Bestandshelden unter `test/rules/`).
 | `deleteHero(id)` | Held und State löschen, Auswahl aktualisieren |
 | `buildExportJson(id)` | `HeroTransferBundle` (Held + State + Zeitstempel) als JSON |
 | `parseImportJson(rawJson)` | JSON parsen und als `HeroTransferBundle` validieren |
-| `importHeroBundle(bundle, resolution)` | Importieren mit Konfliktlösung |
+| `importiereHeld(bundle, resolution)` | Importieren mit Konfliktlösung über den Ablauf `HeldImportieren` (`lib/ablaeufe/held_importieren.dart`); liefert `HeldImportErgebnis` (ID, fehlende Bilder) und wählt den Helden aus |
+| `importHeroBundle(bundle, resolution)` | Kompatibilitätseinstieg, liefert nur die ID |
 
 **`ImportConflictResolution`:**
 - `overwriteExisting` — vorhandenen Helden überschreiben
@@ -3320,8 +3321,8 @@ ueber die Settings-Katalogverwaltung bearbeitet.
   (`hero_combat/combat_state_helpers.dart`). Im Bearbeitungsmodus ändert er
   nur den Entwurf, gespeichert wird wie bisher mit „Speichern“. Im Lesemodus
   ruft er `aendereHeldMitMeldung` mit `mitKampfAenderung`; die Slotprüfung
-  (`_validateWeaponSlotsForConfig`) läuft dabei auf dem frischen Ergebnis und
-  meldet sich als `StateError`. Die Einstiege je Bedienelement liegen in
+  läuft dabei auf dem frischen Ergebnis und meldet sich als `StateError`
+  (seit 2026-10-07 als Regel `neuerKampfSlotFehler`, siehe unten). Die Einstiege je Bedienelement liegen in
   `hero_combat/combat_sofort_aenderungen.dart`.
 - Regeln: `lib/rules/derived/kampf_aenderung_rules.dart` (`mitAktiverWaffe`,
   `aendereWaffe`, `mitEntfernung`, `mitGeschossWahl`, `mitGeschossSchritt`,
@@ -3509,3 +3510,30 @@ sondern der `ProviderScope` darüber.
 
 *Erzeugt am 2026-03-04 — Bezieht sich auf Codestand `claude/create-technical-documentation-Eawbf`*
 
+### Update 2026-10-07: Held importieren als Ablauf, Slotprüfung als Regel (ARCH-05)
+
+- `HeldImportieren` (`lib/ablaeufe/held_importieren.dart`) übernimmt einen
+  Export: Heldenlimit für jede noch unbekannte Ziel-ID, eigene
+  Katalogeinträge, dann die Bilder, dann **ein** `saveHero`, zuletzt der
+  Zustand über `aendereGespeichertenZustand`. Katalog und Bildablage kommen
+  als Funktionen herein; `HeroActions.importiereHeld` bindet sie an
+  (`AvatarFileStorage`, Speicherpfad, `CustomCatalogRepository`) und wählt
+  den Helden aus.
+- Jeder abgelegte Galerieeintrag trägt den Dateinamen, den die Ablage
+  zurückgibt (`{heroId}_{entryId}.png` bzw. `{heroId}.png`), nie den Namen
+  aus dem Export. Ein leerer Name oder ein Fehler gilt als „nicht
+  gespeichert“: Das Bild wird gezählt, der Import läuft weiter, die
+  Startseite nennt die Zahl (`importMeldung`). Unter einer neuen ID
+  entfallen Einträge ohne abgelegtes Bild, denn sie zeigten auf die Datei
+  des Originals. Unter derselben ID bleiben ihre Verweise. Verweise auf
+  entfallene Einträge (aktiv, primär, Schnappschuss) werden bereinigt. Das
+  doppelt mitgelieferte `avatarBase64` wird nur bei alten Exporten ohne
+  Galeriebilder als Legacy-Hauptbild abgelegt.
+- `lib/rules/derived/kampf_slot_pruefung_rules.dart`: `pruefeKampfSlots`
+  liefert alle Befunde der Waffenplätze und der Nebenhand mit stabilem
+  Slotbezug (Slot-ID, ersatzweise Position, `nebenhand`) und Art.
+  `neuerKampfSlotFehler` vergleicht über Bezug und Art. Sofortänderungen im
+  Kampf-Tab sperren nur neu eingeführte Fehler; „Speichern“ im Editor
+  meldet den ersten Befund. Die Talent- und Waffenartauflösung
+  (`combatTypeFromTalent`, `weaponTypeOptionsForTalent`) liegt mit dort,
+  `combat_helpers.dart` re-exportiert sie.

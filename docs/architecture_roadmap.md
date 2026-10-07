@@ -39,7 +39,7 @@ Verbesserungen und „Begleitend“ fortlaufende Absicherung.
 - [ ] **ARCH-02 — Regelrelevante Eigenschaften strukturiert speichern** · Grundlage
 - [x] **ARCH-03 — Gemeinsame Ausrüstungsdaten für Inventar und Kampf** · Grundlage (abgenommen 07.10.2026)
 - [ ] **ARCH-04 — Versionierte Regelprofile und erklärbare Berechnungen** · Aufbau
-- [ ] **ARCH-05 — Schreibende Aktionen fachlich aufteilen** · Grundlage
+- [x] **ARCH-05 — Schreibende Aktionen fachlich aufteilen** · Grundlage (abgenommen 07.10.2026)
 - [ ] **ARCH-06 — Zusammengehörige Änderungen gemeinsam speichern und synchronisieren** · Aufbau
 - [ ] **ARCH-07 — Nutzerabläufe und Datenmigrationen absichern** · Begleitend
 
@@ -1023,14 +1023,14 @@ Regelmodulen. Riverpod bindet die Abläufe an die Oberfläche.
   mit expliziten Abhängigkeiten statt uneingeschränktem Zugriff auf alle Provider.
   *(„Rast abschließen“; bewusst mit zwei kleinen Verhaltensänderungen, siehe
   Teilstand.)*
-- [ ] Weitere Abläufe nach demselben Prinzip entflechten; bestehende Aufrufer
+- [x] Weitere Abläufe nach demselben Prinzip entflechten; bestehende Aufrufer
   schrittweise migrieren und benötigte Kompatibilitätseinstiege erhalten.
-  *(Stand 05.10.2026: Rast, Laufzeitzustand, Schaden erhalten, die
-  Sofortaktionen des Bogens und des Kampf-Tabs, der Inventareditor und alle
-  Editorentwürfe sind frisch; kein Bogenschreibweg schreibt mehr einen
-  Snapshot. „Steigerungsrunde übernehmen“ ist ein benannter Ablauf. Offen
-  sind „Held importieren“ und die Slotprüfung im Widget, siehe Teilstände
-  (1) bis (10).)*
+  *(Rast, Laufzeitzustand, Schaden erhalten, die Sofortaktionen des Bogens
+  und des Kampf-Tabs, der Inventareditor und alle Editorentwürfe sind
+  frisch; kein Bogenschreibweg schreibt mehr einen Snapshot.
+  „Steigerungsrunde übernehmen“ und „Held importieren“ sind benannte
+  Abläufe, die Slotprüfung ist eine Regel. Siehe Teilstände (1) bis (11)
+  und den Abschluss.)*
 
 **Abnahme:** Abläufe sind ohne gerenderte Oberfläche prüfbar. Normalisierung und
 Validierung haben je eine klare Zuständigkeit. Widgets und Provider enthalten
@@ -1867,10 +1867,10 @@ Commits:
 4. Ein Geschoss ohne ID (unbenannt) wird über seinen Inhalt samt Bestand
    gefunden. Ändert ein anderer Weg den Bestand zwischendurch, meldet der
    nächste Klick „inzwischen geändert“, statt falsch zu zählen.
-5. Die Slotprüfung (`_validateWeaponSlotsForConfig`) liegt weiter im Widget
+5. ~~Die Slotprüfung (`_validateWeaponSlotsForConfig`) liegt weiter im Widget
    und läuft bei jeder Sofortänderung auf der ganzen Konfiguration. Eine
    bereits gespeicherte ungültige Konfiguration sperrt deshalb alle
-   Sofortänderungen, wie bisher.
+   Sofortänderungen, wie bisher.~~ *Erledigt im Teilstand (11).*
 
 **Teilstand 05.10.2026 (8) — Inventareditor frisch.** Risiko 1 aus
 Teilstand (7) ist für den Inventareditor umgesetzt. Der Hauptpunkt von
@@ -2245,9 +2245,149 @@ Commits:
 1. Die erste Prüfung läuft wie bisher außerhalb der Warteschlange. Ist
    beim Übernehmen noch eine Bogenänderung eingereiht, scheitert die Runde
    erst an der zweiten Prüfung, mit der Meldung aus `saveHero`.
-2. Nächster Schritt: „Held importieren“ (`importHeroBundle`: eigener
+2. ~~Nächster Schritt: „Held importieren“ (`importHeroBundle`: eigener
    Katalog, bis zu drei `saveHero`, Zustand, Galeriedateien) als Ablauf;
-   danach die Slotprüfung des Kampf-Tabs aus dem Widget.
+   danach die Slotprüfung des Kampf-Tabs aus dem Widget.~~ *Erledigt im
+   Teilstand (11).*
+
+**Teilstand 07.10.2026 (11) — „Held importieren“ als Ablauf, Slotprüfung
+als Regel.** Beide offenen Punkte aus Teilstand (10) sind umgesetzt.
+Gearbeitet wurde direkt auf `test`.
+
+*Entscheidungen (Dennis, 7.10.2026).*
+
+- Bilder, die sich beim Import nicht speichern lassen, brechen den Import
+  nicht ab. Der Held wird ohne sie importiert, die Oberfläche nennt ihre
+  Zahl.
+- Sofortänderungen im Kampf-Tab weisen nur Fehler ab, die sie neu
+  einführen. „Speichern“ im Editor prüft weiter alles.
+
+*Befunde im bisherigen Import* (`HeroActions.importHeroBundle`). Keiner war
+eigens getestet, es gab überhaupt keinen Bildtest beim Import.
+
+1. **Falsche Dateinamen.** Die Ablage legt Galeriebilder als
+   `{heroId}_{entryId}.png` ab. Der Import verwarf den zurückgegebenen Namen
+   und behielt den aus dem Export. Bei „Als neu erstellen“ zeigte die Kopie
+   damit auf die Datei des Originals; Löschen des Bildes in der Kopie
+   entfernte es beim Original. Legacy-Einträge (`{id}_legacy` →
+   `{id}.png`) zeigten auf eine nie geschriebene Datei.
+2. Ein leerer Dateiname (Web ohne Anmeldung) wurde nicht geprüft.
+3. Das aktive Bild steht im Export doppelt (Galerie und `avatarBase64` für
+   alte Importer). Der Import legte es zusätzlich als Legacy-Hauptbild ab,
+   obwohl `avatarFileName` nicht mehr gelesen wird. Das ergab eine
+   verwaiste Datei und einen zweiten Upload.
+4. Das Heldenlimit galt nur für „Als neu erstellen“. Ein Held mit noch
+   unbekannter ID kommt als `overwriteExisting` an und umging es.
+5. Bis zu drei `saveHero`. Scheiterte ein Bild, war der Held schon
+   gespeichert, und der Import brach mit einer Fehlermeldung ab.
+
+*Umsetzung.*
+
+- **Ablauf** `HeldImportieren` (`lib/ablaeufe/held_importieren.dart`),
+  ohne Riverpod. Katalog und Bildablage kommen als Funktionen herein, denn
+  der Wächter erlaubt aus `data/` nur `HeroRepository`. Reihenfolge:
+  1. Limit für jede unbekannte Ziel-ID,
+  2. Katalog,
+  3. Bilder mit dem Namen aus der Ablage,
+  4. **ein** `saveHero`,
+  5. Zustand über `aendereGespeichertenZustand` (eingereiht und
+     gestempelt, bisher ein Snapshot über `saveHeroState`).
+- **Bilder ohne Ablage.** Unter derselben ID bleibt der bisherige Verweis
+  stehen; seine Datei liegt womöglich schon im Speicher bzw. in der Cloud
+  des Kontos. Unter einer neuen ID fällt der Eintrag weg und wird gezählt.
+  Verweise auf entfallene Einträge (aktiv, primär, Schnappschuss) werden
+  bereinigt, wie bei `removeGalleryImage`.
+- **Anbindung.** `HeroActions.importiereHeld` baut den Ablauf inline wie
+  `updateHero`. Ein Provider in `ablauf_providers.dart` hätte einen
+  Importzyklus über `heroActionsProvider` erzeugt. `importHeroBundle`
+  bleibt Kompatibilitätseinstieg. Die Startseite meldet fehlende Bilder
+  über `importMeldung`.
+- **Slotprüfung.** `pruefeKampfSlots`
+  (`lib/rules/derived/kampf_slot_pruefung_rules.dart`) liefert alle Befunde
+  mit Slotbezug (ID, ersatzweise Position, `nebenhand`) und Art.
+  `neuerKampfSlotFehler` vergleicht über beides, nicht über den Text, damit
+  Umsortieren keinen Scheinfehler erzeugt. Die Talent- und
+  Waffenartauflösung zieht mit; `combat_helpers.dart` re-exportiert sie.
+
+Commits:
+
+- `2513698` — Ablauf, Anbindung, Meldung, Tests.
+- `23844d3` — Slotprüfung als Regel, Kampf-Tab, Tests.
+- Abschluss-Commit mit Dokumentation.
+
+*Prüfungen.*
+
+- `test/ablaeufe/held_importieren_test.dart` (12 Proben, ohne Riverpod):
+  - ID behalten bzw. neu vergeben;
+  - Limit für beide Auflösungen, kein Limit beim Überschreiben;
+  - Katalog vor dem Helden;
+  - genau ein Speichern;
+  - Dateinamen aus der Ablage, doppeltes Hauptbild nicht abgelegt;
+  - scheiterndes Bild und leerer Name unter neuer und gleicher ID;
+  - Einträge ohne Bilddaten;
+  - alter Export mit Legacy-Eintrag;
+  - Speicherfehler ohne Zustand.
+
+  Gegenprobe mit dem Namen aus dem Export: Die Probe für die neue ID
+  scheitert.
+- `test/rules/kampf_slot_pruefung_rules_test.dart` (17 Proben):
+  - jede bisherige Meldung;
+  - mehrere Befunde in Reihenfolge;
+  - bestehender Fehler erlaubt, neuer Fehler und neue Art gemeldet;
+  - Umsortieren erzeugt keinen Fehler.
+- `kampf_frisch_schreiben_test.dart`: Eine gespeicherte ungültige Waffe
+  sperrt die Waffenwahl nicht mehr. Eine Parierwaffe ohne Linkhand wird mit
+  „Nebenhand nicht gespeichert: …“ abgewiesen. Gegenprobe mit der alten
+  Gesamtprüfung: Beide Proben scheitern.
+- `test/ui/workspace/import_meldung_test.dart` prüft den Meldungstext.
+- `bestandsheld_ablauf_test.dart`: Die Kopie eines Exports ohne Bilddaten
+  trägt keinen Galerieeintrag und keinen Schnappschuss mehr. Ihre
+  Zukunftsfelder an diesen Stellen sind deshalb von der Prüfung
+  ausgenommen, alle übrigen bleiben erhalten. Die Hash-Pins sind
+  unverändert, kein Modell geändert.
+- `flutter analyze --no-pub` ohne Befund, `dart format` ohne Änderung,
+  Screen-LOC-Prüfung besteht. Vollständige Suite
+  (`--concurrency=1`, eigener `DSA_MCP_DATA_DIR`): 3.807 bestanden,
+  3 bestehende übersprungen.
+
+*Verbleibende Risiken.*
+
+1. Scheitert das Speichern des Helden nach dem Ablegen der Bilder, bleiben
+   die Bilddateien verwaist (auch in der Cloud). Ein Aufräumen gehört zu
+   ARCH-06 (Wiederanlauf).
+2. Beim Überschreiben bleiben Dateien des vorigen Stands liegen, die der
+   Import nicht mehr referenziert (wie bisher).
+3. Der Katalog wird vor dem Helden übernommen. Die Merkmalsmigration beim
+   Speichern sieht den neu geladenen Katalog nicht immer (ARCH-02,
+   Risiko 2, unverändert).
+
+**Abschluss 07.10.2026 — Abnahme ARCH-05.** Geprüft gegen die
+Abnahmekriterien:
+
+- *Abläufe ohne gerenderte Oberfläche prüfbar:* Rast, Schaden,
+  Steigerungsrunde, Held importieren und die Bausteine zum frischen
+  Schreiben von Bogen und Zustand laufen unter `test/ablaeufe/` ohne
+  Widget und ohne Riverpod; der Wächter hält die Abhängigkeiten fest.
+- *Normalisierung und Validierung mit klarer Zuständigkeit:* Normalisiert
+  wird nur in `HeroActions._speichereNormalisiert`, das `saveHero`,
+  `updateHero` und die Abläufe als `speichere` nutzen. Geprüft wird in
+  `rules/derived/` (Kampfslots, Talentverteilung, Steigerungen,
+  Editorabgleich).
+- *Keine neu duplizierten Regelberechnungen in Widgets und Providern:* Die
+  letzte Prüfung im Widget (Kampfslots) ist eine Regel.
+- *Fehler erreichen die aufrufende Oberfläche:* Abläufe fangen nichts. Die
+  Oberfläche zeigt Fehler im Blatt, Dialog oder `ZustandFehlerBereich`.
+  Teilfehler beim Import (Bilder) werden ausdrücklich gemeldet.
+
+*Abgrenzung.*
+
+- „Ausrüstung wechseln“ aus dem Ziel ist keine eigene Klasse geworden. Es
+  läuft als frische Kampfänderung über `aendereHeldMitMeldung` und
+  `kampf_aenderung_rules.dart`; eine weitere Schicht brächte keinen
+  Nutzen.
+- Avatar- und Gruppenoperationen bleiben schmale Methoden in
+  `HeroActions`.
+- Die Aufteilung von `SyncingHeroRepository` gehört zu ARCH-06.
 
 ## ARCH-06 — Zusammengehörige Änderungen gemeinsam speichern und synchronisieren
 
