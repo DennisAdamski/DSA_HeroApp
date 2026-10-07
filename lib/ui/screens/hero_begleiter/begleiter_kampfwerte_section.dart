@@ -21,7 +21,7 @@ class _KampfWerteSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Im View-Modus effektive Werte anzeigen (Basis + Steigerung).
+    // Im View-Modus wirksame Werte anzeigen (Basis + Steigerung + Ausbildung).
     final iniView = isEditing
         ? companion.ini
         : companionEffektivwert(companion, 'ini') ?? companion.ini;
@@ -31,7 +31,7 @@ class _KampfWerteSection extends StatelessWidget {
               companion.magieresistenz;
     final loyView = isEditing
         ? companion.loyalitaet
-        : companionEffektivwert(companion, 'loyalitaet') ??
+        : begleiterWirksamerWert(companion, 'loyalitaet') ??
               companion.loyalitaet;
 
     return Column(
@@ -135,7 +135,9 @@ class _KampfWerteSection extends StatelessWidget {
         ),
         const SizedBox(height: _innerFieldSpacing),
         _GeschwindigkeitenEditor(
-          speeds: companion.geschwindigkeiten,
+          speeds: isEditing
+              ? companion.geschwindigkeiten
+              : begleiterWirksameGeschwindigkeiten(companion),
           isEditing: isEditing,
           onChanged: (speeds) =>
               onChanged(companion.copyWith(geschwindigkeiten: speeds)),
@@ -429,7 +431,12 @@ class _WeiteresSection extends StatelessWidget {
             Expanded(
               child: EditAwareField(
                 label: 'Tragkraft',
-                value: companion.tragkraft,
+                value: isEditing
+                    ? companion.tragkraft
+                    : begleiterWirksameKraft(
+                        companion.tragkraft,
+                        begleiterAusbildungsModifikationen(companion).tkFaktor,
+                      ),
                 isEditing: isEditing,
                 onChanged: (v) => onChanged(companion.copyWith(tragkraft: v)),
               ),
@@ -438,7 +445,12 @@ class _WeiteresSection extends StatelessWidget {
             Expanded(
               child: EditAwareField(
                 label: 'Zugkraft',
-                value: companion.zugkraft,
+                value: isEditing
+                    ? companion.zugkraft
+                    : begleiterWirksameKraft(
+                        companion.zugkraft,
+                        begleiterAusbildungsModifikationen(companion).zkFaktor,
+                      ),
                 isEditing: isEditing,
                 onChanged: (v) => onChanged(companion.copyWith(zugkraft: v)),
               ),
@@ -447,7 +459,11 @@ class _WeiteresSection extends StatelessWidget {
         ),
         const SizedBox(height: _innerFieldSpacing),
         EditAwareField(
-          label: 'Ausbildung',
+          // Bei Reittieren fuehrt der Abschnitt „Reittier-Ausbildung“; der
+          // alte Freitext bleibt als Notiz.
+          label: companion.typ == BegleiterTyp.reittier
+              ? 'Ausbildung (Notiz)'
+              : 'Ausbildung',
           value: companion.ausbildung,
           isEditing: isEditing,
           maxLines: 3,

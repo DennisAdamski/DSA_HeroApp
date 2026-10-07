@@ -371,6 +371,7 @@ final _begleiterAbenteuerNotizen = <_Modell>[
       startAup: 1,
       startAsp: 1,
       startMr: 1,
+      reittierAusbildung: ReittierAusbildung(),
     ).toJson(),
     lade: (json) => HeroCompanion.fromJson(json).toJson(),
     bearbeite: (json) =>
@@ -395,7 +396,10 @@ final _begleiterAbenteuerNotizen = <_Modell>[
   _Modell(
     'HeroCompanionSonderfertigkeit',
     schluessel: HeroCompanionSonderfertigkeit.jsonSchluessel,
-    voll: () => const HeroCompanionSonderfertigkeit(name: 'SF').toJson(),
+    voll: () => const HeroCompanionSonderfertigkeit(
+      name: 'SF',
+      katalogId: 'psf_steigen',
+    ).toJson(),
     lade: (json) => HeroCompanionSonderfertigkeit.fromJson(json).toJson(),
     bearbeite: (json) =>
         HeroCompanionSonderfertigkeit.fromJson(json)
@@ -412,6 +416,29 @@ final _begleiterAbenteuerNotizen = <_Modell>[
     bearbeite: (json) =>
         HeroCompanionSpeed.fromJson(json).copyWith(wert: 14).toJson(),
     unbekannt: (json) => HeroCompanionSpeed.fromJson(json).unbekannteFelder,
+  ),
+  _Modell(
+    'ReittierAusbildung',
+    schluessel: ReittierAusbildung.jsonSchluessel,
+    voll: () => _reittierAusbildung().toJson(),
+    lade: (json) => ReittierAusbildung.fromJson(json).toJson(),
+    bearbeite: (json) =>
+        ReittierAusbildung.fromJson(json)
+            .copyWith(varianteId: 'pvar_schweres_streitross')
+            .toJson(),
+    unbekannt: (json) => ReittierAusbildung.fromJson(json).unbekannteFelder,
+  ),
+  _Modell(
+    'ReittierAusbildungsschritt',
+    schluessel: ReittierAusbildungsschritt.jsonSchluessel,
+    voll: () => _reittierAusbildung().schritte.single.toJson(),
+    lade: (json) => ReittierAusbildungsschritt.fromJson(json).toJson(),
+    bearbeite: (json) =>
+        ReittierAusbildungsschritt.fromJson(json)
+            .copyWith(notiz: 'Neu')
+            .toJson(),
+    unbekannt: (json) =>
+        ReittierAusbildungsschritt.fromJson(json).unbekannteFelder,
   ),
   _Modell(
     'HeroAdventureEntry',
@@ -817,6 +844,23 @@ ZustandsBuchung _zustandsBuchung() => ZustandsBuchung(
   ruecknahmeVon: 'b0',
 );
 
+// Ein Ausbildungsstand, in dem alle bedingt geschriebenen Felder belegt sind.
+ReittierAusbildung _reittierAusbildung() => const ReittierAusbildung(
+  ausgangsstufe: ReittierAusbildungsstufe.erprobt,
+  ausgangsart: ReittierAusbildungsart.fundiert,
+  varianteId: 'pvar_leichtes_streitross',
+  schritte: <ReittierAusbildungsschritt>[
+    ReittierAusbildungsschritt(
+      nach: ReittierAusbildungsstufe.geschult,
+      art: ReittierAusbildungsart.fundiert,
+      fehlschlaege: 2,
+      ausbilder: 'Zureiter',
+      notiz: 'Gestüt',
+    ),
+  ],
+  unartIds: <String>['punart_treten'],
+);
+
 /// Ein Aufzaehlungsfeld im Tabellentest.
 ///
 /// [lade] laedt und schreibt, [gleich] setzt per `copyWith` denselben
@@ -1196,6 +1240,76 @@ final _enumFelder = <_EnumFeld>[
     andersJson: 'phex',
     ersatz: (json) => AventurianDate.fromJson(json).month,
     erwarteterErsatz: '',
+  ),
+  _EnumFeld(
+    'ReittierAusbildung.ausgangsstufe',
+    'ausgangsstufe',
+    voll: () => _reittierAusbildung().toJson(),
+    lade: (json) => ReittierAusbildung.fromJson(json).toJson(),
+    gleich: (json) {
+      final a = ReittierAusbildung.fromJson(json);
+      return a
+          .copyWith(ausgangsstufe: a.ausgangsstufe, varianteId: '')
+          .toJson();
+    },
+    anders: (json) =>
+        ReittierAusbildung.fromJson(json)
+            .copyWith(ausgangsstufe: ReittierAusbildungsstufe.unerfahren)
+            .toJson(),
+    andersJson: 'unerfahren',
+    ersatz: (json) => ReittierAusbildung.fromJson(json).ausgangsstufe,
+    erwarteterErsatz: ReittierAusbildungsstufe.ungearbeitet,
+  ),
+  _EnumFeld(
+    'ReittierAusbildung.ausgangsart',
+    'ausgangsart',
+    voll: () => _reittierAusbildung().toJson(),
+    lade: (json) => ReittierAusbildung.fromJson(json).toJson(),
+    gleich: (json) {
+      final a = ReittierAusbildung.fromJson(json);
+      return a.copyWith(ausgangsart: a.ausgangsart, varianteId: '').toJson();
+    },
+    anders: (json) =>
+        ReittierAusbildung.fromJson(json)
+            .copyWith(ausgangsart: ReittierAusbildungsart.fundiert)
+            .toJson(),
+    andersJson: 'fundiert',
+    ersatz: (json) => ReittierAusbildung.fromJson(json).ausgangsart,
+    erwarteterErsatz: ReittierAusbildungsart.laendlich,
+  ),
+  _EnumFeld(
+    'ReittierAusbildungsschritt.nach',
+    'nach',
+    voll: () => _reittierAusbildung().schritte.single.toJson(),
+    lade: (json) => ReittierAusbildungsschritt.fromJson(json).toJson(),
+    gleich: (json) {
+      final schritt = ReittierAusbildungsschritt.fromJson(json);
+      return schritt.copyWith(nach: schritt.nach, notiz: 'Neu').toJson();
+    },
+    anders: (json) =>
+        ReittierAusbildungsschritt.fromJson(json)
+            .copyWith(nach: ReittierAusbildungsstufe.erprobt)
+            .toJson(),
+    andersJson: 'erprobt',
+    ersatz: (json) => ReittierAusbildungsschritt.fromJson(json).nach,
+    erwarteterErsatz: ReittierAusbildungsstufe.ungearbeitet,
+  ),
+  _EnumFeld(
+    'ReittierAusbildungsschritt.art',
+    'art',
+    voll: () => _reittierAusbildung().schritte.single.toJson(),
+    lade: (json) => ReittierAusbildungsschritt.fromJson(json).toJson(),
+    gleich: (json) {
+      final schritt = ReittierAusbildungsschritt.fromJson(json);
+      return schritt.copyWith(art: schritt.art, notiz: 'Neu').toJson();
+    },
+    anders: (json) =>
+        ReittierAusbildungsschritt.fromJson(json)
+            .copyWith(art: ReittierAusbildungsart.fundiert)
+            .toJson(),
+    andersJson: 'fundiert',
+    ersatz: (json) => ReittierAusbildungsschritt.fromJson(json).art,
+    erwarteterErsatz: ReittierAusbildungsart.laendlich,
   ),
 ];
 
