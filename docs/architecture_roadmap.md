@@ -2352,9 +2352,10 @@ Commits:
 
 *Verbleibende Risiken.*
 
-1. Scheitert das Speichern des Helden nach dem Ablegen der Bilder, bleiben
+1. ~~Scheitert das Speichern des Helden nach dem Ablegen der Bilder, bleiben
    die Bilddateien verwaist (auch in der Cloud). Ein Aufräumen gehört zu
-   ARCH-06 (Wiederanlauf).
+   ARCH-06 (Wiederanlauf).~~ *Behoben in ARCH-06 Teilstand 1:*
+   Vorgangsjournal und Wiederanlauf löschen sie.
 2. Beim Überschreiben bleiben Dateien des vorigen Stands liegen, die der
    Import nicht mehr referenziert (wie bisher).
 3. Der Katalog wird vor dem Helden übernommen. Die Merkmalsmigration beim
@@ -2406,7 +2407,7 @@ Der Betrieb ohne Konto oder Netzwerk bleibt möglich.
 `lib/domain/sync_models.dart`, `lib/domain/hero_advancement_entry.dart` und
 `lib/ui/screens/sync_conflict_gate.dart`.
 
-- [ ] Für die Abläufe aus ARCH-05 festlegen, welche Daten gemeinsam verbindlich
+- [x] Für die Abläufe aus ARCH-05 festlegen, welche Daten gemeinsam verbindlich
   werden müssen, und einen geeigneten Speichervertrag mit Wiederanlauf definieren.
 - [ ] Lokale Änderung und ausstehenden Sync dauerhaft zusammen erfassen;
   wiederholte Übertragung darf eine Aktion nicht erneut anwenden.
@@ -2430,6 +2431,55 @@ ARCH-02/03/04 beeinflussen gespeicherte Referenzen. Speichertechnik, Remote-Prot
 Granularität der Zusammenführung und zulässige Korrekturen gesondert entscheiden.
 Ein Datenbankwechsel ist mit dieser Liste nicht beschlossen. Die vorhandenen
 nativen und REST-Sync-Pfade berücksichtigen.
+
+**Entscheidungen 07.10.2026 (Nutzer).** Der Abgleich bleibt
+dokumentbasiert: Bogen und Zustand werden als ganze Dokumente mit Revision
+übertragen; ausstehend ist, was vom gemerkten Hash abweicht. Eine
+Operations-Warteschlange wird nicht gebaut. Zuerst kommen Speichervertrag,
+Vorgangsjournal und Wiederanlauf (Teilstand 1), danach Buchungsprotokoll und
+Rücknahme für „Schaden erhalten“ (Teilstand 2). Die Rücknahme ist eine
+Gegenbuchung auf den aktuellen Stand: LeP/AuP steigen um den tatsächlich
+abgezogenen Betrag, ohne Obergrenze; Wunden der Buchung werden entfernt,
+soweit noch vorhanden; eine Buchung lässt sich nur einmal zurücknehmen.
+
+**Teilstand 1, 07.10.2026 — Speichervertrag, Vorgangsjournal,
+Wiederanlauf.** Branch `task/2026-10-07-arch06`.
+
+- *Speichervertrag:* Tabelle je Einheit in
+  [schreibpfade_inventar.md](schreibpfade_inventar.md#speichervertrag-arch-06).
+  Bis auf den Import schreiben alle ARCH-05-Abläufe genau ein Dokument.
+  Anlegen und Startimport werden durch Nachsehen vollständig: Ein fehlender
+  Zustand gilt als leer bzw. wird nachgetragen (`uebernimmStartheld`).
+  `createHero` schreibt den Zustand jetzt eingereiht und gestempelt.
+- *Vorgangsjournal:* `Vorgangsjournal` (`lib/data/vorgangsjournal.dart`, reine
+  Schnittstelle, im Wächter `test/ablaeufe/abhaengigkeiten_test.dart`
+  zugelassen), `HiveVorgangsjournal` (Box `vorgaenge_v1` im Profilpfad),
+  `vorgangsjournalProvider`. `HeldImportieren` vermerkt Ziel, abgelegte
+  Bilder, Hash des vorigen Helden und den Exportzustand
+  (`ImportVorgang`).
+- *Wiederanlauf:* `VorgaengeWiederaufnehmen` führt einen Import zu Ende
+  (Zustand nachtragen), sobald der Held gespeichert ist, sonst gleicht er aus
+  (unbenutzte Bilder lokal und in der Cloud löschen). `AppStartupGate`
+  ruft ihn nach dem Öffnen von Hive und vor Startimport und `syncNow` auf;
+  der Abgleich lädt Nachgetragenes per Hash hoch. Ein gescheiterter
+  Importschritt nutzt denselben Weg sofort.
+- *Nachweise:* `test/ablaeufe/vorgaenge_wiederaufnehmen_test.dart`
+  simuliert Abstürze als nie endende Schritte und nimmt danach auf demselben
+  Speicher wieder auf (Bild 2, vor und nach dem Bogen, beim Zustand,
+  überschreibender Import, zweiter Lauf, scheiterndes Löschen, unbekannte
+  Einträge). `held_importieren_test.dart` prüft Journal und sofortigen
+  Ausgleich. `hive_vorgangsjournal_test.dart` prüft das Schließen und
+  Wiederöffnen der Box, `startup_hero_importer_test.dart` das
+  Nachtragen. `sync_speichervertrag_test.dart` belegt den Sync-Vertrag mit
+  zwei Geräten: Ein offline geänderter Zustand übersteht den Neustart (auch
+  mit echtem Hive) und wird genau einmal übertragen. Eine verlorene Antwort
+  schreibt einmal und erzeugt keinen Konflikt. Ein abgebrochener Import wird
+  beim Neustart vor dem Abgleich vollständig und einmal hochgeladen.
+- *Restrisiken:* siehe Speichervertrag (Absturz zwischen Bild und Vermerk,
+  Cloud beim Wiederanlauf nicht erreichbar, überschriebene Bilder beim
+  Re-Import, Journal je Profil). Löschen, Avatar-Operationen und
+  Konfliktauflösung laufen ohne Journal. Die fachliche Wiederholung
+  (dieselbe Buchung zweimal) schützt erst die Buchungs-ID aus Teilstand 2.
 
 ## ARCH-07 — Nutzerabläufe und Datenmigrationen absichern
 

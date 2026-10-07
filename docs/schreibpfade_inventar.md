@@ -36,6 +36,58 @@ Begriffe:
 - Avatarbilder liegen außerhalb des Heldenmodells (`AvatarFileStorage`,
   Firebase Storage), Gruppen in Firestore und `ExterneHeldenRepository`.
 
+## Speichervertrag (ARCH-06)
+
+Stand 07.10.2026, ARCH-06 Teilstand 1. Für jede fachliche Einheit ist
+festgelegt, wie sie trotz getrennter Schreibvorgänge vollständig wird:
+
+| Einheit | Schreibt | Vollständig durch |
+|---|---|---|
+| Steigerungsrunde übernehmen | Bogen (Werte, AP/SE, Historie) | ein Dokument; Hash-Prüfung, Einträge je ID nur einmal |
+| Schaden, Rast, Wunden, Ressourcen, Effekte, Würfelprotokoll | Zustand | ein Dokument (Wundunterdrückung nach einem Treffer ist ein eigener Vorgang) |
+| Sofortaktionen und Editorentwürfe am Bogen | Bogen | ein Dokument |
+| Held anlegen | Bogen, dann Zustand (eingereiht, gestempelt) | Nachsehen: ein fehlender Zustand gilt als leer — derselbe Inhalt, den das Anlegen schreibt |
+| Startimport | Bogen, dann Zustand | Nachsehen: `uebernimmStartheld` trägt bei vorhandenem Helden einen fehlenden Zustand nach |
+| **Held importieren** | eigener Katalog, Bilddateien, Bogen, Zustand | **Vorgangsjournal** mit Wiederanlauf (unten) |
+| Held löschen | Bogen, dann Zustand | Restrisiko: ein verwaister Zustand bleibt unsichtbar; mit Konto trägt der vermerkte Löschauftrag (`localHash: ''`) die Löschung in die Cloud |
+| Avatar speichern bzw. entfernen | Datei, dann Bogen | Restrisiko: eine verwaiste Datei bleibt liegen |
+| Konfliktauflösung (`keepBoth` u. a.) | mehrere lokale und entfernte Schreibvorgänge | Restrisiko: ein unterbrochener Konflikt erscheint beim nächsten Abgleich erneut |
+
+**Vorgangsjournal.** `Vorgangsjournal` (`lib/data/vorgangsjournal.dart`,
+reine Schnittstelle) hält offene Vorgänge in der Box `vorgaenge_v1` des
+Profilpfads (`HiveVorgangsjournal`), in Tests im Speicher. Der Import
+vermerkt sich vor dem ersten Bild, nach jedem abgelegten Bild und nach dem
+Bogen (`ImportVorgang`, `lib/ablaeufe/import_vorgang.dart`) und erledigt den
+Eintrag erst nach dem Zustand. `VorgaengeWiederaufnehmen`
+(`lib/ablaeufe/vorgaenge_wiederaufnehmen.dart`) führt einen offenen Import zu
+Ende, sobald der Held gespeichert ist (vermerkt oder am geänderten Hash
+erkennbar): Der Zustand wird eingereiht und gestempelt nachgetragen. Sonst
+gleicht er aus und löscht abgelegte Bilder, auf die der gespeicherte Held
+nicht verweist — lokal und über `SyncingAvatarStorage` in der Cloud.
+Scheitert ein Importschritt im laufenden Betrieb, geschieht dasselbe sofort;
+der Fehler erreicht trotzdem den Aufrufer, außer ein zweiter Versuch hat den
+Zustand nachgetragen. Beim App-Start läuft der Wiederanlauf auf dem lokalen
+Hive-Speicher **vor** Startimport und `syncNow`; er bricht den Start nie ab.
+Einträge unbekannter Art bleiben liegen.
+
+**Sync-Vertrag.** Bogen und Zustand werden als ganze Dokumente mit Revision
+übertragen; es gibt keine Operations-Warteschlange. Ausstehend ist ein
+Dokument, dessen Hash vom gemerkten `localHash` abweicht, solange die
+Revision der Basis entspricht (`sync_metadata_v1`). Das übersteht einen
+Neustart, und eine wiederholte Übertragung schreibt dasselbe Dokument, statt
+eine Aktion erneut anzuwenden. Nach dem Wiederanlauf nachgetragene Zustände
+lädt deshalb der folgende `syncNow` hoch. Prüfung:
+`test/data/sync_speichervertrag_test.dart`.
+
+**Restrisiken.** Ein Absturz zwischen Bildablage und Journalvermerk lässt
+diese eine Datei verwaist. Ist die Cloud beim Wiederanlauf nicht erreichbar,
+bleibt die Cloud-Kopie liegen (`SyncingAvatarStorage` meldet den Fehler
+nicht). Ein überschreibender Import ersetzt Bilder gleichen Namens bereits
+beim Ablegen; der Ausgleich kann sie nicht zurückholen. Ein identischer
+Re-Import, der vor dem Vermerk „Held gespeichert“ abbricht, behält den
+bisherigen Zustand. Das Journal gilt je Profil und wird nur beim Öffnen
+dieses Profils wiederaufgenommen.
+
 ## Anwendungsabläufe (`lib/ablaeufe/`)
 
 Seit dem ersten ARCH-05-Teilstand gibt es eine eigene Schicht für
@@ -50,7 +102,8 @@ Abhängigkeiten per Konstruktor; die Provider liegen in
 | Zustand frisch ändern | `aendereGespeichertenZustand` (`lib/ablaeufe/zustand_schreiben.dart`) | Zustand, frisch, je Held nacheinander | Baustein, `HeroActions.updateHeroState` delegiert |
 | Bogen frisch ändern | `aendereGespeichertenHelden`, `reiheBogenvorgangEin` (`lib/ablaeufe/held_schreiben.dart`) | Bogen, frisch, je Held nacheinander | Baustein, `HeroActions.updateHero` delegiert, `saveHero` reiht sich ein |
 | Steigerungsrunde übernehmen | `SteigerungsrundeUebernehmen` (`lib/ablaeufe/steigerungsrunde_uebernehmen.dart`) | Bogen, Hash-Prüfung gegen die Sitzungsbasis | extrahiert, Provider `steigerungsrundeUebernehmenProvider` |
-| Held importieren | `HeldImportieren` (`lib/ablaeufe/held_importieren.dart`) | eigener Katalog, Bilddateien, Bogen (ein `saveHero`), Zustand eingereiht | extrahiert, `HeroActions.importiereHeld` bindet ihn an (kein Provider: Zyklus über `heroActionsProvider`) |
+| Held importieren | `HeldImportieren` (`lib/ablaeufe/held_importieren.dart`) | eigener Katalog, Bilddateien, Bogen (ein `saveHero`), Zustand eingereiht; Vorgangsjournal (ARCH-06) | extrahiert, `HeroActions.importiereHeld` bindet ihn an (kein Provider: Zyklus über `heroActionsProvider`) |
+| Vorgänge wiederaufnehmen | `VorgaengeWiederaufnehmen` (`lib/ablaeufe/vorgaenge_wiederaufnehmen.dart`) | Zustand eingereiht bzw. löscht Bilddateien | ARCH-06, beim App-Start und nach einem gescheiterten Importschritt |
 
 `aendereGespeichertenZustand` reiht Änderungen desselben Helden über
 denselben Speicher ein: Jede lädt erst, wenn die vorige gespeichert oder
@@ -132,7 +185,7 @@ Jeder Bogenschreibweg über `HeroActions` durchläuft `saveHero`:
 
 | Methode | Schreibt | Vorbedingungen / Seiteneffekte |
 |---|---|---|
-| `createHero` | Bogen (über `saveHero`), Zustand direkt über das Repository (ohne Zeitstempel), Auswahl | Heldenlimit, neue UUID, Standardtalente, wählt den Helden aus |
+| `createHero` | Bogen (über `saveHero`), Zustand eingereiht und gestempelt (`aendereGespeichertenZustand`), Auswahl | Heldenlimit, neue UUID, Standardtalente, wählt den Helden aus |
 | `saveHero` | Bogen | Normalisierung oben; je Held eingereiht (`reiheBogenvorgangEin`), liefert den gespeicherten Helden |
 | `updateHero` | Bogen, frisch, je Held nacheinander | delegiert an `aendereGespeichertenHelden`; dasselbe Objekt zurück heißt: nichts speichern; liefert den gespeicherten Helden; keine Transaktion |
 | `saveHeroState` | Zustand, Snapshot des Aufrufers | stempelt `lastModified` |
@@ -179,7 +232,7 @@ Domainlogik.
 | Avatar | `hero_overview/hero_avatar_section.dart`, `avatar_generation_dialog.dart` | Datei + Bogen | frisch | ja | — |
 | Gruppen | `hero_gruppe/` | Firestore + Bogen | frisch | ja | — |
 | Anlegen / Löschen / Import / Export | `heroes_home_screen.dart`, `workspace_import_export_actions.dart` | Bogen, Zustand | — | ja | — |
-| Startimport | `data/startup_hero_importer.dart` | Bogen und Zustand **direkt über das Repository**, ohne Normalisierung und Zeitstempel | — | — | — |
+| Startimport | `data/startup_hero_importer.dart` (`uebernimmStartheld`) | Bogen und Zustand **direkt über das Repository**, ohne Normalisierung; Zustand gestempelt, bei vorhandenem Helden nur ein fehlender | — | — | — |
 
 ## Ablauf „Rast abschließen“ im Detail
 
@@ -275,8 +328,11 @@ Domainlogik.
    ARCH-05-Teilstand:* Der Übersichtseditor schreibt nur noch den Bogen. Seine
    LeP-/AuP-/AsP-/KaP-Felder wurden nie angezeigt und setzten den Zustand vom
    Bearbeitungsbeginn zurück (negative LeP wurden 0).
-4. **`createHero` und der Startimport** schreiben den Zustand ohne
-   Zeitstempel; der Startimport umgeht zusätzlich die Normalisierung.
+4. ~~**`createHero` und der Startimport** schreiben den Zustand ohne
+   Zeitstempel~~; der Startimport umgeht zusätzlich die Normalisierung.
+   *Zeitstempel behoben in ARCH-06 Teilstand 1:* `createHero` schreibt den
+   Zustand über `aendereGespeichertenZustand`, der Startimport stempelt ihn
+   und trägt einen fehlenden Zustand nach.
 5. **Probenlogik doppelt:** `isRestProbeSuccessful` und
    `diceLogEntryFromSimpleCheck` (`lib/domain/dice_log_entry.dart`) werten
    eine einfache W20-Probe jeweils selbst aus.

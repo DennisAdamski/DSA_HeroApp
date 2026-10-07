@@ -391,6 +391,17 @@ oeffnet ohne User das Offline-Profil und mit User das Konto-Profil, startet
 (`FirestoreHeroSyncGateway` oder auf Windows `RestFirestoreHeroSyncGateway`)
 und übergibt den Controller über `syncControllerProvider`.
 
+Wiederanlauf (ARCH-06): Direkt nach `HiveHeroRepository.create` öffnet
+`AppStartupGate` das Vorgangsjournal (`HiveVorgangsjournal`, Box
+`vorgaenge_v1` im Profilpfad) und lässt `VorgaengeWiederaufnehmen` auf dem
+lokalen Hive-Speicher laufen — **vor** Startimport und `syncNow`. Ein
+abgebrochener Heldenimport wird dort zu Ende geführt (Zustand nachtragen)
+oder ausgeglichen (unbenutzte Bilder löschen); der folgende Abgleich lädt
+Nachgetragenes über den Hashvergleich hoch. Fehler werden nur protokolliert.
+Das Journal geht als `vorgangsjournalProvider` in den `ProviderScope`.
+Vertrag und Restrisiken: `docs/schreibpfade_inventar.md`, Abschnitt
+„Speichervertrag (ARCH-06)“.
+
 ### App-weites Tablet-Layout
 
 Seit 2026-04-12 nutzt die UI ein gemeinsames Layoutmodell für breite

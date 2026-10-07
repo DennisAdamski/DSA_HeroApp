@@ -221,6 +221,11 @@ void main() {
     expect(hero.attributes.kl, 13);
     expect(hero.talents.keys, contains('tal_klettern'));
     expect(hero.metaTalents.single.id, 'meta_kraeutersuchen');
+    // Der Zustand wird eingereiht und gestempelt geschrieben (ARCH-06).
+    final zustand = await repo.loadHeroState(heroId);
+    expect(zustand, isNotNull);
+    expect(zustand!.lastModified, isNotNull);
+    expect(zustand.currentLep, 0);
   });
 
   test('importHeroBundle stores embedded custom catalog entries', () async {
