@@ -83,6 +83,9 @@ Gefechtspruefung _pruefeGefechtAuftrag(
             relevanteAktion == Gefechtsaktion.schildparade) &&
         profil.pa == null)
       'Keine Parade mit diesem Kampfmittel.',
+    if (profil != null && profil.nebenWaffe && auftrag.manoever == null)
+      'Neben einer Waffe nur Manöver der waffenlosen Kampftechnik '
+          '(WdS S. 90), keine gewöhnliche AT/PA.',
   ];
   final w = gefechtswerteFuer(snapshot, katalog: katalog, kampfmittel: wahl);
   if (auftrag.aktion == Gefechtsaktion.zusatzaktion) {

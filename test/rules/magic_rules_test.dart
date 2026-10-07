@@ -66,12 +66,22 @@ void main() {
   test('Axxeleratus gibt +2 TP auf Nahkampfangriffe', () {
     final withoutAxx = hero(
       combatConfig: const CombatConfig(
-        mainWeapon: MainWeaponSlot(tpFlat: 4, kkBase: 12, kkThreshold: 2),
+        mainWeapon: MainWeaponSlot(
+          name: 'Testwaffe',
+          tpFlat: 4,
+          kkBase: 12,
+          kkThreshold: 2,
+        ),
       ),
     );
     final withAxx = hero(
       combatConfig: const CombatConfig(
-        mainWeapon: MainWeaponSlot(tpFlat: 4, kkBase: 12, kkThreshold: 2),
+        mainWeapon: MainWeaponSlot(
+          name: 'Testwaffe',
+          tpFlat: 4,
+          kkBase: 12,
+          kkThreshold: 2,
+        ),
       ),
     );
 
@@ -174,12 +184,22 @@ void main() {
   test('legacy combat rule flag remains a fallback for Axxeleratus', () {
     final withoutAxx = hero(
       combatConfig: const CombatConfig(
-        mainWeapon: MainWeaponSlot(tpFlat: 4, kkBase: 12, kkThreshold: 2),
+        mainWeapon: MainWeaponSlot(
+          name: 'Testwaffe',
+          tpFlat: 4,
+          kkBase: 12,
+          kkThreshold: 2,
+        ),
       ),
     );
     final withLegacyAxx = hero(
       combatConfig: const CombatConfig(
-        mainWeapon: MainWeaponSlot(tpFlat: 4, kkBase: 12, kkThreshold: 2),
+        mainWeapon: MainWeaponSlot(
+          name: 'Testwaffe',
+          tpFlat: 4,
+          kkBase: 12,
+          kkThreshold: 2,
+        ),
         specialRules: CombatSpecialRules(axxeleratusActive: true),
       ),
     );

@@ -22,7 +22,15 @@ enum Gefechtshaltung { stehend, kniend, liegend }
 enum GefechtsHand { haupthand, nebenhand }
 
 /// Verwendetes Kampfmittel, unabhängig von Aktionsmarken und sichtbaren Titeln.
-enum GefechtsKampfmittelArt { hauptwaffe, nebenwaffe, schild, parierwaffe }
+enum GefechtsKampfmittelArt {
+  hauptwaffe,
+  nebenwaffe,
+  schild,
+  parierwaffe,
+
+  /// Raufen oder Ringen mit freien Händen (`waffenlos_rules.dart`).
+  waffenlos,
+}
 
 /// Flüchtige Identität der bestätigten Ausrüstung für die erneute Prüfung.
 class GefechtsKampfmittelwahl {

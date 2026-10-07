@@ -326,10 +326,10 @@ _erwartet = <String, Map<String, Object?>>{
       'be': 0,
       'at': 7,
       'pa': 7,
-      'ini': 8,
+      'ini': 7, // ohne Waffe: Fausthieb INI −2 mit INI/GE aus TP/KK 10/3 (AA S. 150)
       'ausweichen': 7,
       'schildPa': 0,
-      'tp': '1W6+11',
+      'tp': '1W6', // ohne Waffe: Fausthieb 1W6 TP(A), TP/KK 10/3 statt Platzhalter mit voller KK
     },
     'hinweise': <String>[],
   },
@@ -446,10 +446,10 @@ _erwartet = <String, Map<String, Object?>>{
       'be': 0,
       'at': 7,
       'pa': 7,
-      'ini': 9,
+      'ini': 8, // ohne Waffe: Fausthieb INI −2 mit INI/GE aus TP/KK 10/3 (AA S. 150)
       'ausweichen': 7,
       'schildPa': 0,
-      'tp': '1W6+12',
+      'tp': '1W6', // ohne Waffe: Fausthieb 1W6 TP(A), TP/KK 10/3 statt Platzhalter mit voller KK
     },
     'hinweise': <String>[],
   },
@@ -510,10 +510,10 @@ _erwartet = <String, Map<String, Object?>>{
       'be': 0,
       'at': 7,
       'pa': 7,
-      'ini': 9,
+      'ini': 8, // ohne Waffe: Fausthieb INI −2 mit INI/GE aus TP/KK 10/3 (AA S. 150)
       'ausweichen': 8,
       'schildPa': 0,
-      'tp': '1W6+12',
+      'tp': '1W6', // ohne Waffe: Fausthieb 1W6 TP(A), TP/KK 10/3 statt Platzhalter mit voller KK
     },
     'hinweise': <String>[],
   },
@@ -692,10 +692,10 @@ _erwartet = <String, Map<String, Object?>>{
       'be': 0,
       'at': 7,
       'pa': 7,
-      'ini': 12,
+      'ini': 12, // ohne Waffe: Fausthieb INI −2 mit INI/GE aus TP/KK 10/3 (AA S. 150)
       'ausweichen': 7,
       'schildPa': 0,
-      'tp': '1W6+11',
+      'tp': '1W6', // ohne Waffe: Fausthieb 1W6 TP(A), TP/KK 10/3 statt Platzhalter mit voller KK
     },
     'hinweise': <String>[],
   },
@@ -752,10 +752,10 @@ _erwartet = <String, Map<String, Object?>>{
       'be': 0,
       'at': 7,
       'pa': 7,
-      'ini': 12,
+      'ini': 12, // ohne Waffe: Fausthieb INI −2 mit INI/GE aus TP/KK 10/3 (AA S. 150)
       'ausweichen': 7,
       'schildPa': 0,
-      'tp': '1W6+11',
+      'tp': '1W6', // ohne Waffe: Fausthieb 1W6 TP(A), TP/KK 10/3 statt Platzhalter mit voller KK
     },
     'hinweise': <String>[],
   },

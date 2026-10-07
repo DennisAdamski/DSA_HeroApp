@@ -22,6 +22,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/shield_parry_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/two_weapon_combat_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/waffenmeister_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/unarmed_style_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/waffenlos_slot_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/waffen_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/wund_rules.dart';
 
@@ -48,6 +49,7 @@ class CombatPreviewStats {
     required this.heldenInitiative,
     required this.kombinierteHeldenWaffenIni,
     required this.kampfInitiative,
+    this.waffenlos = false,
     required this.initiative,
     required this.ausweichen,
     required this.at,
@@ -138,6 +140,9 @@ class CombatPreviewStats {
   final int heldenInitiative;
   final int kombinierteHeldenWaffenIni;
   final int kampfInitiative;
+
+  /// Ohne Waffe mit freien Händen: gerechnet wird Raufen (`waffenlos_slot_rules.dart`).
+  final bool waffenlos;
   // Rueckwaertskompatibler Alias auf die Kampf-Ini.
   final int initiative;
   final int ausweichen;
@@ -374,7 +379,9 @@ CombatPreviewStats computeCombatPreviewStats(
 
   final config = overrideConfig ?? sheet.combatConfig;
   final talents = overrideTalents ?? sheet.talents;
-  final main = config.selectedWeapon;
+  // Ohne Waffe mit freien Händen kämpft der Held waffenlos (Raufen).
+  final waffenlos = haendeFrei(config);
+  final main = vorschauHauptwaffe(config);
   final offhandWeapon =
       config.offhandAssignment.usesWeapon &&
           config.offhandAssignment.weaponIndex >= 0 &&
@@ -695,6 +702,7 @@ CombatPreviewStats computeCombatPreviewStats(
     heldenInitiative: heldenInitiative,
     kombinierteHeldenWaffenIni: kombinierteHeldenWaffenIni,
     kampfInitiative: kampfInitiative,
+    waffenlos: waffenlos,
     initiative: initiative,
     ausweichen: ausweichen,
     at: at,

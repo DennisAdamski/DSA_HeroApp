@@ -60,7 +60,7 @@ extension _CombatManeuverHelpers on _HeroCombatTabState {
 
   /// Liefert das aktuell ausgewaehlte Kampftalent aus dem Katalog.
   TalentDef? _selectedCombatTalentDef(RulesCatalog catalog) {
-    final talentId = _draftCombatConfig.selectedWeapon.talentId.trim();
+    final talentId = vorschauHauptwaffe(_draftCombatConfig).talentId.trim();
     if (talentId.isEmpty) {
       return null;
     }
@@ -226,7 +226,7 @@ extension _CombatManeuverHelpers on _HeroCombatTabState {
   ) {
     final mainIds = _maneuverIdsForSlot(
       catalog,
-      _draftCombatConfig.selectedWeapon,
+      vorschauHauptwaffe(_draftCombatConfig),
     );
 
     final offhandWeapon = _offhandWeaponOrNull();

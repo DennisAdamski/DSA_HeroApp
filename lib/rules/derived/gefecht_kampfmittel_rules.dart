@@ -1,9 +1,11 @@
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht.dart';
+import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 
 import 'gefecht_hand_rules.dart';
 import 'combat_special_ability_state.dart';
+import 'waffenlos_rules.dart';
 
 /// Automatisch berechenbares Kampfmittel; Gründe erklären bekannte Sperren.
 class GefechtsKampfmittelprofil {
@@ -16,12 +18,16 @@ class GefechtsKampfmittelprofil {
     this.pa,
     this.sperren = const [],
     this.anteile = const [],
+    this.nebenWaffe = false,
   });
   final GefechtsKampfmittelwahl wahl;
   final String name;
   final MainWeaponSlot? waffe;
   final int? at, pa;
   final List<String> sperren, anteile;
+
+  /// Waffenloses Mittel neben einer Waffe: nur Manöver der Kampftechnik.
+  final bool nebenWaffe;
 }
 
 /// Trennt Hauptwaffenparade und Kombination, ohne persistierte Werte einzuführen.
@@ -30,7 +36,7 @@ List<GefechtsKampfmittelprofil> gefechtsKampfmittelprofile(
 ) {
   final config = s.hero.combatConfig;
   final c = s.combatPreviewStats;
-  final haupt = config.selectedWeaponOrNull;
+  final haupt = gefuehrteHauptwaffe(config);
   final neben = config.offhandAssignment;
   final konflikte = <String>[];
   if (haupt != null && !gefechtsWaffeEinhaendig(haupt) && !neben.isNone) {
@@ -52,6 +58,7 @@ List<GefechtsKampfmittelprofil> gefechtsKampfmittelprofile(
         sperren: konflikte,
         anteile: [
           'Hauptwaffen-PA ohne Parierwaffenanteil: ${c.pa - c.offhandPaBonus}',
+          ...raufenwaffenHinweise(haupt),
         ],
       ),
     if (neben.usesWeapon)
@@ -74,6 +81,7 @@ List<GefechtsKampfmittelprofil> gefechtsKampfmittelprofile(
         anteile: [
           'Falsche Hand: AT ${c.offhandPreview?.falseHandAtMod}, PA ${c.offhandPreview?.falseHandPaMod}; im Grundwert enthalten.',
           'Nebenhandwunden und BE im Grundwert enthalten.',
+          ...raufenwaffenHinweise(config.weaponSlots[neben.weaponIndex]),
         ],
       ),
     if (neben.usesEquipment)
@@ -105,7 +113,63 @@ List<GefechtsKampfmittelprofil> gefechtsKampfmittelprofile(
                 'Hauptwaffen-PA ${c.pa - c.offhandPaBonus}, Parierwaffen-WM/SF ${c.offhandPaBonus}.',
               ],
       ),
+    for (final w in s.waffenlos)
+      GefechtsKampfmittelprofil(
+        nebenWaffe: w.nebenWaffe,
+        wahl: GefechtsKampfmittelwahl(
+          GefechtsKampfmittelArt.waffenlos,
+          w.talent.kampfmittelId,
+        ),
+        name: w.slot.name,
+        waffe: w.slot,
+        at: w.vorschau.at,
+        pa: w.vorschau.pa,
+        anteile: waffenloseHinweise(w),
+      ),
   ];
+}
+
+/// Waffenlose Kampfwerte zu [w], sonst `null`.
+WaffenloseKampfwerte? gefechtsWaffenlosFuer(
+  HeroComputedSnapshot s,
+  GefechtsKampfmittelwahl? w,
+) => w?.art != GefechtsKampfmittelArt.waffenlos
+    ? null
+    : s.waffenlos.where((e) => e.talent.kampfmittelId == w!.id).firstOrNull;
+
+/// Schadenswürfel genau des Mittels [w] aus seiner eigenen Vorschau.
+DiceSpec? gefechtsSchadenswuerfel(
+  HeroComputedSnapshot s,
+  GefechtsKampfmittelwahl w,
+) => switch (w.art) {
+  GefechtsKampfmittelArt.nebenwaffe =>
+    s.combatPreviewStats.offhandPreview?.damageDiceSpec,
+  GefechtsKampfmittelArt.waffenlos => gefechtsWaffenlosFuer(
+    s,
+    w,
+  )?.vorschau.damageDiceSpec,
+  _ => s.combatPreviewStats.damageDiceSpec,
+};
+
+/// Name, TP-Ausdruck und Würfel des Standardangriffsmittels für die Anzeige.
+///
+/// Ohne Waffe in der Hand ist das Raufen; ohne jedes Angriffsmittel `null`.
+({String name, String tp, DiceSpec wuerfel})? gefechtsAngriffsanzeige(
+  HeroComputedSnapshot s,
+) {
+  if (gefuehrteHauptwaffe(s.hero.combatConfig) case final haupt?) {
+    final c = s.combatPreviewStats;
+    return (name: haupt.name, tp: c.tpExpression, wuerfel: c.damageDiceSpec);
+  }
+  final raufen = s.waffenlos
+      .where((w) => w.talent == WaffenlosesTalent.raufen)
+      .firstOrNull;
+  if (raufen == null) return null;
+  return (
+    name: raufen.slot.name,
+    tp: '${raufen.vorschau.tpExpression} (A)',
+    wuerfel: raufen.vorschau.damageDiceSpec,
+  );
 }
 
 /// Löst ausschließlich das aktuell tatsächlich geführte bestätigte Mittel auf.
@@ -119,6 +183,7 @@ GefechtsKampfmittelprofil? gefechtsKampfmittelFuer(
           .firstOrNull;
 
 /// Schild, zulässige Parierwaffe, dann Hauptwaffe; Angriffe beginnen rechts.
+/// Waffenlos kampfbereit folgt Raufen vor Ringen; neben einer Waffe nie.
 GefechtsKampfmittelwahl? gefechtsStandardKampfmittel(
   HeroComputedSnapshot s,
   Gefechtsaktion a,
@@ -131,14 +196,16 @@ GefechtsKampfmittelwahl? gefechtsStandardKampfmittel(
           GefechtsKampfmittelArt.schild,
           GefechtsKampfmittelArt.parierwaffe,
           GefechtsKampfmittelArt.hauptwaffe,
+          GefechtsKampfmittelArt.waffenlos,
         ]
-      : [GefechtsKampfmittelArt.hauptwaffe];
+      : [GefechtsKampfmittelArt.hauptwaffe, GefechtsKampfmittelArt.waffenlos];
   for (final art in reihenfolge) {
     final p = profile
         .where(
           (p) =>
               p.wahl.art == art &&
               p.sperren.isEmpty &&
+              !p.nebenWaffe &&
               (a == Gefechtsaktion.angriff ? p.at != null : p.pa != null),
         )
         .firstOrNull;

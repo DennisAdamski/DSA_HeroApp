@@ -1,4 +1,5 @@
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
+import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht_angriff.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht_auftrag.dart';
@@ -9,6 +10,7 @@ import 'gefecht_ansage_rules.dart';
 import 'gefecht_kampfmittel_rules.dart';
 import 'gefecht_fernkampf_rules.dart';
 import 'maneuver_rules.dart';
+import 'waffenlos_rules.dart';
 
 /// Ordnet bekannte Folgen über stabile IDs ein; Ungeklärtes erfindet keine TP.
 GefechtsSchadensfolge gefechtsSchadensfolgeFuerAuftrag(GefechtAuftrag a) {
@@ -88,6 +90,15 @@ Gefechtszustand entferneGefechtsAngriffsergebnis(
   ),
 );
 
+// TP(A) laut Katalogeintrag der Waffe oder der Handgemengewaffenliste.
+bool _richtetTpAusdauerAn(RulesCatalog katalog, MainWeaponSlot waffe) {
+  if (raufenwaffeFuer(waffe)?.tpAusdauer ?? false) return true;
+  final name = waffe.weaponType.trim().isEmpty ? waffe.name : waffe.weaponType;
+  return katalog.weapons.any(
+    (w) => w.name == name.trim() && w.tp.contains('(A)'),
+  );
+}
+
 /// Hält nur erfolgreich gebuchte Angriffsfolgen mit gebundenen Metadaten fest.
 /// Ein Schadensprofil entsteht ausschließlich für unterstützten Waffenschaden.
 Gefechtsangriffsergebnis? gefechtsAngriffsergebnisNachBuchung({
@@ -110,14 +121,34 @@ Gefechtsangriffsergebnis? gefechtsAngriffsergebnisNachBuchung({
   }
   final profil = gefechtsKampfmittelFuer(snapshot, pruefung.kampfmittel);
   if (profil == null || profil.waffe == null) return null;
-  final neben = profil.wahl.art == GefechtsKampfmittelArt.nebenwaffe;
   var folge = gefechtsSchadensfolgeFuerAuftrag(auftrag);
-  final dice = neben
-      ? snapshot.combatPreviewStats.offhandPreview?.damageDiceSpec
-      : snapshot.combatPreviewStats.damageDiceSpec;
+  final dice = gefechtsSchadenswuerfel(snapshot, profil.wahl);
   if (folge == GefechtsSchadensfolge.waffenschaden && dice == null) return null;
   var distanzKorrektur = 0;
   var hinweis = _schadenshinweis(folge, auftrag.manoever?.id);
+  final waffenlos = gefechtsWaffenlosFuer(snapshot, profil.wahl)?.talent;
+  if (folge == GefechtsSchadensfolge.waffenschaden &&
+      waffenlos == WaffenlosesTalent.ringen) {
+    // WdS S. 89: Ringen-Angriffe schaden nur als Wurf, sonst verschaffen sie
+    // eine bessere Position; beides entscheidet der Tisch.
+    folge = GefechtsSchadensfolge.manuell;
+    hinweis =
+        'Schadensfolge manuell: Ein Ringen-Angriff richtet nur als Wurf '
+        '1W6 TP(A) an, sonst bringt er den Gegner in eine ungünstige Position.';
+  } else if (folge == GefechtsSchadensfolge.waffenschaden &&
+      waffenlos == WaffenlosesTalent.raufen) {
+    hinweis =
+        'Waffenlos: Die Trefferpunkte sind TP(A) (Ausdauerschaden). '
+        'Panzerhandschuh, beschlagene Stiefel oder Metallhelm +2 TP(A). '
+        '$hinweis';
+  } else if (folge == GefechtsSchadensfolge.waffenschaden &&
+      _richtetTpAusdauerAn(katalog, profil.waffe!)) {
+    // AA S. 69/150: z. B. Schlagring, Stoß mit Schild, Turnierwaffen.
+    final raufen = raufenwaffeFuer(profil.waffe!)?.hinweis ?? '';
+    hinweis =
+        'Die Trefferpunkte dieser Waffe sind TP(A) (Ausdauerschaden). '
+        '${raufen.isEmpty ? '' : '$raufen '}$hinweis';
+  }
   if (folge == GefechtsSchadensfolge.waffenschaden && profil.waffe!.isRanged) {
     final ranged = profil.waffe!.rangedProfile;
     final entfernung = auftrag.kontext?.entfernung;
