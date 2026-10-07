@@ -901,6 +901,24 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   `RestFirestoreHeroSyncGateway`), `HiveSyncMetadataStore` und die Modelle in
   `lib/domain/sync_models.dart`. Konflikte dürfen nicht still überschrieben
   werden; die UI muss lokal, online oder beide behalten anbieten.
+- **Konflikte entstehen nur noch für echte Widersprüche** (ARCH-06): Nach
+  jedem Abgleich legt `_saveMetadata` den Inhalt des Stands mit seiner
+  Revision in `SyncBasisStore` ab (Box `sync_basis_v1`, je Konto; ohne
+  Inhalt, etwa bei Löschungen, entfällt sie). Ändern beide Geräte, führt
+  `fuehreSyncZusammen` (`lib/domain/sync_zusammenfuehrung.dart`) Basis,
+  Lokal und Online zusammen: Maps je Schlüssel, Listen über `id`/`instanzId`,
+  AP und Ressourcen als Zähler, Würfelprotokoll als Vereinigung. Ohne
+  Widerspruch geschieht das still
+  (`syncing_hero_repository_zusammenfuehrung.dart`), sonst bleibt der
+  Konflikt: `konfliktVorschau` nennt nur die widersprüchlichen Werte,
+  `resolveConflictAutomatisch` führt mit Entscheidungen je Wert zusammen
+  (Schlüssel `held:`/`zustand:`), der gebundene Zustand läuft mit. Die UI
+  (`SyncKonfliktKarte`, `lib/ui/widgets/sync_konflikt_karte.dart`, im Gate und
+  in den Einstellungen) bietet „Nur Online“, „Nur Lokal“, „Beide behalten“ und
+  „Automatisch“, in der Reihenfolge der Spalten. Ohne gültige Basis
+  (Revision passt nicht, ältere Abgleiche) gibt es kein „Automatisch“; ein
+  Abgleich ohne lokale Änderung trägt die Basis nach. Neue Listenmodelle
+  brauchen eine stabile `id`, sonst gelten sie als unteilbar.
 - Die Sync-Basis ist der **lokale** Stand: Nach dem Übernehmen eines
   Online-Stands merken `_storeHeroMetadata`/`_storeStateMetadata` den Hash
   dessen, was lokal liegt. Den Schreiber-Hash (`remoteHash`) **nie** als

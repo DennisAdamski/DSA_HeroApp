@@ -391,6 +391,13 @@ oeffnet ohne User das Offline-Profil und mit User das Konto-Profil, startet
 (`FirestoreHeroSyncGateway` oder auf Windows `RestFirestoreHeroSyncGateway`)
 und übergibt den Controller über `syncControllerProvider`.
 
+Zusammenführung (ARCH-06 Teilstand 3): Mit Konto öffnet der Start zusätzlich
+`HiveSyncBasisStore` (Box `sync_basis_v1`) und reicht sie an
+`SyncingHeroRepository`. Ändern beide Geräte seit dem letzten Abgleich,
+führt der Sync Held bzw. Zustand über `fuehreSyncZusammen` zusammen; nur
+widersprüchlich geänderte Werte ergeben einen Konflikt
+(`SyncKonfliktKarte`: Nur Online, Nur Lokal, Beide behalten, Automatisch).
+
 Wiederanlauf (ARCH-06): Direkt nach `HiveHeroRepository.create` öffnet
 `AppStartupGate` das Vorgangsjournal (`HiveVorgangsjournal`, Box
 `vorgaenge_v1` im Profilpfad) und lässt `VorgaengeWiederaufnehmen` auf dem
