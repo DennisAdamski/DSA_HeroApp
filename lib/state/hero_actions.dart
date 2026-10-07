@@ -123,14 +123,13 @@ class HeroActions {
       metaTalents: _buildDefaultMetaTalents(),
     );
     await saveHero(hero);
-    await repo.saveHeroState(
-      id,
-      const HeroState(
-        currentLep: 0,
-        currentAsp: 0,
-        currentKap: 0,
-        currentAu: 0,
-      ),
+    // Eingereiht und gestempelt (ARCH-06). Bricht die App vor diesem
+    // Schritt ab, gilt der fehlende Zustand ohnehin als leer.
+    await aendereGespeichertenZustand(
+      repository: repo,
+      heroId: id,
+      aenderung: (_) => const HeroState.empty(),
+      uhr: DateTime.now,
     );
     await _ref.read(selectedHeroSelectionActionsProvider).selectHero(id);
     return id;
@@ -504,6 +503,11 @@ class HeroActions {
             heroId: heroId,
             pngBytes: bytes,
           ),
+      loescheBild: (dateiname) async => storage.deleteGalleryImage(
+        heroStoragePath: await heroStoragePath(),
+        fileName: dateiname,
+      ),
+      journal: _ref.read(vorgangsjournalProvider),
       neueId: () => const Uuid().v4(),
       uhr: DateTime.now,
       maxHelden: maxHeldenProNutzer,

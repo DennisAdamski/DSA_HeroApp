@@ -4,6 +4,7 @@ import 'package:dsa_heldenverwaltung/domain/dice_log_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
 import 'package:dsa_heldenverwaltung/domain/unbekannte_json_felder.dart';
 import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
+import 'package:dsa_heldenverwaltung/domain/zustands_buchung.dart';
 
 /// Laufzeitzustand eines Helden, getrennt von den Stammdaten (`HeroSheet`).
 ///
@@ -23,6 +24,7 @@ class HeroState {
     this.activeSpellEffects = const ActiveSpellEffectsState(),
     this.wpiZustand = const WundZustand(),
     this.diceLog = const <DiceLogEntry>[],
+    this.buchungen = const <ZustandsBuchung>[],
     this.lastModified,
     this.unbekannteFelder = const <String, Object?>{},
   });
@@ -41,6 +43,7 @@ class HeroState {
       activeSpellEffects = const ActiveSpellEffectsState(),
       wpiZustand = const WundZustand(),
       diceLog = const <DiceLogEntry>[],
+      buchungen = const <ZustandsBuchung>[],
       unbekannteFelder = const <String, Object?>{};
 
   /// Maximale Anzahl persistierter Wuerfelprotokoll-Eintraege pro Held.
@@ -48,6 +51,12 @@ class HeroState {
   /// Sessiontauglich dimensioniert, damit auch ein langer Spielabend im
   /// Protokoll nachvollziehbar bleibt.
   static const int diceLogMax = 50;
+
+  /// Maximale Anzahl gespeicherter fachlicher Buchungen pro Held.
+  ///
+  /// Wie das Würfelprotokoll begrenzt; eine Gegenbuchung ist immer jünger
+  /// als ihr Original und wird deshalb nach ihm verdrängt.
+  static const int buchungenMax = 50;
 
   final int schemaVersion;
   final int currentLep;
@@ -65,6 +74,14 @@ class HeroState {
 
   /// Persistiertes Wuerfelprotokoll, neueste Eintraege am Ende der Liste.
   final List<DiceLogEntry> diceLog;
+
+  /// Fachliche Buchungen (ARCH-06), neueste am Ende.
+  ///
+  /// Halten fest, was ein Treffer tatsächlich verändert hat, damit er sich
+  /// als Gegenbuchung zurücknehmen lässt und eine Wiederholung derselben
+  /// Buchung nichts doppelt bucht. Nur bei Belegung im JSON, damit
+  /// Bestandszustände ihren Inhalts-Hash behalten.
+  final List<ZustandsBuchung> buchungen;
 
   /// Zeitpunkt der letzten Speicherung, analog zu `HeroSheet.lastModified`.
   ///
@@ -93,6 +110,7 @@ class HeroState {
     'activeSpellEffects',
     'wpiZustand',
     'diceLog',
+    'buchungen',
     'lastModified',
   };
 
@@ -109,6 +127,7 @@ class HeroState {
     ActiveSpellEffectsState? activeSpellEffects,
     WundZustand? wpiZustand,
     List<DiceLogEntry>? diceLog,
+    List<ZustandsBuchung>? buchungen,
     DateTime? lastModified,
   }) {
     return HeroState(
@@ -124,9 +143,20 @@ class HeroState {
       activeSpellEffects: activeSpellEffects ?? this.activeSpellEffects,
       wpiZustand: wpiZustand ?? this.wpiZustand,
       diceLog: diceLog ?? this.diceLog,
+      buchungen: buchungen ?? this.buchungen,
       lastModified: lastModified ?? this.lastModified,
       unbekannteFelder: unbekannteFelder,
     );
+  }
+
+  /// Hängt eine fachliche Buchung an und verdrängt die ältesten über
+  /// [buchungenMax].
+  HeroState withBuchung(ZustandsBuchung buchung) {
+    final next = <ZustandsBuchung>[...buchungen, buchung];
+    if (next.length > buchungenMax) {
+      next.removeRange(0, next.length - buchungenMax);
+    }
+    return copyWith(buchungen: List<ZustandsBuchung>.unmodifiable(next));
   }
 
   /// Haengt einen neuen Eintrag an das Wuerfelprotokoll an und trimmt FIFO.
@@ -161,6 +191,10 @@ class HeroState {
       'activeSpellEffects': activeSpellEffects.toJson(),
       'wpiZustand': wpiZustand.toJson(),
       'diceLog': diceLog.map((entry) => entry.toJson()).toList(growable: false),
+      if (buchungen.isNotEmpty)
+        'buchungen': buchungen
+            .map((buchung) => buchung.toJson())
+            .toList(growable: false),
       if (lastModified != null)
         'lastModified': lastModified!.toUtc().toIso8601String(),
     };
@@ -178,6 +212,7 @@ class HeroState {
               (e) => DiceLogEntry.fromJson(e.cast<String, dynamic>()),
             ),
           );
+    final rawBuchungen = json['buchungen'] as List?;
     return HeroState(
       schemaVersion: 6,
       currentLep: getInt('currentLep'),
@@ -201,6 +236,13 @@ class HeroState {
         (json['wpiZustand'] as Map?)?.cast<String, dynamic>() ?? const {},
       ),
       diceLog: diceLog,
+      buchungen: rawBuchungen == null
+          ? const <ZustandsBuchung>[]
+          : List<ZustandsBuchung>.unmodifiable(
+              rawBuchungen.whereType<Map>().map(
+                (e) => ZustandsBuchung.fromJson(e.cast<String, dynamic>()),
+              ),
+            ),
       lastModified: DateTime.tryParse(json['lastModified'] as String? ?? ''),
       unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
     );

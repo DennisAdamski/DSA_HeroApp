@@ -108,6 +108,28 @@ void main() {
     });
   });
 
+  group('buchungId (ARCH-06)', () {
+    test('wird nur geschrieben, wenn gesetzt, und übersteht JSON', () {
+      final ohne = diceLogEntryFromRoll(
+        title: 'Wurf',
+        subtitle: '',
+        diceValues: const <int>[3],
+      );
+      final mit = diceLogEntryFromRoll(
+        title: 'Schaden erhalten',
+        subtitle: '',
+        diceValues: const <int>[],
+        type: ProbeType.damage,
+        total: 7,
+        buchungId: 'treffer-1',
+      );
+
+      expect(ohne.toJson().containsKey('buchungId'), isFalse);
+      expect(DiceLogEntry.fromJson(ohne.toJson()).buchungId, isNull);
+      expect(DiceLogEntry.fromJson(mit.toJson()).buchungId, 'treffer-1');
+    });
+  });
+
   group('diceLogEntryFromResult', () {
     test('maps ProbeResult of an attribute check', () {
       const request = ResolvedProbeRequest(

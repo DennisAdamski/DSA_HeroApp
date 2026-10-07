@@ -8,6 +8,7 @@ import 'package:dsa_heldenverwaltung/data/auth_service.dart';
 import 'package:dsa_heldenverwaltung/domain/sync_controller.dart';
 import 'package:dsa_heldenverwaltung/domain/sync_models.dart';
 import 'package:dsa_heldenverwaltung/domain/sync_object_diff.dart';
+import 'package:dsa_heldenverwaltung/domain/sync_zusammenfuehrung.dart';
 import 'package:dsa_heldenverwaltung/state/auth_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/sync_conflict_gate.dart';
 
@@ -183,12 +184,151 @@ void main() {
     expect(find.text('Alrik online'), findsOneWidget);
     expect(find.text('Alrik lokal'), findsOneWidget);
 
-    await tester.tap(find.text('Lokal behalten'));
+    await tester.tap(find.text('Nur Lokal'));
     await tester.pumpAndSettle();
 
     expect(controller.resolvedConflicts, [
       ('hero-h-1', SyncResolutionChoice.keepLocal),
     ]);
+  });
+
+  testWidgets('die Knöpfe folgen den Spalten: Online links, Lokal rechts', (
+    tester,
+  ) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(1200, 900);
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final controller = _FakeSyncController(
+      SyncStatusSnapshot(openConflicts: <SyncConflict>[conflict()]),
+    );
+    addTearDown(controller.close);
+
+    await tester.pumpWidget(buildGate(controller));
+    await tester.pumpAndSettle();
+
+    // Lesereihenfolge: erst die Zeile, dann von links nach rechts.
+    bool vor(String a, String b) {
+      final pa = tester.getTopLeft(find.text(a));
+      final pb = tester.getTopLeft(find.text(b));
+      return pa.dy < pb.dy || (pa.dy == pb.dy && pa.dx < pb.dx);
+    }
+
+    expect(vor('Online', 'Lokal'), isTrue);
+    expect(vor('Nur Online', 'Nur Lokal'), isTrue);
+    expect(vor('Nur Lokal', 'Beide behalten'), isTrue);
+    // Ohne gemeinsamen Ausgangsstand gibt es kein „Automatisch“.
+    expect(find.text('Automatisch'), findsNothing);
+  });
+
+  group('Automatisch (ARCH-06)', () {
+    const feld = SyncKonfliktFeld(
+      schluessel: 'held:dukaten',
+      pfad: <String>['dukaten'],
+      online: '20',
+      lokal: '30',
+    );
+
+    testWidgets('zeigt nur den Widerspruch und fragt nach ihm', (tester) async {
+      final controller = _FakeSyncController(
+        SyncStatusSnapshot(openConflicts: <SyncConflict>[conflict()]),
+        vorschau: const <String, SyncKonfliktVorschau>{
+          'hero-h-1': SyncKonfliktVorschau(
+            felder: <SyncKonfliktFeld>[feld],
+            vonLokal: 2,
+            vonOnline: 3,
+          ),
+        },
+      );
+      addTearDown(controller.close);
+
+      await tester.pumpWidget(buildGate(controller));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.textContaining('1 Wert wurde auf beiden Geräten'),
+        findsOneWidget,
+      );
+      expect(find.textContaining('3 Änderungen von online'), findsOneWidget);
+      // Die widersprüchliche Zeile ist sofort sichtbar.
+      expect(find.text('Dukaten'), findsOneWidget);
+
+      await tester.ensureVisible(find.text('Automatisch'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Automatisch'));
+      await tester.pumpAndSettle();
+      final uebernehmen = find.byKey(
+        const ValueKey<String>('sync-feld-uebernehmen'),
+      );
+      expect(tester.widget<FilledButton>(uebernehmen).onPressed, isNull);
+
+      await tester.tap(
+        find.byKey(const ValueKey<String>('sync-feld-held:dukaten-online')),
+      );
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(uebernehmen);
+      await tester.pumpAndSettle();
+      await tester.tap(uebernehmen);
+      await tester.pumpAndSettle();
+
+      expect(controller.automatisch.single.$1, 'hero-h-1');
+      expect(controller.automatisch.single.$2, {
+        'held:dukaten': SyncSeite.online,
+      });
+    });
+
+    testWidgets('ohne Widerspruch führt es direkt zusammen', (tester) async {
+      final controller = _FakeSyncController(
+        SyncStatusSnapshot(openConflicts: <SyncConflict>[conflict()]),
+        vorschau: const <String, SyncKonfliktVorschau>{
+          'hero-h-1': SyncKonfliktVorschau(
+            felder: <SyncKonfliktFeld>[],
+            vonLokal: 1,
+            vonOnline: 1,
+          ),
+        },
+      );
+      addTearDown(controller.close);
+
+      await tester.pumpWidget(buildGate(controller));
+      await tester.pumpAndSettle();
+      expect(find.text('Kein Wert widerspricht sich.'), findsOneWidget);
+
+      await tester.ensureVisible(find.text('Automatisch'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Automatisch'));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(const ValueKey('sync-feld-entscheidung')),
+        findsNothing,
+      );
+      expect(controller.automatisch.single.$1, 'hero-h-1');
+      expect(controller.automatisch.single.$2, isEmpty);
+    });
+
+    testWidgets('ein Fehler erscheint an der Karte', (tester) async {
+      final controller = _FakeSyncController(
+        SyncStatusSnapshot(openConflicts: <SyncConflict>[conflict()]),
+        vorschau: const <String, SyncKonfliktVorschau>{
+          'hero-h-1': SyncKonfliktVorschau(
+            felder: <SyncKonfliktFeld>[],
+            vonLokal: 1,
+            vonOnline: 1,
+          ),
+        },
+      )..automatischFehler = StateError('Netz weg');
+      addTearDown(controller.close);
+
+      await tester.pumpWidget(buildGate(controller));
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.text('Automatisch'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Automatisch'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Nicht aufgelöst: Netz weg'), findsOneWidget);
+    });
   });
 
   testWidgets('"Später entscheiden" gibt die App frei', (tester) async {
@@ -224,7 +364,7 @@ void main() {
     await tester.pumpWidget(buildGate(controller));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Alle: Online behalten'));
+    await tester.tap(find.text('Alle: Nur Online'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Alle lösen'));
     await tester.pumpAndSettle();
@@ -247,7 +387,7 @@ void main() {
     await tester.pumpWidget(buildGate(controller));
     await tester.pumpAndSettle();
 
-    expect(find.text('Alle: Online behalten'), findsNothing);
+    expect(find.text('Alle: Nur Online'), findsNothing);
   });
 
   testWidgets('Abmelden meldet nach Bestaetigung ab', (tester) async {
@@ -320,7 +460,29 @@ class _FakeSyncController extends AppSyncController {
   _FakeSyncController(
     SyncStatusSnapshot initial, {
     this._diffs = const <String, SyncObjectDiff>{},
+    this._vorschau = const <String, SyncKonfliktVorschau>{},
   }) : _current = initial;
+
+  final Map<String, SyncKonfliktVorschau> _vorschau;
+  final List<(String, Map<String, SyncSeite>)> automatisch =
+      <(String, Map<String, SyncSeite>)>[];
+  Object? automatischFehler;
+
+  @override
+  Future<SyncKonfliktVorschau?> konfliktVorschau(String conflictId) async =>
+      _vorschau[conflictId];
+
+  @override
+  Future<void> resolveConflictAutomatisch(
+    String conflictId,
+    Map<String, SyncSeite> entscheidungen,
+  ) async {
+    final fehler = automatischFehler;
+    if (fehler != null) {
+      throw fehler;
+    }
+    automatisch.add((conflictId, entscheidungen));
+  }
 
   final StreamController<SyncStatusSnapshot> _controller =
       StreamController<SyncStatusSnapshot>.broadcast();

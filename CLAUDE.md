@@ -259,6 +259,14 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   an das auch `HeroActions.updateHeroState` delegiert). Ablaeufe fangen
   Fehler nicht, die aufrufende Oberflaeche zeigt sie. Bestandsaufnahme aller
   Schreibwege: `docs/schreibpfade_inventar.md`.
+- Speichervertrag (ARCH-06, `docs/schreibpfade_inventar.md`): Jeder Ablauf
+  schreibt genau ein Dokument, ausser dem Import. Der Import vermerkt sich im
+  `Vorgangsjournal` (`lib/data/vorgangsjournal.dart`, Box `vorgaenge_v1`,
+  `vorgangsjournalProvider`). `VorgaengeWiederaufnehmen` fuehrt ihn beim Start
+  vor `syncNow` zu Ende oder gleicht ihn aus; dasselbe passiert sofort, wenn
+  ein Importschritt scheitert. Ein neuer Ablauf mit mehreren Schreibvorgaengen
+  braucht dasselbe. Der Sync bleibt dokumentbasiert: ausstehend ist, was vom
+  gemerkten Hash abweicht; es gibt keine Operations-Warteschlange.
 - `aendereGespeichertenZustand` reiht Aenderungen je Speicher und Held ein
   (Warteschlange per `Expando` am Repository); zwei nicht abgewartete Aufrufe
   ueberschreiben einander so nicht. Laufzeitwerte werden in der Oberflaeche
@@ -671,7 +679,14 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   links. Die gespeicherten 2W6 der Kopfwunde (`kopfIniMalus`) betreffen nur die
   aktuelle INI und sind Hinweis, kein Basisabzug. Wunden senken die GS nie
   unter 1 (`begrenzeWundGs`). Anzeige über `wund_anzeige_rules.dart`.
-- Nicht enthalten und bewusst nicht erfunden: Rücknahmeknopf (ARCH-06),
+- „Schaden zurücknehmen“ (ARCH-06) gibt es nur am Protokolleintrag einer
+  gebuchten Schadensbuchung: `SchadenErhalten` vermerkt mit der Vorgangs-ID
+  des Dialogs eine `ZustandsBuchung` (`HeroState.buchungen`, nur bei
+  Belegung im JSON) und bucht dieselbe ID nie zweimal. `SchadenZuruecknehmen`
+  bucht die Gegenbuchung: tatsächlich abgezogene LeP/AuP zurück, ohne
+  Obergrenze, Wunden des Treffers soweit noch vorhanden, nur einmal je
+  Buchung. Regeln in `schaden_ruecknahme_rules.dart`.
+- Nicht enthalten und bewusst nicht erfunden: allgemeiner Rücknahmeknopf,
   KR-Zähler, persistente Favoriten, Offline-/Sync-Status ohne echten
   Providerzustand. Ein Test in `test/ui2/spielen/` hält das fest.
 - Der Kopf von `WorkspaceManagementBody` (nur UI2) ist der
@@ -886,6 +901,24 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   `RestFirestoreHeroSyncGateway`), `HiveSyncMetadataStore` und die Modelle in
   `lib/domain/sync_models.dart`. Konflikte dürfen nicht still überschrieben
   werden; die UI muss lokal, online oder beide behalten anbieten.
+- **Konflikte entstehen nur noch für echte Widersprüche** (ARCH-06): Nach
+  jedem Abgleich legt `_saveMetadata` den Inhalt des Stands mit seiner
+  Revision in `SyncBasisStore` ab (Box `sync_basis_v1`, je Konto; ohne
+  Inhalt, etwa bei Löschungen, entfällt sie). Ändern beide Geräte, führt
+  `fuehreSyncZusammen` (`lib/domain/sync_zusammenfuehrung.dart`) Basis,
+  Lokal und Online zusammen: Maps je Schlüssel, Listen über `id`/`instanzId`,
+  AP und Ressourcen als Zähler, Würfelprotokoll als Vereinigung. Ohne
+  Widerspruch geschieht das still
+  (`syncing_hero_repository_zusammenfuehrung.dart`), sonst bleibt der
+  Konflikt: `konfliktVorschau` nennt nur die widersprüchlichen Werte,
+  `resolveConflictAutomatisch` führt mit Entscheidungen je Wert zusammen
+  (Schlüssel `held:`/`zustand:`), der gebundene Zustand läuft mit. Die UI
+  (`SyncKonfliktKarte`, `lib/ui/widgets/sync_konflikt_karte.dart`, im Gate und
+  in den Einstellungen) bietet „Nur Online“, „Nur Lokal“, „Beide behalten“ und
+  „Automatisch“, in der Reihenfolge der Spalten. Ohne gültige Basis
+  (Revision passt nicht, ältere Abgleiche) gibt es kein „Automatisch“; ein
+  Abgleich ohne lokale Änderung trägt die Basis nach. Neue Listenmodelle
+  brauchen eine stabile `id`, sonst gelten sie als unteilbar.
 - Die Sync-Basis ist der **lokale** Stand: Nach dem Übernehmen eines
   Online-Stands merken `_storeHeroMetadata`/`_storeStateMetadata` den Hash
   dessen, was lokal liegt. Den Schreiber-Hash (`remoteHash`) **nie** als

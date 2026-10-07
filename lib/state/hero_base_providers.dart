@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dsa_heldenverwaltung/data/hero_repository.dart';
 import 'package:dsa_heldenverwaltung/data/hero_transfer_codec.dart';
 import 'package:dsa_heldenverwaltung/data/hero_transfer_file_gateway.dart';
+import 'package:dsa_heldenverwaltung/data/vorgangsjournal.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 
 /// Repository-Abstraktion (wird beim App-Start ueberschrieben).
@@ -12,6 +13,14 @@ final heroRepositoryProvider = Provider<HeroRepository>((ref) {
   throw UnimplementedError(
     'HeroRepository muss beim App-Start uebersteuert werden.',
   );
+});
+
+/// Journal offener Vorgänge mit mehreren Schreibzugriffen (ARCH-06).
+///
+/// Der App-Start übersteuert es mit dem `HiveVorgangsjournal` des
+/// Heldenspeichers; ohne Übersteuerung (Tests) liegt es im Arbeitsspeicher.
+final vorgangsjournalProvider = Provider<Vorgangsjournal>((ref) {
+  return SpeicherVorgangsjournal();
 });
 
 /// Codec fuer Transfer-JSON (Import/Export).

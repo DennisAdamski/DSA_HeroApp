@@ -1,11 +1,15 @@
 import 'dart:convert';
 
 import 'package:dsa_heldenverwaltung/ablaeufe/held_schreiben.dart';
+import 'package:dsa_heldenverwaltung/ablaeufe/import_vorgang.dart';
+import 'package:dsa_heldenverwaltung/ablaeufe/vorgaenge_wiederaufnehmen.dart';
 import 'package:dsa_heldenverwaltung/ablaeufe/zustand_schreiben.dart';
 import 'package:dsa_heldenverwaltung/data/hero_repository.dart';
+import 'package:dsa_heldenverwaltung/data/vorgangsjournal.dart';
 import 'package:dsa_heldenverwaltung/domain/avatar_gallery_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_appearance.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_transfer_bundle.dart';
+import 'package:dsa_heldenverwaltung/domain/sync_models.dart';
 
 /// Übernimmt eingebettete eigene Katalogeinträge eines Exports.
 typedef ImportKatalogUebernehmen = Future<void> Function(
@@ -54,6 +58,14 @@ class HeldImportErgebnis {
 /// der Galerie; unter derselben ID bleibt sein bisheriger Verweis stehen.
 /// Alle übrigen Fehler erreichen den Aufrufer unverändert. Die Auswahl des
 /// Helden bleibt beim Aufrufer.
+///
+/// Bilder, Bogen und Zustand sind getrennte Schreibvorgänge. Der Import
+/// vermerkt sich deshalb vor dem ersten Bild im [journal] und nach jedem
+/// Schritt (ARCH-06). Scheitert ein Schritt, wird der Vorgang sofort über
+/// [VorgaengeWiederaufnehmen.fuehreFort] ausgeglichen bzw. zu Ende geführt;
+/// bricht die App ab, erledigt das der Wiederanlauf beim nächsten Start.
+/// Eigene Katalogeinträge stehen außerhalb des Journals: ihr Übernehmen ist
+/// ein wiederholbares Einfügen und bleibt auch bei Abbruch bestehen.
 class HeldImportieren {
   /// Erzeugt den Ablauf mit seinen Abhängigkeiten.
   const HeldImportieren({
@@ -62,6 +74,8 @@ class HeldImportieren {
     required this.uebernimmKatalog,
     required this.speichereGaleriebild,
     required this.speichereHauptbild,
+    required this.loescheBild,
+    required this.journal,
     required this.neueId,
     required this.uhr,
     required this.maxHelden,
@@ -81,6 +95,12 @@ class HeldImportieren {
 
   /// Legt das Legacy-Hauptbild eines alten Exports ab.
   final ImportHauptbildSpeichern speichereHauptbild;
+
+  /// Löscht ein abgelegtes Bild, wenn der Import ausgeglichen wird.
+  final BildLoeschen loescheBild;
+
+  /// Journal offener Vorgänge (ARCH-06).
+  final Vorgangsjournal journal;
 
   /// Vergibt die ID eines neu angelegten Helden.
   final String Function() neueId;
@@ -118,20 +138,74 @@ class HeldImportieren {
       await uebernimmKatalog(katalogeintraege);
     }
 
-    final bilder = await _legeBilderAb(
-      bundle: bundle,
+    var vorgang = ImportVorgang(
+      id: 'import:$heroId:${uhr().toUtc().microsecondsSinceEpoch}',
       heroId: heroId,
-      neuAnlegen: neuAnlegen,
+      begonnen: uhr(),
+      schritt: ImportSchritt.bilderAblegen,
+      heldHashVorher: vorhandener == null ? null : heroContentHash(vorhandener),
+      dateien: const <String>[],
+      zustand: bundle.state.toJson(),
     );
-    final held = bundle.hero.copyWith(id: heroId, appearance: bilder.aussehen);
-    await speichere(held);
-    await aendereGespeichertenZustand(
+    await journal.merke(vorgang.id, vorgang.toJson());
+    final wiederanlauf = VorgaengeWiederaufnehmen(
       repository: repository,
-      heroId: heroId,
-      aenderung: (_) => bundle.state,
+      journal: journal,
+      loescheBild: loescheBild,
       uhr: uhr,
     );
+
+    final ({HeroAppearance aussehen, int fehlend}) bilder;
+    try {
+      bilder = await _legeBilderAb(
+        bundle: bundle,
+        heroId: heroId,
+        neuAnlegen: neuAnlegen,
+        abgelegt: (name) async {
+          vorgang = vorgang.mitDatei(name);
+          await journal.merke(vorgang.id, vorgang.toJson());
+        },
+      );
+      await speichere(
+        bundle.hero.copyWith(id: heroId, appearance: bilder.aussehen),
+      );
+      vorgang = vorgang.alsHeldGespeichert();
+      await journal.merke(vorgang.id, vorgang.toJson());
+    } on Object {
+      await _versucheAbschluss(wiederanlauf, vorgang);
+      rethrow;
+    }
+
+    try {
+      await aendereGespeichertenZustand(
+        repository: repository,
+        heroId: heroId,
+        aenderung: (_) => bundle.state,
+        uhr: uhr,
+      );
+      await journal.erledige(vorgang.id);
+    } on Object {
+      // Der Held steht schon; ein zweiter Versuch trägt den Zustand nach.
+      // Scheitert auch er, bleibt der Eintrag für den Neustart.
+      if (!await _versucheAbschluss(wiederanlauf, vorgang)) {
+        rethrow;
+      }
+    }
     return HeldImportErgebnis(heroId: heroId, fehlendeBilder: bilder.fehlend);
+  }
+
+  // Schließt [vorgang] nach einem gescheiterten Schritt ab; liefert, ob das
+  // gelang. Der ursprüngliche Fehler bleibt der maßgebliche.
+  Future<bool> _versucheAbschluss(
+    VorgaengeWiederaufnehmen wiederanlauf,
+    ImportVorgang vorgang,
+  ) async {
+    try {
+      await wiederanlauf.fuehreFort(vorgang);
+      return true;
+    } on Object {
+      return false;
+    }
   }
 
   // Legt die Bilder des Exports ab und baut daraus die Galerie des Helden.
@@ -139,11 +213,12 @@ class HeldImportieren {
     required HeroTransferBundle bundle,
     required String heroId,
     required bool neuAnlegen,
+    required Future<void> Function(String dateiname) abgelegt,
   }) async {
     final aussehen = bundle.hero.appearance;
     final galerie = aussehen.avatarGallery;
     final neueNamen = <String, String>{};
-    final abgelegt = <String, AvatarGalleryEntry>{};
+    final abgelegteEintraege = <String, AvatarGalleryEntry>{};
     final gescheitert = <String>{};
     var fehlend = 0;
 
@@ -171,8 +246,9 @@ class HeldImportieren {
           gescheitert.add(eintrag.id);
           continue;
         }
+        await abgelegt(name);
         neueNamen[eintrag.fileName] = name;
-        abgelegt[eintrag.id] = eintrag.copyWith(fileName: name);
+        abgelegteEintraege[eintrag.id] = eintrag.copyWith(fileName: name);
       }
     } else if (bundle.avatarBase64 != null && bundle.avatarBase64!.isNotEmpty) {
       // Alter Export ohne Galeriebilder: Das Hauptbild gehört zum Eintrag
@@ -198,8 +274,9 @@ class HeldImportieren {
         fehlend++;
         gescheitert.add(ziel.id);
       } else {
+        await abgelegt(name);
         neueNamen[ziel.fileName] = name;
-        abgelegt[ziel.id] = ziel.copyWith(fileName: name);
+        abgelegteEintraege[ziel.id] = ziel.copyWith(fileName: name);
       }
     }
 
@@ -215,7 +292,7 @@ class HeldImportieren {
       if (!gesehen.add(eintrag.id)) {
         continue;
       }
-      final neu = abgelegt[eintrag.id];
+      final neu = abgelegteEintraege[eintrag.id];
       if (neu != null) {
         ergebnis.add(neu);
       } else if (!neuAnlegen) {

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:uuid/uuid.dart';
 
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/trefferzonen.dart';
@@ -21,13 +22,20 @@ part 'schaden_eingaben.dart';
 /// Ergebnis eines übernommenen Schadens, für die anschließende Unterdrückung.
 class SchadenDialogErgebnis {
   /// Erstellt ein Ergebnis.
-  const SchadenDialogErgebnis({required this.anwendung, required this.zone});
+  const SchadenDialogErgebnis({
+    required this.anwendung,
+    required this.zone,
+    required this.buchungId,
+  });
 
   /// Tatsächlich gespeicherte Anwendung.
   final SchadensAnwendung anwendung;
 
   /// Getroffene Zone, falls Wunden gebucht wurden.
   final WundZone? zone;
+
+  /// ID der gespeicherten Buchung (ARCH-06).
+  final String buchungId;
 }
 
 /// Öffnet den Dialog „Schaden erhalten“ für einen Helden.
@@ -81,6 +89,7 @@ Future<void> showSchadenDialog({
     zone: zone,
     gespeichert: ergebnis.anwendung.zustand,
     neueWunden: ergebnis.anwendung.hinzugefuegteWunden,
+    buchungId: ergebnis.buchungId,
   );
 }
 
@@ -136,6 +145,11 @@ class _SchadenPanelState extends ConsumerState<SchadenPanel> {
 
   bool _schreibt = false;
   String? _fehler;
+
+  /// Vorgangs-ID der Buchung; entsteht beim ersten Übernehmen und bleibt bis
+  /// zum Schließen. Ein erneuter Versuch nach einem Fehler bucht so nie
+  /// doppelt, falls der erste doch gespeichert hat (ARCH-06).
+  String? _vorgangId;
 
   @override
   void dispose() {
@@ -231,12 +245,21 @@ class _SchadenPanelState extends ConsumerState<SchadenPanel> {
       _fehler = null;
     });
     try {
+      final vorgangId = _vorgangId ??= const Uuid().v4();
       final anwendung = await ref
           .read(schadenErhaltenProvider)
-          .uebernehmeSchaden(heroId: widget.heroId, buchung: buchung);
+          .uebernehmeSchaden(
+            heroId: widget.heroId,
+            buchung: buchung,
+            vorgangId: vorgangId,
+          );
       if (mounted) {
         widget.onUebernommen(
-          SchadenDialogErgebnis(anwendung: anwendung, zone: buchung.zone),
+          SchadenDialogErgebnis(
+            anwendung: anwendung,
+            zone: buchung.zone,
+            buchungId: vorgangId,
+          ),
         );
       }
     } catch (fehler) {
