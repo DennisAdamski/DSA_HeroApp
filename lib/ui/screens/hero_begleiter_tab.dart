@@ -13,15 +13,20 @@ import 'package:dsa_heldenverwaltung/rules/derived/begleiter_aenderung_rules.dar
 import 'package:dsa_heldenverwaltung/rules/derived/begleiter_wirkwert_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/companion_steigerung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/editor_entwurf_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/reittier_ausbilderprobe_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/reittier_ausbildung_aenderung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/reittier_ausbildung_anzeige_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/reittier_ausbildung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ruestung_be_rules.dart';
 import 'package:dsa_heldenverwaltung/catalog/reittier_ausbildung_katalog.dart';
 import 'package:dsa_heldenverwaltung/catalog/vertrautenmagie_preset.dart';
+import 'package:dsa_heldenverwaltung/rules/house_rules/house_rule_registry.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
+import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
+import 'package:dsa_heldenverwaltung/state/house_rules_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/dice_log_persistence.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/editor_entwurf_speichern.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/protected_content_helpers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/zustand_aendern.dart';
@@ -528,6 +533,12 @@ class _HeroBegleiterTabState extends ConsumerState<HeroBegleiterTab>
           .firstOrNull;
       final canRaise = _canRaiseFor(activeCompanion);
       final sofort = _kannSofortBuchen;
+      if (activeCompanion.typ == BegleiterTyp.reittier) {
+        // Hält Heldenwerte und Katalog bereit, damit Ausbilderproben ohne
+        // Wartezeit gewürfelt werden können.
+        ref.watch(heroComputedProvider(widget.heroId));
+        ref.watch(rulesCatalogProvider);
+      }
       return Column(
         children: [
           const CodexTabHeader(

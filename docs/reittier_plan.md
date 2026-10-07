@@ -99,6 +99,14 @@ Reittieren den Abschnitt „Reittier-Ausbildung“
   eingetragenen Grundwert. Der alte Freitext heißt bei Reittieren
   „Ausbildung (Notiz)“.
 - **Gefecht (UI2):** eine Zeile mit Stufe, Variante und Reiten-Modifikatoren.
+- **Ausbilderproben würfeln:** Im Schrittdialog hat jede geforderte Probe
+  einen Würfelknopf, im Pferde-SF-Dialog die Lernprobe (Abrichten +5 bzw. +8).
+  Der Request entsteht über `ausbilderprobeFuer`
+  (`lib/rules/derived/reittier_ausbilderprobe_rules.dart`) und
+  `talentprobeFuer` mit vorbelegter Erschwernis; gewürfelt und protokolliert
+  wird mit `showLoggedProbeDialog`. Eine misslungene Probe zählt im
+  Schrittdialog als Fehlschlag. Führt der Held das Talent nicht, steht der
+  Grund im Dialog; gebucht werden kann trotzdem (Zureiter).
 
 Texte setzt `reittier_ausbildung_anzeige_rules.dart` zusammen.
 

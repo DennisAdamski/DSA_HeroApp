@@ -20,7 +20,10 @@ extension _ReittierAusbildungAktionen on _HeroBegleiterTabState {
     if (ausbildung == null || !_kannSofortBuchen) return;
     final wahl = await showAdaptiveInputDialog<_AusbildungsschrittWahl>(
       context: context,
-      builder: (_) => _AusbildungsschrittDialog(ausbildung: ausbildung),
+      builder: (_) => _AusbildungsschrittDialog(
+        ausbildung: ausbildung,
+        wuerfeln: _wuerfleAusbilderprobe,
+      ),
     );
     if (wahl == null || !mounted) return;
     await _bucheReittier(
@@ -67,7 +70,10 @@ extension _ReittierAusbildungAktionen on _HeroBegleiterTabState {
     if (!_kannSofortBuchen) return;
     final sfId = await showAdaptiveInputDialog<String>(
       context: context,
-      builder: (_) => _PferdeSfDialog(companion: angezeigt),
+      builder: (_) => _PferdeSfDialog(
+        companion: angezeigt,
+        wuerfeln: _wuerfleAusbilderprobe,
+      ),
     );
     if (sfId == null || !mounted) return;
     await _bucheReittier(
@@ -75,6 +81,48 @@ extension _ReittierAusbildungAktionen on _HeroBegleiterTabState {
       meldung: '${pferdeSf(sfId)?.name ?? 'Sonderfertigkeit'} erlernt',
       aenderung: (held) =>
           buchePferdeSf(held, begleiterId: angezeigt.id, sfId: sfId),
+    );
+  }
+
+  /// Würfelt eine Ausbilderprobe des Helden und protokolliert sie.
+  ///
+  /// Gründe, warum nicht gewürfelt wird, kommen als Hinweis in den Dialog
+  /// zurück; eine Snackbar läge hinter ihm.
+  Future<_ProbenWurf> _wuerfleAusbilderprobe(
+    String talentId,
+    String talentName,
+    int erschwernis,
+  ) async {
+    final snapshot = ref.read(heroComputedProvider(widget.heroId)).valueOrNull;
+    final katalog = ref.read(rulesCatalogProvider).valueOrNull;
+    if (snapshot == null || katalog == null) {
+      return const _ProbenWurf(hinweis: 'Heldenwerte werden noch geladen.');
+    }
+    final aufbau = ausbilderprobeFuer(
+      snapshot: snapshot,
+      talente: katalog.talents,
+      talentId: talentId,
+      talentName: talentName,
+      erschwernis: erschwernis,
+      epicAdvantagesActive: ref.read(
+        isHouseRuleActiveProvider(EpicRuleKeys.advantages),
+      ),
+    );
+    final request = aufbau.request;
+    if (request == null) {
+      return _ProbenWurf(hinweis: aufbau.hinweis);
+    }
+    bool? erfolg;
+    await showLoggedProbeDialog(
+      context: context,
+      ref: ref,
+      heroId: widget.heroId,
+      request: request,
+      onResolved: (ergebnis) => erfolg = ergebnis.success,
+    );
+    return _ProbenWurf(
+      erfolg: erfolg,
+      hinweis: erfolg == null ? 'Probe abgebrochen.' : null,
     );
   }
 

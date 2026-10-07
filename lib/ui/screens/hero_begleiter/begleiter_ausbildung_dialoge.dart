@@ -209,6 +209,32 @@ class _UnartDialog extends StatelessWidget {
   }
 }
 
+/// Ergebnis einer im Dialog gewürfelten Ausbilderprobe.
+class _ProbenWurf {
+  const _ProbenWurf({this.erfolg, this.hinweis});
+
+  /// `true` gelungen, `false` misslungen, `null` nicht gewürfelt.
+  final bool? erfolg;
+
+  /// Warum nicht gewürfelt wurde (Talent fehlt, Abbruch …).
+  final String? hinweis;
+}
+
+/// Würfelt eine Probe des Helden auf das Talent mit der Erschwernis
+/// (positiv heißt erschwert) und protokolliert sie.
+typedef _Ausbilderwurf = Future<_ProbenWurf> Function(
+  String talentId,
+  String talentName,
+  int erschwernis,
+);
+
+/// Kurztext eines Wurfs für die Dialoge.
+String _wurfText(_ProbenWurf wurf) => switch (wurf.erfolg) {
+  true => 'Gelungen.',
+  false => 'Misslungen.',
+  null => wurf.hinweis ?? 'Nicht gewürfelt.',
+};
+
 /// Ergebnis des Schrittdialogs.
 class _AusbildungsschrittWahl {
   const _AusbildungsschrittWahl({
@@ -230,9 +256,12 @@ class _AusbildungsschrittWahl {
 /// buchen. Die geforderten Proben stehen als Liste; wer sie am Tisch würfelt
 /// oder von einem Zureiter erledigen lässt, trägt nur die Fehlschläge ein.
 class _AusbildungsschrittDialog extends StatefulWidget {
-  const _AusbildungsschrittDialog({required this.ausbildung});
+  const _AusbildungsschrittDialog({required this.ausbildung, this.wuerfeln});
 
   final ReittierAusbildung ausbildung;
+
+  /// Würfelt eine Ausbilderprobe; `null` blendet die Würfelknöpfe aus.
+  final _Ausbilderwurf? wuerfeln;
 
   @override
   State<_AusbildungsschrittDialog> createState() =>
@@ -246,6 +275,8 @@ class _AusbildungsschrittDialogState extends State<_AusbildungsschrittDialog> {
   bool _meisterentscheid = false;
   bool _sfUebernehmen = true;
   int _fehlschlaege = 0;
+  int _gewuerfelt = 0;
+  String? _letzterWurf;
   final TextEditingController _ausbilder = TextEditingController();
   final TextEditingController _notiz = TextEditingController();
 
@@ -266,6 +297,21 @@ class _AusbildungsschrittDialogState extends State<_AusbildungsschrittDialog> {
   }
 
   ReittierSchrittOption get _option => _optionen[_gewaehlt];
+
+  // Würfelt eine Probe; ein Misslingen zählt als Fehlschlag.
+  Future<void> _wuerfle(ReittierProbeDef probe) async {
+    final wurf = await widget.wuerfeln!(
+      probe.talentId,
+      probe.talentName,
+      probe.erschwernis,
+    );
+    if (!mounted) return;
+    setState(() {
+      if (wurf.erfolg != null) _gewuerfelt++;
+      if (wurf.erfolg == false) _fehlschlaege++;
+      _letzterWurf = _wurfText(wurf);
+    });
+  }
 
   bool get _bestaetigbar {
     if (_option.sperrgrund != null && !_meisterentscheid) return false;
@@ -360,7 +406,28 @@ class _AusbildungsschrittDialogState extends State<_AusbildungsschrittDialog> {
           if (schritt.proben.isNotEmpty) ...[
             const SizedBox(height: _fieldSpacing),
             Text('Proben des Ausbilders', style: theme.textTheme.labelMedium),
-            for (final probe in schritt.proben) Text(reittierProbeText(probe)),
+            for (final probe in schritt.proben)
+              Row(
+                children: [
+                  Expanded(child: Text(reittierProbeText(probe))),
+                  if (widget.wuerfeln != null)
+                    IconButton(
+                      key: ValueKey<String>('ausbilderprobe-${probe.talentId}'),
+                      icon: const Icon(Icons.casino_outlined, size: 18),
+                      tooltip: '${probe.talentName} würfeln',
+                      visualDensity: VisualDensity.compact,
+                      onPressed: () => _wuerfle(probe),
+                    ),
+                ],
+              ),
+            if (_gewuerfelt > 0 || _letzterWurf != null)
+              Text(
+                [
+                  if (_gewuerfelt > 0) '$_gewuerfelt gewürfelt',
+                  ?_letzterWurf,
+                ].join(' · '),
+                style: muted,
+              ),
           ],
           const SizedBox(height: _fieldSpacing),
           Row(
@@ -431,9 +498,12 @@ class _AusbildungsschrittDialogState extends State<_AusbildungsschrittDialog> {
 
 /// Wählt eine Pferde-SF zum Erlernen und zeigt ihre Lernbarkeit.
 class _PferdeSfDialog extends StatefulWidget {
-  const _PferdeSfDialog({required this.companion});
+  const _PferdeSfDialog({required this.companion, this.wuerfeln});
 
   final HeroCompanion companion;
+
+  /// Würfelt die Lernprobe; `null` blendet den Würfelknopf aus.
+  final _Ausbilderwurf? wuerfeln;
 
   @override
   State<_PferdeSfDialog> createState() => _PferdeSfDialogState();
@@ -442,6 +512,7 @@ class _PferdeSfDialog extends StatefulWidget {
 class _PferdeSfDialogState extends State<_PferdeSfDialog> {
   String? _gewaehlt;
   bool _meisterentscheid = false;
+  String? _wurf;
 
   PferdeSfLernbarkeit? get _lernbarkeit => _gewaehlt == null
       ? null
@@ -451,6 +522,17 @@ class _PferdeSfDialogState extends State<_PferdeSfDialog> {
     final lernbarkeit = _lernbarkeit;
     if (lernbarkeit == null) return false;
     return lernbarkeit.sperrgrund == null || _meisterentscheid;
+  }
+
+  // Würfelt die Lernprobe; erlernt wird erst mit „Erlernen“.
+  Future<void> _wuerfleLernprobe(PferdeSfLernbarkeit lernbarkeit) async {
+    final wurf = await widget.wuerfeln!(
+      lernbarkeit.talentId,
+      'Abrichten',
+      lernbarkeit.erschwernis ?? 0,
+    );
+    if (!mounted) return;
+    setState(() => _wurf = _wurfText(wurf));
   }
 
   @override
@@ -475,6 +557,7 @@ class _PferdeSfDialogState extends State<_PferdeSfDialog> {
             onChanged: (id) => setState(() {
               _gewaehlt = id;
               _meisterentscheid = false;
+              _wurf = null;
             }),
             child: Column(
               children: [
@@ -496,10 +579,25 @@ class _PferdeSfDialogState extends State<_PferdeSfDialog> {
           if (lernbarkeit != null) ...[
             const Divider(),
             if (lernbarkeit.erschwernis != null)
-              Text(
-                'Lernprobe: Abrichten '
-                '${mitVorzeichen(lernbarkeit.erschwernis!)}',
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      'Lernprobe: Abrichten '
+                      '${mitVorzeichen(lernbarkeit.erschwernis!)}',
+                    ),
+                  ),
+                  if (widget.wuerfeln != null)
+                    IconButton(
+                      key: const ValueKey<String>('pferde-sf-lernprobe'),
+                      icon: const Icon(Icons.casino_outlined, size: 18),
+                      tooltip: 'Abrichten würfeln',
+                      visualDensity: VisualDensity.compact,
+                      onPressed: () => _wuerfleLernprobe(lernbarkeit),
+                    ),
+                ],
               ),
+            if (_wurf != null) Text(_wurf!, style: muted),
             if (lernbarkeit.sperrgrund != null) ...[
               Text(
                 lernbarkeit.sperrgrund!,

@@ -8,6 +8,7 @@ import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_companion.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
@@ -19,6 +20,23 @@ import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 /// Schritte und Pferde-SF als Sofortbuchung auf den gespeicherten Helden.
 void main() {
   const feld = <String, Object?>{'zukunftsfeld': 1};
+
+  const abrichten = TalentDef(
+    id: 'tal_abrichten',
+    name: 'Abrichten',
+    group: 'Natur',
+    steigerung: 'B',
+    attributes: ['Mut', 'Intuition', 'Charisma'],
+    be: '-',
+  );
+  const tierkunde = TalentDef(
+    id: 'tal_tierkunde',
+    name: 'Tierkunde',
+    group: 'Wissen',
+    steigerung: 'B',
+    attributes: ['Mut', 'Klugheit', 'Intuition'],
+    be: '-',
+  );
 
   HeroSheet held(HeroCompanion pferd) => HeroSheet(
     id: 'demo',
@@ -34,6 +52,7 @@ void main() {
       ko: 12,
       kk: 12,
     ),
+    talents: const {'tal_abrichten': HeroTalentEntry(talentValue: 9)},
     companions: <HeroCompanion>[pferd],
   );
 
@@ -54,8 +73,9 @@ void main() {
 
   Future<(FakeRepository, WorkspaceTabEditActions)> pumpTab(
     WidgetTester tester,
-    HeroCompanion begleiter,
-  ) async {
+    HeroCompanion begleiter, {
+    List<TalentDef> talente = const <TalentDef>[],
+  }) async {
     tester.view.devicePixelRatio = 1.0;
     tester.view.physicalSize = const Size(1600, 1400);
     addTearDown(tester.view.resetPhysicalSize);
@@ -77,10 +97,10 @@ void main() {
         overrides: [
           heroRepositoryProvider.overrideWithValue(repo),
           rulesCatalogProvider.overrideWith(
-            (ref) async => const RulesCatalog(
+            (ref) async => RulesCatalog(
               version: 'test',
               source: 'test',
-              talents: <TalentDef>[],
+              talents: talente,
               spells: <SpellDef>[],
               weapons: <WeaponDef>[],
             ),
@@ -177,6 +197,62 @@ void main() {
     expect(find.text('16'), findsWidgets);
     expect(find.text('1W6+3'), findsOneWidget);
     expect(find.textContaining('Reiten −2 · im Kampf −3'), findsOneWidget);
+  });
+
+  testWidgets('Ausbilderproben werden gewuerfelt, protokolliert und '
+      'zaehlen als Fehlschlag', (tester) async {
+    final (repo, _) = await pumpTab(
+      tester,
+      pferd.copyWith(reittierAusbildung: erprobt),
+      talente: const <TalentDef>[abrichten, tierkunde],
+    );
+
+    final schritt = find.byKey(
+      const ValueKey<String>('begleiter-ausbildungsschritt'),
+    );
+    await tester.ensureVisible(schritt);
+    await tester.tap(schritt);
+    await tester.pumpAndSettle();
+    final wuerfel = find.byKey(
+      const ValueKey<String>('ausbilderprobe-tal_abrichten'),
+    );
+    await tester.ensureVisible(wuerfel);
+    await tester.tap(wuerfel);
+    await tester.pumpAndSettle();
+    expect(find.text('Talentprobe: Abrichten'), findsOneWidget);
+    await tester.tap(find.text('Manuell'));
+    await tester.pumpAndSettle();
+    for (var i = 0; i < 3; i++) {
+      await tester.enterText(
+        find.byKey(ValueKey<String>('probe-dialog-die-$i')),
+        '20',
+      );
+    }
+    await tester.tap(find.text('Auswerten'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Schließen'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('1 gewürfelt · Misslungen.'), findsOneWidget);
+    // Fundiert zieht erst jede dritte misslungene Probe eine Unart nach sich.
+    expect(find.textContaining('nach Meisterwahl ist fällig'), findsNothing);
+    final zustand = await repo.loadHeroState('demo');
+    expect(zustand!.diceLog, hasLength(1));
+
+    // Tierkunde fuehrt der Held nicht: Hinweis statt Probe.
+    final tierkundeWurf = find.byKey(
+      const ValueKey<String>('ausbilderprobe-tal_tierkunde'),
+    );
+    await tester.ensureVisible(tierkundeWurf);
+    await tester.tap(tierkundeWurf);
+    await tester.pumpAndSettle();
+    expect(
+      find.text(
+        '1 gewürfelt · Der Held führt Tierkunde nicht; am Tisch '
+        'würfeln.',
+      ),
+      findsOneWidget,
+    );
   });
 
   testWidgets('eine Pferde-SF wird aus dem Katalog erlernt', (tester) async {
