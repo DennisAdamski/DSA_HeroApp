@@ -37,7 +37,7 @@ Verbesserungen und „Begleitend“ fortlaufende Absicherung.
 
 - [ ] **ARCH-01 — Oberfläche nach Spielsituationen organisieren** · Aufbau
 - [ ] **ARCH-02 — Regelrelevante Eigenschaften strukturiert speichern** · Grundlage
-- [ ] **ARCH-03 — Gemeinsame Ausrüstungsdaten für Inventar und Kampf** · Grundlage
+- [x] **ARCH-03 — Gemeinsame Ausrüstungsdaten für Inventar und Kampf** · Grundlage (abgenommen 07.10.2026)
 - [ ] **ARCH-04 — Versionierte Regelprofile und erklärbare Berechnungen** · Aufbau
 - [ ] **ARCH-05 — Schreibende Aktionen fachlich aufteilen** · Grundlage
 - [ ] **ARCH-06 — Zusammengehörige Änderungen gemeinsam speichern und synchronisieren** · Aufbau
@@ -320,11 +320,11 @@ beschreibt den Gegenstandstyp, eine Instanz-ID das konkrete Exemplar.
 `lib/rules/derived/inventory_modifier_rules.dart`, `lib/state/hero_actions.dart`,
 `lib/ui/screens/hero_inventory/` und `lib/ui/screens/hero_combat/`.
 
-- [ ] Zuständigkeiten für Gegenstandseigenschaften, Menge und ausgerüstete Slots
+- [x] Zuständigkeiten für Gegenstandseigenschaften, Menge und ausgerüstete Slots
   festlegen und ein gemeinsames Modell mit stabilen Referenzen einführen.
-- [ ] Vorhandene Kampf-/Inventareinträge migrieren; gleichnamige Exemplare,
+- [x] Vorhandene Kampf-/Inventareinträge migrieren; gleichnamige Exemplare,
   individuelle Eigenschaften und Geschossmengen verlustfrei erhalten.
-- [ ] Umbenennen, Ablegen, Verkaufen und Ausrüsten auf das gemeinsame Modell
+- [x] Umbenennen, Ablegen, Verkaufen und Ausrüsten auf das gemeinsame Modell
   umstellen; den namensbasierten Abgleich nach abgesicherter Migration ablösen.
 
 **Abnahme:** Zwei gleichnamige Waffen bleiben unabhängig bearbeitbar. Umbenennen
@@ -669,10 +669,48 @@ Vollständige Suite (`--concurrency=1`): 3.750 bestanden, 3 übersprungen.
 4. Ein Verkauf wird nicht protokolliert; er ist nur über Inventar und
    Geldstand nachvollziehbar.
 
-*Nächster Schritt:* die übrige ARCH-03-Abnahme prüfen (Katalog-IDs für
-Gegenstandstypen, Kampfwerte und Inventarmodifikatoren konsequent über die
-ausgerüsteten Exemplare) und danach ARCH-03 abschließen oder den Rest neu
-schneiden.
+*Nächster Schritt:* ~~die übrige ARCH-03-Abnahme prüfen~~ *Erledigt im
+Abschluss unten.*
+
+**Abschluss 07.10.2026 — Abnahme ARCH-03.** Geprüft gegen die
+Abnahmekriterien:
+
+- *Zwei gleichnamige Waffen unabhängig:* Slot-IDs, `slotRef`, Instanz-IDs
+  (Bestandsheld f06, `inventory_sync_rules_test`, `inventar_slot_instanz_*`).
+- *Umbenennen ohne Verlust:* Zuordnung über Instanz und ID, nie über den
+  Namen (`hero_actions_slot_instanz_test`).
+- *Entfernen ohne ungültige Verweise:* Entfernen fragt „Nur ablegen“/„Ganz
+  entfernen“; `bindeSlotsAnInstanzen` leert verwaiste Verweise, die
+  Nebenhandbelegung rückt nach (`kampf_aenderung_rules_test`).
+- *Kampfwerte und Modifikatoren auf denselben Exemplaren:* **neu** —
+  Entscheidung (Dennis, 7.10.2026): Modifikatoren verknüpfter Waffen
+  wirken nur in der Hand (gewählte Hauptwaffe oder Nebenhand), Schild und
+  Parierwaffe nur in der Nebenhand, Rüstung nur angelegt. Bisher galt jede
+  Waffe der Liste als ausgerüstet. Der Abgleich setzt `istAusgeruestet`
+  entsprechend; jeder Waffenwechsel läuft über `saveHero`, die
+  Modifikatoren folgen. Das erste Speichern ändert dabei einmalig
+  `istAusgeruestet` nicht geführter Waffen (`bestandsheld_ablauf_test`
+  erlaubt den Pfad, Hash-Pins unverändert).
+- *Import/Export erhält IDs und Verknüpfungen:* Abnahmetest um einen
+  abgelegten Gegenstand und die Slot-Instanzverweise erweitert.
+
+*Abgrenzung Katalog-ID.* Das Ziel nannte eine Katalog-ID für den
+Gegenstandstyp. Für Waffen ist das faktisch `weaponType` (Katalogname der
+Waffenart, darüber werden Talente und Manöver aufgelöst); Rüstungsteile,
+Schilde und Geschosse haben keinen Katalog. Eine zusätzliche ID brächte
+heute keinen Nutzen und wurde bewusst nicht eingeführt. Sobald Ausrüstung
+einen eigenen Katalog bekommt, ist sie dort nachzuziehen.
+
+*Prüfungen.* Neue Tests „Modifikatoren wirken nur in der Hand“
+(`inventory_sync_rules_test`), angepasste Bestandsheld- und B13-Proben
+(der erste Abgleich ändert nur `istAusgeruestet`, ein zweiter nichts);
+Gegenprobe mit „immer ausgerüstet“ scheitert.
+`flutter analyze` ohne Befund; vollständige Suite (`--concurrency=1`): 3.752
+bestanden, 3 übersprungen. Commit: `5d72ddd`.
+
+*Verbleibende Risiken:* die der Teilstände oben, insbesondere: Ablegen und
+Verkaufen der letzten Waffe sind gesperrt; Bestandswerte pro Stapel werden
+nicht umgerechnet; ein Verkauf wird nicht protokolliert.
 
 **Teilstand 27.09.2026 — B2/B3 behoben:** Kampf-Slots für Waffen,
 Geschosse, Rüstung und Nebenhand tragen stabile IDs. Beim Laden erhalten
