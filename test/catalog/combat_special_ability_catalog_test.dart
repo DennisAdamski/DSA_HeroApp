@@ -25,10 +25,27 @@ void main() {
   }
 
   test('der Katalog laesst sich vollstaendig lesen', () {
-    expect(eintraege, hasLength(87));
+    expect(eintraege, hasLength(90));
     expect(eintraege.every((def) => def.id.isNotEmpty), isTrue);
     expect(eintraege.every((def) => def.name.isNotEmpty), isTrue);
   });
+
+  test(
+    'Turnier- und Kriegsreiterei bauen auf Reiterkampf auf (WdS S. 102)',
+    () {
+      List<String> sfVoraussetzungen(String id) => [
+        for (final bedingung in alleBedingungenFlach(
+          eintraege.firstWhere((def) => def.id == id).voraussetzungenStruktur,
+        ))
+          if (bedingung.art == RequirementArt.sonderfertigkeit) bedingung.name,
+      ];
+
+      expect(sfVoraussetzungen('ksf_reiterkampf'), isEmpty);
+      expect(sfVoraussetzungen('ksf_turnierreiterei'), ['Reiterkampf']);
+      expect(sfVoraussetzungen('ksf_kriegsreiterei'), ['Reiterkampf']);
+      expect(sfVoraussetzungen('esf_rittmeister'), ['Kriegsreiterei']);
+    },
+  );
 
   test('jeder Eintrag hat strukturierte Voraussetzungen', () {
     final ohne = eintraege
