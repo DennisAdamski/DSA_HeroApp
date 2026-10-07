@@ -1589,7 +1589,9 @@ void main() {
 
       test('Befund ARCH-07-B13: eine unbekannte Kampfart behält die '
           'Geschosse samt Inventardaten', () {
-        final json = held.toJson();
+        // Einmal abgeglichen wie nach dem ersten Speichern: Seit dem
+        // 07.10.2026 gilt nur die geführte Waffe als ausgerüstet.
+        final json = held.copyWith(inventoryEntries: gleicheAb(held)).toJson();
         final waffen = (json['combatConfig'] as Map)['weapons'] as List;
         (waffen[1] as Map)['combatType'] = 'zukunftsWert';
         final zukunft = HeroSheet.fromJson(json);

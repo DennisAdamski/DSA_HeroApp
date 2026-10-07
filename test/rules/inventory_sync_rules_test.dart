@@ -5,6 +5,7 @@ import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/inventory_modifier_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/inventory_sync_rules.dart';
 
 // ---------------------------------------------------------------------------
@@ -587,6 +588,72 @@ void main() {
         9,
         reason: 'Der Namensverweis trifft immer den ersten Bogen.',
       );
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // Ausgerüstet heißt in der Hand (Entscheidung vom 07.10.2026)
+  // -------------------------------------------------------------------------
+  group('Modifikatoren wirken nur in der Hand', () {
+    const mutPlusEins = <InventoryItemModifier>[
+      InventoryItemModifier(
+        kind: InventoryModifierKind.attribut,
+        targetId: 'mu',
+        wert: 1,
+      ),
+    ];
+    const kampf = CombatConfig(
+      weapons: [
+        MainWeaponSlot(id: 's', name: 'Schwert'),
+        MainWeaponSlot(id: 'r', name: 'Runenklinge'),
+        MainWeaponSlot(id: 'd', name: 'Dolch'),
+      ],
+      selectedWeaponIndex: 0,
+      offhandEquipment: [
+        OffhandEquipmentEntry(id: 'b', name: 'Buckler'),
+        OffhandEquipmentEntry(id: 't', name: 'Turmschild'),
+      ],
+      offhandAssignment: OffhandAssignment(equipmentIndex: 1),
+    );
+
+    // Abgleich mit MU +1 an Runenklinge und Turmschild.
+    List<HeroInventoryEntry> abgeglichen(CombatConfig config) {
+      final erst = reconcileInventoryWithCombat(const [], config);
+      return reconcileInventoryWithCombat([
+        for (final e in erst)
+          e.gegenstand == 'Runenklinge' || e.gegenstand == 'Turmschild'
+              ? e.copyWith(modifiers: mutPlusEins)
+              : e,
+      ], config);
+    }
+
+    Map<String, bool> ausgeruestet(List<HeroInventoryEntry> eintraege) => {
+      for (final e in eintraege) e.gegenstand: e.istAusgeruestet,
+    };
+
+    test('Hauptwaffe, Nebenhandwaffe und Nebenhandteil in der Hand', () {
+      final eintraege = abgeglichen(
+        kampf.copyWith(
+          offhandAssignment: const OffhandAssignment(weaponIndex: 2),
+        ),
+      );
+
+      expect(ausgeruestet(eintraege), {
+        'Schwert': true,
+        'Runenklinge': false,
+        'Dolch': true,
+        'Buckler': false,
+        'Turmschild': false,
+      });
+      expect(aggregateInventoryModifiers(eintraege).attributeMods.mu, 0);
+    });
+
+    test('wechselt die Hand, folgen die Modifikatoren', () {
+      final eintraege = abgeglichen(kampf.copyWith(selectedWeaponIndex: 1));
+
+      expect(ausgeruestet(eintraege)['Runenklinge'], isTrue);
+      expect(ausgeruestet(eintraege)['Turmschild'], isTrue);
+      expect(aggregateInventoryModifiers(eintraege).attributeMods.mu, 2);
     });
   });
 }

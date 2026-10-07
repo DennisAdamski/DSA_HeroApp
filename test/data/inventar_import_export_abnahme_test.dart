@@ -11,6 +11,7 @@ import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/inventar_aenderung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/inventar_menge_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/inventar_stapel_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/kampfgegenstand_ablegen_rules.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
@@ -68,20 +69,35 @@ Future<HeroSheet> _vorbereitet(ProviderContainer container) async {
     ladeBestandsheld(Bestandsheld.gleichnamigeAusruestung),
     resolution: ImportConflictResolution.overwriteExisting,
   );
-  return aktionen.updateHero(_id, (held) {
-    final rechts = held.inventoryEntries.singleWhere(
-      (e) =>
-          e.source == InventoryItemSource.geschoss &&
-          e.beschreibung == 'Köcher rechts',
-    );
-    return mitGeteiltemStapel(
-      held,
-      rechts,
-      abspalten: 5,
-      woGetragen: 'Rucksack',
-      neueId: 'rucksack-pfeile',
-    );
-  });
+  return aktionen
+      .updateHero(_id, (held) {
+        final rechts = held.inventoryEntries.singleWhere(
+          (e) =>
+              e.source == InventoryItemSource.geschoss &&
+              e.beschreibung == 'Köcher rechts',
+        );
+        return mitGeteiltemStapel(
+          held,
+          rechts,
+          abspalten: 5,
+          woGetragen: 'Rucksack',
+          neueId: 'rucksack-pfeile',
+        );
+      })
+      .then(
+        // Dazu ein im Kampfbereich nur abgelegter Dolch (gemerkte Kampfwerte).
+        (_) => aktionen.updateHero(_id, (held) {
+          final dolch = held.combatConfig.weaponSlots.firstWhere(
+            (w) => w.name == 'Dolch',
+          );
+          return ohneWaffeImKampf(
+            held,
+            dolch,
+            wie: KampfgegenstandEntfernen.ablegen,
+            neueId: () => 'abgelegt',
+          );
+        }),
+      );
 }
 
 void main() {
@@ -92,7 +108,17 @@ void main() {
     expect(vorher.inventoryEntries.every((e) => e.instanzId != null), isTrue);
     expect(
       vorher.inventoryEntries.where((e) => e.slotRef != null),
-      hasLength(8),
+      hasLength(7),
+    );
+    expect(
+      vorher.inventoryEntries.where((e) => e.abgelegt != null),
+      hasLength(1),
+    );
+    expect(
+      vorher.combatConfig.weaponSlots.every(
+        (w) => w.inventarInstanzId.isNotEmpty,
+      ),
+      isTrue,
     );
 
     for (final art in ImportConflictResolution.values) {

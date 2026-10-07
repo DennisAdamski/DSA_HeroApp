@@ -39,14 +39,32 @@ void main() {
     );
     final zweimal = reconcileInventoryWithCombat(einmal, held.combatConfig);
 
+    // Bis auf „ausgerüstet“ ändert der erste Abgleich nichts: Seit dem
+    // 07.10.2026 gilt eine Waffe nur in der Hand als ausgerüstet.
+    Map<String, dynamic> ohneAusgeruestet(HeroInventoryEntry entry) =>
+        entry.toJson()..remove('istAusgeruestet');
     expect(
-      einmal.map((entry) => entry.toJson()).toList(),
-      held.inventoryEntries.map((entry) => entry.toJson()).toList(),
+      einmal.map(ohneAusgeruestet).toList(),
+      held.inventoryEntries.map(ohneAusgeruestet).toList(),
     );
     expect(
       zweimal.map((entry) => entry.toJson()).toList(),
       einmal.map((entry) => entry.toJson()).toList(),
     );
+    final kampf = held.combatConfig;
+    final inDerHand = <String>{
+      if (kampf.hasSelectedWeapon) 'w#${kampf.selectedWeapon.id}',
+      if (kampf.offhandAssignment.usesWeapon)
+        'w#${kampf.weaponSlots[kampf.offhandAssignment.weaponIndex].id}',
+    };
+    for (final entry in einmal) {
+      if (entry.source != InventoryItemSource.waffe) continue;
+      expect(
+        entry.istAusgeruestet,
+        inDerHand.contains(entry.slotRef),
+        reason: entry.beschreibung,
+      );
+    }
     // Manuelle Einträge zuerst, dann Waffen samt ihren Geschossen, dann
     // Rüstung — jeweils in Slot-Reihenfolge.
     expect(_beschreibungen(einmal), <String>[
