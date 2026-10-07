@@ -1,15 +1,12 @@
 import 'package:dsa_heldenverwaltung/domain/hero_companion.dart';
 
+import 'begleiter_wirkwert_rules.dart';
 import 'companion_steigerung_rules.dart';
+import 'reittier_ausbildung_rules.dart';
 import 'ruestung_be_rules.dart';
 
-/// Wirksame AT eines Begleiterangriffs (Basis + gekaufte Steigerung).
-int? begleiterAngriffAt(HeroCompanionAttack a) =>
-    a.at == null ? null : a.at! + a.steigerungAt;
-
-/// Wirksame PA eines Begleiterangriffs; `null` heißt keine Parade möglich.
-int? begleiterAngriffPa(HeroCompanionAttack a) =>
-    a.pa == null ? null : a.pa! + a.steigerungPa;
+export 'companion_steigerung_rules.dart'
+    show begleiterAngriffAt, begleiterAngriffPa;
 
 /// Ein Angriffsmodus des Begleiters mit wirksamen Werten.
 class BegleiterAngriffsprofil {
@@ -23,6 +20,41 @@ class BegleiterAngriffsprofil {
   });
   final String name, tp, dk;
   final int? at, pa;
+}
+
+/// Ausbildungsstand eines Reittiers, wie das Gefecht ihn zeigt.
+class ReittierProfil {
+  /// Hält Stufe, Art, Variante und die Reiten-Modifikatoren.
+  const ReittierProfil({
+    required this.stufe,
+    required this.art,
+    required this.variante,
+    required this.kampfpferd,
+    required this.reitenNormal,
+    required this.reitenImKampf,
+    required this.reiterKampfErschwernis,
+  });
+
+  /// Anzeigename der aktuellen Stufe.
+  final String stufe;
+
+  /// Anzeigename der aktuellen Ausbildungsart.
+  final String art;
+
+  /// Name der Ausbildungsvariante; leer ohne Variante.
+  final String variante;
+
+  /// Gilt als geschultes Kampfpferd.
+  final bool kampfpferd;
+
+  /// Modifikator der Reiten-Probe außerhalb des Kampfes (positiv erschwert).
+  final int reitenNormal;
+
+  /// Modifikator der Reiten-Probe im Kampf (positiv erschwert).
+  final int reitenImKampf;
+
+  /// Zusatzerschwernis der Kampfhandlungen des Reiters.
+  final int reiterKampfErschwernis;
 }
 
 /// Kampfrelevante Werte eines Begleiters zum Nachschlagen im Gefecht.
@@ -43,6 +75,7 @@ class BegleiterKampfprofil {
     required this.angriffe,
     required this.sonderfertigkeiten,
     required this.vertrautenmagie,
+    this.reittier,
   });
 
   /// Stabile Begleiter-ID; Namen dürfen sich wiederholen.
@@ -52,12 +85,16 @@ class BegleiterKampfprofil {
   final int rs, be;
   final List<String> geschwindigkeiten, sonderfertigkeiten, vertrautenmagie;
   final List<BegleiterAngriffsprofil> angriffe;
+
+  /// Ausbildungsstand, falls der Begleiter ein Reittier mit Ausbildung ist.
+  final ReittierProfil? reittier;
 }
 
 /// Leitet das Kampfprofil eines Begleiters ab, wie es der Begleiter-Tab zeigt.
 ///
 /// LeP/AuP/AsP sind Maximalwerte; einen laufenden Stand führt die App für
-/// Begleiter nicht (Gefecht: nur ansehen).
+/// Begleiter nicht (Gefecht: nur ansehen). INI, Angriffe und
+/// Geschwindigkeiten enthalten bei Reittieren die Ausbildung.
 BegleiterKampfprofil begleiterKampfprofil(HeroCompanion c) {
   final ruestung = c.ruestungsTeile.where((p) => p.isActive).toList();
   final be = computeBeKampf(
@@ -79,16 +116,16 @@ BegleiterKampfprofil begleiterKampfprofil(HeroCompanion c) {
     aup: companionEffektiverPoolwert(c, 'aup'),
     asp: companionEffektiverPoolwert(c, 'asp'),
     geschwindigkeiten: [
-      for (final g in c.geschwindigkeiten)
+      for (final g in begleiterWirksameGeschwindigkeiten(c))
         g.art.trim().isEmpty ? 'GS ${g.wert}' : '${g.art} ${g.wert}',
     ],
     angriffe: [
       for (final a in c.angriffe)
         BegleiterAngriffsprofil(
           name: a.name.trim().isEmpty ? 'Angriff' : a.name,
-          at: begleiterAngriffAt(a),
+          at: begleiterWirksamerAngriffAt(c, a),
           pa: begleiterAngriffPa(a),
-          tp: a.tp,
+          tp: begleiterWirksamerAngriffTp(c, a),
           dk: a.dk,
         ),
     ],
@@ -101,5 +138,24 @@ BegleiterKampfprofil begleiterKampfprofil(HeroCompanion c) {
         for (final r in k.rituals)
           if (r.name.trim().isNotEmpty) r.name,
     ],
+    reittier: _reittierProfil(c),
+  );
+}
+
+// Profil der Ausbildung; `null` ohne erfasste Reittier-Ausbildung.
+ReittierProfil? _reittierProfil(HeroCompanion c) {
+  final a = c.reittierAusbildung;
+  if (!istReittierMitAusbildung(c) || a == null) {
+    return null;
+  }
+  final imKampf = reitenProbenModifikator(c, imKampf: true);
+  return ReittierProfil(
+    stufe: aktuelleStufe(a).label,
+    art: aktuelleArt(a).label,
+    variante: gewaehlteVariante(a)?.name ?? '',
+    kampfpferd: istGeschultesKampfpferd(a),
+    reitenNormal: reitenProbenModifikator(c, imKampf: false).erschwernis,
+    reitenImKampf: imKampf.erschwernis,
+    reiterKampfErschwernis: imKampf.reiterKampfErschwernis,
   );
 }
