@@ -38,8 +38,22 @@ an; Ausbildung ist Freitext, und Reiterkampf ist nicht modelliert.
 - **GS(+a/+b) und AU(+a/+b)** der Ausbildungsvarianten gelten für Trab/Galopp.
 - **Pferde-Vor-/Nachteile** bleiben Freitext; Regeln erkennen Lernfähig,
   Nervosität, Gutmütig und Magiegespür über den Text.
+- **Novadisches Kriegspferd:** „wie das tulamidische, aber zusätzlich … LO +3“
+  wird als zusätzliche Loyalität gelesen, zusammen also LO +5.
 - **Ausbildungsproben** lassen sich würfeln, eine Buchung geht aber auch ohne
   Würfeln (bezahlter Zureiter, ZBA S. 37).
+
+## Katalog
+
+Die Ausbildungsdaten stehen als Dart-Konstanten in
+`lib/catalog/reittier_ausbildung_katalog.dart` (Stufenschritte,
+Reiten-Modifikatoren, Varianten) und `lib/catalog/pferde_sf_katalog.dart`
+(Pferde-SF, Unarten); die Typen in `reittier_ausbildung_typen.dart`, die Enums
+für Stufe und Art in `lib/domain/hero_companion/reittier_ausbildungsstufe.dart`.
+`assets/catalogs/house_rules_v1/reittier_ausbildung.json` ist ein Spiegel, den
+`test/catalog/reittier_ausbildung_katalog_test.dart` gegen die Konstanten
+prüft; geladen wird er nicht. Gespeicherte Helden verweisen nur über die IDs
+`pvar_…`, `psf_…` und `punart_…`. Texte sind kurze eigene Zusammenfassungen.
 
 ## Regelquellen
 
