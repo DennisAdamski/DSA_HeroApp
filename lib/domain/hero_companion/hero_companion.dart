@@ -8,6 +8,7 @@ import 'package:dsa_heldenverwaltung/domain/combat_config.dart' show ArmorPiece;
 import 'package:dsa_heldenverwaltung/domain/hero_companion/hero_companion_attack.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_companion/hero_companion_sonderfertigkeit.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_companion/hero_companion_speed.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_companion/reittier_ausbildung.dart';
 import 'package:dsa_heldenverwaltung/domain/unbekannte_json_felder.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_rituals.dart'
     show HeroRitualCategory;
@@ -89,6 +90,8 @@ class HeroCompanion {
     this.startAup,
     this.startAsp,
     this.startMr,
+    // Ausbildungsstand (nur fuer Reittiere, nur wenn erfasst).
+    this.reittierAusbildung,
     this.unbekannteFelder = const <String, Object?>{},
     this.unbekannteEnumWerte = const <String, Object?>{},
   });
@@ -244,6 +247,14 @@ class HeroCompanion {
   /// Startwert fuer MR (analog zu startLep).
   final int? startMr;
 
+  // ---- Reittier-Ausbildung -------------------------------------------------
+
+  /// Ausbildungsstand des Reittiers; `null`, solange keiner erfasst ist.
+  ///
+  /// Wird nie automatisch angelegt und nur bei Belegung geschrieben, damit
+  /// Bestandsbegleiter ihren Inhalts-Hash behalten.
+  final ReittierAusbildung? reittierAusbildung;
+
   /// JSON-Felder einer neueren App-Version; bleiben beim Speichern erhalten
   /// (siehe `unbekannte_json_felder.dart`).
   final Map<String, Object?> unbekannteFelder;
@@ -303,6 +314,7 @@ class HeroCompanion {
     'startAup',
     'startAsp',
     'startMr',
+    'reittierAusbildung',
   };
 
   HeroCompanion copyWith({
@@ -350,6 +362,7 @@ class HeroCompanion {
     Object? startAup = _keepNull,
     Object? startAsp = _keepNull,
     Object? startMr = _keepNull,
+    Object? reittierAusbildung = _keepNull,
     Map<String, Object?>? unbekannteFelder,
     Map<String, Object?>? unbekannteEnumWerte,
   }) {
@@ -412,6 +425,9 @@ class HeroCompanion {
           ? this.startAsp
           : startAsp as int?,
       startMr: identical(startMr, _keepNull) ? this.startMr : startMr as int?,
+      reittierAusbildung: identical(reittierAusbildung, _keepNull)
+          ? this.reittierAusbildung
+          : reittierAusbildung as ReittierAusbildung?,
       unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
       unbekannteEnumWerte:
           unbekannteEnumWerte ??
@@ -477,6 +493,8 @@ class HeroCompanion {
         if (startAup != null) 'startAup': startAup,
         if (startAsp != null) 'startAsp': startAsp,
         if (startMr != null) 'startMr': startMr,
+        if (reittierAusbildung != null)
+          'reittierAusbildung': reittierAusbildung!.toJson(),
       }, unbekannteFelder),
       unbekannteEnumWerte,
     );
@@ -573,6 +591,9 @@ class HeroCompanion {
       startAup: (json['startAup'] as num?)?.toInt(),
       startAsp: (json['startAsp'] as num?)?.toInt(),
       startMr: (json['startMr'] as num?)?.toInt(),
+      reittierAusbildung: ReittierAusbildung.fromJsonValue(
+        json['reittierAusbildung'],
+      ),
       unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
       unbekannteEnumWerte: festeEnumWerte(enumRoh),
     );
@@ -626,6 +647,7 @@ class HeroCompanion {
           startAup == other.startAup &&
           startAsp == other.startAsp &&
           startMr == other.startMr &&
+          reittierAusbildung == other.reittierAusbildung &&
           unbekannteFelderGleich(unbekannteFelder, other.unbekannteFelder) &&
           unbekannteFelderGleich(
             unbekannteEnumWerte,
@@ -678,6 +700,7 @@ class HeroCompanion {
     startAup,
     startAsp,
     startMr,
+    reittierAusbildung,
     unbekannteFelderHash(unbekannteFelder),
     unbekannteFelderHash(unbekannteEnumWerte),
   ]);
