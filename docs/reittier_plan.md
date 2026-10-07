@@ -55,6 +55,27 @@ für Stufe und Art in `lib/domain/hero_companion/reittier_ausbildungsstufe.dart`
 prüft; geladen wird er nicht. Gespeicherte Helden verweisen nur über die IDs
 `pvar_…`, `psf_…` und `punart_…`. Texte sind kurze eigene Zusammenfassungen.
 
+## Regeln und Wirkwerte
+
+- `lib/rules/derived/reittier_ausbildung_rules.dart`: aktuelle Stufe und Art,
+  Herleitung und Summe der Ausbildungsmodifikationen, nächste Schritte mit
+  Sperrgrund und Hinweisen, Reiten-Modifikator (normal/Kampf, ländlich,
+  Kampfpferd, Magierpferd), Lernbarkeit von Pferde-SF, Gangart- und
+  Kraftfaktor-Erkennung.
+- `lib/rules/derived/begleiter_wirkwert_rules.dart`: Wirkwerte = Grundwert +
+  Steigerung + Ausbildung. Die Ausbildung ändert KK und LO, AT aller
+  Angriffe, TP nur bei Tritten/Hufschlägen (am Namen erkannt), GS bei Trab
+  und Galopp (am Namen erkannt) sowie Trag- und Zugkraftfaktor.
+  `companionEffektivwert` bleibt ohne Ausbildung, weil die
+  Vertrauten-Steigerung darauf aufbaut.
+- `lib/rules/derived/tp_ausdruck_rules.dart`: TP-Zuschlag in „1W6+4“-Angaben.
+- `begleiterKampfprofil` zeigt die Wirkwerte und ein `ReittierProfil`
+  (Stufe, Art, Variante, Kampfpferd, Reiten normal/Kampf).
+- Ausbildung wirkt nur bei `BegleiterTyp.reittier` mit erfasster
+  Ausbildung; die Variante nur, wenn der Schritt nach „geschult“ in der App
+  gebucht wurde. AU-Modifikationen erscheinen nur als Hinweis, weil der
+  Begleiter einen einzigen AU-Wert führt.
+
 ## Regelquellen
 
 ### Reit-Sonderfertigkeiten (WdS S. 102)

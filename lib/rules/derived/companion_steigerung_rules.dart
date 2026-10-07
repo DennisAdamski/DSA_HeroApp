@@ -124,6 +124,14 @@ int? companionEffektiverPoolwert(HeroCompanion c, String key) {
   return startwert + companionSteigerung(c, key);
 }
 
+/// Wirksame AT eines Begleiterangriffs (Basis + gekaufte Steigerung).
+int? begleiterAngriffAt(HeroCompanionAttack a) =>
+    a.at == null ? null : a.at! + a.steigerungAt;
+
+/// Wirksame PA eines Begleiterangriffs; `null` heißt keine Parade möglich.
+int? begleiterAngriffPa(HeroCompanionAttack a) =>
+    a.pa == null ? null : a.pa! + a.steigerungPa;
+
 /// Effektiver RK-Wert (Basis-RK + Steigerung).
 int companionEffektiverRk(HeroCompanion c, int basisRk) =>
     basisRk + companionSteigerung(c, 'rk');
