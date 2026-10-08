@@ -19,7 +19,6 @@ import 'package:dsa_heldenverwaltung/ui2/shell/karto_modus_navigation.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_navigationsgrund.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_spielansicht.dart';
 import 'package:dsa_heldenverwaltung/ui2/widgets/karto_papier.dart';
-import 'package:dsa_heldenverwaltung/ui2/widgets/karto_seitenkopf.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
 
 part 'karto_workspace_navigation.dart';
@@ -434,10 +433,22 @@ class _KartoWorkspaceState extends ConsumerState<KartoWorkspace> {
       ],
     );
     if (breite != KartoBreite.schmal) {
-      return KartoSeitenkopf(
-        titel: 'Nächste Schritte',
-        kontext: entwurf,
-        aktion: aktionen,
+      return Padding(
+        padding: const EdgeInsets.only(bottom: Abstand.normal),
+        child: Wrap(
+          alignment: WrapAlignment.spaceBetween,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          spacing: Abstand.normal,
+          runSpacing: Abstand.normal,
+          children: [
+            Text(
+              entwurf,
+              style: Theme.of(context).textTheme.labelMedium
+                  ?.copyWith(color: context.karto.schriftLeise),
+            ),
+            aktionen,
+          ],
+        ),
       );
     }
     return Padding(

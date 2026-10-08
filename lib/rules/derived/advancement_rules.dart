@@ -13,6 +13,7 @@ import 'package:dsa_heldenverwaltung/domain/talent_special_ability.dart';
 import 'advancement_options.dart';
 import 'advancement_attribute_rules.dart';
 import 'requirement_evaluation_rules.dart';
+import 'advancement_specialization_rules.dart';
 
 export 'advancement_options.dart';
 part 'advancement_apply.dart';
@@ -106,6 +107,19 @@ void _validateEntry(
   }
   if (entry.seSpent < 0 || entry.seSpent > option.seAvailable) {
     throw StateError('Nicht genügend Sondererfahrungen.');
+  }
+  if (option.isTalentSpecialization) {
+    if (entry.options['specialization']?.trim().isNotEmpty != true) {
+      throw StateError('Bitte einen Namen für die Spezialisierung angeben.');
+    }
+    if (entry.seSpent != 0 ||
+        entry.fromValue != null ||
+        entry.toValue != null) {
+      throw StateError(
+        'Spezialisierungen verändern weder TaW noch Sondererfahrungen.',
+      );
+    }
+    return;
   }
   if (option.isValueAdvancement) {
     if (entry.fromValue != option.currentValue) {

@@ -123,6 +123,184 @@ HeroAdvancementEntry _entry(
 );
 
 void main() {
+  test('Spezialisierungskosten staffeln sich und berücksichtigen Begabung', () {
+    final hero = _base.copyWith(
+      talents: {
+        'climb': const HeroTalentEntry(
+          talentValue: 21,
+          gifted: true,
+          specializations: 'Felsen',
+        ),
+      },
+    );
+    final option = resolveAdvancementOption(
+      hero: hero,
+      catalog: _catalog,
+      kind: AdvancementKind.talent,
+      targetId: 'climb',
+      options: {'action': 'specialization', 'specialization': 'Eis'},
+    )!;
+    expect(option.apCost, 40);
+    expect(option.isValueAdvancement, isFalse);
+    expect(option.unavailableReason, isNull);
+  });
+
+  test('Kampfspezialisierung prüft Waffenkategorie und erhält AT und PA', () {
+    const catalog = RulesCatalog(
+      version: 'test',
+      source: 'test',
+      weapons: [],
+      spells: [],
+      talents: [
+        TalentDef(
+          id: 'sword',
+          name: 'Schwerter',
+          group: 'Kampftalent',
+          steigerung: 'E',
+          attributes: [],
+          type: 'nahkampf',
+          weaponCategory: 'Schwert, Säbel',
+        ),
+      ],
+    );
+    final base = _base.copyWith(
+      talents: {
+        'sword': const HeroTalentEntry(
+          talentValue: 7,
+          atValue: 4,
+          paValue: 3,
+          specialExperiences: 2,
+          unbekannteFelder: {'future': true},
+        ),
+      },
+    );
+    HeroAdvancementEntry spec(String name) => _entry(
+      'spec',
+      AdvancementKind.talent,
+      'sword',
+      cost: 100,
+      options: {'action': 'specialization', 'specialization': name},
+    );
+    final replay = replayAdvancements(
+      base: base,
+      entries: [spec('Schwert')],
+      catalog: catalog,
+    );
+    expect(replay.errors, isEmpty);
+    final entry = replay.hero.talents['sword']!;
+    expect(entry.atValue, 4);
+    expect(entry.paValue, 3);
+    expect(entry.specialExperiences, 2);
+    expect(entry.specializations, 'Schwert');
+    expect(entry.unbekannteFelder, {'future': true});
+    final invalid = replayAdvancements(
+      base: base,
+      entries: [spec('Axt')],
+      catalog: catalog,
+    );
+    expect(invalid.errors.values.single, contains('Waffenkategorie'));
+    final duplicate = replayAdvancements(
+      base: base,
+      entries: [
+        spec('Schwert'),
+        _entry(
+          'again',
+          AdvancementKind.talent,
+          'sword',
+          cost: 100,
+          options: {'action': 'specialization', 'specialization': 'Schwert'},
+        ),
+      ],
+      catalog: catalog,
+    );
+    expect(duplicate.errors, contains('again'));
+    expect(duplicate.apReserved, 100);
+  });
+
+  test(
+    'Spezialisierung folgt Steigerung, reserviert AP und erhält Talentfelder',
+    () {
+      final raise = _entry(
+        'raise',
+        AdvancementKind.talent,
+        'climb',
+        from: 3,
+        to: 14,
+        cost: 100,
+      );
+      final spec = _entry(
+        'spec',
+        AdvancementKind.talent,
+        'climb',
+        cost: 80,
+        options: {'action': 'specialization', 'specialization': 'Eis'},
+      );
+      final replay = replayAdvancements(
+        base: _base,
+        entries: [raise, spec],
+        catalog: _catalog,
+      );
+      expect(replay.errors, isEmpty);
+      expect(replay.apReserved, 180);
+      expect(replay.hero.talents['climb']!.combatSpecializations, [
+        'Felsen',
+        'Eis',
+      ]);
+      expect(replay.hero.talents['climb']!.talentValue, 14);
+      expect(replay.hero.talents['climb']!.specialExperiences, 1);
+      expect(replay.hero.talents['climb']!.modifier, 2);
+      expect(_base.talents['climb']!.specializations, 'Felsen');
+      final committed = commitAdvancements(
+        base: _base,
+        entries: [raise, spec],
+        catalog: _catalog,
+      );
+      final restored = HeroSheet.fromJson(committed.toJson());
+      expect(restored.talents['climb']!.combatSpecializations, [
+        'Felsen',
+        'Eis',
+      ]);
+      expect(restored.advancementHistory.last.options['specialization'], 'Eis');
+      final withoutRaise = replayAdvancements(
+        base: _base,
+        entries: [spec],
+        catalog: _catalog,
+      );
+      expect(withoutRaise.errors['spec'], contains('TaW 14'));
+      expect(withoutRaise.apReserved, 0);
+    },
+  );
+
+  test(
+    'Spezialisierungen weisen Duplikate und leere Namen ohne AP-Abzug ab',
+    () {
+      final base = _base.copyWith(
+        talents: {
+          'climb': const HeroTalentEntry(
+            talentValue: 21,
+            specializations: 'Felsen',
+          ),
+        },
+      );
+      for (final name in [' felsen ', '', 'Eis, Schnee']) {
+        final entry = _entry(
+          'invalid',
+          AdvancementKind.talent,
+          'climb',
+          cost: 80,
+          options: {'action': 'specialization', 'specialization': name},
+        );
+        final replay = replayAdvancements(
+          base: base,
+          entries: [entry],
+          catalog: _catalog,
+        );
+        expect(replay.errors, isNotEmpty);
+        expect(replay.apReserved, 0);
+      }
+    },
+  );
+
   test('replay reserves AP and consumes SE without appending history', () {
     final entry = _entry(
       'one',
