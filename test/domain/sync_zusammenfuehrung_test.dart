@@ -408,7 +408,7 @@ void main() {
     test('fehlt ein Wert („voll“) auf einer Seite, gilt kein Zähler', () {
       Map<String, Map<String, dynamic>> mit(Map<String, dynamic>? mira) => {
         'rondo': {'currentLep': 3},
-        if (mira != null) 'mira': mira,
+        'mira': ?mira,
       };
       final ergebnis = _fuehre(
         stand(mit({'currentLep': 10})),

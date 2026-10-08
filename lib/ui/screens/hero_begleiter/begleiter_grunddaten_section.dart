@@ -118,6 +118,8 @@ class _EmptyBegleiterHint extends StatelessWidget {
 
 class _BegleiterDetailView extends StatelessWidget {
   const _BegleiterDetailView({
+    required this.heroId,
+    required this.sofort,
     required this.companion,
     required this.isEditing,
     required this.canRaise,
@@ -137,6 +139,10 @@ class _BegleiterDetailView extends StatelessWidget {
     this.vertrautenAktionen,
   });
 
+  final String heroId;
+
+  /// Sofortbuchungen am Bogen sind frei (keine ungespeicherten Änderungen).
+  final bool sofort;
   final HeroCompanion companion;
   final bool isEditing;
   final bool canRaise;
@@ -218,7 +224,18 @@ class _BegleiterDetailView extends StatelessWidget {
                   onRaisePool: onRaisePool,
                   onRaiseGs: onRaiseGs,
                 ),
+                const SizedBox(height: _sectionSpacing),
+                _BegleiterLaufwerteSection(
+                  heroId: heroId,
+                  companionId: companion.id,
+                ),
                 if (companion.typ == BegleiterTyp.vertrauter) ...[
+                  const SizedBox(height: _sectionSpacing),
+                  _VertrautenSpielSection(
+                    heroId: heroId,
+                    companionId: companion.id,
+                    sofort: sofort,
+                  ),
                   const SizedBox(height: _sectionSpacing),
                   _VertrautenBindungSection(
                     companion: companion,
