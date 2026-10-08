@@ -27,10 +27,10 @@ class _KampfWerteSection extends StatelessWidget {
     // Im View-Modus wirksame Werte anzeigen (Basis + Steigerung + Ausbildung).
     final iniView = isEditing
         ? companion.ini
-        : companionEffektivwert(companion, 'ini') ?? companion.ini;
+        : begleiterWirksamerWert(companion, 'ini') ?? companion.ini;
     final mrView = isEditing
         ? companion.magieresistenz
-        : companionEffektiverPoolwert(companion, 'mr') ??
+        : begleiterWirksamerPoolwert(companion, 'mr') ??
               companion.magieresistenz;
     final loyView = isEditing
         ? companion.loyalitaet
@@ -350,13 +350,13 @@ class _LepSection extends StatelessWidget {
     // Im View-Modus effektive Pool-Werte anzeigen.
     final lepView = isEditing
         ? companion.maxLep
-        : companionEffektiverPoolwert(companion, 'lep') ?? companion.maxLep;
+        : begleiterWirksamerPoolwert(companion, 'lep') ?? companion.maxLep;
     final aupView = isEditing
         ? companion.maxAup
-        : companionEffektiverPoolwert(companion, 'aup') ?? companion.maxAup;
+        : begleiterWirksamerPoolwert(companion, 'aup') ?? companion.maxAup;
     final aspView = isEditing
         ? companion.maxAsp
-        : companionEffektiverPoolwert(companion, 'asp') ?? companion.maxAsp;
+        : begleiterWirksamerPoolwert(companion, 'asp') ?? companion.maxAsp;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
