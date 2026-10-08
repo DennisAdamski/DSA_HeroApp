@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/rules/derived/rest_outcome_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/rest_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/vertrauten_spiel_rules.dart';
 import 'package:dsa_heldenverwaltung/state/ablauf_providers.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
@@ -12,6 +13,7 @@ import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/config/ui_spacing.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/workspace/rest_vertraute_section.dart';
 import 'package:dsa_heldenverwaltung/ui/theme/codex_theme.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/karto_variante.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
@@ -92,6 +94,11 @@ class _RestPanelState extends ConsumerState<RestPanel> {
 
   /// Äußere Umstände der Regeneration.
   RestEnvironmentInput _environment = const RestEnvironmentInput();
+
+  /// Auswahl der Vertrauten für die Regeneration: kein Eintrag heißt Standard
+  /// (regeneriert ohne Körperkontakt), `null` heißt abgewählt.
+  final Map<String, VertrautenRast?> _vertrautenWahl =
+      <String, VertrautenRast?>{};
 
   /// Sperrt beide Aktionen, solange ein Speichervorgang laeuft.
   bool _schreibt = false;
@@ -206,6 +213,15 @@ class _RestPanelState extends ConsumerState<RestPanel> {
         if (regenerationPhases > 0) ...[
           const SizedBox(height: 12),
           _buildRegenerationSection(context, computed, abilities),
+          if (restVertraute(hero.companions).isNotEmpty) ...[
+            const SizedBox(height: 12),
+            RestVertrauteSection(
+              vertraute: restVertraute(hero.companions),
+              wahl: _vertrautenWahl,
+              phasen: regenerationPhases,
+              onChanged: (id, neu) => setState(() => _vertrautenWahl[id] = neu),
+            ),
+          ],
         ],
         const SizedBox(height: 16),
         Align(
@@ -579,6 +595,12 @@ class _RestPanelState extends ConsumerState<RestPanel> {
   ) {
     final eingabe = _eingabe(computed, abilities);
     final manuelleWuerfe = _manuelleWuerfe;
+    final vertrautenRast = eingabe.regenerationPhases > 0
+        ? restVertrautenAngaben(
+            restVertraute(computed.hero.companions),
+            _vertrautenWahl,
+          )
+        : const <VertrautenRast>[];
     return _schreibe(
       () => ref
           .read(rastAbschliessenProvider)
@@ -586,6 +608,7 @@ class _RestPanelState extends ConsumerState<RestPanel> {
             heroId: widget.heroId,
             eingabe: eingabe,
             manuelleWuerfe: manuelleWuerfe,
+            vertrautenRast: vertrautenRast,
           ),
     );
   }
