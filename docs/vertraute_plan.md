@@ -27,10 +27,20 @@ Belege kommen aus dem dsa-rules MCP. Vorbild ist das Reittier-Paket
   Hexe, ebenso „AP übertragen“. Je volle 50 übertragene AP steigt die
   Loyalität um 1, höchstens auf 25. Bestandsvertraute lassen sich „ohne
   Buchung“ als gebunden erfassen.
-- **Machtvoller Vertrauter: freie Werte.** WdZ S. 124 (geistige Werte bis +40,
-  einzelne Werte bis 1,5 × Maximum) widerspricht WdH S. 255 (Maximum +3).
-  Die App prüft deshalb bei Machtvollen weder Maxima noch Punkterahmen und
-  rechnet nur die Kosten.
+- **Machtvoller Vertrauter: Vorlage + freie Werte.** WdZ S. 124 (geistige
+  Werte bis +40, einzelne Werte bis 1,5 × Maximum) widerspricht WdH S. 255
+  (Maximum +3). Ein Machtvoller ist meist eine größere Art außerhalb des
+  Katalogs, etwa ein Luchs oder eine Boronsotter.
+  - Eine Katalogart dient als verwandte Vorlage. Name und alle Startwerte
+    sind frei, auch nach unten: Eigenschaften, LeP/AsP/AuP, INI, MR, RS,
+    Angriffe (AT/PA/TP) und Geschwindigkeiten.
+  - Kosten: 120 AP + 2 AP je Punkt über der Vorlage bei geistigen
+    Eigenschaften (MU, KL, IN, CH), AE und MR + 5 AP je Punkt über dem
+    Maximum einer geistigen Eigenschaft. Körperliche Eigenschaften und
+    Kampfwerte passt der Meister ohne Kosten an (WdZ S. 124).
+  - Maxima und Punkterahmen prüft die App nicht.
+  - Für die Vertrautenzauber zählt die Vorlage: Ein Chamäleon mit Vorlage
+    Kröte darf Krötenzauber lernen, ein Luchs mit Vorlage Katze nicht.
 - **Tierfertigkeiten:** WdZ nennt „10–50 AP je nach Komplexität“. Die App
   schlägt 10 + 5 × Abrichten-Erschwernis vor (Komm 10, Sitz 10, Laut 15,
   Apport 25, Trick 45), änderbar zwischen 10 und 50.
@@ -115,6 +125,10 @@ Aktionen liegen in `hero_begleiter/vertrauten_steigerung_aktionen.dart`.
     AuP je 2 AP.
   - `vertrautenGenerierungsFehler` prüft 20 Punkte, die Tabellenmaxima und
     +3 je Zusatzwert; bei Machtvollen nur auf negative Werte.
+  - Machtvolle setzen über `VertrautenGenerierung.werte`, `angriffe`,
+    `geschwindigkeiten` und `artName` freie Startwerte. Die Kosten laufen
+    über `kVertrautenGeistigeKeys` gegen `vertrautenVorlagenwert`. Das
+    Formular dafür steht in `hero_begleiter/vertrauten_machtvoll_form.dart`.
   - `bucheVertrautenBindung` setzt die Startwerte: Eigenschaften, INI, MR,
     LeP/AsP/AuP samt `start*`, LO 15, Angriffe in DK H, Geschwindigkeiten,
     natürlichen RS sowie die Vertrautenmagie mit RK 3, Zwiegespräch und

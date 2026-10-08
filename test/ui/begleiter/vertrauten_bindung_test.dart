@@ -181,6 +181,43 @@ void main() {
     );
   });
 
+  testWidgets('Machtvoller Vertrauter: Vorlage, eigener Name, freie Werte', (
+    tester,
+  ) async {
+    final (repo, _) = await pumpTab(tester, mira);
+
+    await tippe(tester, 'vertrauten-binden');
+    await tester.tap(find.text('Machtvoller Vertrauter'));
+    await _pumpOhneUeberlauf(tester);
+    await tester.enterText(
+      find.byKey(const ValueKey<String>('vertrauten-machtvoll-name')),
+      'Luchs',
+    );
+    for (var i = 0; i < 6; i++) {
+      final kk = find.byTooltip('KK (Vorlage 2) erhöhen');
+      await tester.ensureVisible(kk);
+      await tester.tap(kk);
+      await tester.pump();
+    }
+    for (var i = 0; i < 2; i++) {
+      final kl = find.byTooltip('KL · AP (Vorlage 4) erhöhen');
+      await tester.ensureVisible(kl);
+      await tester.tap(kl);
+      await tester.pump();
+    }
+    // 120 AP + 2 Punkte KL über der Vorlage; KK ist frei.
+    expect(find.text('Binden (124 AP)'), findsOneWidget);
+    await tippe(tester, 'vertrauten-bindung-bestaetigen');
+
+    final stand = (await repo.loadHeroById('demo'))!;
+    final v = stand.companions.single;
+    expect(stand.apSpent, 624);
+    expect(v.gattung, 'Luchs');
+    expect((v.kl, v.kk), (6, 8));
+    expect(v.vertrautenBindung!.machtvoll, isTrue);
+    expect(v.vertrautenBindung!.artId, 'vart_katze');
+  });
+
   testWidgets('Bestandsvertraute werden ohne Buchung erfasst', (tester) async {
     final (repo, _) = await pumpTab(
       tester,

@@ -61,6 +61,7 @@ part 'hero_begleiter/begleiter_ausbildung_aktionen.dart';
 part 'hero_begleiter/vertrauten_steigerung_aktionen.dart';
 part 'hero_begleiter/vertrauten_bindung_section.dart';
 part 'hero_begleiter/vertrauten_bindung_dialoge.dart';
+part 'hero_begleiter/vertrauten_machtvoll_form.dart';
 part 'hero_begleiter/vertrauten_bindung_aktionen.dart';
 
 /// Begleiter-Tab mit Auswahl- und Detailansicht fuer Vertraute/Begleiter.

@@ -1,7 +1,10 @@
 // Bindung eines Vertrauten an seine Hexe (WdZ S. 123 f.).
 //
 // Die Generierung legt Startwerte aus der Tierart fest und rechnet die
-// Bindungskosten, die die Hexe als ausgegebene AP zahlt. Bestandsvertraute
+// Bindungskosten, die die Hexe als ausgegebene AP zahlt. Ein Machtvoller
+// Vertrauter nimmt eine Katalogart nur als Vorlage (verwandte Art, WdH
+// S. 255); seine Werte sind frei (Nutzerentscheidung 8. Oktober 2026).
+// Kosten tragen nur geistige Werte, AE und MR (WdZ S. 124). Bestandsvertraute
 // lassen sich ohne Buchung als gebunden erfassen; ihre Werte bleiben dann
 // unverändert. Beides schreibt in einer Änderung auf den frisch geladenen
 // Helden (ARCH-05).
@@ -25,9 +28,14 @@ class VertrautenGenerierung {
     this.zusatzAsp = 0,
     this.zusatzLep = 0,
     this.zusatzAup = 0,
+    this.artName = '',
+    this.werte = const <String, int>{},
+    this.angriffe,
+    this.geschwindigkeiten,
   });
 
-  /// Vertrautenart (`vart_…`).
+  /// Vertrautenart (`vart_…`); beim Machtvollen die verwandte Vorlage, die
+  /// auch über die Vertrautenzauber entscheidet.
   final String artId;
 
   /// Machtvoller Vertrauter: Bindung 120 AP, freie Werte.
@@ -45,9 +53,77 @@ class VertrautenGenerierung {
   /// Zusätzliche AuP über dem Tabellenwert.
   final int zusatzAup;
 
+  /// Nur Machtvoll: eigener Artname (z. B. „Luchs“); leer heißt Vorlagename.
+  final String artName;
+
+  /// Nur Machtvoll: frei gesetzte Startwerte je Schlüssel
+  /// ([kVertrautenFreieWertKeys]); fehlende kommen aus der Vorlage.
+  final Map<String, int> werte;
+
+  /// Nur Machtvoll: angepasste Angriffe; `null` übernimmt die Vorlage.
+  final List<VertrautenAngriffDef>? angriffe;
+
+  /// Nur Machtvoll: angepasste Geschwindigkeiten; `null` übernimmt die
+  /// Vorlage.
+  final List<VertrautenTempoDef>? geschwindigkeiten;
+
   /// Summe der verteilten Eigenschaftspunkte.
   int get punkteSumme =>
       punkte.values.fold(0, (summe, wert) => summe + (wert > 0 ? wert : 0));
+}
+
+/// Schlüssel der Startwerte, die ein Machtvoller frei setzen kann.
+const List<String> kVertrautenFreieWertKeys = <String>[
+  ...kVertrautenEigenschaftKeys,
+  'lep',
+  'asp',
+  'aup',
+  'ini',
+  'mr',
+  'rs',
+];
+
+/// Geistige Werte, die beim Machtvollen Kosten tragen (WdZ S. 124: geistige
+/// Eigenschaften, auch AE und MR).
+const List<String> kVertrautenGeistigeKeys = <String>[
+  'mu',
+  'kl',
+  'inn',
+  'ch',
+  'asp',
+  'mr',
+];
+
+/// Wert der Vorlage [art] zum Schlüssel [key] (Eigenschaften: Startwert).
+int vertrautenVorlagenwert(VertrautenArtDef art, String key) => switch (key) {
+  'lep' => art.lep,
+  'asp' => art.asp,
+  'aup' => art.aup,
+  'ini' => art.iniBasis,
+  'mr' => art.mr,
+  'rs' => art.rs,
+  _ => art.eigenschaften[key]?.start ?? 0,
+};
+
+/// Startwert zum Schlüssel [key] nach der Generierung [g] auf Basis von [art].
+///
+/// Gewöhnliche Vertraute: Vorlage + verteilte bzw. zusätzliche Punkte.
+/// Machtvolle: ein frei gesetzter Wert geht vor.
+int vertrautenStartwert(
+  VertrautenGenerierung g,
+  VertrautenArtDef art,
+  String key,
+) {
+  final frei = g.machtvoll ? g.werte[key] : null;
+  if (frei != null) return frei;
+  return vertrautenVorlagenwert(art, key) +
+      switch (key) {
+        'lep' => g.zusatzLep,
+        'asp' => g.zusatzAsp,
+        'aup' => g.zusatzAup,
+        'ini' || 'mr' || 'rs' => 0,
+        _ => g.punkte[key] ?? 0,
+      };
 }
 
 /// Einzelposten der Bindungskosten, in Anzeigereihenfolge.
@@ -63,7 +139,8 @@ class VertrautenBindungskosten {
   /// Grundkosten der Art bzw. 120 AP für Machtvolle.
   final int grundkosten;
 
-  /// 2 AP je verteiltem Eigenschaftspunkt.
+  /// 2 AP je verteiltem Eigenschaftspunkt; beim Machtvollen je Punkt über
+  /// der Vorlage bei geistigen Werten, AE und MR.
   final int punkte;
 
   /// 5 AP je Punkt über dem Tabellenmaximum (nur Machtvolle).
@@ -81,24 +158,43 @@ class VertrautenBindungskosten {
 /// Unbekannte Arten kosten als Machtvoller 120 AP, sonst 80 AP.
 VertrautenBindungskosten vertrautenBindungskosten(VertrautenGenerierung g) {
   final art = vertrautenArt(g.artId);
-  var ueberMaximum = 0;
   if (g.machtvoll && art != null) {
-    for (final eintrag in g.punkte.entries) {
-      final spanne = art.eigenschaften[eintrag.key];
-      if (spanne == null) continue;
-      final wert = spanne.start + eintrag.value;
-      if (wert > spanne.max) ueberMaximum += wert - spanne.max;
-    }
+    return _machtvolleBindungskosten(g, art);
   }
   return VertrautenBindungskosten(
     grundkosten: g.machtvoll
         ? kVertrautenBindungskostenMachtvoll
         : art?.bindungskosten ?? 80,
     punkte: g.punkteSumme * kVertrautenApJeGenerierungspunkt,
-    ueberMaximum: ueberMaximum * kVertrautenApJePunktUeberMaximum,
+    ueberMaximum: 0,
     zusatzpunkte:
         (g.zusatzAsp + g.zusatzLep) * kVertrautenApJeZusatzAspLep +
         g.zusatzAup * kVertrautenApJeZusatzAup,
+  );
+}
+
+// Machtvoller Vertrauter: 120 AP, 2 AP je Punkt über der Vorlage bei
+// geistigen Eigenschaften, AE und MR, 5 AP je Punkt über dem Maximum einer
+// geistigen Eigenschaft. Körperliche Eigenschaften und Kampfwerte passt der
+// Meister ohne Kosten an das größere Tier an (WdZ S. 124).
+VertrautenBindungskosten _machtvolleBindungskosten(
+  VertrautenGenerierung g,
+  VertrautenArtDef art,
+) {
+  var punkte = 0;
+  var ueberMaximum = 0;
+  for (final key in kVertrautenGeistigeKeys) {
+    final wert = vertrautenStartwert(g, art, key);
+    final vorlage = vertrautenVorlagenwert(art, key);
+    if (wert > vorlage) punkte += wert - vorlage;
+    final max = art.eigenschaften[key]?.max;
+    if (max != null && wert > max) ueberMaximum += wert - max;
+  }
+  return VertrautenBindungskosten(
+    grundkosten: kVertrautenBindungskostenMachtvoll,
+    punkte: punkte * kVertrautenApJeGenerierungspunkt,
+    ueberMaximum: ueberMaximum * kVertrautenApJePunktUeberMaximum,
+    zusatzpunkte: 0,
   );
 }
 
@@ -119,7 +215,12 @@ List<String> vertrautenGenerierungsFehler(VertrautenGenerierung g) {
       g.zusatzLep < 0 ||
       g.zusatzAup < 0;
   if (negativ) fehler.add('Punkte dürfen nicht negativ sein.');
-  if (g.machtvoll) return fehler;
+  if (g.machtvoll) {
+    if (g.werte.values.any((w) => w < 0)) {
+      fehler.add('Werte dürfen nicht negativ sein.');
+    }
+    return fehler;
+  }
   if (g.punkteSumme > kVertrautenGenerierungspunkte) {
     fehler.add(
       'Höchstens $kVertrautenGenerierungspunkte Punkte verteilen '
@@ -151,8 +252,8 @@ List<String> vertrautenGenerierungsFehler(VertrautenGenerierung g) {
 ///
 /// Setzt Eigenschaften, INI, MR, LeP/AsP/AuP samt Startwerten, Loyalität 15,
 /// Angriffe (DK H), Geschwindigkeiten, natürlichen Rüstungsschutz und die
-/// Vertrautenmagie mit RK 3 und den Zaubern, die mit der Bindung kommen.
-/// Gekaufte Steigerungen bleiben stehen.
+/// Vertrautenmagie mit RK 3 und den Zaubern, die mit der Bindung der
+/// (Vorlagen-)Art kommen. Gekaufte Steigerungen bleiben stehen.
 HeroCompanion vertrautenMitStartwerten(
   HeroCompanion c,
   VertrautenGenerierung g, {
@@ -162,12 +263,23 @@ HeroCompanion vertrautenMitStartwerten(
   if (art == null) {
     throw StateError('Unbekannte Vertrautenart.');
   }
-  int wert(String key) => art.eigenschaften[key]!.start + (g.punkte[key] ?? 0);
-  final lep = art.lep + g.zusatzLep;
-  final asp = art.asp + g.zusatzAsp;
-  final aup = art.aup + g.zusatzAup;
+  int wert(String key) => vertrautenStartwert(g, art, key);
+  final lep = wert('lep');
+  final asp = wert('asp');
+  final aup = wert('aup');
+  final mr = wert('mr');
+  final rs = wert('rs');
+  final angriffe = g.machtvoll ? g.angriffe ?? art.angriffe : art.angriffe;
+  final tempi = g.machtvoll
+      ? g.geschwindigkeiten ?? art.geschwindigkeiten
+      : art.geschwindigkeiten;
+  final name = g.machtvoll ? g.artName.trim() : '';
   return c.copyWith(
-    gattung: c.gattung.trim().isEmpty ? art.name : c.gattung,
+    gattung: name.isNotEmpty
+        ? name
+        : c.gattung.trim().isEmpty
+        ? art.name
+        : c.gattung,
     mu: wert('mu'),
     kl: wert('kl'),
     inn: wert('inn'),
@@ -176,9 +288,9 @@ HeroCompanion vertrautenMitStartwerten(
     ge: wert('ge'),
     ko: wert('ko'),
     kk: wert('kk'),
-    ini: art.iniBasis,
-    magieresistenz: art.mr,
-    startMr: art.mr,
+    ini: wert('ini'),
+    magieresistenz: mr,
+    startMr: mr,
     loyalitaet: kVertrautenStartLoyalitaet,
     maxLep: lep,
     startLep: lep,
@@ -187,27 +299,27 @@ HeroCompanion vertrautenMitStartwerten(
     maxAup: aup,
     startAup: aup,
     angriffe: <HeroCompanionAttack>[
-      for (var i = 0; i < art.angriffe.length; i++)
+      for (var i = 0; i < angriffe.length; i++)
         HeroCompanionAttack(
           id: '${c.id}-${art.id}-angriff-$i',
-          name: art.angriffe[i].name,
+          name: angriffe[i].name,
           dk: 'H',
-          at: art.angriffe[i].at,
-          pa: art.angriffe[i].pa,
-          tp: art.angriffe[i].tp,
+          at: angriffe[i].at,
+          pa: angriffe[i].pa,
+          tp: angriffe[i].tp,
         ),
     ],
     geschwindigkeiten: <HeroCompanionSpeed>[
-      for (final tempo in art.geschwindigkeiten)
+      for (final tempo in tempi)
         HeroCompanionSpeed(art: tempo.art, wert: tempo.wert),
     ],
-    ruestungsTeile: c.ruestungsTeile.isEmpty && art.rs > 0
+    ruestungsTeile: c.ruestungsTeile.isEmpty && rs > 0
         ? <ArmorPiece>[
             ArmorPiece(
               id: '${c.id}-natuerlicher-schutz',
               name: 'Natürlicher Schutz',
               isActive: true,
-              rs: art.rs,
+              rs: rs,
             ),
           ]
         : null,
