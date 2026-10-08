@@ -151,6 +151,15 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   Ausbildungskatalog als Dart-Konstanten (`reittier_ausbildung_katalog.dart`,
   `pferde_sf_katalog.dart`) mit JSON-Spiegel. Schritte und Pferde-SF bucht der
   Begleiter-Tab sofort über `aendereHeldMitMeldung`.
+- **Vertraute** (WdZ S. 123–128) haben einen Artenkatalog
+  (`vertrauten_katalog.dart`, JSON-Spiegel) und eine Bindung
+  `HeroCompanion.vertrautenBindung`. Bindung und AP-Übertragung zählen als
+  ausgegebene AP der Hexe; ¼ der Abenteuer-AP läuft automatisch über
+  Abenteuerabschluss und Reisebericht (`mitVertrautenApAnteil`). Die
+  Steigerung folgt strikt WdZ S. 125: INI, LO und AuP sind gesperrt, die
+  Grenze ist 1,5 × Startwert, Altbuchungen bekommen nur einen Hinweis.
+  Plan, Belege und Entscheidungen stehen in
+  [docs/vertraute_plan.md](docs/vertraute_plan.md) (V1 fertig, V2/V3 offen).
 - [Redesign umsetzen](docs/redesign_implementation.md) enthält drei aufeinander
   aufbauende Agentenpläne, Startprompts und die gemeinsame Umsetzungsspezifikation
   unter `docs/superpowers/`. Ausgangspunkt ist das vorhandene UI2-Fundament;

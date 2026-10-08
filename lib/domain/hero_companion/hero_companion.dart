@@ -9,6 +9,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_companion/hero_companion_attack
 import 'package:dsa_heldenverwaltung/domain/hero_companion/hero_companion_sonderfertigkeit.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_companion/hero_companion_speed.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_companion/reittier_ausbildung.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_companion/vertrauten_bindung.dart';
 import 'package:dsa_heldenverwaltung/domain/unbekannte_json_felder.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_rituals.dart'
     show HeroRitualCategory;
@@ -92,6 +93,8 @@ class HeroCompanion {
     this.startMr,
     // Ausbildungsstand (nur fuer Reittiere, nur wenn erfasst).
     this.reittierAusbildung,
+    // Bindung an die Hexe (nur fuer Vertraute, nur wenn erfasst).
+    this.vertrautenBindung,
     this.unbekannteFelder = const <String, Object?>{},
     this.unbekannteEnumWerte = const <String, Object?>{},
   });
@@ -231,7 +234,9 @@ class HeroCompanion {
   // ---- Steigerungen (Vertraute) ---------------------------------------------
 
   /// Gekaufte Steigerungen pro Wert-Schluessel (Komplexitaet F).
-  /// Keys: 'mu','kl','inn','ch','ff','ge','ko','kk','ini','mr','loyalitaet','lep','asp'.
+  /// Keys: 'mu','kl','inn','ch','ff','ge','ko','kk','mr','lep','asp','rk';
+  /// in Altdaten auch 'ini', 'loyalitaet' und 'aup' (nach WdZ S. 125 nicht
+  /// mehr steigerbar, bestehende Stufen zaehlen weiter).
   final Map<String, int> steigerungen;
 
   /// Startwert fuer LeP — wird einmalig festgehalten und bestimmt das
@@ -254,6 +259,14 @@ class HeroCompanion {
   /// Wird nie automatisch angelegt und nur bei Belegung geschrieben, damit
   /// Bestandsbegleiter ihren Inhalts-Hash behalten.
   final ReittierAusbildung? reittierAusbildung;
+
+  // ---- Vertrautenbindung ----------------------------------------------------
+
+  /// Bindung des Vertrauten an seine Hexe; `null`, solange keine erfasst ist.
+  ///
+  /// Nur bei Belegung geschrieben, damit Bestandsbegleiter ihren
+  /// Inhalts-Hash behalten.
+  final VertrautenBindung? vertrautenBindung;
 
   /// JSON-Felder einer neueren App-Version; bleiben beim Speichern erhalten
   /// (siehe `unbekannte_json_felder.dart`).
@@ -315,6 +328,7 @@ class HeroCompanion {
     'startAsp',
     'startMr',
     'reittierAusbildung',
+    'vertrautenBindung',
   };
 
   HeroCompanion copyWith({
@@ -363,6 +377,7 @@ class HeroCompanion {
     Object? startAsp = _keepNull,
     Object? startMr = _keepNull,
     Object? reittierAusbildung = _keepNull,
+    Object? vertrautenBindung = _keepNull,
     Map<String, Object?>? unbekannteFelder,
     Map<String, Object?>? unbekannteEnumWerte,
   }) {
@@ -428,6 +443,9 @@ class HeroCompanion {
       reittierAusbildung: identical(reittierAusbildung, _keepNull)
           ? this.reittierAusbildung
           : reittierAusbildung as ReittierAusbildung?,
+      vertrautenBindung: identical(vertrautenBindung, _keepNull)
+          ? this.vertrautenBindung
+          : vertrautenBindung as VertrautenBindung?,
       unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
       unbekannteEnumWerte:
           unbekannteEnumWerte ??
@@ -495,6 +513,8 @@ class HeroCompanion {
         if (startMr != null) 'startMr': startMr,
         if (reittierAusbildung != null)
           'reittierAusbildung': reittierAusbildung!.toJson(),
+        if (vertrautenBindung != null)
+          'vertrautenBindung': vertrautenBindung!.toJson(),
       }, unbekannteFelder),
       unbekannteEnumWerte,
     );
@@ -594,6 +614,9 @@ class HeroCompanion {
       reittierAusbildung: ReittierAusbildung.fromJsonValue(
         json['reittierAusbildung'],
       ),
+      vertrautenBindung: VertrautenBindung.fromJsonValue(
+        json['vertrautenBindung'],
+      ),
       unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
       unbekannteEnumWerte: festeEnumWerte(enumRoh),
     );
@@ -648,6 +671,7 @@ class HeroCompanion {
           startAsp == other.startAsp &&
           startMr == other.startMr &&
           reittierAusbildung == other.reittierAusbildung &&
+          vertrautenBindung == other.vertrautenBindung &&
           unbekannteFelderGleich(unbekannteFelder, other.unbekannteFelder) &&
           unbekannteFelderGleich(
             unbekannteEnumWerte,
@@ -701,6 +725,7 @@ class HeroCompanion {
     startAsp,
     startMr,
     reittierAusbildung,
+    vertrautenBindung,
     unbekannteFelderHash(unbekannteFelder),
     unbekannteFelderHash(unbekannteEnumWerte),
   ]);

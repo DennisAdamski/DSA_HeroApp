@@ -3,6 +3,7 @@ import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_reisebericht.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/vertrauten_ap_rules.dart';
 
 // ---------------------------------------------------------------------------
 // Kategorie-Definitionen
@@ -290,6 +291,21 @@ HeroSheet bucheReisebericht({
     rewards: buchung.neu,
     updatedState: zurueckgenommen.reisebericht,
   );
+}
+
+/// AP aller in [gebucht] angewendeten Belohnungen.
+///
+/// Grundlage des Vorschlags für den einmaligen AP-Nachtrag eines Vertrauten
+/// (`vertrautenNachtragsvorschlag`).
+int gebuchteReiseberichtAp({
+  required List<ReiseberichtDef> catalog,
+  required HeroReisebericht gebucht,
+}) {
+  var summe = 0;
+  for (final posten in _buchungsposten(catalog, gebucht)) {
+    if (gebucht.appliedRewardIds.contains(posten.id)) summe += posten.ap;
+  }
+  return summe;
 }
 
 // Ein buchbarer Posten: eine Belohnungs-ID, ihr Inhalt und ob ihre Bedingung
@@ -649,12 +665,14 @@ HeroSheet applyReiseberichtRewards({
     ...rewards.newAppliedIds,
   };
 
-  return hero.copyWith(
+  final ergebnis = hero.copyWith(
     apTotal: apTotal,
     talents: talents,
     attributes: attributes,
     reisebericht: updatedState.copyWith(appliedRewardIds: mergedApplied),
   );
+  // Der Vertraute erhält seinen Anteil an den Abenteuer-AP (WdZ S. 125).
+  return mitVertrautenApAnteil(ergebnis, rewards.ap);
 }
 
 /// Nimmt Belohnungen zurueck (Umkehroperation).
@@ -710,12 +728,14 @@ HeroSheet revokeReiseberichtRewards({
   final cleanedApplied = <String>{...updatedState.appliedRewardIds}
     ..removeAll(rewards.newAppliedIds);
 
-  return hero.copyWith(
+  final ergebnis = hero.copyWith(
     apTotal: apTotal,
     talents: talents,
     attributes: attributes,
     reisebericht: updatedState.copyWith(appliedRewardIds: cleanedApplied),
   );
+  // Der Vertraute erhält seinen Anteil an den Abenteuer-AP (WdZ S. 125).
+  return mitVertrautenApAnteil(ergebnis, -rewards.ap);
 }
 
 // ---------------------------------------------------------------------------

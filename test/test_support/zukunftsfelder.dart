@@ -553,7 +553,7 @@ List<String> _begleiterAbenteuerNotizen(Map<String, dynamic> basis) {
       typ: BegleiterTyp.vertrauter,
       mu: 12,
       geschwindigkeiten: <HeroCompanionSpeed>[
-        HeroCompanionSpeed(art: 'Fliegen', wert: 12),
+        HeroCompanionSpeed(art: 'Fliegen', wert: 12, steigerung: 1),
       ],
       angriffe: <HeroCompanionAttack>[
         HeroCompanionAttack(id: 'angriff-1', name: 'Schnabel', at: 10),
@@ -570,6 +570,14 @@ List<String> _begleiterAbenteuerNotizen(Map<String, dynamic> basis) {
           ownKnowledge: HeroRitualKnowledge(name: 'Vertrautenmagie'),
         ),
       ],
+      vertrautenBindung: VertrautenBindung(
+        artId: 'vart_rabe',
+        bindungskosten: 80,
+        abenteuerApErfasst: 0,
+        ausbildungen: <VertrautenAusbildungsbuchung>[
+          VertrautenAusbildungsbuchung(katalogId: 'vfert_komm', apKosten: 10),
+        ],
+      ),
     ).toJson(),
     const HeroCompanion(
       id: 'begleiter-2',
@@ -634,6 +642,8 @@ List<String> _begleiterAbenteuerNotizen(Map<String, dynamic> basis) {
     'companions/0/ruestungsTeile/0',
     'companions/0/ritualCategories/0',
     'companions/0/ritualCategories/0/ownKnowledge',
+    'companions/0/vertrautenBindung',
+    'companions/0/vertrautenBindung/ausbildungen/0',
     'companions/1',
     'companions/1/sonderfertigkeiten/0',
     'companions/1/reittierAusbildung',
