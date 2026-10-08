@@ -88,6 +88,25 @@ Gekaufte GS-Stufen trägt `HeroCompanionSpeed.steigerung`, analog zu
 `steigerungAt`/`steigerungPa` der Angriffe. Die veröffentlichte App kennt
 beide Felder nicht, deshalb führt `veroeffentlichte_app.dart` sie als neu.
 
+## Steigerung
+
+Die Regeln stehen in `lib/rules/derived/companion_steigerung_rules.dart`:
+
+- `vertrautenWertSteigerbar`: INI, Loyalität und AuP sind gesperrt.
+- `vertrautenMaxStand`: höchster Steigerungsstand, nämlich ⌊1,5 × Startwert⌋
+  − Startwert. AsP und RK sind unbegrenzt.
+- `vertrautenSteigerungshinweis(e)`: Hinweise auf Altbuchungen, die den Regeln
+  widersprechen.
+
+`steigereBegleiter` weist eine Erhöhung über die Grenze mit einem
+`StateError` ab. Diese Prüfung gilt neben der des Dialogstands. GS steigt je
+Bewegungsart über `BegleiterSteigerungsziel.geschwindigkeit(art)`; da
+Geschwindigkeiten keine ID haben, trifft das Ziel die erste mit dieser Art.
+Bestehende Stufen werden nie umgedeutet. Sie zählen weiter in allen Werten,
+und der Abschnitt „Kampf- und Bewegungswerte“ listet die Hinweise rot auf.
+Die Knöpfe zum Steigern von INI, Loyalität und AuP gibt es nicht mehr. Die
+Aktionen liegen in `hero_begleiter/vertrauten_steigerung_aktionen.dart`.
+
 ## Offene Punkte
 
 - Die GS der Kröte (0,3) ist als ganze Zahl nicht darstellbar und steht im

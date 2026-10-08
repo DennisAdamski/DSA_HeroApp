@@ -1,13 +1,19 @@
-/// Steigerungsregeln fuer Vertrautentiere.
+/// Steigerungsregeln fuer Vertrautentiere (WdZ S. 125).
 ///
-/// Alle Werte des Vertrauten werden nach Komplexitaet F gesteigert.
-/// Bei LeP, AuP, AsP und MR wird ab 0 gesteigert; das Maximum liegt bei
-/// 1,5 × Startwert.
+/// Gesteigert wird nach Komplexitaet F. Eigenschaften, AT, PA, GS und RK
+/// steigen direkt (Kosten nach dem aktuellen Wert), LeP, AsP und MR werden
+/// wie bei Helden hinzugekauft (Kosten nach der Zahl gekaufter Punkte).
+/// Kein Wert darf ueber das Anderthalbfache seines Startwerts steigen,
+/// ausgenommen AsP und RK. INI, Loyalitaet und AuP sind nicht steigerbar;
+/// in Altdaten gebuchte Stufen zaehlen weiter und bekommen nur einen Hinweis.
 library;
+
+import 'dart:math' as math;
 
 import 'package:dsa_heldenverwaltung/domain/learn/learn_complexity.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_companion/hero_companion.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_companion/hero_companion_attack.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_companion/hero_companion_speed.dart';
 
 /// Feste Komplexitaet fuer alle Vertrauten-Steigerungen.
 const LearnCost kVertrauterKomplexitaet = LearnCost.f;
@@ -16,10 +22,28 @@ const LearnCost kVertrauterKomplexitaet = LearnCost.f;
 int companionApVerfuegbar(HeroCompanion c) =>
     (c.apGesamt ?? 0) - (c.apAusgegeben ?? 0);
 
-/// Maximale Steigerungsstufe fuer Pool-Werte (LeP, AuP, AsP, MR).
-///
-/// Steigerung beginnt bei 0. Das Maximum ist `(1.5 * startwert).floor()`.
-int poolMaxSteigerung(int startwert) => (startwert * 1.5).floor();
+/// Hoechster Gesamtwert nach WdZ S. 125: das abgerundete Anderthalbfache
+/// des Startwerts.
+int vertrautenGrenze(int startwert) =>
+    startwert <= 0 ? startwert : (startwert * 3) ~/ 2;
+
+/// Hoechster Steigerungsstand ueber dem Startwert [startwert].
+int vertrautenMaxStandUeber(int startwert) =>
+    math.max(0, vertrautenGrenze(startwert) - startwert);
+
+/// Werte, die nach WdZ S. 125 nicht (mehr) steigerbar sind.
+const Set<String> kVertrautenNichtSteigerbar = <String>{
+  'ini',
+  'loyalitaet',
+  'aup',
+};
+
+/// Werte ohne Obergrenze (WdZ S. 125: AsP und RK).
+const Set<String> kVertrautenUnbegrenzt = <String>{'asp', 'rk'};
+
+/// Ob der Wert [schluessel] nach WdZ gesteigert werden darf.
+bool vertrautenWertSteigerbar(String schluessel) =>
+    !kVertrautenNichtSteigerbar.contains(schluessel);
 
 /// Maximale Steigerungsstufe fuer regulaere Werte, begrenzt durch
 /// verfuegbare AP.
@@ -49,13 +73,8 @@ const List<(String label, String key)> kCompanionEigenschaftKeys = [
   ('KK', 'kk'),
 ];
 
-/// Schluessel aller steigerbaren Companion-Kampfwerte (ohne Angriffe).
-const List<(String label, String key)> kCompanionKampfwertKeys = [
-  ('INI', 'ini'),
-  ('Loyalität', 'loyalitaet'),
-];
-
-/// Schluessel der Pool-Werte (Steigerung ab 0, Max = 1,5 × Startwert).
+/// Schluessel der hinzugekauften Werte (Steigerung ab 0 ueber dem
+/// Startwert); AuP nur noch fuer Altdaten.
 const List<(String label, String key)> kCompanionPoolKeys = [
   ('LeP', 'lep'),
   ('AuP', 'aup'),
@@ -136,6 +155,103 @@ int? begleiterAngriffPa(HeroCompanionAttack a) =>
 int companionEffektiverRk(HeroCompanion c, int basisRk) =>
     basisRk + companionSteigerung(c, 'rk');
 
+/// Wirksame GS einer Geschwindigkeit (Grundwert + gekaufte Steigerung).
+int begleiterTempo(HeroCompanionSpeed tempo) => tempo.wert + tempo.steigerung;
+
+/// Hoechster Steigerungsstand des Werts [schluessel] nach WdZ S. 125;
+/// `null` heisst unbegrenzt, 0 bei nicht steigerbaren Werten.
+///
+/// Eigenschaften beziehen sich auf ihren eingetragenen Grundwert, LeP und MR
+/// auf ihren festgehaltenen Startwert.
+int? vertrautenMaxStand(HeroCompanion c, String schluessel) {
+  if (!vertrautenWertSteigerbar(schluessel)) return 0;
+  if (kVertrautenUnbegrenzt.contains(schluessel)) return null;
+  final start = switch (schluessel) {
+    'lep' || 'mr' =>
+      companionPoolStartwert(c, schluessel) ??
+          companionPoolBasiswert(c, schluessel),
+    _ => companionBasiswert(c, schluessel),
+  };
+  if (start == null) return 0;
+  return vertrautenMaxStandUeber(start);
+}
+
+/// Hinweis, wenn ein gebuchter Stand [stand] die Regeln nach WdZ S. 125
+/// verletzt; `null`, wenn alles passt. Gebuchte Stufen bleiben immer stehen.
+String? vertrautenGrenzHinweis({
+  required int stand,
+  required int? maxStand,
+  bool steigerbar = true,
+}) {
+  if (stand <= 0) return null;
+  if (!steigerbar) {
+    return 'Nach WdZ S. 125 nicht steigerbar; die gebuchten +$stand bleiben.';
+  }
+  if (maxStand != null && stand > maxStand) {
+    return 'Über der Grenze von 1,5 × Startwert (höchstens +$maxStand); die '
+        'gebuchten +$stand bleiben.';
+  }
+  return null;
+}
+
+/// [vertrautenGrenzHinweis] für den Wert [schluessel] des Vertrauten [c].
+String? vertrautenSteigerungshinweis(HeroCompanion c, String schluessel) =>
+    vertrautenGrenzHinweis(
+      stand: companionSteigerung(c, schluessel),
+      maxStand: vertrautenMaxStand(c, schluessel),
+      steigerbar: vertrautenWertSteigerbar(schluessel),
+    );
+
+// Anzeigenamen der Steigerungsschlüssel für Hinweise.
+const Map<String, String> _hinweisLabel = <String, String>{
+  'mu': 'MU',
+  'kl': 'KL',
+  'inn': 'IN',
+  'ch': 'CH',
+  'ff': 'FF',
+  'ge': 'GE',
+  'ko': 'KO',
+  'kk': 'KK',
+  'ini': 'INI',
+  'loyalitaet': 'Loyalität',
+  'lep': 'LeP',
+  'aup': 'AuP',
+  'asp': 'AsP',
+  'mr': 'MR',
+  'rk': 'RK',
+};
+
+/// Alle Hinweise zu gebuchten Steigerungen, die WdZ S. 125 widersprechen
+/// (nur bei Vertrauten), z. B. „INI: Nach WdZ S. 125 nicht steigerbar …“.
+List<String> vertrautenSteigerungshinweise(HeroCompanion c) {
+  if (c.typ != BegleiterTyp.vertrauter) return const <String>[];
+  final hinweise = <String>[];
+  for (final eintrag in _hinweisLabel.entries) {
+    final hinweis = vertrautenSteigerungshinweis(c, eintrag.key);
+    if (hinweis != null) hinweise.add('${eintrag.value}: $hinweis');
+  }
+  for (final angriff in c.angriffe) {
+    for (final (label, basis, stand) in <(String, int?, int)>[
+      ('AT', angriff.at, angriff.steigerungAt),
+      ('PA', angriff.pa, angriff.steigerungPa),
+    ]) {
+      final hinweis = vertrautenGrenzHinweis(
+        stand: stand,
+        maxStand: basis == null ? 0 : vertrautenMaxStandUeber(basis),
+      );
+      if (hinweis != null) hinweise.add('${angriff.name} $label: $hinweis');
+    }
+  }
+  for (final tempo in c.geschwindigkeiten) {
+    final hinweis = vertrautenGrenzHinweis(
+      stand: tempo.steigerung,
+      maxStand: vertrautenMaxStandUeber(tempo.wert),
+    );
+    if (hinweis != null) hinweise.add('GS ${tempo.art}: $hinweis');
+  }
+  return hinweise;
+}
+
 /// Was eine Vertrauten-Steigerung erhöht und wo ihr Steigerungsstand steht.
 sealed class BegleiterSteigerungsziel {
   const BegleiterSteigerungsziel();
@@ -151,11 +267,18 @@ sealed class BegleiterSteigerungsziel {
     required bool parade,
   }) = BegleiterAngriffSteigerung;
 
+  /// Steigerung der Geschwindigkeit mit der Bewegungsart [art].
+  const factory BegleiterSteigerungsziel.geschwindigkeit(String art) =
+      BegleiterTempoSteigerung;
+
   /// Liest den bisher gekauften Steigerungsstand aus [c].
   int standIn(HeroCompanion c);
 
   /// Liefert [c] mit dem Steigerungsstand [stand].
   HeroCompanion mitStand(HeroCompanion c, int stand);
+
+  /// Hoechster erlaubter Stand nach WdZ S. 125; `null` heisst unbegrenzt.
+  int? maxStandIn(HeroCompanion c);
 }
 
 /// Ziel eines Werts aus `steigerungen`, siehe
@@ -169,6 +292,9 @@ final class BegleiterWertSteigerung extends BegleiterSteigerungsziel {
 
   @override
   int standIn(HeroCompanion c) => companionSteigerung(c, schluessel);
+
+  @override
+  int? maxStandIn(HeroCompanion c) => vertrautenMaxStand(c, schluessel);
 
   @override
   HeroCompanion mitStand(HeroCompanion c, int stand) {
@@ -196,6 +322,13 @@ final class BegleiterAngriffSteigerung extends BegleiterSteigerungsziel {
   }
 
   @override
+  int? maxStandIn(HeroCompanion c) {
+    final angriff = _angriff(c);
+    final basis = parade ? angriff.pa : angriff.at;
+    return basis == null ? 0 : vertrautenMaxStandUeber(basis);
+  }
+
+  @override
   HeroCompanion mitStand(HeroCompanion c, int stand) {
     _angriff(c);
     final angriffe = c.angriffe.map((angriff) {
@@ -220,13 +353,53 @@ final class BegleiterAngriffSteigerung extends BegleiterSteigerungsziel {
   }
 }
 
+/// Ziel einer Geschwindigkeit, siehe
+/// [BegleiterSteigerungsziel.geschwindigkeit].
+///
+/// Geschwindigkeiten haben keine ID; getroffen wird die erste mit der
+/// Bewegungsart [art].
+final class BegleiterTempoSteigerung extends BegleiterSteigerungsziel {
+  /// Erstellt das Ziel für die Bewegungsart [art].
+  const BegleiterTempoSteigerung(this.art);
+
+  /// Bewegungsart der Geschwindigkeit.
+  final String art;
+
+  @override
+  int standIn(HeroCompanion c) => _tempo(c).steigerung;
+
+  @override
+  int? maxStandIn(HeroCompanion c) => vertrautenMaxStandUeber(_tempo(c).wert);
+
+  @override
+  HeroCompanion mitStand(HeroCompanion c, int stand) {
+    _tempo(c);
+    var getroffen = false;
+    final tempi = c.geschwindigkeiten.map((tempo) {
+      if (getroffen || tempo.art != art) return tempo;
+      getroffen = true;
+      return tempo.copyWith(steigerung: stand);
+    }).toList();
+    return c.copyWith(geschwindigkeiten: tempi);
+  }
+
+  // Die Geschwindigkeit im Stand [c]; fehlt sie, ist nichts buchbar.
+  HeroCompanionSpeed _tempo(HeroCompanion c) {
+    for (final tempo in c.geschwindigkeiten) {
+      if (tempo.art == art) return tempo;
+    }
+    throw StateError('Die Geschwindigkeit wurde inzwischen geändert.');
+  }
+}
+
 /// Bucht eine Vertrauten-Steigerung auf den gespeicherten Begleiter
 /// (ARCH-05).
 ///
 /// Die AP-Kosten hängen vom Ausgangswert ab, den der Steigerungsdialog
 /// gezeigt hat ([erwarteterStand]). Steht im gespeicherten Begleiter ein
 /// anderer Stand, wurde er inzwischen anderswo gesteigert; dann wirft die
-/// Funktion einen [StateError], statt mit falschen Kosten zu buchen. Sonst
+/// Funktion einen [StateError], statt mit falschen Kosten zu buchen. Eine
+/// Erhöhung über die Grenze nach WdZ S. 125 weist sie ebenso ab. Sonst
 /// setzt sie [neuerStand] und addiert [apKosten] auf die ausgegebenen AP des
 /// Vertrauten.
 HeroCompanion steigereBegleiter(
@@ -241,6 +414,16 @@ HeroCompanion steigereBegleiter(
       'Der Vertraute wurde inzwischen gesteigert. Bitte die Steigerung '
       'erneut öffnen.',
     );
+  }
+  if (neuerStand > erwarteterStand) {
+    final maxStand = ziel.maxStandIn(gespeichert);
+    if (maxStand != null && neuerStand > maxStand) {
+      throw StateError(
+        maxStand == 0
+            ? 'Dieser Wert ist nach WdZ S. 125 nicht steigerbar.'
+            : 'Höchstens +$maxStand (1,5 × Startwert, WdZ S. 125).',
+      );
+    }
   }
   final gesteigert = ziel.mitStand(gespeichert, neuerStand);
   return gesteigert.copyWith(

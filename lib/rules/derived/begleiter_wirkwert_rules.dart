@@ -63,22 +63,29 @@ bool istTrittAngriff(HeroCompanionAttack a) {
   return name.contains('tritt') || name.contains('huf');
 }
 
-/// Geschwindigkeiten mit Ausbildungsmodifikationen für Trab und Galopp.
+/// Geschwindigkeiten mit gekauften Steigerungen (Vertraute) und
+/// Ausbildungsmodifikationen für Trab und Galopp.
 ///
 /// Gangarten werden am Namen erkannt; nicht erkannte Angaben bleiben
-/// unverändert.
+/// unverändert. Im Ergebnis steckt die Steigerung im Wert.
 List<HeroCompanionSpeed> begleiterWirksameGeschwindigkeiten(HeroCompanion c) {
   final mods = begleiterAusbildungsModifikationen(c);
-  if (mods.gsTrab == 0 && mods.gsGalopp == 0) {
+  final gesteigert = c.geschwindigkeiten.any((s) => s.steigerung != 0);
+  if (mods.gsTrab == 0 && mods.gsGalopp == 0 && !gesteigert) {
     return c.geschwindigkeiten;
   }
   return <HeroCompanionSpeed>[
     for (final s in c.geschwindigkeiten)
-      switch (reittierGangart(s)) {
-        ReittierGangart.trab => s.copyWith(wert: s.wert + mods.gsTrab),
-        ReittierGangart.galopp => s.copyWith(wert: s.wert + mods.gsGalopp),
-        _ => s,
-      },
+      s.copyWith(
+        wert:
+            begleiterTempo(s) +
+            switch (reittierGangart(s)) {
+              ReittierGangart.trab => mods.gsTrab,
+              ReittierGangart.galopp => mods.gsGalopp,
+              _ => 0,
+            },
+        steigerung: 0,
+      ),
   ];
 }
 
