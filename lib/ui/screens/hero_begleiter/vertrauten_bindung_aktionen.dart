@@ -21,6 +21,13 @@ extension _VertrautenBindungAktionen on _HeroBegleiterTabState {
 
   /// Bindet einen neuen Vertrauten und bucht die Kosten bei der Hexe.
   Future<void> _bindeVertrauten(HeroCompanion angezeigt) async {
+    final darfBearbeiten = await bestaetigeBearbeitungBeiPlanung(
+      context: context,
+      heroId: widget.heroId,
+    );
+    if (!darfBearbeiten || !mounted) {
+      return;
+    }
     final held = _latestHero;
     if (held == null || !_kannSofortBuchen) return;
     final hinweise = vertrautenBindungHinweise(
@@ -49,6 +56,13 @@ extension _VertrautenBindungAktionen on _HeroBegleiterTabState {
 
   /// Erfasst die Bindung eines Bestandsvertrauten ohne Buchung.
   Future<void> _erfasseVertrautenBindung(HeroCompanion angezeigt) async {
+    final darfBearbeiten = await bestaetigeBearbeitungBeiPlanung(
+      context: context,
+      heroId: widget.heroId,
+    );
+    if (!darfBearbeiten || !mounted) {
+      return;
+    }
     if (!_kannSofortBuchen) return;
     final wahl = await showAdaptiveInputDialog<(String, bool)>(
       context: context,
@@ -71,6 +85,13 @@ extension _VertrautenBindungAktionen on _HeroBegleiterTabState {
 
   /// Überträgt AP der Hexe auf den Vertrauten (WdZ S. 125).
   Future<void> _uebertrageVertrautenAp(HeroCompanion angezeigt) async {
+    final darfBearbeiten = await bestaetigeBearbeitungBeiPlanung(
+      context: context,
+      heroId: widget.heroId,
+    );
+    if (!darfBearbeiten || !mounted) {
+      return;
+    }
     final held = _latestHero;
     final bindung = angezeigt.vertrautenBindung;
     if (held == null || bindung == null || !_kannSofortBuchen) return;
@@ -103,6 +124,13 @@ extension _VertrautenBindungAktionen on _HeroBegleiterTabState {
 
   /// Richtet den AP-Anteil ein und schreibt einmalig den Nachtrag gut.
   Future<void> _richteVertrautenAnteilEin(HeroCompanion angezeigt) async {
+    final darfBearbeiten = await bestaetigeBearbeitungBeiPlanung(
+      context: context,
+      heroId: widget.heroId,
+    );
+    if (!darfBearbeiten || !mounted) {
+      return;
+    }
     final held = _latestHero;
     if (held == null || !_kannSofortBuchen) return;
     final katalog = ref.read(rulesCatalogProvider).valueOrNull;
@@ -142,6 +170,13 @@ extension _VertrautenBindungAktionen on _HeroBegleiterTabState {
 
   /// Bucht eine Ausbildungsstufe oder Fertigkeit aus den AP des Vertrauten.
   Future<void> _bucheVertrautenAusbildung(HeroCompanion angezeigt) async {
+    final darfBearbeiten = await bestaetigeBearbeitungBeiPlanung(
+      context: context,
+      heroId: widget.heroId,
+    );
+    if (!darfBearbeiten || !mounted) {
+      return;
+    }
     final bindung = angezeigt.vertrautenBindung;
     if (bindung == null || !_kannSofortBuchen) return;
     final wahl = await showAdaptiveInputDialog<_VertrautenAusbildungWahl>(
@@ -166,6 +201,13 @@ extension _VertrautenBindungAktionen on _HeroBegleiterTabState {
 
   /// Lernt einen Vertrautenzauber aus den AP des Vertrauten.
   Future<void> _lerneVertrautenZauber(HeroCompanion angezeigt) async {
+    final darfBearbeiten = await bestaetigeBearbeitungBeiPlanung(
+      context: context,
+      heroId: widget.heroId,
+    );
+    if (!darfBearbeiten || !mounted) {
+      return;
+    }
     if (!_kannSofortBuchen) return;
     final wahl = await showAdaptiveInputDialog<(String, int)>(
       context: context,
@@ -186,6 +228,13 @@ extension _VertrautenBindungAktionen on _HeroBegleiterTabState {
 
   /// Erwirbt den Aurapanzer des Vertrauten (WdZ S. 125, 125 AP, AE 20).
   Future<void> _bucheVertrautenAurapanzer(HeroCompanion angezeigt) async {
+    final darfBearbeiten = await bestaetigeBearbeitungBeiPlanung(
+      context: context,
+      heroId: widget.heroId,
+    );
+    if (!darfBearbeiten || !mounted) {
+      return;
+    }
     if (!_kannSofortBuchen) return;
     final meisterentscheid = await showAdaptiveInputDialog<bool>(
       context: context,

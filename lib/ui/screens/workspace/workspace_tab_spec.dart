@@ -18,6 +18,7 @@ import 'package:dsa_heldenverwaltung/ui/screens/hero_overview_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_reisebericht_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_talents_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/planung_bearbeiten_guard.dart';
 
 /// Stabile IDs fuer Workspace-Tabs.
 abstract final class WorkspaceTabIds {
@@ -305,7 +306,14 @@ List<WorkspaceHeaderAction> _buildTalentsHeaderActions({
 }) {
   final bePreview = ref.watch(combatPreviewProvider(heroId));
 
-  void openBeDialog() {
+  Future<void> openBeDialog() async {
+    final darfBearbeiten = await bestaetigeBearbeitungBeiPlanung(
+      context: context,
+      heroId: heroId,
+    );
+    if (!darfBearbeiten || !context.mounted) {
+      return;
+    }
     showAdaptiveDetailSheet<void>(
       context: context,
       builder: (_) => TalentBeConfigDialog(

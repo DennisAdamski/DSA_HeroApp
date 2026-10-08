@@ -16,7 +16,9 @@ import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/magic_special_ability.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/active_spell_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/advancement_rules.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
+import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
@@ -24,6 +26,16 @@ import 'package:dsa_heldenverwaltung/ui/screens/hero_magic_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 
 import '../../test_support/begabung_katalog.dart';
+
+// Simuliert eine laufende Übernahme, ohne einen Repository-Schreibvorgang.
+class _SavingSessionController extends AdvancementSessionController {
+  _SavingSessionController(this.session) : super('demo');
+
+  final AdvancementSession session;
+
+  @override
+  AdvancementSession? build() => session;
+}
 
 class _OpenedMagicTab {
   const _OpenedMagicTab({required this.repo, required this.actions});
@@ -154,6 +166,7 @@ void main() {
     WidgetTester tester, {
     FakeRepository? repo,
     RulesCatalog? catalog,
+    AdvancementSession? savingSession,
     AppSettings appSettings = const AppSettings(),
     Size size = const Size(1600, 1200),
   }) async {
@@ -180,6 +193,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          if (savingSession != null)
+            advancementSessionProvider('demo')
+                .overrideWith(() => _SavingSessionController(savingSession)),
           heroRepositoryProvider.overrideWithValue(effectiveRepo),
           rulesCatalogProvider.overrideWith((ref) async => effectiveCatalog),
           appSettingsProvider.overrideWith(
@@ -204,6 +220,64 @@ void main() {
     await _pumpAndSettleIgnoringKnownOverflow(tester);
     expect(actions, isNotNull);
     return _OpenedMagicTab(repo: effectiveRepo, actions: actions!);
+  }
+
+  for (final action in [
+    ('Zauber', 'magic-spells-add'),
+    ('Repr. & SF', 'magic-sf-add'),
+    ('Repr. & SF', 'magic-sf-add-from-catalog'),
+    ('Rituale', 'magic-rituals-add-category'),
+  ]) {
+    testWidgets('Laufende Übernahme sperrt ${action.$2}', (tester) async {
+      final hero = buildHero();
+      final catalog = buildCatalog();
+      final session = AdvancementSession(
+        sessionId: 'saving',
+        base: hero,
+        catalog: catalog,
+        entries: const [],
+        replay: replayAdvancements(
+          base: hero,
+          catalog: catalog,
+          entries: const [],
+        ),
+        isSaving: true,
+      );
+      await openMagicTab(tester, savingSession: session);
+      final context = tester.element(find.byType(HeroMagicTab));
+      final container = ProviderScope.containerOf(context, listen: false);
+      if (action.$1 != 'Zauber') {
+        await tester.tap(find.text(action.$1));
+        await _pumpAndSettleIgnoringKnownOverflow(tester);
+      }
+      await tester.tap(find.byKey(ValueKey(action.$2)));
+      await _pumpAndSettleIgnoringKnownOverflow(tester);
+      expect(find.byType(Dialog), findsNothing);
+      expect(find.byType(BottomSheet), findsNothing);
+      expect(container.read(advancementSessionProvider('demo')), same(session));
+    });
+
+    testWidgets('Planungsabbruch stoppt ${action.$2}', (tester) async {
+      await openMagicTab(tester);
+      final context = tester.element(find.byType(HeroMagicTab));
+      final container = ProviderScope.containerOf(context, listen: false);
+      container
+          .read(advancementSessionProvider('demo').notifier)
+          .start(hero: buildHero(), catalog: buildCatalog());
+      final session = container.read(advancementSessionProvider('demo'));
+      if (action.$1 != 'Zauber') {
+        await tester.tap(find.text(action.$1));
+        await _pumpAndSettleIgnoringKnownOverflow(tester);
+      }
+      await tester.tap(find.byKey(ValueKey(action.$2)));
+      await _pumpAndSettleIgnoringKnownOverflow(tester);
+      expect(find.text('Geplante Entwicklung verwerfen?'), findsOneWidget);
+      await tester.tap(find.text('Abbrechen'));
+      await _pumpAndSettleIgnoringKnownOverflow(tester);
+      expect(find.byType(Dialog), findsNothing);
+      expect(find.byType(BottomSheet), findsNothing);
+      expect(container.read(advancementSessionProvider('demo')), same(session));
+    });
   }
 
   testWidgets('magic tab exposes rituals sub tab', (tester) async {

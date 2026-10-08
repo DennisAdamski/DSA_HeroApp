@@ -22,7 +22,7 @@ class _MagicSpecialAbilitiesSection extends StatelessWidget {
   final Future<void> Function(bool) onShowInapplicableChanged;
   final bool isEditing;
   final void Function(List<MagicSpecialAbility>) onChanged;
-  final Future<void> Function()? onEnsureEditing;
+  final Future<bool> Function()? onEnsureEditing;
 
   /// Katalog magischer Sonderfertigkeiten fuer den Kosten-Abgleich beim
   /// Neuanlegen (Name-Match, best effort).
@@ -61,8 +61,8 @@ class _MagicSpecialAbilitiesSection extends StatelessWidget {
   }
 
   Future<void> _addAbility(BuildContext context) async {
-    await onEnsureEditing?.call();
-    if (!context.mounted) {
+    final darfBearbeiten = await onEnsureEditing?.call() ?? isEditing;
+    if (!darfBearbeiten || !context.mounted) {
       return;
     }
     final result = await showAdaptiveInputDialog<_MagicSpecialAbilityErwerb>(
@@ -86,8 +86,8 @@ class _MagicSpecialAbilitiesSection extends StatelessWidget {
   }
 
   Future<void> _addFromCatalog(BuildContext context) async {
-    await onEnsureEditing?.call();
-    if (!context.mounted) {
+    final darfBearbeiten = await onEnsureEditing?.call() ?? isEditing;
+    if (!darfBearbeiten || !context.mounted) {
       return;
     }
     final owned = abilities.map((a) => a.name.trim().toLowerCase()).toSet();

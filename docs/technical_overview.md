@@ -1946,6 +1946,15 @@ verwendet die bestehenden Kosten- und Erwerbsdialoge für geplante Änderungen.
 Runde und eine Liste von `HeroAdvancementEntry`. Das Regel-Replay unter
 `rules/derived/advancement*.dart` baut daraus eine Vorschau einschließlich AP/SE
 auf. Der normale Heldenprovider bleibt bis zur Übernahme unverändert.
+Beim Wechsel zu „Held verwalten“ bleibt die Runde erhalten und die Verwaltung
+zum Ansehen zugänglich. `shared/planung_bearbeiten_guard.dart` schützt die
+Editor-Einstiege und Sofortaktionen: „Abbrechen“ erhält den Plan; erst
+„Planung verwerfen und bearbeiten“ verwirft ihn ohne Buchung und erlaubt die
+Änderung. Der Guard prüft nach dem Dialog dieselbe Sitzung und ihren
+Speicherstatus. `PlanungsBearbeitungsBereich` bindet Unteransichten ohne eigene
+Helden-ID ein; `PlanungsFormularSchutz` sperrt Eingaben und Fokus bereits
+geöffneter Ausrüstungsformen, erhält ihren Entwurf und lässt Scrollen zu.
+Der technische Editor-Schreibweg behält seine Planungssperre.
 Entfernen ist nur für Einträge der laufenden Runde erlaubt. Nach jedem Entfernen
 wird die Liste erneut geprüft: ungültige Folgeeinträge bleiben mit Begründung
 sichtbar und sperren die Übernahme, statt unbemerkt falsch gebucht zu werden.

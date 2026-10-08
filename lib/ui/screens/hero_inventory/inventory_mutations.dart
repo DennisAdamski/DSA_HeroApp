@@ -226,6 +226,13 @@ extension _HeroInventoryMutations on _HeroInventoryTabState {
   }
 
   Future<void> _deleteEntry(int index) async {
+    final darfBearbeiten = await bestaetigeBearbeitungBeiPlanung(
+      context: context,
+      heroId: widget.heroId,
+    );
+    if (!darfBearbeiten || !mounted) {
+      return;
+    }
     final hero = _latestHero;
     if (hero == null || index < 0 || index >= _entries.length) {
       return;

@@ -65,7 +65,8 @@ extension _HeroInventoryTable on _HeroInventoryTabState {
               child: TextButton(
                 key: ValueKey<String>('inventory-row-open-$index'),
                 style: namensStil,
-                onPressed: () => _openEditEntryAction(context, index),
+                onPressed: () =>
+                    _openEditEntryAction(context, index, bearbeiten: false),
                 child: Align(
                   alignment: Alignment.centerLeft,
                   child: Text(

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:dsa_heldenverwaltung/ui/screens/shared/planung_bearbeiten_guard.dart';
 import 'package:dsa_heldenverwaltung/domain/externer_held.dart';
 import 'package:dsa_heldenverwaltung/state/externe_helden_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
@@ -52,13 +53,24 @@ class GruppeMitgliederListe extends ConsumerWidget {
         for (final held in mitglieder)
           _ExternerHeldKarte(
             held: held,
-            onEntfernen: () => _entferneHeld(ref, held.id),
+            onEntfernen: () => _entferneHeld(context, ref, held.id),
           ),
       ],
     );
   }
 
-  Future<void> _entferneHeld(WidgetRef ref, String externerHeldId) async {
+  Future<void> _entferneHeld(
+    BuildContext context,
+    WidgetRef ref,
+    String externerHeldId,
+  ) async {
+    final darfBearbeiten = await bestaetigeBearbeitungBeiPlanung(
+      context: context,
+      heroId: heroId,
+    );
+    if (!darfBearbeiten || !context.mounted) {
+      return;
+    }
     await ref
         .read(heroActionsProvider)
         .removeExternerHeld(

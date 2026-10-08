@@ -7,6 +7,16 @@ Sie beschreibt, **wo** Heldendaten heute geschrieben werden, mit welchen
 Eingaben, Vorbedingungen, Seiteneffekten und Speichergrenzen. Zeilenangaben
 gelten für den Stand dieses Datums; bei Folgearbeit neu prüfen.
 
+**Update 09.10.2026: offene Planung und Verwaltung.** Die Verwaltung bleibt
+zum Ansehen zugänglich. Editor-Einstiege und direkte Bogenaktionen prüfen
+`bestaetigeBearbeitungBeiPlanung`: Abbrechen erhält die Runde; erst
+„Planung verwerfen und bearbeiten“ verwirft sie und erlaubt die Änderung.
+Die unten aufgeführten Planungssperren am technischen Editor-Schreibweg
+(`aendereHeldImEditor`) bleiben als Rückfall bestehen. Geldfeld sowie bereits
+offene Ausrüstungsformulare sind während der Planung nur lesbar; ihre äußeren
+Scrollbereiche bleiben bedienbar. Laufzeitwerte in `HeroState` bleiben von
+diesem Bogen-Guard getrennt.
+
 Begriffe:
 
 - **Bogen** = `HeroSheet`, **Zustand** = `HeroState` (Laufzeitwerte).
