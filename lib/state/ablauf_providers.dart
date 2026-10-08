@@ -4,6 +4,7 @@ import 'package:dsa_heldenverwaltung/ablaeufe/rast_abschliessen.dart';
 import 'package:dsa_heldenverwaltung/ablaeufe/schaden_erhalten.dart';
 import 'package:dsa_heldenverwaltung/ablaeufe/schaden_zuruecknehmen.dart';
 import 'package:dsa_heldenverwaltung/ablaeufe/steigerungsrunde_uebernehmen.dart';
+import 'package:dsa_heldenverwaltung/ablaeufe/vertrauten_vereinigung.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 
 /// Bindet den Ablauf „Rast abschließen“ an das aktive Heldenrepository.
@@ -12,6 +13,15 @@ import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 /// neuer Ablauf auf dem neuen Speicher.
 final rastAbschliessenProvider = Provider<RastAbschliessen>((ref) {
   return RastAbschliessen(
+    repository: ref.watch(heroRepositoryProvider),
+    uhr: DateTime.now,
+  );
+});
+
+/// Bindet den Ablauf „Vereinigung bei Vollmond“ (V2) an das aktive
+/// Heldenrepository.
+final vertrautenVereinigungProvider = Provider<VertrautenVereinigung>((ref) {
+  return VertrautenVereinigung(
     repository: ref.watch(heroRepositoryProvider),
     uhr: DateTime.now,
   );
