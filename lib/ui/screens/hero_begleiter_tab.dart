@@ -17,8 +17,14 @@ import 'package:dsa_heldenverwaltung/rules/derived/reittier_ausbilderprobe_rules
 import 'package:dsa_heldenverwaltung/rules/derived/reittier_ausbildung_aenderung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/reittier_ausbildung_anzeige_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/reittier_ausbildung_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/reisebericht_rules.dart'
+    show gebuchteReiseberichtAp;
 import 'package:dsa_heldenverwaltung/rules/derived/ruestung_be_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/vertrauten_ap_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/vertrauten_ausbildung_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/vertrauten_bindung_rules.dart';
 import 'package:dsa_heldenverwaltung/catalog/reittier_ausbildung_katalog.dart';
+import 'package:dsa_heldenverwaltung/catalog/vertrauten_katalog.dart';
 import 'package:dsa_heldenverwaltung/catalog/vertrautenmagie_preset.dart';
 import 'package:dsa_heldenverwaltung/rules/house_rules/house_rule_registry.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
@@ -53,6 +59,9 @@ part 'hero_begleiter/begleiter_ausbildung_section.dart';
 part 'hero_begleiter/begleiter_ausbildung_dialoge.dart';
 part 'hero_begleiter/begleiter_ausbildung_aktionen.dart';
 part 'hero_begleiter/vertrauten_steigerung_aktionen.dart';
+part 'hero_begleiter/vertrauten_bindung_section.dart';
+part 'hero_begleiter/vertrauten_bindung_dialoge.dart';
+part 'hero_begleiter/vertrauten_bindung_aktionen.dart';
 
 /// Begleiter-Tab mit Auswahl- und Detailansicht fuer Vertraute/Begleiter.
 class HeroBegleiterTab extends ConsumerStatefulWidget {
@@ -332,6 +341,9 @@ class _HeroBegleiterTabState extends ConsumerState<HeroBegleiterTab>
         // Wartezeit gewürfelt werden können.
         ref.watch(heroComputedProvider(widget.heroId));
         ref.watch(rulesCatalogProvider);
+      } else if (activeCompanion.typ == BegleiterTyp.vertrauter) {
+        // Der Katalog liefert die Reisebericht-AP für den Nachtragsvorschlag.
+        ref.watch(rulesCatalogProvider);
       }
       return Column(
         children: [
@@ -363,6 +375,21 @@ class _HeroBegleiterTabState extends ConsumerState<HeroBegleiterTab>
                   : null,
               onPferdeSf: sofort
                   ? () => _oeffnePferdeSf(activeCompanion)
+                  : null,
+              vertrautenAktionen: sofort
+                  ? _VertrautenAktionen(
+                      binden: () => _bindeVertrauten(activeCompanion),
+                      erfassen: () =>
+                          _erfasseVertrautenBindung(activeCompanion),
+                      uebertragen: () =>
+                          _uebertrageVertrautenAp(activeCompanion),
+                      anteilEinrichten: () =>
+                          _richteVertrautenAnteilEin(activeCompanion),
+                      ausbildung: () =>
+                          _bucheVertrautenAusbildung(activeCompanion),
+                      zauberLernen: () =>
+                          _lerneVertrautenZauber(activeCompanion),
+                    )
                   : null,
             ),
           ),
