@@ -1,0 +1,1120 @@
+{
+  "quelle": "Wege der Zauberei S. 123–128; Zoo-Botanica Aventurica S. 19–21",
+  "arten": [
+    {
+      "id": "vart_katze",
+      "name": "Katze",
+      "bindungskosten": 80,
+      "eigenschaften": {
+        "mu": {
+          "start": 7,
+          "max": 9
+        },
+        "kl": {
+          "start": 4,
+          "max": 6
+        },
+        "inn": {
+          "start": 5,
+          "max": 10
+        },
+        "ch": {
+          "start": 7,
+          "max": 12
+        },
+        "ff": {
+          "start": 2,
+          "max": 5
+        },
+        "ge": {
+          "start": 11,
+          "max": 16
+        },
+        "ko": {
+          "start": 5,
+          "max": 10
+        },
+        "kk": {
+          "start": 2,
+          "max": 4
+        }
+      },
+      "iniBasis": 13,
+      "iniWuerfel": "1W6",
+      "lep": 11,
+      "asp": 5,
+      "aup": 45,
+      "rs": 1,
+      "mr": 4,
+      "angriffe": [
+        {
+          "name": "Prankenhieb",
+          "at": 11,
+          "pa": 11,
+          "tp": "1W6"
+        }
+      ],
+      "geschwindigkeiten": [
+        {
+          "art": "Boden",
+          "wert": 10
+        }
+      ],
+      "kampfregeln": [
+        "Hinterhalt (12)",
+        "Anspringen (−8)",
+        "Verbeißen",
+        "sehr kleiner Gegner (AT +2 / PA +4)",
+        "Gezielter Angriff",
+        "Doppelangriff (Prankenhieb und Biss)"
+      ],
+      "tiersinne": "Nachtsicht, Gehör",
+      "ausbildungIds": [
+        "vausb_zirkustier"
+      ]
+    },
+    {
+      "id": "vart_wildkatze",
+      "name": "Wildkatze",
+      "bindungskosten": 80,
+      "eigenschaften": {
+        "mu": {
+          "start": 8,
+          "max": 10
+        },
+        "kl": {
+          "start": 2,
+          "max": 4
+        },
+        "inn": {
+          "start": 5,
+          "max": 10
+        },
+        "ch": {
+          "start": 7,
+          "max": 12
+        },
+        "ff": {
+          "start": 2,
+          "max": 5
+        },
+        "ge": {
+          "start": 12,
+          "max": 17
+        },
+        "ko": {
+          "start": 7,
+          "max": 12
+        },
+        "kk": {
+          "start": 3,
+          "max": 9
+        }
+      },
+      "iniBasis": 13,
+      "iniWuerfel": "1W6",
+      "lep": 10,
+      "asp": 4,
+      "aup": 25,
+      "rs": 1,
+      "mr": 3,
+      "angriffe": [
+        {
+          "name": "Prankenhieb",
+          "at": 12,
+          "pa": 11,
+          "tp": "1W6+1"
+        }
+      ],
+      "geschwindigkeiten": [
+        {
+          "art": "Boden",
+          "wert": 10
+        }
+      ],
+      "kampfregeln": [
+        "Hinterhalt (12)",
+        "Anspringen (−8)",
+        "Verbeißen",
+        "sehr kleiner Gegner (AT +2 / PA +4)",
+        "Gezielter Angriff",
+        "Doppelangriff (Prankenhieb und Biss)"
+      ],
+      "tiersinne": "Nachtsicht, Gehör",
+      "ausbildungIds": [
+        "vausb_zirkustier"
+      ]
+    },
+    {
+      "id": "vart_hund",
+      "name": "Hund",
+      "bindungskosten": 80,
+      "eigenschaften": {
+        "mu": {
+          "start": 7,
+          "max": 14
+        },
+        "kl": {
+          "start": 3,
+          "max": 8
+        },
+        "inn": {
+          "start": 3,
+          "max": 8
+        },
+        "ch": {
+          "start": 5,
+          "max": 10
+        },
+        "ff": {
+          "start": 2,
+          "max": 5
+        },
+        "ge": {
+          "start": 7,
+          "max": 13
+        },
+        "ko": {
+          "start": 8,
+          "max": 14
+        },
+        "kk": {
+          "start": 8,
+          "max": 14
+        }
+      },
+      "iniBasis": 8,
+      "iniWuerfel": "1W6",
+      "lep": 24,
+      "asp": 4,
+      "aup": 65,
+      "rs": 2,
+      "mr": 1,
+      "angriffe": [
+        {
+          "name": "Biss",
+          "at": 11,
+          "pa": 6,
+          "tp": "1W6+3"
+        }
+      ],
+      "geschwindigkeiten": [
+        {
+          "art": "Boden",
+          "wert": 10
+        }
+      ],
+      "kampfregeln": [
+        "Gezielter Angriff",
+        "Verbeißen",
+        "Niederwerfen (−3)"
+      ],
+      "tiersinne": "Geruch, Gehör",
+      "ausbildungIds": [
+        "vausb_huetetier",
+        "vausb_jagdtier",
+        "vausb_suchtier",
+        "vausb_tragetier",
+        "vausb_wachtier",
+        "vausb_zirkustier",
+        "vausb_zugtier"
+      ]
+    },
+    {
+      "id": "vart_eule",
+      "name": "Eule",
+      "bindungskosten": 80,
+      "eigenschaften": {
+        "mu": {
+          "start": 5,
+          "max": 14
+        },
+        "kl": {
+          "start": 4,
+          "max": 9
+        },
+        "inn": {
+          "start": 4,
+          "max": 9
+        },
+        "ch": {
+          "start": 6,
+          "max": 10
+        },
+        "ff": {
+          "start": 4,
+          "max": 10
+        },
+        "ge": {
+          "start": 4,
+          "max": 8
+        },
+        "ko": {
+          "start": 7,
+          "max": 10
+        },
+        "kk": {
+          "start": 2,
+          "max": 4
+        }
+      },
+      "iniBasis": 9,
+      "iniWuerfel": "1W6",
+      "lep": 8,
+      "asp": 7,
+      "aup": 35,
+      "rs": 2,
+      "mr": 4,
+      "angriffe": [
+        {
+          "name": "Krallen (Boden)",
+          "at": 1,
+          "pa": 2,
+          "tp": "1W6"
+        },
+        {
+          "name": "Krallen (Luft)",
+          "at": 12,
+          "pa": 5,
+          "tp": "1W6"
+        }
+      ],
+      "geschwindigkeiten": [
+        {
+          "art": "Boden",
+          "wert": 1
+        },
+        {
+          "art": "Fliegen",
+          "wert": 12
+        }
+      ],
+      "kampfregeln": [
+        "Flugangriff",
+        "sehr kleiner Gegner (AT +2 / PA +4)"
+      ],
+      "tiersinne": "Hervorragende Nachtsicht",
+      "ausbildungIds": [
+        "vausb_jagdtier"
+      ],
+      "hinweis": "Bei Tag alle Werte außer LE, AE und RS halbiert (Schnee-Eule ausgenommen)."
+    },
+    {
+      "id": "vart_rabe",
+      "name": "Rabe",
+      "bindungskosten": 80,
+      "eigenschaften": {
+        "mu": {
+          "start": 6,
+          "max": 11
+        },
+        "kl": {
+          "start": 4,
+          "max": 9
+        },
+        "inn": {
+          "start": 3,
+          "max": 8
+        },
+        "ch": {
+          "start": 4,
+          "max": 10
+        },
+        "ff": {
+          "start": 3,
+          "max": 8
+        },
+        "ge": {
+          "start": 5,
+          "max": 9
+        },
+        "ko": {
+          "start": 7,
+          "max": 10
+        },
+        "kk": {
+          "start": 2,
+          "max": 4
+        }
+      },
+      "iniBasis": 8,
+      "iniWuerfel": "1W6",
+      "lep": 8,
+      "asp": 6,
+      "aup": 40,
+      "rs": 1,
+      "mr": 2,
+      "angriffe": [
+        {
+          "name": "Schnabel (Boden)",
+          "at": 2,
+          "pa": 1,
+          "tp": "1W6+1"
+        },
+        {
+          "name": "Schnabel (Luft)",
+          "at": 11,
+          "pa": 7,
+          "tp": "1W6+1"
+        }
+      ],
+      "geschwindigkeiten": [
+        {
+          "art": "Boden",
+          "wert": 1
+        },
+        {
+          "art": "Fliegen",
+          "wert": 13
+        }
+      ],
+      "kampfregeln": [
+        "Flugangriff",
+        "sehr kleiner Gegner (AT +2 / PA +4)"
+      ],
+      "tiersinne": "Scharfblick bei Tag",
+      "hinweis": "Nach Einbruch der Dunkelheit alle Werte außer LE, AE und RS halbiert. Elster und Eichelhäher: KO −1, TP −1."
+    },
+    {
+      "id": "vart_falke",
+      "name": "Falke",
+      "bindungskosten": 80,
+      "eigenschaften": {
+        "mu": {
+          "start": 6,
+          "max": 16
+        },
+        "kl": {
+          "start": 2,
+          "max": 5
+        },
+        "inn": {
+          "start": 3,
+          "max": 7
+        },
+        "ch": {
+          "start": 4,
+          "max": 8
+        },
+        "ff": {
+          "start": 3,
+          "max": 7
+        },
+        "ge": {
+          "start": 6,
+          "max": 12
+        },
+        "ko": {
+          "start": 5,
+          "max": 10
+        },
+        "kk": {
+          "start": 2,
+          "max": 4
+        }
+      },
+      "iniBasis": 12,
+      "iniWuerfel": "1W6",
+      "lep": 12,
+      "asp": 4,
+      "aup": 90,
+      "rs": 1,
+      "mr": 2,
+      "angriffe": [
+        {
+          "name": "Krallen (Boden)",
+          "at": 5,
+          "pa": 4,
+          "tp": "1W6+1"
+        },
+        {
+          "name": "Krallen (Luft)",
+          "at": 15,
+          "pa": 7,
+          "tp": "1W6+1"
+        }
+      ],
+      "geschwindigkeiten": [
+        {
+          "art": "Boden",
+          "wert": 1
+        },
+        {
+          "art": "Fliegen",
+          "wert": 30
+        }
+      ],
+      "kampfregeln": [
+        "Flugangriff",
+        "sehr kleiner Gegner (AT +2 / PA +4)",
+        "Sturzflug",
+        "Gezielter Angriff",
+        "Verkrallen"
+      ],
+      "tiersinne": "Hervorragender Scharfblick bei Tag",
+      "ausbildungIds": [
+        "vausb_jagdtier"
+      ],
+      "hinweis": "Nur bei Dienern Sumus. Bei Nacht alle Werte außer LE, AE und RS halbiert."
+    },
+    {
+      "id": "vart_schlange",
+      "name": "Schlange",
+      "bindungskosten": 80,
+      "eigenschaften": {
+        "mu": {
+          "start": 3,
+          "max": 8
+        },
+        "kl": {
+          "start": 2,
+          "max": 6
+        },
+        "inn": {
+          "start": 3,
+          "max": 7
+        },
+        "ch": {
+          "start": 4,
+          "max": 9
+        },
+        "ff": {
+          "start": 1,
+          "max": 2
+        },
+        "ge": {
+          "start": 9,
+          "max": 15
+        },
+        "ko": {
+          "start": 6,
+          "max": 10
+        },
+        "kk": {
+          "start": 2,
+          "max": 5
+        }
+      },
+      "iniBasis": 7,
+      "iniWuerfel": "2W6",
+      "lep": 7,
+      "asp": 8,
+      "aup": 15,
+      "rs": 0,
+      "mr": 6,
+      "angriffe": [
+        {
+          "name": "Biss",
+          "at": 12,
+          "pa": 3,
+          "tp": "1W6+1"
+        }
+      ],
+      "geschwindigkeiten": [
+        {
+          "art": "Boden",
+          "wert": 2
+        }
+      ],
+      "kampfregeln": [
+        "Gezielter Angriff (SP statt TP)",
+        "sehr kleiner Gegner (AT +3 / PA +5)"
+      ],
+      "tiersinne": "Geruch, Magiegespür"
+    },
+    {
+      "id": "vart_kroete",
+      "name": "Kröte",
+      "bindungskosten": 100,
+      "eigenschaften": {
+        "mu": {
+          "start": 5,
+          "max": 10
+        },
+        "kl": {
+          "start": 4,
+          "max": 9
+        },
+        "inn": {
+          "start": 3,
+          "max": 8
+        },
+        "ch": {
+          "start": 4,
+          "max": 10
+        },
+        "ff": {
+          "start": 1,
+          "max": 2
+        },
+        "ge": {
+          "start": 2,
+          "max": 3
+        },
+        "ko": {
+          "start": 7,
+          "max": 10
+        },
+        "kk": {
+          "start": 1,
+          "max": 2
+        }
+      },
+      "iniBasis": 1,
+      "iniWuerfel": "1W6",
+      "lep": 4,
+      "asp": 15,
+      "aup": 15,
+      "rs": 0,
+      "mr": 6,
+      "angriffe": [],
+      "geschwindigkeiten": [
+        {
+          "art": "Boden",
+          "wert": 0
+        }
+      ],
+      "kampfregeln": [
+        "winziger Gegner (AT +6)"
+      ],
+      "tiersinne": "Hervorragendes Magiegespür",
+      "hinweis": "GS laut Tabelle 0,3; die App führt nur ganze Geschwindigkeiten. Hautgift: 1 SP je KR direkter Berührung."
+    },
+    {
+      "id": "vart_affe",
+      "name": "Affe",
+      "bindungskosten": 80,
+      "eigenschaften": {
+        "mu": {
+          "start": 4,
+          "max": 10
+        },
+        "kl": {
+          "start": 3,
+          "max": 8
+        },
+        "inn": {
+          "start": 5,
+          "max": 8
+        },
+        "ch": {
+          "start": 6,
+          "max": 9
+        },
+        "ff": {
+          "start": 10,
+          "max": 17
+        },
+        "ge": {
+          "start": 12,
+          "max": 16
+        },
+        "ko": {
+          "start": 7,
+          "max": 11
+        },
+        "kk": {
+          "start": 3,
+          "max": 6
+        }
+      },
+      "iniBasis": 9,
+      "iniWuerfel": "2W6",
+      "lep": 10,
+      "asp": 4,
+      "aup": 15,
+      "rs": 1,
+      "mr": 1,
+      "angriffe": [
+        {
+          "name": "Biss",
+          "at": 8,
+          "pa": 11,
+          "tp": "1W3"
+        }
+      ],
+      "geschwindigkeiten": [
+        {
+          "art": "Boden",
+          "wert": 8
+        }
+      ],
+      "kampfregeln": [
+        "Gezielter Biss (SP statt TP)",
+        "Gelände (Baum / Wald)",
+        "sehr kleiner Gegner (AT +4 / PA +8)"
+      ],
+      "tiersinne": "Sinnenschärfe +3",
+      "ausbildungIds": [
+        "vausb_wachtier",
+        "vausb_tragetier",
+        "vausb_zirkustier"
+      ]
+    },
+    {
+      "id": "vart_spinne",
+      "name": "Spinne",
+      "bindungskosten": 100,
+      "eigenschaften": {
+        "mu": {
+          "start": 7,
+          "max": 14
+        },
+        "kl": {
+          "start": 2,
+          "max": 6
+        },
+        "inn": {
+          "start": 2,
+          "max": 7
+        },
+        "ch": {
+          "start": 5,
+          "max": 6
+        },
+        "ff": {
+          "start": 5,
+          "max": 10
+        },
+        "ge": {
+          "start": 8,
+          "max": 14
+        },
+        "ko": {
+          "start": 10,
+          "max": 14
+        },
+        "kk": {
+          "start": 1,
+          "max": 2
+        }
+      },
+      "iniBasis": 4,
+      "iniWuerfel": "2W6",
+      "lep": 6,
+      "asp": 7,
+      "aup": 25,
+      "rs": 0,
+      "mr": 8,
+      "angriffe": [
+        {
+          "name": "Biss",
+          "at": 12,
+          "pa": 3,
+          "tp": "1W3+1"
+        }
+      ],
+      "geschwindigkeiten": [
+        {
+          "art": "Boden",
+          "wert": 2
+        }
+      ],
+      "kampfregeln": [
+        "Gezielter Angriff (SP statt TP)",
+        "winziger Gegner (AT +5)",
+        "Gift (Stufe 1, 1W6 SP, sofort)"
+      ],
+      "tiersinne": "Hervorragender Tastsinn"
+    },
+    {
+      "id": "vart_iltis",
+      "name": "Iltis",
+      "bindungskosten": 80,
+      "eigenschaften": {
+        "mu": {
+          "start": 8,
+          "max": 10
+        },
+        "kl": {
+          "start": 2,
+          "max": 5
+        },
+        "inn": {
+          "start": 4,
+          "max": 9
+        },
+        "ch": {
+          "start": 3,
+          "max": 8
+        },
+        "ff": {
+          "start": 3,
+          "max": 8
+        },
+        "ge": {
+          "start": 9,
+          "max": 13
+        },
+        "ko": {
+          "start": 6,
+          "max": 10
+        },
+        "kk": {
+          "start": 3,
+          "max": 7
+        }
+      },
+      "iniBasis": 10,
+      "iniWuerfel": "1W6",
+      "lep": 6,
+      "asp": 4,
+      "aup": 40,
+      "rs": 2,
+      "mr": 0,
+      "angriffe": [
+        {
+          "name": "Biss",
+          "at": 11,
+          "pa": 8,
+          "tp": "1W3"
+        }
+      ],
+      "geschwindigkeiten": [
+        {
+          "art": "Boden",
+          "wert": 8
+        }
+      ],
+      "kampfregeln": [
+        "Gezielter Angriff",
+        "Verbeißen (SP statt TP)",
+        "sehr kleiner Gegner (AT +2 / PA +5)"
+      ],
+      "tiersinne": "Geruch, Gehör"
+    },
+    {
+      "id": "vart_wiesel",
+      "name": "Wiesel",
+      "bindungskosten": 80,
+      "eigenschaften": {
+        "mu": {
+          "start": 8,
+          "max": 14
+        },
+        "kl": {
+          "start": 2,
+          "max": 4
+        },
+        "inn": {
+          "start": 4,
+          "max": 8
+        },
+        "ch": {
+          "start": 4,
+          "max": 10
+        },
+        "ff": {
+          "start": 3,
+          "max": 7
+        },
+        "ge": {
+          "start": 10,
+          "max": 15
+        },
+        "ko": {
+          "start": 4,
+          "max": 9
+        },
+        "kk": {
+          "start": 2,
+          "max": 4
+        }
+      },
+      "iniBasis": 13,
+      "iniWuerfel": "1W6",
+      "lep": 6,
+      "asp": 4,
+      "aup": 20,
+      "rs": 1,
+      "mr": 0,
+      "angriffe": [
+        {
+          "name": "Biss",
+          "at": 10,
+          "pa": 10,
+          "tp": "1W3"
+        }
+      ],
+      "geschwindigkeiten": [
+        {
+          "art": "Boden",
+          "wert": 12
+        }
+      ],
+      "kampfregeln": [
+        "Gezielter Angriff (SP statt TP)",
+        "sehr kleiner Gegner (AT +3 / PA +6)"
+      ],
+      "tiersinne": "Geruch, Gehör"
+    }
+  ],
+  "zauber": [
+    {
+      "id": "vzaub_dinge_aufspueren",
+      "name": "Dinge aufspüren",
+      "lernkosten": 10
+    },
+    {
+      "id": "vzaub_erster_unter_gleichen",
+      "name": "Erster unter Gleichen",
+      "lernkosten": 20,
+      "halbFuerMachtvoll": true
+    },
+    {
+      "id": "vzaub_hexe_finden",
+      "name": "Hexe finden",
+      "lernkosten": 15
+    },
+    {
+      "id": "vzaub_kroetengift",
+      "name": "Krötengift",
+      "lernkosten": 20,
+      "tierartIds": [
+        "vart_kroete"
+      ]
+    },
+    {
+      "id": "vzaub_kroetenschlag",
+      "name": "Krötenschlag",
+      "lernkosten": 0,
+      "tierartIds": [
+        "vart_kroete"
+      ],
+      "mitBindung": true
+    },
+    {
+      "id": "vzaub_schlaf_rauben",
+      "name": "Schlaf rauben",
+      "lernkosten": 20
+    },
+    {
+      "id": "vzaub_stimmungssinn",
+      "name": "Stimmungssinn",
+      "lernkosten": 15
+    },
+    {
+      "id": "vzaub_tarnung",
+      "name": "Tarnung",
+      "lernkosten": 15,
+      "tierartIds": [
+        "vart_kroete",
+        "vart_schlange",
+        "vart_spinne"
+      ]
+    },
+    {
+      "id": "vzaub_tiersinne",
+      "name": "Tiersinne",
+      "lernkosten": 15
+    },
+    {
+      "id": "vzaub_ungesehener_beobachter",
+      "name": "Ungesehener Beobachter",
+      "lernkosten": 20
+    },
+    {
+      "id": "vzaub_wachsame_augen",
+      "name": "Wachsame Augen",
+      "lernkosten": 15,
+      "nurMachtvoll": true
+    },
+    {
+      "id": "vzaub_zwiegespraech",
+      "name": "Zwiegespräch",
+      "lernkosten": 0,
+      "mitBindung": true
+    }
+  ],
+  "ausbildungen": [
+    {
+      "id": "vausb_huetetier",
+      "name": "Hütetier",
+      "tapStern": 50,
+      "erschwernis": 4,
+      "modifikationen": {
+        "mu": 1,
+        "inn": 2,
+        "ge": 1
+      },
+      "hinweis": "Ablegen, Komm, Laut, Sitz, Treiben"
+    },
+    {
+      "id": "vausb_jagdtier",
+      "name": "Jagdtier",
+      "tapStern": 40,
+      "erschwernis": 4,
+      "modifikationen": {
+        "ge": 2,
+        "ko": 1,
+        "at": 2,
+        "pa": 1,
+        "ini": 2,
+        "gs": 1,
+        "lep": 5,
+        "aup": 10
+      },
+      "hinweis": "Fährtensuchen +5; Apport, Fass I, Laut, Still, Such"
+    },
+    {
+      "id": "vausb_kampftier",
+      "name": "Kampftier",
+      "tapStern": 50,
+      "erschwernis": 6,
+      "modifikationen": {
+        "mu": 1,
+        "ko": 2,
+        "kk": 1,
+        "at": 3,
+        "pa": 2,
+        "tp": 1,
+        "ini": 1,
+        "lep": 7,
+        "aup": 10
+      },
+      "hinweis": "Fass I und II",
+      "fuerVertraute": false
+    },
+    {
+      "id": "vausb_reittier",
+      "name": "Reittier",
+      "tapStern": 45,
+      "erschwernis": 4,
+      "modifikationen": {
+        "ge": 1,
+        "ko": 2,
+        "kk": 2,
+        "gs": 1,
+        "lep": 2,
+        "aup": 10
+      },
+      "hinweis": "Mit angepasstem Sattel reitbar; Tragkraft 5 × KK Stein"
+    },
+    {
+      "id": "vausb_renntier",
+      "name": "Renntier",
+      "tapStern": 40,
+      "erschwernis": 5,
+      "modifikationen": {
+        "ko": 2,
+        "ini": 2,
+        "gs": 2,
+        "lep": 3,
+        "aup": 15
+      }
+    },
+    {
+      "id": "vausb_suchtier",
+      "name": "Suchtier",
+      "tapStern": 35,
+      "erschwernis": 4,
+      "modifikationen": {
+        "inn": 1,
+        "ge": 1
+      },
+      "hinweis": "Fährtensuchen +10; Such"
+    },
+    {
+      "id": "vausb_tragetier",
+      "name": "Tragetier",
+      "tapStern": 40,
+      "erschwernis": 3,
+      "modifikationen": {
+        "ko": 1,
+        "kk": 2,
+        "lep": 2,
+        "aup": 10
+      },
+      "hinweis": "Trägt 5 × KK Stein"
+    },
+    {
+      "id": "vausb_wachtier",
+      "name": "Wachtier",
+      "tapStern": 45,
+      "erschwernis": 3,
+      "modifikationen": {
+        "mu": 2,
+        "inn": 1,
+        "at": 2,
+        "pa": 1,
+        "ini": 1
+      },
+      "hinweis": "Ablegen, Komm, Laut, Sitz, Wache"
+    },
+    {
+      "id": "vausb_zirkustier",
+      "name": "Zirkustier",
+      "tapStern": 45,
+      "erschwernis": 5,
+      "modifikationen": {
+        "inn": 1
+      },
+      "hinweis": "GE +2 oder FF +2 nach Wahl (nicht eingerechnet); ein Trick nach Wahl; Befehle verstehen +4, Trick-Erschwernis nur +2, bis 2 × KL Tricks"
+    },
+    {
+      "id": "vausb_zugtier",
+      "name": "Zugtier",
+      "tapStern": 45,
+      "erschwernis": 3,
+      "modifikationen": {
+        "ko": 2,
+        "kk": 2,
+        "lep": 2,
+        "aup": 15
+      },
+      "hinweis": "Zieht 10 × KK Stein"
+    }
+  ],
+  "fertigkeiten": [
+    {
+      "id": "vfert_komm",
+      "name": "Komm",
+      "erschwernis": -1,
+      "hinweis": "Kommt auf Befehl."
+    },
+    {
+      "id": "vfert_sitz",
+      "name": "Sitz",
+      "erschwernis": 0,
+      "hinweis": "Setzt sich auf Befehl."
+    },
+    {
+      "id": "vfert_platz",
+      "name": "Platz",
+      "erschwernis": 1,
+      "hinweis": "Legt sich auf Befehl hin."
+    },
+    {
+      "id": "vfert_laut",
+      "name": "Laut",
+      "erschwernis": 1,
+      "hinweis": "Schlägt auf Befehl und bei Eindringlingen an."
+    },
+    {
+      "id": "vfert_still",
+      "name": "Still",
+      "erschwernis": 2,
+      "hinweis": "Bleibt eine Zeit lang still."
+    },
+    {
+      "id": "vfert_ablegen",
+      "name": "Ablegen",
+      "erschwernis": 3,
+      "voraussetzungId": "vfert_sitz",
+      "hinweis": "Wartet unbeweglich bis zum Komm-Befehl."
+    },
+    {
+      "id": "vfert_apport",
+      "name": "Apport",
+      "erschwernis": 3,
+      "hinweis": "Bringt einen tragbaren Gegenstand."
+    },
+    {
+      "id": "vfert_trick",
+      "name": "Trick",
+      "erschwernis": 7,
+      "mehrfach": true,
+      "hinweis": "Ein Kunststück auf Befehl; höchstens KL Tricks."
+    }
+  ]
+}
