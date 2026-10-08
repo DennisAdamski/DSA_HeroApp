@@ -1,6 +1,6 @@
 # Vertraute: Bindung, Entwicklung, Spiel
 
-Stand: Paket V1 umgesetzt (8. Oktober 2026); V2 und V3 sind offen. Das Dokument
+Stand: Pakete V1 und V2 umgesetzt (8. Oktober 2026); V3 ist offen. Das Dokument
 hält die Regelquellen, die Nutzerentscheidungen und die Paketaufteilung für
 Vertrautentiere von Hexen, Geoden, Zibiljas und Goblin-Schamaninnen fest. Alle
 Belege kommen aus dem dsa-rules MCP. Vorbild ist das Reittier-Paket
@@ -11,7 +11,7 @@ Belege kommen aus dem dsa-rules MCP. Vorbild ist das Reittier-Paket
 | Paket | Inhalt | Stand |
 |---|---|---|
 | V1 Grundlage | Artenkatalog, Bindung mit AP-Buchung bei der Hexe, AP-Anteil und Übertragung, Steigerung nach WdZ, Zauber je Art, ZBA-Ausbildung | umgesetzt |
-| V2 Spielansicht | laufende LeP/AsP/AuP je Begleiter im `HeroState` (gemeinsam mit Reittier-P2), Regeneration, Vereinigung, Vertrautenzauber würfeln | offen |
+| V2 Spielansicht | laufende LeP/AsP/AuP je Begleiter im `HeroState` (gemeinsam mit Reittier-P2), Regeneration, Vereinigung, Vertrautenzauber würfeln | umgesetzt |
 | V3 Gefecht | Vertraute als handelnde Begleiter, magische Angriffe, besondere Kampfregeln, Schaden in die Laufzeitwerte | offen |
 
 ## Entscheidungen (Nutzer, 8. Oktober 2026)
@@ -216,6 +216,109 @@ zeigt er nach „Kampf- und Bewegungswerte“ den Abschnitt „Vertrautenbindung
 
 Abgedeckt durch `test/ui/begleiter/vertrauten_bindung_test.dart`.
 
+## Nachträge zu V1 (Branch V2)
+
+- **Voraussetzungen beim Binden** (`vertrauten_bindung_voraussetzung_rules.dart`):
+  Fehlt der Hexe die SF Vertrautenbindung (`magsf_vertrautenbindung`, erkannt
+  über Katalogname und `alias_namen`, ohne Katalog über den Namen) oder führt
+  sie den Nachteil „Kein Vertrauter“ (`dis_kein_vertrauter`), zeigt der
+  Bindungsdialog Hinweise. Gesperrt wird nie: „Binden“ geht dann nur über das
+  Häkchen „Trotzdem binden (Meisterentscheid)“, `bucheVertrautenBindung` bleibt
+  unverändert.
+- **Aurapanzer** (`vertrauten_aurapanzer_rules.dart`, WdZ S. 125): 125 AP aus
+  den AP des Vertrauten, Voraussetzung wirksame AE 20. Gespeichert als
+  `HeroCompanionSonderfertigkeit` mit `katalogId: magsf_aurapanzer`. Der Katalog
+  kennt den Eintrag mit 500 AP (Held, WdH 285), der Vertrauten-Preis ist
+  eine bewusste Abweichung. Offene Voraussetzungen (AE, freie AP) gehen nur per
+  Meisterentscheid; doppelter Erwerb und Nicht-Vertraute nie. Sofortbuchung über
+  `aendereHeldMitMeldung` mit Prüfung des Dialogstands (`apAusgegeben`).
+
+## V2: laufende Werte und Spieltisch
+
+### Entscheidungen (Nutzer, 8. Oktober 2026)
+
+- **E1 Versäumtes Treffen:** zwei getrennte Buchungen, kein Journal. LeP laufen
+  über `aendereZustandMitMeldung`, die LO über `aendereHeldMitMeldung`. Scheitert
+  die zweite, bleibt die erste stehen; der Dialog „Treffen versäumt“ bietet die
+  fehlende Buchung einzeln zum Nachholen an.
+- **E2 Regeneration:** läuft mit der Rast der Hexe. Der Rastdialog zeigt je
+  Vertrautem „regeneriert“, „Körperkontakt“ und die Wahl +1 LeP / +1 AsP. Die
+  Regeneration steht im selben Zustandsdokument wie die Rast
+  (`RastAbschliessen.uebernehmeRast(vertrautenRast:)`). Es gibt keinen eigenen
+  Knopf; „Volle Erholung“ lässt Begleiter unberührt.
+- **E3 Reittiere:** Die laufenden Werte (LeP/AsP/AuP mit Schrittknöpfen) gelten
+  für **jeden** Begleiter, auch Reittiere und sonstige. Vertrautenaktionen bleiben
+  gebundenen Vertrauten vorbehalten. Reittier-P2 ergänzt nur noch Wunden und Proben.
+
+### Festlegungen im Paket (im PR zu bestätigen)
+
+- **„voll“ ist `null`.** Ein Wert gleich dem wirksamen Maximum wird nicht
+  gespeichert. Steigt das Maximum (Steigerung, Ausbildung), bleibt ein voller
+  Begleiter voll.
+- **Grenzen:** LeP bis −10 (wie beim Helden), AsP/AuP bis 0, nach oben das Maximum
+  nur in Schrittrichtung (`RessourcenAenderung`).
+- **Verwaiste Zustände** gelöschter Begleiter bleiben stehen und werden ignoriert.
+  Ein Aufräumen erzeugte im Sync Konflikte („gelöscht/geändert“).
+- **Sync:** `begleiterZustaende/<id>/currentLep|Asp|Aup` zählen als Zähler
+  (`zaehlerInMaps`), wenn Basis, Lokal und Online einen Zahlenwert tragen; sonst
+  normale Zusammenführung mit Konflikt bei verschiedener Änderung.
+- **Ritualkosten** liest `parseRitualKosten` nur, wo der Preset-Text eindeutig ist
+  („3 AsP“, „2 AsP pro Spielrunde“, „3 AsP + 2 AsP pro Spielrunde“, „Alle AsP“);
+  sonst fragt der Dialog. Der Betrag ist immer änderbar; abgezogen wird erst nach
+  Bestätigung. Die Probe protokolliert unabhängig davon der Probendialog.
+- **UI2-Reihenfolge:** „Begleiter“ steht in der Seitenspalte nach „Zustand“, vor
+  dem Würfelprotokoll (laufende Werte wie dort).
+- **Aurapanzer** (Nachtrag A2): `katalogId` `magsf_aurapanzer` mit dem Preis
+  125 AP aus WdZ S. 125 statt der 500 AP des Katalogs für Helden.
+
+### Modell und Regeln
+
+- `HeroState.begleiterZustaende` (`BegleiterZustand` mit `currentLep`, `currentAsp`,
+  `currentAup`; `null` = voll; nur bei Belegung im JSON; Wunden kommen später
+  additiv dazu). Der Wächter, `zustandMitZukunftsfeldern` und
+  `veroeffentlichte_app.dart` kennen den Eintrag.
+- `begleiter_zustand_rules.dart`: `mitBegleiterPool`, `begleiterAktuellerPool`,
+  `begleiterPoolSchritt`.
+- `vertrauten_spiel_rules.dart`: Regeneration (⌈max/10⌉ je Phase, Körperkontakt
+  +1 LeP **oder** +1 AsP), Vereinigungsverlust, versäumtes Treffen, LO +1,
+  `VertrautenRast`.
+- `vertrauten_zauber_probe_rules.dart`: RK-Probe (Kontakt: Eigenschaften der Hexe
+  nach Wunden; allein: Eigenschaften des Vertrauten, Erleichterung +15), KL-/LO-
+  und CH-Probe, `parseRitualKosten`.
+- Ablauf `VertrautenVereinigung` (ein Dokument: Hexe-AsP, Vertrauten-AsP, zwei
+  Protokolleinträge).
+
+### Oberfläche
+
+- **Begleiter-Tab:** Abschnitt „Laufende Werte“ (alle Begleiter) und
+  „Vertrautenaktionen“ (Vereinigung, Treffen versäumt, CH-Probe → LO +1, Zauber
+  würfeln, KL-/LO-Probe). LO-Buchungen ruhen bei ungespeicherten Änderungen.
+- **Rastdialog:** Abschnitt „Vertraute“ (`rest_vertraute_section.dart`).
+- **UI2:** `KartoBegleiterAbschnitt` (`ui2/spielen/karto_begleiterkarte.dart`),
+  Bedienung über die Brücke (`begleiterWertAendern` ohne Guard,
+  `vertrautenAktionen` öffnet dieselben Aktionen in einem Dialog).
+- **Gefecht:** `GefechtBegleiter` zeigt zusätzlich „Aktuell: LeP x/y · …“; sonst
+  nichts Neues (handelnde Begleiter: V3).
+
+### Manueller Ablauf (Abnahme)
+
+1. Begleiter-Tab, gebundener Vertrauter: „Laufende Werte“, bei LeP „−5“. Die
+   Anzeige springt von 24/24 auf 19/24; der Zustand der Hexe bleibt unberührt.
+2. Rastdialog, „Schlaf“: Beim Vertrauten „Körperkontakt“ wählen und
+   „Übernehmen“. Er gewinnt ⌈24/10⌉ = 3 LeP plus 1 durch den Kontakt.
+3. „Vereinigung“: Würfe eintragen (oder würfeln lassen) und buchen. Hexe und
+   Vertrauter verlieren je ihren Wurf an AsP; im Würfelprotokoll stehen zwei
+   Einträge.
+4. „Zauber würfeln“, Tiersinne, Körperkontakt an: Die Probe zeigt KL/IN/IN der
+   Hexe und den Pool RK. Danach schlägt der Dialog 3 AsP vor; nach „AsP abziehen“
+   sinken die AsP des Vertrauten (ohne Kontakt: Eigenschaften des Tiers, +15).
+
+Abgedeckt durch `test/ui/begleiter/vertrauten_spiel_test.dart`,
+`test/ablaeufe/vertrauten_vereinigung_test.dart`,
+`test/ablaeufe/rast_abschliessen_test.dart`, `test/rules/vertrauten_spiel_rules_test.dart`,
+`test/ui2/spielen/karto_begleiterkarte_test.dart` und
+`test/ui/shared/zustand_frisch_schreiben_test.dart`.
+
 ## Offene Punkte
 
 - Die GS der Kröte (0,3) ist als ganze Zahl nicht darstellbar und steht im
@@ -227,6 +330,10 @@ Abgedeckt durch `test/ui/begleiter/vertrauten_bindung_test.dart`.
 - Die Rücknahme eines Abenteuers, das vor dem Einrichten des AP-Anteils
   gebucht wurde, zieht dem Vertrauten nichts ab, weil der Zähler bei 0
   stehen bleibt.
+- Wunden und Zonen der Begleiter fehlen im Laufzeitmodell (V3/Reittier-P3);
+  Schaden an Begleitern wird von Hand über die Schrittknöpfe gebucht.
+- Die LO-Probe (Gefahr) und die KL-Probe sind Würfelhilfen; die Folgen
+  (Loyalitätsänderung) entscheidet der Meister, die App bucht sie nicht.
 - Der „Göttliche Begleiter“ (Hausregel Erweiterung S. 17) bekommt AP wie ein
   Vertrauter, ist aber nicht modelliert.
 
@@ -256,6 +363,11 @@ Abgedeckt durch `test/ui/begleiter/vertrauten_bindung_test.dart`.
   - Vereinigung bei Vollmond: Hexe und Tier zahlen je 1W6 AsP, ein
     versäumtes Treffen kostet −1 LeP und −1 LO.
   - AP-Übertragung nur von der Hexe zum Tier, permanent.
+- V2-Belege (dsa-rules MCP): Regeneration, Vereinigung und Aurapanzer WdZ S. 125;
+  Vertrautenmagie, Kontakt-/Alleinregel (+15) WdZ S. 126; Rituale mit Probe und
+  Kosten WdZ S. 126–128; Krötenschlag (alle AsP, SP = eingesetzte AsP) S. 127;
+  Aurapanzer-Wirkung Wege der Zauberei S. 32. Die Hausregeln enthalten keine
+  abweichende Vertrautenregel.
 - WdZ S. 126–128:
   - Vertrautenzauber werden mit AP des Vertrauten im Vollmondritual erlernt.
   - In Kontakt gelten die Eigenschaften der Hexe; zaubert der Vertraute

@@ -61,6 +61,13 @@ extension _HeroTalentEditActions on _HeroTalentTableTabState {
   }
 
   Future<void> _startEdit() async {
+    final darfBearbeiten = await bestaetigeBearbeitungBeiPlanung(
+      context: context,
+      heroId: widget.heroId,
+    );
+    if (!darfBearbeiten || !mounted) {
+      return;
+    }
     final hero = _latestHero;
     if (hero == null) {
       return;
@@ -180,13 +187,12 @@ extension _HeroTalentEditActions on _HeroTalentTableTabState {
       return;
     }
     await _startEdit();
+    if (!mounted || !_editController.isEditing) return;
   }
 
   Future<void> _openTalentCatalogAction(List<TalentDef> allTalents) async {
     await _ensureEditingSession();
-    if (!mounted) {
-      return;
-    }
+    if (!mounted || !_editController.isEditing) return;
     _showTalentKatalog(context, allTalents);
   }
 
@@ -194,9 +200,7 @@ extension _HeroTalentEditActions on _HeroTalentTableTabState {
     List<TalentDef> allCatalogTalents,
   ) async {
     await _ensureEditingSession();
-    if (!mounted) {
-      return;
-    }
+    if (!mounted || !_editController.isEditing) return;
     await _openMetaTalentManager(allCatalogTalents);
   }
 

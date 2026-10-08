@@ -4,6 +4,7 @@
 // responsiven Editor und eine Berechnungsvorschau (RS, BE, eBE).
 import 'package:flutter/material.dart';
 
+import 'package:dsa_heldenverwaltung/ui/screens/shared/planung_bearbeiten_guard.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/config/ui_spacing.dart';
@@ -322,6 +323,12 @@ class _CombatArmorSectionState extends State<CombatArmorSection> {
   }
 
   Future<void> _openEditor({int? pieceIndex}) async {
+    final darfBearbeiten = await PlanungsBearbeitungsBereich.bestaetige(
+      context,
+    );
+    if (!darfBearbeiten || !mounted) {
+      return;
+    }
     final sourcePiece = pieceIndex == null
         ? const ArmorPiece()
         : widget.armor.pieces[pieceIndex];
@@ -479,152 +486,154 @@ class _ArmorPieceEditorPanelState extends State<_ArmorPieceEditorPanel> {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      child: Column(
-        key: const ValueKey<String>('combat-armor-editor-panel'),
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  widget.isNew ? 'Rüstung hinzufügen' : 'Rüstung bearbeiten',
-                  style: Theme.of(context).textTheme.titleMedium,
+      child: PlanungsFormularSchutz(
+        child: Column(
+          key: const ValueKey<String>('combat-armor-editor-panel'),
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    widget.isNew ? 'Rüstung hinzufügen' : 'Rüstung bearbeiten',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
                 ),
+                IconButton(
+                  key: const ValueKey<String>('combat-armor-panel-close'),
+                  tooltip: 'Editor schließen',
+                  onPressed: widget.onCancel,
+                  icon: const Icon(Icons.close),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              key: const ValueKey<String>('combat-armor-form-name'),
+              controller: _nameController,
+              decoration: const InputDecoration(
+                labelText: 'Name',
+                border: OutlineInputBorder(),
               ),
-              IconButton(
-                key: const ValueKey<String>('combat-armor-panel-close'),
-                tooltip: 'Editor schließen',
-                onPressed: widget.onCancel,
-                icon: const Icon(Icons.close),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          TextField(
-            key: const ValueKey<String>('combat-armor-form-name'),
-            controller: _nameController,
-            decoration: const InputDecoration(
-              labelText: 'Name',
-              border: OutlineInputBorder(),
             ),
-          ),
-          const SizedBox(height: 10),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              _numberField(
-                controller: _rsController,
-                keyName: 'combat-armor-form-rs',
-                label: 'RS',
-              ),
-              _numberField(
-                controller: _beController,
-                keyName: 'combat-armor-form-be',
-                label: 'BE',
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          SwitchListTile(
-            key: const ValueKey<String>('combat-armor-form-active'),
-            contentPadding: EdgeInsets.zero,
-            title: const Text('Aktiv'),
-            value: _isActive,
-            onChanged: (value) {
-              setState(() {
-                _isActive = value;
-              });
-            },
-          ),
-          SwitchListTile(
-            key: const ValueKey<String>('combat-armor-form-artifact'),
-            contentPadding: EdgeInsets.zero,
-            title: const Text('Artefakt'),
-            value: _isArtifact,
-            onChanged: (value) {
-              setState(() {
-                _isArtifact = value;
-              });
-            },
-          ),
-          TextField(
-            key: const ValueKey<String>(
-              'combat-armor-form-artifact-description',
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _numberField(
+                  controller: _rsController,
+                  keyName: 'combat-armor-form-rs',
+                  label: 'RS',
+                ),
+                _numberField(
+                  controller: _beController,
+                  keyName: 'combat-armor-form-be',
+                  label: 'BE',
+                ),
+              ],
             ),
-            controller: _artifactDescriptionController,
-            enabled: _isArtifact,
-            minLines: 2,
-            maxLines: 4,
-            decoration: const InputDecoration(
-              labelText: 'Artefaktbeschreibung',
-              border: OutlineInputBorder(),
-            ),
-          ),
-          SwitchListTile(
-            key: const ValueKey<String>('combat-armor-form-geweiht'),
-            contentPadding: EdgeInsets.zero,
-            title: const Text('Geweiht'),
-            value: _isGeweiht,
-            onChanged: (value) {
-              setState(() {
-                _isGeweiht = value;
-              });
-            },
-          ),
-          TextField(
-            key: const ValueKey<String>(
-              'combat-armor-form-geweiht-description',
-            ),
-            controller: _geweihtDescriptionController,
-            enabled: _isGeweiht,
-            minLines: 2,
-            maxLines: 4,
-            decoration: const InputDecoration(
-              labelText: 'Beschreibung (geweiht)',
-              border: OutlineInputBorder(),
-            ),
-          ),
-          if (widget.showRg1Toggle)
+            const SizedBox(height: 10),
             SwitchListTile(
-              key: const ValueKey<String>('combat-armor-form-rg1'),
+              key: const ValueKey<String>('combat-armor-form-active'),
               contentPadding: EdgeInsets.zero,
-              title: const Text('RG I aktiv'),
-              value: _rg1Active,
+              title: const Text('Aktiv'),
+              value: _isActive,
               onChanged: (value) {
                 setState(() {
-                  _rg1Active = value;
+                  _isActive = value;
                 });
               },
             ),
-          if (_validationMessage != null &&
-              _validationMessage!.trim().isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.only(top: 6),
-              child: Text(
-                _validationMessage!,
-                style: TextStyle(color: Theme.of(context).colorScheme.error),
+            SwitchListTile(
+              key: const ValueKey<String>('combat-armor-form-artifact'),
+              contentPadding: EdgeInsets.zero,
+              title: const Text('Artefakt'),
+              value: _isArtifact,
+              onChanged: (value) {
+                setState(() {
+                  _isArtifact = value;
+                });
+              },
+            ),
+            TextField(
+              key: const ValueKey<String>(
+                'combat-armor-form-artifact-description',
+              ),
+              controller: _artifactDescriptionController,
+              enabled: _isArtifact,
+              minLines: 2,
+              maxLines: 4,
+              decoration: const InputDecoration(
+                labelText: 'Artefaktbeschreibung',
+                border: OutlineInputBorder(),
               ),
             ),
-          const SizedBox(height: 12),
-          Wrap(
-            alignment: WrapAlignment.end,
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              TextButton(
-                onPressed: widget.onCancel,
-                child: const Text('Abbrechen'),
+            SwitchListTile(
+              key: const ValueKey<String>('combat-armor-form-geweiht'),
+              contentPadding: EdgeInsets.zero,
+              title: const Text('Geweiht'),
+              value: _isGeweiht,
+              onChanged: (value) {
+                setState(() {
+                  _isGeweiht = value;
+                });
+              },
+            ),
+            TextField(
+              key: const ValueKey<String>(
+                'combat-armor-form-geweiht-description',
               ),
-              FilledButton(
-                key: const ValueKey<String>('combat-armor-form-save'),
-                onPressed: _submit,
-                child: const Text('Speichern'),
+              controller: _geweihtDescriptionController,
+              enabled: _isGeweiht,
+              minLines: 2,
+              maxLines: 4,
+              decoration: const InputDecoration(
+                labelText: 'Beschreibung (geweiht)',
+                border: OutlineInputBorder(),
               ),
-            ],
-          ),
-        ],
+            ),
+            if (widget.showRg1Toggle)
+              SwitchListTile(
+                key: const ValueKey<String>('combat-armor-form-rg1'),
+                contentPadding: EdgeInsets.zero,
+                title: const Text('RG I aktiv'),
+                value: _rg1Active,
+                onChanged: (value) {
+                  setState(() {
+                    _rg1Active = value;
+                  });
+                },
+              ),
+            if (_validationMessage != null &&
+                _validationMessage!.trim().isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 6),
+                child: Text(
+                  _validationMessage!,
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+                ),
+              ),
+            const SizedBox(height: 12),
+            Wrap(
+              alignment: WrapAlignment.end,
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                TextButton(
+                  onPressed: widget.onCancel,
+                  child: const Text('Abbrechen'),
+                ),
+                FilledButton(
+                  key: const ValueKey<String>('combat-armor-form-save'),
+                  onPressed: _submit,
+                  child: const Text('Speichern'),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

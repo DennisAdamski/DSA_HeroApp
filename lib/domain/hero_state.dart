@@ -1,5 +1,6 @@
 import 'package:dsa_heldenverwaltung/domain/active_spell_effects_state.dart';
 import 'package:dsa_heldenverwaltung/domain/attribute_modifiers.dart';
+import 'package:dsa_heldenverwaltung/domain/begleiter_zustand.dart';
 import 'package:dsa_heldenverwaltung/domain/dice_log_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
 import 'package:dsa_heldenverwaltung/domain/unbekannte_json_felder.dart';
@@ -25,6 +26,7 @@ class HeroState {
     this.wpiZustand = const WundZustand(),
     this.diceLog = const <DiceLogEntry>[],
     this.buchungen = const <ZustandsBuchung>[],
+    this.begleiterZustaende = const <String, BegleiterZustand>{},
     this.lastModified,
     this.unbekannteFelder = const <String, Object?>{},
   });
@@ -44,6 +46,7 @@ class HeroState {
       wpiZustand = const WundZustand(),
       diceLog = const <DiceLogEntry>[],
       buchungen = const <ZustandsBuchung>[],
+      begleiterZustaende = const <String, BegleiterZustand>{},
       unbekannteFelder = const <String, Object?>{};
 
   /// Maximale Anzahl persistierter Wuerfelprotokoll-Eintraege pro Held.
@@ -83,6 +86,13 @@ class HeroState {
   /// Bestandszustände ihren Inhalts-Hash behalten.
   final List<ZustandsBuchung> buchungen;
 
+  /// Laufende Werte der Begleiter je Begleiter-ID (Vertraute, Reittiere).
+  ///
+  /// Ein Begleiter ohne Eintrag ist „voll“. Einträge gelöschter Begleiter
+  /// bleiben stehen und werden ignoriert. Nur bei Belegung im JSON, damit
+  /// Bestandszustände ihren Inhalts-Hash behalten.
+  final Map<String, BegleiterZustand> begleiterZustaende;
+
   /// Zeitpunkt der letzten Speicherung, analog zu `HeroSheet.lastModified`.
   ///
   /// Rein informativ: Der Wert bleibt aus `heroStateContentHash` und damit aus
@@ -111,6 +121,7 @@ class HeroState {
     'wpiZustand',
     'diceLog',
     'buchungen',
+    'begleiterZustaende',
     'lastModified',
   };
 
@@ -128,6 +139,7 @@ class HeroState {
     WundZustand? wpiZustand,
     List<DiceLogEntry>? diceLog,
     List<ZustandsBuchung>? buchungen,
+    Map<String, BegleiterZustand>? begleiterZustaende,
     DateTime? lastModified,
   }) {
     return HeroState(
@@ -144,6 +156,7 @@ class HeroState {
       wpiZustand: wpiZustand ?? this.wpiZustand,
       diceLog: diceLog ?? this.diceLog,
       buchungen: buchungen ?? this.buchungen,
+      begleiterZustaende: begleiterZustaende ?? this.begleiterZustaende,
       lastModified: lastModified ?? this.lastModified,
       unbekannteFelder: unbekannteFelder,
     );
@@ -157,6 +170,18 @@ class HeroState {
       next.removeRange(0, next.length - buchungenMax);
     }
     return copyWith(buchungen: List<ZustandsBuchung>.unmodifiable(next));
+  }
+
+  /// Ersetzt den Zustand des Begleiters [id]; ein leerer Zustand entfernt den
+  /// Eintrag („voll“).
+  HeroState withBegleiterZustand(String id, BegleiterZustand zustand) {
+    final next = Map<String, BegleiterZustand>.of(begleiterZustaende);
+    if (zustand.istLeer) {
+      next.remove(id);
+    } else {
+      next[id] = zustand;
+    }
+    return copyWith(begleiterZustaende: Map.unmodifiable(next));
   }
 
   /// Haengt einen neuen Eintrag an das Wuerfelprotokoll an und trimmt FIFO.
@@ -195,6 +220,11 @@ class HeroState {
         'buchungen': buchungen
             .map((buchung) => buchung.toJson())
             .toList(growable: false),
+      if (begleiterZustaende.isNotEmpty)
+        'begleiterZustaende': {
+          for (final eintrag in begleiterZustaende.entries)
+            eintrag.key: eintrag.value.toJson(),
+        },
       if (lastModified != null)
         'lastModified': lastModified!.toUtc().toIso8601String(),
     };
@@ -213,6 +243,7 @@ class HeroState {
             ),
           );
     final rawBuchungen = json['buchungen'] as List?;
+    final rawBegleiter = json['begleiterZustaende'] as Map?;
     return HeroState(
       schemaVersion: 6,
       currentLep: getInt('currentLep'),
@@ -243,6 +274,15 @@ class HeroState {
                 (e) => ZustandsBuchung.fromJson(e.cast<String, dynamic>()),
               ),
             ),
+      begleiterZustaende: rawBegleiter == null
+          ? const <String, BegleiterZustand>{}
+          : Map<String, BegleiterZustand>.unmodifiable({
+              for (final eintrag in rawBegleiter.entries)
+                if (eintrag.key is String && eintrag.value is Map)
+                  eintrag.key as String: BegleiterZustand.fromJson(
+                    (eintrag.value as Map).cast<String, dynamic>(),
+                  ),
+            }),
       lastModified: DateTime.tryParse(json['lastModified'] as String? ?? ''),
       unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
     );

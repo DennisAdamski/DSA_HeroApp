@@ -4,6 +4,7 @@ import 'package:dsa_heldenverwaltung/data/hero_repository.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/rest_outcome_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/rest_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/vertrauten_spiel_rules.dart';
 
 /// Anwendungsablauf „Rast abschließen“ (ARCH-05).
 ///
@@ -31,12 +32,22 @@ class RastAbschliessen {
   /// [eingabe]. [manuelleWuerfe] kennzeichnet von Hand eingetragene Würfe im
   /// Protokoll. Protokolleinträge und Änderungszeitpunkt tragen denselben
   /// Zeitpunkt. Liefert das Ergebnis der tatsächlich gespeicherten Rast.
+  ///
+  /// [vertrautenRast] lässt Vertraute je Regenerationsphase ein aufgerundetes
+  /// Zehntel ihrer Maxima regenerieren (WdZ S. 125), bei Körperkontakt mit
+  /// einem Punkt mehr.
   Future<RestOutcome> uebernehmeRast({
     required String heroId,
     required RestOutcomeInput eingabe,
     Set<RestRollSlot> manuelleWuerfe = const <RestRollSlot>{},
+    List<VertrautenRast> vertrautenRast = const <VertrautenRast>[],
   }) async {
     final jetzt = uhr();
+    // Die Vertrauten regenerieren in derselben Zustandsänderung (ein
+    // Dokument); ihre Maxima kommen aus dem frisch geladenen Bogen.
+    final held = vertrautenRast.isEmpty
+        ? null
+        : await repository.loadHeroById(heroId);
     late RestOutcome ergebnis;
     await aendereGespeichertenZustand(
       repository: repository,
@@ -52,10 +63,17 @@ class RastAbschliessen {
           manuelleWuerfe: manuelleWuerfe,
           zeitpunkt: jetzt,
         );
-        return applyRestOutcome(
+        final nachRast = applyRestOutcome(
           aktuell,
           ergebnis,
         ).withAppendedDiceLogEntries(protokoll);
+        if (held == null) return nachRast;
+        return mitVertrautenRast(
+          nachRast,
+          held,
+          vertrautenRast,
+          phasen: eingabe.regenerationPhases,
+        );
       },
     );
     return ergebnis;

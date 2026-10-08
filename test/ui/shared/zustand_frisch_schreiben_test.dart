@@ -7,7 +7,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/active_spell_effects_state.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
+import 'package:dsa_heldenverwaltung/domain/begleiter_zustand.dart';
 import 'package:dsa_heldenverwaltung/domain/dice_log_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_companion.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
@@ -15,11 +17,13 @@ import 'package:dsa_heldenverwaltung/domain/spell_duration.dart';
 import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/active_spell_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/active_spell_state_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/begleiter_zustand_rules.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
 import 'package:dsa_heldenverwaltung/ui/bridges/karto_spiel_bruecke.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/active_spell_effects_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/begleiter_zustand_aendern.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/dice_log_persistence.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/zustand_aendern.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/inspector/widgets/inspector_belastung_section.dart';
@@ -471,6 +475,93 @@ void main() {
     final gespeichert = (await repo.loadHeroState('demo'))!;
     _expectFremdesErhalten(gespeichert, bauchwunden: 2);
     expect(gespeichert.currentLep, 20);
+  });
+
+  group('Begleiter-Ressourcen (V2)', () {
+    const mira = HeroCompanion(
+      id: 'mira',
+      maxLep: 20,
+      maxAsp: 10,
+      maxAup: 30,
+      startLep: 20,
+      startAsp: 10,
+      startAup: 30,
+    );
+
+    Widget begleiterKnopf(int schritt, {int klicks = 1}) =>
+        knopf((context, ref) {
+          for (var i = 0; i < klicks; i++) {
+            unawaited(
+              aendereBegleiterPool(
+                context: context,
+                ref: ref,
+                heroId: 'demo',
+                begleiter: mira,
+                pool: BegleiterPool.lep,
+                aenderung: begleiterPoolSchritt(BegleiterPool.lep, 20, schritt),
+              ),
+            );
+          }
+        });
+
+    testWidgets('ersetzt nur den Wert des Begleiters, Fremdes bleibt', (
+      tester,
+    ) async {
+      final repo = _Repository();
+      await zeige(tester, repo, begleiterKnopf(-5));
+      repo.fremdeAenderung = (z) => _fremd(z)
+          .withBegleiterZustand('rondo', const BegleiterZustand(currentLep: 2))
+          .withBegleiterZustand('mira', const BegleiterZustand(currentAsp: 4));
+
+      await tester.tap(find.text('los'));
+      await tester.pumpAndSettle();
+
+      final gespeichert = (await repo.loadHeroState('demo'))!;
+      expect(gespeichert.begleiterZustaende['mira']!.currentLep, 15);
+      expect(gespeichert.begleiterZustaende['mira']!.currentAsp, 4);
+      expect(gespeichert.begleiterZustaende['rondo']!.currentLep, 2);
+      _expectFremdesErhalten(gespeichert);
+      expect(gespeichert.currentLep, 20, reason: 'der Held bleibt unberührt');
+    });
+
+    testWidgets('fünf schnelle Klicks zählen alle', (tester) async {
+      final repo = _Repository();
+      await zeige(tester, repo, begleiterKnopf(-1, klicks: 5));
+
+      await tester.tap(find.text('los'));
+      await tester.pumpAndSettle();
+
+      expect(
+        (await repo.loadHeroState('demo'))!
+            .begleiterZustaende['mira']!
+            .currentLep,
+        15,
+      );
+    });
+
+    testWidgets('ein Speicherfehler erscheint und der Wert bleibt', (
+      tester,
+    ) async {
+      final repo = _Repository()..schreibFehler = true;
+      await zeige(tester, repo, begleiterKnopf(-1));
+
+      await tester.tap(find.text('los'));
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('LeP nicht gespeichert'), findsOneWidget);
+      expect((await repo.loadHeroState('demo'))!.begleiterZustaende, isEmpty);
+
+      repo.schreibFehler = false;
+      await tester.tap(find.text('los'));
+      await tester.pumpAndSettle();
+
+      expect(
+        (await repo.loadHeroState('demo'))!
+            .begleiterZustaende['mira']!
+            .currentLep,
+        19,
+      );
+    });
   });
 }
 

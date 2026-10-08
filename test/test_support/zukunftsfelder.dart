@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:dsa_heldenverwaltung/domain/active_spell_effects_state.dart';
 import 'package:dsa_heldenverwaltung/domain/avatar_gallery_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/begleiter_zustand.dart';
 import 'package:dsa_heldenverwaltung/domain/avatar_gesichtsbefund.dart';
 import 'package:dsa_heldenverwaltung/domain/avatar_snapshot.dart';
 import 'package:dsa_heldenverwaltung/domain/aventurian_date.dart';
@@ -723,6 +724,9 @@ List<String> _grundwerteAvatarVerlauf(Map<String, dynamic> basis) {
   ];
 }
 
+/// Begleiter-ID, deren laufende Werte die Zustandsbasis ergaenzt.
+const String zukunftsBegleiter = 'b1';
+
 /// Laufender Zaubereffekt, den die Zustandsbasis ergaenzt (Armatrutz).
 const String zukunftsEffekt = 'effect_spell_armatrutz';
 
@@ -734,6 +738,10 @@ Zukunftsheld zustandMitZukunftsfeldern(Map<String, dynamic> zustandJson) {
   final basis = _tiefeKopie(zustandJson);
   _pruefe((basis['diceLog'] as List).isNotEmpty, 'Würfelprotokoll');
   _pruefe(basis['wpiZustand'] is Map, 'Wundenzustand');
+  _pruefe(!basis.containsKey('begleiterZustaende'), 'keine Begleiterwerte');
+  basis['begleiterZustaende'] = <String, dynamic>{
+    zukunftsBegleiter: const BegleiterZustand(currentLep: 4).toJson(),
+  };
   final effekte = basis['activeSpellEffects'] as Map<String, dynamic>;
   _pruefe((effekte['activeEffectIds'] as List).isEmpty, 'keine Effekte');
   basis['activeSpellEffects'] = const ActiveSpellEffectsState()
@@ -758,6 +766,7 @@ Zukunftsheld zustandMitZukunftsfeldern(Map<String, dynamic> zustandJson) {
       'activeSpellEffects/effectDetails/$zukunftsEffekt',
       'activeSpellEffects/effectDetails/$zukunftsEffekt/duration',
       'wpiZustand',
+      'begleiterZustaende/$zukunftsBegleiter',
       'diceLog/0',
     ],
     werte: const <String, Object?>{
@@ -787,6 +796,10 @@ HeroState bearbeiteZustand(HeroState zustand) {
           ),
         ),
         wpiZustand: zustand.wpiZustand.mitWundeHinzu(WundZone.brust),
+      )
+      .withBegleiterZustand(
+        zukunftsBegleiter,
+        zustand.begleiterZustaende[zukunftsBegleiter]!.copyWith(currentLep: 3),
       )
       .withAppendedDiceLog(
         DiceLogEntry(

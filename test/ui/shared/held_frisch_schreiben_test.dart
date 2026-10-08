@@ -267,40 +267,46 @@ void main() {
     });
   });
 
-  testWidgets('der Einstieg schreibt während einer Planung nichts', (
-    tester,
-  ) async {
-    await zeige(
-      tester,
-      Consumer(
-        builder: (context, ref, _) => TextButton(
-          onPressed: () => unawaited(
-            aendereHeldMitMeldung(
-              context: context,
-              ref: ref,
-              heroId: 'rondra',
-              was: 'Test',
-              aenderung: (held) => held.copyWith(name: 'Neu'),
+  testWidgets(
+    'Sofortaktion fragt vor dem Verwerfen und Abbruch schreibt nichts',
+    (tester) async {
+      await zeige(
+        tester,
+        Consumer(
+          builder: (context, ref, _) => TextButton(
+            onPressed: () => unawaited(
+              aendereHeldMitMeldung(
+                context: context,
+                ref: ref,
+                heroId: 'rondra',
+                was: 'Test',
+                aenderung: (held) => held.copyWith(name: 'Neu'),
+              ),
             ),
+            child: const Text('los'),
           ),
-          child: const Text('los'),
         ),
-      ),
-    );
-    starteRunde();
+      );
+      starteRunde();
 
-    await tester.tap(find.text('los'));
-    await tester.pumpAndSettle();
+      await tester.tap(find.text('los'));
+      await tester.pumpAndSettle();
 
-    expect(repo.bogenSpeicherungen, 0);
-    expect(
-      find.text(
-        'Test nicht gespeichert: Während einer Planung ist der Heldenbogen '
-        'gesperrt.',
-      ),
-      findsOneWidget,
-    );
-  });
+      expect(repo.bogenSpeicherungen, 0);
+      expect(find.text('Planung verwerfen und bearbeiten'), findsOneWidget);
+      await tester.tap(find.text('Abbrechen'));
+      await tester.pumpAndSettle();
+      expect(repo.bogenSpeicherungen, 0);
+      expect(container.read(advancementSessionProvider('rondra')), isNotNull);
+      await tester.tap(find.text('los'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Planung verwerfen und bearbeiten'));
+      await tester.pumpAndSettle();
+      expect(repo.bogenSpeicherungen, 1);
+      expect((await repo.loadHeroById('rondra'))!.name, 'Neu');
+      expect(container.read(advancementSessionProvider('rondra')), isNull);
+    },
+  );
 
   testWidgets('der Editor-Einstieg reicht die Planungssperre weiter', (
     tester,

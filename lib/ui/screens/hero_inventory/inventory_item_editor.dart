@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/planung_bearbeiten_guard.dart';
 
 import 'package:dsa_heldenverwaltung/domain/hero_companion.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
@@ -19,7 +22,7 @@ const double _fieldSpacing = 12;
 /// (schmale Screens) eingesetzt werden.
 ///
 /// Ruft [onSaved] mit dem aktualisierten Eintrag auf, [onCancelled] bei Abbruch.
-class InventoryItemEditor extends StatefulWidget {
+class InventoryItemEditor extends ConsumerStatefulWidget {
   /// Erstellt den Detail-Editor fuer einen Inventar-Eintrag.
   const InventoryItemEditor({
     super.key,
@@ -60,10 +63,11 @@ class InventoryItemEditor extends StatefulWidget {
   final Future<void> Function()? onVerkaufen;
 
   @override
-  State<InventoryItemEditor> createState() => _InventoryItemEditorState();
+  ConsumerState<InventoryItemEditor> createState() =>
+      _InventoryItemEditorState();
 }
 
-class _InventoryItemEditorState extends State<InventoryItemEditor> {
+class _InventoryItemEditorState extends ConsumerState<InventoryItemEditor> {
   late HeroInventoryEntry _draft;
   bool _isSaving = false;
   // Ein fehlgeschlagener Schreibvorgang darf den Entwurf nicht stillschweigend
@@ -209,7 +213,10 @@ class _InventoryItemEditorState extends State<InventoryItemEditor> {
 
   @override
   Widget build(BuildContext context) {
-    final content = _buildContent(context);
+    final heroId = PlanungsBearbeitungsBereich.heldVon(context);
+    final planungOffen =
+        heroId != null && ref.watch(advancementSessionProvider(heroId)) != null;
+    final content = _buildContent(context, planungOffen);
     final useCompactTitle = MediaQuery.sizeOf(context).width < 520;
     final appBarTitle = useCompactTitle
         ? (widget.isNew ? 'Hinzufügen' : 'Bearbeiten')
@@ -236,7 +243,7 @@ class _InventoryItemEditorState extends State<InventoryItemEditor> {
             message: 'Speichern',
             child: IconButton(
               key: const ValueKey<String>('inventory-editor-save'),
-              onPressed: _isSaving ? null : _save,
+              onPressed: _isSaving || planungOffen ? null : _save,
               icon: const Icon(Icons.check),
             ),
           ),
@@ -247,7 +254,7 @@ class _InventoryItemEditorState extends State<InventoryItemEditor> {
     );
   }
 
-  Widget _buildContent(BuildContext context) {
+  Widget _buildContent(BuildContext context, bool planungOffen) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -256,7 +263,7 @@ class _InventoryItemEditorState extends State<InventoryItemEditor> {
           if (!widget.showAppBar)
             _InlineHeader(
               title: _editorTitle,
-              onSave: _save,
+              onSave: planungOffen ? null : _save,
               onCancel: widget.onCancelled,
               isSaving: _isSaving,
             ),
@@ -267,27 +274,35 @@ class _InventoryItemEditorState extends State<InventoryItemEditor> {
             ),
             const SizedBox(height: _fieldSpacing),
           ],
-          _SectionTitle('Stammdaten'),
-          const SizedBox(height: 8),
-          _buildStammdaten(context),
-          const SizedBox(height: _fieldSpacing * 2),
-          _SectionTitle('Magisch & Geweiht'),
-          const SizedBox(height: 8),
-          _buildBesonderheiten(),
-          const SizedBox(height: _fieldSpacing * 2),
-          _SectionTitle('Wert & Gewicht'),
-          const SizedBox(height: 8),
-          _buildWertGewicht(),
-          if (_draft.itemType == InventoryItemType.ausruestung) ...[
-            const SizedBox(height: _fieldSpacing * 2),
-            _SectionTitle('Modifikatoren'),
-            const SizedBox(height: 4),
-            _buildModifikatoren(),
-          ],
+          PlanungsFormularSchutz(child: _buildForm(context)),
         ],
       ),
     );
   }
+
+  // Der äußere Scrollbereich bleibt auch bei gesperrter Form bedienbar.
+  Widget _buildForm(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      _SectionTitle('Stammdaten'),
+      const SizedBox(height: 8),
+      _buildStammdaten(context),
+      const SizedBox(height: _fieldSpacing * 2),
+      _SectionTitle('Magisch & Geweiht'),
+      const SizedBox(height: 8),
+      _buildBesonderheiten(),
+      const SizedBox(height: _fieldSpacing * 2),
+      _SectionTitle('Wert & Gewicht'),
+      const SizedBox(height: 8),
+      _buildWertGewicht(),
+      if (_draft.itemType == InventoryItemType.ausruestung) ...[
+        const SizedBox(height: _fieldSpacing * 2),
+        _SectionTitle('Modifikatoren'),
+        const SizedBox(height: 4),
+        _buildModifikatoren(),
+      ],
+    ],
+  );
 
   Widget _buildStammdaten(BuildContext context) {
     return Column(
@@ -540,7 +555,7 @@ class _InlineHeader extends StatelessWidget {
   });
 
   final String title;
-  final Future<void> Function() onSave;
+  final Future<void> Function()? onSave;
   final VoidCallback onCancel;
   final bool isSaving;
 
@@ -674,6 +689,7 @@ class _DropdownField<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DropdownButtonFormField<T>(
+      isExpanded: true,
       initialValue: value,
       decoration: InputDecoration(
         labelText: label,

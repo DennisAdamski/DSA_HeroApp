@@ -18,6 +18,8 @@ class DukatenField extends StatefulWidget {
     required this.value,
     required this.onCommit,
     required this.onSchritt,
+    this.readOnly = false,
+    this.onBearbeiten,
   });
 
   /// Aktuell gespeicherter Geldwert des Helden.
@@ -28,6 +30,12 @@ class DukatenField extends StatefulWidget {
 
   /// Verschiebt den gespeicherten Geldwert um den Kreuzerbetrag.
   final Future<void> Function(int deltaKreuzer) onSchritt;
+
+  /// Zeigt den Geldstand während einer Planung ohne freie Texteingabe.
+  final bool readOnly;
+
+  /// Fragt vor einer Eingabe oder einem Münzschritt nach dem Verwerfen.
+  final Future<bool> Function()? onBearbeiten;
 
   @override
   State<DukatenField> createState() => _DukatenFieldState();
@@ -83,6 +91,7 @@ class _DukatenFieldState extends State<DukatenField> {
   String? _laufenderBetrag;
 
   Future<void> _commitIfChanged() async {
+    if (widget.readOnly) return;
     final nextValue = _controller.text.trim();
     if (nextValue == widget.value.trim() || nextValue == _laufenderBetrag) {
       return;
@@ -96,6 +105,10 @@ class _DukatenFieldState extends State<DukatenField> {
   }
 
   Future<void> _adjustBy(int deltaKreuzer) async {
+    if (widget.readOnly) {
+      final erlaubt = await widget.onBearbeiten?.call() ?? false;
+      if (!erlaubt || !mounted) return;
+    }
     if (parseDsaCurrencyToKreuzer(_controller.text) == null) {
       _showInvalidMoneySnackBar();
       return;
@@ -139,6 +152,8 @@ class _DukatenFieldState extends State<DukatenField> {
           child: TextField(
             controller: _controller,
             focusNode: _focusNode,
+            readOnly: widget.readOnly,
+            onTap: widget.readOnly ? () => widget.onBearbeiten?.call() : null,
             decoration: const InputDecoration(
               labelText: 'Dukaten',
               border: OutlineInputBorder(),

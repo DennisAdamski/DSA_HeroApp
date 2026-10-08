@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/planung_bearbeiten_guard.dart';
 import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -217,6 +218,13 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
   }
 
   Future<void> _startEdit() async {
+    final darfBearbeiten = await bestaetigeBearbeitungBeiPlanung(
+      context: context,
+      heroId: widget.heroId,
+    );
+    if (!darfBearbeiten || !mounted) {
+      return;
+    }
     final hero = _latestHero;
     if (hero == null) {
       return;
@@ -462,7 +470,10 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
                               if (!_editController.isEditing) {
                                 await _startEdit();
                               }
-                              if (!context.mounted) return;
+                              if (!context.mounted ||
+                                  !_editController.isEditing) {
+                                return;
+                              }
                               _showZauberKatalog(context, catalog.spells);
                             },
                             onRollSpell: (_, spell, entry) {
@@ -528,6 +539,7 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
                               if (!_editController.isEditing) {
                                 await _startEdit();
                               }
+                              return mounted && _editController.isEditing;
                             },
                           ),
                         ],
@@ -578,6 +590,7 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
                               if (!_editController.isEditing) {
                                 await _startEdit();
                               }
+                              return mounted && _editController.isEditing;
                             },
                           ),
                         ],

@@ -9,9 +9,12 @@ import 'package:dsa_heldenverwaltung/rules/derived/advancement_options.dart';
 import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/advancement/advancement_activation_sheet.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/advancement/advancement_catalog_actions.dart';
-import 'package:dsa_heldenverwaltung/ui/screens/advancement/advancement_option_card.dart';
 
 import 'advancement_skill_tree_view.dart';
+import 'advancement_value_tile.dart';
+import 'advancement_specialization_dialog.dart';
+
+import 'package:dsa_heldenverwaltung/rules/derived/advancement_specialization_rules.dart';
 
 import 'package:dsa_heldenverwaltung/ui/theme/codex_theme.dart';
 
@@ -117,9 +120,6 @@ class _AdvancementCatalogState extends ConsumerState<AdvancementCatalog> {
     final showImpact = _category == _CatalogCategory.attributes;
     final showBridge =
         query.isNotEmpty && _category.supportsActivation && !_dialogOpen;
-    final headerCount = showImpact ? 1 : 0;
-    final optionCount = filtered.isEmpty ? 1 : filtered.length;
-    final bridgeCount = showBridge ? 1 : 0;
     return LayoutBuilder(
       builder: (context, constraints) {
         // Der Kopf behält seine natürliche Höhe, solange sie passt. Erst wenn
@@ -225,55 +225,162 @@ class _AdvancementCatalogState extends ConsumerState<AdvancementCatalog> {
                           .setShowInapplicableSpecialAbilities,
                       onPlan: session.isSaving || _dialogOpen ? null : _plan,
                     )
-                  : ListView.separated(
-                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-                      itemCount: headerCount + optionCount + bridgeCount,
-                      separatorBuilder: (_, _) => const SizedBox(height: 10),
-                      itemBuilder: (context, index) {
-                        if (showImpact && index == 0) {
-                          return AdvancementImpactPanel(session: session);
-                        }
-                        final offset = index - headerCount;
-                        if (showBridge && offset == optionCount) {
-                          return Align(
-                            alignment: Alignment.centerLeft,
-                            child: TextButton.icon(
-                              key: ValueKey(
-                                'advancement-activate-hint-${_category.name}',
-                              ),
-                              onPressed: () => _activate(
-                                _category,
-                                // Der Suchtext wandert unverändert weiter; `query` ist
-                                // für den Vergleich bereits kleingeschrieben.
-                                initialQuery: _searchController.text.trim(),
-                              ),
-                              icon: const Icon(Icons.search),
-                              label: const Text(
-                                'Weitere Treffer im Erwerbsblatt suchen',
-                              ),
-                            ),
-                          );
-                        }
-                        if (filtered.isEmpty) {
-                          return _buildEmptyState(context, query);
-                        }
-                        final option = filtered[offset];
-                        return AdvancementOptionCard(
-                          option: option,
-                          planned: plannedTargets.contains(
-                            '${option.kind.name}:${option.targetId}',
-                          ),
-                          onPlan: session.isSaving || _dialogOpen
-                              ? null
-                              : () => _plan(option),
-                        );
-                      },
+                  : _valueCatalog(
+                      session,
+                      filtered,
+                      plannedTargets,
+                      showImpact: showImpact,
+                      showBridge: showBridge,
+                      query: query,
                     ),
             ),
           ],
         );
       },
     );
+  }
+
+  // Eine gemeinsame Kacheldarstellung hält alle numerischen Kategorien kompakt.
+  Widget _valueCatalog(
+    AdvancementSession session,
+    List<AdvancementOption> options,
+    Set<String> plannedTargets, {
+    required bool showImpact,
+    required bool showBridge,
+    required String query,
+  }) {
+    final rules = AdvancementContext(
+      hero: session.preview,
+      catalog: session.catalog,
+    );
+    Widget tile(AdvancementOption option) {
+      final spec =
+          option.kind == AdvancementKind.talent && option.currentValue >= 0
+          ? resolveTalentSpecialization(rules, option.targetId, const {
+              'action': 'specialization',
+            })
+          : null;
+      final old = session.preview.talents[option.targetId];
+      return AdvancementValueTile(
+        option: option,
+        planned: plannedTargets.contains(
+          '${option.kind.name}:${option.targetId}',
+        ),
+        onPlan: session.isSaving || _dialogOpen ? null : () => _plan(option),
+        specialization: spec,
+        specializations: spec == null || old == null
+            ? const []
+            : advancementTalentSpecializations(old),
+        onSpecialize: session.isSaving || _dialogOpen
+            ? null
+            : () => _specialize(option.targetId),
+      );
+    }
+
+    Widget tiles(List<AdvancementOption> values) => LayoutBuilder(
+      builder: (context, constraints) {
+        final scale = MediaQuery.textScalerOf(context).scale(1);
+        final columns = math.max(
+          1,
+          (constraints.maxWidth / (260 * scale)).floor(),
+        );
+        final width = (constraints.maxWidth - (columns - 1) * 10) / columns;
+        return Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          children: [
+            for (final option in values)
+              SizedBox(width: width, child: tile(option)),
+          ],
+        );
+      },
+    );
+    final attributes = options
+        .where((o) => o.kind == AdvancementKind.attribute)
+        .toList();
+    final bought = options
+        .where((o) => o.kind == AdvancementKind.boughtStat)
+        .toList();
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (showImpact)
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final stats = Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    AdvancementImpactPanel(session: session),
+                    const SizedBox(height: 10),
+                    tiles(bought),
+                  ],
+                );
+                if (constraints.maxWidth < 760 ||
+                    MediaQuery.textScalerOf(context).scale(1) > 1.3) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      tiles(attributes),
+                      const SizedBox(height: 16),
+                      stats,
+                    ],
+                  );
+                }
+                return Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(child: tiles(attributes)),
+                    const SizedBox(width: 16),
+                    SizedBox(width: 260, child: stats),
+                  ],
+                );
+              },
+            )
+          else if (options.isNotEmpty)
+            tiles(options),
+          if (options.isEmpty) _buildEmptyState(context, query),
+          if (showBridge)
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton.icon(
+                key: ValueKey('advancement-activate-hint-${_category.name}'),
+                onPressed: () => _activate(
+                  _category,
+                  initialQuery: _searchController.text.trim(),
+                ),
+                icon: const Icon(Icons.search),
+                label: const Text('Weitere Treffer im Erwerbsblatt suchen'),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  // Der Erwerb nutzt denselben Controller und dieselbe Fehlerrückmeldung wie Steigerungen.
+  Future<void> _specialize(String talentId) async {
+    final session = ref.read(advancementSessionProvider(widget.heroId));
+    if (session == null || session.isSaving || _dialogOpen) return;
+    setState(() => _dialogOpen = true);
+    try {
+      final entry = await showAdvancementSpecializationDialog(
+        context: context,
+        session: session,
+        talentId: talentId,
+      );
+      if (entry != null && mounted) {
+        ref.read(advancementSessionProvider(widget.heroId).notifier).add(entry);
+      }
+    } on StateError catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(error.message)));
+      }
+    } finally {
+      if (mounted) setState(() => _dialogOpen = false);
+    }
   }
 
   // Ohne Suchtext ist die Liste nicht gefiltert, sondern schlicht leer.

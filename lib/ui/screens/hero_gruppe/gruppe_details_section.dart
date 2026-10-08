@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:dsa_heldenverwaltung/ui/screens/shared/planung_bearbeiten_guard.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_gruppen_config.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 
@@ -136,6 +137,13 @@ class GruppeDetailsSection extends ConsumerWidget {
   }
 
   Future<void> _gruppeVerlassen(BuildContext context, WidgetRef ref) async {
+    final darfBearbeiten = await bestaetigeBearbeitungBeiPlanung(
+      context: context,
+      heroId: heroId,
+    );
+    if (!darfBearbeiten || !context.mounted) {
+      return;
+    }
     final bestaetigt = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(

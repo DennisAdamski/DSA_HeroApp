@@ -19,7 +19,6 @@ import 'package:dsa_heldenverwaltung/ui2/shell/karto_modus_navigation.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_navigationsgrund.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_spielansicht.dart';
 import 'package:dsa_heldenverwaltung/ui2/widgets/karto_papier.dart';
-import 'package:dsa_heldenverwaltung/ui2/widgets/karto_seitenkopf.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
 
 part 'karto_workspace_navigation.dart';
@@ -328,7 +327,7 @@ class _KartoWorkspaceState extends ConsumerState<KartoWorkspace> {
     vorHeldenbearbeitung: _pruefeEditor,
   );
 
-  // Während einer Sitzung bleiben sämtliche manuellen Schreibwege gesperrt.
+  // Ansehen erhält die Sitzung; Schreibwege verlangen bestätigtes Verwerfen.
   Widget _verwaltung(bool gesperrt) => Column(
     // Ohne stretch zentriert Column seine schrumpfenden Kinder; der
     // Sperrhinweis staende dann mittig statt am linken Rand.
@@ -387,13 +386,18 @@ class _KartoWorkspaceState extends ConsumerState<KartoWorkspace> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final rand = kartoBreiteFuer(constraints.maxWidth).seitenrand;
+        // Navigation und große Schrift verkleinern den nutzbaren Platz.
+        // Der Kopf darf deshalb nicht die Breitenklasse des Fensters verwenden.
+        final innenbreite = constraints.maxWidth - 2 * rand;
+        final textSkalierung = MediaQuery.textScalerOf(context).scale(1);
+        final kopfBreite = kartoBreiteFuer(innenbreite / textSkalierung);
         return Column(
           // Siehe _verwaltung: ohne stretch zentriert Column den Seitenkopf.
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Padding(
               padding: EdgeInsets.fromLTRB(rand, rand, rand, 0),
-              child: _planungskopf(session, breite),
+              child: _planungskopf(session, kopfBreite),
             ),
             Expanded(
               child: KartoEntwicklungsansicht(
@@ -434,10 +438,22 @@ class _KartoWorkspaceState extends ConsumerState<KartoWorkspace> {
       ],
     );
     if (breite != KartoBreite.schmal) {
-      return KartoSeitenkopf(
-        titel: 'Nächste Schritte',
-        kontext: entwurf,
-        aktion: aktionen,
+      return Padding(
+        padding: const EdgeInsets.only(bottom: Abstand.normal),
+        child: Wrap(
+          alignment: WrapAlignment.spaceBetween,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          spacing: Abstand.normal,
+          runSpacing: Abstand.normal,
+          children: [
+            Text(
+              entwurf,
+              style: Theme.of(context).textTheme.labelMedium
+                  ?.copyWith(color: context.karto.schriftLeise),
+            ),
+            aktionen,
+          ],
+        ),
       );
     }
     return Padding(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:dsa_heldenverwaltung/ui/screens/shared/planung_bearbeiten_guard.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_gruppen_config.dart';
 import 'package:dsa_heldenverwaltung/state/firebase_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
@@ -191,6 +192,13 @@ class _LeereGruppenAnsicht extends ConsumerWidget {
   }
 
   Future<void> _erstelleGruppe(BuildContext context, WidgetRef ref) async {
+    final darfBearbeiten = await bestaetigeBearbeitungBeiPlanung(
+      context: context,
+      heroId: heroId,
+    );
+    if (!darfBearbeiten || !context.mounted) {
+      return;
+    }
     final code = await showGruppeErstellenDialog(
       context: context,
       ref: ref,
@@ -202,6 +210,13 @@ class _LeereGruppenAnsicht extends ConsumerWidget {
   }
 
   Future<void> _trittBei(BuildContext context, WidgetRef ref) async {
+    final darfBearbeiten = await bestaetigeBearbeitungBeiPlanung(
+      context: context,
+      heroId: heroId,
+    );
+    if (!darfBearbeiten || !context.mounted) {
+      return;
+    }
     final code = await showGruppeBeitretenDialog(
       context: context,
       ref: ref,
@@ -307,6 +322,13 @@ class _AktionsLeisteState extends ConsumerState<_AktionsLeiste> {
   bool _isSyncing = false;
 
   Future<void> _sync() async {
+    final darfBearbeiten = await bestaetigeBearbeitungBeiPlanung(
+      context: context,
+      heroId: widget.heroId,
+    );
+    if (!darfBearbeiten || !mounted) {
+      return;
+    }
     setState(() => _isSyncing = true);
     try {
       await ref.read(heroActionsProvider).syncGruppen(widget.heroId);
@@ -360,6 +382,13 @@ class _AktionsLeisteState extends ConsumerState<_AktionsLeiste> {
   }
 
   Future<void> _addManuell() async {
+    final darfBearbeiten = await bestaetigeBearbeitungBeiPlanung(
+      context: context,
+      heroId: widget.heroId,
+    );
+    if (!darfBearbeiten || !mounted) {
+      return;
+    }
     await showManuellerHeldDialog(
       context: context,
       ref: ref,

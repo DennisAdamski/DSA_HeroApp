@@ -34,7 +34,7 @@ class _AngriffseSection extends StatelessWidget {
             ),
           )
         else if (angriffe.isNotEmpty) ...[
-          // Kopfzeile
+          // Gleiche Spaltenbreiten wie in den Zeilen, auch beim Steigern.
           Padding(
             padding: const EdgeInsets.only(bottom: 4),
             child: Row(
@@ -55,7 +55,7 @@ class _AngriffseSection extends StatelessWidget {
                   ),
                 ),
                 SizedBox(
-                  width: 36,
+                  width: onRaiseAngriffAt != null ? 72 : 36,
                   child: Text(
                     'AT',
                     style: Theme.of(context).textTheme.labelSmall,
@@ -63,7 +63,7 @@ class _AngriffseSection extends StatelessWidget {
                   ),
                 ),
                 SizedBox(
-                  width: 36,
+                  width: onRaiseAngriffPa != null ? 72 : 36,
                   child: Text(
                     'PA',
                     style: Theme.of(context).textTheme.labelSmall,
@@ -77,7 +77,7 @@ class _AngriffseSection extends StatelessWidget {
                     style: Theme.of(context).textTheme.labelSmall,
                   ),
                 ),
-                if (isEditing) const SizedBox(width: 64),
+                if (isEditing) const SizedBox(width: 80),
               ],
             ),
           ),
@@ -237,22 +237,28 @@ class _AngriffRow extends StatelessWidget {
                 ),
               ),
               Expanded(flex: 2, child: Text(showTp.isEmpty ? '–' : showTp)),
-              if (isEditing) ...[
-                IconButton(
-                  icon: const Icon(Icons.edit_outlined, size: 18),
-                  onPressed: onEdit,
-                  tooltip: 'Bearbeiten',
-                  visualDensity: VisualDensity.compact,
-                  padding: EdgeInsets.zero,
+              if (isEditing)
+                SizedBox(
+                  width: 80,
+                  child: Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.edit_outlined, size: 18),
+                        onPressed: onEdit,
+                        tooltip: 'Bearbeiten',
+                        visualDensity: VisualDensity.compact,
+                        padding: EdgeInsets.zero,
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.delete_outline, size: 18),
+                        onPressed: onDelete,
+                        tooltip: 'Löschen',
+                        visualDensity: VisualDensity.compact,
+                        padding: EdgeInsets.zero,
+                      ),
+                    ],
+                  ),
                 ),
-                IconButton(
-                  icon: const Icon(Icons.delete_outline, size: 18),
-                  onPressed: onDelete,
-                  tooltip: 'Löschen',
-                  visualDensity: VisualDensity.compact,
-                  padding: EdgeInsets.zero,
-                ),
-              ],
             ],
           ),
           if (angriff.beschreibung.isNotEmpty)

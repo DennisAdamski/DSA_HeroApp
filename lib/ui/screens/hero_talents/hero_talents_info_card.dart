@@ -121,9 +121,7 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
                     tooltip: 'Aus Katalog wählen',
                     onSelected: (value) async {
                       await _ensureEditingSession();
-                      if (!mounted) {
-                        return;
-                      }
+                      if (!mounted || !_editController.isEditing) return;
                       _openTalentSpecialAbilityCatalog(
                         karmal: value == 'karmal',
                       );
@@ -149,9 +147,7 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
                     ),
                     onPressed: () async {
                       await _ensureEditingSession();
-                      if (!mounted) {
-                        return;
-                      }
+                      if (!mounted || !_editController.isEditing) return;
                       _addTalentSpecialAbility();
                     },
                     child: const Text('+ Sonderfertigkeit'),

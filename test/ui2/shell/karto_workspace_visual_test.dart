@@ -122,6 +122,9 @@ void main() {
           }
 
           await selectAcceptanceMode(tester, 'Entwicklung planen');
+          if (capture) {
+            await _capture(tester, screenshotKey, 'planung-start-$suffix');
+          }
           final planAction = find.byKey(
             const ValueKey('advancement-plan-attribute-mu'),
           );

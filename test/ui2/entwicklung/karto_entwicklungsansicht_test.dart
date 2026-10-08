@@ -5,6 +5,8 @@ import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/advancement/advancement_catalog.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/advancement/advancement_impact_panel.dart';
+import 'package:dsa_heldenverwaltung/ui2/entwicklung/karto_ap_uebersicht.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/advancement/advancement_history_panel.dart';
 import 'package:dsa_heldenverwaltung/ui2/entwicklung/karto_entwicklungsansicht.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_workspace.dart';
@@ -92,6 +94,25 @@ void main() {
     expect(find.text('Laufende Runde'), findsOneWidget);
   });
 
+  testWidgets(
+    'breite Planung stellt AP und Basiswerte neben die Eigenschaften',
+    (tester) async {
+      await pumpPlan(tester, size: const Size(1834, 1100), workspace: true);
+      await tester.tap(find.byTooltip('Entwicklung planen').first);
+      await tester.pumpAndSettle();
+      expect(find.text('Nächste Schritte'), findsNothing);
+      final attribute = tester.getRect(
+        find.byKey(const ValueKey('advancement-plan-attribute-mu')),
+      );
+      final impact = tester.getRect(find.byType(AdvancementImpactPanel));
+      final ap = tester.getRect(find.byType(KartoApUebersicht));
+      expect(impact.left, greaterThan(attribute.right));
+      expect(ap.left, greaterThan(impact.right));
+      expect(attribute.top, lessThan(450));
+      expect(tester.takeException(), isNull);
+    },
+  );
+
   testWidgets('Katalogaktion bleibt bei großer Schrift erreichbar', (
     tester,
   ) async {
@@ -110,6 +131,25 @@ void main() {
     );
 
     expect(action, findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('breite niedrige Fenster behalten scrollbar AP und Historie', (
+    tester,
+  ) async {
+    await pumpPlan(tester, size: const Size(1200, 420), textScale: 2);
+    expect(find.byType(AdvancementHistoryPanel), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    final apScroll = find.ancestor(
+      of: find.byType(KartoApUebersicht),
+      matching: find.byType(Scrollable),
+    );
+    await tester.scrollUntilVisible(
+      find.text('Danach verfügbar: 500 AP'),
+      120,
+      scrollable: apScroll,
+    );
+    expect(find.text('Danach verfügbar: 500 AP').hitTestable(), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 

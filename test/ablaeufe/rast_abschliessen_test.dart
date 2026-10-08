@@ -3,8 +3,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:dsa_heldenverwaltung/ablaeufe/rast_abschliessen.dart';
 import 'package:dsa_heldenverwaltung/ablaeufe/rast_protokoll.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
+import 'package:dsa_heldenverwaltung/domain/begleiter_zustand.dart';
 import 'package:dsa_heldenverwaltung/domain/dice_log_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_companion.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/vertrauten_spiel_rules.dart';
 import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/rest_outcome_rules.dart';
@@ -137,6 +141,52 @@ void main() {
         expect(gespeichert.diceLog, hasLength(7));
       },
     );
+
+    test('Vertraute regenerieren in derselben Zustandsänderung', () async {
+      const mira = HeroCompanion(
+        id: 'mira',
+        typ: BegleiterTyp.vertrauter,
+        maxLep: 24,
+        startLep: 24,
+        maxAsp: 5,
+        startAsp: 5,
+      );
+      final repo = FakeRepository(
+        heroes: [
+          HeroSheet(
+            id: 'held',
+            name: 'Hexe',
+            level: 1,
+            attributes: _eigenschaften,
+            companions: const [mira],
+          ),
+        ],
+        states: {
+          'held': _startzustand.withBegleiterZustand(
+            'mira',
+            const BegleiterZustand(currentLep: 10, currentAsp: 1),
+          ),
+        },
+      );
+
+      await _ablauf(repo).uebernehmeRast(
+        heroId: 'held',
+        eingabe: _schlaf(),
+        vertrautenRast: const [
+          VertrautenRast(
+            begleiterId: 'mira',
+            koerperkontakt: true,
+            wahl: KontaktBonus.asp,
+          ),
+        ],
+      );
+
+      final gespeichert = (await repo.loadHeroState('held'))!;
+      // Eine Phase: ⌈24/10⌉ = 3 LeP, ⌈5/10⌉ = 1 AsP und 1 AsP durch Kontakt.
+      expect(gespeichert.begleiterZustaende['mira']!.currentLep, 13);
+      expect(gespeichert.begleiterZustaende['mira']!.currentAsp, 3);
+      expect(gespeichert.currentLep, 14, reason: 'die Rast der Hexe bleibt');
+    });
 
     test('protokolliert die geltenden Würfe in fester Reihenfolge', () async {
       final repo = FakeRepository(states: {'held': _startzustand});

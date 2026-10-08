@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
+import 'package:dsa_heldenverwaltung/ui/screens/shared/planung_bearbeiten_guard.dart';
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/aventurian_date.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_adventure_entry.dart';
@@ -137,6 +138,13 @@ class _HeroNotesTabState extends ConsumerState<HeroNotesTab>
   }
 
   Future<void> _startEdit() async {
+    final darfBearbeiten = await bestaetigeBearbeitungBeiPlanung(
+      context: context,
+      heroId: widget.heroId,
+    );
+    if (!darfBearbeiten || !mounted) {
+      return;
+    }
     final hero = _latestHero;
     if (hero == null) {
       return;
@@ -265,10 +273,12 @@ class _HeroNotesTabState extends ConsumerState<HeroNotesTab>
       return;
     }
     await _startEdit();
+    if (!mounted || !_editController.isEditing) return;
   }
 
   Future<void> _addNote() async {
     await _startEditIfNeeded();
+    if (!mounted || !_editController.isEditing) return;
     setState(() {
       _draftNotes = List<HeroNoteEntry>.from(_draftNotes)
         ..add(const HeroNoteEntry());
@@ -303,6 +313,7 @@ class _HeroNotesTabState extends ConsumerState<HeroNotesTab>
 
   Future<void> _addConnection() async {
     await _startEditIfNeeded();
+    if (!mounted || !_editController.isEditing) return;
     setState(() {
       _draftConnections = List<HeroConnectionEntry>.from(_draftConnections)
         ..add(const HeroConnectionEntry());
@@ -340,108 +351,6 @@ class _HeroNotesTabState extends ConsumerState<HeroNotesTab>
       _draftConnections = next;
     });
     _markFieldChanged();
-  }
-
-  Future<void> _completeAdventureFor(String adventureId) async {
-    final hero = _latestHero;
-    if (hero == null) {
-      return;
-    }
-
-    final adventure = _findAdventureById(hero.adventures, adventureId);
-    if (adventure == null || adventure.rewardsApplied) {
-      return;
-    }
-
-    final catalog = ref.read(rulesCatalogProvider).asData?.value;
-    final completionEntry = await _showAdventureCompletionDialog(
-      context: context,
-      initial: adventure,
-      rewardTargetOptions: _AdventureRewardTargetOptions(
-        talent: _targetOptionsForType(
-          targetType: HeroAdventureSeTargetType.talent,
-          hero: hero,
-          catalog: catalog,
-        ),
-        grundwert: _targetOptionsForType(
-          targetType: HeroAdventureSeTargetType.grundwert,
-          hero: hero,
-          catalog: catalog,
-        ),
-        eigenschaft: _targetOptionsForType(
-          targetType: HeroAdventureSeTargetType.eigenschaft,
-          hero: hero,
-          catalog: catalog,
-        ),
-      ),
-    );
-    if (!mounted || completionEntry == null) {
-      return;
-    }
-
-    // Gebucht wird auf den gespeicherten Helden (ARCH-05): Ist das Abenteuer
-    // dort schon abgeschlossen, bucht nichts doppelt; der Grund erscheint.
-    final abschluss = _sanitizeAdventure(completionEntry);
-    final gespeichert = await aendereHeldMitMeldung(
-      context: context,
-      ref: ref,
-      heroId: widget.heroId,
-      was: 'Abschluss von „${_adventureTitle(adventure)}“',
-      aenderung: (held) => schliesseAbenteuerAb(
-        held: held,
-        abenteuerId: adventureId,
-        abschluss: abschluss,
-      ),
-    );
-    if (gespeichert == null || !mounted) {
-      return;
-    }
-
-    _latestHero = gespeichert;
-    _syncDraftFromHero(gespeichert, force: true);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('${_adventureTitle(adventure)} abgeschlossen')),
-    );
-  }
-
-  Future<void> _reopenAdventureFor(String adventureId) async {
-    final hero = _latestHero;
-    if (hero == null) {
-      return;
-    }
-
-    // Die Anzeige prüft vorab für schnelle Rückmeldung; entschieden wird am
-    // gespeicherten Helden.
-    final check = canRevokeAdventureRewards(
-      hero: hero,
-      adventureId: adventureId,
-    );
-    if (!check.isAllowed) {
-      if (check.reason.trim().isNotEmpty && mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(check.reason)));
-      }
-      return;
-    }
-
-    final adventure = _findAdventureById(hero.adventures, adventureId);
-    final gespeichert = await aendereHeldMitMeldung(
-      context: context,
-      ref: ref,
-      heroId: widget.heroId,
-      was: 'Rücknahme von „${_adventureTitle(adventure)}“',
-      aenderung: (held) =>
-          oeffneAbenteuerWieder(held: held, abenteuerId: adventureId),
-    );
-    if (gespeichert == null || !mounted) {
-      return;
-    }
-
-    _latestHero = gespeichert;
-    _syncDraftFromHero(gespeichert, force: true);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('${_adventureTitle(adventure)} wieder geöffnet')),
-    );
   }
 
   HeroAdventureEntry? _findAdventureById(

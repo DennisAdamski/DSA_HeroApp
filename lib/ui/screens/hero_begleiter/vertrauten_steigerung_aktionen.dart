@@ -118,6 +118,13 @@ extension _VertrautenSteigerungAktionen on _HeroBegleiterTabState {
     required BegleiterSteigerungsziel ziel,
     required int basis,
   }) async {
+    final darfBearbeiten = await bestaetigeBearbeitungBeiPlanung(
+      context: context,
+      heroId: widget.heroId,
+    );
+    if (!darfBearbeiten || !mounted) {
+      return;
+    }
     final stand = ziel.standIn(c);
     final maxStand = ziel.maxStandIn(c);
     if (maxStand != null && stand >= maxStand) {

@@ -15,20 +15,6 @@ import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_begleiter_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 
-// Die Angriffszeile laeuft im Bearbeitungsmodus mit Steigern-Knopf in der
-// 36 Pixel breiten AT-Spalte ueber; das ist ein vorhandener Layoutfehler
-// ohne Bezug zu diesem Test.
-Future<void> _pumpUndUeberlaufIgnorieren(WidgetTester tester) async {
-  await tester.pumpAndSettle();
-  Object? fehler;
-  do {
-    fehler = tester.takeException();
-    if (fehler != null && !'$fehler'.contains('A RenderFlex overflowed')) {
-      throw fehler;
-    }
-  } while (fehler != null);
-}
-
 void main() {
   testWidgets('Befund ARCH-07-B11: Bearbeiten eines Angriffs behält gekaufte '
       'Steigerungen und unbekannte Felder', (tester) async {
@@ -62,7 +48,9 @@ void main() {
                 HeroCompanionAttack(
                   id: 'schnabel',
                   name: 'Schnabel',
+                  dk: 'H',
                   at: 10,
+                  pa: 5,
                   tp: '1W3',
                   steigerungAt: 2,
                   steigerungPa: 1,
@@ -114,21 +102,43 @@ void main() {
         ),
       ),
     );
-    await _pumpUndUeberlaufIgnorieren(tester);
-    await actions!.startEdit();
-    await _pumpUndUeberlaufIgnorieren(tester);
+    await tester.pumpAndSettle();
 
+    await actions!.startEdit();
+    await tester.pumpAndSettle();
+    expect(find.byTooltip('AT steigern'), findsOneWidget);
+    expect(find.byTooltip('PA steigern'), findsOneWidget);
+
+    // Überschriften müssen auch mit Steigerungsbuttons dieselben Spalten
+    // wie die Werte belegen; sonst rutscht AT optisch unter DK.
+    for (final (label, value) in [('DK', 'H'), ('AT', '10'), ('PA', '5')]) {
+      final header = find
+          .ancestor(of: find.text(label), matching: find.byType(SizedBox))
+          .first;
+      final cell = find
+          .ancestor(of: find.text(value), matching: find.byType(SizedBox))
+          .first;
+      expect(
+        tester.getRect(cell).center.dx,
+        closeTo(tester.getRect(header).center.dx, 0.1),
+        reason: '$label muss unter seiner Überschrift stehen',
+      );
+    }
+    expect(
+      tester.getTopLeft(find.text('1W3')).dx,
+      closeTo(tester.getTopLeft(find.text('TP')).dx, 0.1),
+    );
     await tester.ensureVisible(find.byTooltip('Bearbeiten').first);
     await tester.tap(find.byTooltip('Bearbeiten').first);
-    await _pumpUndUeberlaufIgnorieren(tester);
+    await tester.pumpAndSettle();
     await tester.enterText(
       find.widgetWithText(TextField, 'TP (z.B. 1W6+3)'),
       '1W6',
     );
     await tester.tap(find.text('Speichern').last);
-    await _pumpUndUeberlaufIgnorieren(tester);
+    await tester.pumpAndSettle();
     await actions!.save();
-    await _pumpUndUeberlaufIgnorieren(tester);
+    await tester.pumpAndSettle();
 
     final begleiter = (await repo.loadHeroById('demo'))!.companions.single;
     final angriff = begleiter.angriffe.single;

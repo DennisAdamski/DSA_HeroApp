@@ -23,7 +23,7 @@ class AdvancementHistoryPanel extends ConsumerWidget {
   /// Zeigt Frei, Reserviert und Danach verfügbar.
   ///
   /// Die neue Oberfläche setzt `false`: dort steht dieselbe Bilanz bereits als
-  /// Gleichung über dem Katalog, zweimal dieselben drei Zahlen verwirren.
+  /// eigene Bilanz rechts bzw. mobil über dem Katalog; doppelte Zahlen verwirren.
   final bool zeigeApZeilen;
 
   @override

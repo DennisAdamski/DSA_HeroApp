@@ -1,16 +1,23 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
 import 'dart:math' as math;
 
+import 'package:dsa_heldenverwaltung/ui/screens/shared/planung_bearbeiten_guard.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart' show ArmorPiece;
+import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
+import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_companion.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_rituals.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ap_level_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/begleiter_aenderung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/begleiter_wirkwert_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/begleiter_zustand_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/ressourcen_aenderung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/companion_steigerung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/editor_entwurf_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/reittier_ausbilderprobe_rules.dart';
@@ -22,16 +29,22 @@ import 'package:dsa_heldenverwaltung/rules/derived/reisebericht_rules.dart'
 import 'package:dsa_heldenverwaltung/rules/derived/ruestung_be_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/vertrauten_ap_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/vertrauten_ausbildung_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/vertrauten_aurapanzer_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/vertrauten_bindung_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/vertrauten_bindung_voraussetzung_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/vertrauten_spiel_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/vertrauten_zauber_probe_rules.dart';
 import 'package:dsa_heldenverwaltung/catalog/reittier_ausbildung_katalog.dart';
 import 'package:dsa_heldenverwaltung/catalog/vertrauten_katalog.dart';
 import 'package:dsa_heldenverwaltung/catalog/vertrautenmagie_preset.dart';
 import 'package:dsa_heldenverwaltung/rules/house_rules/house_rule_registry.dart';
+import 'package:dsa_heldenverwaltung/state/ablauf_providers.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/house_rules_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/begleiter_zustand_aendern.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/dice_log_persistence.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/editor_entwurf_speichern.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/protected_content_helpers.dart';
@@ -61,8 +74,12 @@ part 'hero_begleiter/begleiter_ausbildung_aktionen.dart';
 part 'hero_begleiter/vertrauten_steigerung_aktionen.dart';
 part 'hero_begleiter/vertrauten_bindung_section.dart';
 part 'hero_begleiter/vertrauten_bindung_dialoge.dart';
+part 'hero_begleiter/vertrauten_bindung_hinweise.dart';
 part 'hero_begleiter/vertrauten_machtvoll_form.dart';
 part 'hero_begleiter/vertrauten_bindung_aktionen.dart';
+part 'hero_begleiter/begleiter_laufwerte_section.dart';
+part 'hero_begleiter/vertrauten_spiel_section.dart';
+part 'hero_begleiter/vertrauten_spiel_dialoge.dart';
 
 /// Begleiter-Tab mit Auswahl- und Detailansicht fuer Vertraute/Begleiter.
 class HeroBegleiterTab extends ConsumerStatefulWidget {
@@ -160,6 +177,13 @@ class _HeroBegleiterTabState extends ConsumerState<HeroBegleiterTab>
   }
 
   Future<void> _startEdit() async {
+    final darfBearbeiten = await bestaetigeBearbeitungBeiPlanung(
+      context: context,
+      heroId: widget.heroId,
+    );
+    if (!darfBearbeiten || !mounted) {
+      return;
+    }
     final hero = _latestHero;
     if (hero == null) return;
     _editController.clearSyncSignature();
@@ -226,6 +250,8 @@ class _HeroBegleiterTabState extends ConsumerState<HeroBegleiterTab>
   Future<void> _addCompanion() async {
     if (!_editController.isEditing) {
       await _startEdit();
+      if (!mounted || !_editController.isEditing) return;
+      if (!mounted || !_editController.isEditing) return;
     }
     if (!mounted) return;
     final newCompanion = HeroCompanion(
@@ -355,6 +381,8 @@ class _HeroBegleiterTabState extends ConsumerState<HeroBegleiterTab>
           ),
           Expanded(
             child: _BegleiterDetailView(
+              heroId: widget.heroId,
+              sofort: sofort,
               companion: activeCompanion,
               isEditing: isEditing,
               canRaise: canRaise,
@@ -390,6 +418,8 @@ class _HeroBegleiterTabState extends ConsumerState<HeroBegleiterTab>
                           _bucheVertrautenAusbildung(activeCompanion),
                       zauberLernen: () =>
                           _lerneVertrautenZauber(activeCompanion),
+                      aurapanzer: () =>
+                          _bucheVertrautenAurapanzer(activeCompanion),
                     )
                   : null,
             ),

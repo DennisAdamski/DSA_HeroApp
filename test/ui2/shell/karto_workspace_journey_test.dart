@@ -69,7 +69,13 @@ void main() {
       expect(card.value, hero.attributes.mu);
       await selectAcceptanceMode(tester, 'Held verwalten');
       expect(find.text('Zur Planung'), findsOneWidget);
-      expect(find.byKey(const ValueKey('overview-field-name')), findsNothing);
+      expect(
+        find.descendant(
+          of: find.byKey(const ValueKey('overview-field-name')),
+          matching: find.byType(TextField),
+        ),
+        findsNothing,
+      );
       await tester.tap(find.text('Zur Planung'));
       await tester.pumpAndSettle();
       expect(

@@ -51,12 +51,54 @@ class KartoEntwicklungsansicht extends ConsumerWidget {
           ),
           child: bestand.planKatalog(heroId),
         );
+        if (hatKontext) {
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(child: katalog),
+              VerticalDivider(
+                width: Strich.hoehenlinie,
+                thickness: Strich.hoehenlinie,
+                color: context.karto.hoehenlinie,
+              ),
+              SizedBox(
+                width: breite.hatDreiSpalten ? 336 : 304,
+                child: ColoredBox(
+                  color: context.karto.senke,
+                  child: LayoutBuilder(
+                    builder: (context, sideConstraints) {
+                      final maxApHeight = math.max(
+                        sideConstraints.maxHeight - 160,
+                        0.0,
+                      );
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          ConstrainedBox(
+                            constraints: BoxConstraints(maxHeight: maxApHeight),
+                            child: SingleChildScrollView(
+                              child: Padding(
+                                padding: const EdgeInsets.all(14),
+                                child: KartoApUebersicht(
+                                  session: session,
+                                  vertical: true,
+                                ),
+                              ),
+                            ),
+                          ),
+                          Expanded(child: bestand.planHistorie(heroId)),
+                        ],
+                      );
+                    },
+                  ),
+                ),
+              ),
+            ],
+          );
+        }
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Wie im Katalog: der AP-Kopf behält seine natürliche Höhe, solange
-            // sie passt. Bei 320 dp und Textskalierung 2 bricht der Wrap in so
-            // viele Zeilen um, dass er sonst die ganze Fläche überliefe.
             ConstrainedBox(
               constraints: BoxConstraints(
                 maxHeight: constraints.maxHeight.isFinite
@@ -72,55 +114,27 @@ class KartoEntwicklungsansicht extends ConsumerWidget {
                     breite.seitenrand,
                     Abstand.normal,
                     breite.seitenrand,
-                    Abstand.block,
+                    Abstand.normal,
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       KartoApUebersicht(session: session),
-                      if (!hatKontext) ...[
-                        const SizedBox(height: Abstand.normal),
-                        Align(
-                          alignment: Alignment.centerLeft,
-                          child: TextButton.icon(
-                            key: const ValueKey('karto-plan-details'),
-                            onPressed: () => _zeigePlanHistorie(context),
-                            icon: const Icon(Icons.receipt_long_outlined),
-                            label: const Text('AP und Historie'),
-                          ),
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: TextButton.icon(
+                          key: const ValueKey('karto-plan-details'),
+                          onPressed: () => _zeigePlanHistorie(context),
+                          icon: const Icon(Icons.receipt_long_outlined),
+                          label: const Text('AP und Historie'),
                         ),
-                      ],
+                      ),
                     ],
                   ),
                 ),
               ),
             ),
-            Expanded(
-              child: hatKontext
-                  ? Row(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Expanded(child: katalog),
-                        VerticalDivider(
-                          width: Strich.hoehenlinie,
-                          thickness: Strich.hoehenlinie,
-                          color: context.karto.hoehenlinie,
-                        ),
-                        SizedBox(
-                          width: breite.hatDreiSpalten ? 336 : 304,
-                          // Begleitspalte auf der zurueckgesetzten Flaeche,
-                          // wie die Kontextspalte der Spielansicht. Ohne
-                          // Radius, weil sie ueber die volle Hoehe laeuft und
-                          // eine Kachel waere.
-                          child: ColoredBox(
-                            color: context.karto.senke,
-                            child: bestand.planHistorie(heroId),
-                          ),
-                        ),
-                      ],
-                    )
-                  : katalog,
-            ),
+            Expanded(child: katalog),
           ],
         );
       },

@@ -35,6 +35,7 @@ class SyncZusammenfuehrungsRegeln {
     this.lokal = const <String>{},
     this.protokolle = const <String, String>{},
     this.grenzen = const <String, int>{},
+    this.zaehlerInMaps = const <String, Set<String>>{},
   });
 
   /// Zahlen, bei denen beide Seiten ihre Änderung beitragen:
@@ -55,6 +56,14 @@ class SyncZusammenfuehrungsRegeln {
   /// Höchstlänge einer Liste nach dem Zusammenführen; behalten werden die
   /// letzten Einträge.
   final Map<String, int> grenzen;
+
+  /// Zähler in Maps aus Objekten: Schlüssel oberster Ebene → Felder, die in
+  /// jedem Eintrag Zähler sind (`begleiterZustaende/<id>/currentLep`).
+  ///
+  /// Gezählt wird nur, wenn Basis, Lokal und Online einen Zahlenwert tragen;
+  /// fehlt einer („voll“, nur bei Belegung geschrieben), gilt die normale
+  /// Zusammenführung mit Konflikt bei verschiedener Änderung.
+  final Map<String, Set<String>> zaehlerInMaps;
 }
 
 /// Regeln für das Heldenblatt.
@@ -86,6 +95,13 @@ const SyncZusammenfuehrungsRegeln zustandZusammenfuehrungsRegeln =
       maximum: <String>{'schemaVersion', 'lastModified'},
       protokolle: <String, String>{'diceLog': 'timestamp'},
       grenzen: <String, int>{'diceLog': 50, 'buchungen': 50},
+      zaehlerInMaps: <String, Set<String>>{
+        'begleiterZustaende': <String>{
+          'currentLep',
+          'currentAsp',
+          'currentAup',
+        },
+      },
     );
 
 /// Ein Wert, den beide Seiten seit der Basis verschieden geändert haben.
@@ -160,7 +176,7 @@ SyncZusammenfuehrung fuehreSyncZusammen({
   Map<String, SyncSeite> entscheidungen = const <String, SyncSeite>{},
   String praefix = '',
 }) {
-  final lauf = _Lauf(entscheidungen);
+  final lauf = _Lauf(entscheidungen, regeln.zaehlerInMaps);
   final ergebnis = <String, dynamic>{};
   for (final schluessel in _schluesselMenge(basis, lokal, online)) {
     final b = _wert(basis, schluessel);
@@ -331,9 +347,10 @@ Object? _vereinige(
 }
 
 class _Lauf {
-  _Lauf(this.entscheidungen);
+  _Lauf(this.entscheidungen, this.zaehlerInMaps);
 
   final Map<String, SyncSeite> entscheidungen;
+  final Map<String, Set<String>> zaehlerInMaps;
   final List<SyncKonfliktFeld> konflikte = <SyncKonfliktFeld>[];
   int vonLokal = 0;
   int vonOnline = 0;
@@ -355,6 +372,16 @@ class _Lauf {
     if (_gleich(o, b)) {
       vonLokal++;
       return l;
+    }
+    // Zähler in Maps (laufende Werte der Begleiter): beide Änderungen zählen.
+    if (b is num &&
+        l is num &&
+        o is num &&
+        pfad.length == 3 &&
+        (zaehlerInMaps[pfad[0]]?.contains(pfad[2]) ?? false)) {
+      vonLokal++;
+      vonOnline++;
+      return l + o - b;
     }
     // Beide Seiten haben verschieden geändert: tiefer suchen, wo möglich.
     // Fehlt der Wert in der Basis (beide Seiten haben ihn neu angelegt),

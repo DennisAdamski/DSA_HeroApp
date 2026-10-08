@@ -8,6 +8,17 @@ HeroSheet _applyEntry(
   RulesCatalog catalog,
 ) {
   final id = entry.targetId;
+  if (option.isTalentSpecialization) {
+    final old = hero.talents[id]!;
+    final specs = advancementTalentSpecializations(old);
+    final name = entry.options['specialization']!.trim();
+    return hero.copyWith(
+      talents: {
+        ...hero.talents,
+        id: old.copyWith(combatSpecializations: [...specs, name]),
+      },
+    );
+  }
   switch (entry.kind) {
     case AdvancementKind.maneuver:
       final rules = hero.combatConfig.specialRules;

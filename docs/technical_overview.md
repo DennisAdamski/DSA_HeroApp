@@ -492,7 +492,7 @@ mit älterer App per Sync die Felder einer neueren (Befunde ARCH-07-B5/B6):
     `AvatarSnapshot`, `HeroAdvancementEntry`;
   - Laufzeitzustand: `AttributeModifiers`, `ActiveSpellEffectsState`,
     `ActiveSpellEffectDetail`, `SpellDuration`, `WundZustand`, `DiceLogEntry`,
-    `ZustandsBuchung` (ARCH-06).
+    `ZustandsBuchung` (ARCH-06), `BegleiterZustand` (V2).
 
   Ausgenommen ist nur `OffhandSlot`: der Altschlüssel `offhand` wird beim
   Laden migriert und nie geschrieben. Drei Regeln halten das dicht:
@@ -667,6 +667,7 @@ persistiert (eigene Hive-Box `hero_states_v1`).
 | `tempMods` | `StatModifiers` | Temporäre Stat-Modifikatoren |
 | `tempAttributeMods` | `AttributeModifiers` | Temporäre Eigenschaftsmodifikatoren |
 | `buchungen` | `List<ZustandsBuchung>` | Fachliche Buchungen (ARCH-06), höchstens `buchungenMax` = 50, nur bei Belegung im JSON |
+| `begleiterZustaende` | `Map<String, BegleiterZustand>` | Laufende LeP/AsP/AuP je Begleiter-ID (V2, gemeinsam mit Reittier-P2), nur bei Belegung im JSON |
 
 `HeroState.empty()` liefert einen Standardzustand mit allen Werten = 0.
 
@@ -676,6 +677,19 @@ Treffer **tatsächlich** verändert hat (`lepDelta`, `auDelta`, `zone`,
 Gegenbuchung (`art: schadenRuecknahme`, `ruecknahmeVon`), was eine Rücknahme
 geändert hat. Der zugehörige Protokolleintrag trägt dieselbe ID als
 `DiceLogEntry.buchungId`.
+
+`BegleiterZustand` (`lib/domain/begleiter_zustand.dart`) hält `currentLep`,
+`currentAsp` und `currentAup` eines Begleiters. `null` heißt „voll“, also
+gleich dem wirksamen Maximum (`begleiterWirksamerPoolwert`); ein Wert gleich
+dem Maximum wird deshalb nicht gespeichert, und ein Begleiter ohne Wert hat
+keinen Eintrag. Einträge gelöschter Begleiter bleiben stehen und werden
+ignoriert. Die Rechnung steht in `rules/derived/begleiter_zustand_rules.dart`
+(`mitBegleiterPool` mit einer `RessourcenAenderung`, LeP bis −10, AsP/AuP bis 0,
+nach oben das Maximum), der Schreibweg der Oberfläche in
+`ui/screens/shared/begleiter_zustand_aendern.dart` über
+`aendereZustandMitMeldung`. Im Sync zählen die drei Werte als Zähler
+(`zaehlerInMaps` in `zustandZusammenfuehrungsRegeln`), sofern Basis, Lokal und
+Online einen Zahlenwert tragen; sonst gilt die normale Zusammenführung.
 
 ---
 
@@ -1932,6 +1946,15 @@ verwendet die bestehenden Kosten- und Erwerbsdialoge für geplante Änderungen.
 Runde und eine Liste von `HeroAdvancementEntry`. Das Regel-Replay unter
 `rules/derived/advancement*.dart` baut daraus eine Vorschau einschließlich AP/SE
 auf. Der normale Heldenprovider bleibt bis zur Übernahme unverändert.
+Beim Wechsel zu „Held verwalten“ bleibt die Runde erhalten und die Verwaltung
+zum Ansehen zugänglich. `shared/planung_bearbeiten_guard.dart` schützt die
+Editor-Einstiege und Sofortaktionen: „Abbrechen“ erhält den Plan; erst
+„Planung verwerfen und bearbeiten“ verwirft ihn ohne Buchung und erlaubt die
+Änderung. Der Guard prüft nach dem Dialog dieselbe Sitzung und ihren
+Speicherstatus. `PlanungsBearbeitungsBereich` bindet Unteransichten ohne eigene
+Helden-ID ein; `PlanungsFormularSchutz` sperrt Eingaben und Fokus bereits
+geöffneter Ausrüstungsformen, erhält ihren Entwurf und lässt Scrollen zu.
+Der technische Editor-Schreibweg behält seine Planungssperre.
 Entfernen ist nur für Einträge der laufenden Runde erlaubt. Nach jedem Entfernen
 wird die Liste erneut geprüft: ungültige Folgeeinträge bleiben mit Begründung
 sichtbar und sperren die Übernahme, statt unbemerkt falsch gebucht zu werden.
@@ -1952,6 +1975,25 @@ Bei Konflikten oder Speicherfehlern bleibt die Runde erhalten. Die Anzeige nicht
 passender Sonderfertigkeiten speichert derselbe Ablauf
 (`speichereSfAnzeige`): eingereiht hinter andere Bogenvorgänge, ohne
 Normalisierung und bei offener Runde nur auf unveränderter Basis. Die AP- und History-Ansicht erscheint auf breiten Geräten im Inspektor
+Seit 2026-10-09 zeigt `AdvancementValueTile` numerische Ziele als kompakte,
+mit Fensterbreite und Textskalierung umbrechende Kacheln. Eigenschaften stehen
+bei ausreichender Breite links, `AdvancementImpactPanel` und Grundwertzukäufe
+rechts. Im Kartograph-Workspace liegt die AP-Bilanz in der rechten Verlaufsspalte;
+mobil bleibt sie oberhalb des Katalogs. Beide AP-Bereiche sind höhenbegrenzt
+und scrollbar. Der zusätzliche Seitentitel „Nächste Schritte“ entfällt.
+
+Talentspezialisierungen werden direkt am Talent vorgemerkt. Der Befehl verwendet
+die bestehende Art `talent` mit `options.action = specialization` sowie
+`options.specialization` als Namen und ohne numerische Ausgangs-/Zielwerte.
+`advancement_specialization_rules.dart` prüft den Vorschau-TaW, vorhandene Namen
+und bei Waffenkategorien die Katalogauswahl. Mindest-TaW und Kosten stammen
+aus `learning_rules.dart`; die bestätigten Kosten inklusive Lehrmeisteroption
+werden wie bei anderen Erwerbungen im Befehl festgehalten. Das Replay erhält
+alle übrigen Talentfelder und synchronisiert Freitext und Spezialisierungsliste
+über `HeroTalentEntry.copyWith`. Entfernte vorausgehende Steigerungen können
+den Erwerb ungültig machen; ungültige Einträge reservieren keine AP und sperren
+die Übernahme. Zauberkacheln bekommen keine Spezialisierungsaktion.
+
 und mobil im **Detailpanel**. Das Verlassen einer geänderten Runde bietet
 Weiterplanen, Verwerfen und bei gültigen Einträgen Übernehmen an.
 
@@ -2467,6 +2509,19 @@ zugehörigen Regeln:
 Den Katalog bilden Dart-Konstanten in `lib/catalog/vertrauten_katalog.dart`
 mit dem geprüften Spiegel `vertrauten.json`. Quellen, Entscheidungen und
 Folgepakete stehen in `docs/vertraute_plan.md`.
+
+**V2 (laufende Werte und Spieltisch):**
+
+- `vertrauten_bindung_voraussetzung_rules.dart`: Hinweise beim Binden (SF
+  Vertrautenbindung über Katalogname und `alias_namen`, Nachteil „Kein
+  Vertrauter“); sperrt nie, gebunden wird dann per Meisterentscheid.
+- `vertrauten_aurapanzer_rules.dart`: Aurapanzer für 125 AP des Vertrauten bei AE 20.
+- `begleiter_zustand_rules.dart` und `HeroState.begleiterZustaende` (Abschnitt 2.2):
+  laufende LeP/AsP/AuP aller Begleiter.
+- `vertrauten_spiel_rules.dart`, `vertrauten_zauber_probe_rules.dart`: Regeneration,
+  Vereinigung, Loyalität, Ritualproben (Kontakt bzw. allein +15) und Ritualkosten.
+- `lib/ablaeufe/vertrauten_vereinigung.dart`; die Regeneration läuft über
+  `RastAbschliessen.uebernehmeRast(vertrautenRast:)`.
 
 ## 5. Zustandsverwaltung (State Layer)
 

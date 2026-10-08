@@ -4,6 +4,7 @@
 // und bietet einen responsiven Editor fuer neue/bestehende Eintraege.
 import 'package:flutter/material.dart';
 
+import 'package:dsa_heldenverwaltung/ui/screens/shared/planung_bearbeiten_guard.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/config/ui_spacing.dart';
@@ -257,6 +258,12 @@ class _CombatOffhandSectionState extends State<CombatOffhandSection> {
   }
 
   Future<void> _openEditor({int? entryIndex}) async {
+    final darfBearbeiten = await PlanungsBearbeitungsBereich.bestaetige(
+      context,
+    );
+    if (!darfBearbeiten || !mounted) {
+      return;
+    }
     final source = entryIndex == null
         ? const OffhandEquipmentEntry()
         : widget.offhandEquipment[entryIndex];
@@ -420,180 +427,188 @@ class _OffhandEditorPanelState extends State<_OffhandEditorPanel> {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      child: Column(
-        key: const ValueKey<String>('combat-offhand-editor-panel'),
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  widget.isNew
-                      ? 'Nebenhand-Ausrüstung hinzufügen'
-                      : 'Nebenhand-Ausrüstung bearbeiten',
-                  style: Theme.of(context).textTheme.titleMedium,
+      child: PlanungsFormularSchutz(
+        child: Column(
+          key: const ValueKey<String>('combat-offhand-editor-panel'),
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    widget.isNew
+                        ? 'Nebenhand-Ausrüstung hinzufügen'
+                        : 'Nebenhand-Ausrüstung bearbeiten',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
                 ),
-              ),
-              IconButton(
-                key: const ValueKey<String>('combat-offhand-panel-close'),
-                tooltip: 'Editor schließen',
-                onPressed: widget.onCancel,
-                icon: const Icon(Icons.close),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          TextField(
-            key: const ValueKey<String>('combat-offhand-form-name'),
-            controller: _nameController,
-            decoration: const InputDecoration(
-              labelText: 'Ausrüstungsname',
-              border: OutlineInputBorder(),
+                IconButton(
+                  key: const ValueKey<String>('combat-offhand-panel-close'),
+                  tooltip: 'Editor schließen',
+                  onPressed: widget.onCancel,
+                  icon: const Icon(Icons.close),
+                ),
+              ],
             ),
-          ),
-          const SizedBox(height: 10),
-          DropdownButtonFormField<OffhandEquipmentType>(
-            key: const ValueKey<String>('combat-offhand-form-type'),
-            initialValue: _type,
-            decoration: const InputDecoration(
-              labelText: 'Typ',
-              border: OutlineInputBorder(),
-            ),
-            items: const [
-              DropdownMenuItem(
-                value: OffhandEquipmentType.parryWeapon,
-                child: Text('Parierwaffe'),
-              ),
-              DropdownMenuItem(
-                value: OffhandEquipmentType.shield,
-                child: Text('Schild'),
-              ),
-            ],
-            onChanged: (value) {
-              setState(() {
-                _type = value ?? OffhandEquipmentType.parryWeapon;
-              });
-            },
-          ),
-          const SizedBox(height: 10),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              _numberField(
-                controller: _bfController,
-                keyName: 'combat-offhand-form-bf',
-                label: 'BF',
-              ),
-              _numberField(
-                controller: _iniController,
-                keyName: 'combat-offhand-form-ini-mod',
-                label: 'INI Mod',
-              ),
-              _numberField(
-                controller: _atController,
-                keyName: 'combat-offhand-form-at-mod',
-                label: 'AT Mod',
-              ),
-              _numberField(
-                controller: _paController,
-                keyName: 'combat-offhand-form-pa-mod',
-                label: 'PA Mod',
-              ),
-            ],
-          ),
-          if (_type == OffhandEquipmentType.shield) ...[
-            const SizedBox(height: 10),
-            DropdownButtonFormField<ShieldSize>(
-              key: const ValueKey<String>('combat-offhand-form-shield-size'),
-              initialValue: _shieldSize,
+            const SizedBox(height: 12),
+            TextField(
+              key: const ValueKey<String>('combat-offhand-form-name'),
+              controller: _nameController,
               decoration: const InputDecoration(
-                labelText: 'Größe',
+                labelText: 'Ausrüstungsname',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 10),
+            DropdownButtonFormField<OffhandEquipmentType>(
+              key: const ValueKey<String>('combat-offhand-form-type'),
+              initialValue: _type,
+              decoration: const InputDecoration(
+                labelText: 'Typ',
                 border: OutlineInputBorder(),
               ),
               items: const [
-                DropdownMenuItem(value: ShieldSize.small, child: Text('Klein')),
-                DropdownMenuItem(value: ShieldSize.large, child: Text('Groß')),
                 DropdownMenuItem(
-                  value: ShieldSize.veryLarge,
-                  child: Text('Sehr groß'),
+                  value: OffhandEquipmentType.parryWeapon,
+                  child: Text('Parierwaffe'),
+                ),
+                DropdownMenuItem(
+                  value: OffhandEquipmentType.shield,
+                  child: Text('Schild'),
                 ),
               ],
               onChanged: (value) {
                 setState(() {
-                  _shieldSize = value ?? ShieldSize.small;
+                  _type = value ?? OffhandEquipmentType.parryWeapon;
                 });
               },
             ),
-          ],
-          const SizedBox(height: 12),
-          SwitchListTile(
-            key: const ValueKey<String>('combat-offhand-form-artifact'),
-            contentPadding: EdgeInsets.zero,
-            title: const Text('Artefakt'),
-            value: _isArtifact,
-            onChanged: (value) {
-              setState(() {
-                _isArtifact = value;
-              });
-            },
-          ),
-          TextField(
-            key: const ValueKey<String>(
-              'combat-offhand-form-artifact-description',
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _numberField(
+                  controller: _bfController,
+                  keyName: 'combat-offhand-form-bf',
+                  label: 'BF',
+                ),
+                _numberField(
+                  controller: _iniController,
+                  keyName: 'combat-offhand-form-ini-mod',
+                  label: 'INI Mod',
+                ),
+                _numberField(
+                  controller: _atController,
+                  keyName: 'combat-offhand-form-at-mod',
+                  label: 'AT Mod',
+                ),
+                _numberField(
+                  controller: _paController,
+                  keyName: 'combat-offhand-form-pa-mod',
+                  label: 'PA Mod',
+                ),
+              ],
             ),
-            controller: _artifactDescriptionController,
-            enabled: _isArtifact,
-            minLines: 2,
-            maxLines: 4,
-            decoration: const InputDecoration(
-              labelText: 'Artefaktbeschreibung',
-              border: OutlineInputBorder(),
-            ),
-          ),
-          SwitchListTile(
-            key: const ValueKey<String>('combat-offhand-form-geweiht'),
-            contentPadding: EdgeInsets.zero,
-            title: const Text('Geweiht'),
-            value: _isGeweiht,
-            onChanged: (value) {
-              setState(() {
-                _isGeweiht = value;
-              });
-            },
-          ),
-          TextField(
-            key: const ValueKey<String>(
-              'combat-offhand-form-geweiht-description',
-            ),
-            controller: _geweihtDescriptionController,
-            enabled: _isGeweiht,
-            minLines: 2,
-            maxLines: 4,
-            decoration: const InputDecoration(
-              labelText: 'Beschreibung (geweiht)',
-              border: OutlineInputBorder(),
-            ),
-          ),
-          const SizedBox(height: 12),
-          Wrap(
-            alignment: WrapAlignment.end,
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              TextButton(
-                onPressed: widget.onCancel,
-                child: const Text('Abbrechen'),
-              ),
-              FilledButton(
-                key: const ValueKey<String>('combat-offhand-form-save'),
-                onPressed: _submit,
-                child: const Text('Speichern'),
+            if (_type == OffhandEquipmentType.shield) ...[
+              const SizedBox(height: 10),
+              DropdownButtonFormField<ShieldSize>(
+                key: const ValueKey<String>('combat-offhand-form-shield-size'),
+                initialValue: _shieldSize,
+                decoration: const InputDecoration(
+                  labelText: 'Größe',
+                  border: OutlineInputBorder(),
+                ),
+                items: const [
+                  DropdownMenuItem(
+                    value: ShieldSize.small,
+                    child: Text('Klein'),
+                  ),
+                  DropdownMenuItem(
+                    value: ShieldSize.large,
+                    child: Text('Groß'),
+                  ),
+                  DropdownMenuItem(
+                    value: ShieldSize.veryLarge,
+                    child: Text('Sehr groß'),
+                  ),
+                ],
+                onChanged: (value) {
+                  setState(() {
+                    _shieldSize = value ?? ShieldSize.small;
+                  });
+                },
               ),
             ],
-          ),
-        ],
+            const SizedBox(height: 12),
+            SwitchListTile(
+              key: const ValueKey<String>('combat-offhand-form-artifact'),
+              contentPadding: EdgeInsets.zero,
+              title: const Text('Artefakt'),
+              value: _isArtifact,
+              onChanged: (value) {
+                setState(() {
+                  _isArtifact = value;
+                });
+              },
+            ),
+            TextField(
+              key: const ValueKey<String>(
+                'combat-offhand-form-artifact-description',
+              ),
+              controller: _artifactDescriptionController,
+              enabled: _isArtifact,
+              minLines: 2,
+              maxLines: 4,
+              decoration: const InputDecoration(
+                labelText: 'Artefaktbeschreibung',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            SwitchListTile(
+              key: const ValueKey<String>('combat-offhand-form-geweiht'),
+              contentPadding: EdgeInsets.zero,
+              title: const Text('Geweiht'),
+              value: _isGeweiht,
+              onChanged: (value) {
+                setState(() {
+                  _isGeweiht = value;
+                });
+              },
+            ),
+            TextField(
+              key: const ValueKey<String>(
+                'combat-offhand-form-geweiht-description',
+              ),
+              controller: _geweihtDescriptionController,
+              enabled: _isGeweiht,
+              minLines: 2,
+              maxLines: 4,
+              decoration: const InputDecoration(
+                labelText: 'Beschreibung (geweiht)',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Wrap(
+              alignment: WrapAlignment.end,
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                TextButton(
+                  onPressed: widget.onCancel,
+                  child: const Text('Abbrechen'),
+                ),
+                FilledButton(
+                  key: const ValueKey<String>('combat-offhand-form-save'),
+                  onPressed: _submit,
+                  child: const Text('Speichern'),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

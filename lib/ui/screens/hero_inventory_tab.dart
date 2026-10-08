@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
+import 'package:dsa_heldenverwaltung/ui/screens/shared/planung_bearbeiten_guard.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_companion.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
@@ -13,6 +14,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/inventar_summen_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/inventar_verkauf_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/kampfgegenstand_ablegen_rules.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/zustand_aendern.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/dukaten_field.dart';
@@ -153,6 +155,8 @@ class _HeroInventoryTabState extends ConsumerState<HeroInventoryTab>
     }
 
     _latestHero = hero;
+    final planungOffen =
+        ref.watch(advancementSessionProvider(widget.heroId)) != null;
 
     final isWide = MediaQuery.sizeOf(context).width >= _widthBreakpoint;
     // Wert und Gewicht gelten pro Stück (ARCH-03).
@@ -186,6 +190,11 @@ class _HeroInventoryTabState extends ConsumerState<HeroInventoryTab>
             child: DukatenField(
               key: const ValueKey<String>('inventory-dukaten-field'),
               value: hero.dukaten,
+              readOnly: planungOffen,
+              onBearbeiten: () => bestaetigeBearbeitungBeiPlanung(
+                context: context,
+                heroId: widget.heroId,
+              ),
               onCommit: _saveDukaten,
               onSchritt: _verschiebeDukaten,
             ),
@@ -244,6 +253,11 @@ class _HeroInventoryTabState extends ConsumerState<HeroInventoryTab>
           child: DukatenField(
             key: const ValueKey<String>('inventory-dukaten-field'),
             value: hero.dukaten,
+            readOnly: planungOffen,
+            onBearbeiten: () => bestaetigeBearbeitungBeiPlanung(
+              context: context,
+              heroId: widget.heroId,
+            ),
             onCommit: _saveDukaten,
             onSchritt: _verschiebeDukaten,
           ),
