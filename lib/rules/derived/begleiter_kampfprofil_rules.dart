@@ -1,7 +1,6 @@
 import 'package:dsa_heldenverwaltung/domain/hero_companion.dart';
 
 import 'begleiter_wirkwert_rules.dart';
-import 'companion_steigerung_rules.dart';
 import 'reittier_ausbildung_rules.dart';
 import 'ruestung_be_rules.dart';
 
@@ -108,13 +107,13 @@ BegleiterKampfprofil begleiterKampfprofil(HeroCompanion c) {
     id: c.id,
     name: c.name.trim().isEmpty ? 'Unbenannter Begleiter' : c.name,
     typ: c.typ.label,
-    ini: companionEffektivwert(c, 'ini'),
-    mr: companionEffektiverPoolwert(c, 'mr'),
+    ini: begleiterWirksamerWert(c, 'ini'),
+    mr: begleiterWirksamerPoolwert(c, 'mr'),
     rs: computeRsTotal(ruestung),
     be: be,
-    lep: companionEffektiverPoolwert(c, 'lep'),
-    aup: companionEffektiverPoolwert(c, 'aup'),
-    asp: companionEffektiverPoolwert(c, 'asp'),
+    lep: begleiterWirksamerPoolwert(c, 'lep'),
+    aup: begleiterWirksamerPoolwert(c, 'aup'),
+    asp: begleiterWirksamerPoolwert(c, 'asp'),
     geschwindigkeiten: [
       for (final g in begleiterWirksameGeschwindigkeiten(c))
         g.art.trim().isEmpty ? 'GS ${g.wert}' : '${g.art} ${g.wert}',
@@ -124,7 +123,7 @@ BegleiterKampfprofil begleiterKampfprofil(HeroCompanion c) {
         BegleiterAngriffsprofil(
           name: a.name.trim().isEmpty ? 'Angriff' : a.name,
           at: begleiterWirksamerAngriffAt(c, a),
-          pa: begleiterAngriffPa(a),
+          pa: begleiterWirksamerAngriffPa(c, a),
           tp: begleiterWirksamerAngriffTp(c, a),
           dk: a.dk,
         ),

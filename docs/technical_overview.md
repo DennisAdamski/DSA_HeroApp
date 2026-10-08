@@ -2440,6 +2440,34 @@ Spiegel. Die Reit-SF Reiterkampf, Turnier- und Kriegsreiterei stehen im
 Kampf-SF-Katalog. Regelquellen, Entscheidungen und die Folgepakete
 (Spielansicht, Gefecht) stehen in `docs/reittier_plan.md`.
 
+### 4.13 Vertraute: Bindung, AP und Steigerung
+
+Vertraute steigen mit eigenen AP nach Komplexität F (WdZ S. 125). Die Grenzen
+stehen in `companion_steigerung_rules.dart`:
+
+- INI, Loyalität und AuP sind gesperrt.
+- Kein Wert steigt über ⌊1,5 × Startwert⌋, ausgenommen AsP und RK.
+- GS steigt je Bewegungsart über `HeroCompanionSpeed.steigerung`.
+- Altbuchungen bleiben stehen und bekommen nur einen Hinweis.
+
+`HeroCompanion.vertrautenBindung` (`VertrautenBindung`, nur bei Belegung
+im JSON) hält Art, Machtvoll, die bei der Hexe gebuchten Bindungskosten,
+übertragene AP, den Zähler des AP-Anteils und gebuchte Ausbildungen. Die
+zugehörigen Regeln:
+
+- `vertrauten_bindung_rules.dart`: Generierung und Bindung. Die Kosten gehen
+  als `apSpent` der Hexe in derselben Änderung.
+- `vertrauten_ap_rules.dart`: ¼ der Abenteuer-AP. Die Regel ist in
+  Abenteuerabschluss und Reisebericht samt Rücknahmen eingehängt. Dazu kommen
+  die einmalige Einrichtung und die Übertragung mit Loyalität.
+- `vertrauten_ausbildung_rules.dart`: Zauberzugang je Art, Lernen aus den AP
+  des Vertrauten, ZBA-Ausbildung ohne Kampftier. Die Ausbildung wirkt nur
+  abgeleitet in `begleiter_wirkwert_rules.dart`.
+
+Den Katalog bilden Dart-Konstanten in `lib/catalog/vertrauten_katalog.dart`
+mit dem geprüften Spiegel `vertrauten.json`. Quellen, Entscheidungen und
+Folgepakete stehen in `docs/vertraute_plan.md`.
+
 ## 5. Zustandsverwaltung (State Layer)
 
 ### 5.1 Provider-Übersicht

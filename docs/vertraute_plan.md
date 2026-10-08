@@ -107,12 +107,63 @@ und der Abschnitt „Kampf- und Bewegungswerte“ listet die Hinweise rot auf.
 Die Knöpfe zum Steigern von INI, Loyalität und AuP gibt es nicht mehr. Die
 Aktionen liegen in `hero_begleiter/vertrauten_steigerung_aktionen.dart`.
 
+## Bindung, AP und Ausbildung
+
+- `vertrauten_bindung_rules.dart`:
+  - `vertrautenBindungskosten` stellt die Kosten auf: Grundkosten, 2 AP je
+    Punkt, 5 AP je Punkt über dem Maximum (nur Machtvolle), AsP/LeP je 5 AP,
+    AuP je 2 AP.
+  - `vertrautenGenerierungsFehler` prüft 20 Punkte, die Tabellenmaxima und
+    +3 je Zusatzwert; bei Machtvollen nur auf negative Werte.
+  - `bucheVertrautenBindung` setzt die Startwerte: Eigenschaften, INI, MR,
+    LeP/AsP/AuP samt `start*`, LO 15, Angriffe in DK H, Geschwindigkeiten,
+    natürlichen RS sowie die Vertrautenmagie mit RK 3, Zwiegespräch und
+    (Kröte) Krötenschlag. Die Kosten bucht sie als `apSpent` der Hexe, in
+    derselben Änderung.
+  - `erfasseVertrautenBindung` hält für Bestandsvertraute nur Art und
+    Machtvoll fest, ohne Buchung.
+- `vertrauten_ap_rules.dart`:
+  - `mitVertrautenApAnteil` hängt an `applyAdventureRewards`,
+    `revokeAdventureRewards`, `applyReiseberichtRewards` und
+    `revokeReiseberichtRewards`. So bucht jeder Weg, der Abenteuer-AP bucht,
+    das Viertel mit. Der Zähler sinkt nie unter 0.
+  - `richteVertrautenApAnteilEin` macht den einmaligen Nachtrag; den Vorschlag
+    liefert `vertrautenNachtragsvorschlag` aus den angewendeten
+    Abenteuerbelohnungen und `gebuchteReiseberichtAp`.
+  - `uebertrageApAufVertrauten` bucht bei der Hexe und hebt die LO je volle
+    50 AP, höchstens auf 25; eine höhere LO sinkt nicht.
+- `vertrauten_ausbildung_rules.dart`:
+  - `vertrautenZauberZugaenge` liefert je Zauber Lernkosten (halb für
+    Machtvolle bei Erster unter Gleichen), Bekanntheit und Sperrgrund (Art,
+    nur Machtvoll).
+  - `lerneVertrautenZauber` kopiert das Ritual aus dem Preset und zahlt aus
+    den AP des Vertrauten.
+  - `vertrautenAusbildungSperrgrund`: Kampftier nie, nur eine
+    Ausbildungsstufe (Hund zwei), Fertigkeit nur einmal, Ablegen setzt Sitz
+    voraus, höchstens KL Tricks.
+  - `bucheVertrautenAusbildung` übergeht Sperren nur per Meisterentscheid,
+    das Kampftier nie.
+  - `vertrautenAusbildungsModifikationen` summiert die gebuchten Stufen.
+- `begleiter_wirkwert_rules.dart` rechnet die Tierausbildung ab:
+  - Eigenschaften und INI über `begleiterWirksamerWert`;
+  - LeP/AuP über `begleiterWirksamerPoolwert`;
+  - AT/PA/TP aller Angriffe, PA über `begleiterWirksamerAngriffPa`;
+  - GS aller Bewegungsarten.
+
+  Kampfprofil und Gefecht zeigen diese Werte. Grundwerte bleiben unverändert,
+  damit die Steigerungsgrenzen am Startwert hängen.
+
 ## Offene Punkte
 
 - Die GS der Kröte (0,3) ist als ganze Zahl nicht darstellbar und steht im
   Katalog als 0 mit Hinweis.
 - Tag- und Nachtwerte von Eule, Rabe und Falke sind nur als Hinweis
   hinterlegt.
+- „GE +2 oder FF +2“ des Zirkustiers steht nur im Hinweis, weil die Wahl
+  nicht modelliert ist.
+- Die Rücknahme eines Abenteuers, das vor dem Einrichten des AP-Anteils
+  gebucht wurde, zieht dem Vertrauten nichts ab, weil der Zähler bei 0
+  stehen bleibt.
 - Der „Göttliche Begleiter“ (Hausregel Erweiterung S. 17) bekommt AP wie ein
   Vertrauter, ist aber nicht modelliert.
 

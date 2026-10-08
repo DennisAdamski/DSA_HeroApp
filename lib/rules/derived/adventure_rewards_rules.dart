@@ -6,6 +6,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/currency_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/vertrauten_ap_rules.dart';
 
 /// Ergebnis der Abschlusspruefung fuer Abenteuer-Belohnungen.
 class AdventureRewardApplyCheck {
@@ -141,7 +142,7 @@ HeroSheet applyAdventureRewards({
     status: HeroAdventureStatus.completed,
     rewardsApplied: true,
   );
-  return hero.copyWith(
+  final ergebnis = hero.copyWith(
     apTotal: nextApTotal,
     dukaten: nextDukatenValue,
     talents: nextTalents,
@@ -156,6 +157,8 @@ HeroSheet applyAdventureRewards({
       nextInventoryEntries,
     ),
   );
+  // Der Vertraute erhält seinen Anteil an den Abenteuer-AP (WdZ S. 125).
+  return mitVertrautenApAnteil(ergebnis, nextApTotal - hero.apTotal);
 }
 
 /// Prueft, ob die Belohnungen eines Abenteuers sicher zurueckgenommen werden
@@ -327,7 +330,7 @@ HeroSheet revokeAdventureRewards({
     endAventurianDate: const HeroAdventureDateValue(),
     rewardsApplied: false,
   );
-  return hero.copyWith(
+  final ergebnis = hero.copyWith(
     apTotal: nextApTotal,
     dukaten: nextDukatenValue,
     talents: nextTalents,
@@ -339,6 +342,11 @@ HeroSheet revokeAdventureRewards({
     attributeSePool: nextAttributeSePool,
     statSePool: nextStatSePool,
     inventoryEntries: nextInventoryEntries,
+  );
+  // Der Vertraute erhält seinen Anteil an den Abenteuer-AP (WdZ S. 125).
+  return mitVertrautenApAnteil(
+    ergebnis,
+    -_normalizeNonNegative(adventure.apReward),
   );
 }
 

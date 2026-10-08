@@ -86,6 +86,7 @@ class _AngriffseSection extends StatelessWidget {
             _AngriffRow(
               angriff: angriffe[i],
               wirkAt: begleiterWirksamerAngriffAt(companion, angriffe[i]),
+              wirkPa: begleiterWirksamerAngriffPa(companion, angriffe[i]),
               wirkTp: begleiterWirksamerAngriffTp(companion, angriffe[i]),
               isEditing: isEditing,
               onRaiseAt: onRaiseAngriffAt != null
@@ -144,6 +145,7 @@ class _AngriffRow extends StatelessWidget {
   const _AngriffRow({
     required this.angriff,
     required this.wirkAt,
+    required this.wirkPa,
     required this.wirkTp,
     required this.isEditing,
     required this.onEdit,
@@ -154,8 +156,9 @@ class _AngriffRow extends StatelessWidget {
 
   final HeroCompanionAttack angriff;
 
-  /// Wirksame AT und TP (Steigerung und Reittier-Ausbildung eingerechnet).
+  /// Wirksame AT, PA und TP (Steigerung und Ausbildung eingerechnet).
   final int? wirkAt;
+  final int? wirkPa;
   final String wirkTp;
   final bool isEditing;
   final VoidCallback onEdit;
@@ -167,9 +170,8 @@ class _AngriffRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     // Wirksame AT/PA/TP aus den gemeinsamen Regeln (nur im View-Modus).
-    final effPa = begleiterAngriffPa(angriff);
     final showAt = isEditing ? angriff.at : wirkAt;
-    final showPa = isEditing ? angriff.pa : effPa;
+    final showPa = isEditing ? angriff.pa : wirkPa;
     final showTp = isEditing ? angriff.tp : wirkTp;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
