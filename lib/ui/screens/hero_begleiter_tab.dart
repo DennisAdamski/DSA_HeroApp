@@ -22,7 +22,9 @@ import 'package:dsa_heldenverwaltung/rules/derived/reisebericht_rules.dart'
 import 'package:dsa_heldenverwaltung/rules/derived/ruestung_be_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/vertrauten_ap_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/vertrauten_ausbildung_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/vertrauten_aurapanzer_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/vertrauten_bindung_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/vertrauten_bindung_voraussetzung_rules.dart';
 import 'package:dsa_heldenverwaltung/catalog/reittier_ausbildung_katalog.dart';
 import 'package:dsa_heldenverwaltung/catalog/vertrauten_katalog.dart';
 import 'package:dsa_heldenverwaltung/catalog/vertrautenmagie_preset.dart';
@@ -61,6 +63,7 @@ part 'hero_begleiter/begleiter_ausbildung_aktionen.dart';
 part 'hero_begleiter/vertrauten_steigerung_aktionen.dart';
 part 'hero_begleiter/vertrauten_bindung_section.dart';
 part 'hero_begleiter/vertrauten_bindung_dialoge.dart';
+part 'hero_begleiter/vertrauten_bindung_hinweise.dart';
 part 'hero_begleiter/vertrauten_machtvoll_form.dart';
 part 'hero_begleiter/vertrauten_bindung_aktionen.dart';
 
@@ -390,6 +393,8 @@ class _HeroBegleiterTabState extends ConsumerState<HeroBegleiterTab>
                           _bucheVertrautenAusbildung(activeCompanion),
                       zauberLernen: () =>
                           _lerneVertrautenZauber(activeCompanion),
+                      aurapanzer: () =>
+                          _bucheVertrautenAurapanzer(activeCompanion),
                     )
                   : null,
             ),

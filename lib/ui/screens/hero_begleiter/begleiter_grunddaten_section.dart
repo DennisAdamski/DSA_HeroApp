@@ -227,6 +227,7 @@ class _BegleiterDetailView extends StatelessWidget {
                     onUebertragen: vertrautenAktionen?.uebertragen,
                     onAnteilEinrichten: vertrautenAktionen?.anteilEinrichten,
                     onAusbildung: vertrautenAktionen?.ausbildung,
+                    onAurapanzer: vertrautenAktionen?.aurapanzer,
                   ),
                 ],
                 if (companion.typ == BegleiterTyp.reittier) ...[

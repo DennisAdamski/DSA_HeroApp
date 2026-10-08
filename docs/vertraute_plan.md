@@ -216,6 +216,23 @@ zeigt er nach „Kampf- und Bewegungswerte“ den Abschnitt „Vertrautenbindung
 
 Abgedeckt durch `test/ui/begleiter/vertrauten_bindung_test.dart`.
 
+## Nachträge zu V1 (Branch V2)
+
+- **Voraussetzungen beim Binden** (`vertrauten_bindung_voraussetzung_rules.dart`):
+  Fehlt der Hexe die SF Vertrautenbindung (`magsf_vertrautenbindung`, erkannt
+  über Katalogname und `alias_namen`, ohne Katalog über den Namen) oder führt
+  sie den Nachteil „Kein Vertrauter“ (`dis_kein_vertrauter`), zeigt der
+  Bindungsdialog Hinweise. Gesperrt wird nie: „Binden“ geht dann nur über das
+  Häkchen „Trotzdem binden (Meisterentscheid)“, `bucheVertrautenBindung` bleibt
+  unverändert.
+- **Aurapanzer** (`vertrauten_aurapanzer_rules.dart`, WdZ S. 125): 125 AP aus
+  den AP des Vertrauten, Voraussetzung wirksame AE 20. Gespeichert als
+  `HeroCompanionSonderfertigkeit` mit `katalogId: magsf_aurapanzer`. Der Katalog
+  kennt den Eintrag mit 500 AP (Held, WdH 285), der Vertrauten-Preis ist
+  eine bewusste Abweichung. Offene Voraussetzungen (AE, freie AP) gehen nur per
+  Meisterentscheid; doppelter Erwerb und Nicht-Vertraute nie. Sofortbuchung über
+  `aendereHeldMitMeldung` mit Prüfung des Dialogstands (`apAusgegeben`).
+
 ## Offene Punkte
 
 - Die GS der Kröte (0,3) ist als ganze Zahl nicht darstellbar und steht im
