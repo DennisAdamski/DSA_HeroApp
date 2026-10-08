@@ -116,6 +116,13 @@ extension _HeroOverviewApResourcesSection on _HeroOverviewTabState {
     required String targetKey,
     required String label,
   }) async {
+    final darfBearbeiten = await bestaetigeBearbeitungBeiPlanung(
+      context: context,
+      heroId: widget.heroId,
+    );
+    if (!darfBearbeiten || !mounted) {
+      return;
+    }
     final result = await showDialog<int>(
       context: context,
       builder: (_) => _ApBetragDialog(label: label),

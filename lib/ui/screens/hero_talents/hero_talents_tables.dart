@@ -323,7 +323,7 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
         key: ValueKey<String>('talents-row-${talent.id}'),
         onTap: () async {
           await _ensureEditingSession();
-          if (!mounted) return;
+          if (!mounted || !_editController.isEditing) return;
           await showAdaptiveDetailSheet<void>(
             context: context,
             builder: (_) => _TalentDetailDialog(
@@ -446,7 +446,7 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
         key: ValueKey<String>('talents-row-${talent.id}'),
         onTap: () async {
           await _ensureEditingSession();
-          if (!mounted) return;
+          if (!mounted || !_editController.isEditing) return;
           await showAdaptiveDetailSheet<void>(
             context: context,
             builder: (_) => _TalentDetailDialog(
@@ -658,7 +658,7 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
       detailLine: detailParts.join(' · '),
       onTap: () async {
         await _ensureEditingSession();
-        if (!mounted) return;
+        if (!mounted || !_editController.isEditing) return;
         await showAdaptiveDetailSheet<void>(
           context: context,
           builder: (_) => _TalentDetailDialog(
@@ -785,7 +785,7 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
       detailLine: detailParts.join(' · '),
       onTap: () async {
         await _ensureEditingSession();
-        if (!mounted) return;
+        if (!mounted || !_editController.isEditing) return;
         await showAdaptiveDetailSheet<void>(
           context: context,
           builder: (_) => _TalentDetailDialog(

@@ -422,8 +422,10 @@ asynchrone Ausnahme.
 
 **Abweichungen und bewusste Grenzen.**
 
-1. Bei offener Planung bleibt die **gesamte** Verwaltungsfläche gesperrt; die
-   Begründung aus R1 gilt unverändert.
+1. Die damalige vollständige Verwaltungssperre wurde am 2026-10-09 ersetzt:
+   Ansehen bleibt bei offener Planung möglich. Vor Bearbeiten und direkten
+   Bogenaktionen wird das Verwerfen des Plans ausdrücklich bestätigt.
+   Abbrechen erhält die Planung; die technische Schreibsperre bleibt bestehen.
 2. Die Rechtsausrichtung numerischer Spalten wurde nicht umgesetzt, nur die
    Tabellenziffern. Kein Test deckt die Ausrichtung ab, und sie hätte das
    visuelle Raster berührt.

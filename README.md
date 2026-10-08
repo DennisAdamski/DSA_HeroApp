@@ -317,6 +317,14 @@ ueber den injizierten `KartoBestandsAdapter` (`lib/ui/bridges/`); Tabs,
 Editoraktionen und Leave-Guard der Verwaltung teilen sich beide Oberflaechen
 ueber denselben `WorkspaceManagementCoordinator`.
 
+Eine offene Entwicklungsplanung bleibt beim Wechsel zu **Held verwalten**
+erhalten. Die Verwaltung ist zum Ansehen zugänglich. Vor einer Bearbeitung
+erscheint die Warnung, dass die geplante Entwicklung verloren geht:
+**Abbrechen** erhält den Plan, **Planung verwerfen und bearbeiten** verwirft
+ihn und ermöglicht die Änderung. Geplante Steigerungen werden dabei nicht
+übernommen. Das gilt auch für direkte Aktionen wie das Hinzufügen eines
+Inventargegenstands; eine laufende Planübernahme bleibt geschützt.
+
 Grundprinzipien des Projekts:
 
 - Domain-Modelle sind immutable und serialisierbar

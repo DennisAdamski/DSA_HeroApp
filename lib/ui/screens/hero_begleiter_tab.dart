@@ -6,6 +6,7 @@ import 'package:uuid/uuid.dart';
 
 import 'dart:math' as math;
 
+import 'package:dsa_heldenverwaltung/ui/screens/shared/planung_bearbeiten_guard.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart' show ArmorPiece;
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
@@ -176,6 +177,13 @@ class _HeroBegleiterTabState extends ConsumerState<HeroBegleiterTab>
   }
 
   Future<void> _startEdit() async {
+    final darfBearbeiten = await bestaetigeBearbeitungBeiPlanung(
+      context: context,
+      heroId: widget.heroId,
+    );
+    if (!darfBearbeiten || !mounted) {
+      return;
+    }
     final hero = _latestHero;
     if (hero == null) return;
     _editController.clearSyncSignature();
@@ -242,6 +250,8 @@ class _HeroBegleiterTabState extends ConsumerState<HeroBegleiterTab>
   Future<void> _addCompanion() async {
     if (!_editController.isEditing) {
       await _startEdit();
+      if (!mounted || !_editController.isEditing) return;
+      if (!mounted || !_editController.isEditing) return;
     }
     if (!mounted) return;
     final newCompanion = HeroCompanion(

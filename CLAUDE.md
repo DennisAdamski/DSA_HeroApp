@@ -745,11 +745,18 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   Eine laufende Verlassen-Prüfung sperrt auch die direkten Editoraktionen
   einschließlich Speichern und Abbrechen. Der Koordinator meldet Beginn und
   Ende dieser Sperre an beide Hosts, auch bei Abbruch oder Speicherfehler.
-- **Während eine Steigerungssitzung offen ist, sind manuelle Korrekturen
-  gesperrt.** Der Verwaltungsbody zeigt dafür vorerst einen erklärten
-  Sperrzustand für die **gesamte** Fläche, nicht nur ohne „Bearbeiten": ein Teil
-  der Altansichten (Inventar, Gruppe) speichert sofort und lässt sich noch nicht
-  einzeln abschalten. Wechsel, die den Workspace abbauen (Heldenwahl,
+- **Offene Entwicklung erhält die Verwaltung zum Ansehen.** Vor Bearbeiten
+  und direkten Heldenbogenaktionen fragt `shared/planung_bearbeiten_guard.dart`
+  nach: „Abbrechen“ erhält die Sitzung; „Planung verwerfen und bearbeiten“
+  verwirft ausschließlich den noch nicht übernommenen Plan. Der Guard
+  serialisiert Rückfragen je Held, prüft die Sitzungs-ID nach dem Dialog und
+  sperrt Bearbeiten während der Übernahme. `PlanungsBearbeitungsBereich`
+  reicht die Helden-ID an eingebettete Ausrüstungseditoren weiter. Das Geldfeld
+  und Ausrüstungsformen bleiben durch `PlanungsFormularSchutz` während einer
+  Planung nur lesbar; Inventardetails lassen sich über den Namen öffnen.
+  Scrollen und Abschnittswechsel bleiben möglich. `aendereHeldImEditor`
+  behält die technische Schreibsperre als Rückfall. Wechsel, die den Workspace
+  abbauen (Heldenwahl,
   Heldenliste, Rückkehr zur Bestandsoberfläche, System-Zurück), fragen
   zusätzlich nach dem offenen Plan; aufgelegte Screens (Einstellungen,
   Token-Blatt) prüfen nur den Editor, weil die Sitzung im gemeinsamen

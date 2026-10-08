@@ -23,7 +23,7 @@ class _MagicRitualsSection extends StatelessWidget {
   final Map<String, HeroTalentEntry> heroTalents;
   final bool isEditing;
   final void Function(List<HeroRitualCategory>) onChanged;
-  final Future<void> Function()? onEnsureEditing;
+  final Future<bool> Function()? onEnsureEditing;
   final int verfuegbareAp;
   final bool episch;
 
@@ -35,8 +35,8 @@ class _MagicRitualsSection extends StatelessWidget {
   }
 
   Future<void> _addCategory(BuildContext context) async {
-    await onEnsureEditing?.call();
-    if (!context.mounted) {
+    final darfBearbeiten = await onEnsureEditing?.call() ?? isEditing;
+    if (!darfBearbeiten || !context.mounted) {
       return;
     }
     final created = await _showRitualCategoryDialog(

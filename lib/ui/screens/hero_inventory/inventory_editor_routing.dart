@@ -47,6 +47,13 @@ extension _HeroInventoryEditorRouting on _HeroInventoryTabState {
   }
 
   Future<void> _openNewEntryAction(BuildContext context) async {
+    final darfBearbeiten = await bestaetigeBearbeitungBeiPlanung(
+      context: context,
+      heroId: widget.heroId,
+    );
+    if (!darfBearbeiten || !mounted || !context.mounted) {
+      return;
+    }
     final isWide = MediaQuery.sizeOf(context).width >= _widthBreakpoint;
     final entry = HeroInventoryEntry(itemType: _defaultItemTypeForFilter());
 
@@ -61,18 +68,21 @@ extension _HeroInventoryEditorRouting on _HeroInventoryTabState {
 
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (routeContext) => InventoryItemEditor(
-          entry: entry,
-          showAppBar: true,
-          isNew: true,
-          companions: _companions,
-          onSaved: (updated) async {
-            await _saveNewEntry(updated);
-            if (routeContext.mounted) {
-              Navigator.of(routeContext).pop();
-            }
-          },
-          onCancelled: () => Navigator.of(routeContext).pop(),
+        builder: (routeContext) => PlanungsBearbeitungsBereich(
+          heroId: widget.heroId,
+          child: InventoryItemEditor(
+            entry: entry,
+            showAppBar: true,
+            isNew: true,
+            companions: _companions,
+            onSaved: (updated) async {
+              await _saveNewEntry(updated);
+              if (routeContext.mounted) {
+                Navigator.of(routeContext).pop();
+              }
+            },
+            onCancelled: () => Navigator.of(routeContext).pop(),
+          ),
         ),
       ),
     );
@@ -80,8 +90,18 @@ extension _HeroInventoryEditorRouting on _HeroInventoryTabState {
 
   Future<void> _openEditEntryAction(
     BuildContext context,
-    int entryIndex,
-  ) async {
+    int entryIndex, {
+    bool bearbeiten = true,
+  }) async {
+    if (bearbeiten) {
+      final darfBearbeiten = await bestaetigeBearbeitungBeiPlanung(
+        context: context,
+        heroId: widget.heroId,
+      );
+      if (!darfBearbeiten || !mounted || !context.mounted) {
+        return;
+      }
+    }
     final isWide = MediaQuery.sizeOf(context).width >= _widthBreakpoint;
     if (isWide) {
       setState(() {
@@ -98,46 +118,49 @@ extension _HeroInventoryEditorRouting on _HeroInventoryTabState {
     final entry = _entries[entryIndex];
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (routeContext) => InventoryItemEditor(
-          entry: entry,
-          showAppBar: true,
-          companions: _companions,
-          onSaved: (updated) async {
-            await _saveUpdatedEntry(entry, updated);
-            if (routeContext.mounted) {
-              Navigator.of(routeContext).pop();
-            }
-          },
-          // Danach zeigt die Liste beide Stapel; die Seite schließt sich.
-          onStapelTeilen: (teilung) async {
-            await _teileStapel(entry, teilung);
-            if (routeContext.mounted) {
-              Navigator.of(routeContext).pop();
-            }
-          },
-          onKampfUebernehmen: () async {
-            final erledigt = await _uebernehmeInKampf(entry);
-            if (erledigt && routeContext.mounted) {
-              Navigator.of(routeContext).pop();
-            }
-          },
-          onVerkaufen: verkaufbareStueckzahl(entry) > 0
-              ? () async {
-                  final erledigt = await _verkaufe(entry);
-                  if (erledigt && routeContext.mounted) {
-                    Navigator.of(routeContext).pop();
+        builder: (routeContext) => PlanungsBearbeitungsBereich(
+          heroId: widget.heroId,
+          child: InventoryItemEditor(
+            entry: entry,
+            showAppBar: true,
+            companions: _companions,
+            onSaved: (updated) async {
+              await _saveUpdatedEntry(entry, updated);
+              if (routeContext.mounted) {
+                Navigator.of(routeContext).pop();
+              }
+            },
+            // Danach zeigt die Liste beide Stapel; die Seite schließt sich.
+            onStapelTeilen: (teilung) async {
+              await _teileStapel(entry, teilung);
+              if (routeContext.mounted) {
+                Navigator.of(routeContext).pop();
+              }
+            },
+            onKampfUebernehmen: () async {
+              final erledigt = await _uebernehmeInKampf(entry);
+              if (erledigt && routeContext.mounted) {
+                Navigator.of(routeContext).pop();
+              }
+            },
+            onVerkaufen: verkaufbareStueckzahl(entry) > 0
+                ? () async {
+                    final erledigt = await _verkaufe(entry);
+                    if (erledigt && routeContext.mounted) {
+                      Navigator.of(routeContext).pop();
+                    }
                   }
-                }
-              : null,
-          onZusammenfuehren: _kannZusammenfuehren(entry)
-              ? () async {
-                  final erledigt = await _fuehreStapelZusammen(entry);
-                  if (erledigt && routeContext.mounted) {
-                    Navigator.of(routeContext).pop();
+                : null,
+            onZusammenfuehren: _kannZusammenfuehren(entry)
+                ? () async {
+                    final erledigt = await _fuehreStapelZusammen(entry);
+                    if (erledigt && routeContext.mounted) {
+                      Navigator.of(routeContext).pop();
+                    }
                   }
-                }
-              : null,
-          onCancelled: () => Navigator.of(routeContext).pop(),
+                : null,
+            onCancelled: () => Navigator.of(routeContext).pop(),
+          ),
         ),
       ),
     );

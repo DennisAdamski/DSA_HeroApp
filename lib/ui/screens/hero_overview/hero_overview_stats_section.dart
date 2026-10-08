@@ -263,6 +263,13 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
   }
 
   Future<void> _openResourceActivationDialog(HeroSheet hero) async {
+    final darfBearbeiten = await bestaetigeBearbeitungBeiPlanung(
+      context: context,
+      heroId: widget.heroId,
+    );
+    if (!darfBearbeiten || !mounted) {
+      return;
+    }
     var dialogMagicEnabledOverride = _editController.isEditing
         ? _draftMagicEnabledOverride
         : hero.resourceActivationConfig.magicEnabledOverride;
@@ -905,6 +912,13 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
     HeroState state,
     HeroComputedSnapshot snapshot,
   ) async {
+    final darfBearbeiten = await bestaetigeBearbeitungBeiPlanung(
+      context: context,
+      heroId: widget.heroId,
+    );
+    if (!darfBearbeiten || !mounted) {
+      return;
+    }
     final breakdown = computeModifierSourceBreakdown(
       hero,
       catalog: ref.read(rulesCatalogProvider).valueOrNull,
@@ -972,6 +986,13 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
     required int effective,
     required HeroComputedSnapshot snapshot,
   }) async {
+    final darfBearbeiten = await bestaetigeBearbeitungBeiPlanung(
+      context: context,
+      heroId: widget.heroId,
+    );
+    if (!darfBearbeiten || !mounted) {
+      return;
+    }
     final hero = snapshot.hero;
     final state = snapshot.state;
     final breakdown = computeModifierSourceBreakdown(
