@@ -47,6 +47,19 @@ void main() {
     },
   );
 
+  test('jeder Erklaertext ist verschluesselt (v3)', () {
+    // Regeltexte sind nur nach Eingabe des Katalogpassworts lesbar; ein
+    // Klartext oder ein fehlender Text faellt hier sofort auf.
+    final ohne = ladeKatalogDatei('kampf_sonderfertigkeiten.json')
+        .where(
+          (eintrag) =>
+              !'${eintrag['erklarung_lang'] ?? ''}'.startsWith('enc:3:'),
+        )
+        .map((eintrag) => eintrag['id']);
+
+    expect(ohne, isEmpty);
+  });
+
   test('jeder Eintrag hat strukturierte Voraussetzungen', () {
     final ohne = eintraege
         .where((def) => def.voraussetzungenStruktur.isEmpty)
