@@ -23,11 +23,16 @@ extension _VertrautenBindungAktionen on _HeroBegleiterTabState {
   Future<void> _bindeVertrauten(HeroCompanion angezeigt) async {
     final held = _latestHero;
     if (held == null || !_kannSofortBuchen) return;
+    final hinweise = vertrautenBindungHinweise(
+      held,
+      catalog: ref.read(rulesCatalogProvider).valueOrNull,
+    );
     final generierung = await showAdaptiveInputDialog<VertrautenGenerierung>(
       context: context,
       builder: (_) => _VertrautenBindungsDialog(
         freieAp: heldFreieAp(held),
         machtvollVorbelegt: _hexeHatMachtvollenVertrauten,
+        hinweise: hinweise,
       ),
     );
     if (generierung == null || !mounted) return;
@@ -175,6 +180,26 @@ extension _VertrautenBindungAktionen on _HeroBegleiterTabState {
         begleiterId: angezeigt.id,
         ritualName: wahl.$1,
         apKosten: wahl.$2,
+      ),
+    );
+  }
+
+  /// Erwirbt den Aurapanzer des Vertrauten (WdZ S. 125, 125 AP, AE 20).
+  Future<void> _bucheVertrautenAurapanzer(HeroCompanion angezeigt) async {
+    if (!_kannSofortBuchen) return;
+    final meisterentscheid = await showAdaptiveInputDialog<bool>(
+      context: context,
+      builder: (_) => _VertrautenAurapanzerDialog(companion: angezeigt),
+    );
+    if (meisterentscheid == null || !mounted) return;
+    await _bucheVertrauten(
+      was: 'Aurapanzer',
+      meldung: 'Aurapanzer erworben',
+      aenderung: (held) => bucheVertrautenAurapanzer(
+        held,
+        begleiterId: angezeigt.id,
+        erwarteteApAusgegeben: angezeigt.apAusgegeben ?? 0,
+        meisterentscheid: meisterentscheid,
       ),
     );
   }

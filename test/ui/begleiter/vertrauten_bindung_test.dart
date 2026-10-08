@@ -6,6 +6,8 @@ import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/app_settings.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_companion.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_merkmal.dart';
+import 'package:dsa_heldenverwaltung/domain/magic_special_ability.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
@@ -19,7 +21,11 @@ import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 /// `docs/vertraute_plan.md` (binden, AP vergeben, steigern, Zauber lernen)
 /// als Sofortbuchungen auf den gespeicherten Helden.
 void main() {
-  HeroSheet hexe(HeroCompanion vertrauter) => HeroSheet(
+  HeroSheet hexe(
+    HeroCompanion vertrauter, {
+    bool bindungSf = true,
+    bool keinVertrauter = false,
+  }) => HeroSheet(
     id: 'demo',
     name: 'Hexe',
     level: 1,
@@ -37,6 +43,16 @@ void main() {
       kk: 12,
     ),
     companions: <HeroCompanion>[vertrauter],
+    magicSpecialAbilities: <MagicSpecialAbility>[
+      if (bindungSf) const MagicSpecialAbility(name: 'Vertrautenbindung'),
+    ],
+    nachteilEintraege: <HeroMerkmal>[
+      if (keinVertrauter)
+        const HeroMerkmal(
+          katalogId: 'dis_kein_vertrauter',
+          text: 'Kein Vertrauter',
+        ),
+    ],
   );
 
   const mira = HeroCompanion(
@@ -47,14 +63,18 @@ void main() {
 
   Future<(FakeRepository, WorkspaceTabEditActions)> pumpTab(
     WidgetTester tester,
-    HeroCompanion begleiter,
-  ) async {
+    HeroCompanion begleiter, {
+    bool bindungSf = true,
+    bool keinVertrauter = false,
+  }) async {
     tester.view.devicePixelRatio = 1.0;
     tester.view.physicalSize = const Size(1600, 1400);
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
     final repo = FakeRepository(
-      heroes: <HeroSheet>[hexe(begleiter)],
+      heroes: <HeroSheet>[
+        hexe(begleiter, bindungSf: bindungSf, keinVertrauter: keinVertrauter),
+      ],
       states: <String, HeroState>{
         'demo': const HeroState(
           currentLep: 10,
@@ -263,6 +283,97 @@ void main() {
     final v = (await repo.loadHeroById('demo'))!.companions.single;
     expect(v.apAusgegeben, 10);
     expect(v.vertrautenBindung!.ausbildungen.single.katalogId, 'vfert_komm');
+  });
+
+  testWidgets('fehlende Voraussetzungen: Binden nur per Meisterentscheid', (
+    tester,
+  ) async {
+    final (repo, _) = await pumpTab(
+      tester,
+      mira,
+      bindungSf: false,
+      keinVertrauter: true,
+    );
+
+    await tippe(tester, 'vertrauten-binden');
+    expect(
+      find.text('Die Sonderfertigkeit Vertrautenbindung fehlt.'),
+      findsOneWidget,
+    );
+    expect(
+      find.text('Die Hexe hat den Nachteil „Kein Vertrauter“.'),
+      findsOneWidget,
+    );
+    final binden = find.byKey(
+      const ValueKey<String>('vertrauten-bindung-bestaetigen'),
+    );
+    expect(tester.widget<FilledButton>(binden).onPressed, isNull);
+
+    await tippe(tester, 'vertrauten-bindung-meisterentscheid');
+    expect(find.text('Trotzdem binden (80 AP)'), findsOneWidget);
+    await tippe(tester, 'vertrauten-bindung-bestaetigen');
+
+    final stand = (await repo.loadHeroById('demo'))!;
+    expect(stand.apSpent, 580);
+    expect(stand.companions.single.vertrautenBindung!.artId, 'vart_katze');
+  });
+
+  testWidgets('ohne Hinweise bleibt der Dialog unverändert', (tester) async {
+    await pumpTab(tester, mira);
+    await tippe(tester, 'vertrauten-binden');
+    expect(
+      find.byKey(const ValueKey<String>('vertrauten-bindung-hinweise')),
+      findsNothing,
+    );
+    expect(find.text('Binden (80 AP)'), findsOneWidget);
+  });
+
+  testWidgets(
+    'Aurapanzer: 125 AP des Vertrauten, AE 20 oder Meisterentscheid',
+    (tester) async {
+      final (repo, _) = await pumpTab(
+        tester,
+        mira.copyWith(
+          maxAsp: 20,
+          apGesamt: 300,
+          vertrautenBindung: const VertrautenBindung(artId: 'vart_katze'),
+        ),
+      );
+
+      await tippe(tester, 'vertrauten-aurapanzer');
+      await tippe(tester, 'vertrauten-aurapanzer-bestaetigen');
+
+      final v = (await repo.loadHeroById('demo'))!.companions.single;
+      expect(v.apAusgegeben, 125);
+      expect(v.sonderfertigkeiten.single.katalogId, 'magsf_aurapanzer');
+      expect(
+        find.byKey(const ValueKey<String>('vertrauten-aurapanzer')),
+        findsNothing,
+      );
+    },
+  );
+
+  testWidgets('Aurapanzer bei AE 19 nur per Meisterentscheid', (tester) async {
+    final (repo, _) = await pumpTab(
+      tester,
+      mira.copyWith(
+        maxAsp: 19,
+        apGesamt: 300,
+        vertrautenBindung: const VertrautenBindung(artId: 'vart_katze'),
+      ),
+    );
+
+    await tippe(tester, 'vertrauten-aurapanzer');
+    expect(find.text('AE 19, nötig sind 20.'), findsOneWidget);
+    final erwerben = find.byKey(
+      const ValueKey<String>('vertrauten-aurapanzer-bestaetigen'),
+    );
+    expect(tester.widget<FilledButton>(erwerben).onPressed, isNull);
+    await tippe(tester, 'vertrauten-aurapanzer-meister');
+    await tippe(tester, 'vertrauten-aurapanzer-bestaetigen');
+
+    final v = (await repo.loadHeroById('demo'))!.companions.single;
+    expect(v.apAusgegeben, 125);
   });
 }
 

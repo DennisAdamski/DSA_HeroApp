@@ -12,10 +12,15 @@ class _VertrautenBindungsDialog extends StatefulWidget {
   const _VertrautenBindungsDialog({
     required this.freieAp,
     required this.machtvollVorbelegt,
+    this.hinweise = const <String>[],
   });
 
   /// Freie AP der Hexe.
   final int freieAp;
+
+  /// Voraussetzungen, die der Hexe fehlen; Binden dann nur per
+  /// Meisterentscheid (siehe `vertrauten_bindung_voraussetzung_rules.dart`).
+  final List<String> hinweise;
 
   /// Die Hexe hat den Vorteil Machtvoller Vertrauter.
   final bool machtvollVorbelegt;
@@ -32,6 +37,7 @@ class _VertrautenBindungsDialogState extends State<_VertrautenBindungsDialog> {
   int _asp = 0;
   int _lep = 0;
   int _aup = 0;
+  bool _meisterentscheid = false;
 
   // Nur Machtvoll: freie Werte ab der Vorlage.
   final TextEditingController _artName = TextEditingController();
@@ -84,6 +90,11 @@ class _VertrautenBindungsDialogState extends State<_VertrautenBindungsDialog> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          _BindungHinweise(
+            hinweise: widget.hinweise,
+            meisterentscheid: _meisterentscheid,
+            onChanged: (v) => setState(() => _meisterentscheid = v),
+          ),
           DropdownButtonFormField<String>(
             key: const ValueKey<String>('vertrauten-art'),
             initialValue: _artId,
@@ -183,10 +194,15 @@ class _VertrautenBindungsDialogState extends State<_VertrautenBindungsDialog> {
         ),
         FilledButton(
           key: const ValueKey<String>('vertrauten-bindung-bestaetigen'),
-          onPressed: fehler.isEmpty
+          onPressed:
+              fehler.isEmpty && (widget.hinweise.isEmpty || _meisterentscheid)
               ? () => Navigator.of(context).pop(_generierung)
               : null,
-          child: Text('Binden (${kosten.summe} AP)'),
+          child: Text(
+            widget.hinweise.isEmpty || !_meisterentscheid
+                ? 'Binden (${kosten.summe} AP)'
+                : 'Trotzdem binden (${kosten.summe} AP)',
+          ),
         ),
       ],
     );

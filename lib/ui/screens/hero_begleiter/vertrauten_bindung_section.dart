@@ -13,6 +13,7 @@ class _VertrautenAktionen {
     required this.anteilEinrichten,
     required this.ausbildung,
     required this.zauberLernen,
+    required this.aurapanzer,
   });
 
   final VoidCallback binden;
@@ -21,6 +22,7 @@ class _VertrautenAktionen {
   final VoidCallback anteilEinrichten;
   final VoidCallback ausbildung;
   final VoidCallback zauberLernen;
+  final VoidCallback aurapanzer;
 }
 
 /// Bindung, AP-Fluss und Ausbildung eines Vertrauten.
@@ -36,6 +38,7 @@ class _VertrautenBindungSection extends StatelessWidget {
     this.onUebertragen,
     this.onAnteilEinrichten,
     this.onAusbildung,
+    this.onAurapanzer,
   });
 
   final HeroCompanion companion;
@@ -44,6 +47,7 @@ class _VertrautenBindungSection extends StatelessWidget {
   final VoidCallback? onUebertragen;
   final VoidCallback? onAnteilEinrichten;
   final VoidCallback? onAusbildung;
+  final VoidCallback? onAurapanzer;
 
   @override
   Widget build(BuildContext context) {
@@ -170,6 +174,14 @@ class _VertrautenBindungSection extends StatelessWidget {
               onPressed: onUebertragen,
               child: const Text('AP übertragen'),
             ),
+            if (!vertrautenHatAurapanzer(companion))
+              OutlinedButton(
+                key: const ValueKey<String>('vertrauten-aurapanzer'),
+                onPressed: onAurapanzer,
+                child: const Text(
+                  'Aurapanzer ($kVertrautenAurapanzerKosten AP)',
+                ),
+              ),
           ],
         ),
       ),
