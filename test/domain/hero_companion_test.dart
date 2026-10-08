@@ -438,6 +438,63 @@ void main() {
     });
   });
 
+  group('Vertrautenbindung', () {
+    test('ohne Bindung bleibt das JSON unverändert', () {
+      const companion = HeroCompanion(id: 'v', typ: BegleiterTyp.vertrauter);
+      expect(companion.toJson().containsKey('vertrautenBindung'), isFalse);
+      expect(companion.vertrautenBindung, isNull);
+    });
+
+    test('Roundtrip mit Bindung und Ausbildung', () {
+      const companion = HeroCompanion(
+        id: 'v',
+        typ: BegleiterTyp.vertrauter,
+        vertrautenBindung: VertrautenBindung(
+          artId: 'vart_katze',
+          bindungskosten: 90,
+          apUebertragen: 50,
+          abenteuerApErfasst: 120,
+          ausbildungen: <VertrautenAusbildungsbuchung>[
+            VertrautenAusbildungsbuchung(katalogId: 'vfert_sitz', apKosten: 10),
+          ],
+        ),
+      );
+      final restored = HeroCompanion.fromJson(companion.toJson());
+      expect(restored, equals(companion));
+      expect(restored.vertrautenBindung!.ausbildungen.single.apKosten, 10);
+    });
+
+    test('leere Bindung schreibt nur ein leeres Objekt', () {
+      expect(const VertrautenBindung().toJson(), isEmpty);
+    });
+
+    test('copyWith kann Bindungskosten und Anteil leeren', () {
+      const bindung = VertrautenBindung(
+        bindungskosten: 80,
+        abenteuerApErfasst: 4,
+      );
+      final leer = bindung.copyWith(
+        ohneBindungskosten: true,
+        ohneAbenteuerAp: true,
+      );
+      expect(leer.bindungskosten, isNull);
+      expect(leer.abenteuerApErfasst, isNull);
+    });
+
+    test('GS-Steigerung nur bei Belegung im JSON', () {
+      expect(
+        const HeroCompanionSpeed(art: 'Boden', wert: 10).toJson(),
+        isNot(contains('steigerung')),
+      );
+      const gesteigert = HeroCompanionSpeed(
+        art: 'Boden',
+        wert: 10,
+        steigerung: 2,
+      );
+      expect(HeroCompanionSpeed.fromJson(gesteigert.toJson()), gesteigert);
+    });
+  });
+
   group('HeroSheet mit companions', () {
     const testAttributes = Attributes(
       mu: 8,

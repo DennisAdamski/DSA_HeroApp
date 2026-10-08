@@ -17,8 +17,14 @@ import 'package:dsa_heldenverwaltung/rules/derived/reittier_ausbilderprobe_rules
 import 'package:dsa_heldenverwaltung/rules/derived/reittier_ausbildung_aenderung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/reittier_ausbildung_anzeige_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/reittier_ausbildung_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/reisebericht_rules.dart'
+    show gebuchteReiseberichtAp;
 import 'package:dsa_heldenverwaltung/rules/derived/ruestung_be_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/vertrauten_ap_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/vertrauten_ausbildung_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/vertrauten_bindung_rules.dart';
 import 'package:dsa_heldenverwaltung/catalog/reittier_ausbildung_katalog.dart';
+import 'package:dsa_heldenverwaltung/catalog/vertrauten_katalog.dart';
 import 'package:dsa_heldenverwaltung/catalog/vertrautenmagie_preset.dart';
 import 'package:dsa_heldenverwaltung/rules/house_rules/house_rule_registry.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
@@ -52,6 +58,11 @@ part 'hero_begleiter/vertrautenmagie_section.dart';
 part 'hero_begleiter/begleiter_ausbildung_section.dart';
 part 'hero_begleiter/begleiter_ausbildung_dialoge.dart';
 part 'hero_begleiter/begleiter_ausbildung_aktionen.dart';
+part 'hero_begleiter/vertrauten_steigerung_aktionen.dart';
+part 'hero_begleiter/vertrauten_bindung_section.dart';
+part 'hero_begleiter/vertrauten_bindung_dialoge.dart';
+part 'hero_begleiter/vertrauten_machtvoll_form.dart';
+part 'hero_begleiter/vertrauten_bindung_aktionen.dart';
 
 /// Begleiter-Tab mit Auswahl- und Detailansicht fuer Vertraute/Begleiter.
 class HeroBegleiterTab extends ConsumerStatefulWidget {
@@ -206,40 +217,6 @@ class _HeroBegleiterTabState extends ConsumerState<HeroBegleiterTab>
 
   void _markFieldChanged() => _editController.markFieldChanged();
 
-  /// Bucht eine Vertrauten-Steigerung sofort, ohne den Editor zu speichern.
-  ///
-  /// Gebucht wird auf den gespeicherten Begleiter (ARCH-05): Hat ihn ein
-  /// anderer Weg inzwischen gesteigert, passen die Kosten nicht mehr, und die
-  /// Buchung wird mit Meldung abgewiesen. Danach übernimmt der Entwurf den
-  /// gespeicherten Stand; gesteigert wird nur ohne offene Änderungen, und
-  /// der gespeicherte Held wird die neue Basis des Abgleichs.
-  Future<void> _bucheSteigerung(
-    HeroCompanion angezeigt, {
-    required BegleiterSteigerungsziel ziel,
-    required int erwarteterStand,
-    required int neuerStand,
-    required int apKosten,
-  }) async {
-    final gespeichert = await aendereHeldMitMeldung(
-      context: context,
-      ref: ref,
-      heroId: widget.heroId,
-      was: 'Steigerung',
-      aenderung: (held) => bucheBegleiterSteigerung(
-        held,
-        begleiterId: angezeigt.id,
-        ziel: ziel,
-        erwarteterStand: erwarteterStand,
-        neuerStand: neuerStand,
-        apKosten: apKosten,
-      ),
-    );
-    if (gespeichert == null || !mounted) return;
-    _uebernimmGespeichertenHelden(gespeichert);
-    ScaffoldMessenger.of(context)
-        .showSnackBar(const SnackBar(content: Text('Steigerung gespeichert')));
-  }
-
   /// Übernimmt nach einer Sofortbuchung den gespeicherten Helden als neuen
   /// Entwurf und Abgleichsbasis.
   void _uebernimmGespeichertenHelden(HeroSheet gespeichert) {
@@ -329,179 +306,6 @@ class _HeroBegleiterTabState extends ConsumerState<HeroBegleiterTab>
     _markFieldChanged();
   }
 
-  // ---------------------------------------------------------------------------
-  // Steigerung (inline, nur Vertraute)
-  // ---------------------------------------------------------------------------
-
-  bool get _canRaise => _editController.isEditing && !_editController.isDirty;
-
-  HeroCompanion? get _activeCompanion => _activeCompanionId != null
-      ? _draftCompanions.cast<HeroCompanion?>().firstWhere(
-          (c) => c!.id == _activeCompanionId,
-          orElse: () => null,
-        )
-      : null;
-
-  bool _canRaiseFor(HeroCompanion c) =>
-      _canRaise && c.typ == BegleiterTyp.vertrauter;
-
-  Future<void> _raiseRegular(String key, String label) async {
-    final c = _activeCompanion;
-    if (c == null || !_canRaiseFor(c)) return;
-    final basis = companionBasiswert(c, key);
-    if (basis == null) return;
-    final stg = companionSteigerung(c, key);
-    final effWert = basis + stg;
-    final apVerf = companionApVerfuegbar(c);
-    final maxWert = regMaxSteigerung(
-      aktuellerSteigerungswert: effWert,
-      verfuegbareAp: apVerf,
-    );
-    final result = await showSteigerungsDialog(
-      context: context,
-      bezeichnung: '$label (Vertrauter)',
-      aktuellerWert: effWert,
-      maxWert: maxWert,
-      effektiveKomplexitaet: kVertrauterKomplexitaet,
-      verfuegbareAp: apVerf,
-    );
-    if (result == null) return;
-    await _bucheSteigerung(
-      c,
-      ziel: BegleiterSteigerungsziel.wert(key),
-      erwarteterStand: stg,
-      neuerStand: result.neuerWert - basis,
-      apKosten: result.apKosten,
-    );
-  }
-
-  Future<void> _raisePool(String key, String label) async {
-    final c = _activeCompanion;
-    if (c == null || !_canRaiseFor(c)) return;
-    final startwert =
-        companionPoolStartwert(c, key) ?? companionPoolBasiswert(c, key);
-    if (startwert == null) return;
-    final stg = companionSteigerung(c, key);
-    final maxStg = poolMaxSteigerung(startwert);
-    if (stg >= maxStg) return;
-    final apVerf = companionApVerfuegbar(c);
-    final effektivMax = math.min(
-      maxStg,
-      regMaxSteigerung(aktuellerSteigerungswert: stg, verfuegbareAp: apVerf),
-    );
-    final result = await showSteigerungsDialog(
-      context: context,
-      bezeichnung: '$label (Vertrauter)',
-      aktuellerWert: stg,
-      maxWert: effektivMax,
-      effektiveKomplexitaet: kVertrauterKomplexitaet,
-      verfuegbareAp: apVerf,
-    );
-    if (result == null) return;
-    await _bucheSteigerung(
-      c,
-      ziel: BegleiterSteigerungsziel.wert(key),
-      erwarteterStand: stg,
-      neuerStand: result.neuerWert,
-      apKosten: result.apKosten,
-    );
-  }
-
-  Future<void> _raiseAngriffAt(String attackId) async {
-    final c = _activeCompanion;
-    if (c == null || !_canRaiseFor(c)) return;
-    final angriff = c.angriffe.where((a) => a.id == attackId).firstOrNull;
-    if (angriff == null || angriff.at == null) return;
-    final basisAt = angriff.at!;
-    final effAt = basisAt + angriff.steigerungAt;
-    final apVerf = companionApVerfuegbar(c);
-    final maxWert = regMaxSteigerung(
-      aktuellerSteigerungswert: effAt,
-      verfuegbareAp: apVerf,
-    );
-    final result = await showSteigerungsDialog(
-      context: context,
-      bezeichnung: '${angriff.name} AT (Vertrauter)',
-      aktuellerWert: effAt,
-      maxWert: maxWert,
-      effektiveKomplexitaet: kVertrauterKomplexitaet,
-      verfuegbareAp: apVerf,
-    );
-    if (result == null) return;
-    await _bucheSteigerung(
-      c,
-      ziel: BegleiterSteigerungsziel.angriff(attackId, parade: false),
-      erwarteterStand: angriff.steigerungAt,
-      neuerStand: result.neuerWert - basisAt,
-      apKosten: result.apKosten,
-    );
-  }
-
-  Future<void> _raiseAngriffPa(String attackId) async {
-    final c = _activeCompanion;
-    if (c == null || !_canRaiseFor(c)) return;
-    final angriff = c.angriffe.where((a) => a.id == attackId).firstOrNull;
-    if (angriff == null || angriff.pa == null) return;
-    final basisPa = angriff.pa!;
-    final effPa = basisPa + angriff.steigerungPa;
-    final apVerf = companionApVerfuegbar(c);
-    final maxWert = regMaxSteigerung(
-      aktuellerSteigerungswert: effPa,
-      verfuegbareAp: apVerf,
-    );
-    final result = await showSteigerungsDialog(
-      context: context,
-      bezeichnung: '${angriff.name} PA (Vertrauter)',
-      aktuellerWert: effPa,
-      maxWert: maxWert,
-      effektiveKomplexitaet: kVertrauterKomplexitaet,
-      verfuegbareAp: apVerf,
-    );
-    if (result == null) return;
-    await _bucheSteigerung(
-      c,
-      ziel: BegleiterSteigerungsziel.angriff(attackId, parade: true),
-      erwarteterStand: angriff.steigerungPa,
-      neuerStand: result.neuerWert - basisPa,
-      apKosten: result.apKosten,
-    );
-  }
-
-  Future<void> _raiseRk() async {
-    final c = _activeCompanion;
-    if (c == null || !_canRaiseFor(c)) return;
-    final basisRk =
-        c.ritualCategories
-            .where((k) => k.id == 'vertrautenmagie')
-            .firstOrNull
-            ?.ownKnowledge
-            ?.value ??
-        0;
-    final stg = companionSteigerung(c, 'rk');
-    final effRk = basisRk + stg;
-    final apVerf = companionApVerfuegbar(c);
-    final maxWert = regMaxSteigerung(
-      aktuellerSteigerungswert: effRk,
-      verfuegbareAp: apVerf,
-    );
-    final result = await showSteigerungsDialog(
-      context: context,
-      bezeichnung: 'Ritualkenntnis (Vertrauter)',
-      aktuellerWert: effRk,
-      maxWert: maxWert,
-      effektiveKomplexitaet: kVertrauterKomplexitaet,
-      verfuegbareAp: apVerf,
-    );
-    if (result == null) return;
-    await _bucheSteigerung(
-      c,
-      ziel: const BegleiterSteigerungsziel.wert('rk'),
-      erwarteterStand: stg,
-      neuerStand: result.neuerWert - basisRk,
-      apKosten: result.apKosten,
-    );
-  }
-
   void _navigateBack() {
     setState(() {
       _activeCompanionId = null;
@@ -538,6 +342,9 @@ class _HeroBegleiterTabState extends ConsumerState<HeroBegleiterTab>
         // Wartezeit gewürfelt werden können.
         ref.watch(heroComputedProvider(widget.heroId));
         ref.watch(rulesCatalogProvider);
+      } else if (activeCompanion.typ == BegleiterTyp.vertrauter) {
+        // Der Katalog liefert die Reisebericht-AP für den Nachtragsvorschlag.
+        ref.watch(rulesCatalogProvider);
       }
       return Column(
         children: [
@@ -559,6 +366,7 @@ class _HeroBegleiterTabState extends ConsumerState<HeroBegleiterTab>
               onRaiseAngriffAt: canRaise ? _raiseAngriffAt : null,
               onRaiseAngriffPa: canRaise ? _raiseAngriffPa : null,
               onRaiseRk: canRaise ? _raiseRk : null,
+              onRaiseGs: canRaise ? _raiseGs : null,
               vertrautenmagieKategorie: vertrautenmagieKat,
               onAusbildungsschritt: sofort
                   ? () => _oeffneAusbildungsschritt(activeCompanion)
@@ -568,6 +376,21 @@ class _HeroBegleiterTabState extends ConsumerState<HeroBegleiterTab>
                   : null,
               onPferdeSf: sofort
                   ? () => _oeffnePferdeSf(activeCompanion)
+                  : null,
+              vertrautenAktionen: sofort
+                  ? _VertrautenAktionen(
+                      binden: () => _bindeVertrauten(activeCompanion),
+                      erfassen: () =>
+                          _erfasseVertrautenBindung(activeCompanion),
+                      uebertragen: () =>
+                          _uebertrageVertrautenAp(activeCompanion),
+                      anteilEinrichten: () =>
+                          _richteVertrautenAnteilEin(activeCompanion),
+                      ausbildung: () =>
+                          _bucheVertrautenAusbildung(activeCompanion),
+                      zauberLernen: () =>
+                          _lerneVertrautenZauber(activeCompanion),
+                    )
                   : null,
             ),
           ),

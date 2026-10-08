@@ -304,10 +304,16 @@ void _begleiterAbenteuerNotizen(Map<String, dynamic> json) {
   for (final begleiter in _maps(json['companions'])) {
     _behalte(
       begleiter,
-      HeroCompanion.jsonSchluessel.difference(const {'reittierAusbildung'}),
+      HeroCompanion.jsonSchluessel.difference(const {
+        'reittierAusbildung',
+        'vertrautenBindung',
+      }),
     );
     for (final tempo in _maps(begleiter['geschwindigkeiten'])) {
-      _behalte(tempo, HeroCompanionSpeed.jsonSchluessel);
+      _behalte(
+        tempo,
+        HeroCompanionSpeed.jsonSchluessel.difference(const {'steigerung'}),
+      );
     }
     for (final angriff in _maps(begleiter['angriffe'])) {
       _behalte(angriff, HeroCompanionAttack.jsonSchluessel);

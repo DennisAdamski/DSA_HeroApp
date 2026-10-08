@@ -81,6 +81,22 @@ void main() {
     expect(begleiterKampfprofil(vertrauter).reittier, isNull);
   });
 
+  test('gekaufte GS-Stufen stecken im wirksamen Wert', () {
+    const vertrauter = HeroCompanion(
+      id: 'v',
+      typ: BegleiterTyp.vertrauter,
+      geschwindigkeiten: [
+        HeroCompanionSpeed(art: 'Boden', wert: 1),
+        HeroCompanionSpeed(art: 'Fliegen', wert: 12, steigerung: 2),
+      ],
+    );
+
+    expect(begleiterWirksameGeschwindigkeiten(vertrauter).map((s) => s.wert), [
+      1,
+      14,
+    ]);
+  });
+
   test('Trag- und Zugkraft bekommen den Ausbildungsfaktor', () {
     expect(begleiterWirksameKraft('x5', 1), '×6');
     expect(begleiterWirksameKraft('x5', 0), 'x5');
