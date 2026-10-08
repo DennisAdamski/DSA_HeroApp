@@ -480,6 +480,7 @@ mit älterer App per Sync die Felder einer neueren (Befunde ARCH-07-B5/B6):
   - Begleiter und Chronik: `HeroCompanion`, `HeroCompanionAttack`,
     `HeroCompanionSonderfertigkeit`, `HeroCompanionSpeed`,
     `ReittierAusbildung`, `ReittierAusbildungsschritt`,
+    `VertrautenBindung`, `VertrautenAusbildungsbuchung`,
     `HeroAdventureEntry`, `HeroAdventureSeReward`, `HeroAdventureDateValue`,
     `HeroAdventurePersonEntry`, `HeroAdventureLootEntry`, `HeroNoteEntry`,
     `HeroConnectionEntry`, `HeroReisebericht`, `ReiseberichtOpenItem`,
