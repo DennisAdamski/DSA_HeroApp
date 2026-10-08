@@ -16,6 +16,7 @@ import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_bestands_adapter.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abenteuerblatt.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abschnitt.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_begleiterkarte.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_laufendes_abenteuer.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_ressourcenleiste.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_spielaktionen.dart';
@@ -316,6 +317,29 @@ class KartoSpielansicht extends ConsumerWidget {
         symbol: Icons.monitor_heart_outlined,
         child: bestand.spielZustand(heroId: heroId, werte: werte),
       ),
+      // Nach „Zustand“: laufende Werte wie dort; ohne Begleiter entfällt er.
+      if (werte.hero.companions.isNotEmpty)
+        KartoBegleiterAbschnitt(
+          begleiter: werte.hero.companions,
+          zustaende: werte.state.begleiterZustaende,
+          // Bewusst ohne `aktion`-Guard: jeder schnelle Klick zählt.
+          onWert: (begleiter, pool, aenderung) => bestand.begleiterWertAendern(
+            context: context,
+            ref: ref,
+            heroId: heroId,
+            begleiterId: begleiter.id,
+            pool: pool,
+            aenderung: aenderung,
+          ),
+          onVertrautenAktionen: (vertrauter) => aktion(() async {
+            if (!await vorHeldenbearbeitung() || !context.mounted) return;
+            await bestand.vertrautenAktionen(
+              context: context,
+              heroId: heroId,
+              begleiterId: vertrauter.id,
+            );
+          }),
+        ),
     ];
   }
 

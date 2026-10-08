@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:dsa_heldenverwaltung/rules/derived/begleiter_zustand_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/ressourcen_aenderung_rules.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 
 /// Prüft das Verlassen eines Editors; false erhält Ansicht und Entwurf.
@@ -120,6 +122,27 @@ abstract interface class KartoBestandsAdapter {
     required BuildContext context,
     required String heroId,
     required KartoRessource ressource,
+  });
+
+  /// Ändert einen laufenden Wert (LeP, AsP, AuP) eines Begleiters (V2).
+  ///
+  /// Gerechnet wird im Bestand auf dem gespeicherten Wert
+  /// (`aendereBegleiterPool`), nie auf dem angezeigten; die Spielansicht
+  /// ruft das ohne Re-Entrancy-Guard auf, damit jeder schnelle Klick zählt.
+  Future<void> begleiterWertAendern({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String heroId,
+    required String begleiterId,
+    required BegleiterPool pool,
+    required RessourcenAenderung aenderung,
+  });
+
+  /// Öffnet die Vertrautenaktionen (Vereinigung, Zauber würfeln, Proben …).
+  Future<void> vertrautenAktionen({
+    required BuildContext context,
+    required String heroId,
+    required String begleiterId,
   });
 
   /// Baut das Avatarbild eines Helden als quadratische Flaeche.
