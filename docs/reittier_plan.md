@@ -112,9 +112,6 @@ Texte setzt `reittier_ausbildung_anzeige_rules.dart` zusammen.
 
 ## Offene Punkte nach P1
 
-- **Langtexte der Reit-SF:** `erklarung_lang` fehlt bei Reiterkampf, Turnier-
-  und Kriegsreiterei. Die übrigen Kampf-SF tragen es verschlüsselt; ergänzen
-  nur über `tool/encrypt_catalog_fields.py` mit Katalogpasswort.
 - **Rittmeister:** Boni auf das Pferd (AT/PA/TP, GS, MR je Kategorie) und die
   Rückfallregel ohne geschultes Pferd kommen mit P2/P3; ein Hausregel-Patch
   liefe ohne aktives Epik-Paket ins Leere.
@@ -140,7 +137,8 @@ Texte setzt `reittier_ausbildung_anzeige_rules.dart` zusammen.
 | Kriegsreiterei | TaW Reiten 10, SF Reiterkampf | 300 AP | Zuschläge geviertelt; Pferd PA +3; Niederreiten, Hufschlag, Trampeln |
 
 Im Katalog: `ksf_reiterkampf`, `ksf_turnierreiterei`, `ksf_kriegsreiterei` in
-`assets/catalogs/house_rules_v1/kampf_sonderfertigkeiten.json`. Ob sie aktiv
+`assets/catalogs/house_rules_v1/kampf_sonderfertigkeiten.json`, mit
+v3-verschlüsselten Erklärtexten in eigenen Worten wie alle Kampf-SF. Ob sie aktiv
 sind, entscheidet wie bei jeder Kampf-SF `isCombatSpecialAbilityActive`. Das
 System-Paket `regelwerk_ueberarbeitung_v1.system` überlagert die Beschreibung
 von Reiterkampf und Kriegsreiterei mit der Hausregel.
