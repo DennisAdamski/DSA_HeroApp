@@ -13,7 +13,12 @@ import 'package:dsa_heldenverwaltung/ui/screens/advancement/advancement_history_
 import 'package:dsa_heldenverwaltung/ui/screens/auth/open_sign_in.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/heroes_home_screen.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/settings_screen.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/begleiter_zustand_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/ressourcen_aenderung_rules.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_begleiter_tab.dart'
+    show zeigeVertrautenAktionen;
 import 'package:dsa_heldenverwaltung/ui/screens/shared/active_spell_effects_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/begleiter_zustand_aendern.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/inspector/widgets/inspector_arcane_effects_block.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/inspector/widgets/inspector_attribute_probes.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/inspector/widgets/inspector_combat_probes.dart';
@@ -356,6 +361,49 @@ class KartoBestandsAdapterImpl
         context: themedContext,
         heroId: heroId,
         ressource: ressource,
+      ),
+    );
+  }
+
+  /// Schreibt den laufenden Wert über den gemeinsamen Zustandsweg.
+  @override
+  Future<void> begleiterWertAendern({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String heroId,
+    required String begleiterId,
+    required BegleiterPool pool,
+    required RessourcenAenderung aenderung,
+  }) async {
+    final begleiter = ref
+        .read(heroByIdProvider(heroId))
+        ?.companions
+        .where((c) => c.id == begleiterId)
+        .firstOrNull;
+    if (begleiter == null) return;
+    await aendereBegleiterPool(
+      context: context,
+      ref: ref,
+      heroId: heroId,
+      begleiter: begleiter,
+      pool: pool,
+      aenderung: aenderung,
+    );
+  }
+
+  /// Öffnet die vorhandenen Vertrautenaktionen des Begleiter-Tabs.
+  @override
+  Future<void> vertrautenAktionen({
+    required BuildContext context,
+    required String heroId,
+    required String begleiterId,
+  }) {
+    return _withKartoCompatContext(
+      context,
+      (themedContext) => zeigeVertrautenAktionen(
+        context: themedContext,
+        heroId: heroId,
+        begleiterId: begleiterId,
       ),
     );
   }

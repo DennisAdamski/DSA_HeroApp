@@ -42,9 +42,15 @@ class _VertrautenSpielSectionState
   String _name(HeroCompanion c) =>
       c.name.trim().isEmpty ? 'Vertrauter' : c.name.trim();
 
+  // Letzte Meldung; steht zusätzlich im Abschnitt, weil eine Snackbar hinter
+  // einem Dialog läge (Aufruf aus der Spielansicht).
+  String? _letzteMeldung;
+
   void _melde(String text) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
+    setState(() => _letzteMeldung = text);
+    ScaffoldMessenger.maybeOf(context)
+        ?.showSnackBar(SnackBar(content: Text(text)));
   }
 
   // ---- Vereinigung -------------------------------------------------------
@@ -311,6 +317,14 @@ class _VertrautenSpielSectionState
             ),
           ],
         ),
+        if (_letzteMeldung != null)
+          Padding(
+            padding: const EdgeInsets.only(top: _innerFieldSpacing),
+            child: Text(
+              _letzteMeldung!,
+              key: const ValueKey<String>('vertrauten-spiel-meldung'),
+            ),
+          ),
         if (!widget.sofort)
           Text(
             'Buchungen am Bogen (Loyalität) ruhen bei ungespeicherten '
@@ -320,4 +334,47 @@ class _VertrautenSpielSectionState
       ],
     );
   }
+}
+
+/// Öffnet die Vertrautenaktionen eines gebundenen Vertrauten in einem Dialog.
+///
+/// Für die Spielansicht des Kartograph-Rahmens: dieselben Aktionen und
+/// Schreibwege wie im Begleiter-Tab, ohne dessen Bearbeitungsentwurf. Fehler
+/// erscheinen im Dialog selbst (`ZustandFehlerBereich`).
+Future<void> zeigeVertrautenAktionen({
+  required BuildContext context,
+  required String heroId,
+  required String begleiterId,
+}) {
+  return showAdaptiveInputDialog<void>(
+    context: context,
+    builder: (dialogContext) => AdaptiveInputDialog(
+      title: 'Vertrautenaktionen',
+      content: ZustandFehlerBereich(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _BegleiterLaufwerteSection(
+              heroId: heroId,
+              companionId: begleiterId,
+            ),
+            const SizedBox(height: _sectionSpacing),
+            _VertrautenSpielSection(
+              heroId: heroId,
+              companionId: begleiterId,
+              sofort: true,
+            ),
+            const ZustandFehlerAnzeige(),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(dialogContext).pop(),
+          child: const Text('Schließen'),
+        ),
+      ],
+    ),
+  );
 }
