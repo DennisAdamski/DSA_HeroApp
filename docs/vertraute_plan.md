@@ -67,6 +67,27 @@ wird er nicht. Er enthält:
 
 Texte sind Stichworte, keine Buchzitate.
 
+## Modell
+
+`HeroCompanion.vertrautenBindung` (`VertrautenBindung`,
+`lib/domain/hero_companion/vertrauten_bindung.dart`) wird nur bei Belegung
+geschrieben und enthält alle Felder nur, wenn sie belegt sind. Sie hält, was
+sich nicht aus den Grundwerten ablesen lässt:
+
+- `artId` und `machtvoll`;
+- `bindungskosten`: die bei der Hexe gebuchten AP, `null` bei einer Bindung
+  ohne Buchung;
+- `apUebertragen` als Grundlage der Loyalität;
+- `abenteuerApErfasst`: Zähler des AP-Anteils, `null`, solange der Anteil
+  nicht eingerichtet ist;
+- `ausbildungen` als Liste von `VertrautenAusbildungsbuchung` (Katalog-ID,
+  AP, Bezeichnung).
+
+Die Startwerte stehen wie bei jedem Begleiter in seinen Grundwerten.
+Gekaufte GS-Stufen trägt `HeroCompanionSpeed.steigerung`, analog zu
+`steigerungAt`/`steigerungPa` der Angriffe. Die veröffentlichte App kennt
+beide Felder nicht, deshalb führt `veroeffentlichte_app.dart` sie als neu.
+
 ## Offene Punkte
 
 - Die GS der Kröte (0,3) ist als ganze Zahl nicht darstellbar und steht im

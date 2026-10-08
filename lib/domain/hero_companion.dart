@@ -3,3 +3,4 @@ export 'package:dsa_heldenverwaltung/domain/hero_companion/hero_companion_attack
 export 'package:dsa_heldenverwaltung/domain/hero_companion/hero_companion_sonderfertigkeit.dart';
 export 'package:dsa_heldenverwaltung/domain/hero_companion/hero_companion_speed.dart';
 export 'package:dsa_heldenverwaltung/domain/hero_companion/reittier_ausbildung.dart';
+export 'package:dsa_heldenverwaltung/domain/hero_companion/vertrauten_bindung.dart';

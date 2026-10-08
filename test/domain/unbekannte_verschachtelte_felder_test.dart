@@ -372,6 +372,7 @@ final _begleiterAbenteuerNotizen = <_Modell>[
       startAsp: 1,
       startMr: 1,
       reittierAusbildung: ReittierAusbildung(),
+      vertrautenBindung: VertrautenBindung(),
     ).toJson(),
     lade: (json) => HeroCompanion.fromJson(json).toJson(),
     bearbeite: (json) =>
@@ -411,7 +412,11 @@ final _begleiterAbenteuerNotizen = <_Modell>[
   _Modell(
     'HeroCompanionSpeed',
     schluessel: HeroCompanionSpeed.jsonSchluessel,
-    voll: () => const HeroCompanionSpeed(art: 'Fliegen', wert: 12).toJson(),
+    voll: () => const HeroCompanionSpeed(
+      art: 'Fliegen',
+      wert: 12,
+      steigerung: 1,
+    ).toJson(),
     lade: (json) => HeroCompanionSpeed.fromJson(json).toJson(),
     bearbeite: (json) =>
         HeroCompanionSpeed.fromJson(json).copyWith(wert: 14).toJson(),
@@ -439,6 +444,27 @@ final _begleiterAbenteuerNotizen = <_Modell>[
             .toJson(),
     unbekannt: (json) =>
         ReittierAusbildungsschritt.fromJson(json).unbekannteFelder,
+  ),
+  _Modell(
+    'VertrautenBindung',
+    schluessel: VertrautenBindung.jsonSchluessel,
+    voll: () => _vertrautenBindung().toJson(),
+    lade: (json) => VertrautenBindung.fromJson(json).toJson(),
+    bearbeite: (json) =>
+        VertrautenBindung.fromJson(json).copyWith(apUebertragen: 60).toJson(),
+    unbekannt: (json) => VertrautenBindung.fromJson(json).unbekannteFelder,
+  ),
+  _Modell(
+    'VertrautenAusbildungsbuchung',
+    schluessel: VertrautenAusbildungsbuchung.jsonSchluessel,
+    voll: () => _vertrautenBindung().ausbildungen.single.toJson(),
+    lade: (json) => VertrautenAusbildungsbuchung.fromJson(json).toJson(),
+    bearbeite: (json) =>
+        VertrautenAusbildungsbuchung.fromJson(json)
+            .copyWith(bezeichnung: 'Pfote geben')
+            .toJson(),
+    unbekannt: (json) =>
+        VertrautenAusbildungsbuchung.fromJson(json).unbekannteFelder,
   ),
   _Modell(
     'HeroAdventureEntry',
@@ -845,6 +871,21 @@ ZustandsBuchung _zustandsBuchung() => ZustandsBuchung(
 );
 
 // Ein Ausbildungsstand, in dem alle bedingt geschriebenen Felder belegt sind.
+VertrautenBindung _vertrautenBindung() => const VertrautenBindung(
+  artId: 'vart_katze',
+  machtvoll: true,
+  bindungskosten: 130,
+  apUebertragen: 50,
+  abenteuerApErfasst: 400,
+  ausbildungen: <VertrautenAusbildungsbuchung>[
+    VertrautenAusbildungsbuchung(
+      katalogId: 'vfert_trick',
+      apKosten: 45,
+      bezeichnung: 'Rolle',
+    ),
+  ],
+);
+
 ReittierAusbildung _reittierAusbildung() => const ReittierAusbildung(
   ausgangsstufe: ReittierAusbildungsstufe.erprobt,
   ausgangsart: ReittierAusbildungsart.fundiert,
