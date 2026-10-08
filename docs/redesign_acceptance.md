@@ -60,9 +60,12 @@ es wurden keine persönlichen Bilder, Konten oder Cloudgruppen verändert.
   des asynchronen Speicherns; Regression aus `6aed325d` bleibt erhalten.
 - Erst der tatsächliche Oberflächenwechsel in den Einstellungen prüft den
   Plan, nicht bereits das Öffnen der Einstellungen; `d9caee7d` bleibt erhalten.
-- Moduswechsel erhalten die Sitzung. Planung sperrt alle manuellen
-  Heldenbogenänderungen. Wo Bestandsansichten keinen verlässlichen
-  Nur-Lesen-Vertrag besitzen, bleibt die komplette Verwaltung gesperrt.
+- Moduswechsel erhalten die Sitzung. Die Verwaltung bleibt zum Ansehen
+  zugänglich. Bearbeiten und direkte Heldenbogenaktionen verlangen bei
+  offener Planung die ausdrückliche Wahl „Planung verwerfen und bearbeiten“;
+  Abbrechen erhält den Plan und legt auch keinen neuen Editorentwurf an.
+  Geldfeld und Ausrüstungsformen bleiben bis zur Bestätigung nur lesbar;
+  Inventardetails lassen sich über den Gegenstandsnamen ansehen.
 - Übernahmefehler und parallele Heldenänderungen erhalten den Entwurf.
   Laufende Saves sperren weitere Planänderungen; frühere Historie ist nicht
   löschbar. Konto-/Repository- und Heldenwechsel behalten die bestehenden

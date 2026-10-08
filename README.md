@@ -97,6 +97,11 @@ Technischer Stack:
   Runde sind einzeln entfernbar, übernommene Einträge bleiben fest. Werden durch
   Entfernen Folgeeinträge ungültig, müssen diese vor der Übernahme korrigiert
   werden. Auf kleinen Bildschirmen ist die Historie im **Detailpanel** erreichbar.
+- Eigenschaften, Talente und Zauber erscheinen als kompakte Kacheln. Auf breiten
+  Fenstern stehen die Basiswerte neben den Eigenschaften und die AP-Bilanz
+  rechts über dem Verlauf. Talente bieten zusätzlich **+ Spezialisierung**:
+  der Erwerb nutzt die Vorschau und reserviert AP, bis die Runde übernommen wird.
+  Zauberkacheln bieten ausschließlich Wertsteigerungen.
 - Für Talente, Sprachen, Schriften und Zauber zeigt der Steigerungskatalog nur Einträge, die der Held bereits auf dem Bogen
   führt — auch solche, die eingeblendet, aber noch nicht aktiviert sind. Alles
   Weitere kommt je Kategorie über **Talent, Sprache oder Schrift erlernen**,
@@ -311,6 +316,14 @@ Die fachlich umfangreichen Bestandsansichten erreicht er waehrend des Uebergangs
 ueber den injizierten `KartoBestandsAdapter` (`lib/ui/bridges/`); Tabs,
 Editoraktionen und Leave-Guard der Verwaltung teilen sich beide Oberflaechen
 ueber denselben `WorkspaceManagementCoordinator`.
+
+Eine offene Entwicklungsplanung bleibt beim Wechsel zu **Held verwalten**
+erhalten. Die Verwaltung ist zum Ansehen zugänglich. Vor einer Bearbeitung
+erscheint die Warnung, dass die geplante Entwicklung verloren geht:
+**Abbrechen** erhält den Plan, **Planung verwerfen und bearbeiten** verwirft
+ihn und ermöglicht die Änderung. Geplante Steigerungen werden dabei nicht
+übernommen. Das gilt auch für direkte Aktionen wie das Hinzufügen eines
+Inventargegenstands; eine laufende Planübernahme bleibt geschützt.
 
 Grundprinzipien des Projekts:
 

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/planung_bearbeiten_guard.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/rules_lookup_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_management_coordinator.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_spec.dart';
@@ -12,8 +13,6 @@ import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_stroke.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_bestands_adapter.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
-import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
-import 'package:dsa_heldenverwaltung/ui2/widgets/karto_ornamente.dart';
 import 'package:dsa_heldenverwaltung/ui2/widgets/karto_seitenkopf.dart';
 
 /// Zeigt die bestehende Heldenverwaltung ohne äußere Navigation und Inspector.
@@ -34,7 +33,7 @@ class WorkspaceManagementBody extends ConsumerStatefulWidget {
   /// ID des verwalteten Helden.
   final String heroId;
 
-  /// Sperrt alle Änderungen am Heldenbogen während einer Planung.
+  /// Kennzeichnet die offene Planung; Editor-Einstiege verlangen ihr Verwerfen.
   final bool korrekturenGesperrt;
 
   /// Registriert den Guard für Wechsel aus der Verwaltungsfläche.
@@ -88,34 +87,9 @@ class _WorkspaceManagementBodyState
     super.dispose();
   }
 
-  /// Baut Sperr-, Lade-, Fehler- oder Verwaltungszustand des Helden.
+  /// Zeigt die Verwaltung auch bei offener Planung; Schreibwege prüfen sie.
   @override
   Widget build(BuildContext context) {
-    if (widget.korrekturenGesperrt) {
-      return Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(Abstand.bahn),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: Breite.lesespalte),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const KartoKompassrose(groesse: 96),
-                const SizedBox(height: Abstand.block),
-                Text(
-                  'Während einer offenen Entwicklung sind Korrekturen am '
-                  'Heldenbogen gesperrt. Wechsle zur Entwicklung, um die '
-                  'Planung fortzusetzen, zu übernehmen oder zu verwerfen.',
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.fliess,
-                ),
-              ],
-            ),
-          ),
-        ),
-      );
-    }
-
     final index = ref.watch(heroIndexProvider);
     final snapshot = index.valueOrNull;
     if (index.hasError) {
@@ -164,9 +138,12 @@ class _WorkspaceManagementBodyState
                 padding: EdgeInsets.symmetric(
                   horizontal: (rand - Abstand.weit).clamp(0, rand),
                 ),
-                child: TabBarView(
-                  controller: _coordinator.tabController,
-                  children: _coordinator.buildTabContents(),
+                child: PlanungsBearbeitungsBereich(
+                  heroId: widget.heroId,
+                  child: TabBarView(
+                    controller: _coordinator.tabController,
+                    children: _coordinator.buildTabContents(),
+                  ),
                 ),
               ),
             ),

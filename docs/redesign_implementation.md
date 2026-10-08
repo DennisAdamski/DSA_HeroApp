@@ -382,6 +382,21 @@ Adapter legt es um Bestandsinhalte und Dialoge, UI2 importiert es nicht selbst.
 und Historie an und liest alle Werte unverändert aus der laufenden
 `AdvancementSession`.
 
+**Layoutanpassung 2026-10-09.** Der zusätzliche Planungstitel entfällt.
+`AdvancementValueTile` zeigt Eigenschaften, Talente und Zauber in einem
+responsiven Kachelraster. Basiswerte und Zukäufe stehen bei ausreichender Breite
+neben den Eigenschaften. Die AP-Bilanz liegt auf breiten Fenstern rechts über
+der Historie; der Bereich bleibt bei niedrigen Fenstern scrollbar. Mobil
+bleiben die AP-Kurzbilanz und das Detailpanel erhalten. Talente bieten einen
+Spezialisierungserwerb über dieselbe flüchtige Sitzung, inklusive Replay-Prüfung,
+AP-Reservierung und Historie. Zauber erhalten diese Aktion nicht.
+
+Die Prüfung dieser Anpassung umfasst 71 relevante Fach-/UI-Tests, zwei echte
+Flutter-Rasterbilder bei 390 und 1440 dp sowie `flutter analyze`, beide
+Screen-LOC-Prüfungen und `git diff --check`. Die gesamte Testsuite wurde für
+diese begrenzte Änderung nicht ausgeführt. Bestehende manuelle
+Spezialisierungseditoren und die Zauberspezialisierungslogik bleiben unverändert.
+
 **Prüfungen** (lokal, Flutter-Toolchain des Projekts):
 
 | Befehl | Ergebnis |
@@ -407,8 +422,10 @@ asynchrone Ausnahme.
 
 **Abweichungen und bewusste Grenzen.**
 
-1. Bei offener Planung bleibt die **gesamte** Verwaltungsfläche gesperrt; die
-   Begründung aus R1 gilt unverändert.
+1. Die damalige vollständige Verwaltungssperre wurde am 2026-10-09 ersetzt:
+   Ansehen bleibt bei offener Planung möglich. Vor Bearbeiten und direkten
+   Bogenaktionen wird das Verwerfen des Plans ausdrücklich bestätigt.
+   Abbrechen erhält die Planung; die technische Schreibsperre bleibt bestehen.
 2. Die Rechtsausrichtung numerischer Spalten wurde nicht umgesetzt, nur die
    Tabellenziffern. Kein Test deckt die Ausrichtung ab, und sie hätte das
    visuelle Raster berührt.

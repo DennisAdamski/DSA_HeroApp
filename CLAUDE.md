@@ -159,7 +159,15 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   Steigerung folgt strikt WdZ S. 125: INI, LO und AuP sind gesperrt, die
   Grenze ist 1,5 × Startwert, Altbuchungen bekommen nur einen Hinweis.
   Plan, Belege und Entscheidungen stehen in
-  [docs/vertraute_plan.md](docs/vertraute_plan.md) (V1 fertig, V2/V3 offen).
+  [docs/vertraute_plan.md](docs/vertraute_plan.md) (V1 und V2 fertig, V3 offen).
+  V2: `HeroState.begleiterZustaende` hält laufende LeP/AsP/AuP **aller**
+  Begleiter (`null` = voll, Eintrag nur bei Belegung; Rechnung vom gespeicherten
+  Wert in `begleiter_zustand_rules.dart`, Schreibweg `aendereBegleiterPool`;
+  im Sync Zähler). Vereinigung (`VertrautenVereinigung`) und Rast-Regeneration
+  schreiben ein Dokument, ein versäumtes Treffen zwei getrennte Buchungen.
+  Die UI2-Spielansicht führt „Begleiter“ nach „Zustand“, noch vor dem
+  Würfelprotokoll. Fehlt der Hexe die SF Vertrautenbindung, ist das nur ein
+  Hinweis beim Binden (Meisterentscheid).
 - [Redesign umsetzen](docs/redesign_implementation.md) enthält drei aufeinander
   aufbauende Agentenpläne, Startprompts und die gemeinsame Umsetzungsspezifikation
   unter `docs/superpowers/`. Ausgangspunkt ist das vorhandene UI2-Fundament;
@@ -371,6 +379,13 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   `lib/state/advancement_providers.dart` den flüchtigen Entwurf.
   `lib/ui/screens/advancement/` bietet Katalog und Inspector-Historie;
   `workspace/workspace_advancement.dart` verbindet sie mit dem Workspace.
+  `advancement_value_tile.dart` verdichtet Eigenschaften, Talente und Zauber;
+  bei ausreichender Breite stehen Eigenschaften links, Basiswerte und Zukäufe
+  rechts. `advancement_specialization_dialog.dart` erfasst Talentspezialisierungen.
+  Deren Prüfungen liegen in `rules/derived/advancement_specialization_rules.dart`.
+  Sie verwenden `AdvancementKind.talent` mit `options.action = specialization`
+  und `options.specialization` als Namen; Replay erhält TaW, SE und übrige
+  Talentfelder und übernimmt beide Spezialisierungsfelder synchron.
   Nur Übernehmen schreibt Werte, AP/SE und `HeroSheet.advancementHistory`
   gemeinsam, über den Ablauf `SteigerungsrundeUebernehmen`
   (`lib/ablaeufe/steigerungsrunde_uebernehmen.dart`, auch für die
@@ -715,7 +730,8 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   setzt Meer-Unterstrich und Schrift selbst, alle inneren Reiter kommen als
   ruhige Pille aus dem Feinschliff. In UI2 zeigt der Planungsverlauf keine
   AP-Zeilen (`AdvancementHistoryPanel.zeigeApZeilen: false`), die Bilanz
-  steht als Gleichung darüber. `HeroesHomeScreen` bekommt dort
+  steht auf breiten Fenstern rechts über der Historie, mobil als Gleichung
+  über dem Katalog. `HeroesHomeScreen` bekommt dort
   `onHeldOeffnen` und `onEinstellungen`: „Held öffnen“ wählt den Helden für
   den Kartograph-Workspace statt den klassischen `HeroWorkspaceScreen`
   aufzulegen.
@@ -729,11 +745,18 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   Eine laufende Verlassen-Prüfung sperrt auch die direkten Editoraktionen
   einschließlich Speichern und Abbrechen. Der Koordinator meldet Beginn und
   Ende dieser Sperre an beide Hosts, auch bei Abbruch oder Speicherfehler.
-- **Während eine Steigerungssitzung offen ist, sind manuelle Korrekturen
-  gesperrt.** Der Verwaltungsbody zeigt dafür vorerst einen erklärten
-  Sperrzustand für die **gesamte** Fläche, nicht nur ohne „Bearbeiten": ein Teil
-  der Altansichten (Inventar, Gruppe) speichert sofort und lässt sich noch nicht
-  einzeln abschalten. Wechsel, die den Workspace abbauen (Heldenwahl,
+- **Offene Entwicklung erhält die Verwaltung zum Ansehen.** Vor Bearbeiten
+  und direkten Heldenbogenaktionen fragt `shared/planung_bearbeiten_guard.dart`
+  nach: „Abbrechen“ erhält die Sitzung; „Planung verwerfen und bearbeiten“
+  verwirft ausschließlich den noch nicht übernommenen Plan. Der Guard
+  serialisiert Rückfragen je Held, prüft die Sitzungs-ID nach dem Dialog und
+  sperrt Bearbeiten während der Übernahme. `PlanungsBearbeitungsBereich`
+  reicht die Helden-ID an eingebettete Ausrüstungseditoren weiter. Das Geldfeld
+  und Ausrüstungsformen bleiben durch `PlanungsFormularSchutz` während einer
+  Planung nur lesbar; Inventardetails lassen sich über den Namen öffnen.
+  Scrollen und Abschnittswechsel bleiben möglich. `aendereHeldImEditor`
+  behält die technische Schreibsperre als Rückfall. Wechsel, die den Workspace
+  abbauen (Heldenwahl,
   Heldenliste, Rückkehr zur Bestandsoberfläche, System-Zurück), fragen
   zusätzlich nach dem offenen Plan; aufgelegte Screens (Einstellungen,
   Token-Blatt) prüfen nur den Editor, weil die Sitzung im gemeinsamen
@@ -857,12 +880,10 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   jede weitere Aktion darin würde still verworfen. Bei offener Planung ist das
   Blatt schreibgeschützt, weil jede Heldenänderung den Inhalts-Hash der Runde
   bräche.
-  Die Seitentitel (`Am Spieltisch`, `Nächste Schritte`) dürfen die
-  Navigationsbeschriftungen nicht wiederholen — beide stehen gleichzeitig im
-  Baum, und die Navigationsprüfungen erwarten ihre Beschriftung genau einmal.
-  Auf `KartoBreite.schmal` entfällt der Titel in der Planung: der Katalog führt
-  dort schon eine eigene Überschrift, und die Höhe wird für die erste
-  Steigerungskarte gebraucht.
+  Der Seitentitel `Am Spieltisch` darf die Navigationsbeschriftung nicht
+  wiederholen; die Navigationsprüfungen erwarten sie genau einmal.
+  In der Planung entfällt der zusätzliche Seitentitel auf allen Breiten:
+  der Katalog führt bereits die Überschrift „Steigerungen planen“.
 - Die dunkle Bereichsnavigation trägt oben die Markenzeile und
   `KartoHeldenmarke` (Avatar oder Monogramm im `KartoKompassring`, Name,
   Profession) und unten `Heldenauswahl` und `Workspace-Menü`; auf breiten Fenstern gibt es deshalb

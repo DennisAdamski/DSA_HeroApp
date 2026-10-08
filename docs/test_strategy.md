@@ -152,6 +152,9 @@ Regeln:
   Stand einer neueren Version (auch Zustand und gleichzeitig geänderte Cloud)
   und Widgettests der Editoren (Ritual, Talentmodifikator, Begleiterangriff,
   Abenteuerblatt, Übersicht, Zaubereffekte) prüfen die Wege.
+  Der Begleiterangriff-Test kontrolliert auch die Spaltenausrichtung von
+  DK, AT, PA und TP mit aktiven Steigerungsbuttons; Layoutfehler werden
+  dabei nicht unterdrückt.
 - **Gegenproben**: Jeder dieser Tests scheitert ohne den Fix. Nachgewiesen
   wird das, indem man die Editor-Dateien einzeln per `git stash` zurücksetzt
   oder `sammleUnbekannteFelder` vorübergehend eine leere Map liefern lässt.

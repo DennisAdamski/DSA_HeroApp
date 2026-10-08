@@ -5,6 +5,13 @@ Future<void> _pickAndUploadImage(
   WidgetRef ref,
   String heroId,
 ) async {
+  final darfBearbeiten = await bestaetigeBearbeitungBeiPlanung(
+    context: context,
+    heroId: heroId,
+  );
+  if (!darfBearbeiten || !context.mounted) {
+    return;
+  }
   final file = await FilePicker.pickFile(type: FileType.image);
   if (file == null) return;
   final bytes = await file.readAsBytes();
@@ -212,7 +219,17 @@ class _NoAvatarActions extends ConsumerWidget {
     );
   }
 
-  void _openGenerationDialog(BuildContext context, WidgetRef ref) {
+  Future<void> _openGenerationDialog(
+    BuildContext context,
+    WidgetRef ref,
+  ) async {
+    final darfBearbeiten = await bestaetigeBearbeitungBeiPlanung(
+      context: context,
+      heroId: heroId,
+    );
+    if (!darfBearbeiten || !context.mounted) {
+      return;
+    }
     showDialog<void>(
       context: context,
       builder: (context) => AvatarGenerationDialog(heroId: heroId, hero: hero),
@@ -256,7 +273,17 @@ class _HasAvatarActions extends ConsumerWidget {
     );
   }
 
-  void _openGenerationDialog(BuildContext context, WidgetRef ref) {
+  Future<void> _openGenerationDialog(
+    BuildContext context,
+    WidgetRef ref,
+  ) async {
+    final darfBearbeiten = await bestaetigeBearbeitungBeiPlanung(
+      context: context,
+      heroId: heroId,
+    );
+    if (!darfBearbeiten || !context.mounted) {
+      return;
+    }
     showDialog<void>(
       context: context,
       builder: (context) => AvatarGenerationDialog(heroId: heroId, hero: hero),
@@ -479,12 +506,15 @@ class _AlbumCard extends ConsumerWidget {
               color: isAktiv ? colorScheme.primary : null,
               onPressed: isAktiv
                   ? null
-                  : () => ref
-                        .read(heroActionsProvider)
-                        .setActiveAvatar(
-                          heroId: heroId,
-                          galleryEntryId: entry.id,
-                        ),
+                  : () => _bildAendern(
+                      context,
+                      () => ref
+                          .read(heroActionsProvider)
+                          .setActiveAvatar(
+                            heroId: heroId,
+                            galleryEntryId: entry.id,
+                          ),
+                    ),
             ),
             IconButton(
               tooltip: isPrimaer
@@ -496,12 +526,15 @@ class _AlbumCard extends ConsumerWidget {
               color: isPrimaer ? colorScheme.primary : null,
               onPressed: isPrimaer
                   ? null
-                  : () => ref
-                        .read(heroActionsProvider)
-                        .setPrimaerbild(
-                          heroId: heroId,
-                          galleryEntryId: entry.id,
-                        ),
+                  : () => _bildAendern(
+                      context,
+                      () => ref
+                          .read(heroActionsProvider)
+                          .setPrimaerbild(
+                            heroId: heroId,
+                            galleryEntryId: entry.id,
+                          ),
+                    ),
             ),
             IconButton(
               tooltip: 'Entfernen',
@@ -524,7 +557,25 @@ class _AlbumCard extends ConsumerWidget {
     );
   }
 
-  void _openHeaderFocusDialog(BuildContext context) {
+  // Auch Albumaktionen benötigen dieselbe Freigabe wie der Haupteditor.
+  Future<void> _bildAendern(
+    BuildContext context,
+    Future<void> Function() aenderung,
+  ) async {
+    final erlaubt = await bestaetigeBearbeitungBeiPlanung(
+      context: context,
+      heroId: heroId,
+    );
+    if (!erlaubt || !context.mounted) return;
+    await aenderung();
+  }
+
+  Future<void> _openHeaderFocusDialog(BuildContext context) async {
+    final erlaubt = await bestaetigeBearbeitungBeiPlanung(
+      context: context,
+      heroId: heroId,
+    );
+    if (!erlaubt || !context.mounted) return;
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         fullscreenDialog: true,
@@ -534,6 +585,13 @@ class _AlbumCard extends ConsumerWidget {
   }
 
   Future<void> _confirmRemove(BuildContext context, WidgetRef ref) async {
+    final darfBearbeiten = await bestaetigeBearbeitungBeiPlanung(
+      context: context,
+      heroId: heroId,
+    );
+    if (!darfBearbeiten || !context.mounted) {
+      return;
+    }
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(

@@ -100,6 +100,74 @@ void main() {
   });
 
   testWidgets(
+    'Talentkarte plant Spezialisierung ohne den Helden sofort zu speichern',
+    (tester) async {
+      final setup = await openCatalog(
+        tester,
+        selectedHero: hero.copyWith(
+          talents: {'climb': const HeroTalentEntry(talentValue: 7)},
+        ),
+        selectedCatalog: const RulesCatalog(
+          version: 'test',
+          source: 'test',
+          weapons: [],
+          spells: [],
+          talents: [
+            TalentDef(
+              id: 'climb',
+              name: 'Klettern',
+              group: 'Körper',
+              steigerung: 'B',
+              attributes: ['MU', 'GE', 'KK'],
+            ),
+          ],
+        ),
+      );
+      await tester.tap(find.text('Talente'));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(const ValueKey('advancement-specialize-climb')),
+      );
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byKey(const ValueKey('advancement-specialization-name')),
+        'Felsen',
+      );
+      await tester.tap(find.text('Weiter'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Vormerken'));
+      await tester.pumpAndSettle();
+      final session = setup.container.read(
+        advancementSessionProvider(hero.id),
+      )!;
+      expect(session.entries, hasLength(1));
+      expect(session.entries.single.options['specialization'], 'Felsen');
+      expect(session.preview.talents['climb']!.combatSpecializations, [
+        'Felsen',
+      ]);
+      expect(session.preview.apAvailable, lessThan(2000));
+      expect(
+        (await setup.repo.loadHeroById(hero.id))!
+            .talents['climb']!
+            .specializations,
+        '',
+      );
+      await setup.container
+          .read(advancementSessionProvider(hero.id).notifier)
+          .commit();
+      await tester.pumpAndSettle();
+      final saved = (await setup.repo.loadHeroById(hero.id))!;
+      expect(saved.talents['climb']!.combatSpecializations, ['Felsen']);
+      expect(saved.apAvailable, session.preview.apAvailable);
+      expect(
+        saved.advancementHistory.single.options['specialization'],
+        'Felsen',
+      );
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
     'Zielwert aktualisiert Grenzen live; Abbrechen behält die Runde',
     (tester) async {
       const talentCatalog = RulesCatalog(
@@ -187,10 +255,12 @@ void main() {
   ) async {
     await openCatalog(tester, size: const Size(320, 568));
     final plan = find.byKey(const ValueKey('advancement-plan-attribute-mu'));
-    final listScroll = find.descendant(
-      of: find.byType(ListView),
-      matching: find.byType(Scrollable),
-    );
+    final listScroll = find
+        .descendant(
+          of: find.byType(AdvancementCatalog),
+          matching: find.byType(Scrollable),
+        )
+        .last;
     await tester.scrollUntilVisible(plan, 150, scrollable: listScroll);
     await tester.tap(plan);
     await tester.pumpAndSettle();

@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:dsa_heldenverwaltung/domain/begleiter_zustand.dart';
 import 'package:dsa_heldenverwaltung/domain/abgelegter_kampfgegenstand.dart';
 import 'package:dsa_heldenverwaltung/domain/active_spell_effects_state.dart';
 import 'package:dsa_heldenverwaltung/domain/attribute_modifiers.dart';
@@ -854,6 +855,19 @@ final _zustand = <_Modell>[
         ZustandsBuchung.fromJson(json).copyWith(unterdrueckt: 1).toJson(),
     unbekannt: (json) => ZustandsBuchung.fromJson(json).unbekannteFelder,
   ),
+  _Modell(
+    'BegleiterZustand',
+    schluessel: BegleiterZustand.jsonSchluessel,
+    voll: () => const BegleiterZustand(
+      currentLep: 5,
+      currentAsp: 3,
+      currentAup: 7,
+    ).toJson(),
+    lade: (json) => BegleiterZustand.fromJson(json).toJson(),
+    bearbeite: (json) =>
+        BegleiterZustand.fromJson(json).copyWith(currentLep: 2).toJson(),
+    unbekannt: (json) => BegleiterZustand.fromJson(json).unbekannteFelder,
+  ),
 ];
 
 // Eine Buchung, in der alle bedingt geschriebenen Felder belegt sind.
@@ -1402,6 +1416,7 @@ final _woerterbuecher = <RegExp>[
   RegExp(r'^avatarSnapshot/attributes$'),
   RegExp(r'^activeSpellEffects/effectDetails$'),
   RegExp(r'^wpiZustand/(wundenProZone|unterdrueckteWundenProZone)$'),
+  RegExp(r'^begleiterZustaende$'),
   // Spiegelt nur die gewaehlte Waffe und wird aus ihr neu geschrieben.
   RegExp(r'^combatConfig/mainWeapon(/|$)'),
 ];

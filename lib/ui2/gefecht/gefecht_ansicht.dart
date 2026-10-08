@@ -260,6 +260,7 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
                                 ),
                                 GefechtBegleiter(
                                   begleiter: snapshot.hero.companions,
+                                  zustaende: snapshot.state.begleiterZustaende,
                                 ),
                               ],
                               ausruestung: _ausruestung(snapshot),

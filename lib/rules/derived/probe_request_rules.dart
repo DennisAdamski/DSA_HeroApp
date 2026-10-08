@@ -47,11 +47,14 @@ ResolvedProbeRequest buildTalentProbeRequest({
 /// Baut eine aufgeloeste Zauberprobe.
 ///
 /// Wunden wirken ueber die Eigenschaftswerte in [targets]
-/// (`HeroComputedSnapshot.probenEigenschaften`).
+/// (`HeroComputedSnapshot.probenEigenschaften`). [initialSituationalModifier]
+/// ist der Startwert der situativen Erschwernis (negativ = erschwert,
+/// positiv = erleichtert).
 ResolvedProbeRequest buildSpellProbeRequest({
   required String title,
   required List<ProbeTargetValue> targets,
   required int basePool,
+  int initialSituationalModifier = 0,
 }) {
   return ResolvedProbeRequest(
     type: ProbeType.spell,
@@ -61,6 +64,7 @@ ResolvedProbeRequest buildSpellProbeRequest({
     diceSpec: const DiceSpec(count: 3, sides: 20),
     targets: targets,
     basePool: basePool,
+    initialSituationalModifier: initialSituationalModifier,
   );
 }
 

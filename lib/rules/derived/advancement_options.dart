@@ -25,6 +25,7 @@ import 'special_ability_chain_rules.dart';
 import 'special_ability_variant_rules.dart';
 import 'advancement_maneuver_rules.dart';
 import 'maneuver_rules.dart';
+import 'advancement_specialization_rules.dart';
 
 part 'advancement_value_options.dart';
 part 'advancement_ability_options.dart';
@@ -89,7 +90,11 @@ class AdvancementOption {
   final bool isCombatTalent;
 
   /// Unterscheidet numerische Progression vom einmaligen SF-Erwerb.
-  bool get isValueAdvancement => ability == null;
+  bool get isValueAdvancement => ability == null && !isTalentSpecialization;
+
+  /// Ein talentgebundener Erwerb bleibt als Befehl derselben Zielart erhalten.
+  bool get isTalentSpecialization =>
+      kind == AdvancementKind.talent && options['action'] == 'specialization';
 }
 
 /// Einmal je Optionsaufbau berechnete Grundlagen.
@@ -248,7 +253,10 @@ AdvancementOption? resolveAdvancementOptionIn({
   return switch (kind) {
     AdvancementKind.attribute => _attributeOption(context, targetId),
     AdvancementKind.boughtStat => _boughtOption(context, targetId),
-    AdvancementKind.talent => _talentOption(context, targetId),
+    AdvancementKind.talent =>
+      options['action'] == 'specialization'
+          ? resolveTalentSpecialization(context, targetId, options)
+          : _talentOption(context, targetId),
     AdvancementKind.spell => _spellOption(context, targetId, options),
     AdvancementKind.language => _languageOption(context, targetId),
     AdvancementKind.script => _scriptOption(context, targetId),

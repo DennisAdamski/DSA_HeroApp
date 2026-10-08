@@ -16,6 +16,13 @@ extension _ReittierAusbildungAktionen on _HeroBegleiterTabState {
 
   /// Wählt den nächsten Ausbildungsschritt und bucht ihn.
   Future<void> _oeffneAusbildungsschritt(HeroCompanion angezeigt) async {
+    final darfBearbeiten = await bestaetigeBearbeitungBeiPlanung(
+      context: context,
+      heroId: widget.heroId,
+    );
+    if (!darfBearbeiten || !mounted) {
+      return;
+    }
     final ausbildung = angezeigt.reittierAusbildung;
     if (ausbildung == null || !_kannSofortBuchen) return;
     final wahl = await showAdaptiveInputDialog<_AusbildungsschrittWahl>(
@@ -42,6 +49,13 @@ extension _ReittierAusbildungAktionen on _HeroBegleiterTabState {
 
   /// Nimmt nach Rückfrage den letzten Ausbildungsschritt zurück.
   Future<void> _nimmAusbildungsschrittZurueck(HeroCompanion angezeigt) async {
+    final darfBearbeiten = await bestaetigeBearbeitungBeiPlanung(
+      context: context,
+      heroId: widget.heroId,
+    );
+    if (!darfBearbeiten || !mounted) {
+      return;
+    }
     final ausbildung = angezeigt.reittierAusbildung;
     if (ausbildung == null || ausbildung.schritte.isEmpty) return;
     if (!_kannSofortBuchen) return;
@@ -67,6 +81,13 @@ extension _ReittierAusbildungAktionen on _HeroBegleiterTabState {
 
   /// Wählt eine Pferde-SF und trägt sie ein.
   Future<void> _oeffnePferdeSf(HeroCompanion angezeigt) async {
+    final darfBearbeiten = await bestaetigeBearbeitungBeiPlanung(
+      context: context,
+      heroId: widget.heroId,
+    );
+    if (!darfBearbeiten || !mounted) {
+      return;
+    }
     if (!_kannSofortBuchen) return;
     final sfId = await showAdaptiveInputDialog<String>(
       context: context,

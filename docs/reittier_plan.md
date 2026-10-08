@@ -15,7 +15,7 @@ an; Ausbildung ist Freitext, und Reiterkampf ist nicht modelliert.
 | Paket | Inhalt | Stand |
 |---|---|---|
 | P1 Pferd-Grundlage | Reit-SF im Katalog, Ausbildungskatalog, Ausbildungsmodell am Begleiter, abgeleitete Wirkwerte, Ausbildungsschritte und Pferde-SF im Begleiter-Tab, gewürfelte Ausbildungsproben | umgesetzt |
-| P2 Spielansicht | laufende LeP/AuP/Wunden je Begleiter im `HeroState`, Begleiterkarte in `lib/ui2/spielen/`, LO-Probe, Reiten-Probe mit Stufenmodifikator, Pferdeangriffe würfeln, Rittmeister-Boni | offen |
+| P2 Spielansicht | laufende LeP/AuP/Wunden je Begleiter im `HeroState` (**LeP/AuP/AsP-Modell `HeroState.begleiterZustaende` mit Anzeige für alle Begleiter seit Vertraute-V2, Wunden offen**), Begleiterkarte in `lib/ui2/spielen/`, LO-Probe, Reiten-Probe mit Stufenmodifikator, Pferdeangriffe würfeln, Rittmeister-Boni | offen |
 | P3 Gefecht | Schalter „Beritten“, Reiter-SF-Boni nach Hausregel, Reit-AT/PA, Pferdemanöver, Sturmangriff zu Pferd, Pferd als Ziel | offen |
 
 ## Entscheidungen
