@@ -2482,6 +2482,19 @@ Den Katalog bilden Dart-Konstanten in `lib/catalog/vertrauten_katalog.dart`
 mit dem geprüften Spiegel `vertrauten.json`. Quellen, Entscheidungen und
 Folgepakete stehen in `docs/vertraute_plan.md`.
 
+**V2 (laufende Werte und Spieltisch):**
+
+- `vertrauten_bindung_voraussetzung_rules.dart`: Hinweise beim Binden (SF
+  Vertrautenbindung über Katalogname und `alias_namen`, Nachteil „Kein
+  Vertrauter“); sperrt nie, gebunden wird dann per Meisterentscheid.
+- `vertrauten_aurapanzer_rules.dart`: Aurapanzer für 125 AP des Vertrauten bei AE 20.
+- `begleiter_zustand_rules.dart` und `HeroState.begleiterZustaende` (Abschnitt 2.2):
+  laufende LeP/AsP/AuP aller Begleiter.
+- `vertrauten_spiel_rules.dart`, `vertrauten_zauber_probe_rules.dart`: Regeneration,
+  Vereinigung, Loyalität, Ritualproben (Kontakt bzw. allein +15) und Ritualkosten.
+- `lib/ablaeufe/vertrauten_vereinigung.dart`; die Regeneration läuft über
+  `RastAbschliessen.uebernehmeRast(vertrautenRast:)`.
+
 ## 5. Zustandsverwaltung (State Layer)
 
 ### 5.1 Provider-Übersicht

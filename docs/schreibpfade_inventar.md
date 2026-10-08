@@ -1,6 +1,6 @@
 # Schreibpfade der Heldenverwaltung (ARCH-05)
 
-Stand: 29.09.2026, nachgeführt nach dem fünften ARCH-05-Teilstand
+Stand: 08.10.2026, nachgeführt um die Vertrauten-Schreibwege (V2)
 (Sofortaktionen des Bogens). Bestandsaufnahme für
 [ARCH-05 — Schreibende Aktionen fachlich aufteilen](architecture_roadmap.md#arch-05--schreibende-aktionen-fachlich-aufteilen).
 Sie beschreibt, **wo** Heldendaten heute geschrieben werden, mit welchen

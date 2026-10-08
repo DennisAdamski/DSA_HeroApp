@@ -159,7 +159,15 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   Steigerung folgt strikt WdZ S. 125: INI, LO und AuP sind gesperrt, die
   Grenze ist 1,5 × Startwert, Altbuchungen bekommen nur einen Hinweis.
   Plan, Belege und Entscheidungen stehen in
-  [docs/vertraute_plan.md](docs/vertraute_plan.md) (V1 fertig, V2/V3 offen).
+  [docs/vertraute_plan.md](docs/vertraute_plan.md) (V1 und V2 fertig, V3 offen).
+  V2: `HeroState.begleiterZustaende` hält laufende LeP/AsP/AuP **aller**
+  Begleiter (`null` = voll, Eintrag nur bei Belegung; Rechnung vom gespeicherten
+  Wert in `begleiter_zustand_rules.dart`, Schreibweg `aendereBegleiterPool`;
+  im Sync Zähler). Vereinigung (`VertrautenVereinigung`) und Rast-Regeneration
+  schreiben ein Dokument, ein versäumtes Treffen zwei getrennte Buchungen.
+  Die UI2-Spielansicht führt „Begleiter“ nach „Zustand“, noch vor dem
+  Würfelprotokoll. Fehlt der Hexe die SF Vertrautenbindung, ist das nur ein
+  Hinweis beim Binden (Meisterentscheid).
 - [Redesign umsetzen](docs/redesign_implementation.md) enthält drei aufeinander
   aufbauende Agentenpläne, Startprompts und die gemeinsame Umsetzungsspezifikation
   unter `docs/superpowers/`. Ausgangspunkt ist das vorhandene UI2-Fundament;
