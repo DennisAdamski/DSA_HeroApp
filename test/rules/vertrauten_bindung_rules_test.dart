@@ -1,3 +1,4 @@
+import 'package:dsa_heldenverwaltung/catalog/vertrauten_typen.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_companion.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
@@ -191,6 +192,82 @@ void main() {
         ),
         throwsStateError,
       );
+    });
+  });
+
+  group('Machtvoller Vertrauter mit Vorlage (WdZ S. 124, WdH S. 255)', () {
+    const luchs = VertrautenGenerierung(
+      artId: 'vart_katze',
+      machtvoll: true,
+      artName: 'Luchs',
+      werte: {
+        'mu': 5, // unter der Vorlage: keine Erstattung
+        'kl': 8, // Vorlage 4, Maximum 6
+        'kk': 12, // körperlich: frei
+        'asp': 10, // Vorlage 5
+        'lep': 30, // frei
+        'rs': 2,
+      },
+      angriffe: [
+        VertrautenAngriffDef(name: 'Biss', at: 14, pa: 9, tp: '1W6+3'),
+      ],
+      geschwindigkeiten: [VertrautenTempoDef('Boden', 14)],
+    );
+
+    test('nur geistige Werte, AE und MR kosten', () {
+      final kosten = vertrautenBindungskosten(luchs);
+      expect(kosten.grundkosten, 120);
+      expect(kosten.punkte, (4 + 5) * 2);
+      expect(kosten.ueberMaximum, 2 * 5);
+      expect(kosten.zusatzpunkte, 0);
+      expect(kosten.summe, 148);
+      expect(vertrautenGenerierungsFehler(luchs), isEmpty);
+    });
+
+    test('übernimmt freie Werte, Angriffe und Namen', () {
+      final held = bucheVertrautenBindung(
+        _hexe(),
+        begleiterId: 'v',
+        generierung: luchs,
+      );
+      final v = held.companions.single;
+      expect(held.apSpent, 648);
+      expect(v.gattung, 'Luchs');
+      expect((v.mu, v.kl, v.kk, v.ge), (5, 8, 12, 11));
+      expect((v.maxLep, v.startLep, v.maxAsp), (30, 30, 10));
+      expect(v.ruestungsTeile.single.rs, 2);
+      expect(v.angriffe.single.name, 'Biss');
+      expect(v.angriffe.single.at, 14);
+      expect(v.geschwindigkeiten.single.wert, 14);
+      expect(v.vertrautenBindung!.artId, 'vart_katze');
+      expect(v.vertrautenBindung!.machtvoll, isTrue);
+    });
+
+    test('negative Werte werden abgewiesen', () {
+      expect(
+        vertrautenGenerierungsFehler(
+          const VertrautenGenerierung(
+            artId: 'vart_katze',
+            machtvoll: true,
+            werte: {'mu': -1},
+          ),
+        ),
+        isNotEmpty,
+      );
+    });
+
+    test('ohne Machtvoll zählen freie Werte nicht', () {
+      final v = bucheVertrautenBindung(
+        _hexe(),
+        begleiterId: 'v',
+        generierung: const VertrautenGenerierung(
+          artId: 'vart_katze',
+          werte: {'kk': 12},
+          artName: 'Luchs',
+        ),
+      ).companions.single;
+      expect(v.kk, 2);
+      expect(v.gattung, 'Katze');
     });
   });
 

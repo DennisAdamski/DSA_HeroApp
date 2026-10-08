@@ -33,14 +33,39 @@ class _VertrautenBindungsDialogState extends State<_VertrautenBindungsDialog> {
   int _lep = 0;
   int _aup = 0;
 
+  // Nur Machtvoll: freie Werte ab der Vorlage.
+  final TextEditingController _artName = TextEditingController();
+  final Map<String, int> _werte = <String, int>{};
+  List<VertrautenAngriffDef>? _angriffe;
+  List<VertrautenTempoDef>? _tempi;
+
+  @override
+  void dispose() {
+    _artName.dispose();
+    super.dispose();
+  }
+
   VertrautenGenerierung get _generierung => VertrautenGenerierung(
     artId: _artId,
     machtvoll: _machtvoll,
-    punkte: Map<String, int>.of(_punkte),
-    zusatzAsp: _asp,
-    zusatzLep: _lep,
-    zusatzAup: _aup,
+    punkte: _machtvoll ? const <String, int>{} : Map<String, int>.of(_punkte),
+    zusatzAsp: _machtvoll ? 0 : _asp,
+    zusatzLep: _machtvoll ? 0 : _lep,
+    zusatzAup: _machtvoll ? 0 : _aup,
+    artName: _artName.text,
+    werte: Map<String, int>.of(_werte),
+    angriffe: _angriffe,
+    geschwindigkeiten: _tempi,
   );
+
+  // Setzt alle von der Art abhängigen Eingaben zurück.
+  void _neueArt(String id) {
+    _artId = id;
+    _punkte.clear();
+    _werte.clear();
+    _angriffe = null;
+    _tempi = null;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -62,7 +87,9 @@ class _VertrautenBindungsDialogState extends State<_VertrautenBindungsDialog> {
           DropdownButtonFormField<String>(
             key: const ValueKey<String>('vertrauten-art'),
             initialValue: _artId,
-            decoration: const InputDecoration(labelText: 'Tierart'),
+            decoration: InputDecoration(
+              labelText: _machtvoll ? 'Vorlage (verwandte Art)' : 'Tierart',
+            ),
             items: [
               for (final a in kVertrautenArten)
                 DropdownMenuItem(
@@ -70,10 +97,7 @@ class _VertrautenBindungsDialogState extends State<_VertrautenBindungsDialog> {
                   child: Text('${a.name} (${a.bindungskosten} AP)'),
                 ),
             ],
-            onChanged: (id) => setState(() {
-              _artId = id ?? _artId;
-              _punkte.clear();
-            }),
+            onChanged: (id) => setState(() => _neueArt(id ?? _artId)),
           ),
           SwitchListTile(
             contentPadding: EdgeInsets.zero,
@@ -82,44 +106,61 @@ class _VertrautenBindungsDialogState extends State<_VertrautenBindungsDialog> {
             value: _machtvoll,
             onChanged: (v) => setState(() => _machtvoll = v),
           ),
-          Text(
-            'Punkte verteilen (${_generierung.punkteSumme} / '
-            '$kVertrautenGenerierungspunkte, je 2 AP)',
-            style: theme.textTheme.labelMedium,
-          ),
-          for (final (label, key) in kCompanionEigenschaftKeys)
-            _PunkteZeile(
-              key: ValueKey<String>('vertrauten-punkte-$key'),
-              label:
-                  '$label ${art.eigenschaften[key]!.start}–'
-                  '${art.eigenschaften[key]!.max}',
-              wert: _punkte[key] ?? 0,
-              ergebnis: art.eigenschaften[key]!.start + (_punkte[key] ?? 0),
-              onChanged: (v) => setState(() => _punkte[key] = v),
+          if (_machtvoll)
+            _MachtvollWerteForm(
+              art: art,
+              artName: _artName,
+              werte: _werte,
+              angriffe: _angriffe ?? art.angriffe,
+              tempi: _tempi ?? art.geschwindigkeiten,
+              onWert: (key, v) => setState(() => _werte[key] = v),
+              onAngriff: (i, a) => setState(() {
+                _angriffe = List.of(_angriffe ?? art.angriffe)..[i] = a;
+              }),
+              onTempo: (i, t) => setState(() {
+                _tempi = List.of(_tempi ?? art.geschwindigkeiten)..[i] = t;
+              }),
+            )
+          else ...[
+            Text(
+              'Punkte verteilen (${_generierung.punkteSumme} / '
+              '$kVertrautenGenerierungspunkte, je 2 AP)',
+              style: theme.textTheme.labelMedium,
             ),
-          const SizedBox(height: 8),
-          Text(
-            'Zusätzliche Punkte (je höchstens +3)',
-            style: theme.textTheme.labelMedium,
-          ),
-          _PunkteZeile(
-            label: 'AsP ${art.asp} (je 5 AP)',
-            wert: _asp,
-            ergebnis: art.asp + _asp,
-            onChanged: (v) => setState(() => _asp = v),
-          ),
-          _PunkteZeile(
-            label: 'LeP ${art.lep} (je 5 AP)',
-            wert: _lep,
-            ergebnis: art.lep + _lep,
-            onChanged: (v) => setState(() => _lep = v),
-          ),
-          _PunkteZeile(
-            label: 'AuP ${art.aup} (je 2 AP)',
-            wert: _aup,
-            ergebnis: art.aup + _aup,
-            onChanged: (v) => setState(() => _aup = v),
-          ),
+            for (final (label, key) in kCompanionEigenschaftKeys)
+              _PunkteZeile(
+                key: ValueKey<String>('vertrauten-punkte-$key'),
+                label:
+                    '$label ${art.eigenschaften[key]!.start}–'
+                    '${art.eigenschaften[key]!.max}',
+                wert: _punkte[key] ?? 0,
+                ergebnis: art.eigenschaften[key]!.start + (_punkte[key] ?? 0),
+                onChanged: (v) => setState(() => _punkte[key] = v),
+              ),
+            const SizedBox(height: 8),
+            Text(
+              'Zusätzliche Punkte (je höchstens +3)',
+              style: theme.textTheme.labelMedium,
+            ),
+            _PunkteZeile(
+              label: 'AsP ${art.asp} (je 5 AP)',
+              wert: _asp,
+              ergebnis: art.asp + _asp,
+              onChanged: (v) => setState(() => _asp = v),
+            ),
+            _PunkteZeile(
+              label: 'LeP ${art.lep} (je 5 AP)',
+              wert: _lep,
+              ergebnis: art.lep + _lep,
+              onChanged: (v) => setState(() => _lep = v),
+            ),
+            _PunkteZeile(
+              label: 'AuP ${art.aup} (je 2 AP)',
+              wert: _aup,
+              ergebnis: art.aup + _aup,
+              onChanged: (v) => setState(() => _aup = v),
+            ),
+          ],
           const SizedBox(height: 8),
           Text(
             'Kosten: ${kosten.grundkosten} + ${kosten.punkte} $ueber'
