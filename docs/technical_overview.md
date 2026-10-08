@@ -492,7 +492,7 @@ mit älterer App per Sync die Felder einer neueren (Befunde ARCH-07-B5/B6):
     `AvatarSnapshot`, `HeroAdvancementEntry`;
   - Laufzeitzustand: `AttributeModifiers`, `ActiveSpellEffectsState`,
     `ActiveSpellEffectDetail`, `SpellDuration`, `WundZustand`, `DiceLogEntry`,
-    `ZustandsBuchung` (ARCH-06).
+    `ZustandsBuchung` (ARCH-06), `BegleiterZustand` (V2).
 
   Ausgenommen ist nur `OffhandSlot`: der Altschlüssel `offhand` wird beim
   Laden migriert und nie geschrieben. Drei Regeln halten das dicht:
@@ -667,6 +667,7 @@ persistiert (eigene Hive-Box `hero_states_v1`).
 | `tempMods` | `StatModifiers` | Temporäre Stat-Modifikatoren |
 | `tempAttributeMods` | `AttributeModifiers` | Temporäre Eigenschaftsmodifikatoren |
 | `buchungen` | `List<ZustandsBuchung>` | Fachliche Buchungen (ARCH-06), höchstens `buchungenMax` = 50, nur bei Belegung im JSON |
+| `begleiterZustaende` | `Map<String, BegleiterZustand>` | Laufende LeP/AsP/AuP je Begleiter-ID (V2, gemeinsam mit Reittier-P2), nur bei Belegung im JSON |
 
 `HeroState.empty()` liefert einen Standardzustand mit allen Werten = 0.
 
@@ -676,6 +677,19 @@ Treffer **tatsächlich** verändert hat (`lepDelta`, `auDelta`, `zone`,
 Gegenbuchung (`art: schadenRuecknahme`, `ruecknahmeVon`), was eine Rücknahme
 geändert hat. Der zugehörige Protokolleintrag trägt dieselbe ID als
 `DiceLogEntry.buchungId`.
+
+`BegleiterZustand` (`lib/domain/begleiter_zustand.dart`) hält `currentLep`,
+`currentAsp` und `currentAup` eines Begleiters. `null` heißt „voll“, also
+gleich dem wirksamen Maximum (`begleiterWirksamerPoolwert`); ein Wert gleich
+dem Maximum wird deshalb nicht gespeichert, und ein Begleiter ohne Wert hat
+keinen Eintrag. Einträge gelöschter Begleiter bleiben stehen und werden
+ignoriert. Die Rechnung steht in `rules/derived/begleiter_zustand_rules.dart`
+(`mitBegleiterPool` mit einer `RessourcenAenderung`, LeP bis −10, AsP/AuP bis 0,
+nach oben das Maximum), der Schreibweg der Oberfläche in
+`ui/screens/shared/begleiter_zustand_aendern.dart` über
+`aendereZustandMitMeldung`. Im Sync zählen die drei Werte als Zähler
+(`zaehlerInMaps` in `zustandZusammenfuehrungsRegeln`), sofern Basis, Lokal und
+Online einen Zahlenwert tragen; sonst gilt die normale Zusammenführung.
 
 ---
 

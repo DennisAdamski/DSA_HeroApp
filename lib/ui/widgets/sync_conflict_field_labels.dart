@@ -112,4 +112,6 @@ const Map<String, String> syncFieldLabels = <String, String>{
   'activeSpellEffects': 'Aktive Zaubereffekte',
   'wpiZustand': 'Wunden & Schmerz',
   'diceLog': 'Würfel-Log',
+  'begleiterZustaende': 'Begleiter (laufende Werte)',
+  'currentAup': 'AuP',
 };

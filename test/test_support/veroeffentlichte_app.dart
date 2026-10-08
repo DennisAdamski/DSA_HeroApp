@@ -7,6 +7,7 @@ import 'package:dsa_heldenverwaltung/domain/avatar_gallery_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/avatar_gesichtsbefund.dart';
 import 'package:dsa_heldenverwaltung/domain/avatar_snapshot.dart';
 import 'package:dsa_heldenverwaltung/domain/aventurian_date.dart';
+import 'package:dsa_heldenverwaltung/domain/begleiter_zustand.dart';
 import 'package:dsa_heldenverwaltung/domain/bought_stats.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/dice_log_entry.dart';
@@ -438,6 +439,9 @@ Map<String, dynamic> zustandWieVeroeffentlichteApp(
     ]) {
       _behalteIn(wunden[zonen], _namen(WundZone.values));
     }
+  }
+  for (final zustand in _werte(json['begleiterZustaende'])) {
+    _behalte(zustand, BegleiterZustand.jsonSchluessel);
   }
   for (final eintrag in _maps(json['diceLog'])) {
     _behalte(eintrag, DiceLogEntry.jsonSchluessel);

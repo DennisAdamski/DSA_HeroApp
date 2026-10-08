@@ -354,6 +354,74 @@ void main() {
     });
   });
 
+  group('laufende Werte der Begleiter', () {
+    Map<String, dynamic> stand(Map<String, Map<String, dynamic>> begleiter) => {
+      'currentLep': 30,
+      if (begleiter.isNotEmpty) 'begleiterZustaende': begleiter,
+    };
+
+    test('LeP beider Geräte zählen als Zähler', () {
+      final ergebnis = _fuehre(
+        stand({
+          'mira': {'currentLep': 10},
+        }),
+        stand({
+          'mira': {'currentLep': 7},
+        }),
+        stand({
+          'mira': {'currentLep': 9},
+        }),
+        regeln: zustandZusammenfuehrungsRegeln,
+      );
+
+      expect(ergebnis.vollstaendig, isTrue);
+      expect(ergebnis.ergebnis['begleiterZustaende'], {
+        'mira': {'currentLep': 6},
+      });
+    });
+
+    test(
+      'verschiedene Felder und Begleiter führen sich ohne Konflikt zusammen',
+      () {
+        final ergebnis = _fuehre(
+          stand({
+            'mira': {'currentLep': 10},
+          }),
+          stand({
+            'mira': {'currentLep': 10, 'currentAsp': 4},
+          }),
+          stand({
+            'mira': {'currentLep': 10, 'currentAup': 20},
+            'rondo': {'currentLep': 5},
+          }),
+          regeln: zustandZusammenfuehrungsRegeln,
+        );
+
+        expect(ergebnis.vollstaendig, isTrue);
+        expect(ergebnis.ergebnis['begleiterZustaende'], {
+          'mira': {'currentLep': 10, 'currentAsp': 4, 'currentAup': 20},
+          'rondo': {'currentLep': 5},
+        });
+      },
+    );
+
+    test('fehlt ein Wert („voll“) auf einer Seite, gilt kein Zähler', () {
+      Map<String, Map<String, dynamic>> mit(Map<String, dynamic>? mira) => {
+        'rondo': {'currentLep': 3},
+        if (mira != null) 'mira': mira,
+      };
+      final ergebnis = _fuehre(
+        stand(mit({'currentLep': 10})),
+        stand(mit(null)),
+        stand(mit({'currentLep': 8})),
+        regeln: zustandZusammenfuehrungsRegeln,
+      );
+
+      expect(ergebnis.konflikte.single.schluessel, 'begleiterZustaende/mira');
+      expect(ergebnis.konflikte.single.lokalFehlt, isTrue);
+    });
+  });
+
   test('legen beide Seiten eine Liste neu an, zählt jedes Element', () {
     final ergebnis = _fuehre(
       {'name': 'A'},
