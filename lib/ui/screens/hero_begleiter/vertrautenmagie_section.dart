@@ -20,6 +20,7 @@ class _VertrautenmagieSection extends StatelessWidget {
     required this.onChanged,
     this.onRaiseRk,
     this.rkSteigerung = 0,
+    this.onZauberLernen,
   });
 
   final HeroRitualCategory kategorie;
@@ -27,6 +28,10 @@ class _VertrautenmagieSection extends StatelessWidget {
   final ValueChanged<HeroRitualCategory> onChanged;
   final VoidCallback? onRaiseRk;
   final int rkSteigerung;
+
+  /// Lernt einen Zauber aus den AP des Vertrauten (Sofortbuchung); `null`,
+  /// solange Sofortbuchungen ruhen.
+  final VoidCallback? onZauberLernen;
 
   void _removeRitual(int index) {
     final updated = List<HeroRitualEntry>.from(kategorie.rituals)
@@ -58,7 +63,19 @@ class _VertrautenmagieSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const _SectionHeader('Vertrautenmagie'),
+        Row(
+          children: [
+            const Expanded(child: _SectionHeader('Vertrautenmagie')),
+            Tooltip(
+              message: onZauberLernen == null ? _kSofortbuchungGesperrt : '',
+              child: TextButton(
+                key: const ValueKey<String>('vertrauten-zauber-lernen'),
+                onPressed: onZauberLernen,
+                child: const Text('+ Zauber'),
+              ),
+            ),
+          ],
+        ),
         isEditing
             ? Row(
                 children: [
@@ -122,7 +139,7 @@ class _VertrautenmagieSection extends StatelessWidget {
           TextButton.icon(
             onPressed: () => _addRitual(context),
             icon: const Icon(Icons.add),
-            label: const Text('Ritual hinzufügen'),
+            label: const Text('Ritual ohne AP eintragen'),
           ),
         ],
       ],

@@ -1,6 +1,6 @@
 # Vertraute: Bindung, Entwicklung, Spiel
 
-Stand: Paket V1 in Arbeit (8. Oktober 2026); V2 und V3 sind offen. Das Dokument
+Stand: Paket V1 umgesetzt (8. Oktober 2026); V2 und V3 sind offen. Das Dokument
 hält die Regelquellen, die Nutzerentscheidungen und die Paketaufteilung für
 Vertrautentiere von Hexen, Geoden, Zibiljas und Goblin-Schamaninnen fest. Alle
 Belege kommen aus dem dsa-rules MCP. Vorbild ist das Reittier-Paket
@@ -10,7 +10,7 @@ Belege kommen aus dem dsa-rules MCP. Vorbild ist das Reittier-Paket
 
 | Paket | Inhalt | Stand |
 |---|---|---|
-| V1 Grundlage | Artenkatalog, Bindung mit AP-Buchung bei der Hexe, AP-Anteil und Übertragung, Steigerung nach WdZ, Zauber je Art, ZBA-Ausbildung | in Arbeit |
+| V1 Grundlage | Artenkatalog, Bindung mit AP-Buchung bei der Hexe, AP-Anteil und Übertragung, Steigerung nach WdZ, Zauber je Art, ZBA-Ausbildung | umgesetzt |
 | V2 Spielansicht | laufende LeP/AsP/AuP je Begleiter im `HeroState` (gemeinsam mit Reittier-P2), Regeneration, Vereinigung, Vertrautenzauber würfeln | offen |
 | V3 Gefecht | Vertraute als handelnde Begleiter, magische Angriffe, besondere Kampfregeln, Schaden in die Laufzeitwerte | offen |
 
@@ -152,6 +152,55 @@ Aktionen liegen in `hero_begleiter/vertrauten_steigerung_aktionen.dart`.
 
   Kampfprofil und Gefecht zeigen diese Werte. Grundwerte bleiben unverändert,
   damit die Steigerungsgrenzen am Startwert hängen.
+
+## Oberfläche
+
+Die Oberfläche ist der klassische Begleiter-Tab, den auch der
+Kartograph-Workspace über `workspace_tab_spec.dart` nutzt. Bei Vertrauten
+zeigt er nach „Kampf- und Bewegungswerte“ den Abschnitt „Vertrautenbindung“
+(`hero_begleiter/vertrauten_bindung_section.dart`, Dialoge in
+`vertrauten_bindung_dialoge.dart`, Buchungen in
+`vertrauten_bindung_aktionen.dart`):
+
+- **Ungebunden:**
+  - „Vertrauten binden“: Art, Machtvoll (vorbelegt aus dem Vorteil der Hexe),
+    Punkte mit −/+, Zusatz-AsP/LeP/AuP, laufende Kosten und Fehler.
+  - „Ohne Buchung erfassen“: nur Art und Machtvoll.
+- **Gebunden:**
+  - Art, Bindungskosten, AP-Anteil, Übertragung, Ausbildungen, Kampfregeln
+    und Tiersinne.
+  - Knöpfe „AP-Anteil einrichten“ (nur einmal), „AP übertragen“ und im Kopf
+    „+ Ausbildung“. Das Kampftier steht nicht zur Wahl; Sperren lassen sich
+    per Meisterentscheid übergehen.
+- **Vertrautenmagie:** „+ Zauber“ im Kopf lernt einen Zauber mit
+  Zugangsprüfung und Kosten. „Ohne AP erfassen“ ist für schon früher gelernte
+  Zauber. Im Bearbeitungsmodus heißt die alte Liste „Ritual ohne AP
+  eintragen“ und bleibt als manuelle Korrektur.
+- **Sperre:** Alle Buchungen sind Sofortbuchungen über
+  `aendereHeldMitMeldung`. Sie ruhen bei ungespeicherten Änderungen und sind
+  bei offener Planung gesperrt.
+
+### Manueller Ablauf (Abnahme)
+
+1. Eine Hexe mit freien AP öffnen. Im Begleiter-Tab einen Begleiter anlegen,
+   „Typ: Vertrauter“ wählen und speichern.
+2. **Binden:** „Vertrauten binden“ öffnen, Katze wählen, zwei Punkte auf GE
+   legen. Der Dialog zeigt 84 AP. Nach „Binden“ sind die AP der Hexe um 84
+   gesunken. Der Vertraute hat GE 13, LO 15, RK 3, Zwiegespräch, Prankenhieb
+   AT 11 und RS 1.
+3. **AP vergeben:** „AP-Anteil einrichten“ öffnen. Vorgeschlagen ist ¼ der
+   bisher gebuchten Abenteuer- und Reisebericht-AP; bestätigen. Danach
+   „AP übertragen“ mit 50 AP: Die Hexe verliert 50 AP, der Vertraute gewinnt
+   50, LO steigt auf 16. Ein danach abgeschlossenes Abenteuer mit 200 AP
+   schreibt dem Vertrauten automatisch 50 AP gut.
+4. **Steigern:** „Bearbeiten“ wählen und MU über den Pfeil steigern. Bis
+   1,5 × Startwert geht es, darüber meldet die App die Grenze. INI und
+   Loyalität haben keinen Pfeil mehr.
+5. **Zauber lernen:** „+ Zauber“ öffnen und Tiersinne wählen (15 AP des
+   Vertrauten). Tarnung ist für die Katze gesperrt und lässt sich nur per
+   Meisterentscheid lernen.
+
+Abgedeckt durch `test/ui/begleiter/vertrauten_bindung_test.dart`.
 
 ## Offene Punkte
 

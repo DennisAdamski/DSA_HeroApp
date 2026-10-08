@@ -134,6 +134,7 @@ class _BegleiterDetailView extends StatelessWidget {
     this.onAusbildungsschritt,
     this.onAusbildungsschrittZurueck,
     this.onPferdeSf,
+    this.vertrautenAktionen,
   });
 
   final HeroCompanion companion;
@@ -154,6 +155,9 @@ class _BegleiterDetailView extends StatelessWidget {
   final VoidCallback? onAusbildungsschritt;
   final VoidCallback? onAusbildungsschrittZurueck;
   final VoidCallback? onPferdeSf;
+
+  /// Sofortbuchungen der Vertrautenbindung; `null`, solange sie ruhen.
+  final _VertrautenAktionen? vertrautenAktionen;
 
   @override
   Widget build(BuildContext context) {
@@ -214,6 +218,17 @@ class _BegleiterDetailView extends StatelessWidget {
                   onRaisePool: onRaisePool,
                   onRaiseGs: onRaiseGs,
                 ),
+                if (companion.typ == BegleiterTyp.vertrauter) ...[
+                  const SizedBox(height: _sectionSpacing),
+                  _VertrautenBindungSection(
+                    companion: companion,
+                    onBinden: vertrautenAktionen?.binden,
+                    onErfassen: vertrautenAktionen?.erfassen,
+                    onUebertragen: vertrautenAktionen?.uebertragen,
+                    onAnteilEinrichten: vertrautenAktionen?.anteilEinrichten,
+                    onAusbildung: vertrautenAktionen?.ausbildung,
+                  ),
+                ],
                 if (companion.typ == BegleiterTyp.reittier) ...[
                   const SizedBox(height: _sectionSpacing),
                   _AusbildungSection(
@@ -275,6 +290,7 @@ class _BegleiterDetailView extends StatelessWidget {
                     isEditing: isEditing,
                     onRaiseRk: onRaiseRk,
                     rkSteigerung: companionSteigerung(companion, 'rk'),
+                    onZauberLernen: vertrautenAktionen?.zauberLernen,
                     onChanged: (updatedKat) => onChanged(
                       companion.copyWith(
                         ritualCategories: companion.ritualCategories

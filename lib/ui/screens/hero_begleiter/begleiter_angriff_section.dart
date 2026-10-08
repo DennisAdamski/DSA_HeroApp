@@ -195,7 +195,7 @@ class _AngriffRow extends StatelessWidget {
                 ),
               ),
               SizedBox(
-                width: onRaiseAt != null ? 60 : 36,
+                width: onRaiseAt != null ? 72 : 36,
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -216,7 +216,7 @@ class _AngriffRow extends StatelessWidget {
                 ),
               ),
               SizedBox(
-                width: onRaisePa != null ? 60 : 36,
+                width: onRaisePa != null ? 72 : 36,
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   mainAxisAlignment: MainAxisAlignment.center,
