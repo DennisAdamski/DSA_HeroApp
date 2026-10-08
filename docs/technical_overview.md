@@ -1966,6 +1966,25 @@ Bei Konflikten oder Speicherfehlern bleibt die Runde erhalten. Die Anzeige nicht
 passender Sonderfertigkeiten speichert derselbe Ablauf
 (`speichereSfAnzeige`): eingereiht hinter andere Bogenvorgänge, ohne
 Normalisierung und bei offener Runde nur auf unveränderter Basis. Die AP- und History-Ansicht erscheint auf breiten Geräten im Inspektor
+Seit 2026-10-09 zeigt `AdvancementValueTile` numerische Ziele als kompakte,
+mit Fensterbreite und Textskalierung umbrechende Kacheln. Eigenschaften stehen
+bei ausreichender Breite links, `AdvancementImpactPanel` und Grundwertzukäufe
+rechts. Im Kartograph-Workspace liegt die AP-Bilanz in der rechten Verlaufsspalte;
+mobil bleibt sie oberhalb des Katalogs. Beide AP-Bereiche sind höhenbegrenzt
+und scrollbar. Der zusätzliche Seitentitel „Nächste Schritte“ entfällt.
+
+Talentspezialisierungen werden direkt am Talent vorgemerkt. Der Befehl verwendet
+die bestehende Art `talent` mit `options.action = specialization` sowie
+`options.specialization` als Namen und ohne numerische Ausgangs-/Zielwerte.
+`advancement_specialization_rules.dart` prüft den Vorschau-TaW, vorhandene Namen
+und bei Waffenkategorien die Katalogauswahl. Mindest-TaW und Kosten stammen
+aus `learning_rules.dart`; die bestätigten Kosten inklusive Lehrmeisteroption
+werden wie bei anderen Erwerbungen im Befehl festgehalten. Das Replay erhält
+alle übrigen Talentfelder und synchronisiert Freitext und Spezialisierungsliste
+über `HeroTalentEntry.copyWith`. Entfernte vorausgehende Steigerungen können
+den Erwerb ungültig machen; ungültige Einträge reservieren keine AP und sperren
+die Übernahme. Zauberkacheln bekommen keine Spezialisierungsaktion.
+
 und mobil im **Detailpanel**. Das Verlassen einer geänderten Runde bietet
 Weiterplanen, Verwerfen und bei gültigen Einträgen Übernehmen an.
 
