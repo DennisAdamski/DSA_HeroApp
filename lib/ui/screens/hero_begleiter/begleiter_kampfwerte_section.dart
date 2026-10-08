@@ -9,18 +9,21 @@ class _KampfWerteSection extends StatelessWidget {
     required this.companion,
     required this.isEditing,
     required this.onChanged,
-    this.onRaiseRegular,
     this.onRaisePool,
+    this.onRaiseGs,
   });
 
   final HeroCompanion companion;
   final bool isEditing;
   final ValueChanged<HeroCompanion> onChanged;
-  final void Function(String key, String label)? onRaiseRegular;
   final void Function(String key, String label)? onRaisePool;
+  final void Function(String art)? onRaiseGs;
 
   @override
   Widget build(BuildContext context) {
+    // INI und Loyalitaet sind nach WdZ S. 125 nicht steigerbar; Altbuchungen
+    // zaehlen weiter und stehen in den Hinweisen darunter.
+    final hinweise = vertrautenSteigerungshinweise(companion);
     // Im View-Modus wirksame Werte anzeigen (Basis + Steigerung + Ausbildung).
     final iniView = isEditing
         ? companion.ini
@@ -47,12 +50,6 @@ class _KampfWerteSection extends StatelessWidget {
                 value: iniView,
                 isEditing: isEditing,
                 onChanged: (v) => onChanged(companion.copyWith(ini: v)),
-                suffixIcon: onRaiseRegular != null && companion.ini != null
-                    ? _RaiseIconButton(
-                        tooltip: 'INI steigern',
-                        onPressed: () => onRaiseRegular!('ini', 'INI'),
-                      )
-                    : null,
               ),
             ),
             const SizedBox(width: _fieldSpacing),
@@ -79,14 +76,6 @@ class _KampfWerteSection extends StatelessWidget {
                 value: loyView,
                 isEditing: isEditing,
                 onChanged: (v) => onChanged(companion.copyWith(loyalitaet: v)),
-                suffixIcon:
-                    onRaiseRegular != null && companion.loyalitaet != null
-                    ? _RaiseIconButton(
-                        tooltip: 'Loyalität steigern',
-                        onPressed: () =>
-                            onRaiseRegular!('loyalitaet', 'Loyalität'),
-                      )
-                    : null,
               ),
             ),
           ],
@@ -141,7 +130,17 @@ class _KampfWerteSection extends StatelessWidget {
           isEditing: isEditing,
           onChanged: (speeds) =>
               onChanged(companion.copyWith(geschwindigkeiten: speeds)),
+          onRaise: onRaiseGs,
         ),
+        for (final hinweis in hinweise)
+          Padding(
+            padding: const EdgeInsets.only(top: 4),
+            child: Text(
+              hinweis,
+              style: Theme.of(context).textTheme.bodySmall
+                  ?.copyWith(color: Theme.of(context).colorScheme.error),
+            ),
+          ),
       ],
     );
   }
@@ -207,11 +206,13 @@ class _GeschwindigkeitenEditor extends StatelessWidget {
     required this.speeds,
     required this.isEditing,
     required this.onChanged,
+    this.onRaise,
   });
 
   final List<HeroCompanionSpeed> speeds;
   final bool isEditing;
   final ValueChanged<List<HeroCompanionSpeed>> onChanged;
+  final void Function(String art)? onRaise;
 
   @override
   Widget build(BuildContext context) {
@@ -245,6 +246,9 @@ class _GeschwindigkeitenEditor extends StatelessWidget {
             child: _SpeedRow(
               speed: speeds[i],
               isEditing: isEditing,
+              onRaise: onRaise != null && speeds[i].art.isNotEmpty
+                  ? () => onRaise!(speeds[i].art)
+                  : null,
               onChanged: (updated) {
                 final next = List<HeroCompanionSpeed>.from(speeds);
                 next[i] = updated;
@@ -267,12 +271,14 @@ class _SpeedRow extends StatelessWidget {
     required this.isEditing,
     required this.onChanged,
     required this.onDelete,
+    this.onRaise,
   });
 
   final HeroCompanionSpeed speed;
   final bool isEditing;
   final ValueChanged<HeroCompanionSpeed> onChanged;
   final VoidCallback onDelete;
+  final VoidCallback? onRaise;
 
   @override
   Widget build(BuildContext context) {
@@ -307,6 +313,11 @@ class _SpeedRow extends StatelessWidget {
                 onChanged(speed.copyWith(wert: int.tryParse(v) ?? speed.wert)),
           ),
         ),
+        if (onRaise != null)
+          _RaiseIconButton(
+            tooltip: 'GS ${speed.art} steigern',
+            onPressed: onRaise!,
+          ),
         IconButton(
           icon: const Icon(Icons.remove_circle_outline, size: 18),
           visualDensity: VisualDensity.compact,
@@ -374,12 +385,6 @@ class _LepSection extends StatelessWidget {
                 value: aupView,
                 isEditing: isEditing,
                 onChanged: (v) => onChanged(companion.copyWith(maxAup: v)),
-                suffixIcon: onRaisePool != null && companion.maxAup != null
-                    ? _RaiseIconButton(
-                        tooltip: 'AuP steigern',
-                        onPressed: () => onRaisePool!('aup', 'AuP'),
-                      )
-                    : null,
               ),
             ),
             const SizedBox(width: _fieldSpacing),

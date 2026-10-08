@@ -129,6 +129,7 @@ class _BegleiterDetailView extends StatelessWidget {
     this.onRaiseAngriffAt,
     this.onRaiseAngriffPa,
     this.onRaiseRk,
+    this.onRaiseGs,
     this.vertrautenmagieKategorie,
     this.onAusbildungsschritt,
     this.onAusbildungsschrittZurueck,
@@ -146,6 +147,7 @@ class _BegleiterDetailView extends StatelessWidget {
   final void Function(String attackId)? onRaiseAngriffAt;
   final void Function(String attackId)? onRaiseAngriffPa;
   final VoidCallback? onRaiseRk;
+  final void Function(String art)? onRaiseGs;
   final HeroRitualCategory? vertrautenmagieKategorie;
 
   /// Sofortbuchungen der Reittier-Ausbildung; `null`, solange sie ruhen.
@@ -209,8 +211,8 @@ class _BegleiterDetailView extends StatelessWidget {
                   companion: companion,
                   isEditing: isEditing,
                   onChanged: onChanged,
-                  onRaiseRegular: onRaiseRegular,
                   onRaisePool: onRaisePool,
+                  onRaiseGs: onRaiseGs,
                 ),
                 if (companion.typ == BegleiterTyp.reittier) ...[
                   const SizedBox(height: _sectionSpacing),

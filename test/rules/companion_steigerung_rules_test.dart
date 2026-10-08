@@ -16,21 +16,176 @@ void main() {
     });
   });
 
-  group('poolMaxSteigerung', () {
-    test('1.5 × 20 = 30', () {
-      expect(poolMaxSteigerung(20), 30);
+  group('vertrautenGrenze (WdZ S. 125: höchstens 1,5 × Startwert)', () {
+    test('1,5 × 20 = 30, Zuwachs höchstens 10', () {
+      expect(vertrautenGrenze(20), 30);
+      expect(vertrautenMaxStandUeber(20), 10);
     });
 
-    test('1.5 × 7 = 10 (floor)', () {
-      expect(poolMaxSteigerung(7), 10);
+    test('1,5 × 7 = 10 (abgerundet), Zuwachs 3', () {
+      expect(vertrautenGrenze(7), 10);
+      expect(vertrautenMaxStandUeber(7), 3);
     });
 
-    test('1.5 × 0 = 0', () {
-      expect(poolMaxSteigerung(0), 0);
+    test('Startwert 0 und 1 lassen keinen Zuwachs', () {
+      expect(vertrautenMaxStandUeber(0), 0);
+      expect(vertrautenMaxStandUeber(1), 0);
+    });
+  });
+
+  group('vertrautenMaxStand', () {
+    const katze = HeroCompanion(
+      id: 'k',
+      typ: BegleiterTyp.vertrauter,
+      mu: 8,
+      ini: 13,
+      loyalitaet: 15,
+      maxLep: 11,
+      startLep: 11,
+      maxAsp: 5,
+      startAsp: 5,
+      maxAup: 45,
+      magieresistenz: 4,
+      startMr: 4,
+    );
+
+    test('Eigenschaften bis 1,5 × Grundwert', () {
+      expect(vertrautenMaxStand(katze, 'mu'), 4);
     });
 
-    test('1.5 × 1 = 1 (floor)', () {
-      expect(poolMaxSteigerung(1), 1);
+    test('LeP und MR bis 1,5 × Startwert insgesamt', () {
+      expect(vertrautenMaxStand(katze, 'lep'), 5);
+      expect(vertrautenMaxStand(katze, 'mr'), 2);
+    });
+
+    test('AsP und RK sind unbegrenzt', () {
+      expect(vertrautenMaxStand(katze, 'asp'), isNull);
+      expect(vertrautenMaxStand(katze, 'rk'), isNull);
+    });
+
+    test('INI, Loyalität und AuP sind nicht steigerbar', () {
+      for (final key in ['ini', 'loyalitaet', 'aup']) {
+        expect(vertrautenWertSteigerbar(key), isFalse, reason: key);
+        expect(vertrautenMaxStand(katze, key), 0, reason: key);
+      }
+    });
+  });
+
+  group('vertrautenSteigerungshinweis', () {
+    test('Altbuchung auf nicht steigerbarem Wert bleibt mit Hinweis', () {
+      const c = HeroCompanion(id: 'a', ini: 10, steigerungen: {'ini': 2});
+      expect(companionEffektivwert(c, 'ini'), 12);
+      expect(vertrautenSteigerungshinweis(c, 'ini'), contains('+2 bleiben'));
+    });
+
+    test('Altbuchung über der Grenze bleibt mit Hinweis', () {
+      const c = HeroCompanion(
+        id: 'a',
+        maxLep: 10,
+        startLep: 10,
+        steigerungen: {'lep': 9},
+      );
+      expect(companionEffektiverPoolwert(c, 'lep'), 19);
+      expect(vertrautenSteigerungshinweis(c, 'lep'), contains('höchstens +5'));
+    });
+
+    test('regelkonformer Stand ohne Hinweis', () {
+      const c = HeroCompanion(id: 'a', mu: 10, steigerungen: {'mu': 5});
+      expect(vertrautenSteigerungshinweis(c, 'mu'), isNull);
+    });
+  });
+
+  group('steigereBegleiter prüft die WdZ-Grenzen', () {
+    const c = HeroCompanion(
+      id: 'a',
+      mu: 10,
+      ini: 10,
+      apGesamt: 1000,
+      angriffe: [HeroCompanionAttack(id: 'biss', at: 10, pa: 4)],
+      geschwindigkeiten: [
+        HeroCompanionSpeed(art: 'Boden', wert: 1),
+        HeroCompanionSpeed(art: 'Fliegen', wert: 12),
+      ],
+    );
+
+    test('weist Steigerung über 1,5 × ab', () {
+      expect(
+        () => steigereBegleiter(
+          c,
+          ziel: const BegleiterSteigerungsziel.wert('mu'),
+          erwarteterStand: 0,
+          neuerStand: 6,
+          apKosten: 1,
+        ),
+        throwsStateError,
+      );
+    });
+
+    test('weist nicht steigerbare Werte ab', () {
+      expect(
+        () => steigereBegleiter(
+          c,
+          ziel: const BegleiterSteigerungsziel.wert('ini'),
+          erwarteterStand: 0,
+          neuerStand: 1,
+          apKosten: 1,
+        ),
+        throwsA(
+          isA<StateError>().having(
+            (e) => e.message,
+            'message',
+            contains('nicht steigerbar'),
+          ),
+        ),
+      );
+    });
+
+    test('AT bis 1,5 × Grundwert', () {
+      final ergebnis = steigereBegleiter(
+        c,
+        ziel: const BegleiterSteigerungsziel.angriff('biss', parade: false),
+        erwarteterStand: 0,
+        neuerStand: 5,
+        apKosten: 100,
+      );
+      expect(begleiterAngriffAt(ergebnis.angriffe.single), 15);
+      expect(ergebnis.apAusgegeben, 100);
+    });
+
+    test('GS steigt je Bewegungsart', () {
+      final ergebnis = steigereBegleiter(
+        c,
+        ziel: const BegleiterSteigerungsziel.geschwindigkeit('Fliegen'),
+        erwarteterStand: 0,
+        neuerStand: 2,
+        apKosten: 50,
+      );
+      expect(begleiterTempo(ergebnis.geschwindigkeiten[1]), 14);
+      expect(ergebnis.geschwindigkeiten[0].steigerung, 0);
+      expect(
+        () => steigereBegleiter(
+          c,
+          ziel: const BegleiterSteigerungsziel.geschwindigkeit('Boden'),
+          erwarteterStand: 0,
+          neuerStand: 1,
+          apKosten: 1,
+        ),
+        throwsStateError,
+        reason: 'GS 1 lässt keinen Zuwachs (⌊1,5⌋ = 1)',
+      );
+    });
+
+    test('fehlende Bewegungsart wird abgewiesen', () {
+      expect(
+        () => steigereBegleiter(
+          c,
+          ziel: const BegleiterSteigerungsziel.geschwindigkeit('Schwimmen'),
+          erwarteterStand: 0,
+          neuerStand: 1,
+          apKosten: 1,
+        ),
+        throwsStateError,
+      );
     });
   });
 

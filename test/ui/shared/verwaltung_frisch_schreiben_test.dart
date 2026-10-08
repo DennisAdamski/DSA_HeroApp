@@ -53,6 +53,7 @@ const _rabe = HeroCompanion(
   id: 'rabe',
   name: 'Krah',
   typ: BegleiterTyp.vertrauter,
+  mu: 10,
   ini: 10,
   apGesamt: 200,
   apAusgegeben: 0,
@@ -187,13 +188,13 @@ void main() {
   });
 
   group('Vertrauten-Steigerung', () {
-    Future<void> steigereIni(
+    Future<void> steigereMut(
       WidgetTester tester,
       WorkspaceTabEditActions aktionen,
     ) async {
       await aktionen.startEdit();
       await _pumpOhneUeberlauf(tester);
-      final knopf = find.byTooltip('INI steigern');
+      final knopf = find.byTooltip('MU steigern').first;
       await tester.ensureVisible(knopf);
       await tester.tap(knopf);
       await _pumpOhneUeberlauf(tester);
@@ -225,11 +226,11 @@ void main() {
         companions: [_rabe.copyWith(apGesamt: 300)],
       );
 
-      await steigereIni(tester, aktionen!);
+      await steigereMut(tester, aktionen!);
 
       final gespeichert = await repo.gespeichert('demo');
       final rabe = gespeichert.companions.single;
-      expect(rabe.steigerungen['ini'], 1);
+      expect(rabe.steigerungen['mu'], 1);
       expect(rabe.apAusgegeben, greaterThan(0));
       expect(rabe.apGesamt, 300);
       expect(gespeichert.name, 'Hexe vom Sumpf');
@@ -241,11 +242,11 @@ void main() {
       final aktionen = await zeige(tester, begleiter);
       repo.fremdeAenderung = (held) => held.copyWith(
         companions: [
-          _rabe.copyWith(steigerungen: const {'ini': 1}),
+          _rabe.copyWith(steigerungen: const {'mu': 1}),
         ],
       );
 
-      await steigereIni(tester, aktionen!);
+      await steigereMut(tester, aktionen!);
 
       expect(repo.bogenSpeicherungen, 0);
       expect(
