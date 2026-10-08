@@ -341,7 +341,8 @@
       }
     ],
     "verbreitung": "3, bei Reiterkulturen und Veteranen beritten kämpfender Professionen",
-    "kosten": "300 AP"
+    "kosten": "300 AP",
+    "erklarung_lang": "enc:3:rvpTDBhzZS4EHuuQC9lgxaYQQdzyn/D6DInVf3005IxGee6mlNySI0hm1PGc/+Fm1nhxMgkDywkp3rGUnFNUZQJZARfopZx/TJAt3xbshHvohZ1zzPTe3SP7qb9IAmZ6NWmhyreWe3NSypfKCiMEAkw2sh15vbxpTsUS13hEru6ze4LnaHQAgaPTfLOrPYIClyg2wuX6FAb0/pweoos2SBSJuNPLG0PtLtPvuA229TMG4YKvEpAoCiWAtjMN7ctiqkQY+EJ2dBtJ7PHl0r3y4nvuCXrSbQk5PTdG4dd6+6xknlut+N+iM/hVxGoTRG6odd3SyvLTfjJlY31aeMakyEduWyuRYN8ZtSZyoDiVHFA+zEKlsxUD6BCQ7Knix/ybWjJkcwh5GkP/os8P4BqLUwDfuRF0oYn0n1pl2Sl88wq0emUg7WaTZaxO9gNH2jiREXubbrJBX0DDPSNBrexpkp5ndM/QI2N9Co82qlEGNzow17S6DnbUCiumThxCr4u/YuNpQXjt1UCCWQg22CIA1gsud8xFUqdwIAMyZd37HpTiInVVaQX4v4tnDMadlsyAARs94WrNSDXmgAm1X8egBQkHB3guHynEDFTJEqrd6t2eyFAPK+y7PHKGjvyHjZ94jPLbDyJWS4r98HY4AV/Lkj+2S7q7U/QmW4drolQMw2FO/ZlMMu804a0ZoQGejZQDVTZcsdettHUB4oTtZJYc13gitPtymLNXSdZA1ZYTmtRPhmnxHbDm4CCuCxzlmDf+4zm/TZZGoOpwOPp0mVS1l1aVs0iAzOiQMq1JGbVOWtdQdqJc+KdSzkAZ5Q1FISWttfN++Y/cHnCWiyYblrJOWU6GOYWNNAZxvjE33/DrBQPqfrzemUwx14BIdER27sL+zfmdVVC5sDVQxmY0ve5MGb+ESTtIWLT1JjZBWulyec3EEpfGdPIz66xAQ7nLZrfFTDGXI4rifA0heLEv1hZH6OwkgYHc1qR9c/Mw+uqyCF/aa15VaJP8NZ0xLtRk7oEZ5oHDIJPeNc0m13eHss9Eg6KULnL3tqu9ShEdv4eQz0/jfuj98ct5kpZ21iWAV55O9roqcyeGpvwpk0X05xJv9KKNiXe1l8UR4Dwfm08CGsKWIdjo0gycfY3vF4mXw5d7UchyLPzgMHXEg+4vMYXl"
   },
   {
     "id": "ksf_linkhand",
@@ -464,7 +465,8 @@
       }
     ],
     "verbreitung": "5, bei Reiterkulturen und berittenen Kämpfern",
-    "kosten": "200 AP"
+    "kosten": "200 AP",
+    "erklarung_lang": "enc:3:m2krDS2hDouKKfYZzNqgBF8+w7OEE/WF7dTx+d5RhIvBwpKeoESieOByrMJVUTAriS3M1qdFeq3+x0QG1JN0u4Zt35jwgLXtfUTImcHDJvMx0ULvIoovEG8MCmQaGlR7XJFssQOg03jUz4n8OSKTyeBphsppwkg33IPujC/T6aJkFyzeOPfDAP8Qqzzpwo3Eul6w2/u23GEJiekX7znOz4frPff7mLF3VDVb7EJPoBlLpatWFUCi9EDBStxHSUpDm/jmmUVsPEeg8bruxaxIHsmWe7yC6WgU0IbcRavm2hpjS1NL9VkQisjLHWuvJG9vvLAioqJn/0U28K7QgRbYUjVy/KarrAC5+6Q0bWgmAnrIQyMx8K3DxQlNF05vD7h2F1dQ+IoHii8DScxh/1JPlXttw3tGrixbmtAHfId6M6+nXppM/a0TxeGcA5R+RA8bE25bcogXKHSPSVAQKpkDblIRXoBLX/rSzQ2uu5E4SJOOnD7MvWcz2tVBCG9RGtQ8rRG60HifmGxJfTfDWa7PJaOZa4xkqN0DzrL6MHEHD4YRYAmNkdHqHZ2BD4eXrfP//8swKYpaeCLdB1g2IcZouBedTX6Dmc/dl5w0qafbRCTSeXg0jRXsI2eSA/fpaCJRRJ1Cn9AOrwZ0S5jNDPt8Com88EbPjz2yzbiFOqigXG1W3JKJ5Vie9dp4T7vy55t9LxR36EkvKdKRihbWKyODdelHtfVVLCBuhd5sxdRX60wkO7jm4Tqr2j8Xs8pk/4LjK3ciATqe67qUY9uVpIPznylmYi121fm6HddpTGoOvT2bT7HEVXgzWMzY3oslwvSiQij+E4SXuzAFDubJwcxEWVxw78Mamdj+DoiGZEwb11kZyc3DvFf5sI36fj2FcqFQX9eODB5FZsD8afVw9RgQPj3G9TFs8oTU2SJefHFGSrv2oFQt1bzieevTVuREWOCDIBqw0qn2U4RB6+dg/OqHl4nZz4RovNyfMEc6PZ+H+70MMuERhLV/JubNoFosPcL9/HOgh/jXR265+iyxaYd3sAOKq73Bss7YxmJ6ckLWBGPMUudJmUXIEZx8TjXLQCCIjZOfoCU9WBPRb/osrZPKEhbLCzrrH20YKpX33nSL/h96Ki0N8FCu0xpKlDAYF5Loax0gXWlBNJhRZAIPEzdeHgseJpQEeR/3cGTHdXL0dFfNTJdDy51WKA=="
   },
   {
     "id": "ksf_ruestungsgewoehnung_i",
@@ -688,7 +690,8 @@
       }
     ],
     "verbreitung": "3, bei klassischen Rittern",
-    "kosten": "100 AP"
+    "kosten": "100 AP",
+    "erklarung_lang": "enc:3:ag1v6rxCh6MPUVXlEhvd2/avtCHC9WEZvjGSKxENY1eONltcEnfhSiligBqiznZoqy2k9GfcRgaDjGkdbD8QicuQjGOICuyj3jH1q5Tcuo/7ek7PrJMuq1Zisnhg/Y+L1vnpIIYFZ0qvUNT29cIe/aHiZXQvFxV7LubWL/WYoDwAdoc+ElTxRMmgxEv5Haw3TzDKPWpdIX1gxbAR5cGhB6DBvwDzu1ITtoaI6x1c0XMMZO2LLbbCwEp1BgkunF3CYXUldILkLQVaz7j/J1tO+95INS563dIgoDyjw+PJAcg4kJdOy+eYsLLo4PdTEfU9J3t6h7FKDIoLZKhvrRxvWigR+AqDY+hwX5tkYGROeB04s+nGkPWYhVi8T460livE/5RWVnYzGfrRK+wneXiqMZaeP+OdhYjDlddqZpjkYgd0l2gl3juvRfSshJ3v3g9zCL/MdSayOpoec+tPYU071TroW1KKEo+RdIFhACxJyW+13eRsTKdnnbnCsH7dFV0g6QLY+wiT3z7ykZkvXGfdMuCKIr2H+o4fkKzrTrK7lkPIldiY/R/+WdkJ+rYNK3Jvk7i1fURTh7xrPgpEz5VxHFs6vbhwpiUq5flcAZM3EHnBzLm55I3KJ9+1cVfP9ruY+DQYa66WyqidMapTRmH3uj1VmmlQA8DhHzn/CBza5ANMrk2EqeM/57VliHKSsnpBqy6+dDLJdP9YOdfm5jVHWyJp5LB5QF/5RPfkyh08n5aXDHmf1k58Ay/JmK8t9h6lktSNjfI="
   },
   {
     "id": "ksf_unterwasserkampf",
