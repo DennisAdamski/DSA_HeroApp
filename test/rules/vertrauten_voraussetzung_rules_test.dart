@@ -1,7 +1,6 @@
 // Voraussetzungen der Vertrautenbindung und Aurapanzer des Vertrauten
 // (WdZ S. 123, S. 125).
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
-import 'package:dsa_heldenverwaltung/catalog/special_ability_def.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_companion.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_merkmal.dart';
