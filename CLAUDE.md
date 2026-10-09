@@ -13,6 +13,10 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   Verbesserungen mit Ist-Zustand, Abhängigkeiten und Abnahmekriterien fest.
   Bei Architekturarbeiten den Aufgabenstatus prüfen und nach abgeschlossenen
   Teilumfängen aktualisieren.
+- [ARCH-02-Herkunftsmerkmale](docs/superpowers/specs/2026-10-10-arch02-herkunftsmerkmale-design.md)
+  beschreibt den schriftlichen Entwurf zur Nutzerprüfung: strukturierte direkte
+  Herkunftsmodifikatoren und Herkunftsmetadaten an bestehenden Vor-/Nachteilen.
+  Noch nicht implementiert; nächste Arbeitspakete stehen in der Roadmap.
 - [ARCH-06-Abnahmeprüfung](docs/arch06_abnahme.md) hält die reproduzierten
   Abbruchlücken bei „Nur Lokal“ und „Beide behalten“ fest. Konfliktentscheidungen
   über Bogen und Zustand haben noch keinen dauerhaften Wiederanlaufvertrag;
