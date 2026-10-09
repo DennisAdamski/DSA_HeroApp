@@ -108,3 +108,7 @@ Die Abbruchproben sind im Korrekturpaket als dauerhafte Regressionstests zu
 Die sonstigen Grenzen des [Speichervertrags](schreibpfade_inventar.md#speichervertrag-arch-06)
 bleiben bestehen. Insbesondere sind Avatar-Dateien, Löschabläufe und neuere
 Begleiteraktionen damit nicht zusätzlich abgesichert.
+
+**Folgestand 10.10.2026:** Der Nutzer hat die Ausarbeitung des Vertrags
+freigegeben. Der [schriftliche Entwurf](superpowers/specs/2026-10-10-arch06-konflikt-wiederanlauf-design.md)
+liegt zur Prüfung vor. Die hier dokumentierten Fehler sind weiterhin offen.

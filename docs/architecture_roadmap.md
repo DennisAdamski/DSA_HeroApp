@@ -2401,6 +2401,14 @@ Die drei abgehakten Unterpunkte beschreiben die gelieferten Teilstände;
 sie sind keine bestandene Gesamtabnahme. Nächster Schritt ist der dauerhafte
 Wiederanlauf zusammengehöriger Konfliktentscheidungen.
 
+**Entwurfsstand 10.10.2026:** Nach Freigabe der Ausarbeitung liegt der
+[Wiederanlaufvertrag](superpowers/specs/2026-10-10-arch06-konflikt-wiederanlauf-design.md)
+zur Nutzerprüfung vor. Er sichert die einmal gewählte Fassung und Kopie-ID im
+vorhandenen Profiljournal, reserviert betroffene IDs gegenüber normalem Sync
+und macht neue Änderungen ausdrücklich entscheidbar. Produktiver Code ist
+unverändert; der Entwurf ist noch nicht umgesetzt. Implementierungsplanung
+folgt nach Prüfung des schriftlichen Vertrags.
+
 **Ist-Zustand:** Heldenblatt und Spielzustand werden getrennt gespeichert und
 synchronisiert. Steigerungsrunden bündeln bereits Werte, AP/SE und Historie im
 Heldenblatt. Die Sync-Logik bindet zugehörige Zustandskonflikte an Heldenkonflikte;
