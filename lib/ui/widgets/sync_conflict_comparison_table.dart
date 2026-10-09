@@ -76,6 +76,14 @@ class _SyncConflictComparisonTableState
               for (final entry in visibleEntries) _diffRow(theme, entry),
           ],
         ),
+        if (widget.conflict.isOfflineHeroConflict)
+          _note(
+            theme,
+            'Dieser Vergleich betrifft einen Helden aus dem Offline-Profil '
+            '(ohne Login) und den Stand im Konto. „Nur Lokal“ ersetzt den '
+            'Konto-Stand durch den Offline-Stand. Existiert der Held noch '
+            'nicht im Konto, wird er übernommen.',
+          ),
         ..._footerWidgets(theme, diff, visibleEntries.length),
         if (widget.conflict.includesHeroState)
           _note(
@@ -115,12 +123,14 @@ class _SyncConflictComparisonTableState
     final conflict = widget.conflict;
     return [
       _valueRow(theme, 'Name', conflict.remoteSummary, conflict.localSummary),
-      _valueRow(
-        theme,
-        'Gespeichert',
-        _formatTimestamp(conflict.remoteUpdatedAt),
-        _formatTimestamp(conflict.localUpdatedAt),
-      ),
+      // Ohne beide Zeitpunkte lässt sich das Alter der Stände nicht vergleichen.
+      if (conflict.remoteUpdatedAt != null && conflict.localUpdatedAt != null)
+        _valueRow(
+          theme,
+          'Gespeichert',
+          _formatTimestamp(conflict.remoteUpdatedAt),
+          _formatTimestamp(conflict.localUpdatedAt),
+        ),
       if (conflict.remoteApTotal != null || conflict.localApTotal != null)
         _valueRow(
           theme,
@@ -188,7 +198,10 @@ class _SyncConflictComparisonTableState
       return [
         _note(
           theme,
-          'Die Online-Version wurde gelöscht – kein Feldvergleich möglich.',
+          widget.conflict.isOfflineHeroConflict
+              ? 'Im Konto existiert kein Held mit dieser ID – kein '
+                    'Feldvergleich möglich.'
+              : 'Die Online-Version wurde gelöscht – kein Feldvergleich möglich.',
           isError: true,
         ),
       ];

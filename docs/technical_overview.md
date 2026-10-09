@@ -231,6 +231,13 @@ einzelnen Feldunterschiede lassen sich darunter ein- und ausklappen. Dasselbe
 Widget nutzen der blockierende Startbildschirm `SyncConflictGate` und die
 Konflikt-Kachel unter `Einstellungen > Konto & Sync`.
 
+Bei Offline-Helden zeigt die Namenszeile den Konto-Namen ohne erklärenden
+Präfix, bei fehlendem Konto-Held `—`. Ein sichtbarer Hinweis erklärt, dass
+„Nur Lokal“ den Konto-Stand durch den Offline-Stand ersetzt bzw. einen fehlenden
+Konto-Held übernimmt. Ein fehlender Konto-Held wird nicht als Cloud-Löschung
+bezeichnet. Die Zeile „Gespeichert“ erscheint nur, wenn beide Zeitstempel
+vorliegen. Persistenz und Auflösungswege bleiben unverändert.
+
 Seit 2026-08-17 werden Entscheidungen zu Offline-Helden dauerhaft festgehalten.
 Vorher war das eine echte Luecke: `queueOfflineProfileConflicts` liest die
 Offline-Box bei jedem Start neu, die Konfliktliste lebt nur im Speicher, und
