@@ -305,7 +305,8 @@ Commits:
 
 **Fortsetzung 10.10.2026 — Herkunftsmerkmale.** Die inhaltliche Abgrenzung
 ist freigegeben. Die [schriftliche Spezifikation](superpowers/specs/2026-10-10-arch02-herkunftsmerkmale-design.md)
-liegt zur Nutzerprüfung vor; Implementierungsplan und Umsetzung stehen aus.
+ist freigegeben. Der [Implementierungsplan](superpowers/plans/2026-10-10-arch02-herkunftsmerkmale.md)
+liegt zur Prüfung vor; die Umsetzung steht aus.
 Direkte Herkunftsmodifikatoren werden strukturiert, freie Fragmente bleiben
 erhalten. Vor-/Nachteile erhalten Herkunft als Metadatum am bestehenden Eintrag,
 ohne eine zweite regelwirksame Kopie. Ein vollständiger Herkunftskatalog,

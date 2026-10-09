@@ -1,8 +1,8 @@
 # ARCH-02: Strukturierte Herkunftsmerkmale
 
-Stand: 10.10.2026. Schriftlicher Entwurf zur Nutzerprüfung, noch nicht
-implementiert. Die inhaltliche Abgrenzung wurde im Gespräch freigegeben;
-die Prüfung dieser Spezifikation und der Implementierungsplan stehen aus.
+Stand: 10.10.2026. Schriftliche Spezifikation vom Nutzer freigegeben, noch
+nicht implementiert. Der [Implementierungsplan](../plans/2026-10-10-arch02-herkunftsmerkmale.md)
+liegt zur Prüfung vor.
 Ausgangspunkt: `f97be35b` auf `test` und
 [ARCH-02 in der Roadmap](../../architecture_roadmap.md#arch-02--regelrelevante-eigenschaften-strukturiert-speichern).
 
@@ -208,7 +208,8 @@ gesamten Abnahme offen.
 
 ## Nächster Schritt
 
-Nach Prüfung und Freigabe dieser schriftlichen Spezifikation folgt der
-Implementierungsplan: Datenvertrag, Migration/Abgleich, gemeinsame Regeln,
-Schreibpfade/Sync, Bearbeitung und Abnahme in überprüfbaren Schritten.
+Die Spezifikation ist freigegeben. Der Implementierungsplan gliedert
+Datenvertrag, Migration/Abgleich, gemeinsame Regeln, Schreibpfade/Sync,
+Bearbeitung und Abnahme in überprüfbare Schritte. Nach Planprüfung folgt
+die Umsetzung.
 Dieser Entwurf ist kein Nachweis bereits implementierten Verhaltens.
