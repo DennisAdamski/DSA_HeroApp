@@ -2391,6 +2391,16 @@ Abnahmekriterien:
 
 ## ARCH-06 — Zusammengehörige Änderungen gemeinsam speichern und synchronisieren
 
+**Abnahmeprüfung 10.10.2026:** Der Hauptpunkt bleibt offen. Analyse ohne
+Befund und 101 vorhandene Ablauf-/Sync-/Widgettests bestanden; zwei zusätzliche
+Abbruchproben zeigen Lücken bei der Konfliktauflösung: „Nur Lokal“ verliert nach
+dem Heldenupload und Neustart seine Zustandsentscheidung, „Beide behalten“
+kann den Zustand der lokalen Kopie verlieren. Nachweise und nächster
+Teilumfang stehen in [ARCH-06: technische Abnahmeprüfung](arch06_abnahme.md).
+Die drei abgehakten Unterpunkte beschreiben die gelieferten Teilstände;
+sie sind keine bestandene Gesamtabnahme. Nächster Schritt ist der dauerhafte
+Wiederanlauf zusammengehöriger Konfliktentscheidungen.
+
 **Ist-Zustand:** Heldenblatt und Spielzustand werden getrennt gespeichert und
 synchronisiert. Steigerungsrunden bündeln bereits Werte, AP/SE und Historie im
 Heldenblatt. Die Sync-Logik bindet zugehörige Zustandskonflikte an Heldenkonflikte;

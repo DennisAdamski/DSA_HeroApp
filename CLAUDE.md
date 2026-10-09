@@ -13,6 +13,10 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   Verbesserungen mit Ist-Zustand, Abhängigkeiten und Abnahmekriterien fest.
   Bei Architekturarbeiten den Aufgabenstatus prüfen und nach abgeschlossenen
   Teilumfängen aktualisieren.
+- [ARCH-06-Abnahmeprüfung](docs/arch06_abnahme.md) hält die reproduzierten
+  Abbruchlücken bei „Nur Lokal“ und „Beide behalten“ fest. Konfliktentscheidungen
+  über Bogen und Zustand haben noch keinen dauerhaften Wiederanlaufvertrag;
+  die Gesamtabnahme bleibt offen.
 - Das [Codex-Mockup](docs/mockups/README.md) zeigt den geplanten Workspace mit
   drei Arbeitsbereichen als eigenständigen HTML/CSS/JavaScript-Prototyp.
   Es nutzt ausschließlich flüchtige Beispieldaten und keine produktive Regellogik.

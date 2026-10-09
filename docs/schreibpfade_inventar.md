@@ -61,7 +61,7 @@ festgelegt, wie sie trotz getrennter Schreibvorgänge vollständig wird:
 | **Held importieren** | eigener Katalog, Bilddateien, Bogen, Zustand | **Vorgangsjournal** mit Wiederanlauf (unten) |
 | Held löschen | Bogen, dann Zustand | Restrisiko: ein verwaister Zustand bleibt unsichtbar; mit Konto trägt der vermerkte Löschauftrag (`localHash: ''`) die Löschung in die Cloud |
 | Avatar speichern bzw. entfernen | Datei, dann Bogen | Restrisiko: eine verwaiste Datei bleibt liegen |
-| Konfliktauflösung (`keepBoth` u. a.) | mehrere lokale und entfernte Schreibvorgänge | Restrisiko: ein unterbrochener Konflikt erscheint beim nächsten Abgleich erneut |
+| Konfliktauflösung (`keepBoth` u. a.) | mehrere lokale und entfernte Schreibvorgänge | Nicht abbruchsicher: eine Zustandsentscheidung bzw. der Zustand einer lokalen Kopie kann verloren gehen; siehe [Abnahmeprüfung 10.10.2026](arch06_abnahme.md) |
 
 **Vorgangsjournal.** `Vorgangsjournal` (`lib/data/vorgangsjournal.dart`,
 reine Schnittstelle) hält offene Vorgänge in der Box `vorgaenge_v1` des
