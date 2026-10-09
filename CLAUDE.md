@@ -17,6 +17,8 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   Abbruchlücken bei „Nur Lokal“ und „Beide behalten“ fest. Konfliktentscheidungen
   über Bogen und Zustand haben noch keinen dauerhaften Wiederanlaufvertrag;
   die Gesamtabnahme bleibt offen.
+  Der [Wiederanlaufvertrag](docs/superpowers/specs/2026-10-10-arch06-konflikt-wiederanlauf-design.md)
+  beschreibt den Lösungsentwurf zur Nutzerprüfung, noch keine Implementierung.
 - Das [Codex-Mockup](docs/mockups/README.md) zeigt den geplanten Workspace mit
   drei Arbeitsbereichen als eigenständigen HTML/CSS/JavaScript-Prototyp.
   Es nutzt ausschließlich flüchtige Beispieldaten und keine produktive Regellogik.
