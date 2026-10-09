@@ -363,6 +363,12 @@ Zustands-Konflikt:
   analog: `keepLocal` setzt den Zustands-Tombstone, `keepRemote` holt mit dem
   Helden auch dessen Online-Zustand zurueck.
 
+Diese Zuordnung gilt für vollständig abgeschlossene Entscheidungen. Ein
+Abbruch zwischen den Schreibvorgängen ist noch nicht abgesichert: Nach
+„Nur Lokal“ kann der Neustart den Zustand entgegen der Entscheidung
+zusammenführen; bei „Beide behalten“ kann der Kopiezustand verloren gehen.
+Reproduktion und Abnahmegrenze: [ARCH-06-Abnahmeprüfung](arch06_abnahme.md).
+
 Fehlt online ein Zustandsdokument, bleibt der lokale Stand stehen — der
 naechste Sync legt ihn an. Laeuft der Zustands-Push in eine
 `SyncPreconditionException`, wird bewusst nur ein eigener Zustands-Konflikt
