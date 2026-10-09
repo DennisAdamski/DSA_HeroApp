@@ -976,6 +976,11 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   Konto-Profil (`lib/data/hive_offline_hero_review_store.dart`). Der Offline-Held
   selbst wird nie gelöscht. Widerrufbar unter
   `Einstellungen > Konto & Sync > Offline-Helden`.
+- Die Vergleichstabelle kennzeichnet Offline-Helden über
+  `SyncConflict.isOfflineHeroConflict`: „Nur Lokal“ ersetzt den Konto-Stand
+  durch den Offline-Stand oder übernimmt einen fehlenden Konto-Held. Die
+  Namenszeile trägt nur den Konto-Namen bzw. `—`; ein fehlender Konto-Held ist
+  keine Cloud-Löschung. „Gespeichert“ erscheint nur mit beiden Zeitstempeln.
 - Avatar-Bilddateien synchronisiert der Konto-Sync **nicht** mit: sein Payload
   ist `HeroSheet.toJson()` und trägt nur Dateinamen. Die Bytes wandern über
   Firebase Storage (`avatars/{uid}/{fileName}`). `SyncingAvatarStorage`

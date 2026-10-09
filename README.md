@@ -73,6 +73,9 @@ Technischer Stack:
   Sync, offene Konflikte und einen manuellen Sync-Button. Bei Unterschieden
   zwischen Offline- und Konto-Daten entscheidet der Nutzer zwischen lokal,
   online oder beide behalten.
+  Bei Offline-Helden erklärt der Vergleich, dass „Nur Lokal“ den Konto-Stand
+  durch den Offline-Stand ersetzt oder einen fehlenden Konto-Held übernimmt.
+  Speicherzeitpunkte erscheinen nur, wenn beide Seiten einen besitzen.
 - Auf Windows nutzt der Konto-Sync bewusst die Firestore REST API statt des
   nativen `cloud_firestore`-Pluginpfads. Firebase Auth liefert dafür das
   ID-Token; Firestore Security Rules schützen die gleichen User-Dokumente.

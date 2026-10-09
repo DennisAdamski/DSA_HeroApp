@@ -219,6 +219,13 @@ class SyncConflict {
   /// Eindeutige Konflikt-ID.
   final String id;
 
+  /// Ob der Konflikt einen Offline-Helden mit dem Konto-Profil vergleicht.
+  ///
+  /// Diese Konflikte entstehen beim Profilwechsel, nicht durch eine Löschung
+  /// in der Cloud. Die UI erklärt deshalb Herkunft und Auswahl entsprechend.
+  bool get isOfflineHeroConflict =>
+      objectType == SyncObjectType.hero && id.startsWith('offlineHero-');
+
   /// Typ des betroffenen Objekts.
   final SyncObjectType objectType;
 

@@ -484,9 +484,8 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
       objectId: offlineHero.id,
       title: 'Offline-Held: ${offlineHero.name}',
       localSummary: offlineHero.name,
-      remoteSummary: accountHero == null
-          ? 'Konto enthält bereits andere Daten'
-          : 'Konto-Version: ${accountHero.name}',
+      // Die Zusammenfassung steht in der Namenszeile der Vergleichstabelle.
+      remoteSummary: accountHero?.name ?? '—',
       detectedAt: DateTime.now().toUtc(),
       supportsKeepBoth: true,
       localApTotal: offlineHero.apTotal,
