@@ -303,6 +303,27 @@ Commits:
    Unfähigkeit). Der Textweg (ohne Katalog) kennt keine Lernspalten, das ist
    die bewusste Ausnahme im Äquivalenztest.
 
+**Fortsetzung 10.10.2026 — Herkunftsmerkmale.** Die inhaltliche Abgrenzung
+ist freigegeben. Die [schriftliche Spezifikation](superpowers/specs/2026-10-10-arch02-herkunftsmerkmale-design.md)
+liegt zur Nutzerprüfung vor; Implementierungsplan und Umsetzung stehen aus.
+Direkte Herkunftsmodifikatoren werden strukturiert, freie Fragmente bleiben
+erhalten. Vor-/Nachteile erhalten Herkunft als Metadatum am bestehenden Eintrag,
+ohne eine zweite regelwirksame Kopie. Ein vollständiger Herkunftskatalog,
+automatische Generierung und AP-Buchungen sind separate Folgeumfänge.
+
+- [ ] Versionierten Herkunftsdatenvertrag und optionale Merkmalsherkunft
+  einschließlich unbekannter Felder, Werte und ausdrücklich leerer Listen umsetzen.
+- [ ] Idempotente Migration, Textprojektion und ausdrücklichen Abgleich mit
+  älteren Apps ergänzen; wiederholte Modifikatorfragmente erhalten.
+- [ ] Gemeinsame Herkunftsauswertung für Werte, Startwerte, Quellen und
+  Ressourcenaktivierung einführen; Doppelwirkungen ausschließen.
+- [ ] Speicherung, Editor-Rebuild, Hive, Import/Export und Zwei-Geräte-Sync
+  einschließlich Mischbetrieb und Feldschutz absichern.
+- [ ] Herkunftsbearbeitung und Vorschau mit dem Schutz offener Planungen
+  verbinden; bestehende Vor-/Nachteile um Herkunftsangaben ergänzen.
+- [ ] Automatisierte Abnahme und manuelle Bedienprüfung abschließen;
+  ARCH-02-Gesamtstatus anhand der tatsächlich erledigten Kriterien prüfen.
+
 ## ARCH-03 — Gemeinsame Ausrüstungsdaten für Inventar und Kampf
 
 **Ausgangszustand:** Kampfausrüstung und Inventar werden über
