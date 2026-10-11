@@ -197,6 +197,7 @@ class _MatrixAusloesenDialogState
         if (z.zfw != null) 'ZfW ${z.zfw}',
         if (z.zfpStern != null) 'ZfP* ${z.zfpStern}',
         if (z.kostenAsp != null) '${z.kostenAsp} AsP',
+        if (z.pAsP != null) '${z.pAsP} pAsP',
       ].join(' · '),
       if (z.variante.isNotEmpty) 'Variante: ${z.variante}',
       if (z.reichweite.isNotEmpty) 'Reichweite: ${z.reichweite}',

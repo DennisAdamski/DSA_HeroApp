@@ -34,6 +34,7 @@ class ArtefaktZauberEintrag {
     if (zauber.zfw != null) 'ZfW ${zauber.zfw}',
     if (zauber.zfpStern != null) 'ZfP* ${zauber.zfpStern}',
     if (zauber.kostenAsp != null) '${zauber.kostenAsp} AsP',
+    if (zauber.pAsP != null) '${zauber.pAsP} pAsP',
   ].join(' · ');
 }
 
@@ -67,6 +68,7 @@ String matrixgeberZusammenfassung(ArtefaktDaten daten) {
       .where((n) => n.isNotEmpty)
       .join(' + ');
   final aktionen = daten.ausloeserAktionen < 1 ? 1 : daten.ausloeserAktionen;
+  final pAsP = artefaktPAspGesamt(daten);
   return [
     if (namen.isNotEmpty) namen,
     if (!matrixKostenOffen(daten))
@@ -74,5 +76,6 @@ String matrixgeberZusammenfassung(ArtefaktDaten daten) {
           ? '${matrixGrundkosten(daten)} AsP ± W6'
           : '${matrixGrundkosten(daten)} AsP',
     '$aktionen Aktion${aktionen == 1 ? '' : 'en'}',
+    if (pAsP != null) '$pAsP pAsP',
   ].join(' · ');
 }

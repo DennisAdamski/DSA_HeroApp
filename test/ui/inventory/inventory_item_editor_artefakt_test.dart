@@ -173,6 +173,36 @@ void main() {
     expect(z.reichweite, 'Selbst');
   });
 
+  testWidgets('permanente AsP: je Zauber erfasst, Summe als Hilfetext', (
+    tester,
+  ) async {
+    final gespeichert = await _zeige(
+      tester,
+      const HeroInventoryEntry(
+        gegenstand: 'Armschiene',
+        isMagisch: true,
+        artefaktDaten: ArtefaktDaten(),
+      ),
+    );
+
+    expect(find.text('Summe der Zauber: 5'), findsNothing);
+    for (final (name, pAsP) in [('Gardianum', '3'), ('Armatrutz', '2')]) {
+      await _tippe(tester, _artefakt('add'));
+      await tester.enterText(_zauber('name'), name);
+      await tester.enterText(_zauber('pasp'), pAsP);
+      await tester.pumpAndSettle();
+      await _tippe(tester, _zauber('uebernehmen'));
+    }
+
+    expect(find.text('Summe der Zauber: 5'), findsOneWidget);
+    expect(find.textContaining('3 pAsP'), findsOneWidget);
+    await _speichere(tester);
+
+    final daten = gespeichert.single.artefaktDaten!;
+    expect(daten.zauber.map((z) => z.pAsP), [3, 2]);
+    expect(daten.pAsP, isNull, reason: 'die Summe wird nicht gespeichert');
+  });
+
   testWidgets('die Katalogauswahl belegt Kosten, Reichweite und Dauer vor', (
     tester,
   ) async {

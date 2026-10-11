@@ -56,6 +56,9 @@ class _ArtefaktZauberDialogState extends ConsumerState<_ArtefaktZauberDialog> {
   late final _kosten = TextEditingController(
     text: _zauber.kostenAsp?.toString() ?? '',
   );
+  late final _pAsP = TextEditingController(
+    text: _zauber.pAsP?.toString() ?? '',
+  );
   late final _reichweite = TextEditingController(text: _zauber.reichweite);
   late final _dauer = TextEditingController(text: _zauber.wirkungsdauer);
   late final _ziel = TextEditingController(text: _zauber.zielHinweis);
@@ -75,6 +78,7 @@ class _ArtefaktZauberDialogState extends ConsumerState<_ArtefaktZauberDialog> {
       _zfw,
       _zfp,
       _kosten,
+      _pAsP,
       _reichweite,
       _dauer,
       _ziel,
@@ -119,6 +123,7 @@ class _ArtefaktZauberDialogState extends ConsumerState<_ArtefaktZauberDialog> {
     zfw: _zahl(_zfw),
     zfpStern: _zahl(_zfp),
     kostenAsp: _zahl(_kosten),
+    pAsP: _zahl(_pAsP),
     reichweite: _reichweite.text.trim(),
     wirkungsdauer: _dauer.text.trim(),
     zielHinweis: _ziel.text.trim(),
@@ -355,6 +360,7 @@ class _ArtefaktZauberDialogState extends ConsumerState<_ArtefaktZauberDialog> {
                   Expanded(child: _feld('kosten', 'AsP', _kosten, zahl: true)),
                 ],
               ),
+              _feld('pasp', 'Permanente AsP dieses Zaubers', _pAsP, zahl: true),
               _feld('reichweite', 'Reichweite', _reichweite),
               _feld('dauer', 'Wirkungsdauer', _dauer),
               _feld('ziel', 'Zielvorgabe', _ziel),

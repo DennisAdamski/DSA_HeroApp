@@ -101,6 +101,21 @@ void main() {
       expect(json.containsKey('zfpStern'), isFalse);
       expect(json.containsKey('kostenAsp'), isFalse);
       expect(json.containsKey('spellId'), isFalse);
+      expect(json.containsKey('pAsP'), isFalse);
+    });
+
+    test('permanente AsP je Zauber überstehen den Rundlauf', () {
+      const zauber = ArtefaktZauber(name: 'Gardianum', pAsP: 3);
+
+      final neu = ArtefaktZauber.fromJson(
+        jsonDecode(jsonEncode(zauber.toJson())) as Map<String, dynamic>,
+      );
+
+      expect(neu.pAsP, 3);
+      expect(neu.toJson(), zauber.toJson());
+      expect(neu.copyWith(pAsP: null).pAsP, isNull);
+      expect(neu.copyWith(name: 'x').pAsP, 3);
+      expect(neu.unbekannteFelder, isEmpty);
     });
   });
 }
