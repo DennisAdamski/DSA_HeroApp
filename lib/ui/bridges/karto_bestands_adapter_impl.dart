@@ -13,6 +13,7 @@ import 'package:dsa_heldenverwaltung/ui/screens/advancement/advancement_history_
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/auth/open_sign_in.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/artefakt_anwenden.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/auxiliator_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/heroes_home_screen.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/settings_screen.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/begleiter_zustand_rules.dart';
@@ -141,6 +142,32 @@ class KartoBestandsAdapterImpl
       ref: ref,
       heroId: heroId,
       eintrag: eintrag,
+    ),
+  );
+
+  /// Öffnet den Einsatzdialog des Zaubertalismans unter dem kompatiblen Theme.
+  @override
+  Future<void> gefechtsAuxiliator({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String heroId,
+    required HeroInventoryEntry eintrag,
+    required String zauberId,
+    required int zfpStern,
+    required bool gelungen,
+    required String repraesentation,
+  }) => _withKartoCompatContext(
+    context,
+    (themedContext) => zeigeAuxiliator(
+      context: themedContext,
+      ref: ref,
+      heroId: heroId,
+      eintrag: eintrag,
+      zauberId: zauberId,
+      zfpStern: zfpStern,
+      gelungen: gelungen,
+      repraesentation: repraesentation,
+      zauberkostenGebucht: true,
     ),
   );
 

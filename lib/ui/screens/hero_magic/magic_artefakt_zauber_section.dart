@@ -26,9 +26,10 @@ class _MagicArtefaktZauberSection extends StatelessWidget {
         key: const ValueKey<String>('magic-artefakt-zauber'),
         title: 'Zauber aus Artefakten',
         subtitle:
-            'Matrixgeber und Spruchspeicher im Inventar. Ein Matrixgeber '
-            'braucht einen zauberkundigen Träger; ein Spruchspeicher wirkt '
-            'sofort, ohne AsP. Der Zauber muss nicht beherrscht werden.',
+            'Matrixgeber, Spruchspeicher und Zaubertalismane im Inventar. Ein '
+            'Matrixgeber braucht einen zauberkundigen Träger; ein '
+            'Spruchspeicher wirkt sofort, ohne AsP; ein Zaubertalisman '
+            'unterstützt den Zauber, den du selbst sprichst.',
         child: Material(
           type: MaterialType.transparency,
           child: Column(
@@ -69,7 +70,11 @@ class _MagicArtefaktZauberSection extends StatelessWidget {
           : TextButton(
               key: ValueKey<String>('magic-artefakt-ausloesen-$index'),
               onPressed: () => onAusloesen(e.artefakt),
-              child: const Text('Auslösen'),
+              child: Text(
+                e.daten.art == ArtefaktArt.zaubertalisman
+                    ? 'Auxiliator'
+                    : 'Auslösen',
+              ),
             ),
     );
   }

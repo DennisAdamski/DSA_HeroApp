@@ -229,6 +229,40 @@ void main() {
       expect(daten.anwendungen, isEmpty);
     });
 
+    test('ein Zaubertalisman überlebt den Rundlauf ohne Zusatzschlüssel', () {
+      const daten = ArtefaktDaten(
+        art: ArtefaktArt.zaubertalisman,
+        stabilitaet: MatrixStabilitaet.sehrStabil,
+        zauber: <ArtefaktZauber>[
+          ArtefaktZauber(
+            name: 'Ignifaxius',
+            repraesentation: 'Mag',
+            zfpStern: 5,
+          ),
+        ],
+      );
+
+      final json = daten.toJson();
+      final neu = ArtefaktDaten.fromJson(
+        jsonDecode(jsonEncode(json)) as Map<String, dynamic>,
+      );
+
+      expect(json['art'], 'zaubertalisman');
+      for (final schluessel in [
+        'ladungen',
+        'aufladungen',
+        'gesamtAspErschaffung',
+        'intervall',
+        'anwendungen',
+      ]) {
+        expect(json.containsKey(schluessel), isFalse, reason: schluessel);
+      }
+      expect(neu.art, ArtefaktArt.zaubertalisman);
+      expect(neu.stabilitaet, MatrixStabilitaet.sehrStabil);
+      expect(neu.zauber.single.zfpStern, 5);
+      expect(neu.toJson(), json);
+    });
+
     test('ein unbekanntes Feld der Ladung bleibt erhalten', () {
       final ladung = ArtefaktLadung.fromJson(<String, dynamic>{
         'id': 'l',

@@ -413,6 +413,62 @@ void main() {
     expect(find.text('1 von 2 Ladungen frei'), findsOneWidget);
   });
 
+  testWidgets(
+    'Zaubertalisman erscheint mit „Auxiliator“ und öffnet den Dialog',
+    (tester) async {
+      final hero = buildHero().copyWith(
+        inventoryEntries: const [
+          HeroInventoryEntry(
+            gegenstand: 'Mondsilberring',
+            isMagisch: true,
+            istAusgeruestet: true,
+            instanzId: 'i-1',
+            artefaktDaten: ArtefaktDaten(
+              art: ArtefaktArt.zaubertalisman,
+              zauber: <ArtefaktZauber>[
+                ArtefaktZauber(
+                  name: 'Ignifaxius',
+                  repraesentation: 'Mag',
+                  zfpStern: 5,
+                ),
+              ],
+            ),
+          ),
+        ],
+      );
+      await openMagicTab(
+        tester,
+        repo: FakeRepository(
+          heroes: <HeroSheet>[hero],
+          states: <String, HeroState>{
+            'demo': const HeroState(
+              currentLep: 10,
+              currentAsp: 10,
+              currentKap: 0,
+              currentAu: 10,
+            ),
+          },
+        ),
+      );
+
+      final abschnitt = find.byKey(const ValueKey('magic-artefakt-zauber'));
+      await tester.ensureVisible(abschnitt);
+      final knopf = find.byKey(const ValueKey('magic-artefakt-ausloesen-0'));
+      expect(
+        find.descendant(of: knopf, matching: find.text('Auxiliator')),
+        findsOneWidget,
+      );
+
+      await tester.tap(knopf);
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('Mondsilberring – Auxiliator einsetzen'),
+        findsOneWidget,
+      );
+    },
+  );
+
   testWidgets('ohne Artefakte gibt es keinen Artefaktabschnitt', (
     tester,
   ) async {

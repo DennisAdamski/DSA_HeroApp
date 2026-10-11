@@ -10,11 +10,14 @@ String artefaktArtLabel(ArtefaktArt art) => switch (art) {
   ArtefaktArt.spruchspeicherEinmalig => 'Spruchspeicher, einmalig',
   ArtefaktArt.spruchspeicherAufladbar => 'Spruchspeicher, aufladbar',
   ArtefaktArt.spruchspeicherSemipermanent => 'Spruchspeicher, semipermanent',
+  ArtefaktArt.zaubertalisman => 'Zaubertalisman (Auxiliator)',
 };
 
 /// Ob [art] ein Spruchspeicher ist (ladungs- oder intervallbasiert).
 bool artefaktIstSpruchspeicher(ArtefaktArt art) =>
-    art != ArtefaktArt.matrixgeber;
+    art == ArtefaktArt.spruchspeicherEinmalig ||
+    art == ArtefaktArt.spruchspeicherAufladbar ||
+    art == ArtefaktArt.spruchspeicherSemipermanent;
 
 /// Ob [art] ein ladungsbasierter Spruchspeicher ist: Er führt `ladungen`.
 bool artefaktHatLadungen(ArtefaktArt art) =>

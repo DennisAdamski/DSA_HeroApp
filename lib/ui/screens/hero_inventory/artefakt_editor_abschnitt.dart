@@ -367,6 +367,16 @@ class _ArtefaktEditorAbschnittState extends State<ArtefaktEditorAbschnitt> {
             )
           else ...[
             Text('Gespeicherte Zauber', style: texte.titleSmall),
+            if (daten.art == ArtefaktArt.zaubertalisman)
+              Text(
+                'Beim Zaubertalisman sind die gespeicherten ZfP* der Bonus, '
+                'den der Auxiliator zu einem gelungenen Spruch des Anwenders '
+                'beiträgt (höchstens dessen ZfW).',
+                key: const ValueKey<String>(
+                  'inventory-editor-artefakt-talisman-hinweis',
+                ),
+                style: texte.bodySmall,
+              ),
             const SizedBox(height: 4),
             if (daten.zauber.isEmpty)
               Text(

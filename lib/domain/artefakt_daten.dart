@@ -24,6 +24,11 @@ enum ArtefaktArt {
   /// Wirkungsmatrizen innerhalb eines Intervalls (Tag, Woche, Monat, Jahr)
   /// selbst und lässt sich je Intervall nur begrenzt oft auslösen.
   spruchspeicherSemipermanent,
+
+  /// Zaubertalisman (Auxiliator): Der Anwender spricht den Zauber selbst und
+  /// lässt zusätzlich Astralenergie in das Artefakt fließen; es gibt
+  /// zusätzliche ZfP* (Wege der Alchimie S. 88).
+  zaubertalisman,
 }
 
 /// Intervall eines semipermanenten Spruchspeichers (Wege der Alchimie S. 82).

@@ -102,6 +102,27 @@ class GefechtsTestBestand extends TestBestand implements KartoGefechtsAdapter {
   );
 
   @override
+  Future<void> gefechtsAuxiliator({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String heroId,
+    required HeroInventoryEntry eintrag,
+    required String zauberId,
+    required int zfpStern,
+    required bool gelungen,
+    required String repraesentation,
+  }) => _bruecke.gefechtsAuxiliator(
+    context: context,
+    ref: ref,
+    heroId: heroId,
+    eintrag: eintrag,
+    zauberId: zauberId,
+    zfpStern: zfpStern,
+    gelungen: gelungen,
+    repraesentation: repraesentation,
+  );
+
+  @override
   Future<void> gefechtsWirkkosten({
     required BuildContext context,
     required String heroId,

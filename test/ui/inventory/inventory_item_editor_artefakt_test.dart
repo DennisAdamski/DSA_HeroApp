@@ -331,6 +331,36 @@ void main() {
     expect(gespeichert.single.artefaktDaten!.anwendungenProIntervall, 1);
   });
 
+  testWidgets('Zaubertalisman: Stabilität, flache Zauberliste, ZfP*-Hinweis', (
+    tester,
+  ) async {
+    final gespeichert = await _zeige(
+      tester,
+      const HeroInventoryEntry(
+        gegenstand: 'Mondsilberring',
+        isMagisch: true,
+        artefaktDaten: ArtefaktDaten(),
+      ),
+    );
+
+    await _tippe(tester, _artefakt('art'));
+    await _tippe(tester, find.text('Zaubertalisman (Auxiliator)').last);
+    expect(_artefakt('stabilitaet'), findsOneWidget);
+    expect(_artefakt('regelfassung'), findsOneWidget);
+    expect(_artefakt('ladung-add'), findsNothing);
+    expect(_artefakt('talisman-hinweis'), findsOneWidget);
+    await _tippe(tester, _artefakt('add'));
+    await tester.enterText(_zauber('name'), 'Ignifaxius');
+    await tester.enterText(_zauber('zfp'), '6');
+    await tester.pumpAndSettle();
+    await _tippe(tester, _zauber('uebernehmen'));
+    await _speichere(tester);
+
+    final daten = gespeichert.single.artefaktDaten!;
+    expect(daten.art, ArtefaktArt.zaubertalisman);
+    expect(daten.zauber.single.zfpStern, 6);
+  });
+
   testWidgets('ein Matrixgeber zeigt keine Ladungen', (tester) async {
     await _zeige(
       tester,

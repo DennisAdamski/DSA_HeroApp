@@ -78,17 +78,20 @@ const int kMatrixUnempfindlichZusatzAb = 15;
 /// Bei jeder Anwendung eines Matrixgebers kann die Auslösung für W6 SR
 /// gehemmt oder das Artefakt irreparabel beschädigt sein. Eine
 /// unempfindliche Matrix wird auf einer 20 nur gehemmt; beschädigt wird sie
-/// erst, wenn ein weiterer W20 15 bis 20 zeigt.
+/// erst, wenn ein weiterer W20 15 bis 20 zeigt. [aufschlag] erhöht den Wurf
+/// (Zaubertalisman: +2, wenn ein misslungener Spruch durch den Auxiliator
+/// geleitet wird).
 MatrixStabilitaetsErgebnis wertMatrixStabilitaet({
   required MatrixStabilitaet stabilitaet,
   required MatrixRegelfassung regelfassung,
   required MatrixWuerfe wuerfe,
+  int aufschlag = 0,
 }) {
   final tabelle = regelfassung == MatrixRegelfassung.staebeRinge2011
       ? _schwellenStaebeRinge2011
       : _schwellenAlchimie2012;
   final schwellen = tabelle[stabilitaet]!;
-  final w20 = wuerfe.w20;
+  final w20 = wuerfe.w20 + aufschlag;
   if (w20 < schwellen.gehemmtAb) {
     return const MatrixStabilitaetsErgebnis(MatrixAusgang.ok);
   }
@@ -104,9 +107,13 @@ MatrixStabilitaetsErgebnis wertMatrixStabilitaet({
   );
 }
 
-/// Ob der Wurf [w20] bei dieser Matrix einen Zusatzwurf verlangt.
-bool matrixBrauchtZusatzwurf(MatrixStabilitaet stabilitaet, int w20) =>
-    stabilitaet == MatrixStabilitaet.unempfindlich && w20 == 20;
+/// Ob der Wurf [w20] (mit [aufschlag]) bei dieser Matrix einen Zusatzwurf
+/// verlangt.
+bool matrixBrauchtZusatzwurf(
+  MatrixStabilitaet stabilitaet,
+  int w20, {
+  int aufschlag = 0,
+}) => stabilitaet == MatrixStabilitaet.unempfindlich && w20 + aufschlag >= 20;
 
 /// Summe der AsP-Kosten aller gespeicherten Zauber ohne Würfeldifferenz.
 int matrixGrundkosten(ArtefaktDaten daten) =>

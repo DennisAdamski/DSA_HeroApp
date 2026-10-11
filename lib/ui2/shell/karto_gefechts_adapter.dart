@@ -63,6 +63,25 @@ abstract interface class KartoGefechtsAdapter {
     required HeroInventoryEntry eintrag,
   });
 
+  /// Öffnet den Einsatzdialog eines Zaubertalismans (Auxiliators) zu einem
+  /// gerade gewirkten Zauber.
+  ///
+  /// [zauberId] ist der gewirkte Katalogzauber, [zfpStern] das Ergebnis der
+  /// eigenen Probe, [gelungen] ob sie gelang und [repraesentation] die
+  /// Repräsentation des Anwenders. Der Dialog bucht nur die zusätzlichen
+  /// 1W3 AsP (die Zauberkosten bucht der Wirkabschluss) und das Protokoll;
+  /// Fehler zeigt er selbst.
+  Future<void> gefechtsAuxiliator({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String heroId,
+    required HeroInventoryEntry eintrag,
+    required String zauberId,
+    required int zfpStern,
+    required bool gelungen,
+    required String repraesentation,
+  });
+
   /// Öffnet den AsP-/KaP-Dialog mit bestätigten Abschlusskosten.
   ///
   /// [onUebernehmen] erhält den Kontext des Blatts, damit ein Speicherfehler
