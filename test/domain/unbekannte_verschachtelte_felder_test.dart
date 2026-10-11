@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:dsa_heldenverwaltung/domain/begleiter_zustand.dart';
 import 'package:dsa_heldenverwaltung/domain/abgelegter_kampfgegenstand.dart';
 import 'package:dsa_heldenverwaltung/domain/active_spell_effects_state.dart';
+import 'package:dsa_heldenverwaltung/domain/artefakt_daten.dart';
 import 'package:dsa_heldenverwaltung/domain/attribute_modifiers.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/avatar_gallery_entry.dart';
@@ -1020,6 +1021,56 @@ final _enumFelder = <_EnumFeld>[
     andersJson: 'talent',
     ersatz: (json) => InventoryItemModifier.fromJson(json).kind,
     erwarteterErsatz: InventoryModifierKind.stat,
+  ),
+  // Artefaktdaten am Inventareintrag (Matrixgeber).
+  _EnumFeld(
+    'ArtefaktDaten.art',
+    'art',
+    voll: () => const ArtefaktDaten().toJson(),
+    lade: (json) => ArtefaktDaten.fromJson(json).toJson(),
+    gleich: (json) {
+      final d = ArtefaktDaten.fromJson(json);
+      return d.copyWith(art: d.art, ersteller: 'Neu').toJson();
+    },
+    // ArtefaktArt kennt bisher nur einen Wert; es gibt keinen „anderen“.
+    ersatz: (json) => ArtefaktDaten.fromJson(json).art,
+    erwarteterErsatz: ArtefaktArt.matrixgeber,
+  ),
+  _EnumFeld(
+    'ArtefaktDaten.stabilitaet',
+    'stabilitaet',
+    voll: () => const ArtefaktDaten().toJson(),
+    lade: (json) => ArtefaktDaten.fromJson(json).toJson(),
+    gleich: (json) {
+      final d = ArtefaktDaten.fromJson(json);
+      return d.copyWith(stabilitaet: d.stabilitaet, ersteller: 'Neu').toJson();
+    },
+    anders: (json) =>
+        ArtefaktDaten.fromJson(json)
+            .copyWith(stabilitaet: MatrixStabilitaet.labil)
+            .toJson(),
+    andersJson: 'labil',
+    ersatz: (json) => ArtefaktDaten.fromJson(json).stabilitaet,
+    erwarteterErsatz: MatrixStabilitaet.stabil,
+  ),
+  _EnumFeld(
+    'ArtefaktDaten.regelfassung',
+    'regelfassung',
+    voll: () => const ArtefaktDaten().toJson(),
+    lade: (json) => ArtefaktDaten.fromJson(json).toJson(),
+    gleich: (json) {
+      final d = ArtefaktDaten.fromJson(json);
+      return d
+          .copyWith(regelfassung: d.regelfassung, ersteller: 'Neu')
+          .toJson();
+    },
+    anders: (json) =>
+        ArtefaktDaten.fromJson(json)
+            .copyWith(regelfassung: MatrixRegelfassung.staebeRinge2011)
+            .toJson(),
+    andersJson: 'staebeRinge2011',
+    ersatz: (json) => ArtefaktDaten.fromJson(json).regelfassung,
+    erwarteterErsatz: MatrixRegelfassung.alchimie2012,
   ),
   _EnumFeld(
     'MainWeaponSlot.combatType',

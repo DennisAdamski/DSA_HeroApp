@@ -19,6 +19,9 @@ import 'package:dsa_heldenverwaltung/rules/derived/inventory_sync_rules.dart';
 /// Einzelstücke (Waffe, Rüstung, Nebenhand) sind je ein Slot und lassen sich
 /// nicht teilen, verknüpfte Geschosse schon.
 bool stapelTeilbar(HeroInventoryEntry e) {
+  if (e.artefaktDaten != null) {
+    return false;
+  }
   final menge = wirksameInventarMenge(e);
   if (menge == null || menge < 2) {
     return false;
@@ -113,6 +116,9 @@ String? zusammenfuehrenGesperrt(
   if (identical(quelle, ziel) ||
       (quelle.instanzId != null && quelle.instanzId == ziel.instanzId)) {
     return 'Ein Stapel lässt sich nicht mit sich selbst zusammenführen.';
+  }
+  if (quelle.artefaktDaten != null || ziel.artefaktDaten != null) {
+    return 'Artefakte sind Einzelstücke.';
   }
   if (wirksameInventarMenge(quelle) == null ||
       wirksameInventarMenge(ziel) == null) {

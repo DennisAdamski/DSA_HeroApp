@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:dsa_heldenverwaltung/ablaeufe/matrix_ausloesen.dart';
 import 'package:dsa_heldenverwaltung/ablaeufe/rast_abschliessen.dart';
 import 'package:dsa_heldenverwaltung/ablaeufe/schaden_erhalten.dart';
 import 'package:dsa_heldenverwaltung/ablaeufe/schaden_zuruecknehmen.dart';
@@ -22,6 +23,14 @@ final rastAbschliessenProvider = Provider<RastAbschliessen>((ref) {
 /// Heldenrepository.
 final vertrautenVereinigungProvider = Provider<VertrautenVereinigung>((ref) {
   return VertrautenVereinigung(
+    repository: ref.watch(heroRepositoryProvider),
+    uhr: DateTime.now,
+  );
+});
+
+/// Bindet den Ablauf „Matrixgeber auslösen“ an das aktive Heldenrepository.
+final matrixAusloesenProvider = Provider<MatrixAusloesen>((ref) {
+  return MatrixAusloesen(
     repository: ref.watch(heroRepositoryProvider),
     uhr: DateTime.now,
   );

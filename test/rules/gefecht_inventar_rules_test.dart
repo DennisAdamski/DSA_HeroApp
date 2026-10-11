@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:dsa_heldenverwaltung/domain/artefakt_daten.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_companion.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
@@ -168,4 +169,41 @@ void main() {
     expect(p.angriffe.single.pa, isNull);
     expect(p.angriffe.single.tp, '1W6+2');
   });
+
+  test(
+    'Matrixgeber: benutzbar bis zur Beschädigung, Auslöser mindestens 1',
+    () {
+      final held = testHero();
+      const matrix = HeroInventoryEntry(
+        gegenstand: 'Armschiene',
+        artefaktDaten: ArtefaktDaten(ausloeserAktionen: 3),
+      );
+
+      HeroInventoryEntry eintrag(HeroInventoryEntry e) => e;
+      bool benutzbar(HeroInventoryEntry e) =>
+          gefechtsInventar(held.copyWith(inventoryEntries: [eintrag(e)]))
+              .single
+              .benutzbar;
+
+      // Auch ohne das Häkchen „magisch“ zählen die Artefaktdaten.
+      expect(benutzbar(matrix), isTrue);
+      expect(gefechtsMatrixDauer(matrix), 3);
+      expect(
+        benutzbar(
+          matrix.copyWith(
+            artefaktDaten: matrix.artefaktDaten!.copyWith(defekt: true),
+          ),
+        ),
+        isFalse,
+      );
+      expect(
+        gefechtsMatrixDauer(
+          matrix.copyWith(
+            artefaktDaten: matrix.artefaktDaten!.copyWith(ausloeserAktionen: 0),
+          ),
+        ),
+        1,
+      );
+    },
+  );
 }

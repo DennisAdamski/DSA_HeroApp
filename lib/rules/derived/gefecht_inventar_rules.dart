@@ -58,8 +58,10 @@ List<GefechtsInventarposten> gefechtsInventar(HeroSheet hero) {
         menge: inventarMenge(e),
         benutzbar:
             !verknuepft &&
+            e.artefaktDaten?.defekt != true &&
             (e.itemType == InventoryItemType.verbrauchsgegenstand ||
-                e.isMagisch),
+                e.isMagisch ||
+                e.artefaktDaten != null),
         traeger: beimBegleiter ? namen[e.traegerId] : null,
       ),
     );
@@ -102,6 +104,14 @@ GefechtsAufbewahrung gefechtsAufbewahrungVorgabe(HeroInventoryEntry e) {
     return GefechtsAufbewahrung.artefakt;
   }
   return GefechtsAufbewahrung.guerteltasche;
+}
+
+/// Dauer in Aktionen, die das Betätigen des Auslösers eines Matrixgebers
+/// braucht: mindestens eine Aktion (Stäbe, Ringe, Dschinnenlampen S. 16).
+/// Gespeicherte Werte unter 1 gelten als 1.
+int gefechtsMatrixDauer(HeroInventoryEntry e) {
+  final aktionen = e.artefaktDaten?.ausloeserAktionen ?? 1;
+  return aktionen < 1 ? 1 : aktionen;
 }
 
 /// Dauer in Aktionen; 0 bedeutet freie Aktion.

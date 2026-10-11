@@ -10,7 +10,9 @@ import 'package:dsa_heldenverwaltung/ui/bridges/karto_spiel_bruecke.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/advancement/advancement_catalog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/advancement/advancement_history_panel.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/auth/open_sign_in.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/matrix_ausloesen_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/heroes_home_screen.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/settings_screen.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/begleiter_zustand_rules.dart';
@@ -123,6 +125,23 @@ class KartoBestandsAdapterImpl
   @override
   Future<AttributeModifiers?> gefechtsAttributoWerte(BuildContext context) =>
       showAttributoInputDialog(context: context);
+
+  /// Öffnet den Auslösedialog des Matrixgebers unter dem kompatiblen Theme.
+  @override
+  Future<void> gefechtsMatrixAusloesen({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String heroId,
+    required HeroInventoryEntry eintrag,
+  }) => _withKartoCompatContext(
+    context,
+    (themedContext) => zeigeMatrixAusloesen(
+      context: themedContext,
+      ref: ref,
+      heroId: heroId,
+      eintrag: eintrag,
+    ),
+  );
 
   /// Öffnet den vorhandenen Ressourcendialog mit Abschlusskosten.
   @override

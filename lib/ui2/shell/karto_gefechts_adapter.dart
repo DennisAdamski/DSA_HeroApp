@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dsa_heldenverwaltung/domain/active_spell_effects_state.dart';
 import 'package:dsa_heldenverwaltung/domain/attribute_modifiers.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 
@@ -50,6 +51,17 @@ abstract interface class KartoGefechtsAdapter {
 
   /// Erfragt die Attributo-Boni; `null` bei Abbruch.
   Future<AttributeModifiers?> gefechtsAttributoWerte(BuildContext context);
+
+  /// Öffnet den Auslösedialog eines Matrixgebers (`artefaktDaten`).
+  ///
+  /// Der Dialog bucht AsP und Stabilitätswurf des Trägers; Fehler zeigt er
+  /// selbst. Ein Verbrauch am Inventar findet nicht statt.
+  Future<void> gefechtsMatrixAusloesen({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String heroId,
+    required HeroInventoryEntry eintrag,
+  });
 
   /// Öffnet den AsP-/KaP-Dialog mit bestätigten Abschlusskosten.
   ///

@@ -277,6 +277,7 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   behobene Fehler tragen im Test den Kommentar `Befund ARCH-07-Bx` und stehen
   mit Folgeauftrag in `docs/architecture_roadmap.md`. Details in
   `docs/test_strategy.md`.
+- **Artefakte im Inventar** (Matrixgeber, Stand 11. Oktober 2026): `HeroInventoryEntry.artefaktDaten` (`lib/domain/artefakt_daten.dart`, nur bei Belegung im JSON) haelt Stabilitaet, Regelfassung und die eingesprochenen Zauber samt Repraesentation, ZfW und ZfP* des Sprechers — nie vom Traeger. Ein Matrixgeber hat **keine Zauberprobe**: `MatrixAusloesen` (`lib/ablaeufe/matrix_ausloesen.dart`) bucht nur die AsP des Traegers und einen Protokolleintrag (ein Dokument); der Stabilitaetswurf liegt in `rules/derived/artefakt_matrix_rules.dart` (WdA 2012 oder Staebe/Ringe 2011, einstellbar am Gegenstand). Die Beschaedigung vermerkt der Nutzer ausdruecklich am Bogen. Das Gefechtsinventar oeffnet den Dialog ueber `KartoGefechtsAdapter.gefechtsMatrixAusloesen`, der Wirkdialog mit Repraesentationspflicht bleibt Zauberern vorbehalten. Weitere Artefaktarten (Spruchspeicher mit Ladungen, Zaubertalisman) sind noch nicht modelliert.
 - Web-Interop laeuft ueber `package:web` + `dart:js_interop`, nie ueber
   `dart:html` (deprecated und von `dart2wasm` nicht uebersetzbar). Bedingte
   Importe muessen auf `dart.library.js_interop` stehen, **nicht** auf
@@ -637,6 +638,12 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   der Erde → KL, Diener Sumus → IN), hält
   `HeroSheet.repraesentationsTraditionen` die Wahl fest;
   `HeroSheet.magicLeadAttribute` ist nur noch die bewusste Abweichung davon.
+- Magische SF im Split-Katalog unterscheiden `tradition` von einer benannten
+  `ritualkenntnis`: Eine Repräsentation ersetzt keinen geforderten RkW.
+  Varianten-, Kultur- und Gemeinschaftsbedingungen bleiben, soweit nicht
+  modelliert, ausdrückliche Hinweise für die manuelle Prüfung. Quellen und
+  offene Folgearbeiten stehen in `docs/rules_mapping_house_rules_v1.md`
+  unter „Katalogkorrektur magischer Voraussetzungen (11. Oktober 2026)“.
 - Aktivierbare Hausregel-Pakete liegen eingebaut unter
   `assets/catalogs/house_rules_v1/packs/<packId>/manifest.json`.
 - Eingebaute Pack-Manifeste muessen ausserdem explizit in `pubspec.yaml`
