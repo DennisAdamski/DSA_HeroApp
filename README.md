@@ -328,6 +328,16 @@ ihn und ermöglicht die Änderung. Geplante Steigerungen werden dabei nicht
 übernommen. Das gilt auch für direkte Aktionen wie das Hinzufügen eines
 Inventargegenstands; eine laufende Planübernahme bleibt geschützt.
 
+Im Magiebereich der Entwicklungsplanung lassen sich **Repräsentationen** erwerben
+und **Ritualkenntnisse** aktivieren oder steigern. Kosten, Voraussetzungen und
+bestätigte Meisterentscheide gehören zur Planung; gespeichert wird erst beim
+Übernehmen der Runde. **Magische Tradition einrichten** ergänzt im Magie-Editor
+enthaltene oder bereits vorhandene Kenntnisse ohne zusätzliche AP. Derselbe
+Dialog wird beim Erfassen von Voll-/Halbzauberer angeboten.
+Eine gemeinsame Ritualkenntnis je Tradition kann mehrere Ritualgruppen versorgen.
+Alte eigene Werte werden erst nach ausdrücklicher Auswahl angebunden.
+Details und Abgrenzungen: [Magische Kenntnisse](docs/magische_kenntnisse.md).
+
 Grundprinzipien des Projekts:
 
 - Domain-Modelle sind immutable und serialisierbar

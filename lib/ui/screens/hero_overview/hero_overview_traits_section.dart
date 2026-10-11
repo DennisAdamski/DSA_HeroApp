@@ -194,6 +194,16 @@ extension _HeroOverviewTraitsSection on _HeroOverviewTabState {
   /// Uebernimmt einen Merkmalsentwurf in [hero]: Liste plus Projektion.
   HeroSheet _mitMerkmalEntwurf(HeroSheet hero) {
     var ergebnis = hero;
+    final setup = _draftMagicSetup;
+    if (setup != null) {
+      ergebnis = ergebnis.copyWith(
+        representationen: setup.representationen,
+        repraesentationsTraditionen: setup.repraesentationsTraditionen,
+        ritualKnowledge: setup.ritualKnowledge,
+        ritualCategories: setup.ritualCategories,
+        advancementHistory: setup.advancementHistory,
+      );
+    }
     final vorteile = _draftVorteile;
     if (vorteile != null) {
       ergebnis = ergebnis.copyWith(
@@ -247,10 +257,32 @@ extension _HeroOverviewTraitsSection on _HeroOverviewTabState {
         auswahl: wahl.auswahl,
       );
     }
-    _setzeMerkmale(
-      keyName,
-      fuegeMerkmalHinzu(_merkmale(keyName, catalog), neu, def: def),
+    final updated = fuegeMerkmalHinzu(
+      _merkmale(keyName, catalog),
+      neu,
+      def: def,
     );
+    if (keyName == 'vorteile' && offersMagicSetup(def?.id) && catalog != null) {
+      final hero = _latestHero;
+      if (hero == null || !mounted) return;
+      final draft = _mitMerkmalEntwurf(hero).copyWith(
+        vorteilEintraege: updated,
+        vorteileText: projiziereMerkmalText(updated),
+      );
+      final basis = withMagicSetupApBudget(
+        draft,
+        apSpent: _readInt('ap_spent', min: 0),
+      );
+      final setup = await showMagicSetupDialog(
+        context: context,
+        hero: basis,
+        catalog: catalog,
+      );
+      if (setup == null || !mounted) return;
+      _draftMagicSetup = setup;
+      _field('ap_spent').text = setup.apSpent.toString();
+    }
+    _setzeMerkmale(keyName, updated);
   }
 
   Future<void> _editTraitEntry({

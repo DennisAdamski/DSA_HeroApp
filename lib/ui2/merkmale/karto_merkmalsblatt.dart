@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:uuid/uuid.dart';
 
 import 'package:dsa_heldenverwaltung/catalog/hero_trait_choices.dart';
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_merkmal.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/magic_setup_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/editor_entwurf_rules.dart';
+import 'package:dsa_heldenverwaltung/ui_shared/magic_setup_dialog.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_anzeige_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_wirkung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_zuordnung_rules.dart';
@@ -255,14 +259,43 @@ class _KartoMerkmalsblattState extends ConsumerState<KartoMerkmalsblatt> {
         auswahl: angaben.auswahl,
       );
     }
-    await _schreibe(
-      (held, katalog) => aendereMerkmale(
+    HeroSheet? setupBasis;
+    HeroSheet? setup;
+    if (vorteil && offersMagicSetup(def?.id)) {
+      final hero = ref
+          .read(heroComputedProvider(widget.heroId))
+          .asData
+          ?.value
+          .hero;
+      if (hero == null || !mounted) return;
+      setupBasis = aendereMerkmale(
+        hero,
+        vorteil: true,
+        katalog: katalog,
+        aenderung: (liste) => fuegeMerkmalHinzu(liste, neu, def: def),
+      );
+      setup = await showMagicSetupDialog(
+        context: context,
+        hero: setupBasis,
+        catalog: catalog,
+      );
+      if (setup == null || !mounted) return;
+    }
+    await _schreibe((held, katalog) {
+      final result = aendereMerkmale(
         held,
         vorteil: vorteil,
         katalog: katalog,
         aenderung: (liste) => fuegeMerkmalHinzu(liste, neu, def: def),
-      ),
-    );
+      );
+      if (setup == null || setupBasis == null) return result;
+      return uebernimmEditorEntwurf(
+        basis: setupBasis,
+        entwurf: setup,
+        aktuell: result,
+        neueId: () => const Uuid().v4(),
+      );
+    });
   }
 
   // Auswahl und Wert erfragen, sofern der Eintrag welche trägt.

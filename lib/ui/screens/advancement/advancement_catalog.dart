@@ -15,6 +15,7 @@ import 'package:dsa_heldenverwaltung/ui/screens/advancement/advancement_activati
 import 'package:dsa_heldenverwaltung/ui/screens/advancement/advancement_catalog_actions.dart';
 
 import 'advancement_base_value_tile.dart';
+import 'advancement_option_card.dart';
 import 'advancement_gottheit_wahl.dart';
 import 'advancement_merkmal_sections.dart';
 import 'advancement_skill_tree_view.dart';
@@ -61,7 +62,7 @@ enum _Bereich {
 }
 
 /// Wie ein Abschnitt seine Einträge zeigt.
-enum _Darstellung { werte, baum, merkmale, merkmalskenntnisse }
+enum _Darstellung { werte, baum, merkmale, merkmalskenntnisse, kenntnisse }
 
 /// Abschnitt innerhalb eines Bereichs.
 ///
@@ -98,6 +99,15 @@ enum _Abschnitt {
     AdvancementKind.combatAbility,
     AdvancementKind.maneuver,
   ]),
+  repraesentationen(
+    'Repräsentationen',
+    _Bereich.magie,
+    _Darstellung.kenntnisse,
+    [AdvancementKind.representation],
+  ),
+  ritualkenntnisse('Ritualkenntnisse', _Bereich.magie, _Darstellung.werte, [
+    AdvancementKind.ritualKnowledge,
+  ]),
   zauber('Zauber', _Bereich.magie, _Darstellung.werte, [AdvancementKind.spell]),
   merkmalskenntnisse(
     'Merkmalskenntnisse',
@@ -131,7 +141,7 @@ enum _Abschnitt {
 
   /// Wertlisten zeigen nur, was der Held führt; Bäume und Merkmale alles.
   AdvancementScope get scope => switch (darstellung) {
-    _Darstellung.werte => AdvancementScope.active,
+    _Darstellung.werte || _Darstellung.kenntnisse => AdvancementScope.active,
     _ => AdvancementScope.all,
   };
 
@@ -147,6 +157,8 @@ enum _Abschnitt {
   bool get supportsActivation => activationLabel.isNotEmpty;
 
   String get activationLabel => switch (this) {
+    repraesentationen => '+ Repräsentation',
+    ritualkenntnisse => '+ Ritualkenntnis',
     talente => 'Talent erlernen',
     sprachen => 'Sprache oder Schrift erlernen',
     kampftalente => 'Kampftalent erlernen',
@@ -159,6 +171,8 @@ enum _Abschnitt {
   };
 
   String get emptyText => switch (this) {
+    repraesentationen => 'Noch keine Repräsentationen erfasst.',
+    ritualkenntnisse => 'Noch keine Ritualkenntnisse erfasst.',
     talente => 'Noch keine Talente auf dem Heldenbogen.',
     sprachen => 'Noch keine Sprachen oder Schriften auf dem Heldenbogen.',
     kampftalente => 'Noch keine Kampftalente auf dem Heldenbogen.',
@@ -234,6 +248,7 @@ class _AdvancementCatalogState extends ConsumerState<AdvancementCatalog> {
         activation.magic.isEnabled ||
             hero.representationen.isNotEmpty ||
             hero.ritualCategories.isNotEmpty ||
+            hero.ritualKnowledge.isNotEmpty ||
             hero.spells.isNotEmpty ||
             hero.magicSpecialAbilities.isNotEmpty ||
             hero.merkmalskenntnisse.isNotEmpty,
@@ -446,6 +461,21 @@ class _AdvancementCatalogState extends ConsumerState<AdvancementCatalog> {
   }) {
     final onPlan = session.isSaving || _dialogOpen ? null : _plan;
     switch (abschnitt.darstellung) {
+      case _Darstellung.kenntnisse:
+        return ListView(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+          children: [
+            for (final option in filtered)
+              AdvancementOptionCard(
+                option: option,
+                planned: plannedTargets.contains(
+                  '${option.kind.name}:${option.targetId}',
+                ),
+                onPlan: onPlan == null ? null : () => onPlan(option),
+              ),
+            if (filtered.isEmpty) Text(abschnitt.emptyText),
+          ],
+        );
       case _Darstellung.baum:
         final controller = ref.read(
           advancementSessionProvider(widget.heroId).notifier,

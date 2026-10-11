@@ -1,3 +1,4 @@
+import 'package:dsa_heldenverwaltung/ui_shared/magic_knowledge_advancement_dialog.dart';
 import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/advancement/advancement_impact_panel.dart';
 import 'package:flutter/material.dart';
@@ -31,6 +32,14 @@ Future<HeroAdvancementEntry?> showAdvancementPlanDialog({
   required AdvancementSession session,
   required AdvancementOption option,
 }) async {
+  if (option.kind == AdvancementKind.representation ||
+      option.kind == AdvancementKind.ritualKnowledge) {
+    return showMagicKnowledgeAdvancementDialog(
+      context: context,
+      session: session,
+      option: option,
+    );
+  }
   final selectedOptions = Map<String, String>.from(option.options);
   final selected = await _selectAcquisitionOptions(
     context: context,

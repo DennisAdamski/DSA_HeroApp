@@ -31,6 +31,7 @@ const Map<String, String> syncFieldLabels = <String, String>{
   'talentSpecialAbilities': 'Sonderfertigkeiten (Talente)',
   'spells': 'Zauber',
   'ritualCategories': 'Ritualkategorien',
+  'ritualKnowledge': 'Gemeinsame Ritualkenntnisse',
   'representationen': 'Repräsentationen',
   'merkmalskenntnisse': 'Merkmalskenntnisse',
   'magicSpecialAbilities': 'Magische Sonderfertigkeiten',

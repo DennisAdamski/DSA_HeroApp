@@ -13,6 +13,9 @@ import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_rituals.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_advancement_entry.dart';
+import 'package:dsa_heldenverwaltung/ui_shared/magic_setup_dialog.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/ritual_knowledge_rules.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_spell_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_spell_text_overrides.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
@@ -109,6 +112,8 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
   // Draft-Zustand wird nur im Edit-Modus veraendert.
   Map<String, HeroSpellEntry> _draftSpells = <String, HeroSpellEntry>{};
   List<HeroRitualCategory> _draftRitualCategories = <HeroRitualCategory>[];
+  Map<String, HeroRitualKnowledge> _draftRitualKnowledge = {};
+  List<HeroAdvancementEntry> _draftAdvancementHistory = [];
   List<String> _draftRepresentationen = <String>[];
   Map<String, String> _draftRepraesentationsTraditionen = <String, String>{};
   List<String> _draftMerkmalskenntnisse = <String>[];
@@ -179,6 +184,8 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
     _draftRitualCategories = List<HeroRitualCategory>.from(
       hero.ritualCategories,
     );
+    _draftRitualKnowledge = Map.of(hero.ritualKnowledge);
+    _draftAdvancementHistory = List.of(hero.advancementHistory);
     _draftRepresentationen = List<String>.from(hero.representationen);
     _draftRepraesentationsTraditionen = Map<String, String>.from(
       hero.repraesentationsTraditionen,
@@ -245,20 +252,7 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
     if (basis == null) {
       return;
     }
-    final entwurf = basis.copyWith(
-      spells: Map<String, HeroSpellEntry>.from(_draftSpells),
-      ritualCategories: List<HeroRitualCategory>.from(_draftRitualCategories),
-      representationen: List<String>.from(_draftRepresentationen),
-      repraesentationsTraditionen: Map<String, String>.from(
-        _draftRepraesentationsTraditionen,
-      ),
-      merkmalskenntnisse: List<String>.from(_draftMerkmalskenntnisse),
-      magicSpecialAbilities: List<MagicSpecialAbility>.from(
-        _draftMagicSpecialAbilities,
-      ),
-      magicLeadAttribute: _draftMagicLeadAttribute,
-      apSpent: basis.apSpent + _draftApSpentDelta,
-    );
+    final entwurf = _assembledMagicDraft(basis);
     final gespeichert = await speichereEditorEntwurf(
       context: context,
       ref: ref,
@@ -540,6 +534,7 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
                         padding: const EdgeInsets.fromLTRB(0, 8, 0, 12),
                         children: [
                           _MagicRitualsSection(
+                            hero: _assembledMagicDraft(hero),
                             begabungen: begabungen,
                             ritualCategories: _draftRitualCategories,
                             catalogTalents: catalog.talents,
@@ -562,7 +557,16 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
                       ListView(
                         padding: const EdgeInsets.fromLTRB(0, 8, 0, 12),
                         children: [
+                          TextButton.icon(
+                            key: const ValueKey('magic-setup-open'),
+                            onPressed: () => _setupMagic(catalog),
+                            icon: const Icon(Icons.auto_fix_high),
+                            label: const Text('Magische Tradition einrichten'),
+                          ),
                           _MagicHeaderSection(
+                            onAcquireRepresentation: (rep) =>
+                                _setupMagic(catalog, representation: rep),
+                            ritualKnowledge: _draftRitualKnowledge,
                             representationen: _draftRepresentationen,
                             repraesentationsTraditionen:
                                 _draftRepraesentationsTraditionen,

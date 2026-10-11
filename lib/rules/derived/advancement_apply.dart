@@ -22,6 +22,9 @@ HeroSheet _applyEntry(
   if (option.isWaffenmeister) return applyWaffenmeisterEntry(hero, entry);
   if (option.isMerkmalskenntnis) return applyMerkmalskenntnisEntry(hero, entry);
   switch (entry.kind) {
+    case AdvancementKind.representation:
+    case AdvancementKind.ritualKnowledge:
+      return applyMagicKnowledgeEntry(hero, entry);
     case AdvancementKind.advantage:
     case AdvancementKind.disadvantage:
       return applyTraitEntry(hero, entry, catalog);

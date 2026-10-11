@@ -608,6 +608,7 @@ Bestandsdaten enthalten nichts Unbekanntes, ihr JSON und ihre Inhalts-Hashes
 | `talentSpecialAbilities` | `List<TalentSpecialAbility>` | Strukturierte Talent-Sonderfertigkeiten (Name + optionale Notiz), Legacy-Strings werden tolerant migriert |
 | `spells` | `Map<String, HeroSpellEntry>` | Aktivierte oder gelernte Zauber des Helden |
 | `ritualCategories` | `List<HeroRitualCategory>` | Heldenspezifische Ritualkategorien mit Ritualkenntnis oder Talentbezug |
+| `ritualKnowledge` | `Map<String, HeroRitualKnowledge>` | Gemeinsame Ritualkenntnisse nach stabiler Traditionskennung; optional, leer nicht geschrieben |
 | `repraesentationsTraditionen` | `Map<String, String>` | Gewählte Tradition je Repräsentationskürzel; nur bei mehrdeutigen Kürzeln nötig (aktuell nur `Geo`) |
 | `magicLeadAttribute` | `String` | Bewusst abweichende Leiteigenschaft (`MU` bis `KK`); ohne Eintrag wird sie aus der Tradition abgeleitet |
 | `rasse` / `rasseModText` | `String` | Rasse und Rassenmodifikator-Text |
@@ -1032,7 +1033,8 @@ Der Meta-TaW wird nicht persistiert, sondern aus den referenzierten
 
 Rituale werden nicht aus dem globalen Regelkatalog geladen, sondern pro Held
 direkt in `HeroSheet.ritualCategories` gespeichert. Eine Ritualkategorie
-enthaelt entweder eine eigene Ritualkenntnis mit TaW und Lernkomplexitaet oder
+enthält eine eigene Ritualkenntnis mit TaW und Lernkomplexität, einen Bezug auf
+`HeroSheet.ritualKnowledge` oder
 eine Liste referenzierter Talent-IDs, deren TaWs im Magie-Tab angezeigt werden.
 
 | Typ | Kernfelder |
@@ -1367,10 +1369,15 @@ Felder im Heldenmodell (`HeroSheet.merkmalskenntnisse`,
 zeigen den Klartextnamen der Tradition. Die Kosten
 liegen in `lib/rules/derived/magic_acquisition_rules.dart`:
 `merkmalsklassifikation` (I/II/III) speist alle drei Merkmals-Preistabellen,
-`repraesentationApCost` liefert 2.000/3.000/4.000 AP je nach Anzahl und
-Voll-/Halbzauberer. Beim Aktivieren eines Chips oeffnet sich der
-Erwerbsdialog; beim Deaktivieren werden — wie ueberall in der App — keine AP
-zurueckerstattet.
+`repraesentationApCost` liefert die Grundkosten 2.000/3.000/4.000 AP je nach
+Anzahl und Voll-/Halbzauberer. Der Repräsentationserwerb nutzt die gemeinsame
+Prüfung in `advancement_magic_knowledge_rules.dart` einschließlich Rabatten,
+Traditionswahl, Status und Ausbildungsbestätigungen. Beim Deaktivieren werden
+keine AP zurückerstattet. Gemeinsame Ritualkenntnisse liegen in
+`HeroSheet.ritualKnowledge`; mehrere Ritualgruppen können auf denselben Wert
+verweisen. Erwerb und Steigerung stehen auch in der Entwicklungsplanung zur
+Verfügung. [Magische Kenntnisse](magische_kenntnisse.md) beschreibt die
+kostenfreie Erfassung und den ausdrücklichen Abgleich von Bestandsgruppen.
 
 Zauberspezialisierungen liegen in `HeroSpellEntry.specializations` und werden
 in der Spalte `Spez.` der Zaubertabelle gepflegt. Kosten und ZfW-Schwellen

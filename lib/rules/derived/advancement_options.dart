@@ -31,6 +31,7 @@ import 'advancement_trait_options.dart';
 import 'advancement_waffenmeister_options.dart';
 import 'hero_merkmal_zuordnung_rules.dart';
 import 'resource_activation_rules.dart';
+import 'advancement_magic_knowledge_rules.dart';
 
 part 'advancement_value_options.dart';
 part 'advancement_ability_options.dart';
@@ -100,7 +101,9 @@ class AdvancementOption {
       !isTalentSpecialization &&
       !isWaffenmeister &&
       !isTraitChange &&
-      !isMerkmalskenntnis;
+      !isMerkmalskenntnis &&
+      kind != AdvancementKind.representation &&
+      !(kind == AdvancementKind.ritualKnowledge && currentValue < 0);
 
   /// Ein talentgebundener Erwerb bleibt als Befehl derselben Zielart erhalten.
   bool get isTalentSpecialization =>
@@ -261,6 +264,7 @@ List<AdvancementOption> buildAdvancementOptions({
     // gesondert aufgebaut.
     ...buildTraitAdvancementOptions(context, scope),
     ...buildMerkmalskenntnisOptions(context, scope),
+    ...buildMagicKnowledgeOptions(context, scope),
   ];
 }
 
@@ -290,6 +294,8 @@ AdvancementOption? resolveAdvancementOptionIn({
   Map<String, String> options = const {},
 }) {
   return switch (kind) {
+    AdvancementKind.representation || AdvancementKind.ritualKnowledge =>
+      resolveMagicKnowledge(context, kind, targetId, options),
     AdvancementKind.attribute => _attributeOption(context, targetId),
     AdvancementKind.boughtStat => _boughtOption(context, targetId),
     AdvancementKind.talent => switch (options['action']) {

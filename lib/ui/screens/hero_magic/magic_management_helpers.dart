@@ -1,6 +1,47 @@
 part of '../hero_magic_tab.dart';
 
 extension _MagicManagementHelpers on _HeroMagicTabState {
+  // AP und Verlauf gehören zum Entwurf und dürfen Provider-Rebuilds überleben.
+  HeroSheet _assembledMagicDraft(HeroSheet hero) => hero.copyWith(
+    spells: Map.of(_draftSpells),
+    ritualCategories: List.of(_draftRitualCategories),
+    ritualKnowledge: Map.of(_draftRitualKnowledge),
+    representationen: List.of(_draftRepresentationen),
+    repraesentationsTraditionen: Map.of(_draftRepraesentationsTraditionen),
+    merkmalskenntnisse: List.of(_draftMerkmalskenntnisse),
+    magicSpecialAbilities: List.of(_draftMagicSpecialAbilities),
+    magicLeadAttribute: _draftMagicLeadAttribute,
+    advancementHistory: List.of(_draftAdvancementHistory),
+    apSpent: hero.apSpent + _draftApSpentDelta,
+    apAvailable: _verfuegbareApImDraft(hero),
+  );
+
+  Future<void> _setupMagic(
+    RulesCatalog catalog, {
+    String? representation,
+  }) async {
+    if (!_editController.isEditing) await _startEdit();
+    if (!mounted || !_editController.isEditing) return;
+    final hero = _entwurfBasis;
+    if (hero == null) return;
+    final result = await showMagicSetupDialog(
+      context: context,
+      hero: _assembledMagicDraft(hero),
+      catalog: catalog,
+      initialRepresentation: representation,
+    );
+    if (result == null || !mounted) return;
+    _draftRepresentationen = List.of(result.representationen);
+    _draftRepraesentationsTraditionen = Map.of(
+      result.repraesentationsTraditionen,
+    );
+    _draftRitualKnowledge = Map.of(result.ritualKnowledge);
+    _draftRitualCategories = List.of(result.ritualCategories);
+    _draftAdvancementHistory = List.of(result.advancementHistory);
+    _draftApSpentDelta = result.apSpent - hero.apSpent;
+    _markFieldChanged();
+  }
+
   Future<SpellAvailabilityEntry?> _chooseAvailabilityEntryForSpell(
     BuildContext context,
     SpellDef spell,
@@ -71,19 +112,7 @@ extension _MagicManagementHelpers on _HeroMagicTabState {
     RulesCatalog catalog,
   ) {
     return buildHeroRequirementContext(
-      hero.copyWith(
-        spells: Map<String, HeroSpellEntry>.from(_draftSpells),
-        ritualCategories: List<HeroRitualCategory>.from(_draftRitualCategories),
-        representationen: List<String>.from(_draftRepresentationen),
-        repraesentationsTraditionen: Map<String, String>.from(
-          _draftRepraesentationsTraditionen,
-        ),
-        merkmalskenntnisse: List<String>.from(_draftMerkmalskenntnisse),
-        magicSpecialAbilities: List<MagicSpecialAbility>.from(
-          _draftMagicSpecialAbilities,
-        ),
-        magicLeadAttribute: _draftMagicLeadAttribute,
-      ),
+      _assembledMagicDraft(hero),
       catalog: catalog,
     );
   }

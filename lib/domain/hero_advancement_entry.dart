@@ -13,6 +13,12 @@ enum AdvancementKind {
   language,
   script,
 
+  /// Erwerb einer Repräsentation mit dokumentierter Traditionszuordnung.
+  representation,
+
+  /// Aktivierung oder Steigerung einer gemeinsamen oder freien Ritualkenntnis.
+  ritualKnowledge,
+
   /// Einmaliger Manövererwerb, gegebenenfalls pro Kampftalent.
   maneuver,
 

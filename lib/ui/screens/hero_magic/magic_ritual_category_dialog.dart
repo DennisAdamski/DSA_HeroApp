@@ -21,6 +21,7 @@ class _RitualCategoryResult {
 Future<_RitualCategoryResult?> _showRitualCategoryDialog({
   required BuildContext context,
   required List<TalentDef> catalogTalents,
+  required Map<String, HeroRitualKnowledge> ritualKnowledge,
   HeroRitualCategory? existing,
 }) {
   return showAdaptiveDetailSheet<_RitualCategoryResult>(
@@ -28,6 +29,7 @@ Future<_RitualCategoryResult?> _showRitualCategoryDialog({
     builder: (dialogContext) {
       return _RitualCategoryDialog(
         catalogTalents: catalogTalents,
+        ritualKnowledge: ritualKnowledge,
         existing: existing,
       );
     },
@@ -35,9 +37,14 @@ Future<_RitualCategoryResult?> _showRitualCategoryDialog({
 }
 
 class _RitualCategoryDialog extends StatefulWidget {
-  const _RitualCategoryDialog({required this.catalogTalents, this.existing});
+  const _RitualCategoryDialog({
+    required this.catalogTalents,
+    required this.ritualKnowledge,
+    this.existing,
+  });
 
   final List<TalentDef> catalogTalents;
+  final Map<String, HeroRitualKnowledge> ritualKnowledge;
   final HeroRitualCategory? existing;
 
   @override
@@ -52,6 +59,7 @@ class _RitualCategoryDialogState extends State<_RitualCategoryDialog> {
   late String _learningComplexity;
   late Set<String> _selectedTalentIds;
   late List<_EditableRitualFieldDefDraft> _fieldDefs;
+  String _traditionId = '';
   String _talentSearch = '';
   String? _errorText;
 
@@ -65,6 +73,7 @@ class _RitualCategoryDialogState extends State<_RitualCategoryDialog> {
   void initState() {
     super.initState();
     final existing = widget.existing;
+    _traditionId = existing?.traditionId ?? '';
     final ownKnowledge =
         existing?.ownKnowledge ??
         buildDefaultRitualKnowledge(existing?.name ?? '');
@@ -135,6 +144,13 @@ class _RitualCategoryDialogState extends State<_RitualCategoryDialog> {
       });
       return;
     }
+    if (_knowledgeMode == HeroRitualKnowledgeMode.traditionKnowledge &&
+        !widget.ritualKnowledge.containsKey(_traditionId)) {
+      setState(
+        () => _errorText = 'Bitte eine vorhandene Ritualkenntnis zuordnen.',
+      );
+      return;
+    }
     for (final fieldDef in _fieldDefs) {
       if (fieldDef.labelController.text.trim().isEmpty) {
         setState(() {
@@ -169,6 +185,8 @@ class _RitualCategoryDialogState extends State<_RitualCategoryDialog> {
                   value: kenntnisWert,
                   learningComplexity: _learningComplexity,
                 )
+          : _knowledgeMode == HeroRitualKnowledgeMode.traditionKnowledge
+          ? bisherigeKenntnis
           : null,
       derivedTalentIds: _knowledgeMode == HeroRitualKnowledgeMode.derivedTalents
           ? _selectedTalentIds.toList(growable: false)
@@ -194,6 +212,10 @@ class _RitualCategoryDialogState extends State<_RitualCategoryDialog> {
             name: werte.name,
             knowledgeMode: werte.knowledgeMode,
             ownKnowledge: werte.ownKnowledge,
+            traditionId:
+                _knowledgeMode == HeroRitualKnowledgeMode.traditionKnowledge
+                ? _traditionId
+                : '',
             derivedTalentIds: werte.derivedTalentIds,
             additionalFieldDefs: werte.additionalFieldDefs,
           )
@@ -201,13 +223,19 @@ class _RitualCategoryDialogState extends State<_RitualCategoryDialog> {
             name: werte.name,
             knowledgeMode: werte.knowledgeMode,
             ownKnowledge: werte.ownKnowledge,
+            traditionId:
+                _knowledgeMode == HeroRitualKnowledgeMode.traditionKnowledge
+                ? _traditionId
+                : '',
             derivedTalentIds: werte.derivedTalentIds,
             additionalFieldDefs: werte.additionalFieldDefs,
           );
     Navigator.of(context).pop(
       _RitualCategoryResult(
         category: normalizeRitualCategory(builtCategory),
-        fremdeTradition: _fremdeTradition,
+        fremdeTradition:
+            _knowledgeMode == HeroRitualKnowledgeMode.ownKnowledge &&
+            _fremdeTradition,
       ),
     );
   }
@@ -253,6 +281,10 @@ class _RitualCategoryDialogState extends State<_RitualCategoryDialog> {
                     value: HeroRitualKnowledgeMode.derivedTalents,
                     label: Text('Talent'),
                   ),
+                  ButtonSegment(
+                    value: HeroRitualKnowledgeMode.traditionKnowledge,
+                    label: Text('Tradition'),
+                  ),
                 ],
                 selected: <HeroRitualKnowledgeMode>{_knowledgeMode},
                 onSelectionChanged: (selection) {
@@ -268,6 +300,29 @@ class _RitualCategoryDialogState extends State<_RitualCategoryDialog> {
                 },
               ),
               const SizedBox(height: 12),
+              if (_knowledgeMode == HeroRitualKnowledgeMode.traditionKnowledge)
+                DropdownButtonFormField<String>(
+                  key: const ValueKey('magic-ritual-shared-knowledge'),
+                  initialValue: widget.ritualKnowledge.containsKey(_traditionId)
+                      ? _traditionId
+                      : null,
+                  isExpanded: true,
+                  decoration: const InputDecoration(
+                    labelText: 'Gemeinsame Ritualkenntnis',
+                  ),
+                  items: [
+                    for (final entry in widget.ritualKnowledge.entries)
+                      DropdownMenuItem(
+                        value: entry.key,
+                        child: Text(
+                          '${entry.value.name}: RkW ${entry.value.value}, '
+                          '${entry.value.learningComplexity}',
+                        ),
+                      ),
+                  ],
+                  onChanged: (value) =>
+                      setState(() => _traditionId = value ?? ''),
+                ),
               if (_isNew &&
                   _knowledgeMode == HeroRitualKnowledgeMode.ownKnowledge) ...[
                 CheckboxListTile(

@@ -17,6 +17,7 @@ import 'advancement_specialization_rules.dart';
 import 'advancement_merkmalskenntnis_rules.dart';
 import 'advancement_trait_options.dart';
 import 'advancement_waffenmeister_options.dart';
+import 'advancement_magic_knowledge_rules.dart';
 
 export 'advancement_options.dart';
 part 'advancement_apply.dart';
@@ -110,6 +111,11 @@ void _validateEntry(
   }
   if (entry.seSpent < 0 || entry.seSpent > option.seAvailable) {
     throw StateError('Nicht genügend Sondererfahrungen.');
+  }
+  if (entry.kind == AdvancementKind.representation ||
+      entry.kind == AdvancementKind.ritualKnowledge) {
+    validateMagicKnowledgeEntry(hero, entry, option);
+    return;
   }
   if (option.isTalentSpecialization) {
     if (entry.options['specialization']?.trim().isNotEmpty != true) {

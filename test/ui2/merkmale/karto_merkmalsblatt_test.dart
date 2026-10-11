@@ -23,6 +23,12 @@ const _katalog = RulesCatalog(
   weapons: [],
   advantages: [
     HeroTraitDef(
+      id: 'adv_vollzauberer',
+      name: 'Vollzauberer',
+      traitType: 'advantage',
+      selectionTemplate: 'Vollzauberer',
+    ),
+    HeroTraitDef(
       id: 'adv_flink',
       name: 'Flink',
       traitType: 'advantage',
@@ -155,6 +161,27 @@ void main() {
   Finder key(String name) => find.byKey(ValueKey<String>(name));
 
   Future<HeroSheet> gespeichert() async => (await repo.loadHeroById('rondra'))!;
+
+  testWidgets('Vollzauberer bietet Einrichtung vor dem atomaren Speichern', (
+    tester,
+  ) async {
+    await zeige(tester, held: _held());
+    await tester.ensureVisible(key('karto-merkmal-neu-vorteile'));
+    await tester.tap(key('karto-merkmal-neu-vorteile'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField).first, 'Vollzauberer');
+    await tester.pumpAndSettle();
+    await tester.tap(key('karto-merkmal-katalog-adv_vollzauberer'));
+    await tester.pumpAndSettle();
+    expect(find.text('Magische Tradition einrichten'), findsOneWidget);
+    expect((await gespeichert()).vorteilEintraege, isEmpty);
+    await tester.tap(key('magic-setup-confirm'));
+    await tester.pumpAndSettle();
+    final result = await gespeichert();
+    expect(result.vorteilEintraege.single.katalogId, 'adv_vollzauberer');
+    expect(result.representationen, ['Mag']);
+    expect(result.ritualKnowledge['gildenmagier']!.value, 3);
+  });
 
   Future<void> tippe(WidgetTester tester, Finder finder) async {
     await tester.ensureVisible(finder);

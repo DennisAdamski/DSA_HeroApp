@@ -11,6 +11,8 @@ part of '../hero_magic_tab.dart';
 class _MagicHeaderSection extends StatelessWidget {
   const _MagicHeaderSection({
     required this.representationen,
+    required this.onAcquireRepresentation,
+    required this.ritualKnowledge,
     required this.repraesentationsTraditionen,
     required this.merkmalskenntnisse,
     required this.magicLeadAttribute,
@@ -25,6 +27,8 @@ class _MagicHeaderSection extends StatelessWidget {
   });
 
   final List<String> representationen;
+  final Future<void> Function(String) onAcquireRepresentation;
+  final Map<String, HeroRitualKnowledge> ritualKnowledge;
   final Map<String, String> repraesentationsTraditionen;
   final List<String> merkmalskenntnisse;
   final String magicLeadAttribute;
@@ -45,6 +49,7 @@ class _MagicHeaderSection extends StatelessWidget {
   List<TraditionDef> get _traditionen => resolveHeroTraditionen(
     repraesentationen: representationen,
     gewaehlteTraditionen: repraesentationsTraditionen,
+    ritualkenntnisse: ritualKnowledge.keys,
   );
 
   /// Die abgeleiteten Leiteigenschaften.
@@ -89,11 +94,8 @@ class _MagicHeaderSection extends StatelessWidget {
     }
   }
 
-  /// Schaltet eine Repraesentation um. Beim Aktivieren wird — falls das
-  /// Kuerzel mehrere Traditionen traegt — zuerst die Auspraegung erfragt und
-  /// danach der Erwerb ueber den Erwerbsdialog bestaetigt (WdH S. 290).
-  /// Vorgeschlagen wird der Vollzauberer-Preis; der Halbzauberer-Preis steht
-  /// im Kostenhinweis und kann im editierbaren AP-Feld uebernommen werden.
+  /// Erfasst eine Repräsentation über die geprüfte Traditionseinrichtung.
+  /// Entfernen gibt keine AP zurück und entfernt keine Ritualkenntnisse.
   Future<void> _toggleRepresentation(
     BuildContext context,
     String representation,
@@ -109,55 +111,7 @@ class _MagicHeaderSection extends StatelessWidget {
       return;
     }
 
-    var gewaehlteTradition = '';
-    if (repraesentationBrauchtTraditionswahl(representation)) {
-      final auswahl = await showAdaptiveInputDialog<String>(
-        context: context,
-        builder: (_) => _TraditionSelectionDialog(
-          repraesentation: representation,
-          kandidaten: traditionenFuerRepraesentation(representation),
-        ),
-      );
-      if (auswahl == null || auswahl.isEmpty || !context.mounted) {
-        return;
-      }
-      gewaehlteTradition = auswahl;
-    }
-
-    final anzahl = representationen.length;
-    final vollzauberer = repraesentationApCost(
-      anzahlVorhanden: anzahl,
-      istHalbzauberer: false,
-    );
-    final halbzauberer = repraesentationApCost(
-      anzahlVorhanden: anzahl,
-      istHalbzauberer: true,
-    );
-    final erwerb = await showErwerbDialog(
-      manualCorrection: true,
-      context: context,
-      bezeichnung: 'Repräsentation ${_anzeigeName(representation)}',
-      kostenHinweis: _representationKostenHinweis(
-        anzahl: anzahl,
-        vollzauberer: vollzauberer,
-        halbzauberer: halbzauberer,
-      ),
-      vorgeschlageneApKosten: vollzauberer ?? 0,
-      verfuegbareAp: verfuegbareAp,
-      episch: episch,
-    );
-    if (erwerb == null) {
-      return;
-    }
-    updated.add(representation);
-    if (gewaehlteTradition.isNotEmpty) {
-      traditionen[representation] = gewaehlteTradition;
-    }
-    onRepresentationenChanged(updated);
-    onRepraesentationsTraditionenChanged(traditionen);
-    if (erwerb.apKosten > 0) {
-      onApKostenBestaetigt?.call(erwerb.apKosten);
-    }
+    await onAcquireRepresentation(representation);
   }
 
   /// `Gildenmagisch (Mag)` statt des blossen Kuerzels.
@@ -173,26 +127,6 @@ class _MagicHeaderSection extends StatelessWidget {
     return kandidaten.length > 1 && (gewaehlt == null || gewaehlt.isEmpty)
         ? 'Geodisch ($kuerzel)'
         : '${tradition.name} ($kuerzel)';
-  }
-
-  String _representationKostenHinweis({
-    required int anzahl,
-    required int? vollzauberer,
-    required int? halbzauberer,
-  }) {
-    if (anzahl <= 0) {
-      return 'Die erste Repräsentation stammt aus Kultur bzw. Profession '
-          'und kostet keine AP.';
-    }
-    final teile = <String>[
-      if (vollzauberer != null) 'Vollzauberer $vollzauberer AP',
-      if (halbzauberer != null)
-        'Halbzauberer $halbzauberer AP'
-      else
-        'für Halbzauberer laut Regelwerk nicht vorgesehen',
-    ];
-    return '${anzahl + 1}. Repräsentation: ${teile.join('; ')} '
-        '(Wege der Helden S. 290)';
   }
 
   /// Beschreibt, woher die Leiteigenschaft kommt.
@@ -328,86 +262,6 @@ class _MagicHeaderSection extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-}
-
-/// Fragt die Auspraegung einer mehrdeutigen Repraesentation ab.
-///
-/// Betrifft aktuell nur die geodische: Herren der Erde fuehren die Klugheit,
-/// Diener Sumus die Intuition als Leiteigenschaft (WdZ S. 19). Ohne diese
-/// Wahl bliebe unentschieden, welche der beiden gilt.
-class _TraditionSelectionDialog extends StatefulWidget {
-  const _TraditionSelectionDialog({
-    required this.repraesentation,
-    required this.kandidaten,
-  });
-
-  final String repraesentation;
-  final List<TraditionDef> kandidaten;
-
-  @override
-  State<_TraditionSelectionDialog> createState() =>
-      _TraditionSelectionDialogState();
-}
-
-class _TraditionSelectionDialogState extends State<_TraditionSelectionDialog> {
-  String? _selected;
-
-  @override
-  void initState() {
-    super.initState();
-    _selected = widget.kandidaten.isEmpty ? null : widget.kandidaten.first.id;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return AdaptiveInputDialog(
-      title: 'Tradition wählen',
-      maxWidth: kDialogWidthSmall,
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Die Repräsentation ${widget.repraesentation} wird von mehreren '
-            'Traditionen genutzt. Die Wahl bestimmt die Leiteigenschaft.',
-            style: theme.textTheme.bodyMedium,
-          ),
-          const SizedBox(height: 12),
-          // Bewusst ListTile mit Radio-Icon statt RadioListTile: dasselbe
-          // Muster wie im Zauber-Repraesentationsdialog, und ohne die
-          // seit Flutter 3.32 deprecateten Radio-Gruppenparameter.
-          for (final tradition in widget.kandidaten)
-            ListTile(
-              key: ValueKey<String>('magic-tradition-${tradition.id}'),
-              contentPadding: EdgeInsets.zero,
-              dense: true,
-              leading: Icon(
-                _selected == tradition.id
-                    ? Icons.radio_button_checked
-                    : Icons.radio_button_off,
-              ),
-              title: Text(tradition.name),
-              subtitle: Text('Leiteigenschaft ${tradition.leiteigenschaft}'),
-              onTap: () => setState(() => _selected = tradition.id),
-            ),
-        ],
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Abbrechen'),
-        ),
-        FilledButton(
-          key: const ValueKey<String>('magic-tradition-confirm'),
-          onPressed: _selected == null
-              ? null
-              : () => Navigator.of(context).pop(_selected),
-          child: const Text('Weiter'),
-        ),
-      ],
     );
   }
 }
