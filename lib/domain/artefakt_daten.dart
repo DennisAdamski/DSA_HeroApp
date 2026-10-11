@@ -49,6 +49,7 @@ class ArtefaktZauber {
     this.spellId,
     this.name = '',
     this.repraesentation = '',
+    this.variante = '',
     this.zfw,
     this.zfpStern,
     this.kostenAsp,
@@ -68,6 +69,9 @@ class ArtefaktZauber {
 
   /// Repräsentation, in der der Zauber gesprochen wurde.
   final String repraesentation;
+
+  /// Gewählte Variante des Zaubers; leer = keine Variante.
+  final String variante;
 
   /// ZfW des Sprechers zum Zeitpunkt der Verzauberung.
   final int? zfw;
@@ -102,6 +106,7 @@ class ArtefaktZauber {
     'spellId',
     'name',
     'repraesentation',
+    'variante',
     'zfw',
     'zfpStern',
     'kostenAsp',
@@ -117,6 +122,7 @@ class ArtefaktZauber {
     Object? spellId = keepFieldValue,
     String? name,
     String? repraesentation,
+    String? variante,
     Object? zfw = keepFieldValue,
     Object? zfpStern = keepFieldValue,
     Object? kostenAsp = keepFieldValue,
@@ -131,6 +137,7 @@ class ArtefaktZauber {
       spellId: spellId == keepFieldValue ? this.spellId : spellId as String?,
       name: name ?? this.name,
       repraesentation: repraesentation ?? this.repraesentation,
+      variante: variante ?? this.variante,
       zfw: zfw == keepFieldValue ? this.zfw : zfw as int?,
       zfpStern: zfpStern == keepFieldValue ? this.zfpStern : zfpStern as int?,
       kostenAsp: kostenAsp == keepFieldValue
@@ -151,6 +158,8 @@ class ArtefaktZauber {
       if (spellId != null) 'spellId': spellId,
       'name': name,
       'repraesentation': repraesentation,
+      // Nur bei gewählter Variante, damit der Schlüssel sonst nicht erscheint.
+      if (variante.isNotEmpty) 'variante': variante,
       if (zfw != null) 'zfw': zfw,
       if (zfpStern != null) 'zfpStern': zfpStern,
       if (kostenAsp != null) 'kostenAsp': kostenAsp,
@@ -169,6 +178,7 @@ class ArtefaktZauber {
       spellId: json['spellId'] as String?,
       name: text('name'),
       repraesentation: text('repraesentation'),
+      variante: text('variante'),
       zfw: _ganzzahl(json['zfw']),
       zfpStern: _ganzzahl(json['zfpStern']),
       kostenAsp: _ganzzahl(json['kostenAsp']),

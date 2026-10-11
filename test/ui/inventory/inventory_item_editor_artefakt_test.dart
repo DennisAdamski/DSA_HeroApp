@@ -2,16 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:dsa_heldenverwaltung/catalog/catalog_crypto.dart';
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/artefakt_daten.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
+import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/inventory_item_editor.dart';
 
 // Matrixgeber im Inventareditor: Artefaktdaten, eingesprochene Zauber mit den
 // Werten ihres Sprechers und die Katalogvorbelegung.
 
-const _katalog = RulesCatalog(
+const _passwort = 'geheim';
+
+final _katalog = RulesCatalog(
   version: 'test',
   source: 'test',
   talents: [],
@@ -23,10 +27,11 @@ const _katalog = RulesCatalog(
       tradition: 'Mag',
       steigerung: 'D',
       attributes: ['IN', 'GE', 'KO'],
-      availability: 'Mag6',
+      availability: 'Mag6, Elf5',
       aspCost: '8 AsP',
       range: 'Selbst',
       duration: '1 Stunde',
+      variants: ['Dauerhaft', 'Für die Gruppe'],
     ),
     SpellDef(
       id: 'spell_ignifaxius',
@@ -36,14 +41,29 @@ const _katalog = RulesCatalog(
       attributes: ['KL', 'IN', 'FF'],
       availability: 'Mag7',
       aspCost: 'ZfP*',
+      rawVariantsEncrypted: 'enc:3:gesperrt',
+    ),
+    SpellDef(
+      id: 'spell_balsam',
+      name: 'Balsam',
+      tradition: 'Mag',
+      steigerung: 'C',
+      attributes: ['KL', 'IN', 'FF'],
+      availability: 'Mag7',
+      aspCost: '5 AsP',
+      rawVariantsEncrypted: encryptCatalogList([
+        'Schnell',
+        'Kraftvoll',
+      ], _passwort),
     ),
   ],
 );
 
 Future<List<HeroInventoryEntry>> _zeige(
   WidgetTester tester,
-  HeroInventoryEntry eintrag,
-) async {
+  HeroInventoryEntry eintrag, {
+  String? passwort,
+}) async {
   final gespeichert = <HeroInventoryEntry>[];
   tester.view.devicePixelRatio = 1;
   tester.view.physicalSize = const Size(1000, 2400);
@@ -51,7 +71,11 @@ Future<List<HeroInventoryEntry>> _zeige(
   addTearDown(tester.view.resetDevicePixelRatio);
   await tester.pumpWidget(
     ProviderScope(
-      overrides: [rulesCatalogProvider.overrideWith((ref) async => _katalog)],
+      overrides: [
+        rulesCatalogProvider.overrideWith((ref) async => _katalog),
+        if (passwort != null)
+          catalogContentPasswordProvider.overrideWithValue(passwort),
+      ],
       child: MaterialApp(
         home: Scaffold(
           body: InventoryItemEditor(
@@ -108,6 +132,15 @@ void main() {
       const HeroInventoryEntry(gegenstand: 'Armschiene'),
     );
 
+    // Der Matrixgeber hängt unter „Magisch“: erst danach erscheint er.
+    expect(
+      find.byKey(const ValueKey('inventory-editor-artefakt')),
+      findsNothing,
+    );
+    await _tippe(
+      tester,
+      find.byKey(const ValueKey('inventory-editor-magisch')),
+    );
     await _tippe(
       tester,
       find.byKey(const ValueKey('inventory-editor-artefakt')),
@@ -156,8 +189,18 @@ void main() {
     await tester.enterText(_zauber('suche'), 'armat');
     await tester.pumpAndSettle();
     await _tippe(tester, _zauber('treffer-spell_armatrutz'));
-    // Frei änderbar: die Vorbelegung ist nur ein Vorschlag.
-    await tester.enterText(_zauber('repraesentation'), 'Elf');
+    // Zwei Verbreitungen: keine Vorgabe, der Nutzer wählt aus dem Zauber.
+    await _tippe(
+      tester,
+      find.byWidgetPredicate(
+        (w) =>
+            w.key is ValueKey<String> &&
+            (w.key! as ValueKey<String>).value.startsWith(
+              'artefakt-zauber-repraesentation-wahl',
+            ),
+      ),
+    );
+    await _tippe(tester, find.text('Elf').last);
     await _tippe(tester, _zauber('uebernehmen'));
     await _speichere(tester);
 
@@ -258,5 +301,188 @@ void main() {
 
     expect(gespeichert.single.artefaktDaten, isNull);
     expect(gespeichert.single.toJson().containsKey('artefaktDaten'), isFalse);
+  });
+
+  group('Repräsentation und Variante eines Katalogzaubers', () {
+    const leer = HeroInventoryEntry(
+      gegenstand: 'Armschiene',
+      isMagisch: true,
+      artefaktDaten: ArtefaktDaten(),
+    );
+
+    Future<void> waehleZauber(
+      WidgetTester tester,
+      String suche,
+      String id,
+    ) async {
+      await _tippe(tester, _artefakt('add'));
+      await tester.enterText(_zauber('suche'), suche);
+      await tester.pumpAndSettle();
+      await _tippe(tester, _zauber('treffer-$id'));
+    }
+
+    Finder dropdown(String praefix) => find.byWidgetPredicate(
+      (w) =>
+          w.key is ValueKey<String> &&
+          (w.key! as ValueKey<String>).value.startsWith(praefix),
+    );
+
+    testWidgets('eine einzige Verbreitung ist die Vorgabe', (tester) async {
+      final gespeichert = await _zeige(tester, leer, passwort: _passwort);
+
+      await waehleZauber(tester, 'balsam', 'spell_balsam');
+      await _tippe(tester, _zauber('uebernehmen'));
+      await _speichere(tester);
+
+      expect(
+        gespeichert.single.artefaktDaten!.zauber.single.repraesentation,
+        'Mag',
+      );
+    });
+
+    testWidgets('Varianten: Standard ist keine, die Auswahl wird gespeichert', (
+      tester,
+    ) async {
+      final gespeichert = await _zeige(tester, leer);
+
+      await waehleZauber(tester, 'armat', 'spell_armatrutz');
+      expect(find.text('Keine Variante'), findsOneWidget);
+      await _tippe(tester, _zauber('uebernehmen'));
+      await _speichere(tester);
+      expect(gespeichert.last.artefaktDaten!.zauber.single.variante, '');
+      expect(
+        gespeichert.last.artefaktDaten!.zauber.single.toJson().containsKey(
+          'variante',
+        ),
+        isFalse,
+      );
+
+      // Erneut öffnen und eine Variante wählen.
+      await _tippe(tester, _artefakt('zauber-0'));
+      await _tippe(tester, dropdown('artefakt-zauber-variante-wahl'));
+      await _tippe(tester, find.text('Für die Gruppe').last);
+      await _tippe(tester, _zauber('uebernehmen'));
+      await _speichere(tester);
+
+      expect(
+        gespeichert.last.artefaktDaten!.zauber.single.variante,
+        'Für die Gruppe',
+      );
+      expect(find.textContaining('Variante: Für die Gruppe'), findsOneWidget);
+    });
+
+    testWidgets('eine Variante lässt sich wieder auf „Keine“ zurücksetzen', (
+      tester,
+    ) async {
+      final gespeichert = await _zeige(
+        tester,
+        leer.copyWith(
+          artefaktDaten: const ArtefaktDaten(
+            zauber: <ArtefaktZauber>[
+              ArtefaktZauber(
+                spellId: 'spell_armatrutz',
+                name: 'Armatrutz',
+                repraesentation: 'Mag',
+                variante: 'Dauerhaft',
+              ),
+            ],
+          ),
+        ),
+      );
+
+      await _tippe(tester, _artefakt('zauber-0'));
+      await _tippe(tester, dropdown('artefakt-zauber-variante-wahl'));
+      await _tippe(tester, find.text('Keine Variante').last);
+      await _tippe(tester, _zauber('uebernehmen'));
+      await _speichere(tester);
+
+      expect(gespeichert.single.artefaktDaten!.zauber.single.variante, '');
+    });
+
+    testWidgets('gesperrte Varianten: Hinweis und freies Feld', (tester) async {
+      final gespeichert = await _zeige(tester, leer);
+
+      await waehleZauber(tester, 'ignifax', 'spell_ignifaxius');
+      expect(_zauber('varianten-gesperrt'), findsOneWidget);
+      await tester.enterText(_zauber('variante-frei'), 'Von Hand');
+      await _tippe(tester, _zauber('uebernehmen'));
+      await _speichere(tester);
+
+      expect(
+        gespeichert.single.artefaktDaten!.zauber.single.variante,
+        'Von Hand',
+      );
+    });
+
+    testWidgets('mit Passwort werden verschlüsselte Varianten auswählbar', (
+      tester,
+    ) async {
+      final gespeichert = await _zeige(tester, leer, passwort: _passwort);
+
+      await waehleZauber(tester, 'balsam', 'spell_balsam');
+      expect(_zauber('varianten-gesperrt'), findsNothing);
+      await _tippe(tester, dropdown('artefakt-zauber-variante-wahl'));
+      await _tippe(tester, find.text('Kraftvoll').last);
+      await _tippe(tester, _zauber('uebernehmen'));
+      await _speichere(tester);
+
+      expect(
+        gespeichert.single.artefaktDaten!.zauber.single.variante,
+        'Kraftvoll',
+      );
+    });
+
+    testWidgets('eine andere Repräsentation lässt sich frei eintragen', (
+      tester,
+    ) async {
+      final gespeichert = await _zeige(tester, leer);
+
+      await waehleZauber(tester, 'armat', 'spell_armatrutz');
+      await _tippe(tester, dropdown('artefakt-zauber-repraesentation-wahl'));
+      await _tippe(tester, find.text('Andere …').last);
+      await tester.enterText(_zauber('repraesentation'), 'Ach');
+      await _tippe(tester, _zauber('uebernehmen'));
+      await _speichere(tester);
+
+      expect(
+        gespeichert.single.artefaktDaten!.zauber.single.repraesentation,
+        'Ach',
+      );
+    });
+
+    testWidgets('ein freier Zauber hat ein Textfeld für die Repräsentation', (
+      tester,
+    ) async {
+      await _zeige(tester, leer);
+
+      await _tippe(tester, _artefakt('add'));
+
+      expect(_zauber('repraesentation'), findsOneWidget);
+      expect(dropdown('artefakt-zauber-repraesentation-wahl'), findsNothing);
+    });
+  });
+
+  testWidgets('Magisch ausschalten entfernt den Matrixgeber', (tester) async {
+    final gespeichert = await _zeige(
+      tester,
+      const HeroInventoryEntry(
+        gegenstand: 'Armschiene',
+        isMagisch: true,
+        artefaktDaten: ArtefaktDaten(),
+      ),
+    );
+
+    await _tippe(
+      tester,
+      find.byKey(const ValueKey('inventory-editor-magisch')),
+    );
+    expect(
+      find.byKey(const ValueKey('inventory-editor-artefakt')),
+      findsNothing,
+    );
+    await _speichere(tester);
+
+    expect(gespeichert.single.isMagisch, isFalse);
+    expect(gespeichert.single.artefaktDaten, isNull);
   });
 }
