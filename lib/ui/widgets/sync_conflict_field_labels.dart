@@ -35,6 +35,7 @@ const Map<String, String> syncFieldLabels = <String, String>{
   'merkmalskenntnisse': 'Merkmalskenntnisse',
   'magicSpecialAbilities': 'Magische Sonderfertigkeiten',
   'magicLeadAttribute': 'Leiteigenschaft',
+  'gottheit': 'Gottheit',
   'sprachen': 'Sprachen',
   'schriften': 'Schriften',
   'muttersprache': 'Muttersprache',

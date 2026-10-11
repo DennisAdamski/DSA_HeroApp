@@ -32,6 +32,12 @@ bool isAdvancementTargetOwned({
     AdvancementKind.language => hero.sprachen.containsKey(targetId),
     AdvancementKind.script => hero.schriften.containsKey(targetId),
     AdvancementKind.maneuver => isAdvancementManeuverOwned(context, targetId),
+    AdvancementKind.advantage => context.merkmalAbgleich.vorteile.any(
+      (eintrag) => eintrag.katalogId == targetId,
+    ),
+    AdvancementKind.disadvantage => context.merkmalAbgleich.nachteile.any(
+      (eintrag) => eintrag.katalogId == targetId,
+    ),
     _ => context.ownedAbilityIds(kind).contains(targetId),
   };
 }

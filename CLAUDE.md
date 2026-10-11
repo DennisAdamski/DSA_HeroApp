@@ -432,6 +432,32 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   `_validateEntry` und wird nur in der Karte als Bestandsnachweis dargestellt.
   Rituale und Liturgien haben kein `AdvancementKind` und liegen außerhalb des
   Modus — das ist keine Lücke der Aktivfilterung.
+- **Der Steigerungskatalog hat fünf Bereiche mit Abschnitten**
+  (`advancement_catalog.dart`, `_Bereich`/`_Abschnitt`, Nutzerentscheidung
+  11. Oktober 2026): Grundlagen (Eigenschaften & Basiswerte, Vorteile,
+  Nachteile), Talente (Talente, Sprachen & Schriften, allgemeine SF), Kampf
+  (Kampftalente, SF & Manöver), Magie (Zauber, Merkmalskenntnisse, SF &
+  Rituale), Karma (SF & Liturgien). Baumabschnitte nutzen
+  `AdvancementSkillTreeView(festerBereich:)`; Magie/Karma erscheinen nur bei
+  Befähigung oder Bestand (oder „Unpassende einblenden“). Neue Planungsziele:
+  `AdvancementKind.advantage`/`disadvantage` (`advancement_trait_options.dart`,
+  Regeln/GP-Tarife in `trait_advancement_rules.dart`, WdS S. 170: nur die
+  dort genannten Vorteile zu 50 × GP, Nachteile 100 × GP, Schlechte
+  Eigenschaften 50/75 × GP je Punkt, gesellschaftliche nie, episch keine
+  Vorteile; geschrieben nur über `aendereMerkmale`), Merkmalskenntnisse als
+  `magicAbility` mit `action: merkmalskenntnis`
+  (`advancement_merkmalskenntnis_rules.dart`) und Waffenmeister am Kampftalent
+  als `talent` mit `action: waffenmeister`; die im bestehenden Editor erstellte
+  `WaffenmeisterConfig` reist als JSON in den Optionen
+  (`advancement_waffenmeister_options.dart`, WdS S. 192). Den
+  Waffen-Großmeister findet `grossmeisterFuerTalent`.
+  `special_ability_visibility_rules.dart` blendet magische/karmale SF mit
+  unerfüllter `tradition`/`spruchzauberer`/`rasse`/`gottheit`-Voraussetzung
+  aus (`passtNichtZumHelden`). `HeroSheet.gottheit` (nur bei Belegung im
+  JSON) wählt der Karmaabschnitt und speichert sie wie die SF-Anzeige über
+  `AdvancementSessionController.setGottheit`; geprüft wird die neue
+  Voraussetzungsart `gottheit` (`karma_gottheit_rules.dart`, Sammelname
+  `Zwölfgötter`).
 - `rules/derived/advancement_skill_tree.dart` baut Abhängigkeiten und Status
   einschließlich UND-/ODER-Knoten. `ui/screens/advancement/advancement_skill_tree_view.dart`
   bindet Suche, Filter und Erwerbsdetails an die Sitzung; `skill_tree_branch.dart`
@@ -533,8 +559,9 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   (`lib/catalog/special_ability_requirement.dart`, Schema in
   `docs/technical_overview.md` Abschnitt 4.9). Gepflegt für magische,
   allgemeine, Kampf- und karmale Sonderfertigkeiten sowie Manöver.
-  Nicht modellierte karmale Voraussetzungen wie Gottheit oder Entrückung
-  bleiben Hinweise zur manuellen Prüfung. Geprüft wird über `buildHeroRequirementContext` und
+  Die Gottheit prüft die Art `gottheit` gegen `HeroSheet.gottheit` (ohne
+  erfasste Gottheit nur Hinweis); nicht modellierte karmale Voraussetzungen
+  wie Entrückung bleiben Hinweise zur manuellen Prüfung. Geprüft wird über `buildHeroRequirementContext` und
   `evaluateRequirements` (`lib/rules/derived/`). Ein offener Punkt sperrt nie:
   Die UI zeigt eine Checkliste (`lib/ui/widgets/requirement_checklist.dart`)
   und verlangt im Erwerbsdialog die Bestätigung „Trotzdem erwerben

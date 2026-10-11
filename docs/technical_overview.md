@@ -2182,6 +2182,7 @@ zusammengelegt werden müssten.
 | `manoever` | `name` | Erlerntes Manöver aus `manoever.json` |
 | `waffenmeister` | `name?` | Waffenmeisterschaft; ohne Namen genügt irgendeine |
 | `spruchzauberer` | – | Mindestens eine Repräsentation |
+| `gottheit` | `namen` | Geweihter einer der Gottheiten; `Zwölfgötter` steht für jeden Zwölfgott. Geprüft gegen `HeroSheet.gottheit`, ohne erfasste Gottheit nur Hinweis |
 | `oder` / `und` | `bedingungen[]` | Verknüpfung; `und` nur als Oder-Zweig |
 | `hinweis` | `text` | Nicht prüfbarer Regeltext |
 

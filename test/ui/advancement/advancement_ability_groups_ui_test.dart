@@ -80,6 +80,20 @@ const _kopfWaffen = 'advancement-group-header-kampfWaffenmanoever';
 const _kopfWaffenlos = 'advancement-group-header-kampfWaffenlosManoever';
 const _kopfAllgemein = 'advancement-group-header-allgemeinPraxis';
 
+// Wechselt in einen Arbeitsbereich und dort in einen Abschnitt.
+Future<void> zuAbschnitt(
+  WidgetTester tester,
+  String bereich,
+  String abschnitt,
+) async {
+  await tester.tap(find.byKey(ValueKey('advancement-bereich-$bereich')));
+  await tester.pumpAndSettle();
+  final chip = find.byKey(ValueKey('advancement-abschnitt-$abschnitt'));
+  await tester.ensureVisible(chip);
+  await tester.tap(chip);
+  await tester.pumpAndSettle();
+}
+
 void main() {
   Future<ProviderContainer> open(WidgetTester tester, Size size) async {
     tester.view.devicePixelRatio = 1;
@@ -103,8 +117,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Sonderfertigkeiten'));
-    await tester.pumpAndSettle();
+    await zuAbschnitt(tester, 'kampf', 'kampfSf');
     return container;
   }
 
@@ -118,7 +131,8 @@ void main() {
     expect(kopf(_kopfKampfGrundlagen), findsOneWidget);
     expect(kopf(_kopfWaffen), findsOneWidget);
     expect(kopf(_kopfWaffenlos), findsOneWidget);
-    expect(kopf(_kopfAllgemein), findsOneWidget);
+    // Allgemeine Sonderfertigkeiten liegen im Bereich Talente.
+    expect(kopf(_kopfAllgemein), findsNothing);
     expect(knoten('maneuver:man_base'), findsNothing);
     expect(knoten('maneuver:man_tritt'), findsNothing);
 
@@ -187,13 +201,11 @@ void main() {
     tester,
   ) async {
     await open(tester, const Size(1100, 1000));
-    await tester.tap(find.widgetWithText(ChoiceChip, 'Allgemein'));
-    await tester.pumpAndSettle();
+    await zuAbschnitt(tester, 'talente', 'allgemeineSf');
     expect(kopf(_kopfAllgemein), findsOneWidget);
     expect(kopf(_kopfWaffen), findsNothing);
 
-    await tester.tap(find.widgetWithText(ChoiceChip, 'Kampf'));
-    await tester.pumpAndSettle();
+    await zuAbschnitt(tester, 'kampf', 'kampfSf');
     await tester.tap(
       find.byKey(const ValueKey('advancement-skill-tree-only-available')),
     );

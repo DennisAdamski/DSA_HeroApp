@@ -30,6 +30,8 @@ class AdvancementSkillTreeView extends StatefulWidget {
     required this.query,
     this.onPlan,
     this.onShowInapplicableChanged,
+    this.festerBereich,
+    this.kopfZusatz,
   });
   final AdvancementSession session;
   final List<AdvancementOption> options;
@@ -38,6 +40,14 @@ class AdvancementSkillTreeView extends StatefulWidget {
 
   /// Speichert die heldenspezifische Anzeige unter Erhalt des Entwurfs.
   final Future<void> Function(bool)? onShowInapplicableChanged;
+
+  /// Zeigt nur diesen Bereich und blendet die Bereichswahl aus; der Katalog
+  /// gliedert seine Arbeitsbereiche dann selbst.
+  final FaehigkeitenBereich? festerBereich;
+
+  /// Zusätzlicher Inhalt über den Filtern, etwa die Gottheitswahl im
+  /// Karmabereich.
+  final Widget? kopfZusatz;
 
   /// Behält den gewählten Themenbereich während einzelner Planungsschritte.
   @override
@@ -144,7 +154,7 @@ class _AdvancementSkillTreeViewState extends State<AdvancementSkillTreeView> {
     final gruppen = gruppiereFaehigkeiten(
       graph: _graph,
       query: widget.query,
-      bereich: _bereich,
+      bereich: widget.festerBereich ?? _bereich,
       nurErlernbar: _nurErlernbar,
     );
     final gesamt = gruppen.values.fold<int>(0, (sum, g) => sum + g.anzahl);
@@ -154,27 +164,33 @@ class _AdvancementSkillTreeViewState extends State<AdvancementSkillTreeView> {
     final kopf = Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        if (widget.kopfZusatz case final zusatz?) ...[
+          zusatz,
+          const SizedBox(height: 8),
+        ],
         // Bereich: wählt, welcher Teil des Katalogs gezeigt wird.
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: [
-              for (final bereich in <FaehigkeitenBereich?>[
-                null,
-                ...FaehigkeitenBereich.values,
-              ])
-                Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: ChoiceChip(
-                    label: Text(bereich?.label ?? 'Alle'),
-                    selected: _bereich == bereich,
-                    onSelected: (_) => setState(() => _bereich = bereich),
+        if (widget.festerBereich == null) ...[
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                for (final bereich in <FaehigkeitenBereich?>[
+                  null,
+                  ...FaehigkeitenBereich.values,
+                ])
+                  Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: ChoiceChip(
+                      label: Text(bereich?.label ?? 'Alle'),
+                      selected: _bereich == bereich,
+                      onSelected: (_) => setState(() => _bereich = bereich),
+                    ),
                   ),
-                ),
-            ],
+              ],
+            ),
           ),
-        ),
-        const SizedBox(height: 8),
+          const SizedBox(height: 8),
+        ],
         // Filter: schränken die gezeigten Fähigkeiten zusätzlich ein.
         Wrap(
           spacing: 8,

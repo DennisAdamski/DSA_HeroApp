@@ -17,6 +17,8 @@ class AdvancementValueTile extends StatelessWidget {
     this.specializations = const [],
     this.onSpecialize,
     this.gruppe,
+    this.zusatzZeilen = const [],
+    this.zusatzAktionen = const [],
   });
 
   /// Regeloption für den numerischen Wert.
@@ -40,6 +42,12 @@ class AdvancementValueTile extends StatelessWidget {
   /// Talentgruppe, deren Farbleiste die Kachel kennzeichnet; ohne Gruppe bleibt
   /// die Kachel unverändert.
   final TalentGruppe? gruppe;
+
+  /// Weitere Bestandszeilen, etwa erworbene Waffenmeisterschaften.
+  final List<String> zusatzZeilen;
+
+  /// Weitere talentgebundene Erwerbe (Waffenmeister, Waffen-Großmeister).
+  final List<Widget> zusatzAktionen;
 
   /// Zeigt Wert, Grenzen und getrennt freigegebene Aktionen ohne Regelrechnung.
   @override
@@ -88,6 +96,8 @@ class AdvancementValueTile extends StatelessWidget {
             'Spezialisierungen: ${specializations.join(', ')}',
             style: theme.textTheme.bodySmall,
           ),
+        for (final zeile in zusatzZeilen)
+          Text(zeile, style: theme.textTheme.bodySmall),
         if (option.unavailableReason != null)
           Text(option.unavailableReason!, style: theme.textTheme.bodySmall),
         const SizedBox(height: 8),
@@ -116,6 +126,7 @@ class AdvancementValueTile extends StatelessWidget {
                   child: const Text('+ Spezialisierung'),
                 ),
               ),
+            ...zusatzAktionen,
           ],
         ),
         if (specialization?.unavailableReason != null)

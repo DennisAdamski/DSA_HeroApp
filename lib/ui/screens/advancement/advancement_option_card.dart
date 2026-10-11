@@ -200,6 +200,8 @@ class AdvancementOptionCard extends StatelessWidget {
     AdvancementKind.magicAbility => 'Magische Sonderfertigkeit',
     AdvancementKind.karmalAbility => 'Karmale Sonderfertigkeit',
     AdvancementKind.combatAbility => 'Kampfsonderfertigkeit',
+    AdvancementKind.advantage => 'Vorteil · nachträglicher Erwerb',
+    AdvancementKind.disadvantage => 'Nachteil · Abbau',
   };
 }
 

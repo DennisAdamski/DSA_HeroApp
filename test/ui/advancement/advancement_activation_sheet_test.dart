@@ -13,6 +13,20 @@ import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/advancement/advancement_catalog.dart';
 
+// Wechselt in einen Arbeitsbereich und dort in einen Abschnitt.
+Future<void> zuAbschnitt(
+  WidgetTester tester,
+  String bereich,
+  String abschnitt,
+) async {
+  await tester.tap(find.byKey(ValueKey('advancement-bereich-$bereich')));
+  await tester.pumpAndSettle();
+  final chip = find.byKey(ValueKey('advancement-abschnitt-$abschnitt'));
+  await tester.ensureVisible(chip);
+  await tester.tap(chip);
+  await tester.pumpAndSettle();
+}
+
 void main() {
   const hero = HeroSheet(
     id: 'sheet-hero',
@@ -151,10 +165,9 @@ void main() {
       tester,
       selectedHero: hero.copyWith(representationen: ['Mag']),
     );
-    await tester.tap(find.text('Zauber'));
-    await tester.pumpAndSettle();
+    await zuAbschnitt(tester, 'magie', 'zauber');
     expect(
-      find.byKey(const ValueKey('advancement-empty-spells')),
+      find.byKey(const ValueKey('advancement-empty-zauber')),
       findsOneWidget,
     );
     expect(
@@ -162,7 +175,7 @@ void main() {
       findsNothing,
     );
 
-    await tester.tap(find.byKey(const ValueKey('advancement-activate-spells')));
+    await tester.tap(find.byKey(const ValueKey('advancement-activate-zauber')));
     await tester.pumpAndSettle();
     expect(
       find.byKey(const ValueKey('advancement-plan-spell-spell')),
@@ -188,14 +201,13 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('Erwerbsblatt trennt Talente, Kampftalente und Sprachen', (
+  testWidgets('Erwerbsblätter trennen Talente, Kampftalente und Sprachen', (
     tester,
   ) async {
     await openCatalog(tester);
-    await tester.tap(find.text('Talente'));
-    await tester.pumpAndSettle();
+    await zuAbschnitt(tester, 'talente', 'talente');
     await tester.tap(
-      find.byKey(const ValueKey('advancement-activate-talents')),
+      find.byKey(const ValueKey('advancement-activate-talente')),
     );
     await tester.pumpAndSettle();
     expect(
@@ -203,25 +215,35 @@ void main() {
       findsOneWidget,
     );
     expect(
-      find.byKey(const ValueKey('advancement-plan-language-lang')),
-      findsOneWidget,
-    );
-
-    await tester.tap(
-      find.byKey(const ValueKey('advancement-activate-filter-sprachen')),
-    );
-    await tester.pumpAndSettle();
-    expect(
-      find.byKey(const ValueKey('advancement-plan-talent-climb')),
+      find.byKey(const ValueKey('advancement-plan-talent-sword')),
       findsNothing,
     );
     expect(
       find.byKey(const ValueKey('advancement-plan-language-lang')),
+      findsNothing,
+    );
+    await tester.tap(find.byKey(const ValueKey('advancement-activate-close')));
+    await tester.pumpAndSettle();
+
+    await zuAbschnitt(tester, 'talente', 'sprachen');
+    await tester.tap(
+      find.byKey(const ValueKey('advancement-activate-sprachen')),
+    );
+    await tester.pumpAndSettle();
+    expect(
+      find.byKey(const ValueKey('advancement-plan-language-lang')),
       findsOneWidget,
     );
+    expect(
+      find.byKey(const ValueKey('advancement-plan-talent-climb')),
+      findsNothing,
+    );
+    await tester.tap(find.byKey(const ValueKey('advancement-activate-close')));
+    await tester.pumpAndSettle();
 
+    await zuAbschnitt(tester, 'kampf', 'kampftalente');
     await tester.tap(
-      find.byKey(const ValueKey('advancement-activate-filter-kampftalente')),
+      find.byKey(const ValueKey('advancement-activate-kampftalente')),
     );
     await tester.pumpAndSettle();
     expect(
@@ -237,11 +259,14 @@ void main() {
 
   testWidgets('Nur erwerbbare blendet gesperrte Zauber aus', (tester) async {
     // Ohne jede Repräsentation ist kein Zauber erlernbar; eine fremde
-    // Repräsentation genügt sonst immer und wäre kein Sperrfall.
-    await openCatalog(tester);
-    await tester.tap(find.text('Zauber'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey('advancement-activate-spells')));
+    // Repräsentation genügt sonst immer und wäre kein Sperrfall. Der
+    // Magiebereich erscheint dann nur mit „Unpassende anzeigen“.
+    await openCatalog(
+      tester,
+      selectedHero: hero.copyWith(showInapplicableSpecialAbilities: true),
+    );
+    await zuAbschnitt(tester, 'magie', 'zauber');
+    await tester.tap(find.byKey(const ValueKey('advancement-activate-zauber')));
     await tester.pumpAndSettle();
     expect(
       find.byKey(const ValueKey('advancement-activate-empty')),
@@ -270,8 +295,7 @@ void main() {
         ],
       ),
     );
-    await tester.tap(find.text('Sonderfertigkeiten'));
-    await tester.pumpAndSettle();
+    await zuAbschnitt(tester, 'talente', 'allgemeineSf');
     await tester.tap(
       find.byKey(const ValueKey('advancement-group-header-allgemeinPraxis')),
     );
@@ -304,8 +328,7 @@ void main() {
         talents: {'climb': const HeroTalentEntry(talentValue: 5)},
       ),
     );
-    await tester.tap(find.text('Talente'));
-    await tester.pumpAndSettle();
+    await zuAbschnitt(tester, 'talente', 'talente');
     await tester.enterText(
       find.byKey(const ValueKey('advancement-search')),
       'Schwimmen',
@@ -314,7 +337,7 @@ void main() {
     expect(find.text('Keine passenden Einträge.'), findsOneWidget);
 
     await tester.tap(
-      find.byKey(const ValueKey('advancement-activate-hint-talents')),
+      find.byKey(const ValueKey('advancement-activate-hint-talente')),
     );
     await tester.pumpAndSettle();
     expect(
@@ -338,10 +361,9 @@ void main() {
       tester,
     ) async {
       await openCatalog(tester, size: size);
-      await tester.tap(find.text('Talente'));
-      await tester.pumpAndSettle();
+      await zuAbschnitt(tester, 'talente', 'talente');
       await tester.tap(
-        find.byKey(const ValueKey('advancement-activate-talents')),
+        find.byKey(const ValueKey('advancement-activate-talente')),
       );
       await tester.pumpAndSettle();
       expect(

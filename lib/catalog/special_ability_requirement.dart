@@ -71,6 +71,11 @@ enum RequirementArt {
   /// Der Held muss Spruchzauberer sein (mindestens eine Repraesentation).
   spruchzauberer,
 
+  /// Geweihter einer von mehreren Gottheiten (`namen`); `Zwölfgötter` steht
+  /// fuer jede Gottheit des Zwoelfgoetterkults. Geprueft gegen
+  /// `HeroSheet.gottheit`; ohne erfasste Gottheit bleibt es ein Hinweis.
+  gottheit,
+
   /// Mindestens eine der enthaltenen Bedingungen muss erfuellt sein.
   oderGruppe,
 
@@ -108,6 +113,7 @@ const Map<String, RequirementArt> _artByKey = <String, RequirementArt>{
   'manoever': RequirementArt.manoever,
   'waffenmeister': RequirementArt.waffenmeister,
   'spruchzauberer': RequirementArt.spruchzauberer,
+  'gottheit': RequirementArt.gottheit,
   'oder': RequirementArt.oderGruppe,
   'und': RequirementArt.undGruppe,
   'hinweis': RequirementArt.hinweis,

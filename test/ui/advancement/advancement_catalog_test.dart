@@ -15,6 +15,20 @@ import 'package:dsa_heldenverwaltung/ui/screens/advancement/advancement_base_val
 import 'package:dsa_heldenverwaltung/ui/screens/advancement/advancement_catalog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/advancement/advancement_impact_panel.dart';
 
+// Wechselt in einen Arbeitsbereich und dort in einen Abschnitt.
+Future<void> zuAbschnitt(
+  WidgetTester tester,
+  String bereich,
+  String abschnitt,
+) async {
+  await tester.tap(find.byKey(ValueKey('advancement-bereich-$bereich')));
+  await tester.pumpAndSettle();
+  final chip = find.byKey(ValueKey('advancement-abschnitt-$abschnitt'));
+  await tester.ensureVisible(chip);
+  await tester.tap(chip);
+  await tester.pumpAndSettle();
+}
+
 void main() {
   const hero = HeroSheet(
     id: 'catalog-hero',
@@ -133,8 +147,7 @@ void main() {
           ],
         ),
       );
-      await tester.tap(find.text('Talente'));
-      await tester.pumpAndSettle();
+      await zuAbschnitt(tester, 'talente', 'talente');
       await tester.tap(
         find.byKey(const ValueKey('advancement-specialize-climb')),
       );
@@ -327,8 +340,7 @@ void main() {
       findsNothing,
     );
 
-    await tester.tap(find.text('Zauber'));
-    await tester.pumpAndSettle();
+    await zuAbschnitt(tester, 'talente', 'talente');
     expect(find.text('Keine passenden Einträge.'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
@@ -357,8 +369,7 @@ void main() {
         selectedHero: hero.copyWith(representationen: ['Mag']),
         selectedCatalog: spellCatalog,
       );
-      await tester.tap(find.text('Zauber'));
-      await tester.pumpAndSettle();
+      await zuAbschnitt(tester, 'magie', 'zauber');
       // Ein noch nicht gefuehrter Zauber ist nur ueber das Erwerbsblatt
       // erreichbar; die Hauptliste zeigt ausschliesslich aktive Eintraege.
       expect(
@@ -366,7 +377,7 @@ void main() {
         findsNothing,
       );
       await tester.tap(
-        find.byKey(const ValueKey('advancement-activate-spells')),
+        find.byKey(const ValueKey('advancement-activate-zauber')),
       );
       await tester.pumpAndSettle();
       await tester.tap(
@@ -419,10 +430,9 @@ void main() {
         ],
       );
       final setup = await openCatalog(tester, selectedCatalog: abilityCatalog);
-      await tester.tap(find.text('Sonderfertigkeiten'));
-      await tester.pumpAndSettle();
+      await zuAbschnitt(tester, 'talente', 'allgemeineSf');
       await tester.tap(
-        find.byKey(const ValueKey('advancement-activate-abilities')),
+        find.byKey(const ValueKey('advancement-activate-allgemeineSf')),
       );
       await tester.pumpAndSettle();
       await tester.tap(
@@ -475,10 +485,9 @@ void main() {
       ],
     );
     final setup = await openCatalog(tester, selectedCatalog: variantCatalog);
-    await tester.tap(find.text('Sonderfertigkeiten'));
-    await tester.pumpAndSettle();
+    await zuAbschnitt(tester, 'talente', 'allgemeineSf');
     await tester.tap(
-      find.byKey(const ValueKey('advancement-activate-abilities')),
+      find.byKey(const ValueKey('advancement-activate-allgemeineSf')),
     );
     await tester.pumpAndSettle();
     await tester.tap(

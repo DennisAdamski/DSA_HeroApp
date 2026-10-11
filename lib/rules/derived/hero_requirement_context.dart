@@ -79,6 +79,7 @@ HeroRequirementContext buildHeroRequirementContext(
     },
     manoever: _manoeverNamen(hero, catalog: catalog),
     waffenmeisterschaften: _waffenmeisterTalente(hero, catalog: catalog),
+    gottheit: hero.gottheit,
   );
 }
 
