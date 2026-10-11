@@ -462,6 +462,40 @@ void main() {
     });
   });
 
+  testWidgets('ein Matrixgeber lässt sich als ausgerüstet markieren', (
+    tester,
+  ) async {
+    final gespeichert = await _zeige(
+      tester,
+      const HeroInventoryEntry(
+        gegenstand: 'Armschiene',
+        isMagisch: true,
+        artefaktDaten: ArtefaktDaten(),
+      ),
+    );
+
+    // Typ „Sonstiges“: der Schalter erscheint wegen des Matrixgebers.
+    await _tippe(
+      tester,
+      find.byKey(const ValueKey('inventory-editor-ausgeruestet')),
+    );
+    await _speichere(tester);
+
+    expect(gespeichert.single.istAusgeruestet, isTrue);
+  });
+
+  testWidgets(
+    'ein normaler Gegenstand vom Typ Sonstiges hat den Schalter nicht',
+    (tester) async {
+      await _zeige(tester, const HeroInventoryEntry(gegenstand: 'Seil'));
+
+      expect(
+        find.byKey(const ValueKey('inventory-editor-ausgeruestet')),
+        findsNothing,
+      );
+    },
+  );
+
   testWidgets('Magisch ausschalten entfernt den Matrixgeber', (tester) async {
     final gespeichert = await _zeige(
       tester,

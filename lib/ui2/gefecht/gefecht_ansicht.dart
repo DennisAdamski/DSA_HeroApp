@@ -27,6 +27,7 @@ import 'package:dsa_heldenverwaltung/state/gefecht_patzer_provider.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_initiative_provider.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/artefakt_zauber_liste_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_lage_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_patzer_rules.dart';
@@ -163,6 +164,16 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
                         katalog: katalog,
                         zuletzt: s.zuletztGewirkt,
                         gesperrt: _busy,
+                        matrixgeber: gefechtsMatrixgeber(snapshot.hero),
+                        onMatrix: (eintrag) => _run(
+                          () => benutzeGefechtsMatrixgeber(
+                            context: context,
+                            ref: ref,
+                            heroId: widget.heroId,
+                            bestand: _bruecke,
+                            eintrag: eintrag,
+                          ),
+                        ),
                         onZauber: (z) => _run(
                           () => zeigeGefechtsWirken(
                             context: context,
