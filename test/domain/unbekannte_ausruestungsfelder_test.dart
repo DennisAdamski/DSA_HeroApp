@@ -164,13 +164,30 @@ final _modelle = <_Modell>[
     'ArtefaktDaten',
     schluessel: ArtefaktDaten.jsonSchluessel,
     voll: () => const ArtefaktDaten(
+      art: ArtefaktArt.spruchspeicherAufladbar,
       zauber: <ArtefaktZauber>[ArtefaktZauber(name: 'Armatrutz')],
+      ladungen: <ArtefaktLadung>[ArtefaktLadung(id: 'l1')],
+      aufladungen: 1,
+      gesamtAspErschaffung: 75,
       pAsP: 4,
     ).toJson(),
     lade: (json) => ArtefaktDaten.fromJson(json).toJson(),
     bearbeite: (json) =>
         ArtefaktDaten.fromJson(json).copyWith(ersteller: 'Meister').toJson(),
     unbekannt: (json) => ArtefaktDaten.fromJson(json).unbekannteFelder,
+  ),
+  _Modell(
+    'ArtefaktLadung',
+    schluessel: ArtefaktLadung.jsonSchluessel,
+    voll: () => const ArtefaktLadung(
+      id: 'l1',
+      verbraucht: true,
+      zauber: <ArtefaktZauber>[ArtefaktZauber(name: 'Armatrutz')],
+    ).toJson(),
+    lade: (json) => ArtefaktLadung.fromJson(json).toJson(),
+    bearbeite: (json) =>
+        ArtefaktLadung.fromJson(json).copyWith(verbraucht: false).toJson(),
+    unbekannt: (json) => ArtefaktLadung.fromJson(json).unbekannteFelder,
   ),
   _Modell(
     'ArtefaktZauber',

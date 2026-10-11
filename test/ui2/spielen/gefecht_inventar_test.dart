@@ -98,7 +98,63 @@ const _armschiene = HeroInventoryEntry(
   ),
 );
 
+const _stirnreif = HeroInventoryEntry(
+  gegenstand: 'Stirnreif',
+  isMagisch: true,
+  istAusgeruestet: true,
+  instanzId: 'i-1',
+  artefaktDaten: ArtefaktDaten(
+    art: ArtefaktArt.spruchspeicherAufladbar,
+    ladungen: <ArtefaktLadung>[
+      ArtefaktLadung(
+        id: 'a',
+        verbraucht: true,
+        zauber: <ArtefaktZauber>[ArtefaktZauber(name: 'Gardianum')],
+      ),
+      ArtefaktLadung(
+        id: 'b',
+        zauber: <ArtefaktZauber>[ArtefaktZauber(name: 'Armatrutz')],
+      ),
+    ],
+  ),
+);
+
 void main() {
+  testWidgets('Spruchspeicher mit freier Ladung steht im Kampf bereit', (
+    tester,
+  ) async {
+    final (container, repo) = await _ansicht(tester, extra: _stirnreif);
+
+    expect(
+      find.textContaining('Armatrutz · 1 von 2 Ladungen frei · 1 Aktion'),
+      findsOneWidget,
+    );
+    await _tippe(tester, find.byKey(const ValueKey('gefecht-matrixgeber-0')));
+
+    // Der Auslöser kostet seine Aktion, danach öffnet der Spruchspeicher-
+    // Dialog: weder Zauberprobe noch AsP.
+    expect(find.text('Stirnreif auslösen'), findsOneWidget);
+    final s = container.read(gefechtProvider('rondra'))!;
+    expect(s.angriffeVerbraucht + s.paradenVerbraucht, 1);
+    expect(repo.bogenSpeicherungen, 0, reason: 'erst „Auslösen“ schreibt');
+  });
+
+  testWidgets('ein leerer Spruchspeicher fehlt im Kampf', (tester) async {
+    await _ansicht(
+      tester,
+      extra: _stirnreif.copyWith(
+        artefaktDaten: _stirnreif.artefaktDaten!.copyWith(
+          ladungen: [
+            for (final l in _stirnreif.artefaktDaten!.ladungen)
+              l.copyWith(verbraucht: true),
+          ],
+        ),
+      ),
+    );
+
+    expect(find.byKey(const ValueKey('gefecht-matrixgeber-0')), findsNothing);
+  });
+
   testWidgets('ausgerüsteter Matrixgeber steht als eigener Punkt im Kampf', (
     tester,
   ) async {
@@ -114,7 +170,7 @@ void main() {
 
     await _tippe(tester, find.byKey(const ValueKey('gefecht-matrixgeber-0')));
 
-    expect(find.text('Matrixgeber'), findsOneWidget);
+    expect(find.text('Artefakte'), findsOneWidget);
     expect(find.text('Armschiene auslösen'), findsOneWidget);
     final s = container.read(gefechtProvider('rondra'))!;
     expect(s.angriffeVerbraucht + s.paradenVerbraucht, 1);

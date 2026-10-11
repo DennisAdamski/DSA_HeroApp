@@ -13,9 +13,10 @@ import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abschnitt.dart';
 /// Zauberdauer und Kosten (`gefechtsZauberliste`); ab sieben gelernten
 /// Zaubern gibt es eine Suche.
 ///
-/// Ausgerüstete Matrixgeber stehen als eigener Punkt darunter
-/// (`matrixgeber`); sie brauchen weder gelernte Zauber noch Zauberkunde und
-/// erscheinen deshalb auch, wenn der Held selbst nicht zaubert.
+/// Ausgerüstete, auslösbare Artefakte (Matrixgeber und Spruchspeicher mit
+/// freier Ladung) stehen als eigener Punkt darunter (`artefakte`); sie
+/// brauchen weder gelernte Zauber noch Zauberkunde und erscheinen deshalb auch,
+/// wenn der Held selbst nicht zaubert.
 class GefechtMagie extends StatefulWidget {
   /// Führt die Probe über den gemeinsamen, aktionsgebundenen Auftrag aus.
   const GefechtMagie({
@@ -27,7 +28,7 @@ class GefechtMagie extends StatefulWidget {
     this.onZauber,
     this.onKarma,
     this.onMatrix,
-    this.matrixgeber = const [],
+    this.artefakte = const [],
     this.zuletzt = const [],
   });
   final HeroComputedSnapshot werte;
@@ -36,10 +37,10 @@ class GefechtMagie extends StatefulWidget {
   final ValueChanged<SpellDef>? onZauber;
   final ValueChanged<TalentDef>? onKarma;
 
-  /// Ausgerüstete, unbeschädigte Matrixgeber des Helden.
-  final List<HeroInventoryEntry> matrixgeber;
+  /// Ausgerüstete, auslösbare Artefakte des Helden.
+  final List<HeroInventoryEntry> artefakte;
 
-  /// Löst einen Matrixgeber aus.
+  /// Löst ein Artefakt aus.
   final ValueChanged<HeroInventoryEntry>? onMatrix;
   final void Function(
     String titel,
@@ -83,32 +84,32 @@ class _GefechtMagieState extends State<GefechtMagie> {
     final zaubert =
         werte.resourceActivation.magic.isEnabled ||
         werte.resourceActivation.divine.isEnabled;
-    final matrix = widget.matrixgeber.isEmpty
+    final matrix = widget.artefakte.isEmpty
         ? null
         : KartoAbschnitt(
-            titel: 'Matrixgeber',
+            titel: 'Artefakte',
             child: Material(
               type: MaterialType.transparency,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  for (var i = 0; i < widget.matrixgeber.length; i++)
+                  for (var i = 0; i < widget.artefakte.length; i++)
                     ListTile(
                       key: ValueKey('gefecht-matrixgeber-$i'),
                       contentPadding: EdgeInsets.zero,
                       enabled: !gesperrt && widget.onMatrix != null,
                       leading: const Icon(Icons.auto_awesome),
                       title: Text(
-                        widget.matrixgeber[i].gegenstand.isEmpty
-                            ? 'Matrixgeber'
-                            : widget.matrixgeber[i].gegenstand,
+                        widget.artefakte[i].gegenstand.isEmpty
+                            ? 'Artefakt'
+                            : widget.artefakte[i].gegenstand,
                       ),
                       subtitle: Text(
-                        matrixgeberZusammenfassung(
-                          widget.matrixgeber[i].artefaktDaten!,
+                        artefaktZusammenfassung(
+                          widget.artefakte[i].artefaktDaten!,
                         ),
                       ),
-                      onTap: () => widget.onMatrix?.call(widget.matrixgeber[i]),
+                      onTap: () => widget.onMatrix?.call(widget.artefakte[i]),
                     ),
                 ],
               ),

@@ -1,6 +1,7 @@
 part of '../hero_magic_tab.dart';
 
-/// Zauber aus Artefakten (Matrixgebern) in der Zauberliste des Helden.
+/// Zauber aus Artefakten (Matrixgebern, Spruchspeichern) in der Zauberliste
+/// des Helden.
 ///
 /// Die Zauber gehören dem Gegenstand: Repräsentation, ZfW und ZfP* stammen
 /// von dessen Sprecher. Der Abschnitt ist nur zum Ansehen und Auslösen da;
@@ -25,8 +26,9 @@ class _MagicArtefaktZauberSection extends StatelessWidget {
         key: const ValueKey<String>('magic-artefakt-zauber'),
         title: 'Zauber aus Artefakten',
         subtitle:
-            'Matrixgeber im Inventar. Ein zauberkundiger Träger löst sie '
-            'aus, ohne den Zauber zu beherrschen.',
+            'Matrixgeber und Spruchspeicher im Inventar. Ein Matrixgeber '
+            'braucht einen zauberkundigen Träger; ein Spruchspeicher wirkt '
+            'sofort, ohne AsP. Der Zauber muss nicht beherrscht werden.',
         child: Material(
           type: MaterialType.transparency,
           child: Column(
@@ -44,9 +46,12 @@ class _MagicArtefaktZauberSection extends StatelessWidget {
     final zauber = e.zauber;
     final status = e.defekt
         ? 'beschädigt'
+        : e.verbraucht
+        ? 'Ladung verbraucht'
         : e.ausgeruestet
         ? 'ausgerüstet'
         : 'nicht ausgerüstet';
+    final ausloesbar = artefaktAusloesbar(e.daten) && !e.verbraucht;
     return ListTile(
       key: ValueKey<String>('magic-artefakt-zauber-$index'),
       dense: true,
@@ -59,7 +64,7 @@ class _MagicArtefaktZauberSection extends StatelessWidget {
           if (e.detail.isNotEmpty) e.detail,
         ].join(' · '),
       ),
-      trailing: e.defekt
+      trailing: !ausloesbar
           ? null
           : TextButton(
               key: ValueKey<String>('magic-artefakt-ausloesen-$index'),

@@ -164,7 +164,7 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
                         katalog: katalog,
                         zuletzt: s.zuletztGewirkt,
                         gesperrt: _busy,
-                        matrixgeber: gefechtsMatrixgeber(snapshot.hero),
+                        artefakte: gefechtsArtefakte(snapshot.hero),
                         onMatrix: (eintrag) => _run(
                           () => benutzeGefechtsMatrixgeber(
                             context: context,

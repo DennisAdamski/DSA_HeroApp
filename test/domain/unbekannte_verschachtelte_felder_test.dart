@@ -1032,7 +1032,11 @@ final _enumFelder = <_EnumFeld>[
       final d = ArtefaktDaten.fromJson(json);
       return d.copyWith(art: d.art, ersteller: 'Neu').toJson();
     },
-    // ArtefaktArt kennt bisher nur einen Wert; es gibt keinen „anderen“.
+    anders: (json) =>
+        ArtefaktDaten.fromJson(json)
+            .copyWith(art: ArtefaktArt.spruchspeicherAufladbar)
+            .toJson(),
+    andersJson: 'spruchspeicherAufladbar',
     ersatz: (json) => ArtefaktDaten.fromJson(json).art,
     erwarteterErsatz: ArtefaktArt.matrixgeber,
   ),

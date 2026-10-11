@@ -104,6 +104,94 @@ void main() {
       expect(json.containsKey('pAsP'), isFalse);
     });
 
+    test('ein Matrixgeber schreibt keine Spruchspeicher-Schlüssel', () {
+      final json = const ArtefaktDaten(
+        zauber: <ArtefaktZauber>[ArtefaktZauber(name: 'A')],
+      ).toJson();
+
+      for (final schluessel in [
+        'ladungen',
+        'aufladungen',
+        'gesamtAspErschaffung',
+      ]) {
+        expect(json.containsKey(schluessel), isFalse, reason: schluessel);
+      }
+    });
+
+    test('Ladungen, Aufladezähler und Gesamt-AsP überstehen den Rundlauf', () {
+      const daten = ArtefaktDaten(
+        art: ArtefaktArt.spruchspeicherAufladbar,
+        aufladungen: 2,
+        gesamtAspErschaffung: 75,
+        ladungen: <ArtefaktLadung>[
+          ArtefaktLadung(
+            id: 'l1',
+            verbraucht: true,
+            zauber: <ArtefaktZauber>[
+              ArtefaktZauber(name: 'Psychostabilis', kostenAsp: 9),
+              ArtefaktZauber(name: 'Illusion auflösen', kostenAsp: 6),
+            ],
+          ),
+          ArtefaktLadung(id: 'l2'),
+        ],
+      );
+
+      final neu = ArtefaktDaten.fromJson(
+        jsonDecode(jsonEncode(daten.toJson())) as Map<String, dynamic>,
+      );
+
+      expect(neu.toJson(), daten.toJson());
+      expect(neu.art, ArtefaktArt.spruchspeicherAufladbar);
+      expect(neu.aufladungen, 2);
+      expect(neu.gesamtAspErschaffung, 75);
+      expect(neu.ladungen.map((l) => l.id), ['l1', 'l2']);
+      expect(neu.ladungen.first.verbraucht, isTrue);
+      expect(neu.ladungen.first.zauber, hasLength(2));
+      expect(neu.alleZauber.map((z) => z.name), [
+        'Psychostabilis',
+        'Illusion auflösen',
+      ]);
+    });
+
+    test('alleZauber nennt erst die Matrix, dann die Ladungen', () {
+      const daten = ArtefaktDaten(
+        zauber: <ArtefaktZauber>[ArtefaktZauber(name: 'Matrix')],
+        ladungen: <ArtefaktLadung>[
+          ArtefaktLadung(
+            id: 'l',
+            zauber: <ArtefaktZauber>[ArtefaktZauber(name: 'Ladung')],
+          ),
+        ],
+      );
+
+      expect(daten.alleZauber.map((z) => z.name), ['Matrix', 'Ladung']);
+    });
+
+    test('ein unbekanntes Feld der Ladung bleibt erhalten', () {
+      final ladung = ArtefaktLadung.fromJson(<String, dynamic>{
+        'id': 'l',
+        'zukunft': 7,
+      });
+
+      expect(ladung.unbekannteFelder, {'zukunft': 7});
+      expect(ladung.copyWith(verbraucht: true).toJson()['zukunft'], 7);
+    });
+
+    test('eine Ladung ohne Angaben fällt tolerant zurück', () {
+      final daten = ArtefaktDaten.fromJson(<String, dynamic>{
+        'ladungen': <Object>[
+          <String, dynamic>{'zauber': 'kein Array'},
+          'kein Objekt',
+        ],
+        'aufladungen': 'x',
+      });
+
+      expect(daten.ladungen, hasLength(1));
+      expect(daten.ladungen.single.id, '');
+      expect(daten.ladungen.single.zauber, isEmpty);
+      expect(daten.aufladungen, 0);
+    });
+
     test('permanente AsP je Zauber überstehen den Rundlauf', () {
       const zauber = ArtefaktZauber(name: 'Gardianum', pAsP: 3);
 

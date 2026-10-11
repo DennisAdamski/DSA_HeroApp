@@ -115,7 +115,7 @@ int matrixGrundkosten(ArtefaktDaten daten) =>
 /// Summe der je Zauber erfassten permanenten AsP; `null`, wenn kein Zauber
 /// einen Wert trägt.
 int? artefaktPAspSumme(ArtefaktDaten daten) {
-  final werte = daten.zauber.map((z) => z.pAsP).whereType<int>();
+  final werte = daten.alleZauber.map((z) => z.pAsP).whereType<int>();
   return werte.isEmpty ? null : werte.fold<int>(0, (summe, w) => summe + w);
 }
 

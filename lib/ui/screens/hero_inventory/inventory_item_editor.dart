@@ -6,12 +6,14 @@ import 'package:dsa_heldenverwaltung/ui/screens/shared/planung_bearbeiten_guard.
 import 'package:dsa_heldenverwaltung/domain/hero_companion.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/artefakt_spruchspeicher_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/inventar_menge_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/inventar_stapel_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/kampfgegenstand_ablegen_rules.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/artefakt_anwenden.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/artefakt_editor_abschnitt.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/inventory_eintrag_aktionen.dart';
-import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/matrix_ausloesen_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/spruchspeicher_aufladen_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/inventory_modifier_editor.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/inventory_stapel_teilen.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/list_tile_material.dart';
@@ -164,12 +166,26 @@ class _InventoryItemEditorState extends ConsumerState<InventoryItemEditor> {
     final heroId = PlanungsBearbeitungsBereich.heldVon(context);
     final artefakt = widget.entry.artefaktDaten;
     // Ausgelöst wird der gespeicherte Eintrag, nicht der Entwurf.
-    final ausloesbar = heroId != null && artefakt != null && !artefakt.defekt;
+    final ausloesbar =
+        heroId != null && artefakt != null && artefaktAusloesbar(artefakt);
+    final aufladbar =
+        heroId != null &&
+        artefakt != null &&
+        !artefakt.defekt &&
+        spruchspeicherAufladbarLeer(artefakt);
     return InventoryEintragAktionen(
       entry: widget.entry,
       gesperrt: _isSaving,
       onAusloesen: ausloesbar
-          ? () => zeigeMatrixAusloesen(
+          ? () => zeigeArtefaktAnwenden(
+              context: context,
+              ref: ref,
+              heroId: heroId,
+              eintrag: widget.entry,
+            )
+          : null,
+      onAufladen: aufladbar
+          ? () => zeigeSpruchspeicherAufladen(
               context: context,
               ref: ref,
               heroId: heroId,
@@ -404,7 +420,7 @@ class _InventoryItemEditorState extends ConsumerState<InventoryItemEditor> {
                 _isLinked
                     ? 'Wird im Kampf-Tab festgelegt.'
                     : _draft.artefaktDaten != null
-                    ? 'Nur ausgerüstete Matrixgeber stehen im Kampf bereit.'
+                    ? 'Nur ausgerüstete Artefakte stehen im Kampf bereit.'
                     : 'Modifikatoren wirken nur, wenn das Item ausgerüstet '
                           'ist.',
               ),

@@ -17,6 +17,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_spell_text_overrides.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/magic_special_ability.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/artefakt_spruchspeicher_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/artefakt_zauber_liste_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/cost_text_parsing.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/editor_entwurf_rules.dart';
@@ -34,7 +35,7 @@ import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/config/ui_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui/debug/ui_rebuild_observer.dart';
-import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/matrix_ausloesen_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/artefakt_anwenden.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/active_spell_effects_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/dice_log_persistence.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/editor_entwurf_speichern.dart';
@@ -525,7 +526,7 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
                           ),
                           _MagicArtefaktZauberSection(
                             eintraege: artefaktZauberListe(hero),
-                            onAusloesen: (eintrag) => zeigeMatrixAusloesen(
+                            onAusloesen: (eintrag) => zeigeArtefaktAnwenden(
                               context: context,
                               ref: ref,
                               heroId: widget.heroId,
