@@ -480,7 +480,8 @@ mit älterer App per Sync die Felder einer neueren (Befunde ARCH-07-B5/B6):
   `unbekannteFelder` und ein eigenes `jsonSchluessel`:
   - Ausrüstung: `CombatConfig`, `MainWeaponSlot`, `RangedWeaponProfile`,
     `RangedProjectile`, `RangedDistanceBand`, `ArmorConfig`, `ArmorPiece`,
-    `OffhandEquipmentEntry`, `HeroInventoryEntry`, `InventoryItemModifier`;
+    `OffhandEquipmentEntry`, `HeroInventoryEntry`, `InventoryItemModifier`,
+    `ArtefaktDaten`, `ArtefaktZauber`;
   - Kampfeinstellungen: `OffhandAssignment`, `CombatSpecialRules`,
     `CombatManualMods`, `WaffenmeisterConfig`, `WaffenmeisterBonus`;
   - Talente und Magie: `HeroTalentEntry`, `HeroTalentModifier` (auch in
@@ -546,8 +547,9 @@ mit älterer App per Sync die Felder einer neueren (Befunde ARCH-07-B5/B6):
   den Rohwert hält das Modell in `unbekannteEnumWerte` (JSON-Schlüssel →
   Rohwert, getrennt von `unbekannteFelder`), und `toJson` schreibt ihn
   anstelle des Ersatzes zurück. Fehlende oder leere Angaben gelten wie
-  bisher als fehlend. Betroffen sind 22 Felder: `HeroInventoryEntry`
+  bisher als fehlend. Betroffen sind 25 Felder: `HeroInventoryEntry`
   (`itemType`, `source`, `traegerTyp`), `InventoryItemModifier` (`kind`),
+  `ArtefaktDaten` (`art`, `stabilitaet`, `regelfassung`),
   `MainWeaponSlot` (`combatType`), `OffhandEquipmentEntry` (`type`,
   `shieldSize`), `WaffenmeisterBonus` (`type`), `HeroRitualCategory`
   (`knowledgeMode`), `HeroRitualFieldDef` (`type`), `HeroCompanion` (`typ`),
@@ -1089,6 +1091,7 @@ Inventarfelder fuer Quelle, Gewicht, Wert, Modifier und magisch/geweiht.
 | `instanzId` | Stabile Instanz-ID des Stapels/Exemplars (ARCH-03); nur im Helden eindeutig, bei einer Kopie unverändert; vergeben erst in `saveHero`, nur geschrieben, wenn belegt |
 | `menge` | Strukturierte Stückzahl (ARCH-03); `null` = offen; nur geschrieben, wenn belegt |
 | `abgelegt` | `AbgelegterKampfgegenstand` (`lib/domain/abgelegter_kampfgegenstand.dart`): gemerkte Kampfwerte eines im Kampfbereich nur abgelegten Exemplars — genau einer von `waffe`, `geschoss`, `ruestungsteil`, `nebenhandteil`; nur geschrieben, wenn belegt |
+| `artefaktDaten` | `ArtefaktDaten` (`lib/domain/artefakt_daten.dart`): Matrixgeber-Artefakt — Stabilität, Regelfassung (`alchimie2012` / `staebeRinge2011`), Ersteller, Auslöser samt Aktionen, permanente AsP, Beschädigung und die eingesprochenen Zauber (`ArtefaktZauber`: Katalog-ID, Repräsentation des Sprechers, ZfW, ZfP*, AsP-Kosten, Reichweite, Wirkungsdauer, Zielvorgabe, Spontane Modifikation). Alle Angaben gehören dem Gegenstand, nie dem Träger; nur geschrieben, wenn belegt. Regeln: `rules/derived/artefakt_matrix_rules.dart`, Auslösung: `ablaeufe/matrix_ausloesen.dart` |
 
 **Kampf-/Inventarverweise (ARCH-03, Teilfix B2/B3).** Waffen, Geschosse,
 Ruestungsstuecke und Nebenhand-Teile speichern eine Slot-ID.
@@ -2170,7 +2173,7 @@ zusammengelegt werden müssten.
 | `sonderfertigkeit` | `name`, `stufe?` | Andere SF, optional ab Kettenstufe |
 | `zauber` | `name`, `min` | Mindest-ZfW |
 | `talent` | `name`, `min` | Mindest-TaW |
-| `ritualkenntnis` | `name?`, `min?` | Ritualkenntnis, optional mit RkW |
+| `ritualkenntnis` | `name`, `min?` | Benannte Ritualkenntnis, optional mit Mindest-RkW; ohne Namen findet der Prüfer keinen Wert |
 | `tradition` | `namen[]` | Eine von mehreren Traditionen |
 | `merkmalskenntnis` | `name?` | Merkmal; ohne Namen genügt irgendeines |
 | `vorteil` | `name` | Erforderlicher Vorteil |

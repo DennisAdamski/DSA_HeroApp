@@ -106,6 +106,10 @@
       {
         "art": "hinweis",
         "text": "Jede weitere Meisterschaft erfordert +1 auf die Eigenschaft"
+      },
+      {
+        "art": "hinweis",
+        "text": "Die Merkmalskenntnis muss dem gew?hlten Merkmal entsprechen; Zuordnung manuell pr?fen."
       }
     ]
   },
@@ -411,6 +415,10 @@
       {
         "art": "hinweis",
         "text": "Zum Element passende Eigenschaft auf 18: Eis MU / Erz KK / Feuer CH / Humus KO / Luft GE / Wasser FF"
+      },
+      {
+        "art": "hinweis",
+        "text": "Die Merkmalskenntnis muss zum gew?hlten Element geh?ren; Zuordnung und elementabh?ngige Eigenschaft auf 18 manuell pr?fen."
       }
     ]
   },
@@ -421,7 +429,7 @@
     "typ": "sonderfertigkeit",
     "seite": "Epische Stufen S. 38",
     "beschreibung": "Höchste Magie: Zauber des Merkmals als freie Aktion zu 2/3 Kosten; keine spontane Modifikation außer Schutzbrecher.",
-    "voraussetzungen": "KL 24 und IN 23 (oder IN 26 und KL 20 wenn IN Leiteigenschaft; Hexen: CH statt KL). Magische SF im Wert von 2500 AP; alle Merkmalskenntnisse und alle Zauber des Merkmals in eigener Repräsentation auf ZfW 24 (andere Rep. auf ZfW 12)",
+    "voraussetzungen": "KL 24 und IN 23; alternativ IN 26 und KL 20, nur wenn IN die Leiteigenschaft ist. Nur eigeborene Hexen d?rfen CH statt KL verwenden. Magische SF im Wert von 2.500 AP; alle f?r Zauber des gew?hlten Merkmals m?glichen Merkmalskenntnisse; alle Zauber dieses Merkmals in eigener Repr?sentation auf ZfW 24, nur in anderen Repr?sentationen verf?gbare Zauber auf ZfW 12.",
     "kosten": "1000 AP",
     "erklarung_lang": "Die höchste Stufe der Magie, die Freizauberei, kann selbst von Verhüllten Meistern nur in einem Merkmal erreicht werden. Alle Zauber dieser Kategorie können von nun an in einer freien Aktion zu 2/3 der Kosten genutzt werden. Die Freizauberei kann allerdings nicht mehr (spontan) modifiziert werden, außer durch den Einsatz der SF Schutzbrecher. Eigeborene Hexen können CH statt KL verwenden, um die Eigenschafts-Voraussetzungen zu erfüllen.",
     "quelle": "Epische Stufen S. 38",
@@ -466,13 +474,71 @@
             "bedingungen": [
               {
                 "art": "eigenschaft",
+                "code": "KL",
+                "min": 20
+              },
+              {
+                "art": "eigenschaft",
                 "code": "IN",
                 "min": 26
               },
               {
+                "art": "hinweis",
+                "text": "Diese Alternative gilt nur bei IN als Leiteigenschaft; die Zuordnung manuell pr?fen."
+              }
+            ]
+          },
+          {
+            "art": "und",
+            "bedingungen": [
+              {
                 "art": "eigenschaft",
-                "code": "KL",
+                "code": "CH",
+                "min": 24
+              },
+              {
+                "art": "eigenschaft",
+                "code": "IN",
+                "min": 23
+              },
+              {
+                "art": "tradition",
+                "namen": [
+                  "Hexe"
+                ]
+              },
+              {
+                "art": "vorteil",
+                "name": "Eigeboren"
+              }
+            ]
+          },
+          {
+            "art": "und",
+            "bedingungen": [
+              {
+                "art": "eigenschaft",
+                "code": "CH",
                 "min": 20
+              },
+              {
+                "art": "eigenschaft",
+                "code": "IN",
+                "min": 26
+              },
+              {
+                "art": "tradition",
+                "namen": [
+                  "Hexe"
+                ]
+              },
+              {
+                "art": "vorteil",
+                "name": "Eigeboren"
+              },
+              {
+                "art": "hinweis",
+                "text": "Diese Alternative gilt nur bei IN als Leiteigenschaft; die Zuordnung manuell pr?fen."
               }
             ]
           }
@@ -480,15 +546,15 @@
       },
       {
         "art": "hinweis",
-        "text": "Hexen setzen CH statt KL an"
+        "text": "Nur eigeborene Hexen d?rfen CH statt KL verwenden. IN 26 mit KL bzw. CH 20 gilt nur bei IN als Leiteigenschaft; der vorhandene Pr?fer kontrolliert diese Zuordnung nicht."
       },
       {
         "art": "hinweis",
-        "text": "Magische Sonderfertigkeiten im Wert von 2.500 AP"
+        "text": "Magische Sonderfertigkeiten im Wert von 2.500 AP; Summe manuell pr?fen."
       },
       {
         "art": "hinweis",
-        "text": "Alle Merkmalskenntnisse; alle Zauber des Merkmals in eigener Repräsentation auf ZfW 24 (fremde Repräsentation ZfW 12)"
+        "text": "Alle f?r Zauber des gew?hlten Merkmals m?glichen Merkmalskenntnisse; alle Zauber dieses Merkmals in eigener Repr?sentation auf ZfW 24, nur in anderen Repr?sentationen verf?gbare Zauber auf ZfW 12. Merkmal, Repr?sentationen und Gesamtheit der Zauber manuell pr?fen."
       }
     ]
   },
@@ -535,8 +601,8 @@
             "min": 18
           },
           {
-            "art": "ritualkenntnis",
-            "min": 18
+            "art": "hinweis",
+            "text": "Alternativ: eine f?r die gew?hlte Rune passende Ritualkenntnis auf RkW 18; Zuordnung und Wert manuell pr?fen."
           }
         ]
       },
@@ -620,14 +686,36 @@
         "art": "oder",
         "bedingungen": [
           {
-            "art": "eigenschaft",
-            "code": "KL",
-            "min": 18
+            "art": "und",
+            "bedingungen": [
+              {
+                "art": "rasse_verboten",
+                "namen": [
+                  "Elf"
+                ]
+              },
+              {
+                "art": "eigenschaft",
+                "code": "KL",
+                "min": 18
+              }
+            ]
           },
           {
-            "art": "eigenschaft",
-            "code": "IN",
-            "min": 18
+            "art": "und",
+            "bedingungen": [
+              {
+                "art": "rasse",
+                "namen": [
+                  "Elf"
+                ]
+              },
+              {
+                "art": "eigenschaft",
+                "code": "IN",
+                "min": 18
+              }
+            ]
           }
         ]
       },
@@ -718,12 +806,12 @@
     "name": "Merkmalsgroßmeister",
     "gruppe": "magisch",
     "typ": "sonderfertigkeit",
-    "seite": "Epische Stufen S. 41–48",
+    "seite": "Epische Stufen S. 41?49",
     "beschreibung": "Großmeisterschaft in einem Merkmal; Wirkung variiert stark pro Merkmal (Antimagie, Beschwörung, Dämonisch, Eigenschaften, Einfluss, Elementar, Form, Geisterwesen, Heilung, Hellsicht, Herbeirufung, Herrschaft, Illusion, Kraft, Limbus, Metamagie, Objekt, Schaden, Telekinese, Temporal, Umwelt, Verständigung).",
     "voraussetzungen": "Leiteigenschaft 17, KL oder IN 15 (das jeweils andere), entsprechende Merkmalskenntnis; ZfP aller Zauber des Merkmals auf 18 (10 wenn nicht in eigener Repräsentation) oder insgesamt 100 ZfP. Gilt nur für Zauber ab ZfW 18. Weitere Großmeisterschaften +3 auf Leiteigenschaft, +2 auf andere",
     "kosten": "600 / 800 / 1000 AP (Klassifikation I / II / III)",
     "erklarung_lang": "Pro Merkmal individuelle Großmeisterschaft (Auswahl): Antimagie – abgewehrter Zauber gilt als misslungen, Wiederholung +3 erschwert; spezifische Antimagie halbe Zauberdauer und kann den gebannten Spruch MU/2 KR halten. Beschwörung – Untote, Golems, Dämonen: umfangreiche Dienst-Boni (Alptraum-Realitätsdichte +50 %, Bann des Elements +18/+12, Bewegung kostenlos, Kampf +2 AT/PA/TP/INI, Wache AsP-Kosten gedrittelt etc.). Dämonisch – LO aller Dämonen +1/3, Beschwörung/Beherrschung -25 %; domänenspezifische Boni (Blakharaz Besitz bei SP>MR, Belhalhar Schadens-Heilung, Lolgramoth +1 Aktion, Thargunitoth profane-Resistenz, Amazeroth +50 % AsP etc.). Eigenschaften – mehrere Ziele, -25 % AsP, Verlängerung ohne Initialkosten, Aufrechterhaltung halbe Erschwernis. Einfluss – ZfP +CH/3; Ziel-MR -CH/3. Elementar gesamt – Resistenz gegen alle Elemente, Elementar-Boni je Element. Elementar einzeln – Sekundäreffekte erweitert. Form – Zaubern in Verwandlung; nur einzelne Aspekte übernehmbar; halbe/gedrittelte/geviertelte AsP, +7 Erschwernis. Geisterwesen – Medium-ähnlich; Zauberkunst von Totengeistern nutzbar. Heilung – Heilzauber wirken präventiv. Hellsicht – Angriffe auswürfeln bevor Reaktion; magischer Gefahreninstinkt TaW 10. Herbeirufung – Elementare/Golemiden-Boni. Herrschaft – Zauber per vergleichender Gesellschafts-Probe gegen Menschenkenntnis; Ziel-MR -TaP. Illusion – max. Realitätsdichte, selektive Einzelpersonen. Kraft – doppelte AsP für +50 % ZfW Wirkung (Kraft-Zauber: 3×/doppelt); Astralspeicher beschädigt. Limbus – Ausweichen in den Limbus; Objekte/Personen (3 AsP/25 Stein) mitnehmen. Metamagie – alle spontanen Modifikationen, eine ohne Erschwernis, ZfW/ZfP-Tausch. Objekt – temporäre Bindung an Objekt (Fernkampfwaffe + Zauber). Schaden – doppelte Würfel, halbe auswählen. Telekinese – Projektile binnen 3 Schritt abwehren; eigene Projektile +1W6/+50 % Reichweite/+4 Abwehr (1 AsP). Temporal – unterdrückte Zauber halten; Nahkampf-Stapelung bis 7/12 Treffer. Umwelt – Kombination zweier Wirkprinzipien. Verständigung – geistige Verbindung zu Verzauberten, Zauber übertragen/tauschen, Sinne teilen.",
-    "quelle": "Epische Stufen S. 41–48",
+    "quelle": "Epische Stufen S. 41?49",
     "hausregel": true,
     "nurEpisch": true,
     "ruleMeta": {
@@ -732,7 +820,7 @@
       "citations": [
         {
           "source": "Epische Stufen.pdf",
-          "locator": "S. 41–48",
+          "locator": "S. 41?49",
           "excerpt": "Merkmalsgroßmeister"
         }
       ],
@@ -771,6 +859,10 @@
       {
         "art": "hinweis",
         "text": "Weitere Großmeisterschaften: +3 auf die Leiteigenschaft, +2 auf die andere"
+      },
+      {
+        "art": "hinweis",
+        "text": "Die zus?tzliche Eigenschaft auf 15 ist die jeweils andere Eigenschaft aus KL und IN, nicht nochmals die Leiteigenschaft; Zuordnung und passende Merkmalskenntnis manuell pr?fen."
       }
     ]
   },
@@ -781,7 +873,7 @@
     "typ": "sonderfertigkeit",
     "seite": "Epische Stufen S. 49",
     "beschreibung": "Achaz-Ritual unter Kristallomant und Schamane; erweckt drachisches Erbe, Feuerodem als Basisfähigkeit.",
-    "voraussetzungen": "IN 15, KO 15 (je +1 für jeden weiteren Kauf), Rasse Achaz",
+    "voraussetzungen": "IN 15, KO 15, Rasse Achaz; jeder weitere Kauf erfordert einen IN-Punkt mehr (KO bleibt 15)",
     "kosten": "400 AP (erste Stufe), 150 AP je weitere Verbesserung",
     "erklarung_lang": "Lebensgefährliches Ritual: Der Achaz kann Feuer speien, zunächst 1W6 TP, 3 Schritt Reichweite, alle 5 KR. Mehrfach erlernbar; jeder Kauf verbessert eines: Schaden (1W6+3 → 1W6+6 → 2W6+6 → 3W6+6); Ladezeit (-1 KR je Verbesserung, min. 2 KR); Reichweite (+1 Kategorie: 3/7/21 Schritt).",
     "quelle": "Epische Stufen S. 49",
@@ -821,7 +913,7 @@
       },
       {
         "art": "hinweis",
-        "text": "Je +1 auf beide Eigenschaften für jeden weiteren Kauf"
+        "text": "Jeder weitere Kauf erfordert +1 IN; KO bleibt 15. Die steigende IN-Schwelle manuell pr?fen."
       }
     ]
   },
@@ -1227,17 +1319,32 @@
     },
     "voraussetzungen_struktur": [
       {
-        "art": "talent",
-        "name": "Singen",
-        "min": 22
+        "art": "oder",
+        "bedingungen": [
+          {
+            "art": "talent",
+            "name": "Singen",
+            "min": 22
+          },
+          {
+            "art": "und",
+            "bedingungen": [
+              {
+                "art": "vorteil",
+                "name": "Wohlklang"
+              },
+              {
+                "art": "talent",
+                "name": "Singen",
+                "min": 17
+              }
+            ]
+          }
+        ]
       },
       {
         "art": "vorteil",
         "name": "Zweistimmiger Gesang"
-      },
-      {
-        "art": "hinweis",
-        "text": "TaW 17 genügt bei Wohlklang"
       }
     ]
   },
@@ -1543,8 +1650,53 @@
         ]
       },
       {
+        "art": "oder",
+        "bedingungen": [
+          {
+            "art": "oder",
+            "bedingungen": [
+              {
+                "art": "ritualkenntnis",
+                "name": "Druide"
+              },
+              {
+                "art": "ritualkenntnis",
+                "name": "Geode"
+              },
+              {
+                "art": "ritualkenntnis",
+                "name": "Hexe"
+              },
+              {
+                "art": "ritualkenntnis",
+                "name": "Kristallomantie"
+              },
+              {
+                "art": "ritualkenntnis",
+                "name": "Gildenmagie"
+              }
+            ]
+          },
+          {
+            "art": "und",
+            "bedingungen": [
+              {
+                "art": "tradition",
+                "namen": [
+                  "Schamane"
+                ]
+              },
+              {
+                "art": "hinweis",
+                "text": "Die passende schamanische Ritualkenntnis ist erforderlich; manuell pr?fen."
+              }
+            ]
+          }
+        ]
+      },
+      {
         "art": "hinweis",
-        "text": "Geoden nur auf nicht-metallische Instrumente"
+        "text": "Druiden und Geoden d?rfen das Bannschwert-Ritual nur auf nicht-metallische Instrumente anwenden."
       }
     ]
   },
@@ -1775,12 +1927,25 @@
         "art": "tradition",
         "namen": [
           "Druide",
-          "Geode"
+          "Geode (Herr der Erde)"
+        ]
+      },
+      {
+        "art": "oder",
+        "bedingungen": [
+          {
+            "art": "ritualkenntnis",
+            "name": "Druide"
+          },
+          {
+            "art": "ritualkenntnis",
+            "name": "Geode"
+          }
         ]
       },
       {
         "art": "hinweis",
-        "text": "Werte siehe einzelne Rituale; teilweise aufeinander aufbauend"
+        "text": "RkW je Ritual: Weihe 3; Gesp?r und Lebenskraft 5; Licht, Bann, Leib, Weg, Ernte und Opferdolch 7; Schutz, Schneide und Weisung 11. Bann, Leib und Opferdolch nur f?r Druiden. Zus?tzliche Merkmale, Talente, Eigenschaften und Vorrituale laut Erkl?rung manuell pr?fen."
       }
     ]
   },
@@ -1836,8 +2001,36 @@
         ]
       },
       {
+        "art": "oder",
+        "bedingungen": [
+          {
+            "art": "ritualkenntnis",
+            "name": "Druide"
+          },
+          {
+            "art": "und",
+            "bedingungen": [
+              {
+                "art": "tradition",
+                "namen": [
+                  "Schamane"
+                ]
+              },
+              {
+                "art": "ritualkenntnis",
+                "name": "Geister Binden"
+              },
+              {
+                "art": "hinweis",
+                "text": "Nur Ferkina-/Trollzacker-Schamanen; Kultur manuell pr?fen."
+              }
+            ]
+          }
+        ]
+      },
+      {
         "art": "hinweis",
-        "text": "Schamanen der Ferkina und Trollzacker über Geister Binden"
+        "text": "Schamanischer Zugang nur f?r Ferkina-/Trollzacker-Schamanen ?ber Geister Binden. RkW 7 f?r Wachs, Miniatur, Amulett und Wurzel des Blutes; 11 f?r Kristall der Herrschaft. Amulett nur Druiden, Wurzel des Blutes nur im Umfeld der Trollzacker; weitere Voraussetzungen manuell pr?fen."
       }
     ]
   },
@@ -2072,7 +2265,65 @@
         "min": 12
       },
       {
-        "art": "merkmalskenntnis"
+        "art": "oder",
+        "bedingungen": [
+          {
+            "art": "merkmalskenntnis",
+            "name": "Elementar (allgemein)"
+          },
+          {
+            "art": "merkmalskenntnis",
+            "name": "Elementar (Eis)"
+          },
+          {
+            "art": "merkmalskenntnis",
+            "name": "Elementar (Erz)"
+          },
+          {
+            "art": "merkmalskenntnis",
+            "name": "Elementar (Feuer)"
+          },
+          {
+            "art": "merkmalskenntnis",
+            "name": "Elementar (Humus)"
+          },
+          {
+            "art": "merkmalskenntnis",
+            "name": "Elementar (Luft)"
+          },
+          {
+            "art": "merkmalskenntnis",
+            "name": "Elementar (Wasser)"
+          },
+          {
+            "art": "vorteil",
+            "name": "Begabung f?r Elementar (allgemein)"
+          },
+          {
+            "art": "vorteil",
+            "name": "Begabung f?r Elementar (Eis)"
+          },
+          {
+            "art": "vorteil",
+            "name": "Begabung f?r Elementar (Erz)"
+          },
+          {
+            "art": "vorteil",
+            "name": "Begabung f?r Elementar (Feuer)"
+          },
+          {
+            "art": "vorteil",
+            "name": "Begabung f?r Elementar (Humus)"
+          },
+          {
+            "art": "vorteil",
+            "name": "Begabung f?r Elementar (Luft)"
+          },
+          {
+            "art": "vorteil",
+            "name": "Begabung f?r Elementar (Wasser)"
+          }
+        ]
       },
       {
         "art": "nachteil_verboten",
@@ -2105,6 +2356,10 @@
       {
         "art": "hinweis",
         "text": "Mindestens sechs Monate Kontemplation an einem geeigneten Ort; keine Merkmalskenntnis oder Begabung in einem dämonischen Merkmal, kein Paktierer"
+      },
+      {
+        "art": "hinweis",
+        "text": "Keine Merkmalskenntnis oder Begabung in einem d?monischen Merkmal und kein Paktierer; diese Ausschl?sse manuell pr?fen. Affinit?t zu D?monen ist ein verbotener Vorteil, wird vom vorhandenen Schema jedoch nicht automatisch als Vorteilsverbot gepr?ft."
       }
     ]
   },
@@ -2218,8 +2473,29 @@
         ]
       },
       {
-        "art": "ritualkenntnis",
-        "min": 11
+        "art": "oder",
+        "bedingungen": [
+          {
+            "art": "ritualkenntnis",
+            "name": "Druide",
+            "min": 11
+          },
+          {
+            "art": "ritualkenntnis",
+            "name": "Gildenmagie",
+            "min": 11
+          },
+          {
+            "art": "ritualkenntnis",
+            "name": "Hexe",
+            "min": 11
+          },
+          {
+            "art": "ritualkenntnis",
+            "name": "Kristallomantie",
+            "min": 11
+          }
+        ]
       },
       {
         "art": "sonderfertigkeit",
@@ -2390,6 +2666,10 @@
         ]
       },
       {
+        "art": "ritualkenntnis",
+        "name": "Hexe"
+      },
+      {
         "art": "hinweis",
         "text": "Profession Hexe und Teilnahme an Hexennächten"
       }
@@ -2514,8 +2794,29 @@
         ]
       },
       {
-        "art": "ritualkenntnis",
-        "min": 11
+        "art": "oder",
+        "bedingungen": [
+          {
+            "art": "ritualkenntnis",
+            "name": "Druide",
+            "min": 11
+          },
+          {
+            "art": "ritualkenntnis",
+            "name": "Gildenmagie",
+            "min": 11
+          },
+          {
+            "art": "ritualkenntnis",
+            "name": "Hexe",
+            "min": 11
+          },
+          {
+            "art": "ritualkenntnis",
+            "name": "Kristallomantie",
+            "min": 11
+          }
+        ]
       },
       {
         "art": "hinweis",
@@ -2648,7 +2949,7 @@
       },
       {
         "art": "hinweis",
-        "text": "Weitere Voraussetzungen je nach Keulenritual"
+        "text": "Passende schamanische Ritualkenntnis erforderlich. Opferkeule: Blutmagie; Gesp?r: Geister Binden 5; Kraft, Hilfe und N?he zur Natur: Geister Binden 7; Zauber: 9; Bann und Geist: 11; Apport: Geister Binden und Geister Rufen je 11. Voraussetzungen der gew?hlten Variante manuell pr?fen."
       }
     ]
   },
@@ -2775,7 +3076,7 @@
     "kategorie": "Traditionsrituale",
     "seite": "Wege der Helden S. 288",
     "beschreibung": "Rituale, mit denen Kristallomanten der Achaz Edelsteinen besondere Wirkungen verleihen; nahezu unerlässlich für einwandfreies Zaubern in kristallomantischer Repräsentation.",
-    "voraussetzungen": "RK Kristallomantie; zusätzliche Voraussetzungen je nach Ritual",
+    "voraussetzungen": "RK Kristallomantie; Kristallkraft B?ndeln auch f?r Achaz-Schamanen mit entsprechender RK; zus?tzliche Voraussetzungen je nach Ritual",
     "verbreitung": "je nach Ritual (s. erklarung_lang)",
     "kosten": "je nach Ritual (s. erklarung_lang)",
     "erklarung_lang": "Mit diesen Ritualen können die Kristallomanten der Achaz Edelsteinen besondere Wirkungen geben; sie sind quasi unerlässlich für ein einwandfreies Zaubern in kristallomantischer Repräsentation: Kristallbindung (Kosten 100 AP; Verbreitung 6), Kristallformung (250 AP; V5; Voraussetzungen: FF 14, ZfW Hartes Schmelze 10, TaW Gesteinskunde 10, TaW Steinschneider 8), Thesiskristall (250 AP; V4; SF Kristallformung, Magiekunde 10, Gesteinskunde (Edelsteine) 10), Madakristall (300 AP; V2; RK 11, SF Kristallbindung, SF Matrixverständnis, Kristallkugel mit H'Szints Auge), Matrixkristall (200 AP; V2; RK 14, SF Thesiskristall), Kristallkraft Bündeln (150 AP; V4; auch RK Achaz-Schamane, MU 13).",
@@ -2786,12 +3087,37 @@
       {
         "art": "tradition",
         "namen": [
-          "Kristallomant"
+          "Kristallomant",
+          "Schamane"
+        ]
+      },
+      {
+        "art": "oder",
+        "bedingungen": [
+          {
+            "art": "ritualkenntnis",
+            "name": "Kristallomantie"
+          },
+          {
+            "art": "und",
+            "bedingungen": [
+              {
+                "art": "tradition",
+                "namen": [
+                  "Schamane"
+                ]
+              },
+              {
+                "art": "hinweis",
+                "text": "Die schamanische Alternative gilt nur f?r Kristallkraft B?ndeln bei Achaz-Schamanen mit passender Ritualkenntnis; MU 13 erforderlich. Kultur, Ritualkenntnis und Ritualvariante manuell pr?fen."
+              }
+            ]
+          }
         ]
       },
       {
         "art": "hinweis",
-        "text": "Zusätzliche Voraussetzungen je nach Ritual"
+        "text": "Kristallformung: FF 14, Hartes Schmelze 10, Gesteinskunde 10, Steinschneider 8. Thesiskristall: Kristallformung, Magiekunde 10 und Gesteinskunde (Edelsteine) 10. Madakristall: RkW 11, Kristallbindung, Matrixverst?ndnis und Kugel mit H?Szints Auge. Matrixkristall: RkW 14 und Thesiskristall. Kristallkraft B?ndeln auch f?r Achaz-Schamanen; MU 13. Variante und schamanischen Sonderzugang manuell pr?fen."
       }
     ]
   },
@@ -2947,7 +3273,7 @@
       },
       {
         "art": "hinweis",
-        "text": "Voraussetzungen je nach Kugelzauber"
+        "text": "Schutz gegen Untote nur Gildenmagie; Kugel des Illusionisten nur Scharlatane; Orbitarium nur Gildenmagie oder Kristallomantie; Fernbild, H?Szints Auge und Farben des Geistes nur Kristallomantie. Bindung, Brennglas und Prisma, Warnendes Leuchten, Kugel des Hellsehers, Bilderspiel, Bildergalerie und Wachendes Auge f?r alle hier genannten Traditionen. Gew?hlte Variante manuell pr?fen."
       }
     ]
   },
@@ -3353,7 +3679,7 @@
       },
       {
         "art": "hinweis",
-        "text": "Voraussetzungen je nach Gabe"
+        "text": "Hauch des Od?n: MU 12, IN 12, RK Durro-D?n 3. Haut: Hauch und RkW 7. Blut: Haut und RkW 10. Ruf: Blut und RkW 12. Seele: Ruf und RkW 15. Stufe und Vorritual der gew?hlten Gabe manuell pr?fen."
       }
     ]
   },
@@ -3374,14 +3700,12 @@
     "nurEpisch": false,
     "voraussetzungen_struktur": [
       {
-        "art": "tradition",
-        "namen": [
-          "Gildenmagier"
-        ]
+        "art": "hinweis",
+        "text": "Wird ausschließlich an der Runajasko zu Olport und nur kompletten thorwalschen Schiffsgemeinschaften gelehrt"
       },
       {
         "art": "hinweis",
-        "text": "Wird ausschließlich an der Runajasko zu Olport und nur kompletten thorwalschen Schiffsgemeinschaften gelehrt"
+        "text": "Auch beteiligte Nichtzauberer k?nnen Ottagaldr erlernen (50 AP); keine Voraussetzung einer gildenmagischen Repr?sentation. Gemeinschaft und Lehrzugang manuell pr?fen."
       }
     ]
   },
@@ -3490,7 +3814,7 @@
       },
       {
         "art": "hinweis",
-        "text": "Zweite Repräsentation: KL und IN je 15 sowie 50 ZfP in der fremden Repräsentation; dritte Repräsentation: KL 18"
+        "text": "Zweite Repr?sentation: KL und IN je 15 sowie insgesamt 50 ZfP in der fremden Repr?sentation; dritte Repr?sentation: KL 18 und erneut 50 ZfP in der fremden Repr?sentation. Nur Vollzauberer k?nnen eine dritte Repr?sentation erlernen; Lehrmeister und mindestens ein Jahr intensives Studium erforderlich. Erwerbspr?fung im eigenen Magie-Dialog separat."
       }
     ],
     "nur_information": true
@@ -3616,8 +3940,33 @@
         ]
       },
       {
+        "art": "oder",
+        "bedingungen": [
+          {
+            "art": "ritualkenntnis",
+            "name": "Alchimie"
+          },
+          {
+            "art": "ritualkenntnis",
+            "name": "Alchimist"
+          },
+          {
+            "art": "ritualkenntnis",
+            "name": "Gildenmagie"
+          },
+          {
+            "art": "ritualkenntnis",
+            "name": "Hexe"
+          },
+          {
+            "art": "ritualkenntnis",
+            "name": "Kristallomantie"
+          }
+        ]
+      },
+      {
         "art": "hinweis",
-        "text": "Weitere Kenntnisse je nach Ritual"
+        "text": "Weihe der Schale: Alchimie 7. Chymische Hochzeit: Alchimie 10 und Allegorische Analyse. Mandricons Bindung: Magiekunde 7. Transmutation der Elemente: Alchimie 10 und Mandricons Bindung. Voraussetzungen der gew?hlten Variante manuell pr?fen."
       }
     ]
   },
@@ -3645,7 +3994,7 @@
       },
       {
         "art": "hinweis",
-        "text": "Passende Tradition und ausreichender RkW"
+        "text": "Passende schamanische Tradition und benannte Ritualfertigkeit erforderlich. RkW mindestens zweimal Ritualgrad; Rituale fremder Tradition z?hlen, sofern zug?nglich, einen Grad h?her. Tradition, Ritualfertigkeit und Grad manuell pr?fen."
       }
     ]
   },
@@ -3758,8 +4107,12 @@
         ]
       },
       {
+        "art": "ritualkenntnis",
+        "name": "Geode"
+      },
+      {
         "art": "hinweis",
-        "text": "Erforderlicher RkW je nach Ritual"
+        "text": "RK Geode: Weihe der Schlange und Wasserbann 3; Magnetismus, Macht ?ber den Regen, Herr der Flammen, Kr?fte der Natur und Wirbelnder Luftschild 7; Seelenfeuer, Macht des Lebens und Launen des Windes 11; Weg durch Sumus Leib 15. Macht ?ber den Regen ben?tigt Wasserbann, Kr?fte der Natur ben?tigt Macht des Lebens, Launen des Windes ben?tigt Luftschild; Variante und Vorrituale manuell pr?fen."
       }
     ]
   },
@@ -3859,8 +4212,12 @@
         ]
       },
       {
+        "art": "ritualkenntnis",
+        "name": "Kristallomantie"
+      },
+      {
         "art": "hinweis",
-        "text": "Weitere Voraussetzungen je nach Ritual"
+        "text": "Ewige Wegzehrung erfordert Unber?hrt von Satinav 10; Voraussetzungen der gew?hlten Variante manuell pr?fen."
       }
     ]
   },
@@ -3997,8 +4354,12 @@
         ]
       },
       {
+        "art": "ritualkenntnis",
+        "name": "Gildenmagie"
+      },
+      {
         "art": "hinweis",
-        "text": "Schwellenwerte siehe einzelne Stabzauber"
+        "text": "Ewige Flamme: RK Gildenmagie 5; Seil des Adepten: 7; Kraftfokus: 11. Weitere Voraussetzungen der gew?hlten Stabzauber nach Wege der Zauberei manuell pr?fen."
       }
     ]
   },
@@ -4042,14 +4403,12 @@
     "nurEpisch": false,
     "voraussetzungen_struktur": [
       {
-        "art": "tradition",
-        "namen": [
-          "Gildenmagier"
-        ]
-      },
-      {
         "art": "nachteil_verboten",
         "name": "Unstet"
+      },
+      {
+        "art": "hinweis",
+        "text": "Keine pauschale Beschr?nkung auf Gildenmagier. Zugang f?r weitere Helden und verwandte Meditationst?nze nach Meisterentscheid; Lehrzugang manuell pr?fen."
       }
     ]
   },
@@ -4101,14 +4460,62 @@
         "art": "tradition",
         "namen": [
           "Hexe",
-          "Geode",
+          "Geode (Diener Sumus)",
           "Zibilja",
           "Schamane"
         ]
       },
       {
+        "art": "oder",
+        "bedingungen": [
+          {
+            "art": "ritualkenntnis",
+            "name": "Hexe"
+          },
+          {
+            "art": "und",
+            "bedingungen": [
+              {
+                "art": "tradition",
+                "namen": [
+                  "Geode (Diener Sumus)"
+                ]
+              },
+              {
+                "art": "ritualkenntnis",
+                "name": "Geode"
+              }
+            ]
+          },
+          {
+            "art": "ritualkenntnis",
+            "name": "Zibilja"
+          },
+          {
+            "art": "und",
+            "bedingungen": [
+              {
+                "art": "tradition",
+                "namen": [
+                  "Schamane"
+                ]
+              },
+              {
+                "art": "ritualkenntnis",
+                "name": "Geister Binden",
+                "min": 7
+              },
+              {
+                "art": "hinweis",
+                "text": "Nur Goblin-Schamaninnen; Kultur und Profession manuell pr?fen."
+              }
+            ]
+          }
+        ]
+      },
+      {
         "art": "hinweis",
-        "text": "Geoden als Diener Sumus, Goblin-Schamaninnen über Geister Binden 7"
+        "text": "Geoden nur als Diener Sumus; schamanischer Zugang nur f?r Goblin-Schamaninnen mit Geister Binden 7. Diese Bedingungen gelten f?r den Erwerb der SF; der separate Bindungsablauf wird hier nicht erweitert."
       }
     ]
   },
@@ -4229,8 +4636,12 @@
         ]
       },
       {
+        "art": "ritualkenntnis",
+        "name": "Derwisch"
+      },
+      {
         "art": "hinweis",
-        "text": "Erforderlicher RkW je nach Ritual"
+        "text": "RK Derwisch: Ruf des Krieges 3; Sturm der W?ste 7; Schutz Rastullahs und Rastullahs G?te 11; Zorn des Gottgef?lligen 14. RkW der gew?hlten Variante manuell pr?fen."
       }
     ]
   },
@@ -4438,7 +4849,7 @@
     "gruppe": "magisch",
     "typ": "sonderfertigkeit",
     "kategorie": "Runenmagie",
-    "seite": "Wege der Helden S. 292-293",
+    "seite": "Wege der Helden S. 293",
     "beschreibung": "Erlaubt mittels eines Handwerkstalents das Anbringen einzeln erlernbarer Arkanoglyphen an Orten oder Objekten, die unter AsP-Einsatz zauberspruchähnliche Wirkungen hervorrufen.",
     "voraussetzungen": "KL, IN, FF je 12; RK Alchimie, Gildenmagie, Kristallomantie oder Zibiljas; auch Schamanen",
     "verbreitung": "3; kann vor allem an den Akademien Drachenei zu Khunchom und Al'Achami in Fasar erlernt werden, ist auch an der Pentagramm-Akademie Rashdul und am Institut der Arkanen Analysen zu Kuslik bekannt. Achaz müssen dazu einen der wenigen Kristallomanten aufsuchen, die sich mit den Glyphenzaubern der echsischen Blütezeit auskennen, während Zibiljas diese Kunst aus den ältesten Seiten der Seffer Manichs erlernen können.",
@@ -4471,6 +4882,51 @@
           "Kristallomant",
           "Zibilja",
           "Schamane"
+        ]
+      },
+      {
+        "art": "oder",
+        "bedingungen": [
+          {
+            "art": "oder",
+            "bedingungen": [
+              {
+                "art": "ritualkenntnis",
+                "name": "Alchimie"
+              },
+              {
+                "art": "ritualkenntnis",
+                "name": "Alchimist"
+              },
+              {
+                "art": "ritualkenntnis",
+                "name": "Gildenmagie"
+              },
+              {
+                "art": "ritualkenntnis",
+                "name": "Kristallomantie"
+              },
+              {
+                "art": "ritualkenntnis",
+                "name": "Zibilja"
+              }
+            ]
+          },
+          {
+            "art": "und",
+            "bedingungen": [
+              {
+                "art": "tradition",
+                "namen": [
+                  "Schamane"
+                ]
+              },
+              {
+                "art": "hinweis",
+                "text": "Schamanischer Zugang erfordert die passende Ritualkenntnis; manuell pr?fen."
+              }
+            ]
+          }
         ]
       }
     ]
@@ -4540,6 +4996,10 @@
         "namen": [
           "Zaubertänzer"
         ]
+      },
+      {
+        "art": "ritualkenntnis",
+        "name": "Zaubert?nzer"
       }
     ]
   },
@@ -4619,6 +5079,14 @@
         "namen": [
           "Zibilja"
         ]
+      },
+      {
+        "art": "ritualkenntnis",
+        "name": "Zibilja"
+      },
+      {
+        "art": "hinweis",
+        "text": "Ruf des Bienenstocks erfordert Unsichtbare Chronik; Bienentanz erfordert Winterlager; Traumwissen erfordert Traumseherin. Vorritual der gew?hlten Variante manuell pr?fen."
       }
     ]
   }

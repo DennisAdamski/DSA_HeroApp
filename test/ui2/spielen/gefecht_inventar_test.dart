@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:dsa_heldenverwaltung/domain/artefakt_daten.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_companion.dart';
@@ -24,11 +25,11 @@ const _trank = HeroInventoryEntry(
   itemType: InventoryItemType.verbrauchsgegenstand,
 );
 
-HeroSheet _held() => testHero().copyWith(
+HeroSheet _held([HeroInventoryEntry? extra]) => testHero().copyWith(
   combatConfig: const CombatConfig(
     weapons: [MainWeaponSlot(id: 'a', name: 'Schwert', distanceClass: 'N')],
   ),
-  inventoryEntries: const [_trank],
+  inventoryEntries: [_trank, ?extra],
   companions: const [
     HeroCompanion(
       id: 'h',
@@ -40,13 +41,14 @@ HeroSheet _held() => testHero().copyWith(
 );
 
 Future<(ProviderContainer, BogenTestRepository)> _ansicht(
-  WidgetTester tester,
-) async {
+  WidgetTester tester, {
+  HeroInventoryEntry? extra,
+}) async {
   tester.view.physicalSize = const Size(1200, 1800);
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.resetPhysicalSize);
   addTearDown(tester.view.resetDevicePixelRatio);
-  final held = _held();
+  final held = _held(extra);
   final repo = BogenTestRepository(heroes: [held]);
   final snapshot = buildHeroComputedSnapshot(
     hero: held,
@@ -87,7 +89,62 @@ Future<void> _tippe(WidgetTester tester, Finder f) async {
   await tester.pumpAndSettle();
 }
 
+const _armschiene = HeroInventoryEntry(
+  gegenstand: 'Armschiene',
+  isMagisch: true,
+  artefaktDaten: ArtefaktDaten(
+    ausloeserAktionen: 2,
+    zauber: <ArtefaktZauber>[ArtefaktZauber(name: 'Gardianum', kostenAsp: 9)],
+  ),
+);
+
 void main() {
+  testWidgets('Matrixgeber mit einer Aktion öffnet sofort den Auslösedialog', (
+    tester,
+  ) async {
+    final (container, repo) = await _ansicht(
+      tester,
+      extra: _armschiene.copyWith(
+        artefaktDaten: _armschiene.artefaktDaten!.copyWith(
+          ausloeserAktionen: 1,
+        ),
+      ),
+    );
+    await _tippe(tester, find.byKey(const ValueKey('gefecht-inventar')));
+    // Der Trank steht unter „Verbrauchsgüter“, der Matrixgeber danach.
+    await _tippe(tester, find.widgetWithText(TextButton, 'Benutzen').last);
+
+    // Kein Aufbewahrungsdialog und keine Abbuchungsfrage.
+    expect(
+      find.byKey(const ValueKey('gefecht-gegenstand-starten')),
+      findsNothing,
+    );
+    expect(
+      find.byKey(const ValueKey('gefecht-gegenstand-abbuchen')),
+      findsNothing,
+    );
+    expect(find.text('Armschiene auslösen'), findsOneWidget);
+    final s = container.read(gefechtProvider('rondra'))!;
+    expect(s.angriffeVerbraucht + s.paradenVerbraucht, 1);
+    expect(s.handlung, isNull);
+    expect(repo.bogenSpeicherungen, 0);
+  });
+
+  testWidgets('Matrixgeber mit zwei Aktionen bleibt bis zum Abschluss offen', (
+    tester,
+  ) async {
+    final (container, repo) = await _ansicht(tester, extra: _armschiene);
+    await _tippe(tester, find.byKey(const ValueKey('gefecht-inventar')));
+    await _tippe(tester, find.widgetWithText(TextButton, 'Benutzen').last);
+
+    expect(find.text('Armschiene auslösen'), findsNothing);
+    final s = container.read(gefechtProvider('rondra'))!;
+    expect(s.angriffeVerbraucht + s.paradenVerbraucht, 1);
+    expect(s.handlung?.verbleibend, 1);
+    expect(s.handlung?.gegenstand?.gegenstand, 'Armschiene');
+    expect(repo.bogenSpeicherungen, 0);
+  });
+
   testWidgets('Griffbereiter Trank: eine Aktion, Abbuchung frisch', (
     tester,
   ) async {

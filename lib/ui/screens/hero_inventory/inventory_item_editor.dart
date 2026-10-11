@@ -9,7 +9,9 @@ import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/inventar_menge_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/inventar_stapel_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/kampfgegenstand_ablegen_rules.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/artefakt_editor_abschnitt.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/inventory_eintrag_aktionen.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/matrix_ausloesen_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/inventory_modifier_editor.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/inventory_stapel_teilen.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/list_tile_material.dart';
@@ -159,9 +161,21 @@ class _InventoryItemEditorState extends ConsumerState<InventoryItemEditor> {
     final teilbar =
         widget.onStapelTeilen != null && stapelTeilbar(widget.entry);
     final abgelegt = istAbgelegterKampfgegenstand(widget.entry);
+    final heroId = PlanungsBearbeitungsBereich.heldVon(context);
+    final artefakt = widget.entry.artefaktDaten;
+    // Ausgelöst wird der gespeicherte Eintrag, nicht der Entwurf.
+    final ausloesbar = heroId != null && artefakt != null && !artefakt.defekt;
     return InventoryEintragAktionen(
       entry: widget.entry,
       gesperrt: _isSaving,
+      onAusloesen: ausloesbar
+          ? () => zeigeMatrixAusloesen(
+              context: context,
+              ref: ref,
+              heroId: heroId,
+              eintrag: widget.entry,
+            )
+          : null,
       onTeilen: teilbar ? _teileStapel : null,
       onZusammenfuehren: als('Zusammenführen', widget.onZusammenfuehren),
       onVerkaufen: als('Verkaufen', widget.onVerkaufen),
@@ -291,6 +305,19 @@ class _InventoryItemEditorState extends ConsumerState<InventoryItemEditor> {
       _SectionTitle('Magisch & Geweiht'),
       const SizedBox(height: 8),
       _buildBesonderheiten(),
+      const SizedBox(height: _fieldSpacing * 2),
+      _SectionTitle('Artefakt'),
+      const SizedBox(height: 8),
+      ArtefaktEditorAbschnitt(
+        daten: _draft.artefaktDaten,
+        // Ein Artefakt ist immer magisch.
+        onChanged: (daten) => setState(
+          () => _draft = _draft.copyWith(
+            artefaktDaten: daten,
+            isMagisch: daten != null ? true : _draft.isMagisch,
+          ),
+        ),
+      ),
       const SizedBox(height: _fieldSpacing * 2),
       _SectionTitle('Wert & Gewicht'),
       const SizedBox(height: 8),

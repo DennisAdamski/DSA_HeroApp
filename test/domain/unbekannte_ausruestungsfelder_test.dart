@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dsa_heldenverwaltung/catalog/weapon_def.dart';
 import 'package:dsa_heldenverwaltung/domain/abgelegter_kampfgegenstand.dart';
+import 'package:dsa_heldenverwaltung/domain/artefakt_daten.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
@@ -150,11 +151,41 @@ final _modelle = <_Modell>[
       instanzId: 'i1',
       menge: 1,
       abgelegt: AbgelegterKampfgegenstand(waffe: MainWeaponSlot(name: 'Säbel')),
+      artefaktDaten: ArtefaktDaten(
+        zauber: <ArtefaktZauber>[ArtefaktZauber(name: 'Armatrutz')],
+      ),
     ).toJson(),
     lade: (json) => HeroInventoryEntry.fromJson(json).toJson(),
     bearbeite: (json) =>
         HeroInventoryEntry.fromJson(json).copyWith(wert: '12').toJson(),
     unbekannt: (json) => HeroInventoryEntry.fromJson(json).unbekannteFelder,
+  ),
+  _Modell(
+    'ArtefaktDaten',
+    schluessel: ArtefaktDaten.jsonSchluessel,
+    voll: () => const ArtefaktDaten(
+      zauber: <ArtefaktZauber>[ArtefaktZauber(name: 'Armatrutz')],
+      pAsP: 4,
+    ).toJson(),
+    lade: (json) => ArtefaktDaten.fromJson(json).toJson(),
+    bearbeite: (json) =>
+        ArtefaktDaten.fromJson(json).copyWith(ersteller: 'Meister').toJson(),
+    unbekannt: (json) => ArtefaktDaten.fromJson(json).unbekannteFelder,
+  ),
+  _Modell(
+    'ArtefaktZauber',
+    schluessel: ArtefaktZauber.jsonSchluessel,
+    voll: () => const ArtefaktZauber(
+      spellId: 'spell_armatrutz',
+      name: 'Armatrutz',
+      zfw: 12,
+      zfpStern: 5,
+      kostenAsp: 8,
+    ).toJson(),
+    lade: (json) => ArtefaktZauber.fromJson(json).toJson(),
+    bearbeite: (json) =>
+        ArtefaktZauber.fromJson(json).copyWith(notiz: 'Neu').toJson(),
+    unbekannt: (json) => ArtefaktZauber.fromJson(json).unbekannteFelder,
   ),
   _Modell(
     'InventoryItemModifier',

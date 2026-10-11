@@ -18,6 +18,7 @@ class InventoryEintragAktionen extends StatelessWidget {
     this.onZusammenfuehren,
     this.onVerkaufen,
     this.onKampfUebernehmen,
+    this.onAusloesen,
   });
 
   /// Der gespeicherte Eintrag, mit dem der Editor geöffnet wurde.
@@ -38,10 +39,20 @@ class InventoryEintragAktionen extends StatelessWidget {
   /// Holt einen abgelegten Gegenstand in den Kampfbereich zurück.
   final VoidCallback? onKampfUebernehmen;
 
+  /// Löst einen Matrixgeber aus (`artefaktDaten`).
+  final VoidCallback? onAusloesen;
+
   @override
   Widget build(BuildContext context) {
     VoidCallback? frei(VoidCallback? aktion) => gesperrt ? null : aktion;
     final knoepfe = <Widget>[
+      if (onAusloesen != null)
+        FilledButton.icon(
+          key: const ValueKey<String>('inventory-editor-ausloesen'),
+          onPressed: frei(onAusloesen),
+          icon: const Icon(Icons.auto_awesome),
+          label: const Text('Auslösen'),
+        ),
       if (onTeilen != null)
         OutlinedButton.icon(
           key: const ValueKey<String>('inventory-editor-split'),

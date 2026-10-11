@@ -1,4 +1,5 @@
 import 'package:dsa_heldenverwaltung/domain/abgelegter_kampfgegenstand.dart';
+import 'package:dsa_heldenverwaltung/domain/artefakt_daten.dart';
 import 'package:dsa_heldenverwaltung/domain/copy_with_sentinel.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
 import 'package:dsa_heldenverwaltung/domain/unbekannte_json_felder.dart';
@@ -52,6 +53,7 @@ class HeroInventoryEntry {
     this.instanzId,
     this.menge,
     this.abgelegt,
+    this.artefaktDaten,
     this.unbekannteFelder = const <String, Object?>{},
     this.unbekannteEnumWerte = const <String, Object?>{},
   });
@@ -160,6 +162,13 @@ class HeroInventoryEntry {
   /// belegt.
   final AbgelegterKampfgegenstand? abgelegt;
 
+  /// Artefaktdaten (zunächst Matrixgeber): eingesprochene Zauber mit den
+  /// Werten ihres Sprechers, Stabilität und Zustand der Matrix. Damit kann
+  /// ein Träger ohne den Zauber oder die Repräsentation das Artefakt
+  /// auslösen. Nur geschrieben, wenn belegt (Bestands-Hashes). Der Name
+  /// unterscheidet es vom Legacy-Freitext [artefakt].
+  final ArtefaktDaten? artefaktDaten;
+
   /// JSON-Felder einer neueren App-Version; bleiben beim Speichern erhalten
   /// (siehe `unbekannte_json_felder.dart`).
   final Map<String, Object?> unbekannteFelder;
@@ -203,6 +212,7 @@ class HeroInventoryEntry {
     'instanzId',
     'menge',
     'abgelegt',
+    'artefaktDaten',
   };
 
   /// Gibt eine Kopie mit selektiv überschriebenen Feldern zurück.
@@ -237,6 +247,7 @@ class HeroInventoryEntry {
     Object? instanzId = keepFieldValue,
     Object? menge = keepFieldValue,
     Object? abgelegt = keepFieldValue,
+    Object? artefaktDaten = keepFieldValue,
     Map<String, Object?>? unbekannteFelder,
     Map<String, Object?>? unbekannteEnumWerte,
   }) {
@@ -279,6 +290,9 @@ class HeroInventoryEntry {
       abgelegt: abgelegt == keepFieldValue
           ? this.abgelegt
           : abgelegt as AbgelegterKampfgegenstand?,
+      artefaktDaten: artefaktDaten == keepFieldValue
+          ? this.artefaktDaten
+          : artefaktDaten as ArtefaktDaten?,
       unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
       unbekannteEnumWerte:
           unbekannteEnumWerte ??
@@ -334,6 +348,7 @@ class HeroInventoryEntry {
         if (instanzId != null) 'instanzId': instanzId,
         if (menge != null) 'menge': menge,
         if (abgelegt != null) 'abgelegt': abgelegt!.toJson(),
+        if (artefaktDaten != null) 'artefaktDaten': artefaktDaten!.toJson(),
       }, unbekannteFelder),
       unbekannteEnumWerte,
     );
@@ -357,6 +372,7 @@ class HeroInventoryEntry {
         : const <InventoryItemModifier>[];
     final legacyArtifact = getString('artefakt').trim();
     final abgelegtRoh = json['abgelegt'];
+    final artefaktRoh = json['artefaktDaten'];
     final hasMagischDescription =
         json.containsKey('magischDescription') &&
         json['magischDescription'] != null;
@@ -418,6 +434,9 @@ class HeroInventoryEntry {
           ? AbgelegterKampfgegenstand.fromJson(
               abgelegtRoh.cast<String, dynamic>(),
             )
+          : null,
+      artefaktDaten: artefaktRoh is Map
+          ? ArtefaktDaten.fromJson(artefaktRoh.cast<String, dynamic>())
           : null,
       unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
       unbekannteEnumWerte: festeEnumWerte(enumRoh),

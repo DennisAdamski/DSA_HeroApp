@@ -438,6 +438,7 @@ Future<void> setzeGefechtsausruestungFort({
       ref: ref,
       heroId: heroId,
       eintrag: gegenstand,
+      bestand: bestand,
     );
   }
 }
