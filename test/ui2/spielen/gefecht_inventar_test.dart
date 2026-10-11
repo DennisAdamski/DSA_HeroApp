@@ -99,6 +99,37 @@ const _armschiene = HeroInventoryEntry(
 );
 
 void main() {
+  testWidgets('ausgerüsteter Matrixgeber steht als eigener Punkt im Kampf', (
+    tester,
+  ) async {
+    final (container, repo) = await _ansicht(
+      tester,
+      extra: _armschiene.copyWith(
+        istAusgeruestet: true,
+        artefaktDaten: _armschiene.artefaktDaten!.copyWith(
+          ausloeserAktionen: 1,
+        ),
+      ),
+    );
+
+    await _tippe(tester, find.byKey(const ValueKey('gefecht-matrixgeber-0')));
+
+    expect(find.text('Matrixgeber'), findsOneWidget);
+    expect(find.text('Armschiene auslösen'), findsOneWidget);
+    final s = container.read(gefechtProvider('rondra'))!;
+    expect(s.angriffeVerbraucht + s.paradenVerbraucht, 1);
+    expect(repo.bogenSpeicherungen, 0);
+  });
+
+  testWidgets(
+    'nicht ausgerüstete oder beschädigte Matrixgeber fehlen im Kampf',
+    (tester) async {
+      await _ansicht(tester, extra: _armschiene);
+
+      expect(find.byKey(const ValueKey('gefecht-matrixgeber-0')), findsNothing);
+    },
+  );
+
   testWidgets('Matrixgeber mit einer Aktion öffnet sofort den Auslösedialog', (
     tester,
   ) async {

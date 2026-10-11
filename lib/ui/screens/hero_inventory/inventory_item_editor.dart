@@ -385,10 +385,12 @@ class _InventoryItemEditorState extends ConsumerState<InventoryItemEditor> {
           ),
         ],
         if (!widget.isNew) _buildAktionen(),
-        if (_draft.itemType == InventoryItemType.ausruestung) ...[
+        if (_draft.itemType == InventoryItemType.ausruestung ||
+            _draft.artefaktDaten != null) ...[
           const SizedBox(height: _fieldSpacing),
           ListTileMaterial(
             child: SwitchListTile.adaptive(
+              key: const ValueKey<String>('inventory-editor-ausgeruestet'),
               value: _draft.istAusgeruestet,
               // Verknüpfte Einträge folgen ihrem Slot; der Abgleich
               // überschriebe den Schalter beim Speichern still.
@@ -401,6 +403,8 @@ class _InventoryItemEditorState extends ConsumerState<InventoryItemEditor> {
               subtitle: Text(
                 _isLinked
                     ? 'Wird im Kampf-Tab festgelegt.'
+                    : _draft.artefaktDaten != null
+                    ? 'Nur ausgerüstete Matrixgeber stehen im Kampf bereit.'
                     : 'Modifikatoren wirken nur, wenn das Item ausgerüstet '
                           'ist.',
               ),

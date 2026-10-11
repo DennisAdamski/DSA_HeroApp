@@ -194,8 +194,14 @@ List<WorkspaceTabSpec> buildWorkspaceTabs({
       label: 'Magie',
       icon: Icons.bolt_outlined,
       helper: 'Katalogansicht für Zauber',
+      // Auch ein Träger ohne Zauberkunde sieht hier die Zauber seiner
+      // Artefakte (Matrixgeber).
       isVisible: (hero, catalog) =>
-          computeHeroResourceActivation(hero, catalog: catalog).magic.isEnabled,
+          computeHeroResourceActivation(
+            hero,
+            catalog: catalog,
+          ).magic.isEnabled ||
+          hero.inventoryEntries.any((e) => e.artefaktDaten != null),
       buildContent: ({required heroId, required callbacks}) => HeroMagicTab(
         heroId: heroId,
         onDirtyChanged: callbacks.onDirtyChanged,

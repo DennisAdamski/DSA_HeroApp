@@ -37,6 +37,50 @@ Future<void> zeigeGefechtsInventar({
     builder: (_) => _Inventarliste(posten: gefechtsInventar(snapshot.hero)),
   );
   if (posten == null || !context.mounted) return;
+  await benutzeGefechtsPosten(
+    context: context,
+    ref: ref,
+    heroId: heroId,
+    bestand: bestand,
+    posten: posten,
+  );
+}
+
+/// Löst einen ausgerüsteten Matrixgeber aus dem Gefecht aus.
+///
+/// Derselbe Weg wie „Inventar · Gegenstand benutzen“: Der Auslöser kostet
+/// seine gespeicherten Aktionen, danach öffnet der Auslösedialog. Es gibt
+/// keine Zauberprobe und keine Repräsentationswahl.
+Future<void> benutzeGefechtsMatrixgeber({
+  required BuildContext context,
+  required WidgetRef ref,
+  required String heroId,
+  required KartoGefechtsAdapter bestand,
+  required HeroInventoryEntry eintrag,
+}) => benutzeGefechtsPosten(
+  context: context,
+  ref: ref,
+  heroId: heroId,
+  bestand: bestand,
+  posten: GefechtsInventarposten(
+    eintrag: eintrag,
+    gruppe: GefechtsInventargruppe.amKoerper,
+    menge: null,
+    benutzbar: true,
+  ),
+);
+
+/// Benutzt den gewählten Gegenstand: Aufbewahrung wählen, die erste Aktion
+/// bezahlen und die Handlung beginnen bzw. abschließen.
+Future<void> benutzeGefechtsPosten({
+  required BuildContext context,
+  required WidgetRef ref,
+  required String heroId,
+  required KartoGefechtsAdapter bestand,
+  required GefechtsInventarposten posten,
+}) async {
+  final snapshot = ref.read(heroComputedProvider(heroId)).asData?.value;
+  if (snapshot == null) return;
   // Ein Matrixgeber hat keinen Aufbewahrungsort und keine FF-Probe: Der
   // Auslöser braucht seine gespeicherten Aktionen, danach öffnet der
   // Auslösedialog statt der Abbuchung.

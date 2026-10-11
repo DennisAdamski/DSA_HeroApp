@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/artefakt_zauber_liste_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_magie_rules.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abschnitt.dart';
 
@@ -10,6 +12,10 @@ import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abschnitt.dart';
 /// Zauber stehen zuletzt gewirkt zuerst, sonst alphabetisch, jeweils mit ZfW*,
 /// Zauberdauer und Kosten (`gefechtsZauberliste`); ab sieben gelernten
 /// Zaubern gibt es eine Suche.
+///
+/// Ausgerüstete Matrixgeber stehen als eigener Punkt darunter
+/// (`matrixgeber`); sie brauchen weder gelernte Zauber noch Zauberkunde und
+/// erscheinen deshalb auch, wenn der Held selbst nicht zaubert.
 class GefechtMagie extends StatefulWidget {
   /// Führt die Probe über den gemeinsamen, aktionsgebundenen Auftrag aus.
   const GefechtMagie({
@@ -20,6 +26,8 @@ class GefechtMagie extends StatefulWidget {
     required this.onAuftrag,
     this.onZauber,
     this.onKarma,
+    this.onMatrix,
+    this.matrixgeber = const [],
     this.zuletzt = const [],
   });
   final HeroComputedSnapshot werte;
@@ -27,6 +35,12 @@ class GefechtMagie extends StatefulWidget {
   final bool gesperrt;
   final ValueChanged<SpellDef>? onZauber;
   final ValueChanged<TalentDef>? onKarma;
+
+  /// Ausgerüstete, unbeschädigte Matrixgeber des Helden.
+  final List<HeroInventoryEntry> matrixgeber;
+
+  /// Löst einen Matrixgeber aus.
+  final ValueChanged<HeroInventoryEntry>? onMatrix;
   final void Function(
     String titel,
     ResolvedProbeRequest? probe,
@@ -66,9 +80,42 @@ class _GefechtMagieState extends State<GefechtMagie> {
     final gesperrt = widget.gesperrt;
     final onKarma = widget.onKarma;
     final onAuftrag = widget.onAuftrag;
-    if (!werte.resourceActivation.magic.isEnabled &&
-        !werte.resourceActivation.divine.isEnabled) {
-      return const SizedBox.shrink();
+    final zaubert =
+        werte.resourceActivation.magic.isEnabled ||
+        werte.resourceActivation.divine.isEnabled;
+    final matrix = widget.matrixgeber.isEmpty
+        ? null
+        : KartoAbschnitt(
+            titel: 'Matrixgeber',
+            child: Material(
+              type: MaterialType.transparency,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  for (var i = 0; i < widget.matrixgeber.length; i++)
+                    ListTile(
+                      key: ValueKey('gefecht-matrixgeber-$i'),
+                      contentPadding: EdgeInsets.zero,
+                      enabled: !gesperrt && widget.onMatrix != null,
+                      leading: const Icon(Icons.auto_awesome),
+                      title: Text(
+                        widget.matrixgeber[i].gegenstand.isEmpty
+                            ? 'Matrixgeber'
+                            : widget.matrixgeber[i].gegenstand,
+                      ),
+                      subtitle: Text(
+                        matrixgeberZusammenfassung(
+                          widget.matrixgeber[i].artefaktDaten!,
+                        ),
+                      ),
+                      onTap: () => widget.onMatrix?.call(widget.matrixgeber[i]),
+                    ),
+                ],
+              ),
+            ),
+          );
+    if (!zaubert) {
+      return matrix ?? const SizedBox.shrink();
     }
     final alle = katalog == null
         ? const <GefechtsZaubereintrag>[]
@@ -81,7 +128,7 @@ class _GefechtMagieState extends State<GefechtMagie> {
             zuletzt: widget.zuletzt,
             suche: _suche,
           );
-    return KartoAbschnitt(
+    final magie = KartoAbschnitt(
       titel: 'Magie und Karma',
       child: Material(
         type: MaterialType.transparency,
@@ -154,6 +201,11 @@ class _GefechtMagieState extends State<GefechtMagie> {
           ],
         ),
       ),
+    );
+    if (matrix == null) return magie;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [magie, const SizedBox(height: 8), matrix],
     );
   }
 }

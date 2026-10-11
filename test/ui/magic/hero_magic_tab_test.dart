@@ -7,7 +7,9 @@ import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/catalog/special_ability_requirement.dart';
 import 'package:dsa_heldenverwaltung/domain/active_spell_effects_state.dart';
 import 'package:dsa_heldenverwaltung/domain/app_settings.dart';
+import 'package:dsa_heldenverwaltung/domain/artefakt_daten.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_rituals.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_spell_entry.dart';
@@ -279,6 +281,79 @@ void main() {
       expect(container.read(advancementSessionProvider('demo')), same(session));
     });
   }
+
+  testWidgets('Zauber aus Matrixgebern erscheinen in der Zauberliste', (
+    tester,
+  ) async {
+    final hero = buildHero().copyWith(
+      inventoryEntries: const [
+        HeroInventoryEntry(
+          gegenstand: 'Armschiene',
+          isMagisch: true,
+          istAusgeruestet: true,
+          artefaktDaten: ArtefaktDaten(
+            zauber: <ArtefaktZauber>[
+              ArtefaktZauber(
+                name: 'Gardianum',
+                repraesentation: 'Mag',
+                zfw: 12,
+                kostenAsp: 9,
+              ),
+            ],
+          ),
+        ),
+        HeroInventoryEntry(
+          gegenstand: 'Ring',
+          isMagisch: true,
+          artefaktDaten: ArtefaktDaten(
+            defekt: true,
+            zauber: <ArtefaktZauber>[ArtefaktZauber(name: 'Flim Flam')],
+          ),
+        ),
+      ],
+    );
+    await openMagicTab(
+      tester,
+      repo: FakeRepository(
+        heroes: <HeroSheet>[hero],
+        states: <String, HeroState>{
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 10,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
+      ),
+    );
+
+    final abschnitt = find.byKey(const ValueKey('magic-artefakt-zauber'));
+    await tester.ensureVisible(abschnitt);
+    expect(abschnitt, findsOneWidget);
+    expect(find.text('Gardianum'), findsOneWidget);
+    expect(
+      find.textContaining('Armschiene · ausgerüstet · Mag · ZfW 12 · 9 AsP'),
+      findsOneWidget,
+    );
+    expect(find.textContaining('Ring · beschädigt'), findsOneWidget);
+    // Beschädigte Matrixgeber lassen sich nicht auslösen.
+    expect(
+      find.byKey(const ValueKey('magic-artefakt-ausloesen-0')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('magic-artefakt-ausloesen-1')),
+      findsNothing,
+    );
+  });
+
+  testWidgets('ohne Artefakte gibt es keinen Artefaktabschnitt', (
+    tester,
+  ) async {
+    await openMagicTab(tester);
+
+    expect(find.byKey(const ValueKey('magic-artefakt-zauber')), findsNothing);
+  });
 
   testWidgets('magic tab exposes rituals sub tab', (tester) async {
     await openMagicTab(tester);
