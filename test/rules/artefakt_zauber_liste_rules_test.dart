@@ -271,6 +271,33 @@ void main() {
       },
     );
 
+    test(
+      'ein permanenter Spruchspeicher wirkt dauerhaft und steht nie bereit',
+      () {
+        const ring = HeroInventoryEntry(
+          gegenstand: 'Ätherische Platte',
+          isMagisch: true,
+          istAusgeruestet: true,
+          artefaktDaten: ArtefaktDaten(
+            art: ArtefaktArt.spruchspeicherPermanent,
+            pAsP: 9,
+            zauber: <ArtefaktZauber>[ArtefaktZauber(name: 'Transversalis')],
+          ),
+        );
+        final h = held.copyWith(inventoryEntries: [ring]);
+
+        final liste = artefaktZauberListe(h);
+
+        expect(liste.map((e) => e.zauber.name), ['Transversalis']);
+        expect(liste.single.dauerhaft, isTrue);
+        expect(gefechtsArtefakte(h), isEmpty);
+        expect(
+          artefaktZusammenfassung(ring.artefaktDaten!),
+          'Transversalis · dauerhaft wirksam · 9 pAsP',
+        );
+      },
+    );
+
     test('ein Matrixgeber behält seine Zusammenfassung', () {
       expect(
         artefaktZusammenfassung(_daten),

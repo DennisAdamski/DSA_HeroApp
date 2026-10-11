@@ -4,9 +4,9 @@ import 'package:dsa_heldenverwaltung/domain/unbekannte_json_felder.dart';
 
 /// Art eines Artefakts am Inventareintrag.
 ///
-/// Matrixgeber und ladungsbasierte Spruchspeicher (Stäbe, Ringe,
-/// Dschinnenlampen S. 8 und 16 f.; Wege der Alchimie S. 80–88). Weitere Arten
-/// kommen als neue Werte hinzu.
+/// Matrixgeber, Spruchspeicher (ladungs-, intervallbasiert, permanent) und
+/// Zaubertalisman (Stäbe, Ringe, Dschinnenlampen S. 8 und 16 f.; Wege der
+/// Alchimie S. 80–88). Weitere Arten kommen als neue Werte hinzu.
 enum ArtefaktArt {
   /// Der zauberkundige Träger lässt die Zauber-AsP einfließen; die
   /// gespeicherte Wirkung ist unveränderlich.
@@ -29,6 +29,11 @@ enum ArtefaktArt {
   /// lässt zusätzlich Astralenergie in das Artefakt fließen; es gibt
   /// zusätzliche ZfP* (Wege der Alchimie S. 88).
   zaubertalisman,
+
+  /// Permanenter Spruchspeicher („Aeternom“, erschaffen mit INFINITUM): Die
+  /// Wirkung besteht ständig. Es gibt weder Ladungen noch Intervall, weder
+  /// AsP-Kosten noch einen Auslöser (Stäbe, Ringe, Dschinnenlampen S. 8).
+  spruchspeicherPermanent,
 }
 
 /// Intervall eines semipermanenten Spruchspeichers (Wege der Alchimie S. 82).

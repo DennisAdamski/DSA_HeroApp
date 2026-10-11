@@ -10,14 +10,21 @@ String artefaktArtLabel(ArtefaktArt art) => switch (art) {
   ArtefaktArt.spruchspeicherEinmalig => 'Spruchspeicher, einmalig',
   ArtefaktArt.spruchspeicherAufladbar => 'Spruchspeicher, aufladbar',
   ArtefaktArt.spruchspeicherSemipermanent => 'Spruchspeicher, semipermanent',
+  ArtefaktArt.spruchspeicherPermanent => 'Spruchspeicher, permanent',
   ArtefaktArt.zaubertalisman => 'Zaubertalisman (Auxiliator)',
 };
 
-/// Ob [art] ein Spruchspeicher ist (ladungs- oder intervallbasiert).
+/// Ob [art] ein Spruchspeicher ist (ladungs- oder intervallbasiert oder
+/// permanent).
 bool artefaktIstSpruchspeicher(ArtefaktArt art) =>
     art == ArtefaktArt.spruchspeicherEinmalig ||
     art == ArtefaktArt.spruchspeicherAufladbar ||
-    art == ArtefaktArt.spruchspeicherSemipermanent;
+    art == ArtefaktArt.spruchspeicherSemipermanent ||
+    art == ArtefaktArt.spruchspeicherPermanent;
+
+/// Ob [art] ständig wirkt und nie ausgelöst wird (permanenter Spruchspeicher).
+bool artefaktIstDauerwirkung(ArtefaktArt art) =>
+    art == ArtefaktArt.spruchspeicherPermanent;
 
 /// Ob [art] ein ladungsbasierter Spruchspeicher ist: Er führt `ladungen`.
 bool artefaktHatLadungen(ArtefaktArt art) =>
@@ -49,9 +56,10 @@ bool spruchspeicherAufladbarLeer(ArtefaktDaten daten) =>
 /// Ein beschädigtes Artefakt und ein ladungsbasierter Spruchspeicher ohne
 /// freie Ladung lassen sich nicht auslösen. Ein Matrixgeber und ein
 /// semipermanenter Spruchspeicher nur dann nicht, wenn sie beschädigt sind;
-/// der Intervallstand ist für Letzteren eine Anzeige (Meisterentscheid).
+/// der Intervallstand ist für Letzteren eine Anzeige (Meisterentscheid). Ein
+/// permanenter Spruchspeicher wirkt ständig und lässt sich nie auslösen.
 bool artefaktAusloesbar(ArtefaktDaten daten) {
-  if (daten.defekt) {
+  if (daten.defekt || artefaktIstDauerwirkung(daten.art)) {
     return false;
   }
   return !artefaktHatLadungen(daten.art) || freieLadungen(daten).isNotEmpty;
@@ -91,6 +99,13 @@ SpruchspeicherPruefung pruefeSpruchspeicherAusloesung(
   if (daten.defekt) {
     return const SpruchspeicherPruefung(
       sperrgrund: 'Die Haltematrix ist irreparabel beschädigt.',
+    );
+  }
+  if (artefaktIstDauerwirkung(daten.art)) {
+    return const SpruchspeicherPruefung(
+      sperrgrund:
+          'Ein permanenter Spruchspeicher wirkt ständig und wird nicht '
+          'ausgelöst.',
     );
   }
   if (daten.art == ArtefaktArt.spruchspeicherSemipermanent) {

@@ -263,6 +263,35 @@ void main() {
       expect(neu.toJson(), json);
     });
 
+    test('ein permanenter Spruchspeicher schreibt keine Zusatzschlüssel', () {
+      const daten = ArtefaktDaten(
+        art: ArtefaktArt.spruchspeicherPermanent,
+        pAsP: 12,
+        zauber: <ArtefaktZauber>[ArtefaktZauber(name: 'Transversalis')],
+      );
+
+      final json = daten.toJson();
+      final neu = ArtefaktDaten.fromJson(
+        jsonDecode(jsonEncode(json)) as Map<String, dynamic>,
+      );
+
+      expect(json['art'], 'spruchspeicherPermanent');
+      for (final schluessel in [
+        'ladungen',
+        'aufladungen',
+        'gesamtAspErschaffung',
+        'intervall',
+        'anwendungenProIntervall',
+        'anwendungen',
+      ]) {
+        expect(json.containsKey(schluessel), isFalse, reason: schluessel);
+      }
+      expect(neu.art, ArtefaktArt.spruchspeicherPermanent);
+      expect(neu.pAsP, 12);
+      expect(neu.zauber.single.name, 'Transversalis');
+      expect(neu.toJson(), json);
+    });
+
     test('ein unbekanntes Feld der Ladung bleibt erhalten', () {
       final ladung = ArtefaktLadung.fromJson(<String, dynamic>{
         'id': 'l',
