@@ -1,6 +1,7 @@
 import 'package:dsa_heldenverwaltung/domain/artefakt_daten.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/artefakt_auxiliator_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/artefakt_intervall_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/artefakt_matrix_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/artefakt_spruchspeicher_rules.dart';
@@ -68,13 +69,14 @@ List<ArtefaktZauberEintrag> artefaktZauberListe(HeroSheet hero) => [
 ];
 
 /// Artefakte, die im Kampf bereitstehen: ausgerüstet, vom Helden getragen und
-/// auslösbar (nicht beschädigt, bei Spruchspeichern mit freier Ladung).
+/// auslösbar (nicht beschädigt, bei Spruchspeichern mit freier Ladung). Ein
+/// Zaubertalisman gehört nicht dazu: Er wirkt nur beim Zaubern des Anwenders.
 List<HeroInventoryEntry> gefechtsArtefakte(HeroSheet hero) => [
   for (final e in hero.inventoryEntries)
     if (e.artefaktDaten != null &&
         e.istAusgeruestet &&
         e.traegerTyp == InventoryTraeger.held &&
-        artefaktAusloesbar(e.artefaktDaten!))
+        artefaktImKampfAusloesbar(e.artefaktDaten!))
       e,
 ];
 

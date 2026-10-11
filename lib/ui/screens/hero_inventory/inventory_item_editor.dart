@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/planung_bearbeiten_guard.dart';
 
+import 'package:dsa_heldenverwaltung/domain/artefakt_daten.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_companion.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
@@ -176,6 +177,9 @@ class _InventoryItemEditorState extends ConsumerState<InventoryItemEditor> {
     return InventoryEintragAktionen(
       entry: widget.entry,
       gesperrt: _isSaving,
+      ausloesenText: artefakt?.art == ArtefaktArt.zaubertalisman
+          ? 'Auxiliator einsetzen'
+          : 'Auslösen',
       onAusloesen: ausloesbar
           ? () => zeigeArtefaktAnwenden(
               context: context,

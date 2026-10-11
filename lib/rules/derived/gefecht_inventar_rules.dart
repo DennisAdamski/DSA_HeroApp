@@ -2,7 +2,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
 
-import 'artefakt_spruchspeicher_rules.dart';
+import 'artefakt_auxiliator_rules.dart';
 import 'inventar_verbrauch_rules.dart';
 
 /// Gruppen der Inventarsicht im Gefecht, nach Griffnähe geordnet.
@@ -59,7 +59,8 @@ List<GefechtsInventarposten> gefechtsInventar(HeroSheet hero) {
         menge: inventarMenge(e),
         benutzbar:
             !verknuepft &&
-            (e.artefaktDaten == null || artefaktAusloesbar(e.artefaktDaten!)) &&
+            (e.artefaktDaten == null ||
+                artefaktImKampfAusloesbar(e.artefaktDaten!)) &&
             (e.itemType == InventoryItemType.verbrauchsgegenstand ||
                 e.isMagisch ||
                 e.artefaktDaten != null),

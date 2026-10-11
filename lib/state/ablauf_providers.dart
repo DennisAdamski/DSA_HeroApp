@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/ablaeufe/artefakt_protokollieren.dart';
+import 'package:dsa_heldenverwaltung/ablaeufe/auxiliator_einsetzen.dart';
 import 'package:dsa_heldenverwaltung/ablaeufe/matrix_ausloesen.dart';
 import 'package:dsa_heldenverwaltung/ablaeufe/rast_abschliessen.dart';
 import 'package:dsa_heldenverwaltung/ablaeufe/schaden_erhalten.dart';
@@ -32,6 +33,14 @@ final vertrautenVereinigungProvider = Provider<VertrautenVereinigung>((ref) {
 /// Bindet den Ablauf „Matrixgeber auslösen“ an das aktive Heldenrepository.
 final matrixAusloesenProvider = Provider<MatrixAusloesen>((ref) {
   return MatrixAusloesen(
+    repository: ref.watch(heroRepositoryProvider),
+    uhr: DateTime.now,
+  );
+});
+
+/// Bindet den Ablauf „Auxiliator einsetzen“ an das aktive Heldenrepository.
+final auxiliatorEinsetzenProvider = Provider<AuxiliatorEinsetzen>((ref) {
+  return AuxiliatorEinsetzen(
     repository: ref.watch(heroRepositoryProvider),
     uhr: DateTime.now,
   );

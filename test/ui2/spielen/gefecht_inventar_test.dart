@@ -139,6 +139,27 @@ void main() {
     expect(repo.bogenSpeicherungen, 0, reason: 'erst „Auslösen“ schreibt');
   });
 
+  testWidgets('ein Zaubertalisman ist im Kampf nicht auslösbar', (
+    tester,
+  ) async {
+    await _ansicht(
+      tester,
+      extra: const HeroInventoryEntry(
+        gegenstand: 'Mondsilberring',
+        isMagisch: true,
+        istAusgeruestet: true,
+        artefaktDaten: ArtefaktDaten(art: ArtefaktArt.zaubertalisman),
+      ),
+    );
+
+    expect(find.byKey(const ValueKey('gefecht-matrixgeber-0')), findsNothing);
+    await _tippe(tester, find.byKey(const ValueKey('gefecht-inventar')));
+    expect(find.text('Mondsilberring'), findsOneWidget);
+    // Nur der Heiltrank hat einen „Benutzen“-Knopf: Der Talisman wirkt beim
+    // Zaubern des Anwenders, nicht durch einen Auslöser.
+    expect(find.widgetWithText(TextButton, 'Benutzen'), findsOneWidget);
+  });
+
   testWidgets('ein leerer Spruchspeicher fehlt im Kampf', (tester) async {
     await _ansicht(
       tester,

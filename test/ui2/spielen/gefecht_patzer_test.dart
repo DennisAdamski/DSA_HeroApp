@@ -339,6 +339,18 @@ class _Adapter implements KartoGefechtsAdapter {
   }) => throw UnimplementedError();
 
   @override
+  Future<void> gefechtsAuxiliator({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String heroId,
+    required HeroInventoryEntry eintrag,
+    required String zauberId,
+    required int zfpStern,
+    required bool gelungen,
+    required String repraesentation,
+  }) => throw UnimplementedError();
+
+  @override
   Future<void> gefechtsWirkkosten({
     required BuildContext context,
     required String heroId,

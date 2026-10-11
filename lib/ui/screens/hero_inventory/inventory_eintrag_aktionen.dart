@@ -20,6 +20,7 @@ class InventoryEintragAktionen extends StatelessWidget {
     this.onKampfUebernehmen,
     this.onAusloesen,
     this.onAufladen,
+    this.ausloesenText = 'Auslösen',
   });
 
   /// Der gespeicherte Eintrag, mit dem der Editor geöffnet wurde.
@@ -46,6 +47,9 @@ class InventoryEintragAktionen extends StatelessWidget {
   /// Lädt einen leeren, aufladbaren Spruchspeicher wieder auf.
   final VoidCallback? onAufladen;
 
+  /// Beschriftung des Auslöseknopfs (beim Zaubertalisman „Auxiliator einsetzen“).
+  final String ausloesenText;
+
   @override
   Widget build(BuildContext context) {
     VoidCallback? frei(VoidCallback? aktion) => gesperrt ? null : aktion;
@@ -55,7 +59,7 @@ class InventoryEintragAktionen extends StatelessWidget {
           key: const ValueKey<String>('inventory-editor-ausloesen'),
           onPressed: frei(onAusloesen),
           icon: const Icon(Icons.auto_awesome),
-          label: const Text('Auslösen'),
+          label: Text(ausloesenText),
         ),
       if (onAufladen != null)
         FilledButton.icon(
