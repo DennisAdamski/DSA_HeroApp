@@ -53,6 +53,7 @@ class ArtefaktZauber {
     this.zfw,
     this.zfpStern,
     this.kostenAsp,
+    this.pAsP,
     this.reichweite = '',
     this.wirkungsdauer = '',
     this.zielHinweis = '',
@@ -82,6 +83,13 @@ class ArtefaktZauber {
   /// AsP, die der Träger beim Auslösen aufbringen muss.
   final int? kostenAsp;
 
+  /// Permanente AsP, die dieser Zauber im Artefakt bindet.
+  ///
+  /// Eine Buchführungshilfe: Regelwerklich fallen die permanenten AsP je
+  /// Artefakt an (Bruchteil der Gesamtkosten); wer sie je Zauber festhält,
+  /// sieht ihre Summe als Gesamtwert (siehe `artefaktPAspGesamt`).
+  final int? pAsP;
+
   /// Gespeicherte Reichweite.
   final String reichweite;
 
@@ -110,6 +118,7 @@ class ArtefaktZauber {
     'zfw',
     'zfpStern',
     'kostenAsp',
+    'pAsP',
     'reichweite',
     'wirkungsdauer',
     'zielHinweis',
@@ -126,6 +135,7 @@ class ArtefaktZauber {
     Object? zfw = keepFieldValue,
     Object? zfpStern = keepFieldValue,
     Object? kostenAsp = keepFieldValue,
+    Object? pAsP = keepFieldValue,
     String? reichweite,
     String? wirkungsdauer,
     String? zielHinweis,
@@ -143,6 +153,7 @@ class ArtefaktZauber {
       kostenAsp: kostenAsp == keepFieldValue
           ? this.kostenAsp
           : kostenAsp as int?,
+      pAsP: pAsP == keepFieldValue ? this.pAsP : pAsP as int?,
       reichweite: reichweite ?? this.reichweite,
       wirkungsdauer: wirkungsdauer ?? this.wirkungsdauer,
       zielHinweis: zielHinweis ?? this.zielHinweis,
@@ -163,6 +174,7 @@ class ArtefaktZauber {
       if (zfw != null) 'zfw': zfw,
       if (zfpStern != null) 'zfpStern': zfpStern,
       if (kostenAsp != null) 'kostenAsp': kostenAsp,
+      if (pAsP != null) 'pAsP': pAsP,
       'reichweite': reichweite,
       'wirkungsdauer': wirkungsdauer,
       'zielHinweis': zielHinweis,
@@ -182,6 +194,7 @@ class ArtefaktZauber {
       zfw: _ganzzahl(json['zfw']),
       zfpStern: _ganzzahl(json['zfpStern']),
       kostenAsp: _ganzzahl(json['kostenAsp']),
+      pAsP: _ganzzahl(json['pAsP']),
       reichweite: text('reichweite'),
       wirkungsdauer: text('wirkungsdauer'),
       zielHinweis: text('zielHinweis'),
@@ -235,7 +248,10 @@ class ArtefaktDaten {
   /// Aktionen, die das Betätigen des Auslösers braucht (mindestens 1).
   final int ausloeserAktionen;
 
-  /// Permanent gebundene AsP des Artefakts.
+  /// Permanent gebundene AsP des Artefakts insgesamt.
+  ///
+  /// Ein ausdrücklich eingetragener Wert gilt vor der Summe der Zauber-pAsP
+  /// (`ArtefaktZauber.pAsP`); `artefaktPAspGesamt` fasst beides zusammen.
   final int? pAsP;
 
   /// Ob die Matrix irreparabel beschädigt ist.

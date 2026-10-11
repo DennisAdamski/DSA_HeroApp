@@ -187,4 +187,47 @@ void main() {
       expect(matrixAspReichen(7, 8), isFalse);
     });
   });
+
+  group('Permanente AsP', () {
+    test('ohne jede Angabe gibt es keinen Wert', () {
+      const daten = ArtefaktDaten(
+        zauber: <ArtefaktZauber>[ArtefaktZauber(name: 'A')],
+      );
+
+      expect(artefaktPAspSumme(daten), isNull);
+      expect(artefaktPAspGesamt(daten), isNull);
+    });
+
+    test('die Summe zählt nur erfasste Zauber-pAsP', () {
+      const daten = ArtefaktDaten(
+        zauber: <ArtefaktZauber>[
+          ArtefaktZauber(name: 'A', pAsP: 3),
+          ArtefaktZauber(name: 'B'),
+          ArtefaktZauber(name: 'C', pAsP: 2),
+        ],
+      );
+
+      expect(artefaktPAspSumme(daten), 5);
+      expect(artefaktPAspGesamt(daten), 5);
+    });
+
+    test('ein eingetragener Gesamtwert gilt vor der Summe', () {
+      const daten = ArtefaktDaten(
+        pAsP: 4,
+        zauber: <ArtefaktZauber>[ArtefaktZauber(name: 'A', pAsP: 3)],
+      );
+
+      expect(artefaktPAspSumme(daten), 3);
+      expect(artefaktPAspGesamt(daten), 4);
+    });
+
+    test('ein Gesamtwert 0 bleibt 0', () {
+      const daten = ArtefaktDaten(
+        pAsP: 0,
+        zauber: <ArtefaktZauber>[ArtefaktZauber(name: 'A', pAsP: 3)],
+      );
+
+      expect(artefaktPAspGesamt(daten), 0);
+    });
+  });
 }

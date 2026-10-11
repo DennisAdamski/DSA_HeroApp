@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:dsa_heldenverwaltung/ablaeufe/matrix_ausloesen.dart';
 import 'package:dsa_heldenverwaltung/domain/artefakt_daten.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/artefakt_matrix_rules.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/artefakt_zauber_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/list_tile_material.dart';
 
@@ -124,6 +125,7 @@ class _ArtefaktEditorAbschnittState extends State<ArtefaktEditorAbschnitt> {
     TextEditingController controller,
     ArtefaktDaten Function(ArtefaktDaten alt, String text) schreibe, {
     bool zahl = false,
+    String? hilfe,
   }) => TextField(
     key: ValueKey<String>('inventory-editor-artefakt-$schluessel'),
     controller: controller,
@@ -131,6 +133,7 @@ class _ArtefaktEditorAbschnittState extends State<ArtefaktEditorAbschnitt> {
     onChanged: (t) => _aendere((d) => schreibe(d, t)),
     decoration: InputDecoration(
       labelText: label,
+      helperText: hilfe,
       border: const OutlineInputBorder(),
       isDense: true,
     ),
@@ -223,6 +226,9 @@ class _ArtefaktEditorAbschnittState extends State<ArtefaktEditorAbschnitt> {
                   _pAsP,
                   (d, t) => d.copyWith(pAsP: int.tryParse(t.trim())),
                   zahl: true,
+                  hilfe: artefaktPAspSumme(daten) == null
+                      ? null
+                      : 'Summe der Zauber: ${artefaktPAspSumme(daten)}',
                 ),
               ),
             ],
@@ -289,6 +295,7 @@ class _ZauberZeile extends StatelessWidget {
       if (zauber.zfw != null) 'ZfW ${zauber.zfw}',
       if (zauber.zfpStern != null) 'ZfP* ${zauber.zfpStern}',
       if (zauber.kostenAsp != null) '${zauber.kostenAsp} AsP',
+      if (zauber.pAsP != null) '${zauber.pAsP} pAsP',
     ].join(' · ');
     return ListTileMaterial(
       child: ListTile(

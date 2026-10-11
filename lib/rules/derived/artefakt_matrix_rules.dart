@@ -112,6 +112,20 @@ bool matrixBrauchtZusatzwurf(MatrixStabilitaet stabilitaet, int w20) =>
 int matrixGrundkosten(ArtefaktDaten daten) =>
     daten.zauber.fold<int>(0, (summe, z) => summe + (z.kostenAsp ?? 0));
 
+/// Summe der je Zauber erfassten permanenten AsP; `null`, wenn kein Zauber
+/// einen Wert trägt.
+int? artefaktPAspSumme(ArtefaktDaten daten) {
+  final werte = daten.zauber.map((z) => z.pAsP).whereType<int>();
+  return werte.isEmpty ? null : werte.fold<int>(0, (summe, w) => summe + w);
+}
+
+/// Permanente AsP des Artefakts insgesamt.
+///
+/// Ein ausdrücklich eingetragener Gesamtwert (`ArtefaktDaten.pAsP`) gilt vor
+/// der Summe der Zauber-pAsP; ohne beides ist das Ergebnis `null`.
+int? artefaktPAspGesamt(ArtefaktDaten daten) =>
+    daten.pAsP ?? artefaktPAspSumme(daten);
+
 /// Ob für mindestens einen Zauber (oder die ganze Matrix) keine Kosten
 /// hinterlegt sind.
 bool matrixKostenOffen(ArtefaktDaten daten) =>
