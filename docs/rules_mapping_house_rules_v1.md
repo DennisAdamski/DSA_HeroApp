@@ -159,7 +159,7 @@ Hausregeln aus **Epische Stufen** getrennt:
 | Repräsentation | Neun Repräsentationen; Schamanen, Derwische, Durro-Dûn, Zibiljas und Zaubertänzer haben grundsätzlich RK ohne eigene Repräsentation. Hinweis zur dritten Repräsentation enthält erneut 50 ZfP; eigener Erwerbsdialog unverändert. | WdH S. 290 (4824–4825); WdZ S. 19 (4986) |
 | Bannschwert, Geber der Gestalt, Höhere Dämonenbindung, Hexenflüche, Schalenzauber, Stabzauber, Schuppenbeutel, Schlangenring-Zauber, Trommelzauber, Zaubertänze, Zibilja-Rituale, Zauberzeichen | Benannte RK-Bedingungen ergänzen die Tradition; RK-Alternativen per ODER, insbesondere RkW 11 bei Geber der Gestalt und Höherer Dämonenbindung. Beim Bannschwert gilt die nicht-metallische Einschränkung für Druiden **und** Geoden. Nicht eindeutig benannte schamanische RK bleibt Hinweis. | WdH S. 285–293 (4810, 4814–4816, 4826–4828, 4831, 4833–4834) |
 | Druidische Dolchrituale | Geodischer Zugang nur Herr der Erde; RK Druide oder Geode erforderlich. Bann, Leib und Opferdolch nur Druiden; RkW und Zusatzbedingungen je Variante als Hinweis. | WdH S. 285–286 (4811–4812) |
-| Druidische Herrschaftsrituale | RK Druide oder Geister Binden; schamanische Alternative nur Ferkina-/Trollzacker-Schamanen. Kultur und varianteabhängige Bedingungen bleiben manuell. | WdH S. 286 (4812) |
+| Druidische Herrschaftsrituale | RK Druide oder Geister Binden; schamanische Alternative nur Ferkina-/Trollzacker-Schamanen. Kultur und variantenabhängige Bedingungen bleiben manuell. | WdH S. 286 (4812) |
 | Vertrautenbindung | Hexe, Geode **Diener Sumus**, Zibilja oder Goblin-Schamanin; jeweils passende RK, bei Goblin-Schamaninnen Geister Binden 7. Kultur/Profession bleiben Hinweis, der separate Bindungsablauf unverändert. | WdH S. 292 (4830) |
 | Ottagaldr, Tanz der Mada | Unbelegte Gildenmagier-Sperre entfernt. Ottagaldr umfasst beteiligte Nichtzauberer; Lehrzugang und Gemeinschaft bleiben Hinweis. Tanz der Mada ohne Unstet, weitere Zugänge nach Meisterentscheid. | WdH S. 289, 291–292 (4823, 4828–4830) |
 | Elementarharmonisierte Aura | Elementare Merkmalskenntnis **oder** elementare Begabung. Dämonische Kenntnisse/Begabungen, Pakt und der verbotene Vorteil Affinität zu Dämonen bleiben ausdrückliche manuelle Ausschlüsse; kein falsches Nachteilsverbot für diesen Vorteil. | WdH S. 286 (4812–4813) |
@@ -214,6 +214,15 @@ Regelbuchvoraussetzung.
   Repräsentationen, Merkmalskenntnissen und Zauberspezialisierungen ist
   gesondert abzugleichen; deren `nur_information`-Katalogeinträge ersetzen
   keine Prüfung im zugehörigen Ablauf.
+
+**Validierung am 11. Oktober 2026:** `flutter analyze` ohne Befunde;
+139 bestehende Tests aus Katalog-/Schema-, Voraussetzungsauswerter-,
+Traditions-/Heldenkontext-, Varianten- und Stufenkettenprüfungen bestanden
+(`--concurrency=1`, acht Testdateien). Zusätzlich geprüft: 105 eindeutige
+Einträge, ausschließlich bekannte Bedingungsarten, keine namenlosen
+RK-Bedingungen, korrekte UTF-8-Texte sowie unveränderte IDs, Namen,
+Aliasnamen, Varianten, AP-Kosten und Ketten. Keine Vollsuite und keine
+Behauptung vollständiger automatischer Prüfung der oben offenen Regeln.
 
 ### Allgemeine Sonderfertigkeiten: Voraussetzungen
 
