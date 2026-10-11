@@ -74,6 +74,11 @@ const _catalog = RulesCatalog(
 );
 
 void main() {
+  Future<void> oeffneGruppe(WidgetTester tester, String name) async {
+    await tester.tap(find.byKey(ValueKey('advancement-group-header-$name')));
+    await tester.pumpAndSettle();
+  }
+
   Future<ProviderContainer> open(WidgetTester tester, Size size) async {
     tester.view.devicePixelRatio = 1;
     tester.view.physicalSize = size;
@@ -105,6 +110,7 @@ void main() {
     tester,
   ) async {
     final container = await open(tester, const Size(1100, 900));
+    await oeffneGruppe(tester, 'kampfWaffenmanoever');
     final next = find.byKey(const ValueKey('skill-node-maneuver:man_next'));
     expect(
       find.descendant(of: next, matching: find.text('Gesperrt')),
@@ -199,8 +205,10 @@ void main() {
     );
     expect(magic, findsNothing);
     expect(karma, findsNothing);
-    await tester.tap(find.text('Unpassende Sonderfertigkeiten anzeigen'));
+    await tester.tap(find.text('Unpassende einblenden'));
     await tester.pumpAndSettle();
+    await oeffneGruppe(tester, 'magieWeitere');
+    await oeffneGruppe(tester, 'karmaGrundlagen');
     expect(magic, findsOneWidget);
     expect(karma, findsOneWidget);
     final repo = container.read(heroRepositoryProvider);
@@ -208,7 +216,7 @@ void main() {
       (await repo.loadHeroById(_hero.id))!.showInapplicableSpecialAbilities,
       true,
     );
-    await tester.tap(find.text('Unpassende Sonderfertigkeiten anzeigen'));
+    await tester.tap(find.text('Unpassende einblenden'));
     await tester.pumpAndSettle();
     expect(magic, findsNothing);
     expect(karma, findsNothing);

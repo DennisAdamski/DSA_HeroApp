@@ -272,6 +272,10 @@ void main() {
     );
     await tester.tap(find.text('Sonderfertigkeiten'));
     await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(const ValueKey('advancement-group-header-allgemeinPraxis')),
+    );
+    await tester.pumpAndSettle();
     expect(
       find.byKey(const ValueKey('skill-node-generalAbility:will1')),
       findsOneWidget,

@@ -16,6 +16,7 @@ class CombatSpecialAbilityDef implements SpecialAbilityEntry {
     this.typ = 'sonderfertigkeit',
     this.stilTyp = '',
     this.kampfTyp = '',
+    this.kategorie = '',
     this.seite = '',
     this.beschreibung = '',
     this.erklarungLang = '',
@@ -41,6 +42,8 @@ class CombatSpecialAbilityDef implements SpecialAbilityEntry {
   final String typ; // Typisierung, aktuell 'sonderfertigkeit'
   final String stilTyp; // Optionaler Stiltyp, z. B. 'waffenloser_kampfstil'
   final String kampfTyp; // Kampfkategorie für epische SF: 'nahkampf', 'fernkampf', 'allgemein', 'waffenlos', 'grossmeister'
+  final String
+  kategorie; // Optionale Katalogkategorie, z. B. 'Waffen-Großmeister'
   final String seite; // Seitenreferenz im Regelwerk
   final String beschreibung; // Kurze Beschreibung
   final String erklarungLang; // Ausfuehrliche Regelbeschreibung
@@ -92,6 +95,7 @@ class CombatSpecialAbilityDef implements SpecialAbilityEntry {
       typ: readCatalogString(json, 'typ', fallback: 'sonderfertigkeit'),
       stilTyp: readCatalogString(json, 'stil_typ', fallback: ''),
       kampfTyp: readCatalogString(json, 'kampfTyp', fallback: ''),
+      kategorie: readCatalogString(json, 'kategorie', fallback: ''),
       seite: readCatalogString(json, 'seite', fallback: ''),
       beschreibung: readCatalogString(json, 'beschreibung', fallback: ''),
       erklarungLang: readCatalogString(json, 'erklarung_lang', fallback: ''),
@@ -134,6 +138,7 @@ class CombatSpecialAbilityDef implements SpecialAbilityEntry {
       'typ': typ,
       'stil_typ': stilTyp,
       if (kampfTyp.isNotEmpty) 'kampfTyp': kampfTyp,
+      if (kategorie.isNotEmpty) 'kategorie': kategorie,
       'seite': seite,
       'beschreibung': beschreibung,
       'erklarung_lang': erklarungLang,

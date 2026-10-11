@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:dsa_heldenverwaltung/rules/derived/advancement_options.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/advancement/advancement_talent_groups.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/karto_variante.dart';
 import 'package:dsa_heldenverwaltung/ui2/widgets/karto_flaeche.dart';
 
@@ -15,6 +16,7 @@ class AdvancementValueTile extends StatelessWidget {
     this.specialization,
     this.specializations = const [],
     this.onSpecialize,
+    this.gruppe,
   });
 
   /// Regeloption für den numerischen Wert.
@@ -34,6 +36,10 @@ class AdvancementValueTile extends StatelessWidget {
 
   /// Öffnet den Spezialisierungserwerb.
   final VoidCallback? onSpecialize;
+
+  /// Talentgruppe, deren Farbleiste die Kachel kennzeichnet; ohne Gruppe bleibt
+  /// die Kachel unverändert.
+  final TalentGruppe? gruppe;
 
   /// Zeigt Wert, Grenzen und getrennt freigegebene Aktionen ohne Regelrechnung.
   @override
@@ -119,12 +125,37 @@ class AdvancementValueTile extends StatelessWidget {
           ),
       ],
     );
-    if (kartoVariante(context) != null) {
-      return KartoFlaeche(innen: const EdgeInsets.all(12), child: content);
-    }
-    return Card(
-      margin: EdgeInsets.zero,
-      child: Padding(padding: const EdgeInsets.all(12), child: content),
+    final Widget tile = kartoVariante(context) != null
+        ? KartoFlaeche(innen: const EdgeInsets.all(12), child: content)
+        : Card(
+            margin: EdgeInsets.zero,
+            child: Padding(padding: const EdgeInsets.all(12), child: content),
+          );
+    final gruppe = this.gruppe;
+    if (gruppe == null) return tile;
+    // Die Leiste liegt eingerückt auf der Kante, damit sie die gerundeten
+    // Ecken der Kachel nicht überragt.
+    return Stack(
+      children: [
+        tile,
+        Positioned(
+          left: 0,
+          top: 12,
+          bottom: 12,
+          width: 5,
+          child: ExcludeSemantics(
+            child: DecoratedBox(
+              key: ValueKey('advancement-group-stripe-${option.targetId}'),
+              decoration: BoxDecoration(
+                color: gruppe.akzent(theme.brightness),
+                borderRadius: const BorderRadius.horizontal(
+                  right: Radius.circular(3),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

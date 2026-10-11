@@ -10,7 +10,9 @@ import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/advancement/advancement_activation_sheet.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/advancement/advancement_catalog_actions.dart';
 
+import 'advancement_base_value_tile.dart';
 import 'advancement_skill_tree_view.dart';
+import 'advancement_talent_groups.dart';
 import 'advancement_value_tile.dart';
 import 'advancement_specialization_dialog.dart';
 
@@ -83,10 +85,49 @@ enum _CatalogCategory {
   };
 }
 
+/// Abschnittskopf über den zugekauften Basiswerten, abgesetzt von den
+/// Eigenschaftskacheln durch eine Linie statt einer weiteren Karte.
+class _BasiswertUeberschrift extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Flexible(
+          child: Text(
+            'Basiswerte',
+            overflow: TextOverflow.ellipsis,
+            style: theme.textTheme.titleMedium,
+          ),
+        ),
+        const SizedBox(width: 8),
+        Flexible(
+          child: Text(
+            'Zukäufe mit AP',
+            overflow: TextOverflow.ellipsis,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        const Expanded(child: Divider(height: 1)),
+      ],
+    );
+  }
+}
+
 class _AdvancementCatalogState extends ConsumerState<AdvancementCatalog> {
   final _searchController = TextEditingController();
   _CatalogCategory _category = _CatalogCategory.attributes;
   bool _dialogOpen = false;
+
+  // Eingeklappte Talentgruppen und die Anker, zu denen die Sprungleiste scrollt.
+  final _eingeklappt = <TalentGruppe>{};
+  final _gruppenAnker = <TalentGruppe, GlobalKey>{
+    for (final gruppe in TalentGruppe.values) gruppe: GlobalKey(),
+  };
 
   @override
   void dispose() {
@@ -253,7 +294,7 @@ class _AdvancementCatalogState extends ConsumerState<AdvancementCatalog> {
       hero: session.preview,
       catalog: session.catalog,
     );
-    Widget tile(AdvancementOption option) {
+    Widget tile(AdvancementOption option, {TalentGruppe? gruppe}) {
       final spec =
           option.kind == AdvancementKind.talent && option.currentValue >= 0
           ? resolveTalentSpecialization(rules, option.targetId, const {
@@ -274,15 +315,28 @@ class _AdvancementCatalogState extends ConsumerState<AdvancementCatalog> {
         onSpecialize: session.isSaving || _dialogOpen
             ? null
             : () => _specialize(option.targetId),
+        gruppe: gruppe,
       );
     }
 
-    Widget tiles(List<AdvancementOption> values) => LayoutBuilder(
+    Widget baseTile(AdvancementOption option) => AdvancementBaseValueTile(
+      option: option,
+      planned: plannedTargets.contains(
+        '${option.kind.name}:${option.targetId}',
+      ),
+      onPlan: session.isSaving || _dialogOpen ? null : () => _plan(option),
+    );
+
+    Widget tiles(
+      List<AdvancementOption> values, {
+      double minWidth = 260,
+      Widget Function(AdvancementOption option)? builder,
+    }) => LayoutBuilder(
       builder: (context, constraints) {
         final scale = MediaQuery.textScalerOf(context).scale(1);
         final columns = math.max(
           1,
-          (constraints.maxWidth / (260 * scale)).floor(),
+          (constraints.maxWidth / (minWidth * scale)).floor(),
         );
         final width = (constraints.maxWidth - (columns - 1) * 10) / columns;
         return Wrap(
@@ -290,7 +344,7 @@ class _AdvancementCatalogState extends ConsumerState<AdvancementCatalog> {
           runSpacing: 10,
           children: [
             for (final option in values)
-              SizedBox(width: width, child: tile(option)),
+              SizedBox(width: width, child: (builder ?? tile)(option)),
           ],
         );
       },
@@ -301,7 +355,13 @@ class _AdvancementCatalogState extends ConsumerState<AdvancementCatalog> {
     final bought = options
         .where((o) => o.kind == AdvancementKind.boughtStat)
         .toList();
-    return SingleChildScrollView(
+    // Talente, Sprachen und Schriften erscheinen nach Gruppen getrennt, damit
+    // die gewünschte Gruppe über die Sprungleiste schnell erreichbar ist.
+    final gruppiert = _category == _CatalogCategory.talents;
+    final gruppen = gruppiert
+        ? gruppiereTalente(options, session.catalog)
+        : const <TalentGruppe, List<AdvancementOption>>{};
+    final liste = SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -309,35 +369,64 @@ class _AdvancementCatalogState extends ConsumerState<AdvancementCatalog> {
           if (showImpact)
             LayoutBuilder(
               builder: (context, constraints) {
-                final stats = Column(
+                // Eigenschaften und zugekaufte Basiswerte teilen sich den
+                // Kachelbereich; die Berechnung steht getrennt daneben bzw.
+                // darunter.
+                final werte = Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    AdvancementImpactPanel(session: session),
-                    const SizedBox(height: 10),
-                    tiles(bought),
+                    tiles(attributes),
+                    if (bought.isNotEmpty) ...[
+                      const SizedBox(height: 20),
+                      _BasiswertUeberschrift(),
+                      const SizedBox(height: 10),
+                      tiles(bought, minWidth: 190, builder: baseTile),
+                    ],
                   ],
                 );
+                final berechnung = AdvancementImpactPanel(session: session);
                 if (constraints.maxWidth < 760 ||
                     MediaQuery.textScalerOf(context).scale(1) > 1.3) {
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      tiles(attributes),
-                      const SizedBox(height: 16),
-                      stats,
-                    ],
+                    children: [werte, const SizedBox(height: 16), berechnung],
                   );
                 }
                 return Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(child: tiles(attributes)),
+                    Expanded(child: werte),
                     const SizedBox(width: 16),
-                    SizedBox(width: 260, child: stats),
+                    SizedBox(width: 280, child: berechnung),
                   ],
                 );
               },
             )
+          else if (gruppiert)
+            for (final eintrag in gruppen.entries) ...[
+              KeyedSubtree(
+                key: _gruppenAnker[eintrag.key],
+                child: TalentGruppenKopf(
+                  gruppe: eintrag.key,
+                  anzahl: eintrag.value.length,
+                  eingeklappt: _eingeklappt.contains(eintrag.key),
+                  onUmschalten: () => setState(() {
+                    if (!_eingeklappt.remove(eintrag.key)) {
+                      _eingeklappt.add(eintrag.key);
+                    }
+                  }),
+                ),
+              ),
+              if (!_eingeklappt.contains(eintrag.key))
+                Padding(
+                  padding: const EdgeInsets.only(top: 10),
+                  child: tiles(
+                    eintrag.value,
+                    builder: (option) => tile(option, gruppe: eintrag.key),
+                  ),
+                ),
+              const SizedBox(height: 20),
+            ]
           else if (options.isNotEmpty)
             tiles(options),
           if (options.isEmpty) _buildEmptyState(context, query),
@@ -357,6 +446,45 @@ class _AdvancementCatalogState extends ConsumerState<AdvancementCatalog> {
         ],
       ),
     );
+    if (!gruppiert || gruppen.isEmpty) return liste;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        TalentGruppenLeiste(
+          gruppen: {
+            for (final eintrag in gruppen.entries)
+              eintrag.key: eintrag.value.length,
+          },
+          eingeklappt: _eingeklappt,
+          onSpringen: _springeZuGruppe,
+        ),
+        Expanded(child: liste),
+      ],
+    );
+  }
+
+  // Klappt die Gruppe bei Bedarf auf und scrollt ihren Kopf an den oberen Rand.
+  void _springeZuGruppe(TalentGruppe gruppe) {
+    final wasCollapsed = _eingeklappt.contains(gruppe);
+    void scrollen() {
+      final anker = _gruppenAnker[gruppe]?.currentContext;
+      if (anker == null || !anker.mounted) return;
+      Scrollable.ensureVisible(
+        anker,
+        alignment: 0,
+        duration: MediaQuery.disableAnimationsOf(anker)
+            ? Duration.zero
+            : const Duration(milliseconds: 280),
+        curve: Curves.easeOutCubic,
+      );
+    }
+
+    if (!wasCollapsed) {
+      scrollen();
+      return;
+    }
+    setState(() => _eingeklappt.remove(gruppe));
+    WidgetsBinding.instance.addPostFrameCallback((_) => scrollen());
   }
 
   // Der Erwerb nutzt denselben Controller und dieselbe Fehlerrückmeldung wie Steigerungen.

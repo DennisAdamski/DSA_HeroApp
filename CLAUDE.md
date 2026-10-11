@@ -397,6 +397,13 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   Sie verwenden `AdvancementKind.talent` mit `options.action = specialization`
   und `options.specialization` als Namen; Replay erhält TaW, SE und übrige
   Talentfelder und übernimmt beide Spezialisierungsfelder synchron.
+  Empfehlungen für Nicht-Kampftalente liefert `talent_specialization_hints.dart`
+  (WdS-Listen je Talentname, nur Auswahlhilfe ohne Sperre; Kampftalente wählen
+  weiter aus ihren Waffenkategorien). Der Talentkatalog gruppiert nach
+  `advancement_talent_groups.dart` (`TalentGruppe` mit eigener Farbe und
+  eigenem Symbol, Sprungleiste, einklappbare Köpfe); ein neues Talent braucht
+  dort nur eine passende `group` im Katalog, in den Empfehlungen einen Eintrag
+  (der Test gegen den echten Katalog meldet fehlende).
   Nur Übernehmen schreibt Werte, AP/SE und `HeroSheet.advancementHistory`
   gemeinsam, über den Ablauf `SteigerungsrundeUebernehmen`
   (`lib/ablaeufe/steigerungsrunde_uebernehmen.dart`, auch für die
@@ -431,6 +438,18 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   zeichnet die Zweige. `rules/derived/advancement_maneuver_rules.dart` löst
   Manövererwerbe einschließlich talentgebundener IDs (`id::talentId`) auf.
   `learnedManeuverIds` berücksichtigt auch Freischaltungen durch Kampf-SF.
+- Der Fähigkeitenbaum ist nach Bereich (Kampf/Allgemein/Magie/Karma) und
+  Gruppe gegliedert: `rules/derived/advancement_ability_groups.dart` ordnet
+  jede Option einer `FaehigkeitenGruppe` zu (Katalogfelder `kategorie`,
+  `typ`, `kette`, `stil_typ`, `kampfTyp`, Manöver-`gruppe`, `nurEpisch`;
+  wenige Namenslisten für Spezialkampf/Fernkampf-Pakete). Eine Zusammenhangs-
+  komponente liegt in der Gruppe ihrer meisten Knoten (Gleichstand: frühere
+  Gruppe), Zweige bleiben `SkillTreeBranch`, freistehende Einträge sind
+  `SkillTreeChip`-Kacheln. Köpfe und Sprungleiste teilen sich die
+  Bausteine des Talentkatalogs (`GruppenAnzeige`); Gruppen starten
+  zugeklappt, Suche und „Nur erlernbar“ klappen Treffergruppen auf. Neue
+  Sammelgruppen/Namen nur dort pflegen; `test/rules/advancement_ability_groups_test.dart`
+  prüft gegen den echten Katalog, dass jede Gruppe belegt ist.
 - `ui/screens/advancement/advancement_ability_details.dart` ergänzt den
   Baum-Detaildialog um die verfügbaren Katalogangaben für Sonderfertigkeiten
   und Manöver. Die Darstellung löst Referenznamen aus dem Sitzungskatalog auf
