@@ -15,6 +15,13 @@ enum AdvancementKind {
 
   /// Einmaliger Manövererwerb, gegebenenfalls pro Kampftalent.
   maneuver,
+
+  /// Nachträglicher Erwerb oder Ausbau eines Vorteils (WdS S. 170).
+  advantage,
+
+  /// Abbau eines Nachteils oder Senken einer Schlechten Eigenschaft
+  /// (WdS S. 170).
+  disadvantage,
 }
 
 /// Unveränderlicher Steigerungsbefehl und historischer Erwerbsnachweis.

@@ -8,6 +8,7 @@
 library;
 
 import 'package:dsa_heldenverwaltung/catalog/special_ability_requirement.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/karma_gottheit_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/special_ability_variant_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/tradition_rules.dart';
 
@@ -80,6 +81,7 @@ class HeroRequirementContext {
     this.basiswerte = const <String, int>{},
     this.manoever = const <String>[],
     this.waffenmeisterschaften = const <String>[],
+    this.gottheit = '',
   });
 
   /// Eigenschaftswerte nach Kuerzel (`MU`, `KL`, …).
@@ -124,6 +126,9 @@ class HeroRequirementContext {
 
   /// Kampftalente, auf die der Held eine Waffenmeisterschaft besitzt.
   final List<String> waffenmeisterschaften;
+
+  /// Gottheit des Helden (`HeroSheet.gottheit`); leer, solange nicht erfasst.
+  final String gottheit;
 
   /// Die Leiteigenschafts-Kuerzel dieses Helden.
   Set<String> get leiteigenschaften =>
@@ -223,6 +228,8 @@ RequirementCheckResult evaluateRequirement(
             ? 'Repräsentation vorhanden'
             : 'keine Repräsentation eingetragen',
       );
+    case RequirementArt.gottheit:
+      return _pruefeGottheit(requirement, context);
     case RequirementArt.oderGruppe:
       return _pruefeGruppe(requirement, context, alleNoetig: false);
     case RequirementArt.undGruppe:
@@ -436,6 +443,33 @@ int? _besterWert(Map<String, int> werte, String name) {
     }
   }
   return treffer;
+}
+
+// Ohne erfasste Gottheit laesst sich nichts pruefen; das ist ein Hinweis,
+// keine Sperre (CLAUDE.md: offene Punkte sperren nie).
+RequirementCheckResult _pruefeGottheit(
+  SpecialAbilityRequirement requirement,
+  HeroRequirementContext context,
+) {
+  final gefordert = requirement.alleNamen;
+  final soll = 'Geweihter: ${gefordert.join(' oder ')}';
+  final eigene = context.gottheit.trim();
+  if (eigene.isEmpty) {
+    return RequirementCheckResult(
+      requirement: requirement,
+      status: RequirementStatus.hinweis,
+      sollText: soll,
+      istText: 'Gottheit am Helden nicht erfasst',
+    );
+  }
+  return RequirementCheckResult(
+    requirement: requirement,
+    status: gottheitPasst(eigene, gefordert)
+        ? RequirementStatus.erfuellt
+        : RequirementStatus.nichtErfuellt,
+    sollText: soll,
+    istText: eigene,
+  );
 }
 
 RequirementCheckResult _pruefeTradition(

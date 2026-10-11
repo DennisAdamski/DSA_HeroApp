@@ -19,7 +19,12 @@ HeroSheet _applyEntry(
       },
     );
   }
+  if (option.isWaffenmeister) return applyWaffenmeisterEntry(hero, entry);
+  if (option.isMerkmalskenntnis) return applyMerkmalskenntnisEntry(hero, entry);
   switch (entry.kind) {
+    case AdvancementKind.advantage:
+    case AdvancementKind.disadvantage:
+      return applyTraitEntry(hero, entry, catalog);
     case AdvancementKind.maneuver:
       final rules = hero.combatConfig.specialRules;
       return hero.copyWith(

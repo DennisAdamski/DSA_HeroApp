@@ -1903,6 +1903,12 @@
     "nurEpisch": false,
     "voraussetzungen_struktur": [
       {
+        "art": "tradition",
+        "namen": [
+          "Elf"
+        ]
+      },
+      {
         "art": "vorteil",
         "name": "Zweistimmiger Gesang"
       }
@@ -2932,6 +2938,14 @@
     "nurEpisch": false,
     "voraussetzungen_struktur": [
       {
+        "art": "tradition",
+        "namen": [
+          "Gildenmagier",
+          "Achaz-Kristallomant",
+          "Scharlatan"
+        ]
+      },
+      {
         "art": "hinweis",
         "text": "Voraussetzungen je nach Kugelzauber"
       }
@@ -2953,6 +2967,12 @@
     "hausregel": false,
     "nurEpisch": false,
     "voraussetzungen_struktur": [
+      {
+        "art": "tradition",
+        "namen": [
+          "Schelm"
+        ]
+      },
       {
         "art": "eigenschaft",
         "code": "IN",
@@ -3326,6 +3346,12 @@
     "nurEpisch": false,
     "voraussetzungen_struktur": [
       {
+        "art": "tradition",
+        "namen": [
+          "Durro-Dûn"
+        ]
+      },
+      {
         "art": "hinweis",
         "text": "Voraussetzungen je nach Gabe"
       }
@@ -3347,6 +3373,12 @@
     "hausregel": false,
     "nurEpisch": false,
     "voraussetzungen_struktur": [
+      {
+        "art": "tradition",
+        "namen": [
+          "Gildenmagier"
+        ]
+      },
       {
         "art": "hinweis",
         "text": "Wird ausschließlich an der Runajasko zu Olport und nur kompletten thorwalschen Schiffsgemeinschaften gelehrt"
@@ -3511,6 +3543,12 @@
     "hausregel": false,
     "nurEpisch": false,
     "voraussetzungen_struktur": [
+      {
+        "art": "tradition",
+        "namen": [
+          "Elf"
+        ]
+      },
       {
         "art": "vorteil",
         "name": "Zweistimmiger Gesang"
@@ -4004,6 +4042,12 @@
     "nurEpisch": false,
     "voraussetzungen_struktur": [
       {
+        "art": "tradition",
+        "namen": [
+          "Gildenmagier"
+        ]
+      },
+      {
         "art": "nachteil_verboten",
         "name": "Unstet"
       }
@@ -4025,6 +4069,12 @@
     "hausregel": false,
     "nurEpisch": false,
     "voraussetzungen_struktur": [
+      {
+        "art": "tradition",
+        "namen": [
+          "Elf"
+        ]
+      },
       {
         "art": "vorteil",
         "name": "Zweistimmiger Gesang"

@@ -73,6 +73,21 @@ const _catalog = RulesCatalog(
   ],
 );
 
+// Wechselt in einen Arbeitsbereich und dort in einen Abschnitt.
+Future<void> zuAbschnitt(
+  WidgetTester tester,
+  String bereich,
+  String abschnitt,
+) async {
+  await tester.tap(find.byKey(ValueKey('advancement-bereich-$bereich')));
+  await tester.pumpAndSettle();
+  final chip = find.byKey(ValueKey('advancement-abschnitt-$abschnitt'));
+  if (chip.evaluate().isEmpty) return;
+  await tester.ensureVisible(chip);
+  await tester.tap(chip);
+  await tester.pumpAndSettle();
+}
+
 void main() {
   Future<void> oeffneGruppe(WidgetTester tester, String name) async {
     await tester.tap(find.byKey(ValueKey('advancement-group-header-$name')));
@@ -101,8 +116,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Sonderfertigkeiten'));
-    await tester.pumpAndSettle();
+    await zuAbschnitt(tester, 'kampf', 'kampfSf');
     return container;
   }
 
@@ -197,20 +211,32 @@ void main() {
     tester,
   ) async {
     final container = await open(tester, const Size(1400, 1000));
-    final magic = find.byKey(
-      const ValueKey('skill-node-magicAbility:magic_test'),
+    final magieBereich = find.byKey(
+      const ValueKey('advancement-bereich-magie'),
     );
-    final karma = find.byKey(
-      const ValueKey('skill-node-karmalAbility:karma_test'),
+    final karmaBereich = find.byKey(
+      const ValueKey('advancement-bereich-karma'),
     );
-    expect(magic, findsNothing);
-    expect(karma, findsNothing);
+    // Ohne Befähigung bleiben Magie und Karma als Bereiche verborgen.
+    expect(magieBereich, findsNothing);
+    expect(karmaBereich, findsNothing);
     await tester.tap(find.text('Unpassende einblenden'));
     await tester.pumpAndSettle();
+    expect(magieBereich, findsOneWidget);
+    expect(karmaBereich, findsOneWidget);
+
+    await zuAbschnitt(tester, 'magie', 'magieSf');
     await oeffneGruppe(tester, 'magieWeitere');
+    expect(
+      find.byKey(const ValueKey('skill-node-magicAbility:magic_test')),
+      findsOneWidget,
+    );
+    await zuAbschnitt(tester, 'karma', 'karmaSf');
     await oeffneGruppe(tester, 'karmaGrundlagen');
-    expect(magic, findsOneWidget);
-    expect(karma, findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('skill-node-karmalAbility:karma_test')),
+      findsOneWidget,
+    );
     final repo = container.read(heroRepositoryProvider);
     expect(
       (await repo.loadHeroById(_hero.id))!.showInapplicableSpecialAbilities,
@@ -218,8 +244,8 @@ void main() {
     );
     await tester.tap(find.text('Unpassende einblenden'));
     await tester.pumpAndSettle();
-    expect(magic, findsNothing);
-    expect(karma, findsNothing);
+    expect(magieBereich, findsNothing);
+    expect(karmaBereich, findsNothing);
     expect(tester.takeException(), isNull);
   });
 }

@@ -55,6 +55,7 @@ class HeroSheet {
     this.merkmalskenntnisse = const <String>[],
     this.magicSpecialAbilities = const <MagicSpecialAbility>[],
     this.magicLeadAttribute = '',
+    this.gottheit = '',
     this.sprachen = const <String, HeroLanguageEntry>{},
     this.schriften = const <String, HeroScriptEntry>{},
     this.muttersprache = '',
@@ -126,6 +127,13 @@ class HeroSheet {
   final List<String> merkmalskenntnisse;
   final List<MagicSpecialAbility> magicSpecialAbilities;
   final String magicLeadAttribute;
+
+  /// Gottheit (oder Kult) eines Geweihten, z. B. `Praios`; leer, solange
+  /// nicht erfasst. Steuert, welche gottheitsgebundenen karmalen
+  /// Sonderfertigkeiten die Steigerungsplanung zeigt
+  /// (`karma_gottheit_rules.dart`). Nur bei Belegung im JSON, damit
+  /// Bestandshelden ihren Inhalts-Hash behalten.
+  final String gottheit;
 
   /// Sprachkenntnisse: sprachId → Eintrag.
   final Map<String, HeroLanguageEntry> sprachen;
@@ -248,6 +256,7 @@ class HeroSheet {
     List<String>? merkmalskenntnisse,
     List<MagicSpecialAbility>? magicSpecialAbilities,
     String? magicLeadAttribute,
+    String? gottheit,
     Map<String, HeroLanguageEntry>? sprachen,
     Map<String, HeroScriptEntry>? schriften,
     String? muttersprache,
@@ -314,6 +323,7 @@ class HeroSheet {
       magicSpecialAbilities:
           magicSpecialAbilities ?? this.magicSpecialAbilities,
       magicLeadAttribute: magicLeadAttribute ?? this.magicLeadAttribute,
+      gottheit: gottheit ?? this.gottheit,
       sprachen: sprachen ?? this.sprachen,
       schriften: schriften ?? this.schriften,
       muttersprache: muttersprache ?? this.muttersprache,
@@ -394,6 +404,7 @@ class HeroSheet {
     'merkmalskenntnisse',
     'magicSpecialAbilities',
     'magicLeadAttribute',
+    'gottheit',
     'sprachen',
     'schriften',
     'muttersprache',
@@ -464,6 +475,8 @@ class HeroSheet {
           .map((entry) => entry.toJson())
           .toList(growable: false),
       'magicLeadAttribute': magicLeadAttribute,
+      // Nur bei Belegung: Bestandshelden behalten ihren Inhalts-Hash.
+      if (gottheit.trim().isNotEmpty) 'gottheit': gottheit,
       'sprachen': sprachen.map((key, value) => MapEntry(key, value.toJson())),
       'schriften': schriften.map((key, value) => MapEntry(key, value.toJson())),
       'muttersprache': muttersprache,
@@ -665,6 +678,7 @@ class HeroSheet {
           )
           .toList(growable: false),
       magicLeadAttribute: getString('magicLeadAttribute').toUpperCase(),
+      gottheit: getString('gottheit'),
       sprachen: rawSprachen.map((key, value) {
         final map = value is Map
             ? value.cast<String, dynamic>()

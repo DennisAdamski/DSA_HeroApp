@@ -14,6 +14,9 @@ import 'advancement_options.dart';
 import 'advancement_attribute_rules.dart';
 import 'requirement_evaluation_rules.dart';
 import 'advancement_specialization_rules.dart';
+import 'advancement_merkmalskenntnis_rules.dart';
+import 'advancement_trait_options.dart';
+import 'advancement_waffenmeister_options.dart';
 
 export 'advancement_options.dart';
 part 'advancement_apply.dart';
@@ -119,6 +122,18 @@ void _validateEntry(
         'Spezialisierungen verändern weder TaW noch Sondererfahrungen.',
       );
     }
+    return;
+  }
+  if (option.isWaffenmeister) {
+    validateWaffenmeisterEntry(entry, option);
+    return;
+  }
+  if (option.isMerkmalskenntnis) {
+    validateMerkmalskenntnisEntry(entry, option);
+    return;
+  }
+  if (option.isTraitChange) {
+    validateTraitEntry(entry, option);
     return;
   }
   if (option.isValueAdvancement) {

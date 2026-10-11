@@ -148,28 +148,46 @@ void main() {
             await _innereReiter(tester, tab);
           }
 
-          // Planung: alle vier Kategorien, auch der Faehigkeitenbaum mit
-          // dem Schalter fuer unpassende Sonderfertigkeiten.
+          // Planung: jeder sichtbare Bereich mit jedem Abschnitt, auch der
+          // Faehigkeitenbaum mit dem Schalter fuer unpassende
+          // Sonderfertigkeiten.
           await selectAcceptanceMode(tester, 'Entwicklung planen');
-          for (final kategorie in <String>[
-            'Talente',
-            'Zauber',
-            'Sonderfertigkeiten',
-            'Eigenschaften',
+          for (final bereich in <String>[
+            'talente',
+            'kampf',
+            'magie',
+            'karma',
+            'grundlagen',
           ]) {
-            final chip = find.widgetWithText(ChoiceChip, kategorie);
-            expect(chip, findsOneWidget, reason: kategorie);
+            final chip = find.byKey(ValueKey('advancement-bereich-$bereich'));
+            if (chip.evaluate().isEmpty) continue;
             await tester.ensureVisible(chip);
             await tester.tap(chip);
             await tester.pumpAndSettle();
-            expect(tester.takeException(), isNull, reason: kategorie);
-            if (capture && kategorie == 'Sonderfertigkeiten') {
-              await _capture(
-                tester,
-                screenshotKey,
-                'planen-sonderfertigkeiten-${width.toInt()}-'
-                '${brightness.name}',
-              );
+            expect(tester.takeException(), isNull, reason: bereich);
+            final abschnitte = find.byWidgetPredicate(
+              (widget) =>
+                  widget is ChoiceChip &&
+                  widget.key is ValueKey<String> &&
+                  (widget.key! as ValueKey<String>).value.startsWith(
+                    'advancement-abschnitt-',
+                  ),
+            );
+            for (final element in abschnitte.evaluate().toList()) {
+              final key = (element.widget.key! as ValueKey<String>).value;
+              final abschnitt = find.byKey(ValueKey(key));
+              await tester.ensureVisible(abschnitt);
+              await tester.tap(abschnitt);
+              await tester.pumpAndSettle();
+              expect(tester.takeException(), isNull, reason: key);
+              if (capture && key == 'advancement-abschnitt-kampfSf') {
+                await _capture(
+                  tester,
+                  screenshotKey,
+                  'planen-sonderfertigkeiten-${width.toInt()}-'
+                  '${brightness.name}',
+                );
+              }
             }
           }
         }, tags: ['r3-acceptance']);

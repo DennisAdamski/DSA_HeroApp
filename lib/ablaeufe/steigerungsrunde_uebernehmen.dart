@@ -96,6 +96,37 @@ class SteigerungsrundeUebernehmen {
     required bool anzeigen,
     HeroSheet? basis,
     bool Function()? istGeschlossen,
+  }) => _speichereEinstellung(
+    heroId: heroId,
+    basis: basis,
+    istGeschlossen: istGeschlossen,
+    aenderung: (held) =>
+        held.copyWith(showInapplicableSpecialAbilities: anzeigen),
+  );
+
+  /// Speichert nur die Gottheit des Helden, wie [speichereSfAnzeige].
+  ///
+  /// Die Gottheit steuert, welche karmalen Sonderfertigkeiten die Planung
+  /// zeigt; sie verändert weder AP noch Werte und darf deshalb neben einer
+  /// offenen Runde gespeichert werden.
+  Future<HeroSheet> speichereGottheit({
+    required String heroId,
+    required String gottheit,
+    HeroSheet? basis,
+    bool Function()? istGeschlossen,
+  }) => _speichereEinstellung(
+    heroId: heroId,
+    basis: basis,
+    istGeschlossen: istGeschlossen,
+    aenderung: (held) => held.copyWith(gottheit: gottheit.trim()),
+  );
+
+  // Gemeinsamer Weg der Einstellungen, die eine offene Runde überleben.
+  Future<HeroSheet> _speichereEinstellung({
+    required String heroId,
+    required HeroSheet Function(HeroSheet held) aenderung,
+    HeroSheet? basis,
+    bool Function()? istGeschlossen,
   }) {
     return reiheBogenvorgangEin(
       repository: repository,
@@ -112,9 +143,7 @@ class SteigerungsrundeUebernehmen {
                 heroContentHash(aktuell) != heroContentHash(basis))) {
           throw StateError('Der Held wurde inzwischen geändert.');
         }
-        final geaendert = aktuell.copyWith(
-          showInapplicableSpecialAbilities: anzeigen,
-        );
+        final geaendert = aenderung(aktuell);
         await repository.saveHero(geaendert);
         return geaendert;
       },

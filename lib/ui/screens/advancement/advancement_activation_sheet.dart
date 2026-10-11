@@ -22,6 +22,7 @@ Future<AdvancementOption?> showAdvancementActivationSheet({
   required String heroId,
   required String title,
   required List<AdvancementKind> kinds,
+  bool Function(AdvancementOption option)? filter,
   String initialQuery = '',
 }) {
   return showAdaptiveDetailSheet<AdvancementOption>(
@@ -30,6 +31,7 @@ Future<AdvancementOption?> showAdvancementActivationSheet({
       heroId: heroId,
       title: title,
       kinds: kinds,
+      filter: filter,
       initialQuery: initialQuery,
     ),
   );
@@ -74,12 +76,17 @@ class _AdvancementActivationSheet extends ConsumerStatefulWidget {
     required this.title,
     required this.kinds,
     required this.initialQuery,
+    this.filter,
   });
 
   final String heroId;
   final String title;
   final List<AdvancementKind> kinds;
   final String initialQuery;
+
+  /// Engt die Arten weiter ein, etwa auf Kampftalente oder auf
+  /// Sonderfertigkeiten, die zur Tradition des Helden passen.
+  final bool Function(AdvancementOption option)? filter;
 
   @override
   ConsumerState<_AdvancementActivationSheet> createState() =>
@@ -111,7 +118,11 @@ class _AdvancementActivationSheetState
             scope: AdvancementScope.inactive,
           )),
         )
-        .where((option) => widget.kinds.contains(option.kind))
+        .where(
+          (option) =>
+              widget.kinds.contains(option.kind) &&
+              (widget.filter?.call(option) ?? true),
+        )
         .toList();
     final filters = _availableFilters(options);
     // Ohne sichtbare Chips gilt immer der volle Umfang.

@@ -26,6 +26,11 @@ import 'special_ability_variant_rules.dart';
 import 'advancement_maneuver_rules.dart';
 import 'maneuver_rules.dart';
 import 'advancement_specialization_rules.dart';
+import 'advancement_merkmalskenntnis_rules.dart';
+import 'advancement_trait_options.dart';
+import 'advancement_waffenmeister_options.dart';
+import 'hero_merkmal_zuordnung_rules.dart';
+import 'resource_activation_rules.dart';
 
 part 'advancement_value_options.dart';
 part 'advancement_ability_options.dart';
@@ -90,11 +95,30 @@ class AdvancementOption {
   final bool isCombatTalent;
 
   /// Unterscheidet numerische Progression vom einmaligen SF-Erwerb.
-  bool get isValueAdvancement => ability == null && !isTalentSpecialization;
+  bool get isValueAdvancement =>
+      ability == null &&
+      !isTalentSpecialization &&
+      !isWaffenmeister &&
+      !isTraitChange &&
+      !isMerkmalskenntnis;
 
   /// Ein talentgebundener Erwerb bleibt als Befehl derselben Zielart erhalten.
   bool get isTalentSpecialization =>
       kind == AdvancementKind.talent && options['action'] == 'specialization';
+
+  /// Erwerb einer Waffenmeisterschaft direkt am Kampftalent.
+  bool get isWaffenmeister =>
+      kind == AdvancementKind.talent &&
+      options['action'] == kWaffenmeisterAktion;
+
+  /// Merkmalskenntnis als Erwerb der gleichnamigen magischen SF.
+  bool get isMerkmalskenntnis =>
+      kind == AdvancementKind.magicAbility &&
+      options['action'] == kMerkmalskenntnisAktion;
+
+  /// Nachträglicher Vorteil oder Abbau eines Nachteils.
+  bool get isTraitChange =>
+      kind == AdvancementKind.advantage || kind == AdvancementKind.disadvantage;
 }
 
 /// Einmal je Optionsaufbau berechnete Grundlagen.
@@ -146,6 +170,16 @@ class AdvancementContext {
 
   final Map<AdvancementKind, Set<String>> _ownedAbilityIds = {};
   final Map<AdvancementKind, Set<String>> _actionableAbilityIds = {};
+
+  /// Wirksame Vor- und Nachteile samt offener Abweichung, einmal je Durchlauf.
+  late final MerkmalAbgleich merkmalAbgleich = gleicheMerkmaleAb(
+    hero,
+    katalog: MerkmalKatalog.von(catalog),
+  );
+
+  /// Magie- und Karmaaktivierung für Sichtbarkeit und Sperren.
+  late final HeroResourceActivation resourceActivation =
+      computeHeroResourceActivation(hero, catalog: catalog);
 
   /// Einmal aufgelöster Besitz einschließlich durch Kampf-SF gewährter Manöver.
   late final Set<String> ownedManeuverIds = learnedManeuverIds(
@@ -222,6 +256,11 @@ List<AdvancementOption> buildAdvancementOptions({
           kind: target.$1,
           targetId: target.$2,
         ),
+    // Vor-/Nachteile und Merkmalskenntnisse hängen an Einträgen des Helden
+    // bzw. an Merkmalen statt an je einer Katalog-ID und werden deshalb
+    // gesondert aufgebaut.
+    ...buildTraitAdvancementOptions(context, scope),
+    ...buildMerkmalskenntnisOptions(context, scope),
   ];
 }
 
@@ -253,10 +292,28 @@ AdvancementOption? resolveAdvancementOptionIn({
   return switch (kind) {
     AdvancementKind.attribute => _attributeOption(context, targetId),
     AdvancementKind.boughtStat => _boughtOption(context, targetId),
-    AdvancementKind.talent =>
-      options['action'] == 'specialization'
-          ? resolveTalentSpecialization(context, targetId, options)
-          : _talentOption(context, targetId),
+    AdvancementKind.talent => switch (options['action']) {
+      'specialization' => resolveTalentSpecialization(
+        context,
+        targetId,
+        options,
+      ),
+      kWaffenmeisterAktion => resolveWaffenmeister(context, targetId, options),
+      _ => _talentOption(context, targetId),
+    },
+    AdvancementKind.magicAbility
+        when options['action'] == kMerkmalskenntnisAktion =>
+      resolveMerkmalskenntnis(context, options),
+    AdvancementKind.advantage => resolveAdvantageAdvancement(
+      context,
+      targetId,
+      options,
+    ),
+    AdvancementKind.disadvantage => resolveDisadvantageAdvancement(
+      context,
+      targetId,
+      options,
+    ),
     AdvancementKind.spell => _spellOption(context, targetId, options),
     AdvancementKind.language => _languageOption(context, targetId),
     AdvancementKind.script => _scriptOption(context, targetId),
