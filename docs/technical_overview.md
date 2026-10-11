@@ -2073,7 +2073,19 @@ nicht als Regelinformation ausgegeben.
 
 Das Erwerbsblatt (`ui/screens/advancement/advancement_activation_sheet.dart`)
 listet den `inactive`-Umfang einer Kategorie mit Suche, Artfiltern und dem
-standardmäßig aktiven Schalter „Nur erwerbbare“. Es **schließt sich selbst** und
+standardmäßig aktiven Schalter „Nur erwerbbare“. Im Zauber-Erwerbsblatt heißt
+dieser Schalter „Nur gelernte Repräsentationen“: Er berücksichtigt ausschließlich
+die tatsächlichen Repräsentationen aus den Katalogeinträgen, bei `Dru(Elf)2`
+also `Elf`. Ausgeschaltet erscheinen alle noch nicht vorhandenen Zauber;
+gesperrte Einträge bleiben gesperrt. Ein Merkmalsfilter (ein vollständiges Merkmal,
+einschließlich Untermerkmalen) und eine Mindestverbreitung („Ab …“) lassen sich
+mit Repräsentationsfilter und Suche kombinieren. Die Verbreitung muss am selben
+Katalogeintrag passen wie die Repräsentation; im Modus „Alle“ zählen alle
+Katalogeinträge. Leere Angaben passen nur ohne den entsprechenden Filter.
+Die Filterregeln liegen in `rules/derived/spell_catalog_filter_rules.dart` und
+ändern die bisherigen Lernoptionen und AP-Kosten nicht. Filter und Treffer teilen
+einen Scrollbereich, damit auch große Schrift auf schmalen Displays bedienbar bleibt.
+Das Blatt **schließt sich selbst** und
 gibt das gewählte Ziel zurück; geplant wird erst danach beim Aufrufer über
 denselben `_plan`-Pfad wie die Hauptliste. Damit liegt der Planungsdialog nie
 über einem Blatt derselben Root-Navigator-Ebene, und die Sitzung wird weiterhin

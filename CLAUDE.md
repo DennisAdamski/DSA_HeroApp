@@ -527,6 +527,11 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   Spalte. Neue Kostenstellen nehmen den Befund, nie `entry.gifted` allein.
   Der Textweg kennt keine Lernspalten (bewusste Ausnahme im
   Äquivalenztest).
+- Zauber-Erwerbsblatt: `lib/rules/derived/spell_catalog_filter_rules.dart`
+  kombiniert gelernte Repräsentationen, ein Merkmal und Mindestverbreitung.
+  Maßgeblich ist die tatsächliche Zauberrepräsentation (`Dru(Elf)2` → `Elf`);
+  Repräsentation und Verbreitung müssen am selben Katalogeintrag passen.
+  „Alle“ erhält die Lernoptionen für fremde Zauber; der Filter ändert keine AP-Regeln.
 - Mehrfach erwerbbare allgemeine Sonderfertigkeiten (Kulturkunde, Geländekunde,
   Ortskenntnis, Akklimatisierung, Berufsgeheimnis) tragen im Katalog ihre
   Auswahlmöglichkeiten (`mehrfachwaehlbar`, `varianten`, `ap_erstwerb`,
