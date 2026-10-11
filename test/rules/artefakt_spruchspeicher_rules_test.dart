@@ -1,6 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dsa_heldenverwaltung/domain/artefakt_daten.dart';
+import 'package:dsa_heldenverwaltung/domain/aventurian_date.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_adventure_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/artefakt_ladung_aenderung_rules.dart';
@@ -438,6 +440,148 @@ void main() {
           'a',
         ),
         throwsA(isA<StateError>()),
+      );
+    });
+  });
+
+  group('Semipermanenter Speicher am Bogen', () {
+    const eintrag = HeroInventoryEntry(
+      gegenstand: 'Robe',
+      isMagisch: true,
+      instanzId: 'i-9',
+      artefaktDaten: ArtefaktDaten(
+        art: ArtefaktArt.spruchspeicherSemipermanent,
+        intervall: ArtefaktIntervall.woche,
+        anwendungenProIntervall: 2,
+        zauber: <ArtefaktZauber>[ArtefaktZauber(name: 'Aureolus')],
+        anwendungen: <AventurianDate>[
+          AventurianDate(day: '1', month: 'praios', year: '1027'),
+        ],
+      ),
+    );
+
+    HeroSheet held({HeroAdventureDateValue? datum}) => HeroSheet(
+      id: 'h',
+      name: 'Hofillusionistin',
+      level: 1,
+      attributes: const Attributes(
+        mu: 12,
+        kl: 11,
+        inn: 10,
+        ch: 10,
+        ff: 11,
+        ge: 12,
+        ko: 11,
+        kk: 12,
+      ),
+      inventoryEntries: const [eintrag],
+      adventures: [
+        HeroAdventureEntry(
+          id: 'a',
+          currentAventurianDate: datum ?? const HeroAdventureDateValue(),
+        ),
+      ],
+    );
+
+    List<AventurianDate> anwendungen(HeroSheet h) =>
+        h.inventoryEntries.single.artefaktDaten!.anwendungen;
+
+    test('die Anwendung bekommt das Datum der laufenden Kampagne', () {
+      final neu = mitVermerkterAnwendung(
+        held(
+          datum: const HeroAdventureDateValue(
+            day: '5',
+            month: 'praios',
+            year: '1027',
+          ),
+        ),
+        eintrag,
+      );
+
+      expect(anwendungen(neu), [
+        const AventurianDate(day: '1', month: 'praios', year: '1027'),
+        const AventurianDate(day: '5', month: 'praios', year: '1027'),
+      ]);
+    });
+
+    test('abgelaufene Anwendungen entfallen dabei', () {
+      final neu = mitVermerkterAnwendung(
+        held(
+          datum: const HeroAdventureDateValue(
+            day: '9',
+            month: 'praios',
+            year: '1027',
+          ),
+        ),
+        eintrag,
+      );
+
+      expect(anwendungen(neu), [
+        const AventurianDate(day: '9', month: 'praios', year: '1027'),
+      ]);
+    });
+
+    test('ohne Datum im Bogen wird eine Anwendung ohne Datum vermerkt', () {
+      final neu = mitVermerkterAnwendung(held(), eintrag);
+
+      expect(anwendungen(neu), [
+        const AventurianDate(day: '1', month: 'praios', year: '1027'),
+        const AventurianDate(),
+      ]);
+    });
+
+    test('Regeneration löscht alle vermerkten Anwendungen', () {
+      final neu = mitRegenerierterMatrix(held(), eintrag);
+
+      expect(anwendungen(neu), isEmpty);
+    });
+
+    test('ein Speicher anderer Art vermerkt keine Anwendung', () {
+      final anders = eintrag.copyWith(
+        artefaktDaten: eintrag.artefaktDaten!.copyWith(
+          art: ArtefaktArt.spruchspeicherEinmalig,
+        ),
+      );
+      final h = held().copyWith(inventoryEntries: [anders]);
+
+      expect(
+        () => mitVermerkterAnwendung(h, anders),
+        throwsA(isA<StateError>()),
+      );
+      expect(
+        () => mitRegenerierterMatrix(h, anders),
+        throwsA(isA<StateError>()),
+      );
+    });
+
+    test('ein beschädigter Speicher vermerkt nichts', () {
+      final kaputt = eintrag.copyWith(
+        artefaktDaten: eintrag.artefaktDaten!.copyWith(defekt: true),
+      );
+
+      expect(
+        () => mitVermerkterAnwendung(
+          held().copyWith(inventoryEntries: [kaputt]),
+          kaputt,
+        ),
+        throwsA(isA<StateError>()),
+      );
+    });
+
+    test('ein erschöpftes Intervall sperrt die Prüfung nicht', () {
+      final daten = eintrag.artefaktDaten!;
+
+      final p = pruefeSpruchspeicherAusloesung(
+        daten,
+        intervallHinweis: 'Alle Anwendungen sind verbraucht.',
+      );
+
+      expect(p.moeglich, isTrue);
+      expect(p.hinweise, ['Alle Anwendungen sind verbraucht.']);
+      expect(artefaktAusloesbar(daten), isTrue);
+      expect(
+        pruefeSpruchspeicherAusloesung(daten.copyWith(defekt: true)).moeglich,
+        isFalse,
       );
     });
   });

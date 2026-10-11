@@ -1077,6 +1077,25 @@ final _enumFelder = <_EnumFeld>[
     erwarteterErsatz: MatrixRegelfassung.alchimie2012,
   ),
   _EnumFeld(
+    'ArtefaktDaten.intervall',
+    'intervall',
+    voll: () =>
+        const ArtefaktDaten(art: ArtefaktArt.spruchspeicherSemipermanent)
+            .toJson(),
+    lade: (json) => ArtefaktDaten.fromJson(json).toJson(),
+    gleich: (json) {
+      final d = ArtefaktDaten.fromJson(json);
+      return d.copyWith(intervall: d.intervall, ersteller: 'Neu').toJson();
+    },
+    anders: (json) =>
+        ArtefaktDaten.fromJson(json)
+            .copyWith(intervall: ArtefaktIntervall.monat)
+            .toJson(),
+    andersJson: 'monat',
+    ersatz: (json) => ArtefaktDaten.fromJson(json).intervall,
+    erwarteterErsatz: ArtefaktIntervall.woche,
+  ),
+  _EnumFeld(
     'MainWeaponSlot.combatType',
     'combatType',
     voll: () => const MainWeaponSlot(name: 'Bogen').toJson(),

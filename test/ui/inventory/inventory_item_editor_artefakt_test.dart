@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:dsa_heldenverwaltung/catalog/catalog_crypto.dart';
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/artefakt_daten.dart';
+import 'package:dsa_heldenverwaltung/domain/aventurian_date.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
@@ -272,6 +273,62 @@ void main() {
     final daten = gespeichert.single.artefaktDaten!;
     expect(daten.ladungen.map((l) => l.id), ['a']);
     expect(daten.ladungen.single.verbraucht, isTrue);
+  });
+
+  testWidgets('semipermanent: Intervall, Anwendungen und Regeneration', (
+    tester,
+  ) async {
+    final gespeichert = await _zeige(
+      tester,
+      const HeroInventoryEntry(
+        gegenstand: 'Robe',
+        isMagisch: true,
+        artefaktDaten: ArtefaktDaten(
+          art: ArtefaktArt.spruchspeicherSemipermanent,
+          anwendungen: <AventurianDate>[
+            AventurianDate(day: '3', month: 'praios', year: '1027'),
+          ],
+          zauber: <ArtefaktZauber>[ArtefaktZauber(name: 'Aureolus')],
+        ),
+      ),
+    );
+
+    expect(_artefakt('stabilitaet'), findsNothing);
+    expect(_artefakt('ladung-add'), findsNothing);
+    expect(_artefakt('aufladungen'), findsNothing);
+    expect(_artefakt('add'), findsOneWidget, reason: 'flache Zauberliste');
+    expect(find.text('1 Anwendung vermerkt.'), findsOneWidget);
+    await _tippe(tester, _artefakt('intervall'));
+    await _tippe(tester, find.text('Monat').last);
+    await tester.enterText(_artefakt('anwendungen-je-intervall'), '3');
+    await tester.pumpAndSettle();
+    await _tippe(tester, _artefakt('anwendungen-reset'));
+    expect(find.text('Keine Anwendung vermerkt.'), findsOneWidget);
+    await _speichere(tester);
+
+    final daten = gespeichert.single.artefaktDaten!;
+    expect(daten.intervall, ArtefaktIntervall.monat);
+    expect(daten.anwendungenProIntervall, 3);
+    expect(daten.anwendungen, isEmpty);
+    expect(daten.zauber.single.name, 'Aureolus');
+  });
+
+  testWidgets('Anwendungen je Intervall unter 1 gelten als 1', (tester) async {
+    final gespeichert = await _zeige(
+      tester,
+      const HeroInventoryEntry(
+        gegenstand: 'Robe',
+        isMagisch: true,
+        artefaktDaten: ArtefaktDaten(
+          art: ArtefaktArt.spruchspeicherSemipermanent,
+        ),
+      ),
+    );
+
+    await tester.enterText(_artefakt('anwendungen-je-intervall'), '0');
+    await _speichere(tester);
+
+    expect(gespeichert.single.artefaktDaten!.anwendungenProIntervall, 1);
   });
 
   testWidgets('ein Matrixgeber zeigt keine Ladungen', (tester) async {
