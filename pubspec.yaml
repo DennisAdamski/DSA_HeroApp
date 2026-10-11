@@ -27,7 +27,7 @@ dependencies:
   unorm_dart: ^0.3.0
   sqlite3: ^3.7.0
   web: ^1.1.1
-  hive_ce: ^2.20.1
+  hive_ce: ^2.20.2
   hive_ce_flutter: ^2.4.0
 
 dev_dependencies:
