@@ -31,6 +31,7 @@ void main() {
               spellId: 'spell_armatrutz',
               name: 'Armatrutz',
               repraesentation: 'Mag',
+              variante: 'Dauerhaft',
               zfw: 12,
               zfpStern: 7,
               kostenAsp: 8,
@@ -55,6 +56,7 @@ void main() {
       expect(daten.defekt, isTrue);
       expect(daten.pAsP, 4);
       expect(daten.zauber.single.repraesentation, 'Mag');
+      expect(daten.zauber.single.variante, 'Dauerhaft');
       expect(daten.zauber.single.zfpStern, 7);
     });
 

@@ -285,6 +285,7 @@ class _ZauberZeile extends StatelessWidget {
   Widget build(BuildContext context) {
     final details = [
       if (zauber.repraesentation.isNotEmpty) zauber.repraesentation,
+      if (zauber.variante.isNotEmpty) 'Variante: ${zauber.variante}',
       if (zauber.zfw != null) 'ZfW ${zauber.zfw}',
       if (zauber.zfpStern != null) 'ZfP* ${zauber.zfpStern}',
       if (zauber.kostenAsp != null) '${zauber.kostenAsp} AsP',

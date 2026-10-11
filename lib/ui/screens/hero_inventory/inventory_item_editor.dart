@@ -306,19 +306,6 @@ class _InventoryItemEditorState extends ConsumerState<InventoryItemEditor> {
       const SizedBox(height: 8),
       _buildBesonderheiten(),
       const SizedBox(height: _fieldSpacing * 2),
-      _SectionTitle('Artefakt'),
-      const SizedBox(height: 8),
-      ArtefaktEditorAbschnitt(
-        daten: _draft.artefaktDaten,
-        // Ein Artefakt ist immer magisch.
-        onChanged: (daten) => setState(
-          () => _draft = _draft.copyWith(
-            artefaktDaten: daten,
-            isMagisch: daten != null ? true : _draft.isMagisch,
-          ),
-        ),
-      ),
-      const SizedBox(height: _fieldSpacing * 2),
       _SectionTitle('Wert & Gewicht'),
       const SizedBox(height: 8),
       _buildWertGewicht(),
@@ -467,8 +454,13 @@ class _InventoryItemEditorState extends ConsumerState<InventoryItemEditor> {
           child: SwitchListTile.adaptive(
             key: const ValueKey<String>('inventory-editor-magisch'),
             value: _draft.isMagisch,
-            onChanged: (value) =>
-                setState(() => _draft = _draft.copyWith(isMagisch: value)),
+            // Ein Matrixgeber ist ein magischer Gegenstand: ohne „Magisch“
+            // gibt es keine Artefaktdaten.
+            onChanged: (value) => setState(
+              () => _draft = value
+                  ? _draft.copyWith(isMagisch: true)
+                  : _draft.copyWith(isMagisch: false, artefaktDaten: null),
+            ),
             title: const Text('Magisch'),
             dense: true,
             contentPadding: EdgeInsets.zero,
@@ -486,6 +478,18 @@ class _InventoryItemEditorState extends ConsumerState<InventoryItemEditor> {
             isDense: true,
           ),
         ),
+        if (_draft.isMagisch) ...[
+          const SizedBox(height: _fieldSpacing),
+          Padding(
+            padding: const EdgeInsets.only(left: 16),
+            child: ArtefaktEditorAbschnitt(
+              daten: _draft.artefaktDaten,
+              onChanged: (daten) => setState(
+                () => _draft = _draft.copyWith(artefaktDaten: daten),
+              ),
+            ),
+          ),
+        ],
         const SizedBox(height: _fieldSpacing),
         ListTileMaterial(
           child: SwitchListTile.adaptive(
