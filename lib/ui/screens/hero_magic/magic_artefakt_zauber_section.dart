@@ -28,7 +28,8 @@ class _MagicArtefaktZauberSection extends StatelessWidget {
         subtitle:
             'Matrixgeber, Spruchspeicher und Zaubertalismane im Inventar. Ein '
             'Matrixgeber braucht einen zauberkundigen Träger; ein '
-            'Spruchspeicher wirkt sofort, ohne AsP; ein Zaubertalisman '
+            'Spruchspeicher wirkt sofort, ohne AsP; ein permanenter '
+            'Spruchspeicher wirkt ständig; ein Zaubertalisman '
             'unterstützt den Zauber, den du selbst sprichst.',
         child: Material(
           type: MaterialType.transparency,
@@ -47,6 +48,8 @@ class _MagicArtefaktZauberSection extends StatelessWidget {
     final zauber = e.zauber;
     final status = e.defekt
         ? 'beschädigt'
+        : e.dauerhaft
+        ? 'dauerhaft wirksam'
         : e.verbraucht
         ? 'Ladung verbraucht'
         : e.ausgeruestet

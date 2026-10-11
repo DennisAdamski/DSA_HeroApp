@@ -361,6 +361,38 @@ void main() {
     expect(daten.zauber.single.zfpStern, 6);
   });
 
+  testWidgets('permanent: flache Zauberliste ohne Stabilität und Aktionen', (
+    tester,
+  ) async {
+    final gespeichert = await _zeige(
+      tester,
+      const HeroInventoryEntry(
+        gegenstand: 'Ätherische Platte',
+        isMagisch: true,
+        artefaktDaten: ArtefaktDaten(),
+      ),
+    );
+
+    await _tippe(tester, _artefakt('art'));
+    await _tippe(tester, find.text('Spruchspeicher, permanent').last);
+    expect(_artefakt('permanent-hinweis'), findsOneWidget);
+    expect(_artefakt('stabilitaet'), findsNothing);
+    expect(_artefakt('regelfassung'), findsNothing);
+    expect(_artefakt('intervall'), findsNothing);
+    expect(_artefakt('aktionen'), findsNothing);
+    expect(_artefakt('ladung-add'), findsNothing);
+    await _tippe(tester, _artefakt('add'));
+    await tester.enterText(_zauber('name'), 'Transversalis');
+    await tester.pumpAndSettle();
+    await _tippe(tester, _zauber('uebernehmen'));
+    await _speichere(tester);
+
+    final daten = gespeichert.single.artefaktDaten!;
+    expect(daten.art, ArtefaktArt.spruchspeicherPermanent);
+    expect(daten.zauber.single.name, 'Transversalis');
+    expect(daten.ladungen, isEmpty);
+  });
+
   testWidgets('ein Matrixgeber zeigt keine Ladungen', (tester) async {
     await _zeige(
       tester,

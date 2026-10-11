@@ -39,6 +39,42 @@ ArtefaktDaten _speicher({
 );
 
 void main() {
+  group('Permanenter Spruchspeicher', () {
+    const permanent = ArtefaktDaten(
+      art: ArtefaktArt.spruchspeicherPermanent,
+      zauber: <ArtefaktZauber>[ArtefaktZauber(name: 'Transversalis')],
+    );
+
+    test('ist ein Spruchspeicher mit Dauerwirkung ohne Ladungen', () {
+      expect(
+        artefaktArtLabel(ArtefaktArt.spruchspeicherPermanent),
+        'Spruchspeicher, permanent',
+      );
+      expect(
+        artefaktIstSpruchspeicher(ArtefaktArt.spruchspeicherPermanent),
+        isTrue,
+      );
+      expect(
+        artefaktIstDauerwirkung(ArtefaktArt.spruchspeicherPermanent),
+        isTrue,
+      );
+      expect(
+        artefaktIstDauerwirkung(ArtefaktArt.spruchspeicherSemipermanent),
+        isFalse,
+      );
+      expect(artefaktHatLadungen(ArtefaktArt.spruchspeicherPermanent), isFalse);
+    });
+
+    test('lässt sich nie auslösen', () {
+      expect(artefaktAusloesbar(permanent), isFalse);
+
+      final p = pruefeSpruchspeicherAusloesung(permanent);
+
+      expect(p.moeglich, isFalse);
+      expect(p.sperrgrund, contains('wirkt ständig'));
+    });
+  });
+
   group('Ladungen', () {
     test('freie Ladungen sind die noch nicht verbrauchten', () {
       final daten = _speicher(

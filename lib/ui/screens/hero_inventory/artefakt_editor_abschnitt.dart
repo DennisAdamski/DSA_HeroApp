@@ -168,6 +168,7 @@ class _ArtefaktEditorAbschnittState extends State<ArtefaktEditorAbschnitt> {
         daten != null && daten.art == ArtefaktArt.spruchspeicherSemipermanent;
     final aufladbar =
         daten != null && daten.art == ArtefaktArt.spruchspeicherAufladbar;
+    final dauer = daten != null && artefaktIstDauerwirkung(daten.art);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -179,7 +180,8 @@ class _ArtefaktEditorAbschnittState extends State<ArtefaktEditorAbschnitt> {
             title: const Text('Artefakt'),
             subtitle: const Text(
               'Matrixgeber oder Spruchspeicher: Die Wirkung steht im '
-              'Gegenstand, der Träger löst sie aus.',
+              'Gegenstand, der Träger löst sie aus (ein permanenter '
+              'Spruchspeicher wirkt ständig).',
             ),
             dense: true,
             contentPadding: EdgeInsets.zero,
@@ -195,7 +197,7 @@ class _ArtefaktEditorAbschnittState extends State<ArtefaktEditorAbschnitt> {
             onChanged: (v) => _aendere((d) => d.copyWith(art: v)),
           ),
           const SizedBox(height: 12),
-          if (!speicher && !semi)
+          if (!speicher && !semi && !dauer)
             Row(
               children: [
                 Expanded(
@@ -325,16 +327,19 @@ class _ArtefaktEditorAbschnittState extends State<ArtefaktEditorAbschnitt> {
           const SizedBox(height: 12),
           Row(
             children: [
-              Expanded(
-                child: _text(
-                  'aktionen',
-                  'Aktionen für den Auslöser',
-                  _aktionen,
-                  (d, t) => d.copyWith(ausloeserAktionen: int.tryParse(t) ?? 1),
-                  zahl: true,
+              if (!dauer) ...[
+                Expanded(
+                  child: _text(
+                    'aktionen',
+                    'Aktionen für den Auslöser',
+                    _aktionen,
+                    (d, t) =>
+                        d.copyWith(ausloeserAktionen: int.tryParse(t) ?? 1),
+                    zahl: true,
+                  ),
                 ),
-              ),
-              const SizedBox(width: 12),
+                const SizedBox(width: 12),
+              ],
               Expanded(
                 child: _text(
                   'pasp',
@@ -367,6 +372,16 @@ class _ArtefaktEditorAbschnittState extends State<ArtefaktEditorAbschnitt> {
             )
           else ...[
             Text('Gespeicherte Zauber', style: texte.titleSmall),
+            if (dauer)
+              Text(
+                'Wirkt ständig: Es gibt weder Ladungen noch AsP-Kosten noch '
+                'einen Auslöser (Stäbe, Ringe, Dschinnenlampen S. 8). Als '
+                'Auslöser lässt sich eine Bedingung vermerken.',
+                key: const ValueKey<String>(
+                  'inventory-editor-artefakt-permanent-hinweis',
+                ),
+                style: texte.bodySmall,
+              ),
             if (daten.art == ArtefaktArt.zaubertalisman)
               Text(
                 'Beim Zaubertalisman sind die gespeicherten ZfP* der Bonus, '

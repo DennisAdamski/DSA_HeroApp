@@ -35,6 +35,9 @@ Future<void> zeigeArtefaktAnwenden({
       heroId: heroId,
       eintrag: eintrag,
     ),
+    // Ein permanenter Spruchspeicher wirkt ständig; `artefaktAusloesbar` ist
+    // für ihn immer `false`, die Aufrufer bieten das Auslösen gar nicht an.
+    ArtefaktArt.spruchspeicherPermanent => Future<void>.value(),
     ArtefaktArt.spruchspeicherEinmalig ||
     ArtefaktArt.spruchspeicherAufladbar ||
     ArtefaktArt.spruchspeicherSemipermanent => zeigeSpruchspeicherAusloesen(

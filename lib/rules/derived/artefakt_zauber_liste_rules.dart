@@ -36,6 +36,9 @@ class ArtefaktZauberEintrag {
   /// Ob die Matrix irreparabel beschädigt ist.
   bool get defekt => daten.defekt;
 
+  /// Ob der Zauber ständig wirkt (permanenter Spruchspeicher).
+  bool get dauerhaft => artefaktIstDauerwirkung(daten.art);
+
   /// Ob die Ladung des Zaubers schon verbraucht ist.
   bool get verbraucht => ladung?.verbraucht ?? false;
 
@@ -83,6 +86,9 @@ List<HeroInventoryEntry> gefechtsArtefakte(HeroSheet hero) => [
 /// Zeile für ein Artefakt: Zaubernamen, Kosten bzw. Ladungen und
 /// Auslöserdauer.
 String artefaktZusammenfassung(ArtefaktDaten daten) {
+  if (artefaktIstDauerwirkung(daten.art)) {
+    return dauerwirkungZusammenfassung(daten);
+  }
   if (!artefaktIstSpruchspeicher(daten.art)) {
     return matrixgeberZusammenfassung(daten);
   }
@@ -118,6 +124,22 @@ String spruchspeicherLadungenText(ArtefaktDaten daten) {
   final frei = freieLadungen(daten).length;
   final gesamt = daten.ladungen.length;
   return '$frei von $gesamt Ladung${gesamt == 1 ? '' : 'en'} frei';
+}
+
+/// Zeile für einen permanenten Spruchspeicher: Zaubernamen und „dauerhaft
+/// wirksam“. Es gibt weder Aktionen noch Ladungen noch Kosten.
+String dauerwirkungZusammenfassung(ArtefaktDaten daten) {
+  final namen = daten.zauber
+      .map((z) => z.name.trim())
+      .where((n) => n.isNotEmpty)
+      .toSet()
+      .join(' + ');
+  final pAsP = artefaktPAspGesamt(daten);
+  return [
+    if (namen.isNotEmpty) namen,
+    'dauerhaft wirksam',
+    if (pAsP != null) '$pAsP pAsP',
+  ].join(' · ');
 }
 
 /// Zeile für einen Matrixgeber: Zaubernamen, Kosten und Auslöserdauer.
