@@ -5,9 +5,12 @@
 // getrennt (`artefakt_protokollieren.dart`).
 
 import 'package:dsa_heldenverwaltung/domain/artefakt_daten.dart';
+import 'package:dsa_heldenverwaltung/domain/aventurian_date.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/artefakt_intervall_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/artefakt_spruchspeicher_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/aventurian_age_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/inventar_aenderung_rules.dart';
 
 ArtefaktDaten _daten(HeroInventoryEntry eintrag) {
@@ -76,6 +79,46 @@ HeroSheet mitAufgeladenemSpeicher(
       ladungen: [for (final l in neu) l.copyWith(verbraucht: false)],
       aufladungen: daten.aufladungen + 1,
     ),
+  );
+}
+
+/// Vermerkt eine Anwendung des angezeigten semipermanenten Spruchspeichers.
+///
+/// Der Zeitpunkt ist das aventurische Datum der Kampagne des gespeicherten
+/// Helden (`resolveCurrentAdventureDate`); fehlt es, wird eine Anwendung ohne
+/// Datum vermerkt, die erst die ausdrückliche Regeneration löscht. Abgelaufene
+/// Anwendungen entfallen. Das Intervall sperrt nie.
+HeroSheet mitVermerkterAnwendung(HeroSheet held, HeroInventoryEntry angezeigt) {
+  final daten = _daten(angezeigt);
+  if (daten.art != ArtefaktArt.spruchspeicherSemipermanent) {
+    throw StateError(
+      'Nur ein semipermanenter Spruchspeicher vermerkt Anwendungen.',
+    );
+  }
+  if (daten.defekt) {
+    throw StateError('Die Haltematrix ist irreparabel beschädigt.');
+  }
+  final heute = resolveCurrentAdventureDate(held);
+  return _ersetze(
+    held,
+    angezeigt,
+    daten.copyWith(anwendungen: anwendungenNachAusloesung(daten, heute)),
+  );
+}
+
+/// Vermerkt, dass der angezeigte semipermanente Spruchspeicher seine Matrizen
+/// regeneriert hat: alle vermerkten Anwendungen entfallen.
+HeroSheet mitRegenerierterMatrix(HeroSheet held, HeroInventoryEntry angezeigt) {
+  final daten = _daten(angezeigt);
+  if (daten.art != ArtefaktArt.spruchspeicherSemipermanent) {
+    throw StateError(
+      'Nur ein semipermanenter Spruchspeicher regeneriert seine Matrizen.',
+    );
+  }
+  return _ersetze(
+    held,
+    angezeigt,
+    daten.copyWith(anwendungen: const <AventurianDate>[]),
   );
 }
 

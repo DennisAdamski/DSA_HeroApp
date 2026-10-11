@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import 'package:dsa_heldenverwaltung/ablaeufe/matrix_ausloesen.dart';
 import 'package:dsa_heldenverwaltung/domain/artefakt_daten.dart';
+import 'package:dsa_heldenverwaltung/domain/aventurian_date.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/artefakt_intervall_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/artefakt_matrix_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/artefakt_spruchspeicher_rules.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/artefakt_ladungen_editor.dart';
@@ -55,6 +57,10 @@ class _ArtefaktEditorAbschnittState extends State<ArtefaktEditorAbschnitt> {
   late final TextEditingController _aufladungen = TextEditingController(
     text: '${widget.daten?.aufladungen ?? 0}',
   );
+  late final TextEditingController _anwendungenProIntervall =
+      TextEditingController(
+        text: '${widget.daten?.anwendungenProIntervall ?? 1}',
+      );
 
   @override
   void dispose() {
@@ -64,6 +70,7 @@ class _ArtefaktEditorAbschnittState extends State<ArtefaktEditorAbschnitt> {
     _pAsP.dispose();
     _gesamtAsp.dispose();
     _aufladungen.dispose();
+    _anwendungenProIntervall.dispose();
     super.dispose();
   }
 
@@ -156,7 +163,9 @@ class _ArtefaktEditorAbschnittState extends State<ArtefaktEditorAbschnitt> {
   Widget build(BuildContext context) {
     final daten = widget.daten;
     final texte = Theme.of(context).textTheme;
-    final speicher = daten != null && artefaktIstSpruchspeicher(daten.art);
+    final speicher = daten != null && artefaktHatLadungen(daten.art);
+    final semi =
+        daten != null && daten.art == ArtefaktArt.spruchspeicherSemipermanent;
     final aufladbar =
         daten != null && daten.art == ArtefaktArt.spruchspeicherAufladbar;
     return Column(
@@ -186,7 +195,7 @@ class _ArtefaktEditorAbschnittState extends State<ArtefaktEditorAbschnitt> {
             onChanged: (v) => _aendere((d) => d.copyWith(art: v)),
           ),
           const SizedBox(height: 12),
-          if (!speicher)
+          if (!speicher && !semi)
             Row(
               children: [
                 Expanded(
@@ -208,6 +217,67 @@ class _ArtefaktEditorAbschnittState extends State<ArtefaktEditorAbschnitt> {
             )
           else if (aufladbar)
             _fassungDropdown(daten),
+          if (semi) ...[
+            Row(
+              children: [
+                Expanded(
+                  child: _dropdown<ArtefaktIntervall>(
+                    schluessel: 'intervall',
+                    label: 'Intervall',
+                    wert: daten.intervall,
+                    items: {
+                      for (final i in ArtefaktIntervall.values)
+                        i: artefaktIntervallLabel(i),
+                    },
+                    onChanged: (v) => _aendere((d) => d.copyWith(intervall: v)),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _text(
+                    'anwendungen-je-intervall',
+                    'Anwendungen je Intervall',
+                    _anwendungenProIntervall,
+                    (d, t) => d.copyWith(
+                      anwendungenProIntervall: (int.tryParse(t.trim()) ?? 1) < 1
+                          ? 1
+                          : int.tryParse(t.trim()) ?? 1,
+                    ),
+                    zahl: true,
+                    hilfe: 'Nach dem Intervall regenerieren die Matrizen',
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    daten.anwendungen.isEmpty
+                        ? 'Keine Anwendung vermerkt.'
+                        : '${daten.anwendungen.length} Anwendung'
+                              '${daten.anwendungen.length == 1 ? '' : 'en'} '
+                              'vermerkt.',
+                    key: const ValueKey<String>(
+                      'inventory-editor-artefakt-anwendungen',
+                    ),
+                    style: texte.bodySmall,
+                  ),
+                ),
+                if (daten.anwendungen.isNotEmpty)
+                  TextButton(
+                    key: const ValueKey<String>(
+                      'inventory-editor-artefakt-anwendungen-reset',
+                    ),
+                    onPressed: () => _aendere(
+                      (d) => d.copyWith(anwendungen: const <AventurianDate>[]),
+                    ),
+                    child: const Text('Matrizen regeneriert'),
+                  ),
+              ],
+            ),
+          ],
           if (aufladbar) ...[
             const SizedBox(height: 12),
             Row(

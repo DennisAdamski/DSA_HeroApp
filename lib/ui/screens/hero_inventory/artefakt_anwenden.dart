@@ -9,8 +9,8 @@ import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/spruchspeicher_au
 /// Öffnet den Auslösedialog, der zur Art des Artefakts passt.
 ///
 /// Ein Matrixgeber braucht die AsP eines zauberkundigen Trägers und würfelt auf
-/// die Stabilität seiner Matrix; ein ladungsbasierter Spruchspeicher verbraucht
-/// eine Ladung ohne AsP und ohne Zauberprobe. Beide Wege kennen weder
+/// die Stabilität seiner Matrix; ein Spruchspeicher verbraucht eine Ladung bzw.
+/// eine Anwendung im Intervall ohne AsP und ohne Zauberprobe. Beide Wege kennen weder
 /// Repräsentationswahl noch Zauberdauer: die gespeicherten Werte gelten.
 Future<void> zeigeArtefaktAnwenden({
   required BuildContext context,
@@ -27,7 +27,8 @@ Future<void> zeigeArtefaktAnwenden({
       eintrag: eintrag,
     ),
     ArtefaktArt.spruchspeicherEinmalig ||
-    ArtefaktArt.spruchspeicherAufladbar => zeigeSpruchspeicherAusloesen(
+    ArtefaktArt.spruchspeicherAufladbar ||
+    ArtefaktArt.spruchspeicherSemipermanent => zeigeSpruchspeicherAusloesen(
       context: context,
       ref: ref,
       heroId: heroId,

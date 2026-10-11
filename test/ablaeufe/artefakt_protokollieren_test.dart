@@ -41,14 +41,8 @@ void main() {
       heroId: 'held',
       baue: (t) => baueSpruchspeicherProtokoll(
         artefaktName: 'Stirnreif',
-        ladung: _ladung,
-        daten: const ArtefaktDaten(
-          art: ArtefaktArt.spruchspeicherAufladbar,
-          ladungen: <ArtefaktLadung>[
-            ArtefaktLadung(id: 'a', verbraucht: true),
-            ArtefaktLadung(id: 'b'),
-          ],
-        ),
+        zauber: _ladung.zauber,
+        vorgang: 'Ladung ausgelöst (1 von 2 frei)',
         ziel: 'Händler',
         zeitpunkt: t,
       ),

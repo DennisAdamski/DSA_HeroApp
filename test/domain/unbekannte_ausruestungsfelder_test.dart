@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:dsa_heldenverwaltung/catalog/weapon_def.dart';
 import 'package:dsa_heldenverwaltung/domain/abgelegter_kampfgegenstand.dart';
 import 'package:dsa_heldenverwaltung/domain/artefakt_daten.dart';
+import 'package:dsa_heldenverwaltung/domain/aventurian_date.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
@@ -164,11 +165,15 @@ final _modelle = <_Modell>[
     'ArtefaktDaten',
     schluessel: ArtefaktDaten.jsonSchluessel,
     voll: () => const ArtefaktDaten(
-      art: ArtefaktArt.spruchspeicherAufladbar,
+      art: ArtefaktArt.spruchspeicherSemipermanent,
       zauber: <ArtefaktZauber>[ArtefaktZauber(name: 'Armatrutz')],
       ladungen: <ArtefaktLadung>[ArtefaktLadung(id: 'l1')],
       aufladungen: 1,
       gesamtAspErschaffung: 75,
+      anwendungenProIntervall: 2,
+      anwendungen: <AventurianDate>[
+        AventurianDate(day: '3', month: 'praios', year: '1027'),
+      ],
       pAsP: 4,
     ).toJson(),
     lade: (json) => ArtefaktDaten.fromJson(json).toJson(),

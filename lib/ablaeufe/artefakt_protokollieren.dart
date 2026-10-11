@@ -44,23 +44,23 @@ String _name(String artefaktName) =>
 
 /// Baut den Protokolleintrag einer Auslösung des Spruchspeichers.
 ///
-/// Nennt die Zauber der Ladung und das Ziel; es gibt keinen Wurf und keine
-/// Kosten. Der Eintrag ist neutral.
+/// Nennt die ausgelösten [zauber], den [vorgang] („Ladung ausgelöst (1 von 2
+/// frei)“, „Anwendung …“) und das Ziel; es gibt keinen Wurf und keine Kosten.
+/// Der Eintrag ist neutral.
 DiceLogEntry baueSpruchspeicherProtokoll({
   required String artefaktName,
-  required ArtefaktLadung ladung,
-  required ArtefaktDaten daten,
+  required List<ArtefaktZauber> zauber,
+  required String vorgang,
   required String ziel,
   required DateTime zeitpunkt,
 }) {
-  final namen = ladung.zauber
+  final namen = zauber
       .map((z) => z.name.trim())
       .where((n) => n.isNotEmpty)
       .join(' + ');
-  final frei = daten.ladungen.where((l) => !l.verbraucht).length;
   final teile = <String>[
     if (namen.isNotEmpty) namen,
-    'Ladung ausgelöst ($frei von ${daten.ladungen.length} frei)',
+    vorgang,
     if (ziel.trim().isNotEmpty) 'Ziel: ${ziel.trim()}',
   ];
   return diceLogEntryFromRoll(

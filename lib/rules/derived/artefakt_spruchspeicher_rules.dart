@@ -9,10 +9,15 @@ String artefaktArtLabel(ArtefaktArt art) => switch (art) {
   ArtefaktArt.matrixgeber => 'Matrixgeber',
   ArtefaktArt.spruchspeicherEinmalig => 'Spruchspeicher, einmalig',
   ArtefaktArt.spruchspeicherAufladbar => 'Spruchspeicher, aufladbar',
+  ArtefaktArt.spruchspeicherSemipermanent => 'Spruchspeicher, semipermanent',
 };
 
-/// Ob [art] ein ladungsbasierter Spruchspeicher ist.
+/// Ob [art] ein Spruchspeicher ist (ladungs- oder intervallbasiert).
 bool artefaktIstSpruchspeicher(ArtefaktArt art) =>
+    art != ArtefaktArt.matrixgeber;
+
+/// Ob [art] ein ladungsbasierter Spruchspeicher ist: Er führt `ladungen`.
+bool artefaktHatLadungen(ArtefaktArt art) =>
     art == ArtefaktArt.spruchspeicherEinmalig ||
     art == ArtefaktArt.spruchspeicherAufladbar;
 
@@ -38,14 +43,15 @@ bool spruchspeicherAufladbarLeer(ArtefaktDaten daten) =>
 
 /// Ob das Artefakt jetzt ausgelöst werden kann.
 ///
-/// Ein beschädigtes Artefakt und ein Spruchspeicher ohne freie Ladung lassen
-/// sich nicht auslösen; ein Matrixgeber nur dann nicht, wenn er beschädigt ist.
+/// Ein beschädigtes Artefakt und ein ladungsbasierter Spruchspeicher ohne
+/// freie Ladung lassen sich nicht auslösen. Ein Matrixgeber und ein
+/// semipermanenter Spruchspeicher nur dann nicht, wenn sie beschädigt sind;
+/// der Intervallstand ist für Letzteren eine Anzeige (Meisterentscheid).
 bool artefaktAusloesbar(ArtefaktDaten daten) {
   if (daten.defekt) {
     return false;
   }
-  return !artefaktIstSpruchspeicher(daten.art) ||
-      freieLadungen(daten).isNotEmpty;
+  return !artefaktHatLadungen(daten.art) || freieLadungen(daten).isNotEmpty;
 }
 
 /// Prüfergebnis vor dem Auslösen oder Aufladen eines Spruchspeichers.
@@ -66,16 +72,30 @@ class SpruchspeicherPruefung {
   bool get moeglich => sperrgrund == null;
 }
 
-/// Prüft, ob eine Ladung von [daten] ausgelöst werden kann.
+/// Prüft, ob eine Ladung (bzw. eine Anwendung) von [daten] ausgelöst werden
+/// kann.
 ///
 /// Wirkung, ZfP*, Reichweite und Dauer stehen im Artefakt fest. Es gibt weder
 /// Zauberdauer noch AsP-Kosten für den Anwender, und er muss nicht
 /// zauberkundig sein (Wege der Alchimie S. 87). Unvollständige Angaben bleiben
-/// Hinweise.
-SpruchspeicherPruefung pruefeSpruchspeicherAusloesung(ArtefaktDaten daten) {
+/// Hinweise. Bei einem semipermanenten Speicher gibt es nie einen
+/// Sperrgrund außer der Beschädigung: ein erschöpftes Intervall ist ein
+/// Hinweis, den [intervallHinweis] liefert.
+SpruchspeicherPruefung pruefeSpruchspeicherAusloesung(
+  ArtefaktDaten daten, {
+  String? intervallHinweis,
+}) {
   if (daten.defekt) {
     return const SpruchspeicherPruefung(
       sperrgrund: 'Die Haltematrix ist irreparabel beschädigt.',
+    );
+  }
+  if (daten.art == ArtefaktArt.spruchspeicherSemipermanent) {
+    return SpruchspeicherPruefung(
+      hinweise: [
+        if (daten.zauber.isEmpty) 'Im Artefakt ist kein Zauber hinterlegt.',
+        ?intervallHinweis,
+      ],
     );
   }
   if (daten.ladungen.isEmpty) {

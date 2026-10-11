@@ -1,3 +1,4 @@
+import 'package:dsa_heldenverwaltung/domain/aventurian_date.dart';
 import 'package:dsa_heldenverwaltung/domain/copy_with_sentinel.dart';
 import 'package:dsa_heldenverwaltung/domain/unbekannte_json_felder.dart';
 
@@ -18,6 +19,26 @@ enum ArtefaktArt {
   /// Ladungsbasierter Spruchspeicher, aufladbar: sind alle Ladungen
   /// verbraucht, lässt er sich mit Sprüchen desselben Thesiskerns neu laden.
   spruchspeicherAufladbar,
+
+  /// Intervallbasierter Spruchspeicher, semipermanent: Er regeneriert seine
+  /// Wirkungsmatrizen innerhalb eines Intervalls (Tag, Woche, Monat, Jahr)
+  /// selbst und lässt sich je Intervall nur begrenzt oft auslösen.
+  spruchspeicherSemipermanent,
+}
+
+/// Intervall eines semipermanenten Spruchspeichers (Wege der Alchimie S. 82).
+enum ArtefaktIntervall {
+  /// Ein Tag.
+  tag,
+
+  /// Eine Woche (sieben Tage).
+  woche,
+
+  /// Ein Monat (ein Göttermonat zu 30 Tagen).
+  monat,
+
+  /// Ein Jahr (365 Tage).
+  jahr,
 }
 
 /// Stabilität der Speichermatrix eines Matrixgebers.
@@ -305,6 +326,9 @@ class ArtefaktDaten {
     this.ladungen = const <ArtefaktLadung>[],
     this.aufladungen = 0,
     this.gesamtAspErschaffung,
+    this.intervall = ArtefaktIntervall.woche,
+    this.anwendungenProIntervall = 1,
+    this.anwendungen = const <AventurianDate>[],
     this.ersteller = '',
     this.ausloeser = '',
     this.ausloeserAktionen = 1,
@@ -340,6 +364,19 @@ class ArtefaktDaten {
   /// Beim Aufladen dürfen die neu eingespeicherten Wirkenden Sprüche diese
   /// Summe nicht überschreiten (Wege der Alchimie S. 88).
   final int? gesamtAspErschaffung;
+
+  /// Intervall eines semipermanenten Spruchspeichers.
+  final ArtefaktIntervall intervall;
+
+  /// Wie oft ein semipermanenter Spruchspeicher je Intervall ausgelöst werden
+  /// kann (mindestens 1).
+  final int anwendungenProIntervall;
+
+  /// Zeitpunkte der letzten Anwendungen im aventurischen Kalender.
+  ///
+  /// Ein leeres Datum steht für eine Anwendung ohne bekanntes Datum; sie
+  /// verfällt erst, wenn der Nutzer die Regeneration vermerkt.
+  final List<AventurianDate> anwendungen;
 
   /// Alle gespeicherten Zauber: die der Matrix und die aller Ladungen.
   List<ArtefaktZauber> get alleZauber => <ArtefaktZauber>[
@@ -382,6 +419,9 @@ class ArtefaktDaten {
     'ladungen',
     'aufladungen',
     'gesamtAspErschaffung',
+    'intervall',
+    'anwendungenProIntervall',
+    'anwendungen',
     'ersteller',
     'ausloeser',
     'ausloeserAktionen',
@@ -398,6 +438,9 @@ class ArtefaktDaten {
     List<ArtefaktLadung>? ladungen,
     int? aufladungen,
     Object? gesamtAspErschaffung = keepFieldValue,
+    ArtefaktIntervall? intervall,
+    int? anwendungenProIntervall,
+    List<AventurianDate>? anwendungen,
     String? ersteller,
     String? ausloeser,
     int? ausloeserAktionen,
@@ -416,6 +459,10 @@ class ArtefaktDaten {
       gesamtAspErschaffung: gesamtAspErschaffung == keepFieldValue
           ? this.gesamtAspErschaffung
           : gesamtAspErschaffung as int?,
+      intervall: intervall ?? this.intervall,
+      anwendungenProIntervall:
+          anwendungenProIntervall ?? this.anwendungenProIntervall,
+      anwendungen: anwendungen ?? this.anwendungen,
       ersteller: ersteller ?? this.ersteller,
       ausloeser: ausloeser ?? this.ausloeser,
       ausloeserAktionen: ausloeserAktionen ?? this.ausloeserAktionen,
@@ -430,6 +477,7 @@ class ArtefaktDaten {
                 stabilitaet != null && stabilitaet != this.stabilitaet,
             'regelfassung':
                 regelfassung != null && regelfassung != this.regelfassung,
+            'intervall': intervall != null && intervall != this.intervall,
           }),
     );
   }
@@ -448,6 +496,12 @@ class ArtefaktDaten {
         if (aufladungen > 0) 'aufladungen': aufladungen,
         if (gesamtAspErschaffung != null)
           'gesamtAspErschaffung': gesamtAspErschaffung,
+        if (art == ArtefaktArt.spruchspeicherSemipermanent) ...{
+          'intervall': intervall.name,
+          'anwendungenProIntervall': anwendungenProIntervall,
+        },
+        if (anwendungen.isNotEmpty)
+          'anwendungen': anwendungen.map((a) => a.toJson()).toList(),
         'ersteller': ersteller,
         'ausloeser': ausloeser,
         'ausloeserAktionen': ausloeserAktionen,
@@ -464,6 +518,7 @@ class ArtefaktDaten {
     String text(String key) => json[key] is String ? json[key] as String : '';
     final zauberRoh = json['zauber'];
     final ladungenRoh = json['ladungen'];
+    final anwendungenRoh = json['anwendungen'];
     return ArtefaktDaten(
       art: leseEnumWert(
         json['art'],
@@ -500,6 +555,20 @@ class ArtefaktDaten {
           : const <ArtefaktLadung>[],
       aufladungen: _ganzzahl(json['aufladungen']) ?? 0,
       gesamtAspErschaffung: _ganzzahl(json['gesamtAspErschaffung']),
+      intervall: leseEnumWert(
+        json['intervall'],
+        'intervall',
+        erkenne: (roh) => enumNachName(ArtefaktIntervall.values, roh),
+        ersatz: ArtefaktIntervall.woche,
+        unbekannt: enumRoh,
+      ),
+      anwendungenProIntervall: _ganzzahl(json['anwendungenProIntervall']) ?? 1,
+      anwendungen: anwendungenRoh is List
+          ? anwendungenRoh
+                .whereType<Map>()
+                .map((a) => AventurianDate.fromJson(a.cast<String, dynamic>()))
+                .toList(growable: false)
+          : const <AventurianDate>[],
       ersteller: text('ersteller'),
       ausloeser: text('ausloeser'),
       ausloeserAktionen: _ganzzahl(json['ausloeserAktionen']) ?? 1,

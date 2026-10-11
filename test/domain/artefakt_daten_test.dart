@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dsa_heldenverwaltung/domain/artefakt_daten.dart';
+import 'package:dsa_heldenverwaltung/domain/aventurian_date.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 
 void main() {
@@ -165,6 +166,67 @@ void main() {
       );
 
       expect(daten.alleZauber.map((z) => z.name), ['Matrix', 'Ladung']);
+    });
+
+    test('semipermanent: Intervall und vermerkte Anwendungen im Rundlauf', () {
+      const daten = ArtefaktDaten(
+        art: ArtefaktArt.spruchspeicherSemipermanent,
+        intervall: ArtefaktIntervall.monat,
+        anwendungenProIntervall: 3,
+        anwendungen: <AventurianDate>[
+          AventurianDate(day: '4', month: 'rondra', year: '1027'),
+          AventurianDate(),
+        ],
+        zauber: <ArtefaktZauber>[ArtefaktZauber(name: 'Aureolus')],
+      );
+
+      final neu = ArtefaktDaten.fromJson(
+        jsonDecode(jsonEncode(daten.toJson())) as Map<String, dynamic>,
+      );
+
+      expect(neu.toJson(), daten.toJson());
+      expect(neu.art, ArtefaktArt.spruchspeicherSemipermanent);
+      expect(neu.intervall, ArtefaktIntervall.monat);
+      expect(neu.anwendungenProIntervall, 3);
+      expect(neu.anwendungen, hasLength(2));
+      expect(neu.anwendungen.first.month, 'rondra');
+      expect(neu.anwendungen.last.hasContent, isFalse);
+    });
+
+    test('nur ein semipermanenter Speicher schreibt Intervall und Anzahl', () {
+      for (final art in [
+        ArtefaktArt.matrixgeber,
+        ArtefaktArt.spruchspeicherEinmalig,
+        ArtefaktArt.spruchspeicherAufladbar,
+      ]) {
+        final json = ArtefaktDaten(art: art).toJson();
+
+        expect(json.containsKey('intervall'), isFalse, reason: art.name);
+        expect(
+          json.containsKey('anwendungenProIntervall'),
+          isFalse,
+          reason: art.name,
+        );
+        expect(json.containsKey('anwendungen'), isFalse, reason: art.name);
+      }
+      final semi = const ArtefaktDaten(
+        art: ArtefaktArt.spruchspeicherSemipermanent,
+      ).toJson();
+      expect(semi['intervall'], 'woche');
+      expect(semi['anwendungenProIntervall'], 1);
+      expect(semi.containsKey('anwendungen'), isFalse);
+    });
+
+    test('fehlende Angaben des semipermanenten Speichers fallen zurück', () {
+      final daten = ArtefaktDaten.fromJson(<String, dynamic>{
+        'art': 'spruchspeicherSemipermanent',
+        'anwendungen': 'kein Array',
+        'anwendungenProIntervall': 'x',
+      });
+
+      expect(daten.intervall, ArtefaktIntervall.woche);
+      expect(daten.anwendungenProIntervall, 1);
+      expect(daten.anwendungen, isEmpty);
     });
 
     test('ein unbekanntes Feld der Ladung bleibt erhalten', () {

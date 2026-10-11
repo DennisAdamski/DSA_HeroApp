@@ -1,6 +1,7 @@
 import 'package:dsa_heldenverwaltung/domain/artefakt_daten.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/artefakt_intervall_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/artefakt_matrix_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/artefakt_spruchspeicher_rules.dart';
 
@@ -84,17 +85,21 @@ String artefaktZusammenfassung(ArtefaktDaten daten) {
     return matrixgeberZusammenfassung(daten);
   }
   final aktionen = daten.ausloeserAktionen < 1 ? 1 : daten.ausloeserAktionen;
-  final frei = freieLadungen(daten);
-  final namen = frei
-      .expand((l) => l.zauber)
-      .map((z) => z.name.trim())
-      .where((n) => n.isNotEmpty)
-      .toSet()
-      .join(' + ');
+  final semi = daten.art == ArtefaktArt.spruchspeicherSemipermanent;
+  final namen =
+      (semi ? daten.zauber : freieLadungen(daten).expand((l) => l.zauber))
+          .map((z) => z.name.trim())
+          .where((n) => n.isNotEmpty)
+          .toSet()
+          .join(' + ');
   final pAsP = artefaktPAspGesamt(daten);
   return [
     if (namen.isNotEmpty) namen,
-    spruchspeicherLadungenText(daten),
+    if (semi)
+      '${daten.anwendungenProIntervall} je '
+          '${artefaktIntervallLabel(daten.intervall)}'
+    else
+      spruchspeicherLadungenText(daten),
     '$aktionen Aktion${aktionen == 1 ? '' : 'en'}',
     if (pAsP != null) '$pAsP pAsP',
   ].join(' · ');

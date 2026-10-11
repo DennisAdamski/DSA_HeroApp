@@ -234,6 +234,43 @@ void main() {
       );
     });
 
+    test('semipermanent: Zauber, Anwendungen je Intervall und Aktionen', () {
+      const robe = ArtefaktDaten(
+        art: ArtefaktArt.spruchspeicherSemipermanent,
+        intervall: ArtefaktIntervall.monat,
+        anwendungenProIntervall: 2,
+        ausloeserAktionen: 2,
+        zauber: <ArtefaktZauber>[ArtefaktZauber(name: 'Aureolus')],
+      );
+
+      expect(
+        artefaktZusammenfassung(robe),
+        'Aureolus · 2 je Monat · 2 Aktionen',
+      );
+    });
+
+    test(
+      'ein semipermanenter Speicher steht im Kampf bereit und listet Zauber',
+      () {
+        const robe = HeroInventoryEntry(
+          gegenstand: 'Robe',
+          isMagisch: true,
+          istAusgeruestet: true,
+          artefaktDaten: ArtefaktDaten(
+            art: ArtefaktArt.spruchspeicherSemipermanent,
+            zauber: <ArtefaktZauber>[ArtefaktZauber(name: 'Aureolus')],
+          ),
+        );
+        final h = held.copyWith(inventoryEntries: [robe]);
+
+        expect(gefechtsArtefakte(h).map((e) => e.gegenstand), ['Robe']);
+        final liste = artefaktZauberListe(h);
+        expect(liste.map((e) => e.zauber.name), ['Aureolus']);
+        expect(liste.single.ladung, isNull);
+        expect(liste.single.verbraucht, isFalse);
+      },
+    );
+
     test('ein Matrixgeber behält seine Zusammenfassung', () {
       expect(
         artefaktZusammenfassung(_daten),
