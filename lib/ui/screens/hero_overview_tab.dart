@@ -1,5 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/magic_setup_rules.dart';
+import 'package:dsa_heldenverwaltung/ui_shared/magic_setup_dialog.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -134,6 +136,7 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
 
   /// Entwurf der Vor-/Nachteile; `null`, solange unveraendert (ARCH-02).
   List<HeroMerkmal>? _draftVorteile;
+  HeroSheet? _draftMagicSetup;
   List<HeroMerkmal>? _draftNachteile;
 
   @override
@@ -210,6 +213,7 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
     _field('familie').text = hero.background.familieHerkunftHintergrund;
     _field('sozialstatus').text = hero.background.sozialstatus.toString();
     _draftVorteile = null;
+    _draftMagicSetup = null;
     _draftNachteile = null;
     _field('ap_total').text = hero.apTotal.toString();
     _field('ap_spent').text = hero.apSpent.toString();

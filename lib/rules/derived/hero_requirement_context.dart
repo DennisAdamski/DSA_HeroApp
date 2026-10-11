@@ -19,6 +19,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/kampfbasis_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/requirement_evaluation_rules.dart';
 
 import 'maneuver_rules.dart';
+import 'ritual_knowledge_rules.dart';
 
 import 'package:dsa_heldenverwaltung/rules/derived/tradition_rules.dart';
 
@@ -197,10 +198,17 @@ Map<String, int> _werteNachName({
 /// laut Regelwerk auch die Ritualproben gewuerfelt werden.
 Map<String, int> _ritualkenntnisse(HeroSheet hero, {RulesCatalog? catalog}) {
   final result = <String, int>{};
+  for (final entry in hero.ritualKnowledge.entries) {
+    final tradition = traditionById(entry.key);
+    final name = entry.value.name.trim();
+    if (name.isNotEmpty) result[name] = entry.value.value;
+    if (tradition != null) result[tradition.name] = entry.value.value;
+  }
   for (final kategorie in hero.ritualCategories) {
     switch (kategorie.knowledgeMode) {
       case HeroRitualKnowledgeMode.ownKnowledge:
-        final kenntnis = kategorie.ownKnowledge;
+      case HeroRitualKnowledgeMode.traditionKnowledge:
+        final kenntnis = resolveRitualKnowledge(hero, kategorie);
         if (kenntnis == null) {
           continue;
         }

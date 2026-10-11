@@ -4,6 +4,7 @@ part of '../hero_magic_tab.dart';
 class _MagicRitualsSection extends StatelessWidget {
   const _MagicRitualsSection({
     this.begabungen,
+    required this.hero,
     required this.ritualCategories,
     required this.catalogTalents,
     required this.heroTalents,
@@ -17,6 +18,7 @@ class _MagicRitualsSection extends StatelessWidget {
 
   /// Begabungen aus Vor-/Nachteilen; `null` wirkt nicht.
   final HeroBegabungen? begabungen;
+  final HeroSheet hero;
 
   final List<HeroRitualCategory> ritualCategories;
   final List<TalentDef> catalogTalents;
@@ -42,6 +44,7 @@ class _MagicRitualsSection extends StatelessWidget {
     final created = await _showRitualCategoryDialog(
       context: context,
       catalogTalents: catalogTalents,
+      ritualKnowledge: hero.ritualKnowledge,
     );
     if (created == null) {
       return;
@@ -78,6 +81,7 @@ class _MagicRitualsSection extends StatelessWidget {
     final updatedCategory = await _showRitualCategoryDialog(
       context: context,
       catalogTalents: catalogTalents,
+      ritualKnowledge: hero.ritualKnowledge,
       existing: category,
     );
     if (updatedCategory == null) {
@@ -211,6 +215,7 @@ class _MagicRitualsSection extends StatelessWidget {
                       category,
                       resolvedTalents,
                       _befundFuer(category),
+                      resolveRitualKnowledge(hero, category),
                     ),
                     style: theme.textTheme.bodySmall,
                   ),
@@ -243,6 +248,7 @@ class _MagicRitualsSection extends StatelessWidget {
                     _buildKnowledgeSummary(
                       context,
                       category: category,
+                      knowledge: resolveRitualKnowledge(hero, category),
                       resolvedTalents: resolvedTalents,
                       befund: _befundFuer(category),
                     ),
@@ -380,13 +386,14 @@ class _MagicRitualsSection extends StatelessWidget {
 Widget _buildKnowledgeSummary(
   BuildContext context, {
   required HeroRitualCategory category,
+  required HeroRitualKnowledge? knowledge,
   required List<ResolvedRitualTalent> resolvedTalents,
   required LernspaltenBefund befund,
 }) {
   final theme = Theme.of(context);
-  if (category.knowledgeMode == HeroRitualKnowledgeMode.ownKnowledge) {
-    final ownKnowledge =
-        category.ownKnowledge ?? buildDefaultRitualKnowledge(category.name);
+  if (category.knowledgeMode != HeroRitualKnowledgeMode.derivedTalents) {
+    final ownKnowledge = knowledge;
+    if (ownKnowledge == null) return const Text('Ritualkenntnis fehlt');
     return ListTile(
       dense: true,
       contentPadding: EdgeInsets.zero,
@@ -423,10 +430,10 @@ String _buildCategorySummary(
   HeroRitualCategory category,
   List<ResolvedRitualTalent> resolvedTalents,
   LernspaltenBefund befund,
+  HeroRitualKnowledge? knowledge,
 ) {
-  if (category.knowledgeMode == HeroRitualKnowledgeMode.ownKnowledge) {
-    final knowledge =
-        category.ownKnowledge ?? buildDefaultRitualKnowledge(category.name);
+  if (category.knowledgeMode != HeroRitualKnowledgeMode.derivedTalents) {
+    if (knowledge == null) return 'Ritualkenntnis fehlt';
     return 'Ritualkenntnis, TaW ${knowledge.value}, '
         'Kompl. ${_komplexitaetText(knowledge, befund)}';
   }

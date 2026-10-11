@@ -50,6 +50,7 @@ class HeroSheet {
     this.talentSpecialAbilities = const <TalentSpecialAbility>[],
     this.spells = const <String, HeroSpellEntry>{},
     this.ritualCategories = const <HeroRitualCategory>[],
+    this.ritualKnowledge = const <String, HeroRitualKnowledge>{},
     this.representationen = const <String>[],
     this.repraesentationsTraditionen = const <String, String>{},
     this.merkmalskenntnisse = const <String>[],
@@ -113,6 +114,9 @@ class HeroSheet {
   final List<TalentSpecialAbility> talentSpecialAbilities;
   final Map<String, HeroSpellEntry> spells;
   final List<HeroRitualCategory> ritualCategories;
+
+  /// Gemeinsame Ritualkenntnisse je stabiler Traditionskennung.
+  final Map<String, HeroRitualKnowledge> ritualKnowledge;
   final List<String> representationen;
 
   /// Gewaehlte Tradition je Repraesentationskuerzel, z. B.
@@ -251,6 +255,7 @@ class HeroSheet {
     List<TalentSpecialAbility>? talentSpecialAbilities,
     Map<String, HeroSpellEntry>? spells,
     List<HeroRitualCategory>? ritualCategories,
+    Map<String, HeroRitualKnowledge>? ritualKnowledge,
     List<String>? representationen,
     Map<String, String>? repraesentationsTraditionen,
     List<String>? merkmalskenntnisse,
@@ -316,6 +321,7 @@ class HeroSheet {
           talentSpecialAbilities ?? this.talentSpecialAbilities,
       spells: spells ?? this.spells,
       ritualCategories: ritualCategories ?? this.ritualCategories,
+      ritualKnowledge: ritualKnowledge ?? this.ritualKnowledge,
       representationen: representationen ?? this.representationen,
       repraesentationsTraditionen:
           repraesentationsTraditionen ?? this.repraesentationsTraditionen,
@@ -399,6 +405,7 @@ class HeroSheet {
     'talentSpecialAbilities',
     'spells',
     'ritualCategories',
+    'ritualKnowledge',
     'representationen',
     'repraesentationsTraditionen',
     'merkmalskenntnisse',
@@ -468,6 +475,10 @@ class HeroSheet {
       'ritualCategories': ritualCategories
           .map((entry) => entry.toJson())
           .toList(growable: false),
+      if (ritualKnowledge.isNotEmpty)
+        'ritualKnowledge': ritualKnowledge.map(
+          (key, value) => MapEntry(key, value.toJson()),
+        ),
       'representationen': representationen,
       'repraesentationsTraditionen': repraesentationsTraditionen,
       'merkmalskenntnisse': merkmalskenntnisse,
@@ -574,6 +585,9 @@ class HeroSheet {
     final rawSpells =
         (json['spells'] as Map?)?.cast<String, dynamic>() ??
         const <String, dynamic>{};
+    final rawRitualKnowledge =
+        (json['ritualKnowledge'] as Map?)?.cast<String, dynamic>() ??
+        const <String, dynamic>{};
     final rawRitualCategories =
         (json['ritualCategories'] as List?) ?? const <dynamic>[];
     final rawRepresentationen =
@@ -654,6 +668,13 @@ class HeroSheet {
             : const <String, dynamic>{};
         return MapEntry(key, HeroSpellEntry.fromJson(map));
       }),
+      ritualKnowledge: {
+        for (final entry in rawRitualKnowledge.entries)
+          if (entry.value is Map)
+            entry.key: HeroRitualKnowledge.fromJson(
+              (entry.value as Map).cast<String, dynamic>(),
+            ),
+      },
       ritualCategories: rawRitualCategories
           .whereType<Map>()
           .map(

@@ -5,6 +5,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/catalog/special_ability_requirement.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_advancement_entry.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/advancement_options.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/advancement_magic_knowledge_rules.dart';
+import 'package:dsa_heldenverwaltung/ui_shared/magic_knowledge_advancement_dialog.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_merkmal.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_resource_activation_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
@@ -118,9 +122,11 @@ void main() {
   Future<({ProviderContainer container, FakeRepository repo})> open(
     WidgetTester tester, {
     HeroSheet hero = _hero,
+    Size size = const Size(1200, 1000),
+    double textScale = 1,
   }) async {
     tester.view.devicePixelRatio = 1;
-    tester.view.physicalSize = const Size(1200, 1000);
+    tester.view.physicalSize = size;
     addTearDown(tester.view.resetDevicePixelRatio);
     addTearDown(tester.view.resetPhysicalSize);
     final repo = FakeRepository(heroes: [hero]);
@@ -134,7 +140,12 @@ void main() {
     await tester.pumpWidget(
       UncontrolledProviderScope(
         container: container,
-        child: const MaterialApp(
+        child: MaterialApp(
+          builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(context)
+                .copyWith(textScaler: TextScaler.linear(textScale)),
+            child: child!,
+          ),
           home: Scaffold(body: AdvancementCatalog(heroId: 'bereiche-ui')),
         ),
       ),
@@ -187,6 +198,242 @@ void main() {
     expect(session.entries.single.apCost, 50);
     expect(session.preview.nachteileText, 'Goldgier 5');
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Magie hat getrennte Kenntnisse mit Headeraktionen', (
+    tester,
+  ) async {
+    await open(tester, hero: _hero.copyWith(representationen: const ['Mag']));
+    await zuAbschnitt(tester, 'magie', 'repraesentationen');
+    expect(find.text('+ Repräsentation'), findsOneWidget);
+    expect(find.text('Repräsentationen'), findsOneWidget);
+    await zuAbschnitt(tester, 'magie', 'ritualkenntnisse');
+    expect(find.text('+ Ritualkenntnis'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+  testWidgets(
+    'Kostenfreie Kenntniserfassung liefert nur einen Planungsbefehl',
+    (tester) async {
+      final setup = await open(
+        tester,
+        hero: _hero.copyWith(representationen: const ['Mag']),
+      );
+      final session = sitzung(setup.container);
+      final option = resolveMagicKnowledge(
+        AdvancementContext(hero: session.preview, catalog: session.catalog),
+        AdvancementKind.representation,
+        'Elf',
+        const {'traditionId': 'elf'},
+      )!;
+      final future = showMagicKnowledgeAdvancementDialog(
+        context: tester.element(find.byType(AdvancementCatalog)),
+        session: session,
+        option: option,
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Neu erlernen'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Bei Erschaffung enthalten').last);
+      await tester.pumpAndSettle();
+      expect(find.text('Kosten: 0 AP'), findsOneWidget);
+      final confirm = tester.widget<FilledButton>(
+        find.widgetWithText(FilledButton, 'Vormerken'),
+      );
+      expect(confirm.onPressed, isNull);
+      await tester.tap(find.byType(DropdownButtonFormField<String>).last);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Vollzauberer').last);
+      await tester.pumpAndSettle();
+      expect(
+        tester
+            .widget<FilledButton>(
+              find.widgetWithText(FilledButton, 'Vormerken'),
+            )
+            .onPressed,
+        isNotNull,
+      );
+      await tester.tap(find.text('Vormerken'));
+      await tester.pumpAndSettle();
+      final entry = await future;
+      expect(entry!.options['source'], 'creation');
+      expect(entry.apCost, 0);
+      expect(sitzung(setup.container).entries, isEmpty);
+      expect((await setup.repo.loadHeroById(_hero.id))!.representationen, [
+        'Mag',
+      ]);
+      setup.container
+          .read(advancementSessionProvider(_hero.id).notifier)
+          .add(entry);
+      await tester.pumpAndSettle();
+      expect(sitzung(setup.container).preview.representationen, ['Mag', 'Elf']);
+      expect((await setup.repo.loadHeroById(_hero.id))!.representationen, [
+        'Mag',
+      ]);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'Abbruch der Ritualkenntniserfassung lässt die Sitzung unverändert',
+    (tester) async {
+      final setup = await open(
+        tester,
+        hero: _hero.copyWith(representationen: const ['Mag']),
+      );
+      final session = sitzung(setup.container);
+      final option = resolveMagicKnowledge(
+        AdvancementContext(hero: session.preview, catalog: session.catalog),
+        AdvancementKind.ritualKnowledge,
+        'gildenmagier',
+        const {},
+      )!;
+      final future = showMagicKnowledgeAdvancementDialog(
+        context: tester.element(find.byType(AdvancementCatalog)),
+        session: session,
+        option: option,
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Lehrmeister vorhanden'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Abbrechen'));
+      await tester.pumpAndSettle();
+      expect(await future, isNull);
+      expect(sitzung(setup.container).entries, isEmpty);
+      expect(sitzung(setup.container).preview.ritualKnowledge, isEmpty);
+      expect(
+        (await setup.repo.loadHeroById(_hero.id))!.ritualKnowledge,
+        isEmpty,
+      );
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets('Kenntnisdialog bleibt schmal mit großer Schrift bedienbar', (
+    tester,
+  ) async {
+    final setup = await open(
+      tester,
+      hero: _hero.copyWith(representationen: const ['Mag']),
+      size: const Size(390, 844),
+      textScale: 2,
+    );
+    final session = sitzung(setup.container);
+    final option = resolveMagicKnowledge(
+      AdvancementContext(hero: session.preview, catalog: session.catalog),
+      AdvancementKind.ritualKnowledge,
+      'gildenmagier',
+      const {},
+    )!;
+    final future = showMagicKnowledgeAdvancementDialog(
+      context: tester.element(find.byType(AdvancementCatalog)),
+      session: session,
+      option: option,
+    );
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    await tester.tap(find.text('Abbrechen'));
+    await tester.pumpAndSettle();
+    expect(await future, isNull);
+  });
+
+  testWidgets('Geoden wählen die Tradition vor der kostenfreien Erfassung', (
+    tester,
+  ) async {
+    final setup = await open(
+      tester,
+      hero: _hero.copyWith(representationen: const ['Mag']),
+    );
+    final session = sitzung(setup.container);
+    final option = resolveMagicKnowledge(
+      AdvancementContext(hero: session.preview, catalog: session.catalog),
+      AdvancementKind.representation,
+      'Geo',
+      const {'source': 'creation'},
+    )!;
+    final future = showMagicKnowledgeAdvancementDialog(
+      context: tester.element(find.byType(AdvancementCatalog)),
+      session: session,
+      option: option,
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('magic-knowledge-tradition')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Geode (Diener Sumus)').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byType(DropdownButtonFormField<String>).last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Vollzauberer').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Vormerken'));
+    await tester.pumpAndSettle();
+    final entry = (await future)!;
+    expect(entry.options['traditionId'], 'geode_diener_sumus');
+    setup.container
+        .read(advancementSessionProvider(_hero.id).notifier)
+        .add(entry);
+    expect(
+      sitzung(setup.container).preview.repraesentationsTraditionen['Geo'],
+      'geode_diener_sumus',
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Bezahlter Einrichtungsweg sperrt kostenfreie Quellen', (
+    tester,
+  ) async {
+    final setup = await open(
+      tester,
+      hero: _hero.copyWith(representationen: const ['Mag']),
+    );
+    final session = sitzung(setup.container);
+    final option = resolveMagicKnowledge(
+      AdvancementContext(hero: session.preview, catalog: session.catalog),
+      AdvancementKind.ritualKnowledge,
+      'gildenmagier',
+      const {'source': 'acquisition'},
+    )!;
+    final future = showMagicKnowledgeAdvancementDialog(
+      context: tester.element(find.byType(AdvancementCatalog)),
+      session: session,
+      option: option,
+      lockSource: true,
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Bei Erschaffung enthalten'), findsNothing);
+    expect(find.text('Erwerbsgrund: Neu erlernen'), findsOneWidget);
+    await tester.tap(find.text('Abbrechen'));
+    await tester.pumpAndSettle();
+    expect(await future, isNull);
+  });
+
+  testWidgets('Einrichtungsweg behält die außen gewählte Geodentradition', (
+    tester,
+  ) async {
+    final setup = await open(
+      tester,
+      hero: _hero.copyWith(representationen: const ['Mag']),
+    );
+    final session = sitzung(setup.container);
+    final option = resolveMagicKnowledge(
+      AdvancementContext(hero: session.preview, catalog: session.catalog),
+      AdvancementKind.representation,
+      'Geo',
+      const {'source': 'creation', 'traditionId': 'geode_herr_der_erde'},
+    )!;
+    final future = showMagicKnowledgeAdvancementDialog(
+      context: tester.element(find.byType(AdvancementCatalog)),
+      session: session,
+      option: option,
+      lockTradition: true,
+    );
+    await tester.pumpAndSettle();
+    final dropdown = tester.widget<DropdownButtonFormField<String>>(
+      find.byKey(const ValueKey('magic-knowledge-tradition')),
+    );
+    expect(dropdown.onChanged, isNull);
+    await tester.tap(find.text('Abbrechen'));
+    await tester.pumpAndSettle();
+    expect(await future, isNull);
   });
 
   testWidgets('Magie bietet Merkmalskenntnisse an', (tester) async {

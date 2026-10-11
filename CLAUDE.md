@@ -4,6 +4,14 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
 
 ## Zuerst lesen
 
+- [Magische Kenntnisse](docs/magische_kenntnisse.md): Repräsentationen und
+  Ritualkenntnisse in Editor und Entwicklungsplanung. `HeroSheet.ritualKnowledge`
+  hält gemeinsame Werte je Tradition; `ritual_knowledge_rules.dart` löst
+  Kategoriebezüge auf. `advancement_magic_knowledge_rules.dart` prüft Erwerb und
+  Steigerung, `magic_setup_rules.dart` die kostenfreie Erfassung und bewusste
+  Anbindung von Bestandsgruppen. Wiederverwendbare Dialoge liegen unter
+  `lib/ui_shared/`, damit Verwaltung und Kartograph denselben Ablauf nutzen.
+
 - `AGENTS.md` ist die verbindliche Agentenrichtlinie.
 - `README.md` beschreibt Produktumfang, Architekturueberblick und Standard-Workflows.
 - `tool/sync_main_to_test.sh` mergt Main in Test;

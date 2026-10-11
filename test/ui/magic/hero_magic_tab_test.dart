@@ -224,7 +224,199 @@ void main() {
     return _OpenedMagicTab(repo: effectiveRepo, actions: actions!);
   }
 
+  testWidgets(
+    'Traditionseinrichtung bleibt bis Speichern ein vollständiger Entwurf',
+    (tester) async {
+      final base = buildHero(representationen: const [])
+          .copyWith(vorteileText: 'Vollzauberer');
+      final opened = await openMagicTab(
+        tester,
+        repo: FakeRepository(heroes: [base]),
+      );
+      await tester.tap(find.text('Repr. & SF'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('magic-setup-open')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('magic-setup-confirm')));
+      await tester.pumpAndSettle();
+      expect(
+        (await opened.repo.loadHeroById('demo'))!.ritualKnowledge,
+        isEmpty,
+      );
+      await tester.tap(find.text('Rituale'));
+      await tester.pumpAndSettle();
+      await opened.actions.save();
+      await tester.pumpAndSettle();
+      final saved = (await opened.repo.loadHeroById('demo'))!;
+      expect(saved.representationen, ['Mag']);
+      expect(saved.ritualKnowledge['gildenmagier']!.value, 3);
+      expect(saved.apSpent, 0);
+      expect(saved.advancementHistory, base.advancementHistory);
+    },
+  );
+
+  testWidgets(
+    'gemeinsame Kategorien zeigen denselben RkW und erfinden keinen Ersatz',
+    (tester) async {
+      const category = HeroRitualCategory(
+        id: 'shared',
+        name: 'Stabzauber',
+        knowledgeMode: HeroRitualKnowledgeMode.traditionKnowledge,
+        traditionId: 'gildenmagier',
+      );
+      final hero =
+          buildHero(
+            ritualCategories: [
+              category,
+              category.copyWith(id: 'bowl', name: 'Schalenzauber'),
+              category.copyWith(
+                id: 'missing',
+                name: 'Verwaiste Kenntnis',
+                traditionId: 'missing',
+              ),
+            ],
+          ).copyWith(
+            ritualKnowledge: {
+              'gildenmagier': const HeroRitualKnowledge(
+                name: 'Gildenmagie',
+                value: 12,
+              ),
+            },
+          );
+      final opened = await openMagicTab(
+        tester,
+        repo: FakeRepository(heroes: [hero]),
+      );
+      await tester.tap(find.text('Rituale'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('TaW 12'), findsNWidgets(4));
+      expect(find.text('Ritualkenntnis fehlt'), findsNWidgets(2));
+      await opened.actions.startEdit();
+      await tester.pumpAndSettle();
+      await opened.actions.save();
+      await tester.pumpAndSettle();
+      expect(
+        (await opened.repo.loadHeroById('demo'))!.ritualKnowledge,
+        hero.ritualKnowledge,
+      );
+    },
+  );
+
+  testWidgets(
+    'Ritualkategorie kann ausdrücklich eine vorhandene gemeinsame Kenntnis nutzen',
+    (tester) async {
+      final hero = buildHero().copyWith(
+        ritualKnowledge: {
+          'gildenmagier': const HeroRitualKnowledge(
+            name: 'Gildenmagie',
+            value: 12,
+          ),
+        },
+      );
+      final opened = await openMagicTab(
+        tester,
+        repo: FakeRepository(heroes: [hero]),
+      );
+      await tester.tap(find.text('Rituale'));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(const ValueKey('magic-rituals-add-category')),
+      );
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byKey(const ValueKey('magic-ritual-category-name-field')),
+        'Stabzauber',
+      );
+      await tester.tap(find.text('Tradition').last);
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(const ValueKey('magic-ritual-shared-knowledge')),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Gildenmagie: RkW 12, E').last);
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(const ValueKey('magic-ritual-category-save')),
+      );
+      await tester.pumpAndSettle();
+      await opened.actions.save();
+      await tester.pumpAndSettle();
+      final saved = (await opened.repo.loadHeroById('demo'))!;
+      expect(saved.ritualCategories.single.traditionId, 'gildenmagier');
+      expect(saved.ritualCategories.single.ownKnowledge, isNull);
+      expect(
+        saved.ritualCategories.single.knowledgeMode,
+        HeroRitualKnowledgeMode.traditionKnowledge,
+      );
+      expect(saved.ritualKnowledge, hero.ritualKnowledge);
+      expect(saved.apSpent, hero.apSpent);
+    },
+  );
+
+  testWidgets(
+    'zweiter bezahlter Einrichtungsschritt sieht die verbleibenden Entwurfs-AP',
+    (tester) async {
+      final hero = buildHero(
+        representationen: const ['Mag'],
+      ).copyWith(vorteileText: 'Vollzauberer', apTotal: 250, apAvailable: 250);
+      final opened = await openMagicTab(
+        tester,
+        repo: FakeRepository(heroes: [hero]),
+      );
+      await tester.tap(find.text('Repr. & SF'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('magic-setup-open')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Bei Erschaffung enthalten').last);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Neu erlernen').last);
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('magic-setup-confirm')));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.text('Meistererlaubnis für die fremde Ritualkenntnis'),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Vormerken'));
+      await tester.pumpAndSettle();
+      expect((await opened.repo.loadHeroById('demo'))!.apSpent, 0);
+
+      await tester.tap(find.byKey(const ValueKey('magic-setup-open')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Gildenmagier').last);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Derwisch').last);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Bei Erschaffung enthalten').last);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Neu erlernen').last);
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('magic-setup-confirm')));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.text('Meistererlaubnis für die fremde Ritualkenntnis'),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('0 AP verfügbar'), findsOneWidget);
+      final button = tester.widget<FilledButton>(
+        find.widgetWithText(FilledButton, 'Vormerken'),
+      );
+      expect(button.onPressed, isNull);
+      await tester.tap(find.text('Abbrechen').last);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Abbrechen').last);
+      await tester.pumpAndSettle();
+      await opened.actions.save();
+      await tester.pumpAndSettle();
+      final saved = (await opened.repo.loadHeroById('demo'))!;
+      expect(saved.apSpent, 250);
+      expect(saved.ritualKnowledge.keys, ['gildenmagier']);
+      expect(saved.advancementHistory, hasLength(1));
+    },
+  );
+
   for (final action in [
+    ('Repr. & SF', 'magic-setup-open'),
     ('Zauber', 'magic-spells-add'),
     ('Repr. & SF', 'magic-sf-add'),
     ('Repr. & SF', 'magic-sf-add-from-catalog'),
@@ -758,14 +950,13 @@ void main() {
     expect(savedHero?.apSpent, 0);
   });
 
-  testWidgets('manuelle Repraesentation wird ohne AP-Dialog gespeichert', (
+  testWidgets('vorhandene Repräsentation wird ausdrücklich ohne AP erfasst', (
     tester,
   ) async {
-    // Held hat bereits drei Repraesentationen -> die vierte hat keinen
-    // Regelpreis mehr, also faellt der Vorschlag auf 0 und der Hinweis warnt.
     final repo = FakeRepository(
       heroes: <HeroSheet>[
-        buildHero(representationen: const <String>['Mag']),
+        buildHero(representationen: const <String>['Mag'])
+            .copyWith(vorteileText: 'Vollzauberer'),
       ],
       states: <String, HeroState>{
         'demo': const HeroState(
@@ -787,6 +978,14 @@ void main() {
       find.byKey(const ValueKey<String>('magic-representation-Dru')),
     );
     await _pumpAndSettleIgnoringKnownOverflow(tester);
+
+    expect(find.text('Magische Tradition einrichten'), findsWidgets);
+    await tester.tap(find.text('Neu erlernen').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Bereits vorhanden').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('magic-setup-confirm')));
+    await tester.pumpAndSettle();
 
     expect(find.widgetWithText(TextField, 'AP-Kosten'), findsNothing);
     await opened.actions.save();

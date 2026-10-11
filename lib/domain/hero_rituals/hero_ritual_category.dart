@@ -9,6 +9,9 @@ enum HeroRitualKnowledgeMode {
 
   /// Die Kategorie leitet sich von einem oder mehreren Talenten ab.
   derivedTalents,
+
+  /// Die Kategorie verwendet die gemeinsame Kenntnis ihrer Tradition.
+  traditionKnowledge,
 }
 
 /// Eigene Ritualkenntnis fuer eine Ritualkategorie.
@@ -101,6 +104,7 @@ class HeroRitualCategory {
     required this.name,
     required this.knowledgeMode,
     this.ownKnowledge,
+    this.traditionId = '',
     this.derivedTalentIds = const <String>[],
     this.additionalFieldDefs = const <HeroRitualFieldDef>[],
     this.rituals = const <HeroRitualEntry>[],
@@ -119,6 +123,9 @@ class HeroRitualCategory {
 
   /// Eigene Ritualkenntnis, wenn [knowledgeMode] `ownKnowledge` ist.
   final HeroRitualKnowledge? ownKnowledge;
+
+  /// Stabile Traditionskennung bei gemeinsam verwendeter Ritualkenntnis.
+  final String traditionId;
 
   /// Referenzierte Talente, wenn [knowledgeMode] `derivedTalents` ist.
   final List<String> derivedTalentIds;
@@ -145,6 +152,7 @@ class HeroRitualCategory {
     'name',
     'knowledgeMode',
     'ownKnowledge',
+    'traditionId',
     'derivedTalentIds',
     'additionalFieldDefs',
     'rituals',
@@ -156,6 +164,7 @@ class HeroRitualCategory {
     String? name,
     HeroRitualKnowledgeMode? knowledgeMode,
     Object? ownKnowledge = _keepNullableField,
+    String? traditionId,
     List<String>? derivedTalentIds,
     List<HeroRitualFieldDef>? additionalFieldDefs,
     List<HeroRitualEntry>? rituals,
@@ -164,6 +173,7 @@ class HeroRitualCategory {
   }) {
     return HeroRitualCategory(
       id: id ?? this.id,
+      traditionId: traditionId ?? this.traditionId,
       name: name ?? this.name,
       knowledgeMode: knowledgeMode ?? this.knowledgeMode,
       ownKnowledge: identical(ownKnowledge, _keepNullableField)
@@ -190,6 +200,7 @@ class HeroRitualCategory {
         'name': name,
         'knowledgeMode': _ritualKnowledgeModeToJson(knowledgeMode),
         'ownKnowledge': ownKnowledge?.toJson(),
+        if (traditionId.isNotEmpty) 'traditionId': traditionId,
         'derivedTalentIds': derivedTalentIds,
         'additionalFieldDefs': additionalFieldDefs
             .map((entry) => entry.toJson())
@@ -213,6 +224,7 @@ class HeroRitualCategory {
     final rawOwnKnowledge = json['ownKnowledge'];
     return HeroRitualCategory(
       id: (json['id'] as String?) ?? '',
+      traditionId: (json['traditionId'] as String?) ?? '',
       name: (json['name'] as String?) ?? '',
       knowledgeMode: leseEnumWert(
         json['knowledgeMode'],
@@ -255,6 +267,7 @@ class HeroRitualCategory {
           name == other.name &&
           knowledgeMode == other.knowledgeMode &&
           ownKnowledge == other.ownKnowledge &&
+          traditionId == other.traditionId &&
           _ritualListEqual(derivedTalentIds, other.derivedTalentIds) &&
           _ritualListEqual(additionalFieldDefs, other.additionalFieldDefs) &&
           _ritualListEqual(rituals, other.rituals) &&
@@ -270,6 +283,7 @@ class HeroRitualCategory {
     name,
     knowledgeMode,
     ownKnowledge,
+    traditionId,
     ...derivedTalentIds,
     ...additionalFieldDefs,
     ...rituals,
@@ -284,11 +298,15 @@ String _ritualKnowledgeModeToJson(HeroRitualKnowledgeMode value) {
       return 'ownKnowledge';
     case HeroRitualKnowledgeMode.derivedTalents:
       return 'derivedTalents';
+    case HeroRitualKnowledgeMode.traditionKnowledge:
+      return 'traditionKnowledge';
   }
 }
 
 HeroRitualKnowledgeMode? _ritualKnowledgeModeErkennen(Object? raw) {
   switch (raw) {
+    case 'traditionKnowledge':
+      return HeroRitualKnowledgeMode.traditionKnowledge;
     case 'derivedTalents':
       return HeroRitualKnowledgeMode.derivedTalents;
     case 'ownKnowledge':
