@@ -3,13 +3,18 @@ import 'package:flutter/material.dart';
 import 'package:dsa_heldenverwaltung/ablaeufe/matrix_ausloesen.dart';
 import 'package:dsa_heldenverwaltung/domain/artefakt_daten.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/artefakt_matrix_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/artefakt_spruchspeicher_rules.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/artefakt_ladungen_editor.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/artefakt_zauber_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/artefakt_zauber_zeile.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/list_tile_material.dart';
 
 /// Abschnitt „Artefakt“ im Inventareditor.
 ///
-/// Erfasst die Daten eines Matrixgebers: Stabilität und Regelfassung, die
-/// eingesprochenen Zauber mit den Werten ihres Sprechers sowie Ersteller und
+/// Erfasst die Daten eines Matrixgebers (Stabilität, Regelfassung, die
+/// eingesprochenen Zauber mit den Werten ihres Sprechers) oder eines
+/// ladungsbasierten Spruchspeichers (Ladungen aus Zaubergruppen, bei
+/// aufladbaren auch Aufladezähler und Gesamt-AsP) sowie Ersteller und
 /// Auslöser. Der Abschnitt hält keinen Entwurf des Eintrags, sondern meldet
 /// jede Änderung über [onChanged]; `null` heißt „kein Artefakt“.
 class ArtefaktEditorAbschnitt extends StatefulWidget {
@@ -44,6 +49,12 @@ class _ArtefaktEditorAbschnittState extends State<ArtefaktEditorAbschnitt> {
   late final TextEditingController _pAsP = TextEditingController(
     text: widget.daten?.pAsP?.toString() ?? '',
   );
+  late final TextEditingController _gesamtAsp = TextEditingController(
+    text: widget.daten?.gesamtAspErschaffung?.toString() ?? '',
+  );
+  late final TextEditingController _aufladungen = TextEditingController(
+    text: '${widget.daten?.aufladungen ?? 0}',
+  );
 
   @override
   void dispose() {
@@ -51,6 +62,8 @@ class _ArtefaktEditorAbschnittState extends State<ArtefaktEditorAbschnitt> {
     _ausloeser.dispose();
     _aktionen.dispose();
     _pAsP.dispose();
+    _gesamtAsp.dispose();
+    _aufladungen.dispose();
     super.dispose();
   }
 
@@ -143,6 +156,9 @@ class _ArtefaktEditorAbschnittState extends State<ArtefaktEditorAbschnitt> {
   Widget build(BuildContext context) {
     final daten = widget.daten;
     final texte = Theme.of(context).textTheme;
+    final speicher = daten != null && artefaktIstSpruchspeicher(daten.art);
+    final aufladbar =
+        daten != null && daten.art == ArtefaktArt.spruchspeicherAufladbar;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -151,10 +167,10 @@ class _ArtefaktEditorAbschnittState extends State<ArtefaktEditorAbschnitt> {
             key: const ValueKey<String>('inventory-editor-artefakt'),
             value: daten != null,
             onChanged: _schalte,
-            title: const Text('Matrixgeber'),
+            title: const Text('Artefakt'),
             subtitle: const Text(
-              'Ein zauberkundiger Träger löst die gespeicherten Zauber aus, '
-              'ohne sie selbst zu beherrschen.',
+              'Matrixgeber oder Spruchspeicher: Die Wirkung steht im '
+              'Gegenstand, der Träger löst sie aus.',
             ),
             dense: true,
             contentPadding: EdgeInsets.zero,
@@ -162,36 +178,66 @@ class _ArtefaktEditorAbschnittState extends State<ArtefaktEditorAbschnitt> {
         ),
         if (daten != null) ...[
           const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: _dropdown<MatrixStabilitaet>(
-                  schluessel: 'stabilitaet',
-                  label: 'Stabilität der Matrix',
-                  wert: daten.stabilitaet,
-                  items: {
-                    for (final s in MatrixStabilitaet.values)
-                      s: matrixStabilitaetLabel(s),
-                  },
-                  onChanged: (v) => _aendere((d) => d.copyWith(stabilitaet: v)),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _dropdown<MatrixRegelfassung>(
-                  schluessel: 'regelfassung',
-                  label: 'Regelfassung',
-                  wert: daten.regelfassung,
-                  items: {
-                    for (final f in MatrixRegelfassung.values)
-                      f: matrixRegelfassungLabel(f),
-                  },
-                  onChanged: (v) =>
-                      _aendere((d) => d.copyWith(regelfassung: v)),
-                ),
-              ),
-            ],
+          _dropdown<ArtefaktArt>(
+            schluessel: 'art',
+            label: 'Art des Artefakts',
+            wert: daten.art,
+            items: {for (final a in ArtefaktArt.values) a: artefaktArtLabel(a)},
+            onChanged: (v) => _aendere((d) => d.copyWith(art: v)),
           ),
+          const SizedBox(height: 12),
+          if (!speicher)
+            Row(
+              children: [
+                Expanded(
+                  child: _dropdown<MatrixStabilitaet>(
+                    schluessel: 'stabilitaet',
+                    label: 'Stabilität der Matrix',
+                    wert: daten.stabilitaet,
+                    items: {
+                      for (final s in MatrixStabilitaet.values)
+                        s: matrixStabilitaetLabel(s),
+                    },
+                    onChanged: (v) =>
+                        _aendere((d) => d.copyWith(stabilitaet: v)),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(child: _fassungDropdown(daten)),
+              ],
+            )
+          else if (aufladbar)
+            _fassungDropdown(daten),
+          if (aufladbar) ...[
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: _text(
+                    'aufladungen',
+                    'Bisherige Aufladungen',
+                    _aufladungen,
+                    (d, t) => d.copyWith(aufladungen: int.tryParse(t) ?? 0),
+                    zahl: true,
+                    hilfe: 'WdA 2012: jede Aufladung erhöht das Schadensrisiko',
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _text(
+                    'gesamtasp',
+                    'Gesamt-AsP der Erschaffung',
+                    _gesamtAsp,
+                    (d, t) => d.copyWith(
+                      gesamtAspErschaffung: int.tryParse(t.trim()),
+                    ),
+                    zahl: true,
+                    hilfe: 'Grenze für die Sprüche beim Aufladen',
+                  ),
+                ),
+              ],
+            ),
+          ],
           const SizedBox(height: 12),
           _text(
             'ersteller',
@@ -244,72 +290,50 @@ class _ArtefaktEditorAbschnittState extends State<ArtefaktEditorAbschnitt> {
             ),
           ),
           const SizedBox(height: 8),
-          Text('Gespeicherte Zauber', style: texte.titleSmall),
-          const SizedBox(height: 4),
-          if (daten.zauber.isEmpty)
-            Text(
-              'Noch kein Zauber hinterlegt.',
-              style: texte.bodySmall,
-              key: const ValueKey<String>('inventory-editor-artefakt-leer'),
+          if (speicher)
+            ArtefaktLadungenEditor(
+              ladungen: daten.ladungen,
+              onChanged: (l) => _aendere((d) => d.copyWith(ladungen: l)),
+            )
+          else ...[
+            Text('Gespeicherte Zauber', style: texte.titleSmall),
+            const SizedBox(height: 4),
+            if (daten.zauber.isEmpty)
+              Text(
+                'Noch kein Zauber hinterlegt.',
+                style: texte.bodySmall,
+                key: const ValueKey<String>('inventory-editor-artefakt-leer'),
+              ),
+            for (var i = 0; i < daten.zauber.length; i++)
+              ArtefaktZauberZeile(
+                key: ValueKey<String>('inventory-editor-artefakt-zauber-$i'),
+                zauber: daten.zauber[i],
+                onAendern: () => _aendereZauber(i),
+                onEntfernen: () => _entferneZauber(i),
+              ),
+            const SizedBox(height: 4),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: OutlinedButton.icon(
+                key: const ValueKey<String>('inventory-editor-artefakt-add'),
+                onPressed: _fuegeZauberHinzu,
+                icon: const Icon(Icons.add),
+                label: const Text('Zauber hinzufügen'),
+              ),
             ),
-          for (var i = 0; i < daten.zauber.length; i++)
-            _ZauberZeile(
-              key: ValueKey<String>('inventory-editor-artefakt-zauber-$i'),
-              zauber: daten.zauber[i],
-              onAendern: () => _aendereZauber(i),
-              onEntfernen: () => _entferneZauber(i),
-            ),
-          const SizedBox(height: 4),
-          Align(
-            alignment: Alignment.centerLeft,
-            child: OutlinedButton.icon(
-              key: const ValueKey<String>('inventory-editor-artefakt-add'),
-              onPressed: _fuegeZauberHinzu,
-              icon: const Icon(Icons.add),
-              label: const Text('Zauber hinzufügen'),
-            ),
-          ),
+          ],
         ],
       ],
     );
   }
-}
 
-class _ZauberZeile extends StatelessWidget {
-  const _ZauberZeile({
-    super.key,
-    required this.zauber,
-    required this.onAendern,
-    required this.onEntfernen,
-  });
-
-  final ArtefaktZauber zauber;
-  final VoidCallback onAendern;
-  final VoidCallback onEntfernen;
-
-  @override
-  Widget build(BuildContext context) {
-    final details = [
-      if (zauber.repraesentation.isNotEmpty) zauber.repraesentation,
-      if (zauber.variante.isNotEmpty) 'Variante: ${zauber.variante}',
-      if (zauber.zfw != null) 'ZfW ${zauber.zfw}',
-      if (zauber.zfpStern != null) 'ZfP* ${zauber.zfpStern}',
-      if (zauber.kostenAsp != null) '${zauber.kostenAsp} AsP',
-      if (zauber.pAsP != null) '${zauber.pAsP} pAsP',
-    ].join(' · ');
-    return ListTileMaterial(
-      child: ListTile(
-        dense: true,
-        contentPadding: EdgeInsets.zero,
-        title: Text(zauber.name.isEmpty ? 'Unbenannt' : zauber.name),
-        subtitle: details.isEmpty ? null : Text(details),
-        onTap: onAendern,
-        trailing: IconButton(
-          tooltip: 'Zauber entfernen',
-          icon: const Icon(Icons.delete_outline),
-          onPressed: onEntfernen,
-        ),
-      ),
-    );
-  }
+  Widget _fassungDropdown(ArtefaktDaten daten) => _dropdown<MatrixRegelfassung>(
+    schluessel: 'regelfassung',
+    label: 'Regelfassung',
+    wert: daten.regelfassung,
+    items: {
+      for (final f in MatrixRegelfassung.values) f: matrixRegelfassungLabel(f),
+    },
+    onChanged: (v) => _aendere((d) => d.copyWith(regelfassung: v)),
+  );
 }

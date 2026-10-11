@@ -11,6 +11,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/inventar_aenderung_rules.dart
 import 'package:dsa_heldenverwaltung/state/ablauf_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/artefakt_zauber_karte.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/zustand_aendern.dart';
 
 /// Öffnet den Auslösedialog eines Matrixgebers.
@@ -189,36 +190,6 @@ class _MatrixAusloesenDialogState
     }
   }
 
-  Widget _zauberKarte(BuildContext context, ArtefaktZauber z) {
-    final texte = Theme.of(context).textTheme;
-    final zeilen = [
-      [
-        if (z.repraesentation.isNotEmpty) 'Repräsentation ${z.repraesentation}',
-        if (z.zfw != null) 'ZfW ${z.zfw}',
-        if (z.zfpStern != null) 'ZfP* ${z.zfpStern}',
-        if (z.kostenAsp != null) '${z.kostenAsp} AsP',
-        if (z.pAsP != null) '${z.pAsP} pAsP',
-      ].join(' · '),
-      if (z.variante.isNotEmpty) 'Variante: ${z.variante}',
-      if (z.reichweite.isNotEmpty) 'Reichweite: ${z.reichweite}',
-      if (z.wirkungsdauer.isNotEmpty) 'Wirkungsdauer: ${z.wirkungsdauer}',
-      if (z.zielHinweis.isNotEmpty) 'Zielvorgabe: ${z.zielHinweis}',
-      if (z.spontaneModifikation.isNotEmpty)
-        'Spontane Modifikation: ${z.spontaneModifikation}',
-      if (z.notiz.isNotEmpty) z.notiz,
-    ].where((t) => t.isNotEmpty);
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(z.name.isEmpty ? 'Unbenannt' : z.name, style: texte.titleSmall),
-          for (final zeile in zeilen) Text(zeile, style: texte.bodySmall),
-        ],
-      ),
-    );
-  }
-
   Widget _zahlFeld(
     String schluessel,
     String label,
@@ -322,7 +293,7 @@ class _MatrixAusloesenDialogState
           style: texte.bodySmall,
         ),
         const SizedBox(height: 12),
-        for (final z in daten.zauber) _zauberKarte(context, z),
+        for (final z in daten.zauber) ArtefaktZauberKarte(zauber: z),
         if (daten.zauber.isEmpty) const Text('Kein Zauber hinterlegt.'),
         const Divider(),
         Text(

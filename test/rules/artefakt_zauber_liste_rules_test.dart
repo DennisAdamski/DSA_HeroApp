@@ -78,7 +78,7 @@ void main() {
 
     expect(liste, isEmpty);
     expect(
-      gefechtsMatrixgeber(
+      gefechtsArtefakte(
         held.copyWith(
           inventoryEntries: [
             _schiene.copyWith(traegerTyp: InventoryTraeger.begleiter),
@@ -92,7 +92,7 @@ void main() {
   test(
     'im Kampf stehen nur ausgerüstete, unbeschädigte Matrixgeber bereit',
     () {
-      final bereit = gefechtsMatrixgeber(
+      final bereit = gefechtsArtefakte(
         held.copyWith(
           inventoryEntries: [
             _schiene,
@@ -132,5 +132,113 @@ void main() {
       ),
       'Flim Flam · 1 Aktion',
     );
+  });
+
+  group('Spruchspeicher', () {
+    const speicher = ArtefaktDaten(
+      art: ArtefaktArt.spruchspeicherAufladbar,
+      pAsP: 4,
+      ladungen: <ArtefaktLadung>[
+        ArtefaktLadung(
+          id: 'a',
+          verbraucht: true,
+          zauber: <ArtefaktZauber>[ArtefaktZauber(name: 'Gardianum')],
+        ),
+        ArtefaktLadung(
+          id: 'b',
+          zauber: <ArtefaktZauber>[
+            ArtefaktZauber(name: 'Armatrutz'),
+            ArtefaktZauber(name: 'Gardianum'),
+          ],
+        ),
+      ],
+    );
+    const stirnreif = HeroInventoryEntry(
+      gegenstand: 'Stirnreif',
+      isMagisch: true,
+      istAusgeruestet: true,
+      artefaktDaten: speicher,
+    );
+
+    test('die Zauberliste nennt Zauber jeder Ladung samt Status', () {
+      final liste = artefaktZauberListe(
+        held.copyWith(inventoryEntries: [stirnreif]),
+      );
+
+      expect(liste.map((e) => e.zauber.name), [
+        'Gardianum',
+        'Armatrutz',
+        'Gardianum',
+      ]);
+      expect(liste.map((e) => e.verbraucht), [true, false, false]);
+      expect(liste.map((e) => e.ladung?.id), ['a', 'b', 'b']);
+    });
+
+    test('ein Matrixgeber hat keine Ladung und gilt nie als verbraucht', () {
+      final liste = artefaktZauberListe(
+        held.copyWith(inventoryEntries: [_schiene]),
+      );
+
+      expect(liste.map((e) => e.ladung), [null, null]);
+      expect(liste.map((e) => e.verbraucht), [false, false]);
+    });
+
+    test('im Kampf stehen nur Speicher mit freier Ladung bereit', () {
+      final leer = stirnreif.copyWith(
+        gegenstand: 'Leer',
+        artefaktDaten: speicher.copyWith(
+          ladungen: [
+            for (final l in speicher.ladungen) l.copyWith(verbraucht: true),
+          ],
+        ),
+      );
+      final bereit = gefechtsArtefakte(
+        held.copyWith(inventoryEntries: [stirnreif, leer, _schiene]),
+      );
+
+      expect(bereit.map((e) => e.gegenstand), ['Stirnreif', 'Armschiene']);
+    });
+
+    test('die Zusammenfassung nennt freie Zauber, Ladungen und pAsP', () {
+      expect(
+        artefaktZusammenfassung(speicher),
+        'Armatrutz + Gardianum · 1 von 2 Ladungen frei · 1 Aktion · 4 pAsP',
+      );
+    });
+
+    test('der Ladungstext unterscheidet erloschen, leer und unerfasst', () {
+      expect(
+        spruchspeicherLadungenText(
+          speicher.copyWith(ladungen: const <ArtefaktLadung>[]),
+        ),
+        'keine Ladung hinterlegt',
+      );
+      expect(
+        spruchspeicherLadungenText(
+          const ArtefaktDaten(
+            art: ArtefaktArt.spruchspeicherEinmalig,
+            ladungen: <ArtefaktLadung>[
+              ArtefaktLadung(id: 'a', verbraucht: true),
+            ],
+          ),
+        ),
+        'erloschen',
+      );
+      expect(
+        spruchspeicherLadungenText(
+          const ArtefaktDaten(
+            ladungen: <ArtefaktLadung>[ArtefaktLadung(id: 'a')],
+          ),
+        ),
+        '1 von 1 Ladung frei',
+      );
+    });
+
+    test('ein Matrixgeber behält seine Zusammenfassung', () {
+      expect(
+        artefaktZusammenfassung(_daten),
+        matrixgeberZusammenfassung(_daten),
+      );
+    });
   });
 }

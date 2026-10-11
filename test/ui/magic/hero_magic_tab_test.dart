@@ -347,6 +347,72 @@ void main() {
     );
   });
 
+  testWidgets('Ladungen eines Spruchspeichers erscheinen mit Status', (
+    tester,
+  ) async {
+    final hero = buildHero().copyWith(
+      inventoryEntries: const [
+        HeroInventoryEntry(
+          gegenstand: 'Stirnreif',
+          isMagisch: true,
+          istAusgeruestet: true,
+          instanzId: 'i-1',
+          artefaktDaten: ArtefaktDaten(
+            art: ArtefaktArt.spruchspeicherAufladbar,
+            ladungen: <ArtefaktLadung>[
+              ArtefaktLadung(
+                id: 'a',
+                verbraucht: true,
+                zauber: <ArtefaktZauber>[ArtefaktZauber(name: 'Gardianum')],
+              ),
+              ArtefaktLadung(
+                id: 'b',
+                zauber: <ArtefaktZauber>[
+                  ArtefaktZauber(name: 'Armatrutz', kostenAsp: 6),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+    await openMagicTab(
+      tester,
+      repo: FakeRepository(
+        heroes: <HeroSheet>[hero],
+        states: <String, HeroState>{
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 0,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
+      ),
+    );
+
+    final abschnitt = find.byKey(const ValueKey('magic-artefakt-zauber'));
+    await tester.ensureVisible(abschnitt);
+    expect(
+      find.textContaining('Stirnreif · Ladung verbraucht'),
+      findsOneWidget,
+    );
+    expect(find.textContaining('Stirnreif · ausgerüstet'), findsOneWidget);
+    // Nur die freie Ladung lässt sich auslösen.
+    expect(
+      find.byKey(const ValueKey('magic-artefakt-ausloesen-0')),
+      findsNothing,
+    );
+    final ausloesen = find.byKey(const ValueKey('magic-artefakt-ausloesen-1'));
+    expect(ausloesen, findsOneWidget);
+
+    await tester.tap(ausloesen);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Stirnreif auslösen'), findsOneWidget);
+    expect(find.text('1 von 2 Ladungen frei'), findsOneWidget);
+  });
+
   testWidgets('ohne Artefakte gibt es keinen Artefaktabschnitt', (
     tester,
   ) async {

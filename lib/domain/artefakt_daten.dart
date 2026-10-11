@@ -3,12 +3,21 @@ import 'package:dsa_heldenverwaltung/domain/unbekannte_json_felder.dart';
 
 /// Art eines Artefakts am Inventareintrag.
 ///
-/// Bisher nur der Matrixgeber (Stäbe, Ringe, Dschinnenlampen S. 17; Wege der
-/// Alchimie S. 87 f.). Weitere Arten kommen als neue Werte hinzu.
+/// Matrixgeber und ladungsbasierte Spruchspeicher (Stäbe, Ringe,
+/// Dschinnenlampen S. 8 und 16 f.; Wege der Alchimie S. 80–88). Weitere Arten
+/// kommen als neue Werte hinzu.
 enum ArtefaktArt {
   /// Der zauberkundige Träger lässt die Zauber-AsP einfließen; die
   /// gespeicherte Wirkung ist unveränderlich.
   matrixgeber,
+
+  /// Ladungsbasierter Spruchspeicher, einmalig: nach der letzten Ladung ist
+  /// jede Magie des Gegenstands verloren.
+  spruchspeicherEinmalig,
+
+  /// Ladungsbasierter Spruchspeicher, aufladbar: sind alle Ladungen
+  /// verbraucht, lässt er sich mit Sprüchen desselben Thesiskerns neu laden.
+  spruchspeicherAufladbar,
 }
 
 /// Stabilität der Speichermatrix eines Matrixgebers.
@@ -205,6 +214,81 @@ class ArtefaktZauber {
   }
 }
 
+/// Eine Ladung eines Spruchspeichers.
+///
+/// Eine Ladung ist eine unabhängig auslösbare Anwendung und kann aus mehreren
+/// Zaubern bestehen, die grundsätzlich gemeinsam ausgelöst werden (Wege der
+/// Alchimie S. 80). Die stabile [id] ordnet sie beim Konto-Sync zu.
+class ArtefaktLadung {
+  /// Erstellt eine Ladung.
+  const ArtefaktLadung({
+    required this.id,
+    this.zauber = const <ArtefaktZauber>[],
+    this.verbraucht = false,
+    this.unbekannteFelder = const <String, Object?>{},
+  });
+
+  /// Stabile Kennung der Ladung innerhalb des Artefakts.
+  final String id;
+
+  /// Die gemeinsam ausgelösten Zauber der Ladung.
+  final List<ArtefaktZauber> zauber;
+
+  /// Ob die Ladung schon ausgelöst wurde.
+  final bool verbraucht;
+
+  /// JSON-Felder einer neueren App-Version; bleiben beim Speichern erhalten
+  /// (siehe `unbekannte_json_felder.dart`).
+  final Map<String, Object?> unbekannteFelder;
+
+  /// Alle Schlüssel, die [fromJson] liest; alles andere bleibt erhalten.
+  static const Set<String> jsonSchluessel = <String>{
+    'id',
+    'zauber',
+    'verbraucht',
+  };
+
+  /// Gibt eine Kopie mit selektiv überschriebenen Feldern zurück.
+  ArtefaktLadung copyWith({
+    String? id,
+    List<ArtefaktZauber>? zauber,
+    bool? verbraucht,
+    Map<String, Object?>? unbekannteFelder,
+  }) {
+    return ArtefaktLadung(
+      id: id ?? this.id,
+      zauber: zauber ?? this.zauber,
+      verbraucht: verbraucht ?? this.verbraucht,
+      unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
+    );
+  }
+
+  /// Serialisiert die Ladung.
+  Map<String, dynamic> toJson() {
+    return mitUnbekanntenFeldern(<String, dynamic>{
+      'id': id,
+      'zauber': zauber.map((z) => z.toJson()).toList(),
+      'verbraucht': verbraucht,
+    }, unbekannteFelder);
+  }
+
+  /// Liest eine Ladung tolerant aus JSON.
+  static ArtefaktLadung fromJson(Map<String, dynamic> json) {
+    final zauberRoh = json['zauber'];
+    return ArtefaktLadung(
+      id: json['id'] is String ? json['id'] as String : '',
+      zauber: zauberRoh is List
+          ? zauberRoh
+                .whereType<Map>()
+                .map((z) => ArtefaktZauber.fromJson(z.cast<String, dynamic>()))
+                .toList(growable: false)
+          : const <ArtefaktZauber>[],
+      verbraucht: (json['verbraucht'] as bool?) ?? false,
+      unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
+    );
+  }
+}
+
 /// Artefaktdaten eines Inventareintrags (`HeroInventoryEntry.artefaktDaten`).
 ///
 /// Der Eintrag trägt alles, was sonst aus dem Helden käme: welche Zauber in
@@ -218,6 +302,9 @@ class ArtefaktDaten {
     this.stabilitaet = MatrixStabilitaet.stabil,
     this.regelfassung = MatrixRegelfassung.alchimie2012,
     this.zauber = const <ArtefaktZauber>[],
+    this.ladungen = const <ArtefaktLadung>[],
+    this.aufladungen = 0,
+    this.gesamtAspErschaffung,
     this.ersteller = '',
     this.ausloeser = '',
     this.ausloeserAktionen = 1,
@@ -238,6 +325,27 @@ class ArtefaktDaten {
 
   /// Gemeinsam ausgelöste Zauber der Matrix.
   final List<ArtefaktZauber> zauber;
+
+  /// Ladungen eines Spruchspeichers; beim Matrixgeber leer.
+  final List<ArtefaktLadung> ladungen;
+
+  /// Wie oft der Spruchspeicher schon wieder aufgeladen wurde.
+  ///
+  /// Nach Wege der Alchimie 2012 steigt mit jedem Aufladen die Gefahr einer
+  /// Schädigung der Haltematrix um 1 Punkt (S. 88).
+  final int aufladungen;
+
+  /// Gesamt-AsP bei der Erschaffung, einschließlich der AsP des ARCANOVI.
+  ///
+  /// Beim Aufladen dürfen die neu eingespeicherten Wirkenden Sprüche diese
+  /// Summe nicht überschreiten (Wege der Alchimie S. 88).
+  final int? gesamtAspErschaffung;
+
+  /// Alle gespeicherten Zauber: die der Matrix und die aller Ladungen.
+  List<ArtefaktZauber> get alleZauber => <ArtefaktZauber>[
+    ...zauber,
+    for (final ladung in ladungen) ...ladung.zauber,
+  ];
 
   /// Wer das Artefakt erschaffen hat.
   final String ersteller;
@@ -271,6 +379,9 @@ class ArtefaktDaten {
     'stabilitaet',
     'regelfassung',
     'zauber',
+    'ladungen',
+    'aufladungen',
+    'gesamtAspErschaffung',
     'ersteller',
     'ausloeser',
     'ausloeserAktionen',
@@ -284,6 +395,9 @@ class ArtefaktDaten {
     MatrixStabilitaet? stabilitaet,
     MatrixRegelfassung? regelfassung,
     List<ArtefaktZauber>? zauber,
+    List<ArtefaktLadung>? ladungen,
+    int? aufladungen,
+    Object? gesamtAspErschaffung = keepFieldValue,
     String? ersteller,
     String? ausloeser,
     int? ausloeserAktionen,
@@ -297,6 +411,11 @@ class ArtefaktDaten {
       stabilitaet: stabilitaet ?? this.stabilitaet,
       regelfassung: regelfassung ?? this.regelfassung,
       zauber: zauber ?? this.zauber,
+      ladungen: ladungen ?? this.ladungen,
+      aufladungen: aufladungen ?? this.aufladungen,
+      gesamtAspErschaffung: gesamtAspErschaffung == keepFieldValue
+          ? this.gesamtAspErschaffung
+          : gesamtAspErschaffung as int?,
       ersteller: ersteller ?? this.ersteller,
       ausloeser: ausloeser ?? this.ausloeser,
       ausloeserAktionen: ausloeserAktionen ?? this.ausloeserAktionen,
@@ -323,6 +442,12 @@ class ArtefaktDaten {
         'stabilitaet': stabilitaet.name,
         'regelfassung': regelfassung.name,
         'zauber': zauber.map((z) => z.toJson()).toList(),
+        // Nur bei Belegung: Bestandsdaten behalten ihren Inhalts-Hash.
+        if (ladungen.isNotEmpty)
+          'ladungen': ladungen.map((l) => l.toJson()).toList(),
+        if (aufladungen > 0) 'aufladungen': aufladungen,
+        if (gesamtAspErschaffung != null)
+          'gesamtAspErschaffung': gesamtAspErschaffung,
         'ersteller': ersteller,
         'ausloeser': ausloeser,
         'ausloeserAktionen': ausloeserAktionen,
@@ -338,6 +463,7 @@ class ArtefaktDaten {
     final enumRoh = <String, Object?>{};
     String text(String key) => json[key] is String ? json[key] as String : '';
     final zauberRoh = json['zauber'];
+    final ladungenRoh = json['ladungen'];
     return ArtefaktDaten(
       art: leseEnumWert(
         json['art'],
@@ -366,6 +492,14 @@ class ArtefaktDaten {
                 .map((z) => ArtefaktZauber.fromJson(z.cast<String, dynamic>()))
                 .toList(growable: false)
           : const <ArtefaktZauber>[],
+      ladungen: ladungenRoh is List
+          ? ladungenRoh
+                .whereType<Map>()
+                .map((l) => ArtefaktLadung.fromJson(l.cast<String, dynamic>()))
+                .toList(growable: false)
+          : const <ArtefaktLadung>[],
+      aufladungen: _ganzzahl(json['aufladungen']) ?? 0,
+      gesamtAspErschaffung: _ganzzahl(json['gesamtAspErschaffung']),
       ersteller: text('ersteller'),
       ausloeser: text('ausloeser'),
       ausloeserAktionen: _ganzzahl(json['ausloeserAktionen']) ?? 1,

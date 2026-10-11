@@ -19,6 +19,7 @@ class InventoryEintragAktionen extends StatelessWidget {
     this.onVerkaufen,
     this.onKampfUebernehmen,
     this.onAusloesen,
+    this.onAufladen,
   });
 
   /// Der gespeicherte Eintrag, mit dem der Editor geöffnet wurde.
@@ -39,8 +40,11 @@ class InventoryEintragAktionen extends StatelessWidget {
   /// Holt einen abgelegten Gegenstand in den Kampfbereich zurück.
   final VoidCallback? onKampfUebernehmen;
 
-  /// Löst einen Matrixgeber aus (`artefaktDaten`).
+  /// Löst ein Artefakt aus (`artefaktDaten`): Matrixgeber oder eine Ladung.
   final VoidCallback? onAusloesen;
+
+  /// Lädt einen leeren, aufladbaren Spruchspeicher wieder auf.
+  final VoidCallback? onAufladen;
 
   @override
   Widget build(BuildContext context) {
@@ -52,6 +56,13 @@ class InventoryEintragAktionen extends StatelessWidget {
           onPressed: frei(onAusloesen),
           icon: const Icon(Icons.auto_awesome),
           label: const Text('Auslösen'),
+        ),
+      if (onAufladen != null)
+        FilledButton.icon(
+          key: const ValueKey<String>('inventory-editor-aufladen'),
+          onPressed: frei(onAufladen),
+          icon: const Icon(Icons.battery_charging_full),
+          label: const Text('Aufladen'),
         ),
       if (onTeilen != null)
         OutlinedButton.icon(

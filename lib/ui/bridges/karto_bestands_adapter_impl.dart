@@ -12,7 +12,7 @@ import 'package:dsa_heldenverwaltung/ui/screens/advancement/advancement_catalog.
 import 'package:dsa_heldenverwaltung/ui/screens/advancement/advancement_history_panel.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/auth/open_sign_in.dart';
-import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/matrix_ausloesen_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/artefakt_anwenden.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/heroes_home_screen.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/settings_screen.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/begleiter_zustand_rules.dart';
@@ -126,7 +126,8 @@ class KartoBestandsAdapterImpl
   Future<AttributeModifiers?> gefechtsAttributoWerte(BuildContext context) =>
       showAttributoInputDialog(context: context);
 
-  /// Öffnet den Auslösedialog des Matrixgebers unter dem kompatiblen Theme.
+  /// Öffnet den Auslösedialog des Artefakts (Matrixgeber oder Spruchspeicher)
+  /// unter dem kompatiblen Theme.
   @override
   Future<void> gefechtsMatrixAusloesen({
     required BuildContext context,
@@ -135,7 +136,7 @@ class KartoBestandsAdapterImpl
     required HeroInventoryEntry eintrag,
   }) => _withKartoCompatContext(
     context,
-    (themedContext) => zeigeMatrixAusloesen(
+    (themedContext) => zeigeArtefaktAnwenden(
       context: themedContext,
       ref: ref,
       heroId: heroId,

@@ -203,6 +203,91 @@ void main() {
     expect(daten.pAsP, isNull, reason: 'die Summe wird nicht gespeichert');
   });
 
+  testWidgets('Spruchspeicher anlegen: Ladungen mit Zaubern erfassen', (
+    tester,
+  ) async {
+    final gespeichert = await _zeige(
+      tester,
+      const HeroInventoryEntry(
+        gegenstand: 'Stirnreif',
+        isMagisch: true,
+        artefaktDaten: ArtefaktDaten(),
+      ),
+    );
+
+    await _tippe(tester, _artefakt('art'));
+    await _tippe(tester, find.text('Spruchspeicher, aufladbar').last);
+    expect(_artefakt('stabilitaet'), findsNothing, reason: 'nur Matrixgeber');
+    expect(_artefakt('add'), findsNothing, reason: 'Zauber liegen in Ladungen');
+    expect(_artefakt('aufladungen'), findsOneWidget);
+    expect(_artefakt('gesamtasp'), findsOneWidget);
+    await _tippe(tester, _artefakt('ladung-add'));
+    await _tippe(tester, _artefakt('ladung-0-add'));
+    await tester.enterText(_zauber('name'), 'Psychostabilis');
+    await tester.enterText(_zauber('kosten'), '9');
+    await tester.enterText(_zauber('pasp'), '2');
+    await tester.pumpAndSettle();
+    await _tippe(tester, _zauber('uebernehmen'));
+    await _tippe(tester, _artefakt('ladung-add'));
+    await tester.enterText(_artefakt('gesamtasp'), '75');
+    await tester.enterText(_artefakt('aufladungen'), '1');
+    await _speichere(tester);
+
+    final daten = gespeichert.single.artefaktDaten!;
+    expect(daten.art, ArtefaktArt.spruchspeicherAufladbar);
+    expect(daten.ladungen, hasLength(2));
+    expect(daten.ladungen.first.id, isNotEmpty);
+    expect(daten.ladungen.first.id, isNot(daten.ladungen.last.id));
+    expect(daten.ladungen.first.zauber.single.name, 'Psychostabilis');
+    expect(daten.ladungen.first.zauber.single.pAsP, 2);
+    expect(daten.ladungen.last.zauber, isEmpty);
+    expect(daten.gesamtAspErschaffung, 75);
+    expect(daten.aufladungen, 1);
+    expect(daten.zauber, isEmpty);
+  });
+
+  testWidgets('eine Ladung lässt sich als verbraucht markieren und entfernen', (
+    tester,
+  ) async {
+    final gespeichert = await _zeige(
+      tester,
+      const HeroInventoryEntry(
+        gegenstand: 'Stirnreif',
+        isMagisch: true,
+        artefaktDaten: ArtefaktDaten(
+          art: ArtefaktArt.spruchspeicherEinmalig,
+          ladungen: <ArtefaktLadung>[
+            ArtefaktLadung(id: 'a'),
+            ArtefaktLadung(id: 'b'),
+          ],
+        ),
+      ),
+    );
+
+    expect(_artefakt('aufladungen'), findsNothing, reason: 'nur aufladbar');
+    await _tippe(tester, _artefakt('ladung-0-verbraucht'));
+    await _tippe(tester, _artefakt('ladung-1-entfernen'));
+    await _speichere(tester);
+
+    final daten = gespeichert.single.artefaktDaten!;
+    expect(daten.ladungen.map((l) => l.id), ['a']);
+    expect(daten.ladungen.single.verbraucht, isTrue);
+  });
+
+  testWidgets('ein Matrixgeber zeigt keine Ladungen', (tester) async {
+    await _zeige(
+      tester,
+      const HeroInventoryEntry(
+        gegenstand: 'Armschiene',
+        isMagisch: true,
+        artefaktDaten: ArtefaktDaten(),
+      ),
+    );
+
+    expect(_artefakt('stabilitaet'), findsOneWidget);
+    expect(_artefakt('ladung-add'), findsNothing);
+  });
+
   testWidgets('die Katalogauswahl belegt Kosten, Reichweite und Dauer vor', (
     tester,
   ) async {
