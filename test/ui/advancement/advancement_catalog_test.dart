@@ -11,7 +11,9 @@ import 'package:dsa_heldenverwaltung/domain/hero_resource_activation_config.dart
 import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/advancement/advancement_base_value_tile.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/advancement/advancement_catalog.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/advancement/advancement_impact_panel.dart';
 
 void main() {
   const hero = HeroSheet(
@@ -69,10 +71,17 @@ void main() {
     return (container: container, repo: repo);
   }
 
+  // Die Zeilen der Basiswertberechnung tragen Wert und Delta als getrennte Texte.
+  Finder statWert(String label, String text) => find.descendant(
+    of: find.byKey(ValueKey('advancement-impact-$label')),
+    matching: find.text(text),
+  );
+
   testWidgets('Vormerken ändert nur die Vorschau und zeigt Geplant', (
     tester,
   ) async {
     final setup = await openCatalog(tester);
+    expect(find.text('Basiswertberechnung'), findsOneWidget);
     expect(find.text('Basiswerte'), findsOneWidget);
     expect(find.text('Vor der Runde → Geplant'), findsOneWidget);
     await tester.tap(
@@ -89,12 +98,13 @@ void main() {
     expect(session.preview.apAvailable, lessThan(hero.apAvailable));
     expect((await setup.repo.loadHeroById(hero.id))!.attributes.mu, 12);
     expect(find.text('Geplant'), findsOneWidget);
-    expect(find.text('Au 20 → 21 (+1)'), findsOneWidget);
+    expect(statWert('Au', '20 → 21'), findsOneWidget);
+    expect(statWert('Au', '+1'), findsOneWidget);
     setup.container
         .read(advancementSessionProvider(hero.id).notifier)
         .remove(session.entries.single.id);
     await tester.pumpAndSettle();
-    expect(find.text('Au 20 → 20'), findsOneWidget);
+    expect(statWert('Au', '20 → 20'), findsOneWidget);
     expect(find.text('Geplant'), findsNothing);
     expect(tester.takeException(), isNull);
   });
@@ -133,6 +143,8 @@ void main() {
         find.byKey(const ValueKey('advancement-specialization-name')),
         'Felsen',
       );
+      // Der Weiter-Knopf folgt dem Eingabestand und braucht einen Frame.
+      await tester.pump();
       await tester.tap(find.text('Weiter'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Vormerken'));
@@ -206,7 +218,8 @@ void main() {
         find.text('Talent: Klettern · Wert 15 · Maximum 15 → 17'),
         findsOneWidget,
       );
-      expect(find.text('AT-Basis 7 → 8 (+1)'), findsOneWidget);
+      expect(statWert('AT-Basis', '7 → 8'), findsOneWidget);
+      expect(statWert('AT-Basis', '+1'), findsOneWidget);
       await tester.tap(find.byTooltip('Wert senken'));
       await tester.tap(find.byTooltip('Wert senken'));
       await tester.pumpAndSettle();
@@ -222,7 +235,26 @@ void main() {
       expect(session.entries, isEmpty);
       expect(session.preview.apAvailable, hero.apAvailable);
       expect((await setup.repo.loadHeroById(hero.id))!.attributes.mu, 12);
-      expect(find.text('AT-Basis 7 → 7'), findsOneWidget);
+      expect(statWert('AT-Basis', '7 → 7'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'Zugekaufte Basiswerte stehen als Kacheln bei den Eigenschaften',
+    (tester) async {
+      await openCatalog(tester, size: const Size(1200, 900));
+      final attribute = tester.getRect(
+        find.byKey(const ValueKey('advancement-plan-attribute-kk')),
+      );
+      final lep = tester.getRect(
+        find.byKey(const ValueKey('advancement-plan-boughtStat-lep')),
+      );
+      final berechnung = tester.getRect(find.byType(AdvancementImpactPanel));
+      expect(find.byType(AdvancementBaseValueTile), findsNWidgets(5));
+      // Die Kacheln liegen unter den Eigenschaften; die Berechnung daneben.
+      expect(lep.top, greaterThan(attribute.bottom));
+      expect(lep.right, lessThan(berechnung.left));
+      expect(tester.takeException(), isNull);
     },
   );
 
@@ -469,6 +501,10 @@ void main() {
       'Geländekunde (Wüste)',
     );
     // Mehrfach waehlbare SF bleiben in der Hauptliste handlungsfaehig.
+    await tester.tap(
+      find.byKey(const ValueKey('advancement-group-header-allgemeinPraxis')),
+    );
+    await tester.pumpAndSettle();
     await tester.tap(
       find.byKey(const ValueKey('skill-node-generalAbility:terrain')),
     );

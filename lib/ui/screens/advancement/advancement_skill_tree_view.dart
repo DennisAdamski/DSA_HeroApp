@@ -5,14 +5,22 @@ import 'package:dsa_heldenverwaltung/ui/screens/shared/special_ability_visibilit
 
 import 'advancement_ability_details.dart';
 
+import 'package:dsa_heldenverwaltung/rules/derived/advancement_ability_groups.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/advancement_options.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/advancement_skill_tree.dart';
 import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/advancement/advancement_ability_group_style.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/advancement/advancement_option_card.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/advancement/advancement_talent_groups.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/advancement/skill_tree_branch.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/advancement/skill_tree_chip.dart';
 
 /// Durchsuchbarer Fähigkeitenbaum mit logischen Verknüpfungen und Erwerbsdetails.
+///
+/// Gegliedert in Bereiche (Kampf, Allgemein, Magie, Karma) und darunter
+/// thematische Gruppen mit Sprungleiste. Zusammenhängende Ketten bleiben
+/// Skilltree-Zweige, freistehende Fähigkeiten liegen als Kacheln daneben.
 class AdvancementSkillTreeView extends StatefulWidget {
   /// Bindet den Baum an die bereits berechneten Optionen der Sitzung.
   const AdvancementSkillTreeView({
@@ -38,9 +46,19 @@ class AdvancementSkillTreeView extends StatefulWidget {
 }
 
 class _AdvancementSkillTreeViewState extends State<AdvancementSkillTreeView> {
-  String? _category;
+  FaehigkeitenBereich? _bereich;
+  bool _nurErlernbar = false;
   late AdvancementSkillTree _graph;
   bool _detailsOpen = false;
+
+  // Ohne Suche und Filter beginnt jede Gruppe zugeklappt: Die Übersicht der
+  // Gruppen mit Zählern ist die Orientierung. Mit Suche oder Filter sind
+  // Treffergruppen offen, bis sie bewusst geschlossen werden.
+  final Set<FaehigkeitenGruppe> _geoeffnet = {};
+  final Set<FaehigkeitenGruppe> _geschlossenTrotzSuche = {};
+  final Map<FaehigkeitenGruppe, GlobalKey> _anker = {
+    for (final gruppe in FaehigkeitenGruppe.values) gruppe: GlobalKey(),
+  };
 
   @override
   void initState() {
@@ -83,99 +101,210 @@ class _AdvancementSkillTreeViewState extends State<AdvancementSkillTreeView> {
     );
   }
 
+  bool get _automatischOffen => widget.query.trim().isNotEmpty || _nurErlernbar;
+
+  bool _istOffen(FaehigkeitenGruppe gruppe) => _automatischOffen
+      ? !_geschlossenTrotzSuche.contains(gruppe)
+      : _geoeffnet.contains(gruppe);
+
+  void _umschalten(FaehigkeitenGruppe gruppe) => setState(() {
+    final menge = _automatischOffen ? _geschlossenTrotzSuche : _geoeffnet;
+    if (!menge.remove(gruppe)) menge.add(gruppe);
+  });
+
+  // Klappt die Gruppe bei Bedarf auf und scrollt ihren Kopf an den oberen Rand.
+  void _springeZuGruppe(FaehigkeitenGruppenAnzeige anzeige) {
+    final gruppe = anzeige.gruppe;
+    void scrollen() {
+      final anker = _anker[gruppe]?.currentContext;
+      if (anker == null || !anker.mounted) return;
+      Scrollable.ensureVisible(
+        anker,
+        alignment: 0,
+        duration: MediaQuery.disableAnimationsOf(anker)
+            ? Duration.zero
+            : const Duration(milliseconds: 280),
+        curve: Curves.easeOutCubic,
+      );
+    }
+
+    if (_istOffen(gruppe)) {
+      scrollen();
+      return;
+    }
+    setState(() {
+      _geschlossenTrotzSuche.remove(gruppe);
+      _geoeffnet.add(gruppe);
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) => scrollen());
+  }
+
   @override
   Widget build(BuildContext context) {
-    final branches = _graph.components(
+    final gruppen = gruppiereFaehigkeiten(
+      graph: _graph,
       query: widget.query,
-      category: _category,
+      bereich: _bereich,
+      nurErlernbar: _nurErlernbar,
     );
+    final gesamt = gruppen.values.fold<int>(0, (sum, g) => sum + g.anzahl);
     // Schalter und Bereichswahl laufen mit der Liste: fest darueber nahmen sie
     // bei wenig Hoehe (grosse Schrift, niedrige Fenster) dem Baum den ganzen
     // Platz und liefen ueber den Rand.
     final kopf = Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        SpecialAbilityVisibilityToggle(
-          value: widget.session.preview.showInapplicableSpecialAbilities,
-          onChanged: widget.session.isSaving
-              ? null
-              : widget.onShowInapplicableChanged,
-        ),
+        // Bereich: wählt, welcher Teil des Katalogs gezeigt wird.
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           child: Row(
             children: [
-              for (final category in [
+              for (final bereich in <FaehigkeitenBereich?>[
                 null,
-                'Kampf',
-                'Allgemein',
-                'Magie',
-                'Karma',
+                ...FaehigkeitenBereich.values,
               ])
                 Padding(
                   padding: const EdgeInsets.only(right: 8),
                   child: ChoiceChip(
-                    label: Text(category ?? 'Alle'),
-                    selected: _category == category,
-                    onSelected: (_) => setState(() => _category = category),
+                    label: Text(bereich?.label ?? 'Alle'),
+                    selected: _bereich == bereich,
+                    onSelected: (_) => setState(() => _bereich = bereich),
                   ),
                 ),
             ],
           ),
         ),
+        const SizedBox(height: 8),
+        // Filter: schränken die gezeigten Fähigkeiten zusätzlich ein.
+        Wrap(
+          spacing: 8,
+          runSpacing: 4,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            Icon(
+              Icons.filter_list,
+              size: 20,
+              semanticLabel: 'Filter',
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+            Tooltip(
+              message:
+                  'Nur Fähigkeiten, die mit den aktuellen AP und '
+                  'Voraussetzungen erwerbbar sind.',
+              child: FilterChip(
+                key: const ValueKey('advancement-skill-tree-only-available'),
+                label: const Text('Nur erlernbar'),
+                selected: _nurErlernbar,
+                onSelected: (value) => setState(() => _nurErlernbar = value),
+              ),
+            ),
+            SpecialAbilityVisibilityChip(
+              value: widget.session.preview.showInapplicableSpecialAbilities,
+              onChanged: widget.session.isSaving
+                  ? null
+                  : widget.onShowInapplicableChanged,
+            ),
+          ],
+        ),
       ],
     );
-    return ListView.builder(
+    final inhalt = SingleChildScrollView(
       key: const ValueKey('advancement-skill-tree'),
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-      itemCount: branches.length + 1,
-      itemBuilder: (context, index) {
-        if (index == 0) {
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          kopf,
+          const SizedBox(height: 8),
+          Text(
+            gruppen.isEmpty
+                ? 'Keine passenden Fähigkeiten. Suche oder Bereich ändern.'
+                : 'Fähigkeitenbaum: $gesamt Fähigkeiten in ${gruppen.length} '
+                      'Gruppen. Gruppe öffnen oder oben anspringen.',
+            style: Theme.of(context).textTheme.titleSmall,
+          ),
+          const SizedBox(height: 6),
+          Wrap(
+            spacing: 12,
+            runSpacing: 6,
+            children: [
+              for (final status in SkillTreeStatus.values)
+                SkillTreeStatusLabel(status: status),
+            ],
+          ),
+          const SizedBox(height: 12),
+          for (final eintrag in gruppen.entries) ...[
+            KeyedSubtree(
+              key: _anker[eintrag.key],
+              child: TalentGruppenKopf(
+                gruppe: FaehigkeitenGruppenAnzeige(eintrag.key),
+                anzahl: eintrag.value.anzahl,
+                untertitel: eintrag.value.erworben == 0
+                    ? null
+                    : '${eintrag.value.erworben} erworben oder vorgemerkt',
+                eingeklappt: !_istOffen(eintrag.key),
+                onUmschalten: () => _umschalten(eintrag.key),
+              ),
+            ),
+            if (_istOffen(eintrag.key)) _gruppenInhalt(eintrag.value),
+            const SizedBox(height: 16),
+          ],
+        ],
+      ),
+    );
+    if (gruppen.isEmpty) return inhalt;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        TalentGruppenLeiste<FaehigkeitenGruppenAnzeige>(
+          gruppen: {
+            for (final eintrag in gruppen.entries)
+              FaehigkeitenGruppenAnzeige(eintrag.key): eintrag.value.anzahl,
+          },
+          eingeklappt: {
+            for (final gruppe in gruppen.keys)
+              if (!_istOffen(gruppe)) FaehigkeitenGruppenAnzeige(gruppe),
+          },
+          onSpringen: _springeZuGruppe,
+        ),
+        Expanded(child: inhalt),
+      ],
+    );
+  }
+
+  Widget _gruppenInhalt(FaehigkeitenGruppeInhalt inhalt) {
+    final onSelect = _detailsOpen ? null : _openDetails;
+    return Padding(
+      padding: const EdgeInsets.only(top: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          for (final ids in inhalt.zweige)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: SkillTreeBranch(
+                graph: _graph,
+                ids: ids,
+                onSelect: onSelect,
+              ),
+            ),
+          if (inhalt.einzelne.isNotEmpty)
+            Wrap(
+              spacing: 12,
+              runSpacing: 12,
               children: [
-                kopf,
-                const SizedBox(height: 12),
-                Text(
-                  'Fähigkeitenbaum',
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-                const SizedBox(height: 6),
-                const Text(
-                  'Von links nach rechts entwickeln. Knoten öffnen für '
-                  'Voraussetzungen und Erwerb. Breite Zweige seitlich verschieben.',
-                ),
-                const SizedBox(height: 8),
-                Wrap(
-                  spacing: 12,
-                  runSpacing: 6,
-                  children: [
-                    for (final status in SkillTreeStatus.values)
-                      SkillTreeStatusLabel(status: status),
-                  ],
-                ),
-                if (branches.isEmpty) ...[
-                  const SizedBox(height: 24),
-                  const Text(
-                    'Keine passenden Fähigkeiten. Suche oder Bereich ändern.',
+                for (final id in inhalt.einzelne)
+                  SizedBox(
+                    width: SkillTreeChip.breite,
+                    child: SkillTreeChip(
+                      node: _graph.nodes[id]!,
+                      onSelect: onSelect,
+                    ),
                   ),
-                ],
               ],
             ),
-          );
-        }
-        final ids = branches[index - 1];
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 20),
-          child: SkillTreeBranch(
-            graph: _graph,
-            ids: ids,
-            onSelect: _detailsOpen ? null : _openDetails,
-          ),
-        );
-      },
+        ],
+      ),
     );
   }
 

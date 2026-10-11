@@ -3,6 +3,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 
 import 'advancement_options.dart';
 import 'learning_rules.dart';
+import 'talent_specialization_hints.dart';
 
 /// Liest auch Spezialisierungen aus älteren Freitext-Einträgen verlustfrei.
 List<String> advancementTalentSpecializations(HeroTalentEntry entry) {
@@ -23,6 +24,24 @@ List<String> advancementSpecializationChoices(
   if (def == null) return const [];
   final names = def.weaponCategory.split(RegExp(r'[\n,;]+'));
   return _normalizeNames(names);
+}
+
+/// Liefert die Regelwerks-Empfehlungen für Nicht-Kampftalente.
+///
+/// Kampftalente wählen aus ihren Waffenkategorien
+/// ([advancementSpecializationChoices]) und erhalten deshalb keinen Hinweis.
+TalentSpezialisierungsHinweis? advancementSpecializationHint(
+  AdvancementContext context,
+  String talentId,
+) {
+  final def = context.catalog.talents
+      .where((def) => def.id == talentId)
+      .firstOrNull;
+  if (def == null ||
+      advancementSpecializationChoices(context, talentId).isNotEmpty) {
+    return null;
+  }
+  return talentSpezialisierungsHinweis(def.name);
 }
 
 // Doppelte und leere Legacy-Namen dürfen die Erwerbsstaffel nicht erhöhen.

@@ -81,10 +81,14 @@ zeigt die drei Arbeitsbereiche mit Beispieldaten. Bedienung und Abgrenzungen
 stehen in der [Mockup-Anleitung](mockups/README.md). Es ist ein visueller Entwurf;
 die Flutter-Umsetzung und die vollständige Funktionszuordnung bleiben offen.
 
-- [ ] Vorhandene Aktionen den drei Arbeitsbereichen zuordnen und Navigation für
+- [x] Vorhandene Aktionen den drei Arbeitsbereichen zuordnen und Navigation für
   schmale sowie breite Ansichten entwerfen; aktuelle Funktionen vollständig erfassen.
-- [ ] Bestehende Proben-, Steigerungs- und Inspector-Komponenten wiederverwenden;
+  *(Funktionsparität-Tabelle in [redesign_acceptance.md](redesign_acceptance.md),
+  geprüft gegen die neun Abschnitte aus `workspace_tab_spec.dart`; Raster
+  320–1440 dp, 28 Kombinationen.)*
+- [x] Bestehende Proben-, Steigerungs- und Inspector-Komponenten wiederverwenden;
   die Spielansicht um direkten Zugriff auf häufige Aktionen ergänzen.
+  *(R2 samt Schnellproben, Rast, Effekte, Schaden; Gefecht unter `lib/ui2/gefecht/`.)*
 - [x] „Schaden erhalten“ als zusammenhängenden Ablauf mit Ressourcenänderung,
   gegebenenfalls Wunden und nachvollziehbarer Korrekturmöglichkeit anbieten.
   *(Ablauf, Dialog und UI2-Schnellaktion umgesetzt, siehe ARCH-05 Teilstand
@@ -141,9 +145,25 @@ Fachansichten und der Entwicklungsbereich samt Gesamtabnahme (R3, siehe
 seit dem ARCH-05-Teilstand (3) als geführten Ablauf in beiden Oberflächen,
 zurücknehmbar seit ARCH-06 Teilstand 2.
 
+**Abnahmeprüfung 11.10.2026 — funktional abgenommen, manuelle Prüfung offen.**
+Der Hauptpunkt bleibt bewusst nicht abgehakt, bis die Bedienprüfung vorliegt.
+
+- *Automatisiert:* `flutter analyze --no-pub` ohne Befund;
+  `flutter test --no-pub --concurrency=1 test/ui2 test/ui/workspace
+  test/ui/advancement test/ui/shared`: 805 bestanden, 3 übersprungen.
+- *Kriterien:* Direktzugriff (Spielansicht, Gefecht, Schaden mit Rücknahme),
+  Schutz vor Datenverlust bei Bereichs-/Helden-/Oberflächenwechsel und die
+  Trennung Verwaltung/Entwicklung sind durch die Tests in
+  [redesign_acceptance.md](redesign_acceptance.md) belegt.
+- *Abgespalten:* Persönliche Favoriten (eigener Auftrag, Persistenz und Sync
+  zu entscheiden); Offline-/Sync-Statusanzeige (gehört zu ARCH-06); persistenter
+  Kampfrundenzähler bleibt aus, das Gefecht führt Runden flüchtig.
+- *Offen:* manuelle Bedienprüfung, Checkliste in
+  [redesign_acceptance.md](redesign_acceptance.md#manuelle-bedienprüfung-offen).
+
 **Abhängigkeiten / offene Entscheidungen:** Schreibende Spielaktionen auf
-ARCH-05/06 aufbauen. Navigation, Favoritenverhalten und Korrekturbedienung sind
-noch zu konkretisieren. Die im Spielmodus-Konzept vereinbarte Spielerrolle
+ARCH-05/06 aufbauen. Navigation und Korrekturbedienung sind umgesetzt;
+Favoritenverhalten ist noch zu konkretisieren. Die im Spielmodus-Konzept vereinbarte Spielerrolle
 beibehalten; eine Spielleiterverwaltung ist kein impliziter Bestandteil.
 
 ## ARCH-02 — Regelrelevante Eigenschaften strukturiert speichern

@@ -100,7 +100,7 @@ class _Node extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.codexTheme;
-    final color = _statusColor(context, node.status);
+    final color = skillTreeStatusFarbe(context, node.status);
     final option = node.option;
     final gate = option == null;
     final icon = gate
@@ -183,7 +183,7 @@ class SkillTreeStatusLabel extends StatelessWidget {
       SkillTreeStatus.blocked => ('Gesperrt', Icons.lock_outline),
       SkillTreeStatus.review => ('Prüfen', Icons.help_outline),
     };
-    final color = _statusColor(context, status);
+    final color = skillTreeStatusFarbe(context, status);
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -198,7 +198,7 @@ class SkillTreeStatusLabel extends StatelessWidget {
   }
 }
 
-Color _statusColor(BuildContext context, SkillTreeStatus status) {
+Color skillTreeStatusFarbe(BuildContext context, SkillTreeStatus status) {
   final colors = context.codexTheme;
   // Unter Kartograph trennen sich erlernbar (Messing) und geplant (Meer);
   // ueber die Bruecke fielen beide sonst auf dieselbe Farbe.

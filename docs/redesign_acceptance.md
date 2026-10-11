@@ -181,16 +181,36 @@ Der SDK-Cache benötigt Zugriff außerhalb des Repositorys. Es wurde kein
 
 | Mockup-Funktion | Stand nach dem UI-Paket | Getrennter Folgeumfang |
 |---|---|---|
-| Schaden und Rücknahme | Ressourcen-/Wundendialoge erreichbar | ARCH-01/05/06: fachlicher Schadensablauf, atomare Operation, konfliktfeste Korrektur |
-| Gemeinsamer Kampfrundenzähler | Bestehende Effektlaufzeiten bedienbar | Rundensemantik und Umfang festlegen |
+| Schaden und Rücknahme | **Erledigt:** geführter Ablauf (ARCH-05), Rücknahme am Protokolleintrag (ARCH-06) | – |
+| Gemeinsamer Kampfrundenzähler | Flüchtige Rundenleiste im Gefecht (`ui2/gefecht/`); Effektlaufzeiten manuell | Persistenter Zähler bewusst nicht gebaut; nur bei neuem Auftrag |
 | Persönliche Favoriten | Schnellproben und vollständige Suche | Persistenz, Umfang und Sync festlegen |
 | Strukturierte Merkmale | Umgesetzt mit ARCH-02: Modell, Migration, Wirkung über die Katalog-ID und UI2-Merkmalsblatt mit Karten wie im Mockup | Herkunftsmerkmale (Rasse/Kultur/Profession) als Folgeschritt |
 | Identische Inventarinstanzen | Bestehende Inventar-/Kampfzuordnung | ARCH-03: Instanz-IDs und Migration |
 | Regelprofil und vollständige Herleitung | Tatsächlich vorhandene Einstellungen/Vorschauen | ARCH-04: Versionierung und nachvollziehbare Ergebnisse |
-| Offline-/Sync-Anzeige | Keine erfundenen Statusangaben | ARCH-06: persistente Outbox und Konfliktmodell |
+| Offline-/Sync-Anzeige | Keine erfundenen Statusangaben | ARCH-06: Wiederanlauf der Konfliktentscheidungen, danach Statusanzeige |
 
-ARCH-01 bleibt wegen des Schadensablaufs **teilweise offen**. ARCH-02 bis
-ARCH-06 werden durch eine neue Darstellung nicht erledigt. Die Brücke und
+ARCH-01 ist seit dem 11.10.2026 funktional abgenommen; offen ist nur die
+manuelle Bedienprüfung (unten). ARCH-02 bis ARCH-06 werden durch eine neue
+Darstellung nicht erledigt.
+
+## Manuelle Bedienprüfung (offen)
+
+Nicht durch Flutter-Tests ersetzbar; Ergebnis hier mit Datum und Gerät eintragen.
+
+- [ ] **Spielen:** Ressourcen ±1/±5 (auch unter 0, schnelles Tippen); Eigenschafts-
+  und Kampfprobe; Suche per Strg/Cmd+K; „Schaden erhalten“ mit/ohne Wunden und
+  Rücknahme; Rast; Zaubereffekt; Gefecht (Runde, AT/PA, Laden, Gegner/Initiative);
+  Abenteuerblatt.
+- [ ] **Korrektur ≠ Entwicklung:** Wert in der Verwaltung ändern (kostenlos) gegen
+  Steigerung in der Entwicklung (AP); bei offener Planung „Planung verwerfen und
+  bearbeiten“, Abbrechen erhält den Plan.
+- [ ] **Kein Verlust beim Wechsel:** ungespeicherte Eingabe, dann Bereich, Held,
+  Oberfläche oder System-Zurück wechseln; Rückfrage erscheint, Abbrechen verliert nichts.
+- [ ] **Geräte:** schmal (ca. 390 dp) und breit, hell/dunkel, große Systemschrift,
+  echte Touch-Bedienung.
+- [ ] **Screenreader:** NVDA oder VoiceOver für Navigation und Ressourcenknöpfe.
+- [ ] **Datenpfade:** Speichern, Neustart, Stand unverändert; Export/Import;
+  Web nur mit `--web-port=5000`. Die Brücke und
 alten Screens bleiben bestehen; eine spätere Ablösung und jede Änderung des
 Oberflächenstandards erfordern einen eigenen Auftrag.
 
