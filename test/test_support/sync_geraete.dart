@@ -4,6 +4,7 @@ import 'package:dsa_heldenverwaltung/data/sync/in_memory_sync_metadata_store.dar
 import 'package:dsa_heldenverwaltung/data/sync/remote_hero_sync_gateway.dart';
 import 'package:dsa_heldenverwaltung/data/sync/sync_basis_store.dart';
 import 'package:dsa_heldenverwaltung/data/syncing_hero_repository.dart';
+import 'package:dsa_heldenverwaltung/data/vorgangsjournal.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/sync_errors.dart';
@@ -336,6 +337,9 @@ class SyncTestGeraet {
   /// Basisstaende fuer die Zusammenfuehrung; ueberleben [neustart].
   final SpeicherSyncBasisStore basis = SpeicherSyncBasisStore();
 
+  /// Journal der Konfliktentscheidungen; ueberlebt [neustart].
+  Vorgangsjournal journal = SpeicherVorgangsjournal();
+
   /// Das Repository, das die App an dieser Stelle benutzt.
   late SyncingHeroRepository repo;
 
@@ -346,6 +350,7 @@ class SyncTestGeraet {
       remote: remote,
       metadataStore: metadaten,
       basisStore: basis,
+      journal: journal,
       accountId: 'konto-1',
       startRemoteListener: false,
     );
@@ -355,6 +360,14 @@ class SyncTestGeraet {
   /// Statusmeldungen (nur im Speicher) gehen verloren.
   Future<void> neustart() async {
     await repo.close();
+    _verbinde();
+  }
+
+  /// Startet neu und benutzt dabei [neues] als Journal (etwa ein neu
+  /// geoeffnetes Hive-Journal).
+  Future<void> neustartMitJournal(Vorgangsjournal neues) async {
+    await repo.close();
+    journal = neues;
     _verbinde();
   }
 

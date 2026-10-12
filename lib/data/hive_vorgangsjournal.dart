@@ -43,9 +43,18 @@ class HiveVorgangsjournal implements Vorgangsjournal {
       if (roh == null) {
         continue;
       }
-      final gelesen = jsonDecode(roh);
-      if (gelesen is Map) {
-        ergebnis['$schluessel'] = gelesen.cast<String, Object?>();
+      try {
+        final gelesen = jsonDecode(roh);
+        if (gelesen is Map) {
+          ergebnis['$schluessel'] = gelesen.cast<String, Object?>();
+        }
+      } on FormatException {
+        // Ein beschädigter Eintrag darf die übrigen nicht verbergen und wird
+        // nie gelöscht: Er bleibt als Platzhalter sichtbar.
+        ergebnis['$schluessel'] = <String, Object?>{
+          'art': '_beschaedigt',
+          'roh': roh,
+        };
       }
     }
     return ergebnis;

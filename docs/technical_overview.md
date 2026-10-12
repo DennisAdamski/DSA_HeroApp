@@ -411,6 +411,14 @@ führt der Sync Held bzw. Zustand über `fuehreSyncZusammen` zusammen; nur
 widersprüchlich geänderte Werte ergeben einen Konflikt
 (`SyncKonfliktKarte`: Nur Online, Nur Lokal, Beide behalten, Automatisch).
 
+Konfliktentscheidungen (ARCH-06 Teilstand 3): `AppStartupGate` reicht das
+geöffnete `HiveVorgangsjournal` an `SyncingHeroRepository`
+(`journal:`). Entscheidungen über Held und Zustand laufen dort als
+`SyncKonfliktVorgang` über `KonfliktWiederanlauf`
+(`lib/data/sync/`, Teil `syncing_hero_repository_vorgang.dart`);
+`syncNow` setzt offene Vorgänge vor dem normalen Abgleich fort. Vertrag:
+`docs/schreibpfade_inventar.md`, „Konfliktentscheidung“.
+
 Wiederanlauf (ARCH-06): Direkt nach `HiveHeroRepository.create` öffnet
 `AppStartupGate` das Vorgangsjournal (`HiveVorgangsjournal`, Box
 `vorgaenge_v1` im Profilpfad) und lässt `VorgaengeWiederaufnehmen` auf dem

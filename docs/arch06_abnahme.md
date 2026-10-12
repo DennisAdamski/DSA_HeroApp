@@ -2,9 +2,13 @@
 
 Stand: 10.10.2026, geprüft auf Branch `test`, Ausgangscommit `18e89307`.
 
-ARCH-06 bleibt offen. Die vorhandenen Prüfungen bestehen, zwei zusätzliche
-Abbruchproben widerlegen jedoch die Abnahme für zusammengehörige
-Konfliktentscheidungen. Diese Prüfung verändert kein produktives Verhalten.
+**Nachtrag 12.10.2026: Die Lücken sind behoben, ARCH-06 ist technisch
+abgenommen** (siehe Abschnitt „Abschluss“ am Ende). Der folgende Text hält den
+Befund vom 10.10.2026 fest.
+
+ARCH-06 blieb damals offen. Die vorhandenen Prüfungen bestanden, zwei zusätzliche
+Abbruchproben widerlegten jedoch die Abnahme für zusammengehörige
+Konfliktentscheidungen. Diese Prüfung veränderte kein produktives Verhalten.
 
 ## Ergebnisse nach Abnahmekriterium
 
@@ -13,7 +17,7 @@ Konfliktentscheidungen. Diese Prüfung verändert kein produktives Verhalten.
 | Keine halbe Buchung bei Abbruch | Steigerungsrunde und Schaden schreiben jeweils ein Dokument; Import hat Journal und Wiederanlauf | Für diese Abläufe geprüft; Konfliktauflösung hat die unten genannten Lücken |
 | Neustart erhält ausstehenden Abgleich | `sync_speichervertrag_test.dart`, `sync_zwei_geraete_test.dart` | Bestehende Dokumentänderungen werden wieder übertragen |
 | Wiederholungen buchen AP oder Schaden nicht doppelt | `steigerungsrunde_uebernehmen_test.dart`, `schaden_erhalten_test.dart`, `sync_speichervertrag_test.dart` | Geprüfte Buchungen sind wiederholbar |
-| Heldenblatt und Zustand bleiben bei Konflikten zusammengehörig | Bestehende Konflikt- und Zwei-Geräte-Tests; zusätzliche Abbruchproben | **Nicht erfüllt bei abgebrochener Konfliktauflösung** |
+| Heldenblatt und Zustand bleiben bei Konflikten zusammengehörig | Bestehende Konflikt- und Zwei-Geräte-Tests; zusätzliche Abbruchproben | Am 10.10. nicht erfüllt bei abgebrochener Konfliktauflösung; am 12.10. erfüllt durch `sync_konflikt_wiederanlauf_test.dart` |
 | Korrekturen bleiben erkennbar, Steigerungshistorie bleibt erhalten | `schaden_zuruecknehmen_test.dart`, Steigerungsablauftests | Für vorhandene Korrekturaktionen geprüft |
 
 ## Reproduzierte Abbruchlücken
@@ -112,3 +116,28 @@ Begleiteraktionen damit nicht zusätzlich abgesichert.
 **Folgestand 10.10.2026:** Der Nutzer hat die Ausarbeitung des Vertrags
 freigegeben. Der [schriftliche Entwurf](superpowers/specs/2026-10-10-arch06-konflikt-wiederanlauf-design.md)
 liegt zur Prüfung vor. Die hier dokumentierten Fehler sind weiterhin offen.
+
+## Abschluss 12.10.2026
+
+Umsetzung des [Wiederanlaufvertrags](superpowers/specs/2026-10-10-arch06-konflikt-wiederanlauf-design.md):
+`SyncKonfliktVorgang` (`lib/data/sync/sync_konflikt_vorgang.dart`),
+`KonfliktWiederanlauf` (`lib/data/sync/konflikt_wiederanlauf.dart`) und die
+Planung samt Sperren in `lib/data/syncing_hero_repository_vorgang.dart`.
+
+| Kriterium | Ergebnis |
+|---|---|
+| Heldenblatt und Zustand bleiben bei Konflikten zusammengehörig | Erfüllt: Beide Proben bestehen (Nur Lokal 21 LeP, Kopie behält 21 LeP); Abbruch nach 0–3 Schreibvorgängen für alle vier Entscheidungen, verlorene Antwort, Doppelklick, Neustart auch mit echter Hive-Box |
+| Übrige Kriterien | unverändert erfüllt |
+
+Prüfungen: `flutter analyze --no-pub` ohne Befund; vollständige serielle Suite
+(`flutter test --no-pub --concurrency=1`): **4561 bestanden, 3 übersprungen,
+0 fehlgeschlagen**; darin die Transporttests (nativ und REST, unverändert).
+**Nicht durchgeführt:** Gerätebedienprüfung und Live-Firebase-Prüfung.
+
+Bekannte Grenzen (nicht Teil der Abnahme): online zwei getrennte Schreibzugriffe
+für Bogen und Zustand (andere Geräte können kurz eine Zwischenfassung lesen);
+Online-Tombstone mit „Nur Online“, Löschkonflikte, Offline-Helden-Entscheidungen,
+eigenständige Zustandskonflikte, `deleteHero` während eines offenen Vorgangs und
+Avatar-Dateien laufen weiter ohne Journal. Ein beschädigter oder nicht bestimmbarer
+Journaleintrag sperrt den schreibenden Sync vorsorglich und bleibt sichtbar; eine
+Bedienung zum Entfernen gibt es nicht.

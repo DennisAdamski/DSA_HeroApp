@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hive_ce/hive.dart';
 
 import 'package:dsa_heldenverwaltung/data/hive_vorgangsjournal.dart';
 
@@ -59,4 +60,22 @@ void main() {
     await journal.erledige('fehlt');
     expect(await journal.offene(), isEmpty);
   });
+
+  test(
+    'ein beschädigter Eintrag verbirgt die übrigen nicht und bleibt liegen',
+    () async {
+      final journal = await HiveVorgangsjournal.create(
+        storagePath: await createTempPath(),
+      );
+      addTearDown(journal.close);
+      await journal.merke('gut', {'art': 'heldImportieren'});
+      await Hive.box<String>('vorgaenge_v1').put('kaputt', '{nicht json');
+
+      final offen = await journal.offene();
+
+      expect(offen['gut'], {'art': 'heldImportieren'});
+      expect(offen['kaputt'], {'art': '_beschaedigt', 'roh': '{nicht json'});
+      expect(Hive.box<String>('vorgaenge_v1').get('kaputt'), '{nicht json');
+    },
+  );
 }

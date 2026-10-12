@@ -1,3 +1,8 @@
+/// Kennung der Journaleinträge für Konfliktentscheidungen des Konto-Syncs
+/// (`lib/data/sync/sync_konflikt_vorgang.dart`). Der Import-Wiederanlauf
+/// fasst sie nicht an.
+const String kSyncKonfliktVorgangsart = 'syncKonflikt';
+
 /// Dauerhaftes Journal offener Vorgänge mit mehreren Schreibzugriffen
 /// (ARCH-06).
 ///
