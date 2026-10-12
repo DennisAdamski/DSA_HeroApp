@@ -203,11 +203,18 @@ Fallstricke mit echtem Hive:
 
 ### Abbruch und Wiederanlauf (ARCH-06)
 
-Die [Abnahmeprüfung vom 10.10.2026](arch06_abnahme.md) zeigt zwei noch nicht
-abgesicherte Abbruchfälle der Konfliktauflösung („Nur Lokal“, „Beide behalten“).
-Die vorhandenen grünen Tests belegen keine Abbruchsicherheit dieser Entscheidungen.
-Das Korrekturpaket muss sie als Regressionstests einschließlich Hive-Neustart
-aufnehmen; bis dahin bleibt ARCH-06 offen.
+Die zwei Abbruchfälle der [Abnahmeprüfung vom 10.10.2026](arch06_abnahme.md)
+(„Nur Lokal“, „Beide behalten“) sind dauerhafte Regressionstests in
+`test/data/sync_konflikt_wiederanlauf_test.dart`: Abbruch der Leitung nach
+0–3 Schreibvorgängen für alle vier Entscheidungen mit anschließendem
+`neustart()` und `syncNow`, verlorene Antworten, Doppelklick, Wiederholung,
+neue Online- bzw. lokale Änderung während eines offenen Vorgangs, Netz dauerhaft
+weg, nicht schreibbares/unbekanntes/beschädigtes Journal, fehlender
+Online-Zustand und ein echtes `HiveVorgangsjournal` über Schließen und
+Wiederöffnen. `sync_konflikt_vorgang_test.dart` prüft das Journalformat;
+`hive_vorgangsjournal_test.dart` den isolierten beschädigten Eintrag.
+`SyncTestGeraet` hält ein Journal, das `neustart()` überlebt
+(`neustartMitJournal` tauscht es aus).
 
 `test/ablaeufe/vorgaenge_wiederaufnehmen_test.dart` simuliert einen Absturz
 als Schritt, der nie fertig wird (`Completer<void>().future`): Der Import läuft

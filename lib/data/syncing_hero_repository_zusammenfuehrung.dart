@@ -325,29 +325,6 @@ extension _Zusammenfuehrung on SyncingHeroRepository {
     );
   }
 
-  /// „Automatisch“ für einen Helden-Konflikt samt gebundenem Zustand.
-  Future<void> _loeseHeldAutomatisch(
-    _HeroConflictDetails details,
-    Map<String, SyncSeite> entscheidungen,
-  ) async {
-    final plan = await _planeHeld(details, entscheidungen);
-    _pruefePlan(plan);
-    final heroId = details.localHero.id;
-    await _schreibeHeld(plan!.held!, details.remoteRecord);
-    final zustand = plan.zustand;
-    if (zustand != null) {
-      await local.saveHeroState(heroId, zustand);
-      await _pushLocalStateWithHero(heroId, localState: zustand);
-    } else if (plan.zustandGanz == SyncSeite.lokal) {
-      await _pushLocalStateWithHero(
-        heroId,
-        localState: await _localStateForHero(heroId),
-      );
-    } else if (plan.zustandGanz == SyncSeite.online) {
-      await _adoptRemoteStateWithHero(heroId);
-    }
-  }
-
   /// „Automatisch“ für einen eigenständigen Zustands-Konflikt.
   Future<void> _loeseZustandAutomatisch(
     _StateConflictDetails details,

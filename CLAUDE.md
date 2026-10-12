@@ -26,12 +26,13 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   Herkunftsmodifikatoren und Herkunftsmetadaten an bestehenden Vor-/Nachteilen.
   Noch nicht implementiert; der [Implementierungsplan](docs/superpowers/plans/2026-10-10-arch02-herkunftsmerkmale.md)
   liegt zur Prüfung vor. Nächste Arbeitspakete stehen in der Roadmap.
-- [ARCH-06-Abnahmeprüfung](docs/arch06_abnahme.md) hält die reproduzierten
-  Abbruchlücken bei „Nur Lokal“ und „Beide behalten“ fest. Konfliktentscheidungen
-  über Bogen und Zustand haben noch keinen dauerhaften Wiederanlaufvertrag;
-  die Gesamtabnahme bleibt offen.
-  Der [Wiederanlaufvertrag](docs/superpowers/specs/2026-10-10-arch06-konflikt-wiederanlauf-design.md)
-  beschreibt den Lösungsentwurf zur Nutzerprüfung, noch keine Implementierung.
+- [ARCH-06-Abnahmeprüfung](docs/arch06_abnahme.md): technisch abgenommen am
+  12.10.2026. Konfliktentscheidungen über Bogen und Zustand laufen als
+  `SyncKonfliktVorgang` im Profiljournal (`lib/data/sync/`,
+  `syncing_hero_repository_vorgang.dart`) und setzen nach Abbruch oder Neustart
+  fort; betroffene IDs sind bis dahin für normalen Sync gesperrt. Grenzen und
+  Vertrag: [Wiederanlaufvertrag](docs/superpowers/specs/2026-10-10-arch06-konflikt-wiederanlauf-design.md)
+  und Speichervertrag. Geräte-/Live-Firebase-Prüfung steht aus.
 - Das [Codex-Mockup](docs/mockups/README.md) zeigt den geplanten Workspace mit
   drei Arbeitsbereichen als eigenständigen HTML/CSS/JavaScript-Prototyp.
   Es nutzt ausschließlich flüchtige Beispieldaten und keine produktive Regellogik.

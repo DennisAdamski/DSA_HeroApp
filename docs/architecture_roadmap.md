@@ -40,7 +40,7 @@ Verbesserungen und „Begleitend“ fortlaufende Absicherung.
 - [x] **ARCH-03 — Gemeinsame Ausrüstungsdaten für Inventar und Kampf** · Grundlage (abgenommen 07.10.2026)
 - [ ] **ARCH-04 — Versionierte Regelprofile und erklärbare Berechnungen** · Aufbau
 - [x] **ARCH-05 — Schreibende Aktionen fachlich aufteilen** · Grundlage (abgenommen 07.10.2026)
-- [ ] **ARCH-06 — Zusammengehörige Änderungen gemeinsam speichern und synchronisieren** · Aufbau
+- [x] **ARCH-06 — Zusammengehörige Änderungen gemeinsam speichern und synchronisieren** · Aufbau (technisch abgenommen 12.10.2026)
 - [ ] **ARCH-07 — Nutzerabläufe und Datenmigrationen absichern** · Begleitend
 
 Empfohlener Einstieg: unter ARCH-07 repräsentative Bestandsfälle sichern, dann
@@ -2433,7 +2433,23 @@ Abnahmekriterien:
 
 ## ARCH-06 — Zusammengehörige Änderungen gemeinsam speichern und synchronisieren
 
-**Abnahmeprüfung 10.10.2026:** Der Hauptpunkt bleibt offen. Analyse ohne
+**Teilstand 3, 12.10.2026 — dauerhafter Wiederanlauf von Konfliktentscheidungen.**
+Entscheidungen über Held und gebundenen Zustand („Nur Lokal“, „Nur Online“,
+„Beide behalten“, „Automatisch“) werden vor dem ersten Schreibzugriff als
+`SyncKonfliktVorgang` im Profiljournal gesichert und über `KonfliktWiederanlauf`
+inhaltsgeprüft zu Ende geführt; betroffene IDs sind für normalen Sync gesperrt,
+neue Änderungen halten den Vorgang an und stellen den Konflikt mit Hinweis neu.
+Beide Abbruchlücken der Abnahme sind behoben und als Regressionstests
+(`test/data/sync_konflikt_wiederanlauf_test.dart`, echter Hive-Neustart)
+aufgenommen. Nachweis: `flutter analyze` ohne Befund, vollständige serielle Suite
+mit 4561 bestandenen und 3 übersprungenen Tests. Nicht durchgeführt: Geräte- und
+Live-Firebase-Prüfung. Bekannte Grenzen: Bogen und Zustand liegen online in zwei
+getrennten Schreibzugriffen (kurz sichtbare Zwischenfassung auf anderen Geräten);
+Online-Tombstone mit „Nur Online“, Löschkonflikte, Offline-Helden, eigenständige
+Zustandskonflikte, `deleteHero` während eines offenen Vorgangs, Avatare.
+Details: [Abnahmeprüfung](arch06_abnahme.md) und Speichervertrag.
+
+**Abnahmeprüfung 10.10.2026 (überholt durch Teilstand 3):** Der Hauptpunkt blieb damals offen. Analyse ohne
 Befund und 101 vorhandene Ablauf-/Sync-/Widgettests bestanden; zwei zusätzliche
 Abbruchproben zeigen Lücken bei der Konfliktauflösung: „Nur Lokal“ verliert nach
 dem Heldenupload und Neustart seine Zustandsentscheidung, „Beide behalten“

@@ -94,6 +94,11 @@ class VorgaengeWiederaufnehmen {
     var gescheitert = 0;
     final offene = await journal.offene();
     for (final MapEntry(key: id, value: eintrag) in offene.entries) {
+      if (eintrag['art'] == kSyncKonfliktVorgangsart) {
+        // Konfliktentscheidungen braucht Online-Revisionen; sie führt der
+        // Konto-Sync fort (`SyncingHeroRepository`).
+        continue;
+      }
       final vorgang = ImportVorgang.fromJson(id, eintrag);
       if (vorgang == null) {
         unbekannt++;

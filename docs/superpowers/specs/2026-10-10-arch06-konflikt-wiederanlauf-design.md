@@ -1,6 +1,6 @@
 # ARCH-06: Wiederanlauf zusammengehöriger Konfliktentscheidungen
 
-Stand: 10.10.2026. Entwurfsstand zur Nutzerprüfung; noch nicht implementiert.
+Stand: 12.10.2026. Umgesetzt (siehe „Abschluss 12.10.2026“ in der Abnahmeprüfung); Abweichungen im Detail: Wiederanlauf-Reihenfolge Original online vor lokal, lokale Änderungen an „Nur Lokal“-Originalen und Kopien blockieren nicht.
 Ausgangspunkt: `03cb80ca` und die
 [technische Abnahmeprüfung](../../arch06_abnahme.md).
 

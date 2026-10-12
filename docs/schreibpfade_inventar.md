@@ -61,7 +61,30 @@ festgelegt, wie sie trotz getrennter Schreibvorgänge vollständig wird:
 | **Held importieren** | eigener Katalog, Bilddateien, Bogen, Zustand | **Vorgangsjournal** mit Wiederanlauf (unten) |
 | Held löschen | Bogen, dann Zustand | Restrisiko: ein verwaister Zustand bleibt unsichtbar; mit Konto trägt der vermerkte Löschauftrag (`localHash: ''`) die Löschung in die Cloud |
 | Avatar speichern bzw. entfernen | Datei, dann Bogen | Restrisiko: eine verwaiste Datei bleibt liegen |
-| Konfliktauflösung (`keepBoth` u. a.) | mehrere lokale und entfernte Schreibvorgänge | Nicht abbruchsicher: eine Zustandsentscheidung bzw. der Zustand einer lokalen Kopie kann verloren gehen; siehe [Abnahmeprüfung 10.10.2026](arch06_abnahme.md) |
+| **Konfliktentscheidung über einen Helden** („Nur Lokal“, „Nur Online“, „Beide behalten“, „Automatisch“) | Bogen und Zustand lokal und online, bei „Beide behalten“ zusätzlich Kopie samt Zustand | **Vorgangsjournal** (`SyncKonfliktVorgang`, Abschnitt „Konfliktentscheidung“ unten); Ausnahmen: Online-Tombstone mit „Nur Online“, Löschkonflikte, Offline-Helden und eigenständige Zustandskonflikte laufen weiter ohne Journal |
+
+**Konfliktentscheidung (ARCH-06 Teilstand 3).** Eine Entscheidung wird vor dem
+ersten Schreibzugriff als `SyncKonfliktVorgang` (`lib/data/sync/sync_konflikt_vorgang.dart`,
+Journalschlüssel `syncKonflikt-<Helden-ID>`) vollständig geplant abgelegt: Aktion,
+feste Kopie-ID, je Dokument Zielfassung samt Hash, lokale Ausgangsfassung, geprüfte
+Online-Vorrevision und Fortschritt. `KonfliktWiederanlauf`
+(`lib/data/sync/konflikt_wiederanlauf.dart`) führt ihn über Inhaltsprüfungen zu Ende:
+Kopie zuerst lokal, Original online vor lokal, Kopie online, dann Basis und
+Sync-Metadaten, zuletzt wird der Eintrag entfernt. Lokal wird nur geschrieben, solange
+der Stand der Ausgangs- oder Zielfassung entspricht; online nur auf der geplanten
+Vorrevision oder wenn der Inhalt schon dem Ziel gleicht (verlorene Antwort). Eine
+dritte Fassung oder neue Online-Revision hält den Vorgang an (`blockade`); der Konflikt
+wird mit frischen Ständen und einem Hinweis neu gestellt, nichts wird überschrieben.
+Solange ein Eintrag besteht, überspringen Pull, Push, stille Zusammenführung und
+Zustands-Uploads Original und Kopie; lokales Speichern bleibt möglich. `syncNow`
+führt offene Einträge vor dem normalen Abgleich fort und meldet keinen
+erfolgreichen Abgleich, solange einer aussteht (`SyncStatusSnapshot.ausstehendeVorgaenge`).
+Unbekannte Versionen/Arten/Konten bleiben unangetastet und reservieren ihre IDs;
+nicht bestimmbare oder beschädigte Einträge sperren vorsorglich jeden schreibenden
+Sync (der Status nennt den Eintrag). Grenzen: Bogen und Zustand werden online in zwei
+getrennten Schreibzugriffen abgelegt, ein anderes Gerät kann kurz eine
+Zwischenfassung lesen; `deleteHero` während eines offenen Vorgangs ist nicht
+abgesichert.
 
 **Vorgangsjournal.** `Vorgangsjournal` (`lib/data/vorgangsjournal.dart`,
 reine Schnittstelle) hält offene Vorgänge in der Box `vorgaenge_v1` des

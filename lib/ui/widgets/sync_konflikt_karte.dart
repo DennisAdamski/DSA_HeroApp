@@ -131,6 +131,14 @@ class _SyncKonfliktKarteState extends State<SyncKonfliktKarte> {
           children: [
             Text(conflict.title, style: theme.textTheme.titleMedium),
             const SizedBox(height: 8),
+            if (conflict.hinweis != null) ...[
+              Text(
+                conflict.hinweis!,
+                key: const ValueKey<String>('sync-konflikt-hinweis'),
+                style: theme.textTheme.bodySmall,
+              ),
+              const SizedBox(height: 8),
+            ],
             if (vorschau != null) ...[
               _Zusammenfassung(vorschau: vorschau),
               const SizedBox(height: 8),

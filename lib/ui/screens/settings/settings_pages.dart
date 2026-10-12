@@ -271,6 +271,15 @@ class _AccountSyncSettingsPage extends ConsumerWidget {
                 icon: Icons.report_problem_outlined,
                 label: 'Offene Konflikte: ${syncStatus.openConflicts.length}',
               ),
+              if (syncStatus.ausstehendeVorgaenge > 0) ...[
+                const SizedBox(height: 8),
+                _SyncInfoRow(
+                  icon: Icons.pending_actions_outlined,
+                  label:
+                      'Nicht abgeschlossene Entscheidungen: '
+                      '${syncStatus.ausstehendeVorgaenge}',
+                ),
+              ],
               const SizedBox(height: 8),
               _SyncInfoRow(
                 icon: Icons.image_outlined,

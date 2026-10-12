@@ -283,6 +283,7 @@ class _AppStartupGateState extends State<AppStartupGate> {
           metadataStore: metadataStore,
           offlineReviewStore: offlineReviewStore,
           basisStore: basisStore,
+          journal: vorgangsjournal,
           accountId: authUid,
           accountEmail: widget.authUser?.email,
         );
