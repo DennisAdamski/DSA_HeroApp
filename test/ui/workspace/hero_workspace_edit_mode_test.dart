@@ -436,11 +436,29 @@ void main() {
       await tester.drag(verticalScrollable, const Offset(0, 1200));
       await tester.pumpAndSettle();
 
-      final rasseModField = find.byKey(
-        const ValueKey<String>('overview-field-rasse_mod'),
+      // Der Rassenmodifikator kommt aus der Herkunftsliste (ARCH-02).
+      final rasseHinzufuegen = find.byKey(
+        const ValueKey<String>('herkunft-add-rasse'),
       );
-      expect(rasseModField, findsOneWidget);
-      await tester.enterText(rasseModField, 'KL+1');
+      expect(rasseHinzufuegen, findsOneWidget);
+      await tester.ensureVisible(rasseHinzufuegen);
+      await tester.pumpAndSettle();
+      await tester.tap(rasseHinzufuegen);
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(const ValueKey<String>('herkunft-dialog-ziel-eigenschaft')),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('KL').last);
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byKey(const ValueKey<String>('herkunft-dialog-betrag')),
+        '1',
+      );
+      await tester.tap(
+        find.byKey(const ValueKey<String>('herkunft-dialog-uebernehmen')),
+      );
+      await tester.pumpAndSettle();
       await tapWorkspaceSaveAction(tester);
 
       final heroes = await repo.listHeroes();
@@ -1792,9 +1810,7 @@ void main() {
     final rasseFinder = find.byKey(
       const ValueKey<String>('overview-field-rasse'),
     );
-    final rasseModFinder = find.byKey(
-      const ValueKey<String>('overview-field-rasse_mod'),
-    );
+    final rasseModFinder = find.byKey(const ValueKey<String>('herkunft-rasse'));
 
     final nameWide = tester.getTopLeft(nameFinder).dy;
     final rasseWide = tester.getTopLeft(rasseFinder).dy;

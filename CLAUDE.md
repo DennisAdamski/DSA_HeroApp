@@ -24,8 +24,8 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
 - [ARCH-02-Herkunftsmerkmale](docs/superpowers/specs/2026-10-10-arch02-herkunftsmerkmale-design.md)
   beschreibt die freigegebene Spezifikation: strukturierte direkte
   Herkunftsmodifikatoren und Herkunftsmetadaten an bestehenden Vor-/Nachteilen.
-  Noch nicht implementiert; der [Implementierungsplan](docs/superpowers/plans/2026-10-10-arch02-herkunftsmerkmale.md)
-  liegt zur Prüfung vor. Nächste Arbeitspakete stehen in der Roadmap.
+  Umgesetzt (13.10.2026, [Implementierungsplan](docs/superpowers/plans/2026-10-10-arch02-herkunftsmerkmale.md));
+  offen ist nur die manuelle Bedienprüfung. Nächste Arbeitspakete stehen in der Roadmap.
 - [ARCH-06-Abnahmeprüfung](docs/arch06_abnahme.md): technisch abgenommen am
   12.10.2026. Konfliktentscheidungen über Bogen und Zustand laufen als
   `SyncKonfliktVorgang` im Profiljournal (`lib/data/sync/`,
@@ -526,7 +526,7 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   catalog`: in `lib/` immer den vorhandenen Katalog durchreichen,
   `catalog: null` (Textweg) nur in Tests. Details in
   `docs/technical_overview.md` Abschnitt 4.11.
-- **Herkunftsmodifikatoren (ARCH-02, Aufgaben 1–5 von 6, Stand 12. Oktober 2026):**
+- **Herkunftsmodifikatoren (ARCH-02, umgesetzt, Stand 13. Oktober 2026):**
   `HeroBackground.herkunftsModifikatoren` (`lib/domain/hero_herkunft.dart`,
   `hero_herkunfts_modifikator.dart`, flach im Helden-JSON, nur bei Belegung
   geschrieben, `formatVersion: 1`) hält die strukturierten Einträge je

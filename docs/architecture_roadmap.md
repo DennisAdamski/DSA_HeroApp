@@ -323,27 +323,58 @@ Commits:
    Unfähigkeit). Der Textweg (ohne Katalog) kennt keine Lernspalten, das ist
    die bewusste Ausnahme im Äquivalenztest.
 
-**Fortsetzung 10.10.2026 — Herkunftsmerkmale.** Die inhaltliche Abgrenzung
-ist freigegeben. Die [schriftliche Spezifikation](superpowers/specs/2026-10-10-arch02-herkunftsmerkmale-design.md)
-ist freigegeben. Der [Implementierungsplan](superpowers/plans/2026-10-10-arch02-herkunftsmerkmale.md)
-liegt zur Prüfung vor; die Umsetzung steht aus.
-Direkte Herkunftsmodifikatoren werden strukturiert, freie Fragmente bleiben
-erhalten. Vor-/Nachteile erhalten Herkunft als Metadatum am bestehenden Eintrag,
-ohne eine zweite regelwirksame Kopie. Ein vollständiger Herkunftskatalog,
-automatische Generierung und AP-Buchungen sind separate Folgeumfänge.
+**Fortsetzung 10.10.2026 — Herkunftsmerkmale; umgesetzt 12./13.10.2026.**
+Die [schriftliche Spezifikation](superpowers/specs/2026-10-10-arch02-herkunftsmerkmale-design.md)
+war freigegeben, der [Implementierungsplan](superpowers/plans/2026-10-10-arch02-herkunftsmerkmale.md)
+ist in sechs Aufgaben ausgeführt. Direkte Herkunftsmodifikatoren sind
+strukturiert (`HeroBackground.herkunftsModifikatoren`, `formatVersion: 1`),
+freie Fragmente bleiben erhalten, Vor-/Nachteile tragen die Herkunft als
+Metadatum (`HeroMerkmal.herkunft`) ohne zweite regelwirksame Kopie. Ein
+vollständiger Herkunftskatalog, automatische Generierung und AP-Buchungen
+bleiben separate Folgeumfänge.
 
-- [ ] Versionierten Herkunftsdatenvertrag und optionale Merkmalsherkunft
-  einschließlich unbekannter Felder, Werte und ausdrücklich leerer Listen umsetzen.
-- [ ] Idempotente Migration, Textprojektion und ausdrücklichen Abgleich mit
+- [x] Versionierten Herkunftsdatenvertrag und optionale Merkmalsherkunft
+  einschließlich unbekannter Felder, Werte und ausdrücklich leerer Listen
+  umsetzen. *(Aufgabe 1, `158572e8`.)*
+- [x] Idempotente Migration, Textprojektion und ausdrücklichen Abgleich mit
   älteren Apps ergänzen; wiederholte Modifikatorfragmente erhalten.
-- [ ] Gemeinsame Herkunftsauswertung für Werte, Startwerte, Quellen und
+  *(Aufgabe 2, `c56001a4`.)*
+- [x] Gemeinsame Herkunftsauswertung für Werte, Startwerte, Quellen und
   Ressourcenaktivierung einführen; Doppelwirkungen ausschließen.
-- [ ] Speicherung, Editor-Rebuild, Hive, Import/Export und Zwei-Geräte-Sync
-  einschließlich Mischbetrieb und Feldschutz absichern.
-- [ ] Herkunftsbearbeitung und Vorschau mit dem Schutz offener Planungen
+  *(Aufgabe 3, `b9bb7f00`.)*
+- [x] Speicherung, Editor-Rebuild, Hive, Import/Export und Zwei-Geräte-Sync
+  einschließlich Mischbetrieb und Feldschutz absichern. *(Aufgabe 4,
+  `83e33717`.)*
+- [x] Herkunftsbearbeitung und Vorschau mit dem Schutz offener Planungen
   verbinden; bestehende Vor-/Nachteile um Herkunftsangaben ergänzen.
-- [ ] Automatisierte Abnahme und manuelle Bedienprüfung abschließen;
-  ARCH-02-Gesamtstatus anhand der tatsächlich erledigten Kriterien prüfen.
+  *(Aufgabe 5, `9c881c46`.)*
+- [x] Automatisierte Abnahme abschließen. *(Aufgabe 6, siehe unten.)*
+- [ ] Manuelle Bedienprüfung auf einem echten Gerät; danach ARCH-02-Gesamtstatus
+  prüfen.
+
+*Abnahme (automatisiert).* `flutter analyze --no-pub` ohne Befund, LOC-Budget
+eingehalten. Gesamtsuite seriell mit eigenem `DSA_MCP_DATA_DIR`: 4689
+bestanden, 3 übersprungen, 2 fehlgeschlagen; beide waren Tests der
+Workspace-Übersicht, die die entfallenen Textfelder `rasse_mod` & Co.
+ansprachen, und sind angepasst
+(`test/ui/workspace/hero_workspace_edit_mode_test.dart`, Datei danach einzeln
+grün: 32 bestanden, 3 übersprungen). Die Gesamtsuite wurde danach nicht
+vollständig wiederholt.
+
+*Entscheidungen und Grenzen.*
+
+- Die drei Textfelder der Übersicht sind durch Listen ersetzt; `*ModText`
+  bleiben als Projektion für ältere Apps und gelten bei unbekannter
+  Containerversion oder gesperrter Gruppe als Rechengrundlage.
+- Ändern beide Geräte dieselbe Herkunftsgruppe (auch verschiedene Einträge),
+  entsteht ein sichtbarer Sync-Konflikt, weil sich auch beide Textprojektionen
+  ändern. Das generische Zusammenführen blieb unverändert.
+- Eine Textabweichung durch eine ältere App wird nie beim Speichern aufgelöst,
+  nur über „Geänderten Text übernehmen“ / „Liste behalten“.
+- Das UI2-Merkmalsblatt ist bei offener Planung schreibgeschützt; die Aktion
+  „Herkunft ändern“ erscheint dort deshalb nicht.
+- Nicht geprüft: Gerätebedienung (360 px/Textfaktor 2 nur per Widgettest) und
+  Live-Sync mit Firebase.
 
 ## ARCH-03 — Gemeinsame Ausrüstungsdaten für Inventar und Kampf
 
