@@ -30,6 +30,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/inventar_menge_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ap_level_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/attribute_start_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/avatar_rahmung_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/hero_herkunft_migration_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_zuordnung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/inventory_sync_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
@@ -190,10 +191,15 @@ class HeroActions {
     // Katalog wird nicht migriert; gewartet wird darauf bewusst nicht.
     final catalog =
         validationCatalog ?? _ref.read(rulesCatalogProvider).valueOrNull;
-    final heroMitMerkmalen = merkmaleZumSpeichern(
-      hero,
-      katalog: catalog == null ? null : MerkmalKatalog.von(catalog),
-    );
+    final heroMitMerkmalen =
+        merkmaleZumSpeichern(
+          hero,
+          katalog: catalog == null ? null : MerkmalKatalog.von(catalog),
+        ).copyWith(
+          // Herkunftstexte einmalig in den Container ueberfuehren (ARCH-02);
+          // ein vorhandener Container bleibt unangetastet, auch bei Abweichung.
+          background: herkunftZumSpeichern(hero.background),
+        );
     final parsed = parseModifierTextsForHero(
       heroMitMerkmalen,
       catalog: catalog,

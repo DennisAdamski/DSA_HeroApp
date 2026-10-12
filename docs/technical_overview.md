@@ -2534,6 +2534,25 @@ durch `loeseHerkunftsAbweichung` („Text übernehmen“ / „Liste behalten“)
 nie beim Speichern. Unbekannte Versionen und nicht verstandene Gruppen werden
 weder migriert noch verglichen.
 
+#### Herkunftsmodifikatoren: Speicherung, Sync und Bearbeitung
+
+`HeroActions.saveHero` ruft `herkunftZumSpeichern` vor der Regelberechnung auf
+(kein Katalog nötig); Laden und Rohspeichern in den Repositories migrieren
+nichts. `ersetzeHerkunftsEintraege`
+(`hero_herkunft_bearbeitung_rules.dart`) ist der einzige Änderungsweg einer
+Gruppe: Er setzt die Liste **und** die Textprojektion nur dieser Gruppe auf den
+frisch geladenen Stand und wirft `StateError`, wenn die Gruppe gesperrt ist,
+ihr Text von der Liste abweicht oder sie seit der Basis anderweitig geändert
+wurde. Sync: Der Container ist eine verschachtelte Map mit `id`-Listen und wird
+vom generischen Zusammenführen je Gruppe und Eintrag gemergt; ändern beide
+Geräte dieselbe Gruppe, ändern sich auch beide Textprojektionen, und es
+entsteht ein sichtbarer Konflikt (nie eine Fassung mit auseinanderlaufenden
+Liste und Text). Eine ältere App, die den Container verwirft, hinterlässt den
+geltenden Text; das nächste Speichern migriert ihn erneut. Bewahrt sie den
+Container und ändert nur den Text, zeigt `gleicheHerkunftAb` die Abweichung.
+Editorentwürfe laufen über `uebernimmEditorEntwurf`; der Container ist ein
+oberster JSON-Schlüssel, beidseitige Änderungen fragen nach.
+
 ### 4.12 Reittiere: Ausbildung und Wirkwerte
 
 Reittiere entwickeln sich nur über die Ausbildung nach Zoo-Botanica
