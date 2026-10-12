@@ -1,3 +1,5 @@
+import 'package:dsa_heldenverwaltung/domain/hero_herkunft.dart';
+
 /// Herkunft und sozialer Hintergrund eines Helden.
 class HeroBackground {
   /// Schluessel, die [fromJson] aus dem flachen Helden-JSON liest.
@@ -12,6 +14,7 @@ class HeroBackground {
     'stand',
     'titel',
     'sozialstatus',
+    'herkunftsModifikatoren',
   };
 
   const HeroBackground({
@@ -25,6 +28,7 @@ class HeroBackground {
     this.stand = '',
     this.titel = '',
     this.sozialstatus = 0,
+    this.herkunftsModifikatoren,
   });
 
   final String rasse;
@@ -38,6 +42,11 @@ class HeroBackground {
   final String titel;
   final int sozialstatus;
 
+  /// Strukturierte Herkunftsmodifikatoren (ARCH-02); `null`, solange der
+  /// Held noch nicht migriert wurde. Im JSON nur bei Belegung, damit
+  /// Bestandshelden ihren Inhalts-Hash behalten.
+  final HeroHerkunftsModifikatoren? herkunftsModifikatoren;
+
   HeroBackground copyWith({
     String? rasse,
     String? rasseModText,
@@ -49,6 +58,7 @@ class HeroBackground {
     String? stand,
     String? titel,
     int? sozialstatus,
+    Object? herkunftsModifikatoren = _unveraendert,
   }) {
     return HeroBackground(
       rasse: rasse ?? this.rasse,
@@ -62,6 +72,9 @@ class HeroBackground {
       stand: stand ?? this.stand,
       titel: titel ?? this.titel,
       sozialstatus: sozialstatus ?? this.sozialstatus,
+      herkunftsModifikatoren: identical(herkunftsModifikatoren, _unveraendert)
+          ? this.herkunftsModifikatoren
+          : herkunftsModifikatoren as HeroHerkunftsModifikatoren?,
     );
   }
 
@@ -77,6 +90,8 @@ class HeroBackground {
     'stand': stand,
     'titel': titel,
     'sozialstatus': sozialstatus,
+    if (herkunftsModifikatoren != null)
+      'herkunftsModifikatoren': herkunftsModifikatoren!.toJson(),
   };
 
   /// Liest aus einer flachen Map (Felder auf Root-Ebene).
@@ -93,6 +108,11 @@ class HeroBackground {
       stand: (json['stand'] as String?) ?? '',
       titel: (json['titel'] as String?) ?? '',
       sozialstatus: (json['sozialstatus'] as num?)?.toInt() ?? 0,
+      herkunftsModifikatoren: json['herkunftsModifikatoren'] == null
+          ? null
+          : HeroHerkunftsModifikatoren.fromJson(json['herkunftsModifikatoren']),
     );
   }
 }
+
+const Object _unveraendert = Object();

@@ -499,6 +499,8 @@ mit älterer App per Sync die Felder einer neueren (Befunde ARCH-07-B5/B6):
     `HeroRitualFieldDef`, `HeroRitualFieldValue`, `MagicSpecialAbility`,
     `HeroLanguageEntry`, `HeroScriptEntry`;
   - Vor- und Nachteile: `HeroMerkmal` (`vorteilEintraege`/`nachteilEintraege`, ARCH-02);
+  - Herkunftsmodifikatoren: `HeroHerkunftsModifikatoren`,
+    `HeroHerkunftsModifikator` (`HeroBackground.herkunftsModifikatoren`, ARCH-02);
   - Begleiter und Chronik: `HeroCompanion`, `HeroCompanionAttack`,
     `HeroCompanionSonderfertigkeit`, `HeroCompanionSpeed`,
     `ReittierAusbildung`, `ReittierAusbildungsschritt`,
@@ -628,6 +630,7 @@ Bestandsdaten enthalten nichts Unbekanntes, ihr JSON und ihre Inhalts-Hashes
 | `stand`, `titel` | `String` | Sozialer Stand und Titel |
 | `familieHerkunftHintergrund` | `String` | Familiengeschichte/Herkunft |
 | `sozialstatus` | `int` | Numerischer Sozialstatus |
+| `herkunftsModifikatoren` | `HeroHerkunftsModifikatoren?` | Strukturierte Herkunftsmodifikatoren je Rasse/Kultur/Profession (ARCH-02, Folgeumfang Herkunftsmerkmale). Flach im Helden-JSON, nur bei Belegung geschrieben; `formatVersion: 1`. Fehlend = nicht migriert, drei leere Listen = ausdrücklich keine Einträge. Unbekannte Version, Nicht-Objekt, nicht verstandene Gruppen/Einträge und doppelte IDs bleiben roh erhalten und sperren die Bearbeitung (Gruppe bzw. Container) |
 | `vorteilEintraege` / `nachteilEintraege` | `List<HeroMerkmal>` | Erworbene Vor-/Nachteile mit Katalog-ID, Wert, Auswahl und Textfragment (ARCH-02, Abschnitt 4.11). Maßgeblich, sobald belegt; nur dann geschrieben |
 | `vorteileText` / `nachteileText` | `String` | Projektion der Listen für ältere App-Versionen (`; `-getrennt); bei Bestandshelden ohne Liste der Alttext, der beim nächsten Speichern migriert wird |
 | `apTotal` | `int` | Gesamte Abenteuerpunkte |
@@ -2389,7 +2392,9 @@ ausdruecklicher Quittierung („Verstanden – Werte geprueft"), die
 
 **Modell.** `HeroMerkmal` traegt `katalogId` (leer = freier Eintrag), `wert`,
 `auswahl`, `text` (sein Fragment in der Projektion), `kandidatenIds`
-(mehrdeutiger Alttext) und `zuordnung` (`katalog`, `migration`, `frei`), dazu
+(mehrdeutiger Alttext), `zuordnung` (`katalog`, `migration`, `frei`) und
+optional `herkunft` (`rasse`, `kultur`, `profession`; reines Metadatum ohne
+Einfluss auf AP oder Regelwirkung, nur bei Belegung geschrieben), dazu
 wie jedes verschachtelte Modell `unbekannteFelder`/`unbekannteEnumWerte`.
 
 **Die Liste fuehrt.** Ist `vorteilEintraege` belegt, gilt sie;
