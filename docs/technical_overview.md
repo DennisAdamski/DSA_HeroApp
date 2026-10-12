@@ -2501,6 +2501,26 @@ verschobene Spalte per Tooltip. Der Textweg kennt
 keine Lernspalten: freie und mehrdeutige Texte wirken nicht, und der
 Aequivalenztest nimmt `lernspalte` bewusst aus.
 
+#### Herkunftsmodifikatoren: Migration und Abgleich
+
+Die Freitexte `rasseModText`, `kulturModText` und `professionModText` werden
+in `HeroBackground.herkunftsModifikatoren` überführt
+(`lib/rules/derived/hero_herkunft_migration_rules.dart`). Die Zerlegung folgt
+dem Parser (Trenner `
+`, `,`, `;`); jedes nichtleere Fragment wird ein
+eigener Eintrag, Wiederholungen bleiben erhalten. Direkte Modifikatoren
+(`CODE±N`, Aliase `AE`/`KE`/`LE`/`AW`) erkennt die gemeinsame Hilfe
+`direkter_modifikator_rules.dart`, die auch der Modifikator-Parser benutzt;
+alles andere ist ein freier Eintrag mit seinem Text. Die ID ist eine UUID v5
+aus Herkunft, Fragmentposition und Fragmenttext. Migriert wird nur bei
+fehlendem Container und erst in `herkunftZumSpeichern` (aufzurufen aus
+`saveHero`); die Texte bleiben dabei unverändert. `gleicheHerkunftAb` meldet
+je Gruppe eine Abweichung, wenn die Fragmente des Textes von denen der Liste
+abweichen (Trenner und Leerzeichen zählen nicht); aufgelöst wird sie nur
+durch `loeseHerkunftsAbweichung` („Text übernehmen“ / „Liste behalten“),
+nie beim Speichern. Unbekannte Versionen und nicht verstandene Gruppen werden
+weder migriert noch verglichen.
+
 ### 4.12 Reittiere: Ausbildung und Wirkwerte
 
 Reittiere entwickeln sich nur über die Ausbildung nach Zoo-Botanica
