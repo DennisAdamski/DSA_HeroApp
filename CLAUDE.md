@@ -526,7 +526,7 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   catalog`: in `lib/` immer den vorhandenen Katalog durchreichen,
   `catalog: null` (Textweg) nur in Tests. Details in
   `docs/technical_overview.md` Abschnitt 4.11.
-- **Herkunftsmodifikatoren (ARCH-02, Aufgabe 1 von 6, Stand 12. Oktober 2026):**
+- **Herkunftsmodifikatoren (ARCH-02, Aufgaben 1–3 von 6, Stand 12. Oktober 2026):**
   `HeroBackground.herkunftsModifikatoren` (`lib/domain/hero_herkunft.dart`,
   `hero_herkunfts_modifikator.dart`, flach im Helden-JSON, nur bei Belegung
   geschrieben, `formatVersion: 1`) hält die strukturierten Einträge je
@@ -536,9 +536,18 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   verstandene Einträge und Gruppen bleiben roh erhalten
   (`unverstandeneRohdaten`/`unverstandeneGruppen`), doppelte IDs ebenso; sie
   sperren nur die betroffene Gruppe (`istGruppeBearbeitbar`). Migration,
-  Auswertung und UI folgen laut
-  [Plan](docs/superpowers/plans/2026-10-10-arch02-herkunftsmerkmale.md);
-  bis dahin rechnen die Regeln weiter über die Freitexte `*ModText`.
+  Migration (`hero_herkunft_migration_rules.dart`, UUID v5 aus Herkunft,
+  Position und Fragment, Texte bleiben unverändert, Abweichung nur über
+  `loeseHerkunftsAbweichung`) und Auswertung stehen. **Wirkung:**
+  `werteHerkunftAus` (`hero_herkunft_rules.dart`) ist der einzige Weg, auf dem
+  Herkunft rechnet: Parser (`parseModifierTextsForHero`), Quellenaufschlüsselung
+  und Ressourcenaktivierung übergeben den Rohtext der Herkunft nie mehr an den
+  Textparser (`modifier_text_parser.dart`). Direkte Einträge führen über ihre
+  strukturierten Felder, freie Einträge über ihren Text; ohne Container, bei
+  unbekannter Version oder gesperrter Gruppe gilt der Kompatibilitätstext.
+  Aktivierung folgt den erkannten Codes, nie der Summe. UI und Schreibwege
+  folgen laut
+  [Plan](docs/superpowers/plans/2026-10-10-arch02-herkunftsmerkmale.md).
 - Begabungen und Unfähigkeiten wirken über die Katalogwirkung `lernspalte`
   auf ihre Ziele; `ermittleBegabungen` (`hero_begabung_rules.dart`) liefert
   je Talent, Zauber, Sprache/Schrift und Ritualkenntnis einen

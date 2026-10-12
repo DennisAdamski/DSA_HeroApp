@@ -1,8 +1,10 @@
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/attribute_modifiers.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_herkunft.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/hero_herkunft_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_wirkung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 
@@ -43,27 +45,10 @@ ModifierSourceBreakdown computeModifierSourceBreakdown(
 }) {
   const empty = '';
   final merkmale = werteMerkmaleAus(hero, catalog: catalog);
-  final rasse = parseModifierTexts(
-    rasseModText: hero.background.rasseModText,
-    kulturModText: empty,
-    professionModText: empty,
-    vorteileText: empty,
-    nachteileText: empty,
-  );
-  final kultur = parseModifierTexts(
-    rasseModText: empty,
-    kulturModText: hero.background.kulturModText,
-    professionModText: empty,
-    vorteileText: empty,
-    nachteileText: empty,
-  );
-  final profession = parseModifierTexts(
-    rasseModText: empty,
-    kulturModText: empty,
-    professionModText: hero.background.professionModText,
-    vorteileText: empty,
-    nachteileText: empty,
-  );
+  final herkunft = werteHerkunftAus(hero.background);
+  final rasse = herkunft.fuer(HeroHerkunft.rasse).modifikatoren;
+  final kultur = herkunft.fuer(HeroHerkunft.kultur).modifikatoren;
+  final profession = herkunft.fuer(HeroHerkunft.profession).modifikatoren;
   final vorteile = mitMerkmalWirkungen(
     parseModifierTexts(
       rasseModText: empty,
