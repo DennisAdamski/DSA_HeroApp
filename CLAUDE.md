@@ -526,6 +526,19 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   catalog`: in `lib/` immer den vorhandenen Katalog durchreichen,
   `catalog: null` (Textweg) nur in Tests. Details in
   `docs/technical_overview.md` Abschnitt 4.11.
+- **Herkunftsmodifikatoren (ARCH-02, Aufgabe 1 von 6, Stand 12. Oktober 2026):**
+  `HeroBackground.herkunftsModifikatoren` (`lib/domain/hero_herkunft.dart`,
+  `hero_herkunfts_modifikator.dart`, flach im Helden-JSON, nur bei Belegung
+  geschrieben, `formatVersion: 1`) hält die strukturierten Einträge je
+  `HeroHerkunft` (Rasse, Kultur, Profession); `HeroMerkmal.herkunft` ist ein
+  reines Metadatum. Fehlender Container = nicht migriert, drei leere Listen =
+  ausdrücklich keine Einträge. Unbekannte Version, Nicht-Objekte, nicht
+  verstandene Einträge und Gruppen bleiben roh erhalten
+  (`unverstandeneRohdaten`/`unverstandeneGruppen`), doppelte IDs ebenso; sie
+  sperren nur die betroffene Gruppe (`istGruppeBearbeitbar`). Migration,
+  Auswertung und UI folgen laut
+  [Plan](docs/superpowers/plans/2026-10-10-arch02-herkunftsmerkmale.md);
+  bis dahin rechnen die Regeln weiter über die Freitexte `*ModText`.
 - Begabungen und Unfähigkeiten wirken über die Katalogwirkung `lernspalte`
   auf ihre Ziele; `ermittleBegabungen` (`hero_begabung_rules.dart`) liefert
   je Talent, Zauber, Sprache/Schrift und Ritualkenntnis einen

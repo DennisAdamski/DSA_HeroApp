@@ -25,6 +25,8 @@ import 'package:dsa_heldenverwaltung/domain/hero_companion.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_connection_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_gruppen_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_language_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_herkunft.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_herkunfts_modifikator.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_merkmal.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_meta_talent.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_note_entry.dart';
@@ -610,7 +612,17 @@ HeroMerkmal _merkmal() => const HeroMerkmal(
   auswahl: 'A',
   kandidatenIds: <String>['adv_a'],
   zuordnung: HeroMerkmalZuordnung.migration,
+  herkunft: HeroHerkunft.rasse,
 );
+
+HeroHerkunftsModifikator _herkunftsModifikator() =>
+    const HeroHerkunftsModifikator(
+      id: 'h1',
+      art: HeroHerkunftsModifikatorArt.eigenschaft,
+      ziel: 'MU',
+      betrag: 1,
+      text: 'MU+1',
+    );
 
 final _merkmale = <_Modell>[
   _Modell(
@@ -621,6 +633,40 @@ final _merkmale = <_Modell>[
     bearbeite: (json) =>
         HeroMerkmal.fromJson(json).copyWith(wert: 4, text: 'X 4').toJson(),
     unbekannt: (json) => HeroMerkmal.fromJson(json).unbekannteFelder,
+  ),
+  _Modell(
+    'HeroHerkunftsModifikator',
+    schluessel: HeroHerkunftsModifikator.jsonSchluessel,
+    voll: () => _herkunftsModifikator().toJson()! as Map<String, dynamic>,
+    lade: (json) =>
+        HeroHerkunftsModifikator.fromJson(json).toJson()!
+            as Map<String, dynamic>,
+    bearbeite: (json) =>
+        HeroHerkunftsModifikator.fromJson(json).copyWith(betrag: 2).toJson()!
+            as Map<String, dynamic>,
+    unbekannt: (json) =>
+        HeroHerkunftsModifikator.fromJson(json).unbekannteFelder,
+  ),
+  _Modell(
+    'HeroHerkunftsModifikatoren',
+    schluessel: HeroHerkunftsModifikatoren.jsonSchluessel,
+    voll: () =>
+        HeroHerkunftsModifikatoren(
+              rasse: [_herkunftsModifikator()],
+              kultur: [_herkunftsModifikator()],
+              profession: [_herkunftsModifikator()],
+            ).toJson()!
+            as Map<String, dynamic>,
+    lade: (json) =>
+        HeroHerkunftsModifikatoren.fromJson(json).toJson()!
+            as Map<String, dynamic>,
+    bearbeite: (json) =>
+        HeroHerkunftsModifikatoren.fromJson(json)
+                .copyWith(rasse: const <HeroHerkunftsModifikator>[])
+                .toJson()!
+            as Map<String, dynamic>,
+    unbekannt: (json) =>
+        HeroHerkunftsModifikatoren.fromJson(json).unbekannteFelder,
   ),
 ];
 
@@ -1289,6 +1335,39 @@ final _enumFelder = <_EnumFeld>[
     andersJson: 'frei',
     ersatz: (json) => HeroMerkmal.fromJson(json).zuordnung,
     erwarteterErsatz: HeroMerkmalZuordnung.katalog,
+  ),
+  _EnumFeld(
+    'HeroMerkmal.herkunft',
+    'herkunft',
+    voll: () => _merkmal().toJson(),
+    lade: (json) => HeroMerkmal.fromJson(json).toJson(),
+    gleich: (json) => HeroMerkmal.fromJson(json).copyWith(wert: 5).toJson(),
+    anders: (json) =>
+        HeroMerkmal.fromJson(json)
+            .copyWith(herkunft: HeroHerkunft.kultur)
+            .toJson(),
+    andersJson: 'kultur',
+    ersatz: (json) => HeroMerkmal.fromJson(json).herkunft,
+    erwarteterErsatz: null,
+  ),
+  _EnumFeld(
+    'HeroHerkunftsModifikator.art',
+    'art',
+    voll: () => _herkunftsModifikator().toJson()! as Map<String, dynamic>,
+    lade: (json) =>
+        HeroHerkunftsModifikator.fromJson(json).toJson()!
+            as Map<String, dynamic>,
+    gleich: (json) =>
+        HeroHerkunftsModifikator.fromJson(json).copyWith(betrag: 3).toJson()!
+            as Map<String, dynamic>,
+    anders: (json) =>
+        HeroHerkunftsModifikator.fromJson(json)
+                .copyWith(art: HeroHerkunftsModifikatorArt.basiswert)
+                .toJson()!
+            as Map<String, dynamic>,
+    andersJson: 'basiswert',
+    ersatz: (json) => HeroHerkunftsModifikator.fromJson(json).art,
+    erwarteterErsatz: HeroHerkunftsModifikatorArt.frei,
   ),
   _EnumFeld(
     'SpellDuration.unit',
