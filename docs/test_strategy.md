@@ -328,6 +328,7 @@ Die CI (`.github/workflows/flutter-tests.yml`) führt alle Tests auf
 | `test/rules/hero_merkmal_rules_test.dart` | rules | ARCH-02: Zuordnung der Alttexte, Abweichungen, Hinzufügen, Wirkung über die Katalog-ID, Umbenennung, Äquivalenz von Katalog- und Textweg |
 | `test/domain/hero_herkunft_model_test.dart` | domain | ARCH-02 Herkunftsmerkmale: Container fehlend/leer, unbekannte Version, Nicht-Objekte, nicht verstandene Teilstücke, doppelte IDs, Merkmalsherkunft |
 | `test/rules/hero_herkunft_migration_rules_test.dart` | rules | ARCH-02 Herkunftsmerkmale: direkte Modifikatoren, reproduzierbare Migration mit Wiederholungen, Projektion, Fixpunkt, Abweichung und ihre beiden Auflösungen |
+| `test/rules/hero_herkunft_rules_test.dart` | rules | ARCH-02 Herkunftsmerkmale: strukturierte Liste führt, Aktivierung nach Codes, Fallbacks ohne Doppelwirkung, Quellenaufschlüsselung, alle Bestandsfixtures vor/nach der Migration mit echtem Katalog |
 | `test/catalog/trait_effect_catalog_test.dart` | catalog | Deklarative `wirkungen` der Vor-/Nachteile: Arten, Ziele, Vorzeichen, Vollständigkeit |
 | `test/domain/hero_sheet_model_test.dart` | domain | HeroSheet-Kompatibilitaet |
 | `test/domain/hero_transfer_bundle_test.dart` | domain | Transfer-Bundle-Kontrakt |

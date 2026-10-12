@@ -1942,6 +1942,19 @@ bekannten Katalogauswahl entsprechen.
 
 **Performance:** LRU-Cache mit 512 Einträgen für häufig wiederholte Texte.
 
+Seit ARCH-02 (Herkunftsmerkmale) rechnet die Herkunft nicht mehr im Parser:
+`parseModifierTextsForHero` übergibt `rasseModText`/`kulturModText`/
+`professionModText` leer an `parseModifierTexts` (jetzt in
+`modifier_text_parser.dart`, weiter über `modifier_parser.dart` exportiert)
+und addiert das Ergebnis von `werteHerkunftAus`
+(`hero_herkunft_rules.dart`). Der Textcache hängt nur an Vor- und Nachteilen,
+die Herkunft wird je Container-Instanz bzw. Texttripel gemerkt. Direkte
+Einträge (`eigenschaft`/`basiswert` mit gültigem Ziel und Betrag) wirken über
+`wendeDirektenModifikatorAn` auf laufende Werte **und** Startwerte; freie,
+unbekannte oder unbrauchbare Einträge wirken genau einmal über ihren Text.
+Quellenaufschlüsselung und Ressourcenaktivierung nehmen dieselbe Auswertung;
+Magie/Karma folgen aus erkannten `ASP`-/`KAP`-Codes, nicht aus der Summe.
+
 ### 4.8 AP & Level
 
 **Datei:** `lib/rules/derived/ap_level_rules.dart`
