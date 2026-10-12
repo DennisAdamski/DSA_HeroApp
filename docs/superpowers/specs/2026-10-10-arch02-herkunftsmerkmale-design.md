@@ -1,8 +1,9 @@
 # ARCH-02: Strukturierte Herkunftsmerkmale
 
-Stand: 10.10.2026. Schriftliche Spezifikation vom Nutzer freigegeben, noch
-nicht implementiert. Der [Implementierungsplan](../plans/2026-10-10-arch02-herkunftsmerkmale.md)
-liegt zur Prüfung vor.
+Stand: 13.10.2026. Schriftliche Spezifikation vom Nutzer freigegeben und
+umgesetzt (automatisierte Abnahme grün, manuelle Bedienprüfung offen). Siehe
+[Implementierungsplan](../plans/2026-10-10-arch02-herkunftsmerkmale.md) und
+[Roadmap](../../architecture_roadmap.md).
 Ausgangspunkt: `f97be35b` auf `test` und
 [ARCH-02 in der Roadmap](../../architecture_roadmap.md#arch-02--regelrelevante-eigenschaften-strukturiert-speichern).
 

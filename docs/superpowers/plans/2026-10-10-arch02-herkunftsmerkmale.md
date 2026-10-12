@@ -15,8 +15,10 @@ Flutter Tests. Keine zusätzlichen Paketabhängigkeiten.
 
 **Spec:** [Freigegebene Spezifikation](../specs/2026-10-10-arch02-herkunftsmerkmale-design.md).
 
-Stand 10.10.2026, Basis `427a232b` auf `test`. Spezifikation freigegeben;
-dieser Implementierungsplan liegt zur Prüfung vor. Noch kein App-Code geändert.
+Stand 10.10.2026, Basis `427a232b` auf `test`. Umgesetzt am 12./13.10.2026
+(Commits `158572e8`, `c56001a4`, `b9bb7f00`, `83e33717`, `9c881c46` und der
+Abschluss-Commit zu Aufgabe 6); die Schritt-Kästchen unten wurden nicht einzeln
+abgehakt, maßgeblich ist der Status in der Roadmap.
 Empfohlene Ausführung: direkt mit `executing-plans`, in Aufgabenreihenfolge.
 Die Repository-Anweisung, einen vorhandenen Nicht-`main`-Branch weiterzuverwenden,
 hat Vorrang vor dem Worktree-Standard des Skills; auf `test` weiterarbeiten.
