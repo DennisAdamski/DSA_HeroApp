@@ -179,10 +179,13 @@ Future<String> hiveTempVerzeichnis(String praefix) async {
 /// JSON-Pfade, die das erste Speichern ergänzt (ARCH-03): je
 /// Inventareintrag die Instanz-ID und bei rein ganzzahliger Anzahl die
 /// Menge, dazu je benanntem Slot den Verweis auf seine Instanz
-/// ([slotInstanzPfade]). Laden ergänzt keinen davon.
+/// ([slotInstanzPfade]) und der Container `herkunftsModifikatoren`. Laden
+/// ergänzt keinen davon.
 Set<String> ersteSpeicherungPfade(HeroSheet held) {
   final eintraege = held.inventoryEntries;
   return <String>{
+    // Herkunftstexte werden beim ersten Speichern strukturiert (ARCH-02).
+    'herkunftsModifikatoren',
     for (var i = 0; i < eintraege.length; i++) ...<String>{
       'inventoryEntries/$i/instanzId',
       if (inventarZahlAusText(eintraege[i].anzahl) != null)

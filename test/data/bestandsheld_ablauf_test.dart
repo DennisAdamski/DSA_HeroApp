@@ -41,6 +41,8 @@ const Set<String> _importNormalisierung = <String>{
   'ritualCategories',
   'unknownModifierFragments',
   'inventoryEntries',
+  // Erstes Speichern: Herkunftstexte werden einmalig strukturiert (ARCH-02).
+  'herkunftsModifikatoren',
 };
 
 /// Ein geoeffneter Heldenspeicher: echtes Hive plus Provider wie in der App.

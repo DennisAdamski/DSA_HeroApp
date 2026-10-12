@@ -526,7 +526,7 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   catalog`: in `lib/` immer den vorhandenen Katalog durchreichen,
   `catalog: null` (Textweg) nur in Tests. Details in
   `docs/technical_overview.md` Abschnitt 4.11.
-- **Herkunftsmodifikatoren (ARCH-02, Aufgaben 1–3 von 6, Stand 12. Oktober 2026):**
+- **Herkunftsmodifikatoren (ARCH-02, Aufgaben 1–4 von 6, Stand 12. Oktober 2026):**
   `HeroBackground.herkunftsModifikatoren` (`lib/domain/hero_herkunft.dart`,
   `hero_herkunfts_modifikator.dart`, flach im Helden-JSON, nur bei Belegung
   geschrieben, `formatVersion: 1`) hält die strukturierten Einträge je
@@ -545,8 +545,14 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   Textparser (`modifier_text_parser.dart`). Direkte Einträge führen über ihre
   strukturierten Felder, freie Einträge über ihren Text; ohne Container, bei
   unbekannter Version oder gesperrter Gruppe gilt der Kompatibilitätstext.
-  Aktivierung folgt den erkannten Codes, nie der Summe. UI und Schreibwege
-  folgen laut
+  Aktivierung folgt den erkannten Codes, nie der Summe. **Schreiben:**
+  `saveHero` ruft `herkunftZumSpeichern` auf (nur bei fehlendem Container);
+  Gruppen ändert ausschließlich `ersetzeHerkunftsEintraege`
+  (`hero_herkunft_bearbeitung_rules.dart`: Liste und Textprojektion der
+  Gruppe gemeinsam, auf dem frisch geladenen Stand, `StateError` bei
+  gesperrter oder inzwischen geänderter Gruppe). Beidseitige Änderungen am
+  Container sind im Sync und im Editorentwurf ein sichtbarer Konflikt. UI
+  folgt laut
   [Plan](docs/superpowers/plans/2026-10-10-arch02-herkunftsmerkmale.md).
 - Begabungen und Unfähigkeiten wirken über die Katalogwirkung `lernspalte`
   auf ihre Ziele; `ermittleBegabungen` (`hero_begabung_rules.dart`) liefert

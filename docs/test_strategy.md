@@ -329,6 +329,9 @@ Die CI (`.github/workflows/flutter-tests.yml`) führt alle Tests auf
 | `test/domain/hero_herkunft_model_test.dart` | domain | ARCH-02 Herkunftsmerkmale: Container fehlend/leer, unbekannte Version, Nicht-Objekte, nicht verstandene Teilstücke, doppelte IDs, Merkmalsherkunft |
 | `test/rules/hero_herkunft_migration_rules_test.dart` | rules | ARCH-02 Herkunftsmerkmale: direkte Modifikatoren, reproduzierbare Migration mit Wiederholungen, Projektion, Fixpunkt, Abweichung und ihre beiden Auflösungen |
 | `test/rules/hero_herkunft_rules_test.dart` | rules | ARCH-02 Herkunftsmerkmale: strukturierte Liste führt, Aktivierung nach Codes, Fallbacks ohne Doppelwirkung, Quellenaufschlüsselung, alle Bestandsfixtures vor/nach der Migration mit echtem Katalog |
+| `test/rules/hero_herkunft_bearbeitung_rules_test.dart` | rules | ARCH-02 Herkunftsmerkmale: gezieltes Ersetzen einer Gruppe, gesperrte Gruppen, Basis-Prüfung, Editorentwurf gegen frisch Gespeichertes |
+| `test/data/herkunft_migration_test.dart` | data | ARCH-02 Herkunftsmerkmale: einmalige Migration beim Speichern mit echtem Hive, Fixpunkt, gleiche Regelwerte, leerer Container und unbekannte Rohdaten über Export/Import |
+| `test/data/herkunft_sync_test.dart` | data | ARCH-02 Herkunftsmerkmale: zwei Geräte (getrennte Gruppen, derselbe Eintrag, Entfernen gegen Bearbeiten, Konfliktwahlen) und Mischbetrieb (Altversion, nur Text geändert, unbekannte Teilfelder, Merkmalsherkunft) |
 | `test/catalog/trait_effect_catalog_test.dart` | catalog | Deklarative `wirkungen` der Vor-/Nachteile: Arten, Ziele, Vorzeichen, Vollständigkeit |
 | `test/domain/hero_sheet_model_test.dart` | domain | HeroSheet-Kompatibilitaet |
 | `test/domain/hero_transfer_bundle_test.dart` | domain | Transfer-Bundle-Kontrakt |

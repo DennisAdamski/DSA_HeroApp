@@ -59,13 +59,15 @@ import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
 /// Modelle spielt das keine Rolle.
 Map<String, dynamic> wieVeroeffentlichteApp(Map<String, dynamic> heldJson) {
   final json = jsonDecode(jsonEncode(heldJson)) as Map<String, dynamic>;
-  // Strukturierte Vor-/Nachteile (ARCH-02) kennt sie nicht; sie bearbeitet
-  // nur `vorteileText`/`nachteileText`.
+  // Strukturierte Vor-/Nachteile und Herkunftsmodifikatoren (ARCH-02) kennt
+  // sie nicht; sie bearbeitet nur `vorteileText`/`nachteileText` und die
+  // `*ModText`-Felder.
   _behalte(
     json,
     HeroSheet.jsonSchluessel.difference(const {
       'vorteilEintraege',
       'nachteilEintraege',
+      'herkunftsModifikatoren',
     }),
   );
   final kampf = json['combatConfig'] as Map<String, dynamic>?;
