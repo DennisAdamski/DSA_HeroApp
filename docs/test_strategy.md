@@ -332,6 +332,8 @@ Die CI (`.github/workflows/flutter-tests.yml`) führt alle Tests auf
 | `test/rules/hero_herkunft_bearbeitung_rules_test.dart` | rules | ARCH-02 Herkunftsmerkmale: gezieltes Ersetzen einer Gruppe, gesperrte Gruppen, Basis-Prüfung, Editorentwurf gegen frisch Gespeichertes |
 | `test/data/herkunft_migration_test.dart` | data | ARCH-02 Herkunftsmerkmale: einmalige Migration beim Speichern mit echtem Hive, Fixpunkt, gleiche Regelwerte, leerer Container und unbekannte Rohdaten über Export/Import |
 | `test/data/herkunft_sync_test.dart` | data | ARCH-02 Herkunftsmerkmale: zwei Geräte (getrennte Gruppen, derselbe Eintrag, Entfernen gegen Bearbeiten, Konfliktwahlen) und Mischbetrieb (Altversion, nur Text geändert, unbekannte Teilfelder, Merkmalsherkunft) |
+| `test/ui/overview/hero_herkunft_section_test.dart` | ui | ARCH-02 Herkunftsmerkmale: Section und Dialog (Hinzufügen, Abbruch, Ändern mit ID, Entfernen, Abweichung, gesperrte Daten, 360 px/Textfaktor 2) |
+| `test/ui/overview/hero_herkunft_editor_test.dart` | ui | ARCH-02 Herkunftsmerkmale: Entwurf in der Übersicht gegen Vorschau und gespeicherten Stand, Abbrechen, letzter Eintrag über Neustart, Abweichung, Paralleländerung, Merkmalsherkunft, offene Planung |
 | `test/catalog/trait_effect_catalog_test.dart` | catalog | Deklarative `wirkungen` der Vor-/Nachteile: Arten, Ziele, Vorzeichen, Vollständigkeit |
 | `test/domain/hero_sheet_model_test.dart` | domain | HeroSheet-Kompatibilitaet |
 | `test/domain/hero_transfer_bundle_test.dart` | domain | Transfer-Bundle-Kontrakt |

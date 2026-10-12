@@ -9,6 +9,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/magic_setup_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/editor_entwurf_rules.dart';
 import 'package:dsa_heldenverwaltung/ui_shared/magic_setup_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui_shared/merkmal_herkunft_dialog.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_anzeige_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_wirkung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_zuordnung_rules.dart';
@@ -338,6 +339,7 @@ class _KartoMerkmalsblattState extends ConsumerState<KartoMerkmalsblatt> {
           if (eintrag.brauchtPruefung)
             _option(context, _Aktion.zuordnen, 'Katalogeintrag zuordnen'),
           if (def == null) _option(context, _Aktion.text, 'Text bearbeiten'),
+          _option(context, _Aktion.herkunft, 'Herkunft ändern'),
           _option(context, _Aktion.entfernen, 'Entfernen'),
         ],
       ),
@@ -405,6 +407,16 @@ class _KartoMerkmalsblattState extends ConsumerState<KartoMerkmalsblatt> {
               ? HeroMerkmalZuordnung.katalog
               : teile.zuordnung,
         );
+      case _Aktion.herkunft:
+        // Reines Metadatum; geschrieben wird erst unten, wo die Planung
+        // erneut geprueft wird.
+        final wahl = await zeigeMerkmalHerkunftDialog(
+          context: context,
+          merkmalName: anzeige.name,
+          aktuell: eintrag.herkunft,
+        );
+        if (wahl == null || wahl.herkunft == eintrag.herkunft) return;
+        ersatz = eintrag.copyWith(herkunft: wahl.herkunft);
       case _Aktion.entfernen:
         if (!await bestaetigeMerkmalEntfernen(context, anzeige.name)) return;
         ersatz = null;
@@ -492,7 +504,7 @@ List<HeroMerkmal> _ersetze(
 }
 
 /// Aktionen an einer Merkmalskarte.
-enum _Aktion { aendern, zuordnen, text, entfernen }
+enum _Aktion { aendern, zuordnen, text, herkunft, entfernen }
 
 /// Abschnittsüberschrift mit leiser Anzahl, wie im Abenteuerblatt.
 class _Kopfzeile extends StatelessWidget {

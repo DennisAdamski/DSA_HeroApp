@@ -119,7 +119,13 @@ extension _HeroOverviewTraitsSection on _HeroOverviewTabState {
     required bool isEditing,
   }) {
     final eintrag = eintraege[index];
-    final label = Text(eintrag.text);
+    final ursprung = eintrag.herkunft;
+    // Die Herkunft ist nur eine Zusatzangabe und steht hinter dem Text.
+    final label = Text(
+      ursprung == null
+          ? eintrag.text
+          : '${eintrag.text} · ${herkunftBezeichnung(ursprung)}',
+    );
     final Widget? avatar = eintrag.istKatalogisiert
         ? const Icon(Icons.check, size: 16)
         : eintrag.brauchtPruefung
@@ -135,22 +141,40 @@ extension _HeroOverviewTraitsSection on _HeroOverviewTabState {
         visualDensity: VisualDensity.compact,
       );
     }
-    return InputChip(
-      key: ValueKey<String>('overview-trait-chip-$keyName-$index'),
-      label: label,
-      avatar: avatar,
-      visualDensity: VisualDensity.compact,
-      onPressed: () => _editTraitEntry(
-        keyName: keyName,
-        eintraege: eintraege,
-        index: index,
-        traits: traits,
-        catalog: catalog,
-      ),
-      onDeleted: () => _setzeMerkmale(
-        keyName,
-        List<HeroMerkmal>.of(eintraege)..removeAt(index),
-      ),
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Flexible(
+          child: InputChip(
+            key: ValueKey<String>('overview-trait-chip-$keyName-$index'),
+            label: label,
+            avatar: avatar,
+            visualDensity: VisualDensity.compact,
+            onPressed: () => _editTraitEntry(
+              keyName: keyName,
+              eintraege: eintraege,
+              index: index,
+              traits: traits,
+              catalog: catalog,
+            ),
+            onDeleted: () => _setzeMerkmale(
+              keyName,
+              List<HeroMerkmal>.of(eintraege)..removeAt(index),
+            ),
+          ),
+        ),
+        IconButton(
+          key: ValueKey<String>('overview-trait-herkunft-$keyName-$index'),
+          tooltip: 'Herkunft ändern',
+          visualDensity: VisualDensity.compact,
+          icon: const Icon(Icons.flag_outlined, size: 18),
+          onPressed: () => _aendereMerkmalHerkunft(
+            keyName: keyName,
+            eintraege: eintraege,
+            index: index,
+          ),
+        ),
+      ],
     );
   }
 

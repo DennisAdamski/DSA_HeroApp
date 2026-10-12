@@ -526,7 +526,7 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   catalog`: in `lib/` immer den vorhandenen Katalog durchreichen,
   `catalog: null` (Textweg) nur in Tests. Details in
   `docs/technical_overview.md` Abschnitt 4.11.
-- **Herkunftsmodifikatoren (ARCH-02, Aufgaben 1–4 von 6, Stand 12. Oktober 2026):**
+- **Herkunftsmodifikatoren (ARCH-02, Aufgaben 1–5 von 6, Stand 12. Oktober 2026):**
   `HeroBackground.herkunftsModifikatoren` (`lib/domain/hero_herkunft.dart`,
   `hero_herkunfts_modifikator.dart`, flach im Helden-JSON, nur bei Belegung
   geschrieben, `formatVersion: 1`) hält die strukturierten Einträge je
@@ -551,8 +551,13 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   (`hero_herkunft_bearbeitung_rules.dart`: Liste und Textprojektion der
   Gruppe gemeinsam, auf dem frisch geladenen Stand, `StateError` bei
   gesperrter oder inzwischen geänderter Gruppe). Beidseitige Änderungen am
-  Container sind im Sync und im Editorentwurf ein sichtbarer Konflikt. UI
-  folgt laut
+  Container sind im Sync und im Editorentwurf ein sichtbarer Konflikt.
+  **Bedienung:** Die Übersicht zeigt je Gruppe eine `HeroHerkunftSection`
+  (`ui/screens/hero_overview/`, rechnet nichts, Callbacks), der Tab hält
+  `_draftHerkunft`; `bestaetigeBearbeitungBeiPlanung` läuft vor Dialog und
+  Entfernen. Die Herkunft eines Merkmals ändert der gemeinsame Dialog
+  `lib/ui_shared/merkmal_herkunft_dialog.dart` (Übersicht und UI2-Merkmalsblatt,
+  nur Metadatum). Abschluss und Gesamtstatus laut
   [Plan](docs/superpowers/plans/2026-10-10-arch02-herkunftsmerkmale.md).
 - Begabungen und Unfähigkeiten wirken über die Katalogwirkung `lernspalte`
   auf ihre Ziele; `ermittleBegabungen` (`hero_begabung_rules.dart`) liefert

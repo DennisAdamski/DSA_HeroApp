@@ -89,6 +89,7 @@ const Map<String, String> syncFieldLabels = <String, String>{
   'kulturModText': 'Kultur-Modifikatoren',
   'profession': 'Profession',
   'professionModText': 'Professions-Modifikatoren',
+  'herkunftsModifikatoren': 'Herkunftsmodifikatoren (Liste)',
   'familieHerkunftHintergrund': 'Familie & Herkunft',
   'stand': 'Stand',
   'titel': 'Titel',

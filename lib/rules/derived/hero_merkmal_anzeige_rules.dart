@@ -9,6 +9,7 @@ library;
 import 'package:dsa_heldenverwaltung/catalog/hero_trait_def.dart';
 import 'package:dsa_heldenverwaltung/catalog/hero_trait_effect.dart';
 import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_herkunft.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_merkmal.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_wirkung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_zuordnung_rules.dart';
@@ -39,6 +40,7 @@ class MerkmalAnzeige {
     required this.herkunft,
     required this.kurz,
     this.def,
+    this.ursprung,
   });
 
   /// `Vorteil` oder `Nachteil`.
@@ -63,6 +65,16 @@ class MerkmalAnzeige {
   /// Zugehoeriger Katalogeintrag, sofern vorhanden.
   final HeroTraitDef? def;
 
+  /// Woher der Eintrag stammt (Rasse, Kultur, Profession); `null`, solange
+  /// nicht angegeben. Reine Zusatzinformation.
+  final HeroHerkunft? ursprung;
+
+  /// Beschriftung des Ursprungs, z. B. `Herkunft: Rasse`; `null` ohne Angabe.
+  String? get ursprungText {
+    final wert = ursprung;
+    return wert == null ? null : 'Herkunft: ${herkunftBezeichnung(wert)}';
+  }
+
   /// Beschriftung der Herkunft fuer die Karte.
   String get herkunftText => switch (herkunft) {
     MerkmalHerkunft.katalog => 'Aus dem Katalog',
@@ -71,6 +83,13 @@ class MerkmalAnzeige {
     MerkmalHerkunft.unbekannt => 'Nicht im Katalog',
   };
 }
+
+/// Deutsche Bezeichnung einer Herkunftsgruppe.
+String herkunftBezeichnung(HeroHerkunft herkunft) => switch (herkunft) {
+  HeroHerkunft.rasse => 'Rasse',
+  HeroHerkunft.kultur => 'Kultur',
+  HeroHerkunft.profession => 'Profession',
+};
 
 /// Bereitet [eintrag] fuer die Anzeige auf.
 MerkmalAnzeige beschreibeMerkmal(
@@ -89,6 +108,7 @@ MerkmalAnzeige beschreibeMerkmal(
       detail: '',
       wirkungen: const <String>[],
       kurz: eintrag.text,
+      ursprung: eintrag.herkunft,
       herkunft: eintrag.istKatalogisiert
           ? MerkmalHerkunft.unbekannt
           : eintrag.brauchtPruefung
@@ -112,6 +132,7 @@ MerkmalAnzeige beschreibeMerkmal(
     herkunft: MerkmalHerkunft.katalog,
     kurz: merkmalTextFuer(def, auswahl: eintrag.auswahl, wert: eintrag.wert),
     def: def,
+    ursprung: eintrag.herkunft,
   );
 }
 

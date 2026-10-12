@@ -2553,6 +2553,34 @@ Container und ändert nur den Text, zeigt `gleicheHerkunftAb` die Abweichung.
 Editorentwürfe laufen über `uebernimmEditorEntwurf`; der Container ist ein
 oberster JSON-Schlüssel, beidseitige Änderungen fragen nach.
 
+#### Herkunftsmodifikatoren: Bedienung
+
+Die Übersicht ersetzt die drei Textfelder „Rasse/Kultur/Profession
+Modifikatoren“ durch je eine `HeroHerkunftSection`
+(`ui/screens/hero_overview/hero_herkunft_section.dart`): Chips der Gruppe,
+`+ Herkunftsmodifikator` im Header, Ändern/Entfernen im Bearbeitungsmodus und
+die beiden Abgleichsknöpfe bei einer Textabweichung. Das Widget rechnet nichts;
+es liest Liste, Abweichung und Sperren aus
+`hero_herkunft_migration_rules.dart` und meldet Änderungen über Callbacks.
+Der Dialog (`hero_herkunft_dialog.dart`) wählt Eigenschaft/Basiswert mit Ziel
+und Betrag oder einen freien Text und baut den Eintrag über
+`baueDirektenHerkunftsEintrag`/`baueFreienHerkunftsEintrag`
+(`hero_herkunft_bearbeitung_rules.dart`); die UUID v4 vergibt er erst bei der
+Bestätigung, beim Bearbeiten bleibt die ID. Der Tab hält `_draftHerkunft`
+(`hero_overview_herkunft_section.dart`, Part des Tabs); Vorschau
+(Ressourcenaktivierung) und Speicherentwurf nutzen dieselbe Fassung, gespeichert
+wird über `speichereEditorEntwurf`. Vor Dialog und Entfernen fragt
+`bestaetigeBearbeitungBeiPlanung`; bei Abbruch bleiben Sitzung und Daten.
+Unbekannte Containerversionen und gesperrte Gruppen zeigen einen Grund statt
+Eingabefeldern.
+
+**Merkmalsherkunft:** `zeigeMerkmalHerkunftDialog`
+(`lib/ui_shared/merkmal_herkunft_dialog.dart`, Wahl „Nicht angegeben“, „Rasse“,
+„Kultur“, „Profession“) dient der Übersicht (Flaggen-Knopf am Chip, Entwurf wie
+bei Katalog-ID und Wert) und dem UI2-Merkmalsblatt (Aktion „Herkunft ändern“,
+Zusatzpille „Herkunft: …“ auf der Karte). Reines Metadatum: AP und Regelwirkung
+bleiben unverändert; Katalog-ID, Wert, Auswahl und Zusatzfelder bleiben.
+
 ### 4.12 Reittiere: Ausbildung und Wirkwerte
 
 Reittiere entwickeln sich nur über die Ausbildung nach Zoo-Botanica
