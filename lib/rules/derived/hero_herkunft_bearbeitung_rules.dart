@@ -1,6 +1,7 @@
 import 'package:dsa_heldenverwaltung/domain/hero_background.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_herkunft.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_herkunfts_modifikator.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/direkter_modifikator_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_herkunft_migration_rules.dart';
 
 /// Ersetzt die Einträge einer Herkunftsgruppe gezielt.
@@ -70,4 +71,88 @@ bool _gleicheEintraege(
     }
   }
   return true;
+}
+
+/// Eigenschaftscodes, die ein direkter Herkunftsmodifikator anspricht.
+const List<String> herkunftEigenschaftsZiele = <String>[
+  'MU',
+  'KL',
+  'IN',
+  'CH',
+  'FF',
+  'GE',
+  'KO',
+  'KK',
+];
+
+/// Basiswertcodes, die ein direkter Herkunftsmodifikator anspricht.
+const List<String> herkunftBasiswertZiele = <String>[
+  'LEP',
+  'AU',
+  'ASP',
+  'KAP',
+  'MR',
+  'INI',
+  'GS',
+  'AUSWEICHEN',
+];
+
+/// Baut einen direkten Eintrag aus Ziel und Betrag.
+///
+/// Ziel und Betrag werden gemeinsam über den Regelvertrag
+/// ([erkenneDirektenModifikator]) geprüft und der Text daraus normalisiert
+/// (`MU+1`, `LEP-2`). Gibt `null` zurück, wenn das Ziel unbekannt ist. Mit
+/// [bisher] bleiben ID und unbekannte Felder eines bearbeiteten Eintrags
+/// erhalten; sonst vergibt der Aufrufer die [id].
+HeroHerkunftsModifikator? baueDirektenHerkunftsEintrag({
+  required String ziel,
+  required int betrag,
+  String? id,
+  HeroHerkunftsModifikator? bisher,
+}) {
+  final text =
+      '${ziel.trim().toUpperCase()}${betrag < 0 ? '-' : '+'}'
+      '${betrag.abs()}';
+  return baueFreienHerkunftsEintrag(text: text, id: id, bisher: bisher);
+}
+
+/// Baut einen Eintrag aus einem einzelnen Textfragment.
+///
+/// Ein Fragment der Form `CODE±N` wird dabei strukturiert (so wirkt es wie
+/// ein direkter Eintrag), alles andere bleibt ein freier Eintrag. Gibt `null`
+/// zurück, wenn [text] leer ist oder mehrere Fragmente enthält (Trenner `,`,
+/// `;`, Zeilenumbruch). Mit [bisher] bleiben ID und unbekannte Felder
+/// erhalten.
+HeroHerkunftsModifikator? baueFreienHerkunftsEintrag({
+  required String text,
+  String? id,
+  HeroHerkunftsModifikator? bisher,
+}) {
+  final fragmente = zerlegeHerkunftsText(text);
+  if (fragmente.length != 1) {
+    return null;
+  }
+  final fragment = fragmente.single;
+  final direkt = erkenneDirektenModifikator(fragment);
+  final eintragsId = bisher?.id ?? id;
+  if (eintragsId == null || eintragsId.isEmpty) {
+    return null;
+  }
+  if (bisher != null) {
+    return bisher.copyWith(
+      art: direkt?.art ?? HeroHerkunftsModifikatorArt.frei,
+      ziel: direkt?.ziel ?? '',
+      betrag: direkt?.betrag,
+      text: fragment,
+    );
+  }
+  return direkt == null
+      ? HeroHerkunftsModifikator(id: eintragsId, text: fragment)
+      : HeroHerkunftsModifikator(
+          id: eintragsId,
+          art: direkt.art,
+          ziel: direkt.ziel,
+          betrag: direkt.betrag,
+          text: fragment,
+        );
 }

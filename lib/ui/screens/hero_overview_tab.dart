@@ -9,6 +9,9 @@ import 'package:dsa_heldenverwaltung/ui/screens/shared/planung_bearbeiten_guard.
 import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/aventurian_date.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_background.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_herkunft.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_herkunfts_modifikator.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_merkmal.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
@@ -21,6 +24,9 @@ import 'package:dsa_heldenverwaltung/rules/derived/epic_main_attribute_rules.dar
 import 'package:dsa_heldenverwaltung/rules/derived/epic_status_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/editor_entwurf_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/hero_herkunft_bearbeitung_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/hero_herkunft_migration_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_anzeige_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_wirkung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_zuordnung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_source_breakdown.dart';
@@ -36,7 +42,9 @@ import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/config/ui_feature_flags.dart';
 import 'package:dsa_heldenverwaltung/ui/debug/ui_rebuild_observer.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/dice_log_persistence.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_overview/hero_herkunft_section.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/editor_entwurf_speichern.dart';
+import 'package:dsa_heldenverwaltung/ui_shared/merkmal_herkunft_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/probe_request_factory.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/zustand_aendern.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_edit_controller.dart';
@@ -69,6 +77,7 @@ part 'hero_overview/hero_overview_base_info_section.dart';
 part 'hero_overview/hero_overview_ap_resources_section.dart';
 part 'hero_overview/hero_overview_stats_section.dart';
 part 'hero_overview/hero_overview_form_fields.dart';
+part 'hero_overview/hero_overview_herkunft_section.dart';
 part 'hero_overview/hero_overview_traits_section.dart';
 part 'hero_overview/hero_overview_trait_dialogs.dart';
 part 'hero_overview/hero_overview_epic_section.dart';
@@ -134,6 +143,10 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
   /// laesst sich deshalb nicht wie die uebrigen Felder als Text puffern.
   String _draftGeburtsmonat = '';
 
+  /// Entwurf der Herkunftsmodifikatoren (Container samt Textprojektion);
+  /// `null`, solange unveraendert (ARCH-02).
+  HeroBackground? _draftHerkunft;
+
   /// Entwurf der Vor-/Nachteile; `null`, solange unveraendert (ARCH-02).
   List<HeroMerkmal>? _draftVorteile;
   HeroSheet? _draftMagicSetup;
@@ -191,11 +204,8 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
 
     _field('name').text = hero.name;
     _field('rasse').text = hero.background.rasse;
-    _field('rasse_mod').text = hero.background.rasseModText;
     _field('kultur').text = hero.background.kultur;
-    _field('kultur_mod').text = hero.background.kulturModText;
     _field('profession').text = hero.background.profession;
-    _field('profession_mod').text = hero.background.professionModText;
     _field('geschlecht').text = hero.appearance.geschlecht;
     _field('alter').text = hero.appearance.alter;
     _field('geburt_tag').text = hero.appearance.geburtsdatum.day;
@@ -212,6 +222,7 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
     _field('titel').text = hero.background.titel;
     _field('familie').text = hero.background.familieHerkunftHintergrund;
     _field('sozialstatus').text = hero.background.sozialstatus.toString();
+    _draftHerkunft = null;
     _draftVorteile = null;
     _draftMagicSetup = null;
     _draftNachteile = null;
@@ -279,7 +290,7 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
       return;
     }
 
-    final entwurf = _mitMerkmalEntwurf(hero).copyWith(
+    final entwurf = _mitHerkunftEntwurf(_mitMerkmalEntwurf(hero)).copyWith(
       name: _field('name').text.trim().isEmpty
           ? 'Unbenannter Held'
           : _field('name').text.trim(),
@@ -294,13 +305,10 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
         augenfarbe: _field('augenfarbe').text.trim(),
         aussehen: _field('aussehen').text.trim(),
       ),
-      background: hero.background.copyWith(
+      background: _mitHerkunftEntwurf(hero).background.copyWith(
         rasse: _field('rasse').text.trim(),
-        rasseModText: _field('rasse_mod').text.trim(),
         kultur: _field('kultur').text.trim(),
-        kulturModText: _field('kultur_mod').text.trim(),
         profession: _field('profession').text.trim(),
-        professionModText: _field('profession_mod').text.trim(),
         stand: _field('stand').text.trim(),
         titel: _field('titel').text.trim(),
         familieHerkunftHintergrund: _field('familie').text.trim(),
@@ -439,12 +447,7 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
         catalog: catalog,
       );
     }
-    final draftHero = _mitMerkmalEntwurf(hero).copyWith(
-      background: hero.background.copyWith(
-        rasseModText: _field('rasse_mod').text.trim(),
-        kulturModText: _field('kultur_mod').text.trim(),
-        professionModText: _field('profession_mod').text.trim(),
-      ),
+    final draftHero = _mitHerkunftEntwurf(_mitMerkmalEntwurf(hero)).copyWith(
       resourceActivationConfig: hero.resourceActivationConfig.copyWith(
         magicEnabledOverride: magicEnabledOverride,
         divineEnabledOverride: divineEnabledOverride,
