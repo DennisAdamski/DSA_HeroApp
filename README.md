@@ -413,6 +413,9 @@ Fuer die konkrete Umsetzung im Projekt sind diese Dokus die besten Einstiege:
 - `docs/test_strategy.md` fuer Testaufbau und Qualitaetssicherung
 - [Architektur-To-do-Liste](docs/architecture_roadmap.md) für sieben geplante
   Verbesserungen mit Einstiegspunkten, Abhängigkeiten und Abnahmekriterien
+- [Zaubereffekte-Integrationsplan](docs/zaubereffekte_integrationsplan.md)
+  für den geplanten Ausbau von Charakterwirkungen im Kampf und Spielgeschehen
+  (Roadmap MAG-EFF, Katalog-Screening und DSA-Regelbelege)
 - [Klickbares Codex-Mockup](docs/mockups/README.md) für die geplanten Bereiche
   Spielen, Held verwalten und Entwicklung planen
 - [Redesign-Umsetzungspläne](docs/redesign_implementation.md) mit drei
