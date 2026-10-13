@@ -135,3 +135,26 @@ List<HerleitungsSchritt> mitUntergrenze(
     ),
   ];
 }
+
+/// Ergänzt [schritte] um einen Begrenzungsschritt, wenn ihre Summe über
+/// [obergrenze] liegt, und gibt die Liste zurück.
+///
+/// Gegenstück zu [mitUntergrenze]; der Endwert bleibt die Summe aller Schritte.
+List<HerleitungsSchritt> mitObergrenze(
+  List<HerleitungsSchritt> schritte, {
+  required int obergrenze,
+  required String bezeichnung,
+}) {
+  final summe = summeDer(schritte);
+  if (summe <= obergrenze) {
+    return schritte;
+  }
+  return <HerleitungsSchritt>[
+    ...schritte,
+    HerleitungsSchritt(
+      bezeichnung: bezeichnung,
+      betrag: obergrenze - summe,
+      art: HerleitungsArt.begrenzung,
+    ),
+  ];
+}

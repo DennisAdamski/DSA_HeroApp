@@ -1056,8 +1056,9 @@ ihre Basis, Modifikatoren, Bedingungen und Quellen.
 - [ ] Ein gemeinsames Ergebnisformat für Regelherleitungen einführen und
   schrittweise auf Basiswerte, Kampf, Talente, Magie und Steigerungen anwenden.
   Die UI zeigt die Herleitung aus dem Regelmodul, ohne sie selbst nachzurechnen.
-  *(Format und Basiswerte seit Teilstand 1, Eigenschaften seit Teilstand 2;
-  Kampf, Talente, Magie und Steigerungen offen.)*
+  *(Format und Basiswerte seit Teilstand 1, Eigenschaften seit Teilstand 2,
+  Kampfvorschau seit Teilstand 3; Schild-PA, Talente, Magie und Steigerungen
+  offen.)*
 
 **Abnahme:** Zwei Helden mit verschiedenen Profilen können parallel geöffnet
 werden, ohne einander zu beeinflussen. Gleiche Eingaben und Regelversionen
@@ -1162,6 +1163,62 @@ Eigenschaftsdialog in `basiswert_herleitung_anzeige_test.dart`. Gepinnte
 Regelwerte der Bestandshelden unverändert.
 Commit: `6f79e3b`. Vollständige Suite danach grün (4724 bestanden,
 3 übersprungen).
+
+**Teilstand 3, 13.10.2026 — Kampfvorschau.**
+
+*Befund.* Die „Berechnungsschritte“ des Kampf-Tabs
+(`weapon_detail_expansion.dart`) rechneten selbst nach, und ihre Schritte
+ergaben teils nicht das Ergebnis: Die AT-Basis war ein Restwert, in dem der
+Bonus eines waffenlosen Kampfstils verschwand (in der PA fehlte er ganz);
+unter Axxeleratus fehlte im Ausweichen der PA-Anteil des Zaubers (2 Punkte);
+die Fernkampf-INI zeigte weder INI-Wurf noch Axxeleratus noch Kampfstil; der
+Nebenhandwaffe fehlten AT-/PA- bzw. FK-Basis und Schildarmwunden; Begrenzungen
+(Helden-INI ≥ 0, Ausweichen ≥ 0, eBE ≤ 0) waren unsichtbar.
+
+*Umsetzung.*
+
+- **Regeln:** `kampf_herleitung_rules.dart` (RS, BE Kampf, eBE, AT/FK, PA,
+  PA mit INI-Parade-Bonus, TP-Zuschlag) und `kampf_ini_herleitung_rules.dart`
+  (Helden-, Waffen-, Kampf-INI, Ausweichen) ordnen die Bausteine der
+  Kampfvorschau als Schritte an. `computeCombatPreviewStats` liest AT, PA,
+  TP, INI, Ausweichen, RS, BE und eBE dort ab
+  (`CombatPreviewStats.herleitungen`, Nebenhandwaffe
+  `OffhandCombatPreview.herleitungen`); die Summen und Klemmungen im
+  Kampfmodul entfallen. Neu ist `mitObergrenze` im Herleitungsformat; die
+  höhere Waffen-INI einer Nebenhandwaffe ist ein eigener Schritt. Die
+  Nebenhand-Vorschau liegt jetzt im Teil `combat_offhand_preview_rules.dart`.
+- **Oberfläche:** `KampfHerleitungDetails` ersetzt die alte Erweiterung und
+  zeigt nur die Herleitungen über das neue gemeinsame `HerleitungsSchritte`;
+  neu sichtbar ist der Abschnitt Rüstungsschutz/Behinderung/eBE. Die Ladezeit
+  bleibt eine Aufzählung (Halbierung und Teilung sind nicht additiv).
+- **Nebenbei:** `hero_overview_tab.dart` lag seit Teilstand 1 mit 707 Zeilen
+  über dem LOC-Budget der CI; `_DerivedRow` liegt jetzt im eigenen Teil
+  `hero_overview_derived_row.dart`.
+
+*Prüfungen.* `test/rules/kampf_herleitung_rules_test.dart` (Begrenzungen,
+Axxeleratus in PA/Ausweichen/TP, AT-Basis als Grundwert, Schwertarm- und
+Schildarmwunden, Rüstungsgewöhnung, Nebenhand-INI-Modifikator und schnellere
+Nebenhandwaffe, Fernkampf gleich `computeRangedAtValue`, Ausweichen gleich
+`computeAusweichen`; alle zehn Bestandshelden mit und ohne Armwunden und
+Axxeleratus) und `test/ui/combat/kampf_herleitung_anzeige_test.dart`
+(Axxeleratus-Zeilen in PA und Ausweichen, Nebenhand mit AT-Basis und
+Schildarmwunde, Einstieg aus dem Kampf-Tab). Verhaltensneutral: gepinnte
+Regelwerte der Bestandshelden, `combat_rules_test.dart`,
+`gefecht_kampfmittel_rules_test.dart` und `test/ui/combat` unverändert grün;
+kein Modell und kein JSON-Format geändert.
+
+*Befund, nicht behoben.* Ein Waffenmeister-AT-Bonus wurde bei Fernkampfwaffen
+angezeigt, aber nie gerechnet (`computeRangedAtValue` kennt ihn nicht). Die
+Anzeige folgt jetzt der Rechnung; ob der Bonus im Fernkampf gelten soll, ist
+per dsa-rules-MCP gegen WdS/Arsenal zu klären (eigener Regelauftrag).
+
+*Nächste Schritte.* Schild-/Parierwaffen-PA (`computeOffhandModifierSnapshot`)
+und die Gefechtswerte (`gefecht_held_rules.dart` setzt sein Ausweichen
+weiterhin selbst aus den Einzelwerten zusammen, mit INI-Bonus und BE 0)
+als Herleitung; danach Talente, Magie und
+Steigerungen.
+
+Commit: wird nachgetragen.
 
 ## ARCH-05 — Schreibende Aktionen fachlich aufteilen
 
