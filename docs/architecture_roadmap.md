@@ -1253,7 +1253,8 @@ Verhaltensneutral.
 *Prüfungen.* `kampf_herleitung_rules_test.dart` (Schild-PA je SF-Stufe mit
 Axxeleratus, Rüstung und Schildarmwunde; Parierwaffe je SF-Stufe; ohne
 Linkhand kein PA-Anteil; Gleichheit mit `shieldPa` für alle Bestandshelden),
-Widgettest für den Abschnitt „Schild-Parade“.
+Widgettest für den Abschnitt „Schild-Parade“. Commit: `c8be027`.
+Vollständige Suite danach grün (4788 bestanden, 3 übersprungen).
 
 *Regelbefunde vor Paket B (per dsa-rules-MCP geprüft, nicht behoben).*
 
