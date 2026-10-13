@@ -1160,6 +1160,8 @@ Aufteilung; für alle Bestandshelden gleicht die Herleitung den effektiven
 Werten und ist nach Herkunft aufgeteilt) und ein Widgettest für den
 Eigenschaftsdialog in `basiswert_herleitung_anzeige_test.dart`. Gepinnte
 Regelwerte der Bestandshelden unverändert.
+Commit: `6f79e3b`. Vollständige Suite danach grün (4724 bestanden,
+3 übersprungen).
 
 ## ARCH-05 — Schreibende Aktionen fachlich aufteilen
 
