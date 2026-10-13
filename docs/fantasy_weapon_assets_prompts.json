@@ -1,0 +1,182 @@
+{
+  "version": 1,
+  "created": "2026-10-13",
+  "tool": "image_gen.imagegen (built-in)",
+  "transparent_background": true,
+  "assets": [
+    {
+      "id": "melee",
+      "label": "Nahkampf",
+      "path": "assets/ui/fantasy_weapons_v1/melee.png",
+      "prompt": "Use case: stylized-concept. Create ONE standalone transparent PNG icon for a medieval fantasy hero management Flutter app. Match an established set of medieval manuscript engravings in etched brass #9C7A3C, warm ivory #F2EDE1, and muted dark petrol #1F4E5F. Elegant hand-engraved illustration, strong dark petrol outlines, restrained engraving texture, simple readable silhouette at 48-64 logical pixels. Minimal internal detail, no tiny ornaments. Square canvas. Center the full subject, keep generous transparent margins of at least 10% on every edge, show entire weapon without cropping. Long weapons arranged diagonally to use square area efficiently. Truly transparent background. No lettering, numerals, labels, watermark, scenery, backing shape, cast shadow, hands holding weapons, photorealism, or 3D render. Make the weapon's defining construction obvious so it differs from related weapon categories. Subject: two crossed weapons: one straight medieval sword and one single-bladed hand axe, no shield"
+    },
+    {
+      "id": "ranged",
+      "label": "Fernkampf",
+      "path": "assets/ui/fantasy_weapons_v1/ranged.png",
+      "prompt": "Use case: stylized-concept. Create ONE standalone transparent PNG icon for a medieval fantasy hero management Flutter app. Match an established set of medieval manuscript engravings in etched brass #9C7A3C, warm ivory #F2EDE1, and muted dark petrol #1F4E5F. Elegant hand-engraved illustration, strong dark petrol outlines, restrained engraving texture, simple readable silhouette at 48-64 logical pixels. Minimal internal detail, no tiny ornaments. Square canvas. Center the full subject, keep generous transparent margins of at least 10% on every edge, show entire weapon without cropping. Long weapons arranged diagonally to use square area efficiently. Truly transparent background. No lettering, numerals, labels, watermark, scenery, backing shape, cast shadow, hands holding weapons, photorealism, or 3D render. Make the weapon's defining construction obvious so it differs from related weapon categories. Subject: a bow with arrow crossing a compact crossbow, a clear ranged weapons emblem"
+    },
+    {
+      "id": "hand_and_a_half",
+      "label": "Anderthalbhänder",
+      "path": "assets/ui/fantasy_weapons_v1/hand_and_a_half.png",
+      "prompt": "Use case: stylized-concept. Create ONE standalone transparent PNG icon for a medieval fantasy hero management Flutter app. Match an established set of medieval manuscript engravings in etched brass #9C7A3C, warm ivory #F2EDE1, and muted dark petrol #1F4E5F. Elegant hand-engraved illustration, strong dark petrol outlines, restrained engraving texture, simple readable silhouette at 48-64 logical pixels. Minimal internal detail, no tiny ornaments. Square canvas. Center the full subject, keep generous transparent margins of at least 10% on every edge, show entire weapon without cropping. Long weapons arranged diagonally to use square area efficiently. Truly transparent background. No lettering, numerals, labels, watermark, scenery, backing shape, cast shadow, hands holding weapons, photorealism, or 3D render. Make the weapon's defining construction obvious so it differs from related weapon categories. Subject: one hand-and-a-half straight longsword with an elongated two-hand leather grip, cruciform guard and pointed double edged blade, diagonally from lower left to upper right"
+    },
+    {
+      "id": "daggers",
+      "label": "Dolche",
+      "path": "assets/ui/fantasy_weapons_v1/daggers.png",
+      "prompt": "Use case: stylized-concept. Create ONE standalone transparent PNG icon for a medieval fantasy hero management Flutter app. Match an established set of medieval manuscript engravings in etched brass #9C7A3C, warm ivory #F2EDE1, and muted dark petrol #1F4E5F. Elegant hand-engraved illustration, strong dark petrol outlines, restrained engraving texture, simple readable silhouette at 48-64 logical pixels. Minimal internal detail, no tiny ornaments. Square canvas. Center the full subject, keep generous transparent margins of at least 10% on every edge, show entire weapon without cropping. Long weapons arranged diagonally to use square area efficiently. Truly transparent background. No lettering, numerals, labels, watermark, scenery, backing shape, cast shadow, hands holding weapons, photorealism, or 3D render. Make the weapon's defining construction obvious so it differs from related weapon categories. Subject: one short broad dagger with a visibly short double edged blade and a small cruciform guard, diagonal"
+    },
+    {
+      "id": "fencing",
+      "label": "Fechtwaffen",
+      "path": "assets/ui/fantasy_weapons_v1/fencing.png",
+      "prompt": "Use case: stylized-concept. Create ONE standalone transparent PNG icon for a medieval fantasy hero management Flutter app. Match an established set of medieval manuscript engravings in etched brass #9C7A3C, warm ivory #F2EDE1, and muted dark petrol #1F4E5F. Elegant hand-engraved illustration, strong dark petrol outlines, restrained engraving texture, simple readable silhouette at 48-64 logical pixels. Minimal internal detail, no tiny ornaments. Square canvas. Center the full subject, keep generous transparent margins of at least 10% on every edge, show entire weapon without cropping. Long weapons arranged diagonally to use square area efficiently. Truly transparent background. No lettering, numerals, labels, watermark, scenery, backing shape, cast shadow, hands holding weapons, photorealism, or 3D render. Make the weapon's defining construction obvious so it differs from related weapon categories. Subject: one slim rapier with a clearly visible swept brass basket guard and very narrow straight thrusting blade, diagonal"
+    },
+    {
+      "id": "impact",
+      "label": "Hiebwaffen",
+      "path": "assets/ui/fantasy_weapons_v1/impact.png",
+      "prompt": "Use case: stylized-concept. Create ONE standalone transparent PNG icon for a medieval fantasy hero management Flutter app. Match an established set of medieval manuscript engravings in etched brass #9C7A3C, warm ivory #F2EDE1, and muted dark petrol #1F4E5F. Elegant hand-engraved illustration, strong dark petrol outlines, restrained engraving texture, simple readable silhouette at 48-64 logical pixels. Minimal internal detail, no tiny ornaments. Square canvas. Center the full subject, keep generous transparent margins of at least 10% on every edge, show entire weapon without cropping. Long weapons arranged diagonally to use square area efficiently. Truly transparent background. No lettering, numerals, labels, watermark, scenery, backing shape, cast shadow, hands holding weapons, photorealism, or 3D render. Make the weapon's defining construction obvious so it differs from related weapon categories. Subject: one short medieval flanged mace, prominent faceted metal striking head on a short leather wrapped haft, diagonal"
+    },
+    {
+      "id": "polearms",
+      "label": "Infanteriewaffen",
+      "path": "assets/ui/fantasy_weapons_v1/polearms.png",
+      "prompt": "Use case: stylized-concept. Create ONE standalone transparent PNG icon for a medieval fantasy hero management Flutter app. Match an established set of medieval manuscript engravings in etched brass #9C7A3C, warm ivory #F2EDE1, and muted dark petrol #1F4E5F. Elegant hand-engraved illustration, strong dark petrol outlines, restrained engraving texture, simple readable silhouette at 48-64 logical pixels. Minimal internal detail, no tiny ornaments. Square canvas. Center the full subject, keep generous transparent margins of at least 10% on every edge, show entire weapon without cropping. Long weapons arranged diagonally to use square area efficiently. Truly transparent background. No lettering, numerals, labels, watermark, scenery, backing shape, cast shadow, hands holding weapons, photorealism, or 3D render. Make the weapon's defining construction obvious so it differs from related weapon categories. Subject: one medieval halberd with axe blade, opposing hook and top spear spike on a long wooden pole, diagonal"
+    },
+    {
+      "id": "chain_staves",
+      "label": "Kettenstäbe",
+      "path": "assets/ui/fantasy_weapons_v1/chain_staves.png",
+      "prompt": "Use case: stylized-concept. Create ONE standalone transparent PNG icon for a medieval fantasy hero management Flutter app. Match an established set of medieval manuscript engravings in etched brass #9C7A3C, warm ivory #F2EDE1, and muted dark petrol #1F4E5F. Elegant hand-engraved illustration, strong dark petrol outlines, restrained engraving texture, simple readable silhouette at 48-64 logical pixels. Minimal internal detail, no tiny ornaments. Square canvas. Center the full subject, keep generous transparent margins of at least 10% on every edge, show entire weapon without cropping. Long weapons arranged diagonally to use square area efficiently. Truly transparent background. No lettering, numerals, labels, watermark, scenery, backing shape, cast shadow, hands holding weapons, photorealism, or 3D render. Make the weapon's defining construction obvious so it differs from related weapon categories. Subject: two short wooden combat batons linked by a short clearly visible chain, angled apart in a V, no spikes or metal ball"
+    },
+    {
+      "id": "chain_weapons",
+      "label": "Kettenwaffen",
+      "path": "assets/ui/fantasy_weapons_v1/chain_weapons.png",
+      "prompt": "Use case: stylized-concept. Create ONE standalone transparent PNG icon for a medieval fantasy hero management Flutter app. Match an established set of medieval manuscript engravings in etched brass #9C7A3C, warm ivory #F2EDE1, and muted dark petrol #1F4E5F. Elegant hand-engraved illustration, strong dark petrol outlines, restrained engraving texture, simple readable silhouette at 48-64 logical pixels. Minimal internal detail, no tiny ornaments. Square canvas. Center the full subject, keep generous transparent margins of at least 10% on every edge, show entire weapon without cropping. Long weapons arranged diagonally to use square area efficiently. Truly transparent background. No lettering, numerals, labels, watermark, scenery, backing shape, cast shadow, hands holding weapons, photorealism, or 3D render. Make the weapon's defining construction obvious so it differs from related weapon categories. Subject: one single-handed morning star flail: short leather wrapped handle, curved visible chain and one large spiked iron ball"
+    },
+    {
+      "id": "lances",
+      "label": "Lanzenreiten",
+      "path": "assets/ui/fantasy_weapons_v1/lances.png",
+      "prompt": "Use case: stylized-concept. Create ONE standalone transparent PNG icon for a medieval fantasy hero management Flutter app. Match an established set of medieval manuscript engravings in etched brass #9C7A3C, warm ivory #F2EDE1, and muted dark petrol #1F4E5F. Elegant hand-engraved illustration, strong dark petrol outlines, restrained engraving texture, simple readable silhouette at 48-64 logical pixels. Minimal internal detail, no tiny ornaments. Square canvas. Center the full subject, keep generous transparent margins of at least 10% on every edge, show entire weapon without cropping. Long weapons arranged diagonally to use square area efficiently. Truly transparent background. No lettering, numerals, labels, watermark, scenery, backing shape, cast shadow, hands holding weapons, photorealism, or 3D render. Make the weapon's defining construction obvious so it differs from related weapon categories. Subject: one long cavalry lance with a tapered shaft, small pointed lancehead and clearly visible conical hand guard, diagonal, no horse"
+    },
+    {
+      "id": "brawling",
+      "label": "Raufen",
+      "path": "assets/ui/fantasy_weapons_v1/brawling.png",
+      "prompt": "Use case: stylized-concept. Create ONE standalone transparent PNG icon for a medieval fantasy hero management Flutter app. Match an established set of medieval manuscript engravings in etched brass #9C7A3C, warm ivory #F2EDE1, and muted dark petrol #1F4E5F. Elegant hand-engraved illustration, strong dark petrol outlines, restrained engraving texture, simple readable silhouette at 48-64 logical pixels. Minimal internal detail, no tiny ornaments. Square canvas. Center the full subject, keep generous transparent margins of at least 10% on every edge, show entire weapon without cropping. Long weapons arranged diagonally to use square area efficiently. Truly transparent background. No lettering, numerals, labels, watermark, scenery, backing shape, cast shadow, hands holding weapons, photorealism, or 3D render. Make the weapon's defining construction obvious so it differs from related weapon categories. Subject: one clenched leather gloved fist with brass knuckle plates, frontal silhouette, no weapon, no arm beyond wrist"
+    },
+    {
+      "id": "wrestling",
+      "label": "Ringen",
+      "path": "assets/ui/fantasy_weapons_v1/wrestling.png",
+      "prompt": "Use case: stylized-concept. Create ONE standalone transparent PNG icon for a medieval fantasy hero management Flutter app. Match an established set of medieval manuscript engravings in etched brass #9C7A3C, warm ivory #F2EDE1, and muted dark petrol #1F4E5F. Elegant hand-engraved illustration, strong dark petrol outlines, restrained engraving texture, simple readable silhouette at 48-64 logical pixels. Minimal internal detail, no tiny ornaments. Square canvas. Center the full subject, keep generous transparent margins of at least 10% on every edge, show entire weapon without cropping. Long weapons arranged diagonally to use square area efficiently. Truly transparent background. No lettering, numerals, labels, watermark, scenery, backing shape, cast shadow, hands holding weapons, photorealism, or 3D render. Make the weapon's defining construction obvious so it differs from related weapon categories. Subject: two leather wrapped hands clasping each other's wrists in a clear grappling grip, compact silhouette, no weapon, no arms beyond wrists"
+    },
+    {
+      "id": "sabres",
+      "label": "Säbel",
+      "path": "assets/ui/fantasy_weapons_v1/sabres.png",
+      "prompt": "Use case: stylized-concept. Create ONE standalone transparent PNG icon for a medieval fantasy hero management Flutter app. Match an established set of medieval manuscript engravings in etched brass #9C7A3C, warm ivory #F2EDE1, and muted dark petrol #1F4E5F. Elegant hand-engraved illustration, strong dark petrol outlines, restrained engraving texture, simple readable silhouette at 48-64 logical pixels. Minimal internal detail, no tiny ornaments. Square canvas. Center the full subject, keep generous transparent margins of at least 10% on every edge, show entire weapon without cropping. Long weapons arranged diagonally to use square area efficiently. Truly transparent background. No lettering, numerals, labels, watermark, scenery, backing shape, cast shadow, hands holding weapons, photorealism, or 3D render. Make the weapon's defining construction obvious so it differs from related weapon categories. Subject: one curved single-edged sabre with a clearly curved blade and simple brass knuckle bow guard, diagonal"
+    },
+    {
+      "id": "swords",
+      "label": "Schwerter",
+      "path": "assets/ui/fantasy_weapons_v1/swords.png",
+      "prompt": "Use case: stylized-concept. Create ONE standalone transparent PNG icon for a medieval fantasy hero management Flutter app. Match an established set of medieval manuscript engravings in etched brass #9C7A3C, warm ivory #F2EDE1, and muted dark petrol #1F4E5F. Elegant hand-engraved illustration, strong dark petrol outlines, restrained engraving texture, simple readable silhouette at 48-64 logical pixels. Minimal internal detail, no tiny ornaments. Square canvas. Center the full subject, keep generous transparent margins of at least 10% on every edge, show entire weapon without cropping. Long weapons arranged diagonally to use square area efficiently. Truly transparent background. No lettering, numerals, labels, watermark, scenery, backing shape, cast shadow, hands holding weapons, photorealism, or 3D render. Make the weapon's defining construction obvious so it differs from related weapon categories. Subject: one single-handed straight medieval arming sword, short leather grip, simple crossguard and double edged blade, diagonal"
+    },
+    {
+      "id": "spears",
+      "label": "Speere",
+      "path": "assets/ui/fantasy_weapons_v1/spears.png",
+      "prompt": "Use case: stylized-concept. Create ONE standalone transparent PNG icon for a medieval fantasy hero management Flutter app. Match an established set of medieval manuscript engravings in etched brass #9C7A3C, warm ivory #F2EDE1, and muted dark petrol #1F4E5F. Elegant hand-engraved illustration, strong dark petrol outlines, restrained engraving texture, simple readable silhouette at 48-64 logical pixels. Minimal internal detail, no tiny ornaments. Square canvas. Center the full subject, keep generous transparent margins of at least 10% on every edge, show entire weapon without cropping. Long weapons arranged diagonally to use square area efficiently. Truly transparent background. No lettering, numerals, labels, watermark, scenery, backing shape, cast shadow, hands holding weapons, photorealism, or 3D render. Make the weapon's defining construction obvious so it differs from related weapon categories. Subject: one long wooden spear with a broad leaf-shaped spearhead and small brass socket, diagonal"
+    },
+    {
+      "id": "staves",
+      "label": "Stäbe",
+      "path": "assets/ui/fantasy_weapons_v1/staves.png",
+      "prompt": "Use case: stylized-concept. Create ONE standalone transparent PNG icon for a medieval fantasy hero management Flutter app. Match an established set of medieval manuscript engravings in etched brass #9C7A3C, warm ivory #F2EDE1, and muted dark petrol #1F4E5F. Elegant hand-engraved illustration, strong dark petrol outlines, restrained engraving texture, simple readable silhouette at 48-64 logical pixels. Minimal internal detail, no tiny ornaments. Square canvas. Center the full subject, keep generous transparent margins of at least 10% on every edge, show entire weapon without cropping. Long weapons arranged diagonally to use square area efficiently. Truly transparent background. No lettering, numerals, labels, watermark, scenery, backing shape, cast shadow, hands holding weapons, photorealism, or 3D render. Make the weapon's defining construction obvious so it differs from related weapon categories. Subject: one plain quarterstaff made of dark wood with simple brass end caps and petrol leather central grip, diagonal, no blade, no magic"
+    },
+    {
+      "id": "two_hand_flails",
+      "label": "Zweihandflegel",
+      "path": "assets/ui/fantasy_weapons_v1/two_hand_flails.png",
+      "prompt": "Use case: stylized-concept. Create ONE standalone transparent PNG icon for a medieval fantasy hero management Flutter app. Match an established set of medieval manuscript engravings in etched brass #9C7A3C, warm ivory #F2EDE1, and muted dark petrol #1F4E5F. Elegant hand-engraved illustration, strong dark petrol outlines, restrained engraving texture, simple readable silhouette at 48-64 logical pixels. Minimal internal detail, no tiny ornaments. Square canvas. Center the full subject, keep generous transparent margins of at least 10% on every edge, show entire weapon without cropping. Long weapons arranged diagonally to use square area efficiently. Truly transparent background. No lettering, numerals, labels, watermark, scenery, backing shape, cast shadow, hands holding weapons, photorealism, or 3D render. Make the weapon's defining construction obvious so it differs from related weapon categories. Subject: one two-handed flail with a long wooden pole and a shorter thick wooden striking bar attached to its upper end by a short chain, bent configuration, no ball"
+    },
+    {
+      "id": "two_hand_impact",
+      "label": "Zweihand-Hiebwaffen",
+      "path": "assets/ui/fantasy_weapons_v1/two_hand_impact.png",
+      "prompt": "Use case: stylized-concept. Create ONE standalone transparent PNG icon for a medieval fantasy hero management Flutter app. Match an established set of medieval manuscript engravings in etched brass #9C7A3C, warm ivory #F2EDE1, and muted dark petrol #1F4E5F. Elegant hand-engraved illustration, strong dark petrol outlines, restrained engraving texture, simple readable silhouette at 48-64 logical pixels. Minimal internal detail, no tiny ornaments. Square canvas. Center the full subject, keep generous transparent margins of at least 10% on every edge, show entire weapon without cropping. Long weapons arranged diagonally to use square area efficiently. Truly transparent background. No lettering, numerals, labels, watermark, scenery, backing shape, cast shadow, hands holding weapons, photorealism, or 3D render. Make the weapon's defining construction obvious so it differs from related weapon categories. Subject: one large two-handed battle axe with a broad double-bladed axe head and long wooden handle with leather grip, diagonal"
+    },
+    {
+      "id": "two_hand_swords",
+      "label": "Zweihandschwerter und -säbel",
+      "path": "assets/ui/fantasy_weapons_v1/two_hand_swords.png",
+      "prompt": "Use case: stylized-concept. Create ONE standalone transparent PNG icon for a medieval fantasy hero management Flutter app. Match an established set of medieval manuscript engravings in etched brass #9C7A3C, warm ivory #F2EDE1, and muted dark petrol #1F4E5F. Elegant hand-engraved illustration, strong dark petrol outlines, restrained engraving texture, simple readable silhouette at 48-64 logical pixels. Minimal internal detail, no tiny ornaments. Square canvas. Center the full subject, keep generous transparent margins of at least 10% on every edge, show entire weapon without cropping. Long weapons arranged diagonally to use square area efficiently. Truly transparent background. No lettering, numerals, labels, watermark, scenery, backing shape, cast shadow, hands holding weapons, photorealism, or 3D render. Make the weapon's defining construction obvious so it differs from related weapon categories. Subject: one massive two-handed greatsword with a very long straight double edged blade, broad guard, long two-handed grip and visible blade-side parrying hooks, diagonal"
+    },
+    {
+      "id": "crossbows",
+      "label": "Armbrust",
+      "path": "assets/ui/fantasy_weapons_v1/crossbows.png",
+      "prompt": "Use case: stylized-concept. Create ONE standalone transparent PNG icon for a medieval fantasy hero management Flutter app. Match an established set of medieval manuscript engravings in etched brass #9C7A3C, warm ivory #F2EDE1, and muted dark petrol #1F4E5F. Elegant hand-engraved illustration, strong dark petrol outlines, restrained engraving texture, simple readable silhouette at 48-64 logical pixels. Minimal internal detail, no tiny ornaments. Square canvas. Center the full subject, keep generous transparent margins of at least 10% on every edge, show entire weapon without cropping. Long weapons arranged diagonally to use square area efficiently. Truly transparent background. No lettering, numerals, labels, watermark, scenery, backing shape, cast shadow, hands holding weapons, photorealism, or 3D render. Make the weapon's defining construction obvious so it differs from related weapon categories. Subject: one medieval crossbow viewed from slightly above, wooden stock, brass fittings, petrol wrapped grip, short horizontal bow and visible loaded bolt"
+    },
+    {
+      "id": "siege",
+      "label": "Belagerungswaffen",
+      "path": "assets/ui/fantasy_weapons_v1/siege.png",
+      "prompt": "Use case: stylized-concept. Create ONE standalone transparent PNG icon for a medieval fantasy hero management Flutter app. Match an established set of medieval manuscript engravings in etched brass #9C7A3C, warm ivory #F2EDE1, and muted dark petrol #1F4E5F. Elegant hand-engraved illustration, strong dark petrol outlines, restrained engraving texture, simple readable silhouette at 48-64 logical pixels. Minimal internal detail, no tiny ornaments. Square canvas. Center the full subject, keep generous transparent margins of at least 10% on every edge, show entire weapon without cropping. Long weapons arranged diagonally to use square area efficiently. Truly transparent background. No lettering, numerals, labels, watermark, scenery, backing shape, cast shadow, hands holding weapons, photorealism, or 3D render. Make the weapon's defining construction obvious so it differs from related weapon categories. Subject: one compact medieval wooden ballista with two bow arms and a large central bolt on a stable wooden frame, viewed three quarter"
+    },
+    {
+      "id": "blowpipes",
+      "label": "Blasrohr",
+      "path": "assets/ui/fantasy_weapons_v1/blowpipes.png",
+      "prompt": "Use case: stylized-concept. Create ONE standalone transparent PNG icon for a medieval fantasy hero management Flutter app. Match an established set of medieval manuscript engravings in etched brass #9C7A3C, warm ivory #F2EDE1, and muted dark petrol #1F4E5F. Elegant hand-engraved illustration, strong dark petrol outlines, restrained engraving texture, simple readable silhouette at 48-64 logical pixels. Minimal internal detail, no tiny ornaments. Square canvas. Center the full subject, keep generous transparent margins of at least 10% on every edge, show entire weapon without cropping. Long weapons arranged diagonally to use square area efficiently. Truly transparent background. No lettering, numerals, labels, watermark, scenery, backing shape, cast shadow, hands holding weapons, photorealism, or 3D render. Make the weapon's defining construction obvious so it differs from related weapon categories. Subject: one hollow wooden blowpipe with simple brass mouthpiece and one small feathered blow dart beside it, diagonal, no rifle"
+    },
+    {
+      "id": "bows",
+      "label": "Bogen",
+      "path": "assets/ui/fantasy_weapons_v1/bows.png",
+      "prompt": "Use case: stylized-concept. Create ONE standalone transparent PNG icon for a medieval fantasy hero management Flutter app. Match an established set of medieval manuscript engravings in etched brass #9C7A3C, warm ivory #F2EDE1, and muted dark petrol #1F4E5F. Elegant hand-engraved illustration, strong dark petrol outlines, restrained engraving texture, simple readable silhouette at 48-64 logical pixels. Minimal internal detail, no tiny ornaments. Square canvas. Center the full subject, keep generous transparent margins of at least 10% on every edge, show entire weapon without cropping. Long weapons arranged diagonally to use square area efficiently. Truly transparent background. No lettering, numerals, labels, watermark, scenery, backing shape, cast shadow, hands holding weapons, photorealism, or 3D render. Make the weapon's defining construction obvious so it differs from related weapon categories. Subject: one classic tall recurve wooden bow with clearly visible bowstring and a single arrow, brass accents and petrol wrapped grip"
+    },
+    {
+      "id": "discs",
+      "label": "Diskus",
+      "path": "assets/ui/fantasy_weapons_v1/discs.png",
+      "prompt": "Use case: stylized-concept. Create ONE standalone transparent PNG icon for a medieval fantasy hero management Flutter app. Match an established set of medieval manuscript engravings in etched brass #9C7A3C, warm ivory #F2EDE1, and muted dark petrol #1F4E5F. Elegant hand-engraved illustration, strong dark petrol outlines, restrained engraving texture, simple readable silhouette at 48-64 logical pixels. Minimal internal detail, no tiny ornaments. Square canvas. Center the full subject, keep generous transparent margins of at least 10% on every edge, show entire weapon without cropping. Long weapons arranged diagonally to use square area efficiently. Truly transparent background. No lettering, numerals, labels, watermark, scenery, backing shape, cast shadow, hands holding weapons, photorealism, or 3D render. Make the weapon's defining construction obvious so it differs from related weapon categories. Subject: one flat round throwing disc with a broad smooth brass rim and dark petrol center, seen at a slight angle, no spokes, no compass motif, no blades"
+    },
+    {
+      "id": "whips",
+      "label": "Peitsche",
+      "path": "assets/ui/fantasy_weapons_v1/whips.png",
+      "prompt": "Use case: stylized-concept. Create ONE standalone transparent PNG icon for a medieval fantasy hero management Flutter app. Match an established set of medieval manuscript engravings in etched brass #9C7A3C, warm ivory #F2EDE1, and muted dark petrol #1F4E5F. Elegant hand-engraved illustration, strong dark petrol outlines, restrained engraving texture, simple readable silhouette at 48-64 logical pixels. Minimal internal detail, no tiny ornaments. Square canvas. Center the full subject, keep generous transparent margins of at least 10% on every edge, show entire weapon without cropping. Long weapons arranged diagonally to use square area efficiently. Truly transparent background. No lettering, numerals, labels, watermark, scenery, backing shape, cast shadow, hands holding weapons, photorealism, or 3D render. Make the weapon's defining construction obvious so it differs from related weapon categories. Subject: one leather whip with a short petrol leather wrapped handle, brass pommel and a long tapering brown lash curling into one loop, no chain"
+    },
+    {
+      "id": "slings",
+      "label": "Schleuder",
+      "path": "assets/ui/fantasy_weapons_v1/slings.png",
+      "prompt": "Use case: stylized-concept. Create ONE standalone transparent PNG icon for a medieval fantasy hero management Flutter app. Match an established set of medieval manuscript engravings in etched brass #9C7A3C, warm ivory #F2EDE1, and muted dark petrol #1F4E5F. Elegant hand-engraved illustration, strong dark petrol outlines, restrained engraving texture, simple readable silhouette at 48-64 logical pixels. Minimal internal detail, no tiny ornaments. Square canvas. Center the full subject, keep generous transparent margins of at least 10% on every edge, show entire weapon without cropping. Long weapons arranged diagonally to use square area efficiently. Truly transparent background. No lettering, numerals, labels, watermark, scenery, backing shape, cast shadow, hands holding weapons, photorealism, or 3D render. Make the weapon's defining construction obvious so it differs from related weapon categories. Subject: one simple leather shepherd's sling with two cords and a central leather pouch holding a smooth stone, cords curled compactly, no staff, no slingshot fork"
+    },
+    {
+      "id": "throwing_axes",
+      "label": "Wurfbeile",
+      "path": "assets/ui/fantasy_weapons_v1/throwing_axes.png",
+      "prompt": "Use case: stylized-concept. Create ONE standalone transparent PNG icon for a medieval fantasy hero management Flutter app. Match an established set of medieval manuscript engravings in etched brass #9C7A3C, warm ivory #F2EDE1, and muted dark petrol #1F4E5F. Elegant hand-engraved illustration, strong dark petrol outlines, restrained engraving texture, simple readable silhouette at 48-64 logical pixels. Minimal internal detail, no tiny ornaments. Square canvas. Center the full subject, keep generous transparent margins of at least 10% on every edge, show entire weapon without cropping. Long weapons arranged diagonally to use square area efficiently. Truly transparent background. No lettering, numerals, labels, watermark, scenery, backing shape, cast shadow, hands holding weapons, photorealism, or 3D render. Make the weapon's defining construction obvious so it differs from related weapon categories. Subject: one small light throwing axe with a short wooden handle and compact asymmetric single axe blade, diagonal, clearly smaller proportions than a battle axe"
+    },
+    {
+      "id": "throwing_knives",
+      "label": "Wurfmesser",
+      "path": "assets/ui/fantasy_weapons_v1/throwing_knives.png",
+      "prompt": "Use case: stylized-concept. Create ONE standalone transparent PNG icon for a medieval fantasy hero management Flutter app. Match an established set of medieval manuscript engravings in etched brass #9C7A3C, warm ivory #F2EDE1, and muted dark petrol #1F4E5F. Elegant hand-engraved illustration, strong dark petrol outlines, restrained engraving texture, simple readable silhouette at 48-64 logical pixels. Minimal internal detail, no tiny ornaments. Square canvas. Center the full subject, keep generous transparent margins of at least 10% on every edge, show entire weapon without cropping. Long weapons arranged diagonally to use square area efficiently. Truly transparent background. No lettering, numerals, labels, watermark, scenery, backing shape, cast shadow, hands holding weapons, photorealism, or 3D render. Make the weapon's defining construction obvious so it differs from related weapon categories. Subject: three slim balanced throwing knives fanned apart, simple metal grips without crossguards and narrow pointed blades"
+    },
+    {
+      "id": "javelins",
+      "label": "Wurfspeere",
+      "path": "assets/ui/fantasy_weapons_v1/javelins.png",
+      "prompt": "Use case: stylized-concept. Create ONE standalone transparent PNG icon for a medieval fantasy hero management Flutter app. Match an established set of medieval manuscript engravings in etched brass #9C7A3C, warm ivory #F2EDE1, and muted dark petrol #1F4E5F. Elegant hand-engraved illustration, strong dark petrol outlines, restrained engraving texture, simple readable silhouette at 48-64 logical pixels. Minimal internal detail, no tiny ornaments. Square canvas. Center the full subject, keep generous transparent margins of at least 10% on every edge, show entire weapon without cropping. Long weapons arranged diagonally to use square area efficiently. Truly transparent background. No lettering, numerals, labels, watermark, scenery, backing shape, cast shadow, hands holding weapons, photorealism, or 3D render. Make the weapon's defining construction obvious so it differs from related weapon categories. Subject: two slim light wooden javelins with narrow spearheads and leather wrapped central grips, parallel diagonals, no fletching"
+    }
+  ]
+}
