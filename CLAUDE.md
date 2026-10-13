@@ -4,6 +4,10 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
 
 ## Zuerst lesen
 
+- [Fantasy-Assets](docs/fantasy_assets.md): 12 transparente Symbole und drei
+  dekorative PNGs unter `assets/ui/fantasy_v1/`, für Flutter registriert.
+  Vorschau und Generierungsprompts liegen unter `docs/fantasy_assets*`.
+
 - [Magische Kenntnisse](docs/magische_kenntnisse.md): Repräsentationen und
   Ritualkenntnisse in Editor und Entwicklungsplanung. `HeroSheet.ritualKnowledge`
   hält gemeinsame Werte je Tradition; `ritual_knowledge_rules.dart` löst

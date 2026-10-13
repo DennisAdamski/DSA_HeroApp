@@ -6,6 +6,9 @@ Die App ist auf eine moeglichst umfangreiche Heldenverwaltung ausgelegt: Eigensc
 
 ## Inhalt
 
+Einbindbare Fantasy-Symbole und dekorative Assets mit Vorschau:
+[Fantasy-Assets](docs/fantasy_assets.md).
+
 - [DSA Heldenverwaltung](#dsa-heldenverwaltung)
   - [Inhalt](#inhalt)
   - [Projektueberblick](#projektueberblick)

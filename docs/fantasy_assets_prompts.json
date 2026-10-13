@@ -1,0 +1,98 @@
+{
+  "version": 1,
+  "created": "2026-10-13",
+  "tool": "image_gen.imagegen (built-in)",
+  "transparent_background": true,
+  "assets": [
+    {
+      "id": "hero",
+      "label": "Held",
+      "path": "assets/ui/fantasy_v1/hero.png",
+      "prompt": "Use case: stylized-concept. Create ONE standalone production UI icon for a German medieval fantasy tabletop hero management app. Subject: HERO, a front-facing medieval adventurer helmet with a simple shield silhouette. Style: elegant medieval manuscript engraving, clean bold outline, restrained flat etched brass and warm ivory, muted dark petrol accent. Palette brass #9C7A3C, ivory #F2EDE1, petrol #1F4E5F. Strong simplified silhouette readable at 32-48 pixels; few internal details, consistent 3px-like contours, no tiny filigree. Square canvas, centered object occupying 75% of canvas with generous padding. Truly transparent background. No lettering, numbers, logos, watermark, scenery, cast shadow or rectangular backing. It must work on light parchment and dark navy surfaces. Not photorealistic or 3D."
+    },
+    {
+      "id": "combat",
+      "label": "Kampf",
+      "path": "assets/ui/fantasy_v1/combat.png",
+      "prompt": "Use case: stylized-concept. Generate ONE standalone asset for a medieval fantasy tabletop hero management Flutter app. Elegant medieval manuscript engraving with clean bold outlines, restrained flat etched brass #9C7A3C and warm ivory #F2EDE1, muted dark petrol #1F4E5F accents. Consistent handcrafted visual family, strong silhouette, no photorealism or 3D. Centered on square canvas with generous 12% transparent padding around all edges. Truly transparent background, no backdrop, no cast shadow, no text, numbers, logos or watermark. UI icons must read at 32-48 pixels, few internal details, avoid tiny filigree. Decorative assets can have slightly richer engraving and read at 160 pixels. Subject: two crossed medieval swords with a compact shield"
+    },
+    {
+      "id": "talents",
+      "label": "Talente",
+      "path": "assets/ui/fantasy_v1/talents.png",
+      "prompt": "Use case: stylized-concept. Generate ONE standalone asset for a medieval fantasy tabletop hero management Flutter app. Elegant medieval manuscript engraving with clean bold outlines, restrained flat etched brass #9C7A3C and warm ivory #F2EDE1, muted dark petrol #1F4E5F accents. Consistent handcrafted visual family, strong silhouette, no photorealism or 3D. Centered on square canvas with generous 12% transparent padding around all edges. Truly transparent background, no backdrop, no cast shadow, no text, numbers, logos or watermark. UI icons must read at 32-48 pixels, few internal details, avoid tiny filigree. Decorative assets can have slightly richer engraving and read at 160 pixels. Subject: a feather quill crossing a small scroll"
+    },
+    {
+      "id": "magic",
+      "label": "Magie",
+      "path": "assets/ui/fantasy_v1/magic.png",
+      "prompt": "Use case: stylized-concept. Generate ONE standalone asset for a medieval fantasy tabletop hero management Flutter app. Elegant medieval manuscript engraving with clean bold outlines, restrained flat etched brass #9C7A3C and warm ivory #F2EDE1, muted dark petrol #1F4E5F accents. Consistent handcrafted visual family, strong silhouette, no photorealism or 3D. Centered on square canvas with generous 12% transparent padding around all edges. Truly transparent background, no backdrop, no cast shadow, no text, numbers, logos or watermark. UI icons must read at 32-48 pixels, few internal details, avoid tiny filigree. Decorative assets can have slightly richer engraving and read at 160 pixels. Subject: a five-point arcane star inside a single etched circle, no lettering"
+    },
+    {
+      "id": "liturgies",
+      "label": "Liturgien",
+      "path": "assets/ui/fantasy_v1/liturgies.png",
+      "prompt": "Use case: stylized-concept. Generate ONE standalone asset for a medieval fantasy tabletop hero management Flutter app. Elegant medieval manuscript engraving with clean bold outlines, restrained flat etched brass #9C7A3C and warm ivory #F2EDE1, muted dark petrol #1F4E5F accents. Consistent handcrafted visual family, strong silhouette, no photorealism or 3D. Centered on square canvas with generous 12% transparent padding around all edges. Truly transparent background, no backdrop, no cast shadow, no text, numbers, logos or watermark. UI icons must read at 32-48 pixels, few internal details, avoid tiny filigree. Decorative assets can have slightly richer engraving and read at 160 pixels. Subject: a radiant stylized sun above a simple chalice, generic sacred motif"
+    },
+    {
+      "id": "inventory",
+      "label": "Inventar",
+      "path": "assets/ui/fantasy_v1/inventory.png",
+      "prompt": "Use case: stylized-concept. Generate ONE standalone asset for a medieval fantasy tabletop hero management Flutter app. Elegant medieval manuscript engraving with clean bold outlines, restrained flat etched brass #9C7A3C and warm ivory #F2EDE1, muted dark petrol #1F4E5F accents. Consistent handcrafted visual family, strong silhouette, no photorealism or 3D. Centered on square canvas with generous 12% transparent padding around all edges. Truly transparent background, no backdrop, no cast shadow, no text, numbers, logos or watermark. UI icons must read at 32-48 pixels, few internal details, avoid tiny filigree. Decorative assets can have slightly richer engraving and read at 160 pixels. Subject: a medieval leather adventurer backpack with a single buckle"
+    },
+    {
+      "id": "companion",
+      "label": "Begleiter",
+      "path": "assets/ui/fantasy_v1/companion.png",
+      "prompt": "Use case: stylized-concept. Generate ONE standalone asset for a medieval fantasy tabletop hero management Flutter app. Elegant medieval manuscript engraving with clean bold outlines, restrained flat etched brass #9C7A3C and warm ivory #F2EDE1, muted dark petrol #1F4E5F accents. Consistent handcrafted visual family, strong silhouette, no photorealism or 3D. Centered on square canvas with generous 12% transparent padding around all edges. Truly transparent background, no backdrop, no cast shadow, no text, numbers, logos or watermark. UI icons must read at 32-48 pixels, few internal details, avoid tiny filigree. Decorative assets can have slightly richer engraving and read at 160 pixels. Subject: a friendly raven in side profile perched on a short branch"
+    },
+    {
+      "id": "adventure",
+      "label": "Abenteuer",
+      "path": "assets/ui/fantasy_v1/adventure.png",
+      "prompt": "Use case: stylized-concept. Generate ONE standalone asset for a medieval fantasy tabletop hero management Flutter app. Elegant medieval manuscript engraving with clean bold outlines, restrained flat etched brass #9C7A3C and warm ivory #F2EDE1, muted dark petrol #1F4E5F accents. Consistent handcrafted visual family, strong silhouette, no photorealism or 3D. Centered on square canvas with generous 12% transparent padding around all edges. Truly transparent background, no backdrop, no cast shadow, no text, numbers, logos or watermark. UI icons must read at 32-48 pixels, few internal details, avoid tiny filigree. Decorative assets can have slightly richer engraving and read at 160 pixels. Subject: a simple compass rose with four clear cardinal points, no letters"
+    },
+    {
+      "id": "notes",
+      "label": "Notizen",
+      "path": "assets/ui/fantasy_v1/notes.png",
+      "prompt": "Use case: stylized-concept. Generate ONE standalone asset for a medieval fantasy tabletop hero management Flutter app. Elegant medieval manuscript engraving with clean bold outlines, restrained flat etched brass #9C7A3C and warm ivory #F2EDE1, muted dark petrol #1F4E5F accents. Consistent handcrafted visual family, strong silhouette, no photorealism or 3D. Centered on square canvas with generous 12% transparent padding around all edges. Truly transparent background, no backdrop, no cast shadow, no text, numbers, logos or watermark. UI icons must read at 32-48 pixels, few internal details, avoid tiny filigree. Decorative assets can have slightly richer engraving and read at 160 pixels. Subject: a small closed leather journal with a feather quill"
+    },
+    {
+      "id": "advancement",
+      "label": "Steigerung",
+      "path": "assets/ui/fantasy_v1/advancement.png",
+      "prompt": "Use case: stylized-concept. Generate ONE standalone asset for a medieval fantasy tabletop hero management Flutter app. Elegant medieval manuscript engraving with clean bold outlines, restrained flat etched brass #9C7A3C and warm ivory #F2EDE1, muted dark petrol #1F4E5F accents. Consistent handcrafted visual family, strong silhouette, no photorealism or 3D. Centered on square canvas with generous 12% transparent padding around all edges. Truly transparent background, no backdrop, no cast shadow, no text, numbers, logos or watermark. UI icons must read at 32-48 pixels, few internal details, avoid tiny filigree. Decorative assets can have slightly richer engraving and read at 160 pixels. Subject: three ascending steps with a small radiant star above the highest step"
+    },
+    {
+      "id": "vitality",
+      "label": "Lebensenergie",
+      "path": "assets/ui/fantasy_v1/vitality.png",
+      "prompt": "Use case: stylized-concept. Generate ONE standalone asset for a medieval fantasy tabletop hero management Flutter app. Elegant medieval manuscript engraving with clean bold outlines, restrained flat etched brass #9C7A3C and warm ivory #F2EDE1, muted dark petrol #1F4E5F accents. Consistent handcrafted visual family, strong silhouette, no photorealism or 3D. Centered on square canvas with generous 12% transparent padding around all edges. Truly transparent background, no backdrop, no cast shadow, no text, numbers, logos or watermark. UI icons must read at 32-48 pixels, few internal details, avoid tiny filigree. Decorative assets can have slightly richer engraving and read at 160 pixels. Subject: a stylized heart framed by two short laurel sprigs"
+    },
+    {
+      "id": "dice",
+      "label": "Würfel",
+      "path": "assets/ui/fantasy_v1/dice.png",
+      "prompt": "Use case: stylized-concept. Generate ONE standalone asset for a medieval fantasy tabletop hero management Flutter app. Elegant medieval manuscript engraving with clean bold outlines, restrained flat etched brass #9C7A3C and warm ivory #F2EDE1, muted dark petrol #1F4E5F accents. Consistent handcrafted visual family, strong silhouette, no photorealism or 3D. Centered on square canvas with generous 12% transparent padding around all edges. Truly transparent background, no backdrop, no cast shadow, no text, numbers, logos or watermark. UI icons must read at 32-48 pixels, few internal details, avoid tiny filigree. Decorative assets can have slightly richer engraving and read at 160 pixels. Subject: one twenty-sided tabletop roleplaying die, clear triangular facets, no numerals"
+    },
+    {
+      "id": "hero_crest",
+      "label": "Heldenwappen",
+      "path": "assets/ui/fantasy_v1/hero_crest.png",
+      "prompt": "Use case: stylized-concept. Generate ONE standalone asset for a medieval fantasy tabletop hero management Flutter app. Elegant medieval manuscript engraving with clean bold outlines, restrained flat etched brass #9C7A3C and warm ivory #F2EDE1, muted dark petrol #1F4E5F accents. Consistent handcrafted visual family, strong silhouette, no photorealism or 3D. Centered on square canvas with generous 12% transparent padding around all edges. Truly transparent background, no backdrop, no cast shadow, no text, numbers, logos or watermark. UI icons must read at 32-48 pixels, few internal details, avoid tiny filigree. Decorative assets can have slightly richer engraving and read at 160 pixels. Subject: DECORATIVE ASSET: a blank heraldic shield with a central eight-point compass star, two restrained laurel branches and a modest leather ribbon, no writing"
+    },
+    {
+      "id": "chapter_ornament",
+      "label": "Kapitelornament",
+      "path": "assets/ui/fantasy_v1/chapter_ornament.png",
+      "prompt": "Use case: stylized-concept. Generate ONE standalone asset for a medieval fantasy tabletop hero management Flutter app. Elegant medieval manuscript engraving with clean bold outlines, restrained flat etched brass #9C7A3C and warm ivory #F2EDE1, muted dark petrol #1F4E5F accents. Consistent handcrafted visual family, strong silhouette, no photorealism or 3D. Centered on square canvas with generous 12% transparent padding around all edges. Truly transparent background, no backdrop, no cast shadow, no text, numbers, logos or watermark. UI icons must read at 32-48 pixels, few internal details, avoid tiny filigree. Decorative assets can have slightly richer engraving and read at 160 pixels. Subject: DECORATIVE ASSET: a thin symmetrical horizontal medieval engraved chapter divider, central small diamond with balanced curling vine ornaments extending left and right. Wide horizontal subject with plenty of transparent space above and below"
+    },
+    {
+      "id": "adventure_book",
+      "label": "Abenteuerbuch",
+      "path": "assets/ui/fantasy_v1/adventure_book.png",
+      "prompt": "Use case: stylized-concept. Generate ONE standalone asset for a medieval fantasy tabletop hero management Flutter app. Elegant medieval manuscript engraving with clean bold outlines, restrained flat etched brass #9C7A3C and warm ivory #F2EDE1, muted dark petrol #1F4E5F accents. Consistent handcrafted visual family, strong silhouette, no photorealism or 3D. Centered on square canvas with generous 12% transparent padding around all edges. Truly transparent background, no backdrop, no cast shadow, no text, numbers, logos or watermark. UI icons must read at 32-48 pixels, few internal details, avoid tiny filigree. Decorative assets can have slightly richer engraving and read at 160 pixels. Subject: DECORATIVE ASSET: an open medieval adventure journal, cream parchment pages with a few abstract map contours and compass sketch, dark petrol leather cover with brass corners, slightly viewed from above, no text"
+    }
+  ]
+}
