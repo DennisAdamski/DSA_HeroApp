@@ -1670,6 +1670,17 @@ Schritt. Die „Berechnungsschritte“ des Kampf-Tabs
 (`ui/screens/hero_combat/kampf_herleitung_details.dart`) zeigen nur diese
 Herleitungen über `HerleitungsSchritte`; die Ladezeit bleibt eine
 Aufzählung, weil Halbierung und Teilung nicht additiv sind.
+Alle Herleitungen eines Helden lassen sich zentral durchsuchen:
+`sammleHerleitungen` (`herleitung_uebersicht_rules.dart`) sammelt
+Eigenschaften, Basiswerte (AsP/KaP nur bei aktivierter Ressource),
+Kampfvorschau und Nebenhandwaffe aus dem `HeroComputedSnapshot` als
+`HerleitungsEintrag`e, `filtereHerleitungen` filtert nach Begriffen, die
+jeweils in Titel, Bereich oder Bezeichnung, Formel, Quelle oder Bedingung
+eines Schritts vorkommen müssen. Der Dialog `HerleitungsSucheDialog`
+(`ui/screens/workspace/herleitung_suche_dialog.dart`) öffnet sich über ein
+(i) neben „Regeln nachschlagen“ (Heldenbogen und UI2-Verwaltung) und in UI2
+über die Navigation (`KartoBestandsAdapter.berechnungsschritte`); er zeigt
+den gespeicherten Stand, Treffer einer Suche stehen aufgeklappt.
 
 **Zukauf-Grenzen:** `lib/rules/derived/bought_stat_limit_rules.dart`
 begrenzt den AP-Zukauf im Steigerungsdialog fuer Grundwerte. LeP duerfen bis

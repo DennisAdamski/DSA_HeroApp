@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/planung_bearbeiten_guard.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/workspace/herleitung_suche_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/rules_lookup_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_management_coordinator.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_spec.dart';
@@ -154,15 +155,17 @@ class _WorkspaceManagementBodyState
   }
 
   List<Widget> _buildGlobalActions() {
-    if (!isRulesLookupSupported()) {
-      return const <Widget>[];
-    }
     return <Widget>[
-      IconButton(
-        key: const ValueKey<String>('management-rules-lookup'),
-        tooltip: 'Regeln nachschlagen',
-        onPressed: () => showRulesLookupDialog(context: context),
-        icon: const Icon(Icons.menu_book_outlined),
+      if (isRulesLookupSupported())
+        IconButton(
+          key: const ValueKey<String>('management-rules-lookup'),
+          tooltip: 'Regeln nachschlagen',
+          onPressed: () => showRulesLookupDialog(context: context),
+          icon: const Icon(Icons.menu_book_outlined),
+        ),
+      HerleitungsSucheKnopf(
+        heroId: widget.heroId,
+        schluessel: const ValueKey<String>('management-herleitung-suche'),
       ),
     ];
   }

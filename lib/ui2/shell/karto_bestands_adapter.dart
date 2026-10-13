@@ -97,6 +97,13 @@ abstract interface class KartoBestandsAdapter {
     required String heroId,
   });
 
+  /// Öffnet die durchsuchbaren Berechnungsschritte aller erklärbaren Werte
+  /// (ARCH-04); gerechnet wird ausschließlich in den Regelmodulen.
+  Future<void> berechnungsschritte({
+    required BuildContext context,
+    required String heroId,
+  });
+
   /// Öffnet die vorhandene Rastbedienung.
   Future<void> rast({required BuildContext context, required String heroId});
 

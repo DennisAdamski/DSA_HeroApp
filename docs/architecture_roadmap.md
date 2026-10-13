@@ -1221,6 +1221,20 @@ Steigerungen.
 Commit: `2da15ee`. Vollständige Suite danach grün (4749 bestanden,
 3 übersprungen).
 
+**Nachtrag 13.10.2026 — Berechnungsschritte durchsuchbar (Nutzerwunsch).**
+Ein (i) neben „Regeln nachschlagen“ öffnet alle Herleitungen des Helden in
+einem durchsuchbaren Dialog: im Heldenbogen, in der UI2-Verwaltung und in
+UI2 zusätzlich in der Navigation (in allen drei Arbeitsbereichen; schmal in
+der Kopfleiste). Regeln: `herleitung_uebersicht_rules.dart`
+(`sammleHerleitungen`, `filtereHerleitungen`); Dialog
+`herleitung_suche_dialog.dart`; Brücke `KartoBestandsAdapter.berechnungsschritte`.
+Gezeigt wird der gespeicherte Stand; ein ungespeicherter Kampf-Entwurf
+erscheint weiterhin nur in den Berechnungsschritten des Kampf-Tabs. Neue
+Herleitungen (Talente, Magie, Steigerungen) werden dort ergänzt.
+Prüfungen: `test/rules/herleitung_uebersicht_rules_test.dart`,
+`test/ui/workspace/herleitung_suche_test.dart`, neue Fälle in
+`test/ui2/spielen/karto_spielaktionen_test.dart`.
+
 ## ARCH-05 — Schreibende Aktionen fachlich aufteilen
 
 **Ist-Zustand:** `HeroActions` bündelt unter anderem Erstellung, Normalisierung,

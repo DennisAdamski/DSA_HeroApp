@@ -26,6 +26,7 @@ import 'package:dsa_heldenverwaltung/ui/screens/workspace/inspector/widgets/insp
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/inspector/widgets/inspector_attribute_probes.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/inspector/widgets/inspector_combat_probes.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/inspector/widgets/inspector_dice_log_section.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/workspace/herleitung_suche_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/probe_quick_search.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/rest_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/schaden/schaden_dialog.dart';
@@ -339,6 +340,19 @@ class KartoBestandsAdapterImpl
           child: SettingsScreen(beforeSurfaceChange: vorOberflaechenwechsel),
         ),
       ),
+    );
+  }
+
+  /// Öffnet die durchsuchbaren Berechnungsschritte des Bestands.
+  @override
+  Future<void> berechnungsschritte({
+    required BuildContext context,
+    required String heroId,
+  }) {
+    return _withKartoCompatContext(
+      context,
+      (themedContext) =>
+          showHerleitungsSuche(context: themedContext, heroId: heroId),
     );
   }
 

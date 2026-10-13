@@ -21,6 +21,7 @@ import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_inspector_pa
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_management_body.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_management_coordinator.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/probe_quick_search.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/workspace/herleitung_suche_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/rules_lookup_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_spec.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/settings_screen.dart';
@@ -168,10 +169,18 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
     );
   }
 
-  /// Baut die tab-unabhaengigen Spiel-Aktionen (Probensuche, Regelsuche).
+  /// Baut die tab-unabhaengigen Spiel-Aktionen (Probensuche, Regelsuche,
+  /// Berechnungsschritte).
   List<Widget> _buildGlobalPlayActions() {
     final rulesLookup = _buildRulesLookupAction();
-    return <Widget>[_buildProbeQuickSearchAction(), ?rulesLookup];
+    return <Widget>[
+      _buildProbeQuickSearchAction(),
+      ?rulesLookup,
+      HerleitungsSucheKnopf(
+        heroId: widget.heroId,
+        schluessel: const ValueKey('workspace-herleitung-suche'),
+      ),
+    ];
   }
 
   /// Baut die Aktionsschaltflaechen fuer die AppBar.

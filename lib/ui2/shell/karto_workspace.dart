@@ -165,6 +165,14 @@ class _KartoWorkspaceState extends ConsumerState<KartoWorkspace> {
                       icon: const Icon(Icons.arrow_back),
                     ),
                     actions: [
+                      IconButton(
+                        key: const ValueKey<String>(
+                          'karto-berechnungsschritte',
+                        ),
+                        tooltip: 'Berechnungsschritte',
+                        onPressed: _berechnungsschritte,
+                        icon: const Icon(Icons.info_outline),
+                      ),
                       PopupMenuButton<String>(
                         tooltip: 'Workspace-Menü',
                         onSelected: _menueAktion,
@@ -261,6 +269,12 @@ class _KartoWorkspaceState extends ConsumerState<KartoWorkspace> {
     mainAxisSize: MainAxisSize.min,
     children: [
       _Fussziel(
+        key: const ValueKey<String>('karto-berechnungsschritte'),
+        icon: Icons.info_outline,
+        beschriftung: 'Berechnungsschritte',
+        onTap: _berechnungsschritte,
+      ),
+      _Fussziel(
         icon: Icons.arrow_back,
         beschriftung: 'Heldenauswahl',
         onTap: _zurHeldenwahl,
@@ -312,6 +326,16 @@ class _KartoWorkspaceState extends ConsumerState<KartoWorkspace> {
       () => widget.bestand.probeSuchen(
         context: context,
         ref: ref,
+        heroId: widget.heroId,
+      ),
+    );
+  }
+
+  // Erklärt jeden Wert des Helden; in allen drei Bereichen erreichbar.
+  void _berechnungsschritte() {
+    _laufzeitAktion(
+      () => widget.bestand.berechnungsschritte(
+        context: context,
         heroId: widget.heroId,
       ),
     );
@@ -513,7 +537,12 @@ class _KartoWorkspaceState extends ConsumerState<KartoWorkspace> {
 /// Trefferflaeche bereits mit, und ein zweiter Tooltip gleichen Wortlauts
 /// waere in den Bedientests doppelt vorhanden.
 class _Fussziel extends StatelessWidget {
-  const _Fussziel({required this.icon, required this.beschriftung, this.onTap});
+  const _Fussziel({
+    super.key,
+    required this.icon,
+    required this.beschriftung,
+    this.onTap,
+  });
 
   final IconData icon;
   final String beschriftung;
