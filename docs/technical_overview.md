@@ -1657,6 +1657,19 @@ permanente (ohne temporäre Zauberboni) und effektive Werte aus der
 Herleitung ab, `HeroComputedSnapshot.eigenschaftHerleitungen` trägt die
 effektive. Beide Modifikatordialoge zeigen Herleitungen über
 `HerleitungsAbschnitt` (`ui/screens/hero_overview/herleitung_abschnitt.dart`).
+Die Kampfvorschau folgt seit Teilstand 3 demselben Muster:
+`kampf_herleitung_rules.dart` (RS, BE Kampf, eBE, AT/FK, PA, TP-Zuschlag)
+und `kampf_ini_herleitung_rules.dart` (Helden-, Waffen- und Kampf-INI,
+Ausweichen) ordnen die Bausteine aus `computeCombatPreviewStats` als Schritte
+an; die Endwerte werden dort abgelesen (`CombatPreviewStats.herleitungen`,
+für eine Nebenhandwaffe `OffhandCombatPreview.herleitungen`, berechnet im
+Teil `combat_offhand_preview_rules.dart`). Untergrenzen (Helden-INI,
+Kampf-INI, Ausweichen, RS, BE) und die Obergrenze 0 der eBE erscheinen als
+Begrenzungsschritte, die höhere Waffen-INI einer Nebenhandwaffe als eigener
+Schritt. Die „Berechnungsschritte“ des Kampf-Tabs
+(`ui/screens/hero_combat/kampf_herleitung_details.dart`) zeigen nur diese
+Herleitungen über `HerleitungsSchritte`; die Ladezeit bleibt eine
+Aufzählung, weil Halbierung und Teilung nicht additiv sind.
 
 **Zukauf-Grenzen:** `lib/rules/derived/bought_stat_limit_rules.dart`
 begrenzt den AP-Zukauf im Steigerungsdialog fuer Grundwerte. LeP duerfen bis

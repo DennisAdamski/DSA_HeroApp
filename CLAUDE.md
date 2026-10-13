@@ -308,9 +308,14 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   Vervielfachungen sind eigene Ausgleichsschritte. Basiswerte kommen aus
   `computeBasiswertHerleitungen` und liegen in `DerivedStats.herleitungen`,
   Eigenschaften aus `computeEigenschaftHerleitungen`
-  (`HeroComputedSnapshot.eigenschaftHerleitungen`); angezeigt über
-  `HerleitungsAbschnitt` (`ui/screens/hero_overview/herleitung_abschnitt.dart`);
-  die Oberfläche zeigt sie an und rechnet **nie** selbst Modifikatoren
+  (`HeroComputedSnapshot.eigenschaftHerleitungen`), die Kampfvorschau aus
+  `kampf_herleitung_rules.dart`/`kampf_ini_herleitung_rules.dart`
+  (`CombatPreviewStats.herleitungen`, Nebenhandwaffe in
+  `OffhandCombatPreview.herleitungen`; AT, PA, TP, INI, Ausweichen, RS, BE und
+  eBE werden dort abgelesen). Angezeigt über `HerleitungsAbschnitt`/
+  `HerleitungsSchritte` (`ui/screens/hero_overview/herleitung_abschnitt.dart`)
+  und `KampfHerleitungDetails` (`ui/screens/hero_combat/`); die Oberfläche
+  zeigt sie an und rechnet **nie** selbst Modifikatoren
   zusammen. Stand und nächste Bereiche: Roadmap ARCH-04.
 - Fachlich benannte Anwendungsablaeufe (ARCH-05) liegen in `lib/ablaeufe/`:
   ohne Riverpod und Flutter, Abhaengigkeiten per Konstruktor, aus `data/`

@@ -43,8 +43,7 @@ class HerleitungsAbschnitt extends StatelessWidget {
             ),
           ),
         ),
-        for (final schritt in herleitung.sichtbareSchritte)
-          _SchrittZeile(schritt: schritt),
+        HerleitungsSchritte(herleitung: herleitung),
         const Divider(height: kDialogSectionSpacing * 2),
         HerleitungsZeile(
           key: ergebnisKey,
@@ -53,6 +52,31 @@ class HerleitungsAbschnitt extends StatelessWidget {
           fett: true,
           vorzeichen: false,
         ),
+      ],
+    );
+  }
+}
+
+/// Die sichtbaren Schritte einer [Herleitung] mit Rechenweg, Quelle und
+/// Bedingung, ohne Überschrift und Ergebniszeile.
+///
+/// Gemeinsam genutzt von [HerleitungsAbschnitt] und den Berechnungsschritten
+/// der Kampfvorschau; rechnet nichts.
+class HerleitungsSchritte extends StatelessWidget {
+  /// Erzeugt die Liste der sichtbaren Schritte von [herleitung].
+  const HerleitungsSchritte({super.key, required this.herleitung});
+
+  /// Anzuzeigende Herleitung.
+  final Herleitung herleitung;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        for (final schritt in herleitung.sichtbareSchritte)
+          _SchrittZeile(schritt: schritt),
       ],
     );
   }

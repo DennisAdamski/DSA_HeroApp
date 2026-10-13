@@ -43,7 +43,7 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
         artifactSummaryCard,
       ],
       const SizedBox(height: 12),
-      buildWeaponCalculationDetails(preview: preview, isEditing: isEditing),
+      KampfHerleitungDetails(preview: preview),
       if (isEditing) ...[
         const SizedBox(height: 12),
         _buildManualModifiersCard(manual: manual),
