@@ -7,6 +7,7 @@ import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/attribute_start_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/combat_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/eigenschaft_herleitung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_wirkung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_stat_inputs.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
@@ -34,6 +35,7 @@ class HeroComputedSnapshot {
     this.inventoryAttributeMods = const AttributeModifiers(),
     this.inventoryTalentMods = const <String, int>{},
     this.waffenlos = const <WaffenloseKampfwerte>[],
+    this.eigenschaftHerleitungen,
   });
 
   final HeroSheet hero;
@@ -72,6 +74,9 @@ class HeroComputedSnapshot {
   /// Raufen und Ringen als Kampfmittel, nur wenn beide Hände frei sind
   /// (`waffenlos_rules.dart`); sonst leer.
   final List<WaffenloseKampfwerte> waffenlos;
+
+  /// Herleitung der [effectiveAttributes] je Eigenschaft (ARCH-04).
+  final EigenschaftHerleitungen? eigenschaftHerleitungen;
 }
 
 /// Setzt den [HeroComputedSnapshot] aus Sheet, State und Katalog zusammen.
@@ -171,5 +176,6 @@ HeroComputedSnapshot buildHeroComputedSnapshot({
     inventoryAttributeMods: inventoryMods.attributeMods,
     inventoryTalentMods: inventoryMods.talentMods,
     waffenlos: waffenlos,
+    eigenschaftHerleitungen: inputs.eigenschaftHerleitungen,
   );
 }

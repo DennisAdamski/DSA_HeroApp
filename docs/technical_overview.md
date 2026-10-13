@@ -1651,6 +1651,12 @@ temporär, Inventar, Wunden); passt die Aufteilung nach Herkunft nicht exakt
 zur Textsumme, erscheint der Textanteil als ein Schritt, der Wert ändert sich
 nie. Die Basiswerttabelle der Übersicht liest Start (Grundwert) und
 Modifikator aus der Herleitung, der Modifikatordialog zeigt sie vollständig.
+Die Eigenschaften folgen demselben Muster (`computeEigenschaftHerleitungen`,
+`eigenschaft_herleitung_rules.dart`): `computeHeroStatInputs` liest
+permanente (ohne temporäre Zauberboni) und effektive Werte aus der
+Herleitung ab, `HeroComputedSnapshot.eigenschaftHerleitungen` trägt die
+effektive. Beide Modifikatordialoge zeigen Herleitungen über
+`HerleitungsAbschnitt` (`ui/screens/hero_overview/herleitung_abschnitt.dart`).
 
 **Zukauf-Grenzen:** `lib/rules/derived/bought_stat_limit_rules.dart`
 begrenzt den AP-Zukauf im Steigerungsdialog fuer Grundwerte. LeP duerfen bis

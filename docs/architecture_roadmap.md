@@ -1056,8 +1056,8 @@ ihre Basis, Modifikatoren, Bedingungen und Quellen.
 - [ ] Ein gemeinsames Ergebnisformat für Regelherleitungen einführen und
   schrittweise auf Basiswerte, Kampf, Talente, Magie und Steigerungen anwenden.
   Die UI zeigt die Herleitung aus dem Regelmodul, ohne sie selbst nachzurechnen.
-  *(Format und Basiswerte seit Teilstand 1; Eigenschaften, Kampf, Talente,
-  Magie und Steigerungen offen.)*
+  *(Format und Basiswerte seit Teilstand 1, Eigenschaften seit Teilstand 2;
+  Kampf, Talente, Magie und Steigerungen offen.)*
 
 **Abnahme:** Zwei Helden mit verschiedenen Profilen können parallel geöffnet
 werden, ohne einander zu beeinflussen. Gleiche Eingaben und Regelversionen
@@ -1132,10 +1132,34 @@ Start statt im Modifikator; der Dialog listete eine eigene Quellenliste.
   (`bestandshelden_regelwerte_test.dart`) sind unverändert grün; kein Modell
   und kein JSON-Format geändert.
 
-*Nächste Schritte.* Eigenschaften (gleiches Muster im Eigenschaftsdialog),
-dann die Kampfvorschau (AT/PA/FK je Waffe, INI, Ausweichen, RS/BE), danach
-Talente, Magie und Steigerungen. Das Regelprofil folgt als eigener
-Teilumfang nach den Entscheidungen oben.
+*Nächste Schritte.* ~~Eigenschaften~~ (Teilstand 2), dann die
+Kampfvorschau (AT/PA/FK je Waffe, INI, Ausweichen, RS/BE), danach Talente,
+Magie und Steigerungen. Das Regelprofil folgt als eigener Teilumfang nach
+den Entscheidungen oben.
+
+Commit: `365e3b2`. Vollständige Suite danach grün (4710 bestanden,
+3 übersprungen).
+
+**Teilstand 2, 13.10.2026 — Eigenschaften.** `computeEigenschaftHerleitungen`
+(`eigenschaft_herleitung_rules.dart`) leitet jede Eigenschaft aus dem
+eingetragenen Wert, Rasse/Kultur/Profession/Vor-/Nachteilen, jedem eigenen
+Modifikator, Inventar und (nur für die effektiven Werte) temporären
+Zauberboni her. `computeHeroStatInputs` liest permanente und effektive
+Eigenschaften daraus ab, statt Modifikatoren selbst zu addieren; die
+effektive Herleitung steht in `HeroComputedSnapshot.eigenschaftHerleitungen`.
+Der Eigenschaftsdialog der Übersicht zeigt sie; beide Modifikatordialoge
+teilen dafür `HerleitungsAbschnitt`
+(`ui/screens/hero_overview/herleitung_abschnitt.dart`), die Übersicht ruft
+`computeModifierSourceBreakdown` nicht mehr selbst auf. Wundbedingte
+Eigenschaftsverluste bleiben bewusst außerhalb (sie gelten nur für Proben,
+`probenEigenschaften`).
+
+*Prüfungen.* `test/rules/eigenschaft_herleitung_rules_test.dart`
+(Quellen, Zauberschritt nur mit temporären Boni, Rückfall bei unpassender
+Aufteilung; für alle Bestandshelden gleicht die Herleitung den effektiven
+Werten und ist nach Herkunft aufgeteilt) und ein Widgettest für den
+Eigenschaftsdialog in `basiswert_herleitung_anzeige_test.dart`. Gepinnte
+Regelwerte der Bestandshelden unverändert.
 
 ## ARCH-05 — Schreibende Aktionen fachlich aufteilen
 
