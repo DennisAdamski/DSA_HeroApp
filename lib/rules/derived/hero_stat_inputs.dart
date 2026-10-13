@@ -5,6 +5,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
 
+import 'basiswert_herleitung_rules.dart';
 import 'derived_stats.dart';
 import 'epic_main_attribute_rules.dart';
 import 'inventory_modifier_rules.dart';
@@ -21,12 +22,17 @@ class HeroStatInputs {
     required this.permanent,
     required this.effective,
     required this.wounds,
+    this.textAufteilung,
   });
   final ModifierParseResult parsed;
   final InventoryModifierAggregation inventory;
   final Attributes permanent;
   final Attributes effective;
   final WundEffekte wounds;
+
+  /// Textmodifikatoren nach Rasse, Kultur, Profession und Vor-/Nachteilen,
+  /// nur für die Herleitung der Basiswerte (ARCH-04).
+  final List<StatModifikatorQuelle>? textAufteilung;
 
   /// Eigenschaftswerte für Proben: [effective] abzüglich der wundbedingten
   /// Eigenschaftsverluste. Abgeleitete Werte rechnen nie damit (WdS S. 111).
@@ -42,6 +48,7 @@ class HeroStatInputs {
         permanentAttributes: permanent,
         inventoryStatMods: inventory.statMods,
         wundStatMods: wundEffekteToStatModifiers(wounds),
+        textAufteilung: textAufteilung,
       );
 }
 
@@ -90,6 +97,9 @@ HeroStatInputs computeHeroStatInputs({
     permanent: permanent,
     effective: effective,
     wounds: wundEffekte,
+    textAufteilung: herkunftsQuellen(
+      computeModifierSourceBreakdown(hero, catalog: catalog),
+    ),
   );
 }
 
