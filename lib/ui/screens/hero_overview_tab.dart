@@ -24,6 +24,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/epic_main_attribute_rules.dar
 import 'package:dsa_heldenverwaltung/rules/derived/epic_status_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/editor_entwurf_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/herleitung.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_herkunft_bearbeitung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_herkunft_migration_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_anzeige_rules.dart';
@@ -634,9 +635,11 @@ class _DerivedRow {
     required this.variableName,
     required this.statKey,
     required this.current,
+    required this.start,
     required this.modifier,
     this.bought,
     this.boughtKey,
+    this.herleitung,
   });
 
   final String label;
@@ -645,9 +648,17 @@ class _DerivedRow {
   /// Schluessel fuer benannte Modifikatoren (z.B. 'lep', 'au', 'iniBase').
   final String statKey;
   final int current;
+
+  /// Grundwert aus der Herleitung (Spalte „Start“).
+  final int start;
+
+  /// Alles außer Grundwert und Zukauf (Spalte „Modifikator“).
   final int modifier;
   final int? bought;
   final String? boughtKey;
+
+  /// Herleitung des Regelmoduls, im Modifikatordialog angezeigt (ARCH-04).
+  final Herleitung? herleitung;
 }
 
 class _SectionCard extends StatelessWidget {

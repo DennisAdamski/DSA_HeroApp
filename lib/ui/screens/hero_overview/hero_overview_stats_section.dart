@@ -114,99 +114,81 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
     HeroComputedSnapshot snapshot,
     HeroResourceActivation resourceActivation,
   ) {
-    // Derselbe Parse wie im Snapshot (mit Katalog, ARCH-02).
-    final parsed = snapshot.modifierParse;
-    final namedStatMods = aggregateNamedStatModifiers(hero.statModifiers);
-    final totalMods =
-        hero.persistentMods +
-        namedStatMods +
-        parsed.statMods +
-        state.tempMods +
-        snapshot.inventoryStatMods;
     final debugModus = ref.read(debugModusProvider);
+    // Start, Modifikator und Zukauf liest die Tabelle aus der Herleitung des
+    // Regelmoduls (ARCH-04); sie rechnet nichts selbst nach.
+    _DerivedRow zeile(
+      String label,
+      String variableName,
+      String statKey,
+      int current, {
+      int? bought,
+      String? boughtKey,
+    }) {
+      final herleitung = derived.herleitungen?.fuer(statKey);
+      final start = herleitung?.summeVon(HerleitungsArt.grundwert) ?? current;
+      final zukauf = herleitung?.summeVon(HerleitungsArt.zukauf) ?? 0;
+      return _DerivedRow(
+        label: label,
+        variableName: variableName,
+        statKey: statKey,
+        current: current,
+        start: start,
+        modifier: current - start - zukauf,
+        bought: bought,
+        boughtKey: boughtKey,
+        herleitung: herleitung,
+      );
+    }
+
     final entries = <_DerivedRow>[
-      _DerivedRow(
-        label: 'LeP',
-        variableName: 'maxLep',
-        statKey: 'lep',
-        current: derived.maxLep,
-        modifier: totalMods.lep + _cappedLevel(hero.level),
+      zeile(
+        'LeP',
+        'maxLep',
+        'lep',
+        derived.maxLep,
         bought: hero.bought.lep,
         boughtKey: 'b_lep',
       ),
-      _DerivedRow(
-        label: 'Au',
-        variableName: 'maxAu',
-        statKey: 'au',
-        current: derived.maxAu,
-        modifier: totalMods.au + hero.level * 2,
+      zeile(
+        'Au',
+        'maxAu',
+        'au',
+        derived.maxAu,
         bought: hero.bought.au,
         boughtKey: 'b_au',
       ),
       if (resourceActivation.magic.isEnabled)
-        _DerivedRow(
-          label: 'AsP',
-          variableName: 'maxAsp',
-          statKey: 'asp',
-          current: derived.maxAsp,
-          modifier: totalMods.asp + hero.level * 2,
+        zeile(
+          'AsP',
+          'maxAsp',
+          'asp',
+          derived.maxAsp,
           bought: hero.bought.asp,
           boughtKey: 'b_asp',
         ),
       if (resourceActivation.divine.isEnabled)
-        _DerivedRow(
-          label: 'KaP',
-          variableName: 'maxKap',
-          statKey: 'kap',
-          current: derived.maxKap,
-          modifier: totalMods.kap,
+        zeile(
+          'KaP',
+          'maxKap',
+          'kap',
+          derived.maxKap,
           bought: hero.bought.kap,
           boughtKey: 'b_kap',
         ),
-      _DerivedRow(
-        label: 'MR',
-        variableName: 'mr',
-        statKey: 'mr',
-        current: derived.mr,
-        modifier: totalMods.mr,
+      zeile(
+        'MR',
+        'mr',
+        'mr',
+        derived.mr,
         bought: hero.bought.mr,
         boughtKey: 'b_mr',
       ),
-      _DerivedRow(
-        label: 'Ini-Basis',
-        variableName: 'iniBase',
-        statKey: 'iniBase',
-        current: derived.iniBase,
-        modifier: totalMods.iniBase,
-      ),
-      _DerivedRow(
-        label: 'AT-Basis',
-        variableName: 'atBase',
-        statKey: 'at',
-        current: derived.atBase,
-        modifier: totalMods.at,
-      ),
-      _DerivedRow(
-        label: 'PA-Basis',
-        variableName: 'paBase',
-        statKey: 'pa',
-        current: derived.paBase,
-        modifier: totalMods.pa,
-      ),
-      _DerivedRow(
-        label: 'FK-Basis',
-        variableName: 'fkBase',
-        statKey: 'fk',
-        current: derived.fkBase,
-        modifier: totalMods.fk,
-      ),
-      _DerivedRow(
-        label: 'GS',
-        variableName: 'gs',
-        statKey: 'gs',
-        current: derived.gs,
-        modifier: totalMods.gs,
-      ),
+      zeile('Ini-Basis', 'iniBase', 'iniBase', derived.iniBase),
+      zeile('AT-Basis', 'atBase', 'at', derived.atBase),
+      zeile('PA-Basis', 'paBase', 'pa', derived.paBase),
+      zeile('FK-Basis', 'fkBase', 'fk', derived.fkBase),
+      zeile('GS', 'gs', 'gs', derived.gs),
     ];
 
     final showStart = _editController.isEditing;
@@ -240,10 +222,7 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
               false,
             ),
             if (showStart)
-              _buildDerivedValueCell(
-                value: (entry.current - entry.modifier - (entry.bought ?? 0))
-                    .toString(),
-              ),
+              _buildDerivedValueCell(value: entry.start.toString()),
             _buildTappableStatModifierCell(entry, hero, state, snapshot),
             _buildDerivedValueCell(value: entry.current.toString()),
             _buildDerivedBoughtCell(entry),
@@ -782,10 +761,7 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
             if (showStart)
               _buildStatCardFieldRow(
                 label: 'Start',
-                value: _buildDerivedValueCell(
-                  value: (entry.current - entry.modifier - (entry.bought ?? 0))
-                      .toString(),
-                ),
+                value: _buildDerivedValueCell(value: entry.start.toString()),
               ),
             _buildStatCardFieldRow(
               label: 'Modifikator',
@@ -808,16 +784,6 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
         ),
       ),
     );
-  }
-
-  int _cappedLevel(int level) {
-    if (level < 0) {
-      return 0;
-    }
-    if (level > 21) {
-      return 21;
-    }
-    return level;
   }
 
   // ---------------------------------------------------------------------------
@@ -919,53 +885,15 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
     if (!darfBearbeiten || !mounted) {
       return;
     }
-    final breakdown = computeModifierSourceBreakdown(
-      hero,
-      catalog: ref.read(rulesCatalogProvider).valueOrNull,
-    );
     final statKey = entry.statKey;
     final namedMods = hero.statModifiers[statKey] ?? const [];
-
-    // Level-basierte Boni.
-    int levelBonus = 0;
-    if (statKey == 'lep') {
-      levelBonus = _cappedLevel(hero.level);
-    } else if (statKey == 'au' || statKey == 'asp') {
-      levelBonus = hero.level * 2;
-    }
-
-    final sources = <ModifierSourceEntry>[
-      (label: 'Rasse', value: statModValue(breakdown.rasseStatMods, statKey)),
-      (label: 'Kultur', value: statModValue(breakdown.kulturStatMods, statKey)),
-      (
-        label: 'Profession',
-        value: statModValue(breakdown.professionStatMods, statKey),
-      ),
-      (
-        label: 'Vorteile',
-        value: statModValue(breakdown.vorteileStatMods, statKey),
-      ),
-      (
-        label: 'Nachteile',
-        value: statModValue(breakdown.nachteileStatMods, statKey),
-      ),
-      // Schnellmodifikatoren aus dem Inspector (`persistentMods`); sie zählen
-      // zur Summe, sind aber keine benannten Einträge dieses Dialogs.
-      (label: 'Inspector', value: statModValue(hero.persistentMods, statKey)),
-      (label: 'Temporaer', value: statModValue(state.tempMods, statKey)),
-      if (levelBonus != 0) (label: 'Level', value: levelBonus),
-      (
-        label: 'Inventar',
-        value: statModValue(snapshot.inventoryStatMods, statKey),
-      ),
-    ];
 
     final result = await showStatModifierDetailDialog(
       context: context,
       statLabel: entry.label,
       namedModifiers: namedMods,
-      parsedSources: sources,
       total: entry.modifier,
+      herleitung: entry.herleitung,
     );
     if (result == null || !mounted) {
       return;

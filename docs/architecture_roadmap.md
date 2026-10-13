@@ -1056,6 +1056,8 @@ ihre Basis, Modifikatoren, Bedingungen und Quellen.
 - [ ] Ein gemeinsames Ergebnisformat für Regelherleitungen einführen und
   schrittweise auf Basiswerte, Kampf, Talente, Magie und Steigerungen anwenden.
   Die UI zeigt die Herleitung aus dem Regelmodul, ohne sie selbst nachzurechnen.
+  *(Format und Basiswerte seit Teilstand 1; Eigenschaften, Kampf, Talente,
+  Magie und Steigerungen offen.)*
 
 **Abnahme:** Zwei Helden mit verschiedenen Profilen können parallel geöffnet
 werden, ohne einander zu beeinflussen. Gleiche Eingaben und Regelversionen
@@ -1070,6 +1072,70 @@ für Profilwechsel, Updatevorschau und Herleitungen ergänzen.
 Wirkungsquellen. Gruppenvererbung gegenüber einer festen Profilkopie, Aufbewahrung
 alter Paketstände und Verhalten bei fehlenden Paketen klären. Import/Export und
 Sync müssen die reproduzierbare Profilzuordnung mittragen.
+
+**Entscheidungen 13.10.2026 (Nutzer).**
+
+- **Reihenfolge:** zuerst das Herleitungsformat (ohne Daten- und
+  Syncänderung), danach Regelprofil und Updatevorschau.
+- **Profilquelle: live von der Gruppe.** Ein Gruppenheld folgt der aktuellen
+  Vorgabe seiner Gruppe; eine geänderte Vorgabe wird ihm als Vorschau
+  angeboten. Das braucht Firestore und ist deshalb unter Windows nicht
+  verfügbar; dort und ohne Gruppe gilt die eigene Auswahl. Offen für den
+  Profilteilumfang: Verhalten bei mehreren Gruppen eines Helden, beim
+  Verlassen der Gruppe und ohne Verbindung.
+- **Paketstand am Helden.** Der Held trägt die Patches seiner Pakete als
+  Kopie und rechnet nach einem App-Update mit dem alten Stand weiter, bis die
+  Vorschau übernommen wird. Ein fehlendes Paket rechnet aus der Kopie weiter
+  und zeigt einen Hinweis. Der Basiskatalog selbst wird nicht eingefroren.
+
+**Teilstand 1, 13.10.2026 — Herleitungsformat und Basiswerte.** Der dritte
+Unterpunkt ist begonnen, der Hauptpunkt bleibt offen.
+
+*Befund.* Die Basiswerttabelle der Übersicht rechnete „Modifikator“ und
+„Start“ selbst nach (`totalMods` ohne Wunden, eigener Level-Anteil, Start als
+Differenz). Dadurch erschienen Kampfreflexe/Kampfgespür, Wundabzüge, die
+Rüstungsbehinderung der GS und der begrenzte Au-Level epischer Helden im
+Start statt im Modifikator; der Dialog listete eine eigene Quellenliste.
+
+*Umsetzung.*
+
+- **Format:** `Herleitung`/`HerleitungsSchritt`/`HerleitungsArt`
+  (`lib/rules/derived/herleitung.dart`). Der Wert ist die Summe der Schritte;
+  Begrenzungen und Vervielfachungen sind eigene Ausgleichsschritte. Damit
+  stimmen angezeigte Herleitung und verwendeter Wert per Konstruktion überein.
+- **Basiswerte:** `computeBasiswertHerleitungen`
+  (`basiswert_herleitung_rules.dart`) für LeP, Au, AsP, KaP, MR, INI-Basis,
+  AT/PA/FK-Basis, GS und Ausweichen. `computeDerivedStatsFromInputs` liest
+  die Werte dort ab und legt die Herleitungen in `DerivedStats.herleitungen`.
+  Die Grundwertformeln sind als `grundwert*`-Funktionen herausgezogen und
+  werden von den bisherigen `compute*`-Funktionen mitbenutzt.
+- **Quellen:** jeder eigene Modifikator einzeln mit seinem Text, der
+  Textanteil nach Rasse, Kultur, Profession, Vor- und Nachteilen
+  (`HeroStatInputs.textAufteilung`). Passt die Aufteilung nicht exakt, bleibt
+  der Textanteil ein Schritt.
+- **Oberfläche:** Die Basiswerttabelle liest Start und Modifikator aus der
+  Herleitung, der Modifikatordialog zeigt sie samt Formel, Quelle und
+  Ergebnis. Sichtbare Änderung: Sonderfertigkeiten, Wunden und Behinderung
+  stehen jetzt in der Modifikatorspalte; die Summe ist unverändert.
+
+*Prüfungen.*
+
+- `test/rules/basiswert_herleitung_rules_test.dart` (17 Proben): Format,
+  Untergrenze, Gleichheit mit den Einzelformeln, eigene Modifikatoren nur am
+  eigenen Wert, Kampfreflexe/Kampfgespür als SF-Schritte, GS mit Axxeleratus
+  und Wundgrenze, Rückfall bei unpassender Aufteilung; für alle zehn
+  Bestandshelden mit Wunde zerlegen die Modifikatorschritte genau
+  `DerivedStats.modifiers`, und der Textanteil ist nach Herkunft aufgeteilt.
+- `test/ui/overview/basiswert_herleitung_anzeige_test.dart`: INI-Modifikator
+  mit Kampfreflexe (vorher 0), Dialog mit Formel, Quelle und Ergebnis.
+- Die gepinnten Regelwerte der Bestandshelden
+  (`bestandshelden_regelwerte_test.dart`) sind unverändert grün; kein Modell
+  und kein JSON-Format geändert.
+
+*Nächste Schritte.* Eigenschaften (gleiches Muster im Eigenschaftsdialog),
+dann die Kampfvorschau (AT/PA/FK je Waffe, INI, Ausweichen, RS/BE), danach
+Talente, Magie und Steigerungen. Das Regelprofil folgt als eigener
+Teilumfang nach den Entscheidungen oben.
 
 ## ARCH-05 — Schreibende Aktionen fachlich aufteilen
 

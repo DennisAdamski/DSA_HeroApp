@@ -298,6 +298,13 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   ueberhaupt feuern und wie breit `dart format` umbricht — ein SDK-Bump zieht
   beides nach sich.
 - Regellogik gehoert nach `lib/rules/derived/`.
+- Erklärbare Werte (ARCH-04) liefern Regelmodule als `Herleitung`
+  (`lib/rules/derived/herleitung.dart`): additive Schritte mit Art, Formel,
+  Quelle und Bedingung, der Wert ist die Summe. Begrenzungen und
+  Vervielfachungen sind eigene Ausgleichsschritte. Basiswerte kommen aus
+  `computeBasiswertHerleitungen` und liegen in `DerivedStats.herleitungen`;
+  die Oberfläche zeigt sie an und rechnet **nie** selbst Modifikatoren
+  zusammen. Stand und nächste Bereiche: Roadmap ARCH-04.
 - Fachlich benannte Anwendungsablaeufe (ARCH-05) liegen in `lib/ablaeufe/`:
   ohne Riverpod und Flutter, Abhaengigkeiten per Konstruktor, aus `data/`
   nur die `HeroRepository`-Schnittstelle — der Waechter

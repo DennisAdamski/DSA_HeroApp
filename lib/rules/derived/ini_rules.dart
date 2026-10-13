@@ -1,24 +1,31 @@
+import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/excel_rounding.dart';
 
+/// INI-Grundwert aus Eigenschaften: round((MU+MU+IN+GE)/5).
+int grundwertIni(Attributes a) => excelRound((a.mu + a.mu + a.inn + a.ge) / 5);
+
+/// INI-Basisbonus der Sonderfertigkeit Kampfreflexe.
+const int kKampfreflexeIniBonus = 4;
+
+/// INI-Basisbonus der Sonderfertigkeit Kampfgespür.
+const int kKampfgespuerIniBonus = 2;
+
 // INI-Basiswert aus Eigenschaften: round((MU+MU+IN+GE)/5) + Mod.
 int computeIniBase(HeroSheet sheet, StatModifiers mods) {
-  final mu = sheet.attributes.mu;
-  final inn = sheet.attributes.inn;
-  final ge = sheet.attributes.ge;
-  return excelRound((mu + mu + inn + ge) / 5) + mods.iniBase;
+  return grundwertIni(sheet.attributes) + mods.iniBase;
 }
 
 // INI-Basis-Modifikatoren aus Kampfsonderfertigkeiten.
 int computeIniBaseBonus(CombatSpecialRules special) {
   var total = 0;
   if (special.kampfreflexe) {
-    total += 4;
+    total += kKampfreflexeIniBonus;
   }
   if (special.kampfgespuer) {
-    total += 2;
+    total += kKampfgespuerIniBonus;
   }
   return total;
 }

@@ -1633,6 +1633,25 @@ Basiswerte. Armgebundene Wundabzüge rechnet erst die Waffe im jeweiligen Arm
 an, wundbedingte Eigenschaftsverluste gelten nur für Proben
 (`probenEigenschaften`, siehe „Zonenwunden nach WdS“ unten).
 
+**Herleitungen (ARCH-04).** Die Basiswerte entstehen als `Herleitung`
+(`lib/rules/derived/herleitung.dart`): eine geordnete Folge additiver
+`HerleitungsSchritt`e mit Art (Grundwert, Zukauf, Stufe, Modifikator,
+Sonderfertigkeit, Zauber, Begrenzung), Formel mit eingesetzten Werten,
+Quelle und Bedingung. Der Endwert ist **per Konstruktion** die Summe der
+Schritte; Untergrenzen, die Axxeleratus-Verdopplung und die Wundgrenze der
+GS erscheinen als eigene Ausgleichsschritte. `computeBasiswertHerleitungen`
+(`basiswert_herleitung_rules.dart`) baut alle Basiswerte;
+`computeDerivedStatsFromInputs` liest die Werte dort ab und legt die
+Herleitungen in `DerivedStats.herleitungen`. Die Grundwertformeln liegen als
+`grundwertLep`, `grundwertAt` usw. neben den bisherigen `compute*`-Funktionen,
+damit beide dieselbe Formel benutzen. Die Modifikatorquellen sammelt
+`sammleStatModifikatorQuellen` (Inspector, jeder eigene Modifikator einzeln,
+Rasse/Kultur/Profession/Vor-/Nachteile aus `computeModifierSourceBreakdown`,
+temporär, Inventar, Wunden); passt die Aufteilung nach Herkunft nicht exakt
+zur Textsumme, erscheint der Textanteil als ein Schritt, der Wert ändert sich
+nie. Die Basiswerttabelle der Übersicht liest Start (Grundwert) und
+Modifikator aus der Herleitung, der Modifikatordialog zeigt sie vollständig.
+
 **Zukauf-Grenzen:** `lib/rules/derived/bought_stat_limit_rules.dart`
 begrenzt den AP-Zukauf im Steigerungsdialog fuer Grundwerte. LeP duerfen bis
 `floor(KO / 2)`, Au bis `KO` und MR bis `floor(MU / 2)` gekauft werden. Fuer
