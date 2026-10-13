@@ -144,6 +144,14 @@ List<HerleitungsEintrag> sammleHerleitungen({
     );
     neu('kampf-pa', bereich, 'Parade (PA)', k.paMitIniParade);
     neu(
+      'kampf-schild-pa',
+      bereich,
+      kampf.offhandName.trim().isEmpty
+          ? 'Schild-Parade'
+          : 'Schild-Parade – ${kampf.offhandName.trim()}',
+      k.schildPa,
+    );
+    neu(
       'kampf-tp',
       bereich,
       'Trefferpunkte (TP)',

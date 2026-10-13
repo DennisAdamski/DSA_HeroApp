@@ -166,6 +166,33 @@ void main() {
     expect(_betraege(tester, 'AT-Basis').length, 2);
   });
 
+  testWidgets('Schild-Parade erscheint mit Schild-WM und SF', (tester) async {
+    final held = _held.copyWith(
+      combatConfig: _held.combatConfig.copyWith(
+        offhandAssignment: const OffhandAssignment(equipmentIndex: 0),
+        offhandEquipment: const <OffhandEquipmentEntry>[
+          OffhandEquipmentEntry(
+            name: 'Holzschild',
+            type: OffhandEquipmentType.shield,
+            paMod: 3,
+          ),
+        ],
+        specialRules: const CombatSpecialRules(schildkampfI: true),
+      ),
+    );
+    final c = computeCombatPreviewStats(
+      held,
+      _mitAxx,
+      catalogTalents: _katalog.talents,
+    );
+    await _zeigeDetails(tester, c, titel: 'Berechnungsschritte (Haupthand)');
+
+    expect(find.text('Schild-Parade'), findsOneWidget);
+    expect(find.text('= ${c.shieldPa}'), findsWidgets);
+    expect(_betraege(tester, 'Schild-WM'), <int>[3]);
+    expect(_betraege(tester, 'SF Schildkampf'), <int>[3]);
+  });
+
   testWidgets('der Kampf-Tab öffnet die Herleitung der Vorschau', (
     tester,
   ) async {

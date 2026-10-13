@@ -1658,7 +1658,8 @@ Herleitung ab, `HeroComputedSnapshot.eigenschaftHerleitungen` trägt die
 effektive. Beide Modifikatordialoge zeigen Herleitungen über
 `HerleitungsAbschnitt` (`ui/screens/hero_overview/herleitung_abschnitt.dart`).
 Die Kampfvorschau folgt seit Teilstand 3 demselben Muster:
-`kampf_herleitung_rules.dart` (RS, BE Kampf, eBE, AT/FK, PA, TP-Zuschlag)
+`kampf_herleitung_rules.dart` (RS, BE Kampf, eBE, AT/FK, PA, Schild-PA,
+TP-Zuschlag; die Parierwaffe als WM- und SF-Schritt der PA)
 und `kampf_ini_herleitung_rules.dart` (Helden-, Waffen- und Kampf-INI,
 Ausweichen) ordnen die Bausteine aus `computeCombatPreviewStats` als Schritte
 an; die Endwerte werden dort abgelesen (`CombatPreviewStats.herleitungen`,
