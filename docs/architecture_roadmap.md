@@ -1057,8 +1057,8 @@ ihre Basis, Modifikatoren, Bedingungen und Quellen.
   schrittweise auf Basiswerte, Kampf, Talente, Magie und Steigerungen anwenden.
   Die UI zeigt die Herleitung aus dem Regelmodul, ohne sie selbst nachzurechnen.
   *(Format und Basiswerte seit Teilstand 1, Eigenschaften seit Teilstand 2,
-  Kampfvorschau seit Teilstand 3; Schild-PA, Talente, Magie und Steigerungen
-  offen.)*
+  Kampfvorschau seit Teilstand 3, Schild- und Parierwaffen-PA seit
+  Teilstand 4; Gefechtswerte, Talente, Magie und Steigerungen offen.)*
 
 **Abnahme:** Zwei Helden mit verschiedenen Profilen können parallel geöffnet
 werden, ohne einander zu beeinflussen. Gleiche Eingaben und Regelversionen
@@ -1234,6 +1234,41 @@ Herleitungen (Talente, Magie, Steigerungen) werden dort ergänzt.
 Prüfungen: `test/rules/herleitung_uebersicht_rules_test.dart`,
 `test/ui/workspace/herleitung_suche_test.dart`, neue Fälle in
 `test/ui2/spielen/karto_spielaktionen_test.dart`.
+
+**Teilstand 4, 13.10.2026 — Schild und Parierwaffe (Paket A).**
+Plan der Folgepakete: A Schild-/Parierwaffen-PA in der Kampfvorschau,
+B Gefechtswerte auf denselben Herleitungen, C Zielwert und Erschwernis im
+Gefechtsdialog als Herleitung, D (optional) Begleiter.
+
+*Umsetzung A.* `herleiteSchildPa` (`kampf_herleitung_rules.dart`): PA-Basis,
+Axxeleratus, Schild-WM, SF Schildkampf (Linkhand +1, Schildkampf I +3,
+Schildkampf II +5, Quelle die wirkende SF), eBE-PA-Anteil und Wunden des
+Schildarms. `computeOffhandModifierSnapshot` liest `shieldPa` dort ab und
+nimmt PA-Basis und Axxeleratus getrennt (`paBasis`, `axxeleratusPa`). Die
+Parierwaffe erscheint in der Haupthand-PA als „Nebenhand PA“ (ihr WM) und
+„SF Parierwaffen“ (−4/−1/+2, Quelle die SF). Neu: `KampfHerleitungen.schildPa`,
+Eintrag „Schild-Parade“ in der Berechnungsschritte-Suche und im Kampf-Tab.
+Verhaltensneutral.
+
+*Prüfungen.* `kampf_herleitung_rules_test.dart` (Schild-PA je SF-Stufe mit
+Axxeleratus, Rüstung und Schildarmwunde; Parierwaffe je SF-Stufe; ohne
+Linkhand kein PA-Anteil; Gleichheit mit `shieldPa` für alle Bestandshelden),
+Widgettest für den Abschnitt „Schild-Parade“.
+
+*Regelbefunde vor Paket B (per dsa-rules-MCP geprüft, nicht behoben).*
+
+1. **Ausweichen im Gefecht ohne BE.** WdS S. 67: Ausweichen ist eine Probe
+   auf den PA-Basiswert, „unter anderem um die volle BE der Rüstung
+   erschwert“ (Tabelle „Behinderung +BE“). Die Kampfvorschau zieht die BE ab,
+   das Gefecht (`gefecht_held_rules.dart`, `beKampf: 0`) nirgends; dort ist
+   Ausweichen um die BE zu hoch. Paket B übernimmt die Herleitung der
+   Vorschau und behebt das.
+2. **INI-Bonus auf die Schild-Parade.** Das Gefecht gibt PA, Schild-PA und
+   Ausweichen denselben INI-Bonus (`gefechtsIniBonus`: über 20 +1, über 30
+   +2, über 40 +3), die Vorschau nur PA (ohne Obergrenze) und Ausweichen,
+   nicht der Schild-PA. Eine Quelle für den Bonus fand sich weder in den
+   Regelwerken noch in den Hausregeln; Nutzerentscheidung offen.
+3. Waffenmeister-AT im Fernkampf, siehe Teilstand 3.
 
 ## ARCH-05 — Schreibende Aktionen fachlich aufteilen
 

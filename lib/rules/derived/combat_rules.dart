@@ -550,11 +550,13 @@ CombatPreviewStats computeCombatPreviewStats(
   final offhandModifiers = computeOffhandModifierSnapshot(
     equipment: offhandEquipment,
     specialRules: special,
-    paBase:
-        computePa(effectiveSheet, mods) +
-        computeAxxeleratusPaBaseBonus(axxeleratusActive: axxeleratusActive),
+    paBasis: computePa(effectiveSheet, mods),
+    axxeleratusPa: computeAxxeleratusPaBaseBonus(
+      axxeleratusActive: axxeleratusActive,
+    ),
     schildarmWundMalus: wunden.schildarmAtPaMalus,
     paradeBehinderung: paEbePart,
+    ebe: ebe,
   );
 
   // --- Kampfbasiswerte (kampfbasis_rules) ---
@@ -619,8 +621,12 @@ CombatPreviewStats computeCombatPreviewStats(
           ebeAnteil: paEbePart,
           spezialisierung: paSpecBonus,
           kampfstil: unarmedStyleEffects.paBonus,
-          nebenhand: offhandModifiers.mainPaMod,
+          nebenhand: offhandModifiers.isParryWeapon
+              ? offhandModifiers.parierwaffeWm
+              : offhandModifiers.mainPaMod,
           nebenhandName: offhandModifiers.displayName,
+          parierwaffeSf: offhandModifiers.parierwaffeSf,
+          parierwaffeSfName: offhandModifiers.parierwaffeSfName,
           armWunden: schwertarmWundMalus,
           manuell: manualMods.paMod,
         );
@@ -769,6 +775,7 @@ CombatPreviewStats computeCombatPreviewStats(
       heldenIni: heldenIniHerleitung,
       kampfIni: kampfIniHerleitung,
       ausweichen: ausweichenHerleitung,
+      schildPa: offhandModifiers.schildPaHerleitung,
     ),
     rsTotal: rsTotal,
     armatrutzRsBonus: armatrutzRsBonus,

@@ -25,6 +25,7 @@ class KampfHerleitungen {
     required this.heldenIni,
     required this.kampfIni,
     required this.ausweichen,
+    this.schildPa,
   });
 
   /// Rüstungsschutz einschließlich Modifikatoren und Armatrutz.
@@ -56,6 +57,9 @@ class KampfHerleitungen {
 
   /// Ausweichen in der aktuellen Ausrüstung.
   final Herleitung ausweichen;
+
+  /// Parade mit dem Schild; `null` ohne geführten Schild.
+  final Herleitung? schildPa;
 }
 
 /// Herleitungen einer Nebenhandwaffe.
@@ -323,6 +327,9 @@ Herleitung herleiteNahkampfAt({
 }
 
 /// Parade im Nahkampf (Haupt- oder Nebenhand), ohne INI-Parade-Bonus.
+///
+/// Mit Parierwaffe trägt [nebenhand] deren PA-WM und [parierwaffeSf] den
+/// Anteil der Parierwaffen-SF (Quelle [parierwaffeSfName]).
 Herleitung herleiteNahkampfPa({
   required int paBasis,
   int axxeleratus = 0,
@@ -337,6 +344,8 @@ Herleitung herleiteNahkampfPa({
   int kampfstil = 0,
   int nebenhand = 0,
   String? nebenhandName,
+  int parierwaffeSf = 0,
+  String? parierwaffeSfName,
   int falscheHand = 0,
   String? falscheHandLabel,
   int armWunden = 0,
@@ -374,6 +383,8 @@ Herleitung herleiteNahkampfPa({
         nebenhand: nebenhand,
         nebenhandBezeichnung: 'Nebenhand PA',
         nebenhandName: nebenhandName,
+        parierwaffeSf: parierwaffeSf,
+        parierwaffeSfName: parierwaffeSfName,
         falscheHand: falscheHand,
         falscheHandLabel: falscheHandLabel,
         armWunden: armWunden,
@@ -389,6 +400,8 @@ List<HerleitungsSchritt> _zusatzSchritte({
   required int nebenhand,
   required String nebenhandBezeichnung,
   required String? nebenhandName,
+  int parierwaffeSf = 0,
+  String? parierwaffeSfName,
   required int falscheHand,
   required String? falscheHandLabel,
   required int armWunden,
@@ -408,6 +421,12 @@ List<HerleitungsSchritt> _zusatzSchritte({
       quelle: _text(nebenhandName),
     ),
     HerleitungsSchritt(
+      bezeichnung: 'SF Parierwaffen',
+      betrag: parierwaffeSf,
+      art: HerleitungsArt.sonderfertigkeit,
+      quelle: parierwaffeSfName ?? 'ohne Parierwaffen-SF',
+    ),
+    HerleitungsSchritt(
       bezeichnung: _text(falscheHandLabel) ?? 'Falsche Hand',
       betrag: falscheHand,
       art: HerleitungsArt.modifikator,
@@ -424,6 +443,64 @@ List<HerleitungsSchritt> _zusatzSchritte({
       art: HerleitungsArt.modifikator,
     ),
   ];
+}
+
+/// Parade mit dem Schild (WdS S. 70 f.): PA-Basis, Schild-WM, Bonus aus
+/// Linkhand oder Schildkampf, PA-Anteil der eBE und Wunden des Schildarms.
+Herleitung herleiteSchildPa({
+  required int paBasis,
+  int axxeleratus = 0,
+  required int schildWm,
+  String? schildName,
+  required int sfBonus,
+  String? sfName,
+  required int ebe,
+  required int ebeAnteil,
+  int armWunden = 0,
+}) {
+  return Herleitung(
+    bezeichnung: 'Schild-PA',
+    schritte: <HerleitungsSchritt>[
+      HerleitungsSchritt(
+        bezeichnung: 'PA-Basis',
+        betrag: paBasis,
+        art: HerleitungsArt.grundwert,
+        quelle: 'Basiswert',
+      ),
+      HerleitungsSchritt(
+        bezeichnung: 'Axxeleratus PA',
+        betrag: axxeleratus,
+        art: HerleitungsArt.zauber,
+        bedingung: 'Axxeleratus aktiv',
+      ),
+      HerleitungsSchritt(
+        bezeichnung: 'Schild-WM',
+        betrag: schildWm,
+        art: HerleitungsArt.modifikator,
+        quelle: _text(schildName),
+      ),
+      HerleitungsSchritt(
+        bezeichnung: 'SF Schildkampf',
+        betrag: sfBonus,
+        art: HerleitungsArt.sonderfertigkeit,
+        formel: 'Linkhand +1, Schildkampf I +3, Schildkampf II +5',
+        quelle: sfName,
+      ),
+      HerleitungsSchritt(
+        bezeichnung: 'eBE PA-Anteil',
+        betrag: ebeAnteil,
+        art: HerleitungsArt.modifikator,
+        formel: 'eBE $ebe / 2, von der Null weg gerundet',
+        quelle: 'Behinderung',
+      ),
+      HerleitungsSchritt(
+        bezeichnung: 'Wunden Schildarm',
+        betrag: armWunden,
+        art: HerleitungsArt.modifikator,
+        quelle: 'Wunden',
+      ),
+    ],
+  );
 }
 
 /// Fernkampfwert: genau die Summanden von `computeRangedAtValue`.

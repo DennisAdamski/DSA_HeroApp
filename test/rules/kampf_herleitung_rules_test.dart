@@ -87,6 +87,10 @@ void _pruefeGleichheit(CombatPreviewStats c, {String reason = ''}) {
   expect(h.heldenIni.wert, c.heldenInitiative, reason: '$reason Helden-INI');
   expect(h.kampfIni.wert, c.kampfInitiative, reason: '$reason Kampf-INI');
   expect(h.ausweichen.wert, c.ausweichen, reason: '$reason Ausweichen');
+  expect(h.schildPa == null, !c.offhandIsShield, reason: '$reason Schild');
+  if (h.schildPa case final schild?) {
+    expect(schild.wert, c.shieldPa, reason: '$reason Schild-PA');
+  }
   final neben = c.offhandPreview;
   if (neben != null && neben.isWeapon) {
     final nh = neben.herleitungen!;
@@ -330,6 +334,120 @@ void main() {
       final h = c.herleitungen!;
       expect(c.heldenInitiative, 0);
       expect(_sichtbar(h.heldenIni), contains('Untergrenze 0'));
+      _pruefeGleichheit(c);
+    });
+  });
+
+  group('Schild und Parierwaffe', () {
+    CombatPreviewStats mitNebenhand(
+      OffhandEquipmentEntry ausruestung,
+      CombatSpecialRules sf, {
+      WundEffekte wunden = const WundEffekte(),
+      ArmorConfig ruestung = const ArmorConfig(),
+    }) {
+      return computeCombatPreviewStats(
+        _held(
+          combatConfig: CombatConfig(
+            mainWeapon: const MainWeaponSlot(name: 'Schwert', wmPa: 0),
+            offhandAssignment: const OffhandAssignment(equipmentIndex: 0),
+            offhandEquipment: <OffhandEquipmentEntry>[ausruestung],
+            specialRules: sf,
+            armor: ruestung,
+          ),
+        ),
+        _zustandMitAxx,
+        wunden: wunden,
+      );
+    }
+
+    const schild = OffhandEquipmentEntry(
+      name: 'Holzschild',
+      type: OffhandEquipmentType.shield,
+      paMod: 3,
+    );
+
+    for (final (sf, bonus, name) in <(CombatSpecialRules, int, String?)>[
+      (const CombatSpecialRules(), 0, null),
+      (const CombatSpecialRules(linkhandActive: true), 1, 'Linkhand'),
+      (const CombatSpecialRules(schildkampfI: true), 3, 'Schildkampf I'),
+      (
+        const CombatSpecialRules(schildkampfI: true, schildkampfII: true),
+        5,
+        'Schildkampf II',
+      ),
+    ]) {
+      test('Schild-PA mit SF-Bonus $bonus aus ${name ?? 'keiner SF'}', () {
+        final c = mitNebenhand(
+          schild,
+          sf,
+          wunden: const WundEffekte(schildarmAtPaMalus: -2),
+          ruestung: const ArmorConfig(
+            pieces: <ArmorPiece>[
+              ArmorPiece(name: 'Kettenhemd', isActive: true, rs: 3, be: 3),
+            ],
+          ),
+        );
+        final h = c.herleitungen!.schildPa!;
+        expect(h.bezeichnung, 'Schild-PA');
+        expect(_schritt(h, 'PA-Basis').betrag, c.paBase - 2);
+        expect(_schritt(h, 'Axxeleratus PA').betrag, 2);
+        expect(_schritt(h, 'Schild-WM').betrag, 3);
+        expect(_schritt(h, 'Schild-WM').quelle, 'Holzschild');
+        expect(_schritt(h, 'SF Schildkampf').betrag, bonus);
+        expect(_schritt(h, 'SF Schildkampf').quelle, name);
+        expect(_schritt(h, 'eBE PA-Anteil').betrag, -2);
+        expect(_schritt(h, 'Wunden Schildarm').betrag, -2);
+        expect(c.shieldPaBonus, 3 + bonus);
+        _pruefeGleichheit(c);
+      });
+    }
+
+    for (final (sf, bonus, name) in <(CombatSpecialRules, int, String)>[
+      (
+        const CombatSpecialRules(linkhandActive: true),
+        -4,
+        'ohne Parierwaffen-SF',
+      ),
+      (
+        const CombatSpecialRules(linkhandActive: true, parierwaffenI: true),
+        -1,
+        'Parierwaffen I',
+      ),
+      (
+        const CombatSpecialRules(
+          linkhandActive: true,
+          parierwaffenI: true,
+          parierwaffenII: true,
+        ),
+        2,
+        'Parierwaffen II',
+      ),
+    ]) {
+      test('Parierwaffe: WM und SF $name als getrennte Schritte', () {
+        final c = mitNebenhand(
+          const OffhandEquipmentEntry(name: 'Linkhand-Dolch', paMod: 1),
+          sf,
+        );
+        final pa = c.herleitungen!.pa!;
+        expect(_schritt(pa, 'Nebenhand PA').betrag, 1);
+        expect(_schritt(pa, 'Nebenhand PA').quelle, 'Linkhand-Dolch');
+        expect(_schritt(pa, 'SF Parierwaffen').betrag, bonus);
+        expect(_schritt(pa, 'SF Parierwaffen').quelle, name);
+        expect(c.offhandPaBonus, 1 + bonus);
+        expect(c.herleitungen!.schildPa, isNull);
+        _pruefeGleichheit(c);
+      });
+    }
+
+    test('Parierwaffe ohne Linkhand bringt keinen PA-Anteil', () {
+      final c = mitNebenhand(
+        const OffhandEquipmentEntry(name: 'Linkhand-Dolch', paMod: 1),
+        const CombatSpecialRules(),
+      );
+      final pa = c.herleitungen!.pa!;
+      expect(_schritt(pa, 'Nebenhand PA').betrag, 0);
+      expect(_schritt(pa, 'SF Parierwaffen').betrag, 0);
+      expect(c.offhandRequiresLinkhand, isTrue);
       _pruefeGleichheit(c);
     });
   });
