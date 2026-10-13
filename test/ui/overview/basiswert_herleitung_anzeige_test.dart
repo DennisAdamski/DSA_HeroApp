@@ -45,6 +45,11 @@ HeroSheet _held() => HeroSheet(
       HeroTalentModifier(modifier: 2, description: 'Zäh'),
     ],
   },
+  attributeModifiers: <String, List<HeroTalentModifier>>{
+    'mu': <HeroTalentModifier>[
+      HeroTalentModifier(modifier: 1, description: 'Löwenmut'),
+    ],
+  },
   combatConfig: const CombatConfig(
     specialRules: CombatSpecialRules(kampfreflexe: true),
   ),
@@ -127,6 +132,31 @@ void main() {
     // 21 + Stufe 1 + Zäh 2.
     expect(
       find.descendant(of: ergebnis, matching: find.text('24')),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('der Eigenschaftsdialog zeigt dieselbe Herleitung', (
+    tester,
+  ) async {
+    await zeige(tester);
+    final mu = find.byKey(const ValueKey('overview-effective-mu'));
+    await tester.scrollUntilVisible(
+      mu,
+      240,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
+    // Links auf den Wert tippen; mittig liegt der Würfelknopf der Zelle.
+    await tester.tapAt(tester.getTopLeft(mu) + const Offset(12, 12));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Herleitung (gespeicherter Stand)'), findsOneWidget);
+    expect(find.text('Eingetragener Wert'), findsOneWidget);
+    expect(find.text('Löwenmut'), findsWidgets);
+    final ergebnis = find.byKey(const ValueKey('attr-herleitung-ergebnis'));
+    expect(
+      find.descendant(of: ergebnis, matching: find.text('15')),
       findsOneWidget,
     );
   });

@@ -7,6 +7,7 @@ import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
 
 import 'basiswert_herleitung_rules.dart';
 import 'derived_stats.dart';
+import 'eigenschaft_herleitung_rules.dart';
 import 'epic_main_attribute_rules.dart';
 import 'inventory_modifier_rules.dart';
 import 'modifier_parser.dart';
@@ -23,6 +24,7 @@ class HeroStatInputs {
     required this.effective,
     required this.wounds,
     this.textAufteilung,
+    this.eigenschaftHerleitungen,
   });
   final ModifierParseResult parsed;
   final InventoryModifierAggregation inventory;
@@ -33,6 +35,9 @@ class HeroStatInputs {
   /// Textmodifikatoren nach Rasse, Kultur, Profession und Vor-/Nachteilen,
   /// nur für die Herleitung der Basiswerte (ARCH-04).
   final List<StatModifikatorQuelle>? textAufteilung;
+
+  /// Herleitung der effektiven Eigenschaften ([effective]) (ARCH-04).
+  final EigenschaftHerleitungen? eigenschaftHerleitungen;
 
   /// Eigenschaftswerte für Proben: [effective] abzüglich der wundbedingten
   /// Eigenschaftsverluste. Abgeleitete Werte rechnen nie damit (WdS S. 111).
@@ -67,24 +72,25 @@ HeroStatInputs computeHeroStatInputs({
     talents: talents,
   );
 
-  final namedAttrMods = aggregateNamedAttributeModifiers(
-    hero.attributeModifiers,
-  );
-  // Permanente Attribute ohne temporaere Boni (fuer LeP/Au/AsP-Maxima).
-  // Attributo und aehnliche Zauber-Effekte sollen die Ressourcen-Obergrenzen
-  // nicht veraendern.
-  final permanent = applyAttributeModifiers(
-    hero.attributes,
-    parsed.attributeMods + namedAttrMods + inventoryMods.attributeMods,
-  );
-  // Effektive Attribute inkl. temporaerer Boni (fuer AT/PA/INI/GS/MR/FK).
-  final effective = applyAttributeModifiers(
-    hero.attributes,
-    parsed.attributeMods +
-        namedAttrMods +
-        state.tempAttributeMods +
-        inventoryMods.attributeMods,
-  );
+  final breakdown = computeModifierSourceBreakdown(hero, catalog: catalog);
+  // Eigenschaften als Herleitung (ARCH-04), einmal ohne temporäre Boni:
+  // Attributo und ähnliche Zaubereffekte verändern die Ressourcen-Obergrenzen
+  // (LeP/Au/AsP) nicht, wohl aber AT/PA/INI/GS/MR/FK.
+  EigenschaftHerleitungen eigenschaften({required bool mitTemporaer}) =>
+      computeEigenschaftHerleitungen(
+        gespeichert: hero.attributes,
+        quellen: sammleEigenschaftQuellen(
+          textMods: parsed.attributeMods,
+          eigene: hero.attributeModifiers,
+          textAufteilung: herkunftsEigenschaftQuellen(breakdown),
+          inventar: inventoryMods.attributeMods,
+          temporaer: mitTemporaer ? state.tempAttributeMods : null,
+        ),
+      );
+  final permanent = eigenschaften(mitTemporaer: false)
+      .werteAuf(hero.attributes);
+  final effektiveHerleitungen = eigenschaften(mitTemporaer: true);
+  final effective = effektiveHerleitungen.werteAuf(hero.attributes);
   final wundEffekte = computeHeroWundEffekte(
     hero: hero,
     zustand: state.wpiZustand,
@@ -97,9 +103,8 @@ HeroStatInputs computeHeroStatInputs({
     permanent: permanent,
     effective: effective,
     wounds: wundEffekte,
-    textAufteilung: herkunftsQuellen(
-      computeModifierSourceBreakdown(hero, catalog: catalog),
-    ),
+    textAufteilung: herkunftsQuellen(breakdown),
+    eigenschaftHerleitungen: effektiveHerleitungen,
   );
 }
 

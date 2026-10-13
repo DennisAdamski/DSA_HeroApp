@@ -5,6 +5,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/herleitung.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/config/ui_spacing.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_overview/herleitung_abschnitt.dart';
 
 /// Eintrag fuer eine read-only Modifikatorquelle im Detail-Dialog.
 typedef ModifierSourceEntry = ({String label, int value});
@@ -225,17 +226,12 @@ class _StatModifierDetailDialogState extends State<_StatModifierDetailDialog> {
               ),
               if (herleitung != null) ...[
                 const SizedBox(height: kDialogSectionSpacing),
-                _sectionTitle(theme, 'Herleitung (gespeicherter Stand)'),
-                for (final schritt in herleitung.sichtbareSchritte)
-                  _schrittZeile(theme, schritt),
-                const Divider(height: kDialogSectionSpacing * 2),
-                _sourceRow(
-                  theme,
-                  widget.statLabel,
-                  herleitung.wert,
-                  bold: true,
-                  vorzeichen: false,
-                  key: const ValueKey<String>('stat-herleitung-ergebnis'),
+                HerleitungsAbschnitt(
+                  herleitung: herleitung,
+                  ergebnisBezeichnung: widget.statLabel,
+                  ergebnisKey: const ValueKey<String>(
+                    'stat-herleitung-ergebnis',
+                  ),
                 ),
               ] else ...[
                 if (nonZeroSources.isNotEmpty) ...[
@@ -278,45 +274,11 @@ class _StatModifierDetailDialogState extends State<_StatModifierDetailDialog> {
     );
   }
 
-  // Ein Herleitungsschritt: Betrag, Name und darunter Rechenweg, Quelle
-  // oder Bedingung, soweit vorhanden.
-  Widget _schrittZeile(ThemeData theme, HerleitungsSchritt schritt) {
-    final details = <String>[
-      ?schritt.formel,
-      ?schritt.quelle,
-      ?schritt.bedingung,
-    ].join(' · ');
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _sourceRow(
-          theme,
-          schritt.bezeichnung,
-          schritt.betrag,
-          vorzeichen: schritt.art != HerleitungsArt.grundwert,
-        ),
-        if (details.isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 2),
-            child: Text(
-              details,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-                fontStyle: FontStyle.italic,
-              ),
-            ),
-          ),
-      ],
-    );
-  }
-
   Widget _sourceRow(
     ThemeData theme,
     String label,
     int value, {
     bool bold = false,
-    bool vorzeichen = true,
-    Key? key,
   }) {
     final style = bold
         ? theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold)
@@ -324,9 +286,8 @@ class _StatModifierDetailDialogState extends State<_StatModifierDetailDialog> {
     final labelStyle = bold
         ? style
         : style?.copyWith(color: theme.colorScheme.onSurfaceVariant);
-    final sign = vorzeichen && value >= 0 ? '+' : '';
+    final sign = value >= 0 ? '+' : '';
     return Padding(
-      key: key,
       padding: const EdgeInsets.symmetric(vertical: 2),
       child: Row(
         children: [

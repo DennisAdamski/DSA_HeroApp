@@ -30,7 +30,6 @@ import 'package:dsa_heldenverwaltung/rules/derived/hero_herkunft_migration_rules
 import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_anzeige_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_wirkung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_zuordnung_rules.dart';
-import 'package:dsa_heldenverwaltung/rules/derived/modifier_source_breakdown.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifikator_aenderung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/resource_activation_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/house_rules/house_rule_registry.dart';

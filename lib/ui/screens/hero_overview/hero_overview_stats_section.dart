@@ -922,50 +922,16 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
       return;
     }
     final hero = snapshot.hero;
-    final state = snapshot.state;
-    final breakdown = computeModifierSourceBreakdown(
-      hero,
-      catalog: ref.read(rulesCatalogProvider).valueOrNull,
-    );
     final namedMods = hero.attributeModifiers[attrKey] ?? const [];
     final baseValue = _valueByKey(hero.attributes, attrKey);
-
-    final tempValue = attributeModValue(state.tempAttributeMods, attrKey);
-    final sources = <ModifierSourceEntry>[
-      (
-        label: 'Rasse',
-        value: attributeModValue(breakdown.rasseAttributeMods, attrKey),
-      ),
-      (
-        label: 'Kultur',
-        value: attributeModValue(breakdown.kulturAttributeMods, attrKey),
-      ),
-      (
-        label: 'Profession',
-        value: attributeModValue(breakdown.professionAttributeMods, attrKey),
-      ),
-      (
-        label: 'Vorteile',
-        value: attributeModValue(breakdown.vorteileAttributeMods, attrKey),
-      ),
-      (
-        label: 'Nachteile',
-        value: attributeModValue(breakdown.nachteileAttributeMods, attrKey),
-      ),
-      if (tempValue != 0) (label: 'Attributo', value: tempValue),
-      (
-        label: 'Inventar',
-        value: attributeModValue(snapshot.inventoryAttributeMods, attrKey),
-      ),
-    ];
 
     final result = await showAttributeModifierDetailDialog(
       context: context,
       attributeLabel: label,
       baseValue: baseValue,
       namedModifiers: namedMods,
-      parsedSources: sources,
       effectiveValue: effective,
+      herleitung: snapshot.eigenschaftHerleitungen?.fuer(attrKey),
     );
     if (result == null || !mounted) {
       return;
