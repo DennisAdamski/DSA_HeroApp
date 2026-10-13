@@ -21,6 +21,10 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   `lib/ui_shared/`, damit Verwaltung und Kartograph denselben Ablauf nutzen.
 
 - `AGENTS.md` ist die verbindliche Agentenrichtlinie.
+- [Zaubereffekte-Integrationsplan](docs/zaubereffekte_integrationsplan.md):
+  MAG-EFF in der Roadmap; Screening aller 288 Zauber, Quellenbelege und
+  vorgeschlagene Pakete für Effekte auf Charaktere. Reine Planung, noch keine
+  neuen Laufzeitmodelle. Vor Umsetzung Bestandsprofile und Migration prüfen.
 - `README.md` beschreibt Produktumfang, Architekturueberblick und Standard-Workflows.
 - `tool/sync_main_to_test.sh` mergt Main in Test;
   `tool/test_main_test_sync.py` sichert Erhalt, Konflikte und Wiederholungen ab.

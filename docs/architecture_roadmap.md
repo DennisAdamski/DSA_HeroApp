@@ -10,6 +10,21 @@ Die Bestandsaufnahme beruht auf Code und Dokumentation; die laufende Oberfläche
 wurde dafür nicht praktisch geprüft. Vor einer Umsetzung den jeweiligen
 Ist-Zustand erneut prüfen und den konkreten Teilumfang festlegen.
 
+## Fachlicher Ausbau: MAG-EFF – Zaubereffekte
+
+- [ ] **MAG-EFF – Zauberwirkungen auf Charaktere im Kampf und Spielgeschehen integrieren.**
+  Recherche und [Umsetzungsplan](zaubereffekte_integrationsplan.md), Stand
+  14.10.2026: Screening aller 288 Katalogzauber, priorisierte Wirkungen mit
+  DSA-MCP-Belegen und sechs separat abnehmbare Arbeitspakete. Axxeleratus,
+  Attributo, Armatrutz und die Fulminictus-Fremdgrundwirkung sind bereits
+  vorhanden; der Ausbau beginnt mit Quellenprofilen und quellenbezogenen
+  Effektinstanzen, danach Probenboni und empfangene Kampf-Mali.
+  **Status: geplant, keine Produktimplementierung durch diesen Eintrag.**
+  ARCH-04 liefert gemeinsame Herleitungen; ARCH-05/06 bilden die Grundlage
+  für fachliche Schreibvorgänge und Speicherung, ARCH-07 begleitet Migration
+  und Bedienprüfungen. MAG-EFF ist eine zusätzliche fachliche Aufgabe und
+  ändert die Bedeutung der sieben ARCH-IDs nicht.
+
 ## Arbeitsweise und gemeinsame Grenzen
 
 - Verbindlich bleibt [AGENTS.md](../AGENTS.md). Die Aufgaben sollen schrittweise
