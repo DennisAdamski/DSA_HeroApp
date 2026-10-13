@@ -6,6 +6,9 @@ Codex und Kartograph. Erstellt mit dem integrierten ImageGen-Werkzeug.
 
 ## Dateien und Vorschau
 
+Ergänzung: [29 Waffengruppen-Symbole](fantasy_weapon_assets.md) mit eigener
+Vorschau und eindeutiger Katalogzuordnung.
+
 [Gesamtvorschau auf hellen und dunklen Flächen](fantasy_assets_preview.html).
 Die Vorschau lokal im Browser öffnen; sie lädt ausschließlich die PNGs aus
 dem Repository. Sie zeigt die Symbole zusätzlich in 32 und 48 CSS-Pixeln.

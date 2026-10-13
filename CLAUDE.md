@@ -4,6 +4,10 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
 
 ## Zuerst lesen
 
+- [Fantasy-Waffensymbole](docs/fantasy_weapon_assets.md): 29 transparente PNGs
+  unter `assets/ui/fantasy_weapons_v1/`; `manifest.json` ordnet Waffenarten
+  und die 27 Kampftalentgruppen anhand bestehender Katalogwerte und IDs zu.
+
 - [Fantasy-Assets](docs/fantasy_assets.md): 12 transparente Symbole und drei
   dekorative PNGs unter `assets/ui/fantasy_v1/`, für Flutter registriert.
   Vorschau und Generierungsprompts liegen unter `docs/fantasy_assets*`.
