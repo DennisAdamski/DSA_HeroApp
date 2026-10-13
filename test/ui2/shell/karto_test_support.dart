@@ -127,6 +127,14 @@ class TestBestand implements KartoBestandsAdapter {
   }
 
   @override
+  Future<void> berechnungsschritte({
+    required BuildContext context,
+    required String heroId,
+  }) async {
+    aufrufe.add('berechnungsschritte:$heroId');
+  }
+
+  @override
   Future<void> rast({
     required BuildContext context,
     required String heroId,

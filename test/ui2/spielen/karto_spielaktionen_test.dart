@@ -81,6 +81,29 @@ void main() {
     expect(bestand.aufrufe, ['schadenErhalten:rondra']);
   });
 
+  testWidgets('(i) öffnet die Berechnungsschritte in jedem Bereich', (
+    tester,
+  ) async {
+    final bestand = await zeige(tester);
+    final knopf = find.byKey(const ValueKey('karto-berechnungsschritte'));
+    await tester.tap(knopf);
+    await tester.pumpAndSettle();
+    await modus(tester, 'Entwicklung planen');
+    await tester.tap(knopf);
+    await tester.pumpAndSettle();
+    expect(bestand.aufrufe, [
+      'berechnungsschritte:rondra',
+      'berechnungsschritte:rondra',
+    ]);
+  });
+
+  testWidgets('(i) steht schmal in der Kopfleiste', (tester) async {
+    final bestand = await zeige(tester, breite: 390);
+    await tester.tap(find.byTooltip('Berechnungsschritte'));
+    await tester.pumpAndSettle();
+    expect(bestand.aufrufe, ['berechnungsschritte:rondra']);
+  });
+
   testWidgets('Strg+K öffnet dieselbe Suche im Spielen-Bereich', (
     tester,
   ) async {

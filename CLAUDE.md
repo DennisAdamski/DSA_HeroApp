@@ -314,7 +314,13 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   `OffhandCombatPreview.herleitungen`; AT, PA, TP, INI, Ausweichen, RS, BE und
   eBE werden dort abgelesen). Angezeigt über `HerleitungsAbschnitt`/
   `HerleitungsSchritte` (`ui/screens/hero_overview/herleitung_abschnitt.dart`)
-  und `KampfHerleitungDetails` (`ui/screens/hero_combat/`); die Oberfläche
+  und `KampfHerleitungDetails` (`ui/screens/hero_combat/`). Alle Herleitungen
+  eines Helden sind über ein (i) durchsuchbar: `sammleHerleitungen`/
+  `filtereHerleitungen` (`herleitung_uebersicht_rules.dart`), Dialog
+  `HerleitungsSucheDialog` (`ui/screens/workspace/herleitung_suche_dialog.dart`)
+  neben „Regeln nachschlagen“ im Heldenbogen und in der UI2-Verwaltung, in UI2
+  zusätzlich in der Navigation über `KartoBestandsAdapter.berechnungsschritte`.
+  Eine neue Herleitung gehört dort in `sammleHerleitungen`. Die Oberfläche
   zeigt sie an und rechnet **nie** selbst Modifikatoren
   zusammen. Stand und nächste Bereiche: Roadmap ARCH-04.
 - Fachlich benannte Anwendungsablaeufe (ARCH-05) liegen in `lib/ablaeufe/`:
