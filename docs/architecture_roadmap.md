@@ -1218,7 +1218,8 @@ weiterhin selbst aus den Einzelwerten zusammen, mit INI-Bonus und BE 0)
 als Herleitung; danach Talente, Magie und
 Steigerungen.
 
-Commit: wird nachgetragen.
+Commit: `2da15ee`. Vollständige Suite danach grün (4749 bestanden,
+3 übersprungen).
 
 ## ARCH-05 — Schreibende Aktionen fachlich aufteilen
 
