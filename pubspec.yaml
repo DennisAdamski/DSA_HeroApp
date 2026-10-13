@@ -75,6 +75,7 @@ flutter:
     - assets/heroes/
     - assets/models/
     - assets/ui/codex/
+    - assets/ui/fantasy_v1/
   fonts:
     # Bestehende Oberflaeche. Faellt mit ihr weg.
     # Achtung: Regular und 700 zeigen hier auf dieselbe Datei, der Fettschnitt
