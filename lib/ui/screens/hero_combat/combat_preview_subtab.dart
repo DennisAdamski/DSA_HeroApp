@@ -503,7 +503,10 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
             width: 160,
             child: CodexMetricTile(
               label: 'Schild-PA',
-              value: offhandPreview.shieldPa.toString(),
+              value:
+                  (offhandPreview.shieldPaMitIniParadeMod ??
+                          offhandPreview.shieldPa)
+                      .toString(),
               icon: Icons.shield,
               onTap: () => showLoggedProbeDialog(
                 context: context,
@@ -512,7 +515,9 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
                 request: buildCombatCheckProbeRequest(
                   type: ProbeType.combatParry,
                   title: 'Kampfprobe: Schild-PA',
-                  targetValue: offhandPreview.shieldPa!,
+                  targetValue:
+                      offhandPreview.shieldPaMitIniParadeMod ??
+                      offhandPreview.shieldPa!,
                 ),
               ),
             ),

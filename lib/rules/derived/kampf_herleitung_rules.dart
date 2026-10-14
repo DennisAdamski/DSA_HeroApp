@@ -26,6 +26,7 @@ class KampfHerleitungen {
     required this.kampfIni,
     required this.ausweichen,
     this.schildPa,
+    this.schildPaMitIniParade,
   });
 
   /// Rüstungsschutz einschließlich Modifikatoren und Armatrutz.
@@ -60,6 +61,11 @@ class KampfHerleitungen {
 
   /// Parade mit dem Schild; `null` ohne geführten Schild.
   final Herleitung? schildPa;
+
+  /// Schild-Parade mit dem INI-Parade-Bonus der Kampfinitiative wie bei der
+  /// Haupthand-PA; `null` ohne geführten Schild. Das Gefecht rechnet statt
+  /// dessen mit dem INI-Bonus der Sitzung auf [schildPa].
+  final Herleitung? schildPaMitIniParade;
 }
 
 /// Herleitungen einer Nebenhandwaffe.
@@ -574,9 +580,10 @@ Herleitung herleitePaMitIniParade({
   required Herleitung pa,
   required int iniParadeMod,
   required int kampfInitiative,
+  String bezeichnung = 'PA',
 }) {
   return Herleitung(
-    bezeichnung: 'PA',
+    bezeichnung: bezeichnung,
     schritte: <HerleitungsSchritt>[
       ...pa.schritte,
       HerleitungsSchritt(

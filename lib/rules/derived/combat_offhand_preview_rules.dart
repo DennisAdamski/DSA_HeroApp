@@ -48,6 +48,7 @@ OffhandCombatPreview? _buildOffhandPreview({
     return _computeOffhandEquipmentPreview(
       offhandModifiers: offhandModifiers,
       equipment: offhandEquipment,
+      iniParadeMod: iniParadeMod,
     );
   }
   return null;
@@ -281,6 +282,7 @@ OffhandCombatPreview _computeOffhandWeaponPreview({
 OffhandCombatPreview _computeOffhandEquipmentPreview({
   required OffhandModifierSnapshot offhandModifiers,
   required OffhandEquipmentEntry equipment,
+  required int iniParadeMod,
 }) {
   return OffhandCombatPreview(
     displayName: offhandModifiers.displayName.trim().isEmpty
@@ -289,6 +291,9 @@ OffhandCombatPreview _computeOffhandEquipmentPreview({
     isShield: offhandModifiers.isShield,
     isParryWeapon: offhandModifiers.isParryWeapon,
     shieldPa: offhandModifiers.isShield ? offhandModifiers.shieldPa : null,
+    shieldPaMitIniParadeMod: offhandModifiers.isShield
+        ? offhandModifiers.shieldPa + iniParadeMod
+        : null,
     mainPaMod: offhandModifiers.isParryWeapon
         ? offhandModifiers.mainPaMod
         : null,

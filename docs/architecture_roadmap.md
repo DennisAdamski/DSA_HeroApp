@@ -1403,6 +1403,17 @@ in `gefecht_begleiter_werte_test.dart`.
 Vollständige Suite danach grün (5709 bestanden, 3 übersprungen),
 `flutter analyze` ohne Befund.
 
+*Nachtrag (Nutzerentscheidung, 14.10.2026).* Die Kampfvorschau zeigt der
+Schild-PA jetzt den INI-Anteil wie der Haupthand-PA:
+`KampfHerleitungen.schildPaMitIniParade` (INI-Parade-Bonus der
+Kampfinitiative), `OffhandCombatPreview.shieldPaMitIniParadeMod`; Kampf-Tab
+(Kachel und Berechnungsschritte) und (i)-Suche nehmen diese Werte. `shieldPa`
+und die Gefechtsprofile bleiben ohne INI-Anteil, weil das Gefecht den INI-Bonus
+der Sitzung selbst aufschlägt; die Regelentscheidung aus Teilstand 5 gilt damit
+in Vorschau und Gefecht.
+Vollständige Suite danach grün (5709 bestanden, 3 übersprungen),
+`flutter analyze` ohne Befund.
+
 *Stand ARCH-04 Kampf.* Pakete A bis D sind erledigt; offen bleiben
 Talente, Magie und Steigerungen.
 
