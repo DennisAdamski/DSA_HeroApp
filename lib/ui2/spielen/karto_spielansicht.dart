@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/ui2/merkmale/karto_merkmalsblatt.dart';
 import 'package:dsa_heldenverwaltung/ui2/merkmale/karto_merkmal_karten.dart';
-import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_zuordnung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_wirkung_rules.dart';
@@ -241,7 +240,7 @@ class KartoSpielansicht extends ConsumerWidget {
     WidgetRef ref,
     HeroComputedSnapshot werte,
   ) {
-    final catalog = ref.watch(rulesCatalogProvider).valueOrNull;
+    final catalog = ref.watch(heroRulesCatalogProvider(heroId)).valueOrNull;
     // Ohne geladenen Katalog zeigt die Übersicht die gespeicherten Texte;
     // bearbeitet werden kann erst mit Katalog.
     final katalog = catalog == null

@@ -8,7 +8,6 @@ import 'package:dsa_heldenverwaltung/rules/derived/rest_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/vertrauten_spiel_rules.dart';
 import 'package:dsa_heldenverwaltung/state/ablauf_providers.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
-import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
@@ -191,7 +190,7 @@ class _RestPanelState extends ConsumerState<RestPanel> {
     }
     final abilities = collectRestAbilities(
       computed.hero,
-      catalog: ref.watch(rulesCatalogProvider).valueOrNull,
+      catalog: ref.watch(heroRulesCatalogProvider(widget.heroId)).valueOrNull,
     );
     final regenerationPhases = _activity.regenerationPhases(
       applySecondPhase: _applySecondPhase,

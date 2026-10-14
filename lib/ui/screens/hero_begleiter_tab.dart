@@ -37,11 +37,8 @@ import 'package:dsa_heldenverwaltung/rules/derived/vertrauten_zauber_probe_rules
 import 'package:dsa_heldenverwaltung/catalog/reittier_ausbildung_katalog.dart';
 import 'package:dsa_heldenverwaltung/catalog/vertrauten_katalog.dart';
 import 'package:dsa_heldenverwaltung/catalog/vertrautenmagie_preset.dart';
-import 'package:dsa_heldenverwaltung/rules/house_rules/house_rule_registry.dart';
 import 'package:dsa_heldenverwaltung/state/ablauf_providers.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
-import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
-import 'package:dsa_heldenverwaltung/state/house_rules_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/begleiter_zustand_aendern.dart';
@@ -367,10 +364,10 @@ class _HeroBegleiterTabState extends ConsumerState<HeroBegleiterTab>
         // Hält Heldenwerte und Katalog bereit, damit Ausbilderproben ohne
         // Wartezeit gewürfelt werden können.
         ref.watch(heroComputedProvider(widget.heroId));
-        ref.watch(rulesCatalogProvider);
+        ref.watch(heroRulesCatalogProvider(widget.heroId));
       } else if (activeCompanion.typ == BegleiterTyp.vertrauter) {
         // Der Katalog liefert die Reisebericht-AP für den Nachtragsvorschlag.
-        ref.watch(rulesCatalogProvider);
+        ref.watch(heroRulesCatalogProvider(widget.heroId));
       }
       return Column(
         children: [

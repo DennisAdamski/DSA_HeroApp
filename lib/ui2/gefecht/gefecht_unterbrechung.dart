@@ -4,10 +4,7 @@ import 'package:dsa_heldenverwaltung/domain/gefecht.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_magie_rules.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_provider.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_initiative_provider.dart';
-import 'package:dsa_heldenverwaltung/rules/house_rules/house_rule_registry.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
-import 'package:dsa_heldenverwaltung/state/house_rules_providers.dart';
-import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_wirken_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_requirement_context.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_gefechts_adapter.dart';
@@ -159,7 +156,7 @@ Future<void> stoereGefechtsWirken({
   final s = ref.read(gefechtMitInitiativeProvider(heroId));
   final h = s?.handlung;
   final snapshot = ref.read(heroComputedProvider(heroId)).asData?.value;
-  final katalog = ref.read(rulesCatalogProvider).asData?.value;
+  final katalog = ref.read(heroRulesCatalogProvider(heroId)).asData?.value;
   if (s == null ||
       h?.wirken == null ||
       snapshot == null ||
@@ -230,9 +227,7 @@ Future<void> stoereGefechtsWirken({
   final request = gefechtsTalentprobe(
     snapshot,
     talent,
-    epicAdvantagesActive: ref.read(
-      isHouseRuleActiveProvider(EpicRuleKeys.advantages),
-    ),
+    epicAdvantagesActive: ref.read(heroEpicAdvantagesActiveProvider(heroId)),
     talentBeOverride: ref.read(talentBeOverrideProvider(heroId)),
   );
   if (request == null) throw StateError('Selbstbeherrschungswerte fehlen.');

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
-import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
@@ -129,7 +129,9 @@ class _WundUnterdrueckungDialog extends StatelessWidget {
                       sbProbeSnapshot(ref, heroId)?.effectiveAttributes ??
                           computeEffectiveAttributes(
                             hero,
-                            catalog: ref.read(rulesCatalogProvider).valueOrNull,
+                            catalog: ref
+                                .read(heroRulesCatalogProvider(heroId))
+                                .valueOrNull,
                           ),
                       wundEffekte,
                     );

@@ -436,7 +436,9 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
     required bool? magicEnabledOverride,
     required bool? divineEnabledOverride,
   }) {
-    final catalog = ref.read(rulesCatalogProvider).valueOrNull;
+    final catalog = ref
+        .read(heroRulesCatalogProvider(widget.heroId))
+        .valueOrNull;
     if (!_editController.isEditing) {
       return computeHeroResourceActivation(
         hero.copyWith(

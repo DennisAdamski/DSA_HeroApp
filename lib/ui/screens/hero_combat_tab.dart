@@ -3,8 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/ui/screens/shared/planung_bearbeiten_guard.dart';
 import 'package:dsa_heldenverwaltung/catalog/house_rule_provenance.dart';
-import 'package:dsa_heldenverwaltung/rules/house_rules/house_rule_registry.dart';
-import 'package:dsa_heldenverwaltung/state/house_rules_providers.dart';
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
@@ -335,13 +333,13 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
     _syncDraftFromHero(hero);
 
     final stateAsync = ref.watch(heroStateProvider(widget.heroId));
-    final catalogAsync = ref.watch(rulesCatalogProvider);
+    final catalogAsync = ref.watch(heroRulesCatalogProvider(widget.heroId));
     // Dieselben Eingaben wie Inspector und Spielansicht, samt Wunden.
     final berechnet = ref
         .watch(heroComputedProvider(widget.heroId))
         .valueOrNull;
     final epicAdvantagesActive = ref.watch(
-      isHouseRuleActiveProvider(EpicRuleKeys.advantages),
+      heroEpicAdvantagesActiveProvider(widget.heroId),
     );
 
     return stateAsync.when(

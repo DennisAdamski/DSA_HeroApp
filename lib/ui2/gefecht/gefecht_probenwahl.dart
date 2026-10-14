@@ -10,13 +10,10 @@ import 'package:dsa_heldenverwaltung/rules/derived/gefecht_talent_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_wirken_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/probe_request_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/talent_probe_rules.dart';
-import 'package:dsa_heldenverwaltung/rules/house_rules/house_rule_registry.dart';
-import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_initiative_provider.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_provider.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
-import 'package:dsa_heldenverwaltung/state/house_rules_providers.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_gefechts_adapter.dart';
 
 import 'gefecht_zahlfeld.dart';
@@ -118,11 +115,11 @@ Future<void> zeigeGefechtsTalentprobe({
   required KartoGefechtsAdapter bestand,
 }) async {
   final snapshot = ref.read(heroComputedProvider(heroId)).asData?.value;
-  final katalog = ref.read(rulesCatalogProvider).asData?.value;
+  final katalog = ref.read(heroRulesCatalogProvider(heroId)).asData?.value;
   if (snapshot == null || katalog == null) {
     throw StateError('Spielwerte oder Regelkatalog werden geladen.');
   }
-  final episch = ref.read(isHouseRuleActiveProvider(EpicRuleKeys.advantages));
+  final episch = ref.read(heroEpicAdvantagesActiveProvider(heroId));
   final kandidat = await showDialog<GefechtProbenkandidat>(
     context: context,
     builder: (_) => _Probenwahl(

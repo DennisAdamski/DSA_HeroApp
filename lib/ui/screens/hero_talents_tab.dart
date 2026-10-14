@@ -28,11 +28,9 @@ import 'package:dsa_heldenverwaltung/rules/derived/meta_talent_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/wund_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/talent_herleitung_rules.dart';
-import 'package:dsa_heldenverwaltung/rules/house_rules/house_rule_registry.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
-import 'package:dsa_heldenverwaltung/state/house_rules_providers.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/config/platform_adaptive.dart';
@@ -239,12 +237,12 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
     _latestHero = hero;
     _tabellenAnsicht = ref.watch(tabellenAnsichtProvider);
     _epicAdvantagesActive = ref.watch(
-      isHouseRuleActiveProvider(EpicRuleKeys.advantages),
+      heroEpicAdvantagesActiveProvider(widget.heroId),
     );
     _syncDraftFromHero(hero);
 
     final stateAsync = ref.watch(heroStateProvider(widget.heroId));
-    final catalogAsync = ref.watch(rulesCatalogProvider);
+    final catalogAsync = ref.watch(heroRulesCatalogProvider(widget.heroId));
 
     return stateAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),

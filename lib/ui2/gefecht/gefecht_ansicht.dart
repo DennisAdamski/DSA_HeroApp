@@ -21,14 +21,11 @@ import 'gefecht_reserve.dart';
 import 'gefecht_patzer.dart';
 import 'gefecht_klingen.dart';
 
-import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_provider.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_patzer_provider.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_initiative_provider.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
-import 'package:dsa_heldenverwaltung/rules/house_rules/house_rule_registry.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
-import 'package:dsa_heldenverwaltung/state/house_rules_providers.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/artefakt_zauber_liste_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_lage_rules.dart';
@@ -111,7 +108,10 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
   Widget build(BuildContext context) {
     final geladen = ref.watch(heroComputedProvider(widget.heroId));
     final s = ref.watch(gefechtMitInitiativeProvider(widget.heroId));
-    final katalog = ref.watch(rulesCatalogProvider).asData?.value;
+    final katalog = ref
+        .watch(heroRulesCatalogProvider(widget.heroId))
+        .asData
+        ?.value;
     final snapshot = geladen.asData?.value;
     // Strg/Cmd+K öffnet wie im Spielbereich die Probenauswahl, hier aber
     // gefechtsbewusst; die Route liegt außerhalb des Workspace-Kürzels.
@@ -169,7 +169,7 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
                           talentBeOverrideProvider(widget.heroId),
                         ),
                         epicAdvantagesActive: ref.watch(
-                          isHouseRuleActiveProvider(EpicRuleKeys.advantages),
+                          heroEpicAdvantagesActiveProvider(widget.heroId),
                         ),
                         gesperrt: _busy,
                         artefakte: gefechtsArtefakte(snapshot.hero),
@@ -592,7 +592,7 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
   Widget _handlung(Gefechtszustand s, HeroComputedSnapshot snapshot) {
     final vorbereitet = s.handlung!.vorbereitung != null;
     final p = vorbereitet ? pruefeGefechtsVorbereitung(s, snapshot) : null;
-    final k = ref.watch(rulesCatalogProvider).asData?.value;
+    final k = ref.watch(heroRulesCatalogProvider(widget.heroId)).asData?.value;
     final schuss =
         s.handlung!.art == Gefechtshandlungsart.zielen && p?.rest == 0;
     final schusspruefung = schuss && k != null

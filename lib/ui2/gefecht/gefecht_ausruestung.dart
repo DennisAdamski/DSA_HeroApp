@@ -19,7 +19,6 @@ import 'gefecht_inventar.dart';
 import 'gefecht_laden.dart';
 import 'gefecht_aktion_ausfuehren.dart';
 
-import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_laden_rules.dart';
 
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_hand_rules.dart';
@@ -324,7 +323,7 @@ Future<void> setzeGefechtsausruestungFort({
   if (h.vorbereitung != null) {
     final p = pruefeGefechtsVorbereitung(s, snapshot);
     if (h.art == Gefechtshandlungsart.zielen && p.rest == 0) {
-      final k = ref.read(rulesCatalogProvider).asData?.value;
+      final k = ref.read(heroRulesCatalogProvider(heroId)).asData?.value;
       if (k == null) throw StateError('Regelkatalog wird geladen.');
       await fuehreGefechtsAuftragAus(
         context: context,

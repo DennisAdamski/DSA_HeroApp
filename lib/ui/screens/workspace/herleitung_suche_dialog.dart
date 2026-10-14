@@ -5,12 +5,9 @@ import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/herleitung_uebersicht_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/talent_herleitung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/zauber_herleitung_rules.dart';
-import 'package:dsa_heldenverwaltung/rules/house_rules/house_rule_registry.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
-import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
-import 'package:dsa_heldenverwaltung/state/house_rules_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_overview/herleitung_abschnitt.dart';
 
 /// Öffnet die durchsuchbaren Berechnungsschritte eines Helden (ARCH-04).
@@ -76,10 +73,12 @@ class _HerleitungsSucheDialogState
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final snapshot = ref.watch(heroComputedProvider(widget.heroId)).valueOrNull;
-    final katalog = ref.watch(rulesCatalogProvider).valueOrNull;
+    final katalog = ref
+        .watch(heroRulesCatalogProvider(widget.heroId))
+        .valueOrNull;
     final talentBeOverride = ref.watch(talentBeOverrideProvider(widget.heroId));
     final epicAdvantagesActive = ref.watch(
-      isHouseRuleActiveProvider(EpicRuleKeys.advantages),
+      heroEpicAdvantagesActiveProvider(widget.heroId),
     );
     final Widget inhalt;
     if (snapshot == null) {

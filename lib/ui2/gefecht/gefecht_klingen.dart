@@ -9,7 +9,6 @@ import 'package:dsa_heldenverwaltung/state/gefecht_initiative_provider.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_begegnung_provider.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
-import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_klingen_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_kampfmittel_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_held_rules.dart';
@@ -329,7 +328,7 @@ class GefechtKlingenkarte extends ConsumerWidget {
   Future<void> _probe(BuildContext context, WidgetRef ref, int index) async {
     final s = ref.read(gefechtMitInitiativeProvider(heroId));
     final snapshot = ref.read(heroComputedProvider(heroId)).asData?.value;
-    final k = ref.read(rulesCatalogProvider).asData?.value;
+    final k = ref.read(heroRulesCatalogProvider(heroId)).asData?.value;
     if (s == null || snapshot == null || k == null) return;
     final stand = s.klingen;
     if (stand == null) return;

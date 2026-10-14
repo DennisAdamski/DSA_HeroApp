@@ -1074,7 +1074,7 @@ ihre Basis, Modifikatoren, Bedingungen und Quellen.
   *(Format und Basiswerte seit Teilstand 1, Eigenschaften seit Teilstand 2,
   Kampfvorschau seit Teilstand 3, Schild- und Parierwaffen-PA seit
   Teilstand 4, Gefechtswerte Teilstand 6, Begleiter Teilstand 7, Talente
-  Teilstand 8, Zauber Teilstand 9, Steigerungskosten Teilstand 10, Lernregeln Teilstand 11; offen bleibt
+  Teilstand 8, Zauber Teilstand 9, Steigerungskosten Teilstand 10, Lernregeln Teilstand 11; Regelprofil-Grundlage Teilstand 12; offen bleibt
   der Erwerbsdialog, siehe Teilstand 10/11.)*
 
 **Abnahme:** Zwei Helden mit verschiedenen Profilen können parallel geöffnet
@@ -1623,6 +1623,41 @@ und `steigerungs_dialog_test`.
   nach Gruppenzugehörigkeit (⅓, Randgruppen +20 %), Aktivierung nur mit Mentor.
 - Die Vorschau im Zauberkatalog und der Repräsentationsdialog des Magie-Tabs
   zeigen das Gegenelement noch nicht.
+
+**Teilstand 12, 14.10.2026 — Regelprofil am Helden: Modell, Auflösung, Provider.**
+
+*Umfang (verhaltensneutral).* `HeroSheet.regelProfil` (`HeroRegelProfil`,
+`lib/domain/hero_regelprofil.dart`) hält die **aktiven** Hausregelpakete des
+Helden mit Manifestkopie und Prüfsumme sowie die Katalogversion. Ohne Profil
+(`null`, der Bestand) folgt der Held unverändert den globalen Einstellungen;
+das Feld wird nur bei Belegung geschrieben, Hashes und Bestandshelden bleiben
+gleich. Ein nicht verstandenes Profil (`formatVersion` > 1) wird wie keines
+behandelt und roh erhalten. Die Paketliste ist im Sync atomar (Schlüssel
+`paketId`, keine `id`): zwei Geräte mergen sie nie elementweise.
+
+*Auflösung.* `loeseRegelProfilAuf` (`lib/catalog/regelprofil_aufloesung.dart`)
+ist rein: Manifestkopien → `HouseRuleCatalogResolver` → `CatalogRuntimeData` →
+`RulesCatalog`. Die Kopie im Profil entscheidet über die Wirkung; Pakete
+außerhalb des Profils sind für den Helden aus; unlesbare Kopien werden
+gemeldet und übersprungen. `regelProfilAusGlobalemStand` bildet den bisher
+wirksamen Stand ab (Test: identische Katalogdaten). Eigene Katalogeinträge
+bleiben global.
+
+*Provider.* `regelProfilAufloesungProvider` (Family je Profil, Helden mit
+gleichem Profil teilen die Auflösung), `heroRulesCatalogProvider(heroId)`,
+`heroEpicAdvantagesActiveProvider(heroId)` und `heroHouseRuleActiveProvider`
+in `hero_providers.dart`. `heroComputedProvider`, der Speicherweg
+(`HeroActions.saveHero`), die Gefechts-Initiative und alle heldengebundenen
+Oberflächen in `lib/ui` und `lib/ui2` lesen den Katalog des Helden. Globale
+Leser (Gate, Einstellungen, Katalogverwaltung) bleiben bewusst bei
+`rulesCatalogProvider`.
+
+*Offen.* Migration/Übernahme eines Profils nur durch bewusste Nutzeraktion
+(schreibt sonst Hashes um); Updatevorschau (Diff zweier Auflösungen, geänderte
+Werte, Erwerbsvoraussetzungen, Gate-Änderungen im Basiskatalog); Oberfläche je
+Held; Hinweis bei fehlendem/geändertem Paket; Gruppenvorgabe („live von der
+Gruppe“, eigenes Teilprojekt, Firestore-Regeln verbieten heute
+Gruppen-Updates); Import/Export prüfen.
 
 ## ARCH-05 — Schreibende Aktionen fachlich aufteilen
 

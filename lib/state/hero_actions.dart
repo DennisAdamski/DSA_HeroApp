@@ -19,6 +19,7 @@ import 'package:dsa_heldenverwaltung/domain/externer_held.dart';
 import 'package:dsa_heldenverwaltung/domain/held_visitenkarte.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_gruppen_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_meta_talent.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_regelprofil.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
@@ -49,6 +50,7 @@ import 'package:dsa_heldenverwaltung/state/avatar_providers.dart'
         gespeicherterGesichtsbefund;
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
+import 'package:dsa_heldenverwaltung/state/regelprofil_providers.dart';
 import 'package:dsa_heldenverwaltung/state/firebase_providers.dart';
 import 'package:dsa_heldenverwaltung/state/externe_helden_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_base_providers.dart';
@@ -189,8 +191,8 @@ class HeroActions {
     // Vor-/Nachteile: Alttext beim ersten Speichern migrieren, sonst den
     // Text als Projektion der Liste schreiben (ARCH-02). Ohne geladenen
     // Katalog wird nicht migriert; gewartet wird darauf bewusst nicht.
-    final catalog =
-        validationCatalog ?? _ref.read(rulesCatalogProvider).valueOrNull;
+    final profil = _verstandenesProfil(hero);
+    final catalog = validationCatalog ?? _katalogDesHelden(profil);
     final heroMitMerkmalen =
         merkmaleZumSpeichern(
           hero,
@@ -207,6 +209,7 @@ class HeroActions {
     final unknownModifierFragments = await _filterKnownTraitWarnings(
       parsed.unknownFragments,
       catalog: catalog,
+      profil: profil,
     );
     final effectiveStartAttributes = computeHeroEffectiveStartAttributes(
       heroMitMerkmalen,
@@ -328,12 +331,14 @@ class HeroActions {
   Future<List<String>> _filterKnownTraitWarnings(
     List<String> fragments, {
     RulesCatalog? catalog,
+    HeroRegelProfil? profil,
   }) async {
     if (fragments.isEmpty) {
       return fragments;
     }
     try {
-      final resolvedCatalog = catalog ?? await _warteAufRegelkatalog();
+      final resolvedCatalog =
+          catalog ?? await _warteAufRegelkatalog(profil: profil);
       if (resolvedCatalog == null) {
         return fragments;
       }
@@ -352,12 +357,9 @@ class HeroActions {
   // `rulesCatalogProvider.future`: jene Future endet in Riverpod 3 nicht
   // immer (CLAUDE.md), und ein hängendes Laden ließe jedes Speichern hängen.
   // Das Abo hält die Katalogkette zugleich am Leben.
-  Future<RulesCatalog?> _warteAufRegelkatalog() {
+  Future<RulesCatalog?> _warteAufRegelkatalog({HeroRegelProfil? profil}) {
     final ergebnis = Completer<RulesCatalog?>();
-    final abo = _ref.listen<AsyncValue<RulesCatalog>>(rulesCatalogProvider, (
-      _,
-      naechster,
-    ) {
+    void pruefe(AsyncValue<RulesCatalog> naechster) {
       if (ergebnis.isCompleted) {
         return;
       }
@@ -366,10 +368,42 @@ class HeroActions {
       } else if (naechster.hasError) {
         ergebnis.complete(null);
       }
-    }, fireImmediately: true);
+    }
+
+    // Ein Held mit Regelprofil rechnet nach dessen Katalog (ARCH-04).
+    final abo = profil == null
+        ? _ref.listen<AsyncValue<RulesCatalog>>(
+            rulesCatalogProvider,
+            (_, naechster) => pruefe(naechster),
+            fireImmediately: true,
+          )
+        : _ref.listen<AsyncValue<RulesCatalog>>(
+            regelProfilAufloesungProvider(profil)
+                .select((a) => a.whenData((r) => r.katalog)),
+            (_, naechster) => pruefe(naechster),
+            fireImmediately: true,
+          );
     return ergebnis.future
         .timeout(katalogWartezeit, onTimeout: () => null)
         .whenComplete(abo.close);
+  }
+
+  // Das Profil des Helden, falls diese App-Version es versteht.
+  HeroRegelProfil? _verstandenesProfil(HeroSheet hero) {
+    final profil = hero.regelProfil;
+    return profil != null && profil.istVerstanden ? profil : null;
+  }
+
+  // Der bereits geladene Katalog, nach dem der Held rechnet; `null` solange er
+  // noch lädt (gewartet wird beim Speichern bewusst nicht).
+  RulesCatalog? _katalogDesHelden(HeroRegelProfil? profil) {
+    if (profil == null) {
+      return _ref.read(rulesCatalogProvider).valueOrNull;
+    }
+    return _ref
+        .read(regelProfilAufloesungProvider(profil))
+        .valueOrNull
+        ?.katalog;
   }
 
   /// Loescht einen Helden und seinen Zustand dauerhaft aus dem Repository.
