@@ -298,6 +298,7 @@ Gefechtspruefung ergaenzeGefechtsansagen(
     zielwert: p.zielwert == null ? null : p.zielwert! - delta,
     erschwernis: p.erschwernis + delta,
     modifikatoren: [...p.modifikatoren, ...mods],
+    zielHerleitung: p.zielHerleitung,
     angriffe: p.angriffe,
     paraden: paraden,
     freie: p.freie,

@@ -1,5 +1,6 @@
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/herleitung.dart';
 
 import 'gefecht_kontext.dart';
 import 'gefecht_wirken.dart';
@@ -455,13 +456,21 @@ class Gefechtspruefung {
     this.verbrauchterMeisterparadeBonus = 0,
     this.ansageFehlmalus = 0,
     this.beendetAnsageFolgemalus = false,
+    this.zielHerleitung,
   });
   final Gefechtsaktion aktion;
   final Gefechtsfreigabe status;
   final List<String> gruende;
   final int? zielwert;
   final int angriffe, paraden, freie, zusatz, erschwernis;
+
+  /// Benannte Erschwernisse; ihre Summe ist [erschwernis].
   final List<Gefechtsmodifikator> modifikatoren;
+
+  /// Zielwert vor Erschwernis (Grundwert, INI-Bonus der Sitzung); `null`, wo
+  /// es keinen Zielwert gibt. `gefecht_zielwert_herleitung_rules.dart` macht
+  /// daraus mit [erschwernis] die angezeigte Herleitung.
+  final Herleitung? zielHerleitung;
   final GefechtsKampfmittelwahl? kampfmittel;
   final String? ausruestungspaar;
   final bool mitAnsage;
@@ -509,6 +518,7 @@ class Gefechtspruefung {
     verbrauchterMeisterparadeBonus: verbrauchterMeisterparadeBonus,
     ansageFehlmalus: ansageFehlmalus,
     beendetAnsageFolgemalus: beendetAnsageFolgemalus,
+    zielHerleitung: zielHerleitung,
   );
 
   /// Nur konkrete Sperren, fehlende Angaben oder offene Entscheidungen blockieren.

@@ -833,3 +833,14 @@ aus der Gefechts-INI; die BE steht als Schritt in der Herleitung und wird nicht
 zusätzlich als Erschwernis gezählt. Kampfmittelprofile tragen `atHerleitung`/
 `paHerleitung`, ihre `anteile` entstehen aus den Schritten. Prüfung:
 `test/rules/gefecht_herleitung_rules_test.dart`.
+
+## Zielwert und Erschwernis als Herleitung (14. Oktober 2026)
+
+Der Aktionsdialog zeigt unter „Berechnung und Regeltext“ zwei Herleitungen:
+den Zielwert (Grundwert der Vorschau, INI-Bonus der Sitzung, abzüglich der
+Erschwernis) und die Erschwernis mit jedem benannten Anteil (Bewegen,
+Distanzwechsel, Umwandlung, Schild-WM, Gegner, Fernkampf, Ansagen, gezieltes
+Ausweichen je DK). `gefecht_zielwert_herleitung_rules.dart` baut sie aus
+`Gefechtspruefung.zielHerleitung` und `modifikatoren`; eine neue Erschwernis
+gehört mit Namen in `modifikatoren`, nicht in einen Sammelposten. Prüfung:
+`test/rules/gefecht_zielwert_herleitung_rules_test.dart`.

@@ -100,6 +100,7 @@ Gefechtspruefung ergaenzeGefechtsZielen(
       ...p.modifikatoren,
       if (reduziert > 0) Gefechtsmodifikator('Optionales Zielen', -reduziert),
     ],
+    zielHerleitung: p.zielHerleitung,
     angriffe: p.angriffe,
     paraden: p.paraden,
     freie: p.freie,

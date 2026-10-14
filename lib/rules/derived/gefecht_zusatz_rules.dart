@@ -137,6 +137,7 @@ Gefechtspruefung gefechtsPruefungMitKampfmittel(
   zusatz: p.zusatz,
   erschwernis: p.erschwernis,
   modifikatoren: p.modifikatoren,
+  zielHerleitung: p.zielHerleitung,
   kampfmittel: w,
   ausruestungspaar: gefechtsAusruestungspaar(s),
   mitAnsage: a.manoever != null || a.zuschlag != 0,
@@ -224,6 +225,7 @@ Gefechtspruefung pruefeGefechtsZusatzauftrag(
     zusatz: 1,
     erschwernis: basis.erschwernis,
     modifikatoren: basis.modifikatoren,
+    zielHerleitung: basis.zielHerleitung,
     kampfmittel: w,
     probenart: art,
   );

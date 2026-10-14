@@ -1,15 +1,27 @@
 import 'package:flutter/material.dart';
 
+import 'package:dsa_heldenverwaltung/rules/derived/herleitung.dart';
+
+import 'gefecht_herleitung_schritte.dart';
+
 /// Einklappbare Herleitung eines Gefechtsdialogs.
 ///
 /// Zielwertanteile, Katalogtext und Quelle bleiben vollständig erreichbar,
 /// stehen aber nicht mehr zwischen den eigentlichen Eingaben.
 class GefechtBerechnung extends StatelessWidget {
-  /// Zeigt [zeilen] erst nach dem Aufklappen.
-  const GefechtBerechnung({super.key, required this.zeilen});
+  /// Zeigt [herleitungen] und [zeilen] erst nach dem Aufklappen.
+  const GefechtBerechnung({
+    super.key,
+    required this.zeilen,
+    this.herleitungen = const [],
+  });
 
   /// Bereits fertig formulierte Zeilen aus Regelmodulen und Katalog.
   final List<String> zeilen;
+
+  /// Zielwert und Erschwernis der Prüfung als Herleitungen; sie stehen vor
+  /// den Zeilen, deren Katalog- und Regeltext darunter bleibt.
+  final List<Herleitung> herleitungen;
 
   @override
   Widget build(BuildContext context) {
@@ -17,14 +29,19 @@ class GefechtBerechnung extends StatelessWidget {
       for (final z in zeilen)
         if (z.trim().isNotEmpty) z,
     ];
-    if (sichtbar.isEmpty) return const SizedBox.shrink();
+    if (sichtbar.isEmpty && herleitungen.isEmpty) {
+      return const SizedBox.shrink();
+    }
     return ExpansionTile(
       key: const ValueKey('gefecht-berechnung'),
       tilePadding: EdgeInsets.zero,
       childrenPadding: const EdgeInsets.only(bottom: 8),
       expandedCrossAxisAlignment: CrossAxisAlignment.start,
       title: const Text('Berechnung und Regeltext'),
-      children: [for (final z in sichtbar) Text(z)],
+      children: [
+        for (final h in herleitungen) GefechtHerleitungSchritte(herleitung: h),
+        for (final z in sichtbar) Text(z),
+      ],
     );
   }
 }
