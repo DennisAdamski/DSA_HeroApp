@@ -30,8 +30,16 @@ class GefechtMagie extends StatefulWidget {
     this.onMatrix,
     this.artefakte = const [],
     this.zuletzt = const [],
+    this.talentBeOverride,
+    this.epicAdvantagesActive = false,
   });
   final HeroComputedSnapshot werte;
+
+  /// Vorübergehende Talent-BE des Helden für die Liturgieprobe.
+  final int? talentBeOverride;
+
+  /// Epische Vorteile aktiv (halbierte eBE bei KK-Proben).
+  final bool epicAdvantagesActive;
   final RulesCatalog? katalog;
   final bool gesperrt;
   final ValueChanged<SpellDef>? onZauber;
@@ -158,7 +166,13 @@ class _GefechtMagieState extends State<GefechtMagie> {
             if (werte.resourceActivation.divine.isEnabled) ...[
               for (final talent in katalog?.talents ?? <TalentDef>[])
                 if (talent.name.toLowerCase().contains('liturgiekenntnis') &&
-                    gefechtsLiturgieprobe(werte, talent) != null)
+                    gefechtsLiturgieprobe(
+                          werte,
+                          talent,
+                          epicAdvantagesActive: widget.epicAdvantagesActive,
+                          talentBeOverride: widget.talentBeOverride,
+                        ) !=
+                        null)
                   TextButton(
                     onPressed: gesperrt
                         ? null
@@ -166,7 +180,13 @@ class _GefechtMagieState extends State<GefechtMagie> {
                               ? onKarma(talent)
                               : onAuftrag(
                                   talent.name,
-                                  gefechtsLiturgieprobe(werte, talent),
+                                  gefechtsLiturgieprobe(
+                                    werte,
+                                    talent,
+                                    epicAdvantagesActive:
+                                        widget.epicAdvantagesActive,
+                                    talentBeOverride: widget.talentBeOverride,
+                                  ),
                                   'Tatsächliche Liturgiekenntnis; Liturgie, Grad, '
                                   'Modifikatoren, Zeitpunkt, Dauer und KaP-Kosten '
                                   'ausdrücklich bestätigen.',

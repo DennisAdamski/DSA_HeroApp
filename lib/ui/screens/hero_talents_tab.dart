@@ -20,13 +20,14 @@ import 'package:dsa_heldenverwaltung/rules/derived/combat_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/cost_text_parsing.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/editor_entwurf_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/epic_main_attribute_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/herleitung.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_requirement_context.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/inventory_modifier_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/learning_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/meta_talent_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/wund_rules.dart';
-import 'package:dsa_heldenverwaltung/rules/derived/ruestung_be_rules.dart';
-import 'package:dsa_heldenverwaltung/rules/derived/talent_value_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/talent_herleitung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/house_rules/house_rule_registry.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
@@ -42,6 +43,7 @@ import 'package:dsa_heldenverwaltung/ui/widgets/codex_tab_header.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/adaptive_table_columns.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/responsive_adaptive_table.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/resizable_table_columns.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_overview/herleitung_abschnitt.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_talents/combat_specialization_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/dice_log_persistence.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/editor_entwurf_speichern.dart';
@@ -138,6 +140,13 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
   /// Ob das Hausregel-Paket der epischen Vorteile aktiv ist. Wird aus
   /// demselben Grund wie [_tabellenAnsicht] in `build` gelesen.
   bool _epicAdvantagesActive = false;
+
+  /// Kampf-BE, vorübergehende Talent-BE und Inventarquellen des letzten
+  /// Builds; Grundlage der Herleitungen von eBE und TaW* (ARCH-04).
+  int _beKampf = 0;
+  int? _beOverride;
+  Map<String, List<InventoryModifierQuelle>> _inventarQuellen =
+      const <String, List<InventoryModifierQuelle>>{};
   CatalogRuleResolver _latestCatalogRuleResolver = const CatalogRuleResolver();
 
   /// Zuletzt gebauter Regelkatalog; die Tabellen rechnen Vor-/Nachteile damit
@@ -261,6 +270,15 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
           final activeTalentBe = combatBaseBe == null
               ? 0
               : (talentBeOverride ?? combatBaseBe);
+          _beKampf = combatBaseBe ?? 0;
+          _beOverride = combatBaseBe == null ? null : talentBeOverride;
+          _inventarQuellen =
+              ref
+                  .watch(heroComputedProvider(widget.heroId))
+                  .asData
+                  ?.value
+                  .inventoryTalentQuellen ??
+              const <String, List<InventoryModifierQuelle>>{};
           final relevantTalents = catalog.talents
               .where(_matchesScope)
               .toList(growable: false);

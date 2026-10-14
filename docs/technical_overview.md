@@ -1683,6 +1683,23 @@ eines Schritts vorkommen müssen. Der Dialog `HerleitungsSucheDialog`
 über die Navigation (`KartoBestandsAdapter.berechnungsschritte`); er zeigt
 den gespeicherten Stand, Treffer einer Suche stehen aufgeklappt.
 
+**Talente als Herleitung (ARCH-04, Teilstand 8).** `talent_herleitung_rules.dart`
+liefert TaW\*, eBE und Probenwerte: `herleiteTalentEbe` (BE Kampf, die
+situative BE-Anpassung des Talent-BE-Overrides als eigener Schritt, epische
+KK-Halbierung als Ausgleichsschritt), `herleiteTalentTaw` (TaW, jeder
+Modifikator, jeder ausgerüstete Gegenstand einzeln, eBE) und
+`herleiteMetaTalentTaw`. Die Gegenstandsquellen stammen aus
+`InventoryModifierAggregation.talentQuellen` (Summe je Talent gleich
+`talentMods`, `HeroComputedSnapshot.inventoryTalentQuellen`).
+`talentProbenwertFuer` liest TaW\* und eBE aus der Herleitung ab, damit
+Probensuche, Gefecht, Liturgie- und Ausbilderprobe dasselbe liefern. Der
+Talente-Tab und das Talentdetail rechnen auf dem Entwurf, nehmen aber
+dieselben Funktionen (`_ebeHerleitung`/`_tawHerleitung`). Die Wertesuche
+nimmt die Talente über `sammleTalentHerleitungen` (Bereich „Talente“, nur
+Nicht-Kampftalente mit Wert, Meta-Talente inbegriffen). Das Unterdrücken von
+Wunden würfelt die Selbstbeherrschung mit `talentTawNachId`
+(`workspace/sb_probe_werte.dart`).
+
 **Zukauf-Grenzen:** `lib/rules/derived/bought_stat_limit_rules.dart`
 begrenzt den AP-Zukauf im Steigerungsdialog fuer Grundwerte. LeP duerfen bis
 `floor(KO / 2)`, Au bis `KO` und MR bis `floor(MU / 2)` gekauft werden. Fuer

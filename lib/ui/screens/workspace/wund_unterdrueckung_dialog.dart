@@ -13,6 +13,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/wund_anzeige_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/wund_rules.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/dice_log_persistence.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/probe_request_factory.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/workspace/sb_probe_werte.dart';
 
 /// Zeigt nach neuen Wunden eines Angriffs einen Dialog, der sofortige
 /// Unterdrueckung via SB-Probe oder direkte Bestaetigung anbietet.
@@ -88,11 +89,12 @@ class _WundUnterdrueckungDialog extends StatelessWidget {
             as Map<String, HeroTalentEntry>?)?['tal_selbstbeherrschung'];
     final hatSb = sbEntry != null && sbEntry.talentValue != null;
     final sbTaw = hatSb
-        ? computeTalentComputedTaw(
-            talentValue: sbEntry.talentValue,
-            modifier: sbEntry.modifier,
-            ebe: 0,
-          )
+        ? (sbProbeTaw(ref, heroId) ??
+              computeTalentComputedTaw(
+                talentValue: sbEntry.talentValue,
+                modifier: sbEntry.modifier,
+                ebe: 0,
+              ))
         : 0;
 
     final zoneLabel = wundZoneLabel[zone] ?? zone.name;
@@ -124,10 +126,11 @@ class _WundUnterdrueckungDialog extends StatelessWidget {
                     // Probenwerte: Wundverluste einschliesslich der neuen
                     // Wunden (WdS S. 83 zaehlt sie schon mit).
                     final effectiveAttrs = wendeWundVerlusteAn(
-                      computeEffectiveAttributes(
-                        hero,
-                        catalog: ref.read(rulesCatalogProvider).valueOrNull,
-                      ),
+                      sbProbeSnapshot(ref, heroId)?.effectiveAttributes ??
+                          computeEffectiveAttributes(
+                            hero,
+                            catalog: ref.read(rulesCatalogProvider).valueOrNull,
+                          ),
                       wundEffekte,
                     );
                     const sbCodes = [

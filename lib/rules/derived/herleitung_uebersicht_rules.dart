@@ -11,6 +11,8 @@ import 'package:dsa_heldenverwaltung/rules/derived/begleiter_herleitung_rules.da
 import 'package:dsa_heldenverwaltung/rules/derived/combat_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/eigenschaft_herleitung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/herleitung.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/talent_herleitung_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/zauber_herleitung_rules.dart';
 
 /// Bereich eines erklärbaren Werts, in Anzeigereihenfolge.
 enum HerleitungsBereich {
@@ -27,7 +29,13 @@ enum HerleitungsBereich {
   nebenhand('Nebenhand'),
 
   /// Wirksame Werte der Begleiter (Reittiere, Vertraute, Tiere).
-  begleiter('Begleiter');
+  begleiter('Begleiter'),
+
+  /// TaW* und eBE der Talente und Meta-Talente.
+  talente('Talente'),
+
+  /// ZfW* der aktivierten Zauber.
+  zauber('Zauber');
 
   const HerleitungsBereich(this.anzeige);
 
@@ -90,6 +98,8 @@ List<HerleitungsEintrag> sammleHerleitungen({
   BasiswertHerleitungen? basiswerte,
   CombatPreviewStats? kampf,
   List<HeroCompanion> begleiter = const <HeroCompanion>[],
+  List<TalentUebersicht> talente = const <TalentUebersicht>[],
+  List<ZauberUebersicht> zauber = const <ZauberUebersicht>[],
   bool astral = true,
   bool karmal = true,
 }) {
@@ -217,6 +227,19 @@ List<HerleitungsEintrag> sammleHerleitungen({
         angriff.pa,
       );
     }
+  }
+  for (final t in talente) {
+    const bereich = HerleitungsBereich.talente;
+    neu('talent-${t.id}', bereich, '${t.name} – TaW*', t.herleitungen.taw);
+    neu('talent-${t.id}-ebe', bereich, '${t.name} – eBE', t.herleitungen.ebe);
+  }
+  for (final z in zauber) {
+    neu(
+      'zauber-${z.id}',
+      HerleitungsBereich.zauber,
+      '${z.name} – ZfW*',
+      z.herleitung,
+    );
   }
   return eintraege;
 }

@@ -20,7 +20,6 @@ import 'package:dsa_heldenverwaltung/domain/hero_spell_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_spell_text_overrides.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/magic_special_ability.dart';
-import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/artefakt_spruchspeicher_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/artefakt_zauber_liste_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/cost_text_parsing.dart';
@@ -30,7 +29,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/learning_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/magic_acquisition_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/magic_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
-import 'package:dsa_heldenverwaltung/rules/derived/wund_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/zauber_herleitung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/requirement_evaluation_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ritual_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/tradition_rules.dart';
@@ -43,7 +42,6 @@ import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/artefakt_anwenden
 import 'package:dsa_heldenverwaltung/ui/screens/shared/active_spell_effects_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/dice_log_persistence.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/editor_entwurf_speichern.dart';
-import 'package:dsa_heldenverwaltung/ui/screens/shared/probe_request_factory.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_edit_controller.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/adaptive_table_columns.dart';
@@ -477,44 +475,37 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
                               _showZauberKatalog(context, catalog.spells);
                             },
                             onRollSpell: (_, spell, entry) {
-                              // Wunden senken die Eigenschaften nur für
-                              // den Wurf (WdS S. 111).
-                              final wundEffekte = ref
+                              // Probenwerte aus dem gespeicherten Stand: Wunden
+                              // und temporäre Boni zählen mit (WdS S. 111); der
+                              // ZfW kommt aus dem (Entwurfs-)Eintrag.
+                              final snapshot = ref
                                   .read(heroComputedProvider(widget.heroId))
                                   .asData
-                                  ?.value
-                                  .wundEffekte;
-                              final probenWerte = wundEffekte == null
-                                  ? effectiveAttributes
-                                  : wendeWundVerlusteAn(
-                                      effectiveAttributes,
-                                      wundEffekte,
-                                    );
-                              final targets = <ProbeTargetValue>[];
-                              for (final raw in spell.attributes) {
-                                final code = parseAttributeCode(raw);
-                                if (code == null) {
-                                  continue;
-                                }
-                                targets.add(
-                                  ProbeTargetValue(
-                                    label: raw.toUpperCase(),
-                                    value: readAttributeValue(
-                                      probenWerte,
-                                      code,
+                                  ?.value;
+                              final wert = zauberProbenwertAus(
+                                eintrag: entry,
+                                spell: spell,
+                                probenEigenschaften:
+                                    snapshot?.probenEigenschaften ??
+                                    effectiveAttributes,
+                              );
+                              if (wert == null) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      'Zauber ist nicht aktiviert (kein ZfW).',
                                     ),
                                   ),
                                 );
+                                return;
                               }
                               showLoggedProbeDialog(
                                 context: context,
                                 ref: ref,
                                 heroId: widget.heroId,
-                                request: buildSpellProbeRequest(
-                                  title: spell.name,
-                                  targets: targets,
-                                  basePool:
-                                      (entry.spellValue ?? 0) + entry.modifier,
+                                request: zauberprobeAus(
+                                  wert: wert,
+                                  titel: spell.name,
                                 ),
                               );
                             },

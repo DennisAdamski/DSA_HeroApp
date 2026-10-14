@@ -26,7 +26,9 @@ import 'package:dsa_heldenverwaltung/state/gefecht_provider.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_patzer_provider.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_initiative_provider.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
+import 'package:dsa_heldenverwaltung/rules/house_rules/house_rule_registry.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/state/house_rules_providers.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/artefakt_zauber_liste_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_lage_rules.dart';
@@ -163,6 +165,12 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
                         werte: snapshot,
                         katalog: katalog,
                         zuletzt: s.zuletztGewirkt,
+                        talentBeOverride: ref.watch(
+                          talentBeOverrideProvider(widget.heroId),
+                        ),
+                        epicAdvantagesActive: ref.watch(
+                          isHouseRuleActiveProvider(EpicRuleKeys.advantages),
+                        ),
                         gesperrt: _busy,
                         artefakte: gefechtsArtefakte(snapshot.hero),
                         onMatrix: (eintrag) => _run(

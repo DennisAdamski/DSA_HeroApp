@@ -18,6 +18,7 @@ import 'package:dsa_heldenverwaltung/ui/screens/hero_overview/stat_modifier_deta
 import 'package:dsa_heldenverwaltung/ui/screens/shared/dice_log_persistence.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/probe_request_factory.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/zustand_aendern.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/workspace/sb_probe_werte.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/wund_zustand_speichern.dart';
 
 /// Oeffnet den Wunden-Detail-Dialog als Fullscreen-Dialog.
@@ -396,11 +397,12 @@ class _SbProbeSection extends StatelessWidget {
             as Map<String, HeroTalentEntry>?)?['tal_selbstbeherrschung'];
     final hatSb = sbEntry != null && sbEntry.talentValue != null;
     final sbTaw = hatSb
-        ? computeTalentComputedTaw(
-            talentValue: sbEntry.talentValue,
-            modifier: sbEntry.modifier,
-            ebe: 0,
-          )
+        ? (sbProbeTaw(ref, heroId) ??
+              computeTalentComputedTaw(
+                talentValue: sbEntry.talentValue,
+                modifier: sbEntry.modifier,
+                ebe: 0,
+              ))
         : 0;
 
     return Column(

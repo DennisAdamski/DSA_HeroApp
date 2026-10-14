@@ -4,7 +4,9 @@ import 'package:dsa_heldenverwaltung/domain/gefecht.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_magie_rules.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_provider.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_initiative_provider.dart';
+import 'package:dsa_heldenverwaltung/rules/house_rules/house_rule_registry.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/state/house_rules_providers.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_wirken_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_requirement_context.dart';
@@ -225,7 +227,14 @@ Future<void> stoereGefechtsWirken({
       .where((t) => t.id == 'tal_selbstbeherrschung')
       .firstOrNull;
   if (talent == null) throw StateError('Selbstbeherrschungsprofil fehlt.');
-  final request = gefechtsTalentprobe(snapshot, talent);
+  final request = gefechtsTalentprobe(
+    snapshot,
+    talent,
+    epicAdvantagesActive: ref.read(
+      isHouseRuleActiveProvider(EpicRuleKeys.advantages),
+    ),
+    talentBeOverride: ref.read(talentBeOverrideProvider(heroId)),
+  );
   if (request == null) throw StateError('Selbstbeherrschungswerte fehlen.');
   final konz = heroSpecialAbilityNames(
     snapshot.hero,

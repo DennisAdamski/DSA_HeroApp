@@ -68,12 +68,25 @@ class _TalentDetailDialogState extends State<_TalentDetailDialog> {
             attributeNames: talent.attributes,
             gifted: begabt,
           );
-    // Beruecksichtigt die epische KK-Haupteigenschaft (halbierte eBE bei
-    // KK-Talenten); ohne State-Referenz bleibt es beim ungekuerzten Wert.
-    final talentEbe = computeTalentEbe(
-      baseBe: activeBaseBe,
-      talentBeRule: talent.be,
-      reductionMultiplier: state?._epicEbeMultiplier(talent.attributes) ?? 1.0,
+    // Herleitungen aus dem Regelmodul; mit State-Referenz zählen die epische
+    // KK-Halbierung, die vorübergehende Talent-BE und die Ausrüstung je
+    // Gegenstand. Ohne State bleibt es bei der übergebenen BE und Summe.
+    final ebeHerleitung =
+        state?._ebeHerleitung(talent.be, talent.attributes) ??
+        herleiteTalentEbe(beKampf: activeBaseBe, beRegel: talent.be);
+    final tawHerleitung = herleiteTalentTaw(
+      eintrag: entry,
+      ebe: ebeHerleitung,
+      inventar: state != null
+          ? (state._inventarQuellen[talent.id] ??
+                const <InventoryModifierQuelle>[])
+          : <InventoryModifierQuelle>[
+              if (inventoryMod != 0)
+                InventoryModifierQuelle(
+                  gegenstand: 'Ausrüstung',
+                  wert: inventoryMod,
+                ),
+            ],
     );
     final specs = entry.combatSpecializations.isNotEmpty
         ? entry.combatSpecializations
@@ -269,11 +282,19 @@ class _TalentDetailDialogState extends State<_TalentDetailDialog> {
               ],
               _detailRow(theme, 'max TaW', '$maxTaw'),
               if (!isCombat) ...[
-                _detailRow(theme, 'eBE', '$talentEbe'),
-                _detailRow(
-                  theme,
-                  'TaW*',
-                  '${computeTalentComputedTaw(talentValue: entry.talentValue, modifier: entry.modifier, ebe: talentEbe, inventoryMod: inventoryMod)}',
+                _detailRow(theme, 'eBE', '${ebeHerleitung.wert}'),
+                _detailRow(theme, 'TaW*', '${tawHerleitung.wert}'),
+                const Divider(height: 16),
+                _sectionTitle(theme, 'Herleitung TaW*'),
+                HerleitungsSchritte(
+                  key: ValueKey<String>('talent-detail-taw-${talent.id}'),
+                  herleitung: tawHerleitung,
+                ),
+                const SizedBox(height: 6),
+                _sectionTitle(theme, 'Herleitung eBE'),
+                HerleitungsSchritte(
+                  key: ValueKey<String>('talent-detail-ebe-${talent.id}'),
+                  herleitung: ebeHerleitung,
                 ),
               ],
               if (isEditing || specs.isNotEmpty) ...[
@@ -428,6 +449,7 @@ class _MetaTalentDetailDialog extends StatelessWidget {
     required this.rawTaw,
     required this.computedTaw,
     required this.ebe,
+    required this.tawHerleitung,
   });
 
   final HeroMetaTalent metaTalent;
@@ -439,6 +461,9 @@ class _MetaTalentDetailDialog extends StatelessWidget {
 
   /// Bereits berechnete eBE -- enthaelt den epischen KK-Rabatt, falls er greift.
   final int ebe;
+
+  /// Herleitung von [computedTaw] aus dem Regelmodul.
+  final Herleitung tawHerleitung;
 
   @override
   Widget build(BuildContext context) {
@@ -472,6 +497,12 @@ class _MetaTalentDetailDialog extends StatelessWidget {
               _detailRow(theme, 'eBE', '$ebe'),
               _detailRow(theme, 'TaW*', '$computedTaw'),
               _detailRow(theme, 'max TaW', '$maxTaw'),
+              const SizedBox(height: 6),
+              _sectionTitle(theme, 'Herleitung TaW*'),
+              HerleitungsSchritte(
+                key: ValueKey<String>('meta-detail-taw-${metaTalent.id}'),
+                herleitung: tawHerleitung,
+              ),
               const Divider(height: 16),
               _sectionTitle(theme, 'Bestandteile'),
               ...componentNames.map(

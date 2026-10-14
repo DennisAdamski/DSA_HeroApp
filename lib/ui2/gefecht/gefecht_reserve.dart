@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_provider.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_initiative_provider.dart';
+import 'package:dsa_heldenverwaltung/rules/house_rules/house_rule_registry.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/state/house_rules_providers.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_held_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_initiative_rules.dart';
@@ -142,7 +144,18 @@ class GefechtReservekarte extends ConsumerWidget {
                                 talent == null) {
                               return;
                             }
-                            final request = gefechtsTalentprobe(frisch, talent);
+                            final request = gefechtsTalentprobe(
+                              frisch,
+                              talent,
+                              epicAdvantagesActive: ref.read(
+                                isHouseRuleActiveProvider(
+                                  EpicRuleKeys.advantages,
+                                ),
+                              ),
+                              talentBeOverride: ref.read(
+                                talentBeOverrideProvider(heroId),
+                              ),
+                            );
                             if (request == null) {
                               throw StateError(
                                 'Selbstbeherrschungsprofil fehlt.',
