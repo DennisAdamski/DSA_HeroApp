@@ -11,6 +11,9 @@ import 'package:dsa_heldenverwaltung/domain/learn/learn_complexity.dart';
 import 'package:dsa_heldenverwaltung/domain/learn/learn_rules.dart';
 
 import 'attribute_start_rules.dart';
+import 'lernkosten_faktor_rules.dart';
+import 'steigerung_herleitung_rules.dart';
+import 'zauber_lernspalte_rules.dart';
 import 'bought_stat_limit_rules.dart';
 import 'combat_special_ability_state.dart';
 import 'cost_text_parsing.dart';
@@ -59,6 +62,7 @@ class AdvancementOption {
     this.apCost,
     this.requirements = const [],
     this.isCombatTalent = false,
+    this.lernregeln = Lernregeln.keine,
   });
 
   final AdvancementKind kind;
@@ -94,6 +98,18 @@ class AdvancementOption {
   final int? apCost;
   final List<RequirementCheckResult> requirements;
   final bool isCombatTalent;
+
+  /// Hexalogie-Erleichterung, Kostenfaktoren und Spaltenherleitung des Ziels.
+  final Lernregeln lernregeln;
+
+  /// Ob ein Lehrmeister die Kosten senken darf: nur bei Talenten (auch
+  /// Sprachen und Schriften) und Zauberfertigkeiten (Hausregel „Lehrmeister“,
+  /// Erweiterung und Überarbeitung S. 19).
+  bool get lehrmeisterMoeglich =>
+      kind == AdvancementKind.talent ||
+      kind == AdvancementKind.spell ||
+      kind == AdvancementKind.language ||
+      kind == AdvancementKind.script;
 
   /// Unterscheidet numerische Progression vom einmaligen SF-Erwerb.
   bool get isValueAdvancement =>

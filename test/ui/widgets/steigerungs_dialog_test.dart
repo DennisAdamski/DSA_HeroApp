@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dsa_heldenverwaltung/domain/learn/learn_complexity.dart';
+import 'package:dsa_heldenverwaltung/domain/learn/learn_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/herleitung.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/steigerung_herleitung_rules.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/steigerungs_dialog.dart';
 
 void main() {
@@ -254,5 +257,131 @@ void main() {
     expect(find.text('Grundkosten'), findsOneWidget);
     expect(find.text('Sondererfahrung'), findsOneWidget);
     expect(find.text('Epischer Aufschlag (+25 %)'), findsOneWidget);
+  });
+
+  Future<void> oeffne(
+    WidgetTester tester, {
+    required int aktuellerWert,
+    Lernregeln lernregeln = Lernregeln.keine,
+    int? lehrmeisterMaxWert,
+    LearnCost komplexitaet = LearnCost.d,
+  }) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: Builder(
+            builder: (context) => FilledButton(
+              onPressed: () => showSteigerungsDialog(
+                context: context,
+                bezeichnung: 'Wand aus Erz',
+                aktuellerWert: aktuellerWert,
+                maxWert: 14,
+                effektiveKomplexitaet: komplexitaet,
+                verfuegbareAp: 9999,
+                lehrmeisterVerfuegbar: true,
+                lernregeln: lernregeln,
+                lehrmeisterMaxWert: lehrmeisterMaxWert,
+                komplexitaetsHinweis: 'Lernkomplexität D',
+              ),
+              child: const Text('Öffnen'),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('Öffnen'));
+    await tester.pumpAndSettle();
+  }
+
+  testWidgets('Hexalogie senkt die Kosten und nennt ihren Hinweis', (
+    tester,
+  ) async {
+    await oeffne(
+      tester,
+      aktuellerWert: 3,
+      lernregeln: const Lernregeln(
+        erleichterungBisWert: 9,
+        hinweise: ['Elementare Wände: eine Spalte leichter bis ZfW 9'],
+      ),
+    );
+    expect(
+      find.textContaining('eine Spalte leichter bis ZfW 9'),
+      findsOneWidget,
+    );
+    // Schritt 3 -> 4 in Spalte C statt D.
+    expect(
+      find.text('AP-Kosten: ${LearnCost.c.costForStep(3)}'),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('ein Lehrmeister wirkt nur bis Stufe + 3', (tester) async {
+    await oeffne(tester, aktuellerWert: 5, lehrmeisterMaxWert: 5);
+    await tester.ensureVisible(find.text('Mit Lehrmeister'));
+    await tester.tap(find.text('Mit Lehrmeister'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey<String>('steigerungs-dialog-lm-grenze')),
+      findsOneWidget,
+    );
+    final ohneLm = LearnCost.d.costForStep(5);
+    expect(find.text('Kosten (LM): $ohneLm AP'), findsOneWidget);
+  });
+
+  testWidgets('innerhalb der Grenze gilt der Lehrmeister-Nachlass', (
+    tester,
+  ) async {
+    await oeffne(tester, aktuellerWert: 3, lehrmeisterMaxWert: 10);
+    await tester.ensureVisible(find.text('Mit Lehrmeister'));
+    await tester.tap(find.text('Mit Lehrmeister'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey<String>('steigerungs-dialog-lm-grenze')),
+      findsNothing,
+    );
+    expect(
+      find.text(
+        'Kosten (LM): ${apMitLehrmeister(LearnCost.d.costForStep(3))} AP',
+      ),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('die Berechnung zeigt Lernspalte in Spalten und Hexalogie', (
+    tester,
+  ) async {
+    await oeffne(
+      tester,
+      aktuellerWert: 3,
+      lernregeln: Lernregeln(
+        erleichterungBisWert: 9,
+        spaltenHerleitung: Herleitung(
+          bezeichnung: 'Lernspalte',
+          schritte: const [
+            HerleitungsSchritt(
+              bezeichnung: 'Komplexität des Zaubers',
+              betrag: 4,
+              art: HerleitungsArt.grundwert,
+              formel: 'Spalte D',
+            ),
+            HerleitungsSchritt(
+              bezeichnung: 'Merkmalskenntnis',
+              betrag: -1,
+              art: HerleitungsArt.modifikator,
+              quelle: 'Merkmalskenntnis',
+            ),
+          ],
+        ),
+      ),
+    );
+    await tester.tap(find.text('Berechnung der AP-Kosten'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Lernspalte'), findsOneWidget);
+    expect(find.textContaining('Merkmalskenntnis: -1 Spalte'), findsOneWidget);
+    expect(find.text('Ergebnis: Spalte C'), findsOneWidget);
+    expect(find.text('Hexalogie'), findsOneWidget);
   });
 }

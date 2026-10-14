@@ -244,7 +244,9 @@ Future<HeroAdvancementEntry?> _planValue(
     komplexitaetsHinweis: option.complexityHint,
     episch: session.preview.isEpisch,
     istHaupteigenschaft: option.isMainAttribute,
-    lehrmeisterVerfuegbar: true,
+    lehrmeisterVerfuegbar: option.lehrmeisterMoeglich,
+    lehrmeisterMaxWert: session.preview.level + 3,
+    lernregeln: option.lernregeln,
     previewBuilder: option.kind == AdvancementKind.attribute
         ? (context, target) => AdvancementImpactPanel(
             session: session,

@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:dsa_heldenverwaltung/domain/learn/learn_complexity.dart';
 import 'package:dsa_heldenverwaltung/domain/learn/learn_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/epic_ap_cost_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/lernkosten_faktor_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/steigerung_herleitung_rules.dart';
 
 void main() {
@@ -141,5 +142,138 @@ void main() {
       episch: true,
     );
     expect(k.apKosten, 0);
+  });
+
+  group('Hexalogie und Gedächtnis', () {
+    test('Hexalogie verbilligt nur Schritte bis zum Zielwert', () {
+      final k = herleiteSteigerungskosten(
+        vonWert: 2,
+        aufWert: 6,
+        komplexitaet: LearnCost.d,
+        regeln: const Lernregeln(erleichterungBisWert: 4),
+      );
+      // Schritte 2→3 und 3→4 in Spalte C, 4→5 und 5→6 in Spalte D.
+      expect(
+        k.apKosten,
+        LearnCost.c.costForStep(2) +
+            LearnCost.c.costForStep(3) +
+            LearnCost.d.costForStep(4) +
+            LearnCost.d.costForStep(5),
+      );
+      final hex = k.herleitung.schritte.singleWhere(
+        (s) => s.bezeichnung == kSteigerungHexalogieSchritt,
+      );
+      expect(hex.betrag, lessThan(0));
+      expect(hex.formel, contains('ZfW 4'));
+    });
+
+    test(
+      'die Aktivierung gehört zur Erleichterung, sobald der Wert >= 0 ist',
+      () {
+        final k = herleiteSteigerungskosten(
+          vonWert: -1,
+          aufWert: 1,
+          komplexitaet: LearnCost.d,
+          regeln: const Lernregeln(erleichterungBisWert: 0),
+        );
+        expect(
+          k.apKosten,
+          LearnCost.c.costForStep(-1) + LearnCost.d.costForStep(0),
+        );
+      },
+    );
+
+    test(
+      'Hexalogie und Sondererfahrung verbilligen denselben Schritt doppelt',
+      () {
+        final k = herleiteSteigerungskosten(
+          vonWert: 3,
+          aufWert: 4,
+          komplexitaet: LearnCost.d,
+          seAnzahl: 1,
+          regeln: const Lernregeln(erleichterungBisWert: 9),
+        );
+        expect(k.apKosten, LearnCost.b.costForStep(3));
+        expect(k.seVerbraucht, 1);
+      },
+    );
+
+    test('Gutes Gedächtnis nimmt ein Viertel der Kosten nach der Spalte', () {
+      final ohne = herleiteSteigerungskosten(
+        vonWert: 5,
+        aufWert: 8,
+        komplexitaet: LearnCost.d,
+      );
+      final mit = herleiteSteigerungskosten(
+        vonWert: 5,
+        aufWert: 8,
+        komplexitaet: LearnCost.d,
+        regeln: const Lernregeln(
+          faktoren: [
+            LernkostenFaktor(
+              bezeichnung: 'Gutes Gedächtnis (¾)',
+              zaehler: 3,
+              nenner: 4,
+              quelle: 'Vorteil',
+            ),
+          ],
+        ),
+      );
+      expect(mit.apKosten, (ohne.apKosten * 3 / 4).round());
+      expect(
+        mit.herleitung.sichtbareSchritte.map((s) => s.bezeichnung),
+        contains('Gutes Gedächtnis (¾)'),
+      );
+    });
+
+    test('Begabung (Spalte) vor Gedächtnis: Dreiviertel der linken Spalte', () {
+      // „Ein begabter Held mit Gutem Gedächtnis bezahlt drei Viertel der AP
+      // der verbilligten (linken) Spalte.“ (Wege der Helden S. 253)
+      final k = herleiteSteigerungskosten(
+        vonWert: 5,
+        aufWert: 6,
+        komplexitaet: LearnCost.c,
+        regeln: const Lernregeln(
+          faktoren: [
+            LernkostenFaktor(
+              bezeichnung: 'Gutes Gedächtnis (¾)',
+              zaehler: 3,
+              nenner: 4,
+              quelle: 'Vorteil',
+            ),
+          ],
+        ),
+      );
+      expect(k.apKosten, (LearnCost.c.costForStep(5) * 3 / 4).round());
+    });
+
+    test('Faktor, epischer Aufschlag und Lehrmeister bleiben summentreu', () {
+      for (final lehrmeister in const [false, true]) {
+        final k = herleiteSteigerungskosten(
+          vonWert: 5,
+          aufWert: 9,
+          komplexitaet: LearnCost.d,
+          seAnzahl: 1,
+          episch: true,
+          mitLehrmeister: lehrmeister,
+          regeln: const Lernregeln(
+            erleichterungBisWert: 7,
+            faktoren: [
+              LernkostenFaktor(
+                bezeichnung: 'Eidetisches Gedächtnis (½)',
+                zaehler: 1,
+                nenner: 2,
+                quelle: 'Vorteil',
+              ),
+            ],
+          ),
+        );
+        expect(
+          k.herleitung.wert,
+          k.herleitung.schritte.fold<int>(0, (a, s) => a + s.betrag),
+        );
+        expect(k.apKosten, greaterThan(0));
+      }
+    });
   });
 }

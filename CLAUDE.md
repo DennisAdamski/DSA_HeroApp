@@ -338,7 +338,13 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   Talente: `talentErsatzproben` (Meisterentscheid, Richtzuschläge aus WdS). Zauber: `zauber_herleitung_rules.dart` (ZfW*, gemeinsame
   Zauberprobe für Suche, Gefecht und Magie-Tab). Steigerungskosten:
   `steigerung_herleitung_rules.dart` (Grundkosten, SE, Aufschlag, Lehrmeister;
-  der Steigerungsdialog liest nur ab). Die Oberfläche
+  der Steigerungsdialog liest nur ab). Lernspalte von
+  Zaubern: `zauber_lernspalte_rules.dart` (Hauszauber, Merkmalskenntnis,
+  Begabung, Unfähigkeit, fremde Repräsentation je Paar, Gegenelement,
+  Hexalogie nach `hexalogie_katalog.dart`); Gedächtnis-Vorteile als
+  Kostenfaktor in `lernkosten_faktor_rules.dart`; beides reist als `Lernregeln`
+  an der `AdvancementOption`. Ein Lehrmeister gilt nur für Talente und Zauber,
+  bis Stufe + 3. Die Oberfläche
   zeigt sie an und rechnet **nie** selbst Modifikatoren
   zusammen. Stand und nächste Bereiche: Roadmap ARCH-04.
 - Fachlich benannte Anwendungsablaeufe (ARCH-05) liegen in `lib/ablaeufe/`:

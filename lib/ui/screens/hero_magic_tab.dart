@@ -29,7 +29,9 @@ import 'package:dsa_heldenverwaltung/rules/derived/learning_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/magic_acquisition_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/magic_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/special_ability_variant_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/zauber_herleitung_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/zauber_lernspalte_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/requirement_evaluation_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ritual_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/tradition_rules.dart';
@@ -437,6 +439,14 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
                             ),
                           ),
                           _MagicActiveSpellsTable(
+                            elementarharmonisiert:
+                                heroSpecialAbilityNames(
+                                  hero,
+                                  catalog: catalog,
+                                ).any(
+                                  (name) => normalizeSpecialAbilityName(name)
+                                      .startsWith('elementarharmonisierteaura'),
+                                ),
                             begabungen: begabungen,
                             activeSpellIds: activeSpellIds,
                             spellEntries: _draftSpells,

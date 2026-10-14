@@ -1074,8 +1074,8 @@ ihre Basis, Modifikatoren, Bedingungen und Quellen.
   *(Format und Basiswerte seit Teilstand 1, Eigenschaften seit Teilstand 2,
   Kampfvorschau seit Teilstand 3, Schild- und Parierwaffen-PA seit
   Teilstand 4, Gefechtswerte Teilstand 6, Begleiter Teilstand 7, Talente
-  Teilstand 8, Zauber Teilstand 9, Steigerungskosten Teilstand 10; offen
-  bleiben Lernspalte und Erwerbsdialog, siehe Teilstand 10.)*
+  Teilstand 8, Zauber Teilstand 9, Steigerungskosten Teilstand 10, Lernregeln Teilstand 11; offen bleibt
+  der Erwerbsdialog, siehe Teilstand 10/11.)*
 
 **Abnahme:** Zwei Helden mit verschiedenen Profilen können parallel geöffnet
 werden, ohne einander zu beeinflussen. Gleiche Eingaben und Regelversionen
@@ -1553,6 +1553,76 @@ der Erwerbsdialog (`erwerb_dialog.dart`) und der Nachteilsabbau rechnen den
 epischen Aufschlag weiterhin selbst. Die Sondererfahrungs-Ausnahme des
 Aufschlags (Hausregel Kap. 2.2) greift im Dialog wie bisher auf die schon
 verbilligten Kosten; unverändert übernommen.
+
+**Teilstand 11, 14.10.2026 — Lernregeln: Hexalogien, Gegenelement, Gedächtnis,
+Lehrmeister.**
+
+*Anlass (Nutzer).* AP-Kosten weichen je nach Lehrmeister, Begabung und
+Unfähigkeit, Gedächtnis-Vorteilen und – bei Zaubern – weiteren Faktoren ab;
+besonders beeinflussen sich die Zauber einer Hexalogie. Die Regeln wurden mit
+dem dsa-rules-MCP geprüft (Belege unten) und die Abweichungen der App behoben.
+
+*Belege.* Hexalogien: Wege der Zauberei S. 384 („Der Zauber einer Hexalogie
+mit dem höchsten ZfW wird normal gesteigert, alle anderen werden eine Spalte
+leichter aktiviert und bis zu diesem Wert leichter gesteigert“; Zauber des
+Gegenelements profitieren nicht davon). Gegenelement: WdZ S. 382 (Feuer–Wasser,
+Erz–Luft, Humus–Eis; Merkmalskenntnis oder Begabung in einem speziellen Element
+macht dessen Gegenelement eine Spalte schwerer, „Elementar (gesamt)“ und die SF
+Elementarharmonisierte Aura heben das auf). Beispiel Rafik S. 385 als Test.
+Repräsentation: WdZ S. 74 / WdS S. 171 (fremd zwei Spalten, Schelme drei,
+Schelm–Scharlatan zwei, Gildenmagier–Scharlatan und –Borbaradianer eine).
+Gutes/Eidetisches Gedächtnis: WdH S. 251/253 (¾ bzw. ½ der Kosten für
+Wissenstalente, Sprachen/Schriften und Zauberfertigkeiten, nicht kombinierbar,
+nach der Spalte, „drei Viertel der AP der verbilligten Spalte“). Lehrmeister:
+Hausregel „Erweiterung und Überarbeitung“ Kap. 6 (20 %, TaW 15+, nur Talente
+und Zauberfertigkeiten, bis Stufe + 3).
+
+*Umsetzung.*
+
+- `hexalogie_katalog.dart`: sieben Hexalogien mit den Zaubern des
+  Basiskatalogs (Wände, Geschosse, Explosionen, Leiber, Verzauberung eines
+  Geschosses, Bewegung, Wirbel), `Magieelement` mit Gegenelement.
+- `zauber_lernspalte_rules.dart`: `zauberLernspalte` liefert Spalte,
+  Herleitung **in Spalten** (Katalog, Hauszauber, Merkmalskenntnis, Begabung,
+  Unfähigkeit, fremde Repräsentation, Gegenelement) und die Hexalogie-Lage
+  (`hexalogieBisWert` = höchster ZfW der anderen gelernten Zauber der Gruppe).
+  Dieselbe Rechnung nutzen Steigerungsoption und Zaubertabelle des Magie-Tabs
+  (dort mit einem Hexalogie-Symbol samt Hinweis).
+- `berechneSteigerungskosten(erleichterungBisWert:)`: jeder Schritt bis zu
+  diesem Zielwert (die Aktivierung eingeschlossen) kostet eine weitere Spalte
+  weniger, zusammen mit Sondererfahrung.
+- `lernkosten_faktor_rules.dart`: Gutes/Eidetisches Gedächtnis als
+  Kostenfaktor; `Lernregeln` bündelt Hexalogie, Faktoren, Spaltenherleitung und
+  Hinweise an der `AdvancementOption`. Die Steigerungskosten-Herleitung führt
+  „Hexalogie“ und den Faktor als eigene Schritte.
+- `fremdeRepraesentationsSpalten` (`magic_rules.dart`) ersetzt den pauschalen
+  Zuschlag von zwei Spalten.
+- Lehrmeister nur noch bei Talenten (auch Sprachen/Schriften) und Zaubern
+  (`AdvancementOption.lehrmeisterMoeglich`) und nur bis Stufe + 3
+  (`lehrmeisterMaxWert`); darüber entfällt der Nachlass, der Dialog sagt es.
+- Steigerungsdialog: „Berechnung der AP-Kosten“ zeigt die Lernspalte in
+  Spalten, dann die AP-Schritte.
+
+*Prüfungen.* `zauber_lernspalte_rules_test.dart` (Rafik-Beispiel, Gegenelement,
+Hexalogie ohne Geschwister, Spaltensummen über den ganzen Katalog, Repräsentation),
+`hexalogie_katalog_test.dart` (gegen den echten Katalog),
+`lernregeln_advancement_test.dart`, erweiterte `steigerung_herleitung_rules_test`
+und `steigerungs_dialog_test`.
+
+*Bewusst offen.*
+
+- Zweite Repräsentation desselben Zaubers (Expertenregel, WdZ S. 74): der Held
+  speichert einen Zauber nur einmal.
+- Hexalogien nur mit den Zaubern des Basiskatalogs; eigene Katalogzauber ordnet
+  nichts einer Hexalogie zu. Merkmalskenntnis **und** Begabung in einem Element
+  und seinem Gegenelement (Expertenhinweis) gilt als Summe.
+- Gedächtnis-Vorteile und Akademische Ausbildung bei Sonderfertigkeiten,
+  Rituale, Ritualkenntnis und Liturgien; die Akademische Ausbildung wirkt nur
+  bei der Erschaffung.
+- Selbststudium und gegenseitiges Lehren (optionale Regeln), Lehrmeister-Gebühren
+  nach Gruppenzugehörigkeit (⅓, Randgruppen +20 %), Aktivierung nur mit Mentor.
+- Die Vorschau im Zauberkatalog und der Repräsentationsdialog des Magie-Tabs
+  zeigen das Gegenelement noch nicht.
 
 ## ARCH-05 — Schreibende Aktionen fachlich aufteilen
 

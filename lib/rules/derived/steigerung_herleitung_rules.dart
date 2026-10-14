@@ -10,6 +10,7 @@ import 'package:dsa_heldenverwaltung/domain/learn/learn_complexity.dart';
 import 'package:dsa_heldenverwaltung/domain/learn/learn_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/epic_ap_cost_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/herleitung.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/lernkosten_faktor_rules.dart';
 
 /// Bezeichnung der Grundkosten.
 const String kSteigerungGrundkostenSchritt = 'Grundkosten';
@@ -17,11 +18,41 @@ const String kSteigerungGrundkostenSchritt = 'Grundkosten';
 /// Bezeichnung des Sondererfahrungs-Nachlasses.
 const String kSteigerungSeSchritt = 'Sondererfahrung';
 
+/// Bezeichnung der Hexalogie-Erleichterung.
+const String kSteigerungHexalogieSchritt = 'Hexalogie';
+
 /// Bezeichnung des epischen Aufschlags.
 const String kSteigerungEposSchritt = 'Epischer Aufschlag (+25 %)';
 
 /// Bezeichnung des Lehrmeister-Nachlasses.
 const String kSteigerungLehrmeisterSchritt = 'Lehrmeister (−20 %)';
+
+/// Regeln, die die Kosten eines Lernziels über die Spalte hinaus bestimmen.
+class Lernregeln {
+  /// Bündelt Hexalogie-Erleichterung, Kostenfaktoren und Erklärungen.
+  const Lernregeln({
+    this.erleichterungBisWert,
+    this.faktoren = const <LernkostenFaktor>[],
+    this.spaltenHerleitung,
+    this.hinweise = const <String>[],
+  });
+
+  /// Ohne besondere Regeln.
+  static const Lernregeln keine = Lernregeln();
+
+  /// Bis zu diesem Zielwert ist jeder Schritt eine weitere Spalte billiger
+  /// (Hexalogie).
+  final int? erleichterungBisWert;
+
+  /// Kostenfaktoren aus Vorteilen (Gutes/Eidetisches Gedächtnis).
+  final List<LernkostenFaktor> faktoren;
+
+  /// Herleitung der Lernspalte in Spalten, falls das Lernziel eine kennt.
+  final Herleitung? spaltenHerleitung;
+
+  /// Weitere Erklärungen für die Anzeige (etwa zur Hexalogie).
+  final List<String> hinweise;
+}
 
 /// Kosten einer Steigerung samt Herleitung.
 class Steigerungskosten {
@@ -68,6 +99,7 @@ Steigerungskosten herleiteSteigerungskosten({
   bool istHaupteigenschaft = false,
   bool mitLehrmeister = false,
   bool epicRuleActive = true,
+  Lernregeln regeln = Lernregeln.keine,
 }) {
   final ohneSe = berechneSteigerungskosten(
     vonWert: vonWert,
@@ -80,7 +112,30 @@ Steigerungskosten herleiteSteigerungskosten({
     effektiveKomplexitaet: komplexitaet,
     seAnzahl: seAnzahl,
   );
-  final vorAufschlag = mitSe.apKosten;
+  final mitHexalogie = berechneSteigerungskosten(
+    vonWert: vonWert,
+    aufWert: aufWert,
+    effektiveKomplexitaet: komplexitaet,
+    seAnzahl: seAnzahl,
+    erleichterungBisWert: regeln.erleichterungBisWert,
+  );
+  // Faktoren (Gedächtnis) wirken auf die Kosten nach allen Spaltenregeln.
+  final faktorSchritte = <HerleitungsSchritt>[];
+  var kosten = mitHexalogie.apKosten;
+  for (final faktor in regeln.faktoren) {
+    final danach = faktor.wende(kosten);
+    faktorSchritte.add(
+      HerleitungsSchritt(
+        bezeichnung: faktor.bezeichnung,
+        betrag: danach - kosten,
+        art: HerleitungsArt.modifikator,
+        quelle: faktor.quelle,
+        formel: '${faktor.zaehler}/${faktor.nenner} von $kosten AP',
+      ),
+    );
+    kosten = danach;
+  }
+  final vorAufschlag = kosten;
   final nachAufschlag = applyEpicApSurcharge(
     vorAufschlag,
     ruleActive: epicRuleActive,
@@ -108,7 +163,7 @@ Steigerungskosten herleiteSteigerungskosten({
         ),
         HerleitungsSchritt(
           bezeichnung: kSteigerungSeSchritt,
-          betrag: vorAufschlag - ohneSe.apKosten,
+          betrag: mitSe.apKosten - ohneSe.apKosten,
           art: HerleitungsArt.modifikator,
           formel: mitSe.seVerbraucht == 0
               ? null
@@ -117,6 +172,16 @@ Steigerungskosten herleiteSteigerungskosten({
                     'in Spalte ${komplexitaetLabel(komplexitaet.previous())}',
           quelle: 'Sondererfahrung',
         ),
+        HerleitungsSchritt(
+          bezeichnung: kSteigerungHexalogieSchritt,
+          betrag: mitHexalogie.apKosten - mitSe.apKosten,
+          art: HerleitungsArt.modifikator,
+          formel: regeln.erleichterungBisWert == null
+              ? null
+              : 'eine Spalte leichter bis ZfW ${regeln.erleichterungBisWert}',
+          quelle: 'Hexalogie',
+        ),
+        ...faktorSchritte,
         HerleitungsSchritt(
           bezeichnung: kSteigerungEposSchritt,
           betrag: nachAufschlag - vorAufschlag,
