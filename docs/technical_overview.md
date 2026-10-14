@@ -1711,6 +1711,31 @@ Talents `herleiteTalentLernspalte`; `AdvancementOption.lernregeln`
 (`Lernregeln`) trägt Hexalogie-Grenze, Faktoren (`lernkosten_faktor_rules.dart`)
 und Hinweise bis in den Steigerungsdialog.
 
+**Regelprofil und Updatevorschau (ARCH-04, Teilstand 12/13).**
+`HeroSheet.regelProfil` hält die aktiven Pakete des Helden als Manifestkopie mit
+Prüfsumme; `loeseRegelProfilAuf` (`catalog/regelprofil_aufloesung.dart`) löst
+sie rein zu einem `RulesCatalog` auf. `bekanntePaketIds` (die App-weit
+bekannten Pakete) sorgen dafür, dass Einträge eines nicht gewählten Pakets
+über `ruleMeta.sourceKey` gesperrt bleiben; das Profil kennt sonst nur seine
+eigenen Pakete (`istEintragDurchPaketGesperrt` im Resolver). Die Vorschau
+besteht aus drei reinen Schichten: `vergleicheAufloesungen`/
+`erstelleRegelProfilVergleich` (`catalog/regelprofil_vergleich.dart`) vergleichen
+zwei Auflösungen – neue, entfernte, geänderte Einträge mit Feldpfad und
+Paketursache, durch Pakete ein-/ausgeblendete Basiseinträge und Hinweise zu den
+Kopien (`fehlt`, `aktualisiert`, `kopieVeraendert`, `unlesbar`); der Vorschlag
+kommt aus `schlageProfilVor` (alle Pakete des Profils auf dem aktuellen Stand,
+neue nur auf Wunsch). `erstelleRegelProfilVorschau`
+(`regelprofil_vorschau_rules.dart`) rechnet dazu für einen Helden die
+Auswirkung geänderter `voraussetzungen_struktur` auf erworbene Fähigkeiten und
+Manöver (`ErworbenAuswirkung`) sowie die Herleitungen vorher/nachher
+(`sammleHerleitungenAusSnapshot`, dieselbe Zusammenstellung wie die
+Berechnungssuche). Der Basiskatalog ist nicht eingefroren, beide Seiten rechnen
+gegen den aktuellen Stand. Provider: `regelProfilVergleichProvider(profil)`
+(geteilt je Profil) und `regelProfilVorschauProvider(heroId)`. Geschrieben wird
+nur über `RegelProfilUebernehmen` (`ablaeufe/`, `uebernehmeRegelProfil`): frisch
+laden, abweisen wenn das Profil inzwischen ein anderes ist, ein Dokument
+speichern, Normalisierung mit dem Katalog des neuen Profils.
+
 **Zukauf-Grenzen:** `lib/rules/derived/bought_stat_limit_rules.dart`
 begrenzt den AP-Zukauf im Steigerungsdialog fuer Grundwerte. LeP duerfen bis
 `floor(KO / 2)`, Au bis `KO` und MR bis `floor(MU / 2)` gekauft werden. Fuer

@@ -354,7 +354,20 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   `heroEpicAdvantagesActiveProvider(heroId)`, nie `rulesCatalogProvider` direkt
   (der bleibt Gate, Einstellungen und Katalogverwaltung). Auflösung rein in
   `loeseRegelProfilAuf`. Ein Profil wird **nie** automatisch geschrieben (Hashes);
-  nur bewusste Nutzeraktion. Offen: Updatevorschau, Oberfläche, Gruppenvorgabe.
+  nur bewusste Nutzeraktion. **Updatevorschau (Teilstand 13, ohne Oberfläche):**
+  `erstelleRegelProfilVergleich`/`vergleicheAufloesungen`
+  (`lib/catalog/regelprofil_vergleich.dart`) vergleichen zwei Auflösungen
+  (Einträge, Sperrbedingungen über `ruleMeta.sourceKey`, Pakethinweise);
+  `schlageProfilVor` hebt die Pakete des Profils auf den aktuellen Stand, neue
+  nie von selbst. `erstelleRegelProfilVorschau`
+  (`rules/derived/regelprofil_vorschau_rules.dart`) ergänzt Auswirkung auf
+  erworbene Fähigkeiten und Herleitung vorher/nachher; Provider
+  `regelProfilVorschauProvider(heroId)`. Der Basiskatalog bleibt nicht
+  eingefroren. Geschrieben wird nur über den Ablauf `RegelProfilUebernehmen`
+  (`uebernehmeRegelProfil` weist ein inzwischen geändertes Profil ab).
+  Auflösungen bekommen `bekanntePaketIds`, sonst blieben Einträge eines nicht
+  gewählten Pakets sichtbar. Offen: Oberfläche je Held, Erstübernahme
+  `null → Profil`, Gruppenvorgabe, Import/Export.
 - Fachlich benannte Anwendungsablaeufe (ARCH-05) liegen in `lib/ablaeufe/`:
   ohne Riverpod und Flutter, Abhaengigkeiten per Konstruktor, aus `data/`
   nur die `HeroRepository`-Schnittstelle — der Waechter

@@ -21,10 +21,14 @@ final regelProfilAufloesungProvider =
       );
       final repository = ref.watch(customCatalogRepositoryProvider);
       final eigene = await repository.load(catalogVersion: basisDaten.version);
+      // Der Paketkatalog hängt nicht von den Einstellungen ab; ein globales
+      // Umschalten löst die Auflösung der Profile also nicht neu aus.
+      final paketKatalog = await ref.watch(houseRulePackCatalogProvider.future);
       return loeseRegelProfilAuf(
         basisDaten: basisDaten,
         profil: profil,
         eigeneEintraege: eigene,
+        bekanntePaketIds: <String>{for (final p in paketKatalog.packs) p.id},
         loader: ref.watch(catalogLoaderProvider),
       );
     });

@@ -48,6 +48,38 @@ HeroRegelProfil regelProfilAusGlobalemStand({
   );
 }
 
+/// Vorgeschlagenes Profil für ein Update (ARCH-04): die Pakete des Helden
+/// auf dem aktuellen Stand von [aktuellerPaketKatalog].
+///
+/// Jedes Profilpaket wird aus dem aktuellen Paket neu gestempelt. Fehlt das
+/// Paket im aktuellen Katalog oder ist seine Kopie unlesbar und kein aktuelles
+/// Paket da, bleibt die Kopie unverändert (der Held rechnet aus ihr weiter).
+/// Pakete, die erst eine neuere App-Version mitbringt, kommen nie von selbst
+/// hinzu; wer sie will, nennt sie in [zusaetzlichePaketIds] (unbekannte IDs
+/// werden übergangen). Felder einer neueren App-Version bleiben erhalten.
+HeroRegelProfil schlageProfilVor({
+  required HeroRegelProfil profil,
+  required HouseRulePackCatalog aktuellerPaketKatalog,
+  required String catalogVersion,
+  Set<String> zusaetzlichePaketIds = const <String>{},
+}) {
+  final pakete = <HeroRegelProfilPaket>[
+    for (final paket in profil.pakete)
+      switch (aktuellerPaketKatalog.find(paket.paketId)) {
+        final aktuell? => stempelRegelprofilPaket(aktuell),
+        null => paket,
+      },
+  ];
+  final vorhanden = profil.paketIds;
+  for (final id in zusaetzlichePaketIds) {
+    final aktuell = aktuellerPaketKatalog.find(id);
+    if (aktuell != null && !vorhanden.contains(aktuell.id)) {
+      pakete.add(stempelRegelprofilPaket(aktuell));
+    }
+  }
+  return profil.copyWith(catalogVersion: catalogVersion, pakete: pakete);
+}
+
 /// Paketkatalog, der nur aus den Kopien des Profils besteht.
 ///
 /// Kopien, die sich nicht als Manifest lesen lassen, fehlen im Ergebnis und
@@ -81,6 +113,7 @@ class RegelProfilAufloesung {
     required this.katalog,
     required this.runtimeData,
     required this.aktivePaketIds,
+    required this.bekanntePaketIds,
     required this.hinweise,
   });
 
@@ -93,6 +126,10 @@ class RegelProfilAufloesung {
   /// Pakete, die für den Helden wirken.
   final Set<String> aktivePaketIds;
 
+  /// Pakete, deren Sperrbedingung (`ruleMeta.sourceKey`) galt: die Pakete des
+  /// Profils und alle, die die App kennt.
+  final Set<String> bekanntePaketIds;
+
   /// Probleme der Paketkopien und des Resolvers.
   final List<HouseRulePackIssue> hinweise;
 }
@@ -101,19 +138,29 @@ class RegelProfilAufloesung {
 ///
 /// [eigeneEintraege] sind die eigenen Katalogeinträge des Nutzers; sie sind
 /// kein Paket und gelten für jeden Helden.
+///
+/// [bekanntePaketIds] sind die Pakete, die die App kennt. Ihre Einträge sind
+/// gesperrt, solange das Profil das Paket nicht nennt; ohne Angabe gelten nur
+/// die Pakete des Profils als bekannt.
 RegelProfilAufloesung loeseRegelProfilAuf({
   required CatalogSourceData basisDaten,
   required HeroRegelProfil profil,
   required CustomCatalogSnapshot eigeneEintraege,
+  Set<String> bekanntePaketIds = const <String>{},
   CatalogLoader loader = const CatalogLoader(),
 }) {
   final paketKatalog = paketKatalogAusProfil(profil);
   // Das Profil nennt die aktiven Pakete; die Elternkette gilt weiter.
   final aktiv = paketKatalog.resolveActivePackIds(const <String>{});
+  final bekannt = Set<String>.unmodifiable(<String>{
+    for (final paket in profil.pakete) paket.paketId,
+    ...bekanntePaketIds,
+  });
   final ergebnis = HouseRuleCatalogResolver.resolve(
     baseData: basisDaten,
     packCatalog: paketKatalog,
     activePackIds: aktiv,
+    bekanntePaketIds: bekannt,
   );
   final runtimeData = CatalogRuntimeData.resolve(
     baseData: basisDaten,
@@ -134,6 +181,7 @@ RegelProfilAufloesung loeseRegelProfilAuf({
     katalog: katalog,
     runtimeData: runtimeData,
     aktivePaketIds: aktiv,
+    bekanntePaketIds: bekannt,
     hinweise: List<HouseRulePackIssue>.unmodifiable(<HouseRulePackIssue>[
       ...paketKatalog.issues,
       ...ergebnis.issues,

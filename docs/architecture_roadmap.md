@@ -1074,7 +1074,7 @@ ihre Basis, Modifikatoren, Bedingungen und Quellen.
   *(Format und Basiswerte seit Teilstand 1, Eigenschaften seit Teilstand 2,
   Kampfvorschau seit Teilstand 3, Schild- und Parierwaffen-PA seit
   Teilstand 4, Gefechtswerte Teilstand 6, Begleiter Teilstand 7, Talente
-  Teilstand 8, Zauber Teilstand 9, Steigerungskosten Teilstand 10, Lernregeln Teilstand 11; Regelprofil-Grundlage Teilstand 12; offen bleibt
+  Teilstand 8, Zauber Teilstand 9, Steigerungskosten Teilstand 10, Lernregeln Teilstand 11; Regelprofil-Grundlage Teilstand 12, Updatevorschau ohne Oberfläche Teilstand 13; offen bleibt
   der Erwerbsdialog, siehe Teilstand 10/11.)*
 
 **Abnahme:** Zwei Helden mit verschiedenen Profilen können parallel geöffnet
@@ -1658,6 +1658,68 @@ Werte, Erwerbsvoraussetzungen, Gate-Änderungen im Basiskatalog); Oberfläche je
 Held; Hinweis bei fehlendem/geändertem Paket; Gruppenvorgabe („live von der
 Gruppe“, eigenes Teilprojekt, Firestore-Regeln verbieten heute
 Gruppen-Updates); Import/Export prüfen.
+
+**Teilstand 13, 14.10.2026 — Updatevorschau für Regelprofile (ohne Oberfläche).**
+
+*Umfang.* Reine Vorschau, was ein Paketupdate für einen Helden mit Profil
+ändern würde, und eine bewusste Übernahme. Ohne Übernahme ändert sich nichts am
+Helden (Hashes, Sync).
+
+- `catalog/regelprofil_vergleich.dart`: Diff zweier `loeseRegelProfilAuf`-Läufe.
+  Je Katalogsektion neue, entfernte und geänderte Einträge mit Feldpfad, Werten
+  und Paketursache (aus dem Herkunftsindex); `SperrAenderung` für Basiseinträge,
+  die ein Paket über `ruleMeta.sourceKey` ein- oder ausblendet; Pakethinweise
+  `fehlt` / `aktualisiert` / `kopieVeraendert` / `unlesbar`. Ausgabe sortiert,
+  gleiche Eingaben liefern dasselbe Ergebnis. `schlageProfilVor` hebt jedes
+  Paket des Profils auf den aktuellen Stand; neue Pakete kommen nie von selbst
+  hinzu (`zusaetzlichePaketIds`).
+- `rules/derived/regelprofil_vorschau_rules.dart`: Auswirkung geänderter oder
+  entfallener Erwerbsvoraussetzungen auf bereits erworbene Fähigkeiten und
+  Manöver (`ErworbenAuswirkung`: nichtErworben, unveraendert, neuOffen,
+  nichtMehrOffen, entfallen) und Herleitung vorher/nachher je Wert. Die
+  Zusammenstellung der Herleitungen steht jetzt in
+  `sammleHerleitungenAusSnapshot` und wird von Berechnungssuche und Vorschau
+  geteilt; angezeigter und verwendeter Wert sind so dieselben.
+- `ablaeufe/regelprofil_uebernehmen.dart` (`RegelProfilUebernehmen`) setzt das
+  Profil über `HeroActions.updateHero` (`aendereGespeichertenHelden`, ein
+  Dokument). `uebernehmeRegelProfil` weist ein inzwischen geändertes Profil mit
+  `StateError` ab und liefert bei gleichem Profil denselben Helden (kein
+  Schreiben). `updateHero` bekam dafür einen optionalen `validationCatalog`, damit
+  die Normalisierung den Katalog des **neuen** Profils nutzt.
+  `aendereHeldMitMeldung` kommt erst mit der Oberfläche dazu (braucht Kontext,
+  Planungsprüfung und Fehleranzeige).
+- Provider: `regelProfilVergleichProvider(profil)` (geteilt je Profil),
+  `regelProfilVorschauProvider(heroId)` (`null` ohne verstandenes Profil),
+  `regelProfilUebernehmenProvider`.
+
+*Befund und Korrektur.* Der Resolver sperrte Einträge nur, wenn sein
+Paketkatalog das Paket kannte. Ein Profil enthält aber nur seine **aktiven**
+Pakete; ließ es etwa `epic_rules_v1.combat_sf` weg, blieben dessen 53 Einträge
+sichtbar, anders als im globalen Stand. `loeseRegelProfilAuf` und
+`HouseRuleCatalogResolver.resolve` nehmen deshalb `bekanntePaketIds`
+(`regelProfilAufloesungProvider` reicht die Pakete der App durch). Betrifft nur
+Helden mit Profil; heute schreibt die App keines automatisch.
+
+*Entscheidung.* Der Basiskatalog bleibt nicht eingefroren. Beide Auflösungen
+rechnen gegen die aktuellen Basisdaten, verglichen werden Paketkopie gegen
+aktuellen Paketstand. Änderungen von `sourceKey` im Basiskatalog selbst zeigt
+der Vergleich nur, wenn der Aufrufer `vorherigeBasisDaten` mitgibt; im
+Produktivpfad entstehen Sperränderungen durch Profil- und Paketwechsel.
+
+*Abnahme.* Zwei Helden mit verschiedenen Profilen (ein Container) und je ein
+Held in zwei `ProviderContainer`n bleiben getrennt
+(`test/state/regelprofil_vorschau_provider_test.dart`); ein Update ändert den
+Helden erst nach der Übernahme (Ablauf-, Provider- und Regeltests); Bestandshelden
+und Hash-Pins sind unverändert.
+
+*Offen.* Oberfläche je Held (Profil wählen, Vorschau zeigen, übernehmen,
+Erstübernahme `null → Profil` für Bestandshelden); Gruppenvorgabe („live von der
+Gruppe“, Firestore-Regeln verbieten heute Gruppen-Updates). Dazu offene
+Fragen: Verhalten bei **mehreren Gruppen** eines Helden, beim **Verlassen der
+Gruppe** und **ohne Verbindung** (offline gilt weiter die Kopie im Profil;
+wessen Vorgabe gilt, wenn zwei Gruppen verschiedene Pakete verlangen?).
+Import/Export prüfen (trägt der Export das Profil mit, was passiert beim Import
+in eine App mit anderem Paketstand?).
 
 ## ARCH-05 — Schreibende Aktionen fachlich aufteilen
 
