@@ -22,8 +22,8 @@ Ist-Zustand erneut prüfen und den konkreten Teilumfang festlegen.
   **Status: MAG-EFF-01 umgesetzt (14.10.2026) — Zauberprofile als
   `spell_effects.json` mit Validierung und Bestandsprotokoll, noch ohne
   Zahlenwirkung; MAG-EFF-02 bis 06 geplant.** Befund: Armatrutz kennt die
-  Regelgrenze ZfW/2 nicht, Axxeleratus fehlen Abwehr-Erschwernis und
-  Athletik-Verdopplung (Details im Integrationsplan).
+  Regelgrenze ZfW/2 nicht, bei Axxeleratus fehlt nur die Athletik-Verdopplung
+  für Sprints und Sprünge (Details im Integrationsplan).
   ARCH-04 liefert gemeinsame Herleitungen; ARCH-05/06 bilden die Grundlage
   für fachliche Schreibvorgänge und Speicherung, ARCH-07 begleitet Migration
   und Bedienprüfungen. MAG-EFF ist eine zusätzliche fachliche Aufgabe und
