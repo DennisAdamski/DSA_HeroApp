@@ -1068,13 +1068,14 @@ ihre Basis, Modifikatoren, Bedingungen und Quellen.
   mit ihrem bisher wirksamen Regelsatz übernehmen.
 - [ ] Vorschau für Profil-/Paketupdates implementieren: geänderte Werte und
   Erwerbsvoraussetzungen anzeigen, erst durch Übernahme verbindlich machen.
-- [ ] Ein gemeinsames Ergebnisformat für Regelherleitungen einführen und
+- [x] Ein gemeinsames Ergebnisformat für Regelherleitungen einführen und
   schrittweise auf Basiswerte, Kampf, Talente, Magie und Steigerungen anwenden.
   Die UI zeigt die Herleitung aus dem Regelmodul, ohne sie selbst nachzurechnen.
   *(Format und Basiswerte seit Teilstand 1, Eigenschaften seit Teilstand 2,
   Kampfvorschau seit Teilstand 3, Schild- und Parierwaffen-PA seit
   Teilstand 4, Gefechtswerte Teilstand 6, Begleiter Teilstand 7, Talente
-  Teilstand 8, Zauber Teilstand 9; Steigerungen offen.)*
+  Teilstand 8, Zauber Teilstand 9, Steigerungskosten Teilstand 10; offen
+  bleiben Lernspalte und Erwerbsdialog, siehe Teilstand 10.)*
 
 **Abnahme:** Zwei Helden mit verschiedenen Profilen können parallel geöffnet
 werden, ohne einander zu beeinflussen. Gleiche Eingaben und Regelversionen
@@ -1428,7 +1429,7 @@ Vollständige Suite danach grün (5709 bestanden, 3 übersprungen),
 `flutter analyze` ohne Befund.
 
 *Stand ARCH-04 Kampf.* Pakete A bis D sind erledigt; offen bleiben
-Steigerungen (Talente: Teilstand 8, Zauber: Teilstand 9).
+Lernspalte und Erwerbsdialog der Steigerungen (Talente: Teilstand 8, Zauber: Teilstand 9, Steigerungskosten: Teilstand 10).
 
 **Teilstand 8, 14.10.2026 — Talente.**
 
@@ -1525,6 +1526,33 @@ Verhaltensneutral bis auf die genannten Angleichungen.
 *Offen.* Zauberspezialisierung, Merkmalskenntnis- und Repräsentationsboni
 sowie AsP-Kosten sind keine Teile des ZfW\* und stehen nicht in der
 Herleitung.
+
+**Teilstand 10, 14.10.2026 — Steigerungskosten.**
+
+*Befund.* Der Steigerungsdialog (`steigerungs_dialog.dart`, genutzt vom
+Steigerungskatalog und der Vertrauten-Steigerung) setzte die Kette
+Grundkosten der Spalte → Sondererfahrung → epischer Aufschlag →
+Lehrmeister-Nachlass selbst aus `berechneSteigerungskosten`,
+`applyEpicApSurcharge` und `apMitLehrmeister` zusammen; wie die AP entstanden,
+war nur teilweise sichtbar („AP-Kosten“, Epos-Aufschlag).
+
+*Umsetzung.* `steigerung_herleitung_rules.dart`: `herleiteSteigerungskosten`
+liefert `Steigerungskosten` mit einer `Herleitung` (Grundkosten mit Spalte und
+Wertebereich, Sondererfahrung als Nachlass, epischer Aufschlag, Lehrmeister)
+und den Zwischenständen `kostenVorAufschlag`/`kostenNachAufschlag`. Die Summe
+ist die gebuchte AP-Zahl; Rundung (Aufschlag, Lehrmeister) steckt in den
+Beträgen der Schritte. Der Dialog liest alle Zahlen daraus ab und zeigt die
+Schritte eingeklappt unter „Berechnung der AP-Kosten“. Verhaltensneutral: der
+Test `steigerung_herleitung_rules_test.dart` vergleicht über mehr als 1000
+Kombinationen (Spalte, Wertebereich, SE, episch, Haupteigenschaft,
+Lehrmeister) mit der bisherigen Kette.
+
+*Offen.* Die Lernspalte selbst (Katalogspalte, Begabung, Unfähigkeit,
+Hausregel) bleibt der Text „Lernkomplexität X“ (`effectiveTalentLernkomplexitaet`);
+der Erwerbsdialog (`erwerb_dialog.dart`) und der Nachteilsabbau rechnen den
+epischen Aufschlag weiterhin selbst. Die Sondererfahrungs-Ausnahme des
+Aufschlags (Hausregel Kap. 2.2) greift im Dialog wie bisher auf die schon
+verbilligten Kosten; unverändert übernommen.
 
 ## ARCH-05 — Schreibende Aktionen fachlich aufteilen
 
