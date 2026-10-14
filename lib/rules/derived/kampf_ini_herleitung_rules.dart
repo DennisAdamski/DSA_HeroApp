@@ -186,6 +186,10 @@ Herleitung herleiteKampfIni({
 // Ausweichen
 // ---------------------------------------------------------------------------
 
+/// Schrittname des INI-Bonus im Ausweichen; das Gefecht ersetzt ihn durch den
+/// Sitzungsanteil (`gefecht_herleitung_rules.dart`).
+const String kAusweichenIniBonusSchritt = 'INI-Bonus';
+
 /// Ausweichen in der aktuellen Ausrüstung, mindestens 0.
 ///
 /// Entspricht `computeAusweichen`; [paBasis] ist die PA-Basis ohne
@@ -235,7 +239,7 @@ Herleitung herleiteAusweichen({
       bedingung: 'Axxeleratus aktiv',
     ),
     HerleitungsSchritt(
-      bezeichnung: 'INI-Bonus',
+      bezeichnung: kAusweichenIniBonusSchritt,
       betrag: iniBonus,
       art: HerleitungsArt.modifikator,
       formel: '(Kampf-INI $kampfInitiative − 20) / 10, aufgerundet',

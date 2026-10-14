@@ -10,6 +10,8 @@ import 'gefecht_meisterparade_rules.dart';
 import 'gefecht_ansagefolge_rules.dart';
 import 'gefecht_vorgaben_rules.dart';
 import 'gefecht_initiative_rules.dart';
+import 'gefecht_herleitung_rules.dart';
+import 'herleitung.dart';
 
 /// Aufgelöste Kampfwerte ohne Regelberechnungen im Widget oder Provider.
 class Gefechtswerte {
@@ -43,8 +45,14 @@ class Gefechtswerte {
     this.umwandlungVerboten = false,
     this.konkreteKampfmittel = false,
     this.klingentaenzerAktiv = false,
+    this.ausweichenHerleitung,
   });
   final int iniBasis, at, pa, ausweichen, be, zusatzaktionen;
+
+  /// Ausweichen der Kampfvorschau samt BE und INI-Bonus der Vorschau; das
+  /// Gefecht ersetzt den INI-Bonus durch den der Sitzung
+  /// (`gefechtsAusweichen`). [ausweichen] ist ihr Wert ohne INI-Bonus.
+  final Herleitung? ausweichenHerleitung;
   final int? schildPa;
 
   /// Reiner Schild-WM; SF und Heldenmali werden bei Kettenwaffen nicht entfernt.
@@ -97,6 +105,16 @@ int gefechtsIniBonus(Gefechtszustand s, Gefechtswerte w) {
       ? 1
       : 0;
 }
+
+/// Ausweichen-Zielwert vor Erschwernissen: Vorschau-Herleitung samt BE, mit dem
+/// INI-Bonus der Sitzung statt dem der Vorschau.
+Herleitung gefechtsAusweichen(Gefechtszustand s, Gefechtswerte w) =>
+    gefechtsAusweichenHerleitung(
+      herleitung: w.ausweichenHerleitung,
+      ausweichen: w.ausweichen,
+      be: w.be,
+      iniBonus: gefechtsIniBonus(s, w),
+    );
 
 /// Noch nutzbare reguläre Angriffsmarken nach verbindlicher Umwandlung.
 int gefechtsAngriffe(Gefechtszustand s, {bool inklusiveReserve = false}) {
@@ -433,10 +451,10 @@ Gefechtspruefung pruefeGefechtsaktion(
       if (!abwehrAufAttacke) ziel = ziel == null ? null : ziel + bonus;
     case Gefechtsaktion.freiesAusweichen:
       f = 1;
-      ziel ??= w.ausweichen + bonus;
+      ziel ??= gefechtsAusweichen(s, w).wert;
     case Gefechtsaktion.gezieltesAusweichen:
       p = 1;
-      ziel ??= w.ausweichen + bonus;
+      ziel ??= gefechtsAusweichen(s, w).wert;
       if (!w.ausweichen1) sperren.add('Ausweichen I fehlt.');
       if (s.dk == null) pruefen.add('DK für gezieltes Ausweichen festlegen.');
       erschwernis += switch (s.dk) {
@@ -481,7 +499,8 @@ Gefechtspruefung pruefeGefechtsaktion(
     if (gegner >= 4) {
       sperren.add('Bei vier oder mehr Gegnern kein Ausweichen.');
     }
-    erschwernis += w.be + (gegner - 1) * 2;
+    // Die BE steckt in der Ausweichen-Herleitung (`gefechtsAusweichen`).
+    erschwernis += (gegner - 1) * 2;
   } else if (s.haltung != Gefechtshaltung.stehend) {
     pruefen.add('Haltungsmodifikatoren manuell festlegen.');
   }

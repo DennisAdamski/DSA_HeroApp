@@ -1278,13 +1278,62 @@ Vollständige Suite danach grün (4788 bestanden, 3 übersprungen).
    erschwert“ (Tabelle „Behinderung +BE“). Die Kampfvorschau zieht die BE ab,
    das Gefecht (`gefecht_held_rules.dart`, `beKampf: 0`) nirgends; dort ist
    Ausweichen um die BE zu hoch. Paket B übernimmt die Herleitung der
-   Vorschau und behebt das.
+   Vorschau und behebt das. *(Beim Umsetzen richtiggestellt: Die BE wirkte
+   im Gefecht bereits, nämlich als Erschwernis `w.be` in
+   `pruefeGefechtsaktion`; nur `beKampf: 0` im Grundwert war irreführend.
+   Eine Fehlrechnung bestand nicht, siehe Teilstand 5.)*
 2. **INI-Bonus auf die Schild-Parade.** Das Gefecht gibt PA, Schild-PA und
    Ausweichen denselben INI-Bonus (`gefechtsIniBonus`: über 20 +1, über 30
    +2, über 40 +3), die Vorschau nur PA (ohne Obergrenze) und Ausweichen,
    nicht der Schild-PA. Eine Quelle für den Bonus fand sich weder in den
    Regelwerken noch in den Hausregeln; Nutzerentscheidung offen.
 3. Waffenmeister-AT im Fernkampf, siehe Teilstand 3.
+
+**Teilstand 5, 14.10.2026 — Gefechtswerte auf denselben Herleitungen (Paket B).**
+
+*Umsetzung.* Das Gefecht rechnet AT, PA, Schild-PA und Ausweichen nicht mehr
+aus Einzelwerten nach, sondern nimmt die Herleitungen der Kampfvorschau
+(`gefecht_herleitung_rules.dart`, blattartig):
+
+- **Ausweichen:** `Gefechtswerte.ausweichenHerleitung` hält die Vorschau-
+  Herleitung samt BE. `herleiteGefechtsAusweichen` ersetzt deren Schritt
+  „INI-Bonus“ durch „INI-Bonus (Sitzung)“ (`gefechtsIniBonus`, Gefechts-INI)
+  und wendet die Untergrenze 0 auf die neue Summe an; `gefechtsAusweichen(s, w)`
+  liefert den Zielwert vor Erschwernissen. Die BE steht jetzt als Schritt in
+  der Herleitung und läuft **nicht mehr zusätzlich** als Erschwernis
+  (`erschwernis += (gegner − 1) * 2`). Rechenfolge also: Untergrenze 0 vor
+  den Gegnerzuschlägen, wie in der Vorschau. Von Hand gebaute `Gefechtswerte`
+  (Tests) ohne Herleitung erhalten eine synthetische mit `−be`.
+- **Kampfmittelprofile:** `atHerleitung`/`paHerleitung` (`at == atHerleitung.wert`).
+  Haupt-PA ist die Vorschau-PA ohne die Schritte „Nebenhand PA“ und „SF
+  Parierwaffen“ (`kNebenhandPaSchritt`, `kParierwaffenSfSchritt`); Nebenwaffe
+  und Waffenlos lesen ihre eigene Vorschau, Schild die Schild-PA-Herleitung.
+  Die `anteile`-Zeilen erzeugt `herleitungsZeile` aus den sichtbaren Schritten
+  („Hauptwaffen-PA ohne Parierwaffenanteil: 14 (PA-Basis 9, …)“); die
+  handgeschriebenen „im Grundwert enthalten“-Zeilen entfallen. Eine
+  Fernkampf-Hauptwaffe zeigt keine PA-Zeile mehr (bisher „…: 0“).
+- Verhaltensneutral bis auf die Klemmung: Ein Ziel unter 0 vor den
+  Gegnerzuschlägen gibt es nicht mehr.
+
+*Prüfungen.* `test/rules/gefecht_herleitung_rules_test.dart`: Ersetzen des
+INI-Schritts und Neuklemmung, alle zehn Bestandshelden (mit und ohne
+Armwunden und Axxeleratus, Sitzungswürfe 0/12/25/35): Ausweichen = Vorschau
+ohne INI-Bonus + Sitzungsbonus, PA = `w.pa` + Sitzungsbonus, AT = `w.at`,
+Profile gleich Vorschau; BE wirkt genau einmal; schwere Rüstung klemmt auf 0.
+`gefecht_vorgaben_rules_test.dart` erwartet die BE nicht mehr in der
+Erschwernis, sondern im Zielwert. Vollständige Suite danach grün (4806
+bestanden, 3 übersprungen), `flutter analyze` ohne Befund.
+
+*Entschieden (Nutzer, 14.10.2026).* Regelbefund 2: Der Gefechts-INI-Bonus
+gilt auch für die Schild-Parade. Das Gefecht tut das bereits (PA und Schild-PA
+erhalten `gefechtsIniBonus`), es bleibt also unverändert; ein Test hält die
+Entscheidung fest. Die Kampfvorschau gibt der Schild-PA weiterhin keinen
+INI-Anteil (nur „PA mit INI-Parade-Bonus“ der Haupthand); ob sie ihn zeigen
+soll, ist noch nicht entschieden.
+
+*Offen.* Regelbefund 3 bleibt unverändert.
+*Nächste Schritte:* C Zielwert und Erschwernis im Gefechtsdialog als
+Herleitung (der Sitzungsschritt ist dafür vorbereitet), D optional Begleiter.
 
 ## ARCH-05 — Schreibende Aktionen fachlich aufteilen
 

@@ -823,3 +823,13 @@ bewaffneten Kampf), WdS S. 123/127 und AA S. 69 f., 97 f., 150
   Hammerfaust, Gladiatorenstil).
 
 Prüfung: `test/rules/waffenlos_rules_test.dart`.
+
+## Gefechtswerte auf Herleitungen (14. Oktober 2026)
+
+AT, PA, Schild-PA und Ausweichen des Gefechts stammen aus den Herleitungen der
+Kampfvorschau (ARCH-04, Paket B): `gefecht_herleitung_rules.dart` ersetzt den
+INI-Bonus der Vorschau im Ausweichen durch den Schritt „INI-Bonus (Sitzung)“
+aus der Gefechts-INI; die BE steht als Schritt in der Herleitung und wird nicht
+zusätzlich als Erschwernis gezählt. Kampfmittelprofile tragen `atHerleitung`/
+`paHerleitung`, ihre `anteile` entstehen aus den Schritten. Prüfung:
+`test/rules/gefecht_herleitung_rules_test.dart`.
