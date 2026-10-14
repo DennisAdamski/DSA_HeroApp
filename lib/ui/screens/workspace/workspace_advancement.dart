@@ -8,7 +8,9 @@ extension _WorkspaceAdvancement on _HeroWorkspaceScreenState {
 
   /// Bietet Steigern getrennt von der tabbezogenen manuellen Bearbeitung an.
   Widget _buildStartAdvancementAction({required bool isCompactLayout}) {
-    final catalog = ref.read(rulesCatalogProvider).valueOrNull;
+    final catalog = ref
+        .read(heroRulesCatalogProvider(widget.heroId))
+        .valueOrNull;
     final onPressed = catalog == null || _management.isRunningEditAction
         ? null
         : () => _runEditAction(_startAdvancement);
@@ -42,7 +44,9 @@ extension _WorkspaceAdvancement on _HeroWorkspaceScreenState {
     }
     if (!mounted) return;
     final hero = ref.read(heroByIdProvider(widget.heroId));
-    final catalog = ref.read(rulesCatalogProvider).valueOrNull;
+    final catalog = ref
+        .read(heroRulesCatalogProvider(widget.heroId))
+        .valueOrNull;
     if (hero == null || catalog == null) return;
     ref
         .read(advancementSessionProvider(widget.heroId).notifier)

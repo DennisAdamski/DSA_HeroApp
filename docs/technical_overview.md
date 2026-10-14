@@ -498,6 +498,8 @@ mit älterer App per Sync die Felder einer neueren (Befunde ARCH-07-B5/B6):
     `HeroRitualCategory`, `HeroRitualKnowledge`, `HeroRitualEntry`,
     `HeroRitualFieldDef`, `HeroRitualFieldValue`, `MagicSpecialAbility`,
     `HeroLanguageEntry`, `HeroScriptEntry`;
+  - Regelprofil: `HeroRegelProfil`, `HeroRegelProfilPaket`
+    (`lib/domain/hero_regelprofil.dart`);
   - Vor- und Nachteile: `HeroMerkmal` (`vorteilEintraege`/`nachteilEintraege`, ARCH-02);
   - Herkunftsmodifikatoren: `HeroHerkunftsModifikatoren`,
     `HeroHerkunftsModifikator` (`HeroBackground.herkunftsModifikatoren`, ARCH-02);

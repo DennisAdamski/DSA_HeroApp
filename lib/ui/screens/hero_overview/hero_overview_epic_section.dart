@@ -4,7 +4,7 @@ extension _HeroOverviewEpicSection on _HeroOverviewTabState {
   Widget _buildEpicAdvantagesSection(HeroSheet hero) {
     final theme = Theme.of(context);
     final advRuleActive = ref.watch(
-      isHouseRuleActiveProvider(EpicRuleKeys.advantages),
+      heroEpicAdvantagesActiveProvider(widget.heroId),
     );
     final disadvRuleActive = ref.watch(
       isHouseRuleActiveProvider(EpicRuleKeys.disadvantages),

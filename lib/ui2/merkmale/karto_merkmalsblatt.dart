@@ -15,7 +15,6 @@ import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_wirkung_rules.da
 import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_zuordnung_rules.dart';
 import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
-import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui2/merkmale/karto_merkmal_dialoge.dart';
@@ -79,7 +78,7 @@ class _KartoMerkmalsblattState extends ConsumerState<KartoMerkmalsblatt> {
   @override
   Widget build(BuildContext context) {
     final berechnet = ref.watch(heroComputedProvider(widget.heroId));
-    final katalogWert = ref.watch(rulesCatalogProvider);
+    final katalogWert = ref.watch(heroRulesCatalogProvider(widget.heroId));
     final werte = berechnet.asData?.value;
     final catalog = katalogWert.valueOrNull;
     if (berechnet.hasError || katalogWert.hasError) {
@@ -455,7 +454,9 @@ class _KartoMerkmalsblattState extends ConsumerState<KartoMerkmalsblatt> {
           'Während einer Planung sind Vor- und Nachteile gesperrt.',
         );
       }
-      final catalog = ref.read(rulesCatalogProvider).valueOrNull;
+      final catalog = ref
+          .read(heroRulesCatalogProvider(widget.heroId))
+          .valueOrNull;
       if (catalog == null) {
         throw StateError('Der Regelkatalog ist noch nicht geladen.');
       }

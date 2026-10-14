@@ -6,7 +6,6 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dsa_heldenverwaltung/catalog/catalog_runtime_data.dart';
 import 'package:dsa_heldenverwaltung/catalog/catalog_section_id.dart';
-import 'package:dsa_heldenverwaltung/catalog/house_rule_pack.dart';
 import 'package:dsa_heldenverwaltung/catalog/regelprofil_aufloesung.dart';
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/data/custom_catalog_repository.dart';
@@ -191,8 +190,9 @@ void main() {
       final completer = Completer<RulesCatalog>();
       c.listen(heroRulesCatalogProvider(id), (_, next) {
         if (completer.isCompleted) return;
-        if (next.hasError)
+        if (next.hasError) {
           completer.completeError(next.error!, next.stackTrace);
+        }
         if (next.hasValue) completer.complete(next.requireValue);
       }, fireImmediately: true);
       return completer.future.timeout(const Duration(seconds: 60));

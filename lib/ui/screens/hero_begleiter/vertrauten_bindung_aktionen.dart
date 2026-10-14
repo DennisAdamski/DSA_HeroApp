@@ -32,7 +32,7 @@ extension _VertrautenBindungAktionen on _HeroBegleiterTabState {
     if (held == null || !_kannSofortBuchen) return;
     final hinweise = vertrautenBindungHinweise(
       held,
-      catalog: ref.read(rulesCatalogProvider).valueOrNull,
+      catalog: ref.read(heroRulesCatalogProvider(widget.heroId)).valueOrNull,
     );
     final generierung = await showAdaptiveInputDialog<VertrautenGenerierung>(
       context: context,
@@ -133,7 +133,9 @@ extension _VertrautenBindungAktionen on _HeroBegleiterTabState {
     }
     final held = _latestHero;
     if (held == null || !_kannSofortBuchen) return;
-    final katalog = ref.read(rulesCatalogProvider).valueOrNull;
+    final katalog = ref
+        .read(heroRulesCatalogProvider(widget.heroId))
+        .valueOrNull;
     final reiseberichtAp = katalog == null
         ? 0
         : gebuchteReiseberichtAp(

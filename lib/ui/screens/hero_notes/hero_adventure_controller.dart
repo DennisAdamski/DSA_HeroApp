@@ -406,7 +406,10 @@ extension _HeroNotesAdventureController on _HeroNotesTabState {
       return;
     }
 
-    final catalog = ref.read(rulesCatalogProvider).asData?.value;
+    final catalog = ref
+        .read(heroRulesCatalogProvider(widget.heroId))
+        .asData
+        ?.value;
     final completionEntry = await _showAdventureCompletionDialog(
       context: context,
       initial: adventure,

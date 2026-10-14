@@ -347,6 +347,14 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   bis Stufe + 3. Die Oberfläche
   zeigt sie an und rechnet **nie** selbst Modifikatoren
   zusammen. Stand und nächste Bereiche: Roadmap ARCH-04.
+- **Regelprofil am Helden** (ARCH-04, Teilstand 12): `HeroSheet.regelProfil`
+  (nur bei Belegung im JSON) listet die aktiven Hausregelpakete mit Manifestkopie
+  und Prüfsumme; `null` = der Held folgt den globalen Einstellungen. Hero-gebundene
+  Leser nehmen `heroRulesCatalogProvider(heroId)` bzw.
+  `heroEpicAdvantagesActiveProvider(heroId)`, nie `rulesCatalogProvider` direkt
+  (der bleibt Gate, Einstellungen und Katalogverwaltung). Auflösung rein in
+  `loeseRegelProfilAuf`. Ein Profil wird **nie** automatisch geschrieben (Hashes);
+  nur bewusste Nutzeraktion. Offen: Updatevorschau, Oberfläche, Gruppenvorgabe.
 - Fachlich benannte Anwendungsablaeufe (ARCH-05) liegen in `lib/ablaeufe/`:
   ohne Riverpod und Flutter, Abhaengigkeiten per Konstruktor, aus `data/`
   nur die `HeroRepository`-Schnittstelle — der Waechter

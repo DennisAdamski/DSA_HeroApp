@@ -8,7 +8,6 @@ import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/editor_entwurf_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/reisebericht_rules.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
-import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/editor_entwurf_speichern.dart';
@@ -127,7 +126,9 @@ class _HeroReiseberichtTabState extends ConsumerState<HeroReiseberichtTab>
     final basis = _entwurfBasis;
     if (basis == null) return;
 
-    final catalog = ref.read(rulesCatalogProvider).valueOrNull;
+    final catalog = ref
+        .read(heroRulesCatalogProvider(widget.heroId))
+        .valueOrNull;
     if (catalog == null) return;
 
     // Gebucht und zurückgenommen wird auf dem gespeicherten Helden, nie
@@ -217,7 +218,9 @@ class _HeroReiseberichtTabState extends ConsumerState<HeroReiseberichtTab>
   /// Belohnungen schon als offen an.
   Future<void> _aendereEntwurf(HeroReisebericht nachher) async {
     final basis = _entwurfBasis;
-    final catalog = ref.read(rulesCatalogProvider).valueOrNull;
+    final catalog = ref
+        .read(heroRulesCatalogProvider(widget.heroId))
+        .valueOrNull;
     var neu = nachher;
     if (basis != null && catalog != null) {
       final aenderung = reiseberichtBuchungsaenderung(
@@ -263,7 +266,7 @@ class _HeroReiseberichtTabState extends ConsumerState<HeroReiseberichtTab>
     _latestHero = hero;
     _syncDraftFromHero(hero);
 
-    final catalogAsync = ref.watch(rulesCatalogProvider);
+    final catalogAsync = ref.watch(heroRulesCatalogProvider(widget.heroId));
     final catalog = catalogAsync.valueOrNull;
     if (catalog == null) {
       return const Center(child: CircularProgressIndicator());

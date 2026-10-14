@@ -12,7 +12,6 @@ import 'package:dsa_heldenverwaltung/rules/derived/gefecht_patzer_rules.dart';
 
 import 'gefecht_begegnung_provider.dart';
 import 'hero_providers.dart';
-import 'catalog_providers.dart';
 
 /// Verbindet ausdrücklich gewählte Heldensitzungen ohne Repository-Schreibzugriff.
 class GefechtsinitiativController extends Notifier<Gefechtsinitiative> {
@@ -184,12 +183,6 @@ List<Gefechtszeitpunkt> _zeitpunkte(
   final begegnung = beobachten
       ? ref.watch(gefechtBegegnungProvider)
       : ref.read(gefechtBegegnungProvider);
-  final katalog =
-      (beobachten
-              ? ref.watch(rulesCatalogProvider)
-              : ref.read(rulesCatalogProvider))
-          .asData
-          ?.value;
   final liste = <Gefechtszeitpunkt>[];
   final reserven = <({String id, String name, int ini})>[];
   for (final id in gruppe.helden) {
@@ -203,6 +196,13 @@ List<Gefechtszeitpunkt> _zeitpunkte(
             .asData
             ?.value;
     if (s == null || snap == null) continue;
+    // Jeder Held rechnet nach seinem eigenen Regelprofil (ARCH-04).
+    final katalog =
+        (beobachten
+                ? ref.watch(heroRulesCatalogProvider(id))
+                : ref.read(heroRulesCatalogProvider(id)))
+            .asData
+            ?.value;
     final w = gefechtswerteFuer(snap, katalog: katalog);
     if (s.reserveIni != null && s.reserveBereit) {
       reserven.add((id: id, name: snap.hero.name, ini: s.reserveIni!));

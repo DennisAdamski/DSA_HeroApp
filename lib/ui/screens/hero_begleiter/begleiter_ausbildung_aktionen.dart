@@ -115,7 +115,9 @@ extension _ReittierAusbildungAktionen on _HeroBegleiterTabState {
     int erschwernis,
   ) async {
     final snapshot = ref.read(heroComputedProvider(widget.heroId)).valueOrNull;
-    final katalog = ref.read(rulesCatalogProvider).valueOrNull;
+    final katalog = ref
+        .read(heroRulesCatalogProvider(widget.heroId))
+        .valueOrNull;
     if (snapshot == null || katalog == null) {
       return const _ProbenWurf(hinweis: 'Heldenwerte werden noch geladen.');
     }
@@ -126,7 +128,7 @@ extension _ReittierAusbildungAktionen on _HeroBegleiterTabState {
       talentName: talentName,
       erschwernis: erschwernis,
       epicAdvantagesActive: ref.read(
-        isHouseRuleActiveProvider(EpicRuleKeys.advantages),
+        heroEpicAdvantagesActiveProvider(widget.heroId),
       ),
     );
     final request = aufbau.request;

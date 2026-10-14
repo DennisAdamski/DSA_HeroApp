@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/resource_activation_rules.dart';
@@ -88,7 +87,7 @@ class WorkspaceHeaderStatRail extends ConsumerWidget {
     final computed = computedAsync.valueOrNull;
     // Ersatz, solange der Snapshot laedt; Vor-/Nachteile wirken wie dort
     // ueber ihre Katalog-ID (ARCH-02).
-    final catalog = ref.watch(rulesCatalogProvider).valueOrNull;
+    final catalog = ref.watch(heroRulesCatalogProvider(heroId)).valueOrNull;
     final effectiveAttributes =
         computed?.effectiveAttributes ??
         computeEffectiveAttributes(hero, catalog: catalog);

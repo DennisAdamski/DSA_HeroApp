@@ -1,12 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/rules/derived/talent_herleitung_rules.dart';
-import 'package:dsa_heldenverwaltung/rules/house_rules/house_rule_registry.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
-import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
-import 'package:dsa_heldenverwaltung/state/house_rules_providers.dart';
 
 /// Talent-ID der Selbstbeherrschung, auf die das Unterdrücken von Wunden würfelt.
 const String kSelbstbeherrschungId = 'tal_selbstbeherrschung';
@@ -23,15 +20,13 @@ HeroComputedSnapshot? sbProbeSnapshot(WidgetRef ref, String heroId) =>
 /// Selbstbeherrschung nicht führt.
 int? sbProbeTaw(WidgetRef ref, String heroId) {
   final snapshot = sbProbeSnapshot(ref, heroId);
-  final katalog = ref.read(rulesCatalogProvider).valueOrNull;
+  final katalog = ref.read(heroRulesCatalogProvider(heroId)).valueOrNull;
   if (snapshot == null || katalog == null) return null;
   return talentTawNachId(
     snapshot: snapshot,
     talente: katalog.talents,
     talentId: kSelbstbeherrschungId,
-    epicAdvantagesActive: ref.read(
-      isHouseRuleActiveProvider(EpicRuleKeys.advantages),
-    ),
+    epicAdvantagesActive: ref.read(heroEpicAdvantagesActiveProvider(heroId)),
     talentBeOverride: ref.read(talentBeOverrideProvider(heroId)),
   );
 }
