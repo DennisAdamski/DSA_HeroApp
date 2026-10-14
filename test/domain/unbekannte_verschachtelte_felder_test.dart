@@ -30,6 +30,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_herkunfts_modifikator.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_merkmal.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_meta_talent.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_note_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_regelprofil.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_reisebericht.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_resource_activation_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_rituals.dart';
@@ -567,6 +568,37 @@ final _begleiterAbenteuerNotizen = <_Modell>[
     bearbeite: (json) =>
         ReiseberichtOpenItem.fromJson(json).copyWith(ap: 15).toJson(),
     unbekannt: (json) => ReiseberichtOpenItem.fromJson(json).unbekannteFelder,
+  ),
+  _Modell(
+    'HeroRegelProfil',
+    schluessel: HeroRegelProfil.jsonSchluessel,
+    voll: () => HeroRegelProfil(
+      catalogVersion: 'house_rules_v1',
+      pakete: <HeroRegelProfilPaket>[
+        HeroRegelProfilPaket(
+          paketId: 'p',
+          pruefsumme: 's',
+          manifest: const <String, Object?>{'id': 'p', 'title': 'P'},
+        ),
+      ],
+    ).toJson(),
+    lade: (json) => HeroRegelProfil.fromJson(json).toJson(),
+    bearbeite: (json) =>
+        HeroRegelProfil.fromJson(json).copyWith(catalogVersion: 'v2').toJson(),
+    unbekannt: (json) => HeroRegelProfil.fromJson(json).unbekannteFelder,
+  ),
+  _Modell(
+    'HeroRegelProfilPaket',
+    schluessel: HeroRegelProfilPaket.jsonSchluessel,
+    voll: () => HeroRegelProfilPaket(
+      paketId: 'p',
+      pruefsumme: 's',
+      manifest: const <String, Object?>{'id': 'p', 'title': 'P'},
+    ).toJson(),
+    lade: (json) => HeroRegelProfilPaket.fromJson(json)!.toJson(),
+    bearbeite: (json) =>
+        HeroRegelProfilPaket.fromJson(json)!.copyWith(pruefsumme: 'x').toJson(),
+    unbekannt: (json) => HeroRegelProfilPaket.fromJson(json)!.unbekannteFelder,
   ),
   _Modell(
     'HeroGruppenMitgliedschaft',

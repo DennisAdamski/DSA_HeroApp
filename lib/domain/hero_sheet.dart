@@ -15,6 +15,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_language_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_merkmal.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_meta_talent.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_note_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_regelprofil.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_reisebericht.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_resource_activation_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_rituals.dart';
@@ -93,6 +94,7 @@ class HeroSheet {
     this.epicAttributeMaxBonus = const Attributes.zero(),
     this.epicMainAttributes = const Attributes.zero(),
     this.epicActivationPolicy,
+    this.regelProfil,
     this.epicLockedWaffenmeisterCategories = const <String>{},
     this.epicUnactivatedTalentIds = const <String>{},
   }) : rawStartAttributes = rawStartAttributes ?? startAttributes ?? attributes,
@@ -228,6 +230,11 @@ class HeroSheet {
   /// Werte: `'standard'`, `'elevated_being'`, `'paktierer'`, `'elfisch'` oder `null`.
   final String? epicActivationPolicy;
 
+  /// Explizites Regelprofil (Hausregel-Pakete als Kopie, ARCH-04). `null`
+  /// heißt: der Held folgt dem globalen Stand der Einstellungen. Nur bei
+  /// Belegung im JSON, damit Bestandshelden ihren Inhalts-Hash behalten.
+  final HeroRegelProfil? regelProfil;
+
   /// Waffenmeister-Kategorien, die beim Epic-Werden nicht erlernbar waren
   /// und daher auch nachtraeglich gesperrt bleiben.
   final Set<String> epicLockedWaffenmeisterCategories;
@@ -298,6 +305,7 @@ class HeroSheet {
     Attributes? epicAttributeMaxBonus,
     Attributes? epicMainAttributes,
     Object? epicActivationPolicy = _copySentinel,
+    Object? regelProfil = _copySentinel,
     Set<String>? epicLockedWaffenmeisterCategories,
     Set<String>? epicUnactivatedTalentIds,
   }) {
@@ -376,6 +384,9 @@ class HeroSheet {
       epicActivationPolicy: identical(epicActivationPolicy, _copySentinel)
           ? this.epicActivationPolicy
           : epicActivationPolicy as String?,
+      regelProfil: identical(regelProfil, _copySentinel)
+          ? this.regelProfil
+          : regelProfil as HeroRegelProfil?,
       epicLockedWaffenmeisterCategories:
           epicLockedWaffenmeisterCategories ??
           this.epicLockedWaffenmeisterCategories,
@@ -444,6 +455,7 @@ class HeroSheet {
     'epicAttributeMaxBonus',
     'epicMainAttributes',
     'epicActivationPolicy',
+    'regelProfil',
     'epicLockedWaffenmeisterCategories',
     'epicUnactivatedTalentIds',
     ...HeroAppearance.jsonSchluessel,
@@ -555,6 +567,7 @@ class HeroSheet {
       'epicMainAttributes': epicMainAttributes.toJson(),
       if (epicActivationPolicy != null)
         'epicActivationPolicy': epicActivationPolicy,
+      if (regelProfil != null) 'regelProfil': regelProfil!.toJson(),
       'epicLockedWaffenmeisterCategories': epicLockedWaffenmeisterCategories
           .toList(growable: false),
       'epicUnactivatedTalentIds': epicUnactivatedTalentIds.toList(
@@ -806,6 +819,11 @@ class HeroSheet {
             const {},
       ),
       epicActivationPolicy: _parseOptionalString(json['epicActivationPolicy']),
+      regelProfil: json['regelProfil'] is Map
+          ? HeroRegelProfil.fromJson(
+              Map<String, dynamic>.from(json['regelProfil'] as Map),
+            )
+          : null,
       epicLockedWaffenmeisterCategories: _parseStringSet(
         json['epicLockedWaffenmeisterCategories'],
       ),
