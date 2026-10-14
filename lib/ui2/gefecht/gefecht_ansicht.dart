@@ -172,16 +172,6 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
                           heroEpicAdvantagesActiveProvider(widget.heroId),
                         ),
                         gesperrt: _busy,
-                        artefakte: gefechtsArtefakte(snapshot.hero),
-                        onMatrix: (eintrag) => _run(
-                          () => benutzeGefechtsMatrixgeber(
-                            context: context,
-                            ref: ref,
-                            heroId: widget.heroId,
-                            bestand: _bruecke,
-                            eintrag: eintrag,
-                          ),
-                        ),
                         onZauber: (z) => _run(
                           () => zeigeGefechtsWirken(
                             context: context,
@@ -282,7 +272,17 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
                                   zustaende: snapshot.state.begleiterZustaende,
                                 ),
                               ],
-                              ausruestung: _ausruestung(snapshot),
+                              ausruestung: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  _ausruestung(snapshot),
+                                  if (gefechtsArtefakte(snapshot.hero)
+                                      .isNotEmpty) ...[
+                                    const SizedBox(height: 16),
+                                    _artefakte(snapshot),
+                                  ],
+                                ],
+                              ),
                             ),
                             widget.bestand.spielProtokoll(snapshot),
                           ],

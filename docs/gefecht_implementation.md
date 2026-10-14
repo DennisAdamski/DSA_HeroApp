@@ -589,6 +589,8 @@ bleiben antippbar, der Dialog erklärt alle Gründe. `gefecht_anordnung.dart`
 ordnet die Abschnitte: schmal Vitalwerte, Angriff, Verteidigung, Manöver,
 Magie, weitere Aktionen (mit Abwarten), Begegnung (Gegner, gemeinsame
 Initiative), Ausrüstung; breit dieselben Gruppen in zwei bzw. drei Spalten.
+Auslösbare Artefakte stehen in allen Layouts direkt unter „Geführte Ausrüstung“,
+unabhängig davon, ob der Held selbst zaubern kann.
 Unter 744 Pixeln hält eine feste Schnellleiste (`gefecht_schnellleiste.dart`)
 Attacke, Parade, Ausweichen und „Neue Runde“ erreichbar; sie nutzt dieselben
 Prüfungen und denselben Guard wie die Abschnittsknöpfe. Fehler einer Aktion
