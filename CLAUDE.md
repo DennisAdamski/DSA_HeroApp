@@ -23,8 +23,15 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
 - `AGENTS.md` ist die verbindliche Agentenrichtlinie.
 - [Zaubereffekte-Integrationsplan](docs/zaubereffekte_integrationsplan.md):
   MAG-EFF in der Roadmap; Screening aller 288 Zauber, Quellenbelege und
-  vorgeschlagene Pakete für Effekte auf Charaktere. Reine Planung, noch keine
-  neuen Laufzeitmodelle. Vor Umsetzung Bestandsprofile und Migration prüfen.
+  vorgeschlagene Pakete für Effekte auf Charaktere. MAG-EFF-01 ist umgesetzt:
+  `assets/catalogs/house_rules_v1/spell_effects.json` (Manifest-Schlüssel
+  `spell_effects`, `SpellEffectProfile` in `lib/catalog/spell_effect_def.dart`,
+  `RulesCatalog.spellEffects`) hält je Zauber Pruefstand (`bestand`/`belegt`/
+  `manuell`), Quelle und Eingabenamen — **keine Formeln, keine Zahlen**; die
+  folgen erst in MAG-EFF-03. `spell_effect_profile_rules.dart` validiert
+  (Zauber-ID existiert, Beleg gesetzt, Bestandsprofile nennen ihre
+  Legacy-`effect_spell_*`-ID) und `istAutomatisiert` bremst unbelegte Profile.
+  Noch keine Laufzeitmodelle am Helden; vor MAG-EFF-02 Migration prüfen.
 - `README.md` beschreibt Produktumfang, Architekturueberblick und Standard-Workflows.
 - `tool/sync_main_to_test.sh` mergt Main in Test;
   `tool/test_main_test_sync.py` sichert Erhalt, Konflikte und Wiederholungen ab.

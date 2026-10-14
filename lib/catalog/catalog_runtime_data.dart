@@ -36,6 +36,7 @@ class CatalogSourceData {
     required this.metadata,
     required this.sections,
     required this.reisebericht,
+    this.spellEffects = const <Map<String, dynamic>>[],
     this.catalogSaltV3,
   });
 
@@ -53,6 +54,9 @@ class CatalogSourceData {
 
   /// Reisebericht-Rohdaten, bewusst ausserhalb der Settings-Verwaltung.
   final List<Map<String, dynamic>> reisebericht;
+
+  /// Zauberprofil-Rohdaten (MAG-EFF), nicht Teil der Settings-Verwaltung.
+  final List<Map<String, dynamic>> spellEffects;
 
   /// Globaler PBKDF2-Salt fuer v3-verschluesselte Inhalte dieses Katalogs.
   ///
@@ -208,6 +212,7 @@ class CatalogRuntimeData {
         metadata: baseData.metadata,
         sections: effectiveSections,
         reisebericht: baseData.reisebericht,
+        spellEffects: baseData.spellEffects,
         catalogSaltV3: baseData.catalogSaltV3,
       ),
       issues: List<CatalogIssue>.unmodifiable(issues),

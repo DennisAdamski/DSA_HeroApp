@@ -1333,6 +1333,7 @@ Vorhandensein von `hero` und `state`. Wirft `FormatException` bei Validierungsfe
 | `disadvantages` | `List<HeroTraitDef>` | Katalogisierte Nachteile |
 | `sprachen` / `schriften` | `List<SpracheDef>` / `List<SchriftDef>` | Sprach- und Schriftkatalog |
 | `reisebericht` | `List<ReiseberichtDef>` | Separater Reisebericht-Katalog |
+| `spellEffects` | `List<SpellEffectProfile>` | Zauberprofile (MAG-EFF-01): Pruefstand, Quelle, Eingabenamen je Zauber-ID; keine Formeln. Manifest-Schlüssel `spell_effects`, optional, nicht Teil der Settings-Verwaltung |
 | `metadata` | `Map<String, dynamic>` | Weitere Metadaten |
 
 #### Mehrfach erwerbbare Sonderfertigkeiten mit Auswahl
