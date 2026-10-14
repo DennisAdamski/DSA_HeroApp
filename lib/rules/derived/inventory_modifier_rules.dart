@@ -4,12 +4,31 @@ import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
 import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
 
+/// Beitrag eines einzelnen ausgeruesteten Gegenstands zu einem Talent.
+class InventoryModifierQuelle {
+  const InventoryModifierQuelle({
+    required this.gegenstand,
+    required this.wert,
+    this.gruppe,
+  });
+
+  /// Name des Gegenstands.
+  final String gegenstand;
+
+  /// Bonus (oder Malus) dieses Gegenstands auf das Talent.
+  final int wert;
+
+  /// Talentgruppe, ueber die der Bonus wirkt; `null` bei direktem Talentbezug.
+  final String? gruppe;
+}
+
 /// Aggregiertes Ergebnis aller aktiven Inventar-Modifikatoren.
 class InventoryModifierAggregation {
   const InventoryModifierAggregation({
     this.statMods = const StatModifiers(),
     this.attributeMods = const AttributeModifiers(),
     this.talentMods = const <String, int>{},
+    this.talentQuellen = const <String, List<InventoryModifierQuelle>>{},
   });
 
   /// Aggregierte Stat-Modifikatoren (GS, LeP, AT, PA, usw.).
@@ -20,6 +39,10 @@ class InventoryModifierAggregation {
 
   /// Aggregierte Talentboni je Talent-ID.
   final Map<String, int> talentMods;
+
+  /// Beitraege je Talent-ID nach Gegenstand. Die Summe der [wert]e einer
+  /// Talent-ID ist immer der Eintrag in [talentMods].
+  final Map<String, List<InventoryModifierQuelle>> talentQuellen;
 }
 
 /// Aggregiert alle Modifikatoren ausgeruesteter Inventar-Items.
@@ -41,6 +64,18 @@ InventoryModifierAggregation aggregateInventoryModifiers(
   var statMods = const StatModifiers();
   var attributeMods = const AttributeModifiers();
   final talentMods = <String, int>{};
+  final talentQuellen = <String, List<InventoryModifierQuelle>>{};
+
+  void buche(String talentId, int wert, String gegenstand, String? gruppe) {
+    talentMods[talentId] = (talentMods[talentId] ?? 0) + wert;
+    (talentQuellen[talentId] ??= <InventoryModifierQuelle>[]).add(
+      InventoryModifierQuelle(
+        gegenstand: gegenstand,
+        wert: wert,
+        gruppe: gruppe,
+      ),
+    );
+  }
 
   for (final entry in entries) {
     if (!entry.istAusgeruestet) continue;
@@ -57,12 +92,12 @@ InventoryModifierAggregation aggregateInventoryModifiers(
             mod.wert,
           );
         case InventoryModifierKind.talent:
-          talentMods[mod.targetId] = (talentMods[mod.targetId] ?? 0) + mod.wert;
+          buche(mod.targetId, mod.wert, entry.gegenstand, null);
         case InventoryModifierKind.talentgruppe:
           final groupKey = mod.targetId.toLowerCase().trim();
           for (final talent in talents) {
             if (talent.group.toLowerCase().trim() == groupKey) {
-              talentMods[talent.id] = (talentMods[talent.id] ?? 0) + mod.wert;
+              buche(talent.id, mod.wert, entry.gegenstand, talent.group);
             }
           }
       }
@@ -73,6 +108,10 @@ InventoryModifierAggregation aggregateInventoryModifiers(
     statMods: statMods,
     attributeMods: attributeMods,
     talentMods: Map<String, int>.unmodifiable(talentMods),
+    talentQuellen: Map<String, List<InventoryModifierQuelle>>.unmodifiable({
+      for (final e in talentQuellen.entries)
+        e.key: List<InventoryModifierQuelle>.unmodifiable(e.value),
+    }),
   );
 }
 

@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/herleitung_uebersicht_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/talent_herleitung_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/zauber_herleitung_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/house_rules/house_rule_registry.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
+import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/state/house_rules_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_overview/herleitung_abschnitt.dart';
 
 /// Öffnet die durchsuchbaren Berechnungsschritte eines Helden (ARCH-04).
@@ -70,6 +76,11 @@ class _HerleitungsSucheDialogState
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final snapshot = ref.watch(heroComputedProvider(widget.heroId)).valueOrNull;
+    final katalog = ref.watch(rulesCatalogProvider).valueOrNull;
+    final talentBeOverride = ref.watch(talentBeOverrideProvider(widget.heroId));
+    final epicAdvantagesActive = ref.watch(
+      isHouseRuleActiveProvider(EpicRuleKeys.advantages),
+    );
     final Widget inhalt;
     if (snapshot == null) {
       inhalt = const Padding(
@@ -78,7 +89,15 @@ class _HerleitungsSucheDialogState
       );
     } else {
       inhalt = _Trefferliste(
-        eintraege: filtereHerleitungen(_alleEintraege(snapshot), _suche),
+        eintraege: filtereHerleitungen(
+          _alleEintraege(
+            snapshot,
+            katalog: katalog,
+            talentBeOverride: talentBeOverride,
+            epicAdvantagesActive: epicAdvantagesActive,
+          ),
+          _suche,
+        ),
         aufgeklappt: _suche.trim().isNotEmpty,
       );
     }
@@ -135,12 +154,27 @@ class _HerleitungsSucheDialogState
     );
   }
 
-  List<HerleitungsEintrag> _alleEintraege(HeroComputedSnapshot snapshot) {
+  List<HerleitungsEintrag> _alleEintraege(
+    HeroComputedSnapshot snapshot, {
+    required RulesCatalog? katalog,
+    required int? talentBeOverride,
+    required bool epicAdvantagesActive,
+  }) {
     return sammleHerleitungen(
       eigenschaften: snapshot.eigenschaftHerleitungen,
       basiswerte: snapshot.derivedStats.herleitungen,
       kampf: snapshot.combatPreviewStats,
       begleiter: snapshot.hero.companions,
+      talente: sammleTalentHerleitungen(
+        snapshot: snapshot,
+        talente: katalog?.talents ?? const <TalentDef>[],
+        epicAdvantagesActive: epicAdvantagesActive,
+        talentBeOverride: talentBeOverride,
+      ),
+      zauber: sammleZauberHerleitungen(
+        snapshot: snapshot,
+        zauber: katalog?.spells ?? const <SpellDef>[],
+      ),
       astral: snapshot.resourceActivation.magic.isEnabled,
       karmal: snapshot.resourceActivation.divine.isEnabled,
     );

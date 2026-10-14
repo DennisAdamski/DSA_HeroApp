@@ -1444,7 +1444,15 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Gesamt-Mod'), findsOneWidget);
-      expect(find.text(truncatedDescription), findsOneWidget);
+      // Einmal in der Modifikatorliste, einmal als Schritt der Herleitung.
+      expect(find.text(truncatedDescription), findsNWidgets(2));
+      expect(
+        find.descendant(
+          of: find.byKey(const ValueKey<String>('talent-detail-taw-tal_a')),
+          matching: find.text(truncatedDescription),
+        ),
+        findsOneWidget,
+      );
       expect(find.text('5'), findsWidgets);
     },
   );
@@ -1548,6 +1556,78 @@ void main() {
         find.byKey(const ValueKey<String>('talents-be-override-field')),
       );
       expect(overrideField.controller?.text ?? '', '1');
+    },
+  );
+
+  testWidgets(
+    'Talentdetail zeigt die situative BE-Anpassung in der Herleitung',
+    (tester) async {
+      final repo = FakeRepository(
+        heroes: [
+          buildHero(
+            talents: const <String, HeroTalentEntry>{
+              'tal_a': HeroTalentEntry(talentValue: 9),
+            },
+            combatConfig: const CombatConfig(
+              armor: ArmorConfig(
+                pieces: <ArmorPiece>[
+                  ArmorPiece(
+                    name: 'Ruestung',
+                    isActive: true,
+                    rg1Active: false,
+                    be: 3,
+                  ),
+                ],
+                globalArmorTrainingLevel: 0,
+              ),
+            ),
+          ),
+        ],
+        states: {
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 0,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
+      );
+
+      await openTalentsTab(tester, repo, buildCatalog());
+      await openBeScreen(tester);
+      await tester.enterText(
+        find.byKey(const ValueKey<String>('talents-be-override-field')),
+        '1',
+      );
+      await tester.pumpAndSettle();
+      await closeBeDialog(tester);
+
+      await tester.ensureVisible(find.text('Athletik').first);
+      await tester.tap(find.text('Athletik').first);
+      await tester.pumpAndSettle();
+
+      final ebe = find.byKey(const ValueKey<String>('talent-detail-ebe-tal_a'));
+      expect(
+        find.descendant(
+          of: ebe,
+          matching: find.text('BE-Anpassung (situativ)'),
+        ),
+        findsOneWidget,
+      );
+      // BE 3 -> 1 bei Regel x2: Grundwert -6, Anpassung +4, eBE -2.
+      expect(
+        find.descendant(of: ebe, matching: find.text('-6')),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(of: ebe, matching: find.text('+4')),
+        findsOneWidget,
+      );
+      final taw = find.byKey(const ValueKey<String>('talent-detail-taw-tal_a'));
+      expect(
+        find.descendant(of: taw, matching: find.text('-2')),
+        findsOneWidget,
+      );
     },
   );
 

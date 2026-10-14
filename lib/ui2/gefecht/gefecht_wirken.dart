@@ -8,7 +8,9 @@ import 'package:dsa_heldenverwaltung/state/gefecht_provider.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_begegnung_provider.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_fremdwirkung_rules.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_initiative_provider.dart';
+import 'package:dsa_heldenverwaltung/rules/house_rules/house_rule_registry.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/state/house_rules_providers.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_ablauf_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_held_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_wirken_rules.dart';
@@ -38,6 +40,10 @@ Future<void> zeigeGefechtsWirken({
       zustand: s,
       zauber: zauber,
       talent: talent,
+      talentBeOverride: ref.read(talentBeOverrideProvider(heroId)),
+      epicAdvantagesActive: ref.read(
+        isHouseRuleActiveProvider(EpicRuleKeys.advantages),
+      ),
     ),
   );
   if (profil == null || !context.mounted) return;

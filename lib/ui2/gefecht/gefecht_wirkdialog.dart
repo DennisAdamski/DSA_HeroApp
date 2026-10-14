@@ -17,8 +17,16 @@ class GefechtWirkdialog extends StatefulWidget {
     required this.zustand,
     this.zauber,
     this.talent,
+    this.talentBeOverride,
+    this.epicAdvantagesActive = false,
   });
   final HeroComputedSnapshot snapshot;
+
+  /// Vorübergehende Talent-BE des Helden für die Liturgieprobe.
+  final int? talentBeOverride;
+
+  /// Epische Vorteile aktiv (halbierte eBE bei KK-Proben).
+  final bool epicAdvantagesActive;
   final Gefechtszustand zustand;
   final SpellDef? zauber;
   final TalentDef? talent;
@@ -90,6 +98,8 @@ class _WirkdialogState extends State<GefechtWirkdialog> {
                 .split('/')
                 .map((e) => e.trim())
                 .toList(),
+            epicAdvantagesActive: widget.epicAdvantagesActive,
+            talentBeOverride: widget.talentBeOverride,
           )
         : gefechtsZauberprobe(widget.snapshot, widget.zauber!);
     final id =

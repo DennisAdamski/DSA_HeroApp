@@ -1073,7 +1073,8 @@ ihre Basis, Modifikatoren, Bedingungen und Quellen.
   Die UI zeigt die Herleitung aus dem Regelmodul, ohne sie selbst nachzurechnen.
   *(Format und Basiswerte seit Teilstand 1, Eigenschaften seit Teilstand 2,
   Kampfvorschau seit Teilstand 3, Schild- und Parierwaffen-PA seit
-  Teilstand 4; Gefechtswerte, Talente, Magie und Steigerungen offen.)*
+  Teilstand 4, Gefechtswerte Teilstand 6, Begleiter Teilstand 7, Talente
+  Teilstand 8, Zauber Teilstand 9; Steigerungen offen.)*
 
 **Abnahme:** Zwei Helden mit verschiedenen Profilen können parallel geöffnet
 werden, ohne einander zu beeinflussen. Gleiche Eingaben und Regelversionen
@@ -1427,7 +1428,103 @@ Vollständige Suite danach grün (5709 bestanden, 3 übersprungen),
 `flutter analyze` ohne Befund.
 
 *Stand ARCH-04 Kampf.* Pakete A bis D sind erledigt; offen bleiben
-Talente, Magie und Steigerungen.
+Steigerungen (Talente: Teilstand 8, Zauber: Teilstand 9).
+
+**Teilstand 8, 14.10.2026 — Talente.**
+
+*Entscheidungen (Nutzer).* Die Ausrüstung erscheint **je Gegenstand** als
+eigener Schritt, nicht als Summe. Der Talent-BE-Override (kurzfristige,
+situative BE-Änderung ohne Rüstungswechsel) ist in der eBE-Herleitung als
+eigener Schritt „BE-Anpassung (situativ)“ sichtbar.
+
+*Umsetzung.*
+
+- `InventoryModifierAggregation.talentQuellen` (Gegenstand, Wert, Gruppe),
+  `HeroComputedSnapshot.inventoryTalentQuellen`; `talentMods` bleibt die Summe.
+- `talent_herleitung_rules.dart`: `herleiteTalentEbe` (Grundwert BE-Regel bei
+  BE Kampf, situative Anpassung, epische KK-Halbierung als Ausgleichsschritt),
+  `herleiteTalentTaw`, `herleiteMetaTalentTaw`, `herleiteProbenEigenschaften`
+  (effektive Eigenschaft samt Quellen plus Schritt „Wunden“), `herleiteTalent`,
+  `talentTawNachId`, `sammleTalentHerleitungen`.
+- `talentProbenwertFuer` liest TaW\* und eBE aus der Herleitung
+  (`TalentProbenwert.herleitung`); verhaltensneutral, per Test gegen
+  `computeTalentComputedTaw`/`computeTalentEbe` für alle Bestandshelden mit
+  und ohne Override gepinnt.
+- Wertesuche: Bereich „Talente“ (TaW\* und eBE je Nicht-Kampftalent mit Wert
+  sowie je Meta-Talent), lazy im Dialog gebaut, nicht im Snapshot.
+- Talente-Tab: Zeilen, Mobilkarten und Metatalente lesen TaW\*/eBE aus den
+  Herleitungen (auf dem Entwurf); Talent- und Meta-Talent-Detail zeigen
+  „Herleitung TaW\*“ und „Herleitung eBE“.
+- **Verhaltensänderung:** Die SB-Probe beim Unterdrücken von Wunden
+  (`wund_unterdrueckung_dialog.dart`, `wunden_detail_dialog.dart`) nimmt TaW\*
+  jetzt wie jede Talentprobe (Ausrüstungsbonus, eBE der Selbstbeherrschung);
+  der Unterdrückungsdialog rechnet die Eigenschaften aus dem Snapshot
+  (temporäre Eigenschaftsboni zählen mit).
+
+*Nachtrag (Nutzerentscheidung, 14.10.2026).* Das Gefecht beachtet den
+Talent-BE-Override: `gefechtsProbenkandidaten`, `gefechtsTalentprobe` und
+`gefechtsLiturgieprobe` nehmen `talentBeOverride`; Probenwahl, Magie-Liste,
+Wirkdialog, Selbstbeherrschung bei Reserve und Unterbrechung lesen ihn aus
+`talentBeOverrideProvider`. Dabei bekamen Liturgie-, Reserve- und
+Unterbrechungsprobe auch erstmals das Epic-Flag (halbierte eBE bei KK-Proben);
+vorher galt dort immer „nicht episch“.
+
+*Nachtrag Basis-/Spezial-Talente und Ausweichen (14.10.2026).* Regelbasis:
+Wege des Schwerts S. 16 f. (Basis-Talente darf jeder proben, auch mit TaW 0
+oder negativ; Spezial-Talente nur aktiviert mit TaW ≥ 0) und Basisregelwerk
+S. 113 (Ableiten auf verwandte Fertigkeit, Meisterentscheid). Die Tabelle
+liegt als Dart-Konstante in `lib/catalog/talent_nutzung_katalog.dart`
+(`basis` je Talent, `ersatz` mit Richtzuschlag und Bedingung aus der Zeile
+„Ersatzweise verwendbare Fertigkeiten“ jedes Talents), nicht in
+`talente.json`, weil die Basisassets laut Katalog-Workflow nur über die
+Python-Werkzeuge entstehen; `test/catalog/talent_nutzung_katalog_test.dart`
+gleicht sie mit dem echten Katalog ab. `talent_nutzung_rules.dart`:
+`talentEintragFuerProbe` (zentrale Zulassung, von `talentProbenwertFuer` und
+`herleiteTalent` genutzt), `talentErsatzOptionen`; in `talent_probe_rules.dart`
+`talentErsatzprobeFuer` und `talentErsatzproben`. Folgen: Basis-Talente sind in
+Probensuche und Gefechtsprobenwahl auch ohne Bogeneintrag würfelbar (TaW 0),
+nicht aktivierte Spezial-Talente und negative Werte nicht mehr; die
+Selbstbeherrschungsprobe im Gefecht braucht keinen eingetragenen Wert mehr.
+Ausweichproben („Reiten (über Körperbeherrschung −10)“) erscheinen in beiden
+Suchen nur bei einer Sucheingabe und tragen den Hinweis „Meisterentscheid“.
+Offen: Eigenschaftsprobe als Ausweichen (Zuschlag ≥ 7, `kEigenschaftsprobeErsatzZuschlag`)
+gibt es weiterhin als eigene Eigenschaftsprobe; Kampftalente behalten ihr
+Katalogfeld `alternatives`.
+
+*Befunde, offen.* Die Probenziele des Würfelknopfs im Talente-Tab nutzen weiter `wendeWundVerlusteAn` direkt; der
+Probendialog zeigt TaW\* nur als Zahl (Herleitung dort ist ein Folgepaket).
+
+*Prüfungen.* `test/rules/talent_herleitung_rules_test.dart`,
+`test/rules/inventory_modifier_rules_test.dart` (Quellen),
+`test/rules/gefecht_talentprobe_rules_test.dart` (Override im Gefecht),
+erweiterte Talente-Tab-Tests (Herleitung, situative BE-Anpassung).
+
+**Teilstand 9, 14.10.2026 — Zauber (ZfW\*).**
+
+*Befund.* Drei Stellen bauten die Zauberprobe je für sich: Probensuche
+(`probe_quick_search.dart`), Gefecht (`gefechtsZauberprobe`,
+`gefechtsZauberliste`) und der Würfelknopf im Magie-Tab. Der Magie-Tab rechnete
+die Eigenschaften aus `computeEffectiveAttributes` ohne die temporären
+Eigenschaftsboni des Zustands (etwa Attributo), die beiden anderen nahmen
+`probenEigenschaften`; die Behandlung eines Zaubers ohne ZfW war uneinheitlich
+(Suche und Tab würfelten ihn mit ZfW 0, das Gefecht nicht).
+
+*Umsetzung.* `zauber_herleitung_rules.dart`: `herleiteZfw` (ZfW und
+Modifikator als Schritte), `zauberProbenwertAus` (aus einem Entwurfseintrag
+und den Probenwerten) und `zauberProbenwertFuer` (aus dem Snapshot),
+`zauberprobeAus`, `sammleZauberHerleitungen`. Alle drei Stellen nehmen diese
+Funktionen; ein Zauber ohne ZfW wird nirgends mehr gewürfelt (der Magie-Tab
+meldet „Zauber ist nicht aktiviert“), die Kette muss genau drei bekannte
+Eigenschaften nennen. Der Magie-Tab würfelt damit gegen die Probenwerte des
+gespeicherten Stands (Wunden und temporäre Boni), den ZfW nimmt er weiter aus
+dem Entwurf. Wertesuche: Bereich „Zauber“ (ZfW\* je aktiviertem Zauber).
+Verhaltensneutral bis auf die genannten Angleichungen.
+
+*Prüfungen.* `test/rules/zauber_herleitung_rules_test.dart`.
+
+*Offen.* Zauberspezialisierung, Merkmalskenntnis- und Repräsentationsboni
+sowie AsP-Kosten sind keine Teile des ZfW\* und stehen nicht in der
+Herleitung.
 
 ## ARCH-05 — Schreibende Aktionen fachlich aufteilen
 

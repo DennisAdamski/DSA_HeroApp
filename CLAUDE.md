@@ -328,7 +328,14 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   `HerleitungsSucheDialog` (`ui/screens/workspace/herleitung_suche_dialog.dart`)
   neben „Regeln nachschlagen“ im Heldenbogen und in der UI2-Verwaltung, in UI2
   zusätzlich in der Navigation über `KartoBestandsAdapter.berechnungsschritte`.
-  Eine neue Herleitung gehört dort in `sammleHerleitungen`. Die Oberfläche
+  Eine neue Herleitung gehört dort in `sammleHerleitungen`. Talente
+  (`talent_herleitung_rules.dart`): TaW\* und eBE sind Herleitungen, die
+  Ausrüstung steht je Gegenstand (`talentQuellen`), der Talent-BE-Override
+  als Schritt „BE-Anpassung (situativ)“; `talentProbenwertFuer` liest sie ab. Wer ein
+  Talent proben darf, entscheidet allein `talentEintragFuerProbe`
+  (`talent_nutzung_rules.dart`, Tabelle `talent_nutzung_katalog.dart`): Basis-Talente
+  immer, Spezial-Talente nur aktiviert (TaW ≥ 0). Ausweichen auf verwandte
+  Talente: `talentErsatzproben` (Meisterentscheid, Richtzuschläge aus WdS). Die Oberfläche
   zeigt sie an und rechnet **nie** selbst Modifikatoren
   zusammen. Stand und nächste Bereiche: Roadmap ARCH-04.
 - Fachlich benannte Anwendungsablaeufe (ARCH-05) liegen in `lib/ablaeufe/`:
