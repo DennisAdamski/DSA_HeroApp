@@ -174,6 +174,48 @@ extension _GefechtAnsichtTeile on _GefechtAnsichtState {
       ],
     ),
   );
+  // Auslösbare Artefakte bleiben unabhängig von den magischen Kenntnissen.
+  Widget _artefakte(HeroComputedSnapshot snapshot) {
+    final artefakte = gefechtsArtefakte(snapshot.hero);
+    return artefakte.isEmpty
+        ? const SizedBox.shrink()
+        : KartoAbschnitt(
+            titel: 'Artefakte',
+            child: Material(
+              type: MaterialType.transparency,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  for (var i = 0; i < artefakte.length; i++)
+                    ListTile(
+                      key: ValueKey('gefecht-matrixgeber-$i'),
+                      contentPadding: EdgeInsets.zero,
+                      enabled: !_busy,
+                      leading: const Icon(Icons.auto_awesome),
+                      title: Text(
+                        artefakte[i].gegenstand.isEmpty
+                            ? 'Artefakt'
+                            : artefakte[i].gegenstand,
+                      ),
+                      subtitle: Text(
+                        artefaktZusammenfassung(artefakte[i].artefaktDaten!),
+                      ),
+                      onTap: () => _run(
+                        () => benutzeGefechtsMatrixgeber(
+                          context: context,
+                          ref: ref,
+                          heroId: widget.heroId,
+                          bestand: _bruecke,
+                          eintrag: artefakte[i],
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          );
+  }
+
   Widget _ausruestung(HeroComputedSnapshot snapshot) => KartoAbschnitt(
     titel: 'Geführte Ausrüstung',
     aktion: TextButton(

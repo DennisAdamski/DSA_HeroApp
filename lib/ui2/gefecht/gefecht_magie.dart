@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
-import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
-import 'package:dsa_heldenverwaltung/rules/derived/artefakt_zauber_liste_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_magie_rules.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abschnitt.dart';
 
@@ -12,11 +10,6 @@ import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abschnitt.dart';
 /// Zauber stehen zuletzt gewirkt zuerst, sonst alphabetisch, jeweils mit ZfW*,
 /// Zauberdauer und Kosten (`gefechtsZauberliste`); ab sieben gelernten
 /// Zaubern gibt es eine Suche.
-///
-/// Ausgerüstete, auslösbare Artefakte (Matrixgeber und Spruchspeicher mit
-/// freier Ladung) stehen als eigener Punkt darunter (`artefakte`); sie
-/// brauchen weder gelernte Zauber noch Zauberkunde und erscheinen deshalb auch,
-/// wenn der Held selbst nicht zaubert.
 class GefechtMagie extends StatefulWidget {
   /// Führt die Probe über den gemeinsamen, aktionsgebundenen Auftrag aus.
   const GefechtMagie({
@@ -27,8 +20,6 @@ class GefechtMagie extends StatefulWidget {
     required this.onAuftrag,
     this.onZauber,
     this.onKarma,
-    this.onMatrix,
-    this.artefakte = const [],
     this.zuletzt = const [],
     this.talentBeOverride,
     this.epicAdvantagesActive = false,
@@ -45,11 +36,6 @@ class GefechtMagie extends StatefulWidget {
   final ValueChanged<SpellDef>? onZauber;
   final ValueChanged<TalentDef>? onKarma;
 
-  /// Ausgerüstete, auslösbare Artefakte des Helden.
-  final List<HeroInventoryEntry> artefakte;
-
-  /// Löst ein Artefakt aus.
-  final ValueChanged<HeroInventoryEntry>? onMatrix;
   final void Function(
     String titel,
     ResolvedProbeRequest? probe,
@@ -92,40 +78,7 @@ class _GefechtMagieState extends State<GefechtMagie> {
     final zaubert =
         werte.resourceActivation.magic.isEnabled ||
         werte.resourceActivation.divine.isEnabled;
-    final matrix = widget.artefakte.isEmpty
-        ? null
-        : KartoAbschnitt(
-            titel: 'Artefakte',
-            child: Material(
-              type: MaterialType.transparency,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  for (var i = 0; i < widget.artefakte.length; i++)
-                    ListTile(
-                      key: ValueKey('gefecht-matrixgeber-$i'),
-                      contentPadding: EdgeInsets.zero,
-                      enabled: !gesperrt && widget.onMatrix != null,
-                      leading: const Icon(Icons.auto_awesome),
-                      title: Text(
-                        widget.artefakte[i].gegenstand.isEmpty
-                            ? 'Artefakt'
-                            : widget.artefakte[i].gegenstand,
-                      ),
-                      subtitle: Text(
-                        artefaktZusammenfassung(
-                          widget.artefakte[i].artefaktDaten!,
-                        ),
-                      ),
-                      onTap: () => widget.onMatrix?.call(widget.artefakte[i]),
-                    ),
-                ],
-              ),
-            ),
-          );
-    if (!zaubert) {
-      return matrix ?? const SizedBox.shrink();
-    }
+    if (!zaubert) return const SizedBox.shrink();
     final alle = katalog == null
         ? const <GefechtsZaubereintrag>[]
         : gefechtsZauberliste(werte, katalog, zuletzt: widget.zuletzt);
@@ -223,10 +176,6 @@ class _GefechtMagieState extends State<GefechtMagie> {
         ),
       ),
     );
-    if (matrix == null) return magie;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [magie, const SizedBox(height: 8), matrix],
-    );
+    return magie;
   }
 }
