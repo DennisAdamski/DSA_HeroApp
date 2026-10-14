@@ -28,7 +28,12 @@ class _MagicActiveSpellsTable extends StatelessWidget {
     this.verfuegbareAp = 0,
     this.episch = false,
     this.onApKostenBestaetigt,
+    this.elementarharmonisiert = false,
   });
+
+  /// Der Held besitzt die SF Elementarharmonisierte Aura: das Gegenelement
+  /// verteuert dann keine Zauber.
+  final bool elementarharmonisiert;
 
   /// Begabungen/Unfaehigkeiten aus Vor-/Nachteilen; `null` wirkt nicht.
   final HeroBegabungen? begabungen;
@@ -449,26 +454,37 @@ class _MagicActiveSpellsTable extends StatelessWidget {
                                     entry.learnedRepresentation,
                                 learnedTradition: entry.learnedTradition,
                               );
-                          final fremdReprPenaltySteps = isLearnedAsForeign
-                              ? 2
-                              : 0;
                           final probeLabel = _probeWithValuesLabel(
                             effectiveAttributes,
                             def.attributes,
                           );
-                          final merkmale = parseSpellTraits(def.traits);
                           final befund = _befundFuer(def);
-                          final effSteigerung = effectiveSteigerung(
-                            basisSteigerung: def.steigerung,
-                            istHauszauber: entry.hauszauber,
-                            zauberMerkmale: merkmale,
-                            heldMerkmalskenntnisse: merkmalskenntnisse,
-                            istBegabt:
-                                entry.gifted || befund.begabungen.isNotEmpty,
-                            fremdReprPenaltySteps: fremdReprPenaltySteps,
-                            zusatzReduktion: befund.zusatzBegabungen.length,
-                            zusatzErhoehung: befund.erhoehung,
+                          final reprSpalten = fremdeRepraesentationsSpalten(
+                            learnedRepresentation:
+                                currentAvailabilityEntry
+                                    ?.learnedRepresentation ??
+                                entry.learnedRepresentation,
+                            learnedTradition:
+                                currentAvailabilityEntry?.tradition ??
+                                entry.learnedTradition,
                           );
+                          // Ein vom Katalog als fremd markierter Eintrag kostet
+                          // mindestens die üblichen zwei Spalten.
+                          final fremdSpalten = !isLearnedAsForeign
+                              ? 0
+                              : (reprSpalten == 0 ? 2 : reprSpalten);
+                          final lernspalte = zauberLernspalte(
+                            spell: def,
+                            eintrag: entry,
+                            fremdeReprSpalten: fremdSpalten,
+                            befund: befund,
+                            merkmalskenntnisse: merkmalskenntnisse,
+                            begabteMerkmale:
+                                begabungen?.begabteMerkmale ?? const <String>{},
+                            elementarharmonisiert: elementarharmonisiert,
+                            zauber: spellEntries,
+                          );
+                          final effSteigerung = lernspalte.spalte;
                           final representationLabel =
                               currentAvailabilityEntry == null
                               ? (entry.learnedRepresentation == null
@@ -740,6 +756,24 @@ class _MagicActiveSpellsTable extends StatelessWidget {
                                           : theme.textTheme.bodySmall,
                                     ),
                                     LernspaltenMarke(befund: befund),
+                                    if (lernspalte.hexalogieHinweis != null)
+                                      Tooltip(
+                                        message: lernspalte.hexalogieHinweis!,
+                                        child: Padding(
+                                          padding: const EdgeInsets.only(
+                                            left: 4,
+                                          ),
+                                          child: Icon(
+                                            Icons.hub_outlined,
+                                            size: 14,
+                                            color:
+                                                lernspalte.hexalogieBisWert ==
+                                                    null
+                                                ? theme.colorScheme.outline
+                                                : theme.colorScheme.primary,
+                                          ),
+                                        ),
+                                      ),
                                   ],
                                 ),
                               ),

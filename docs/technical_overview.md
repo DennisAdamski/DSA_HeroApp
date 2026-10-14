@@ -1700,6 +1700,15 @@ Nicht-Kampftalente mit Wert, Meta-Talente inbegriffen). Das Unterdrücken von
 Wunden würfelt die Selbstbeherrschung mit `talentTawNachId`
 (`workspace/sb_probe_werte.dart`).
 
+**Kosten und Lernspalte (ARCH-04, Teilstand 10/11).** Die AP einer Steigerung
+berechnet `herleiteSteigerungskosten` (`steigerung_herleitung_rules.dart`):
+Grundkosten, Sondererfahrung, Hexalogie, Gedächtnis-Faktor, epischer
+Aufschlag, Lehrmeister – jeder Schritt mit dem Betrag, um den er die AP
+verändert. Die Spalte eines Zaubers liefert `zauberLernspalte`, die eines
+Talents `herleiteTalentLernspalte`; `AdvancementOption.lernregeln`
+(`Lernregeln`) trägt Hexalogie-Grenze, Faktoren (`lernkosten_faktor_rules.dart`)
+und Hinweise bis in den Steigerungsdialog.
+
 **Zukauf-Grenzen:** `lib/rules/derived/bought_stat_limit_rules.dart`
 begrenzt den AP-Zukauf im Steigerungsdialog fuer Grundwerte. LeP duerfen bis
 `floor(KO / 2)`, Au bis `KO` und MR bis `floor(MU / 2)` gekauft werden. Fuer

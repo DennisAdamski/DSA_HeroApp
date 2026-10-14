@@ -186,7 +186,9 @@ void main() {
       targetId: 'newSpell',
       options: {'learnedRepresentation': 'Srl', 'learnedTradition': 'Srl'},
     )!;
-    expect(before.complexityHint, 'Lernkomplexität D');
+    // Gildenmagier lernen Scharlatanensprüche nur eine Spalte erschwert
+    // (Wege der Zauberei S. 74), nicht zwei wie sonst bei fremder Repräsentation.
+    expect(before.complexityHint, 'Lernkomplexität C');
     expect(after.complexityHint, 'Lernkomplexität B');
     final spell = step(
       'spell',

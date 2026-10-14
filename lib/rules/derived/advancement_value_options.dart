@@ -116,7 +116,21 @@ AdvancementOption? _talentOption(AdvancementContext context, String id) {
   );
   final cost = learnCostFromKomplexitaet(complexity);
   final value = entry.talentValue ?? -1;
+  final lernregeln = Lernregeln(
+    faktoren: lernkostenFaktoren(
+      hero,
+      def.group == 'Wissenstalente'
+          ? LernzielArt.wissenstalent
+          : LernzielArt.sonstiges,
+    ),
+    spaltenHerleitung: herleiteTalentLernspalte(
+      basisSpalte: def.steigerung,
+      befund: befund,
+      gifted: entry.gifted,
+    ),
+  );
   return AdvancementOption(
+    lernregeln: lernregeln,
     kind: AdvancementKind.talent,
     targetId: id,
     label: def.name,
@@ -165,20 +179,26 @@ AdvancementOption? _spellOption(
       'learnedRepresentation': selected.learnedRepresentation,
     if (selected != null) 'learnedTradition': selected.tradition,
   };
-  final foreign = isForeignLearnedRepresentation(
+  final fremdSpalten = fremdeRepraesentationsSpalten(
     learnedRepresentation: chosen['learnedRepresentation'] ?? repr,
     learnedTradition: chosen['learnedTradition'] ?? tradition,
   );
   final befund = context.begabungen.zauber(def);
-  final complexity = effectiveSpellLernkomplexitaet(
-    basisKomplexitaet: def.steigerung,
-    istHauszauber: entry.hauszauber,
-    zauberMerkmale: parseSpellTraits(def.traits),
-    heldMerkmalskenntnisse: hero.merkmalskenntnisse,
-    gifted: entry.gifted || befund.begabungen.isNotEmpty,
-    penaltySteps: (foreign ? 2 : 0) + befund.erhoehung,
-    zusatzReduktion: befund.zusatzBegabungen.length,
+  final lernspalte = zauberLernspalte(
+    spell: def,
+    eintrag: hero.spells[id],
+    fremdeReprSpalten: fremdSpalten,
+    befund: befund,
+    merkmalskenntnisse: hero.merkmalskenntnisse,
+    begabteMerkmale: context.begabungen.begabteMerkmale,
+    elementarharmonisiert: context.ownedAbilityNames.any(
+      (name) =>
+          normalizeSpecialAbilityName(name)
+              .startsWith('elementarharmonisierteaura'),
+    ),
+    zauber: hero.spells,
   );
+  final complexity = lernspalte.spalte;
   final maximum = computeTalentMaxValue(
     effectiveAttributes: context.permanentAttributes,
     attributeNames: def.attributes,
@@ -186,6 +206,12 @@ AdvancementOption? _spellOption(
   );
   final cost = learnCostFromKomplexitaet(complexity);
   return AdvancementOption(
+    lernregeln: Lernregeln(
+      erleichterungBisWert: lernspalte.hexalogieBisWert,
+      faktoren: lernkostenFaktoren(hero, LernzielArt.zauber),
+      spaltenHerleitung: lernspalte.herleitung,
+      hinweise: <String>[?lernspalte.hexalogieHinweis],
+    ),
     kind: AdvancementKind.spell,
     targetId: id,
     label: def.name,
@@ -227,6 +253,9 @@ AdvancementOption? _languageOption(AdvancementContext context, String id) {
     currentValue: value,
     maxValue: def.maxWert,
     learnCost: learnCostFromKomplexitaet(complexity),
+    lernregeln: Lernregeln(
+      faktoren: lernkostenFaktoren(hero, LernzielArt.sprachschrift),
+    ),
     isOwned: hero.sprachen.containsKey(id),
     unavailableReason: value >= def.maxWert ? 'Maximum erreicht' : null,
   );
@@ -247,6 +276,9 @@ AdvancementOption? _scriptOption(AdvancementContext context, String id) {
     maxValue: def.maxWert,
     learnCost: learnCostFromKomplexitaet(
       _mitBefund(def.steigerung, context.begabungen.schriften()),
+    ),
+    lernregeln: Lernregeln(
+      faktoren: lernkostenFaktoren(hero, LernzielArt.sprachschrift),
     ),
     isOwned: hero.schriften.containsKey(id),
     unavailableReason: value >= def.maxWert ? 'Maximum erreicht' : null,
