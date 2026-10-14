@@ -3,8 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/herleitung_uebersicht_rules.dart';
-import 'package:dsa_heldenverwaltung/rules/derived/talent_herleitung_rules.dart';
-import 'package:dsa_heldenverwaltung/rules/derived/zauber_herleitung_rules.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
@@ -159,23 +157,11 @@ class _HerleitungsSucheDialogState
     required int? talentBeOverride,
     required bool epicAdvantagesActive,
   }) {
-    return sammleHerleitungen(
-      eigenschaften: snapshot.eigenschaftHerleitungen,
-      basiswerte: snapshot.derivedStats.herleitungen,
-      kampf: snapshot.combatPreviewStats,
-      begleiter: snapshot.hero.companions,
-      talente: sammleTalentHerleitungen(
-        snapshot: snapshot,
-        talente: katalog?.talents ?? const <TalentDef>[],
-        epicAdvantagesActive: epicAdvantagesActive,
-        talentBeOverride: talentBeOverride,
-      ),
-      zauber: sammleZauberHerleitungen(
-        snapshot: snapshot,
-        zauber: katalog?.spells ?? const <SpellDef>[],
-      ),
-      astral: snapshot.resourceActivation.magic.isEnabled,
-      karmal: snapshot.resourceActivation.divine.isEnabled,
+    return sammleHerleitungenAusSnapshot(
+      snapshot,
+      katalog: katalog,
+      talentBeOverride: talentBeOverride,
+      epicAdvantagesActive: epicAdvantagesActive,
     );
   }
 }

@@ -5,6 +5,7 @@
 /// Die Herleitungen selbst bleiben unverändert; hier wird nichts gerechnet.
 library;
 
+import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_companion.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/basiswert_herleitung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/begleiter_herleitung_rules.dart';
@@ -13,6 +14,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/eigenschaft_herleitung_rules.
 import 'package:dsa_heldenverwaltung/rules/derived/herleitung.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/talent_herleitung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/zauber_herleitung_rules.dart';
+import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 
 /// Bereich eines erklärbaren Werts, in Anzeigereihenfolge.
 enum HerleitungsBereich {
@@ -242,6 +244,37 @@ List<HerleitungsEintrag> sammleHerleitungen({
     );
   }
   return eintraege;
+}
+
+/// Alle Herleitungen eines Helden aus seinem berechneten [snapshot].
+///
+/// Gemeinsame Zusammenstellung für die Berechnungssuche und die
+/// Updatevorschau des Regelprofils: Beide zeigen so dieselben Werte.
+/// [katalog] ist der Katalog, nach dem der Held rechnet.
+List<HerleitungsEintrag> sammleHerleitungenAusSnapshot(
+  HeroComputedSnapshot snapshot, {
+  required RulesCatalog? katalog,
+  required int? talentBeOverride,
+  required bool epicAdvantagesActive,
+}) {
+  return sammleHerleitungen(
+    eigenschaften: snapshot.eigenschaftHerleitungen,
+    basiswerte: snapshot.derivedStats.herleitungen,
+    kampf: snapshot.combatPreviewStats,
+    begleiter: snapshot.hero.companions,
+    talente: sammleTalentHerleitungen(
+      snapshot: snapshot,
+      talente: katalog?.talents ?? const <TalentDef>[],
+      epicAdvantagesActive: epicAdvantagesActive,
+      talentBeOverride: talentBeOverride,
+    ),
+    zauber: sammleZauberHerleitungen(
+      snapshot: snapshot,
+      zauber: katalog?.spells ?? const <SpellDef>[],
+    ),
+    astral: snapshot.resourceActivation.magic.isEnabled,
+    karmal: snapshot.resourceActivation.divine.isEnabled,
+  );
 }
 
 /// Filtert [eintraege] nach [suche].

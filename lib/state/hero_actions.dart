@@ -284,16 +284,25 @@ class HeroActions {
   ///
   /// [update] darf selbst weder [saveHero] noch [updateHero] aufrufen: beide
   /// warten auf den laufenden Vorgang und damit auf sich selbst.
+  ///
+  /// [validationCatalog] ersetzt wie bei [saveHero] den Katalog der
+  /// Normalisierung; ein Wechsel des Regelprofils gibt hier den Katalog des
+  /// neuen Profils mit, statt sich darauf zu verlassen, dass er schon geladen ist.
   Future<HeroSheet> updateHero(
     String heroId,
-    HeroSheet Function(HeroSheet current) update,
-  ) {
+    HeroSheet Function(HeroSheet current) update, {
+    RulesCatalog? validationCatalog,
+  }) {
     final repo = _ref.read(heroRepositoryProvider);
     return aendereGespeichertenHelden(
       repository: repo,
       heroId: heroId,
       aenderung: update,
-      speichere: (geaendert) => _speichereNormalisiert(repo, geaendert),
+      speichere: (geaendert) => _speichereNormalisiert(
+        repo,
+        geaendert,
+        validationCatalog: validationCatalog,
+      ),
     );
   }
 

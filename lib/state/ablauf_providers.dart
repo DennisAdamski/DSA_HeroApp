@@ -4,6 +4,7 @@ import 'package:dsa_heldenverwaltung/ablaeufe/artefakt_protokollieren.dart';
 import 'package:dsa_heldenverwaltung/ablaeufe/auxiliator_einsetzen.dart';
 import 'package:dsa_heldenverwaltung/ablaeufe/matrix_ausloesen.dart';
 import 'package:dsa_heldenverwaltung/ablaeufe/rast_abschliessen.dart';
+import 'package:dsa_heldenverwaltung/ablaeufe/regelprofil_uebernehmen.dart';
 import 'package:dsa_heldenverwaltung/ablaeufe/schaden_erhalten.dart';
 import 'package:dsa_heldenverwaltung/ablaeufe/schaden_zuruecknehmen.dart';
 import 'package:dsa_heldenverwaltung/ablaeufe/steigerungsrunde_uebernehmen.dart';
@@ -69,6 +70,14 @@ final schadenZuruecknehmenProvider = Provider<SchadenZuruecknehmen>((ref) {
   return SchadenZuruecknehmen(
     repository: ref.watch(heroRepositoryProvider),
     uhr: DateTime.now,
+  );
+});
+
+/// Bindet den Ablauf „Regelprofil übernehmen“ (ARCH-04) an den frischen
+/// Schreibweg des Bogens.
+final regelProfilUebernehmenProvider = Provider<RegelProfilUebernehmen>((ref) {
+  return RegelProfilUebernehmen(
+    aendere: ref.watch(heroActionsProvider).updateHero,
   );
 });
 
