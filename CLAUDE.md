@@ -1332,7 +1332,8 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
 - Direktes App-Feedback als GitHub-Issue ist in
   [docs/feedback_github_plan.md](docs/feedback_github_plan.md) geplant;
   der Entwurf beschreibt einen eigenen HTTPS-Feedbackdienst und ist noch
-  nicht implementiert. Die Zugangsentscheidung (mit/ohne App-Anmeldung) ist offen.
+  nicht implementiert. Feedback erfordert die bestehende App-Anmeldung;
+  ein GitHub-Konto des Nutzers ist nicht erforderlich.
 - Spielunterstuetzung ("Spielmodus") ist in `docs/spielmodus_konzept.md` konzipiert.
   Phase 1 umfasst die tab-unabhaengige Proben-Schnellsuche
   (`lib/ui/screens/workspace/probe_quick_search.dart`), Filter-Chips im

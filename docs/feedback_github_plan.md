@@ -8,14 +8,15 @@ Nutzer senden Feedback direkt aus der App. Ein Server erstellt daraus ein Issue
 in `DennisAdamski/DSA_HeroApp`; ein GitHub-Konto des Nutzers ist nicht erforderlich.
 Erfolg bedeutet: Die App bestätigt eine tatsächlich erhaltene Issue-Nummer.
 
-Vom Nutzer festgelegt: direktes Absenden und Erstellung dieses Plans.
+Vom Nutzer festgelegt: direktes Absenden, Erstellung dieses Plans und Feedback
+nur mit bestehender App-Anmeldung. Ein zusätzlicher Login-Dienst entfällt.
 Vorgeschlagener Umfang: Textfeedback ohne Screenshots, Heldendaten oder Logs.
-Noch zu entscheiden: nur mit bestehender App-Anmeldung oder auch ohne Anmeldung.
-Die Aufgaben unten beschreiben zunächst die Variante mit App-Anmeldung.
-Diese Annahme ist keine bereits erteilte Freigabe für eine Loginpflicht.
+Die Aufgaben unten beschreiben die gewählte Variante mit App-Anmeldung.
+Nicht angemeldete Nutzer erhalten einen Hinweis auf die vorhandene Konto-Anmeldung;
+der Server lehnt Einsendungen ohne gültiges Firebase-ID-Token ab.
 
-Die Umsetzung beginnt erst nach Klärung dieser Zugangsentscheidung und Review
-dieses Plans. Billing-Aktivierung, Secrets und Deployment sind eigene
+Die Umsetzung beginnt erst nach Review dieses Plans. Die Zugangsentscheidung
+ist geklärt. Billing-Aktivierung, Secrets und Deployment sind eigene
 Betriebsschritte; dieser Plan führt sie nicht aus.
 
 ## Befund im Repository
@@ -270,9 +271,10 @@ Widersprüche prüfen, nur bei tatsächlich nötiger Policyänderung anpassen.
   Functions gezielt deployen, keinen pauschalen Hosting-/Rules-Deploy ausführen.
 - [ ] Entscheidungen und Grenzen mit Commit in Mempalace hinterlegen.
 
-## Variante ohne App-Anmeldung
+## Ausgeschlossen: Feedback ohne App-Anmeldung
 
-Falls gewählt, wird vor P1 das Identitäts- und Missbrauchskonzept erweitert.
+Feedback ohne App-Anmeldung gehört nicht zum gewählten Umfang. Sollte dies
+später gewünscht werden, muss das Identitäts- und Missbrauchskonzept erweitert werden.
 Kein stilles `signInAnonymously()` im bestehenden Firebase-Auth-Service:
 Authstatus steuert Konto-/Heldensynchronisation und darf nicht durch Feedback
 verändert werden. Eine getrennte Feedback-Identität und plattformgerechte
@@ -285,8 +287,7 @@ Einsendungen müssen vor öffentlicher Freigabe nachgewiesen werden.
 
 Grobe Schätzung: 2–4 Arbeitstage für P1–P4 mit App-Anmeldung, abhängig von
 Firebase-Billing, GitHub-Berechtigungen und vorhandenen Testproblemen.
-Ohne App-Anmeldung zusätzlicher Aufwand für getrennte Identität und Spam-Schutz;
-verlässliche Schätzung erst nach Festlegung der Zielplattformen dieses Zugangs.
+Ein anonymer Feedbackzugang wird nicht implementiert.
 Screenshots werden als spätere Erweiterung mit eigenem Speicher-/Löschkonzept geplant.
 
 Vor Deployment prüfen: Ist Issues im Repository aktiv, ist es öffentlich oder
