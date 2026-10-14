@@ -188,7 +188,11 @@ void main() {
     await _zeigeDetails(tester, c, titel: 'Berechnungsschritte (Haupthand)');
 
     expect(find.text('Schild-Parade'), findsOneWidget);
-    expect(find.text('= ${c.shieldPa}'), findsWidgets);
+    // Wie bei der Haupthand-PA steht der INI-Parade-Bonus mit im Ergebnis.
+    final mitIni = c.shieldPa + c.iniParadeMod;
+    expect(c.offhandPreview!.shieldPaMitIniParadeMod, mitIni);
+    expect(c.herleitungen!.schildPaMitIniParade!.wert, mitIni);
+    expect(find.text('= $mitIni'), findsWidgets);
     expect(_betraege(tester, 'Schild-WM'), <int>[3]);
     expect(_betraege(tester, 'SF Schildkampf'), <int>[3]);
   });

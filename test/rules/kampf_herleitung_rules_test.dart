@@ -91,6 +91,27 @@ void _pruefeGleichheit(CombatPreviewStats c, {String reason = ''}) {
   if (h.schildPa case final schild?) {
     expect(schild.wert, c.shieldPa, reason: '$reason Schild-PA');
   }
+  expect(
+    h.schildPaMitIniParade == null,
+    !c.offhandIsShield,
+    reason: '$reason Schild mit INI',
+  );
+  if (h.schildPaMitIniParade case final schild?) {
+    expect(
+      schild.wert,
+      c.shieldPa + c.iniParadeMod,
+      reason: '$reason Schild-PA mit INI',
+    );
+    expect(
+      c.offhandPreview!.shieldPaMitIniParadeMod,
+      schild.wert,
+      reason: '$reason Schild-PA mit INI in der Vorschau',
+    );
+    expect(
+      schild.schritte.map((e) => e.bezeichnung),
+      contains('INI-Parade-Bonus'),
+    );
+  }
   final neben = c.offhandPreview;
   if (neben != null && neben.isWeapon) {
     final nh = neben.herleitungen!;

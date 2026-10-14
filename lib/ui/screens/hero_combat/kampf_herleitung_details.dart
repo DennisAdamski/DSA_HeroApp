@@ -54,7 +54,8 @@ class KampfHerleitungDetails extends StatelessWidget {
                     const Divider(),
                     _Abschnitt(titel: 'Parade (PA)', herleitung: pa),
                   ],
-                  if (h.schildPa case final schildPa?) ...[
+                  if (h.schildPaMitIniParade ?? h.schildPa
+                      case final schildPa?) ...[
                     const Divider(),
                     _Abschnitt(titel: 'Schild-Parade', herleitung: schildPa),
                   ],

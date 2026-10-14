@@ -281,6 +281,7 @@ class OffhandCombatPreview {
     this.activeProjectileCount,
     this.mainPaMod,
     this.shieldPa,
+    this.shieldPaMitIniParadeMod,
     this.atMod,
     this.iniMod,
     this.waffenmeisterActive = false,
@@ -331,6 +332,9 @@ class OffhandCombatPreview {
   // Modifikator-basiert (Parierwaffe/Schild)
   final int? mainPaMod;
   final int? shieldPa;
+
+  /// Schild-PA mit dem INI-Parade-Bonus der Kampfinitiative; `null` ohne Schild.
+  final int? shieldPaMitIniParadeMod;
   final int? atMod;
   final int? iniMod;
 
@@ -776,6 +780,14 @@ CombatPreviewStats computeCombatPreviewStats(
       kampfIni: kampfIniHerleitung,
       ausweichen: ausweichenHerleitung,
       schildPa: offhandModifiers.schildPaHerleitung,
+      schildPaMitIniParade: offhandModifiers.schildPaHerleitung == null
+          ? null
+          : herleitePaMitIniParade(
+              pa: offhandModifiers.schildPaHerleitung!,
+              iniParadeMod: iniParadeMod,
+              kampfInitiative: kampfInitiative,
+              bezeichnung: 'Schild-PA',
+            ),
     ),
     rsTotal: rsTotal,
     armatrutzRsBonus: armatrutzRsBonus,

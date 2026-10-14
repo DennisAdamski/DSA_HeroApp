@@ -155,7 +155,7 @@ List<HerleitungsEintrag> sammleHerleitungen({
       kampf.offhandName.trim().isEmpty
           ? 'Schild-Parade'
           : 'Schild-Parade – ${kampf.offhandName.trim()}',
-      k.schildPa,
+      k.schildPaMitIniParade ?? k.schildPa,
     );
     neu(
       'kampf-tp',
