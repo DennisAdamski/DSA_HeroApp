@@ -844,3 +844,11 @@ Ausweichen je DK). `gefecht_zielwert_herleitung_rules.dart` baut sie aus
 `Gefechtspruefung.zielHerleitung` und `modifikatoren`; eine neue Erschwernis
 gehört mit Namen in `modifikatoren`, nicht in einen Sammelposten. Prüfung:
 `test/rules/gefecht_zielwert_herleitung_rules_test.dart`.
+
+## Begleiterwerte als Herleitung (14. Oktober 2026)
+
+Die Begleiteransicht des Gefechts zeigt unter „Berechnung“ je Begleiter INI,
+Pools und Angriffe als Schritte (Grundwert, Steigerung, Reittier-Ausbildung,
+Tierausbildung). Dieselben Herleitungen stehen in der (i)-Suche im Bereich
+„Begleiter“. Regeln: `begleiter_herleitung_rules.dart`; Prüfung:
+`test/rules/begleiter_herleitung_rules_test.dart`.

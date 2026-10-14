@@ -140,6 +140,7 @@ class _HerleitungsSucheDialogState
       eigenschaften: snapshot.eigenschaftHerleitungen,
       basiswerte: snapshot.derivedStats.herleitungen,
       kampf: snapshot.combatPreviewStats,
+      begleiter: snapshot.hero.companions,
       astral: snapshot.resourceActivation.magic.isEnabled,
       karmal: snapshot.resourceActivation.divine.isEnabled,
     );

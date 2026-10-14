@@ -1378,7 +1378,33 @@ Aktionsdialog.
 Vollständige Suite danach grün (5700 bestanden, 3 übersprungen),
 `flutter analyze` ohne Befund.
 
-*Nächste Schritte:* D (optional) Begleiter.
+**Teilstand 7, 14.10.2026 — Begleiter (Paket D).**
+
+*Umsetzung.* `begleiter_herleitung_rules.dart` ordnet die wirksamen Werte eines
+Begleiters als Schritte an, mit denselben Bausteinen wie
+`begleiter_wirkwert_rules.dart`: Grundwert (bei Pools der Startwert),
+„Steigerung (AP)“, „Reittier-Ausbildung“ (KK, Loyalität, AT) und
+„Tierausbildung“ eines Vertrauten (Eigenschaften, INI, LeP, AuP, AT, PA).
+Herleitungen gibt es für MU–KK, INI, Loyalität, LeP/AuP/AsP/MR sowie AT und PA
+jedes Angriffs (PA nur, wo eine Parade möglich ist). TP und Geschwindigkeiten
+bleiben Text bzw. Aufzählung, weil sie keine reine Summe sind. Neu im
+Überblick: Bereich „Begleiter“ in `sammleHerleitungen(begleiter:)` und damit
+in der (i)-Suche; im Gefecht zeigt jedes Begleiterprofil unter „Berechnung“
+INI, Pools und Angriffe mit mehr als einem Schritt. Verhaltensneutral: die
+Werte selbst rechnen weiter `begleiter_wirkwert_rules.dart` und das
+Kampfprofil, die Herleitungen werden nur daneben gestellt und gegen sie
+geprüft.
+
+*Prüfungen.* `test/rules/begleiter_herleitung_rules_test.dart` (Reittier und
+Vertrauter: Summen gleich `begleiterWirksamerWert`/`-Poolwert`/`-AngriffAt`/
+`-Pa` und Kampfprofil; benannte Schritte je Quelle; Suche) und ein Widgettest
+in `gefecht_begleiter_werte_test.dart`.
+
+Vollständige Suite danach grün (5709 bestanden, 3 übersprungen),
+`flutter analyze` ohne Befund.
+
+*Stand ARCH-04 Kampf.* Pakete A bis D sind erledigt; offen bleiben
+Talente, Magie und Steigerungen.
 
 ## ARCH-05 — Schreibende Aktionen fachlich aufteilen
 

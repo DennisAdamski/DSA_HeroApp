@@ -5,7 +5,9 @@
 /// Die Herleitungen selbst bleiben unverändert; hier wird nichts gerechnet.
 library;
 
+import 'package:dsa_heldenverwaltung/domain/hero_companion.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/basiswert_herleitung_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/begleiter_herleitung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/combat_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/eigenschaft_herleitung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/herleitung.dart';
@@ -22,7 +24,10 @@ enum HerleitungsBereich {
   kampf('Kampf'),
 
   /// Kampfvorschau einer Nebenhandwaffe.
-  nebenhand('Nebenhand');
+  nebenhand('Nebenhand'),
+
+  /// Wirksame Werte der Begleiter (Reittiere, Vertraute, Tiere).
+  begleiter('Begleiter');
 
   const HerleitungsBereich(this.anzeige);
 
@@ -84,6 +89,7 @@ List<HerleitungsEintrag> sammleHerleitungen({
   EigenschaftHerleitungen? eigenschaften,
   BasiswertHerleitungen? basiswerte,
   CombatPreviewStats? kampf,
+  List<HeroCompanion> begleiter = const <HeroCompanion>[],
   bool astral = true,
   bool karmal = true,
 }) {
@@ -185,6 +191,32 @@ List<HerleitungsEintrag> sammleHerleitungen({
       nh.tpZuschlag,
       ergebnis: neben.tpExpression,
     );
+  }
+  for (final c in begleiter) {
+    final h = begleiterHerleitungen(c);
+    const bereich = HerleitungsBereich.begleiter;
+    for (final (label, key) in [...kBegleiterWerte, ...kBegleiterPools]) {
+      neu(
+        'begleiter-${h.id}-$key',
+        bereich,
+        '${h.name} – $label',
+        h.werte[key] ?? h.pools[key],
+      );
+    }
+    for (final (i, angriff) in h.angriffe.indexed) {
+      neu(
+        'begleiter-${h.id}-angriff$i-at',
+        bereich,
+        '${h.name} – AT ${angriff.name}',
+        angriff.at,
+      );
+      neu(
+        'begleiter-${h.id}-angriff$i-pa',
+        bereich,
+        '${h.name} – PA ${angriff.name}',
+        angriff.pa,
+      );
+    }
   }
   return eintraege;
 }

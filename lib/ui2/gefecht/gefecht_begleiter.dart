@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:dsa_heldenverwaltung/domain/begleiter_zustand.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_companion.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/begleiter_herleitung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/begleiter_kampfprofil_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/herleitung.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/begleiter_zustand_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/reittier_ausbildung_anzeige_rules.dart';
+import 'package:dsa_heldenverwaltung/ui2/gefecht/gefecht_herleitung_schritte.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abschnitt.dart';
 
 /// Begleiter, Tiere und Vertraute zum Nachschlagen im Gefecht.
@@ -37,7 +40,11 @@ class GefechtBegleiter extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             for (final c in begleiter)
-              _Profil(profil: begleiterKampfprofil(c), laufend: _laufend(c)),
+              _Profil(
+                profil: begleiterKampfprofil(c),
+                herleitung: begleiterHerleitungen(c),
+                laufend: _laufend(c),
+              ),
           ],
         ),
       ),
@@ -64,11 +71,35 @@ class GefechtBegleiter extends StatelessWidget {
 
 // Kopfzeile mit den häufigsten Werten, Details nach dem Aufklappen.
 class _Profil extends StatelessWidget {
-  const _Profil({required this.profil, required this.laufend});
+  const _Profil({
+    required this.profil,
+    required this.herleitung,
+    required this.laufend,
+  });
   final BegleiterKampfprofil profil;
+
+  /// Herleitungen der Werte, die das Profil zeigt.
+  final BegleiterHerleitungen herleitung;
 
   /// Aktuelle Werte der Pools, leer ohne Maxima.
   final String laufend;
+
+  // INI, die Pools und je Angriff AT und PA, soweit sie Schritte haben.
+  Iterable<Herleitung> get _herleitungen sync* {
+    for (final h in [
+      herleitung.werte['ini'],
+      for (final (_, key) in kBegleiterPools) herleitung.pools[key],
+    ]) {
+      if (h != null && h.sichtbareSchritte.length > 1) yield h;
+    }
+    for (final a in herleitung.angriffe) {
+      for (final (art, h) in [('AT', a.at), ('PA', a.pa)]) {
+        if (h != null) {
+          yield Herleitung(bezeichnung: '$art ${a.name}', schritte: h.schritte);
+        }
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -116,6 +147,17 @@ class _Profil extends StatelessWidget {
           Text('Sonderfertigkeiten: ${p.sonderfertigkeiten.join(', ')}'),
         if (p.vertrautenmagie.isNotEmpty)
           Text('Vertrautenmagie: ${p.vertrautenmagie.join(', ')}'),
+        ExpansionTile(
+          key: ValueKey('gefecht-begleiter-berechnung-${p.id}'),
+          tilePadding: EdgeInsets.zero,
+          childrenPadding: const EdgeInsets.only(bottom: 8),
+          expandedCrossAxisAlignment: CrossAxisAlignment.start,
+          title: const Text('Berechnung'),
+          children: [
+            for (final h in _herleitungen)
+              GefechtHerleitungSchritte(herleitung: h),
+          ],
+        ),
       ],
     );
   }
