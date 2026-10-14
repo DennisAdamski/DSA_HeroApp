@@ -588,6 +588,7 @@ CombatPreviewStats computeCombatPreviewStats(
           talentName: selectedTalent?.name,
           waffenWm: main.wmAt,
           waffenName: waffenName,
+          waffenmeister: wmEffects.atWmBonus,
           ebe: rangedAtEbePart,
           spezialisierung: atSpecBonus,
           geschoss: projectileAtMod,

@@ -161,6 +161,7 @@ OffhandCombatPreview _computeOffhandWeaponPreview({
           talentName: selectedTalent?.name,
           waffenWm: slot.wmAt,
           waffenName: slot.name,
+          waffenmeister: wmEffects.atWmBonus,
           ebe: rangedAtEbePart,
           spezialisierung: atSpecBonus,
           geschoss: projectileAtMod,

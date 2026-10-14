@@ -556,6 +556,65 @@ void main() {
     });
   });
 
+  group('Waffenmeister im Fernkampf', () {
+    // Nutzerentscheidung (14.10.2026): Der AT-WM-Bonus gilt auch für
+    // Fernkampfwaffen, sonst wäre er dort wirkungslos.
+    CombatPreviewStats vorschau({required bool waffenmeister}) =>
+        computeCombatPreviewStats(
+          _held(
+            talents: const <String, HeroTalentEntry>{
+              'tal_boegen': HeroTalentEntry(talentValue: 7, atValue: 1),
+            },
+            combatConfig: CombatConfig(
+              mainWeapon: const MainWeaponSlot(
+                name: 'Kurzbogen',
+                talentId: 'tal_boegen',
+                combatType: WeaponCombatType.ranged,
+                weaponType: 'Kurzbogen',
+                wmAt: 2,
+              ),
+              waffenmeisterschaften: [
+                if (waffenmeister)
+                  const WaffenmeisterConfig(
+                    talentId: 'tal_boegen',
+                    weaponType: 'Kurzbogen',
+                    bonuses: [
+                      WaffenmeisterBonus(
+                        type: WaffenmeisterBonusType.atWmBonus,
+                        value: 2,
+                      ),
+                    ],
+                  ),
+              ],
+            ),
+          ),
+          _zustand,
+        );
+
+    test('FK enthält den Waffenmeister-Bonus als eigenen Schritt', () {
+      final ohne = vorschau(waffenmeister: false);
+      final mit = vorschau(waffenmeister: true);
+      expect(mit.waffenmeisterAtBonus, 2);
+      expect(_schritt(mit.herleitungen!.at, 'Waffenmeister AT').betrag, 2);
+      expect(_schritt(ohne.herleitungen!.at, 'Waffenmeister AT').betrag, 0);
+      expect(mit.at, ohne.at + 2);
+      expect(
+        mit.at,
+        computeRangedAtValue(
+          rangedAtBase: mit.rangedAtBase,
+          talentAtValue: 1,
+          weaponAtMod: 2,
+          waffenmeisterAtBonus: 2,
+          ebeAttackPart: mit.ebe,
+          specializationBonus: mit.specBonus,
+          projectileAtMod: mit.projectileAtMod,
+          manualAtMod: 0,
+        ),
+      );
+      _pruefeGleichheit(mit);
+    });
+  });
+
   group('Bestandshelden', () {
     late EchterKatalog katalog;
 
