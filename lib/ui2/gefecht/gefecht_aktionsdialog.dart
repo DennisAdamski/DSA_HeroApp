@@ -5,6 +5,7 @@ import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht_auftrag.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_auftrag_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_held_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/gefecht_zielwert_herleitung_rules.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht_kontext.dart';
 
@@ -241,6 +242,8 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
         : null;
     final zielen = !p.ausfuehrbar && zielbeginn?.ausfuehrbar == true;
     final freigabe = zielen ? zielbeginn! : p;
+    final zielwert = herleiteGefechtsZielwert(p);
+    final erschwernis = herleiteGefechtsErschwernis(p);
     final sonder =
         widget.manuell || widget.manoever != null || widget.probe != null;
     return AlertDialog(
@@ -516,10 +519,12 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
                 }),
               ),
               GefechtBerechnung(
+                herleitungen: [?zielwert, ?erschwernis],
                 zeilen: [
                   if (mittel != null && waehlen) ...mittel.anteile,
-                  for (final m in p.modifikatoren)
-                    '${m.name}: ${m.wert >= 0 ? '+' : ''}${m.wert}',
+                  if (erschwernis == null)
+                    for (final m in p.modifikatoren)
+                      '${m.name}: ${m.wert >= 0 ? '+' : ''}${m.wert}',
                   if (widget.manoever != null) ...[
                     widget.manoever!.erklarung,
                     'Katalog: ${widget.manoever!.erschwernis}',

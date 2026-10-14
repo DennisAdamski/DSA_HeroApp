@@ -80,6 +80,7 @@ Gefechtspruefung ergaenzeGefechtsAnsagefolge(
       ...p.modifikatoren,
       if (malus > 0) Gefechtsmodifikator('Ansagefolgemalus', malus),
     ],
+    zielHerleitung: p.zielHerleitung,
     angriffe: p.angriffe,
     paraden: p.paraden,
     freie: p.freie,

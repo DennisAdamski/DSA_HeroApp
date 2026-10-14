@@ -1,6 +1,7 @@
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht.dart';
+import 'package:dsa_heldenverwaltung/domain/gefecht_kontext.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 
 import 'combat_special_ability_state.dart';
@@ -86,6 +87,9 @@ Gefechtswerte gefechtswerteFuer(
       rueckfall: c.ausweichen - c.iniAusweichenBonus,
     ),
     ausweichenHerleitung: c.herleitungen?.ausweichen,
+    atHerleitung: profil?.atHerleitung ?? c.herleitungen?.at,
+    paHerleitung: profil?.paHerleitung ?? c.herleitungen?.pa,
+    schildPaHerleitung: c.offhandIsShield ? c.herleitungen?.schildPa : null,
     be: c.beKampf,
     schildPa: c.offhandIsShield ? c.shieldPa : null,
     schildWm: c.offhandIsShield
@@ -274,24 +278,31 @@ Gefechtspruefung pruefeGefechtsmanoever(
     gefechtsManoeveraktion(m),
     kampfmittel,
   );
+  final waffenmeisterErleichterung =
+      (kampfmittel?.art == GefechtsKampfmittelArt.nebenwaffe
+          ? snapshot
+                .combatPreviewStats
+                .offhandPreview
+                ?.waffenmeisterManeuverReductions[m.id]
+          : snapshot.combatPreviewStats.waffenmeisterManeuverReductions[m
+                .id]) ??
+      0;
+  // Benannte Anteile des Gesamtzuschlags; der Rest ist die eigene Eingabe.
+  final zuschlagsAnteile = [
+    Gefechtsmodifikator('Manöverzuschlag', gefechtsManoeverZuschlag(m)),
+    Gefechtsmodifikator('Schildführung', schild.zuschlag),
+    Gefechtsmodifikator('Waffenloses Manöver neben Waffe', nebenWaffe ? 2 : 0),
+    Gefechtsmodifikator(
+      'Waffenmeister-Erleichterung',
+      -waffenmeisterErleichterung,
+    ),
+  ];
   return pruefeGefechtsaktion(
     s,
     gefechtswerteFuer(snapshot, katalog: katalog, kampfmittel: kampfmittel),
     aktion,
-    zuschlag:
-        zuschlag +
-        gefechtsManoeverZuschlag(m) +
-        schild.zuschlag +
-        (nebenWaffe ? 2 : 0) -
-        (kampfmittel?.art == GefechtsKampfmittelArt.nebenwaffe
-            ? snapshot
-                      .combatPreviewStats
-                      .offhandPreview
-                      ?.waffenmeisterManeuverReductions[m.id] ??
-                  0
-            : snapshot.combatPreviewStats.waffenmeisterManeuverReductions[m
-                      .id] ??
-                  0),
+    zuschlag: zuschlag + zuschlagsAnteile.fold(0, (summe, t) => summe + t.wert),
+    zuschlagsAnteile: zuschlagsAnteile,
     manuellerZielwert: zielwert,
     abwehrAufAttacke: m.name.toLowerCase() == 'gegenhalten',
     sperrGruende: sperren,

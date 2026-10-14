@@ -35,7 +35,8 @@ Herleitung ohneSchritte(Herleitung h, Set<String> bezeichnungen) => Herleitung(
   ],
 );
 
-HerleitungsSchritt _sitzungsBonus(int iniBonus) => HerleitungsSchritt(
+/// Schritt des Sitzungs-INI-Bonus mit dem Betrag [iniBonus].
+HerleitungsSchritt gefechtsIniBonusSchritt(int iniBonus) => HerleitungsSchritt(
   bezeichnung: kGefechtsIniBonusSchritt,
   betrag: iniBonus,
   art: HerleitungsArt.modifikator,
@@ -57,13 +58,13 @@ Herleitung herleiteGefechtsAusweichen(
   for (final s in vorschau.schritte) {
     if (s.art == HerleitungsArt.begrenzung) continue;
     if (s.bezeichnung == kAusweichenIniBonusSchritt) {
-      schritte.add(_sitzungsBonus(iniBonus));
+      schritte.add(gefechtsIniBonusSchritt(iniBonus));
       ersetzt = true;
     } else {
       schritte.add(s);
     }
   }
-  if (!ersetzt) schritte.add(_sitzungsBonus(iniBonus));
+  if (!ersetzt) schritte.add(gefechtsIniBonusSchritt(iniBonus));
   return Herleitung(
     bezeichnung: 'Ausweichen',
     schritte: mitUntergrenze(
@@ -97,7 +98,7 @@ Herleitung gefechtsAusweichenHerleitung({
           art: HerleitungsArt.grundwert,
           quelle: 'Kampfvorschau',
         ),
-        _sitzungsBonus(iniBonus),
+        gefechtsIniBonusSchritt(iniBonus),
         HerleitungsSchritt(
           bezeichnung: 'BE Kampf',
           betrag: -be,

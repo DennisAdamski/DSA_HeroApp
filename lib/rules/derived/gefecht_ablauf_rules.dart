@@ -1,9 +1,11 @@
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht.dart';
+import 'package:dsa_heldenverwaltung/domain/gefecht_kontext.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht_auftrag.dart';
 
 import 'gefecht_rules.dart';
+import 'gefecht_zielwert_herleitung_rules.dart';
 
 /// Prüft explizit festgelegte Kosten manueller Sonder- und Dauerhandlungen.
 Gefechtspruefung pruefeManuelleGefechtsaktion(
@@ -63,6 +65,16 @@ Gefechtspruefung pruefeManuelleGefechtsaktion(
     hinweise: basis.hinweise,
     zielwert: zielwert == null ? null : zielwert - zuschlag,
     erschwernis: zuschlag,
+    modifikatoren: [
+      if (zuschlag != 0) Gefechtsmodifikator('Weitere Erschwernis', zuschlag),
+    ],
+    zielHerleitung: zielwert == null
+        ? null
+        : gefechtsGrundwert(
+            manuell: zielwert,
+            wert: zielwert,
+            name: 'Zielwert',
+          ),
     angriffe: a,
     paraden: p,
   );

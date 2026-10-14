@@ -1335,6 +1335,51 @@ soll, ist noch nicht entschieden.
 *Nächste Schritte:* C Zielwert und Erschwernis im Gefechtsdialog als
 Herleitung (der Sitzungsschritt ist dafür vorbereitet), D optional Begleiter.
 
+**Teilstand 6, 14.10.2026 — Zielwert und Erschwernis im Gefechtsdialog (Paket C).**
+
+*Umsetzung.* Der Aktionsdialog zeigt unter „Berechnung und Regeltext“ zwei
+Herleitungen der Prüfung, Katalog- und Regeltext stehen darunter:
+
+- **Erschwernis:** `pruefeGefechtsaktion` hält jede Erschwernis benannt in
+  `Gefechtspruefung.modifikatoren`; deren Summe ist `erschwernis`. Der frühere
+  Sammelposten „Weitere Zuschläge/Budget/BE“ entfällt. Benannt sind Nach
+  Bewegen (+4), Distanzklassenwechsel, Zweite Attacke/Parade (Umwandlung),
+  Schild-WM entfällt, Weitere Gegner (2 je Gegner), Gezieltes Ausweichen je
+  Distanzklasse (H 8 / N 4 / S 2), die Kontext- und Fernkampfanteile sowie die
+  eigene Eingabe „Weitere Erschwernis“. Manöver zerlegen ihren Zuschlag in
+  Manöverzuschlag, Schildführung, Waffenloses Manöver neben Waffe und
+  Waffenmeister-Erleichterung (`zuschlagsAnteile`); Ansagen, Zielen,
+  Meisterparade und Ansagefolge hängen ihre Anteile wie bisher an.
+- **Zielwert:** `Gefechtspruefung.zielHerleitung` hält den Grundwert vor der
+  Erschwernis: die Vorschau-Herleitung von AT/FK, PA, Schild-PA
+  (`Gefechtswerte.atHerleitung` usw.) plus „INI-Bonus (Sitzung)“, beim
+  Ausweichen die Herleitung aus Paket B, bei bestätigtem Grundzielwert dieser.
+  Die Ergänzungsschichten reichen das Feld durch.
+- **Modul:** `gefecht_zielwert_herleitung_rules.dart` macht daraus
+  `herleiteGefechtsZielwert` (Grundwert minus Erschwernis) und
+  `herleiteGefechtsErschwernis`; beide liefern `null`, wenn die Summe vom Wert
+  der Prüfung abwiche, dann zeigt der Dialog wie bisher Textzeilen.
+- **Oberfläche:** `GefechtBerechnung(herleitungen:)` zeigt sie über das neue
+  `GefechtHerleitungSchritte`. UI2 darf `HerleitungsSchritte` (`lib/ui/`) nicht
+  importieren (`ui2_import_richtung_test.dart`); das Gegenstück ist klein und
+  rechnet nichts.
+- Verhaltensneutral: Zielwert und Erschwernis aller Prüfungen bleiben gleich.
+
+*Prüfungen.* `test/rules/gefecht_zielwert_herleitung_rules_test.dart`: für
+jede Gefechtsaktion in elf Zuständen (Bewegen, vier Distanzklassen, drei
+Gegner, zweite AT/PA, Finte mit Schild-WM-Abzug, Fernkampf mit Getümmel, hohe
+INI), Nah- und Fernkampf, mit und ohne bestätigten Grundzielwert und
+Zuschlag: Anteile ergeben die Erschwernis, Grundwert minus Erschwernis den
+Zielwert; benannte Anteile je Regel; Dialogpfad mit echtem Helden (Ansagen,
+Manöver, manuelle Handlung, alle Kampfmittelprofile).
+`test/ui2/spielen/gefecht_zielwert_herleitung_test.dart`: Anzeige im
+Aktionsdialog.
+
+Vollständige Suite danach grün (5700 bestanden, 3 übersprungen),
+`flutter analyze` ohne Befund.
+
+*Nächste Schritte:* D (optional) Begleiter.
+
 ## ARCH-05 — Schreibende Aktionen fachlich aufteilen
 
 **Ist-Zustand:** `HeroActions` bündelt unter anderem Erstellung, Normalisierung,

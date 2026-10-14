@@ -133,6 +133,8 @@ Gefechtspruefung pruefeGefechtsKlingenbeginn(
     freie: p.freie,
     zusatz: p.zusatz,
     erschwernis: p.erschwernis,
+    modifikatoren: p.modifikatoren,
+    zielHerleitung: p.zielHerleitung,
     kampfmittel: p.kampfmittel,
     ausruestungspaar: p.ausruestungspaar,
   );
