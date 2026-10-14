@@ -131,11 +131,17 @@ class CatalogLoader {
       manifestAssetPath: manifestAssetPath,
       manifestKey: reiseberichtManifestKey,
     );
+    final spellEffectsFuture = _loadOptionalSectionByKey(
+      files: files,
+      manifestAssetPath: manifestAssetPath,
+      manifestKey: spellEffectsManifestKey,
+    );
     final sectionResults = await sectionResultsFuture;
     final sections = <CatalogSectionId, List<Map<String, dynamic>>>{
       for (final result in sectionResults) result.section: result.entries,
     };
     final reisebericht = await reiseberichtFuture;
+    final spellEffects = await spellEffectsFuture;
     final catalogSaltV3 = _decodeOptionalCatalogSaltV3(
       manifest,
       assetPath: manifestAssetPath,
@@ -147,6 +153,7 @@ class CatalogLoader {
       metadata: metadata,
       sections: sections,
       reisebericht: reisebericht,
+      spellEffects: spellEffects,
       catalogSaltV3: catalogSaltV3,
     );
   }
@@ -259,6 +266,11 @@ class CatalogLoader {
       domainName: 'reisebericht',
       assetPath: assetPathForErrors,
     );
+    _validateUniqueIds(
+      entries: sourceData.spellEffects,
+      domainName: 'spell effects',
+      assetPath: assetPathForErrors,
+    );
 
     return RulesCatalog(
       version: sourceData.version,
@@ -302,6 +314,9 @@ class CatalogLoader {
           .toList(growable: false),
       reisebericht: sourceData.reisebericht
           .map((entry) => ReiseberichtDef.fromJson(entry))
+          .toList(growable: false),
+      spellEffects: sourceData.spellEffects
+          .map((entry) => SpellEffectProfile.fromJson(entry))
           .toList(growable: false),
       ruleResolver: ruleResolver,
     );

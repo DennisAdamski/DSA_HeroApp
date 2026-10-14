@@ -1,0 +1,115 @@
+[
+  {
+    "id": "profil_axxeleratus_grund",
+    "spellId": "spell_axxeleratus_blitzgeschwind",
+    "profilVersion": 1,
+    "status": "bestand",
+    "legacyEffektId": "effect_spell_axxeleratus",
+    "beleg": { "buch": "Liber Cantiones", "seite": "36", "chunkId": 1949 },
+    "eingaben": ["zfpStern"],
+    "variantenHinweis": "Varianten „Blitzgeschwind“ (ab ZfW 11) und „Koboldisch“ sind nicht umgesetzt.",
+    "rundungsHinweis": "INI-Basis und GS werden verdoppelt, ohne Rundung.",
+    "hinweis": "Die App rechnet PA-Basis +2, Ausweichen +2, TP +2, INI-Basis ×2, GS ×2 sowie Schnellziehen/Schnellladen. Die Abwehr-Erschwernis −2 gegen beschleunigte Angreifer und die Athletik-Verdopplung für Sprints und Sprünge sind nicht umgesetzt."
+  },
+  {
+    "id": "profil_attributo_grund",
+    "spellId": "spell_attributo",
+    "profilVersion": 1,
+    "status": "bestand",
+    "legacyEffektId": "effect_spell_attributo",
+    "beleg": { "buch": "Liber Cantiones", "seite": "30", "chunkId": 1940 },
+    "eingaben": ["eigenschaft", "zfpStern"],
+    "variantenHinweis": "Die Schnellsteigerung und die Tier-/Pflanzen-Sonderfälle sind nicht umgesetzt.",
+    "rundungsHinweis": "Laut Regelwerk ZfP*/3 Punkte; die App übernimmt den vom Nutzer eingetragenen Wert und rundet nicht.",
+    "hinweis": "Der Bonus liegt als freier Wert in den temporären Eigenschaftsmodifikatoren; Ende und Quellenbezug folgen mit MAG-EFF-02."
+  },
+  {
+    "id": "profil_armatrutz_grund",
+    "spellId": "spell_armatrutz",
+    "profilVersion": 1,
+    "status": "bestand",
+    "legacyEffektId": "effect_spell_armatrutz",
+    "beleg": { "buch": "Liber Cantiones", "seite": "28", "chunkId": 1938 },
+    "eingaben": ["zusaetzlicherRs", "zfpStern", "zfw"],
+    "variantenHinweis": "Die Varianten „Körperschild“ und „Kraft des Fakirs“ sind nicht umgesetzt.",
+    "rundungsHinweis": "Kosten: zusätzlicher RS² minus ZfP*/2 (abgerundet), mindestens 4 AsP.",
+    "hinweis": "Laut Regelwerk darf der zusätzliche RS höchstens ZfW/2 betragen. Die App prüft nur eine feste Eingabegrenze von 12, nicht ZfW/2."
+  },
+  {
+    "id": "profil_fulminictus_grund",
+    "spellId": "spell_fulminictus_donnerkeil",
+    "profilVersion": 1,
+    "status": "bestand",
+    "beleg": { "buch": "Liber Cantiones", "seite": "91", "chunkId": 2030 },
+    "eingaben": ["zfpStern"],
+    "variantenHinweis": "Nur die Grundwirkung ist umgesetzt.",
+    "rundungsHinweis": "Schaden 2W6 + ZfP* als direkte SP, begrenzt durch die AsP des Ziels; gewöhnlicher RS und Armatrutz wirken nicht.",
+    "hinweis": "Wirkt als Fremdschaden im Gefecht (Gegnerbuchung), nicht als Dauereffekt am Helden."
+  },
+  {
+    "id": "profil_falkenauge_grund",
+    "spellId": "spell_falkenauge_meisterschuss",
+    "profilVersion": 1,
+    "status": "belegt",
+    "beleg": { "buch": "Liber Cantiones", "seite": "84", "chunkId": 2020 },
+    "eingaben": ["zfpStern", "zfw", "ziel"],
+    "variantenHinweis": "Die Variante „bleibendes Band“ braucht ein eigenes Profil.",
+    "rundungsHinweis": "Keine Rundung nötig (Erleichterung um ZfP*).",
+    "hinweis": "FK-Probe gegen das festgelegte Ziel; einmaliger Verbrauch beim nächsten Schuss oder Wurf innerhalb von ZfW Kampfrunden."
+  },
+  {
+    "id": "profil_adlerauge_grund",
+    "spellId": "spell_adlerauge_luchsenohr",
+    "profilVersion": 1,
+    "status": "belegt",
+    "beleg": { "buch": "Liber Cantiones", "seite": "15", "chunkId": 1920 },
+    "eingaben": ["zfpStern", "sinn"],
+    "variantenHinweis": "Die Einzelsinn-Variante ist stärker und auf einen Sinn begrenzt; sie braucht ein eigenes Profil.",
+    "rundungsHinweis": "Keine Rundung nötig (Erleichterung um ZfP*).",
+    "hinweis": "Wirkt auf Sinnenschärfe; verleiht keine Nachtsicht. Überreizung ist ein Ereignishinweis."
+  },
+  {
+    "id": "profil_psychostabilis_grund",
+    "spellId": "spell_psychostabilis",
+    "profilVersion": 1,
+    "status": "belegt",
+    "beleg": { "buch": "Liber Cantiones", "seite": "214", "chunkId": 2194 },
+    "eingaben": ["zfpStern", "kontext"],
+    "variantenHinweis": "Selbstanwendung und Gegenzauber sind eigene Profile.",
+    "rundungsHinweis": "Keine Rundung nötig (MR + ZfP*, im passenden geistigen Kontext zusätzlich +2).",
+    "hinweis": "Allgemeine MR und kontextbezogene MR getrennt führen."
+  },
+  {
+    "id": "profil_blitz_grund",
+    "spellId": "spell_blitz_dich_find",
+    "profilVersion": 1,
+    "status": "belegt",
+    "beleg": { "buch": "Liber Cantiones", "seite": "49", "chunkId": 1970 },
+    "eingaben": ["zfpStern", "zfw"],
+    "variantenHinweis": "Blindkampf und Konzentrationsstärke ändern die Wirkung und sind vor der Umsetzung gesondert zu prüfen.",
+    "rundungsHinweis": "ZfP* wird gleichmäßig auf AT- und PA-Basis verteilt, ein ungerader Rest geht zuerst an die AT.",
+    "hinweis": "Empfangener Malus: FK-, Talent- und Zauberproben um ZfP* erschwert, INI −ZfW, Dauer ZfW/2 Aktionen."
+  },
+  {
+    "id": "profil_plumbumbarum_grund",
+    "spellId": "spell_plumbumbarum_schwerer_arm",
+    "profilVersion": 1,
+    "status": "belegt",
+    "beleg": { "buch": "Liber Cantiones", "seite": "211", "chunkId": 2190 },
+    "eingaben": ["zfpStern"],
+    "variantenHinweis": "Die Demotivationsvariante braucht ein eigenes Profil.",
+    "rundungsHinweis": "Keine Rundung nötig (AT und INI-Basis je −ZfP*).",
+    "hinweis": "Die Grundwirkung senkt keine PA; Dauer 5 Kampfrunden."
+  },
+  {
+    "id": "profil_aengste_lindern_grund",
+    "spellId": "spell_aengste_lindern",
+    "profilVersion": 1,
+    "status": "belegt",
+    "beleg": { "buch": "Liber Cantiones", "seite": "23", "chunkId": 1929 },
+    "eingaben": ["zfpStern", "angst"],
+    "variantenHinweis": "Kein pauschaler MU-Bonus; wirkt nur auf die zugehörige Angstprobe.",
+    "rundungsHinweis": "Keine Rundung nötig.",
+    "hinweis": "Verbrauchbarer, kontextbezogener Bonus: Wiederholung einer bestimmten Angst-/MU-Probe oder Aufhebung des zugehörigen Angstzuschlags."
+  }
+]

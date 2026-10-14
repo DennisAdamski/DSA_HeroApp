@@ -255,6 +255,9 @@ class HouseRuleCatalogResolver {
         reisebericht: baseData.reisebericht
             .map(_deepCloneEntry)
             .toList(growable: false),
+        spellEffects: baseData.spellEffects
+            .map(_deepCloneEntry)
+            .toList(growable: false),
       ),
       provenanceIndex: HouseRuleProvenanceIndex(entries: provenanceEntries),
       issues: List<HouseRulePackIssue>.unmodifiable(issues),

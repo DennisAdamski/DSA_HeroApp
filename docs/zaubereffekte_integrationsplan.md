@@ -99,10 +99,25 @@ Jedes Paket ist separat abnehmbar. Neue Dateinamen sind Vorschläge; vor Umsetzu
 
 ### MAG-EFF-01 – Quellenprofile und Bestandsabsicherung (P1)
 
-- [ ] Axxeleratus, Attributo, Armatrutz gegen LC und geltende Hausregeln prüfen; vorhandenen Fulminictus mit belegter Grundwirkung vergleichen. Repräsentation, Varianten, Rundung und zeitliche Regeln protokollieren.
-- [ ] Profildefinitionen in `lib/catalog/spell_effect_def.dart` (neu) vorsehen; Metadaten in der kanonischen Split-Struktur als `spell_effects.json` (neu) mit Registrierung im tatsächlichen Loader/Manifest. Keine zweite Kopie des gesamten Zauberkatalogs.
-- [ ] Validierung in `lib/rules/derived/spell_effect_profile_rules.dart` (neu): jede referenzierte Zauber-ID existiert, Quellen/Profilversion sind gesetzt, unterstützte und manuelle Fälle getrennt. Die oben mit B markierten Regeln sind die Startliste.
-- [ ] Bestandstests für bestehende Werte/Schreibabläufe ausführen. **Abnahme:** Kein bestehender Effekt verändert ohne expliziten Regelauftrag sein Verhalten; unbekanntes Profil liefert keinen geratenen Zahlenbonus.
+**Umgesetzt am 14.10.2026** (siehe Prüfprotokoll unten).
+
+- [x] Axxeleratus, Attributo, Armatrutz gegen LC und geltende Hausregeln prüfen; vorhandenen Fulminictus mit belegter Grundwirkung vergleichen. Repräsentation, Varianten, Rundung und zeitliche Regeln protokollieren. *(Protokoll unten; Abweichungen dokumentiert, nicht geändert.)*
+- [x] Profildefinitionen in `lib/catalog/spell_effect_def.dart`; Metadaten als `assets/catalogs/house_rules_v1/spell_effects.json` mit Manifest-Schlüssel `spell_effects` (Reisebericht-Ladepfad: `CatalogSourceData.spellEffects`, `RulesCatalog.spellEffects`). Keine zweite Kopie des Zauberkatalogs, keine Wirkungstexte. Zehn Profile: vier Bestand, sechs belegt.
+- [x] Validierung in `lib/rules/derived/spell_effect_profile_rules.dart`: Zauber-ID existiert, Quelle/Profilversion gesetzt, Bestandsprofile nennen ihre Umsetzung, `istAutomatisiert` schließt manuelle/unbekannte Profile von Zahlen aus.
+- [x] Bestandstests ausgeführt. **Abnahme:** Kein bestehender Effekt verändert sein Verhalten (kein Produktcode der Effekte angefasst); unbekanntes Profil liefert keinen geratenen Zahlenbonus.
+
+**Prüfprotokoll MAG-EFF-01 (DSA-MCP, Liber Cantiones, Buchseiten).**
+
+| Effekt | LC / Chunk | Vergleich mit der App | Befund |
+|---|---|---|---|
+| Axxeleratus | S. 36, 1949 | PA-Basis +2, Ausweichen +2, TP +2, INI-Basis ×2 (ohne Rundung), GS ×2 nach BE, Schnellziehen/-laden stimmen | **Nicht umgesetzt:** Abwehr eines beschleunigten Angriffs um 2 erschwert; Athletik-TaW für Sprints/Sprünge verdoppelt; Variante Blitzgeschwind (ab ZfW 11, Patzer ab 18) und Koboldisch |
+| Attributo | S. 30, 1940 | App nimmt einen freien Wert und rundet nicht | Regelwerk: Bonus = ZfP*/3 für 1 Stunde (Kosten 7 AsP); Rundung nicht belegt. Tier-/Pflanzen-Erschwernisse und Schnellsteigerung nicht umgesetzt. Quellenbezug erst mit MAG-EFF-02 |
+| Armatrutz | S. 28, 1938 | Kosten `RS² − ZfP*/2` (abgerundet), Minimum 4 AsP, Dauer 1 SR, Behinderung 0, wirkt nicht gegen Fulminictus: stimmen | **Abweichung:** Regelwerk begrenzt den zusätzlichen RS auf ZfW/2; die App kennt nur den Eingaberiegel 12 (bewusst, ohne ZfW). Körperschild, Kraft des Fakirs nicht umgesetzt |
+| Fulminictus | S. 91, 2030 | 2W6 + ZfP* direkte SP, AsP-Kappung, kein RS/Armatrutz | Nur Grundwirkung; Varianten offen |
+
+Hausregeln wurden in diesem Paket nicht gegen die Hausregel-Quellen des MCP geprüft; die Profile tragen deshalb nur die LC-Grundregel. Jede Änderung der Bestandsformeln (z. B. ZfW/2-Grenze, Abwehr-Erschwernis) braucht einen gesonderten Regelauftrag.
+
+**Automatisiert geprüft:** `flutter analyze` ohne Befund; `test/catalog/spell_effect_catalog_test.dart`, `test/rules/spell_effect_profile_rules_test.dart`, `test/data/catalog_loader_test.dart` (Manifest mit/ohne Schlüssel, doppelte IDs) sowie die Bestandstests zu Zaubereffekten, Armatrutz, Fulminictus, Magie-Regeln und Bestandshelden-Hashes grün.
 
 ### MAG-EFF-02 – Quellenbezogene Instanzen und sichere Speicherung
 
