@@ -57,4 +57,61 @@ void main() {
     await zeige(tester, const {});
     expect(find.text('Aktuell: LeP 24/24 · AsP 10/10'), findsOneWidget);
   });
+
+  testWidgets('Berechnung zeigt die Schritte hinter INI, Pools und Angriffen', (
+    tester,
+  ) async {
+    const kater = HeroCompanion(
+      id: 'kater',
+      name: 'Kater',
+      typ: BegleiterTyp.vertrauter,
+      ini: 8,
+      maxLep: 20,
+      startLep: 20,
+      steigerungen: <String, int>{'lep': 2},
+      angriffe: [
+        HeroCompanionAttack(
+          id: 'kralle',
+          name: 'Kralle',
+          at: 10,
+          pa: 5,
+          steigerungAt: 2,
+        ),
+      ],
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: buildKartoTheme(
+          brightness: Brightness.light,
+          centerAppBarTitle: false,
+        ),
+        home: const Scaffold(
+          body: SingleChildScrollView(
+            child: GefechtBegleiter(begleiter: [kater]),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('gefecht-begleiter-kater')));
+    await tester.pumpAndSettle();
+    final berechnung = find.byKey(
+      const ValueKey('gefecht-begleiter-berechnung-kater'),
+    );
+    await tester.ensureVisible(berechnung);
+    await tester.tap(berechnung);
+    await tester.pumpAndSettle();
+    expect(
+      find.byKey(const ValueKey('gefecht-herleitung-LeP')),
+      findsOneWidget,
+    );
+    final at = find.byKey(const ValueKey('gefecht-herleitung-AT Kralle'));
+    expect(at, findsOneWidget);
+    expect(
+      find.descendant(of: at, matching: find.text('Steigerung (AP)')),
+      findsOneWidget,
+    );
+    // INI hat nur den Grundwert und bleibt ohne eigene Herleitung.
+    expect(find.byKey(const ValueKey('gefecht-herleitung-INI')), findsNothing);
+  });
 }
