@@ -6,7 +6,7 @@ import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 import 'combat_special_ability_state.dart';
 import 'gefecht_rules.dart';
 import 'maneuver_rules.dart';
-import 'ausweichen_rules.dart';
+import 'gefecht_herleitung_rules.dart';
 import 'hero_requirement_context.dart';
 import 'requirement_evaluation_rules.dart';
 import 'two_weapon_combat_rules.dart';
@@ -81,15 +81,11 @@ Gefechtswerte gefechtswerteFuer(
         snapshot.wundEffekte.aktuellerIniMalus,
     at: profil?.at ?? c.at,
     pa: profil?.pa ?? c.pa,
-    ausweichen: computeAusweichen(
-      paBase: c.paBase,
-      sfAusweichenBonus: c.sfAusweichenBonus,
-      akrobatikBonus: computeAkrobatikBonus(snapshot.hero.talents),
-      axxAusweichenBonus: c.axxAusweichenBonus,
-      iniAusweichenBonus: 0,
-      ausweichenMod: c.ausweichenMod,
-      beKampf: 0,
+    ausweichen: ausweichenOhneIniBonus(
+      c.herleitungen?.ausweichen,
+      rueckfall: c.ausweichen - c.iniAusweichenBonus,
     ),
+    ausweichenHerleitung: c.herleitungen?.ausweichen,
     be: c.beKampf,
     schildPa: c.offhandIsShield ? c.shieldPa : null,
     schildWm: c.offhandIsShield

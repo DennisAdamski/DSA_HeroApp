@@ -4,6 +4,9 @@ import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 
 import 'gefecht_hand_rules.dart';
+import 'gefecht_herleitung_rules.dart';
+import 'herleitung.dart';
+import 'kampf_herleitung_rules.dart';
 import 'combat_special_ability_state.dart';
 import 'waffenlos_rules.dart';
 
@@ -19,11 +22,19 @@ class GefechtsKampfmittelprofil {
     this.sperren = const [],
     this.anteile = const [],
     this.nebenWaffe = false,
+    this.atHerleitung,
+    this.paHerleitung,
   });
   final GefechtsKampfmittelwahl wahl;
   final String name;
   final MainWeaponSlot? waffe;
   final int? at, pa;
+
+  /// Herleitungen von [at] und [pa] aus der Kampfvorschau, ohne Sitzungs-INI;
+  /// `at == atHerleitung.wert`, `pa == paHerleitung.wert`.
+  final Herleitung? atHerleitung, paHerleitung;
+
+  /// [anteile] erklärt die Grundwerte aus den Schritten der Herleitungen.
   final List<String> sperren, anteile;
 
   /// Waffenloses Mittel neben einer Waffe: nur Manöver der Kampftechnik.
@@ -44,6 +55,37 @@ List<GefechtsKampfmittelprofil> gefechtsKampfmittelprofile(
       'Zweihändige Hauptwaffe und belegte Nebenhand widersprechen sich.',
     );
   }
+  final h = c.herleitungen;
+  // Hauptwaffe: AT/FK und PA aus der Vorschau; die PA ohne den Anteil einer
+  // Parierwaffe ist die der Hauptwaffe allein.
+  final hauptAt =
+      h?.at ?? herleitungAusWert(c.isRangedWeapon ? 'FK' : 'AT', c.at);
+  final hauptPaVoll = c.isRangedWeapon
+      ? null
+      : h?.pa ?? herleitungAusWert('PA', c.pa);
+  final hauptPa = hauptPaVoll == null
+      ? null
+      : h?.pa == null
+      ? herleitungAusWert('PA', c.pa - c.offhandPaBonus)
+      : ohneSchritte(hauptPaVoll, {
+          kNebenhandPaSchritt,
+          kParierwaffenSfSchritt,
+        });
+  final nebenVorschau = c.offhandPreview;
+  final nebenH = nebenVorschau?.herleitungen;
+  final nebenAt = nebenVorschau == null
+      ? null
+      : nebenH?.at ??
+            herleitungAusWert(
+              nebenVorschau.isRangedWeapon ? 'FK' : 'AT',
+              nebenVorschau.at ?? 0,
+            );
+  final nebenPa = nebenVorschau == null || nebenVorschau.isRangedWeapon
+      ? null
+      : nebenH?.pa ?? herleitungAusWert('PA', nebenVorschau.pa ?? 0);
+  final schildPa = c.offhandIsShield
+      ? h?.schildPa ?? herleitungAusWert('Schild-PA', c.shieldPa)
+      : null;
   return [
     if (haupt != null)
       GefechtsKampfmittelprofil(
@@ -53,11 +95,15 @@ List<GefechtsKampfmittelprofil> gefechtsKampfmittelprofile(
         ),
         name: haupt.name,
         waffe: haupt,
-        at: c.at,
-        pa: c.isRangedWeapon ? null : c.pa - c.offhandPaBonus,
+        at: hauptAt.wert,
+        pa: hauptPa?.wert,
+        atHerleitung: hauptAt,
+        paHerleitung: hauptPa,
         sperren: konflikte,
         anteile: [
-          'Hauptwaffen-PA ohne Parierwaffenanteil: ${c.pa - c.offhandPaBonus}',
+          herleitungsZeile(c.isRangedWeapon ? 'FK' : 'AT', hauptAt),
+          if (hauptPa != null)
+            herleitungsZeile('Hauptwaffen-PA ohne Parierwaffenanteil', hauptPa),
           ...raufenwaffenHinweise(haupt),
         ],
       ),
@@ -69,18 +115,22 @@ List<GefechtsKampfmittelprofil> gefechtsKampfmittelprofile(
         ),
         name: gefechtsNebenhandname(config),
         waffe: config.weaponSlots[neben.weaponIndex],
-        at: c.offhandPreview?.at,
-        pa: c.offhandPreview?.isRangedWeapon == true
-            ? null
-            : c.offhandPreview?.pa,
+        at: nebenAt?.wert,
+        pa: nebenPa?.wert,
+        atHerleitung: nebenAt,
+        paHerleitung: nebenPa,
         sperren: [
           ...konflikte,
           if (!gefechtsWaffeEinhaendig(config.weaponSlots[neben.weaponIndex]))
             'Nebenhandwaffe nicht einhändig.',
         ],
         anteile: [
-          'Falsche Hand: AT ${c.offhandPreview?.falseHandAtMod}, PA ${c.offhandPreview?.falseHandPaMod}; im Grundwert enthalten.',
-          'Nebenhandwunden und BE im Grundwert enthalten.',
+          if (nebenAt != null)
+            herleitungsZeile(
+              nebenVorschau!.isRangedWeapon ? 'FK Nebenhand' : 'AT Nebenhand',
+              nebenAt,
+            ),
+          if (nebenPa != null) herleitungsZeile('PA Nebenhand', nebenPa),
           ...raufenwaffenHinweise(config.weaponSlots[neben.weaponIndex]),
         ],
       ),
@@ -95,10 +145,15 @@ List<GefechtsKampfmittelprofil> gefechtsKampfmittelprofile(
         name: gefechtsNebenhandname(config),
         waffe: haupt,
         pa: c.offhandIsShield
-            ? c.shieldPa
+            ? schildPa?.wert
             : haupt == null || c.offhandRequiresLinkhand
             ? null
-            : c.pa,
+            : hauptPaVoll?.wert,
+        paHerleitung: c.offhandIsShield
+            ? schildPa
+            : haupt == null || c.offhandRequiresLinkhand
+            ? null
+            : hauptPaVoll,
         sperren: [
           ...konflikte,
           if (c.offhandRequiresLinkhand) 'Parierwaffen erfordern Linkhand.',
@@ -106,11 +161,26 @@ List<GefechtsKampfmittelprofil> gefechtsKampfmittelprofile(
             'Parierwaffe benötigt eine Hauptwaffe.',
         ],
         anteile: c.offhandIsShield
-            ? [
-                'PA-Basis ${c.paBase}, Schild-WM/SF ${c.shieldPaBonus}; BE und Armwunden im Grundwert enthalten.',
-              ]
+            ? [if (schildPa != null) herleitungsZeile('Schild-PA', schildPa)]
             : [
-                'Hauptwaffen-PA ${c.pa - c.offhandPaBonus}, Parierwaffen-WM/SF ${c.offhandPaBonus}.',
+                if (hauptPa != null)
+                  herleitungsZeile(
+                    'Hauptwaffen-PA ohne Parierwaffenanteil',
+                    hauptPa,
+                  ),
+                if (hauptPaVoll != null)
+                  herleitungsZeile(
+                    'Parierwaffenanteil',
+                    Herleitung(
+                      bezeichnung: 'Parierwaffenanteil',
+                      schritte: [
+                        for (final s in hauptPaVoll.schritte)
+                          if (s.bezeichnung == kNebenhandPaSchritt ||
+                              s.bezeichnung == kParierwaffenSfSchritt)
+                            s,
+                      ],
+                    ),
+                  ),
               ],
       ),
     for (final w in s.waffenlos)
@@ -124,7 +194,19 @@ List<GefechtsKampfmittelprofil> gefechtsKampfmittelprofile(
         waffe: w.slot,
         at: w.vorschau.at,
         pa: w.vorschau.pa,
-        anteile: waffenloseHinweise(w),
+        atHerleitung:
+            w.vorschau.herleitungen?.at ??
+            herleitungAusWert('AT', w.vorschau.at),
+        paHerleitung:
+            w.vorschau.herleitungen?.pa ??
+            herleitungAusWert('PA', w.vorschau.pa),
+        anteile: [
+          if (w.vorschau.herleitungen case final wh?) ...[
+            herleitungsZeile('AT', wh.at),
+            if (wh.pa case final pa?) herleitungsZeile('PA', pa),
+          ],
+          ...waffenloseHinweise(w),
+        ],
       ),
   ];
 }

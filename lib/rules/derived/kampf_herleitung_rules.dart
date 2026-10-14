@@ -93,6 +93,11 @@ String? _text(String? wert) {
 
 String _mitVorzeichen(int wert) => wert >= 0 ? '+$wert' : '$wert';
 
+/// Schrittnamen des Parierwaffenanteils in der Haupthand-PA; das Gefecht
+/// trennt damit die Hauptwaffenparade von der Kombination.
+const String kNebenhandPaSchritt = 'Nebenhand PA';
+const String kParierwaffenSfSchritt = 'SF Parierwaffen';
+
 // ---------------------------------------------------------------------------
 // Rüstung und Behinderung
 // ---------------------------------------------------------------------------
@@ -381,7 +386,7 @@ Herleitung herleiteNahkampfPa({
       ..._zusatzSchritte(
         kampfstil: kampfstil,
         nebenhand: nebenhand,
-        nebenhandBezeichnung: 'Nebenhand PA',
+        nebenhandBezeichnung: kNebenhandPaSchritt,
         nebenhandName: nebenhandName,
         parierwaffeSf: parierwaffeSf,
         parierwaffeSfName: parierwaffeSfName,
@@ -421,7 +426,7 @@ List<HerleitungsSchritt> _zusatzSchritte({
       quelle: _text(nebenhandName),
     ),
     HerleitungsSchritt(
-      bezeichnung: 'SF Parierwaffen',
+      bezeichnung: kParierwaffenSfSchritt,
       betrag: parierwaffeSf,
       art: HerleitungsArt.sonderfertigkeit,
       quelle: parierwaffeSfName ?? 'ohne Parierwaffen-SF',
