@@ -212,4 +212,47 @@ void main() {
     expect(result, isNotNull);
     expect(result!.apKosten, 2);
   });
+
+  testWidgets('die aufklappbare Berechnung nennt die Schritte der Regel', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: Builder(
+            builder: (context) {
+              return FilledButton(
+                onPressed: () => showSteigerungsDialog(
+                  context: context,
+                  bezeichnung: 'Klettern',
+                  aktuellerWert: 4,
+                  maxWert: 12,
+                  effektiveKomplexitaet: LearnCost.d,
+                  verfuegbareAp: 999,
+                  seAnzahl: 1,
+                  episch: true,
+                ),
+                child: const Text('Öffnen'),
+              );
+            },
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('Öffnen'));
+    await tester.pumpAndSettle();
+
+    final kachel = find.byKey(
+      const ValueKey<String>('steigerungs-dialog-herleitung'),
+    );
+    expect(kachel, findsOneWidget);
+    expect(find.text('Grundkosten'), findsNothing);
+    await tester.ensureVisible(kachel);
+    await tester.tap(find.text('Berechnung der AP-Kosten'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Grundkosten'), findsOneWidget);
+    expect(find.text('Sondererfahrung'), findsOneWidget);
+    expect(find.text('Epischer Aufschlag (+25 %)'), findsOneWidget);
+  });
 }

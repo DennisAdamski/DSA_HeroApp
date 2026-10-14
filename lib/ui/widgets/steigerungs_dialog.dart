@@ -4,7 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'package:dsa_heldenverwaltung/domain/learn/learn_complexity.dart';
-import 'package:dsa_heldenverwaltung/rules/derived/epic_ap_cost_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/steigerung_herleitung_rules.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_overview/herleitung_abschnitt.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/config/ui_spacing.dart';
 import 'package:dsa_heldenverwaltung/domain/learn/learn_rules.dart';
@@ -159,42 +160,25 @@ class _SteigerungsDialogState extends State<_SteigerungsDialog> {
     return math.max(widget.maxWert, _minZielwert);
   }
 
-  ({int apKosten, int seVerbraucht}) get _basisKosten {
-    return berechneSteigerungskosten(
-      vonWert: widget.aktuellerWert,
-      aufWert: _neuerWert,
-      effektiveKomplexitaet: _ausgewaehlteKomplexitaet,
-      seAnzahl: widget.seAnzahl,
-    );
-  }
+  // Alle Kosten kommen aus der Regel; der Dialog liest nur ab.
+  Steigerungskosten get _kosten => herleiteSteigerungskosten(
+    vonWert: widget.aktuellerWert,
+    aufWert: _neuerWert,
+    komplexitaet: _ausgewaehlteKomplexitaet,
+    seAnzahl: widget.seAnzahl,
+    episch: widget.episch,
+    istHaupteigenschaft: widget.istHaupteigenschaft,
+    mitLehrmeister: _mitLehrmeister,
+  );
 
-  int get _kostenNachEpos {
-    return applyEpicApSurcharge(
-      _basisKosten.apKosten,
-      ruleActive: true,
-      isEpisch: widget.episch,
-      isMainAttribute: widget.istHaupteigenschaft,
-      lehrmeisterHebtAuf: _mitLehrmeister,
-    );
-  }
+  ({int apKosten, int seVerbraucht}) get _basisKosten => (
+    apKosten: _kosten.kostenVorAufschlag,
+    seVerbraucht: _kosten.seVerbraucht,
+  );
 
-  int get _eposAufschlagDelta {
-    return computeEpicApSurchargeDelta(
-      _basisKosten.apKosten,
-      ruleActive: true,
-      isEpisch: widget.episch,
-      isMainAttribute: widget.istHaupteigenschaft,
-      lehrmeisterHebtAuf: _mitLehrmeister,
-    );
-  }
+  int get _eposAufschlagDelta => _kosten.aufschlag;
 
-  int get _effektiveApKosten {
-    final kosten = _kostenNachEpos;
-    if (!_mitLehrmeister) {
-      return kosten;
-    }
-    return apMitLehrmeister(kosten);
-  }
+  int get _effektiveApKosten => _kosten.apKosten;
 
   double? get _dukaten {
     if (!_mitLehrmeister) {
@@ -437,6 +421,25 @@ class _SteigerungsDialogState extends State<_SteigerungsDialog> {
               style: theme.textTheme.bodySmall,
             ),
           ],
+          Theme(
+            data: theme.copyWith(dividerColor: Colors.transparent),
+            child: ExpansionTile(
+              key: const ValueKey<String>('steigerungs-dialog-herleitung'),
+              tilePadding: EdgeInsets.zero,
+              childrenPadding: EdgeInsets.zero,
+              dense: true,
+              title: Text(
+                'Berechnung der AP-Kosten',
+                style: theme.textTheme.bodySmall,
+              ),
+              children: [
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: HerleitungsSchritte(herleitung: _kosten.herleitung),
+                ),
+              ],
+            ),
+          ),
           const SizedBox(height: 12),
           Text('Verfügbare AP: ${widget.verfuegbareAp}'),
           Text(
