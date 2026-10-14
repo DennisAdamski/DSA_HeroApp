@@ -854,3 +854,30 @@ Pools und Angriffe als Schritte (Grundwert, Steigerung, Reittier-Ausbildung,
 Tierausbildung). Dieselben Herleitungen stehen in der (i)-Suche im Bereich
 „Begleiter“. Regeln: `begleiter_herleitung_rules.dart`; Prüfung:
 `test/rules/begleiter_herleitung_rules_test.dart`.
+
+## Kampfwerte mit Herleitung in der Gefechtsansicht (14. Oktober 2026)
+
+Die Gefechtsansicht zeigt INI, AT/FK, PA, Schild-PA, Ausweichen, TP, RS und BE
+als schmale, **fixierte** Leiste `GefechtKampfwerteLeiste`
+(`ui2/gefecht/gefecht_kampfwerte.dart`) als `AppBar.bottom`; sie scrollt nicht
+mit, der Heldenname steht nicht mehr im Inhalt. Antippen eines Eintrags öffnet den
+Rechenweg (schmal als Blatt, ab `kGefechtZweispaltig` als Dialog); auf der
+schmalen Schnellleiste öffnet ein langer Druck auf Attacke/Parade/Ausweichen
+dasselbe.
+
+- `rules/derived/gefecht_kampfwerte_rules.dart` stellt die Werte zusammen und
+  rechnet nichts Neues. Der Grundwert ist die Herleitung der Prüfung
+  (`Gefechtspruefung.zielHerleitung`, bei PA/Ausweichen einschließlich
+  „INI-Bonus (Sitzung)“); der aktuelle Zielwert und die Erschwernis stammen aus
+  derselben `pruefeGefechtAuftrag`-Prüfung wie der Aktionsknopf (ohne Katalog
+  aus der Grundprüfung). Ein Eintrag zeigt „→ Zielwert“, sobald Distanzklasse,
+  Umwandlung, Folgemali usw. den Wert verändern; Ansagen und Zuschläge des
+  Aktionsdialogs sind darin bewusst nicht enthalten.
+- Neu ist die Herleitung der Gefechts-INI (`herleiteGefechtsIni`): Schritte der
+  Vorschau-Kampf-INI ohne Vorschauwurf, dazu „INI-Wurf (Sitzung)“, Kopfwunde,
+  Kampfverluste, geschützter und ungeklärter Verlust. Weicht ihre Summe von
+  `gefechtsInitiative` ab, entfällt sie (`null`) statt falsch zu erklären.
+- Der Eintrag zeigt „→ Zielwert“, das Blatt zusätzlich Hinweise (hohe INI,
+  Ansagefolgemalus, Meisterparade). Tests:
+  `test/rules/gefecht_kampfwerte_rules_test.dart`,
+  `test/ui2/spielen/gefecht_kampfwerte_test.dart`.

@@ -11,10 +11,14 @@ class GefechtSchnellaktion {
     required this.onPressed,
     this.pruefung,
     this.schluessel,
+    this.onLangDruck,
   });
   final String titel;
   final IconData symbol;
   final VoidCallback? onPressed;
+
+  /// Langer Druck zeigt den Rechenweg des zugehörigen Kampfwerts.
+  final VoidCallback? onLangDruck;
   final Gefechtspruefung? pruefung;
 
   /// Stabiler Schlüssel für Tests und Fokus.
@@ -60,6 +64,7 @@ class GefechtSchnellleiste extends StatelessWidget {
                     onPressed: a.pruefung?.status == Gefechtsfreigabe.gesperrt
                         ? null
                         : a.onPressed,
+                    onLongPress: a.onLangDruck,
                     style: TextButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 6),
                     ),

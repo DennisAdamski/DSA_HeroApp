@@ -67,6 +67,7 @@ import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_overview/avatar_generation_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/avatar_gallery_image.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_overview/epic_activation_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_overview/hero_regelprofil_section.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/karto_variante.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
 import 'package:dsa_heldenverwaltung/ui2/widgets/karto_ornamente.dart';
@@ -614,6 +615,8 @@ class _HeroOverviewTabState extends ConsumerState<HeroOverviewTab>
                 snapshot,
                 resourceActivation,
               ),
+              const SizedBox(height: _sectionSpacing),
+              HeroRegelprofilSection(heroId: hero.id),
             ];
             return ListView.builder(
               key: const ValueKey<String>('hero-overview-scroll'),

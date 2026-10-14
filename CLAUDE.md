@@ -133,6 +133,8 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   `gefecht_vitalwerte.dart` zeigt geschlossen LeP, aktivierte AsP und tatsächliche
   Wunden; seine stabile Heldenidentität erhält die Expansion bei Ressourcenänderung.
   Geöffnet nutzt die Ansicht dieselben bisherigen Fachdialoge und Schreibwege.
+  `gefecht_kampfwerte.dart` zeigt INI/AT/PA/Ausweichen/TP/RS/BE als fixierte
+  AppBar-Leiste mit Rechenweg (`gefecht_kampfwerte_rules.dart`, inkl. Herleitung der Gefechts-INI).
   Normale Nahkampf-PA benötigt keine allgemeine Paradebestätigung; bekannte
   Verbote und konkrete fehlende Angriffsdaten bleiben in den Kontextregeln wirksam.
   Der Folgeplan steht in [docs/gefecht_next_plan.md](docs/gefecht_next_plan.md).
@@ -373,8 +375,11 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   eingefroren. Geschrieben wird nur über den Ablauf `RegelProfilUebernehmen`
   (`uebernehmeRegelProfil` weist ein inzwischen geändertes Profil ab).
   Auflösungen bekommen `bekanntePaketIds`, sonst blieben Einträge eines nicht
-  gewählten Pakets sichtbar. Offen: Oberfläche je Held, Erstübernahme
-  `null → Profil`, Gruppenvorgabe, Import/Export.
+  gewählten Pakets sichtbar. Oberfläche (Teilstand 14): Karte „Regelprofil“ in der Übersicht
+  (`hero_regelprofil_section.dart`: Erstübernahme `null → Profil` über
+  `globalesRegelProfilProvider`, Vorschaudialog, Übernahme über
+  `aendereHeldMitMeldung(validationCatalog:)`). Offen: gewählte Zusatzpakete,
+  Gruppenvorgabe, Import/Export.
 - Fachlich benannte Anwendungsablaeufe (ARCH-05) liegen in `lib/ablaeufe/`:
   ohne Riverpod und Flutter, Abhaengigkeiten per Konstruktor, aus `data/`
   nur die `HeroRepository`-Schnittstelle — der Waechter

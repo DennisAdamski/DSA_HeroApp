@@ -17,6 +17,10 @@ String? _text(String? wert) {
 // Initiative
 // ---------------------------------------------------------------------------
 
+/// Schrittname des eingetragenen INI-Wurfs; das Gefecht ersetzt ihn durch den
+/// Wurf der Sitzung (`gefecht_kampfwerte_rules.dart`).
+const String kIniWurfSchritt = 'INI-Wurf';
+
 /// Initiative des Helden ohne Waffe, mindestens 0.
 Herleitung herleiteHeldenIni({
   required int iniBasis,
@@ -52,7 +56,7 @@ Herleitung herleiteHeldenIni({
       art: HerleitungsArt.sonderfertigkeit,
     ),
     HerleitungsSchritt(
-      bezeichnung: 'INI-Wurf',
+      bezeichnung: kIniWurfSchritt,
       betrag: iniWurf,
       art: HerleitungsArt.modifikator,
       formel: '${wuerfel}W6, eingetragener Wurf',

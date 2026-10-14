@@ -7,6 +7,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/regelprofil_vorschau_rules.da
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/state/house_rules_providers.dart';
 import 'package:dsa_heldenverwaltung/state/regelprofil_providers.dart';
 
 /// Katalogvergleich eines Profils mit dem aktuellen Paketstand (ARCH-04).
@@ -114,3 +115,39 @@ final regelProfilVorschauProvider =
         ),
       );
     });
+
+/// Regelstand, den ein Held ohne Profil heute tatsächlich hat (ARCH-04).
+///
+/// Das Profil, das die Erstübernahme (`null → Profil`) festhalten würde: die
+/// aktiven Hausregelpakete der globalen Einstellungen mit Manifestkopie und
+/// Prüfsumme. Es wird nur berechnet; geschrieben wird erst durch die bewusste
+/// Übernahme des Nutzers.
+final globalesRegelProfilProvider = Provider<AsyncValue<HeroRegelProfil>>((
+  ref,
+) {
+  final basis = ref.watch(decryptedCatalogSourceDataProvider);
+  final paketKatalog = ref.watch(houseRulePackCatalogProvider);
+  final fehler = basis.hasError
+      ? basis
+      : paketKatalog.hasError
+      ? paketKatalog
+      : null;
+  if (fehler != null) {
+    return AsyncValue<HeroRegelProfil>.error(
+      fehler.error!,
+      fehler.stackTrace ?? StackTrace.current,
+    );
+  }
+  final basisDaten = basis.valueOrNull;
+  final pakete = paketKatalog.valueOrNull;
+  if (basisDaten == null || pakete == null) {
+    return const AsyncValue<HeroRegelProfil>.loading();
+  }
+  return AsyncValue<HeroRegelProfil>.data(
+    regelProfilAusGlobalemStand(
+      catalogVersion: basisDaten.version,
+      paketKatalog: pakete,
+      aktivePaketIds: ref.watch(activeHouseRulePackIdsProvider),
+    ),
+  );
+});
