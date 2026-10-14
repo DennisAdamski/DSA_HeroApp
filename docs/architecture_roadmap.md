@@ -1331,7 +1331,19 @@ Entscheidung fest. Die Kampfvorschau gibt der Schild-PA weiterhin keinen
 INI-Anteil (nur „PA mit INI-Parade-Bonus“ der Haupthand); ob sie ihn zeigen
 soll, ist noch nicht entschieden.
 
-*Offen.* Regelbefund 3 bleibt unverändert.
+*Entschieden (Nutzer, 14.10.2026).* Regelbefund 3: Der AT-WM-Bonus eines
+Waffenmeisters gilt auch bei Fernkampfwaffen, sonst bliebe er dort wirkungslos
+(die Regelsuche in WdS/Arsenal fand keine Aussage dagegen). `herleiteFernkampfAt`
+hat dafür den Schritt „Waffenmeister AT“ (Haupt- und Nebenhand),
+`computeRangedAtValue` den Parameter `waffenmeisterAtBonus`; die bisher nur
+angezeigte `waffenmeisterAtBonus` der Vorschau wirkt damit tatsächlich.
+Dadurch ändert sich der FK-Wert jedes Helden mit Fernkampf-Waffenmeister;
+Test `Waffenmeister im Fernkampf` in `kampf_herleitung_rules_test.dart`.
+
+Vollständige Suite danach grün (5710 bestanden, 3 übersprungen),
+`flutter analyze` ohne Befund.
+
+*Offen.* Keine Regelbefunde mehr.
 *Nächste Schritte:* C Zielwert und Erschwernis im Gefechtsdialog als
 Herleitung (der Sitzungsschritt ist dafür vorbereitet), D optional Begleiter.
 

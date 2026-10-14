@@ -521,6 +521,7 @@ Herleitung herleiteFernkampfAt({
   String? talentName,
   required int waffenWm,
   String? waffenName,
+  int waffenmeister = 0,
   required int ebe,
   required int spezialisierung,
   int geschoss = 0,
@@ -547,6 +548,11 @@ Herleitung herleiteFernkampfAt({
         betrag: waffenWm,
         art: HerleitungsArt.modifikator,
         quelle: _text(waffenName),
+      ),
+      HerleitungsSchritt(
+        bezeichnung: 'Waffenmeister AT',
+        betrag: waffenmeister,
+        art: HerleitungsArt.sonderfertigkeit,
       ),
       HerleitungsSchritt(
         bezeichnung: 'eBE',
