@@ -1069,16 +1069,18 @@ ihre Basis, Modifikatoren, Bedingungen und Quellen.
 [Katalog-Workflow](catalog_import_workflow.md).
 
 - [ ] Profilzuordnung, Versionierung und Auflösung definieren; Bestandshelden
-  mit ihrem bisher wirksamen Regelsatz übernehmen.
-- [ ] Vorschau für Profil-/Paketupdates implementieren: geänderte Werte und
+  mit ihrem bisher wirksamen Regelsatz übernehmen. *(Modell und Auflösung
+  Teilstand 12, Erstübernahme per Knopf Teilstand 14; Gruppenvorgabe offen.)*
+- [x] Vorschau für Profil-/Paketupdates implementieren: geänderte Werte und
   Erwerbsvoraussetzungen anzeigen, erst durch Übernahme verbindlich machen.
+  *(Teilstand 13 ohne, Teilstand 14 mit Oberfläche.)*
 - [x] Ein gemeinsames Ergebnisformat für Regelherleitungen einführen und
   schrittweise auf Basiswerte, Kampf, Talente, Magie und Steigerungen anwenden.
   Die UI zeigt die Herleitung aus dem Regelmodul, ohne sie selbst nachzurechnen.
   *(Format und Basiswerte seit Teilstand 1, Eigenschaften seit Teilstand 2,
   Kampfvorschau seit Teilstand 3, Schild- und Parierwaffen-PA seit
   Teilstand 4, Gefechtswerte Teilstand 6, Begleiter Teilstand 7, Talente
-  Teilstand 8, Zauber Teilstand 9, Steigerungskosten Teilstand 10, Lernregeln Teilstand 11; Regelprofil-Grundlage Teilstand 12, Updatevorschau ohne Oberfläche Teilstand 13; offen bleibt
+  Teilstand 8, Zauber Teilstand 9, Steigerungskosten Teilstand 10, Lernregeln Teilstand 11; Regelprofil-Grundlage Teilstand 12, Updatevorschau Teilstand 13, Oberfläche je Held Teilstand 14; offen bleibt
   der Erwerbsdialog, siehe Teilstand 10/11.)*
 
 **Abnahme:** Zwei Helden mit verschiedenen Profilen können parallel geöffnet
@@ -1724,6 +1726,44 @@ Gruppe** und **ohne Verbindung** (offline gilt weiter die Kopie im Profil;
 wessen Vorgabe gilt, wenn zwei Gruppen verschiedene Pakete verlangen?).
 Import/Export prüfen (trägt der Export das Profil mit, was passiert beim Import
 in eine App mit anderem Paketstand?).
+
+**Teilstand 14, 14.10.2026 — Oberfläche je Held: Regelprofil festhalten, Vorschau, Übernahme.**
+
+*Umfang.* Die Übersicht (Bestand und UI2-Verwaltung teilen den Tab) zeigt am Ende
+die Karte „Regelprofil“ (`ui/screens/hero_overview/hero_regelprofil_section.dart`):
+
+- **Ohne Profil** (Bestand): Hinweis „folgt den globalen Hausregeln“ und der Knopf
+  „Aktuellen Regelstand festhalten“. Nach Rückfrage (Paketliste, Hinweis auf
+  Speichern und Sync-Änderung) schreibt `uebernehmeRegelProfil(von: null, auf:
+  globalesRegelProfilProvider)` das Profil; geschrieben wird nur durch diese
+  bewusste Aktion. Der Knopf bleibt gesperrt, bis die Auflösung des Profils
+  geladen ist, damit die Normalisierung dessen Katalog bekommt.
+- **Mit Profil:** festgehaltene Pakete (Titel aus der Manifestkopie) und der
+  Paketstand: „aktuell“ oder „Update steht an“ mit Zahl der Katalogeinträge,
+  Werte und betroffenen erworbenen Fähigkeiten. „Vorschau ansehen“ öffnet
+  `RegelprofilVorschauDialog` (Pakethinweise, erworbene Fähigkeiten, Werte
+  vorher/nachher, Katalogeinträge mit Feldpfad und Paketursache, Ein-/Ausblendungen);
+  erst „Übernehmen“ verändert den Helden.
+- **Nicht verstandenes Profil** (neuere App): nur Hinweis, keine Aktion.
+- Fehler beim Speichern stehen im Dialog bzw. in der Karte (`ZustandFehlerBereich`),
+  eine offene Planung wird wie bei jeder Sofortaktion vorher abgefragt.
+
+*Unterbau.* `globalesRegelProfilProvider` (`regelprofil_vorschau_providers.dart`)
+liefert den Stand, den die Erstübernahme festhalten würde.
+`aendereHeldMitMeldung`/`aendereHeldImEditor` nehmen einen optionalen
+`validationCatalog` (Katalog des neuen Profils) und reichen ihn an `updateHero`;
+bestehende Aufrufer bleiben unverändert.
+
+*Prüfung.* `test/ui/overview/hero_regelprofil_section_test.dart` (echter Katalog):
+Festhalten schreibt den globalen Stand, Abbrechen schreibt nichts, Vorschau ändert
+den Helden nicht, Übernahme setzt den aktuellen Paketstand, Speicherfehler bleibt
+im Dialog sichtbar, unbekannte Formatversion bietet keine Aktion.
+
+*Offen.* Gruppenvorgabe („live von der Gruppe“, mehrere Gruppen, Verlassen,
+Offline); Auswahl zusätzlicher Pakete in der Vorschau (`zusaetzlichePaketIds`);
+Zurückführen eines Profils auf „folgt global“; Import/Export; ein Einstieg in der
+UI2-Navigation (heute nur die Übersichtskarte); Epische Nachteile lesen weiterhin
+den globalen Schalter statt des Profils (`hero_overview_epic_section.dart`).
 
 ## ARCH-05 — Schreibende Aktionen fachlich aufteilen
 

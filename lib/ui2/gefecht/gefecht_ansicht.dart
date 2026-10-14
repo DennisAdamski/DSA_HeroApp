@@ -56,6 +56,9 @@ import 'gefecht_unterbrechung.dart';
 import 'gefecht_laden.dart';
 import 'gefecht_geschosse.dart';
 import 'gefecht_vitalwerte.dart';
+import 'gefecht_kampfwerte.dart';
+
+import 'package:dsa_heldenverwaltung/rules/derived/gefecht_kampfwerte_rules.dart';
 
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_laden_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_kampfmittel_rules.dart';
@@ -127,6 +130,12 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
           child: Scaffold(
             appBar: AppBar(
               title: const Text('Gefecht'),
+              // Fixiert: die schwankenden Kampfwerte bleiben beim Scrollen sichtbar.
+              bottom: s != null && snapshot != null
+                  ? GefechtKampfwerteLeiste(
+                      werte: gefechtsKampfwerte(s, snapshot, katalog),
+                    )
+                  : null,
               actions: [
                 TextButton.icon(
                   key: const ValueKey('gefecht-probe'),
@@ -208,11 +217,6 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            Text(
-                              snapshot.hero.name,
-                              style: Theme.of(context).textTheme.headlineSmall,
-                            ),
-                            const SizedBox(height: 12),
                             GefechtRundenleiste(
                               onAktion: _run,
                               zustand: s,

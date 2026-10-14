@@ -37,6 +37,13 @@ extension _GefechtAnsichtTeile on _GefechtAnsichtState {
         _busy || k == null
         ? null
         : () => _run(() => _aktion(s, snapshot, k, aktion, titel));
+    // Langer Druck: derselbe Rechenweg wie auf den Kampfwerte-Kacheln.
+    final werte = gefechtsKampfwerte(s, snapshot, k);
+    VoidCallback? rechenweg(String id) {
+      final wert = werte.where((w) => w.id == id).firstOrNull;
+      return wert == null ? null : () => zeigeGefechtKampfwert(context, wert);
+    }
+
     return GefechtSchnellleiste(
       aktionen: [
         GefechtSchnellaktion(
@@ -45,6 +52,7 @@ extension _GefechtAnsichtTeile on _GefechtAnsichtState {
           schluessel: 'gefecht-leiste-attacke',
           pruefung: _schnellpruefung(s, snapshot, k, Gefechtsaktion.angriff),
           onPressed: oeffnen(Gefechtsaktion.angriff, 'Angreifen'),
+          onLangDruck: rechenweg('at'),
         ),
         GefechtSchnellaktion(
           titel: 'Parade',
@@ -52,11 +60,13 @@ extension _GefechtAnsichtTeile on _GefechtAnsichtState {
           schluessel: 'gefecht-leiste-parade',
           pruefung: _schnellpruefung(s, snapshot, k, Gefechtsaktion.parade),
           onPressed: oeffnen(Gefechtsaktion.parade, 'Parieren'),
+          onLangDruck: rechenweg('pa'),
         ),
         GefechtSchnellaktion(
           titel: 'Ausweichen',
           symbol: Icons.directions_run,
           schluessel: 'gefecht-leiste-ausweichen',
+          onLangDruck: rechenweg('aw'),
           pruefung: _schnellpruefung(
             s,
             snapshot,
