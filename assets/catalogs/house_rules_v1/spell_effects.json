@@ -9,7 +9,7 @@
     "eingaben": ["zfpStern"],
     "variantenHinweis": "Varianten „Blitzgeschwind“ (ab ZfW 11) und „Koboldisch“ sind nicht umgesetzt.",
     "rundungsHinweis": "INI-Basis und GS werden verdoppelt, ohne Rundung.",
-    "hinweis": "Die App rechnet PA-Basis +2, Ausweichen +2, TP +2, INI-Basis ×2, GS ×2 sowie Schnellziehen/Schnellladen. Die Abwehr-Erschwernis −2 gegen beschleunigte Angreifer und die Athletik-Verdopplung für Sprints und Sprünge sind nicht umgesetzt."
+    "hinweis": "Die App rechnet PA-Basis +2, Ausweichen +2, TP +2, INI-Basis ×2, GS ×2 sowie Schnellziehen/Schnellladen. Die um 2 erschwerte Abwehr gegen beschleunigte Angreifer erscheint als Kampfvorschau-Hinweis „Automatische Finte +2“. Nicht umgesetzt ist nur die Verdopplung des Athletik-TaW für Sprints und Sprünge (die App berechnet keine Sprint- oder Sprungstrecken)."
   },
   {
     "id": "profil_attributo_grund",
