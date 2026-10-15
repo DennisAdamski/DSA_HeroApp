@@ -133,6 +133,12 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
   final Map<String, RemoteHeroStateRecord> _zurueckgestellteZustaende =
       <String, RemoteHeroStateRecord>{};
 
+  /// Zuletzt selbst hochgeladene Zustandsrevisionen je Held (älteste zuerst).
+  /// Trifft das Echo einer älteren davon nach einem neueren Upload ein, ist es
+  /// überholt und wird ignoriert; sonst spränge die Anzeige kurz zurück.
+  final Map<String, List<String>> _eigeneZustandsRevisionen =
+      <String, List<String>>{};
+
   /// Fertig, sobald das Journal gelesen und die Sperren gesetzt sind.
   late final Future<void> _journalBereit;
 
@@ -933,6 +939,14 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
     final metadata = await metadataStore.load(key);
     final localState = await local.loadHeroState(record.heroId);
 
+    // Echo eines eigenen, inzwischen überholten Uploads: nichts zu übernehmen.
+    if (metadata != null &&
+        record.revision != metadata.remoteRevision &&
+        (_eigeneZustandsRevisionen[record.heroId]?.contains(record.revision) ??
+            false)) {
+      return;
+    }
+
     if (record.isDeleted) {
       if (localState == null || metadata?.localHash == '') {
         await _saveMetadata(
@@ -1042,6 +1056,20 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
       remoteRevision: saved.revision,
       basis: state.toJson(),
     );
+    _merkeEigeneZustandsRevision(heroId, saved.revision);
+  }
+
+  // Merkt eine Revision, die dieses Gerät selbst hochgeladen hat. Das Echo
+  // einer überholten eigenen Revision darf den lokalen Stand nie zurücksetzen.
+  void _merkeEigeneZustandsRevision(String heroId, String revision) {
+    final revisionen = _eigeneZustandsRevisionen.putIfAbsent(
+      heroId,
+      () => <String>[],
+    );
+    revisionen.add(revision);
+    if (revisionen.length > 32) {
+      revisionen.removeAt(0);
+    }
   }
 
   Future<void> _openHeroConflict({
