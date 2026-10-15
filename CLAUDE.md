@@ -51,7 +51,13 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   zentral in `showLoggedProbeDialog`/`zeigeGefechtsprobe`). Unbelegtes
   (Blindkampf-/Konzentrationsstärke-Halbierung, Fernkampf-Blitz) wird nie
   geraten, sondern als Hinweis gemeldet; andere Profile rechnen noch keine
-  Zahlen.
+  Zahlen. MAG-EFF-04 (teilweise): einmalige, zielgebundene Wirkungen in
+  `spell_effect_event_rules.dart` – Falkenauge erleichtert den Gefecht-Schuss
+  auf `SpellEffectInstance.ziel` und wird nach dem bestätigten Wurf verbraucht
+  (`fuehreGefechtsAuftragAus`), Ängste lindern geht über „In Mut-Probe
+  einsetzen“ im Effektdialog. Dauern werden nur vorgeschlagen, wo das
+  Regelwerk sie eindeutig nennt; Abgelaufenes wird markiert, nie automatisch
+  beendet.
 - `README.md` beschreibt Produktumfang, Architekturueberblick und Standard-Workflows.
 - `tool/sync_main_to_test.sh` mergt Main in Test;
   `tool/test_main_test_sync.py` sichert Erhalt, Konflikte und Wiederholungen ab.

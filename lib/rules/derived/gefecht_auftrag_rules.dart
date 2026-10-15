@@ -15,6 +15,7 @@ import 'gefecht_zielen_rules.dart';
 import 'gefecht_ansagefolge_rules.dart';
 import 'gefecht_klingen_rules.dart';
 import 'gefecht_patzer_rules.dart';
+import 'spell_effect_event_rules.dart';
 
 /// Identische Prüfung vor Anzeige und Ausführung, mit bekannten Gegnersperren.
 Gefechtspruefung pruefeGefechtAuftrag(
@@ -132,6 +133,9 @@ Gefechtspruefung _pruefeGefechtAuftrag(
       zusatzParade: auftrag.zusatzParade,
       eigenerAuftrag: eigenerAuftrag,
       distanzSchritte: auftrag.distanzSchritte,
+      zauberAnteile: [
+        ?falkenaugeAnteil(snapshot.state, zustand.kontext, katalog),
+      ],
     );
   }
   if (snapshot.wundEffekte.kampfunfaehig) {

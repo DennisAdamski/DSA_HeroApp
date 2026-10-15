@@ -306,6 +306,7 @@ Gefechtspruefung pruefeGefechtsaktion(
   bool abwehrAufAttacke = false,
   int distanzSchritte = 0,
   List<Gefechtsmodifikator> zuschlagsAnteile = const [],
+  List<Gefechtsmodifikator> zauberAnteile = const [],
 }) {
   final pruefen = <String>[...pruefGruende];
   final sperren = <String>[
@@ -375,6 +376,12 @@ Gefechtspruefung pruefeGefechtsaktion(
   erschwernis += fk.zuschlag;
   pruefen.addAll(fk.fehlend);
   sperren.addAll(fk.sperren);
+  // Zauberwirkungen auf den Schuss (Falkenauge): nur Fernkampfangriffe.
+  if (w.fernkampf && aktion == Gefechtsaktion.angriff) {
+    for (final t in zauberAnteile) {
+      erschwere(t.name, t.wert);
+    }
+  }
   if (distanzSchritte != 0) {
     f = 1;
     if (w.fernkampf ||

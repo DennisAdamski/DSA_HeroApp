@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
@@ -11,6 +13,10 @@ import 'package:dsa_heldenverwaltung/rules/derived/spell_effect_instance_rules.d
 import 'package:dsa_heldenverwaltung/rules/derived/active_spell_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/active_spell_state_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/spell_effect_combat_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/spell_effect_event_rules.dart';
+import 'package:dsa_heldenverwaltung/state/gefecht_begegnung_provider.dart';
+import 'package:dsa_heldenverwaltung/domain/spell_duration.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/dice_log_persistence.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
@@ -175,8 +181,13 @@ class _ActiveSpellEffectsDialogState
             zauberId: eintrag.zauberId,
             name: eintrag.name,
             benoetigtZfw: eintrag.benoetigtZfw,
+            benoetigtZiel: eintrag.benoetigtZiel,
             hinweis: eintrag.hinweis,
           ),
+      ],
+      gegnerNamen: [
+        for (final g in ref.read(gefechtBegegnungProvider).gegner.values)
+          g.name,
       ],
     );
     if (eingabe == null || !mounted) {
@@ -188,10 +199,71 @@ class _ActiveSpellEffectsDialogState
       effectId: eingabe.zauberId,
       vorgangsId: vorgang,
       quelle: eingabe.quelle,
+      ziel: eingabe.ziel,
       zfpStern: eingabe.zfpStern,
       zfw: eingabe.zfw,
+      // Nur eine eindeutig belegte Dauer wird vorgeschlagen; sonst bleibt sie
+      // leer und lässt sich an der Quelle festlegen.
+      duration: dauerVorschlag(eingabe.zauberId, zfw: eingabe.zfw),
     );
     await _aendere((aktuell) => aktiviereEffektInstanz(aktuell, instanz));
+  }
+
+  /// Legt die Wirkungsdauer einer Quelle fest.
+  Future<void> _dauerDerQuelle(SpellEffectInstance instanz) async {
+    final ergebnis = await showSpellDurationDialog(
+      context: context,
+      spellLabel: effektName(
+        instanz.effectId,
+        ref.read(heroRulesCatalogProvider(widget.heroId)).asData?.value,
+      ),
+      initialDuration: instanz.duration,
+      defaultUnit: SpellDurationUnit.kampfrunden,
+    );
+    if (ergebnis == null || !mounted) {
+      return;
+    }
+    await _aendere(
+      (aktuell) => bearbeiteEffektInstanz(
+        aktuell,
+        instanz.id,
+        (gespeichert) => ergebnis.duration == null
+            ? gespeichert.copyWith(clearDuration: true)
+            : gespeichert.copyWith(duration: ergebnis.duration),
+      ),
+    );
+  }
+
+  /// Setzt Ängste lindern in einer wiederholten Mut-Probe ein.
+  ///
+  /// Verbraucht wird die Wirkung erst, wenn die Probe tatsächlich
+  /// ausgewertet wurde; schließt der Nutzer den Dialog vorher, bleibt sie.
+  Future<void> _aengsteEinsetzen(SpellEffectInstance instanz) async {
+    final snapshot = ref
+        .read(heroComputedProvider(widget.heroId))
+        .asData
+        ?.value;
+    if (snapshot == null) {
+      return;
+    }
+    final mu = snapshot.probenEigenschaften.mu;
+    var verbraucht = false;
+    await showLoggedProbeDialog(
+      context: context,
+      ref: ref,
+      heroId: widget.heroId,
+      request: aengsteLindernProbe(mu: mu, instanz: instanz),
+      zaubereffekteAnwenden: false,
+      onResolved: (_) {
+        // Sofort nach der Auswertung, nicht erst beim Schließen des Blatts;
+        // das Beenden ist über die Instanz-ID idempotent.
+        if (verbraucht) return;
+        verbraucht = true;
+        unawaited(
+          _aendere((aktuell) => beendeEffektInstanz(aktuell, instanz.id)),
+        );
+      },
+    );
   }
 
   /// Führt die alten Attributo-Boni auf ausdrücklichen Wunsch als Quelle.
@@ -320,6 +392,11 @@ class _ActiveSpellEffectsDialogState
               unterdrueckt: !wirkt,
             ),
           ),
+          onEditDuration: () => _dauerDerQuelle(instanzen[i]),
+          onEinsetzen: instanzen[i].effectId == kAengsteLindernZauberId
+              ? () => _aengsteEinsetzen(instanzen[i])
+              : null,
+          einsetzenLabel: 'In Mut-Probe einsetzen',
           onBeenden: () => _aendere(
             (aktuell) => beendeEffektInstanz(aktuell, instanzen[i].id),
           ),

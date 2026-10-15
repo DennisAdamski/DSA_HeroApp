@@ -875,6 +875,7 @@ final _zustand = <_Modell>[
       effectId: 'e1',
       vorgangsId: 'v1',
       quelle: 'Q',
+      ziel: 'gegner:g1',
       zfw: 10,
       zfpStern: 5,
       amount: 2,
