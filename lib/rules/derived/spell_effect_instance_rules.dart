@@ -163,6 +163,34 @@ List<String> ueberlagerteEigenschaften(HeroState zustand, String instanzId) {
   ];
 }
 
+/// Kurzbeschreibung der Eingaben einer Instanz für die Anzeige: Attributo
+/// nennt seine Boni, andere Zauber ZfP* und ZfW des Zaubernden.
+String beschreibeEffektInstanz(SpellEffectInstance instanz) {
+  if (instanz.effectId == activeSpellEffectAttributo) {
+    final boni = beschreibeAttributoInstanz(instanz);
+    return boni.isEmpty ? '' : 'Boni: $boni';
+  }
+  return [
+    if (instanz.zfpStern != null) 'ZfP* ${instanz.zfpStern}',
+    if (instanz.zfw != null) 'ZfW ${instanz.zfw}',
+  ].join(', ');
+}
+
+/// Anzeigename des Zaubers hinter [effectId]: die Bezeichnung des
+/// Bestandseffekts, sonst der Katalogname, sonst die ID selbst.
+String effektName(String effectId, RulesCatalog? katalog) {
+  final bestand = importantActiveSpellEffectById(effectId);
+  if (bestand != null) {
+    return bestand.label;
+  }
+  for (final zauber in katalog?.spells ?? const <SpellDef>[]) {
+    if (zauber.id == effectId) {
+      return zauber.name;
+    }
+  }
+  return effectId;
+}
+
 /// Boni einer Instanz als Text (`MU+2 KL+1`), leer ohne Werte.
 String beschreibeAttributoInstanz(SpellEffectInstance instanz) =>
     describeAttributeModifiers(instanz.attributeMods);

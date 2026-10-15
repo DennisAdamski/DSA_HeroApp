@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dsa_heldenverwaltung/domain/active_spell_effects_state.dart';
@@ -14,6 +15,8 @@ import 'package:dsa_heldenverwaltung/rules/derived/active_spell_rules.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/active_spell_effects_dialog.dart';
+
+import '../../test_support/real_catalog.dart';
 
 void main() {
   HeroSheet buildHero() {
@@ -42,6 +45,7 @@ void main() {
   Future<FakeRepository> openDialog(
     WidgetTester tester, {
     HeroState? initialState,
+    List<Override> overrides = const <Override>[],
   }) async {
     tester.view.devicePixelRatio = 1.0;
     tester.view.physicalSize = const Size(1200, 1400);
@@ -64,7 +68,10 @@ void main() {
 
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [heroRepositoryProvider.overrideWithValue(repo)],
+        overrides: [
+          heroRepositoryProvider.overrideWithValue(repo),
+          ...overrides,
+        ],
         child: MaterialApp(
           home: Scaffold(
             body: Builder(
@@ -402,4 +409,67 @@ void main() {
       expect(state.tempAttributeMods.ge, 4);
     },
   );
+
+  testWidgets('Blitz lässt sich als Quelle anlegen und zeigt Hinweis, Ende', (
+    tester,
+  ) async {
+    final katalog = await tester.runAsync(ladeEchtenRegelkatalog);
+    final repo = await openDialog(tester, overrides: katalog!.overrides);
+    await tester.pumpAndSettle();
+
+    await tester.tap(
+      find.byKey(const ValueKey<String>('spell-instance-zauber-hinzu')),
+    );
+    await tester.pumpAndSettle();
+    // Ohne ZfP* ist „Hinzufügen“ gesperrt.
+    expect(
+      tester
+          .widget<FilledButton>(
+            find.byKey(const ValueKey<String>('spell-effect-input-confirm')),
+          )
+          .onPressed,
+      isNull,
+    );
+    await tester.enterText(
+      find.byKey(const ValueKey<String>('spell-effect-input-zfp')),
+      '5',
+    );
+    await tester.enterText(
+      find.byKey(const ValueKey<String>('spell-effect-input-zfw')),
+      '12',
+    );
+    await tester.enterText(
+      find.byKey(const ValueKey<String>('spell-effect-input-quelle')),
+      'Alrik',
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(const ValueKey<String>('spell-effect-input-confirm')),
+    );
+    await tester.pumpAndSettle();
+
+    var state = (await repo.loadHeroState('demo'))!;
+    final instanz = state.activeSpellEffects.instanzen.single;
+    expect(instanz.effectId, 'spell_blitz_dich_find');
+    expect(instanz.zfpStern, 5);
+    expect(instanz.zfw, 12);
+    expect(instanz.quelle, 'Alrik');
+    expect(
+      find.byKey(const ValueKey<String>('spell-effect-orientieren-hinweis')),
+      findsOneWidget,
+    );
+    expect(find.textContaining('ZfP* 5, ZfW 12'), findsOneWidget);
+
+    await tester.tap(
+      find.byKey(ValueKey<String>('spell-instance-beenden-${instanz.id}')),
+    );
+    await tester.pumpAndSettle();
+
+    state = (await repo.loadHeroState('demo'))!;
+    expect(state.activeSpellEffects.instanzen, isEmpty);
+    expect(
+      find.byKey(const ValueKey<String>('spell-effect-orientieren-hinweis')),
+      findsNothing,
+    );
+  });
 }

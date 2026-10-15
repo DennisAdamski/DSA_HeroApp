@@ -48,7 +48,7 @@ class SpellEffectInstanceTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final boni = beschreibeAttributoInstanz(instanz);
+    final beschreibung = beschreibeEffektInstanz(instanz);
     final dauer = instanz.duration;
     final dauerText = describeSpellDuration(dauer);
     final kannZaehlen =
@@ -69,7 +69,7 @@ class SpellEffectInstanceTile extends StatelessWidget {
               subtitle: Text(
                 [
                   if (instanz.quelle != null) 'Quelle: ${instanz.quelle}',
-                  if (boni.isNotEmpty) 'Boni: $boni',
+                  if (beschreibung.isNotEmpty) beschreibung,
                   if (instanz.unterdrueckt) 'unterdrückt',
                   if (ueberlagert.isNotEmpty)
                     'zählt nicht für ${ueberlagert.join(', ')} (bessere Quelle)',

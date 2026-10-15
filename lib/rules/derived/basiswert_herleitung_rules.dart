@@ -136,6 +136,7 @@ List<StatModifikatorQuelle> sammleStatModifikatorQuellen({
   List<StatModifikatorQuelle>? textAufteilung,
   StatModifiers inventar = const StatModifiers(),
   StatModifiers wunden = const StatModifiers(),
+  List<StatModifikatorQuelle> zauber = const <StatModifikatorQuelle>[],
 }) {
   final textQuellen =
       textAufteilung != null &&
@@ -161,6 +162,7 @@ List<StatModifikatorQuelle> sammleStatModifikatorQuellen({
     ),
     StatModifikatorQuelle(bezeichnung: 'Inventar', mods: inventar),
     StatModifikatorQuelle(bezeichnung: 'Wunden', mods: wunden),
+    ...zauber,
   ];
 }
 

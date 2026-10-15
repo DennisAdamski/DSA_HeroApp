@@ -30,6 +30,8 @@ Herleitung herleiteHeldenIni({
   required int iniWurf,
   required int wuerfel,
   int axxeleratus = 0,
+  int zauberMalus = 0,
+  String? zauberName,
   int manuell = 0,
 }) {
   final schritte = <HerleitungsSchritt>[
@@ -68,6 +70,14 @@ Herleitung herleiteHeldenIni({
       formel: 'INI-Basis $iniBasis ein zweites Mal',
       bedingung: 'Axxeleratus aktiv',
     ),
+    if (zauberMalus != 0)
+      HerleitungsSchritt(
+        bezeichnung: zauberName ?? 'Zaubereffekt',
+        betrag: zauberMalus,
+        art: HerleitungsArt.zauber,
+        formel: 'INI-Abzug in Höhe des ZfW',
+        bedingung: 'Zauber wirkt auf den Helden',
+      ),
     HerleitungsSchritt(
       bezeichnung: 'Manueller Mod',
       betrag: manuell,
