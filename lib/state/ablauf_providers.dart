@@ -1,8 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:uuid/uuid.dart';
 
 import 'package:dsa_heldenverwaltung/ablaeufe/vitalwirkung_anwenden.dart';
 import 'package:dsa_heldenverwaltung/ablaeufe/artefakt_protokollieren.dart';
 import 'package:dsa_heldenverwaltung/ablaeufe/auxiliator_einsetzen.dart';
+import 'package:dsa_heldenverwaltung/ablaeufe/elixier_einnehmen.dart';
 import 'package:dsa_heldenverwaltung/ablaeufe/heilung_erhalten.dart';
 import 'package:dsa_heldenverwaltung/ablaeufe/matrix_ausloesen.dart';
 import 'package:dsa_heldenverwaltung/ablaeufe/rast_abschliessen.dart';
@@ -82,6 +84,16 @@ final vitalwirkungAnwendenProvider = Provider<VitalwirkungAnwenden>((ref) {
   return VitalwirkungAnwenden(
     repository: ref.watch(heroRepositoryProvider),
     uhr: DateTime.now,
+  );
+});
+
+/// Bindet den Ablauf „Elixier einnehmen“ (TRANK) an das aktive
+/// Heldenrepository.
+final elixierEinnehmenProvider = Provider<ElixierEinnehmen>((ref) {
+  return ElixierEinnehmen(
+    repository: ref.watch(heroRepositoryProvider),
+    uhr: DateTime.now,
+    neueId: () => const Uuid().v4(),
   );
 });
 

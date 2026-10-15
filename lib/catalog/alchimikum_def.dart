@@ -39,6 +39,55 @@ class AlchimikumBeleg {
   }
 }
 
+/// Eine Eigenschaftsänderung auf Zeit, die ein Elixier in einer Qualitätsstufe
+/// auslöst (z. B. `MU +3` für 3 Spielrunden).
+///
+/// Nur ausdrücklich genannte Zahlen mit Eigenschaft und Dauer stehen hier;
+/// alles andere (Nachwirkungen nach Ablauf, Gruppen wie „alle geistigen
+/// Eigenschaften“, AuP-Wirkungen) bleibt Text in [AlchimikumQualitaet.wirkung].
+class AlchimikumEigenschaft {
+  /// Erstellt eine Eigenschaftsänderung.
+  const AlchimikumEigenschaft({
+    required this.eigenschaft,
+    required this.wert,
+    required this.dauer,
+    required this.einheit,
+  });
+
+  /// Eigenschaftskürzel: `MU`, `KL`, `IN`, `CH`, `FF`, `GE`, `KO` oder `KK`.
+  final String eigenschaft;
+
+  /// Änderung der Eigenschaft; negativ bei Nebenwirkungen.
+  final int wert;
+
+  /// Dauer in [einheit]; mindestens 1.
+  final int dauer;
+
+  /// Einheit der Dauer, Name von `SpellDurationUnit` (`spielrunden`,
+  /// `stunden`, `tage`).
+  final String einheit;
+
+  /// Liest eine Eigenschaftsänderung tolerant aus dem Katalog-JSON.
+  factory AlchimikumEigenschaft.fromJson(Map<String, dynamic> json) {
+    return AlchimikumEigenschaft(
+      eigenschaft: readCatalogString(json, 'eigenschaft', fallback: ''),
+      wert: readCatalogInt(json, 'wert', fallback: 0),
+      dauer: readCatalogInt(json, 'dauer', fallback: 0),
+      einheit: readCatalogString(json, 'einheit', fallback: ''),
+    );
+  }
+
+  /// Schreibt die Eigenschaftsänderung zurück.
+  Map<String, dynamic> toJson() {
+    return <String, dynamic>{
+      'eigenschaft': eigenschaft,
+      'wert': wert,
+      'dauer': dauer,
+      'einheit': einheit,
+    };
+  }
+}
+
 /// Wirkung eines Mittels in einer Qualitätsstufe (`A` bis `F`).
 ///
 /// Die Würfelausdrücke (`2W6+4`) sind nur **Vorschläge** für den Dialog
@@ -53,10 +102,17 @@ class AlchimikumQualitaet {
     this.aupWurf = '',
     this.lepProWunde = 0,
     this.wirkung = '',
+    this.eigenschaften = const <AlchimikumEigenschaft>[],
   });
 
   /// Stufe `A` bis `F`.
   final String stufe;
+
+  /// Eigenschaftsänderungen auf Zeit (Elixiere); jede läuft mit eigener Dauer.
+  final List<AlchimikumEigenschaft> eigenschaften;
+
+  /// Ob die Stufe Eigenschaften auf Zeit verändert.
+  bool get hatEigenschaftsWirkung => eigenschaften.isNotEmpty;
 
   /// Vorschlag für die zurückkehrenden LeP.
   final String lepWurf;
@@ -89,6 +145,10 @@ class AlchimikumQualitaet {
       aupWurf: readCatalogString(json, 'aupWurf', fallback: ''),
       lepProWunde: readCatalogInt(json, 'lepProWunde', fallback: 0),
       wirkung: readCatalogString(json, 'wirkung', fallback: ''),
+      eigenschaften: readCatalogObjectList(
+        json,
+        'eigenschaften',
+      ).map(AlchimikumEigenschaft.fromJson).toList(growable: false),
     );
   }
 
@@ -101,6 +161,10 @@ class AlchimikumQualitaet {
       if (aupWurf.isNotEmpty) 'aupWurf': aupWurf,
       if (lepProWunde > 0) 'lepProWunde': lepProWunde,
       if (wirkung.isNotEmpty) 'wirkung': wirkung,
+      if (eigenschaften.isNotEmpty)
+        'eigenschaften': eigenschaften
+            .map((e) => e.toJson())
+            .toList(growable: false),
     };
   }
 }

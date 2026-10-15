@@ -6,6 +6,7 @@ import 'package:dsa_heldenverwaltung/domain/begleiter_zustand.dart';
 import 'package:dsa_heldenverwaltung/domain/abgelegter_kampfgegenstand.dart';
 import 'package:dsa_heldenverwaltung/domain/active_spell_effects_state.dart';
 import 'package:dsa_heldenverwaltung/domain/spell_effect_instance.dart';
+import 'package:dsa_heldenverwaltung/domain/alchimikum_bezug.dart';
 import 'package:dsa_heldenverwaltung/domain/artefakt_daten.dart';
 import 'package:dsa_heldenverwaltung/domain/attribute_modifiers.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
@@ -108,6 +109,16 @@ final _kampf = <_Modell>[
     lade: (json) => Vitalwirkung.fromJson(json).toJson(),
     bearbeite: (json) => Vitalwirkung.fromJson(json).copyWith(lep: 9).toJson(),
     unbekannt: (json) => Vitalwirkung.fromJson(json).unbekannteFelder,
+  ),
+  _Modell(
+    'AlchimikumBezug',
+    schluessel: AlchimikumBezug.jsonSchluessel,
+    voll: () =>
+        const AlchimikumBezug(id: 'alch_mutelixier', stufe: 'C').toJson(),
+    lade: (json) => AlchimikumBezug.fromJson(json)!.toJson(),
+    bearbeite: (json) =>
+        AlchimikumBezug.fromJson(json)!.copyWith(stufe: 'D').toJson(),
+    unbekannt: (json) => AlchimikumBezug.fromJson(json)!.unbekannteFelder,
   ),
   _Modell(
     'AbgelegterKampfgegenstand',

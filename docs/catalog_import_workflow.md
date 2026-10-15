@@ -32,7 +32,9 @@ Separate runtime catalog:
 - `assets/catalogs/house_rules_v1/alchimika.json` (Tränke und Heilmittel, TRANK;
   Manifest-Schlüssel `alchimika`, unverschlüsselt, nur belegte Eckdaten mit
   Buch, gedruckter Seite und Chunk-ID sowie kurze eigene Wirkungstexte;
-  Prüfung über `test/catalog/alchimika_catalog_test.dart`)
+  Elixiere tragen je Qualitätsstufe `eigenschaften` (Kürzel, Zahl, Dauer und
+  Einheit `spielrunden`/`stunden`/`tage`), nur wenn das Regelwerk alle drei
+  nennt; Prüfung über `test/catalog/alchimika_catalog_test.dart`)
 
 Synchronizable custom entries in hero storage:
 
