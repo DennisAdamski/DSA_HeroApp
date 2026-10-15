@@ -38,9 +38,9 @@ RulesCatalog _katalog(List<SpellEffectProfile> profile) {
 }
 
 Set<SpellEffectBefundArt> _arten(List<SpellEffectProfile> profile) {
-  return validiereSpellEffectProfile(
-    _katalog(profile),
-  ).map((befund) => befund.art).toSet();
+  return validiereSpellEffectProfile(_katalog(profile))
+      .map((befund) => befund.art)
+      .toSet();
 }
 
 void main() {
@@ -55,14 +55,18 @@ void main() {
 
     test('unbekannter Zauber wird gemeldet', () {
       expect(
-        _arten([_profil({'spellId': 'spell_gibt_es_nicht'})]),
+        _arten([
+          _profil({'spellId': 'spell_gibt_es_nicht'}),
+        ]),
         contains(SpellEffectBefundArt.zauberUnbekannt),
       );
     });
 
     test('fehlende und doppelte Profil-IDs werden gemeldet', () {
       expect(
-        _arten([_profil({'id': ''})]),
+        _arten([
+          _profil({'id': ''}),
+        ]),
         contains(SpellEffectBefundArt.profilIdFehlt),
       );
       expect(
@@ -73,11 +77,15 @@ void main() {
 
     test('Quelle und Version sind Pflicht', () {
       expect(
-        _arten([_profil({'beleg': <String, dynamic>{}})]),
+        _arten([
+          _profil({'beleg': <String, dynamic>{}}),
+        ]),
         contains(SpellEffectBefundArt.quelleFehlt),
       );
       expect(
-        _arten([_profil({'profilVersion': 0})]),
+        _arten([
+          _profil({'profilVersion': 0}),
+        ]),
         contains(SpellEffectBefundArt.versionUngueltig),
       );
     });
@@ -91,7 +99,9 @@ void main() {
 
     test('Bestandsprofil braucht eine bekannte Umsetzung', () {
       expect(
-        _arten([_profil({'status': 'bestand'})]),
+        _arten([
+          _profil({'status': 'bestand'}),
+        ]),
         contains(SpellEffectBefundArt.bestandOhneUmsetzung),
       );
       expect(
@@ -127,7 +137,9 @@ void main() {
 
     test('Legacy-Effekt ist nur bei Bestand erlaubt', () {
       expect(
-        _arten([_profil({'legacyEffektId': activeSpellEffectAttributo})]),
+        _arten([
+          _profil({'legacyEffektId': activeSpellEffectAttributo}),
+        ]),
         contains(SpellEffectBefundArt.legacyEffektOhneBestand),
       );
     });

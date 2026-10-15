@@ -25,11 +25,7 @@ enum SpellEffectStatus {
 /// Quellenangabe eines Zauberprofils.
 class SpellEffectBeleg {
   /// Erstellt eine Quellenangabe.
-  const SpellEffectBeleg({
-    this.buch = '',
-    this.seite = '',
-    this.chunkId = 0,
-  });
+  const SpellEffectBeleg({this.buch = '', this.seite = '', this.chunkId = 0});
 
   /// Regelwerk, z. B. `Liber Cantiones`.
   final String buch;
