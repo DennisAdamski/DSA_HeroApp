@@ -5,6 +5,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/spell_effect_instance.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/active_spell_state_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/gefecht_wirken_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/spell_effect_combat_rules.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 
@@ -85,6 +86,48 @@ void main() {
     expect(mit.derivedStats.paBase, ohne.derivedStats.paBase);
     expect(mit.combatPreviewStats.at, ohne.combatPreviewStats.at - 6);
     expect(mit.combatPreviewStats.pa, ohne.combatPreviewStats.pa);
+  });
+
+  test('Psychostabilis erhöht die MR um ZfP*, +2 nur als Hinweis', () {
+    final ohne = rechne(_grund);
+    final mit = rechne(
+      aktiviereEffektInstanz(
+        _grund,
+        const SpellEffectInstance(
+          id: 'ps',
+          effectId: kPsychostabilisZauberId,
+          zfpStern: 7,
+        ),
+      ),
+    );
+
+    expect(mit.derivedStats.mr, ohne.derivedStats.mr + 7);
+    expect(mit.derivedStats.zauberEffekte.hinweise.single, contains('+2'));
+    final schritte = mit.derivedStats.herleitungen!.mr.schritte;
+    expect(
+      schritte.where((s) => s.bezeichnung == 'Psychostabilis' && s.betrag == 7),
+      hasLength(1),
+    );
+  });
+
+  test('Blitz erschwert die Zauberprobe im Gefecht-Zuschlag um ZfP*', () {
+    final ohne = rechne(_grund);
+    final mit = rechne(
+      aktiviereEffektInstanz(
+        _grund,
+        const SpellEffectInstance(
+          id: 'b',
+          effectId: kBlitzZauberId,
+          zfpStern: 5,
+          zfw: 4,
+        ),
+      ),
+    );
+
+    int zuschlag(HeroComputedSnapshot s) =>
+        gefechtsZauberZuschlag(s, aufrechterhalten: 0, simultanzaubern: false);
+
+    expect(zuschlag(mit), zuschlag(ohne) + 5);
   });
 
   test('Beenden der Quelle stellt alle Werte wieder her', () {

@@ -7,7 +7,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/basiswert_herleitung_rules.da
 import 'package:dsa_heldenverwaltung/rules/derived/hero_requirement_context.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/spell_effect_profile_rules.dart';
 
-// Empfangene Kampf-Mali durch Zauber (MAG-EFF-03).
+// Empfangene Zauberwirkungen auf Kampfwerte, Proben und MR (MAG-EFF-03).
 //
 // Blattartig wie `spell_effect_instance_rules.dart`: liest nur Instanzen und
 // Profile und liefert Beiträge, die die Basiswert- und INI-Herleitung als
@@ -15,7 +15,8 @@ import 'package:dsa_heldenverwaltung/rules/derived/spell_effect_profile_rules.da
 // die Instanz an Eingaben (ZfP*, ZfW) trägt; fehlt etwas, entsteht ein
 // Hinweis statt einer geratenen Zahl.
 //
-// Belege: Liber Cantiones S. 49 (Blitz dich find), S. 211 (Plumbumbarum).
+// Belege: Liber Cantiones S. 15 (Adlerauge), S. 49 (Blitz dich find),
+// S. 211 (Plumbumbarum), S. 214 (Psychostabilis).
 
 /// Zauber-ID des Blitz dich find.
 const String kBlitzZauberId = 'spell_blitz_dich_find';
@@ -23,20 +24,61 @@ const String kBlitzZauberId = 'spell_blitz_dich_find';
 /// Zauber-ID des Plumbumbarum.
 const String kPlumbumbarumZauberId = 'spell_plumbumbarum_schwerer_arm';
 
-/// Kampf-Zauber, die dieses Modul rechnet.
-const Set<String> kKampfMaliZauberIds = <String>{
+/// Zauber-ID des Adlerauge.
+const String kAdlerAugeZauberId = 'spell_adlerauge_luchsenohr';
+
+/// Zauber-ID des Psychostabilis.
+const String kPsychostabilisZauberId = 'spell_psychostabilis';
+
+/// Name des Talents, das das Adlerauge erleichtert. Das Regelwerk schreibt
+/// „Sinnenschärfe“; der Katalog führt es als „Sinnesschärfe“ (maßgeblich, ein
+/// Test sichert den Namen gegen den echten Katalog).
+const String kSinnenschaerfeTalentName = 'Sinnesschärfe';
+
+/// Zauber, die dieses Modul rechnet.
+const Set<String> kRechenbareZauberIds = <String>{
   kBlitzZauberId,
   kPlumbumbarumZauberId,
+  kAdlerAugeZauberId,
+  kPsychostabilisZauberId,
 };
 
+/// Ein Beitrag zu Proben, der von einer laufenden Zauberwirkung stammt.
+class SpellEffectProbenBeitrag {
+  /// Erstellt den Beitrag; [wert] > 0 erleichtert, < 0 erschwert.
+  const SpellEffectProbenBeitrag({
+    required this.bezeichnung,
+    required this.wert,
+    this.talentName,
+    this.talent = true,
+    this.zauber = false,
+  });
+
+  /// Zaubername für die Anzeige.
+  final String bezeichnung;
+
+  /// Änderung der Probe (positiv = erleichtert, negativ = erschwert).
+  final int wert;
+
+  /// Nur Talentproben auf dieses Talent; `null` = unabhängig vom Talent.
+  final String? talentName;
+
+  /// Gilt für Talentproben.
+  final bool talent;
+
+  /// Gilt für Zauberproben.
+  final bool zauber;
+}
+
 /// Ergebnis der Kampf-Mali aller laufenden Zaubereffekte.
-class SpellEffectKampfBeitraege {
+class SpellEffectBeitraege {
   /// Erstellt das Ergebnis.
-  const SpellEffectKampfBeitraege({
+  const SpellEffectBeitraege({
     this.statQuellen = const <StatModifikatorQuelle>[],
     this.heldenIniMalus = 0,
     this.heldenIniQuelle,
     this.orientierenGesperrt = false,
+    this.probenBeitraege = const <SpellEffectProbenBeitrag>[],
     this.hinweise = const <String>[],
   });
 
@@ -52,7 +94,11 @@ class SpellEffectKampfBeitraege {
   /// Blitz: Die Aktion „Orientieren“ ist während der Wirkung nicht möglich.
   final bool orientierenGesperrt;
 
-  /// Fehlende Eingaben und bewusst nicht gerechnete Sonderfälle.
+  /// Beiträge zu Talent- und Zauberproben (Adlerauge, Blitz).
+  final List<SpellEffectProbenBeitrag> probenBeitraege;
+
+  /// Fehlende Eingaben, bewusst nicht gerechnete Sonderfälle und Hinweise zu
+  /// Wirkungen, die die App nicht in Zahlen fasst.
   final List<String> hinweise;
 
   /// `true`, wenn nichts beiträgt und nichts zu melden ist.
@@ -60,6 +106,7 @@ class SpellEffectKampfBeitraege {
       statQuellen.isEmpty &&
       heldenIniMalus == 0 &&
       !orientierenGesperrt &&
+      probenBeitraege.isEmpty &&
       hinweise.isEmpty;
 }
 
@@ -74,36 +121,70 @@ bool heldKenntBlindkampf(HeroSheet held, RulesCatalog? katalog) {
   ).any((name) => name.trim().toLowerCase() == 'blindkampf');
 }
 
-/// Rechnet die empfangenen Kampf-Mali der laufenden Zaubereffekte.
+/// Ob der Held die Sonderfertigkeit Konzentrationsstärke beherrscht.
+bool heldKenntKonzentrationsstaerke(HeroSheet held, RulesCatalog? katalog) {
+  return heroSpecialAbilityNames(
+    held,
+    catalog: katalog,
+  ).any((name) => name.trim().toLowerCase().startsWith('konzentrationsstärke'));
+}
+
+/// Wie [berechneSpellEffectBeitraege], liest die Sonderfertigkeiten des
+/// Helden (Blindkampf, Konzentrationsstärke) selbst. Der übliche Einstieg.
+SpellEffectBeitraege berechneSpellEffectBeitraegeFuerHeld({
+  required HeroSheet held,
+  required HeroState zustand,
+  required RulesCatalog? katalog,
+}) {
+  return berechneSpellEffectBeitraege(
+    zustand: zustand,
+    katalog: katalog,
+    blindkampf: heldKenntBlindkampf(held, katalog),
+    konzentrationsstaerke: heldKenntKonzentrationsstaerke(held, katalog),
+  );
+}
+
+/// Rechnet die empfangenen Wirkungen der laufenden Zaubereffekte.
 ///
 /// - **Blitz** (LC S. 49): ZfP* gleichmäßig von AT- und PA-Basis abziehen, bei
 ///   ungeradem ZfP* zuerst von der Attacke; Helden-INI −ZfW; Orientieren
 ///   gesperrt. Mit der SF Blindkampf halbieren sich die Abzüge — die Rundung
 ///   steht nicht im Regelwerk, deshalb rechnet die App dann **nicht**
 ///   automatisch, sondern meldet einen Hinweis ([blindkampf]).
+///   Außerdem sind Talent-, Zauber- und Fernkampfproben um ZfP* erschwert:
+///   Talent- und Zauberproben rechnet die App ([probenBeitraege]), den
+///   Fernkampf nur als Hinweis. Konzentrationsstärke halbiert die Abzüge auf
+///   **Zauberproben** (Rundung nicht belegt → Hinweis statt Zahl).
 /// - **Plumbumbarum** (LC S. 211): AT-Basis und INI-**Basis** je −ZfP*; keine
 ///   PA. Die Demotivationsvariante ist nicht umgesetzt.
+/// - **Adlerauge** (LC S. 15): Proben auf Sinnenschärfe um ZfP* erleichtert;
+///   keine Nachtsicht. Die Einzelsinn-Variante ist nicht umgesetzt.
+/// - **Psychostabilis** (LC S. 214): MR +ZfP*; gegen geistig wirkende Zauber
+///   mit den Merkmalen Einfluss, Hellsicht, Herrschaft und Verständigung
+///   zusätzlich +2 (als Hinweis, nicht in der MR).
 ///
 /// Tischregel (15.10.2026, gilt für Zauber mit Einfluss): wirken mehrere
 /// Quellen desselben Zaubers, zählt nur die stärkste (größtes ZfP*, bei
 /// Gleichstand die erste); verschiedene Zauber addieren sich. Unterdrückte
 /// Instanzen zählen nicht. Ohne Katalog oder ohne automatisierbares Profil
 /// entsteht kein Beitrag.
-SpellEffectKampfBeitraege berechneSpellEffectKampfBeitraege({
+SpellEffectBeitraege berechneSpellEffectBeitraege({
   required HeroState zustand,
   required RulesCatalog? katalog,
   bool blindkampf = false,
+  bool konzentrationsstaerke = false,
 }) {
   if (katalog == null) {
-    return const SpellEffectKampfBeitraege();
+    return const SpellEffectBeitraege();
   }
   final quellen = <StatModifikatorQuelle>[];
   final hinweise = <String>[];
+  final proben = <SpellEffectProbenBeitrag>[];
   var iniMalus = 0;
   String? iniQuelle;
   var orientieren = false;
 
-  for (final zauberId in kKampfMaliZauberIds) {
+  for (final zauberId in kRechenbareZauberIds) {
     final stark = _staerksteInstanz(zustand, zauberId);
     if (stark == null || !_istAutomatisiert(katalog, zauberId)) {
       continue;
@@ -121,10 +202,35 @@ SpellEffectKampfBeitraege berechneSpellEffectKampfBeitraege({
         if (blindkampf) {
           hinweise.add(
             '$name: Blindkampf halbiert die Abzüge; die Rundung ist im '
-            'Regelwerk nicht belegt – Abzüge auf AT, PA und INI bitte '
-            'manuell eintragen.',
+            'Regelwerk nicht belegt – Abzüge auf AT, PA, INI und Proben '
+            'bitte manuell eintragen.',
           );
           break;
+        }
+        if (staerke > 0) {
+          proben.add(
+            SpellEffectProbenBeitrag(bezeichnung: name, wert: -staerke),
+          );
+          if (konzentrationsstaerke) {
+            hinweise.add(
+              '$name: Konzentrationsstärke halbiert die Abzüge auf '
+              'Zauberproben; die Rundung ist nicht belegt – Zauberproben '
+              'bitte manuell anpassen.',
+            );
+          } else {
+            proben.add(
+              SpellEffectProbenBeitrag(
+                bezeichnung: name,
+                wert: -staerke,
+                talent: false,
+                zauber: true,
+              ),
+            );
+          }
+          hinweise.add(
+            '$name: Fernkampfproben sind um $staerke erschwert – im '
+            'Probendialog selbst eintragen.',
+          );
         }
         final zfw = stark.zfw;
         // Ungerades ZfP*: der Rest geht zuerst an die Attacke.
@@ -151,13 +257,37 @@ SpellEffectKampfBeitraege berechneSpellEffectKampfBeitraege({
             quelle: 'Zaubereffekt (ZfP* $staerke)',
           ),
         );
+      case kAdlerAugeZauberId:
+        if (staerke > 0) {
+          proben.add(
+            SpellEffectProbenBeitrag(
+              bezeichnung: name,
+              wert: staerke,
+              talentName: kSinnenschaerfeTalentName,
+            ),
+          );
+        }
+      case kPsychostabilisZauberId:
+        quellen.add(
+          StatModifikatorQuelle(
+            bezeichnung: name,
+            mods: StatModifiers(mr: staerke),
+            quelle: 'Zaubereffekt (ZfP* $staerke)',
+          ),
+        );
+        hinweise.add(
+          '$name: gegen Zauber mit den Merkmalen Einfluss, Hellsicht, '
+          'Herrschaft und Verständigung zusätzlich MR +2 (nicht in der MR '
+          'enthalten).',
+        );
     }
   }
-  return SpellEffectKampfBeitraege(
+  return SpellEffectBeitraege(
     statQuellen: List<StatModifikatorQuelle>.unmodifiable(quellen),
     heldenIniMalus: iniMalus,
     heldenIniQuelle: iniQuelle,
     orientierenGesperrt: orientieren,
+    probenBeitraege: List<SpellEffectProbenBeitrag>.unmodifiable(proben),
     hinweise: List<String>.unmodifiable(hinweise),
   );
 }
@@ -213,11 +343,11 @@ class SpellEffectKatalogEintrag {
 }
 
 /// Zauber, deren Wirkung die App rechnet und die der Nutzer als Quelle
-/// hinzufügen kann: automatisierbare Profile mit Kampf-Mali.
+/// hinzufügen kann: automatisierbare Profile aus [kRechenbareZauberIds].
 List<SpellEffectKatalogEintrag> spellEffectAuswahl(RulesCatalog katalog) {
   final eintraege = <SpellEffectKatalogEintrag>[];
   for (final profil in katalog.spellEffects) {
-    if (!istKampfMaliProfil(profil)) {
+    if (!istRechenbaresProfil(profil)) {
       continue;
     }
     eintraege.add(
@@ -232,6 +362,6 @@ List<SpellEffectKatalogEintrag> spellEffectAuswahl(RulesCatalog katalog) {
   return List<SpellEffectKatalogEintrag>.unmodifiable(eintraege);
 }
 
-/// Profile, deren Instanzen dieses Modul in Kampfwerte umsetzt.
-bool istKampfMaliProfil(SpellEffectProfile profil) =>
-    kKampfMaliZauberIds.contains(profil.spellId) && istAutomatisiert(profil);
+/// Profile, deren Instanzen dieses Modul in Zahlen umsetzt.
+bool istRechenbaresProfil(SpellEffectProfile profil) =>
+    kRechenbareZauberIds.contains(profil.spellId) && istAutomatisiert(profil);

@@ -103,6 +103,27 @@ class ResolvedProbeRequest {
   /// Fester Ersatz fuer den Wurf, z. B. Aufmerksamkeit mit `+6/+12`.
   final int? fixedRollTotal;
 
+  /// Gibt eine Kopie mit geänderten Feldern zurück.
+  ResolvedProbeRequest copyWith({
+    String? ruleHint,
+    int? initialSituationalModifier,
+  }) {
+    return ResolvedProbeRequest(
+      type: type,
+      title: title,
+      subtitle: subtitle,
+      ruleHint: ruleHint ?? this.ruleHint,
+      diceSpec: diceSpec,
+      targets: targets,
+      basePool: basePool,
+      specializationBonus: specializationBonus,
+      initialSpecializationApplied: initialSpecializationApplied,
+      initialSituationalModifier:
+          initialSituationalModifier ?? this.initialSituationalModifier,
+      fixedRollTotal: fixedRollTotal,
+    );
+  }
+
   /// Kennzeichnet Talent- und Zauberproben mit Kompensationspool.
   bool get usesCompensationPool =>
       type == ProbeType.talent || type == ProbeType.spell;

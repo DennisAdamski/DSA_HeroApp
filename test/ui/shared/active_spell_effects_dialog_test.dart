@@ -421,6 +421,12 @@ void main() {
       find.byKey(const ValueKey<String>('spell-instance-zauber-hinzu')),
     );
     await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(const ValueKey<String>('spell-effect-input-zauber')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Blitz dich find').last);
+    await tester.pumpAndSettle();
     // Ohne ZfP* ist „Hinzufügen“ gesperrt.
     expect(
       tester

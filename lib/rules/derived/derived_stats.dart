@@ -27,7 +27,7 @@ class DerivedStats {
     required this.ausweichen,
     this.modifiers = const StatModifiers(),
     this.herleitungen,
-    this.zauberKampf = const SpellEffectKampfBeitraege(),
+    this.zauberEffekte = const SpellEffectBeitraege(),
   });
 
   final int maxLep;
@@ -58,7 +58,7 @@ class DerivedStats {
   /// Basiswert-Anteile stecken bereits in [modifiers] und [herleitungen]; der
   /// Abzug auf die fertige Helden-INI (Blitz) und die Hinweise werden von der
   /// Kampfvorschau gelesen.
-  final SpellEffectKampfBeitraege zauberKampf;
+  final SpellEffectBeitraege zauberEffekte;
 }
 
 /// Berechnet alle abgeleiteten Werte aus Stammdaten und Laufzeitzustand.
@@ -95,10 +95,10 @@ DerivedStats computeDerivedStats(
     parsedModifiers: parsed,
     effectiveAttributes: effectiveAttributes,
     permanentAttributes: permanentAttributes,
-    zauberKampf: berechneSpellEffectKampfBeitraege(
+    zauberEffekte: berechneSpellEffectBeitraegeFuerHeld(
+      held: sheet,
       zustand: state,
       katalog: catalog,
-      blindkampf: heldKenntBlindkampf(sheet, catalog),
     ),
   );
 }
@@ -120,7 +120,7 @@ DerivedStats computeDerivedStatsFromInputs({
   StatModifiers inventoryStatMods = const StatModifiers(),
   StatModifiers wundStatMods = const StatModifiers(),
   List<StatModifikatorQuelle>? textAufteilung,
-  SpellEffectKampfBeitraege zauberKampf = const SpellEffectKampfBeitraege(),
+  SpellEffectBeitraege zauberEffekte = const SpellEffectBeitraege(),
 }) {
   final quellen = sammleStatModifikatorQuellen(
     sheet: sheet,
@@ -129,7 +129,7 @@ DerivedStats computeDerivedStatsFromInputs({
     textAufteilung: textAufteilung,
     inventar: inventoryStatMods,
     wunden: wundStatMods,
-    zauber: zauberKampf.statQuellen,
+    zauber: zauberEffekte.statQuellen,
   );
   final h = computeBasiswertHerleitungen(
     sheet: sheet,
@@ -157,6 +157,6 @@ DerivedStats computeDerivedStatsFromInputs({
     ausweichen: h.ausweichen.wert,
     modifiers: summeDerQuellen(quellen),
     herleitungen: h,
-    zauberKampf: zauberKampf,
+    zauberEffekte: zauberEffekte,
   );
 }
