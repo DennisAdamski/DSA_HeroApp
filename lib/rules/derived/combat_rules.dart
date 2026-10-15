@@ -21,6 +21,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/magic_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ruestung_be_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/shield_parry_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/spell_effect_instance_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/two_weapon_combat_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/waffenmeister_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/unarmed_style_rules.dart';
@@ -380,7 +381,7 @@ CombatPreviewStats computeCombatPreviewStats(
       effectiveAttributes ??
       applyAttributeModifiers(
         sheet.attributes,
-        parsed.attributeMods + state.tempAttributeMods,
+        parsed.attributeMods + effektiveTempAttributeMods(state),
       );
   final effectiveSheet = sheet.copyWith(attributes: effective);
   final derived =

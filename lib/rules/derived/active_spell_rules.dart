@@ -2,6 +2,7 @@ import 'package:dsa_heldenverwaltung/domain/attribute_modifiers.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/spell_duration.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/spell_effect_instance_rules.dart';
 
 /// Statische Definition eines wichtigen, laufend aktivierbaren Zaubereffekts.
 class ActiveSpellEffectDefinition {
@@ -121,7 +122,9 @@ String describeActiveSpellEffectValue({
       final rsBonus = state.activeSpellEffects.detailFor(effectId).amount;
       return 'Zusätzlicher RS: $rsBonus';
     case activeSpellEffectAttributo:
-      final summary = describeAttributeModifiers(state.tempAttributeMods);
+      final summary = describeAttributeModifiers(
+        effektiveTempAttributeMods(state),
+      );
       return summary.isEmpty ? 'Keine Boni erfasst' : 'Boni: $summary';
     default:
       return '';

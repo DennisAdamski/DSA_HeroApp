@@ -517,7 +517,7 @@ mit älterer App per Sync die Felder einer neueren (Befunde ARCH-07-B5/B6):
     `AvatarGalleryEntry`, `AvatarGesichtsbefund`, `AvatarGesichtsrahmen`,
     `AvatarSnapshot`, `HeroAdvancementEntry`;
   - Laufzeitzustand: `AttributeModifiers`, `ActiveSpellEffectsState`,
-    `ActiveSpellEffectDetail`, `SpellDuration`, `WundZustand`, `DiceLogEntry`,
+    `ActiveSpellEffectDetail`, `SpellEffectInstance`, `SpellDuration`, `WundZustand`, `DiceLogEntry`,
     `ZustandsBuchung` (ARCH-06), `BegleiterZustand` (V2).
 
   Ausgenommen ist nur `OffhandSlot`: der Altschlüssel `offhand` wird beim

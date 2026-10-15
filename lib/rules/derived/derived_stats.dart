@@ -6,6 +6,7 @@ import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
 
 import 'package:dsa_heldenverwaltung/rules/derived/basiswert_herleitung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_source_breakdown.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/spell_effect_instance_rules.dart';
 
 import 'modifier_parser.dart';
 
@@ -78,7 +79,7 @@ DerivedStats computeDerivedStats(
   // Effektive Attribute inkl. temporaerer Boni (fuer AT/PA/INI/GS/MR/FK).
   final effectiveAttributes = applyAttributeModifiers(
     sheet.attributes,
-    parsed.attributeMods + namedAttrMods + state.tempAttributeMods,
+    parsed.attributeMods + namedAttrMods + effektiveTempAttributeMods(state),
   );
   return computeDerivedStatsFromInputs(
     sheet: sheet,

@@ -200,6 +200,11 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
+    // Die Herkunft der gespeicherten Boni ist nicht erkennbar: Rückfrage.
+    await tester.tap(
+      find.byKey(const ValueKey<String>('attributo-boni-entfernen')),
+    );
+    await tester.pumpAndSettle();
 
     final state = (await repo.loadHeroState('demo'))!;
     final detail = state.activeSpellEffects.detailFor(
@@ -314,4 +319,87 @@ void main() {
 
     expect(find.text('abgelaufen (2 Spielrunden)'), findsOneWidget);
   });
+
+  testWidgets('Attributo aus: Boni behalten bleibt auf Wunsch stehen', (
+    tester,
+  ) async {
+    final repo = await openDialog(
+      tester,
+      initialState:
+          const HeroState(
+            currentLep: 30,
+            currentAsp: 30,
+            currentKap: 0,
+            currentAu: 20,
+            tempAttributeMods: AttributeModifiers(mu: 2),
+          ).copyWith(
+            activeSpellEffects: const ActiveSpellEffectsState().withToggled(
+              activeSpellEffectAttributo,
+              true,
+            ),
+          ),
+    );
+
+    await tester.tap(
+      find.byKey(
+        const ValueKey<String>('active-spell-toggle-effect_spell_attributo'),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(const ValueKey<String>('attributo-boni-behalten')),
+    );
+    await tester.pumpAndSettle();
+
+    final state = (await repo.loadHeroState('demo'))!;
+    expect(
+      state.activeSpellEffects.isActive(activeSpellEffectAttributo),
+      isFalse,
+    );
+    expect(state.tempAttributeMods.mu, 2);
+  });
+
+  testWidgets(
+    'Weitere Attributo-Quelle lässt sich anlegen und einzeln beenden',
+    (tester) async {
+      final repo = await openDialog(
+        tester,
+        initialState: const HeroState(
+          currentLep: 30,
+          currentAsp: 30,
+          currentKap: 0,
+          currentAu: 20,
+          tempAttributeMods: AttributeModifiers(ge: 4),
+        ),
+      );
+
+      await tester.tap(
+        find.byKey(const ValueKey<String>('spell-instance-attributo-hinzu')),
+      );
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byKey(const ValueKey<String>('attributo-input-MU')),
+        '3',
+      );
+      await tester.tap(
+        find.byKey(const ValueKey<String>('attributo-input-confirm')),
+      );
+      await tester.pumpAndSettle();
+
+      var state = (await repo.loadHeroState('demo'))!;
+      expect(state.activeSpellEffects.instanzen, hasLength(1));
+      expect(state.activeSpellEffects.instanzen.single.attributeMods.mu, 3);
+      final id = state.activeSpellEffects.instanzen.single.id;
+
+      await tester.tap(
+        find.byKey(ValueKey<String>('spell-instance-beenden-$id')),
+      );
+      await tester.pumpAndSettle();
+
+      state = (await repo.loadHeroState('demo'))!;
+      expect(state.activeSpellEffects.instanzen, isEmpty);
+      // Manuelle Boni bleiben vom Ende der Quelle unberührt.
+      expect(state.tempAttributeMods.ge, 4);
+    },
+  );
 }

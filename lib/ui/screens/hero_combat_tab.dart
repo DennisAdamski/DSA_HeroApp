@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/spell_effect_instance_rules.dart';
 
 import 'package:dsa_heldenverwaltung/ui/screens/shared/planung_bearbeiten_guard.dart';
 import 'package:dsa_heldenverwaltung/catalog/house_rule_provenance.dart';
@@ -377,7 +378,7 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
               );
               final effectiveAttributes = computeEffectiveAttributes(
                 hero,
-                tempAttributeMods: state.tempAttributeMods,
+                tempAttributeMods: effektiveTempAttributeMods(state),
                 catalog: catalog,
               );
 
