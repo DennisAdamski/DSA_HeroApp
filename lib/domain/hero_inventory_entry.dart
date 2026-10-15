@@ -1,4 +1,5 @@
 import 'package:dsa_heldenverwaltung/domain/abgelegter_kampfgegenstand.dart';
+import 'package:dsa_heldenverwaltung/domain/alchimikum_bezug.dart';
 import 'package:dsa_heldenverwaltung/domain/artefakt_daten.dart';
 import 'package:dsa_heldenverwaltung/domain/copy_with_sentinel.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
@@ -56,6 +57,7 @@ class HeroInventoryEntry {
     this.abgelegt,
     this.artefaktDaten,
     this.vitalwirkung,
+    this.alchimikum,
     this.unbekannteFelder = const <String, Object?>{},
     this.unbekannteEnumWerte = const <String, Object?>{},
   });
@@ -177,6 +179,12 @@ class HeroInventoryEntry {
   /// (Bestands-Hashes).
   final Vitalwirkung? vitalwirkung;
 
+  /// Verweis auf das Katalogmittel (TRANK), aus dem der Eintrag stammt;
+  /// darüber findet „Anwenden“ die Katalogwirkung (etwa die
+  /// Eigenschaftsänderungen eines Elixiers). Nur geschrieben, wenn belegt
+  /// (Bestands-Hashes).
+  final AlchimikumBezug? alchimikum;
+
   /// JSON-Felder einer neueren App-Version; bleiben beim Speichern erhalten
   /// (siehe `unbekannte_json_felder.dart`).
   final Map<String, Object?> unbekannteFelder;
@@ -222,6 +230,7 @@ class HeroInventoryEntry {
     'abgelegt',
     'artefaktDaten',
     'vitalwirkung',
+    'alchimikum',
   };
 
   /// Gibt eine Kopie mit selektiv überschriebenen Feldern zurück.
@@ -258,6 +267,7 @@ class HeroInventoryEntry {
     Object? abgelegt = keepFieldValue,
     Object? artefaktDaten = keepFieldValue,
     Object? vitalwirkung = keepFieldValue,
+    Object? alchimikum = keepFieldValue,
     Map<String, Object?>? unbekannteFelder,
     Map<String, Object?>? unbekannteEnumWerte,
   }) {
@@ -306,6 +316,9 @@ class HeroInventoryEntry {
       vitalwirkung: vitalwirkung == keepFieldValue
           ? this.vitalwirkung
           : vitalwirkung as Vitalwirkung?,
+      alchimikum: alchimikum == keepFieldValue
+          ? this.alchimikum
+          : alchimikum as AlchimikumBezug?,
       unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
       unbekannteEnumWerte:
           unbekannteEnumWerte ??
@@ -363,6 +376,7 @@ class HeroInventoryEntry {
         if (abgelegt != null) 'abgelegt': abgelegt!.toJson(),
         if (artefaktDaten != null) 'artefaktDaten': artefaktDaten!.toJson(),
         if (vitalwirkung != null) 'vitalwirkung': vitalwirkung!.toJson(),
+        if (alchimikum != null) 'alchimikum': alchimikum!.toJson(),
       }, unbekannteFelder),
       unbekannteEnumWerte,
     );
@@ -388,6 +402,7 @@ class HeroInventoryEntry {
     final abgelegtRoh = json['abgelegt'];
     final artefaktRoh = json['artefaktDaten'];
     final vitalRoh = json['vitalwirkung'];
+    final alchimikumRoh = json['alchimikum'];
     final hasMagischDescription =
         json.containsKey('magischDescription') &&
         json['magischDescription'] != null;
@@ -455,6 +470,9 @@ class HeroInventoryEntry {
           : null,
       vitalwirkung: vitalRoh is Map
           ? Vitalwirkung.fromJson(vitalRoh.cast<String, dynamic>())
+          : null,
+      alchimikum: alchimikumRoh is Map
+          ? AlchimikumBezug.fromJson(alchimikumRoh.cast<String, dynamic>())
           : null,
       unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
       unbekannteEnumWerte: festeEnumWerte(enumRoh),

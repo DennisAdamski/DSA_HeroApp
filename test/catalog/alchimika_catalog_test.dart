@@ -77,6 +77,65 @@ void main() {
       }
     });
 
+    test('Eigenschaftswirkungen nennen Kürzel, Zahl und Dauer vollständig', () {
+      const kuerzel = {'MU', 'KL', 'IN', 'CH', 'FF', 'GE', 'KO', 'KK'};
+      const einheiten = {'spielrunden', 'stunden', 'tage'};
+      for (final mittel in roh) {
+        for (final q in (mittel['qualitaeten'] as List).cast<Map>()) {
+          for (final e
+              in ((q['eigenschaften'] as List?) ?? const []).cast<Map>()) {
+            final grund = '${mittel['id']} ${q['stufe']}: $e';
+            expect(kuerzel, contains(e['eigenschaft']), reason: grund);
+            expect(e['wert'], isA<int>(), reason: grund);
+            expect(e['wert'], isNot(0), reason: grund);
+            expect(e['dauer'], isA<int>(), reason: grund);
+            expect(e['dauer'] as int, greaterThan(0), reason: grund);
+            expect(einheiten, contains(e['einheit']), reason: grund);
+          }
+        }
+      }
+    });
+
+    test('die acht Elixiere der Tugenden führen je Stufe eine Eigenschaft', () {
+      const erwartet = {
+        'alch_mutelixier': 'MU',
+        'alch_klugheitselixier': 'KL',
+        'alch_intuitionselixier': 'IN',
+        'alch_charismaelixier': 'CH',
+        'alch_fingerfertigkeitselixier': 'FF',
+        'alch_gewandtheitselixier': 'GE',
+        'alch_konstitutionselixier': 'KO',
+        'alch_kraftelixier': 'KK',
+      };
+      for (final eintrag in erwartet.entries) {
+        final mittel = roh.firstWhere((m) => m['id'] == eintrag.key);
+        expect(mittel['gruppe'], 'Virtutica', reason: eintrag.key);
+        final stufen = (mittel['qualitaeten'] as List).cast<Map>();
+        expect(stufen, hasLength(6), reason: eintrag.key);
+        for (final q in stufen) {
+          final eigenschaften = (q['eigenschaften'] as List).cast<Map>();
+          expect(
+            eigenschaften.first['eigenschaft'],
+            eintrag.value,
+            reason: '${eintrag.key} ${q['stufe']}',
+          );
+          expect(
+            eigenschaften.first['wert'] as int,
+            greaterThan(0),
+            reason: '${eintrag.key} ${q['stufe']}',
+          );
+        }
+        // B bis D folgen dem festen Schema: Punkte = Spielrunden (2, 3, 7).
+        for (final entry in {'B': 2, 'C': 3, 'D': 7}.entries) {
+          final q = stufen.firstWhere((s) => s['stufe'] == entry.key);
+          final e = ((q['eigenschaften'] as List).first as Map);
+          expect(e['wert'], entry.value, reason: '${eintrag.key} ${entry.key}');
+          expect(e['dauer'], entry.value);
+          expect(e['einheit'], 'spielrunden');
+        }
+      }
+    });
+
     test('Startliste ist vollständig vorhanden', () {
       expect(
         roh.map((e) => e['id']),

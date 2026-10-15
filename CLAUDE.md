@@ -362,7 +362,15 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   `Vitalwirkung` vor. Deren Würfelausdrücke (`lepWurf` …) und `lepProWunde`
   sind **nur Hinweise** im Dialog „Anwenden“; die Zahlenfelder bleiben leer,
   gewürfelt und gebucht wird nie automatisch. Stufe M ist Meisterentscheid und
-  nicht wählbar. Stand und offene Punkte: Roadmap (TRANK).
+  nicht wählbar. **Teilstand 2** (16. Oktober 2026): Elixiere der Tugenden
+  tragen je Stufe `eigenschaften` (`AlchimikumEigenschaft`: Kürzel, Zahl, Dauer,
+  Einheit – nur ausdrücklich belegte Werte, Rest bleibt Text „nicht berechnet“);
+  `HeroInventoryEntry.alchimikum` (`AlchimikumBezug`) merkt ID und Stufe,
+  „Anwenden“ wird dort zu „Einnehmen“ (`alchimika_elixier_rules.dart`, Ablauf
+  `ElixierEinnehmen`): je Eigenschaftsänderung eine `SpellEffectInstance`
+  (`effectId` = Mittel-ID) mit eigener Dauer. Sie rechnen **nur** über
+  `effektiveTempAttributeMods`, Elixiere **addieren sich** (kein
+  Attributo-Höchstwert). Stand und offene Punkte: Roadmap (TRANK).
 - Web-Interop laeuft ueber `package:web` + `dart:js_interop`, nie ueber
   `dart:html` (deprecated und von `dart2wasm` nicht uebersetzbar). Bedingte
   Importe muessen auf `dart.library.js_interop` stehen, **nicht** auf

@@ -28,8 +28,8 @@ Ist-Zustand erneut prüfen und den konkreten Teilumfang festlegen.
   (einmaliger Verbrauch) mit MAG-EFF-04 (teilweise) umgesetzt, Psychostabilis
   schlägt seine vorausbezahlte Dauer aus Zusatz-AsP vor; „laufende Kosten“
   entfallen (regelseitig nicht belegt, siehe Integrationsplan); offen sind
-  Ende-Gründe (Ereignisprotokoll am Helden, Entscheidung offen) und die
-  ereignisbasierten Profile;
+  die ereignisbasierten Profile (Ende-Gründe entfallen: Das Beenden eines
+  Zaubers braucht keine Begründung, Entscheidung 16.10.2026);
   MAG-EFF-05 teilweise umgesetzt (15.10.2026) — Gardianum als Schutzvorrat,
   Heilung durch Balsam, Hexenspeichel und Lach dich gesund, Ruhe Körper als
   Schlafablauf; einfache Zauber Karnifilo und Seidenzunge;
@@ -95,8 +95,33 @@ Ist-Zustand erneut prüfen und den konkreten Teilumfang festlegen.
   bräuchte das Katalogpasswort); kein Würfelknopf. **Offen:** Kraft-, Zauber-
   und Mut-Elixiere (Wirkung auf Eigenschaften, braucht MAG-EFF-Instanzen),
   Verbandszeug und Heilkräuter (Heilkunde-Probe, Zoo-Botanica), Hausregel-
-  Abweichungen als Paket, Katalogauswahl in der UI2-Verwaltung (heute nur im
-  Bestands-Inventareditor, der in beiden Oberflächen genutzt wird).
+  Abweichungen als Paket. (Eine eigene UI2-Katalogauswahl ist nicht nötig: Die
+  Verwaltung beider Oberflächen nutzt denselben Inventareditor mit
+  „Aus Katalog: Tränke & Heilmittel“; erst ein UI2-eigener Editor bräuchte sie.)
+
+  **Teilstand 2 umgesetzt (16.10.2026) — Elixiere der Tugenden über
+  MAG-EFF-Instanzen.** `alchimika.json` führt jetzt die acht Elixiere der
+  Gruppe Virtutica (Mut, Klugheit, Intuition, Charisma, Fingerfertigkeit,
+  Gewandtheit, Konstitution, Körperkraft; *Wege der Alchimie* 2012, S. 39–43,
+  Chunks 2827–2834) mit je sechs Stufen. Eine Stufe trägt `eigenschaften`
+  (Kürzel, Zahl, Dauer, Einheit; `AlchimikumEigenschaft`), **nur** wo das
+  Regelwerk alle drei ausdrücklich nennt. Nachwirkungen nach Ablauf („am
+  nächsten Tag …“), Gruppen („alle geistigen Eigenschaften“), AuP-Wirkungen,
+  Talentabzüge und Nachteile stehen als Text mit dem Zusatz „nicht berechnet“.
+  Am Inventareintrag merkt `HeroInventoryEntry.alchimikum`
+  (`AlchimikumBezug`: ID, Stufe; nur bei Belegung) das Katalogmittel; die Werte
+  bleiben im Katalog. „Anwenden“ im Inventareditor und im Gefechtsinventar
+  öffnet bei einem Elixier den Dialog „Einnehmen“
+  (`elixier_einnehmen_dialog.dart`); der Ablauf `ElixierEinnehmen` legt je
+  Eigenschaftsänderung eine `SpellEffectInstance` (`effectId` = Katalog-ID des
+  Mittels, `quelle` = „Qualität X“) mit eigener Dauer an, mit Protokolleintrag
+  in einem Dokument. Gerechnet wird über `effektiveTempAttributeMods`: **Elixiere
+  addieren sich** (das Regelwerk nennt keine Höchstwertregel; anders als beim
+  Attributo). Dauern zählt der Nutzer wie bei Zaubern manuell herunter, nichts
+  endet automatisch. Eine Dauer „halber Tag“ ist als 12 Stunden erfasst. **Offen:**
+  Mutelixier-Brechreiz ohne Basiliskum, Kleptomanie und Mibelsucht (Nachteile
+  auf Zeit), Mehrfachanwendung desselben Elixiers (Regelwerk-Meisterhinweise
+  nur als Text), Zauberelixiere und Wandlungselixiere, Heilkräuter/Verbandszeug.
 
 ## Arbeitsweise und gemeinsame Grenzen
 

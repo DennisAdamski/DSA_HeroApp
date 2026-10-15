@@ -38,6 +38,15 @@ List<SpellEffectInstance> aktiveEffektInstanzen(HeroState zustand) {
   ]);
 }
 
+/// Präfix der Katalog-IDs alchimistischer Mittel (`alch_mutelixier` …). Eine
+/// Instanz mit dieser `effectId` stammt aus einem Elixier (TRANK), nicht aus
+/// einem Zauber.
+const String kAlchimikumEffektPraefix = 'alch_';
+
+/// Ob [effectId] zu einem alchimistischen Mittel gehört.
+bool istAlchimikumEffekt(String effectId) =>
+    effectId.startsWith(kAlchimikumEffektPraefix);
+
 /// Kürzel der acht Eigenschaften in der Reihenfolge von [AttributeModifiers].
 const List<String> _eigenschaftsKuerzel = <String>[
   'MU',
@@ -116,6 +125,25 @@ List<int> _wirksameQuelle(List<(String, AttributeModifiers)> quellen) {
   ];
 }
 
+/// Summe der Eigenschaftsänderungen laufender Elixiere (nicht unterdrückt).
+///
+/// Elixiere werden **addiert**, auch mehrere derselben Eigenschaft: Das
+/// Regelwerk (Wege der Alchimie) nennt dafür keine Höchstwertregel. Anders als
+/// beim Attributo gibt es hier keine Überlagerung.
+List<int> _elixirBoni(HeroState zustand) {
+  final summe = List<int>.filled(_eigenschaftsKuerzel.length, 0);
+  for (final instanz in zustand.activeSpellEffects.instanzen) {
+    if (!istAlchimikumEffekt(instanz.effectId) || instanz.unterdrueckt) {
+      continue;
+    }
+    final werte = _werte(instanz.attributeMods);
+    for (var e = 0; e < summe.length; e++) {
+      summe[e] += werte[e];
+    }
+  }
+  return summe;
+}
+
 /// Eigenschaftsboni, die für Rechnungen gelten.
 ///
 /// Boni mehrerer Attributo-Quellen (Legacy-Attributo und Instanzen) werden
@@ -139,9 +167,12 @@ AttributeModifiers effektiveTempAttributeMods(HeroState zustand) {
   final manuell = legacyAktiv
       ? List<int>.filled(_eigenschaftsKuerzel.length, 0)
       : _werte(zustand.tempAttributeMods);
+  final elixiere = _elixirBoni(zustand);
   final summe = <int>[
     for (var e = 0; e < _eigenschaftsKuerzel.length; e++)
-      manuell[e] + (wirksam[e] < 0 ? 0 : _werte(quellen[wirksam[e]].$2)[e]),
+      manuell[e] +
+          (wirksam[e] < 0 ? 0 : _werte(quellen[wirksam[e]].$2)[e]) +
+          elixiere[e],
   ];
   return _ausWerten(summe);
 }
@@ -164,8 +195,12 @@ List<String> ueberlagerteEigenschaften(HeroState zustand, String instanzId) {
 }
 
 /// Kurzbeschreibung der Eingaben einer Instanz für die Anzeige: Attributo
-/// nennt seine Boni, andere Zauber ZfP* und ZfW des Zaubernden.
+/// und Elixiere nennen ihre Eigenschaftsänderungen, andere Zauber ZfP* und ZfW
+/// des Zaubernden.
 String beschreibeEffektInstanz(SpellEffectInstance instanz) {
+  if (istAlchimikumEffekt(instanz.effectId)) {
+    return beschreibeAttributoInstanz(instanz);
+  }
   if (instanz.effectId == activeSpellEffectAttributo) {
     final boni = beschreibeAttributoInstanz(instanz);
     return boni.isEmpty ? '' : 'Boni: $boni';
@@ -186,6 +221,11 @@ String effektName(String effectId, RulesCatalog? katalog) {
   for (final zauber in katalog?.spells ?? const <SpellDef>[]) {
     if (zauber.id == effectId) {
       return zauber.name;
+    }
+  }
+  for (final mittel in katalog?.alchimika ?? const <AlchimikumDef>[]) {
+    if (mittel.id == effectId) {
+      return mittel.name;
     }
   }
   return effectId;

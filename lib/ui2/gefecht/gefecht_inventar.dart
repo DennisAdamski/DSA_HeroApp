@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/alchimika_elixier_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_ablauf_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_held_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_inventar_rules.dart';
@@ -11,6 +12,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/gefecht_wirken_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/inventar_verbrauch_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/probe_request_rules.dart';
 import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
+import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_initiative_provider.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_provider.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
@@ -193,8 +195,13 @@ Future<void> schliesseGefechtsGegenstandAb({
     );
     return;
   }
-  // Ein Heiltrank o. Ä. bucht Wirkung und Verbrauch im eigenen Dialog.
-  if (eintrag.vitalwirkung?.istBelegt ?? false) {
+  // Ein Heiltrank o. Ä. bucht Wirkung und Verbrauch im eigenen Dialog; ein
+  // Katalogelixier mit Eigenschaftswirkung ebenso (Einnehmen).
+  if ((eintrag.vitalwirkung?.istBelegt ?? false) ||
+      hatElixierWirkung(
+        ref.read(heroRulesCatalogProvider(heroId)).valueOrNull,
+        eintrag,
+      )) {
     await bestand.gefechtsVitalwirkung(
       context: context,
       ref: ref,

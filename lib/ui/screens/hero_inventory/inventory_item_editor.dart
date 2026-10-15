@@ -8,6 +8,7 @@ import 'package:dsa_heldenverwaltung/domain/artefakt_daten.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_companion.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/alchimika_elixier_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/alchimika_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/artefakt_spruchspeicher_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/inventar_menge_rules.dart';
@@ -19,6 +20,7 @@ import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/alchimika_auswahl_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/artefakt_anwenden.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/artefakt_editor_abschnitt.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/elixier_einnehmen_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/inventory_eintrag_aktionen.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/spruchspeicher_aufladen_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/vitalwirkung_anwenden_dialog.dart';
@@ -210,6 +212,14 @@ class _InventoryItemEditorState extends ConsumerState<InventoryItemEditor> {
     final abgelegt = istAbgelegterKampfgegenstand(widget.entry);
     final heroId = PlanungsBearbeitungsBereich.heldVon(context);
     final artefakt = widget.entry.artefaktDaten;
+    // Ein Katalogelixier nimmt „Anwenden“ als Einnehmen; der Katalog des
+    // Helden entscheidet, ob die Stufe Eigenschaften verändert.
+    final elixier =
+        heroId != null &&
+        hatElixierWirkung(
+          ref.watch(heroRulesCatalogProvider(heroId)).valueOrNull,
+          widget.entry,
+        );
     // Ausgelöst wird der gespeicherte Eintrag, nicht der Entwurf.
     final ausloesbar =
         heroId != null && artefakt != null && artefaktAusloesbar(artefakt);
@@ -232,13 +242,23 @@ class _InventoryItemEditorState extends ConsumerState<InventoryItemEditor> {
               eintrag: widget.entry,
             )
           : null,
-      onAnwenden: heroId != null && hatVitalwirkung(widget.entry) && !_isLinked
-          ? () => zeigeVitalwirkungAnwenden(
-              context: context,
-              ref: ref,
-              heroId: heroId,
-              eintrag: widget.entry,
-            )
+      onAnwenden:
+          heroId != null &&
+              (hatVitalwirkung(widget.entry) || elixier) &&
+              !_isLinked
+          ? () => elixier
+                ? zeigeElixierEinnehmen(
+                    context: context,
+                    ref: ref,
+                    heroId: heroId,
+                    eintrag: widget.entry,
+                  )
+                : zeigeVitalwirkungAnwenden(
+                    context: context,
+                    ref: ref,
+                    heroId: heroId,
+                    eintrag: widget.entry,
+                  )
           : null,
       onAufladen: aufladbar
           ? () => zeigeSpruchspeicherAufladen(

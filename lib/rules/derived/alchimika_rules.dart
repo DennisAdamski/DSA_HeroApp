@@ -1,4 +1,5 @@
 import 'package:dsa_heldenverwaltung/catalog/alchimikum_def.dart';
+import 'package:dsa_heldenverwaltung/domain/alchimikum_bezug.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
 import 'package:dsa_heldenverwaltung/domain/vitalwirkung.dart';
@@ -91,9 +92,10 @@ List<String> _wurfZeilen(AlchimikumQualitaet wirkung) {
 /// Übernimmt [mittel] in einen Inventareintrag.
 ///
 /// Setzt Name, Typ „Verbrauchsgegenstand“, Beschreibung, Richtpreis (nur wenn
-/// das Regelwerk einen eindeutigen nennt) und die Vitalwirkung. Alle anderen
-/// Felder des Eintrags, auch unbekannte Felder der Vorbelegung, bleiben
-/// erhalten.
+/// das Regelwerk einen eindeutigen nennt), die Vitalwirkung und den Verweis
+/// auf das Katalogmittel (darüber findet „Anwenden“ später etwa die
+/// Eigenschaftsänderungen eines Elixiers). Alle anderen Felder des Eintrags,
+/// auch unbekannte Felder der Vorbelegung, bleiben erhalten.
 HeroInventoryEntry mitAlchimikum(
   HeroInventoryEntry basis,
   AlchimikumDef mittel,
@@ -126,5 +128,9 @@ HeroInventoryEntry mitAlchimikum(
     beschreibung: alchimikumBeschreibung(mittel, stufe),
     wertSilber: mittel.preisSilber ?? basis.wertSilber,
     vitalwirkung: vitalwirkung,
+    alchimikum: (basis.alchimikum ?? AlchimikumBezug(id: mittel.id)).copyWith(
+      id: mittel.id,
+      stufe: alchimikumStufe(mittel, stufe) == null ? '' : stufe,
+    ),
   );
 }
