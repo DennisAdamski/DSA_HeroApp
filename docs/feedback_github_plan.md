@@ -1,6 +1,15 @@
 # Feedback aus der App als GitHub-Issue – Umsetzungsplan
 
-Stand: 14. Oktober 2026. Status: Planentwurf, keine Implementierung oder Bereitstellung.
+Stand: 16. Oktober 2026. Status: Backend und Flutter-Vertragskern lokal
+implementiert; Bedienoberfläche, vollständige Integration und Bereitstellung
+stehen noch aus. Es wurde keine Function bereitgestellt und kein Issue erzeugt.
+
+Der freigegebene Vertragsstand unterscheidet drei typisierte Meldungen:
+Bug (`bug`), Feature-Anfrage (`enhancement`) und Regelfrage (`question`). Bugs
+enthalten tatsächliches und erwartetes Verhalten sowie optionale
+Reproduktionsschritte. Ihr in der Vorschau sichtbares Diagnosepaket ist
+vollständig abwählbar. Feature-Anfragen erfassen Problem und Zielzustand,
+Regelfragen die Frage sowie optional Fundstelle und eigene Auslegung.
 
 ## Ziel und Entscheidungen
 
