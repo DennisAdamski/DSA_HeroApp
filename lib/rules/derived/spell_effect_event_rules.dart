@@ -142,14 +142,32 @@ ResolvedProbeRequest aengsteLindernProbe({
 /// - Plumbumbarum: 5 Kampfrunden (LC S. 211)
 /// - Adlerauge: 1 Spielrunde (LC S. 15)
 /// - Falkenauge: ZfW Kampfrunden (LC S. 84) – ohne ZfW kein Vorschlag
+/// - Karnifilo: ZfP* × 5 Kampfrunden (LC S. 136)
+/// - Seidenzunge: ZfP* Spielrunden (LC S. 237)
 /// - Gardianum: höchstens 1 Spielrunde (LC S. 92); der Schild löst sich
 ///   früher auf, wenn der Vorrat verbraucht ist
 ///
 /// Blitz dauert ZfW/2 Aktionen; die Rundung eines ungeraden ZfW steht nicht im
 /// Regelwerk, deshalb gibt es dort keinen Vorschlag. Psychostabilis dauert
 /// „nach AsP“ und wird vom Nutzer festgelegt. `null` = kein Vorschlag.
-SpellDuration? dauerVorschlag(String zauberId, {int? zfw}) {
+SpellDuration? dauerVorschlag(String zauberId, {int? zfw, int? zfpStern}) {
   switch (zauberId) {
+    case kKarnifiloZauberId:
+      if (zfpStern == null || zfpStern <= 0) {
+        return null;
+      }
+      return SpellDuration(
+        amount: zfpStern * 5,
+        unit: SpellDurationUnit.kampfrunden,
+      );
+    case kSeidenzungeZauberId:
+      if (zfpStern == null || zfpStern <= 0) {
+        return null;
+      }
+      return SpellDuration(
+        amount: zfpStern,
+        unit: SpellDurationUnit.spielrunden,
+      );
     case kPlumbumbarumZauberId:
       return SpellDuration(amount: 5, unit: SpellDurationUnit.kampfrunden);
     case kAdlerAugeZauberId:

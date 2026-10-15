@@ -67,7 +67,7 @@ void main() {
     });
 
     test('Profile werden aus dem Manifest geladen', () {
-      expect(katalog.spellEffects, hasLength(14));
+      expect(katalog.spellEffects, hasLength(17));
     });
 
     test('die Profilprüfung findet keinen Mangel', () {

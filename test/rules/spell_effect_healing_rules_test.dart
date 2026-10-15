@@ -282,4 +282,50 @@ void main() {
     expect(b.wundenDelta, -1);
     expect(b.zone, WundZone.brust);
   });
+
+  group('Lach dich gesund', () {
+    HeilEingabe lach({int zfp = 6, bool selbst = false}) => HeilEingabe(
+      zauberId: kLachDichGesundZauberId,
+      asp: 0,
+      zfw: 0,
+      zfpStern: zfp,
+      selbstGewirkt: selbst,
+    );
+
+    test('ZfP* LeP kommen zurück, der Held zahlt keine AsP', () {
+      final p = pruefeHeilung(_zustand(), lach(), maxLep: 40);
+      expect(p.gueltig, isTrue, reason: p.fehler.join('; '));
+      expect(p.lep, 6);
+      expect(p.kosten, 0);
+
+      final a = wendeHeilungAn(_zustand(), lach(), maxLep: 40);
+      expect(a.zustand.currentLep, 16);
+      expect(a.zustand.currentAsp, 20);
+    });
+
+    test('ZfP* sind nötig, Selbstanwendung und LeP unter 1 sperren', () {
+      expect(
+        pruefeHeilung(_zustand(), lach(zfp: 0), maxLep: 40).gueltig,
+        isFalse,
+      );
+      expect(
+        pruefeHeilung(_zustand(), lach(selbst: true), maxLep: 40).gueltig,
+        isFalse,
+      );
+      expect(
+        pruefeHeilung(_zustand(lep: 0), lach(), maxLep: 40).gueltig,
+        isFalse,
+      );
+    });
+
+    test('LeP nur bis zum Maximum, Hinweis auf die misslungene Probe', () {
+      final z = _zustand(lep: 38);
+      final a = wendeHeilungAn(z, lach(), maxLep: 40);
+      expect(a.lep, 2);
+      expect(
+        pruefeHeilung(z, lach(), maxLep: 40).hinweise.join(' '),
+        contains('1W3'),
+      );
+    });
+  });
 }

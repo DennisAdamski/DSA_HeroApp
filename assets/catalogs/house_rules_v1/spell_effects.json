@@ -155,5 +155,38 @@
     "variantenHinweis": "Die Reversalis (Schlaflosigkeit, ZfP* Punkte Erschöpfung) ist nicht umgesetzt.",
     "rundungsHinweis": "Je verschlafener Stunde 2 LeP, 4 Überanstrengung und 8 Erschöpfung weniger; je 6 volle Stunden heilt eine Wunde vollständig (ganzzahlige Division). Heilungs-Vor- und Nachteile und die „evtl. 1 AsP“ je Stunde sind nicht gerechnet.",
     "hinweis": "Ersetzt die normale Regeneration dieser Stunden. Der Schlaf dauert höchstens ZfP* Stunden; der Zaubernde trägt die Kosten (4 AsP + 2 AsP je Stunde), nicht der Schlafende."
+  },
+  {
+    "id": "profil_karnifilo_grund",
+    "spellId": "spell_karnifilo_raserei",
+    "profilVersion": 1,
+    "status": "belegt",
+    "beleg": { "buch": "Liber Cantiones", "seite": "136", "chunkId": 2091 },
+    "eingaben": ["zfpStern"],
+    "variantenHinweis": "Blutrausch (Werte-Veränderungen 2 Punkte stärker), borbaradianische und Achaz-Repräsentation sind nicht umgesetzt.",
+    "rundungsHinweis": "AT-Basis +5 und PA-Basis −5 gelten fest; ZfP*/2 Erschöpfung nach Ablauf ist nicht gerechnet (Rundung nicht belegt).",
+    "hinweis": "Empfangener Kampfrausch: AT-Basis +5, PA-Basis −5, Dauer ZfP* × 5 Kampfrunden. MU/KK +5 und KL/CH −5 sowie der Wegfall der Wund-Abzüge sind nur Hinweise."
+  },
+  {
+    "id": "profil_seidenzunge_grund",
+    "spellId": "spell_seidenzunge_elfenwort",
+    "profilVersion": 1,
+    "status": "belegt",
+    "beleg": { "buch": "Liber Cantiones", "seite": "237", "chunkId": 2219 },
+    "eingaben": ["zfpStern"],
+    "variantenHinweis": "Die Variante gegen mehrere Personen und die Reversalis sind nicht umgesetzt.",
+    "rundungsHinweis": "Keine Rundung nötig (Überreden um ZfP* erleichtert, nach Meisterentscheid).",
+    "hinweis": "Der Meister darf alle Überreden-Proben des Elfen um ZfP* erleichtern; die App setzt das als Startwert. Dauer ZfP* Spielrunden (A)."
+  },
+  {
+    "id": "profil_lach_dich_gesund_grund",
+    "spellId": "spell_lach_dich_gesund",
+    "profilVersion": 1,
+    "status": "belegt",
+    "beleg": { "buch": "Liber Cantiones", "seite": "151", "chunkId": 2107 },
+    "eingaben": ["zfpStern"],
+    "variantenHinweis": "Die Variante „Tanz dich wach“ (Erschöpfung abbauen) ist nicht umgesetzt.",
+    "rundungsHinweis": "Der Patient regeneriert ZfP* LeP (eine Spielrunde je Punkt); die Zaubernde zahlt so viele AsP wie LeP zurückkommen. Misslingt die Probe, bringt der Zauber nur 1W3 LeP.",
+    "hinweis": "Einmalige Heilung des Empfängers; wirkt nie auf die Zaubernde selbst."
   }
 ]

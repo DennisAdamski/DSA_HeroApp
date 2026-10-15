@@ -197,4 +197,37 @@ void main() {
     expect(talentNameAusProbe(_zauber()), isNull);
     expect(talentNameAusProbe(_talent('Klettern')), 'Klettern');
   });
+
+  group('Seidenzunge', () {
+    test('das Talent heißt im Katalog genau so', () {
+      expect(
+        katalog.talents.any((t) => t.name == kUeberredenTalentName),
+        isTrue,
+      );
+    });
+
+    test('erleichtert Überreden um ZfP* als Startwert, sonst nichts', () {
+      final b = rechne(
+        _mit([
+          const SpellEffectInstance(
+            id: 's',
+            effectId: kSeidenzungeZauberId,
+            zfpStern: 4,
+          ),
+        ]),
+      );
+
+      final ueberreden = probeMitSpellEffekten(_talent('Überreden'), b);
+      expect(ueberreden.initialSituationalModifier, 4);
+      expect(ueberreden.ruleHint, contains('Seidenzunge Elfenwort +4'));
+      expect(
+        probeMitSpellEffekten(
+          _talent('Klettern'),
+          b,
+        ).initialSituationalModifier,
+        0,
+      );
+      expect(b.hinweise.join(' '), contains('Meisterentscheid'));
+    });
+  });
 }

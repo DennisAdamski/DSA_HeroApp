@@ -176,4 +176,27 @@ void main() {
 
     expect(_key('heilung-keine-wunden'), findsOneWidget);
   });
+
+  testWidgets(
+    'Lach dich gesund: nur ZfP*, kein Selbstzauber, Buchung ohne AsP',
+    (tester) async {
+      final repo = await zeigePanel(tester, _zustand(lep: 2));
+      await tester.tap(find.text('Lach dich gesund'));
+      await tester.pumpAndSettle();
+
+      expect(_key('heilung-selbst'), findsNothing);
+      expect(_key('heilung-asp'), findsNothing);
+      await tester.enterText(_key('heilung-zfp'), '6');
+      await tester.pumpAndSettle();
+      expect(find.textContaining('LeP 2 → 8'), findsOneWidget);
+
+      await tester.tap(_key('heilung-uebernehmen'));
+      await tester.pumpAndSettle();
+
+      final z = (await repo.loadHeroState('demo'))!;
+      expect(z.currentLep, 8);
+      expect(z.currentAsp, 20);
+      expect(z.diceLog.single.subtitle, contains('ZfP* 6'));
+    },
+  );
 }
