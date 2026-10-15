@@ -62,6 +62,7 @@ List<GefechtsInventarposten> gefechtsInventar(HeroSheet hero) {
             (e.artefaktDaten == null ||
                 artefaktImKampfAusloesbar(e.artefaktDaten!)) &&
             (e.itemType == InventoryItemType.verbrauchsgegenstand ||
+                (e.vitalwirkung?.istBelegt ?? false) ||
                 e.isMagisch ||
                 e.artefaktDaten != null),
         traeger: beimBegleiter ? namen[e.traegerId] : null,

@@ -133,6 +133,7 @@ Abhängigkeiten per Konstruktor; die Provider liegen in
 | Rast abschließen | `RastAbschliessen` (`lib/ablaeufe/rast_abschliessen.dart`) | Zustand, frisch | extrahiert |
 | Schaden erhalten | `SchadenErhalten` (`lib/ablaeufe/schaden_erhalten.dart`) | Zustand, frisch, mit Buchung | extrahiert |
 | Matrixgeber auslösen | `MatrixAusloesen` (`lib/ablaeufe/matrix_ausloesen.dart`) | Zustand, frisch (AsP und Protokolleintrag in einem Dokument) | extrahiert |
+| Gegenstand anwenden (Heiltrank …) | `VitalwirkungAnwenden` (`lib/ablaeufe/vitalwirkung_anwenden.dart`) | Zustand, frisch (LeP/AsP/AuP, geschlossene Wunden, Buchung `heilung` und Protokoll in einem Dokument; idempotent über die Vorgangs-ID). Das Abziehen des Stücks ist ein eigener Bogenschritt des Dialogs (`mitVerbrauchtemInventarEintrag`) | extrahiert |
 | Auxiliator einsetzen | `AuxiliatorEinsetzen` (`lib/ablaeufe/auxiliator_einsetzen.dart`) | Zustand, frisch (AsP und Protokolleintrag in einem Dokument) | extrahiert |
 | Artefaktvorgang protokollieren | `ArtefaktProtokollieren` (`lib/ablaeufe/artefakt_protokollieren.dart`) | Zustand, frisch (nur der Protokolleintrag; folgt der Bogenänderung eines Spruchspeichers als eigene Buchung) | extrahiert |
 | Schaden zurücknehmen | `SchadenZuruecknehmen` (`lib/ablaeufe/schaden_zuruecknehmen.dart`) | Zustand, frisch, Gegenbuchung | ARCH-06 |

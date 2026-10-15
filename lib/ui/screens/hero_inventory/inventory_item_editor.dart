@@ -15,6 +15,8 @@ import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/artefakt_anwenden
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/artefakt_editor_abschnitt.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/inventory_eintrag_aktionen.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/spruchspeicher_aufladen_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/vitalwirkung_anwenden_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/vitalwirkung_editor_abschnitt.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/inventory_modifier_editor.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/inventory_stapel_teilen.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/list_tile_material.dart';
@@ -182,6 +184,14 @@ class _InventoryItemEditorState extends ConsumerState<InventoryItemEditor> {
           : 'Auslösen',
       onAusloesen: ausloesbar
           ? () => zeigeArtefaktAnwenden(
+              context: context,
+              ref: ref,
+              heroId: heroId,
+              eintrag: widget.entry,
+            )
+          : null,
+      onAnwenden: heroId != null && hatVitalwirkung(widget.entry) && !_isLinked
+          ? () => zeigeVitalwirkungAnwenden(
               context: context,
               ref: ref,
               heroId: heroId,
@@ -402,6 +412,15 @@ class _InventoryItemEditorState extends ConsumerState<InventoryItemEditor> {
             'übernimmt sie.',
             key: const ValueKey<String>('inventory-editor-quantity-hint'),
             style: Theme.of(context).textTheme.bodySmall,
+          ),
+        ],
+        if (_draft.itemType == InventoryItemType.verbrauchsgegenstand &&
+            !_isLinked) ...[
+          const SizedBox(height: _fieldSpacing),
+          VitalwirkungEditorAbschnitt(
+            wirkung: _draft.vitalwirkung,
+            onChanged: (wirkung) =>
+                setState(() => _draft = _draft.copyWith(vitalwirkung: wirkung)),
           ),
         ],
         if (!widget.isNew) _buildAktionen(),

@@ -38,6 +38,37 @@ Ist-Zustand erneut prüfen und den konkreten Teilumfang festlegen.
   und Bedienprüfungen. MAG-EFF ist eine zusätzliche fachliche Aufgabe und
   ändert die Bedeutung der sieben ARCH-IDs nicht.
 
+- [ ] **TRANK — Trankdefinitionen aus den Regelbüchern in einen Katalog übernehmen.**
+  Angeregt am 15.10.2026 durch den Verbrauch von Gegenständen: Der Dialog
+  „Anwenden“ (`VitalwirkungAnwenden`, `Vitalwirkung` am Inventareintrag,
+  Schreibweg in `docs/schreibpfade_inventar.md`) kennt bisher nur eine vom
+  Nutzer eingetragene Vorbelegung (LeP/AsP/AuP/Wunden). Ziel: die
+  wichtigsten Tränke und Heilmittel mit ihren Regelwerten als Katalog
+  (Split-JSON unter `assets/catalogs/house_rules_v1/`, geschützte
+  Wirkungstexte wie bei Zaubern verschlüsselt) bereitstellen, damit Inventar,
+  Kauf/Anlegen und Anwenden daraus vorbelegen, statt Werte frei zu tippen.
+  Vorgehen: (1) Screening mit dem DSA-MCP – erste Fundstellen: *Wege der
+  Alchimie* (2. Aufl. 2012; Rezepturen, Probe, Wirkung, z. B. S. 35–37),
+  *Stäbe, Ringe, Dschinnenlampen* (Spagyrik S. 95, Wundpulver S. 108), *Wege
+  der Zauberei* (Alchimie-Probe und Qualitätsstufen S. 62 f.), dazu die
+  Hausregeln „Epische Stufen“ (Tränke brauen S. 29); Belege je Eintrag mit
+  Buch und Seite, nichts ohne Beleg. (2) Auswahl der **wichtigsten**
+  Definitionen (Heil-, Kraft- und Ausdauertränke, Gegengifte, Verbände und
+  Wundpulver) – kein Vollimport aller Rezepturen. (3) Datenmodell: Name,
+  Gruppe, Quelle, Wirkung je Qualitätsstufe (A–F) bzw. ausdrücklich
+  gewürfelte Wirkung (Würfelausdruck als Vorschlag, wie bei `Vitalwirkung`),
+  Wirkungsdauer, Preis/Gewicht, Haltbarkeit; nur additiv an
+  `HeroInventoryEntry` anbinden (`jsonSchluessel`, Eintrag in
+  `unbekannte_verschachtelte_felder_test.dart`, Hash-Pins beachten).
+  (4) Anbindung: Katalogauswahl im Inventareditor füllt `vitalwirkung` vor;
+  der Anwendungsdialog behält die Nutzerentscheidung (nichts wird geraten
+  oder automatisch gebucht). (5) Abgrenzung: Brauen, Rezepturenerwerb und
+  Labor sind **nicht** Teil dieses Pakets; Wirkungen über Zeit oder auf
+  Eigenschaften folgen erst, wenn MAG-EFF-Instanzen (Dauer, Ende-Gründe)
+  dafür wiederverwendbar sind. Offene Produktentscheidungen: Katalogpaket
+  einzeln oder im Basiskatalog; Umgang mit Qualitätsstufen im Dialog;
+  Hausregel-Abweichungen als eigenes Paket.
+
 ## Arbeitsweise und gemeinsame Grenzen
 
 - Verbindlich bleibt [AGENTS.md](../AGENTS.md). Die Aufgaben sollen schrittweise

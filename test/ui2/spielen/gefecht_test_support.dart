@@ -102,6 +102,19 @@ class GefechtsTestBestand extends TestBestand implements KartoGefechtsAdapter {
   );
 
   @override
+  Future<bool> gefechtsVitalwirkung({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String heroId,
+    required HeroInventoryEntry eintrag,
+  }) => _bruecke.gefechtsVitalwirkung(
+    context: context,
+    ref: ref,
+    heroId: heroId,
+    eintrag: eintrag,
+  );
+
+  @override
   Future<void> gefechtsAuxiliator({
     required BuildContext context,
     required WidgetRef ref,

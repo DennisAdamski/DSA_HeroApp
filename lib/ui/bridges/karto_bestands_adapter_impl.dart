@@ -13,6 +13,7 @@ import 'package:dsa_heldenverwaltung/ui/screens/advancement/advancement_history_
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/auth/open_sign_in.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/artefakt_anwenden.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/vitalwirkung_anwenden_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/auxiliator_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/heroes_home_screen.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/settings_screen.dart';
@@ -145,6 +146,28 @@ class KartoBestandsAdapterImpl
       eintrag: eintrag,
     ),
   );
+
+  /// Öffnet den Anwendungsdialog eines Heiltranks o. Ä. unter dem kompatiblen
+  /// Theme.
+  @override
+  Future<bool> gefechtsVitalwirkung({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String heroId,
+    required HeroInventoryEntry eintrag,
+  }) async {
+    var gebucht = false;
+    await _withKartoCompatContext(
+      context,
+      (themedContext) async => gebucht = await zeigeVitalwirkungAnwenden(
+        context: themedContext,
+        ref: ref,
+        heroId: heroId,
+        eintrag: eintrag,
+      ),
+    );
+    return gebucht;
+  }
 
   /// Öffnet den Einsatzdialog des Zaubertalismans unter dem kompatiblen Theme.
   @override

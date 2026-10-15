@@ -45,6 +45,7 @@ import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/domain/spell_duration.dart';
 import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
 import 'package:dsa_heldenverwaltung/domain/talent_special_ability.dart';
+import 'package:dsa_heldenverwaltung/domain/vitalwirkung.dart';
 import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
 import 'package:dsa_heldenverwaltung/domain/zustands_buchung.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
@@ -91,6 +92,14 @@ const _zukunft = <String, dynamic>{
 };
 
 final _kampf = <_Modell>[
+  _Modell(
+    'Vitalwirkung',
+    schluessel: Vitalwirkung.jsonSchluessel,
+    voll: () => const Vitalwirkung(lep: 8, asp: 2, aup: 3, wunden: 1).toJson(),
+    lade: (json) => Vitalwirkung.fromJson(json).toJson(),
+    bearbeite: (json) => Vitalwirkung.fromJson(json).copyWith(lep: 9).toJson(),
+    unbekannt: (json) => Vitalwirkung.fromJson(json).unbekannteFelder,
+  ),
   _Modell(
     'AbgelegterKampfgegenstand',
     schluessel: AbgelegterKampfgegenstand.jsonSchluessel,

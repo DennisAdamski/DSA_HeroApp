@@ -3,6 +3,7 @@ import 'package:dsa_heldenverwaltung/domain/artefakt_daten.dart';
 import 'package:dsa_heldenverwaltung/domain/copy_with_sentinel.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
 import 'package:dsa_heldenverwaltung/domain/unbekannte_json_felder.dart';
+import 'package:dsa_heldenverwaltung/domain/vitalwirkung.dart';
 
 /// Wer oder was ein Inventarstück trägt.
 enum InventoryTraeger {
@@ -54,6 +55,7 @@ class HeroInventoryEntry {
     this.menge,
     this.abgelegt,
     this.artefaktDaten,
+    this.vitalwirkung,
     this.unbekannteFelder = const <String, Object?>{},
     this.unbekannteEnumWerte = const <String, Object?>{},
   });
@@ -169,6 +171,12 @@ class HeroInventoryEntry {
   /// unterscheidet es vom Legacy-Freitext [artefakt].
   final ArtefaktDaten? artefaktDaten;
 
+  /// Vorbelegung für Verbrauchsgegenstände, die Vitalwerte oder Wunden
+  /// beeinflussen (Heiltrank, Verband …); der Anwendungsdialog schlägt diese
+  /// Werte vor, der Nutzer bestätigt sie. Nur geschrieben, wenn belegt
+  /// (Bestands-Hashes).
+  final Vitalwirkung? vitalwirkung;
+
   /// JSON-Felder einer neueren App-Version; bleiben beim Speichern erhalten
   /// (siehe `unbekannte_json_felder.dart`).
   final Map<String, Object?> unbekannteFelder;
@@ -213,6 +221,7 @@ class HeroInventoryEntry {
     'menge',
     'abgelegt',
     'artefaktDaten',
+    'vitalwirkung',
   };
 
   /// Gibt eine Kopie mit selektiv überschriebenen Feldern zurück.
@@ -248,6 +257,7 @@ class HeroInventoryEntry {
     Object? menge = keepFieldValue,
     Object? abgelegt = keepFieldValue,
     Object? artefaktDaten = keepFieldValue,
+    Object? vitalwirkung = keepFieldValue,
     Map<String, Object?>? unbekannteFelder,
     Map<String, Object?>? unbekannteEnumWerte,
   }) {
@@ -293,6 +303,9 @@ class HeroInventoryEntry {
       artefaktDaten: artefaktDaten == keepFieldValue
           ? this.artefaktDaten
           : artefaktDaten as ArtefaktDaten?,
+      vitalwirkung: vitalwirkung == keepFieldValue
+          ? this.vitalwirkung
+          : vitalwirkung as Vitalwirkung?,
       unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
       unbekannteEnumWerte:
           unbekannteEnumWerte ??
@@ -349,6 +362,7 @@ class HeroInventoryEntry {
         if (menge != null) 'menge': menge,
         if (abgelegt != null) 'abgelegt': abgelegt!.toJson(),
         if (artefaktDaten != null) 'artefaktDaten': artefaktDaten!.toJson(),
+        if (vitalwirkung != null) 'vitalwirkung': vitalwirkung!.toJson(),
       }, unbekannteFelder),
       unbekannteEnumWerte,
     );
@@ -373,6 +387,7 @@ class HeroInventoryEntry {
     final legacyArtifact = getString('artefakt').trim();
     final abgelegtRoh = json['abgelegt'];
     final artefaktRoh = json['artefaktDaten'];
+    final vitalRoh = json['vitalwirkung'];
     final hasMagischDescription =
         json.containsKey('magischDescription') &&
         json['magischDescription'] != null;
@@ -437,6 +452,9 @@ class HeroInventoryEntry {
           : null,
       artefaktDaten: artefaktRoh is Map
           ? ArtefaktDaten.fromJson(artefaktRoh.cast<String, dynamic>())
+          : null,
+      vitalwirkung: vitalRoh is Map
+          ? Vitalwirkung.fromJson(vitalRoh.cast<String, dynamic>())
           : null,
       unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
       unbekannteEnumWerte: festeEnumWerte(enumRoh),
