@@ -35,6 +35,14 @@ const String kPsychostabilisZauberId = 'spell_psychostabilis';
 /// Test sichert den Namen gegen den echten Katalog).
 const String kSinnenschaerfeTalentName = 'Sinnesschärfe';
 
+/// Einmalige, zielgebundene Zauber, die `spell_effect_event_rules.dart`
+/// auswertet; hier nur für die Auswahlliste des Dialogs gespiegelt (ein Test
+/// hält beide Listen gleich).
+const Set<String> kEinmaligeAuswahlZauberIds = <String>{
+  'spell_falkenauge_meisterschuss',
+  'spell_aengste_lindern',
+};
+
 /// Zauber, die dieses Modul rechnet.
 const Set<String> kRechenbareZauberIds = <String>{
   kBlitzZauberId,
@@ -327,7 +335,11 @@ class SpellEffectKatalogEintrag {
     required this.name,
     required this.benoetigtZfw,
     required this.hinweis,
+    this.benoetigtZiel = false,
   });
+
+  /// Ob das Profil ein festgelegtes Ziel verlangt (Falkenauge).
+  final bool benoetigtZiel;
 
   /// Katalog-ID des Zaubers.
   final String zauberId;
@@ -355,6 +367,7 @@ List<SpellEffectKatalogEintrag> spellEffectAuswahl(RulesCatalog katalog) {
         zauberId: profil.spellId,
         name: _zauberName(katalog, profil.spellId),
         benoetigtZfw: profil.eingaben.contains('zfw'),
+        benoetigtZiel: profil.eingaben.contains('ziel'),
         hinweis: profil.hinweis,
       ),
     );
@@ -364,4 +377,6 @@ List<SpellEffectKatalogEintrag> spellEffectAuswahl(RulesCatalog katalog) {
 
 /// Profile, deren Instanzen dieses Modul in Zahlen umsetzt.
 bool istRechenbaresProfil(SpellEffectProfile profil) =>
-    kRechenbareZauberIds.contains(profil.spellId) && istAutomatisiert(profil);
+    (kRechenbareZauberIds.contains(profil.spellId) ||
+        kEinmaligeAuswahlZauberIds.contains(profil.spellId)) &&
+    istAutomatisiert(profil);

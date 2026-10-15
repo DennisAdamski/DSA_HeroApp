@@ -11,6 +11,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/spell_duration.dart';
+import 'package:dsa_heldenverwaltung/domain/spell_effect_instance.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/active_spell_rules.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
@@ -477,5 +478,117 @@ void main() {
       find.byKey(const ValueKey<String>('spell-effect-orientieren-hinweis')),
       findsNothing,
     );
+  });
+
+  testWidgets('Falkenauge braucht ein Ziel und schlägt ZfW Kampfrunden vor', (
+    tester,
+  ) async {
+    final katalog = await tester.runAsync(ladeEchtenRegelkatalog);
+    final repo = await openDialog(tester, overrides: katalog!.overrides);
+    await tester.pumpAndSettle();
+
+    await tester.tap(
+      find.byKey(const ValueKey<String>('spell-instance-zauber-hinzu')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(const ValueKey<String>('spell-effect-input-zauber')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Falkenauge Meisterschuss').last);
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const ValueKey<String>('spell-effect-input-zfp')),
+      '5',
+    );
+    await tester.enterText(
+      find.byKey(const ValueKey<String>('spell-effect-input-zfw')),
+      '9',
+    );
+    await tester.pumpAndSettle();
+    // Ohne Ziel bleibt „Hinzufügen“ gesperrt.
+    expect(
+      tester
+          .widget<FilledButton>(
+            find.byKey(const ValueKey<String>('spell-effect-input-confirm')),
+          )
+          .onPressed,
+      isNull,
+    );
+    await tester.enterText(
+      find.byKey(const ValueKey<String>('spell-effect-input-ziel')),
+      'Ork',
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(const ValueKey<String>('spell-effect-input-confirm')),
+    );
+    await tester.pumpAndSettle();
+
+    final instanz = (await repo.loadHeroState('demo'))!
+        .activeSpellEffects
+        .instanzen
+        .single;
+    expect(instanz.effectId, 'spell_falkenauge_meisterschuss');
+    expect(instanz.ziel, 'Ork');
+    expect(instanz.duration?.amount, 9);
+    expect(instanz.duration?.unit, SpellDurationUnit.kampfrunden);
+    expect(find.textContaining('Ziel: Ork'), findsOneWidget);
+  });
+
+  testWidgets('Ängste lindern: Einsetzen verbraucht erst nach der Auswertung', (
+    tester,
+  ) async {
+    final katalog = await tester.runAsync(ladeEchtenRegelkatalog);
+    final repo = await openDialog(
+      tester,
+      overrides: katalog!.overrides,
+      initialState:
+          const HeroState(
+            currentLep: 30,
+            currentAsp: 30,
+            currentKap: 0,
+            currentAu: 20,
+          ).copyWith(
+            activeSpellEffects: const ActiveSpellEffectsState().copyWith(
+              instanzen: const [
+                SpellEffectInstance(
+                  id: 'angst',
+                  effectId: 'spell_aengste_lindern',
+                  zfpStern: 6,
+                ),
+              ],
+            ),
+          ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(
+      find.byKey(const ValueKey<String>('spell-instance-einsetzen-angst')),
+    );
+    await tester.pumpAndSettle();
+    // Probe offen, Startwert +6; Dialog schließen ohne Auswertung.
+    expect(find.text('Eigenschaftsprobe: MU'), findsWidgets);
+    await tester.tapAt(const Offset(5, 5));
+    await tester.pumpAndSettle();
+    var state = (await repo.loadHeroState('demo'))!;
+    expect(state.activeSpellEffects.instanzen, hasLength(1));
+
+    await tester.tap(
+      find.byKey(const ValueKey<String>('spell-instance-einsetzen-angst')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Manuell'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const ValueKey<String>('probe-dialog-die-0')),
+      '7',
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Auswerten'));
+    await tester.pumpAndSettle();
+
+    state = (await repo.loadHeroState('demo'))!;
+    expect(state.activeSpellEffects.instanzen, isEmpty);
   });
 }

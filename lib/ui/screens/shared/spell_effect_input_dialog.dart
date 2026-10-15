@@ -12,7 +12,11 @@ class SpellEffectAuswahl {
     required this.name,
     required this.benoetigtZfw,
     required this.hinweis,
+    this.benoetigtZiel = false,
   });
+
+  /// Ob die Wirkung an ein festgelegtes Ziel gebunden ist (Falkenauge).
+  final bool benoetigtZiel;
 
   /// Katalog-ID des Zaubers.
   final String zauberId;
@@ -35,7 +39,11 @@ class SpellEffectEingabe {
     required this.zfpStern,
     this.zfw,
     this.quelle,
+    this.ziel,
   });
+
+  /// Ziel der Wirkung (Name des Gegners), falls das Profil eines verlangt.
+  final String? ziel;
 
   /// Gewählter Zauber.
   final String zauberId;
@@ -54,20 +62,29 @@ class SpellEffectEingabe {
 ///
 /// Zahlen sind Werte des **ursprünglich Zaubernden** (bei fremden Zaubern also
 /// nicht die des Helden). `null`, wenn der Nutzer abbricht.
+///
+/// [gegnerNamen] sind die Namen der lokalen Gegner der Begegnung; sie dienen
+/// als Auswahlhilfe für das Ziel, ein freier Name bleibt möglich.
 Future<SpellEffectEingabe?> showSpellEffectInputDialog({
   required BuildContext context,
   required List<SpellEffectAuswahl> auswahl,
+  List<String> gegnerNamen = const <String>[],
 }) {
   return showAdaptiveInputDialog<SpellEffectEingabe>(
     context: context,
-    builder: (_) => _SpellEffectInputDialog(auswahl: auswahl),
+    builder: (_) =>
+        _SpellEffectInputDialog(auswahl: auswahl, gegnerNamen: gegnerNamen),
   );
 }
 
 class _SpellEffectInputDialog extends StatefulWidget {
-  const _SpellEffectInputDialog({required this.auswahl});
+  const _SpellEffectInputDialog({
+    required this.auswahl,
+    required this.gegnerNamen,
+  });
 
   final List<SpellEffectAuswahl> auswahl;
+  final List<String> gegnerNamen;
 
   @override
   State<_SpellEffectInputDialog> createState() =>
@@ -78,6 +95,7 @@ class _SpellEffectInputDialogState extends State<_SpellEffectInputDialog> {
   final _zfp = TextEditingController();
   final _zfw = TextEditingController();
   final _quelle = TextEditingController();
+  final _ziel = TextEditingController();
   late SpellEffectAuswahl _gewaehlt = widget.auswahl.first;
 
   @override
@@ -85,6 +103,7 @@ class _SpellEffectInputDialogState extends State<_SpellEffectInputDialog> {
     _zfp.dispose();
     _zfw.dispose();
     _quelle.dispose();
+    _ziel.dispose();
     super.dispose();
   }
 
@@ -94,7 +113,8 @@ class _SpellEffectInputDialogState extends State<_SpellEffectInputDialog> {
   bool get _gueltig =>
       _zfpWert != null &&
       _zfpWert! >= 0 &&
-      (!_gewaehlt.benoetigtZfw || (_zfwWert != null && _zfwWert! >= 0));
+      (!_gewaehlt.benoetigtZfw || (_zfwWert != null && _zfwWert! >= 0)) &&
+      (!_gewaehlt.benoetigtZiel || _ziel.text.trim().isNotEmpty);
 
   void _bestaetigen() {
     final quelle = _quelle.text.trim();
@@ -104,6 +124,7 @@ class _SpellEffectInputDialogState extends State<_SpellEffectInputDialog> {
         zfpStern: _zfpWert!,
         zfw: _gewaehlt.benoetigtZfw ? _zfwWert : null,
         quelle: quelle.isEmpty ? null : quelle,
+        ziel: _gewaehlt.benoetigtZiel ? _ziel.text.trim() : null,
       ),
     );
   }
@@ -175,6 +196,30 @@ class _SpellEffectInputDialogState extends State<_SpellEffectInputDialog> {
               _zfw,
               'ZfW des Zaubernden',
             ),
+          ],
+          if (_gewaehlt.benoetigtZiel) ...[
+            const SizedBox(height: kDialogFieldSpacing),
+            TextField(
+              key: const ValueKey<String>('spell-effect-input-ziel'),
+              controller: _ziel,
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                isDense: true,
+                labelText: 'Ziel (Name des Gegners)',
+              ),
+              onChanged: (_) => setState(() {}),
+            ),
+            if (widget.gegnerNamen.isNotEmpty)
+              Wrap(
+                spacing: kDialogInlineSpacing,
+                children: [
+                  for (final name in widget.gegnerNamen)
+                    ActionChip(
+                      label: Text(name),
+                      onPressed: () => setState(() => _ziel.text = name),
+                    ),
+                ],
+              ),
           ],
           const SizedBox(height: kDialogFieldSpacing),
           TextField(

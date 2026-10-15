@@ -21,6 +21,9 @@ class SpellEffectInstanceTile extends StatelessWidget {
     required this.onAdvanceDuration,
     this.ueberlagert = const <String>[],
     this.mussAufrechterhaltenWerden = false,
+    this.onEditDuration,
+    this.onEinsetzen,
+    this.einsetzenLabel = 'Einsetzen',
   });
 
   /// Anzuzeigende Instanz.
@@ -45,12 +48,22 @@ class SpellEffectInstanceTile extends StatelessWidget {
   /// Der Zauber verlangt Aufrechterhaltung (Katalog „(A)“).
   final bool mussAufrechterhaltenWerden;
 
+  /// Öffnet die Eingabe der Wirkungsdauer; `null` blendet den Knopf aus.
+  final VoidCallback? onEditDuration;
+
+  /// Setzt eine einmalige Wirkung ein (z. B. Ängste lindern); `null` = keine.
+  final VoidCallback? onEinsetzen;
+
+  /// Beschriftung des Einsetzen-Knopfs.
+  final String einsetzenLabel;
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final beschreibung = beschreibeEffektInstanz(instanz);
     final dauer = instanz.duration;
     final dauerText = describeSpellDuration(dauer);
+    final abgelaufen = dauer?.isExpired ?? false;
     final kannZaehlen =
         dauer != null &&
         dauer.amount > 0 &&
@@ -69,6 +82,7 @@ class SpellEffectInstanceTile extends StatelessWidget {
               subtitle: Text(
                 [
                   if (instanz.quelle != null) 'Quelle: ${instanz.quelle}',
+                  if (instanz.ziel != null) 'Ziel: ${instanz.ziel}',
                   if (beschreibung.isNotEmpty) beschreibung,
                   if (instanz.unterdrueckt) 'unterdrückt',
                   if (ueberlagert.isNotEmpty)
@@ -80,6 +94,18 @@ class SpellEffectInstanceTile extends StatelessWidget {
               onChanged: onWirktChanged,
             ),
           ),
+          if (onEinsetzen != null)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: OutlinedButton(
+                  key: ValueKey<String>('spell-instance-einsetzen-$id'),
+                  onPressed: onEinsetzen,
+                  child: Text(einsetzenLabel),
+                ),
+              ),
+            ),
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 0, 8, 8),
             child: Row(
@@ -92,10 +118,14 @@ class SpellEffectInstanceTile extends StatelessWidget {
                 const SizedBox(width: kDialogInlineSpacing),
                 Expanded(
                   child: Text(
-                    dauerText,
+                    abgelaufen
+                        ? '$dauerText – Ende am Tisch bestätigen'
+                        : dauerText,
                     key: ValueKey<String>('spell-instance-dauer-$id'),
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
+                      color: abgelaufen
+                          ? theme.colorScheme.error
+                          : theme.colorScheme.onSurfaceVariant,
                     ),
                   ),
                 ),
@@ -106,6 +136,14 @@ class SpellEffectInstanceTile extends StatelessWidget {
                   onPressed: kannZaehlen ? onAdvanceDuration : null,
                   icon: const Icon(Icons.exposure_minus_1, size: 18),
                 ),
+                if (onEditDuration != null)
+                  IconButton(
+                    key: ValueKey<String>('spell-instance-dauer-edit-$id'),
+                    tooltip: 'Wirkungsdauer festlegen',
+                    visualDensity: VisualDensity.compact,
+                    onPressed: onEditDuration,
+                    icon: const Icon(Icons.edit_calendar_outlined, size: 18),
+                  ),
                 IconButton(
                   key: ValueKey<String>('spell-instance-beenden-$id'),
                   tooltip: 'Diese Quelle beenden',

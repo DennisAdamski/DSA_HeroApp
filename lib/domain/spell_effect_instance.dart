@@ -21,6 +21,7 @@ class SpellEffectInstance {
     required this.effectId,
     this.vorgangsId,
     this.quelle,
+    this.ziel,
     this.zfw,
     this.zfpStern,
     this.amount = 0,
@@ -44,6 +45,11 @@ class SpellEffectInstance {
 
   /// Freitext zum Ursprung (etwa Name des Zaubernden); `null` = unbekannt.
   final String? quelle;
+
+  /// Ziel, an das die Wirkung gebunden ist (etwa das Opfer eines Falkenauge-
+  /// Schusses): Name oder `gegner:<ID>` des lokalen Gegners. `null` = keine
+  /// Zielbindung.
+  final String? ziel;
 
   /// ZfW des ursprünglich Zaubernden, falls bekannt.
   final int? zfw;
@@ -73,6 +79,7 @@ class SpellEffectInstance {
     'effectId',
     'vorgangsId',
     'quelle',
+    'ziel',
     'zfw',
     'zfpStern',
     'amount',
@@ -87,6 +94,7 @@ class SpellEffectInstance {
     String? effectId,
     String? vorgangsId,
     String? quelle,
+    String? ziel,
     int? zfw,
     int? zfpStern,
     int? amount,
@@ -101,6 +109,7 @@ class SpellEffectInstance {
       effectId: effectId ?? this.effectId,
       vorgangsId: vorgangsId ?? this.vorgangsId,
       quelle: quelle ?? this.quelle,
+      ziel: ziel ?? this.ziel,
       zfw: zfw ?? this.zfw,
       zfpStern: zfpStern ?? this.zfpStern,
       amount: amount ?? this.amount,
@@ -118,6 +127,7 @@ class SpellEffectInstance {
       'effectId': effectId,
       if (vorgangsId != null) 'vorgangsId': vorgangsId,
       if (quelle != null) 'quelle': quelle,
+      if (ziel != null) 'ziel': ziel,
       if (zfw != null) 'zfw': zfw,
       if (zfpStern != null) 'zfpStern': zfpStern,
       'amount': amount,
@@ -141,6 +151,7 @@ class SpellEffectInstance {
       effectId: effectId,
       vorgangsId: json['vorgangsId'] as String?,
       quelle: json['quelle'] as String?,
+      ziel: json['ziel'] as String?,
       zfw: (json['zfw'] as num?)?.toInt(),
       zfpStern: (json['zfpStern'] as num?)?.toInt(),
       amount: (json['amount'] as num?)?.toInt() ?? 0,
@@ -162,6 +173,7 @@ class SpellEffectInstance {
         other.effectId == effectId &&
         other.vorgangsId == vorgangsId &&
         other.quelle == quelle &&
+        other.ziel == ziel &&
         other.zfw == zfw &&
         other.zfpStern == zfpStern &&
         other.amount == amount &&
@@ -177,6 +189,7 @@ class SpellEffectInstance {
     effectId,
     vorgangsId,
     quelle,
+    ziel,
     zfw,
     zfpStern,
     amount,
