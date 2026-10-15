@@ -56,7 +56,9 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   auf `SpellEffectInstance.ziel` und wird nach dem bestätigten Wurf verbraucht
   (`fuehreGefechtsAuftragAus`), Ängste lindern geht über „In Mut-Probe
   einsetzen“ im Effektdialog. Dauern werden nur vorgeschlagen, wo das
-  Regelwerk sie eindeutig nennt; Abgelaufenes wird markiert, nie automatisch
+  Regelwerk sie eindeutig nennt (Psychostabilis: „nach AsP“ aus den
+  eingegebenen Zusatz-AsP in `amount`, 1 AsP = 1 SR; laufende Kosten gibt es
+  nicht, „(A)“ kostet nur Konzentration); Abgelaufenes wird markiert, nie automatisch
   beendet. MAG-EFF-05 (Teilstand 1): Schutzvorräte wie das Gardianum liegen in
   `SpellEffectInstance.amount` (Kapazität) und `schutzRest`; auffangen darf
   nur, was der Nutzer als direkten magischen Angriff einordnet

@@ -396,7 +396,11 @@ class SpellEffectKatalogEintrag {
     required this.hinweis,
     this.benoetigtZiel = false,
     this.benoetigtSchutzvorrat = false,
+    this.benoetigtDauerAsp = false,
   });
+
+  /// Ob die Dauer „nach AsP“ vorausbezahlt wird (Psychostabilis, LC S. 214).
+  final bool benoetigtDauerAsp;
 
   /// Ob das Profil ein festgelegtes Ziel verlangt (Falkenauge).
   final bool benoetigtZiel;
@@ -432,6 +436,7 @@ List<SpellEffectKatalogEintrag> spellEffectAuswahl(RulesCatalog katalog) {
         benoetigtZfw: profil.eingaben.contains('zfw'),
         benoetigtZiel: profil.eingaben.contains('ziel'),
         benoetigtSchutzvorrat: kSchutzAuswahlZauberIds.contains(profil.spellId),
+        benoetigtDauerAsp: profil.eingaben.contains('asp'),
         hinweis: profil.hinweis,
       ),
     );

@@ -933,4 +933,48 @@ void main() {
     // Hinweise zu den nicht eingerechneten Eigenschaften erscheinen im Dialog.
     expect(find.textContaining('MU +5'), findsOneWidget);
   });
+
+  testWidgets('Psychostabilis schlägt die Dauer aus vorausbezahlten AsP vor', (
+    tester,
+  ) async {
+    final katalog = await tester.runAsync(ladeEchtenRegelkatalog);
+    final repo = await openDialog(tester, overrides: katalog!.overrides);
+    await tester.pumpAndSettle();
+
+    Future<void> fuegeHinzu({String? asp}) async {
+      await waehleZauber(tester, 'Psychostabilis');
+      await tester.enterText(
+        find.byKey(const ValueKey<String>('spell-effect-input-zfp')),
+        '5',
+      );
+      if (asp != null) {
+        await tester.enterText(
+          find.byKey(const ValueKey<String>('spell-effect-input-dauer-asp')),
+          asp,
+        );
+      }
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(const ValueKey<String>('spell-effect-input-confirm')),
+      );
+      await tester.pumpAndSettle();
+    }
+
+    await fuegeHinzu(asp: '6');
+    await fuegeHinzu();
+
+    final zustand = (await repo.loadHeroState('demo'))!;
+    final instanzen = zustand.activeSpellEffects.instanzen
+        .where((i) => i.effectId == 'spell_psychostabilis')
+        .toList();
+    expect(instanzen, hasLength(2));
+    expect(instanzen[0].amount, 6);
+    expect(instanzen[0].duration?.amount, 6);
+    expect(instanzen[0].duration?.unit, SpellDurationUnit.spielrunden);
+    // Ohne Angabe bleibt die Dauer leer, es wird nichts geraten.
+    expect(instanzen[1].amount, 0);
+    expect(instanzen[1].duration, isNull);
+    // Es werden keine AsP abgezogen.
+    expect(zustand.currentAsp, 30);
+  });
 }

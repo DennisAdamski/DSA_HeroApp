@@ -147,11 +147,29 @@ ResolvedProbeRequest aengsteLindernProbe({
 /// - Gardianum: höchstens 1 Spielrunde (LC S. 92); der Schild löst sich
 ///   früher auf, wenn der Vorrat verbraucht ist
 ///
+/// - Psychostabilis: 1 Spielrunde je eingesetztem AsP (LC S. 214: „Kosten: 8 AsP
+///   plus 1 AsP pro SR“, Dauer „nach AsP; muss vorher festgelegt werden“). Die
+///   Dauer ist vorausbezahlt, es laufen keine Kosten nach; [zusaetzlicheAsp]
+///   sind die über die Grundkosten hinaus eingesetzten AsP. Ohne Angabe (oder
+///   0) kein Vorschlag.
+///
 /// Blitz dauert ZfW/2 Aktionen; die Rundung eines ungeraden ZfW steht nicht im
-/// Regelwerk, deshalb gibt es dort keinen Vorschlag. Psychostabilis dauert
-/// „nach AsP“ und wird vom Nutzer festgelegt. `null` = kein Vorschlag.
-SpellDuration? dauerVorschlag(String zauberId, {int? zfw, int? zfpStern}) {
+/// Regelwerk, deshalb gibt es dort keinen Vorschlag. `null` = kein Vorschlag.
+SpellDuration? dauerVorschlag(
+  String zauberId, {
+  int? zfw,
+  int? zfpStern,
+  int? zusaetzlicheAsp,
+}) {
   switch (zauberId) {
+    case kPsychostabilisZauberId:
+      if (zusaetzlicheAsp == null || zusaetzlicheAsp <= 0) {
+        return null;
+      }
+      return SpellDuration(
+        amount: zusaetzlicheAsp,
+        unit: SpellDurationUnit.spielrunden,
+      );
     case kKarnifiloZauberId:
       if (zfpStern == null || zfpStern <= 0) {
         return null;

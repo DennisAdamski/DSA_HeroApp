@@ -188,6 +188,7 @@ class _ActiveSpellEffectsDialogState
             benoetigtZfw: eintrag.benoetigtZfw,
             benoetigtZiel: eintrag.benoetigtZiel,
             benoetigtSchutzvorrat: eintrag.benoetigtSchutzvorrat,
+            benoetigtDauerAsp: eintrag.benoetigtDauerAsp,
             hinweis: eintrag.hinweis,
           ),
       ],
@@ -208,13 +209,16 @@ class _ActiveSpellEffectsDialogState
       ziel: eingabe.ziel,
       zfpStern: eingabe.zfpStern,
       zfw: eingabe.zfw,
-      amount: eingabe.kapazitaet ?? 0,
+      // Kapazität eines Schutzschilds bzw. (Psychostabilis) die vorausbezahlten
+      // Zusatz-AsP, aus denen die Dauer vorgeschlagen wird.
+      amount: eingabe.kapazitaet ?? eingabe.dauerAsp ?? 0,
       // Nur eine eindeutig belegte Dauer wird vorgeschlagen; sonst bleibt sie
       // leer und lässt sich an der Quelle festlegen.
       duration: dauerVorschlag(
         eingabe.zauberId,
         zfw: eingabe.zfw,
         zfpStern: eingabe.zfpStern,
+        zusaetzlicheAsp: eingabe.dauerAsp,
       ),
     );
     await _aendere((aktuell) => aktiviereEffektInstanz(aktuell, instanz));

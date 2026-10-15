@@ -15,7 +15,12 @@ class SpellEffectAuswahl {
     required this.hinweis,
     this.benoetigtZiel = false,
     this.benoetigtSchutzvorrat = false,
+    this.benoetigtDauerAsp = false,
   });
+
+  /// Ob die Dauer mit AsP über die Grundkosten hinaus vorausbezahlt wird
+  /// (Psychostabilis).
+  final bool benoetigtDauerAsp;
 
   /// Ob die Wirkung an ein festgelegtes Ziel gebunden ist (Falkenauge).
   final bool benoetigtZiel;
@@ -46,7 +51,12 @@ class SpellEffectEingabe {
     this.quelle,
     this.ziel,
     this.kapazitaet,
+    this.dauerAsp,
   });
+
+  /// Über die Grundkosten hinaus eingesetzte AsP, die die Dauer festlegen
+  /// (Psychostabilis: 1 AsP je Spielrunde), falls angegeben.
+  final int? dauerAsp;
 
   /// Anfangsvorrat eines Schutzschilds in TP, falls das Profil einen bildet.
   final int? kapazitaet;
@@ -106,6 +116,7 @@ class _SpellEffectInputDialogState extends State<_SpellEffectInputDialog> {
   final _quelle = TextEditingController();
   final _ziel = TextEditingController();
   final _asp = TextEditingController();
+  final _dauerAsp = TextEditingController();
   Schutzvariante _variante = Schutzvariante.kuppel;
   late SpellEffectAuswahl _gewaehlt = widget.auswahl.first;
 
@@ -116,6 +127,7 @@ class _SpellEffectInputDialogState extends State<_SpellEffectInputDialog> {
     _quelle.dispose();
     _ziel.dispose();
     _asp.dispose();
+    _dauerAsp.dispose();
     super.dispose();
   }
 
@@ -123,6 +135,8 @@ class _SpellEffectInputDialogState extends State<_SpellEffectInputDialog> {
   int? get _zfwWert => int.tryParse(_zfw.text.trim());
 
   int? get _aspWert => int.tryParse(_asp.text.trim());
+
+  int? get _dauerAspWert => int.tryParse(_dauerAsp.text.trim());
 
   /// Anfangsvorrat des Schilds aus den Eingaben; `null`, solange er nicht
   /// belegt ist. Gerechnet wird im Regelmodul.
@@ -156,6 +170,7 @@ class _SpellEffectInputDialogState extends State<_SpellEffectInputDialog> {
         quelle: quelle.isEmpty ? null : quelle,
         ziel: _gewaehlt.benoetigtZiel ? _ziel.text.trim() : null,
         kapazitaet: _gewaehlt.benoetigtSchutzvorrat ? _kapazitaet : null,
+        dauerAsp: _gewaehlt.benoetigtDauerAsp ? _dauerAspWert : null,
       ),
     );
   }
@@ -277,6 +292,20 @@ class _SpellEffectInputDialogState extends State<_SpellEffectInputDialog> {
             ),
           ],
           if (_gewaehlt.benoetigtSchutzvorrat) ..._schutzFelder(theme),
+          if (_gewaehlt.benoetigtDauerAsp) ...[
+            const SizedBox(height: kDialogFieldSpacing),
+            _zahlfeld(
+              const ValueKey<String>('spell-effect-input-dauer-asp'),
+              _dauerAsp,
+              'Über die Grundkosten hinaus eingesetzte AsP (optional)',
+            ),
+            const SizedBox(height: kDialogInlineSpacing),
+            Text(
+              'Die Dauer ist vorausbezahlt: 1 AsP entspricht 1 Spielrunde. '
+              'Die AsP werden hier nicht abgezogen.',
+              style: theme.textTheme.bodySmall,
+            ),
+          ],
           if (_gewaehlt.benoetigtZiel) ...[
             const SizedBox(height: kDialogFieldSpacing),
             TextField(
