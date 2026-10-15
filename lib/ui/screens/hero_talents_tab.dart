@@ -29,6 +29,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/meta_talent_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/wund_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/talent_herleitung_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/talent_specialization_hints.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
@@ -48,6 +49,7 @@ import 'package:dsa_heldenverwaltung/ui/screens/shared/dice_log_persistence.dart
 import 'package:dsa_heldenverwaltung/ui/screens/shared/editor_entwurf_speichern.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/probe_request_factory.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/special_ability_picker.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/talent_specialization_name_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/edit_aware_table_cell.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/erwerb_dialog.dart';
 
