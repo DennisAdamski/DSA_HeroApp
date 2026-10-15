@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'package:dsa_heldenverwaltung/rules/derived/spell_effect_protection_rules.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/config/ui_spacing.dart';
 
@@ -13,10 +14,14 @@ class SpellEffectAuswahl {
     required this.benoetigtZfw,
     required this.hinweis,
     this.benoetigtZiel = false,
+    this.benoetigtSchutzvorrat = false,
   });
 
   /// Ob die Wirkung an ein festgelegtes Ziel gebunden ist (Falkenauge).
   final bool benoetigtZiel;
+
+  /// Ob die Wirkung einen Schutzvorrat aus AsP und ZfP* bildet (Gardianum).
+  final bool benoetigtSchutzvorrat;
 
   /// Katalog-ID des Zaubers.
   final String zauberId;
@@ -40,7 +45,11 @@ class SpellEffectEingabe {
     this.zfw,
     this.quelle,
     this.ziel,
+    this.kapazitaet,
   });
+
+  /// Anfangsvorrat eines Schutzschilds in TP, falls das Profil einen bildet.
+  final int? kapazitaet;
 
   /// Ziel der Wirkung (Name des Gegners), falls das Profil eines verlangt.
   final String? ziel;
@@ -96,6 +105,8 @@ class _SpellEffectInputDialogState extends State<_SpellEffectInputDialog> {
   final _zfw = TextEditingController();
   final _quelle = TextEditingController();
   final _ziel = TextEditingController();
+  final _asp = TextEditingController();
+  Schutzvariante _variante = Schutzvariante.kuppel;
   late SpellEffectAuswahl _gewaehlt = widget.auswahl.first;
 
   @override
@@ -104,15 +115,34 @@ class _SpellEffectInputDialogState extends State<_SpellEffectInputDialog> {
     _zfw.dispose();
     _quelle.dispose();
     _ziel.dispose();
+    _asp.dispose();
     super.dispose();
   }
 
   int? get _zfpWert => int.tryParse(_zfp.text.trim());
   int? get _zfwWert => int.tryParse(_zfw.text.trim());
 
+  int? get _aspWert => int.tryParse(_asp.text.trim());
+
+  /// Anfangsvorrat des Schilds aus den Eingaben; `null`, solange er nicht
+  /// belegt ist. Gerechnet wird im Regelmodul.
+  int? get _kapazitaet {
+    final zfp = _zfpWert;
+    final asp = _aspWert;
+    if (!_gewaehlt.benoetigtSchutzvorrat || zfp == null || asp == null) {
+      return null;
+    }
+    return gardianumKapazitaet(
+      variante: _variante,
+      zfpStern: zfp,
+      investierteAsp: asp,
+    );
+  }
+
   bool get _gueltig =>
       _zfpWert != null &&
       _zfpWert! >= 0 &&
+      (!_gewaehlt.benoetigtSchutzvorrat || _kapazitaet != null) &&
       (!_gewaehlt.benoetigtZfw || (_zfwWert != null && _zfwWert! >= 0)) &&
       (!_gewaehlt.benoetigtZiel || _ziel.text.trim().isNotEmpty);
 
@@ -125,6 +155,7 @@ class _SpellEffectInputDialogState extends State<_SpellEffectInputDialog> {
         zfw: _gewaehlt.benoetigtZfw ? _zfwWert : null,
         quelle: quelle.isEmpty ? null : quelle,
         ziel: _gewaehlt.benoetigtZiel ? _ziel.text.trim() : null,
+        kapazitaet: _gewaehlt.benoetigtSchutzvorrat ? _kapazitaet : null,
       ),
     );
   }
@@ -142,6 +173,54 @@ class _SpellEffectInputDialogState extends State<_SpellEffectInputDialog> {
       ),
       onChanged: (_) => setState(() {}),
     );
+  }
+
+  /// Eingaben eines Schutzvorrats: Ausprägung und eingesetzte AsP.
+  List<Widget> _schutzFelder(ThemeData theme) {
+    final kapazitaet = _kapazitaet;
+    final hinweis = schutzvarianteHinweis(_variante, _zfwWert);
+    return [
+      const SizedBox(height: kDialogFieldSpacing),
+      SegmentedButton<Schutzvariante>(
+        key: const ValueKey<String>('spell-effect-input-variante'),
+        segments: const [
+          ButtonSegment<Schutzvariante>(
+            value: Schutzvariante.kuppel,
+            label: Text('Kuppel'),
+          ),
+          ButtonSegment<Schutzvariante>(
+            value: Schutzvariante.persoenlich,
+            label: Text('Persönlicher Schild'),
+          ),
+        ],
+        selected: <Schutzvariante>{_variante},
+        onSelectionChanged: (auswahl) =>
+            setState(() => _variante = auswahl.single),
+      ),
+      const SizedBox(height: kDialogFieldSpacing),
+      _zahlfeld(
+        const ValueKey<String>('spell-effect-input-asp'),
+        _asp,
+        'Eingesetzte AsP (mindestens $kGardianumMindestAsp)',
+      ),
+      const SizedBox(height: kDialogInlineSpacing),
+      Text(
+        kapazitaet == null
+            ? 'Schutzvorrat: ZfP* und mindestens $kGardianumMindestAsp AsP '
+                  'eintragen'
+            : 'Schutzvorrat: $kapazitaet TP',
+        key: const ValueKey<String>('spell-effect-input-kapazitaet'),
+        style: theme.textTheme.bodySmall,
+      ),
+      if (hinweis != null)
+        Text(
+          hinweis,
+          key: const ValueKey<String>('spell-effect-input-varianten-hinweis'),
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: theme.colorScheme.error,
+          ),
+        ),
+    ];
   }
 
   @override
@@ -197,6 +276,7 @@ class _SpellEffectInputDialogState extends State<_SpellEffectInputDialog> {
               'ZfW des Zaubernden',
             ),
           ],
+          if (_gewaehlt.benoetigtSchutzvorrat) ..._schutzFelder(theme),
           if (_gewaehlt.benoetigtZiel) ...[
             const SizedBox(height: kDialogFieldSpacing),
             TextField(

@@ -76,10 +76,30 @@ extension _SchadenInhalt on _SchadenPanelState {
         ? null
         : wendeSchadenAn(state, buchung).zustand;
 
+    final katalog = ref
+        .watch(heroRulesCatalogProvider(widget.heroId))
+        .asData
+        ?.value;
+    final schilde = wirksameSchutzschilde(state, katalog);
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        for (final schild in schilde)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: OutlinedButton.icon(
+              key: ValueKey<String>('schaden-schild-${schild.id}'),
+              onPressed: _schreibt ? null : () => _schildAuffangen(schild),
+              icon: const Icon(Icons.shield_outlined),
+              label: Text(
+                'Magischen Treffer auffangen · '
+                '${effektName(schild.effectId, katalog)} '
+                '(${schutzRestVon(schild)} TP)',
+              ),
+            ),
+          ),
         SegmentedButton<SchadensArt>(
           key: const ValueKey<String>('schaden-art'),
           segments: const [

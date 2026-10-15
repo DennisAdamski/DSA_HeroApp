@@ -102,4 +102,15 @@ void main() {
 
     expect(zustand.instanzen.single.quelle, 'Alrik');
   });
+
+  test('Schutzvorrat: nur bei Belegung im JSON, übersteht den Roundtrip', () {
+    const ohne = SpellEffectInstance(id: 's', effectId: 'e', amount: 12);
+    expect(ohne.toJson().containsKey('schutzRest'), isFalse);
+
+    final mit = ohne.copyWith(schutzRest: 0);
+    expect(mit.toJson()['schutzRest'], 0);
+    expect(SpellEffectInstance.fromJson(mit.toJson())!.schutzRest, 0);
+    expect(SpellEffectInstance.fromJson(mit.toJson()), mit);
+    expect(mit == ohne, isFalse);
+  });
 }

@@ -879,6 +879,7 @@ final _zustand = <_Modell>[
       zfw: 10,
       zfpStern: 5,
       amount: 2,
+      schutzRest: 1,
       attributeMods: const AttributeModifiers(mu: 1),
       duration: _dauer(),
       unterdrueckt: true,

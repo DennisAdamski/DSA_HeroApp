@@ -4,10 +4,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
+import 'package:dsa_heldenverwaltung/domain/spell_effect_instance.dart';
 import 'package:dsa_heldenverwaltung/domain/trefferzonen.dart';
 import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/probe_engine_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/schaden_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/spell_effect_instance_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/spell_effect_protection_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/trefferzonen_rules.dart';
 import 'package:dsa_heldenverwaltung/state/ablauf_providers.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
@@ -15,6 +18,7 @@ import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/config/ui_spacing.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/spell_shield_actions.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/wund_zustand_speichern.dart';
 
 part 'schaden_eingaben.dart';
@@ -43,12 +47,14 @@ class SchadenDialogErgebnis {
 /// Der Dialog schließt sich nach dem Übernehmen selbst. Wurden Wunden
 /// eingetragen, folgt die vorhandene Unterdrückungsabfrage, einmal für alle
 /// Wunden dieses Angriffs gemeinsam.
-/// [wuerfler] ersetzt in Tests die Zufallswürfe.
+/// [wuerfler] ersetzt in Tests die Zufallswürfe; [anfangsTp] belegt das
+/// TP-Feld vor, etwa mit dem Durchschlag eines Zauberschilds.
 Future<void> showSchadenDialog({
   required BuildContext context,
   required WidgetRef ref,
   required String heroId,
   DiceRoller? wuerfler,
+  int? anfangsTp,
 }) async {
   final ergebnis = await showAdaptiveDetailSheet<SchadenDialogErgebnis>(
     context: context,
@@ -61,6 +67,7 @@ Future<void> showSchadenDialog({
           child: SchadenPanel(
             heroId: heroId,
             wuerfler: wuerfler,
+            anfangsTp: anfangsTp,
             onUebernommen: (ergebnis) =>
                 Navigator.of(sheetContext).pop(ergebnis),
           ),
@@ -107,7 +114,11 @@ class SchadenPanel extends ConsumerStatefulWidget {
     required this.heroId,
     required this.onUebernommen,
     this.wuerfler,
+    this.anfangsTp,
   });
+
+  /// Vorbelegung des TP-Felds; `null` = leer.
+  final int? anfangsTp;
 
   /// Held, dem der Schaden gebucht wird.
   final String heroId;
@@ -126,7 +137,9 @@ class _SchadenPanelState extends ConsumerState<SchadenPanel> {
   late final DiceRoller _wuerfler = widget.wuerfler ?? RandomDiceRoller();
 
   SchadensArt _art = SchadensArt.lebensenergie;
-  final TextEditingController _tp = TextEditingController();
+  late final TextEditingController _tp = TextEditingController(
+    text: widget.anfangsTp == null ? '' : '${widget.anfangsTp}',
+  );
   TextEditingController? _rs;
   final TextEditingController _wsMod = TextEditingController(text: '0');
   final TextEditingController _w20 = TextEditingController();
@@ -218,6 +231,31 @@ class _SchadenPanelState extends ConsumerState<SchadenPanel> {
   }
 
   void _neuZeichnen() => setState(() {});
+
+  // Ein Zauberschild nimmt einen direkten magischen Treffer vorab auf; der
+  // Durchschlag ersetzt die TP dieses Dialogs. Welcher Treffer magisch ist,
+  // entscheidet der Nutzer mit dem Knopf, nicht die App.
+  Future<void> _schildAuffangen(SpellEffectInstance schild) async {
+    final katalog = ref
+        .read(heroRulesCatalogProvider(widget.heroId))
+        .asData
+        ?.value;
+    final ergebnis = await fangeTrefferMitSchildAuf(
+      context: context,
+      ref: ref,
+      heroId: widget.heroId,
+      instanz: schild,
+      schildName: effektName(schild.effectId, katalog),
+      vorbelegtTp: _zahl(_tp),
+    );
+    if (ergebnis == null || !mounted) {
+      return;
+    }
+    setState(() {
+      _tp.text = '${ergebnis.durchschlag}';
+      _wundenUeberschrieben = null;
+    });
+  }
 
   TextEditingController _zusatzFeld(String situation, String label) {
     return _zusatz.putIfAbsent('$situation#$label', TextEditingController.new);

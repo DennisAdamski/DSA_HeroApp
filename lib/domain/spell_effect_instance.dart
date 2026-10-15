@@ -25,6 +25,7 @@ class SpellEffectInstance {
     this.zfw,
     this.zfpStern,
     this.amount = 0,
+    this.schutzRest,
     this.attributeMods = const AttributeModifiers(),
     this.duration,
     this.unterdrueckt = false,
@@ -57,8 +58,14 @@ class SpellEffectInstance {
   /// ZfP* der Probe, falls bekannt.
   final int? zfpStern;
 
-  /// Profilspezifischer Zahlenwert (z. B. RS beim Armatrutz).
+  /// Profilspezifischer Zahlenwert (z. B. RS beim Armatrutz, bei einem
+  /// Schutzvorrat die Anfangskapazität).
   final int amount;
+
+  /// Verbleibender Schutzvorrat eines Schildzaubers (Gardianum); `null` =
+  /// noch unberührt, der Vorrat entspricht dann [amount]. Wird nur durch
+  /// bestätigte Auffangvorgänge verändert (MAG-EFF-05).
+  final int? schutzRest;
 
   /// Eigenschaftsboni dieser Quelle (nur Attributo).
   final AttributeModifiers attributeMods;
@@ -83,6 +90,7 @@ class SpellEffectInstance {
     'zfw',
     'zfpStern',
     'amount',
+    'schutzRest',
     'attributeMods',
     'duration',
     'unterdrueckt',
@@ -98,6 +106,7 @@ class SpellEffectInstance {
     int? zfw,
     int? zfpStern,
     int? amount,
+    int? schutzRest,
     AttributeModifiers? attributeMods,
     SpellDuration? duration,
     bool clearDuration = false,
@@ -113,6 +122,7 @@ class SpellEffectInstance {
       zfw: zfw ?? this.zfw,
       zfpStern: zfpStern ?? this.zfpStern,
       amount: amount ?? this.amount,
+      schutzRest: schutzRest ?? this.schutzRest,
       attributeMods: attributeMods ?? this.attributeMods,
       duration: clearDuration ? null : (duration ?? this.duration),
       unterdrueckt: unterdrueckt ?? this.unterdrueckt,
@@ -131,6 +141,7 @@ class SpellEffectInstance {
       if (zfw != null) 'zfw': zfw,
       if (zfpStern != null) 'zfpStern': zfpStern,
       'amount': amount,
+      if (schutzRest != null) 'schutzRest': schutzRest,
       'attributeMods': attributeMods.toJson(),
       if (duration != null) 'duration': duration!.toJson(),
       if (unterdrueckt) 'unterdrueckt': true,
@@ -155,6 +166,7 @@ class SpellEffectInstance {
       zfw: (json['zfw'] as num?)?.toInt(),
       zfpStern: (json['zfpStern'] as num?)?.toInt(),
       amount: (json['amount'] as num?)?.toInt() ?? 0,
+      schutzRest: (json['schutzRest'] as num?)?.toInt(),
       attributeMods: rawMods == null
           ? const AttributeModifiers()
           : AttributeModifiers.fromJson(rawMods),
@@ -177,6 +189,7 @@ class SpellEffectInstance {
         other.zfw == zfw &&
         other.zfpStern == zfpStern &&
         other.amount == amount &&
+        other.schutzRest == schutzRest &&
         other.duration == duration &&
         other.unterdrueckt == unterdrueckt &&
         _mods(other.attributeMods) == _mods(attributeMods) &&
@@ -193,6 +206,7 @@ class SpellEffectInstance {
     zfw,
     zfpStern,
     amount,
+    schutzRest,
     duration,
     unterdrueckt,
     _mods(attributeMods),
