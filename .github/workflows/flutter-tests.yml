@@ -32,6 +32,30 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  feedback-backend:
+    name: Feedback-Backend
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Repository auschecken
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+
+      - name: Node.js 22 einrichten
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: functions/package-lock.json
+
+      - name: Backend installieren, testen und bauen
+        working-directory: functions
+        run: |
+          npm ci
+          npm test
+          npm run build
+
   analyze:
     name: Statische Analyse & Lint
     runs-on: ubuntu-latest
@@ -140,7 +164,7 @@ jobs:
   deploy:
     name: Firebase Hosting veröffentlichen
     if: github.event_name == 'push' && (inputs.branch == '' || inputs.branch == 'test')
-    needs: [analyze, test, loc-budget, web-build]
+    needs: [feedback-backend, analyze, test, loc-budget, web-build]
     runs-on: ubuntu-latest
     # Serialisierung verhindert parallele Veröffentlichungen auf dieselbe Site.
     concurrency:
