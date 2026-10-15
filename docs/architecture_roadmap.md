@@ -21,7 +21,9 @@ Ist-Zustand erneut prüfen und den konkreten Teilumfang festlegen.
   Effektinstanzen, danach Probenboni und empfangene Kampf-Mali.
   **Status: MAG-EFF-01 umgesetzt (14.10.2026) — Zauberprofile als
   `spell_effects.json` mit Validierung und Bestandsprotokoll, noch ohne
-  Zahlenwirkung; MAG-EFF-02 bis 06 geplant.** Befund: Armatrutz kennt die
+  Zahlenwirkung; MAG-EFF-02 im Kern umgesetzt (15.10.2026) — quellenbezogene
+  `SpellEffectInstance`, Attributo als mehrere Quellen, Rest siehe
+  Integrationsplan; MAG-EFF-03 bis 06 geplant.** Befund: Armatrutz kennt die
   Regelgrenze ZfW/2 nicht, bei Axxeleratus fehlt nur die Athletik-Verdopplung
   für Sprints und Sprünge (Details im Integrationsplan).
   ARCH-04 liefert gemeinsame Herleitungen; ARCH-05/06 bilden die Grundlage

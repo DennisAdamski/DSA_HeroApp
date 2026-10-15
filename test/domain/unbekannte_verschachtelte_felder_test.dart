@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:dsa_heldenverwaltung/domain/begleiter_zustand.dart';
 import 'package:dsa_heldenverwaltung/domain/abgelegter_kampfgegenstand.dart';
 import 'package:dsa_heldenverwaltung/domain/active_spell_effects_state.dart';
+import 'package:dsa_heldenverwaltung/domain/spell_effect_instance.dart';
 import 'package:dsa_heldenverwaltung/domain/artefakt_daten.dart';
 import 'package:dsa_heldenverwaltung/domain/attribute_modifiers.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
@@ -865,6 +866,26 @@ final _zustand = <_Modell>[
         ActiveSpellEffectsState.fromJson(json).withToggled('e2', true).toJson(),
     unbekannt: (json) =>
         ActiveSpellEffectsState.fromJson(json).unbekannteFelder,
+  ),
+  _Modell(
+    'SpellEffectInstance',
+    schluessel: SpellEffectInstance.jsonSchluessel,
+    voll: () => SpellEffectInstance(
+      id: 'i1',
+      effectId: 'e1',
+      vorgangsId: 'v1',
+      quelle: 'Q',
+      zfw: 10,
+      zfpStern: 5,
+      amount: 2,
+      attributeMods: const AttributeModifiers(mu: 1),
+      duration: _dauer(),
+      unterdrueckt: true,
+    ).toJson(),
+    lade: (json) => SpellEffectInstance.fromJson(json)!.toJson(),
+    bearbeite: (json) =>
+        SpellEffectInstance.fromJson(json)!.copyWith(amount: 3).toJson(),
+    unbekannt: (json) => SpellEffectInstance.fromJson(json)!.unbekannteFelder,
   ),
   _Modell(
     'ActiveSpellEffectDetail',

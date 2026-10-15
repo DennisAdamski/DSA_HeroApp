@@ -31,7 +31,17 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   folgen erst in MAG-EFF-03. `spell_effect_profile_rules.dart` validiert
   (Zauber-ID existiert, Beleg gesetzt, Bestandsprofile nennen ihre
   Legacy-`effect_spell_*`-ID) und `istAutomatisiert` bremst unbelegte Profile.
-  Noch keine Laufzeitmodelle am Helden; vor MAG-EFF-02 Migration prüfen.
+  MAG-EFF-02 (Kern): `SpellEffectInstance` (`lib/domain/spell_effect_instance.dart`)
+  in `ActiveSpellEffectsState.instanzen` (nur bei Belegung im JSON) trägt
+  mehrere Quellen je Zauber; die drei Legacy-IDs bleiben unverändert und
+  erscheinen nur als abgeleitete Instanzen (`aktiveEffektInstanzen`). Eigenschaften
+  rechnen **nur** über `effektiveTempAttributeMods`
+  (`spell_effect_instance_rules.dart`), nie über `tempAttributeMods` allein;
+  Beenden einer Quelle entfernt nur sie. Tischregel: bei mehreren Attributo
+  zählt je Eigenschaft nur der **beste** Wert (nicht Summe). „(A)“ in
+  `SpellDef.duration` = aufrechterhalten (`aufrechterhaltungsBefund`); der
+  Gefecht-Wirkdialog belegt die Anzahl daraus nur vor. Instanzen anderer Profile rechnen
+  noch keine Zahlen (MAG-EFF-03).
 - `README.md` beschreibt Produktumfang, Architekturueberblick und Standard-Workflows.
 - `tool/sync_main_to_test.sh` mergt Main in Test;
   `tool/test_main_test_sync.py` sichert Erhalt, Konflikte und Wiederholungen ab.

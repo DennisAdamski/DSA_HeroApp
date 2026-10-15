@@ -13,6 +13,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/gefecht_ablauf_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_held_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_wirken_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_magie_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/spell_effect_instance_rules.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_gefechts_adapter.dart';
 
 import 'gefecht_wirkdialog.dart';
@@ -38,6 +39,10 @@ Future<void> zeigeGefechtsWirken({
       zustand: s,
       zauber: zauber,
       talent: talent,
+      aufrechterhaltenVorschlag: aufrechterhaltungsBefund(
+        snapshot.state,
+        ref.read(heroRulesCatalogProvider(heroId)).asData?.value,
+      ).anzahl,
       talentBeOverride: ref.read(talentBeOverrideProvider(heroId)),
       epicAdvantagesActive: ref.read(heroEpicAdvantagesActiveProvider(heroId)),
     ),

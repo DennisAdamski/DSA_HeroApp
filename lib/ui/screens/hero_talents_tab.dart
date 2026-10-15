@@ -3,6 +3,7 @@ import 'package:dsa_heldenverwaltung/ui/screens/shared/planung_bearbeiten_guard.
 import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/spell_effect_instance_rules.dart';
 
 import 'package:dsa_heldenverwaltung/catalog/house_rule_provenance.dart';
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
@@ -283,7 +284,7 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
           final effectiveAttributes = widget.scope == _TalentTabScope.nonCombat
               ? computeEffectiveAttributes(
                   hero,
-                  tempAttributeMods: state.tempAttributeMods,
+                  tempAttributeMods: effektiveTempAttributeMods(state),
                   catalog: catalog,
                 )
               : null;

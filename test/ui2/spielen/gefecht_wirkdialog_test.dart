@@ -84,4 +84,75 @@ void main() {
       }
     }
   }
+
+  for (final (bestaetigt, vorschlag, erwartet) in [
+    (0, 2, '2'),
+    (1, 2, '2'),
+    (3, 2, '3'),
+    (0, 0, '0'),
+  ]) {
+    testWidgets(
+      'Aufrechterhalten: bestätigt $bestaetigt, Vorschlag $vorschlag → $erwartet',
+      (tester) async {
+        tester.view.physicalSize = const Size(820, 1400);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+        final zauber = SpellDef.fromJson({
+          'id': 's',
+          'name': 'Blitz',
+          'attributes': ['MU', 'KL', 'IN'],
+          'castingTime': '5 Aktionen',
+          'aspCost': '7 AsP',
+        });
+        final snapshot = buildHeroComputedSnapshot(
+          hero: testHero().copyWith(
+            spells: {
+              's': const HeroSpellEntry(
+                spellValue: 9,
+                learnedRepresentation: 'Mag',
+              ),
+            },
+          ),
+          state: const HeroState(
+            currentLep: 30,
+            currentAsp: 20,
+            currentKap: 15,
+            currentAu: 30,
+          ),
+          catalog: testCatalog,
+          epicAdvantagesActive: false,
+        );
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: GefechtWirkdialog(
+                snapshot: snapshot,
+                zustand: Gefechtszustand(
+                  iniWurf: 6,
+                  aufrechterhalteneZauber: bestaetigt,
+                ),
+                zauber: zauber,
+                aufrechterhaltenVorschlag: vorschlag,
+              ),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.text(erwartet), findsWidgets);
+        expect(
+          find.byKey(const ValueKey<String>('gefecht-aufrecht-vorschlag')),
+          vorschlag > 0 ? findsOneWidget : findsNothing,
+        );
+        // Der Vorschlag fließt in den automatischen Zuschlag (3 je Zauber).
+        expect(
+          find.textContaining(
+            'Aufrechterhalten-Mali: +${int.parse(erwartet) * 3}',
+          ),
+          findsOneWidget,
+        );
+      },
+    );
+  }
 }

@@ -4,6 +4,7 @@ import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/spell_effect_instance_rules.dart';
 
 import 'basiswert_herleitung_rules.dart';
 import 'derived_stats.dart';
@@ -84,7 +85,7 @@ HeroStatInputs computeHeroStatInputs({
           eigene: hero.attributeModifiers,
           textAufteilung: herkunftsEigenschaftQuellen(breakdown),
           inventar: inventoryMods.attributeMods,
-          temporaer: mitTemporaer ? state.tempAttributeMods : null,
+          temporaer: mitTemporaer ? effektiveTempAttributeMods(state) : null,
         ),
       );
   final permanent = eigenschaften(mitTemporaer: false)
