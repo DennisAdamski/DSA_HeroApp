@@ -43,6 +43,13 @@ const Set<String> kEinmaligeAuswahlZauberIds = <String>{
   'spell_aengste_lindern',
 };
 
+/// Schutzzauber mit Vorrat, die `spell_effect_protection_rules.dart`
+/// auswertet; hier nur für die Auswahlliste gespiegelt (ein Test hält beide
+/// Listen gleich).
+const Set<String> kSchutzAuswahlZauberIds = <String>{
+  'spell_gardianum_zauberschild',
+};
+
 /// Zauber, die dieses Modul rechnet.
 const Set<String> kRechenbareZauberIds = <String>{
   kBlitzZauberId,
@@ -336,10 +343,14 @@ class SpellEffectKatalogEintrag {
     required this.benoetigtZfw,
     required this.hinweis,
     this.benoetigtZiel = false,
+    this.benoetigtSchutzvorrat = false,
   });
 
   /// Ob das Profil ein festgelegtes Ziel verlangt (Falkenauge).
   final bool benoetigtZiel;
+
+  /// Ob die Wirkung einen Schutzvorrat aus AsP und ZfP* bildet (Gardianum).
+  final bool benoetigtSchutzvorrat;
 
   /// Katalog-ID des Zaubers.
   final String zauberId;
@@ -368,6 +379,7 @@ List<SpellEffectKatalogEintrag> spellEffectAuswahl(RulesCatalog katalog) {
         name: _zauberName(katalog, profil.spellId),
         benoetigtZfw: profil.eingaben.contains('zfw'),
         benoetigtZiel: profil.eingaben.contains('ziel'),
+        benoetigtSchutzvorrat: kSchutzAuswahlZauberIds.contains(profil.spellId),
         hinweis: profil.hinweis,
       ),
     );
@@ -378,5 +390,6 @@ List<SpellEffectKatalogEintrag> spellEffectAuswahl(RulesCatalog katalog) {
 /// Profile, deren Instanzen dieses Modul in Zahlen umsetzt.
 bool istRechenbaresProfil(SpellEffectProfile profil) =>
     (kRechenbareZauberIds.contains(profil.spellId) ||
-        kEinmaligeAuswahlZauberIds.contains(profil.spellId)) &&
+        kEinmaligeAuswahlZauberIds.contains(profil.spellId) ||
+        kSchutzAuswahlZauberIds.contains(profil.spellId)) &&
     istAutomatisiert(profil);

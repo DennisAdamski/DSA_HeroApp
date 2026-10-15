@@ -7,6 +7,7 @@ import 'package:dsa_heldenverwaltung/domain/spell_effect_instance.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/probe_request_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/spell_effect_combat_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/spell_effect_profile_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/spell_effect_protection_rules.dart';
 
 // Einmalige, zielgebundene Zauberwirkungen und ihr Verbrauch (MAG-EFF-04).
 //
@@ -141,6 +142,8 @@ ResolvedProbeRequest aengsteLindernProbe({
 /// - Plumbumbarum: 5 Kampfrunden (LC S. 211)
 /// - Adlerauge: 1 Spielrunde (LC S. 15)
 /// - Falkenauge: ZfW Kampfrunden (LC S. 84) – ohne ZfW kein Vorschlag
+/// - Gardianum: höchstens 1 Spielrunde (LC S. 92); der Schild löst sich
+///   früher auf, wenn der Vorrat verbraucht ist
 ///
 /// Blitz dauert ZfW/2 Aktionen; die Rundung eines ungeraden ZfW steht nicht im
 /// Regelwerk, deshalb gibt es dort keinen Vorschlag. Psychostabilis dauert
@@ -150,6 +153,8 @@ SpellDuration? dauerVorschlag(String zauberId, {int? zfw}) {
     case kPlumbumbarumZauberId:
       return SpellDuration(amount: 5, unit: SpellDurationUnit.kampfrunden);
     case kAdlerAugeZauberId:
+      return SpellDuration(amount: 1, unit: SpellDurationUnit.spielrunden);
+    case kGardianumZauberId:
       return SpellDuration(amount: 1, unit: SpellDurationUnit.spielrunden);
     case kFalkenaugeZauberId:
       if (zfw == null || zfw <= 0) {

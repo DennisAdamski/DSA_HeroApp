@@ -14,6 +14,9 @@ import 'package:dsa_heldenverwaltung/rules/derived/active_spell_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/active_spell_state_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/spell_effect_combat_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/spell_effect_event_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/spell_effect_protection_rules.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/spell_shield_actions.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/workspace/schaden/schaden_dialog.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_begegnung_provider.dart';
 import 'package:dsa_heldenverwaltung/domain/spell_duration.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/dice_log_persistence.dart';
@@ -182,6 +185,7 @@ class _ActiveSpellEffectsDialogState
             name: eintrag.name,
             benoetigtZfw: eintrag.benoetigtZfw,
             benoetigtZiel: eintrag.benoetigtZiel,
+            benoetigtSchutzvorrat: eintrag.benoetigtSchutzvorrat,
             hinweis: eintrag.hinweis,
           ),
       ],
@@ -202,6 +206,7 @@ class _ActiveSpellEffectsDialogState
       ziel: eingabe.ziel,
       zfpStern: eingabe.zfpStern,
       zfw: eingabe.zfw,
+      amount: eingabe.kapazitaet ?? 0,
       // Nur eine eindeutig belegte Dauer wird vorgeschlagen; sonst bleibt sie
       // leer und lässt sich an der Quelle festlegen.
       duration: dauerVorschlag(eingabe.zauberId, zfw: eingabe.zfw),
@@ -264,6 +269,68 @@ class _ActiveSpellEffectsDialogState
         );
       },
     );
+  }
+
+  /// Lässt einen Zauberschild einen direkten magischen Treffer auffangen und
+  /// bietet den Durchschlag anschließend als Schaden an.
+  Future<void> _schildAuffangen(SpellEffectInstance instanz) async {
+    final ergebnis = await fangeTrefferMitSchildAuf(
+      context: context,
+      ref: ref,
+      heroId: widget.heroId,
+      instanz: instanz,
+      schildName: effektName(
+        instanz.effectId,
+        ref.read(heroRulesCatalogProvider(widget.heroId)).asData?.value,
+      ),
+    );
+    if (ergebnis == null || !mounted) {
+      return;
+    }
+    final schadenBuchen = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        key: const ValueKey<String>('schild-auffang-ergebnis'),
+        title: const Text('Treffer aufgefangen'),
+        content: Text(
+          'Der Schild nimmt ${ergebnis.aufgefangen} TP auf. '
+          '${ergebnis.durchschlag > 0 ? 'Durchschlag: ${ergebnis.durchschlag} TP.' : 'Kein Durchschlag.'}',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Schließen'),
+          ),
+          if (ergebnis.durchschlag > 0)
+            FilledButton(
+              key: const ValueKey<String>('schild-durchschlag-buchen'),
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: const Text('Durchschlag als Schaden buchen'),
+            ),
+        ],
+      ),
+    );
+    if (schadenBuchen != true || !mounted) {
+      return;
+    }
+    await showSchadenDialog(
+      context: context,
+      ref: ref,
+      heroId: widget.heroId,
+      anfangsTp: ergebnis.durchschlag,
+    );
+  }
+
+  /// Korrigiert den Schutzvorrat eines Zauberschilds.
+  Future<void> _schutzRestAnpassen(SpellEffectInstance instanz) async {
+    final rest = await fragePasseSchutzRestAn(
+      context: context,
+      instanz: instanz,
+    );
+    if (rest == null || !mounted) {
+      return;
+    }
+    await _aendere((aktuell) => setzeSchutzRest(aktuell, instanz.id, rest));
   }
 
   /// Führt die alten Attributo-Boni auf ausdrücklichen Wunsch als Quelle.
@@ -395,8 +462,17 @@ class _ActiveSpellEffectsDialogState
           onEditDuration: () => _dauerDerQuelle(instanzen[i]),
           onEinsetzen: instanzen[i].effectId == kAengsteLindernZauberId
               ? () => _aengsteEinsetzen(instanzen[i])
+              : kSchutzZauberIds.contains(instanzen[i].effectId) &&
+                    !instanzen[i].unterdrueckt &&
+                    schutzRestVon(instanzen[i]) > 0
+              ? () => _schildAuffangen(instanzen[i])
               : null,
-          einsetzenLabel: 'In Mut-Probe einsetzen',
+          einsetzenLabel: kSchutzZauberIds.contains(instanzen[i].effectId)
+              ? 'Magischen Treffer auffangen'
+              : 'In Mut-Probe einsetzen',
+          onEditSchutz: kSchutzZauberIds.contains(instanzen[i].effectId)
+              ? () => _schutzRestAnpassen(instanzen[i])
+              : null,
           onBeenden: () => _aendere(
             (aktuell) => beendeEffektInstanz(aktuell, instanzen[i].id),
           ),

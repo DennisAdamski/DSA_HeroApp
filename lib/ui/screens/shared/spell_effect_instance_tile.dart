@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:dsa_heldenverwaltung/domain/spell_effect_instance.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/spell_duration_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/spell_effect_instance_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/spell_effect_protection_rules.dart';
 import 'package:dsa_heldenverwaltung/ui/config/ui_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/list_tile_material.dart';
 
@@ -24,6 +25,7 @@ class SpellEffectInstanceTile extends StatelessWidget {
     this.onEditDuration,
     this.onEinsetzen,
     this.einsetzenLabel = 'Einsetzen',
+    this.onEditSchutz,
   });
 
   /// Anzuzeigende Instanz.
@@ -57,6 +59,9 @@ class SpellEffectInstanceTile extends StatelessWidget {
   /// Beschriftung des Einsetzen-Knopfs.
   final String einsetzenLabel;
 
+  /// Öffnet die Korrektur des Schutzvorrats; `null` blendet den Knopf aus.
+  final VoidCallback? onEditSchutz;
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -84,6 +89,8 @@ class SpellEffectInstanceTile extends StatelessWidget {
                   if (instanz.quelle != null) 'Quelle: ${instanz.quelle}',
                   if (instanz.ziel != null) 'Ziel: ${instanz.ziel}',
                   if (beschreibung.isNotEmpty) beschreibung,
+                  if (kSchutzZauberIds.contains(instanz.effectId))
+                    beschreibeSchutzVorrat(instanz),
                   if (instanz.unterdrueckt) 'unterdrückt',
                   if (ueberlagert.isNotEmpty)
                     'zählt nicht für ${ueberlagert.join(', ')} (bessere Quelle)',
@@ -136,6 +143,14 @@ class SpellEffectInstanceTile extends StatelessWidget {
                   onPressed: kannZaehlen ? onAdvanceDuration : null,
                   icon: const Icon(Icons.exposure_minus_1, size: 18),
                 ),
+                if (onEditSchutz != null)
+                  IconButton(
+                    key: ValueKey<String>('spell-instance-schutz-edit-$id'),
+                    tooltip: 'Schutzvorrat anpassen',
+                    visualDensity: VisualDensity.compact,
+                    onPressed: onEditSchutz,
+                    icon: const Icon(Icons.shield_outlined, size: 18),
+                  ),
                 if (onEditDuration != null)
                   IconButton(
                     key: ValueKey<String>('spell-instance-dauer-edit-$id'),

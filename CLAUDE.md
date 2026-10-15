@@ -57,7 +57,12 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   (`fuehreGefechtsAuftragAus`), Ängste lindern geht über „In Mut-Probe
   einsetzen“ im Effektdialog. Dauern werden nur vorgeschlagen, wo das
   Regelwerk sie eindeutig nennt; Abgelaufenes wird markiert, nie automatisch
-  beendet.
+  beendet. MAG-EFF-05 (Teilstand 1): Schutzvorräte wie das Gardianum liegen in
+  `SpellEffectInstance.amount` (Kapazität) und `schutzRest`; auffangen darf
+  nur, was der Nutzer als direkten magischen Angriff einordnet
+  (`spell_effect_protection_rules.dart`, `fangeMagischenSchadenAuf` mit
+  erwartetem Restvorrat gegen Doppelbuchung); der Durchschlag geht in den
+  Schadensdialog, ein aufgezehrter Schild bleibt bis zum Beenden am Tisch.
 - `README.md` beschreibt Produktumfang, Architekturueberblick und Standard-Workflows.
 - `tool/sync_main_to_test.sh` mergt Main in Test;
   `tool/test_main_test_sync.py` sichert Erhalt, Konflikte und Wiederholungen ab.
