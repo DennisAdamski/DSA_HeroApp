@@ -30,6 +30,15 @@ const String kAdlerAugeZauberId = 'spell_adlerauge_luchsenohr';
 /// Zauber-ID des Psychostabilis.
 const String kPsychostabilisZauberId = 'spell_psychostabilis';
 
+/// Zauber-ID des Karnifilo Raserei.
+const String kKarnifiloZauberId = 'spell_karnifilo_raserei';
+
+/// Zauber-ID der Seidenzunge Elfenwort.
+const String kSeidenzungeZauberId = 'spell_seidenzunge_elfenwort';
+
+/// Name des Talents, das die Seidenzunge erleichtert.
+const String kUeberredenTalentName = 'Überreden';
+
 /// Name des Talents, das das Adlerauge erleichtert. Das Regelwerk schreibt
 /// „Sinnenschärfe“; der Katalog führt es als „Sinnesschärfe“ (maßgeblich, ein
 /// Test sichert den Namen gegen den echten Katalog).
@@ -56,6 +65,8 @@ const Set<String> kRechenbareZauberIds = <String>{
   kPlumbumbarumZauberId,
   kAdlerAugeZauberId,
   kPsychostabilisZauberId,
+  kKarnifiloZauberId,
+  kSeidenzungeZauberId,
 };
 
 /// Ein Beitrag zu Proben, der von einer laufenden Zauberwirkung stammt.
@@ -282,6 +293,47 @@ SpellEffectBeitraege berechneSpellEffectBeitraege({
             ),
           );
         }
+      case kKarnifiloZauberId:
+        // Feste Zahlen (LC S. 136): AT-Basis +5, PA-Basis −5. Sie ersetzen die
+        // Neuberechnung aus den veränderten Eigenschaften.
+        quellen.add(
+          StatModifikatorQuelle(
+            bezeichnung: name,
+            mods: const StatModifiers(at: 5, pa: -5),
+            quelle: 'Zaubereffekt (Kampfrausch, fest laut Regelwerk)',
+          ),
+        );
+        hinweise
+          ..add(
+            '$name: MU +5, KK +5, KL −5 und CH −5 sind nicht eingerechnet. '
+            'AT und PA gelten laut Regelwerk fest und werden daraus nicht '
+            'neu berechnet; die TP können durch KK +5 steigen – bei Bedarf '
+            'von Hand eintragen.',
+          )
+          ..add(
+            '$name: erlaubt sind nur gewöhnliche AT/PA sowie Ausweichen, '
+            'Befreiungsschlag, Hammerschlag, Niederwerfen, Schildparade, '
+            'Sturmangriff und Wuchtschlag. Wunden und LeP-/AuP-Verlust '
+            'behindern den Rasenden nicht (keine AT/PA-Einbußen durch '
+            'Wunden). Danach AuP 0 und ZfP*/2 Erschöpfung; sind alle Gegner '
+            'besiegt, greift er Gefährten an.',
+          );
+      case kSeidenzungeZauberId:
+        // Der Meister darf Überreden-Proben um ZfP* erleichtern (LC S. 237);
+        // der Wert ist ein Startwert im Probendialog.
+        if (staerke > 0) {
+          proben.add(
+            SpellEffectProbenBeitrag(
+              bezeichnung: name,
+              wert: staerke,
+              talentName: kUeberredenTalentName,
+            ),
+          );
+        }
+        hinweise.add(
+          '$name: Erleichterung von Überreden um ZfP* nach Meisterentscheid; '
+          'bei zu dick aufgetragenen Lügen kann sie entfallen.',
+        );
       case kPsychostabilisZauberId:
         quellen.add(
           StatModifikatorQuelle(

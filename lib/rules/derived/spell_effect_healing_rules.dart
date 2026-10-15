@@ -15,7 +15,8 @@ import 'package:dsa_heldenverwaltung/rules/derived/ressourcen_aenderung_rules.da
 // Gebucht wird in einem Zustandsdokument mit einer `ZustandsBuchung`, die
 // dieselbe Vorgangs-ID nie zweimal anwendet.
 //
-// Belege: Liber Cantiones S. 37 (Balsam Salabunde), S. 117 (Hexenspeichel).
+// Belege: Liber Cantiones S. 37 (Balsam Salabunde), S. 117 (Hexenspeichel),
+// S. 151 (Lach dich gesund).
 
 /// Zauber-ID des Balsam Salabunde.
 const String kBalsamZauberId = 'spell_balsam_salabunde';
@@ -23,10 +24,14 @@ const String kBalsamZauberId = 'spell_balsam_salabunde';
 /// Zauber-ID des Hexenspeichels.
 const String kHexenspeichelZauberId = 'spell_hexenspeichel';
 
+/// Zauber-ID von Lach dich gesund.
+const String kLachDichGesundZauberId = 'spell_lach_dich_gesund';
+
 /// Heilzauber, die dieses Modul rechnet.
 const Set<String> kHeilZauberIds = <String>{
   kBalsamZauberId,
   kHexenspeichelZauberId,
+  kLachDichGesundZauberId,
 };
 
 /// Mindestkosten des Balsam in AsP.
@@ -56,6 +61,7 @@ class HeilEingabe {
     required this.zauberId,
     required this.asp,
     required this.zfw,
+    this.zfpStern = 0,
     this.schaden = HeilSchaden.wunde,
     this.wundheilungAngesagt = false,
     this.zone,
@@ -71,6 +77,9 @@ class HeilEingabe {
 
   /// ZfW des Zaubernden.
   final int zfw;
+
+  /// ZfP* des Zaubernden (nur Lach dich gesund: so viele LeP kommen zurück).
+  final int zfpStern;
 
   /// Herkunft des LeP-Verlusts (nur Hexenspeichel).
   final HeilSchaden schaden;
@@ -124,6 +133,8 @@ class HeilPruefung {
 /// unzulässiger AsP-Zahl (Grund dann in [pruefeHeilung]).
 int? _zurueckgegebeneLep(HeilEingabe e) {
   switch (e.zauberId) {
+    case kLachDichGesundZauberId:
+      return e.zfpStern;
     case kBalsamZauberId:
       return e.asp;
     case kHexenspeichelZauberId:
@@ -151,10 +162,28 @@ HeilPruefung pruefeHeilung(
     return const HeilPruefung(fehler: <String>['Unbekannter Heilzauber.']);
   }
   final balsam = eingabe.zauberId == kBalsamZauberId;
-  if (eingabe.zfw < 1) {
+  final lach = eingabe.zauberId == kLachDichGesundZauberId;
+  if (!lach && eingabe.zfw < 1) {
     fehler.add('ZfW des Zaubernden eintragen.');
   }
-  if (balsam) {
+  if (lach) {
+    if (eingabe.zfpStern < 1) {
+      fehler.add('ZfP* des Zaubernden eintragen.');
+    }
+    if (eingabe.selbstGewirkt) {
+      fehler.add('Lach dich gesund wirkt nie auf die Zaubernde selbst.');
+    }
+    hinweise
+      ..add(
+        'Der Patient regeneriert die LeP über die Zeit (eine Spielrunde je '
+        'Punkt); gebucht wird die gesamte Heilung auf einmal.',
+      )
+      ..add(
+        'Misslingt die Probe, bringt der Zauber nur 1W3 LeP: diesen Wurf als '
+        'ZfP* eintragen. Die Zaubernde zahlt so viele AsP wie LeP '
+        'zurückkommen.',
+      );
+  } else if (balsam) {
     if (eingabe.asp < kBalsamMindestAsp) {
       fehler.add('Balsam kostet mindestens $kBalsamMindestAsp AsP.');
     } else if (eingabe.zfw >= 1 && eingabe.asp > 2 * eingabe.zfw) {
@@ -192,8 +221,8 @@ HeilPruefung pruefeHeilung(
       'von Hand anpassen.',
     );
   }
-  final kosten = eingabe.asp;
-  if (eingabe.selbstGewirkt && zustand.currentAsp < kosten) {
+  final kosten = lach ? 0 : eingabe.asp;
+  if (eingabe.selbstGewirkt && !lach && zustand.currentAsp < kosten) {
     fehler.add(
       'Zu wenige AsP: ${zustand.currentAsp} vorhanden, $kosten nötig.',
     );
@@ -234,10 +263,12 @@ HeilPruefung pruefeHeilung(
       'Wunden heilt Balsam nur, wenn die Wundheilung angesagt wird.',
     );
   }
-  hinweise.add(
-    'Die schädliche Wirkung von Giften und Krankheiten stoppt dieser Zauber '
-    'nicht.',
-  );
+  if (!lach) {
+    hinweise.add(
+      'Die schädliche Wirkung von Giften und Krankheiten stoppt dieser Zauber '
+      'nicht.',
+    );
+  }
   final bisMaximum = math.max(0, maxLep - zustand.currentLep);
   if (fehler.isEmpty && lep > bisMaximum) {
     hinweise.add(

@@ -150,4 +150,44 @@ void main() {
       ohne.combatPreviewStats.initiative,
     );
   });
+
+  test('Karnifilo: AT-Basis +5, PA-Basis −5, Herkunft sichtbar', () {
+    final ohne = rechne(_grund);
+    final mit = rechne(
+      aktiviereEffektInstanz(
+        _grund,
+        const SpellEffectInstance(
+          id: 'k',
+          effectId: kKarnifiloZauberId,
+          zfpStern: 4,
+        ),
+      ),
+    );
+
+    expect(mit.derivedStats.atBase, ohne.derivedStats.atBase + 5);
+    expect(mit.derivedStats.paBase, ohne.derivedStats.paBase - 5);
+    expect(mit.derivedStats.iniBase, ohne.derivedStats.iniBase);
+    expect(mit.combatPreviewStats.at, ohne.combatPreviewStats.at + 5);
+    expect(mit.combatPreviewStats.pa, ohne.combatPreviewStats.pa - 5);
+    final schritte = mit.derivedStats.herleitungen!.atBase.schritte;
+    expect(
+      schritte.where(
+        (s) => s.bezeichnung == 'Karnifilo Raserei' && s.betrag == 5,
+      ),
+      hasLength(1),
+    );
+  });
+
+  test('zwei Karnifilo addieren sich nicht', () {
+    final ohne = rechne(_grund);
+    var z = _grund;
+    for (final id in ['k1', 'k2']) {
+      z = aktiviereEffektInstanz(
+        z,
+        SpellEffectInstance(id: id, effectId: kKarnifiloZauberId, zfpStern: 4),
+      );
+    }
+
+    expect(rechne(z).derivedStats.atBase, ohne.derivedStats.atBase + 5);
+  });
 }

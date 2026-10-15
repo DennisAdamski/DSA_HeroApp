@@ -211,7 +211,11 @@ class _ActiveSpellEffectsDialogState
       amount: eingabe.kapazitaet ?? 0,
       // Nur eine eindeutig belegte Dauer wird vorgeschlagen; sonst bleibt sie
       // leer und lässt sich an der Quelle festlegen.
-      duration: dauerVorschlag(eingabe.zauberId, zfw: eingabe.zfw),
+      duration: dauerVorschlag(
+        eingabe.zauberId,
+        zfw: eingabe.zfw,
+        zfpStern: eingabe.zfpStern,
+      ),
     );
     await _aendere((aktuell) => aktiviereEffektInstanz(aktuell, instanz));
   }

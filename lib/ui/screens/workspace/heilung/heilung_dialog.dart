@@ -72,6 +72,7 @@ class _HeilungPanelState extends ConsumerState<HeilungPanel> {
   static const Map<String, String> _namen = <String, String>{
     kBalsamZauberId: 'Balsam Salabunde',
     kHexenspeichelZauberId: 'Hexenspeichel',
+    kLachDichGesundZauberId: 'Lach dich gesund',
   };
 
   String _zauberId = kBalsamZauberId;
@@ -82,6 +83,7 @@ class _HeilungPanelState extends ConsumerState<HeilungPanel> {
   int? _wundenUeberschrieben;
   final TextEditingController _zfw = TextEditingController();
   final TextEditingController _asp = TextEditingController();
+  final TextEditingController _zfp = TextEditingController();
 
   bool _schreibt = false;
   String? _fehler;
@@ -91,21 +93,24 @@ class _HeilungPanelState extends ConsumerState<HeilungPanel> {
   void dispose() {
     _zfw.dispose();
     _asp.dispose();
+    _zfp.dispose();
     super.dispose();
   }
 
   int get _zfwWert => int.tryParse(_zfw.text.trim()) ?? 0;
   int get _aspWert => int.tryParse(_asp.text.trim()) ?? 0;
+  int get _zfpWert => int.tryParse(_zfp.text.trim()) ?? 0;
 
   HeilEingabe _eingabe(int wunden) => HeilEingabe(
     zauberId: _zauberId,
-    asp: _aspWert,
+    asp: _zauberId == kLachDichGesundZauberId ? 0 : _aspWert,
     zfw: _zfwWert,
+    zfpStern: _zfpWert,
     schaden: _schaden,
     wundheilungAngesagt: _wundheilung && _zauberId == kBalsamZauberId,
     zone: _zone,
     wunden: wunden,
-    selbstGewirkt: _selbst,
+    selbstGewirkt: _selbst && _zauberId != kLachDichGesundZauberId,
   );
 
   Future<void> _uebernehme(HeilEingabe eingabe, int maxLep) async {
@@ -169,6 +174,7 @@ class _HeilungPanelState extends ConsumerState<HeilungPanel> {
     final theme = Theme.of(context);
     final maxLep = computed.derivedStats.maxLep;
     final balsam = _zauberId == kBalsamZauberId;
+    final lach = _zauberId == kLachDichGesundZauberId;
     final zonenMitWunden = <WundZone>[
       for (final zone in WundZone.values)
         if (state.wpiZustand.wundenInZone(zone) > 0) zone,
@@ -216,23 +222,26 @@ class _HeilungPanelState extends ConsumerState<HeilungPanel> {
                 }),
         ),
         const SizedBox(height: kDialogFieldSpacing),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: _zahlfeld('heilung-zfw', _zfw, 'ZfW des Zaubernden'),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _zahlfeld(
-                'heilung-asp',
-                _asp,
-                balsam ? 'Eingesetzte AsP (ab 5)' : 'Eingesetzte AsP',
+        if (lach)
+          _zahlfeld('heilung-zfp', _zfp, 'ZfP* des Zaubernden')
+        else
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: _zahlfeld('heilung-zfw', _zfw, 'ZfW des Zaubernden'),
               ),
-            ),
-          ],
-        ),
-        if (!balsam) ...[
+              const SizedBox(width: 12),
+              Expanded(
+                child: _zahlfeld(
+                  'heilung-asp',
+                  _asp,
+                  balsam ? 'Eingesetzte AsP (ab 5)' : 'Eingesetzte AsP',
+                ),
+              ),
+            ],
+          ),
+        if (!balsam && !lach) ...[
           const SizedBox(height: kDialogFieldSpacing),
           SegmentedButton<HeilSchaden>(
             key: const ValueKey<String>('heilung-schaden'),
@@ -274,18 +283,19 @@ class _HeilungPanelState extends ConsumerState<HeilungPanel> {
           ),
         if (balsam && _wundheilung)
           ..._wundenBereich(theme, state, zone, wunden),
-        SwitchListTile(
-          key: const ValueKey<String>('heilung-selbst'),
-          contentPadding: EdgeInsets.zero,
-          title: const Text('Der Held zaubert selbst'),
-          subtitle: const Text(
-            'Zieht die AsP des Helden ab; bei fremder Quelle bleibt sie unberührt',
+        if (!lach)
+          SwitchListTile(
+            key: const ValueKey<String>('heilung-selbst'),
+            contentPadding: EdgeInsets.zero,
+            title: const Text('Der Held zaubert selbst'),
+            subtitle: const Text(
+              'Zieht die AsP des Helden ab; bei fremder Quelle bleibt sie unberührt',
+            ),
+            value: _selbst,
+            onChanged: _schreibt
+                ? null
+                : (wert) => setState(() => _selbst = wert),
           ),
-          value: _selbst,
-          onChanged: _schreibt
-              ? null
-              : (wert) => setState(() => _selbst = wert),
-        ),
         const SizedBox(height: 8),
         for (final fehler in pruefung.fehler)
           Padding(

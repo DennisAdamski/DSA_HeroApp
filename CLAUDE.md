@@ -72,6 +72,9 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   (`spell_effect_rest_rules.dart`, `RuheKoerperErhalten`), der die normale
   Regeneration der Stunden ersetzt; Heilungs-Vor-/Nachteile und „evtl. 1 AsP“
   werden nicht gerechnet, der Zaubernde trägt die Kosten.
+  Einfache Zauber (Runde 1): Karnifilo (AT-Basis +5/PA-Basis −5 fest, die
+  Eigenschaften ±5 nur als Hinweis), Seidenzunge (Überreden-Startwert +ZfP*),
+  Lach dich gesund (Heilung im Heilungsdialog).
 - `README.md` beschreibt Produktumfang, Architekturueberblick und Standard-Workflows.
 - `tool/sync_main_to_test.sh` mergt Main in Test;
   `tool/test_main_test_sync.py` sichert Erhalt, Konflikte und Wiederholungen ab.

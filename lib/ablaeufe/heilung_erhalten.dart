@@ -22,7 +22,8 @@ DiceLogEntry baueHeilungsProtokoll({
   final zone = eingabe.zone;
   final teile = <String>[
     zauberName,
-    '${eingabe.asp} AsP eingesetzt',
+    if (eingabe.asp > 0) '${eingabe.asp} AsP eingesetzt',
+    if (eingabe.zfpStern > 0 && eingabe.asp == 0) 'ZfP* ${eingabe.zfpStern}',
     '+${anwendung.lep} LeP',
     if (anwendung.asp > 0) '−${anwendung.asp} AsP',
     if (anwendung.wunden > 0 && zone != null)

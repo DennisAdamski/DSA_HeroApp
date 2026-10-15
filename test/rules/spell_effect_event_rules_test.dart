@@ -282,4 +282,15 @@ void main() {
       expect(dauerVorschlag(kPsychostabilisZauberId), isNull);
     });
   });
+
+  test('Dauervorschläge für Karnifilo und Seidenzunge', () {
+    final karnifilo = dauerVorschlag(kKarnifiloZauberId, zfpStern: 4)!;
+    expect(karnifilo.amount, 20);
+    expect(karnifilo.unit, SpellDurationUnit.kampfrunden);
+    final seide = dauerVorschlag(kSeidenzungeZauberId, zfpStern: 6)!;
+    expect(seide.amount, 6);
+    expect(seide.unit, SpellDurationUnit.spielrunden);
+    expect(dauerVorschlag(kKarnifiloZauberId), isNull);
+    expect(dauerVorschlag(kSeidenzungeZauberId, zfpStern: 0), isNull);
+  });
 }

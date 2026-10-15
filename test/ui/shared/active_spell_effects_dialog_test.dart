@@ -593,6 +593,9 @@ void main() {
   });
 
   Future<void> waehleZauber(WidgetTester tester, String name) async {
+    await tester.ensureVisible(
+      find.byKey(const ValueKey<String>('spell-instance-zauber-hinzu')),
+    );
     await tester.tap(
       find.byKey(const ValueKey<String>('spell-instance-zauber-hinzu')),
     );
@@ -889,5 +892,45 @@ void main() {
       find.byKey(const ValueKey<String>('ruhe-koerper-dialog')),
       findsOneWidget,
     );
+  });
+
+  testWidgets('Karnifilo und Seidenzunge schlagen ihre Dauer aus ZfP* vor', (
+    tester,
+  ) async {
+    final katalog = await tester.runAsync(ladeEchtenRegelkatalog);
+    final repo = await openDialog(tester, overrides: katalog!.overrides);
+    await tester.pumpAndSettle();
+
+    Future<void> fuegeHinzu(String name, String zfp) async {
+      await waehleZauber(tester, name);
+      await tester.enterText(
+        find.byKey(const ValueKey<String>('spell-effect-input-zfp')),
+        zfp,
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(const ValueKey<String>('spell-effect-input-confirm')),
+      );
+      await tester.pumpAndSettle();
+    }
+
+    await fuegeHinzu('Karnifilo Raserei', '4');
+    await fuegeHinzu('Seidenzunge Elfenwort', '6');
+
+    final instanzen = (await repo.loadHeroState('demo'))!
+        .activeSpellEffects
+        .instanzen;
+    final karnifilo = instanzen.firstWhere(
+      (i) => i.effectId == 'spell_karnifilo_raserei',
+    );
+    final seide = instanzen.firstWhere(
+      (i) => i.effectId == 'spell_seidenzunge_elfenwort',
+    );
+    expect(karnifilo.duration?.amount, 20);
+    expect(karnifilo.duration?.unit, SpellDurationUnit.kampfrunden);
+    expect(seide.duration?.amount, 6);
+    expect(seide.duration?.unit, SpellDurationUnit.spielrunden);
+    // Hinweise zu den nicht eingerechneten Eigenschaften erscheinen im Dialog.
+    expect(find.textContaining('MU +5'), findsOneWidget);
   });
 }

@@ -159,4 +159,38 @@ void main() {
       isTrue,
     );
   });
+
+  test('Karnifilo ist in den rechenbaren Zaubern und meldet seine Grenzen', () {
+    final b = rechne(
+      _mit(
+        _zustand(),
+        const SpellEffectInstance(
+          id: 'k',
+          effectId: kKarnifiloZauberId,
+          zfpStern: 4,
+        ),
+      ),
+    );
+
+    final mods = _quelle(b, 'Karnifilo Raserei').mods;
+    expect(mods.at, 5);
+    expect(mods.pa, -5);
+    expect(mods.iniBase, 0);
+    expect(b.heldenIniMalus, 0);
+    expect(b.orientierenGesperrt, isFalse);
+    expect(b.hinweise.any((h) => h.contains('MU +5')), isTrue);
+    expect(b.hinweise.any((h) => h.contains('Sturmangriff')), isTrue);
+  });
+
+  test('Karnifilo ohne ZfP* rechnet nichts und sagt es', () {
+    final b = rechne(
+      _mit(
+        _zustand(),
+        const SpellEffectInstance(id: 'k', effectId: kKarnifiloZauberId),
+      ),
+    );
+
+    expect(b.statQuellen, isEmpty);
+    expect(b.hinweise.single, contains('ZfP* fehlt'));
+  });
 }
