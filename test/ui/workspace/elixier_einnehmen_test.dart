@@ -85,9 +85,7 @@ void main() {
           heroRepositoryProvider.overrideWithValue(repo),
           ...echt.overrides,
         ],
-        child: MaterialApp(
-          home: Scaffold(body: baue(elixier)),
-        ),
+        child: MaterialApp(home: Scaffold(body: baue(elixier))),
       ),
     );
     await tester.pumpAndSettle();
