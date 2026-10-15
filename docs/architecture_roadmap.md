@@ -28,7 +28,7 @@ Ist-Zustand erneut prüfen und den konkreten Teilumfang festlegen.
   (einmaliger Verbrauch) mit MAG-EFF-04 (teilweise) umgesetzt; offen sind
   Ende-Gründe, laufende Kosten und die ereignisbasierten Profile;
   MAG-EFF-05 teilweise umgesetzt (15.10.2026) — Gardianum als Schutzvorrat,
-  Heilung und Rastprofile offen; MAG-EFF-06 geplant.** Befund: Armatrutz kennt die
+  Heilung durch Balsam und Hexenspeichel; Ruhe Körper als Rastprofil offen; MAG-EFF-06 geplant.** Befund: Armatrutz kennt die
   Regelgrenze ZfW/2 nicht, bei Axxeleratus fehlt nur die Athletik-Verdopplung
   für Sprints und Sprünge (Details im Integrationsplan).
   ARCH-04 liefert gemeinsame Herleitungen; ARCH-05/06 bilden die Grundlage

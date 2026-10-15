@@ -122,5 +122,27 @@
     "variantenHinweis": "Schild gegen Dämonen und Schild gegen Zauber sind nicht umgesetzt. Die Kuppel ist ein gemeinsamer Vorrat aller Geschützten; die App führt ihn nur auf diesem Bogen, ein gemeinsamer Vorrat über mehrere Helden ist ein eigener Folgeumfang.",
     "rundungsHinweis": "Kapazität: investierte AsP (mindestens 3) plus 2 × ZfP* (Kuppel) bzw. 3 × ZfP* (Persönlicher Schild, ab ZfW 11). Keine Rundung nötig.",
     "hinweis": "Absorbiert nur direkte magische Angriffe (Schadenszauber, Schaden erzeugende Zauber von Dämonen, Elementaren oder Geistern), nicht magisch erhöhte Waffen-TP und keine physischen Angriffe. Der Schild löst sich nach spätestens 1 Spielrunde auf. Richtet ein Schadenszauber keine direkten TP an, verliert der Schild AsP in Höhe der Zauberkosten."
+  },
+  {
+    "id": "profil_balsam_grund",
+    "spellId": "spell_balsam_salabunde",
+    "profilVersion": 1,
+    "status": "belegt",
+    "beleg": { "buch": "Liber Cantiones", "seite": "37", "chunkId": 1951 },
+    "eingaben": ["asp", "zfw", "wundheilung", "zone"],
+    "variantenHinweis": "Heilung von Verstümmelungen, Rettung von der Schwelle des Todes, Lebenskraft stärken und Sofortige Regeneration sind nicht umgesetzt.",
+    "rundungsHinweis": "1 LeP je AsP (mindestens 5 AsP), höchstens ZfW × 2 LeP. Je 7 zurückgegebene LeP schließen eine angesagte Wunde vollständig; Rundung des Rests ist nicht nötig (ganzzahlige Division).",
+    "hinweis": "Einmalige Heilung des Empfängers. Wunden heilt der Zauber nur bei angesagter Wundheilung (Probe um die doppelte Wundenzahl erschwert); Gift und Krankheit werden nicht gestoppt. Der Zaubernde bezahlt die AsP, der Empfänger erhält die LeP."
+  },
+  {
+    "id": "profil_hexenspeichel_grund",
+    "spellId": "spell_hexenspeichel",
+    "profilVersion": 1,
+    "status": "belegt",
+    "beleg": { "buch": "Liber Cantiones", "seite": "117", "chunkId": 2063 },
+    "eingaben": ["asp", "zfw", "schadensart"],
+    "variantenHinweis": "Rettung von der Schwelle des Todes und Selbstheilung (Spontane Modifikation) sind nicht berechnet.",
+    "rundungsHinweis": "Wunden: 1 LeP je 2 AsP; für ungerade AsP ist die Rundung nicht festgelegt, die App verlangt eine gerade Zahl. Krankheiten: 1 LeP je AsP. Vergiftungen: 2 LeP je AsP. Höchstens ZfW AsP auf einmal.",
+    "hinweis": "Einmalige Heilung des Empfängers; die schädliche Wirkung von Giften und Krankheiten wird nicht gestoppt. Schließt keine Wunden."
   }
 ]

@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/ablaeufe/artefakt_protokollieren.dart';
 import 'package:dsa_heldenverwaltung/ablaeufe/auxiliator_einsetzen.dart';
+import 'package:dsa_heldenverwaltung/ablaeufe/heilung_erhalten.dart';
 import 'package:dsa_heldenverwaltung/ablaeufe/matrix_ausloesen.dart';
 import 'package:dsa_heldenverwaltung/ablaeufe/rast_abschliessen.dart';
 import 'package:dsa_heldenverwaltung/ablaeufe/regelprofil_uebernehmen.dart';
@@ -59,6 +60,15 @@ final artefaktProtokollierenProvider = Provider<ArtefaktProtokollieren>((ref) {
 /// Bindet den Ablauf „Schaden erhalten“ an das aktive Heldenrepository.
 final schadenErhaltenProvider = Provider<SchadenErhalten>((ref) {
   return SchadenErhalten(
+    repository: ref.watch(heroRepositoryProvider),
+    uhr: DateTime.now,
+  );
+});
+
+/// Bindet den Ablauf „Heilung erhalten“ (MAG-EFF-05) an das aktive
+/// Heldenrepository.
+final heilungErhaltenProvider = Provider<HeilungErhalten>((ref) {
+  return HeilungErhalten(
     repository: ref.watch(heroRepositoryProvider),
     uhr: DateTime.now,
   );
