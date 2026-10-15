@@ -6,6 +6,7 @@ import 'package:uuid/uuid.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/alchimika_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/inventar_verbrauch_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/vitalwirkung_rules.dart';
 import 'package:dsa_heldenverwaltung/state/ablauf_providers.dart';
@@ -184,7 +185,12 @@ class _VitalwirkungPanelState extends ConsumerState<VitalwirkungPanel> {
     }
   }
 
-  Widget _zahlfeld(String schluessel, TextEditingController c, String label) {
+  Widget _zahlfeld(
+    String schluessel,
+    TextEditingController c,
+    String label, {
+    String wurf = '',
+  }) {
     return TextField(
       key: ValueKey<String>(schluessel),
       controller: c,
@@ -195,6 +201,9 @@ class _VitalwirkungPanelState extends ConsumerState<VitalwirkungPanel> {
         border: const OutlineInputBorder(),
         isDense: true,
         labelText: label,
+        // Würfelausdruck des Katalogmittels: nur Hinweis, gewürfelt wird nicht.
+        helperText: wurf.isEmpty ? null : 'Wurf: $wurf',
+        helperMaxLines: 2,
       ),
       onChanged: (_) => setState(() {}),
     );
@@ -232,6 +241,8 @@ class _VitalwirkungPanelState extends ConsumerState<VitalwirkungPanel> {
         if (zustand.wpiZustand.wundenInZone(z) > 0) z,
     ];
     final menge = inventarMenge(widget.eintrag);
+    final vorgabe = widget.eintrag.vitalwirkung;
+    final wundenAusLepZahl = wundenAusLep(vorgabe, _zahl(_lep));
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -245,6 +256,7 @@ class _VitalwirkungPanelState extends ConsumerState<VitalwirkungPanel> {
                 'vitalwirkung-lep',
                 _lep,
                 'LeP (${zustand.currentLep} / ${grenzen.maxLep})',
+                wurf: vorgabe?.lepWurf ?? '',
               ),
             ),
             const SizedBox(width: 12),
@@ -253,6 +265,7 @@ class _VitalwirkungPanelState extends ConsumerState<VitalwirkungPanel> {
                 'vitalwirkung-asp',
                 _asp,
                 'AsP (${zustand.currentAsp} / ${grenzen.maxAsp})',
+                wurf: vorgabe?.aspWurf ?? '',
               ),
             ),
             const SizedBox(width: 12),
@@ -261,10 +274,24 @@ class _VitalwirkungPanelState extends ConsumerState<VitalwirkungPanel> {
                 'vitalwirkung-aup',
                 _aup,
                 'AuP (${zustand.currentAu} / ${grenzen.maxAu})',
+                wurf: vorgabe?.aupWurf ?? '',
               ),
             ),
           ],
         ),
+        if (vorgabe != null && vorgabe.lepProWunde > 0) ...[
+          const SizedBox(height: 4),
+          Text(
+            wundenAusLepZahl == null
+                ? 'Je ${vorgabe.lepProWunde} zurückgewonnene LeP schließt sich '
+                      'eine Wunde.'
+                : 'Je ${vorgabe.lepProWunde} zurückgewonnene LeP schließt sich '
+                      'eine Wunde: bei ${_zahl(_lep)} LeP bis zu '
+                      '$wundenAusLepZahl.',
+            key: const ValueKey<String>('vitalwirkung-wunden-regel'),
+            style: theme.textTheme.bodySmall,
+          ),
+        ],
         const SizedBox(height: kDialogFieldSpacing),
         if (zonen.isEmpty)
           Text(

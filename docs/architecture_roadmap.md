@@ -69,6 +69,32 @@ Ist-Zustand erneut prüfen und den konkreten Teilumfang festlegen.
   einzeln oder im Basiskatalog; Umgang mit Qualitätsstufen im Dialog;
   Hausregel-Abweichungen als eigenes Paket.
 
+  **Status: Teilstand 1 umgesetzt (15.10.2026) — Katalog, Modell und
+  Editoranbindung.** `assets/catalogs/house_rules_v1/alchimika.json`
+  (Manifest-Schlüssel `alchimika`, `AlchimikumDef` in
+  `lib/catalog/alchimikum_def.dart`, `RulesCatalog.alchimika`) enthält sechs
+  Mittel mit Beleg (Buch, gedruckte Seite, Chunk-ID): Heiltrank, Pastillen
+  gegen Erschöpfung, Restorarium, Schlaftrunk, Antidot (alle *Wege der
+  Alchimie* 2012, S. 55–59) und Wundpulver (*Stäbe, Ringe, Dschinnenlampen*
+  S. 107). Qualitätsstufen A–F mit Würfelausdruck (`2W6+4`), Wunden-Regel
+  („je 7 LeP eine Wunde“, WdA S. 56, Basisregelwerk S. 197) und kurzer eigener
+  Wirkungsbeschreibung. Im Inventareditor übernimmt „Aus Katalog: Tränke &
+  Heilmittel“ (`alchimika_auswahl_dialog.dart`, Regeln in
+  `rules/derived/alchimika_rules.dart`, `mitAlchimikum`) Name, Typ, Beschreibung,
+  Richtpreis und die Vorbelegung; `Vitalwirkung` trägt dafür die neuen
+  additiven Felder `lepWurf`/`aspWurf`/`aupWurf`/`lepProWunde`. Der Dialog
+  „Anwenden“ zeigt den Wurf als Hinweis am Feld und die Wunden-Regel; gewürfelt
+  und gebucht wird weiter nur, was der Nutzer eingibt. **Entscheidungen
+  (Annahmen, bei Bedarf korrigieren):** Basiskatalog statt eigenem Paket;
+  Qualität C vorgewählt (Preisangabe der Regelbücher), Stufe M nicht wählbar
+  (Meisterentscheid); die Wirkungstexte sind kurze eigene Zusammenfassungen
+  und **unverschlüsselt**, weil kein Buchtext kopiert wird (Verschlüsselung
+  bräuchte das Katalogpasswort); kein Würfelknopf. **Offen:** Kraft-, Zauber-
+  und Mut-Elixiere (Wirkung auf Eigenschaften, braucht MAG-EFF-Instanzen),
+  Verbandszeug und Heilkräuter (Heilkunde-Probe, Zoo-Botanica), Hausregel-
+  Abweichungen als Paket, Katalogauswahl in der UI2-Verwaltung (heute nur im
+  Bestands-Inventareditor, der in beiden Oberflächen genutzt wird).
+
 ## Arbeitsweise und gemeinsame Grenzen
 
 - Verbindlich bleibt [AGENTS.md](../AGENTS.md). Die Aufgaben sollen schrittweise

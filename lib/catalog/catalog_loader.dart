@@ -136,12 +136,18 @@ class CatalogLoader {
       manifestAssetPath: manifestAssetPath,
       manifestKey: spellEffectsManifestKey,
     );
+    final alchimikaFuture = _loadOptionalSectionByKey(
+      files: files,
+      manifestAssetPath: manifestAssetPath,
+      manifestKey: alchimikaManifestKey,
+    );
     final sectionResults = await sectionResultsFuture;
     final sections = <CatalogSectionId, List<Map<String, dynamic>>>{
       for (final result in sectionResults) result.section: result.entries,
     };
     final reisebericht = await reiseberichtFuture;
     final spellEffects = await spellEffectsFuture;
+    final alchimika = await alchimikaFuture;
     final catalogSaltV3 = _decodeOptionalCatalogSaltV3(
       manifest,
       assetPath: manifestAssetPath,
@@ -154,6 +160,7 @@ class CatalogLoader {
       sections: sections,
       reisebericht: reisebericht,
       spellEffects: spellEffects,
+      alchimika: alchimika,
       catalogSaltV3: catalogSaltV3,
     );
   }
@@ -271,6 +278,11 @@ class CatalogLoader {
       domainName: 'spell effects',
       assetPath: assetPathForErrors,
     );
+    _validateUniqueIds(
+      entries: sourceData.alchimika,
+      domainName: 'alchimika',
+      assetPath: assetPathForErrors,
+    );
 
     return RulesCatalog(
       version: sourceData.version,
@@ -317,6 +329,9 @@ class CatalogLoader {
           .toList(growable: false),
       spellEffects: sourceData.spellEffects
           .map((entry) => SpellEffectProfile.fromJson(entry))
+          .toList(growable: false),
+      alchimika: sourceData.alchimika
+          .map((entry) => AlchimikumDef.fromJson(entry))
           .toList(growable: false),
       ruleResolver: ruleResolver,
     );

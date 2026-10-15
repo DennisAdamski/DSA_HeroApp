@@ -258,6 +258,9 @@ class HouseRuleCatalogResolver {
         spellEffects: baseData.spellEffects
             .map(_deepCloneEntry)
             .toList(growable: false),
+        alchimika: baseData.alchimika
+            .map(_deepCloneEntry)
+            .toList(growable: false),
       ),
       provenanceIndex: HouseRuleProvenanceIndex(entries: provenanceEntries),
       issues: List<HouseRulePackIssue>.unmodifiable(issues),

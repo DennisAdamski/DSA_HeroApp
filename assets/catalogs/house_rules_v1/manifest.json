@@ -20,7 +20,8 @@
     "sprachen": "sprachen.json",
     "schriften": "schriften.json",
     "reisebericht": "../reiseberichte/house_rules_v1/reisebericht.json",
-    "spell_effects": "spell_effects.json"
+    "spell_effects": "spell_effects.json",
+    "alchimika": "alchimika.json"
   },
   "catalog_salt_v3": "sgq7s+3Gd0fq9QaO7dE+5/GEVKWYwdM6HFHgGIc21yU="
 }

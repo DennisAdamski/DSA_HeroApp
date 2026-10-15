@@ -48,6 +48,9 @@ const String reiseberichtManifestKey = 'reisebericht';
 /// Schluessel der manifestbasierten Zauberprofil-Datei (MAG-EFF).
 const String spellEffectsManifestKey = 'spell_effects';
 
+/// Schluessel der manifestbasierten Datei alchimistischer Mittel (TRANK).
+const String alchimikaManifestKey = 'alchimika';
+
 /// Liefert Hilfsdaten und Default-Verhalten fuer Katalogsektionen.
 extension CatalogSectionIdX on CatalogSectionId {
   /// Manifest-Key innerhalb der Split-Katalogstruktur.
