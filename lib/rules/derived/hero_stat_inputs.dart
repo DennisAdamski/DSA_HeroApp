@@ -4,6 +4,7 @@ import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/spell_effect_combat_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/spell_effect_instance_rules.dart';
 
 import 'basiswert_herleitung_rules.dart';
@@ -26,6 +27,7 @@ class HeroStatInputs {
     required this.wounds,
     this.textAufteilung,
     this.eigenschaftHerleitungen,
+    this.zauberKampf = const SpellEffectKampfBeitraege(),
   });
   final ModifierParseResult parsed;
   final InventoryModifierAggregation inventory;
@@ -39,6 +41,9 @@ class HeroStatInputs {
 
   /// Herleitung der effektiven Eigenschaften ([effective]) (ARCH-04).
   final EigenschaftHerleitungen? eigenschaftHerleitungen;
+
+  /// Empfangene Kampf-Mali laufender Zaubereffekte (MAG-EFF-03).
+  final SpellEffectKampfBeitraege zauberKampf;
 
   /// Eigenschaftswerte für Proben: [effective] abzüglich der wundbedingten
   /// Eigenschaftsverluste. Abgeleitete Werte rechnen nie damit (WdS S. 111).
@@ -55,6 +60,7 @@ class HeroStatInputs {
         inventoryStatMods: inventory.statMods,
         wundStatMods: wundEffekteToStatModifiers(wounds),
         textAufteilung: textAufteilung,
+        zauberKampf: zauberKampf,
       );
 }
 
@@ -106,6 +112,11 @@ HeroStatInputs computeHeroStatInputs({
     wounds: wundEffekte,
     textAufteilung: herkunftsQuellen(breakdown),
     eigenschaftHerleitungen: effektiveHerleitungen,
+    zauberKampf: berechneSpellEffectKampfBeitraege(
+      zustand: state,
+      katalog: catalog,
+      blindkampf: heldKenntBlindkampf(hero, catalog),
+    ),
   );
 }
 

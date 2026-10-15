@@ -6,6 +6,7 @@ import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
 
 import 'package:dsa_heldenverwaltung/rules/derived/basiswert_herleitung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_source_breakdown.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/spell_effect_combat_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/spell_effect_instance_rules.dart';
 
 import 'modifier_parser.dart';
@@ -26,6 +27,7 @@ class DerivedStats {
     required this.ausweichen,
     this.modifiers = const StatModifiers(),
     this.herleitungen,
+    this.zauberKampf = const SpellEffectKampfBeitraege(),
   });
 
   final int maxLep;
@@ -51,6 +53,12 @@ class DerivedStats {
   /// Herleitung jedes Werts (ARCH-04); `null` nur bei von Hand gebauten
   /// Werten, etwa in Tests.
   final BasiswertHerleitungen? herleitungen;
+
+  /// Empfangene Kampf-Mali laufender Zaubereffekte (MAG-EFF-03). Ihre
+  /// Basiswert-Anteile stecken bereits in [modifiers] und [herleitungen]; der
+  /// Abzug auf die fertige Helden-INI (Blitz) und die Hinweise werden von der
+  /// Kampfvorschau gelesen.
+  final SpellEffectKampfBeitraege zauberKampf;
 }
 
 /// Berechnet alle abgeleiteten Werte aus Stammdaten und Laufzeitzustand.
@@ -87,6 +95,11 @@ DerivedStats computeDerivedStats(
     parsedModifiers: parsed,
     effectiveAttributes: effectiveAttributes,
     permanentAttributes: permanentAttributes,
+    zauberKampf: berechneSpellEffectKampfBeitraege(
+      zustand: state,
+      katalog: catalog,
+      blindkampf: heldKenntBlindkampf(sheet, catalog),
+    ),
   );
 }
 
@@ -107,6 +120,7 @@ DerivedStats computeDerivedStatsFromInputs({
   StatModifiers inventoryStatMods = const StatModifiers(),
   StatModifiers wundStatMods = const StatModifiers(),
   List<StatModifikatorQuelle>? textAufteilung,
+  SpellEffectKampfBeitraege zauberKampf = const SpellEffectKampfBeitraege(),
 }) {
   final quellen = sammleStatModifikatorQuellen(
     sheet: sheet,
@@ -115,6 +129,7 @@ DerivedStats computeDerivedStatsFromInputs({
     textAufteilung: textAufteilung,
     inventar: inventoryStatMods,
     wunden: wundStatMods,
+    zauber: zauberKampf.statQuellen,
   );
   final h = computeBasiswertHerleitungen(
     sheet: sheet,
@@ -142,5 +157,6 @@ DerivedStats computeDerivedStatsFromInputs({
     ausweichen: h.ausweichen.wert,
     modifiers: summeDerQuellen(quellen),
     herleitungen: h,
+    zauberKampf: zauberKampf,
   );
 }

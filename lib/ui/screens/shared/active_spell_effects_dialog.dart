@@ -4,11 +4,13 @@ import 'package:uuid/uuid.dart';
 
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/attribute_modifiers.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/spell_effect_instance.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/spell_effect_instance_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/active_spell_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/active_spell_state_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/spell_effect_combat_rules.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
@@ -17,6 +19,7 @@ import 'package:dsa_heldenverwaltung/ui/screens/shared/active_spell_effect_tile.
 import 'package:dsa_heldenverwaltung/ui/screens/shared/armatrutz_input_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/attributo_input_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/spell_duration_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/spell_effect_input_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/spell_effect_instance_tile.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/zustand_aendern.dart';
 
@@ -158,6 +161,39 @@ class _ActiveSpellEffectsDialogState
     await _aendere((aktuell) => aktiviereEffektInstanz(aktuell, instanz));
   }
 
+  /// Legt eine Zauberwirkung mit belegtem Profil als weitere Quelle an.
+  Future<void> _fuegeZauberwirkungHinzu(RulesCatalog katalog) async {
+    final auswahl = spellEffectAuswahl(katalog);
+    if (auswahl.isEmpty) {
+      return;
+    }
+    final eingabe = await showSpellEffectInputDialog(
+      context: context,
+      auswahl: [
+        for (final eintrag in auswahl)
+          SpellEffectAuswahl(
+            zauberId: eintrag.zauberId,
+            name: eintrag.name,
+            benoetigtZfw: eintrag.benoetigtZfw,
+            hinweis: eintrag.hinweis,
+          ),
+      ],
+    );
+    if (eingabe == null || !mounted) {
+      return;
+    }
+    final vorgang = const Uuid().v4();
+    final instanz = SpellEffectInstance(
+      id: const Uuid().v4(),
+      effectId: eingabe.zauberId,
+      vorgangsId: vorgang,
+      quelle: eingabe.quelle,
+      zfpStern: eingabe.zfpStern,
+      zfw: eingabe.zfw,
+    );
+    await _aendere((aktuell) => aktiviereEffektInstanz(aktuell, instanz));
+  }
+
   /// Führt die alten Attributo-Boni auf ausdrücklichen Wunsch als Quelle.
   Future<void> _uebernimmLegacyAttributo() {
     final id = const Uuid().v4();
@@ -251,7 +287,16 @@ class _ActiveSpellEffectsDialogState
   }
 
   /// Weitere Quellen desselben Zaubers, jede mit eigenem Ende.
-  List<Widget> _instanzBereich(HeroState state, RulesCatalog? catalog) {
+  List<Widget> _instanzBereich(
+    HeroState state,
+    HeroSheet hero,
+    RulesCatalog? catalog,
+  ) {
+    final kampf = berechneSpellEffectKampfBeitraege(
+      zustand: state,
+      katalog: catalog,
+      blindkampf: heldKenntBlindkampf(hero, catalog),
+    );
     final instanzen = state.activeSpellEffects.instanzen;
     final legacyBoni =
         state.activeSpellEffects.isActive(activeSpellEffectAttributo) &&
@@ -267,7 +312,7 @@ class _ActiveSpellEffectsDialogState
             catalog,
           ),
           titel:
-              '${importantActiveSpellEffectById(instanzen[i].effectId)?.label ?? instanzen[i].effectId} · Quelle ${i + 1}',
+              '${effektName(instanzen[i].effectId, catalog)} · Quelle ${i + 1}',
           onWirktChanged: (wirkt) => _aendere(
             (aktuell) => unterdrueckeEffektInstanz(
               aktuell,
@@ -286,6 +331,20 @@ class _ActiveSpellEffectsDialogState
             ),
           ),
         ),
+      if (kampf.orientierenGesperrt)
+        const Padding(
+          padding: EdgeInsets.only(bottom: 8),
+          child: Text(
+            'Blitz: Die Aktion „Orientieren“ ist während der Wirkung nicht '
+            'möglich.',
+            key: ValueKey<String>('spell-effect-orientieren-hinweis'),
+          ),
+        ),
+      for (final hinweis in kampf.hinweise)
+        Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: Text(hinweis),
+        ),
       Wrap(
         spacing: kDialogInlineSpacing,
         runSpacing: kDialogInlineSpacing,
@@ -296,6 +355,13 @@ class _ActiveSpellEffectsDialogState
             icon: const Icon(Icons.add),
             label: const Text('Weiteren Attributo als Quelle'),
           ),
+          if (catalog != null && spellEffectAuswahl(catalog).isNotEmpty)
+            OutlinedButton.icon(
+              key: const ValueKey<String>('spell-instance-zauber-hinzu'),
+              onPressed: () => _fuegeZauberwirkungHinzu(catalog),
+              icon: const Icon(Icons.add),
+              label: const Text('Zauberwirkung hinzufügen'),
+            ),
           if (legacyBoni)
             OutlinedButton(
               key: const ValueKey<String>('spell-instance-legacy-uebernehmen'),
@@ -361,7 +427,7 @@ class _ActiveSpellEffectsDialogState
                       onResetDuration: () =>
                           _changeRemainingDuration(effect, reset: true),
                     ),
-                  ..._instanzBereich(state, catalog),
+                  ..._instanzBereich(state, hero, catalog),
                   const ZustandFehlerAnzeige(),
                 ],
               ),

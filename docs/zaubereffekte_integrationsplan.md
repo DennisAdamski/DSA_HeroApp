@@ -139,6 +139,14 @@ Hausregeln wurden in diesem Paket nicht gegen die Hausregel-Quellen des MCP gepr
 
 ### MAG-EFF-03 – Proben- und Kampfbeiträge (erster nutzbarer Ausbau)
 
+**Teilstand 1 (15.10.2026): empfangene Kampf-Mali Blitz und Plumbumbarum umgesetzt**, Probenbeiträge (Adlerauge, Falkenauge, Psychostabilis, Blitz-Probenzuschlag, Ängste lindern) folgen.
+
+- `spell_effect_combat_rules.dart`: `berechneSpellEffectKampfBeitraege` rechnet aus den Instanzen (`zfpStern`, `zfw`) und belegten Profilen. **Blitz** (LC S. 49): ZfP* gleichmäßig von AT- und PA-**Basis**, ungerader Rest zuerst AT; Helden-**INI** −ZfW (nicht INI-Basis, deshalb als eigener Herleitungsschritt in `herleiteHeldenIni`, Untergrenze 0 bleibt); „Orientieren“ gesperrt (Hinweis im Effektdialog). **Plumbumbarum** (LC S. 211): AT-Basis und INI-**Basis** je −ZfP*, keine PA. Die Beiträge laufen als benannte Quellen durch `sammleStatModifikatorQuellen` → Basiswert-Herleitung → Kampfvorschau und Gefecht (eine Rechenstelle, Herkunft sichtbar).
+- **Blindkampf** halbiert laut Regelwerk die Blitz-Abzüge; die Rundung ist nicht belegt, deshalb rechnet die App dann **nichts** und zeigt einen Hinweis (Abzüge manuell eintragen). Konzentrationsstärke betrifft nur Zauberproben (Probenpaket).
+- **Mehrere Quellen**: derselbe Zauber – nur die stärkste (größtes ZfP*) zählt, verschiedene Zauber addieren sich (Annahme in Anlehnung an die Tischregel, bitte bestätigen); unterdrückte Instanzen zählen nicht. Fehlende ZfP*/ZfW melden einen Hinweis statt einer geratenen Zahl.
+- Bedienung: Effektdialog → „Zauberwirkung hinzufügen“ (`spell_effect_input_dialog.dart`, Werte des Zaubernden, optionale Quelle); Beenden/Unterdrücken je Quelle wie bei Attributo.
+- Offen: Dauer/Ablauf (MAG-EFF-04), Demotivationsvariante, Chips in der Spielansicht.
+
 - [ ] Neue kleine Regelmodule `spell_effect_probe_rules.dart` und `spell_effect_combat_rules.dart` unter `lib/rules/derived/`; Einbindung in `hero_computed_snapshot.dart`, `probe_request_rules.dart`, passende Kampfherleitungen und Gefechtsregeln.
 - [ ] Erste Profile: **Adlerauge, Falkenauge, Psychostabilis, Blitz, Plumbumbarum, Ängste lindern**. UI unter `lib/ui/screens/shared/active_spell_effects_dialog.dart` bzw. bestehender UI2-Anbindung erweitern; Beschreibungen aus demselben Profil.
 - [ ] Konkrete Testfälle: Falkenauge ZfP*=6 wirkt nur auf das festgelegte Ziel und verfällt nach dem bestätigten Schuss; Adlerauge wirkt nicht auf Klettern; Psychostabilis ZfP*=5 ergibt +5 allgemeine MR und +7 im passenden geistigen Kontext.
