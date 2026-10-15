@@ -189,27 +189,29 @@ Der SDK-Cache benötigt Zugriff außerhalb des Repositorys. Es wurde kein
 | Regelprofil und vollständige Herleitung | Tatsächlich vorhandene Einstellungen/Vorschauen | ARCH-04: Versionierung und nachvollziehbare Ergebnisse |
 | Offline-/Sync-Anzeige | Keine erfundenen Statusangaben | ARCH-06: Wiederanlauf der Konfliktentscheidungen, danach Statusanzeige |
 
-ARCH-01 ist seit dem 11.10.2026 funktional abgenommen; offen ist nur die
-manuelle Bedienprüfung (unten). ARCH-02 bis ARCH-06 werden durch eine neue
+ARCH-01 ist seit dem 11.10.2026 funktional und seit dem 15.10.2026 auch durch
+die manuelle Bedienprüfung (unten) abgenommen. ARCH-02 bis ARCH-06 werden durch eine neue
 Darstellung nicht erledigt.
 
-## Manuelle Bedienprüfung (offen)
+## Manuelle Bedienprüfung (abgenommen 15.10.2026)
 
-Nicht durch Flutter-Tests ersetzbar; Ergebnis hier mit Datum und Gerät eintragen.
+Nicht durch Flutter-Tests ersetzbar. Alle Punkte wurden am 15.10.2026 vom Nutzer
+durchgeführt und bestätigt. Das verwendete Gerät ist nicht vermerkt; bei Bedarf
+hier nachtragen.
 
-- [ ] **Spielen:** Ressourcen ±1/±5 (auch unter 0, schnelles Tippen); Eigenschafts-
+- [x] **Spielen:** Ressourcen ±1/±5 (auch unter 0, schnelles Tippen); Eigenschafts-
   und Kampfprobe; Suche per Strg/Cmd+K; „Schaden erhalten“ mit/ohne Wunden und
   Rücknahme; Rast; Zaubereffekt; Gefecht (Runde, AT/PA, Laden, Gegner/Initiative);
   Abenteuerblatt.
-- [ ] **Korrektur ≠ Entwicklung:** Wert in der Verwaltung ändern (kostenlos) gegen
+- [x] **Korrektur ≠ Entwicklung:** Wert in der Verwaltung ändern (kostenlos) gegen
   Steigerung in der Entwicklung (AP); bei offener Planung „Planung verwerfen und
   bearbeiten“, Abbrechen erhält den Plan.
-- [ ] **Kein Verlust beim Wechsel:** ungespeicherte Eingabe, dann Bereich, Held,
+- [x] **Kein Verlust beim Wechsel:** ungespeicherte Eingabe, dann Bereich, Held,
   Oberfläche oder System-Zurück wechseln; Rückfrage erscheint, Abbrechen verliert nichts.
-- [ ] **Geräte:** schmal (ca. 390 dp) und breit, hell/dunkel, große Systemschrift,
+- [x] **Geräte:** schmal (ca. 390 dp) und breit, hell/dunkel, große Systemschrift,
   echte Touch-Bedienung.
-- [ ] **Screenreader:** NVDA oder VoiceOver für Navigation und Ressourcenknöpfe.
-- [ ] **Datenpfade:** Speichern, Neustart, Stand unverändert; Export/Import;
+- [x] **Screenreader:** NVDA oder VoiceOver für Navigation und Ressourcenknöpfe.
+- [x] **Datenpfade:** Speichern, Neustart, Stand unverändert; Export/Import;
   Web nur mit `--web-port=5000`. Die Brücke und
 alten Screens bleiben bestehen; eine spätere Ablösung und jede Änderung des
 Oberflächenstandards erfordern einen eigenen Auftrag.
