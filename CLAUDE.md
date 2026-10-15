@@ -63,6 +63,12 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   (`spell_effect_protection_rules.dart`, `fangeMagischenSchadenAuf` mit
   erwartetem Restvorrat gegen Doppelbuchung); der Durchschlag geht in den
   Schadensdialog, ein aufgezehrter Schild bleibt bis zum Beenden am Tisch.
+  Teilstand 2: Zauberheilung (Balsam, Hexenspeichel) ist ein einmaliges
+  Ereignis über „Heilzauber erhalten“; Regeln in `spell_effect_healing_rules.dart`,
+  Schreibweg `HeilungErhalten` (ein Dokument mit `ZustandsBuchung` Art
+  `heilung`, `aspDelta` und Protokoll, idempotent über die Vorgangs-ID). Nie
+  geraten: ungerade AsP bei Wunden (Hexenspeichel) und Rettung von der
+  Schwelle des Todes.
 - `README.md` beschreibt Produktumfang, Architekturueberblick und Standard-Workflows.
 - `tool/sync_main_to_test.sh` mergt Main in Test;
   `tool/test_main_test_sync.py` sichert Erhalt, Konflikte und Wiederholungen ab.

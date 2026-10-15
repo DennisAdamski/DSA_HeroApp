@@ -9,6 +9,10 @@ enum ZustandsBuchungsArt {
   /// Die Gegenbuchung, die einen Treffer zurücknimmt.
   schadenRuecknahme,
 
+  /// Eine übernommene Heilung durch einen Zauber (MAG-EFF-05); nicht
+  /// zurücknehmbar, das Protokoll nennt die tatsächlichen Änderungen.
+  heilung,
+
   /// Ersatz für eine Art einer neueren App-Version; nie zurücknehmbar.
   unbekannt,
 }
@@ -28,6 +32,7 @@ class ZustandsBuchung {
     required this.zeitpunkt,
     this.lepDelta = 0,
     this.auDelta = 0,
+    this.aspDelta = 0,
     this.zone,
     this.wundenDelta = 0,
     this.kopfIniMalusDelta = 0,
@@ -51,6 +56,10 @@ class ZustandsBuchung {
 
   /// Tatsächliche Änderung der AuP.
   final int auDelta;
+
+  /// Tatsächliche Änderung der AsP (etwa Kosten eines selbst gewirkten
+  /// Heilzaubers).
+  final int aspDelta;
 
   /// Zone der eingetragenen bzw. entfernten Wunden; `null` ohne Wunden oder
   /// bei einer Zone einer neueren App-Version.
@@ -82,6 +91,7 @@ class ZustandsBuchung {
     'zeitpunkt',
     'lepDelta',
     'auDelta',
+    'aspDelta',
     'zone',
     'wundenDelta',
     'kopfIniMalusDelta',
@@ -97,6 +107,7 @@ class ZustandsBuchung {
       zeitpunkt: zeitpunkt,
       lepDelta: lepDelta,
       auDelta: auDelta,
+      aspDelta: aspDelta,
       zone: zone,
       wundenDelta: wundenDelta,
       kopfIniMalusDelta: kopfIniMalusDelta,
@@ -118,6 +129,7 @@ class ZustandsBuchung {
         'zeitpunkt': zeitpunkt.toUtc().toIso8601String(),
         if (lepDelta != 0) 'lepDelta': lepDelta,
         if (auDelta != 0) 'auDelta': auDelta,
+        if (aspDelta != 0) 'aspDelta': aspDelta,
         if (zone != null) 'zone': zone.name,
         if (wundenDelta != 0) 'wundenDelta': wundenDelta,
         if (kopfIniMalusDelta != 0) 'kopfIniMalusDelta': kopfIniMalusDelta,
@@ -146,6 +158,7 @@ class ZustandsBuchung {
           DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
       lepDelta: zahl('lepDelta'),
       auDelta: zahl('auDelta'),
+      aspDelta: zahl('aspDelta'),
       zone: leseEnumWert<WundZone?>(
         json['zone'],
         'zone',

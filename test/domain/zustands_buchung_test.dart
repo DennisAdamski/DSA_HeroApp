@@ -29,6 +29,7 @@ void main() {
       zeitpunkt: zeit,
       lepDelta: 9,
       auDelta: 3,
+      aspDelta: -5,
       zone: WundZone.kopf,
       wundenDelta: -2,
       kopfIniMalusDelta: -7,
@@ -40,6 +41,7 @@ void main() {
 
     expect(geladen.toJson(), buchung.toJson());
     expect(geladen.zone, WundZone.kopf);
+    expect(geladen.aspDelta, -5);
     expect(geladen.ruecknahmeVon, 'b1');
     expect(geladen.hatUnbekannteZone, isFalse);
   });

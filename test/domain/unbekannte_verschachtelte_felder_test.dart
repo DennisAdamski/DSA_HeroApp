@@ -979,6 +979,7 @@ ZustandsBuchung _zustandsBuchung() => ZustandsBuchung(
   zeitpunkt: DateTime.utc(2026, 10, 7),
   lepDelta: -7,
   auDelta: -2,
+  aspDelta: -3,
   zone: WundZone.brust,
   wundenDelta: 2,
   kopfIniMalusDelta: 3,

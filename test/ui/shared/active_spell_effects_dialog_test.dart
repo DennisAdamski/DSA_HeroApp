@@ -860,4 +860,20 @@ void main() {
     );
     expect(find.textContaining('aufgezehrt'), findsOneWidget);
   });
+
+  testWidgets('der Effektdialog öffnet den Heilzauber-Dialog', (tester) async {
+    final katalog = await tester.runAsync(ladeEchtenRegelkatalog);
+    await openDialog(tester, overrides: katalog!.overrides);
+    await tester.pumpAndSettle();
+
+    await tester.tap(
+      find.byKey(const ValueKey<String>('spell-heilung-erhalten')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey<String>('heilung-dialog')),
+      findsOneWidget,
+    );
+  });
 }
