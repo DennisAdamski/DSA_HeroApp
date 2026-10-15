@@ -440,38 +440,26 @@ extension _HeroTalentsCells on _HeroTalentTableTabState {
       );
       return;
     }
-    final controller = TextEditingController();
-    final result = await showAdaptiveDetailSheet<String>(
+    final result = await showAdaptiveInputDialog<String>(
       context: context,
-      builder: (ctx) {
-        return AlertDialog(
-          title: const Text('Spezialisierung hinzufuegen'),
-          content: TextField(
-            controller: controller,
-            autofocus: true,
-            decoration: const InputDecoration(
-              hintText: 'Name der Spezialisierung',
-            ),
-            onSubmitted: (value) => Navigator.of(ctx).pop(value),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(),
-              child: const Text('Abbrechen'),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.of(ctx).pop(controller.text),
-              child: const Text('Hinzufuegen'),
-            ),
-          ],
-        );
-      },
+      builder: (_) => TalentSpecializationNameDialog(
+        choices: const [],
+        useSelection: false,
+        talentName: talent.name,
+        hint: talentSpezialisierungsHinweis(talent.name),
+        owned: currentSpecs,
+      ),
     );
-    controller.dispose();
-    if (result == null || result.trim().isEmpty) {
+    if (result == null || result.trim().isEmpty || !mounted) {
       return;
     }
     final name = result.trim();
+    if (currentSpecs.any((s) => s.toLowerCase() == name.toLowerCase())) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('"$name" ist bereits eingetragen.')),
+      );
+      return;
+    }
     final hero = _latestHero;
     if (!mounted) {
       return;

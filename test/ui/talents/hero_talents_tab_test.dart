@@ -11,6 +11,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
 import 'package:dsa_heldenverwaltung/domain/talent_special_ability.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/talent_specialization_hints.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/rules/house_rules/house_rule_registry.dart';
@@ -640,6 +641,64 @@ void main() {
         )
         .dx;
     expect(catalogX, lessThan(beX));
+  });
+
+  testWidgets('Spezialisierung hinzufügen schlägt Empfehlungen aus dem '
+      'Regelwerk vor', (tester) async {
+    final repo = FakeRepository(
+      heroes: [
+        buildHero(
+          talents: const <String, HeroTalentEntry>{
+            'tal_a': HeroTalentEntry(talentValue: 7),
+          },
+        ),
+      ],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    final actions = await openTalentsTab(tester, repo, buildCatalog());
+    await actions.startEdit();
+    await tester.pumpAndSettle();
+
+    final addButton = find.byKey(
+      const ValueKey<String>('talents-spec-add-tal_a'),
+    );
+    await tester.ensureVisible(addButton);
+    await tester.tap(addButton);
+    await tester.pumpAndSettle();
+
+    // Athletik: Empfehlungen aus den Talentbeschreibungen werden angeboten.
+    expect(find.text('Empfehlungen'), findsOneWidget);
+    final empfehlung = talentSpezialisierungsHinweis('Athletik')!.vorschlaege;
+    expect(empfehlung, isNotEmpty);
+    expect(
+      find.byKey(
+        ValueKey<String>(
+          'advancement-specialization-option-${empfehlung.first}',
+        ),
+      ),
+      findsOneWidget,
+    );
+
+    await tester.tap(
+      find.byKey(
+        ValueKey<String>(
+          'advancement-specialization-option-${empfehlung.first}',
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final field = tester.widget<TextField>(
+      find.byKey(const ValueKey<String>('advancement-specialization-name')),
+    );
+    expect(field.controller!.text, empfehlung.first);
   });
 
   testWidgets('gifted talents show reduced complexity and higher max TaW', (
