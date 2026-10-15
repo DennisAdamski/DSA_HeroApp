@@ -876,4 +876,18 @@ void main() {
       findsOneWidget,
     );
   });
+
+  testWidgets('der Effektdialog öffnet den Ruhe-Körper-Dialog', (tester) async {
+    final katalog = await tester.runAsync(ladeEchtenRegelkatalog);
+    await openDialog(tester, overrides: katalog!.overrides);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const ValueKey<String>('spell-ruhe-koerper')));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey<String>('ruhe-koerper-dialog')),
+      findsOneWidget,
+    );
+  });
 }

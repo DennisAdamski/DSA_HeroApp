@@ -68,7 +68,10 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   Schreibweg `HeilungErhalten` (ein Dokument mit `ZustandsBuchung` Art
   `heilung`, `aspDelta` und Protokoll, idempotent über die Vorgangs-ID). Nie
   geraten: ungerade AsP bei Wunden (Hexenspeichel) und Rettung von der
-  Schwelle des Todes.
+  Schwelle des Todes. Teilstand 3: Ruhe Körper ist ein eigener Schlafablauf
+  (`spell_effect_rest_rules.dart`, `RuheKoerperErhalten`), der die normale
+  Regeneration der Stunden ersetzt; Heilungs-Vor-/Nachteile und „evtl. 1 AsP“
+  werden nicht gerechnet, der Zaubernde trägt die Kosten.
 - `README.md` beschreibt Produktumfang, Architekturueberblick und Standard-Workflows.
 - `tool/sync_main_to_test.sh` mergt Main in Test;
   `tool/test_main_test_sync.py` sichert Erhalt, Konflikte und Wiederholungen ab.

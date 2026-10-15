@@ -17,6 +17,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/spell_effect_event_rules.dart
 import 'package:dsa_heldenverwaltung/rules/derived/spell_effect_protection_rules.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/spell_shield_actions.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/heilung/heilung_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/workspace/heilung/ruhe_koerper_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/schaden/schaden_dialog.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_begegnung_provider.dart';
 import 'package:dsa_heldenverwaltung/domain/spell_duration.dart';
@@ -522,6 +523,13 @@ class _ActiveSpellEffectsDialogState
                 showHeilungDialog(context: context, heroId: widget.heroId),
             icon: const Icon(Icons.healing_outlined),
             label: const Text('Heilzauber erhalten'),
+          ),
+          OutlinedButton.icon(
+            key: const ValueKey<String>('spell-ruhe-koerper'),
+            onPressed: () =>
+                showRuheKoerperDialog(context: context, heroId: widget.heroId),
+            icon: const Icon(Icons.bedtime_outlined),
+            label: const Text('Ruhe Körper (Schlaf)'),
           ),
           if (legacyBoni)
             OutlinedButton(
