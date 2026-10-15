@@ -3,14 +3,20 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/planung_bearbeiten_guard.dart';
 
+import 'package:dsa_heldenverwaltung/catalog/alchimikum_def.dart';
 import 'package:dsa_heldenverwaltung/domain/artefakt_daten.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_companion.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/alchimika_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/artefakt_spruchspeicher_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/inventar_menge_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/inventar_stapel_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/kampfgegenstand_ablegen_rules.dart';
+import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
+import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
+import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/alchimika_auswahl_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/artefakt_anwenden.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/artefakt_editor_abschnitt.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/inventory_eintrag_aktionen.dart';
@@ -80,6 +86,10 @@ class _InventoryItemEditorState extends ConsumerState<InventoryItemEditor> {
   // Ein fehlgeschlagener Schreibvorgang darf den Entwurf nicht stillschweigend
   // verlieren: der Editor bleibt offen und nennt den Grund.
   String? _speicherFehler;
+
+  // Zählt Katalogübernahmen: Der Abschnitt „Wirkung auf Vitalwerte“ füllt seine
+  // Felder nur einmal aus dem Entwurf und wird dafür neu aufgebaut.
+  int _katalogUebernahmen = 0;
 
   late TextEditingController _nameCtrl;
   late TextEditingController _anzahlCtrl;
@@ -157,6 +167,38 @@ class _InventoryItemEditorState extends ConsumerState<InventoryItemEditor> {
     );
 
     await _fuehreAus('Speichern', () => widget.onSaved(updated));
+  }
+
+  // Übernimmt ein Katalogmittel (TRANK) in den Entwurf. Nichts wird gespeichert
+  // oder gebucht; der Nutzer kann alles danach ändern.
+  Future<void> _waehleAlchimikum() async {
+    final heroId = PlanungsBearbeitungsBereich.heldVon(context);
+    final katalog =
+        (heroId == null
+                ? ref.read(rulesCatalogProvider)
+                : ref.read(heroRulesCatalogProvider(heroId)))
+            .valueOrNull;
+    final mittel = katalog?.alchimika ?? const <AlchimikumDef>[];
+    if (mittel.isEmpty) {
+      setState(
+        () => _speicherFehler =
+            'Der Katalog der Tränke und Heilmittel ist nicht geladen.',
+      );
+      return;
+    }
+    final wahl = await zeigeAlchimikaAuswahl(context: context, mittel: mittel);
+    if (wahl == null || !mounted) {
+      return;
+    }
+    final neu = mitAlchimikum(_draft, wahl.mittel, wahl.stufe);
+    setState(() {
+      _speicherFehler = null;
+      _draft = neu;
+      _katalogUebernahmen++;
+      _nameCtrl.text = neu.gegenstand;
+      _beschreibungCtrl.text = neu.beschreibung;
+      _wertCtrl.text = neu.wertSilber > 0 ? neu.wertSilber.toString() : '';
+    });
   }
 
   // Aktionen am gespeicherten Eintrag; Fehler bleiben im Editor sichtbar.
@@ -352,6 +394,16 @@ class _InventoryItemEditorState extends ConsumerState<InventoryItemEditor> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        if (!_isLinked)
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton.icon(
+              key: const ValueKey<String>('inventory-editor-katalog'),
+              onPressed: _isSaving ? null : _waehleAlchimikum,
+              icon: const Icon(Icons.local_pharmacy_outlined),
+              label: const Text('Aus Katalog: Tränke & Heilmittel'),
+            ),
+          ),
         if (_isLinked)
           _LinkedHint(gegenstand: _draft.gegenstand)
         else
@@ -418,6 +470,7 @@ class _InventoryItemEditorState extends ConsumerState<InventoryItemEditor> {
             !_isLinked) ...[
           const SizedBox(height: _fieldSpacing),
           VitalwirkungEditorAbschnitt(
+            key: ValueKey<int>(_katalogUebernahmen),
             wirkung: _draft.vitalwirkung,
             onChanged: (wirkung) =>
                 setState(() => _draft = _draft.copyWith(vitalwirkung: wirkung)),

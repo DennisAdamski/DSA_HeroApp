@@ -29,6 +29,10 @@ Separate runtime catalog:
 - `assets/catalogs/house_rules_v1/spell_effects.json` (Zauberprofile, MAG-EFF-01;
   Manifest-Schlüssel `spell_effects`, unverschlüsselt, ohne Wirkungstexte;
   Prüfung über `test/catalog/spell_effect_catalog_test.dart`)
+- `assets/catalogs/house_rules_v1/alchimika.json` (Tränke und Heilmittel, TRANK;
+  Manifest-Schlüssel `alchimika`, unverschlüsselt, nur belegte Eckdaten mit
+  Buch, gedruckter Seite und Chunk-ID sowie kurze eigene Wirkungstexte;
+  Prüfung über `test/catalog/alchimika_catalog_test.dart`)
 
 Synchronizable custom entries in hero storage:
 

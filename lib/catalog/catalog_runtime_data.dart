@@ -37,6 +37,7 @@ class CatalogSourceData {
     required this.sections,
     required this.reisebericht,
     this.spellEffects = const <Map<String, dynamic>>[],
+    this.alchimika = const <Map<String, dynamic>>[],
     this.catalogSaltV3,
   });
 
@@ -57,6 +58,10 @@ class CatalogSourceData {
 
   /// Zauberprofil-Rohdaten (MAG-EFF), nicht Teil der Settings-Verwaltung.
   final List<Map<String, dynamic>> spellEffects;
+
+  /// Rohdaten alchimistischer Mittel (TRANK), nicht Teil der
+  /// Settings-Verwaltung.
+  final List<Map<String, dynamic>> alchimika;
 
   /// Globaler PBKDF2-Salt fuer v3-verschluesselte Inhalte dieses Katalogs.
   ///
@@ -213,6 +218,7 @@ class CatalogRuntimeData {
         sections: effectiveSections,
         reisebericht: baseData.reisebericht,
         spellEffects: baseData.spellEffects,
+        alchimika: baseData.alchimika,
         catalogSaltV3: baseData.catalogSaltV3,
       ),
       issues: List<CatalogIssue>.unmodifiable(issues),

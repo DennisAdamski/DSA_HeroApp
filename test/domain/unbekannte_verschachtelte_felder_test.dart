@@ -95,7 +95,16 @@ final _kampf = <_Modell>[
   _Modell(
     'Vitalwirkung',
     schluessel: Vitalwirkung.jsonSchluessel,
-    voll: () => const Vitalwirkung(lep: 8, asp: 2, aup: 3, wunden: 1).toJson(),
+    voll: () => const Vitalwirkung(
+      lep: 8,
+      asp: 2,
+      aup: 3,
+      wunden: 1,
+      lepWurf: '2W6+4',
+      aspWurf: '1W6',
+      aupWurf: '1W3',
+      lepProWunde: 7,
+    ).toJson(),
     lade: (json) => Vitalwirkung.fromJson(json).toJson(),
     bearbeite: (json) => Vitalwirkung.fromJson(json).copyWith(lep: 9).toJson(),
     unbekannt: (json) => Vitalwirkung.fromJson(json).unbekannteFelder,

@@ -62,6 +62,22 @@ class _VitalwirkungEditorAbschnittState
     widget.onChanged(leer ? null : neu);
   }
 
+  // Würfelvorschläge aus dem Katalog; sie sind hier nur lesbar und bleiben
+  // beim Ändern der Zahlenfelder über `copyWith` erhalten.
+  static String? _katalogHinweis(Vitalwirkung? wirkung) {
+    if (wirkung == null) {
+      return null;
+    }
+    final teile = <String>[
+      if (wirkung.lepWurf.isNotEmpty) 'LeP ${wirkung.lepWurf}',
+      if (wirkung.aspWurf.isNotEmpty) 'AsP ${wirkung.aspWurf}',
+      if (wirkung.aupWurf.isNotEmpty) 'AuP ${wirkung.aupWurf}',
+      if (wirkung.lepProWunde > 0)
+        'je ${wirkung.lepProWunde} LeP eine Wunde geschlossen',
+    ];
+    return teile.isEmpty ? null : 'Aus dem Katalog: ${teile.join(' · ')}';
+  }
+
   Widget _feld(String schluessel, TextEditingController c, String label) {
     return Expanded(
       child: TextField(
@@ -92,6 +108,14 @@ class _VitalwirkungEditorAbschnittState
           'lässt sich alles ändern; gewürfelte Werte trägst du dort ein.',
           style: theme.textTheme.bodySmall,
         ),
+        if (_katalogHinweis(widget.wirkung) case final hinweis?) ...[
+          const SizedBox(height: 4),
+          Text(
+            hinweis,
+            key: const ValueKey<String>('inventory-editor-vital-katalog'),
+            style: theme.textTheme.bodySmall,
+          ),
+        ],
         const SizedBox(height: 8),
         Row(
           children: [
