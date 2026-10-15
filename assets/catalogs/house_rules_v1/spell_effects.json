@@ -144,5 +144,16 @@
     "variantenHinweis": "Rettung von der Schwelle des Todes und Selbstheilung (Spontane Modifikation) sind nicht berechnet.",
     "rundungsHinweis": "Wunden: 1 LeP je 2 AsP; für ungerade AsP ist die Rundung nicht festgelegt, die App verlangt eine gerade Zahl. Krankheiten: 1 LeP je AsP. Vergiftungen: 2 LeP je AsP. Höchstens ZfW AsP auf einmal.",
     "hinweis": "Einmalige Heilung des Empfängers; die schädliche Wirkung von Giften und Krankheiten wird nicht gestoppt. Schließt keine Wunden."
+  },
+  {
+    "id": "profil_ruhe_koerper_grund",
+    "spellId": "spell_ruhe_koerper_ruhe_geist",
+    "profilVersion": 1,
+    "status": "belegt",
+    "beleg": { "buch": "Liber Cantiones", "seite": "220", "chunkId": 2200 },
+    "eingaben": ["zfpStern", "stunden", "aspRegeneration", "wunden"],
+    "variantenHinweis": "Die Reversalis (Schlaflosigkeit, ZfP* Punkte Erschöpfung) ist nicht umgesetzt.",
+    "rundungsHinweis": "Je verschlafener Stunde 2 LeP, 4 Überanstrengung und 8 Erschöpfung weniger; je 6 volle Stunden heilt eine Wunde vollständig (ganzzahlige Division). Heilungs-Vor- und Nachteile und die „evtl. 1 AsP“ je Stunde sind nicht gerechnet.",
+    "hinweis": "Ersetzt die normale Regeneration dieser Stunden. Der Schlaf dauert höchstens ZfP* Stunden; der Zaubernde trägt die Kosten (4 AsP + 2 AsP je Stunde), nicht der Schlafende."
   }
 ]

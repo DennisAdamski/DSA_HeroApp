@@ -6,6 +6,7 @@ import 'package:dsa_heldenverwaltung/ablaeufe/heilung_erhalten.dart';
 import 'package:dsa_heldenverwaltung/ablaeufe/matrix_ausloesen.dart';
 import 'package:dsa_heldenverwaltung/ablaeufe/rast_abschliessen.dart';
 import 'package:dsa_heldenverwaltung/ablaeufe/regelprofil_uebernehmen.dart';
+import 'package:dsa_heldenverwaltung/ablaeufe/ruhe_koerper_erhalten.dart';
 import 'package:dsa_heldenverwaltung/ablaeufe/schaden_erhalten.dart';
 import 'package:dsa_heldenverwaltung/ablaeufe/schaden_zuruecknehmen.dart';
 import 'package:dsa_heldenverwaltung/ablaeufe/steigerungsrunde_uebernehmen.dart';
@@ -69,6 +70,15 @@ final schadenErhaltenProvider = Provider<SchadenErhalten>((ref) {
 /// Heldenrepository.
 final heilungErhaltenProvider = Provider<HeilungErhalten>((ref) {
   return HeilungErhalten(
+    repository: ref.watch(heroRepositoryProvider),
+    uhr: DateTime.now,
+  );
+});
+
+/// Bindet den Ablauf „Ruhe Körper“ (MAG-EFF-05) an das aktive
+/// Heldenrepository.
+final ruheKoerperErhaltenProvider = Provider<RuheKoerperErhalten>((ref) {
+  return RuheKoerperErhalten(
     repository: ref.watch(heroRepositoryProvider),
     uhr: DateTime.now,
   );
