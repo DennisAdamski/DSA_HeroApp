@@ -74,10 +74,10 @@
     "profilVersion": 1,
     "status": "belegt",
     "beleg": { "buch": "Liber Cantiones", "seite": "214", "chunkId": 2194 },
-    "eingaben": ["zfpStern", "kontext"],
+    "eingaben": ["zfpStern", "kontext", "asp"],
     "variantenHinweis": "Selbstanwendung und Gegenzauber sind eigene Profile.",
     "rundungsHinweis": "Keine Rundung nötig (MR + ZfP*, im passenden geistigen Kontext zusätzlich +2).",
-    "hinweis": "Allgemeine MR und kontextbezogene MR getrennt führen."
+    "hinweis": "Allgemeine MR und kontextbezogene MR getrennt führen. Die Dauer wird mit AsP vorausbezahlt (1 AsP je Spielrunde über die Grundkosten hinaus); es laufen keine Kosten nach."
   },
   {
     "id": "profil_blitz_grund",

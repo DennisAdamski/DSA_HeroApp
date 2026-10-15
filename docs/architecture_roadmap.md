@@ -25,8 +25,11 @@ Ist-Zustand erneut prüfen und den konkreten Teilumfang festlegen.
   `SpellEffectInstance`, Attributo als mehrere Quellen, Rest siehe
   Integrationsplan; MAG-EFF-03 teilweise umgesetzt (15.10.2026) — Blitz,
   Plumbumbarum, Adlerauge, Psychostabilis; Falkenauge und Ängste lindern
-  (einmaliger Verbrauch) mit MAG-EFF-04 (teilweise) umgesetzt; offen sind
-  Ende-Gründe, laufende Kosten und die ereignisbasierten Profile;
+  (einmaliger Verbrauch) mit MAG-EFF-04 (teilweise) umgesetzt, Psychostabilis
+  schlägt seine vorausbezahlte Dauer aus Zusatz-AsP vor; „laufende Kosten“
+  entfallen (regelseitig nicht belegt, siehe Integrationsplan); offen sind
+  Ende-Gründe (Ereignisprotokoll am Helden, Entscheidung offen) und die
+  ereignisbasierten Profile;
   MAG-EFF-05 teilweise umgesetzt (15.10.2026) — Gardianum als Schutzvorrat,
   Heilung durch Balsam, Hexenspeichel und Lach dich gesund, Ruhe Körper als
   Schlafablauf; einfache Zauber Karnifilo und Seidenzunge;

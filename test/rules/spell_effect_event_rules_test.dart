@@ -279,7 +279,28 @@ void main() {
       expect(dauerVorschlag(kFalkenaugeZauberId), isNull);
       // ZfW/2 Aktionen (Blitz): Rundung nicht belegt → kein Vorschlag.
       expect(dauerVorschlag(kBlitzZauberId, zfw: 7), isNull);
+      // Psychostabilis: nach AsP – ohne Angabe kein Vorschlag.
       expect(dauerVorschlag(kPsychostabilisZauberId), isNull);
+    });
+
+    test('Psychostabilis: 1 Spielrunde je vorausbezahltem Zusatz-AsP', () {
+      final dauer = dauerVorschlag(
+        kPsychostabilisZauberId,
+        zusaetzlicheAsp: 7,
+      )!;
+      expect(dauer.amount, 7);
+      expect(dauer.unit, SpellDurationUnit.spielrunden);
+      // Grenzfälle: 0 oder negativ ergeben keinen Vorschlag.
+      expect(
+        dauerVorschlag(kPsychostabilisZauberId, zusaetzlicheAsp: 0),
+        isNull,
+      );
+      expect(
+        dauerVorschlag(kPsychostabilisZauberId, zusaetzlicheAsp: -2),
+        isNull,
+      );
+      // Andere Zauber ignorieren die Angabe.
+      expect(dauerVorschlag(kBlitzZauberId, zusaetzlicheAsp: 7), isNull);
     });
   });
 
