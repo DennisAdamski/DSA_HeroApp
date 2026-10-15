@@ -94,7 +94,7 @@ Die IDs entsprechen den sieben Punkten der ursprünglichen Empfehlung.
 „Grundlage“ bezeichnet technische Vorarbeiten, „Aufbau“ darauf aufsetzende
 Verbesserungen und „Begleitend“ fortlaufende Absicherung.
 
-- [ ] **ARCH-01 — Oberfläche nach Spielsituationen organisieren** · Aufbau
+- [x] **ARCH-01 — Oberfläche nach Spielsituationen organisieren** · Aufbau (abgenommen 15.10.2026)
 - [ ] **ARCH-02 — Regelrelevante Eigenschaften strukturiert speichern** · Grundlage
 - [x] **ARCH-03 — Gemeinsame Ausrüstungsdaten für Inventar und Kampf** · Grundlage (abgenommen 07.10.2026)
 - [ ] **ARCH-04 — Versionierte Regelprofile und erklärbare Berechnungen** · Aufbau
@@ -197,15 +197,16 @@ Neubau vorerst über die injizierte Brücke `KartoBestandsAdapter`. Nachweise,
 Commit-IDs und Abgrenzungen stehen unter „R1: Übergabe“ in den
 [Umsetzungsplänen](redesign_implementation.md).
 
-**ARCH-01 bleibt trotzdem offen.** Die Spielanordnung mit echten Werten und
+**ARCH-01 ist abgenommen (funktional 11.10.2026, manuelle Bedienprüfung
+15.10.2026).** Die Spielanordnung mit echten Werten und
 Bestandsaktionen ist umgesetzt (R2), ebenso die gestalterische Integration der
 Fachansichten und der Entwicklungsbereich samt Gesamtabnahme (R3, siehe
 [redesign_acceptance.md](redesign_acceptance.md)). „Schaden erhalten“ gibt es
 seit dem ARCH-05-Teilstand (3) als geführten Ablauf in beiden Oberflächen,
 zurücknehmbar seit ARCH-06 Teilstand 2.
 
-**Abnahmeprüfung 11.10.2026 — funktional abgenommen, manuelle Prüfung offen.**
-Der Hauptpunkt bleibt bewusst nicht abgehakt, bis die Bedienprüfung vorliegt.
+**Abnahmeprüfung 11.10.2026 — funktional abgenommen; manuelle Prüfung am
+15.10.2026 nachgeholt.** Der Hauptpunkt wurde erst mit der Bedienprüfung abgehakt.
 
 - *Automatisiert:* `flutter analyze --no-pub` ohne Befund;
   `flutter test --no-pub --concurrency=1 test/ui2 test/ui/workspace
@@ -217,8 +218,9 @@ Der Hauptpunkt bleibt bewusst nicht abgehakt, bis die Bedienprüfung vorliegt.
 - *Abgespalten:* Persönliche Favoriten (eigener Auftrag, Persistenz und Sync
   zu entscheiden); Offline-/Sync-Statusanzeige (gehört zu ARCH-06); persistenter
   Kampfrundenzähler bleibt aus, das Gefecht führt Runden flüchtig.
-- *Offen:* manuelle Bedienprüfung, Checkliste in
-  [redesign_acceptance.md](redesign_acceptance.md#manuelle-bedienprüfung-offen).
+- *Manuell:* Checkliste in
+  [redesign_acceptance.md](redesign_acceptance.md#manuelle-bedienprüfung-abgenommen-15102026)
+  am 15.10.2026 vom Nutzer vollständig bestätigt (Gerät nicht vermerkt).
 
 **Abhängigkeiten / offene Entscheidungen:** Schreibende Spielaktionen auf
 ARCH-05/06 aufbauen. Navigation und Korrekturbedienung sind umgesetzt;
