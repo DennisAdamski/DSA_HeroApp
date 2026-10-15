@@ -170,6 +170,8 @@ Future<void> benutzeGefechtsPosten({
 ///
 /// Ein Matrixgeber (`artefaktDaten`) wird nie abgebucht: Er öffnet stattdessen
 /// den Auslösedialog der Bestandsbrücke, der AsP und Stabilitätswurf bucht.
+/// Ein Verbrauchsgegenstand mit Vitalwirkung öffnet den Anwendungsdialog, der
+/// Vitalwerte, Wunden und den Verbrauch eines Stücks bucht.
 /// Bei allen anderen Gegenständen fragt die App, ob ein Stück abgebucht wird.
 ///
 /// Schreibt frisch über `HeroActions.updateHero` und trifft den Eintrag über
@@ -184,6 +186,16 @@ Future<void> schliesseGefechtsGegenstandAb({
 }) async {
   if (eintrag.artefaktDaten != null) {
     await bestand.gefechtsMatrixAusloesen(
+      context: context,
+      ref: ref,
+      heroId: heroId,
+      eintrag: eintrag,
+    );
+    return;
+  }
+  // Ein Heiltrank o. Ä. bucht Wirkung und Verbrauch im eigenen Dialog.
+  if (eintrag.vitalwirkung?.istBelegt ?? false) {
+    await bestand.gefechtsVitalwirkung(
       context: context,
       ref: ref,
       heroId: heroId,

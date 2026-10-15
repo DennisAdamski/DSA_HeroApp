@@ -63,6 +63,19 @@ abstract interface class KartoGefechtsAdapter {
     required HeroInventoryEntry eintrag,
   });
 
+  /// Öffnet den Dialog „Gegenstand anwenden“ eines Verbrauchsgegenstands mit
+  /// Vitalwirkung (Heiltrank, Verband …).
+  ///
+  /// Der Dialog bucht LeP, AsP, AuP und geschlossene Wunden und zieht auf
+  /// Wunsch ein Stück ab; Fehler zeigt er selbst. Liefert `true`, wenn die
+  /// Wirkung gebucht wurde.
+  Future<bool> gefechtsVitalwirkung({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String heroId,
+    required HeroInventoryEntry eintrag,
+  });
+
   /// Öffnet den Einsatzdialog eines Zaubertalismans (Auxiliators) zu einem
   /// gerade gewirkten Zauber.
   ///

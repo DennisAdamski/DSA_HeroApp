@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:dsa_heldenverwaltung/ablaeufe/vitalwirkung_anwenden.dart';
 import 'package:dsa_heldenverwaltung/ablaeufe/artefakt_protokollieren.dart';
 import 'package:dsa_heldenverwaltung/ablaeufe/auxiliator_einsetzen.dart';
 import 'package:dsa_heldenverwaltung/ablaeufe/heilung_erhalten.dart';
@@ -70,6 +71,15 @@ final schadenErhaltenProvider = Provider<SchadenErhalten>((ref) {
 /// Heldenrepository.
 final heilungErhaltenProvider = Provider<HeilungErhalten>((ref) {
   return HeilungErhalten(
+    repository: ref.watch(heroRepositoryProvider),
+    uhr: DateTime.now,
+  );
+});
+
+/// Bindet den Ablauf „Gegenstand anwenden“ (Heiltrank, Verband …) an das
+/// aktive Heldenrepository.
+final vitalwirkungAnwendenProvider = Provider<VitalwirkungAnwenden>((ref) {
+  return VitalwirkungAnwenden(
     repository: ref.watch(heroRepositoryProvider),
     uhr: DateTime.now,
   );

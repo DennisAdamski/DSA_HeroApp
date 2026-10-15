@@ -4,7 +4,8 @@ import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/inventory_kampf_uebernehmen.dart';
 
 /// Aktionen am gespeicherten Inventareintrag im Editor (ARCH-03): Stapel
-/// teilen, zusammenführen, verkaufen und in den Kampfbereich übernehmen.
+/// teilen, zusammenführen, verkaufen, in den Kampfbereich übernehmen und
+/// Verbrauchsgegenstände mit Vitalwirkung anwenden.
 ///
 /// Jede Aktion erscheint nur mit Rückruf; `null` heißt „hier nicht
 /// möglich“. [gesperrt] sperrt alle Knöpfe, etwa während des Speicherns.
@@ -20,6 +21,7 @@ class InventoryEintragAktionen extends StatelessWidget {
     this.onKampfUebernehmen,
     this.onAusloesen,
     this.onAufladen,
+    this.onAnwenden,
     this.ausloesenText = 'Auslösen',
   });
 
@@ -47,6 +49,9 @@ class InventoryEintragAktionen extends StatelessWidget {
   /// Lädt einen leeren, aufladbaren Spruchspeicher wieder auf.
   final VoidCallback? onAufladen;
 
+  /// Wendet einen Verbrauchsgegenstand mit Vitalwirkung an (Heiltrank …).
+  final VoidCallback? onAnwenden;
+
   /// Beschriftung des Auslöseknopfs (beim Zaubertalisman „Auxiliator einsetzen“).
   final String ausloesenText;
 
@@ -60,6 +65,13 @@ class InventoryEintragAktionen extends StatelessWidget {
           onPressed: frei(onAusloesen),
           icon: const Icon(Icons.auto_awesome),
           label: Text(ausloesenText),
+        ),
+      if (onAnwenden != null)
+        FilledButton.icon(
+          key: const ValueKey<String>('inventory-editor-anwenden'),
+          onPressed: frei(onAnwenden),
+          icon: const Icon(Icons.healing),
+          label: const Text('Anwenden'),
         ),
       if (onAufladen != null)
         FilledButton.icon(

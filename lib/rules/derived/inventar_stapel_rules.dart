@@ -141,7 +141,8 @@ String? zusammenfuehrenGesperrt(
       quelle.magischDescription.trim() == ziel.magischDescription.trim() &&
       quelle.isGeweiht == ziel.isGeweiht &&
       quelle.geweihtDescription.trim() == ziel.geweihtDescription.trim() &&
-      _modifikatoren(quelle) == _modifikatoren(ziel);
+      _modifikatoren(quelle) == _modifikatoren(ziel) &&
+      _vitalwirkung(quelle) == _vitalwirkung(ziel);
   if (!gleich) {
     return 'Nur gleiche Gegenstände lassen sich zusammenführen.';
   }
@@ -212,6 +213,11 @@ bool _mitKampfVerknuepft(HeroInventoryEntry e) {
 String _name(HeroInventoryEntry e) => e.gegenstand.trim().toLowerCase();
 
 // Modifikatoren als vergleichbarer Text.
+// Zwei Stapel mit verschiedener Wirkung wären nicht „gleich“.
+String _vitalwirkung(HeroInventoryEntry e) {
+  return stableContentHash(<String, Object?>{'v': e.vitalwirkung?.toJson()});
+}
+
 String _modifikatoren(HeroInventoryEntry e) {
   return stableContentHash(<String, Object?>{
     'm': e.modifiers.map((m) => m.toJson()).toList(),
