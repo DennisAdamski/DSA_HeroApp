@@ -40,8 +40,18 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   Beenden einer Quelle entfernt nur sie. Tischregel: bei mehreren Attributo
   zählt je Eigenschaft nur der **beste** Wert (nicht Summe). „(A)“ in
   `SpellDef.duration` = aufrechterhalten (`aufrechterhaltungsBefund`); der
-  Gefecht-Wirkdialog belegt die Anzahl daraus nur vor. Instanzen anderer Profile rechnen
-  noch keine Zahlen (MAG-EFF-03).
+  Gefecht-Wirkdialog belegt die Anzahl daraus nur vor. MAG-EFF-03
+  (Teilstand 1): empfangene Kampf-Mali Blitz (AT/PA-Basis, Helden-INI) und
+  Plumbumbarum (AT, INI-Basis) rechnet `spell_effect_combat_rules.dart` aus
+  Instanzen (`zfpStern`, `zfw`); sie laufen als benannte Quellen in die
+  Basiswert-Herleitung (`DerivedStats.zauberKampf`). Teilstand 2: Adlerauge (Sinnesschärfe),
+  Blitz-Probenzuschlag und Psychostabilis (MR) rechnet dasselbe Modul;
+  `spell_effect_probe_rules.dart` legt Probenbeiträge als Startwert des
+  situativen Modifikators in Talent-/Zauberproben (`probeMitSpellEffekten`,
+  zentral in `showLoggedProbeDialog`/`zeigeGefechtsprobe`). Unbelegtes
+  (Blindkampf-/Konzentrationsstärke-Halbierung, Fernkampf-Blitz) wird nie
+  geraten, sondern als Hinweis gemeldet; andere Profile rechnen noch keine
+  Zahlen.
 - `README.md` beschreibt Produktumfang, Architekturueberblick und Standard-Workflows.
 - `tool/sync_main_to_test.sh` mergt Main in Test;
   `tool/test_main_test_sync.py` sichert Erhalt, Konflikte und Wiederholungen ab.

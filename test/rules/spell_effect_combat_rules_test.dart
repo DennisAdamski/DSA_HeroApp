@@ -35,7 +35,7 @@ SpellEffectInstance _blitz(
 SpellEffectInstance _plumbum(String id, {int? zfp = 6}) =>
     SpellEffectInstance(id: id, effectId: kPlumbumbarumZauberId, zfpStern: zfp);
 
-StatModifikatorQuelle _quelle(SpellEffectKampfBeitraege b, String name) =>
+StatModifikatorQuelle _quelle(SpellEffectBeitraege b, String name) =>
     b.statQuellen.singleWhere((q) => q.bezeichnung == name);
 
 void main() {
@@ -46,8 +46,8 @@ void main() {
     katalog = (await ladeEchtenRegelkatalog()).catalog;
   });
 
-  SpellEffectKampfBeitraege rechne(HeroState z, {bool blindkampf = false}) =>
-      berechneSpellEffectKampfBeitraege(
+  SpellEffectBeitraege rechne(HeroState z, {bool blindkampf = false}) =>
+      berechneSpellEffectBeitraege(
         zustand: z,
         katalog: katalog,
         blindkampf: blindkampf,
@@ -82,7 +82,7 @@ void main() {
 
     expect(_quelle(b, 'Blitz dich find').mods.at, -3);
     expect(b.heldenIniMalus, 0);
-    expect(b.hinweise.single, contains('ZfW fehlt'));
+    expect(b.hinweise.any((h) => h.contains('ZfW fehlt')), isTrue);
   });
 
   test('Blitz ohne ZfP* rechnet nichts und sagt es', () {
@@ -142,7 +142,7 @@ void main() {
     final z = _mit(_zustand(), _blitz('b'));
 
     expect(
-      berechneSpellEffectKampfBeitraege(zustand: z, katalog: null).istLeer,
+      berechneSpellEffectBeitraege(zustand: z, katalog: null).istLeer,
       isTrue,
     );
     expect(

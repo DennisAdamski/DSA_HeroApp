@@ -27,7 +27,7 @@ class HeroStatInputs {
     required this.wounds,
     this.textAufteilung,
     this.eigenschaftHerleitungen,
-    this.zauberKampf = const SpellEffectKampfBeitraege(),
+    this.zauberEffekte = const SpellEffectBeitraege(),
   });
   final ModifierParseResult parsed;
   final InventoryModifierAggregation inventory;
@@ -43,7 +43,7 @@ class HeroStatInputs {
   final EigenschaftHerleitungen? eigenschaftHerleitungen;
 
   /// Empfangene Kampf-Mali laufender Zaubereffekte (MAG-EFF-03).
-  final SpellEffectKampfBeitraege zauberKampf;
+  final SpellEffectBeitraege zauberEffekte;
 
   /// Eigenschaftswerte für Proben: [effective] abzüglich der wundbedingten
   /// Eigenschaftsverluste. Abgeleitete Werte rechnen nie damit (WdS S. 111).
@@ -60,7 +60,7 @@ class HeroStatInputs {
         inventoryStatMods: inventory.statMods,
         wundStatMods: wundEffekteToStatModifiers(wounds),
         textAufteilung: textAufteilung,
-        zauberKampf: zauberKampf,
+        zauberEffekte: zauberEffekte,
       );
 }
 
@@ -112,10 +112,10 @@ HeroStatInputs computeHeroStatInputs({
     wounds: wundEffekte,
     textAufteilung: herkunftsQuellen(breakdown),
     eigenschaftHerleitungen: effektiveHerleitungen,
-    zauberKampf: berechneSpellEffectKampfBeitraege(
+    zauberEffekte: berechneSpellEffectBeitraegeFuerHeld(
+      held: hero,
       zustand: state,
       katalog: catalog,
-      blindkampf: heldKenntBlindkampf(hero, catalog),
     ),
   );
 }

@@ -292,10 +292,10 @@ class _ActiveSpellEffectsDialogState
     HeroSheet hero,
     RulesCatalog? catalog,
   ) {
-    final kampf = berechneSpellEffectKampfBeitraege(
+    final kampf = berechneSpellEffectBeitraegeFuerHeld(
+      held: hero,
       zustand: state,
       katalog: catalog,
-      blindkampf: heldKenntBlindkampf(hero, catalog),
     );
     final instanzen = state.activeSpellEffects.instanzen;
     final legacyBoni =

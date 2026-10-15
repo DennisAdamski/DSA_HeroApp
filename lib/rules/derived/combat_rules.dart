@@ -657,8 +657,8 @@ CombatPreviewStats computeCombatPreviewStats(
     iniWurf: iniWurfEffective,
     wuerfel: iniDiceCount,
     axxeleratus: axxIniBonus,
-    zauberMalus: derived.zauberKampf.heldenIniMalus,
-    zauberName: derived.zauberKampf.heldenIniQuelle,
+    zauberMalus: derived.zauberEffekte.heldenIniMalus,
+    zauberName: derived.zauberEffekte.heldenIniQuelle,
     manuell: manualMods.iniMod,
   );
   final heldenInitiative = heldenIniHerleitung.wert;

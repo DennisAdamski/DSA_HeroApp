@@ -149,6 +149,7 @@ class _VertrautenSpielSectionState
       ref: ref,
       heroId: widget.heroId,
       request: vertrautenChProbe(snapshot.probenEigenschaften),
+      zaubereffekteAnwenden: false,
       onResolved: (ergebnis) => erfolg = ergebnis.success,
     );
     if (erfolg != true || !mounted) return;
@@ -216,6 +217,7 @@ class _VertrautenSpielSectionState
       ref: ref,
       heroId: widget.heroId,
       request: request,
+      zaubereffekteAnwenden: false,
       onResolved: (ergebnis) => erfolg = ergebnis.success,
     );
     if (!mounted) return;
@@ -249,6 +251,7 @@ class _VertrautenSpielSectionState
       ref: ref,
       heroId: widget.heroId,
       request: bau(c),
+      zaubereffekteAnwenden: false,
     );
   }
 
