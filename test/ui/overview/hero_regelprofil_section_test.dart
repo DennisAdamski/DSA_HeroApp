@@ -204,6 +204,42 @@ void main() {
     expect(find.text('Regelprofil aktualisieren'), findsNothing);
   });
 
+  testWidgets('Profil lösen: Abbrechen schreibt nichts, Lösen entfernt es', (
+    tester,
+  ) async {
+    final held = basisHeld.copyWith(id: 'alt', regelProfil: global);
+    final zustand = ladeBestandsheld(Bestandsheld.kriegerNormal).state;
+    final repo = BogenTestRepository(heroes: [held], states: {'alt': zustand});
+    final c = container(repo, held);
+    await tester.runAsync(() async {
+      await warte(c, regelProfilVorschauProvider('alt'));
+    });
+    await zeige(tester, c, 'alt');
+
+    await tester.tap(find.byKey(const ValueKey('regelprofil-loesen')));
+    await tester.pumpAndSettle();
+    expect(find.text('Festgehaltenen Regelstand lösen?'), findsOneWidget);
+    await tester.tap(
+      find.byKey(const ValueKey('regelprofil-loesen-abbrechen')),
+    );
+    await tester.pumpAndSettle();
+    expect(repo.bogenSpeicherungen, 0);
+
+    await tester.tap(find.byKey(const ValueKey('regelprofil-loesen')));
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(const ValueKey('regelprofil-loesen-bestaetigen')),
+    );
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 300)),
+    );
+    await tester.pumpAndSettle();
+
+    final gespeichert = await tester.runAsync(() => repo.gespeichert('alt'));
+    expect(gespeichert!.regelProfil, isNull);
+    expect(repo.bogenSpeicherungen, 1);
+  });
+
   testWidgets('Speicherfehler erscheint im Dialog und lässt ihn offen', (
     tester,
   ) async {

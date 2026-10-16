@@ -229,6 +229,34 @@ void main() {
       expect(c.read(isHouseRuleActiveProvider('epic_rules_v1')), isFalse);
     });
 
+    test(
+      'epische Nachteile folgen dem Profil des Helden, nicht den Einstellungen',
+      () async {
+        const nachteile = EpicRuleKeys.disadvantages;
+        final mitProfil = container(
+          profil: globalesProfil(),
+          deaktiviert: {'epic_rules_v1'},
+        );
+        await warteAufKatalog(mitProfil, heldId);
+        expect(
+          mitProfil.read(
+            heroHouseRuleActiveProvider((heroId: heldId, paketId: nachteile)),
+          ),
+          isTrue,
+        );
+        expect(mitProfil.read(isHouseRuleActiveProvider(nachteile)), isFalse);
+
+        final ohneProfil = container(deaktiviert: {'epic_rules_v1'});
+        await warteAufKatalog(ohneProfil, heldId);
+        expect(
+          ohneProfil.read(
+            heroHouseRuleActiveProvider((heroId: heldId, paketId: nachteile)),
+          ),
+          isFalse,
+        );
+      },
+    );
+
     test('ein nicht verstandenes Profil wird wie keines behandelt', () async {
       final profil = globalesProfil().copyWith(formatVersion: 99);
       final c = container(profil: profil);

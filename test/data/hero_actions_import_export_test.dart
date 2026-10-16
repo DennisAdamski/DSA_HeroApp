@@ -10,6 +10,7 @@ import 'package:dsa_heldenverwaltung/data/custom_catalog_repository.dart';
 import 'package:dsa_heldenverwaltung/domain/attribute_modifiers.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_language_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_regelprofil.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_spell_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
@@ -302,6 +303,77 @@ void main() {
     expect(snapshot.entries.single.id, 'tal_custom');
     expect(snapshot.issues, isEmpty);
     expect((await repo.listHeroes()).single.id, 'new-id');
+  });
+
+  test('Export und Import erhalten das Regelprofil unverändert', () async {
+    final profil = HeroRegelProfil(
+      catalogVersion: 'house_rules_v1',
+      pakete: <HeroRegelProfilPaket>[
+        HeroRegelProfilPaket(
+          paketId: 'paket_alt',
+          pruefsumme: 'sum-alt',
+          manifest: const <String, Object?>{
+            'id': 'paket_alt',
+            'title': 'Altes Paket',
+            'description': '',
+            'priority': 0,
+            'patches': <Object?>[],
+          },
+        ),
+      ],
+    );
+    const attribute = Attributes(
+      mu: 8,
+      kl: 8,
+      inn: 8,
+      ch: 8,
+      ff: 8,
+      ge: 8,
+      ko: 8,
+      kk: 8,
+    );
+    final quelle = FakeRepository(
+      heroes: [
+        HeroSheet(
+          id: 'mit-profil',
+          name: 'Mit Profil',
+          level: 1,
+          attributes: attribute,
+          regelProfil: profil,
+        ),
+      ],
+      states: {
+        'mit-profil': const HeroState(
+          currentLep: 20,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 30,
+        ),
+      },
+    );
+    final roh = await buildContainer(quelle)
+        .read(heroActionsProvider)
+        .buildExportJson('mit-profil');
+    expect(
+      ((jsonDecode(roh) as Map)['hero'] as Map)['regelProfil'],
+      isA<Map>(),
+    );
+
+    final ziel = FakeRepository.empty();
+    final zielActions = buildContainer(ziel).read(heroActionsProvider);
+    final bundle = await zielActions.parseImportJson(roh);
+    final ergebnis = await zielActions.importiereHeld(
+      bundle,
+      resolution: ImportConflictResolution.createNewHero,
+    );
+
+    final importiert = (await ziel.listHeroes()).singleWhere(
+      (h) => h.id == ergebnis.heroId,
+    );
+    expect(importiert.id, isNot('mit-profil'));
+    // Die Manifestkopie reist mit: der Import rechnet nicht neu.
+    expect(importiert.regelProfil, profil);
+    expect(importiert.toJson()['regelProfil'], profil.toJson());
   });
 }
 
