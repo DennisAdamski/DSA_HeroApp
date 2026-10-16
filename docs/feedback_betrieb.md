@@ -1,18 +1,18 @@
 # Betrieb des In-App-Feedbackdienstes
 
-Stand: 16. Oktober 2026. `feedbackApiTest` ist im Projekt `heldensync-ccf0b`
-in `europe-west10` bereitgestellt, aber deaktiviert. `feedbackApi` ist nicht
-bereitgestellt. Es wurde kein GitHub-Issue über die Funktion erzeugt. Dieser
-Leitfaden ist keine Freigabe zum Aktivieren oder für einen Produktionsdeploy.
+Stand: 16. Oktober 2026. `feedbackApiTest` und `feedbackApi` sind im Projekt
+`heldensync-ccf0b` in `europe-west10` bereitgestellt und aktiviert. Der
+Staging-Smoke-Test war erfolgreich. Die Produktions-Webapp wird über den
+geprüften `main`-Workflow mit `feedbackApi` veröffentlicht.
 
 Die erforderlichen Gen-2-Dienste sind aktiviert. Das Secret
-`GITHUB_FEEDBACK_TOKEN` hat eine aktive Version; sein Inhalt wurde nicht
-ausgelesen und seine Gültigkeit bei GitHub ist noch nicht durch einen Test-POST
-bestätigt. `FEEDBACK_TEST_ENABLED` und `FEEDBACK_PRODUCTION_ENABLED` stehen
-beide auf `false`; der Testendpunkt antwortet daher mit `503 SERVICE_DISABLED`.
-Die Test-Webapp ist unter `https://heldensync-test.web.app` veröffentlicht und
-auf `feedbackApiTest` konfiguriert. Ihr Build stammt aus dem letzten Commit;
-lokale, nicht committete Änderungen waren nicht enthalten.
+`GITHUB_FEEDBACK_TOKEN` hat eine aktive Version. Der Tokenwert wurde nicht
+ausgelesen; der erfolgreiche Staging-Smoke-Test bestätigt seine Nutzbarkeit.
+`FEEDBACK_TEST_ENABLED` und `FEEDBACK_PRODUCTION_ENABLED` steuern die beiden
+Endpunkte unabhängig; beide stehen nach dem freigegebenen Rollout auf `true`.
+Die Test-Webapp ist unter `https://heldensync-test.web.app` auf `feedbackApiTest`
+konfiguriert. Die Produktions-Webapp ist unter
+`https://heldensync-ccf0b.web.app` auf `feedbackApi` konfiguriert.
 
 ## Dienste und feste Grenzen
 
@@ -34,9 +34,9 @@ Build-Parameter oder Firestore gespeichert. Geplanter Ablauf: 180 Tage.
    Standardlabels `bug`, `enhancement` und `question` müssen bestehen bleiben.
 3. Das PAT lokal mit `firebase functions:secrets:set GITHUB_FEEDBACK_TOKEN`
    setzen. Den Tokenwert nie in Shell-Historie, Chat oder Dokumentation kopieren.
-4. Die Parameter `FEEDBACK_TEST_ENABLED` und `FEEDBACK_PRODUCTION_ENABLED`
-   standardmäßig auf `false` belassen. Produktion wird erst nach bestandenem
-   Staging-Smoke-Test aktiviert.
+4. `FEEDBACK_TEST_ENABLED` nur für Staging und `FEEDBACK_PRODUCTION_ENABLED`
+   nur für den freigegebenen Produktivbetrieb aktivieren. Sonst bleiben beide
+   Endpunkte deaktiviert.
 
 ## Prüfung und gezieltes Deployment
 
@@ -53,10 +53,8 @@ npm run test:rules
 Der Firestore-Emulator benötigt Java 21. Unter Windows kann dafür beispielsweise
 die mit Android Studio ausgelieferte JBR verwendet werden.
 
-Die Testfunction ist bereits bereitgestellt und deaktiviert. Erst nach
-gesonderter Freigabe zum Aktivieren des Stagings wird
-`FEEDBACK_TEST_ENABLED` in der lokalen Projekt-Parameterdatei auf `true`
-gesetzt und ausschließlich die Testfunction aktualisiert:
+Die Testfunction ist bereits bereitgestellt. Ihr Parameter wird in der lokalen
+Projekt-Parameterdatei gesetzt und ausschließlich die Testfunction aktualisiert:
 
 ```powershell
 firebase deploy --only functions:feedbackApiTest
@@ -64,24 +62,22 @@ firebase deploy --only functions:feedbackApiTest
 
 Der Smoke-Test erstellt ein öffentliches Issue, prüft Inhalt, Labels und Link
 und schließt es mit einem eindeutigen Testhinweis. Er löscht das Issue nicht.
-Ein Produktionsdeploy erfolgt separat und gezielt mit
-`functions:feedbackApi`; ein pauschales `firebase deploy` ist ausgeschlossen.
+Die Produktionsfunction wird separat und gezielt mit `functions:feedbackApi`
+bereitgestellt; ein pauschales `firebase deploy` ist ausgeschlossen.
 
-Der CI-Build für `test` erhält die freigegebene URL von `feedbackApiTest` über
-`--dart-define=FEEDBACK_API_URL=...` und prüft, dass sie im Bundle enthalten ist.
-Produktionsbuilds bleiben bis zur separaten Freigabe und Bereitstellung von
-`feedbackApi` ohne Feedback-URL. Ohne diese Definition bleibt der Client
-deaktiviert; eine URL wird nicht automatisch geraten.
+CI-Builds auf `test` und `main` erhalten jeweils explizit die URL ihrer
+Feedback-Function (`feedbackApiTest` bzw. `feedbackApi`) und verifizieren sie
+im Bundle. Ohne eine solche Definition bleibt der Client deaktiviert; eine URL
+wird nicht automatisch geraten.
 
 ## Datenschutz, Limits und Störungen
 
 Firestore speichert keine Feedbacktexte. Interne Dokumente enthalten nur
 Kontozuordnung, Request-ID, Payload-Hash, Korrelationsmarker, Status und bei
-Erfolg die öffentliche Issue-Referenz. `expiresAt` ist für eine TTL von 30
-Tagen vorgesehen. Direkter App-Zugriff auf `feedbackSubmissions` und
-`feedbackRateLimits` bleibt durch die abschließende Deny-Regel gesperrt.
-Die Firestore-TTL-Richtlinie für das Feld `expiresAt` muss vor dem Stagingbetrieb
-einmalig in der Firebase-/Google-Cloud-Konsole aktiviert werden.
+Erfolg die öffentliche Issue-Referenz. `expiresAt` wird auf sieben Tage nach
+Anlage gesetzt; die Firestore-TTL löscht abgelaufene Dokumente. Direkter
+App-Zugriff auf `feedbackSubmissions` und `feedbackRateLimits` bleibt durch die
+abschließende Deny-Regel gesperrt.
 
 Je Konto gelten drei neue Meldungen pro Stunde und zehn pro rollierendem Tag.
 Ein identischer Retry verbraucht keine weitere Quote. `uncertain` bedeutet,
