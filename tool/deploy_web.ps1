@@ -2,7 +2,13 @@ param(
     [Parameter(Mandatory = $true)]
     [ValidateSet('test', 'production')]
     [string]$Target,
-    [string]$AppCheckSiteKey = $env:FIREBASE_APP_CHECK_SITE_KEY
+    [string]$AppCheckSiteKey = $env:FIREBASE_APP_CHECK_SITE_KEY,
+    [string]$LegalResponsibleName = $env:LEGAL_RESPONSIBLE_NAME,
+    [string]$LegalStreetAddress = $env:LEGAL_STREET_ADDRESS,
+    [string]$LegalPostalCode = $env:LEGAL_POSTAL_CODE,
+    [string]$LegalCity = $env:LEGAL_CITY,
+    [string]$LegalCountry = $env:LEGAL_COUNTRY,
+    [string]$LegalContactEmail = $env:LEGAL_CONTACT_EMAIL
 )
 
 # Web-Deploy fuer DSA-Heldenverwaltung.
@@ -22,6 +28,20 @@ Set-Location -Path (Split-Path -Parent $PSScriptRoot)
 
 if ([string]::IsNullOrWhiteSpace($AppCheckSiteKey)) {
     throw 'FIREBASE_APP_CHECK_SITE_KEY fehlt. Release-Deploy abgebrochen.'
+}
+
+$legalValues = @{
+    LEGAL_RESPONSIBLE_NAME = $LegalResponsibleName
+    LEGAL_STREET_ADDRESS = $LegalStreetAddress
+    LEGAL_POSTAL_CODE = $LegalPostalCode
+    LEGAL_CITY = $LegalCity
+    LEGAL_COUNTRY = $LegalCountry
+    LEGAL_CONTACT_EMAIL = $LegalContactEmail
+}
+foreach ($entry in $legalValues.GetEnumerator()) {
+    if ([string]::IsNullOrWhiteSpace($entry.Value)) {
+        throw "$($entry.Key) fehlt. Release-Deploy abgebrochen."
+    }
 }
 
 $feedbackApiUrls = @{
@@ -47,7 +67,13 @@ flutter build web --release --no-wasm-dry-run `
     "--dart-define=BUILD_COMMIT=$commit" `
     "--dart-define=BUILD_TIME=$buildTime" `
     "--dart-define=FEEDBACK_API_URL=$feedbackApiUrl" `
-    "--dart-define=FIREBASE_APP_CHECK_SITE_KEY=$AppCheckSiteKey"
+    "--dart-define=FIREBASE_APP_CHECK_SITE_KEY=$AppCheckSiteKey" `
+    "--dart-define=LEGAL_RESPONSIBLE_NAME=$LegalResponsibleName" `
+    "--dart-define=LEGAL_STREET_ADDRESS=$LegalStreetAddress" `
+    "--dart-define=LEGAL_POSTAL_CODE=$LegalPostalCode" `
+    "--dart-define=LEGAL_CITY=$LegalCity" `
+    "--dart-define=LEGAL_COUNTRY=$LegalCountry" `
+    "--dart-define=LEGAL_CONTACT_EMAIL=$LegalContactEmail"
 
 $manifest = 'build/web/assets/AssetManifest.bin.json'
 if (-not (Test-Path $manifest)) {

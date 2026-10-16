@@ -1453,6 +1453,33 @@ class _LegalSettingsPage extends StatelessWidget {
     return _SettingsPageList(
       children: [
         _SettingsSectionCard(
+          title: 'Datenschutz & Impressum',
+          child: Wrap(
+            spacing: 12,
+            runSpacing: 8,
+            children: [
+              FilledButton.icon(
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const PrivacyPolicyScreen(),
+                  ),
+                ),
+                icon: const Icon(Icons.privacy_tip_outlined),
+                label: const Text('Datenschutzerklärung öffnen'),
+              ),
+              OutlinedButton.icon(
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const ImprintScreen(),
+                  ),
+                ),
+                icon: const Icon(Icons.contact_page_outlined),
+                label: const Text('Impressum öffnen'),
+              ),
+            ],
+          ),
+        ),
+        _SettingsSectionCard(
           title: 'Rechtehinweis',
           child: SelectableText(
             _legalDisclaimerText,

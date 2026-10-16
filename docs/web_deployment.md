@@ -35,7 +35,10 @@ Der Web-Build bekommt Commit und Bauzeit per `--dart-define=BUILD_COMMIT=…`
 und `--dart-define=BUILD_TIME=…` (CI und `tool/deploy_web.ps1`). Release-Builds
 benötigen zusätzlich den öffentlichen reCAPTCHA-Enterprise-Site-Key als
 `--dart-define=FIREBASE_APP_CHECK_SITE_KEY=…`; der Schlüssel ist kein Secret,
-wird aber umgebungsbezogen in der CI-Konfiguration gepflegt. Die App zeigt
+wird aber umgebungsbezogen in der CI-Konfiguration gepflegt. Außerdem müssen
+die sechs öffentlichen `LEGAL_*`-Angaben aus
+[`legal_privacy_operations.md`](legal_privacy_operations.md) vollständig
+gesetzt sein; andernfalls brechen CI und manueller Deploy ab. Die App zeigt
 sie unter `Einstellungen` unterhalb der Bereichsliste, z. B.
 `Version: e92ff9f · 05.10.2026 14:32` (Bauzeit in Gerätezeit). Stimmt der
 Kurz-Commit mit dem Branch-Stand überein, ist die neueste Fassung geladen.

@@ -82,6 +82,17 @@ class SecurityConfigTest(unittest.TestCase):
         self.assertIn("feedbackApiTest", deploy_script)
         self.assertIn("feedbackApi", deploy_script)
         self.assertIn("--dart-define=FEEDBACK_API_URL", deploy_script)
+        for variable in (
+            "LEGAL_RESPONSIBLE_NAME",
+            "LEGAL_STREET_ADDRESS",
+            "LEGAL_POSTAL_CODE",
+            "LEGAL_CITY",
+            "LEGAL_COUNTRY",
+            "LEGAL_CONTACT_EMAIL",
+        ):
+            self.assertIn(variable, workflow)
+            self.assertIn(f"--dart-define={variable}", workflow)
+            self.assertIn(variable, deploy_script)
         self.assertNotIn("firebase deploy --only hosting\n", deploy_script)
 
 

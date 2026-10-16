@@ -155,13 +155,31 @@ jobs:
           BRANCH: ${{ inputs.branch || github.ref_name }}
           FEEDBACK_API_URL: ${{ (inputs.branch || github.ref_name) == 'test' && 'https://europe-west10-heldensync-ccf0b.cloudfunctions.net/feedbackApiTest' || (inputs.branch || github.ref_name) == 'main' && 'https://europe-west10-heldensync-ccf0b.cloudfunctions.net/feedbackApi' || '' }}
           FIREBASE_APP_CHECK_SITE_KEY: ${{ vars.FIREBASE_APP_CHECK_SITE_KEY }}
+          LEGAL_RESPONSIBLE_NAME: ${{ vars.LEGAL_RESPONSIBLE_NAME }}
+          LEGAL_STREET_ADDRESS: ${{ vars.LEGAL_STREET_ADDRESS }}
+          LEGAL_POSTAL_CODE: ${{ vars.LEGAL_POSTAL_CODE }}
+          LEGAL_CITY: ${{ vars.LEGAL_CITY }}
+          LEGAL_COUNTRY: ${{ vars.LEGAL_COUNTRY }}
+          LEGAL_CONTACT_EMAIL: ${{ vars.LEGAL_CONTACT_EMAIL }}
         run: |
           test -n "$FIREBASE_APP_CHECK_SITE_KEY"
+          test -n "$LEGAL_RESPONSIBLE_NAME"
+          test -n "$LEGAL_STREET_ADDRESS"
+          test -n "$LEGAL_POSTAL_CODE"
+          test -n "$LEGAL_CITY"
+          test -n "$LEGAL_COUNTRY"
+          test -n "$LEGAL_CONTACT_EMAIL"
           flutter build web --release \
             --dart-define=BUILD_COMMIT="$BUILD_COMMIT" \
             --dart-define=BUILD_TIME="$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
             --dart-define=FEEDBACK_API_URL="$FEEDBACK_API_URL" \
-            --dart-define=FIREBASE_APP_CHECK_SITE_KEY="$FIREBASE_APP_CHECK_SITE_KEY"
+            --dart-define=FIREBASE_APP_CHECK_SITE_KEY="$FIREBASE_APP_CHECK_SITE_KEY" \
+            --dart-define=LEGAL_RESPONSIBLE_NAME="$LEGAL_RESPONSIBLE_NAME" \
+            --dart-define=LEGAL_STREET_ADDRESS="$LEGAL_STREET_ADDRESS" \
+            --dart-define=LEGAL_POSTAL_CODE="$LEGAL_POSTAL_CODE" \
+            --dart-define=LEGAL_CITY="$LEGAL_CITY" \
+            --dart-define=LEGAL_COUNTRY="$LEGAL_COUNTRY" \
+            --dart-define=LEGAL_CONTACT_EMAIL="$LEGAL_CONTACT_EMAIL"
       - name: Build verifizieren
         env:
           BRANCH: ${{ inputs.branch || github.ref_name }}
