@@ -10,6 +10,9 @@ Die erforderlichen Gen-2-Dienste sind aktiviert. Das Secret
 ausgelesen und seine Gültigkeit bei GitHub ist noch nicht durch einen Test-POST
 bestätigt. `FEEDBACK_TEST_ENABLED` und `FEEDBACK_PRODUCTION_ENABLED` stehen
 beide auf `false`; der Testendpunkt antwortet daher mit `503 SERVICE_DISABLED`.
+Die Test-Webapp ist unter `https://heldensync-test.web.app` veröffentlicht und
+auf `feedbackApiTest` konfiguriert. Ihr Build stammt aus dem letzten Commit;
+lokale, nicht committete Änderungen waren nicht enthalten.
 
 ## Dienste und feste Grenzen
 
