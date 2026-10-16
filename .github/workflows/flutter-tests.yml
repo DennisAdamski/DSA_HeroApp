@@ -153,7 +153,7 @@ jobs:
         env:
           BUILD_COMMIT: ${{ inputs.ref || github.sha }}
           BRANCH: ${{ inputs.branch || github.ref_name }}
-          FEEDBACK_API_URL: ${{ (inputs.branch || github.ref_name) == 'test' && 'https://europe-west10-heldensync-ccf0b.cloudfunctions.net/feedbackApiTest' || '' }}
+          FEEDBACK_API_URL: ${{ (inputs.branch || github.ref_name) == 'test' && 'https://europe-west10-heldensync-ccf0b.cloudfunctions.net/feedbackApiTest' || (inputs.branch || github.ref_name) == 'main' && 'https://europe-west10-heldensync-ccf0b.cloudfunctions.net/feedbackApi' || '' }}
         run: |
           flutter build web --release \
             --dart-define=BUILD_COMMIT="$BUILD_COMMIT" \
@@ -162,11 +162,11 @@ jobs:
       - name: Build verifizieren
         env:
           BRANCH: ${{ inputs.branch || github.ref_name }}
-          FEEDBACK_API_URL: ${{ (inputs.branch || github.ref_name) == 'test' && 'https://europe-west10-heldensync-ccf0b.cloudfunctions.net/feedbackApiTest' || '' }}
+          FEEDBACK_API_URL: ${{ (inputs.branch || github.ref_name) == 'test' && 'https://europe-west10-heldensync-ccf0b.cloudfunctions.net/feedbackApiTest' || (inputs.branch || github.ref_name) == 'main' && 'https://europe-west10-heldensync-ccf0b.cloudfunctions.net/feedbackApi' || '' }}
         run: |
           test -f build/web/assets/AssetManifest.bin.json
           test -n "$(ls -A build/web/assets/assets/heroes 2>/dev/null)"
-          if [ "$BRANCH" = "test" ]; then
+          if [ "$BRANCH" = "test" ] || [ "$BRANCH" = "main" ]; then
             grep -Fq "$FEEDBACK_API_URL" build/web/main.dart.js
           fi
       - uses: actions/upload-artifact@v7

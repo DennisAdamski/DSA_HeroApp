@@ -39,10 +39,11 @@ Kurz-Commit mit dem Branch-Stand überein, ist die neueste Fassung geladen.
 Ohne Angaben steht dort `Lokaler Entwicklungsstand`; `-dirty` markiert einen
 manuellen Build mit uncommitteten Änderungen. Logik: `lib/domain/app_build_info.dart`.
 
-CI-Builds auf `test` erhalten außerdem explizit die URL von `feedbackApiTest`.
-Produktionsbuilds erhalten erst nach separater Freigabe und Bereitstellung der
-Produktionsfunction eine Feedback-URL. Der Testbuild verifiziert, dass die
-Test-URL tatsächlich im Webbundle enthalten ist.
+CI-Builds auf `test` erhalten explizit die URL von `feedbackApiTest`; Builds auf
+`main` erhalten die URL von `feedbackApi`. Beide Builds verifizieren, dass die
+zur Umgebung passende URL im Webbundle enthalten ist. Pull Requests
+veröffentlichen nichts; erst ein Push auf den jeweiligen Branch deployt das
+geprüfte Artefakt auf die zugeordnete Hosting-Site.
 
 ## Betrieb und manuelle Abnahme
 
