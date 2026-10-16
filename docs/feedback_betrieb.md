@@ -1,6 +1,6 @@
 # Betrieb des In-App-Feedbackdienstes
 
-Stand: 15. Oktober 2026. Die Implementierung ist lokal vorhanden, aber weder
+Stand: 16. Oktober 2026. Die Implementierung ist lokal vorhanden, aber weder
 bereitgestellt noch aktiviert. Dieser Leitfaden ist keine Deployment-Freigabe.
 
 ## Dienste und feste Grenzen
@@ -36,7 +36,11 @@ Set-Location functions
 npm ci
 npm test
 npm run build
+npm run test:rules
 ```
+
+Der Firestore-Emulator benötigt Java 21. Unter Windows kann dafür beispielsweise
+die mit Android Studio ausgelieferte JBR verwendet werden.
 
 Nach gesonderter Staging-Freigabe wird nur die Testfunction bereitgestellt:
 
@@ -49,6 +53,10 @@ und schließt es mit einem eindeutigen Testhinweis. Er löscht das Issue nicht.
 Ein Produktionsdeploy erfolgt separat und gezielt mit
 `functions:feedbackApi`; ein pauschales `firebase deploy` ist ausgeschlossen.
 
+Test- und Produktionsbuild erhalten jeweils ausschließlich ihre freigegebene
+Function-URL über `--dart-define=FEEDBACK_API_URL=<URL>`. Ohne diese Definition
+bleibt der Client deaktiviert; eine URL wird nicht automatisch geraten.
+
 ## Datenschutz, Limits und Störungen
 
 Firestore speichert keine Feedbacktexte. Interne Dokumente enthalten nur
@@ -56,6 +64,8 @@ Kontozuordnung, Request-ID, Payload-Hash, Korrelationsmarker, Status und bei
 Erfolg die öffentliche Issue-Referenz. `expiresAt` ist für eine TTL von 30
 Tagen vorgesehen. Direkter App-Zugriff auf `feedbackSubmissions` und
 `feedbackRateLimits` bleibt durch die abschließende Deny-Regel gesperrt.
+Die Firestore-TTL-Richtlinie für das Feld `expiresAt` muss vor dem Stagingbetrieb
+einmalig in der Firebase-/Google-Cloud-Konsole aktiviert werden.
 
 Je Konto gelten drei neue Meldungen pro Stunde und zehn pro rollierendem Tag.
 Ein identischer Retry verbraucht keine weitere Quote. `uncertain` bedeutet,

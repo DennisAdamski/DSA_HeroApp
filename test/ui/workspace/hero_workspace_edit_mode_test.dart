@@ -1692,10 +1692,12 @@ void main() {
       expect((actions.first as IconButton).tooltip, 'Detailpanel');
       expect(actions[1], isA<SizedBox>());
       expect((actions[1] as SizedBox).width, 8);
-      // Letztes Element ist jetzt das Settings-Icon; der rechte Spacer
-      // liegt direkt davor.
-      expect(actions.last, isA<IconButton>());
-      expect((actions.last as IconButton).tooltip, 'Einstellungen');
+      // Der kompakte Aktionsknopf enthält Feedback und Einstellungen gemeinsam.
+      expect(actions.last, isA<PopupMenuButton<String>>());
+      expect(
+        (actions.last as PopupMenuButton<String>).tooltip,
+        'Workspace-Aktionen',
+      );
       expect(find.byTooltip('Bearbeiten'), findsOneWidget);
     },
   );

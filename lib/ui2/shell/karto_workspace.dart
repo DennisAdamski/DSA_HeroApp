@@ -6,6 +6,7 @@ import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
+import 'package:dsa_heldenverwaltung/domain/feedback/feedback_submission.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/ui2/debug/karto_token_sheet.dart';
 import 'package:dsa_heldenverwaltung/ui2/entwicklung/karto_entwicklungsansicht.dart';
@@ -20,6 +21,7 @@ import 'package:dsa_heldenverwaltung/ui2/shell/karto_navigationsgrund.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_spielansicht.dart';
 import 'package:dsa_heldenverwaltung/ui2/widgets/karto_papier.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
+import 'package:dsa_heldenverwaltung/ui_shared/feedback/open_feedback.dart';
 
 part 'karto_workspace_navigation.dart';
 
@@ -295,6 +297,7 @@ class _KartoWorkspaceState extends ConsumerState<KartoWorkspace> {
 
   List<PopupMenuEntry<String>> _menueEintraege() => <PopupMenuEntry<String>>[
     const PopupMenuItem(value: 'helden', child: Text('Helden verwalten')),
+    const PopupMenuItem(value: 'feedback', child: Text('Feedback senden')),
     const PopupMenuItem(value: 'einstellungen', child: Text('Einstellungen')),
     const PopupMenuItem(
       value: 'bestand',

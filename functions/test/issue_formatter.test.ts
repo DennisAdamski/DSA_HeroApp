@@ -31,5 +31,6 @@ test("formats a bug with neutralized mentions and fixed labels", () => {
   assert.deepEqual(issue.labels, ["in-app-feedback", "bug", "feedback-test"]);
   assert.match(issue.body, /## Tatsächliches Verhalten/);
   assert.match(issue.body, /<!-- feedback:marker-1 -->/);
+  assert.match(issue.body, /- Bereich: Kampf/);
   assert.doesNotMatch(issue.body, /@admin/);
 });

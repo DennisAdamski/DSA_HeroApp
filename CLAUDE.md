@@ -1434,11 +1434,14 @@ Kurze Einstiegsdatei fuer neue Sessions. Diese Datei bleibt absichtlich klein un
   `lib/ui/widgets/list_tile_material.dart` einen lokalen Material-Layer
   erhalten, damit Flutter-3.44-Ink- und Tile-Hintergruende sichtbar bleiben.
 - Der Windows-Release-Audit fuer EXE/MSIX-Artefakte ist in `docs/windows_antivirus_audit.md` beschrieben; der zugehoerige Helfer liegt unter `tool/audit_windows_artifact.ps1`.
-- Direktes App-Feedback als GitHub-Issue ist in
-  [docs/feedback_github_plan.md](docs/feedback_github_plan.md) geplant;
-  der Entwurf beschreibt einen eigenen HTTPS-Feedbackdienst und ist noch
-  nicht implementiert. Feedback erfordert die bestehende App-Anmeldung;
-  ein GitHub-Konto des Nutzers ist nicht erforderlich.
+- Direktes App-Feedback als GitHub-Issue ist lokal implementiert und in
+  [docs/feedback_github_plan.md](docs/feedback_github_plan.md) sowie
+  [docs/feedback_betrieb.md](docs/feedback_betrieb.md) dokumentiert. Gemeinsame
+  UI liegt unter `lib/ui_shared/feedback/`, der typisierte Vertrag unter
+  `lib/domain/feedback/` und die Gen-2-Functions unter `functions/`. Feedback
+  erfordert die bestehende App-Anmeldung; ein GitHub-Konto des Nutzers ist
+  nicht erforderlich. Deployment, Secret und echtes Staging-Issue bleiben
+  getrennte Freigabeschritte.
 - Spielunterstuetzung ("Spielmodus") ist in `docs/spielmodus_konzept.md` konzipiert.
   Phase 1 umfasst die tab-unabhaengige Proben-Schnellsuche
   (`lib/ui/screens/workspace/probe_quick_search.dart`), Filter-Chips im

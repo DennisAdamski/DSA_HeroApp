@@ -19,7 +19,7 @@ export function formatIssue(
   const base = submission.metadata;
   lines.push(
     "## App-Kontext",
-    `- Bereich: ${submission.surface}`,
+    `- Bereich: ${surfaceLabel(submission.surface)}`,
     `- Version: ${base.appVersion}+${base.buildNumber}`,
     `- Build: ${base.commit || "lokal"}`,
     `- Bauzeit: ${base.builtAt || "unbekannt"}`,
@@ -87,4 +87,24 @@ function formatRules(submission: Extract<FeedbackSubmission, { kind: "rules" }>)
 
 function neutralizeMentions(value: string): string {
   return value.replace(/@(?=[\p{L}\p{N}_-])/gu, "@\u200b");
+}
+
+function surfaceLabel(surface: FeedbackSubmission["surface"]): string {
+  return {
+    heroSelection: "Heldenauswahl",
+    overview: "Übersicht",
+    talents: "Talente",
+    combat: "Kampf",
+    magic: "Magie",
+    inventory: "Inventar",
+    notes: "Notizen",
+    travelLog: "Reisebericht",
+    companions: "Begleiter",
+    group: "Gruppe",
+    play: "Spielmodus",
+    advancement: "Entwicklung",
+    settings: "Einstellungen",
+    catalog: "Katalogverwaltung",
+    other: "Sonstiges",
+  }[surface];
 }

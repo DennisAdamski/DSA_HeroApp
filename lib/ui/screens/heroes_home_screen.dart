@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/data/hero_transfer_file_gateway.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
+import 'package:dsa_heldenverwaltung/domain/feedback/feedback_submission.dart';
 import 'package:dsa_heldenverwaltung/state/auth_providers.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
@@ -23,6 +24,7 @@ import 'package:dsa_heldenverwaltung/ui/widgets/codex_empty_state.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/codex_page_scaffold.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/codex_split_view.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/karto_variante.dart';
+import 'package:dsa_heldenverwaltung/ui_shared/feedback/open_feedback.dart';
 
 /// Startscreen fuer die Heldenauswahl mit iPad-tauglicher Vorschau.
 class HeroesHomeScreen extends ConsumerStatefulWidget {
@@ -286,6 +288,10 @@ class _HeroesHomeScreenState extends ConsumerState<HeroesHomeScreen> {
                   ),
                 ),
               ),
+          onOpenFeedback: () => openFeedbackPage(
+            context,
+            initialSurface: FeedbackSurface.heroSelection,
+          ),
         ),
       ),
       floatingActionButton: layout == AppLayoutClass.compact && !apple
@@ -418,6 +424,7 @@ class _HeroesHomeScreenState extends ConsumerState<HeroesHomeScreen> {
     required Future<void> Function() onCreateHero,
     required Future<void> Function() onImportHero,
     required VoidCallback onOpenSettings,
+    required VoidCallback onOpenFeedback,
   }) {
     if (layout == AppLayoutClass.compact) {
       return [
@@ -431,6 +438,11 @@ class _HeroesHomeScreenState extends ConsumerState<HeroesHomeScreen> {
           tooltip: 'Importieren',
           onPressed: onImportHero,
           icon: const Icon(Icons.download),
+        ),
+        IconButton(
+          tooltip: 'Feedback senden',
+          onPressed: onOpenFeedback,
+          icon: const Icon(Icons.feedback_outlined),
         ),
         IconButton(
           tooltip: 'Einstellungen',
@@ -470,6 +482,11 @@ class _HeroesHomeScreenState extends ConsumerState<HeroesHomeScreen> {
           icon: const Icon(Icons.download),
           label: const Text('Importieren'),
         ),
+      ),
+      IconButton(
+        tooltip: 'Feedback senden',
+        onPressed: onOpenFeedback,
+        icon: const Icon(Icons.feedback_outlined),
       ),
       IconButton(
         tooltip: 'Einstellungen',
