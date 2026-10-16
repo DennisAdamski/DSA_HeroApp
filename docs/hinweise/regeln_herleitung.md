@@ -28,7 +28,11 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   Talent proben darf, entscheidet allein `talentEintragFuerProbe`
   (`talent_nutzung_rules.dart`, Tabelle `talent_nutzung_katalog.dart`): Basis-Talente
   immer, Spezial-Talente nur aktiviert (TaW ≥ 0). Ausweichen auf verwandte
-  Talente: `talentErsatzproben` (Meisterentscheid, Richtzuschläge aus WdS). Zauber: `zauber_herleitung_rules.dart` (ZfW*, gemeinsame
+  Talente: `talentErsatzproben` (Meisterentscheid, Richtzuschläge aus WdS).
+  Der Probendialog zeigt die TaW\*-Herleitung aufklappbar: `buildTalentProbeRequest`
+  nimmt `tawHerleitung` (Summe muss `basePool` sein, per `assert`) und legt sie als
+  `ResolvedProbeRequest.poolHerleitung` ab (nur Anzeige, nie persistiert); die
+  Ausweichprobe ergänzt den Schritt „Ausweichzuschlag“. Zauber: `zauber_herleitung_rules.dart` (ZfW*, gemeinsame
   Zauberprobe für Suche, Gefecht und Magie-Tab). Steigerungskosten:
   `steigerung_herleitung_rules.dart` (Grundkosten, SE, Aufschlag, Lehrmeister;
   der Steigerungsdialog liest nur ab). Lernspalte von

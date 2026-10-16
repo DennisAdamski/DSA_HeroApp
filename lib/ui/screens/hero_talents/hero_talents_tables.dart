@@ -301,7 +301,8 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
     final entry = _entryForTalent(talent.id);
     final complexityResolution = _resolveTalentComplexity(talent, entry);
     final ebe = _ebeHerleitung(talent.be, talent.attributes).wert;
-    final computedTaw = _tawHerleitung(talent, entry).wert;
+    final tawHerleitung = _tawHerleitung(talent, entry);
+    final computedTaw = tawHerleitung.wert;
     final hasSpecialization =
         entry.combatSpecializations.isNotEmpty ||
         _splitSpecializationTokens(entry.specializations).isNotEmpty;
@@ -344,6 +345,7 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
               ),
               basePool: computedTaw,
               hasSpecialization: hasSpecialization,
+              tawHerleitung: tawHerleitung,
             ),
           ),
           icon: const Icon(Icons.casino_outlined),
@@ -550,6 +552,7 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
                   metaTalent.attributes,
                 ),
                 basePool: computedTaw,
+                tawHerleitung: metaHerleitung,
               ),
             ),
             icon: const Icon(Icons.casino_outlined),
@@ -600,7 +603,8 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
     final entry = _entryForTalent(talent.id);
     final complexityResolution = _resolveTalentComplexity(talent, entry);
     final ebe = _ebeHerleitung(talent.be, talent.attributes).wert;
-    final computedTaw = _tawHerleitung(talent, entry).wert;
+    final tawHerleitung = _tawHerleitung(talent, entry);
+    final computedTaw = tawHerleitung.wert;
     final hasSpecialization =
         entry.combatSpecializations.isNotEmpty ||
         _splitSpecializationTokens(entry.specializations).isNotEmpty;
@@ -671,6 +675,7 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
               ),
               basePool: computedTaw,
               hasSpecialization: hasSpecialization,
+              tawHerleitung: tawHerleitung,
             ),
           ),
           icon: const Icon(Icons.casino_outlined),
@@ -868,6 +873,7 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
               metaTalent.attributes,
             ),
             basePool: computedTaw,
+            tawHerleitung: metaHerleitung,
           ),
         ),
         icon: const Icon(Icons.casino_outlined),

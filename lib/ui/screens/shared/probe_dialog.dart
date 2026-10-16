@@ -11,6 +11,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/probe_engine_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/trefferzonen_rules.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/config/ui_spacing.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_overview/herleitung_abschnitt.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/animated_dice_row.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/karto_variante.dart';
 
@@ -349,6 +350,7 @@ class _ProbeDialogState extends State<ProbeDialog> {
               ),
               const SizedBox(height: 12),
               _buildSummary(),
+              _buildPoolHerleitung(),
               const SizedBox(height: 12),
               _buildControls(),
               const SizedBox(height: 16),
@@ -389,6 +391,34 @@ class _ProbeDialogState extends State<ProbeDialog> {
         ),
     ];
     return Wrap(spacing: 8, runSpacing: 8, children: chips);
+  }
+
+  /// Aufklappbare Herleitung des Pools (TaW*); rechnet nichts nach.
+  Widget _buildPoolHerleitung() {
+    final herleitung = widget.request.poolHerleitung;
+    if (herleitung == null) return const SizedBox.shrink();
+    return Theme(
+      data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+      child: ExpansionTile(
+        key: const ValueKey<String>('probe-dialog-pool-herleitung'),
+        tilePadding: EdgeInsets.zero,
+        childrenPadding: const EdgeInsets.only(bottom: 4),
+        dense: true,
+        title: Text('${herleitung.bezeichnung} herleiten'),
+        expandedCrossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          HerleitungsSchritte(herleitung: herleitung),
+          const Divider(height: 12),
+          HerleitungsZeile(
+            key: const ValueKey<String>('probe-dialog-pool-herleitung-wert'),
+            bezeichnung: herleitung.bezeichnung,
+            wert: herleitung.wert,
+            fett: true,
+            vorzeichen: false,
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildControls() {

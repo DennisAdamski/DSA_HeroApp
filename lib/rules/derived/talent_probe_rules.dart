@@ -8,6 +8,7 @@ import 'probe_request_rules.dart';
 
 import 'package:dsa_heldenverwaltung/catalog/talent_nutzung_katalog.dart';
 
+import 'herleitung.dart';
 import 'talent_herleitung_rules.dart';
 import 'talent_nutzung_rules.dart';
 
@@ -121,6 +122,7 @@ ResolvedProbeRequest? talentprobeFuer({
     basePool: wert.taw,
     hasSpecialization: wert.spezialisierung,
     initialSituationalModifier: initialSituationalModifier,
+    tawHerleitung: wert.herleitung.taw,
   );
 }
 
@@ -150,6 +152,20 @@ ResolvedProbeRequest? talentErsatzprobeFuer({
         '${zuschlag == 0 ? '' : ' −$zuschlag'})',
     targets: wert.ziele,
     basePool: wert.taw - zuschlag,
+    tawHerleitung: Herleitung(
+      bezeichnung: wert.herleitung.taw.bezeichnung,
+      schritte: <HerleitungsSchritt>[
+        ...wert.herleitung.taw.schritte,
+        if (zuschlag != 0)
+          HerleitungsSchritt(
+            bezeichnung: 'Ausweichzuschlag',
+            betrag: -zuschlag,
+            art: HerleitungsArt.modifikator,
+            quelle: 'Ersatztalent ${option.talent.name}',
+            bedingung: 'Meisterentscheid',
+          ),
+      ],
+    ),
   );
 }
 

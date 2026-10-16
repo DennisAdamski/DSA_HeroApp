@@ -265,9 +265,11 @@ im [Archiv](archiv/arch-04.md):
   Sondererfahrungs-Ausnahme greift auf die schon verbilligten Kosten.
 - [x] Die Probenziele des Würfelknopfs im Talente-Tab lesen jetzt
   `probenEigenschaften` aus dem Snapshot (16.10.2026).
-- [ ] Der Probendialog zeigt TaW\* nur als Zahl; die Herleitung steht im
-  Talentdetail. Sie in den Probendialog zu bringen braucht ein neues optionales
-  Feld an `ResolvedProbeRequest` und die Anzeige im Dialog.
+- [x] Der Probendialog zeigt die TaW\*-Herleitung aufklappbar
+  (`ResolvedProbeRequest.poolHerleitung`, gesetzt von `buildTalentProbeRequest`;
+  Talente, Meta-Talente, Ausweichproben, Probensuche, Gefecht; 16.10.2026).
+  Offen: die SB-Probe der Wunddialoge (`wund_unterdrueckung_dialog.dart`,
+  `wunden_detail_dialog.dart`) übergibt noch keine Herleitung.
 - [ ] Eigenschaftsprobe als Ausweichen (Zuschlag ≥ 7) bleibt eigene
   Eigenschaftsprobe.
 - [ ] Bewusst offen aus den Lernregeln: zweite Repräsentation desselben Zaubers,
