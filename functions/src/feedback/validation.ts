@@ -22,6 +22,7 @@ const diagnosticKeys = [
   "firebaseAvailable",
   "authenticated",
 ];
+const graphemeSegmenter = new Intl.Segmenter("de", { granularity: "grapheme" });
 
 /** Validates and normalizes the complete public feedback payload. */
 export function validateSubmission(input: unknown): FeedbackSubmission {
@@ -124,7 +125,8 @@ function rejectUnknown(value: Record<string, unknown>, allowed: readonly string[
 function text(input: unknown, field: string, min: number, max: number): string {
   if (typeof input !== "string") return fail(`${field} muss Text sein.`);
   const value = input.trim();
-  if (value.length < min || value.length > max) {
+  const length = [...graphemeSegmenter.segment(value)].length;
+  if (length < min || length > max) {
     return fail(`${field} muss zwischen ${min} und ${max} Zeichen lang sein.`);
   }
   return value;

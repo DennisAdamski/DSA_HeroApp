@@ -81,6 +81,37 @@ test("rejects malformed identifiers, short text, oversized sources and unknown s
     }),
     /source/,
   );
+
+  assert.throws(
+    () => validateSubmission({
+      ...base,
+      title: "🧙‍♂️".repeat(4),
+      kind: "feature",
+      problem: "Wiederkehrende Gegner müssen jedes Mal neu erfasst werden.",
+      desiredBehavior: "Gegner sollen als Vorlage gespeichert werden können.",
+    }),
+    /title/,
+  );
+
+  assert.throws(
+    () => validateSubmission({
+      ...base,
+      title: "🧙".repeat(121),
+      kind: "feature",
+      problem: "Wiederkehrende Gegner müssen jedes Mal neu erfasst werden.",
+      desiredBehavior: "Gegner sollen als Vorlage gespeichert werden können.",
+    }),
+    /title/,
+  );
+
+  assert.throws(
+    () => validateSubmission({
+      ...base,
+      kind: "rules",
+      question: "ä".repeat(8001),
+    }),
+    /question/,
+  );
 });
 
 test("accepts a complete bug diagnostic package but no identity fields", () => {

@@ -100,6 +100,7 @@ void main() {
     expect(find.text('DSA Helden'), findsOneWidget);
     expect(find.text('Rondra'), findsOneWidget);
     expect(find.text('Neuer Held'), findsOneWidget);
+    expect(find.byTooltip('Feedback senden'), findsOneWidget);
   });
 
   testWidgets('ipad landscape shows hero preview beside the archive', (
@@ -268,6 +269,14 @@ void main() {
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('Rondra').first);
+      await tester.pumpAndSettle();
+      expect(find.byTooltip('Workspace-Aktionen'), findsOneWidget);
+      await tester.tap(find.byTooltip('Workspace-Aktionen'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Feedback senden'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('anmelden'), findsOneWidget);
+      await tester.pageBack();
       await tester.pumpAndSettle();
 
       final tabLabels = tester

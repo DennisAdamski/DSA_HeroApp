@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
+import 'package:dsa_heldenverwaltung/domain/feedback/feedback_submission.dart';
 import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
@@ -27,6 +28,7 @@ import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_spec.dar
 import 'package:dsa_heldenverwaltung/ui/screens/settings_screen.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/ui_shared/feedback/open_feedback.dart';
 
 part 'workspace/workspace_layout.dart';
 part 'workspace/workspace_advancement.dart';
@@ -217,6 +219,30 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
     return spaced;
   }
 
+  // Der Bereich bleibt heldenunabhängig und verwendet ausschließlich stabile Tab-IDs.
+  FeedbackSurface _activeFeedbackSurface() => switch (_management.activeTabId) {
+    WorkspaceTabIds.overview => FeedbackSurface.overview,
+    WorkspaceTabIds.talents => FeedbackSurface.talents,
+    WorkspaceTabIds.combat => FeedbackSurface.combat,
+    WorkspaceTabIds.magic => FeedbackSurface.magic,
+    WorkspaceTabIds.inventory => FeedbackSurface.inventory,
+    WorkspaceTabIds.notes => FeedbackSurface.notes,
+    WorkspaceTabIds.reisebericht => FeedbackSurface.travelLog,
+    WorkspaceTabIds.begleiter => FeedbackSurface.companions,
+    WorkspaceTabIds.gruppe => FeedbackSurface.group,
+    _ => FeedbackSurface.other,
+  };
+
+  // Kompakte Fenster bündeln globale Ziele, damit die AppBar bedienbar bleibt.
+  void _openCompactWorkspaceAction(String action) {
+    if (action == 'feedback') {
+      openFeedbackPage(context, initialSurface: _activeFeedbackSurface());
+      return;
+    }
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (_) => const SettingsScreen()));
+  }
+
   /// Baut die horizontale TabBar fuer das klassische Layout.
   PreferredSizeWidget _buildWorkspaceTabBar() {
     return TabBar(
@@ -318,16 +344,44 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
             ..._buildSpacedWorkspaceActions(
               _buildWorkspaceActions(isCompactLayout: isCompactLayout),
             ),
-            if (session == null &&
+            if (!isCompactLayout &&
+                session == null &&
                 !(_management.activeTabId != null &&
                     _management.isEditing(_management.activeTabId!)))
               IconButton(
-                tooltip: 'Einstellungen',
-                onPressed: () => Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const SettingsScreen()),
+                tooltip: 'Feedback senden',
+                onPressed: () => openFeedbackPage(
+                  context,
+                  initialSurface: _activeFeedbackSurface(),
                 ),
-                icon: const Icon(Icons.settings),
+                icon: const Icon(Icons.feedback_outlined),
               ),
+            if (session == null &&
+                !(_management.activeTabId != null &&
+                    _management.isEditing(_management.activeTabId!)))
+              if (isCompactLayout)
+                PopupMenuButton<String>(
+                  tooltip: 'Workspace-Aktionen',
+                  onSelected: _openCompactWorkspaceAction,
+                  itemBuilder: (_) => const [
+                    PopupMenuItem(
+                      value: 'feedback',
+                      child: Text('Feedback senden'),
+                    ),
+                    PopupMenuItem(
+                      value: 'settings',
+                      child: Text('Einstellungen'),
+                    ),
+                  ],
+                )
+              else
+                IconButton(
+                  tooltip: 'Einstellungen',
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const SettingsScreen()),
+                  ),
+                  icon: const Icon(Icons.settings),
+                ),
           ],
           bottom: showTabBar ? _buildWorkspaceTabBar() : null,
         ),

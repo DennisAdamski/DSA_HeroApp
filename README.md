@@ -51,6 +51,7 @@ Technischer Stack:
 - `Hive` fuer lokale Persistenz
 - JSON-Import/-Export fuer Heldendaten
 - Python-Tools unter `tool/` fuer Katalogaufbereitung und Wartung
+- Optionale Firebase-Functions für typisiertes In-App-Feedback als GitHub-Issue
 
 ## Funktionsumfang
 
@@ -511,6 +512,8 @@ Build-Tools-Instanz die Komponente `C++ ATL/MFC` nachinstallieren.
 - `docs/ui_performance_measurements.md`
 - `docs/ios_xcode_setup.md`
 - `docs/windows_antivirus_audit.md`
+- `docs/feedback_github_plan.md`
+- `docs/feedback_betrieb.md`
 
 ## Hinweise
 

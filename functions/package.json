@@ -8,13 +8,16 @@
   "main": "lib/index.js",
   "scripts": {
     "build": "tsc",
-    "test": "tsx --test test/**/*.test.ts"
+    "test": "tsx --test test/**/*.test.ts",
+    "test:rules": "npx --yes firebase-tools@15.34.0 emulators:exec --project demo-feedback --config ../firebase.json --only firestore \"npm run test:rules:inner\"",
+    "test:rules:inner": "tsx --test test/firestore_rules.rules.ts"
   },
   "dependencies": {
-    "firebase-admin": "^13.5.0",
+    "firebase-admin": "^14.5.0",
     "firebase-functions": "^7.0.0"
   },
   "devDependencies": {
+    "@firebase/rules-unit-testing": "^5.0.0",
     "@types/node": "^22.18.8",
     "tsx": "^4.20.6",
     "typescript": "^5.9.3"

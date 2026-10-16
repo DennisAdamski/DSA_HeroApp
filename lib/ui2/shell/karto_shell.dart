@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/domain/feedback/feedback_submission.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/ui2/debug/karto_token_sheet.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_bestands_adapter.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_heldenwahl.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_workspace.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_feinschliff.dart';
+import 'package:dsa_heldenverwaltung/ui_shared/feedback/open_feedback.dart';
 
 /// Zeigt echte Heldenauswahl oder Workspace im vorhandenen ProviderScope.
 class KartoShell extends ConsumerStatefulWidget {
@@ -71,6 +73,16 @@ class _KartoShellState extends ConsumerState<KartoShell> {
       appBar: AppBar(
         title: const Text('Heldenauswahl'),
         actions: [
+          IconButton(
+            tooltip: 'Feedback senden',
+            icon: const Icon(Icons.feedback_outlined),
+            onPressed: () => _aktion(
+              () => openFeedbackPage(
+                context,
+                initialSurface: FeedbackSurface.heroSelection,
+              ),
+            ),
+          ),
           IconButton(
             tooltip: 'Einstellungen',
             icon: const Icon(Icons.settings_outlined),

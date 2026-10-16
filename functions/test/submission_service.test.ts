@@ -47,6 +47,26 @@ test("creates one issue and returns the stored result for an identical retry", a
   assert.equal(github.created.length, 1);
 });
 
+test("collapses concurrent requests for the same id into one GitHub issue", async () => {
+  const store = new MemoryStore();
+  const github = new MemoryGithub();
+  const service = new FeedbackSubmissionService(store, github, {
+    testMode: false,
+    now: () => new Date("2026-10-15T20:00:00Z"),
+  });
+
+  const results = await Promise.all([
+    service.submit("account-a", submission),
+    service.submit("account-a", submission),
+  ]);
+
+  assert.equal(github.created.length, 1);
+  assert.deepEqual(
+    new Set(results.map((result) => result.status)),
+    new Set(["created", "processing"]),
+  );
+});
+
 test("rejects the same request id with changed content", async () => {
   const store = new MemoryStore();
   const service = new FeedbackSubmissionService(store, new MemoryGithub(), {

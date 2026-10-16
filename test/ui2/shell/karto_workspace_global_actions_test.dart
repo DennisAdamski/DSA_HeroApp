@@ -9,6 +9,7 @@ import 'package:dsa_heldenverwaltung/ui/screens/heroes_home_screen.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/settings_screen.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_workspace.dart';
 import 'package:dsa_heldenverwaltung/ui2/widgets/karto_papier.dart';
+import 'package:dsa_heldenverwaltung/ui_shared/feedback/feedback_page.dart';
 
 import 'karto_acceptance_support.dart';
 import 'karto_test_support.dart';
@@ -60,6 +61,22 @@ void main() {
     expect(find.byType(SettingsScreen), findsNothing);
     expect(repository.heroWrites, isEmpty);
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Feedback ist als geschützte gemeinsame Aktion erreichbar', (
+    tester,
+  ) async {
+    await pumpAcceptanceWorkspace(
+      tester,
+      repository: AcceptanceRepository(heroes: [testHero()]),
+      selectedHeroId: 'rondra',
+    );
+    await _openMenu(tester, 'Feedback senden');
+    expect(find.byType(FeedbackPage), findsOneWidget);
+    expect(find.textContaining('anmelden'), findsOneWidget);
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    expect(find.byType(KartoWorkspace), findsOneWidget);
   });
 
   testWidgets('Held öffnen aus der Bestandsliste bleibt in Kartograph', (

@@ -49,12 +49,19 @@ jobs:
           cache: npm
           cache-dependency-path: functions/package-lock.json
 
+      - name: Java 21 für Firestore-Emulator einrichten
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+
       - name: Backend installieren, testen und bauen
         working-directory: functions
         run: |
           npm ci
           npm test
           npm run build
+          npm run test:rules
 
   analyze:
     name: Statische Analyse & Lint

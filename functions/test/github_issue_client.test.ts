@@ -27,7 +27,7 @@ test("creates an issue only in the configured repository", async () => {
   assert.deepEqual(result, { number: 42, url: "https://github.test/issues/42" });
 });
 
-test("marks transport failures uncertain but treats HTTP rejection as definite", async () => {
+test("marks transport failures uncertain but treats GitHub rejections as definite", async () => {
   const timeoutClient = new GitHubIssueClient({
     owner: "DennisAdamski",
     repository: "DSA_HeroApp",
@@ -39,14 +39,16 @@ test("marks transport failures uncertain but treats HTTP rejection as definite",
     (error: unknown) => (error as { uncertain?: boolean }).uncertain === true,
   );
 
-  const rejectedClient = new GitHubIssueClient({
-    owner: "DennisAdamski",
-    repository: "DSA_HeroApp",
-    token: "secret",
-    fetcher: async () => new Response("forbidden", { status: 403 }),
-  });
-  await assert.rejects(
-    () => rejectedClient.createIssue("Titel", "Text", ["bug"], "feedback:abc"),
-    (error: unknown) => (error as { uncertain?: boolean }).uncertain !== true,
-  );
+  for (const status of [401, 403, 429, 500, 503]) {
+    const rejectedClient = new GitHubIssueClient({
+      owner: "DennisAdamski",
+      repository: "DSA_HeroApp",
+      token: "secret",
+      fetcher: async () => new Response("rejected", { status }),
+    });
+    await assert.rejects(
+      () => rejectedClient.createIssue("Titel", "Text", ["bug"], "feedback:abc"),
+      (error: unknown) => (error as { uncertain?: boolean }).uncertain !== true,
+    );
+  }
 });

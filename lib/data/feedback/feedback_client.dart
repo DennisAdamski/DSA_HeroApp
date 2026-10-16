@@ -6,8 +6,17 @@ import 'package:http/http.dart' as http;
 import 'package:dsa_heldenverwaltung/domain/feedback/feedback_result.dart';
 import 'package:dsa_heldenverwaltung/domain/feedback/feedback_submission.dart';
 
+/// Austauschbarer Transportvertrag für UI und Statuswiederherstellung.
+abstract interface class FeedbackGateway {
+  /// Sendet genau eine typisierte Meldung.
+  Future<FeedbackResult> submit(FeedbackSubmission submission);
+
+  /// Fragt einen bestehenden Vorgang ohne neuen POST ab.
+  Future<FeedbackResult> status(String requestId);
+}
+
 /// HTTP-Client für den authentifizierten Feedbackdienst.
-class FeedbackClient {
+class FeedbackClient implements FeedbackGateway {
   /// Erstellt einen Client mit injizierbaren Netzwerk- und Tokenabhängigkeiten.
   FeedbackClient({
     required this.endpoint,
@@ -28,6 +37,7 @@ class FeedbackClient {
   final http.Client _http;
 
   /// Sendet eine Meldung genau einmal; Transportabbrüche werden `uncertain`.
+  @override
   Future<FeedbackResult> submit(FeedbackSubmission submission) async {
     try {
       final token = await _requiredToken();
@@ -56,6 +66,7 @@ class FeedbackClient {
   }
 
   /// Fragt den kontogebundenen Status ab, ohne einen neuen POST auszulösen.
+  @override
   Future<FeedbackResult> status(String requestId) async {
     final token = await _requiredToken();
     try {
