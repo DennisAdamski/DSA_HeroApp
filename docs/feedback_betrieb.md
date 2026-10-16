@@ -1,7 +1,15 @@
 # Betrieb des In-App-Feedbackdienstes
 
-Stand: 16. Oktober 2026. Die Implementierung ist lokal vorhanden, aber weder
-bereitgestellt noch aktiviert. Dieser Leitfaden ist keine Deployment-Freigabe.
+Stand: 16. Oktober 2026. `feedbackApiTest` ist im Projekt `heldensync-ccf0b`
+in `europe-west10` bereitgestellt, aber deaktiviert. `feedbackApi` ist nicht
+bereitgestellt. Es wurde kein GitHub-Issue über die Funktion erzeugt. Dieser
+Leitfaden ist keine Freigabe zum Aktivieren oder für einen Produktionsdeploy.
+
+Die erforderlichen Gen-2-Dienste sind aktiviert. Das Secret
+`GITHUB_FEEDBACK_TOKEN` hat eine aktive Version; sein Inhalt wurde nicht
+ausgelesen und seine Gültigkeit bei GitHub ist noch nicht durch einen Test-POST
+bestätigt. `FEEDBACK_TEST_ENABLED` und `FEEDBACK_PRODUCTION_ENABLED` stehen
+beide auf `false`; der Testendpunkt antwortet daher mit `503 SERVICE_DISABLED`.
 
 ## Dienste und feste Grenzen
 
@@ -17,8 +25,8 @@ Build-Parameter oder Firestore gespeichert. Geplanter Ablauf: 180 Tage.
 
 ## Einmalige Vorbereitung
 
-1. Die Cloud-Functions-, Cloud-Build-, Artifact-Registry- und Cloud-Run-Dienste
-   erst nach Betriebsfreigabe aktivieren.
+1. Die bereits aktivierten Cloud-Functions-, Cloud-Build-, Artifact-Registry-,
+   Cloud-Run- und Eventarc-Dienste müssen nicht erneut aktiviert werden.
 2. In GitHub die Labels `in-app-feedback` und `feedback-test` anlegen. Die
    Standardlabels `bug`, `enhancement` und `question` müssen bestehen bleiben.
 3. Das PAT lokal mit `firebase functions:secrets:set GITHUB_FEEDBACK_TOKEN`
@@ -42,7 +50,10 @@ npm run test:rules
 Der Firestore-Emulator benötigt Java 21. Unter Windows kann dafür beispielsweise
 die mit Android Studio ausgelieferte JBR verwendet werden.
 
-Nach gesonderter Staging-Freigabe wird nur die Testfunction bereitgestellt:
+Die Testfunction ist bereits bereitgestellt und deaktiviert. Erst nach
+gesonderter Freigabe zum Aktivieren des Stagings wird
+`FEEDBACK_TEST_ENABLED` in der lokalen Projekt-Parameterdatei auf `true`
+gesetzt und ausschließlich die Testfunction aktualisiert:
 
 ```powershell
 firebase deploy --only functions:feedbackApiTest
