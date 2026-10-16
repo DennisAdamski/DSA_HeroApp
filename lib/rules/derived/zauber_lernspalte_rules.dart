@@ -49,6 +49,7 @@ class ZauberLernspalte {
     this.hexalogie,
     this.hexalogieBisWert,
     this.hexalogieHinweis,
+    this.gegenelementHinweis,
   });
 
   /// Wirksame Spalte ohne Hexalogie (`A*` bis `H`).
@@ -68,6 +69,10 @@ class ZauberLernspalte {
 
   /// Erklärung der Hexalogie-Lage für die Anzeige; `null` ohne Hexalogie.
   final String? hexalogieHinweis;
+
+  /// Erklärung, warum der Zauber wegen des Gegenelements eine Spalte schwerer
+  /// ist; `null`, wenn der Nachteil nicht greift.
+  final String? gegenelementHinweis;
 }
 
 /// Berechnet die Lernspalte des Zaubers [spell].
@@ -209,6 +214,12 @@ ZauberLernspalte zauberLernspalte({
     hexalogie: hex,
     hexalogieBisWert: bis,
     hexalogieHinweis: hinweis,
+    gegenelementHinweis: gegenelement
+        ? 'Gegenelement: Der Held bevorzugt ${element.gegenelement.anzeige} '
+              '(Merkmalskenntnis oder Begabung), das Gegenelement dieses '
+              'Zaubers. Der Zauber ist deshalb eine Spalte schwerer (Siegel der '
+              'Elemente); die SF Elementarharmonisierte Aura hebt das auf.'
+        : null,
   );
 }
 

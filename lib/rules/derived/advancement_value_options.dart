@@ -210,7 +210,10 @@ AdvancementOption? _spellOption(
       erleichterungBisWert: lernspalte.hexalogieBisWert,
       faktoren: lernkostenFaktoren(hero, LernzielArt.zauber),
       spaltenHerleitung: lernspalte.herleitung,
-      hinweise: <String>[?lernspalte.hexalogieHinweis],
+      hinweise: <String>[
+        ?lernspalte.hexalogieHinweis,
+        ?lernspalte.gegenelementHinweis,
+      ],
     ),
     kind: AdvancementKind.spell,
     targetId: id,

@@ -96,6 +96,8 @@ void main() {
       expect(s.spalte, 'E');
       expect(s.hexalogieBisWert, isNull);
       expect(s.hexalogieHinweis, contains('Gegenelement'));
+      expect(s.gegenelementHinweis, contains('bevorzugt Erz'));
+      expect(s.gegenelementHinweis, contains('Elementarharmonisierte Aura'));
       expect(
         s.herleitung.schritte
             .singleWhere((x) => x.bezeichnung == kSpalteGegenelementSchritt)
@@ -125,6 +127,7 @@ void main() {
       );
       expect(s.spalte, 'D');
       expect(s.hexalogieBisWert, 9);
+      expect(s.gegenelementHinweis, isNull);
     });
   });
 
