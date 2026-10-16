@@ -12,6 +12,9 @@ import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_initiative_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_held_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/gefecht_zielwert_herleitung_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/gefecht_vorgaben_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/gefecht_gegner_rules.dart';
 
 import '../rules/gefecht_ansagen_paket2_test.dart' as fixture;
 import '../ui2/shell/karto_test_support.dart';
@@ -46,6 +49,69 @@ void main() {
           gefechtswerteFuer(snap, katalog: testCatalog),
         ),
       );
+    },
+  );
+
+  test(
+    'Bindungen setzen die Gegnerzahl, zwei Angreifer die Überzahl',
+    () async {
+      final snap = fixture.ansageSnapshot(sf: true);
+      final c = ProviderContainer(
+        overrides: [
+          heroComputedProvider('a').overrideWith((ref) => AsyncData(snap)),
+          heroComputedProvider('b').overrideWith((ref) => AsyncData(snap)),
+          rulesCatalogProvider.overrideWith((ref) async => testCatalog),
+        ],
+      );
+      addTearDown(c.dispose);
+      await c.read(rulesCatalogProvider.future);
+      final gegner = c.read(gefechtBegegnungProvider.notifier);
+      for (final id in ['g', 'h', 'r']) {
+        gegner.speichern(Gefechtsgegner(id: id, name: id, ini: 5));
+      }
+      gegner.bindungSetzen('g', 'a');
+      gegner.bindungSetzen('h', 'a');
+      gegner.bindungSetzen('r', 'b');
+      for (final id in ['a', 'b']) {
+        c.read(gefechtProvider(id).notifier).beginnen(6, dk: 'N');
+      }
+      Gefechtszustand s(String id) => c.read(gefechtMitInitiativeProvider(id))!;
+      expect(s('a').gebundeneGegner, 2);
+      expect(gefechtsGegnerzahl(s('a')), 2);
+      expect(s('b').gebundeneGegner, 1);
+      gegner.statusSetzen('h', GefechtsgegnerStatus.tot);
+      expect(s('a').gebundeneGegner, 1);
+      gegner.bindungSetzen('g', null);
+      expect(s('a').gebundeneGegner, isNull);
+      expect(gefechtsGegnerzahl(s('a')), 1);
+
+      // Beide greifen den Oger an: nur in der gemeinsamen Initiative AT +1.
+      for (final id in ['a', 'b']) {
+        final ctl = c.read(gefechtProvider(id).notifier);
+        ctl.setzen(
+          waehleGefechtsgegner(
+            c.read(gefechtProvider(id))!,
+            c.read(gefechtBegegnungProvider).gegner['r']!,
+            startDk: 'N',
+          ),
+        );
+      }
+      expect(s('a').ueberzahlAngriff, isFalse);
+      final gruppe = c.read(gefechtInitiativeProvider.notifier);
+      gruppe.hinzufuegen('a', zeitpunktVorbei: false);
+      gruppe.hinzufuegen('b', zeitpunktVorbei: false);
+      expect(s('a').ueberzahlAngriff, isTrue);
+      final w = gefechtswerteFuer(snap, katalog: testCatalog);
+      expect(
+        pruefeGefechtsaktion(
+          s('a'),
+          w,
+          Gefechtsaktion.angriff,
+        ).modifikatoren.where((m) => m.name == kGefechtsUeberzahl).single.wert,
+        -1,
+      );
+      gegner.statusSetzen('r', GefechtsgegnerStatus.geflohen);
+      expect(s('a').ueberzahlAngriff, isFalse);
     },
   );
 

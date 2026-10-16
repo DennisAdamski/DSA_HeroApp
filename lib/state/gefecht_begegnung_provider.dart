@@ -2,6 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht_gegner.dart';
 import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_gegner_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/gefecht_ueberzahl_rules.dart'
+    show setzeGefechtstaktik;
 
 /// Hält die lokale Gegnerliste gemeinsam für alle Heldensitzungen.
 class GefechtsbegegnungsController extends Notifier<Gefechtsbegegnung> {
@@ -53,6 +55,17 @@ class GefechtsbegegnungsController extends Notifier<Gefechtsbegegnung> {
   /// Setzt einen ausdrücklich gewählten Status auf dem frischen Gegner.
   void statusSetzen(String gegnerId, GefechtsgegnerStatus status) => state =
       setzeGefechtsgegnerStatus(state, gegnerId: gegnerId, status: status);
+
+  /// Legt fest, wen der Gegner im Nahkampf bindet (`null`: niemanden).
+  void bindungSetzen(String gegnerId, String? teilnehmerId) =>
+      state = setzeGefechtsgegnerBindung(
+        state,
+        gegnerId: gegnerId,
+        teilnehmerId: teilnehmerId,
+      );
+
+  /// Hält das bestätigte Ergebnis der Aktion Taktik einmal pro Kampf fest.
+  void taktikSetzen(Gefechtstaktik t) => state = setzeGefechtstaktik(state, t);
 
   /// Beendet die Begegnung ausdrücklich für alle verbundenen Ansichten.
   void beenden() => state = const Gefechtsbegegnung();

@@ -8,6 +8,8 @@ import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 
 import 'gefecht_meisterparade_rules.dart';
 import 'gefecht_ansagefolge_rules.dart';
+import 'gefecht_ueberzahl_rules.dart'
+    show gefechtsAbwehrErschwernisWeitereGegner;
 import 'gefecht_vorgaben_rules.dart';
 import 'gefecht_initiative_rules.dart';
 import 'gefecht_herleitung_rules.dart';
@@ -441,6 +443,8 @@ Gefechtspruefung pruefeGefechtsaktion(
     case Gefechtsaktion.angriff:
       a = 1;
       ziel ??= w.at;
+      // WdS S. 81: Angreifer in der Überzahl haben AT +1.
+      if (s.ueberzahlAngriff && !w.fernkampf) erschwere(kGefechtsUeberzahl, -1);
       grund = gefechtsGrundwert(
         manuell: manuellerZielwert,
         vorschau: w.atHerleitung,
@@ -524,7 +528,17 @@ Gefechtspruefung pruefeGefechtsaktion(
               : 4,
         );
       }
-      if (!abwehrAufAttacke) ziel = ziel == null ? null : ziel + bonus;
+      if (!abwehrAufAttacke) {
+        ziel = ziel == null ? null : ziel + bonus;
+        // WdS S. 81: PA-Basis −1 je weiterem Gegner im Blick.
+        erschwere(
+          kGefechtsWeitereGegner,
+          gefechtsAbwehrErschwernisWeitereGegner(
+            gefechtsGegnerzahl(s),
+            ausweichen: false,
+          ),
+        );
+      }
     case Gefechtsaktion.freiesAusweichen:
       f = 1;
       ziel ??= gefechtsAusweichen(s, w).wert;
@@ -573,12 +587,14 @@ Gefechtspruefung pruefeGefechtsaktion(
     if (s.haltung == Gefechtshaltung.liegend) {
       sperren.add('Liegend kein Ausweichen.');
     }
-    final gegner = gefechtsGegnerzahl(s);
-    if (gegner >= 4) {
-      sperren.add('Bei vier oder mehr Gegnern kein Ausweichen.');
-    }
     // Die BE steckt in der Ausweichen-Herleitung (`gefechtsAusweichen`).
-    erschwere(kGefechtsWeitereGegner, (gegner - 1) * 2);
+    erschwere(
+      kGefechtsWeitereGegner,
+      gefechtsAbwehrErschwernisWeitereGegner(
+        gefechtsGegnerzahl(s),
+        ausweichen: true,
+      ),
+    );
   } else if (s.haltung != Gefechtshaltung.stehend) {
     pruefen.add('Haltungsmodifikatoren manuell festlegen.');
   }

@@ -21,8 +21,8 @@ Schreiben.
 - Gegner stehen bereits in der gemeinsamen INI-Folge
   (`_zeitpunkte` in `state/gefecht_initiative_provider.dart`), der
   Klingensturm wählt mehrere Begegnungsgegner als Ziele.
-- Die Gegnerzahl ist eine manuelle Zahl (`gefechtsGegnerzahl`); sie wirkt
-  heute nur auf das Ausweichen (−2 je weiterem Gegner, Sperre ab vier).
+- Die Gegnerzahl war eine manuelle Zahl (`gefechtsGegnerzahl`); sie wirkte
+  nur auf das Ausweichen (−2 je weiterem Gegner, Sperre ab vier).
 - Die Wundrechnung der Helden (`computeWundschwellenStufen`,
   `schlageWundenVor`, `WundZone`) ist wiederverwendbar.
 
@@ -33,7 +33,7 @@ Schreiben.
 | 1 | Gegnermodell erweitern | umgesetzt (16.10.2026) |
 | 2 | Trefferliste statt LeP-Abzug | umgesetzt (16.10.2026) |
 | 3 | Ausgeschiedene Gegner herausnehmen | umgesetzt (16.10.2026) |
-| 4 | Überzahl-Regelmodul | offen |
+| 4 | Überzahl-Regelmodul | umgesetzt bis auf Konzentration und Taktik-Bedienung (16.10.2026) |
 | 5 | Eigene Seite als Teilnehmerliste | offen |
 | 6 | Gegnerwerte als Vorgabe übernehmen | offen |
 | 7 | INI der Gegner mit Überzahl und Wunden | offen |
@@ -92,10 +92,31 @@ Ausgang je Verteidiger und Seite (WdS S. 81, optional):
 - Sehr große Wesen und Wesen kleiner als winzig zählen nicht (WdS S. 114,
   dort für Tiere); fliegende Gegner ebenfalls nicht.
 
-`gefechtsGegnerzahl` zählt dann die Gegner, die den Helden binden; die
-manuelle Angabe bleibt Überschreibung. **Vorher prüfen:** Der Abzug auf die
-PA fehlt heute, und die Sperre „ab vier Gegnern kein Ausweichen“
-(`gefecht_rules.dart`) ist im Regelindex nicht belegt gefunden worden.
+**Stand 16.10.2026:**
+
+- Ein Gegner zählt, wenn er kämpft, jemanden bindet und nicht sehr groß ist
+  (`gefechtsGegnerZaehltFuerUeberzahl`). Ohne Bindung gilt er als nicht im
+  Nahkampf; Fernkämpfer der Gegner bleiben so außen vor.
+- `gefechtMitInitiativeProvider` setzt `Gefechtszustand.gebundeneGegner` aus
+  den Bindungen; `gefechtsGegnerzahl` nimmt die Angabe im Aktionsdialog vor
+  den Bindungen vor der Rundenleiste. Mit Bindungen ist die Rundenleiste
+  gesperrt („Gegner (Liste)“).
+- Parade: PA-Basis −1 je weiterem Gegner (neu, Nutzerentscheidung
+  16.10.2026). Ausweichen −2 je weiterem Gegner, beides höchstens für drei
+  Gegner im Blick. Die frühere Sperre „ab vier Gegnern kein Ausweichen“ ist
+  entfernt (nicht belegt; Nutzerentscheidung, Ausweichen nicht zu sperren).
+- AT +1 (`kGefechtsUeberzahl`), wenn mindestens zwei Helden der gemeinsamen
+  Initiative dasselbe kämpfende Ziel gewählt haben (`ueberzahlAngriff`);
+  bis Schritt 5 zählen alle verbundenen Helden, auch Fernkämpfer.
+- Die Gegnerkarte setzt die Bindung je Gegner und zeigt Kräfteverhältnis,
+  INI-Bonus der überlegenen Seite und die eigene Abwehrlage. Der INI-Bonus
+  wird erst mit Schritt 7 verrechnet.
+- Offen: Konzentration auf einen Gegner (braucht eine Paradesperre gegen die
+  übrigen) und die Bedienung der Taktik (Probe, Anführerwahl). Die Regeln der
+  Taktik sind fertig (`gefechtsTaktikAufhebungErschwernis`,
+  `gefechtsTaktikVerteilung`, `gefechtsTaktikMisslungen`,
+  `setzeGefechtstaktik`); „aufgehoben“ nimmt den Gegnern den INI-Bonus, die
+  Paarungen legt danach die Bindung fest.
 
 #### Überzahl durch Kriegskunst aufheben oder verbessern
 
@@ -119,8 +140,9 @@ Taktik“; als Aktion auch WdS S. 55):
 
 Für das Modul heißt das: Die Überzahl je Seite braucht einen flüchtigen
 Taktikstand der Begegnung (Anführer, Ergebnis „aufgehoben“ oder verteilte
-INI-Punkte je Teilnehmer, bereits genutzt). „Aufgehoben“ setzt die Boni und
-Mali der gegnerischen Überzahl auf null; verteilte Punkte erscheinen als
+INI-Punkte je Teilnehmer, bereits genutzt; `Gefechtstaktik` in der
+Begegnung). „Aufgehoben“ setzt den INI-Bonus der gegnerischen Überzahl auf
+null; Abwehrmali folgen weiter den Bindungen. Verteilte Punkte erscheinen als
 eigener Herleitungsschritt der INI (ARCH-04). Die Probe selbst läuft über den
 vorhandenen Probendialog; die App schreibt das Ergebnis nur nach Bestätigung.
 

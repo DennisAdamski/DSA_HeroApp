@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/gefecht_zielwert_herleitung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_ablauf_rules.dart';
 
 void main() {
@@ -165,21 +166,46 @@ void main() {
       Gefechtsfreigabe.gesperrt,
     );
   });
-  test('Ausweichen ist liegend und bei vier Gegnern gesperrt', () {
+  test('Ausweichen ist liegend gesperrt, bei vier Gegnern gedeckelt', () {
     final s = beginneGefecht(6);
-    for (final zustand in [
-      s.copyWith(gegner: 4),
-      s.copyWith(haltung: Gefechtshaltung.liegend),
-    ]) {
-      expect(
-        pruefeGefechtsaktion(
-          zustand,
-          kontext,
-          Gefechtsaktion.freiesAusweichen,
-        ).status,
-        Gefechtsfreigabe.gesperrt,
-      );
-    }
+    expect(
+      pruefeGefechtsaktion(
+        s.copyWith(haltung: Gefechtshaltung.liegend),
+        kontext,
+        Gefechtsaktion.freiesAusweichen,
+      ).status,
+      Gefechtsfreigabe.gesperrt,
+    );
+    // WdS S. 81: höchstens drei Gegner im Blick; der vierte bringt nichts.
+    Gefechtspruefung vier(Gefechtsaktion a) =>
+        pruefeGefechtsaktion(s.copyWith(gegner: 4), kontext, a);
+    final ausweichen = vier(Gefechtsaktion.freiesAusweichen);
+    expect(ausweichen.status, isNot(Gefechtsfreigabe.gesperrt));
+    expect(
+      ausweichen.modifikatoren
+          .where((m) => m.name == kGefechtsWeitereGegner)
+          .single
+          .wert,
+      4,
+    );
+    expect(
+      vier(Gefechtsaktion.parade).modifikatoren
+          .where((m) => m.name == kGefechtsWeitereGegner)
+          .single
+          .wert,
+      2,
+    );
+    expect(
+      pruefeGefechtsaktion(
+            s.copyWith(gegner: 2),
+            kontext,
+            Gefechtsaktion.parade,
+          ).modifikatoren
+          .where((m) => m.name == kGefechtsWeitereGegner)
+          .single
+          .wert,
+      1,
+    );
     final f = pruefeGefechtsaktion(s, kontext, Gefechtsaktion.freiesAusweichen);
     final nach = verbraucheGefechtsaktion(s, kontext, f, erfolg: true);
     expect(nach.iniVerlust, 4);

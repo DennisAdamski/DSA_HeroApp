@@ -903,6 +903,15 @@ automatisch übernommen. Nur kämpfende Gegner stehen in der gemeinsamen
 INI-Folge; tote und geflohene Gegner sind kein Ziel mehr (Zielknopf,
 Klingensturm, Fremdwirkung), kampfunfähige bleiben angreifbar.
 
+Schritt 4: `gefecht_ueberzahl_rules.dart` rechnet Kräfteverhältnis,
+INI-Bonus (max. +4), Abwehrlage und die Aktion Taktik (WdS S. 81). Bindungen
+der Gegnerkarte setzen `gebundeneGegner` der Heldensitzung und damit die
+Gegnerzahl; Parade −1 und Ausweichen −2 je weiterem Gegner, höchstens drei
+im Blick. Ausweichen ist ab vier Gegnern nicht mehr gesperrt. Zwei Helden
+der gemeinsamen Initiative mit demselben Ziel erhalten AT +1.
+
 Tests: `test/rules/gefecht_gegner_rules_test.dart`,
+`test/rules/gefecht_ueberzahl_rules_test.dart`,
+`test/rules/gefecht_rules_test.dart`,
 `test/state/gefecht_initiative_provider_test.dart`,
 `test/ui2/spielen/gefecht_gegner_test.dart`.

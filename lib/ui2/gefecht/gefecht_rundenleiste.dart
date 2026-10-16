@@ -107,11 +107,16 @@ class GefechtRundenleiste extends StatelessWidget {
                 ),
                 SizedBox(
                   width: 95,
+                  // Bindungen der Gegnerliste ersetzen die manuelle Zahl.
                   child: DropdownButtonFormField<int>(
                     isExpanded: true,
-                    key: ValueKey(s.gegner),
-                    initialValue: s.gegner,
-                    decoration: const InputDecoration(labelText: 'Gegner'),
+                    key: ValueKey('${s.gegner}:${s.gebundeneGegner}'),
+                    initialValue: (s.gebundeneGegner ?? s.gegner).clamp(1, 6),
+                    decoration: InputDecoration(
+                      labelText: s.gebundeneGegner == null
+                          ? 'Gegner'
+                          : 'Gegner (Liste)',
+                    ),
                     items: [
                       for (final n in [1, 2, 3, 4, 5, 6])
                         DropdownMenuItem(
@@ -119,7 +124,7 @@ class GefechtRundenleiste extends StatelessWidget {
                           child: Text(n == 6 ? '6+' : '$n'),
                         ),
                     ],
-                    onChanged: gesperrt
+                    onChanged: gesperrt || s.gebundeneGegner != null
                         ? null
                         : (n) => onAendern(s.copyWith(gegner: n)),
                   ),

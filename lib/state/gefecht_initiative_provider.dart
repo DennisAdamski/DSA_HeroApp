@@ -3,6 +3,8 @@ import 'package:dsa_heldenverwaltung/domain/gefecht.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht_initiative.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_gegner_rules.dart'
     show gefechtsGegnerHandelt;
+import 'package:dsa_heldenverwaltung/rules/derived/gefecht_ueberzahl_rules.dart'
+    show gefechtsAngriffInUeberzahl, gefechtsVerteidigerlage;
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_initiative_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_held_rules.dart';
@@ -256,14 +258,32 @@ final gefechtMitInitiativeProvider = Provider.family<Gefechtszustand?, String>((
   if (roh == null) return null;
   final patzer = ref.watch(gefechtPatzerProvider(id));
   final sperrt = gefechtPatzerSperrt(patzer, roh.runde);
+  final gruppe = ref.watch(gefechtInitiativeProvider);
+  // Bindungen der Begegnung und gemeinsame Ziele der Gruppe (WdS S. 81).
+  final begegnung = ref.watch(gefechtBegegnungProvider);
+  final gebunden = gefechtsVerteidigerlage(begegnung, id).gegner;
+  final ziel = begegnung.gegner[roh.kontext.gegnerId];
+  final angreifer = ziel == null || !gefechtsGegnerHandelt(ziel)
+      ? 0
+      : {id, if (gruppe.helden.contains(id)) ...gruppe.helden}
+            .where(
+              (h) =>
+                  (h == id ? roh : ref.watch(gefechtProvider(h)))
+                      ?.kontext
+                      .gegnerId ==
+                  ziel.id,
+            )
+            .length;
   final s = roh.copyWith(
     patzerSperre: sperrt
         ? 'Patzer-/Bruchfolgen offen oder restliche Rundenaktionen verloren.'
         : null,
     ohnePatzerSperre: !sperrt,
     gesperrteKampfmittel: patzer.gesperrteMittel,
+    gebundeneGegner: gebunden > 0 ? gebunden : null,
+    ohneGebundeneGegner: gebunden == 0,
+    ueberzahlAngriff: gefechtsAngriffInUeberzahl(angreiferAufZiel: angreifer),
   );
-  final gruppe = ref.watch(gefechtInitiativeProvider);
   if (!gruppe.helden.contains(id)) {
     return s.copyWith(gemeinsameInitiative: false, ohneInitiativSperre: true);
   }

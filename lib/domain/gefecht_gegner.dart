@@ -133,21 +133,49 @@ class Gefechtsgegner {
   );
 }
 
+/// Bestätigtes Ergebnis der Aktion Taktik (WdS S. 81, optional).
+///
+/// Einmal pro Kampf: Entweder hebt eine gelungene Kriegskunst-Probe die
+/// gegnerische Überzahl auf, oder ihre TaP* verbessern die INI einzelner
+/// Gefährten (bei Misslingen −1 je Positioniertem).
+class Gefechtstaktik {
+  /// [iniBoni] hält je Teilnehmer-ID den einmaligen INI-Bonus oder -Malus.
+  const Gefechtstaktik({
+    required this.anfuehrerId,
+    this.ueberzahlAufgehoben = false,
+    this.iniBoni = const {},
+  });
+  final String anfuehrerId;
+  final bool ueberzahlAufgehoben;
+  final Map<String, int> iniBoni;
+}
+
 /// Gemeinsam genutzte Gegner und einmalige Buchungen ohne JSON oder Speicherweg.
 class Gefechtsbegegnung {
   /// Ein neuer App-Prozess beginnt mit einer leeren Begegnung.
-  const Gefechtsbegegnung({this.gegner = const {}, this.buchungen = const {}});
+  const Gefechtsbegegnung({
+    this.gegner = const {},
+    this.buchungen = const {},
+    this.taktik,
+  });
   final Map<String, Gefechtsgegner> gegner;
 
   /// Verbrauchte Buchungs-IDs; eine Rücknahme gibt sie nicht wieder frei.
   final Set<String> buchungen;
 
+  /// Die einmal pro Kampf genutzte Taktik; `null`, solange sie offen ist.
+  final Gefechtstaktik? taktik;
+
   /// Übergibt unveränderliche Ergebnisse reiner Regeln an den Provider.
   Gefechtsbegegnung copyWith({
     Map<String, Gefechtsgegner>? gegner,
     Set<String>? buchungen,
+    Object? taktik = keepFieldValue,
   }) => Gefechtsbegegnung(
     gegner: gegner ?? this.gegner,
     buchungen: buchungen ?? this.buchungen,
+    taktik: identical(taktik, keepFieldValue)
+        ? this.taktik
+        : taktik as Gefechtstaktik?,
   );
 }
