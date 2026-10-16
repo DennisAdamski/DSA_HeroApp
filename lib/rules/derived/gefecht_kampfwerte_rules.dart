@@ -135,6 +135,13 @@ Herleitung? herleiteGefechtsIni({
       quelle: 'Gefecht',
     ),
     HerleitungsSchritt(
+      bezeichnung: 'Überzahl und Taktik',
+      betrag: s.lageIni,
+      art: HerleitungsArt.modifikator,
+      quelle: 'Begegnung',
+      formel: 'INI +1 je Kopf Überzahl (höchstens +4) und Taktik (WdS S. 81)',
+    ),
+    HerleitungsSchritt(
       bezeichnung: 'Kampfverluste',
       betrag: -s.iniVerlust,
       art: HerleitungsArt.modifikator,

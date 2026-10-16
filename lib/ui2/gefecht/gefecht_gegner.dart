@@ -43,11 +43,11 @@ class GefechtGegnerkarte extends ConsumerWidget {
     };
     final teilnehmer = dabei.keys.toList();
     String name(String id) => dabei[id] ?? id;
-    final lage = _lagetext(
+    final ueberzahl = gefechtsUeberzahl(
       begegnung,
-      heroId,
-      eigene: gefechtsEigeneNahkaempfer(seite),
+      eigeneNahkaempfer: gefechtsEigeneNahkaempfer(seite),
     );
+    final lage = _lagetext(begegnung, heroId, ueberzahl);
     Future<void> bearbeiten([Gefechtsgegner? g]) async {
       final neu = await showDialog<Gefechtsgegner>(
         context: context,
@@ -87,7 +87,7 @@ class GefechtGegnerkarte extends ConsumerWidget {
                   children: [
                     Text(
                       '${g.name} · ${_schadenstext(g)} · RS ${g.rs ?? "?"} · '
-                      'INI ${g.ini}',
+                      '${_initext(g, ueberzahl)}',
                     ),
                     if (_zusatztext(g).isNotEmpty) Text(_zusatztext(g)),
                     Wrap(
@@ -169,6 +169,7 @@ class GefechtGegnerkarte extends ConsumerWidget {
                                         waehleGefechtsgegner(
                                           s,
                                           g,
+                                          heldId: heroId,
                                           startDk: gefechtsStartDk(
                                             waffenDk,
                                             fernkampf: fernkampf,
@@ -237,8 +238,7 @@ class GefechtGegnerkarte extends ConsumerWidget {
 }
 
 // Kräfteverhältnis und eigene Abwehrlage (WdS S. 81); leer ohne Bindungen.
-String _lagetext(Gefechtsbegegnung b, String heroId, {required int eigene}) {
-  final u = gefechtsUeberzahl(b, eigeneNahkaempfer: eigene);
+String _lagetext(Gefechtsbegegnung b, String heroId, GefechtsUeberzahl u) {
   if (u.gegner == 0) return '';
   final l = gefechtsVerteidigerlage(b, heroId);
   return [
@@ -258,6 +258,18 @@ String _lagetext(Gefechtsbegegnung b, String heroId, {required int eigene}) {
         if (l.imRuecken > 0) '${l.imRuecken} im Rücken, nicht parierbar',
       ].join(' · '),
   ].join('\n');
+}
+
+// Aktuelle INI mit Überzahl- und Wundanteil, wenn sie vom erfassten Wert abweicht.
+String _initext(Gefechtsgegner g, GefechtsUeberzahl u) {
+  final ini = gefechtsGegnerIni(g, u);
+  final teile = [
+    if (ini.ueberzahl != 0) '+${ini.ueberzahl} Überzahl',
+    if (ini.wunden != 0) '${ini.wunden} Wunden',
+  ];
+  return teile.isEmpty
+      ? 'INI ${ini.wert}'
+      : 'INI ${ini.wert} (${g.ini} ${teile.join(", ")})';
 }
 
 // Kurzer Schadensstand: LeP nur, wenn Start-LeP und alle RS bekannt sind.

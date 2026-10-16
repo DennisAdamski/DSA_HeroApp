@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht_gegner.dart';
+import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_ueberzahl_rules.dart';
 
 void main() {
@@ -212,5 +213,67 @@ void main() {
       ),
       throwsStateError,
     );
+  });
+  test('Ohne Nahkampf auf beiden Seiten gibt es keinen INI-Bonus', () {
+    final b = begegnung({'a': 'h'});
+    expect(gefechtsUeberzahl(b, eigeneNahkaempfer: 0).iniBonusGegner, 0);
+    expect(
+      gefechtsUeberzahl(
+        const Gefechtsbegegnung(),
+        eigeneNahkaempfer: 3,
+      ).iniBonusEigene,
+      0,
+    );
+  });
+
+  test('Lage-INI: Überzahl und Taktik, nicht für Unbeteiligte', () {
+    final b = setzeGefechtstaktik(
+      begegnung({'a': 'h'}),
+      const Gefechtstaktik(anfuehrerId: 'h', iniBoni: {'x': 2}),
+    );
+    final u = gefechtsUeberzahl(b, eigeneNahkaempfer: 3);
+    expect(u.iniBonusEigene, 2);
+    GefechtsTeilnehmer t(String id, GefechtsBeteiligung b) =>
+        gefechtsEigeneSeite(
+          Gefechtsbegegnung(
+            mitstreiter: {
+              id: Gefechtsmitstreiter(id: id, name: id, beteiligung: b),
+            },
+          ),
+          helden: const [],
+        ).single;
+    expect(gefechtsLageIni(b, u, t('x', GefechtsBeteiligung.fernkampf)), 4);
+    expect(gefechtsLageIni(b, u, t('y', GefechtsBeteiligung.nahkampf)), 2);
+    expect(gefechtsLageIni(b, u, t('x', GefechtsBeteiligung.nichtDabei)), 0);
+  });
+
+  test('Gegner-INI: Überzahl der Gegner und INI-Basis-Abzug der Wunden', () {
+    // KO 12: Schwellen 6/12/18; RS 0.
+    var g = const Gefechtsgegner(
+      id: 'o',
+      name: 'Ork',
+      lep: 30,
+      rs: 0,
+      ko: 12,
+      ini: 10,
+      bindet: 'h',
+      treffer: [
+        Gefechtsgegnertreffer(buchungId: '1', tp: 13, zone: WundZone.brust),
+        Gefechtsgegnertreffer(buchungId: '2', tp: 7, zone: WundZone.linkesBein),
+      ],
+    );
+    // Zwei Wunden Brust (−4) und eine im Bein (−2 und Zonenanteil −2).
+    expect(gefechtsGegnerIniWundmalus(g), -8);
+    final b = Gefechtsbegegnung(
+      gegner: {
+        'o': g,
+        'p': const Gefechtsgegner(id: 'p', name: 'Ork 2', ini: 9, bindet: 'h'),
+      },
+    );
+    final u = gefechtsUeberzahl(b, eigeneNahkaempfer: 1);
+    final ini = gefechtsGegnerIni(g, u);
+    expect((ini.wert, ini.ueberzahl, ini.wunden), (3, 1, -8));
+    g = g.copyWith(status: GefechtsgegnerStatus.kampfunfaehig);
+    expect(gefechtsGegnerIni(g, u).ueberzahl, 0);
   });
 }

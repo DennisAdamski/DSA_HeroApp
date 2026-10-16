@@ -916,6 +916,15 @@ verbundenen Helden und automatisch den externen Gefährten der Heldengruppen
 Beteiligung je Teilnehmer und dem Ziel externer Gefährten. Nur Nahkämpfer
 zählen für Kräfteverhältnis und AT +1; „nicht dabei“ löst Bindungen.
 
+Schritt 6: Die Zielwahl stellt die zuletzt gesetzte DK je Gegner wieder her
+(`dkJeGegner`) und belegt Zielsituation (Zielgröße), Kampfgetümmel und „Sehr
+großer Gegner“ aus dem Gegner sichtbar vor.
+
+Schritt 7: Überzahl wirkt nur, wenn beide Seiten im Nahkampf stehen. Die
+Gegner-INI der Zeitpunkte enthält Überzahlbonus und Wundabzug
+(`gefechtsGegnerIni`); Helden erhalten über `lageIni` den Anteil aus
+Überzahl und Taktik in `gefechtsInitiative` und der INI-Herleitung.
+
 Tests: `test/rules/gefecht_gegner_rules_test.dart`,
 `test/rules/gefecht_ueberzahl_rules_test.dart`,
 `test/rules/gefecht_rules_test.dart`,

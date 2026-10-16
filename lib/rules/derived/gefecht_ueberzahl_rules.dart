@@ -4,7 +4,9 @@
 
 import 'package:dsa_heldenverwaltung/domain/gefecht_gegner.dart';
 
-import 'gefecht_gegner_rules.dart' show gefechtsGegnerHandelt;
+import 'gefecht_gegner_rules.dart'
+    show gefechtsGegnerHandelt, gefechtsGegnerstand;
+import 'wund_zonen_rules.dart' show kWundAllgemein, wundZonenWirkung;
 
 /// Höchstens drei Gegner hat ein Kämpfer im Blick (WdS S. 81).
 const int kGefechtsGegnerImBlick = 3;
@@ -46,7 +48,7 @@ class GefechtsUeberzahl {
 }
 
 /// WdS S. 81: Die Partei in der Überzahl erhält INI +1 je Kopf Überzahl,
-/// höchstens +4. Eine gelungene Taktik zum Aufheben nimmt den Gegnern
+/// höchstens +4, sobald beide Seiten im Nahkampf stehen. Eine gelungene Taktik zum Aufheben nimmt den Gegnern
 /// diesen Bonus; die Paarungen legt dann die Bindung der Gegner fest.
 GefechtsUeberzahl gefechtsUeberzahl(
   Gefechtsbegegnung b, {
@@ -58,7 +60,9 @@ GefechtsUeberzahl gefechtsUeberzahl(
   final gegner = b.gegner.values
       .where(gefechtsGegnerZaehltFuerUeberzahl)
       .length;
+  // Ohne Nahkampf auf beiden Seiten gibt es keine Überzahl.
   int bonus(int a, int b) {
+    if (a == 0 || b == 0) return 0;
     final d = a - b;
     return d <= 0
         ? 0
@@ -343,5 +347,47 @@ Gefechtsbegegnung setzeGefechtsmitstreiterZiel(
       ...b.mitstreiter,
       teilnehmerId: alt.copyWith(zielId: zielId),
     }),
+  );
+}
+
+/// INI-Anteil eines Teilnehmers der eigenen Seite aus Überzahl und Taktik.
+///
+/// WdS S. 81: Jeder Kämpfer der überlegenen Partei erhält den Bonus; wer nicht
+/// dabei ist, nicht. Dazu kommen die einmal verteilten Taktikpunkte (oder −1
+/// nach misslungener Taktik).
+int gefechtsLageIni(
+  Gefechtsbegegnung b,
+  GefechtsUeberzahl u,
+  GefechtsTeilnehmer t,
+) {
+  if (t.beteiligung == GefechtsBeteiligung.nichtDabei) return 0;
+  return u.iniBonusEigene + (b.taktik?.iniBoni[t.id] ?? 0);
+}
+
+/// WdS S. 57 f. und 108 f.: je Wunde INI-Basis −2, dazu der Zonenanteil
+/// (Kopf −2, Bauch −1, Bein −2), kombiniert wie bei Helden (Hausregel
+/// „Erweiterung und Überarbeitung“ S. 3). Die gewürfelten 2W6 einer
+/// Kopfwunde trägt der Nutzer als INI-Korrektur ein.
+int gefechtsGegnerIniWundmalus(Gefechtsgegner g) {
+  final stand = gefechtsGegnerstand(g);
+  var malus = kWundAllgemein.iniBasis * stand.wunden;
+  for (final e in stand.wundenNachZone.entries) {
+    malus += wundZonenWirkung(e.key).iniBasis * e.value;
+  }
+  return malus;
+}
+
+/// Aktuelle INI eines Gegners: erfasster Wert, Überzahlbonus seiner Seite
+/// und Wundabzüge.
+({int wert, int ueberzahl, int wunden}) gefechtsGegnerIni(
+  Gefechtsgegner g,
+  GefechtsUeberzahl u,
+) {
+  final ueberzahl = gefechtsGegnerHandelt(g) ? u.iniBonusGegner : 0;
+  final wunden = gefechtsGegnerIniWundmalus(g);
+  return (
+    wert: g.ini + ueberzahl + wunden,
+    ueberzahl: ueberzahl,
+    wunden: wunden,
   );
 }
