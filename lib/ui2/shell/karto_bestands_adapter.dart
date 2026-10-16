@@ -104,6 +104,15 @@ abstract interface class KartoBestandsAdapter {
     required String heroId,
   });
 
+  /// Öffnet die Karte „Regelprofil“ des Bestands (ARCH-04): festgehaltene
+  /// Pakete, Updatevorschau, Zusatzpakete und Lösen des Profils.
+  ///
+  /// Geschrieben wird nur über die ausdrücklichen Aktionen der Karte.
+  Future<void> regelprofil({
+    required BuildContext context,
+    required String heroId,
+  });
+
   /// Öffnet die vorhandene Rastbedienung.
   Future<void> rast({required BuildContext context, required String heroId});
 

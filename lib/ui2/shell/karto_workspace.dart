@@ -297,6 +297,7 @@ class _KartoWorkspaceState extends ConsumerState<KartoWorkspace> {
 
   List<PopupMenuEntry<String>> _menueEintraege() => <PopupMenuEntry<String>>[
     const PopupMenuItem(value: 'helden', child: Text('Helden verwalten')),
+    const PopupMenuItem(value: 'regelprofil', child: Text('Regelprofil')),
     const PopupMenuItem(value: 'feedback', child: Text('Feedback senden')),
     const PopupMenuItem(value: 'einstellungen', child: Text('Einstellungen')),
     const PopupMenuItem(

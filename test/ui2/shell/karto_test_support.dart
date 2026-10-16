@@ -135,6 +135,14 @@ class TestBestand implements KartoBestandsAdapter {
   }
 
   @override
+  Future<void> regelprofil({
+    required BuildContext context,
+    required String heroId,
+  }) async {
+    aufrufe.add('regelprofil:$heroId');
+  }
+
+  @override
   Future<void> rast({
     required BuildContext context,
     required String heroId,
