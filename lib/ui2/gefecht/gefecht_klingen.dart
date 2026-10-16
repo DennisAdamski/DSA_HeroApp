@@ -6,6 +6,8 @@ import 'package:dsa_heldenverwaltung/domain/gefecht_klingen.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_provider.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_initiative_provider.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/gefecht_gegner_rules.dart'
+    show gefechtsAngreifbareGegner;
 import 'package:dsa_heldenverwaltung/state/gefecht_begegnung_provider.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
@@ -51,8 +53,16 @@ Future<void> zeigeGefechtsKlingenbeginn({
   );
   if (!p.ausfuehrbar) throw StateError(p.gruende.join(' '));
   final w = gefechtswerteFuer(snapshot, katalog: katalog, kampfmittel: wahl);
-  final gegner = ref.read(gefechtBegegnungProvider).gegner;
-  if (gegner.length < 2) throw StateError('Mindestens zwei Gegner erfassen.');
+  // Tote und Geflohene sind kein Ziel; Kämpfende werden zuerst vorbelegt.
+  final gegner = {
+    for (final g in gefechtsAngreifbareGegner(
+      ref.read(gefechtBegegnungProvider),
+    ))
+      g.id: g,
+  };
+  if (gegner.length < 2) {
+    throw StateError('Mindestens zwei angreifbare Gegner erfassen.');
+  }
   final vorgaben = gefechtsKlingenVorgaben(s, gegner.keys.toList());
   final ids = vorgaben.gegner;
   final dk = vorgaben.dk;
