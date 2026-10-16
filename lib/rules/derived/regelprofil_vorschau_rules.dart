@@ -212,6 +212,29 @@ HeroSheet uebernehmeRegelProfil(
   return aktuell.copyWith(regelProfil: auf);
 }
 
+/// Führt das Regelprofil des frisch geladenen Helden [aktuell] zurück auf
+/// „folgt den globalen Hausregeln“.
+///
+/// [von] ist das Profil, das der Nutzer vor sich sah. Ist das gespeicherte
+/// Profil inzwischen ein anderes, wirft die Funktion einen [StateError] und
+/// schreibt nichts. Hat der Held kein Profil mehr, kommt [aktuell] unverändert
+/// zurück. Danach gilt wieder der globale Stand; die Werte können sich ändern.
+HeroSheet setzeRegelProfilZurueck(
+  HeroSheet aktuell, {
+  required HeroRegelProfil von,
+}) {
+  if (aktuell.regelProfil == null) {
+    return aktuell;
+  }
+  if (aktuell.regelProfil != von) {
+    throw StateError(
+      'Das Regelprofil des Helden wurde inzwischen geändert. Bitte die '
+      'Karte neu öffnen.',
+    );
+  }
+  return aktuell.copyWith(regelProfil: null);
+}
+
 // Fähigkeit oder Manöver aus dem typisierten Katalog.
 class _Eintrag {
   const _Eintrag({

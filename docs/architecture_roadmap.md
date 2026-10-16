@@ -236,14 +236,18 @@ im [Archiv](archiv/arch-04.md):
 
 *Regelprofil:*
 
-- [ ] Profil auf „folgt global“ zurückführen (heute nur Erstübernahme `null → Profil`).
+- [x] Profil auf „folgt global“ zurückführen: Knopf „Wieder den globalen
+  Hausregeln folgen“ in der Karte „Regelprofil“ (`setzeRegelProfilZurueck`,
+  16.10.2026); ein inzwischen geändertes Profil wird nie überschrieben.
 - [ ] Zusätzliche Pakete in der Vorschau wählen (`zusaetzlichePaketIds`).
-- [ ] Import/Export: trägt der Export das Profil mit; Import in eine App mit
-  anderem Paketstand.
+- [x] Import/Export: das Profil reist mit dem Helden-JSON (Manifestkopien und
+  Prüfsummen unverändert); ein Import rechnet nicht neu, ein abweichender
+  Paketstand der Ziel-App erscheint als Updatevorschau
+  (`test/data/hero_actions_import_export_test.dart`, 16.10.2026).
 - [ ] Einstieg in der UI2-Navigation (heute nur die Übersichtskarte
   „Regelprofil“).
-- [ ] Epische Nachteile lesen den globalen Schalter statt des Profils
-  (`hero_overview_epic_section.dart`).
+- [x] Epische Nachteile folgen dem Profil des Helden
+  (`heroHouseRuleActiveProvider`, 16.10.2026).
 - [ ] Gruppenvorgabe („live von der Gruppe“): Verhalten bei mehreren Gruppen,
   beim Verlassen und ohne Verbindung klären; die Firestore-Regeln verbieten
   heute Gruppen-Updates, unter Windows ist Firestore nicht verfügbar.

@@ -7,6 +7,7 @@ import 'package:dsa_heldenverwaltung/catalog/regelprofil_vergleich.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_regelprofil.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/regelprofil_vorschau_rules.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
+import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/state/regelprofil_providers.dart';
 import 'package:dsa_heldenverwaltung/state/regelprofil_vorschau_providers.dart';
@@ -236,7 +237,56 @@ class _MitProfil extends ConsumerWidget {
             ),
         const SizedBox(height: 8),
         status,
+        const SizedBox(height: 8),
+        TextButton.icon(
+          key: const ValueKey<String>('regelprofil-loesen'),
+          onPressed: () => _loesen(context, ref),
+          icon: const Icon(Icons.link),
+          label: const Text('Wieder den globalen Hausregeln folgen'),
+        ),
       ],
+    );
+  }
+
+  Future<void> _loesen(BuildContext context, WidgetRef ref) async {
+    final ja = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Festgehaltenen Regelstand lösen?'),
+        content: const Text(
+          'Der Held folgt danach wieder den globalen Hausregeln. Ändert sich '
+          'dort ein Paket, ändern sich seine Werte mit. Das festgehaltene '
+          'Profil wird entfernt; der Held wird dabei gespeichert und beim '
+          'Konto-Sync als geändert gemeldet.',
+        ),
+        actions: [
+          TextButton(
+            key: const ValueKey<String>('regelprofil-loesen-abbrechen'),
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Abbrechen'),
+          ),
+          FilledButton(
+            key: const ValueKey<String>('regelprofil-loesen-bestaetigen'),
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Lösen'),
+          ),
+        ],
+      ),
+    );
+    if (ja != true || !context.mounted) return;
+    final gespeichert = await aendereHeldMitMeldung(
+      context: context,
+      ref: ref,
+      heroId: heroId,
+      was: 'Regelprofil',
+      aenderung: (held) => setzeRegelProfilZurueck(held, von: profil),
+      validationCatalog: ref.read(rulesCatalogProvider).valueOrNull,
+    );
+    if (gespeichert == null || !context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Der Held folgt wieder den globalen Regeln'),
+      ),
     );
   }
 }

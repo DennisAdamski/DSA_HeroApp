@@ -7,7 +7,10 @@ extension _HeroOverviewEpicSection on _HeroOverviewTabState {
       heroEpicAdvantagesActiveProvider(widget.heroId),
     );
     final disadvRuleActive = ref.watch(
-      isHouseRuleActiveProvider(EpicRuleKeys.disadvantages),
+      heroHouseRuleActiveProvider((
+        heroId: widget.heroId,
+        paketId: EpicRuleKeys.disadvantages,
+      )),
     );
     final boni = activeEpicMainAttributeBonuses(
       ruleActive: advRuleActive,

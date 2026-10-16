@@ -266,4 +266,39 @@ void main() {
       expect(ergebnis.regelProfil, profil);
     });
   });
+
+  group('setzeRegelProfilZurueck', () {
+    test('entfernt das Profil auf dem frisch geladenen Helden', () {
+      final profil = globalesProfil();
+      final held = krieger.copyWith(regelProfil: profil);
+      final ergebnis = setzeRegelProfilZurueck(held, von: profil);
+      expect(ergebnis.regelProfil, isNull);
+      expect(ergebnis.id, held.id);
+      expect(held.regelProfil, profil);
+      // Das JSON trägt den Schlüssel danach nicht mehr (Hash-Pins).
+      expect(ergebnis.toJson().containsKey('regelProfil'), isFalse);
+    });
+
+    test('ein inzwischen geändertes Profil wird nie überschrieben', () {
+      final alt = globalesProfil();
+      final fremd = mitPaket(alt, 'test_fremd', const []);
+      expect(
+        () => setzeRegelProfilZurueck(
+          krieger.copyWith(regelProfil: fremd),
+          von: alt,
+        ),
+        throwsStateError,
+      );
+    });
+
+    test('ohne Profil gibt es nichts zu speichern', () {
+      expect(
+        identical(
+          setzeRegelProfilZurueck(krieger, von: globalesProfil()),
+          krieger,
+        ),
+        isTrue,
+      );
+    });
+  });
 }
