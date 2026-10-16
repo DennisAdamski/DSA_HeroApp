@@ -2,18 +2,26 @@ rules_version = '2';
 
 service firebase.storage {
   match /b/{bucket}/o {
-    // Avatarbilder gehoeren ausschliesslich ihrem Konto.
+    // Avatar images belong exclusively to their owner
     //
-    // `delete` steht bewusst getrennt von `write`: Bei einer Loeschung ist
-    // `request.resource` null, eine Groessenbedingung in `write` wuerde also
-    // jedes Loeschen blockieren.
+    // Separate 'delete' from 'write': during deletion,
+    // request.resource is null, so a size condition in 'write'
+    // would block every deletion.
     match /avatars/{userId}/{allPaths=**} {
       allow read, delete: if request.auth != null
                           && request.auth.uid == userId;
+      
+      // Strict validation: only JPEG, PNG, WebP allowed
       allow write: if request.auth != null
                    && request.auth.uid == userId
-                   && request.resource.size < 8 * 1024 * 1024
-                   && request.resource.contentType.matches('image/.*');
+                   && request.resource.size < 5 * 1024 * 1024
+                   && request.resource.contentType in ['image/jpeg', 'image/png', 'image/webp']
+                   && !isBlacklisted(request.resource.contentType);
     }
   }
+}
+
+function isBlacklisted(contentType) {
+  // Prevent SVG and other potentially dangerous formats
+  return contentType in ['image/svg+xml', 'image/x-svg', 'application/svg+xml'];
 }
