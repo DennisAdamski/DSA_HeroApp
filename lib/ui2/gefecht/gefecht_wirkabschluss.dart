@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht_wirken.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_provider.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_begegnung_provider.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_initiative_provider.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/artefakt_auxiliator_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_wirken_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/active_spell_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/active_spell_state_rules.dart';
@@ -247,6 +249,14 @@ class _AbschlussState extends ConsumerState<_Abschluss> {
         h.wirken!.fremdwirkung != null &&
         h.fremdwirkungswurf == null;
     final kosten = brauchtWurf ? null : gefechtsAbschlusskosten(h);
+    // Zaubertalismane, die zum gerade gewirkten Zauber passen (Auxiliator).
+    final zauberId = h.art == Gefechtshandlungsart.zauber
+        ? gefechtsWirkZauberId(h.wirken!.identitaet)
+        : null;
+    final held = ref.watch(heroComputedProvider(widget.heroId)).asData?.value;
+    final auxiliatoren = zauberId == null || held == null || h.ergebnis == null
+        ? const <HeroInventoryEntry>[]
+        : gefechtsAuxiliatoren(held.hero, zauberId);
     final unterstuetzt = [
       'armatrutz',
       'attributo',
@@ -317,6 +327,31 @@ class _AbschlussState extends ConsumerState<_Abschluss> {
                     onChanged: (_) => setState(() {}),
                   ),
                 ],
+                for (var i = 0; i < auxiliatoren.length; i++)
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: OutlinedButton.icon(
+                      key: ValueKey('gefecht-auxiliator-$i'),
+                      onPressed: _busy
+                          ? null
+                          : () => widget.bestand.gefechtsAuxiliator(
+                              context: context,
+                              ref: ref,
+                              heroId: widget.heroId,
+                              eintrag: auxiliatoren[i],
+                              zauberId: zauberId!,
+                              zfpStern: h.ergebnis!.remainingPool < 0
+                                  ? 0
+                                  : h.ergebnis!.remainingPool,
+                              gelungen: erfolg,
+                              repraesentation: h.wirken!.repraesentation,
+                            ),
+                      icon: const Icon(Icons.auto_awesome),
+                      label: Text(
+                        'Auxiliator einsetzen · ${auxiliatoren[i].gegenstand}',
+                      ),
+                    ),
+                  ),
                 if (h.wirken!.fremdwirkung == null &&
                     !h.wirken!.permanentManuell)
                   const Text(

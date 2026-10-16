@@ -1,17 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:uuid/uuid.dart';
 
+import 'package:dsa_heldenverwaltung/ui/screens/shared/planung_bearbeiten_guard.dart';
+import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_companion.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/inventar_aenderung_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/inventar_stapel_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/inventar_summen_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/inventar_verkauf_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/kampfgegenstand_ablegen_rules.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/zustand_aendern.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/dukaten_field.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/inventory_filter_bar.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/inventory_item_editor.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/inventory_kampf_uebernehmen.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/inventory_stapel_teilen.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/inventory_stapel_zusammenfuehren.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/inventory_verkaufen_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/adaptive_table_columns.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/codex_tab_header.dart';
@@ -143,16 +155,13 @@ class _HeroInventoryTabState extends ConsumerState<HeroInventoryTab>
     }
 
     _latestHero = hero;
+    final planungOffen =
+        ref.watch(advancementSessionProvider(widget.heroId)) != null;
 
     final isWide = MediaQuery.sizeOf(context).width >= _widthBreakpoint;
-    final totalWeight = hero.inventoryEntries.fold<int>(
-      0,
-      (sum, entry) => sum + entry.gewichtGramm,
-    );
-    final totalValue = hero.inventoryEntries.fold<int>(
-      0,
-      (sum, entry) => sum + entry.wertSilber,
-    );
+    // Wert und Gewicht gelten pro Stück (ARCH-03).
+    final totalWeight = inventarGesamtgewichtGramm(hero.inventoryEntries);
+    final totalValue = inventarGesamtwertSilber(hero.inventoryEntries);
 
     final filterBar = InventoryFilterBar(
       activeFilter: _filter,
@@ -181,6 +190,11 @@ class _HeroInventoryTabState extends ConsumerState<HeroInventoryTab>
             child: DukatenField(
               key: const ValueKey<String>('inventory-dukaten-field'),
               value: hero.dukaten,
+              readOnly: planungOffen,
+              onBearbeiten: () => bestaetigeBearbeitungBeiPlanung(
+                context: context,
+                heroId: widget.heroId,
+              ),
               onCommit: _saveDukaten,
               onSchritt: _verschiebeDukaten,
             ),
@@ -239,6 +253,11 @@ class _HeroInventoryTabState extends ConsumerState<HeroInventoryTab>
           child: DukatenField(
             key: const ValueKey<String>('inventory-dukaten-field'),
             value: hero.dukaten,
+            readOnly: planungOffen,
+            onBearbeiten: () => bestaetigeBearbeitungBeiPlanung(
+              context: context,
+              heroId: widget.heroId,
+            ),
             onCommit: _saveDukaten,
             onSchritt: _verschiebeDukaten,
           ),

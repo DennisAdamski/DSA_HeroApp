@@ -1,6 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht_initiative.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/gefecht_gegner_rules.dart'
+    show gefechtsGegnerHandelt;
+import 'package:dsa_heldenverwaltung/rules/derived/gefecht_ueberzahl_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_initiative_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_held_rules.dart';
@@ -11,8 +14,8 @@ import 'gefecht_patzer_provider.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_patzer_rules.dart';
 
 import 'gefecht_begegnung_provider.dart';
+import 'gefecht_seite_provider.dart';
 import 'hero_providers.dart';
-import 'catalog_providers.dart';
 
 /// Verbindet ausdrücklich gewählte Heldensitzungen ohne Repository-Schreibzugriff.
 class GefechtsinitiativController extends Notifier<Gefechtsinitiative> {
@@ -184,14 +187,16 @@ List<Gefechtszeitpunkt> _zeitpunkte(
   final begegnung = beobachten
       ? ref.watch(gefechtBegegnungProvider)
       : ref.read(gefechtBegegnungProvider);
-  final katalog =
-      (beobachten
-              ? ref.watch(rulesCatalogProvider)
-              : ref.read(rulesCatalogProvider))
-          .asData
-          ?.value;
   final liste = <Gefechtszeitpunkt>[];
   final reserven = <({String id, String name, int ini})>[];
+  // Überzahl und Taktik wirken auf beide Seiten (WdS S. 81).
+  final seite = gruppe.helden.isEmpty
+      ? const <GefechtsTeilnehmer>[]
+      : gefechtsEigeneSeiteLesen(ref, gruppe.helden, beobachten: beobachten);
+  final ueberzahl = gefechtsUeberzahl(
+    begegnung,
+    eigeneNahkaempfer: gefechtsEigeneNahkaempfer(seite),
+  );
   for (final id in gruppe.helden) {
     final s = beobachten
         ? ref.watch(gefechtProvider(id))
@@ -203,22 +208,42 @@ List<Gefechtszeitpunkt> _zeitpunkte(
             .asData
             ?.value;
     if (s == null || snap == null) continue;
+    final teilnehmer = seite.where((t) => t.id == id).firstOrNull;
+    final mitLage = teilnehmer == null
+        ? s
+        : s.copyWith(
+            lageIni: gefechtsLageIni(begegnung, ueberzahl, teilnehmer),
+          );
+    // Jeder Held rechnet nach seinem eigenen Regelprofil (ARCH-04).
+    final katalog =
+        (beobachten
+                ? ref.watch(heroRulesCatalogProvider(id))
+                : ref.read(heroRulesCatalogProvider(id)))
+            .asData
+            ?.value;
     final w = gefechtswerteFuer(snap, katalog: katalog);
     if (s.reserveIni != null && s.reserveBereit) {
       reserven.add((id: id, name: snap.hero.name, ini: s.reserveIni!));
     }
     liste.addAll(
-      gefechtsHeldenzeitpunkte(id, snap.hero.name, s, gefechtsInitiative(s, w)),
+      gefechtsHeldenzeitpunkte(
+        id,
+        snap.hero.name,
+        mitLage,
+        gefechtsInitiative(mitLage, w),
+      ),
     );
   }
-  for (final g in begegnung.gegner.values) {
+  // Kampfunfähige, Tote und Geflohene handeln nicht mehr (Basis S. 139).
+  for (final g in begegnung.gegner.values.where(gefechtsGegnerHandelt)) {
+    final ini = gefechtsGegnerIni(g, ueberzahl).wert;
     liste.add(
       Gefechtszeitpunkt(
         id: 'gegner:${g.id}',
         teilnehmerId: g.id,
         name: g.name,
-        ini: g.ini,
-        ursprungsIni: g.ini,
+        ini: ini,
+        ursprungsIni: ini,
         gegner: true,
       ),
     );
@@ -253,14 +278,38 @@ final gefechtMitInitiativeProvider = Provider.family<Gefechtszustand?, String>((
   if (roh == null) return null;
   final patzer = ref.watch(gefechtPatzerProvider(id));
   final sperrt = gefechtPatzerSperrt(patzer, roh.runde);
+  final gruppe = ref.watch(gefechtInitiativeProvider);
+  // Bindungen der Begegnung und gemeinsame Ziele der Gruppe (WdS S. 81).
+  final begegnung = ref.watch(gefechtBegegnungProvider);
+  final gebunden = gefechtsVerteidigerlage(begegnung, id).gegner;
+  final ziel = begegnung.gegner[roh.kontext.gegnerId];
+  // Nahkämpfer der eigenen Seite mit demselben Ziel (Helden und Gefährten).
+  final seite = ref.watch(gefechtsEigeneSeiteProvider(id));
+  final angreifer = ziel == null || !gefechtsGegnerHandelt(ziel)
+      ? 0
+      : gefechtsAngreiferAufZiel(seite, ziel.id);
+  final teilnehmer = seite.where((t) => t.id == id).firstOrNull;
+  final lageIni = teilnehmer == null
+      ? 0
+      : gefechtsLageIni(
+          begegnung,
+          gefechtsUeberzahl(
+            begegnung,
+            eigeneNahkaempfer: gefechtsEigeneNahkaempfer(seite),
+          ),
+          teilnehmer,
+        );
   final s = roh.copyWith(
     patzerSperre: sperrt
         ? 'Patzer-/Bruchfolgen offen oder restliche Rundenaktionen verloren.'
         : null,
     ohnePatzerSperre: !sperrt,
     gesperrteKampfmittel: patzer.gesperrteMittel,
+    gebundeneGegner: gebunden > 0 ? gebunden : null,
+    ohneGebundeneGegner: gebunden == 0,
+    ueberzahlAngriff: gefechtsAngriffInUeberzahl(angreiferAufZiel: angreifer),
+    lageIni: lageIni,
   );
-  final gruppe = ref.watch(gefechtInitiativeProvider);
   if (!gruppe.helden.contains(id)) {
     return s.copyWith(gemeinsameInitiative: false, ohneInitiativSperre: true);
   }

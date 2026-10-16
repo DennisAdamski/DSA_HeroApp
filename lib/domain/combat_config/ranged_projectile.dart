@@ -4,6 +4,7 @@ import 'package:dsa_heldenverwaltung/domain/unbekannte_json_felder.dart';
 class RangedProjectile {
   const RangedProjectile({
     this.id = '',
+    this.inventarInstanzId = '',
     this.name = '',
     this.count = 0,
     this.tpMod = 0,
@@ -15,6 +16,13 @@ class RangedProjectile {
 
   /// Stabile Kennung des Geschosses innerhalb seiner Waffe.
   final String id;
+
+  /// Instanz-ID des Inventareintrags, der dieses Exemplar ist (ARCH-03).
+  ///
+  /// Verweis Slot → Instanz; leer, bis `HeroActions.saveHero` ihn aus dem
+  /// verknuepften Eintrag setzt (`bindeSlotsAnInstanzen`). Abgeleitet, nie
+  /// von der Bedienung geschrieben; nur geschrieben, wenn belegt.
+  final String inventarInstanzId;
 
   /// Anzeigename des Geschosses.
   final String name;
@@ -43,6 +51,7 @@ class RangedProjectile {
   /// nicht als unbekannt zurueckgeschrieben werden darf.
   static const Set<String> jsonSchluessel = <String>{
     'id',
+    'inventarInstanzId',
     'name',
     'count',
     'tpMod',
@@ -55,6 +64,7 @@ class RangedProjectile {
   /// Gibt eine Kopie mit selektiv ueberschriebenen Feldern zurueck.
   RangedProjectile copyWith({
     String? id,
+    String? inventarInstanzId,
     String? name,
     int? count,
     int? tpMod,
@@ -65,6 +75,7 @@ class RangedProjectile {
   }) {
     return RangedProjectile(
       id: id ?? this.id,
+      inventarInstanzId: inventarInstanzId ?? this.inventarInstanzId,
       name: name ?? this.name,
       count: count ?? this.count,
       tpMod: tpMod ?? this.tpMod,
@@ -79,6 +90,7 @@ class RangedProjectile {
   Map<String, dynamic> toJson() {
     return mitUnbekanntenFeldern(<String, dynamic>{
       if (id.isNotEmpty) 'id': id,
+      if (inventarInstanzId.isNotEmpty) 'inventarInstanzId': inventarInstanzId,
       'name': name,
       'count': count,
       'tpMod': tpMod,
@@ -93,6 +105,7 @@ class RangedProjectile {
     final hasAtMod = json.containsKey('atMod') && json['atMod'] != null;
     return RangedProjectile(
       id: (json['id'] as String?) ?? '',
+      inventarInstanzId: (json['inventarInstanzId'] as String?) ?? '',
       name: (json['name'] as String?) ?? '',
       count: (json['count'] as num?)?.toInt() ?? 0,
       tpMod: (json['tpMod'] as num?)?.toInt() ?? 0,

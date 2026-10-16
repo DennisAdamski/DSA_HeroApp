@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'package:dsa_heldenverwaltung/domain/learn/learn_rules.dart';
-import 'package:dsa_heldenverwaltung/rules/derived/epic_ap_cost_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/erwerb_herleitung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/requirement_evaluation_rules.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/config/ui_spacing.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_overview/herleitung_abschnitt.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/requirement_checklist.dart';
 
 /// Ergebnis eines bestaetigten Erwerbsdialogs.
@@ -167,40 +168,21 @@ class _ErwerbDialogState extends State<_ErwerbDialog> {
     return parsed;
   }
 
-  int get _kostenNachEpos {
-    final basis = _eingegebeneBasiskosten ?? 0;
-    return applyEpicApSurcharge(
-      basis,
-      ruleActive: true,
-      isEpisch: widget.episch,
-      isEpicContent: widget.epischerInhalt,
-      isBegabung: _keinEposAufschlag,
-      lehrmeisterHebtAuf: _mitLehrmeister,
+  /// Kosten samt Herleitung; die Regel liegt in `herleiteErwerbskosten`.
+  Erwerbskosten get _kosten {
+    return herleiteErwerbskosten(
+      basiskosten: _eingegebeneBasiskosten ?? 0,
+      episch: widget.episch,
+      epischerInhalt: widget.epischerInhalt,
+      keinAufschlag: _keinEposAufschlag,
+      mitLehrmeister: _mitLehrmeister,
+      lehrmeisterVerdoppeltOhneIhn: widget.lehrmeisterVerdoppeltOhneIhn,
     );
   }
 
-  int get _eposAufschlagDelta {
-    final basis = _eingegebeneBasiskosten ?? 0;
-    return computeEpicApSurchargeDelta(
-      basis,
-      ruleActive: true,
-      isEpisch: widget.episch,
-      isEpicContent: widget.epischerInhalt,
-      isBegabung: _keinEposAufschlag,
-      lehrmeisterHebtAuf: _mitLehrmeister,
-    );
-  }
+  int get _eposAufschlagDelta => _kosten.aufschlag;
 
-  int get _effektiveApKosten {
-    final kosten = _kostenNachEpos;
-    if (widget.lehrmeisterVerdoppeltOhneIhn) {
-      return _mitLehrmeister ? kosten : kosten * 2;
-    }
-    if (!_mitLehrmeister) {
-      return kosten;
-    }
-    return apMitLehrmeister(kosten);
-  }
+  int get _effektiveApKosten => _kosten.apKosten;
 
   double? get _dukaten {
     if (!_mitLehrmeister) {
@@ -296,6 +278,25 @@ class _ErwerbDialogState extends State<_ErwerbDialog> {
               },
             ),
           ],
+          Theme(
+            data: theme.copyWith(dividerColor: Colors.transparent),
+            child: ExpansionTile(
+              key: const ValueKey<String>('erwerb-dialog-herleitung'),
+              tilePadding: EdgeInsets.zero,
+              childrenPadding: EdgeInsets.zero,
+              dense: true,
+              title: Text(
+                'Berechnung der AP-Kosten',
+                style: theme.textTheme.bodySmall,
+              ),
+              children: [
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: HerleitungsSchritte(herleitung: _kosten.herleitung),
+                ),
+              ],
+            ),
+          ),
           const SizedBox(height: 8),
           Text('Verfügbare AP: ${widget.verfuegbareAp}'),
           Text(

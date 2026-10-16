@@ -1,0 +1,192 @@
+[
+  {
+    "id": "profil_axxeleratus_grund",
+    "spellId": "spell_axxeleratus_blitzgeschwind",
+    "profilVersion": 1,
+    "status": "bestand",
+    "legacyEffektId": "effect_spell_axxeleratus",
+    "beleg": { "buch": "Liber Cantiones", "seite": "36", "chunkId": 1949 },
+    "eingaben": ["zfpStern"],
+    "variantenHinweis": "Varianten „Blitzgeschwind“ (ab ZfW 11) und „Koboldisch“ sind nicht umgesetzt.",
+    "rundungsHinweis": "INI-Basis und GS werden verdoppelt, ohne Rundung.",
+    "hinweis": "Die App rechnet PA-Basis +2, Ausweichen +2, TP +2, INI-Basis ×2, GS ×2 sowie Schnellziehen/Schnellladen. Die um 2 erschwerte Abwehr gegen beschleunigte Angreifer erscheint als Kampfvorschau-Hinweis „Automatische Finte +2“. Nicht umgesetzt ist nur die Verdopplung des Athletik-TaW für Sprints und Sprünge (die App berechnet keine Sprint- oder Sprungstrecken)."
+  },
+  {
+    "id": "profil_attributo_grund",
+    "spellId": "spell_attributo",
+    "profilVersion": 1,
+    "status": "bestand",
+    "legacyEffektId": "effect_spell_attributo",
+    "beleg": { "buch": "Liber Cantiones", "seite": "30", "chunkId": 1940 },
+    "eingaben": ["eigenschaft", "zfpStern"],
+    "variantenHinweis": "Die Schnellsteigerung und die Tier-/Pflanzen-Sonderfälle sind nicht umgesetzt.",
+    "rundungsHinweis": "Laut Regelwerk ZfP*/3 Punkte; die App übernimmt den vom Nutzer eingetragenen Wert und rundet nicht.",
+    "hinweis": "Der Bonus liegt als freier Wert in den temporären Eigenschaftsmodifikatoren; Ende und Quellenbezug folgen mit MAG-EFF-02."
+  },
+  {
+    "id": "profil_armatrutz_grund",
+    "spellId": "spell_armatrutz",
+    "profilVersion": 1,
+    "status": "bestand",
+    "legacyEffektId": "effect_spell_armatrutz",
+    "beleg": { "buch": "Liber Cantiones", "seite": "28", "chunkId": 1938 },
+    "eingaben": ["zusaetzlicherRs", "zfpStern", "zfw"],
+    "variantenHinweis": "Die Varianten „Körperschild“ und „Kraft des Fakirs“ sind nicht umgesetzt.",
+    "rundungsHinweis": "Kosten: zusätzlicher RS² minus ZfP*/2 (abgerundet), mindestens 4 AsP.",
+    "hinweis": "Laut Regelwerk darf der zusätzliche RS höchstens ZfW/2 betragen. Die App prüft nur eine feste Eingabegrenze von 12, nicht ZfW/2."
+  },
+  {
+    "id": "profil_fulminictus_grund",
+    "spellId": "spell_fulminictus_donnerkeil",
+    "profilVersion": 1,
+    "status": "bestand",
+    "beleg": { "buch": "Liber Cantiones", "seite": "91", "chunkId": 2030 },
+    "eingaben": ["zfpStern"],
+    "variantenHinweis": "Nur die Grundwirkung ist umgesetzt.",
+    "rundungsHinweis": "Schaden 2W6 + ZfP* als direkte SP, begrenzt durch die AsP des Ziels; gewöhnlicher RS und Armatrutz wirken nicht.",
+    "hinweis": "Wirkt als Fremdschaden im Gefecht (Gegnerbuchung), nicht als Dauereffekt am Helden."
+  },
+  {
+    "id": "profil_falkenauge_grund",
+    "spellId": "spell_falkenauge_meisterschuss",
+    "profilVersion": 1,
+    "status": "belegt",
+    "beleg": { "buch": "Liber Cantiones", "seite": "84", "chunkId": 2020 },
+    "eingaben": ["zfpStern", "zfw", "ziel"],
+    "variantenHinweis": "Die Variante „bleibendes Band“ braucht ein eigenes Profil.",
+    "rundungsHinweis": "Keine Rundung nötig (Erleichterung um ZfP*).",
+    "hinweis": "FK-Probe gegen das festgelegte Ziel; einmaliger Verbrauch beim nächsten Schuss oder Wurf innerhalb von ZfW Kampfrunden."
+  },
+  {
+    "id": "profil_adlerauge_grund",
+    "spellId": "spell_adlerauge_luchsenohr",
+    "profilVersion": 1,
+    "status": "belegt",
+    "beleg": { "buch": "Liber Cantiones", "seite": "15", "chunkId": 1920 },
+    "eingaben": ["zfpStern", "sinn"],
+    "variantenHinweis": "Die Einzelsinn-Variante ist stärker und auf einen Sinn begrenzt; sie braucht ein eigenes Profil.",
+    "rundungsHinweis": "Keine Rundung nötig (Erleichterung um ZfP*).",
+    "hinweis": "Wirkt auf Sinnenschärfe; verleiht keine Nachtsicht. Überreizung ist ein Ereignishinweis."
+  },
+  {
+    "id": "profil_psychostabilis_grund",
+    "spellId": "spell_psychostabilis",
+    "profilVersion": 1,
+    "status": "belegt",
+    "beleg": { "buch": "Liber Cantiones", "seite": "214", "chunkId": 2194 },
+    "eingaben": ["zfpStern", "kontext", "asp"],
+    "variantenHinweis": "Selbstanwendung und Gegenzauber sind eigene Profile.",
+    "rundungsHinweis": "Keine Rundung nötig (MR + ZfP*, im passenden geistigen Kontext zusätzlich +2).",
+    "hinweis": "Allgemeine MR und kontextbezogene MR getrennt führen. Die Dauer wird mit AsP vorausbezahlt (1 AsP je Spielrunde über die Grundkosten hinaus); es laufen keine Kosten nach."
+  },
+  {
+    "id": "profil_blitz_grund",
+    "spellId": "spell_blitz_dich_find",
+    "profilVersion": 1,
+    "status": "belegt",
+    "beleg": { "buch": "Liber Cantiones", "seite": "49", "chunkId": 1970 },
+    "eingaben": ["zfpStern", "zfw"],
+    "variantenHinweis": "Blindkampf und Konzentrationsstärke ändern die Wirkung und sind vor der Umsetzung gesondert zu prüfen.",
+    "rundungsHinweis": "ZfP* wird gleichmäßig auf AT- und PA-Basis verteilt, ein ungerader Rest geht zuerst an die AT.",
+    "hinweis": "Empfangener Malus: FK-, Talent- und Zauberproben um ZfP* erschwert, INI −ZfW, Dauer ZfW/2 Aktionen."
+  },
+  {
+    "id": "profil_plumbumbarum_grund",
+    "spellId": "spell_plumbumbarum_schwerer_arm",
+    "profilVersion": 1,
+    "status": "belegt",
+    "beleg": { "buch": "Liber Cantiones", "seite": "211", "chunkId": 2190 },
+    "eingaben": ["zfpStern"],
+    "variantenHinweis": "Die Demotivationsvariante braucht ein eigenes Profil.",
+    "rundungsHinweis": "Keine Rundung nötig (AT und INI-Basis je −ZfP*).",
+    "hinweis": "Die Grundwirkung senkt keine PA; Dauer 5 Kampfrunden."
+  },
+  {
+    "id": "profil_aengste_lindern_grund",
+    "spellId": "spell_aengste_lindern",
+    "profilVersion": 1,
+    "status": "belegt",
+    "beleg": { "buch": "Liber Cantiones", "seite": "23", "chunkId": 1929 },
+    "eingaben": ["zfpStern", "angst"],
+    "variantenHinweis": "Kein pauschaler MU-Bonus; wirkt nur auf die zugehörige Angstprobe.",
+    "rundungsHinweis": "Keine Rundung nötig.",
+    "hinweis": "Verbrauchbarer, kontextbezogener Bonus: Wiederholung einer bestimmten Angst-/MU-Probe oder Aufhebung des zugehörigen Angstzuschlags."
+  },
+  {
+    "id": "profil_gardianum_grund",
+    "spellId": "spell_gardianum_zauberschild",
+    "profilVersion": 1,
+    "status": "belegt",
+    "beleg": { "buch": "Liber Cantiones", "seite": "92", "chunkId": 2031 },
+    "eingaben": ["zfpStern", "zfw", "investierteAsp", "schutzvariante"],
+    "variantenHinweis": "Schild gegen Dämonen und Schild gegen Zauber sind nicht umgesetzt. Die Kuppel ist ein gemeinsamer Vorrat aller Geschützten; die App führt ihn nur auf diesem Bogen, ein gemeinsamer Vorrat über mehrere Helden ist ein eigener Folgeumfang.",
+    "rundungsHinweis": "Kapazität: investierte AsP (mindestens 3) plus 2 × ZfP* (Kuppel) bzw. 3 × ZfP* (Persönlicher Schild, ab ZfW 11). Keine Rundung nötig.",
+    "hinweis": "Absorbiert nur direkte magische Angriffe (Schadenszauber, Schaden erzeugende Zauber von Dämonen, Elementaren oder Geistern), nicht magisch erhöhte Waffen-TP und keine physischen Angriffe. Der Schild löst sich nach spätestens 1 Spielrunde auf. Richtet ein Schadenszauber keine direkten TP an, verliert der Schild AsP in Höhe der Zauberkosten."
+  },
+  {
+    "id": "profil_balsam_grund",
+    "spellId": "spell_balsam_salabunde",
+    "profilVersion": 1,
+    "status": "belegt",
+    "beleg": { "buch": "Liber Cantiones", "seite": "37", "chunkId": 1951 },
+    "eingaben": ["asp", "zfw", "wundheilung", "zone"],
+    "variantenHinweis": "Heilung von Verstümmelungen, Rettung von der Schwelle des Todes, Lebenskraft stärken und Sofortige Regeneration sind nicht umgesetzt.",
+    "rundungsHinweis": "1 LeP je AsP (mindestens 5 AsP), höchstens ZfW × 2 LeP. Je 7 zurückgegebene LeP schließen eine angesagte Wunde vollständig; Rundung des Rests ist nicht nötig (ganzzahlige Division).",
+    "hinweis": "Einmalige Heilung des Empfängers. Wunden heilt der Zauber nur bei angesagter Wundheilung (Probe um die doppelte Wundenzahl erschwert); Gift und Krankheit werden nicht gestoppt. Der Zaubernde bezahlt die AsP, der Empfänger erhält die LeP."
+  },
+  {
+    "id": "profil_hexenspeichel_grund",
+    "spellId": "spell_hexenspeichel",
+    "profilVersion": 1,
+    "status": "belegt",
+    "beleg": { "buch": "Liber Cantiones", "seite": "117", "chunkId": 2063 },
+    "eingaben": ["asp", "zfw", "schadensart"],
+    "variantenHinweis": "Rettung von der Schwelle des Todes und Selbstheilung (Spontane Modifikation) sind nicht berechnet.",
+    "rundungsHinweis": "Wunden: 1 LeP je 2 AsP; für ungerade AsP ist die Rundung nicht festgelegt, die App verlangt eine gerade Zahl. Krankheiten: 1 LeP je AsP. Vergiftungen: 2 LeP je AsP. Höchstens ZfW AsP auf einmal.",
+    "hinweis": "Einmalige Heilung des Empfängers; die schädliche Wirkung von Giften und Krankheiten wird nicht gestoppt. Schließt keine Wunden."
+  },
+  {
+    "id": "profil_ruhe_koerper_grund",
+    "spellId": "spell_ruhe_koerper_ruhe_geist",
+    "profilVersion": 1,
+    "status": "belegt",
+    "beleg": { "buch": "Liber Cantiones", "seite": "220", "chunkId": 2200 },
+    "eingaben": ["zfpStern", "stunden", "aspRegeneration", "wunden"],
+    "variantenHinweis": "Die Reversalis (Schlaflosigkeit, ZfP* Punkte Erschöpfung) ist nicht umgesetzt.",
+    "rundungsHinweis": "Je verschlafener Stunde 2 LeP, 4 Überanstrengung und 8 Erschöpfung weniger; je 6 volle Stunden heilt eine Wunde vollständig (ganzzahlige Division). Heilungs-Vor- und Nachteile und die „evtl. 1 AsP“ je Stunde sind nicht gerechnet.",
+    "hinweis": "Ersetzt die normale Regeneration dieser Stunden. Der Schlaf dauert höchstens ZfP* Stunden; der Zaubernde trägt die Kosten (4 AsP + 2 AsP je Stunde), nicht der Schlafende."
+  },
+  {
+    "id": "profil_karnifilo_grund",
+    "spellId": "spell_karnifilo_raserei",
+    "profilVersion": 1,
+    "status": "belegt",
+    "beleg": { "buch": "Liber Cantiones", "seite": "136", "chunkId": 2091 },
+    "eingaben": ["zfpStern"],
+    "variantenHinweis": "Blutrausch (Werte-Veränderungen 2 Punkte stärker), borbaradianische und Achaz-Repräsentation sind nicht umgesetzt.",
+    "rundungsHinweis": "AT-Basis +5 und PA-Basis −5 gelten fest; ZfP*/2 Erschöpfung nach Ablauf ist nicht gerechnet (Rundung nicht belegt).",
+    "hinweis": "Empfangener Kampfrausch: AT-Basis +5, PA-Basis −5, Dauer ZfP* × 5 Kampfrunden. MU/KK +5 und KL/CH −5 sowie der Wegfall der Wund-Abzüge sind nur Hinweise."
+  },
+  {
+    "id": "profil_seidenzunge_grund",
+    "spellId": "spell_seidenzunge_elfenwort",
+    "profilVersion": 1,
+    "status": "belegt",
+    "beleg": { "buch": "Liber Cantiones", "seite": "237", "chunkId": 2219 },
+    "eingaben": ["zfpStern"],
+    "variantenHinweis": "Die Variante gegen mehrere Personen und die Reversalis sind nicht umgesetzt.",
+    "rundungsHinweis": "Keine Rundung nötig (Überreden um ZfP* erleichtert, nach Meisterentscheid).",
+    "hinweis": "Der Meister darf alle Überreden-Proben des Elfen um ZfP* erleichtern; die App setzt das als Startwert. Dauer ZfP* Spielrunden (A)."
+  },
+  {
+    "id": "profil_lach_dich_gesund_grund",
+    "spellId": "spell_lach_dich_gesund",
+    "profilVersion": 1,
+    "status": "belegt",
+    "beleg": { "buch": "Liber Cantiones", "seite": "151", "chunkId": 2107 },
+    "eingaben": ["zfpStern"],
+    "variantenHinweis": "Die Variante „Tanz dich wach“ (Erschöpfung abbauen) ist nicht umgesetzt.",
+    "rundungsHinweis": "Der Patient regeneriert ZfP* LeP (eine Spielrunde je Punkt); die Zaubernde zahlt so viele AsP wie LeP zurückkommen. Misslingt die Probe, bringt der Zauber nur 1W3 LeP.",
+    "hinweis": "Einmalige Heilung des Empfängers; wirkt nie auf die Zaubernde selbst."
+  }
+]

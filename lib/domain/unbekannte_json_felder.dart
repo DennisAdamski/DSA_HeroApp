@@ -45,6 +45,12 @@ Map<String, Object?> sammleUnbekannteFelder(
   return Map<String, Object?>.unmodifiable(unbekannt);
 }
 
+/// Tiefe, unveraenderliche Kopie eines rohen JSON-Werts.
+///
+/// Fuer Teilstuecke, die ein Modell nicht versteht und unveraendert
+/// zurueckschreibt (zum Beispiel ein Container einer neueren Formatversion).
+Object? kopiereJsonRohwert(Object? wert) => _kopie(wert);
+
 /// Ergaenzt [json] um die [unbekannt]en Felder, ohne bekannte zu ueberschreiben.
 Map<String, dynamic> mitUnbekanntenFeldern(
   Map<String, dynamic> json,

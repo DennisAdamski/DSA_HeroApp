@@ -1,0 +1,176 @@
+import 'package:flutter/material.dart';
+
+import 'package:dsa_heldenverwaltung/domain/spell_effect_instance.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/spell_duration_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/spell_effect_instance_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/spell_effect_protection_rules.dart';
+import 'package:dsa_heldenverwaltung/ui/config/ui_spacing.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/list_tile_material.dart';
+
+/// Karte einer einzelnen Zauberquelle (MAG-EFF-02).
+///
+/// Rein darstellend: Unterdrücken, Beenden und die Dauer laufen über
+/// Callbacks, die Persistenz bleibt beim aufrufenden Dialog.
+class SpellEffectInstanceTile extends StatelessWidget {
+  /// Erstellt die Karte für genau eine Instanz.
+  const SpellEffectInstanceTile({
+    super.key,
+    required this.instanz,
+    required this.titel,
+    required this.onWirktChanged,
+    required this.onBeenden,
+    required this.onAdvanceDuration,
+    this.ueberlagert = const <String>[],
+    this.mussAufrechterhaltenWerden = false,
+    this.onEditDuration,
+    this.onEinsetzen,
+    this.einsetzenLabel = 'Einsetzen',
+    this.onEditSchutz,
+  });
+
+  /// Anzuzeigende Instanz.
+  final SpellEffectInstance instanz;
+
+  /// Name des Zaubers samt laufender Nummer der Quelle.
+  final String titel;
+
+  /// Schaltet die Wirkung ein (`true`) oder unterdrückt sie (`false`).
+  final ValueChanged<bool> onWirktChanged;
+
+  /// Beendet nur diese Quelle.
+  final VoidCallback onBeenden;
+
+  /// Zieht eine Zeiteinheit von der Restlaufzeit ab.
+  final VoidCallback onAdvanceDuration;
+
+  /// Eigenschaften, die diese Quelle verbessern würde, die aber eine bessere
+  /// Quelle überlagert (es zählt nur der beste Wert).
+  final List<String> ueberlagert;
+
+  /// Der Zauber verlangt Aufrechterhaltung (Katalog „(A)“).
+  final bool mussAufrechterhaltenWerden;
+
+  /// Öffnet die Eingabe der Wirkungsdauer; `null` blendet den Knopf aus.
+  final VoidCallback? onEditDuration;
+
+  /// Setzt eine einmalige Wirkung ein (z. B. Ängste lindern); `null` = keine.
+  final VoidCallback? onEinsetzen;
+
+  /// Beschriftung des Einsetzen-Knopfs.
+  final String einsetzenLabel;
+
+  /// Öffnet die Korrektur des Schutzvorrats; `null` blendet den Knopf aus.
+  final VoidCallback? onEditSchutz;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final beschreibung = beschreibeEffektInstanz(instanz);
+    final dauer = instanz.duration;
+    final dauerText = describeSpellDuration(dauer);
+    final abgelaufen = dauer?.isExpired ?? false;
+    final kannZaehlen =
+        dauer != null &&
+        dauer.amount > 0 &&
+        !dauer.isPermanent &&
+        dauer.remaining > 0;
+    final id = instanz.id;
+    return Card(
+      margin: const EdgeInsets.only(bottom: 8),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ListTileMaterial(
+            child: SwitchListTile(
+              key: ValueKey<String>('spell-instance-wirkt-$id'),
+              title: Text(titel),
+              subtitle: Text(
+                [
+                  if (instanz.quelle != null) 'Quelle: ${instanz.quelle}',
+                  if (instanz.ziel != null) 'Ziel: ${instanz.ziel}',
+                  if (beschreibung.isNotEmpty) beschreibung,
+                  if (kSchutzZauberIds.contains(instanz.effectId))
+                    beschreibeSchutzVorrat(instanz),
+                  if (instanz.unterdrueckt) 'unterdrückt',
+                  if (ueberlagert.isNotEmpty)
+                    'zählt nicht für ${ueberlagert.join(', ')} (bessere Quelle)',
+                  if (mussAufrechterhaltenWerden) 'aufrechterhalten',
+                ].join(' · '),
+              ),
+              value: !instanz.unterdrueckt,
+              onChanged: onWirktChanged,
+            ),
+          ),
+          if (onEinsetzen != null)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: OutlinedButton(
+                  key: ValueKey<String>('spell-instance-einsetzen-$id'),
+                  onPressed: onEinsetzen,
+                  child: Text(einsetzenLabel),
+                ),
+              ),
+            ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 8, 8),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.timelapse_outlined,
+                  size: 16,
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+                const SizedBox(width: kDialogInlineSpacing),
+                Expanded(
+                  child: Text(
+                    abgelaufen
+                        ? '$dauerText – Ende am Tisch bestätigen'
+                        : dauerText,
+                    key: ValueKey<String>('spell-instance-dauer-$id'),
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: abgelaufen
+                          ? theme.colorScheme.error
+                          : theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ),
+                IconButton(
+                  key: ValueKey<String>('spell-instance-dauer-minus-$id'),
+                  tooltip: 'Eine Zeiteinheit abziehen',
+                  visualDensity: VisualDensity.compact,
+                  onPressed: kannZaehlen ? onAdvanceDuration : null,
+                  icon: const Icon(Icons.exposure_minus_1, size: 18),
+                ),
+                if (onEditSchutz != null)
+                  IconButton(
+                    key: ValueKey<String>('spell-instance-schutz-edit-$id'),
+                    tooltip: 'Schutzvorrat anpassen',
+                    visualDensity: VisualDensity.compact,
+                    onPressed: onEditSchutz,
+                    icon: const Icon(Icons.shield_outlined, size: 18),
+                  ),
+                if (onEditDuration != null)
+                  IconButton(
+                    key: ValueKey<String>('spell-instance-dauer-edit-$id'),
+                    tooltip: 'Wirkungsdauer festlegen',
+                    visualDensity: VisualDensity.compact,
+                    onPressed: onEditDuration,
+                    icon: const Icon(Icons.edit_calendar_outlined, size: 18),
+                  ),
+                IconButton(
+                  key: ValueKey<String>('spell-instance-beenden-$id'),
+                  tooltip: 'Diese Quelle beenden',
+                  visualDensity: VisualDensity.compact,
+                  onPressed: onBeenden,
+                  icon: const Icon(Icons.stop_circle_outlined, size: 18),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

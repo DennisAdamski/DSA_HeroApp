@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/catalog/special_ability_requirement.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_advancement_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/talent_special_ability.dart';
@@ -12,6 +13,21 @@ import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/advancement/advancement_catalog.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/advancement/advancement_activation_sheet.dart';
+
+// Wechselt in einen Arbeitsbereich und dort in einen Abschnitt.
+Future<void> zuAbschnitt(
+  WidgetTester tester,
+  String bereich,
+  String abschnitt,
+) async {
+  await tester.tap(find.byKey(ValueKey('advancement-bereich-$bereich')));
+  await tester.pumpAndSettle();
+  final chip = find.byKey(ValueKey('advancement-abschnitt-$abschnitt'));
+  await tester.ensureVisible(chip);
+  await tester.tap(chip);
+  await tester.pumpAndSettle();
+}
 
 void main() {
   const hero = HeroSheet(
@@ -68,6 +84,7 @@ void main() {
         steigerung: 'A',
         attributes: ['MU', 'KL', 'IN'],
         availability: 'Mag6',
+        traits: 'Illusion, Umwelt',
       ),
       SpellDef(
         id: 'foreign',
@@ -76,6 +93,16 @@ void main() {
         steigerung: 'A',
         attributes: ['MU', 'KL', 'IN'],
         availability: 'Elf3',
+        traits: 'Heilung',
+      ),
+      SpellDef(
+        id: 'mixed',
+        name: 'Zweiklang',
+        tradition: 'Mag',
+        steigerung: 'A',
+        attributes: ['MU', 'KL', 'IN'],
+        availability: 'Mag2, Elf6',
+        traits: 'Illusion',
       ),
     ],
     sprachen: [
@@ -118,6 +145,8 @@ void main() {
   Future<({ProviderContainer container, FakeRepository repo})> openCatalog(
     WidgetTester tester, {
     Size size = const Size(1024, 900),
+    double textScale = 1,
+    bool standaloneSpellSheet = false,
     HeroSheet selectedHero = hero,
   }) async {
     tester.view.devicePixelRatio = 1;
@@ -135,8 +164,27 @@ void main() {
     await tester.pumpWidget(
       UncontrolledProviderScope(
         container: container,
-        child: const MaterialApp(
-          home: Scaffold(body: AdvancementCatalog(heroId: 'sheet-hero')),
+        child: MaterialApp(
+          builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(context)
+                .copyWith(textScaler: TextScaler.linear(textScale)),
+            child: child!,
+          ),
+          home: Scaffold(
+            body: standaloneSpellSheet
+                ? Builder(
+                    builder: (context) => TextButton(
+                      onPressed: () => showAdvancementActivationSheet(
+                        context: context,
+                        heroId: hero.id,
+                        title: 'Zauber lernen',
+                        kinds: const [AdvancementKind.spell],
+                      ),
+                      child: const Text('Öffnen'),
+                    ),
+                  )
+                : const AdvancementCatalog(heroId: 'sheet-hero'),
+          ),
         ),
       ),
     );
@@ -151,10 +199,9 @@ void main() {
       tester,
       selectedHero: hero.copyWith(representationen: ['Mag']),
     );
-    await tester.tap(find.text('Zauber'));
-    await tester.pumpAndSettle();
+    await zuAbschnitt(tester, 'magie', 'zauber');
     expect(
-      find.byKey(const ValueKey('advancement-empty-spells')),
+      find.byKey(const ValueKey('advancement-empty-zauber')),
       findsOneWidget,
     );
     expect(
@@ -162,7 +209,7 @@ void main() {
       findsNothing,
     );
 
-    await tester.tap(find.byKey(const ValueKey('advancement-activate-spells')));
+    await tester.tap(find.byKey(const ValueKey('advancement-activate-zauber')));
     await tester.pumpAndSettle();
     expect(
       find.byKey(const ValueKey('advancement-plan-spell-spell')),
@@ -188,14 +235,13 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('Erwerbsblatt trennt Talente, Kampftalente und Sprachen', (
+  testWidgets('Erwerbsblätter trennen Talente, Kampftalente und Sprachen', (
     tester,
   ) async {
     await openCatalog(tester);
-    await tester.tap(find.text('Talente'));
-    await tester.pumpAndSettle();
+    await zuAbschnitt(tester, 'talente', 'talente');
     await tester.tap(
-      find.byKey(const ValueKey('advancement-activate-talents')),
+      find.byKey(const ValueKey('advancement-activate-talente')),
     );
     await tester.pumpAndSettle();
     expect(
@@ -203,25 +249,35 @@ void main() {
       findsOneWidget,
     );
     expect(
-      find.byKey(const ValueKey('advancement-plan-language-lang')),
-      findsOneWidget,
-    );
-
-    await tester.tap(
-      find.byKey(const ValueKey('advancement-activate-filter-sprachen')),
-    );
-    await tester.pumpAndSettle();
-    expect(
-      find.byKey(const ValueKey('advancement-plan-talent-climb')),
+      find.byKey(const ValueKey('advancement-plan-talent-sword')),
       findsNothing,
     );
     expect(
       find.byKey(const ValueKey('advancement-plan-language-lang')),
+      findsNothing,
+    );
+    await tester.tap(find.byKey(const ValueKey('advancement-activate-close')));
+    await tester.pumpAndSettle();
+
+    await zuAbschnitt(tester, 'talente', 'sprachen');
+    await tester.tap(
+      find.byKey(const ValueKey('advancement-activate-sprachen')),
+    );
+    await tester.pumpAndSettle();
+    expect(
+      find.byKey(const ValueKey('advancement-plan-language-lang')),
       findsOneWidget,
     );
+    expect(
+      find.byKey(const ValueKey('advancement-plan-talent-climb')),
+      findsNothing,
+    );
+    await tester.tap(find.byKey(const ValueKey('advancement-activate-close')));
+    await tester.pumpAndSettle();
 
+    await zuAbschnitt(tester, 'kampf', 'kampftalente');
     await tester.tap(
-      find.byKey(const ValueKey('advancement-activate-filter-kampftalente')),
+      find.byKey(const ValueKey('advancement-activate-kampftalente')),
     );
     await tester.pumpAndSettle();
     expect(
@@ -235,13 +291,120 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('Nur erwerbbare blendet gesperrte Zauber aus', (tester) async {
+  testWidgets(
+    'Repräsentationsfilter schaltet zwischen eigenen und allen Zaubern',
+    (tester) async {
+      await openCatalog(
+        tester,
+        selectedHero: hero.copyWith(representationen: ['Mag']),
+      );
+      await zuAbschnitt(tester, 'magie', 'zauber');
+      await tester.tap(
+        find.byKey(const ValueKey('advancement-activate-zauber')),
+      );
+      await tester.pumpAndSettle();
+      final own = find.byKey(const ValueKey('advancement-plan-spell-spell'));
+      final foreign = find.byKey(
+        const ValueKey('advancement-plan-spell-foreign'),
+      );
+      expect(own, findsOneWidget);
+      expect(foreign, findsNothing);
+
+      final toggle = find.byKey(
+        const ValueKey('advancement-activate-only-available'),
+      );
+      await tester.tap(toggle);
+      await tester.pumpAndSettle();
+      expect(own, findsOneWidget);
+      expect(foreign, findsOneWidget);
+      expect(tester.widget<OutlinedButton>(foreign).onPressed, isNotNull);
+      await tester.tap(toggle);
+      await tester.pumpAndSettle();
+      expect(foreign, findsNothing);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'Zauberfilter kombinieren Merkmal, Verbreitung und Repräsentation',
+    (tester) async {
+      await openCatalog(
+        tester,
+        selectedHero: hero.copyWith(representationen: ['Mag']),
+      );
+      await zuAbschnitt(tester, 'magie', 'zauber');
+      await tester.tap(
+        find.byKey(const ValueKey('advancement-activate-zauber')),
+      );
+      await tester.pumpAndSettle();
+      final traitFilter = find.byKey(
+        const ValueKey('advancement-activate-spell-trait'),
+      );
+      final spreadFilter = find.byKey(
+        const ValueKey('advancement-activate-spell-spread'),
+      );
+      await tester.tap(traitFilter);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Illusion').last);
+      await tester.pumpAndSettle();
+      await tester.tap(spreadFilter);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Ab 6').last);
+      await tester.pumpAndSettle();
+      final own = find.byKey(const ValueKey('advancement-plan-spell-spell'));
+      final mixed = find.byKey(const ValueKey('advancement-plan-spell-mixed'));
+      expect(own, findsOneWidget);
+      expect(mixed, findsNothing);
+      await tester.tap(
+        find.byKey(const ValueKey('advancement-activate-only-available')),
+      );
+      await tester.pumpAndSettle();
+      expect(mixed, findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('advancement-plan-spell-foreign')),
+        findsNothing,
+      );
+      await tester.enterText(
+        find.byKey(const ValueKey('advancement-activate-search')),
+        'Zweiklang',
+      );
+      await tester.pumpAndSettle();
+      expect(own, findsNothing);
+      expect(mixed, findsOneWidget);
+      await tester.enterText(
+        find.byKey(const ValueKey('advancement-activate-search')),
+        '',
+      );
+      await tester.tap(traitFilter);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Alle Merkmale').last);
+      await tester.pumpAndSettle();
+      await tester.tap(spreadFilter);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Alle Verbreitungen').last);
+      await tester.pumpAndSettle();
+      expect(own, findsOneWidget);
+      expect(mixed, findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('advancement-plan-spell-foreign')),
+        findsOneWidget,
+      );
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets('Repräsentationsfilter blendet Zauber ohne Repräsentation aus', (
+    tester,
+  ) async {
     // Ohne jede Repräsentation ist kein Zauber erlernbar; eine fremde
-    // Repräsentation genügt sonst immer und wäre kein Sperrfall.
-    await openCatalog(tester);
-    await tester.tap(find.text('Zauber'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey('advancement-activate-spells')));
+    // Repräsentation genügt sonst immer und wäre kein Sperrfall. Der
+    // Magiebereich erscheint dann nur mit „Unpassende anzeigen“.
+    await openCatalog(
+      tester,
+      selectedHero: hero.copyWith(showInapplicableSpecialAbilities: true),
+    );
+    await zuAbschnitt(tester, 'magie', 'zauber');
+    await tester.tap(find.byKey(const ValueKey('advancement-activate-zauber')));
     await tester.pumpAndSettle();
     expect(
       find.byKey(const ValueKey('advancement-activate-empty')),
@@ -270,7 +433,10 @@ void main() {
         ],
       ),
     );
-    await tester.tap(find.text('Sonderfertigkeiten'));
+    await zuAbschnitt(tester, 'talente', 'allgemeineSf');
+    await tester.tap(
+      find.byKey(const ValueKey('advancement-group-header-allgemeinPraxis')),
+    );
     await tester.pumpAndSettle();
     expect(
       find.byKey(const ValueKey('skill-node-generalAbility:will1')),
@@ -300,8 +466,7 @@ void main() {
         talents: {'climb': const HeroTalentEntry(talentValue: 5)},
       ),
     );
-    await tester.tap(find.text('Talente'));
-    await tester.pumpAndSettle();
+    await zuAbschnitt(tester, 'talente', 'talente');
     await tester.enterText(
       find.byKey(const ValueKey('advancement-search')),
       'Schwimmen',
@@ -310,7 +475,7 @@ void main() {
     expect(find.text('Keine passenden Einträge.'), findsOneWidget);
 
     await tester.tap(
-      find.byKey(const ValueKey('advancement-activate-hint-talents')),
+      find.byKey(const ValueKey('advancement-activate-hint-talente')),
     );
     await tester.pumpAndSettle();
     expect(
@@ -329,15 +494,78 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('Zauberfilter bleiben mit doppelter Schrift bedienbar', (
+    tester,
+  ) async {
+    await openCatalog(
+      tester,
+      size: const Size(320, 568),
+      textScale: 2,
+      standaloneSpellSheet: true,
+      selectedHero: hero.copyWith(representationen: ['Mag']),
+    );
+    await tester.tap(find.text('Öffnen'));
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    final spread = find.byKey(
+      const ValueKey('advancement-activate-spell-spread'),
+    );
+    await Scrollable.ensureVisible(tester.element(spread), alignment: 0.5);
+    await tester.pumpAndSettle();
+    await tester.tap(spread);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Ab 6').last);
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    await tester.tap(find.byKey(const ValueKey('advancement-activate-close')));
+    await tester.pumpAndSettle();
+    expect(
+      find.byKey(const ValueKey('advancement-activate-search')),
+      findsNothing,
+    );
+  });
+
   for (final size in const [Size(390, 844), Size(320, 568)]) {
+    testWidgets('Zauberfilter bleiben auf ${size.width.toInt()} px bedienbar', (
+      tester,
+    ) async {
+      await openCatalog(
+        tester,
+        size: size,
+        selectedHero: hero.copyWith(representationen: ['Mag']),
+      );
+      await zuAbschnitt(tester, 'magie', 'zauber');
+      await tester.tap(
+        find.byKey(const ValueKey('advancement-activate-zauber')),
+      );
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+      final spread = find.byKey(
+        const ValueKey('advancement-activate-spell-spread'),
+      );
+      await tester.ensureVisible(spread);
+      await tester.tap(spread);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Ab 6').last);
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey('advancement-plan-spell-mixed')),
+        findsNothing,
+      );
+      expect(
+        find.byKey(const ValueKey('advancement-plan-spell-spell')),
+        findsOneWidget,
+      );
+      expect(tester.takeException(), isNull);
+    });
+
     testWidgets('Erwerbsblatt bleibt auf ${size.width.toInt()} px bedienbar', (
       tester,
     ) async {
       await openCatalog(tester, size: size);
-      await tester.tap(find.text('Talente'));
-      await tester.pumpAndSettle();
+      await zuAbschnitt(tester, 'talente', 'talente');
       await tester.tap(
-        find.byKey(const ValueKey('advancement-activate-talents')),
+        find.byKey(const ValueKey('advancement-activate-talente')),
       );
       await tester.pumpAndSettle();
       expect(

@@ -27,9 +27,14 @@ Future<ProbeResult?> zeigeGefechtsprobe({
 }) async {
   ProbeResult? ergebnis;
   final eintraege = <DiceLogEntry>[];
+  // Zauberproben tragen ihre Zaubereffekte bereits im Zuschlag des
+  // Wirkdialogs (`gefechtsZauberZuschlag`); nur Talentproben nicht.
+  final angepasst = request.type == ProbeType.talent
+      ? probeMitZaubereffekten(ref: ref, heroId: heroId, request: request)
+      : request;
   await showProbeDialog(
     context: context,
-    request: request,
+    request: angepasst,
     singleResolution: true,
     modifikatorGesperrt: kGefechtsprobenMitFestemModifikator.contains(
       request.type,

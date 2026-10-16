@@ -8,8 +8,13 @@ import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 
 import 'gefecht_meisterparade_rules.dart';
 import 'gefecht_ansagefolge_rules.dart';
+import 'gefecht_ueberzahl_rules.dart'
+    show gefechtsAbwehrErschwernisWeitereGegner;
 import 'gefecht_vorgaben_rules.dart';
 import 'gefecht_initiative_rules.dart';
+import 'gefecht_herleitung_rules.dart';
+import 'gefecht_zielwert_herleitung_rules.dart';
+import 'herleitung.dart';
 
 /// Aufgelöste Kampfwerte ohne Regelberechnungen im Widget oder Provider.
 class Gefechtswerte {
@@ -43,8 +48,21 @@ class Gefechtswerte {
     this.umwandlungVerboten = false,
     this.konkreteKampfmittel = false,
     this.klingentaenzerAktiv = false,
+    this.ausweichenHerleitung,
+    this.atHerleitung,
+    this.paHerleitung,
+    this.schildPaHerleitung,
   });
   final int iniBasis, at, pa, ausweichen, be, zusatzaktionen;
+
+  /// Ausweichen der Kampfvorschau samt BE und INI-Bonus der Vorschau; das
+  /// Gefecht ersetzt den INI-Bonus durch den der Sitzung
+  /// (`gefechtsAusweichen`). [ausweichen] ist ihr Wert ohne INI-Bonus.
+  final Herleitung? ausweichenHerleitung;
+
+  /// Herleitungen von [at], [pa] und [schildPa] aus der Kampfvorschau, ohne
+  /// Sitzungs-INI; der Zielwert-Dialog zeigt sie als Grundwert.
+  final Herleitung? atHerleitung, paHerleitung, schildPaHerleitung;
   final int? schildPa;
 
   /// Reiner Schild-WM; SF und Heldenmali werden bei Kettenwaffen nicht entfernt.
@@ -80,7 +98,8 @@ Gefechtszustand beginneGefecht(int wurf, {String? dk}) => Gefechtszustand(
 /// Aktuelle Initiative ersetzt den im Helden gespeicherten Vorschauwurf.
 int gefechtsInitiative(Gefechtszustand s, Gefechtswerte w) =>
     w.iniBasis +
-    s.iniWurf -
+    s.iniWurf +
+    s.lageIni -
     s.iniVerlust -
     s.geschuetzterIniVerlust -
     s.ungeklaerterIniVerlust;
@@ -97,6 +116,28 @@ int gefechtsIniBonus(Gefechtszustand s, Gefechtswerte w) {
       ? 1
       : 0;
 }
+
+// Grundwert des Ausweichens: manuell bestätigt (ohne INI-Bonus) oder die
+// Herleitung der Vorschau mit dem Sitzungsanteil.
+Herleitung _ausweichenGrund(Gefechtszustand s, Gefechtswerte w, int? manuell) =>
+    manuell != null
+    ? gefechtsGrundwert(
+        manuell: manuell,
+        vorschau: null,
+        wert: manuell,
+        name: 'Ausweichen',
+      )
+    : gefechtsAusweichen(s, w);
+
+/// Ausweichen-Zielwert vor Erschwernissen: Vorschau-Herleitung samt BE, mit dem
+/// INI-Bonus der Sitzung statt dem der Vorschau.
+Herleitung gefechtsAusweichen(Gefechtszustand s, Gefechtswerte w) =>
+    gefechtsAusweichenHerleitung(
+      herleitung: w.ausweichenHerleitung,
+      ausweichen: w.ausweichen,
+      be: w.be,
+      iniBonus: gefechtsIniBonus(s, w),
+    );
 
 /// Noch nutzbare reguläre Angriffsmarken nach verbindlicher Umwandlung.
 int gefechtsAngriffe(Gefechtszustand s, {bool inklusiveReserve = false}) {
@@ -267,6 +308,8 @@ Gefechtspruefung pruefeGefechtsaktion(
   bool zusatzParade = false,
   bool abwehrAufAttacke = false,
   int distanzSchritte = 0,
+  List<Gefechtsmodifikator> zuschlagsAnteile = const [],
+  List<Gefechtsmodifikator> zauberAnteile = const [],
 }) {
   final pruefen = <String>[...pruefGruende];
   final sperren = <String>[
@@ -279,8 +322,25 @@ Gefechtspruefung pruefeGefechtsaktion(
   if (s.kontext.halbschwert && !w.halbschwert) {
     sperren.add('Halbschwertführung ohne aktive Sonderfertigkeit.');
   }
-  var a = 0, p = 0, f = 0, z = 0, erschwernis = zuschlag;
+  var a = 0, p = 0, f = 0, z = 0, erschwernis = 0;
+  // Jede Erschwernis steht benannt in [anteile]; ihre Summe ist [erschwernis].
+  final anteile = <Gefechtsmodifikator>[];
+  void erschwere(String name, int wert) {
+    if (wert == 0) return;
+    anteile.add(Gefechtsmodifikator(name, wert));
+    erschwernis += wert;
+  }
+
+  for (final t in zuschlagsAnteile) {
+    erschwere(t.name, t.wert);
+  }
+  erschwere(
+    'Weitere Erschwernis',
+    zuschlag - zuschlagsAnteile.fold(0, (summe, t) => summe + t.wert),
+  );
   int? ziel = manuellerZielwert;
+  // Zielwert vor Erschwernis als Herleitung; `null`, wo es keinen gibt.
+  Herleitung? grund;
   final bonus = gefechtsIniBonus(s, w);
   final schildAbzug =
       aktion == Gefechtsaktion.schildparade &&
@@ -296,8 +356,9 @@ Gefechtspruefung pruefeGefechtsaktion(
   );
   pruefen.addAll(kontext.fehlend);
   sperren.addAll(kontext.sperren);
+  anteile.addAll(kontext.modifikatoren);
   erschwernis += kontext.zuschlag;
-  erschwernis += schildAbzug;
+  erschwere('Schild-WM entfällt', schildAbzug);
   if (aktion == Gefechtsaktion.schildparade &&
       w.konkreteKampfmittel &&
       s.kontext.schildWmWirksam == null) {
@@ -314,9 +375,16 @@ Gefechtspruefung pruefeGefechtsaktion(
           waffenmeister: w.waffenmeister,
         )
       : const Gefechtskontextpruefung([], [], []);
+  anteile.addAll(fk.modifikatoren);
   erschwernis += fk.zuschlag;
   pruefen.addAll(fk.fehlend);
   sperren.addAll(fk.sperren);
+  // Zauberwirkungen auf den Schuss (Falkenauge): nur Fernkampfangriffe.
+  if (w.fernkampf && aktion == Gefechtsaktion.angriff) {
+    for (final t in zauberAnteile) {
+      erschwere(t.name, t.wert);
+    }
+  }
   if (distanzSchritte != 0) {
     f = 1;
     if (w.fernkampf ||
@@ -325,11 +393,14 @@ Gefechtspruefung pruefeGefechtsaktion(
         naechsteGefechtsDk(s.dk, distanzSchritte) == null) {
       sperren.add('Diese Distanzänderung ist nicht möglich.');
     }
-    erschwernis += distanzSchritte > 0
-        ? distanzSchritte * 4
-        : distanzSchritte == -2
-        ? 8
-        : 0;
+    erschwere(
+      kGefechtsDistanzwechsel,
+      distanzSchritte > 0
+          ? distanzSchritte * 4
+          : distanzSchritte == -2
+          ? 8
+          : 0,
+    );
   }
   if (s.auftrag != null && !eigenerAuftrag) {
     sperren.add('Ein Aktionsauftrag läuft.');
@@ -360,7 +431,7 @@ Gefechtspruefung pruefeGefechtsaktion(
       aktion == Gefechtsaktion.gezieltesAusweichen;
   // WdS S. 55: Bewegen erschwert Kampfaktionen derselben Runde um 4.
   final bewegenZuschlag = s.bewegt && kampfaktion ? 4 : 0;
-  erschwernis += bewegenZuschlag;
+  erschwere(kGefechtsNachBewegen, bewegenZuschlag);
   if (s.gesprintet && (kampfaktion || ausweichen)) {
     sperren.add(
       'Nach Sprinten keine Angriffs- oder Abwehraktion in dieser Runde.',
@@ -373,6 +444,14 @@ Gefechtspruefung pruefeGefechtsaktion(
     case Gefechtsaktion.angriff:
       a = 1;
       ziel ??= w.at;
+      // WdS S. 81: Angreifer in der Überzahl haben AT +1.
+      if (s.ueberzahlAngriff && !w.fernkampf) erschwere(kGefechtsUeberzahl, -1);
+      grund = gefechtsGrundwert(
+        manuell: manuellerZielwert,
+        vorschau: w.atHerleitung,
+        wert: w.at,
+        name: w.fernkampf ? 'FK' : 'AT',
+      );
       if (!w.waffeVorhanden) sperren.add('Keine geführte Waffe.');
       if (w.waffeVorhanden && !w.fernkampf && w.waffenDk.trim().isEmpty) {
         pruefen.add(kGefechtWaffenDkAngenommen);
@@ -385,7 +464,7 @@ Gefechtspruefung pruefeGefechtsaktion(
       if (s.umwandlung == Gefechtsumwandlung.zweiteAttacke &&
           s.umgewandelteAktionOffen &&
           s.angriffeVerbraucht > 0) {
-        erschwernis += w.stabUmwandlung ? 0 : 4;
+        erschwere(kGefechtsZweiteAttacke, w.stabUmwandlung ? 0 : 4);
         if (gefechtsInitiative(s, w) - 8 < 0) {
           sperren.add('Zweite AT läge unter INI 0.');
         }
@@ -399,6 +478,24 @@ Gefechtspruefung pruefeGefechtsaktion(
           : aktion == Gefechtsaktion.schildparade
           ? w.schildPa
           : w.pa;
+      if (ziel != null) {
+        final schild = aktion == Gefechtsaktion.schildparade;
+        grund = gefechtsGrundwert(
+          manuell: manuellerZielwert,
+          vorschau: abwehrAufAttacke
+              ? w.atHerleitung
+              : schild
+              ? w.schildPaHerleitung
+              : w.paHerleitung,
+          wert: ziel,
+          name: abwehrAufAttacke
+              ? 'AT'
+              : schild
+              ? 'Schild-PA'
+              : 'PA',
+          iniBonus: abwehrAufAttacke ? 0 : bonus,
+        );
+      }
       if (aktion == Gefechtsaktion.schildparade && w.schildPa == null) {
         sperren.add('Kein Schild geführt.');
       }
@@ -423,28 +520,42 @@ Gefechtspruefung pruefeGefechtsaktion(
       if (s.umwandlung == Gefechtsumwandlung.zweiteParade &&
           s.umgewandelteAktionOffen &&
           s.paradenVerbraucht > 0) {
-        erschwernis +=
-            aktion == Gefechtsaktion.schildparade ||
-                w.stabUmwandlung ||
-                s.defensiverStil
-            ? 0
-            : 4;
+        erschwere(
+          kGefechtsZweiteParade,
+          aktion == Gefechtsaktion.schildparade ||
+                  w.stabUmwandlung ||
+                  s.defensiverStil
+              ? 0
+              : 4,
+        );
       }
-      if (!abwehrAufAttacke) ziel = ziel == null ? null : ziel + bonus;
+      if (!abwehrAufAttacke) {
+        ziel = ziel == null ? null : ziel + bonus;
+        // WdS S. 81: PA-Basis −1 je weiterem Gegner im Blick.
+        erschwere(
+          kGefechtsWeitereGegner,
+          gefechtsAbwehrErschwernisWeitereGegner(
+            gefechtsGegnerzahl(s),
+            ausweichen: false,
+          ),
+        );
+      }
     case Gefechtsaktion.freiesAusweichen:
       f = 1;
-      ziel ??= w.ausweichen + bonus;
+      ziel ??= gefechtsAusweichen(s, w).wert;
+      grund = _ausweichenGrund(s, w, manuellerZielwert);
     case Gefechtsaktion.gezieltesAusweichen:
       p = 1;
-      ziel ??= w.ausweichen + bonus;
+      ziel ??= gefechtsAusweichen(s, w).wert;
+      grund = _ausweichenGrund(s, w, manuellerZielwert);
       if (!w.ausweichen1) sperren.add('Ausweichen I fehlt.');
       if (s.dk == null) pruefen.add('DK für gezieltes Ausweichen festlegen.');
-      erschwernis += switch (s.dk) {
+      erschwere(kGefechtsGezieltesAusweichen, switch (s.dk) {
         'H' => 8,
         'N' => 4,
         'S' => 2,
         _ => 0,
-      };
+      });
       pruefen.add(
         'Rückweichen um eine DK, optional zwei (+4), manuell prüfen.',
       );
@@ -477,11 +588,14 @@ Gefechtspruefung pruefeGefechtsaktion(
     if (s.haltung == Gefechtshaltung.liegend) {
       sperren.add('Liegend kein Ausweichen.');
     }
-    final gegner = gefechtsGegnerzahl(s);
-    if (gegner >= 4) {
-      sperren.add('Bei vier oder mehr Gegnern kein Ausweichen.');
-    }
-    erschwernis += w.be + (gegner - 1) * 2;
+    // Die BE steckt in der Ausweichen-Herleitung (`gefechtsAusweichen`).
+    erschwere(
+      kGefechtsWeitereGegner,
+      gefechtsAbwehrErschwernisWeitereGegner(
+        gefechtsGegnerzahl(s),
+        ausweichen: true,
+      ),
+    );
   } else if (s.haltung != Gefechtshaltung.stehend) {
     pruefen.add('Haltungsmodifikatoren manuell festlegen.');
   }
@@ -522,6 +636,14 @@ Gefechtspruefung pruefeGefechtsaktion(
       'Negative INI: nur eine reguläre Reaktion/Daueraktion verfügbar.',
     );
   }
+  // Handlungen ohne eigenen Grundwert zeigen nur einen bestätigten.
+  if (grund == null && manuellerZielwert != null) {
+    grund = gefechtsGrundwert(
+      manuell: manuellerZielwert,
+      wert: manuellerZielwert,
+      name: 'Zielwert',
+    );
+  }
   if (ziel != null) ziel -= erschwernis;
   final status = sperren.isNotEmpty
       ? Gefechtsfreigabe.gesperrt
@@ -555,22 +677,8 @@ Gefechtspruefung pruefeGefechtsaktion(
     freie: f,
     zusatz: z,
     erschwernis: erschwernis,
-    modifikatoren: [
-      ...kontext.modifikatoren,
-      ...fk.modifikatoren,
-      if (schildAbzug != 0)
-        Gefechtsmodifikator('Schild-WM entfällt', schildAbzug),
-      if (bewegenZuschlag != 0)
-        Gefechtsmodifikator('Nach Bewegen', bewegenZuschlag),
-      Gefechtsmodifikator(
-        'Weitere Zuschläge/Budget/BE',
-        erschwernis -
-            kontext.zuschlag -
-            fk.zuschlag -
-            schildAbzug -
-            bewegenZuschlag,
-      ),
-    ],
+    modifikatoren: anteile,
+    zielHerleitung: ziel == null ? null : grund,
   );
 }
 

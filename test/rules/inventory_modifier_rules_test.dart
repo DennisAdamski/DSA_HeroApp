@@ -245,6 +245,66 @@ void main() {
       expect(result.talentMods['tal_klettern'], 5);
     });
 
+    test(
+      'talentQuellen nennen Gegenstand und Gruppe, Summe gleicht talentMods',
+      () {
+        final talents = [
+          const TalentDef(
+            id: 'tal_klettern',
+            name: 'Klettern',
+            group: 'Körperliche Talente',
+            steigerung: 'B',
+            attributes: ['MU', 'GE', 'KK'],
+          ),
+        ];
+        final nichtAusgeruestet = HeroInventoryEntry(
+          gegenstand: 'Im Rucksack',
+          itemType: InventoryItemType.ausruestung,
+          modifiers: const [
+            InventoryItemModifier(
+              kind: InventoryModifierKind.talent,
+              targetId: 'tal_klettern',
+              wert: 9,
+            ),
+          ],
+        );
+        final result = aggregateInventoryModifiers([
+          HeroInventoryEntry(
+            gegenstand: 'Kletterhaken',
+            itemType: InventoryItemType.ausruestung,
+            istAusgeruestet: true,
+            modifiers: const [
+              InventoryItemModifier(
+                kind: InventoryModifierKind.talentgruppe,
+                targetId: 'Körperliche Talente',
+                wert: 2,
+              ),
+              InventoryItemModifier(
+                kind: InventoryModifierKind.talent,
+                targetId: 'tal_klettern',
+                wert: 3,
+              ),
+            ],
+          ),
+          nichtAusgeruestet,
+        ], talents: talents);
+        final quellen = result.talentQuellen['tal_klettern']!;
+        expect(quellen.map((q) => q.gegenstand), [
+          'Kletterhaken',
+          'Kletterhaken',
+        ]);
+        expect(quellen.map((q) => q.wert), [2, 3]);
+        expect(quellen.map((q) => q.gruppe), ['Körperliche Talente', null]);
+        for (final eintrag in result.talentMods.entries) {
+          final summe = result.talentQuellen[eintrag.key]!.fold<int>(
+            0,
+            (a, q) => a + q.wert,
+          );
+          expect(summe, eintrag.value, reason: eintrag.key);
+        }
+      },
+    );
+
     test('alle StatModifiers-Felder koennen gesetzt werden', () {
       final mods = <InventoryItemModifier>[
         const InventoryItemModifier(

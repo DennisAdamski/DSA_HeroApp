@@ -150,7 +150,7 @@ extension _HeroOverviewBaseInfoSection on _HeroOverviewTabState {
         breakpoint: _standardTwoColumnBreakpoint,
         children: [
           _buildInputField(label: 'Rasse', keyName: 'rasse'),
-          _buildInputField(label: 'Rasse Modifikatoren', keyName: 'rasse_mod'),
+          _buildHerkunftSection(hero, HeroHerkunft.rasse),
         ],
       ),
       const SizedBox(height: _gridSpacing),
@@ -158,10 +158,7 @@ extension _HeroOverviewBaseInfoSection on _HeroOverviewTabState {
         breakpoint: _standardTwoColumnBreakpoint,
         children: [
           _buildInputField(label: 'Kultur', keyName: 'kultur'),
-          _buildInputField(
-            label: 'Kultur Modifikatoren',
-            keyName: 'kultur_mod',
-          ),
+          _buildHerkunftSection(hero, HeroHerkunft.kultur),
         ],
       ),
       const SizedBox(height: _gridSpacing),
@@ -169,10 +166,7 @@ extension _HeroOverviewBaseInfoSection on _HeroOverviewTabState {
         breakpoint: _standardTwoColumnBreakpoint,
         children: [
           _buildInputField(label: 'Profession', keyName: 'profession'),
-          _buildInputField(
-            label: 'Profession Modifikatoren',
-            keyName: 'profession_mod',
-          ),
+          _buildHerkunftSection(hero, HeroHerkunft.profession),
         ],
       ),
       const SizedBox(height: _gridSpacing),

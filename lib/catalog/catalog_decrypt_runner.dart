@@ -62,6 +62,10 @@ Future<CatalogSourceData> decryptAllCatalogValues({
             entry.value,
     },
     reisebericht: result.reisebericht,
+    // Zauberprofile tragen keine verschluesselten Werte.
+    spellEffects: encrypted.spellEffects,
+    // Alchimika tragen ebenfalls keine verschluesselten Werte.
+    alchimika: encrypted.alchimika,
   );
 }
 

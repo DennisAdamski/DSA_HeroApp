@@ -42,6 +42,138 @@ extension _HeroInventoryMutations on _HeroInventoryTabState {
     );
   }
 
+  /// Spaltet vom angezeigten Stapel frisch ab (ARCH-03) und wählt den neuen
+  /// Stapel über seine Instanz-ID aus. Fehler gehen an den Editor.
+  Future<void> _teileStapel(
+    HeroInventoryEntry angezeigt,
+    StapelTeilung teilung,
+  ) async {
+    final neueId = const Uuid().v4();
+    final gespeichert = await aendereHeldImEditor(
+      ref: ref,
+      heroId: widget.heroId,
+      aenderung: (held) => mitGeteiltemStapel(
+        held,
+        angezeigt,
+        abspalten: teilung.anzahl,
+        woGetragen: teilung.woGetragen,
+        neueId: neueId,
+      ),
+    );
+    final eintraege = gespeichert.inventoryEntries;
+    final neu = eintraege.indexWhere((e) => e.instanzId == neueId);
+    _nachEditorSpeichern(
+      eintraege,
+      neu,
+      changedEntry: neu < 0 ? angezeigt : eintraege[neu],
+    );
+  }
+
+  /// Holt den angezeigten abgelegten Gegenstand frisch in den Kampfbereich
+  /// zurück (ARCH-03). Ein Geschoss fragt nach seiner Fernkampfwaffe;
+  /// Abbruch ändert nichts. Fehler gehen an den Editor. Liefert, ob
+  /// übernommen wurde.
+  Future<bool> _uebernehmeInKampf(HeroInventoryEntry angezeigt) async {
+    String? zielWaffeId;
+    if (istAbgelegtesGeschoss(angezeigt)) {
+      final kampf = _latestHero?.combatConfig ?? const CombatConfig();
+      zielWaffeId = await waehleZielwaffeFuerGeschoss(
+        context,
+        zielwaffenFuerGeschoss(kampf),
+      );
+      if (zielWaffeId == null) {
+        return false;
+      }
+    }
+    final gespeichert = await aendereHeldImEditor(
+      ref: ref,
+      heroId: widget.heroId,
+      aenderung: (held) => mitUebernommenemKampfgegenstand(
+        held,
+        angezeigt,
+        zielWaffeId: zielWaffeId,
+        neueId: () => const Uuid().v4(),
+      ),
+    );
+    final eintraege = gespeichert.inventoryEntries;
+    final id = angezeigt.instanzId;
+    final index = id == null
+        ? -1
+        : eintraege.indexWhere((e) => e.instanzId == id);
+    _nachEditorSpeichern(
+      eintraege,
+      index,
+      changedEntry: index < 0 ? angezeigt : eintraege[index],
+    );
+    return true;
+  }
+
+  /// Ob es für [eintrag] einen Stapel gibt, in den er sich zusammenführen
+  /// lässt.
+  bool _kannZusammenfuehren(HeroInventoryEntry eintrag) {
+    final alle = _latestHero?.inventoryEntries ?? const <HeroInventoryEntry>[];
+    return zusammenfuehrbareZiele(alle, eintrag).isNotEmpty;
+  }
+
+  /// Führt den angezeigten Stapel frisch in einen gewählten gleichen Stapel
+  /// zusammen (ARCH-03) und wählt diesen aus. Abbruch ändert nichts; Fehler
+  /// gehen an den Editor. Liefert, ob zusammengeführt wurde.
+  Future<bool> _fuehreStapelZusammen(HeroInventoryEntry angezeigt) async {
+    final alle = _latestHero?.inventoryEntries ?? const <HeroInventoryEntry>[];
+    final ziel = await waehleZielstapel(
+      context,
+      zusammenfuehrbareZiele(alle, angezeigt),
+    );
+    if (ziel == null) {
+      return false;
+    }
+    final gespeichert = await aendereHeldImEditor(
+      ref: ref,
+      heroId: widget.heroId,
+      aenderung: (held) => mitZusammengefuehrtemStapel(held, angezeigt, ziel),
+    );
+    final eintraege = gespeichert.inventoryEntries;
+    final index = _findeGespeichertenEintrag(eintraege, ziel);
+    _nachEditorSpeichern(
+      eintraege,
+      index,
+      changedEntry: index < 0 ? ziel : eintraege[index],
+    );
+    return true;
+  }
+
+  /// Verkauft frisch einen Teil oder den ganzen angezeigten Gegenstand
+  /// (ARCH-03); der Erlös kommt auf den Geldstand. Abbruch ändert nichts;
+  /// Fehler gehen an den Editor. Liefert, ob verkauft wurde.
+  Future<bool> _verkaufe(HeroInventoryEntry angezeigt) async {
+    final wahl = await zeigeVerkaufenDialog(context, angezeigt);
+    if (wahl == null) {
+      return false;
+    }
+    final gespeichert = await aendereHeldImEditor(
+      ref: ref,
+      heroId: widget.heroId,
+      aenderung: (held) => mitVerkauftemGegenstand(
+        held,
+        angezeigt,
+        anzahl: wahl.anzahl,
+        erloesKreuzer: wahl.erloesKreuzer,
+        neueId: () => const Uuid().v4(),
+      ),
+    );
+    final eintraege = gespeichert.inventoryEntries;
+    final id = angezeigt.instanzId;
+    final index = id == null
+        ? -1
+        : eintraege.indexWhere((e) => e.instanzId == id);
+    _nachEditorSpeichern(
+      eintraege,
+      index,
+      changedEntry: index < 0 ? angezeigt : eintraege[index],
+    );
+    return true;
+  }
+
   void _nachEditorSpeichern(
     List<HeroInventoryEntry> gespeicherteEintraege,
     int auswahl, {
@@ -54,7 +186,7 @@ extension _HeroInventoryMutations on _HeroInventoryTabState {
         _filter != InventoryFilter.alle &&
         !matchesInventoryFilter(
           changedEntry.itemType,
-          changedEntry.source,
+          anzeigeQuelleImInventar(changedEntry),
           _filter,
         );
 
@@ -68,13 +200,23 @@ extension _HeroInventoryMutations on _HeroInventoryTabState {
     });
   }
 
-  // Position des gespeicherten Gegenstands nach dem Speichern. Verknüpfte
-  // Einträge gleicht das Speichern an ihren Slot an; sie werden notfalls
-  // über ihren ID-Verweis gefunden.
+  // Position des gespeicherten Gegenstands nach dem Speichern: über seine
+  // Instanz-ID, sonst über den Inhalt. Verknüpfte Einträge gleicht das
+  // Speichern an ihren Slot an; sie werden notfalls über ihren ID-Verweis
+  // gefunden.
   int _findeGespeichertenEintrag(
     List<HeroInventoryEntry> eintraege,
     HeroInventoryEntry eintrag,
   ) {
+    final id = eintrag.instanzId;
+    if (id != null) {
+      final perId = eintraege.indexWhere(
+        (kandidat) => kandidat.instanzId == id,
+      );
+      if (perId >= 0) {
+        return perId;
+      }
+    }
     final perInhalt = findeGleichenInventarEintrag(eintraege, eintrag);
     final slotRef = eintrag.slotRef;
     if (perInhalt >= 0 || slotRef == null) {
@@ -84,6 +226,13 @@ extension _HeroInventoryMutations on _HeroInventoryTabState {
   }
 
   Future<void> _deleteEntry(int index) async {
+    final darfBearbeiten = await bestaetigeBearbeitungBeiPlanung(
+      context: context,
+      heroId: widget.heroId,
+    );
+    if (!darfBearbeiten || !mounted) {
+      return;
+    }
     final hero = _latestHero;
     if (hero == null || index < 0 || index >= _entries.length) {
       return;
@@ -122,10 +271,7 @@ extension _HeroInventoryMutations on _HeroInventoryTabState {
     }
     final neueAuswahl = ausgewaehlt == null
         ? -1
-        : findeGleichenInventarEintrag(
-            gespeichert.inventoryEntries,
-            ausgewaehlt,
-          );
+        : _findeGespeichertenEintrag(gespeichert.inventoryEntries, ausgewaehlt);
     setState(() {
       _waehleAus(gespeichert.inventoryEntries, neueAuswahl);
       _pendingNewEntry = null;

@@ -75,4 +75,18 @@ void main() {
       throwsStateError,
     );
   });
+  test('Der beim Speichern gesetzte Instanzverweis ist keine Änderung', () {
+    // Angezeigt vor dem ersten Speichern, gespeichert danach (ARCH-03).
+    final neu = mitGefechtsHandbelegung(
+      CombatConfig(
+        weapons: [
+          a,
+          b.copyWith(inventarInstanzId: 'i1'),
+        ],
+      ),
+      GefechtsHand.nebenhand,
+      waffe: b,
+    );
+    expect(neu.offhandAssignment.weaponIndex, 1);
+  });
 }

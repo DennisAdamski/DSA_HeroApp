@@ -15,6 +15,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_language_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_merkmal.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_meta_talent.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_note_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_regelprofil.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_reisebericht.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_resource_activation_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_rituals.dart';
@@ -50,11 +51,13 @@ class HeroSheet {
     this.talentSpecialAbilities = const <TalentSpecialAbility>[],
     this.spells = const <String, HeroSpellEntry>{},
     this.ritualCategories = const <HeroRitualCategory>[],
+    this.ritualKnowledge = const <String, HeroRitualKnowledge>{},
     this.representationen = const <String>[],
     this.repraesentationsTraditionen = const <String, String>{},
     this.merkmalskenntnisse = const <String>[],
     this.magicSpecialAbilities = const <MagicSpecialAbility>[],
     this.magicLeadAttribute = '',
+    this.gottheit = '',
     this.sprachen = const <String, HeroLanguageEntry>{},
     this.schriften = const <String, HeroScriptEntry>{},
     this.muttersprache = '',
@@ -91,6 +94,7 @@ class HeroSheet {
     this.epicAttributeMaxBonus = const Attributes.zero(),
     this.epicMainAttributes = const Attributes.zero(),
     this.epicActivationPolicy,
+    this.regelProfil,
     this.epicLockedWaffenmeisterCategories = const <String>{},
     this.epicUnactivatedTalentIds = const <String>{},
   }) : rawStartAttributes = rawStartAttributes ?? startAttributes ?? attributes,
@@ -112,6 +116,9 @@ class HeroSheet {
   final List<TalentSpecialAbility> talentSpecialAbilities;
   final Map<String, HeroSpellEntry> spells;
   final List<HeroRitualCategory> ritualCategories;
+
+  /// Gemeinsame Ritualkenntnisse je stabiler Traditionskennung.
+  final Map<String, HeroRitualKnowledge> ritualKnowledge;
   final List<String> representationen;
 
   /// Gewaehlte Tradition je Repraesentationskuerzel, z. B.
@@ -126,6 +133,13 @@ class HeroSheet {
   final List<String> merkmalskenntnisse;
   final List<MagicSpecialAbility> magicSpecialAbilities;
   final String magicLeadAttribute;
+
+  /// Gottheit (oder Kult) eines Geweihten, z. B. `Praios`; leer, solange
+  /// nicht erfasst. Steuert, welche gottheitsgebundenen karmalen
+  /// Sonderfertigkeiten die Steigerungsplanung zeigt
+  /// (`karma_gottheit_rules.dart`). Nur bei Belegung im JSON, damit
+  /// Bestandshelden ihren Inhalts-Hash behalten.
+  final String gottheit;
 
   /// Sprachkenntnisse: sprachId → Eintrag.
   final Map<String, HeroLanguageEntry> sprachen;
@@ -216,6 +230,11 @@ class HeroSheet {
   /// Werte: `'standard'`, `'elevated_being'`, `'paktierer'`, `'elfisch'` oder `null`.
   final String? epicActivationPolicy;
 
+  /// Explizites Regelprofil (Hausregel-Pakete als Kopie, ARCH-04). `null`
+  /// heißt: der Held folgt dem globalen Stand der Einstellungen. Nur bei
+  /// Belegung im JSON, damit Bestandshelden ihren Inhalts-Hash behalten.
+  final HeroRegelProfil? regelProfil;
+
   /// Waffenmeister-Kategorien, die beim Epic-Werden nicht erlernbar waren
   /// und daher auch nachtraeglich gesperrt bleiben.
   final Set<String> epicLockedWaffenmeisterCategories;
@@ -243,11 +262,13 @@ class HeroSheet {
     List<TalentSpecialAbility>? talentSpecialAbilities,
     Map<String, HeroSpellEntry>? spells,
     List<HeroRitualCategory>? ritualCategories,
+    Map<String, HeroRitualKnowledge>? ritualKnowledge,
     List<String>? representationen,
     Map<String, String>? repraesentationsTraditionen,
     List<String>? merkmalskenntnisse,
     List<MagicSpecialAbility>? magicSpecialAbilities,
     String? magicLeadAttribute,
+    String? gottheit,
     Map<String, HeroLanguageEntry>? sprachen,
     Map<String, HeroScriptEntry>? schriften,
     String? muttersprache,
@@ -284,6 +305,7 @@ class HeroSheet {
     Attributes? epicAttributeMaxBonus,
     Attributes? epicMainAttributes,
     Object? epicActivationPolicy = _copySentinel,
+    Object? regelProfil = _copySentinel,
     Set<String>? epicLockedWaffenmeisterCategories,
     Set<String>? epicUnactivatedTalentIds,
   }) {
@@ -307,6 +329,7 @@ class HeroSheet {
           talentSpecialAbilities ?? this.talentSpecialAbilities,
       spells: spells ?? this.spells,
       ritualCategories: ritualCategories ?? this.ritualCategories,
+      ritualKnowledge: ritualKnowledge ?? this.ritualKnowledge,
       representationen: representationen ?? this.representationen,
       repraesentationsTraditionen:
           repraesentationsTraditionen ?? this.repraesentationsTraditionen,
@@ -314,6 +337,7 @@ class HeroSheet {
       magicSpecialAbilities:
           magicSpecialAbilities ?? this.magicSpecialAbilities,
       magicLeadAttribute: magicLeadAttribute ?? this.magicLeadAttribute,
+      gottheit: gottheit ?? this.gottheit,
       sprachen: sprachen ?? this.sprachen,
       schriften: schriften ?? this.schriften,
       muttersprache: muttersprache ?? this.muttersprache,
@@ -360,6 +384,9 @@ class HeroSheet {
       epicActivationPolicy: identical(epicActivationPolicy, _copySentinel)
           ? this.epicActivationPolicy
           : epicActivationPolicy as String?,
+      regelProfil: identical(regelProfil, _copySentinel)
+          ? this.regelProfil
+          : regelProfil as HeroRegelProfil?,
       epicLockedWaffenmeisterCategories:
           epicLockedWaffenmeisterCategories ??
           this.epicLockedWaffenmeisterCategories,
@@ -389,11 +416,13 @@ class HeroSheet {
     'talentSpecialAbilities',
     'spells',
     'ritualCategories',
+    'ritualKnowledge',
     'representationen',
     'repraesentationsTraditionen',
     'merkmalskenntnisse',
     'magicSpecialAbilities',
     'magicLeadAttribute',
+    'gottheit',
     'sprachen',
     'schriften',
     'muttersprache',
@@ -426,6 +455,7 @@ class HeroSheet {
     'epicAttributeMaxBonus',
     'epicMainAttributes',
     'epicActivationPolicy',
+    'regelProfil',
     'epicLockedWaffenmeisterCategories',
     'epicUnactivatedTalentIds',
     ...HeroAppearance.jsonSchluessel,
@@ -457,6 +487,10 @@ class HeroSheet {
       'ritualCategories': ritualCategories
           .map((entry) => entry.toJson())
           .toList(growable: false),
+      if (ritualKnowledge.isNotEmpty)
+        'ritualKnowledge': ritualKnowledge.map(
+          (key, value) => MapEntry(key, value.toJson()),
+        ),
       'representationen': representationen,
       'repraesentationsTraditionen': repraesentationsTraditionen,
       'merkmalskenntnisse': merkmalskenntnisse,
@@ -464,6 +498,8 @@ class HeroSheet {
           .map((entry) => entry.toJson())
           .toList(growable: false),
       'magicLeadAttribute': magicLeadAttribute,
+      // Nur bei Belegung: Bestandshelden behalten ihren Inhalts-Hash.
+      if (gottheit.trim().isNotEmpty) 'gottheit': gottheit,
       'sprachen': sprachen.map((key, value) => MapEntry(key, value.toJson())),
       'schriften': schriften.map((key, value) => MapEntry(key, value.toJson())),
       'muttersprache': muttersprache,
@@ -531,6 +567,7 @@ class HeroSheet {
       'epicMainAttributes': epicMainAttributes.toJson(),
       if (epicActivationPolicy != null)
         'epicActivationPolicy': epicActivationPolicy,
+      if (regelProfil != null) 'regelProfil': regelProfil!.toJson(),
       'epicLockedWaffenmeisterCategories': epicLockedWaffenmeisterCategories
           .toList(growable: false),
       'epicUnactivatedTalentIds': epicUnactivatedTalentIds.toList(
@@ -560,6 +597,9 @@ class HeroSheet {
     final rawTalentSpecialAbilities = json['talentSpecialAbilities'];
     final rawSpells =
         (json['spells'] as Map?)?.cast<String, dynamic>() ??
+        const <String, dynamic>{};
+    final rawRitualKnowledge =
+        (json['ritualKnowledge'] as Map?)?.cast<String, dynamic>() ??
         const <String, dynamic>{};
     final rawRitualCategories =
         (json['ritualCategories'] as List?) ?? const <dynamic>[];
@@ -641,6 +681,13 @@ class HeroSheet {
             : const <String, dynamic>{};
         return MapEntry(key, HeroSpellEntry.fromJson(map));
       }),
+      ritualKnowledge: {
+        for (final entry in rawRitualKnowledge.entries)
+          if (entry.value is Map)
+            entry.key: HeroRitualKnowledge.fromJson(
+              (entry.value as Map).cast<String, dynamic>(),
+            ),
+      },
       ritualCategories: rawRitualCategories
           .whereType<Map>()
           .map(
@@ -665,6 +712,7 @@ class HeroSheet {
           )
           .toList(growable: false),
       magicLeadAttribute: getString('magicLeadAttribute').toUpperCase(),
+      gottheit: getString('gottheit'),
       sprachen: rawSprachen.map((key, value) {
         final map = value is Map
             ? value.cast<String, dynamic>()
@@ -771,6 +819,11 @@ class HeroSheet {
             const {},
       ),
       epicActivationPolicy: _parseOptionalString(json['epicActivationPolicy']),
+      regelProfil: json['regelProfil'] is Map
+          ? HeroRegelProfil.fromJson(
+              Map<String, dynamic>.from(json['regelProfil'] as Map),
+            )
+          : null,
       epicLockedWaffenmeisterCategories: _parseStringSet(
         json['epicLockedWaffenmeisterCategories'],
       ),

@@ -5,7 +5,11 @@ extension _HeroInventoryTable on _HeroInventoryTabState {
     final result = <(int, HeroInventoryEntry)>[];
     for (var index = 0; index < _entries.length; index++) {
       final entry = _entries[index];
-      if (matchesInventoryFilter(entry.itemType, entry.source, _filter)) {
+      if (matchesInventoryFilter(
+        entry.itemType,
+        anzeigeQuelleImInventar(entry),
+        _filter,
+      )) {
         result.add((index, entry));
       }
     }
@@ -61,7 +65,8 @@ extension _HeroInventoryTable on _HeroInventoryTabState {
               child: TextButton(
                 key: ValueKey<String>('inventory-row-open-$index'),
                 style: namensStil,
-                onPressed: () => _openEditEntryAction(context, index),
+                onPressed: () =>
+                    _openEditEntryAction(context, index, bearbeiten: false),
                 child: Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
@@ -72,13 +77,14 @@ extension _HeroInventoryTable on _HeroInventoryTabState {
               ),
             ),
             Text(_typeLabel(entry.itemType)),
-            Text(_sourceLabel(entry.source)),
+            Text(_sourceLabel(anzeigeQuelleImInventar(entry))),
             Text(_traegerName(entry)),
             _zahlenzelle(
               entry.anzahl.trim().isEmpty ? '–' : entry.anzahl.trim(),
             ),
-            _zahlenzelle(_formatWeight(entry.gewichtGramm)),
-            _zahlenzelle(_formatValue(entry.wertSilber)),
+            // Der ganze Stapel; der Editor zeigt den Wert pro Stück.
+            _zahlenzelle(_formatWeight(inventarStapelGewichtGramm(entry))),
+            _zahlenzelle(_formatValue(inventarStapelWertSilber(entry))),
             Wrap(
               spacing: 6,
               runSpacing: 6,

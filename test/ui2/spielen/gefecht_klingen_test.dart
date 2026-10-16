@@ -7,6 +7,7 @@ import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht_gegner.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht_klingen.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_held_rules.dart';
@@ -547,6 +548,34 @@ class _Adapter implements KartoGefechtsAdapter {
   @override
   Future<AttributeModifiers?> gefechtsAttributoWerte(BuildContext context) =>
       throw UnimplementedError();
+
+  @override
+  Future<void> gefechtsMatrixAusloesen({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String heroId,
+    required HeroInventoryEntry eintrag,
+  }) => throw UnimplementedError();
+
+  @override
+  Future<bool> gefechtsVitalwirkung({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String heroId,
+    required HeroInventoryEntry eintrag,
+  }) => throw UnimplementedError();
+
+  @override
+  Future<void> gefechtsAuxiliator({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String heroId,
+    required HeroInventoryEntry eintrag,
+    required String zauberId,
+    required int zfpStern,
+    required bool gelungen,
+    required String repraesentation,
+  }) => throw UnimplementedError();
 
   @override
   Future<void> gefechtsWirkkosten({

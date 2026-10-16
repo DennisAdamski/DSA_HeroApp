@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/planung_bearbeiten_guard.dart';
 
 /// Schlüssel der eingeblendeten Fehlermeldung ([ZustandFehlerAnzeige]).
 const ValueKey<String> kZustandFehlerSchluessel = ValueKey<String>(
@@ -49,22 +51,67 @@ Future<HeroState?> aendereZustandMitMeldung({
 /// Änderungen desselben Helden laufen nacheinander (`updateHero`), auch
 /// gegenüber einem Speichern aus einem Editor.
 ///
-/// Solange eine Steigerungsrunde offen ist, wird nichts geschrieben: jede
-/// Heldenänderung bräche den Inhalts-Hash der Runde und damit ihre
-/// Übernahme. Die Meldung erscheint dann wie ein Speicherfehler. Das
-/// Ergebnis ist bei einem Fehler `null`, sonst der gespeicherte Held.
+/// Bei offener Planung fragt der Schreibweg vor der Sofortaktion nach.
+/// Abbrechen erhält den Plan und schreibt nichts; erst bestätigtes Verwerfen
+/// erlaubt die Änderung. Das Ergebnis ist bei Abbruch oder Fehler `null`.
+///
+/// [validationCatalog] ersetzt für die Normalisierung beim Speichern den
+/// Katalog des bisherigen Profils, etwa wenn [aenderung] das Regelprofil
+/// wechselt.
 Future<HeroSheet?> aendereHeldMitMeldung({
   required BuildContext context,
   required WidgetRef ref,
   required String heroId,
   required String was,
   required HeroSheet Function(HeroSheet aktuell) aenderung,
+  RulesCatalog? validationCatalog,
 }) {
+  if (ref.read(advancementSessionProvider(heroId)) != null) {
+    return _aendereHeldNachPlanungspruefung(
+      context: context,
+      ref: ref,
+      heroId: heroId,
+      was: was,
+      aenderung: aenderung,
+      validationCatalog: validationCatalog,
+    );
+  }
   return _schreibeMitMeldung(
     context: context,
     was: was,
-    schreibe: () =>
-        aendereHeldImEditor(ref: ref, heroId: heroId, aenderung: aenderung),
+    schreibe: () => aendereHeldImEditor(
+      ref: ref,
+      heroId: heroId,
+      aenderung: aenderung,
+      validationCatalog: validationCatalog,
+    ),
+  );
+}
+
+// Ohne Planung bleibt der normale Schreibweg synchron eingereiht. Nur eine
+// offene Planung wartet zuerst auf die ausdrückliche Entscheidung.
+Future<HeroSheet?> _aendereHeldNachPlanungspruefung({
+  required BuildContext context,
+  required WidgetRef ref,
+  required String heroId,
+  required String was,
+  required HeroSheet Function(HeroSheet aktuell) aenderung,
+  RulesCatalog? validationCatalog,
+}) async {
+  final darfBearbeiten = await bestaetigeBearbeitungBeiPlanung(
+    context: context,
+    heroId: heroId,
+  );
+  if (!darfBearbeiten || !context.mounted) {
+    return null;
+  }
+  return aendereHeldMitMeldung(
+    context: context,
+    ref: ref,
+    heroId: heroId,
+    was: was,
+    aenderung: aenderung,
+    validationCatalog: validationCatalog,
   );
 }
 
@@ -78,11 +125,14 @@ Future<HeroSheet> aendereHeldImEditor({
   required WidgetRef ref,
   required String heroId,
   required HeroSheet Function(HeroSheet aktuell) aenderung,
+  RulesCatalog? validationCatalog,
 }) {
   if (ref.read(advancementSessionProvider(heroId)) != null) {
     return Future<HeroSheet>.error(StateError(kBogenWaehrendPlanungGesperrt));
   }
-  return ref.read(heroActionsProvider).updateHero(heroId, aenderung);
+  return ref
+      .read(heroActionsProvider)
+      .updateHero(heroId, aenderung, validationCatalog: validationCatalog);
 }
 
 /// Grund, aus dem Sofortaktionen am Bogen während einer Planung ruhen.

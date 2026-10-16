@@ -1,0 +1,1232 @@
+<meta charset="utf-8">
+<title>Gefechtslage</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Spectral:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+/* Layout: Lagekarte als Kompassrose um den eigenen Helden (Ringe = Distanzklassen),
+   daneben Gegnerbuch und Detailblatt; Kräfteverhältnis und eigene Seite unter der Karte.
+   Token folgen lib/ui2/theme/karto_tokens.dart (Kartograph). */
+:root {
+  --f-titel: 'Spectral', Georgia, 'Times New Roman', serif;
+  --f-daten: 'Inter Tight', 'Segoe UI', system-ui, sans-serif;
+  --blatt: #F2EDE1; --feld: #FAF7EF; --senke: #E8E1D2;
+  --kueste: #2A3138; --grat: #6E6355; --hoehenlinie: #C9C0AE; --raster: #DCD4C3;
+  --schrift: #101820; --schrift-leise: #4A4F55; --schrift-stumm: #8C857A; --auf-signal: #F2EDE1;
+  --navigation: #162C30; --navigation-text: #F2EDE1; --navigation-leise: #BFC6BD;
+  --meer: #1F4E5F; --siegel: #A6501E; --wachs: #7E6013; --moos: #2F5D43; --leben: #93493E;
+  --messing: #9C7A3C; --schatten: rgba(59, 42, 23, .18); --schleier: rgba(16, 24, 32, .45);
+  --meer-hauch: rgba(31, 78, 95, .10); --siegel-hauch: rgba(166, 80, 30, .12);
+  --r: 8px; --r-klein: 4px; --dauer: 420ms;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --blatt: #101820; --feld: #16202A; --senke: #0B1116;
+    --kueste: #D8D0BE; --grat: #8A8172; --hoehenlinie: #2B3640; --raster: #1C262F;
+    --schrift: #F2EDE1; --schrift-leise: #B3AC9E; --schrift-stumm: #6E6355; --auf-signal: #101820;
+    --navigation: #0B1116; --navigation-text: #F2EDE1; --navigation-leise: #B3AC9E;
+    --meer: #4E9AAF; --siegel: #D97E43; --wachs: #C9A44C; --moos: #6BA383; --leben: #C97F72;
+    --messing: #B09470; --schatten: rgba(0, 0, 0, .55); --schleier: rgba(0, 0, 0, .62);
+    --meer-hauch: rgba(78, 154, 175, .14); --siegel-hauch: rgba(217, 126, 67, .16);
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --blatt: #101820; --feld: #16202A; --senke: #0B1116;
+  --kueste: #D8D0BE; --grat: #8A8172; --hoehenlinie: #2B3640; --raster: #1C262F;
+  --schrift: #F2EDE1; --schrift-leise: #B3AC9E; --schrift-stumm: #6E6355; --auf-signal: #101820;
+  --navigation: #0B1116; --navigation-text: #F2EDE1; --navigation-leise: #B3AC9E;
+  --meer: #4E9AAF; --siegel: #D97E43; --wachs: #C9A44C; --moos: #6BA383; --leben: #C97F72;
+  --messing: #B09470; --schatten: rgba(0, 0, 0, .55); --schleier: rgba(0, 0, 0, .62);
+  --meer-hauch: rgba(78, 154, 175, .14); --siegel-hauch: rgba(217, 126, 67, .16);
+}
+@media (prefers-reduced-motion: reduce) { :root { --dauer: 0ms; } }
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { background: var(--blatt); color: var(--schrift); font-family: var(--f-daten); font-size: 15px; line-height: 1.45; font-variant-numeric: tabular-nums; }
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; touch-action: manipulation; }
+h1, h2, h3, p { margin: 0; }
+h1, h2, h3 { text-wrap: balance; }
+:focus-visible { outline: 2px solid var(--meer); outline-offset: 2px; }
+
+/* ---------- Kopf ---------- */
+.kopf { background: var(--navigation); color: var(--navigation-text); }
+.kopf-innen { max-width: 1440px; margin: 0 auto; padding-block: 12px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; }
+.kopf h1 { font-family: var(--f-titel); font-weight: 500; font-size: 24px; line-height: 1.15; }
+.kopf .unter { font-size: 13px; color: var(--navigation-leise); }
+.kopf-titel { display: flex; flex-direction: column; gap: 2px; margin-right: auto; min-width: 0; }
+.kopf-takt { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.kr { font-family: var(--f-titel); font-size: 20px; font-weight: 500; padding-inline: 4px; }
+.kopf .btn-nav { min-height: 36px; padding: 6px 12px; border-radius: var(--r-klein); border: 1px solid var(--navigation-leise); background: none; color: var(--navigation-text); font-size: 13px; font-weight: 600; }
+.kopf .btn-nav:hover { background: rgba(242, 237, 225, .08); }
+.kopf .btn-nav[aria-pressed="true"] { background: var(--navigation-text); color: var(--navigation); }
+.hinweis-beispiel { font-size: 11px; letter-spacing: .5px; color: var(--navigation-leise); border: 1px dashed var(--navigation-leise); border-radius: var(--r-klein); padding: 2px 6px; }
+
+/* ---------- INI-Band ---------- */
+.ini-band { border-bottom: 1px solid var(--hoehenlinie); background: var(--feld); }
+.ini-innen { max-width: 1440px; margin: 0 auto; padding-block: 10px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: flex; gap: 12px; align-items: center; }
+.ini-etikett { font-size: 11px; font-weight: 600; letter-spacing: .8px; color: var(--schrift-leise); flex-shrink: 0; }
+.ini-leiste { position: relative; list-style: none; margin: 0; padding: 2px 2px 6px; display: flex; gap: 6px; overflow-x: auto; min-width: 0; flex: 1; scrollbar-width: thin; }
+.ini-chip { flex-shrink: 0; display: flex; align-items: center; gap: 8px; min-height: 38px; padding: 4px 10px 4px 4px; border: 1px solid var(--hoehenlinie); border-radius: var(--r-klein); background: var(--blatt); font-size: 13px; transition: transform var(--dauer), background var(--dauer), border-color var(--dauer); cursor: pointer; }
+.ini-chip .zahl { min-width: 30px; height: 30px; display: grid; place-items: center; border-radius: 3px; font-weight: 700; font-size: 14px; color: var(--auf-signal); }
+.ini-chip.wir .zahl { background: var(--meer); }
+.ini-chip.sie .zahl { background: var(--siegel); }
+.ini-chip .bonus { font-size: 11px; color: var(--schrift-leise); }
+.ini-chip.dran { border-color: var(--messing); border-width: 2px; background: var(--feld); transform: translateY(-1px); box-shadow: 0 3px 10px var(--schatten); }
+.ini-chip.dran::after { content: 'am Zug'; font-size: 10px; font-weight: 700; letter-spacing: .6px; color: var(--messing); text-transform: uppercase; }
+.ini-chip.vorbei { opacity: .55; }
+.ini-chip.raus { opacity: .4; text-decoration: line-through; }
+
+/* ---------- Raster ---------- */
+.raster { max-width: 1440px; margin: 0 auto; padding-block: 16px 40px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: flex; gap: 16px; align-items: flex-start; }
+.spalte { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.spalte-links { flex: 1.1 1 0; }
+.spalte-rechts { flex: 1 1 0; }
+@media (max-width: 980px) {
+  .raster { flex-direction: column; align-items: stretch; }
+  .spalte { display: contents; }
+  #blatt-karte { order: 1; } #blatt-kraefte { order: 2; } #blatt-gegner { order: 3; } #blatt-detail { order: 4; } #blatt-gruppe { order: 5; }
+}
+.blatt { background: var(--feld); border: 1px solid var(--hoehenlinie); border-radius: var(--r); padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.blatt-kopf { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
+.blatt-kopf h2 { font-family: var(--f-titel); font-weight: 500; font-size: 19px; line-height: 1.2; }
+.blatt-kopf .leise { font-size: 13px; }
+.blatt-kopf .rechts { margin-left: auto; display: flex; gap: 6px; flex-wrap: wrap; }
+.leise { color: var(--schrift-leise); }
+.stumm { color: var(--schrift-stumm); }
+.quelle { font-size: 12px; color: var(--schrift-stumm); font-style: italic; font-family: var(--f-titel); }
+.marke { font-size: 11px; font-weight: 600; letter-spacing: .6px; padding: 2px 6px; border-radius: var(--r-klein); border: 1px solid var(--grat); color: var(--schrift-leise); white-space: nowrap; display: inline-flex; align-items: center; gap: 4px; }
+.marke.ok { border-color: var(--moos); color: var(--moos); }
+.marke.warn { border-color: var(--wachs); color: var(--wachs); }
+.marke.gefahr { border-color: var(--siegel); color: var(--siegel); }
+.marke.voll { background: var(--siegel); border-color: var(--siegel); color: var(--auf-signal); }
+
+/* ---------- Bausteine ---------- */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 36px; padding: 6px 12px; border-radius: var(--r-klein); border: 1px solid transparent; font-size: 13px; font-weight: 600; background: none; white-space: nowrap; }
+.btn-primaer { background: var(--meer); color: var(--auf-signal); }
+.btn-primaer:hover { filter: brightness(1.08); }
+.btn-sek { background: var(--feld); border-color: var(--grat); }
+.btn-sek:hover { background: var(--senke); }
+.btn-leise { color: var(--meer); padding-inline: 8px; }
+.btn-leise:hover { background: var(--senke); }
+.btn-gefahr { border-color: var(--siegel); color: var(--siegel); background: var(--feld); }
+.btn:disabled { opacity: .45; cursor: default; }
+.btn-klein { min-height: 30px; padding: 3px 9px; font-size: 12px; }
+.seg { display: inline-flex; flex-wrap: wrap; border: 1px solid var(--grat); border-radius: var(--r-klein); overflow: hidden; max-width: 100%; }
+.seg button { border: 0; border-right: 1px solid var(--grat); background: var(--feld); padding: 5px 9px; font-size: 12px; font-weight: 500; min-height: 30px; }
+.seg button:last-child { border-right: 0; }
+.seg button[aria-pressed="true"] { background: var(--meer); color: var(--auf-signal); }
+.seg.status button[data-wert="tot"][aria-pressed="true"] { background: var(--kueste); color: var(--blatt); }
+.seg.status button[data-wert="kampfunfaehig"][aria-pressed="true"] { background: var(--wachs); color: var(--auf-signal); }
+.seg.status button[data-wert="geflohen"][aria-pressed="true"] { background: var(--grat); color: var(--auf-signal); }
+.feld { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.feld > span { font-size: 12px; font-weight: 500; color: var(--schrift-leise); }
+.feld input, .feld select, select.klein { height: 34px; border: 1px solid var(--grat); border-radius: var(--r-klein); background: var(--blatt); padding: 0 8px; font-size: 14px; min-width: 0; width: 100%; }
+.feld input::placeholder { color: var(--schrift-stumm); }
+.feld.unbekannt input { border-style: dashed; }
+.zeile { display: flex; flex-wrap: wrap; gap: 8px 10px; align-items: center; }
+.werte-raster { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+@media (max-width: 460px) { .werte-raster { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.check { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; }
+.check input { width: 16px; height: 16px; accent-color: var(--meer); }
+
+/* ---------- Karte ---------- */
+.karte-huelle { position: relative; width: 100%; max-width: 640px; margin: 0 auto; aspect-ratio: 1; }
+#karte { width: 100%; height: 100%; display: block; touch-action: none; user-select: none; }
+.ring { fill: none; stroke: var(--hoehenlinie); stroke-width: 1; }
+.ring.dk { stroke: var(--grat); stroke-width: 1; stroke-dasharray: 2 4; }
+.ring.fern { stroke: var(--hoehenlinie); stroke-dasharray: 1 6; }
+.band-reichweite { fill: none; stroke: var(--meer-hauch); }
+.ringlabel { font-size: 11px; font-weight: 600; letter-spacing: .6px; fill: var(--schrift-stumm); }
+.ringlabel.reich { fill: var(--meer); }
+.windrose { stroke: var(--raster); stroke-width: 1; }
+.linie { stroke-width: 1.5; fill: none; stroke-linecap: round; }
+.linie.sie { stroke: var(--siegel); stroke-dasharray: 5 4; opacity: .75; }
+.linie.wir { stroke: var(--meer); opacity: .7; }
+.linie.schuss { stroke: var(--meer); stroke-dasharray: 1 5; opacity: .9; }
+.token { cursor: grab; transition: transform var(--dauer) cubic-bezier(.3, .7, .2, 1), opacity var(--dauer); }
+.token.zieht { transition: none; cursor: grabbing; }
+.token .koerper { transition: transform var(--dauer); transform-box: fill-box; transform-origin: center; }
+.token .scheibe { stroke: var(--feld); stroke-width: 2; }
+.token.sie .scheibe { fill: var(--siegel); }
+.token.wir .scheibe { fill: var(--meer); }
+.token.ich .scheibe { fill: var(--messing); }
+.token.raus .scheibe { fill: var(--schrift-stumm); }
+.token .kuerzel { fill: var(--auf-signal); font-size: 11px; font-weight: 700; text-anchor: middle; dominant-baseline: central; pointer-events: none; }
+.token .name { fill: var(--schrift); font-size: 11.5px; font-weight: 600; text-anchor: middle; pointer-events: none; paint-order: stroke; stroke: var(--feld); stroke-width: 3px; stroke-linejoin: round; }
+.token .ini-plakette rect { fill: var(--feld); stroke: var(--grat); stroke-width: 1; }
+.token .ini-plakette text { fill: var(--schrift); font-size: 10px; font-weight: 700; text-anchor: middle; dominant-baseline: central; }
+.token .wund-pip { fill: var(--leben); stroke: var(--feld); stroke-width: 1.2; }
+.token .auswahl { fill: none; stroke: var(--messing); stroke-width: 2; stroke-dasharray: 4 3; opacity: 0; transition: opacity var(--dauer); }
+.token.gewaehlt .auswahl { opacity: 1; animation: kreisen 9s linear infinite; transform-box: fill-box; transform-origin: center; }
+@keyframes kreisen { to { transform: rotate(360deg); } }
+.token .kreuz { stroke: var(--blatt); stroke-width: 2.5; stroke-linecap: round; opacity: 0; transition: opacity var(--dauer); }
+.token.st-tot .scheibe { fill: var(--schrift-stumm); }
+.token.st-tot .kreuz { opacity: 1; }
+.token.st-tot .koerper { transform: scale(.8); }
+.token.st-kampfunfaehig .koerper { transform: scale(1.1, .55) rotate(-8deg); }
+.token.st-kampfunfaehig .scheibe { fill: var(--wachs); }
+.token.st-geflohen { opacity: .32; }
+.token.reichweite-aus .scheibe { opacity: .78; }
+.token.getroffen .koerper { animation: treffer 520ms ease-out; }
+@keyframes treffer { 0% { transform: translateX(0); } 20% { transform: translateX(-4px); } 45% { transform: translateX(4px); } 70% { transform: translateX(-2px); } 100% { transform: translateX(0); } }
+.blitz { fill: none; stroke: var(--leben); stroke-width: 3; animation: blitz 700ms ease-out forwards; transform-box: fill-box; transform-origin: center; }
+@keyframes blitz { from { opacity: .9; transform: scale(.7); } to { opacity: 0; transform: scale(1.8); } }
+.schwebe { fill: var(--leben); font-size: 15px; font-weight: 700; text-anchor: middle; paint-order: stroke; stroke: var(--feld); stroke-width: 3px; animation: schweben 1300ms ease-out forwards; }
+.schwebe.wunde { fill: var(--siegel); font-size: 13px; }
+@keyframes schweben { from { opacity: 0; transform: translateY(4px); } 15% { opacity: 1; } to { opacity: 0; transform: translateY(-34px); } }
+@media (prefers-reduced-motion: reduce) { .token.gewaehlt .auswahl, .token.getroffen .koerper { animation: none; } .blitz, .schwebe { animation-duration: 1ms; } }
+.karte-legende { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12px; color: var(--schrift-leise); align-items: center; }
+.punkt { display: inline-block; width: 10px; height: 10px; border-radius: 50%; vertical-align: -1px; margin-right: 4px; }
+.karte-hilfe { font-size: 12px; color: var(--schrift-stumm); }
+
+/* ---------- Kräfteverhältnis ---------- */
+.waage { display: grid; grid-template-columns: auto 1fr auto; gap: 8px 12px; align-items: center; }
+.waage-seite { display: flex; flex-direction: column; gap: 2px; }
+.waage-seite strong { font-size: 13px; }
+.waage-seite .zahl { font-family: var(--f-titel); font-size: 30px; line-height: 1; font-weight: 500; }
+.waage-seite.wir .zahl { color: var(--meer); }
+.waage-seite.sie { text-align: right; }
+.waage-seite.sie .zahl { color: var(--siegel); }
+.waage-balken { position: relative; height: 34px; }
+.waage-balken .bahn { position: absolute; inset: 15px 0; background: var(--senke); border-radius: 2px; }
+.waage-balken .anteil { position: absolute; top: 9px; height: 16px; border-radius: 2px; transition: width var(--dauer), left var(--dauer); }
+.waage-balken .anteil.wir { left: 0; background: var(--meer); }
+.waage-balken .anteil.sie { right: 0; background: var(--siegel); }
+.waage-balken .mitte { position: absolute; left: 50%; top: 2px; bottom: 2px; width: 2px; background: var(--kueste); transform: translateX(-1px); }
+.figuren { display: flex; gap: 3px; flex-wrap: wrap; }
+.figuren i { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+.waage-seite.sie .figuren { justify-content: flex-end; }
+.lagesatz { font-family: var(--f-titel); font-size: 17px; line-height: 1.35; }
+.lagesatz b { font-weight: 600; }
+.folgen { display: grid; gap: 8px; }
+.folge { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; padding: 10px 12px; border: 1px solid var(--hoehenlinie); border-radius: var(--r-klein); background: var(--blatt); }
+.folge.druck { border-left: 3px solid var(--siegel); }
+.folge.vorteil { border-left: 3px solid var(--moos); }
+.folge h3 { font-size: 14px; font-weight: 600; }
+.folge .werte { display: flex; flex-wrap: wrap; gap: 4px; justify-content: flex-end; align-items: flex-start; }
+.folge p { grid-column: 1 / -1; font-size: 13px; color: var(--schrift-leise); }
+.nicht-gezaehlt { font-size: 12px; color: var(--schrift-stumm); }
+
+/* ---------- Gegnerbuch ---------- */
+.gegnerliste { display: flex; flex-direction: column; gap: 6px; }
+.gegner-zeile { display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; gap: 4px 10px; align-items: center; padding: 8px 10px; border: 1px solid var(--hoehenlinie); border-radius: var(--r-klein); background: var(--blatt); cursor: pointer; text-align: left; width: 100%; transition: border-color var(--dauer), background var(--dauer); }
+.gegner-zeile:hover { border-color: var(--grat); }
+.gegner-zeile.gewaehlt { border-color: var(--messing); box-shadow: inset 0 0 0 1px var(--messing); }
+.gegner-zeile.inaktiv { opacity: .62; }
+.gegner-zeile .ini { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 3px; background: var(--siegel); color: var(--auf-signal); font-weight: 700; }
+.gegner-zeile.inaktiv .ini { background: var(--schrift-stumm); }
+.gegner-zeile .kern { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.gegner-zeile .titelzeile { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; }
+.gegner-zeile .titelzeile strong { font-size: 15px; }
+.gegner-zeile .info { font-size: 12px; color: var(--schrift-leise); display: flex; flex-wrap: wrap; gap: 2px 10px; }
+.gegner-zeile .rechts { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+.lep-balken { height: 5px; background: var(--senke); border-radius: 2px; overflow: hidden; width: 100%; max-width: 220px; }
+.lep-balken i { display: block; height: 100%; background: var(--leben); transition: width var(--dauer); }
+.lep-balken.unbekannt { background: repeating-linear-gradient(90deg, var(--senke) 0 6px, transparent 6px 10px); }
+.wundpips { display: inline-flex; gap: 3px; align-items: center; }
+.wundpips i { width: 8px; height: 8px; border-radius: 50%; background: var(--leben); display: inline-block; }
+.gruppe-trenner { font-size: 11px; font-weight: 600; letter-spacing: .8px; color: var(--schrift-stumm); padding-top: 6px; text-transform: uppercase; }
+
+/* ---------- Detailblatt ---------- */
+.detail-kopf { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; }
+.detail-kopf input.name { font-family: var(--f-titel); font-size: 22px; font-weight: 500; border: 0; border-bottom: 1px dashed var(--grat); background: none; padding: 2px 0; min-width: 0; flex: 1 1 180px; }
+.detail-teil { display: flex; flex-direction: column; gap: 8px; padding-top: 12px; border-top: 1px solid var(--hoehenlinie); }
+.detail-teil > h3 { font-size: 12px; font-weight: 600; letter-spacing: .7px; color: var(--schrift-leise); text-transform: uppercase; }
+.schaden-kopf { display: flex; flex-wrap: wrap; gap: 6px 18px; align-items: baseline; }
+.schaden-kopf .gross { font-family: var(--f-titel); font-size: 28px; font-weight: 500; line-height: 1; }
+.koerper-raster { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 14px; align-items: start; }
+@media (max-width: 460px) { .koerper-raster { grid-template-columns: 120px minmax(0, 1fr); } }
+.figur { width: 100%; height: auto; }
+.figur .zone { fill: var(--senke); stroke: var(--grat); stroke-width: 1; cursor: pointer; transition: fill var(--dauer); }
+.figur .zone:hover { fill: var(--raster); }
+.figur .zone.w1 { fill: color-mix(in srgb, var(--leben) 35%, var(--senke)); }
+.figur .zone.w2 { fill: color-mix(in srgb, var(--leben) 65%, var(--senke)); }
+.figur .zone.w3 { fill: var(--leben); }
+.figur .zone.aktiv { stroke: var(--messing); stroke-width: 2.5; }
+.figur text { font-size: 9px; fill: var(--schrift-stumm); text-anchor: middle; pointer-events: none; }
+.wundliste { display: flex; flex-direction: column; gap: 6px; font-size: 13px; }
+.wundliste .eintrag { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 8px; }
+.wundliste .eintrag small { grid-column: 1 / -1; color: var(--schrift-leise); font-size: 12px; }
+.trefferliste { width: 100%; border-collapse: collapse; font-size: 13px; }
+.trefferliste th { text-align: left; font-size: 11px; font-weight: 600; letter-spacing: .5px; color: var(--schrift-stumm); padding: 4px 6px; border-bottom: 1px solid var(--hoehenlinie); }
+.trefferliste td { padding: 6px; border-bottom: 1px solid var(--hoehenlinie); vertical-align: top; }
+.trefferliste .zahl { text-align: right; }
+.tabelle-huelle { overflow-x: auto; }
+.vorschlag { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 8px 10px; border: 1px dashed var(--wachs); border-radius: var(--r-klein); font-size: 13px; color: var(--schrift); background: var(--blatt); }
+.groessen-folgen { display: flex; flex-wrap: wrap; gap: 6px; }
+
+/* ---------- Eigene Seite ---------- */
+.mitstreiter { display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; gap: 6px 10px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--hoehenlinie); }
+.mitstreiter:last-child { border-bottom: 0; }
+.mitstreiter .avatar { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; font-size: 12px; font-weight: 700; color: var(--auf-signal); background: var(--meer); }
+.mitstreiter .avatar.ich { background: var(--messing); }
+.mitstreiter .avatar.raus { background: var(--schrift-stumm); }
+.mitstreiter .kern { min-width: 0; }
+.mitstreiter .kern small { display: block; font-size: 12px; color: var(--schrift-leise); }
+.mitstreiter .steuer { grid-column: 2 / -1; display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; }
+.mitstreiter .steuer .feld { flex-direction: row; align-items: center; gap: 6px; }
+.mitstreiter .steuer .feld input { width: 58px; height: 30px; }
+.mitstreiter .steuer select { height: 30px; width: auto; max-width: 160px; }
+
+/* ---------- Dialoge ---------- */
+dialog { border: 1px solid var(--grat); border-radius: var(--r); background: var(--feld); color: var(--schrift); padding: 0; width: min(680px, calc(100vw - 24px)); max-height: calc(100dvh - 24px); box-shadow: 0 18px 50px var(--schatten); }
+dialog::backdrop { background: var(--schleier); }
+.dlg { display: flex; flex-direction: column; max-height: calc(100dvh - 26px); }
+.dlg-kopf { display: flex; align-items: center; gap: 10px; padding: 14px 16px; border-bottom: 1px solid var(--hoehenlinie); }
+.dlg-kopf h2 { font-family: var(--f-titel); font-weight: 500; font-size: 21px; margin-right: auto; }
+.dlg-inhalt { padding: 14px 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; }
+.dlg-fuss { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; align-items: center; padding: 12px 16px; border-top: 1px solid var(--hoehenlinie); }
+.dlg-fuss .leise { margin-right: auto; font-size: 13px; }
+.art-wahl { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 6px; }
+.art-wahl button { text-align: left; border: 1px solid var(--grat); border-radius: var(--r-klein); background: var(--blatt); padding: 8px 10px; display: flex; flex-direction: column; gap: 2px; }
+.art-wahl button strong { font-size: 13px; }
+.art-wahl button small { font-size: 11.5px; color: var(--schrift-leise); line-height: 1.3; }
+.art-wahl button[aria-pressed="true"] { border-color: var(--meer); box-shadow: inset 0 0 0 1px var(--meer); background: var(--meer-hauch); }
+.art-wahl button:disabled { opacity: .45; }
+.ziel-karte { border: 1px solid var(--hoehenlinie); border-radius: var(--r-klein); background: var(--blatt); padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; }
+.ziel-karte.aus { opacity: .55; }
+.ziel-karte .ziel-kopf { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; }
+.ziel-karte .ziel-kopf strong { margin-right: auto; }
+.ziel-felder { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; align-items: end; }
+@media (max-width: 520px) { .ziel-felder { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.mit-knopf { display: flex; gap: 4px; }
+.mit-knopf input { flex: 1; }
+.ergebnis { font-size: 13px; padding: 6px 8px; border-radius: var(--r-klein); background: var(--senke); }
+.ergebnis b { font-weight: 700; }
+.herleitung { font-size: 12.5px; color: var(--schrift-leise); display: flex; flex-wrap: wrap; gap: 2px 10px; }
+.vorlagen { display: flex; flex-wrap: wrap; gap: 6px; }
+.vorlagen button { border: 1px solid var(--grat); background: var(--blatt); border-radius: var(--r-klein); padding: 5px 10px; font-size: 13px; }
+.vorlagen button[aria-pressed="true"] { border-color: var(--meer); background: var(--meer-hauch); }
+.stepper { display: inline-flex; align-items: center; border: 1px solid var(--grat); border-radius: var(--r-klein); overflow: hidden; }
+.stepper button { width: 34px; height: 34px; border: 0; background: var(--feld); font-weight: 700; }
+.stepper output { min-width: 34px; text-align: center; font-weight: 600; }
+
+/* ---------- Meldung ---------- */
+.meldung { position: fixed; left: 50%; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); transform: translate(-50%, 20px); background: var(--kueste); color: var(--blatt); padding: 10px 14px; border-radius: var(--r-klein); font-size: 14px; display: flex; gap: 12px; align-items: center; opacity: 0; pointer-events: none; transition: opacity 200ms, transform 200ms; max-width: calc(100vw - 32px); box-shadow: 0 8px 24px var(--schatten); z-index: 5; }
+.meldung.zeigen { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
+.meldung button { background: none; border: 0; color: var(--blatt); text-decoration: underline; font-weight: 600; }
+</style>
+
+<header class="kopf">
+  <div class="kopf-innen">
+    <div class="kopf-titel">
+      <h1>Gefechtslage</h1>
+      <span class="unter">Hohlweg bei Gashok · Alrike und Gefährten gegen den Orktrupp</span>
+    </div>
+    <div class="kopf-takt">
+      <span class="kr" id="kr-anzeige">KR 2</span>
+      <button class="btn-nav" id="btn-phase" type="button">Nächste Phase</button>
+      <button class="btn-nav" id="btn-runde" type="button">Neue Kampfrunde</button>
+    </div>
+    <button class="btn-nav" id="btn-zonen" type="button" aria-pressed="true" title="Optionalregel WdS S. 107 ff.">Trefferzonen</button>
+    <button class="btn-nav" id="btn-thema" type="button">Dunkel</button>
+    <button class="btn-nav" id="btn-reset" type="button">Beispiel zurücksetzen</button>
+    <span class="hinweis-beispiel">ENTWURF · BEISPIELDATEN</span>
+  </div>
+</header>
+
+<div class="ini-band">
+  <div class="ini-innen">
+    <span class="ini-etikett">INI-FOLGE</span>
+    <ol class="ini-leiste" id="ini-leiste" aria-label="Initiativreihenfolge"></ol>
+  </div>
+</div>
+
+<main class="raster">
+  <div class="spalte spalte-links">
+    <section class="blatt" id="blatt-karte" aria-labelledby="h-karte">
+      <div class="blatt-kopf">
+        <h2 id="h-karte">Lage um Alrike</h2>
+        <span class="leise">Ringe = Distanzklassen zu dir, außen Schritt</span>
+        <div class="rechts">
+          <button class="btn btn-primaer btn-klein" type="button" data-aktion="angriff">Angriff</button>
+          <button class="btn btn-sek btn-klein" type="button" data-aktion="neu">+ Gegner</button>
+        </div>
+      </div>
+      <div class="karte-huelle">
+        <svg id="karte" viewBox="0 0 600 600" role="img" aria-label="Lagekarte: Gegner und Gefährten um den eigenen Helden">
+          <g id="k-grund"></g>
+          <g id="k-linien"></g>
+          <g id="k-token"></g>
+          <g id="k-fx"></g>
+        </svg>
+      </div>
+      <div class="karte-legende">
+        <span><i class="punkt" style="background: var(--messing)"></i>du</span>
+        <span><i class="punkt" style="background: var(--meer)"></i>Gefährten</span>
+        <span><i class="punkt" style="background: var(--siegel)"></i>Gegner</span>
+        <span><i class="punkt" style="background: var(--wachs)"></i>kampfunfähig</span>
+        <span><i class="punkt" style="background: var(--schrift-stumm)"></i>tot / nicht dabei</span>
+        <span>Größe der Scheibe = Größenklasse · rote Punkte = Wunden · gestrichelt = bindet</span>
+      </div>
+      <p class="karte-hilfe">Ziehe eine Figur auf einen anderen Ring, um die Distanzklasse zu ändern. Antippen wählt sie aus.</p>
+    </section>
+
+    <section class="blatt" id="blatt-kraefte" aria-labelledby="h-kraefte">
+      <div class="blatt-kopf">
+        <h2 id="h-kraefte">Kräfteverhältnis</h2>
+        <span class="leise">Nur Nahkämpfer zählen</span>
+      </div>
+      <div id="kraefte"></div>
+    </section>
+
+    <section class="blatt" id="blatt-gruppe" aria-labelledby="h-gruppe">
+      <div class="blatt-kopf">
+        <h2 id="h-gruppe">Eure Seite</h2>
+        <span class="leise">aus der Gruppe „Die Gefährten vom Svellt“</span>
+      </div>
+      <div id="gruppe"></div>
+      <p class="quelle">Gefährten kommen automatisch aus der Heldengruppe. Wer nicht im Nahkampf steht, zählt nicht für die Überzahl, bleibt aber in der INI-Folge.</p>
+    </section>
+  </div>
+
+  <div class="spalte spalte-rechts">
+    <section class="blatt" id="blatt-gegner" aria-labelledby="h-gegner">
+      <div class="blatt-kopf">
+        <h2 id="h-gegner">Gegner</h2>
+        <span class="leise" id="gegner-zaehler"></span>
+        <div class="rechts"><button class="btn btn-sek btn-klein" type="button" data-aktion="neu">+ Gegner</button></div>
+      </div>
+      <div class="gegnerliste" id="gegnerliste"></div>
+    </section>
+
+    <section class="blatt" id="blatt-detail" aria-live="polite"></section>
+  </div>
+</main>
+
+<dialog id="dlg-angriff" aria-labelledby="h-angriff"></dialog>
+<dialog id="dlg-neu" aria-labelledby="h-neu"></dialog>
+<div class="meldung" id="meldung" role="status"><span id="meldung-text"></span><button type="button" id="meldung-rueck">Rückgängig</button></div>
+
+<script>
+(() => {
+'use strict';
+
+/* ================= Regeltabellen (Belege im Kommentar) ================= */
+// Zielgröße Fernkampf: WdS S. 97 / Basis S. 286. Scheibenradius nur Darstellung.
+const GR = {
+  winzig:    { label: 'winzig',     r: 8,  fk: 8,  bsp: 'Maus, Kröte' },
+  sehrklein: { label: 'sehr klein', r: 10, fk: 6,  bsp: 'Katze, Rabe' },
+  klein:     { label: 'klein',      r: 13, fk: 4,  bsp: 'Wolf, Reh' },
+  mittel:    { label: 'mittel',     r: 17, fk: 2,  bsp: 'Mensch, Ork' },
+  gross:     { label: 'groß',       r: 23, fk: 0,  bsp: 'Pferd, Oger, Troll' },
+  sehrgross: { label: 'sehr groß',  r: 31, fk: -2, bsp: 'Drache, Riese' },
+};
+const GR_REIHE = Object.keys(GR);
+const DKS = ['H', 'N', 'S', 'P'];
+const DK_NAME = { H: 'Handgemenge', N: 'Nahkampf', S: 'Stangenwaffe', P: 'Pike' };
+const BAND = { H: [36, 72], N: [72, 116], S: [116, 160], P: [160, 204] };
+const FERN_R = [204, 284], FERN_S = [5, 60];
+// Trefferzonen WdS S. 108 (Zweibeiner), S. 97 (Vierbeiner, nur Verteilung)
+const ZONEN = {
+  zweibeiner: {
+    kopf:       { label: 'Kopf',         eff: 'MU, KL, IN, INI-Basis −2, INI −2W6', drei: '+2W6 SP, bewusstlos, Blutverlust' },
+    brust:      { label: 'Brust',        eff: 'AT, PA, KO, KK −1; +1W6 SP', drei: 'bewusstlos, Blutverlust' },
+    schwertarm: { label: 'Schwertarm',   eff: 'AT, PA, KK, FF −2 mit diesem Arm', drei: 'Arm handlungsunfähig' },
+    schildarm:  { label: 'Schildarm',    eff: 'AT, PA, KK, FF −2 mit diesem Arm', drei: 'Arm handlungsunfähig' },
+    bauch:      { label: 'Bauch',        eff: 'AT, PA, KO, KK, GS, INI-Basis −1; +1W6 SP', drei: 'bewusstlos, Blutverlust' },
+    beinL:      { label: 'linkes Bein',  eff: 'AT, PA, GE, INI-Basis −2; GS −1', drei: 'Sturz, kampfunfähig' },
+    beinR:      { label: 'rechtes Bein', eff: 'AT, PA, GE, INI-Basis −2; GS −1', drei: 'Sturz, kampfunfähig' },
+  },
+  vierbeiner: {
+    kopf:    { label: 'Kopf',    eff: 'Wirkung nach Meisterentscheid', drei: 'Meisterentscheid' },
+    rumpf:   { label: 'Rumpf',   eff: 'Wirkung nach Meisterentscheid', drei: 'Meisterentscheid' },
+    bein:    { label: 'Bein',    eff: 'Wirkung nach Meisterentscheid', drei: 'Meisterentscheid' },
+    schwanz: { label: 'Schwanz', eff: 'Wirkung nach Meisterentscheid', drei: 'Meisterentscheid' },
+  },
+};
+function zoneAusWurf(w, typ) {
+  if (typ === 'vierbeiner') return w <= 8 ? 'rumpf' : w <= 16 ? 'bein' : w <= 19 ? 'kopf' : 'schwanz';
+  if (w >= 19) return 'kopf';
+  if (w >= 15) return 'brust';
+  if (w >= 9) return w % 2 ? 'schildarm' : 'schwertarm';
+  if (w >= 7) return 'bauch';
+  return w % 2 ? 'beinL' : 'beinR';
+}
+const STATUS = { kaempft: 'kämpft', kampfunfaehig: 'kampfunfähig', tot: 'tot', geflohen: 'geflohen' };
+
+/* ================= Beispielzustand ================= */
+function beispiel() {
+  return {
+    kr: 2, phase: 0, zonen: true, konzentration: null, gewaehlt: 'ork1',
+    wir: [
+      { id: 'ich', name: 'Alrike', rolle: 'Kriegerin · Schwert, Schild', ich: true, modus: 'nah', ini: 13, dk: 'N', at: 15, tp: [1, 4], ziel: 'ork1', w: 0, r: 0 },
+      { id: 'bosper', name: 'Bosper', rolle: 'Söldner · Hellebarde', modus: 'nah', ini: 11, dk: 'S', at: 14, tp: [1, 5], ziel: 'oger', w: 205, r: 120 },
+      { id: 'yasmina', name: 'Yasmina', rolle: 'Jägerin · Kurzbogen', modus: 'fern', ini: 12, dk: 'N', at: 12, tp: [1, 4], ziel: 'oger', w: 150, r: 236 },
+      { id: 'haldor', name: 'Haldor', rolle: 'Magier · am Wagen', modus: 'raus', ini: 9, dk: 'N', at: 8, tp: [1, 1], ziel: null, w: 112, r: 268 },
+    ],
+    gegner: [
+      { id: 'anf', name: 'Ork-Anführer', typ: 'zweibeiner', gr: 'mittel', ini: 13, lep: 34, rs: 4, ko: 15, lage: { dk: 'N' }, w: -32, ziel: 'ich', status: 'kaempft',
+        treffer: [{ id: 't1', kr: 1, von: 'Alrike', tp: 9, zone: 'brust' }] },
+      { id: 'ork1', name: 'Ork 1', typ: 'zweibeiner', gr: 'mittel', ini: 10, lep: null, rs: 3, ko: 13, lage: { dk: 'N' }, w: 24, ziel: 'ich', status: 'kaempft',
+        treffer: [{ id: 't2', kr: 1, von: 'Alrike', tp: 14, zone: 'schwertarm' }, { id: 't3', kr: 2, von: 'Alrike', tp: 6, zone: 'beinL' }] },
+      { id: 'wolf', name: 'Steppenwolf', typ: 'vierbeiner', gr: 'klein', ini: 14, lep: 24, rs: 1, ko: 11, lage: { dk: 'H' }, w: 75, ziel: 'ich', status: 'kaempft',
+        treffer: [{ id: 't4', kr: 1, von: 'Alrike', tp: 10, zone: 'rumpf' }, { id: 't5', kr: 2, von: 'Bosper', tp: 9, zone: 'bein' }] },
+      { id: 'ork2', name: 'Ork 2', typ: 'zweibeiner', gr: 'mittel', ini: 9, lep: null, rs: null, ko: null, lage: { dk: 'P' }, w: 170, ziel: 'bosper', status: 'kaempft',
+        treffer: [{ id: 't6', kr: 2, von: 'Bosper', tp: 11, zone: 'bauch', wunden: 1 }] },
+      { id: 'oger', name: 'Oger', typ: 'zweibeiner', gr: 'gross', ini: 7, lep: 50, rs: 3, ko: 20, lage: { dk: 'P' }, w: 222, ziel: 'bosper', status: 'kaempft',
+        treffer: [{ id: 't7', kr: 1, von: 'Yasmina', tp: 12, zone: 'brust' }] },
+      { id: 'ork3', name: 'Ork 3', typ: 'zweibeiner', gr: 'mittel', ini: 8, lep: 28, rs: 3, ko: 12, lage: { dk: 'S' }, w: -88, ziel: 'ich', status: 'tot',
+        treffer: [{ id: 't8', kr: 1, von: 'Alrike', tp: 19, zone: 'brust' }, { id: 't9', kr: 2, von: 'Alrike', tp: 16, zone: 'kopf' }] },
+      { id: 'gob', name: 'Goblin-Späher', typ: 'zweibeiner', gr: 'klein', ini: 11, lep: null, rs: 1, ko: null, lage: { schritt: 48 }, w: -140, ziel: null, status: 'geflohen',
+        treffer: [{ id: 't10', kr: 1, von: 'Yasmina', tp: 7, zone: 'beinR' }] },
+    ],
+    neuZaehler: 11,
+  };
+}
+let S = beispiel();
+let rueckgaengig = null;
+
+/* ================= Hilfen ================= */
+const $ = (sel, el = document) => el.querySelector(sel);
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const w20 = () => 1 + Math.floor(Math.random() * 20);
+const w6 = () => 1 + Math.floor(Math.random() * 6);
+const kuerzel = (n) => { const t = n.split(/[\s-]+/).filter(Boolean); return (t.length > 1 ? t[0][0] + (t[t.length - 1].match(/\d+/)?.[0] ?? t[t.length - 1][0]) : n.slice(0, 2)).toUpperCase(); };
+const kopie = (o) => JSON.parse(JSON.stringify(o));
+const gegner = (id) => S.gegner.find((g) => g.id === id);
+const wir = (id) => S.wir.find((k) => k.id === id);
+const ich = () => S.wir.find((k) => k.ich);
+const nameVon = (id) => (gegner(id) || wir(id))?.name ?? '—';
+const aktiv = (g) => g.status === 'kaempft';
+const imNahkampf = (g) => !!g.lage.dk;
+function merken(text) { rueckgaengig = kopie(S); return text; }
+
+/* ================= Regelrechnung (im Entwurf vereinfacht) ================= */
+function schwellen(g) { return g.ko == null ? null : [Math.round(g.ko / 2), g.ko, Math.round(g.ko * 1.5)]; } // WdS S. 57
+function sp(g, t) { return t.direkt ? t.tp : g.rs == null ? null : Math.max(0, t.tp - g.rs); } // WdS S. 56
+function wundenAus(g, t) {
+  const s = sp(g, t), ws = schwellen(g);
+  if (s != null && ws) return { n: s > ws[2] ? 3 : s > ws[1] ? 2 : s > ws[0] ? 1 : 0, auto: true };
+  return { n: t.wunden ?? 0, auto: false };
+}
+function wundenNachZone(g) {
+  const z = {};
+  for (const t of g.treffer) { const n = wundenAus(g, t).n; if (!n) continue; const k = S.zonen ? (t.zone || 'ohne') : 'ohne'; z[k] = Math.min(3, (z[k] || 0) + n); } // max. 3 je Zone, WdS S. 109
+  return z;
+}
+const wundenGesamt = (g) => Object.values(wundenNachZone(g)).reduce((a, b) => a + b, 0);
+function schaden(g) {
+  let spSumme = 0, tpOffen = 0;
+  for (const t of g.treffer) { const s = sp(g, t); if (s == null) tpOffen += t.tp; else spSumme += s; }
+  return { sp: spSumme, tpOffen, lepRest: g.lep != null && tpOffen === 0 ? g.lep - spSumme : null };
+}
+function zaehlt(g) { return aktiv(g) && imNahkampf(g) && g.gr !== 'sehrgross'; } // WdS S. 114: sehr große Wesen ohne Überzahlwirkung
+function nahkaempferWir() { return S.wir.filter((k) => k.modus === 'nah'); }
+function ueberzahl() {
+  const a = nahkaempferWir().length, b = S.gegner.filter(zaehlt).length;
+  return { wir: a, sie: b, bonusWir: Math.min(4, Math.max(0, a - b)), bonusSie: Math.min(4, Math.max(0, b - a)) }; // WdS S. 81, max. +4
+}
+function gegnerAuf(id) { return S.gegner.filter((g) => zaehlt(g) && g.ziel === id); }
+function verteidigerlage(id) {
+  const n = gegnerAuf(id).length, kon = id === ich().id ? S.konzentration : null;
+  const extra = Math.max(0, n - 1);
+  return { n, pa: kon ? 0 : -Math.min(2, extra), aus: kon ? 0 : -2 * Math.min(2, extra), ruecken: Math.max(0, n - 3), atGegner: n >= 2 ? 1 : 0, kon };
+}
+function unsereAufGegner(g) { return S.wir.filter((k) => k.modus === 'nah' && k.ziel === g.id).length; }
+function dkFolge(meine, g) { // WdS S. 80
+  if (!g.lage.dk) return { text: 'außer Reichweite', at: null, pa: null, ok: false };
+  const d = DKS.indexOf(g.lage.dk) - DKS.indexOf(meine);
+  if (d === 0) return { text: 'ideale DK', at: 0, pa: 0, ok: true };
+  if (d === 1) return { text: 'Waffe zu kurz: AT −6', at: -6, pa: 0, ok: true };
+  if (d >= 2) return { text: 'zu weit: AT unmöglich', at: null, pa: 0, ok: false };
+  if (d === -1) return { text: 'unterlaufen: AT/PA −6', at: -6, pa: -6, ok: true };
+  return { text: 'zu nah: AT/PA unmöglich', at: null, pa: null, ok: false };
+}
+function iniAnzeige(k, seite) {
+  const u = ueberzahl();
+  if (seite === 'sie') return { wert: k.ini + (aktiv(k) ? u.bonusSie : 0) - 2 * wundenGesamt(k), bonus: aktiv(k) ? u.bonusSie : 0, wunden: wundenGesamt(k) };
+  return { wert: k.ini + (k.modus !== 'raus' ? u.bonusWir : 0), bonus: k.modus !== 'raus' ? u.bonusWir : 0, wunden: 0 };
+}
+function iniFolge() {
+  const alle = [
+    ...S.wir.map((k) => ({ id: k.id, name: k.name, seite: 'wir', aktiv: k.modus !== 'raus', ...iniAnzeige(k, 'wir'), basis: k.ini, ich: !!k.ich })),
+    ...S.gegner.map((g) => ({ id: g.id, name: g.name, seite: 'sie', aktiv: aktiv(g), ...iniAnzeige(g, 'sie'), basis: g.ini, status: g.status })),
+  ];
+  const akt = alle.filter((e) => e.aktiv).sort((a, b) => b.wert - a.wert || (a.seite === 'wir' ? -1 : 1));
+  return { akt, inaktiv: alle.filter((e) => !e.aktiv) };
+}
+function statusVorschlag(g) { // Basis S. 139, WdS S. 114
+  if (g.status !== 'kaempft') return null;
+  const d = schaden(g);
+  if (d.lepRest == null) return null;
+  if (g.ko != null && d.lepRest < -g.ko) return { status: 'tot', text: `LeP ${d.lepRest} liegt unter −KO: tot.` };
+  if (d.lepRest <= 0) return { status: 'kampfunfaehig', text: `LeP ${d.lepRest}: lebensbedrohlich, bewusstlos.` };
+  if (g.typ === 'vierbeiner' && d.lepRest < g.lep / 3) return { status: 'geflohen', text: `Nur noch ${d.lepRest} von ${g.lep} LeP: Tiere fliehen meist unter einem Drittel.` };
+  if (d.lepRest <= 5) return { status: 'kampfunfaehig', text: `${d.lepRest} LeP: ab 5 LeP kampfunfähig, sofern nicht zäh oder eisern.` };
+  return null;
+}
+
+/* ================= Karte ================= */
+const NS = 'http://www.w3.org/2000/svg';
+const MX = 300, MY = 300;
+function radiusVon(lage) {
+  if (lage.dk) { const [a, b] = BAND[lage.dk]; return (a + b) / 2; }
+  const s = Math.max(FERN_S[0], Math.min(FERN_S[1], lage.schritt));
+  return FERN_R[0] + 14 + (s - FERN_S[0]) / (FERN_S[1] - FERN_S[0]) * (FERN_R[1] - FERN_R[0] - 14);
+}
+function lageVonRadius(r) {
+  for (const dk of DKS) if (r < BAND[dk][1]) return { dk };
+  const s = FERN_S[0] + (Math.min(r, FERN_R[1]) - FERN_R[0] - 14) / (FERN_R[1] - FERN_R[0] - 14) * (FERN_S[1] - FERN_S[0]);
+  return { schritt: Math.max(FERN_S[0], Math.round(s)) };
+}
+const pol = (w, r) => [MX + r * Math.sin(w * Math.PI / 180), MY - r * Math.cos(w * Math.PI / 180)];
+function posVon(id) {
+  const g = gegner(id);
+  if (g) return pol(g.w, g.status === 'geflohen' ? 292 : radiusVon(g.lage));
+  const k = wir(id); if (!k) return [MX, MY];
+  return k.ich ? [MX, MY] : pol(k.w, k.r);
+}
+function grundZeichnen() {
+  const meine = ich().dk; const [a, b] = BAND[meine];
+  let h = `<circle cx="${MX}" cy="${MY}" r="296" style="fill: var(--blatt); stroke: var(--hoehenlinie)"/>`;
+  for (let i = 0; i < 16; i++) { const [x, y] = pol(i * 22.5, 296), [x0, y0] = pol(i * 22.5, 30); h += `<line class="windrose" x1="${x0}" y1="${y0}" x2="${x}" y2="${y}"/>`; }
+  h += `<circle class="band-reichweite" cx="${MX}" cy="${MY}" r="${(a + b) / 2}" style="stroke-width:${b - a}px"/>`;
+  for (const dk of DKS) h += `<circle class="ring dk" cx="${MX}" cy="${MY}" r="${BAND[dk][1]}"/>`;
+  for (const s of [15, 30, 45]) h += `<circle class="ring fern" cx="${MX}" cy="${MY}" r="${radiusVon({ schritt: s })}"/>`;
+  for (const dk of DKS) { const m = (BAND[dk][0] + BAND[dk][1]) / 2; h += `<text class="ringlabel ${dk === meine ? 'reich' : ''}" x="${MX + 4}" y="${MY + m + 4}">${dk}</text>`; }
+  for (const s of [15, 30, 45]) h += `<text class="ringlabel" x="${MX + 4}" y="${MY + radiusVon({ schritt: s }) + 4}">${s} Schritt</text>`;
+  h += `<text class="ringlabel" x="${MX - 292}" y="${MY - 280}">Fernkampf</text>`;
+  $('#k-grund').innerHTML = h;
+}
+function linienZeichnen() {
+  let h = '';
+  for (const g of S.gegner) {
+    if (!aktiv(g) || !g.ziel) continue;
+    const [x1, y1] = posVon(g.id), [x2, y2] = posVon(g.ziel);
+    h += `<line class="linie sie" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/>`;
+  }
+  for (const k of S.wir) {
+    if (k.modus === 'raus' || !k.ziel || !gegner(k.ziel) || !aktiv(gegner(k.ziel))) continue;
+    const [x1, y1] = posVon(k.id), [x2, y2] = posVon(k.ziel);
+    h += `<line class="linie ${k.modus === 'fern' ? 'schuss' : 'wir'}" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/>`;
+  }
+  $('#k-linien').innerHTML = h;
+}
+function tokenInhalt(name, r, ini, wunden, mitIni = true) {
+  let pips = '';
+  for (let i = 0; i < Math.min(wunden, 6); i++) { const [px, py] = [Math.sin((200 + i * 26) * Math.PI / 180) * (r + 1), -Math.cos((200 + i * 26) * Math.PI / 180) * (r + 1)]; pips += `<circle class="wund-pip" cx="${px}" cy="${py}" r="3.4"/>`; }
+  const k = r * .42;
+  return `<circle class="auswahl" r="${r + 6}"/>
+    <g class="koerper"><circle class="scheibe" r="${r}"/><text class="kuerzel" y="0.5" style="font-size:${Math.max(9, Math.min(14, r * .62))}px">${esc(kuerzel(name))}</text>
+    <path class="kreuz" d="M ${-k} ${-k} L ${k} ${k} M ${k} ${-k} L ${-k} ${k}"/></g>
+    ${pips}
+    ${mitIni ? `<g class="ini-plakette" transform="translate(${r * .78} ${-r * .82})"><rect x="-10" y="-8" width="20" height="16" rx="3"/><text>${ini}</text></g>` : ''}
+    <text class="name" y="${r + 14}">${esc(name)}</text>`;
+}
+function tokenZeichnen() {
+  const ebene = $('#k-token');
+  const vorhanden = new Set();
+  const eintraege = [
+    ...S.wir.map((k) => ({ id: k.id, name: k.name, r: k.ich ? 19 : 16, cls: `wir ${k.ich ? 'ich' : ''} ${k.modus === 'raus' ? 'raus' : ''}`, ini: iniAnzeige(k, 'wir').wert, wunden: 0, mitIni: k.modus !== 'raus' })),
+    ...S.gegner.map((g) => ({ id: g.id, name: g.name, r: GR[g.gr].r, cls: `sie st-${g.status} ${aktiv(g) && !dkFolge(ich().dk, g).ok ? 'reichweite-aus' : ''}`, ini: iniAnzeige(g, 'sie').wert, wunden: wundenGesamt(g), mitIni: aktiv(g) })),
+  ];
+  for (const e of eintraege) {
+    vorhanden.add(e.id);
+    let el = ebene.querySelector(`[data-id="${e.id}"]`);
+    const [x, y] = posVon(e.id);
+    if (!el) {
+      el = document.createElementNS(NS, 'g');
+      el.dataset.id = e.id; el.setAttribute('tabindex', '0'); el.setAttribute('role', 'button');
+      const [sx, sy] = pol(gegner(e.id)?.w ?? 0, 330);
+      el.style.transform = `translate(${sx}px, ${sy}px)`; el.style.opacity = '0';
+      ebene.appendChild(el);
+      el.getBoundingClientRect();
+      requestAnimationFrame(() => { el.style.opacity = ''; });
+      tokenEreignisse(el);
+    }
+    const sig = `${e.name}|${e.r}|${e.ini}|${e.wunden}|${e.mitIni}`;
+    if (el.dataset.sig !== sig) { el.innerHTML = tokenInhalt(e.name, e.r, e.ini, e.wunden, e.mitIni); el.dataset.sig = sig; }
+    el.setAttribute('class', `token ${e.cls} ${S.gewaehlt === e.id ? 'gewaehlt' : ''}`);
+    el.setAttribute('aria-label', `${e.name}, INI ${e.ini}`);
+    if (!el.classList.contains('zieht')) el.style.transform = `translate(${x}px, ${y}px)`;
+  }
+  for (const el of [...ebene.children]) if (!vorhanden.has(el.dataset.id)) el.remove();
+  // Gewählte und kleine Figuren nach vorn, große nach hinten
+  // Nur umsortieren, wenn sich die Reihenfolge ändert: Verschieben bricht laufende Übergänge ab.
+  const radius = (el) => (gegner(el.dataset.id) ? GR[gegner(el.dataset.id).gr].r : 16);
+  const ist = [...ebene.children], soll = [...ist].sort((a, b) => radius(b) - radius(a));
+  if (soll.some((el, i) => el !== ist[i])) soll.forEach((el) => ebene.appendChild(el));
+}
+function svgPunkt(ev) {
+  const svg = $('#karte'), p = svg.createSVGPoint(); p.x = ev.clientX; p.y = ev.clientY;
+  return p.matrixTransform(svg.getScreenCTM().inverse());
+}
+function tokenEreignisse(el) {
+  let start = null, bewegt = false;
+  el.addEventListener('pointerdown', (ev) => {
+    const id = el.dataset.id; if (wir(id)?.ich) { waehle(id); return; }
+    start = svgPunkt(ev); bewegt = false; el.setPointerCapture(ev.pointerId);
+  });
+  el.addEventListener('pointermove', (ev) => {
+    if (!start) return;
+    const p = svgPunkt(ev);
+    if (!bewegt && Math.hypot(p.x - start.x, p.y - start.y) < 5) return;
+    bewegt = true; el.classList.add('zieht');
+    el.style.transform = `translate(${p.x}px, ${p.y}px)`;
+  });
+  const ende = (ev) => {
+    if (!start) return;
+    const id = el.dataset.id; start = null; el.classList.remove('zieht');
+    if (!bewegt) { waehle(id); return; }
+    const p = svgPunkt(ev), dx = p.x - MX, dy = p.y - MY;
+    const r = Math.hypot(dx, dy), w = Math.atan2(dx, -dy) * 180 / Math.PI;
+    const g = gegner(id), k = wir(id);
+    merken();
+    if (g) {
+      const alt = g.lage.dk || `${g.lage.schritt} Schritt`;
+      g.w = Math.round(w); g.lage = lageVonRadius(r);
+      if (g.status === 'geflohen' && r < FERN_R[1]) g.status = 'kaempft';
+      const neu = g.lage.dk ? `DK ${g.lage.dk}` : `${g.lage.schritt} Schritt`;
+      S.gewaehlt = id; alles(); meldung(`${g.name}: ${alt.length < 3 ? 'DK ' + alt : alt} → ${neu}`);
+    } else if (k) { k.w = Math.round(w); k.r = Math.max(70, Math.min(284, r)); alles(); }
+  };
+  el.addEventListener('pointerup', ende);
+  el.addEventListener('pointercancel', () => { start = null; el.classList.remove('zieht'); alles(); });
+  el.addEventListener('keydown', (ev) => {
+    const g = gegner(el.dataset.id);
+    if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); waehle(el.dataset.id); }
+    if (g && (ev.key === 'ArrowUp' || ev.key === 'ArrowDown')) {
+      ev.preventDefault(); merken();
+      const stufen = [...DKS, 'F'], i = g.lage.dk ? DKS.indexOf(g.lage.dk) : 4;
+      const j = Math.max(0, Math.min(4, i + (ev.key === 'ArrowUp' ? 1 : -1)));
+      g.lage = stufen[j] === 'F' ? { schritt: g.lage.schritt ?? 10 } : { dk: stufen[j] };
+      alles();
+    }
+  });
+}
+function trefferAnimation(id, text, wunden) {
+  const el = $(`#k-token [data-id="${id}"]`); if (!el) return;
+  el.classList.remove('getroffen'); void el.getBoundingClientRect(); el.classList.add('getroffen');
+  const [x, y] = posVon(id), fx = $('#k-fx'), r = gegner(id) ? GR[gegner(id).gr].r : 16;
+  const ring = document.createElementNS(NS, 'circle');
+  ring.setAttribute('class', 'blitz'); ring.setAttribute('cx', x); ring.setAttribute('cy', y); ring.setAttribute('r', r + 4);
+  const t = document.createElementNS(NS, 'text');
+  t.setAttribute('class', 'schwebe'); t.setAttribute('x', x); t.setAttribute('y', y - r - 8); t.textContent = text;
+  fx.append(ring, t);
+  if (wunden) { const t2 = document.createElementNS(NS, 'text'); t2.setAttribute('class', 'schwebe wunde'); t2.setAttribute('x', x); t2.setAttribute('y', y - r - 24); t2.textContent = wunden === 1 ? 'Wunde' : `${wunden} Wunden`; fx.append(t2); setTimeout(() => t2.remove(), 1400); }
+  setTimeout(() => { ring.remove(); t.remove(); }, 1400);
+}
+
+/* ================= INI-Band ================= */
+function iniZeichnen() {
+  const { akt, inaktiv } = iniFolge();
+  if (S.phase >= akt.length) S.phase = 0;
+  $('#ini-leiste').innerHTML = [
+    ...akt.map((e, i) => `<li class="ini-chip ${e.seite} ${i === S.phase ? 'dran' : ''} ${i < S.phase ? 'vorbei' : ''}" data-id="${e.id}" title="${esc(e.name)}: INI ${e.basis} erfasst${e.bonus ? ` · +${e.bonus} Überzahl` : ''}${e.wunden ? ` · −${2 * e.wunden} aus ${e.wunden} Wunde${e.wunden > 1 ? 'n' : ''}` : ''}">
+      <span class="zahl">${e.wert}</span><span>${esc(e.name)}${e.ich ? ' (du)' : ''}${e.bonus || e.wunden ? `<br><span class="bonus">${e.bonus ? `+${e.bonus} Überzahl` : ''}${e.bonus && e.wunden ? ' · ' : ''}${e.wunden ? `−${2 * e.wunden} Wunden` : ''}</span>` : ''}</span></li>`),
+    ...inaktiv.map((e) => `<li class="ini-chip ${e.seite} raus" data-id="${e.id}"><span class="zahl">${e.basis}</span><span>${esc(e.name)}</span></li>`),
+  ].join('');
+  $('#kr-anzeige').textContent = `KR ${S.kr}`;
+  const liste = $('#ini-leiste'), dran = $('#ini-leiste .dran');
+  if (dran && (dran.offsetLeft < liste.scrollLeft || dran.offsetLeft + dran.offsetWidth > liste.scrollLeft + liste.clientWidth)) liste.scrollTo({ left: Math.max(0, dran.offsetLeft - 24), behavior: 'smooth' });
+}
+
+/* ================= Kräfteverhältnis ================= */
+function kraefteZeichnen() {
+  const u = ueberzahl(), gesamt = Math.max(1, u.wir + u.sie);
+  const nicht = S.gegner.filter((g) => !zaehlt(g)).map((g) => `${g.name} (${g.status !== 'kaempft' ? STATUS[g.status] : !imNahkampf(g) ? 'Fernkampf-Abstand' : 'sehr groß'})`);
+  const nichtWir = S.wir.filter((k) => k.modus !== 'nah').map((k) => `${k.name} (${k.modus === 'fern' ? 'Fernkampf' : 'nicht dabei'})`);
+  const fig = (n, c) => Array.from({ length: n }, () => `<i style="background:var(${c})"></i>`).join('');
+  let satz;
+  if (u.bonusSie) satz = `Die Gegner sind <b>${u.sie - u.wir} in der Überzahl</b>. Jeder kämpfende Gegner erhält <b>INI +${u.bonusSie}</b>${u.sie - u.wir > 4 ? ' (Höchstwert 4)' : ''}.`;
+  else if (u.bonusWir) satz = `Ihr seid <b>${u.wir - u.sie} in der Überzahl</b>. Jeder eurer Kämpfer erhält <b>INI +${u.bonusWir}</b>${u.wir - u.sie > 4 ? ' (Höchstwert 4)' : ''}.`;
+  else satz = 'Gleichstand: <b>kein Überzahlbonus</b> auf die Initiative.';
+  const folgen = [];
+  for (const k of nahkaempferWir()) {
+    const l = verteidigerlage(k.id); if (l.n === 0) continue;
+    const namen = gegnerAuf(k.id).map((g) => g.name).join(', ');
+    const werte = [];
+    if (l.kon) werte.push('<span class="marke ok">konzentriert</span>');
+    else if (l.n > 1) werte.push(`<span class="marke gefahr">PA ${l.pa}</span>`, `<span class="marke gefahr">Ausweichen ${l.aus}</span>`);
+    else werte.push('<span class="marke">Zweikampf</span>');
+    if (l.atGegner) werte.push(`<span class="marke gefahr">Gegner-AT +1</span>`);
+    if (l.ruecken) werte.push(`<span class="marke voll">${l.ruecken} im Rücken</span>`);
+    let text = `${l.n === 1 ? 'Bindet' : 'Binden'}: ${esc(namen)}.`;
+    if (l.kon) text += ` Konzentriert auf ${esc(nameVon(l.kon))}: gegen sie kein Malus, die übrigen kann ${esc(k.name)} weder parieren noch angreifen.`;
+    else if (l.n > 1) text += ` Nur eine Parade pro KR; ${l.ruecken ? 'ein vierter Gegner steht im Rücken und ist nicht parierbar.' : 'ab dem vierten Gegner steht einer im Rücken.'}`;
+    let kon = '';
+    if (k.ich && l.n > 1) kon = `<label class="check" style="grid-column:1/-1"><input type="checkbox" id="kon-an" ${l.kon ? 'checked' : ''}> Zu Beginn der KR auf einen Gegner konzentrieren</label>
+      ${l.kon ? `<select class="klein" id="kon-ziel" style="grid-column:1/-1;max-width:240px">${gegnerAuf(k.id).map((g) => `<option value="${g.id}" ${g.id === l.kon ? 'selected' : ''}>${esc(g.name)}</option>`).join('')}</select>` : ''}`;
+    folgen.push(`<div class="folge ${l.n > 1 && !l.kon ? 'druck' : ''}"><h3>${k.ich ? 'Gegen dich' : 'Gegen ' + esc(k.name)} · ${l.n} Gegner</h3><div class="werte">${werte.join('')}</div><p>${text}</p>${kon}</div>`);
+  }
+  for (const g of S.gegner.filter(zaehlt)) {
+    const n = unsereAufGegner(g);
+    if (n >= 2) folgen.push(`<div class="folge vorteil"><h3>${esc(g.name)} gegen ${n} von euch</h3><div class="werte"><span class="marke ok">eure AT +1</span><span class="marke ok">${esc(g.name)}: PA −${Math.min(2, n - 1)}</span></div><p>Wer in der Überzahl angreift, erhält AT +1.</p></div>`);
+  }
+  for (const k of S.wir.filter((k) => k.modus === 'fern' && k.ziel && gegner(k.ziel) && aktiv(gegner(k.ziel)))) {
+    const g = gegner(k.ziel);
+    const getuemmel = S.wir.filter((m) => m.modus === 'nah' && g.ziel === m.id).length + S.gegner.filter((x) => x !== g && zaehlt(x) && x.ziel === g.ziel && g.ziel).length;
+    const proKopf = g.lage.dk === 'H' ? 2 : 3;
+    const werte = [`<span class="marke">Zielgröße ${GR[g.gr].fk >= 0 ? '+' : ''}${GR[g.gr].fk}</span>`];
+    if (g.lage.dk && getuemmel) werte.push(`<span class="marke warn">Getümmel +${getuemmel * proKopf}</span>`);
+    folgen.push(`<div class="folge"><h3>${esc(k.name)} schießt auf ${esc(g.name)}</h3><div class="werte">${werte.join('')}</div><p>${g.lage.dk ? `${esc(g.name)} steht im Nahkampf (DK ${g.lage.dk}) mit ${getuemmel} weiteren Kämpfer${getuemmel === 1 ? '' : 'n'}: +${proKopf} je Kämpfer, kein Zuschlag für Bewegung.` : 'Ziel steht frei.'} Entfernung zählt nach Waffe.</p></div>`);
+  }
+  $('#kraefte').innerHTML = `
+    <div class="waage">
+      <div class="waage-seite wir"><strong>Ihr</strong><span class="zahl">${u.wir}</span><span class="figuren">${fig(u.wir, '--meer')}</span></div>
+      <div class="waage-balken" aria-hidden="true"><div class="bahn"></div><div class="anteil wir" style="width:${u.wir / gesamt * 100}%"></div><div class="anteil sie" style="width:${u.sie / gesamt * 100}%"></div><div class="mitte"></div></div>
+      <div class="waage-seite sie"><strong>Gegner</strong><span class="zahl">${u.sie}</span><span class="figuren">${fig(u.sie, '--siegel')}</span></div>
+    </div>
+    <p class="lagesatz">${satz}</p>
+    <div class="folgen">${folgen.join('') || '<p class="leise">Niemand ist von mehreren Gegnern gebunden.</p>'}</div>
+    ${nicht.length || nichtWir.length ? `<p class="nicht-gezaehlt">Nicht gezählt: ${esc([...nichtWir, ...nicht].join(' · '))}</p>` : ''}
+    <p class="quelle">WdS S. 81 (optional: Kämpfe mit mehreren Beteiligten), S. 114 (sehr große Wesen ohne Überzahl), S. 97 (Kampfgetümmel)</p>`;
+  const an = $('#kon-an');
+  if (an) an.addEventListener('change', () => { merken(); S.konzentration = an.checked ? gegnerAuf(ich().id)[0]?.id ?? null : null; alles(); });
+  const kz = $('#kon-ziel');
+  if (kz) kz.addEventListener('change', () => { S.konzentration = kz.value; alles(); });
+}
+
+/* ================= Gegnerbuch ================= */
+function gegnerZeile(g) {
+  const d = schaden(g), ini = iniAnzeige(g, 'sie'), wz = wundenGesamt(g);
+  const lage = g.lage.dk ? `DK ${g.lage.dk}` : `${g.lage.schritt} Schritt`;
+  const df = dkFolge(ich().dk, g);
+  let schadenText;
+  if (d.lepRest != null) schadenText = `LeP ${d.lepRest}/${g.lep}`;
+  else if (d.tpOffen) schadenText = `${d.sp ? d.sp + ' SP + ' : ''}${d.tpOffen} TP (RS ?)`;
+  else schadenText = d.sp ? `${d.sp} SP verursacht` : 'unverletzt';
+  const balken = d.lepRest != null ? `<div class="lep-balken"><i style="width:${Math.max(0, d.lepRest) / g.lep * 100}%"></i></div>` : `<div class="lep-balken unbekannt" title="LeP unbekannt"></div>`;
+  const marke = g.status === 'kaempft'
+    ? (aktiv(g) && g.lage.dk ? `<span class="marke ${df.ok ? (df.at ? 'warn' : 'ok') : ''}">${df.ok ? (df.at ? 'AT ' + df.at : 'erreichbar') : 'außer Reichweite'}</span>` : '')
+    : `<span class="marke ${g.status === 'tot' ? '' : g.status === 'kampfunfaehig' ? 'warn' : ''}">${STATUS[g.status]}</span>`;
+  return `<button type="button" class="gegner-zeile ${S.gewaehlt === g.id ? 'gewaehlt' : ''} ${aktiv(g) ? '' : 'inaktiv'}" data-id="${g.id}">
+    <span class="ini" title="INI">${aktiv(g) ? ini.wert : '–'}</span>
+    <span class="kern">
+      <span class="titelzeile"><strong>${esc(g.name)}</strong><span class="leise" style="font-size:12px">${GR[g.gr].label}${g.typ === 'vierbeiner' ? ' · Tier' : ''}</span></span>
+      <span class="info"><span>${schadenText}</span><span>RS ${g.rs ?? '?'}</span><span>${lage}</span>${g.ziel && aktiv(g) ? `<span>bindet ${esc(nameVon(g.ziel))}</span>` : ''}</span>
+      ${balken}
+    </span>
+    <span class="rechts">${marke}${wz ? `<span class="wundpips" title="${wz} Wunde${wz > 1 ? 'n' : ''}">${'<i></i>'.repeat(Math.min(wz, 6))}</span>` : ''}</span>
+  </button>`;
+}
+function gegnerZeichnen() {
+  const akt = S.gegner.filter(aktiv), rest = S.gegner.filter((g) => !aktiv(g));
+  const sort = (a, b) => iniAnzeige(b, 'sie').wert - iniAnzeige(a, 'sie').wert;
+  $('#gegnerliste').innerHTML = akt.sort(sort).map(gegnerZeile).join('') + (rest.length ? `<div class="gruppe-trenner">Ausgeschieden</div>${rest.map(gegnerZeile).join('')}` : '');
+  $('#gegner-zaehler').textContent = `${akt.length} kämpfen · ${rest.length} ausgeschieden`;
+  for (const b of $('#gegnerliste').querySelectorAll('.gegner-zeile')) b.addEventListener('click', () => waehle(b.dataset.id));
+}
+
+/* ================= Detailblatt ================= */
+function figurSvg(g) {
+  const z = wundenNachZone(g), cls = (k) => `zone ${z[k] ? 'w' + z[k] : ''}`;
+  if (g.typ === 'vierbeiner') return `<svg class="figur" viewBox="0 0 150 110" aria-label="Trefferzonen Vierbeiner">
+    <path class="${cls('schwanz')}" data-zone="schwanz" d="M 24 44 Q 6 36 4 18 Q 12 30 28 38 Z"/>
+    <rect class="${cls('bein')}" data-zone="bein" x="34" y="62" width="12" height="38" rx="5"/>
+    <rect class="${cls('bein')}" data-zone="bein" x="52" y="62" width="12" height="38" rx="5"/>
+    <rect class="${cls('bein')}" data-zone="bein" x="86" y="62" width="12" height="38" rx="5"/>
+    <rect class="${cls('bein')}" data-zone="bein" x="104" y="62" width="12" height="38" rx="5"/>
+    <ellipse class="${cls('rumpf')}" data-zone="rumpf" cx="74" cy="52" rx="50" ry="20"/>
+    <path class="${cls('kopf')}" data-zone="kopf" d="M 112 40 Q 120 18 138 22 L 148 34 Q 140 44 126 50 Z"/>
+    <text x="74" y="55">Rumpf</text><text x="132" y="36">Kopf</text></svg>`;
+  return `<svg class="figur" viewBox="0 0 150 200" aria-label="Trefferzonen Zweibeiner">
+    <circle class="${cls('kopf')}" data-zone="kopf" cx="75" cy="22" r="16"/>
+    <rect class="${cls('brust')}" data-zone="brust" x="52" y="42" width="46" height="44" rx="6"/>
+    <rect class="${cls('bauch')}" data-zone="bauch" x="54" y="88" width="42" height="26" rx="5"/>
+    <rect class="${cls('schwertarm')}" data-zone="schwertarm" x="28" y="44" width="20" height="74" rx="8"/>
+    <rect class="${cls('schildarm')}" data-zone="schildarm" x="102" y="44" width="20" height="74" rx="8"/>
+    <rect class="${cls('beinR')}" data-zone="beinR" x="54" y="117" width="19" height="78" rx="8"/>
+    <rect class="${cls('beinL')}" data-zone="beinL" x="77" y="117" width="19" height="78" rx="8"/>
+    <text x="38" y="138">Schwert</text><text x="112" y="138">Schild</text><text x="75" y="68">Brust</text><text x="75" y="104">Bauch</text></svg>`;
+}
+function detailZeichnen() {
+  const el = $('#blatt-detail');
+  const g = gegner(S.gewaehlt);
+  if (!g) {
+    const k = wir(S.gewaehlt) || ich();
+    const l = verteidigerlage(k.id);
+    el.innerHTML = `<div class="blatt-kopf"><h2>${esc(k.name)}${k.ich ? ' (du)' : ''}</h2><span class="leise">${esc(k.rolle)}</span></div>
+      <p class="leise">${k.modus === 'raus' ? 'Nicht am Kampf beteiligt.' : `${l.n} Gegner binden ${k.ich ? 'dich' : esc(k.name)}. Waffen-DK ${k.dk}.`} Eigene Werte, Wunden und Proben stehen im Gefecht des Helden; hier geht es nur um die Lage.</p>
+      <p class="leise">Wähle einen Gegner auf der Karte oder in der Liste, um Schaden, Wunden und Status zu pflegen.</p>`;
+    return;
+  }
+  const d = schaden(g), ws = schwellen(g), z = wundenNachZone(g), wz = wundenGesamt(g), vs = statusVorschlag(g), df = dkFolge(ich().dk, g);
+  const zonen = ZONEN[g.typ];
+  const gr = GR[g.gr];
+  let gross;
+  if (d.lepRest != null) gross = `<span class="gross">${d.lepRest}</span><span class="leise">von ${g.lep} LeP übrig · ${d.sp} SP erlitten</span>`;
+  else if (d.tpOffen) gross = `<span class="gross">${d.sp + d.tpOffen}</span><span class="leise">TP verursacht${d.sp ? ` (davon ${d.sp} SP verrechnet)` : ''}, RS unbekannt</span>`;
+  else gross = `<span class="gross">${d.sp}</span><span class="leise">SP verursacht · LeP unbekannt</span>`;
+  const abwehr = g.typ === 'vierbeiner'
+    ? (g.gr === 'gross' ? '<span class="marke warn">Biss/Pranke nur mit Schild parierbar</span>' : g.gr === 'sehrgross' ? '<span class="marke gefahr">Biss/Pranke nicht parierbar</span>' : '<span class="marke">Parade normal</span>')
+    : (g.gr === 'gross' || g.gr === 'sehrgross' ? '<span class="marke warn">Parade: Meisterentscheid</span>' : '<span class="marke">Parade normal</span>');
+  const zonenEintraege = Object.entries(z).map(([k, n]) => {
+    const info = zonen[k];
+    return `<div class="eintrag"><strong>${info ? info.label : 'ohne Zone'}</strong><span class="wundpips">${'<i></i>'.repeat(n)}</span><small>${info ? (n >= 3 ? info.drei : info.eff) : 'je Wunde AT, PA, FK, INI-Basis −2, GE −2, GS −1'}</small></div>`;
+  }).join('');
+  el.innerHTML = `
+    <div class="detail-kopf">
+      <input class="name" id="d-name" value="${esc(g.name)}" aria-label="Name">
+      <div class="seg status" role="group" aria-label="Status">${Object.entries(STATUS).map(([k, v]) => `<button type="button" data-wert="${k}" aria-pressed="${g.status === k}">${v}</button>`).join('')}</div>
+    </div>
+    ${vs ? `<div class="vorschlag"><span>${esc(vs.text)}</span><button class="btn btn-sek btn-klein" type="button" id="d-vorschlag">Als ${STATUS[vs.status]} markieren</button></div>` : ''}
+    <div class="zeile">
+      <button class="btn btn-primaer" type="button" id="d-angriff" ${aktiv(g) ? '' : 'disabled'}>Angriff auf ${esc(g.name)}</button>
+      <button class="btn btn-sek" type="button" id="d-treffer">Treffer eintragen</button>
+      <button class="btn btn-leise" type="button" id="d-kopie">Duplizieren</button>
+      <button class="btn btn-leise" type="button" id="d-weg">Entfernen</button>
+    </div>
+    <div class="detail-teil">
+      <h3>Schaden</h3>
+      <div class="schaden-kopf">${gross}</div>
+      <div class="zeile">${wz ? `<span class="marke gefahr">${wz} Wunde${wz > 1 ? 'n' : ''}: AT/PA/INI −${2 * wz}</span>` : '<span class="marke">keine Wunde</span>'}
+        ${ws ? `<span class="marke">Wundschwellen ${ws.join(' / ')}</span>` : '<span class="marke warn">KO unbekannt: Wunden von Hand</span>'}</div>
+    </div>
+    <div class="detail-teil">
+      <h3>Wunden${S.zonen ? ' nach Trefferzone' : ''}</h3>
+      <div class="koerper-raster">
+        ${S.zonen ? figurSvg(g) : '<div></div>'}
+        <div class="wundliste">${zonenEintraege || '<span class="leise">Noch keine Wunde.</span>'}
+          <span class="quelle">Höchstens 3 Wunden je Zone. Wirkung nach WdS S. 57 und S. 108${g.typ === 'vierbeiner' ? '; für Tiere nennt WdS nur die Verteilung' : ''}.</span></div>
+      </div>
+    </div>
+    <div class="detail-teil">
+      <h3>Werte</h3>
+      <div class="werte-raster">
+        <label class="feld"><span>INI (erfasst)</span><input id="d-ini" type="number" inputmode="numeric" value="${g.ini}"></label>
+        <label class="feld ${g.lep == null ? 'unbekannt' : ''}"><span>LeP gesamt</span><input id="d-lep" type="number" inputmode="numeric" placeholder="unbekannt" value="${g.lep ?? ''}"></label>
+        <label class="feld ${g.rs == null ? 'unbekannt' : ''}"><span>RS</span><input id="d-rs" type="number" inputmode="numeric" placeholder="unbekannt" value="${g.rs ?? ''}"></label>
+        <label class="feld ${g.ko == null ? 'unbekannt' : ''}"><span>KO</span><input id="d-ko" type="number" inputmode="numeric" placeholder="unbekannt" value="${g.ko ?? ''}"></label>
+      </div>
+      <p class="leise" style="font-size:12.5px">Angezeigte INI ${iniAnzeige(g, 'sie').wert} = ${g.ini} erfasst${iniAnzeige(g, 'sie').bonus ? ` + ${iniAnzeige(g, 'sie').bonus} Überzahl` : ''}${wz ? ` − ${2 * wz} aus Wunden` : ''}. Wird der RS nachträglich bekannt, rechnet die Liste alle Treffer neu.</p>
+    </div>
+    <div class="detail-teil">
+      <h3>Größe und Lage</h3>
+      <div class="seg" role="group" aria-label="Größenklasse" id="d-gr">${GR_REIHE.map((k) => `<button type="button" data-wert="${k}" aria-pressed="${g.gr === k}" title="${GR[k].bsp}">${GR[k].label}</button>`).join('')}</div>
+      <div class="groessen-folgen">
+        <span class="marke">Fernkampf ${gr.fk >= 0 ? '+' : ''}${gr.fk}</span>
+        ${g.gr === 'sehrgross' ? '<span class="marke warn">zählt nicht für Überzahl</span>' : '<span class="marke">zählt für Überzahl</span>'}
+        ${abwehr}
+      </div>
+      <div class="zeile">
+        <div class="seg" role="group" aria-label="Körperbau" id="d-typ"><button type="button" data-wert="zweibeiner" aria-pressed="${g.typ === 'zweibeiner'}">Zweibeiner</button><button type="button" data-wert="vierbeiner" aria-pressed="${g.typ === 'vierbeiner'}">Tier</button></div>
+        <div class="seg" role="group" aria-label="Distanzklasse zu dir" id="d-dk">${DKS.map((k) => `<button type="button" data-wert="${k}" aria-pressed="${g.lage.dk === k}" title="${DK_NAME[k]}">${k}</button>`).join('')}<button type="button" data-wert="F" aria-pressed="${!g.lage.dk}">Fern</button></div>
+        ${!g.lage.dk ? `<label class="feld" style="flex-direction:row;align-items:center;gap:6px"><input id="d-schritt" type="number" style="width:70px" value="${g.lage.schritt}"><span>Schritt</span></label>` : ''}
+      </div>
+      <div class="zeile"><label class="feld" style="flex:1 1 200px"><span>Bindet</span><select id="d-ziel"><option value="">niemanden</option>${S.wir.filter((k) => k.modus !== 'raus').map((k) => `<option value="${k.id}" ${g.ziel === k.id ? 'selected' : ''}>${esc(k.name)}${k.ich ? ' (du)' : ''}</option>`).join('')}</select></label>
+        <span class="marke ${df.ok ? (df.at ? 'warn' : 'ok') : ''}" style="align-self:flex-end;margin-bottom:6px">Für dich (DK ${ich().dk}): ${df.text}</span></div>
+      <p class="quelle">Zielgröße WdS S. 97; Distanzklassen S. 80; Paraden gegen große Tiere S. 114. Hausregel „Fortgeschrittene Monsterparade“ (Epische Stufen) erweitert die Parade.</p>
+    </div>
+    <div class="detail-teil">
+      <h3>Treffer (${g.treffer.length})</h3>
+      ${g.treffer.length ? `<div class="tabelle-huelle"><table class="trefferliste"><thead><tr><th>KR</th><th>Von</th><th class="zahl">TP</th><th class="zahl">SP</th>${S.zonen ? '<th>Zone</th>' : ''}<th>Wunden</th><th></th></tr></thead><tbody>
+        ${g.treffer.map((t) => { const s = sp(g, t), w = wundenAus(g, t); return `<tr><td>${t.kr}</td><td>${esc(t.von)}</td><td class="zahl">${t.tp}${t.direkt ? '*' : ''}</td><td class="zahl">${s ?? '?'}</td>${S.zonen ? `<td>${esc(zonen[t.zone]?.label ?? '–')}</td>` : ''}<td>${w.n}${w.auto ? '' : ' <span class="stumm">(Hand)</span>'}</td><td><button class="btn btn-leise btn-klein" type="button" data-weg="${t.id}" aria-label="Treffer entfernen">Entfernen</button></td></tr>`; }).join('')}
+      </tbody></table></div>` : '<p class="leise">Noch keine Treffer.</p>'}
+      <p class="quelle">SP = TP − RS (WdS S. 56); * umgeht den RS. Wunden ab SP über KO/2, zwei über KO, drei über 1,5 × KO (WdS S. 57).</p>
+    </div>`;
+  // Ereignisse
+  $('#d-name').addEventListener('change', (e) => { merken(); g.name = e.target.value.trim() || g.name; alles(); });
+  el.querySelectorAll('.seg.status button').forEach((b) => b.addEventListener('click', () => statusSetzen(g, b.dataset.wert)));
+  $('#d-vorschlag')?.addEventListener('click', () => statusSetzen(g, vs.status));
+  $('#d-angriff').addEventListener('click', () => angriffOeffnen({ ziele: [g.id] }));
+  $('#d-treffer').addEventListener('click', () => angriffOeffnen({ ziele: [g.id], nurTreffer: true }));
+  $('#d-kopie').addEventListener('click', () => { merken(); const n = kopie(g); n.id = 'g' + (S.neuZaehler++); n.name = naechsterName(g.name); n.treffer = []; n.status = 'kaempft'; n.w = g.w + 18; S.gegner.push(n); S.gewaehlt = n.id; alles(); meldung(`${n.name} hinzugefügt`); });
+  $('#d-weg').addEventListener('click', () => { merken(); S.gegner = S.gegner.filter((x) => x !== g); S.gewaehlt = S.gegner.find(aktiv)?.id ?? ich().id; alles(); meldung(`${g.name} entfernt`); });
+  const zahl = (v) => (v === '' ? null : Math.max(0, parseInt(v, 10) || 0));
+  $('#d-ini').addEventListener('change', (e) => { merken(); g.ini = parseInt(e.target.value, 10) || 0; alles(); });
+  $('#d-lep').addEventListener('change', (e) => { merken(); g.lep = zahl(e.target.value); alles(); });
+  $('#d-rs').addEventListener('change', (e) => { merken(); const alt = g.rs; g.rs = zahl(e.target.value); alles(); if (alt == null && g.rs != null && g.treffer.length) meldung(`RS ${g.rs}: ${g.treffer.length} Treffer neu verrechnet`); });
+  $('#d-ko').addEventListener('change', (e) => { merken(); g.ko = zahl(e.target.value); alles(); });
+  $('#d-gr').querySelectorAll('button').forEach((b) => b.addEventListener('click', () => { merken(); g.gr = b.dataset.wert; alles(); }));
+  $('#d-typ').querySelectorAll('button').forEach((b) => b.addEventListener('click', () => { merken(); g.typ = b.dataset.wert; g.treffer.forEach((t) => { if (!ZONEN[g.typ][t.zone]) t.zone = null; }); alles(); }));
+  $('#d-dk').querySelectorAll('button').forEach((b) => b.addEventListener('click', () => { merken(); g.lage = b.dataset.wert === 'F' ? { schritt: g.lage.schritt ?? 15 } : { dk: b.dataset.wert }; alles(); }));
+  $('#d-schritt')?.addEventListener('change', (e) => { merken(); g.lage = { schritt: Math.max(5, parseInt(e.target.value, 10) || 5) }; alles(); });
+  $('#d-ziel').addEventListener('change', (e) => { merken(); g.ziel = e.target.value || null; alles(); });
+  el.querySelectorAll('[data-weg]').forEach((b) => b.addEventListener('click', () => { merken(); g.treffer = g.treffer.filter((t) => t.id !== b.dataset.weg); alles(); meldung('Treffer entfernt'); }));
+  el.querySelectorAll('.figur .zone').forEach((z) => z.addEventListener('click', () => angriffOeffnen({ ziele: [g.id], nurTreffer: true, zone: z.dataset.zone })));
+}
+function statusSetzen(g, st) {
+  merken();
+  const alt = g.status; g.status = st;
+  if (st !== 'kaempft' && S.konzentration === g.id) S.konzentration = null;
+  alles();
+  if (alt !== st) meldung(`${g.name}: ${STATUS[st]}`);
+}
+function naechsterName(n) {
+  const m = n.match(/^(.*?)(\s*)(\d+)$/);
+  const stamm = m ? m[1] : n;
+  let i = m ? parseInt(m[3], 10) + 1 : 2;
+  while (S.gegner.some((g) => g.name === `${stamm} ${i}`)) i++;
+  return `${stamm} ${i}`;
+}
+
+/* ================= Eigene Seite ================= */
+function gruppeZeichnen() {
+  const zielOptionen = (k) => `<option value="">kein Ziel</option>${S.gegner.filter(aktiv).map((g) => `<option value="${g.id}" ${k.ziel === g.id ? 'selected' : ''}>${esc(g.name)}</option>`).join('')}`;
+  $('#gruppe').innerHTML = S.wir.map((k) => `
+    <div class="mitstreiter" data-id="${k.id}">
+      <span class="avatar ${k.ich ? 'ich' : ''} ${k.modus === 'raus' ? 'raus' : ''}">${esc(kuerzel(k.name))}</span>
+      <span class="kern"><strong>${esc(k.name)}${k.ich ? ' (du)' : ''}</strong><small>${esc(k.rolle)}</small></span>
+      <span class="marke ${k.modus === 'nah' ? 'ok' : ''}">${k.modus === 'nah' ? 'zählt' : 'zählt nicht'}</span>
+      <div class="steuer">
+        <div class="seg" role="group" aria-label="Beteiligung ${esc(k.name)}">
+          <button type="button" data-modus="nah" aria-pressed="${k.modus === 'nah'}">Nahkampf</button>
+          <button type="button" data-modus="fern" aria-pressed="${k.modus === 'fern'}" ${k.ich ? 'disabled title="Du kämpfst im Gefecht selbst"' : ''}>Fernkampf</button>
+          <button type="button" data-modus="raus" aria-pressed="${k.modus === 'raus'}" ${k.ich ? 'disabled' : ''}>Nicht dabei</button>
+        </div>
+        <label class="feld"><span>INI</span><input type="number" inputmode="numeric" data-ini value="${k.ini}" ${k.ich ? 'title="Kommt aus deinem Gefecht"' : ''}></label>
+        ${k.modus !== 'raus' ? `<select class="klein" data-ziel aria-label="Ziel ${esc(k.name)}">${zielOptionen(k)}</select>` : ''}
+      </div>
+    </div>`).join('');
+  $('#gruppe').querySelectorAll('.mitstreiter').forEach((row) => {
+    const k = wir(row.dataset.id);
+    row.querySelectorAll('[data-modus]').forEach((b) => b.addEventListener('click', () => {
+      merken(); const vorher = ueberzahl(); k.modus = b.dataset.modus;
+      if (k.modus !== 'raus' && k.r > 250) k.r = k.modus === 'fern' ? 236 : 130;
+      if (k.modus === 'raus') S.gegner.forEach((g) => { if (g.ziel === k.id) g.ziel = null; });
+      alles(); const n = ueberzahl();
+      if (vorher.bonusSie !== n.bonusSie || vorher.bonusWir !== n.bonusWir) meldung(`Überzahl neu: ${n.bonusSie ? 'Gegner INI +' + n.bonusSie : n.bonusWir ? 'eure INI +' + n.bonusWir : 'ausgeglichen'}`);
+    }));
+    row.querySelector('[data-ini]').addEventListener('change', (e) => { merken(); k.ini = parseInt(e.target.value, 10) || 0; alles(); });
+    row.querySelector('[data-ziel]')?.addEventListener('change', (e) => { merken(); k.ziel = e.target.value || null; alles(); });
+  });
+}
+
+/* ================= Angriff ================= */
+const ARTEN = {
+  einzel:   { titel: 'Angriff', text: 'ein Ziel', max: 1 },
+  sturm:    { titel: 'Klingensturm', text: '2 Ziele, je AT/2 + 2 (Klingentänzer: 3)', max: 2 },
+  befreien: { titel: 'Befreiungsschlag', text: 'alle in Reichweite, AT +4 je Gegner, kostet die Abwehr', max: 99 },
+  flaeche:  { titel: 'Flächenwirkung', text: 'Zauber, Explosion: beliebig viele, Probe im Probendialog', max: 99 },
+};
+let A = null;
+function angriffOeffnen({ ziele = [], nurTreffer = false, zone = null } = {}) {
+  const angreifer = ich();
+  A = { art: nurTreffer ? 'eintrag' : 'einzel', von: angreifer.id, ziele: {}, atWurf: null, taenzer: false, nurTreffer };
+  const start = ziele.length ? ziele : (angreifer.ziel && gegner(angreifer.ziel) && aktiv(gegner(angreifer.ziel)) ? [angreifer.ziel] : []);
+  for (const id of start) A.ziele[id] = neuesZiel(id, zone);
+  angriffZeichnen();
+  const d = $('#dlg-angriff'); if (!d.open) d.showModal();
+}
+function neuesZiel(id, zone = null) { return { an: true, abwehr: 'nein', tp: null, direkt: false, zone, wunden: 0, atWurf: null }; }
+function angreiferVon() { return wir(A.von); }
+function zielwert(g) {
+  const k = angreiferVon(), df = dkFolge(k.dk, g), n = Object.values(A.ziele).filter((z) => z.an).length;
+  const teile = [[`AT ${k.at}`, k.at]];
+  let basis = k.at;
+  if (A.art === 'sturm') { basis = Math.floor(k.at / 2) + 2; teile.length = 0; teile.push([`AT ${k.at} / 2 + 2`, basis]); }
+  let w = basis;
+  if (A.art === 'befreien') { w -= 4 * n; teile.push([`Befreiungsschlag −4 × ${n}`, -4 * n]); }
+  if (df.at) { w += df.at; teile.push([`DK ${g.lage.dk}: −${-df.at}`, df.at]); }
+  if (unsereAufGegner(g) >= 2 && A.art !== 'flaeche') { w += 1; teile.push(['Überzahl +1', 1]); }
+  if (k.id === ich().id && S.konzentration && S.konzentration !== g.id && A.art !== 'flaeche') return { wert: null, teile, sperre: `Du bist auf ${nameVon(S.konzentration)} konzentriert` };
+  if (A.art === 'flaeche') return { wert: null, teile: [], sperre: null };
+  if (!df.ok) return { wert: null, teile, sperre: df.text };
+  if (A.art === 'sturm' && df.at) return { wert: null, teile, sperre: 'Klingensturm nur in idealer DK' };
+  return { wert: w, teile, sperre: null };
+}
+function tpWurf() { const k = angreiferVon(); let s = k.tp[1]; for (let i = 0; i < k.tp[0]; i++) s += w6(); return s; }
+function vorschau(g, z) {
+  if (z.tp == null) return 'TP eintragen oder würfeln.';
+  const t = { tp: z.tp, direkt: z.direkt, wunden: z.wunden };
+  const s = sp(g, t), w = wundenAus(g, t);
+  if (z.abwehr !== 'nein') return `${z.abwehr === 'pariert' ? 'Pariert' : 'Ausgewichen'}: kein Schaden.`;
+  return `<b>${s == null ? z.tp + ' TP' : s + ' SP'}</b>${s == null ? ' (RS unbekannt, wird später verrechnet)' : ` = ${z.tp} TP${z.direkt ? '' : ` − RS ${g.rs}`}`} · ${w.auto ? `<b>${w.n} Wunde${w.n === 1 ? '' : 'n'}</b>` : 'Wunden von Hand (KO oder RS unbekannt)'}${S.zonen && z.zone ? ` · ${ZONEN[g.typ][z.zone]?.label}` : ''}${A.art === 'befreien' ? ' · DK +1 weg, INI −1W6' : ''}`;
+}
+function angriffZeichnen() {
+  const d = $('#dlg-angriff'), k = angreiferVon();
+  const art = A.art;
+  const kandidaten = S.gegner.filter(aktiv);
+  const gewaehlt = Object.entries(A.ziele).filter(([, z]) => z.an).map(([id]) => id);
+  const max = art === 'sturm' ? (A.taenzer ? 3 : 2) : art === 'einzel' || art === 'eintrag' ? 1 : 99;
+  const gemeinsamerWurf = art === 'einzel' || art === 'befreien';
+  const zielKarten = gewaehlt.map((id) => {
+    const g = gegner(id), z = A.ziele[id], zw = zielwert(g);
+    const wurf = gemeinsamerWurf ? A.atWurf : z.atWurf;
+    const at = art === 'eintrag' || art === 'flaeche' ? null : zw.wert;
+    let atErg = '';
+    if (at != null && wurf != null) atErg = wurf === 20 ? '<span class="marke gefahr">Patzer?</span>' : wurf <= at ? `<span class="marke ok">AT gelungen (${wurf})</span>` : `<span class="marke gefahr">AT misslungen (${wurf})</span>`;
+    const atOk = art === 'eintrag' || art === 'flaeche' || (at != null && wurf != null && wurf <= at && wurf !== 20);
+    const autoW = wundenAus(g, { tp: z.tp ?? 0, direkt: z.direkt }).auto;
+    return `<div class="ziel-karte ${zw.sperre && art !== 'eintrag' ? 'aus' : ''}" data-ziel="${id}">
+      <div class="ziel-kopf"><strong>${esc(g.name)}</strong><span class="marke">RS ${g.rs ?? '?'}</span><span class="marke">${GR[g.gr].label}</span>
+        ${art !== 'eintrag' && art !== 'flaeche' ? (zw.sperre ? `<span class="marke gefahr">${esc(zw.sperre)}</span>` : `<span class="marke ok">Zielwert ${at}</span>`) : ''}
+        ${!gemeinsamerWurf && art === 'sturm' && !zw.sperre ? `<button class="btn btn-sek btn-klein" type="button" data-at>W20 werfen</button>` : ''} ${atErg}</div>
+      ${zw.teile.length && art !== 'eintrag' && art !== 'flaeche' ? `<div class="herleitung">${zw.teile.map(([t]) => `<span>${esc(t)}</span>`).join('<span>·</span>')}</div>` : ''}
+      ${atOk || art === 'eintrag' ? `
+      <div class="ziel-felder">
+        <label class="feld"><span>Abwehr</span><select data-abwehr><option value="nein" ${z.abwehr === 'nein' ? 'selected' : ''}>nicht abgewehrt</option><option value="pariert" ${z.abwehr === 'pariert' ? 'selected' : ''}>pariert</option><option value="ausgewichen" ${z.abwehr === 'ausgewichen' ? 'selected' : ''}>ausgewichen</option></select></label>
+        <label class="feld"><span>TP</span><span class="mit-knopf"><input type="number" inputmode="numeric" data-tp value="${z.tp ?? ''}" placeholder="${k.tp[0]}W6+${k.tp[1]}"><button class="btn btn-sek btn-klein" type="button" data-tpwurf title="${k.tp[0]}W6+${k.tp[1]} würfeln">W6</button></span></label>
+        ${S.zonen ? `<label class="feld"><span>Zone</span><span class="mit-knopf"><select data-zone><option value="">–</option>${Object.entries(ZONEN[g.typ]).map(([zk, zi]) => `<option value="${zk}" ${z.zone === zk ? 'selected' : ''}>${zi.label}</option>`).join('')}</select><button class="btn btn-sek btn-klein" type="button" data-zonewurf title="Trefferzone mit W20">W20</button></span></label>` : '<span></span>'}
+        ${autoW ? `<label class="check"><input type="checkbox" data-direkt ${z.direkt ? 'checked' : ''}> umgeht RS</label>` : `<label class="feld"><span>Wunden</span><select data-wunden>${[0, 1, 2, 3].map((n) => `<option ${z.wunden === n ? 'selected' : ''}>${n}</option>`).join('')}</select></label>`}
+      </div>
+      <div class="ergebnis">${vorschau(g, z)}</div>` : ''}
+    </div>`;
+  }).join('');
+  const bereit = gewaehlt.filter((id) => { const g = gegner(id), z = A.ziele[id]; if (art === 'eintrag' || art === 'flaeche') return z.tp != null || z.abwehr !== 'nein'; const zw = zielwert(g); const w = gemeinsamerWurf ? A.atWurf : z.atWurf; return zw.wert != null && w != null && w <= zw.wert && w !== 20 && (z.tp != null || z.abwehr !== 'nein'); });
+  d.innerHTML = `<form class="dlg" method="dialog" id="f-angriff">
+    <div class="dlg-kopf"><h2 id="h-angriff">${art === 'eintrag' ? 'Treffer eintragen' : 'Angriff'}</h2>
+      <label class="feld" style="flex-direction:row;align-items:center;gap:6px"><span>von</span><select class="klein" id="a-von" style="width:auto">${S.wir.filter((x) => x.modus !== 'raus').map((x) => `<option value="${x.id}" ${x.id === A.von ? 'selected' : ''}>${esc(x.name)}</option>`).join('')}</select></label>
+      <button class="btn btn-leise" type="button" id="a-zu" aria-label="Schließen">Schließen</button></div>
+    <div class="dlg-inhalt">
+      ${art !== 'eintrag' ? `<div class="art-wahl" role="group" aria-label="Angriffsart">${Object.entries(ARTEN).map(([key, a]) => `<button type="button" data-art="${key}" aria-pressed="${art === key}"><strong>${a.titel}</strong><small>${a.text}</small></button>`).join('')}</div>` : '<p class="leise">Für Treffer, die schon am Tisch ausgewürfelt wurden. Nichts wird neu gewürfelt.</p>'}
+      ${art === 'sturm' ? `<label class="check"><input type="checkbox" id="a-taenzer" ${A.taenzer ? 'checked' : ''}> Klingentänzer: bis zu drei Ziele</label>` : ''}
+      ${art === 'befreien' ? '<p class="leise" style="font-size:13px">Verbraucht die Abwehraktion dieser KR. Wer nicht pariert, wird eine DK weggetrieben, verliert 1W6 INI und muss sich gegen Niederwerfen behaupten (WdS S. 61 f.).</p>' : ''}
+      ${art === 'flaeche' ? '<p class="leise" style="font-size:13px">Die Probe läuft wie gewohnt im Zauber- oder Probendialog. Hier nur den Schaden je Ziel verteilen.</p>' : ''}
+      <div class="feld"><span>Ziele (${gewaehlt.length}${max < 99 ? ' von höchstens ' + max : ''})</span>
+        <div class="zeile">${kandidaten.map((g) => { const on = gewaehlt.includes(g.id); const df = dkFolge(k.dk, g); return `<label class="check" style="border:1px solid var(--hoehenlinie);border-radius:4px;padding:4px 8px;background:var(--blatt)"><input type="checkbox" data-wahl="${g.id}" ${on ? 'checked' : ''} ${!on && gewaehlt.length >= max ? 'disabled' : ''}> ${esc(g.name)} <span class="stumm" style="font-size:11px">${g.lage.dk ? 'DK ' + g.lage.dk : g.lage.schritt + ' S'}${art !== 'flaeche' && art !== 'eintrag' && !df.ok ? ' · ' + esc(df.text) : ''}</span></label>`; }).join('')}</div></div>
+      ${gemeinsamerWurf && gewaehlt.length ? `<div class="zeile"><button class="btn btn-primaer" type="button" id="a-at">AT werfen (W20)</button>${A.atWurf != null ? `<span class="leise">Wurf: <b>${A.atWurf}</b></span>` : '<span class="leise">oder Wurf eintragen:</span>'}<input type="number" min="1" max="20" id="a-at-wert" style="width:64px;height:34px;border:1px solid var(--grat);border-radius:4px;background:var(--blatt);padding:0 6px" value="${A.atWurf ?? ''}" aria-label="AT-Wurf"></div>` : ''}
+      ${zielKarten || '<p class="leise">Wähle mindestens ein Ziel.</p>'}
+    </div>
+    <div class="dlg-fuss"><span class="leise">${bereit.length} Treffer bereit</span>
+      <button class="btn btn-sek" type="button" id="a-abbruch">Abbrechen</button>
+      <button class="btn btn-primaer" type="submit" id="a-ok" ${bereit.length ? '' : 'disabled'}>${bereit.length > 1 ? bereit.length + ' Treffer übernehmen' : 'Treffer übernehmen'}</button></div>
+  </form>`;
+  // Ereignisse
+  const neu = () => angriffZeichnen();
+  $('#a-zu', d).onclick = $('#a-abbruch', d).onclick = () => d.close();
+  $('#a-von', d).onchange = (e) => { A.von = e.target.value; A.atWurf = null; neu(); };
+  d.querySelectorAll('[data-art]').forEach((b) => b.onclick = () => {
+    A.art = b.dataset.art; A.atWurf = null;
+    if (A.art === 'befreien') { for (const g of S.gegner.filter(aktiv)) if (g.lage.dk && dkFolge(angreiferVon().dk, g).ok && g.ziel === A.von) A.ziele[g.id] = A.ziele[g.id] || neuesZiel(g.id); }
+    const lim = A.art === 'sturm' ? 2 : A.art === 'einzel' ? 1 : 99;
+    Object.keys(A.ziele).filter((id) => A.ziele[id].an).slice(lim).forEach((id) => delete A.ziele[id]);
+    neu();
+  });
+  $('#a-taenzer', d)?.addEventListener('change', (e) => { A.taenzer = e.target.checked; neu(); });
+  d.querySelectorAll('[data-wahl]').forEach((c) => c.onchange = () => { if (c.checked) A.ziele[c.dataset.wahl] = neuesZiel(c.dataset.wahl); else delete A.ziele[c.dataset.wahl]; neu(); });
+  $('#a-at', d)?.addEventListener('click', () => { A.atWurf = w20(); neu(); });
+  $('#a-at-wert', d)?.addEventListener('change', (e) => { const v = parseInt(e.target.value, 10); A.atWurf = v >= 1 && v <= 20 ? v : null; neu(); });
+  d.querySelectorAll('.ziel-karte').forEach((karte) => {
+    const id = karte.dataset.ziel, z = A.ziele[id], g = gegner(id);
+    karte.querySelector('[data-at]')?.addEventListener('click', () => { z.atWurf = w20(); neu(); });
+    karte.querySelector('[data-abwehr]')?.addEventListener('change', (e) => { z.abwehr = e.target.value; neu(); });
+    karte.querySelector('[data-tp]')?.addEventListener('change', (e) => { const v = parseInt(e.target.value, 10); z.tp = Number.isFinite(v) ? Math.max(0, v) : null; neu(); });
+    karte.querySelector('[data-tpwurf]')?.addEventListener('click', () => { z.tp = tpWurf(); neu(); });
+    karte.querySelector('[data-zone]')?.addEventListener('change', (e) => { z.zone = e.target.value || null; neu(); });
+    karte.querySelector('[data-zonewurf]')?.addEventListener('click', () => { z.zone = zoneAusWurf(w20(), g.typ); neu(); });
+    karte.querySelector('[data-direkt]')?.addEventListener('change', (e) => { z.direkt = e.target.checked; neu(); });
+    karte.querySelector('[data-wunden]')?.addEventListener('change', (e) => { z.wunden = parseInt(e.target.value, 10) || 0; neu(); });
+  });
+  $('#f-angriff', d).onsubmit = (e) => { e.preventDefault(); angriffUebernehmen(bereit); d.close(); };
+}
+function angriffUebernehmen(ids) {
+  merken();
+  const von = angreiferVon().name, effekte = [];
+  for (const id of ids) {
+    const g = gegner(id), z = A.ziele[id];
+    if (z.abwehr !== 'nein' || z.tp == null) { effekte.push([id, z.abwehr === 'pariert' ? 'pariert' : 'ausgewichen', 0]); continue; }
+    const t = { id: 't' + (S.neuZaehler++), kr: S.kr, von, tp: z.tp, direkt: z.direkt || undefined, zone: S.zonen ? z.zone : null, wunden: z.wunden || undefined };
+    g.treffer.push(t);
+    const s = sp(g, t), w = wundenAus(g, t).n;
+    if (A.art === 'befreien') {
+      if (g.lage.dk && g.lage.dk !== 'P') g.lage = { dk: DKS[DKS.indexOf(g.lage.dk) + 1] };
+      g.ini -= w6();
+    }
+    effekte.push([id, s == null ? `−${z.tp} TP` : `−${s} SP`, w]);
+  }
+  if (A.art === 'einzel' || A.art === 'sturm') { const k = angreiferVon(); if (ids.length) k.ziel = ids[0]; }
+  alles();
+  effekte.forEach(([id, txt, w], i) => setTimeout(() => trefferAnimation(id, txt, w), i * 160));
+  const vs = ids.map((id) => gegner(id)).map((g) => statusVorschlag(g)).filter(Boolean);
+  meldung(`${ids.length === 1 ? 'Treffer' : ids.length + ' Treffer'} übernommen${vs.length ? ' · Status prüfen' : ''}`);
+}
+
+/* ================= Gegner hinzufügen ================= */
+const VORLAGEN = {
+  raeuber: { name: 'Räuber', typ: 'zweibeiner', gr: 'mittel', ini: 10, lep: 30, rs: 2, ko: 12 },
+  ork:     { name: 'Ork', typ: 'zweibeiner', gr: 'mittel', ini: 9, lep: null, rs: 3, ko: 13 },
+  wolf:    { name: 'Wolf', typ: 'vierbeiner', gr: 'klein', ini: 12, lep: 22, rs: 1, ko: 10 },
+  oger:    { name: 'Oger', typ: 'zweibeiner', gr: 'gross', ini: 6, lep: 50, rs: 3, ko: 20 },
+  riese:   { name: 'Riese', typ: 'zweibeiner', gr: 'sehrgross', ini: 5, lep: null, rs: 4, ko: null },
+  leer:    { name: '', typ: 'zweibeiner', gr: 'mittel', ini: 10, lep: null, rs: null, ko: null },
+};
+let N = null;
+function neuOeffnen() {
+  N = { vorlage: 'ork', anzahl: 3, iniWuerfeln: false, lage: 'N', ziel: ich().id, ...kopie(VORLAGEN.ork) };
+  neuZeichnen(); $('#dlg-neu').showModal();
+}
+function neuZeichnen() {
+  const d = $('#dlg-neu');
+  const zahl = (v) => (v == null ? '' : v);
+  d.innerHTML = `<form class="dlg" id="f-neu">
+    <div class="dlg-kopf"><h2 id="h-neu">Gegner hinzufügen</h2><button class="btn btn-leise" type="button" id="n-zu">Schließen</button></div>
+    <div class="dlg-inhalt">
+      <div class="feld"><span>Schnellstart (Beispielwerte, frei änderbar)</span>
+        <div class="vorlagen">${Object.entries(VORLAGEN).map(([k, v]) => `<button type="button" data-vorlage="${k}" aria-pressed="${N.vorlage === k}">${v.name || 'Leer'}</button>`).join('')}</div></div>
+      <div class="zeile" style="align-items:flex-end">
+        <label class="feld" style="flex:1 1 200px"><span>Name</span><input id="n-name" value="${esc(N.name)}" placeholder="z. B. Söldner" required></label>
+        <div class="feld"><span>Anzahl</span><div class="stepper"><button type="button" id="n-minus" aria-label="weniger">−</button><output id="n-anzahl">${N.anzahl}</output><button type="button" id="n-plus" aria-label="mehr">+</button></div></div>
+      </div>
+      <div class="feld"><span>Größenklasse</span><div class="seg" id="n-gr">${GR_REIHE.map((k) => `<button type="button" data-wert="${k}" aria-pressed="${N.gr === k}" title="${GR[k].bsp}">${GR[k].label}</button>`).join('')}</div></div>
+      <div class="werte-raster">
+        <label class="feld"><span>INI${N.anzahl > 1 ? ' (je Gegner)' : ''}</span><input id="n-ini" type="number" value="${N.ini}"></label>
+        <label class="feld unbekannt"><span>LeP</span><input id="n-lep" type="number" placeholder="unbekannt" value="${zahl(N.lep)}"></label>
+        <label class="feld unbekannt"><span>RS</span><input id="n-rs" type="number" placeholder="unbekannt" value="${zahl(N.rs)}"></label>
+        <label class="feld unbekannt"><span>KO</span><input id="n-ko" type="number" placeholder="unbekannt" value="${zahl(N.ko)}"></label>
+      </div>
+      <label class="check"><input type="checkbox" id="n-wuerfeln" ${N.iniWuerfeln ? 'checked' : ''}> INI als Basis nehmen und für jeden Gegner 1W6 dazuwürfeln</label>
+      <div class="zeile" style="align-items:flex-end">
+        <div class="feld"><span>Körperbau</span><div class="seg" id="n-typ"><button type="button" data-wert="zweibeiner" aria-pressed="${N.typ === 'zweibeiner'}">Zweibeiner</button><button type="button" data-wert="vierbeiner" aria-pressed="${N.typ === 'vierbeiner'}">Tier</button></div></div>
+        <div class="feld"><span>Start-DK zu dir</span><div class="seg" id="n-dk">${[...DKS, 'F'].map((k) => `<button type="button" data-wert="${k}" aria-pressed="${N.lage === k}">${k === 'F' ? 'Fern' : k}</button>`).join('')}</div></div>
+        <label class="feld" style="flex:1 1 140px"><span>Bindet</span><select id="n-ziel"><option value="">niemanden</option>${S.wir.filter((k) => k.modus !== 'raus').map((k) => `<option value="${k.id}" ${N.ziel === k.id ? 'selected' : ''}>${esc(k.name)}</option>`).join('')}</select></label>
+      </div>
+      <p class="leise" style="font-size:13px">Unbekannte Werte dürfen leer bleiben. Ohne RS zählt die Liste TP, ohne KO trägst du Wunden von Hand ein. Alles lässt sich später ergänzen.</p>
+    </div>
+    <div class="dlg-fuss"><button class="btn btn-sek" type="button" id="n-abbruch">Abbrechen</button><button class="btn btn-primaer" type="submit">${N.anzahl > 1 ? N.anzahl + ' Gegner hinzufügen' : 'Gegner hinzufügen'}</button></div>
+  </form>`;
+  const lese = () => {
+    const v = (id) => $(id, d).value, z = (id) => (v(id) === '' ? null : Math.max(0, parseInt(v(id), 10) || 0));
+    N.name = v('#n-name'); N.ini = parseInt(v('#n-ini'), 10) || 0; N.lep = z('#n-lep'); N.rs = z('#n-rs'); N.ko = z('#n-ko');
+    N.ziel = v('#n-ziel') || null; N.iniWuerfeln = $('#n-wuerfeln', d).checked;
+  };
+  d.querySelectorAll('[data-vorlage]').forEach((b) => b.onclick = () => { Object.assign(N, kopie(VORLAGEN[b.dataset.vorlage]), { vorlage: b.dataset.vorlage }); neuZeichnen(); });
+  $('#n-minus', d).onclick = () => { lese(); N.anzahl = Math.max(1, N.anzahl - 1); neuZeichnen(); };
+  $('#n-plus', d).onclick = () => { lese(); N.anzahl = Math.min(12, N.anzahl + 1); neuZeichnen(); };
+  d.querySelectorAll('#n-gr button').forEach((b) => b.onclick = () => { lese(); N.gr = b.dataset.wert; neuZeichnen(); });
+  d.querySelectorAll('#n-typ button').forEach((b) => b.onclick = () => { lese(); N.typ = b.dataset.wert; neuZeichnen(); });
+  d.querySelectorAll('#n-dk button').forEach((b) => b.onclick = () => { lese(); N.lage = b.dataset.wert; neuZeichnen(); });
+  $('#n-zu', d).onclick = $('#n-abbruch', d).onclick = () => d.close();
+  $('#f-neu', d).onsubmit = (e) => {
+    e.preventDefault(); lese();
+    const name = N.name.trim(); if (!name) { $('#n-name', d).focus(); return; }
+    merken();
+    const basisW = (S.gegner.length * 47) % 360;
+    const neue = [];
+    for (let i = 0; i < N.anzahl; i++) {
+      const g = { id: 'g' + (S.neuZaehler++), name: N.anzahl > 1 ? `${name} ${i + 1}` : name, typ: N.typ, gr: N.gr, ini: N.ini + (N.iniWuerfeln ? w6() : 0), lep: N.lep, rs: N.rs, ko: N.ko,
+        lage: N.lage === 'F' ? { schritt: 20 } : { dk: N.lage }, w: basisW + (i - (N.anzahl - 1) / 2) * 24, ziel: N.ziel, status: 'kaempft', treffer: [] };
+      if (N.anzahl > 1 && S.gegner.some((x) => x.name === g.name)) g.name = naechsterName(g.name);
+      S.gegner.push(g); neue.push(g);
+    }
+    S.gewaehlt = neue[0].id; d.close(); alles();
+    meldung(`${neue.length === 1 ? neue[0].name : neue.length + ' × ' + name} hinzugefügt`);
+  };
+}
+
+/* ================= Gesamtablauf ================= */
+function waehle(id) { S.gewaehlt = id; alles(); if (matchMedia('(max-width: 980px)').matches && gegner(id)) $('#blatt-detail').scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+function alles() {
+  if (S.konzentration && !gegnerAuf(ich().id).some((g) => g.id === S.konzentration)) S.konzentration = null;
+  grundZeichnen(); linienZeichnen(); tokenZeichnen(); iniZeichnen(); kraefteZeichnen(); gegnerZeichnen(); detailZeichnen(); gruppeZeichnen();
+  $('#btn-zonen').setAttribute('aria-pressed', String(S.zonen));
+}
+let meldungsUhr = null;
+function meldung(text) {
+  const m = $('#meldung'); $('#meldung-text').textContent = text; m.classList.add('zeigen');
+  $('#meldung-rueck').hidden = !rueckgaengig;
+  clearTimeout(meldungsUhr); meldungsUhr = setTimeout(() => m.classList.remove('zeigen'), 4200);
+}
+$('#meldung-rueck').addEventListener('click', () => { if (!rueckgaengig) return; S = rueckgaengig; rueckgaengig = null; alles(); $('#meldung').classList.remove('zeigen'); });
+$('#btn-phase').addEventListener('click', () => { const n = iniFolge().akt.length; S.phase = (S.phase + 1) % Math.max(1, n); if (S.phase === 0) { S.kr++; meldung(`Kampfrunde ${S.kr} beginnt`); } alles(); });
+$('#btn-runde').addEventListener('click', () => { S.kr++; S.phase = 0; S.konzentration = null; alles(); meldung(`Kampfrunde ${S.kr} beginnt`); });
+$('#btn-zonen').addEventListener('click', () => { S.zonen = !S.zonen; alles(); });
+$('#btn-reset').addEventListener('click', () => { merken(); S = beispiel(); $('#k-token').innerHTML = ''; alles(); meldung('Beispiel zurückgesetzt'); });
+$('#ini-leiste').addEventListener('click', (e) => { const li = e.target.closest('.ini-chip'); if (li) waehle(li.dataset.id); });
+document.querySelectorAll('[data-aktion="angriff"]').forEach((b) => b.addEventListener('click', () => angriffOeffnen({ ziele: gegner(S.gewaehlt) && aktiv(gegner(S.gewaehlt)) ? [S.gewaehlt] : [] })));
+document.querySelectorAll('[data-aktion="neu"]').forEach((b) => b.addEventListener('click', neuOeffnen));
+// Thema: folgt dem System, bis man umschaltet
+const wurzel = document.documentElement;
+function themaText() { const dunkel = wurzel.dataset.theme ? wurzel.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches; $('#btn-thema').textContent = dunkel ? 'Hell' : 'Dunkel'; }
+$('#btn-thema').addEventListener('click', () => { const dunkel = wurzel.dataset.theme ? wurzel.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches; wurzel.dataset.theme = dunkel ? 'light' : 'dark'; themaText(); });
+themaText();
+alles();
+})();
+</script>

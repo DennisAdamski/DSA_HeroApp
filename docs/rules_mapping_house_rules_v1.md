@@ -116,7 +116,8 @@ unverändert.
 
 - Alle 105 Eintraege in `magische_sonderfertigkeiten.json` tragen den Block
   `voraussetzungen_struktur`; das Schema steht in `docs/technical_overview.md`
-  Abschnitt 4.9. Der Freitext `voraussetzungen` bleibt unveraendert erhalten.
+  Abschnitt 4.9. Der Freitext `voraussetzungen` bleibt die Anzeigequelle und
+  wird bei belegten Katalogkorrekturen mit der Struktur abgeglichen.
 - Drei Sammeleintraege wurden in Einzelstufen aufgeteilt. Die alten Namen
   bleiben als `alias_namen` der jeweils ersten Stufe erhalten, damit
   Bestandshelden weiterhin als Besitzer erkannt werden:
@@ -135,10 +136,93 @@ unverändert.
   wird: `magsf_repraesentation`, `magsf_ritualkenntnis_tradition`,
   `magsf_merkmalskenntnis_einzelnes_merkmal` und `magsf_zauberspezialisierung`.
   Sie bleiben im Picker nachschlagbar, haben dort aber keinen Schalter.
-- Die 18 Traditionsrituale sind ueber `{"art": "tradition", …}` an ihre
-  Tradition gebunden. Ausgenommen sind `magsf_elfenlieder` (haengt am Vorteil
-  Zweistimmiger Gesang), `magsf_kugelzauber`, `magsf_oduen_gaben` und
-  `magsf_ottagaldr` — deren Regelwerk nennt nur Einzelfallbedingungen.
+- Traditionsrituale können `{"art": "tradition", …}` und benannte
+  `ritualkenntnis`-Bedingungen kombinieren. Traditionen werden auch aus
+  Repräsentationen abgeleitet; allein erfüllen sie deshalb keine geforderte
+  Ritualkenntnis. Kugelzauber und Odûn-Gaben haben zusätzlich Voraussetzungen
+  je Variante. Ottagaldr hat keine pauschale Gildenmagier-Bedingung.
+
+#### Katalogkorrektur magischer Voraussetzungen (11. Oktober 2026)
+
+Umfang: ausschließlich `magische_sonderfertigkeiten.json` und Dokumentation;
+keine Änderung an Dart, Tests oder den separaten Erwerbs-/Bindungsabläufen.
+Alle 105 Einträge, IDs, Aliasnamen, Varianten, Stufenketten und AP-Kosten
+bleiben erhalten. Nicht modellierte Bedingungen sind manuell zu prüfen;
+ein `hinweis` innerhalb einer ODER-Gruppe ist keine automatische Sperre.
+
+Die Quellen wurden über den DSA-MCP gelesen. Offizielle Regeln aus
+**Wege der Helden** (WdH) und **Wege der Zauberei** (WdZ) sind von den
+Hausregeln aus **Epische Stufen** getrennt:
+
+| Betroffene Einträge | Korrektur / verbleibende Grenze | MCP-Quelle (Chunk-ID) |
+|---|---|---|
+| Repräsentation | Neun Repräsentationen; Schamanen, Derwische, Durro-Dûn, Zibiljas und Zaubertänzer haben grundsätzlich RK ohne eigene Repräsentation. Hinweis zur dritten Repräsentation enthält erneut 50 ZfP; eigener Erwerbsdialog unverändert. | WdH S. 290 (4824–4825); WdZ S. 19 (4986) |
+| Bannschwert, Geber der Gestalt, Höhere Dämonenbindung, Hexenflüche, Schalenzauber, Stabzauber, Schuppenbeutel, Schlangenring-Zauber, Trommelzauber, Zaubertänze, Zibilja-Rituale, Zauberzeichen | Benannte RK-Bedingungen ergänzen die Tradition; RK-Alternativen per ODER, insbesondere RkW 11 bei Geber der Gestalt und Höherer Dämonenbindung. Beim Bannschwert gilt die nicht-metallische Einschränkung für Druiden **und** Geoden. Nicht eindeutig benannte schamanische RK bleibt Hinweis. | WdH S. 285–293 (4810, 4814–4816, 4826–4828, 4831, 4833–4834) |
+| Druidische Dolchrituale | Geodischer Zugang nur Herr der Erde; RK Druide oder Geode erforderlich. Bann, Leib und Opferdolch nur Druiden; RkW und Zusatzbedingungen je Variante als Hinweis. | WdH S. 285–286 (4811–4812) |
+| Druidische Herrschaftsrituale | RK Druide oder Geister Binden; schamanische Alternative nur Ferkina-/Trollzacker-Schamanen. Kultur und variantenabhängige Bedingungen bleiben manuell. | WdH S. 286 (4812) |
+| Vertrautenbindung | Hexe, Geode **Diener Sumus**, Zibilja oder Goblin-Schamanin; jeweils passende RK, bei Goblin-Schamaninnen Geister Binden 7. Kultur/Profession bleiben Hinweis, der separate Bindungsablauf unverändert. | WdH S. 292 (4830) |
+| Ottagaldr, Tanz der Mada | Unbelegte Gildenmagier-Sperre entfernt. Ottagaldr umfasst beteiligte Nichtzauberer; Lehrzugang und Gemeinschaft bleiben Hinweis. Tanz der Mada ohne Unstet, weitere Zugänge nach Meisterentscheid. | WdH S. 289, 291–292 (4823, 4828–4830) |
+| Elementarharmonisierte Aura | Elementare Merkmalskenntnis **oder** elementare Begabung. Dämonische Kenntnisse/Begabungen, Pakt und der verbotene Vorteil Affinität zu Dämonen bleiben ausdrückliche manuelle Ausschlüsse; kein falsches Nachteilsverbot für diesen Vorteil. | WdH S. 286 (4812–4813) |
+| Kugelzauber, Odûn-Gaben, Keulenrituale, Kristallomantische Rituale, Schalen-/Stab-/Schlangenring-Zauber, Schuppenbeutel, Trommelzauber, Zibilja-Rituale | Hinweise führen Variantenbeschränkungen, RkW-Schwellen und Vorrituale konkret auf. Kristallkraft Bündeln hat einen schamanischen Sonderzugang für Achaz-Schamanen. Keine automatische Prüfung der ausgewählten Variante. | WdH S. 287–293 (4817–4819, 4823, 4826–4828, 4831, 4834) |
+| Freizauberei | CH statt KL nur bei eigeborenen Hexen; strukturierte Eigeboren-/Hexen-Alternative. IN-26-Alternative verlangt IN als Leiteigenschaft, diese Zuordnung bleibt Hinweis. Kenntnisse/Zauber betreffen das gewählte Merkmal; ZfW 12 nur für ausschließlich fremdrepräsentierte Zauber. | Epische Stufen S. 38 (25772) |
+| Arkane Meisterschaft, Elementaraspekt, Infinitum-Runen, Meisterlicher Artefaktschmied, Merkmalsgroßmeister | Passende Merkmals-/RK-Zuordnung und dynamische Schwellen ausdrücklich manuell prüfen. Namenlose RK 18 bei Infinitum-Runen durch einen zutreffenden Hinweis ersetzt. Artefaktschmied: IN-Alternative nur Elfen; Summe 40 und ARCANOVI-Variante weiterhin Hinweis. Merkmalsgroßmeister: zusätzliche Eigenschaft ist die andere aus KL/IN. | Epische Stufen S. 35–41, 49 (25769–25772, 25774, 25782) |
+| Pfad der Uralten, Sirenensang | Weitere Käufe erhöhen nur die IN-Anforderung, KO bleibt 15. Sirenensang: Singen 22 oder Wohlklang mit Singen 17, zusätzlich Zweistimmiger Gesang. | Epische Stufen S. 49–50 (25782–25783) |
+
+Der Quellenbereich des Merkmalsgroßmeisters reicht bis **S. 49**, einschließlich
+seiner Voraussetzungen; `seite`, `quelle` und der Citation-Locator wurden
+abgeglichen. Die übrigen epischen Seitenangaben waren bereits passend.
+Zauberzeichen steht in WdH auf S. 293. Zusatz-Vorstufen bei Meisterlicher
+Zauberkontrolle II und Semipermanenz II bleiben die oben dokumentierte
+**Projektkonvention**; die gelesenen WdH-Voraussetzungsblöcke auf S. 289/291
+(4822/4827) nennen Stufe I nicht ausdrücklich. Das ist keine neu belegte
+Regelbuchvoraussetzung.
+
+**Noch umzusetzen, nicht durch diese Katalogkorrektur erledigt:**
+
+- **Voraussetzungen je ausgewählter Variante:** gemeinsamer Daten-/Prüfpfad
+  für Kugelzauber, Dolch-/Herrschafts-/Keulen-/Kristallrituale, Odûn-Gaben,
+  Schalen-/Stab-/Schlangenring-Zauber, Schuppenbeutel, Trommelzauber und
+  Zibilja-Rituale; einschließlich RkW, Vorritualen und Sonderzugängen.
+- **Zaubererarten:** Z/H/V/B (und G bei Exorzist) aus WdH S. 284 (4807)
+  sind keine Repräsentationslisten. Zulassung strukturiert modellieren;
+  eingeschränkte Viertelzauberer-Ausnahmen separat behandeln. Die Katalognamen
+  und epischen Z/ZH-Zulassungen sind derzeit keine vollständige Prüfung.
+- **Kultur, Profession, Gemeinschaft:** Ferkina-/Trollzacker- und
+  Goblin-Schamaninnen, Achaz-Schamanen, Hexennächte, geodische Gemeinschaft,
+  Ottagaldr und Lehrzugänge tatsächlich prüfen. Bis dahin können trotz
+  konkretem Hinweis zu breite Freigaben bestehen. Ottagaldr und Tanz der Mada
+  können außerdem durch die allgemeine Magiebereich-Sichtbarkeit für profane
+  Helden verborgen bleiben; diese UI-Regel wurde nicht geändert.
+- **Dynamische/bedingte Werte:** weitere Käufe bei Arkane Meisterschaft und
+  Pfad der Uralten; Element-/Merkmalszuordnung bei Elementaraspekt und
+  Merkmalsgroßmeister; IN-Leiteigenschaft, 2.500-AP-Summe und Zaubermengen
+  bei Freizauberei; Attributsumme und Semipermanenz-ZfW beim Artefaktschmied;
+  passende RK bei Infinitum-Runen. Die fehlenden Bedingungen brauchen
+  gezielte Unterstützung im Regelmodul, keine Namensheuristik im Widget.
+- **Dämonische Ausschlüsse:** Elementarharmonisierte Aura benötigt ein
+  Vorteilsverbot für Affinität zu Dämonen, Ausschlüsse dämonischer
+  Merkmalskenntnisse/Begabungen und eine Paktprüfung. Der aktuelle Parser
+  unterstützt kein `vorteil_verboten`; daher bleibt dies ein Hinweis.
+- **Ritualkenntnis-Abgleich:** Der aktuelle Wertprüfer gleicht benannte RK
+  textuell ab, nicht über die Traditionsalias-Tabelle. Unterschiedliche
+  Benennungen freier Ritualkategorien können falsch negative Ergebnisse
+  liefern; insbesondere schamanische Teilfertigkeiten gezielt auflösen.
+- **Elfische Zauberkontrolle:** eingeschränkte Kenntnis aus der elfischen
+  Repräsentation für höhere SF nur berücksichtigen, wenn die damit verwendeten
+  Zauber ebenfalls elfisch gesprochen werden (WdH S. 292, 4831–4832).
+- **Eigene Magiedialoge:** die vollständige Prüfung beim Erwerb von
+  Repräsentationen, Merkmalskenntnissen und Zauberspezialisierungen ist
+  gesondert abzugleichen; deren `nur_information`-Katalogeinträge ersetzen
+  keine Prüfung im zugehörigen Ablauf.
+
+**Validierung am 11. Oktober 2026:** `flutter analyze` ohne Befunde;
+139 bestehende Tests aus Katalog-/Schema-, Voraussetzungsauswerter-,
+Traditions-/Heldenkontext-, Varianten- und Stufenkettenprüfungen bestanden
+(`--concurrency=1`, acht Testdateien). Zusätzlich geprüft: 105 eindeutige
+Einträge, ausschließlich bekannte Bedingungsarten, keine namenlosen
+RK-Bedingungen, korrekte UTF-8-Texte sowie unveränderte IDs, Namen,
+Aliasnamen, Varianten, AP-Kosten und Ketten. Keine Vollsuite und keine
+Behauptung vollständiger automatischer Prüfung der oben offenen Regeln.
 
 ### Allgemeine Sonderfertigkeiten: Voraussetzungen
 

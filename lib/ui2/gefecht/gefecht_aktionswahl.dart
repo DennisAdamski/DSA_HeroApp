@@ -8,7 +8,6 @@ import 'package:dsa_heldenverwaltung/rules/derived/gefecht_freigabe_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_held_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_wirken_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/probe_request_rules.dart';
-import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_initiative_provider.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_provider.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
@@ -27,7 +26,7 @@ Future<void> zeigeGefechtsBenannteAktion({
   required KartoGefechtsAdapter bestand,
 }) async {
   final snapshot = ref.read(heroComputedProvider(heroId)).asData?.value;
-  final katalog = ref.read(rulesCatalogProvider).asData?.value;
+  final katalog = ref.read(heroRulesCatalogProvider(heroId)).asData?.value;
   final s = ref.read(gefechtMitInitiativeProvider(heroId));
   if (snapshot == null || s == null) return;
   final w = gefechtswerteFuer(snapshot, katalog: katalog);

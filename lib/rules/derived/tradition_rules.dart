@@ -22,6 +22,8 @@ class TraditionDef {
     required this.name,
     required this.leiteigenschaft,
     this.repraesentation = '',
+    this.ritualKnowledgeName = '',
+    this.ritualLearningComplexity = 'E',
     this.aliasNamen = const <String>[],
   });
 
@@ -39,12 +41,23 @@ class TraditionDef {
   /// Alchimist, Ferkina-Besessener).
   final String repraesentation;
 
+  /// Name der gemeinsamen Ritualkenntnis; leer ohne einzelne Kenntnis.
+  /// Schamanen behalten ihre vier unabhängigen Ritualkenntnisse.
+  final String ritualKnowledgeName;
+
+  /// Basislernspalte vor fremder Tradition und individuellen Lernmodifikatoren.
+  final String ritualLearningComplexity;
+
   /// Weitere Schreibweisen, unter denen die Tradition in Katalogtexten und
   /// Ritualkenntnissen auftaucht (`RK Gildenmagie`, `gildenmagisch`).
   final List<String> aliasNamen;
 
   /// Alle Namen, unter denen diese Tradition erkannt wird.
-  List<String> get alleNamen => <String>[name, ...aliasNamen];
+  List<String> get alleNamen => <String>[
+    name,
+    if (ritualKnowledgeName.isNotEmpty) ritualKnowledgeName,
+    ...aliasNamen,
+  ];
 }
 
 /// Alle bekannten Zaubertraditionen.
@@ -54,6 +67,7 @@ class TraditionDef {
 const List<TraditionDef> kTraditionen = <TraditionDef>[
   TraditionDef(
     id: 'achaz_kristallomant',
+    ritualKnowledgeName: 'Kristallomantie',
     name: 'Achaz-Kristallomant',
     leiteigenschaft: 'IN',
     repraesentation: 'Ach',
@@ -73,6 +87,7 @@ const List<TraditionDef> kTraditionen = <TraditionDef>[
   ),
   TraditionDef(
     id: 'druide',
+    ritualKnowledgeName: 'Druiden',
     name: 'Druide',
     leiteigenschaft: 'KL',
     repraesentation: 'Dru',
@@ -87,6 +102,7 @@ const List<TraditionDef> kTraditionen = <TraditionDef>[
   ),
   TraditionDef(
     id: 'geode_herr_der_erde',
+    ritualKnowledgeName: 'Geode (Herr der Erde)',
     name: 'Geode (Herr der Erde)',
     leiteigenschaft: 'KL',
     repraesentation: 'Geo',
@@ -100,6 +116,7 @@ const List<TraditionDef> kTraditionen = <TraditionDef>[
   ),
   TraditionDef(
     id: 'geode_diener_sumus',
+    ritualKnowledgeName: 'Geode (Diener Sumus)',
     name: 'Geode (Diener Sumus)',
     leiteigenschaft: 'IN',
     repraesentation: 'Geo',
@@ -107,6 +124,7 @@ const List<TraditionDef> kTraditionen = <TraditionDef>[
   ),
   TraditionDef(
     id: 'hexe',
+    ritualKnowledgeName: 'Hexenmagie',
     name: 'Hexe',
     leiteigenschaft: 'IN',
     repraesentation: 'Hex',
@@ -114,6 +132,7 @@ const List<TraditionDef> kTraditionen = <TraditionDef>[
   ),
   TraditionDef(
     id: 'gildenmagier',
+    ritualKnowledgeName: 'Gildenmagie',
     name: 'Gildenmagier',
     leiteigenschaft: 'KL',
     repraesentation: 'Mag',
@@ -128,6 +147,8 @@ const List<TraditionDef> kTraditionen = <TraditionDef>[
   ),
   TraditionDef(
     id: 'scharlatan',
+    ritualKnowledgeName: 'Scharlatanerie',
+    ritualLearningComplexity: 'D',
     name: 'Scharlatan',
     leiteigenschaft: 'KL',
     repraesentation: 'Srl',
@@ -136,30 +157,36 @@ const List<TraditionDef> kTraditionen = <TraditionDef>[
   // Traditionen mit Ritualkenntnis, aber ohne Repraesentation.
   TraditionDef(
     id: 'alchimist',
+    ritualKnowledgeName: 'Alchimie',
+    ritualLearningComplexity: 'D',
     name: 'Alchimist',
     leiteigenschaft: 'KL',
     aliasNamen: <String>['Alchimie', 'Alchimisten'],
   ),
   TraditionDef(
     id: 'zibilja',
+    ritualKnowledgeName: 'Zibilja',
     name: 'Zibilja',
     leiteigenschaft: 'KL',
     aliasNamen: <String>['Zibiljas'],
   ),
   TraditionDef(
     id: 'derwisch',
+    ritualKnowledgeName: 'Derwisch',
     name: 'Derwisch',
     leiteigenschaft: 'IN',
     aliasNamen: <String>['Derwische'],
   ),
   TraditionDef(
     id: 'durro_dun',
+    ritualKnowledgeName: 'Durro-Dûn',
     name: 'Durro-Dûn',
     leiteigenschaft: 'IN',
     aliasNamen: <String>['Durro Dun', 'Durro-Dun'],
   ),
   TraditionDef(
     id: 'ferkina_besessener',
+    ritualKnowledgeName: 'Ferkina-Besessener',
     name: 'Ferkina-Besessener',
     leiteigenschaft: 'IN',
     aliasNamen: <String>['Ferkina', 'Ferkina-Besessene'],
@@ -172,6 +199,7 @@ const List<TraditionDef> kTraditionen = <TraditionDef>[
   ),
   TraditionDef(
     id: 'zaubertaenzer',
+    ritualKnowledgeName: 'Zaubertanz',
     name: 'Zaubertänzer',
     leiteigenschaft: 'IN',
     aliasNamen: <String>['Zaubertanz', 'Zaubertänze'],

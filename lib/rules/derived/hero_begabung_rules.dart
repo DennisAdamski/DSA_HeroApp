@@ -102,6 +102,14 @@ class HeroBegabungen {
   /// Ob ueberhaupt eine Begabung oder Unfaehigkeit vorliegt.
   bool get istLeer => _wirkungen.isEmpty;
 
+  /// Merkmale (normalisiert, etwa `elementar (erz)`), fuer die der Held eine
+  /// Begabung besitzt.
+  Set<String> get begabteMerkmale => <String>{
+    for (final wirkung in _wirkungen)
+      if (wirkung.ziel == 'merkmal' && wirkung.betrag > 0)
+        _schluessel(wirkung.auswahl),
+  };
+
   /// Befund fuer ein Talent (einschliesslich Kampftalente).
   LernspaltenBefund talent(TalentDef def) {
     if (_wirkungen.isEmpty) {

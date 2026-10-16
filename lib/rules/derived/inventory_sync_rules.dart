@@ -2,6 +2,7 @@ import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config/inventar_verweise.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/inventar_menge_rules.dart';
 
 // Das Verweisformat liegt in der Domain, weil `HeroSheet.fromJson` Altdaten
 // schon beim Laden umstellt; Aufrufer erreichen es weiterhin ueber diese Datei.
@@ -25,10 +26,20 @@ export 'package:dsa_heldenverwaltung/domain/combat_config/inventar_verweise.dart
 ///
 /// Items ohne Namen (nach trim) werden uebersprungen.
 /// Die Reihenfolge ist stabil: Waffen → deren Geschosse → Ruestung → Nebenhand.
+/// Jeder Eintrag traegt die Instanz-ID, auf die sein Slot verweist
+/// (`inventarInstanzId`, ARCH-03), sonst keine.
+///
+/// Ausgeruestet — und damit mit wirksamen Inventarmodifikatoren — ist eine
+/// Waffe nur in der Hand (gewaehlte Hauptwaffe oder Nebenhand), ein Schild
+/// bzw. eine Parierwaffe nur in der Nebenhand, ein Ruestungsteil nur
+/// angelegt (Entscheidung vom 07.10.2026). So wirken Modifikatoren auf
+/// dieselben Exemplare wie die Kampfwerte.
 List<HeroInventoryEntry> buildExpectedLinkedEntries(CombatConfig config) {
   final result = <HeroInventoryEntry>[];
+  final slots = config.weaponSlots;
 
-  for (final slot in config.weaponSlots) {
+  for (var index = 0; index < slots.length; index++) {
+    final slot = slots[index];
     final name = slot.name.trim();
     if (name.isEmpty) continue;
 
@@ -40,7 +51,8 @@ List<HeroInventoryEntry> buildExpectedLinkedEntries(CombatConfig config) {
         source: InventoryItemSource.waffe,
         sourceRef: waffenVerweis.sourceRef,
         slotRef: waffenVerweis.slotRef,
-        istAusgeruestet: true,
+        instanzId: _instanzOderNull(slot.inventarInstanzId),
+        istAusgeruestet: _waffeInDerHand(config, index),
         isMagisch: slot.isArtifact,
         magischDescription: slot.artifactDescription,
         isGeweiht: slot.isGeweiht,
@@ -61,6 +73,7 @@ List<HeroInventoryEntry> buildExpectedLinkedEntries(CombatConfig config) {
             source: InventoryItemSource.geschoss,
             sourceRef: geschossVerweis.sourceRef,
             slotRef: geschossVerweis.slotRef,
+            instanzId: _instanzOderNull(proj.inventarInstanzId),
             istAusgeruestet: false,
           ),
         );
@@ -79,6 +92,7 @@ List<HeroInventoryEntry> buildExpectedLinkedEntries(CombatConfig config) {
         source: InventoryItemSource.ruestung,
         sourceRef: ruestungsVerweis.sourceRef,
         slotRef: ruestungsVerweis.slotRef,
+        instanzId: _instanzOderNull(piece.inventarInstanzId),
         istAusgeruestet: piece.isActive,
         isMagisch: piece.isArtifact,
         magischDescription: piece.artifactDescription,
@@ -88,7 +102,9 @@ List<HeroInventoryEntry> buildExpectedLinkedEntries(CombatConfig config) {
     );
   }
 
-  for (final equipment in config.offhandEquipment) {
+  final teile = config.offhandEquipment;
+  for (var index = 0; index < teile.length; index++) {
+    final equipment = teile[index];
     final name = equipment.name.trim();
     if (name.isEmpty) continue;
     final nebenhandVerweis = verweisFuerNebenhand(equipment);
@@ -99,7 +115,8 @@ List<HeroInventoryEntry> buildExpectedLinkedEntries(CombatConfig config) {
         source: InventoryItemSource.nebenhand,
         sourceRef: nebenhandVerweis.sourceRef,
         slotRef: nebenhandVerweis.slotRef,
-        istAusgeruestet: true,
+        instanzId: _instanzOderNull(equipment.inventarInstanzId),
+        istAusgeruestet: config.offhandAssignment.equipmentIndex == index,
         isMagisch: equipment.isArtifact,
         magischDescription: equipment.artifactDescription,
         isGeweiht: equipment.isGeweiht,
@@ -109,6 +126,18 @@ List<HeroInventoryEntry> buildExpectedLinkedEntries(CombatConfig config) {
   }
 
   return result;
+}
+
+// Ob die Waffe an [index] gefuehrt wird: als gewaehlte Hauptwaffe oder in
+// der Nebenhand.
+bool _waffeInDerHand(CombatConfig config, int index) {
+  final haupt = config.hasSelectedWeapon && config.selectedWeaponIndex == index;
+  return haupt || config.offhandAssignment.weaponIndex == index;
+}
+
+// Leere Instanz-ID am Slot heisst „noch nicht gebunden“.
+String? _instanzOderNull(String instanzId) {
+  return instanzId.isEmpty ? null : instanzId;
 }
 
 // ---------------------------------------------------------------------------
@@ -127,11 +156,14 @@ List<HeroInventoryEntry> buildExpectedLinkedEntries(CombatConfig config) {
 ///    - Eintrag nicht mehr erwartet → wird entfernt.
 /// 3. Reihenfolge: manuelle Eintraege zuerst, dann verlinkte in Slot-Reihenfolge.
 ///
-/// Zugeordnet wird ueber den ID-Verweis `slotRef` (`inventar_verweise.dart`),
-/// sodass gleichnamige Exemplare unabhaengig bleiben und Umbenennen nichts
-/// verliert. Jeder Eintrag traegt danach beide Verweise; die Reihenfolge
-/// bleibt die, ueber die die veroeffentlichte App gleichnamige Eintraege
-/// paart.
+/// Zugeordnet wird zuerst ueber die Instanz, auf die der Slot verweist
+/// (`inventarInstanzId`, ARCH-03), dann ueber den ID-Verweis `slotRef`
+/// (`inventar_verweise.dart`), sodass gleichnamige Exemplare unabhaengig
+/// bleiben und Umbenennen nichts verliert. Ueber den Namen gleicht nur noch
+/// das Laden Altdaten ab (siehe [_passenderEintrag]). Jeder Eintrag traegt danach beide
+/// Verweise; die Reihenfolge bleibt die, ueber die die veroeffentlichte App
+/// gleichnamige Eintraege paart. Ein neu angelegter Eintrag bekommt seine
+/// Instanz-ID erst beim Speichern (`vergibInstanzIds`).
 List<HeroInventoryEntry> reconcileInventoryWithCombat(
   List<HeroInventoryEntry> existing,
   CombatConfig config,
@@ -148,22 +180,25 @@ List<HeroInventoryEntry> reconcileInventoryWithCombat(
   final fremdVerknuepft = existing.where(_istFremdVerknuepft).toList();
 
   final expected = buildExpectedLinkedEntries(config);
+  final slots = _SlotUebersicht(expected);
   final merged = <HeroInventoryEntry>[];
 
   for (final expectedEntry in expected) {
     // List-basiertes Matching: ersten Treffer nehmen und aus Pool entfernen.
-    final matchIdx = _passenderEintrag(unmatched, expectedEntry);
+    final matchIdx = _passenderEintrag(unmatched, expectedEntry, slots);
 
     if (matchIdx >= 0) {
       final existing_ = unmatched.removeAt(matchIdx);
       merged.add(_mergeEntry(base: expectedEntry, existing: existing_));
     } else {
-      final fremdIdx = _passenderEintrag(fremdVerknuepft, expectedEntry);
+      final fremdIdx = _passenderEintrag(fremdVerknuepft, expectedEntry, slots);
       if (fremdIdx >= 0) {
         fremdVerknuepft.removeAt(fremdIdx);
         continue;
       }
-      merged.add(expectedEntry);
+      // Die Instanz des Slots koennte noch ein anderer Eintrag tragen; ein
+      // neuer Eintrag bekommt seine eigene erst beim Speichern.
+      merged.add(expectedEntry.copyWith(instanzId: null));
     }
   }
 
@@ -173,23 +208,62 @@ List<HeroInventoryEntry> reconcileInventoryWithCombat(
 
 /// Index des Eintrags in [kandidaten], der zu [erwartet] gehoert, oder -1.
 ///
-/// Ein Eintrag mit `slotRef` passt nur ueber diesen. Verweist er auf einen
-/// entfernten Slot, faellt er weg, statt ueber den Namen an ein
-/// gleichnamiges Exemplar zu wandern (Befund ARCH-07-B2). Ueber den Namen
-/// zugeordnet werden nur Eintraege ohne `slotRef`, die zuletzt eine aeltere
-/// App-Version gespeichert hat — in Listenreihenfolge wie dort.
+/// Zuerst zaehlt die Instanz, auf die der Slot verweist
+/// ([_SlotUebersicht.passtPerInstanz]), dann der ID-Verweis `slotRef`.
+/// Verweist ein Eintrag auf einen entfernten Slot, faellt er weg, statt ueber
+/// den Namen an ein gleichnamiges Exemplar zu wandern (Befund ARCH-07-B2).
+///
+/// Ueber den Namen wird nicht mehr abgeglichen (ARCH-03, Schritt 3): Altdaten
+/// ohne `slotRef` ordnet einmalig das Laden zu (`migriereInventarVerweise`).
+/// Einzige Ausnahme sind Slots ohne ID; die gibt es nur im Speicher vor dem
+/// ersten Speichern, das ihnen vor dem Abgleich eine vergibt.
 int _passenderEintrag(
   List<HeroInventoryEntry> kandidaten,
   HeroInventoryEntry erwartet,
+  _SlotUebersicht slots,
 ) {
+  final perInstanz = kandidaten.indexWhere(
+    (entry) => slots.passtPerInstanz(entry, erwartet),
+  );
+  if (perInstanz >= 0) return perInstanz;
   final slotRef = erwartet.slotRef;
   if (slotRef != null) {
-    final perId = kandidaten.indexWhere((entry) => entry.slotRef == slotRef);
-    if (perId >= 0) return perId;
+    return kandidaten.indexWhere((entry) => entry.slotRef == slotRef);
   }
   return kandidaten.indexWhere(
     (entry) => entry.slotRef == null && entry.sourceRef == erwartet.sourceRef,
   );
+}
+
+/// Die ID-Verweise aller erwarteten Slots, fuer die Instanzzuordnung.
+class _SlotUebersicht {
+  _SlotUebersicht(List<HeroInventoryEntry> erwartet)
+    : _slotRefs = <String>{
+        for (final eintrag in erwartet)
+          if (eintrag.slotRef != null) eintrag.slotRef!,
+      };
+
+  final Set<String> _slotRefs;
+
+  /// Ob [entry] ueber die Instanz zum Slot von [erwartet] gehoert.
+  ///
+  /// Verlangt dieselbe Instanz-ID und dieselbe Quelle. Verweist [entry]
+  /// per `slotRef` auf einen **anderen bestehenden** Slot, bleibt er dort:
+  /// Dann ist die Instanz am erwarteten Slot veraltet, etwa weil der Slot
+  /// eine Kopie ist, die die Instanz ihres Vorbilds mitgenommen hat. Ohne
+  /// `slotRef` oder mit einem auf einen entfernten Slot entscheidet die
+  /// Instanz. Jeder Eintrag wird hoechstens einmal vergeben; zwei Slots
+  /// mit derselben Instanz teilen sich so nie ein Exemplar.
+  bool passtPerInstanz(HeroInventoryEntry entry, HeroInventoryEntry erwartet) {
+    final instanzId = erwartet.instanzId;
+    if (instanzId == null ||
+        entry.instanzId != instanzId ||
+        entry.source != erwartet.source) {
+      return false;
+    }
+    final ref = entry.slotRef;
+    return ref == null || ref == erwartet.slotRef || !_slotRefs.contains(ref);
+  }
 }
 
 /// Aktualisiert [existing] um die Felder, die der Kampf-Slot fuehrt.
@@ -203,14 +277,17 @@ int _passenderEintrag(
 /// [source], [sourceRef], [slotRef], [itemType]) sowie die Markierungen
 /// magisch/geweiht (CombatConfig ist die Quelle der Wahrheit). Bei
 /// Ausruestung kommt [istAusgeruestet] aus dem Slot, bei Geschossen
-/// [anzahl] (bidirektionaler Sync).
+/// [anzahl] (bidirektionaler Sync, der Slot fuehrt). Traegt der Eintrag
+/// schon eine `menge`, folgt sie mit; neu vergeben wird sie nur beim
+/// Speichern (`ueberfuehreInventarMengen`), damit der Abgleich auf
+/// Bestandsdaten ein Fixpunkt bleibt.
 HeroInventoryEntry _mergeEntry({
   required HeroInventoryEntry base,
   required HeroInventoryEntry existing,
 }) {
   final isProjectile = base.source == InventoryItemSource.geschoss;
 
-  return existing.copyWith(
+  final merged = existing.copyWith(
     gegenstand: base.gegenstand,
     itemType: base.itemType,
     source: base.source,
@@ -223,6 +300,10 @@ HeroInventoryEntry _mergeEntry({
     istAusgeruestet: isProjectile ? null : base.istAusgeruestet,
     anzahl: isProjectile ? base.anzahl : null,
   );
+  if (!isProjectile || existing.menge == null) {
+    return merged;
+  }
+  return mitInventarMenge(merged, int.parse(base.anzahl));
 }
 
 /// Verweist [entry] auf einen Slot, traegt aber eine Quelle, die diese
@@ -242,41 +323,41 @@ bool _isCombatLinkedInventoryEntry(HeroInventoryEntry entry) {
 /// Uebernimmt magische und geweihte Markierungen aus verlinkten Inventar-Eintraegen.
 ///
 /// Verarbeitet nur Eintraege mit [HeroInventoryEntry.sourceRef], deren Quelle
-/// mit dem Kampf-Tab verknuepft ist. Zugeordnet wird wie im Abgleich: ueber
-/// `slotRef`, sonst — nur fuer Eintraege ohne `slotRef` — ueber den Namen,
-/// stabil in Listenreihenfolge.
+/// mit dem Kampf-Tab verknuepft ist. Gepaart wird genau wie im Abgleich
+/// ([reconcileInventoryWithCombat]): zuerst ueber die Instanz des Slots, dann
+/// ueber `slotRef`, sonst — nur fuer Eintraege ohne `slotRef` — ueber den
+/// Namen, stabil in Listenreihenfolge.
 CombatConfig applyLinkedInventoryDetailsToConfig(
   CombatConfig config,
   List<HeroInventoryEntry> entries,
 ) {
-  final weaponEntries = _VerknuepfteEintraege(
-    entries,
-    InventoryItemSource.waffe,
-  );
-  final armorEntries = _VerknuepfteEintraege(
-    entries,
-    InventoryItemSource.ruestung,
-  );
-  final offhandEntries = _VerknuepfteEintraege(
-    entries,
-    InventoryItemSource.nebenhand,
-  );
+  final paare = _paareMitSlots(entries, config).iterator;
+  // Benannte Slots in der Reihenfolge von [buildExpectedLinkedEntries].
+  HeroInventoryEntry? eintragFuer(String name) {
+    if (name.trim().isEmpty) return null;
+    paare.moveNext();
+    return paare.current;
+  }
 
-  final updatedWeaponSlots = config.weaponSlots
-      .map((slot) {
-        final entry = weaponEntries.nimm(verweisFuerWaffe(slot));
-        return _applyInventoryDetailsToWeapon(slot, entry);
-      })
-      .toList(growable: false);
+  final updatedWeaponSlots = <MainWeaponSlot>[];
+  for (final slot in config.weaponSlots) {
+    final entry = eintragFuer(slot.name);
+    updatedWeaponSlots.add(_applyInventoryDetailsToWeapon(slot, entry));
+    if (slot.name.trim().isEmpty || !slot.fuehrtGeschosse) continue;
+    // Geschosse tragen keine Markierungen; ihre Paare werden uebersprungen.
+    for (final geschoss in slot.rangedProfile.projectiles) {
+      eintragFuer(geschoss.name);
+    }
+  }
   final updatedArmorPieces = config.armor.pieces
       .map((piece) {
-        final entry = armorEntries.nimm(verweisFuerRuestung(piece));
+        final entry = eintragFuer(piece.name);
         return _applyInventoryDetailsToArmor(piece, entry);
       })
       .toList(growable: false);
   final updatedOffhandEntries = config.offhandEquipment
       .map((equipment) {
-        final entry = offhandEntries.nimm(verweisFuerNebenhand(equipment));
+        final entry = eintragFuer(equipment.name);
         return _applyInventoryDetailsToOffhand(equipment, entry);
       })
       .toList(growable: false);
@@ -296,45 +377,26 @@ CombatConfig applyLinkedInventoryDetailsToConfig(
   );
 }
 
-/// Verknuepfte Eintraege einer Quelle, zum Nachschlagen je Slot.
+/// Paart die erwarteten Eintraege aus [config] mit den verknuepften
+/// Eintraegen aus [entries], wie der Abgleich es tut.
 ///
-/// Eintraege mit `slotRef` stehen nur unter diesem, Eintraege ohne unter
-/// ihrem Namensverweis. Jeder Eintrag wird hoechstens einmal vergeben.
-class _VerknuepfteEintraege {
-  _VerknuepfteEintraege(
-    List<HeroInventoryEntry> entries,
-    InventoryItemSource source,
-  ) {
-    for (final entry in entries) {
-      final ref = entry.sourceRef;
-      if (entry.source != source || ref == null) continue;
-      final slotRef = entry.slotRef;
-      final ziel = slotRef == null ? _nachName : _nachSlot;
-      ziel.putIfAbsent(slotRef ?? ref, () => <HeroInventoryEntry>[]).add(entry);
-    }
-  }
-
-  final Map<String, List<HeroInventoryEntry>> _nachSlot = {};
-  final Map<String, List<HeroInventoryEntry>> _nachName = {};
-
-  /// Naechster freier Eintrag zum Slot hinter [verweis], sonst `null`.
-  HeroInventoryEntry? nimm(SlotVerweis verweis) {
-    final slotRef = verweis.slotRef;
-    final perId = slotRef == null ? null : _naechster(_nachSlot, slotRef);
-    return perId ?? _naechster(_nachName, verweis.sourceRef);
-  }
-
-  // Entnimmt den ersten Eintrag unter [schluessel].
-  static HeroInventoryEntry? _naechster(
-    Map<String, List<HeroInventoryEntry>> gruppen,
-    String schluessel,
-  ) {
-    final eintraege = gruppen[schluessel];
-    if (eintraege == null || eintraege.isEmpty) {
-      return null;
-    }
-    return eintraege.removeAt(0);
-  }
+/// Liefert je Eintrag von [buildExpectedLinkedEntries] den gepaarten Eintrag
+/// oder `null`, in derselben Reihenfolge. Jeder Eintrag wird hoechstens
+/// einmal vergeben.
+List<HeroInventoryEntry?> _paareMitSlots(
+  List<HeroInventoryEntry> entries,
+  CombatConfig config,
+) {
+  final frei = entries.where(_isCombatLinkedInventoryEntry).toList();
+  final erwartet = buildExpectedLinkedEntries(config);
+  final slots = _SlotUebersicht(erwartet);
+  return <HeroInventoryEntry?>[
+    for (final eintrag in erwartet)
+      switch (_passenderEintrag(frei, eintrag, slots)) {
+        < 0 => null,
+        final index => frei.removeAt(index),
+      },
+  ];
 }
 
 MainWeaponSlot _applyInventoryDetailsToWeapon(

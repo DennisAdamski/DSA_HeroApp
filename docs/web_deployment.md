@@ -39,6 +39,11 @@ Kurz-Commit mit dem Branch-Stand überein, ist die neueste Fassung geladen.
 Ohne Angaben steht dort `Lokaler Entwicklungsstand`; `-dirty` markiert einen
 manuellen Build mit uncommitteten Änderungen. Logik: `lib/domain/app_build_info.dart`.
 
+CI-Builds auf `test` erhalten außerdem explizit die URL von `feedbackApiTest`.
+Produktionsbuilds erhalten erst nach separater Freigabe und Bereitstellung der
+Produktionsfunction eine Feedback-URL. Der Testbuild verifiziert, dass die
+Test-URL tatsächlich im Webbundle enthalten ist.
+
 ## Betrieb und manuelle Abnahme
 
 Anmeldung, Heldenladen, Cloud-Sync, Avatare und Import/Export im Browser prüfen.
@@ -68,3 +73,11 @@ internen GITHUB_TOKEN keinen weiteren Push-Workflow startet. Analyse, Tests,
 LOC-Prüfung und Web-Build bleiben Voraussetzungen für das Test-Deployment.
 Ist main bereits in test enthalten, gibt es keinen neuen Commit oder CI-Lauf.
 Der Sync ist unabhängig vom Erfolg der main-CI; beide Branches prüfen ihren Stand.
+
+Der Aufruf `uses: ./.github/workflows/flutter-tests.yml` lädt die Workflow-Datei
+aus dem Commit des aufrufenden Laufs, also immer von `main`. Das übergebene
+`ref` bestimmt nur, welcher Code ausgecheckt und gebaut wird. CI-Änderungen,
+die nur auf `test` liegen, wirken in Abgleichsläufen deshalb erst nach dem
+nächsten Release. Beobachtet: Der Test-Build `e784f4e` (Abgleich vor PR #221)
+zeigte „Lokaler Entwicklungsstand“, weil `main` damals noch ohne
+`--dart-define=BUILD_COMMIT` baute.

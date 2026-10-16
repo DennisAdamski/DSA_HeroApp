@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_advancement_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
@@ -78,6 +80,223 @@ void main() {
     );
   }
 
+  // Eine echte geplante Steigerung muss alle Lese- und Abbruchwege überleben.
+  Future<void> plan(WidgetTester tester, ProviderContainer container) async {
+    await mode(tester, 'Entwicklung planen');
+    final session = container.read(advancementSessionProvider('rondra'))!;
+    container
+        .read(advancementSessionProvider('rondra').notifier)
+        .add(
+          HeroAdvancementEntry(
+            id: 'planned-mut',
+            sessionId: session.sessionId,
+            createdAt: DateTime.utc(2026, 10, 9),
+            kind: AdvancementKind.attribute,
+            targetId: 'mu',
+            label: 'Mut',
+            fromValue: 14,
+            toValue: 15,
+            apCost: 100,
+          ),
+        );
+    await tester.pumpAndSettle();
+    await mode(tester, 'Held verwalten');
+  }
+
+  for (final width in [390.0, 1440.0]) {
+    testWidgets('Planung bleibt beim Ansehen und Abbrechen bei $width dp', (
+      tester,
+    ) async {
+      final repository = FakeRepository(heroes: [testHero()]);
+      final container = await pump(
+        tester,
+        width: width,
+        repository: repository,
+      );
+      await plan(tester, container);
+      final session = container.read(advancementSessionProvider('rondra'))!;
+      expect(find.widgetWithText(Tab, 'Inventar'), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byKey(const ValueKey('overview-field-name')),
+          matching: find.byType(TextField),
+        ),
+        findsNothing,
+      );
+      final bearbeiten = width < 744
+          ? find.byTooltip('Bearbeiten')
+          : find.text('Bearbeiten');
+      await tester.tap(bearbeiten.first);
+      await tester.pumpAndSettle();
+      expect(find.text('Planung verwerfen und bearbeiten'), findsOneWidget);
+      await tester.tap(find.text('Abbrechen').last);
+      await tester.pumpAndSettle();
+      expect(
+        container.read(advancementSessionProvider('rondra')),
+        same(session),
+      );
+      expect(
+        find.descendant(
+          of: find.byKey(const ValueKey('overview-field-name')),
+          matching: find.byType(TextField),
+        ),
+        findsNothing,
+      );
+      expect((await repository.loadHeroById('rondra'))!.attributes.mu, 14);
+
+      await tester.tap(bearbeiten.first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Planung verwerfen und bearbeiten'));
+      await tester.pumpAndSettle();
+      expect(container.read(advancementSessionProvider('rondra')), isNull);
+      expect(find.byKey(const ValueKey('overview-field-name')), findsOneWidget);
+      await tester.enterText(
+        find.byKey(const ValueKey('overview-field-name')),
+        'Bearbeitet',
+      );
+      await tester.tap(
+        width < 744 ? find.byTooltip('Speichern') : find.text('Speichern'),
+      );
+      await tester.pumpAndSettle();
+      final saved = (await repository.loadHeroById('rondra'))!;
+      expect(saved.name, 'Bearbeitet');
+      expect(saved.attributes.mu, 14);
+      expect(saved.advancementHistory, isEmpty);
+    });
+  }
+
+  testWidgets('Inventar fragt vor direktem Hinzufügen und erhält den Plan', (
+    tester,
+  ) async {
+    final container = await pump(tester);
+    await plan(tester, container);
+    final session = container.read(advancementSessionProvider('rondra'))!;
+    final inventar = find.widgetWithText(Tab, 'Inventar');
+    await tester.ensureVisible(inventar);
+    await tester.tap(inventar);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('inventory-header-add')));
+    await tester.pumpAndSettle();
+    expect(find.text('Planung verwerfen und bearbeiten'), findsOneWidget);
+    await tester.tap(find.text('Abbrechen').last);
+    await tester.pumpAndSettle();
+    expect(container.read(advancementSessionProvider('rondra')), same(session));
+    await tester.tap(find.byKey(const ValueKey('inventory-header-add')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Planung verwerfen und bearbeiten'));
+    await tester.pumpAndSettle();
+    expect(container.read(advancementSessionProvider('rondra')), isNull);
+    expect(find.byKey(const ValueKey('inventory-editor-name')), findsOneWidget);
+  });
+
+  testWidgets('Geld bleibt nur lesbar und Münzschritt fragt vor der Änderung', (
+    tester,
+  ) async {
+    final repository = FakeRepository(
+      heroes: [testHero().copyWith(dukaten: '10')],
+    );
+    final container = await pump(tester, repository: repository);
+    await plan(tester, container);
+    final session = container.read(advancementSessionProvider('rondra'))!;
+    final inventar = find.widgetWithText(Tab, 'Inventar');
+    await tester.ensureVisible(inventar);
+    await tester.tap(inventar);
+    await tester.pumpAndSettle();
+    final geldfeld = find.descendant(
+      of: find.byKey(const ValueKey('inventory-dukaten-field')),
+      matching: find.byType(TextField),
+    );
+    expect(tester.widget<TextField>(geldfeld).readOnly, isTrue);
+    final plus = find.byKey(
+      const ValueKey('inventory-dukaten-increment-dukaten'),
+    );
+    await tester.tap(plus);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Abbrechen'));
+    await tester.pumpAndSettle();
+    expect(container.read(advancementSessionProvider('rondra')), same(session));
+    expect((await repository.loadHeroById('rondra'))!.dukaten, '10');
+    await tester.tap(plus);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Planung verwerfen und bearbeiten'));
+    await tester.pumpAndSettle();
+    expect(container.read(advancementSessionProvider('rondra')), isNull);
+    expect((await repository.loadHeroById('rondra'))!.dukaten, '11');
+    expect(tester.widget<TextField>(geldfeld).readOnly, isFalse);
+  });
+
+  testWidgets('Inventardetails lassen sich ohne Verwerfen des Plans ansehen', (
+    tester,
+  ) async {
+    final repository = FakeRepository(
+      heroes: [
+        testHero().copyWith(
+          inventoryEntries: [
+            const HeroInventoryEntry(
+              gegenstand: 'Seil',
+              beschreibung: 'Besonders lang',
+            ),
+          ],
+        ),
+      ],
+    );
+    final container = await pump(tester, repository: repository);
+    await plan(tester, container);
+    final session = container.read(advancementSessionProvider('rondra'))!;
+    final inventar = find.widgetWithText(Tab, 'Inventar');
+    await tester.ensureVisible(inventar);
+    await tester.tap(inventar);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('inventory-row-open-0')));
+    await tester.pumpAndSettle();
+    expect(container.read(advancementSessionProvider('rondra')), same(session));
+    expect(find.text('Geplante Entwicklung verwerfen?'), findsNothing);
+    expect(find.byKey(const ValueKey('inventory-editor-name')), findsOneWidget);
+    final speichern = tester.widget<IconButton>(
+      find.byKey(const ValueKey('inventory-editor-save')),
+    );
+    expect(speichern.onPressed, isNull);
+    await tester.tap(find.widgetWithText(TextButton, 'Bearbeiten'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Abbrechen'));
+    await tester.pumpAndSettle();
+    expect(container.read(advancementSessionProvider('rondra')), same(session));
+    expect(
+      (await repository.loadHeroById('rondra'))!
+          .inventoryEntries
+          .single
+          .gegenstand,
+      'Seil',
+    );
+  });
+
+  testWidgets(
+    'direktes + Chronik legt bei abgebrochener Warnung keinen Entwurf an',
+    (tester) async {
+      final container = await pump(tester, width: 1440);
+      await plan(tester, container);
+      final session = container.read(advancementSessionProvider('rondra'))!;
+      final notizen = find.widgetWithText(
+        Tab,
+        'Chroniken, Kontakte & Abenteuer',
+      );
+      await tester.ensureVisible(notizen);
+      await tester.tap(notizen);
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('notes-add-note')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Abbrechen').last);
+      await tester.pumpAndSettle();
+      expect(
+        container.read(advancementSessionProvider('rondra')),
+        same(session),
+      );
+      expect(find.byTooltip('Speichern'), findsNothing);
+      expect(find.widgetWithText(FilledButton, 'Speichern'), findsNothing);
+      expect(find.text('Noch keine Chroniken vorhanden.'), findsOneWidget);
+    },
+  );
+
   testWidgets('echter Editor schützt Moduswechsel vor fehlgeschlagenem Save', (
     tester,
   ) async {
@@ -97,7 +316,13 @@ void main() {
     await mode(tester, 'Spielen');
     await tester.tap(find.text('Ja'));
     await tester.pumpAndSettle();
-    expect(find.byKey(const ValueKey('overview-field-name')), findsNothing);
+    expect(
+      find.descendant(
+        of: find.byKey(const ValueKey('overview-field-name')),
+        matching: find.byType(TextField),
+      ),
+      findsNothing,
+    );
     expect((await repository.loadHeroById('rondra'))!.name, 'Rondra');
   });
 
@@ -154,7 +379,7 @@ void main() {
       expect(find.text('Ressourcen'), findsOneWidget);
       expect(find.byKey(const ValueKey('advancement-history')), findsNothing);
       await mode(tester, 'Held verwalten');
-      expect(find.widgetWithText(Tab, 'Inventar'), findsNothing);
+      expect(find.widgetWithText(Tab, 'Inventar'), findsOneWidget);
       expect(find.text('Zur Planung'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });

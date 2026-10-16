@@ -1,8 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/inventory_modifier_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/inventory_sync_rules.dart';
 
 // ---------------------------------------------------------------------------
@@ -75,6 +78,8 @@ void main() {
       expect(entries[1].sourceRef, 'w:Bogen|p:Pfeil');
       expect(entries[1].itemType, InventoryItemType.verbrauchsgegenstand);
       expect(entries[1].anzahl, '20');
+      // `menge` vergibt erst das Speichern; der Abgleich bleibt ein Fixpunkt.
+      expect(entries[1].menge, isNull);
 
       expect(entries[2].gegenstand, 'Brandpfeil');
       expect(entries[2].anzahl, '5');
@@ -230,6 +235,7 @@ void main() {
         sourceRef: 'w:Bogen|p:Pfeil',
         itemType: InventoryItemType.verbrauchsgegenstand,
         anzahl: '5', // veraltet
+        menge: 5,
       );
       final config = _configWithRangedWeapon('Bogen', [
         const RangedProjectile(name: 'Pfeil', count: 20),
@@ -240,6 +246,7 @@ void main() {
         (e) => e.source == InventoryItemSource.geschoss,
       );
       expect(projEntry.anzahl, '20');
+      expect(projEntry.menge, 20);
     });
 
     test(
@@ -474,11 +481,44 @@ void main() {
       );
     });
 
-    test('Einträge ohne slotRef werden per Name in Reihenfolge zugeordnet', () {
+    test('der Abgleich ordnet nicht mehr über den Namen zu (ARCH-03)', () {
       final ergebnis = reconcileInventoryWithCombat([
         dolch('B', slotRef: 'w#b'),
         dolch('alt'),
       ], zweiDolche);
+
+      expect(ergebnis.map((e) => e.beschreibung), ['', 'B']);
+      expect(ergebnis.first.slotRef, 'w#a');
+    });
+
+    test('Altdaten ohne slotRef ordnet das Laden über den Namen zu', () {
+      final geladen = HeroSheet.fromJson(
+        HeroSheet(
+          id: 'h',
+          name: 'Alrik',
+          level: 1,
+          attributes: const Attributes(
+            mu: 12,
+            kl: 12,
+            inn: 12,
+            ch: 12,
+            ff: 12,
+            ge: 12,
+            ko: 12,
+            kk: 12,
+          ),
+          combatConfig: zweiDolche,
+          inventoryEntries: [
+            dolch('B', slotRef: 'w#b'),
+            dolch('alt'),
+          ],
+        ).toJson(),
+      );
+
+      final ergebnis = reconcileInventoryWithCombat(
+        geladen.inventoryEntries,
+        geladen.combatConfig,
+      );
 
       expect(ergebnis.map((e) => e.beschreibung), ['alt', 'B']);
       expect(ergebnis.first.slotRef, 'w#a');
@@ -548,6 +588,72 @@ void main() {
         9,
         reason: 'Der Namensverweis trifft immer den ersten Bogen.',
       );
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // Ausgerüstet heißt in der Hand (Entscheidung vom 07.10.2026)
+  // -------------------------------------------------------------------------
+  group('Modifikatoren wirken nur in der Hand', () {
+    const mutPlusEins = <InventoryItemModifier>[
+      InventoryItemModifier(
+        kind: InventoryModifierKind.attribut,
+        targetId: 'mu',
+        wert: 1,
+      ),
+    ];
+    const kampf = CombatConfig(
+      weapons: [
+        MainWeaponSlot(id: 's', name: 'Schwert'),
+        MainWeaponSlot(id: 'r', name: 'Runenklinge'),
+        MainWeaponSlot(id: 'd', name: 'Dolch'),
+      ],
+      selectedWeaponIndex: 0,
+      offhandEquipment: [
+        OffhandEquipmentEntry(id: 'b', name: 'Buckler'),
+        OffhandEquipmentEntry(id: 't', name: 'Turmschild'),
+      ],
+      offhandAssignment: OffhandAssignment(equipmentIndex: 1),
+    );
+
+    // Abgleich mit MU +1 an Runenklinge und Turmschild.
+    List<HeroInventoryEntry> abgeglichen(CombatConfig config) {
+      final erst = reconcileInventoryWithCombat(const [], config);
+      return reconcileInventoryWithCombat([
+        for (final e in erst)
+          e.gegenstand == 'Runenklinge' || e.gegenstand == 'Turmschild'
+              ? e.copyWith(modifiers: mutPlusEins)
+              : e,
+      ], config);
+    }
+
+    Map<String, bool> ausgeruestet(List<HeroInventoryEntry> eintraege) => {
+      for (final e in eintraege) e.gegenstand: e.istAusgeruestet,
+    };
+
+    test('Hauptwaffe, Nebenhandwaffe und Nebenhandteil in der Hand', () {
+      final eintraege = abgeglichen(
+        kampf.copyWith(
+          offhandAssignment: const OffhandAssignment(weaponIndex: 2),
+        ),
+      );
+
+      expect(ausgeruestet(eintraege), {
+        'Schwert': true,
+        'Runenklinge': false,
+        'Dolch': true,
+        'Buckler': false,
+        'Turmschild': false,
+      });
+      expect(aggregateInventoryModifiers(eintraege).attributeMods.mu, 0);
+    });
+
+    test('wechselt die Hand, folgen die Modifikatoren', () {
+      final eintraege = abgeglichen(kampf.copyWith(selectedWeaponIndex: 1));
+
+      expect(ausgeruestet(eintraege)['Runenklinge'], isTrue);
+      expect(ausgeruestet(eintraege)['Turmschild'], isTrue);
+      expect(aggregateInventoryModifiers(eintraege).attributeMods.mu, 2);
     });
   });
 }

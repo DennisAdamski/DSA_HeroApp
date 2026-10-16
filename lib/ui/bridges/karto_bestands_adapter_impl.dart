@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:dsa_heldenverwaltung/rules/derived/alchimika_elixier_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/avatar_rahmung_rules.dart';
 import 'package:dsa_heldenverwaltung/state/auth_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/bridges/karto_compat_theme.dart';
@@ -10,20 +11,34 @@ import 'package:dsa_heldenverwaltung/ui/bridges/karto_spiel_bruecke.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/advancement/advancement_catalog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/advancement/advancement_history_panel.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/auth/open_sign_in.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/artefakt_anwenden.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/elixier_einnehmen_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/vitalwirkung_anwenden_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/auxiliator_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/heroes_home_screen.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/settings_screen.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/begleiter_zustand_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/ressourcen_aenderung_rules.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_begleiter_tab.dart'
+    show zeigeVertrautenAktionen;
 import 'package:dsa_heldenverwaltung/ui/screens/shared/active_spell_effects_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/begleiter_zustand_aendern.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/inspector/widgets/inspector_arcane_effects_block.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/inspector/widgets/inspector_attribute_probes.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/inspector/widgets/inspector_combat_probes.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/inspector/widgets/inspector_dice_log_section.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_overview/hero_regelprofil_section.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/workspace/herleitung_suche_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/probe_quick_search.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/rest_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/schaden/schaden_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/workspace/schaden/schaden_ruecknahme.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_management_body.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/avatar_gallery_image.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_bestands_adapter.dart';
+import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
@@ -117,6 +132,84 @@ class KartoBestandsAdapterImpl
   @override
   Future<AttributeModifiers?> gefechtsAttributoWerte(BuildContext context) =>
       showAttributoInputDialog(context: context);
+
+  /// Öffnet den Auslösedialog des Artefakts (Matrixgeber oder Spruchspeicher)
+  /// unter dem kompatiblen Theme.
+  @override
+  Future<void> gefechtsMatrixAusloesen({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String heroId,
+    required HeroInventoryEntry eintrag,
+  }) => _withKartoCompatContext(
+    context,
+    (themedContext) => zeigeArtefaktAnwenden(
+      context: themedContext,
+      ref: ref,
+      heroId: heroId,
+      eintrag: eintrag,
+    ),
+  );
+
+  /// Öffnet den Anwendungsdialog eines Heiltranks o. Ä. unter dem kompatiblen
+  /// Theme; ein Katalogelixier mit Eigenschaftswirkung öffnet stattdessen den
+  /// Dialog „Elixier einnehmen“.
+  @override
+  Future<bool> gefechtsVitalwirkung({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String heroId,
+    required HeroInventoryEntry eintrag,
+  }) async {
+    var gebucht = false;
+    final elixier = hatElixierWirkung(
+      ref.read(heroRulesCatalogProvider(heroId)).valueOrNull,
+      eintrag,
+    );
+    await _withKartoCompatContext(
+      context,
+      (themedContext) async => gebucht = elixier
+          ? await zeigeElixierEinnehmen(
+              context: themedContext,
+              ref: ref,
+              heroId: heroId,
+              eintrag: eintrag,
+            )
+          : await zeigeVitalwirkungAnwenden(
+              context: themedContext,
+              ref: ref,
+              heroId: heroId,
+              eintrag: eintrag,
+            ),
+    );
+    return gebucht;
+  }
+
+  /// Öffnet den Einsatzdialog des Zaubertalismans unter dem kompatiblen Theme.
+  @override
+  Future<void> gefechtsAuxiliator({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String heroId,
+    required HeroInventoryEntry eintrag,
+    required String zauberId,
+    required int zfpStern,
+    required bool gelungen,
+    required String repraesentation,
+  }) => _withKartoCompatContext(
+    context,
+    (themedContext) => zeigeAuxiliator(
+      context: themedContext,
+      ref: ref,
+      heroId: heroId,
+      eintrag: eintrag,
+      zauberId: zauberId,
+      zfpStern: zfpStern,
+      gelungen: gelungen,
+      repraesentation: repraesentation,
+      zauberkostenGebucht: true,
+    ),
+  );
 
   /// Öffnet den vorhandenen Ressourcendialog mit Abschlusskosten.
   @override
@@ -212,7 +305,14 @@ class KartoBestandsAdapterImpl
   /// Baut das vorhandene Würfelprotokoll mit den Einträgen des Zustands.
   @override
   Widget spielProtokoll(HeroComputedSnapshot werte) => _KartoCompatHost(
-    child: InspectorDiceLogSection(entries: werte.state.diceLog),
+    child: InspectorDiceLogSection(
+      entries: werte.state.diceLog,
+      aktion: (eintrag) => schadenRuecknahmeAktion(
+        eintrag: eintrag,
+        heroId: werte.hero.id,
+        zustand: werte.state,
+      ),
+    ),
   );
 
   /// Baut Belastung, Wunden und Statuswerte des Bestands.
@@ -277,6 +377,62 @@ class KartoBestandsAdapterImpl
       MaterialPageRoute<void>(
         builder: (_) => _KartoCompatHost(
           child: SettingsScreen(beforeSurfaceChange: vorOberflaechenwechsel),
+        ),
+      ),
+    );
+  }
+
+  /// Öffnet die durchsuchbaren Berechnungsschritte des Bestands.
+  @override
+  Future<void> berechnungsschritte({
+    required BuildContext context,
+    required String heroId,
+  }) {
+    return _withKartoCompatContext(
+      context,
+      (themedContext) =>
+          showHerleitungsSuche(context: themedContext, heroId: heroId),
+    );
+  }
+
+  /// Öffnet die Regelprofil-Karte der Übersicht in einem Dialog.
+  @override
+  Future<void> regelprofil({
+    required BuildContext context,
+    required String heroId,
+  }) {
+    return _withKartoCompatContext(
+      context,
+      (themedContext) => showDialog<void>(
+        context: themedContext,
+        builder: (dialogContext) => Dialog(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 560),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Flexible(
+                  child: SingleChildScrollView(
+                    child: HeroRegelprofilSection(heroId: heroId),
+                  ),
+                ),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: Padding(
+                    padding: const EdgeInsets.all(8),
+                    child: TextButton(
+                      key: const ValueKey<String>(
+                        'karto-regelprofil-schliessen',
+                      ),
+                      onPressed: () => Navigator.of(dialogContext).pop(),
+                      child: const Text('Schließen'),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -348,6 +504,49 @@ class KartoBestandsAdapterImpl
         context: themedContext,
         heroId: heroId,
         ressource: ressource,
+      ),
+    );
+  }
+
+  /// Schreibt den laufenden Wert über den gemeinsamen Zustandsweg.
+  @override
+  Future<void> begleiterWertAendern({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String heroId,
+    required String begleiterId,
+    required BegleiterPool pool,
+    required RessourcenAenderung aenderung,
+  }) async {
+    final begleiter = ref
+        .read(heroByIdProvider(heroId))
+        ?.companions
+        .where((c) => c.id == begleiterId)
+        .firstOrNull;
+    if (begleiter == null) return;
+    await aendereBegleiterPool(
+      context: context,
+      ref: ref,
+      heroId: heroId,
+      begleiter: begleiter,
+      pool: pool,
+      aenderung: aenderung,
+    );
+  }
+
+  /// Öffnet die vorhandenen Vertrautenaktionen des Begleiter-Tabs.
+  @override
+  Future<void> vertrautenAktionen({
+    required BuildContext context,
+    required String heroId,
+    required String begleiterId,
+  }) {
+    return _withKartoCompatContext(
+      context,
+      (themedContext) => zeigeVertrautenAktionen(
+        context: themedContext,
+        heroId: heroId,
+        begleiterId: begleiterId,
       ),
     );
   }

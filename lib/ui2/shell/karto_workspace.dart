@@ -6,6 +6,7 @@ import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
+import 'package:dsa_heldenverwaltung/domain/feedback/feedback_submission.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/ui2/debug/karto_token_sheet.dart';
 import 'package:dsa_heldenverwaltung/ui2/entwicklung/karto_entwicklungsansicht.dart';
@@ -19,8 +20,8 @@ import 'package:dsa_heldenverwaltung/ui2/shell/karto_modus_navigation.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_navigationsgrund.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_spielansicht.dart';
 import 'package:dsa_heldenverwaltung/ui2/widgets/karto_papier.dart';
-import 'package:dsa_heldenverwaltung/ui2/widgets/karto_seitenkopf.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
+import 'package:dsa_heldenverwaltung/ui_shared/feedback/open_feedback.dart';
 
 part 'karto_workspace_navigation.dart';
 
@@ -166,6 +167,14 @@ class _KartoWorkspaceState extends ConsumerState<KartoWorkspace> {
                       icon: const Icon(Icons.arrow_back),
                     ),
                     actions: [
+                      IconButton(
+                        key: const ValueKey<String>(
+                          'karto-berechnungsschritte',
+                        ),
+                        tooltip: 'Berechnungsschritte',
+                        onPressed: _berechnungsschritte,
+                        icon: const Icon(Icons.info_outline),
+                      ),
                       PopupMenuButton<String>(
                         tooltip: 'Workspace-Menü',
                         onSelected: _menueAktion,
@@ -262,6 +271,12 @@ class _KartoWorkspaceState extends ConsumerState<KartoWorkspace> {
     mainAxisSize: MainAxisSize.min,
     children: [
       _Fussziel(
+        key: const ValueKey<String>('karto-berechnungsschritte'),
+        icon: Icons.info_outline,
+        beschriftung: 'Berechnungsschritte',
+        onTap: _berechnungsschritte,
+      ),
+      _Fussziel(
         icon: Icons.arrow_back,
         beschriftung: 'Heldenauswahl',
         onTap: _zurHeldenwahl,
@@ -282,6 +297,8 @@ class _KartoWorkspaceState extends ConsumerState<KartoWorkspace> {
 
   List<PopupMenuEntry<String>> _menueEintraege() => <PopupMenuEntry<String>>[
     const PopupMenuItem(value: 'helden', child: Text('Helden verwalten')),
+    const PopupMenuItem(value: 'regelprofil', child: Text('Regelprofil')),
+    const PopupMenuItem(value: 'feedback', child: Text('Feedback senden')),
     const PopupMenuItem(value: 'einstellungen', child: Text('Einstellungen')),
     const PopupMenuItem(
       value: 'bestand',
@@ -318,6 +335,16 @@ class _KartoWorkspaceState extends ConsumerState<KartoWorkspace> {
     );
   }
 
+  // Erklärt jeden Wert des Helden; in allen drei Bereichen erreichbar.
+  void _berechnungsschritte() {
+    _laufzeitAktion(
+      () => widget.bestand.berechnungsschritte(
+        context: context,
+        heroId: widget.heroId,
+      ),
+    );
+  }
+
   // Die Spielanordnung liegt vollständig in ui2/spielen und liest den
   // gemeinsamen Snapshot selbst; der Workspace reicht nur seinen Guard herein.
   Widget _spielen() => KartoSpielansicht(
@@ -328,7 +355,7 @@ class _KartoWorkspaceState extends ConsumerState<KartoWorkspace> {
     vorHeldenbearbeitung: _pruefeEditor,
   );
 
-  // Während einer Sitzung bleiben sämtliche manuellen Schreibwege gesperrt.
+  // Ansehen erhält die Sitzung; Schreibwege verlangen bestätigtes Verwerfen.
   Widget _verwaltung(bool gesperrt) => Column(
     // Ohne stretch zentriert Column seine schrumpfenden Kinder; der
     // Sperrhinweis staende dann mittig statt am linken Rand.
@@ -387,13 +414,18 @@ class _KartoWorkspaceState extends ConsumerState<KartoWorkspace> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final rand = kartoBreiteFuer(constraints.maxWidth).seitenrand;
+        // Navigation und große Schrift verkleinern den nutzbaren Platz.
+        // Der Kopf darf deshalb nicht die Breitenklasse des Fensters verwenden.
+        final innenbreite = constraints.maxWidth - 2 * rand;
+        final textSkalierung = MediaQuery.textScalerOf(context).scale(1);
+        final kopfBreite = kartoBreiteFuer(innenbreite / textSkalierung);
         return Column(
           // Siehe _verwaltung: ohne stretch zentriert Column den Seitenkopf.
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Padding(
               padding: EdgeInsets.fromLTRB(rand, rand, rand, 0),
-              child: _planungskopf(session, breite),
+              child: _planungskopf(session, kopfBreite),
             ),
             Expanded(
               child: KartoEntwicklungsansicht(
@@ -434,10 +466,22 @@ class _KartoWorkspaceState extends ConsumerState<KartoWorkspace> {
       ],
     );
     if (breite != KartoBreite.schmal) {
-      return KartoSeitenkopf(
-        titel: 'Nächste Schritte',
-        kontext: entwurf,
-        aktion: aktionen,
+      return Padding(
+        padding: const EdgeInsets.only(bottom: Abstand.normal),
+        child: Wrap(
+          alignment: WrapAlignment.spaceBetween,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          spacing: Abstand.normal,
+          runSpacing: Abstand.normal,
+          children: [
+            Text(
+              entwurf,
+              style: Theme.of(context).textTheme.labelMedium
+                  ?.copyWith(color: context.karto.schriftLeise),
+            ),
+            aktionen,
+          ],
+        ),
       );
     }
     return Padding(
@@ -497,7 +541,12 @@ class _KartoWorkspaceState extends ConsumerState<KartoWorkspace> {
 /// Trefferflaeche bereits mit, und ein zweiter Tooltip gleichen Wortlauts
 /// waere in den Bedientests doppelt vorhanden.
 class _Fussziel extends StatelessWidget {
-  const _Fussziel({required this.icon, required this.beschriftung, this.onTap});
+  const _Fussziel({
+    super.key,
+    required this.icon,
+    required this.beschriftung,
+    this.onTap,
+  });
 
   final IconData icon;
   final String beschriftung;

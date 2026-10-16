@@ -158,6 +158,7 @@ Gefechtspruefung ergaenzeGefechtsMeisterparade(
     zielwert: p.zielwert == null ? null : p.zielwert! - delta,
     erschwernis: p.erschwernis + delta,
     modifikatoren: mods,
+    zielHerleitung: p.zielHerleitung,
     angriffe: p.angriffe,
     paraden: p.paraden,
     freie: p.freie,

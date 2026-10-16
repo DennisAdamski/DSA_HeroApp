@@ -589,6 +589,8 @@ bleiben antippbar, der Dialog erklärt alle Gründe. `gefecht_anordnung.dart`
 ordnet die Abschnitte: schmal Vitalwerte, Angriff, Verteidigung, Manöver,
 Magie, weitere Aktionen (mit Abwarten), Begegnung (Gegner, gemeinsame
 Initiative), Ausrüstung; breit dieselben Gruppen in zwei bzw. drei Spalten.
+Auslösbare Artefakte stehen in allen Layouts direkt unter „Geführte Ausrüstung“,
+unabhängig davon, ob der Held selbst zaubern kann.
 Unter 744 Pixeln hält eine feste Schnellleiste (`gefecht_schnellleiste.dart`)
 Attacke, Parade, Ausweichen und „Neue Runde“ erreichbar; sie nutzt dieselben
 Prüfungen und denselben Guard wie die Abschnittsknöpfe. Fehler einer Aktion
@@ -669,7 +671,10 @@ bleibt der Eintrag stehen, bei offener Steigerungsrunde wird nichts geändert.
 Der Abschnitt „Begleiter“ (`gefecht_begleiter.dart`) zeigt je Begleiter Typ,
 INI, RS/BE, MR, LeP-/AuP-/AsP-Maxima, Geschwindigkeiten und Angriffe mit
 wirksamer AT/PA (`begleiter_kampfprofil_rules.dart`, auch vom klassischen
-Begleiter-Tab genutzt) sowie Sonderfertigkeiten und Vertrautenmagie. Nur
+Begleiter-Tab genutzt) sowie Sonderfertigkeiten und Vertrautenmagie. Bei
+Reittieren mit erfasster Ausbildung enthalten AT, TP (Tritt) und
+Geschwindigkeiten die Ausbildung, und eine Zeile nennt Stufe, Variante und
+die Reiten-Modifikatoren (`reittierProfilText`, `docs/reittier_plan.md`). Nur
 Anzeige, keine Proben und keine LeP-Zählung. Prüfung:
 `test/rules/gefecht_inventar_rules_test.dart`,
 `test/ui2/spielen/gefecht_inventar_test.dart`.
@@ -772,3 +777,157 @@ erfassten Stand; modale Dialoge, `_busy` und die `setzen`-Sperre während
 eines Auftrags verhindern heute jede Zwischenänderung.
 
 Abschlussprüfung (6. Oktober 2026, nach Review und beiden Restschulden): `flutter analyze` ohne Befund; vollständige Suite 3.630 bestanden, 3 bestehende Tests übersprungen; Format über 1.089 Dateien ohne Änderung; CI-Screen-LOC (21 Dateien) und breite UI2-LOC-Prüfung (87 Dateien) ≤ 700 Zeilen, ebenso `test/ui2/spielen` und `test/ui/bridges`. Commits: `7789c1e` Review-Befunde, `d243601` Wirkabschluss über die Gefechtsbrücke, `e2d01b3` Abenteuerblatt-Teildatei. Nur lokal; kein Push.
+
+## Waffenloser Kampf (7. Oktober 2026)
+
+Seit die letzte Waffe entfernt werden kann, stand ein Held ohne Waffe im
+Gefecht ohne jedes Kampfmittel da. Regelgrundlage per dsa-rules-MCP: WdS
+S. 89–91 (Raufen/Ringen, waffenlose Kampftechniken, waffenlose Manöver im
+bewaffneten Kampf), WdS S. 123/127 und AA S. 69 f., 97 f., 150
+(Handgemengewaffen, Fausthieb 1W6 TP(A), TP/KK 10/3, INI −2).
+
+- **Grundbegriffe** liegen blattartig in `rules/derived/waffenlos_slot_rules.dart`
+  (auch von `combat_rules.dart` genutzt): Der leere Platzhalter (Name, Talent,
+  Waffenart leer, wie `_ohneWaffen` in `kampf_aenderung_rules.dart`) ist keine
+  Waffe (`gefuehrteHauptwaffe`). `waffenloserSlot` ist ein virtueller, nie
+  gespeicherter Slot mit den Werten des Katalogeintrags „Hände“.
+- **Kampfvorschau ohne Waffe:** Mit freien Händen rechnet
+  `computeCombatPreviewStats` mit dem Raufen-Slot (`vorschauHauptwaffe`,
+  `CombatPreviewStats.waffenlos`). Kampf-Tab, Spielansicht und
+  Gefechts-INI zeigen damit Fausthieb-Werte statt eines Platzhalters mit
+  voller KK als TP-Bonus. Die Bestandshelden f03/f05/f08/f08b/f09 (ohne
+  Waffe) haben ihre Pins kommentiert nachgezogen.
+- **Kampfmittel `waffenlos`** (`waffenlos:raufen`, `waffenlos:ringen`) aus
+  `rules/derived/waffenlos_rules.dart`: bei waffenloser Kampfbereitschaft
+  (`waffenlosKampfbereit`: Hände frei oder nur Raufen-/Ringen-Waffen) als
+  gewöhnliche Mittel, Standard Raufen. Talent, eBE, Wunden, Modifikatoren
+  und Kampfstile (je höchstens +2) wirken über die Vorschau.
+- **Neben einer Waffe** (WdS S. 90) nur mit aktiver waffenloser Kampftechnik
+  („… (waffenloses Manöver)“, `nebenWaffe`): nur Manöver dieser Technik,
+  +2, kein Würgegriff, keine gewöhnliche AT/PA, nie Standardmittel, keine
+  Linkhand-Zusatzaktion.
+- **Waffenlos geführte Waffen** (Talent Raufen: Schlagring, Orchidee,
+  Veteranenhand, Panzerarm, Drachenklaue, Bock …) bleiben Hauptwaffe, ihr
+  Träger aber waffenlos kampfbereit. `kRaufenwaffen` begrenzt ihre
+  waffenlosen Manöver (Schlagring: Doppelschlag, Gerade, Handkante,
+  Schwinger; Orchidee ohne Gerade; Veteranenhand, Panzerarm, Drachenklaue:
+  Gerade); übrige Raufen-Manöver laufen über „Raufen (waffenlos)“. Hinweis
+  „bei Paraden gegen Waffen unbewaffnet“; der Bock hat im Index keine
+  Manöverliste und bleibt ohne Einschränkung.
+- **Manöver und Talent:** Ein Manöver vom Typ „Ringen-…“ verlangt ein
+  Ringen-Mittel und umgekehrt, auch bei Handgemengewaffen.
+- **Schaden:** Raufen-Treffer und Waffen mit TP(A) im Katalog (Schlagring,
+  Stoß mit Schild, Turnierwaffen) tragen einen TP(A)-Hinweis; Ringen-Angriffe
+  sind manuell (Schaden nur als Wurf). Waffenlos kein Bruchtest.
+- **Nur Hinweise:** Raufen/Ringen-Wechsel ohne Kampftechnik, optionale
+  Regeln gegen Bewaffnete, Panzerhandschuh/Stiefel/Metallhelm +2 TP(A),
+  Stilbesonderheiten (Unauer Schule: Entwinden −2, Hruruzat-Zat, Mercenario,
+  Hammerfaust, Gladiatorenstil).
+
+Prüfung: `test/rules/waffenlos_rules_test.dart`.
+
+## Gefechtswerte auf Herleitungen (14. Oktober 2026)
+
+AT, PA, Schild-PA und Ausweichen des Gefechts stammen aus den Herleitungen der
+Kampfvorschau (ARCH-04, Paket B): `gefecht_herleitung_rules.dart` ersetzt den
+INI-Bonus der Vorschau im Ausweichen durch den Schritt „INI-Bonus (Sitzung)“
+aus der Gefechts-INI; die BE steht als Schritt in der Herleitung und wird nicht
+zusätzlich als Erschwernis gezählt. Kampfmittelprofile tragen `atHerleitung`/
+`paHerleitung`, ihre `anteile` entstehen aus den Schritten. Prüfung:
+`test/rules/gefecht_herleitung_rules_test.dart`.
+
+## Zielwert und Erschwernis als Herleitung (14. Oktober 2026)
+
+Der Aktionsdialog zeigt unter „Berechnung und Regeltext“ zwei Herleitungen:
+den Zielwert (Grundwert der Vorschau, INI-Bonus der Sitzung, abzüglich der
+Erschwernis) und die Erschwernis mit jedem benannten Anteil (Bewegen,
+Distanzwechsel, Umwandlung, Schild-WM, Gegner, Fernkampf, Ansagen, gezieltes
+Ausweichen je DK). `gefecht_zielwert_herleitung_rules.dart` baut sie aus
+`Gefechtspruefung.zielHerleitung` und `modifikatoren`; eine neue Erschwernis
+gehört mit Namen in `modifikatoren`, nicht in einen Sammelposten. Prüfung:
+`test/rules/gefecht_zielwert_herleitung_rules_test.dart`.
+
+## Begleiterwerte als Herleitung (14. Oktober 2026)
+
+Die Begleiteransicht des Gefechts zeigt unter „Berechnung“ je Begleiter INI,
+Pools und Angriffe als Schritte (Grundwert, Steigerung, Reittier-Ausbildung,
+Tierausbildung). Dieselben Herleitungen stehen in der (i)-Suche im Bereich
+„Begleiter“. Regeln: `begleiter_herleitung_rules.dart`; Prüfung:
+`test/rules/begleiter_herleitung_rules_test.dart`.
+
+## Kampfwerte mit Herleitung in der Gefechtsansicht (14. Oktober 2026)
+
+Die Gefechtsansicht zeigt INI, AT/FK, PA, Schild-PA, Ausweichen, TP, RS und BE
+als schmale, **fixierte** Leiste `GefechtKampfwerteLeiste`
+(`ui2/gefecht/gefecht_kampfwerte.dart`) als `AppBar.bottom`; sie scrollt nicht
+mit, der Heldenname steht nicht mehr im Inhalt. Antippen eines Eintrags öffnet den
+Rechenweg (schmal als Blatt, ab `kGefechtZweispaltig` als Dialog); auf der
+schmalen Schnellleiste öffnet ein langer Druck auf Attacke/Parade/Ausweichen
+dasselbe.
+
+- `rules/derived/gefecht_kampfwerte_rules.dart` stellt die Werte zusammen und
+  rechnet nichts Neues. Der Grundwert ist die Herleitung der Prüfung
+  (`Gefechtspruefung.zielHerleitung`, bei PA/Ausweichen einschließlich
+  „INI-Bonus (Sitzung)“); der aktuelle Zielwert und die Erschwernis stammen aus
+  derselben `pruefeGefechtAuftrag`-Prüfung wie der Aktionsknopf (ohne Katalog
+  aus der Grundprüfung). Ein Eintrag zeigt „→ Zielwert“, sobald Distanzklasse,
+  Umwandlung, Folgemali usw. den Wert verändern; Ansagen und Zuschläge des
+  Aktionsdialogs sind darin bewusst nicht enthalten.
+- Neu ist die Herleitung der Gefechts-INI (`herleiteGefechtsIni`): Schritte der
+  Vorschau-Kampf-INI ohne Vorschauwurf, dazu „INI-Wurf (Sitzung)“, Kopfwunde,
+  Kampfverluste, geschützter und ungeklärter Verlust. Weicht ihre Summe von
+  `gefechtsInitiative` ab, entfällt sie (`null`) statt falsch zu erklären.
+- Der Eintrag zeigt „→ Zielwert“, das Blatt zusätzlich Hinweise (hohe INI,
+  Ansagefolgemalus, Meisterparade). Tests:
+  `test/rules/gefecht_kampfwerte_rules_test.dart`,
+  `test/ui2/spielen/gefecht_kampfwerte_test.dart`.
+
+## Gegnerstand aus Treffern (16. Oktober 2026)
+
+Erste Schritte des [Gefechtslage-Konzepts](gefecht_lage_konzept.md).
+`Gefechtsgegner` führt zusätzlich KO, Größenklasse, Körperbau, Status und
+`bindet`; LeP (jetzt LeP zu Beginn), RS und KO dürfen unbekannt sein. Jede
+Buchung landet als `Gefechtsgegnertreffer` am Gegner, statt LeP sofort zu
+senken. `gefechtsGegnerstand` leitet SP, verbleibende LeP, offene TP ohne RS
+und Wunden je Zone ab (WdS S. 56 f., höchstens drei je Zone nach S. 109);
+ein nachträglich eingetragener RS oder KO rechnet alle Treffer neu. Die
+Gegnerkarte zeigt den Stand, bearbeitet Grundwerte über
+`speichereGefechtsgegnerprofil` auf dem frischen Gegner (Treffer und
+Manöverfolgen bleiben) und nimmt den letzten Treffer zurück; die Buchungs-ID
+bleibt dabei verbraucht. Größe und Bindung wirken noch nicht auf Regeln
+(Schritte 4 bis 7).
+
+Schritt 3: Der Status wird über Chips der Gegnerkarte gesetzt; ein
+Statusvorschlag aus den LeP erscheint als Text mit Knopf und wird nie
+automatisch übernommen. Nur kämpfende Gegner stehen in der gemeinsamen
+INI-Folge; tote und geflohene Gegner sind kein Ziel mehr (Zielknopf,
+Klingensturm, Fremdwirkung), kampfunfähige bleiben angreifbar.
+
+Schritt 4: `gefecht_ueberzahl_rules.dart` rechnet Kräfteverhältnis,
+INI-Bonus (max. +4), Abwehrlage und die Aktion Taktik (WdS S. 81). Bindungen
+der Gegnerkarte setzen `gebundeneGegner` der Heldensitzung und damit die
+Gegnerzahl; Parade −1 und Ausweichen −2 je weiterem Gegner, höchstens drei
+im Blick. Ausweichen ist ab vier Gegnern nicht mehr gesperrt. Zwei Helden
+der gemeinsamen Initiative mit demselben Ziel erhalten AT +1.
+
+Schritt 5: `gefechtsEigeneSeiteProvider` bildet die eigene Seite aus Held,
+verbundenen Helden und automatisch den externen Gefährten der Heldengruppen
+(`gruppenMitgliederProvider`). Die Gegnerkarte zeigt „Eure Seite“ mit
+Beteiligung je Teilnehmer und dem Ziel externer Gefährten. Nur Nahkämpfer
+zählen für Kräfteverhältnis und AT +1; „nicht dabei“ löst Bindungen.
+
+Schritt 6: Die Zielwahl stellt die zuletzt gesetzte DK je Gegner wieder her
+(`dkJeGegner`) und belegt Zielsituation (Zielgröße), Kampfgetümmel und „Sehr
+großer Gegner“ aus dem Gegner sichtbar vor.
+
+Schritt 7: Überzahl wirkt nur, wenn beide Seiten im Nahkampf stehen. Die
+Gegner-INI der Zeitpunkte enthält Überzahlbonus und Wundabzug
+(`gefechtsGegnerIni`); Helden erhalten über `lageIni` den Anteil aus
+Überzahl und Taktik in `gefechtsInitiative` und der INI-Herleitung.
+
+Tests: `test/rules/gefecht_gegner_rules_test.dart`,
+`test/rules/gefecht_ueberzahl_rules_test.dart`,
+`test/rules/gefecht_rules_test.dart`,
+`test/state/gefecht_initiative_provider_test.dart`,
+`test/state/gefecht_seite_provider_test.dart`,
+`test/ui2/spielen/gefecht_gegner_test.dart`.

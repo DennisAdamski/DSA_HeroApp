@@ -17,9 +17,22 @@ class GefechtWirkdialog extends StatefulWidget {
     required this.zustand,
     this.zauber,
     this.talent,
+    this.talentBeOverride,
+    this.epicAdvantagesActive = false,
+    this.aufrechterhaltenVorschlag = 0,
   });
   final HeroComputedSnapshot snapshot;
+
+  /// Vorübergehende Talent-BE des Helden für die Liturgieprobe.
+  final int? talentBeOverride;
+
+  /// Epische Vorteile aktiv (halbierte eBE bei KK-Proben).
+  final bool epicAdvantagesActive;
   final Gefechtszustand zustand;
+
+  /// Zahl der laufenden Wirkungen, deren Zauber laut Katalog aufrechterhalten
+  /// werden muss. Belegt die Anzahl vor, wenn die Sitzung weniger kennt.
+  final int aufrechterhaltenVorschlag;
   final SpellDef? zauber;
   final TalentDef? talent;
   @override
@@ -46,7 +59,12 @@ class _WirkdialogState extends State<GefechtWirkdialog> {
       _dauer.text = gefechtsFesteAktionen(z.castingTime)?.toString() ?? '';
       _kosten.text = gefechtsFesteKosten(z.aspCost)?.toString() ?? '';
       if (gefechtsFremdprofilUnterstuetzt(z.id)) _kosten.text = '0';
-      _aufrecht.text = widget.zustand.aufrechterhalteneZauber.toString();
+      final bestaetigt = widget.zustand.aufrechterhalteneZauber;
+      _aufrecht.text =
+          (bestaetigt > widget.aufrechterhaltenVorschlag
+                  ? bestaetigt
+                  : widget.aufrechterhaltenVorschlag)
+              .toString();
       _rep = widget.snapshot.hero.spells[z.id]?.learnedRepresentation;
       if (_rep == null && widget.snapshot.hero.representationen.length == 1) {
         _rep = widget.snapshot.hero.representationen.single;
@@ -90,6 +108,8 @@ class _WirkdialogState extends State<GefechtWirkdialog> {
                 .split('/')
                 .map((e) => e.trim())
                 .toList(),
+            epicAdvantagesActive: widget.epicAdvantagesActive,
+            talentBeOverride: widget.talentBeOverride,
           )
         : gefechtsZauberprobe(widget.snapshot, widget.zauber!);
     final id =
@@ -280,6 +300,13 @@ class _WirkdialogState extends State<GefechtWirkdialog> {
                   _aufrecht,
                   'Aufrechterhaltene Zauber (bestätigte Anzahl, 0 möglich)',
                 ),
+                if (widget.aufrechterhaltenVorschlag > 0)
+                  Text(
+                    'Laufende Wirkungen mit Aufrechterhaltung (A): '
+                    '${widget.aufrechterhaltenVorschlag} (als Vorschlag '
+                    'eingetragen, bitte am Tisch bestätigen)',
+                    key: const ValueKey<String>('gefecht-aufrecht-vorschlag'),
+                  ),
                 Text(
                   'Automatische LE-/AU-/Aufrechterhalten-Mali: +$automatisch',
                 ),

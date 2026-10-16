@@ -5,6 +5,7 @@ import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_advancement_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/advancement_rules.dart';
+import 'package:dsa_heldenverwaltung/ablaeufe/steigerungsrunde_uebernehmen.dart';
 import 'package:dsa_heldenverwaltung/state/ablauf_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 
@@ -130,7 +131,38 @@ class AdvancementSessionController extends Notifier<AdvancementSession?> {
   /// Nur diese Präferenz wird persistiert; geplante Erwerbe bleiben im Entwurf.
   /// Laden, Prüfen und Speichern übernimmt
   /// `SteigerungsrundeUebernehmen.speichereSfAnzeige`.
-  Future<void> setShowInapplicableSpecialAbilities(bool value) async {
+  Future<void> setShowInapplicableSpecialAbilities(bool value) =>
+      _speichereEinstellung(
+        (ablauf, basis, istGeschlossen) => ablauf.speichereSfAnzeige(
+          heroId: heroId,
+          anzeigen: value,
+          basis: basis,
+          istGeschlossen: istGeschlossen,
+        ),
+      );
+
+  /// Speichert die Gottheit des Helden und erhält eine offene Runde wie
+  /// [setShowInapplicableSpecialAbilities]; geplante Erwerbe bleiben im
+  /// Entwurf und werden gegen die neue Gottheit erneut geprüft.
+  Future<void> setGottheit(String gottheit) => _speichereEinstellung(
+    (ablauf, basis, istGeschlossen) => ablauf.speichereGottheit(
+      heroId: heroId,
+      gottheit: gottheit,
+      basis: basis,
+      istGeschlossen: istGeschlossen,
+    ),
+  );
+
+  // Speichert eine Einstellung am Helden und setzt die Runde auf die neue
+  // Basis, ohne Entwurf oder AP zu übernehmen.
+  Future<void> _speichereEinstellung(
+    Future<HeroSheet> Function(
+      SteigerungsrundeUebernehmen ablauf,
+      HeroSheet? basis,
+      bool Function() istGeschlossen,
+    )
+    speichern,
+  ) async {
     final current = state == null ? null : _editableSession();
     if (current != null) {
       state = _updated(
@@ -141,16 +173,13 @@ class AdvancementSessionController extends Notifier<AdvancementSession?> {
       );
     }
     try {
-      final updated = await ref
-          .read(steigerungsrundeUebernehmenProvider)
-          .speichereSfAnzeige(
-            heroId: heroId,
-            anzeigen: value,
-            basis: current?.base,
-            istGeschlossen: () =>
-                !ref.mounted ||
-                (current != null && state?.sessionId != current.sessionId),
-          );
+      final updated = await speichern(
+        ref.read(steigerungsrundeUebernehmenProvider),
+        current?.base,
+        () =>
+            !ref.mounted ||
+            (current != null && state?.sessionId != current.sessionId),
+      );
       if (current != null &&
           ref.mounted &&
           state?.sessionId == current.sessionId) {

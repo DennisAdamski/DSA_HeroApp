@@ -3,6 +3,9 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dsa_heldenverwaltung/catalog/weapon_def.dart';
+import 'package:dsa_heldenverwaltung/domain/abgelegter_kampfgegenstand.dart';
+import 'package:dsa_heldenverwaltung/domain/artefakt_daten.dart';
+import 'package:dsa_heldenverwaltung/domain/aventurian_date.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
@@ -60,7 +63,11 @@ final _modelle = <_Modell>[
   _Modell(
     'MainWeaponSlot',
     schluessel: MainWeaponSlot.jsonSchluessel,
-    voll: () => const MainWeaponSlot(id: 'w1', name: 'Säbel').toJson(),
+    voll: () => const MainWeaponSlot(
+      id: 'w1',
+      inventarInstanzId: 'i1',
+      name: 'Säbel',
+    ).toJson(),
     lade: (json) => MainWeaponSlot.fromJson(json).toJson(),
     bearbeite: (json) =>
         MainWeaponSlot.fromJson(json).copyWith(name: 'Neu').toJson(),
@@ -78,7 +85,11 @@ final _modelle = <_Modell>[
   _Modell(
     'RangedProjectile',
     schluessel: RangedProjectile.jsonSchluessel,
-    voll: () => const RangedProjectile(id: 'p1', name: 'Pfeil').toJson(),
+    voll: () => const RangedProjectile(
+      id: 'p1',
+      inventarInstanzId: 'i2',
+      name: 'Pfeil',
+    ).toJson(),
     lade: (json) => RangedProjectile.fromJson(json).toJson(),
     bearbeite: (json) =>
         RangedProjectile.fromJson(json).copyWith(count: 7).toJson(),
@@ -107,7 +118,11 @@ final _modelle = <_Modell>[
   _Modell(
     'ArmorPiece',
     schluessel: ArmorPiece.jsonSchluessel,
-    voll: () => const ArmorPiece(id: 'a1', name: 'Helm').toJson(),
+    voll: () => const ArmorPiece(
+      id: 'a1',
+      inventarInstanzId: 'i3',
+      name: 'Helm',
+    ).toJson(),
     lade: (json) => ArmorPiece.fromJson(json).toJson(),
     bearbeite: (json) => ArmorPiece.fromJson(json).copyWith(rs: 3).toJson(),
     unbekannt: (json) => ArmorPiece.fromJson(json).unbekannteFelder,
@@ -115,7 +130,11 @@ final _modelle = <_Modell>[
   _Modell(
     'OffhandEquipmentEntry',
     schluessel: OffhandEquipmentEntry.jsonSchluessel,
-    voll: () => const OffhandEquipmentEntry(id: 'oh1', name: 'Schild').toJson(),
+    voll: () => const OffhandEquipmentEntry(
+      id: 'oh1',
+      inventarInstanzId: 'i4',
+      name: 'Schild',
+    ).toJson(),
     lade: (json) => OffhandEquipmentEntry.fromJson(json).toJson(),
     bearbeite: (json) =>
         OffhandEquipmentEntry.fromJson(json).copyWith(paMod: 2).toJson(),
@@ -130,11 +149,65 @@ final _modelle = <_Modell>[
       sourceRef: 'w#w1',
       traegerTyp: InventoryTraeger.begleiter,
       traegerId: 'b1',
+      instanzId: 'i1',
+      menge: 1,
+      abgelegt: AbgelegterKampfgegenstand(waffe: MainWeaponSlot(name: 'Säbel')),
+      artefaktDaten: ArtefaktDaten(
+        zauber: <ArtefaktZauber>[ArtefaktZauber(name: 'Armatrutz')],
+      ),
     ).toJson(),
     lade: (json) => HeroInventoryEntry.fromJson(json).toJson(),
     bearbeite: (json) =>
         HeroInventoryEntry.fromJson(json).copyWith(wert: '12').toJson(),
     unbekannt: (json) => HeroInventoryEntry.fromJson(json).unbekannteFelder,
+  ),
+  _Modell(
+    'ArtefaktDaten',
+    schluessel: ArtefaktDaten.jsonSchluessel,
+    voll: () => const ArtefaktDaten(
+      art: ArtefaktArt.spruchspeicherSemipermanent,
+      zauber: <ArtefaktZauber>[ArtefaktZauber(name: 'Armatrutz')],
+      ladungen: <ArtefaktLadung>[ArtefaktLadung(id: 'l1')],
+      aufladungen: 1,
+      gesamtAspErschaffung: 75,
+      anwendungenProIntervall: 2,
+      anwendungen: <AventurianDate>[
+        AventurianDate(day: '3', month: 'praios', year: '1027'),
+      ],
+      pAsP: 4,
+    ).toJson(),
+    lade: (json) => ArtefaktDaten.fromJson(json).toJson(),
+    bearbeite: (json) =>
+        ArtefaktDaten.fromJson(json).copyWith(ersteller: 'Meister').toJson(),
+    unbekannt: (json) => ArtefaktDaten.fromJson(json).unbekannteFelder,
+  ),
+  _Modell(
+    'ArtefaktLadung',
+    schluessel: ArtefaktLadung.jsonSchluessel,
+    voll: () => const ArtefaktLadung(
+      id: 'l1',
+      verbraucht: true,
+      zauber: <ArtefaktZauber>[ArtefaktZauber(name: 'Armatrutz')],
+    ).toJson(),
+    lade: (json) => ArtefaktLadung.fromJson(json).toJson(),
+    bearbeite: (json) =>
+        ArtefaktLadung.fromJson(json).copyWith(verbraucht: false).toJson(),
+    unbekannt: (json) => ArtefaktLadung.fromJson(json).unbekannteFelder,
+  ),
+  _Modell(
+    'ArtefaktZauber',
+    schluessel: ArtefaktZauber.jsonSchluessel,
+    voll: () => const ArtefaktZauber(
+      spellId: 'spell_armatrutz',
+      name: 'Armatrutz',
+      zfw: 12,
+      zfpStern: 5,
+      kostenAsp: 8,
+    ).toJson(),
+    lade: (json) => ArtefaktZauber.fromJson(json).toJson(),
+    bearbeite: (json) =>
+        ArtefaktZauber.fromJson(json).copyWith(notiz: 'Neu').toJson(),
+    unbekannt: (json) => ArtefaktZauber.fromJson(json).unbekannteFelder,
   ),
   _Modell(
     'InventoryItemModifier',

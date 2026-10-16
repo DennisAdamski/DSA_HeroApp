@@ -60,5 +60,7 @@ String gefechtsStartDkFuer(MainWeaponSlot? waffe) => gefechtsStartDk(
   fernkampf: waffe?.isRanged ?? false,
 );
 
-/// Relevante Nahkampfgegner: Angabe des Angriffs vor der Rundenleiste.
-int gefechtsGegnerzahl(Gefechtszustand s) => s.kontext.gegnerzahl ?? s.gegner;
+/// Relevante Nahkampfgegner: Angabe des Angriffs vor den Bindungen der
+/// Begegnung vor der Rundenleiste.
+int gefechtsGegnerzahl(Gefechtszustand s) =>
+    s.kontext.gegnerzahl ?? s.gebundeneGegner ?? s.gegner;

@@ -122,6 +122,21 @@ extension _HeroInventoryDisplay on _HeroInventoryTabState {
       );
     }
 
+    final artefakt = entry.artefaktDaten;
+    if (artefakt != null) {
+      widgets.add(
+        _StatusBadge(
+          label: artefakt.defekt ? 'Matrixgeber defekt' : 'Matrixgeber',
+          color: artefakt.defekt
+              ? colorScheme.errorContainer
+              : colorScheme.primaryContainer,
+          textColor: artefakt.defekt
+              ? colorScheme.onErrorContainer
+              : colorScheme.onPrimaryContainer,
+        ),
+      );
+    }
+
     if (entry.isGeweiht) {
       widgets.add(
         _StatusBadge(

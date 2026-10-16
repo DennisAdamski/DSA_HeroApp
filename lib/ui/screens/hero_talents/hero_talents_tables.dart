@@ -2,15 +2,13 @@ part of 'package:dsa_heldenverwaltung/ui/screens/hero_talents_tab.dart';
 
 extension _HeroTalentsTables on _HeroTalentTableTabState {
   // Probenwerte: Die Wunden des gespeicherten Zustands senken die
-  // Eigenschaften nur für den Wurf; Anzeige und Rechnung der Tabelle bleiben
-  // bei den effektiven Werten (WdS S. 111).
+  // Eigenschaften nur für den Wurf (WdS S. 111). Sie kommen aus dem
+  // gemeinsamen Snapshot (`probenEigenschaften`), derselben Quelle wie
+  // Probensuche und Gefecht; Anzeige und Rechnung der Tabelle bleiben bei den
+  // effektiven Werten. Ohne geladenen Snapshot gilt der übergebene Wert.
   Attributes _probenEigenschaften(Attributes effectiveAttributes) {
     final computed = ref.read(heroComputedProvider(widget.heroId));
-    final wunden = computed.asData?.value.wundEffekte;
-    if (wunden == null) {
-      return effectiveAttributes;
-    }
-    return wendeWundVerlusteAn(effectiveAttributes, wunden);
+    return computed.asData?.value.probenEigenschaften ?? effectiveAttributes;
   }
 
   // Meta-Talente haben eine andere Struktur, daher eigene Spaltenspezifikationen
@@ -302,17 +300,9 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
   }) {
     final entry = _entryForTalent(talent.id);
     final complexityResolution = _resolveTalentComplexity(talent, entry);
-    final ebe = computeTalentEbe(
-      baseBe: activeBaseBe,
-      talentBeRule: talent.be,
-      reductionMultiplier: _epicEbeMultiplier(talent.attributes),
-    );
-    final computedTaw = computeTalentComputedTaw(
-      talentValue: entry.talentValue,
-      modifier: entry.modifier,
-      ebe: ebe,
-      inventoryMod: inventoryMod,
-    );
+    final ebe = _ebeHerleitung(talent.be, talent.attributes).wert;
+    final tawHerleitung = _tawHerleitung(talent, entry);
+    final computedTaw = tawHerleitung.wert;
     final hasSpecialization =
         entry.combatSpecializations.isNotEmpty ||
         _splitSpecializationTokens(entry.specializations).isNotEmpty;
@@ -323,7 +313,7 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
         key: ValueKey<String>('talents-row-${talent.id}'),
         onTap: () async {
           await _ensureEditingSession();
-          if (!mounted) return;
+          if (!mounted || !_editController.isEditing) return;
           await showAdaptiveDetailSheet<void>(
             context: context,
             builder: (_) => _TalentDetailDialog(
@@ -355,6 +345,7 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
               ),
               basePool: computedTaw,
               hasSpecialization: hasSpecialization,
+              tawHerleitung: tawHerleitung,
             ),
           ),
           icon: const Icon(Icons.casino_outlined),
@@ -446,7 +437,7 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
         key: ValueKey<String>('talents-row-${talent.id}'),
         onTap: () async {
           await _ensureEditingSession();
-          if (!mounted) return;
+          if (!mounted || !_editController.isEditing) return;
           await showAdaptiveDetailSheet<void>(
             context: context,
             builder: (_) => _TalentDetailDialog(
@@ -522,16 +513,10 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
       metaTalent: metaTalent,
       catalogTalents: catalogTalents,
     );
-    final ebe = computeMetaTalentEbe(
-      baseBe: activeBaseBe,
-      beRule: metaTalent.be,
-      reductionMultiplier: _epicEbeMultiplier(metaTalent.attributes),
-    );
-    final rawTaw = computeMetaTalentBaseTaw(
-      talentEntries: _draftTalents,
-      componentTalentIds: metaTalent.componentTalentIds,
-    );
-    final computedTaw = computeMetaTalentComputedTaw(baseTaw: rawTaw, ebe: ebe);
+    final metaHerleitung = _metaTawHerleitung(metaTalent);
+    final ebe = _ebeHerleitung(metaTalent.be, metaTalent.attributes).wert;
+    final rawTaw = metaHerleitung.schritte.first.betrag;
+    final computedTaw = metaHerleitung.wert;
 
     return TableRow(
       children: [
@@ -548,6 +533,7 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
               rawTaw: rawTaw,
               computedTaw: computedTaw,
               ebe: ebe,
+              tawHerleitung: metaHerleitung,
             ),
           ),
           trailing: IconButton(
@@ -566,6 +552,7 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
                   metaTalent.attributes,
                 ),
                 basePool: computedTaw,
+                tawHerleitung: metaHerleitung,
               ),
             ),
             icon: const Icon(Icons.casino_outlined),
@@ -615,17 +602,9 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
   }) {
     final entry = _entryForTalent(talent.id);
     final complexityResolution = _resolveTalentComplexity(talent, entry);
-    final ebe = computeTalentEbe(
-      baseBe: activeBaseBe,
-      talentBeRule: talent.be,
-      reductionMultiplier: _epicEbeMultiplier(talent.attributes),
-    );
-    final computedTaw = computeTalentComputedTaw(
-      talentValue: entry.talentValue,
-      modifier: entry.modifier,
-      ebe: ebe,
-      inventoryMod: inventoryMod,
-    );
+    final ebe = _ebeHerleitung(talent.be, talent.attributes).wert;
+    final tawHerleitung = _tawHerleitung(talent, entry);
+    final computedTaw = tawHerleitung.wert;
     final hasSpecialization =
         entry.combatSpecializations.isNotEmpty ||
         _splitSpecializationTokens(entry.specializations).isNotEmpty;
@@ -658,7 +637,7 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
       detailLine: detailParts.join(' · '),
       onTap: () async {
         await _ensureEditingSession();
-        if (!mounted) return;
+        if (!mounted || !_editController.isEditing) return;
         await showAdaptiveDetailSheet<void>(
           context: context,
           builder: (_) => _TalentDetailDialog(
@@ -696,6 +675,7 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
               ),
               basePool: computedTaw,
               hasSpecialization: hasSpecialization,
+              tawHerleitung: tawHerleitung,
             ),
           ),
           icon: const Icon(Icons.casino_outlined),
@@ -703,6 +683,33 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
       ),
     );
   }
+
+  /// Herleitung der eBE für [beRegel] aus der Kampf-BE, einer vorübergehenden
+  /// Talent-BE und der epischen KK-Halbierung ([attributes] ist die Kette).
+  Herleitung _ebeHerleitung(String beRegel, List<String> attributes) =>
+      herleiteTalentEbe(
+        beKampf: _beKampf,
+        beOverride: _beOverride,
+        beRegel: beRegel,
+        reduktionsFaktor: _epicEbeMultiplier(attributes),
+      );
+
+  /// Herleitung von TaW* für den (Entwurfs-)[entry] eines Talents.
+  Herleitung _tawHerleitung(TalentDef talent, HeroTalentEntry entry) =>
+      herleiteTalentTaw(
+        eintrag: entry,
+        ebe: _ebeHerleitung(talent.be, talent.attributes),
+        inventar:
+            _inventarQuellen[talent.id] ?? const <InventoryModifierQuelle>[],
+      );
+
+  /// Herleitung von TaW* eines Meta-Talents aus dem Entwurf.
+  Herleitung _metaTawHerleitung(HeroMetaTalent metaTalent) =>
+      herleiteMetaTalentTaw(
+        talentEntries: _draftTalents,
+        componentTalentIds: metaTalent.componentTalentIds,
+        ebe: _ebeHerleitung(metaTalent.be, metaTalent.attributes),
+      );
 
   /// Liefert den eBE-Multiplikator fuer eine Talent-Probenkette.
   ///
@@ -785,7 +792,7 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
       detailLine: detailParts.join(' · '),
       onTap: () async {
         await _ensureEditingSession();
-        if (!mounted) return;
+        if (!mounted || !_editController.isEditing) return;
         await showAdaptiveDetailSheet<void>(
           context: context,
           builder: (_) => _TalentDetailDialog(
@@ -812,16 +819,10 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
       metaTalent: metaTalent,
       catalogTalents: catalogTalents,
     );
-    final ebe = computeMetaTalentEbe(
-      baseBe: activeBaseBe,
-      beRule: metaTalent.be,
-      reductionMultiplier: _epicEbeMultiplier(metaTalent.attributes),
-    );
-    final rawTaw = computeMetaTalentBaseTaw(
-      talentEntries: _draftTalents,
-      componentTalentIds: metaTalent.componentTalentIds,
-    );
-    final computedTaw = computeMetaTalentComputedTaw(baseTaw: rawTaw, ebe: ebe);
+    final metaHerleitung = _metaTawHerleitung(metaTalent);
+    final ebe = _ebeHerleitung(metaTalent.be, metaTalent.attributes).wert;
+    final rawTaw = metaHerleitung.schritte.first.betrag;
+    final computedTaw = metaHerleitung.wert;
     final attributeLabel = _buildShortAttributeLabel(
       effectiveAttributes,
       metaTalent.attributes,
@@ -851,6 +852,7 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
           rawTaw: rawTaw,
           computedTaw: computedTaw,
           ebe: ebe,
+          tawHerleitung: metaHerleitung,
         ),
       ),
       trailing: IconButton(
@@ -871,6 +873,7 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
               metaTalent.attributes,
             ),
             basePool: computedTaw,
+            tawHerleitung: metaHerleitung,
           ),
         ),
         icon: const Icon(Icons.casino_outlined),

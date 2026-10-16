@@ -13,6 +13,11 @@ import 'package:dsa_heldenverwaltung/domain/talent_special_ability.dart';
 import 'advancement_options.dart';
 import 'advancement_attribute_rules.dart';
 import 'requirement_evaluation_rules.dart';
+import 'advancement_specialization_rules.dart';
+import 'advancement_merkmalskenntnis_rules.dart';
+import 'advancement_trait_options.dart';
+import 'advancement_waffenmeister_options.dart';
+import 'advancement_magic_knowledge_rules.dart';
 
 export 'advancement_options.dart';
 part 'advancement_apply.dart';
@@ -106,6 +111,36 @@ void _validateEntry(
   }
   if (entry.seSpent < 0 || entry.seSpent > option.seAvailable) {
     throw StateError('Nicht genügend Sondererfahrungen.');
+  }
+  if (entry.kind == AdvancementKind.representation ||
+      entry.kind == AdvancementKind.ritualKnowledge) {
+    validateMagicKnowledgeEntry(hero, entry, option);
+    return;
+  }
+  if (option.isTalentSpecialization) {
+    if (entry.options['specialization']?.trim().isNotEmpty != true) {
+      throw StateError('Bitte einen Namen für die Spezialisierung angeben.');
+    }
+    if (entry.seSpent != 0 ||
+        entry.fromValue != null ||
+        entry.toValue != null) {
+      throw StateError(
+        'Spezialisierungen verändern weder TaW noch Sondererfahrungen.',
+      );
+    }
+    return;
+  }
+  if (option.isWaffenmeister) {
+    validateWaffenmeisterEntry(entry, option);
+    return;
+  }
+  if (option.isMerkmalskenntnis) {
+    validateMerkmalskenntnisEntry(entry, option);
+    return;
+  }
+  if (option.isTraitChange) {
+    validateTraitEntry(entry, option);
+    return;
   }
   if (option.isValueAdvancement) {
     if (entry.fromValue != option.currentValue) {

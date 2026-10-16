@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/spell_effect_instance_rules.dart';
 
+import 'package:dsa_heldenverwaltung/ui/screens/shared/planung_bearbeiten_guard.dart';
 import 'package:dsa_heldenverwaltung/catalog/house_rule_provenance.dart';
-import 'package:dsa_heldenverwaltung/rules/house_rules/house_rule_registry.dart';
-import 'package:dsa_heldenverwaltung/state/house_rules_providers.dart';
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
@@ -18,15 +19,17 @@ import 'package:dsa_heldenverwaltung/rules/derived/cost_text_parsing.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/editor_entwurf_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_requirement_context.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/kampf_aenderung_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/kampf_slot_pruefung_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/kampfgegenstand_ablegen_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/learning_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/maneuver_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_source_breakdown.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/requirement_evaluation_rules.dart';
-import 'package:dsa_heldenverwaltung/rules/derived/ruestung_be_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/special_ability_chain_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/two_weapon_combat_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/unarmed_style_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/waffenlos_slot_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/waffenmeister_rules.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
@@ -45,8 +48,10 @@ import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_combat/combat_armor_section.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_combat/combat_helpers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_combat/combat_offhand_section.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_combat/kampf_herleitung_details.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_talents/combat_specialization_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_combat/combat_weapons_section.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_combat/kampfgegenstand_entfernen_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/codex_metric_tile.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/codex_section_card.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/codex_tab_header.dart';
@@ -66,7 +71,6 @@ part 'hero_combat/hero_combat_talents_subtab.dart';
 part 'hero_combat/combat_talent_catalog_table.dart';
 part 'hero_combat/hero_combat_calculator_subtab.dart';
 part 'hero_combat/hero_combat_form_fields.dart';
-part 'hero_combat/weapon_detail_expansion.dart';
 part 'hero_combat/combat_preview_subtab.dart';
 part 'hero_combat/combat_artifact_summary_section.dart';
 part 'hero_combat/combat_rules_subtab.dart';
@@ -113,6 +117,10 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
   Map<String, HeroTalentEntry> _draftTalents = <String, HeroTalentEntry>{};
   Set<String> _invalidCombatTalentIds = <String>{};
   CombatConfig _draftCombatConfig = const CombatConfig();
+
+  /// Inventar des Entwurfs, sobald eine Entwurfsänderung es betrifft (etwa
+  /// ein abgelegter Gegenstand, ARCH-03); `null` heißt unverändert.
+  List<HeroInventoryEntry>? _draftInventar;
 
   /// Aufsummierte AP-Kosten aus Erwerbs-Dialogen (Kampf-Sonderfertigkeiten,
   /// Manoever, Kampftalent-Spezialisierungen) seit dem letzten Sync/Save.
@@ -203,6 +211,7 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
     _draftTalents = Map<String, HeroTalentEntry>.from(hero.talents);
     _invalidCombatTalentIds = <String>{};
     _draftCombatConfig = hero.combatConfig;
+    _draftInventar = null;
     _draftApSpentDelta = 0;
     _temporaryIniRoll = null;
     _seedCombatControllers();
@@ -325,13 +334,13 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
     _syncDraftFromHero(hero);
 
     final stateAsync = ref.watch(heroStateProvider(widget.heroId));
-    final catalogAsync = ref.watch(rulesCatalogProvider);
+    final catalogAsync = ref.watch(heroRulesCatalogProvider(widget.heroId));
     // Dieselben Eingaben wie Inspector und Spielansicht, samt Wunden.
     final berechnet = ref
         .watch(heroComputedProvider(widget.heroId))
         .valueOrNull;
     final epicAdvantagesActive = ref.watch(
-      isHouseRuleActiveProvider(EpicRuleKeys.advantages),
+      heroEpicAdvantagesActiveProvider(widget.heroId),
     );
 
     return stateAsync.when(
@@ -369,7 +378,7 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
               );
               final effectiveAttributes = computeEffectiveAttributes(
                 hero,
-                tempAttributeMods: state.tempAttributeMods,
+                tempAttributeMods: effektiveTempAttributeMods(state),
                 catalog: catalog,
               );
 

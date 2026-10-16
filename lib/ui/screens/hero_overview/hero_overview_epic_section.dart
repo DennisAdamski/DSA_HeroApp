@@ -4,10 +4,13 @@ extension _HeroOverviewEpicSection on _HeroOverviewTabState {
   Widget _buildEpicAdvantagesSection(HeroSheet hero) {
     final theme = Theme.of(context);
     final advRuleActive = ref.watch(
-      isHouseRuleActiveProvider(EpicRuleKeys.advantages),
+      heroEpicAdvantagesActiveProvider(widget.heroId),
     );
     final disadvRuleActive = ref.watch(
-      isHouseRuleActiveProvider(EpicRuleKeys.disadvantages),
+      heroHouseRuleActiveProvider((
+        heroId: widget.heroId,
+        paketId: EpicRuleKeys.disadvantages,
+      )),
     );
     final boni = activeEpicMainAttributeBonuses(
       ruleActive: advRuleActive,
@@ -148,6 +151,13 @@ extension _HeroOverviewEpicSection on _HeroOverviewTabState {
   }
 
   Future<void> _activateEpicStatus(HeroSheet hero) async {
+    final darfBearbeiten = await bestaetigeBearbeitungBeiPlanung(
+      context: context,
+      heroId: widget.heroId,
+    );
+    if (!darfBearbeiten || !mounted) {
+      return;
+    }
     final snapshot = _latestSnapshot;
     final effectiveStart =
         snapshot?.effectiveStartAttributes ?? const Attributes.zero();
@@ -190,6 +200,13 @@ extension _HeroOverviewEpicSection on _HeroOverviewTabState {
   /// Policy. `epicStartAp` und `epicUnactivatedTalentIds` bleiben
   /// unangetastet, damit Epos-Level und AU-Deckelung stabil bleiben.
   Future<void> _editEpicStatus(HeroSheet hero) async {
+    final darfBearbeiten = await bestaetigeBearbeitungBeiPlanung(
+      context: context,
+      heroId: widget.heroId,
+    );
+    if (!darfBearbeiten || !mounted) {
+      return;
+    }
     final snapshot = _latestSnapshot;
     final effectiveStart =
         snapshot?.effectiveStartAttributes ?? const Attributes.zero();

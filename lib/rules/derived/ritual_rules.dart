@@ -94,6 +94,14 @@ HeroRitualCategory normalizeRitualCategory(HeroRitualCategory category) {
         additionalFieldDefs: normalizedFieldDefs,
         rituals: normalizedRituals,
       );
+    case HeroRitualKnowledgeMode.traditionKnowledge:
+      return category.copyWith(
+        id: category.id.trim(),
+        name: normalizedName,
+        traditionId: category.traditionId.trim(),
+        additionalFieldDefs: normalizedFieldDefs,
+        rituals: normalizedRituals,
+      );
     case HeroRitualKnowledgeMode.derivedTalents:
       return category.copyWith(
         id: category.id.trim(),

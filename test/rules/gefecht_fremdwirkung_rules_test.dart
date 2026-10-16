@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/gefecht_gegner_rules.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht_fremdwirkung.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht_gegner.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
@@ -131,8 +132,8 @@ void main() {
         buchungId: 'einmal',
         schaden: 7,
       );
-      expect(neu.gegner['a']!.lep, 18);
-      expect(neu.gegner['b']!.lep, 30);
+      expect(gefechtsGegnerstand(neu.gegner['a']!).lep, 18);
+      expect(gefechtsGegnerstand(neu.gegner['b']!).lep, 30);
       expect(
         bucheGefechtsFremdwirkung(
           neu,

@@ -4,7 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'package:dsa_heldenverwaltung/domain/learn/learn_complexity.dart';
-import 'package:dsa_heldenverwaltung/rules/derived/epic_ap_cost_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/herleitung.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/learning_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/steigerung_herleitung_rules.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_overview/herleitung_abschnitt.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/config/ui_spacing.dart';
 import 'package:dsa_heldenverwaltung/domain/learn/learn_rules.dart';
@@ -66,6 +69,8 @@ Future<SteigerungsErgebnis?> showSteigerungsDialog({
   int? startWert,
   bool episch = false,
   bool istHaupteigenschaft = false,
+  Lernregeln lernregeln = Lernregeln.keine,
+  int? lehrmeisterMaxWert,
 }) {
   return showAdaptiveInputDialog<SteigerungsErgebnis>(
     context: context,
@@ -84,6 +89,8 @@ Future<SteigerungsErgebnis?> showSteigerungsDialog({
         startWert: startWert,
         episch: episch,
         istHaupteigenschaft: istHaupteigenschaft,
+        lernregeln: lernregeln,
+        lehrmeisterMaxWert: lehrmeisterMaxWert,
       );
     },
   );
@@ -104,8 +111,14 @@ class _SteigerungsDialog extends StatefulWidget {
     this.startWert,
     this.episch = false,
     this.istHaupteigenschaft = false,
+    this.lernregeln = Lernregeln.keine,
+    this.lehrmeisterMaxWert,
   });
 
+  /// Höchster Wert, bis zu dem ein Lehrmeister steigert (Heldenstufe + 3,
+  /// Hausregel „Lehrmeister“); darüber entfällt sein Nachlass.
+  final int? lehrmeisterMaxWert;
+  final Lernregeln lernregeln;
   final Widget Function(BuildContext context, int targetValue)? previewBuilder;
   final String bezeichnung;
   final String? confirmLabel;
@@ -130,6 +143,12 @@ class _SteigerungsDialogState extends State<_SteigerungsDialog> {
   late final TextEditingController _wertController;
   late final TextEditingController _lehrmeisterController;
   bool _mitLehrmeister = false;
+
+  // Ein Lehrmeister wirkt nur bis zu seiner Grenze (Stufe + 3).
+  bool get _lehrmeisterWirkt =>
+      _mitLehrmeister &&
+      (widget.lehrmeisterMaxWert == null ||
+          _neuerWert <= widget.lehrmeisterMaxWert!);
   int _lehrmeisterTaW = 15;
 
   @override
@@ -159,45 +178,29 @@ class _SteigerungsDialogState extends State<_SteigerungsDialog> {
     return math.max(widget.maxWert, _minZielwert);
   }
 
-  ({int apKosten, int seVerbraucht}) get _basisKosten {
-    return berechneSteigerungskosten(
-      vonWert: widget.aktuellerWert,
-      aufWert: _neuerWert,
-      effektiveKomplexitaet: _ausgewaehlteKomplexitaet,
-      seAnzahl: widget.seAnzahl,
-    );
-  }
+  // Alle Kosten kommen aus der Regel; der Dialog liest nur ab.
+  Steigerungskosten get _kosten => herleiteSteigerungskosten(
+    vonWert: widget.aktuellerWert,
+    aufWert: _neuerWert,
+    komplexitaet: _ausgewaehlteKomplexitaet,
+    seAnzahl: widget.seAnzahl,
+    episch: widget.episch,
+    istHaupteigenschaft: widget.istHaupteigenschaft,
+    mitLehrmeister: _lehrmeisterWirkt,
+    regeln: widget.lernregeln,
+  );
 
-  int get _kostenNachEpos {
-    return applyEpicApSurcharge(
-      _basisKosten.apKosten,
-      ruleActive: true,
-      isEpisch: widget.episch,
-      isMainAttribute: widget.istHaupteigenschaft,
-      lehrmeisterHebtAuf: _mitLehrmeister,
-    );
-  }
+  ({int apKosten, int seVerbraucht}) get _basisKosten => (
+    apKosten: _kosten.kostenVorAufschlag,
+    seVerbraucht: _kosten.seVerbraucht,
+  );
 
-  int get _eposAufschlagDelta {
-    return computeEpicApSurchargeDelta(
-      _basisKosten.apKosten,
-      ruleActive: true,
-      isEpisch: widget.episch,
-      isMainAttribute: widget.istHaupteigenschaft,
-      lehrmeisterHebtAuf: _mitLehrmeister,
-    );
-  }
+  int get _eposAufschlagDelta => _kosten.aufschlag;
 
-  int get _effektiveApKosten {
-    final kosten = _kostenNachEpos;
-    if (!_mitLehrmeister) {
-      return kosten;
-    }
-    return apMitLehrmeister(kosten);
-  }
+  int get _effektiveApKosten => _kosten.apKosten;
 
   double? get _dukaten {
-    if (!_mitLehrmeister) {
+    if (!_lehrmeisterWirkt) {
       return null;
     }
     return dukatenFuerLehrmeister(_effektiveApKosten, _lehrmeisterTaW);
@@ -293,6 +296,7 @@ class _SteigerungsDialogState extends State<_SteigerungsDialog> {
       );
     }
 
+    hinweise.addAll(widget.lernregeln.hinweise);
     if (hinweise.isEmpty) {
       return null;
     }
@@ -437,6 +441,33 @@ class _SteigerungsDialogState extends State<_SteigerungsDialog> {
               style: theme.textTheme.bodySmall,
             ),
           ],
+          Theme(
+            data: theme.copyWith(dividerColor: Colors.transparent),
+            child: ExpansionTile(
+              key: const ValueKey<String>('steigerungs-dialog-herleitung'),
+              tilePadding: EdgeInsets.zero,
+              childrenPadding: EdgeInsets.zero,
+              dense: true,
+              title: Text(
+                'Berechnung der AP-Kosten',
+                style: theme.textTheme.bodySmall,
+              ),
+              children: [
+                if (widget.lernregeln.spaltenHerleitung != null &&
+                    widget.lernregeln.spaltenHerleitung!.schritte.isNotEmpty)
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: _SpaltenSchritte(
+                      herleitung: widget.lernregeln.spaltenHerleitung!,
+                    ),
+                  ),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: HerleitungsSchritte(herleitung: _kosten.herleitung),
+                ),
+              ],
+            ),
+          ),
           const SizedBox(height: 12),
           Text('Verfügbare AP: ${widget.verfuegbareAp}'),
           Text(
@@ -463,6 +494,19 @@ class _SteigerungsDialogState extends State<_SteigerungsDialog> {
               },
             ),
             if (_mitLehrmeister) ...[
+              if (!_lehrmeisterWirkt)
+                Padding(
+                  padding: const EdgeInsets.only(top: 4),
+                  child: Text(
+                    'Ein Lehrmeister steigert nur bis Wert '
+                    '${widget.lehrmeisterMaxWert} (Stufe + 3); darüber gelten '
+                    'die Kosten ohne Lehrmeister.',
+                    key: const ValueKey<String>('steigerungs-dialog-lm-grenze'),
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.error,
+                    ),
+                  ),
+                ),
               const SizedBox(height: 8),
               TextField(
                 controller: _lehrmeisterController,
@@ -537,8 +581,10 @@ class _SteigerungsDialogState extends State<_SteigerungsDialog> {
                       effektiveKomplexitaet: _ausgewaehlteKomplexitaet,
                       apKosten: _effektiveApKosten,
                       seVerbraucht: basisKosten.seVerbraucht,
-                      lehrmeisterTaW: _mitLehrmeister ? _lehrmeisterTaW : null,
-                      dukaten: _mitLehrmeister ? _dukaten : null,
+                      lehrmeisterTaW: _lehrmeisterWirkt
+                          ? _lehrmeisterTaW
+                          : null,
+                      dukaten: _lehrmeisterWirkt ? _dukaten : null,
                     ),
                   );
                 },
@@ -546,6 +592,53 @@ class _SteigerungsDialogState extends State<_SteigerungsDialog> {
           label: Text(widget.confirmLabel ?? 'Steigern'),
         ),
       ],
+    );
+  }
+}
+
+// Die Lernspalte in Spalten statt in AP: Katalogspalte, jede Verschiebung,
+// Ergebnis (die Herleitung zählt hier Spaltenindizes).
+class _SpaltenSchritte extends StatelessWidget {
+  const _SpaltenSchritte({required this.herleitung});
+
+  final Herleitung herleitung;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final stil = theme.textTheme.bodySmall;
+    final zeilen = <Widget>[
+      for (final schritt in herleitung.sichtbareSchritte)
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 1),
+          child: Text(
+            schritt.art == HerleitungsArt.grundwert
+                ? '${schritt.bezeichnung}: ${schritt.formel ?? ''}'
+                : '${schritt.bezeichnung}: '
+                      '${schritt.betrag > 0 ? '+' : ''}${schritt.betrag} '
+                      '${schritt.betrag.abs() == 1 ? 'Spalte' : 'Spalten'}'
+                      '${(schritt.quelle ?? '').isEmpty ? '' : ' · ${schritt.quelle}'}',
+            style: stil,
+          ),
+        ),
+    ];
+    final index = herleitung.wert.clamp(0, kLernkomplexitaeten.length - 1);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Lernspalte',
+            style: stil?.copyWith(fontWeight: FontWeight.bold),
+          ),
+          ...zeilen,
+          Text(
+            'Ergebnis: Spalte ${kLernkomplexitaeten[index]}',
+            style: stil?.copyWith(fontWeight: FontWeight.bold),
+          ),
+        ],
+      ),
     );
   }
 }

@@ -1,3 +1,5 @@
+import 'package:dsa_heldenverwaltung/rules/derived/herleitung.dart';
+
 /// Gemeinsame Probearten fuer die Wuerfel-Engine.
 enum ProbeType {
   genericRoll,
@@ -68,6 +70,7 @@ class ResolvedProbeRequest {
     this.initialSpecializationApplied = false,
     this.initialSituationalModifier = 0,
     this.fixedRollTotal,
+    this.poolHerleitung,
   });
 
   /// Fachliche Probeart.
@@ -102,6 +105,33 @@ class ResolvedProbeRequest {
 
   /// Fester Ersatz fuer den Wurf, z. B. Aufmerksamkeit mit `+6/+12`.
   final int? fixedRollTotal;
+
+  /// Herleitung des Kompensationspools (TaW*), nur zur Anzeige im Dialog.
+  ///
+  /// Wenn gesetzt, ist ihre Summe [basePool]; der Dialog rechnet nichts nach.
+  final Herleitung? poolHerleitung;
+
+  /// Gibt eine Kopie mit geänderten Feldern zurück.
+  ResolvedProbeRequest copyWith({
+    String? ruleHint,
+    int? initialSituationalModifier,
+  }) {
+    return ResolvedProbeRequest(
+      type: type,
+      title: title,
+      subtitle: subtitle,
+      ruleHint: ruleHint ?? this.ruleHint,
+      diceSpec: diceSpec,
+      targets: targets,
+      basePool: basePool,
+      specializationBonus: specializationBonus,
+      initialSpecializationApplied: initialSpecializationApplied,
+      initialSituationalModifier:
+          initialSituationalModifier ?? this.initialSituationalModifier,
+      fixedRollTotal: fixedRollTotal,
+      poolHerleitung: poolHerleitung,
+    );
+  }
 
   /// Kennzeichnet Talent- und Zauberproben mit Kompensationspool.
   bool get usesCompensationPool =>

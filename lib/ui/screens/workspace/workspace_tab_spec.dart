@@ -18,6 +18,7 @@ import 'package:dsa_heldenverwaltung/ui/screens/hero_overview_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_reisebericht_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_talents_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/planung_bearbeiten_guard.dart';
 
 /// Stabile IDs fuer Workspace-Tabs.
 abstract final class WorkspaceTabIds {
@@ -193,8 +194,14 @@ List<WorkspaceTabSpec> buildWorkspaceTabs({
       label: 'Magie',
       icon: Icons.bolt_outlined,
       helper: 'Katalogansicht für Zauber',
+      // Auch ein Träger ohne Zauberkunde sieht hier die Zauber seiner
+      // Artefakte (Matrixgeber).
       isVisible: (hero, catalog) =>
-          computeHeroResourceActivation(hero, catalog: catalog).magic.isEnabled,
+          computeHeroResourceActivation(
+            hero,
+            catalog: catalog,
+          ).magic.isEnabled ||
+          hero.inventoryEntries.any((e) => e.artefaktDaten != null),
       buildContent: ({required heroId, required callbacks}) => HeroMagicTab(
         heroId: heroId,
         onDirtyChanged: callbacks.onDirtyChanged,
@@ -305,7 +312,14 @@ List<WorkspaceHeaderAction> _buildTalentsHeaderActions({
 }) {
   final bePreview = ref.watch(combatPreviewProvider(heroId));
 
-  void openBeDialog() {
+  Future<void> openBeDialog() async {
+    final darfBearbeiten = await bestaetigeBearbeitungBeiPlanung(
+      context: context,
+      heroId: heroId,
+    );
+    if (!darfBearbeiten || !context.mounted) {
+      return;
+    }
     showAdaptiveDetailSheet<void>(
       context: context,
       builder: (_) => TalentBeConfigDialog(

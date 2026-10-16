@@ -231,6 +231,13 @@ einzelnen Feldunterschiede lassen sich darunter ein- und ausklappen. Dasselbe
 Widget nutzen der blockierende Startbildschirm `SyncConflictGate` und die
 Konflikt-Kachel unter `Einstellungen > Konto & Sync`.
 
+Bei Offline-Helden zeigt die Namenszeile den Konto-Namen ohne erklärenden
+Präfix, bei fehlendem Konto-Held `—`. Ein sichtbarer Hinweis erklärt, dass
+„Nur Lokal“ den Konto-Stand durch den Offline-Stand ersetzt bzw. einen fehlenden
+Konto-Held übernimmt. Ein fehlender Konto-Held wird nicht als Cloud-Löschung
+bezeichnet. Die Zeile „Gespeichert“ erscheint nur, wenn beide Zeitstempel
+vorliegen. Persistenz und Auflösungswege bleiben unverändert.
+
 Seit 2026-08-17 werden Entscheidungen zu Offline-Helden dauerhaft festgehalten.
 Vorher war das eine echte Luecke: `queueOfflineProfileConflicts` liest die
 Offline-Box bei jedem Start neu, die Konfliktliste lebt nur im Speicher, und
@@ -356,6 +363,12 @@ Zustands-Konflikt:
   analog: `keepLocal` setzt den Zustands-Tombstone, `keepRemote` holt mit dem
   Helden auch dessen Online-Zustand zurueck.
 
+Diese Zuordnung gilt für vollständig abgeschlossene Entscheidungen. Ein
+Abbruch zwischen den Schreibvorgängen ist noch nicht abgesichert: Nach
+„Nur Lokal“ kann der Neustart den Zustand entgegen der Entscheidung
+zusammenführen; bei „Beide behalten“ kann der Kopiezustand verloren gehen.
+Reproduktion und Abnahmegrenze: [ARCH-06-Abnahmeprüfung](arch06_abnahme.md).
+
 Fehlt online ein Zustandsdokument, bleibt der lokale Stand stehen — der
 naechste Sync legt ihn an. Laeuft der Zustands-Push in eine
 `SyncPreconditionException`, wird bewusst nur ein eigener Zustands-Konflikt
@@ -390,6 +403,32 @@ oeffnet ohne User das Offline-Profil und mit User das Konto-Profil, startet
 `SyncingHeroRepository` plus plattformspezifisches Remote-Gateway
 (`FirestoreHeroSyncGateway` oder auf Windows `RestFirestoreHeroSyncGateway`)
 und übergibt den Controller über `syncControllerProvider`.
+
+Zusammenführung (ARCH-06 Teilstand 3): Mit Konto öffnet der Start zusätzlich
+`HiveSyncBasisStore` (Box `sync_basis_v1`) und reicht sie an
+`SyncingHeroRepository`. Ändern beide Geräte seit dem letzten Abgleich,
+führt der Sync Held bzw. Zustand über `fuehreSyncZusammen` zusammen; nur
+widersprüchlich geänderte Werte ergeben einen Konflikt
+(`SyncKonfliktKarte`: Nur Online, Nur Lokal, Beide behalten, Automatisch).
+
+Konfliktentscheidungen (ARCH-06 Teilstand 3): `AppStartupGate` reicht das
+geöffnete `HiveVorgangsjournal` an `SyncingHeroRepository`
+(`journal:`). Entscheidungen über Held und Zustand laufen dort als
+`SyncKonfliktVorgang` über `KonfliktWiederanlauf`
+(`lib/data/sync/`, Teil `syncing_hero_repository_vorgang.dart`);
+`syncNow` setzt offene Vorgänge vor dem normalen Abgleich fort. Vertrag:
+`docs/schreibpfade_inventar.md`, „Konfliktentscheidung“.
+
+Wiederanlauf (ARCH-06): Direkt nach `HiveHeroRepository.create` öffnet
+`AppStartupGate` das Vorgangsjournal (`HiveVorgangsjournal`, Box
+`vorgaenge_v1` im Profilpfad) und lässt `VorgaengeWiederaufnehmen` auf dem
+lokalen Hive-Speicher laufen — **vor** Startimport und `syncNow`. Ein
+abgebrochener Heldenimport wird dort zu Ende geführt (Zustand nachtragen)
+oder ausgeglichen (unbenutzte Bilder löschen); der folgende Abgleich lädt
+Nachgetragenes über den Hashvergleich hoch. Fehler werden nur protokolliert.
+Das Journal geht als `vorgangsjournalProvider` in den `ProviderScope`.
+Vertrag und Restrisiken: `docs/schreibpfade_inventar.md`, Abschnitt
+„Speichervertrag (ARCH-06)“.
 
 ### App-weites Tablet-Layout
 
@@ -449,7 +488,8 @@ mit älterer App per Sync die Felder einer neueren (Befunde ARCH-07-B5/B6):
   `unbekannteFelder` und ein eigenes `jsonSchluessel`:
   - Ausrüstung: `CombatConfig`, `MainWeaponSlot`, `RangedWeaponProfile`,
     `RangedProjectile`, `RangedDistanceBand`, `ArmorConfig`, `ArmorPiece`,
-    `OffhandEquipmentEntry`, `HeroInventoryEntry`, `InventoryItemModifier`;
+    `OffhandEquipmentEntry`, `HeroInventoryEntry`, `InventoryItemModifier`,
+    `ArtefaktDaten`, `ArtefaktZauber`, `ArtefaktLadung`;
   - Kampfeinstellungen: `OffhandAssignment`, `CombatSpecialRules`,
     `CombatManualMods`, `WaffenmeisterConfig`, `WaffenmeisterBonus`;
   - Talente und Magie: `HeroTalentEntry`, `HeroTalentModifier` (auch in
@@ -458,9 +498,15 @@ mit älterer App per Sync die Felder einer neueren (Befunde ARCH-07-B5/B6):
     `HeroRitualCategory`, `HeroRitualKnowledge`, `HeroRitualEntry`,
     `HeroRitualFieldDef`, `HeroRitualFieldValue`, `MagicSpecialAbility`,
     `HeroLanguageEntry`, `HeroScriptEntry`;
+  - Regelprofil: `HeroRegelProfil`, `HeroRegelProfilPaket`
+    (`lib/domain/hero_regelprofil.dart`);
   - Vor- und Nachteile: `HeroMerkmal` (`vorteilEintraege`/`nachteilEintraege`, ARCH-02);
+  - Herkunftsmodifikatoren: `HeroHerkunftsModifikatoren`,
+    `HeroHerkunftsModifikator` (`HeroBackground.herkunftsModifikatoren`, ARCH-02);
   - Begleiter und Chronik: `HeroCompanion`, `HeroCompanionAttack`,
     `HeroCompanionSonderfertigkeit`, `HeroCompanionSpeed`,
+    `ReittierAusbildung`, `ReittierAusbildungsschritt`,
+    `VertrautenBindung`, `VertrautenAusbildungsbuchung`,
     `HeroAdventureEntry`, `HeroAdventureSeReward`, `HeroAdventureDateValue`,
     `HeroAdventurePersonEntry`, `HeroAdventureLootEntry`, `HeroNoteEntry`,
     `HeroConnectionEntry`, `HeroReisebericht`, `ReiseberichtOpenItem`,
@@ -471,7 +517,8 @@ mit älterer App per Sync die Felder einer neueren (Befunde ARCH-07-B5/B6):
     `AvatarGalleryEntry`, `AvatarGesichtsbefund`, `AvatarGesichtsrahmen`,
     `AvatarSnapshot`, `HeroAdvancementEntry`;
   - Laufzeitzustand: `AttributeModifiers`, `ActiveSpellEffectsState`,
-    `ActiveSpellEffectDetail`, `SpellDuration`, `WundZustand`, `DiceLogEntry`.
+    `ActiveSpellEffectDetail`, `SpellEffectInstance`, `SpellDuration`, `WundZustand`, `DiceLogEntry`,
+    `ZustandsBuchung` (ARCH-06), `BegleiterZustand` (V2).
 
   Ausgenommen ist nur `OffhandSlot`: der Altschlüssel `offhand` wird beim
   Laden migriert und nie geschrieben. Drei Regeln halten das dicht:
@@ -512,15 +559,18 @@ mit älterer App per Sync die Felder einer neueren (Befunde ARCH-07-B5/B6):
   den Rohwert hält das Modell in `unbekannteEnumWerte` (JSON-Schlüssel →
   Rohwert, getrennt von `unbekannteFelder`), und `toJson` schreibt ihn
   anstelle des Ersatzes zurück. Fehlende oder leere Angaben gelten wie
-  bisher als fehlend. Betroffen sind 18 Felder: `HeroInventoryEntry`
+  bisher als fehlend. Betroffen sind 25 Felder: `HeroInventoryEntry`
   (`itemType`, `source`, `traegerTyp`), `InventoryItemModifier` (`kind`),
+  `ArtefaktDaten` (`art`, `stabilitaet`, `regelfassung`),
   `MainWeaponSlot` (`combatType`), `OffhandEquipmentEntry` (`type`,
   `shieldSize`), `WaffenmeisterBonus` (`type`), `HeroRitualCategory`
   (`knowledgeMode`), `HeroRitualFieldDef` (`type`), `HeroCompanion` (`typ`),
+  `ReittierAusbildung` (`ausgangsstufe`, `ausgangsart`),
+  `ReittierAusbildungsschritt` (`nach`, `art`),
   `HeroAdventureEntry` (`status`), `HeroAdventureSeReward` (`targetType`),
   `HeroAdventureLootEntry` (`itemType`), `SpellDuration` (`unit`),
-  `DiceLogEntry` (`type`, `automaticOutcome`) und `AventurianDate`
-  (`month`). Muster beim Lesen: `leseEnumWert` mit einer Erkennerfunktion,
+  `DiceLogEntry` (`type`, `automaticOutcome`), `ZustandsBuchung` (`art`,
+  `zone`) und `AventurianDate` (`month`). Muster beim Lesen: `leseEnumWert` mit einer Erkennerfunktion,
   die `null` für Unbekanntes liefert, dann `festeEnumWerte`; beim Schreiben
   `mitUnbekanntenEnumWerten` über `mitUnbekanntenFeldern`.
   **Änderungsregel:** `copyWith` mit einem *anderen* Wert überschreibt den
@@ -570,6 +620,7 @@ Bestandsdaten enthalten nichts Unbekanntes, ihr JSON und ihre Inhalts-Hashes
 | `talentSpecialAbilities` | `List<TalentSpecialAbility>` | Strukturierte Talent-Sonderfertigkeiten (Name + optionale Notiz), Legacy-Strings werden tolerant migriert |
 | `spells` | `Map<String, HeroSpellEntry>` | Aktivierte oder gelernte Zauber des Helden |
 | `ritualCategories` | `List<HeroRitualCategory>` | Heldenspezifische Ritualkategorien mit Ritualkenntnis oder Talentbezug |
+| `ritualKnowledge` | `Map<String, HeroRitualKnowledge>` | Gemeinsame Ritualkenntnisse nach stabiler Traditionskennung; optional, leer nicht geschrieben |
 | `repraesentationsTraditionen` | `Map<String, String>` | Gewählte Tradition je Repräsentationskürzel; nur bei mehrdeutigen Kürzeln nötig (aktuell nur `Geo`) |
 | `magicLeadAttribute` | `String` | Bewusst abweichende Leiteigenschaft (`MU` bis `KK`); ohne Eintrag wird sie aus der Tradition abgeleitet |
 | `rasse` / `rasseModText` | `String` | Rasse und Rassenmodifikator-Text |
@@ -581,6 +632,7 @@ Bestandsdaten enthalten nichts Unbekanntes, ihr JSON und ihre Inhalts-Hashes
 | `stand`, `titel` | `String` | Sozialer Stand und Titel |
 | `familieHerkunftHintergrund` | `String` | Familiengeschichte/Herkunft |
 | `sozialstatus` | `int` | Numerischer Sozialstatus |
+| `herkunftsModifikatoren` | `HeroHerkunftsModifikatoren?` | Strukturierte Herkunftsmodifikatoren je Rasse/Kultur/Profession (ARCH-02, Folgeumfang Herkunftsmerkmale). Flach im Helden-JSON, nur bei Belegung geschrieben; `formatVersion: 1`. Fehlend = nicht migriert, drei leere Listen = ausdrücklich keine Einträge. Unbekannte Version, Nicht-Objekt, nicht verstandene Gruppen/Einträge und doppelte IDs bleiben roh erhalten und sperren die Bearbeitung (Gruppe bzw. Container) |
 | `vorteilEintraege` / `nachteilEintraege` | `List<HeroMerkmal>` | Erworbene Vor-/Nachteile mit Katalog-ID, Wert, Auswahl und Textfragment (ARCH-02, Abschnitt 4.11). Maßgeblich, sobald belegt; nur dann geschrieben |
 | `vorteileText` / `nachteileText` | `String` | Projektion der Listen für ältere App-Versionen (`; `-getrennt); bei Bestandshelden ohne Liste der Alttext, der beim nächsten Speichern migriert wird |
 | `apTotal` | `int` | Gesamte Abenteuerpunkte |
@@ -643,8 +695,30 @@ persistiert (eigene Hive-Box `hero_states_v1`).
 | `ueberanstrengung` | `int` | Aktuelle Überanstrengung; wird vor Erschöpfung abgebaut |
 | `tempMods` | `StatModifiers` | Temporäre Stat-Modifikatoren |
 | `tempAttributeMods` | `AttributeModifiers` | Temporäre Eigenschaftsmodifikatoren |
+| `buchungen` | `List<ZustandsBuchung>` | Fachliche Buchungen (ARCH-06), höchstens `buchungenMax` = 50, nur bei Belegung im JSON |
+| `begleiterZustaende` | `Map<String, BegleiterZustand>` | Laufende LeP/AsP/AuP je Begleiter-ID (V2, gemeinsam mit Reittier-P2), nur bei Belegung im JSON |
 
 `HeroState.empty()` liefert einen Standardzustand mit allen Werten = 0.
+
+`ZustandsBuchung` (`lib/domain/zustands_buchung.dart`) hält fest, was ein
+Treffer **tatsächlich** verändert hat (`lepDelta`, `auDelta`, `zone`,
+`wundenDelta`, `kopfIniMalusDelta`, nachgetragen `unterdrueckt`), bzw. als
+Gegenbuchung (`art: schadenRuecknahme`, `ruecknahmeVon`), was eine Rücknahme
+geändert hat. Der zugehörige Protokolleintrag trägt dieselbe ID als
+`DiceLogEntry.buchungId`.
+
+`BegleiterZustand` (`lib/domain/begleiter_zustand.dart`) hält `currentLep`,
+`currentAsp` und `currentAup` eines Begleiters. `null` heißt „voll“, also
+gleich dem wirksamen Maximum (`begleiterWirksamerPoolwert`); ein Wert gleich
+dem Maximum wird deshalb nicht gespeichert, und ein Begleiter ohne Wert hat
+keinen Eintrag. Einträge gelöschter Begleiter bleiben stehen und werden
+ignoriert. Die Rechnung steht in `rules/derived/begleiter_zustand_rules.dart`
+(`mitBegleiterPool` mit einer `RessourcenAenderung`, LeP bis −10, AsP/AuP bis 0,
+nach oben das Maximum), der Schreibweg der Oberfläche in
+`ui/screens/shared/begleiter_zustand_aendern.dart` über
+`aendereZustandMitMeldung`. Im Sync zählen die drei Werte als Zähler
+(`zaehlerInMaps` in `zustandZusammenfuehrungsRegeln`), sofern Basis, Lokal und
+Online einen Zahlenwert tragen; sonst gilt die normale Zusammenführung.
 
 ---
 
@@ -730,6 +804,7 @@ desselben Feldes entspricht; abweichende Einträge bleiben stehen.
 | Feld | Typ | Bedeutung |
 |---|---|---|
 | `name` | `String` | Anzeigename |
+| `inventarInstanzId` | `String` | Verweis Slot → Inventarinstanz (ARCH-03); abgeleitet, gesetzt nur in `saveHero`, nur geschrieben, wenn belegt. Gilt ebenso für `RangedProjectile`, `ArmorPiece` und `OffhandEquipmentEntry` |
 | `talentId` | `String` | Zugehöriges Kampftalent (ID aus Katalog) |
 | `combatType` | `WeaponCombatType` | Explizite Einordnung als Nah- oder Fernkampfwaffe |
 | `weaponType` | `String` | Waffenkategorie |
@@ -971,7 +1046,8 @@ Der Meta-TaW wird nicht persistiert, sondern aus den referenzierten
 
 Rituale werden nicht aus dem globalen Regelkatalog geladen, sondern pro Held
 direkt in `HeroSheet.ritualCategories` gespeichert. Eine Ritualkategorie
-enthaelt entweder eine eigene Ritualkenntnis mit TaW und Lernkomplexitaet oder
+enthält eine eigene Ritualkenntnis mit TaW und Lernkomplexität, einen Bezug auf
+`HeroSheet.ritualKnowledge` oder
 eine Liste referenzierter Talent-IDs, deren TaWs im Magie-Tab angezeigt werden.
 
 | Typ | Kernfelder |
@@ -1010,7 +1086,7 @@ Inventarfelder fuer Quelle, Gewicht, Wert, Modifier und magisch/geweiht.
 | `gewicht` | Gewicht |
 | `wert` | Wert |
 | `artefakt` | Legacy-Artefakt-Kennzeichnung fuer Altbestaende |
-| `anzahl` | Menge |
+| `anzahl` | Menge als Text; Projektion von `menge`, Freitext bedeutet „Menge offen“ |
 | `amKoerper` | Am Körper getragen? |
 | `woDann` | Aufbewahrungsort |
 | `gruppe` | Gruppe/Kategorie |
@@ -1019,14 +1095,20 @@ Inventarfelder fuer Quelle, Gewicht, Wert, Modifier und magisch/geweiht.
 | `source` | Herkunft des Eintrags (`manuell`, Kampf-Sync oder `abenteuer`) |
 | `sourceRef` | Namensverweis auf einen Kampf-Slot (`w:<Name>` …), den auch die veröffentlichte App versteht, oder Verweis auf Abenteuerbeute |
 | `slotRef` | Stabiler ID-Verweis auf den Kampf-Slot (`w#<id>` …); nur geschrieben, wenn belegt |
-| `istAusgeruestet` | Steuert, ob Modifier des Eintrags aktiv wirken |
+| `istAusgeruestet` | Steuert, ob Modifier des Eintrags aktiv wirken. Bei verknüpften Einträgen setzt der Abgleich ihn (07.10.2026): Waffe nur in der Hand (gewählte Hauptwaffe oder Nebenhand), Schild/Parierwaffe nur in der Nebenhand, Rüstungsteil nur angelegt |
 | `modifiers` | Typisierte Inventar-Modifikatoren |
-| `gewichtGramm` | Numerisches Gewicht in Gramm |
-| `wertSilber` | Numerischer Wert in Silbertalern |
+| `gewichtGramm` | Numerisches Gewicht in Gramm **pro Stück** (ARCH-03, 07.10.2026); Summen rechnen Menge × Stückgewicht, offene Menge = 1 Stück (`inventar_summen_rules.dart`) |
+| `wertSilber` | Numerischer Wert in Silbertalern **pro Stück**; Summen wie beim Gewicht |
 | `herkunft` | Fundort, Quelle oder Haendler |
 | `isMagisch` / `magischDescription` | Magische Markierung und Beschreibung |
 | `isGeweiht` / `geweihtDescription` | Geweihte Markierung und Beschreibung |
 | `traegerTyp` / `traegerId` | Zuordnung zum Helden oder zu einem Begleiter |
+| `instanzId` | Stabile Instanz-ID des Stapels/Exemplars (ARCH-03); nur im Helden eindeutig, bei einer Kopie unverändert; vergeben erst in `saveHero`, nur geschrieben, wenn belegt |
+| `menge` | Strukturierte Stückzahl (ARCH-03); `null` = offen; nur geschrieben, wenn belegt |
+| `abgelegt` | `AbgelegterKampfgegenstand` (`lib/domain/abgelegter_kampfgegenstand.dart`): gemerkte Kampfwerte eines im Kampfbereich nur abgelegten Exemplars — genau einer von `waffe`, `geschoss`, `ruestungsteil`, `nebenhandteil`; nur geschrieben, wenn belegt |
+| `vitalwirkung` | `Vitalwirkung` (`lib/domain/vitalwirkung.dart`): Vorbelegung `lep`/`asp`/`aup`/`wunden` für Verbrauchsgegenstände (Heiltrank, Verband); dazu die Hinweise `lepWurf`/`aspWurf`/`aupWurf` (Würfelausdruck als Text, nie gebucht) und `lepProWunde` (Katalogmittel, TRANK); nur Vorschlag für den Dialog „Anwenden“, nur geschrieben, wenn belegt |
+| `alchimikum` | `AlchimikumBezug` (`lib/domain/alchimikum_bezug.dart`): Katalog-ID (`alch_…`) und Qualitätsstufe des Mittels, aus dem der Eintrag stammt (TRANK); darüber findet „Anwenden“ die Katalogwirkung, etwa die Eigenschaftsänderungen eines Elixiers. Die Werte bleiben im Katalog; nur geschrieben, wenn belegt |
+| `artefaktDaten` | `ArtefaktDaten` (`lib/domain/artefakt_daten.dart`): Artefakt (`art`: `matrixgeber`, `spruchspeicherEinmalig`, `spruchspeicherAufladbar`, `spruchspeicherSemipermanent`, `spruchspeicherPermanent`, `zaubertalisman`) — Stabilität, Regelfassung (`alchimie2012` / `staebeRinge2011`), Ersteller, Auslöser samt Aktionen, permanente AsP, Beschädigung und die eingesprochenen Zauber (`ArtefaktZauber`: Katalog-ID, Repräsentation des Sprechers, ZfW, ZfP*, AsP-Kosten, permanente AsP, Reichweite, Wirkungsdauer, Zielvorgabe, Spontane Modifikation). Die permanenten AsP stehen je Zauber und insgesamt (`ArtefaktDaten.pAsP` gilt vor der Summe, `artefaktPAspGesamt`). Alle Angaben gehören dem Gegenstand, nie dem Träger; nur geschrieben, wenn belegt. Ladungsbasierte Spruchspeicher tragen `ladungen` (`ArtefaktLadung`: stabile `id`, gemeinsam ausgelöste `zauber`, `verbraucht`), den Aufladezähler `aufladungen` und optional `gesamtAspErschaffung`; ein semipermanenter Speicher führt die flache `zauber`-Liste samt `intervall` (`tag`/`woche`/`monat`/`jahr`), `anwendungenProIntervall` und die vermerkten `anwendungen` (`AventurianDate`; ein leeres Datum zählt bis zur ausdrücklichen Regeneration). Alle diese Schlüssel stehen nur bei Belegung bzw. passender Art im JSON, Bestandsdaten behalten ihren Hash. Ein Zaubertalisman (Auxiliator) führt wie der Matrixgeber Stabilität, Regelfassung und die flache `zauber`-Liste; die gespeicherten ZfP* eines Zaubers sind sein Bonus. Regeln: `rules/derived/artefakt_matrix_rules.dart` (Matrixgeber), `artefakt_spruchspeicher_rules.dart` (Ladungen, Erlöschen, Schadensschwelle beim Aufladen: WdA 2012 nur die 20 und jede bisherige Aufladung senkt die Schwelle um 1, Stäbe/Ringe 2011 immer 19–20), `artefakt_intervall_rules.dart` (Intervall gegen das aventurische Kampagnendatum: Tag 1, Woche 7, Monat 30, Jahr 365 Tage, bei mehreren Anwendungen ein gleitendes Fenster, nur Anzeige) `artefakt_auxiliator_rules.dart` (Bonus: gespeicherte ZfP*, bei fremder Repräsentation halbiert und danach durch den ZfW des Anwenders gedeckelt, nur bei einem Spruch, der auch ohne Talisman gelungen wäre; Kosten Zauberkosten + 1W3; Ausfallwurf wie beim Matrixgeber, +2 bei misslungenem Spruch) und `artefakt_ladung_aenderung_rules.dart` (Bogenänderungen); Auslösung: `ablaeufe/matrix_ausloesen.dart`, `ablaeufe/auxiliator_einsetzen.dart` (Zustand, ein Dokument) bzw. die Spruchspeicher-Dialoge (`hero_inventory/`), Protokoll: `ablaeufe/artefakt_protokollieren.dart`. Zurückgestellt: APPLICATUS (entlädt sich am nächsten Sonnenaufgang automatisch auf den Auslöser), Kraftspeicher, magische Waffen (ZAUBERKLINGE) |
 
 **Kampf-/Inventarverweise (ARCH-03, Teilfix B2/B3).** Waffen, Geschosse,
 Ruestungsstuecke und Nebenhand-Teile speichern eine Slot-ID.
@@ -1051,14 +1133,25 @@ Ein verknuepfter Inventareintrag traegt **zwei Verweise**
   Slot-IDs.
 
 Zuordnung beim **Abgleich** (`reconcileInventoryWithCombat`) und bei der
-Uebernahme magischer/geweihter Angaben (`applyLinkedInventoryDetailsToConfig`):
+Uebernahme magischer/geweihter Angaben (`applyLinkedInventoryDetailsToConfig`;
+beide nutzen dieselbe Paarung):
 
+0. **Instanz zuerst** (ARCH-03, Verweis Slot → Instanz): Traegt der Slot eine
+   `inventarInstanzId`, passt der verknuepfte Eintrag derselben Quelle mit
+   dieser Instanz-ID — es sei denn, sein `slotRef` zeigt auf einen *anderen
+   bestehenden* Slot (etwa weil der Slot eine Kopie ist, die die Instanz
+   ihres Vorbilds mitgenommen hat). Ohne `slotRef` oder mit einem auf einen
+   entfernten Slot entscheidet die Instanz. Jeder Eintrag wird einmal
+   vergeben; ein neu angelegter Eintrag uebernimmt die Instanz des Slots
+   nicht, er bekommt seine eigene erst in `vergibInstanzIds`.
 1. Ein Eintrag mit `slotRef` passt nur ueber diesen. Verweist er auf einen
    entfernten Slot, faellt er weg. Er wandert nie ueber den Namen zu einem
    gleichnamigen Exemplar weiter (Befund B2).
-2. Ein Eintrag ohne `slotRef` passt ueber den Namen, auf den ersten freien
-   gleichnamigen Slot in Slot-Reihenfolge — genau wie in der
-   veroeffentlichten App.
+2. Ueber den Namen gleicht der Abgleich nicht mehr ab (ARCH-03, Schritt 3,
+   07.10.2026). Altdaten ohne `slotRef` ordnet einmalig das Laden zu
+   (`migriereInventarVerweise`, Tabelle unten). Nur ein Slot ohne ID — den
+   gibt es allein im Speicher vor dem ersten Speichern — paart noch Eintraege
+   ohne `slotRef` ueber den Namen.
 3. Die Ausgabe bleibt „manuelle Eintraege, dann verknuepfte in
    Slot-Reihenfolge“. Die veroeffentlichte App paart gleichnamige Eintraege
    ueber diese Reihenfolge; sie darf sich nicht aendern.
@@ -1098,6 +1191,92 @@ Katalog-IDs und die vollstaendige ARCH-03-Migration sind noch offen. Der
 Abgleich aendert bestehende verknuepfte Eintraege nur per `copyWith` und
 uebernimmt aus dem Slot allein dessen Felder; Typ und Traeger bleiben
 erhalten (Befund B9 behoben).
+
+**Verweis Slot → Instanz (ARCH-03, Teilstand 06.10.2026).** Waffe,
+Geschoss, Ruestungsstueck und Nebenhand-Teil tragen `inventarInstanzId`, die
+Instanz-ID ihres verknuepften Eintrags. `bindeSlotsAnInstanzen`
+(`rules/derived/inventar_slot_instanz_rules.dart`) setzt sie in `saveHero`
+nach Abgleich und Instanzvergabe, nie beim Laden; ohne Eintrag wird ein
+veralteter Verweis geleert. Der Verweis ist abgeleitet und kein Profil:
+Inhaltsvergleiche gegen „inzwischen geaendert“ (`kampf_aenderung_rules.dart`,
+`gefecht_hand_rules.dart`) und Gefechts-Fingerabdruecke (Ziel-, Lade- und
+Bruchprofil) lassen ihn ueber `ohneInstanzverweise` weg. Sonst verloere etwa
+ein gebundener Ladezustand beim ersten Speichern nach dem Update seine Waffe.
+`slotRef` am Eintrag bleibt bestehen; die Ladermigration
+(`migriereInventarVerweise`) ordnet weiterhin nur ueber Name und Slot-ID zu.
+
+**Ablegen und Zurückholen (ARCH-03, Entscheidung vom 06.10.2026).** Wer im
+Kampf-Tab eine Waffe, ein Rüstungsteil oder ein Schild bzw. eine Parierwaffe
+entfernt, wird gefragt: „Nur ablegen“ oder „Ganz entfernen“
+(`kampfgegenstand_entfernen_dialog.dart`). Geschosse, die das Ergebnis des
+Waffeneditors nicht mehr führt, fragen dasselbe beim Speichern der Waffe.
+Regeln in `rules/derived/kampfgegenstand_ablegen_rules.dart`:
+
+- *Ablegen* entfernt den Slot und macht seinen verknüpften Eintrag (gefunden
+  über Instanz, `slotRef`, Name) zu einem **manuellen** Eintrag ohne
+  Verweise, mit derselben Instanz-ID, nicht ausgerüstet und mit
+  `abgelegt` = Slot ohne Instanzverweis. Eine abgelegte Waffe merkt sich
+  keine Geschosse. Manuell, weil mehrere Stellen allein an der Quelle
+  „verknüpft“ festmachen; Liste und Filter zeigen ihn über
+  `anzeigeQuelleImInventar` trotzdem als Waffe, Geschoss usw.
+- *Ganz entfernen* entfernt nur den Slot; der Abgleich verwirft den Eintrag
+  wie bisher.
+- **Geschosse gehen nie still verloren:** Eine entfernte Fernkampfwaffe legt
+  ihre benannten Geschosse in beiden Fällen ab, auch mit Bestand 0. Ein
+  Bestand von 0 löscht nirgends einen Eintrag.
+- *In Kampfbereich übernehmen* (Inventareditor,
+  `inventory_kampf_uebernehmen.dart`, `mitUebernommenemKampfgegenstand`)
+  hängt den Slot aus den gemerkten Werten hinten an; Name und
+  magisch/geweiht kommen vom Eintrag, ein Geschoss bekommt die Menge und
+  wählt seine Fernkampfwaffe. Der Eintrag wird wieder verknüpft
+  (`sourceRef` = Namensverweis, ohne `slotRef`); der Abgleich paart ihn über
+  die Instanz, Angaben wie Beschreibung und Gewicht bleiben.
+- Der Kampf-Tab schreibt beides über `_aendereKampfUndInventar`; im
+  Bearbeitungsmodus hält er dafür einen Inventarentwurf (`_draftInventar`),
+  den „Speichern“ zusammen mit der Kampfkonfiguration übernimmt.
+
+**Menge und Stapel (ARCH-03, Entscheidungen vom 04. und 06.10.2026).** Ein
+Stapel ist ein Gegenstand mit einer Instanz-ID und einer Menge. Die Lesart
+liegt in `rules/derived/inventar_menge_rules.dart`:
+
+| `anzahl` | `menge` | wirksame Menge |
+|---|---|---|
+| reine Zahl | fehlt | die Zahl (`saveHero` ergänzt `menge`) |
+| reine Zahl | dieselbe Zahl | die Zahl |
+| reine Zahl | andere Zahl | `anzahl` — eine ältere Version hat geändert; der Editor zeigt die Abweichung, nur eine Bearbeitung des Eintrags löst sie auf |
+| leer oder Freitext | beliebig | offen (`null`), wird nie geraten |
+
+Diese Version schreibt beide immer gemeinsam (`mitInventarMenge`). Der
+Abgleich vergibt keine `menge`, damit er auf Bestandsdaten ein Fixpunkt
+bleibt; hat ein Geschoss schon eine, hält er sie mit dem Slot synchron, der
+die Menge führt. Ein Geschoss ohne eindeutige Menge wird im Editor
+abgewiesen. **Stapel teilen** (`inventar_stapel_rules.dart`) spaltet einen
+unverknüpften Stapel mit neuer Instanz-ID ab; bei einem verknüpften Geschoss
+sinkt die Menge am eigenen Slot. **Zusammenführen** (gleiche Datei,
+Entscheidung vom 07.10.2026) addiert einen Stapel in einen anderen:
+gleicher Name (ohne Groß-/Kleinschreibung), Typ, magisch/geweiht samt
+Beschreibung und Modifikatoren, beide mit eindeutiger Menge; Ort und übrige
+Angaben kommen vom Ziel, gemerkte Kampfwerte eines abgelegten Stapels
+bleiben. Die Quelle darf nicht verknüpft sein; ein verknüpftes Ziel nur als
+Geschoss, dessen Slot dann die Summe führt. Abenteuerbeute ist kein Ziel,
+weil das Zurücknehmen des Abenteuers sie über ihren Verweis entfernt.
+Inventarwege treffen Einträge über die Instanz-ID
+(`findeInventarEintragZurAenderung`), Altdaten ohne ID über den Inhalt.
+Slots verweisen zusätzlich über `inventarInstanzId` auf ihr Exemplar.
+
+**Verkaufen** (`rules/derived/inventar_verkauf_rules.dart`, Dialog
+`inventory_verkaufen_dialog.dart`, Entscheidung vom 07.10.2026) verkauft den
+ganzen Gegenstand oder einen Teil des Stapels; eine offene Menge zählt als
+ein Stück. Der Erlös ist frei wählbar, vorbelegt mit dem vollen Wert (Wert
+pro Stück × Anzahl), und kommt über `mitDukatenSchritt` auf den Geldstand
+(unlesbarer Geldstand: abgewiesen). Unverknüpft sinkt die Menge, der letzte
+Rest entfernt den Eintrag. Ausgerüstete Waffen, Rüstungsteile und
+Nebenhandteile verlassen samt Slot den Kampfbereich (wie „Ganz entfernen“,
+die Geschosse einer Fernkampfwaffe werden abgelegt). Auch die letzte Waffe
+lässt sich entfernen, ablegen und verkaufen: Der Held steht dann wie ein
+neuer da (`ohneWaffe`: keine Waffenliste, nur der leere Platzhalter, den die
+nächste neue Waffe ersetzt). Pfeile am Bogen senken den Bestand ihres Slots und bleiben bei 0
+stehen.
 
 ---
 
@@ -1156,6 +1335,7 @@ Vorhandensein von `hero` und `state`. Wirft `FormatException` bei Validierungsfe
 | `disadvantages` | `List<HeroTraitDef>` | Katalogisierte Nachteile |
 | `sprachen` / `schriften` | `List<SpracheDef>` / `List<SchriftDef>` | Sprach- und Schriftkatalog |
 | `reisebericht` | `List<ReiseberichtDef>` | Separater Reisebericht-Katalog |
+| `spellEffects` | `List<SpellEffectProfile>` | Zauberprofile (MAG-EFF-01): Pruefstand, Quelle, Eingabenamen je Zauber-ID; keine Formeln. Manifest-Schlüssel `spell_effects`, optional, nicht Teil der Settings-Verwaltung |
 | `metadata` | `Map<String, dynamic>` | Weitere Metadaten |
 
 #### Mehrfach erwerbbare Sonderfertigkeiten mit Auswahl
@@ -1205,10 +1385,15 @@ Felder im Heldenmodell (`HeroSheet.merkmalskenntnisse`,
 zeigen den Klartextnamen der Tradition. Die Kosten
 liegen in `lib/rules/derived/magic_acquisition_rules.dart`:
 `merkmalsklassifikation` (I/II/III) speist alle drei Merkmals-Preistabellen,
-`repraesentationApCost` liefert 2.000/3.000/4.000 AP je nach Anzahl und
-Voll-/Halbzauberer. Beim Aktivieren eines Chips oeffnet sich der
-Erwerbsdialog; beim Deaktivieren werden — wie ueberall in der App — keine AP
-zurueckerstattet.
+`repraesentationApCost` liefert die Grundkosten 2.000/3.000/4.000 AP je nach
+Anzahl und Voll-/Halbzauberer. Der Repräsentationserwerb nutzt die gemeinsame
+Prüfung in `advancement_magic_knowledge_rules.dart` einschließlich Rabatten,
+Traditionswahl, Status und Ausbildungsbestätigungen. Beim Deaktivieren werden
+keine AP zurückerstattet. Gemeinsame Ritualkenntnisse liegen in
+`HeroSheet.ritualKnowledge`; mehrere Ritualgruppen können auf denselben Wert
+verweisen. Erwerb und Steigerung stehen auch in der Entwicklungsplanung zur
+Verfügung. [Magische Kenntnisse](magische_kenntnisse.md) beschreibt die
+kostenfreie Erfassung und den ausdrücklichen Abgleich von Bestandsgruppen.
 
 Zauberspezialisierungen liegen in `HeroSpellEntry.specializations` und werden
 in der Spalte `Spez.` der Zaubertabelle gepflegt. Kosten und ZfW-Schwellen
@@ -1452,6 +1637,107 @@ sodass etwa eine Wunde AT, PA und Ausweichen genauso senkt wie die
 Basiswerte. Armgebundene Wundabzüge rechnet erst die Waffe im jeweiligen Arm
 an, wundbedingte Eigenschaftsverluste gelten nur für Proben
 (`probenEigenschaften`, siehe „Zonenwunden nach WdS“ unten).
+
+**Herleitungen (ARCH-04).** Die Basiswerte entstehen als `Herleitung`
+(`lib/rules/derived/herleitung.dart`): eine geordnete Folge additiver
+`HerleitungsSchritt`e mit Art (Grundwert, Zukauf, Stufe, Modifikator,
+Sonderfertigkeit, Zauber, Begrenzung), Formel mit eingesetzten Werten,
+Quelle und Bedingung. Der Endwert ist **per Konstruktion** die Summe der
+Schritte; Untergrenzen, die Axxeleratus-Verdopplung und die Wundgrenze der
+GS erscheinen als eigene Ausgleichsschritte. `computeBasiswertHerleitungen`
+(`basiswert_herleitung_rules.dart`) baut alle Basiswerte;
+`computeDerivedStatsFromInputs` liest die Werte dort ab und legt die
+Herleitungen in `DerivedStats.herleitungen`. Die Grundwertformeln liegen als
+`grundwertLep`, `grundwertAt` usw. neben den bisherigen `compute*`-Funktionen,
+damit beide dieselbe Formel benutzen. Die Modifikatorquellen sammelt
+`sammleStatModifikatorQuellen` (Inspector, jeder eigene Modifikator einzeln,
+Rasse/Kultur/Profession/Vor-/Nachteile aus `computeModifierSourceBreakdown`,
+temporär, Inventar, Wunden); passt die Aufteilung nach Herkunft nicht exakt
+zur Textsumme, erscheint der Textanteil als ein Schritt, der Wert ändert sich
+nie. Die Basiswerttabelle der Übersicht liest Start (Grundwert) und
+Modifikator aus der Herleitung, der Modifikatordialog zeigt sie vollständig.
+Die Eigenschaften folgen demselben Muster (`computeEigenschaftHerleitungen`,
+`eigenschaft_herleitung_rules.dart`): `computeHeroStatInputs` liest
+permanente (ohne temporäre Zauberboni) und effektive Werte aus der
+Herleitung ab, `HeroComputedSnapshot.eigenschaftHerleitungen` trägt die
+effektive. Beide Modifikatordialoge zeigen Herleitungen über
+`HerleitungsAbschnitt` (`ui/screens/hero_overview/herleitung_abschnitt.dart`).
+Die Kampfvorschau folgt seit Teilstand 3 demselben Muster:
+`kampf_herleitung_rules.dart` (RS, BE Kampf, eBE, AT/FK, PA, Schild-PA,
+TP-Zuschlag; die Parierwaffe als WM- und SF-Schritt der PA)
+und `kampf_ini_herleitung_rules.dart` (Helden-, Waffen- und Kampf-INI,
+Ausweichen) ordnen die Bausteine aus `computeCombatPreviewStats` als Schritte
+an; die Endwerte werden dort abgelesen (`CombatPreviewStats.herleitungen`,
+für eine Nebenhandwaffe `OffhandCombatPreview.herleitungen`, berechnet im
+Teil `combat_offhand_preview_rules.dart`). Untergrenzen (Helden-INI,
+Kampf-INI, Ausweichen, RS, BE) und die Obergrenze 0 der eBE erscheinen als
+Begrenzungsschritte, die höhere Waffen-INI einer Nebenhandwaffe als eigener
+Schritt. Die „Berechnungsschritte“ des Kampf-Tabs
+(`ui/screens/hero_combat/kampf_herleitung_details.dart`) zeigen nur diese
+Herleitungen über `HerleitungsSchritte`; die Ladezeit bleibt eine
+Aufzählung, weil Halbierung und Teilung nicht additiv sind.
+Alle Herleitungen eines Helden lassen sich zentral durchsuchen:
+`sammleHerleitungen` (`herleitung_uebersicht_rules.dart`) sammelt
+Eigenschaften, Basiswerte (AsP/KaP nur bei aktivierter Ressource),
+Kampfvorschau und Nebenhandwaffe aus dem `HeroComputedSnapshot` als
+`HerleitungsEintrag`e, `filtereHerleitungen` filtert nach Begriffen, die
+jeweils in Titel, Bereich oder Bezeichnung, Formel, Quelle oder Bedingung
+eines Schritts vorkommen müssen. Der Dialog `HerleitungsSucheDialog`
+(`ui/screens/workspace/herleitung_suche_dialog.dart`) öffnet sich über ein
+(i) neben „Regeln nachschlagen“ (Heldenbogen und UI2-Verwaltung) und in UI2
+über die Navigation (`KartoBestandsAdapter.berechnungsschritte`); er zeigt
+den gespeicherten Stand, Treffer einer Suche stehen aufgeklappt.
+
+**Talente als Herleitung (ARCH-04, Teilstand 8).** `talent_herleitung_rules.dart`
+liefert TaW\*, eBE und Probenwerte: `herleiteTalentEbe` (BE Kampf, die
+situative BE-Anpassung des Talent-BE-Overrides als eigener Schritt, epische
+KK-Halbierung als Ausgleichsschritt), `herleiteTalentTaw` (TaW, jeder
+Modifikator, jeder ausgerüstete Gegenstand einzeln, eBE) und
+`herleiteMetaTalentTaw`. Die Gegenstandsquellen stammen aus
+`InventoryModifierAggregation.talentQuellen` (Summe je Talent gleich
+`talentMods`, `HeroComputedSnapshot.inventoryTalentQuellen`).
+`talentProbenwertFuer` liest TaW\* und eBE aus der Herleitung ab, damit
+Probensuche, Gefecht, Liturgie- und Ausbilderprobe dasselbe liefern. Der
+Talente-Tab und das Talentdetail rechnen auf dem Entwurf, nehmen aber
+dieselben Funktionen (`_ebeHerleitung`/`_tawHerleitung`). Die Wertesuche
+nimmt die Talente über `sammleTalentHerleitungen` (Bereich „Talente“, nur
+Nicht-Kampftalente mit Wert, Meta-Talente inbegriffen). Das Unterdrücken von
+Wunden würfelt die Selbstbeherrschung mit `talentTawNachId`
+(`workspace/sb_probe_werte.dart`).
+
+**Kosten und Lernspalte (ARCH-04, Teilstand 10/11).** Die AP einer Steigerung
+berechnet `herleiteSteigerungskosten` (`steigerung_herleitung_rules.dart`):
+Grundkosten, Sondererfahrung, Hexalogie, Gedächtnis-Faktor, epischer
+Aufschlag, Lehrmeister – jeder Schritt mit dem Betrag, um den er die AP
+verändert. Die Spalte eines Zaubers liefert `zauberLernspalte`, die eines
+Talents `herleiteTalentLernspalte`; `AdvancementOption.lernregeln`
+(`Lernregeln`) trägt Hexalogie-Grenze, Faktoren (`lernkosten_faktor_rules.dart`)
+und Hinweise bis in den Steigerungsdialog.
+
+**Regelprofil und Updatevorschau (ARCH-04, Teilstand 12/13).**
+`HeroSheet.regelProfil` hält die aktiven Pakete des Helden als Manifestkopie mit
+Prüfsumme; `loeseRegelProfilAuf` (`catalog/regelprofil_aufloesung.dart`) löst
+sie rein zu einem `RulesCatalog` auf. `bekanntePaketIds` (die App-weit
+bekannten Pakete) sorgen dafür, dass Einträge eines nicht gewählten Pakets
+über `ruleMeta.sourceKey` gesperrt bleiben; das Profil kennt sonst nur seine
+eigenen Pakete (`istEintragDurchPaketGesperrt` im Resolver). Die Vorschau
+besteht aus drei reinen Schichten: `vergleicheAufloesungen`/
+`erstelleRegelProfilVergleich` (`catalog/regelprofil_vergleich.dart`) vergleichen
+zwei Auflösungen – neue, entfernte, geänderte Einträge mit Feldpfad und
+Paketursache, durch Pakete ein-/ausgeblendete Basiseinträge und Hinweise zu den
+Kopien (`fehlt`, `aktualisiert`, `kopieVeraendert`, `unlesbar`); der Vorschlag
+kommt aus `schlageProfilVor` (alle Pakete des Profils auf dem aktuellen Stand,
+neue nur auf Wunsch). `erstelleRegelProfilVorschau`
+(`regelprofil_vorschau_rules.dart`) rechnet dazu für einen Helden die
+Auswirkung geänderter `voraussetzungen_struktur` auf erworbene Fähigkeiten und
+Manöver (`ErworbenAuswirkung`) sowie die Herleitungen vorher/nachher
+(`sammleHerleitungenAusSnapshot`, dieselbe Zusammenstellung wie die
+Berechnungssuche). Der Basiskatalog ist nicht eingefroren, beide Seiten rechnen
+gegen den aktuellen Stand. Provider: `regelProfilVergleichProvider(profil)`
+(geteilt je Profil) und `regelProfilVorschauProvider(heroId)`. Geschrieben wird
+nur über `RegelProfilUebernehmen` (`ablaeufe/`, `uebernehmeRegelProfil`): frisch
+laden, abweisen wenn das Profil inzwischen ein anderes ist, ein Dokument
+speichern, Normalisierung mit dem Katalog des neuen Profils.
 
 **Zukauf-Grenzen:** `lib/rules/derived/bought_stat_limit_rules.dart`
 begrenzt den AP-Zukauf im Steigerungsdialog fuer Grundwerte. LeP duerfen bis
@@ -1762,6 +2048,19 @@ bekannten Katalogauswahl entsprechen.
 
 **Performance:** LRU-Cache mit 512 Einträgen für häufig wiederholte Texte.
 
+Seit ARCH-02 (Herkunftsmerkmale) rechnet die Herkunft nicht mehr im Parser:
+`parseModifierTextsForHero` übergibt `rasseModText`/`kulturModText`/
+`professionModText` leer an `parseModifierTexts` (jetzt in
+`modifier_text_parser.dart`, weiter über `modifier_parser.dart` exportiert)
+und addiert das Ergebnis von `werteHerkunftAus`
+(`hero_herkunft_rules.dart`). Der Textcache hängt nur an Vor- und Nachteilen,
+die Herkunft wird je Container-Instanz bzw. Texttripel gemerkt. Direkte
+Einträge (`eigenschaft`/`basiswert` mit gültigem Ziel und Betrag) wirken über
+`wendeDirektenModifikatorAn` auf laufende Werte **und** Startwerte; freie,
+unbekannte oder unbrauchbare Einträge wirken genau einmal über ihren Text.
+Quellenaufschlüsselung und Ressourcenaktivierung nehmen dieselbe Auswertung;
+Magie/Karma folgen aus erkannten `ASP`-/`KAP`-Codes, nicht aus der Summe.
+
 ### 4.8 AP & Level
 
 **Datei:** `lib/rules/derived/ap_level_rules.dart`
@@ -1800,6 +2099,15 @@ verwendet die bestehenden Kosten- und Erwerbsdialoge für geplante Änderungen.
 Runde und eine Liste von `HeroAdvancementEntry`. Das Regel-Replay unter
 `rules/derived/advancement*.dart` baut daraus eine Vorschau einschließlich AP/SE
 auf. Der normale Heldenprovider bleibt bis zur Übernahme unverändert.
+Beim Wechsel zu „Held verwalten“ bleibt die Runde erhalten und die Verwaltung
+zum Ansehen zugänglich. `shared/planung_bearbeiten_guard.dart` schützt die
+Editor-Einstiege und Sofortaktionen: „Abbrechen“ erhält den Plan; erst
+„Planung verwerfen und bearbeiten“ verwirft ihn ohne Buchung und erlaubt die
+Änderung. Der Guard prüft nach dem Dialog dieselbe Sitzung und ihren
+Speicherstatus. `PlanungsBearbeitungsBereich` bindet Unteransichten ohne eigene
+Helden-ID ein; `PlanungsFormularSchutz` sperrt Eingaben und Fokus bereits
+geöffneter Ausrüstungsformen, erhält ihren Entwurf und lässt Scrollen zu.
+Der technische Editor-Schreibweg behält seine Planungssperre.
 Entfernen ist nur für Einträge der laufenden Runde erlaubt. Nach jedem Entfernen
 wird die Liste erneut geprüft: ungültige Folgeeinträge bleiben mit Begründung
 sichtbar und sperren die Übernahme, statt unbemerkt falsch gebucht zu werden.
@@ -1820,6 +2128,25 @@ Bei Konflikten oder Speicherfehlern bleibt die Runde erhalten. Die Anzeige nicht
 passender Sonderfertigkeiten speichert derselbe Ablauf
 (`speichereSfAnzeige`): eingereiht hinter andere Bogenvorgänge, ohne
 Normalisierung und bei offener Runde nur auf unveränderter Basis. Die AP- und History-Ansicht erscheint auf breiten Geräten im Inspektor
+Seit 2026-10-09 zeigt `AdvancementValueTile` numerische Ziele als kompakte,
+mit Fensterbreite und Textskalierung umbrechende Kacheln. Eigenschaften stehen
+bei ausreichender Breite links, `AdvancementImpactPanel` und Grundwertzukäufe
+rechts. Im Kartograph-Workspace liegt die AP-Bilanz in der rechten Verlaufsspalte;
+mobil bleibt sie oberhalb des Katalogs. Beide AP-Bereiche sind höhenbegrenzt
+und scrollbar. Der zusätzliche Seitentitel „Nächste Schritte“ entfällt.
+
+Talentspezialisierungen werden direkt am Talent vorgemerkt. Der Befehl verwendet
+die bestehende Art `talent` mit `options.action = specialization` sowie
+`options.specialization` als Namen und ohne numerische Ausgangs-/Zielwerte.
+`advancement_specialization_rules.dart` prüft den Vorschau-TaW, vorhandene Namen
+und bei Waffenkategorien die Katalogauswahl. Mindest-TaW und Kosten stammen
+aus `learning_rules.dart`; die bestätigten Kosten inklusive Lehrmeisteroption
+werden wie bei anderen Erwerbungen im Befehl festgehalten. Das Replay erhält
+alle übrigen Talentfelder und synchronisiert Freitext und Spezialisierungsliste
+über `HeroTalentEntry.copyWith`. Entfernte vorausgehende Steigerungen können
+den Erwerb ungültig machen; ungültige Einträge reservieren keine AP und sperren
+die Übernahme. Zauberkacheln bekommen keine Spezialisierungsaktion.
+
 und mobil im **Detailpanel**. Das Verlassen einer geänderten Runde bietet
 Weiterplanen, Verwerfen und bei gültigen Einträgen Übernehmen an.
 
@@ -1883,7 +2210,19 @@ nicht als Regelinformation ausgegeben.
 
 Das Erwerbsblatt (`ui/screens/advancement/advancement_activation_sheet.dart`)
 listet den `inactive`-Umfang einer Kategorie mit Suche, Artfiltern und dem
-standardmäßig aktiven Schalter „Nur erwerbbare“. Es **schließt sich selbst** und
+standardmäßig aktiven Schalter „Nur erwerbbare“. Im Zauber-Erwerbsblatt heißt
+dieser Schalter „Nur gelernte Repräsentationen“: Er berücksichtigt ausschließlich
+die tatsächlichen Repräsentationen aus den Katalogeinträgen, bei `Dru(Elf)2`
+also `Elf`. Ausgeschaltet erscheinen alle noch nicht vorhandenen Zauber;
+gesperrte Einträge bleiben gesperrt. Ein Merkmalsfilter (ein vollständiges Merkmal,
+einschließlich Untermerkmalen) und eine Mindestverbreitung („Ab …“) lassen sich
+mit Repräsentationsfilter und Suche kombinieren. Die Verbreitung muss am selben
+Katalogeintrag passen wie die Repräsentation; im Modus „Alle“ zählen alle
+Katalogeinträge. Leere Angaben passen nur ohne den entsprechenden Filter.
+Die Filterregeln liegen in `rules/derived/spell_catalog_filter_rules.dart` und
+ändern die bisherigen Lernoptionen und AP-Kosten nicht. Filter und Treffer teilen
+einen Scrollbereich, damit auch große Schrift auf schmalen Displays bedienbar bleibt.
+Das Blatt **schließt sich selbst** und
 gibt das gewählte Ziel zurück; geplant wird erst danach beim Aufrufer über
 denselben `_plan`-Pfad wie die Hauptliste. Damit liegt der Planungsdialog nie
 über einem Blatt derselben Root-Navigator-Ebene, und die Sitzung wird weiterhin
@@ -1983,7 +2322,7 @@ zusammengelegt werden müssten.
 | `sonderfertigkeit` | `name`, `stufe?` | Andere SF, optional ab Kettenstufe |
 | `zauber` | `name`, `min` | Mindest-ZfW |
 | `talent` | `name`, `min` | Mindest-TaW |
-| `ritualkenntnis` | `name?`, `min?` | Ritualkenntnis, optional mit RkW |
+| `ritualkenntnis` | `name`, `min?` | Benannte Ritualkenntnis, optional mit Mindest-RkW; ohne Namen findet der Prüfer keinen Wert |
 | `tradition` | `namen[]` | Eine von mehreren Traditionen |
 | `merkmalskenntnis` | `name?` | Merkmal; ohne Namen genügt irgendeines |
 | `vorteil` | `name` | Erforderlicher Vorteil |
@@ -1995,6 +2334,7 @@ zusammengelegt werden müssten.
 | `manoever` | `name` | Erlerntes Manöver aus `manoever.json` |
 | `waffenmeister` | `name?` | Waffenmeisterschaft; ohne Namen genügt irgendeine |
 | `spruchzauberer` | – | Mindestens eine Repräsentation |
+| `gottheit` | `namen` | Geweihter einer der Gottheiten; `Zwölfgötter` steht für jeden Zwölfgott. Geprüft gegen `HeroSheet.gottheit`, ohne erfasste Gottheit nur Hinweis |
 | `oder` / `und` | `bedingungen[]` | Verknüpfung; `und` nur als Oder-Zweig |
 | `hinweis` | `text` | Nicht prüfbarer Regeltext |
 
@@ -2171,7 +2511,9 @@ ausdruecklicher Quittierung („Verstanden – Werte geprueft"), die
 
 **Modell.** `HeroMerkmal` traegt `katalogId` (leer = freier Eintrag), `wert`,
 `auswahl`, `text` (sein Fragment in der Projektion), `kandidatenIds`
-(mehrdeutiger Alttext) und `zuordnung` (`katalog`, `migration`, `frei`), dazu
+(mehrdeutiger Alttext), `zuordnung` (`katalog`, `migration`, `frei`) und
+optional `herkunft` (`rasse`, `kultur`, `profession`; reines Metadatum ohne
+Einfluss auf AP oder Regelwirkung, nur bei Belegung geschrieben), dazu
 wie jedes verschachtelte Modell `unbekannteFelder`/`unbekannteEnumWerte`.
 
 **Die Liste fuehrt.** Ist `vorteilEintraege` belegt, gilt sie;
@@ -2277,6 +2619,144 @@ gesperrtes Haekchen mit Quelle; `LernspaltenMarke` erklaert jede
 verschobene Spalte per Tooltip. Der Textweg kennt
 keine Lernspalten: freie und mehrdeutige Texte wirken nicht, und der
 Aequivalenztest nimmt `lernspalte` bewusst aus.
+
+#### Herkunftsmodifikatoren: Migration und Abgleich
+
+Die Freitexte `rasseModText`, `kulturModText` und `professionModText` werden
+in `HeroBackground.herkunftsModifikatoren` überführt
+(`lib/rules/derived/hero_herkunft_migration_rules.dart`). Die Zerlegung folgt
+dem Parser (Trenner `
+`, `,`, `;`); jedes nichtleere Fragment wird ein
+eigener Eintrag, Wiederholungen bleiben erhalten. Direkte Modifikatoren
+(`CODE±N`, Aliase `AE`/`KE`/`LE`/`AW`) erkennt die gemeinsame Hilfe
+`direkter_modifikator_rules.dart`, die auch der Modifikator-Parser benutzt;
+alles andere ist ein freier Eintrag mit seinem Text. Die ID ist eine UUID v5
+aus Herkunft, Fragmentposition und Fragmenttext. Migriert wird nur bei
+fehlendem Container und erst in `herkunftZumSpeichern` (aufzurufen aus
+`saveHero`); die Texte bleiben dabei unverändert. `gleicheHerkunftAb` meldet
+je Gruppe eine Abweichung, wenn die Fragmente des Textes von denen der Liste
+abweichen (Trenner und Leerzeichen zählen nicht); aufgelöst wird sie nur
+durch `loeseHerkunftsAbweichung` („Text übernehmen“ / „Liste behalten“),
+nie beim Speichern. Unbekannte Versionen und nicht verstandene Gruppen werden
+weder migriert noch verglichen.
+
+#### Herkunftsmodifikatoren: Speicherung, Sync und Bearbeitung
+
+`HeroActions.saveHero` ruft `herkunftZumSpeichern` vor der Regelberechnung auf
+(kein Katalog nötig); Laden und Rohspeichern in den Repositories migrieren
+nichts. `ersetzeHerkunftsEintraege`
+(`hero_herkunft_bearbeitung_rules.dart`) ist der einzige Änderungsweg einer
+Gruppe: Er setzt die Liste **und** die Textprojektion nur dieser Gruppe auf den
+frisch geladenen Stand und wirft `StateError`, wenn die Gruppe gesperrt ist,
+ihr Text von der Liste abweicht oder sie seit der Basis anderweitig geändert
+wurde. Sync: Der Container ist eine verschachtelte Map mit `id`-Listen und wird
+vom generischen Zusammenführen je Gruppe und Eintrag gemergt; ändern beide
+Geräte dieselbe Gruppe, ändern sich auch beide Textprojektionen, und es
+entsteht ein sichtbarer Konflikt (nie eine Fassung mit auseinanderlaufenden
+Liste und Text). Eine ältere App, die den Container verwirft, hinterlässt den
+geltenden Text; das nächste Speichern migriert ihn erneut. Bewahrt sie den
+Container und ändert nur den Text, zeigt `gleicheHerkunftAb` die Abweichung.
+Editorentwürfe laufen über `uebernimmEditorEntwurf`; der Container ist ein
+oberster JSON-Schlüssel, beidseitige Änderungen fragen nach.
+
+#### Herkunftsmodifikatoren: Bedienung
+
+Die Übersicht ersetzt die drei Textfelder „Rasse/Kultur/Profession
+Modifikatoren“ durch je eine `HeroHerkunftSection`
+(`ui/screens/hero_overview/hero_herkunft_section.dart`): Chips der Gruppe,
+`+ Herkunftsmodifikator` im Header, Ändern/Entfernen im Bearbeitungsmodus und
+die beiden Abgleichsknöpfe bei einer Textabweichung. Das Widget rechnet nichts;
+es liest Liste, Abweichung und Sperren aus
+`hero_herkunft_migration_rules.dart` und meldet Änderungen über Callbacks.
+Der Dialog (`hero_herkunft_dialog.dart`) wählt Eigenschaft/Basiswert mit Ziel
+und Betrag oder einen freien Text und baut den Eintrag über
+`baueDirektenHerkunftsEintrag`/`baueFreienHerkunftsEintrag`
+(`hero_herkunft_bearbeitung_rules.dart`); die UUID v4 vergibt er erst bei der
+Bestätigung, beim Bearbeiten bleibt die ID. Der Tab hält `_draftHerkunft`
+(`hero_overview_herkunft_section.dart`, Part des Tabs); Vorschau
+(Ressourcenaktivierung) und Speicherentwurf nutzen dieselbe Fassung, gespeichert
+wird über `speichereEditorEntwurf`. Vor Dialog und Entfernen fragt
+`bestaetigeBearbeitungBeiPlanung`; bei Abbruch bleiben Sitzung und Daten.
+Unbekannte Containerversionen und gesperrte Gruppen zeigen einen Grund statt
+Eingabefeldern.
+
+**Merkmalsherkunft:** `zeigeMerkmalHerkunftDialog`
+(`lib/ui_shared/merkmal_herkunft_dialog.dart`, Wahl „Nicht angegeben“, „Rasse“,
+„Kultur“, „Profession“) dient der Übersicht (Flaggen-Knopf am Chip, Entwurf wie
+bei Katalog-ID und Wert) und dem UI2-Merkmalsblatt (Aktion „Herkunft ändern“,
+Zusatzpille „Herkunft: …“ auf der Karte). Reines Metadatum: AP und Regelwirkung
+bleiben unverändert; Katalog-ID, Wert, Auswahl und Zusatzfelder bleiben.
+
+### 4.12 Reittiere: Ausbildung und Wirkwerte
+
+Reittiere entwickeln sich nur über die Ausbildung nach Zoo-Botanica
+Aventurica S. 32–37, nicht über AP; die AP-Steigerung (Komplexität F) bleibt
+den Vertrauten. Den Stand hält `HeroCompanion.reittierAusbildung`
+(`ReittierAusbildung`, nur bei Belegung im JSON). Die eingetragenen Werte
+des Tiers gelten als Werte der `ausgangsstufe`; erst die in der App
+gebuchten Schritte, die Variante beim Schritt nach „geschult“ (samt LO +3)
+und die Unarten wirken, und zwar abgeleitet:
+
+- `reittier_ausbildung_rules.dart`: Stufe, Modifikationen und Herleitung
+  (ländlich nach fundiert halbiert, abgerundet), nächste Schritte mit
+  Sperrgrund, Reiten-Modifikator je Stufe (Kampfpferd, ländlich, Magierpferd)
+  und Lernbarkeit von Pferde-SF (Abrichten +5, Nervosität +8, Lernfähig −1).
+- `begleiter_wirkwert_rules.dart`: Wirkwert = Grundwert + Steigerung +
+  Ausbildung (KK, LO, AT aller Angriffe, TP nur bei Tritten, GS Trab/Galopp,
+  Trag-/Zugkraftfaktor). `companionEffektivwert` bleibt ohne Ausbildung, weil
+  die Vertrauten-Steigerung darauf aufbaut.
+- `reittier_ausbildung_aenderung_rules.dart`: Sofortbuchungen (Schritt,
+  Rücknahme, Pferde-SF) mit Prüfung des Dialogstands.
+- `reittier_ausbilderprobe_rules.dart`: gewürfelte Ausbilderproben über
+  `talentprobeFuer`.
+
+Die Katalogdaten (Stufenschritte, Varianten, Pferde-SF, Unarten) sind
+Dart-Konstanten in `lib/catalog/reittier_ausbildung_katalog.dart` und
+`pferde_sf_katalog.dart`; `reittier_ausbildung.json` ist nur ihr geprüfter
+Spiegel. Die Reit-SF Reiterkampf, Turnier- und Kriegsreiterei stehen im
+Kampf-SF-Katalog. Regelquellen, Entscheidungen und die Folgepakete
+(Spielansicht, Gefecht) stehen in `docs/reittier_plan.md`.
+
+### 4.13 Vertraute: Bindung, AP und Steigerung
+
+Vertraute steigen mit eigenen AP nach Komplexität F (WdZ S. 125). Die Grenzen
+stehen in `companion_steigerung_rules.dart`:
+
+- INI, Loyalität und AuP sind gesperrt.
+- Kein Wert steigt über ⌊1,5 × Startwert⌋, ausgenommen AsP und RK.
+- GS steigt je Bewegungsart über `HeroCompanionSpeed.steigerung`.
+- Altbuchungen bleiben stehen und bekommen nur einen Hinweis.
+
+`HeroCompanion.vertrautenBindung` (`VertrautenBindung`, nur bei Belegung
+im JSON) hält Art, Machtvoll, die bei der Hexe gebuchten Bindungskosten,
+übertragene AP, den Zähler des AP-Anteils und gebuchte Ausbildungen. Die
+zugehörigen Regeln:
+
+- `vertrauten_bindung_rules.dart`: Generierung und Bindung. Die Kosten gehen
+  als `apSpent` der Hexe in derselben Änderung.
+- `vertrauten_ap_rules.dart`: ¼ der Abenteuer-AP. Die Regel ist in
+  Abenteuerabschluss und Reisebericht samt Rücknahmen eingehängt. Dazu kommen
+  die einmalige Einrichtung und die Übertragung mit Loyalität.
+- `vertrauten_ausbildung_rules.dart`: Zauberzugang je Art, Lernen aus den AP
+  des Vertrauten, ZBA-Ausbildung ohne Kampftier. Die Ausbildung wirkt nur
+  abgeleitet in `begleiter_wirkwert_rules.dart`.
+
+Den Katalog bilden Dart-Konstanten in `lib/catalog/vertrauten_katalog.dart`
+mit dem geprüften Spiegel `vertrauten.json`. Quellen, Entscheidungen und
+Folgepakete stehen in `docs/vertraute_plan.md`.
+
+**V2 (laufende Werte und Spieltisch):**
+
+- `vertrauten_bindung_voraussetzung_rules.dart`: Hinweise beim Binden (SF
+  Vertrautenbindung über Katalogname und `alias_namen`, Nachteil „Kein
+  Vertrauter“); sperrt nie, gebunden wird dann per Meisterentscheid.
+- `vertrauten_aurapanzer_rules.dart`: Aurapanzer für 125 AP des Vertrauten bei AE 20.
+- `begleiter_zustand_rules.dart` und `HeroState.begleiterZustaende` (Abschnitt 2.2):
+  laufende LeP/AsP/AuP aller Begleiter.
+- `vertrauten_spiel_rules.dart`, `vertrauten_zauber_probe_rules.dart`: Regeneration,
+  Vereinigung, Loyalität, Ritualproben (Kontakt bzw. allein +15) und Ritualkosten.
+- `lib/ablaeufe/vertrauten_vereinigung.dart`; die Regeneration läuft über
+  `RastAbschliessen.uebernehmeRast(vertrautenRast:)`.
 
 ## 5. Zustandsverwaltung (State Layer)
 
@@ -2413,7 +2893,8 @@ Bestandshelden unter `test/rules/`).
 | `deleteHero(id)` | Held und State löschen, Auswahl aktualisieren |
 | `buildExportJson(id)` | `HeroTransferBundle` (Held + State + Zeitstempel) als JSON |
 | `parseImportJson(rawJson)` | JSON parsen und als `HeroTransferBundle` validieren |
-| `importHeroBundle(bundle, resolution)` | Importieren mit Konfliktlösung |
+| `importiereHeld(bundle, resolution)` | Importieren mit Konfliktlösung über den Ablauf `HeldImportieren` (`lib/ablaeufe/held_importieren.dart`); liefert `HeldImportErgebnis` (ID, fehlende Bilder) und wählt den Helden aus |
+| `importHeroBundle(bundle, resolution)` | Kompatibilitätseinstieg, liefert nur die ID |
 
 **`ImportConflictResolution`:**
 - `overwriteExisting` — vorhandenen Helden überschreiben
@@ -3116,8 +3597,19 @@ ueber die Settings-Katalogverwaltung bearbeitet.
   über `computeSbUnterdrueckungErschwernis(neueWunden: n)`). Einstiege: Knopf im
   Inspector-Vitals-Tab und die UI2-Schnellaktion über
   `KartoBestandsAdapter.schadenErhalten`.
-- Keine Rücknahme: korrigiert wird von Hand anhand des Protokolleintrags;
-  eine echte Rücknahme gehört zu ARCH-06.
+- Rücknahme (ARCH-06 Teilstand 2): Der Dialog vergibt beim ersten
+  Übernehmen eine Vorgangs-ID; `uebernehmeSchaden(vorgangId:)` bucht sie nur
+  einmal und legt eine `ZustandsBuchung` an. Am Protokolleintrag bietet
+  `schadenRuecknahmeAktion` (`schaden/schaden_ruecknahme.dart`) über
+  `InspectorDiceLogSection.aktion` „Zurücknehmen“ an, in beiden
+  Oberflächen. Die Rückfrage zeigt den Plan
+  (`planeSchadensRuecknahme`, `schaden_ruecknahme_rules.dart`), der Ablauf
+  `SchadenZuruecknehmen` bucht die Gegenbuchung auf dem frischen Zustand:
+  LeP/AuP um den tatsächlich abgezogenen Betrag ohne Obergrenze (Hinweis
+  über dem Maximum), Wunden des Treffers soweit noch vorhanden, zuerst seine
+  vermerkten Unterdrückungen, Kopf-INI-Malus um den Wurf bzw. auf 0 mit der
+  letzten Kopfwunde. Eine Buchung lässt sich nur einmal zurücknehmen; die
+  Gegenbuchung selbst nicht.
 
 ### Update 2026-09-30: Zonenwunden nach WdS (ARCH-05)
 
@@ -3219,8 +3711,8 @@ ueber die Settings-Katalogverwaltung bearbeitet.
   (`hero_combat/combat_state_helpers.dart`). Im Bearbeitungsmodus ändert er
   nur den Entwurf, gespeichert wird wie bisher mit „Speichern“. Im Lesemodus
   ruft er `aendereHeldMitMeldung` mit `mitKampfAenderung`; die Slotprüfung
-  (`_validateWeaponSlotsForConfig`) läuft dabei auf dem frischen Ergebnis und
-  meldet sich als `StateError`. Die Einstiege je Bedienelement liegen in
+  läuft dabei auf dem frischen Ergebnis und meldet sich als `StateError`
+  (seit 2026-10-07 als Regel `neuerKampfSlotFehler`, siehe unten). Die Einstiege je Bedienelement liegen in
   `hero_combat/combat_sofort_aenderungen.dart`.
 - Regeln: `lib/rules/derived/kampf_aenderung_rules.dart` (`mitAktiverWaffe`,
   `aendereWaffe`, `mitEntfernung`, `mitGeschossWahl`, `mitGeschossSchritt`,
@@ -3408,3 +3900,30 @@ sondern der `ProviderScope` darüber.
 
 *Erzeugt am 2026-03-04 — Bezieht sich auf Codestand `claude/create-technical-documentation-Eawbf`*
 
+### Update 2026-10-07: Held importieren als Ablauf, Slotprüfung als Regel (ARCH-05)
+
+- `HeldImportieren` (`lib/ablaeufe/held_importieren.dart`) übernimmt einen
+  Export: Heldenlimit für jede noch unbekannte Ziel-ID, eigene
+  Katalogeinträge, dann die Bilder, dann **ein** `saveHero`, zuletzt der
+  Zustand über `aendereGespeichertenZustand`. Katalog und Bildablage kommen
+  als Funktionen herein; `HeroActions.importiereHeld` bindet sie an
+  (`AvatarFileStorage`, Speicherpfad, `CustomCatalogRepository`) und wählt
+  den Helden aus.
+- Jeder abgelegte Galerieeintrag trägt den Dateinamen, den die Ablage
+  zurückgibt (`{heroId}_{entryId}.png` bzw. `{heroId}.png`), nie den Namen
+  aus dem Export. Ein leerer Name oder ein Fehler gilt als „nicht
+  gespeichert“: Das Bild wird gezählt, der Import läuft weiter, die
+  Startseite nennt die Zahl (`importMeldung`). Unter einer neuen ID
+  entfallen Einträge ohne abgelegtes Bild, denn sie zeigten auf die Datei
+  des Originals. Unter derselben ID bleiben ihre Verweise. Verweise auf
+  entfallene Einträge (aktiv, primär, Schnappschuss) werden bereinigt. Das
+  doppelt mitgelieferte `avatarBase64` wird nur bei alten Exporten ohne
+  Galeriebilder als Legacy-Hauptbild abgelegt.
+- `lib/rules/derived/kampf_slot_pruefung_rules.dart`: `pruefeKampfSlots`
+  liefert alle Befunde der Waffenplätze und der Nebenhand mit stabilem
+  Slotbezug (Slot-ID, ersatzweise Position, `nebenhand`) und Art.
+  `neuerKampfSlotFehler` vergleicht über Bezug und Art. Sofortänderungen im
+  Kampf-Tab sperren nur neu eingeführte Fehler; „Speichern“ im Editor
+  meldet den ersten Befund. Die Talent- und Waffenartauflösung
+  (`combatTypeFromTalent`, `weaponTypeOptionsForTalent`) liegt mit dort,
+  `combat_helpers.dart` re-exportiert sie.

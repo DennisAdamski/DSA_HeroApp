@@ -2,6 +2,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
 
+import 'artefakt_auxiliator_rules.dart';
 import 'inventar_verbrauch_rules.dart';
 
 /// Gruppen der Inventarsicht im Gefecht, nach Griffnähe geordnet.
@@ -58,8 +59,12 @@ List<GefechtsInventarposten> gefechtsInventar(HeroSheet hero) {
         menge: inventarMenge(e),
         benutzbar:
             !verknuepft &&
+            (e.artefaktDaten == null ||
+                artefaktImKampfAusloesbar(e.artefaktDaten!)) &&
             (e.itemType == InventoryItemType.verbrauchsgegenstand ||
-                e.isMagisch),
+                (e.vitalwirkung?.istBelegt ?? false) ||
+                e.isMagisch ||
+                e.artefaktDaten != null),
         traeger: beimBegleiter ? namen[e.traegerId] : null,
       ),
     );
@@ -102,6 +107,14 @@ GefechtsAufbewahrung gefechtsAufbewahrungVorgabe(HeroInventoryEntry e) {
     return GefechtsAufbewahrung.artefakt;
   }
   return GefechtsAufbewahrung.guerteltasche;
+}
+
+/// Dauer in Aktionen, die das Betätigen des Auslösers eines Matrixgebers
+/// braucht: mindestens eine Aktion (Stäbe, Ringe, Dschinnenlampen S. 16).
+/// Gespeicherte Werte unter 1 gelten als 1.
+int gefechtsMatrixDauer(HeroInventoryEntry e) {
+  final aktionen = e.artefaktDaten?.ausloeserAktionen ?? 1;
+  return aktionen < 1 ? 1 : aktionen;
 }
 
 /// Dauer in Aktionen; 0 bedeutet freie Aktion.

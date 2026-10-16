@@ -12,6 +12,9 @@ import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_initiative_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_held_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/gefecht_zielwert_herleitung_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/gefecht_vorgaben_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/gefecht_gegner_rules.dart';
 
 import '../rules/gefecht_ansagen_paket2_test.dart' as fixture;
 import '../ui2/shell/karto_test_support.dart';
@@ -48,6 +51,149 @@ void main() {
       );
     },
   );
+
+  test(
+    'Bindungen setzen die Gegnerzahl, zwei Angreifer die Überzahl',
+    () async {
+      final snap = fixture.ansageSnapshot(sf: true);
+      final c = ProviderContainer(
+        overrides: [
+          heroComputedProvider('a').overrideWith((ref) => AsyncData(snap)),
+          heroComputedProvider('b').overrideWith((ref) => AsyncData(snap)),
+          rulesCatalogProvider.overrideWith((ref) async => testCatalog),
+        ],
+      );
+      addTearDown(c.dispose);
+      await c.read(rulesCatalogProvider.future);
+      final gegner = c.read(gefechtBegegnungProvider.notifier);
+      for (final id in ['g', 'h', 'r']) {
+        gegner.speichern(Gefechtsgegner(id: id, name: id, ini: 5));
+      }
+      gegner.bindungSetzen('g', 'a');
+      gegner.bindungSetzen('h', 'a');
+      gegner.bindungSetzen('r', 'b');
+      for (final id in ['a', 'b']) {
+        c.read(gefechtProvider(id).notifier).beginnen(6, dk: 'N');
+      }
+      Gefechtszustand s(String id) => c.read(gefechtMitInitiativeProvider(id))!;
+      expect(s('a').gebundeneGegner, 2);
+      expect(gefechtsGegnerzahl(s('a')), 2);
+      expect(s('b').gebundeneGegner, 1);
+      gegner.statusSetzen('h', GefechtsgegnerStatus.tot);
+      expect(s('a').gebundeneGegner, 1);
+      gegner.bindungSetzen('g', null);
+      expect(s('a').gebundeneGegner, isNull);
+      expect(gefechtsGegnerzahl(s('a')), 1);
+
+      // Beide greifen den Oger an: nur in der gemeinsamen Initiative AT +1.
+      for (final id in ['a', 'b']) {
+        final ctl = c.read(gefechtProvider(id).notifier);
+        ctl.setzen(
+          waehleGefechtsgegner(
+            c.read(gefechtProvider(id))!,
+            c.read(gefechtBegegnungProvider).gegner['r']!,
+            startDk: 'N',
+          ),
+        );
+      }
+      expect(s('a').ueberzahlAngriff, isFalse);
+      final gruppe = c.read(gefechtInitiativeProvider.notifier);
+      gruppe.hinzufuegen('a', zeitpunktVorbei: false);
+      gruppe.hinzufuegen('b', zeitpunktVorbei: false);
+      expect(s('a').ueberzahlAngriff, isTrue);
+      final w = gefechtswerteFuer(snap, katalog: testCatalog);
+      expect(
+        pruefeGefechtsaktion(
+          s('a'),
+          w,
+          Gefechtsaktion.angriff,
+        ).modifikatoren.where((m) => m.name == kGefechtsUeberzahl).single.wert,
+        -1,
+      );
+      // Fernkämpfer zählen nicht zur Überzahl.
+      gegner.beteiligungSetzen('b', 'b', GefechtsBeteiligung.fernkampf);
+      expect(s('a').ueberzahlAngriff, isFalse);
+      gegner.beteiligungSetzen('b', 'b', GefechtsBeteiligung.nahkampf);
+      expect(s('a').ueberzahlAngriff, isTrue);
+      gegner.statusSetzen('r', GefechtsgegnerStatus.geflohen);
+      expect(s('a').ueberzahlAngriff, isFalse);
+    },
+  );
+
+  test('Überzahl hebt INI der Helden und Gegner, Wunden senken sie', () async {
+    final snap = fixture.ansageSnapshot(sf: true);
+    final c = ProviderContainer(
+      overrides: [
+        heroComputedProvider('a').overrideWith((ref) => AsyncData(snap)),
+        heroComputedProvider('b').overrideWith((ref) => AsyncData(snap)),
+        rulesCatalogProvider.overrideWith((ref) async => testCatalog),
+      ],
+    );
+    addTearDown(c.dispose);
+    await c.read(rulesCatalogProvider.future);
+    final gruppe = c.read(gefechtInitiativeProvider.notifier);
+    for (final id in ['a', 'b']) {
+      c.read(gefechtProvider(id).notifier).beginnen(6, dk: 'N');
+      gruppe.hinzufuegen(id, zeitpunktVorbei: false);
+    }
+    final w = gefechtswerteFuer(snap, katalog: testCatalog);
+    final roh = gefechtsInitiative(c.read(gefechtProvider('a'))!, w);
+    int zeit(String id) =>
+        c.read(gefechtsZeitpunkteProvider).firstWhere((z) => z.id == id).ini;
+    final gegner = c.read(gefechtBegegnungProvider.notifier);
+    gegner.speichern(
+      const Gefechtsgegner(id: 'g', name: 'Ork', ini: 10, ko: 12, rs: 0),
+    );
+    gegner.bindungSetzen('g', 'a');
+    // Zwei gegen einen: Helden INI +1.
+    expect(c.read(gefechtMitInitiativeProvider('a'))!.lageIni, 1);
+    expect(zeit('a:regulaer'), roh + 1);
+    expect(zeit('gegner:g'), 10);
+    for (final id in ['h', 'i']) {
+      gegner.speichern(Gefechtsgegner(id: id, name: id, ini: 10));
+      gegner.bindungSetzen(id, 'b');
+    }
+    // Drei gegen zwei: Gegner INI +1, Helden ohne Bonus.
+    expect(c.read(gefechtMitInitiativeProvider('a'))!.lageIni, 0);
+    expect(zeit('a:regulaer'), roh);
+    expect(zeit('gegner:g'), 11);
+    gegner.schaden(gegnerId: 'g', buchungId: 'x', tp: 13);
+    // Zwei Wunden (ohne Zone): INI-Basis −4.
+    expect(zeit('gegner:g'), 7);
+  });
+
+  test('Ausgeschiedene Gegner verlieren ihren INI-Zeitpunkt', () async {
+    final snap = fixture.ansageSnapshot(sf: true);
+    final c = ProviderContainer(
+      overrides: [
+        heroComputedProvider('a').overrideWith((ref) => AsyncData(snap)),
+        rulesCatalogProvider.overrideWith((ref) async => testCatalog),
+      ],
+    );
+    addTearDown(c.dispose);
+    await c.read(rulesCatalogProvider.future);
+    c.read(gefechtProvider('a').notifier).beginnen(6, dk: 'N');
+    c
+        .read(gefechtInitiativeProvider.notifier)
+        .hinzufuegen('a', zeitpunktVorbei: false);
+    final gegner = c.read(gefechtBegegnungProvider.notifier);
+    gegner.speichern(
+      const Gefechtsgegner(id: 'g', name: 'Ork', lep: 20, rs: 3, ini: 99),
+    );
+    List<String> ids() =>
+        c.read(gefechtsZeitpunkteProvider).map((z) => z.id).toList();
+    expect(ids(), contains('gegner:g'));
+    for (final st in [
+      GefechtsgegnerStatus.kampfunfaehig,
+      GefechtsgegnerStatus.tot,
+      GefechtsgegnerStatus.geflohen,
+    ]) {
+      gegner.statusSetzen('g', st);
+      expect(ids(), isNot(contains('gegner:g')));
+    }
+    gegner.statusSetzen('g', GefechtsgegnerStatus.kaempft);
+    expect(ids(), contains('gegner:g'));
+  });
 
   test(
     'Fehlende Teilnehmerspielwerte sperren Gruppenaktionen bis Wiederkehr',

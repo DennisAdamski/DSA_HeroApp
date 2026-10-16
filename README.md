@@ -6,6 +6,11 @@ Die App ist auf eine moeglichst umfangreiche Heldenverwaltung ausgelegt: Eigensc
 
 ## Inhalt
 
+Einbindbare Fantasy-Symbole und dekorative Assets mit Vorschau:
+[Fantasy-Assets](docs/fantasy_assets.md).
+
+Waffenarten und Waffengruppen: [29 Fantasy-Waffensymbole](docs/fantasy_weapon_assets.md).
+
 - [DSA Heldenverwaltung](#dsa-heldenverwaltung)
   - [Inhalt](#inhalt)
   - [Projektueberblick](#projektueberblick)
@@ -46,6 +51,7 @@ Technischer Stack:
 - `Hive` fuer lokale Persistenz
 - JSON-Import/-Export fuer Heldendaten
 - Python-Tools unter `tool/` fuer Katalogaufbereitung und Wartung
+- Optionale Firebase-Functions für typisiertes In-App-Feedback als GitHub-Issue
 
 ## Funktionsumfang
 
@@ -73,6 +79,9 @@ Technischer Stack:
   Sync, offene Konflikte und einen manuellen Sync-Button. Bei Unterschieden
   zwischen Offline- und Konto-Daten entscheidet der Nutzer zwischen lokal,
   online oder beide behalten.
+  Bei Offline-Helden erklärt der Vergleich, dass „Nur Lokal“ den Konto-Stand
+  durch den Offline-Stand ersetzt oder einen fehlenden Konto-Held übernimmt.
+  Speicherzeitpunkte erscheinen nur, wenn beide Seiten einen besitzen.
 - Auf Windows nutzt der Konto-Sync bewusst die Firestore REST API statt des
   nativen `cloud_firestore`-Pluginpfads. Firebase Auth liefert dafür das
   ID-Token; Firestore Security Rules schützen die gleichen User-Dokumente.
@@ -97,6 +106,11 @@ Technischer Stack:
   Runde sind einzeln entfernbar, übernommene Einträge bleiben fest. Werden durch
   Entfernen Folgeeinträge ungültig, müssen diese vor der Übernahme korrigiert
   werden. Auf kleinen Bildschirmen ist die Historie im **Detailpanel** erreichbar.
+- Eigenschaften, Talente und Zauber erscheinen als kompakte Kacheln. Auf breiten
+  Fenstern stehen die Basiswerte neben den Eigenschaften und die AP-Bilanz
+  rechts über dem Verlauf. Talente bieten zusätzlich **+ Spezialisierung**:
+  der Erwerb nutzt die Vorschau und reserviert AP, bis die Runde übernommen wird.
+  Zauberkacheln bieten ausschließlich Wertsteigerungen.
 - Für Talente, Sprachen, Schriften und Zauber zeigt der Steigerungskatalog nur Einträge, die der Held bereits auf dem Bogen
   führt — auch solche, die eingeblendet, aber noch nicht aktiviert sind. Alles
   Weitere kommt je Kategorie über **Talent, Sprache oder Schrift erlernen**,
@@ -312,6 +326,24 @@ ueber den injizierten `KartoBestandsAdapter` (`lib/ui/bridges/`); Tabs,
 Editoraktionen und Leave-Guard der Verwaltung teilen sich beide Oberflaechen
 ueber denselben `WorkspaceManagementCoordinator`.
 
+Eine offene Entwicklungsplanung bleibt beim Wechsel zu **Held verwalten**
+erhalten. Die Verwaltung ist zum Ansehen zugänglich. Vor einer Bearbeitung
+erscheint die Warnung, dass die geplante Entwicklung verloren geht:
+**Abbrechen** erhält den Plan, **Planung verwerfen und bearbeiten** verwirft
+ihn und ermöglicht die Änderung. Geplante Steigerungen werden dabei nicht
+übernommen. Das gilt auch für direkte Aktionen wie das Hinzufügen eines
+Inventargegenstands; eine laufende Planübernahme bleibt geschützt.
+
+Im Magiebereich der Entwicklungsplanung lassen sich **Repräsentationen** erwerben
+und **Ritualkenntnisse** aktivieren oder steigern. Kosten, Voraussetzungen und
+bestätigte Meisterentscheide gehören zur Planung; gespeichert wird erst beim
+Übernehmen der Runde. **Magische Tradition einrichten** ergänzt im Magie-Editor
+enthaltene oder bereits vorhandene Kenntnisse ohne zusätzliche AP. Derselbe
+Dialog wird beim Erfassen von Voll-/Halbzauberer angeboten.
+Eine gemeinsame Ritualkenntnis je Tradition kann mehrere Ritualgruppen versorgen.
+Alte eigene Werte werden erst nach ausdrücklicher Auswahl angebunden.
+Details und Abgrenzungen: [Magische Kenntnisse](docs/magische_kenntnisse.md).
+
 Grundprinzipien des Projekts:
 
 - Domain-Modelle sind immutable und serialisierbar
@@ -382,6 +414,9 @@ Fuer die konkrete Umsetzung im Projekt sind diese Dokus die besten Einstiege:
 - `docs/test_strategy.md` fuer Testaufbau und Qualitaetssicherung
 - [Architektur-To-do-Liste](docs/architecture_roadmap.md) für sieben geplante
   Verbesserungen mit Einstiegspunkten, Abhängigkeiten und Abnahmekriterien
+- [Zaubereffekte-Integrationsplan](docs/zaubereffekte_integrationsplan.md)
+  für den geplanten Ausbau von Charakterwirkungen im Kampf und Spielgeschehen
+  (Roadmap MAG-EFF, Katalog-Screening und DSA-Regelbelege)
 - [Klickbares Codex-Mockup](docs/mockups/README.md) für die geplanten Bereiche
   Spielen, Held verwalten und Entwicklung planen
 - [Redesign-Umsetzungspläne](docs/redesign_implementation.md) mit drei
@@ -477,6 +512,8 @@ Build-Tools-Instanz die Komponente `C++ ATL/MFC` nachinstallieren.
 - `docs/ui_performance_measurements.md`
 - `docs/ios_xcode_setup.md`
 - `docs/windows_antivirus_audit.md`
+- `docs/feedback_github_plan.md`
+- `docs/feedback_betrieb.md`
 
 ## Hinweise
 

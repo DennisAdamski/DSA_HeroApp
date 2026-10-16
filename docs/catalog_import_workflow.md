@@ -26,6 +26,15 @@ Base assets:
 Separate runtime catalog:
 
 - `assets/catalogs/reiseberichte/house_rules_v1/reisebericht.json`
+- `assets/catalogs/house_rules_v1/spell_effects.json` (Zauberprofile, MAG-EFF-01;
+  Manifest-Schlüssel `spell_effects`, unverschlüsselt, ohne Wirkungstexte;
+  Prüfung über `test/catalog/spell_effect_catalog_test.dart`)
+- `assets/catalogs/house_rules_v1/alchimika.json` (Tränke und Heilmittel, TRANK;
+  Manifest-Schlüssel `alchimika`, unverschlüsselt, nur belegte Eckdaten mit
+  Buch, gedruckter Seite und Chunk-ID sowie kurze eigene Wirkungstexte;
+  Elixiere tragen je Qualitätsstufe `eigenschaften` (Kürzel, Zahl, Dauer und
+  Einheit `spielrunden`/`stunden`/`tage`), nur wenn das Regelwerk alle drei
+  nennt; Prüfung über `test/catalog/alchimika_catalog_test.dart`)
 
 Synchronizable custom entries in hero storage:
 

@@ -11,8 +11,11 @@ import 'package:dsa_heldenverwaltung/rules/derived/gefecht_magie_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_talent_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/probe_engine_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/talent_nutzung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/talent_probe_rules.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
+
+import 'package:dsa_heldenverwaltung/ui2/gefecht/gefecht_probenwahl.dart';
 
 import '../ui2/shell/karto_test_support.dart';
 
@@ -128,6 +131,53 @@ void main() {
     );
   });
 
+  test('Gefecht beachtet die vorübergehende Talent-BE wie die Suche', () {
+    final s = _snapshot();
+    final be = s.combatPreviewStats.beKampf;
+    expect(be, greaterThan(0));
+    // Situativ ohne Behinderung: BE-Override 0 hebt den Abzug auf.
+    final ohneBe = gefechtsTalentprobe(s, klettern, talentBeOverride: 0)!;
+    expect(ohneBe.basePool, 8 + 1 + 2);
+    final mitBe = gefechtsTalentprobe(s, klettern)!;
+    expect(mitBe.basePool, 8 + 1 + 2 - 2 * be);
+    expect(
+      gefechtsTalentprobe(s, klettern, talentBeOverride: be + 1)!.basePool,
+      8 + 1 + 2 - 2 * (be + 1),
+    );
+    final suche = talentprobeFuer(
+      snapshot: s,
+      talent: klettern,
+      epicAdvantagesActive: false,
+      talentBeOverride: 0,
+    )!;
+    expect(ohneBe.basePool, suche.basePool);
+  });
+
+  test(
+    'Probenkandidaten des Gefechts folgen der vorübergehenden Talent-BE',
+    () {
+      final s = _snapshot();
+      const katalog = RulesCatalog(
+        version: 'test',
+        source: 'test',
+        talents: [klettern, selbstbeherrschung],
+        spells: [],
+        weapons: [],
+      );
+      String detail(int? override) => gefechtsProbenkandidaten(
+        s,
+        katalog,
+        epicAdvantagesActive: false,
+        talentBeOverride: override,
+      ).firstWhere((k) => k.name == 'Klettern').detail;
+      expect(detail(0), endsWith('TaW* 11'));
+      expect(
+        detail(null),
+        endsWith('TaW* ${11 - 2 * s.combatPreviewStats.beKampf}'),
+      );
+    },
+  );
+
   test('Gefecht und Suche verwenden dieselbe Talentprobe', () {
     final s = _snapshot();
     final gefecht = gefechtsTalentprobe(s, klettern)!;
@@ -141,6 +191,69 @@ void main() {
     expect(gefecht.type, ProbeType.talent);
     // Selbstbeherrschung hat keine Behinderung; der Wert bleibt der TaW.
     expect(gefechtsTalentprobe(s, selbstbeherrschung)!.basePool, 6);
+  });
+
+  test(
+    'Die Talentprobe trägt die TaW*-Herleitung, deren Summe der Pool ist',
+    () {
+      final s = _snapshot();
+      final be = s.combatPreviewStats.beKampf;
+      final request = talentprobeFuer(
+        snapshot: s,
+        talent: klettern,
+        epicAdvantagesActive: false,
+      )!;
+      final herleitung = request.poolHerleitung!;
+      expect(herleitung.wert, request.basePool);
+      final schritte = {
+        for (final schritt in herleitung.schritte) schritt.bezeichnung: schritt,
+      };
+      expect(schritte['TaW']!.betrag, 8);
+      expect(schritte['Kletterschuhe']!.betrag, 2);
+      expect(schritte['eBE']!.betrag, -2 * be);
+      // Gefecht und Suche teilen dieselbe Herleitung.
+      expect(
+        gefechtsTalentprobe(s, klettern)!.poolHerleitung!.wert,
+        request.basePool,
+      );
+      final ueberschrieben = talentprobeFuer(
+        snapshot: s,
+        talent: klettern,
+        epicAdvantagesActive: false,
+        talentBeOverride: 0,
+      )!;
+      expect(ueberschrieben.poolHerleitung!.wert, ueberschrieben.basePool);
+      expect(
+        ueberschrieben.copyWith(initialSituationalModifier: -1).poolHerleitung,
+        same(ueberschrieben.poolHerleitung),
+      );
+    },
+  );
+
+  test('Die Ausweichprobe nennt den Zuschlag in der Herleitung', () {
+    final s = _snapshot();
+    final request = talentErsatzprobeFuer(
+      snapshot: s,
+      talent: selbstbeherrschung,
+      option: const TalentErsatzOption(talent: klettern, zuschlag: 3),
+      epicAdvantagesActive: false,
+    )!;
+    final herleitung = request.poolHerleitung!;
+    expect(herleitung.wert, request.basePool);
+    final zuschlag = herleitung.schritte.last;
+    expect(zuschlag.bezeichnung, 'Ausweichzuschlag');
+    expect(zuschlag.betrag, -3);
+    final ohne = talentErsatzprobeFuer(
+      snapshot: s,
+      talent: selbstbeherrschung,
+      option: const TalentErsatzOption(talent: klettern, zuschlag: null),
+      epicAdvantagesActive: false,
+    )!;
+    expect(ohne.poolHerleitung!.wert, ohne.basePool);
+    expect(
+      ohne.poolHerleitung!.schritte.map((e) => e.bezeichnung),
+      isNot(contains('Ausweichzuschlag')),
+    );
   });
 
   test('Zeitbedarf: Talente eine Aktion, Eigenschaften keine', () {

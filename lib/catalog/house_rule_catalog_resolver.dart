@@ -28,22 +28,30 @@ class HouseRuleCatalogResolver {
   const HouseRuleCatalogResolver._();
 
   /// Baut den wirksamen Basiskatalog aus offiziellen Daten und aktiven Packs.
+  ///
+  /// [bekanntePaketIds] sind die Pakete, deren Sperrbedingung
+  /// (`ruleMeta.sourceKey`) gilt. Ohne Angabe sind es die Pakete von
+  /// [packCatalog]. Ein Regelprofil trägt nur seine aktiven Pakete; ohne die
+  /// App-weit bekannten IDs blieben Einträge eines nicht gewählten Pakets
+  /// sichtbar.
   static HouseRuleCatalogResolverResult resolve({
     required CatalogSourceData baseData,
     required HouseRulePackCatalog packCatalog,
     required Set<String> activePackIds,
+    Set<String>? bekanntePaketIds,
   }) {
     final issues = <HouseRulePackIssue>[];
+    final gesperrtDurch = bekanntePaketIds ?? _paketIds(packCatalog);
     final resolvedSections = <CatalogSectionId, List<Map<String, dynamic>>>{
       for (final section in editableCatalogSections)
         section: baseData
             .entriesFor(section)
             .map(_deepCloneEntry)
             .where(
-              (entry) => !_isEntryGatedByInactivePack(
+              (entry) => !istEintragDurchPaketGesperrt(
                 entry: entry,
-                packCatalog: packCatalog,
-                activePackIds: activePackIds,
+                bekanntePaketIds: gesperrtDurch,
+                aktivePaketIds: activePackIds,
               ),
             )
             .toList(growable: true),
@@ -247,6 +255,12 @@ class HouseRuleCatalogResolver {
         reisebericht: baseData.reisebericht
             .map(_deepCloneEntry)
             .toList(growable: false),
+        spellEffects: baseData.spellEffects
+            .map(_deepCloneEntry)
+            .toList(growable: false),
+        alchimika: baseData.alchimika
+            .map(_deepCloneEntry)
+            .toList(growable: false),
       ),
       provenanceIndex: HouseRuleProvenanceIndex(entries: provenanceEntries),
       issues: List<HouseRulePackIssue>.unmodifiable(issues),
@@ -286,19 +300,26 @@ List<Map<String, dynamic>> _selectEntries({
       .toList(growable: false);
 }
 
-bool _isEntryGatedByInactivePack({
+Set<String> _paketIds(HouseRulePackCatalog packCatalog) => <String>{
+  for (final pack in packCatalog.packs) pack.id,
+};
+
+/// Ob ein Basiseintrag durch sein Paket gesperrt ist: Er nennt über
+/// `ruleMeta.sourceKey` ein bekanntes Paket, das nicht aktiv ist.
+bool istEintragDurchPaketGesperrt({
   required Map<String, dynamic> entry,
-  required HouseRulePackCatalog packCatalog,
-  required Set<String> activePackIds,
+  required Set<String> bekanntePaketIds,
+  required Set<String> aktivePaketIds,
 }) {
-  final sourceKey = _readEntrySourceKey(entry);
-  if (sourceKey.isEmpty || !packCatalog.contains(sourceKey)) {
+  final sourceKey = liesQuellschluessel(entry);
+  if (sourceKey.isEmpty || !bekanntePaketIds.contains(sourceKey)) {
     return false;
   }
-  return !activePackIds.contains(sourceKey);
+  return !aktivePaketIds.contains(sourceKey);
 }
 
-String _readEntrySourceKey(Map<String, dynamic> entry) {
+/// `ruleMeta.sourceKey` eines rohen Katalogeintrags; leer ohne Angabe.
+String liesQuellschluessel(Map<String, dynamic> entry) {
   final ruleMeta = entry['ruleMeta'];
   if (ruleMeta is Map<String, dynamic>) {
     return (ruleMeta['sourceKey'] as String? ?? '').trim();

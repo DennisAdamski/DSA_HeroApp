@@ -1,39 +1,27 @@
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
-import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
 
 import 'hero_requirement_context.dart';
 import 'gefecht_wirken_rules.dart';
 import 'talent_probe_rules.dart';
+import 'zauber_herleitung_rules.dart';
 
 /// Baut eine tatsächliche Zauberprobe; Dauer und Kosten bleiben separat geprüft.
 ResolvedProbeRequest? gefechtsZauberprobe(
   HeroComputedSnapshot snapshot,
   SpellDef zauber,
 ) {
-  final eintrag = snapshot.hero.spells[zauber.id];
-  if (eintrag?.spellValue == null) return null;
-  final targets = <ProbeTargetValue>[];
-  for (final name in zauber.attributes) {
-    final code = parseAttributeCode(name);
-    if (code == null) return null;
-    targets.add(
-      ProbeTargetValue(
-        label: name,
-        value: readAttributeValue(snapshot.probenEigenschaften, code),
-      ),
-    );
-  }
-  if (targets.length != 3) return null;
+  final wert = zauberProbenwertFuer(snapshot: snapshot, spell: zauber);
+  if (wert == null) return null;
   return ResolvedProbeRequest(
     type: ProbeType.spell,
     title: zauber.name,
     subtitle: 'Gefechtszauber · ${zauber.castingTime}',
     ruleHint: 'Reichweite, Zeit, Modifikationen, Kosten und Wirkung ausdrücklich prüfen.',
     diceSpec: const DiceSpec(count: 3, sides: 20),
-    targets: targets,
-    basePool: eintrag!.spellValue! + eintrag.modifier,
+    targets: wert.ziele,
+    basePool: wert.zfw,
   );
 }
 
@@ -46,6 +34,7 @@ ResolvedProbeRequest? gefechtsLiturgieprobe(
   TalentDef talent, {
   List<String>? eigenschaften,
   bool epicAdvantagesActive = false,
+  int? talentBeOverride,
 }) {
   if (snapshot.hero.talents[talent.id]?.talentValue == null ||
       talent.attributes.length != 3) {
@@ -55,6 +44,7 @@ ResolvedProbeRequest? gefechtsLiturgieprobe(
     snapshot: snapshot,
     talent: talent,
     epicAdvantagesActive: epicAdvantagesActive,
+    talentBeOverride: talentBeOverride,
     eigenschaften:
         eigenschaften ??
         gefechtsEigenschaftenFuerKult(talent.name) ??
@@ -74,17 +64,22 @@ ResolvedProbeRequest? gefechtsLiturgieprobe(
 
 /// Gelernte Talentprobe im Gefecht mit derselben TaW*-Rechnung wie die Suche.
 ///
-/// `null`, wenn der Held das Talent nicht mit Wert führt.
+/// [talentBeOverride] ist die vorübergehende Talent-BE des Helden (situative
+/// BE-Änderung ohne Rüstungswechsel); sie gilt wie in Suche und Talente-Tab.
+///
+/// `null`, wenn der Held das Talent nicht proben darf: Basis-Talente darf jeder
+/// (auch mit TaW 0), Spezial-Talente nur aktiviert (`talentEintragFuerProbe`).
 ResolvedProbeRequest? gefechtsTalentprobe(
   HeroComputedSnapshot snapshot,
   TalentDef talent, {
   bool epicAdvantagesActive = false,
+  int? talentBeOverride,
 }) {
-  if (snapshot.hero.talents[talent.id]?.talentValue == null) return null;
   return talentprobeFuer(
     snapshot: snapshot,
     talent: talent,
     epicAdvantagesActive: epicAdvantagesActive,
+    talentBeOverride: talentBeOverride,
   );
 }
 
@@ -170,7 +165,7 @@ List<GefechtsZaubereintrag> gefechtsZauberliste(
         if (filter.isEmpty || z.name.toLowerCase().contains(filter))
           GefechtsZaubereintrag(
             zauber: z,
-            zfw: e.spellValue! + e.modifier,
+            zfw: herleiteZfw(e).wert,
             zuletzt: zuletzt.contains(z.id),
           ),
   ];

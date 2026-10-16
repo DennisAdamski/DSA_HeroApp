@@ -1,16 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:uuid/uuid.dart';
 
 import 'package:dsa_heldenverwaltung/catalog/hero_trait_choices.dart';
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_merkmal.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/magic_setup_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/editor_entwurf_rules.dart';
+import 'package:dsa_heldenverwaltung/ui_shared/magic_setup_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui_shared/merkmal_herkunft_dialog.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_anzeige_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_wirkung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_zuordnung_rules.dart';
 import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
-import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui2/merkmale/karto_merkmal_dialoge.dart';
@@ -74,7 +78,7 @@ class _KartoMerkmalsblattState extends ConsumerState<KartoMerkmalsblatt> {
   @override
   Widget build(BuildContext context) {
     final berechnet = ref.watch(heroComputedProvider(widget.heroId));
-    final katalogWert = ref.watch(rulesCatalogProvider);
+    final katalogWert = ref.watch(heroRulesCatalogProvider(widget.heroId));
     final werte = berechnet.asData?.value;
     final catalog = katalogWert.valueOrNull;
     if (berechnet.hasError || katalogWert.hasError) {
@@ -255,14 +259,43 @@ class _KartoMerkmalsblattState extends ConsumerState<KartoMerkmalsblatt> {
         auswahl: angaben.auswahl,
       );
     }
-    await _schreibe(
-      (held, katalog) => aendereMerkmale(
+    HeroSheet? setupBasis;
+    HeroSheet? setup;
+    if (vorteil && offersMagicSetup(def?.id)) {
+      final hero = ref
+          .read(heroComputedProvider(widget.heroId))
+          .asData
+          ?.value
+          .hero;
+      if (hero == null || !mounted) return;
+      setupBasis = aendereMerkmale(
+        hero,
+        vorteil: true,
+        katalog: katalog,
+        aenderung: (liste) => fuegeMerkmalHinzu(liste, neu, def: def),
+      );
+      setup = await showMagicSetupDialog(
+        context: context,
+        hero: setupBasis,
+        catalog: catalog,
+      );
+      if (setup == null || !mounted) return;
+    }
+    await _schreibe((held, katalog) {
+      final result = aendereMerkmale(
         held,
         vorteil: vorteil,
         katalog: katalog,
         aenderung: (liste) => fuegeMerkmalHinzu(liste, neu, def: def),
-      ),
-    );
+      );
+      if (setup == null || setupBasis == null) return result;
+      return uebernimmEditorEntwurf(
+        basis: setupBasis,
+        entwurf: setup,
+        aktuell: result,
+        neueId: () => const Uuid().v4(),
+      );
+    });
   }
 
   // Auswahl und Wert erfragen, sofern der Eintrag welche trägt.
@@ -305,6 +338,7 @@ class _KartoMerkmalsblattState extends ConsumerState<KartoMerkmalsblatt> {
           if (eintrag.brauchtPruefung)
             _option(context, _Aktion.zuordnen, 'Katalogeintrag zuordnen'),
           if (def == null) _option(context, _Aktion.text, 'Text bearbeiten'),
+          _option(context, _Aktion.herkunft, 'Herkunft ändern'),
           _option(context, _Aktion.entfernen, 'Entfernen'),
         ],
       ),
@@ -372,6 +406,16 @@ class _KartoMerkmalsblattState extends ConsumerState<KartoMerkmalsblatt> {
               ? HeroMerkmalZuordnung.katalog
               : teile.zuordnung,
         );
+      case _Aktion.herkunft:
+        // Reines Metadatum; geschrieben wird erst unten, wo die Planung
+        // erneut geprueft wird.
+        final wahl = await zeigeMerkmalHerkunftDialog(
+          context: context,
+          merkmalName: anzeige.name,
+          aktuell: eintrag.herkunft,
+        );
+        if (wahl == null || wahl.herkunft == eintrag.herkunft) return;
+        ersatz = eintrag.copyWith(herkunft: wahl.herkunft);
       case _Aktion.entfernen:
         if (!await bestaetigeMerkmalEntfernen(context, anzeige.name)) return;
         ersatz = null;
@@ -410,7 +454,9 @@ class _KartoMerkmalsblattState extends ConsumerState<KartoMerkmalsblatt> {
           'Während einer Planung sind Vor- und Nachteile gesperrt.',
         );
       }
-      final catalog = ref.read(rulesCatalogProvider).valueOrNull;
+      final catalog = ref
+          .read(heroRulesCatalogProvider(widget.heroId))
+          .valueOrNull;
       if (catalog == null) {
         throw StateError('Der Regelkatalog ist noch nicht geladen.');
       }
@@ -459,7 +505,7 @@ List<HeroMerkmal> _ersetze(
 }
 
 /// Aktionen an einer Merkmalskarte.
-enum _Aktion { aendern, zuordnen, text, entfernen }
+enum _Aktion { aendern, zuordnen, text, herkunft, entfernen }
 
 /// Abschnittsüberschrift mit leiser Anzahl, wie im Abenteuerblatt.
 class _Kopfzeile extends StatelessWidget {

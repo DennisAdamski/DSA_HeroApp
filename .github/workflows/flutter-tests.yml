@@ -32,6 +32,37 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  feedback-backend:
+    name: Feedback-Backend
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Repository auschecken
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+
+      - name: Node.js 22 einrichten
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: functions/package-lock.json
+
+      - name: Java 21 für Firestore-Emulator einrichten
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Backend installieren, testen und bauen
+        working-directory: functions
+        run: |
+          npm ci
+          npm test
+          npm run build
+          npm run test:rules
+
   analyze:
     name: Statische Analyse & Lint
     runs-on: ubuntu-latest
@@ -121,14 +152,23 @@ jobs:
       - name: Web-Release bauen
         env:
           BUILD_COMMIT: ${{ inputs.ref || github.sha }}
-        run: >-
-          flutter build web --release
-          --dart-define=BUILD_COMMIT="$BUILD_COMMIT"
-          --dart-define=BUILD_TIME="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          BRANCH: ${{ inputs.branch || github.ref_name }}
+          FEEDBACK_API_URL: ${{ (inputs.branch || github.ref_name) == 'test' && 'https://europe-west10-heldensync-ccf0b.cloudfunctions.net/feedbackApiTest' || '' }}
+        run: |
+          flutter build web --release \
+            --dart-define=BUILD_COMMIT="$BUILD_COMMIT" \
+            --dart-define=BUILD_TIME="$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            --dart-define=FEEDBACK_API_URL="$FEEDBACK_API_URL"
       - name: Build verifizieren
+        env:
+          BRANCH: ${{ inputs.branch || github.ref_name }}
+          FEEDBACK_API_URL: ${{ (inputs.branch || github.ref_name) == 'test' && 'https://europe-west10-heldensync-ccf0b.cloudfunctions.net/feedbackApiTest' || '' }}
         run: |
           test -f build/web/assets/AssetManifest.bin.json
           test -n "$(ls -A build/web/assets/assets/heroes 2>/dev/null)"
+          if [ "$BRANCH" = "test" ]; then
+            grep -Fq "$FEEDBACK_API_URL" build/web/main.dart.js
+          fi
       - uses: actions/upload-artifact@v7
         with:
           name: web-release
@@ -140,7 +180,7 @@ jobs:
   deploy:
     name: Firebase Hosting veröffentlichen
     if: github.event_name == 'push' && (inputs.branch == '' || inputs.branch == 'test')
-    needs: [analyze, test, loc-budget, web-build]
+    needs: [feedback-backend, analyze, test, loc-budget, web-build]
     runs-on: ubuntu-latest
     # Serialisierung verhindert parallele Veröffentlichungen auf dieselbe Site.
     concurrency:

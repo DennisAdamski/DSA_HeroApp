@@ -2,7 +2,12 @@ import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:dsa_heldenverwaltung/domain/begleiter_zustand.dart';
+import 'package:dsa_heldenverwaltung/domain/abgelegter_kampfgegenstand.dart';
 import 'package:dsa_heldenverwaltung/domain/active_spell_effects_state.dart';
+import 'package:dsa_heldenverwaltung/domain/spell_effect_instance.dart';
+import 'package:dsa_heldenverwaltung/domain/alchimikum_bezug.dart';
+import 'package:dsa_heldenverwaltung/domain/artefakt_daten.dart';
 import 'package:dsa_heldenverwaltung/domain/attribute_modifiers.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/avatar_gallery_entry.dart';
@@ -22,9 +27,12 @@ import 'package:dsa_heldenverwaltung/domain/hero_companion.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_connection_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_gruppen_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_language_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_herkunft.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_herkunfts_modifikator.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_merkmal.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_meta_talent.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_note_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_regelprofil.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_reisebericht.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_resource_activation_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_rituals.dart';
@@ -38,7 +46,9 @@ import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/domain/spell_duration.dart';
 import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
 import 'package:dsa_heldenverwaltung/domain/talent_special_ability.dart';
+import 'package:dsa_heldenverwaltung/domain/vitalwirkung.dart';
 import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
+import 'package:dsa_heldenverwaltung/domain/zustands_buchung.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/inventory_sync_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/rest_rules.dart';
@@ -83,6 +93,50 @@ const _zukunft = <String, dynamic>{
 };
 
 final _kampf = <_Modell>[
+  _Modell(
+    'Vitalwirkung',
+    schluessel: Vitalwirkung.jsonSchluessel,
+    voll: () => const Vitalwirkung(
+      lep: 8,
+      asp: 2,
+      aup: 3,
+      wunden: 1,
+      lepWurf: '2W6+4',
+      aspWurf: '1W6',
+      aupWurf: '1W3',
+      lepProWunde: 7,
+    ).toJson(),
+    lade: (json) => Vitalwirkung.fromJson(json).toJson(),
+    bearbeite: (json) => Vitalwirkung.fromJson(json).copyWith(lep: 9).toJson(),
+    unbekannt: (json) => Vitalwirkung.fromJson(json).unbekannteFelder,
+  ),
+  _Modell(
+    'AlchimikumBezug',
+    schluessel: AlchimikumBezug.jsonSchluessel,
+    voll: () =>
+        const AlchimikumBezug(id: 'alch_mutelixier', stufe: 'C').toJson(),
+    lade: (json) => AlchimikumBezug.fromJson(json)!.toJson(),
+    bearbeite: (json) =>
+        AlchimikumBezug.fromJson(json)!.copyWith(stufe: 'D').toJson(),
+    unbekannt: (json) => AlchimikumBezug.fromJson(json)!.unbekannteFelder,
+  ),
+  _Modell(
+    'AbgelegterKampfgegenstand',
+    schluessel: AbgelegterKampfgegenstand.jsonSchluessel,
+    voll: () => const AbgelegterKampfgegenstand(
+      waffe: MainWeaponSlot(name: 'Dolch'),
+      geschoss: RangedProjectile(name: 'Pfeil'),
+      ruestungsteil: ArmorPiece(name: 'Helm'),
+      nebenhandteil: OffhandEquipmentEntry(name: 'Schild'),
+    ).toJson(),
+    lade: (json) => AbgelegterKampfgegenstand.fromJson(json).toJson(),
+    bearbeite: (json) =>
+        AbgelegterKampfgegenstand.fromJson(json)
+            .copyWith(waffe: const MainWeaponSlot(name: 'Säbel'))
+            .toJson(),
+    unbekannt: (json) =>
+        AbgelegterKampfgegenstand.fromJson(json).unbekannteFelder,
+  ),
   _Modell(
     'OffhandAssignment',
     schluessel: OffhandAssignment.jsonSchluessel,
@@ -352,6 +406,8 @@ final _begleiterAbenteuerNotizen = <_Modell>[
       startAup: 1,
       startAsp: 1,
       startMr: 1,
+      reittierAusbildung: ReittierAusbildung(),
+      vertrautenBindung: VertrautenBindung(),
     ).toJson(),
     lade: (json) => HeroCompanion.fromJson(json).toJson(),
     bearbeite: (json) =>
@@ -376,7 +432,10 @@ final _begleiterAbenteuerNotizen = <_Modell>[
   _Modell(
     'HeroCompanionSonderfertigkeit',
     schluessel: HeroCompanionSonderfertigkeit.jsonSchluessel,
-    voll: () => const HeroCompanionSonderfertigkeit(name: 'SF').toJson(),
+    voll: () => const HeroCompanionSonderfertigkeit(
+      name: 'SF',
+      katalogId: 'psf_steigen',
+    ).toJson(),
     lade: (json) => HeroCompanionSonderfertigkeit.fromJson(json).toJson(),
     bearbeite: (json) =>
         HeroCompanionSonderfertigkeit.fromJson(json)
@@ -388,11 +447,59 @@ final _begleiterAbenteuerNotizen = <_Modell>[
   _Modell(
     'HeroCompanionSpeed',
     schluessel: HeroCompanionSpeed.jsonSchluessel,
-    voll: () => const HeroCompanionSpeed(art: 'Fliegen', wert: 12).toJson(),
+    voll: () => const HeroCompanionSpeed(
+      art: 'Fliegen',
+      wert: 12,
+      steigerung: 1,
+    ).toJson(),
     lade: (json) => HeroCompanionSpeed.fromJson(json).toJson(),
     bearbeite: (json) =>
         HeroCompanionSpeed.fromJson(json).copyWith(wert: 14).toJson(),
     unbekannt: (json) => HeroCompanionSpeed.fromJson(json).unbekannteFelder,
+  ),
+  _Modell(
+    'ReittierAusbildung',
+    schluessel: ReittierAusbildung.jsonSchluessel,
+    voll: () => _reittierAusbildung().toJson(),
+    lade: (json) => ReittierAusbildung.fromJson(json).toJson(),
+    bearbeite: (json) =>
+        ReittierAusbildung.fromJson(json)
+            .copyWith(varianteId: 'pvar_schweres_streitross')
+            .toJson(),
+    unbekannt: (json) => ReittierAusbildung.fromJson(json).unbekannteFelder,
+  ),
+  _Modell(
+    'ReittierAusbildungsschritt',
+    schluessel: ReittierAusbildungsschritt.jsonSchluessel,
+    voll: () => _reittierAusbildung().schritte.single.toJson(),
+    lade: (json) => ReittierAusbildungsschritt.fromJson(json).toJson(),
+    bearbeite: (json) =>
+        ReittierAusbildungsschritt.fromJson(json)
+            .copyWith(notiz: 'Neu')
+            .toJson(),
+    unbekannt: (json) =>
+        ReittierAusbildungsschritt.fromJson(json).unbekannteFelder,
+  ),
+  _Modell(
+    'VertrautenBindung',
+    schluessel: VertrautenBindung.jsonSchluessel,
+    voll: () => _vertrautenBindung().toJson(),
+    lade: (json) => VertrautenBindung.fromJson(json).toJson(),
+    bearbeite: (json) =>
+        VertrautenBindung.fromJson(json).copyWith(apUebertragen: 60).toJson(),
+    unbekannt: (json) => VertrautenBindung.fromJson(json).unbekannteFelder,
+  ),
+  _Modell(
+    'VertrautenAusbildungsbuchung',
+    schluessel: VertrautenAusbildungsbuchung.jsonSchluessel,
+    voll: () => _vertrautenBindung().ausbildungen.single.toJson(),
+    lade: (json) => VertrautenAusbildungsbuchung.fromJson(json).toJson(),
+    bearbeite: (json) =>
+        VertrautenAusbildungsbuchung.fromJson(json)
+            .copyWith(bezeichnung: 'Pfote geben')
+            .toJson(),
+    unbekannt: (json) =>
+        VertrautenAusbildungsbuchung.fromJson(json).unbekannteFelder,
   ),
   _Modell(
     'HeroAdventureEntry',
@@ -493,6 +600,37 @@ final _begleiterAbenteuerNotizen = <_Modell>[
     unbekannt: (json) => ReiseberichtOpenItem.fromJson(json).unbekannteFelder,
   ),
   _Modell(
+    'HeroRegelProfil',
+    schluessel: HeroRegelProfil.jsonSchluessel,
+    voll: () => HeroRegelProfil(
+      catalogVersion: 'house_rules_v1',
+      pakete: <HeroRegelProfilPaket>[
+        HeroRegelProfilPaket(
+          paketId: 'p',
+          pruefsumme: 's',
+          manifest: const <String, Object?>{'id': 'p', 'title': 'P'},
+        ),
+      ],
+    ).toJson(),
+    lade: (json) => HeroRegelProfil.fromJson(json).toJson(),
+    bearbeite: (json) =>
+        HeroRegelProfil.fromJson(json).copyWith(catalogVersion: 'v2').toJson(),
+    unbekannt: (json) => HeroRegelProfil.fromJson(json).unbekannteFelder,
+  ),
+  _Modell(
+    'HeroRegelProfilPaket',
+    schluessel: HeroRegelProfilPaket.jsonSchluessel,
+    voll: () => HeroRegelProfilPaket(
+      paketId: 'p',
+      pruefsumme: 's',
+      manifest: const <String, Object?>{'id': 'p', 'title': 'P'},
+    ).toJson(),
+    lade: (json) => HeroRegelProfilPaket.fromJson(json)!.toJson(),
+    bearbeite: (json) =>
+        HeroRegelProfilPaket.fromJson(json)!.copyWith(pruefsumme: 'x').toJson(),
+    unbekannt: (json) => HeroRegelProfilPaket.fromJson(json)!.unbekannteFelder,
+  ),
+  _Modell(
     'HeroGruppenMitgliedschaft',
     schluessel: HeroGruppenMitgliedschaft.jsonSchluessel,
     voll: () => const HeroGruppenMitgliedschaft(
@@ -536,7 +674,17 @@ HeroMerkmal _merkmal() => const HeroMerkmal(
   auswahl: 'A',
   kandidatenIds: <String>['adv_a'],
   zuordnung: HeroMerkmalZuordnung.migration,
+  herkunft: HeroHerkunft.rasse,
 );
+
+HeroHerkunftsModifikator _herkunftsModifikator() =>
+    const HeroHerkunftsModifikator(
+      id: 'h1',
+      art: HeroHerkunftsModifikatorArt.eigenschaft,
+      ziel: 'MU',
+      betrag: 1,
+      text: 'MU+1',
+    );
 
 final _merkmale = <_Modell>[
   _Modell(
@@ -547,6 +695,40 @@ final _merkmale = <_Modell>[
     bearbeite: (json) =>
         HeroMerkmal.fromJson(json).copyWith(wert: 4, text: 'X 4').toJson(),
     unbekannt: (json) => HeroMerkmal.fromJson(json).unbekannteFelder,
+  ),
+  _Modell(
+    'HeroHerkunftsModifikator',
+    schluessel: HeroHerkunftsModifikator.jsonSchluessel,
+    voll: () => _herkunftsModifikator().toJson()! as Map<String, dynamic>,
+    lade: (json) =>
+        HeroHerkunftsModifikator.fromJson(json).toJson()!
+            as Map<String, dynamic>,
+    bearbeite: (json) =>
+        HeroHerkunftsModifikator.fromJson(json).copyWith(betrag: 2).toJson()!
+            as Map<String, dynamic>,
+    unbekannt: (json) =>
+        HeroHerkunftsModifikator.fromJson(json).unbekannteFelder,
+  ),
+  _Modell(
+    'HeroHerkunftsModifikatoren',
+    schluessel: HeroHerkunftsModifikatoren.jsonSchluessel,
+    voll: () =>
+        HeroHerkunftsModifikatoren(
+              rasse: [_herkunftsModifikator()],
+              kultur: [_herkunftsModifikator()],
+              profession: [_herkunftsModifikator()],
+            ).toJson()!
+            as Map<String, dynamic>,
+    lade: (json) =>
+        HeroHerkunftsModifikatoren.fromJson(json).toJson()!
+            as Map<String, dynamic>,
+    bearbeite: (json) =>
+        HeroHerkunftsModifikatoren.fromJson(json)
+                .copyWith(rasse: const <HeroHerkunftsModifikator>[])
+                .toJson()!
+            as Map<String, dynamic>,
+    unbekannt: (json) =>
+        HeroHerkunftsModifikatoren.fromJson(json).unbekannteFelder,
   ),
 ];
 
@@ -715,6 +897,28 @@ final _zustand = <_Modell>[
         ActiveSpellEffectsState.fromJson(json).unbekannteFelder,
   ),
   _Modell(
+    'SpellEffectInstance',
+    schluessel: SpellEffectInstance.jsonSchluessel,
+    voll: () => SpellEffectInstance(
+      id: 'i1',
+      effectId: 'e1',
+      vorgangsId: 'v1',
+      quelle: 'Q',
+      ziel: 'gegner:g1',
+      zfw: 10,
+      zfpStern: 5,
+      amount: 2,
+      schutzRest: 1,
+      attributeMods: const AttributeModifiers(mu: 1),
+      duration: _dauer(),
+      unterdrueckt: true,
+    ).toJson(),
+    lade: (json) => SpellEffectInstance.fromJson(json)!.toJson(),
+    bearbeite: (json) =>
+        SpellEffectInstance.fromJson(json)!.copyWith(amount: 3).toJson(),
+    unbekannt: (json) => SpellEffectInstance.fromJson(json)!.unbekannteFelder,
+  ),
+  _Modell(
     'ActiveSpellEffectDetail',
     schluessel: ActiveSpellEffectDetail.jsonSchluessel,
     voll: () => ActiveSpellEffectDetail(amount: 2, duration: _dauer()).toJson(),
@@ -760,6 +964,7 @@ final _zustand = <_Modell>[
       targetValue: 14,
       total: 3,
       isNeutral: true,
+      buchungId: 'b1',
     ).toJson(),
     lade: (json) => DiceLogEntry.fromJson(json).toJson(),
     // Unveraenderlich: bearbeitet wird der Zustand, der das Protokoll traegt.
@@ -772,7 +977,76 @@ final _zustand = <_Modell>[
             as Map<String, dynamic>,
     unbekannt: (json) => DiceLogEntry.fromJson(json).unbekannteFelder,
   ),
+  _Modell(
+    'ZustandsBuchung',
+    schluessel: ZustandsBuchung.jsonSchluessel,
+    voll: () => _zustandsBuchung().toJson(),
+    lade: (json) => ZustandsBuchung.fromJson(json).toJson(),
+    bearbeite: (json) =>
+        ZustandsBuchung.fromJson(json).copyWith(unterdrueckt: 1).toJson(),
+    unbekannt: (json) => ZustandsBuchung.fromJson(json).unbekannteFelder,
+  ),
+  _Modell(
+    'BegleiterZustand',
+    schluessel: BegleiterZustand.jsonSchluessel,
+    voll: () => const BegleiterZustand(
+      currentLep: 5,
+      currentAsp: 3,
+      currentAup: 7,
+    ).toJson(),
+    lade: (json) => BegleiterZustand.fromJson(json).toJson(),
+    bearbeite: (json) =>
+        BegleiterZustand.fromJson(json).copyWith(currentLep: 2).toJson(),
+    unbekannt: (json) => BegleiterZustand.fromJson(json).unbekannteFelder,
+  ),
 ];
+
+// Eine Buchung, in der alle bedingt geschriebenen Felder belegt sind.
+ZustandsBuchung _zustandsBuchung() => ZustandsBuchung(
+  id: 'b1',
+  art: ZustandsBuchungsArt.schaden,
+  zeitpunkt: DateTime.utc(2026, 10, 7),
+  lepDelta: -7,
+  auDelta: -2,
+  aspDelta: -3,
+  zone: WundZone.brust,
+  wundenDelta: 2,
+  kopfIniMalusDelta: 3,
+  unterdrueckt: 2,
+  ruecknahmeVon: 'b0',
+);
+
+// Ein Ausbildungsstand, in dem alle bedingt geschriebenen Felder belegt sind.
+VertrautenBindung _vertrautenBindung() => const VertrautenBindung(
+  artId: 'vart_katze',
+  machtvoll: true,
+  bindungskosten: 130,
+  apUebertragen: 50,
+  abenteuerApErfasst: 400,
+  ausbildungen: <VertrautenAusbildungsbuchung>[
+    VertrautenAusbildungsbuchung(
+      katalogId: 'vfert_trick',
+      apKosten: 45,
+      bezeichnung: 'Rolle',
+    ),
+  ],
+);
+
+ReittierAusbildung _reittierAusbildung() => const ReittierAusbildung(
+  ausgangsstufe: ReittierAusbildungsstufe.erprobt,
+  ausgangsart: ReittierAusbildungsart.fundiert,
+  varianteId: 'pvar_leichtes_streitross',
+  schritte: <ReittierAusbildungsschritt>[
+    ReittierAusbildungsschritt(
+      nach: ReittierAusbildungsstufe.geschult,
+      art: ReittierAusbildungsart.fundiert,
+      fehlschlaege: 2,
+      ausbilder: 'Zureiter',
+      notiz: 'Gestüt',
+    ),
+  ],
+  unartIds: <String>['punart_treten'],
+);
 
 /// Ein Aufzaehlungsfeld im Tabellentest.
 ///
@@ -878,6 +1152,79 @@ final _enumFelder = <_EnumFeld>[
     andersJson: 'talent',
     ersatz: (json) => InventoryItemModifier.fromJson(json).kind,
     erwarteterErsatz: InventoryModifierKind.stat,
+  ),
+  // Artefaktdaten am Inventareintrag (Matrixgeber).
+  _EnumFeld(
+    'ArtefaktDaten.art',
+    'art',
+    voll: () => const ArtefaktDaten().toJson(),
+    lade: (json) => ArtefaktDaten.fromJson(json).toJson(),
+    gleich: (json) {
+      final d = ArtefaktDaten.fromJson(json);
+      return d.copyWith(art: d.art, ersteller: 'Neu').toJson();
+    },
+    anders: (json) =>
+        ArtefaktDaten.fromJson(json)
+            .copyWith(art: ArtefaktArt.spruchspeicherAufladbar)
+            .toJson(),
+    andersJson: 'spruchspeicherAufladbar',
+    ersatz: (json) => ArtefaktDaten.fromJson(json).art,
+    erwarteterErsatz: ArtefaktArt.matrixgeber,
+  ),
+  _EnumFeld(
+    'ArtefaktDaten.stabilitaet',
+    'stabilitaet',
+    voll: () => const ArtefaktDaten().toJson(),
+    lade: (json) => ArtefaktDaten.fromJson(json).toJson(),
+    gleich: (json) {
+      final d = ArtefaktDaten.fromJson(json);
+      return d.copyWith(stabilitaet: d.stabilitaet, ersteller: 'Neu').toJson();
+    },
+    anders: (json) =>
+        ArtefaktDaten.fromJson(json)
+            .copyWith(stabilitaet: MatrixStabilitaet.labil)
+            .toJson(),
+    andersJson: 'labil',
+    ersatz: (json) => ArtefaktDaten.fromJson(json).stabilitaet,
+    erwarteterErsatz: MatrixStabilitaet.stabil,
+  ),
+  _EnumFeld(
+    'ArtefaktDaten.regelfassung',
+    'regelfassung',
+    voll: () => const ArtefaktDaten().toJson(),
+    lade: (json) => ArtefaktDaten.fromJson(json).toJson(),
+    gleich: (json) {
+      final d = ArtefaktDaten.fromJson(json);
+      return d
+          .copyWith(regelfassung: d.regelfassung, ersteller: 'Neu')
+          .toJson();
+    },
+    anders: (json) =>
+        ArtefaktDaten.fromJson(json)
+            .copyWith(regelfassung: MatrixRegelfassung.staebeRinge2011)
+            .toJson(),
+    andersJson: 'staebeRinge2011',
+    ersatz: (json) => ArtefaktDaten.fromJson(json).regelfassung,
+    erwarteterErsatz: MatrixRegelfassung.alchimie2012,
+  ),
+  _EnumFeld(
+    'ArtefaktDaten.intervall',
+    'intervall',
+    voll: () =>
+        const ArtefaktDaten(art: ArtefaktArt.spruchspeicherSemipermanent)
+            .toJson(),
+    lade: (json) => ArtefaktDaten.fromJson(json).toJson(),
+    gleich: (json) {
+      final d = ArtefaktDaten.fromJson(json);
+      return d.copyWith(intervall: d.intervall, ersteller: 'Neu').toJson();
+    },
+    anders: (json) =>
+        ArtefaktDaten.fromJson(json)
+            .copyWith(intervall: ArtefaktIntervall.monat)
+            .toJson(),
+    andersJson: 'monat',
+    ersatz: (json) => ArtefaktDaten.fromJson(json).intervall,
+    erwarteterErsatz: ArtefaktIntervall.woche,
   ),
   _EnumFeld(
     'MainWeaponSlot.combatType',
@@ -1075,6 +1422,39 @@ final _enumFelder = <_EnumFeld>[
     erwarteterErsatz: HeroMerkmalZuordnung.katalog,
   ),
   _EnumFeld(
+    'HeroMerkmal.herkunft',
+    'herkunft',
+    voll: () => _merkmal().toJson(),
+    lade: (json) => HeroMerkmal.fromJson(json).toJson(),
+    gleich: (json) => HeroMerkmal.fromJson(json).copyWith(wert: 5).toJson(),
+    anders: (json) =>
+        HeroMerkmal.fromJson(json)
+            .copyWith(herkunft: HeroHerkunft.kultur)
+            .toJson(),
+    andersJson: 'kultur',
+    ersatz: (json) => HeroMerkmal.fromJson(json).herkunft,
+    erwarteterErsatz: null,
+  ),
+  _EnumFeld(
+    'HeroHerkunftsModifikator.art',
+    'art',
+    voll: () => _herkunftsModifikator().toJson()! as Map<String, dynamic>,
+    lade: (json) =>
+        HeroHerkunftsModifikator.fromJson(json).toJson()!
+            as Map<String, dynamic>,
+    gleich: (json) =>
+        HeroHerkunftsModifikator.fromJson(json).copyWith(betrag: 3).toJson()!
+            as Map<String, dynamic>,
+    anders: (json) =>
+        HeroHerkunftsModifikator.fromJson(json)
+                .copyWith(art: HeroHerkunftsModifikatorArt.basiswert)
+                .toJson()!
+            as Map<String, dynamic>,
+    andersJson: 'basiswert',
+    ersatz: (json) => HeroHerkunftsModifikator.fromJson(json).art,
+    erwarteterErsatz: HeroHerkunftsModifikatorArt.frei,
+  ),
+  _EnumFeld(
     'SpellDuration.unit',
     'unit',
     voll: () => _dauer().toJson(),
@@ -1121,6 +1501,23 @@ final _enumFelder = <_EnumFeld>[
           : DiceLogEntry.fromJson(json).automaticOutcome,
       erwarteterErsatz: ersatz,
     ),
+  for (final (schluessel, ersatz) in <(String, Object?)>[
+    ('art', ZustandsBuchungsArt.unbekannt),
+    ('zone', null),
+  ])
+    _EnumFeld(
+      'ZustandsBuchung.$schluessel',
+      schluessel,
+      voll: () => _zustandsBuchung().toJson(),
+      lade: (json) => ZustandsBuchung.fromJson(json).toJson(),
+      // Art und Zone sind unveränderlich; bearbeitet wird die Unterdrückung.
+      gleich: (json) =>
+          ZustandsBuchung.fromJson(json).copyWith(unterdrueckt: 1).toJson(),
+      ersatz: (json) => schluessel == 'art'
+          ? ZustandsBuchung.fromJson(json).art
+          : ZustandsBuchung.fromJson(json).zone,
+      erwarteterErsatz: ersatz,
+    ),
   _EnumFeld(
     'AventurianDate.month',
     'month',
@@ -1136,6 +1533,76 @@ final _enumFelder = <_EnumFeld>[
     andersJson: 'phex',
     ersatz: (json) => AventurianDate.fromJson(json).month,
     erwarteterErsatz: '',
+  ),
+  _EnumFeld(
+    'ReittierAusbildung.ausgangsstufe',
+    'ausgangsstufe',
+    voll: () => _reittierAusbildung().toJson(),
+    lade: (json) => ReittierAusbildung.fromJson(json).toJson(),
+    gleich: (json) {
+      final a = ReittierAusbildung.fromJson(json);
+      return a
+          .copyWith(ausgangsstufe: a.ausgangsstufe, varianteId: '')
+          .toJson();
+    },
+    anders: (json) =>
+        ReittierAusbildung.fromJson(json)
+            .copyWith(ausgangsstufe: ReittierAusbildungsstufe.unerfahren)
+            .toJson(),
+    andersJson: 'unerfahren',
+    ersatz: (json) => ReittierAusbildung.fromJson(json).ausgangsstufe,
+    erwarteterErsatz: ReittierAusbildungsstufe.ungearbeitet,
+  ),
+  _EnumFeld(
+    'ReittierAusbildung.ausgangsart',
+    'ausgangsart',
+    voll: () => _reittierAusbildung().toJson(),
+    lade: (json) => ReittierAusbildung.fromJson(json).toJson(),
+    gleich: (json) {
+      final a = ReittierAusbildung.fromJson(json);
+      return a.copyWith(ausgangsart: a.ausgangsart, varianteId: '').toJson();
+    },
+    anders: (json) =>
+        ReittierAusbildung.fromJson(json)
+            .copyWith(ausgangsart: ReittierAusbildungsart.fundiert)
+            .toJson(),
+    andersJson: 'fundiert',
+    ersatz: (json) => ReittierAusbildung.fromJson(json).ausgangsart,
+    erwarteterErsatz: ReittierAusbildungsart.laendlich,
+  ),
+  _EnumFeld(
+    'ReittierAusbildungsschritt.nach',
+    'nach',
+    voll: () => _reittierAusbildung().schritte.single.toJson(),
+    lade: (json) => ReittierAusbildungsschritt.fromJson(json).toJson(),
+    gleich: (json) {
+      final schritt = ReittierAusbildungsschritt.fromJson(json);
+      return schritt.copyWith(nach: schritt.nach, notiz: 'Neu').toJson();
+    },
+    anders: (json) =>
+        ReittierAusbildungsschritt.fromJson(json)
+            .copyWith(nach: ReittierAusbildungsstufe.erprobt)
+            .toJson(),
+    andersJson: 'erprobt',
+    ersatz: (json) => ReittierAusbildungsschritt.fromJson(json).nach,
+    erwarteterErsatz: ReittierAusbildungsstufe.ungearbeitet,
+  ),
+  _EnumFeld(
+    'ReittierAusbildungsschritt.art',
+    'art',
+    voll: () => _reittierAusbildung().schritte.single.toJson(),
+    lade: (json) => ReittierAusbildungsschritt.fromJson(json).toJson(),
+    gleich: (json) {
+      final schritt = ReittierAusbildungsschritt.fromJson(json);
+      return schritt.copyWith(art: schritt.art, notiz: 'Neu').toJson();
+    },
+    anders: (json) =>
+        ReittierAusbildungsschritt.fromJson(json)
+            .copyWith(art: ReittierAusbildungsart.fundiert)
+            .toJson(),
+    andersJson: 'fundiert',
+    ersatz: (json) => ReittierAusbildungsschritt.fromJson(json).art,
+    erwarteterErsatz: ReittierAusbildungsart.laendlich,
   ),
 ];
 
@@ -1187,6 +1654,7 @@ final _woerterbuecher = <RegExp>[
   RegExp(r'^avatarSnapshot/attributes$'),
   RegExp(r'^activeSpellEffects/effectDetails$'),
   RegExp(r'^wpiZustand/(wundenProZone|unterdrueckteWundenProZone)$'),
+  RegExp(r'^begleiterZustaende$'),
   // Spiegelt nur die gewaehlte Waffe und wird aus ihr neu geschrieben.
   RegExp(r'^combatConfig/mainWeapon(/|$)'),
 ];
@@ -1571,7 +2039,9 @@ void main() {
 
       test('Befund ARCH-07-B13: eine unbekannte Kampfart behält die '
           'Geschosse samt Inventardaten', () {
-        final json = held.toJson();
+        // Einmal abgeglichen wie nach dem ersten Speichern: Seit dem
+        // 07.10.2026 gilt nur die geführte Waffe als ausgerüstet.
+        final json = held.copyWith(inventoryEntries: gleicheAb(held)).toJson();
         final waffen = (json['combatConfig'] as Map)['weapons'] as List;
         (waffen[1] as Map)['combatType'] = 'zukunftsWert';
         final zukunft = HeroSheet.fromJson(json);

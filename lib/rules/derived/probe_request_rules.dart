@@ -1,5 +1,7 @@
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 
+import 'herleitung.dart';
+
 /// Baut eine aufgeloeste Eigenschaftsprobe.
 ResolvedProbeRequest buildAttributeProbeRequest({
   required String label,
@@ -23,14 +25,20 @@ ResolvedProbeRequest buildAttributeProbeRequest({
 /// (`HeroComputedSnapshot.probenEigenschaften`), nicht als pauschale
 /// Erschwernis. [initialSituationalModifier] ist der Startwert der
 /// situativen Erschwernis (negativ = erschwert), etwa die Erschwernis beim
-/// Unterdruecken von Wunden.
+/// Unterdruecken von Wunden. [tawHerleitung] erklaert [basePool] im Dialog;
+/// ihre Summe muss [basePool] sein.
 ResolvedProbeRequest buildTalentProbeRequest({
   required String title,
   required List<ProbeTargetValue> targets,
   required int basePool,
   bool hasSpecialization = false,
   int initialSituationalModifier = 0,
+  Herleitung? tawHerleitung,
 }) {
+  assert(
+    tawHerleitung == null || tawHerleitung.wert == basePool,
+    'TaW*-Herleitung (${tawHerleitung.wert}) weicht vom Pool ($basePool) ab',
+  );
   return ResolvedProbeRequest(
     type: ProbeType.talent,
     title: 'Talentprobe: $title',
@@ -41,17 +49,21 @@ ResolvedProbeRequest buildTalentProbeRequest({
     basePool: basePool,
     specializationBonus: hasSpecialization ? 2 : 0,
     initialSituationalModifier: initialSituationalModifier,
+    poolHerleitung: tawHerleitung,
   );
 }
 
 /// Baut eine aufgeloeste Zauberprobe.
 ///
 /// Wunden wirken ueber die Eigenschaftswerte in [targets]
-/// (`HeroComputedSnapshot.probenEigenschaften`).
+/// (`HeroComputedSnapshot.probenEigenschaften`). [initialSituationalModifier]
+/// ist der Startwert der situativen Erschwernis (negativ = erschwert,
+/// positiv = erleichtert).
 ResolvedProbeRequest buildSpellProbeRequest({
   required String title,
   required List<ProbeTargetValue> targets,
   required int basePool,
+  int initialSituationalModifier = 0,
 }) {
   return ResolvedProbeRequest(
     type: ProbeType.spell,
@@ -61,6 +73,7 @@ ResolvedProbeRequest buildSpellProbeRequest({
     diceSpec: const DiceSpec(count: 3, sides: 20),
     targets: targets,
     basePool: basePool,
+    initialSituationalModifier: initialSituationalModifier,
   );
 }
 

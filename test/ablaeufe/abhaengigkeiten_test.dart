@@ -14,9 +14,11 @@ const List<String> _verboteneBestandteile = <String>[
   'package:dsa_heldenverwaltung/ui2/',
 ];
 
-/// Aus der Datenschicht ist nur die Repository-Schnittstelle erlaubt.
+/// Aus der Datenschicht sind nur reine Schnittstellen erlaubt: das
+/// Heldenrepository und das Vorgangsjournal (ARCH-06).
 const Set<String> _erlaubteDatenImporte = <String>{
   'package:dsa_heldenverwaltung/data/hero_repository.dart',
+  'package:dsa_heldenverwaltung/data/vorgangsjournal.dart',
 };
 
 final RegExp _importMuster = RegExp(
@@ -24,8 +26,8 @@ final RegExp _importMuster = RegExp(
 );
 
 void main() {
-  test('lib/ablaeufe hängt nur von Domain, Regeln, Katalog und '
-      'HeroRepository ab', () {
+  test('lib/ablaeufe hängt nur von Domain, Regeln, Katalog, '
+      'HeroRepository und Vorgangsjournal ab', () {
     final dateien = Directory('lib/ablaeufe')
         .listSync(recursive: true)
         .whereType<File>()

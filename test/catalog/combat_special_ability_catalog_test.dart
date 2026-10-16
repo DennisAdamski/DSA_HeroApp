@@ -25,9 +25,39 @@ void main() {
   }
 
   test('der Katalog laesst sich vollstaendig lesen', () {
-    expect(eintraege, hasLength(87));
+    expect(eintraege, hasLength(90));
     expect(eintraege.every((def) => def.id.isNotEmpty), isTrue);
     expect(eintraege.every((def) => def.name.isNotEmpty), isTrue);
+  });
+
+  test(
+    'Turnier- und Kriegsreiterei bauen auf Reiterkampf auf (WdS S. 102)',
+    () {
+      List<String> sfVoraussetzungen(String id) => [
+        for (final bedingung in alleBedingungenFlach(
+          eintraege.firstWhere((def) => def.id == id).voraussetzungenStruktur,
+        ))
+          if (bedingung.art == RequirementArt.sonderfertigkeit) bedingung.name,
+      ];
+
+      expect(sfVoraussetzungen('ksf_reiterkampf'), isEmpty);
+      expect(sfVoraussetzungen('ksf_turnierreiterei'), ['Reiterkampf']);
+      expect(sfVoraussetzungen('ksf_kriegsreiterei'), ['Reiterkampf']);
+      expect(sfVoraussetzungen('esf_rittmeister'), ['Kriegsreiterei']);
+    },
+  );
+
+  test('jeder Erklaertext ist verschluesselt (v3)', () {
+    // Regeltexte sind nur nach Eingabe des Katalogpassworts lesbar; ein
+    // Klartext oder ein fehlender Text faellt hier sofort auf.
+    final ohne = ladeKatalogDatei('kampf_sonderfertigkeiten.json')
+        .where(
+          (eintrag) =>
+              !'${eintrag['erklarung_lang'] ?? ''}'.startsWith('enc:3:'),
+        )
+        .map((eintrag) => eintrag['id']);
+
+    expect(ohne, isEmpty);
   });
 
   test('jeder Eintrag hat strukturierte Voraussetzungen', () {

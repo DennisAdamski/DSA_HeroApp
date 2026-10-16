@@ -31,7 +31,11 @@ List<GefechtsZusatzoption> gefechtsZusatzoptionen(HeroComputedSnapshot s) {
   final c = s.combatPreviewStats;
   final profile = gefechtsKampfmittelprofile(s);
   final neben = profile
-      .where((p) => p.wahl.art != GefechtsKampfmittelArt.hauptwaffe)
+      .where(
+        (p) =>
+            p.wahl.art != GefechtsKampfmittelArt.hauptwaffe &&
+            p.wahl.art != GefechtsKampfmittelArt.waffenlos,
+      )
       .firstOrNull;
   if (neben == null) return [];
   final haupt = s.hero.combatConfig.selectedWeaponOrNull;
@@ -90,7 +94,11 @@ List<GefechtsZusatzoption> gefechtsZusatzoptionen(HeroComputedSnapshot s) {
 String gefechtsAusruestungspaar(HeroComputedSnapshot s) {
   final c = s.hero.combatConfig;
   final n = gefechtsKampfmittelprofile(s)
-      .where((p) => p.wahl.art != GefechtsKampfmittelArt.hauptwaffe)
+      .where(
+        (p) =>
+            p.wahl.art != GefechtsKampfmittelArt.hauptwaffe &&
+            p.wahl.art != GefechtsKampfmittelArt.waffenlos,
+      )
       .firstOrNull;
   final haupt = c.selectedWeaponOrNull;
   final hId = haupt?.id.isNotEmpty == true
@@ -129,6 +137,7 @@ Gefechtspruefung gefechtsPruefungMitKampfmittel(
   zusatz: p.zusatz,
   erschwernis: p.erschwernis,
   modifikatoren: p.modifikatoren,
+  zielHerleitung: p.zielHerleitung,
   kampfmittel: w,
   ausruestungspaar: gefechtsAusruestungspaar(s),
   mitAnsage: a.manoever != null || a.zuschlag != 0,
@@ -216,6 +225,7 @@ Gefechtspruefung pruefeGefechtsZusatzauftrag(
     zusatz: 1,
     erschwernis: basis.erschwernis,
     modifikatoren: basis.modifikatoren,
+    zielHerleitung: basis.zielHerleitung,
     kampfmittel: w,
     probenart: art,
   );

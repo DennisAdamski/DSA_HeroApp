@@ -3,10 +3,11 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import 'package:dsa_heldenverwaltung/rules/derived/epic_ap_cost_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/erwerb_herleitung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/trait_ap_cost_rules.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/config/ui_spacing.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_overview/herleitung_abschnitt.dart';
 
 /// Ergebnis eines bestaetigten Nachteil-Abbau-Dialogs.
 class NachteilAbbauErgebnis {
@@ -153,29 +154,18 @@ class _NachteilAbbauDialogState extends State<_NachteilAbbauDialog> {
     return parsed;
   }
 
-  int get _kostenNachEpos {
-    final basis = _eingegebeneBasiskosten ?? 0;
-    return applyEpicApSurcharge(
-      basis,
-      ruleActive: true,
-      isEpisch: widget.episch,
-      isSpecialExperience: _mitSpeziellerErfahrung,
+  /// Kosten samt Herleitung; die Regel liegt in `herleiteErwerbskosten`.
+  Erwerbskosten get _kosten {
+    return herleiteErwerbskosten(
+      basiskosten: _eingegebeneBasiskosten ?? 0,
+      episch: widget.episch,
+      keinAufschlag: _mitSpeziellerErfahrung,
     );
   }
 
-  int get _eposAufschlagDelta {
-    final basis = _eingegebeneBasiskosten ?? 0;
-    return computeEpicApSurchargeDelta(
-      basis,
-      ruleActive: true,
-      isEpisch: widget.episch,
-      isSpecialExperience: _mitSpeziellerErfahrung,
-    );
-  }
+  int get _eposAufschlagDelta => _kosten.aufschlag;
 
-  int get _effektiveApKosten {
-    return _kostenNachEpos;
-  }
+  int get _effektiveApKosten => _kosten.apKosten;
 
   bool get _hatGenugAp {
     return _effektiveApKosten <= widget.verfuegbareAp;
@@ -318,6 +308,25 @@ class _NachteilAbbauDialogState extends State<_NachteilAbbauDialog> {
               style: theme.textTheme.bodySmall,
             ),
           ],
+          Theme(
+            data: theme.copyWith(dividerColor: Colors.transparent),
+            child: ExpansionTile(
+              key: const ValueKey<String>('nachteil-abbau-herleitung'),
+              tilePadding: EdgeInsets.zero,
+              childrenPadding: EdgeInsets.zero,
+              dense: true,
+              title: Text(
+                'Berechnung der AP-Kosten',
+                style: theme.textTheme.bodySmall,
+              ),
+              children: [
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: HerleitungsSchritte(herleitung: _kosten.herleitung),
+                ),
+              ],
+            ),
+          ),
           const SizedBox(height: 12),
           Text('Verfügbare AP: ${widget.verfuegbareAp}'),
           Text(

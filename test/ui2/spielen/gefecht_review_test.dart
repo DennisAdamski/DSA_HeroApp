@@ -229,7 +229,10 @@ void main() {
         await tester.tap(find.text('Treffer bestätigt').last);
         await tester.pumpAndSettle();
       }
-      expect(c.read(gefechtBegegnungProvider).gegner['g']!.lep, 15);
+      expect(
+        gefechtsGegnerstand(c.read(gefechtBegegnungProvider).gegner['g']!).lep,
+        15,
+      );
     },
   );
 

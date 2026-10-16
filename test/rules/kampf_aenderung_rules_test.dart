@@ -349,6 +349,25 @@ void main() {
       expect(_namen(ergebnis), ['Axt', 'Langschwert', 'Kurzbogen']);
     });
 
+    test('den beim Speichern gesetzten Instanzverweis zählt sie nicht', () {
+      // Angezeigt vor dem ersten Speichern, gespeichert danach (ARCH-03).
+      final gebunden = _bogen.copyWith(
+        inventarInstanzId: 'i1',
+        rangedProfile: _bogen.rangedProfile.copyWith(
+          projectiles: [
+            _pfeile.copyWith(inventarInstanzId: 'i2'),
+            _jagdpfeile,
+          ],
+        ),
+      );
+      final ergebnis = ersetzeWaffe(
+        _config(waffen: [_schwert, gebunden]),
+        ausgang: _bogen,
+        neu: _bogen.copyWith(name: 'Langbogen'),
+      );
+      expect(_namen(ergebnis), ['Schwert', 'Langbogen']);
+    });
+
     test('ersetzeWaffe weist eine inzwischen geänderte Waffe ab', () {
       final gespeichert = _config(
         waffen: [_schwert, _bogen.copyWith(breakFactor: 3)],
@@ -415,17 +434,50 @@ void main() {
       expect(ergebnis.offhandAssignment.isNone, isTrue);
     });
 
-    test('die letzte Waffe bleibt', () {
-      expect(
-        () => ohneWaffe(_config(waffen: const [_schwert]), _schwert),
-        throwsA(
-          isA<StateError>().having(
-            (fehler) => fehler.message,
-            'message',
-            'Die letzte Waffe lässt sich nicht entfernen.',
-          ),
+    test('ohne die letzte Waffe steht der Held wie ein neuer da', () {
+      final ergebnis = ohneWaffe(
+        _config(
+          waffen: const [_schwert],
+          nebenhand: const OffhandAssignment(equipmentIndex: 0),
         ),
+        _schwert,
       );
+
+      expect(ergebnis.weapons, isEmpty);
+      expect(ergebnis.weaponSlots.single.name, isEmpty);
+      expect(ergebnis.hasSelectedWeapon, isFalse);
+      expect(ergebnis.offhandAssignment.equipmentIndex, 0);
+      expect(
+        ergebnis.toJson(),
+        CombatConfig.fromJson(ergebnis.toJson()).toJson(),
+        reason: 'Speichern und Laden halten den Zustand',
+      );
+    });
+
+    test('eine neue Waffe ersetzt den leeren Platzhalter', () {
+      final ohne = ohneWaffe(_config(waffen: const [_schwert]), _schwert);
+
+      final mitAxt = mitNeuerWaffe(ohne, _axt);
+
+      expect(_namen(mitAxt), ['Axt']);
+      expect(_namen(mitNeuerWaffe(mitAxt, _dolch)), ['Axt', 'Dolch']);
+    });
+
+    test('ohne Hauptwaffe bleibt ein Schild in der Nebenhand', () {
+      final gespeichert = _config(
+        nebenhand: const OffhandAssignment(equipmentIndex: 0),
+      );
+
+      final ergebnis = mitAktiverWaffe(gespeichert, null);
+
+      expect(ergebnis.hasSelectedWeapon, isFalse);
+      expect(ergebnis.offhandAssignment.equipmentIndex, 0);
+    });
+
+    test('eine inzwischen entfernte letzte Waffe wird gemeldet', () {
+      final ohne = ohneWaffe(_config(waffen: const [_schwert]), _schwert);
+
+      expect(() => ohneWaffe(ohne, _schwert), throwsStateError);
     });
   });
 

@@ -8,6 +8,7 @@ import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
+import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_management_body.dart';
@@ -189,7 +190,7 @@ void main() {
     expect(find.byTooltip('Bearbeiten'), findsOneWidget);
   });
 
-  testWidgets('blocks the complete management surface during planning', (
+  testWidgets('keeps management readable and asks before discarding planning', (
     tester,
   ) async {
     await pumpBody(
@@ -198,9 +199,22 @@ void main() {
       korrekturenGesperrt: true,
     );
 
-    expect(find.textContaining('Entwicklung'), findsOneWidget);
-    expect(find.byType(TabBar), findsNothing);
-    expect(find.text('Bearbeiten'), findsNothing);
+    final context = tester.element(find.byType(WorkspaceManagementBody));
+    final container = ProviderScope.containerOf(context);
+    container
+        .read(advancementSessionProvider('demo').notifier)
+        .start(hero: hero(), catalog: catalog);
+    final session = container.read(advancementSessionProvider('demo'));
+    expect(find.byType(TabBar), findsOneWidget);
+    final text = find.text('Bearbeiten');
+    await tester.tap(
+      text.evaluate().isNotEmpty ? text.first : find.byTooltip('Bearbeiten'),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Planung verwerfen und bearbeiten'), findsOneWidget);
+    await tester.tap(find.text('Abbrechen'));
+    await tester.pumpAndSettle();
+    expect(container.read(advancementSessionProvider('demo')), same(session));
   });
 
   testWidgets('guard save blocks parallel header saves', (tester) async {

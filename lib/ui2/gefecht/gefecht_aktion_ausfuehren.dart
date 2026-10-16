@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht_auftrag.dart';
+import 'package:dsa_heldenverwaltung/domain/gefecht_kontext.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_provider.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_initiative_provider.dart';
@@ -26,6 +29,8 @@ import 'package:dsa_heldenverwaltung/rules/derived/gefecht_laden_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_kampfmittel_rules.dart';
 
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_wirken_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/active_spell_state_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/spell_effect_event_rules.dart';
 
 /// Verwendet dieselbe Freigabe für Kontextdialog, einmalige Probe und Folgen.
 Future<void> fuehreGefechtsaktionAus({
@@ -192,6 +197,18 @@ Future<void> fuehreGefechtsAuftragAus({
   void buchen([ProbeResult? result]) {
     if (!controller.abschliessen(id, w, p, erfolg: result?.success)) return;
     gewuerfelt ??= result;
+    if (result != null &&
+        w.fernkampf &&
+        aktuellerAuftrag.aktion == Gefechtsaktion.angriff) {
+      _verbraucheFalkenauge(
+        context: context,
+        ref: ref,
+        heroId: heroId,
+        zustand: frisch,
+        katalog: k,
+        kontext: aktuellerAuftrag.kontext ?? aktuell.kontext,
+      );
+    }
     if (result != null && !w.fernkampf) {
       starteGefechtsPatzer(
         ref: ref,
@@ -337,4 +354,34 @@ Future<void> fuehreGefechtsAuftragAus({
       bestand: bestand,
     );
   }
+}
+
+/// Verbraucht die Falkenauge-Wirkung, die in die Prüfung des Schusses einging.
+///
+/// Erst nach dem bestätigten Wurf (Treffer oder Fehlschuss): Der Zauber gilt
+/// für den nächsten Schuss auf sein Ziel. Das Beenden ist über die Instanz-ID
+/// idempotent; ein Speicherfehler erscheint als Hinweis und der Nutzer kann die
+/// Wirkung im Effektdialog selbst beenden.
+void _verbraucheFalkenauge({
+  required BuildContext context,
+  required WidgetRef ref,
+  required String heroId,
+  required HeroComputedSnapshot zustand,
+  required RulesCatalog katalog,
+  required Gefechtskontext kontext,
+}) {
+  final instanz = passendeFalkenauge(zustand.state, kontext, katalog);
+  if (instanz == null) return;
+  final bote = ScaffoldMessenger.maybeOf(context);
+  unawaited(
+    ref
+        .read(heroActionsProvider)
+        .updateHeroState(heroId, (z) => beendeEffektInstanz(z, instanz.id))
+        .then<void>((_) {})
+        .catchError((Object fehler) {
+          bote?.showSnackBar(
+            SnackBar(content: Text('Falkenauge nicht verbraucht: $fehler')),
+          );
+        }),
+  );
 }

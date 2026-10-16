@@ -540,7 +540,9 @@ class CombatWeaponsOverviewTable extends StatelessWidget {
               IconButton(
                 key: ValueKey<String>('combat-weapon-remove-${entry.index}'),
                 tooltip: 'Waffe entfernen',
-                onPressed: weapons.length <= 1
+                // Gesperrt nur für den leeren Platzhalter eines Helden ohne
+                // Waffe; auch die letzte echte Waffe lässt sich entfernen.
+                onPressed: weapons.length <= 1 && slot.name.trim().isEmpty
                     ? null
                     : () => onWeaponRemove(entry.index, slot),
                 icon: const Icon(Icons.delete),
