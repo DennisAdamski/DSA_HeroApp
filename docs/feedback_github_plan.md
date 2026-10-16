@@ -1,9 +1,9 @@
 # Direktes App-Feedback als GitHub-Issue
 
-Stand: 16. Oktober 2026. Status: Implementierung und lokale Prüfungen sind
-abgeschlossen. Functions, Secret, GitHub-Labels und echtes Staging-Issue wurden
-nicht bereitgestellt; Staging und Produktion benötigen jeweils eine eigene
-Freigabe. Die Betriebsschritte stehen in [feedback_betrieb.md](feedback_betrieb.md).
+Stand: 16. Oktober 2026. Implementierung und Staging-Smoke-Test sind
+abgeschlossen. Der Produktionsendpoint ist bereitgestellt und aktiviert; der
+Produktions-Webbuild verwendet ihn nach dem geprüften `main`-Deployment.
+Betriebsschritte stehen in [feedback_betrieb.md](feedback_betrieb.md).
 
 ## Umgesetzter Umfang
 
@@ -80,7 +80,7 @@ Wiederholungen zählen nicht erneut. Ein unklarer GitHub-Ausgang wird
 `uncertain` und nie automatisch erneut gepostet. Eine spätere Statusabfrage
 sucht nach dem unpersönlichen Korrelationsmarker. Firestore erhält keine
 Nutzertexte, sondern nur Eigentümerzuordnung, Hash, Status, Marker,
-Issue-Referenz und `expiresAt` für 30 Tage.
+Issue-Referenz und `expiresAt` für 7 Tage.
 
 ## Prüfungen
 
@@ -114,17 +114,14 @@ python tool/check_screen_loc_budget.py --max-lines 700
 flutter build web --release --dart-define=FEEDBACK_API_URL=<freigegebener Endpoint>
 ```
 
-## Noch nicht ausgeführt
+## Betriebsstand
 
-- Cloud-Functions- und Gen-2-Dienste aktivieren.
-- `feedback-test` und `in-app-feedback` im Repository kontrolliert anlegen.
-- Fine-grained PAT mit ausschließlich `Issues: write` für dieses Repository
-  lokal als Firebase-Secret eingeben.
-- Firestore-TTL für `expiresAt` konfigurieren.
-- Nach eigener Freigabe `feedbackApiTest` bereitstellen, ein echtes öffentliches
-  Testissue prüfen und mit Testhinweis schließen.
-- Produktionsfunction und Produktionsparameter in einem separaten Schritt
-  freigeben und bereitstellen.
+- `feedbackApiTest` und `feedbackApi` sind in `europe-west10` bereitgestellt;
+  der Staging-Smoke-Test wurde manuell erfolgreich bestätigt.
+- Der Produktionsendpoint ist aktiviert. Die Test- und Produktions-Webbuilds
+  erhalten getrennte URLs und verifizieren diese im Bundle.
+- Firestore-TTL ist aktiv; Metadatensätze verfallen sieben Tage nach Anlage
+  beziehungsweise letzter Aktivität.
 
 Version 1 bleibt ein Einwegkanal ohne Kontaktdaten, Entwurfsspeicherung,
 Anhänge, Screenshots oder Ticketpostfach.

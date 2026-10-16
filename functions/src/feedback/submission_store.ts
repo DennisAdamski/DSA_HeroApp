@@ -16,6 +16,7 @@ import type { FeedbackStatus, FeedbackSubmission } from "./types.js";
 
 const hourMs = 60 * 60 * 1000;
 const dayMs = 24 * hourMs;
+const metadataRetentionMs = 7 * dayMs;
 
 /** Firestore-backed atomic claims and per-account rolling quotas. */
 export class FirestoreFeedbackSubmissionStore implements FeedbackSubmissionStore {
@@ -47,7 +48,7 @@ export class FirestoreFeedbackSubmissionStore implements FeedbackSubmissionStore
       const rate = await transaction.get(rateRef);
       const timestamps = decodeDates(rate.data()?.timestamps);
       const next = nextRateLimit(timestamps, now);
-      const expiresAt = new Date(now.getTime() + 30 * dayMs);
+      const expiresAt = new Date(now.getTime() + metadataRetentionMs);
       const stored: StoredSubmission = {
         uid,
         requestId: submission.requestId,
