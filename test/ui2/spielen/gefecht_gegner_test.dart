@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht_gegner.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_begegnung_provider.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_provider.dart';
+import 'package:dsa_heldenverwaltung/state/gefecht_initiative_provider.dart';
 import 'package:dsa_heldenverwaltung/ui2/gefecht/gefecht_gegner.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht_angriff.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht.dart';
@@ -352,6 +353,55 @@ void main() {
     await tester.pump();
     expect(status(), GefechtsgegnerStatus.tot);
     expect(ziel().onPressed, isNull);
+  });
+  testWidgets('Bindung wählen zeigt Kräfteverhältnis und Abwehrlage', (
+    tester,
+  ) async {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+    container.read(gefechtProvider('h').notifier).beginnen(6, dk: 'N');
+    final c = container.read(gefechtBegegnungProvider.notifier);
+    for (final id in ['a', 'b']) {
+      c.speichern(Gefechtsgegner(id: id, name: 'Ork $id', ini: 12));
+    }
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: const MaterialApp(
+          home: Scaffold(
+            body: SingleChildScrollView(
+              child: GefechtGegnerkarte(
+                heroId: 'h',
+                waffenDk: 'N',
+                fernkampf: false,
+                gesperrt: false,
+                onAktion: _direkt,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    expect(find.byKey(const ValueKey('gegner-lage')), findsNothing);
+    for (final id in ['a', 'b']) {
+      await tester.tap(find.byKey(ValueKey('gegner-bindet-$id')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('bindet h').last);
+      await tester.pumpAndSettle();
+    }
+    expect(container.read(gefechtBegegnungProvider).gegner['b']!.bindet, 'h');
+    expect(
+      find.text(
+        'Nahkampf: 1 gegen 2 · Gegner INI +1\n'
+        'Dich binden 2 · Parade 1 schwerer · Ausweichen 2 schwerer · '
+        'ihre AT 1 leichter',
+      ),
+      findsOneWidget,
+    );
+    expect(
+      container.read(gefechtMitInitiativeProvider('h'))!.gebundeneGegner,
+      2,
+    );
   });
 }
 

@@ -19,6 +19,7 @@ const String kGefechtsZweiteAttacke = 'Zweite Attacke (Umwandlung)';
 const String kGefechtsZweiteParade = 'Zweite Parade (Umwandlung)';
 const String kGefechtsGezieltesAusweichen = 'Gezieltes Ausweichen (DK)';
 const String kGefechtsWeitereGegner = 'Weitere Gegner';
+const String kGefechtsUeberzahl = 'Überzahl';
 
 // Rechenweg der bekannten Erschwernisse; unbekannte Namen zeigen keinen.
 const Map<String, String> _formeln = {
@@ -30,7 +31,12 @@ const Map<String, String> _formeln = {
       'Zweite PA durch Umwandlung +4, mit Schild, Stabumwandlung oder '
       'Defensivem Kampfstil 0',
   kGefechtsGezieltesAusweichen: 'H +8, N +4, S +2',
-  kGefechtsWeitereGegner: '2 je weiterem Gegner',
+  kGefechtsWeitereGegner:
+      'PA-Basis +1 je weiterem Gegner, Ausweichen zusätzlich +1; höchstens '
+      'drei Gegner im Blick (WdS S. 81)',
+  kGefechtsUeberzahl:
+      '1 leichter, wenn mindestens zwei von euch dasselbe Ziel angreifen '
+      '(WdS S. 81)',
   'Ausweich-DK': 'H +4, N +2, S +1',
   'Distanzklasse': 'Waffe in der falschen DK +6',
   'Schild-WM entfällt': 'Schild-WM gegen Kettenwaffe oder Peitsche entfällt',

@@ -109,7 +109,10 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   tragen stabile IDs und eine Trefferliste; LeP, SP und Wunden nur über
   `gefechtsGegnerstand` lesen (nie `lep` als aktuellen Wert), Grundwerte aus
   Dialogen nur über `profilSpeichern` auf den frischen Gegner legen
-  ([Konzept Gefechtslage](../gefecht_lage_konzept.md)); die gemeinsame Initiative
+  ([Konzept Gefechtslage](../gefecht_lage_konzept.md)). Überzahl, Gegnerzahl
+  aus Bindungen und Taktik nur über `gefecht_ueberzahl_rules.dart`;
+  `gebundeneGegner` und `ueberzahlAngriff` setzt allein
+  `gefechtMitInitiativeProvider`; die gemeinsame Initiative
   (`gefecht_initiative_rules.dart`, `state/gefecht_initiative_provider.dart`)
   verbindet ausdrücklich gewählte Helden; ihr Rundenwechsel nimmt die
   angezeigte Runde (`naechsteRunde(vonRunde:)`), Gegner- und Initiativkarte

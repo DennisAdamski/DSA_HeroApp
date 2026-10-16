@@ -196,6 +196,8 @@ class Gefechtszustand {
     this.gesprintet = false,
     this.zuletztGewirkt = const [],
     this.gemeinsameInitiative = false,
+    this.gebundeneGegner,
+    this.ueberzahlAngriff = false,
     this.initiativphase,
     this.zeitpunktAbgeschlossen = false,
     this.regulaerePhaseOffen = false,
@@ -290,6 +292,14 @@ class Gefechtszustand {
   /// Defekte oder verlorene Gegenstände bleiben an ihrer physischen ID gebunden.
   final Map<String, String> gesperrteKampfmittel;
 
+  /// Kämpfende Gegner der Begegnung, die diesen Helden binden; abgeleitet,
+  /// `null` ohne Bindung (dann gilt die manuelle Gegnerzahl [gegner]).
+  final int? gebundeneGegner;
+
+  /// Mindestens zwei Nahkämpfer der eigenen Seite greifen das aktuelle Ziel
+  /// an (WdS S. 81: AT +1 in der Überzahl); abgeleitet.
+  final bool ueberzahlAngriff;
+
   /// Ändert nur benannte Sitzungsteile; kein JSON oder Heldenformat betroffen.
   Gefechtszustand copyWith({
     int? runde,
@@ -340,6 +350,9 @@ class Gefechtszustand {
     bool? gesprintet,
     List<String>? zuletztGewirkt,
     bool? gemeinsameInitiative,
+    int? gebundeneGegner,
+    bool ohneGebundeneGegner = false,
+    bool? ueberzahlAngriff,
     int? initiativphase,
     bool ohneInitiativphase = false,
     bool? zeitpunktAbgeschlossen,
@@ -412,6 +425,10 @@ class Gefechtszustand {
     gesprintet: gesprintet ?? this.gesprintet,
     zuletztGewirkt: zuletztGewirkt ?? this.zuletztGewirkt,
     gemeinsameInitiative: gemeinsameInitiative ?? this.gemeinsameInitiative,
+    gebundeneGegner: ohneGebundeneGegner
+        ? null
+        : gebundeneGegner ?? this.gebundeneGegner,
+    ueberzahlAngriff: ueberzahlAngriff ?? this.ueberzahlAngriff,
     initiativphase: ohneInitiativphase
         ? null
         : initiativphase ?? this.initiativphase,

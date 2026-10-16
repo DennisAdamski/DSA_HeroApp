@@ -355,3 +355,23 @@ Gefechtsbegegnung setzeGefechtsgegnerStatus(
     }),
   );
 }
+
+/// Setzt, wen der Gegner im Nahkampf bindet (`null`: niemanden).
+Gefechtsbegegnung setzeGefechtsgegnerBindung(
+  Gefechtsbegegnung s, {
+  required String gegnerId,
+  required String? teilnehmerId,
+}) {
+  final g = s.gegner[gegnerId];
+  if (g == null) throw StateError('Der Gegner fehlt.');
+  if (teilnehmerId != null && teilnehmerId.isEmpty) {
+    throw ArgumentError('Teilnehmer-ID fehlt.');
+  }
+  if (g.bindet == teilnehmerId) return s;
+  return s.copyWith(
+    gegner: Map.unmodifiable({
+      ...s.gegner,
+      gegnerId: g.copyWith(bindet: teilnehmerId),
+    }),
+  );
+}

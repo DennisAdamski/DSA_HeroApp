@@ -432,7 +432,8 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
                 key: const ValueKey('gefecht-kontextfelder'),
                 kontext: _kontext,
                 aktion: kontextAktion,
-                gegnerVorgabe: widget.zustand.gegner,
+                gegnerVorgabe:
+                    widget.zustand.gebundeneGegner ?? widget.zustand.gegner,
                 onChanged: (k) => setState(() {
                   _kontext = k;
                   _entscheidungen.clear();

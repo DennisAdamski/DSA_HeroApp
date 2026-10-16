@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht_gegner.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_gegner_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/gefecht_ueberzahl_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_vorgaben_rules.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_provider.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_initiative_provider.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_begegnung_provider.dart';
+import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 
 /// Gemeinsam verfügbare Gegner mit konkreter Zielwahl für diese Heldensitzung.
 class GefechtGegnerkarte extends ConsumerWidget {
@@ -32,6 +34,14 @@ class GefechtGegnerkarte extends ConsumerWidget {
     final s = ref.watch(gefechtMitInitiativeProvider(heroId));
     final blockiert = gesperrt || s?.auftrag != null || s?.handlung != null;
     final controller = ref.read(gefechtBegegnungProvider.notifier);
+    // Bis zur Teilnehmerliste (Konzept Schritt 5) zählen alle verbundenen
+    // Helden als eigene Nahkämpfer.
+    final teilnehmer = {
+      heroId,
+      ...ref.watch(gefechtInitiativeProvider).helden,
+    }.toList();
+    String name(String id) => ref.watch(heroByIdProvider(id))?.name ?? id;
+    final lage = _lagetext(begegnung, heroId, eigene: teilnehmer.length);
     Future<void> bearbeiten([Gefechtsgegner? g]) async {
       final neu = await showDialog<Gefechtsgegner>(
         context: context,
@@ -57,6 +67,7 @@ class GefechtGegnerkarte extends ConsumerWidget {
                 ),
               ],
             ),
+            if (lage.isNotEmpty) Text(lage, key: const ValueKey('gegner-lage')),
             if (begegnung.gegner.isEmpty)
               const Text(
                 'Name und INI erfassen; LeP, RS und KO dürfen unbekannt '
@@ -90,6 +101,31 @@ class GefechtGegnerkarte extends ConsumerWidget {
                           ),
                       ],
                     ),
+                    if (gefechtsGegnerHandelt(g))
+                      DropdownButton<String?>(
+                        key: ValueKey('gegner-bindet-${g.id}'),
+                        isExpanded: true,
+                        value: teilnehmer.contains(g.bindet) ? g.bindet : null,
+                        items: [
+                          const DropdownMenuItem<String?>(
+                            value: null,
+                            child: Text('bindet niemanden'),
+                          ),
+                          for (final t in teilnehmer)
+                            DropdownMenuItem<String?>(
+                              value: t,
+                              child: Text(
+                                'bindet ${name(t)}',
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                        ],
+                        onChanged: gesperrt
+                            ? null
+                            : (t) => onAktion(
+                                () async => controller.bindungSetzen(g.id, t),
+                              ),
+                      ),
                     if (gefechtsGegnerStatusvorschlag(g) case final v?)
                       Wrap(
                         crossAxisAlignment: WrapCrossAlignment.center,
@@ -186,6 +222,30 @@ class GefechtGegnerkarte extends ConsumerWidget {
       ),
     );
   }
+}
+
+// Kräfteverhältnis und eigene Abwehrlage (WdS S. 81); leer ohne Bindungen.
+String _lagetext(Gefechtsbegegnung b, String heroId, {required int eigene}) {
+  final u = gefechtsUeberzahl(b, eigeneNahkaempfer: eigene);
+  if (u.gegner == 0) return '';
+  final l = gefechtsVerteidigerlage(b, heroId);
+  return [
+    [
+      'Nahkampf: ${u.eigene} gegen ${u.gegner}',
+      if (u.iniBonusGegner > 0) 'Gegner INI +${u.iniBonusGegner}',
+      if (u.iniBonusEigene > 0) 'eure INI +${u.iniBonusEigene}',
+      if (u.aufgehoben) 'Überzahl durch Taktik aufgehoben',
+    ].join(' · '),
+    if (l.gegner > 0)
+      [
+        'Dich binden ${l.gegner}',
+        if (l.paradeErschwernis > 0) 'Parade ${l.paradeErschwernis} schwerer',
+        if (l.ausweichenErschwernis > 0)
+          'Ausweichen ${l.ausweichenErschwernis} schwerer',
+        if (l.gegnerInUeberzahl) 'ihre AT 1 leichter',
+        if (l.imRuecken > 0) '${l.imRuecken} im Rücken, nicht parierbar',
+      ].join(' · '),
+  ].join('\n');
 }
 
 // Kurzer Schadensstand: LeP nur, wenn Start-LeP und alle RS bekannt sind.
