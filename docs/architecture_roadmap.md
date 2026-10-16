@@ -263,14 +263,18 @@ im [Archiv](archiv/arch-04.md):
   (`herleiteTalentLernspalte`), Sprachen und Schriften seit 16.10.2026
   (gleiche Herleitung im Steigerungsdialog). Unverändert: die
   Sondererfahrungs-Ausnahme greift auf die schon verbilligten Kosten.
-- [ ] Probenziele des Würfelknopfs im Talente-Tab nutzen `wendeWundVerlusteAn`
-  direkt; der Probendialog zeigt TaW\* nur als Zahl.
+- [x] Die Probenziele des Würfelknopfs im Talente-Tab lesen jetzt
+  `probenEigenschaften` aus dem Snapshot (16.10.2026).
+- [ ] Der Probendialog zeigt TaW\* nur als Zahl; die Herleitung steht im
+  Talentdetail. Sie in den Probendialog zu bringen braucht ein neues optionales
+  Feld an `ResolvedProbeRequest` und die Anzeige im Dialog.
 - [ ] Eigenschaftsprobe als Ausweichen (Zuschlag ≥ 7) bleibt eigene
   Eigenschaftsprobe.
 - [ ] Bewusst offen aus den Lernregeln: zweite Repräsentation desselben Zaubers,
   Hexalogien für eigene Katalogzauber, Gedächtnis-Vorteile bei SF/Ritualen,
-  Selbststudium und Lehrmeister-Gebühren, Gegenelement in der
-  Zauberkatalog-Vorschau und im Repräsentationsdialog.
+  Selbststudium und Lehrmeister-Gebühren.
+- [x] Gegenelement: Erwerbsdialog (Hinweis) und Magie-Tab (Symbol mit
+  Erklärung) nennen den Grund für die schwerere Spalte (16.10.2026).
 - [ ] Zauberspezialisierung, Merkmalskenntnis- und Repräsentationsboni sowie
   AsP-Kosten stehen nicht in der ZfW\*-Herleitung.
 
