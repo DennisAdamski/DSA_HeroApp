@@ -242,8 +242,10 @@
     },
     "voraussetzungen_struktur": [
       {
-        "art": "hinweis",
-        "text": "Zwölfgötterkult"
+        "art": "gottheit",
+        "namen": [
+          "Zwölfgötter"
+        ]
       }
     ]
   },
@@ -324,8 +326,10 @@
     },
     "voraussetzungen_struktur": [
       {
-        "art": "hinweis",
-        "text": "Geweihter des Praios"
+        "art": "gottheit",
+        "namen": [
+          "Praios"
+        ]
       },
       {
         "art": "hinweis",
@@ -359,8 +363,10 @@
     },
     "voraussetzungen_struktur": [
       {
-        "art": "hinweis",
-        "text": "Geweihter der Rondra"
+        "art": "gottheit",
+        "namen": [
+          "Rondra"
+        ]
       },
       {
         "art": "hinweis",
@@ -394,8 +400,10 @@
     },
     "voraussetzungen_struktur": [
       {
-        "art": "hinweis",
-        "text": "Geweihter des Efferd"
+        "art": "gottheit",
+        "namen": [
+          "Efferd"
+        ]
       },
       {
         "art": "hinweis",
@@ -429,8 +437,10 @@
     },
     "voraussetzungen_struktur": [
       {
-        "art": "hinweis",
-        "text": "Geweihter der Travia"
+        "art": "gottheit",
+        "namen": [
+          "Travia"
+        ]
       },
       {
         "art": "hinweis",
@@ -464,8 +474,10 @@
     },
     "voraussetzungen_struktur": [
       {
-        "art": "hinweis",
-        "text": "Geweihter des Boron"
+        "art": "gottheit",
+        "namen": [
+          "Boron"
+        ]
       },
       {
         "art": "hinweis",
@@ -499,8 +511,10 @@
     },
     "voraussetzungen_struktur": [
       {
-        "art": "hinweis",
-        "text": "Geweihter der Hesinde"
+        "art": "gottheit",
+        "namen": [
+          "Hesinde"
+        ]
       },
       {
         "art": "hinweis",
@@ -534,8 +548,10 @@
     },
     "voraussetzungen_struktur": [
       {
-        "art": "hinweis",
-        "text": "Geweihter des Firun"
+        "art": "gottheit",
+        "namen": [
+          "Firun"
+        ]
       },
       {
         "art": "hinweis",
@@ -569,8 +585,10 @@
     },
     "voraussetzungen_struktur": [
       {
-        "art": "hinweis",
-        "text": "Geweihter der Tsa"
+        "art": "gottheit",
+        "namen": [
+          "Tsa"
+        ]
       },
       {
         "art": "hinweis",
@@ -604,8 +622,10 @@
     },
     "voraussetzungen_struktur": [
       {
-        "art": "hinweis",
-        "text": "Geweihter des Phex"
+        "art": "gottheit",
+        "namen": [
+          "Phex"
+        ]
       },
       {
         "art": "hinweis",
@@ -639,8 +659,10 @@
     },
     "voraussetzungen_struktur": [
       {
-        "art": "hinweis",
-        "text": "Geweihter der Peraine"
+        "art": "gottheit",
+        "namen": [
+          "Peraine"
+        ]
       },
       {
         "art": "hinweis",
@@ -674,8 +696,10 @@
     },
     "voraussetzungen_struktur": [
       {
-        "art": "hinweis",
-        "text": "Geweihter des Ingerimm"
+        "art": "gottheit",
+        "namen": [
+          "Ingerimm"
+        ]
       },
       {
         "art": "hinweis",
@@ -709,8 +733,10 @@
     },
     "voraussetzungen_struktur": [
       {
-        "art": "hinweis",
-        "text": "Geweihter der Rahja"
+        "art": "gottheit",
+        "namen": [
+          "Rahja"
+        ]
       },
       {
         "art": "hinweis",

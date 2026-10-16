@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:dsa_heldenverwaltung/domain/active_spell_effects_state.dart';
 import 'package:dsa_heldenverwaltung/domain/avatar_gallery_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/begleiter_zustand.dart';
 import 'package:dsa_heldenverwaltung/domain/avatar_gesichtsbefund.dart';
 import 'package:dsa_heldenverwaltung/domain/avatar_snapshot.dart';
 import 'package:dsa_heldenverwaltung/domain/aventurian_date.dart';
@@ -69,7 +70,8 @@ bool istZukunftsWertPfad(String pfad) => !pfad.endsWith('/$zukunftsfeld');
 /// Text-Overrides, eine Ritualkategorie mit Zusatzfeld und Ritual, eine
 /// magische Sonderfertigkeit, Personen, Notiz, SE und Beute im laufenden
 /// Abenteuer, einen Kontakt, einen Begleiter mit Angriff, Bewegung, SF,
-/// Ruestung und Ritualkategorie, eine Gruppe, einen offenen
+/// Ruestung und Ritualkategorie, ein Reittier mit Ausbildungsstand und
+/// Katalog-SF, eine Gruppe, einen offenen
 /// Reiseberichtseintrag, ein Geburtsdatum, ein Galeriebild mit Gesichtsbefund,
 /// einen Avatar-Schnappschuss und einen Verlaufseintrag.
 Zukunftsheld mitZukunftsfeldern(Map<String, dynamic> heldJson) {
@@ -105,6 +107,8 @@ Map<String, Object?> _aufzaehlungen(Map<String, dynamic> basis) {
     'ritualCategories/0/knowledgeMode': zukunftsWert,
     'ritualCategories/0/additionalFieldDefs/0/type': zukunftsWert,
     'companions/0/typ': zukunftsWert,
+    'companions/1/reittierAusbildung/ausgangsstufe': zukunftsWert,
+    'companions/1/reittierAusbildung/schritte/0/art': zukunftsWert,
     'adventures/0/status': zukunftsWert,
     'adventures/0/seRewards/0/targetType': zukunftsWert,
     'adventures/0/lootRewards/0/itemType': zukunftsWert,
@@ -247,7 +251,9 @@ HeroSheet bearbeiteVerschachtelteModelle(HeroSheet held) {
   final basiswert = held.statModifiers.entries.first;
   final eigenschaft = held.attributeModifiers.entries.first;
   final abenteuer = held.adventures.first;
-  final begleiter = held.companions.single;
+  final begleiter = held.companions.first;
+  final reittier = held.companions[1];
+  final ausbildung = reittier.reittierAusbildung!;
   final offen = held.reisebericht.openEntries[_zukunftsReise]!.single;
   final bild = held.appearance.avatarGallery.single;
   return held.copyWith(
@@ -303,6 +309,17 @@ HeroSheet bearbeiteVerschachtelteModelle(HeroSheet held) {
         sonderfertigkeiten: <HeroCompanionSonderfertigkeit>[
           begleiter.sonderfertigkeiten.single.copyWith(beschreibung: 'Neu'),
         ],
+      ),
+      reittier.copyWith(
+        sonderfertigkeiten: <HeroCompanionSonderfertigkeit>[
+          reittier.sonderfertigkeiten.single.copyWith(beschreibung: 'Neu'),
+        ],
+        reittierAusbildung: ausbildung.copyWith(
+          varianteId: 'pvar_mittelschweres_streitross',
+          schritte: <ReittierAusbildungsschritt>[
+            ausbildung.schritte.single.copyWith(notiz: 'Gestüt'),
+          ],
+        ),
       ),
     ],
     gruppen: <HeroGruppenMitgliedschaft>[
@@ -537,7 +554,7 @@ List<String> _begleiterAbenteuerNotizen(Map<String, dynamic> basis) {
       typ: BegleiterTyp.vertrauter,
       mu: 12,
       geschwindigkeiten: <HeroCompanionSpeed>[
-        HeroCompanionSpeed(art: 'Fliegen', wert: 12),
+        HeroCompanionSpeed(art: 'Fliegen', wert: 12, steigerung: 1),
       ],
       angriffe: <HeroCompanionAttack>[
         HeroCompanionAttack(id: 'angriff-1', name: 'Schnabel', at: 10),
@@ -554,6 +571,37 @@ List<String> _begleiterAbenteuerNotizen(Map<String, dynamic> basis) {
           ownKnowledge: HeroRitualKnowledge(name: 'Vertrautenmagie'),
         ),
       ],
+      vertrautenBindung: VertrautenBindung(
+        artId: 'vart_rabe',
+        bindungskosten: 80,
+        abenteuerApErfasst: 0,
+        ausbildungen: <VertrautenAusbildungsbuchung>[
+          VertrautenAusbildungsbuchung(katalogId: 'vfert_komm', apKosten: 10),
+        ],
+      ),
+    ).toJson(),
+    const HeroCompanion(
+      id: 'begleiter-2',
+      name: 'Falbe',
+      typ: BegleiterTyp.reittier,
+      kk: 20,
+      loyalitaet: 12,
+      sonderfertigkeiten: <HeroCompanionSonderfertigkeit>[
+        HeroCompanionSonderfertigkeit(name: 'Stopp', katalogId: 'psf_stopp'),
+      ],
+      reittierAusbildung: ReittierAusbildung(
+        ausgangsstufe: ReittierAusbildungsstufe.erprobt,
+        ausgangsart: ReittierAusbildungsart.fundiert,
+        varianteId: 'pvar_leichtes_streitross',
+        schritte: <ReittierAusbildungsschritt>[
+          ReittierAusbildungsschritt(
+            nach: ReittierAusbildungsstufe.geschult,
+            art: ReittierAusbildungsart.fundiert,
+            ausbilder: 'Zureiter',
+          ),
+        ],
+        unartIds: <String>['punart_treten'],
+      ),
     ).toJson(),
   ];
   _pruefe((basis['gruppen'] as List).isEmpty, 'keine Gruppen');
@@ -595,6 +643,12 @@ List<String> _begleiterAbenteuerNotizen(Map<String, dynamic> basis) {
     'companions/0/ruestungsTeile/0',
     'companions/0/ritualCategories/0',
     'companions/0/ritualCategories/0/ownKnowledge',
+    'companions/0/vertrautenBindung',
+    'companions/0/vertrautenBindung/ausbildungen/0',
+    'companions/1',
+    'companions/1/sonderfertigkeiten/0',
+    'companions/1/reittierAusbildung',
+    'companions/1/reittierAusbildung/schritte/0',
     'gruppen/0',
     'reisebericht',
     'reisebericht/openEntries/$_zukunftsReise/0',
@@ -670,6 +724,9 @@ List<String> _grundwerteAvatarVerlauf(Map<String, dynamic> basis) {
   ];
 }
 
+/// Begleiter-ID, deren laufende Werte die Zustandsbasis ergaenzt.
+const String zukunftsBegleiter = 'b1';
+
 /// Laufender Zaubereffekt, den die Zustandsbasis ergaenzt (Armatrutz).
 const String zukunftsEffekt = 'effect_spell_armatrutz';
 
@@ -681,6 +738,10 @@ Zukunftsheld zustandMitZukunftsfeldern(Map<String, dynamic> zustandJson) {
   final basis = _tiefeKopie(zustandJson);
   _pruefe((basis['diceLog'] as List).isNotEmpty, 'Würfelprotokoll');
   _pruefe(basis['wpiZustand'] is Map, 'Wundenzustand');
+  _pruefe(!basis.containsKey('begleiterZustaende'), 'keine Begleiterwerte');
+  basis['begleiterZustaende'] = <String, dynamic>{
+    zukunftsBegleiter: const BegleiterZustand(currentLep: 4).toJson(),
+  };
   final effekte = basis['activeSpellEffects'] as Map<String, dynamic>;
   _pruefe((effekte['activeEffectIds'] as List).isEmpty, 'keine Effekte');
   basis['activeSpellEffects'] = const ActiveSpellEffectsState()
@@ -705,6 +766,7 @@ Zukunftsheld zustandMitZukunftsfeldern(Map<String, dynamic> zustandJson) {
       'activeSpellEffects/effectDetails/$zukunftsEffekt',
       'activeSpellEffects/effectDetails/$zukunftsEffekt/duration',
       'wpiZustand',
+      'begleiterZustaende/$zukunftsBegleiter',
       'diceLog/0',
     ],
     werte: const <String, Object?>{
@@ -734,6 +796,10 @@ HeroState bearbeiteZustand(HeroState zustand) {
           ),
         ),
         wpiZustand: zustand.wpiZustand.mitWundeHinzu(WundZone.brust),
+      )
+      .withBegleiterZustand(
+        zukunftsBegleiter,
+        zustand.begleiterZustaende[zukunftsBegleiter]!.copyWith(currentLep: 3),
       )
       .withAppendedDiceLog(
         DiceLogEntry(

@@ -1,11 +1,21 @@
 # Schreibpfade der Heldenverwaltung (ARCH-05)
 
-Stand: 29.09.2026, nachgeführt nach dem fünften ARCH-05-Teilstand
+Stand: 08.10.2026, nachgeführt um die Vertrauten-Schreibwege (V2)
 (Sofortaktionen des Bogens). Bestandsaufnahme für
 [ARCH-05 — Schreibende Aktionen fachlich aufteilen](architecture_roadmap.md#arch-05--schreibende-aktionen-fachlich-aufteilen).
 Sie beschreibt, **wo** Heldendaten heute geschrieben werden, mit welchen
 Eingaben, Vorbedingungen, Seiteneffekten und Speichergrenzen. Zeilenangaben
 gelten für den Stand dieses Datums; bei Folgearbeit neu prüfen.
+
+**Update 09.10.2026: offene Planung und Verwaltung.** Die Verwaltung bleibt
+zum Ansehen zugänglich. Editor-Einstiege und direkte Bogenaktionen prüfen
+`bestaetigeBearbeitungBeiPlanung`: Abbrechen erhält die Runde; erst
+„Planung verwerfen und bearbeiten“ verwirft sie und erlaubt die Änderung.
+Die unten aufgeführten Planungssperren am technischen Editor-Schreibweg
+(`aendereHeldImEditor`) bleiben als Rückfall bestehen. Geldfeld sowie bereits
+offene Ausrüstungsformulare sind während der Planung nur lesbar; ihre äußeren
+Scrollbereiche bleiben bedienbar. Laufzeitwerte in `HeroState` bleiben von
+diesem Bogen-Guard getrennt.
 
 Begriffe:
 
@@ -36,6 +46,81 @@ Begriffe:
 - Avatarbilder liegen außerhalb des Heldenmodells (`AvatarFileStorage`,
   Firebase Storage), Gruppen in Firestore und `ExterneHeldenRepository`.
 
+## Speichervertrag (ARCH-06)
+
+Stand 07.10.2026, ARCH-06 Teilstand 1. Für jede fachliche Einheit ist
+festgelegt, wie sie trotz getrennter Schreibvorgänge vollständig wird:
+
+| Einheit | Schreibt | Vollständig durch |
+|---|---|---|
+| Steigerungsrunde übernehmen | Bogen (Werte, AP/SE, Historie) | ein Dokument; Hash-Prüfung, Einträge je ID nur einmal |
+| Schaden, Rast, Wunden, Ressourcen, Effekte, Würfelprotokoll | Zustand | ein Dokument (Wundunterdrückung nach einem Treffer ist ein eigener Vorgang) |
+| Sofortaktionen und Editorentwürfe am Bogen | Bogen | ein Dokument |
+| Held anlegen | Bogen, dann Zustand (eingereiht, gestempelt) | Nachsehen: ein fehlender Zustand gilt als leer — derselbe Inhalt, den das Anlegen schreibt |
+| Startimport | Bogen, dann Zustand | Nachsehen: `uebernimmStartheld` trägt bei vorhandenem Helden einen fehlenden Zustand nach |
+| **Held importieren** | eigener Katalog, Bilddateien, Bogen, Zustand | **Vorgangsjournal** mit Wiederanlauf (unten) |
+| Held löschen | Bogen, dann Zustand | Restrisiko: ein verwaister Zustand bleibt unsichtbar; mit Konto trägt der vermerkte Löschauftrag (`localHash: ''`) die Löschung in die Cloud |
+| Avatar speichern bzw. entfernen | Datei, dann Bogen | Restrisiko: eine verwaiste Datei bleibt liegen |
+| **Konfliktentscheidung über einen Helden** („Nur Lokal“, „Nur Online“, „Beide behalten“, „Automatisch“) | Bogen und Zustand lokal und online, bei „Beide behalten“ zusätzlich Kopie samt Zustand | **Vorgangsjournal** (`SyncKonfliktVorgang`, Abschnitt „Konfliktentscheidung“ unten); Ausnahmen: Online-Tombstone mit „Nur Online“, Löschkonflikte, Offline-Helden und eigenständige Zustandskonflikte laufen weiter ohne Journal |
+
+**Konfliktentscheidung (ARCH-06 Teilstand 3).** Eine Entscheidung wird vor dem
+ersten Schreibzugriff als `SyncKonfliktVorgang` (`lib/data/sync/sync_konflikt_vorgang.dart`,
+Journalschlüssel `syncKonflikt-<Helden-ID>`) vollständig geplant abgelegt: Aktion,
+feste Kopie-ID, je Dokument Zielfassung samt Hash, lokale Ausgangsfassung, geprüfte
+Online-Vorrevision und Fortschritt. `KonfliktWiederanlauf`
+(`lib/data/sync/konflikt_wiederanlauf.dart`) führt ihn über Inhaltsprüfungen zu Ende:
+Kopie zuerst lokal, Original online vor lokal, Kopie online, dann Basis und
+Sync-Metadaten, zuletzt wird der Eintrag entfernt. Lokal wird nur geschrieben, solange
+der Stand der Ausgangs- oder Zielfassung entspricht; online nur auf der geplanten
+Vorrevision oder wenn der Inhalt schon dem Ziel gleicht (verlorene Antwort). Eine
+dritte Fassung oder neue Online-Revision hält den Vorgang an (`blockade`); der Konflikt
+wird mit frischen Ständen und einem Hinweis neu gestellt, nichts wird überschrieben.
+Solange ein Eintrag besteht, überspringen Pull, Push, stille Zusammenführung und
+Zustands-Uploads Original und Kopie; lokales Speichern bleibt möglich. `syncNow`
+führt offene Einträge vor dem normalen Abgleich fort und meldet keinen
+erfolgreichen Abgleich, solange einer aussteht (`SyncStatusSnapshot.ausstehendeVorgaenge`).
+Unbekannte Versionen/Arten/Konten bleiben unangetastet und reservieren ihre IDs;
+nicht bestimmbare oder beschädigte Einträge sperren vorsorglich jeden schreibenden
+Sync (der Status nennt den Eintrag). Grenzen: Bogen und Zustand werden online in zwei
+getrennten Schreibzugriffen abgelegt, ein anderes Gerät kann kurz eine
+Zwischenfassung lesen; `deleteHero` während eines offenen Vorgangs ist nicht
+abgesichert.
+
+**Vorgangsjournal.** `Vorgangsjournal` (`lib/data/vorgangsjournal.dart`,
+reine Schnittstelle) hält offene Vorgänge in der Box `vorgaenge_v1` des
+Profilpfads (`HiveVorgangsjournal`), in Tests im Speicher. Der Import
+vermerkt sich vor dem ersten Bild, nach jedem abgelegten Bild und nach dem
+Bogen (`ImportVorgang`, `lib/ablaeufe/import_vorgang.dart`) und erledigt den
+Eintrag erst nach dem Zustand. `VorgaengeWiederaufnehmen`
+(`lib/ablaeufe/vorgaenge_wiederaufnehmen.dart`) führt einen offenen Import zu
+Ende, sobald der Held gespeichert ist (vermerkt oder am geänderten Hash
+erkennbar): Der Zustand wird eingereiht und gestempelt nachgetragen. Sonst
+gleicht er aus und löscht abgelegte Bilder, auf die der gespeicherte Held
+nicht verweist — lokal und über `SyncingAvatarStorage` in der Cloud.
+Scheitert ein Importschritt im laufenden Betrieb, geschieht dasselbe sofort;
+der Fehler erreicht trotzdem den Aufrufer, außer ein zweiter Versuch hat den
+Zustand nachgetragen. Beim App-Start läuft der Wiederanlauf auf dem lokalen
+Hive-Speicher **vor** Startimport und `syncNow`; er bricht den Start nie ab.
+Einträge unbekannter Art bleiben liegen.
+
+**Sync-Vertrag.** Bogen und Zustand werden als ganze Dokumente mit Revision
+übertragen; es gibt keine Operations-Warteschlange. Ausstehend ist ein
+Dokument, dessen Hash vom gemerkten `localHash` abweicht, solange die
+Revision der Basis entspricht (`sync_metadata_v1`). Das übersteht einen
+Neustart, und eine wiederholte Übertragung schreibt dasselbe Dokument, statt
+eine Aktion erneut anzuwenden. Nach dem Wiederanlauf nachgetragene Zustände
+lädt deshalb der folgende `syncNow` hoch. Prüfung:
+`test/data/sync_speichervertrag_test.dart`.
+
+**Restrisiken.** Ein Absturz zwischen Bildablage und Journalvermerk lässt
+diese eine Datei verwaist. Ist die Cloud beim Wiederanlauf nicht erreichbar,
+bleibt die Cloud-Kopie liegen (`SyncingAvatarStorage` meldet den Fehler
+nicht). Ein überschreibender Import ersetzt Bilder gleichen Namens bereits
+beim Ablegen; der Ausgleich kann sie nicht zurückholen. Ein identischer
+Re-Import, der vor dem Vermerk „Held gespeichert“ abbricht, behält den
+bisherigen Zustand. Das Journal gilt je Profil und wird nur beim Öffnen
+dieses Profils wiederaufgenommen.
+
 ## Anwendungsabläufe (`lib/ablaeufe/`)
 
 Seit dem ersten ARCH-05-Teilstand gibt es eine eigene Schicht für
@@ -46,9 +131,18 @@ Abhängigkeiten per Konstruktor; die Provider liegen in
 | Ablauf | Einstieg | Schreibt | Stand |
 |---|---|---|---|
 | Rast abschließen | `RastAbschliessen` (`lib/ablaeufe/rast_abschliessen.dart`) | Zustand, frisch | extrahiert |
-| Schaden erhalten | `SchadenErhalten` (`lib/ablaeufe/schaden_erhalten.dart`) | Zustand, frisch | extrahiert |
+| Schaden erhalten | `SchadenErhalten` (`lib/ablaeufe/schaden_erhalten.dart`) | Zustand, frisch, mit Buchung | extrahiert |
+| Matrixgeber auslösen | `MatrixAusloesen` (`lib/ablaeufe/matrix_ausloesen.dart`) | Zustand, frisch (AsP und Protokolleintrag in einem Dokument) | extrahiert |
+| Gegenstand anwenden (Heiltrank …) | `VitalwirkungAnwenden` (`lib/ablaeufe/vitalwirkung_anwenden.dart`) | Zustand, frisch (LeP/AsP/AuP, geschlossene Wunden, Buchung `heilung` und Protokoll in einem Dokument; idempotent über die Vorgangs-ID). Das Abziehen des Stücks ist ein eigener Bogenschritt des Dialogs (`mitVerbrauchtemInventarEintrag`) | extrahiert |
+| Elixier einnehmen (TRANK, Eigenschaften auf Zeit) | `ElixierEinnehmen` (`lib/ablaeufe/elixier_einnehmen.dart`) | Zustand, frisch (je Eigenschaftsänderung des Katalogs eine `SpellEffectInstance` mit eigener Dauer und Protokolleintrag in einem Dokument; idempotent über die Vorgangs-IDs `<ID>#<Nr>` der Instanzen). Das Abziehen des Stücks ist wie beim Anwenden ein eigener Bogenschritt des Dialogs | extrahiert |
+| Auxiliator einsetzen | `AuxiliatorEinsetzen` (`lib/ablaeufe/auxiliator_einsetzen.dart`) | Zustand, frisch (AsP und Protokolleintrag in einem Dokument) | extrahiert |
+| Artefaktvorgang protokollieren | `ArtefaktProtokollieren` (`lib/ablaeufe/artefakt_protokollieren.dart`) | Zustand, frisch (nur der Protokolleintrag; folgt der Bogenänderung eines Spruchspeichers als eigene Buchung) | extrahiert |
+| Schaden zurücknehmen | `SchadenZuruecknehmen` (`lib/ablaeufe/schaden_zuruecknehmen.dart`) | Zustand, frisch, Gegenbuchung | ARCH-06 |
 | Zustand frisch ändern | `aendereGespeichertenZustand` (`lib/ablaeufe/zustand_schreiben.dart`) | Zustand, frisch, je Held nacheinander | Baustein, `HeroActions.updateHeroState` delegiert |
 | Bogen frisch ändern | `aendereGespeichertenHelden`, `reiheBogenvorgangEin` (`lib/ablaeufe/held_schreiben.dart`) | Bogen, frisch, je Held nacheinander | Baustein, `HeroActions.updateHero` delegiert, `saveHero` reiht sich ein |
+| Steigerungsrunde übernehmen | `SteigerungsrundeUebernehmen` (`lib/ablaeufe/steigerungsrunde_uebernehmen.dart`) | Bogen, Hash-Prüfung gegen die Sitzungsbasis | extrahiert, Provider `steigerungsrundeUebernehmenProvider` |
+| Held importieren | `HeldImportieren` (`lib/ablaeufe/held_importieren.dart`) | eigener Katalog, Bilddateien, Bogen (ein `saveHero`), Zustand eingereiht; Vorgangsjournal (ARCH-06) | extrahiert, `HeroActions.importiereHeld` bindet ihn an (kein Provider: Zyklus über `heroActionsProvider`) |
+| Vorgänge wiederaufnehmen | `VorgaengeWiederaufnehmen` (`lib/ablaeufe/vorgaenge_wiederaufnehmen.dart`) | Zustand eingereiht bzw. löscht Bilddateien | ARCH-06, beim App-Start und nach einem gescheiterten Importschritt |
 
 `aendereGespeichertenZustand` reiht Änderungen desselben Helden über
 denselben Speicher ein: Jede lädt erst, wenn die vorige gespeichert oder
@@ -117,22 +211,27 @@ Jeder Bogenschreibweg über `HeroActions` durchläuft `saveHero`:
 5. Neue Kampf-Slots bekommen UUIDs (`withStableIds`).
 6. Ritualkategorien normalisiert.
 7. Inventar mit Kampf abgeglichen (`reconcileInventoryWithCombat`).
-8. `lastModified` frisch gestempelt.
-9. Optional: `expectedContentHash` gegen den gespeicherten Stand geprüft
+8. Rein ganzzahlige `anzahl` ohne `menge` überführt
+   (`ueberfuehreInventarMengen`), danach fehlende oder doppelte Instanz-IDs
+   vergeben (`vergibInstanzIds`, ARCH-03; beides nie beim Laden).
+9. Jeder verknüpfte Slot bekommt die Instanz-ID seines Eintrags als
+   `inventarInstanzId` (`bindeSlotsAnInstanzen`, ARCH-03; nie beim Laden).
+10. `lastModified` frisch gestempelt.
+11. Optional: `expectedContentHash` gegen den gespeicherten Stand geprüft
    (optimistische Sperre der Steigerungsrunde).
 
 ### Öffentliche Methoden
 
 | Methode | Schreibt | Vorbedingungen / Seiteneffekte |
 |---|---|---|
-| `createHero` | Bogen (über `saveHero`), Zustand direkt über das Repository (ohne Zeitstempel), Auswahl | Heldenlimit, neue UUID, Standardtalente, wählt den Helden aus |
+| `createHero` | Bogen (über `saveHero`), Zustand eingereiht und gestempelt (`aendereGespeichertenZustand`), Auswahl | Heldenlimit, neue UUID, Standardtalente, wählt den Helden aus |
 | `saveHero` | Bogen | Normalisierung oben; je Held eingereiht (`reiheBogenvorgangEin`), liefert den gespeicherten Helden |
 | `updateHero` | Bogen, frisch, je Held nacheinander | delegiert an `aendereGespeichertenHelden`; dasselbe Objekt zurück heißt: nichts speichern; liefert den gespeicherten Helden; keine Transaktion |
 | `saveHeroState` | Zustand, Snapshot des Aufrufers | stempelt `lastModified` |
 | `updateHeroState` | Zustand, frisch | delegiert an `aendereGespeichertenZustand`, liefert den gespeicherten Zustand |
 | `deleteHero` | löscht Bogen und Zustand, Auswahl | — |
 | `buildExportJson` / `parseImportJson` | nichts | Avatar und Galerie als Base64, eigene Katalogeinträge |
-| `importHeroBundle` | eigener Katalog, Bogen, Zustand, Galeriedateien, Auswahl | Heldenlimit; bis zu drei `saveHero`; lädt den Katalog neu |
+| `importiereHeld` / `importHeroBundle` | eigener Katalog, Galeriedateien, Bogen, Zustand, Auswahl | über den Ablauf `HeldImportieren`: Heldenlimit für jede noch unbekannte Ziel-ID; Bilder vor dem Helden, Dateinamen aus der Ablage; ein `saveHero`; Zustand über `aendereGespeichertenZustand`; nicht speicherbare Bilder werden gezählt statt abzubrechen; lädt den Katalog neu. `importHeroBundle` liefert nur die ID |
 | `saveHeroAvatar`, `uploadHeroImage` | Bilddatei, dann Bogen | Bildlimit bzw. Größenlimit, Gesichtserkennung beim Anlegen |
 | `setPrimaerbild`, `setAvatarHeaderFocus`, `setActiveAvatar` | Bogen | Fokus/Zoom begrenzt |
 | `removeGalleryImage`, `removeHeroAvatar` | löscht Dateien, dann Bogen | `removeHeroAvatar` hat keinen Aufrufer mehr |
@@ -146,13 +245,17 @@ Domainlogik.
 | Ablauf | Einstieg | Schreibt | Stand | Fehler → UI | Regelrechnung inline |
 |---|---|---|---|---|---|
 | Rast abschließen | `RestPanel` (`workspace/rest_dialog.dart`) → `RastAbschliessen` | Zustand | frisch | ja, im Panel | nein (seit ARCH-05) |
-| Schaden erhalten | `SchadenPanel` (`workspace/schaden/schaden_dialog.dart`, Inspector-Vitals und UI2-Schnellaktion) → `SchadenErhalten` | Zustand | frisch, je Held nacheinander | ja, im Panel | nein, `schaden_rules.dart` |
+| Schaden erhalten | `SchadenPanel` (`workspace/schaden/schaden_dialog.dart`, Inspector-Vitals und UI2-Schnellaktion) → `SchadenErhalten` | Zustand | frisch, je Held nacheinander; Vorgangs-ID bucht nur einmal | ja, im Panel | nein, `schaden_rules.dart` |
+| Schaden zurücknehmen | `schadenRuecknahmeAktion` am Würfelprotokoll (`workspace/schaden/schaden_ruecknahme.dart`) → `SchadenZuruecknehmen` | Zustand | frisch, je Held nacheinander; nur einmal je Buchung | ja, in der Rückfrage | nein, `schaden_ruecknahme_rules.dart` |
 | Steigerung übernehmen | `AdvancementSessionController.commit` (`state/advancement_providers.dart`) → `SteigerungsrundeUebernehmen.uebernehmeRunde` | Bogen | Hash-Prüfung gegen die Sitzungsbasis, erneut in `saveHero` vor dem Schreiben | ja (Snackbar) | nein, `commitAdvancements` |
 | Anzeige nicht passender SF | `setShowInapplicableSpecialAbilities` (ebd.) → `SteigerungsrundeUebernehmen.speichereSfAnzeige` | Bogen direkt über das Repository, ohne Normalisierung | frisch, je Held nacheinander; bei offener Runde Hash-Prüfung | ja | nein |
-| Inventar (Löschen, Dukaten) | `hero_inventory/inventory_mutations.dart` (`_deleteEntry`, `_saveDukaten`, `_verschiebeDukaten`) | Bogen | frisch, je Held nacheinander; Löschen findet den Eintrag über den Inhalt, Münzknöpfe zählen vom gespeicherten Betrag | ja (Snackbar) | nein, `inventar_aenderung_rules.dart` |
-| Inventar (Editor) | `hero_inventory/inventory_mutations.dart` (`_saveNewEntry`, `_saveUpdatedEntry`) über `aendereHeldImEditor` | Bogen | frisch, je Held nacheinander; trifft den geöffneten Gegenstand über seinen Inhalt, ein inzwischen geänderter wird abgewiesen; bei offener Planung gesperrt | ja, im Editor | nein, `inventar_aenderung_rules.dart` |
-| Kampf (Sofortspeichern) | `hero_combat/combat_sofort_aenderungen.dart` über `_aendereKampf` (`combat_state_helpers.dart`) | Bogen | frisch, je Held nacheinander; Slots über ihre ID, Geschosse zählen vom gespeicherten Bestand, Editorergebnisse auf geänderte Slots werden abgewiesen | ja (Snackbar) | Slotprüfung auf dem frischen Ergebnis; sonst `kampf_aenderung_rules.dart` |
-| Kampf (Editor) | `hero_combat/combat_state_helpers.dart` (`_saveChanges`) über `speichereEditorEntwurf` | Bogen | frisch, Abgleich mit dem Bearbeitungsbeginn (`uebernimmEditorEntwurf`); bei Überschneidung Rückfrage; bei offener Planung gesperrt | ja (Dialog bzw. Snackbar) | Slotprüfung, Talentverteilung; AP-Delta als Zähler |
+| Inventar (Löschen, Dukaten) | `hero_inventory/inventory_mutations.dart` (`_deleteEntry`, `_saveDukaten`, `_verschiebeDukaten`) | Bogen | frisch, je Held nacheinander; Löschen findet den Eintrag über seine Instanz-ID, Altdaten über den Inhalt; Münzknöpfe zählen vom gespeicherten Betrag | ja (Snackbar) | nein, `inventar_aenderung_rules.dart` |
+| Matrixgeber auslösen | `hero_inventory/matrix_ausloesen_dialog.dart` (Inventareditor und Gefechtsinventar über `KartoGefechtsAdapter.gefechtsMatrixAusloesen`) → `MatrixAusloesen` | Zustand | frisch, je Held nacheinander; keine Zauberprobe, kein Verbrauch am Inventar; die Beschädigung (`artefaktDaten.defekt`) schreibt erst die ausdrückliche Aktion „Als beschädigt markieren“ über `aendereHeldMitMeldung` und `mitGeaendertemInventarEintrag` | ja, im Dialog | nein, `artefakt_matrix_rules.dart` |
+| Auxiliator einsetzen | `hero_inventory/auxiliator_dialog.dart` (Inventareditor, Magie-Tab über `zeigeArtefaktAnwenden`, Gefecht-Wirkabschluss über `KartoGefechtsAdapter.gefechtsAuxiliator`) → `AuxiliatorEinsetzen` | Zustand | frisch, je Held nacheinander; die Zauberprobe des Anwenders läuft davor über den unveränderten Standardweg; im Gefecht bucht der Dialog nur die 1W3 AsP (die Zauberkosten bucht der Abschluss); die Beschädigung schreibt erst die ausdrückliche Aktion „Als beschädigt markieren“ über `aendereHeldMitMeldung` und `mitBeschaedigtemArtefakt` | ja, im Dialog | nein, `artefakt_auxiliator_rules.dart` |
+| Spruchspeicher auslösen / aufladen / regenerieren | `hero_inventory/spruchspeicher_ausloesen_dialog.dart`, `spruchspeicher_aufladen_dialog.dart` (Inventareditor, Magie-Tab und Gefechtsinventar über `zeigeArtefaktAnwenden` bzw. `KartoGefechtsAdapter.gefechtsMatrixAusloesen`) über `aendereHeldImEditor` | Bogen, danach Zustand (nur Protokoll) | frisch, je Held nacheinander; die Ladung (`ArtefaktLadung.verbraucht`), bei einem semipermanenten Speicher die vermerkte Anwendung samt Kampagnendatum bzw. „Matrizen regeneriert“, die neuen Ladungen samt Aufladezähler oder der Defekt sind **ein** Bogendokument (`artefakt_ladung_aenderung_rules.dart`, trifft den Gegenstand über seinen angezeigten Stand); weder AsP noch Zauberprobe; das Würfelprotokoll folgt als eigene Buchung (`ArtefaktProtokollieren`) – scheitert sie, bleibt die Buchung am Bogen und der Dialog nennt den Fehler; bei offener Planung gesperrt | ja, im Dialog | nein, `artefakt_spruchspeicher_rules.dart` |
+| Inventar (Editor) | `hero_inventory/inventory_mutations.dart` (`_saveNewEntry`, `_saveUpdatedEntry`, `_teileStapel`, `_uebernehmeInKampf`, `_fuehreStapelZusammen`, `_verkaufe`) über `aendereHeldImEditor` | Bogen | frisch, je Held nacheinander; trifft den geöffneten Gegenstand über seine Instanz-ID (Altdaten über den Inhalt), ein inzwischen geänderter wird abgewiesen; Teilen schreibt auch die Geschossmenge des eigenen Slots; „In Kampfbereich übernehmen“ legt den Slot eines abgelegten Gegenstands wieder an (`kampfgegenstand_ablegen_rules.dart`); Zusammenführen und Verkaufen (`inventar_stapel_rules.dart`, `inventar_verkauf_rules.dart`) schreiben bei Geschossen am Bogen den Slotbestand, Verkaufen auch den Geldstand; bei offener Planung gesperrt | ja, im Editor | nein, `inventar_aenderung_rules.dart` |
+| Kampf (Sofortspeichern) | `hero_combat/combat_sofort_aenderungen.dart` über `_aendereKampf` bzw. `_aendereKampfUndInventar` (`combat_state_helpers.dart`) | Bogen | frisch, je Held nacheinander; Slots über ihre ID; Entfernen fragt „Nur ablegen“/„Ganz entfernen“ und schreibt beim Ablegen Kampf und Inventar gemeinsam (im Bearbeitungsmodus über den Inventarentwurf); Geschosse zählen vom gespeicherten Bestand, Editorergebnisse auf geänderte Slots werden abgewiesen | ja (Snackbar) | Slotprüfung `neuerKampfSlotFehler` (`kampf_slot_pruefung_rules.dart`): nur neu eingeführte Fehler sperren; sonst `kampf_aenderung_rules.dart` |
+| Kampf (Editor) | `hero_combat/combat_state_helpers.dart` (`_saveChanges`) über `speichereEditorEntwurf` | Bogen | frisch, Abgleich mit dem Bearbeitungsbeginn (`uebernimmEditorEntwurf`); bei Überschneidung Rückfrage; bei offener Planung gesperrt | ja (Dialog bzw. Snackbar) | Slotprüfung (`pruefeKampfSlots`, erster Befund), Talentverteilung; AP-Delta als Zähler |
 | Ressourcen (LeP, Au, AsP, KaP) | `resource_stepper_dialog.dart`, `inspector_vitals_tab.dart`, `inspector_magie_tab.dart` | Zustand | frisch, Schritt vom gespeicherten Wert (`RessourcenAenderung`) | ja (im Blatt bzw. Tab) | Grenzen nur in Schrittrichtung |
 | Belastung | `inspector_belastung_section.dart` | Zustand | frisch, zählt vom gespeicherten Wert | ja (im Inspector-Tab bzw. Zustandsblock) | Untergrenze 0 |
 | Ressourcen UI2 | `ui/bridges/karto_spiel_bruecke.dart` | Zustand | frisch, Schritt vom gespeicherten Wert | ja (im Blatt) | nein |
@@ -168,11 +271,20 @@ Domainlogik.
 | Übersicht (Editor) | `hero_overview_tab.dart` über `speichereEditorEntwurf` | Bogen (seit Teilstand 9 kein Zustand mehr) | frisch, Abgleich mit dem Bearbeitungsbeginn; AP als Zähler | ja (Dialog bzw. Snackbar) | Merkmalsentwurf, Zahlengrenzen |
 | Übersicht (Sofortaktionen) | `hero_overview_tab.dart`, `hero_overview_stats_section.dart`, `hero_overview_epic_section.dart`, `hero_overview_base_info_section.dart` | Bogen | frisch; AP als Schritt, Ressourcenschalter nur umgestellte | ja (Ressourcenblatt im Blatt, sonst Snackbar) | nein, u. a. `epic_status_rules.dart` |
 | Talente / Magie / Begleiter (Editor) | `hero_talents_edit_actions.dart`, `hero_magic_tab.dart`, `hero_begleiter_tab.dart` über `speichereEditorEntwurf` | Bogen | frisch, Abgleich mit dem Bearbeitungsbeginn; bei Überschneidung Rückfrage; bei offener Planung gesperrt | ja (Dialog bzw. Snackbar) | Talentverteilung, Meta-Talente; AP-Delta als Zähler |
-| Vertrauten-Steigerung | `hero_begleiter_tab.dart` (`_bucheSteigerung`) | Bogen | frisch; abgewiesen, wenn der Ausgangsstand sich geändert hat | ja (Snackbar) | nein, `begleiter_aenderung_rules.dart` |
+| Vertrauten-Steigerung | `hero_begleiter/vertrauten_steigerung_aktionen.dart` (`_bucheSteigerung`) | Bogen | frisch; abgewiesen, wenn der Ausgangsstand sich geändert hat oder die Grenze nach WdZ S. 125 überschritten würde | ja (Snackbar) | nein, `begleiter_aenderung_rules.dart`, `companion_steigerung_rules.dart` |
+| Vereinigung bei Vollmond (V2) | `ablaeufe/vertrauten_vereinigung.dart` (`VertrautenVereinigung`, `vertrautenVereinigungProvider`) | Zustand (Hexe-AsP, `begleiterZustaende[<id>].currentAsp`, zwei Protokolleinträge; **ein** Dokument) | frisch; Würfe 1–6 als Parameter, Verlust höchstens der Vorrat; abgewiesen bei entferntem Begleiter | ja | nein, `vertrauten_spiel_rules.dart` |
+| Versäumtes Treffen (V2, E1) | zwei Einzelbuchungen: LeP über `aendereBegleiterPool`, LO über `aendereHeldMitMeldung` (`mitVersaeumtemTreffenLo`) | Zustand, dann Bogen (Begleiter-LO) | LO abgewiesen bei geändertem Stand; scheitert die zweite Buchung, bleibt die erste stehen und die UI bietet sie zum Nachholen an (kein Journal) | ja | nein |
+| CH-Probe → LO +1 (V2) | `aendereHeldMitMeldung` (`mitLoyalitaetPlusEins`) | Bogen (Begleiter-LO) | abgewiesen bei geändertem Stand und ab LO 25 | ja | nein |
+| Rast mit Vertrauten (V2, E2) | `RastAbschliessen.uebernehmeRast(vertrautenRast:)` | Zustand (Rast der Hexe und `begleiterZustaende` in derselben Änderung) | Maxima aus dem frisch geladenen Bogen; Begleiter, die entfernt wurden oder keine Vertrauten sind, werden übergangen | ja | nein, `vertrauten_spiel_rules.dart` |
+| Vertrautenzauber würfeln (V2) | `hero_begleiter/vertrauten_spiel_section.dart` (`showLoggedProbeDialog`, danach `aendereBegleiterPool`) | Zustand (Würfelprotokoll, `begleiterZustaende[<id>].currentAsp`) | zwei getrennte Schreibwege: Probe protokolliert, die AsP des Vertrauten bucht der Nutzer nach Bestätigung (Betrag aus dem Ritualtext vorbelegt, sonst leer) | ja | nein, `vertrauten_zauber_probe_rules.dart` |
+| Begleiterkarte UI2 (V2) | `ui2/spielen/karto_begleiterkarte.dart` → `KartoBestandsAdapter.begleiterWertAendern` / `vertrautenAktionen` (Brücke ruft `aendereBegleiterPool` bzw. `zeigeVertrautenAktionen`) | Zustand (wie oben) bzw. die Dialoge des Begleiter-Tabs | wie oben; die Knöpfe laufen bewusst **ohne** `KartoLaufzeitAktion`-Guard, damit jeder schnelle Klick zählt; die Vertrautenaktionen öffnen nach `vorHeldenbearbeitung` im Guard | ja (Fehlerbereich im Dialog) | nein |
+| Laufende Werte der Begleiter (LeP/AsP/AuP, V2) | `shared/begleiter_zustand_aendern.dart` (`aendereBegleiterPool`) über `aendereZustandMitMeldung` | Zustand (`begleiterZustaende[<id>]`) | frisch; Schritte zählen vom gespeicherten Wert (`RessourcenAenderung`), „voll“ = kein Eintrag; nichts gespeichert bei unveränderter Instanz | ja (Fehlerbereich, sonst Snackbar) | nein, `begleiter_zustand_rules.dart` |
+| Vertrautenbindung (Binden, Erfassen, AP-Anteil, Übertragung, Ausbildung, Zauber, Aurapanzer) | `hero_begleiter/vertrauten_bindung_aktionen.dart` über `aendereHeldMitMeldung` | Bogen (Begleiter, bei Bindung und Übertragung auch `apSpent` der Hexe in derselben Änderung) | frisch; abgewiesen bei schon gebundenem Tier, geändertem Übertragungs- bzw. Ausbildungsstand, schon bekanntem Zauber oder zu wenig AP; bei offener Planung gesperrt | ja (Snackbar) | nein, `vertrauten_bindung_rules.dart`, `vertrauten_ap_rules.dart`, `vertrauten_ausbildung_rules.dart`, `vertrauten_aurapanzer_rules.dart` (125 AP des Vertrauten, abgewiesen bei geändertem AP-Stand); Voraussetzungen der Bindung nur als Hinweis (`vertrauten_bindung_voraussetzung_rules.dart`) |
+| Reittier-Ausbildung (Schritt, Rücknahme, Pferde-SF) | `hero_begleiter/begleiter_ausbildung_aktionen.dart` über `aendereHeldMitMeldung` | Bogen | frisch; abgewiesen, wenn sich die Zahl der gebuchten Schritte geändert hat oder die SF schon erlernt ist; bei offener Planung gesperrt | ja (Snackbar) | nein, `reittier_ausbildung_aenderung_rules.dart` |
 | Avatar | `hero_overview/hero_avatar_section.dart`, `avatar_generation_dialog.dart` | Datei + Bogen | frisch | ja | — |
 | Gruppen | `hero_gruppe/` | Firestore + Bogen | frisch | ja | — |
 | Anlegen / Löschen / Import / Export | `heroes_home_screen.dart`, `workspace_import_export_actions.dart` | Bogen, Zustand | — | ja | — |
-| Startimport | `data/startup_hero_importer.dart` | Bogen und Zustand **direkt über das Repository**, ohne Normalisierung und Zeitstempel | — | — | — |
+| Startimport | `data/startup_hero_importer.dart` (`uebernimmStartheld`) | Bogen und Zustand **direkt über das Repository**, ohne Normalisierung; Zustand gestempelt, bei vorhandenem Helden nur ein fehlender | — | — | — |
 
 ## Ablauf „Rast abschließen“ im Detail
 
@@ -210,14 +322,34 @@ Domainlogik.
   `wendeSchadenAn` ersetzt genau `currentLep` und `wpiZustand` bzw.
   `currentAu`.
 - **Ablauf:** `SchadenErhalten.uebernehmeSchaden` lädt frisch, wendet an,
-  hängt einen Protokolleintrag an und stempelt mit demselben Zeitpunkt.
-  Wunden über die freien Plätze der gespeicherten Zone verfallen und stehen
-  im Ergebnis.
+  vermerkt eine `ZustandsBuchung` mit den tatsächlichen Änderungen, hängt
+  einen Protokolleintrag mit derselben `buchungId` an und stempelt mit
+  demselben Zeitpunkt. Wunden über die freien Plätze der gespeicherten Zone
+  verfallen und stehen im Ergebnis. Die Vorgangs-ID vergibt der Dialog beim
+  ersten Übernehmen; eine Wiederholung mit derselben ID speichert nichts
+  (ARCH-06). Die anschließende Unterdrückung vermerkt sich an der Buchung.
 - **Fehler:** werden nicht gefangen; das Panel zeigt sie und bleibt offen.
 - **Grenzen:** Wundschwellen und RS stammen aus dem berechneten Snapshot.
   Die Zusatzwürfe beziehen sich auf die angezeigte Wundzahl der Zone; ändert
   ein anderer Weg sie zwischendurch, bleibt der eingetragene Zusatzschaden
-  trotzdem gebucht. Keine Rücknahme (ARCH-06).
+  trotzdem gebucht.
+
+## Ablauf „Schaden zurücknehmen“ im Detail (ARCH-06)
+
+- **Einstieg:** „Zurücknehmen“ am Protokolleintrag einer gebuchten
+  Schadensbuchung (`schadenRuecknahmeAktion`, `InspectorDiceLogSection`,
+  Bestand und UI2). Ältere Einträge ohne Buchung haben keinen Knopf.
+- **Regel:** `schaden_ruecknahme_rules.dart` — `planeSchadensRuecknahme`
+  auf dem aktuellen Zustand, `wendeSchadensRuecknahmeAn` als Gegenbuchung.
+- **Ablauf:** `SchadenZuruecknehmen.nimmZurueck` lädt frisch und prüft dort
+  erneut: schon zurückgenommen, nicht mehr gespeichert oder keine
+  Schadensbuchung wirft einen `StateError` mit deutschem Text. Dieselbe
+  Vorgangs-ID der Gegenbuchung speichert kein zweites Mal.
+- **Fehler:** werden nicht gefangen; die Rückfrage zeigt sie und bleibt offen.
+- **Grenzen:** LeP/AuP steigen ohne Obergrenze (Nutzerentscheidung); eine
+  zwischenzeitliche Heilung bleibt und wird nur angezeigt. Wunden, die
+  bereits geheilt sind, werden genannt, nicht erneut entfernt. Buchungen
+  werden nach 50 verdrängt; dann ist die Rücknahme nicht mehr verfügbar.
 
 ## Befunde für Folgeaufträge
 
@@ -268,8 +400,11 @@ Domainlogik.
    ARCH-05-Teilstand:* Der Übersichtseditor schreibt nur noch den Bogen. Seine
    LeP-/AuP-/AsP-/KaP-Felder wurden nie angezeigt und setzten den Zustand vom
    Bearbeitungsbeginn zurück (negative LeP wurden 0).
-4. **`createHero` und der Startimport** schreiben den Zustand ohne
-   Zeitstempel; der Startimport umgeht zusätzlich die Normalisierung.
+4. ~~**`createHero` und der Startimport** schreiben den Zustand ohne
+   Zeitstempel~~; der Startimport umgeht zusätzlich die Normalisierung.
+   *Zeitstempel behoben in ARCH-06 Teilstand 1:* `createHero` schreibt den
+   Zustand über `aendereGespeichertenZustand`, der Startimport stempelt ihn
+   und trägt einen fehlenden Zustand nach.
 5. **Probenlogik doppelt:** `isRestProbeSuccessful` und
    `diceLogEntryFromSimpleCheck` (`lib/domain/dice_log_entry.dart`) werten
    eine einfache W20-Probe jeweils selbst aus.

@@ -127,8 +127,10 @@ void main() {
     expect(gefechtsGegnerzahl(s), 3);
     final p = pruefeGefechtsaktion(s, w, Gefechtsaktion.freiesAusweichen);
     expect(p.fehlendeAngaben, isEmpty);
-    // BE 1 + zwei weitere Gegner je 2 + Ausweich-DK Stangenwaffen 1.
-    expect(p.erschwernis, 1 + 4 + 1);
+    // Zwei weitere Gegner je 2 + Ausweich-DK Stangenwaffen 1; die BE 1 steckt
+    // in der Ausweichen-Herleitung (12 − 1), nicht in der Erschwernis.
+    expect(p.erschwernis, 4 + 1);
+    expect(p.zielwert, 12 - 1 - (4 + 1));
     expect(
       gefechtsGegnerzahl(
         s.copyWith(

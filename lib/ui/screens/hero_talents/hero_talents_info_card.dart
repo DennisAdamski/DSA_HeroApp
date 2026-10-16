@@ -121,9 +121,7 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
                     tooltip: 'Aus Katalog wählen',
                     onSelected: (value) async {
                       await _ensureEditingSession();
-                      if (!mounted) {
-                        return;
-                      }
+                      if (!mounted || !_editController.isEditing) return;
                       _openTalentSpecialAbilityCatalog(
                         karmal: value == 'karmal',
                       );
@@ -149,9 +147,7 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
                     ),
                     onPressed: () async {
                       await _ensureEditingSession();
-                      if (!mounted) {
-                        return;
-                      }
+                      if (!mounted || !_editController.isEditing) return;
                       _addTalentSpecialAbility();
                     },
                     child: const Text('+ Sonderfertigkeit'),
@@ -250,7 +246,9 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
   /// Liste, vgl. Dokumentation bei [_showTalentSpecialAbilityDialog]).
   void _openTalentSpecialAbilityCatalog({required bool karmal}) {
     final hero = _latestHero;
-    final catalog = ref.read(rulesCatalogProvider).valueOrNull;
+    final catalog = ref
+        .read(heroRulesCatalogProvider(widget.heroId))
+        .valueOrNull;
     if (hero == null || catalog == null) {
       return;
     }
@@ -394,7 +392,7 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
                     if (isNew) {
                       final hero = _latestHero;
                       final catalog = ref
-                          .read(rulesCatalogProvider)
+                          .read(heroRulesCatalogProvider(widget.heroId))
                           .valueOrNull;
                       final combinedCatalog = <SpecialAbilityDef>[
                         ...?catalog?.generalSpecialAbilities,

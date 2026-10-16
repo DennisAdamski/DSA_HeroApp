@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/kampfgegenstand_ablegen_rules.dart';
 import 'package:dsa_heldenverwaltung/ui/theme/codex_theme.dart';
 
 /// Karte fuer einen einzelnen Inventar-Eintrag in der Listenansicht.
@@ -48,7 +49,7 @@ class InventoryItemCard extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           child: Row(
             children: [
-              _SourceIcon(source: entry.source),
+              _SourceIcon(source: anzeigeQuelleImInventar(entry)),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(

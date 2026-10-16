@@ -6,6 +6,9 @@ export 'package:dsa_heldenverwaltung/state/hero_actions.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
+import 'package:dsa_heldenverwaltung/catalog/regelprofil_aufloesung.dart';
+import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_regelprofil.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/combat_rules.dart';
@@ -19,6 +22,7 @@ import 'package:dsa_heldenverwaltung/state/hero_base_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 import 'package:dsa_heldenverwaltung/state/hero_index_snapshot.dart';
 import 'package:dsa_heldenverwaltung/state/house_rules_providers.dart';
+import 'package:dsa_heldenverwaltung/state/regelprofil_providers.dart';
 
 /// Temporaerer BE-Ueberschreibungswert fuer die Talentansicht je Held.
 ///
@@ -107,6 +111,62 @@ final selectedHeroProvider = Provider<HeroSheet?>((ref) {
   return snapshot.byId[selectedId] ?? snapshot.byId[snapshot.sortedIds.first];
 });
 
+/// Regelprofil des Helden; `null` heißt: er folgt dem globalen Stand.
+///
+/// Ein Profil, das eine neuere App-Version geschrieben hat und diese Version
+/// nicht versteht, zählt ebenfalls als `null`.
+final heroRegelProfilProvider = Provider.family<HeroRegelProfil?, String>((
+  ref,
+  heroId,
+) {
+  final profil = ref.watch(
+    heroByIdProvider(heroId).select((hero) => hero?.regelProfil),
+  );
+  return profil != null && profil.istVerstanden ? profil : null;
+});
+
+/// Regelkatalog, nach dem der Held rechnet (ARCH-04).
+///
+/// Ohne Profil ist das der globale `rulesCatalogProvider` – dann bleiben
+/// Vorwärmen, Overrides in Tests und alle bisherigen Werte unverändert. Mit
+/// Profil entsteht der Katalog aus den Paketkopien des Helden.
+final heroRulesCatalogProvider =
+    Provider.family<AsyncValue<RulesCatalog>, String>((ref, heroId) {
+      final profil = ref.watch(heroRegelProfilProvider(heroId));
+      if (profil == null) {
+        return ref.watch(rulesCatalogProvider);
+      }
+      return ref
+          .watch(regelProfilAufloesungProvider(profil))
+          .whenData((aufloesung) => aufloesung.katalog);
+    });
+
+/// Ob ein Hausregel-Paket für den Helden wirkt: nach seinem Profil, sonst
+/// nach den Einstellungen. Die Elternkette der Pakete gilt in beiden Fällen.
+final heroHouseRuleActiveProvider =
+    Provider.family<bool, ({String heroId, String paketId})>((ref, schluessel) {
+      final profil = ref.watch(heroRegelProfilProvider(schluessel.heroId));
+      if (profil == null) {
+        return ref.watch(isHouseRuleActiveProvider(schluessel.paketId));
+      }
+      return paketKatalogAusProfil(profil)
+          .resolveActivePackIds(const <String>{})
+          .contains(schluessel.paketId.trim());
+    });
+
+/// Epische Vorteile aktiv? Für den Helden nach seinem Profil.
+final heroEpicAdvantagesActiveProvider = Provider.family<bool, String>((
+  ref,
+  heroId,
+) {
+  return ref.watch(
+    heroHouseRuleActiveProvider((
+      heroId: heroId,
+      paketId: EpicRuleKeys.advantages,
+    )),
+  );
+});
+
 /// Laufzeitzustand (Ressourcen, temp. Modifikatoren) je Held.
 final heroStateProvider = StreamProvider.family<HeroState, String>((
   ref,
@@ -142,9 +202,9 @@ final heroComputedProvider =
       if (state == null) {
         return const AsyncValue<HeroComputedSnapshot>.loading();
       }
-      final catalog = ref.watch(rulesCatalogProvider).valueOrNull;
+      final catalog = ref.watch(heroRulesCatalogProvider(heroId)).valueOrNull;
       final epicAdvantagesActive = ref.watch(
-        isHouseRuleActiveProvider(EpicRuleKeys.advantages),
+        heroEpicAdvantagesActiveProvider(heroId),
       );
       return AsyncValue<HeroComputedSnapshot>.data(
         buildHeroComputedSnapshot(

@@ -80,6 +80,9 @@ assets/catalogs/house_rules_v1/waffenmeister.md
 .codex/
 .claude/settings.local.json
 .superpowers/
+functions/node_modules/
+functions/lib/
+functions/.env.*
 docs/superpowers/
 .superpowers\brainstorm
 

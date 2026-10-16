@@ -1,20 +1,27 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/planung_bearbeiten_guard.dart';
 import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/catalog/special_ability_matching.dart';
+import 'package:dsa_heldenverwaltung/domain/artefakt_daten.dart';
 import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_rituals.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_advancement_entry.dart';
+import 'package:dsa_heldenverwaltung/ui_shared/magic_setup_dialog.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/ritual_knowledge_rules.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_spell_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_spell_text_overrides.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/magic_special_ability.dart';
-import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/artefakt_spruchspeicher_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/artefakt_zauber_liste_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/cost_text_parsing.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/editor_entwurf_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_requirement_context.dart';
@@ -22,19 +29,20 @@ import 'package:dsa_heldenverwaltung/rules/derived/learning_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/magic_acquisition_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/magic_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
-import 'package:dsa_heldenverwaltung/rules/derived/wund_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/special_ability_variant_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/zauber_herleitung_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/zauber_lernspalte_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/requirement_evaluation_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ritual_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/tradition_rules.dart';
-import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/config/ui_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui/debug/ui_rebuild_observer.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/artefakt_anwenden.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/active_spell_effects_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/dice_log_persistence.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/editor_entwurf_speichern.dart';
-import 'package:dsa_heldenverwaltung/ui/screens/shared/probe_request_factory.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_edit_controller.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/adaptive_table_columns.dart';
@@ -51,6 +59,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/hero_begabung_rules.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/begabung_haekchen.dart';
 
 part 'hero_magic/magic_active_spells_table.dart';
+part 'hero_magic/magic_artefakt_zauber_section.dart';
 part 'hero_magic/magic_header_section.dart';
 part 'hero_magic/magic_management_helpers.dart';
 part 'hero_magic/magic_representation_dialog.dart';
@@ -102,6 +111,8 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
   // Draft-Zustand wird nur im Edit-Modus veraendert.
   Map<String, HeroSpellEntry> _draftSpells = <String, HeroSpellEntry>{};
   List<HeroRitualCategory> _draftRitualCategories = <HeroRitualCategory>[];
+  Map<String, HeroRitualKnowledge> _draftRitualKnowledge = {};
+  List<HeroAdvancementEntry> _draftAdvancementHistory = [];
   List<String> _draftRepresentationen = <String>[];
   Map<String, String> _draftRepraesentationsTraditionen = <String, String>{};
   List<String> _draftMerkmalskenntnisse = <String>[];
@@ -172,6 +183,8 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
     _draftRitualCategories = List<HeroRitualCategory>.from(
       hero.ritualCategories,
     );
+    _draftRitualKnowledge = Map.of(hero.ritualKnowledge);
+    _draftAdvancementHistory = List.of(hero.advancementHistory);
     _draftRepresentationen = List<String>.from(hero.representationen);
     _draftRepraesentationsTraditionen = Map<String, String>.from(
       hero.repraesentationsTraditionen,
@@ -217,6 +230,13 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
   }
 
   Future<void> _startEdit() async {
+    final darfBearbeiten = await bestaetigeBearbeitungBeiPlanung(
+      context: context,
+      heroId: widget.heroId,
+    );
+    if (!darfBearbeiten || !mounted) {
+      return;
+    }
     final hero = _latestHero;
     if (hero == null) {
       return;
@@ -231,20 +251,7 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
     if (basis == null) {
       return;
     }
-    final entwurf = basis.copyWith(
-      spells: Map<String, HeroSpellEntry>.from(_draftSpells),
-      ritualCategories: List<HeroRitualCategory>.from(_draftRitualCategories),
-      representationen: List<String>.from(_draftRepresentationen),
-      repraesentationsTraditionen: Map<String, String>.from(
-        _draftRepraesentationsTraditionen,
-      ),
-      merkmalskenntnisse: List<String>.from(_draftMerkmalskenntnisse),
-      magicSpecialAbilities: List<MagicSpecialAbility>.from(
-        _draftMagicSpecialAbilities,
-      ),
-      magicLeadAttribute: _draftMagicLeadAttribute,
-      apSpent: basis.apSpent + _draftApSpentDelta,
-    );
+    final entwurf = _assembledMagicDraft(basis);
     final gespeichert = await speichereEditorEntwurf(
       context: context,
       ref: ref,
@@ -362,7 +369,7 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
 
     _latestHero = hero;
     _syncDraftFromHero(hero);
-    final catalogAsync = ref.watch(rulesCatalogProvider);
+    final catalogAsync = ref.watch(heroRulesCatalogProvider(widget.heroId));
     return catalogAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (error, stackTrace) =>
@@ -431,6 +438,14 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
                             ),
                           ),
                           _MagicActiveSpellsTable(
+                            elementarharmonisiert:
+                                heroSpecialAbilityNames(
+                                  hero,
+                                  catalog: catalog,
+                                ).any(
+                                  (name) => normalizeSpecialAbilityName(name)
+                                      .startsWith('elementarharmonisierteaura'),
+                                ),
                             begabungen: begabungen,
                             activeSpellIds: activeSpellIds,
                             spellEntries: _draftSpells,
@@ -462,51 +477,56 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
                               if (!_editController.isEditing) {
                                 await _startEdit();
                               }
-                              if (!context.mounted) return;
+                              if (!context.mounted ||
+                                  !_editController.isEditing) {
+                                return;
+                              }
                               _showZauberKatalog(context, catalog.spells);
                             },
                             onRollSpell: (_, spell, entry) {
-                              // Wunden senken die Eigenschaften nur für
-                              // den Wurf (WdS S. 111).
-                              final wundEffekte = ref
+                              // Probenwerte aus dem gespeicherten Stand: Wunden
+                              // und temporäre Boni zählen mit (WdS S. 111); der
+                              // ZfW kommt aus dem (Entwurfs-)Eintrag.
+                              final snapshot = ref
                                   .read(heroComputedProvider(widget.heroId))
                                   .asData
-                                  ?.value
-                                  .wundEffekte;
-                              final probenWerte = wundEffekte == null
-                                  ? effectiveAttributes
-                                  : wendeWundVerlusteAn(
-                                      effectiveAttributes,
-                                      wundEffekte,
-                                    );
-                              final targets = <ProbeTargetValue>[];
-                              for (final raw in spell.attributes) {
-                                final code = parseAttributeCode(raw);
-                                if (code == null) {
-                                  continue;
-                                }
-                                targets.add(
-                                  ProbeTargetValue(
-                                    label: raw.toUpperCase(),
-                                    value: readAttributeValue(
-                                      probenWerte,
-                                      code,
+                                  ?.value;
+                              final wert = zauberProbenwertAus(
+                                eintrag: entry,
+                                spell: spell,
+                                probenEigenschaften:
+                                    snapshot?.probenEigenschaften ??
+                                    effectiveAttributes,
+                              );
+                              if (wert == null) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      'Zauber ist nicht aktiviert (kein ZfW).',
                                     ),
                                   ),
                                 );
+                                return;
                               }
                               showLoggedProbeDialog(
                                 context: context,
                                 ref: ref,
                                 heroId: widget.heroId,
-                                request: buildSpellProbeRequest(
-                                  title: spell.name,
-                                  targets: targets,
-                                  basePool:
-                                      (entry.spellValue ?? 0) + entry.modifier,
+                                request: zauberprobeAus(
+                                  wert: wert,
+                                  titel: spell.name,
                                 ),
                               );
                             },
+                          ),
+                          _MagicArtefaktZauberSection(
+                            eintraege: artefaktZauberListe(hero),
+                            onAusloesen: (eintrag) => zeigeArtefaktAnwenden(
+                              context: context,
+                              ref: ref,
+                              heroId: widget.heroId,
+                              eintrag: eintrag,
+                            ),
                           ),
                         ],
                       ),
@@ -514,6 +534,7 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
                         padding: const EdgeInsets.fromLTRB(0, 8, 0, 12),
                         children: [
                           _MagicRitualsSection(
+                            hero: _assembledMagicDraft(hero),
                             begabungen: begabungen,
                             ritualCategories: _draftRitualCategories,
                             catalogTalents: catalog.talents,
@@ -528,6 +549,7 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
                               if (!_editController.isEditing) {
                                 await _startEdit();
                               }
+                              return mounted && _editController.isEditing;
                             },
                           ),
                         ],
@@ -535,7 +557,16 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
                       ListView(
                         padding: const EdgeInsets.fromLTRB(0, 8, 0, 12),
                         children: [
+                          TextButton.icon(
+                            key: const ValueKey('magic-setup-open'),
+                            onPressed: () => _setupMagic(catalog),
+                            icon: const Icon(Icons.auto_fix_high),
+                            label: const Text('Magische Tradition einrichten'),
+                          ),
                           _MagicHeaderSection(
+                            onAcquireRepresentation: (rep) =>
+                                _setupMagic(catalog, representation: rep),
+                            ritualKnowledge: _draftRitualKnowledge,
                             representationen: _draftRepresentationen,
                             repraesentationsTraditionen:
                                 _draftRepraesentationsTraditionen,
@@ -578,6 +609,7 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
                               if (!_editController.isEditing) {
                                 await _startEdit();
                               }
+                              return mounted && _editController.isEditing;
                             },
                           ),
                         ],

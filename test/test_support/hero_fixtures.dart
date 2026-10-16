@@ -4,7 +4,12 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dsa_heldenverwaltung/data/hero_transfer_codec.dart';
+import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
+import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_transfer_bundle.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/inventar_menge_rules.dart';
 
 /// Synthetische Bestandshelden unter `test/fixtures/heroes/` (ARCH-07).
 ///
@@ -169,4 +174,68 @@ Future<String> hiveTempVerzeichnis(String praefix) async {
     }
   });
   return verzeichnis.path;
+}
+
+/// JSON-Pfade, die das erste Speichern ergänzt (ARCH-03): je
+/// Inventareintrag die Instanz-ID und bei rein ganzzahliger Anzahl die
+/// Menge, dazu je benanntem Slot den Verweis auf seine Instanz
+/// ([slotInstanzPfade]) und der Container `herkunftsModifikatoren`. Laden
+/// ergänzt keinen davon.
+Set<String> ersteSpeicherungPfade(HeroSheet held) {
+  final eintraege = held.inventoryEntries;
+  return <String>{
+    // Herkunftstexte werden beim ersten Speichern strukturiert (ARCH-02).
+    'herkunftsModifikatoren',
+    for (var i = 0; i < eintraege.length; i++) ...<String>{
+      'inventoryEntries/$i/instanzId',
+      if (inventarZahlAusText(eintraege[i].anzahl) != null)
+        'inventoryEntries/$i/menge',
+      // Waffen und Nebenhandteile gelten seit dem 07.10.2026 nur in der Hand
+      // als ausgerüstet; das erste Speichern gleicht das an.
+      if (_inDerHandAbgeglichen(eintraege[i]))
+        'inventoryEntries/$i/istAusgeruestet',
+    },
+    ...slotInstanzPfade(held),
+  };
+}
+
+// Verknüpfte Waffe oder verknüpftes Nebenhandteil.
+bool _inDerHandAbgeglichen(HeroInventoryEntry e) {
+  final quelle = e.source;
+  return e.sourceRef != null &&
+      (quelle == InventoryItemSource.waffe ||
+          quelle == InventoryItemSource.nebenhand);
+}
+
+/// JSON-Pfade von `inventarInstanzId` an jedem benannten Slot von [held]:
+/// Waffen samt Geschossen (auch an der gespiegelten aktiven Waffe
+/// `mainWeapon`), Rüstungsstücke und Nebenhand-Teile.
+Set<String> slotInstanzPfade(HeroSheet held) {
+  final kampf = held.combatConfig;
+  Iterable<String> waffe(String pfad, MainWeaponSlot slot) sync* {
+    if (slot.name.trim().isEmpty) return;
+    yield '$pfad/inventarInstanzId';
+    if (!slot.fuehrtGeschosse) return;
+    final geschosse = slot.rangedProfile.projectiles;
+    for (var j = 0; j < geschosse.length; j++) {
+      if (geschosse[j].name.trim().isEmpty) continue;
+      yield '$pfad/rangedProfile/projectiles/$j/inventarInstanzId';
+    }
+  }
+
+  final slots = kampf.weaponSlots;
+  final aktiv = kampf.selectedWeaponOrNull ?? kampf.mainWeapon;
+  final ruestung = kampf.armor.pieces;
+  final nebenhand = kampf.offhandEquipment;
+  return <String>{
+    for (var i = 0; i < slots.length; i++)
+      ...waffe('combatConfig/weapons/$i', slots[i]),
+    ...waffe('combatConfig/mainWeapon', aktiv),
+    for (var i = 0; i < ruestung.length; i++)
+      if (ruestung[i].name.trim().isNotEmpty)
+        'combatConfig/armor/pieces/$i/inventarInstanzId',
+    for (var i = 0; i < nebenhand.length; i++)
+      if (nebenhand[i].name.trim().isNotEmpty)
+        'combatConfig/offhandEquipment/$i/inventarInstanzId',
+  };
 }

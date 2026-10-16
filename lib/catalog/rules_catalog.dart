@@ -1,3 +1,4 @@
+import 'package:dsa_heldenverwaltung/catalog/alchimikum_def.dart';
 import 'package:dsa_heldenverwaltung/catalog/catalog_json_helpers.dart';
 import 'package:dsa_heldenverwaltung/catalog/combat_special_ability_def.dart';
 import 'package:dsa_heldenverwaltung/catalog/hero_trait_def.dart';
@@ -7,11 +8,13 @@ import 'package:dsa_heldenverwaltung/catalog/reisebericht_def.dart';
 import 'package:dsa_heldenverwaltung/catalog/schrift_def.dart';
 import 'package:dsa_heldenverwaltung/catalog/special_ability_def.dart';
 import 'package:dsa_heldenverwaltung/catalog/spell_def.dart';
+import 'package:dsa_heldenverwaltung/catalog/spell_effect_def.dart';
 import 'package:dsa_heldenverwaltung/catalog/sprache_def.dart';
 import 'package:dsa_heldenverwaltung/catalog/talent_def.dart';
 import 'package:dsa_heldenverwaltung/catalog/weapon_def.dart';
 
 // Re-Exports fuer abwaertskompatible Imports.
+export 'package:dsa_heldenverwaltung/catalog/alchimikum_def.dart';
 export 'package:dsa_heldenverwaltung/catalog/catalog_constants.dart';
 export 'package:dsa_heldenverwaltung/catalog/combat_special_ability_def.dart';
 export 'package:dsa_heldenverwaltung/catalog/hero_trait_def.dart';
@@ -20,6 +23,7 @@ export 'package:dsa_heldenverwaltung/catalog/rule_meta.dart';
 export 'package:dsa_heldenverwaltung/catalog/schrift_def.dart';
 export 'package:dsa_heldenverwaltung/catalog/special_ability_def.dart';
 export 'package:dsa_heldenverwaltung/catalog/spell_def.dart';
+export 'package:dsa_heldenverwaltung/catalog/spell_effect_def.dart';
 export 'package:dsa_heldenverwaltung/catalog/sprache_def.dart';
 export 'package:dsa_heldenverwaltung/catalog/talent_def.dart';
 export 'package:dsa_heldenverwaltung/catalog/reisebericht_def.dart';
@@ -48,6 +52,8 @@ class RulesCatalog {
     this.sprachen = const [],
     this.schriften = const [],
     this.reisebericht = const [],
+    this.spellEffects = const [],
+    this.alchimika = const [],
     this.metadata = const {},
     this.ruleResolver = const CatalogRuleResolver(),
   });
@@ -71,6 +77,8 @@ class RulesCatalog {
   final List<SpracheDef> sprachen; // Sprachdefinitionen
   final List<SchriftDef> schriften; // Schriftdefinitionen
   final List<ReiseberichtDef> reisebericht; // Reisebericht-Eintraege
+  final List<SpellEffectProfile> spellEffects; // Zauberprofile (MAG-EFF)
+  final List<AlchimikumDef> alchimika; // Traenke und Heilmittel (TRANK)
   final Map<String, dynamic> metadata; // Sonstige Metadaten aus dem Manifest
   final CatalogRuleResolver ruleResolver; // Hausregel-Provenienz fuer UI/Regeln
 
@@ -101,6 +109,8 @@ class RulesCatalog {
     final sprachenRaw = (json['sprachen'] as List?) ?? const [];
     final schriftenRaw = (json['schriften'] as List?) ?? const [];
     final reiseberichtRaw = (json['reisebericht'] as List?) ?? const [];
+    final spellEffectsRaw = (json['spellEffects'] as List?) ?? const [];
+    final alchimikaRaw = (json['alchimika'] as List?) ?? const [];
 
     return RulesCatalog(
       version: readCatalogString(json, 'version', fallback: 'unknown'),
@@ -171,6 +181,17 @@ class RulesCatalog {
             (entry) => ReiseberichtDef.fromJson(entry.cast<String, dynamic>()),
           )
           .toList(growable: false),
+      spellEffects: spellEffectsRaw
+          .whereType<Map>()
+          .map(
+            (entry) =>
+                SpellEffectProfile.fromJson(entry.cast<String, dynamic>()),
+          )
+          .toList(growable: false),
+      alchimika: alchimikaRaw
+          .whereType<Map>()
+          .map((entry) => AlchimikumDef.fromJson(entry.cast<String, dynamic>()))
+          .toList(growable: false),
       metadata: (json['metadata'] as Map?)?.cast<String, dynamic>() ?? const {},
     );
   }
@@ -213,6 +234,14 @@ class RulesCatalog {
       'reisebericht': reisebericht
           .map((entry) => entry.toJson())
           .toList(growable: false),
+      if (spellEffects.isNotEmpty)
+        'spellEffects': spellEffects
+            .map((entry) => entry.toJson())
+            .toList(growable: false),
+      if (alchimika.isNotEmpty)
+        'alchimika': alchimika
+            .map((entry) => entry.toJson())
+            .toList(growable: false),
     };
   }
 }

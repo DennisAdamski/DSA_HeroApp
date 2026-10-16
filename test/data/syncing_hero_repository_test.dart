@@ -156,6 +156,26 @@ void main() {
         repository.currentStatus.openConflicts.single.localSummary,
         'Offline Alrik',
       );
+      expect(repository.currentStatus.openConflicts.single.remoteSummary, '—');
+    });
+
+    test('Offline-Konflikt zeigt den unveränderten Konto-Namen', () async {
+      final repository = SyncingHeroRepository(
+        local: FakeRepository(heroes: <HeroSheet>[hero('h-1', 'Konto Alrik')]),
+        remote: FakeRemoteHeroSyncGateway(),
+        metadataStore: InMemorySyncMetadataStore(),
+        accountId: 'user-1',
+        startRemoteListener: false,
+      );
+
+      await repository.queueOfflineProfileConflicts(
+        offlineHeroes: <HeroSheet>[hero('h-1', 'Offline Alrik')],
+      );
+
+      expect(
+        repository.currentStatus.openConflicts.single.remoteSummary,
+        'Konto Alrik',
+      );
     });
 
     test(

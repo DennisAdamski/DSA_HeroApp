@@ -1,9 +1,32 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/planung_bearbeiten_guard.dart';
 
+import 'package:dsa_heldenverwaltung/catalog/alchimikum_def.dart';
+import 'package:dsa_heldenverwaltung/domain/artefakt_daten.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_companion.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/alchimika_elixier_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/alchimika_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/artefakt_spruchspeicher_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/inventar_menge_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/inventar_stapel_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/kampfgegenstand_ablegen_rules.dart';
+import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
+import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
+import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/alchimika_auswahl_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/artefakt_anwenden.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/artefakt_editor_abschnitt.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/elixier_einnehmen_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/inventory_eintrag_aktionen.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/spruchspeicher_aufladen_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/vitalwirkung_anwenden_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/vitalwirkung_editor_abschnitt.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/inventory_modifier_editor.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/inventory_stapel_teilen.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/list_tile_material.dart';
 
 const double _fieldSpacing = 12;
@@ -14,7 +37,7 @@ const double _fieldSpacing = 12;
 /// (schmale Screens) eingesetzt werden.
 ///
 /// Ruft [onSaved] mit dem aktualisierten Eintrag auf, [onCancelled] bei Abbruch.
-class InventoryItemEditor extends StatefulWidget {
+class InventoryItemEditor extends ConsumerStatefulWidget {
   /// Erstellt den Detail-Editor fuer einen Inventar-Eintrag.
   const InventoryItemEditor({
     super.key,
@@ -24,6 +47,10 @@ class InventoryItemEditor extends StatefulWidget {
     this.showAppBar = true,
     this.isNew = false,
     this.companions = const <HeroCompanion>[],
+    this.onStapelTeilen,
+    this.onKampfUebernehmen,
+    this.onZusammenfuehren,
+    this.onVerkaufen,
   });
 
   final HeroInventoryEntry entry;
@@ -35,16 +62,36 @@ class InventoryItemEditor extends StatefulWidget {
   /// Begleiter des Helden fuer das Traeger-Dropdown.
   final List<HeroCompanion> companions;
 
+  /// Spaltet vom angezeigten Stapel ab (ARCH-03); ohne Rückruf und für
+  /// nicht teilbare Einträge gibt es keinen Knopf „Stapel teilen“.
+  final Future<void> Function(StapelTeilung teilung)? onStapelTeilen;
+
+  /// Holt einen im Kampfbereich abgelegten Gegenstand zurück (ARCH-03);
+  /// ohne Rückruf und für andere Einträge gibt es keinen Knopf.
+  final Future<void> Function()? onKampfUebernehmen;
+
+  /// Führt den Stapel in einen gleichen zusammen (ARCH-03); der Aufrufer
+  /// übergibt ihn nur, wenn es einen passenden Stapel gibt.
+  final Future<void> Function()? onZusammenfuehren;
+
+  /// Verkauft den Gegenstand oder einen Teil des Stapels (ARCH-03).
+  final Future<void> Function()? onVerkaufen;
+
   @override
-  State<InventoryItemEditor> createState() => _InventoryItemEditorState();
+  ConsumerState<InventoryItemEditor> createState() =>
+      _InventoryItemEditorState();
 }
 
-class _InventoryItemEditorState extends State<InventoryItemEditor> {
+class _InventoryItemEditorState extends ConsumerState<InventoryItemEditor> {
   late HeroInventoryEntry _draft;
   bool _isSaving = false;
   // Ein fehlgeschlagener Schreibvorgang darf den Entwurf nicht stillschweigend
   // verlieren: der Editor bleibt offen und nennt den Grund.
   String? _speicherFehler;
+
+  // Zählt Katalogübernahmen: Der Abschnitt „Wirkung auf Vitalwerte“ füllt seine
+  // Felder nur einmal aus dem Entwurf und wird dafür neu aufgebaut.
+  int _katalogUebernahmen = 0;
 
   late TextEditingController _nameCtrl;
   late TextEditingController _anzahlCtrl;
@@ -110,9 +157,9 @@ class _InventoryItemEditorState extends State<InventoryItemEditor> {
       return;
     }
 
-    final updated = _draft.copyWith(
+    // Eine reine Zahl wird zur Menge, alles andere bleibt offener Text.
+    final updated = mitInventarMengeAusText(_draft, _anzahlCtrl.text).copyWith(
       gegenstand: _nameCtrl.text.trim(),
-      anzahl: _anzahlCtrl.text.trim(),
       gewichtGramm: int.tryParse(_gewichtCtrl.text) ?? 0,
       wertSilber: int.tryParse(_wertCtrl.text) ?? 0,
       herkunft: _herkunftCtrl.text.trim(),
@@ -121,17 +168,147 @@ class _InventoryItemEditorState extends State<InventoryItemEditor> {
       geweihtDescription: _geweihtDescriptionCtrl.text.trim(),
     );
 
+    await _fuehreAus('Speichern', () => widget.onSaved(updated));
+  }
+
+  // Übernimmt ein Katalogmittel (TRANK) in den Entwurf. Nichts wird gespeichert
+  // oder gebucht; der Nutzer kann alles danach ändern.
+  Future<void> _waehleAlchimikum() async {
+    final heroId = PlanungsBearbeitungsBereich.heldVon(context);
+    final katalog =
+        (heroId == null
+                ? ref.read(rulesCatalogProvider)
+                : ref.read(heroRulesCatalogProvider(heroId)))
+            .valueOrNull;
+    final mittel = katalog?.alchimika ?? const <AlchimikumDef>[];
+    if (mittel.isEmpty) {
+      setState(
+        () => _speicherFehler =
+            'Der Katalog der Tränke und Heilmittel ist nicht geladen.',
+      );
+      return;
+    }
+    final wahl = await zeigeAlchimikaAuswahl(context: context, mittel: mittel);
+    if (wahl == null || !mounted) {
+      return;
+    }
+    final neu = mitAlchimikum(_draft, wahl.mittel, wahl.stufe);
+    setState(() {
+      _speicherFehler = null;
+      _draft = neu;
+      _katalogUebernahmen++;
+      _nameCtrl.text = neu.gegenstand;
+      _beschreibungCtrl.text = neu.beschreibung;
+      _wertCtrl.text = neu.wertSilber > 0 ? neu.wertSilber.toString() : '';
+    });
+  }
+
+  // Aktionen am gespeicherten Eintrag; Fehler bleiben im Editor sichtbar.
+  Widget _buildAktionen() {
+    VoidCallback? als(String was, Future<void> Function()? aktion) =>
+        aktion == null ? null : () => _fuehreAus(was, aktion);
+    final teilbar =
+        widget.onStapelTeilen != null && stapelTeilbar(widget.entry);
+    final abgelegt = istAbgelegterKampfgegenstand(widget.entry);
+    final heroId = PlanungsBearbeitungsBereich.heldVon(context);
+    final artefakt = widget.entry.artefaktDaten;
+    // Ein Katalogelixier nimmt „Anwenden“ als Einnehmen; der Katalog des
+    // Helden entscheidet, ob die Stufe Eigenschaften verändert.
+    final elixier =
+        heroId != null &&
+        hatElixierWirkung(
+          ref.watch(heroRulesCatalogProvider(heroId)).valueOrNull,
+          widget.entry,
+        );
+    // Ausgelöst wird der gespeicherte Eintrag, nicht der Entwurf.
+    final ausloesbar =
+        heroId != null && artefakt != null && artefaktAusloesbar(artefakt);
+    final aufladbar =
+        heroId != null &&
+        artefakt != null &&
+        !artefakt.defekt &&
+        spruchspeicherAufladbarLeer(artefakt);
+    return InventoryEintragAktionen(
+      entry: widget.entry,
+      gesperrt: _isSaving,
+      ausloesenText: artefakt?.art == ArtefaktArt.zaubertalisman
+          ? 'Auxiliator einsetzen'
+          : 'Auslösen',
+      onAusloesen: ausloesbar
+          ? () => zeigeArtefaktAnwenden(
+              context: context,
+              ref: ref,
+              heroId: heroId,
+              eintrag: widget.entry,
+            )
+          : null,
+      onAnwenden:
+          heroId != null &&
+              (hatVitalwirkung(widget.entry) || elixier) &&
+              !_isLinked
+          ? () => elixier
+                ? zeigeElixierEinnehmen(
+                    context: context,
+                    ref: ref,
+                    heroId: heroId,
+                    eintrag: widget.entry,
+                  )
+                : zeigeVitalwirkungAnwenden(
+                    context: context,
+                    ref: ref,
+                    heroId: heroId,
+                    eintrag: widget.entry,
+                  )
+          : null,
+      onAufladen: aufladbar
+          ? () => zeigeSpruchspeicherAufladen(
+              context: context,
+              ref: ref,
+              heroId: heroId,
+              eintrag: widget.entry,
+            )
+          : null,
+      onTeilen: teilbar ? _teileStapel : null,
+      onZusammenfuehren: als('Zusammenführen', widget.onZusammenfuehren),
+      onVerkaufen: als('Verkaufen', widget.onVerkaufen),
+      onKampfUebernehmen: abgelegt
+          ? als('Übernehmen', widget.onKampfUebernehmen)
+          : null,
+    );
+  }
+
+  /// Fragt die Teilung ab und spaltet vom gespeicherten Stapel ab.
+  Future<void> _teileStapel() async {
+    final teilen = widget.onStapelTeilen;
+    final menge = wirksameInventarMenge(widget.entry);
+    if (teilen == null || menge == null || _isSaving) {
+      return;
+    }
+    final wahl = await zeigeStapelTeilenDialog(
+      context,
+      name: widget.entry.gegenstand,
+      menge: menge,
+      woGetragen: widget.entry.woGetragen,
+    );
+    if (wahl == null || !mounted) {
+      return;
+    }
+    await _fuehreAus('Teilen', () => teilen(wahl));
+  }
+
+  // Führt einen Schreibvorgang aus; ein Fehler bleibt im Editor sichtbar.
+  Future<void> _fuehreAus(String was, Future<void> Function() aktion) async {
     setState(() {
       _isSaving = true;
       _speicherFehler = null;
     });
     try {
-      await widget.onSaved(updated);
+      await aktion();
     } catch (error) {
       if (mounted) {
         // Fachliche Gründe (`StateError`) ohne das technische „Bad state:“.
         final grund = error is StateError ? error.message : '$error';
-        setState(() => _speicherFehler = 'Speichern fehlgeschlagen: $grund');
+        setState(() => _speicherFehler = '$was fehlgeschlagen: $grund');
       }
     } finally {
       if (mounted) {
@@ -142,7 +319,10 @@ class _InventoryItemEditorState extends State<InventoryItemEditor> {
 
   @override
   Widget build(BuildContext context) {
-    final content = _buildContent(context);
+    final heroId = PlanungsBearbeitungsBereich.heldVon(context);
+    final planungOffen =
+        heroId != null && ref.watch(advancementSessionProvider(heroId)) != null;
+    final content = _buildContent(context, planungOffen);
     final useCompactTitle = MediaQuery.sizeOf(context).width < 520;
     final appBarTitle = useCompactTitle
         ? (widget.isNew ? 'Hinzufügen' : 'Bearbeiten')
@@ -169,7 +349,7 @@ class _InventoryItemEditorState extends State<InventoryItemEditor> {
             message: 'Speichern',
             child: IconButton(
               key: const ValueKey<String>('inventory-editor-save'),
-              onPressed: _isSaving ? null : _save,
+              onPressed: _isSaving || planungOffen ? null : _save,
               icon: const Icon(Icons.check),
             ),
           ),
@@ -180,7 +360,7 @@ class _InventoryItemEditorState extends State<InventoryItemEditor> {
     );
   }
 
-  Widget _buildContent(BuildContext context) {
+  Widget _buildContent(BuildContext context, bool planungOffen) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -189,7 +369,7 @@ class _InventoryItemEditorState extends State<InventoryItemEditor> {
           if (!widget.showAppBar)
             _InlineHeader(
               title: _editorTitle,
-              onSave: _save,
+              onSave: planungOffen ? null : _save,
               onCancel: widget.onCancelled,
               isSaving: _isSaving,
             ),
@@ -200,32 +380,50 @@ class _InventoryItemEditorState extends State<InventoryItemEditor> {
             ),
             const SizedBox(height: _fieldSpacing),
           ],
-          _SectionTitle('Stammdaten'),
-          const SizedBox(height: 8),
-          _buildStammdaten(context),
-          const SizedBox(height: _fieldSpacing * 2),
-          _SectionTitle('Magisch & Geweiht'),
-          const SizedBox(height: 8),
-          _buildBesonderheiten(),
-          const SizedBox(height: _fieldSpacing * 2),
-          _SectionTitle('Wert & Gewicht'),
-          const SizedBox(height: 8),
-          _buildWertGewicht(),
-          if (_draft.itemType == InventoryItemType.ausruestung) ...[
-            const SizedBox(height: _fieldSpacing * 2),
-            _SectionTitle('Modifikatoren'),
-            const SizedBox(height: 4),
-            _buildModifikatoren(),
-          ],
+          PlanungsFormularSchutz(child: _buildForm(context)),
         ],
       ),
     );
   }
 
+  // Der äußere Scrollbereich bleibt auch bei gesperrter Form bedienbar.
+  Widget _buildForm(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      _SectionTitle('Stammdaten'),
+      const SizedBox(height: 8),
+      _buildStammdaten(context),
+      const SizedBox(height: _fieldSpacing * 2),
+      _SectionTitle('Magisch & Geweiht'),
+      const SizedBox(height: 8),
+      _buildBesonderheiten(),
+      const SizedBox(height: _fieldSpacing * 2),
+      _SectionTitle('Wert & Gewicht'),
+      const SizedBox(height: 8),
+      _buildWertGewicht(),
+      if (_draft.itemType == InventoryItemType.ausruestung) ...[
+        const SizedBox(height: _fieldSpacing * 2),
+        _SectionTitle('Modifikatoren'),
+        const SizedBox(height: 4),
+        _buildModifikatoren(),
+      ],
+    ],
+  );
+
   Widget _buildStammdaten(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        if (!_isLinked)
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton.icon(
+              key: const ValueKey<String>('inventory-editor-katalog'),
+              onPressed: _isSaving ? null : _waehleAlchimikum,
+              icon: const Icon(Icons.local_pharmacy_outlined),
+              label: const Text('Aus Katalog: Tränke & Heilmittel'),
+            ),
+          ),
         if (_isLinked)
           _LinkedHint(gegenstand: _draft.gegenstand)
         else
@@ -277,17 +475,50 @@ class _InventoryItemEditorState extends State<InventoryItemEditor> {
             ),
           ],
         ),
-        if (_draft.itemType == InventoryItemType.ausruestung) ...[
+        if (inventarMengenstand(widget.entry).ueberholteMenge
+            case final vorher?) ...[
+          const SizedBox(height: 4),
+          Text(
+            'Eine ältere App-Version hat die Anzahl geändert '
+            '(gespeicherte Menge: $vorher). Es gilt die Anzahl; Speichern '
+            'übernimmt sie.',
+            key: const ValueKey<String>('inventory-editor-quantity-hint'),
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+        ],
+        if (_draft.itemType == InventoryItemType.verbrauchsgegenstand &&
+            !_isLinked) ...[
+          const SizedBox(height: _fieldSpacing),
+          VitalwirkungEditorAbschnitt(
+            key: ValueKey<int>(_katalogUebernahmen),
+            wirkung: _draft.vitalwirkung,
+            onChanged: (wirkung) =>
+                setState(() => _draft = _draft.copyWith(vitalwirkung: wirkung)),
+          ),
+        ],
+        if (!widget.isNew) _buildAktionen(),
+        if (_draft.itemType == InventoryItemType.ausruestung ||
+            _draft.artefaktDaten != null) ...[
           const SizedBox(height: _fieldSpacing),
           ListTileMaterial(
             child: SwitchListTile.adaptive(
+              key: const ValueKey<String>('inventory-editor-ausgeruestet'),
               value: _draft.istAusgeruestet,
-              onChanged: (value) => setState(
-                () => _draft = _draft.copyWith(istAusgeruestet: value),
-              ),
+              // Verknüpfte Einträge folgen ihrem Slot; der Abgleich
+              // überschriebe den Schalter beim Speichern still.
+              onChanged: _isLinked
+                  ? null
+                  : (value) => setState(
+                      () => _draft = _draft.copyWith(istAusgeruestet: value),
+                    ),
               title: const Text('Ausgerüstet'),
-              subtitle: const Text(
-                'Modifikatoren wirken nur, wenn das Item ausgerüstet ist.',
+              subtitle: Text(
+                _isLinked
+                    ? 'Wird im Kampf-Tab festgelegt.'
+                    : _draft.artefaktDaten != null
+                    ? 'Nur ausgerüstete Artefakte stehen im Kampf bereit.'
+                    : 'Modifikatoren wirken nur, wenn das Item ausgerüstet '
+                          'ist.',
               ),
               dense: true,
               contentPadding: EdgeInsets.zero,
@@ -339,8 +570,13 @@ class _InventoryItemEditorState extends State<InventoryItemEditor> {
           child: SwitchListTile.adaptive(
             key: const ValueKey<String>('inventory-editor-magisch'),
             value: _draft.isMagisch,
-            onChanged: (value) =>
-                setState(() => _draft = _draft.copyWith(isMagisch: value)),
+            // Ein Matrixgeber ist ein magischer Gegenstand: ohne „Magisch“
+            // gibt es keine Artefaktdaten.
+            onChanged: (value) => setState(
+              () => _draft = value
+                  ? _draft.copyWith(isMagisch: true)
+                  : _draft.copyWith(isMagisch: false, artefaktDaten: null),
+            ),
             title: const Text('Magisch'),
             dense: true,
             contentPadding: EdgeInsets.zero,
@@ -358,6 +594,18 @@ class _InventoryItemEditorState extends State<InventoryItemEditor> {
             isDense: true,
           ),
         ),
+        if (_draft.isMagisch) ...[
+          const SizedBox(height: _fieldSpacing),
+          Padding(
+            padding: const EdgeInsets.only(left: 16),
+            child: ArtefaktEditorAbschnitt(
+              daten: _draft.artefaktDaten,
+              onChanged: (daten) => setState(
+                () => _draft = _draft.copyWith(artefaktDaten: daten),
+              ),
+            ),
+          ),
+        ],
         const SizedBox(height: _fieldSpacing),
         ListTileMaterial(
           child: SwitchListTile.adaptive(
@@ -394,7 +642,7 @@ class _InventoryItemEditorState extends State<InventoryItemEditor> {
             key: const ValueKey<String>('inventory-editor-weight'),
             controller: _gewichtCtrl,
             decoration: const InputDecoration(
-              labelText: 'Gewicht (g)',
+              labelText: 'Gewicht pro Stück (g)',
               hintText: '0 = unbekannt',
               border: OutlineInputBorder(),
               isDense: true,
@@ -409,7 +657,7 @@ class _InventoryItemEditorState extends State<InventoryItemEditor> {
             key: const ValueKey<String>('inventory-editor-value'),
             controller: _wertCtrl,
             decoration: const InputDecoration(
-              labelText: 'Wert (S)',
+              labelText: 'Wert pro Stück (S)',
               hintText: '0 = unbekannt',
               border: OutlineInputBorder(),
               isDense: true,
@@ -454,7 +702,7 @@ class _InlineHeader extends StatelessWidget {
   });
 
   final String title;
-  final Future<void> Function() onSave;
+  final Future<void> Function()? onSave;
   final VoidCallback onCancel;
   final bool isSaving;
 
@@ -588,6 +836,7 @@ class _DropdownField<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DropdownButtonFormField<T>(
+      isExpanded: true,
       initialValue: value,
       decoration: InputDecoration(
         labelText: label,

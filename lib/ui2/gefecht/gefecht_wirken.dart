@@ -5,6 +5,8 @@ import 'package:dsa_heldenverwaltung/domain/gefecht.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht_wirken.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_provider.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/gefecht_gegner_rules.dart'
+    show gefechtsAngreifbareGegner;
 import 'package:dsa_heldenverwaltung/state/gefecht_begegnung_provider.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_fremdwirkung_rules.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_initiative_provider.dart';
@@ -13,6 +15,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/gefecht_ablauf_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_held_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_wirken_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_magie_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/spell_effect_instance_rules.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_gefechts_adapter.dart';
 
 import 'gefecht_wirkdialog.dart';
@@ -38,6 +41,12 @@ Future<void> zeigeGefechtsWirken({
       zustand: s,
       zauber: zauber,
       talent: talent,
+      aufrechterhaltenVorschlag: aufrechterhaltungsBefund(
+        snapshot.state,
+        ref.read(heroRulesCatalogProvider(heroId)).asData?.value,
+      ).anzahl,
+      talentBeOverride: ref.read(talentBeOverrideProvider(heroId)),
+      epicAdvantagesActive: ref.read(heroEpicAdvantagesActiveProvider(heroId)),
     ),
   );
   if (profil == null || !context.mounted) return;
@@ -46,7 +55,7 @@ Future<void> zeigeGefechtsWirken({
     final ziel = await zeigeGefechtsFremdziel(
       context: context,
       zauberId: zauber.id,
-      gegner: ref.read(gefechtBegegnungProvider).gegner.values.toList(),
+      gegner: gefechtsAngreifbareGegner(ref.read(gefechtBegegnungProvider)),
       verfuegbareAsp: snapshot.state.currentAsp,
       gegnerId: s.kontext.gegnerId,
     );

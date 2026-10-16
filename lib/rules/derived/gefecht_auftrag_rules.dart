@@ -15,6 +15,7 @@ import 'gefecht_zielen_rules.dart';
 import 'gefecht_ansagefolge_rules.dart';
 import 'gefecht_klingen_rules.dart';
 import 'gefecht_patzer_rules.dart';
+import 'spell_effect_event_rules.dart';
 
 /// Identische Prüfung vor Anzeige und Ausführung, mit bekannten Gegnersperren.
 Gefechtspruefung pruefeGefechtAuftrag(
@@ -83,6 +84,9 @@ Gefechtspruefung _pruefeGefechtAuftrag(
             relevanteAktion == Gefechtsaktion.schildparade) &&
         profil.pa == null)
       'Keine Parade mit diesem Kampfmittel.',
+    if (profil != null && profil.nebenWaffe && auftrag.manoever == null)
+      'Neben einer Waffe nur Manöver der waffenlosen Kampftechnik '
+          '(WdS S. 90), keine gewöhnliche AT/PA.',
   ];
   final w = gefechtswerteFuer(snapshot, katalog: katalog, kampfmittel: wahl);
   if (auftrag.aktion == Gefechtsaktion.zusatzaktion) {
@@ -129,6 +133,9 @@ Gefechtspruefung _pruefeGefechtAuftrag(
       zusatzParade: auftrag.zusatzParade,
       eigenerAuftrag: eigenerAuftrag,
       distanzSchritte: auftrag.distanzSchritte,
+      zauberAnteile: [
+        ?falkenaugeAnteil(snapshot.state, zustand.kontext, katalog),
+      ],
     );
   }
   if (snapshot.wundEffekte.kampfunfaehig) {
@@ -170,6 +177,7 @@ Gefechtspruefung _pruefeGefechtAuftrag(
       entscheidungen: p.entscheidungen,
       hinweise: p.hinweise,
       modifikatoren: p.modifikatoren,
+      zielHerleitung: p.zielHerleitung,
       kampfmittel: wahl,
       ausruestungspaar: gefechtsAusruestungspaar(snapshot),
       mitAnsage: true,
@@ -203,6 +211,7 @@ Gefechtspruefung _pruefeGefechtAuftrag(
       entscheidungen: p.entscheidungen,
       hinweise: p.hinweise,
       modifikatoren: p.modifikatoren,
+      zielHerleitung: p.zielHerleitung,
       kampfmittel: wahl,
       ausruestungspaar: gefechtsAusruestungspaar(snapshot),
       mitAnsage: true,
@@ -224,6 +233,7 @@ Gefechtspruefung _pruefeGefechtAuftrag(
     entscheidungen: p.entscheidungen,
     hinweise: p.hinweise,
     modifikatoren: p.modifikatoren,
+    zielHerleitung: p.zielHerleitung,
     kampfmittel: wahl,
     ausruestungspaar: gefechtsAusruestungspaar(snapshot),
     mitAnsage: auftrag.manoever != null || auftrag.zuschlag != 0,

@@ -9,29 +9,32 @@ class _KampfWerteSection extends StatelessWidget {
     required this.companion,
     required this.isEditing,
     required this.onChanged,
-    this.onRaiseRegular,
     this.onRaisePool,
+    this.onRaiseGs,
   });
 
   final HeroCompanion companion;
   final bool isEditing;
   final ValueChanged<HeroCompanion> onChanged;
-  final void Function(String key, String label)? onRaiseRegular;
   final void Function(String key, String label)? onRaisePool;
+  final void Function(String art)? onRaiseGs;
 
   @override
   Widget build(BuildContext context) {
-    // Im View-Modus effektive Werte anzeigen (Basis + Steigerung).
+    // INI und Loyalitaet sind nach WdZ S. 125 nicht steigerbar; Altbuchungen
+    // zaehlen weiter und stehen in den Hinweisen darunter.
+    final hinweise = vertrautenSteigerungshinweise(companion);
+    // Im View-Modus wirksame Werte anzeigen (Basis + Steigerung + Ausbildung).
     final iniView = isEditing
         ? companion.ini
-        : companionEffektivwert(companion, 'ini') ?? companion.ini;
+        : begleiterWirksamerWert(companion, 'ini') ?? companion.ini;
     final mrView = isEditing
         ? companion.magieresistenz
-        : companionEffektiverPoolwert(companion, 'mr') ??
+        : begleiterWirksamerPoolwert(companion, 'mr') ??
               companion.magieresistenz;
     final loyView = isEditing
         ? companion.loyalitaet
-        : companionEffektivwert(companion, 'loyalitaet') ??
+        : begleiterWirksamerWert(companion, 'loyalitaet') ??
               companion.loyalitaet;
 
     return Column(
@@ -47,12 +50,6 @@ class _KampfWerteSection extends StatelessWidget {
                 value: iniView,
                 isEditing: isEditing,
                 onChanged: (v) => onChanged(companion.copyWith(ini: v)),
-                suffixIcon: onRaiseRegular != null && companion.ini != null
-                    ? _RaiseIconButton(
-                        tooltip: 'INI steigern',
-                        onPressed: () => onRaiseRegular!('ini', 'INI'),
-                      )
-                    : null,
               ),
             ),
             const SizedBox(width: _fieldSpacing),
@@ -79,14 +76,6 @@ class _KampfWerteSection extends StatelessWidget {
                 value: loyView,
                 isEditing: isEditing,
                 onChanged: (v) => onChanged(companion.copyWith(loyalitaet: v)),
-                suffixIcon:
-                    onRaiseRegular != null && companion.loyalitaet != null
-                    ? _RaiseIconButton(
-                        tooltip: 'Loyalität steigern',
-                        onPressed: () =>
-                            onRaiseRegular!('loyalitaet', 'Loyalität'),
-                      )
-                    : null,
               ),
             ),
           ],
@@ -135,11 +124,23 @@ class _KampfWerteSection extends StatelessWidget {
         ),
         const SizedBox(height: _innerFieldSpacing),
         _GeschwindigkeitenEditor(
-          speeds: companion.geschwindigkeiten,
+          speeds: isEditing
+              ? companion.geschwindigkeiten
+              : begleiterWirksameGeschwindigkeiten(companion),
           isEditing: isEditing,
           onChanged: (speeds) =>
               onChanged(companion.copyWith(geschwindigkeiten: speeds)),
+          onRaise: onRaiseGs,
         ),
+        for (final hinweis in hinweise)
+          Padding(
+            padding: const EdgeInsets.only(top: 4),
+            child: Text(
+              hinweis,
+              style: Theme.of(context).textTheme.bodySmall
+                  ?.copyWith(color: Theme.of(context).colorScheme.error),
+            ),
+          ),
       ],
     );
   }
@@ -205,11 +206,13 @@ class _GeschwindigkeitenEditor extends StatelessWidget {
     required this.speeds,
     required this.isEditing,
     required this.onChanged,
+    this.onRaise,
   });
 
   final List<HeroCompanionSpeed> speeds;
   final bool isEditing;
   final ValueChanged<List<HeroCompanionSpeed>> onChanged;
+  final void Function(String art)? onRaise;
 
   @override
   Widget build(BuildContext context) {
@@ -243,6 +246,9 @@ class _GeschwindigkeitenEditor extends StatelessWidget {
             child: _SpeedRow(
               speed: speeds[i],
               isEditing: isEditing,
+              onRaise: onRaise != null && speeds[i].art.isNotEmpty
+                  ? () => onRaise!(speeds[i].art)
+                  : null,
               onChanged: (updated) {
                 final next = List<HeroCompanionSpeed>.from(speeds);
                 next[i] = updated;
@@ -265,12 +271,14 @@ class _SpeedRow extends StatelessWidget {
     required this.isEditing,
     required this.onChanged,
     required this.onDelete,
+    this.onRaise,
   });
 
   final HeroCompanionSpeed speed;
   final bool isEditing;
   final ValueChanged<HeroCompanionSpeed> onChanged;
   final VoidCallback onDelete;
+  final VoidCallback? onRaise;
 
   @override
   Widget build(BuildContext context) {
@@ -305,6 +313,11 @@ class _SpeedRow extends StatelessWidget {
                 onChanged(speed.copyWith(wert: int.tryParse(v) ?? speed.wert)),
           ),
         ),
+        if (onRaise != null)
+          _RaiseIconButton(
+            tooltip: 'GS ${speed.art} steigern',
+            onPressed: onRaise!,
+          ),
         IconButton(
           icon: const Icon(Icons.remove_circle_outline, size: 18),
           visualDensity: VisualDensity.compact,
@@ -337,13 +350,13 @@ class _LepSection extends StatelessWidget {
     // Im View-Modus effektive Pool-Werte anzeigen.
     final lepView = isEditing
         ? companion.maxLep
-        : companionEffektiverPoolwert(companion, 'lep') ?? companion.maxLep;
+        : begleiterWirksamerPoolwert(companion, 'lep') ?? companion.maxLep;
     final aupView = isEditing
         ? companion.maxAup
-        : companionEffektiverPoolwert(companion, 'aup') ?? companion.maxAup;
+        : begleiterWirksamerPoolwert(companion, 'aup') ?? companion.maxAup;
     final aspView = isEditing
         ? companion.maxAsp
-        : companionEffektiverPoolwert(companion, 'asp') ?? companion.maxAsp;
+        : begleiterWirksamerPoolwert(companion, 'asp') ?? companion.maxAsp;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -372,12 +385,6 @@ class _LepSection extends StatelessWidget {
                 value: aupView,
                 isEditing: isEditing,
                 onChanged: (v) => onChanged(companion.copyWith(maxAup: v)),
-                suffixIcon: onRaisePool != null && companion.maxAup != null
-                    ? _RaiseIconButton(
-                        tooltip: 'AuP steigern',
-                        onPressed: () => onRaisePool!('aup', 'AuP'),
-                      )
-                    : null,
               ),
             ),
             const SizedBox(width: _fieldSpacing),
@@ -429,7 +436,12 @@ class _WeiteresSection extends StatelessWidget {
             Expanded(
               child: EditAwareField(
                 label: 'Tragkraft',
-                value: companion.tragkraft,
+                value: isEditing
+                    ? companion.tragkraft
+                    : begleiterWirksameKraft(
+                        companion.tragkraft,
+                        begleiterAusbildungsModifikationen(companion).tkFaktor,
+                      ),
                 isEditing: isEditing,
                 onChanged: (v) => onChanged(companion.copyWith(tragkraft: v)),
               ),
@@ -438,7 +450,12 @@ class _WeiteresSection extends StatelessWidget {
             Expanded(
               child: EditAwareField(
                 label: 'Zugkraft',
-                value: companion.zugkraft,
+                value: isEditing
+                    ? companion.zugkraft
+                    : begleiterWirksameKraft(
+                        companion.zugkraft,
+                        begleiterAusbildungsModifikationen(companion).zkFaktor,
+                      ),
                 isEditing: isEditing,
                 onChanged: (v) => onChanged(companion.copyWith(zugkraft: v)),
               ),
@@ -447,7 +464,11 @@ class _WeiteresSection extends StatelessWidget {
         ),
         const SizedBox(height: _innerFieldSpacing),
         EditAwareField(
-          label: 'Ausbildung',
+          // Bei Reittieren fuehrt der Abschnitt „Reittier-Ausbildung“; der
+          // alte Freitext bleibt als Notiz.
+          label: companion.typ == BegleiterTyp.reittier
+              ? 'Ausbildung (Notiz)'
+              : 'Ausbildung',
           value: companion.ausbildung,
           isEditing: isEditing,
           maxLines: 3,

@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_provider.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_initiative_provider.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
-import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_held_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_initiative_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_magie_rules.dart';
@@ -30,7 +29,7 @@ class GefechtReservekarte extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final s = ref.watch(gefechtMitInitiativeProvider(heroId));
     final snap = ref.watch(heroComputedProvider(heroId)).asData?.value;
-    final k = ref.watch(rulesCatalogProvider).asData?.value;
+    final k = ref.watch(heroRulesCatalogProvider(heroId)).asData?.value;
     if (s == null || snap == null) return const SizedBox.shrink();
     final blockiert = gesperrt || s.auftrag != null || s.handlung != null;
     final ctl = ref.read(gefechtProvider(heroId).notifier);
@@ -142,7 +141,16 @@ class GefechtReservekarte extends ConsumerWidget {
                                 talent == null) {
                               return;
                             }
-                            final request = gefechtsTalentprobe(frisch, talent);
+                            final request = gefechtsTalentprobe(
+                              frisch,
+                              talent,
+                              epicAdvantagesActive: ref.read(
+                                heroEpicAdvantagesActiveProvider(heroId),
+                              ),
+                              talentBeOverride: ref.read(
+                                talentBeOverrideProvider(heroId),
+                              ),
+                            );
                             if (request == null) {
                               throw StateError(
                                 'Selbstbeherrschungsprofil fehlt.',

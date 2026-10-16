@@ -6,6 +6,7 @@ import 'package:dsa_heldenverwaltung/domain/active_spell_effects_state.dart';
 
 import 'active_spell_rules.dart';
 import 'active_spell_state_rules.dart';
+import 'spell_effect_probe_rules.dart';
 import 'gefecht_ansagefolge_rules.dart';
 
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
@@ -54,7 +55,8 @@ HeroState uebernimmGefechtsArmatrutz(
   );
 }
 
-/// WdZ 15: niedrige LE/AU und bestätigte aufrechterhaltene Zauber, ohne Wunddoppelung.
+/// WdZ 15: niedrige LE/AU und bestätigte aufrechterhaltene Zauber, ohne
+/// Wunddoppelung; dazu die empfangenen Zauberwirkungen auf Zauberproben (Blitz).
 int gefechtsZauberZuschlag(
   HeroComputedSnapshot s, {
   required int aufrechterhalten,
@@ -78,7 +80,15 @@ int gefechtsZauberZuschlag(
       : au * 3 <= maxAu
       ? 3
       : 0;
-  return leMalus + auMalus + aufrechterhalten * (simultanzaubern ? 1 : 3);
+  // Blitz (LC S. 49): Zauberproben des Geblendeten sind um ZfP* erschwert.
+  final zauberEffekte = -probenAnpassungFuer(
+    s.derivedStats.zauberEffekte,
+    typ: ProbeType.spell,
+  ).wert;
+  return leMalus +
+      auMalus +
+      aufrechterhalten * (simultanzaubern ? 1 : 3) +
+      (zauberEffekte > 0 ? zauberEffekte : 0);
 }
 
 /// Ein Bonus trifft nur den bestätigten Proben- oder Eigenschaftstitel.

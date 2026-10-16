@@ -3,8 +3,10 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:dsa_heldenverwaltung/catalog/spell_def.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_advancement_entry.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/advancement_options.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/spell_catalog_filter_rules.dart';
 import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/config/ui_spacing.dart';
@@ -22,6 +24,7 @@ Future<AdvancementOption?> showAdvancementActivationSheet({
   required String heroId,
   required String title,
   required List<AdvancementKind> kinds,
+  bool Function(AdvancementOption option)? filter,
   String initialQuery = '',
 }) {
   return showAdaptiveDetailSheet<AdvancementOption>(
@@ -30,6 +33,7 @@ Future<AdvancementOption?> showAdvancementActivationSheet({
       heroId: heroId,
       title: title,
       kinds: kinds,
+      filter: filter,
       initialQuery: initialQuery,
     ),
   );
@@ -74,12 +78,17 @@ class _AdvancementActivationSheet extends ConsumerStatefulWidget {
     required this.title,
     required this.kinds,
     required this.initialQuery,
+    this.filter,
   });
 
   final String heroId;
   final String title;
   final List<AdvancementKind> kinds;
   final String initialQuery;
+
+  /// Engt die Arten weiter ein, etwa auf Kampftalente oder auf
+  /// Sonderfertigkeiten, die zur Tradition des Helden passen.
+  final bool Function(AdvancementOption option)? filter;
 
   @override
   ConsumerState<_AdvancementActivationSheet> createState() =>
@@ -93,6 +102,8 @@ class _AdvancementActivationSheetState
   );
   _ActivationFilter _filter = _ActivationFilter.all;
   bool _onlyAvailable = true;
+  String? _spellTrait;
+  int _minimumSpellSpread = 0;
 
   @override
   void dispose() {
@@ -104,6 +115,16 @@ class _AdvancementActivationSheetState
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final media = MediaQuery.sizeOf(context);
+    final session = ref.watch(advancementSessionProvider(widget.heroId));
+    final spellSheet = widget.kinds.contains(AdvancementKind.spell);
+    final catalogSpells = spellSheet
+        ? session?.catalog.spells ?? const <SpellDef>[]
+        : const <SpellDef>[];
+    final spells = <String, SpellDef>{
+      for (final spell in catalogSpells) spell.id: spell,
+    };
+    final spellTraits = spellCatalogFilterTraits(spells.values);
+    final spellSpreads = spellCatalogFilterSpreads(spells.values);
     final options = ref
         .watch(
           advancementOptionsProvider((
@@ -111,7 +132,11 @@ class _AdvancementActivationSheetState
             scope: AdvancementScope.inactive,
           )),
         )
-        .where((option) => widget.kinds.contains(option.kind))
+        .where(
+          (option) =>
+              widget.kinds.contains(option.kind) &&
+              (widget.filter?.call(option) ?? true),
+        )
         .toList();
     final filters = _availableFilters(options);
     // Ohne sichtbare Chips gilt immer der volle Umfang.
@@ -119,7 +144,20 @@ class _AdvancementActivationSheetState
     final query = _searchController.text.trim().toLowerCase();
     final filtered =
         options.where((option) {
-          if (_onlyAvailable && option.unavailableReason != null) return false;
+          if (option.kind == AdvancementKind.spell) {
+            final spell = spells[option.targetId];
+            if (spell == null) return false;
+            final matches = matchesSpellCatalogFilters(
+              spell: spell,
+              representations: session?.preview.representationen ?? const [],
+              onlyLearnedRepresentations: _onlyAvailable,
+              trait: _spellTrait,
+              minimumSpread: _minimumSpellSpread,
+            );
+            if (!matches) return false;
+          } else if (_onlyAvailable && option.unavailableReason != null) {
+            return false;
+          }
           if (!filter.matches(option)) return false;
           return option.label.toLowerCase().contains(query);
         }).toList()..sort(
@@ -133,88 +171,178 @@ class _AdvancementActivationSheetState
       content: SizedBox(
         width: kDialogWidthLarge,
         height: math.min(520, media.height * 0.6),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            TextField(
-              key: const ValueKey('advancement-activate-search'),
-              controller: _searchController,
-              onChanged: (_) => setState(() {}),
-              decoration: const InputDecoration(
-                hintText: 'Suchen…',
-                prefixIcon: Icon(Icons.search),
-                isDense: true,
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 8),
-            // Die Artfilter laufen waagerecht, damit sie auf schmalen Geräten
-            // nicht die halbe Blatthöhe als Umbruch beanspruchen.
-            if (filters.isNotEmpty)
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    for (final choice in filters)
-                      Padding(
-                        padding: const EdgeInsets.only(right: 8),
-                        child: ChoiceChip(
-                          key: ValueKey(
-                            'advancement-activate-filter-${choice.slug}',
-                          ),
-                          label: Text(choice.label),
-                          selected: choice == filter,
-                          onSelected: (_) => setState(() => _filter = choice),
+        // Filter und Treffer teilen den Scrollbereich auch bei großer Schrift.
+        child: CustomScrollView(
+          slivers: [
+            SliverToBoxAdapter(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  TextField(
+                    key: const ValueKey('advancement-activate-search'),
+                    controller: _searchController,
+                    onChanged: (_) => setState(() {}),
+                    decoration: const InputDecoration(
+                      hintText: 'Suchen…',
+                      prefixIcon: Icon(Icons.search),
+                      isDense: true,
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  // Die Artfilter laufen waagerecht, damit sie auf schmalen Geräten
+                  // nicht die halbe Blatthöhe als Umbruch beanspruchen.
+                  if (filters.isNotEmpty)
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: [
+                          for (final choice in filters)
+                            Padding(
+                              padding: const EdgeInsets.only(right: 8),
+                              child: ChoiceChip(
+                                key: ValueKey(
+                                  'advancement-activate-filter-${choice.slug}',
+                                ),
+                                label: Text(choice.label),
+                                selected: choice == filter,
+                                onSelected: (_) =>
+                                    setState(() => _filter = choice),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 12,
+                    runSpacing: 4,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      Text(
+                        '${filtered.length} von ${options.length} Einträgen',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: context.codexTheme.inkMuted,
                         ),
                       ),
-                  ],
-                ),
-              ),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 12,
-              runSpacing: 4,
-              crossAxisAlignment: WrapCrossAlignment.center,
-              children: [
-                Text(
-                  '${filtered.length} von ${options.length} Einträgen',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: context.codexTheme.inkMuted,
+                      FilterChip(
+                        key: const ValueKey(
+                          'advancement-activate-only-available',
+                        ),
+                        label: Text(
+                          spellSheet
+                              ? 'Nur gelernte Repräsentationen'
+                              : 'Nur erwerbbare',
+                        ),
+                        selected: _onlyAvailable,
+                        onSelected: (value) =>
+                            setState(() => _onlyAvailable = value),
+                      ),
+                    ],
                   ),
-                ),
-                FilterChip(
-                  key: const ValueKey('advancement-activate-only-available'),
-                  label: const Text('Nur erwerbbare'),
-                  selected: _onlyAvailable,
-                  onSelected: (value) => setState(() => _onlyAvailable = value),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Expanded(
-              child: filtered.isEmpty
-                  ? const Center(
-                      key: ValueKey('advancement-activate-empty'),
-                      child: Text('Keine passenden Einträge.'),
-                    )
-                  : ListView.builder(
-                      itemCount: filtered.length,
-                      itemBuilder: (context, index) {
-                        final option = filtered[index];
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 10),
-                          child: AdvancementOptionCard(
-                            option: option,
-                            // Ein vorgemerkter Erwerb macht sein Ziel in der
-                            // Vorschau vorhanden; es verlaesst diese Liste
-                            // damit sofort und kann hier nie geplant sein.
-                            planned: false,
-                            onPlan: () => Navigator.of(context).pop(option),
+                  const SizedBox(height: 8),
+                  if (spellSheet) ...[
+                    // Horizontales Scrollen lässt auf kleinen Geräten Platz für Treffer.
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: [
+                          SizedBox(
+                            width: 190,
+                            child: DropdownButtonFormField<String>(
+                              key: const ValueKey(
+                                'advancement-activate-spell-trait',
+                              ),
+                              initialValue: _spellTrait ?? '',
+                              isExpanded: true,
+                              decoration: const InputDecoration(
+                                labelText: 'Merkmal',
+                                isDense: true,
+                                border: OutlineInputBorder(),
+                              ),
+                              items: [
+                                const DropdownMenuItem(
+                                  value: '',
+                                  child: Text('Alle Merkmale'),
+                                ),
+                                for (final trait in spellTraits)
+                                  DropdownMenuItem(
+                                    value: trait,
+                                    child: Text(
+                                      trait,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                              ],
+                              onChanged: (value) => setState(
+                                () => _spellTrait = value == '' ? null : value,
+                              ),
+                            ),
                           ),
-                        );
-                      },
+                          const SizedBox(width: 12),
+                          SizedBox(
+                            width: 190,
+                            child: DropdownButtonFormField<int>(
+                              key: const ValueKey(
+                                'advancement-activate-spell-spread',
+                              ),
+                              initialValue: _minimumSpellSpread,
+                              isExpanded: true,
+                              decoration: const InputDecoration(
+                                labelText: 'Verbreitung',
+                                isDense: true,
+                                border: OutlineInputBorder(),
+                              ),
+                              items: [
+                                const DropdownMenuItem(
+                                  value: 0,
+                                  child: Text('Alle Verbreitungen'),
+                                ),
+                                for (final spread in spellSpreads)
+                                  DropdownMenuItem(
+                                    value: spread,
+                                    child: Text('Ab $spread'),
+                                  ),
+                              ],
+                              onChanged: (value) => setState(
+                                () => _minimumSpellSpread = value ?? 0,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
+                    const SizedBox(height: 8),
+                  ],
+                ],
+              ),
             ),
+            if (filtered.isEmpty)
+              const SliverFillRemaining(
+                hasScrollBody: false,
+                child: Center(
+                  key: ValueKey('advancement-activate-empty'),
+                  child: Text('Keine passenden Einträge.'),
+                ),
+              )
+            else
+              SliverList.builder(
+                itemCount: filtered.length,
+                itemBuilder: (context, index) {
+                  final option = filtered[index];
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: AdvancementOptionCard(
+                      option: option,
+                      // Ein vorgemerkter Erwerb macht sein Ziel in der
+                      // Vorschau vorhanden; es verlaesst diese Liste
+                      // damit sofort und kann hier nie geplant sein.
+                      planned: false,
+                      onPlan: () => Navigator.of(context).pop(option),
+                    ),
+                  );
+                },
+              ),
           ],
         ),
       ),

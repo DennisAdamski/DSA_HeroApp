@@ -8,12 +8,10 @@ import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/talent_probe_rules.dart';
-import 'package:dsa_heldenverwaltung/rules/house_rules/house_rule_registry.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/zauber_herleitung_rules.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
-import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
-import 'package:dsa_heldenverwaltung/state/house_rules_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/dice_log_persistence.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/probe_request_factory.dart';
 
@@ -112,10 +110,10 @@ class _ProbeQuickSearchDialogState
   Widget build(BuildContext context) {
     final hero = ref.watch(heroByIdProvider(widget.heroId));
     final computedAsync = ref.watch(heroComputedProvider(widget.heroId));
-    final catalogAsync = ref.watch(rulesCatalogProvider);
+    final catalogAsync = ref.watch(heroRulesCatalogProvider(widget.heroId));
     final talentBeOverride = ref.watch(talentBeOverrideProvider(widget.heroId));
     final epicAdvantagesActive = ref.watch(
-      isHouseRuleActiveProvider(EpicRuleKeys.advantages),
+      heroEpicAdvantagesActiveProvider(widget.heroId),
     );
 
     final snapshot = computedAsync.valueOrNull;
@@ -379,7 +377,28 @@ List<ProbeQuickSearchCandidate> _buildTalentCandidates({
           targets: wert.ziele,
           basePool: wert.taw,
           hasSpecialization: wert.spezialisierung,
+          tawHerleitung: wert.herleitung.taw,
         ),
+      ),
+    );
+  }
+  // Ausweichproben auf verwandte Talente (Meisterentscheid, Basis S. 113).
+  for (final e in talentErsatzproben(
+    snapshot: snapshot,
+    katalog: catalogTalents,
+    epicAdvantagesActive: epicAdvantagesActive,
+    talentBeOverride: talentBeOverride,
+  )) {
+    final chain = e.request.targets.map((target) => target.label).join('/');
+    candidates.add(
+      ProbeQuickSearchCandidate(
+        category: ProbeQuickSearchCategory.talent,
+        name: e.request.title.replaceFirst('Talentprobe: ', ''),
+        detail:
+            '$chain · Ausweichen, TaW* ${e.request.basePool} · '
+            'Meisterentscheid'
+            '${e.option.bedingung == null ? '' : ' · ${e.option.bedingung}'}',
+        buildRequest: () => e.request,
       ),
     );
   }
@@ -407,54 +426,29 @@ List<ProbeQuickSearchCandidate> _buildSpellCandidates({
     if (spell == null) {
       continue;
     }
-    final entry = spellEntry.value;
-    final targets = _buildProbeTargets(
-      snapshot.probenEigenschaften,
-      spell.attributes,
+    final wert = zauberProbenwertAus(
+      eintrag: spellEntry.value,
+      spell: spell,
+      probenEigenschaften: snapshot.probenEigenschaften,
     );
-    if (targets.isEmpty) {
+    if (wert == null) {
       continue;
     }
-    final basePool = (entry.spellValue ?? 0) + entry.modifier;
-    final chain = targets.map((target) => target.label).join('/');
+    final chain = wert.ziele.map((target) => target.label).join('/');
     candidates.add(
       ProbeQuickSearchCandidate(
         category: ProbeQuickSearchCategory.spell,
         name: spell.name,
-        detail: '$chain · ZfW* $basePool',
-        buildRequest: () => buildSpellProbeRequest(
-          title: spell.name,
-          targets: targets,
-          basePool: basePool,
-        ),
+        detail: '$chain · ZfW* ${wert.zfw}',
+        buildRequest: () => zauberprobeAus(wert: wert, titel: spell.name),
       ),
     );
   }
+
   candidates.sort(
     (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
   );
   return candidates;
-}
-
-/// Löst Eigenschaftskürzel in Probenziele mit effektiven Werten auf.
-List<ProbeTargetValue> _buildProbeTargets(
-  Attributes attributes,
-  List<String> attributeNames,
-) {
-  final targets = <ProbeTargetValue>[];
-  for (final name in attributeNames) {
-    final code = parseAttributeCode(name);
-    if (code == null) {
-      continue;
-    }
-    targets.add(
-      ProbeTargetValue(
-        label: attributeCodeKey(code),
-        value: readAttributeValue(attributes, code),
-      ),
-    );
-  }
-  return List<ProbeTargetValue>.unmodifiable(targets);
 }
 
 /// Normalisiert Suchtokens für robuste, umlaut-tolerante Vergleiche.

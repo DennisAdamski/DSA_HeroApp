@@ -34,7 +34,7 @@ class _AngriffseSection extends StatelessWidget {
             ),
           )
         else if (angriffe.isNotEmpty) ...[
-          // Kopfzeile
+          // Gleiche Spaltenbreiten wie in den Zeilen, auch beim Steigern.
           Padding(
             padding: const EdgeInsets.only(bottom: 4),
             child: Row(
@@ -55,7 +55,7 @@ class _AngriffseSection extends StatelessWidget {
                   ),
                 ),
                 SizedBox(
-                  width: 36,
+                  width: onRaiseAngriffAt != null ? 72 : 36,
                   child: Text(
                     'AT',
                     style: Theme.of(context).textTheme.labelSmall,
@@ -63,7 +63,7 @@ class _AngriffseSection extends StatelessWidget {
                   ),
                 ),
                 SizedBox(
-                  width: 36,
+                  width: onRaiseAngriffPa != null ? 72 : 36,
                   child: Text(
                     'PA',
                     style: Theme.of(context).textTheme.labelSmall,
@@ -77,7 +77,7 @@ class _AngriffseSection extends StatelessWidget {
                     style: Theme.of(context).textTheme.labelSmall,
                   ),
                 ),
-                if (isEditing) const SizedBox(width: 64),
+                if (isEditing) const SizedBox(width: 80),
               ],
             ),
           ),
@@ -85,6 +85,9 @@ class _AngriffseSection extends StatelessWidget {
           for (int i = 0; i < angriffe.length; i++) ...[
             _AngriffRow(
               angriff: angriffe[i],
+              wirkAt: begleiterWirksamerAngriffAt(companion, angriffe[i]),
+              wirkPa: begleiterWirksamerAngriffPa(companion, angriffe[i]),
+              wirkTp: begleiterWirksamerAngriffTp(companion, angriffe[i]),
               isEditing: isEditing,
               onRaiseAt: onRaiseAngriffAt != null
                   ? () => onRaiseAngriffAt!(angriffe[i].id)
@@ -141,6 +144,9 @@ class _AngriffseSection extends StatelessWidget {
 class _AngriffRow extends StatelessWidget {
   const _AngriffRow({
     required this.angriff,
+    required this.wirkAt,
+    required this.wirkPa,
+    required this.wirkTp,
     required this.isEditing,
     required this.onEdit,
     required this.onDelete,
@@ -149,6 +155,11 @@ class _AngriffRow extends StatelessWidget {
   });
 
   final HeroCompanionAttack angriff;
+
+  /// Wirksame AT, PA und TP (Steigerung und Ausbildung eingerechnet).
+  final int? wirkAt;
+  final int? wirkPa;
+  final String wirkTp;
   final bool isEditing;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
@@ -158,11 +169,10 @@ class _AngriffRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    // Effektive AT/PA aus der gemeinsamen Regel (nur im View-Modus anzeigen).
-    final effAt = begleiterAngriffAt(angriff);
-    final effPa = begleiterAngriffPa(angriff);
-    final showAt = isEditing ? angriff.at : effAt;
-    final showPa = isEditing ? angriff.pa : effPa;
+    // Wirksame AT/PA/TP aus den gemeinsamen Regeln (nur im View-Modus).
+    final showAt = isEditing ? angriff.at : wirkAt;
+    final showPa = isEditing ? angriff.pa : wirkPa;
+    final showTp = isEditing ? angriff.tp : wirkTp;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Column(
@@ -185,7 +195,7 @@ class _AngriffRow extends StatelessWidget {
                 ),
               ),
               SizedBox(
-                width: onRaiseAt != null ? 60 : 36,
+                width: onRaiseAt != null ? 72 : 36,
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -206,7 +216,7 @@ class _AngriffRow extends StatelessWidget {
                 ),
               ),
               SizedBox(
-                width: onRaisePa != null ? 60 : 36,
+                width: onRaisePa != null ? 72 : 36,
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -226,26 +236,29 @@ class _AngriffRow extends StatelessWidget {
                   ],
                 ),
               ),
-              Expanded(
-                flex: 2,
-                child: Text(angriff.tp.isEmpty ? '–' : angriff.tp),
-              ),
-              if (isEditing) ...[
-                IconButton(
-                  icon: const Icon(Icons.edit_outlined, size: 18),
-                  onPressed: onEdit,
-                  tooltip: 'Bearbeiten',
-                  visualDensity: VisualDensity.compact,
-                  padding: EdgeInsets.zero,
+              Expanded(flex: 2, child: Text(showTp.isEmpty ? '–' : showTp)),
+              if (isEditing)
+                SizedBox(
+                  width: 80,
+                  child: Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.edit_outlined, size: 18),
+                        onPressed: onEdit,
+                        tooltip: 'Bearbeiten',
+                        visualDensity: VisualDensity.compact,
+                        padding: EdgeInsets.zero,
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.delete_outline, size: 18),
+                        onPressed: onDelete,
+                        tooltip: 'Löschen',
+                        visualDensity: VisualDensity.compact,
+                        padding: EdgeInsets.zero,
+                      ),
+                    ],
+                  ),
                 ),
-                IconButton(
-                  icon: const Icon(Icons.delete_outline, size: 18),
-                  onPressed: onDelete,
-                  tooltip: 'Löschen',
-                  visualDensity: VisualDensity.compact,
-                  padding: EdgeInsets.zero,
-                ),
-              ],
             ],
           ),
           if (angriff.beschreibung.isNotEmpty)

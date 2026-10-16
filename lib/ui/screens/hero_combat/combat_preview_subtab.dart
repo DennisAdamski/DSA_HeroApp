@@ -43,7 +43,7 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
         artifactSummaryCard,
       ],
       const SizedBox(height: 12),
-      buildWeaponCalculationDetails(preview: preview, isEditing: isEditing),
+      KampfHerleitungDetails(preview: preview),
       if (isEditing) ...[
         const SizedBox(height: 12),
         _buildManualModifiersCard(manual: manual),
@@ -212,7 +212,7 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
 
   /// Haupthand-spezifische Kampfwerte: AT, PA, TP, eBE, Fernkampf-Chips.
   Widget _buildMainHandValues({required CombatPreviewStats preview}) {
-    final mainName = _draftCombatConfig.selectedWeapon.name.trim();
+    final mainName = vorschauHauptwaffe(_draftCombatConfig).name.trim();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -503,7 +503,10 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
             width: 160,
             child: CodexMetricTile(
               label: 'Schild-PA',
-              value: offhandPreview.shieldPa.toString(),
+              value:
+                  (offhandPreview.shieldPaMitIniParadeMod ??
+                          offhandPreview.shieldPa)
+                      .toString(),
               icon: Icons.shield,
               onTap: () => showLoggedProbeDialog(
                 context: context,
@@ -512,7 +515,9 @@ extension _CombatPreviewSubtab on _HeroCombatTabState {
                 request: buildCombatCheckProbeRequest(
                   type: ProbeType.combatParry,
                   title: 'Kampfprobe: Schild-PA',
-                  targetValue: offhandPreview.shieldPa!,
+                  targetValue:
+                      offhandPreview.shieldPaMitIniParadeMod ??
+                      offhandPreview.shieldPa!,
                 ),
               ),
             ),

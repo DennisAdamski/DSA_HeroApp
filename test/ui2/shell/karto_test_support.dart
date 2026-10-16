@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/begleiter_zustand_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/ressourcen_aenderung_rules.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_bestands_adapter.dart';
 
@@ -125,6 +127,22 @@ class TestBestand implements KartoBestandsAdapter {
   }
 
   @override
+  Future<void> berechnungsschritte({
+    required BuildContext context,
+    required String heroId,
+  }) async {
+    aufrufe.add('berechnungsschritte:$heroId');
+  }
+
+  @override
+  Future<void> regelprofil({
+    required BuildContext context,
+    required String heroId,
+  }) async {
+    aufrufe.add('regelprofil:$heroId');
+  }
+
+  @override
   Future<void> rast({
     required BuildContext context,
     required String heroId,
@@ -156,6 +174,33 @@ class TestBestand implements KartoBestandsAdapter {
     required KartoRessource ressource,
   }) async {
     aufrufe.add('ressource:$heroId:${ressource.name}');
+  }
+
+  @override
+  Future<void> begleiterWertAendern({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String heroId,
+    required String begleiterId,
+    required BegleiterPool pool,
+    required RessourcenAenderung aenderung,
+  }) async {
+    aufrufe.add(
+      'begleiter:$heroId:$begleiterId:${pool.name}:'
+      '${switch (aenderung) {
+        RessourcenSchritt(:final schritt) => 'schritt$schritt',
+        RessourcenSetzen(:final wert) => 'setzen$wert',
+      }}',
+    );
+  }
+
+  @override
+  Future<void> vertrautenAktionen({
+    required BuildContext context,
+    required String heroId,
+    required String begleiterId,
+  }) async {
+    aufrufe.add('vertrautenAktionen:$heroId:$begleiterId');
   }
 
   @override

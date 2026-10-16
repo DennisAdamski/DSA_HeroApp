@@ -57,6 +57,18 @@ class _LangsameCloud extends FakeRemoteHeroAndStateSyncGateway {
   @override
   Stream<List<RemoteHeroStateRecord>> watchHeroStates() => _echo.stream;
 
+  Future<RemoteHeroStateRecord> speichereOhneEchoUndGibZurueck(
+    String heroId,
+    HeroState state,
+    String? previousRevision,
+  ) {
+    return super.saveHeroState(
+      heroId,
+      state,
+      previousRevision: previousRevision,
+    );
+  }
+
   /// Schreibt wie ein anderes Gerät, dessen Änderung hier nicht ankommt.
   Future<void> speichereOhneEcho(
     String heroId,
@@ -69,6 +81,34 @@ class _LangsameCloud extends FakeRemoteHeroAndStateSyncGateway {
       previousRevision: previousRevision,
     );
   }
+}
+
+/// Cloud, deren Echos erst spät eintreffen – nach dem Ende aller Uploads.
+class _SpaetesEchoCloud extends _LangsameCloud {
+  final _spaet = StreamController<List<RemoteHeroStateRecord>>.broadcast();
+
+  @override
+  Future<RemoteHeroStateRecord> saveHeroState(
+    String heroId,
+    HeroState state, {
+    required String? previousRevision,
+  }) async {
+    final record = await super.speichereOhneEchoUndGibZurueck(
+      heroId,
+      state,
+      previousRevision,
+    );
+    schreibvorgaenge++;
+    Future<void>.delayed(
+      _LangsameCloud.laufzeit * 4,
+      () => _spaet.add(<RemoteHeroStateRecord>[record]),
+    );
+    await Future<void>.delayed(_LangsameCloud.laufzeit);
+    return record;
+  }
+
+  @override
+  Stream<List<RemoteHeroStateRecord>> watchHeroStates() => _spaet.stream;
 }
 
 HeroState _einWeniger(HeroState z) => z.copyWith(currentAsp: z.currentAsp - 1);
@@ -216,5 +256,38 @@ void main() {
     expect(repo.currentStatus.openConflicts, hasLength(1));
     expect((await lokal.loadHeroState('held'))!.currentAsp, 10);
     expect((await cloud.loadHeroState('held'))!.state!.currentLep, 3);
+  });
+
+  test('das späte Echo eines überholten Uploads setzt die Anzeige nicht '
+      'zurück', () async {
+    await repo.close();
+    final spaet = _SpaetesEchoCloud();
+    repo = SyncingHeroRepository(
+      local: lokal,
+      remote: spaet,
+      metadataStore: InMemorySyncMetadataStore(),
+      accountId: 'konto',
+    );
+    final gesehen = <int>[];
+    final abo = repo.watchHeroState('held').listen((z) {
+      gesehen.add(z.currentAsp);
+    });
+
+    await zehnKlicks();
+    await repo.warteAufUebertragungen();
+    await Future<void>.delayed(_LangsameCloud.laufzeit * 8);
+    await abo.cancel();
+
+    // Die Anzeige läuft nur abwärts (30 → 20) und springt nie zurück.
+    for (var i = 1; i < gesehen.length; i++) {
+      expect(
+        gesehen[i],
+        lessThanOrEqualTo(gesehen[i - 1]),
+        reason: 'Anzeige sprang zurück: $gesehen',
+      );
+    }
+    expect(gesehen.last, 20);
+    expect((await lokal.loadHeroState('held'))!.currentAsp, 20);
+    expect(repo.currentStatus.openConflicts, isEmpty);
   });
 }

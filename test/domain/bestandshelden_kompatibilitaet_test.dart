@@ -9,6 +9,7 @@ import 'package:dsa_heldenverwaltung/domain/combat_config/inventar_verweise.dart
 import 'package:dsa_heldenverwaltung/domain/hero_advancement_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_merkmal.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_regelprofil.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
@@ -423,6 +424,10 @@ void main() {
       final voll = basis.copyWith(
         showInapplicableSpecialAbilities: true,
         epicActivationPolicy: 'standard',
+        regelProfil: HeroRegelProfil(
+          catalogVersion: 'house_rules_v1',
+          pakete: const <HeroRegelProfilPaket>[],
+        ),
         vorteilEintraege: const <HeroMerkmal>[
           HeroMerkmal(katalogId: 'adv_eisern', text: 'Eisern'),
         ],

@@ -11,16 +11,21 @@ import 'package:flutter/material.dart';
 /// Die Darstellung liest Basis, Reservierung und Vorschau direkt aus der
 /// Sitzung. Sie führt deshalb bewusst keine eigene Kostenrechnung aus.
 ///
-/// Gesetzt als Gleichung — frei minus reserviert gleich danach verfügbar —,
-/// weil genau das die Beziehung der drei Zahlen ist. Die Rechenzeichen sind
-/// Beiwerk und aus der Semantik genommen; jede Zahl bleibt eine eigene Zeile
-/// mit Beschriftung und Einheit.
+/// Mobil zeigt eine Gleichung die Beziehung der Werte; die rechte Seitenleiste
+/// ordnet sie vertikal an. Beschriftung und Einheit bleiben immer sichtbar.
 class KartoApUebersicht extends StatelessWidget {
   /// Bindet die Anzeige an den unveränderten Zustand derselben Sitzung.
-  const KartoApUebersicht({super.key, required this.session});
+  const KartoApUebersicht({
+    super.key,
+    required this.session,
+    this.vertical = false,
+  });
 
   /// Enthält die vom Regel-Replay berechneten AP-Werte.
   final AdvancementSession session;
+
+  /// Ordnet die Bilanz in der seitlichen Planungsspalte untereinander an.
+  final bool vertical;
 
   @override
   Widget build(BuildContext context) {
@@ -42,22 +47,48 @@ class KartoApUebersicht extends StatelessWidget {
         ),
         child: Padding(
           padding: Abstand.blockInnen,
-          child: Wrap(
-            spacing: Abstand.weit,
-            runSpacing: Abstand.normal,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            children: [
-              _ApWert(label: 'Frei zu Beginn', value: session.base.apAvailable),
-              const _Rechenzeichen('−'),
-              _ApWert(label: 'Reserviert', value: session.apReserved),
-              const _Rechenzeichen('='),
-              _ApWert(
-                label: 'Danach verfügbar',
-                value: session.preview.apAvailable,
-                emphasized: true,
-              ),
-            ],
-          ),
+          child: vertical
+              ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Abenteuerpunkte',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: Abstand.normal),
+                    _ApWert(
+                      label: 'Frei zu Beginn',
+                      value: session.base.apAvailable,
+                    ),
+                    const SizedBox(height: Abstand.eng),
+                    _ApWert(label: 'Reserviert', value: session.apReserved),
+                    const Divider(),
+                    _ApWert(
+                      label: 'Danach verfügbar',
+                      value: session.preview.apAvailable,
+                      emphasized: true,
+                    ),
+                  ],
+                )
+              : Wrap(
+                  spacing: Abstand.weit,
+                  runSpacing: Abstand.normal,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    _ApWert(
+                      label: 'Frei zu Beginn',
+                      value: session.base.apAvailable,
+                    ),
+                    const _Rechenzeichen('−'),
+                    _ApWert(label: 'Reserviert', value: session.apReserved),
+                    const _Rechenzeichen('='),
+                    _ApWert(
+                      label: 'Danach verfügbar',
+                      value: session.preview.apAvailable,
+                      emphasized: true,
+                    ),
+                  ],
+                ),
         ),
       ),
     );

@@ -4,6 +4,7 @@ import 'package:dsa_heldenverwaltung/domain/spell_duration.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/active_spell_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/combat_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/magic_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/spell_effect_instance_rules.dart';
 
 /// Stellt die Chipliste laufender Zaubereffekte zusammen.
 ///
@@ -47,7 +48,9 @@ List<ActiveSpellEffectChip> buildActiveSpellEffectChips({
     armatrutzActive: armatrutzAktiv,
     armatrutzRsBonus: combat.armatrutzRsBonus,
     attributoActive: attributoAktiv,
-    attributoBonusText: describeAttributeModifiers(state.tempAttributeMods),
+    attributoBonusText: describeAttributeModifiers(
+      effektiveTempAttributeMods(state),
+    ),
     durationsByEffectId: laufzeiten,
   );
 }

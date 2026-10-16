@@ -1,10 +1,9 @@
 // Änderungen im Inventar-Tab: Gegenstand anlegen, bearbeiten und löschen
 // sowie Geldstand (ARCH-05).
 //
-// Alle arbeiten auf dem gespeicherten Helden. Inventareinträge haben keine
-// eigene ID; ein Eintrag wird deshalb über seinen Inhalt wiedergefunden,
-// nicht über seine Position, die sich durch einen anderen Schreibweg
-// verschoben haben kann.
+// Alle arbeiten auf dem gespeicherten Helden. Ein Eintrag wird über seine
+// Instanz-ID wiedergefunden (ARCH-03), Altdaten ohne ID über ihren Inhalt —
+// nie über die Position, die ein anderer Schreibweg verschoben haben kann.
 
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
@@ -12,6 +11,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
 import 'package:dsa_heldenverwaltung/domain/sync_models.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/currency_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/inventar_menge_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/inventory_sync_rules.dart';
 
 /// Position des ersten Eintrags in [eintraege], der inhaltlich [gesucht]
@@ -21,17 +21,17 @@ import 'package:dsa_heldenverwaltung/rules/derived/inventory_sync_rules.dart';
 /// Zwei gleiche Einträge sind nicht unterscheidbar; das Entfernen des ersten
 /// ergibt dann dieselbe Liste wie das des zweiten.
 ///
-/// Trägt [gesucht] keine Instanz-ID, zählt sie auch bei den Einträgen nicht:
-/// Das Speichern vergibt fehlende IDs (ARCH-03), ein inzwischen gespeicherter
+/// Was das Speichern ergänzt (ARCH-03), zählt nicht, solange [gesucht] es
+/// noch nicht kennt: eine fehlende Instanz-ID und die aus einer rein
+/// ganzzahligen Anzahl überführte Menge. Ein inzwischen gespeicherter
 /// Eintrag ist dadurch nicht geändert.
 int findeGleichenInventarEintrag(
   List<HeroInventoryEntry> eintraege,
   HeroInventoryEntry gesucht,
 ) {
   final gesuchterHash = _inhalt(gesucht);
-  final ohneId = gesucht.instanzId == null;
   for (var index = 0; index < eintraege.length; index++) {
-    if (_inhalt(eintraege[index], ohneInstanzId: ohneId) == gesuchterHash) {
+    if (_inhalt(_wieGesucht(eintraege[index], gesucht)) == gesuchterHash) {
       return index;
     }
   }
@@ -42,29 +42,68 @@ int findeGleichenInventarEintrag(
 /// gleicht, sonst `-1`.
 ///
 /// Für einen gerade angehängten Gegenstand: Gleicht er einem älteren
-/// Eintrag, ist er der hintere der beiden. Instanz-IDs wie bei
-/// [findeGleichenInventarEintrag].
+/// Eintrag, ist er der hintere der beiden. Ergänzungen des Speicherns wie
+/// bei [findeGleichenInventarEintrag].
 int findeLetztenGleichenInventarEintrag(
   List<HeroInventoryEntry> eintraege,
   HeroInventoryEntry gesucht,
 ) {
   final gesuchterHash = _inhalt(gesucht);
-  final ohneId = gesucht.instanzId == null;
   for (var index = eintraege.length - 1; index >= 0; index--) {
-    if (_inhalt(eintraege[index], ohneInstanzId: ohneId) == gesuchterHash) {
+    if (_inhalt(_wieGesucht(eintraege[index], gesucht)) == gesuchterHash) {
       return index;
     }
   }
   return -1;
 }
 
-// Inhalts-Hash eines Eintrags, auf Wunsch ohne seine Instanz-ID.
-String _inhalt(HeroInventoryEntry eintrag, {bool ohneInstanzId = false}) {
-  final json = Map<String, dynamic>.of(eintrag.toJson());
-  if (ohneInstanzId) {
-    json.remove('instanzId');
+/// Position des gespeicherten Eintrags, den eine Änderung an [angezeigt]
+/// treffen soll, sonst `-1`.
+///
+/// Mit Instanz-ID wird über sie gesucht, damit inhaltsgleiche Stapel
+/// unterscheidbar bleiben; ohne über den Inhalt
+/// ([findeGleichenInventarEintrag]). In beiden Fällen muss der gespeicherte
+/// Eintrag noch [angezeigt] gleichen: Hat ein anderer Weg ihn inzwischen
+/// geändert, ergibt das `-1`, statt die fremde Änderung zu überschreiben.
+int findeInventarEintragZurAenderung(
+  List<HeroInventoryEntry> eintraege,
+  HeroInventoryEntry angezeigt,
+) {
+  final id = angezeigt.instanzId;
+  if (id == null) {
+    return findeGleichenInventarEintrag(eintraege, angezeigt);
   }
-  return stableContentHash(json);
+  final index = eintraege.indexWhere((eintrag) => eintrag.instanzId == id);
+  if (index < 0) {
+    return -1;
+  }
+  final gleich =
+      _inhalt(_wieGesucht(eintraege[index], angezeigt)) == _inhalt(angezeigt);
+  return gleich ? index : -1;
+}
+
+// [kandidat] ohne die Ergänzungen des Speicherns, die [gesucht] fehlen.
+HeroInventoryEntry _wieGesucht(
+  HeroInventoryEntry kandidat,
+  HeroInventoryEntry gesucht,
+) {
+  var ergebnis = kandidat;
+  if (gesucht.instanzId == null && ergebnis.instanzId != null) {
+    ergebnis = ergebnis.copyWith(instanzId: null);
+  }
+  final ueberfuehrt =
+      gesucht.menge == null &&
+      ergebnis.menge != null &&
+      ergebnis.menge == inventarZahlAusText(gesucht.anzahl);
+  if (ueberfuehrt) {
+    ergebnis = ergebnis.copyWith(menge: null);
+  }
+  return ergebnis;
+}
+
+// Inhalts-Hash eines Eintrags.
+String _inhalt(HeroInventoryEntry eintrag) {
+  return stableContentHash(eintrag.toJson());
 }
 
 /// Hängt den im Editor angelegten Gegenstand [neu] an das gespeicherte
@@ -100,7 +139,10 @@ HeroSheet mitGeaendertemInventarEintrag(
   HeroInventoryEntry angezeigt,
   HeroInventoryEntry neu,
 ) {
-  final index = findeGleichenInventarEintrag(held.inventoryEntries, angezeigt);
+  final index = findeInventarEintragZurAenderung(
+    held.inventoryEntries,
+    angezeigt,
+  );
   if (index < 0) {
     throw StateError('Der Gegenstand wurde inzwischen geändert oder entfernt.');
   }
@@ -138,14 +180,16 @@ CombatConfig _kampfMitEintrag(
   final verweis = neu.slotRef ?? neu.sourceRef;
   final istGeschoss =
       neu.source == InventoryItemSource.geschoss && neu.sourceRef != null;
-  if (istGeschoss && verweis != null && neu.anzahl != vorher.anzahl) {
+  final geaendert = neu.anzahl != vorher.anzahl || neu.menge != vorher.menge;
+  if (istGeschoss && verweis != null && geaendert) {
+    // Der Slot führt die Menge; Freitext setzte sie früher still auf 0.
+    final menge = wirksameInventarMenge(neu);
+    if (menge == null) {
+      throw StateError('Geschosse brauchen eine Zahl als Anzahl.');
+    }
     // Der ID-Verweis zuerst: der Namensverweis träfe bei zwei gleichnamigen
     // Bögen immer den ersten.
-    ergebnis = applyAmmoCountChangeToConfig(
-      ergebnis,
-      verweis,
-      int.tryParse(neu.anzahl.trim()) ?? 0,
-    );
+    ergebnis = applyAmmoCountChangeToConfig(ergebnis, verweis, menge);
   }
   return ergebnis;
 }
@@ -167,7 +211,10 @@ HeroSheet ohneInventarEintrag(HeroSheet held, HeroInventoryEntry angezeigt) {
       'Mit dem Kampf verknüpfte Gegenstände werden im Kampf-Tab entfernt.',
     );
   }
-  final index = findeGleichenInventarEintrag(held.inventoryEntries, angezeigt);
+  final index = findeInventarEintragZurAenderung(
+    held.inventoryEntries,
+    angezeigt,
+  );
   if (index < 0) {
     throw StateError('Der Gegenstand wurde inzwischen geändert oder entfernt.');
   }

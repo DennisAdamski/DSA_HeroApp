@@ -60,9 +60,12 @@ es wurden keine persönlichen Bilder, Konten oder Cloudgruppen verändert.
   des asynchronen Speicherns; Regression aus `6aed325d` bleibt erhalten.
 - Erst der tatsächliche Oberflächenwechsel in den Einstellungen prüft den
   Plan, nicht bereits das Öffnen der Einstellungen; `d9caee7d` bleibt erhalten.
-- Moduswechsel erhalten die Sitzung. Planung sperrt alle manuellen
-  Heldenbogenänderungen. Wo Bestandsansichten keinen verlässlichen
-  Nur-Lesen-Vertrag besitzen, bleibt die komplette Verwaltung gesperrt.
+- Moduswechsel erhalten die Sitzung. Die Verwaltung bleibt zum Ansehen
+  zugänglich. Bearbeiten und direkte Heldenbogenaktionen verlangen bei
+  offener Planung die ausdrückliche Wahl „Planung verwerfen und bearbeiten“;
+  Abbrechen erhält den Plan und legt auch keinen neuen Editorentwurf an.
+  Geldfeld und Ausrüstungsformen bleiben bis zur Bestätigung nur lesbar;
+  Inventardetails lassen sich über den Gegenstandsnamen ansehen.
 - Übernahmefehler und parallele Heldenänderungen erhalten den Entwurf.
   Laufende Saves sperren weitere Planänderungen; frühere Historie ist nicht
   löschbar. Konto-/Repository- und Heldenwechsel behalten die bestehenden
@@ -178,16 +181,38 @@ Der SDK-Cache benötigt Zugriff außerhalb des Repositorys. Es wurde kein
 
 | Mockup-Funktion | Stand nach dem UI-Paket | Getrennter Folgeumfang |
 |---|---|---|
-| Schaden und Rücknahme | Ressourcen-/Wundendialoge erreichbar | ARCH-01/05/06: fachlicher Schadensablauf, atomare Operation, konfliktfeste Korrektur |
-| Gemeinsamer Kampfrundenzähler | Bestehende Effektlaufzeiten bedienbar | Rundensemantik und Umfang festlegen |
+| Schaden und Rücknahme | **Erledigt:** geführter Ablauf (ARCH-05), Rücknahme am Protokolleintrag (ARCH-06) | – |
+| Gemeinsamer Kampfrundenzähler | Flüchtige Rundenleiste im Gefecht (`ui2/gefecht/`); Effektlaufzeiten manuell | Persistenter Zähler bewusst nicht gebaut; nur bei neuem Auftrag |
 | Persönliche Favoriten | Schnellproben und vollständige Suche | Persistenz, Umfang und Sync festlegen |
 | Strukturierte Merkmale | Umgesetzt mit ARCH-02: Modell, Migration, Wirkung über die Katalog-ID und UI2-Merkmalsblatt mit Karten wie im Mockup | Herkunftsmerkmale (Rasse/Kultur/Profession) als Folgeschritt |
 | Identische Inventarinstanzen | Bestehende Inventar-/Kampfzuordnung | ARCH-03: Instanz-IDs und Migration |
 | Regelprofil und vollständige Herleitung | Tatsächlich vorhandene Einstellungen/Vorschauen | ARCH-04: Versionierung und nachvollziehbare Ergebnisse |
-| Offline-/Sync-Anzeige | Keine erfundenen Statusangaben | ARCH-06: persistente Outbox und Konfliktmodell |
+| Offline-/Sync-Anzeige | Keine erfundenen Statusangaben | ARCH-06: Wiederanlauf der Konfliktentscheidungen, danach Statusanzeige |
 
-ARCH-01 bleibt wegen des Schadensablaufs **teilweise offen**. ARCH-02 bis
-ARCH-06 werden durch eine neue Darstellung nicht erledigt. Die Brücke und
+ARCH-01 ist seit dem 11.10.2026 funktional und seit dem 15.10.2026 auch durch
+die manuelle Bedienprüfung (unten) abgenommen. ARCH-02 bis ARCH-06 werden durch eine neue
+Darstellung nicht erledigt.
+
+## Manuelle Bedienprüfung (abgenommen 15.10.2026)
+
+Nicht durch Flutter-Tests ersetzbar. Alle Punkte wurden am 15.10.2026 vom Nutzer
+durchgeführt und bestätigt. Das verwendete Gerät ist nicht vermerkt; bei Bedarf
+hier nachtragen.
+
+- [x] **Spielen:** Ressourcen ±1/±5 (auch unter 0, schnelles Tippen); Eigenschafts-
+  und Kampfprobe; Suche per Strg/Cmd+K; „Schaden erhalten“ mit/ohne Wunden und
+  Rücknahme; Rast; Zaubereffekt; Gefecht (Runde, AT/PA, Laden, Gegner/Initiative);
+  Abenteuerblatt.
+- [x] **Korrektur ≠ Entwicklung:** Wert in der Verwaltung ändern (kostenlos) gegen
+  Steigerung in der Entwicklung (AP); bei offener Planung „Planung verwerfen und
+  bearbeiten“, Abbrechen erhält den Plan.
+- [x] **Kein Verlust beim Wechsel:** ungespeicherte Eingabe, dann Bereich, Held,
+  Oberfläche oder System-Zurück wechseln; Rückfrage erscheint, Abbrechen verliert nichts.
+- [x] **Geräte:** schmal (ca. 390 dp) und breit, hell/dunkel, große Systemschrift,
+  echte Touch-Bedienung.
+- [x] **Screenreader:** NVDA oder VoiceOver für Navigation und Ressourcenknöpfe.
+- [x] **Datenpfade:** Speichern, Neustart, Stand unverändert; Export/Import;
+  Web nur mit `--web-port=5000`. Die Brücke und
 alten Screens bleiben bestehen; eine spätere Ablösung und jede Änderung des
 Oberflächenstandards erfordern einen eigenen Auftrag.
 

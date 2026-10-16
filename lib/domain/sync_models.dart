@@ -214,10 +214,18 @@ class SyncConflict {
     this.remoteApTotal,
     this.remoteApAvailable,
     this.remoteUpdatedAt,
+    this.hinweis,
   });
 
   /// Eindeutige Konflikt-ID.
   final String id;
+
+  /// Ob der Konflikt einen Offline-Helden mit dem Konto-Profil vergleicht.
+  ///
+  /// Diese Konflikte entstehen beim Profilwechsel, nicht durch eine Löschung
+  /// in der Cloud. Die UI erklärt deshalb Herkunft und Auswahl entsprechend.
+  bool get isOfflineHeroConflict =>
+      objectType == SyncObjectType.hero && id.startsWith('offlineHero-');
 
   /// Typ des betroffenen Objekts.
   final SyncObjectType objectType;
@@ -265,6 +273,10 @@ class SyncConflict {
 
   /// Letzter Speicherzeitpunkt der Remote-Version.
   final DateTime? remoteUpdatedAt;
+
+  /// Erklärung, warum der Konflikt erneut gestellt wird (etwa eine
+  /// angehaltene frühere Entscheidung); `null` bei gewöhnlichen Konflikten.
+  final String? hinweis;
 }
 
 /// Sichtbarer Laufzeitstatus des Konto-Syncs.
@@ -277,6 +289,7 @@ class SyncStatusSnapshot {
     this.lastSuccessfulSync,
     this.lastFailure,
     this.openConflicts = const <SyncConflict>[],
+    this.ausstehendeVorgaenge = 0,
   });
 
   /// ID des angemeldeten Kontos oder `null` im Offline-Modus.
@@ -300,6 +313,11 @@ class SyncStatusSnapshot {
   /// Noch nicht geloeste Konflikte.
   final List<SyncConflict> openConflicts;
 
+  /// Konfliktentscheidungen, die getroffen, aber noch nicht vollständig
+  /// abgelegt sind (ARCH-06). Solange eine aussteht, gilt der Abgleich nicht
+  /// als erfolgreich.
+  final int ausstehendeVorgaenge;
+
   /// True, wenn gerade ein Konto mit dem Sync verbunden ist.
   bool get isOnlineAccount => accountId != null && accountId!.isNotEmpty;
 
@@ -311,6 +329,7 @@ class SyncStatusSnapshot {
     Object? lastSuccessfulSync = _copySentinel,
     Object? lastFailure = _copySentinel,
     List<SyncConflict>? openConflicts,
+    int? ausstehendeVorgaenge,
   }) {
     return SyncStatusSnapshot(
       accountId: accountId ?? this.accountId,
@@ -323,6 +342,7 @@ class SyncStatusSnapshot {
           ? this.lastFailure
           : lastFailure as SyncFailure?,
       openConflicts: openConflicts ?? this.openConflicts,
+      ausstehendeVorgaenge: ausstehendeVorgaenge ?? this.ausstehendeVorgaenge,
     );
   }
 }

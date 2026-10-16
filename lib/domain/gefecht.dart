@@ -1,5 +1,6 @@
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/herleitung.dart';
 
 import 'gefecht_kontext.dart';
 import 'gefecht_wirken.dart';
@@ -22,7 +23,15 @@ enum Gefechtshaltung { stehend, kniend, liegend }
 enum GefechtsHand { haupthand, nebenhand }
 
 /// Verwendetes Kampfmittel, unabhängig von Aktionsmarken und sichtbaren Titeln.
-enum GefechtsKampfmittelArt { hauptwaffe, nebenwaffe, schild, parierwaffe }
+enum GefechtsKampfmittelArt {
+  hauptwaffe,
+  nebenwaffe,
+  schild,
+  parierwaffe,
+
+  /// Raufen oder Ringen mit freien Händen (`waffenlos_rules.dart`).
+  waffenlos,
+}
 
 /// Flüchtige Identität der bestätigten Ausrüstung für die erneute Prüfung.
 class GefechtsKampfmittelwahl {
@@ -187,6 +196,8 @@ class Gefechtszustand {
     this.gesprintet = false,
     this.zuletztGewirkt = const [],
     this.gemeinsameInitiative = false,
+    this.gebundeneGegner,
+    this.ueberzahlAngriff = false,
     this.initiativphase,
     this.zeitpunktAbgeschlossen = false,
     this.regulaerePhaseOffen = false,
@@ -197,6 +208,8 @@ class Gefechtszustand {
     this.patzerSperre,
     this.initiativSperre,
     this.gesperrteKampfmittel = const {},
+    this.dkJeGegner = const {},
+    this.lageIni = 0,
   });
   final int runde, iniWurf, iniVerlust;
   final int geschuetzterIniVerlust, ungeklaerterIniVerlust;
@@ -281,6 +294,21 @@ class Gefechtszustand {
   /// Defekte oder verlorene Gegenstände bleiben an ihrer physischen ID gebunden.
   final Map<String, String> gesperrteKampfmittel;
 
+  /// INI-Anteil aus Überzahl und Taktik der Begegnung (WdS S. 81);
+  /// abgeleitet von `gefechtMitInitiativeProvider`, sonst 0.
+  final int lageIni;
+
+  /// Zuletzt gesetzte DK je Gegner-ID; ein Zielwechsel stellt sie wieder her.
+  final Map<String, String> dkJeGegner;
+
+  /// Kämpfende Gegner der Begegnung, die diesen Helden binden; abgeleitet,
+  /// `null` ohne Bindung (dann gilt die manuelle Gegnerzahl [gegner]).
+  final int? gebundeneGegner;
+
+  /// Mindestens zwei Nahkämpfer der eigenen Seite greifen das aktuelle Ziel
+  /// an (WdS S. 81: AT +1 in der Überzahl); abgeleitet.
+  final bool ueberzahlAngriff;
+
   /// Ändert nur benannte Sitzungsteile; kein JSON oder Heldenformat betroffen.
   Gefechtszustand copyWith({
     int? runde,
@@ -331,6 +359,9 @@ class Gefechtszustand {
     bool? gesprintet,
     List<String>? zuletztGewirkt,
     bool? gemeinsameInitiative,
+    int? gebundeneGegner,
+    bool ohneGebundeneGegner = false,
+    bool? ueberzahlAngriff,
     int? initiativphase,
     bool ohneInitiativphase = false,
     bool? zeitpunktAbgeschlossen,
@@ -346,6 +377,8 @@ class Gefechtszustand {
     String? initiativSperre,
     bool ohneInitiativSperre = false,
     Map<String, String>? gesperrteKampfmittel,
+    Map<String, String>? dkJeGegner,
+    int? lageIni,
   }) => Gefechtszustand(
     runde: runde ?? this.runde,
     iniWurf: iniWurf ?? this.iniWurf,
@@ -403,6 +436,10 @@ class Gefechtszustand {
     gesprintet: gesprintet ?? this.gesprintet,
     zuletztGewirkt: zuletztGewirkt ?? this.zuletztGewirkt,
     gemeinsameInitiative: gemeinsameInitiative ?? this.gemeinsameInitiative,
+    gebundeneGegner: ohneGebundeneGegner
+        ? null
+        : gebundeneGegner ?? this.gebundeneGegner,
+    ueberzahlAngriff: ueberzahlAngriff ?? this.ueberzahlAngriff,
     initiativphase: ohneInitiativphase
         ? null
         : initiativphase ?? this.initiativphase,
@@ -418,6 +455,8 @@ class Gefechtszustand {
         ? null
         : initiativSperre ?? this.initiativSperre,
     gesperrteKampfmittel: gesperrteKampfmittel ?? this.gesperrteKampfmittel,
+    dkJeGegner: dkJeGegner ?? this.dkJeGegner,
+    lageIni: lageIni ?? this.lageIni,
   );
 }
 
@@ -447,13 +486,21 @@ class Gefechtspruefung {
     this.verbrauchterMeisterparadeBonus = 0,
     this.ansageFehlmalus = 0,
     this.beendetAnsageFolgemalus = false,
+    this.zielHerleitung,
   });
   final Gefechtsaktion aktion;
   final Gefechtsfreigabe status;
   final List<String> gruende;
   final int? zielwert;
   final int angriffe, paraden, freie, zusatz, erschwernis;
+
+  /// Benannte Erschwernisse; ihre Summe ist [erschwernis].
   final List<Gefechtsmodifikator> modifikatoren;
+
+  /// Zielwert vor Erschwernis (Grundwert, INI-Bonus der Sitzung); `null`, wo
+  /// es keinen Zielwert gibt. `gefecht_zielwert_herleitung_rules.dart` macht
+  /// daraus mit [erschwernis] die angezeigte Herleitung.
+  final Herleitung? zielHerleitung;
   final GefechtsKampfmittelwahl? kampfmittel;
   final String? ausruestungspaar;
   final bool mitAnsage;
@@ -501,6 +548,7 @@ class Gefechtspruefung {
     verbrauchterMeisterparadeBonus: verbrauchterMeisterparadeBonus,
     ansageFehlmalus: ansageFehlmalus,
     beendetAnsageFolgemalus: beendetAnsageFolgemalus,
+    zielHerleitung: zielHerleitung,
   );
 
   /// Nur konkrete Sperren, fehlende Angaben oder offene Entscheidungen blockieren.

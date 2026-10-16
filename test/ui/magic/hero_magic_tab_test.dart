@@ -7,7 +7,9 @@ import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/catalog/special_ability_requirement.dart';
 import 'package:dsa_heldenverwaltung/domain/active_spell_effects_state.dart';
 import 'package:dsa_heldenverwaltung/domain/app_settings.dart';
+import 'package:dsa_heldenverwaltung/domain/artefakt_daten.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_rituals.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_spell_entry.dart';
@@ -16,7 +18,9 @@ import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/magic_special_ability.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/active_spell_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/advancement_rules.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
+import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
@@ -24,6 +28,16 @@ import 'package:dsa_heldenverwaltung/ui/screens/hero_magic_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 
 import '../../test_support/begabung_katalog.dart';
+
+// Simuliert eine laufende Übernahme, ohne einen Repository-Schreibvorgang.
+class _SavingSessionController extends AdvancementSessionController {
+  _SavingSessionController(this.session) : super('demo');
+
+  final AdvancementSession session;
+
+  @override
+  AdvancementSession? build() => session;
+}
 
 class _OpenedMagicTab {
   const _OpenedMagicTab({required this.repo, required this.actions});
@@ -154,6 +168,7 @@ void main() {
     WidgetTester tester, {
     FakeRepository? repo,
     RulesCatalog? catalog,
+    AdvancementSession? savingSession,
     AppSettings appSettings = const AppSettings(),
     Size size = const Size(1600, 1200),
   }) async {
@@ -180,6 +195,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          if (savingSession != null)
+            advancementSessionProvider('demo')
+                .overrideWith(() => _SavingSessionController(savingSession)),
           heroRepositoryProvider.overrideWithValue(effectiveRepo),
           rulesCatalogProvider.overrideWith((ref) async => effectiveCatalog),
           appSettingsProvider.overrideWith(
@@ -205,6 +223,451 @@ void main() {
     expect(actions, isNotNull);
     return _OpenedMagicTab(repo: effectiveRepo, actions: actions!);
   }
+
+  testWidgets(
+    'Traditionseinrichtung bleibt bis Speichern ein vollständiger Entwurf',
+    (tester) async {
+      final base = buildHero(representationen: const [])
+          .copyWith(vorteileText: 'Vollzauberer');
+      final opened = await openMagicTab(
+        tester,
+        repo: FakeRepository(heroes: [base]),
+      );
+      await tester.tap(find.text('Repr. & SF'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('magic-setup-open')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('magic-setup-confirm')));
+      await tester.pumpAndSettle();
+      expect(
+        (await opened.repo.loadHeroById('demo'))!.ritualKnowledge,
+        isEmpty,
+      );
+      await tester.tap(find.text('Rituale'));
+      await tester.pumpAndSettle();
+      await opened.actions.save();
+      await tester.pumpAndSettle();
+      final saved = (await opened.repo.loadHeroById('demo'))!;
+      expect(saved.representationen, ['Mag']);
+      expect(saved.ritualKnowledge['gildenmagier']!.value, 3);
+      expect(saved.apSpent, 0);
+      expect(saved.advancementHistory, base.advancementHistory);
+    },
+  );
+
+  testWidgets(
+    'gemeinsame Kategorien zeigen denselben RkW und erfinden keinen Ersatz',
+    (tester) async {
+      const category = HeroRitualCategory(
+        id: 'shared',
+        name: 'Stabzauber',
+        knowledgeMode: HeroRitualKnowledgeMode.traditionKnowledge,
+        traditionId: 'gildenmagier',
+      );
+      final hero =
+          buildHero(
+            ritualCategories: [
+              category,
+              category.copyWith(id: 'bowl', name: 'Schalenzauber'),
+              category.copyWith(
+                id: 'missing',
+                name: 'Verwaiste Kenntnis',
+                traditionId: 'missing',
+              ),
+            ],
+          ).copyWith(
+            ritualKnowledge: {
+              'gildenmagier': const HeroRitualKnowledge(
+                name: 'Gildenmagie',
+                value: 12,
+              ),
+            },
+          );
+      final opened = await openMagicTab(
+        tester,
+        repo: FakeRepository(heroes: [hero]),
+      );
+      await tester.tap(find.text('Rituale'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('TaW 12'), findsNWidgets(4));
+      expect(find.text('Ritualkenntnis fehlt'), findsNWidgets(2));
+      await opened.actions.startEdit();
+      await tester.pumpAndSettle();
+      await opened.actions.save();
+      await tester.pumpAndSettle();
+      expect(
+        (await opened.repo.loadHeroById('demo'))!.ritualKnowledge,
+        hero.ritualKnowledge,
+      );
+    },
+  );
+
+  testWidgets(
+    'Ritualkategorie kann ausdrücklich eine vorhandene gemeinsame Kenntnis nutzen',
+    (tester) async {
+      final hero = buildHero().copyWith(
+        ritualKnowledge: {
+          'gildenmagier': const HeroRitualKnowledge(
+            name: 'Gildenmagie',
+            value: 12,
+          ),
+        },
+      );
+      final opened = await openMagicTab(
+        tester,
+        repo: FakeRepository(heroes: [hero]),
+      );
+      await tester.tap(find.text('Rituale'));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(const ValueKey('magic-rituals-add-category')),
+      );
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byKey(const ValueKey('magic-ritual-category-name-field')),
+        'Stabzauber',
+      );
+      await tester.tap(find.text('Tradition').last);
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(const ValueKey('magic-ritual-shared-knowledge')),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Gildenmagie: RkW 12, E').last);
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(const ValueKey('magic-ritual-category-save')),
+      );
+      await tester.pumpAndSettle();
+      await opened.actions.save();
+      await tester.pumpAndSettle();
+      final saved = (await opened.repo.loadHeroById('demo'))!;
+      expect(saved.ritualCategories.single.traditionId, 'gildenmagier');
+      expect(saved.ritualCategories.single.ownKnowledge, isNull);
+      expect(
+        saved.ritualCategories.single.knowledgeMode,
+        HeroRitualKnowledgeMode.traditionKnowledge,
+      );
+      expect(saved.ritualKnowledge, hero.ritualKnowledge);
+      expect(saved.apSpent, hero.apSpent);
+    },
+  );
+
+  testWidgets(
+    'zweiter bezahlter Einrichtungsschritt sieht die verbleibenden Entwurfs-AP',
+    (tester) async {
+      final hero = buildHero(
+        representationen: const ['Mag'],
+      ).copyWith(vorteileText: 'Vollzauberer', apTotal: 250, apAvailable: 250);
+      final opened = await openMagicTab(
+        tester,
+        repo: FakeRepository(heroes: [hero]),
+      );
+      await tester.tap(find.text('Repr. & SF'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('magic-setup-open')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Bei Erschaffung enthalten').last);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Neu erlernen').last);
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('magic-setup-confirm')));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.text('Meistererlaubnis für die fremde Ritualkenntnis'),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Vormerken'));
+      await tester.pumpAndSettle();
+      expect((await opened.repo.loadHeroById('demo'))!.apSpent, 0);
+
+      await tester.tap(find.byKey(const ValueKey('magic-setup-open')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Gildenmagier').last);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Derwisch').last);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Bei Erschaffung enthalten').last);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Neu erlernen').last);
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('magic-setup-confirm')));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.text('Meistererlaubnis für die fremde Ritualkenntnis'),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('0 AP verfügbar'), findsOneWidget);
+      final button = tester.widget<FilledButton>(
+        find.widgetWithText(FilledButton, 'Vormerken'),
+      );
+      expect(button.onPressed, isNull);
+      await tester.tap(find.text('Abbrechen').last);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Abbrechen').last);
+      await tester.pumpAndSettle();
+      await opened.actions.save();
+      await tester.pumpAndSettle();
+      final saved = (await opened.repo.loadHeroById('demo'))!;
+      expect(saved.apSpent, 250);
+      expect(saved.ritualKnowledge.keys, ['gildenmagier']);
+      expect(saved.advancementHistory, hasLength(1));
+    },
+  );
+
+  for (final action in [
+    ('Repr. & SF', 'magic-setup-open'),
+    ('Zauber', 'magic-spells-add'),
+    ('Repr. & SF', 'magic-sf-add'),
+    ('Repr. & SF', 'magic-sf-add-from-catalog'),
+    ('Rituale', 'magic-rituals-add-category'),
+  ]) {
+    testWidgets('Laufende Übernahme sperrt ${action.$2}', (tester) async {
+      final hero = buildHero();
+      final catalog = buildCatalog();
+      final session = AdvancementSession(
+        sessionId: 'saving',
+        base: hero,
+        catalog: catalog,
+        entries: const [],
+        replay: replayAdvancements(
+          base: hero,
+          catalog: catalog,
+          entries: const [],
+        ),
+        isSaving: true,
+      );
+      await openMagicTab(tester, savingSession: session);
+      final context = tester.element(find.byType(HeroMagicTab));
+      final container = ProviderScope.containerOf(context, listen: false);
+      if (action.$1 != 'Zauber') {
+        await tester.tap(find.text(action.$1));
+        await _pumpAndSettleIgnoringKnownOverflow(tester);
+      }
+      await tester.tap(find.byKey(ValueKey(action.$2)));
+      await _pumpAndSettleIgnoringKnownOverflow(tester);
+      expect(find.byType(Dialog), findsNothing);
+      expect(find.byType(BottomSheet), findsNothing);
+      expect(container.read(advancementSessionProvider('demo')), same(session));
+    });
+
+    testWidgets('Planungsabbruch stoppt ${action.$2}', (tester) async {
+      await openMagicTab(tester);
+      final context = tester.element(find.byType(HeroMagicTab));
+      final container = ProviderScope.containerOf(context, listen: false);
+      container
+          .read(advancementSessionProvider('demo').notifier)
+          .start(hero: buildHero(), catalog: buildCatalog());
+      final session = container.read(advancementSessionProvider('demo'));
+      if (action.$1 != 'Zauber') {
+        await tester.tap(find.text(action.$1));
+        await _pumpAndSettleIgnoringKnownOverflow(tester);
+      }
+      await tester.tap(find.byKey(ValueKey(action.$2)));
+      await _pumpAndSettleIgnoringKnownOverflow(tester);
+      expect(find.text('Geplante Entwicklung verwerfen?'), findsOneWidget);
+      await tester.tap(find.text('Abbrechen'));
+      await _pumpAndSettleIgnoringKnownOverflow(tester);
+      expect(find.byType(Dialog), findsNothing);
+      expect(find.byType(BottomSheet), findsNothing);
+      expect(container.read(advancementSessionProvider('demo')), same(session));
+    });
+  }
+
+  testWidgets('Zauber aus Matrixgebern erscheinen in der Zauberliste', (
+    tester,
+  ) async {
+    final hero = buildHero().copyWith(
+      inventoryEntries: const [
+        HeroInventoryEntry(
+          gegenstand: 'Armschiene',
+          isMagisch: true,
+          istAusgeruestet: true,
+          artefaktDaten: ArtefaktDaten(
+            zauber: <ArtefaktZauber>[
+              ArtefaktZauber(
+                name: 'Gardianum',
+                repraesentation: 'Mag',
+                zfw: 12,
+                kostenAsp: 9,
+              ),
+            ],
+          ),
+        ),
+        HeroInventoryEntry(
+          gegenstand: 'Ring',
+          isMagisch: true,
+          artefaktDaten: ArtefaktDaten(
+            defekt: true,
+            zauber: <ArtefaktZauber>[ArtefaktZauber(name: 'Flim Flam')],
+          ),
+        ),
+      ],
+    );
+    await openMagicTab(
+      tester,
+      repo: FakeRepository(
+        heroes: <HeroSheet>[hero],
+        states: <String, HeroState>{
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 10,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
+      ),
+    );
+
+    final abschnitt = find.byKey(const ValueKey('magic-artefakt-zauber'));
+    await tester.ensureVisible(abschnitt);
+    expect(abschnitt, findsOneWidget);
+    expect(find.text('Gardianum'), findsOneWidget);
+    expect(
+      find.textContaining('Armschiene · ausgerüstet · Mag · ZfW 12 · 9 AsP'),
+      findsOneWidget,
+    );
+    expect(find.textContaining('Ring · beschädigt'), findsOneWidget);
+    // Beschädigte Matrixgeber lassen sich nicht auslösen.
+    expect(
+      find.byKey(const ValueKey('magic-artefakt-ausloesen-0')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('magic-artefakt-ausloesen-1')),
+      findsNothing,
+    );
+  });
+
+  testWidgets('Ladungen eines Spruchspeichers erscheinen mit Status', (
+    tester,
+  ) async {
+    final hero = buildHero().copyWith(
+      inventoryEntries: const [
+        HeroInventoryEntry(
+          gegenstand: 'Stirnreif',
+          isMagisch: true,
+          istAusgeruestet: true,
+          instanzId: 'i-1',
+          artefaktDaten: ArtefaktDaten(
+            art: ArtefaktArt.spruchspeicherAufladbar,
+            ladungen: <ArtefaktLadung>[
+              ArtefaktLadung(
+                id: 'a',
+                verbraucht: true,
+                zauber: <ArtefaktZauber>[ArtefaktZauber(name: 'Gardianum')],
+              ),
+              ArtefaktLadung(
+                id: 'b',
+                zauber: <ArtefaktZauber>[
+                  ArtefaktZauber(name: 'Armatrutz', kostenAsp: 6),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+    await openMagicTab(
+      tester,
+      repo: FakeRepository(
+        heroes: <HeroSheet>[hero],
+        states: <String, HeroState>{
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 0,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
+      ),
+    );
+
+    final abschnitt = find.byKey(const ValueKey('magic-artefakt-zauber'));
+    await tester.ensureVisible(abschnitt);
+    expect(
+      find.textContaining('Stirnreif · Ladung verbraucht'),
+      findsOneWidget,
+    );
+    expect(find.textContaining('Stirnreif · ausgerüstet'), findsOneWidget);
+    // Nur die freie Ladung lässt sich auslösen.
+    expect(
+      find.byKey(const ValueKey('magic-artefakt-ausloesen-0')),
+      findsNothing,
+    );
+    final ausloesen = find.byKey(const ValueKey('magic-artefakt-ausloesen-1'));
+    expect(ausloesen, findsOneWidget);
+
+    await tester.tap(ausloesen);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Stirnreif auslösen'), findsOneWidget);
+    expect(find.text('1 von 2 Ladungen frei'), findsOneWidget);
+  });
+
+  testWidgets(
+    'Zaubertalisman erscheint mit „Auxiliator“ und öffnet den Dialog',
+    (tester) async {
+      final hero = buildHero().copyWith(
+        inventoryEntries: const [
+          HeroInventoryEntry(
+            gegenstand: 'Mondsilberring',
+            isMagisch: true,
+            istAusgeruestet: true,
+            instanzId: 'i-1',
+            artefaktDaten: ArtefaktDaten(
+              art: ArtefaktArt.zaubertalisman,
+              zauber: <ArtefaktZauber>[
+                ArtefaktZauber(
+                  name: 'Ignifaxius',
+                  repraesentation: 'Mag',
+                  zfpStern: 5,
+                ),
+              ],
+            ),
+          ),
+        ],
+      );
+      await openMagicTab(
+        tester,
+        repo: FakeRepository(
+          heroes: <HeroSheet>[hero],
+          states: <String, HeroState>{
+            'demo': const HeroState(
+              currentLep: 10,
+              currentAsp: 10,
+              currentKap: 0,
+              currentAu: 10,
+            ),
+          },
+        ),
+      );
+
+      final abschnitt = find.byKey(const ValueKey('magic-artefakt-zauber'));
+      await tester.ensureVisible(abschnitt);
+      final knopf = find.byKey(const ValueKey('magic-artefakt-ausloesen-0'));
+      expect(
+        find.descendant(of: knopf, matching: find.text('Auxiliator')),
+        findsOneWidget,
+      );
+
+      await tester.tap(knopf);
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('Mondsilberring – Auxiliator einsetzen'),
+        findsOneWidget,
+      );
+    },
+  );
+
+  testWidgets('ohne Artefakte gibt es keinen Artefaktabschnitt', (
+    tester,
+  ) async {
+    await openMagicTab(tester);
+
+    expect(find.byKey(const ValueKey('magic-artefakt-zauber')), findsNothing);
+  });
 
   testWidgets('magic tab exposes rituals sub tab', (tester) async {
     await openMagicTab(tester);
@@ -487,14 +950,13 @@ void main() {
     expect(savedHero?.apSpent, 0);
   });
 
-  testWidgets('manuelle Repraesentation wird ohne AP-Dialog gespeichert', (
+  testWidgets('vorhandene Repräsentation wird ausdrücklich ohne AP erfasst', (
     tester,
   ) async {
-    // Held hat bereits drei Repraesentationen -> die vierte hat keinen
-    // Regelpreis mehr, also faellt der Vorschlag auf 0 und der Hinweis warnt.
     final repo = FakeRepository(
       heroes: <HeroSheet>[
-        buildHero(representationen: const <String>['Mag']),
+        buildHero(representationen: const <String>['Mag'])
+            .copyWith(vorteileText: 'Vollzauberer'),
       ],
       states: <String, HeroState>{
         'demo': const HeroState(
@@ -516,6 +978,14 @@ void main() {
       find.byKey(const ValueKey<String>('magic-representation-Dru')),
     );
     await _pumpAndSettleIgnoringKnownOverflow(tester);
+
+    expect(find.text('Magische Tradition einrichten'), findsWidgets);
+    await tester.tap(find.text('Neu erlernen').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Bereits vorhanden').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('magic-setup-confirm')));
+    await tester.pumpAndSettle();
 
     expect(find.widgetWithText(TextField, 'AP-Kosten'), findsNothing);
     await opened.actions.save();

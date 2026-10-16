@@ -118,6 +118,8 @@ class _EmptyBegleiterHint extends StatelessWidget {
 
 class _BegleiterDetailView extends StatelessWidget {
   const _BegleiterDetailView({
+    required this.heroId,
+    required this.sofort,
     required this.companion,
     required this.isEditing,
     required this.canRaise,
@@ -129,9 +131,18 @@ class _BegleiterDetailView extends StatelessWidget {
     this.onRaiseAngriffAt,
     this.onRaiseAngriffPa,
     this.onRaiseRk,
+    this.onRaiseGs,
     this.vertrautenmagieKategorie,
+    this.onAusbildungsschritt,
+    this.onAusbildungsschrittZurueck,
+    this.onPferdeSf,
+    this.vertrautenAktionen,
   });
 
+  final String heroId;
+
+  /// Sofortbuchungen am Bogen sind frei (keine ungespeicherten Änderungen).
+  final bool sofort;
   final HeroCompanion companion;
   final bool isEditing;
   final bool canRaise;
@@ -143,7 +154,16 @@ class _BegleiterDetailView extends StatelessWidget {
   final void Function(String attackId)? onRaiseAngriffAt;
   final void Function(String attackId)? onRaiseAngriffPa;
   final VoidCallback? onRaiseRk;
+  final void Function(String art)? onRaiseGs;
   final HeroRitualCategory? vertrautenmagieKategorie;
+
+  /// Sofortbuchungen der Reittier-Ausbildung; `null`, solange sie ruhen.
+  final VoidCallback? onAusbildungsschritt;
+  final VoidCallback? onAusbildungsschrittZurueck;
+  final VoidCallback? onPferdeSf;
+
+  /// Sofortbuchungen der Vertrautenbindung; `null`, solange sie ruhen.
+  final _VertrautenAktionen? vertrautenAktionen;
 
   @override
   Widget build(BuildContext context) {
@@ -201,9 +221,42 @@ class _BegleiterDetailView extends StatelessWidget {
                   companion: companion,
                   isEditing: isEditing,
                   onChanged: onChanged,
-                  onRaiseRegular: onRaiseRegular,
                   onRaisePool: onRaisePool,
+                  onRaiseGs: onRaiseGs,
                 ),
+                const SizedBox(height: _sectionSpacing),
+                _BegleiterLaufwerteSection(
+                  heroId: heroId,
+                  companionId: companion.id,
+                ),
+                if (companion.typ == BegleiterTyp.vertrauter) ...[
+                  const SizedBox(height: _sectionSpacing),
+                  _VertrautenSpielSection(
+                    heroId: heroId,
+                    companionId: companion.id,
+                    sofort: sofort,
+                  ),
+                  const SizedBox(height: _sectionSpacing),
+                  _VertrautenBindungSection(
+                    companion: companion,
+                    onBinden: vertrautenAktionen?.binden,
+                    onErfassen: vertrautenAktionen?.erfassen,
+                    onUebertragen: vertrautenAktionen?.uebertragen,
+                    onAnteilEinrichten: vertrautenAktionen?.anteilEinrichten,
+                    onAusbildung: vertrautenAktionen?.ausbildung,
+                    onAurapanzer: vertrautenAktionen?.aurapanzer,
+                  ),
+                ],
+                if (companion.typ == BegleiterTyp.reittier) ...[
+                  const SizedBox(height: _sectionSpacing),
+                  _AusbildungSection(
+                    companion: companion,
+                    isEditing: isEditing,
+                    onChanged: onChanged,
+                    onSchritt: onAusbildungsschritt,
+                    onSchrittZurueck: onAusbildungsschrittZurueck,
+                  ),
+                ],
                 const SizedBox(height: _sectionSpacing),
                 _AngriffseSection(
                   companion: companion,
@@ -236,6 +289,10 @@ class _BegleiterDetailView extends StatelessWidget {
                   companion: companion,
                   isEditing: isEditing,
                   onChanged: onChanged,
+                  onPferdeSf: companion.typ == BegleiterTyp.reittier
+                      ? onPferdeSf
+                      : null,
+                  zeigePferdeSf: companion.typ == BegleiterTyp.reittier,
                 ),
                 const SizedBox(height: _sectionSpacing),
                 _MerkmaleSection(
@@ -251,6 +308,7 @@ class _BegleiterDetailView extends StatelessWidget {
                     isEditing: isEditing,
                     onRaiseRk: onRaiseRk,
                     rkSteigerung: companionSteigerung(companion, 'rk'),
+                    onZauberLernen: vertrautenAktionen?.zauberLernen,
                     onChanged: (updatedKat) => onChanged(
                       companion.copyWith(
                         ritualCategories: companion.ritualCategories

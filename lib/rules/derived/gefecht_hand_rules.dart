@@ -2,6 +2,7 @@ import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht.dart';
 import 'package:dsa_heldenverwaltung/domain/sync_models.dart';
 
+import 'inventar_slot_instanz_rules.dart';
 import 'kampf_aenderung_rules.dart';
 import 'string_normalize.dart';
 
@@ -131,8 +132,10 @@ void _pruefeBekannteFelder(
   Map<String, dynamic> b,
   Set<String> keys,
 ) {
-  final aktuell = {for (final k in keys) k: a[k]};
-  final angezeigt = {for (final k in keys) k: b[k]};
+  // Den Instanzverweis setzt nur das Speichern; er ist keine Auswahländerung.
+  final bekannt = keys.difference({kInventarInstanzSchluessel});
+  final aktuell = {for (final k in bekannt) k: a[k]};
+  final angezeigt = {for (final k in bekannt) k: b[k]};
   if (stableContentHash(aktuell) != stableContentHash(angezeigt)) {
     throw StateError(
       'Ausrüstung inzwischen geändert; Auswahl erneut bestätigen.',

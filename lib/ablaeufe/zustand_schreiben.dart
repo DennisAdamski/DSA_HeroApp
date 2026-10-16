@@ -21,7 +21,9 @@ final ReihenfolgeJeHeld _zustandsReihenfolge = ReihenfolgeJeHeld(
 ///
 /// Lädt den Zustand frisch aus [repository] (fehlt er, gilt
 /// `HeroState.empty()`), wendet [aenderung] an, stempelt ihn mit [uhr] und
-/// speichert ihn. Felder, die seit dem letzten Aufbau der Oberfläche anderswo
+/// speichert ihn. Gibt [aenderung] den gespeicherten Zustand unverändert
+/// zurück (dieselbe Instanz), wird nichts gespeichert — etwa bei einer
+/// bereits gebuchten Wiederholung (ARCH-06). Felder, die seit dem letzten Aufbau der Oberfläche anderswo
 /// gespeichert wurden, bleiben so erhalten, solange [aenderung] sie nicht
 /// selbst ersetzt. Liefert den gespeicherten Zustand.
 ///
@@ -59,9 +61,15 @@ Future<HeroState> _aendereJetzt({
   required HeroState Function(HeroState aktuell) aenderung,
   required DateTime Function() uhr,
 }) async {
-  final aktuell =
-      await repository.loadHeroState(heroId) ?? const HeroState.empty();
-  final geaendert = mitAenderungszeitpunkt(aenderung(aktuell), uhr());
+  final gespeichert = await repository.loadHeroState(heroId);
+  final aktuell = gespeichert ?? const HeroState.empty();
+  final neu = aenderung(aktuell);
+  // Nur ein tatsächlich gespeicherter Zustand gilt als unverändert; ein
+  // fehlender wird immer geschrieben, auch als leerer Zustand.
+  if (gespeichert != null && identical(neu, gespeichert)) {
+    return gespeichert;
+  }
+  final geaendert = mitAenderungszeitpunkt(neu, uhr());
   await repository.saveHeroState(heroId, geaendert);
   return geaendert;
 }

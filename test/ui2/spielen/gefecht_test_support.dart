@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dsa_heldenverwaltung/domain/active_spell_effects_state.dart';
 import 'package:dsa_heldenverwaltung/domain/attribute_modifiers.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/probe_engine_rules.dart';
@@ -86,6 +87,53 @@ class GefechtsTestBestand extends TestBestand implements KartoGefechtsAdapter {
   @override
   Future<AttributeModifiers?> gefechtsAttributoWerte(BuildContext context) =>
       _bruecke.gefechtsAttributoWerte(context);
+
+  @override
+  Future<void> gefechtsMatrixAusloesen({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String heroId,
+    required HeroInventoryEntry eintrag,
+  }) => _bruecke.gefechtsMatrixAusloesen(
+    context: context,
+    ref: ref,
+    heroId: heroId,
+    eintrag: eintrag,
+  );
+
+  @override
+  Future<bool> gefechtsVitalwirkung({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String heroId,
+    required HeroInventoryEntry eintrag,
+  }) => _bruecke.gefechtsVitalwirkung(
+    context: context,
+    ref: ref,
+    heroId: heroId,
+    eintrag: eintrag,
+  );
+
+  @override
+  Future<void> gefechtsAuxiliator({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String heroId,
+    required HeroInventoryEntry eintrag,
+    required String zauberId,
+    required int zfpStern,
+    required bool gelungen,
+    required String repraesentation,
+  }) => _bruecke.gefechtsAuxiliator(
+    context: context,
+    ref: ref,
+    heroId: heroId,
+    eintrag: eintrag,
+    zauberId: zauberId,
+    zfpStern: zfpStern,
+    gelungen: gelungen,
+    repraesentation: repraesentation,
+  );
 
   @override
   Future<void> gefechtsWirkkosten({

@@ -123,7 +123,11 @@ AdvancementSkillTree buildAdvancementSkillTree({
 }) {
   final nodes = <String, SkillTreeNode>{};
   final edges = <SkillTreeEdge>[];
-  final abilityOptions = options.where((o) => !o.isValueAdvancement).toList();
+  // Nur Katalog-Sonderfertigkeiten und Manöver bilden Knoten; Merkmals-
+  // kenntnisse, Waffenmeister und Vor-/Nachteile haben eigene Bereiche.
+  final abilityOptions = options
+      .where((o) => o.ability != null && !o.isMerkmalskenntnis)
+      .toList();
   for (final option in abilityOptions) {
     final id = '${option.kind.name}:${option.targetId}';
     nodes[id] = SkillTreeNode(

@@ -56,6 +56,10 @@ class AdvancementOptionCard extends StatelessWidget {
         ? 'Weitere Auswahl'
         : option.kind == AdvancementKind.maneuver
         ? '+ Manöver'
+        : option.kind == AdvancementKind.representation
+        ? '+ Repräsentation'
+        : option.kind == AdvancementKind.ritualKnowledge
+        ? '+ Ritualkenntnis'
         : '+ Sonderfertigkeit';
     final action = acquiredClosed
         ? Row(
@@ -195,11 +199,15 @@ class AdvancementOptionCard extends StatelessWidget {
     AdvancementKind.talent => option.isCombatTalent ? 'Kampftalent' : 'Talent',
     AdvancementKind.language => 'Sprache',
     AdvancementKind.script => 'Schrift',
+    AdvancementKind.representation => 'Repräsentation',
+    AdvancementKind.ritualKnowledge => 'Ritualkenntnis',
     AdvancementKind.spell => 'Zauber',
     AdvancementKind.generalAbility => 'Allgemeine Sonderfertigkeit',
     AdvancementKind.magicAbility => 'Magische Sonderfertigkeit',
     AdvancementKind.karmalAbility => 'Karmale Sonderfertigkeit',
     AdvancementKind.combatAbility => 'Kampfsonderfertigkeit',
+    AdvancementKind.advantage => 'Vorteil · nachträglicher Erwerb',
+    AdvancementKind.disadvantage => 'Nachteil · Abbau',
   };
 }
 

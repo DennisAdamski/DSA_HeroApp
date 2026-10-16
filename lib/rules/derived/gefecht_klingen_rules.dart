@@ -10,6 +10,7 @@ import 'gefecht_held_rules.dart';
 import 'gefecht_rules.dart';
 import 'gefecht_kontext_rules.dart';
 import 'gefecht_angriff_rules.dart';
+import 'gefecht_kampfmittel_rules.dart';
 
 import 'dart:convert';
 
@@ -132,6 +133,8 @@ Gefechtspruefung pruefeGefechtsKlingenbeginn(
     freie: p.freie,
     zusatz: p.zusatz,
     erschwernis: p.erschwernis,
+    modifikatoren: p.modifikatoren,
+    zielHerleitung: p.zielHerleitung,
     kampfmittel: p.kampfmittel,
     ausruestungspaar: p.ausruestungspaar,
   );
@@ -308,6 +311,4 @@ String gefechtsKlingenprofilKey(Gefechtswerte w) => jsonEncode({
 DiceSpec? gefechtsKlingenschaden(
   HeroComputedSnapshot s,
   GefechtsKampfmittelwahl w,
-) => w.art == GefechtsKampfmittelArt.nebenwaffe
-    ? s.combatPreviewStats.offhandPreview?.damageDiceSpec
-    : s.combatPreviewStats.damageDiceSpec;
+) => gefechtsSchadenswuerfel(s, w);

@@ -1,0 +1,266 @@
+{
+  "version": 1,
+  "created": "2026-10-13",
+  "style": "Medieval manuscript engraving; brass, ivory, petrol",
+  "assets": [
+    {
+      "id": "melee",
+      "label": "Nahkampf",
+      "kind": "type",
+      "catalogValue": "Nahkampf",
+      "catalogId": null,
+      "path": "assets/ui/fantasy_weapons_v1/melee.png"
+    },
+    {
+      "id": "ranged",
+      "label": "Fernkampf",
+      "kind": "type",
+      "catalogValue": "Fernkampf",
+      "catalogId": null,
+      "path": "assets/ui/fantasy_weapons_v1/ranged.png"
+    },
+    {
+      "id": "hand_and_a_half",
+      "label": "Anderthalbhänder",
+      "kind": "combatSkill",
+      "catalogValue": "Anderthalbhänder",
+      "catalogId": "tal_anderthalbhaender",
+      "weaponType": "Nahkampf",
+      "path": "assets/ui/fantasy_weapons_v1/hand_and_a_half.png"
+    },
+    {
+      "id": "daggers",
+      "label": "Dolche",
+      "kind": "combatSkill",
+      "catalogValue": "Dolche",
+      "catalogId": "tal_dolche",
+      "weaponType": "Nahkampf",
+      "path": "assets/ui/fantasy_weapons_v1/daggers.png"
+    },
+    {
+      "id": "fencing",
+      "label": "Fechtwaffen",
+      "kind": "combatSkill",
+      "catalogValue": "Fechtwaffen",
+      "catalogId": "tal_fechtwaffen",
+      "weaponType": "Nahkampf",
+      "path": "assets/ui/fantasy_weapons_v1/fencing.png"
+    },
+    {
+      "id": "impact",
+      "label": "Hiebwaffen",
+      "kind": "combatSkill",
+      "catalogValue": "Hiebwaffen",
+      "catalogId": "tal_hiebwaffen",
+      "weaponType": "Nahkampf",
+      "path": "assets/ui/fantasy_weapons_v1/impact.png"
+    },
+    {
+      "id": "polearms",
+      "label": "Infanteriewaffen",
+      "kind": "combatSkill",
+      "catalogValue": "Infanteriewaffen",
+      "catalogId": "tal_infanteriewaffen",
+      "weaponType": "Nahkampf",
+      "path": "assets/ui/fantasy_weapons_v1/polearms.png"
+    },
+    {
+      "id": "chain_staves",
+      "label": "Kettenstäbe",
+      "kind": "combatSkill",
+      "catalogValue": "Kettenstäbe",
+      "catalogId": "tal_kettenstaebe",
+      "weaponType": "Nahkampf",
+      "path": "assets/ui/fantasy_weapons_v1/chain_staves.png"
+    },
+    {
+      "id": "chain_weapons",
+      "label": "Kettenwaffen",
+      "kind": "combatSkill",
+      "catalogValue": "Kettenwaffen",
+      "catalogId": "tal_kettenwaffen",
+      "weaponType": "Nahkampf",
+      "path": "assets/ui/fantasy_weapons_v1/chain_weapons.png"
+    },
+    {
+      "id": "lances",
+      "label": "Lanzenreiten",
+      "kind": "combatSkill",
+      "catalogValue": "Lanzenreiten",
+      "catalogId": "tal_lanzenreiten",
+      "weaponType": "Nahkampf",
+      "path": "assets/ui/fantasy_weapons_v1/lances.png"
+    },
+    {
+      "id": "brawling",
+      "label": "Raufen",
+      "kind": "combatSkill",
+      "catalogValue": "Raufen",
+      "catalogId": "tal_raufen",
+      "weaponType": "Nahkampf",
+      "path": "assets/ui/fantasy_weapons_v1/brawling.png"
+    },
+    {
+      "id": "wrestling",
+      "label": "Ringen",
+      "kind": "combatSkill",
+      "catalogValue": "Ringen",
+      "catalogId": "tal_ringen",
+      "weaponType": "Nahkampf",
+      "path": "assets/ui/fantasy_weapons_v1/wrestling.png"
+    },
+    {
+      "id": "sabres",
+      "label": "Säbel",
+      "kind": "combatSkill",
+      "catalogValue": "Säbel",
+      "catalogId": "tal_saebel",
+      "weaponType": "Nahkampf",
+      "path": "assets/ui/fantasy_weapons_v1/sabres.png"
+    },
+    {
+      "id": "swords",
+      "label": "Schwerter",
+      "kind": "combatSkill",
+      "catalogValue": "Schwerter",
+      "catalogId": "tal_schwerter",
+      "weaponType": "Nahkampf",
+      "path": "assets/ui/fantasy_weapons_v1/swords.png"
+    },
+    {
+      "id": "spears",
+      "label": "Speere",
+      "kind": "combatSkill",
+      "catalogValue": "Speere",
+      "catalogId": "tal_speere",
+      "weaponType": "Nahkampf",
+      "path": "assets/ui/fantasy_weapons_v1/spears.png"
+    },
+    {
+      "id": "staves",
+      "label": "Stäbe",
+      "kind": "combatSkill",
+      "catalogValue": "Stäbe",
+      "catalogId": "tal_staebe",
+      "weaponType": "Nahkampf",
+      "path": "assets/ui/fantasy_weapons_v1/staves.png"
+    },
+    {
+      "id": "two_hand_flails",
+      "label": "Zweihandflegel",
+      "kind": "combatSkill",
+      "catalogValue": "Zweihandflegel",
+      "catalogId": "tal_zweihandflegel",
+      "weaponType": "Nahkampf",
+      "path": "assets/ui/fantasy_weapons_v1/two_hand_flails.png"
+    },
+    {
+      "id": "two_hand_impact",
+      "label": "Zweihand-Hiebwaffen",
+      "kind": "combatSkill",
+      "catalogValue": "Zweihand_Hiebwaffen",
+      "catalogId": "tal_zweihand_hiebwaffen",
+      "weaponType": "Nahkampf",
+      "path": "assets/ui/fantasy_weapons_v1/two_hand_impact.png"
+    },
+    {
+      "id": "two_hand_swords",
+      "label": "Zweihandschwerter und -säbel",
+      "kind": "combatSkill",
+      "catalogValue": "Zweihandschwerter_Säbel",
+      "catalogId": "tal_zweihandschwerter_saebel",
+      "weaponType": "Nahkampf",
+      "path": "assets/ui/fantasy_weapons_v1/two_hand_swords.png"
+    },
+    {
+      "id": "crossbows",
+      "label": "Armbrust",
+      "kind": "combatSkill",
+      "catalogValue": "Armbrust",
+      "catalogId": "tal_armbrust",
+      "weaponType": "Fernkampf",
+      "path": "assets/ui/fantasy_weapons_v1/crossbows.png"
+    },
+    {
+      "id": "siege",
+      "label": "Belagerungswaffen",
+      "kind": "combatSkill",
+      "catalogValue": "Belagerungswaffen",
+      "catalogId": "tal_belagerungswaffen",
+      "weaponType": "Fernkampf",
+      "path": "assets/ui/fantasy_weapons_v1/siege.png"
+    },
+    {
+      "id": "blowpipes",
+      "label": "Blasrohr",
+      "kind": "combatSkill",
+      "catalogValue": "Blasrohr",
+      "catalogId": "tal_blasrohr",
+      "weaponType": "Fernkampf",
+      "path": "assets/ui/fantasy_weapons_v1/blowpipes.png"
+    },
+    {
+      "id": "bows",
+      "label": "Bogen",
+      "kind": "combatSkill",
+      "catalogValue": "Bogen",
+      "catalogId": "tal_bogen",
+      "weaponType": "Fernkampf",
+      "path": "assets/ui/fantasy_weapons_v1/bows.png"
+    },
+    {
+      "id": "discs",
+      "label": "Diskus",
+      "kind": "combatSkill",
+      "catalogValue": "Diskus",
+      "catalogId": "tal_diskus",
+      "weaponType": "Fernkampf",
+      "path": "assets/ui/fantasy_weapons_v1/discs.png"
+    },
+    {
+      "id": "whips",
+      "label": "Peitsche",
+      "kind": "combatSkill",
+      "catalogValue": "Peitsche",
+      "catalogId": "tal_peitsche",
+      "weaponType": "Fernkampf",
+      "path": "assets/ui/fantasy_weapons_v1/whips.png"
+    },
+    {
+      "id": "slings",
+      "label": "Schleuder",
+      "kind": "combatSkill",
+      "catalogValue": "Schleuder",
+      "catalogId": "tal_schleuder",
+      "weaponType": "Fernkampf",
+      "path": "assets/ui/fantasy_weapons_v1/slings.png"
+    },
+    {
+      "id": "throwing_axes",
+      "label": "Wurfbeile",
+      "kind": "combatSkill",
+      "catalogValue": "Wurfbeile",
+      "catalogId": "tal_wurfbeile",
+      "weaponType": "Fernkampf",
+      "path": "assets/ui/fantasy_weapons_v1/throwing_axes.png"
+    },
+    {
+      "id": "throwing_knives",
+      "label": "Wurfmesser",
+      "kind": "combatSkill",
+      "catalogValue": "Wurfmesser",
+      "catalogId": "tal_wurfmesser",
+      "weaponType": "Fernkampf",
+      "path": "assets/ui/fantasy_weapons_v1/throwing_knives.png"
+    },
+    {
+      "id": "javelins",
+      "label": "Wurfspeere",
+      "kind": "combatSkill",
+      "catalogValue": "Wurfspeere",
+      "catalogId": "tal_wurfspeere",
+      "weaponType": "Fernkampf",
+      "path": "assets/ui/fantasy_weapons_v1/javelins.png"
+    }
+  ]
+}

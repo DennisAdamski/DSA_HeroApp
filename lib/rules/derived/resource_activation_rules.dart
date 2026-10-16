@@ -1,3 +1,4 @@
+import 'package:dsa_heldenverwaltung/rules/derived/hero_herkunft_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_wirkung_rules.dart';
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_resource_activation_config.dart';
@@ -98,16 +99,10 @@ bool _hasOriginOrAdvantageModifier(
   required Set<String> recognizedCodes,
   required RulesCatalog? catalog,
 }) {
-  final originTexts = <String>[
-    hero.background.rasseModText,
-    hero.background.kulturModText,
-    hero.background.professionModText,
-  ];
-  for (final text in originTexts) {
-    final codes = extractNormalizedStatModifierCodes(text);
-    if (codes.any(recognizedCodes.contains)) {
-      return true;
-    }
+  final herkunft = werteHerkunftAus(hero.background);
+  if ((recognizedCodes.contains('ASP') && herkunft.aktiviertMagie) ||
+      (recognizedCodes.contains('KAP') && herkunft.aktiviertKarma)) {
+    return true;
   }
 
   final merkmale = werteMerkmaleAus(hero, catalog: catalog);

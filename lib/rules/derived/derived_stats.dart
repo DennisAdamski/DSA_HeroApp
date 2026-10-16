@@ -4,14 +4,10 @@ import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
 
-import 'package:dsa_heldenverwaltung/rules/derived/active_spell_rules.dart';
-import 'package:dsa_heldenverwaltung/rules/derived/ini_rules.dart';
-import 'package:dsa_heldenverwaltung/rules/derived/kampfbasis_rules.dart';
-import 'package:dsa_heldenverwaltung/rules/derived/magic_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/basiswert_herleitung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_source_breakdown.dart';
-import 'package:dsa_heldenverwaltung/rules/derived/ressourcen_rules.dart';
-import 'package:dsa_heldenverwaltung/rules/derived/ruestung_be_rules.dart';
-import 'package:dsa_heldenverwaltung/rules/derived/wund_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/spell_effect_combat_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/spell_effect_instance_rules.dart';
 
 import 'modifier_parser.dart';
 
@@ -30,6 +26,8 @@ class DerivedStats {
     required this.gs,
     required this.ausweichen,
     this.modifiers = const StatModifiers(),
+    this.herleitungen,
+    this.zauberEffekte = const SpellEffectBeitraege(),
   });
 
   final int maxLep;
@@ -51,6 +49,16 @@ class DerivedStats {
   /// Die Kampfvorschau rechnet damit weiter, damit AT, PA, RS und INI
   /// dieselben Quellen beruecksichtigen wie die Basiswerte.
   final StatModifiers modifiers;
+
+  /// Herleitung jedes Werts (ARCH-04); `null` nur bei von Hand gebauten
+  /// Werten, etwa in Tests.
+  final BasiswertHerleitungen? herleitungen;
+
+  /// Empfangene Kampf-Mali laufender Zaubereffekte (MAG-EFF-03). Ihre
+  /// Basiswert-Anteile stecken bereits in [modifiers] und [herleitungen]; der
+  /// Abzug auf die fertige Helden-INI (Blitz) und die Hinweise werden von der
+  /// Kampfvorschau gelesen.
+  final SpellEffectBeitraege zauberEffekte;
 }
 
 /// Berechnet alle abgeleiteten Werte aus Stammdaten und Laufzeitzustand.
@@ -79,7 +87,7 @@ DerivedStats computeDerivedStats(
   // Effektive Attribute inkl. temporaerer Boni (fuer AT/PA/INI/GS/MR/FK).
   final effectiveAttributes = applyAttributeModifiers(
     sheet.attributes,
-    parsed.attributeMods + namedAttrMods + state.tempAttributeMods,
+    parsed.attributeMods + namedAttrMods + effektiveTempAttributeMods(state),
   );
   return computeDerivedStatsFromInputs(
     sheet: sheet,
@@ -87,9 +95,20 @@ DerivedStats computeDerivedStats(
     parsedModifiers: parsed,
     effectiveAttributes: effectiveAttributes,
     permanentAttributes: permanentAttributes,
+    zauberEffekte: berechneSpellEffectBeitraegeFuerHeld(
+      held: sheet,
+      zustand: state,
+      katalog: catalog,
+    ),
   );
 }
 
+/// Berechnet die Basiswerte aus vorbereiteten Eingaben.
+///
+/// Die Werte stammen aus den [BasiswertHerleitungen] (ARCH-04); sie liegen
+/// in [DerivedStats.herleitungen], damit jede Anzeige genau die gerechnete
+/// Herleitung zeigt. [textAufteilung] zerlegt den Textanteil nach Herkunft
+/// und Merkmalen, ohne den Wert zu verändern.
 DerivedStats computeDerivedStatsFromInputs({
   required HeroSheet sheet,
   required HeroState state,
@@ -100,74 +119,44 @@ DerivedStats computeDerivedStatsFromInputs({
   Attributes? permanentAttributes,
   StatModifiers inventoryStatMods = const StatModifiers(),
   StatModifiers wundStatMods = const StatModifiers(),
+  List<StatModifikatorQuelle>? textAufteilung,
+  SpellEffectBeitraege zauberEffekte = const SpellEffectBeitraege(),
 }) {
-  final effectiveSheet = sheet.copyWith(attributes: effectiveAttributes);
-  // Ressourcen-Maxima (LeP/Au/AsP) nutzen permanente Attribute ohne temporaere
-  // Zauber-Boni, da Attributo keinen Einfluss auf die Ressourcen-Obergrenze hat.
-  final permanentSheet = sheet.copyWith(
-    attributes: permanentAttributes ?? effectiveAttributes,
-  );
-  final namedStatMods = aggregateNamedStatModifiers(sheet.statModifiers);
-  final mods =
-      sheet.persistentMods +
-      namedStatMods +
-      parsedModifiers.statMods +
-      state.tempMods +
-      inventoryStatMods +
-      wundStatMods;
-  final activeArmorPieces = sheet.combatConfig.armor.pieces
-      .where((piece) => piece.isActive)
-      .toList(growable: false);
-  final beTotalRaw = computeBeTotalRaw(activeArmorPieces);
-  final rgReduction = computeRgReduction(
-    globalArmorTrainingLevel: sheet.combatConfig.armor.globalArmorTrainingLevel,
-    activePieces: activeArmorPieces,
-  );
-  final beKampf = computeBeKampf(beTotalRaw, rgReduction);
-  final axxeleratusActive = isAxxeleratusEffectActive(
+  final quellen = sammleStatModifikatorQuellen(
     sheet: sheet,
     state: state,
+    textMods: parsedModifiers.statMods,
+    textAufteilung: textAufteilung,
+    inventar: inventoryStatMods,
+    wunden: wundStatMods,
+    zauber: zauberEffekte.statQuellen,
   );
-  var gsBonus = 0;
-  if (parsedModifiers.hasFlinkFromVorteile) {
-    gsBonus += 1;
-  }
-  if (parsedModifiers.hasBehaebigFromNachteile) {
-    gsBonus -= 1;
-  }
-  // Dieselbe GS-Kette mit und ohne Wundanteil: Wunden senken die GS nie
-  // unter 1 (WdS S. 111).
-  int gsFuer(StatModifiers gsMods) {
-    final baseGs = computeGs(effectiveSheet, gsMods, beKampf: beKampf);
-    final gs = computeAxxeleratusGs(
-      gs: baseGs,
-      axxeleratusActive: axxeleratusActive,
-    );
-    return gs + gsBonus;
-  }
-
-  final gsOhneWundModifikatoren = mods.copyWith(gs: mods.gs - wundStatMods.gs);
-  final gs = begrenzeWundGs(
-    ohneWunden: gsFuer(gsOhneWundModifikatoren),
-    mitWunden: gsFuer(mods),
+  final h = computeBasiswertHerleitungen(
+    sheet: sheet,
+    state: state,
+    // Ressourcen-Maxima ignorieren temporaere Zauberboni (Attributo).
+    permanentAttributes: permanentAttributes ?? effectiveAttributes,
+    effectiveAttributes: effectiveAttributes,
+    quellen: quellen,
+    hasFlinkFromVorteile: parsedModifiers.hasFlinkFromVorteile,
+    hasBehaebigFromNachteile: parsedModifiers.hasBehaebigFromNachteile,
+    wundGs: wundStatMods.gs,
   );
-  final iniBase = computeIniBase(effectiveSheet, mods);
-  final iniBaseBonus = computeIniBaseBonus(sheet.combatConfig.specialRules);
 
   return DerivedStats(
-    maxLep: computeMaxLep(permanentSheet, mods),
-    maxAu: computeMaxAu(permanentSheet, mods),
-    maxAsp: computeMaxAsp(permanentSheet, mods),
-    maxKap: computeMaxKap(permanentSheet, mods),
-    mr: computeMr(effectiveSheet, mods),
-    iniBase: iniBase + iniBaseBonus,
-    atBase: computeAt(effectiveSheet, mods),
-    paBase: computePa(effectiveSheet, mods),
-    fkBase: computeFk(effectiveSheet, mods),
-    gs: gs,
-    // Ausweichen wird nicht mehr als Basiswertformel aus Attributen berechnet.
-    // Der abgeleitete Wert spiegelt hier nur explizite Modifikatoren wider.
-    ausweichen: mods.ausweichen,
-    modifiers: mods,
+    maxLep: h.maxLep.wert,
+    maxAu: h.maxAu.wert,
+    maxAsp: h.maxAsp.wert,
+    maxKap: h.maxKap.wert,
+    mr: h.mr.wert,
+    iniBase: h.iniBase.wert,
+    atBase: h.atBase.wert,
+    paBase: h.paBase.wert,
+    fkBase: h.fkBase.wert,
+    gs: h.gs.wert,
+    ausweichen: h.ausweichen.wert,
+    modifiers: summeDerQuellen(quellen),
+    herleitungen: h,
+    zauberEffekte: zauberEffekte,
   );
 }

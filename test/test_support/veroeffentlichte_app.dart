@@ -7,6 +7,7 @@ import 'package:dsa_heldenverwaltung/domain/avatar_gallery_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/avatar_gesichtsbefund.dart';
 import 'package:dsa_heldenverwaltung/domain/avatar_snapshot.dart';
 import 'package:dsa_heldenverwaltung/domain/aventurian_date.dart';
+import 'package:dsa_heldenverwaltung/domain/begleiter_zustand.dart';
 import 'package:dsa_heldenverwaltung/domain/bought_stats.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/dice_log_entry.dart';
@@ -36,30 +37,37 @@ import 'package:dsa_heldenverwaltung/domain/talent_special_ability.dart';
 import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
 
-/// Nachbildung der bereits veroeffentlichten App-Version (`main`, Stand
-/// `7f0f830`) fuer Tests zum Mischbetrieb.
+/// Nachbildung aelterer App-Versionen fuer Tests zum Mischbetrieb.
 ///
-/// Sie laesst sich nicht mehr aendern; das Datenformat dieser Version muss
-/// deshalb so gewaehlt sein, dass sie damit vertraeglich arbeitet.
+/// Hauptsaechlich `main` im Stand `7f0f830` (PR #195, 27.09.2026), der
+/// letzte Stand ohne Schutz unbekannter Felder. Seit PR #199–#201
+/// (28./29.09.2026) bewahrt die Web-Produktion unbekannte Felder, seit PR #221
+/// (06.10.2026) kennt sie `instanzId` und `menge`. Laut Nutzer laeuft seit dem
+/// 06.10.2026 keine aeltere Version mehr; die Nachbildungen sichern, dass
+/// zurueckgeschriebene Altdaten trotzdem verlustfrei gelesen werden.
 
 /// Was die veroeffentlichte App von [heldJson] uebrig laesst, wenn sie den
 /// Helden laedt und wieder speichert.
 ///
 /// Sie kennt weder Slot-IDs noch `slotRef` noch strukturierte Vor- und
-/// Nachteile (`vorteilEintraege`/`nachteilEintraege`) und bewahrt keine unbekannten
+/// Nachteile (`vorteilEintraege`/`nachteilEintraege`) noch die Ausbildung von
+/// Reittieren (`reittierAusbildung`, `katalogId` der Begleiter-SF) und bewahrt
+/// keine unbekannten
 /// Felder, weder oben noch verschachtelt. Nachgebildet mit den
 /// Schluesselsaetzen dieser Version ohne `id` und `slotRef`; Felder, die erst
 /// nach ihr dazukamen, bleiben damit stehen — fuer die hier geprueften
 /// Modelle spielt das keine Rolle.
 Map<String, dynamic> wieVeroeffentlichteApp(Map<String, dynamic> heldJson) {
   final json = jsonDecode(jsonEncode(heldJson)) as Map<String, dynamic>;
-  // Strukturierte Vor-/Nachteile (ARCH-02) kennt sie nicht; sie bearbeitet
-  // nur `vorteileText`/`nachteileText`.
+  // Strukturierte Vor-/Nachteile und Herkunftsmodifikatoren (ARCH-02) kennt
+  // sie nicht; sie bearbeitet nur `vorteileText`/`nachteileText` und die
+  // `*ModText`-Felder.
   _behalte(
     json,
     HeroSheet.jsonSchluessel.difference(const {
       'vorteilEintraege',
       'nachteilEintraege',
+      'herkunftsModifikatoren',
     }),
   );
   final kampf = json['combatConfig'] as Map<String, dynamic>?;
@@ -297,15 +305,29 @@ void _begleiterAbenteuerNotizen(Map<String, dynamic> json) {
     _behalte(kontakt, HeroConnectionEntry.jsonSchluessel);
   }
   for (final begleiter in _maps(json['companions'])) {
-    _behalte(begleiter, HeroCompanion.jsonSchluessel);
+    _behalte(
+      begleiter,
+      HeroCompanion.jsonSchluessel.difference(const {
+        'reittierAusbildung',
+        'vertrautenBindung',
+      }),
+    );
     for (final tempo in _maps(begleiter['geschwindigkeiten'])) {
-      _behalte(tempo, HeroCompanionSpeed.jsonSchluessel);
+      _behalte(
+        tempo,
+        HeroCompanionSpeed.jsonSchluessel.difference(const {'steigerung'}),
+      );
     }
     for (final angriff in _maps(begleiter['angriffe'])) {
       _behalte(angriff, HeroCompanionAttack.jsonSchluessel);
     }
     for (final sf in _maps(begleiter['sonderfertigkeiten'])) {
-      _behalte(sf, HeroCompanionSonderfertigkeit.jsonSchluessel);
+      _behalte(
+        sf,
+        HeroCompanionSonderfertigkeit.jsonSchluessel.difference(const {
+          'katalogId',
+        }),
+      );
     }
     for (final stueck in _maps(begleiter['ruestungsTeile'])) {
       _behalteOhneId(stueck, ArmorPiece.jsonSchluessel);
@@ -420,6 +442,9 @@ Map<String, dynamic> zustandWieVeroeffentlichteApp(
       _behalteIn(wunden[zonen], _namen(WundZone.values));
     }
   }
+  for (final zustand in _werte(json['begleiterZustaende'])) {
+    _behalte(zustand, BegleiterZustand.jsonSchluessel);
+  }
   for (final eintrag in _maps(json['diceLog'])) {
     _behalte(eintrag, DiceLogEntry.jsonSchluessel);
     _ersatz(eintrag, 'type', _namen(ProbeType.values), 'attribute');
@@ -519,4 +544,20 @@ void _behalte(Map<String, dynamic> json, Set<String> bekannt) {
 // Wie [_behalte], zusaetzlich ohne Slot-ID.
 void _behalteOhneId(Map<String, dynamic> json, Set<String> bekannt) {
   _behalte(json, bekannt.difference(const {'id'}));
+}
+
+/// Was eine Version vom 29.09. bis 05.10.2026 aus [heldJson] macht, wenn der
+/// Nutzer dort die Anzahl des Inventareintrags [index] auf [anzahl] setzt.
+///
+/// Sie bewahrt `menge` als unbekanntes Feld, kennt es aber nicht und
+/// schreibt nur `anzahl` (ARCH-03). Danach passen beide nicht mehr zusammen.
+Map<String, dynamic> anzahlWieVersionOhneMenge(
+  Map<String, dynamic> heldJson,
+  int index,
+  String anzahl,
+) {
+  final json = jsonDecode(jsonEncode(heldJson)) as Map<String, dynamic>;
+  final eintraege = json['inventoryEntries'] as List;
+  (eintraege[index] as Map<String, dynamic>)['anzahl'] = anzahl;
+  return json;
 }

@@ -54,10 +54,22 @@ class KartoMerkmalkarte extends StatelessWidget {
             ),
           ],
           const SizedBox(height: Abstand.normal),
-          _Pille(
-            text: anzeige.herkunftText,
-            symbol: pruefen ? Icons.help_outline : null,
-            farbe: pruefen ? karto.siegel : karto.schriftLeise,
+          Wrap(
+            spacing: Abstand.eng,
+            runSpacing: Abstand.eng,
+            children: [
+              _Pille(
+                text: anzeige.herkunftText,
+                symbol: pruefen ? Icons.help_outline : null,
+                farbe: pruefen ? karto.siegel : karto.schriftLeise,
+              ),
+              if (anzeige.ursprungText != null)
+                _Pille(
+                  key: const ValueKey<String>('karto-merkmal-ursprung'),
+                  text: anzeige.ursprungText!,
+                  farbe: karto.schriftLeise,
+                ),
+            ],
           ),
         ],
       ),
@@ -67,7 +79,12 @@ class KartoMerkmalkarte extends StatelessWidget {
 
 /// Leise Marke mit optionalem Symbol, etwa die Herkunft eines Merkmals.
 class _Pille extends StatelessWidget {
-  const _Pille({required this.text, required this.farbe, this.symbol});
+  const _Pille({
+    super.key,
+    required this.text,
+    required this.farbe,
+    this.symbol,
+  });
 
   final String text;
   final Color farbe;

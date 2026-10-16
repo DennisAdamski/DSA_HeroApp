@@ -7,6 +7,7 @@ enum _SettingsDestination {
   catalog,
   houseRules,
   imageGeneration,
+  feedback,
   legal,
   debugMode,
 }
@@ -19,6 +20,7 @@ extension _SettingsDestinationX on _SettingsDestination {
     _SettingsDestination.catalog => 'Katalogverwaltung',
     _SettingsDestination.houseRules => 'Hausregeln',
     _SettingsDestination.imageGeneration => 'Bildgenerierung',
+    _SettingsDestination.feedback => 'Feedback',
     _SettingsDestination.legal => 'Rechtliches',
     _SettingsDestination.debugMode => 'Debugmodus',
   };
@@ -30,6 +32,7 @@ extension _SettingsDestinationX on _SettingsDestination {
     _SettingsDestination.catalog => 'Custom-Kataloge und Passwortschutz',
     _SettingsDestination.houseRules => 'Pakete aktivieren und verwalten',
     _SettingsDestination.imageGeneration => 'Anbieter und API-Schlüssel',
+    _SettingsDestination.feedback => 'Bug, Feature-Anfrage oder Regelfrage',
     _SettingsDestination.legal => 'Autor, Marken und Fan-Hinweis',
     _SettingsDestination.debugMode =>
       'Variablennamen statt Anzeigebezeichnungen',
@@ -42,6 +45,7 @@ extension _SettingsDestinationX on _SettingsDestination {
     _SettingsDestination.catalog => Icons.library_books_outlined,
     _SettingsDestination.houseRules => Icons.rule_folder_outlined,
     _SettingsDestination.imageGeneration => Icons.auto_awesome_outlined,
+    _SettingsDestination.feedback => Icons.feedback_outlined,
     _SettingsDestination.legal => Icons.info_outline,
     _SettingsDestination.debugMode => Icons.bug_report_outlined,
   };
@@ -63,6 +67,10 @@ extension _SettingsDestinationX on _SettingsDestination {
         _SettingsDestination.catalog => const _CatalogSettingsPage(),
         _SettingsDestination.houseRules => const _HouseRulesSettingsPage(),
         _SettingsDestination.imageGeneration => const _AvatarApiSettingsPage(),
+        _SettingsDestination.feedback => const FeedbackPage(
+          initialSurface: FeedbackSurface.settings,
+          embedded: true,
+        ),
         _SettingsDestination.legal => const _LegalSettingsPage(),
         _SettingsDestination.debugMode => const SizedBox.shrink(),
       };

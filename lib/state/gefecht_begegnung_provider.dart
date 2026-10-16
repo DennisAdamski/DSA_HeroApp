@@ -1,6 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht_gegner.dart';
+import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_gegner_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/gefecht_ueberzahl_rules.dart'
+    show
+        setzeGefechtsBeteiligung,
+        setzeGefechtsmitstreiterZiel,
+        setzeGefechtstaktik;
 
 /// Hält die lokale Gegnerliste gemeinsam für alle Heldensitzungen.
 class GefechtsbegegnungsController extends Notifier<Gefechtsbegegnung> {
@@ -11,18 +17,81 @@ class GefechtsbegegnungsController extends Notifier<Gefechtsbegegnung> {
   /// Erfasst bestätigte Gegnerwerte über die gemeinsame Profilprüfung.
   void speichern(Gefechtsgegner g) => state = speichereGefechtsgegner(state, g);
 
+  /// Übernimmt bearbeitete Grundwerte auf den frischen Gegner.
+  ///
+  /// Treffer und Folgen, die während der Bearbeitung entstanden, bleiben.
+  void profilSpeichern(Gefechtsgegner profil) =>
+      state = speichereGefechtsgegnerprofil(state, profil);
+
   /// Bucht gegen die ursprüngliche ID mit den frischen Gegnerwerten.
   void schaden({
     required String gegnerId,
     required String buchungId,
     required int tp,
     bool direkt = false,
+    WundZone? zone,
+    int? wunden,
+    int? runde,
+    String von = '',
   }) => state = bucheGefechtsGegnerschaden(
     state,
     gegnerId: gegnerId,
     buchungId: buchungId,
     tp: tp,
     direkt: direkt,
+    zone: zone,
+    wunden: wunden,
+    runde: runde,
+    von: von,
+  );
+
+  /// Nimmt einen gebuchten Treffer zurück, ohne die Buchung freizugeben.
+  void trefferZuruecknehmen({
+    required String gegnerId,
+    required String buchungId,
+  }) => state = nimmGefechtsGegnertrefferZurueck(
+    state,
+    gegnerId: gegnerId,
+    buchungId: buchungId,
+  );
+
+  /// Setzt einen ausdrücklich gewählten Status auf dem frischen Gegner.
+  void statusSetzen(String gegnerId, GefechtsgegnerStatus status) => state =
+      setzeGefechtsgegnerStatus(state, gegnerId: gegnerId, status: status);
+
+  /// Legt fest, wen der Gegner im Nahkampf bindet (`null`: niemanden).
+  void bindungSetzen(String gegnerId, String? teilnehmerId) =>
+      state = setzeGefechtsgegnerBindung(
+        state,
+        gegnerId: gegnerId,
+        teilnehmerId: teilnehmerId,
+      );
+
+  /// Hält das bestätigte Ergebnis der Aktion Taktik einmal pro Kampf fest.
+  void taktikSetzen(Gefechtstaktik t) => state = setzeGefechtstaktik(state, t);
+
+  /// Legt die Beteiligung eines Teilnehmers der eigenen Seite fest.
+  void beteiligungSetzen(
+    String teilnehmerId,
+    String name,
+    GefechtsBeteiligung beteiligung,
+  ) => state = setzeGefechtsBeteiligung(
+    state,
+    teilnehmerId: teilnehmerId,
+    name: name,
+    beteiligung: beteiligung,
+  );
+
+  /// Legt das Ziel eines externen Gefährten fest.
+  void mitstreiterZielSetzen(
+    String teilnehmerId,
+    String name,
+    String? zielId,
+  ) => state = setzeGefechtsmitstreiterZiel(
+    state,
+    teilnehmerId: teilnehmerId,
+    name: name,
+    zielId: zielId,
   );
 
   /// Beendet die Begegnung ausdrücklich für alle verbundenen Ansichten.

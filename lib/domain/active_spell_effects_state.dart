@@ -1,4 +1,5 @@
 import 'package:dsa_heldenverwaltung/domain/spell_duration.dart';
+import 'package:dsa_heldenverwaltung/domain/spell_effect_instance.dart';
 import 'package:dsa_heldenverwaltung/domain/unbekannte_json_felder.dart';
 
 /// Zusatzdaten eines laufenden Zaubereffekts.
@@ -98,6 +99,8 @@ class ActiveSpellEffectsState {
   const ActiveSpellEffectsState({
     this.activeEffectIds = const <String>[],
     this.effectDetails = const <String, ActiveSpellEffectDetail>{},
+    this.instanzen = const <SpellEffectInstance>[],
+    this.unverstandeneInstanzen = const <Object?>[],
     this.unbekannteFelder = const <String, Object?>{},
   });
 
@@ -107,6 +110,17 @@ class ActiveSpellEffectsState {
   /// Zusatzdaten je Effekt-ID; Effekte ohne Eintrag laufen ohne Zusatzdaten.
   final Map<String, ActiveSpellEffectDetail> effectDetails;
 
+  /// Quellenbezogene Wirkungen (MAG-EFF-02); neben den Legacy-IDs oben.
+  ///
+  /// Nur bei Belegung im JSON, damit Bestandshelden ihren Inhalts-Hash
+  /// behalten. Ältere App-Versionen erhalten das Feld als unbekannt, werten es
+  /// aber nicht aus.
+  final List<SpellEffectInstance> instanzen;
+
+  /// Einträge von `instanzen`, die diese Version nicht versteht (etwa ohne
+  /// `id`); bleiben roh erhalten und werden mitgeschrieben.
+  final List<Object?> unverstandeneInstanzen;
+
   /// JSON-Felder einer neueren App-Version; bleiben beim Speichern erhalten
   /// (siehe `unbekannte_json_felder.dart`).
   final Map<String, Object?> unbekannteFelder;
@@ -115,6 +129,7 @@ class ActiveSpellEffectsState {
   static const Set<String> jsonSchluessel = <String>{
     'activeEffectIds',
     'effectDetails',
+    'instanzen',
   };
 
   /// Prueft, ob ein Effekt mit [effectId] aktiv ist.
@@ -131,6 +146,8 @@ class ActiveSpellEffectsState {
   ActiveSpellEffectsState copyWith({
     List<String>? activeEffectIds,
     Map<String, ActiveSpellEffectDetail>? effectDetails,
+    List<SpellEffectInstance>? instanzen,
+    List<Object?>? unverstandeneInstanzen,
     Map<String, Object?>? unbekannteFelder,
   }) {
     final nextIds = _normalizeEffectIds(
@@ -142,8 +159,21 @@ class ActiveSpellEffectsState {
         effectDetails ?? this.effectDetails,
         nextIds,
       ),
+      instanzen: _normalizeInstanzen(instanzen ?? this.instanzen),
+      unverstandeneInstanzen:
+          unverstandeneInstanzen ?? this.unverstandeneInstanzen,
       unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
     );
+  }
+
+  /// Liefert die Instanz mit [instanzId] oder `null`.
+  SpellEffectInstance? instanzFor(String instanzId) {
+    for (final instanz in instanzen) {
+      if (instanz.id == instanzId) {
+        return instanz;
+      }
+    }
+    return null;
   }
 
   /// Aktiviert oder deaktiviert einen einzelnen Effekt.
@@ -193,6 +223,11 @@ class ActiveSpellEffectsState {
       'effectDetails': normalizedDetails.map(
         (effectId, detail) => MapEntry(effectId, detail.toJson()),
       ),
+      if (instanzen.isNotEmpty || unverstandeneInstanzen.isNotEmpty)
+        'instanzen': <Object?>[
+          for (final i in _normalizeInstanzen(instanzen)) i.toJson(),
+          for (final roh in unverstandeneInstanzen) kopiereJsonRohwert(roh),
+        ],
     }, unbekannteFelder);
   }
 
@@ -214,9 +249,24 @@ class ActiveSpellEffectsState {
         value.cast<String, dynamic>(),
       );
     });
+    final rawInstanzen = (json['instanzen'] as List?) ?? const <dynamic>[];
+    final verstanden = <SpellEffectInstance>[];
+    final unverstanden = <Object?>[];
+    for (final roh in rawInstanzen) {
+      final instanz = roh is Map
+          ? SpellEffectInstance.fromJson(roh.cast<String, dynamic>())
+          : null;
+      if (instanz == null) {
+        unverstanden.add(kopiereJsonRohwert(roh));
+      } else {
+        verstanden.add(instanz);
+      }
+    }
     return ActiveSpellEffectsState(
       activeEffectIds: normalizedIds,
       effectDetails: _normalizeDetails(details, normalizedIds),
+      instanzen: _normalizeInstanzen(verstanden),
+      unverstandeneInstanzen: List<Object?>.unmodifiable(unverstanden),
       unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
     );
   }
@@ -251,4 +301,16 @@ Map<String, ActiveSpellEffectDetail> _normalizeDetails(
     normalized[id] = entry.value;
   }
   return Map<String, ActiveSpellEffectDetail>.unmodifiable(normalized);
+}
+
+// Behaelt die erste Instanz je ID; doppelte IDs kaemen sonst bei jedem Merge
+// zurueck.
+List<SpellEffectInstance> _normalizeInstanzen(
+  Iterable<SpellEffectInstance> instanzen,
+) {
+  final gesehen = <String>{};
+  return List<SpellEffectInstance>.unmodifiable([
+    for (final instanz in instanzen)
+      if (gesehen.add(instanz.id)) instanz,
+  ]);
 }

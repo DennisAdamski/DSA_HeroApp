@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:dsa_heldenverwaltung/ablaeufe/held_importieren.dart';
 import 'package:dsa_heldenverwaltung/data/hero_transfer_file_gateway.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_transfer_bundle.dart';
@@ -24,8 +25,8 @@ class WorkspaceImportExportActions {
 
   /// Importiert eine JSON-Datei als einzelnen Helden.
   ///
-  /// Gibt die ID des importierten Helden zurueck oder `null` bei Abbruch.
-  Future<String?> importHeroData({
+  /// Gibt das Importergebnis zurueck oder `null` bei Abbruch.
+  Future<HeldImportErgebnis?> importHeroData({
     required BuildContext context,
     required WidgetRef ref,
   }) async {
@@ -40,7 +41,7 @@ class WorkspaceImportExportActions {
     final resolution = await _resolveConflict(context, ref, bundle);
     if (resolution == null) return null;
 
-    return actions.importHeroBundle(bundle, resolution: resolution);
+    return actions.importiereHeld(bundle, resolution: resolution);
   }
 
   Future<ImportConflictResolution?> _resolveConflict(
@@ -89,4 +90,15 @@ class WorkspaceImportExportActions {
       },
     );
   }
+}
+
+/// Rückmeldung nach einem Import; nennt ausgelassene Bilder ausdrücklich,
+/// damit ein fehlendes Porträt nie stumm wie „kein Bild“ aussieht.
+String importMeldung(HeldImportErgebnis ergebnis) {
+  final fehlend = ergebnis.fehlendeBilder;
+  if (fehlend <= 0) {
+    return 'Held erfolgreich importiert';
+  }
+  final bilder = fehlend == 1 ? '1 Bild konnte' : '$fehlend Bilder konnten';
+  return 'Held importiert – $bilder nicht gespeichert werden.';
 }

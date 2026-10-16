@@ -37,6 +37,13 @@ extension _GefechtAnsichtTeile on _GefechtAnsichtState {
         _busy || k == null
         ? null
         : () => _run(() => _aktion(s, snapshot, k, aktion, titel));
+    // Langer Druck: derselbe Rechenweg wie auf den Kampfwerte-Kacheln.
+    final werte = gefechtsKampfwerte(s, snapshot, k);
+    VoidCallback? rechenweg(String id) {
+      final wert = werte.where((w) => w.id == id).firstOrNull;
+      return wert == null ? null : () => zeigeGefechtKampfwert(context, wert);
+    }
+
     return GefechtSchnellleiste(
       aktionen: [
         GefechtSchnellaktion(
@@ -45,6 +52,7 @@ extension _GefechtAnsichtTeile on _GefechtAnsichtState {
           schluessel: 'gefecht-leiste-attacke',
           pruefung: _schnellpruefung(s, snapshot, k, Gefechtsaktion.angriff),
           onPressed: oeffnen(Gefechtsaktion.angriff, 'Angreifen'),
+          onLangDruck: rechenweg('at'),
         ),
         GefechtSchnellaktion(
           titel: 'Parade',
@@ -52,11 +60,13 @@ extension _GefechtAnsichtTeile on _GefechtAnsichtState {
           schluessel: 'gefecht-leiste-parade',
           pruefung: _schnellpruefung(s, snapshot, k, Gefechtsaktion.parade),
           onPressed: oeffnen(Gefechtsaktion.parade, 'Parieren'),
+          onLangDruck: rechenweg('pa'),
         ),
         GefechtSchnellaktion(
           titel: 'Ausweichen',
           symbol: Icons.directions_run,
           schluessel: 'gefecht-leiste-ausweichen',
+          onLangDruck: rechenweg('aw'),
           pruefung: _schnellpruefung(
             s,
             snapshot,
@@ -174,6 +184,48 @@ extension _GefechtAnsichtTeile on _GefechtAnsichtState {
       ],
     ),
   );
+  // Auslösbare Artefakte bleiben unabhängig von den magischen Kenntnissen.
+  Widget _artefakte(HeroComputedSnapshot snapshot) {
+    final artefakte = gefechtsArtefakte(snapshot.hero);
+    return artefakte.isEmpty
+        ? const SizedBox.shrink()
+        : KartoAbschnitt(
+            titel: 'Artefakte',
+            child: Material(
+              type: MaterialType.transparency,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  for (var i = 0; i < artefakte.length; i++)
+                    ListTile(
+                      key: ValueKey('gefecht-matrixgeber-$i'),
+                      contentPadding: EdgeInsets.zero,
+                      enabled: !_busy,
+                      leading: const Icon(Icons.auto_awesome),
+                      title: Text(
+                        artefakte[i].gegenstand.isEmpty
+                            ? 'Artefakt'
+                            : artefakte[i].gegenstand,
+                      ),
+                      subtitle: Text(
+                        artefaktZusammenfassung(artefakte[i].artefaktDaten!),
+                      ),
+                      onTap: () => _run(
+                        () => benutzeGefechtsMatrixgeber(
+                          context: context,
+                          ref: ref,
+                          heroId: widget.heroId,
+                          bestand: _bruecke,
+                          eintrag: artefakte[i],
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          );
+  }
+
   Widget _ausruestung(HeroComputedSnapshot snapshot) => KartoAbschnitt(
     titel: 'Geführte Ausrüstung',
     aktion: TextButton(

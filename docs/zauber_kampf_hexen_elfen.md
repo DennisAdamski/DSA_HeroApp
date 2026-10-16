@@ -2,6 +2,17 @@
 
 Recherche-Stand: 2026-05-31. Reine Recherche, **kein Produktionscode geändert**.
 
+> **Historischer Stand; am 14.10.2026 neu bewertet:** Die App hat inzwischen
+> aktive Effekte und Gefechtszauber. Mehrere Formeln unten sind fehlerhaft:
+> Fulminictus verursacht 2W6+ZfP* direkte SP ohne gewöhnlichen RS;
+> Elementarpfeile verzaubern Munition mit sechs unterschiedlichen Wirkungen;
+> Plumbumbarum senkt AT und INI-Basis; Eiseskälte unterdrückt bestimmte
+> Verletzungsfolgen. Band und Fessel erzeugt eine Gebietsbindung statt
+> allgemeiner Wehrlosigkeit; Somnigravis-Grundwirkung ist kein Kampfzauber
+> mit AuP-Schwelle. Die folgenden alten Angaben nicht als Implementierungsgrundlage
+> verwenden. Aktuelle Quellen, Bestandsaufnahme und Prioritäten stehen im
+> [Zaubereffekte-Integrationsplan](zaubereffekte_integrationsplan.md), Roadmap MAG-EFF.
+
 ## Zweck & Methode
 
 Diese Liste sammelt **Hexen- und Elfenzauber, die Kampfregeln beeinflussen**, und

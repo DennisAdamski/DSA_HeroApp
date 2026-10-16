@@ -1,6 +1,10 @@
+import 'package:dsa_heldenverwaltung/domain/abgelegter_kampfgegenstand.dart';
+import 'package:dsa_heldenverwaltung/domain/alchimikum_bezug.dart';
+import 'package:dsa_heldenverwaltung/domain/artefakt_daten.dart';
 import 'package:dsa_heldenverwaltung/domain/copy_with_sentinel.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
 import 'package:dsa_heldenverwaltung/domain/unbekannte_json_felder.dart';
+import 'package:dsa_heldenverwaltung/domain/vitalwirkung.dart';
 
 /// Wer oder was ein Inventarstück trägt.
 enum InventoryTraeger {
@@ -50,6 +54,10 @@ class HeroInventoryEntry {
     // Gemeinsames Gegenstandsmodell (ARCH-03)
     this.instanzId,
     this.menge,
+    this.abgelegt,
+    this.artefaktDaten,
+    this.vitalwirkung,
+    this.alchimikum,
     this.unbekannteFelder = const <String, Object?>{},
     this.unbekannteEnumWerte = const <String, Object?>{},
   });
@@ -152,6 +160,31 @@ class HeroInventoryEntry {
   /// Eintrag mit eigener [instanzId].
   final int? menge;
 
+  /// Gemerkte Kampfwerte, wenn das Exemplar im Kampfbereich nur abgelegt
+  /// wurde; `null` sonst. „In Kampfbereich übernehmen“ legt daraus den Slot
+  /// wieder an (`kampfgegenstand_ablegen_rules.dart`). Nur geschrieben, wenn
+  /// belegt.
+  final AbgelegterKampfgegenstand? abgelegt;
+
+  /// Artefaktdaten (zunächst Matrixgeber): eingesprochene Zauber mit den
+  /// Werten ihres Sprechers, Stabilität und Zustand der Matrix. Damit kann
+  /// ein Träger ohne den Zauber oder die Repräsentation das Artefakt
+  /// auslösen. Nur geschrieben, wenn belegt (Bestands-Hashes). Der Name
+  /// unterscheidet es vom Legacy-Freitext [artefakt].
+  final ArtefaktDaten? artefaktDaten;
+
+  /// Vorbelegung für Verbrauchsgegenstände, die Vitalwerte oder Wunden
+  /// beeinflussen (Heiltrank, Verband …); der Anwendungsdialog schlägt diese
+  /// Werte vor, der Nutzer bestätigt sie. Nur geschrieben, wenn belegt
+  /// (Bestands-Hashes).
+  final Vitalwirkung? vitalwirkung;
+
+  /// Verweis auf das Katalogmittel (TRANK), aus dem der Eintrag stammt;
+  /// darüber findet „Anwenden“ die Katalogwirkung (etwa die
+  /// Eigenschaftsänderungen eines Elixiers). Nur geschrieben, wenn belegt
+  /// (Bestands-Hashes).
+  final AlchimikumBezug? alchimikum;
+
   /// JSON-Felder einer neueren App-Version; bleiben beim Speichern erhalten
   /// (siehe `unbekannte_json_felder.dart`).
   final Map<String, Object?> unbekannteFelder;
@@ -194,6 +227,10 @@ class HeroInventoryEntry {
     'traegerId',
     'instanzId',
     'menge',
+    'abgelegt',
+    'artefaktDaten',
+    'vitalwirkung',
+    'alchimikum',
   };
 
   /// Gibt eine Kopie mit selektiv überschriebenen Feldern zurück.
@@ -227,6 +264,10 @@ class HeroInventoryEntry {
     Object? traegerId = keepFieldValue,
     Object? instanzId = keepFieldValue,
     Object? menge = keepFieldValue,
+    Object? abgelegt = keepFieldValue,
+    Object? artefaktDaten = keepFieldValue,
+    Object? vitalwirkung = keepFieldValue,
+    Object? alchimikum = keepFieldValue,
     Map<String, Object?>? unbekannteFelder,
     Map<String, Object?>? unbekannteEnumWerte,
   }) {
@@ -266,6 +307,18 @@ class HeroInventoryEntry {
           ? this.instanzId
           : instanzId as String?,
       menge: menge == keepFieldValue ? this.menge : menge as int?,
+      abgelegt: abgelegt == keepFieldValue
+          ? this.abgelegt
+          : abgelegt as AbgelegterKampfgegenstand?,
+      artefaktDaten: artefaktDaten == keepFieldValue
+          ? this.artefaktDaten
+          : artefaktDaten as ArtefaktDaten?,
+      vitalwirkung: vitalwirkung == keepFieldValue
+          ? this.vitalwirkung
+          : vitalwirkung as Vitalwirkung?,
+      alchimikum: alchimikum == keepFieldValue
+          ? this.alchimikum
+          : alchimikum as AlchimikumBezug?,
       unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
       unbekannteEnumWerte:
           unbekannteEnumWerte ??
@@ -320,6 +373,10 @@ class HeroInventoryEntry {
         // ARCH-03: nur bei belegtem Wert, sonst ändern sich Bestands-Hashes.
         if (instanzId != null) 'instanzId': instanzId,
         if (menge != null) 'menge': menge,
+        if (abgelegt != null) 'abgelegt': abgelegt!.toJson(),
+        if (artefaktDaten != null) 'artefaktDaten': artefaktDaten!.toJson(),
+        if (vitalwirkung != null) 'vitalwirkung': vitalwirkung!.toJson(),
+        if (alchimikum != null) 'alchimikum': alchimikum!.toJson(),
       }, unbekannteFelder),
       unbekannteEnumWerte,
     );
@@ -342,6 +399,10 @@ class HeroInventoryEntry {
               .toList(growable: false)
         : const <InventoryItemModifier>[];
     final legacyArtifact = getString('artefakt').trim();
+    final abgelegtRoh = json['abgelegt'];
+    final artefaktRoh = json['artefaktDaten'];
+    final vitalRoh = json['vitalwirkung'];
+    final alchimikumRoh = json['alchimikum'];
     final hasMagischDescription =
         json.containsKey('magischDescription') &&
         json['magischDescription'] != null;
@@ -399,6 +460,20 @@ class HeroInventoryEntry {
       traegerId: json['traegerId'] as String?,
       instanzId: json['instanzId'] as String?,
       menge: (json['menge'] as num?)?.toInt(),
+      abgelegt: abgelegtRoh is Map
+          ? AbgelegterKampfgegenstand.fromJson(
+              abgelegtRoh.cast<String, dynamic>(),
+            )
+          : null,
+      artefaktDaten: artefaktRoh is Map
+          ? ArtefaktDaten.fromJson(artefaktRoh.cast<String, dynamic>())
+          : null,
+      vitalwirkung: vitalRoh is Map
+          ? Vitalwirkung.fromJson(vitalRoh.cast<String, dynamic>())
+          : null,
+      alchimikum: alchimikumRoh is Map
+          ? AlchimikumBezug.fromJson(alchimikumRoh.cast<String, dynamic>())
+          : null,
       unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
       unbekannteEnumWerte: festeEnumWerte(enumRoh),
     );

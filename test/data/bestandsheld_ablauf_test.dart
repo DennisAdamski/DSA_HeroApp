@@ -41,12 +41,8 @@ const Set<String> _importNormalisierung = <String>{
   'ritualCategories',
   'unknownModifierFragments',
   'inventoryEntries',
-};
-
-/// Pfade der Instanz-IDs, die das erste Speichern je Inventareintrag vergibt
-/// (ARCH-03); beim Laden entstehen sie nie.
-Set<String> _instanzIdPfade(int anzahl) => <String>{
-  for (var i = 0; i < anzahl; i++) 'inventoryEntries/$i/instanzId',
+  // Erstes Speichern: Herkunftstexte werden einmalig strukturiert (ARCH-02).
+  'herkunftsModifikatoren',
 };
 
 /// Ein geoeffneter Heldenspeicher: echtes Hive plus Provider wie in der App.
@@ -137,11 +133,8 @@ void main() {
             bundle.hero.toJson(),
             held1,
             held.istAktuellesFormat
-                ? {
-                    'lastModified',
-                    ..._instanzIdPfade(bundle.hero.inventoryEntries.length),
-                  }
-                : _importNormalisierung,
+                ? {'lastModified', ...ersteSpeicherungPfade(bundle.hero)}
+                : {..._importNormalisierung, ...slotInstanzPfade(bundle.hero)},
             grund: 'Import veränderte mehr als die Normalisierung',
           );
           expectNurGeaendert(bundle.state.toJson(), zustand1, const {
@@ -285,7 +278,20 @@ void main() {
     for (final heldId in <String>[id, kopieId]) {
       final export = jsonDecode(await speicher.actions.buildExportJson(heldId));
       final heldJson = (export as Map)['hero'];
+      if (heldId == kopieId) {
+        // Der Export trägt keine Bilddaten: Unter neuer ID zeigte der
+        // Galerieeintrag auf die Datei des Originals, der Import lässt ihn
+        // deshalb weg, mit dem Primärbild auch dessen Schnappschuss
+        // (ARCH-05, `HeldImportieren`; wie `removeGalleryImage`).
+        expect(heldJson['avatarGallery'], isEmpty, reason: kopieId);
+        expect(heldJson['avatarSnapshot'], isNull, reason: kopieId);
+      }
       for (final feldPfad in zukunft.pfade) {
+        if (heldId == kopieId &&
+            (feldPfad.startsWith('avatarGallery/') ||
+                feldPfad.startsWith('avatarSnapshot/'))) {
+          continue;
+        }
         expect(
           wertAn(heldJson, feldPfad),
           wertAn(zukunft.json, feldPfad),
@@ -418,8 +424,8 @@ void main() {
       expectNurGeaendert(
         ohneZeitstempel(fixture.hero.toJson()),
         ohneZeitstempel(nachImport),
-        _instanzIdPfade(fixture.hero.inventoryEntries.length),
-        grund: 'aktuelles Format ist beim Import bis auf Instanz-IDs identisch',
+        ersteSpeicherungPfade(fixture.hero),
+        grund: 'Import im aktuellen Format: nur Instanz-IDs/Menge neu',
       );
 
       // 2. Steigern: MU 14 → 15 und Klettern 5 → 6 in einer Runde.

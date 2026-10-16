@@ -3,10 +3,11 @@ import 'dart:convert';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht_laden.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/inventar_slot_instanz_rules.dart';
 
 /// Ladebindung erlaubt geänderte Dauer, aber keine andere Waffe oder Munition.
 String gefechtsLadeprofilKey(MainWeaponSlot waffe) {
-  final json = waffe.toJson();
+  final json = ohneInstanzverweise(waffe.toJson());
   final ranged = Map<String, dynamic>.from(json['rangedProfile'] as Map);
   ranged.remove('reloadTime');
   json['rangedProfile'] = ranged;

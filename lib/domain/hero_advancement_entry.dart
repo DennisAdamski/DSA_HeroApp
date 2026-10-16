@@ -13,8 +13,21 @@ enum AdvancementKind {
   language,
   script,
 
+  /// Erwerb einer Repräsentation mit dokumentierter Traditionszuordnung.
+  representation,
+
+  /// Aktivierung oder Steigerung einer gemeinsamen oder freien Ritualkenntnis.
+  ritualKnowledge,
+
   /// Einmaliger Manövererwerb, gegebenenfalls pro Kampftalent.
   maneuver,
+
+  /// Nachträglicher Erwerb oder Ausbau eines Vorteils (WdS S. 170).
+  advantage,
+
+  /// Abbau eines Nachteils oder Senken einer Schlechten Eigenschaft
+  /// (WdS S. 170).
+  disadvantage,
 }
 
 /// Unveränderlicher Steigerungsbefehl und historischer Erwerbsnachweis.

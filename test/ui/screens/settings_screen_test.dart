@@ -72,8 +72,21 @@ void main() {
       expect(find.text('API-Schlüssel'), findsOneWidget);
 
       await tester.tap(
-        find.byKey(const ValueKey<String>('settings-menu-legal')),
+        find.byKey(const ValueKey<String>('settings-menu-feedback')),
       );
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey<String>('settings-detail-feedback')),
+        findsOneWidget,
+      );
+      expect(find.textContaining('anmelden'), findsOneWidget);
+
+      final legalTile = find.byKey(
+        const ValueKey<String>('settings-menu-legal'),
+      );
+      await tester.ensureVisible(legalTile);
+      await tester.pumpAndSettle();
+      await tester.tap(legalTile);
       await tester.pumpAndSettle();
       expect(
         find.byKey(const ValueKey<String>('settings-detail-legal')),
@@ -91,11 +104,7 @@ void main() {
       final debugModeTile = find.byKey(
         const ValueKey<String>('settings-menu-debugMode'),
       );
-      final navigationScrollable = find.ancestor(
-        of: debugModeTile,
-        matching: find.byType(Scrollable),
-      );
-      await tester.drag(navigationScrollable, const Offset(0, -160));
+      await tester.ensureVisible(debugModeTile);
       await tester.pumpAndSettle();
       await tester.tap(debugModeTile);
       await tester.pumpAndSettle();
@@ -135,13 +144,18 @@ void main() {
 
       await tester.pageBack();
       await tester.pumpAndSettle();
+      await tester.drag(find.byType(Scrollable).first, const Offset(0, 500));
+      await tester.pumpAndSettle();
 
       expect(find.text('Bereiche'), findsOneWidget);
       expect(find.text('Aktiver Heldenspeicher'), findsNothing);
 
-      await tester.tap(
-        find.byKey(const ValueKey<String>('settings-menu-legal')),
+      final legalTile = find.byKey(
+        const ValueKey<String>('settings-menu-legal'),
       );
+      await tester.ensureVisible(legalTile);
+      await tester.pumpAndSettle();
+      await tester.tap(legalTile);
       await tester.pumpAndSettle();
 
       expect(find.text('Rechtliches'), findsOneWidget);
@@ -167,6 +181,8 @@ void main() {
       await tester.pageBack();
       await tester.pumpAndSettle();
 
+      await tester.drag(find.byType(Scrollable).first, const Offset(0, 500));
+      await tester.pumpAndSettle();
       expect(find.text('Bereiche'), findsOneWidget);
       expect(find.text('Rechtehinweis'), findsNothing);
 
@@ -177,7 +193,7 @@ void main() {
         of: debugModeTile,
         matching: find.byType(Scrollable),
       );
-      await tester.drag(navigationScrollable, const Offset(0, -160));
+      await tester.ensureVisible(debugModeTile);
       await tester.pumpAndSettle();
       await tester.tap(debugModeTile);
       await tester.pumpAndSettle();

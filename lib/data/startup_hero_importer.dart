@@ -8,6 +8,32 @@ import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_transfer_bundle.dart';
 
+/// Übernimmt einen mitgelieferten Starthelden in [repository].
+///
+/// Ein neuer Held wird mit seinem Zustand geschrieben; ein vorhandener bleibt
+/// unangetastet. Fehlt einem vorhandenen Helden der Zustand — ein früherer
+/// Start brach zwischen Bogen und Zustand ab —, wird nur dieser nachgetragen
+/// (ARCH-06). Beide Zustände tragen einen Änderungsstempel aus [uhr].
+Future<void> uebernimmStartheld(
+  HeroRepository repository,
+  HeroSheet held,
+  HeroState zustand, {
+  required bool existiert,
+  required DateTime Function() uhr,
+}) async {
+  if (existiert) {
+    if (await repository.loadHeroState(held.id) != null) {
+      return;
+    }
+  } else {
+    await repository.saveHero(held);
+  }
+  await repository.saveHeroState(
+    held.id,
+    zustand.copyWith(lastModified: uhr().toUtc()),
+  );
+}
+
 class StartupHeroImporter {
   const StartupHeroImporter({this.assetsPrefix = 'assets/heroes/'});
 
@@ -30,12 +56,13 @@ class StartupHeroImporter {
         if (parsed == null) {
           continue;
         }
-        if (existingIds.contains(parsed.hero.id)) {
-          continue;
-        }
-
-        await repository.saveHero(parsed.hero);
-        await repository.saveHeroState(parsed.hero.id, parsed.state);
+        await uebernimmStartheld(
+          repository,
+          parsed.hero,
+          parsed.state,
+          existiert: existingIds.contains(parsed.hero.id),
+          uhr: DateTime.now,
+        );
         existingIds.add(parsed.hero.id);
       } on Exception catch (error) {
         debugPrint(

@@ -10,13 +10,10 @@ import 'package:dsa_heldenverwaltung/rules/derived/gefecht_talent_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_wirken_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/probe_request_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/talent_probe_rules.dart';
-import 'package:dsa_heldenverwaltung/rules/house_rules/house_rule_registry.dart';
-import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_initiative_provider.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_provider.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
-import 'package:dsa_heldenverwaltung/state/house_rules_providers.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_gefechts_adapter.dart';
 
 import 'gefecht_zahlfeld.dart';
@@ -24,9 +21,18 @@ import 'gefecht_zahlfeld.dart';
 /// Eine wählbare Talent- oder Eigenschaftsprobe des Gefechts.
 class GefechtProbenkandidat {
   /// [request] ist bereits mit dem TaW* bzw. Eigenschaftswert aufgelöst.
-  const GefechtProbenkandidat(this.name, this.detail, this.request);
+  const GefechtProbenkandidat(
+    this.name,
+    this.detail,
+    this.request, {
+    this.ausweichen = false,
+  });
   final String name, detail;
   final ResolvedProbeRequest request;
+
+  /// Ausweichprobe auf ein verwandtes Talent (Meisterentscheid); erscheint
+  /// nur bei einer Suche.
+  final bool ausweichen;
 }
 
 /// Talente mit TaW* und Eigenschaften, alphabetisch; Kampftalente fehlen.
@@ -37,6 +43,7 @@ List<GefechtProbenkandidat> gefechtsProbenkandidaten(
   HeroComputedSnapshot snapshot,
   RulesCatalog katalog, {
   required bool epicAdvantagesActive,
+  int? talentBeOverride,
 }) {
   final talente = <GefechtProbenkandidat>[];
   for (final t in katalog.talents) {
@@ -45,6 +52,7 @@ List<GefechtProbenkandidat> gefechtsProbenkandidaten(
       snapshot: snapshot,
       talent: t,
       epicAdvantagesActive: epicAdvantagesActive,
+      talentBeOverride: talentBeOverride,
     );
     if (wert == null) continue;
     final kette = wert.ziele.map((z) => z.label).join('/');
@@ -57,11 +65,27 @@ List<GefechtProbenkandidat> gefechtsProbenkandidaten(
           targets: wert.ziele,
           basePool: wert.taw,
           hasSpecialization: wert.spezialisierung,
+          tawHerleitung: wert.herleitung.taw,
         ),
       ),
     );
   }
   talente.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+  final ausweichen = [
+    for (final e in talentErsatzproben(
+      snapshot: snapshot,
+      katalog: katalog.talents,
+      epicAdvantagesActive: epicAdvantagesActive,
+      talentBeOverride: talentBeOverride,
+    ))
+      GefechtProbenkandidat(
+        e.request.title.replaceFirst('Talentprobe: ', ''),
+        'Ausweichen · Meisterentscheid · TaW* ${e.request.basePool}'
+        '${e.option.bedingung == null ? '' : ' · ${e.option.bedingung}'}',
+        e.request,
+        ausweichen: true,
+      ),
+  ];
   final eigenschaften = [
     for (final code in AttributeCode.values)
       GefechtProbenkandidat(
@@ -76,7 +100,7 @@ List<GefechtProbenkandidat> gefechtsProbenkandidaten(
         ),
       ),
   ];
-  return [...talente, ...eigenschaften];
+  return [...talente, ...ausweichen, ...eigenschaften];
 }
 
 /// Wählt eine Probe, ihren Zeitbedarf und würfelt sie im Gefecht.
@@ -92,11 +116,11 @@ Future<void> zeigeGefechtsTalentprobe({
   required KartoGefechtsAdapter bestand,
 }) async {
   final snapshot = ref.read(heroComputedProvider(heroId)).asData?.value;
-  final katalog = ref.read(rulesCatalogProvider).asData?.value;
+  final katalog = ref.read(heroRulesCatalogProvider(heroId)).asData?.value;
   if (snapshot == null || katalog == null) {
     throw StateError('Spielwerte oder Regelkatalog werden geladen.');
   }
-  final episch = ref.read(isHouseRuleActiveProvider(EpicRuleKeys.advantages));
+  final episch = ref.read(heroEpicAdvantagesActiveProvider(heroId));
   final kandidat = await showDialog<GefechtProbenkandidat>(
     context: context,
     builder: (_) => _Probenwahl(
@@ -104,6 +128,7 @@ Future<void> zeigeGefechtsTalentprobe({
         snapshot,
         katalog,
         epicAdvantagesActive: episch,
+        talentBeOverride: ref.read(talentBeOverrideProvider(heroId)),
       ),
     ),
   );
@@ -185,8 +210,13 @@ class _ProbenwahlState extends State<_Probenwahl> {
   @override
   Widget build(BuildContext context) {
     final suche = _suche.trim().toLowerCase();
+    // Ausweichproben (Meisterentscheid) erscheinen nur bei einer Suche.
     final treffer = widget.kandidaten
-        .where((k) => suche.isEmpty || k.name.toLowerCase().contains(suche))
+        .where(
+          (k) => suche.isEmpty
+              ? !k.ausweichen
+              : k.name.toLowerCase().contains(suche),
+        )
         .take(60)
         .toList();
     return Dialog(

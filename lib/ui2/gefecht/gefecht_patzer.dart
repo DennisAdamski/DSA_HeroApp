@@ -6,7 +6,6 @@ import 'package:dsa_heldenverwaltung/domain/gefecht_patzer.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_held_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_patzer_rules.dart';
-import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_provider.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_patzer_provider.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
@@ -239,7 +238,10 @@ class _GefechtPatzerState extends ConsumerState<GefechtPatzer> {
       final snap = ref.read(heroComputedProvider(widget.heroId)).asData?.value;
       if (s == null || snap == null) throw StateError('Gefechtsstand fehlt.');
       if (!r.success) {
-        final k = ref.read(rulesCatalogProvider).asData?.value;
+        final k = ref
+            .read(heroRulesCatalogProvider(widget.heroId))
+            .asData
+            ?.value;
         final w = gefechtswerteFuer(snap, katalog: k);
         ref
             .read(gefechtProvider(widget.heroId).notifier)
@@ -516,7 +518,7 @@ class _GefechtPatzerState extends ConsumerState<GefechtPatzer> {
     }
     final s = ref.read(gefechtProvider(widget.heroId));
     if (s == null || s.auftrag != null || _stand.patzer?.id != p.id) return;
-    final k = ref.read(rulesCatalogProvider).asData?.value;
+    final k = ref.read(heroRulesCatalogProvider(widget.heroId)).asData?.value;
     final w = gefechtswerteFuer(snap, katalog: k);
     ref
         .read(gefechtProvider(widget.heroId).notifier)

@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/herleitung.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/config/ui_spacing.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_overview/herleitung_abschnitt.dart';
 
 /// Eintrag fuer eine read-only Modifikatorquelle im Detail-Dialog.
 typedef ModifierSourceEntry = ({String label, int value});
@@ -13,16 +15,19 @@ typedef ModifierSourceEntry = ({String label, int value});
 ///
 /// [statLabel]: Anzeigename des Basiswerts (z.B. "LeP", "MR").
 /// [namedModifiers]: Vom Benutzer gepflegte benannte Modifikatoren.
-/// [parsedSources]: Read-only Quellen aus Text-Parsing, Level, Inventar etc.
+/// [parsedSources]: Read-only Quellen, wenn keine [herleitung] vorliegt.
 /// [total]: Aktueller Gesamtmodifikator (fuer Anzeige).
+/// [herleitung]: Herleitung des Regelmoduls (ARCH-04); ersetzt die Quellen
+/// und zeigt Rechenweg und Ergebnis des gespeicherten Stands.
 ///
 /// Gibt die bearbeitete Liste zurueck, oder `null` bei Abbruch.
 Future<List<HeroTalentModifier>?> showStatModifierDetailDialog({
   required BuildContext context,
   required String statLabel,
   required List<HeroTalentModifier> namedModifiers,
-  required List<ModifierSourceEntry> parsedSources,
+  List<ModifierSourceEntry> parsedSources = const <ModifierSourceEntry>[],
   required int total,
+  Herleitung? herleitung,
 }) {
   return showAdaptiveDetailSheet<List<HeroTalentModifier>>(
     context: context,
@@ -31,6 +36,7 @@ Future<List<HeroTalentModifier>?> showStatModifierDetailDialog({
       namedModifiers: namedModifiers,
       parsedSources: parsedSources,
       total: total,
+      herleitung: herleitung,
     ),
   );
 }
@@ -41,12 +47,14 @@ class _StatModifierDetailDialog extends StatefulWidget {
     required this.namedModifiers,
     required this.parsedSources,
     required this.total,
+    required this.herleitung,
   });
 
   final String statLabel;
   final List<HeroTalentModifier> namedModifiers;
   final List<ModifierSourceEntry> parsedSources;
   final int total;
+  final Herleitung? herleitung;
 
   @override
   State<_StatModifierDetailDialog> createState() =>
@@ -184,6 +192,7 @@ class _StatModifierDetailDialogState extends State<_StatModifierDetailDialog> {
       modifierFields.add(const SizedBox(height: kDialogInlineSpacing));
     }
 
+    final herleitung = widget.herleitung;
     // Read-only Quellen (nur Nicht-Null-Werte anzeigen).
     final nonZeroSources = widget.parsedSources
         .where((entry) => entry.value != 0)
@@ -215,15 +224,26 @@ class _StatModifierDetailDialogState extends State<_StatModifierDetailDialog> {
                   label: const Text('Modifikator hinzufuegen'),
                 ),
               ),
-              if (nonZeroSources.isNotEmpty) ...[
+              if (herleitung != null) ...[
                 const SizedBox(height: kDialogSectionSpacing),
-                _sectionTitle(theme, 'Automatisch (nur Anzeige)'),
-                ...nonZeroSources.map(
-                  (entry) => _sourceRow(theme, entry.label, entry.value),
+                HerleitungsAbschnitt(
+                  herleitung: herleitung,
+                  ergebnisBezeichnung: widget.statLabel,
+                  ergebnisKey: const ValueKey<String>(
+                    'stat-herleitung-ergebnis',
+                  ),
                 ),
+              ] else ...[
+                if (nonZeroSources.isNotEmpty) ...[
+                  const SizedBox(height: kDialogSectionSpacing),
+                  _sectionTitle(theme, 'Automatisch (nur Anzeige)'),
+                  ...nonZeroSources.map(
+                    (entry) => _sourceRow(theme, entry.label, entry.value),
+                  ),
+                ],
+                const Divider(height: kDialogSectionSpacing * 2),
+                _sourceRow(theme, 'Gesamt', widget.total, bold: true),
               ],
-              const Divider(height: kDialogSectionSpacing * 2),
-              _sourceRow(theme, 'Gesamt', widget.total, bold: true),
             ],
           ),
         ),

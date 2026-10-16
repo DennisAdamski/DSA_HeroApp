@@ -222,6 +222,36 @@ bool isForeignLearnedRepresentation({
   return learnedRepresentation != learnedTradition;
 }
 
+/// Spalten, um die ein Zauber in fremder Repräsentation schwerer zu lernen ist.
+///
+/// Wege der Zauberei S. 74 und Wege des Schwerts S. 171: Regelfall zwei
+/// Spalten. Ausnahmen: Schelme und jede andere Repräsentation trennen drei
+/// Spalten (Schelm und Scharlatan zwei), Gildenmagier und Scharlatan sowie
+/// Gildenmagier und Borbaradianer nur eine. Die Regel ist symmetrisch; welche
+/// der beiden Angaben Held und welche Herkunft ist, spielt keine Rolle. Gleiche
+/// oder fehlende Angaben kosten nichts.
+int fremdeRepraesentationsSpalten({
+  required String? learnedRepresentation,
+  required String? learnedTradition,
+}) {
+  if (!isForeignLearnedRepresentation(
+    learnedRepresentation: learnedRepresentation,
+    learnedTradition: learnedTradition,
+  )) {
+    return 0;
+  }
+  final paar = <String>{learnedRepresentation!, learnedTradition!};
+  if (paar.contains('Sch')) {
+    return paar.contains('Srl') ? 2 : 3;
+  }
+  if (paar.length == 2 &&
+      paar.contains('Mag') &&
+      (paar.contains('Srl') || paar.contains('Bor'))) {
+    return 1;
+  }
+  return 2;
+}
+
 /// Liefert alle Lern-Optionen, die einem magiebegabten Helden offen stehen.
 ///
 /// Enthaelt sowohl regulaere Availability-Eintraege (Tradition passt zu einer

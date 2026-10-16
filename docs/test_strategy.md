@@ -152,6 +152,9 @@ Regeln:
   Stand einer neueren Version (auch Zustand und gleichzeitig geänderte Cloud)
   und Widgettests der Editoren (Ritual, Talentmodifikator, Begleiterangriff,
   Abenteuerblatt, Übersicht, Zaubereffekte) prüfen die Wege.
+  Der Begleiterangriff-Test kontrolliert auch die Spaltenausrichtung von
+  DK, AT, PA und TP mit aktiven Steigerungsbuttons; Layoutfehler werden
+  dabei nicht unterdrückt.
 - **Gegenproben**: Jeder dieser Tests scheitert ohne den Fix. Nachgewiesen
   wird das, indem man die Editor-Dateien einzeln per `git stash` zurücksetzt
   oder `sammleUnbekannteFelder` vorübergehend eine leere Map liefern lässt.
@@ -197,6 +200,29 @@ Fallstricke mit echtem Hive:
 - `FakeRepository` setzt kein `lastModified`, Hive schon — Vergleiche über
   beide Repositories hinweg laufen über `ohneZeitstempel` oder die
   Inhalts-Hashes.
+
+### Abbruch und Wiederanlauf (ARCH-06)
+
+Die zwei Abbruchfälle der [Abnahmeprüfung vom 10.10.2026](arch06_abnahme.md)
+(„Nur Lokal“, „Beide behalten“) sind dauerhafte Regressionstests in
+`test/data/sync_konflikt_wiederanlauf_test.dart`: Abbruch der Leitung nach
+0–3 Schreibvorgängen für alle vier Entscheidungen mit anschließendem
+`neustart()` und `syncNow`, verlorene Antworten, Doppelklick, Wiederholung,
+neue Online- bzw. lokale Änderung während eines offenen Vorgangs, Netz dauerhaft
+weg, nicht schreibbares/unbekanntes/beschädigtes Journal, fehlender
+Online-Zustand und ein echtes `HiveVorgangsjournal` über Schließen und
+Wiederöffnen. `sync_konflikt_vorgang_test.dart` prüft das Journalformat;
+`hive_vorgangsjournal_test.dart` den isolierten beschädigten Eintrag.
+`SyncTestGeraet` hält ein Journal, das `neustart()` überlebt
+(`neustartMitJournal` tauscht es aus).
+
+`test/ablaeufe/vorgaenge_wiederaufnehmen_test.dart` simuliert einen Absturz
+als Schritt, der nie fertig wird (`Completer<void>().future`): Der Import läuft
+nicht abgewartet bis dorthin (`pumpEventQueue`), danach nimmt ein **neues**
+`FakeRepository` auf denselben Listen den Vorgang wieder auf. Ein neues
+Repository ist nötig, weil die Warteschlange je Held am Speicherobjekt hängt
+und der hängende Schritt sie sonst blockierte. Dasselbe Muster mit zwei
+Geräten und echtem Journal steht in `test/data/sync_speichervertrag_test.dart`.
 
 ### Zwei Geräte am Konto-Sync
 
@@ -300,6 +326,14 @@ Die CI (`.github/workflows/flutter-tests.yml`) führt alle Tests auf
 | `test/data/sync_app_versionen_test.dart` | data | Sync mit anderen App-Versionen: Basis gleich lokaler Stand (B10), Felder einer neueren Version in Held und Zustand samt gleichzeitig geänderter Cloud, veröffentlichte App im Mischbetrieb (auch ihr Echo), geänderter Vor-/Nachteiltext mit und ohne bewahrte Liste (ARCH-02) |
 | `test/data/merkmal_migration_test.dart` | data | ARCH-02: einmalige Migration der Vor-/Nachteiltexte beim Speichern mit echtem Hive, Fixpunkt, gleiche Regelwerte, Export/Import |
 | `test/rules/hero_merkmal_rules_test.dart` | rules | ARCH-02: Zuordnung der Alttexte, Abweichungen, Hinzufügen, Wirkung über die Katalog-ID, Umbenennung, Äquivalenz von Katalog- und Textweg |
+| `test/domain/hero_herkunft_model_test.dart` | domain | ARCH-02 Herkunftsmerkmale: Container fehlend/leer, unbekannte Version, Nicht-Objekte, nicht verstandene Teilstücke, doppelte IDs, Merkmalsherkunft |
+| `test/rules/hero_herkunft_migration_rules_test.dart` | rules | ARCH-02 Herkunftsmerkmale: direkte Modifikatoren, reproduzierbare Migration mit Wiederholungen, Projektion, Fixpunkt, Abweichung und ihre beiden Auflösungen |
+| `test/rules/hero_herkunft_rules_test.dart` | rules | ARCH-02 Herkunftsmerkmale: strukturierte Liste führt, Aktivierung nach Codes, Fallbacks ohne Doppelwirkung, Quellenaufschlüsselung, alle Bestandsfixtures vor/nach der Migration mit echtem Katalog |
+| `test/rules/hero_herkunft_bearbeitung_rules_test.dart` | rules | ARCH-02 Herkunftsmerkmale: gezieltes Ersetzen einer Gruppe, gesperrte Gruppen, Basis-Prüfung, Editorentwurf gegen frisch Gespeichertes |
+| `test/data/herkunft_migration_test.dart` | data | ARCH-02 Herkunftsmerkmale: einmalige Migration beim Speichern mit echtem Hive, Fixpunkt, gleiche Regelwerte, leerer Container und unbekannte Rohdaten über Export/Import |
+| `test/data/herkunft_sync_test.dart` | data | ARCH-02 Herkunftsmerkmale: zwei Geräte (getrennte Gruppen, derselbe Eintrag, Entfernen gegen Bearbeiten, Konfliktwahlen) und Mischbetrieb (Altversion, nur Text geändert, unbekannte Teilfelder, Merkmalsherkunft) |
+| `test/ui/overview/hero_herkunft_section_test.dart` | ui | ARCH-02 Herkunftsmerkmale: Section und Dialog (Hinzufügen, Abbruch, Ändern mit ID, Entfernen, Abweichung, gesperrte Daten, 360 px/Textfaktor 2) |
+| `test/ui/overview/hero_herkunft_editor_test.dart` | ui | ARCH-02 Herkunftsmerkmale: Entwurf in der Übersicht gegen Vorschau und gespeicherten Stand, Abbrechen, letzter Eintrag über Neustart, Abweichung, Paralleländerung, Merkmalsherkunft, offene Planung |
 | `test/catalog/trait_effect_catalog_test.dart` | catalog | Deklarative `wirkungen` der Vor-/Nachteile: Arten, Ziele, Vorzeichen, Vollständigkeit |
 | `test/domain/hero_sheet_model_test.dart` | domain | HeroSheet-Kompatibilitaet |
 | `test/domain/hero_transfer_bundle_test.dart` | domain | Transfer-Bundle-Kontrakt |

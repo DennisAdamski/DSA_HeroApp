@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dsa_heldenverwaltung/domain/active_spell_effects_state.dart';
 import 'package:dsa_heldenverwaltung/domain/attribute_modifiers.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 
@@ -50,6 +51,49 @@ abstract interface class KartoGefechtsAdapter {
 
   /// Erfragt die Attributo-Boni; `null` bei Abbruch.
   Future<AttributeModifiers?> gefechtsAttributoWerte(BuildContext context);
+
+  /// Öffnet den Auslösedialog eines Matrixgebers (`artefaktDaten`).
+  ///
+  /// Der Dialog bucht AsP und Stabilitätswurf des Trägers; Fehler zeigt er
+  /// selbst. Ein Verbrauch am Inventar findet nicht statt.
+  Future<void> gefechtsMatrixAusloesen({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String heroId,
+    required HeroInventoryEntry eintrag,
+  });
+
+  /// Öffnet den Dialog „Gegenstand anwenden“ eines Verbrauchsgegenstands mit
+  /// Vitalwirkung (Heiltrank, Verband …).
+  ///
+  /// Der Dialog bucht LeP, AsP, AuP und geschlossene Wunden und zieht auf
+  /// Wunsch ein Stück ab; Fehler zeigt er selbst. Liefert `true`, wenn die
+  /// Wirkung gebucht wurde.
+  Future<bool> gefechtsVitalwirkung({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String heroId,
+    required HeroInventoryEntry eintrag,
+  });
+
+  /// Öffnet den Einsatzdialog eines Zaubertalismans (Auxiliators) zu einem
+  /// gerade gewirkten Zauber.
+  ///
+  /// [zauberId] ist der gewirkte Katalogzauber, [zfpStern] das Ergebnis der
+  /// eigenen Probe, [gelungen] ob sie gelang und [repraesentation] die
+  /// Repräsentation des Anwenders. Der Dialog bucht nur die zusätzlichen
+  /// 1W3 AsP (die Zauberkosten bucht der Wirkabschluss) und das Protokoll;
+  /// Fehler zeigt er selbst.
+  Future<void> gefechtsAuxiliator({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String heroId,
+    required HeroInventoryEntry eintrag,
+    required String zauberId,
+    required int zfpStern,
+    required bool gelungen,
+    required String repraesentation,
+  });
 
   /// Öffnet den AsP-/KaP-Dialog mit bestätigten Abschlusskosten.
   ///

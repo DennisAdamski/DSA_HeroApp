@@ -11,7 +11,23 @@ import 'package:dsa_heldenverwaltung/domain/hero_resource_activation_config.dart
 import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/advancement/advancement_base_value_tile.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/advancement/advancement_catalog.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/advancement/advancement_impact_panel.dart';
+
+// Wechselt in einen Arbeitsbereich und dort in einen Abschnitt.
+Future<void> zuAbschnitt(
+  WidgetTester tester,
+  String bereich,
+  String abschnitt,
+) async {
+  await tester.tap(find.byKey(ValueKey('advancement-bereich-$bereich')));
+  await tester.pumpAndSettle();
+  final chip = find.byKey(ValueKey('advancement-abschnitt-$abschnitt'));
+  await tester.ensureVisible(chip);
+  await tester.tap(chip);
+  await tester.pumpAndSettle();
+}
 
 void main() {
   const hero = HeroSheet(
@@ -69,10 +85,17 @@ void main() {
     return (container: container, repo: repo);
   }
 
+  // Die Zeilen der Basiswertberechnung tragen Wert und Delta als getrennte Texte.
+  Finder statWert(String label, String text) => find.descendant(
+    of: find.byKey(ValueKey('advancement-impact-$label')),
+    matching: find.text(text),
+  );
+
   testWidgets('Vormerken ändert nur die Vorschau und zeigt Geplant', (
     tester,
   ) async {
     final setup = await openCatalog(tester);
+    expect(find.text('Basiswertberechnung'), findsOneWidget);
     expect(find.text('Basiswerte'), findsOneWidget);
     expect(find.text('Vor der Runde → Geplant'), findsOneWidget);
     await tester.tap(
@@ -89,15 +112,85 @@ void main() {
     expect(session.preview.apAvailable, lessThan(hero.apAvailable));
     expect((await setup.repo.loadHeroById(hero.id))!.attributes.mu, 12);
     expect(find.text('Geplant'), findsOneWidget);
-    expect(find.text('Au 20 → 21 (+1)'), findsOneWidget);
+    expect(statWert('Au', '20 → 21'), findsOneWidget);
+    expect(statWert('Au', '+1'), findsOneWidget);
     setup.container
         .read(advancementSessionProvider(hero.id).notifier)
         .remove(session.entries.single.id);
     await tester.pumpAndSettle();
-    expect(find.text('Au 20 → 20'), findsOneWidget);
+    expect(statWert('Au', '20 → 20'), findsOneWidget);
     expect(find.text('Geplant'), findsNothing);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets(
+    'Talentkarte plant Spezialisierung ohne den Helden sofort zu speichern',
+    (tester) async {
+      final setup = await openCatalog(
+        tester,
+        selectedHero: hero.copyWith(
+          talents: {'climb': const HeroTalentEntry(talentValue: 7)},
+        ),
+        selectedCatalog: const RulesCatalog(
+          version: 'test',
+          source: 'test',
+          weapons: [],
+          spells: [],
+          talents: [
+            TalentDef(
+              id: 'climb',
+              name: 'Klettern',
+              group: 'Körper',
+              steigerung: 'B',
+              attributes: ['MU', 'GE', 'KK'],
+            ),
+          ],
+        ),
+      );
+      await zuAbschnitt(tester, 'talente', 'talente');
+      await tester.tap(
+        find.byKey(const ValueKey('advancement-specialize-climb')),
+      );
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byKey(const ValueKey('advancement-specialization-name')),
+        'Felsen',
+      );
+      // Der Weiter-Knopf folgt dem Eingabestand und braucht einen Frame.
+      await tester.pump();
+      await tester.tap(find.text('Weiter'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Vormerken'));
+      await tester.pumpAndSettle();
+      final session = setup.container.read(
+        advancementSessionProvider(hero.id),
+      )!;
+      expect(session.entries, hasLength(1));
+      expect(session.entries.single.options['specialization'], 'Felsen');
+      expect(session.preview.talents['climb']!.combatSpecializations, [
+        'Felsen',
+      ]);
+      expect(session.preview.apAvailable, lessThan(2000));
+      expect(
+        (await setup.repo.loadHeroById(hero.id))!
+            .talents['climb']!
+            .specializations,
+        '',
+      );
+      await setup.container
+          .read(advancementSessionProvider(hero.id).notifier)
+          .commit();
+      await tester.pumpAndSettle();
+      final saved = (await setup.repo.loadHeroById(hero.id))!;
+      expect(saved.talents['climb']!.combatSpecializations, ['Felsen']);
+      expect(saved.apAvailable, session.preview.apAvailable);
+      expect(
+        saved.advancementHistory.single.options['specialization'],
+        'Felsen',
+      );
+      expect(tester.takeException(), isNull);
+    },
+  );
 
   testWidgets(
     'Zielwert aktualisiert Grenzen live; Abbrechen behält die Runde',
@@ -138,7 +231,8 @@ void main() {
         find.text('Talent: Klettern · Wert 15 · Maximum 15 → 17'),
         findsOneWidget,
       );
-      expect(find.text('AT-Basis 7 → 8 (+1)'), findsOneWidget);
+      expect(statWert('AT-Basis', '7 → 8'), findsOneWidget);
+      expect(statWert('AT-Basis', '+1'), findsOneWidget);
       await tester.tap(find.byTooltip('Wert senken'));
       await tester.tap(find.byTooltip('Wert senken'));
       await tester.pumpAndSettle();
@@ -154,7 +248,26 @@ void main() {
       expect(session.entries, isEmpty);
       expect(session.preview.apAvailable, hero.apAvailable);
       expect((await setup.repo.loadHeroById(hero.id))!.attributes.mu, 12);
-      expect(find.text('AT-Basis 7 → 7'), findsOneWidget);
+      expect(statWert('AT-Basis', '7 → 7'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'Zugekaufte Basiswerte stehen als Kacheln bei den Eigenschaften',
+    (tester) async {
+      await openCatalog(tester, size: const Size(1200, 900));
+      final attribute = tester.getRect(
+        find.byKey(const ValueKey('advancement-plan-attribute-kk')),
+      );
+      final lep = tester.getRect(
+        find.byKey(const ValueKey('advancement-plan-boughtStat-lep')),
+      );
+      final berechnung = tester.getRect(find.byType(AdvancementImpactPanel));
+      expect(find.byType(AdvancementBaseValueTile), findsNWidgets(5));
+      // Die Kacheln liegen unter den Eigenschaften; die Berechnung daneben.
+      expect(lep.top, greaterThan(attribute.bottom));
+      expect(lep.right, lessThan(berechnung.left));
+      expect(tester.takeException(), isNull);
     },
   );
 
@@ -187,10 +300,12 @@ void main() {
   ) async {
     await openCatalog(tester, size: const Size(320, 568));
     final plan = find.byKey(const ValueKey('advancement-plan-attribute-mu'));
-    final listScroll = find.descendant(
-      of: find.byType(ListView),
-      matching: find.byType(Scrollable),
-    );
+    final listScroll = find
+        .descendant(
+          of: find.byType(AdvancementCatalog),
+          matching: find.byType(Scrollable),
+        )
+        .last;
     await tester.scrollUntilVisible(plan, 150, scrollable: listScroll);
     await tester.tap(plan);
     await tester.pumpAndSettle();
@@ -225,8 +340,7 @@ void main() {
       findsNothing,
     );
 
-    await tester.tap(find.text('Zauber'));
-    await tester.pumpAndSettle();
+    await zuAbschnitt(tester, 'talente', 'talente');
     expect(find.text('Keine passenden Einträge.'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
@@ -255,8 +369,7 @@ void main() {
         selectedHero: hero.copyWith(representationen: ['Mag']),
         selectedCatalog: spellCatalog,
       );
-      await tester.tap(find.text('Zauber'));
-      await tester.pumpAndSettle();
+      await zuAbschnitt(tester, 'magie', 'zauber');
       // Ein noch nicht gefuehrter Zauber ist nur ueber das Erwerbsblatt
       // erreichbar; die Hauptliste zeigt ausschliesslich aktive Eintraege.
       expect(
@@ -264,7 +377,7 @@ void main() {
         findsNothing,
       );
       await tester.tap(
-        find.byKey(const ValueKey('advancement-activate-spells')),
+        find.byKey(const ValueKey('advancement-activate-zauber')),
       );
       await tester.pumpAndSettle();
       await tester.tap(
@@ -317,10 +430,9 @@ void main() {
         ],
       );
       final setup = await openCatalog(tester, selectedCatalog: abilityCatalog);
-      await tester.tap(find.text('Sonderfertigkeiten'));
-      await tester.pumpAndSettle();
+      await zuAbschnitt(tester, 'talente', 'allgemeineSf');
       await tester.tap(
-        find.byKey(const ValueKey('advancement-activate-abilities')),
+        find.byKey(const ValueKey('advancement-activate-allgemeineSf')),
       );
       await tester.pumpAndSettle();
       await tester.tap(
@@ -373,10 +485,9 @@ void main() {
       ],
     );
     final setup = await openCatalog(tester, selectedCatalog: variantCatalog);
-    await tester.tap(find.text('Sonderfertigkeiten'));
-    await tester.pumpAndSettle();
+    await zuAbschnitt(tester, 'talente', 'allgemeineSf');
     await tester.tap(
-      find.byKey(const ValueKey('advancement-activate-abilities')),
+      find.byKey(const ValueKey('advancement-activate-allgemeineSf')),
     );
     await tester.pumpAndSettle();
     await tester.tap(
@@ -399,6 +510,10 @@ void main() {
       'Geländekunde (Wüste)',
     );
     // Mehrfach waehlbare SF bleiben in der Hauptliste handlungsfaehig.
+    await tester.tap(
+      find.byKey(const ValueKey('advancement-group-header-allgemeinPraxis')),
+    );
+    await tester.pumpAndSettle();
     await tester.tap(
       find.byKey(const ValueKey('skill-node-generalAbility:terrain')),
     );

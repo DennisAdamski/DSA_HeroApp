@@ -7,10 +7,13 @@ import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/attribute_start_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/combat_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/eigenschaft_herleitung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_wirkung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_stat_inputs.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/inventory_modifier_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/resource_activation_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/waffenlos_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/wund_rules.dart';
 
 /// Zentraler Compute-Snapshot fuer alle abgeleiteten Heldenwerte.
@@ -32,6 +35,10 @@ class HeroComputedSnapshot {
     this.inventoryStatMods = const StatModifiers(),
     this.inventoryAttributeMods = const AttributeModifiers(),
     this.inventoryTalentMods = const <String, int>{},
+    this.inventoryTalentQuellen =
+        const <String, List<InventoryModifierQuelle>>{},
+    this.waffenlos = const <WaffenloseKampfwerte>[],
+    this.eigenschaftHerleitungen,
   });
 
   final HeroSheet hero;
@@ -66,6 +73,16 @@ class HeroComputedSnapshot {
 
   /// Aggregierte Talentboni aus ausgeruesteten Inventar-Items (talentId → Bonus).
   final Map<String, int> inventoryTalentMods;
+
+  /// Dieselben Talentboni nach Gegenstand aufgeschlüsselt (talentId → Quellen).
+  final Map<String, List<InventoryModifierQuelle>> inventoryTalentQuellen;
+
+  /// Raufen und Ringen als Kampfmittel, nur wenn beide Hände frei sind
+  /// (`waffenlos_rules.dart`); sonst leer.
+  final List<WaffenloseKampfwerte> waffenlos;
+
+  /// Herleitung der [effectiveAttributes] je Eigenschaft (ARCH-04).
+  final EigenschaftHerleitungen? eigenschaftHerleitungen;
 }
 
 /// Setzt den [HeroComputedSnapshot] aus Sheet, State und Katalog zusammen.
@@ -134,6 +151,19 @@ HeroComputedSnapshot buildHeroComputedSnapshot({
     epicAdvantagesRuleActive: epicAdvantagesActive,
   );
 
+  final waffenlos = computeWaffenloseKampfwerte(
+    hero: hero,
+    state: state,
+    catalogTalents: catalogTalents,
+    catalogManeuvers: catalogManeuvers,
+    catalogCombatSpecialAbilities: catalogCombatSpecialAbilities,
+    parsedModifiers: parsed,
+    effectiveAttributes: effective,
+    derivedStats: derived,
+    wunden: wundEffekte,
+    epicAdvantagesRuleActive: epicAdvantagesActive,
+  );
+
   return HeroComputedSnapshot(
     hero: hero,
     state: state,
@@ -151,5 +181,8 @@ HeroComputedSnapshot buildHeroComputedSnapshot({
     inventoryStatMods: inventoryMods.statMods,
     inventoryAttributeMods: inventoryMods.attributeMods,
     inventoryTalentMods: inventoryMods.talentMods,
+    inventoryTalentQuellen: inventoryMods.talentQuellen,
+    waffenlos: waffenlos,
+    eigenschaftHerleitungen: inputs.eigenschaftHerleitungen,
   );
 }

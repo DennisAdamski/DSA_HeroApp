@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:dsa_heldenverwaltung/ui/screens/shared/planung_bearbeiten_guard.dart';
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
@@ -186,6 +187,12 @@ class _CombatWeaponsSectionState extends State<CombatWeaponsSection> {
     MainWeaponSlot? initialWeapon,
     String? catalogWeaponName,
   }) async {
+    final darfBearbeiten = await PlanungsBearbeitungsBereich.bestaetige(
+      context,
+    );
+    if (!darfBearbeiten || !mounted) {
+      return;
+    }
     final sourceSlot = _sourceSlotFor(slotIndex, initialWeapon);
     if (_isWideLayout) {
       final mayReplace = await _closeWideEditorIfNeeded();

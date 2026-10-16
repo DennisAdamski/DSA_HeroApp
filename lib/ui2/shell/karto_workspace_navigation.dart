@@ -62,6 +62,24 @@ extension _KartoWorkspaceNavigation on _KartoWorkspaceState {
             vorOberflaechenwechsel: () async => !mounted || await _pruefePlan(),
           ),
         );
+      case 'regelprofil':
+        await _aufgelegt(
+          () => widget.bestand.regelprofil(
+            context: context,
+            heroId: widget.heroId,
+          ),
+        );
+      case 'feedback':
+        await _aufgelegt(
+          () => openFeedbackPage(
+            context,
+            initialSurface: switch (_bereich) {
+              KartoArbeitsbereich.spielen => FeedbackSurface.play,
+              KartoArbeitsbereich.verwalten => FeedbackSurface.overview,
+              KartoArbeitsbereich.entwickeln => FeedbackSurface.advancement,
+            },
+          ),
+        );
       case 'bestand':
         await _verlassen(
           () => ref

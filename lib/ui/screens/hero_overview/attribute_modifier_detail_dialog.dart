@@ -3,7 +3,9 @@ import 'package:flutter/services.dart';
 
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/herleitung.dart';
 import 'package:dsa_heldenverwaltung/ui/config/ui_spacing.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_overview/herleitung_abschnitt.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_overview/stat_modifier_detail_dialog.dart';
 
 /// Oeffnet den kombinierten Detail- und Bearbeitungsdialog fuer Eigenschafts-
@@ -12,8 +14,10 @@ import 'package:dsa_heldenverwaltung/ui/screens/hero_overview/stat_modifier_deta
 /// [attributeLabel]: Anzeigename der Eigenschaft (z.B. "MU", "KL").
 /// [baseValue]: Aktueller Basiswert der Eigenschaft.
 /// [namedModifiers]: Vom Benutzer gepflegte benannte Modifikatoren.
-/// [parsedSources]: Read-only Quellen (Vorteile, Nachteile, Inventar, etc.).
+/// [parsedSources]: Read-only Quellen, wenn keine [herleitung] vorliegt.
 /// [effectiveValue]: Berechneter Endwert.
+/// [herleitung]: Herleitung des Regelmoduls (ARCH-04); ersetzt Quellen und
+/// Wert-/Aktuell-Zeilen.
 ///
 /// Gibt die bearbeitete Liste zurueck, oder `null` bei Abbruch.
 Future<List<HeroTalentModifier>?> showAttributeModifierDetailDialog({
@@ -21,8 +25,9 @@ Future<List<HeroTalentModifier>?> showAttributeModifierDetailDialog({
   required String attributeLabel,
   required int baseValue,
   required List<HeroTalentModifier> namedModifiers,
-  required List<ModifierSourceEntry> parsedSources,
+  List<ModifierSourceEntry> parsedSources = const <ModifierSourceEntry>[],
   required int effectiveValue,
+  Herleitung? herleitung,
 }) {
   return showAdaptiveDetailSheet<List<HeroTalentModifier>>(
     context: context,
@@ -32,6 +37,7 @@ Future<List<HeroTalentModifier>?> showAttributeModifierDetailDialog({
       namedModifiers: namedModifiers,
       parsedSources: parsedSources,
       effectiveValue: effectiveValue,
+      herleitung: herleitung,
     ),
   );
 }
@@ -43,6 +49,7 @@ class _AttributeModifierDetailDialog extends StatefulWidget {
     required this.namedModifiers,
     required this.parsedSources,
     required this.effectiveValue,
+    required this.herleitung,
   });
 
   final String attributeLabel;
@@ -50,6 +57,7 @@ class _AttributeModifierDetailDialog extends StatefulWidget {
   final List<HeroTalentModifier> namedModifiers;
   final List<ModifierSourceEntry> parsedSources;
   final int effectiveValue;
+  final Herleitung? herleitung;
 
   @override
   State<_AttributeModifierDetailDialog> createState() =>
@@ -218,16 +226,27 @@ class _AttributeModifierDetailDialogState
                   label: const Text('Modifikator hinzufuegen'),
                 ),
               ),
-              if (nonZeroSources.isNotEmpty) ...[
+              if (widget.herleitung case final herleitung?) ...[
                 const SizedBox(height: kDialogSectionSpacing),
-                _sectionTitle(theme, 'Automatisch (nur Anzeige)'),
-                ...nonZeroSources.map(
-                  (entry) => _sourceRow(theme, entry.label, entry.value),
+                HerleitungsAbschnitt(
+                  herleitung: herleitung,
+                  ergebnisBezeichnung: 'Aktuell',
+                  ergebnisKey: const ValueKey<String>(
+                    'attr-herleitung-ergebnis',
+                  ),
                 ),
+              ] else ...[
+                if (nonZeroSources.isNotEmpty) ...[
+                  const SizedBox(height: kDialogSectionSpacing),
+                  _sectionTitle(theme, 'Automatisch (nur Anzeige)'),
+                  ...nonZeroSources.map(
+                    (entry) => _sourceRow(theme, entry.label, entry.value),
+                  ),
+                ],
+                const Divider(height: kDialogSectionSpacing * 2),
+                _sourceRow(theme, 'Wert', widget.baseValue),
+                _sourceRow(theme, 'Aktuell', widget.effectiveValue, bold: true),
               ],
-              const Divider(height: kDialogSectionSpacing * 2),
-              _sourceRow(theme, 'Wert', widget.baseValue),
-              _sourceRow(theme, 'Aktuell', widget.effectiveValue, bold: true),
             ],
           ),
         ),

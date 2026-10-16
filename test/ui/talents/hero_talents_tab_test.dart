@@ -11,6 +11,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
 import 'package:dsa_heldenverwaltung/domain/talent_special_ability.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/talent_specialization_hints.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/rules/house_rules/house_rule_registry.dart';
@@ -640,6 +641,64 @@ void main() {
         )
         .dx;
     expect(catalogX, lessThan(beX));
+  });
+
+  testWidgets('Spezialisierung hinzufügen schlägt Empfehlungen aus dem '
+      'Regelwerk vor', (tester) async {
+    final repo = FakeRepository(
+      heroes: [
+        buildHero(
+          talents: const <String, HeroTalentEntry>{
+            'tal_a': HeroTalentEntry(talentValue: 7),
+          },
+        ),
+      ],
+      states: {
+        'demo': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 10,
+        ),
+      },
+    );
+
+    final actions = await openTalentsTab(tester, repo, buildCatalog());
+    await actions.startEdit();
+    await tester.pumpAndSettle();
+
+    final addButton = find.byKey(
+      const ValueKey<String>('talents-spec-add-tal_a'),
+    );
+    await tester.ensureVisible(addButton);
+    await tester.tap(addButton);
+    await tester.pumpAndSettle();
+
+    // Athletik: Empfehlungen aus den Talentbeschreibungen werden angeboten.
+    expect(find.text('Empfehlungen'), findsOneWidget);
+    final empfehlung = talentSpezialisierungsHinweis('Athletik')!.vorschlaege;
+    expect(empfehlung, isNotEmpty);
+    expect(
+      find.byKey(
+        ValueKey<String>(
+          'advancement-specialization-option-${empfehlung.first}',
+        ),
+      ),
+      findsOneWidget,
+    );
+
+    await tester.tap(
+      find.byKey(
+        ValueKey<String>(
+          'advancement-specialization-option-${empfehlung.first}',
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final field = tester.widget<TextField>(
+      find.byKey(const ValueKey<String>('advancement-specialization-name')),
+    );
+    expect(field.controller!.text, empfehlung.first);
   });
 
   testWidgets('gifted talents show reduced complexity and higher max TaW', (
@@ -1444,7 +1503,15 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Gesamt-Mod'), findsOneWidget);
-      expect(find.text(truncatedDescription), findsOneWidget);
+      // Einmal in der Modifikatorliste, einmal als Schritt der Herleitung.
+      expect(find.text(truncatedDescription), findsNWidgets(2));
+      expect(
+        find.descendant(
+          of: find.byKey(const ValueKey<String>('talent-detail-taw-tal_a')),
+          matching: find.text(truncatedDescription),
+        ),
+        findsOneWidget,
+      );
       expect(find.text('5'), findsWidgets);
     },
   );
@@ -1548,6 +1615,78 @@ void main() {
         find.byKey(const ValueKey<String>('talents-be-override-field')),
       );
       expect(overrideField.controller?.text ?? '', '1');
+    },
+  );
+
+  testWidgets(
+    'Talentdetail zeigt die situative BE-Anpassung in der Herleitung',
+    (tester) async {
+      final repo = FakeRepository(
+        heroes: [
+          buildHero(
+            talents: const <String, HeroTalentEntry>{
+              'tal_a': HeroTalentEntry(talentValue: 9),
+            },
+            combatConfig: const CombatConfig(
+              armor: ArmorConfig(
+                pieces: <ArmorPiece>[
+                  ArmorPiece(
+                    name: 'Ruestung',
+                    isActive: true,
+                    rg1Active: false,
+                    be: 3,
+                  ),
+                ],
+                globalArmorTrainingLevel: 0,
+              ),
+            ),
+          ),
+        ],
+        states: {
+          'demo': const HeroState(
+            currentLep: 10,
+            currentAsp: 0,
+            currentKap: 0,
+            currentAu: 10,
+          ),
+        },
+      );
+
+      await openTalentsTab(tester, repo, buildCatalog());
+      await openBeScreen(tester);
+      await tester.enterText(
+        find.byKey(const ValueKey<String>('talents-be-override-field')),
+        '1',
+      );
+      await tester.pumpAndSettle();
+      await closeBeDialog(tester);
+
+      await tester.ensureVisible(find.text('Athletik').first);
+      await tester.tap(find.text('Athletik').first);
+      await tester.pumpAndSettle();
+
+      final ebe = find.byKey(const ValueKey<String>('talent-detail-ebe-tal_a'));
+      expect(
+        find.descendant(
+          of: ebe,
+          matching: find.text('BE-Anpassung (situativ)'),
+        ),
+        findsOneWidget,
+      );
+      // BE 3 -> 1 bei Regel x2: Grundwert -6, Anpassung +4, eBE -2.
+      expect(
+        find.descendant(of: ebe, matching: find.text('-6')),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(of: ebe, matching: find.text('+4')),
+        findsOneWidget,
+      );
+      final taw = find.byKey(const ValueKey<String>('talent-detail-taw-tal_a'));
+      expect(
+        find.descendant(of: taw, matching: find.text('-2')),
+        findsOneWidget,
+      );
     },
   );
 

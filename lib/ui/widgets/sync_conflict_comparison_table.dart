@@ -25,6 +25,8 @@ class SyncConflictComparisonTable extends StatefulWidget {
     super.key,
     required this.conflict,
     this.diff,
+    this.startOffen = false,
+    this.mitZusammenfuehrung = false,
   });
 
   /// Offener Konflikt mit den Zusammenfassungswerten beider Seiten.
@@ -33,6 +35,13 @@ class SyncConflictComparisonTable extends StatefulWidget {
   /// Feld-Diff des Konflikts oder `null`, wenn keine Volldaten vorliegen.
   final SyncObjectDiff? diff;
 
+  /// Ob die Feldzeilen anfangs aufgeklappt sind.
+  final bool startOffen;
+
+  /// [diff] nennt nur die widersprüchlichen Werte einer möglichen
+  /// Zusammenführung (ARCH-06), nicht alle Unterschiede.
+  final bool mitZusammenfuehrung;
+
   @override
   State<SyncConflictComparisonTable> createState() =>
       _SyncConflictComparisonTableState();
@@ -40,7 +49,7 @@ class SyncConflictComparisonTable extends StatefulWidget {
 
 class _SyncConflictComparisonTableState
     extends State<SyncConflictComparisonTable> {
-  bool _expanded = false;
+  late bool _expanded = widget.startOffen;
 
   @override
   Widget build(BuildContext context) {
@@ -67,12 +76,24 @@ class _SyncConflictComparisonTableState
               for (final entry in visibleEntries) _diffRow(theme, entry),
           ],
         ),
+        if (widget.conflict.isOfflineHeroConflict)
+          _note(
+            theme,
+            'Dieser Vergleich betrifft einen Helden aus dem Offline-Profil '
+            '(ohne Login) und den Stand im Konto. „Nur Lokal“ ersetzt den '
+            'Konto-Stand durch den Offline-Stand. Existiert der Held noch '
+            'nicht im Konto, wird er übernommen.',
+          ),
         ..._footerWidgets(theme, diff, visibleEntries.length),
         if (widget.conflict.includesHeroState)
           _note(
             theme,
-            'Der Zustand des Helden (Laufzeitwerte wie LeP, AsP und Wunden) '
-            'wird mit der gewählten Version übernommen.',
+            widget.mitZusammenfuehrung
+                ? 'Der Zustand des Helden (LeP, AsP, Wunden) folgt „Nur '
+                      'Online“ bzw. „Nur Lokal“; „Automatisch“ führt ihn mit '
+                      'zusammen.'
+                : 'Der Zustand des Helden (Laufzeitwerte wie LeP, AsP und '
+                      'Wunden) wird mit der gewählten Version übernommen.',
           ),
       ],
     );
@@ -102,12 +123,14 @@ class _SyncConflictComparisonTableState
     final conflict = widget.conflict;
     return [
       _valueRow(theme, 'Name', conflict.remoteSummary, conflict.localSummary),
-      _valueRow(
-        theme,
-        'Gespeichert',
-        _formatTimestamp(conflict.remoteUpdatedAt),
-        _formatTimestamp(conflict.localUpdatedAt),
-      ),
+      // Ohne beide Zeitpunkte lässt sich das Alter der Stände nicht vergleichen.
+      if (conflict.remoteUpdatedAt != null && conflict.localUpdatedAt != null)
+        _valueRow(
+          theme,
+          'Gespeichert',
+          _formatTimestamp(conflict.remoteUpdatedAt),
+          _formatTimestamp(conflict.localUpdatedAt),
+        ),
       if (conflict.remoteApTotal != null || conflict.localApTotal != null)
         _valueRow(
           theme,
@@ -175,7 +198,10 @@ class _SyncConflictComparisonTableState
       return [
         _note(
           theme,
-          'Die Online-Version wurde gelöscht – kein Feldvergleich möglich.',
+          widget.conflict.isOfflineHeroConflict
+              ? 'Im Konto existiert kein Held mit dieser ID – kein '
+                    'Feldvergleich möglich.'
+              : 'Die Online-Version wurde gelöscht – kein Feldvergleich möglich.',
           isError: true,
         ),
       ];
@@ -190,8 +216,18 @@ class _SyncConflictComparisonTableState
       ];
     }
     if (diff.entries.isEmpty) {
-      return [_note(theme, 'Beide Versionen sind inhaltlich identisch.')];
+      return [
+        _note(
+          theme,
+          widget.mitZusammenfuehrung
+              ? 'Kein Wert widerspricht sich.'
+              : 'Beide Versionen sind inhaltlich identisch.',
+        ),
+      ];
     }
+    final art = widget.mitZusammenfuehrung
+        ? 'Widersprüchliche Werte'
+        : 'Unterschiede';
 
     final hiddenCount = diff.entries.length - visibleCount;
     return [
@@ -202,8 +238,8 @@ class _SyncConflictComparisonTableState
           icon: Icon(_expanded ? Icons.expand_less : Icons.expand_more),
           label: Text(
             _expanded
-                ? 'Unterschiede ausblenden'
-                : 'Unterschiede anzeigen (${diff.entries.length})',
+                ? '$art ausblenden'
+                : '$art anzeigen (${diff.entries.length})',
           ),
         ),
       ),

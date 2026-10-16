@@ -8,7 +8,26 @@ HeroSheet _applyEntry(
   RulesCatalog catalog,
 ) {
   final id = entry.targetId;
+  if (option.isTalentSpecialization) {
+    final old = hero.talents[id]!;
+    final specs = advancementTalentSpecializations(old);
+    final name = entry.options['specialization']!.trim();
+    return hero.copyWith(
+      talents: {
+        ...hero.talents,
+        id: old.copyWith(combatSpecializations: [...specs, name]),
+      },
+    );
+  }
+  if (option.isWaffenmeister) return applyWaffenmeisterEntry(hero, entry);
+  if (option.isMerkmalskenntnis) return applyMerkmalskenntnisEntry(hero, entry);
   switch (entry.kind) {
+    case AdvancementKind.representation:
+    case AdvancementKind.ritualKnowledge:
+      return applyMagicKnowledgeEntry(hero, entry);
+    case AdvancementKind.advantage:
+    case AdvancementKind.disadvantage:
+      return applyTraitEntry(hero, entry, catalog);
     case AdvancementKind.maneuver:
       final rules = hero.combatConfig.specialRules;
       return hero.copyWith(

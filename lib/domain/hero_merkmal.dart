@@ -1,3 +1,4 @@
+import 'package:dsa_heldenverwaltung/domain/hero_herkunft.dart';
 import 'package:dsa_heldenverwaltung/domain/unbekannte_json_felder.dart';
 
 /// Woher die Zuordnung eines erworbenen Merkmals zum Katalog stammt.
@@ -30,6 +31,7 @@ class HeroMerkmal {
     this.auswahl = '',
     this.kandidatenIds = const <String>[],
     this.zuordnung = HeroMerkmalZuordnung.katalog,
+    this.herkunft,
     this.unbekannteFelder = const <String, Object?>{},
     this.unbekannteEnumWerte = const <String, Object?>{},
   });
@@ -53,6 +55,10 @@ class HeroMerkmal {
   /// Herkunft der Zuordnung.
   final HeroMerkmalZuordnung zuordnung;
 
+  /// Woher der Eintrag stammt (Rasse, Kultur, Profession); `null`, solange
+  /// nicht angegeben. Reines Metadatum: Es ändert weder AP noch Regelwirkung.
+  final HeroHerkunft? herkunft;
+
   /// JSON-Felder einer neueren App-Version; bleiben beim Speichern erhalten
   /// (siehe `unbekannte_json_felder.dart`).
   final Map<String, Object?> unbekannteFelder;
@@ -69,6 +75,7 @@ class HeroMerkmal {
     'auswahl',
     'kandidatenIds',
     'zuordnung',
+    'herkunft',
   };
 
   /// Ob der Eintrag einem Katalogeintrag zugeordnet ist.
@@ -80,7 +87,8 @@ class HeroMerkmal {
   /// Gibt eine Kopie mit geaenderten Feldern zurueck.
   ///
   /// [wert] nimmt `null` als echten Wert an (Wert entfernen); ohne Angabe
-  /// bleibt der bisherige Wert.
+  /// bleibt der bisherige Wert. Dasselbe gilt für [herkunft]; ein ausdrücklich
+  /// übergebenes `null` entfernt die Herkunft samt bewahrtem Rohwert.
   HeroMerkmal copyWith({
     String? katalogId,
     String? text,
@@ -88,6 +96,7 @@ class HeroMerkmal {
     String? auswahl,
     List<String>? kandidatenIds,
     HeroMerkmalZuordnung? zuordnung,
+    Object? herkunft = _unveraendert,
     Map<String, Object?>? unbekannteFelder,
     Map<String, Object?>? unbekannteEnumWerte,
   }) {
@@ -98,11 +107,17 @@ class HeroMerkmal {
       auswahl: auswahl ?? this.auswahl,
       kandidatenIds: kandidatenIds ?? this.kandidatenIds,
       zuordnung: zuordnung ?? this.zuordnung,
+      herkunft: identical(herkunft, _unveraendert)
+          ? this.herkunft
+          : herkunft as HeroHerkunft?,
       unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
       unbekannteEnumWerte:
           unbekannteEnumWerte ??
           ohneGeaenderteEnumWerte(this.unbekannteEnumWerte, {
             'zuordnung': zuordnung != null && zuordnung != this.zuordnung,
+            'herkunft':
+                !identical(herkunft, _unveraendert) &&
+                (herkunft == null || herkunft != this.herkunft),
           }),
     );
   }
@@ -117,6 +132,7 @@ class HeroMerkmal {
         if (auswahl.isNotEmpty) 'auswahl': auswahl,
         if (kandidatenIds.isNotEmpty) 'kandidatenIds': kandidatenIds,
         'zuordnung': zuordnung.name,
+        if (herkunft != null) 'herkunft': herkunft!.name,
       }, unbekannteFelder),
       unbekannteEnumWerte,
     );
@@ -146,6 +162,13 @@ class HeroMerkmal {
           ? List<String>.unmodifiable(rohKandidaten.map((e) => e.toString()))
           : const <String>[],
       zuordnung: zuordnung,
+      herkunft: leseEnumWert<HeroHerkunft?>(
+        json['herkunft'],
+        'herkunft',
+        erkenne: (roh) => enumNachName(HeroHerkunft.values, roh),
+        ersatz: null,
+        unbekannt: enumRoh,
+      ),
       unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
       unbekannteEnumWerte: festeEnumWerte(enumRoh),
     );
@@ -160,6 +183,7 @@ class HeroMerkmal {
         other.auswahl == auswahl &&
         _listenGleich(other.kandidatenIds, kandidatenIds) &&
         other.zuordnung == zuordnung &&
+        other.herkunft == herkunft &&
         unbekannteFelderGleich(unbekannteFelder, other.unbekannteFelder) &&
         unbekannteFelderGleich(unbekannteEnumWerte, other.unbekannteEnumWerte);
   }
@@ -172,6 +196,7 @@ class HeroMerkmal {
     auswahl,
     Object.hashAll(kandidatenIds),
     zuordnung,
+    herkunft,
     unbekannteFelderHash(unbekannteFelder),
     unbekannteFelderHash(unbekannteEnumWerte),
   );

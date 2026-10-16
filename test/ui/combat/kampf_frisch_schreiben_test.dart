@@ -340,6 +340,9 @@ void main() {
       );
       tester.widget<IconButton>(entfernen).onPressed!();
       await tester.pumpAndSettle();
+      // Rückfrage beim Entfernen (ARCH-03): wie bisher ganz entfernen.
+      await tester.tap(find.text('Ganz entfernen'));
+      await tester.pumpAndSettle();
 
       final gespeichert = await repo.gespeichert('demo');
       final kampf = gespeichert.combatConfig;
@@ -418,6 +421,9 @@ void main() {
       );
       tester.widget<IconButton>(entfernen).onPressed!();
       await tester.pumpAndSettle();
+      // Rückfrage beim Entfernen (ARCH-03): wie bisher ganz entfernen.
+      await tester.tap(find.text('Ganz entfernen'));
+      await tester.pumpAndSettle();
 
       final kampf = await gespeicherterKampf();
       expect(kampf.armor.pieces.map((teil) => teil.name), [
@@ -440,10 +446,64 @@ void main() {
 
       tester.widget<IconButton>(entfernen).onPressed!();
       await tester.pumpAndSettle();
+      // Rückfrage beim Entfernen (ARCH-03): wie bisher ganz entfernen.
+      await tester.tap(find.text('Ganz entfernen'));
+      await tester.pumpAndSettle();
 
       final kampf = await gespeicherterKampf();
       expect(kampf.offhandEquipment.map((teil) => teil.name), ['Buckler']);
       expect(kampf.offhandAssignment.equipmentIndex, 0);
+    });
+  });
+
+  group('Slotprüfung', () {
+    // Eine schon gespeicherte ungültige Waffe (z. B. aus einem Import)
+    // sperrt nicht mehr jede Sofortänderung; abgewiesen wird nur, was einen
+    // neuen Fehler einführt (ARCH-05, `neuerKampfSlotFehler`).
+    final kaputterDolch = _dolch.copyWith(kkThreshold: -1);
+
+    testWidgets('eine gespeicherte ungültige Waffe sperrt andere '
+        'Sofortänderungen nicht', (tester) async {
+      await zeige(tester, _kampf(waffen: [_schwert, _bogen, kaputterDolch]));
+
+      tester.widget<DropdownButtonFormField<int?>>(waffenwahl).onChanged!(0);
+      await tester.pumpAndSettle();
+
+      final kampf = await gespeicherterKampf();
+      expect(kampf.selectedWeapon.name, 'Schwert');
+      expect(kampf.weaponSlots[2].kkThreshold, -1);
+    });
+
+    testWidgets('eine Änderung mit neuem Fehler wird abgewiesen', (
+      tester,
+    ) async {
+      const parierwaffe = OffhandEquipmentEntry(
+        id: 'oh9',
+        name: 'Linkhanddolch',
+        type: OffhandEquipmentType.parryWeapon,
+      );
+      await zeige(
+        tester,
+        _kampf(
+          waffen: [_schwert, _bogen, kaputterDolch],
+          teile: const [_schild, parierwaffe],
+        ),
+      );
+      await bisSichtbar(tester, nebenhandwahl);
+
+      tester.widget<DropdownButtonFormField<String>>(nebenhandwahl).onChanged!(
+        'equipment:1',
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text(
+          'Nebenhand nicht gespeichert: Nebenhand: Parierwaffen erfordern '
+          'die Sonderfertigkeit Linkhand.',
+        ),
+        findsOneWidget,
+      );
+      expect((await gespeicherterKampf()).offhandAssignment.equipmentIndex, -1);
     });
   });
 }

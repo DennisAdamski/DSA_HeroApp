@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/alchimika_elixier_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_ablauf_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_held_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_inventar_rules.dart';
@@ -11,7 +12,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/gefecht_wirken_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/inventar_verbrauch_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/probe_request_rules.dart';
 import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
-import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
+import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_initiative_provider.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_provider.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
@@ -37,13 +38,66 @@ Future<void> zeigeGefechtsInventar({
     builder: (_) => _Inventarliste(posten: gefechtsInventar(snapshot.hero)),
   );
   if (posten == null || !context.mounted) return;
-  final wahl = await showDialog<(GefechtsAufbewahrung, bool)>(
+  await benutzeGefechtsPosten(
     context: context,
-    builder: (_) => _Benutzung(posten: posten),
+    ref: ref,
+    heroId: heroId,
+    bestand: bestand,
+    posten: posten,
   );
+}
+
+/// Löst einen ausgerüsteten Matrixgeber aus dem Gefecht aus.
+///
+/// Derselbe Weg wie „Inventar · Gegenstand benutzen“: Der Auslöser kostet
+/// seine gespeicherten Aktionen, danach öffnet der Auslösedialog. Es gibt
+/// keine Zauberprobe und keine Repräsentationswahl.
+Future<void> benutzeGefechtsMatrixgeber({
+  required BuildContext context,
+  required WidgetRef ref,
+  required String heroId,
+  required KartoGefechtsAdapter bestand,
+  required HeroInventoryEntry eintrag,
+}) => benutzeGefechtsPosten(
+  context: context,
+  ref: ref,
+  heroId: heroId,
+  bestand: bestand,
+  posten: GefechtsInventarposten(
+    eintrag: eintrag,
+    gruppe: GefechtsInventargruppe.amKoerper,
+    menge: null,
+    benutzbar: true,
+  ),
+);
+
+/// Benutzt den gewählten Gegenstand: Aufbewahrung wählen, die erste Aktion
+/// bezahlen und die Handlung beginnen bzw. abschließen.
+Future<void> benutzeGefechtsPosten({
+  required BuildContext context,
+  required WidgetRef ref,
+  required String heroId,
+  required KartoGefechtsAdapter bestand,
+  required GefechtsInventarposten posten,
+}) async {
+  final snapshot = ref.read(heroComputedProvider(heroId)).asData?.value;
+  if (snapshot == null) return;
+  // Ein Matrixgeber hat keinen Aufbewahrungsort und keine FF-Probe: Der
+  // Auslöser braucht seine gespeicherten Aktionen, danach öffnet der
+  // Auslösedialog statt der Abbuchung.
+  final matrix = posten.eintrag.artefaktDaten != null;
+  final wahl = matrix
+      ? (GefechtsAufbewahrung.artefakt, false)
+      : await showDialog<(GefechtsAufbewahrung, bool)>(
+          context: context,
+          builder: (_) => _Benutzung(posten: posten),
+        );
   if (wahl == null || !context.mounted) return;
   final (ort, ffProbe) = wahl;
-  final katalog = ref.read(rulesCatalogProvider).asData?.value;
+  int basisDauer(bool ffGelungen) => matrix
+      ? gefechtsMatrixDauer(posten.eintrag)
+      : gefechtsBenutzungsdauer(ort, ffGelungen: ffGelungen);
+  final katalog = ref.read(heroRulesCatalogProvider(heroId)).asData?.value;
   final s = ref.read(gefechtMitInitiativeProvider(heroId));
   if (s == null) return;
   final w = gefechtswerteFuer(snapshot, katalog: katalog);
@@ -52,7 +106,7 @@ Future<void> zeigeGefechtsInventar({
   Gefechtspruefung pruefung(Gefechtszustand z, int dauer) => dauer == 0
       ? pruefeGefechtsaktion(z, w, Gefechtsaktion.freieAktion)
       : pruefeManuelleGefechtsaktion(z, w, kosten: 1);
-  final vorher = pruefung(s, gefechtsBenutzungsdauer(ort));
+  final vorher = pruefung(s, basisDauer(false));
   if (vorher.status == Gefechtsfreigabe.gesperrt) {
     throw StateError(vorher.gruende.join(' '));
   }
@@ -75,7 +129,7 @@ Future<void> zeigeGefechtsInventar({
     if (r == null || !context.mounted) return;
     ffGelungen = r.success;
   }
-  final dauer = gefechtsBenutzungsdauer(ort, ffGelungen: ffGelungen);
+  final dauer = basisDauer(ffGelungen);
   final frisch = ref.read(gefechtMitInitiativeProvider(heroId));
   if (frisch == null) return;
   final p = pruefung(frisch, dauer);
@@ -110,10 +164,17 @@ Future<void> zeigeGefechtsInventar({
     ref: ref,
     heroId: heroId,
     eintrag: posten.eintrag,
+    bestand: bestand,
   );
 }
 
-/// Fragt nach abgeschlossener Benutzung, ob ein Stück abgebucht wird.
+/// Schließt die Benutzung eines Gegenstands ab.
+///
+/// Ein Matrixgeber (`artefaktDaten`) wird nie abgebucht: Er öffnet stattdessen
+/// den Auslösedialog der Bestandsbrücke, der AsP und Stabilitätswurf bucht.
+/// Ein Verbrauchsgegenstand mit Vitalwirkung öffnet den Anwendungsdialog, der
+/// Vitalwerte, Wunden und den Verbrauch eines Stücks bucht.
+/// Bei allen anderen Gegenständen fragt die App, ob ein Stück abgebucht wird.
 ///
 /// Schreibt frisch über `HeroActions.updateHero` und trifft den Eintrag über
 /// seinen Inhalt; bei offener Steigerungsrunde wird nichts geschrieben.
@@ -123,7 +184,32 @@ Future<void> schliesseGefechtsGegenstandAb({
   required WidgetRef ref,
   required String heroId,
   required HeroInventoryEntry eintrag,
+  required KartoGefechtsAdapter bestand,
 }) async {
+  if (eintrag.artefaktDaten != null) {
+    await bestand.gefechtsMatrixAusloesen(
+      context: context,
+      ref: ref,
+      heroId: heroId,
+      eintrag: eintrag,
+    );
+    return;
+  }
+  // Ein Heiltrank o. Ä. bucht Wirkung und Verbrauch im eigenen Dialog; ein
+  // Katalogelixier mit Eigenschaftswirkung ebenso (Einnehmen).
+  if ((eintrag.vitalwirkung?.istBelegt ?? false) ||
+      hatElixierWirkung(
+        ref.read(heroRulesCatalogProvider(heroId)).valueOrNull,
+        eintrag,
+      )) {
+    await bestand.gefechtsVitalwirkung(
+      context: context,
+      ref: ref,
+      heroId: heroId,
+      eintrag: eintrag,
+    );
+    return;
+  }
   if (!inventarAbbuchbar(eintrag)) return;
   final ja = await showDialog<bool>(
     context: context,

@@ -9,11 +9,20 @@ class _SonderfertigkeitenSection extends StatelessWidget {
     required this.companion,
     required this.isEditing,
     required this.onChanged,
+    this.onPferdeSf,
+    this.zeigePferdeSf = false,
   });
 
   final HeroCompanion companion;
   final bool isEditing;
   final ValueChanged<HeroCompanion> onChanged;
+
+  /// Erlernt eine Pferde-SF aus dem Katalog (sofort, ohne AP); `null`,
+  /// solange Sofortbuchungen ruhen.
+  final VoidCallback? onPferdeSf;
+
+  /// Zeigt den Katalogeinstieg für Pferde-SF (nur bei Reittieren).
+  final bool zeigePferdeSf;
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +30,20 @@ class _SonderfertigkeitenSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const _SectionHeader('Sonderfertigkeiten'),
+        Row(
+          children: [
+            const Expanded(child: _SectionHeader('Sonderfertigkeiten')),
+            if (zeigePferdeSf)
+              Tooltip(
+                message: onPferdeSf == null ? _kSofortbuchungGesperrt : '',
+                child: TextButton(
+                  key: const ValueKey<String>('begleiter-pferde-sf'),
+                  onPressed: onPferdeSf,
+                  child: const Text('+ Pferde-SF'),
+                ),
+              ),
+          ],
+        ),
         if (sfs.isEmpty && !isEditing)
           Text(
             'Keine Sonderfertigkeiten eingetragen.',

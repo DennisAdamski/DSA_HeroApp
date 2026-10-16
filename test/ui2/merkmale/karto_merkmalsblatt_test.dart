@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dsa_heldenverwaltung/catalog/hero_trait_effect.dart';
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_herkunft.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_merkmal.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
@@ -22,6 +23,12 @@ const _katalog = RulesCatalog(
   spells: [],
   weapons: [],
   advantages: [
+    HeroTraitDef(
+      id: 'adv_vollzauberer',
+      name: 'Vollzauberer',
+      traitType: 'advantage',
+      selectionTemplate: 'Vollzauberer',
+    ),
     HeroTraitDef(
       id: 'adv_flink',
       name: 'Flink',
@@ -155,6 +162,27 @@ void main() {
   Finder key(String name) => find.byKey(ValueKey<String>(name));
 
   Future<HeroSheet> gespeichert() async => (await repo.loadHeroById('rondra'))!;
+
+  testWidgets('Vollzauberer bietet Einrichtung vor dem atomaren Speichern', (
+    tester,
+  ) async {
+    await zeige(tester, held: _held());
+    await tester.ensureVisible(key('karto-merkmal-neu-vorteile'));
+    await tester.tap(key('karto-merkmal-neu-vorteile'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField).first, 'Vollzauberer');
+    await tester.pumpAndSettle();
+    await tester.tap(key('karto-merkmal-katalog-adv_vollzauberer'));
+    await tester.pumpAndSettle();
+    expect(find.text('Magische Tradition einrichten'), findsOneWidget);
+    expect((await gespeichert()).vorteilEintraege, isEmpty);
+    await tester.tap(key('magic-setup-confirm'));
+    await tester.pumpAndSettle();
+    final result = await gespeichert();
+    expect(result.vorteilEintraege.single.katalogId, 'adv_vollzauberer');
+    expect(result.representationen, ['Mag']);
+    expect(result.ritualKnowledge['gildenmagier']!.value, 3);
+  });
 
   Future<void> tippe(WidgetTester tester, Finder finder) async {
     await tester.ensureVisible(finder);
@@ -400,6 +428,88 @@ void main() {
     await tester.tap(key('karto-merkmal-vorteile-0'));
     await tester.pumpAndSettle();
     expect(key('karto-merkmal-aktion-entfernen'), findsNothing);
+  });
+
+  group('Herkunft des Merkmals', () {
+    HeroSheet held() => _held(
+      vorteileText: 'Flink',
+      vorteile: const [
+        HeroMerkmal(
+          katalogId: 'adv_flink',
+          text: 'Flink',
+          unbekannteFelder: {'zukunft': 1},
+        ),
+      ],
+    );
+
+    testWidgets('Herkunft ändern setzt die Angabe, erhält Katalogbezug und '
+        'Zusatzfelder und zeigt sie auf der Karte', (tester) async {
+      await zeige(tester, held: held());
+      expect(key('karto-merkmal-ursprung'), findsNothing);
+
+      await tippe(tester, key('karto-merkmal-vorteile-0'));
+      await tester.tap(key('karto-merkmal-aktion-herkunft'));
+      await tester.pumpAndSettle();
+      await tester.tap(key('merkmal-herkunft-profession'));
+      await tester.pumpAndSettle();
+
+      final eintrag = (await gespeichert()).vorteilEintraege.single;
+      expect(eintrag.herkunft, HeroHerkunft.profession);
+      expect(eintrag.katalogId, 'adv_flink');
+      expect(eintrag.unbekannteFelder, {'zukunft': 1});
+      expect((await gespeichert()).vorteileText, 'Flink');
+      expect(key('karto-merkmal-ursprung'), findsOneWidget);
+      expect(find.text('Herkunft: Profession'), findsOneWidget);
+    });
+
+    testWidgets('Nicht angegeben entfernt die Angabe wieder', (tester) async {
+      await zeige(
+        tester,
+        held: held().copyWith(
+          vorteilEintraege: [
+            held().vorteilEintraege.single.copyWith(
+              herkunft: HeroHerkunft.rasse,
+            ),
+          ],
+        ),
+      );
+      expect(find.text('Herkunft: Rasse'), findsOneWidget);
+
+      await tippe(tester, key('karto-merkmal-vorteile-0'));
+      await tester.tap(key('karto-merkmal-aktion-herkunft'));
+      await tester.pumpAndSettle();
+      await tester.tap(key('merkmal-herkunft-nicht-angegeben'));
+      await tester.pumpAndSettle();
+
+      expect((await gespeichert()).vorteilEintraege.single.herkunft, isNull);
+      expect(key('karto-merkmal-ursprung'), findsNothing);
+    });
+
+    testWidgets('Abbrechen und dieselbe Wahl schreiben nichts', (tester) async {
+      await zeige(tester, held: held());
+      final vorher = await gespeichert();
+
+      await tippe(tester, key('karto-merkmal-vorteile-0'));
+      await tester.tap(key('karto-merkmal-aktion-herkunft'));
+      await tester.pumpAndSettle();
+      await tester.tap(key('merkmal-herkunft-abbrechen'));
+      await tester.pumpAndSettle();
+      expect(await gespeichert(), vorher);
+
+      await tippe(tester, key('karto-merkmal-vorteile-0'));
+      await tester.tap(key('karto-merkmal-aktion-herkunft'));
+      await tester.pumpAndSettle();
+      await tester.tap(key('merkmal-herkunft-nicht-angegeben'));
+      await tester.pumpAndSettle();
+      expect(await gespeichert(), vorher);
+    });
+
+    testWidgets('bei offener Planung gibt es die Aktion nicht', (tester) async {
+      await zeige(tester, held: held(), planOffen: true);
+      await tester.tap(key('karto-merkmal-vorteile-0'));
+      await tester.pumpAndSettle();
+      expect(key('karto-merkmal-aktion-herkunft'), findsNothing);
+    });
   });
 
   testWidgets('ein Speicherfehler erscheint im Blatt', (tester) async {

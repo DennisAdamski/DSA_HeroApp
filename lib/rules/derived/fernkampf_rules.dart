@@ -7,10 +7,12 @@ int computeRangedAtValue({
   required int specializationBonus,
   required int projectileAtMod,
   required int manualAtMod,
+  int waffenmeisterAtBonus = 0,
 }) {
   return rangedAtBase +
       talentAtValue +
       weaponAtMod +
+      waffenmeisterAtBonus +
       ebeAttackPart +
       specializationBonus +
       projectileAtMod +

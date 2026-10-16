@@ -21,12 +21,12 @@ import 'gefecht_reserve.dart';
 import 'gefecht_patzer.dart';
 import 'gefecht_klingen.dart';
 
-import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_provider.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_patzer_provider.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_initiative_provider.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/artefakt_zauber_liste_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_lage_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_patzer_rules.dart';
@@ -56,6 +56,9 @@ import 'gefecht_unterbrechung.dart';
 import 'gefecht_laden.dart';
 import 'gefecht_geschosse.dart';
 import 'gefecht_vitalwerte.dart';
+import 'gefecht_kampfwerte.dart';
+
+import 'package:dsa_heldenverwaltung/rules/derived/gefecht_kampfwerte_rules.dart';
 
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_laden_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_kampfmittel_rules.dart';
@@ -108,7 +111,10 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
   Widget build(BuildContext context) {
     final geladen = ref.watch(heroComputedProvider(widget.heroId));
     final s = ref.watch(gefechtMitInitiativeProvider(widget.heroId));
-    final katalog = ref.watch(rulesCatalogProvider).asData?.value;
+    final katalog = ref
+        .watch(heroRulesCatalogProvider(widget.heroId))
+        .asData
+        ?.value;
     final snapshot = geladen.asData?.value;
     // Strg/Cmd+K öffnet wie im Spielbereich die Probenauswahl, hier aber
     // gefechtsbewusst; die Route liegt außerhalb des Workspace-Kürzels.
@@ -124,6 +130,12 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
           child: Scaffold(
             appBar: AppBar(
               title: const Text('Gefecht'),
+              // Fixiert: die schwankenden Kampfwerte bleiben beim Scrollen sichtbar.
+              bottom: s != null && snapshot != null
+                  ? GefechtKampfwerteLeiste(
+                      werte: gefechtsKampfwerte(s, snapshot, katalog),
+                    )
+                  : null,
               actions: [
                 TextButton.icon(
                   key: const ValueKey('gefecht-probe'),
@@ -162,6 +174,12 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
                         werte: snapshot,
                         katalog: katalog,
                         zuletzt: s.zuletztGewirkt,
+                        talentBeOverride: ref.watch(
+                          talentBeOverrideProvider(widget.heroId),
+                        ),
+                        epicAdvantagesActive: ref.watch(
+                          heroEpicAdvantagesActiveProvider(widget.heroId),
+                        ),
                         gesperrt: _busy,
                         onZauber: (z) => _run(
                           () => zeigeGefechtsWirken(
@@ -199,11 +217,6 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            Text(
-                              snapshot.hero.name,
-                              style: Theme.of(context).textTheme.headlineSmall,
-                            ),
-                            const SizedBox(height: 12),
                             GefechtRundenleiste(
                               onAktion: _run,
                               zustand: s,
@@ -260,9 +273,20 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
                                 ),
                                 GefechtBegleiter(
                                   begleiter: snapshot.hero.companions,
+                                  zustaende: snapshot.state.begleiterZustaende,
                                 ),
                               ],
-                              ausruestung: _ausruestung(snapshot),
+                              ausruestung: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  _ausruestung(snapshot),
+                                  if (gefechtsArtefakte(snapshot.hero)
+                                      .isNotEmpty) ...[
+                                    const SizedBox(height: 16),
+                                    _artefakte(snapshot),
+                                  ],
+                                ],
+                              ),
                             ),
                             widget.bestand.spielProtokoll(snapshot),
                           ],
@@ -358,8 +382,8 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text('Geführt: ${snapshot.hero.combatConfig.selectedWeapon.name}'),
-        Text('TP ${snapshot.combatPreviewStats.tpExpression}'),
+        Text('Geführt: ${gefechtsAngriffsanzeige(snapshot)?.name ?? '–'}'),
+        Text('TP ${gefechtsAngriffsanzeige(snapshot)?.tp ?? '–'}'),
         if (s.ansageFolgemalus > 0)
           Text(
             'Ansagefolgemalus +${s.ansageFolgemalus} auf Proben bis einschließlich '
@@ -572,7 +596,7 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
   Widget _handlung(Gefechtszustand s, HeroComputedSnapshot snapshot) {
     final vorbereitet = s.handlung!.vorbereitung != null;
     final p = vorbereitet ? pruefeGefechtsVorbereitung(s, snapshot) : null;
-    final k = ref.watch(rulesCatalogProvider).asData?.value;
+    final k = ref.watch(heroRulesCatalogProvider(widget.heroId)).asData?.value;
     final schuss =
         s.handlung!.art == Gefechtshandlungsart.zielen && p?.rest == 0;
     final schusspruefung = schuss && k != null
@@ -620,6 +644,7 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
   }
 
   Future<void> _schaden(HeroComputedSnapshot snapshot) async {
+    final anzeige = gefechtsAngriffsanzeige(snapshot);
     await _bruecke.gefechtsProbe(
       context: context,
       ref: ref,
@@ -627,9 +652,10 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
       request: ResolvedProbeRequest(
         type: ProbeType.damage,
         title: 'Schaden',
-        subtitle: snapshot.combatPreviewStats.tpExpression,
+        subtitle: anzeige?.tp ?? snapshot.combatPreviewStats.tpExpression,
         ruleHint: 'TP-Wurf; RS, Wunden und Manöverfolgen beim Gegner manuell berücksichtigen.',
-        diceSpec: snapshot.combatPreviewStats.damageDiceSpec,
+        diceSpec:
+            anzeige?.wuerfel ?? snapshot.combatPreviewStats.damageDiceSpec,
         targets: const [],
       ),
     );

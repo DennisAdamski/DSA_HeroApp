@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dsa_heldenverwaltung/catalog/catalog_loader.dart';
+import 'package:dsa_heldenverwaltung/catalog/spell_effect_def.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -217,6 +218,111 @@ void main() {
       'raufen',
     );
     expect(catalog.reisebericht.map((e) => e.id).toList(), ['rb_test']);
+  });
+
+  test('ohne spell_effects im Manifest bleibt die Profilliste leer', () async {
+    assets = buildValidAssets();
+
+    final catalog = await const CatalogLoader().loadFromAsset(manifestPath);
+
+    expect(catalog.spellEffects, isEmpty);
+  });
+
+  test('lädt Zauberprofile aus dem Manifest-Schlüssel spell_effects', () async {
+    assets = buildValidAssets();
+    final manifest = jsonDecode(assets[manifestPath]!) as Map<String, dynamic>;
+    (manifest['files'] as Map<String, dynamic>)['spell_effects'] =
+        'spell_effects.json';
+    assets[manifestPath] = jsonEncode(manifest);
+    assets['$basePath/spell_effects.json'] = jsonEncode([
+      {
+        'id': 'profil_balsam',
+        'spellId': 'spell_balsam',
+        'profilVersion': 2,
+        'status': 'belegt',
+        'beleg': {'buch': 'Liber Cantiones', 'seite': '37', 'chunkId': 1951},
+        'eingaben': ['zfpStern'],
+      },
+    ]);
+
+    final catalog = await const CatalogLoader().loadFromAsset(manifestPath);
+
+    final profil = catalog.spellEffects.single;
+    expect(profil.id, 'profil_balsam');
+    expect(profil.spellId, 'spell_balsam');
+    expect(profil.profilVersion, 2);
+    expect(profil.status, SpellEffectStatus.belegt);
+    expect(profil.beleg.seite, '37');
+    expect(profil.beleg.chunkId, 1951);
+    expect(profil.eingaben, ['zfpStern']);
+  });
+
+  test('ohne alchimika im Manifest bleibt die Mittelliste leer', () async {
+    assets = buildValidAssets();
+
+    final catalog = await const CatalogLoader().loadFromAsset(manifestPath);
+
+    expect(catalog.alchimika, isEmpty);
+  });
+
+  test('lädt Mittel aus dem Manifest-Schlüssel alchimika', () async {
+    assets = buildValidAssets();
+    final manifest = jsonDecode(assets[manifestPath]!) as Map<String, dynamic>;
+    (manifest['files'] as Map<String, dynamic>)['alchimika'] = 'alchimika.json';
+    assets[manifestPath] = jsonEncode(manifest);
+    assets['$basePath/alchimika.json'] = jsonEncode([
+      {
+        'id': 'alch_test',
+        'name': 'Testtrank',
+        'beleg': {'buch': 'Testbuch', 'seite': '1', 'chunkId': 7},
+        'preisSilber': 20,
+        'qualitaeten': [
+          {'stufe': 'C', 'lepWurf': '2W6+4', 'lepProWunde': 7},
+        ],
+      },
+    ]);
+
+    final catalog = await const CatalogLoader().loadFromAsset(manifestPath);
+
+    final mittel = catalog.alchimika.single;
+    expect(mittel.name, 'Testtrank');
+    expect(mittel.beleg.kurz, 'Testbuch S. 1');
+    expect(mittel.preisSilber, 20);
+    expect(mittel.qualitaeten.single.lepWurf, '2W6+4');
+    expect(mittel.qualitaeten.single.lepProWunde, 7);
+  });
+
+  test('doppelte IDs in alchimika werden abgewiesen', () async {
+    assets = buildValidAssets();
+    final manifest = jsonDecode(assets[manifestPath]!) as Map<String, dynamic>;
+    (manifest['files'] as Map<String, dynamic>)['alchimika'] = 'alchimika.json';
+    assets[manifestPath] = jsonEncode(manifest);
+    assets['$basePath/alchimika.json'] = jsonEncode([
+      {'id': 'alch_a', 'name': 'A'},
+      {'id': 'alch_a', 'name': 'B'},
+    ]);
+
+    await expectLater(
+      const CatalogLoader().loadFromAsset(manifestPath),
+      throwsA(isA<FormatException>()),
+    );
+  });
+
+  test('doppelte Profil-IDs in spell_effects werden abgewiesen', () async {
+    assets = buildValidAssets();
+    final manifest = jsonDecode(assets[manifestPath]!) as Map<String, dynamic>;
+    (manifest['files'] as Map<String, dynamic>)['spell_effects'] =
+        'spell_effects.json';
+    assets[manifestPath] = jsonEncode(manifest);
+    assets['$basePath/spell_effects.json'] = jsonEncode([
+      {'id': 'profil_a', 'spellId': 'spell_balsam', 'status': 'belegt'},
+      {'id': 'profil_a', 'spellId': 'spell_balsam', 'status': 'belegt'},
+    ]);
+
+    await expectLater(
+      const CatalogLoader().loadFromAsset(manifestPath),
+      throwsA(isA<FormatException>()),
+    );
   });
 
   test('throws when section JSON top-level is not a list', () async {

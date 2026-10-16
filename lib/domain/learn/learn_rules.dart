@@ -41,11 +41,18 @@ const Map<String, LearnCost> kGrundwertKomplexitaeten = <String, LearnCost>{
 /// abzubilden. In diesem Fall repraesentiert der erste Schritt die
 /// Aktivierungskosten. Sondererfahrungen reduzieren fuer die ersten
 /// `seAnzahl` Schritte die Komplexitaet jeweils um genau eine Stufe.
+///
+/// [erleichterungBisWert] verbilligt jeden Schritt, dessen Zielwert hoechstens
+/// so hoch ist, um eine weitere Spalte (Hexalogie: ein Zauber derselben
+/// Hexalogie mit diesem ZfW ist schon gelernt). Die Aktivierung (Ziel 0) gehoert
+/// dazu, sobald der Wert mindestens 0 ist. Beide Erleichterungen zaehlen
+/// gemeinsam.
 ({int apKosten, int seVerbraucht}) berechneSteigerungskosten({
   required int vonWert,
   required int aufWert,
   required LearnCost effektiveKomplexitaet,
   int seAnzahl = 0,
+  int? erleichterungBisWert,
 }) {
   if (aufWert <= vonWert) {
     return (apKosten: 0, seVerbraucht: 0);
@@ -56,9 +63,11 @@ const Map<String, LearnCost> kGrundwertKomplexitaeten = <String, LearnCost>{
   final verfuegbareSe = math.max(0, seAnzahl);
   for (var level = vonWert; level < aufWert; level++) {
     final nutztSe = seVerbraucht < verfuegbareSe;
-    final schrittKomplexitaet = nutztSe
-        ? effektiveKomplexitaet.previous()
-        : effektiveKomplexitaet;
+    final erleichtert =
+        erleichterungBisWert != null && level + 1 <= erleichterungBisWert;
+    final schrittKomplexitaet = effektiveKomplexitaet.plusSteps(
+      -((nutztSe ? 1 : 0) + (erleichtert ? 1 : 0)),
+    );
     kosten += schrittKomplexitaet.costForStep(level);
     if (nutztSe) {
       seVerbraucht++;

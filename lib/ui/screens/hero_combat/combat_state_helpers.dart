@@ -8,38 +8,59 @@ extension _CombatStateHelpers on _HeroCombatTabState {
   /// wird mit „Speichern“. Sonst trifft sie frisch die **gespeicherte**
   /// Kampfkonfiguration (ARCH-05): Ein beim Rendern erfasster Stand wird nie
   /// zurückgeschrieben, Änderungen desselben Helden laufen nacheinander, und
-  /// die Anzeige folgt dem gespeicherten Wert. Die Slotprüfung läuft auf dem
-  /// frischen Ergebnis. Fehler erscheinen als „[was] nicht gespeichert“;
+  /// die Anzeige folgt dem gespeicherten Wert. Die Slotprüfung
+  /// (`neuerKampfSlotFehler`) weist nur Fehler ab, die die Änderung neu
+  /// einführt. Fehler erscheinen als „[was] nicht gespeichert“;
   /// die Bedienelemente springen dann auf den gespeicherten Stand zurück.
   /// Liefert, ob die Änderung übernommen wurde.
   Future<bool> _aendereKampf({
     required String was,
     required CombatConfig Function(CombatConfig aktuell) aenderung,
     required RulesCatalog catalog,
+  }) {
+    return _aendereKampfUndInventar(
+      was: was,
+      aenderung: (held) => mitKampfAenderung(held, aenderung),
+      catalog: catalog,
+    );
+  }
+
+  /// Wie [_aendereKampf], für Änderungen, die Kampf **und** Inventar
+  /// treffen, etwa das Ablegen eines Gegenstands (ARCH-03).
+  ///
+  /// Im Bearbeitungsmodus wirkt [aenderung] auf den Entwurf: die
+  /// Kampfkonfiguration und, falls sie sich ändern, die Inventareinträge
+  /// ([_draftInventar]); „Speichern“ übernimmt beide gemeinsam.
+  Future<bool> _aendereKampfUndInventar({
+    required String was,
+    required HeroSheet Function(HeroSheet aktuell) aenderung,
+    required RulesCatalog catalog,
   }) async {
     if (_editController.isEditing) {
       return _aendereKampfEntwurf(was: was, aenderung: aenderung);
     }
-    final combatTalents = catalog.talents
-        .where(isCombatTalentDef)
-        .toList(growable: false);
     final gespeichert = await aendereHeldMitMeldung(
       context: context,
       ref: ref,
       heroId: widget.heroId,
       was: was,
-      aenderung: (held) => mitKampfAenderung(held, (config) {
-        final neu = aenderung(config);
-        final fehler = _validateWeaponSlotsForConfig(
-          config: neu,
+      aenderung: (held) {
+        final neu = aenderung(held);
+        if (identical(neu, held)) {
+          return held;
+        }
+        // Nur neue Fehler sperren: Eine schon gespeicherte ungültige
+        // Konfiguration darf die übrige Bedienung nicht blockieren.
+        final fehler = neuerKampfSlotFehler(
+          vorher: held.combatConfig,
+          nachher: neu.combatConfig,
           catalog: catalog,
-          combatTalents: combatTalents,
         );
         if (fehler != null) {
-          throw StateError(fehler);
+          throw StateError(fehler.meldung);
         }
         return neu;
-      }),
+      },
     );
     if (gespeichert == null && mounted) {
       _steuerRevision++;
@@ -51,21 +72,42 @@ extension _CombatStateHelpers on _HeroCombatTabState {
   // Wendet [aenderung] im Bearbeitungsmodus auf den Entwurf an.
   bool _aendereKampfEntwurf({
     required String was,
-    required CombatConfig Function(CombatConfig aktuell) aenderung,
+    required HeroSheet Function(HeroSheet aktuell) aenderung,
   }) {
+    final basis = _entwurfBasis;
+    if (basis == null) {
+      return false;
+    }
+    final inventar = _draftInventar ?? basis.inventoryEntries;
+    final entwurf = basis.copyWith(
+      combatConfig: _draftCombatConfig,
+      inventoryEntries: inventar,
+    );
+    final HeroSheet neu;
     try {
-      _draftCombatConfig = aenderung(_draftCombatConfig);
+      neu = aenderung(entwurf);
     } on StateError catch (fehler) {
       ScaffoldMessenger.maybeOf(context)?.showSnackBar(
         SnackBar(content: Text('$was nicht übernommen: ${fehler.message}')),
       );
       return false;
     }
+    _draftCombatConfig = neu.combatConfig;
+    if (!identical(neu.inventoryEntries, inventar)) {
+      _draftInventar = neu.inventoryEntries;
+    }
     _markFieldChanged();
     return true;
   }
 
   Future<void> _startEdit() async {
+    final darfBearbeiten = await bestaetigeBearbeitungBeiPlanung(
+      context: context,
+      heroId: widget.heroId,
+    );
+    if (!darfBearbeiten || !mounted) {
+      return;
+    }
     final hero = _latestHero;
     if (hero == null) {
       return;
@@ -83,13 +125,10 @@ extension _CombatStateHelpers on _HeroCombatTabState {
     }
 
     final catalog = await ref.read(rulesCatalogProvider.future);
-    final combatTalents = sortedCombatTalents(
-      catalog.talents.where(isCombatTalentDef).toList(growable: false),
-    );
-    final weaponValidation = _validateWeaponSlots(
+    final weaponValidation = pruefeKampfSlots(
+      config: _draftCombatConfig,
       catalog: catalog,
-      combatTalents: combatTalents,
-    );
+    ).firstOrNull?.meldung;
     if (weaponValidation != null) {
       if (mounted) {
         ScaffoldMessenger.of(context)
@@ -116,6 +155,7 @@ extension _CombatStateHelpers on _HeroCombatTabState {
     final entwurf = basis.copyWith(
       talents: Map<String, HeroTalentEntry>.from(_draftTalents),
       combatConfig: _draftCombatConfig,
+      inventoryEntries: _draftInventar ?? basis.inventoryEntries,
       apSpent: basis.apSpent + _draftApSpentDelta,
     );
     if (!mounted) {
@@ -137,6 +177,7 @@ extension _CombatStateHelpers on _HeroCombatTabState {
       return;
     }
     _draftApSpentDelta = 0;
+    _draftInventar = null;
     if (!mounted) {
       return;
     }
@@ -243,98 +284,6 @@ extension _CombatStateHelpers on _HeroCombatTabState {
     }
     _viewRevision.value++;
     _editController.markFieldChanged();
-  }
-
-  String? _validateWeaponSlotsForConfig({
-    required CombatConfig config,
-    required RulesCatalog catalog,
-    required List<TalentDef> combatTalents,
-  }) {
-    final talentById = <String, TalentDef>{
-      for (final talent in combatTalents) talent.id: talent,
-    };
-    final slots = config.weaponSlots;
-    for (var i = 0; i < slots.length; i++) {
-      final slot = slots[i];
-      final slotLabel = 'Waffe ${i + 1}';
-      final hasAnyData =
-          slot.name.trim().isNotEmpty ||
-          slot.talentId.trim().isNotEmpty ||
-          slot.weaponType.trim().isNotEmpty;
-      if (!hasAnyData) {
-        continue;
-      }
-      final talentId = slot.talentId.trim();
-      final talent = talentId.isEmpty ? null : talentById[talentId];
-      if (talentId.isNotEmpty && talent == null) {
-        return '$slotLabel: Das gewählte Talent ist kein gültiges Kampftalent.';
-      }
-      if (talent != null && combatTypeFromTalent(talent) != slot.combatType) {
-        return '$slotLabel: Talent "${talent.name}" passt nicht zum Waffenkampftyp.';
-      }
-      final weaponType = slot.weaponType.trim();
-      if (weaponType.isNotEmpty && talent != null) {
-        final allowedTypes = weaponTypeOptionsForTalent(
-          talent: talent,
-          catalog: catalog,
-          combatType: slot.combatType,
-        );
-        if (!allowedTypes.contains(weaponType)) {
-          return '$slotLabel: Waffenart "$weaponType" passt nicht zum Talent "${talent.name}".';
-        }
-      }
-      if (weaponType.isNotEmpty && talent == null) {
-        return '$slotLabel: Waffenart "$weaponType" benötigt ein gültiges Talent.';
-      }
-      if (slot.kkThreshold < 0) {
-        return '$slotLabel: KK-Schwelle darf nicht negativ sein.';
-      }
-      if (slot.kkThreshold == 0 && slot.kkBase != 0) {
-        return '$slotLabel: TP/KK darf nur als 0/0 deaktiviert werden.';
-      }
-      if (slot.tpDiceCount < 1) {
-        return '$slotLabel: Würfelanzahl muss >= 1 sein.';
-      }
-      if (slot.isRanged && slot.rangedProfile.reloadTime < 0) {
-        return '$slotLabel: Ladezeit darf nicht negativ sein.';
-      }
-      if (slot.isRanged) {
-        for (final projectile in slot.rangedProfile.projectiles) {
-          if (projectile.count < 0) {
-            return '$slotLabel: Geschossbestände dürfen nicht negativ sein.';
-          }
-        }
-      }
-    }
-    final assignment = config.offhandAssignment;
-    if (assignment.weaponIndex >= 0 &&
-        assignment.weaponIndex == config.selectedWeaponIndex) {
-      return 'Nebenhand: Haupthand und Nebenhand dürfen nicht dieselbe Waffe nutzen.';
-    }
-    if (assignment.usesEquipment &&
-        assignment.equipmentIndex >= 0 &&
-        assignment.equipmentIndex < config.offhandEquipment.length) {
-      final offhandEntry = config.offhandEquipment[assignment.equipmentIndex];
-      if (offhandEntry.type == OffhandEquipmentType.parryWeapon &&
-          !config.specialRules.linkhandActive) {
-        return 'Nebenhand: Parierwaffen erfordern die Sonderfertigkeit Linkhand.';
-      }
-      if (offhandEntry.breakFactor < 0) {
-        return 'Nebenhand: BF darf nicht negativ sein.';
-      }
-    }
-    return null;
-  }
-
-  String? _validateWeaponSlots({
-    required RulesCatalog catalog,
-    required List<TalentDef> combatTalents,
-  }) {
-    return _validateWeaponSlotsForConfig(
-      config: _draftCombatConfig,
-      catalog: catalog,
-      combatTalents: combatTalents,
-    );
   }
 
   String _fallback(String value) {

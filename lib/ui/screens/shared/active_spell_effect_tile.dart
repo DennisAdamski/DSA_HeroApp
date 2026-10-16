@@ -6,6 +6,11 @@ import 'package:dsa_heldenverwaltung/rules/derived/spell_duration_rules.dart';
 import 'package:dsa_heldenverwaltung/ui/config/ui_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/list_tile_material.dart';
 
+/// Hinweis an Zaubern mit „(A)“ in der Wirkungsdauer.
+const String kAufrechterhaltenHinweis =
+    'Muss aufrechterhalten werden (Konzentration): erschwert weitere '
+    'Zauberproben.';
+
 /// Karte eines laufend aktivierbaren Zaubereffekts inklusive Wirkungsdauer.
 ///
 /// Rein darstellend: Alle Aenderungen laufen ueber die Callbacks, damit die
@@ -23,6 +28,7 @@ class ActiveSpellEffectTile extends StatelessWidget {
     this.duration,
     this.valueText = '',
     this.onEditValue,
+    this.mussAufrechterhaltenWerden = false,
   });
 
   /// Definition des Effekts (Label, Beschreibung, Standard-Zeiteinheit).
@@ -52,6 +58,10 @@ class ActiveSpellEffectTile extends StatelessWidget {
   /// Oeffnet die effektspezifische Werteingabe; `null`, wenn es keine gibt.
   final VoidCallback? onEditValue;
 
+  /// Der Zauber traegt im Katalog „(A)“: Er verlangt Konzentration und
+  /// erschwert weitere Zauberproben.
+  final bool mussAufrechterhaltenWerden;
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -70,7 +80,11 @@ class ActiveSpellEffectTile extends StatelessWidget {
             child: SwitchListTile(
               key: ValueKey<String>('active-spell-toggle-${effect.id}'),
               title: Text(effect.label),
-              subtitle: Text(effect.description),
+              subtitle: Text(
+                mussAufrechterhaltenWerden
+                    ? '${effect.description}\n$kAufrechterhaltenHinweis'
+                    : effect.description,
+              ),
               value: isActive,
               onChanged: onToggled,
             ),
