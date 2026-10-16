@@ -756,6 +756,24 @@ class _MagicActiveSpellsTable extends StatelessWidget {
                                           : theme.textTheme.bodySmall,
                                     ),
                                     LernspaltenMarke(befund: befund),
+                                    if (lernspalte.gegenelementHinweis != null)
+                                      Tooltip(
+                                        message:
+                                            lernspalte.gegenelementHinweis!,
+                                        child: Padding(
+                                          key: ValueKey<String>(
+                                            'magic-spells-gegenelement-$spellId',
+                                          ),
+                                          padding: const EdgeInsets.only(
+                                            left: 4,
+                                          ),
+                                          child: Icon(
+                                            Icons.swap_horiz,
+                                            size: 14,
+                                            color: theme.colorScheme.error,
+                                          ),
+                                        ),
+                                      ),
                                     if (lernspalte.hexalogieHinweis != null)
                                       Tooltip(
                                         message: lernspalte.hexalogieHinweis!,

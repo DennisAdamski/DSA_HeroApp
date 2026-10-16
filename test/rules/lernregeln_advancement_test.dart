@@ -87,6 +87,11 @@ void main() {
         final o = option(hero, AdvancementKind.spell, 'spell_wand_aus_luft');
         expect(o.learnCost, LearnCost.e);
         expect(o.lernregeln.erleichterungBisWert, isNull);
+        // Der Erwerbsdialog nennt den Grund für die schwerere Spalte.
+        expect(
+          o.lernregeln.hinweise.where((h) => h.startsWith('Gegenelement:')),
+          hasLength(1),
+        );
       },
     );
 
