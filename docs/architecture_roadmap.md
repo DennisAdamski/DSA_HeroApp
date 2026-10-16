@@ -259,9 +259,10 @@ im [Archiv](archiv/arch-04.md):
 
 *Herleitungen:*
 
-- [ ] Lernspalte als Herleitung für Talente (heute Text „Lernkomplexität X“,
-  `effectiveTalentLernkomplexitaet`); die Sondererfahrungs-Ausnahme greift auf
-  die schon verbilligten Kosten.
+- [x] Lernspalte als Herleitung: Talente seit Teilstand 11
+  (`herleiteTalentLernspalte`), Sprachen und Schriften seit 16.10.2026
+  (gleiche Herleitung im Steigerungsdialog). Unverändert: die
+  Sondererfahrungs-Ausnahme greift auf die schon verbilligten Kosten.
 - [ ] Probenziele des Würfelknopfs im Talente-Tab nutzen `wendeWundVerlusteAn`
   direkt; der Probendialog zeigt TaW\* nur als Zahl.
 - [ ] Eigenschaftsprobe als Ausweichen (Zuschlag ≥ 7) bleibt eigene
