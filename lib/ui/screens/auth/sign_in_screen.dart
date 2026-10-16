@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import 'package:dsa_heldenverwaltung/data/auth_service.dart';
+import 'package:dsa_heldenverwaltung/data/registration_invite_client.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/karto_variante.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_stroke.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_rahmen.dart';
@@ -34,6 +35,7 @@ class _SignInScreenState extends State<SignInScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _registrationKeywordController = TextEditingController();
   late bool _isRegisterMode = widget.initialRegisterMode;
   bool _isBusy = false;
   String? _errorMessage;
@@ -42,6 +44,7 @@ class _SignInScreenState extends State<SignInScreen> {
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _registrationKeywordController.dispose();
     super.dispose();
   }
 
@@ -59,6 +62,7 @@ class _SignInScreenState extends State<SignInScreen> {
         await _authService.registerWithEmail(
           email: _emailController.text,
           password: _passwordController.text,
+          registrationKeyword: _registrationKeywordController.text,
         );
       } else {
         await _authService.signInWithEmail(
@@ -75,6 +79,10 @@ class _SignInScreenState extends State<SignInScreen> {
     } on FirebaseAuthException catch (error) {
       setState(() {
         _errorMessage = _localizeError(error);
+      });
+    } on RegistrationInviteException catch (error) {
+      setState(() {
+        _errorMessage = _localizeRegistrationError(error.code);
       });
     } on Object catch (error) {
       setState(() {
@@ -154,6 +162,17 @@ class _SignInScreenState extends State<SignInScreen> {
     }
   }
 
+  String _localizeRegistrationError(String code) {
+    return switch (code) {
+      'INVITE_INVALID' =>
+        'E-Mail oder Registrierungs-Keyword ist nicht gültig.',
+      'RATE_LIMITED' => 'Zu viele Versuche. Bitte später erneut versuchen.',
+      'APP_CHECK_REQUIRED' || 'APP_CHECK_INVALID' =>
+        'Die App-Integrität konnte nicht bestätigt werden.',
+      _ => 'Registrierung ist derzeit nicht verfügbar.',
+    };
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -217,8 +236,10 @@ class _SignInScreenState extends State<SignInScreen> {
                         ? AutofillHints.newPassword
                         : AutofillHints.password,
                   ],
-                  textInputAction: TextInputAction.done,
-                  onFieldSubmitted: (_) => _submit(),
+                  textInputAction: _isRegisterMode
+                      ? TextInputAction.next
+                      : TextInputAction.done,
+                  onFieldSubmitted: _isRegisterMode ? null : (_) => _submit(),
                   validator: (value) {
                     final v = value ?? '';
                     if (v.isEmpty) return 'Bitte Passwort eingeben.';
@@ -228,6 +249,27 @@ class _SignInScreenState extends State<SignInScreen> {
                     return null;
                   },
                 ),
+                if (_isRegisterMode) ...[
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _registrationKeywordController,
+                    decoration: const InputDecoration(
+                      labelText: 'Registrierungs-Keyword',
+                      prefixIcon: Icon(Icons.key_outlined),
+                    ),
+                    obscureText: true,
+                    autocorrect: false,
+                    enableSuggestions: false,
+                    textInputAction: TextInputAction.done,
+                    onFieldSubmitted: (_) => _submit(),
+                    validator: (value) {
+                      if ((value ?? '').trim().isEmpty) {
+                        return 'Bitte Registrierungs-Keyword eingeben.';
+                      }
+                      return null;
+                    },
+                  ),
+                ],
               ],
             ),
           ),

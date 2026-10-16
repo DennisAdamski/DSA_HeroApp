@@ -103,6 +103,8 @@ einen Themenindex; Details stehen nach Thema in [docs/hinweise/](docs/hinweise/)
   [security_operations.md](docs/security_operations.md).
 - Öffentliche Rechtstexte, Verarbeitungstätigkeiten, TOM und Löschkonzept:
   [legal_privacy_operations.md](docs/legal_privacy_operations.md).
+- Keyword, Tickets und Blocking-Function für neue Konten:
+  [registration_security.md](docs/registration_security.md).
 - [Architektur-Roadmap](docs/architecture_roadmap.md): nur Status und offene
   Punkte; abgenommene Aufgaben im [Archiv](docs/archiv/README.md). Bei
   Architekturarbeiten den Status pruefen und nach Teilumfaengen aktualisieren.

@@ -11,9 +11,10 @@ harten Regeln und den Themenindex.
   den Status nachladen.
 - `Passwort vergessen?` sendet über Firebase eine Reset-Mail. Die UI antwortet
   für vorhandene und unbekannte Adressen gleich, damit kein Konto-Bestand
-  offengelegt wird. Registrierungstickets und die serverseitige Keyword-Sperre
-  bleiben Voraussetzung, bevor neue öffentliche Registrierungen freigegeben
-  werden.
+  offengelegt wird. Neue Registrierungen fordern zuvor über App Check ein
+  kurzlebiges, E-Mail-gebundenes Ticket an; die Auth-Blocking-Function
+  verbraucht es atomar. Inbetriebnahme und Rotation stehen in
+  [`registration_security.md`](../registration_security.md).
 
 - `Einstellungen > Konto & Sync` steuert optionalen Firebase-Login,
   manuellen Konto-Sync und Konfliktaufloesung. Ohne Login nutzt die App das
