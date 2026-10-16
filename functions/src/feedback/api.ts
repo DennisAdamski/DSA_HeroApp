@@ -18,6 +18,7 @@ export interface FeedbackHttpResponse {
 
 export interface FeedbackApiDependencies {
   allowedOrigins: Array<string | RegExp>;
+  verifyAppCheck(token: string): Promise<boolean>;
   verifyToken(token: string): Promise<string | null>;
   submit(uid: string, body: unknown): Promise<FeedbackResult>;
   status(uid: string, requestId: string): Promise<FeedbackResult>;
@@ -39,10 +40,25 @@ export function createFeedbackApi(dependencies: FeedbackApiDependencies) {
     }
     if (request.method === "OPTIONS") {
       response.set("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
-      response.set("Access-Control-Allow-Headers", "Authorization, Content-Type");
+      response.set(
+        "Access-Control-Allow-Headers",
+        "Authorization, Content-Type, X-Firebase-AppCheck",
+      );
       return response.status(204).send();
     }
     if (bodyTooLarge(request)) return error(response, 400, "BODY_TOO_LARGE");
+
+    const appCheckToken = header(request, "x-firebase-appcheck")?.trim() ?? "";
+    if (appCheckToken.length === 0) {
+      return error(response, 401, "APP_CHECK_REQUIRED");
+    }
+    let validAppCheck = false;
+    try {
+      validAppCheck = await dependencies.verifyAppCheck(appCheckToken);
+    } catch {
+      validAppCheck = false;
+    }
+    if (!validAppCheck) return error(response, 401, "APP_CHECK_INVALID");
 
     const auth = header(request, "authorization");
     const token = auth?.startsWith("Bearer ") ? auth.substring(7).trim() : "";

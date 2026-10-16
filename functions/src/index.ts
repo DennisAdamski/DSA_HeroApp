@@ -1,5 +1,6 @@
 import { initializeApp } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
+import { getAppCheck } from "firebase-admin/app-check";
 import { getFirestore } from "firebase-admin/firestore";
 import { onRequest } from "firebase-functions/v2/https";
 import type { HttpsOptions } from "firebase-functions/v2/https";
@@ -72,8 +73,12 @@ function buildApi(options: {
   return createFeedbackApi({
     allowedOrigins: options.allowedOrigins,
     verifyToken: async (token) => {
-      const decoded = await getAuth().verifyIdToken(token);
-      return decoded.uid;
+      const decoded = await getAuth().verifyIdToken(token, true);
+      return decoded.email_verified === true ? decoded.uid : null;
+    },
+    verifyAppCheck: async (token) => {
+      await getAppCheck().verifyToken(token);
+      return true;
     },
     submit: (uid, body) => service.submit(uid, validateSubmission(body)),
     status: (uid, requestId) => service.getStatus(uid, requestId),

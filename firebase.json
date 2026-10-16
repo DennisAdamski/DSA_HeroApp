@@ -48,6 +48,31 @@
             ],
             "headers": [
                 {
+                    "source": "**",
+                    "headers": [
+                        {
+                            "key": "Content-Security-Policy",
+                            "value": "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://storage.googleapis.com https://firebasestorage.googleapis.com; font-src 'self' data:; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com https://*.cloudfunctions.net https://api.openai.com; worker-src 'self' blob:; manifest-src 'self'"
+                        },
+                        {
+                            "key": "X-Content-Type-Options",
+                            "value": "nosniff"
+                        },
+                        {
+                            "key": "Referrer-Policy",
+                            "value": "strict-origin-when-cross-origin"
+                        },
+                        {
+                            "key": "Permissions-Policy",
+                            "value": "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
+                        },
+                        {
+                            "key": "X-Frame-Options",
+                            "value": "DENY"
+                        }
+                    ]
+                },
+                {
                     "source": "**/*.@(js|css)",
                     "headers": [
                         {
@@ -127,6 +152,31 @@
                 }
             ],
             "headers": [
+                {
+                    "source": "**",
+                    "headers": [
+                        {
+                            "key": "Content-Security-Policy",
+                            "value": "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://storage.googleapis.com https://firebasestorage.googleapis.com; font-src 'self' data:; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com https://*.cloudfunctions.net https://api.openai.com; worker-src 'self' blob:; manifest-src 'self'"
+                        },
+                        {
+                            "key": "X-Content-Type-Options",
+                            "value": "nosniff"
+                        },
+                        {
+                            "key": "Referrer-Policy",
+                            "value": "strict-origin-when-cross-origin"
+                        },
+                        {
+                            "key": "Permissions-Policy",
+                            "value": "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
+                        },
+                        {
+                            "key": "X-Frame-Options",
+                            "value": "DENY"
+                        }
+                    ]
+                },
                 {
                     "source": "**/*.@(js|css)",
                     "headers": [

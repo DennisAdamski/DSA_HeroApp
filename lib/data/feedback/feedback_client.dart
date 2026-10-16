@@ -21,6 +21,7 @@ class FeedbackClient implements FeedbackGateway {
   FeedbackClient({
     required this.endpoint,
     required this.idTokenProvider,
+    required this.appCheckTokenProvider,
     http.Client? httpClient,
     this.timeout = const Duration(seconds: 12),
   }) : _http = httpClient ?? http.Client();
@@ -31,6 +32,9 @@ class FeedbackClient implements FeedbackGateway {
   /// Liefert unmittelbar vor jedem Aufruf das aktuelle Firebase-ID-Token.
   final Future<String?> Function() idTokenProvider;
 
+  /// Liefert unmittelbar vor jedem Aufruf einen frischen App-Check-Token.
+  final Future<String?> Function() appCheckTokenProvider;
+
   /// Maximale Wartezeit; ein Ablauf gilt wegen möglicher Erstellung als unklar.
   final Duration timeout;
 
@@ -40,12 +44,13 @@ class FeedbackClient implements FeedbackGateway {
   @override
   Future<FeedbackResult> submit(FeedbackSubmission submission) async {
     try {
-      final token = await _requiredToken();
+      final tokens = await _requiredTokens();
       final response = await _http
           .post(
             _route('submissions'),
             headers: <String, String>{
-              'authorization': 'Bearer $token',
+              'authorization': 'Bearer ${tokens.idToken}',
+              'x-firebase-appcheck': tokens.appCheckToken,
               'content-type': 'application/json',
             },
             body: jsonEncode(submission.toJson()),
@@ -68,12 +73,15 @@ class FeedbackClient implements FeedbackGateway {
   /// Fragt den kontogebundenen Status ab, ohne einen neuen POST auszulösen.
   @override
   Future<FeedbackResult> status(String requestId) async {
-    final token = await _requiredToken();
+    final tokens = await _requiredTokens();
     try {
       final response = await _http
           .get(
             _route('submissions/${Uri.encodeComponent(requestId)}'),
-            headers: <String, String>{'authorization': 'Bearer $token'},
+            headers: <String, String>{
+              'authorization': 'Bearer ${tokens.idToken}',
+              'x-firebase-appcheck': tokens.appCheckToken,
+            },
           )
           .timeout(timeout);
       return _decode(response);
@@ -90,12 +98,22 @@ class FeedbackClient implements FeedbackGateway {
     }
   }
 
-  Future<String> _requiredToken() async {
-    final token = await idTokenProvider();
-    if (token == null || token.trim().isEmpty) {
+  Future<_FeedbackTokens> _requiredTokens() async {
+    final idToken = await idTokenProvider();
+    if (idToken == null || idToken.trim().isEmpty) {
       throw const FeedbackClientException('AUTH_REQUIRED', statusCode: 401);
     }
-    return token;
+    final appCheckToken = await appCheckTokenProvider();
+    if (appCheckToken == null || appCheckToken.trim().isEmpty) {
+      throw const FeedbackClientException(
+        'APP_CHECK_REQUIRED',
+        statusCode: 401,
+      );
+    }
+    return _FeedbackTokens(
+      idToken: idToken.trim(),
+      appCheckToken: appCheckToken.trim(),
+    );
   }
 
   Uri _route(String child) {
@@ -124,6 +142,13 @@ class FeedbackClient implements FeedbackGateway {
     }
     return FeedbackResult.fromJson(json);
   }
+}
+
+class _FeedbackTokens {
+  const _FeedbackTokens({required this.idToken, required this.appCheckToken});
+
+  final String idToken;
+  final String appCheckToken;
 }
 
 /// Stabiler, nutzerlesbar übersetzbarer Fehler des Feedbackdienstes.

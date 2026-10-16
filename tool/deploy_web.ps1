@@ -1,3 +1,10 @@
+param(
+    [Parameter(Mandatory = $true)]
+    [ValidateSet('test', 'production')]
+    [string]$Target,
+    [string]$AppCheckSiteKey = $env:FIREBASE_APP_CHECK_SITE_KEY
+)
+
 # Web-Deploy fuer DSA-Heldenverwaltung.
 #
 # Auf diesem Windows-Setup verlieren inkrementelle Flutter-Web-Builds
@@ -12,6 +19,16 @@
 
 $ErrorActionPreference = 'Stop'
 Set-Location -Path (Split-Path -Parent $PSScriptRoot)
+
+if ([string]::IsNullOrWhiteSpace($AppCheckSiteKey)) {
+    throw 'FIREBASE_APP_CHECK_SITE_KEY fehlt. Release-Deploy abgebrochen.'
+}
+
+$feedbackApiUrls = @{
+    test = 'https://europe-west10-heldensync-ccf0b.cloudfunctions.net/feedbackApiTest'
+    production = 'https://europe-west10-heldensync-ccf0b.cloudfunctions.net/feedbackApi'
+}
+$feedbackApiUrl = $feedbackApiUrls[$Target]
 
 Write-Host '== flutter clean =='
 flutter clean
@@ -28,7 +45,9 @@ $buildTime = [DateTime]::UtcNow.ToString(
     [Globalization.CultureInfo]::InvariantCulture)
 flutter build web --release --no-wasm-dry-run `
     "--dart-define=BUILD_COMMIT=$commit" `
-    "--dart-define=BUILD_TIME=$buildTime"
+    "--dart-define=BUILD_TIME=$buildTime" `
+    "--dart-define=FEEDBACK_API_URL=$feedbackApiUrl" `
+    "--dart-define=FIREBASE_APP_CHECK_SITE_KEY=$AppCheckSiteKey"
 
 $manifest = 'build/web/assets/AssetManifest.bin.json'
 if (-not (Test-Path $manifest)) {
@@ -40,5 +59,5 @@ if (-not $heroes) {
     throw 'Build kaputt: build/web/assets/assets/heroes ist leer. Erneut bauen.'
 }
 
-Write-Host '== firebase deploy --only hosting =='
-firebase deploy --only hosting
+Write-Host "== firebase deploy --only hosting:$Target =="
+firebase deploy --only "hosting:$Target"

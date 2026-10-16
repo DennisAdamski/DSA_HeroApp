@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_core/firebase_core.dart';
 
 import 'package:dsa_heldenverwaltung/data/sync/sync_transport.dart';
@@ -89,8 +90,54 @@ Future<FirebaseBootstrapResult> bootstrapFirebase({
   }
 }
 
-Future<void> _initializeFirebase() {
-  return Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
+Future<void> _initializeFirebase() async {
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await _activateAppCheck();
+}
+
+/// Entscheidet, ob App Check auf der aktuellen Plattform aktiviert werden kann.
+///
+/// Windows besitzt derzeit nur einen Debug-Provider. Ohne ausdrücklich
+/// konfiguriertes Debug-Token bleibt App Check dort aus, damit ein
+/// Produktionsstart nicht die übrige Firebase-Initialisierung blockiert.
+bool shouldActivateFirebaseAppCheck({
+  required bool isWeb,
+  required TargetPlatform platform,
+  required bool hasWindowsDebugToken,
+}) {
+  if (isWeb) {
+    return true;
+  }
+  return platform != TargetPlatform.windows || hasWindowsDebugToken;
+}
+
+Future<void> _activateAppCheck() async {
+  const siteKey = String.fromEnvironment('FIREBASE_APP_CHECK_SITE_KEY');
+  const debugToken = String.fromEnvironment('FIREBASE_APP_CHECK_DEBUG_TOKEN');
+
+  if (kIsWeb && kReleaseMode && siteKey.isEmpty) {
+    throw StateError('FIREBASE_APP_CHECK_SITE_KEY fehlt im Release-Build.');
+  }
+
+  final shouldActivate = shouldActivateFirebaseAppCheck(
+    isWeb: kIsWeb,
+    platform: defaultTargetPlatform,
+    hasWindowsDebugToken: debugToken.isNotEmpty,
+  );
+  if (!shouldActivate) {
+    return;
+  }
+
+  final webProvider = kReleaseMode
+      ? ReCaptchaEnterpriseProvider(siteKey)
+      : WebDebugProvider(debugToken: debugToken.isEmpty ? null : debugToken);
+  final windowsProvider = WindowsDebugProvider(
+    debugToken: debugToken.isEmpty ? null : debugToken,
+  );
+  await FirebaseAppCheck.instance.activate(
+    providerWeb: webProvider,
+    providerAndroid: const AndroidPlayIntegrityProvider(),
+    providerApple: const AppleAppAttestWithDeviceCheckFallbackProvider(),
+    providerWindows: windowsProvider,
   );
 }

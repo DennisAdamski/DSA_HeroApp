@@ -99,6 +99,8 @@ einen Themenindex; Details stehen nach Thema in [docs/hinweise/](docs/hinweise/)
   `docs/pdf_agent_workflow.md`, `docs/rule_audit_regelwerk_ueberarbeitung.md`,
   `docs/ios_xcode_setup.md`, `docs/windows_antivirus_audit.md`,
   `docs/web_deployment.md`; `tool/sync_main_to_test.sh` mergt Main in Test.
+- Sicherheitsbetrieb, App Check, Key-Einschränkungen und Incident-Ablauf:
+  [security_operations.md](docs/security_operations.md).
 - [Architektur-Roadmap](docs/architecture_roadmap.md): nur Status und offene
   Punkte; abgenommene Aufgaben im [Archiv](docs/archiv/README.md). Bei
   Architekturarbeiten den Status pruefen und nach Teilumfaengen aktualisieren.
