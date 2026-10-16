@@ -49,6 +49,39 @@ void main() {
     },
   );
 
+  test('Ausgeschiedene Gegner verlieren ihren INI-Zeitpunkt', () async {
+    final snap = fixture.ansageSnapshot(sf: true);
+    final c = ProviderContainer(
+      overrides: [
+        heroComputedProvider('a').overrideWith((ref) => AsyncData(snap)),
+        rulesCatalogProvider.overrideWith((ref) async => testCatalog),
+      ],
+    );
+    addTearDown(c.dispose);
+    await c.read(rulesCatalogProvider.future);
+    c.read(gefechtProvider('a').notifier).beginnen(6, dk: 'N');
+    c
+        .read(gefechtInitiativeProvider.notifier)
+        .hinzufuegen('a', zeitpunktVorbei: false);
+    final gegner = c.read(gefechtBegegnungProvider.notifier);
+    gegner.speichern(
+      const Gefechtsgegner(id: 'g', name: 'Ork', lep: 20, rs: 3, ini: 99),
+    );
+    List<String> ids() =>
+        c.read(gefechtsZeitpunkteProvider).map((z) => z.id).toList();
+    expect(ids(), contains('gegner:g'));
+    for (final st in [
+      GefechtsgegnerStatus.kampfunfaehig,
+      GefechtsgegnerStatus.tot,
+      GefechtsgegnerStatus.geflohen,
+    ]) {
+      gegner.statusSetzen('g', st);
+      expect(ids(), isNot(contains('gegner:g')));
+    }
+    gegner.statusSetzen('g', GefechtsgegnerStatus.kaempft);
+    expect(ids(), contains('gegner:g'));
+  });
+
   test(
     'Fehlende Teilnehmerspielwerte sperren Gruppenaktionen bis Wiederkehr',
     () async {

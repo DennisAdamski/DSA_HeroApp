@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht_initiative.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/gefecht_gegner_rules.dart'
+    show gefechtsGegnerHandelt;
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_initiative_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_held_rules.dart';
@@ -211,7 +213,8 @@ List<Gefechtszeitpunkt> _zeitpunkte(
       gefechtsHeldenzeitpunkte(id, snap.hero.name, s, gefechtsInitiative(s, w)),
     );
   }
-  for (final g in begegnung.gegner.values) {
+  // Kampfunfähige, Tote und Geflohene handeln nicht mehr (Basis S. 139).
+  for (final g in begegnung.gegner.values.where(gefechtsGegnerHandelt)) {
     liste.add(
       Gefechtszeitpunkt(
         id: 'gegner:${g.id}',

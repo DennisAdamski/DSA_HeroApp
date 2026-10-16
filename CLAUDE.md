@@ -100,7 +100,8 @@ einen Themenindex; Details stehen nach Thema in [docs/hinweise/](docs/hinweise/)
   Punkte; abgenommene Aufgaben im [Archiv](docs/archiv/README.md). Bei
   Architekturarbeiten den Status pruefen und nach Teilumfaengen aktualisieren.
 - Fachplaene: [Zaubereffekte](docs/zaubereffekte_integrationsplan.md),
-  [Gefecht](docs/gefecht_implementation.md), [Reittiere](docs/reittier_plan.md),
+  [Gefecht](docs/gefecht_implementation.md),
+  [Gefechtslage](docs/gefecht_lage_konzept.md), [Reittiere](docs/reittier_plan.md),
   [Vertraute](docs/vertraute_plan.md), [Redesign](docs/redesign_implementation.md)
   mit [Abnahme](docs/redesign_acceptance.md), [Schreibpfade](docs/schreibpfade_inventar.md),
   [ARCH-06-Abnahme](docs/arch06_abnahme.md), [Magische Kenntnisse](docs/magische_kenntnisse.md),
