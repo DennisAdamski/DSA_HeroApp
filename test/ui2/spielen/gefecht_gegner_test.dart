@@ -403,6 +403,45 @@ void main() {
       2,
     );
   });
+  testWidgets('Eure Seite: Nicht dabei löst die Bindung und zählt nicht', (
+    tester,
+  ) async {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+    container.read(gefechtProvider('h').notifier).beginnen(6, dk: 'N');
+    final c = container.read(gefechtBegegnungProvider.notifier);
+    c.speichern(const Gefechtsgegner(id: 'a', name: 'Ork', ini: 12));
+    c.bindungSetzen('a', 'h');
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: const MaterialApp(
+          home: Scaffold(
+            body: SingleChildScrollView(
+              child: GefechtGegnerkarte(
+                heroId: 'h',
+                waffenDk: 'N',
+                fernkampf: false,
+                gesperrt: false,
+                onAktion: _direkt,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    expect(find.text('Eure Seite'), findsOneWidget);
+    expect(find.text('h (du)'), findsOneWidget);
+    expect(find.textContaining('Nahkampf: 1 gegen 1'), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('seite-h-nichtDabei')));
+    await tester.pump();
+    expect(
+      container.read(gefechtBegegnungProvider).gegner['a']!.bindet,
+      isNull,
+    );
+    expect(find.byKey(const ValueKey('gegner-lage')), findsNothing);
+    expect(find.text('bindet h'), findsNothing);
+  });
 }
 
 // Führt Kartenaktionen ohne Ansicht direkt aus.

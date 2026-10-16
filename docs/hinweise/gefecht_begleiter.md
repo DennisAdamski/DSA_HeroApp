@@ -112,7 +112,8 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   ([Konzept Gefechtslage](../gefecht_lage_konzept.md)). Überzahl, Gegnerzahl
   aus Bindungen und Taktik nur über `gefecht_ueberzahl_rules.dart`;
   `gebundeneGegner` und `ueberzahlAngriff` setzt allein
-  `gefechtMitInitiativeProvider`; die gemeinsame Initiative
+  `gefechtMitInitiativeProvider`; die eigene Seite (Helden, Gruppengefährten,
+  Beteiligung) nur über `gefechtsEigeneSeiteProvider`; die gemeinsame Initiative
   (`gefecht_initiative_rules.dart`, `state/gefecht_initiative_provider.dart`)
   verbindet ausdrücklich gewählte Helden; ihr Rundenwechsel nimmt die
   angezeigte Runde (`naechsteRunde(vonRunde:)`), Gegner- und Initiativkarte

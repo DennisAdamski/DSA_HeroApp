@@ -110,6 +110,11 @@ void main() {
         ).modifikatoren.where((m) => m.name == kGefechtsUeberzahl).single.wert,
         -1,
       );
+      // Fernkämpfer zählen nicht zur Überzahl.
+      gegner.beteiligungSetzen('b', 'b', GefechtsBeteiligung.fernkampf);
+      expect(s('a').ueberzahlAngriff, isFalse);
+      gegner.beteiligungSetzen('b', 'b', GefechtsBeteiligung.nahkampf);
+      expect(s('a').ueberzahlAngriff, isTrue);
       gegner.statusSetzen('r', GefechtsgegnerStatus.geflohen);
       expect(s('a').ueberzahlAngriff, isFalse);
     },

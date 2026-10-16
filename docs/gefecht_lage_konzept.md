@@ -34,7 +34,7 @@ Schreiben.
 | 2 | Trefferliste statt LeP-Abzug | umgesetzt (16.10.2026) |
 | 3 | Ausgeschiedene Gegner herausnehmen | umgesetzt (16.10.2026) |
 | 4 | Überzahl-Regelmodul | umgesetzt bis auf Konzentration und Taktik-Bedienung (16.10.2026) |
-| 5 | Eigene Seite als Teilnehmerliste | offen |
+| 5 | Eigene Seite als Teilnehmerliste | umgesetzt (16.10.2026) |
 | 6 | Gegnerwerte als Vorgabe übernehmen | offen |
 | 7 | INI der Gegner mit Überzahl und Wunden | offen |
 
@@ -107,7 +107,8 @@ Ausgang je Verteidiger und Seite (WdS S. 81, optional):
   entfernt (nicht belegt; Nutzerentscheidung, Ausweichen nicht zu sperren).
 - AT +1 (`kGefechtsUeberzahl`), wenn mindestens zwei Helden der gemeinsamen
   Initiative dasselbe kämpfende Ziel gewählt haben (`ueberzahlAngriff`);
-  bis Schritt 5 zählen alle verbundenen Helden, auch Fernkämpfer.
+  seit Schritt 5 zählen nur Nahkämpfer der eigenen Seite, auch externe
+  Gefährten mit diesem Ziel.
 - Die Gegnerkarte setzt die Bindung je Gegner und zeigt Kräfteverhältnis,
   INI-Bonus der überlegenen Seite und die eigene Abwehrlage. Der INI-Bonus
   wird erst mit Schritt 7 verrechnet.
@@ -154,6 +155,17 @@ Ziel. Vorbelegt aus den verbundenen Helden der gemeinsamen Initiative und aus
 `gruppenMitgliederProvider` (`ExternerHeld.iniBase`). Nur Nahkämpfer zählen
 für die Überzahl; Fernkämpfer erhalten den Getümmel-Zuschlag (+2 je Kämpfer
 in H, +3 in N/S, WdS S. 97; Lesart der Tabelle).
+
+**Stand 16.10.2026:** `gefechtsEigeneSeiteProvider(heroId)` bildet die Seite
+aus dem Helden, den verbundenen Helden der gemeinsamen Initiative und
+automatisch den externen Gefährten ihrer Heldengruppen; eine Visitenkarte mit
+`quelleHeroId` eines mitkämpfenden Helden erscheint nicht doppelt. Ohne
+Festlegung kämpfen alle im Nahkampf. `Gefechtsmitstreiter` in der Begegnung
+hält Beteiligung (Nahkampf, Fernkampf, nicht dabei) und das Ziel externer
+Gefährten; Helden wählen ihr Ziel im eigenen Gefecht. „Nicht dabei“ löst
+Bindungen und Ziel. Die Gegnerkarte zeigt „Eure Seite“ und bietet nur
+Beteiligte zur Bindung an. Der Getümmel-Zuschlag für Fernkämpfer folgt mit
+Schritt 6.
 
 ### 6. Gegnerwerte als Vorgabe übernehmen
 

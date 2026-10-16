@@ -191,3 +191,157 @@ Gefechtsbegegnung setzeGefechtstaktik(Gefechtsbegegnung b, Gefechtstaktik t) {
   }
   return b.copyWith(taktik: t);
 }
+
+/// Herkunft eines Teilnehmers der eigenen Seite.
+enum GefechtsTeilnehmerherkunft { held, extern, manuell }
+
+/// Ein Teilnehmer der eigenen Seite mit aufgelöster Beteiligung.
+class GefechtsTeilnehmer {
+  /// Wird ausschließlich von [gefechtsEigeneSeite] gebildet.
+  const GefechtsTeilnehmer({
+    required this.id,
+    required this.name,
+    required this.herkunft,
+    required this.beteiligung,
+    this.zielId,
+    this.ini,
+  });
+  final String id, name;
+  final GefechtsTeilnehmerherkunft herkunft;
+  final GefechtsBeteiligung beteiligung;
+  final String? zielId;
+
+  /// Bekannte INI-Basis eines externen Gefährten.
+  final int? ini;
+}
+
+/// Ein Held der App mit seinem aktuellen Ziel aus der Heldensitzung.
+typedef GefechtsHeldEintrag = ({String id, String name, String? zielId});
+
+/// Ein externer Gefährte aus der Heldengruppe.
+typedef GefechtsExternEintrag = ({String id, String name, int? ini});
+
+/// Teilnehmer-ID eines externen Gefährten.
+String gefechtsExterneTeilnehmerId(String externerHeldId) =>
+    'extern:$externerHeldId';
+
+/// Eigene Seite: Helden, Gefährten der Heldengruppe und manuell erfasste
+/// Mitstreiter. Ohne Festlegung kämpfen alle im Nahkampf; gespeicherte
+/// [Gefechtsbegegnung.mitstreiter] legen Beteiligung und Ziele externer
+/// Gefährten fest. Doppelte IDs erscheinen nur einmal (Helden vor Gruppe).
+List<GefechtsTeilnehmer> gefechtsEigeneSeite(
+  Gefechtsbegegnung b, {
+  required List<GefechtsHeldEintrag> helden,
+  List<GefechtsExternEintrag> externe = const [],
+}) {
+  final liste = <GefechtsTeilnehmer>[];
+  final ids = <String>{};
+  GefechtsBeteiligung beteiligung(String id) =>
+      b.mitstreiter[id]?.beteiligung ?? GefechtsBeteiligung.nahkampf;
+  for (final h in helden) {
+    if (!ids.add(h.id)) continue;
+    liste.add(
+      GefechtsTeilnehmer(
+        id: h.id,
+        name: h.name,
+        herkunft: GefechtsTeilnehmerherkunft.held,
+        beteiligung: beteiligung(h.id),
+        zielId: h.zielId,
+      ),
+    );
+  }
+  for (final e in externe) {
+    final id = gefechtsExterneTeilnehmerId(e.id);
+    if (!ids.add(id)) continue;
+    liste.add(
+      GefechtsTeilnehmer(
+        id: id,
+        name: e.name,
+        herkunft: GefechtsTeilnehmerherkunft.extern,
+        beteiligung: beteiligung(id),
+        zielId: b.mitstreiter[id]?.zielId,
+        ini: e.ini,
+      ),
+    );
+  }
+  for (final m in b.mitstreiter.values) {
+    if (!ids.add(m.id)) continue;
+    liste.add(
+      GefechtsTeilnehmer(
+        id: m.id,
+        name: m.name,
+        herkunft: GefechtsTeilnehmerherkunft.manuell,
+        beteiligung: m.beteiligung,
+        zielId: m.zielId,
+      ),
+    );
+  }
+  return List.unmodifiable(liste);
+}
+
+/// Nur Nahkämpfer zählen für die Überzahl (WdS S. 81).
+int gefechtsEigeneNahkaempfer(List<GefechtsTeilnehmer> seite) =>
+    seite.where((t) => t.beteiligung == GefechtsBeteiligung.nahkampf).length;
+
+/// Nahkämpfer der eigenen Seite, die [gegnerId] angreifen.
+int gefechtsAngreiferAufZiel(List<GefechtsTeilnehmer> seite, String gegnerId) =>
+    seite
+        .where(
+          (t) =>
+              t.beteiligung == GefechtsBeteiligung.nahkampf &&
+              t.zielId == gegnerId,
+        )
+        .length;
+
+/// Legt die Beteiligung eines Teilnehmers fest.
+///
+/// Wer nicht dabei ist, wird von keinem Gegner mehr gebunden und verliert
+/// sein Ziel; die Gegner bleiben unverändert erfasst.
+Gefechtsbegegnung setzeGefechtsBeteiligung(
+  Gefechtsbegegnung b, {
+  required String teilnehmerId,
+  required String name,
+  required GefechtsBeteiligung beteiligung,
+}) {
+  if (teilnehmerId.isEmpty) throw ArgumentError('Teilnehmer-ID fehlt.');
+  final alt =
+      b.mitstreiter[teilnehmerId] ??
+      Gefechtsmitstreiter(id: teilnehmerId, name: name);
+  final raus = beteiligung == GefechtsBeteiligung.nichtDabei;
+  final neu = raus
+      ? alt.copyWith(beteiligung: beteiligung, zielId: null)
+      : alt.copyWith(beteiligung: beteiligung);
+  return b.copyWith(
+    mitstreiter: Map.unmodifiable({...b.mitstreiter, teilnehmerId: neu}),
+    gegner: raus
+        ? Map.unmodifiable({
+            for (final e in b.gegner.entries)
+              e.key: e.value.bindet == teilnehmerId
+                  ? e.value.copyWith(bindet: null)
+                  : e.value,
+          })
+        : null,
+  );
+}
+
+/// Legt fest, welchen Gegner ein externer Gefährte angreift.
+Gefechtsbegegnung setzeGefechtsmitstreiterZiel(
+  Gefechtsbegegnung b, {
+  required String teilnehmerId,
+  required String name,
+  required String? zielId,
+}) {
+  if (teilnehmerId.isEmpty) throw ArgumentError('Teilnehmer-ID fehlt.');
+  if (zielId != null && !b.gegner.containsKey(zielId)) {
+    throw StateError('Der Gegner fehlt.');
+  }
+  final alt =
+      b.mitstreiter[teilnehmerId] ??
+      Gefechtsmitstreiter(id: teilnehmerId, name: name);
+  return b.copyWith(
+    mitstreiter: Map.unmodifiable({
+      ...b.mitstreiter,
+      teilnehmerId: alt.copyWith(zielId: zielId),
+    }),
+  );
+}
