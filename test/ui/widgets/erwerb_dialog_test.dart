@@ -81,6 +81,14 @@ void main() {
       findsOneWidget,
     );
 
+    // Die aufklappbare Berechnung nennt die Schritte der Regel.
+    await tester.tap(
+      find.byKey(const ValueKey<String>('erwerb-dialog-herleitung')),
+    );
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Kosten laut Katalog/Eingabe'), findsOneWidget);
+    expect(find.textContaining('Epischer Aufschlag (+25 %)'), findsOneWidget);
+
     await tester.tap(find.text('Erwerben'));
     await tester.pumpAndSettle();
 
