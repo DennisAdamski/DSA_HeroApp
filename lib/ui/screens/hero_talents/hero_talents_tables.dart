@@ -2,15 +2,13 @@ part of 'package:dsa_heldenverwaltung/ui/screens/hero_talents_tab.dart';
 
 extension _HeroTalentsTables on _HeroTalentTableTabState {
   // Probenwerte: Die Wunden des gespeicherten Zustands senken die
-  // Eigenschaften nur für den Wurf; Anzeige und Rechnung der Tabelle bleiben
-  // bei den effektiven Werten (WdS S. 111).
+  // Eigenschaften nur für den Wurf (WdS S. 111). Sie kommen aus dem
+  // gemeinsamen Snapshot (`probenEigenschaften`), derselben Quelle wie
+  // Probensuche und Gefecht; Anzeige und Rechnung der Tabelle bleiben bei den
+  // effektiven Werten. Ohne geladenen Snapshot gilt der übergebene Wert.
   Attributes _probenEigenschaften(Attributes effectiveAttributes) {
     final computed = ref.read(heroComputedProvider(widget.heroId));
-    final wunden = computed.asData?.value.wundEffekte;
-    if (wunden == null) {
-      return effectiveAttributes;
-    }
-    return wendeWundVerlusteAn(effectiveAttributes, wunden);
+    return computed.asData?.value.probenEigenschaften ?? effectiveAttributes;
   }
 
   // Meta-Talente haben eine andere Struktur, daher eigene Spaltenspezifikationen
