@@ -106,7 +106,10 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   einer Abwehr. Ladezustand und Schussentfernung bleiben bewusst ohne Vorgabe.
   Hinweise allein ergeben „Bereit“. Gegner der lokalen Begegnung
   (`gefecht_gegner_rules.dart`, `state/gefecht_begegnung_provider.dart`)
-  tragen stabile IDs; die gemeinsame Initiative
+  tragen stabile IDs und eine Trefferliste; LeP, SP und Wunden nur über
+  `gefechtsGegnerstand` lesen (nie `lep` als aktuellen Wert), Grundwerte aus
+  Dialogen nur über `profilSpeichern` auf den frischen Gegner legen
+  ([Konzept Gefechtslage](../gefecht_lage_konzept.md)); die gemeinsame Initiative
   (`gefecht_initiative_rules.dart`, `state/gefecht_initiative_provider.dart`)
   verbindet ausdrücklich gewählte Helden; ihr Rundenwechsel nimmt die
   angezeigte Runde (`naechsteRunde(vonRunde:)`), Gegner- und Initiativkarte

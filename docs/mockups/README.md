@@ -186,6 +186,55 @@ Die genauen Fälle und bewusst offenen Regelsituationen stehen im
 Plan und Mockup bleiben die Grundlage für weitere gemeinsame Entwurfsarbeit.
 Die produktive App wird in dieser Iteration nicht geändert.
 
+## Gefechtslage-Entwurf (Stand 16.10.2026)
+
+[gefecht-lage.html](gefecht-lage.html) ist ein eigenständiger Entwurf für die
+Begegnung mit mehreren Gegnern und Gefährten. Die Datei ist in sich
+geschlossen (CSS und JavaScript inline, Schriften über Google Fonts mit
+Ersatzschriften) und lässt sich direkt öffnen.
+
+Gezeigt werden:
+
+- **Lagekarte** als Kompassrose um den eigenen Helden: Ringe H/N/S/P, außen
+  Fernkampf in Schritt. Die Scheibengröße folgt der Größenklasse, rote Punkte
+  zeigen Wunden, gestrichelte Linien „bindet“. Figuren lassen sich ziehen
+  (ändert die DK), Treffer, Tod, Kampfunfähigkeit und Flucht sind animiert.
+  Die eigene Waffen-DK ist hinterlegt; Gegner außerhalb erscheinen blasser.
+- **INI-Folge** über die volle Breite mit Phasenmarke, Überzahlbonus und
+  INI-Abzug aus Wunden je Eintrag.
+- **Kräfteverhältnis:** nur Nahkämpfer zählen. INI +1 je Kopf Überzahl
+  (max. +4), PA −1 und Ausweichen −2 je zusätzlichem Gegner (max. drei
+  im Blick, der vierte steht im Rücken), Gegner-AT +1, Konzentration auf
+  einen Gegner, Fernkampf ins Getümmel.
+- **Gegnerbuch und Detailblatt:** Gegner schnell per Vorlage und Anzahl
+  anlegen; INI, LeP, RS und KO dürfen unbekannt bleiben. Ohne RS zählt die
+  Liste TP und verrechnet sie, sobald der RS bekannt ist. Ohne KO werden
+  Wunden von Hand eingetragen. Trefferzonen am Körperbild (Zweibeiner und
+  Tier), Statusvorschläge (≤ 5 LeP, ≤ 0 LeP, unter −KO, Tierflucht).
+- **Angriffe auf mehrere Ziele:** Einzelangriff, Klingensturm (2 bzw. 3
+  Ziele), Befreiungsschlag (AT +4 je Gegner, DK +1 weg, INI −1W6) und
+  Flächenwirkung; außerdem „Treffer eintragen“ für bereits gewürfelte Treffer.
+- **Eure Seite** aus der Heldengruppe: je Gefährte Nahkampf, Fernkampf oder
+  nicht dabei, INI und Ziel.
+
+Regelstellen (über den dsa-rules-Index geprüft): WdS S. 56 f. (SP, Wunden,
+Wundschwellen), S. 61 f. (Befreiungsschlag), S. 64 (Klingensturm), S. 80
+(Distanzklassen), S. 81 (optional: Kämpfe mit mehreren Beteiligten), S. 97
+(Zielgröße, Kampfgetümmel, Trefferzonen Vierbeiner), S. 107–109
+(Trefferzonen), S. 114 (Tiere: Flucht, Überzahl, Paraden gegen große Tiere);
+Basisregelwerk S. 139 (Kampfunfähigkeit, Tod); Hausregel „Epische Stufen“
+(Fortgeschrittene Monsterparade).
+
+Die Vorbereitungsschritte in der App stehen im
+[Konzept Gefechtslage](../gefecht_lage_konzept.md).
+
+Offene Annahmen: Die Ausnahme sehr großer Wesen von der Überzahl gilt in WdS
+für Tiere und ist im Entwurf auf alle Gegner übertragen. Für Paraden gegen
+große bewaffnete Zweibeiner ist keine Regel belegt (Meisterentscheid). Der
+Getümmel-Zuschlag ist als +2 in H und +3 in N/S gelesen. Die Abstände der
+Ringe sind nur Darstellung. Alle Zahlen sind Beispieldaten; Änderungen
+bleiben im Arbeitsspeicher.
+
 ## Übergang zur Flutter-Umsetzung
 
 Die [Redesign-Übergabe](../redesign_implementation.md) enthält drei konkrete
