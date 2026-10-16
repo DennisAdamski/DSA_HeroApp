@@ -88,13 +88,12 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   `cors.json` im Repo und wird **nicht** von `firebase deploy` übertragen,
   sondern mit
   `gsutil cors set cors.json gs://heldensync-ccf0b.firebasestorage.app`
-  (z. B. in der Google Cloud Shell). `cors.json` hat zwei Einträge: zuerst die
-  drei bekannten Origins (die bekommen ihre exakte Origin zurückgespiegelt),
-  danach eine Sammelregel `"origin": ["*"]` für lesende Zugriffe. Die
-  Sammelregel deckt auch die feste Test-Site und manuelle Preview-Channels ab.
-  Automatische Branch-Previews entfallen; siehe `docs/web_deployment.md`.
-  GCS erlaubt keine Wildcard innerhalb einer Origin. Schreibzugriffe laufen
-  über das Firebase-SDK und bleiben ohne CORS-Freigabe.
+  (z. B. in der Google Cloud Shell). `cors.json` erlaubt ausschließlich die
+  beiden festen Hosting-Sites, ihre `firebaseapp.com`-Aliase sowie lokale
+  Entwicklung auf Port 5000. Eine Wildcard ist aus Datenschutz- und
+  Missbrauchsschutzgründen nicht zulässig; neue Preview-Origins müssen bewusst
+  ergänzt, geprüft und wieder entfernt werden. Schreibzugriffe laufen über das
+  Firebase-SDK und bleiben ohne CORS-Freigabe.
 - Im Web liegen geladene Avatarbytes zusätzlich in der Hive-Box
   `avatar_blobs_v1` (IndexedDB, `lib/data/hive_avatar_blob_cache.dart`), damit
   ein Reload sie nicht erneut herunterlädt. Der Cache ist inhaltsadressiert und

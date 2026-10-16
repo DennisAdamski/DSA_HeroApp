@@ -154,11 +154,14 @@ jobs:
           BUILD_COMMIT: ${{ inputs.ref || github.sha }}
           BRANCH: ${{ inputs.branch || github.ref_name }}
           FEEDBACK_API_URL: ${{ (inputs.branch || github.ref_name) == 'test' && 'https://europe-west10-heldensync-ccf0b.cloudfunctions.net/feedbackApiTest' || (inputs.branch || github.ref_name) == 'main' && 'https://europe-west10-heldensync-ccf0b.cloudfunctions.net/feedbackApi' || '' }}
+          FIREBASE_APP_CHECK_SITE_KEY: ${{ vars.FIREBASE_APP_CHECK_SITE_KEY }}
         run: |
+          test -n "$FIREBASE_APP_CHECK_SITE_KEY"
           flutter build web --release \
             --dart-define=BUILD_COMMIT="$BUILD_COMMIT" \
             --dart-define=BUILD_TIME="$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-            --dart-define=FEEDBACK_API_URL="$FEEDBACK_API_URL"
+            --dart-define=FEEDBACK_API_URL="$FEEDBACK_API_URL" \
+            --dart-define=FIREBASE_APP_CHECK_SITE_KEY="$FIREBASE_APP_CHECK_SITE_KEY"
       - name: Build verifizieren
         env:
           BRANCH: ${{ inputs.branch || github.ref_name }}

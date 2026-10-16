@@ -7,6 +7,7 @@ test("rejects missing authentication and oversized bodies without calling the se
   let calls = 0;
   const api = createFeedbackApi({
     allowedOrigins: ["https://heldensync-test.web.app"],
+    verifyAppCheck: async (token) => token === "valid-app-check",
     verifyToken: async () => "account-a",
     submit: async () => { calls += 1; throw new Error("unexpected"); },
     status: async () => { calls += 1; throw new Error("unexpected"); },
@@ -20,7 +21,11 @@ test("rejects missing authentication and oversized bodies without calling the se
   await api({
     method: "POST",
     path: "/submissions",
-    headers: { authorization: "Bearer token", "content-length": "32769" },
+    headers: {
+      authorization: "Bearer token",
+      "content-length": "32769",
+      "x-firebase-appcheck": "valid-app-check",
+    },
     body: {},
   }, oversized);
   assert.equal(oversized.statusCode, 400);
@@ -30,6 +35,7 @@ test("rejects missing authentication and oversized bodies without calling the se
 test("serves allowed preflight requests and blocks unknown browser origins", async () => {
   const api = createFeedbackApi({
     allowedOrigins: ["https://heldensync-test.web.app"],
+    verifyAppCheck: async (token) => token === "valid-app-check",
     verifyToken: async () => "account-a",
     submit: async () => ({ requestId: "id", status: "created", issueNumber: 7 }),
     status: async () => ({ requestId: "id", status: "processing" }),
@@ -60,6 +66,7 @@ test("serves allowed preflight requests and blocks unknown browser origins", asy
 test("returns created and owned status results with the documented status codes", async () => {
   const api = createFeedbackApi({
     allowedOrigins: [],
+    verifyAppCheck: async (token) => token === "valid-app-check",
     verifyToken: async (token) => token === "good" ? "account-a" : null,
     submit: async (_uid, body) => ({
       requestId: (body as { requestId: string }).requestId,
@@ -74,7 +81,10 @@ test("returns created and owned status results with the documented status codes"
   await api({
     method: "POST",
     path: "/submissions",
-    headers: { authorization: "Bearer good" },
+    headers: {
+      authorization: "Bearer good",
+      "x-firebase-appcheck": "valid-app-check",
+    },
     body: { requestId: "123e4567-e89b-42d3-a456-426614174000" },
   }, created);
   assert.equal(created.statusCode, 201);
@@ -84,9 +94,34 @@ test("returns created and owned status results with the documented status codes"
   await api({
     method: "GET",
     path: "/submissions/123e4567-e89b-42d3-a456-426614174000",
-    headers: { authorization: "Bearer good" },
+    headers: {
+      authorization: "Bearer good",
+      "x-firebase-appcheck": "valid-app-check",
+    },
   }, status);
   assert.equal(status.statusCode, 202);
+});
+
+test("requires a valid Firebase App Check token", async () => {
+  const api = createFeedbackApi({
+    allowedOrigins: [],
+    verifyAppCheck: async (token) => token === "valid-app-check",
+    verifyToken: async () => "account-a",
+    submit: async () => ({ requestId: "id", status: "created" }),
+    status: async () => ({ requestId: "id", status: "processing" }),
+  });
+
+  for (const headers of [
+    { authorization: "Bearer good" },
+    {
+      authorization: "Bearer good",
+      "x-firebase-appcheck": "invalid-app-check",
+    },
+  ]) {
+    const response = new FakeResponse();
+    await api({ method: "POST", path: "/submissions", headers, body: {} }, response);
+    assert.equal(response.statusCode, 401);
+  }
 });
 
 class FakeResponse {

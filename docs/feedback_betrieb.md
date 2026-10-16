@@ -22,6 +22,15 @@ Die Gen-2-Functions `feedbackApiTest` und `feedbackApi` laufen in
 Endpunkte ergänzen `in-app-feedback` sowie genau eines der Labels `bug`,
 `enhancement` oder `question`.
 
+Der gehärtete Endpunkt akzeptiert nur widerrufsgeprüfte Firebase-ID-Tokens von
+E-Mail-verifizierten Konten und zusätzlich einen gültigen App-Check-Token. Die
+Web-/Mobile-Clients holen beide Tokens unmittelbar vor dem Aufruf. Eine neue
+Function-Version darf deshalb erst bereitgestellt werden, wenn App Check für
+die betreffende App registriert, der Site-Key in den Builds gesetzt und die
+Clientversion veröffentlicht ist. Windows unterstützt derzeit nur den
+App-Check-Debugprovider; produktive Windows-Aufrufe bleiben bis zu einem
+eigenen Attestierungs-/Gatewayweg deaktiviert.
+
 Das Secret `GITHUB_FEEDBACK_TOKEN` ist ein Fine-grained PAT mit Zugriff nur auf
 dieses Repository und `Issues: write`. Es wird niemals in einer Datei, einem
 Build-Parameter oder Firestore gespeichert. Geplanter Ablauf: 180 Tage.
@@ -37,6 +46,11 @@ Build-Parameter oder Firestore gespeichert. Geplanter Ablauf: 180 Tage.
 4. `FEEDBACK_TEST_ENABLED` nur für Staging und `FEEDBACK_PRODUCTION_ENABLED`
    nur für den freigegebenen Produktivbetrieb aktivieren. Sonst bleiben beide
    Endpunkte deaktiviert.
+5. Vor der App-Check-Erzwingung zuerst Metriken im Monitoring-Modus beobachten,
+   Debugtokens nur lokal registrieren und niemals in Release-Bundles ablegen.
+6. Für beide Functions eine dedizierte Runtime-Service-Identity verwenden. Sie
+   benötigt nur Zugriff auf die beiden Feedback-Collections und genau die
+   verwendete Secret-Version; die Standard-Compute-Identity ist kein Zielzustand.
 
 ## Prüfung und gezieltes Deployment
 

@@ -32,7 +32,10 @@ Veröffentlichung. Das bestehende Secret
 ## Angezeigte Version
 
 Der Web-Build bekommt Commit und Bauzeit per `--dart-define=BUILD_COMMIT=…`
-und `--dart-define=BUILD_TIME=…` (CI und `tool/deploy_web.ps1`). Die App zeigt
+und `--dart-define=BUILD_TIME=…` (CI und `tool/deploy_web.ps1`). Release-Builds
+benötigen zusätzlich den öffentlichen reCAPTCHA-Enterprise-Site-Key als
+`--dart-define=FIREBASE_APP_CHECK_SITE_KEY=…`; der Schlüssel ist kein Secret,
+wird aber umgebungsbezogen in der CI-Konfiguration gepflegt. Die App zeigt
 sie unter `Einstellungen` unterhalb der Bereichsliste, z. B.
 `Version: e92ff9f · 05.10.2026 14:32` (Bauzeit in Gerätezeit). Stimmt der
 Kurz-Commit mit dem Branch-Stand überein, ist die neueste Fassung geladen.
@@ -51,6 +54,12 @@ Anmeldung, Heldenladen, Cloud-Sync, Avatare und Import/Export im Browser prüfen
 Testdomains müssen in Firebase Auth als autorisierte Domains eingetragen sein.
 Die bestehende Storage-CORS-Regel erlaubt GET/HEAD für die Test-Site; Hosting
 ändert die Bucket-CORS-Konfiguration nicht. Browser-Funktionstests bleiben manuell.
+
+Jede Hosting-Antwort erhält CSP, `nosniff`, Referrer-, Permissions- und
+Clickjacking-Schutz aus `firebase.json`. Nach einem Deployment müssen die
+Live-Header beider Sites geprüft werden; besonders `/index.html` muss
+`Cache-Control: no-cache, no-store, must-revalidate` liefern. Ein erfolgreicher
+Build allein weist diese Deployment-Konfiguration nicht nach.
 
 Manuelle Veröffentlichung nur mit explizitem Target:
 `firebase deploy --only hosting:test` oder `firebase deploy --only hosting:production`.
