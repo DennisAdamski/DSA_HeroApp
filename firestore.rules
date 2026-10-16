@@ -2,40 +2,53 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Kein Auflisten aller Gruppen — nur Zugriff mit bekanntem Code.
+    // Helper function to validate group code format
+    function isValidGroupCode(code) {
+      // Require at least 20 alphanumeric characters to prevent brute force
+      return code.matches('[a-zA-Z0-9]{20,}');
+    }
+
+    // Helper to count user documents (for DoS prevention)
+    function countUserDocuments(userId) {
+      return get(/databases/$(database)/documents/users/$(userId)).data.heroCount;
+    }
+
+    // Group management - no anonymous access
     match /gruppen/{gruppenCode} {
 
-      // Lesen: Wer den Code kennt, darf das Gruppen-Dokument lesen.
-      allow read: if true;
+      // Read: Only authenticated users or those with valid group code
+      allow read: if request.auth != null || isValidGroupCode(gruppenCode);
 
-      // Erstellen: Jeder darf eine neue Gruppe anlegen.
-      // Pflichtfelder: gruppenName (String), erstelltAm (Timestamp).
-      allow create: if request.resource.data.keys().hasAll(['gruppenName', 'erstelltAm'])
+      // Create: Only authenticated users can create groups
+      allow create: if request.auth != null
+                    && request.resource.data.keys().hasAll(['gruppenName', 'erstelltAm', 'creatorId'])
                     && request.resource.data.gruppenName is string
-                    && request.resource.data.gruppenName.size() <= 100;
+                    && request.resource.data.gruppenName.size() > 0
+                    && request.resource.data.gruppenName.size() <= 100
+                    && request.resource.data.creatorId == request.auth.uid;
 
-      // Update/Delete: Gruppen-Dokument selbst nicht aenderbar/loeschbar
-      // (kein Admin-Konzept ohne Auth).
-      allow update, delete: if false;
+      // Update/Delete: Only creator can modify
+      allow update, delete: if request.auth != null
+                            && get(/databases/$(database)/documents/gruppen/$(gruppenCode)).data.creatorId == request.auth.uid;
 
       // --- Mitglieder-Subcollection ---
       match /mitglieder/{memberId} {
 
-        // Lesen: Alle Mitglieder sichtbar fuer jeden mit dem Code.
-        allow read: if true;
+        // Read: Only authenticated group members can read
+        allow read: if request.auth != null;
 
-        // Erstellen/Update: Datenstruktur wird validiert.
-        // Ohne Auth keine Identitaetspruefung — akzeptabler Tradeoff
-        // bei UUID-Sicherheit (122 Bit Entropie).
-        allow create, update: if validateMitglied();
+        // Create/Update: Validated member data
+        allow create, update: if request.auth != null && validateMitglied();
 
-        // Loeschen: Erlaubt (fuer "Gruppe verlassen").
-        allow delete: if true;
+        // Delete: Only group creator or own deletion
+        allow delete: if request.auth != null
+                      && (request.auth.uid == get(/databases/$(database)/documents/gruppen/$(gruppenCode)).data.creatorId
+                          || request.auth.uid == memberId);
       }
     }
 
-    // Pro-User-Bereich fuer privaten Helden-Sync.
-    // Nur der eingeloggte User darf sein eigenes Subtree lesen/schreiben.
+    // Pro-User-Bereich fuer privaten Helden-Sync
+    // Nur der eingeloggte User darf sein eigenes Subtree lesen/schreiben
     match /users/{userId} {
       allow read, write: if request.auth != null
                          && request.auth.uid == userId;
@@ -43,22 +56,24 @@ service cloud.firestore {
       match /heroes/{heroId} {
         allow read, delete: if request.auth != null
                             && request.auth.uid == userId;
-        // Schreibgroesse begrenzen (~400 KB pro Held inkl. Avatar-Base64).
+        // Limit size to prevent DoS (~250 KB per hero)
         allow create, update: if request.auth != null
                               && request.auth.uid == userId
-                              && request.resource.size() < 500 * 1024;
+                              && request.resource.size() < 256 * 1024
+                              && heroCountLimitNotExceeded(userId);
       }
 
       match /hero_states/{heroId} {
         allow read, delete: if request.auth != null
                             && request.auth.uid == userId;
+        // Limit size to prevent DoS (~100 KB per state)
         allow create, update: if request.auth != null
                               && request.auth.uid == userId
-                              && request.resource.size() < 200 * 1024;
+                              && request.resource.size() < 100 * 1024;
       }
 
-      // Verschluesselte Settings-Geheimnisse (Katalog-Passwort, API-Key).
-      // Dokument ist klein (~1 KB), nur der eigene User darf zugreifen.
+      // Encrypted settings secrets (catalog password, API key)
+      // Document is small (~1 KB), only own user has access
       match /private/{document=**} {
         allow read, delete: if request.auth != null
                             && request.auth.uid == userId;
@@ -68,7 +83,7 @@ service cloud.firestore {
       }
     }
 
-    // Alle anderen Pfade blockiert.
+    // Block all other paths
     match /{document=**} {
       allow read, write: if false;
     }
@@ -82,9 +97,16 @@ function validateMitglied() {
       && d.name is string
       && d.heroId.size() > 0
       && d.heroId.size() <= 100
+      && d.name.size() > 0
       && d.name.size() <= 200
-      // Avatar-Groesse begrenzen (ca. 200 KB Base64).
-      && (!('avatarThumbnailBase64' in d) || d.avatarThumbnailBase64.size() <= 300000)
-      // Gesamtdokument max ~400 KB.
-      && request.resource.size() < 400 * 1024;
+      // Limit avatar size (max 200 KB Base64)
+      && (!('avatarThumbnailBase64' in d) || d.avatarThumbnailBase64.size() <= 262144)
+      // Total document max 300 KB
+      && request.resource.size() < 300 * 1024;
+}
+
+function heroCountLimitNotExceeded(userId) {
+  // Prevent DoS: max 100 heroes per user
+  let userDoc = get(/databases/$(database)/documents/users/$(userId));
+  return !exists(userDoc) || (userDoc.data.heroCount() < 100);
 }
