@@ -79,6 +79,37 @@ void main() {
     expect(find.byType(KartoWorkspace), findsOneWidget);
   });
 
+  testWidgets('Das Regelprofil ist aus dem Workspace-Menü erreichbar', (
+    tester,
+  ) async {
+    final repository = AcceptanceRepository(heroes: [testHero()]);
+    await pumpAcceptanceWorkspace(
+      tester,
+      repository: repository,
+      selectedHeroId: 'rondra',
+    );
+    await _openMenu(tester, 'Regelprofil');
+    expect(
+      find.byKey(const ValueKey<String>('hero-regelprofil')),
+      findsOneWidget,
+    );
+    expect(
+      find.textContaining('folgt den globalen Hausregeln'),
+      findsOneWidget,
+    );
+    await tester.tap(
+      find.byKey(const ValueKey<String>('karto-regelprofil-schliessen')),
+    );
+    await tester.pumpAndSettle();
+    expect(
+      find.byKey(const ValueKey<String>('hero-regelprofil')),
+      findsNothing,
+    );
+    // Ansehen schreibt nichts.
+    expect(repository.heroWrites, isEmpty);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('Held öffnen aus der Bestandsliste bleibt in Kartograph', (
     tester,
   ) async {

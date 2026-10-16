@@ -67,8 +67,9 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   im Export/Import mit (Kopien und Prüfsummen unverändert); epische Nachteile
   lesen `heroHouseRuleActiveProvider`, nicht den globalen Schalter. Zusatzpakete
   wählt der Nutzer im Vorschaudialog (flüchtige Auswahl,
-  `regelProfilVorschauMitZusatzProvider`, Elternpakete werden ergänzt). Offen:
-  Gruppenvorgabe, Einstieg in der UI2-Navigation.
+  `regelProfilVorschauMitZusatzProvider`, Elternpakete werden ergänzt). In UI2
+  öffnet „Regelprofil“ im Workspace-Menü dieselbe Karte
+  (`KartoBestandsAdapter.regelprofil`). Offen: Gruppenvorgabe.
 - Aventurische Waehrungsumrechnung fuer Dukaten/Silber/Kreuzer liegt in
   `lib/rules/derived/currency_rules.dart`.
 - Der aventurische Kalender liegt kanonisch in `lib/domain/aventurian_date.dart`:

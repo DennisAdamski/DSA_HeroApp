@@ -248,8 +248,9 @@ im [Archiv](archiv/arch-04.md):
   Prüfsummen unverändert); ein Import rechnet nicht neu, ein abweichender
   Paketstand der Ziel-App erscheint als Updatevorschau
   (`test/data/hero_actions_import_export_test.dart`, 16.10.2026).
-- [ ] Einstieg in der UI2-Navigation (heute nur die Übersichtskarte
-  „Regelprofil“).
+- [x] Einstieg in der UI2-Navigation: Punkt „Regelprofil“ im Workspace-Menü
+  öffnet die Karte in einem Dialog (`KartoBestandsAdapter.regelprofil`,
+  16.10.2026).
 - [x] Epische Nachteile folgen dem Profil des Helden
   (`heroHouseRuleActiveProvider`, 16.10.2026).
 - [ ] Gruppenvorgabe („live von der Gruppe“): Verhalten bei mehreren Gruppen,
