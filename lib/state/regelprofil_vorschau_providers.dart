@@ -22,6 +22,38 @@ final regelProfilVergleichProvider =
       ref,
       profil,
     ) {
+      return ref.watch(
+        regelProfilVergleichMitZusatzProvider((profil: profil, zusatz: '')),
+      );
+    });
+
+/// Schlüssel des Vergleichs: Profil plus kodierte Zusatzpakete
+/// ([zusatzPaketSchluessel]).
+typedef RegelProfilVergleichSchluessel = ({
+  HeroRegelProfil profil,
+  String zusatz,
+});
+
+/// Kodiert gewählte Zusatzpakete als Familienschlüssel mit Wertgleichheit
+/// (sortiert, durch Komma getrennt; leer = keine).
+String zusatzPaketSchluessel(Iterable<String> paketIds) {
+  final ids = <String>{
+    for (final id in paketIds)
+      if (id.trim().isNotEmpty) id.trim(),
+  }.toList()..sort();
+  return ids.join(',');
+}
+
+/// Wie [regelProfilVergleichProvider], aber mit zusätzlich gewählten Paketen
+/// ([RegelProfilVergleichSchluessel.zusatz] kommt aus
+/// [zusatzPaketSchluessel]). Fehlende Elternpakete der Auswahl kommen
+/// automatisch hinzu.
+final regelProfilVergleichMitZusatzProvider =
+    Provider.family<
+      AsyncValue<RegelProfilVergleich>,
+      RegelProfilVergleichSchluessel
+    >((ref, schluessel) {
+      final profil = schluessel.profil;
       final basis = ref.watch(decryptedCatalogSourceDataProvider);
       final paketKatalog = ref.watch(houseRulePackCatalogProvider);
       final fehler = basis.hasError
@@ -40,10 +72,18 @@ final regelProfilVergleichProvider =
       if (basisDaten == null || pakete == null) {
         return const AsyncValue<RegelProfilVergleich>.loading();
       }
+      final gewaehlt = schluessel.zusatz.isEmpty
+          ? const <String>{}
+          : schluessel.zusatz.split(',').toSet();
       final vorschlag = schlageProfilVor(
         profil: profil,
         aktuellerPaketKatalog: pakete,
         catalogVersion: basisDaten.version,
+        zusaetzlichePaketIds: zusatzPaketeMitElternpaketen(
+          gewaehlt: gewaehlt,
+          profil: profil,
+          aktuellerPaketKatalog: pakete,
+        ),
       );
       final alt = ref.watch(regelProfilAufloesungProvider(profil));
       final neu = ref.watch(regelProfilAufloesungProvider(vorschlag));
@@ -82,12 +122,34 @@ final regelProfilVergleichProvider =
 /// `regelProfilUebernehmenProvider`.
 final regelProfilVorschauProvider =
     Provider.family<AsyncValue<RegelProfilVorschau?>, String>((ref, heroId) {
+      return ref.watch(
+        regelProfilVorschauMitZusatzProvider((heroId: heroId, zusatz: '')),
+      );
+    });
+
+/// Schlüssel der Vorschau: Held plus kodierte Zusatzpakete
+/// ([zusatzPaketSchluessel]).
+typedef RegelProfilVorschauSchluessel = ({String heroId, String zusatz});
+
+/// Wie [regelProfilVorschauProvider], aber mit zusätzlich gewählten Paketen.
+/// Die Auswahl hält der Dialog selbst; sie ist flüchtig und schreibt nichts.
+final regelProfilVorschauMitZusatzProvider =
+    Provider.family<
+      AsyncValue<RegelProfilVorschau?>,
+      RegelProfilVorschauSchluessel
+    >((ref, schluessel) {
+      final heroId = schluessel.heroId;
       final profil = ref.watch(heroRegelProfilProvider(heroId));
       final hero = ref.watch(heroByIdProvider(heroId));
       if (profil == null || hero == null) {
         return const AsyncValue<RegelProfilVorschau?>.data(null);
       }
-      final vergleich = ref.watch(regelProfilVergleichProvider(profil));
+      final vergleich = ref.watch(
+        regelProfilVergleichMitZusatzProvider((
+          profil: profil,
+          zusatz: schluessel.zusatz,
+        )),
+      );
       if (vergleich.hasError) {
         return AsyncValue<RegelProfilVorschau?>.error(
           vergleich.error!,

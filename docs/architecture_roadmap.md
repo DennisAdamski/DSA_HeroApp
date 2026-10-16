@@ -239,7 +239,11 @@ im [Archiv](archiv/arch-04.md):
 - [x] Profil auf „folgt global“ zurückführen: Knopf „Wieder den globalen
   Hausregeln folgen“ in der Karte „Regelprofil“ (`setzeRegelProfilZurueck`,
   16.10.2026); ein inzwischen geändertes Profil wird nie überschrieben.
-- [ ] Zusätzliche Pakete in der Vorschau wählen (`zusaetzlichePaketIds`).
+- [x] Zusätzliche Pakete in der Vorschau wählen: Knopf „Zusätzliche Pakete
+  wählen“ und Auswahl im Dialog „Regelprofil aktualisieren“
+  (`zusatzPaketKandidaten`, Elternpakete kommen automatisch mit,
+  `regelProfilVorschauMitZusatzProvider`); geschrieben wird erst mit
+  „Übernehmen“ (16.10.2026).
 - [x] Import/Export: das Profil reist mit dem Helden-JSON (Manifestkopien und
   Prüfsummen unverändert); ein Import rechnet nicht neu, ein abweichender
   Paketstand der Ziel-App erscheint als Updatevorschau

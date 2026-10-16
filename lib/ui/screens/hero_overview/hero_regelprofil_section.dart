@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/catalog/catalog_section_id.dart';
+import 'package:dsa_heldenverwaltung/catalog/house_rule_pack.dart';
 import 'package:dsa_heldenverwaltung/catalog/regelprofil_aufloesung.dart';
 import 'package:dsa_heldenverwaltung/catalog/regelprofil_vergleich.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_regelprofil.dart';
@@ -179,6 +180,13 @@ class _MitProfil extends ConsumerWidget {
       color: theme.colorScheme.onSurfaceVariant,
     );
     final vorschau = ref.watch(regelProfilVorschauProvider(heroId));
+    final paketKatalog = ref.watch(houseRulePackCatalogProvider).valueOrNull;
+    final hatKandidaten =
+        paketKatalog != null &&
+        zusatzPaketKandidaten(
+          profil: profil,
+          aktuellerPaketKatalog: paketKatalog,
+        ).isNotEmpty;
     final Widget status = vorschau.when(
       loading: () => Text('Prüfe Paketstand …', style: leise),
       error: (fehler, _) => Text(
@@ -237,6 +245,18 @@ class _MitProfil extends ConsumerWidget {
             ),
         const SizedBox(height: 8),
         status,
+        if (hatKandidaten) ...[
+          const SizedBox(height: 8),
+          OutlinedButton.icon(
+            key: const ValueKey<String>('regelprofil-pakete'),
+            onPressed: () => showDialog<void>(
+              context: context,
+              builder: (_) => RegelprofilVorschauDialog(heroId: heroId),
+            ),
+            icon: const Icon(Icons.add_box_outlined),
+            label: const Text('Zusätzliche Pakete wählen'),
+          ),
+        ],
         const SizedBox(height: 8),
         TextButton.icon(
           key: const ValueKey<String>('regelprofil-loesen'),
@@ -312,6 +332,30 @@ class _RegelprofilVorschauDialogState
     extends ConsumerState<RegelprofilVorschauDialog> {
   bool _laeuft = false;
 
+  // Zusätzlich gewählte Pakete; flüchtig, geschrieben wird erst mit „Übernehmen“.
+  Set<String> _zusatz = const <String>{};
+
+  void _waehle(
+    HouseRulePackManifest paket,
+    bool an,
+    HeroRegelProfil profil,
+    HouseRulePackCatalog katalog,
+  ) {
+    setState(() {
+      _zusatz = an
+          ? zusatzPaketeMitElternpaketen(
+              gewaehlt: {..._zusatz, paket.id},
+              profil: profil,
+              aktuellerPaketKatalog: katalog,
+            )
+          : zusatzPaketAbwaehlen(
+              gewaehlt: _zusatz,
+              paketId: paket.id,
+              aktuellerPaketKatalog: katalog,
+            );
+    });
+  }
+
   Future<void> _uebernehmen(RegelProfilVorschau v) async {
     setState(() => _laeuft = true);
     final gespeichert = await aendereHeldMitMeldung(
@@ -329,25 +373,55 @@ class _RegelprofilVorschauDialogState
 
   @override
   Widget build(BuildContext context) {
-    final vorschau = ref.watch(regelProfilVorschauProvider(widget.heroId));
+    final vorschau = ref.watch(
+      regelProfilVorschauMitZusatzProvider((
+        heroId: widget.heroId,
+        zusatz: zusatzPaketSchluessel(_zusatz),
+      )),
+    );
     final v = vorschau.valueOrNull;
+    final profil = ref.watch(heroRegelProfilProvider(widget.heroId));
+    final paketKatalog = ref.watch(houseRulePackCatalogProvider).valueOrNull;
+    final kandidaten = profil == null || paketKatalog == null
+        ? const <HouseRulePackManifest>[]
+        : zusatzPaketKandidaten(
+            profil: profil,
+            aktuellerPaketKatalog: paketKatalog,
+          );
     return ZustandFehlerBereich(
       child: AlertDialog(
         title: const Text('Regelprofil aktualisieren'),
         content: SizedBox(
           width: 560,
-          child: v == null
-              ? const Text('Keine Änderungen vorhanden.')
-              : SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const ZustandFehlerAnzeige(),
-                      _VorschauInhalt(vorschau: v),
-                    ],
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const ZustandFehlerAnzeige(),
+                if (kandidaten.isNotEmpty &&
+                    profil != null &&
+                    paketKatalog != null)
+                  _ZusatzPakete(
+                    kandidaten: kandidaten,
+                    gewaehlt: _zusatz,
+                    onChanged: _laeuft
+                        ? null
+                        : (paket, an) =>
+                              _waehle(paket, an, profil, paketKatalog),
                   ),
-                ),
+                if (v != null)
+                  _VorschauInhalt(vorschau: v)
+                else
+                  Text(
+                    vorschau.isLoading
+                        ? 'Prüfe Paketstand …'
+                        : 'Keine Änderungen vorhanden.',
+                    key: const ValueKey<String>('regelprofil-dialog-status'),
+                  ),
+              ],
+            ),
+          ),
         ),
         actions: [
           TextButton(
@@ -362,6 +436,57 @@ class _RegelprofilVorschauDialogState
                   ? null
                   : () => _uebernehmen(v),
               child: const Text('Übernehmen'),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ZusatzPakete extends StatelessWidget {
+  const _ZusatzPakete({
+    required this.kandidaten,
+    required this.gewaehlt,
+    required this.onChanged,
+  });
+
+  final List<HouseRulePackManifest> kandidaten;
+  final Set<String> gewaehlt;
+  final void Function(HouseRulePackManifest paket, bool an)? onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: ExpansionTile(
+        key: const ValueKey<String>('regelprofil-zusatz'),
+        tilePadding: EdgeInsets.zero,
+        initiallyExpanded: gewaehlt.isNotEmpty,
+        title: Text(
+          gewaehlt.isEmpty
+              ? 'Zusätzliche Pakete'
+              : 'Zusätzliche Pakete (${gewaehlt.length} gewählt)',
+          style: Theme.of(context).textTheme.titleSmall,
+        ),
+        subtitle: const Text(
+          'Neue Pakete kommen nie von selbst hinzu. Die Auswahl wirkt erst '
+          'mit „Übernehmen“.',
+        ),
+        children: [
+          for (final paket in kandidaten)
+            CheckboxListTile(
+              key: ValueKey<String>('regelprofil-zusatz-${paket.id}'),
+              dense: true,
+              contentPadding: EdgeInsets.zero,
+              controlAffinity: ListTileControlAffinity.leading,
+              value: gewaehlt.contains(paket.id),
+              onChanged: onChanged == null
+                  ? null
+                  : (an) => onChanged!(paket, an ?? false),
+              title: Text(paket.title),
+              subtitle: paket.description.trim().isEmpty
+                  ? null
+                  : Text(paket.description),
             ),
         ],
       ),
