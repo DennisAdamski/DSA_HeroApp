@@ -491,6 +491,30 @@ vollständig wiederholt.
 - Nicht geprüft: Gerätebedienung (360 px/Textfaktor 2 nur per Widgettest) und
   Live-Sync mit Firebase.
 
+*Automatisierte Abnahme wiederholt (16.10.2026).* `flutter analyze --no-pub`
+ohne Befund; Gesamtsuite seriell (`--concurrency=1`, eigenes
+`DSA_MCP_DATA_DIR`): 6177 bestanden, 3 übersprungen, 0 fehlgeschlagen. Damit
+ist die in der Abnahme oben vermerkte unvollständige Wiederholung nachgeholt.
+
+*Checkliste für die manuelle Bedienprüfung (offen, Gerät nötig).* Erst wenn
+alle Punkte bestanden sind, ARCH-02 oben abhaken:
+
+- [ ] Übersicht: je Gruppe Rasse/Kultur/Profession einen direkten Modifikator
+  und ein freies Fragment anlegen, ändern, entfernen; Werte im Bogen stimmen.
+- [ ] Merkmal: Herkunft über den gemeinsamen Dialog ändern (Übersicht und
+  UI2-Merkmalsblatt); Wirkung bleibt unverändert, nur das Metadatum wechselt.
+- [ ] Schmal (360 px) und Textfaktor 2: keine Überläufe in Herkunftskarten,
+  Dialogen und Merkmalsblatt.
+- [ ] Offene Planung: Bearbeiten fragt nach, „Abbrechen“ erhält die Sitzung,
+  UI2-Merkmalsblatt ist schreibgeschützt.
+- [ ] Abweichung durch ältere App (Textfeld geändert): Bearbeiten gesperrt bis
+  „Text übernehmen“ oder „Liste behalten“; nichts wird still aufgelöst.
+- [ ] Export → Import desselben Helden: Herkunft, Stufen, Varianten und
+  Freitexte identisch.
+- [ ] Live-Sync mit zwei Geräten (Firebase): gleiche Änderung in einer Gruppe
+  auf beiden Geräten ergibt einen sichtbaren Konflikt, verschiedene Gruppen
+  führen still zusammen.
+
 ## ARCH-03 — Gemeinsame Ausrüstungsdaten für Inventar und Kampf
 
 **Ausgangszustand:** Kampfausrüstung und Inventar werden über
@@ -3598,6 +3622,26 @@ unbekannte Aufzählungswerte und Wundzonen, siehe ARCH-03-Teilstand
 zutage und sind mit `9d2aeaa` behoben: B12 minimal (der Eintrag deckt seinen
 Slot ab und bleibt unverändert), B13 über `MainWeaponSlot.fuehrtGeschosse`,
 das auch eine unbekannte Kampfart als geschossführend behandelt.
+
+**Abdeckungsaudit neuer Modelle (16.10.2026).** Geprüft wurde, ob jedes seit der
+Grundausstattung additiv eingeführte Modell die ARCH-07-Anforderungen erfüllt
+(Schlüsselliste, Erhalt unbekannter Felder, unverändertes JSON nach erneutem
+Laden). `test/domain/unbekannte_verschachtelte_felder_test.dart` führt dafür
+67 Modelle in einer Tabelle (`_pruefeModelle`), darunter `HeroRegelProfil`,
+`HeroRegelProfilPaket`, `HeroHerkunftsModifikator(en)`, `HeroMerkmal`,
+`SpellEffectInstance`, `AlchimikumBezug`, `Vitalwirkung`, `ReittierAusbildung`,
+`VertrautenBindung`, `BegleiterZustand` und `ZustandsBuchung`; `ArtefaktDaten`
+deckt `unbekannte_ausruestungsfelder_test.dart` ab. Der Vollständigkeitswächter
+im selben Test fängt jedes weitere Modell ab, die Hash-Pins aus
+`bestandshelden_kompatibilitaet_test.dart` halten die Bestandsfixtures
+unverändert. Migrationen mit Bestandsfall und Reload-Test: Herkunft
+(`herkunft_migration_test.dart`, `herkunft_sync_test.dart`), Merkmale
+(`merkmal_migration_test.dart`), Inventarverweise
+(`bestandshelden_ausruestung_test.dart`). **Keine Lücke gefunden**, es wurden
+keine Tests ergänzt. Gesamtsuite: 6177 bestanden, 3 übersprungen, 0 fehlgeschlagen.
+Der Hauptpunkt bleibt bewusst offen (begleitend); verbleibend sind die
+manuellen Plattformprüfungen aus der Teststrategie (Web/IndexedDB, native
+Pfade, `file_picker`, Live-Firebase).
 
 ## Abschluss und Übergabe je Aufgabe
 
