@@ -101,6 +101,8 @@ einen Themenindex; Details stehen nach Thema in [docs/hinweise/](docs/hinweise/)
   `docs/web_deployment.md`; `tool/sync_main_to_test.sh` mergt Main in Test.
 - Sicherheitsbetrieb, App Check, Key-Einschränkungen und Incident-Ablauf:
   [security_operations.md](docs/security_operations.md).
+- Öffentliche Rechtstexte, Verarbeitungstätigkeiten, TOM und Löschkonzept:
+  [legal_privacy_operations.md](docs/legal_privacy_operations.md).
 - [Architektur-Roadmap](docs/architecture_roadmap.md): nur Status und offene
   Punkte; abgenommene Aufgaben im [Archiv](docs/archiv/README.md). Bei
   Architekturarbeiten den Status pruefen und nach Teilumfaengen aktualisieren.

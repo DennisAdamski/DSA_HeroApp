@@ -24,6 +24,7 @@ import 'package:dsa_heldenverwaltung/ui/screens/auth/open_sign_in.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/catalog_management_screen.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/catalog_unlock_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/house_rule_pack_management_screen.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/legal/legal_pages.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/sync_konflikt_karte.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/karto_variante.dart';
 import 'package:dsa_heldenverwaltung/ui_shared/feedback/feedback_page.dart';
