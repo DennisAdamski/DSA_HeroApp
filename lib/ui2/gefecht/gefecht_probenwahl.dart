@@ -65,6 +65,7 @@ List<GefechtProbenkandidat> gefechtsProbenkandidaten(
           targets: wert.ziele,
           basePool: wert.taw,
           hasSpecialization: wert.spezialisierung,
+          tawHerleitung: wert.herleitung.taw,
         ),
       ),
     );

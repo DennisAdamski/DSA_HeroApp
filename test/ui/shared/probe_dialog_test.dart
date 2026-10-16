@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dsa_heldenverwaltung/domain/dice_log_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/herleitung.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/probe_dialog.dart';
 
 const _kAttrRequest = ResolvedProbeRequest(
@@ -107,6 +108,74 @@ void main() {
     expect(
       find.byKey(const ValueKey<String>('probe-dialog-specialization')),
       findsOneWidget,
+    );
+  });
+
+  testWidgets('Die TaW*-Herleitung lässt sich im Dialog aufklappen', (
+    tester,
+  ) async {
+    final request = ResolvedProbeRequest(
+      type: ProbeType.talent,
+      title: 'Talentprobe: Klettern',
+      subtitle: 'MU / GE / KK',
+      ruleHint: 'rule',
+      diceSpec: const DiceSpec(count: 3, sides: 20),
+      targets: const <ProbeTargetValue>[
+        ProbeTargetValue(label: 'MU', value: 14),
+        ProbeTargetValue(label: 'GE', value: 12),
+        ProbeTargetValue(label: 'KK', value: 13),
+      ],
+      basePool: 7,
+      poolHerleitung: Herleitung(
+        bezeichnung: 'TaW*',
+        schritte: const <HerleitungsSchritt>[
+          HerleitungsSchritt(
+            bezeichnung: 'TaW',
+            betrag: 9,
+            art: HerleitungsArt.zukauf,
+          ),
+          HerleitungsSchritt(
+            bezeichnung: 'eBE',
+            betrag: -2,
+            art: HerleitungsArt.modifikator,
+            quelle: 'Rüstung',
+          ),
+        ],
+      ),
+    );
+
+    await tester.pumpWidget(_wrap(ProbeDialog(request: request)));
+    await tester.pumpAndSettle();
+
+    const tile = ValueKey<String>('probe-dialog-pool-herleitung');
+    expect(find.byKey(tile), findsOneWidget);
+    expect(find.text('eBE'), findsNothing);
+
+    await tester.tap(find.text('TaW* herleiten'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('eBE'), findsOneWidget);
+    expect(find.text('Rüstung'), findsOneWidget);
+    final wert = tester.widget<Text>(
+      find.descendant(
+        of: find.byKey(
+          const ValueKey<String>('probe-dialog-pool-herleitung-wert'),
+        ),
+        matching: find.text('7'),
+      ),
+    );
+    expect(wert.data, '7');
+  });
+
+  testWidgets('Ohne Herleitung gibt es keinen Herleitungsblock', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_wrap(const ProbeDialog(request: _kAttrRequest)));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey<String>('probe-dialog-pool-herleitung')),
+      findsNothing,
     );
   });
 
