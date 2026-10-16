@@ -1,181 +1,70 @@
-# Offene Schritte: Heldengruppen-Sharing
+# Sicherheitsstatus: Heldengruppen-Sharing
 
-Stand nach dem initialen Commit auf `claude/hero-group-sharing-PV6f8`.
+Stand: 17. Oktober 2026.
 
----
+## Legacy-Pfad ist gesperrt
 
-## 1. Firebase-Projekt einrichten (Blocker fuer Cloud-Sync, nicht fuer den App-Start)
+Die frühere Struktur `gruppen/{gruppenCode}` besaß weder eine belastbare
+Besitzeridentität noch echte Mitgliedschaften. Ein Gruppencode war keine
+Zugriffsgrenze: Firestore-`read` umfasst sowohl Einzelzugriffe als auch
+Abfragen. Außerdem konnten anonyme Clients Mitgliedsdokumente ändern oder
+löschen.
 
-Die App startet inzwischen auch ohne erfolgreiche Firebase-Initialisierung im
-Local-Only-Modus weiter. Ohne Firebase bleiben aber Gruppen-Sync und andere
-Cloud-Funktionen deaktiviert.
+`firestore.rules` verweigert deshalb jeden Clientzugriff auf das
+Legacy-Dokument und sämtliche Unterpfade. Die vorhandenen Dokumente werden
+nicht gelöscht. Eine Übernahme darf nur nach administrativer Prüfung erfolgen,
+weil aus den Altdaten keine vertrauenswürdige Besitzer-UID ableitbar ist.
 
-### Was aktuell gilt
-- `lib/firebase_options.dart` enthaelt reale Projektwerte.
-- `lib/data/firebase_bootstrap.dart` faengt Initialisierungsfehler ab und
-  laesst die App lokal weiterlaufen.
-- `lib/state/firebase_providers.dart` stellt den Laufzeitstatus fuer UI und
-  Aktionen bereit; der Gruppen-Tab deaktiviert Cloud-Aktionen bei Bedarf.
+## Zielstruktur `groups_v2`
 
-### Was weiterhin fehlen kann
-- Plattform-Konfigurationsdateien fehlen komplett:
-  - Android: `android/app/google-services.json`
-  - iOS: `ios/Runner/GoogleService-Info.plist`
-  - macOS: `macos/Runner/GoogleService-Info.plist`
-- Android-Build: `com.google.gms.google-services`-Plugin fehlt in `android/app/build.gradle.kts`
-- iOS/macOS: Die SPM-basierte Plugin-Integration muss auf dem Ziel-Mac einmal
-  via `bash tool/ios_bootstrap_spm.sh` eingespielt werden
+Die neuen Regeln reservieren folgende, UID-gebundene Struktur:
 
-### Was zu tun ist
-```bash
-# 1. Firebase-Projekt in der Firebase-Konsole erstellen
-#    https://console.firebase.google.com
-#    → Neues Projekt → Cloud Firestore aktivieren
-
-# 2. FlutterFire CLI installieren (falls nicht vorhanden)
-dart pub global activate flutterfire_cli
-
-# 3. Konfiguration generieren (ersetzt firebase_options.dart
-#    und erzeugt plattformspezifische Dateien)
-flutterfire configure --project=<dein-firebase-projekt-id>
-
-# 4. iOS/macOS: SPM-Setup auf dem Mac aktualisieren
-bash tool/ios_bootstrap_spm.sh
-
-# 5. Falls du fuer persoenliches Signing den iOS-Bundle-Identifier geaendert
-#    hast: flutterfire configure erneut ausfuehren, damit die iOS-App-ID passt
+```text
+groups_v2/{groupId}
+  ownerUid: <Firebase UID>
+  name: <Gruppenname>
+  members/{uid}
+  hero_snapshots/{uid}
+  invitations/{invitationId}  # nur Backendzugriff
 ```
 
----
+- Nur eingetragene Mitglieder dürfen Gruppe, Mitgliedschaften und
+  Heldensnapshots lesen.
+- Nur der Besitzer darf die Gruppe und Mitgliedschaften verwalten.
+- Mitglieder dürfen ausschließlich ihren eigenen Heldensnapshot schreiben
+  oder löschen.
+- Einladungen sind für Clients vollständig gesperrt. Ein späterer Backendweg
+  speichert nur Hash, Ablaufzeit und Verwendungsstatus.
 
-## 2. Firestore Security Rules
+Die Rules-Emulatortests liegen in
+`functions/test/firestore_rules.rules.ts` und prüfen Legacy-Sperre,
+Mitgliedslesen, Besitzerverwaltung und den eigenen Snapshot-Schreibweg.
 
-Aktuell existieren keine Sicherheitsregeln. Die Datenbank ist vollstaendig offen.
+## Noch nicht freigegebene Anwendungsmigration
 
-Hinweis zum aktuellen Payload-Verhalten:
-- `avatarThumbnailBase64` wird beim Sync nur noch als kompaktes PNG-Thumbnail
-  uebertragen.
-- Wenn selbst das kleinste Thumbnail die sichere Groessenobergrenze
-  ueberschreitet, wird das Feld weggelassen und die UI zeigt einen
-  Platzhalter-Avatar.
+Die bestehende Flutter-Implementierung unter `lib/data/gruppen_sync_service.dart`
+verwendet noch den gesperrten Legacy-Pfad. Bis zur vollständigen Umstellung auf
+`groups_v2` dürfen alte Gruppen weder automatisch beansprucht noch clientseitig
+migriert werden. Nutzer müssen anschließend neue Gruppen erstellen und ihre
+Mitglieder erneut einladen.
 
-### Was zu tun ist
-In der Firebase-Konsole oder via `firestore.rules` im Projekt:
+Vor einer produktiven Aktivierung von `groups_v2` fehlen noch:
 
-```javascript
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    // Jeder mit dem Gruppencode kann lesen und schreiben
-    match /gruppen/{gruppenCode} {
-      allow read, write: if true;  // Vorerst offen — spaeter einschraenken
-      match /mitglieder/{heroId} {
-        allow read, write: if true;
-      }
-    }
-  }
-}
+1. authentifizierte Backendoperationen für Erstellen, Einladen, Annehmen und
+   Entfernen von Mitgliedern;
+2. serverseitig gehashte, kurzlebige und einmal verwendbare Einladungen;
+3. Umstellung des Flutter-Syncdienstes auf UID-basierte Snapshots;
+4. klare UI für gesperrte Legacy-Gruppen und den Neuaufbau einer Gruppe;
+5. Emulator- und Flutter-End-to-End-Tests für den vollständigen Ablauf.
+
+## Betrieb
+
+Rules werden getrennt von Hosting und Functions veröffentlicht:
+
+```powershell
+$env:JAVA_HOME = 'C:\Program Files\Android\Android Studio\jbr'
+firebase deploy --only firestore:rules --project heldensync-ccf0b
 ```
 
-> Fuer den Anfang reicht offener Zugriff. Spaeter kann man
-> Validierung hinzufuegen (z.B. nur eigene heroId schreiben).
-
----
-
-## 3. Auto-Sync nach Held-Speichern
-
-`syncVisitenkarten()` existiert, wird aber nirgends aufgerufen. Wenn ein
-Spieler seinen Helden aendert, bekommen andere Gruppenmitglieder die
-Aenderung nicht mit.
-
-### Was zu tun ist
-In `lib/state/hero_actions.dart` nach relevanten `saveHero()`-Aufrufen
-`syncVisitenkarten(heroId)` einbauen — mindestens an diesen Stellen:
-
-- Nach `erstelleGruppe()` (bereits erledigt via `_pushEigeneVisitenkarte`)
-- Nach `trittGruppeBei()` (bereits erledigt via `_pushEigeneVisitenkarte`)
-- **Nach dem normalen `saveHero()`** wenn der Held Profildaten aendert
-  (Uebersicht-Tab speichern, Kampf-Tab speichern, etc.)
-
-Empfehlung: Am Ende der oeffentlichen `saveHero()`-Methode pruefen,
-ob der Held Gruppen hat, und dann `syncVisitenkarten()` aufrufen.
-
----
-
-## 4. Firestore-Listener starten/stoppen
-
-`listenToGruppe()` im `GruppenSyncService` ist implementiert, wird aber
-nie aufgerufen. Es gibt keine Echtzeit-Updates.
-
-### Was zu tun ist
-In `lib/ui/screens/hero_gruppe_tab.dart`:
-
-- **`initState()`**: Fuer jede Gruppe des Helden einen Firestore-Listener
-  starten via `gruppenSyncServiceProvider.listenToGruppe()`
-- **`dispose()`**: Alle Listener stoppen via `stopAlleListener()`
-- **Gruppenwechsel**: Beim Wechsel zwischen Gruppen (Chip-Auswahl) den
-  Listener fuer die neue Gruppe starten, falls noch nicht aktiv
-
----
-
-## 5. Externe Helden automatisch verlinken
-
-Wenn ein externer Held ueber Firebase synchronisiert wird, landet er zwar
-im `HiveExterneHeldenRepository`, wird aber nicht in die
-`externeHeldIds` der Gruppenmitgliedschaft eingetragen.
-
-### Auswirkung
-`gruppenMitgliederProvider` liefert leere Listen — synchronisierte Helden
-erscheinen nicht in der UI.
-
-### Was zu tun ist
-In `lib/data/gruppen_sync_service.dart` → `listenToGruppe()`:
-
-Nach dem Speichern des `ExternerHeld` muss dessen ID in die
-`HeroGruppenMitgliedschaft.externeHeldIds` des lokalen Helden
-eingetragen werden. Dafuer braucht der Listener entweder:
-- Einen Callback `onNewMemberSynced(String externerHeldId)`, oder
-- Zugriff auf `HeroActions` zum Aktualisieren der Gruppenconfig
-
----
-
-## 6. Gruppenimport erweitern
-
-Der bestehende Smart-Import (`workspace_import_export_actions.dart`)
-erkennt `.dsa-gruppe.json`-Dateien und speichert sie lokal — bindet
-sie aber nicht an Firebase an.
-
-### Was zu tun ist (optional, nice-to-have)
-- Beim Import eines Gruppen-Snapshots die enthaltenen Helden als
-  `ExternerHeld`-Eintraege anlegen
-- Den importierenden Helden automatisch der Gruppe zuordnen
-- Optional: `trittGruppeBei()` aufrufen, falls ein `gruppenCode`
-  im Snapshot enthalten ist
-
----
-
-## 7. Tests
-
-Es gibt keine Tests fuer die neuen Komponenten.
-
-### Mindest-Testabdeckung
-| Testdatei | Inhalt |
-|-----------|--------|
-| `test/domain/externer_held_test.dart` | Serialisierungs-Roundtrip, `fromVisitenkarte`, `copyWith` |
-| `test/domain/hero_gruppen_config_test.dart` | Serialisierungs-Roundtrip, leere Defaults |
-| `test/data/hive_externe_helden_repository_test.dart` | CRUD, Stream-Verhalten |
-| `test/state/gruppen_providers_test.dart` | `gruppenMitgliederProvider` mit Mock-Daten |
-
----
-
-## Empfohlene Reihenfolge
-
-| # | Aufgabe | Grund |
-|---|---------|-------|
-| 1 | Firebase-Projekt + `flutterfire configure` | Blocker: App startet sonst nicht |
-| 2 | Firestore Security Rules | Backend absichern |
-| 3 | Listener-Lifecycle im Gruppe-Tab | Echtzeit-Updates aktivieren |
-| 4 | Externe Helden automatisch verlinken | Synchronisierte Helden sichtbar machen |
-| 5 | Auto-Sync bei Held-Speichern | Aenderungen an andere Geraete pushen |
-| 6 | Tests | Stabilitaet absichern |
-| 7 | Gruppenimport erweitern | Komfort-Feature |
+Vorher ist immer `npm run test:rules` im Verzeichnis `functions/` auszuführen.
+Die Firebase CLI benötigt dafür Java 21 oder neuer.
