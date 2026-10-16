@@ -82,6 +82,9 @@ class SecurityConfigTest(unittest.TestCase):
         self.assertIn("feedbackApiTest", deploy_script)
         self.assertIn("feedbackApi", deploy_script)
         self.assertIn("--dart-define=FEEDBACK_API_URL", deploy_script)
+        self.assertIn("REGISTRATION_INVITE_API_URL", workflow)
+        self.assertIn("--dart-define=REGISTRATION_INVITE_API_URL", workflow)
+        self.assertIn("registrationInviteApi", deploy_script)
         for variable in (
             "LEGAL_RESPONSIBLE_NAME",
             "LEGAL_STREET_ADDRESS",
