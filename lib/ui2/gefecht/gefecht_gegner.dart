@@ -7,7 +7,8 @@ import 'package:dsa_heldenverwaltung/rules/derived/gefecht_vorgaben_rules.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_provider.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_initiative_provider.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_begegnung_provider.dart';
-import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/state/gefecht_seite_provider.dart';
+import 'package:dsa_heldenverwaltung/ui2/gefecht/gefecht_seite.dart';
 
 /// Gemeinsam verfügbare Gegner mit konkreter Zielwahl für diese Heldensitzung.
 class GefechtGegnerkarte extends ConsumerWidget {
@@ -34,14 +35,19 @@ class GefechtGegnerkarte extends ConsumerWidget {
     final s = ref.watch(gefechtMitInitiativeProvider(heroId));
     final blockiert = gesperrt || s?.auftrag != null || s?.handlung != null;
     final controller = ref.read(gefechtBegegnungProvider.notifier);
-    // Bis zur Teilnehmerliste (Konzept Schritt 5) zählen alle verbundenen
-    // Helden als eigene Nahkämpfer.
-    final teilnehmer = {
+    // Nur wer dabei ist, kann gebunden werden; nur Nahkämpfer zählen.
+    final seite = ref.watch(gefechtsEigeneSeiteProvider(heroId));
+    final dabei = {
+      for (final t in seite)
+        if (t.beteiligung != GefechtsBeteiligung.nichtDabei) t.id: t.name,
+    };
+    final teilnehmer = dabei.keys.toList();
+    String name(String id) => dabei[id] ?? id;
+    final lage = _lagetext(
+      begegnung,
       heroId,
-      ...ref.watch(gefechtInitiativeProvider).helden,
-    }.toList();
-    String name(String id) => ref.watch(heroByIdProvider(id))?.name ?? id;
-    final lage = _lagetext(begegnung, heroId, eigene: teilnehmer.length);
+      eigene: gefechtsEigeneNahkaempfer(seite),
+    );
     Future<void> bearbeiten([Gefechtsgegner? g]) async {
       final neu = await showDialog<Gefechtsgegner>(
         context: context,
@@ -217,6 +223,12 @@ class GefechtGegnerkarte extends ConsumerWidget {
                   ],
                 ),
               ),
+            const Divider(),
+            GefechtEigeneSeite(
+              heroId: heroId,
+              gesperrt: gesperrt,
+              onAktion: onAktion,
+            ),
           ],
         ),
       ),

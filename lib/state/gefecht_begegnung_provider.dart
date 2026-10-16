@@ -3,7 +3,10 @@ import 'package:dsa_heldenverwaltung/domain/gefecht_gegner.dart';
 import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_gegner_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_ueberzahl_rules.dart'
-    show setzeGefechtstaktik;
+    show
+        setzeGefechtsBeteiligung,
+        setzeGefechtsmitstreiterZiel,
+        setzeGefechtstaktik;
 
 /// Hält die lokale Gegnerliste gemeinsam für alle Heldensitzungen.
 class GefechtsbegegnungsController extends Notifier<Gefechtsbegegnung> {
@@ -66,6 +69,30 @@ class GefechtsbegegnungsController extends Notifier<Gefechtsbegegnung> {
 
   /// Hält das bestätigte Ergebnis der Aktion Taktik einmal pro Kampf fest.
   void taktikSetzen(Gefechtstaktik t) => state = setzeGefechtstaktik(state, t);
+
+  /// Legt die Beteiligung eines Teilnehmers der eigenen Seite fest.
+  void beteiligungSetzen(
+    String teilnehmerId,
+    String name,
+    GefechtsBeteiligung beteiligung,
+  ) => state = setzeGefechtsBeteiligung(
+    state,
+    teilnehmerId: teilnehmerId,
+    name: name,
+    beteiligung: beteiligung,
+  );
+
+  /// Legt das Ziel eines externen Gefährten fest.
+  void mitstreiterZielSetzen(
+    String teilnehmerId,
+    String name,
+    String? zielId,
+  ) => state = setzeGefechtsmitstreiterZiel(
+    state,
+    teilnehmerId: teilnehmerId,
+    name: name,
+    zielId: zielId,
+  );
 
   /// Beendet die Begegnung ausdrücklich für alle verbundenen Ansichten.
   void beenden() => state = const Gefechtsbegegnung();

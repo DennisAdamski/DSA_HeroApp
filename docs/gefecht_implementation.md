@@ -910,8 +910,15 @@ Gegnerzahl; Parade −1 und Ausweichen −2 je weiterem Gegner, höchstens drei
 im Blick. Ausweichen ist ab vier Gegnern nicht mehr gesperrt. Zwei Helden
 der gemeinsamen Initiative mit demselben Ziel erhalten AT +1.
 
+Schritt 5: `gefechtsEigeneSeiteProvider` bildet die eigene Seite aus Held,
+verbundenen Helden und automatisch den externen Gefährten der Heldengruppen
+(`gruppenMitgliederProvider`). Die Gegnerkarte zeigt „Eure Seite“ mit
+Beteiligung je Teilnehmer und dem Ziel externer Gefährten. Nur Nahkämpfer
+zählen für Kräfteverhältnis und AT +1; „nicht dabei“ löst Bindungen.
+
 Tests: `test/rules/gefecht_gegner_rules_test.dart`,
 `test/rules/gefecht_ueberzahl_rules_test.dart`,
 `test/rules/gefecht_rules_test.dart`,
 `test/state/gefecht_initiative_provider_test.dart`,
+`test/state/gefecht_seite_provider_test.dart`,
 `test/ui2/spielen/gefecht_gegner_test.dart`.

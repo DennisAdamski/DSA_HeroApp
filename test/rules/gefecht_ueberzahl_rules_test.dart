@@ -131,4 +131,86 @@ void main() {
       expect(() => setzeGefechtstaktik(leer, falsch), throwsArgumentError);
     }
   });
+  test('Eigene Seite: Helden, Gruppe, manuelle Mitstreiter ohne Doppel', () {
+    final b = Gefechtsbegegnung(
+      gegner: {'o': const Gefechtsgegner(id: 'o', name: 'Oger', ini: 7)},
+      mitstreiter: {
+        'extern:y': const Gefechtsmitstreiter(
+          id: 'extern:y',
+          name: 'Yasmina',
+          beteiligung: GefechtsBeteiligung.fernkampf,
+          zielId: 'o',
+        ),
+        'h2': const Gefechtsmitstreiter(
+          id: 'h2',
+          name: 'Bosper',
+          beteiligung: GefechtsBeteiligung.nichtDabei,
+        ),
+        'm': const Gefechtsmitstreiter(id: 'm', name: 'Söldner', zielId: 'o'),
+      },
+    );
+    final seite = gefechtsEigeneSeite(
+      b,
+      helden: [
+        (id: 'h1', name: 'Alrike', zielId: 'o'),
+        (id: 'h2', name: 'Bosper', zielId: 'o'),
+        (id: 'h1', name: 'Alrike', zielId: 'o'),
+      ],
+      externe: [
+        (id: 'y', name: 'Yasmina', ini: 12),
+        (id: 'z', name: 'Haldor', ini: 9),
+      ],
+    );
+    expect(seite.map((t) => t.id), ['h1', 'h2', 'extern:y', 'extern:z', 'm']);
+    expect(seite[1].beteiligung, GefechtsBeteiligung.nichtDabei);
+    expect(seite[2].beteiligung, GefechtsBeteiligung.fernkampf);
+    expect(seite[2].ini, 12);
+    expect(seite[3].beteiligung, GefechtsBeteiligung.nahkampf);
+    expect(seite[4].herkunft, GefechtsTeilnehmerherkunft.manuell);
+    // Nahkämpfer: Alrike, Haldor, Söldner; auf den Oger: Alrike und Söldner.
+    expect(gefechtsEigeneNahkaempfer(seite), 3);
+    expect(gefechtsAngreiferAufZiel(seite, 'o'), 2);
+  });
+
+  test('Nicht dabei löst Bindungen und Ziel, Ziel braucht den Gegner', () {
+    var b = Gefechtsbegegnung(
+      gegner: {
+        'o': const Gefechtsgegner(id: 'o', name: 'Oger', ini: 7, bindet: 'x'),
+        'p': const Gefechtsgegner(id: 'p', name: 'Ork', ini: 7, bindet: 'h'),
+      },
+    );
+    b = setzeGefechtsmitstreiterZiel(
+      b,
+      teilnehmerId: 'x',
+      name: 'Haldor',
+      zielId: 'o',
+    );
+    expect(b.mitstreiter['x']!.zielId, 'o');
+    b = setzeGefechtsBeteiligung(
+      b,
+      teilnehmerId: 'x',
+      name: 'Haldor',
+      beteiligung: GefechtsBeteiligung.fernkampf,
+    );
+    expect(b.mitstreiter['x']!.zielId, 'o');
+    expect(b.gegner['o']!.bindet, 'x');
+    b = setzeGefechtsBeteiligung(
+      b,
+      teilnehmerId: 'x',
+      name: 'Haldor',
+      beteiligung: GefechtsBeteiligung.nichtDabei,
+    );
+    expect(b.mitstreiter['x']!.zielId, isNull);
+    expect(b.gegner['o']!.bindet, isNull);
+    expect(b.gegner['p']!.bindet, 'h');
+    expect(
+      () => setzeGefechtsmitstreiterZiel(
+        b,
+        teilnehmerId: 'x',
+        name: 'Haldor',
+        zielId: 'fehlt',
+      ),
+      throwsStateError,
+    );
+  });
 }

@@ -4,7 +4,10 @@ import 'package:dsa_heldenverwaltung/domain/gefecht_initiative.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_gegner_rules.dart'
     show gefechtsGegnerHandelt;
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_ueberzahl_rules.dart'
-    show gefechtsAngriffInUeberzahl, gefechtsVerteidigerlage;
+    show
+        gefechtsAngreiferAufZiel,
+        gefechtsAngriffInUeberzahl,
+        gefechtsVerteidigerlage;
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_initiative_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_held_rules.dart';
@@ -15,6 +18,7 @@ import 'gefecht_patzer_provider.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_patzer_rules.dart';
 
 import 'gefecht_begegnung_provider.dart';
+import 'gefecht_seite_provider.dart';
 import 'hero_providers.dart';
 
 /// Verbindet ausdrücklich gewählte Heldensitzungen ohne Repository-Schreibzugriff.
@@ -263,17 +267,13 @@ final gefechtMitInitiativeProvider = Provider.family<Gefechtszustand?, String>((
   final begegnung = ref.watch(gefechtBegegnungProvider);
   final gebunden = gefechtsVerteidigerlage(begegnung, id).gegner;
   final ziel = begegnung.gegner[roh.kontext.gegnerId];
+  // Nahkämpfer der eigenen Seite mit demselben Ziel (Helden und Gefährten).
   final angreifer = ziel == null || !gefechtsGegnerHandelt(ziel)
       ? 0
-      : {id, if (gruppe.helden.contains(id)) ...gruppe.helden}
-            .where(
-              (h) =>
-                  (h == id ? roh : ref.watch(gefechtProvider(h)))
-                      ?.kontext
-                      .gegnerId ==
-                  ziel.id,
-            )
-            .length;
+      : gefechtsAngreiferAufZiel(
+          ref.watch(gefechtsEigeneSeiteProvider(id)),
+          ziel.id,
+        );
   final s = roh.copyWith(
     patzerSperre: sperrt
         ? 'Patzer-/Bruchfolgen offen oder restliche Rundenaktionen verloren.'

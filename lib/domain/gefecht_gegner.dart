@@ -133,6 +133,47 @@ class Gefechtsgegner {
   );
 }
 
+/// Wie ein Teilnehmer der eigenen Seite am Kampf beteiligt ist.
+enum GefechtsBeteiligung { nahkampf, fernkampf, nichtDabei }
+
+/// Deutschsprachige Anzeigenamen der Beteiligungen.
+const Map<GefechtsBeteiligung, String> gefechtsBeteiligungLabel = {
+  GefechtsBeteiligung.nahkampf: 'Nahkampf',
+  GefechtsBeteiligung.fernkampf: 'Fernkampf',
+  GefechtsBeteiligung.nichtDabei: 'nicht dabei',
+};
+
+/// Festgelegte Angaben zu einem Teilnehmer der eigenen Seite.
+///
+/// Für Helden der App zählt nur [beteiligung]; ihr Ziel steht in der
+/// Heldensitzung. Externe Gefährten tragen ihr Ziel hier.
+class Gefechtsmitstreiter {
+  /// [id] ist die Teilnehmer-ID (Helden-ID oder `extern:<id>`).
+  const Gefechtsmitstreiter({
+    required this.id,
+    required this.name,
+    this.beteiligung = GefechtsBeteiligung.nahkampf,
+    this.zielId,
+  });
+  final String id, name;
+  final GefechtsBeteiligung beteiligung;
+
+  /// Gegner-ID, die ein externer Gefährte angreift.
+  final String? zielId;
+
+  /// Ändert Beteiligung oder Ziel; ein ausdrückliches `null` löscht das Ziel.
+  Gefechtsmitstreiter copyWith({
+    String? name,
+    GefechtsBeteiligung? beteiligung,
+    Object? zielId = keepFieldValue,
+  }) => Gefechtsmitstreiter(
+    id: id,
+    name: name ?? this.name,
+    beteiligung: beteiligung ?? this.beteiligung,
+    zielId: identical(zielId, keepFieldValue) ? this.zielId : zielId as String?,
+  );
+}
+
 /// Bestätigtes Ergebnis der Aktion Taktik (WdS S. 81, optional).
 ///
 /// Einmal pro Kampf: Entweder hebt eine gelungene Kriegskunst-Probe die
@@ -157,6 +198,7 @@ class Gefechtsbegegnung {
     this.gegner = const {},
     this.buchungen = const {},
     this.taktik,
+    this.mitstreiter = const {},
   });
   final Map<String, Gefechtsgegner> gegner;
 
@@ -166,16 +208,21 @@ class Gefechtsbegegnung {
   /// Die einmal pro Kampf genutzte Taktik; `null`, solange sie offen ist.
   final Gefechtstaktik? taktik;
 
+  /// Festgelegte Beteiligung und Ziele der eigenen Seite je Teilnehmer-ID.
+  final Map<String, Gefechtsmitstreiter> mitstreiter;
+
   /// Übergibt unveränderliche Ergebnisse reiner Regeln an den Provider.
   Gefechtsbegegnung copyWith({
     Map<String, Gefechtsgegner>? gegner,
     Set<String>? buchungen,
     Object? taktik = keepFieldValue,
+    Map<String, Gefechtsmitstreiter>? mitstreiter,
   }) => Gefechtsbegegnung(
     gegner: gegner ?? this.gegner,
     buchungen: buchungen ?? this.buchungen,
     taktik: identical(taktik, keepFieldValue)
         ? this.taktik
         : taktik as Gefechtstaktik?,
+    mitstreiter: mitstreiter ?? this.mitstreiter,
   );
 }
