@@ -241,10 +241,9 @@ AdvancementOption? _languageOption(AdvancementContext context, String id) {
       .where((item) => item.id == hero.muttersprache)
       .firstOrNull;
   final sameFamily = mother != null && mother.familie == def.familie;
-  final complexity = _mitBefund(
-    def.steigerung == 'B' || !sameFamily ? 'B' : 'A',
-    context.begabungen.sprachen(),
-  );
+  final basisSpalte = def.steigerung == 'B' || !sameFamily ? 'B' : 'A';
+  final befund = context.begabungen.sprachen();
+  final complexity = _mitBefund(basisSpalte, befund);
   final value = hero.sprachen[id]?.wert ?? -1;
   return AdvancementOption(
     kind: AdvancementKind.language,
@@ -255,6 +254,11 @@ AdvancementOption? _languageOption(AdvancementContext context, String id) {
     learnCost: learnCostFromKomplexitaet(complexity),
     lernregeln: Lernregeln(
       faktoren: lernkostenFaktoren(hero, LernzielArt.sprachschrift),
+      spaltenHerleitung: herleiteTalentLernspalte(
+        basisSpalte: basisSpalte,
+        befund: befund,
+        gifted: false,
+      ),
     ),
     isOwned: hero.sprachen.containsKey(id),
     unavailableReason: value >= def.maxWert ? 'Maximum erreicht' : null,
@@ -268,17 +272,21 @@ AdvancementOption? _scriptOption(AdvancementContext context, String id) {
       .firstOrNull;
   if (def == null) return null;
   final value = hero.schriften[id]?.wert ?? -1;
+  final befund = context.begabungen.schriften();
   return AdvancementOption(
     kind: AdvancementKind.script,
     targetId: id,
     label: def.name,
     currentValue: value,
     maxValue: def.maxWert,
-    learnCost: learnCostFromKomplexitaet(
-      _mitBefund(def.steigerung, context.begabungen.schriften()),
-    ),
+    learnCost: learnCostFromKomplexitaet(_mitBefund(def.steigerung, befund)),
     lernregeln: Lernregeln(
       faktoren: lernkostenFaktoren(hero, LernzielArt.sprachschrift),
+      spaltenHerleitung: herleiteTalentLernspalte(
+        basisSpalte: def.steigerung,
+        befund: befund,
+        gifted: false,
+      ),
     ),
     isOwned: hero.schriften.containsKey(id),
     unavailableReason: value >= def.maxWert ? 'Maximum erreicht' : null,

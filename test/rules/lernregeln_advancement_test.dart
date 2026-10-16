@@ -8,6 +8,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_spell_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/learn/learn_complexity.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/advancement_options.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/learning_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/lernkosten_faktor_rules.dart';
 
 import '../test_support/real_catalog.dart';
@@ -97,6 +98,49 @@ void main() {
       );
       expect(o.learnCost, LearnCost.d);
       expect(o.lernregeln.erleichterungBisWert, 9);
+    });
+  });
+
+  group('Lernspalte von Sprachen und Schriften als Herleitung', () {
+    test('Sprache ohne Besonderheit: Spalte aus dem Katalog', () {
+      final hero = held().copyWith(muttersprache: 'spr_garethi');
+      final o = option(hero, AdvancementKind.language, 'spr_garethi');
+      final herleitung = o.lernregeln.spaltenHerleitung;
+      expect(herleitung, isNotNull);
+      // Muttersprache ist die verbilligte Spalte A.
+      expect(o.learnCost, LearnCost.a);
+      expect(herleitung!.wert, kLernkomplexitaeten.indexOf('A'));
+      expect(herleitung.schritte.first.formel, 'Spalte A');
+    });
+
+    test(
+      'Begabung für Sprachen senkt die Spalte, die Herleitung nennt sie',
+      () {
+        final hero = held(vorteile: 'Begabung für Talentgruppe Sprachen')
+            .copyWith(muttersprache: 'spr_garethi');
+        final ohne = option(
+          held().copyWith(muttersprache: 'spr_garethi'),
+          AdvancementKind.language,
+          'spr_garethi',
+        );
+        final mit = option(hero, AdvancementKind.language, 'spr_garethi');
+        final herleitung = mit.lernregeln.spaltenHerleitung!;
+        expect(
+          herleitung.wert,
+          lessThan(ohne.lernregeln.spaltenHerleitung!.wert),
+        );
+        // Anzeige und Kosten stammen aus derselben Spalte.
+        expect(kLernkomplexitaeten[herleitung.wert], 'A*');
+        expect(mit.learnCost, LearnCost.z);
+      },
+    );
+
+    test('Schrift hat dieselbe Herleitung wie das Talent', () {
+      final o = option(held(), AdvancementKind.script, 'sch_altes_alaani');
+      final herleitung = o.lernregeln.spaltenHerleitung;
+      expect(herleitung, isNotNull);
+      expect(herleitung!.schritte, isNotEmpty);
+      expect(herleitung.wert, kLernkomplexitaeten.indexOf('A'));
     });
   });
 
