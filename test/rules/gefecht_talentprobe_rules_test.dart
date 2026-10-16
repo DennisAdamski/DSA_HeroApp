@@ -193,36 +193,42 @@ void main() {
     expect(gefechtsTalentprobe(s, selbstbeherrschung)!.basePool, 6);
   });
 
-  test('Die Talentprobe trägt die TaW*-Herleitung, deren Summe der Pool ist', () {
-    final s = _snapshot();
-    final be = s.combatPreviewStats.beKampf;
-    final request = talentprobeFuer(
-      snapshot: s,
-      talent: klettern,
-      epicAdvantagesActive: false,
-    )!;
-    final herleitung = request.poolHerleitung!;
-    expect(herleitung.wert, request.basePool);
-    final schritte = {
-      for (final schritt in herleitung.schritte) schritt.bezeichnung: schritt,
-    };
-    expect(schritte['TaW']!.betrag, 8);
-    expect(schritte['Kletterschuhe']!.betrag, 2);
-    expect(schritte['eBE']!.betrag, -2 * be);
-    // Gefecht und Suche teilen dieselbe Herleitung.
-    expect(gefechtsTalentprobe(s, klettern)!.poolHerleitung!.wert, request.basePool);
-    final ueberschrieben = talentprobeFuer(
-      snapshot: s,
-      talent: klettern,
-      epicAdvantagesActive: false,
-      talentBeOverride: 0,
-    )!;
-    expect(ueberschrieben.poolHerleitung!.wert, ueberschrieben.basePool);
-    expect(
-      ueberschrieben.copyWith(initialSituationalModifier: -1).poolHerleitung,
-      same(ueberschrieben.poolHerleitung),
-    );
-  });
+  test(
+    'Die Talentprobe trägt die TaW*-Herleitung, deren Summe der Pool ist',
+    () {
+      final s = _snapshot();
+      final be = s.combatPreviewStats.beKampf;
+      final request = talentprobeFuer(
+        snapshot: s,
+        talent: klettern,
+        epicAdvantagesActive: false,
+      )!;
+      final herleitung = request.poolHerleitung!;
+      expect(herleitung.wert, request.basePool);
+      final schritte = {
+        for (final schritt in herleitung.schritte) schritt.bezeichnung: schritt,
+      };
+      expect(schritte['TaW']!.betrag, 8);
+      expect(schritte['Kletterschuhe']!.betrag, 2);
+      expect(schritte['eBE']!.betrag, -2 * be);
+      // Gefecht und Suche teilen dieselbe Herleitung.
+      expect(
+        gefechtsTalentprobe(s, klettern)!.poolHerleitung!.wert,
+        request.basePool,
+      );
+      final ueberschrieben = talentprobeFuer(
+        snapshot: s,
+        talent: klettern,
+        epicAdvantagesActive: false,
+        talentBeOverride: 0,
+      )!;
+      expect(ueberschrieben.poolHerleitung!.wert, ueberschrieben.basePool);
+      expect(
+        ueberschrieben.copyWith(initialSituationalModifier: -1).poolHerleitung,
+        same(ueberschrieben.poolHerleitung),
+      );
+    },
+  );
 
   test('Die Ausweichprobe nennt den Zuschlag in der Herleitung', () {
     final s = _snapshot();
