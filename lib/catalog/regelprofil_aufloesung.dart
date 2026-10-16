@@ -80,6 +80,69 @@ HeroRegelProfil schlageProfilVor({
   return profil.copyWith(catalogVersion: catalogVersion, pakete: pakete);
 }
 
+/// Pakete des [aktuellerPaketKatalog], die [profil] noch nicht enthält und die
+/// der Nutzer in der Updatevorschau zusätzlich wählen kann (nach Titel
+/// sortiert).
+List<HouseRulePackManifest> zusatzPaketKandidaten({
+  required HeroRegelProfil profil,
+  required HouseRulePackCatalog aktuellerPaketKatalog,
+}) {
+  final vorhanden = profil.paketIds;
+  final kandidaten = <HouseRulePackManifest>[
+    for (final paket in aktuellerPaketKatalog.packs)
+      if (!vorhanden.contains(paket.id)) paket,
+  ]..sort((a, b) => a.title.toLowerCase().compareTo(b.title.toLowerCase()));
+  return List<HouseRulePackManifest>.unmodifiable(kandidaten);
+}
+
+/// Ergänzt [gewaehlt] um die Elternpakete, die weder im [profil] stehen noch
+/// schon gewählt sind: Ein Unterpaket wirkt nur, wenn sein Elternpaket aktiv
+/// ist. Unbekannte IDs bleiben unverändert (`schlageProfilVor` übergeht sie).
+Set<String> zusatzPaketeMitElternpaketen({
+  required Set<String> gewaehlt,
+  required HeroRegelProfil profil,
+  required HouseRulePackCatalog aktuellerPaketKatalog,
+}) {
+  final ergebnis = <String>{...gewaehlt};
+  final vorhanden = profil.paketIds;
+  for (final id in gewaehlt) {
+    var paket = aktuellerPaketKatalog.find(id);
+    final besucht = <String>{};
+    while (paket != null && !paket.isRoot && besucht.add(paket.id)) {
+      final elternId = paket.parentPackId.trim();
+      if (!vorhanden.contains(elternId)) {
+        ergebnis.add(elternId);
+      }
+      paket = aktuellerPaketKatalog.find(elternId);
+    }
+  }
+  return ergebnis;
+}
+
+/// Entfernt [paketId] aus [gewaehlt] samt aller gewählten Unterpakete, die
+/// ohne es nicht wirken würden.
+Set<String> zusatzPaketAbwaehlen({
+  required Set<String> gewaehlt,
+  required String paketId,
+  required HouseRulePackCatalog aktuellerPaketKatalog,
+}) {
+  bool haengtAn(String id) {
+    final besucht = <String>{};
+    var paket = aktuellerPaketKatalog.find(id);
+    while (paket != null && !paket.isRoot && besucht.add(paket.id)) {
+      final elternId = paket.parentPackId.trim();
+      if (elternId == paketId) return true;
+      paket = aktuellerPaketKatalog.find(elternId);
+    }
+    return false;
+  }
+
+  return <String>{
+    for (final id in gewaehlt)
+      if (id != paketId && !haengtAn(id)) id,
+  };
+}
+
 /// Paketkatalog, der nur aus den Kopien des Profils besteht.
 ///
 /// Kopien, die sich nicht als Manifest lesen lassen, fehlen im Ergebnis und

@@ -240,6 +240,72 @@ void main() {
     expect(repo.bogenSpeicherungen, 1);
   });
 
+  testWidgets('Zusätzliches Paket wählen, ansehen und bewusst übernehmen', (
+    tester,
+  ) async {
+    const neuesPaket = 'epic_rules_v1.combat_sf';
+    final ohne = global.copyWith(
+      pakete: [
+        for (final p in global.pakete)
+          if (p.paketId != neuesPaket) p,
+      ],
+    );
+    expect(ohne.paketIds, isNot(contains(neuesPaket)));
+    final held = basisHeld.copyWith(id: 'zus', regelProfil: ohne);
+    final zustand = ladeBestandsheld(Bestandsheld.kriegerNormal).state;
+    final repo = BogenTestRepository(heroes: [held], states: {'zus': zustand});
+    final c = container(repo, held);
+    await tester.runAsync(() async {
+      await warte(c, regelProfilVorschauProvider('zus'));
+      await warte(
+        c,
+        regelProfilVorschauMitZusatzProvider((
+          heroId: 'zus',
+          zusatz: neuesPaket,
+        )),
+      );
+    });
+    await zeige(tester, c, 'zus');
+    await tester.pump();
+
+    await tester.tap(find.byKey(const ValueKey('regelprofil-pakete')));
+    await tester.pumpAndSettle();
+    expect(find.text('Regelprofil aktualisieren'), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('regelprofil-zusatz')));
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(const ValueKey('regelprofil-zusatz-$neuesPaket')),
+    );
+    await tester.pumpAndSettle();
+    // Auswahl allein schreibt nichts.
+    expect(repo.bogenSpeicherungen, 0);
+    expect(find.text('Zusätzliche Pakete (1 gewählt)'), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey('regelprofil-uebernehmen')));
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 300)),
+    );
+    await tester.pumpAndSettle();
+
+    final gespeichert = await tester.runAsync(() => repo.gespeichert('zus'));
+    expect(gespeichert!.regelProfil!.paketIds, contains(neuesPaket));
+    expect(gespeichert.regelProfil!.paketIds.toSet(), global.paketIds.toSet());
+  });
+
+  testWidgets('Ohne fehlende Pakete gibt es keinen Knopf für Zusatzpakete', (
+    tester,
+  ) async {
+    final held = basisHeld.copyWith(id: 'voll', regelProfil: global);
+    final zustand = ladeBestandsheld(Bestandsheld.kriegerNormal).state;
+    final repo = BogenTestRepository(heroes: [held], states: {'voll': zustand});
+    final c = container(repo, held);
+    await tester.runAsync(() async {
+      await warte(c, regelProfilVorschauProvider('voll'));
+    });
+    await zeige(tester, c, 'voll');
+    expect(find.byKey(const ValueKey('regelprofil-pakete')), findsNothing);
+  });
+
   testWidgets('Speicherfehler erscheint im Dialog und lässt ihn offen', (
     tester,
   ) async {

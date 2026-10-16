@@ -247,6 +247,87 @@ void main() {
     });
   });
 
+  group('Zusatzpakete', () {
+    const eltern = 'epic_rules_v1';
+
+    test('Kandidaten sind die Pakete, die dem Profil fehlen', () {
+      final profil = ohnePaket(globalesProfil(), epicKampf);
+      final kandidaten = zusatzPaketKandidaten(
+        profil: profil,
+        aktuellerPaketKatalog: pakete(),
+      );
+      expect(kandidaten.map((p) => p.id), [epicKampf]);
+      expect(
+        zusatzPaketKandidaten(
+          profil: globalesProfil(),
+          aktuellerPaketKatalog: pakete(),
+        ),
+        isEmpty,
+      );
+    });
+
+    test('ein Unterpaket bringt sein fehlendes Elternpaket mit', () {
+      final profil = ohnePaket(ohnePaket(globalesProfil(), epicKampf), eltern);
+      final ergebnis = zusatzPaketeMitElternpaketen(
+        gewaehlt: {epicKampf},
+        profil: profil,
+        aktuellerPaketKatalog: pakete(),
+      );
+      expect(ergebnis, {epicKampf, eltern});
+      // Steht das Elternpaket schon im Profil, bleibt die Auswahl gleich.
+      expect(
+        zusatzPaketeMitElternpaketen(
+          gewaehlt: {epicKampf},
+          profil: ohnePaket(globalesProfil(), epicKampf),
+          aktuellerPaketKatalog: pakete(),
+        ),
+        {epicKampf},
+      );
+      // Unbekannte IDs bleiben stehen und führen zu keinem Fehler.
+      expect(
+        zusatzPaketeMitElternpaketen(
+          gewaehlt: {'gibt_es_nicht'},
+          profil: profil,
+          aktuellerPaketKatalog: pakete(),
+        ),
+        {'gibt_es_nicht'},
+      );
+    });
+
+    test('Abwählen des Elternpakets nimmt die gewählten Unterpakete mit', () {
+      final ergebnis = zusatzPaketAbwaehlen(
+        gewaehlt: {eltern, epicKampf, talentPaket},
+        paketId: eltern,
+        aktuellerPaketKatalog: pakete(),
+      );
+      expect(ergebnis, {talentPaket});
+      expect(
+        zusatzPaketAbwaehlen(
+          gewaehlt: {eltern, epicKampf},
+          paketId: epicKampf,
+          aktuellerPaketKatalog: pakete(),
+        ),
+        {eltern},
+      );
+    });
+
+    test('der Vorschlag mit Eltern- und Unterpaket enthält beide', () {
+      final profil = ohnePaket(ohnePaket(globalesProfil(), epicKampf), eltern);
+      final vorschlag = schlageProfilVor(
+        profil: profil,
+        aktuellerPaketKatalog: pakete(),
+        catalogVersion: profil.catalogVersion,
+        zusaetzlichePaketIds: zusatzPaketeMitElternpaketen(
+          gewaehlt: {epicKampf},
+          profil: profil,
+          aktuellerPaketKatalog: pakete(),
+        ),
+      );
+      expect(vorschlag.paketIds, containsAll([eltern, epicKampf]));
+      expect(vorschlag.paketIds, globalesProfil().paketIds);
+    });
+  });
+
   group('Pakethinweise', () {
     List<(PaketHinweisArt, String)> arten(HeroRegelProfil profil) => [
       for (final h in paketHinweise(

@@ -65,8 +65,10 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   `aendereHeldMitMeldung(validationCatalog:)`). Zurück auf „folgt global“ nur
   über `setzeRegelProfilZurueck` (Knopf in derselben Karte). Das Profil reist
   im Export/Import mit (Kopien und Prüfsummen unverändert); epische Nachteile
-  lesen `heroHouseRuleActiveProvider`, nicht den globalen Schalter. Offen:
-  gewählte Zusatzpakete, Gruppenvorgabe, Einstieg in der UI2-Navigation.
+  lesen `heroHouseRuleActiveProvider`, nicht den globalen Schalter. Zusatzpakete
+  wählt der Nutzer im Vorschaudialog (flüchtige Auswahl,
+  `regelProfilVorschauMitZusatzProvider`, Elternpakete werden ergänzt). Offen:
+  Gruppenvorgabe, Einstieg in der UI2-Navigation.
 - Aventurische Waehrungsumrechnung fuer Dukaten/Silber/Kreuzer liegt in
   `lib/rules/derived/currency_rules.dart`.
 - Der aventurische Kalender liegt kanonisch in `lib/domain/aventurian_date.dart`:
