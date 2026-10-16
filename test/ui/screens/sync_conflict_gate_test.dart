@@ -433,6 +433,18 @@ class _FakeAuthService implements AuthService {
   }
 
   @override
+  Future<void> sendPasswordResetEmail(String email) async {}
+
+  @override
+  Future<void> sendEmailVerification() async {}
+
+  @override
+  Future<AuthUser?> reloadCurrentUser() async => currentUser;
+
+  @override
+  Future<void> reauthenticateWithPassword(String password) async {}
+
+  @override
   AuthUser? get currentUser => const AuthUser(uid: 'user-1', email: null);
 
   @override

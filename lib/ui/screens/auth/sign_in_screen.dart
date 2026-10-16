@@ -89,6 +89,52 @@ class _SignInScreenState extends State<SignInScreen> {
     }
   }
 
+  Future<void> _sendPasswordReset() async {
+    final email = _emailController.text.trim();
+    if (email.isEmpty || !email.contains('@') || !email.contains('.')) {
+      setState(() {
+        _errorMessage = 'Bitte gib zuerst eine gültige E-Mail-Adresse ein.';
+      });
+      return;
+    }
+    setState(() {
+      _isBusy = true;
+      _errorMessage = null;
+    });
+    try {
+      await _authService.sendPasswordResetEmail(email);
+      if (!mounted) {
+        return;
+      }
+      _showPasswordResetConfirmation();
+    } on FirebaseAuthException catch (error) {
+      if (mounted && error.code == 'user-not-found') {
+        _showPasswordResetConfirmation();
+      } else if (mounted) {
+        setState(() {
+          _errorMessage = _localizeError(error);
+        });
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isBusy = false;
+        });
+      }
+    }
+  }
+
+  void _showPasswordResetConfirmation() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+          'Falls ein Konto existiert, wurde eine E-Mail zum Zurücksetzen '
+          'gesendet.',
+        ),
+      ),
+    );
+  }
+
   String _localizeError(FirebaseAuthException error) {
     switch (error.code) {
       case 'invalid-email':
@@ -100,7 +146,7 @@ class _SignInScreenState extends State<SignInScreen> {
       case 'email-already-in-use':
         return 'Für diese E-Mail existiert bereits ein Konto.';
       case 'weak-password':
-        return 'Das Passwort ist zu schwach (mindestens 6 Zeichen).';
+        return 'Das Passwort ist zu schwach (mindestens 12 Zeichen).';
       case 'network-request-failed':
         return 'Keine Verbindung zum Server. Prüfe deine Internetverbindung.';
       default:
@@ -176,8 +222,8 @@ class _SignInScreenState extends State<SignInScreen> {
                   validator: (value) {
                     final v = value ?? '';
                     if (v.isEmpty) return 'Bitte Passwort eingeben.';
-                    if (_isRegisterMode && v.length < 6) {
-                      return 'Mindestens 6 Zeichen.';
+                    if (_isRegisterMode && v.length < 12) {
+                      return 'Mindestens 12 Zeichen.';
                     }
                     return null;
                   },
@@ -220,6 +266,11 @@ class _SignInScreenState extends State<SignInScreen> {
               _isRegisterMode ? 'Stattdessen anmelden' : 'Neues Konto anlegen',
             ),
           ),
+          if (!_isRegisterMode)
+            TextButton(
+              onPressed: _isBusy ? null : _sendPasswordReset,
+              child: const Text('Passwort vergessen?'),
+            ),
         ],
       ),
     );
