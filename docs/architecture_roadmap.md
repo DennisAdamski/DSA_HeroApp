@@ -1650,11 +1650,20 @@ Kombinationen (Spalte, Wertebereich, SE, episch, Haupteigenschaft,
 Lehrmeister) mit der bisherigen Kette.
 
 *Offen.* Die Lernspalte selbst (Katalogspalte, Begabung, Unfähigkeit,
-Hausregel) bleibt der Text „Lernkomplexität X“ (`effectiveTalentLernkomplexitaet`);
-der Erwerbsdialog (`erwerb_dialog.dart`) und der Nachteilsabbau rechnen den
-epischen Aufschlag weiterhin selbst. Die Sondererfahrungs-Ausnahme des
-Aufschlags (Hausregel Kap. 2.2) greift im Dialog wie bisher auf die schon
-verbilligten Kosten; unverändert übernommen.
+Hausregel) bleibt der Text „Lernkomplexität X“ (`effectiveTalentLernkomplexitaet`).
+Die Sondererfahrungs-Ausnahme des Aufschlags (Hausregel Kap. 2.2) greift im
+Dialog wie bisher auf die schon verbilligten Kosten; unverändert übernommen.
+
+*Nachtrag 16.10.2026 — Erwerbsdialog und Nachteilsabbau.* Die Kette „Kosten →
+epischer Aufschlag → Lehrmeister“ steht jetzt als Regel in
+`erwerb_herleitung_rules.dart` (`herleiteErwerbskosten`, `Erwerbskosten`);
+`erwerb_dialog.dart` und `nachteil_abbau_dialog.dart` lesen Kosten, Aufschlag
+und die eingeklappte „Berechnung der AP-Kosten“ daraus ab und rechnen nichts
+mehr selbst. Verhaltensneutral: `erwerb_herleitung_rules_test.dart` vergleicht
+über alle Kombinationen (Aufschlag, epischer Inhalt, Begabung/SE, Lehrmeister,
+Spezialisierungs-Verdopplung) mit der bisherigen Kette. Damit ist der
+Erwerbsdialog-Punkt von Teilstand 10 erledigt; offen bleibt die Lernspalte als
+Herleitung für Talente.
 
 **Teilstand 11, 14.10.2026 — Lernregeln: Hexalogien, Gegenelement, Gedächtnis,
 Lehrmeister.**
