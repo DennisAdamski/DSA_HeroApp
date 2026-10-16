@@ -5,6 +5,8 @@ import 'package:dsa_heldenverwaltung/domain/gefecht.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht_wirken.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_provider.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/gefecht_gegner_rules.dart'
+    show gefechtsAngreifbareGegner;
 import 'package:dsa_heldenverwaltung/state/gefecht_begegnung_provider.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_fremdwirkung_rules.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_initiative_provider.dart';
@@ -53,7 +55,7 @@ Future<void> zeigeGefechtsWirken({
     final ziel = await zeigeGefechtsFremdziel(
       context: context,
       zauberId: zauber.id,
-      gegner: ref.read(gefechtBegegnungProvider).gegner.values.toList(),
+      gegner: gefechtsAngreifbareGegner(ref.read(gefechtBegegnungProvider)),
       verfuegbareAsp: snapshot.state.currentAsp,
       gegnerId: s.kontext.gegnerId,
     );

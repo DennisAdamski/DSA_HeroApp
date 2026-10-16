@@ -881,3 +881,28 @@ dasselbe.
   Ansagefolgemalus, Meisterparade). Tests:
   `test/rules/gefecht_kampfwerte_rules_test.dart`,
   `test/ui2/spielen/gefecht_kampfwerte_test.dart`.
+
+## Gegnerstand aus Treffern (16. Oktober 2026)
+
+Erste Schritte des [Gefechtslage-Konzepts](gefecht_lage_konzept.md).
+`Gefechtsgegner` führt zusätzlich KO, Größenklasse, Körperbau, Status und
+`bindet`; LeP (jetzt LeP zu Beginn), RS und KO dürfen unbekannt sein. Jede
+Buchung landet als `Gefechtsgegnertreffer` am Gegner, statt LeP sofort zu
+senken. `gefechtsGegnerstand` leitet SP, verbleibende LeP, offene TP ohne RS
+und Wunden je Zone ab (WdS S. 56 f., höchstens drei je Zone nach S. 109);
+ein nachträglich eingetragener RS oder KO rechnet alle Treffer neu. Die
+Gegnerkarte zeigt den Stand, bearbeitet Grundwerte über
+`speichereGefechtsgegnerprofil` auf dem frischen Gegner (Treffer und
+Manöverfolgen bleiben) und nimmt den letzten Treffer zurück; die Buchungs-ID
+bleibt dabei verbraucht. Größe und Bindung wirken noch nicht auf Regeln
+(Schritte 4 bis 7).
+
+Schritt 3: Der Status wird über Chips der Gegnerkarte gesetzt; ein
+Statusvorschlag aus den LeP erscheint als Text mit Knopf und wird nie
+automatisch übernommen. Nur kämpfende Gegner stehen in der gemeinsamen
+INI-Folge; tote und geflohene Gegner sind kein Ziel mehr (Zielknopf,
+Klingensturm, Fremdwirkung), kampfunfähige bleiben angreifbar.
+
+Tests: `test/rules/gefecht_gegner_rules_test.dart`,
+`test/state/gefecht_initiative_provider_test.dart`,
+`test/ui2/spielen/gefecht_gegner_test.dart`.

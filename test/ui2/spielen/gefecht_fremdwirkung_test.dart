@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/gefecht_gegner_rules.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht.dart';
@@ -128,7 +129,10 @@ void main() {
         c.read(gefechtProvider('rondra'))!.handlung!.ergebnis,
         same(original),
       );
-      expect(c.read(gefechtBegegnungProvider).gegner['a']!.lep, 30);
+      expect(
+        gefechtsGegnerstand(c.read(gefechtBegegnungProvider).gegner['a']!).lep,
+        30,
+      );
       repo.fehler = false;
       await repo.saveHeroState(
         'rondra',
@@ -146,7 +150,10 @@ void main() {
         true,
       );
       expect((await repo.loadHeroState('rondra'))!.currentAsp, 6);
-      expect(c.read(gefechtBegegnungProvider).gegner['a']!.lep, 30);
+      expect(
+        gefechtsGegnerstand(c.read(gefechtBegegnungProvider).gegner['a']!).lep,
+        30,
+      );
       foes.speichern(
         const Gefechtsgegner(id: 'a', name: 'A', lep: 25, rs: 100, ini: 12),
       );
@@ -168,8 +175,14 @@ void main() {
         ),
         false,
       );
-      expect(c.read(gefechtBegegnungProvider).gegner['a']!.lep, 13);
-      expect(c.read(gefechtBegegnungProvider).gegner['b']!.lep, 40);
+      expect(
+        gefechtsGegnerstand(c.read(gefechtBegegnungProvider).gegner['a']!).lep,
+        13,
+      );
+      expect(
+        gefechtsGegnerstand(c.read(gefechtBegegnungProvider).gegner['b']!).lep,
+        40,
+      );
       expect((await repo.loadHeroState('rondra'))!.currentAsp, 6);
       expect((await repo.loadHeroState('rondra'))!.currentLep, 13);
       await tester.pumpAndSettle();

@@ -3,6 +3,8 @@ import 'package:dsa_heldenverwaltung/domain/gefecht_fremdwirkung.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht_gegner.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_fremdwirkung_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/gefecht_gegner_rules.dart'
+    show gefechtsGegnerstand;
 
 /// Erfasst konkrete Voraussetzungen und friert das Ziel vor der Startprobe ein.
 Future<GefechtsFremdwirkung?> zeigeGefechtsFremdziel({
@@ -38,7 +40,7 @@ Future<GefechtsFremdwirkung?> zeigeGefechtsFremdziel({
                       DropdownMenuItem(
                         value: g.id,
                         child: Text(
-                          '${g.name} · ${g.lep} LeP',
+                          '${g.name} · ${gefechtsGegnerstand(g).lep?.toString() ?? "?"} LeP',
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
