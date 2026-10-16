@@ -67,9 +67,11 @@ und schließt es mit einem eindeutigen Testhinweis. Er löscht das Issue nicht.
 Ein Produktionsdeploy erfolgt separat und gezielt mit
 `functions:feedbackApi`; ein pauschales `firebase deploy` ist ausgeschlossen.
 
-Test- und Produktionsbuild erhalten jeweils ausschließlich ihre freigegebene
-Function-URL über `--dart-define=FEEDBACK_API_URL=<URL>`. Ohne diese Definition
-bleibt der Client deaktiviert; eine URL wird nicht automatisch geraten.
+Der CI-Build für `test` erhält die freigegebene URL von `feedbackApiTest` über
+`--dart-define=FEEDBACK_API_URL=...` und prüft, dass sie im Bundle enthalten ist.
+Produktionsbuilds bleiben bis zur separaten Freigabe und Bereitstellung von
+`feedbackApi` ohne Feedback-URL. Ohne diese Definition bleibt der Client
+deaktiviert; eine URL wird nicht automatisch geraten.
 
 ## Datenschutz, Limits und Störungen
 
