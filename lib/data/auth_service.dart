@@ -4,10 +4,17 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 /// Vereinfachte Sicht auf den eingeloggten Benutzer fuer die UI-Schicht.
 class AuthUser {
-  const AuthUser({required this.uid, required this.email});
+  const AuthUser({
+    required this.uid,
+    required this.email,
+    this.emailVerified = false,
+  });
 
   final String uid;
   final String? email;
+
+  /// Gibt an, ob Firebase die E-Mail-Adresse bestätigt hat.
+  final bool emailVerified;
 }
 
 /// Wrapper um [FirebaseAuth] mit den fuer die App benoetigten Operationen.
@@ -27,7 +34,7 @@ class AuthService {
 
   /// Reaktiver Stream des eingeloggten Benutzers (Login/Logout/Refresh).
   Stream<AuthUser?> watchUser() {
-    return _auth.authStateChanges().map(_mapUser);
+    return _auth.userChanges().map(_mapUser);
   }
 
   /// Loggt den Benutzer per Email und Passwort ein.
@@ -59,7 +66,46 @@ class AuthService {
     if (user == null) {
       throw StateError('Registrierung lieferte keinen Benutzer.');
     }
+    await credential.user?.sendEmailVerification();
     return user;
+  }
+
+  /// Sendet eine E-Mail zum Zurücksetzen des Passworts.
+  Future<void> sendPasswordResetEmail(String email) {
+    return _auth.sendPasswordResetEmail(email: email.trim());
+  }
+
+  /// Sendet dem aktuellen, noch nicht verifizierten Konto eine Bestätigung.
+  Future<void> sendEmailVerification() async {
+    final user = _auth.currentUser;
+    if (user == null) {
+      throw StateError('Kein Konto angemeldet.');
+    }
+    if (!user.emailVerified) {
+      await user.sendEmailVerification();
+    }
+  }
+
+  /// Lädt den aktuellen Kontostand neu und gibt ihn für die UI zurück.
+  Future<AuthUser?> reloadCurrentUser() async {
+    await _auth.currentUser?.reload();
+    return _mapUser(_auth.currentUser);
+  }
+
+  /// Bestätigt sensible Kontoaktionen erneut mit dem Kontopasswort.
+  Future<void> reauthenticateWithPassword(String password) async {
+    final user = _auth.currentUser;
+    final email = user?.email;
+    if (user == null || email == null) {
+      throw StateError(
+        'Für dieses Konto ist keine E-Mail-Anmeldung verfügbar.',
+      );
+    }
+    final credential = EmailAuthProvider.credential(
+      email: email,
+      password: password,
+    );
+    await user.reauthenticateWithCredential(credential);
   }
 
   /// Loggt den aktuellen Benutzer aus.
@@ -69,6 +115,10 @@ class AuthService {
     if (user == null) {
       return null;
     }
-    return AuthUser(uid: user.uid, email: user.email);
+    return AuthUser(
+      uid: user.uid,
+      email: user.email,
+      emailVerified: user.emailVerified,
+    );
   }
 }

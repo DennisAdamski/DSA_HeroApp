@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dsa_heldenverwaltung/catalog/house_rule_pack.dart';
 import 'package:dsa_heldenverwaltung/data/app_storage_paths.dart';
+import 'package:dsa_heldenverwaltung/data/auth_service.dart';
 import 'package:dsa_heldenverwaltung/data/hive_settings_repository.dart';
 import 'package:dsa_heldenverwaltung/domain/app_settings.dart';
 import 'package:dsa_heldenverwaltung/domain/sync_models.dart';
@@ -120,18 +121,58 @@ void main() {
     expect(find.text('1200'), findsNWidgets(2));
     expect(find.text('1100'), findsNWidgets(2));
   });
+
+  testWidgets('unbestätigtes Konto kann Verifikationsmail erneut senden', (
+    tester,
+  ) async {
+    final settings = _FakeSettingsRepository();
+    final sync = _FakeSyncController(
+      const SyncStatusSnapshot(accountId: 'user-1'),
+    );
+    final auth = _FakeAuthService();
+    addTearDown(settings.close);
+    addTearDown(sync.close);
+    tester.view.devicePixelRatio = 1.0;
+    tester.view.physicalSize = const Size(1200, 900);
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      _buildApp(settings: settings, sync: sync, authService: auth),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(const ValueKey<String>('settings-menu-accountSync')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('E-Mail noch nicht bestätigt'), findsOneWidget);
+    await tester.tap(find.text('Bestätigungs-E-Mail erneut senden'));
+    await tester.pumpAndSettle();
+
+    expect(auth.verificationCalls, 1);
+    expect(
+      find.textContaining('Bestätigungs-E-Mail wurde gesendet'),
+      findsOneWidget,
+    );
+  });
 }
 
 Widget _buildApp({
   required _FakeSettingsRepository settings,
   required _FakeSyncController sync,
+  AuthService? authService,
 }) {
   return ProviderScope(
     overrides: [
       settingsRepositoryProvider.overrideWithValue(settings),
       syncControllerProvider.overrideWithValue(sync),
-      authServiceProvider.overrideWithValue(null),
-      authUserProvider.overrideWith((ref) => const Stream.empty()),
+      authServiceProvider.overrideWithValue(authService),
+      authUserProvider.overrideWith(
+        (ref) => authService == null
+            ? const Stream.empty()
+            : Stream.value(authService.currentUser),
+      ),
       heroStorageLocationProvider.overrideWith(
         (ref) async => const HeroStorageLocation(
           defaultPath: '/default',
@@ -150,6 +191,46 @@ Widget _buildApp({
     ],
     child: const MaterialApp(home: SettingsScreen()),
   );
+}
+
+class _FakeAuthService implements AuthService {
+  int verificationCalls = 0;
+
+  @override
+  AuthUser? get currentUser =>
+      const AuthUser(uid: 'user-1', email: 'alrik@example.test');
+
+  @override
+  Future<void> sendEmailVerification() async {
+    verificationCalls++;
+  }
+
+  @override
+  Future<AuthUser?> reloadCurrentUser() async => currentUser;
+
+  @override
+  Future<void> sendPasswordResetEmail(String email) async {}
+
+  @override
+  Future<void> reauthenticateWithPassword(String password) async {}
+
+  @override
+  Future<AuthUser> registerWithEmail({
+    required String email,
+    required String password,
+  }) async => throw UnimplementedError();
+
+  @override
+  Future<AuthUser> signInWithEmail({
+    required String email,
+    required String password,
+  }) async => throw UnimplementedError();
+
+  @override
+  Future<void> signOut() async {}
+
+  @override
+  Stream<AuthUser?> watchUser() => Stream.value(currentUser);
 }
 
 class _FakeSyncController extends AppSyncController {

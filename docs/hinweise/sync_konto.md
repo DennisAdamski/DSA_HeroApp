@@ -1,6 +1,19 @@
 # Konto, Sync und Konflikte
 
-Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unverändert. Die kurze [CLAUDE.md](../../CLAUDE.md) enthält die harten Regeln und den Themenindex.
+Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026) und um den aktuellen
+Konto-Lebenszyklus ergänzt. Die kurze [CLAUDE.md](../../CLAUDE.md) enthält die
+harten Regeln und den Themenindex.
+
+- Registrierungen verlangen clientseitig mindestens zwölf Passwortzeichen;
+  Firebase prüft zusätzlich seine serverseitige Kennwortrichtlinie. Nach dem
+  Anlegen sendet `AuthService` eine E-Mail-Verifikation. Ein unbestätigtes Konto
+  kann die Nachricht unter `Einstellungen > Konto & Sync` erneut senden und
+  den Status nachladen.
+- `Passwort vergessen?` sendet über Firebase eine Reset-Mail. Die UI antwortet
+  für vorhandene und unbekannte Adressen gleich, damit kein Konto-Bestand
+  offengelegt wird. Registrierungstickets und die serverseitige Keyword-Sperre
+  bleiben Voraussetzung, bevor neue öffentliche Registrierungen freigegeben
+  werden.
 
 - `Einstellungen > Konto & Sync` steuert optionalen Firebase-Login,
   manuellen Konto-Sync und Konfliktaufloesung. Ohne Login nutzt die App das
