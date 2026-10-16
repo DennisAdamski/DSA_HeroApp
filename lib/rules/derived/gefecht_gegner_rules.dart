@@ -7,11 +7,27 @@ import 'gefecht_vorgaben_rules.dart';
 import 'schaden_rules.dart' show berechneSchadenspunkte, schlageWundenVor;
 import 'wund_rules.dart' show computeWundschwellenStufen;
 
+/// WdS S. 97: Zuschlag der Zielgröße im Fernkampf (winzig +8 … sehr groß −2).
+int gefechtsZielgroesseZuschlag(GefechtsGroesse g) => switch (g) {
+  GefechtsGroesse.winzig => 8,
+  GefechtsGroesse.sehrKlein => 6,
+  GefechtsGroesse.klein => 4,
+  GefechtsGroesse.mittel => 2,
+  GefechtsGroesse.gross => 0,
+  GefechtsGroesse.sehrGross => -2,
+};
+
 /// Ein neuer Gegnerkontakt verwirft Angriffsdaten und bezahltes altes Zielen.
+///
+/// Sichtbare Vorgaben aus dem Gegner: die zuletzt für diese Paarung gesetzte
+/// DK (sonst [startDk]), die Zielgröße als Zielsituation, „sehr groß“ und
+/// Kampfgetümmel, wenn der Gegner jemand anderen als [heldId] bindet. Alles
+/// bleibt im Gefecht änderbar.
 Gefechtszustand waehleGefechtsgegner(
   Gefechtszustand s,
   Gefechtsgegner g, {
   required String startDk,
+  String? heldId,
 }) {
   if (s.auftrag != null || s.handlung != null) {
     throw StateError('Laufende Handlung zuerst abschließen oder abbrechen.');
@@ -20,11 +36,22 @@ Gefechtszustand waehleGefechtsgegner(
     throw StateError('Tote oder geflohene Gegner sind kein Ziel mehr.');
   }
   if (s.kontext.gegnerId == g.id) return s;
+  final alt = s.kontext.gegnerId;
+  final dk = s.dk;
   return s.copyWith(
-    dk: startDk,
+    dk: s.dkJeGegner[g.id] ?? startDk,
+    dkJeGegner: alt == null || dk == null
+        ? null
+        : Map.unmodifiable({...s.dkJeGegner, alt: dk}),
     ohneZielstand: true,
     kontext: gefechtsKontextMitVorgaben(
-      Gefechtskontext(kontakt: g.name, gegnerId: g.id),
+      Gefechtskontext(
+        kontakt: g.name,
+        gegnerId: g.id,
+        situationsZuschlag: gefechtsZielgroesseZuschlag(g.groesse),
+        sehrGross: g.groesse == GefechtsGroesse.sehrGross,
+        getuemmel: g.bindet != null && g.bindet != heldId,
+      ),
     ),
   );
 }

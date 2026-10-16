@@ -286,6 +286,40 @@ void main() {
       throwsStateError,
     );
   });
+  test('Zielwahl belegt Größe, Getümmel und die DK der Paarung vor', () {
+    expect(
+      [for (final g in GefechtsGroesse.values) gefechtsZielgroesseZuschlag(g)],
+      [8, 6, 4, 2, 0, -2],
+    );
+    final riese = _mitId(
+      ork,
+      'r',
+    ).copyWith(groesse: GefechtsGroesse.sehrGross, bindet: 'bosper');
+    final wolf = _mitId(
+      ork,
+      'w',
+    ).copyWith(groesse: GefechtsGroesse.klein, bindet: 'held');
+    var s = waehleGefechtsgegner(
+      const Gefechtszustand(iniWurf: 6),
+      riese,
+      startDk: 'N',
+      heldId: 'held',
+    );
+    expect(s.kontext.situationsZuschlag, -2);
+    expect(s.kontext.sehrGross, isTrue);
+    expect(s.kontext.getuemmel, isTrue);
+    s = s.copyWith(dk: 'S');
+    s = waehleGefechtsgegner(s, wolf, startDk: 'N', heldId: 'held');
+    expect(s.kontext.situationsZuschlag, 4);
+    expect(s.kontext.sehrGross, isFalse);
+    // Bindet er den Schützen selbst, ist es kein Schuss ins Getümmel.
+    expect(s.kontext.getuemmel, isFalse);
+    expect(s.dk, 'N');
+    s = s.copyWith(dk: 'H');
+    s = waehleGefechtsgegner(s, riese, startDk: 'N', heldId: 'held');
+    expect(s.dk, 'S');
+    expect(s.dkJeGegner, {'r': 'S', 'w': 'H'});
+  });
 }
 
 // Kopie mit anderer ID für Begegnungen aus einer Vorlage.
@@ -297,4 +331,6 @@ Gefechtsgegner _mitId(Gefechtsgegner g, String id) => Gefechtsgegner(
   ko: g.ko,
   ini: g.ini,
   status: g.status,
+  groesse: g.groesse,
+  bindet: g.bindet,
 );

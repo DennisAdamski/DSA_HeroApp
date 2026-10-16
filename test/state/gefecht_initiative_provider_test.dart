@@ -120,6 +120,48 @@ void main() {
     },
   );
 
+  test('Überzahl hebt INI der Helden und Gegner, Wunden senken sie', () async {
+    final snap = fixture.ansageSnapshot(sf: true);
+    final c = ProviderContainer(
+      overrides: [
+        heroComputedProvider('a').overrideWith((ref) => AsyncData(snap)),
+        heroComputedProvider('b').overrideWith((ref) => AsyncData(snap)),
+        rulesCatalogProvider.overrideWith((ref) async => testCatalog),
+      ],
+    );
+    addTearDown(c.dispose);
+    await c.read(rulesCatalogProvider.future);
+    final gruppe = c.read(gefechtInitiativeProvider.notifier);
+    for (final id in ['a', 'b']) {
+      c.read(gefechtProvider(id).notifier).beginnen(6, dk: 'N');
+      gruppe.hinzufuegen(id, zeitpunktVorbei: false);
+    }
+    final w = gefechtswerteFuer(snap, katalog: testCatalog);
+    final roh = gefechtsInitiative(c.read(gefechtProvider('a'))!, w);
+    int zeit(String id) =>
+        c.read(gefechtsZeitpunkteProvider).firstWhere((z) => z.id == id).ini;
+    final gegner = c.read(gefechtBegegnungProvider.notifier);
+    gegner.speichern(
+      const Gefechtsgegner(id: 'g', name: 'Ork', ini: 10, ko: 12, rs: 0),
+    );
+    gegner.bindungSetzen('g', 'a');
+    // Zwei gegen einen: Helden INI +1.
+    expect(c.read(gefechtMitInitiativeProvider('a'))!.lageIni, 1);
+    expect(zeit('a:regulaer'), roh + 1);
+    expect(zeit('gegner:g'), 10);
+    for (final id in ['h', 'i']) {
+      gegner.speichern(Gefechtsgegner(id: id, name: id, ini: 10));
+      gegner.bindungSetzen(id, 'b');
+    }
+    // Drei gegen zwei: Gegner INI +1, Helden ohne Bonus.
+    expect(c.read(gefechtMitInitiativeProvider('a'))!.lageIni, 0);
+    expect(zeit('a:regulaer'), roh);
+    expect(zeit('gegner:g'), 11);
+    gegner.schaden(gegnerId: 'g', buchungId: 'x', tp: 13);
+    // Zwei Wunden (ohne Zone): INI-Basis −4.
+    expect(zeit('gegner:g'), 7);
+  });
+
   test('Ausgeschiedene Gegner verlieren ihren INI-Zeitpunkt', () async {
     final snap = fixture.ansageSnapshot(sf: true);
     final c = ProviderContainer(

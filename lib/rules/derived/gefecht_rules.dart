@@ -98,7 +98,8 @@ Gefechtszustand beginneGefecht(int wurf, {String? dk}) => Gefechtszustand(
 /// Aktuelle Initiative ersetzt den im Helden gespeicherten Vorschauwurf.
 int gefechtsInitiative(Gefechtszustand s, Gefechtswerte w) =>
     w.iniBasis +
-    s.iniWurf -
+    s.iniWurf +
+    s.lageIni -
     s.iniVerlust -
     s.geschuetzterIniVerlust -
     s.ungeklaerterIniVerlust;

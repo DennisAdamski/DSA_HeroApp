@@ -208,6 +208,8 @@ class Gefechtszustand {
     this.patzerSperre,
     this.initiativSperre,
     this.gesperrteKampfmittel = const {},
+    this.dkJeGegner = const {},
+    this.lageIni = 0,
   });
   final int runde, iniWurf, iniVerlust;
   final int geschuetzterIniVerlust, ungeklaerterIniVerlust;
@@ -292,6 +294,13 @@ class Gefechtszustand {
   /// Defekte oder verlorene Gegenstände bleiben an ihrer physischen ID gebunden.
   final Map<String, String> gesperrteKampfmittel;
 
+  /// INI-Anteil aus Überzahl und Taktik der Begegnung (WdS S. 81);
+  /// abgeleitet von `gefechtMitInitiativeProvider`, sonst 0.
+  final int lageIni;
+
+  /// Zuletzt gesetzte DK je Gegner-ID; ein Zielwechsel stellt sie wieder her.
+  final Map<String, String> dkJeGegner;
+
   /// Kämpfende Gegner der Begegnung, die diesen Helden binden; abgeleitet,
   /// `null` ohne Bindung (dann gilt die manuelle Gegnerzahl [gegner]).
   final int? gebundeneGegner;
@@ -368,6 +377,8 @@ class Gefechtszustand {
     String? initiativSperre,
     bool ohneInitiativSperre = false,
     Map<String, String>? gesperrteKampfmittel,
+    Map<String, String>? dkJeGegner,
+    int? lageIni,
   }) => Gefechtszustand(
     runde: runde ?? this.runde,
     iniWurf: iniWurf ?? this.iniWurf,
@@ -444,6 +455,8 @@ class Gefechtszustand {
         ? null
         : initiativSperre ?? this.initiativSperre,
     gesperrteKampfmittel: gesperrteKampfmittel ?? this.gesperrteKampfmittel,
+    dkJeGegner: dkJeGegner ?? this.dkJeGegner,
+    lageIni: lageIni ?? this.lageIni,
   );
 }
 

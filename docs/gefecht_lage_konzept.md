@@ -35,8 +35,8 @@ Schreiben.
 | 3 | Ausgeschiedene Gegner herausnehmen | umgesetzt (16.10.2026) |
 | 4 | Überzahl-Regelmodul | umgesetzt bis auf Konzentration und Taktik-Bedienung (16.10.2026) |
 | 5 | Eigene Seite als Teilnehmerliste | umgesetzt (16.10.2026) |
-| 6 | Gegnerwerte als Vorgabe übernehmen | offen |
-| 7 | INI der Gegner mit Überzahl und Wunden | offen |
+| 6 | Gegnerwerte als Vorgabe übernehmen | umgesetzt (16.10.2026) |
+| 7 | INI der Gegner mit Überzahl und Wunden | umgesetzt (16.10.2026) |
 
 ### 1. Gegnermodell erweitern
 
@@ -153,8 +153,10 @@ Flüchtiger `Gefechtsmitstreiter` in der Begegnung: Name, Herkunft (Held der
 App oder externer Held), INI, Beteiligung (Nahkampf, Fernkampf, nicht dabei),
 Ziel. Vorbelegt aus den verbundenen Helden der gemeinsamen Initiative und aus
 `gruppenMitgliederProvider` (`ExternerHeld.iniBase`). Nur Nahkämpfer zählen
-für die Überzahl; Fernkämpfer erhalten den Getümmel-Zuschlag (+2 je Kämpfer
-in H, +3 in N/S, WdS S. 97; Lesart der Tabelle).
+für die Überzahl. Für Fernkämpfer gilt beim Schuss ins Getümmel die
+Hausregel der App (`gefechtsGetuemmelZuschlag`: pauschal +3, mit
+Scharfschütze +2, Meisterschütze +1, Waffenmeister 0) statt des Zuschlags je
+Kämpfer aus WdS S. 97; das Mockup zeigt noch die Lesart je Kämpfer.
 
 **Stand 16.10.2026:** `gefechtsEigeneSeiteProvider(heroId)` bildet die Seite
 aus dem Helden, den verbundenen Helden der gemeinsamen Initiative und
@@ -164,14 +166,21 @@ Festlegung kämpfen alle im Nahkampf. `Gefechtsmitstreiter` in der Begegnung
 hält Beteiligung (Nahkampf, Fernkampf, nicht dabei) und das Ziel externer
 Gefährten; Helden wählen ihr Ziel im eigenen Gefecht. „Nicht dabei“ löst
 Bindungen und Ziel. Die Gegnerkarte zeigt „Eure Seite“ und bietet nur
-Beteiligte zur Bindung an. Der Getümmel-Zuschlag für Fernkämpfer folgt mit
-Schritt 6.
+Beteiligte zur Bindung an.
 
 ### 6. Gegnerwerte als Vorgabe übernehmen
 
 `waehleGefechtsgegner` übernimmt die zuletzt für diese Paarung gesetzte DK;
 der Fernkampf belegt die Zielgröße aus der Größenklasse sichtbar vor
-(winzig +8 … sehr groß −2, WdS S. 97). Für Tierangriffe: groß nur mit Schild
+(winzig +8 … sehr groß −2, WdS S. 97).
+
+**Stand 16.10.2026:** `Gefechtszustand.dkJeGegner` merkt die DK je Gegner;
+ein Zielwechsel stellt sie wieder her, sonst gilt die Start-DK der Waffe.
+Die Zielsituation des Fernkampfs startet mit dem Zuschlag der Größenklasse
+(`gefechtsZielgroesseZuschlag`), „Kampfgetümmel“ ist vorbelegt, wenn der
+Gegner jemand anderen als den Schützen bindet, und „Sehr großer Gegner“ im
+Aktionsdialog (Hammerschlag) folgt der Größenklasse. Alle Vorgaben bleiben
+änderbar. Für Tierangriffe: groß nur mit Schild
 parierbar, sehr groß gar nicht (WdS S. 114); Hausregel „Fortgeschrittene
 Monsterparade“ (Epische Stufen) erweitert das.
 
@@ -180,6 +189,16 @@ Monsterparade“ (Epische Stufen) erweitert das.
 `_zeitpunkte` rechnet den Überzahlbonus (Schritt 4, nach Taktik) und −2 je
 Wunde in die Gegner-INI ein, als nachvollziehbare Herleitung. Der Bonus der
 eigenen Helden folgt als eigener Herleitungsschritt in `gefechtsInitiative`.
+
+**Stand 16.10.2026:** Überzahl gibt es nur, wenn beide Seiten im Nahkampf
+stehen. `gefechtsGegnerIni` = erfasste INI + Überzahlbonus der Gegner +
+Wundabzug (`gefechtsGegnerIniWundmalus`: je Wunde INI-Basis −2 plus
+Zonenanteil, kombiniert wie bei Helden). `Gefechtszustand.lageIni` hält den
+Anteil aus Überzahl und Taktik eines Helden (`gefechtsLageIni`, nicht für
+Unbeteiligte); `gefechtsInitiative` zählt ihn mit, die INI-Herleitung zeigt
+ihn als Schritt „Überzahl und Taktik“. Die Gegnerkarte zeigt die aktuelle
+Gegner-INI mit ihren Anteilen. Die gewürfelten 2W6 einer Kopfwunde trägt der
+Nutzer weiterhin als INI-Korrektur des Gegners ein.
 
 ## Bewusst später
 

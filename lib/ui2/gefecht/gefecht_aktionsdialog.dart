@@ -80,6 +80,8 @@ class _GefechtAktionsdialogState extends State<GefechtAktionsdialog> {
   void initState() {
     super.initState();
     _dk = widget.zustand.dk;
+    // Vorgabe aus der Größenklasse des gewählten Gegners; änderbar.
+    _grosserGegner = widget.zustand.kontext.sehrGross ?? false;
     _distanzSchritte = _distanzwechsel ? -1 : 0;
     _zusatzParade = widget.zusatzParade;
     _kontext = widget.zustand.kontext.copyWith(
