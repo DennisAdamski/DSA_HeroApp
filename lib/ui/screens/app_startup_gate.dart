@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dsa_heldenverwaltung/ablaeufe/vorgaenge_wiederaufnehmen.dart';
 import 'package:dsa_heldenverwaltung/data/app_storage_paths.dart';
 import 'package:dsa_heldenverwaltung/data/auth_service.dart';
+import 'package:dsa_heldenverwaltung/data/account_access_policy.dart';
 import 'package:dsa_heldenverwaltung/data/avatar_backfill_service.dart';
 import 'package:dsa_heldenverwaltung/data/avatar_cache_reconciler.dart';
 import 'package:dsa_heldenverwaltung/data/avatar_file_storage.dart';
@@ -182,10 +183,10 @@ class _AppStartupGateState extends State<AppStartupGate> {
   }
 
   String? get _remoteSyncProfileUid {
-    if (!widget.firebaseBootstrap.isAccountSyncAvailable) {
-      return null;
-    }
-    return widget.authUser?.uid;
+    return verifiedSyncUid(
+      accountSyncAvailable: widget.firebaseBootstrap.isAccountSyncAvailable,
+      user: widget.authUser,
+    );
   }
 
   Future<_HeroRepositoryBootstrapResult> _bootstrapHeroRepository(

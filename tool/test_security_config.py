@@ -34,6 +34,12 @@ class SecurityConfigTest(unittest.TestCase):
         self.assertIn("image/png", rules)
         self.assertIn("image/jpeg", rules)
         self.assertIn("image/webp", rules)
+        self.assertIn("request.auth.token.email_verified == true", rules)
+
+    def test_cloud_rules_require_verified_email(self) -> None:
+        rules = (ROOT / "firestore.rules").read_text(encoding="utf-8")
+
+        self.assertIn("request.auth.token.email_verified == true", rules)
 
     def test_each_hosting_target_sets_required_security_headers(self) -> None:
         config = json.loads((ROOT / "firebase.json").read_text(encoding="utf-8"))
@@ -82,9 +88,8 @@ class SecurityConfigTest(unittest.TestCase):
         self.assertIn("feedbackApiTest", deploy_script)
         self.assertIn("feedbackApi", deploy_script)
         self.assertIn("--dart-define=FEEDBACK_API_URL", deploy_script)
-        self.assertIn("REGISTRATION_INVITE_API_URL", workflow)
-        self.assertIn("--dart-define=REGISTRATION_INVITE_API_URL", workflow)
-        self.assertIn("registrationInviteApi", deploy_script)
+        self.assertNotIn("REGISTRATION_INVITE_API_URL", workflow)
+        self.assertNotIn("REGISTRATION_INVITE_API_URL", deploy_script)
         for variable in (
             "LEGAL_RESPONSIBLE_NAME",
             "LEGAL_STREET_ADDRESS",

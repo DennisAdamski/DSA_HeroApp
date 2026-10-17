@@ -107,6 +107,13 @@ class PrivacyPolicyScreen extends StatelessWidget {
               'Bei freiwilliger Konto-Nutzung verarbeitet Firebase '
               'Authentication insbesondere E-Mail-Adresse, Zugangsdaten, '
               'IP-Adresse und Geräte-/Browserinformationen. Firebase '
+              'sendet nach der Registrierung eine Bestätigungs-E-Mail und '
+              'auf Anforderung eine Nachricht zum Passwort zurücksetzen. '
+              'Bis zur Bestätigung bleibt die App lokal nutzbar; Cloud-Sync, '
+              'Gruppen und geschützte Backend-Funktionen sind gesperrt. '
+              'Bei der Registrierung bestätigst du lediglich, diese '
+              'Datenschutzerklärung zur Kenntnis genommen zu haben. Dies ist '
+              'keine Einwilligung in optionale Verarbeitungen. '
               'Authentication wird ausschließlich aus US-Rechenzentren '
               'betrieben. Firestore speichert kontogebundene Helden, '
               'Zustände, Sync-Metadaten und Einstellungen; Cloud Storage '
@@ -185,7 +192,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
         const _LegalSection(
           title: '9. Stand und Änderungen',
           text:
-              'Stand: 17. Oktober 2026. Bei neuen Telemetrie-, Analyse- oder '
+              'Stand: 18. Oktober 2026. Bei neuen Telemetrie-, Analyse- oder '
               'Marketingfunktionen sowie bei geänderten Dienstleistern wird '
               'diese Erklärung vor deren Einsatz aktualisiert.',
         ),

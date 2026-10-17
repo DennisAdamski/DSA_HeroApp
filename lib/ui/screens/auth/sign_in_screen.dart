@@ -2,7 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import 'package:dsa_heldenverwaltung/data/auth_service.dart';
-import 'package:dsa_heldenverwaltung/data/registration_invite_client.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/legal/legal_pages.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/karto_variante.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_stroke.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_rahmen.dart';
@@ -35,8 +35,8 @@ class _SignInScreenState extends State<SignInScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _registrationKeywordController = TextEditingController();
   late bool _isRegisterMode = widget.initialRegisterMode;
+  bool _privacyNoticeAcknowledged = false;
   bool _isBusy = false;
   String? _errorMessage;
 
@@ -44,7 +44,6 @@ class _SignInScreenState extends State<SignInScreen> {
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
-    _registrationKeywordController.dispose();
     super.dispose();
   }
 
@@ -62,7 +61,6 @@ class _SignInScreenState extends State<SignInScreen> {
         await _authService.registerWithEmail(
           email: _emailController.text,
           password: _passwordController.text,
-          registrationKeyword: _registrationKeywordController.text,
         );
       } else {
         await _authService.signInWithEmail(
@@ -79,10 +77,6 @@ class _SignInScreenState extends State<SignInScreen> {
     } on FirebaseAuthException catch (error) {
       setState(() {
         _errorMessage = _localizeError(error);
-      });
-    } on RegistrationInviteException catch (error) {
-      setState(() {
-        _errorMessage = _localizeRegistrationError(error.code);
       });
     } on Object catch (error) {
       setState(() {
@@ -160,17 +154,6 @@ class _SignInScreenState extends State<SignInScreen> {
       default:
         return 'Anmeldung fehlgeschlagen: ${error.message ?? error.code}';
     }
-  }
-
-  String _localizeRegistrationError(String code) {
-    return switch (code) {
-      'INVITE_INVALID' =>
-        'E-Mail oder Registrierungs-Keyword ist nicht gültig.',
-      'RATE_LIMITED' => 'Zu viele Versuche. Bitte später erneut versuchen.',
-      'APP_CHECK_REQUIRED' || 'APP_CHECK_INVALID' =>
-        'Die App-Integrität konnte nicht bestätigt werden.',
-      _ => 'Registrierung ist derzeit nicht verfügbar.',
-    };
   }
 
   @override
@@ -251,23 +234,48 @@ class _SignInScreenState extends State<SignInScreen> {
                 ),
                 if (_isRegisterMode) ...[
                   const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _registrationKeywordController,
-                    decoration: const InputDecoration(
-                      labelText: 'Registrierungs-Keyword',
-                      prefixIcon: Icon(Icons.key_outlined),
+                  FormField<bool>(
+                    initialValue: _privacyNoticeAcknowledged,
+                    validator: (value) => value == true
+                        ? null
+                        : 'Bitte bestätige die Kenntnisnahme.',
+                    builder: (field) => Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        CheckboxListTile(
+                          contentPadding: EdgeInsets.zero,
+                          controlAffinity: ListTileControlAffinity.leading,
+                          value: _privacyNoticeAcknowledged,
+                          onChanged: _isBusy
+                              ? null
+                              : (value) {
+                                  final acknowledged = value ?? false;
+                                  setState(() {
+                                    _privacyNoticeAcknowledged = acknowledged;
+                                  });
+                                  field.didChange(acknowledged);
+                                },
+                          title: const Text(
+                            'Ich habe die Datenschutzerklärung zur Kenntnis '
+                            'genommen.',
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: _openPrivacyPolicy,
+                          child: const Text('Datenschutzerklärung'),
+                        ),
+                        if (field.hasError)
+                          Padding(
+                            padding: const EdgeInsets.only(left: 12),
+                            child: Text(
+                              field.errorText!,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: theme.colorScheme.error,
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
-                    obscureText: true,
-                    autocorrect: false,
-                    enableSuggestions: false,
-                    textInputAction: TextInputAction.done,
-                    onFieldSubmitted: (_) => _submit(),
-                    validator: (value) {
-                      if ((value ?? '').trim().isEmpty) {
-                        return 'Bitte Registrierungs-Keyword eingeben.';
-                      }
-                      return null;
-                    },
                   ),
                 ],
               ],
@@ -301,6 +309,7 @@ class _SignInScreenState extends State<SignInScreen> {
                 : () {
                     setState(() {
                       _isRegisterMode = !_isRegisterMode;
+                      _privacyNoticeAcknowledged = false;
                       _errorMessage = null;
                     });
                   },
@@ -319,10 +328,13 @@ class _SignInScreenState extends State<SignInScreen> {
     final karto = kartoVariante(context);
     if (karto == null) {
       return Scaffold(
-        body: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 420),
-            child: Padding(padding: const EdgeInsets.all(24), child: formular),
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 420),
+              child: formular,
+            ),
           ),
         ),
       );
@@ -366,6 +378,12 @@ class _SignInScreenState extends State<SignInScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  Future<void> _openPrivacyPolicy() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(builder: (_) => const PrivacyPolicyScreen()),
     );
   }
 }

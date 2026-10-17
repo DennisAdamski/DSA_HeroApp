@@ -164,7 +164,6 @@ class _AuthAttrappe implements AuthService {
   Future<AuthUser> registerWithEmail({
     required String email,
     required String password,
-    required String registrationKeyword,
   }) async => AuthUser(uid: email, email: email);
 
   @override

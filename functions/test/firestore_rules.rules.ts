@@ -29,7 +29,7 @@ after(async () => {
 
 test("App-Nutzer können interne Feedback-Collections weder lesen noch schreiben", async () => {
   const database = environment!
-    .authenticatedContext("account-a")
+    .authenticatedContext("account-a", {email_verified: true})
     .firestore();
 
   for (const collection of ["feedbackSubmissions", "feedbackRateLimits"]) {
@@ -43,7 +43,9 @@ test("App-Nutzer können interne Feedback-Collections weder lesen noch schreiben
 test("Legacy-Gruppen sind anonym und angemeldet vollständig gesperrt", async () => {
   for (const database of [
     environment!.unauthenticatedContext().firestore(),
-    environment!.authenticatedContext("account-a").firestore(),
+    environment!
+      .authenticatedContext("account-a", {email_verified: true})
+      .firestore(),
   ]) {
     const group = doc(database, "gruppen", "legacy-code");
     const member = doc(group, "mitglieder", "legacy-member");
@@ -70,9 +72,15 @@ test("groups_v2 erlaubt Lesen nur Mitgliedern und Verwaltung nur dem Besitzer", 
     });
   });
 
-  const owner = environment!.authenticatedContext("owner-a").firestore();
-  const member = environment!.authenticatedContext("member-a").firestore();
-  const stranger = environment!.authenticatedContext("stranger-a").firestore();
+  const owner = environment!
+    .authenticatedContext("owner-a", {email_verified: true})
+    .firestore();
+  const member = environment!
+    .authenticatedContext("member-a", {email_verified: true})
+    .firestore();
+  const stranger = environment!
+    .authenticatedContext("stranger-a", {email_verified: true})
+    .firestore();
 
   await assertSucceeds(getDoc(doc(owner, "groups_v2", "runde-a")));
   await assertSucceeds(getDoc(doc(member, "groups_v2", "runde-a")));
@@ -107,8 +115,12 @@ test("groups_v2 erlaubt Mitgliedern nur den eigenen Heldensnapshot", async () =>
     }
   });
 
-  const member = environment!.authenticatedContext("member-b").firestore();
-  const stranger = environment!.authenticatedContext("stranger-b").firestore();
+  const member = environment!
+    .authenticatedContext("member-b", {email_verified: true})
+    .firestore();
+  const stranger = environment!
+    .authenticatedContext("stranger-b", {email_verified: true})
+    .firestore();
   const ownSnapshot = doc(
     member,
     "groups_v2",
@@ -130,4 +142,37 @@ test("groups_v2 erlaubt Mitgliedern nur den eigenen Heldensnapshot", async () =>
   await assertFails(
     getDoc(doc(stranger, "groups_v2", "runde-b", "hero_snapshots", "member-b")),
   );
+});
+
+test("unbestätigte Konten können private und Gruppen-Daten nicht lesen", async () => {
+  await environment!.withSecurityRulesDisabled(async (context) => {
+    const admin = context.firestore();
+    await setDoc(doc(admin, "users", "account-unverified"), {version: 1});
+    await setDoc(doc(admin, "groups_v2", "runde-unverified"), {
+      name: "Runde",
+      ownerUid: "account-unverified",
+    });
+    await setDoc(
+      doc(
+        admin,
+        "groups_v2",
+        "runde-unverified",
+        "members",
+        "account-unverified",
+      ),
+      {role: "owner"},
+    );
+  });
+
+  const database = environment!
+    .authenticatedContext("account-unverified", {email_verified: false})
+    .firestore();
+
+  await assertFails(getDoc(doc(database, "users", "account-unverified")));
+  await assertFails(getDoc(doc(database, "groups_v2", "runde-unverified")));
+
+  const withoutClaim = environment!
+    .authenticatedContext("account-unverified")
+    .firestore();
+  await assertFails(getDoc(doc(withoutClaim, "users", "account-unverified")));
 });
