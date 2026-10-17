@@ -17,7 +17,7 @@ service cloud.firestore {
     // verarbeitet ausschließlich das Backend; Clients sehen keine Hashes.
     match /groups_v2/{groupId} {
       allow read: if isGroupMember(groupId);
-      allow create: if isSignedIn()
+      allow create: if isVerified()
                     && request.resource.data.ownerUid == request.auth.uid
                     && validGroup(request.resource.data);
       allow update: if isGroupOwner(groupId)
@@ -34,11 +34,11 @@ service cloud.firestore {
 
       match /hero_snapshots/{memberId} {
         allow read: if isGroupMember(groupId);
-        allow create, update: if isSignedIn()
+        allow create, update: if isVerified()
                               && request.auth.uid == memberId
                               && isGroupMember(groupId)
                               && request.resource.size() < 400 * 1024;
-        allow delete: if isSignedIn()
+        allow delete: if isVerified()
                       && request.auth.uid == memberId
                       && isGroupMember(groupId);
       }
@@ -51,33 +51,26 @@ service cloud.firestore {
     // Pro-User-Bereich fuer privaten Helden-Sync.
     // Nur der eingeloggte User darf sein eigenes Subtree lesen/schreiben.
     match /users/{userId} {
-      allow read, write: if request.auth != null
-                         && request.auth.uid == userId;
+      allow read, write: if isVerifiedUser(userId);
 
       match /heroes/{heroId} {
-        allow read, delete: if request.auth != null
-                            && request.auth.uid == userId;
+        allow read, delete: if isVerifiedUser(userId);
         // Schreibgroesse begrenzen (~400 KB pro Held inkl. Avatar-Base64).
-        allow create, update: if request.auth != null
-                              && request.auth.uid == userId
+        allow create, update: if isVerifiedUser(userId)
                               && request.resource.size() < 500 * 1024;
       }
 
       match /hero_states/{heroId} {
-        allow read, delete: if request.auth != null
-                            && request.auth.uid == userId;
-        allow create, update: if request.auth != null
-                              && request.auth.uid == userId
+        allow read, delete: if isVerifiedUser(userId);
+        allow create, update: if isVerifiedUser(userId)
                               && request.resource.size() < 200 * 1024;
       }
 
       // Verschluesselte Settings-Geheimnisse (Katalog-Passwort, API-Key).
       // Dokument ist klein (~1 KB), nur der eigene User darf zugreifen.
       match /private/{document=**} {
-        allow read, delete: if request.auth != null
-                            && request.auth.uid == userId;
-        allow create, update: if request.auth != null
-                              && request.auth.uid == userId
+        allow read, delete: if isVerifiedUser(userId);
+        allow create, update: if isVerifiedUser(userId)
                               && request.resource.size() < 16 * 1024;
       }
     }
@@ -91,13 +84,23 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    function isGroupMember(groupId) {
+    function isVerified() {
       return isSignedIn()
+             && request.auth.token.email_verified == true;
+    }
+
+    function isVerifiedUser(userId) {
+      return isVerified()
+             && request.auth.uid == userId;
+    }
+
+    function isGroupMember(groupId) {
+      return isVerified()
              && exists(/databases/$(database)/documents/groups_v2/$(groupId)/members/$(request.auth.uid));
     }
 
     function isGroupOwner(groupId) {
-      return isSignedIn()
+      return isVerified()
              && get(/databases/$(database)/documents/groups_v2/$(groupId)).data.ownerUid
                 == request.auth.uid;
     }

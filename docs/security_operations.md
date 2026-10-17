@@ -38,8 +38,9 @@ einen authentifizierten und rate-limitierten Gateway läuft.
 
 - Budgetwarnungen für Functions, Firestore, Storage und ausgehenden Traffic;
 - Alarm auf erhöhte 401/403/429/5xx-Raten und ungewöhnliche Schreibmengen;
-- GitHub-PAT und Registrierungs-Keyword nach Plan sowie sofort nach einem
-  Verdacht rotieren;
+- GitHub-PAT nach Plan sowie sofort nach einem Verdacht rotieren; ein
+  Registrierungs-Keyword wird erst relevant, wenn die zurückgestellte Variante
+  aus `registration_security.md` ausdrücklich aktiviert wird;
 - Dependency-, Secret- und SAST-Scans in CI, Findings vor Releases bewerten;
 - halbjährlich Firebase-/Google-Cloud-IAM, GitHub-Zugriffe, registrierte
   App-Check-Debugtokens und autorisierte Auth-Domains prüfen.

@@ -1,6 +1,6 @@
 # Datenschutz- und Rechtstext-Betrieb
 
-Stand: 17. Oktober 2026. Diese technische Dokumentation ersetzt keine
+Stand: 18. Oktober 2026. Diese technische Dokumentation ersetzt keine
 individuelle Rechtsberatung. Die veröffentlichten Texte und die dokumentierte
 Fanprojekt-Freigabe müssen vor dem öffentlichen Release fachlich geprüft werden.
 
@@ -20,6 +20,15 @@ Kontaktdaten kommen aus öffentlichen Build-Parametern:
 CI und `tool/deploy_web.ps1` brechen einen Release ab, sobald einer dieser Werte
 fehlt. Lokale Entwicklungsbuilds zeigen stattdessen eine unübersehbare Warnung.
 Die Werte sind kein Secret: Sie erscheinen bestimmungsgemäß im Impressum.
+
+Die Registrierung verlangt eine aktive Kenntnisnahme der verlinkten
+Datenschutzerklärung. Die Formulierung ist bewusst keine Einwilligung: Konto
+und Sync beruhen auf der angeforderten App-Funktion, während optionale
+Verarbeitungen separat erklärt und ausgelöst werden. Nach der Registrierung
+sendet Firebase eine Bestätigungs-E-Mail. Unbestätigte Konten bleiben lokal
+nutzbar, erhalten aber keinen Zugriff auf Firestore, Storage, Gruppen oder das
+Feedback-Backend. Der Passwort-Reset antwortet unabhängig vom Kontobestand mit
+derselben neutralen Meldung.
 
 ## Verzeichnis der Verarbeitungstätigkeiten
 

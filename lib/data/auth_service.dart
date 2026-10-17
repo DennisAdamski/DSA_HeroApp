@@ -4,8 +4,6 @@ import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
 
-import 'package:dsa_heldenverwaltung/data/registration_invite_client.dart';
-
 /// Vereinfachte Sicht auf den eingeloggten Benutzer fuer die UI-Schicht.
 class AuthUser {
   const AuthUser({
@@ -28,16 +26,11 @@ class AuthUser {
 /// schmal gehalten und kann fuer Tests durch eine Fake-Implementierung ersetzt
 /// werden.
 class AuthService {
-  // Der öffentliche Parametername bleibt für die Verdrahtung lesbar, während
-  // die austauschbare Infrastruktur nicht Teil der Service-Oberfläche wird.
-  AuthService({
-    FirebaseAuth? firebaseAuth,
-    RegistrationInviteGateway? registrationInviteGateway,
-  }) : _auth = firebaseAuth ?? FirebaseAuth.instance,
-       _registrationInviteGateway = registrationInviteGateway;
+  /// Erstellt den Dienst mit einer injizierbaren Firebase-Instanz für Tests.
+  AuthService({FirebaseAuth? firebaseAuth})
+    : _auth = firebaseAuth ?? FirebaseAuth.instance;
 
   final FirebaseAuth _auth;
-  final RegistrationInviteGateway? _registrationInviteGateway;
 
   /// Liefert den aktuell eingeloggten Benutzer oder `null`.
   AuthUser? get currentUser => _mapUser(_auth.currentUser);
@@ -67,13 +60,7 @@ class AuthService {
   Future<AuthUser> registerWithEmail({
     required String email,
     required String password,
-    required String registrationKeyword,
   }) async {
-    final gateway = _registrationInviteGateway;
-    if (gateway == null) {
-      throw const RegistrationInviteException('REGISTRATION_UNAVAILABLE');
-    }
-    await gateway.issueTicket(email: email, keyword: registrationKeyword);
     final credential = await _auth.createUserWithEmailAndPassword(
       email: email.trim(),
       password: password,

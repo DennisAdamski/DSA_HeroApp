@@ -1,10 +1,12 @@
-# Geschützte Registrierung
+# Zurückgestellte geschützte Registrierung
 
-Stand: 17. Oktober 2026. Neue Konten werden erst nach einem serverseitig
-geprüften Registrierungs-Keyword zugelassen. Das Keyword wird weder in einen
-Client-Build geschrieben noch in Firestore gespeichert.
+Stand: 18. Oktober 2026. Neue Konten verwenden derzeit eine offene
+E-Mail-/Passwort-Registrierung mit E-Mail-Verifikation. Die hier beschriebene
+Keyword-Variante ist vorbereitet, aber bewusst nicht aktiv: Client-Builds
+enthalten keine Invite-URL und `functions/src/index.ts` exportiert weder
+`registrationInviteApi` noch `registrationGate`.
 
-## Ablauf
+## Vorbereiteter Ablauf
 
 1. Der Client sendet normalisierte E-Mail und eingegebenes Keyword zusammen
    mit einem frischen App-Check-Token an `registrationInviteApi`.
@@ -26,9 +28,10 @@ nicht les- oder schreibbar. Für `expiresAt` ist zusätzlich eine Firestore-TTL
 zu konfigurieren; die fachliche Gültigkeitsprüfung hängt nicht von der späteren
 TTL-Bereinigung ab.
 
-## Sichere Inbetriebnahme
+## Voraussetzungen für eine spätere Inbetriebnahme
 
-Die Functions dürfen nicht vor ihren Voraussetzungen veröffentlicht werden:
+Die Functions dürfen erst nach einer neuen ausdrücklichen Freigabe und nicht
+vor ihren Voraussetzungen veröffentlicht werden:
 
 1. Identity Platform und Auth-Blocking-Functions für das Projekt aktivieren.
 2. App Check für Web/Mobile registrieren und den Client mit

@@ -26,6 +26,8 @@ void main() {
     expect(find.text('Datenschutzerklärung'), findsOneWidget);
     expect(find.textContaining('Alrik Beispiel'), findsOneWidget);
     expect(find.textContaining('Firebase Authentication'), findsOneWidget);
+    expect(find.textContaining('Bestätigungs-E-Mail'), findsOneWidget);
+    expect(find.textContaining('Passwort zurücksetzen'), findsOneWidget);
     expect(find.textContaining('bis zu 30 Tage'), findsOneWidget);
     expect(find.textContaining('öffentlich'), findsWidgets);
     expect(find.textContaining('Beschwerderecht'), findsOneWidget);

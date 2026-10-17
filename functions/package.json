@@ -10,7 +10,8 @@
     "build": "tsc",
     "test": "tsx --test test/**/*.test.ts",
     "test:rules": "npx --yes firebase-tools@15.34.0 emulators:exec --project demo-feedback --config ../firebase.json --only firestore \"npm run test:rules:inner\"",
-    "test:rules:inner": "tsx --test test/firestore_rules.rules.ts"
+    "test:rules:inner": "tsx --test test/firestore_rules.rules.ts",
+    "accounts:verify-existing": "tsx scripts/verify_existing_accounts.ts"
   },
   "dependencies": {
     "firebase-admin": "^14.5.0",

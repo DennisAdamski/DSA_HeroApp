@@ -35,7 +35,7 @@ void main() {
     await tester.pumpAndSettle();
 
     final registerFields = _textFields(tester);
-    expect(registerFields, hasLength(3));
+    expect(registerFields, hasLength(2));
     expect(
       registerFields[1].autofillHints,
       orderedEquals([AutofillHints.newPassword]),
@@ -69,15 +69,17 @@ void main() {
     final fields = find.byType(TextFormField);
     await tester.enterText(fields.at(0), 'held@example.de');
     await tester.enterText(fields.at(1), 'geheim123456');
-    await tester.enterText(fields.at(2), 'invite-secret');
+    await tester.tap(find.widgetWithText(FilledButton, 'Konto anlegen'));
+    await tester.pump();
+
+    expect(find.text('Bitte bestätige die Kenntnisnahme.'), findsOneWidget);
+
+    await tester.tap(find.byType(Checkbox));
     await tester.tap(find.widgetWithText(FilledButton, 'Konto anlegen'));
     await tester.pumpAndSettle();
 
     expect(find.byType(SignInScreen), findsNothing);
     expect(find.text('öffnen'), findsOneWidget);
-    // Die Freigabe wird nur für den unmittelbar folgenden Ticketaufruf genutzt.
-    // Der Fake hält sie ausschließlich zur Verifikation dieses Tests fest.
-    expect(_FakeAuthService.lastRegistrationKeyword, 'invite-secret');
   });
 
   testWidgets('Registrierung verlangt mindestens zwölf Zeichen', (
@@ -91,11 +93,31 @@ void main() {
     final fields = find.byType(TextFormField);
     await tester.enterText(fields.at(0), 'held@example.de');
     await tester.enterText(fields.at(1), 'zu-kurz-11');
+    await tester.tap(find.byType(Checkbox));
     await tester.tap(find.widgetWithText(FilledButton, 'Konto anlegen'));
     await tester.pump();
 
     expect(find.text('Mindestens 12 Zeichen.'), findsOneWidget);
     expect(auth.registerCalls, 0);
+  });
+
+  testWidgets('Datenschutzerklärung ist aus der Registrierung erreichbar', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: SignInScreen(
+          authService: _FakeAuthService(),
+          initialRegisterMode: true,
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Datenschutzerklärung'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Datenschutzerklärung'), findsWidgets);
+    expect(find.text('1. Verantwortlicher'), findsOneWidget);
   });
 
   testWidgets('Passwort-Reset nutzt die eingegebene E-Mail neutral', (
@@ -121,7 +143,6 @@ List<TextField> _textFields(WidgetTester tester) {
 }
 
 class _FakeAuthService implements AuthService {
-  static String? lastRegistrationKeyword;
   int registerCalls = 0;
   final List<String> resetEmails = [];
 
@@ -132,10 +153,8 @@ class _FakeAuthService implements AuthService {
   Future<AuthUser> registerWithEmail({
     required String email,
     required String password,
-    required String registrationKeyword,
   }) async {
     registerCalls++;
-    lastRegistrationKeyword = registrationKeyword;
     return AuthUser(uid: email, email: email);
   }
 

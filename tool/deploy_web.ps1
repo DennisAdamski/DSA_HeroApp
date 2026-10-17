@@ -49,7 +49,6 @@ $feedbackApiUrls = @{
     production = 'https://europe-west10-heldensync-ccf0b.cloudfunctions.net/feedbackApi'
 }
 $feedbackApiUrl = $feedbackApiUrls[$Target]
-$registrationInviteApiUrl = 'https://europe-west10-heldensync-ccf0b.cloudfunctions.net/registrationInviteApi'
 
 Write-Host '== flutter clean =='
 flutter clean
@@ -68,7 +67,6 @@ flutter build web --release --no-wasm-dry-run `
     "--dart-define=BUILD_COMMIT=$commit" `
     "--dart-define=BUILD_TIME=$buildTime" `
     "--dart-define=FEEDBACK_API_URL=$feedbackApiUrl" `
-    "--dart-define=REGISTRATION_INVITE_API_URL=$registrationInviteApiUrl" `
     "--dart-define=FIREBASE_APP_CHECK_SITE_KEY=$AppCheckSiteKey" `
     "--dart-define=LEGAL_RESPONSIBLE_NAME=$LegalResponsibleName" `
     "--dart-define=LEGAL_STREET_ADDRESS=$LegalStreetAddress" `
