@@ -34,6 +34,14 @@ und Debugtokens sind ausschließlich für lokale Entwicklung. Eine globale
 Firestore-Erzwingung ist erst zulässig, wenn der Windows-REST-Zugriff über
 einen authentifizierten und rate-limitierten Gateway läuft.
 
+Stand 18. Oktober 2026 ist die Firebase-Web-App mit einem auf die Produktions-
+und Testdomains beschränkten reCAPTCHA-Enterprise-Schlüssel registriert. Der
+öffentliche Site-Key ist als Repository-Variable
+`FIREBASE_APP_CHECK_SITE_KEY` hinterlegt und auf der Test-Site ausgerollt.
+Globale Erzwingung bleibt während der Beobachtungsphase ausgeschaltet; sie darf
+nicht vor der oben beschriebenen Plattform- und Gateway-Abnahme aktiviert
+werden.
+
 ## Alarmierung und Rotation
 
 - Budgetwarnungen für Functions, Firestore, Storage und ausgehenden Traffic;

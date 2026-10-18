@@ -35,7 +35,10 @@ Der Web-Build bekommt Commit und Bauzeit per `--dart-define=BUILD_COMMIT=…`
 und `--dart-define=BUILD_TIME=…` (CI und `tool/deploy_web.ps1`). Release-Builds
 benötigen zusätzlich den öffentlichen reCAPTCHA-Enterprise-Site-Key als
 `--dart-define=FIREBASE_APP_CHECK_SITE_KEY=…`; der Schlüssel ist kein Secret,
-wird aber umgebungsbezogen in der CI-Konfiguration gepflegt. Außerdem müssen
+wird aber umgebungsbezogen in der CI-Konfiguration gepflegt. Die Web-App ist
+dafür in Firebase App Check registriert; der reCAPTCHA-Enterprise-Schlüssel ist
+auf die beiden Hosting-Domains samt ihrer `firebaseapp.com`-Aliasse begrenzt.
+Außerdem müssen
 die sechs öffentlichen `LEGAL_*`-Angaben aus
 [`legal_privacy_operations.md`](legal_privacy_operations.md) vollständig
 gesetzt sein; andernfalls brechen CI und manueller Deploy ab. Die App zeigt
@@ -67,6 +70,10 @@ Build allein weist diese Deployment-Konfiguration nicht nach.
 Manuelle Veröffentlichung nur mit explizitem Target:
 `firebase deploy --only hosting:test` oder `firebase deploy --only hosting:production`.
 `firebase deploy --only hosting` würde beide Sites veröffentlichen.
+Das Repository-Skript `tool/deploy_web.ps1` entfernt unmittelbar vor dem Upload
+nur den regenerierbaren Hashcache für `build/web`. Das verhindert unter Windows
+einen Firebase-CLI-Fehler durch ältere CRLF-Cacheeinträge; Quellen, Assets und
+bereits veröffentlichte Versionen bleiben davon unberührt.
 Zur Rücknahme in der Firebase-Konsole die vorherige Veröffentlichung der
 betreffenden Site wiederherstellen. Der nächste erfolgreiche Branch-Push
 veröffentlicht wieder automatisch. Keine geplanten oder manuellen Actions-Trigger.

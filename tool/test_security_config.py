@@ -103,6 +103,12 @@ class SecurityConfigTest(unittest.TestCase):
             self.assertIn(variable, deploy_script)
         self.assertNotIn("firebase deploy --only hosting\n", deploy_script)
 
+    def test_windows_deploy_discards_firebase_hosting_hash_cache(self) -> None:
+        deploy_script = (ROOT / "tool/deploy_web.ps1").read_text(encoding="utf-8")
+
+        self.assertIn("hosting.YnVpbGRcd2Vi.cache", deploy_script)
+        self.assertIn("Remove-Item -LiteralPath $hostingHashCache", deploy_script)
+
 
 if __name__ == "__main__":
     unittest.main()
