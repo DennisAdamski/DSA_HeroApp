@@ -57,10 +57,7 @@ void main() {
       expect(first.issueNumber, 23);
       expect(requests[0].headers['authorization'], 'Bearer first-token');
       expect(requests[1].headers['authorization'], 'Bearer second-token');
-      expect(
-        requests[0].headers['x-firebase-appcheck'],
-        'app-check-token',
-      );
+      expect(requests[0].headers['x-firebase-appcheck'], 'app-check-token');
       expect(jsonDecode(requests[0].body), submission.toJson());
     },
   );
