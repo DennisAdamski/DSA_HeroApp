@@ -8,6 +8,7 @@ import 'active_spell_rules.dart';
 import 'active_spell_state_rules.dart';
 import 'spell_effect_probe_rules.dart';
 import 'gefecht_ansagefolge_rules.dart';
+import 'herleitung.dart';
 
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 
@@ -106,15 +107,27 @@ ResolvedProbeRequest gefechtsProbeMitBonus(
   final pool =
       p.title == b!.ziel &&
       (p.type == ProbeType.talent || p.type == ProbeType.spell);
-  return ResolvedProbeRequest(
-    type: p.type,
-    title: p.title,
-    subtitle: p.subtitle,
+  final herleitung = p.poolHerleitung;
+  return p.copyWith(
     ruleHint: '${p.ruleHint} Einmaliger bestätigter Mirakelbonus: ${b.wert}.',
-    diceSpec: p.diceSpec,
     basePool: p.basePool + (pool ? b.wert : 0),
+    poolHerleitung: pool && herleitung != null
+        ? Herleitung(
+            bezeichnung: herleitung.bezeichnung,
+            schritte: <HerleitungsSchritt>[
+              ...herleitung.schritte,
+              HerleitungsSchritt(
+                bezeichnung: 'Mirakelbonus',
+                betrag: b.wert,
+                art: HerleitungsArt.modifikator,
+                quelle: 'Mirakel',
+                bedingung: 'einmalig bestätigt',
+              ),
+            ],
+          )
+        : null,
     targets: pool
-        ? p.targets
+        ? null
         : [
             for (final t in p.targets)
               ProbeTargetValue(
@@ -124,10 +137,6 @@ ResolvedProbeRequest gefechtsProbeMitBonus(
                     (p.title == b.ziel || t.label == b.ziel ? b.wert : 0),
               ),
           ],
-    specializationBonus: p.specializationBonus,
-    initialSpecializationApplied: p.initialSpecializationApplied,
-    initialSituationalModifier: p.initialSituationalModifier,
-    fixedRollTotal: p.fixedRollTotal,
   );
 }
 
@@ -233,16 +242,8 @@ HeroState uebernimmGefechtsWirkkosten(
 ResolvedProbeRequest modifiziereGefechtsWirkprobe(
   ResolvedProbeRequest probe,
   int zuschlag,
-) => ResolvedProbeRequest(
-  type: probe.type,
-  title: probe.title,
-  subtitle: probe.subtitle,
+) => probe.copyWith(
   ruleHint: '${probe.ruleHint} Zusatzmodifikator: $zuschlag.',
-  diceSpec: probe.diceSpec,
-  targets: probe.targets,
-  basePool: probe.basePool,
-  specializationBonus: probe.specializationBonus,
-  initialSpecializationApplied: probe.initialSpecializationApplied,
   initialSituationalModifier: probe.initialSituationalModifier - zuschlag,
 );
 

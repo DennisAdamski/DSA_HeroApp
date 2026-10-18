@@ -254,11 +254,11 @@ TalentHerleitungen? herleiteTalent({
   );
 }
 
-/// TaW* des Talents [talentId] für den Helden des [snapshot].
+/// Herleitungen des Talents [talentId] für den Helden des [snapshot].
 ///
 /// `null`, wenn das Talent nicht im Katalog steht oder der Held keinen TaW
 /// führt (nicht aktiviert).
-int? talentTawNachId({
+TalentHerleitungen? talentHerleitungNachId({
   required HeroComputedSnapshot snapshot,
   required Iterable<TalentDef> talente,
   required String talentId,
@@ -273,10 +273,26 @@ int? talentTawNachId({
       talent: talent,
       epicAdvantagesActive: epicAdvantagesActive,
       talentBeOverride: talentBeOverride,
-    )?.taw.wert;
+    );
   }
   return null;
 }
+
+/// TaW* des Talents [talentId] für den Helden des [snapshot]; Summe von
+/// [talentHerleitungNachId].
+int? talentTawNachId({
+  required HeroComputedSnapshot snapshot,
+  required Iterable<TalentDef> talente,
+  required String talentId,
+  required bool epicAdvantagesActive,
+  int? talentBeOverride,
+}) => talentHerleitungNachId(
+  snapshot: snapshot,
+  talente: talente,
+  talentId: talentId,
+  epicAdvantagesActive: epicAdvantagesActive,
+  talentBeOverride: talentBeOverride,
+)?.taw.wert;
 
 /// Ein Talent des Helden mit seinen Herleitungen für die Wertesuche.
 class TalentUebersicht {

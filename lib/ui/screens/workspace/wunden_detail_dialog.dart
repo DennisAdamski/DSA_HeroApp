@@ -396,8 +396,9 @@ class _SbProbeSection extends StatelessWidget {
         (hero.talents
             as Map<String, HeroTalentEntry>?)?['tal_selbstbeherrschung'];
     final hatSb = sbEntry != null && sbEntry.talentValue != null;
+    final sbTawHerleitung = hatSb ? sbProbeHerleitung(ref, heroId) : null;
     final sbTaw = hatSb
-        ? (sbProbeTaw(ref, heroId) ??
+        ? (sbTawHerleitung?.wert ??
               computeTalentComputedTaw(
                 talentValue: sbEntry.talentValue,
                 modifier: sbEntry.modifier,
@@ -454,6 +455,7 @@ class _SbProbeSection extends StatelessWidget {
                       targets: targets,
                       basePool: sbTaw,
                       initialSituationalModifier: -erschwernis,
+                      tawHerleitung: sbTawHerleitung,
                     ),
                   );
                 }

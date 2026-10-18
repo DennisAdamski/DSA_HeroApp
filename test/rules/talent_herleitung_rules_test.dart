@@ -435,6 +435,29 @@ void main() {
       expect(taw, 8 + 1 + 2 + ebe);
     });
 
+    test('Herleitung nach ID summiert sich zum TaW*', () {
+      final snapshot = mitSb(wert: 8, bonus: 2);
+      final herleitung = talentHerleitungNachId(
+        snapshot: snapshot,
+        talente: katalog.catalog.talents,
+        talentId: 'tal_selbstbeherrschung',
+        epicAdvantagesActive: true,
+      )!;
+      expect(
+        herleitung.taw.wert,
+        talentTawNachId(
+          snapshot: snapshot,
+          talente: katalog.catalog.talents,
+          talentId: 'tal_selbstbeherrschung',
+          epicAdvantagesActive: true,
+        ),
+      );
+      expect(
+        herleitung.taw.schritte.map((s) => s.bezeichnung),
+        contains('Amulett'),
+      );
+    });
+
     test('null ohne Wert oder unbekanntes Talent', () {
       expect(
         talentTawNachId(

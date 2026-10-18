@@ -112,9 +112,16 @@ class ResolvedProbeRequest {
   final Herleitung? poolHerleitung;
 
   /// Gibt eine Kopie mit geänderten Feldern zurück.
+  ///
+  /// Umbauten einer vorhandenen Probe laufen hierüber, damit
+  /// [poolHerleitung] erhalten bleibt. Wer [basePool] ändert, übergibt die
+  /// passend ergänzte [poolHerleitung] mit.
   ResolvedProbeRequest copyWith({
     String? ruleHint,
+    List<ProbeTargetValue>? targets,
+    int? basePool,
     int? initialSituationalModifier,
+    Herleitung? poolHerleitung,
   }) {
     return ResolvedProbeRequest(
       type: type,
@@ -122,14 +129,14 @@ class ResolvedProbeRequest {
       subtitle: subtitle,
       ruleHint: ruleHint ?? this.ruleHint,
       diceSpec: diceSpec,
-      targets: targets,
-      basePool: basePool,
+      targets: targets ?? this.targets,
+      basePool: basePool ?? this.basePool,
       specializationBonus: specializationBonus,
       initialSpecializationApplied: initialSpecializationApplied,
       initialSituationalModifier:
           initialSituationalModifier ?? this.initialSituationalModifier,
       fixedRollTotal: fixedRollTotal,
-      poolHerleitung: poolHerleitung,
+      poolHerleitung: poolHerleitung ?? this.poolHerleitung,
     );
   }
 
