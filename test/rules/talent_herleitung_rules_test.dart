@@ -7,10 +7,13 @@ import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_meta_talent.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
+import 'package:dsa_heldenverwaltung/domain/spell_effect_instance.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/active_spell_state_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/herleitung.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/herleitung_uebersicht_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/meta_talent_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ruestung_be_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/spell_effect_combat_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/talent_herleitung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/talent_probe_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/talent_value_rules.dart';
@@ -339,6 +342,55 @@ void main() {
     });
   });
 
+  group('Karnifilo in den Probenwerten', () {
+    test('eigener Schritt vor den Wunden, Summe = Probenwert', () {
+      final bundle = ladeBestandsheld(Bestandsheld.kriegerNormal);
+      final zustand = aktiviereEffektInstanz(
+        bundle.state,
+        const SpellEffectInstance(
+          id: 'k',
+          effectId: kKarnifiloZauberId,
+          zfpStern: 4,
+        ),
+      );
+      final ohne = snapshotFuer(Bestandsheld.kriegerNormal);
+      final mit = buildHeroComputedSnapshot(
+        hero: bundle.hero,
+        state: zustand,
+        catalog: katalog.catalog,
+        epicAdvantagesActive: true,
+      );
+      final liste = herleiteProbenEigenschaften(
+        snapshot: mit,
+        eigenschaften: const <String>['MU', 'KL', 'GE', 'KK'],
+      );
+      final erwartet = <String, int>{'MU': 5, 'KL': -5, 'GE': 0, 'KK': 5};
+      for (final e in liste) {
+        final code = parseAttributeCode(e.bezeichnung)!;
+        final karnifilo = e.schritte.singleWhere(
+          (s) => s.bezeichnung == 'Karnifilo Raserei',
+        );
+        expect(karnifilo.betrag, erwartet[e.bezeichnung]);
+        expect(karnifilo.art, HerleitungsArt.zauber);
+        expect(e.wert, readAttributeValue(mit.probenEigenschaften, code));
+        expect(
+          e.wert,
+          readAttributeValue(ohne.probenEigenschaften, code) +
+              erwartet[e.bezeichnung]!,
+        );
+        // Wunden bleiben ein eigener Schritt und zählen Karnifilo nicht mit.
+        final wunden = e.schritte.singleWhere(
+          (s) => s.bezeichnung == kTalentWundenSchritt,
+        );
+        expect(
+          wunden.betrag,
+          readAttributeValue(ohne.probenEigenschaften, code) -
+              readAttributeValue(ohne.effectiveAttributes, code),
+        );
+      }
+    });
+  });
+
   group('Meta-Talente', () {
     test('Mittelwert und eBE stimmen mit den Metaformeln überein', () {
       final ids = katalog.catalog.talents
@@ -433,6 +485,29 @@ void main() {
         talentBeRule: talent.be,
       );
       expect(taw, 8 + 1 + 2 + ebe);
+    });
+
+    test('Herleitung nach ID summiert sich zum TaW*', () {
+      final snapshot = mitSb(wert: 8, bonus: 2);
+      final herleitung = talentHerleitungNachId(
+        snapshot: snapshot,
+        talente: katalog.catalog.talents,
+        talentId: 'tal_selbstbeherrschung',
+        epicAdvantagesActive: true,
+      )!;
+      expect(
+        herleitung.taw.wert,
+        talentTawNachId(
+          snapshot: snapshot,
+          talente: katalog.catalog.talents,
+          talentId: 'tal_selbstbeherrschung',
+          epicAdvantagesActive: true,
+        ),
+      );
+      expect(
+        herleitung.taw.schritte.map((s) => s.bezeichnung),
+        contains('Amulett'),
+      );
     });
 
     test('null ohne Wert oder unbekanntes Talent', () {

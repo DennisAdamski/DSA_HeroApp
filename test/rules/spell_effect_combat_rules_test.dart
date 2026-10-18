@@ -99,7 +99,15 @@ void main() {
     expect(b.statQuellen, isEmpty);
     expect(b.heldenIniMalus, 0);
     expect(b.orientierenGesperrt, isTrue);
+    expect(b.fernkampfMalus, 0);
     expect(b.hinweise.single, contains('Blindkampf'));
+  });
+
+  test('Blitz erschwert den Fernkampf um ZfP*', () {
+    final b = rechne(_mit(_zustand(), _blitz('b')));
+
+    expect(b.fernkampfMalus, isNegative);
+    expect(b.fernkampfQuelle, 'Blitz dich find');
   });
 
   test('Plumbumbarum ZfP*=6: AT und INI-Basis −6, PA bleibt', () {
@@ -180,6 +188,27 @@ void main() {
     expect(b.orientierenGesperrt, isFalse);
     expect(b.hinweise.any((h) => h.contains('MU +5')), isTrue);
     expect(b.hinweise.any((h) => h.contains('Sturmangriff')), isTrue);
+    // Eigenschaften laufen getrennt, nie über die Stat-Quellen.
+    final eigenschaften = b.eigenschaftsQuellen.single;
+    expect(eigenschaften.bezeichnung, 'Karnifilo Raserei');
+    expect(eigenschaften.mods.mu, 5);
+    expect(eigenschaften.mods.kk, 5);
+    expect(eigenschaften.mods.kl, -5);
+    expect(eigenschaften.mods.ch, -5);
+    expect(eigenschaften.mods.ge, 0);
+    expect(zauberEigenschaftsName(b), 'Karnifilo Raserei');
+  });
+
+  test('Axxeleratus meldet die Athletik-Verdopplung auch ohne Katalog', () {
+    expect(
+      berechneSpellEffectBeitraege(
+        zustand: _zustand(),
+        katalog: null,
+        axxeleratus: true,
+      ).athletikVerdopplungQuelle,
+      kAxxeleratusAthletikQuelle,
+    );
+    expect(rechne(_zustand()).athletikVerdopplungQuelle, isNull);
   });
 
   test('Karnifilo ohne ZfP* rechnet nichts und sagt es', () {

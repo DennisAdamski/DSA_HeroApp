@@ -71,6 +71,9 @@ einen Themenindex; Details stehen nach Thema in [docs/hinweise/](docs/hinweise/)
     sowie `sqlite3_flutter_libs` nur gemeinsam bewegen.
 11. **Qualitaet.** `flutter analyze` bricht auch bei `info`-Lints ab (CI). Tests
     seriell (`--concurrency=1`), Details in `docs/test_strategy.md`.
+12. **Gruppen.** `gruppen/*` ist ein vollständig gesperrter Legacy-Pfad und
+    wird nie clientseitig reaktiviert oder automatisch beansprucht.
+    `groups_v2/*` ist UID-gebunden; Einladungen bleiben Backendoperationen.
 
 ## Themenindex (docs/hinweise/)
 
@@ -96,6 +99,12 @@ einen Themenindex; Details stehen nach Thema in [docs/hinweise/](docs/hinweise/)
   `docs/pdf_agent_workflow.md`, `docs/rule_audit_regelwerk_ueberarbeitung.md`,
   `docs/ios_xcode_setup.md`, `docs/windows_antivirus_audit.md`,
   `docs/web_deployment.md`; `tool/sync_main_to_test.sh` mergt Main in Test.
+- Sicherheitsbetrieb, App Check, Key-Einschränkungen und Incident-Ablauf:
+  [security_operations.md](docs/security_operations.md).
+- Öffentliche Rechtstexte, Verarbeitungstätigkeiten, TOM und Löschkonzept:
+  [legal_privacy_operations.md](docs/legal_privacy_operations.md).
+- Zurückgestellte Keyword-, Ticket- und Blocking-Function-Variante:
+  [registration_security.md](docs/registration_security.md).
 - [Architektur-Roadmap](docs/architecture_roadmap.md): nur Status und offene
   Punkte; abgenommene Aufgaben im [Archiv](docs/archiv/README.md). Bei
   Architekturarbeiten den Status pruefen und nach Teilumfaengen aktualisieren.

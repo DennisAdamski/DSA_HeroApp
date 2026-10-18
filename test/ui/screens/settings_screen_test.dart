@@ -100,6 +100,8 @@ void main() {
         find.textContaining('Ulisses Spiele GmbH', findRichText: true),
         findsOneWidget,
       );
+      expect(find.text('Datenschutzerklärung öffnen'), findsOneWidget);
+      expect(find.text('Impressum öffnen'), findsOneWidget);
 
       final debugModeTile = find.byKey(
         const ValueKey<String>('settings-menu-debugMode'),

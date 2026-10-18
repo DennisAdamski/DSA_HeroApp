@@ -21,6 +21,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/magic_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ruestung_be_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/shield_parry_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/spell_effect_combat_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/spell_effect_instance_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/two_weapon_combat_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/waffenmeister_rules.dart';
@@ -131,7 +132,8 @@ class CombatPreviewStats {
 
   final int rsTotal;
 
-  /// Anteil des `Armatrutz` an [rsTotal]; 0, wenn der Zauber nicht laeuft.
+  /// Wirksamer Anteil des `Armatrutz` an [rsTotal] (hoechstens ZfW/2);
+  /// 0, wenn der Zauber nicht laeuft.
   final int armatrutzRsBonus;
   final int beTotalRaw;
   final int rgReduction;
@@ -431,11 +433,24 @@ CombatPreviewStats computeCombatPreviewStats(
       .toList(growable: false);
   // Der Armatrutz legt eine rein magische Ruestung auf: Sein RS zaehlt zur
   // getragenen Ruestung hinzu, erzeugt aber bewusst keine Behinderung.
-  final armatrutzRsBonus = computeArmatrutzRsBonus(sheet: sheet, state: state);
+  // Gespeichert bleibt der eingetragene Wert; wirksam ist höchstens ZfW/2.
+  final armatrutzGespeichert = computeArmatrutzRsBonus(
+    sheet: sheet,
+    state: state,
+  );
+  final armatrutzGrenze = armatrutzGespeichert > 0
+      ? armatrutzRsGrenze(sheet: sheet)
+      : null;
+  final armatrutzRsBonus = begrenzeArmatrutzRs(
+    gespeichert: armatrutzGespeichert,
+    grenze: armatrutzGrenze,
+  );
   final rsHerleitung = herleiteRuestungsschutz(
     aktiveTeile: activeArmorPieces,
     modifikatoren: mods.rs,
-    armatrutz: armatrutzRsBonus,
+    armatrutz: armatrutzGespeichert,
+    armatrutzGrenze: armatrutzGrenze,
+    armatrutzZfw: armatrutzZfw(sheet),
   );
   final rsTotal = rsHerleitung.wert;
   final beTotalRaw = computeBeTotalRaw(activeArmorPieces);
@@ -492,13 +507,22 @@ CombatPreviewStats computeCombatPreviewStats(
   final kkThreshold = usesTpKkThreshold && wmKkThreshold < 1
       ? 1
       : wmKkThreshold;
-  final tpKk = usesTpKkThreshold
+  // Karnifilo: KK +5 verbessert die TP (LC S. 136), ohne AT/PA neu zu rechnen.
+  final zauberKk = derived.zauberEffekte.eigenschaftsMods.kk;
+  final tpKkOhneZauber = usesTpKkThreshold
       ? computeTpKk(
           kk: effectiveSheet.attributes.kk,
           kkBase: wmKkBase,
           kkThreshold: kkThreshold,
         )
       : 0;
+  final tpKk = usesTpKkThreshold && zauberKk != 0
+      ? computeTpKk(
+          kk: effectiveSheet.attributes.kk + zauberKk,
+          kkBase: wmKkBase,
+          kkThreshold: kkThreshold,
+        )
+      : tpKkOhneZauber;
   final axxTpBonus = isRangedWeapon
       ? 0
       : computeAxxeleratusTpBonus(axxeleratusActive: axxeleratusActive);
@@ -527,12 +551,15 @@ CombatPreviewStats computeCombatPreviewStats(
     tpGrundwert: main.tpFlat,
     waffenName: main.name,
     nutztTpKk: usesTpKkThreshold,
-    tpKk: tpKk,
+    tpKk: tpKkOhneZauber,
     kk: effectiveSheet.attributes.kk,
     kkBasis: wmKkBase,
     kkSchwelle: kkThreshold,
     waffenmeisterKkBasis: wmEffects.tpKkBaseReduction,
     waffenmeisterKkSchwelle: wmEffects.tpKkThresholdReduction,
+    zauberTpKk: tpKk - tpKkOhneZauber,
+    zauberKk: zauberKk,
+    zauberName: zauberEigenschaftsName(derived.zauberEffekte),
     axxeleratus: axxTpBonus,
     entfernung: distanceTpMod,
     entfernungLabel: isRangedWeapon ? activeDistanceBand.label : null,
@@ -595,6 +622,8 @@ CombatPreviewStats computeCombatPreviewStats(
           geschoss: projectileAtMod,
           geschossName: activeProjectile?.name,
           manuell: manualMods.atMod,
+          zauberMalus: derived.zauberEffekte.fernkampfMalus,
+          zauberName: derived.zauberEffekte.fernkampfQuelle,
         )
       : herleiteNahkampfAt(
           atBasis: atBase,

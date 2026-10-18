@@ -1,6 +1,29 @@
 # Konto, Sync und Konflikte
 
-Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unverändert. Die kurze [CLAUDE.md](../../CLAUDE.md) enthält die harten Regeln und den Themenindex.
+Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026) und um den aktuellen
+Konto-Lebenszyklus ergänzt. Die kurze [CLAUDE.md](../../CLAUDE.md) enthält die
+harten Regeln und den Themenindex.
+
+- Registrierungen verlangen clientseitig mindestens zwölf Passwortzeichen;
+  Firebase prüft zusätzlich seine serverseitige Kennwortrichtlinie. Nach dem
+  Anlegen sendet `AuthService` eine E-Mail-Verifikation. Die Registrierung ist
+  nur nach aktiver Kenntnisnahme der verlinkten Datenschutzerklärung möglich.
+  Ein unbestätigtes Konto kann die App lokal nutzen, aber weder Firestore,
+  Storage, Gruppen noch geschützte Backend-Funktionen verwenden. Unter
+  `Einstellungen > Konto & Sync` lässt sich die Nachricht erneut senden und
+  der Status nachladen.
+- `Passwort vergessen?` sendet über Firebase eine Reset-Mail. Die UI antwortet
+  für vorhandene und unbekannte Adressen gleich, damit kein Konto-Bestand
+  offengelegt wird. Neue Registrierungen sind derzeit offen; die vorbereitete,
+  aber nicht aktive Keyword-Variante ist in
+  [`registration_security.md`](../registration_security.md) abgegrenzt.
+- Vor dem erstmaligen Erzwingen der verifizierten Cloud-Regeln werden bekannte
+  Bestandskonten einmalig administrativ bestätigt. Das Werkzeug
+  `npm run accounts:verify-existing` im Ordner `functions/` ist standardmäßig
+  ein schreibfreier Trockenlauf; nur der ausdrücklich ergänzte Parameter
+  `-- --apply` ändert Konten. Es protokolliert ausschließlich Summen und keine
+  E-Mail-Adressen. Erst nach erfolgreicher Migration dürfen Firestore- und
+  Storage-Regeln veröffentlicht werden.
 
 - `Einstellungen > Konto & Sync` steuert optionalen Firebase-Login,
   manuellen Konto-Sync und Konfliktaufloesung. Ohne Login nutzt die App das
@@ -84,6 +107,7 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   `authServiceProvider` einen Dienst liefert. Geöffnet wird immer
   `openSignInScreen` (`lib/ui/screens/auth/open_sign_in.dart`); der
   `SignInScreen` schließt sich nach Erfolg selbst.
-- `FirebaseBootstrapResult.isAccountSyncAvailable` steuert den privaten
-  Konto-Sync; `isFirestoreAvailable` steht für native Firestore-Funktionen wie
+- `FirebaseBootstrapResult.isAccountSyncAvailable` und eine bestätigte
+  E-Mail-Adresse steuern gemeinsam den privaten Konto-Sync;
+  `isFirestoreAvailable` steht für native Firestore-Funktionen wie
   Gruppen-Cloudaktionen und bleibt auf Windows deaktiviert.

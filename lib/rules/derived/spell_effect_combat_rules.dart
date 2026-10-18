@@ -1,10 +1,14 @@
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
+import 'package:dsa_heldenverwaltung/domain/attribute_modifiers.dart';
+import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/spell_effect_instance.dart';
 import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/active_spell_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/basiswert_herleitung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_requirement_context.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/spell_effect_profile_rules.dart';
 
 // Empfangene Zauberwirkungen auf Kampfwerte, Proben und MR (MAG-EFF-03).
@@ -96,6 +100,32 @@ class SpellEffectProbenBeitrag {
   final bool zauber;
 }
 
+/// Eine Eigenschaftsänderung eines Zaubers, die **nicht** über
+/// `effektiveTempAttributeMods` läuft.
+///
+/// Karnifilo (LC S. 136) legt AT- und PA-Basis fest; seine Eigenschaften
+/// dürfen sie deshalb nicht neu berechnen. Die Änderung wirkt nur dort, wo
+/// sie ausdrücklich eingerechnet wird: in den Probenwerten
+/// (`wendeZauberEigenschaftenAn`), im TP/KK-Zuschlag sowie in INI- und
+/// FK-Basis (Tischentscheid 18.10.2026), jeweils als eigener Schritt.
+class SpellEffectEigenschaftsQuelle {
+  /// Erstellt die Quelle.
+  const SpellEffectEigenschaftsQuelle({
+    required this.bezeichnung,
+    required this.mods,
+    this.quelle,
+  });
+
+  /// Zaubername für die Herleitung.
+  final String bezeichnung;
+
+  /// Änderung je Eigenschaft.
+  final AttributeModifiers mods;
+
+  /// Übergeordnete Herkunft für die Anzeige.
+  final String? quelle;
+}
+
 /// Ergebnis der Kampf-Mali aller laufenden Zaubereffekte.
 class SpellEffectBeitraege {
   /// Erstellt das Ergebnis.
@@ -103,10 +133,38 @@ class SpellEffectBeitraege {
     this.statQuellen = const <StatModifikatorQuelle>[],
     this.heldenIniMalus = 0,
     this.heldenIniQuelle,
+    this.fernkampfMalus = 0,
+    this.fernkampfQuelle,
+    this.eigenschaftsQuellen = const <SpellEffectEigenschaftsQuelle>[],
+    this.athletikVerdopplungQuelle,
     this.orientierenGesperrt = false,
     this.probenBeitraege = const <SpellEffectProbenBeitrag>[],
     this.hinweise = const <String>[],
   });
+
+  /// Erschwernis der Fernkampfproben (≤ 0), Blitz (LC S. 49). Sie wirkt auf
+  /// den fertigen FK-Wert der Waffe, nicht auf die FK-Basis.
+  final int fernkampfMalus;
+
+  /// Name des Zaubers hinter [fernkampfMalus] für die Herleitung.
+  final String? fernkampfQuelle;
+
+  /// Eigenschaftsänderungen außerhalb von `effektiveTempAttributeMods`
+  /// (Karnifilo), siehe [SpellEffectEigenschaftsQuelle].
+  final List<SpellEffectEigenschaftsQuelle> eigenschaftsQuellen;
+
+  /// Axxeleratus (LC S. 36): Name der Quelle, wenn der Athletik-TaW für
+  /// Sprints und Sprünge verdoppelt ist; sonst `null`.
+  final String? athletikVerdopplungQuelle;
+
+  /// Summe aller [eigenschaftsQuellen].
+  AttributeModifiers get eigenschaftsMods {
+    var summe = const AttributeModifiers();
+    for (final quelle in eigenschaftsQuellen) {
+      summe = summe + quelle.mods;
+    }
+    return summe;
+  }
 
   /// Beiträge zu den Basiswerten (AT-, PA-, INI-Basis), je Zauber eine Quelle.
   final List<StatModifikatorQuelle> statQuellen;
@@ -131,9 +189,36 @@ class SpellEffectBeitraege {
   bool get istLeer =>
       statQuellen.isEmpty &&
       heldenIniMalus == 0 &&
+      fernkampfMalus == 0 &&
+      eigenschaftsQuellen.isEmpty &&
+      athletikVerdopplungQuelle == null &&
       !orientierenGesperrt &&
       probenBeitraege.isEmpty &&
       hinweise.isEmpty;
+}
+
+/// Namen der Zauber hinter [SpellEffectBeitraege.eigenschaftsQuellen] für
+/// eine zusammengefasste Herleitungszeile; `null` ohne Quelle.
+String? zauberEigenschaftsName(SpellEffectBeitraege beitraege) {
+  if (beitraege.eigenschaftsQuellen.isEmpty) {
+    return null;
+  }
+  return beitraege.eigenschaftsQuellen.map((q) => q.bezeichnung).join(', ');
+}
+
+/// Die Eigenschaften [basis] mit den Zauber-Eigenschaftsquellen aus
+/// [beitraege] (Karnifilo).
+///
+/// Nur für Probenwerte, TP/KK sowie INI- und FK-Basis; AT-/PA-Basis,
+/// MR, GS und Ressourcen rechnen nie damit.
+Attributes wendeZauberEigenschaftenAn(
+  Attributes basis,
+  SpellEffectBeitraege beitraege,
+) {
+  if (beitraege.eigenschaftsQuellen.isEmpty) {
+    return basis;
+  }
+  return applyAttributeModifiers(basis, beitraege.eigenschaftsMods);
 }
 
 /// Ob der Held die Sonderfertigkeit Blindkampf beherrscht.
@@ -156,7 +241,9 @@ bool heldKenntKonzentrationsstaerke(HeroSheet held, RulesCatalog? katalog) {
 }
 
 /// Wie [berechneSpellEffectBeitraege], liest die Sonderfertigkeiten des
-/// Helden (Blindkampf, Konzentrationsstärke) selbst. Der übliche Einstieg.
+/// Helden (Blindkampf, Konzentrationsstärke) und den laufenden Axxeleratus
+/// (auch den alten Schalter der Kampfeinstellungen) selbst. Der übliche
+/// Einstieg.
 SpellEffectBeitraege berechneSpellEffectBeitraegeFuerHeld({
   required HeroSheet held,
   required HeroState zustand,
@@ -167,8 +254,12 @@ SpellEffectBeitraege berechneSpellEffectBeitraegeFuerHeld({
     katalog: katalog,
     blindkampf: heldKenntBlindkampf(held, katalog),
     konzentrationsstaerke: heldKenntKonzentrationsstaerke(held, katalog),
+    axxeleratus: isAxxeleratusEffectActive(sheet: held, state: zustand),
   );
 }
+
+/// Quellname der Athletik-Verdopplung durch Axxeleratus.
+const String kAxxeleratusAthletikQuelle = 'Axxeleratus';
 
 /// Rechnet die empfangenen Wirkungen der laufenden Zaubereffekte.
 ///
@@ -178,9 +269,15 @@ SpellEffectBeitraege berechneSpellEffectBeitraegeFuerHeld({
 ///   steht nicht im Regelwerk, deshalb rechnet die App dann **nicht**
 ///   automatisch, sondern meldet einen Hinweis ([blindkampf]).
 ///   Außerdem sind Talent-, Zauber- und Fernkampfproben um ZfP* erschwert:
-///   Talent- und Zauberproben rechnet die App ([probenBeitraege]), den
-///   Fernkampf nur als Hinweis. Konzentrationsstärke halbiert die Abzüge auf
-///   **Zauberproben** (Rundung nicht belegt → Hinweis statt Zahl).
+///   Talent- und Zauberproben über [probenBeitraege], den Fernkampf über
+///   [SpellEffectBeitraege.fernkampfMalus] im FK-Wert der Waffe.
+///   Konzentrationsstärke halbiert die Abzüge auf **Zauberproben** (Rundung
+///   nicht belegt → Hinweis statt Zahl).
+/// - **Karnifilo** (LC S. 136): AT-Basis +5, PA-Basis −5 fest; MU/KK +5 und
+///   KL/CH −5 als [SpellEffectEigenschaftsQuelle] (nicht über
+///   `effektiveTempAttributeMods`, damit AT/PA nicht neu gerechnet werden).
+/// - **Axxeleratus** ([axxeleratus], LC S. 36): Athletik-TaW für Sprints und
+///   Sprünge verdoppelt; als bedingter Probenschritt, nie pauschal.
 /// - **Plumbumbarum** (LC S. 211): AT-Basis und INI-**Basis** je −ZfP*; keine
 ///   PA. Die Demotivationsvariante ist nicht umgesetzt.
 /// - **Adlerauge** (LC S. 15): Proben auf Sinnenschärfe um ZfP* erleichtert;
@@ -199,15 +296,20 @@ SpellEffectBeitraege berechneSpellEffectBeitraege({
   required RulesCatalog? katalog,
   bool blindkampf = false,
   bool konzentrationsstaerke = false,
+  bool axxeleratus = false,
 }) {
+  final athletikQuelle = axxeleratus ? kAxxeleratusAthletikQuelle : null;
   if (katalog == null) {
-    return const SpellEffectBeitraege();
+    return SpellEffectBeitraege(athletikVerdopplungQuelle: athletikQuelle);
   }
   final quellen = <StatModifikatorQuelle>[];
+  final eigenschaften = <SpellEffectEigenschaftsQuelle>[];
   final hinweise = <String>[];
   final proben = <SpellEffectProbenBeitrag>[];
   var iniMalus = 0;
   String? iniQuelle;
+  var fkMalus = 0;
+  String? fkQuelle;
   var orientieren = false;
 
   for (final zauberId in kRechenbareZauberIds) {
@@ -228,8 +330,8 @@ SpellEffectBeitraege berechneSpellEffectBeitraege({
         if (blindkampf) {
           hinweise.add(
             '$name: Blindkampf halbiert die Abzüge; die Rundung ist im '
-            'Regelwerk nicht belegt – Abzüge auf AT, PA, INI und Proben '
-            'bitte manuell eintragen.',
+            'Regelwerk nicht belegt – Abzüge auf AT, PA, INI, Fernkampf und '
+            'Proben bitte manuell eintragen.',
           );
           break;
         }
@@ -253,10 +355,9 @@ SpellEffectBeitraege berechneSpellEffectBeitraege({
               ),
             );
           }
-          hinweise.add(
-            '$name: Fernkampfproben sind um $staerke erschwert – im '
-            'Probendialog selbst eintragen.',
-          );
+          // „Fernkampf um … ZfP* Punkte erschwert“: im FK-Wert der Waffe.
+          fkMalus -= staerke;
+          fkQuelle = name;
         }
         final zfw = stark.zfw;
         // Ungerades ZfP*: der Rest geht zuerst an die Attacke.
@@ -303,12 +404,21 @@ SpellEffectBeitraege berechneSpellEffectBeitraege({
             quelle: 'Zaubereffekt (Kampfrausch, fest laut Regelwerk)',
           ),
         );
+        // MU/KK +5, KL/CH −5 nur für Proben, TP/KK, INI- und FK-Basis
+        // (Tischentscheid 18.10.2026); AT/PA bleiben bei den festen Zahlen.
+        eigenschaften.add(
+          SpellEffectEigenschaftsQuelle(
+            bezeichnung: name,
+            mods: const AttributeModifiers(mu: 5, kk: 5, kl: -5, ch: -5),
+            quelle: 'Zaubereffekt (Kampfrausch)',
+          ),
+        );
         hinweise
           ..add(
-            '$name: MU +5, KK +5, KL −5 und CH −5 sind nicht eingerechnet. '
-            'AT und PA gelten laut Regelwerk fest und werden daraus nicht '
-            'neu berechnet; die TP können durch KK +5 steigen – bei Bedarf '
-            'von Hand eintragen.',
+            '$name: MU +5, KK +5, KL −5 und CH −5 gelten für Proben, den '
+            'TP/KK-Zuschlag sowie INI- und FK-Basis. AT und PA werden daraus '
+            'nicht neu berechnet; MR, GS, LeP/AuP und Wundschwelle bleiben '
+            'unverändert.',
           )
           ..add(
             '$name: erlaubt sind nur gewöhnliche AT/PA sowie Ausweichen, '
@@ -353,6 +463,12 @@ SpellEffectBeitraege berechneSpellEffectBeitraege({
     statQuellen: List<StatModifikatorQuelle>.unmodifiable(quellen),
     heldenIniMalus: iniMalus,
     heldenIniQuelle: iniQuelle,
+    fernkampfMalus: fkMalus,
+    fernkampfQuelle: fkQuelle,
+    eigenschaftsQuellen: List<SpellEffectEigenschaftsQuelle>.unmodifiable(
+      eigenschaften,
+    ),
+    athletikVerdopplungQuelle: athletikQuelle,
     orientierenGesperrt: orientieren,
     probenBeitraege: List<SpellEffectProbenBeitrag>.unmodifiable(proben),
     hinweise: List<String>.unmodifiable(hinweise),

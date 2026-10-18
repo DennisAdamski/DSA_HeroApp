@@ -243,6 +243,37 @@ class _AccountSyncSettingsPage extends ConsumerWidget {
                   title: const Text('Angemeldet'),
                   subtitle: Text(accountLabel),
                 ),
+                if (authUser != null && !authUser.emailVerified) ...[
+                  Text(
+                    'E-Mail noch nicht bestätigt',
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: theme.colorScheme.error,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      OutlinedButton(
+                        onPressed: authService == null
+                            ? null
+                            : () => _sendVerification(context, authService),
+                        child: const Text('Bestätigungs-E-Mail erneut senden'),
+                      ),
+                      TextButton(
+                        onPressed: authService == null
+                            ? null
+                            : () => _refreshVerification(
+                                context,
+                                ref,
+                                authService,
+                              ),
+                        child: const Text('Status aktualisieren'),
+                      ),
+                    ],
+                  ),
+                ],
                 const SizedBox(height: 12),
                 OutlinedButton.icon(
                   onPressed: authService == null
@@ -380,6 +411,49 @@ class _AccountSyncSettingsPage extends ConsumerWidget {
     if (confirmed == true) {
       await authService.signOut();
     }
+  }
+
+  Future<void> _sendVerification(
+    BuildContext context,
+    AuthService authService,
+  ) async {
+    try {
+      await authService.sendEmailVerification();
+      if (!context.mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Bestätigungs-E-Mail wurde gesendet.')),
+      );
+    } on Object catch (_) {
+      if (!context.mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Versand fehlgeschlagen. Bitte später erneut versuchen.',
+          ),
+        ),
+      );
+    }
+  }
+
+  Future<void> _refreshVerification(
+    BuildContext context,
+    WidgetRef ref,
+    AuthService authService,
+  ) async {
+    final user = await authService.reloadCurrentUser();
+    ref.invalidate(authUserProvider);
+    if (!context.mounted) {
+      return;
+    }
+    final message = user?.emailVerified == true
+        ? 'E-Mail-Adresse ist bestätigt.'
+        : 'Die E-Mail-Adresse ist noch nicht bestätigt.';
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
   }
 
   void _meldeAufgeloest(BuildContext context) {
@@ -1452,6 +1526,33 @@ class _LegalSettingsPage extends StatelessWidget {
 
     return _SettingsPageList(
       children: [
+        _SettingsSectionCard(
+          title: 'Datenschutz & Impressum',
+          child: Wrap(
+            spacing: 12,
+            runSpacing: 8,
+            children: [
+              FilledButton.icon(
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const PrivacyPolicyScreen(),
+                  ),
+                ),
+                icon: const Icon(Icons.privacy_tip_outlined),
+                label: const Text('Datenschutzerklärung öffnen'),
+              ),
+              OutlinedButton.icon(
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const ImprintScreen(),
+                  ),
+                ),
+                icon: const Icon(Icons.contact_page_outlined),
+                label: const Text('Impressum öffnen'),
+              ),
+            ],
+          ),
+        ),
         _SettingsSectionCard(
           title: 'Rechtehinweis',
           child: SelectableText(

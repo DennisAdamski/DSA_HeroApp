@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import 'package:dsa_heldenverwaltung/data/auth_service.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/legal/legal_pages.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/karto_variante.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_stroke.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_rahmen.dart';
@@ -35,6 +36,7 @@ class _SignInScreenState extends State<SignInScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   late bool _isRegisterMode = widget.initialRegisterMode;
+  bool _privacyNoticeAcknowledged = false;
   bool _isBusy = false;
   String? _errorMessage;
 
@@ -89,6 +91,52 @@ class _SignInScreenState extends State<SignInScreen> {
     }
   }
 
+  Future<void> _sendPasswordReset() async {
+    final email = _emailController.text.trim();
+    if (email.isEmpty || !email.contains('@') || !email.contains('.')) {
+      setState(() {
+        _errorMessage = 'Bitte gib zuerst eine gültige E-Mail-Adresse ein.';
+      });
+      return;
+    }
+    setState(() {
+      _isBusy = true;
+      _errorMessage = null;
+    });
+    try {
+      await _authService.sendPasswordResetEmail(email);
+      if (!mounted) {
+        return;
+      }
+      _showPasswordResetConfirmation();
+    } on FirebaseAuthException catch (error) {
+      if (mounted && error.code == 'user-not-found') {
+        _showPasswordResetConfirmation();
+      } else if (mounted) {
+        setState(() {
+          _errorMessage = _localizeError(error);
+        });
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isBusy = false;
+        });
+      }
+    }
+  }
+
+  void _showPasswordResetConfirmation() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+          'Falls ein Konto existiert, wurde eine E-Mail zum Zurücksetzen '
+          'gesendet.',
+        ),
+      ),
+    );
+  }
+
   String _localizeError(FirebaseAuthException error) {
     switch (error.code) {
       case 'invalid-email':
@@ -100,7 +148,7 @@ class _SignInScreenState extends State<SignInScreen> {
       case 'email-already-in-use':
         return 'Für diese E-Mail existiert bereits ein Konto.';
       case 'weak-password':
-        return 'Das Passwort ist zu schwach (mindestens 6 Zeichen).';
+        return 'Das Passwort ist zu schwach (mindestens 12 Zeichen).';
       case 'network-request-failed':
         return 'Keine Verbindung zum Server. Prüfe deine Internetverbindung.';
       default:
@@ -171,17 +219,65 @@ class _SignInScreenState extends State<SignInScreen> {
                         ? AutofillHints.newPassword
                         : AutofillHints.password,
                   ],
-                  textInputAction: TextInputAction.done,
-                  onFieldSubmitted: (_) => _submit(),
+                  textInputAction: _isRegisterMode
+                      ? TextInputAction.next
+                      : TextInputAction.done,
+                  onFieldSubmitted: _isRegisterMode ? null : (_) => _submit(),
                   validator: (value) {
                     final v = value ?? '';
                     if (v.isEmpty) return 'Bitte Passwort eingeben.';
-                    if (_isRegisterMode && v.length < 6) {
-                      return 'Mindestens 6 Zeichen.';
+                    if (_isRegisterMode && v.length < 12) {
+                      return 'Mindestens 12 Zeichen.';
                     }
                     return null;
                   },
                 ),
+                if (_isRegisterMode) ...[
+                  const SizedBox(height: 16),
+                  FormField<bool>(
+                    initialValue: _privacyNoticeAcknowledged,
+                    validator: (value) => value == true
+                        ? null
+                        : 'Bitte bestätige die Kenntnisnahme.',
+                    builder: (field) => Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        CheckboxListTile(
+                          contentPadding: EdgeInsets.zero,
+                          controlAffinity: ListTileControlAffinity.leading,
+                          value: _privacyNoticeAcknowledged,
+                          onChanged: _isBusy
+                              ? null
+                              : (value) {
+                                  final acknowledged = value ?? false;
+                                  setState(() {
+                                    _privacyNoticeAcknowledged = acknowledged;
+                                  });
+                                  field.didChange(acknowledged);
+                                },
+                          title: const Text(
+                            'Ich habe die Datenschutzerklärung zur Kenntnis '
+                            'genommen.',
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: _openPrivacyPolicy,
+                          child: const Text('Datenschutzerklärung'),
+                        ),
+                        if (field.hasError)
+                          Padding(
+                            padding: const EdgeInsets.only(left: 12),
+                            child: Text(
+                              field.errorText!,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: theme.colorScheme.error,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
@@ -213,6 +309,7 @@ class _SignInScreenState extends State<SignInScreen> {
                 : () {
                     setState(() {
                       _isRegisterMode = !_isRegisterMode;
+                      _privacyNoticeAcknowledged = false;
                       _errorMessage = null;
                     });
                   },
@@ -220,16 +317,24 @@ class _SignInScreenState extends State<SignInScreen> {
               _isRegisterMode ? 'Stattdessen anmelden' : 'Neues Konto anlegen',
             ),
           ),
+          if (!_isRegisterMode)
+            TextButton(
+              onPressed: _isBusy ? null : _sendPasswordReset,
+              child: const Text('Passwort vergessen?'),
+            ),
         ],
       ),
     );
     final karto = kartoVariante(context);
     if (karto == null) {
       return Scaffold(
-        body: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 420),
-            child: Padding(padding: const EdgeInsets.all(24), child: formular),
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 420),
+              child: formular,
+            ),
           ),
         ),
       );
@@ -273,6 +378,12 @@ class _SignInScreenState extends State<SignInScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  Future<void> _openPrivacyPolicy() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(builder: (_) => const PrivacyPolicyScreen()),
     );
   }
 }

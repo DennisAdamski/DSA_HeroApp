@@ -52,4 +52,40 @@ void main() {
     expect(result.userMessage, contains('Cloud-Funktionen'));
     expect(result.technicalDetails, contains('boom'));
   });
+
+  test('App Check stays inactive on Windows without a debug token', () {
+    final shouldActivate = shouldActivateFirebaseAppCheck(
+      isWeb: false,
+      platform: TargetPlatform.windows,
+      hasWindowsDebugToken: false,
+    );
+
+    expect(shouldActivate, isFalse);
+  });
+
+  test('App Check activates on Windows when a debug token is configured', () {
+    final shouldActivate = shouldActivateFirebaseAppCheck(
+      isWeb: false,
+      platform: TargetPlatform.windows,
+      hasWindowsDebugToken: true,
+    );
+
+    expect(shouldActivate, isTrue);
+  });
+
+  test('App Check activates on supported native and web platforms', () {
+    final android = shouldActivateFirebaseAppCheck(
+      isWeb: false,
+      platform: TargetPlatform.android,
+      hasWindowsDebugToken: false,
+    );
+    final web = shouldActivateFirebaseAppCheck(
+      isWeb: true,
+      platform: TargetPlatform.windows,
+      hasWindowsDebugToken: false,
+    );
+
+    expect(android, isTrue);
+    expect(web, isTrue);
+  });
 }

@@ -4,6 +4,16 @@
 /// die Probe läuft auf die drei Eigenschaften des Zaubers mit den
 /// Probenwerten (Wunden und temporäre Eigenschaftsboni eingerechnet).
 /// Probensuche, Magie-Tab und Gefecht nehmen dieselben Funktionen.
+///
+/// Bewusst **keine** Schritte von ZfW* (Teilstand 15):
+/// - Zauberspezialisierung: +2 nur im spezialisierten Aspekt, höchstens eine je
+///   Zauber (WdH S. 292 f.). Wie bei Talenten ein Schalter im Probendialog.
+/// - Merkmalskenntnis: nur „eine Spalte leichter erlernen“ (WdH S. 289); steht
+///   in der Lernspalten-Herleitung (`zauber_lernspalte_rules.dart`).
+/// - Repräsentation: wirkt auf die Lernspalte (dort hergeleitet) und die
+///   Zaubertechnik; fehlende Komponenten sind Veränderte Technik, eine spontane
+///   Modifikation (WdZ S. 21), also situativ.
+/// - AsP-Kosten: Katalogtext, oft Freitext; nur Hinweis im Probendialog.
 library;
 
 import 'package:dsa_heldenverwaltung/catalog/spell_def.dart';
@@ -42,13 +52,24 @@ Herleitung herleiteZfw(HeroSpellEntry eintrag) => Herleitung(
 /// Aufgelöste Werte einer Zauberprobe.
 class ZauberProbenwert {
   /// Hält Probenziele, ZfW* und seine Herleitung.
-  const ZauberProbenwert({required this.ziele, required this.herleitung});
+  const ZauberProbenwert({
+    required this.ziele,
+    required this.herleitung,
+    this.spezialisierungen = const <String>[],
+    this.kosten = '',
+  });
 
   /// Drei Eigenschaften mit ihren Probenwerten.
   final List<ProbeTargetValue> ziele;
 
   /// Herleitung von ZfW*.
   final Herleitung herleitung;
+
+  /// Zauberspezialisierungen des Helden (nicht leere Namen).
+  final List<String> spezialisierungen;
+
+  /// AsP-Kosten laut Katalog; leer, wenn unbekannt.
+  final String kosten;
 
   /// ZfW* = ZfW + Modifikator.
   int get zfw => herleitung.wert;
@@ -67,7 +88,15 @@ ZauberProbenwert? zauberProbenwertAus({
   if (eintrag.spellValue == null) return null;
   final ziele = probenzieleFuer(probenEigenschaften, spell.attributes);
   if (ziele.length != 3) return null;
-  return ZauberProbenwert(ziele: ziele, herleitung: herleiteZfw(eintrag));
+  return ZauberProbenwert(
+    ziele: ziele,
+    herleitung: herleiteZfw(eintrag),
+    spezialisierungen: List<String>.unmodifiable([
+      for (final name in eintrag.specializations)
+        if (name.trim().isNotEmpty) name.trim(),
+    ]),
+    kosten: spell.aspCost.trim(),
+  );
 }
 
 /// Probenwert des Zaubers [spell] für den Helden des [snapshot].
@@ -87,7 +116,8 @@ ZauberProbenwert? zauberProbenwertFuer({
   );
 }
 
-/// Zauberprobe über den gemeinsamen Probenbauer.
+/// Zauberprobe über den gemeinsamen Probenbauer, mit ZfW*-Herleitung,
+/// Spezialisierungsschalter und Kostenhinweis.
 ResolvedProbeRequest zauberprobeAus({
   required ZauberProbenwert wert,
   required String titel,
@@ -95,7 +125,18 @@ ResolvedProbeRequest zauberprobeAus({
   title: titel,
   targets: wert.ziele,
   basePool: wert.zfw,
+  hasSpecialization: wert.spezialisierungen.isNotEmpty,
+  zfwHerleitung: wert.herleitung,
+  hinweise: zauberprobenHinweise(wert),
 );
+
+/// Hinweise zur Zauberprobe: Spezialisierungen und Kosten laut Katalog.
+List<String> zauberprobenHinweise(ZauberProbenwert wert) => <String>[
+  if (wert.spezialisierungen.isNotEmpty)
+    'Spezialisierung (+2 nur im jeweiligen Aspekt): '
+        '${wert.spezialisierungen.join(', ')}.',
+  if (wert.kosten.isNotEmpty) 'Kosten: ${wert.kosten}.',
+];
 
 /// Ein gelernter Zauber des Helden mit seiner ZfW*-Herleitung.
 class ZauberUebersicht {

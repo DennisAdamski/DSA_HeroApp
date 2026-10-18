@@ -6,8 +6,69 @@ import 'package:dsa_heldenverwaltung/domain/gefecht.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht_wirken.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_wirken_rules.dart';
+import 'package:dsa_heldenverwaltung/domain/gefecht_auftrag.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/gefecht_ablauf_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/gefecht_ansagefolge_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/herleitung.dart';
 
 void main() {
+  test('Gefechtsumbauten behalten die Pool-Herleitung (ARCH-04)', () {
+    final herleitung = Herleitung(
+      bezeichnung: 'ZfW*',
+      schritte: const <HerleitungsSchritt>[
+        HerleitungsSchritt(
+          bezeichnung: 'ZfW',
+          betrag: 5,
+          art: HerleitungsArt.zukauf,
+        ),
+      ],
+    );
+    final p = ResolvedProbeRequest(
+      type: ProbeType.spell,
+      title: 'LK',
+      subtitle: '',
+      ruleHint: '',
+      diceSpec: const DiceSpec(count: 3, sides: 20),
+      targets: const [],
+      basePool: 5,
+      specializationBonus: 2,
+      poolHerleitung: herleitung,
+    );
+    final umgebaut = <ResolvedProbeRequest>[
+      modifiziereGefechtsWirkprobe(p, 3),
+      gefechtsProbeMitAnsagefolgemalus(p, 2),
+      gefechtRequestFuerAuftrag(
+        GefechtAuftrag(
+          aktion: Gefechtsaktion.handlung,
+          titel: 'LK',
+          zuschlag: 0,
+          dk: null,
+          dauer: 1,
+          kosten: 1,
+          probe: p,
+        ),
+        const Gefechtspruefung(
+          aktion: Gefechtsaktion.handlung,
+          status: Gefechtsfreigabe.bereit,
+          gruende: [],
+          zielwert: null,
+          erschwernis: 4,
+        ),
+      )!,
+    ];
+    for (final r in umgebaut) {
+      expect(r.poolHerleitung, same(herleitung));
+      expect(r.basePool, 5);
+      expect(r.specializationBonus, 2);
+    }
+    final mirakel = gefechtsProbeMitBonus(
+      p,
+      const GefechtsProbenbonus('LK', 3),
+    );
+    expect(mirakel.basePool, 8);
+    expect(mirakel.poolHerleitung!.wert, 8);
+    expect(mirakel.poolHerleitung!.schritte.last.bezeichnung, 'Mirakelbonus');
+  });
   test('Neue Armatrutz-Werte erhalten frische unbekannte Effektdaten', () {
     final state = HeroState.empty().copyWith(
       activeSpellEffects: const ActiveSpellEffectsState(

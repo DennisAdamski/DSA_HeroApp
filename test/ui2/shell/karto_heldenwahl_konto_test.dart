@@ -95,6 +95,18 @@ class _FakeAuthService implements AuthService {
   Future<void> signOut() async {}
 
   @override
+  Future<void> sendPasswordResetEmail(String email) async {}
+
+  @override
+  Future<void> sendEmailVerification() async {}
+
+  @override
+  Future<AuthUser?> reloadCurrentUser() async => currentUser;
+
+  @override
+  Future<void> reauthenticateWithPassword(String password) async {}
+
+  @override
   Future<AuthUser> signInWithEmail({
     required String email,
     required String password,

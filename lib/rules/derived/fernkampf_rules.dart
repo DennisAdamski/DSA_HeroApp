@@ -8,6 +8,7 @@ int computeRangedAtValue({
   required int projectileAtMod,
   required int manualAtMod,
   int waffenmeisterAtBonus = 0,
+  int zauberMalus = 0,
 }) {
   return rangedAtBase +
       talentAtValue +
@@ -16,7 +17,8 @@ int computeRangedAtValue({
       ebeAttackPart +
       specializationBonus +
       projectileAtMod +
-      manualAtMod;
+      manualAtMod +
+      zauberMalus;
 }
 
 /// Addiert Distanz- und Geschossmodifikator auf den TP-Gesamtwert.
