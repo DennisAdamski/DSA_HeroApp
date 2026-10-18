@@ -32,6 +32,7 @@ void main() {
       final client = FeedbackClient(
         endpoint: Uri.parse('https://feedback.test.example'),
         idTokenProvider: () async => token,
+        appCheckTokenProvider: () async => 'app-check-token',
         httpClient: MockClient((request) async {
           requests.add(request);
           return http.Response(
@@ -56,6 +57,7 @@ void main() {
       expect(first.issueNumber, 23);
       expect(requests[0].headers['authorization'], 'Bearer first-token');
       expect(requests[1].headers['authorization'], 'Bearer second-token');
+      expect(requests[0].headers['x-firebase-appcheck'], 'app-check-token');
       expect(jsonDecode(requests[0].body), submission.toJson());
     },
   );
@@ -67,6 +69,7 @@ void main() {
       final accepted = FeedbackClient(
         endpoint: Uri.parse('https://feedback.test.example'),
         idTokenProvider: () async => 'token',
+        appCheckTokenProvider: () async => 'app-check-token',
         httpClient: MockClient(
           (_) async => http.Response(
             jsonEncode({
@@ -85,6 +88,7 @@ void main() {
       final timedOut = FeedbackClient(
         endpoint: Uri.parse('https://feedback.test.example'),
         idTokenProvider: () async => 'token',
+        appCheckTokenProvider: () async => 'app-check-token',
         timeout: const Duration(milliseconds: 1),
         httpClient: MockClient((_) async {
           calls += 1;
@@ -102,6 +106,7 @@ void main() {
     final client = FeedbackClient(
       endpoint: Uri.parse('https://feedback.test.example'),
       idTokenProvider: () async => 'token',
+      appCheckTokenProvider: () async => 'app-check-token',
       httpClient: MockClient((request) async {
         expect(request.method, 'GET');
         return http.Response(jsonEncode({'code': 'NOT_FOUND'}), 404);

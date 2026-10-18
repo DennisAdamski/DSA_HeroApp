@@ -6,13 +6,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/app_layout.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/legal/legal_pages.dart';
 import 'package:dsa_heldenverwaltung/ui/theme/codex_theme.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_theme.dart';
 
 /// Wurzel-Widget der DSA-Heldenverwaltung mit plattformspezifischem Theme.
 class DsaAppShell extends ConsumerWidget {
   /// Erstellt die App-Huelle mit Theme und Navigator.
-  const DsaAppShell({super.key, required this.home});
+  const DsaAppShell({
+    super.key,
+    required this.home,
+    this.legalContact = legalContactFromEnvironment,
+  });
 
   static bool _isApple() =>
       defaultTargetPlatform == TargetPlatform.iOS ||
@@ -28,6 +33,9 @@ class DsaAppShell extends ConsumerWidget {
 
   /// Startscreen innerhalb der App-Navigation.
   final Widget home;
+
+  /// Anbieterangaben der öffentlichen Rechtstexte.
+  final LegalContact legalContact;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -66,6 +74,10 @@ class DsaAppShell extends ConsumerWidget {
         theme: themeFuer(Brightness.light),
         darkTheme: themeFuer(Brightness.dark),
         home: home,
+        routes: {
+          '/datenschutz': (_) => PrivacyPolicyScreen(contact: legalContact),
+          '/impressum': (_) => ImprintScreen(contact: legalContact),
+        },
         builder: (context, child) {
           if (!debugModus) return child!;
           final layout = appLayoutOf(context);

@@ -12,6 +12,7 @@ import 'package:dsa_heldenverwaltung/domain/spell_effect_instance.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/spell_effect_instance_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/active_spell_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/active_spell_state_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/armatrutz_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/spell_effect_combat_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/spell_effect_event_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/spell_effect_protection_rules.dart';
@@ -369,9 +370,12 @@ class _ActiveSpellEffectsDialogState
     final current = state.activeSpellEffects.detailFor(
       activeSpellEffectArmatrutz,
     );
+    final hero = ref.read(heroByIdProvider(widget.heroId));
     final detail = await showArmatrutzInputDialog(
       context: context,
       initialDetail: activateFirst ? null : current,
+      grenzePruefen: hero != null,
+      grenze: hero == null ? null : armatrutzRsGrenze(sheet: hero),
     );
     if (detail == null || !mounted) {
       return;
@@ -591,10 +595,12 @@ class _ActiveSpellEffectsDialogState
                       duration: state.activeSpellEffects
                           .detailFor(effect.id)
                           .duration,
-                      valueText: describeActiveSpellEffectValue(
-                        effectId: effect.id,
-                        state: state,
-                      ),
+                      valueText: effect.id == activeSpellEffectArmatrutz
+                          ? describeArmatrutzWert(sheet: hero, state: state)
+                          : describeActiveSpellEffectValue(
+                              effectId: effect.id,
+                              state: state,
+                            ),
                       mussAufrechterhaltenWerden:
                           effektVerlangtAufrechterhaltung(effect.id, catalog),
                       onToggled: _toggleHandlerFor(effect),

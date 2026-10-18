@@ -12,20 +12,36 @@ import 'package:dsa_heldenverwaltung/ui/widgets/spell_duration_field.dart';
 ///
 /// Liefert den erzauberten Ruestungsschutz samt Wirkungsdauer als
 /// [ActiveSpellEffectDetail] zurueck oder `null`, wenn abgebrochen wurde.
+///
+/// Mit [grenzePruefen] zeigt die Maske die Regelgrenze ZfW/2 ([grenze] aus
+/// `armatrutzRsGrenze`, `null` = ZfW unbekannt). Die Eingabe wird nicht
+/// gekappt: Die Rechnung begrenzt den Wert und nennt den Grund.
 Future<ActiveSpellEffectDetail?> showArmatrutzInputDialog({
   required BuildContext context,
   ActiveSpellEffectDetail? initialDetail,
+  bool grenzePruefen = false,
+  int? grenze,
 }) {
   return showAdaptiveInputDialog<ActiveSpellEffectDetail>(
     context: context,
-    builder: (_) => _ArmatrutzInputDialog(initialDetail: initialDetail),
+    builder: (_) => _ArmatrutzInputDialog(
+      initialDetail: initialDetail,
+      grenzePruefen: grenzePruefen,
+      grenze: grenze,
+    ),
   );
 }
 
 class _ArmatrutzInputDialog extends StatefulWidget {
-  const _ArmatrutzInputDialog({this.initialDetail});
+  const _ArmatrutzInputDialog({
+    this.initialDetail,
+    this.grenzePruefen = false,
+    this.grenze,
+  });
 
   final ActiveSpellEffectDetail? initialDetail;
+  final bool grenzePruefen;
+  final int? grenze;
 
   @override
   State<_ArmatrutzInputDialog> createState() => _ArmatrutzInputDialogState();
@@ -130,6 +146,18 @@ class _ArmatrutzInputDialogState extends State<_ArmatrutzInputDialog> {
               color: theme.colorScheme.primary,
             ),
           ),
+          if (widget.grenzePruefen) ...[
+            const SizedBox(height: kDialogInlineSpacing),
+            Text(
+              key: const ValueKey<String>('armatrutz-input-grenze-hint'),
+              describeArmatrutzGrenze(rsBonus: _rsBonus, grenze: widget.grenze),
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: widget.grenze != null && _rsBonus > widget.grenze!
+                    ? theme.colorScheme.error
+                    : theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ],
           const SizedBox(height: kDialogSectionSpacing),
           SpellDurationField(
             fieldKeyPrefix: 'armatrutz-duration',

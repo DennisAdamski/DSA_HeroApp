@@ -86,6 +86,15 @@ class _ProbeDialogState extends State<ProbeDialog> {
   final DiceRollController _trefferzonenDiceController = DiceRollController();
   late ProbeRollMode _mode;
   late bool _specializationApplied;
+
+  /// Ob der bedingte Poolschritt (etwa Axxeleratus bei Sprint/Sprung) gilt.
+  bool _bedingungAngewendet = false;
+
+  /// Die Probe, wie sie gerade gewertet wird: mit angewendetem bedingten
+  /// Poolschritt, wenn der Schalter an ist (Rechnung in den Regeln).
+  ResolvedProbeRequest get _request => _bedingungAngewendet
+      ? wendeBedingtenPoolSchrittAn(widget.request)
+      : widget.request;
   late final TextEditingController _modifierController;
   late final List<TextEditingController> _manualDiceControllers;
   ProbeResult? _result;
@@ -106,12 +115,12 @@ class _ProbeDialogState extends State<ProbeDialog> {
   void initState() {
     super.initState();
     _mode = ProbeRollMode.digital;
-    _specializationApplied = widget.request.initialSpecializationApplied;
+    _specializationApplied = _request.initialSpecializationApplied;
     _modifierController = TextEditingController(
-      text: widget.request.initialSituationalModifier.toString(),
+      text: _request.initialSituationalModifier.toString(),
     );
     _manualDiceControllers = List<TextEditingController>.generate(
-      widget.request.diceSpec.count,
+      _request.diceSpec.count,
       (_) => TextEditingController(),
     );
   }
@@ -134,22 +143,22 @@ class _ProbeDialogState extends State<ProbeDialog> {
 
     _resetTrefferzone();
 
-    if (widget.request.fixedRollTotal != null) {
+    if (_request.fixedRollTotal != null) {
       final input = createDigitalProbeRollInput(
-        widget.request,
+        _request,
         roller: _roller,
         situationalModifier: _situationalModifier,
         specializationApplied: _specializationApplied,
       );
       setState(() {
-        _result = evaluateProbe(widget.request, input);
+        _result = evaluateProbe(_request, input);
       });
       _notifyResolved();
       return;
     }
 
     final input = createDigitalProbeRollInput(
-      widget.request,
+      _request,
       roller: _roller,
       situationalModifier: _situationalModifier,
       specializationApplied: _specializationApplied,
@@ -193,7 +202,7 @@ class _ProbeDialogState extends State<ProbeDialog> {
       specializationApplied: _specializationApplied,
     );
     setState(() {
-      _result = evaluateProbe(widget.request, input);
+      _result = evaluateProbe(_request, input);
     });
   }
 
@@ -217,7 +226,7 @@ class _ProbeDialogState extends State<ProbeDialog> {
       situationalModifier: _situationalModifier,
       specializationApplied: _specializationApplied,
     );
-    if (!isValidManualProbeInput(widget.request, input)) {
+    if (!isValidManualProbeInput(_request, input)) {
       setState(() {
         _result = null;
       });
@@ -225,7 +234,7 @@ class _ProbeDialogState extends State<ProbeDialog> {
     }
 
     setState(() {
-      _result = evaluateProbe(widget.request, input);
+      _result = evaluateProbe(_request, input);
     });
   }
 
@@ -333,7 +342,7 @@ class _ProbeDialogState extends State<ProbeDialog> {
   Widget build(BuildContext context) {
     final result = _result;
     return AlertDialog(
-      title: Text(widget.request.title),
+      title: Text(_request.title),
       content: SizedBox(
         width: kDialogWidthMedium,
         child: SingleChildScrollView(
@@ -341,11 +350,10 @@ class _ProbeDialogState extends State<ProbeDialog> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (widget.request.subtitle.trim().isNotEmpty)
-                Text(widget.request.subtitle),
+              if (_request.subtitle.trim().isNotEmpty) Text(_request.subtitle),
               const SizedBox(height: 8),
               Text(
-                widget.request.ruleHint,
+                _request.ruleHint,
                 style: Theme.of(context).textTheme.bodySmall,
               ),
               const SizedBox(height: 12),
@@ -378,24 +386,20 @@ class _ProbeDialogState extends State<ProbeDialog> {
 
   Widget _buildSummary() {
     final chips = <Widget>[
-      Chip(label: Text(widget.request.diceSpec.label)),
-      for (final target in widget.request.targets)
+      Chip(label: Text(_request.diceSpec.label)),
+      for (final target in _request.targets)
         Chip(label: Text('${target.label}: ${target.value}')),
-      if (widget.request.usesCompensationPool)
-        Chip(label: Text('Pool: ${widget.request.basePool}')),
-      if (widget.request.supportsSpecialization)
-        Chip(
-          label: Text(
-            'Spezialisierung: +${widget.request.specializationBonus}',
-          ),
-        ),
+      if (_request.usesCompensationPool)
+        Chip(label: Text('Pool: ${_request.basePool}')),
+      if (_request.supportsSpecialization)
+        Chip(label: Text('Spezialisierung: +${_request.specializationBonus}')),
     ];
     return Wrap(spacing: 8, runSpacing: 8, children: chips);
   }
 
   /// Aufklappbare Herleitung des Pools (TaW*); rechnet nichts nach.
   Widget _buildPoolHerleitung() {
-    final herleitung = widget.request.poolHerleitung;
+    final herleitung = _request.poolHerleitung;
     if (herleitung == null) return const SizedBox.shrink();
     return Theme(
       data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
@@ -461,13 +465,13 @@ class _ProbeDialogState extends State<ProbeDialog> {
           ),
           onChanged: (_) => _liveRefresh(),
         ),
-        if (widget.request.supportsSpecialization) ...[
+        if (_request.supportsSpecialization) ...[
           const SizedBox(height: 8),
           SwitchListTile(
             key: const ValueKey<String>('probe-dialog-specialization'),
             contentPadding: EdgeInsets.zero,
             title: Text(
-              'Spezialisierung anwenden (+${widget.request.specializationBonus})',
+              'Spezialisierung anwenden (+${_request.specializationBonus})',
             ),
             value: _specializationApplied,
             onChanged: _locked || _isAnimating
@@ -480,17 +484,35 @@ class _ProbeDialogState extends State<ProbeDialog> {
                   },
           ),
         ],
+        if (widget.request.bedingterPoolSchritt case final schritt?) ...[
+          const SizedBox(height: 8),
+          SwitchListTile(
+            key: const ValueKey<String>('probe-dialog-bedingter-pool'),
+            contentPadding: EdgeInsets.zero,
+            title: Text('${schritt.bezeichnung} (+${schritt.betrag})'),
+            subtitle: Text([?schritt.bedingung, ?schritt.formel].join(': ')),
+            value: _bedingungAngewendet,
+            onChanged: _locked || _isAnimating
+                ? null
+                : (value) {
+                    setState(() {
+                      _bedingungAngewendet = value;
+                    });
+                    _liveRefresh();
+                  },
+          ),
+        ],
       ],
     );
   }
 
   Widget _buildDiceSection() {
-    if (widget.request.fixedRollTotal != null) {
+    if (_request.fixedRollTotal != null) {
       return Card(
         child: Padding(
           padding: const EdgeInsets.all(12),
           child: Text(
-            'Fester Wurf: ${widget.request.fixedRollTotal}',
+            'Fester Wurf: ${_request.fixedRollTotal}',
             key: const ValueKey<String>('probe-dialog-fixed-roll'),
           ),
         ),
@@ -503,10 +525,10 @@ class _ProbeDialogState extends State<ProbeDialog> {
           padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 12),
           child: Center(
             child: AnimatedDiceRow(
-              diceSpec: widget.request.diceSpec,
+              diceSpec: _request.diceSpec,
               controller: _diceController,
               onRollComplete: _onRollComplete,
-              probeType: widget.request.type,
+              probeType: _request.type,
             ),
           ),
         ),
@@ -546,7 +568,7 @@ class _ProbeDialogState extends State<ProbeDialog> {
   }
 
   Widget _buildTrefferzonenSection() {
-    if (widget.request.type != ProbeType.damage || _result == null) {
+    if (_request.type != ProbeType.damage || _result == null) {
       return const SizedBox.shrink();
     }
 
@@ -721,7 +743,7 @@ class _ProbeDialogState extends State<ProbeDialog> {
     if (result == null) return const SizedBox.shrink();
 
     final lines = <String>[];
-    if (widget.request.usesCompensationPool) {
+    if (_request.usesCompensationPool) {
       lines.add('Pool Start: ${result.compensationPoolStart}');
       if (result.appliedAttributePenalty != 0) {
         lines.add('Attributmalus: ${result.appliedAttributePenalty}');
@@ -729,9 +751,9 @@ class _ProbeDialogState extends State<ProbeDialog> {
       lines.add('Verbleibender Pool: ${result.remainingPool}');
     }
 
-    if (widget.request.usesSummedTotal) {
+    if (_request.usesSummedTotal) {
       lines.add('Gesamtergebnis: ${result.total}');
-    } else if (widget.request.usesBinaryCheck) {
+    } else if (_request.usesBinaryCheck) {
       lines.add('Wurf: ${result.diceValues.join(', ')}');
       lines.add('Zielwert: ${result.effectiveTargetValues.join(', ')}');
     } else {
@@ -751,7 +773,7 @@ class _ProbeDialogState extends State<ProbeDialog> {
       lines.add('Spezielle Erfahrung');
     }
 
-    final headline = widget.request.usesSummedTotal
+    final headline = _request.usesSummedTotal
         ? 'Ergebnis'
         : (result.success ? 'Erfolg' : 'Misslungen');
 

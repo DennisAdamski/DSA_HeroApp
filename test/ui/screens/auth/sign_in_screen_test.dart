@@ -68,12 +68,73 @@ void main() {
 
     final fields = find.byType(TextFormField);
     await tester.enterText(fields.at(0), 'held@example.de');
-    await tester.enterText(fields.at(1), 'geheim123');
+    await tester.enterText(fields.at(1), 'geheim123456');
+    await tester.tap(find.widgetWithText(FilledButton, 'Konto anlegen'));
+    await tester.pump();
+
+    expect(find.text('Bitte bestätige die Kenntnisnahme.'), findsOneWidget);
+
+    await tester.tap(find.byType(Checkbox));
     await tester.tap(find.widgetWithText(FilledButton, 'Konto anlegen'));
     await tester.pumpAndSettle();
 
     expect(find.byType(SignInScreen), findsNothing);
     expect(find.text('öffnen'), findsOneWidget);
+  });
+
+  testWidgets('Registrierung verlangt mindestens zwölf Zeichen', (
+    tester,
+  ) async {
+    final auth = _FakeAuthService();
+    await tester.pumpWidget(MaterialApp(home: SignInScreen(authService: auth)));
+
+    await tester.tap(find.text('Neues Konto anlegen'));
+    await tester.pumpAndSettle();
+    final fields = find.byType(TextFormField);
+    await tester.enterText(fields.at(0), 'held@example.de');
+    await tester.enterText(fields.at(1), 'zu-kurz-11');
+    await tester.tap(find.byType(Checkbox));
+    await tester.tap(find.widgetWithText(FilledButton, 'Konto anlegen'));
+    await tester.pump();
+
+    expect(find.text('Mindestens 12 Zeichen.'), findsOneWidget);
+    expect(auth.registerCalls, 0);
+  });
+
+  testWidgets('Datenschutzerklärung ist aus der Registrierung erreichbar', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: SignInScreen(
+          authService: _FakeAuthService(),
+          initialRegisterMode: true,
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Datenschutzerklärung'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Datenschutzerklärung'), findsWidgets);
+    expect(find.text('1. Verantwortlicher'), findsOneWidget);
+  });
+
+  testWidgets('Passwort-Reset nutzt die eingegebene E-Mail neutral', (
+    tester,
+  ) async {
+    final auth = _FakeAuthService();
+    await tester.pumpWidget(MaterialApp(home: SignInScreen(authService: auth)));
+
+    await tester.enterText(
+      find.byType(TextFormField).first,
+      ' held@example.de ',
+    );
+    await tester.tap(find.text('Passwort vergessen?'));
+    await tester.pumpAndSettle();
+
+    expect(auth.resetEmails, ['held@example.de']);
+    expect(find.textContaining('Falls ein Konto existiert'), findsOneWidget);
   });
 }
 
@@ -82,6 +143,9 @@ List<TextField> _textFields(WidgetTester tester) {
 }
 
 class _FakeAuthService implements AuthService {
+  int registerCalls = 0;
+  final List<String> resetEmails = [];
+
   @override
   AuthUser? get currentUser => null;
 
@@ -90,8 +154,23 @@ class _FakeAuthService implements AuthService {
     required String email,
     required String password,
   }) async {
+    registerCalls++;
     return AuthUser(uid: email, email: email);
   }
+
+  @override
+  Future<void> sendPasswordResetEmail(String email) async {
+    resetEmails.add(email);
+  }
+
+  @override
+  Future<void> sendEmailVerification() async {}
+
+  @override
+  Future<AuthUser?> reloadCurrentUser() async => currentUser;
+
+  @override
+  Future<void> reauthenticateWithPassword(String password) async {}
 
   @override
   Future<void> signOut() async {}

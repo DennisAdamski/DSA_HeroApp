@@ -727,3 +727,42 @@ Offline); Auswahl zusätzlicher Pakete in der Vorschau (`zusaetzlichePaketIds`);
 Zurückführen eines Profils auf „folgt global“; Import/Export; ein Einstieg in der
 UI2-Navigation (heute nur die Übersichtskarte); Epische Nachteile lesen weiterhin
 den globalen Schalter statt des Profils (`hero_overview_epic_section.dart`).
+
+**Teilstand 15, 18.10.2026 — Herleitungsreste der Proben.**
+
+*Befund.* Die SB-Probe der Wunddialoge übergab keine TaW\*-Herleitung, keine
+Zauberprobe eine ZfW\*-Herleitung (Magie-Tab, Probensuche, Gefecht), die
+Liturgieprobe im Gefecht keine TaW\*-Herleitung. Vier Gefechtsumbauten
+(`gefechtsProbeMitBonus`, `modifiziereGefechtsWirkprobe`,
+`gefechtRequestFuerAuftrag`, `gefechtsProbeMitAnsagefolgemalus`) bauten
+`ResolvedProbeRequest` neu und verloren `poolHerleitung`.
+
+*Regelklärung (offener Punkt aus Teilstand 9).* Zauberspezialisierung: „im
+spezialisierten Aspekt“ zwei zusätzliche effektive ZfP, höchstens eine je Zauber
+(WdH S. 292 f.) – bedingt, deshalb wie die Talentspezialisierung ein Schalter
+(+2) im Probendialog und kein ZfW\*-Schritt. Merkmalskenntnis: nur „eine Spalte
+leichter erlernen“ (WdH S. 289), steht in der Lernspalten-Herleitung.
+Repräsentation: Lernspalte (hergeleitet) und Zaubertechnik; fehlende
+Komponenten sind Veränderte Technik, eine spontane Modifikation (WdZ S. 21).
+AsP-Kosten: Katalogtext, oft Freitext; nur Hinweis im Regelhinweis der Probe.
+
+*Umsetzung.* `ResolvedProbeRequest.copyWith` nimmt `targets`, `basePool` und
+`poolHerleitung`; die vier Gefechtsumbauten laufen darüber, der Mirakelbonus auf
+den Pool ergänzt den Schritt „Mirakelbonus“. `buildSpellProbeRequest` nimmt
+`zfwHerleitung`, `hasSpecialization` und `hinweise`; `ZauberProbenwert` trägt
+`spezialisierungen` und `kosten`, `zauberprobeAus` und `gefechtsZauberprobe`
+übergeben Herleitung, Schalter und Hinweise (`zauberprobenHinweise`).
+`talentHerleitungNachId` (Grundlage von `talentTawNachId`) und
+`sbProbeHerleitung` liefern die SB-Herleitung an beide Wunddialoge; der Fallback
+ohne Snapshot übergibt keine.
+
+*Prüfungen.* `test/rules/zauber_herleitung_rules_test.dart` (Herleitung = Pool,
+Spezialisierung als Schalter, Kostenhinweis), `gefecht_wirken_rules_test.dart`
+(Umbauten behalten die Herleitung, Mirakelbonus als Schritt),
+`talent_herleitung_rules_test.dart` (`talentHerleitungNachId`),
+`test/ui/workspace/wunden_dialog_test.dart` („TaW\* herleiten“ im SB-Dialog).
+`flutter analyze --no-pub` ohne Befund in den geänderten Dateien; Gesamtsuite
+seriell: 6241 bestanden, 3 übersprungen, 0 fehlgeschlagen. Commit `89331747`.
+
+*Offen.* Unverändert die Punkte unter „Herleitungen“ in der Roadmap
+(Eigenschaftsprobe als Ausweichen, bewusst offene Lernregeln).

@@ -18,10 +18,15 @@ ResolvedProbeRequest? gefechtsZauberprobe(
     type: ProbeType.spell,
     title: zauber.name,
     subtitle: 'Gefechtszauber · ${zauber.castingTime}',
-    ruleHint: 'Reichweite, Zeit, Modifikationen, Kosten und Wirkung ausdrücklich prüfen.',
+    ruleHint: <String>[
+      'Reichweite, Zeit, Modifikationen, Kosten und Wirkung ausdrücklich prüfen.',
+      ...zauberprobenHinweise(wert),
+    ].join(' '),
     diceSpec: const DiceSpec(count: 3, sides: 20),
     targets: wert.ziele,
     basePool: wert.zfw,
+    specializationBonus: wert.spezialisierungen.isEmpty ? 0 : 2,
+    poolHerleitung: wert.herleitung,
   );
 }
 
@@ -59,6 +64,7 @@ ResolvedProbeRequest? gefechtsLiturgieprobe(
     diceSpec: const DiceSpec(count: 3, sides: 20),
     targets: wert.ziele,
     basePool: wert.taw,
+    poolHerleitung: wert.herleitung.taw,
   );
 }
 

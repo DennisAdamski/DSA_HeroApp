@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/data/feedback/feedback_client.dart';
@@ -37,6 +38,7 @@ final feedbackGatewayProvider = Provider<FeedbackGateway?>((ref) {
       final user = FirebaseAuth.instance.currentUser;
       return user?.getIdToken();
     },
+    appCheckTokenProvider: () => FirebaseAppCheck.instance.getToken(),
   );
 });
 
