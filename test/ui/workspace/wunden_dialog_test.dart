@@ -62,6 +62,13 @@ const _katalog = RulesCatalog(
       steigerung: 'C',
       attributes: <String>['KL', 'IN', 'CH'],
     ),
+    TalentDef(
+      id: 'tal_selbstbeherrschung',
+      name: 'Selbstbeherrschung',
+      group: 'Körperlich',
+      steigerung: 'D',
+      attributes: <String>['MU', 'KO', 'KK'],
+    ),
   ],
   spells: <SpellDef>[],
   weapons: <WeaponDef>[],
@@ -191,6 +198,8 @@ void main() {
     expect(find.text('KO: 12'), findsOneWidget);
     expect(find.text('KK: 10'), findsOneWidget);
     expect(modifikator(tester), '-8');
+    // TaW* der Selbstbeherrschung ist aufklappbar hergeleitet (ARCH-04).
+    expect(find.text('TaW* herleiten'), findsOneWidget);
   });
 
   testWidgets('epische KO halbiert die SB-Erschwernis', (tester) async {

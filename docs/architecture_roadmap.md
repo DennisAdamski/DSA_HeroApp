@@ -1,6 +1,6 @@
 # To-do-Liste: Weiterentwicklung der Heldenverwaltung
 
-Stand: 16.10.2026. Diese Liste führt **nur Status und offene Punkte**. Abgenommene
+Stand: 18.10.2026. Diese Liste führt **nur Status und offene Punkte**. Abgenommene
 Aufgaben und der Verlauf der Teilstände stehen unverändert im
 [Archiv](archiv/README.md); Verweise wie „ARCH-05 Teilstand (3)“ in Code und
 Dokumentation meinen den dortigen Text.
@@ -206,7 +206,7 @@ alter Paketstände und Verhalten bei fehlenden Paketen klären. Import/Export un
 Sync müssen die reproduzierbare Profilzuordnung mittragen.
 
 **Status: Herleitungen und Regelprofil umgesetzt, Hauptpunkt offen.** Die
-Teilstände 1–14 (13./14.10.2026) mit Entscheidungen, Prüfungen und Grenzen stehen
+Teilstände 1–15 (13.–18.10.2026) mit Entscheidungen, Prüfungen und Grenzen stehen
 im [Archiv](archiv/arch-04.md):
 
 - Herleitungsformat `Herleitung` und Basiswerte (1), Eigenschaften (2),
@@ -216,6 +216,8 @@ im [Archiv](archiv/arch-04.md):
   `erwerb_herleitung_rules.dart`), Lernregeln (11).
 - Regelprofil am Helden `HeroSheet.regelProfil` mit Auflösung (12),
   Updatevorschau (13) und Oberfläche je Held in der Übersicht (14).
+- Herleitungsreste der Proben (15): SB-Probe, ZfW\* im Probendialog,
+  Zauberspezialisierung als Schalter, Gefechtsumbauten behalten die Herleitung.
 
 **Entscheidungen 13.10.2026 (Nutzer).**
 
@@ -268,17 +270,22 @@ im [Archiv](archiv/arch-04.md):
 - [x] Der Probendialog zeigt die TaW\*-Herleitung aufklappbar
   (`ResolvedProbeRequest.poolHerleitung`, gesetzt von `buildTalentProbeRequest`;
   Talente, Meta-Talente, Ausweichproben, Probensuche, Gefecht; 16.10.2026).
-  Offen: die SB-Probe der Wunddialoge (`wund_unterdrueckung_dialog.dart`,
-  `wunden_detail_dialog.dart`) übergibt noch keine Herleitung.
-- [ ] Eigenschaftsprobe als Ausweichen (Zuschlag ≥ 7) bleibt eigene
-  Eigenschaftsprobe.
+  Seit Teilstand 15 (18.10.2026) auch die SB-Probe der Wunddialoge
+  (`sbProbeHerleitung`), Zauberproben (ZfW\*), die Liturgieprobe im Gefecht und
+  die Gefechtsumbauten (Zuschläge, Ansagefolge, Mirakelbonus).
+- [x] Eigenschaftsprobe als Ausweichen (Zuschlag ≥ 7, WdS S. 15): entfällt
+  (Nutzerentscheidung 18.10.2026), bleibt Meisterentscheid am Tisch.
 - [ ] Bewusst offen aus den Lernregeln: zweite Repräsentation desselben Zaubers,
   Hexalogien für eigene Katalogzauber, Gedächtnis-Vorteile bei SF/Ritualen,
   Selbststudium und Lehrmeister-Gebühren.
 - [x] Gegenelement: Erwerbsdialog (Hinweis) und Magie-Tab (Symbol mit
   Erklärung) nennen den Grund für die schwerere Spalte (16.10.2026).
-- [ ] Zauberspezialisierung, Merkmalskenntnis- und Repräsentationsboni sowie
-  AsP-Kosten stehen nicht in der ZfW\*-Herleitung.
+- [x] Zauberspezialisierung, Merkmalskenntnis- und Repräsentationsboni sowie
+  AsP-Kosten geklärt (Teilstand 15, 18.10.2026): die Spezialisierung ist ein
+  Schalter (+2 im spezialisierten Aspekt, WdH S. 292 f.) im Probendialog,
+  Merkmalskenntnis (WdH S. 289) und Repräsentation wirken nur auf die schon
+  hergeleitete Lernspalte, die AsP-Kosten stehen als Katalogtext im Regelhinweis.
+  Keines davon ist ein ZfW\*-Schritt.
 
 **Abnahme** erst, wenn Profilzuordnung (inkl. Gruppenvorgabe) abgehakt ist.
 

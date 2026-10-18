@@ -123,6 +123,62 @@ void main() {
     });
   });
 
+  group('Zauberprobe im Dialog (Teilstand 15)', () {
+    const teurer = SpellDef(
+      id: 'spell_test',
+      name: 'Testzauber',
+      tradition: 'Gildenmagie',
+      steigerung: 'C',
+      attributes: <String>['KL', 'IN', 'CH'],
+      aspCost: '7 AsP',
+    );
+
+    test('Probe trägt die ZfW*-Herleitung, ihre Summe ist der Pool', () {
+      final s = snapshot({
+        'spell_test': const HeroSpellEntry(spellValue: 8, modifier: -1),
+      });
+      final wert = zauberProbenwertFuer(snapshot: s, spell: teurer)!;
+      for (final probe in [
+        zauberprobeAus(wert: wert, titel: teurer.name),
+        gefechtsZauberprobe(s, teurer)!,
+      ]) {
+        expect(probe.poolHerleitung, isNotNull);
+        expect(probe.poolHerleitung!.wert, probe.basePool);
+        expect(probe.basePool, 7);
+        expect(probe.ruleHint, contains('Kosten: 7 AsP.'));
+      }
+    });
+
+    test('Spezialisierung ist ein Schalter (+2), kein ZfW*-Schritt', () {
+      final s = snapshot({
+        'spell_test': const HeroSpellEntry(
+          spellValue: 8,
+          specializations: <String>['Reichweite', ' '],
+        ),
+      });
+      final wert = zauberProbenwertFuer(snapshot: s, spell: teurer)!;
+      expect(wert.spezialisierungen, ['Reichweite']);
+      expect(wert.zfw, 8);
+      for (final probe in [
+        zauberprobeAus(wert: wert, titel: teurer.name),
+        gefechtsZauberprobe(s, teurer)!,
+      ]) {
+        expect(probe.specializationBonus, 2);
+        expect(probe.initialSpecializationApplied, isFalse);
+        expect(probe.basePool, 8);
+        expect(probe.ruleHint, contains('Reichweite'));
+      }
+    });
+
+    test('ohne Spezialisierung und Kosten kein Schalter und kein Hinweis', () {
+      final s = snapshot({'spell_test': const HeroSpellEntry(spellValue: 8)});
+      final wert = zauberProbenwertFuer(snapshot: s, spell: spell)!;
+      final probe = zauberprobeAus(wert: wert, titel: spell.name);
+      expect(probe.specializationBonus, 0);
+      expect(zauberprobenHinweise(wert), isEmpty);
+    });
+  });
+
   group('Übersicht', () {
     test('aktivierte Zauber stehen als letzter Bereich und sind suchbar', () {
       final spells = katalog.catalog.spells.take(2).toList();

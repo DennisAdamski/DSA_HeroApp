@@ -32,8 +32,14 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   Der Probendialog zeigt die TaW\*-Herleitung aufklappbar: `buildTalentProbeRequest`
   nimmt `tawHerleitung` (Summe muss `basePool` sein, per `assert`) und legt sie als
   `ResolvedProbeRequest.poolHerleitung` ab (nur Anzeige, nie persistiert); die
-  Ausweichprobe ergänzt den Schritt „Ausweichzuschlag“. Zauber: `zauber_herleitung_rules.dart` (ZfW*, gemeinsame
-  Zauberprobe für Suche, Gefecht und Magie-Tab). Steigerungskosten:
+  Ausweichprobe ergänzt den Schritt „Ausweichzuschlag“. Eine vorhandene Probe
+  wird nur per `ResolvedProbeRequest.copyWith` umgebaut, sonst geht
+  `poolHerleitung` verloren; wer `basePool` ändert, ergänzt einen Schritt (etwa
+  „Mirakelbonus“ in `gefechtsProbeMitBonus`). Zauber: `zauber_herleitung_rules.dart` (ZfW*, gemeinsame
+  Zauberprobe für Suche, Gefecht und Magie-Tab mit `zfwHerleitung`). Die
+  Zauberspezialisierung ist wie bei Talenten ein Schalter (+2) im Probendialog,
+  kein ZfW\*-Schritt; Merkmalskenntnis und Repräsentation wirken nur auf die
+  Lernspalte, AsP-Kosten stehen als Katalogtext im Regelhinweis. Steigerungskosten:
   `steigerung_herleitung_rules.dart` (Grundkosten, SE, Aufschlag, Lehrmeister;
   der Steigerungsdialog liest nur ab). Lernspalte von
   Zaubern: `zauber_lernspalte_rules.dart` (Hauszauber, Merkmalskenntnis,

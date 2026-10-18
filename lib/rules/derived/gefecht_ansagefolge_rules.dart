@@ -116,17 +116,8 @@ ResolvedProbeRequest gefechtsProbeMitAnsagefolgemalus(
       p.type == ProbeType.initiative) {
     return p;
   }
-  return ResolvedProbeRequest(
-    type: p.type,
-    title: p.title,
-    subtitle: p.subtitle,
+  return p.copyWith(
     ruleHint: '${p.ruleHint} Ansagefolgemalus +$malus.',
-    diceSpec: p.diceSpec,
-    targets: p.targets,
-    basePool: p.basePool,
-    specializationBonus: p.specializationBonus,
-    initialSpecializationApplied: p.initialSpecializationApplied,
     initialSituationalModifier: p.initialSituationalModifier - malus,
-    fixedRollTotal: p.fixedRollTotal,
   );
 }

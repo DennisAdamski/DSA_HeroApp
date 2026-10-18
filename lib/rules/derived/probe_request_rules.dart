@@ -58,22 +58,37 @@ ResolvedProbeRequest buildTalentProbeRequest({
 /// Wunden wirken ueber die Eigenschaftswerte in [targets]
 /// (`HeroComputedSnapshot.probenEigenschaften`). [initialSituationalModifier]
 /// ist der Startwert der situativen Erschwernis (negativ = erschwert,
-/// positiv = erleichtert).
+/// positiv = erleichtert). [zfwHerleitung] erklaert [basePool] im Dialog;
+/// ihre Summe muss [basePool] sein. [hasSpecialization] bietet die
+/// Zauberspezialisierung (+2 im spezialisierten Aspekt, WdH S. 292) als
+/// Schalter an. [hinweise] werden an den Regelhinweis angehaengt.
 ResolvedProbeRequest buildSpellProbeRequest({
   required String title,
   required List<ProbeTargetValue> targets,
   required int basePool,
+  bool hasSpecialization = false,
   int initialSituationalModifier = 0,
+  Herleitung? zfwHerleitung,
+  List<String> hinweise = const <String>[],
 }) {
+  assert(
+    zfwHerleitung == null || zfwHerleitung.wert == basePool,
+    'ZfW*-Herleitung (${zfwHerleitung.wert}) weicht vom Pool ($basePool) ab',
+  );
   return ResolvedProbeRequest(
     type: ProbeType.spell,
     title: 'Zauberprobe: $title',
     subtitle: targets.map((target) => target.label).join(' / '),
-    ruleHint: '3W20 mit ZfW-Kompensation; Varianten und spontane Modifikationen bleiben in v1 außen vor.',
+    ruleHint: <String>[
+      '3W20 mit ZfW-Kompensation; Varianten und spontane Modifikationen bleiben in v1 außen vor.',
+      ...hinweise,
+    ].join(' '),
     diceSpec: const DiceSpec(count: 3, sides: 20),
     targets: targets,
     basePool: basePool,
+    specializationBonus: hasSpecialization ? 2 : 0,
     initialSituationalModifier: initialSituationalModifier,
+    poolHerleitung: zfwHerleitung,
   );
 }
 

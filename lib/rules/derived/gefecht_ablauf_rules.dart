@@ -198,19 +198,9 @@ ResolvedProbeRequest? gefechtRequestFuerAuftrag(
                 auftrag.manoever?.name.toLowerCase() == 'gegenhalten',
           );
   }
-  return ResolvedProbeRequest(
-    type: original.type,
-    title: original.title,
-    subtitle: original.subtitle,
-    ruleHint: original.ruleHint,
-    diceSpec: original.diceSpec,
-    targets: original.targets,
-    basePool: original.basePool,
-    specializationBonus: original.specializationBonus,
-    initialSpecializationApplied: original.initialSpecializationApplied,
+  return original.copyWith(
     initialSituationalModifier:
         original.initialSituationalModifier - p.erschwernis,
-    fixedRollTotal: original.fixedRollTotal,
   );
 }
 
