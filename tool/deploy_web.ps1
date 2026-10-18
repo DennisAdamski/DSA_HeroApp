@@ -85,5 +85,14 @@ if (-not $heroes) {
     throw 'Build kaputt: build/web/assets/assets/heroes ist leer. Erneut bauen.'
 }
 
+# firebase-tools liest ältere CRLF-Hashcaches unter Windows teilweise mit einem
+# angehängten Carriage Return ein. Der Server liefert denselben Hash normalisiert
+# zurück und der Upload kann die zugehörige Datei dann nicht mehr auflösen.
+$hostingHashCache = Join-Path (Get-Location) '.firebase/hosting.YnVpbGRcd2Vi.cache'
+if (Test-Path -LiteralPath $hostingHashCache) {
+    Write-Host '== veralteten Firebase-Hosting-Hashcache entfernen =='
+    Remove-Item -LiteralPath $hostingHashCache
+}
+
 Write-Host "== firebase deploy --only hosting:$Target =="
 firebase deploy --only "hosting:$Target"
