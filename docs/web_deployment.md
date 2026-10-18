@@ -63,8 +63,10 @@ Die bestehende Storage-CORS-Regel erlaubt GET/HEAD für die Test-Site; Hosting
 
 Jede Hosting-Antwort erhält CSP, `nosniff`, Referrer-, Permissions- und
 Clickjacking-Schutz aus `firebase.json`. Nach einem Deployment müssen die
-Live-Header beider Sites geprüft werden; besonders `/index.html` muss
-`Cache-Control: no-cache, no-store, must-revalidate` liefern. Ein erfolgreicher
+Live-Header beider Sites geprüft werden; `/`, `/index.html`, `/datenschutz` und
+`/impressum` müssen `Cache-Control: no-cache, no-store, must-revalidate`
+liefern. Flutter verwendet Pfad-URLs, damit die beiden Rechtstexte ohne
+Hash-Fragment direkt aufrufbar sind. Ein erfolgreicher
 Build allein weist diese Deployment-Konfiguration nicht nach.
 
 Manuelle Veröffentlichung nur mit explizitem Target:

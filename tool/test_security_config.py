@@ -60,20 +60,24 @@ class SecurityConfigTest(unittest.TestCase):
             }
             self.assertTrue(required.issubset(headers), hosting["target"])
 
-    def test_index_html_is_never_cached_for_each_hosting_target(self) -> None:
+    def test_spa_entry_routes_are_never_cached_for_each_hosting_target(self) -> None:
         config = json.loads((ROOT / "firebase.json").read_text(encoding="utf-8"))
+        entry_routes = {"/", "/index.html", "/datenschutz", "/impressum"}
 
         for hosting in config["hosting"]:
-            index_rules = [
-                rule for rule in hosting["headers"] if rule["source"] == "/index.html"
-            ]
-            self.assertEqual(len(index_rules), 1, hosting["target"])
-            values = {item["key"]: item["value"] for item in index_rules[0]["headers"]}
-            self.assertEqual(
-                values.get("Cache-Control"),
-                "no-cache, no-store, must-revalidate",
-                hosting["target"],
-            )
+            rules_by_source = {
+                rule["source"]: rule["headers"] for rule in hosting["headers"]
+            }
+            for route in entry_routes:
+                self.assertIn(route, rules_by_source, (hosting["target"], route))
+                values = {
+                    item["key"]: item["value"] for item in rules_by_source[route]
+                }
+                self.assertEqual(
+                    values.get("Cache-Control"),
+                    "no-cache, no-store, must-revalidate",
+                    (hosting["target"], route),
+                )
 
     def test_release_builds_require_app_check_and_explicit_hosting_target(self) -> None:
         workflow = (ROOT / ".github/workflows/flutter-tests.yml").read_text(
