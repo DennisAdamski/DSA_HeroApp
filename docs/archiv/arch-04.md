@@ -762,7 +762,7 @@ Spezialisierung als Schalter, Kostenhinweis), `gefecht_wirken_rules_test.dart`
 `talent_herleitung_rules_test.dart` (`talentHerleitungNachId`),
 `test/ui/workspace/wunden_dialog_test.dart` („TaW\* herleiten“ im SB-Dialog).
 `flutter analyze --no-pub` ohne Befund in den geänderten Dateien; Gesamtsuite
-seriell: 6241 bestanden, 3 übersprungen, 0 fehlgeschlagen.
+seriell: 6241 bestanden, 3 übersprungen, 0 fehlgeschlagen. Commit `89331747`.
 
 *Offen.* Unverändert die Punkte unter „Herleitungen“ in der Roadmap
 (Eigenschaftsprobe als Ausweichen, bewusst offene Lernregeln).
