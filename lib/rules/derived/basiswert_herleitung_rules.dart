@@ -8,9 +8,11 @@ import 'package:dsa_heldenverwaltung/rules/derived/herleitung.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ini_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/kampfbasis_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/magic_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_source_breakdown.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ressourcen_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ruestung_be_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/spell_effect_combat_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/wund_rules.dart';
 
 /// Schlüssel aller additiven Stat-Modifikatoren in fester Reihenfolge.
@@ -205,6 +207,9 @@ bool gleicheStatModifikatoren(StatModifiers a, StatModifiers b) {
 /// Ressourcen-Höchstwerte, [effectiveAttributes] alle übrigen Werte.
 /// [wundGs] ist der GS-Anteil der Wunden, der in [quellen] enthalten ist;
 /// er senkt die GS nie unter 1 (WdS S. 111).
+/// [zauberEigenschaften] (Karnifilo) wirken nur auf INI- und FK-Basis, je
+/// als eigener Schritt mit dem Unterschied der Grundwertformel
+/// (Tischentscheid 18.10.2026); alle anderen Basiswerte bleiben unberührt.
 BasiswertHerleitungen computeBasiswertHerleitungen({
   required HeroSheet sheet,
   required HeroState state,
@@ -214,6 +219,8 @@ BasiswertHerleitungen computeBasiswertHerleitungen({
   required bool hasFlinkFromVorteile,
   required bool hasBehaebigFromNachteile,
   int wundGs = 0,
+  List<SpellEffectEigenschaftsQuelle> zauberEigenschaften =
+      const <SpellEffectEigenschaftsQuelle>[],
 }) {
   List<HerleitungsSchritt> mods(String key) =>
       _modifikatorSchritte(quellen, key);
@@ -288,6 +295,12 @@ BasiswertHerleitungen computeBasiswertHerleitungen({
       grundwertIni(e),
       '(MU ${e.mu} + MU ${e.mu} + IN ${e.inn} + GE ${e.ge}) / 5',
     ),
+    ..._zauberEigenschaftSchritte(
+      e,
+      zauberEigenschaften,
+      grundwertIni,
+      (a) => '(MU ${a.mu} + MU ${a.mu} + IN ${a.inn} + GE ${a.ge}) / 5',
+    ),
     ...mods('iniBase'),
     if (special.kampfreflexe) _sf('Kampfreflexe', kKampfreflexeIniBonus),
     if (special.kampfgespuer) _sf('Kampfgespür', kKampfgespuerIniBonus),
@@ -326,6 +339,12 @@ BasiswertHerleitungen computeBasiswertHerleitungen({
         _grundwert(
           grundwertFk(e),
           '(IN ${e.inn} + FF ${e.ff} + KK ${e.kk}) / 5',
+        ),
+        ..._zauberEigenschaftSchritte(
+          e,
+          zauberEigenschaften,
+          grundwertFk,
+          (a) => '(IN ${a.inn} + FF ${a.ff} + KK ${a.kk}) / 5',
         ),
         ...mods('fk'),
       ],
@@ -445,6 +464,35 @@ List<HerleitungsSchritt> _gsSchritte({
         quelle: 'WdS S. 111',
       ),
   ];
+}
+
+// Je Zauber-Eigenschaftsquelle ein Schritt: der Unterschied, um den sie die
+// Grundwertformel [grundwert] gegenüber dem Stand davor verändert. Die
+// Rundung der Formel bleibt dieselbe; die Summe ist der Grundwert mit allen
+// Quellen.
+List<HerleitungsSchritt> _zauberEigenschaftSchritte(
+  Attributes basis,
+  List<SpellEffectEigenschaftsQuelle> quellen,
+  int Function(Attributes) grundwert,
+  String Function(Attributes) formel,
+) {
+  final schritte = <HerleitungsSchritt>[];
+  var stand = basis;
+  for (final quelle in quellen) {
+    final neu = applyAttributeModifiers(stand, quelle.mods);
+    schritte.add(
+      HerleitungsSchritt(
+        bezeichnung: quelle.bezeichnung,
+        betrag: grundwert(neu) - grundwert(stand),
+        art: HerleitungsArt.zauber,
+        formel: '${formel(neu)} = ${grundwert(neu)}',
+        quelle: quelle.quelle,
+        bedingung: 'Zauber wirkt auf den Helden',
+      ),
+    );
+    stand = neu;
+  }
+  return schritte;
 }
 
 // Ein Schritt je Quelle, die zum Basiswert [key] beiträgt.

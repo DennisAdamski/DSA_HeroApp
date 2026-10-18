@@ -62,9 +62,20 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   (`spell_effect_rest_rules.dart`, `RuheKoerperErhalten`), der die normale
   Regeneration der Stunden ersetzt; Heilungs-Vor-/Nachteile und „evtl. 1 AsP“
   werden nicht gerechnet, der Zaubernde trägt die Kosten.
-  Einfache Zauber (Runde 1): Karnifilo (AT-Basis +5/PA-Basis −5 fest, die
-  Eigenschaften ±5 nur als Hinweis), Seidenzunge (Überreden-Startwert +ZfP*),
-  Lach dich gesund (Heilung im Heilungsdialog).
+  Einfache Zauber (Runde 1): Karnifilo (AT-Basis +5/PA-Basis −5 fest),
+  Seidenzunge (Überreden-Startwert +ZfP*), Lach dich gesund (Heilung im
+  Heilungsdialog).
+  Bestandsbefunde (Regelauftrag 19.10.2026): Karnifilos Eigenschaften ±5
+  laufen über `SpellEffectBeitraege.eigenschaftsQuellen`, **nie** über
+  `effektiveTempAttributeMods`; sie wirken nur auf `probenEigenschaften`
+  (`wendeZauberEigenschaftenAn`), TP/KK sowie INI- und FK-Basis, jeweils als
+  eigener Schritt. Blitz erschwert den FK-Wert der Waffe
+  (`fernkampfMalus` → `herleiteFernkampfAt`), nicht die FK-Basis. Situative
+  Poolbeiträge (Axxeleratus: Athletik-TaW für Sprint/Sprung) stehen als
+  `ResolvedProbeRequest.bedingterPoolSchritt` außerhalb des Pools; der
+  Probendialog bietet sie als Schalter an (`wendeBedingtenPoolSchrittAn`).
+  Tischregel Rundung: Kosten abrunden, übrige Spielerwerte aufrunden, MR
+  ausgenommen.
 - Laufende Zaubereffekte (`Axxeleratus`, `Attributo`, `Armatrutz`) stehen in
   `lib/rules/derived/active_spell_rules.dart` und werden über
   `Magie-Tab > Zauber aktivieren` gepflegt. Zusatzdaten je Effekt (Zahlenwert
@@ -72,6 +83,10 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   Der `Armatrutz` addiert seinen erzauberten RS in
   `lib/rules/derived/armatrutz_rules.dart` zur getragenen Rüstung, ohne
   Behinderung zu erzeugen; bei abgelaufener Wirkungsdauer fällt der Bonus weg.
+  Wirksam ist höchstens ZfW/2 des Helden (aufgerundet, `armatrutzRsGrenze`).
+  Der gespeicherte Wert bleibt; ein Begrenzungsschritt der RS-Herleitung zeigt
+  den Grund. Ohne ZfW wird nicht begrenzt. Die Kosten rechnen mit
+  abgerundeten Endkosten.
   Die Wirkungsdauer selbst (`lib/domain/spell_duration.dart`,
   `lib/rules/derived/spell_duration_rules.dart`) ist effektunabhängig:
   Kampfrunden, Spielrunden und weitere Zeiteinheiten werden nie ineinander

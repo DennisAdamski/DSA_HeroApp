@@ -45,9 +45,14 @@ class HeroStatInputs {
   /// Empfangene Kampf-Mali laufender Zaubereffekte (MAG-EFF-03).
   final SpellEffectBeitraege zauberEffekte;
 
-  /// Eigenschaftswerte für Proben: [effective] abzüglich der wundbedingten
-  /// Eigenschaftsverluste. Abgeleitete Werte rechnen nie damit (WdS S. 111).
-  Attributes get probenEigenschaften => wendeWundVerlusteAn(effective, wounds);
+  /// Eigenschaftswerte für Proben: [effective] mit den Zauber-
+  /// Eigenschaftsquellen (Karnifilo, `wendeZauberEigenschaftenAn`) und
+  /// abzüglich der wundbedingten Eigenschaftsverluste. Abgeleitete Werte
+  /// rechnen nie damit (WdS S. 111).
+  Attributes get probenEigenschaften => wendeWundVerlusteAn(
+    wendeZauberEigenschaftenAn(effective, zauberEffekte),
+    wounds,
+  );
 
   /// Wendet die zentralen Basiswertregeln auf die vorbereiteten Eingaben an.
   DerivedStats derive(HeroSheet hero, HeroState state) =>

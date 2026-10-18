@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/herleitung.dart';
 
 /// Abstraktion ueber die Zufallsquelle der Wuerfel-Engine.
 abstract interface class DiceRoller {
@@ -20,6 +21,29 @@ class RandomDiceRoller implements DiceRoller {
     final normalizedSides = sides < 1 ? 1 : sides;
     return _random.nextInt(normalizedSides) + 1;
   }
+}
+
+/// Die Probe [request] mit angewendetem `bedingterPoolSchritt`.
+///
+/// Der Schritt erhöht [ResolvedProbeRequest.basePool] und erscheint in der
+/// `poolHerleitung`, deren Summe so der Pool bleibt. Ohne bedingten Schritt
+/// kommt dieselbe Instanz zurück.
+ResolvedProbeRequest wendeBedingtenPoolSchrittAn(ResolvedProbeRequest request) {
+  final schritt = request.bedingterPoolSchritt;
+  if (schritt == null) {
+    return request;
+  }
+  final herleitung = request.poolHerleitung;
+  return request.copyWith(
+    basePool: request.basePool + schritt.betrag,
+    poolHerleitung: herleitung == null
+        ? null
+        : Herleitung(
+            bezeichnung: herleitung.bezeichnung,
+            schritte: <HerleitungsSchritt>[...herleitung.schritte, schritt],
+          ),
+    clearBedingterPoolSchritt: true,
+  );
 }
 
 /// Erzeugt eine digitale Wurfeingabe fuer eine Probe.

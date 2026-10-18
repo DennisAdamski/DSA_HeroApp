@@ -71,6 +71,7 @@ class ResolvedProbeRequest {
     this.initialSituationalModifier = 0,
     this.fixedRollTotal,
     this.poolHerleitung,
+    this.bedingterPoolSchritt,
   });
 
   /// Fachliche Probeart.
@@ -111,6 +112,13 @@ class ResolvedProbeRequest {
   /// Wenn gesetzt, ist ihre Summe [basePool]; der Dialog rechnet nichts nach.
   final Herleitung? poolHerleitung;
 
+  /// Poolbeitrag, der nur unter seiner `bedingung` gilt (etwa Axxeleratus:
+  /// Athletik-TaW für Sprints und Sprünge verdoppelt).
+  ///
+  /// Er ist in [basePool] **nicht** enthalten; der Dialog bietet ihn als
+  /// Schalter an und wendet ihn über `wendeBedingtenPoolSchrittAn` an.
+  final HerleitungsSchritt? bedingterPoolSchritt;
+
   /// Gibt eine Kopie mit geänderten Feldern zurück.
   ///
   /// Umbauten einer vorhandenen Probe laufen hierüber, damit
@@ -122,6 +130,8 @@ class ResolvedProbeRequest {
     int? basePool,
     int? initialSituationalModifier,
     Herleitung? poolHerleitung,
+    HerleitungsSchritt? bedingterPoolSchritt,
+    bool clearBedingterPoolSchritt = false,
   }) {
     return ResolvedProbeRequest(
       type: type,
@@ -137,6 +147,9 @@ class ResolvedProbeRequest {
           initialSituationalModifier ?? this.initialSituationalModifier,
       fixedRollTotal: fixedRollTotal,
       poolHerleitung: poolHerleitung ?? this.poolHerleitung,
+      bedingterPoolSchritt: clearBedingterPoolSchritt
+          ? null
+          : bedingterPoolSchritt ?? this.bedingterPoolSchritt,
     );
   }
 

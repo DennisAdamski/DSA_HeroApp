@@ -1,3 +1,4 @@
+import 'package:dsa_heldenverwaltung/domain/attribute_modifiers.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 
 /// Kanonische Codes fuer die acht DSA-Grundeigenschaften.
@@ -129,4 +130,18 @@ int readAttributeValue(Attributes attributes, AttributeCode code) {
     case AttributeCode.kk:
       return attributes.kk;
   }
+}
+
+/// Liefert den Modifikator fuer einen kanonischen Code.
+int readAttributeModifierValue(AttributeModifiers mods, AttributeCode code) {
+  return switch (code) {
+    AttributeCode.mu => mods.mu,
+    AttributeCode.kl => mods.kl,
+    AttributeCode.inn => mods.inn,
+    AttributeCode.ch => mods.ch,
+    AttributeCode.ff => mods.ff,
+    AttributeCode.ge => mods.ge,
+    AttributeCode.ko => mods.ko,
+    AttributeCode.kk => mods.kk,
+  };
 }

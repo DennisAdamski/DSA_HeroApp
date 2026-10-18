@@ -26,9 +26,25 @@ Ist-Zustand erneut prüfen und den konkreten Teilumfang festlegen.
   offen** und werden zu einem anderen Zeitpunkt aufgenommen. Nächste
   Kandidaten laut Plan: Duplicatus, Klarum Purum und Folgetick-Profile
   (MAG-EFF-05); Hexenkrallen, Elementarpfeile, Eiseskälte, Horriphobus, Band und
-  Fessel (MAG-EFF-06). Offene Befunde der Bestandszauber: Armatrutz kennt die
-  Grenze ZfW/2 nicht, Axxeleratus ohne Athletik-Verdopplung, Blitz ohne
-  Fernkampf-Zuschlag, Karnifilo-Eigenschaften nur als Hinweis.
+  Fessel (MAG-EFF-06).
+  **Befunde der Bestandszauber (Regelauftrag 19.10.2026,
+  [Prüfprotokoll](zaubereffekte_integrationsplan.md#regelauftrag-bestandsbefunde-19102026)):**
+  - [x] Armatrutz: zusätzlicher RS höchstens ZfW/2 (aufgerundet) als
+    Begrenzungsschritt der RS-Herleitung; der gespeicherte Wert bleibt. Kosten
+    jetzt mit abgerundeten Endkosten (Buchbeispiel 13 AsP). *(19.10.2026)*
+  - [x] Axxeleratus: Athletik-TaW für Sprint/Sprung als Schalter in der
+    Athletik-Probe (gesteigerter TaW ein zweites Mal). *(19.10.2026)*
+  - [x] Blitz: Fernkampf um ZfP* erschwert, als Schritt im FK-Wert der Waffe
+    (Vorschau und Gefecht). *(19.10.2026)*
+  - [x] Karnifilo: MU/KK +5, KL/CH −5 nur für Proben, TP/KK, INI- und
+    FK-Basis; AT/PA fest. *(19.10.2026)*
+  - **Tischregel Rundung (Nutzer, 18./19.10.2026):** Kosten werden abgerundet,
+    alle übrigen Spielerwerte aufgerundet, ausgenommen die MR. Offen ist, sie
+    auf die bisher als „Rundung nicht belegt“ geführten Punkte anzuwenden
+    (Blitz-Dauer ZfW/2, Attributo ZfP*/3, Karnifilo-Erschöpfung ZfP*/2,
+    Blindkampf-/Konzentrationsstärke-Halbierung, Corpofesso).
+  - Offen: Grenzhinweis im Gefecht-Wirkdialog des Armatrutz (die Rechnung
+    begrenzt dort schon), Wegfall der Wund-Abzüge unter Karnifilo.
 
 - [ ] **TRANK — Trankdefinitionen aus den Regelbüchern in einen Katalog übernehmen.**
   Ziel: die wichtigsten Tränke und Heilmittel mit Regelwerten und Belegen als

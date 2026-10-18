@@ -8,11 +8,13 @@ import 'package:dsa_heldenverwaltung/domain/attribute_modifiers.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_spell_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/spell_duration.dart';
 import 'package:dsa_heldenverwaltung/domain/spell_effect_instance.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/active_spell_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/armatrutz_rules.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/active_spell_effects_dialog.dart';
@@ -46,6 +48,7 @@ void main() {
   Future<FakeRepository> openDialog(
     WidgetTester tester, {
     HeroState? initialState,
+    HeroSheet? hero,
     List<Override> overrides = const <Override>[],
   }) async {
     tester.view.devicePixelRatio = 1.0;
@@ -54,7 +57,7 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
 
     final repo = FakeRepository(
-      heroes: <HeroSheet>[buildHero()],
+      heroes: <HeroSheet>[hero ?? buildHero()],
       states: <String, HeroState>{
         'demo':
             initialState ??
@@ -229,6 +232,73 @@ void main() {
     );
     expect(state.tempAttributeMods.kk, 0);
     expect(state.tempAttributeMods.unbekannteFelder, feld);
+  });
+
+  testWidgets('Die Eingabe nennt die Grenze ZfW/2 und kappt nicht', (
+    tester,
+  ) async {
+    final repo = await openDialog(
+      tester,
+      hero: buildHero().copyWith(
+        spells: const <String, HeroSpellEntry>{
+          armatrutzSpellId: HeroSpellEntry(spellValue: 9),
+        },
+      ),
+    );
+
+    await tester.tap(
+      find.byKey(
+        const ValueKey<String>('active-spell-toggle-effect_spell_armatrutz'),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    Text hinweis() => tester.widget<Text>(
+      find.byKey(const ValueKey<String>('armatrutz-input-grenze-hint')),
+    );
+    expect(hinweis().data, 'Höchstens 5 (ZfW/2, aufgerundet).');
+
+    await tester.enterText(
+      find.byKey(const ValueKey<String>('armatrutz-input-rs')),
+      '7',
+    );
+    await tester.pumpAndSettle();
+    expect(hinweis().data, contains('Es wirken nur 5'));
+
+    await tester.tap(
+      find.byKey(const ValueKey<String>('armatrutz-input-confirm')),
+    );
+    await tester.pumpAndSettle();
+
+    // Gespeichert bleibt die Eingabe; die Effektliste nennt die Grenze.
+    final state = (await repo.loadHeroState('demo'))!;
+    expect(
+      state.activeSpellEffects.detailFor(activeSpellEffectArmatrutz).amount,
+      7,
+    );
+    expect(find.textContaining('Es wirken nur 5'), findsOneWidget);
+  });
+
+  testWidgets('Ohne ZfW meldet die Eingabe, dass nichts geprüft wird', (
+    tester,
+  ) async {
+    await openDialog(tester);
+
+    await tester.tap(
+      find.byKey(
+        const ValueKey<String>('active-spell-toggle-effect_spell_armatrutz'),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      tester
+          .widget<Text>(
+            find.byKey(const ValueKey<String>('armatrutz-input-grenze-hint')),
+          )
+          .data,
+      contains('nicht geprüft'),
+    );
   });
 
   testWidgets('Der Kostenhinweis folgt der Eingabe von RS und ZfP*', (
