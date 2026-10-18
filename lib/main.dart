@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:hive_ce_flutter/hive_flutter.dart';
 
 import 'package:dsa_heldenverwaltung/data/app_storage_paths.dart';
@@ -20,6 +21,7 @@ Future<void> main() async {
 
 Future<void> _runApp() async {
   WidgetsFlutterBinding.ensureInitialized();
+  usePathUrlStrategy();
   registriereBlazeFaceLizenz();
   debugPrint('[boot] hive init…');
   await Hive.initFlutter();
