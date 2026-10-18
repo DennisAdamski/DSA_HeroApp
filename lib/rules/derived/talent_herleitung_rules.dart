@@ -175,7 +175,8 @@ List<HerleitungsSchritt> _inventarSchritte(
 ];
 
 /// Probenwerte der Eigenschaftskette: die effektive Eigenschaft samt ihren
-/// Quellen und, falls vorhanden, der Wundabzug als eigener Schritt.
+/// Quellen, je Zauber-Eigenschaftsquelle (Karnifilo) ein eigener Schritt
+/// und, falls vorhanden, der Wundabzug als eigener Schritt.
 List<Herleitung> herleiteProbenEigenschaften({
   required HeroComputedSnapshot snapshot,
   required List<String> eigenschaften,
@@ -188,6 +189,17 @@ List<Herleitung> herleiteProbenEigenschaften({
     final effektiv = readAttributeValue(snapshot.effectiveAttributes, code);
     final probe = readAttributeValue(snapshot.probenEigenschaften, code);
     final quellen = snapshot.eigenschaftHerleitungen?.fuer(schluessel);
+    final zauberSchritte = <HerleitungsSchritt>[
+      for (final zauber
+          in snapshot.derivedStats.zauberEffekte.eigenschaftsQuellen)
+        HerleitungsSchritt(
+          bezeichnung: zauber.bezeichnung,
+          betrag: readAttributeModifierValue(zauber.mods, code),
+          art: HerleitungsArt.zauber,
+          quelle: zauber.quelle,
+          bedingung: 'nur Proben',
+        ),
+    ];
     ergebnis.add(
       Herleitung(
         bezeichnung: attributeCodeKey(code),
@@ -200,9 +212,10 @@ List<Herleitung> herleiteProbenEigenschaften({
               betrag: effektiv,
               art: HerleitungsArt.grundwert,
             ),
+          ...zauberSchritte,
           HerleitungsSchritt(
             bezeichnung: kTalentWundenSchritt,
-            betrag: probe - effektiv,
+            betrag: probe - effektiv - summeDer(zauberSchritte),
             art: HerleitungsArt.modifikator,
             quelle: 'Wunden',
           ),

@@ -84,6 +84,75 @@ void main() {
     expect(find.text('Misslungen'), findsOneWidget);
   });
 
+  testWidgets('Der bedingte Poolschritt ist ein Schalter, anfangs aus', (
+    tester,
+  ) async {
+    final request = ResolvedProbeRequest(
+      type: ProbeType.talent,
+      title: 'Talentprobe: Athletik',
+      subtitle: 'MU / GE / KK',
+      ruleHint: 'rule',
+      diceSpec: const DiceSpec(count: 3, sides: 20),
+      targets: const <ProbeTargetValue>[
+        ProbeTargetValue(label: 'MU', value: 14),
+        ProbeTargetValue(label: 'GE', value: 12),
+        ProbeTargetValue(label: 'KK', value: 13),
+      ],
+      basePool: 7,
+      poolHerleitung: Herleitung(
+        bezeichnung: 'TaW*',
+        schritte: const <HerleitungsSchritt>[
+          HerleitungsSchritt(
+            bezeichnung: 'TaW',
+            betrag: 7,
+            art: HerleitungsArt.zukauf,
+          ),
+        ],
+      ),
+      bedingterPoolSchritt: const HerleitungsSchritt(
+        bezeichnung: 'Axxeleratus (Sprint/Sprung)',
+        betrag: 7,
+        art: HerleitungsArt.zauber,
+        formel: 'Athletik-TaW 7 verdoppelt',
+        bedingung: 'nur Sprints und Sprünge',
+      ),
+    );
+
+    await tester.pumpWidget(_wrap(ProbeDialog(request: request)));
+    await tester.pumpAndSettle();
+
+    final schalter = find.byKey(
+      const ValueKey<String>('probe-dialog-bedingter-pool'),
+    );
+    expect(schalter, findsOneWidget);
+    expect(find.text('Axxeleratus (Sprint/Sprung) (+7)'), findsOneWidget);
+    expect(find.text('Pool: 7'), findsOneWidget);
+
+    await tester.ensureVisible(schalter);
+    await tester.tap(schalter);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Pool: 14'), findsOneWidget);
+
+    await tester.ensureVisible(schalter);
+    await tester.tap(schalter);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Pool: 7'), findsOneWidget);
+  });
+
+  testWidgets('Ohne bedingten Poolschritt gibt es keinen Schalter', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_wrap(const ProbeDialog(request: _kAttrRequest)));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey<String>('probe-dialog-bedingter-pool')),
+      findsNothing,
+    );
+  });
+
   testWidgets('Talentproben zeigen den Spezialisierungs-Toggle', (
     tester,
   ) async {

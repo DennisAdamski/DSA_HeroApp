@@ -5,9 +5,12 @@ import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/domain/spell_effect_instance.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/active_spell_state_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/herleitung.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/probe_engine_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/probe_request_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/spell_effect_combat_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/spell_effect_probe_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/talent_herleitung_rules.dart';
 
 import '../test_support/real_catalog.dart';
 
@@ -46,6 +49,40 @@ ResolvedProbeRequest _talent(String name) => buildTalentProbeRequest(
   ],
   basePool: 8,
 );
+
+/// Talentprobe mit Pool-Herleitung: TaW [taw], eigener Modifikator +1, eBE −2.
+ResolvedProbeRequest _talentMitTaw(String name, {required int taw}) {
+  final herleitung = Herleitung(
+    bezeichnung: 'TaW*',
+    schritte: <HerleitungsSchritt>[
+      HerleitungsSchritt(
+        bezeichnung: kTalentTawSchritt,
+        betrag: taw,
+        art: HerleitungsArt.zukauf,
+      ),
+      const HerleitungsSchritt(
+        bezeichnung: 'Eigener Modifikator',
+        betrag: 1,
+        art: HerleitungsArt.modifikator,
+      ),
+      const HerleitungsSchritt(
+        bezeichnung: kTalentEbeSchritt,
+        betrag: -2,
+        art: HerleitungsArt.modifikator,
+      ),
+    ],
+  );
+  return buildTalentProbeRequest(
+    title: name,
+    targets: const [
+      ProbeTargetValue(label: 'MU', value: 12),
+      ProbeTargetValue(label: 'GE', value: 13),
+      ProbeTargetValue(label: 'KK', value: 11),
+    ],
+    basePool: herleitung.wert,
+    tawHerleitung: herleitung,
+  );
+}
 
 ResolvedProbeRequest _zauber() => buildSpellProbeRequest(
   title: 'Ignifaxius',
@@ -121,6 +158,100 @@ void main() {
     });
   });
 
+  group('Axxeleratus: Athletik-TaW für Sprint/Sprung', () {
+    SpellEffectBeitraege axx(HeroState zustand) => berechneSpellEffectBeitraege(
+      zustand: zustand,
+      katalog: katalog,
+      axxeleratus: true,
+    );
+
+    test('Athletik bekommt einen bedingten Schritt, der Pool bleibt', () {
+      final probe = probeMitSpellEffekten(
+        _talentMitTaw('Athletik', taw: 7),
+        axx(_mit(const [])),
+      );
+
+      expect(probe.basePool, 6);
+      expect(probe.initialSituationalModifier, 0);
+      final schritt = probe.bedingterPoolSchritt!;
+      expect(schritt.betrag, 7);
+      expect(schritt.bedingung, kAxxeleratusAthletikBedingung);
+      expect(schritt.art, HerleitungsArt.zauber);
+      expect(probe.ruleHint, contains('Athletik-TaW verdoppelt'));
+    });
+
+    test('angewendet: Pool und Herleitung steigen um den TaW', () {
+      final probe = wendeBedingtenPoolSchrittAn(
+        probeMitSpellEffekten(
+          _talentMitTaw('Athletik', taw: 7),
+          axx(_mit(const [])),
+        ),
+      );
+
+      expect(probe.basePool, 13);
+      expect(probe.poolHerleitung!.wert, probe.basePool);
+      expect(probe.bedingterPoolSchritt, isNull);
+      // Nur der gesteigerte TaW zählt doppelt, Modifikator und eBE einmal.
+      expect(
+        probe.poolHerleitung!.schritte
+            .where((s) => s.bezeichnung == kTalentEbeSchritt)
+            .single
+            .betrag,
+        -2,
+      );
+    });
+
+    test('kein Schritt für andere Talente, Ersatzproben und TaW ≤ 0', () {
+      final b = axx(_mit(const []));
+      expect(
+        probeMitSpellEffekten(
+          _talentMitTaw('Klettern', taw: 7),
+          b,
+        ).bedingterPoolSchritt,
+        isNull,
+      );
+      expect(
+        probeMitSpellEffekten(
+          _talentMitTaw('Athletik (über Akrobatik)', taw: 7),
+          b,
+        ).bedingterPoolSchritt,
+        isNull,
+      );
+      expect(
+        probeMitSpellEffekten(
+          _talentMitTaw('Athletik', taw: 0),
+          b,
+        ).bedingterPoolSchritt,
+        isNull,
+      );
+      // Ohne Pool-Herleitung ist der TaW unbekannt.
+      expect(
+        probeMitSpellEffekten(_talent('Athletik'), b).bedingterPoolSchritt,
+        isNull,
+      );
+    });
+
+    test('ohne Axxeleratus kein Schritt', () {
+      expect(
+        probeMitSpellEffekten(
+          _talentMitTaw('Athletik', taw: 7),
+          rechne(_mit(const [])),
+        ).bedingterPoolSchritt,
+        isNull,
+      );
+    });
+
+    test('mit Blitz: Startwert und bedingter Schritt zusammen', () {
+      final probe = probeMitSpellEffekten(
+        _talentMitTaw('Athletik', taw: 7),
+        axx(_mit([_blitz(4)])),
+      );
+
+      expect(probe.initialSituationalModifier, -4);
+      expect(probe.bedingterPoolSchritt!.betrag, 7);
+    });
+  });
+
   group('Blitz', () {
     test('erschwert Talent- und Zauberproben um ZfP*', () {
       final b = rechne(_mit([_blitz(5)]));
@@ -136,7 +267,10 @@ void main() {
         probeMitSpellEffekten(_zauber(), b).initialSituationalModifier,
         -5,
       );
-      expect(b.hinweise.join(' '), contains('Fernkampfproben'));
+      // Fernkampf geht in den FK-Wert der Waffe, nicht in einen Hinweis.
+      expect(b.fernkampfMalus, -5);
+      expect(b.fernkampfQuelle, isNotNull);
+      expect(b.hinweise.join(' '), isNot(contains('Fernkampfproben')));
     });
 
     test('Konzentrationsstärke: Zauberproben nicht gerechnet, Hinweis', () {

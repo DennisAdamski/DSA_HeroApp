@@ -556,6 +556,78 @@ void main() {
     });
   });
 
+  group('Zaubereffekt im Fernkampf', () {
+    test(
+      'Blitz-Erschwernis ist ein Schritt und zählt in computeRangedAtValue',
+      () {
+        final h = herleiteFernkampfAt(
+          fkBasis: 9,
+          talentAt: 6,
+          waffenWm: 1,
+          ebe: -1,
+          spezialisierung: 0,
+          zauberMalus: -4,
+          zauberName: 'Blitz dich find',
+        );
+        expect(_schritt(h, 'Blitz dich find').betrag, -4);
+        expect(
+          h.wert,
+          computeRangedAtValue(
+            rangedAtBase: 9,
+            talentAtValue: 6,
+            weaponAtMod: 1,
+            ebeAttackPart: -1,
+            specializationBonus: 0,
+            projectileAtMod: 0,
+            manualAtMod: 0,
+            zauberMalus: -4,
+          ),
+        );
+        expect(
+          herleiteFernkampfAt(
+            fkBasis: 9,
+            talentAt: 6,
+            waffenWm: 1,
+            ebe: -1,
+            spezialisierung: 0,
+          ).schritte.where((s) => s.art == HerleitungsArt.zauber),
+          isEmpty,
+        );
+      },
+    );
+
+    test('TP/KK-Schritt eines Zaubers zeigt die veränderte KK', () {
+      final h = herleiteTpZuschlag(
+        tpGrundwert: 4,
+        nutztTpKk: true,
+        tpKk: 0,
+        kk: 13,
+        kkBasis: 12,
+        kkSchwelle: 3,
+        zauberTpKk: 2,
+        zauberKk: 5,
+        zauberName: 'Karnifilo Raserei',
+      );
+      final schritt = _schritt(h, 'Karnifilo Raserei (KK +5)');
+      expect(schritt.betrag, 2);
+      expect(schritt.formel, contains('KK 18'));
+      expect(h.wert, 6);
+      // Ohne TP/KK-Regel (0/0) gibt es keinen Zauberanteil.
+      expect(
+        herleiteTpZuschlag(
+          tpGrundwert: 4,
+          nutztTpKk: false,
+          tpKk: 0,
+          kk: 13,
+          kkBasis: 0,
+          kkSchwelle: 0,
+          zauberKk: 5,
+        ).wert,
+        4,
+      );
+    });
+  });
+
   group('Waffenmeister im Fernkampf', () {
     // Nutzerentscheidung (14.10.2026): Der AT-WM-Bonus gilt auch für
     // Fernkampfwaffen, sonst wäre er dort wirkungslos.

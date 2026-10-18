@@ -109,10 +109,16 @@ const String kParierwaffenSfSchritt = 'SF Parierwaffen';
 // ---------------------------------------------------------------------------
 
 /// Rüstungsschutz aus den aktiven Teilen, [modifikatoren] und [armatrutz].
+///
+/// [armatrutz] ist der gespeicherte zusätzliche RS. Liegt er über
+/// [armatrutzGrenze] (ZfW/2, LC S. 28), gleicht ein Begrenzungsschritt den
+/// Überschuss aus; [armatrutzZfw] erscheint in dessen Formel.
 Herleitung herleiteRuestungsschutz({
   required List<ArmorPiece> aktiveTeile,
   required int modifikatoren,
   required int armatrutz,
+  int? armatrutzGrenze,
+  int? armatrutzZfw,
 }) {
   final schritte = <HerleitungsSchritt>[
     if (aktiveTeile.isEmpty)
@@ -139,6 +145,16 @@ Herleitung herleiteRuestungsschutz({
       art: HerleitungsArt.zauber,
       bedingung: 'Armatrutz aktiv',
     ),
+    if (armatrutzGrenze != null && armatrutz > armatrutzGrenze)
+      HerleitungsSchritt(
+        bezeichnung: 'Armatrutz-Grenze ZfW/2',
+        betrag: armatrutzGrenze - armatrutz,
+        art: HerleitungsArt.begrenzung,
+        formel:
+            'höchstens ZfW ${armatrutzZfw ?? '?'} / 2 = $armatrutzGrenze '
+            '(aufgerundet)',
+        quelle: 'Liber Cantiones S. 28',
+      ),
   ];
   return Herleitung(
     bezeichnung: 'RS',
@@ -527,6 +543,8 @@ Herleitung herleiteFernkampfAt({
   int geschoss = 0,
   String? geschossName,
   int manuell = 0,
+  int zauberMalus = 0,
+  String? zauberName,
 }) {
   return Herleitung(
     bezeichnung: 'FK',
@@ -577,6 +595,16 @@ Herleitung herleiteFernkampfAt({
         betrag: manuell,
         art: HerleitungsArt.modifikator,
       ),
+      // Blitz dich find (LC S. 49): „Fernkampf um … ZfP* Punkte erschwert“.
+      if (zauberMalus != 0)
+        HerleitungsSchritt(
+          bezeichnung: zauberName ?? 'Zaubereffekt',
+          betrag: zauberMalus,
+          art: HerleitungsArt.zauber,
+          formel: 'Fernkampf um ZfP* ${-zauberMalus} erschwert',
+          quelle: 'Zaubereffekt',
+          bedingung: 'geblendet',
+        ),
     ],
   );
 }
@@ -620,6 +648,9 @@ Herleitung herleiteTpZuschlag({
   required int kkSchwelle,
   int waffenmeisterKkBasis = 0,
   int waffenmeisterKkSchwelle = 0,
+  int zauberTpKk = 0,
+  int zauberKk = 0,
+  String? zauberName,
   int axxeleratus = 0,
   int entfernung = 0,
   String? entfernungLabel,
@@ -648,6 +679,20 @@ Herleitung herleiteTpZuschlag({
             : 'deaktiviert (0/0)',
         bedingung: wmHinweis,
       ),
+      // Zauber, die nur die KK für die TP ändern (Karnifilo, LC S. 136): der
+      // Unterschied des TP/KK-Zuschlags mit der veränderten KK.
+      if (nutztTpKk && zauberKk != 0)
+        HerleitungsSchritt(
+          bezeichnung:
+              '${zauberName ?? 'Zaubereffekt'} '
+              '(KK ${_mitVorzeichen(zauberKk)})',
+          betrag: zauberTpKk,
+          art: HerleitungsArt.zauber,
+          formel:
+              '(KK ${kk + zauberKk} − $kkBasis) / $kkSchwelle, ganzzahlig, '
+              'statt KK $kk',
+          bedingung: 'Zauber wirkt auf den Helden',
+        ),
       HerleitungsSchritt(
         bezeichnung: 'Axxeleratus',
         betrag: axxeleratus,

@@ -110,13 +110,22 @@ OffhandCombatPreview _computeOffhandWeaponPreview({
     kkThreshold: slot.kkThreshold,
   );
   final kkThreshold = usesTpKk && wmKkThreshold < 1 ? 1 : wmKkThreshold;
-  final tpKk = usesTpKk
+  // Karnifilo: KK +5 verbessert die TP (LC S. 136), ohne AT/PA neu zu rechnen.
+  final zauberKk = derived.zauberEffekte.eigenschaftsMods.kk;
+  final tpKkOhneZauber = usesTpKk
       ? computeTpKk(
           kk: effectiveSheet.attributes.kk,
           kkBase: wmKkBase,
           kkThreshold: kkThreshold,
         )
       : 0;
+  final tpKk = usesTpKk && zauberKk != 0
+      ? computeTpKk(
+          kk: effectiveSheet.attributes.kk + zauberKk,
+          kkBase: wmKkBase,
+          kkThreshold: kkThreshold,
+        )
+      : tpKkOhneZauber;
 
   // Fernkampf-spezifisch
   final activeDistanceBand = slot.rangedProfile.selectedDistanceBand;
@@ -129,12 +138,15 @@ OffhandCombatPreview _computeOffhandWeaponPreview({
     tpGrundwert: slot.tpFlat,
     waffenName: slot.name,
     nutztTpKk: usesTpKk,
-    tpKk: tpKk,
+    tpKk: tpKkOhneZauber,
     kk: effectiveSheet.attributes.kk,
     kkBasis: wmKkBase,
     kkSchwelle: kkThreshold,
     waffenmeisterKkBasis: wmEffects.tpKkBaseReduction,
     waffenmeisterKkSchwelle: wmEffects.tpKkThresholdReduction,
+    zauberTpKk: tpKk - tpKkOhneZauber,
+    zauberKk: zauberKk,
+    zauberName: zauberEigenschaftsName(derived.zauberEffekte),
     axxeleratus: isRanged ? 0 : axxTpBonus,
     entfernung: distanceTpMod,
     entfernungLabel: isRanged ? activeDistanceBand.label : null,
@@ -166,6 +178,8 @@ OffhandCombatPreview _computeOffhandWeaponPreview({
           spezialisierung: atSpecBonus,
           geschoss: projectileAtMod,
           geschossName: activeProjectile?.name,
+          zauberMalus: derived.zauberEffekte.fernkampfMalus,
+          zauberName: derived.zauberEffekte.fernkampfQuelle,
         )
       : herleiteNahkampfAt(
           atBasis: atBase,
