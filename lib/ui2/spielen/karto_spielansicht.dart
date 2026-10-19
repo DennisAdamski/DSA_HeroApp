@@ -19,6 +19,7 @@ import 'package:dsa_heldenverwaltung/ui2/spielen/karto_begleiterkarte.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_laufendes_abenteuer.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_ressourcenleiste.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_spielaktionen.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_standort.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
 import 'package:dsa_heldenverwaltung/ui2/widgets/karto_flaeche.dart';
 import 'package:dsa_heldenverwaltung/ui2/widgets/karto_ornamente.dart';
@@ -283,6 +284,17 @@ class KartoSpielansicht extends ConsumerWidget {
     HeroComputedSnapshot werte,
   ) {
     return <Widget>[
+      KartoStandortAbschnitt(
+        standort: werte.state.standort,
+        // Bewusst ohne `aktion`-Guard: der Dialog schließt sich selbst, und
+        // das Speichern läuft über den eingereihten Zustandsweg.
+        onSpeichern: (standort) => bestand.standortSetzen(
+          context: context,
+          ref: ref,
+          heroId: heroId,
+          standort: standort,
+        ),
+      ),
       KartoAbschnitt(
         titel: 'Kampf',
         aktion: GefechtEinstieg(

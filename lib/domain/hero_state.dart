@@ -27,6 +27,7 @@ class HeroState {
     this.diceLog = const <DiceLogEntry>[],
     this.buchungen = const <ZustandsBuchung>[],
     this.begleiterZustaende = const <String, BegleiterZustand>{},
+    this.standort = '',
     this.lastModified,
     this.unbekannteFelder = const <String, Object?>{},
   });
@@ -47,6 +48,7 @@ class HeroState {
       diceLog = const <DiceLogEntry>[],
       buchungen = const <ZustandsBuchung>[],
       begleiterZustaende = const <String, BegleiterZustand>{},
+      standort = '',
       unbekannteFelder = const <String, Object?>{};
 
   /// Maximale Anzahl persistierter Wuerfelprotokoll-Eintraege pro Held.
@@ -93,6 +95,14 @@ class HeroState {
   /// Bestandszustände ihren Inhalts-Hash behalten.
   final Map<String, BegleiterZustand> begleiterZustaende;
 
+  /// Aktueller Aufenthaltsort des Helden als Freitext, etwa der Name einer
+  /// Siedlung.
+  ///
+  /// Wechselt im Spiel häufig und gehört deshalb zum Laufzeitzustand, nicht
+  /// zum Bogen. Nur bei Belegung im JSON, damit Bestandszustände ihren
+  /// Inhalts-Hash behalten.
+  final String standort;
+
   /// Zeitpunkt der letzten Speicherung, analog zu `HeroSheet.lastModified`.
   ///
   /// Rein informativ: Der Wert bleibt aus `heroStateContentHash` und damit aus
@@ -122,6 +132,7 @@ class HeroState {
     'diceLog',
     'buchungen',
     'begleiterZustaende',
+    'standort',
     'lastModified',
   };
 
@@ -140,6 +151,7 @@ class HeroState {
     List<DiceLogEntry>? diceLog,
     List<ZustandsBuchung>? buchungen,
     Map<String, BegleiterZustand>? begleiterZustaende,
+    String? standort,
     DateTime? lastModified,
   }) {
     return HeroState(
@@ -157,6 +169,7 @@ class HeroState {
       diceLog: diceLog ?? this.diceLog,
       buchungen: buchungen ?? this.buchungen,
       begleiterZustaende: begleiterZustaende ?? this.begleiterZustaende,
+      standort: standort ?? this.standort,
       lastModified: lastModified ?? this.lastModified,
       unbekannteFelder: unbekannteFelder,
     );
@@ -225,6 +238,7 @@ class HeroState {
           for (final eintrag in begleiterZustaende.entries)
             eintrag.key: eintrag.value.toJson(),
         },
+      if (standort.trim().isNotEmpty) 'standort': standort,
       if (lastModified != null)
         'lastModified': lastModified!.toUtc().toIso8601String(),
     };
@@ -283,6 +297,7 @@ class HeroState {
                     (eintrag.value as Map).cast<String, dynamic>(),
                   ),
             }),
+      standort: json['standort'] is String ? json['standort'] as String : '',
       lastModified: DateTime.tryParse(json['lastModified'] as String? ?? ''),
       unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
     );

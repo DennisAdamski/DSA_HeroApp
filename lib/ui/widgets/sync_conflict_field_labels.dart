@@ -116,5 +116,6 @@ const Map<String, String> syncFieldLabels = <String, String>{
   'wpiZustand': 'Wunden & Schmerz',
   'diceLog': 'Würfel-Log',
   'begleiterZustaende': 'Begleiter (laufende Werte)',
+  'standort': 'Standort',
   'currentAup': 'AuP',
 };

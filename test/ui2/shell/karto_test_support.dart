@@ -195,6 +195,16 @@ class TestBestand implements KartoBestandsAdapter {
   }
 
   @override
+  Future<void> standortSetzen({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String heroId,
+    required String standort,
+  }) async {
+    aufrufe.add('standort:$heroId:$standort');
+  }
+
+  @override
   Future<void> vertrautenAktionen({
     required BuildContext context,
     required String heroId,

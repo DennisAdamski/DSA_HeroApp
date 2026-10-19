@@ -21,6 +21,7 @@ import 'package:dsa_heldenverwaltung/ui/screens/heroes_home_screen.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/settings_screen.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/begleiter_zustand_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ressourcen_aenderung_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/standort_rules.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_begleiter_tab.dart'
     show zeigeVertrautenAktionen;
 import 'package:dsa_heldenverwaltung/ui/screens/shared/active_spell_effects_dialog.dart';
@@ -531,6 +532,24 @@ class KartoBestandsAdapterImpl
       begleiter: begleiter,
       pool: pool,
       aenderung: aenderung,
+    );
+  }
+
+  /// Schreibt den Standort über den gemeinsamen Zustandsweg.
+  @override
+  Future<void> standortSetzen({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String heroId,
+    required String standort,
+  }) async {
+    await aendereZustandMitMeldung(
+      context: context,
+      ref: ref,
+      heroId: heroId,
+      was: 'Standort',
+      aenderung: (aktuell) =>
+          aktuell.copyWith(standort: bereinigeStandort(standort)),
     );
   }
 
