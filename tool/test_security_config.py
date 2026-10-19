@@ -107,6 +107,31 @@ class SecurityConfigTest(unittest.TestCase):
             self.assertIn(variable, deploy_script)
         self.assertNotIn("firebase deploy --only hosting\n", deploy_script)
 
+    def test_web_builds_self_host_canvaskit_and_csp_allows_firebase_sdk(self) -> None:
+        workflow = (ROOT / ".github/workflows/flutter-tests.yml").read_text(
+            encoding="utf-8"
+        )
+        deploy_script = (ROOT / "tool/deploy_web.ps1").read_text(encoding="utf-8")
+        config = json.loads((ROOT / "firebase.json").read_text(encoding="utf-8"))
+
+        self.assertIn("--no-web-resources-cdn", workflow)
+        self.assertIn("--no-web-resources-cdn", deploy_script)
+        for hosting in config["hosting"]:
+            csp = next(
+                item["value"]
+                for rule in hosting["headers"]
+                if rule["source"] == "**"
+                for item in rule["headers"]
+                if item["key"] == "Content-Security-Policy"
+            )
+            # Firebase-Web-SDK und reCAPTCHA laden Skripte von gstatic; CanvasKit
+            # kommt lokal, daher nur diese Pfade und nicht die ganze Domain.
+            self.assertIn("https://www.gstatic.com/firebasejs/", csp, hosting["target"])
+            self.assertIn("https://www.gstatic.com/recaptcha/", csp, hosting["target"])
+            self.assertNotIn("https://www.gstatic.com ", csp, hosting["target"])
+            self.assertNotIn("https://www.gstatic.com;", csp, hosting["target"])
+            self.assertIn("frame-src", csp, hosting["target"])
+
     def test_windows_deploy_discards_firebase_hosting_hash_cache(self) -> None:
         deploy_script = (ROOT / "tool/deploy_web.ps1").read_text(encoding="utf-8")
 
