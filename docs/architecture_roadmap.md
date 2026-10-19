@@ -113,7 +113,11 @@ Rücknahme am Protokolleintrag.
 **Offen bzw. abgespalten:**
 
 - Persönliche Favoriten (eigener Auftrag; Persistenz und Sync zu entscheiden).
-- Offline-/Sync-Statusanzeige (gehört zu ARCH-06).
+- [x] Sync-Statusanzeige im Workspace: Fußeintrag der Navigation (breit) bzw.
+  AppBar-Symbol mit Tooltip (schmal) aus `syncStatusProvider`, Zuordnung in
+  `beschreibeKartoSync` (`lib/ui2/shell/karto_sync_anzeige.dart`); Tipp öffnet
+  die Einstellungen. Ohne Konto entfällt der Eintrag bewusst, einen eigenen
+  „Offline“-Zustand gibt es nicht. *(19.10.2026, `test/ui2/shell/karto_sync_anzeige_test.dart`.)*
 - Ein persistenter Kampfrundenzähler bleibt bewusst aus, das Gefecht führt
   Runden flüchtig.
 - Die Spielerrolle des Spielmodus-Konzepts bleibt; eine Spielleiterverwaltung
