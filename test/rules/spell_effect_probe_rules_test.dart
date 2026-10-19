@@ -273,10 +273,14 @@ void main() {
       expect(b.hinweise.join(' '), isNot(contains('Fernkampfproben')));
     });
 
-    test('Konzentrationsstärke: Zauberproben nicht gerechnet, Hinweis', () {
+    test('Konzentrationsstärke halbiert nur die Zauberproben (aufgerundet)', () {
       final b = rechne(_mit([_blitz(5)]), konzentrationsstaerke: true);
 
-      expect(probeMitSpellEffekten(_zauber(), b).initialSituationalModifier, 0);
+      expect(
+        probeMitSpellEffekten(_zauber(), b).initialSituationalModifier,
+        -3,
+      );
+      expect(b.fernkampfMalus, -5);
       expect(
         probeMitSpellEffekten(
           _talent('Klettern'),
@@ -287,10 +291,34 @@ void main() {
       expect(b.hinweise.join(' '), contains('Konzentrationsstärke'));
     });
 
-    test('Blindkampf: gar keine Probenzahl, Hinweis', () {
+    test('Blindkampf halbiert Talent- und Zauberproben (aufgerundet)', () {
       final b = rechne(_mit([_blitz(5)]), blindkampf: true);
 
-      expect(b.probenBeitraege, isEmpty);
+      expect(
+        probeMitSpellEffekten(
+          _talent('Klettern'),
+          b,
+        ).initialSituationalModifier,
+        -3,
+      );
+      expect(
+        probeMitSpellEffekten(_zauber(), b).initialSituationalModifier,
+        -3,
+      );
+    });
+
+    test('Blindkampf und Konzentrationsstärke halbieren nur einmal', () {
+      final b = rechne(
+        _mit([_blitz(5)]),
+        blindkampf: true,
+        konzentrationsstaerke: true,
+      );
+
+      expect(
+        probeMitSpellEffekten(_zauber(), b).initialSituationalModifier,
+        -3,
+      );
+      expect(b.hinweise.join(' '), contains('nicht ein zweites Mal'));
     });
 
     test(

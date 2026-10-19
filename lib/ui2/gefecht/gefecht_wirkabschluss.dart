@@ -12,6 +12,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/artefakt_auxiliator_rules.dar
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_wirken_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/active_spell_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/active_spell_state_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/armatrutz_rules.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_gefechts_adapter.dart';
 
 import 'gefecht_fremdwirkung.dart';
@@ -165,7 +166,13 @@ class _AbschlussState extends ConsumerState<_Abschluss> {
     if (!_eigenerEffekt) return null;
     final n = h.titel.toLowerCase();
     if (n.startsWith('armatrutz')) {
-      final d = await widget.bestand.gefechtsArmatrutzWerte(context);
+      // Die Rechnung begrenzt den RS auf ZfW/2; die Eingabe nennt die Grenze.
+      final held = ref.read(heroByIdProvider(widget.heroId));
+      final d = await widget.bestand.gefechtsArmatrutzWerte(
+        context,
+        grenzePruefen: held != null,
+        grenze: held == null ? null : armatrutzRsGrenze(sheet: held),
+      );
       return d == null ? null : (s) => uebernimmGefechtsArmatrutz(s, d);
     }
     if (n.startsWith('attributo')) {

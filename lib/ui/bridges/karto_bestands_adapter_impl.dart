@@ -126,8 +126,14 @@ class KartoBestandsAdapterImpl
   /// Verwendet die vorhandene Armatrutz-Eingabe ohne frühes Speichern.
   @override
   Future<ActiveSpellEffectDetail?> gefechtsArmatrutzWerte(
-    BuildContext context,
-  ) => showArmatrutzInputDialog(context: context);
+    BuildContext context, {
+    bool grenzePruefen = false,
+    int? grenze,
+  }) => showArmatrutzInputDialog(
+    context: context,
+    grenzePruefen: grenzePruefen,
+    grenze: grenze,
+  );
 
   /// Verwendet die vorhandene Attributo-Eingabe ohne frühes Speichern.
   @override
@@ -270,6 +276,7 @@ class KartoBestandsAdapterImpl
         heroId: heroId,
         probenEigenschaften: werte.probenEigenschaften,
         grundwerte: werte.effectiveAttributes,
+        kompakt: true,
       ),
     );
   }

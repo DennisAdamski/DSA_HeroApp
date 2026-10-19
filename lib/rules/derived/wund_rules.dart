@@ -380,6 +380,46 @@ int begrenzeWundGs({required int ohneWunden, required int mitWunden}) {
   return ohneWunden < 1 ? ohneWunden : 1;
 }
 
+/// [effekte] im Kampfrausch des Karnifilo ([quelle] ist der Zaubername).
+///
+/// LC S. 136: Der Rasende „wird auch von LeP/AuP-Verlust und Wunden nicht in
+/// seinem Kampfrausch behindert (keine AT/PA-Einbußen, keine
+/// Kampfunfähigkeit)“. Entfallen deshalb die AT- und PA-Abzüge, auch die der
+/// Arme, und die Kampfunfähigkeit; FK, INI-Basis, GS und die
+/// Eigenschaftsverluste für Proben bleiben, ebenso die gezählten Wunden.
+/// Die App kennt keine AT/PA-Abzüge aus LeP/AuP-Verlust, deshalb betrifft
+/// die Regel hier nur die Wunden.
+WundEffekte wundEffekteImKampfrausch(
+  WundEffekte effekte, {
+  required String quelle,
+}) {
+  final betroffen =
+      effekte.atMalus != 0 ||
+      effekte.paMalus != 0 ||
+      effekte.schwertarmAtPaMalus != 0 ||
+      effekte.schildarmAtPaMalus != 0 ||
+      effekte.kampfunfaehig;
+  if (!betroffen) {
+    return effekte;
+  }
+  return WundEffekte(
+    fkMalus: effekte.fkMalus,
+    iniBasisMalus: effekte.iniBasisMalus,
+    gsMalus: effekte.gsMalus,
+    eigenschaftsVerluste: effekte.eigenschaftsVerluste,
+    aktuellerIniMalus: effekte.aktuellerIniMalus,
+    hinweise: <String>[
+      ...effekte.hinweise,
+      '$quelle: Wunden mindern AT und PA nicht und machen nicht '
+          'kampfunfähig, solange der Kampfrausch anhält.',
+    ],
+    zonenMitDritterWunde: effekte.zonenMitDritterWunde,
+    unterdrueckteGesamt: effekte.unterdrueckteGesamt,
+    unterdrueckungHalbiert: effekte.unterdrueckungHalbiert,
+    linkshaender: effekte.linkshaender,
+  );
+}
+
 /// Konvertiert aggregierte Wundeffekte in [StatModifiers] für die
 /// zentrale Berechnungspipeline.
 ///

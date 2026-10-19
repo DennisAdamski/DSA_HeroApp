@@ -20,7 +20,7 @@
     "beleg": { "buch": "Liber Cantiones", "seite": "30", "chunkId": 1940 },
     "eingaben": ["eigenschaft", "zfpStern"],
     "variantenHinweis": "Die Schnellsteigerung und die Tier-/Pflanzen-Sonderfälle sind nicht umgesetzt.",
-    "rundungsHinweis": "Laut Regelwerk ZfP*/3 Punkte; die App übernimmt den vom Nutzer eingetragenen Wert und rundet nicht.",
+    "rundungsHinweis": "Laut Regelwerk ZfP*/3 Punkte, nach Tischregel aufgerundet; die Eingabe schlägt den Wert aus den ZfP* vor, maßgeblich bleibt der eingetragene Bonus.",
     "hinweis": "Der Bonus liegt als freier Wert in den temporären Eigenschaftsmodifikatoren; Ende und Quellenbezug folgen mit MAG-EFF-02."
   },
   {
@@ -86,8 +86,8 @@
     "status": "belegt",
     "beleg": { "buch": "Liber Cantiones", "seite": "49", "chunkId": 1970 },
     "eingaben": ["zfpStern", "zfw"],
-    "variantenHinweis": "Blindkampf und Konzentrationsstärke ändern die Wirkung und sind vor der Umsetzung gesondert zu prüfen.",
-    "rundungsHinweis": "ZfP* wird gleichmäßig auf AT- und PA-Basis verteilt, ein ungerader Rest geht zuerst an die AT.",
+    "variantenHinweis": "Blindkampf halbiert alle Abzüge, Konzentrationsstärke die auf Zauberproben (beide zusammen nur einmal).",
+    "rundungsHinweis": "ZfP* wird gleichmäßig auf AT- und PA-Basis verteilt, ein ungerader Rest geht zuerst an die AT. Halbierte Abzüge (Blindkampf, Konzentrationsstärke) und die Dauer ZfW/2 werden nach Tischregel aufgerundet.",
     "hinweis": "Empfangener Malus: Talent- und Zauberproben (Startwert) sowie der FK-Wert jeder Fernkampfwaffe um ZfP* erschwert, AT/PA-Basis −ZfP* verteilt, INI −ZfW, Dauer ZfW/2 Aktionen."
   },
   {
@@ -164,8 +164,8 @@
     "beleg": { "buch": "Liber Cantiones", "seite": "136", "chunkId": 2091 },
     "eingaben": ["zfpStern"],
     "variantenHinweis": "Blutrausch (Werte-Veränderungen 2 Punkte stärker), borbaradianische und Achaz-Repräsentation sind nicht umgesetzt.",
-    "rundungsHinweis": "AT-Basis +5 und PA-Basis −5 gelten fest; ZfP*/2 Erschöpfung nach Ablauf ist nicht gerechnet (Rundung nicht belegt).",
-    "hinweis": "Empfangener Kampfrausch: AT-Basis +5, PA-Basis −5 fest, Dauer ZfP* × 5 Kampfrunden. MU/KK +5 und KL/CH −5 wirken nur auf Proben, den TP/KK-Zuschlag sowie INI- und FK-Basis (nicht auf AT/PA, MR, GS, LeP/AuP, Wundschwelle). Der Wegfall der Wund-Abzüge ist nur ein Hinweis."
+    "rundungsHinweis": "AT-Basis +5 und PA-Basis −5 gelten fest; ZfP*/2 Erschöpfung nach Ablauf wird nach Tischregel aufgerundet und als Hinweis genannt, nicht gebucht.",
+    "hinweis": "Empfangener Kampfrausch: AT-Basis +5, PA-Basis −5 fest, Dauer ZfP* × 5 Kampfrunden. MU/KK +5 und KL/CH −5 wirken nur auf Proben, den TP/KK-Zuschlag sowie INI- und FK-Basis (nicht auf AT/PA, MR, GS, LeP/AuP, Wundschwelle). Wunden mindern AT und PA nicht (auch nicht die Armwunden) und machen nicht kampfunfähig."
   },
   {
     "id": "profil_seidenzunge_grund",

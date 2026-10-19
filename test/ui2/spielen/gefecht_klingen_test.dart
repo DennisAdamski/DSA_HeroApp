@@ -542,8 +542,10 @@ class _Adapter implements KartoGefechtsAdapter {
 
   @override
   Future<ActiveSpellEffectDetail?> gefechtsArmatrutzWerte(
-    BuildContext context,
-  ) => throw UnimplementedError();
+    BuildContext context, {
+    bool grenzePruefen = false,
+    int? grenze,
+  }) => throw UnimplementedError();
 
   @override
   Future<AttributeModifiers?> gefechtsAttributoWerte(BuildContext context) =>

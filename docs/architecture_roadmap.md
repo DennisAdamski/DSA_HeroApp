@@ -1,6 +1,6 @@
 # To-do-Liste: Weiterentwicklung der Heldenverwaltung
 
-Stand: 18.10.2026. Diese Liste führt **nur Status und offene Punkte**. Abgenommene
+Stand: 20.10.2026. Diese Liste führt **nur Status und offene Punkte**. Abgenommene
 Aufgaben und der Verlauf der Teilstände stehen unverändert im
 [Archiv](archiv/README.md); Verweise wie „ARCH-05 Teilstand (3)“ in Code und
 Dokumentation meinen den dortigen Text.
@@ -38,13 +38,20 @@ Ist-Zustand erneut prüfen und den konkreten Teilumfang festlegen.
     (Vorschau und Gefecht). *(19.10.2026)*
   - [x] Karnifilo: MU/KK +5, KL/CH −5 nur für Proben, TP/KK, INI- und
     FK-Basis; AT/PA fest. *(19.10.2026)*
-  - **Tischregel Rundung (Nutzer, 18./19.10.2026):** Kosten werden abgerundet,
-    alle übrigen Spielerwerte aufgerundet, ausgenommen die MR. Offen ist, sie
-    auf die bisher als „Rundung nicht belegt“ geführten Punkte anzuwenden
-    (Blitz-Dauer ZfW/2, Attributo ZfP*/3, Karnifilo-Erschöpfung ZfP*/2,
-    Blindkampf-/Konzentrationsstärke-Halbierung, Corpofesso).
-  - Offen: Grenzhinweis im Gefecht-Wirkdialog des Armatrutz (die Rechnung
-    begrenzt dort schon), Wegfall der Wund-Abzüge unter Karnifilo.
+  - [x] **Tischregel Rundung (Nutzer, 18./19.10.2026)** angewandt: Kosten
+    werden abgerundet, alle übrigen Werte aufgerundet, ausgenommen die MR; bei
+    halbierten Abzügen wird der **Betrag** aufgerundet (Entscheid 20.10.2026,
+    `halbiertAufgerundet`). Blitz mit Blindkampf rechnet jetzt alle Abzüge
+    halbiert (Konzentrationsstärke halbiert die Zauberproben, beide zusammen
+    nur einmal), Blitz-Dauer ZfW/2 Aktionen als Vorschlag, Attributo schlägt
+    ZfP*/3 vor, Karnifilo nennt die Erschöpfung ZfP*/2 als Zahl (Hinweis,
+    keine Buchung). Corpofesso bleibt mit allen weiteren Zaubern
+    zurückgestellt. *(20.10.2026)*
+  - [x] Armatrutz-Grenzhinweis im Gefecht-Wirkdialog (`gefechtsArmatrutzWerte`
+    mit `grenze`). *(20.10.2026)*
+  - [x] Karnifilo: Wunden mindern AT/PA (auch Armwunden) nicht und machen nicht
+    kampfunfähig (`wundEffekteImKampfrausch`); FK, INI-Basis, GS und
+    Probenverluste bleiben. *(20.10.2026, `test/rules/karnifilo_wunden_test.dart`)*
 
 - [ ] **TRANK — Trankdefinitionen aus den Regelbüchern in einen Katalog übernehmen.**
   Ziel: die wichtigsten Tränke und Heilmittel mit Regelwerten und Belegen als

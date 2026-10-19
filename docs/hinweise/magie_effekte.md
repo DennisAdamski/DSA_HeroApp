@@ -36,10 +36,9 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   Blitz-Probenzuschlag und Psychostabilis (MR) rechnet dasselbe Modul;
   `spell_effect_probe_rules.dart` legt Probenbeiträge als Startwert des
   situativen Modifikators in Talent-/Zauberproben (`probeMitSpellEffekten`,
-  zentral in `showLoggedProbeDialog`/`zeigeGefechtsprobe`). Unbelegtes
-  (Blindkampf-/Konzentrationsstärke-Halbierung, Fernkampf-Blitz) wird nie
-  geraten, sondern als Hinweis gemeldet; andere Profile rechnen noch keine
-  Zahlen. MAG-EFF-04 (teilweise): einmalige, zielgebundene Wirkungen in
+  zentral in `showLoggedProbeDialog`/`zeigeGefechtsprobe`). Unbelegtes wird
+  nie geraten, sondern als Hinweis gemeldet; andere Profile rechnen noch
+  keine Zahlen. MAG-EFF-04 (teilweise): einmalige, zielgebundene Wirkungen in
   `spell_effect_event_rules.dart` – Falkenauge erleichtert den Gefecht-Schuss
   auf `SpellEffectInstance.ziel` und wird nach dem bestätigten Wurf verbraucht
   (`fuehreGefechtsAuftragAus`), Ängste lindern geht über „In Mut-Probe
@@ -75,7 +74,13 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   `ResolvedProbeRequest.bedingterPoolSchritt` außerhalb des Pools; der
   Probendialog bietet sie als Schalter an (`wendeBedingtenPoolSchrittAn`).
   Tischregel Rundung: Kosten abrunden, übrige Spielerwerte aufrunden, MR
-  ausgenommen.
+  ausgenommen; bei halbierten Abzügen und Dauern den Betrag aufrunden
+  (`halbiertAufgerundet`). Blitz mit Blindkampf halbiert alle Abzüge,
+  Konzentrationsstärke die Zauberproben, beide zusammen nur einmal.
+  Karnifilo: Wunden mindern AT/PA nicht und machen nicht kampfunfähig, nur
+  über `wundEffekteImKampfrausch` in `computeHeroStatInputs`
+  (`SpellEffectBeitraege.kampfrauschQuelle`); FK, INI-Basis, GS und
+  Probenverluste der Wunden bleiben.
 - Laufende Zaubereffekte (`Axxeleratus`, `Attributo`, `Armatrutz`) stehen in
   `lib/rules/derived/active_spell_rules.dart` und werden über
   `Magie-Tab > Zauber aktivieren` gepflegt. Zusatzdaten je Effekt (Zahlenwert
