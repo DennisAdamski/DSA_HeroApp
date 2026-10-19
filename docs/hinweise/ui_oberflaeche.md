@@ -54,6 +54,13 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   Adaptermethoden nur mit konkretem Aufrufer und Test, beide Seiten im selben
   Commit. Die Brücke wird abschnittsweise entbehrlich, ihre Entfernung ist kein
   Abnahmekriterium.
+- **Der Konto-Sync steht als ruhiger Eintrag im Workspace**
+  (`_SyncAnzeige` in `karto_workspace.dart`, Key `karto-sync-anzeige`): breit im
+  Navigationsfuß, schmal als AppBar-Symbol mit Tooltip. Wortlaut und Rangfolge
+  (Konflikte, offene Entscheidungen, Fehler, laufender Abgleich, Zeitpunkt) liefert
+  `beschreibeKartoSync` aus dem `SyncStatusSnapshot`; ohne Konto gibt es keinen
+  Eintrag. Der Zeitpunkt ist absolut, weil der Statusstrom nur Änderungen meldet.
+  Konflikte löst man weiter unter „Einstellungen > Konto & Sync“.
 - **Die Spielansicht des Neubaus liegt in `lib/ui2/spielen/`.**
   `KartoSpielansicht` liest `heroComputedProvider(heroId)` **einmal** und reicht
   den `HeroComputedSnapshot` an alle Abschnitte weiter — auch an die

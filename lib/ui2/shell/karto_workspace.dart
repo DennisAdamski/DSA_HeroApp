@@ -8,6 +8,7 @@ import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/feedback/feedback_submission.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
+import 'package:dsa_heldenverwaltung/state/sync_providers.dart';
 import 'package:dsa_heldenverwaltung/ui2/debug/karto_token_sheet.dart';
 import 'package:dsa_heldenverwaltung/ui2/entwicklung/karto_entwicklungsansicht.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_bewegung.dart';
@@ -18,6 +19,7 @@ import 'package:dsa_heldenverwaltung/ui2/shell/karto_bestands_adapter.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_heldenmarke.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_modus_navigation.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_navigationsgrund.dart';
+import 'package:dsa_heldenverwaltung/ui2/shell/karto_sync_anzeige.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_spielansicht.dart';
 import 'package:dsa_heldenverwaltung/ui2/widgets/karto_papier.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
@@ -167,6 +169,10 @@ class _KartoWorkspaceState extends ConsumerState<KartoWorkspace> {
                       icon: const Icon(Icons.arrow_back),
                     ),
                     actions: [
+                      _SyncAnzeige(
+                        kompakt: true,
+                        onTap: () => _menueAktion('einstellungen'),
+                      ),
                       IconButton(
                         key: const ValueKey<String>(
                           'karto-berechnungsschritte',
@@ -270,6 +276,8 @@ class _KartoWorkspaceState extends ConsumerState<KartoWorkspace> {
     crossAxisAlignment: CrossAxisAlignment.stretch,
     mainAxisSize: MainAxisSize.min,
     children: [
+      // Der Eintrag gehört zum Konto: ohne Konto bleibt er ganz weg.
+      _SyncAnzeige(kompakt: false, onTap: () => _menueAktion('einstellungen')),
       _Fussziel(
         key: const ValueKey<String>('karto-berechnungsschritte'),
         icon: Icons.info_outline,
@@ -588,6 +596,72 @@ class _Fussziel extends StatelessWidget {
       child: Tooltip(
         message: beschriftung,
         child: InkWell(onTap: ziel, child: inhalt),
+      ),
+    );
+  }
+}
+
+/// Zeigt den Konto-Sync des gemeinsamen [syncStatusProvider].
+///
+/// Breit als ruhiger Fußeintrag der Bereichsnavigation, schmal als Symbol in
+/// der AppBar mit demselben Text als Tooltip. Ohne Konto entfällt der Eintrag.
+/// Er nennt den Stand nur und rechnet nichts: Zuordnung und Wortlaut liefert
+/// [beschreibeKartoSync], Konflikte löst man weiter unter „Einstellungen“.
+class _SyncAnzeige extends ConsumerWidget {
+  const _SyncAnzeige({required this.kompakt, required this.onTap});
+
+  final bool kompakt;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final status = ref.watch(syncStatusProvider).asData?.value;
+    final anzeige = status == null
+        ? null
+        : beschreibeKartoSync(status, jetzt: DateTime.now());
+    if (anzeige == null) return const SizedBox.shrink();
+    final token = KartoTheme.of(context);
+    final dringend = anzeige.stufe != KartoSyncStufe.ruhig;
+    final farbe = dringend ? token.messingNavigation : token.navigationMuted;
+    if (kompakt) {
+      return IconButton(
+        key: const ValueKey<String>('karto-sync-anzeige'),
+        tooltip: anzeige.text,
+        onPressed: onTap,
+        icon: Icon(anzeige.icon, color: dringend ? token.messing : null),
+      );
+    }
+    return MergeSemantics(
+      child: Tooltip(
+        message: anzeige.text,
+        child: InkWell(
+          key: const ValueKey<String>('karto-sync-anzeige'),
+          onTap: onTap,
+          child: Container(
+            constraints: const BoxConstraints(minHeight: 48),
+            padding: const EdgeInsets.symmetric(
+              horizontal: Abstand.block,
+              vertical: Abstand.normal,
+            ),
+            child: Row(
+              children: [
+                Icon(anzeige.icon, size: 20, color: farbe),
+                const SizedBox(width: Abstand.weit),
+                Expanded(
+                  child: Text(
+                    anzeige.text,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                      color: farbe,
+                      fontWeight: dringend ? FontWeight.w600 : null,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
