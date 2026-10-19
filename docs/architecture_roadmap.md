@@ -46,7 +46,7 @@ Ist-Zustand erneut prüfen und den konkreten Teilumfang festlegen.
     nur einmal), Blitz-Dauer ZfW/2 Aktionen als Vorschlag, Attributo schlägt
     ZfP*/3 vor, Karnifilo nennt die Erschöpfung ZfP*/2 als Zahl (Hinweis,
     keine Buchung). Corpofesso bleibt mit allen weiteren Zaubern
-    zurückgestellt. *(20.10.2026)*
+    zurückgestellt. *(20.10.2026, Commit `5c1ecf2c`)*
   - [x] Armatrutz-Grenzhinweis im Gefecht-Wirkdialog (`gefechtsArmatrutzWerte`
     mit `grenze`). *(20.10.2026)*
   - [x] Karnifilo: Wunden mindern AT/PA (auch Armwunden) nicht und machen nicht
