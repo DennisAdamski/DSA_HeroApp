@@ -153,8 +153,10 @@ ResolvedProbeRequest aengsteLindernProbe({
 ///   sind die über die Grundkosten hinaus eingesetzten AsP. Ohne Angabe (oder
 ///   0) kein Vorschlag.
 ///
-/// Blitz dauert ZfW/2 Aktionen; die Rundung eines ungeraden ZfW steht nicht im
-/// Regelwerk, deshalb gibt es dort keinen Vorschlag. `null` = kein Vorschlag.
+/// - Blitz dich find: ZfW/2 Aktionen (LC S. 49), nach Tischregel aufgerundet
+///   ([halbiertAufgerundet]); ohne ZfW kein Vorschlag
+///
+/// `null` = kein Vorschlag.
 SpellDuration? dauerVorschlag(
   String zauberId, {
   int? zfw,
@@ -197,6 +199,14 @@ SpellDuration? dauerVorschlag(
         return null;
       }
       return SpellDuration(amount: zfw, unit: SpellDurationUnit.kampfrunden);
+    case kBlitzZauberId:
+      if (zfw == null || zfw <= 0) {
+        return null;
+      }
+      return SpellDuration(
+        amount: halbiertAufgerundet(zfw),
+        unit: SpellDurationUnit.aktionen,
+      );
   }
   return null;
 }

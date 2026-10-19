@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'package:dsa_heldenverwaltung/domain/attribute_modifiers.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/active_spell_rules.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/config/ui_spacing.dart';
 
@@ -38,6 +39,7 @@ class _AttributoInputDialogState extends State<_AttributoInputDialog> {
   ];
 
   late final List<TextEditingController> _controllers;
+  final TextEditingController _zfpController = TextEditingController();
 
   @override
   void initState() {
@@ -54,12 +56,24 @@ class _AttributoInputDialogState extends State<_AttributoInputDialog> {
     for (final c in _controllers) {
       c.dispose();
     }
+    _zfpController.dispose();
     super.dispose();
   }
 
   int _readInt(int index) {
     final parsed = int.tryParse(_controllers[index].text.trim()) ?? 0;
     return parsed.clamp(-99, 99);
+  }
+
+  // Regelwert aus den ZfP*: ZfP*/3, aufgerundet (LC S. 30, Tischregel).
+  String _zfpHinweis() {
+    final zfp = int.tryParse(_zfpController.text.trim());
+    if (zfp == null) {
+      return 'Bonus laut Regelwerk: ZfP*/3 (aufgerundet) auf die gesteigerte '
+          'Eigenschaft.';
+    }
+    return 'Bonus laut Regelwerk: ${attributoBonusAusZfp(zfp)} '
+        '(ZfP*/3, aufgerundet).';
   }
 
   AttributeModifiers _buildResult() {
@@ -136,6 +150,37 @@ class _AttributoInputDialogState extends State<_AttributoInputDialog> {
             style: theme.textTheme.bodySmall?.copyWith(
               color: theme.colorScheme.onSurfaceVariant,
             ),
+          ),
+          const SizedBox(height: kDialogSectionSpacing),
+          Row(
+            children: [
+              SizedBox(
+                width: 80,
+                child: TextField(
+                  key: const ValueKey<String>('attributo-input-zfp'),
+                  controller: _zfpController,
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    isDense: true,
+                    labelText: 'ZfP*',
+                  ),
+                  textAlign: TextAlign.center,
+                  onChanged: (_) => setState(() {}),
+                ),
+              ),
+              const SizedBox(width: kDialogInlineSpacing),
+              Expanded(
+                child: Text(
+                  key: const ValueKey<String>('attributo-input-zfp-hint'),
+                  _zfpHinweis(),
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.primary,
+                  ),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: kDialogSectionSpacing),
           ...rows,
