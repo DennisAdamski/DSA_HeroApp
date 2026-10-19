@@ -697,6 +697,7 @@ persistiert (eigene Hive-Box `hero_states_v1`).
 | `tempAttributeMods` | `AttributeModifiers` | Temporäre Eigenschaftsmodifikatoren |
 | `buchungen` | `List<ZustandsBuchung>` | Fachliche Buchungen (ARCH-06), höchstens `buchungenMax` = 50, nur bei Belegung im JSON |
 | `begleiterZustaende` | `Map<String, BegleiterZustand>` | Laufende LeP/AsP/AuP je Begleiter-ID (V2, gemeinsam mit Reittier-P2), nur bei Belegung im JSON |
+| `standort` | `String` | Aktueller Aufenthaltsort als Freitext (Spielansicht, Abschnitt „Standort“), nur bei Belegung im JSON; `standort_rules.dart` bereinigt die Eingabe und baut den Avesmaps-Link `https://avesmaps.de/?siedlung=<Ort>`. Die Karte wird nur verlinkt (`url_launcher`), nicht eingebettet: avesmaps.de sendet `X-Frame-Options: DENY`, und Karten- und Ortsdaten stehen nicht unter freier Lizenz |
 
 `HeroState.empty()` liefert einen Standardzustand mit allen Werten = 0.
 

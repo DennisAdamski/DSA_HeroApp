@@ -154,6 +154,17 @@ abstract interface class KartoBestandsAdapter {
     required RessourcenAenderung aenderung,
   });
 
+  /// Speichert den Standort des Helden im Laufzeitzustand.
+  ///
+  /// Schreibt frisch über `aendereZustandMitMeldung` und ersetzt nur das Feld
+  /// `standort`; ein leerer Text entfernt den Standort.
+  Future<void> standortSetzen({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String heroId,
+    required String standort,
+  });
+
   /// Öffnet die Vertrautenaktionen (Vereinigung, Zauber würfeln, Proben …).
   Future<void> vertrautenAktionen({
     required BuildContext context,
