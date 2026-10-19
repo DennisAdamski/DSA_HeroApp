@@ -170,6 +170,7 @@ jobs:
           test -n "$LEGAL_COUNTRY"
           test -n "$LEGAL_CONTACT_EMAIL"
           flutter build web --release \
+            --no-web-resources-cdn \
             --dart-define=BUILD_COMMIT="$BUILD_COMMIT" \
             --dart-define=BUILD_TIME="$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
             --dart-define=FEEDBACK_API_URL="$FEEDBACK_API_URL" \
