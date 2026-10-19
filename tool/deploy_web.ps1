@@ -63,7 +63,7 @@ if (git status --porcelain) { $commit = "$commit-dirty" }
 $buildTime = [DateTime]::UtcNow.ToString(
     "yyyy-MM-dd'T'HH:mm:ss'Z'",
     [Globalization.CultureInfo]::InvariantCulture)
-flutter build web --release --no-wasm-dry-run `
+flutter build web --release --no-wasm-dry-run --no-web-resources-cdn `
     "--dart-define=BUILD_COMMIT=$commit" `
     "--dart-define=BUILD_TIME=$buildTime" `
     "--dart-define=FEEDBACK_API_URL=$feedbackApiUrl" `
