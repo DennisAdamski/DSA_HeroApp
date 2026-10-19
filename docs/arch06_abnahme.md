@@ -137,7 +137,8 @@ Prüfungen: `flutter analyze --no-pub` ohne Befund; vollständige serielle Suite
 Bekannte Grenzen (nicht Teil der Abnahme): online zwei getrennte Schreibzugriffe
 für Bogen und Zustand (andere Geräte können kurz eine Zwischenfassung lesen);
 Online-Tombstone mit „Nur Online“, Löschkonflikte, Offline-Helden-Entscheidungen,
-eigenständige Zustandskonflikte, `deleteHero` während eines offenen Vorgangs und
-Avatar-Dateien laufen weiter ohne Journal. Ein beschädigter oder nicht bestimmbarer
+eigenständige Zustandskonflikte und Avatar-Dateien laufen weiter ohne Journal.
+(`deleteHero` während eines offenen Vorgangs ist seit 19.10.2026 abgedeckt: die
+Löschung wird abgelehnt, bis die Entscheidung abgeschlossen ist.) Ein beschädigter oder nicht bestimmbarer
 Journaleintrag sperrt den schreibenden Sync vorsorglich und bleibt sichtbar; eine
 Bedienung zum Entfernen gibt es nicht.
