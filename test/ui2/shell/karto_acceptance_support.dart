@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dsa_heldenverwaltung/data/hero_transfer_file_gateway.dart';
@@ -57,6 +58,7 @@ Future<ProviderContainer> pumpAcceptanceWorkspace(
   double textScale = 1,
   GlobalKey? screenshotKey,
   HeroTransferFileGateway? transferGateway,
+  List<Override> overrides = const [],
 }) async {
   tester.view.devicePixelRatio = 1;
   tester.view.physicalSize = size;
@@ -69,6 +71,7 @@ Future<ProviderContainer> pumpAcceptanceWorkspace(
       settingsRepositoryProvider.overrideWithValue(settings),
       heroRepositoryProvider.overrideWithValue(repository),
       rulesCatalogProvider.overrideWith((ref) async => testCatalog),
+      ...overrides,
       if (transferGateway != null)
         heroTransferFileGatewayProvider.overrideWithValue(transferGateway),
       if (transferGateway != null)
