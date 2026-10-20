@@ -14,6 +14,7 @@ class InspectorAttributeCard extends StatelessWidget {
     required this.value,
     required this.onTap,
     this.wundAbzug = 0,
+    this.kompakt = false,
   });
 
   final String label;
@@ -22,6 +23,9 @@ class InspectorAttributeCard extends StatelessWidget {
 
   /// Abzug durch Wunden (≤ 0), bereits in [value] enthalten.
   final int wundAbzug;
+
+  /// Einzeilig „MU 14“ statt Kürzel über Wert.
+  final bool kompakt;
 
   @override
   Widget build(BuildContext context) {
@@ -37,6 +41,32 @@ class InspectorAttributeCard extends StatelessWidget {
     );
   }
 
+  Widget _zeile(ThemeData theme, CodexTheme codex) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.baseline,
+      textBaseline: TextBaseline.alphabetic,
+      children: [
+        Text(
+          label,
+          style: theme.textTheme.labelSmall?.copyWith(
+            color: codex.brass,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 0.6,
+          ),
+        ),
+        const SizedBox(width: 4),
+        Text(
+          '$value',
+          style: theme.textTheme.titleSmall?.copyWith(
+            fontWeight: FontWeight.bold,
+            color: wundAbzug == 0 ? null : theme.colorScheme.error,
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _karte(ThemeData theme, CodexTheme codex) {
     return Material(
       color: codex.parchment,
@@ -49,30 +79,36 @@ class InspectorAttributeCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(8),
             border: Border.all(color: codex.brassMuted, width: 1),
           ),
-          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
+          padding: kompakt
+              ? const EdgeInsets.symmetric(vertical: 4, horizontal: 6)
+              : const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
           child: FittedBox(
             fit: BoxFit.scaleDown,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  label,
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    color: codex.brass,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 0.6,
+            child: kompakt
+                ? _zeile(theme, codex)
+                : Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        label,
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: codex.brass,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.6,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        '$value',
+                        style: theme.textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: wundAbzug == 0
+                              ? null
+                              : theme.colorScheme.error,
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  '$value',
-                  style: theme.textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: wundAbzug == 0 ? null : theme.colorScheme.error,
-                  ),
-                ),
-              ],
-            ),
           ),
         ),
       ),

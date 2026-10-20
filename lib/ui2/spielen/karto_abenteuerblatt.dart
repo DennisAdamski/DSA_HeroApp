@@ -7,8 +7,10 @@ import 'package:dsa_heldenverwaltung/domain/hero_adventure_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_note_entry.dart';
 import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abenteuer_karten.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abenteuer_sortierung.dart';
 import 'package:dsa_heldenverwaltung/ui2/widgets/karto_kartenraster.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_laufendes_abenteuer.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
@@ -106,6 +108,9 @@ class _KartoAbenteuerblattState extends ConsumerState<KartoAbenteuerblatt> {
     final aktuell = abenteuer;
     final notizen = aktuell.notes;
     final personen = aktuell.people;
+    final sortierung = ref.watch(abenteuerSortierungProvider);
+    final notizfolge = sortiereNotizen(notizen, sortierung);
+    final personenfolge = sortierePersonen(personen, sortierung);
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -156,7 +161,12 @@ class _KartoAbenteuerblattState extends ConsumerState<KartoAbenteuerblatt> {
                 farbe: karto.siegel,
               ),
             ],
-            const SizedBox(height: Abstand.rand),
+            const SizedBox(height: Abstand.bahn),
+            const Align(
+              alignment: Alignment.centerLeft,
+              child: KartoAbenteuerSortierwahl(),
+            ),
+            const SizedBox(height: Abstand.normal),
             _Kopfzeile(titel: 'Personen', anzahl: personen.length),
             const SizedBox(height: Abstand.weit),
             if (personen.isEmpty && gesperrt)
@@ -165,7 +175,9 @@ class _KartoAbenteuerblattState extends ConsumerState<KartoAbenteuerblatt> {
               KartoKartenraster(
                 mindestbreite: 220,
                 kinder: [
-                  for (final person in personen)
+                  for (final person in [
+                    for (final i in personenfolge) personen[i],
+                  ])
                     KartoFigurenkarte(
                       name: person.name,
                       beschreibung: person.description,
@@ -191,7 +203,7 @@ class _KartoAbenteuerblattState extends ConsumerState<KartoAbenteuerblatt> {
               KartoKartenraster(
                 mindestbreite: 300,
                 kinder: [
-                  for (var i = 0; i < notizen.length; i++)
+                  for (final i in notizfolge)
                     KartoNotizkarte(
                       titel: notizen[i].title,
                       text: notizen[i].description,
@@ -261,6 +273,9 @@ class _KartoAbenteuerblattState extends ConsumerState<KartoAbenteuerblatt> {
     }
   }
 
+  // Zeitstempel für „Zuletzt bearbeitet“; UTC wie alle Zeitpunkte im Modell.
+  DateTime _jetzt() => DateTime.now().toUtc();
+
   String _text(Object error) =>
       error is StateError ? error.message : error.toString();
 
@@ -291,6 +306,7 @@ class _KartoAbenteuerblattState extends ConsumerState<KartoAbenteuerblatt> {
     final notiz = HeroNoteEntry(
       title: ergebnis.erstes,
       description: ergebnis.zweites,
+      lastModified: _jetzt(),
     );
     await _schreibe((a) => a.copyWith(notes: [...a.notes, notiz]));
   }
@@ -304,6 +320,12 @@ class _KartoAbenteuerblattState extends ConsumerState<KartoAbenteuerblatt> {
       ),
     );
     if (ergebnis == null) return;
+    // Unverändert gespeichert: kein neuer Zeitstempel, kein Schreiben.
+    if (!ergebnis.loeschen &&
+        ergebnis.erstes == notiz.title &&
+        ergebnis.zweites == notiz.description) {
+      return;
+    }
     if (ergebnis.loeschen && !await _bestaetigeLoeschen('Notiz')) return;
     await _schreibe((a) {
       // Der Index stammt aus der Anzeige; stimmt er nicht mehr mit dem
@@ -321,6 +343,7 @@ class _KartoAbenteuerblattState extends ConsumerState<KartoAbenteuerblatt> {
         notizen[index] = notizen[index].copyWith(
           title: ergebnis.erstes,
           description: ergebnis.zweites,
+          lastModified: _jetzt(),
         );
       }
       return a.copyWith(notes: notizen);
@@ -337,6 +360,7 @@ class _KartoAbenteuerblattState extends ConsumerState<KartoAbenteuerblatt> {
       id: const Uuid().v4(),
       name: ergebnis.erstes,
       description: ergebnis.zweites,
+      lastModified: _jetzt(),
     );
     await _schreibe((a) => a.copyWith(people: [...a.people, person]));
   }
@@ -350,6 +374,11 @@ class _KartoAbenteuerblattState extends ConsumerState<KartoAbenteuerblatt> {
       ),
     );
     if (ergebnis == null) return;
+    if (!ergebnis.loeschen &&
+        ergebnis.erstes == person.name &&
+        ergebnis.zweites == person.description) {
+      return;
+    }
     if (ergebnis.loeschen && !await _bestaetigeLoeschen('Person')) return;
     await _schreibe((a) {
       if (!a.people.any((p) => p.id == person.id)) {
@@ -361,7 +390,11 @@ class _KartoAbenteuerblattState extends ConsumerState<KartoAbenteuerblatt> {
             if (p.id != person.id)
               p
             else if (!ergebnis.loeschen)
-              p.copyWith(name: ergebnis.erstes, description: ergebnis.zweites),
+              p.copyWith(
+                name: ergebnis.erstes,
+                description: ergebnis.zweites,
+                lastModified: _jetzt(),
+              ),
         ],
       );
     });

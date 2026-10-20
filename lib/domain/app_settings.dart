@@ -26,6 +26,21 @@ enum TabellenAnsicht {
   karten,
 }
 
+/// Reihenfolge von Notizen und Personen eines Abenteuers.
+enum AbenteuerSortierung {
+  /// Zuletzt bearbeitete Eintraege zuerst (Standard).
+  zuletztBearbeitet,
+
+  /// Zuletzt angelegte Eintraege zuerst.
+  neuesteZuerst,
+
+  /// Reihenfolge der Erfassung.
+  aeltesteZuerst,
+
+  /// Nach Titel bzw. Name.
+  alphabetisch,
+}
+
 /// Globale, heldenunabhaengige App-Einstellungen.
 class AppSettings {
   const AppSettings({
@@ -36,6 +51,7 @@ class AppSettings {
     this.avatarApiConfig = const AvatarApiConfig(),
     this.oberflaeche = Oberflaeche.codex,
     this.tabellenAnsicht = TabellenAnsicht.automatisch,
+    this.abenteuerSortierung = AbenteuerSortierung.zuletztBearbeitet,
     this.summaryRailCollapsed = false,
     this.tableColumnWidths = const <String, Map<String, double>>{},
     this.catalogContentPassword,
@@ -61,6 +77,9 @@ class AppSettings {
 
   /// Gewuenschte Darstellung breiter Datenlisten.
   final TabellenAnsicht tabellenAnsicht;
+
+  /// Geraeteweite Reihenfolge von Abenteuernotizen und -personen.
+  final AbenteuerSortierung abenteuerSortierung;
 
   /// Ob die Kernwerte-Rail im Workspace zugeklappt ist.
   final bool summaryRailCollapsed;
@@ -90,6 +109,7 @@ class AppSettings {
     AvatarApiConfig? avatarApiConfig,
     Oberflaeche? oberflaeche,
     TabellenAnsicht? tabellenAnsicht,
+    AbenteuerSortierung? abenteuerSortierung,
     bool? summaryRailCollapsed,
     Map<String, Map<String, double>>? tableColumnWidths,
     Object? catalogContentPassword = _copySentinel,
@@ -110,6 +130,7 @@ class AppSettings {
       avatarApiConfig: avatarApiConfig ?? this.avatarApiConfig,
       oberflaeche: oberflaeche ?? this.oberflaeche,
       tabellenAnsicht: tabellenAnsicht ?? this.tabellenAnsicht,
+      abenteuerSortierung: abenteuerSortierung ?? this.abenteuerSortierung,
       summaryRailCollapsed: summaryRailCollapsed ?? this.summaryRailCollapsed,
       tableColumnWidths: tableColumnWidths ?? this.tableColumnWidths,
       catalogContentPassword: identical(catalogContentPassword, _copySentinel)
@@ -132,6 +153,7 @@ class AppSettings {
     'avatarApiConfig': avatarApiConfig.toJson(),
     'oberflaeche': oberflaeche.name,
     'tabellenAnsicht': tabellenAnsicht.name,
+    'abenteuerSortierung': abenteuerSortierung.name,
     'summaryRailCollapsed': summaryRailCollapsed,
     'tableColumnWidths': <String, Map<String, double>>{
       for (final entry in tableColumnWidths.entries)
@@ -158,6 +180,12 @@ class AppSettings {
     final tabellenAnsicht =
         TabellenAnsicht.values.where((v) => v.name == rawAnsicht).firstOrNull ??
         TabellenAnsicht.automatisch;
+    final rawSortierung = json['abenteuerSortierung'] as String?;
+    final abenteuerSortierung =
+        AbenteuerSortierung.values
+            .where((v) => v.name == rawSortierung)
+            .firstOrNull ??
+        AbenteuerSortierung.zuletztBearbeitet;
 
     return AppSettings(
       debugModus: json['debugModus'] as bool? ?? false,
@@ -171,6 +199,7 @@ class AppSettings {
       ),
       oberflaeche: oberflaeche,
       tabellenAnsicht: tabellenAnsicht,
+      abenteuerSortierung: abenteuerSortierung,
       summaryRailCollapsed: json['summaryRailCollapsed'] as bool? ?? false,
       tableColumnWidths: _parseTableColumnWidths(json['tableColumnWidths']),
       catalogContentPassword: _parseNullableString(

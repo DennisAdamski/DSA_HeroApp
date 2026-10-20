@@ -9,7 +9,7 @@ import 'package:dsa_heldenverwaltung/domain/avatar_config.dart'
 import 'package:dsa_heldenverwaltung/domain/rules_index_remote_config.dart'
     show RulesIndexRemoteConfig;
 export 'package:dsa_heldenverwaltung/domain/app_settings.dart'
-    show Oberflaeche, TabellenAnsicht;
+    show AbenteuerSortierung, Oberflaeche, TabellenAnsicht;
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 
 /// Settings-Repository (wird beim App-Start uebersteuert).
@@ -149,6 +149,12 @@ final tabellenAnsichtProvider = Provider<TabellenAnsicht>((ref) {
       TabellenAnsicht.automatisch;
 });
 
+/// Geraeteweite Reihenfolge von Abenteuernotizen und -personen.
+final abenteuerSortierungProvider = Provider<AbenteuerSortierung>((ref) {
+  return ref.watch(appSettingsProvider).valueOrNull?.abenteuerSortierung ??
+      AbenteuerSortierung.zuletztBearbeitet;
+});
+
 /// Ob die Kernwerte-Rail im Workspace zugeklappt ist.
 final summaryRailCollapsedProvider = Provider<bool>((ref) {
   return ref.watch(appSettingsProvider).valueOrNull?.summaryRailCollapsed ??
@@ -233,6 +239,12 @@ class SettingsActions {
   Future<void> setTabellenAnsicht(TabellenAnsicht ansicht) async {
     final current = _repo.load();
     await _repo.save(current.copyWith(tabellenAnsicht: ansicht));
+  }
+
+  /// Setzt die Reihenfolge von Abenteuernotizen und -personen.
+  Future<void> setAbenteuerSortierung(AbenteuerSortierung sortierung) async {
+    final current = _repo.load();
+    await _repo.save(current.copyWith(abenteuerSortierung: sortierung));
   }
 
   /// Speichert die Avatar-API-Konfiguration.

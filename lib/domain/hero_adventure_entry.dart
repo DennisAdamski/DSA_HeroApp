@@ -213,6 +213,7 @@ class HeroAdventurePersonEntry {
     required this.id,
     this.name = '',
     this.description = '',
+    this.lastModified,
     this.unbekannteFelder = const <String, Object?>{},
   });
 
@@ -224,6 +225,12 @@ class HeroAdventurePersonEntry {
 
   /// Kurze Kontextbeschreibung der Person.
   final String description;
+
+  /// Zeitpunkt der letzten Bearbeitung (UTC); `null` bei Bestandspersonen.
+  ///
+  /// Nur belegt im JSON, damit sich der Inhalts-Hash alter Helden nicht
+  /// aendert.
+  final DateTime? lastModified;
 
   /// Gibt an, ob der Eintrag fachlich belegt ist.
   bool get hasContent {
@@ -239,6 +246,7 @@ class HeroAdventurePersonEntry {
     'id',
     'name',
     'description',
+    'lastModified',
   };
 
   /// Liefert eine Kopie mit gezielt ersetzten Feldern.
@@ -246,12 +254,16 @@ class HeroAdventurePersonEntry {
     String? id,
     String? name,
     String? description,
+    Object? lastModified = _copySentinel,
     Map<String, Object?>? unbekannteFelder,
   }) {
     return HeroAdventurePersonEntry(
       id: id ?? this.id,
       name: name ?? this.name,
       description: description ?? this.description,
+      lastModified: identical(lastModified, _copySentinel)
+          ? this.lastModified
+          : lastModified as DateTime?,
       unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
     );
   }
@@ -262,6 +274,8 @@ class HeroAdventurePersonEntry {
       'id': id,
       'name': name,
       'description': description,
+      if (lastModified != null)
+        'lastModified': lastModified!.toUtc().toIso8601String(),
     }, unbekannteFelder);
   }
 
@@ -273,6 +287,7 @@ class HeroAdventurePersonEntry {
       id: getString('id'),
       name: getString('name'),
       description: getString('description'),
+      lastModified: DateTime.tryParse(json['lastModified']?.toString() ?? ''),
       unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
     );
   }
@@ -811,3 +826,5 @@ int _normalizeReward(int value) {
 double _normalizeDukatenReward(double value) {
   return value < 0 ? 0 : value;
 }
+
+const Object _copySentinel = Object();

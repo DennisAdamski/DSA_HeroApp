@@ -28,6 +28,7 @@ class KartoAbschnitt extends StatelessWidget {
     this.stufe = KartoFlaechenstufe.feld,
     this.symbol,
     this.akzent,
+    this.dicht = false,
   });
 
   /// Überschrift des Abschnitts.
@@ -55,6 +56,9 @@ class KartoAbschnitt extends StatelessWidget {
   /// Hervorhebung einer Begleitfläche; `null` lässt den Abschnitt schlicht.
   final KartoAkzent? akzent;
 
+  /// Knapperer Innenabstand für schmale Hilfsleisten wie die Eigenschaften.
+  final bool dicht;
+
   @override
   Widget build(BuildContext context) {
     final karto = context.karto;
@@ -75,7 +79,7 @@ class KartoAbschnitt extends StatelessWidget {
     final flaeche = KartoFlaeche(
       stufe: stufe,
       toenung: akzent?.toenung(karto),
-      innen: const EdgeInsets.all(Abstand.block),
+      innen: EdgeInsets.all(dicht ? Abstand.weit : Abstand.block),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisSize: MainAxisSize.min,
@@ -118,7 +122,7 @@ class KartoAbschnitt extends StatelessWidget {
               );
             },
           ),
-          const SizedBox(height: Abstand.weit),
+          SizedBox(height: dicht ? Abstand.normal : Abstand.weit),
           child,
         ],
       ),

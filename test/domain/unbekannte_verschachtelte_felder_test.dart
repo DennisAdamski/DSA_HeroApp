@@ -535,8 +535,11 @@ final _begleiterAbenteuerNotizen = <_Modell>[
   _Modell(
     'HeroAdventurePersonEntry',
     schluessel: HeroAdventurePersonEntry.jsonSchluessel,
-    voll: () =>
-        const HeroAdventurePersonEntry(id: 'p1', name: 'Answin').toJson(),
+    voll: () => HeroAdventurePersonEntry(
+      id: 'p1',
+      name: 'Answin',
+      lastModified: DateTime.utc(2026, 3, 1),
+    ).toJson(),
     lade: (json) => HeroAdventurePersonEntry.fromJson(json).toJson(),
     bearbeite: (json) =>
         HeroAdventurePersonEntry.fromJson(json)
@@ -557,7 +560,8 @@ final _begleiterAbenteuerNotizen = <_Modell>[
   _Modell(
     'HeroNoteEntry',
     schluessel: HeroNoteEntry.jsonSchluessel,
-    voll: () => const HeroNoteEntry(title: 'T').toJson(),
+    voll: () =>
+        HeroNoteEntry(title: 'T', lastModified: DateTime.utc(2026)).toJson(),
     lade: (json) => HeroNoteEntry.fromJson(json).toJson(),
     bearbeite: (json) =>
         HeroNoteEntry.fromJson(json).copyWith(description: 'D').toJson(),
