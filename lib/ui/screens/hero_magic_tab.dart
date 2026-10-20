@@ -48,7 +48,6 @@ import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_edit_con
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/adaptive_table_columns.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/codex_section_card.dart';
-import 'package:dsa_heldenverwaltung/ui/widgets/codex_tab_header.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/resizable_table_columns.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
@@ -399,11 +398,6 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
         );
         return Column(
           children: [
-            const CodexTabHeader(
-              title: 'Arkane Matrizen',
-              subtitle: 'Zauber, Rituale und magische Sonderfertigkeiten mit Repräsentationen und Merkmalfokus.',
-              assetPath: 'assets/ui/codex/arcane_seal.png',
-            ),
             TabBar(
               controller: _innerTabController,
               tabs: const [
@@ -425,26 +419,13 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
                       ListView(
                         padding: const EdgeInsets.fromLTRB(0, 8, 0, 12),
                         children: [
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
-                            child: Align(
-                              alignment: Alignment.centerLeft,
-                              child: OutlinedButton.icon(
-                                key: const ValueKey<String>(
-                                  'magic-active-spells-open',
-                                ),
-                                onPressed: () {
-                                  showActiveSpellEffectsDialog(
-                                    context: context,
-                                    heroId: widget.heroId,
-                                  );
-                                },
-                                icon: const Icon(Icons.auto_awesome_outlined),
-                                label: const Text('Zauber aktivieren'),
-                              ),
-                            ),
-                          ),
                           _MagicActiveSpellsTable(
+                            onActivateSpells: () {
+                              showActiveSpellEffectsDialog(
+                                context: context,
+                                heroId: widget.heroId,
+                              );
+                            },
                             elementarharmonisiert:
                                 heroSpecialAbilityNames(
                                   hero,

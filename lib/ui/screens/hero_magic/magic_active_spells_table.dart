@@ -23,6 +23,7 @@ class _MagicActiveSpellsTable extends StatelessWidget {
     this.contentUnlocked = true,
     this.contentPassword,
     this.onAddSpell,
+    this.onActivateSpells,
     this.onRollSpell,
     this.onSpecializationsChanged,
     this.verfuegbareAp = 0,
@@ -81,6 +82,9 @@ class _MagicActiveSpellsTable extends StatelessWidget {
   final bool contentUnlocked;
   final String? contentPassword;
   final VoidCallback? onAddSpell;
+
+  /// Oeffnet die Verwaltung laufender Zaubereffekte („Zauber aktivieren“).
+  final VoidCallback? onActivateSpells;
   final void Function(String spellId, SpellDef spell, HeroSpellEntry entry)?
   onRollSpell;
 
@@ -210,10 +214,45 @@ class _MagicActiveSpellsTable extends StatelessWidget {
             onPressed: onAddSpell,
             child: const Text('+ Zauber'),
           );
+    final activateAction = onActivateSpells == null
+        ? null
+        : OutlinedButton.icon(
+            key: const ValueKey<String>('magic-active-spells-open'),
+            onPressed: onActivateSpells,
+            icon: const Icon(Icons.auto_awesome_outlined),
+            label: const Text('Zauber aktivieren'),
+          );
+    final kopfAktionen = <Widget>[?activateAction, ?addSpellAction];
+    // Auf schmalen Breiten umbrechen die Knoepfe untereinander, statt den
+    // Kartentitel zu verdraengen.
+    final schmal = MediaQuery.sizeOf(context).width < 700;
+    final kopfAktion = kopfAktionen.isEmpty
+        ? null
+        : ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: schmal ? 190 : 480),
+            child: Wrap(
+              spacing: 8,
+              runSpacing: 4,
+              alignment: WrapAlignment.end,
+              children: kopfAktionen,
+            ),
+          );
+
+    final merkmale = merkmaleDerZauber(
+      activeSpellIds.map((id) => spellDefs[id]).whereType<SpellDef>(),
+    );
+    // Ein Merkmal, das kein aktiver Zauber mehr traegt, filtert nicht.
+    final aktivesMerkmal = merkmale.contains(merkmal) ? merkmal : null;
+
     final columns = <AdaptiveDataColumnSpec>[
-      const AdaptiveDataColumnSpec(
-        label: Text('Name'),
-        width: AdaptiveTableColumnSpec(
+      AdaptiveDataColumnSpec(
+        label: _buildSortierKopf(
+          context,
+          ZauberSortierung.name,
+          'Name',
+          aktivesMerkmal,
+        ),
+        width: const AdaptiveTableColumnSpec(
           columnId: 'name',
           minWidth: 220,
           maxWidth: 320,
@@ -233,9 +272,14 @@ class _MagicActiveSpellsTable extends StatelessWidget {
           resizeMaxWidth: 480,
         ),
       ),
-      const AdaptiveDataColumnSpec(
-        label: Text('ZfW'),
-        width: AdaptiveTableColumnSpec(minWidth: 40, maxWidth: 80),
+      AdaptiveDataColumnSpec(
+        label: _buildSortierKopf(
+          context,
+          ZauberSortierung.zfw,
+          'ZfW',
+          aktivesMerkmal,
+        ),
+        width: const AdaptiveTableColumnSpec(minWidth: 40, maxWidth: 80),
         numeric: true,
       ),
       const AdaptiveDataColumnSpec(
@@ -267,9 +311,9 @@ class _MagicActiveSpellsTable extends StatelessWidget {
           label: Text('Beg.'),
           width: AdaptiveTableColumnSpec.fixed(68),
         ),
-      const AdaptiveDataColumnSpec(
-        label: Text('Merkmale'),
-        width: AdaptiveTableColumnSpec(
+      AdaptiveDataColumnSpec(
+        label: _buildMerkmalFilterKopf(context, merkmale, aktivesMerkmal),
+        width: const AdaptiveTableColumnSpec(
           columnId: 'traits',
           minWidth: 120,
           maxWidth: 220,
@@ -365,8 +409,7 @@ class _MagicActiveSpellsTable extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
         child: CodexSectionCard(
           title: 'Zauber',
-          subtitle: 'Aktiviere hier Zauber für diesen Helden.',
-          trailing: addSpellAction,
+          trailing: kopfAktion,
           child: Text(
             'Keine Zauber aktiviert.',
             style: theme.textTheme.bodySmall,
@@ -375,11 +418,6 @@ class _MagicActiveSpellsTable extends StatelessWidget {
       );
     }
 
-    final merkmale = merkmaleDerZauber(
-      activeSpellIds.map((id) => spellDefs[id]).whereType<SpellDef>(),
-    );
-    // Ein Merkmal, das kein aktiver Zauber mehr traegt, filtert nicht.
-    final aktivesMerkmal = merkmale.contains(merkmal) ? merkmal : null;
     final sortedIds = ordneZauberliste(
       ids: activeSpellIds,
       defs: spellDefs,
@@ -396,93 +434,116 @@ class _MagicActiveSpellsTable extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
       child: CodexSectionCard(
         title: 'Aktivierte Zauber',
-        subtitle: '$anzahlText mit Repräsentation, Wirkung und Varianten.',
-        trailing: addSpellAction,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            _buildOrdnungsleiste(context, merkmale, aktivesMerkmal),
-            if (sortedIds.isEmpty)
-              Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child: Text(
-                  'Keine Zauber mit Merkmal $aktivesMerkmal.',
-                  style: theme.textTheme.bodySmall,
-                ),
+        subtitle: anzahlText,
+        trailing: kopfAktion,
+        child: sortedIds.isEmpty
+            // Ohne Zeilen gibt es keinen Tabellenkopf: der Filter laesst sich
+            // dann nur hier zuruecksetzen.
+            ? Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      'Keine Zauber mit Merkmal $aktivesMerkmal.',
+                      style: theme.textTheme.bodySmall,
+                    ),
+                  ),
+                  TextButton(
+                    key: const ValueKey<String>('magic-spells-filter-reset'),
+                    onPressed: onOrdnungChanged == null
+                        ? null
+                        : () =>
+                              onOrdnungChanged!(sortierung, aufsteigend, null),
+                    child: const Text('Filter zurücksetzen'),
+                  ),
+                ],
               )
-            else
-              _buildTabelle(context, theme, columns, sortedIds),
-          ],
-        ),
+            : _buildTabelle(context, theme, columns, sortedIds),
       ),
     );
   }
 
-  /// Sortier-Chips (Name/ZfW, erneutes Tippen dreht die Richtung) und
-  /// Merkmalsfilter ueber der Tabelle.
-  Widget _buildOrdnungsleiste(
+  /// Spaltenkopf mit Sortierpfeil: aktiv in Primaerfarbe mit Richtung, sonst
+  /// dezent. Erneutes Tippen dreht die Richtung.
+  Widget _buildSortierKopf(
+    BuildContext context,
+    ZauberSortierung kriterium,
+    String label,
+    String? aktivesMerkmal,
+  ) {
+    final theme = Theme.of(context);
+    final melde = onOrdnungChanged;
+    final aktiv = sortierung == kriterium;
+    final farbe = aktiv
+        ? theme.colorScheme.primary
+        : theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.45);
+    return InkWell(
+      key: ValueKey<String>('magic-spells-sort-${kriterium.name}'),
+      onTap: melde == null
+          ? null
+          : () => melde(
+              kriterium,
+              // ZfW startet mit den hoechsten Werten.
+              aktiv ? !aufsteigend : kriterium == ZauberSortierung.name,
+              aktivesMerkmal,
+            ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(label),
+          const SizedBox(width: 2),
+          Icon(
+            aktiv && !aufsteigend ? Icons.arrow_downward : Icons.arrow_upward,
+            size: 14,
+            color: farbe,
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Kopf der Merkmalspalte mit Filtersymbol (Menue mit allen Merkmalen).
+  Widget _buildMerkmalFilterKopf(
     BuildContext context,
     List<String> merkmale,
     String? aktivesMerkmal,
   ) {
+    final theme = Theme.of(context);
     final melde = onOrdnungChanged;
-    Widget sortChip(ZauberSortierung kriterium, String label) {
-      final aktiv = sortierung == kriterium;
-      return ChoiceChip(
-        key: ValueKey<String>('magic-spells-sort-${kriterium.name}'),
-        label: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(label),
-            if (aktiv) ...[
-              const SizedBox(width: 4),
-              Icon(
-                aufsteigend ? Icons.arrow_upward : Icons.arrow_downward,
-                size: 14,
-              ),
-            ],
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const Text('Merkmale'),
+        PopupMenuButton<String?>(
+          key: const ValueKey<String>('magic-spells-filter-merkmal'),
+          tooltip: aktivesMerkmal == null
+              ? 'Nach Merkmal filtern'
+              : 'Filter: $aktivesMerkmal',
+          enabled: melde != null,
+          padding: EdgeInsets.zero,
+          icon: Icon(
+            aktivesMerkmal == null ? Icons.filter_list : Icons.filter_alt,
+            size: 16,
+            color: aktivesMerkmal == null
+                ? theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.6)
+                : theme.colorScheme.primary,
+          ),
+          iconSize: 16,
+          style: const ButtonStyle(
+            visualDensity: VisualDensity.compact,
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
+          onSelected: (value) => melde?.call(sortierung, aufsteigend, value),
+          itemBuilder: (_) => [
+            PopupMenuItem<String?>(
+              enabled: aktivesMerkmal != null,
+              child: const Text('Alle Merkmale'),
+              onTap: () => melde?.call(sortierung, aufsteigend, null),
+            ),
+            for (final eintrag in merkmale)
+              PopupMenuItem<String?>(value: eintrag, child: Text(eintrag)),
           ],
         ),
-        showCheckmark: false,
-        selected: aktiv,
-        onSelected: melde == null
-            ? null
-            : (_) => melde(
-                kriterium,
-                // Erneutes Tippen dreht; ZfW startet mit den hoechsten Werten.
-                aktiv ? !aufsteigend : kriterium == ZauberSortierung.name,
-                aktivesMerkmal,
-              ),
-      );
-    }
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Wrap(
-        spacing: 8,
-        runSpacing: 4,
-        crossAxisAlignment: WrapCrossAlignment.center,
-        children: [
-          Text('Sortieren:', style: Theme.of(context).textTheme.bodySmall),
-          sortChip(ZauberSortierung.name, 'Name'),
-          sortChip(ZauberSortierung.zfw, 'ZfW'),
-          const SizedBox(width: 8),
-          DropdownButton<String?>(
-            key: const ValueKey<String>('magic-spells-filter-merkmal'),
-            value: aktivesMerkmal,
-            isDense: true,
-            hint: const Text('Alle Merkmale'),
-            items: [
-              const DropdownMenuItem<String?>(child: Text('Alle Merkmale')),
-              for (final eintrag in merkmale)
-                DropdownMenuItem<String?>(value: eintrag, child: Text(eintrag)),
-            ],
-            onChanged: melde == null
-                ? null
-                : (value) => melde(sortierung, aufsteigend, value),
-          ),
-        ],
-      ),
+      ],
     );
   }
 

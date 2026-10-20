@@ -696,10 +696,7 @@ void main() {
       expect(find.byType(ExpansionTile), findsNothing);
       expect(find.text('+ Zauber'), findsOneWidget);
       expect(find.text('Kategorie'), findsNothing);
-      expect(
-        find.text('Aktiviere hier Zauber für diesen Helden.'),
-        findsOneWidget,
-      );
+      expect(find.text('Zauber aktivieren'), findsOneWidget);
       expect(find.text('Keine Zauber aktiviert.'), findsOneWidget);
     },
   );
@@ -1279,6 +1276,18 @@ void main() {
         tester.getTopLeft(adler).dy < tester.getTopLeft(axx).dy;
 
     // Standard: Name aufsteigend.
+    expect(adlerZuerst(), isTrue);
+
+    // Pfeil im Namenskopf dreht die Richtung.
+    await tester.tap(
+      find.byKey(const ValueKey<String>('magic-spells-sort-name')),
+    );
+    await _pumpAndSettleIgnoringKnownOverflow(tester);
+    expect(adlerZuerst(), isFalse);
+    await tester.tap(
+      find.byKey(const ValueKey<String>('magic-spells-sort-name')),
+    );
+    await _pumpAndSettleIgnoringKnownOverflow(tester);
     expect(adlerZuerst(), isTrue);
 
     // ZfW startet absteigend.
