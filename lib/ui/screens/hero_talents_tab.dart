@@ -292,7 +292,10 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
           return ValueListenableBuilder<int>(
             valueListenable: _tableRevision,
             builder: (context, revision, child) {
-              final showTalentsHeader = MediaQuery.sizeOf(context).width >= 600;
+              final karto = kartoVariante(context) != null;
+              // Unter Kartograph titelt bereits der Verwaltungskopf.
+              final showTalentsHeader =
+                  !karto && MediaQuery.sizeOf(context).width >= 600;
               // Nur Talente anzeigen, die im Draft aktiv sind.
               final activeTalents = relevantTalents
                   .where((t) => _draftTalents.containsKey(t.id))
@@ -337,6 +340,8 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
                 if (widget.scope == _TalentTabScope.nonCombat)
                   TabBar(
                     controller: _subTabController,
+                    isScrollable: karto,
+                    tabAlignment: karto ? TabAlignment.start : null,
                     tabs: const [
                       Tab(text: 'Talente'),
                       Tab(text: 'Sonderfertigkeiten'),
@@ -434,7 +439,7 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
                     return [
                       Padding(
                         key: _keyForGroup(group),
-                        padding: const EdgeInsets.only(bottom: 10),
+                        padding: EdgeInsets.only(bottom: karto ? 6 : 10),
                         child: CodexSectionCard(
                           title: group,
                           subtitle: '${allGroupTalents.length} Talente',
@@ -507,7 +512,9 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
               // stillschweigend fehlschlaegt (kein currentContext). Die Anzahl der
               // Top-Level-Children ist klein und eingeklappte Gruppen sind SizedBox.shrink.
               return SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(0, 8, 0, 12),
+                padding: karto
+                    ? const EdgeInsets.fromLTRB(0, 4, 0, 8)
+                    : const EdgeInsets.fromLTRB(0, 8, 0, 12),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: talentTabChildren,

@@ -124,9 +124,14 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   `active_spell_rules.dart` von `combat_rules` und `magic_rules` importiert
   wird und sie deshalb nicht zurückholen darf.
 - Der Kopf von `WorkspaceManagementBody` (nur UI2) ist der
-  `KartoSeitenkopf`: Kontext „Heldenbogen“ (schmal ohne), Tab als Titel,
-  Helfertext als Unterzeile; `management-active-title`/`-helper` hängen über
-  `titelSchluessel`/`unterzeileSchluessel` daran. Die oberste Reiterreihe
+  `KartoSeitenkopf`, bewusst kompakt (auch auf Tablets): nur der Tab als
+  Titel, ohne Kontext- und Unterzeile (`WorkspaceTabSpec.helper` bleibt für die
+  klassische UI); `management-active-title` hängt über `titelSchluessel` daran.
+  Links von „Bearbeiten“ steht „Probe suchen“ (`management-probe-suche`, schmal
+  nur Symbol), dieselbe Suche wie im Spielen-Bereich; Strg/Cmd+K gilt in
+  Spielen und Verwalten (`_mitProbenkuerzel`). `CodexTabHeader` entfällt unter
+  Kartograph (nur `trailing` bleibt), weil der Seitenkopf schon titelt; die
+  Talente-Toolbar ist dort einzeilig. Die oberste Reiterreihe
   setzt Meer-Unterstrich und Schrift selbst, alle inneren Reiter kommen als
   ruhige Pille aus dem Feinschliff. In UI2 zeigt der Planungsverlauf keine
   AP-Zeilen (`AdvancementHistoryPanel.zeigeApZeilen: false`), die Bilanz

@@ -142,9 +142,12 @@ class _KartoWorkspaceState extends ConsumerState<KartoWorkspace> {
                 child: IndexedStack(
                   index: _bereich.index,
                   children: [
-                    _mitProbenkuerzel(_spielen()),
+                    _mitProbenkuerzel(_spielen(), KartoArbeitsbereich.spielen),
                     _verwaltungBesucht
-                        ? _verwaltung(session != null)
+                        ? _mitProbenkuerzel(
+                            _verwaltung(session != null),
+                            KartoArbeitsbereich.verwalten,
+                          )
                         : const SizedBox.shrink(),
                     _planung(session, breite),
                   ],
@@ -316,19 +319,23 @@ class _KartoWorkspaceState extends ConsumerState<KartoWorkspace> {
       const PopupMenuItem(value: 'token', child: Text('Token-Blatt')),
   ];
 
-  // Strg/Cmd+K gilt nur im Spielen-Bereich und verschwindet mit dem
-  // Workspace. Der IndexedStack haelt die anderen Bereiche am Leben, deshalb
+  // Strg/Cmd+K gilt im Spielen- und im Verwaltungsbereich und verschwindet mit
+  // dem Workspace. Der IndexedStack haelt die anderen Bereiche am Leben, deshalb
   // entscheidet der aktive Bereich und nicht allein die Position im Baum.
-  Widget _mitProbenkuerzel(Widget kind) {
-    if (_bereich != KartoArbeitsbereich.spielen) return kind;
+  // Der Aufbau bleibt je Bereich gleich, damit ein Wechsel keinen Zustand
+  // der Verwaltung verwirft; nur die Belegung wechselt.
+  Widget _mitProbenkuerzel(Widget kind, KartoArbeitsbereich fuer) {
+    final aktiv = _bereich == fuer;
     return CallbackShortcuts(
-      bindings: <ShortcutActivator, VoidCallback>{
-        const SingleActivator(LogicalKeyboardKey.keyK, control: true):
-            _probeSuchen,
-        const SingleActivator(LogicalKeyboardKey.keyK, meta: true):
-            _probeSuchen,
-      },
-      child: Focus(autofocus: true, child: kind),
+      bindings: aktiv
+          ? <ShortcutActivator, VoidCallback>{
+              const SingleActivator(LogicalKeyboardKey.keyK, control: true):
+                  _probeSuchen,
+              const SingleActivator(LogicalKeyboardKey.keyK, meta: true):
+                  _probeSuchen,
+            }
+          : const <ShortcutActivator, VoidCallback>{},
+      child: Focus(autofocus: aktiv, child: kind),
     );
   }
 

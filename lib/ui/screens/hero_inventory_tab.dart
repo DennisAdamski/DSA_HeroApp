@@ -181,9 +181,9 @@ class _HeroInventoryTabState extends ConsumerState<HeroInventoryTab>
             assetPath: 'assets/ui/codex/compass_mark.png',
           ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(
+            padding: EdgeInsets.fromLTRB(
               _pagePadding,
-              _pagePadding,
+              kartoVariante(context) != null ? 4 : _pagePadding,
               _pagePadding,
               0,
             ),
@@ -244,9 +244,9 @@ class _HeroInventoryTabState extends ConsumerState<HeroInventoryTab>
           assetPath: 'assets/ui/codex/compass_mark.png',
         ),
         Padding(
-          padding: const EdgeInsets.fromLTRB(
+          padding: EdgeInsets.fromLTRB(
             _pagePadding,
-            _pagePadding,
+            kartoVariante(context) != null ? 4 : _pagePadding,
             _pagePadding,
             0,
           ),
