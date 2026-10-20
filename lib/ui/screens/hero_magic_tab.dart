@@ -40,6 +40,7 @@ import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/config/ui_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui/debug/ui_rebuild_observer.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/artefakt_anwenden.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_magic/zauber_liste_ordnung.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/active_spell_effects_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/dice_log_persistence.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/editor_entwurf_speichern.dart';
@@ -129,6 +130,12 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
   /// Held, aus dem der Entwurf gefüllt wurde; Ausgang des Abgleichs beim
   /// Speichern (ARCH-05).
   HeroSheet? _entwurfBasis;
+
+  // Anzeigeordnung der Zaubertabelle; lebt hier, weil die Tabelle beim
+  // Wechsel der Unterreiter neu entsteht.
+  ZauberSortierung _zauberSortierung = ZauberSortierung.name;
+  bool _zauberAufsteigend = true;
+  String? _zauberMerkmal;
 
   @override
   void initState() {
@@ -448,6 +455,23 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
                                 ),
                             begabungen: begabungen,
                             activeSpellIds: activeSpellIds,
+                            // Gespeicherter ZfW: beim Tippen im Entwurf
+                            // springen die Zeilen sonst samt Fokus.
+                            zfwJeZauber: <String, int>{
+                              for (final eintrag in hero.spells.entries)
+                                eintrag.key: eintrag.value.spellValue ?? 0,
+                            },
+                            sortierung: _zauberSortierung,
+                            aufsteigend: _zauberAufsteigend,
+                            merkmal: _zauberMerkmal,
+                            onOrdnungChanged:
+                                (sortierung, aufsteigend, merkmal) {
+                                  setState(() {
+                                    _zauberSortierung = sortierung;
+                                    _zauberAufsteigend = aufsteigend;
+                                    _zauberMerkmal = merkmal;
+                                  });
+                                },
                             spellEntries: _draftSpells,
                             spellDefs: spellDefsById,
                             effectiveAttributes: effectiveAttributes,

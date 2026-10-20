@@ -10,9 +10,11 @@ import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_anzeige_rules.da
 import 'package:dsa_heldenverwaltung/domain/hero_merkmal.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_breakpoints.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_bestands_adapter.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abenteuer_abschnitt.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abenteuerblatt.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abschnitt.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_begleiterkarte.dart';
@@ -166,23 +168,29 @@ class KartoSpielansicht extends ConsumerWidget {
       kompakt: kompakt,
       tippHinweis: 'Abenteuer öffnen',
       tippSchluessel: const ValueKey<String>('karto-spiel-abenteuer'),
-      onTap: () => aktion(() async {
+      onTap: () => _abenteuerOeffnen(context, abenteuer.id),
+    );
+  }
+
+  // Kopf, Abschnitt und Karten öffnen das Blatt auf demselben geschützten Weg.
+  Future<void> _abenteuerOeffnen(BuildContext context, String abenteuerId) =>
+      aktion(() async {
         if (!await vorHeldenbearbeitung() || !context.mounted) return;
         await zeigeAbenteuerblatt(
           context: context,
           heroId: heroId,
-          abenteuerId: abenteuer.id,
+          abenteuerId: abenteuerId,
         );
-      }),
-    );
-  }
+      });
 
-  // Reihenfolge laut Spezifikation: Ressourcen zuerst, dann Aktionen.
+  // Reihenfolge: Ressourcen, Aktionen, dann das laufende Abenteuer; die
+  // Eigenschaften folgen als schmale Würfelleiste.
   List<Widget> _hauptabschnitte(
     BuildContext context,
     WidgetRef ref,
     HeroComputedSnapshot werte,
   ) {
+    final abenteuer = laufendesAbenteuer(werte.hero);
     return <Widget>[
       KartoAbschnitt(
         titel: 'Ressourcen',
@@ -225,9 +233,15 @@ class KartoSpielansicht extends ConsumerWidget {
           ),
         ),
       ),
+      if (abenteuer != null)
+        KartoAbenteuerAbschnitt(
+          abenteuer: abenteuer,
+          sortierung: ref.watch(abenteuerSortierungProvider),
+          onOeffnen: () => _abenteuerOeffnen(context, abenteuer.id),
+        ),
       KartoAbschnitt(
         titel: 'Eigenschaften',
-        hinweis: 'Ein Tippen würfelt die Probe',
+        dicht: true,
         child: bestand.spielEigenschaftsproben(heroId: heroId, werte: werte),
       ),
       _merkmale(context, ref, werte),

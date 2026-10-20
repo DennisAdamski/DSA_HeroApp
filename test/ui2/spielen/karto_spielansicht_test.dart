@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dsa_heldenverwaltung/domain/hero_adventure_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_note_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_resource_activation_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
@@ -52,6 +53,19 @@ const _nebel = HeroAdventureEntry(
     month: 'phex',
     year: '1043',
   ),
+  notes: [
+    HeroNoteEntry(
+      title: 'Der Nebelreiter',
+      description: 'Reitet nur bei Neumond und meidet die Straße nach Gareth.',
+    ),
+  ],
+  people: [
+    HeroAdventurePersonEntry(
+      id: 'p1',
+      name: 'Alrik vom Blautann',
+      description: 'Wirt des „Grünen Krugs“, weiß mehr als er sagt.',
+    ),
+  ],
 );
 
 void main() {
@@ -290,6 +304,59 @@ void main() {
       expect(tester.takeException(), isNull);
     });
   }
+
+  group('Abenteuerabschnitt', () {
+    testWidgets('steht zwischen Schnellaktionen und Eigenschaften', (
+      tester,
+    ) async {
+      await zeige(tester, held: mitAbenteuern([_nebel]));
+      final aktionen = tester.getTopLeft(find.text('Schnellaktionen')).dy;
+      final abenteuer = tester.getTopLeft(find.text('Abenteuer')).dy;
+      final eigenschaften = tester.getTopLeft(find.text('Eigenschaften')).dy;
+      expect(aktionen < abenteuer && abenteuer < eigenschaften, isTrue);
+      expect(find.text('Alrik vom Blautann'), findsOneWidget);
+      expect(find.text('Der Nebelreiter'), findsOneWidget);
+    });
+
+    testWidgets('fehlt ohne laufendes Abenteuer', (tester) async {
+      await zeige(
+        tester,
+        held: mitAbenteuern([
+          _nebel.copyWith(status: HeroAdventureStatus.completed),
+        ]),
+      );
+      expect(
+        find.byKey(const ValueKey('karto-spiel-abenteuer-oeffnen')),
+        findsNothing,
+      );
+      expect(find.text('Der Nebelreiter'), findsNothing);
+    });
+
+    testWidgets('Öffnen prüft zuerst die Verwaltung', (tester) async {
+      var geprueft = 0;
+      await zeige(
+        tester,
+        held: mitAbenteuern([_nebel]),
+        vorAbenteuer: () async {
+          geprueft++;
+          return false;
+        },
+      );
+      await tester.tap(
+        find.byKey(const ValueKey('karto-spiel-abenteuer-oeffnen')),
+      );
+      await tester.pumpAndSettle();
+      expect(geprueft, 1);
+      expect(find.byType(BottomSheet), findsNothing);
+    });
+
+    testWidgets('eine Karte öffnet das Abenteuerblatt', (tester) async {
+      await zeige(tester, held: mitAbenteuern([_nebel]), breite: 1024);
+      await tester.tap(find.text('Der Nebelreiter'));
+      await tester.pumpAndSettle();
+      expect(find.byType(BottomSheet), findsOneWidget);
+    });
+  });
 
   group('Vor- und Nachteile', () {
     testWidgets('stehen nach den Eigenschaften und vor dem Kampf', (

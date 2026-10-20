@@ -66,8 +66,15 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   den `HeroComputedSnapshot` an alle Abschnitte weiter — auch an die
   Adaptermethoden, damit die Brücke für dieselben Werte keine zweite
   Providerbeobachtung aufmacht. Die Reihenfolge ist überall Ressourcen,
-  Schnellaktionen, Eigenschaften, Vor- und Nachteile, Kampf, Effekte, Zustand,
-  Würfelprotokoll; ab
+  Schnellaktionen, Abenteuer (nur mit laufendem Abenteuer), Eigenschaften,
+  Vor- und Nachteile, Kampf, Effekte, Zustand, Würfelprotokoll. Die
+  Eigenschaften stehen als schmale Würfelleiste (`KartoAbschnitt.dicht`,
+  `InspectorAttributeProbes(kompakt: true)`: einzeilige Karten in 8, 4 oder 2
+  Spalten; die klassische Optik bleibt beim Standard). Der Abschnitt
+  „Abenteuer“ (`karto_abenteuer_abschnitt.dart`) zeigt die obersten drei
+  Personen und vier Notizen nach der gewählten Sortierung; Karten und
+  „Öffnen“ (Key `karto-spiel-abenteuer-oeffnen`) öffnen das Abenteuerblatt auf
+  demselben Weg wie der Seitenkopf; ab
   `KartoBreite.breit` wandern Kampf, Effekte und Zustand in eine Seitenspalte,
   das Protokoll bleibt der letzte Abschnitt beider Anordnungen. Den
   Re-Entrancy-Guard reicht `KartoWorkspace` als `KartoLaufzeitAktion` herein;
@@ -258,7 +265,15 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   (`lib/ui2/spielen/karto_abenteuerblatt.dart`, Dialoge in der Teildatei
   `karto_abenteuer_dialoge.dart`): Datum, Zusammenfassung,
   Notizen und Personen lesen und pflegen, Abschluss und Belohnungen bleiben in
-  der Verwaltung. Das Blatt ist eine eigene Seite (Grund `blatt`); Personen
+  der Verwaltung. Notizen und Personen sind sortierbar
+  (`karto_abenteuer_sortierung.dart`: zuletzt bearbeitet, neueste, älteste,
+  alphabetisch); die Wahl ist die geräteweite Einstellung
+  `AppSettings.abenteuerSortierung` und schreibt nie den Helden. „Zuletzt
+  bearbeitet“ liest `lastModified` an `HeroNoteEntry` und
+  `HeroAdventurePersonEntry` (UTC, nur bei Belegung im JSON); Blatt und
+  Verwaltungsdialoge stempeln nur echte Änderungen. Einträge ohne Stempel
+  folgen, jüngste Erfassung zuerst. Sortiert wird über Indizes, damit das
+  Bearbeiten weiter den Originalindex gegen den frischen Stand prüft. Das Blatt ist eine eigene Seite (Grund `blatt`); Personen
   und Notizen stehen als `feld`-Karten im `KartoKartenraster`
   (`lib/ui2/widgets/karto_kartenraster.dart`, geteilt mit der Heldenwahl),
   Personen mit demselben `KartoKompassring` wie die Heldenmarke, Anlegen als leise `senke`-Kachel am Rasterende. Es ist UI2-eigen, weil der Notizen-Tab beim Speichern seinen
