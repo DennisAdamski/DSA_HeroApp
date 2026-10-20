@@ -115,11 +115,22 @@ void main() {
     expect(bestand.aufrufe, ['probeSuchen:rondra']);
   });
 
-  testWidgets('Strg+K greift außerhalb des Spielen-Bereichs nicht', (
+  testWidgets('Strg+K öffnet die Probensuche auch im Verwalten-Bereich', (
     tester,
   ) async {
     final bestand = await zeige(tester);
     await modus(tester, 'Held verwalten');
+    await tester.sendKeyDownEvent(LogicalKeyboardKey.control);
+    await tester.sendKeyEvent(LogicalKeyboardKey.keyK);
+    await tester.sendKeyUpEvent(LogicalKeyboardKey.control);
+    await tester.pumpAndSettle();
+    expect(bestand.aufrufe, ['probeSuchen:rondra']);
+  });
+
+  testWidgets('Strg+K greift im Planungsbereich nicht', (tester) async {
+    final bestand = await zeige(tester);
+    await modus(tester, 'Entwicklung planen');
+    bestand.aufrufe.clear();
     await tester.sendKeyDownEvent(LogicalKeyboardKey.control);
     await tester.sendKeyEvent(LogicalKeyboardKey.keyK);
     await tester.sendKeyUpEvent(LogicalKeyboardKey.control);

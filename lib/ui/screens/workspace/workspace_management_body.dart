@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -5,6 +7,7 @@ import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/planung_bearbeiten_guard.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/herleitung_suche_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/workspace/probe_quick_search.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/rules_lookup_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_management_coordinator.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_spec.dart';
@@ -118,7 +121,7 @@ class _WorkspaceManagementBodyState
           heroId: widget.heroId,
           coordinator: _coordinator,
           compact: compact,
-          globalActions: _buildGlobalActions(),
+          globalActions: _buildGlobalActions(compact: compact),
         );
         return Column(
           children: <Widget>[
@@ -154,8 +157,30 @@ class _WorkspaceManagementBodyState
     );
   }
 
-  List<Widget> _buildGlobalActions() {
+  List<Widget> _buildGlobalActions({required bool compact}) {
+    void probeSuchen() => unawaited(
+      showProbeQuickSearch(
+        context: context,
+        ref: ref,
+        heroId: widget.heroId,
+      ),
+    );
     return <Widget>[
+      // Dieselbe Suche wie im Spielen-Bereich (Strg/Cmd+K), links der Aktionen.
+      if (compact)
+        IconButton(
+          key: const ValueKey<String>('management-probe-suche'),
+          tooltip: 'Probe suchen und würfeln',
+          onPressed: probeSuchen,
+          icon: const Icon(Icons.search),
+        )
+      else
+        OutlinedButton.icon(
+          key: const ValueKey<String>('management-probe-suche'),
+          onPressed: probeSuchen,
+          icon: const Icon(Icons.search),
+          label: const Text('Probe suchen'),
+        ),
       if (isRulesLookupSupported())
         IconButton(
           key: const ValueKey<String>('management-rules-lookup'),
@@ -232,23 +257,19 @@ class _ManagementHeader extends StatelessWidget {
         Padding(
           padding: EdgeInsets.fromLTRB(
             rand,
-            compact ? Abstand.block : Abstand.bahn,
+            Abstand.weit,
             rand,
             0,
           ),
           child: activeTab == null
               ? const SizedBox.shrink()
               : KartoSeitenkopf(
-                  // Schmal wird jede Zeile ueber den Reitern gebraucht.
-                  kontext: compact ? null : 'Heldenbogen',
+                  // Auch auf Tablets wird die Hoehe fuer den Inhalt gebraucht:
+                  // nur die Ueberschrift, ohne Kontext- und Unterzeile.
                   titel: activeTab.label,
-                  unterzeile: activeTab.helper,
-                  kompakt: compact,
+                  kompakt: true,
                   titelSchluessel: const ValueKey<String>(
                     'management-active-title',
-                  ),
-                  unterzeileSchluessel: const ValueKey<String>(
-                    'management-active-helper',
                   ),
                   aktion: actions.isEmpty ? null : actionRow,
                 ),
