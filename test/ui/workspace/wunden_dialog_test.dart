@@ -194,9 +194,11 @@ void main() {
     await tester.pumpAndSettle();
 
     // MU −2 (Kopf), KK −2 (Arm), KO unverändert.
-    expect(find.text('MU: 10'), findsOneWidget);
-    expect(find.text('KO: 12'), findsOneWidget);
-    expect(find.text('KK: 10'), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey<String>('probe-dialog-eigenschaften')),
+      findsOneWidget,
+    );
+    expect(find.text('MU: 10 | KO: 12 | KK: 10'), findsOneWidget);
     expect(modifikator(tester), '-8');
     // TaW* der Selbstbeherrschung ist aufklappbar hergeleitet (ARCH-04).
     expect(find.text('TaW* herleiten'), findsOneWidget);
@@ -261,9 +263,9 @@ void main() {
     await tester.tap(_key('probe-quick-search-talent-Menschenkenntnis'));
     await tester.pumpAndSettle();
 
-    expect(find.text('KL: 10'), findsOneWidget);
-    expect(find.text('IN: 10'), findsOneWidget);
-    expect(find.text('CH: 12'), findsOneWidget);
+    expect(find.textContaining('KL: 10'), findsOneWidget);
+    expect(find.textContaining('IN: 10'), findsOneWidget);
+    expect(find.textContaining('CH: 12'), findsOneWidget);
     expect(modifikator(tester), '0');
   });
 }

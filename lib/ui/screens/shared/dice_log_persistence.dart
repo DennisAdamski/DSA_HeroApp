@@ -7,6 +7,7 @@ import 'package:dsa_heldenverwaltung/domain/dice_log_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/spell_effect_probe_rules.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/probe_dialog.dart';
 
 /// Haengt einen Wuerfelprotokoll-Eintrag an den Laufzeitzustand des Helden an.
@@ -102,5 +103,7 @@ Future<void> showLoggedProbeDialog({
       protokolliere(diceLogEntryFromResult(result));
     },
     onDiceLogEntry: protokolliere,
+    contentUnlocked: ref.read(catalogContentVisibleProvider),
+    contentPassword: ref.read(catalogContentPasswordProvider),
   );
 }

@@ -24,6 +24,22 @@ const _kDamageRequest = ResolvedProbeRequest(
   targets: <ProbeTargetValue>[],
 );
 
+ResolvedProbeRequest _talentMitSpez() => const ResolvedProbeRequest(
+  type: ProbeType.talent,
+  title: 'Talentprobe: Athletik',
+  subtitle: 'MU / GE / KK',
+  ruleHint: '',
+  diceSpec: DiceSpec(count: 3, sides: 20),
+  targets: <ProbeTargetValue>[
+    ProbeTargetValue(label: 'MU', value: 14),
+    ProbeTargetValue(label: 'GE', value: 12),
+    ProbeTargetValue(label: 'KK', value: 13),
+  ],
+  basePool: 7,
+  specializationBonus: 2,
+  spezialisierungen: <String>['Klettern', 'Springen'],
+);
+
 Widget _wrap(Widget child) => MaterialApp(home: Scaffold(body: child));
 
 Future<void> _rollMainProbe(WidgetTester tester) async {
@@ -234,6 +250,140 @@ void main() {
       ),
     );
     expect(wert.data, '7');
+  });
+
+  testWidgets('Spezialisierung wird gewählt und erhöht den Pool um 2', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_wrap(ProbeDialog(request: _talentMitSpez())));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Pool: 7'), findsOneWidget);
+    expect(find.text('MU: 14 | GE: 12 | KK: 13'), findsOneWidget);
+    expect(find.text('Spezialisierung (+2 auf TaW)'), findsOneWidget);
+
+    await tester.tap(find.text('Manuell'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const ValueKey<String>('probe-dialog-die-0')),
+      '19',
+    );
+    await tester.enterText(
+      find.byKey(const ValueKey<String>('probe-dialog-die-1')),
+      '12',
+    );
+    await tester.enterText(
+      find.byKey(const ValueKey<String>('probe-dialog-die-2')),
+      '13',
+    );
+    await tester.pumpAndSettle();
+    // 5 Überschreitung bei MU, Pool 7: Rest 2.
+    expect(find.text('Verbleibender Pool: 2'), findsOneWidget);
+
+    await tester.tap(find.text('Klettern'));
+    await tester.pumpAndSettle();
+    expect(find.text('Verbleibender Pool: 4'), findsOneWidget);
+
+    await tester.tap(find.byKey(
+      const ValueKey<String>('probe-dialog-specialization-keine'),
+    ));
+    await tester.pumpAndSettle();
+    expect(find.text('Verbleibender Pool: 2'), findsOneWidget);
+  });
+
+  testWidgets('Manuelle Würfel tragen den Eigenschaftsnamen', (tester) async {
+    await tester.pumpWidget(_wrap(ProbeDialog(request: _talentMitSpez())));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Manuell'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('MU (14)'), findsOneWidget);
+    expect(find.text('GE (12)'), findsOneWidget);
+    expect(find.text('KK (13)'), findsOneWidget);
+  });
+
+  testWidgets('Alle Würfe unter dem Ziel zeigen den knappsten Abstand', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_wrap(ProbeDialog(request: _talentMitSpez())));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Manuell'));
+    await tester.pumpAndSettle();
+    for (final (i, wert) in [10, 12, 5].indexed) {
+      await tester.enterText(
+        find.byKey(ValueKey<String>('probe-dialog-die-$i')),
+        '$wert',
+      );
+    }
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('Knappster Wurf: GE, Abstand zum Zielwert 0'),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('Modifikator lässt sich mit + und − ändern', (tester) async {
+    final fired = <ProbeResult>[];
+    await tester.pumpWidget(
+      _wrap(ProbeDialog(request: _kAttrRequest, onResolved: fired.add)),
+    );
+    await tester.pumpAndSettle();
+
+    String modifikator() => tester
+        .widget<TextField>(
+          find.byKey(const ValueKey<String>('probe-dialog-modifier')),
+        )
+        .controller!
+        .text;
+
+    expect(modifikator(), '0');
+    await tester.tap(
+      find.byKey(const ValueKey<String>('probe-dialog-modifier-minus')),
+    );
+    await tester.tap(
+      find.byKey(const ValueKey<String>('probe-dialog-modifier-minus')),
+    );
+    await tester.pumpAndSettle();
+    expect(modifikator(), '-2');
+    await tester.tap(
+      find.byKey(const ValueKey<String>('probe-dialog-modifier-plus')),
+    );
+    await tester.pumpAndSettle();
+    expect(modifikator(), '-1');
+    expect(fired, isEmpty);
+  });
+
+  testWidgets('Zauberdetails klappen Wirkung und Varianten auf', (
+    tester,
+  ) async {
+    final request = _talentMitSpez().copyWith();
+    final zauber = ResolvedProbeRequest(
+      type: ProbeType.spell,
+      title: 'Zauberprobe: Test',
+      subtitle: 'KL / IN / CH',
+      ruleHint: '',
+      diceSpec: const DiceSpec(count: 3, sides: 20),
+      targets: request.targets,
+      basePool: 5,
+      kontext: const ProbeKontext(
+        wirkung: 'Der Zauber wirkt.',
+        variantenRoh: <String>['Mehr Reichweite'],
+        kosten: '7 AsP',
+        zauberdauer: '2 Aktionen',
+      ),
+    );
+    await tester.pumpWidget(_wrap(ProbeDialog(request: zauber)));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Kosten: 7 AsP · Dauer: 2 Aktionen'), findsOneWidget);
+    expect(find.text('Der Zauber wirkt.'), findsNothing);
+
+    await tester.tap(find.text('Zauberdetails'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Der Zauber wirkt.'), findsOneWidget);
+    expect(find.text('• Mehr Reichweite'), findsOneWidget);
   });
 
   testWidgets('Ohne Herleitung gibt es keinen Herleitungsblock', (

@@ -26,7 +26,9 @@ ResolvedProbeRequest? gefechtsZauberprobe(
     targets: wert.ziele,
     basePool: wert.zfw,
     specializationBonus: wert.spezialisierungen.isEmpty ? 0 : 2,
+    spezialisierungen: wert.spezialisierungen,
     poolHerleitung: wert.herleitung,
+    kontext: wert.kontext,
   );
 }
 
