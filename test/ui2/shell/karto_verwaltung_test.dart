@@ -119,11 +119,14 @@ void main() {
       final title = tester.widget<Text>(
         find.byKey(const ValueKey<String>('management-active-title')),
       );
-      final helper = tester.widget<Text>(
-        find.byKey(const ValueKey<String>('management-active-helper')),
-      );
       expect(title.data, category.$1);
-      expect(helper.data, category.$2);
+      // Der Kopf traegt nur die Ueberschrift; Eyebrow und Unterzeile entfallen.
+      expect(
+        find.byKey(const ValueKey<String>('management-active-helper')),
+        findsNothing,
+      );
+      expect(find.text(category.$2), findsNothing);
+      expect(find.text('Heldenbogen'), findsNothing);
       if (category.$3 != null) {
         final actionText = find.text(category.$3!);
         final actionTooltip = find.byTooltip(category.$3!);
@@ -165,12 +168,43 @@ void main() {
       );
       expect(
         find.byKey(const ValueKey<String>('management-active-helper')),
-        findsOneWidget,
+        findsNothing,
       );
       expect(find.byTooltip('Bearbeiten'), findsOneWidget);
       expect(tester.takeException(), isNull);
     },
   );
+
+  testWidgets('offers the probe search left of Bearbeiten on tablets', (
+    tester,
+  ) async {
+    await pumpManagement(tester, hero: hero(), width: 834);
+
+    final suche = find.byKey(const ValueKey<String>('management-probe-suche'));
+    expect(suche, findsOneWidget);
+    expect(find.text('Probe suchen'), findsOneWidget);
+    expect(
+      tester.getTopLeft(suche).dx,
+      lessThan(tester.getTopLeft(find.text('Bearbeiten')).dx),
+    );
+
+    await tester.tap(suche);
+    await tester.pumpAndSettle();
+    expect(
+      find.byKey(const ValueKey<String>('probe-quick-search-field')),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('shows the probe search as icon on phones without overflow', (
+    tester,
+  ) async {
+    await pumpManagement(tester, hero: hero(), width: 320, textScale: 2);
+
+    expect(find.byTooltip('Probe suchen und würfeln'), findsOneWidget);
+    expect(find.text('Probe suchen'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
 
   testWidgets('applies the compatibility theme to adapter dialogs', (
     tester,

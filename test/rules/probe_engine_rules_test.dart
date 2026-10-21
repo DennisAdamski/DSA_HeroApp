@@ -17,7 +17,69 @@ class _FixedDiceRoller implements DiceRoller {
   }
 }
 
+ResolvedProbeRequest _talent(int pool) => ResolvedProbeRequest(
+  type: ProbeType.talent,
+  title: 'Talent',
+  subtitle: 'MU / KL / CH',
+  ruleHint: '',
+  diceSpec: const DiceSpec(count: 3, sides: 20),
+  targets: const <ProbeTargetValue>[
+    ProbeTargetValue(label: 'MU', value: 12),
+    ProbeTargetValue(label: 'KL', value: 14),
+    ProbeTargetValue(label: 'CH', value: 10),
+  ],
+  basePool: pool,
+);
+
+ProbeResult _werte(ResolvedProbeRequest request, List<int> wuerfe, int mod) =>
+    evaluateProbe(
+      request,
+      ProbeRollInput(
+        mode: ProbeRollMode.manual,
+        diceValues: wuerfe,
+        situationalModifier: mod,
+        specializationApplied: false,
+      ),
+    );
+
 void main() {
+  group('kleinsteReserveZumZiel', () {
+    test(
+      'liefert den knappsten Abstand, wenn alle Würfe unter dem Ziel liegen',
+      () {
+        final reserve = kleinsteReserveZumZiel(
+          _werte(_talent(5), [9, 13, 4], 0),
+        );
+        expect(reserve, (abstand: 1, eigenschaft: 'KL'));
+      },
+    );
+
+    test('bei Erschwernis über dem Pool gilt der gesenkte Zielwert', () {
+      // Pool 3, Erschwernis -8: Rohpool -5, alle Ziele 5 niedriger (7/9/5).
+      final result = _werte(_talent(3), [4, 6, 2], -8);
+      expect(result.appliedAttributePenalty, -5);
+      expect(kleinsteReserveZumZiel(result), (abstand: 3, eigenschaft: 'MU'));
+    });
+
+    test('gleiche Würfe wie Ziel ergeben Abstand 0', () {
+      final reserve = kleinsteReserveZumZiel(_werte(_talent(0), [12, 3, 2], 0));
+      expect(reserve?.abstand, 0);
+    });
+
+    test('mit Überschreitung, ohne Kompensationsprobe: keine Reserve', () {
+      expect(kleinsteReserveZumZiel(_werte(_talent(9), [15, 3, 2], 0)), isNull);
+      const binaer = ResolvedProbeRequest(
+        type: ProbeType.attribute,
+        title: 'MU',
+        subtitle: 'MU',
+        ruleHint: '',
+        diceSpec: DiceSpec(count: 1, sides: 20),
+        targets: <ProbeTargetValue>[ProbeTargetValue(label: 'MU', value: 12)],
+      );
+      expect(kleinsteReserveZumZiel(_werte(binaer, [5], 0)), isNull);
+    });
+  });
+
   test('attribute probe treats 1 as automatic success', () {
     const request = ResolvedProbeRequest(
       type: ProbeType.attribute,

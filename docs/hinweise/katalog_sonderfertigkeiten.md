@@ -171,11 +171,24 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   Belohnungsarten gehoeren in `_buchungsposten`, nie in eine eigene
   Buchungsfunktion.
 - Geschuetzte Katalog-Felder (Wirkung/Varianten von Zaubern, Erklaerungstexte
-  von Manoevern und Kampf-Sonderfertigkeiten) sind v3-verschluesselt
+  von Manoevern sowie von Kampf-, allgemeinen, karmalen und magischen
+  Sonderfertigkeiten) sind v3-verschluesselt
   (AES-GCM, globaler Salt im Manifest `catalog_salt_v3`). Beim Unlock
   entschluesselt `decryptedCatalogSourceDataProvider` den ganzen Katalog
   einmal — Detail in `docs/technical_overview.md` Abschnitt 5.3. Passwoerter
   werden vor PBKDF2 NFC-normalisiert, damit Eingaben mit Umlauten
   unabhaengig von NFC/NFD-Codepoint-Repraesentation funktionieren.
+- **Regelbuch-Langtexte nie im Klartext einchecken.** Neue oder neu importierte
+  Texte aus Regelwerken (`erklarung_lang`, `wirkung`, `variants`, ...) gehen
+  nur verschluesselt ins Repo: Feld in `PROTECTED_FIELDS` von
+  `tool/encrypt_catalog_fields.py` und in
+  `test/catalog/geschuetzte_langtexte_test.dart` eintragen, dann
+  `python tool/encrypt_catalog_fields.py --format v3` ausfuehren. Das
+  Passwort liegt lokal in `docs/Passwort.env` (`KATALOG_PASSWORT=...`, in
+  `.gitignore`; alternativ Umgebungsvariable oder `--password`). Das Tool
+  prueft das Passwort vorab an einem vorhandenen `enc:3:`-Wert und bricht bei
+  Abweichung ohne Aenderung ab. Angezeigt wird ein Feld in der UI nur ueber
+  `resolveProtectedValue` (Locked-Hinweis ohne Passwort); Regelrechnung darf
+  kein verschluesseltes Feld lesen.
 - Die App besitzt dafuer eine eigene In-App-Verwaltung unter
   `Einstellungen > Hausregeln > Hausregelverwaltung`.

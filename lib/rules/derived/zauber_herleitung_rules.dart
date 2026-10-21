@@ -57,6 +57,7 @@ class ZauberProbenwert {
     required this.herleitung,
     this.spezialisierungen = const <String>[],
     this.kosten = '',
+    this.kontext,
   });
 
   /// Drei Eigenschaften mit ihren Probenwerten.
@@ -71,8 +72,30 @@ class ZauberProbenwert {
   /// AsP-Kosten laut Katalog; leer, wenn unbekannt.
   final String kosten;
 
+  /// Zauberdetails für den aufklappbaren Kontext im Probendialog.
+  final ProbeKontext? kontext;
+
   /// ZfW* = ZfW + Modifikator.
   int get zfw => herleitung.wert;
+}
+
+/// Zauberdetails aus Katalog und Heldenoverrides (Override hat Vorrang, wie
+/// im Zauberdetaildialog). Geschützte Texte bleiben roh.
+ProbeKontext zauberKontextAus(HeroSpellEntry eintrag, SpellDef spell) {
+  final overrides = eintrag.textOverrides;
+  return ProbeKontext(
+    wirkung: overrides?.wirkung ?? spell.wirkung,
+    variantenRoh:
+        overrides?.variants ?? spell.rawVariantsEncrypted ?? spell.variants,
+    kosten: (overrides?.aspCost ?? spell.aspCost).trim(),
+    zauberdauer: (overrides?.castingTime ?? spell.castingTime).trim(),
+    reichweite: (overrides?.range ?? spell.range).trim(),
+    wirkungsdauer: (overrides?.duration ?? spell.duration).trim(),
+    zielobjekt: (overrides?.targetObject ?? spell.targetObject).trim(),
+    merkmale: spell.traits.trim(),
+    modifikationen: (overrides?.modifications ?? spell.modifications).trim(),
+    quelle: spell.source.trim(),
+  );
 }
 
 /// Probenwert eines Zaubers aus einem (gegebenenfalls ungespeicherten)
@@ -95,7 +118,8 @@ ZauberProbenwert? zauberProbenwertAus({
       for (final name in eintrag.specializations)
         if (name.trim().isNotEmpty) name.trim(),
     ]),
-    kosten: spell.aspCost.trim(),
+    kosten: (eintrag.textOverrides?.aspCost ?? spell.aspCost).trim(),
+    kontext: zauberKontextAus(eintrag, spell),
   );
 }
 
@@ -125,18 +149,15 @@ ResolvedProbeRequest zauberprobeAus({
   title: titel,
   targets: wert.ziele,
   basePool: wert.zfw,
-  hasSpecialization: wert.spezialisierungen.isNotEmpty,
+  spezialisierungen: wert.spezialisierungen,
   zfwHerleitung: wert.herleitung,
   hinweise: zauberprobenHinweise(wert),
+  kontext: wert.kontext,
 );
 
-/// Hinweise zur Zauberprobe: Spezialisierungen und Kosten laut Katalog.
-List<String> zauberprobenHinweise(ZauberProbenwert wert) => <String>[
-  if (wert.spezialisierungen.isNotEmpty)
-    'Spezialisierung (+2 nur im jeweiligen Aspekt): '
-        '${wert.spezialisierungen.join(', ')}.',
-  if (wert.kosten.isNotEmpty) 'Kosten: ${wert.kosten}.',
-];
+/// Hinweise zur Zauberprobe. Spezialisierungen (Auswahl im Dialog) und Kosten
+/// (Zauberdetails) stehen nicht mehr im Text; bleibt für künftige Hinweise.
+List<String> zauberprobenHinweise(ZauberProbenwert wert) => const <String>[];
 
 /// Ein gelernter Zauber des Helden mit seiner ZfW*-Herleitung.
 class ZauberUebersicht {

@@ -97,6 +97,15 @@ abstract interface class KartoBestandsAdapter {
     required String heroId,
   });
 
+  /// Ob der Regelnachschlag auf dieser Plattform verfügbar ist.
+  ///
+  /// Der Regelwerk-Index läuft nur auf Desktop und im Web; wo er fehlt, blendet
+  /// die Spielansicht den Einstieg aus.
+  bool get regelnNachschlagenVerfuegbar;
+
+  /// Öffnet die Volltextsuche in den Regelwerken (heldenunabhängig).
+  Future<void> regelnNachschlagen({required BuildContext context});
+
   /// Öffnet die durchsuchbaren Berechnungsschritte aller erklärbaren Werte
   /// (ARCH-04); gerechnet wird ausschließlich in den Regelmodulen.
   Future<void> berechnungsschritte({
@@ -152,6 +161,17 @@ abstract interface class KartoBestandsAdapter {
     required String begleiterId,
     required BegleiterPool pool,
     required RessourcenAenderung aenderung,
+  });
+
+  /// Speichert den Standort des Helden im Laufzeitzustand.
+  ///
+  /// Schreibt frisch über `aendereZustandMitMeldung` und ersetzt nur das Feld
+  /// `standort`; ein leerer Text entfernt den Standort.
+  Future<void> standortSetzen({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String heroId,
+    required String standort,
   });
 
   /// Öffnet die Vertrautenaktionen (Vereinigung, Zauber würfeln, Proben …).

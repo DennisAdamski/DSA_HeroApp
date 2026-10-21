@@ -8,6 +8,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_base_providers.dart';
+import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abenteuerblatt.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_theme.dart';
@@ -41,6 +42,7 @@ void main() {
     double breite = 900,
     double skalierung = 1,
     Brightness helligkeit = Brightness.light,
+    AbenteuerSortierung? sortierung,
   }) async {
     tester.view.devicePixelRatio = 1;
     tester.view.physicalSize = Size(breite, 1200);
@@ -51,6 +53,8 @@ void main() {
       overrides: [
         heroRepositoryProvider.overrideWithValue(repo),
         rulesCatalogProvider.overrideWith((ref) async => testCatalog),
+        if (sortierung != null)
+          abenteuerSortierungProvider.overrideWithValue(sortierung),
       ],
     );
     addTearDown(container.dispose);
@@ -263,7 +267,8 @@ void main() {
     final alrik = tester.getTopLeft(find.text('Alrik'));
     final yasmina = tester.getTopLeft(find.text('Yasmina'));
     expect(yasmina.dy, alrik.dy);
-    expect(yasmina.dx, greaterThan(alrik.dx));
+    // „Zuletzt bearbeitet“ stellt die neue Person vor die alte.
+    expect(yasmina.dx, lessThan(alrik.dx));
   });
 
   testWidgets('leer und gesperrt erklaert das Blatt, was fehlt', (
@@ -299,5 +304,73 @@ void main() {
   ) async {
     await zeige(tester, abenteuerId: 'weg');
     expect(find.text('Dieses Abenteuer gibt es nicht mehr.'), findsOneWidget);
+  });
+
+  group('Sortierung', () {
+    HeroSheet mitZweiNotizen() => testHero().copyWith(
+      adventures: [
+        _nebel.copyWith(
+          notes: [
+            HeroNoteEntry(
+              title: 'Wirt',
+              description: 'Weiß mehr.',
+              lastModified: DateTime.utc(2026, 1, 1),
+            ),
+            const HeroNoteEntry(title: 'Brücke', description: 'Eingestürzt.'),
+          ],
+        ),
+      ],
+    );
+
+    testWidgets('zuletzt bearbeitete Notiz steht vorn', (tester) async {
+      await zeige(tester, held: mitZweiNotizen(), breite: 400);
+      expect(
+        tester.getTopLeft(find.text('Weiß mehr.')).dy,
+        lessThan(tester.getTopLeft(find.text('Eingestürzt.')).dy),
+      );
+      expect(key('karto-abenteuer-sortierung'), findsOneWidget);
+    });
+
+    testWidgets('Bearbeiten stempelt die Notiz, unverändert nicht', (
+      tester,
+    ) async {
+      await zeige(tester, held: mitZweiNotizen(), breite: 400);
+      await tester.tap(find.text('Eingestürzt.'));
+      await tester.pumpAndSettle();
+      await speichern(tester);
+      expect((await gespeichert()).notes[1].lastModified, isNull);
+
+      await tester.tap(find.text('Eingestürzt.'));
+      await tester.pumpAndSettle();
+      await tester.enterText(key('karto-abenteuer-feld-2'), 'Repariert.');
+      await speichern(tester);
+      final notizen = (await gespeichert()).notes;
+      expect(notizen.map((n) => n.title), ['Wirt', 'Brücke']);
+      expect(notizen[1].lastModified, isNotNull);
+      expect(
+        notizen[1].lastModified!.isAfter(notizen[0].lastModified!),
+        isTrue,
+      );
+    });
+
+    testWidgets('alphabetisch bearbeitet die angetippte Notiz', (tester) async {
+      await zeige(
+        tester,
+        held: mitZweiNotizen(),
+        breite: 400,
+        sortierung: AbenteuerSortierung.alphabetisch,
+      );
+      expect(
+        tester.getTopLeft(find.text('Eingestürzt.')).dy,
+        lessThan(tester.getTopLeft(find.text('Weiß mehr.')).dy),
+      );
+      await tester.tap(find.text('Weiß mehr.'));
+      await tester.pumpAndSettle();
+      await tester.enterText(key('karto-abenteuer-feld-2'), 'Weiß alles.');
+      await speichern(tester);
+      final notizen = (await gespeichert()).notes;
+      expect(notizen[0].description, 'Weiß alles.');
+      expect(notizen[1].description, 'Eingestürzt.');
+    });
   });
 }

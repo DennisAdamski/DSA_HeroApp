@@ -74,6 +74,7 @@ class ExternerHeld {
       iniBase: karte.iniBase,
       avatarThumbnailBase64: karte.avatarThumbnailBase64,
       quelleHeroId: karte.istManuell ? null : karte.heroId,
+      notizen: karte.notizen,
       updatedAt: karte.exportedAt,
     );
   }

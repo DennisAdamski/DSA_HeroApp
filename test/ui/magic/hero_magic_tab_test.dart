@@ -696,10 +696,7 @@ void main() {
       expect(find.byType(ExpansionTile), findsNothing);
       expect(find.text('+ Zauber'), findsOneWidget);
       expect(find.text('Kategorie'), findsNothing);
-      expect(
-        find.text('Aktiviere hier Zauber für diesen Helden.'),
-        findsOneWidget,
-      );
+      expect(find.text('Zauber aktivieren'), findsOneWidget);
       expect(find.text('Keine Zauber aktiviert.'), findsOneWidget);
     },
   );
@@ -1243,6 +1240,97 @@ void main() {
       find.text('Zauberprobe: Axxeleratus Blitzgeschwind'),
       findsOneWidget,
     );
+  });
+
+  testWidgets('Zauberliste sortiert nach Name/ZfW und filtert nach Merkmal', (
+    tester,
+  ) async {
+    final opened = await openMagicTab(
+      tester,
+      repo: FakeRepository(
+        heroes: <HeroSheet>[
+          buildHero().copyWith(
+            spells: const <String, HeroSpellEntry>{
+              'spell_axxeleratus': HeroSpellEntry(
+                spellValue: 12,
+                learnedRepresentation: 'Mag',
+                learnedTradition: 'Mag',
+              ),
+              'spell_adlerschwinge': HeroSpellEntry(
+                spellValue: 3,
+                learnedRepresentation: 'Elf',
+                learnedTradition: 'Elf',
+              ),
+            },
+          ),
+        ],
+      ),
+    );
+    final axx = find.byKey(
+      const ValueKey<String>('magic-spells-roll-spell_axxeleratus'),
+    );
+    final adler = find.byKey(
+      const ValueKey<String>('magic-spells-roll-spell_adlerschwinge'),
+    );
+    bool adlerZuerst() =>
+        tester.getTopLeft(adler).dy < tester.getTopLeft(axx).dy;
+
+    // Standard: Name aufsteigend.
+    expect(adlerZuerst(), isTrue);
+
+    // Pfeil im Namenskopf dreht die Richtung.
+    await tester.tap(
+      find.byKey(const ValueKey<String>('magic-spells-sort-name')),
+    );
+    await _pumpAndSettleIgnoringKnownOverflow(tester);
+    expect(adlerZuerst(), isFalse);
+    await tester.tap(
+      find.byKey(const ValueKey<String>('magic-spells-sort-name')),
+    );
+    await _pumpAndSettleIgnoringKnownOverflow(tester);
+    expect(adlerZuerst(), isTrue);
+
+    // ZfW startet absteigend.
+    await tester.tap(
+      find.byKey(const ValueKey<String>('magic-spells-sort-zfw')),
+    );
+    await _pumpAndSettleIgnoringKnownOverflow(tester);
+    expect(adlerZuerst(), isFalse);
+
+    // Erneutes Tippen dreht die Richtung.
+    await tester.tap(
+      find.byKey(const ValueKey<String>('magic-spells-sort-zfw')),
+    );
+    await _pumpAndSettleIgnoringKnownOverflow(tester);
+    expect(adlerZuerst(), isTrue);
+
+    // Im Entwurf geaenderter ZfW ordnet erst nach dem Speichern neu.
+    await opened.actions.startEdit();
+    await _pumpAndSettleIgnoringKnownOverflow(tester);
+    await tester.enterText(
+      find.byKey(
+        const ValueKey<String>(
+          'magic-spells-field-spell_adlerschwinge-spellValue',
+        ),
+      ),
+      '20',
+    );
+    await _pumpAndSettleIgnoringKnownOverflow(tester);
+    expect(adlerZuerst(), isTrue);
+    await opened.actions.save();
+    await _pumpAndSettleIgnoringKnownOverflow(tester);
+    expect(adlerZuerst(), isFalse);
+
+    // Merkmalsfilter.
+    await tester.tap(
+      find.byKey(const ValueKey<String>('magic-spells-filter-merkmal')),
+    );
+    await _pumpAndSettleIgnoringKnownOverflow(tester);
+    await tester.tap(find.text('Form').last);
+    await _pumpAndSettleIgnoringKnownOverflow(tester);
+    expect(adler, findsOneWidget);
+    expect(axx, findsNothing);
+    expect(find.textContaining('1 von 2 Einträgen'), findsOneWidget);
   });
 
   testWidgets('spell catalog shows all availability entries', (tester) async {

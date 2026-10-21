@@ -33,6 +33,12 @@ abstract class AppSyncController {
   /// Startet einen manuellen Sync.
   Future<void> syncNow();
 
+  /// Wartet, bis alle im Hintergrund angestoßenen Uploads übertragen sind.
+  ///
+  /// Die Standardimplementierung kehrt sofort zurück, damit einfache
+  /// Controller-Attrappen nichts überschreiben müssen.
+  Future<void> warteAufUebertragungen() async {}
+
   /// Loest einen offenen Konflikt.
   Future<void> resolveConflict(
     String conflictId,

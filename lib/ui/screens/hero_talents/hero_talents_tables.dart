@@ -303,9 +303,7 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
     final ebe = _ebeHerleitung(talent.be, talent.attributes).wert;
     final tawHerleitung = _tawHerleitung(talent, entry);
     final computedTaw = tawHerleitung.wert;
-    final hasSpecialization =
-        entry.combatSpecializations.isNotEmpty ||
-        _splitSpecializationTokens(entry.specializations).isNotEmpty;
+    final spezialisierungen = talentSpezialisierungenAus(entry);
 
     final cells = <Widget>[
       _tappableNameCell(
@@ -344,7 +342,7 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
                 talent.attributes,
               ),
               basePool: computedTaw,
-              hasSpecialization: hasSpecialization,
+              spezialisierungen: spezialisierungen,
               tawHerleitung: tawHerleitung,
             ),
           ),
@@ -605,9 +603,7 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
     final ebe = _ebeHerleitung(talent.be, talent.attributes).wert;
     final tawHerleitung = _tawHerleitung(talent, entry);
     final computedTaw = tawHerleitung.wert;
-    final hasSpecialization =
-        entry.combatSpecializations.isNotEmpty ||
-        _splitSpecializationTokens(entry.specializations).isNotEmpty;
+    final spezialisierungen = talentSpezialisierungenAus(entry);
     final attributeLabel = _buildShortAttributeLabel(
       effectiveAttributes,
       talent.attributes,
@@ -674,7 +670,7 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
                 talent.attributes,
               ),
               basePool: computedTaw,
-              hasSpecialization: hasSpecialization,
+              spezialisierungen: spezialisierungen,
               tawHerleitung: tawHerleitung,
             ),
           ),

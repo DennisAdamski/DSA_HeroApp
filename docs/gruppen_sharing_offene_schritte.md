@@ -1,6 +1,6 @@
 # Sicherheitsstatus: Heldengruppen-Sharing
 
-Stand: 17. Oktober 2026.
+Stand: 21. Oktober 2026.
 
 ## Legacy-Pfad ist gesperrt
 
@@ -14,48 +14,56 @@ löschen.
 Legacy-Dokument und sämtliche Unterpfade. Die vorhandenen Dokumente werden
 nicht gelöscht. Eine Übernahme darf nur nach administrativer Prüfung erfolgen,
 weil aus den Altdaten keine vertrauenswürdige Besitzer-UID ableitbar ist.
+Alte Gruppen werden in der App weder synchronisiert noch migriert; sie
+erscheinen mit Sperrhinweis und lassen sich nur lokal vom Helden entfernen.
 
-## Zielstruktur `groups_v2`
-
-Die neuen Regeln reservieren folgende, UID-gebundene Struktur:
+## Struktur `groups_v2`
 
 ```text
 groups_v2/{groupId}
-  ownerUid: <Firebase UID>
-  name: <Gruppenname>
-  members/{uid}
-  hero_snapshots/{uid}
-  invitations/{invitationId}  # nur Backendzugriff
+  name, ownerUid, joinCode
+  members/{uid}              role: owner | member
+  hero_snapshots/{uid}       Heldenkarte des Mitglieds
+  shared_heroes/{entryId}    gemeinsame Einträge (z. B. NSC-Begleiter)
+  shared_info/notizen        gemeinsame Gruppennotizen
+  invitations/{id}           für ein späteres Backend reserviert, gesperrt
 ```
 
-- Nur eingetragene Mitglieder dürfen Gruppe, Mitgliedschaften und
-  Heldensnapshots lesen.
-- Nur der Besitzer darf die Gruppe und Mitgliedschaften verwalten.
-- Mitglieder dürfen ausschließlich ihren eigenen Heldensnapshot schreiben
-  oder löschen.
-- Einladungen sind für Clients vollständig gesperrt. Ein späterer Backendweg
-  speichert nur Hash, Ablaufzeit und Verwendungsstatus.
+- Nur eingetragene Mitglieder lesen Gruppe, Mitgliedschaften, Heldenkarten und
+  gemeinsame Inhalte.
+- **Beitritt:** Wer den `joinCode` kennt, trägt sich per Regel als einfaches
+  Mitglied (`role: member`) ein. Der Code steht im Gruppendokument, das nur
+  Mitglieder lesen; der Besitzer erneuert ihn, ohne Mitglieder zu verlieren.
+  Der Code ist weder einmalig noch befristet: Wer ihn weitergibt, lädt ein.
+  Ein Backend mit gehashten, einmaligen Einladungen bleibt eine mögliche
+  spätere Verschärfung (`invitations` ist dafür reserviert).
+- **Schreibrechte:** Gruppe und Mitgliedereinträge verwaltet der Besitzer.
+  Jedes Mitglied schreibt nur die eigene Heldenkarte. Gemeinsame Einträge und
+  Notizen dürfen **alle Mitglieder** anlegen, ändern und löschen; der Ersteller
+  (`createdByUid`) eines Eintrags bleibt unveränderlich.
+- **Austritt:** Mitglieder löschen ihren eigenen Eintrag. Der Besitzer kann nur
+  die ganze Gruppe löschen und fremde Heldenkarten entfernen.
 
-Die Rules-Emulatortests liegen in
-`functions/test/firestore_rules.rules.ts` und prüfen Legacy-Sperre,
-Mitgliedslesen, Besitzerverwaltung und den eigenen Snapshot-Schreibweg.
+Die Rules-Emulatortests liegen in `functions/test/firestore_rules.rules.ts`
+und decken Legacy-Sperre, Lesen, Besitzerverwaltung, Beitritt mit richtigem und
+falschem Code, Austritt, gemeinsame Einträge und Notizen ab.
 
-## Noch nicht freigegebene Anwendungsmigration
+## Anwendung
 
-Die bestehende Flutter-Implementierung unter `lib/data/gruppen_sync_service.dart`
-verwendet noch den gesperrten Legacy-Pfad. Bis zur vollständigen Umstellung auf
-`groups_v2` dürfen alte Gruppen weder automatisch beansprucht noch clientseitig
-migriert werden. Nutzer müssen anschließend neue Gruppen erstellen und ihre
-Mitglieder erneut einladen.
+`lib/data/gruppen_sync_service.dart` und die Gruppenaktionen in
+`lib/state/hero_actions.dart` verwenden ausschließlich `groups_v2`. Die
+Oberfläche (`lib/ui/screens/hero_gruppe*`) bietet Erstellen, Beitreten per
+Beitrittscode, Code kopieren/erneuern, Verlassen bzw. Löschen,
+gemeinsame Einträge und gemeinsame Notizen.
 
-Vor einer produktiven Aktivierung von `groups_v2` fehlen noch:
+Noch offen:
 
-1. authentifizierte Backendoperationen für Erstellen, Einladen, Annehmen und
-   Entfernen von Mitgliedern;
-2. serverseitig gehashte, kurzlebige und einmal verwendbare Einladungen;
-3. Umstellung des Flutter-Syncdienstes auf UID-basierte Snapshots;
-4. klare UI für gesperrte Legacy-Gruppen und den Neuaufbau einer Gruppe;
-5. Emulator- und Flutter-End-to-End-Tests für den vollständigen Ablauf.
+1. Mitglieder entfernen in der Oberfläche (Dienst `entferneMitglied` ist da);
+2. Live-Listener statt manuellem „Synchronisieren“;
+3. Gruppen unter Windows (REST-Transport ohne Firestore-SDK; dort bleibt
+   `isFirestoreAvailable` aus);
+4. Flutter-End-to-End-Test gegen den Firestore-Emulator;
+5. optional: serverseitig gehashte, einmalige Einladungen.
 
 ## Betrieb
 
@@ -67,4 +75,6 @@ firebase deploy --only firestore:rules --project heldensync-ccf0b
 ```
 
 Vorher ist immer `npm run test:rules` im Verzeichnis `functions/` auszuführen.
-Die Firebase CLI benötigt dafür Java 21 oder neuer.
+Die Firebase CLI benötigt dafür Java 21 oder neuer. **Ohne das Veröffentlichen
+der Regeln funktionieren neue Gruppen nicht**, weil die bisherigen Regeln den
+Selbstbeitritt und die gemeinsamen Inhalte verweigern.

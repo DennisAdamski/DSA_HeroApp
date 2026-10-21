@@ -18,9 +18,14 @@ class KartoSpielaktionen extends StatelessWidget {
     required this.onProbeSuchen,
     required this.onRast,
     required this.onSchaden,
+    this.onRegeln,
     this.kuerzelHinweis,
     this.gefecht,
   });
+
+  /// Öffnet die Regelwerk-Suche; `null` blendet den Knopf aus (Plattform ohne
+  /// Regelindex).
+  final VoidCallback? onRegeln;
 
   /// Einstieg ins Gefecht; steht vor allen übrigen Schnellaktionen.
   final Widget? gefecht;
@@ -54,6 +59,13 @@ class KartoSpielaktionen extends StatelessWidget {
           icon: const Icon(Icons.search),
           label: const Text('Probe suchen'),
         ),
+        if (onRegeln != null)
+          OutlinedButton.icon(
+            key: const ValueKey<String>('karto-spiel-regeln'),
+            onPressed: onRegeln,
+            icon: const Icon(Icons.menu_book_outlined),
+            label: const Text('Regeln'),
+          ),
         OutlinedButton.icon(
           key: const ValueKey<String>('karto-spiel-rast'),
           onPressed: onRast,

@@ -4,7 +4,10 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dsa_heldenverwaltung/data/firebase_bootstrap.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
+import 'package:dsa_heldenverwaltung/domain/externer_held.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_gruppen_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
+import 'package:dsa_heldenverwaltung/state/externe_helden_providers.dart';
 import 'package:dsa_heldenverwaltung/state/firebase_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
@@ -76,6 +79,70 @@ void main() {
       expect(joinButton.onPressed, isNull);
     },
   );
+
+  testWidgets('Altgruppen zeigen den Sperrhinweis und synchronisieren nicht', (
+    tester,
+  ) async {
+    final repo = FakeRepository(
+      heroes: [
+        const HeroSheet(
+          id: 'hero',
+          name: 'Alrik',
+          level: 1,
+          attributes: Attributes(
+            mu: 12,
+            kl: 12,
+            inn: 12,
+            ch: 12,
+            ff: 12,
+            ge: 12,
+            ko: 12,
+            kk: 12,
+          ),
+          gruppen: [
+            HeroGruppenMitgliedschaft(
+              gruppenCode: 'alt-code',
+              gruppenName: 'Die Alten',
+            ),
+          ],
+        ),
+      ],
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          heroRepositoryProvider.overrideWithValue(repo),
+          firebaseBootstrapProvider.overrideWithValue(
+            const FirebaseBootstrapResult.available(),
+          ),
+          externeHeldenProvider.overrideWith(
+            (ref) => Stream.value(const <String, ExternerHeld>{}),
+          ),
+        ],
+        child: MaterialApp(
+          home: Scaffold(
+            body: HeroGruppeTab(
+              heroId: 'hero',
+              onDirtyChanged: _noopBool,
+              onEditingChanged: _noopBool,
+              onRegisterDiscard: _noopDiscard,
+              onRegisterEditActions: _noopEditActions,
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Die Alten'), findsOneWidget);
+    expect(find.textContaining('alten, gesperrten Format'), findsOneWidget);
+    final sync = tester.widget<FilledButton>(
+      find.widgetWithText(FilledButton, 'Synchronisieren'),
+    );
+    expect(sync.onPressed, isNull);
+    expect(find.text('Gemeinsame Notizen'), findsNothing);
+  });
 }
 
 void _noopBool(bool value) {}

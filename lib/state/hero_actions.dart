@@ -12,10 +12,12 @@ import 'package:dsa_heldenverwaltung/catalog/catalog_runtime_data.dart';
 import 'package:dsa_heldenverwaltung/catalog/catalog_section_id.dart';
 import 'package:dsa_heldenverwaltung/catalog/hero_trait_text.dart';
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
+import 'package:dsa_heldenverwaltung/data/gruppen_sync_service.dart';
 import 'package:dsa_heldenverwaltung/data/hero_repository.dart';
 import 'package:dsa_heldenverwaltung/data/hero_transfer_codec.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/externer_held.dart';
+import 'package:dsa_heldenverwaltung/domain/gruppen_beitrittscode.dart';
 import 'package:dsa_heldenverwaltung/domain/held_visitenkarte.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_gruppen_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_meta_talent.dart';
@@ -914,142 +916,185 @@ class HeroActions {
   }
 
   // ---------------------------------------------------------------------------
-  // Gruppen-Verwaltung
+  // Gruppen-Verwaltung (groups_v2)
   // ---------------------------------------------------------------------------
 
   /// Erstellt eine neue Gruppe fuer einen Helden (Firebase + lokal).
   ///
-  /// Gibt den generierten Gruppencode zurueck.
+  /// Gibt die Gruppen-ID zurueck. Den teilbaren Beitrittscode liefert
+  /// [ladeBeitrittscode].
   Future<String> erstelleGruppe({
     required String heroId,
     required String gruppenName,
   }) async {
     _requireGruppenSyncAvailable();
     final syncService = _ref.read(gruppenSyncServiceProvider);
-    final gruppenCode = await syncService.erstelleGruppe(gruppenName);
-
-    final hero = await _loadHeroById(heroId);
-    final neueGruppen = List<HeroGruppenMitgliedschaft>.from(hero.gruppen)
-      ..add(
-        HeroGruppenMitgliedschaft(
-          gruppenCode: gruppenCode,
-          gruppenName: gruppenName,
-        ),
-      );
-    await saveHero(hero.copyWith(gruppen: neueGruppen));
-
-    // Eigene Visitenkarte direkt pushen.
-    await _pushEigeneVisitenkarte(heroId: heroId, gruppenCode: gruppenCode);
-
-    return gruppenCode;
+    final info = await syncService.erstelleGruppe(gruppenName);
+    await _traegeMitgliedschaftEin(heroId, info);
+    await _pushEigeneVisitenkarteBestEffort(heroId, info.groupId);
+    return info.groupId;
   }
 
-  /// Tritt einer bestehenden Gruppe bei (via Code).
-  Future<void> trittGruppeBei({
+  /// Tritt einer bestehenden Gruppe bei (mit dem geteilten Beitrittscode).
+  ///
+  /// Gibt die Gruppen-ID zurueck.
+  Future<String> trittGruppeBei({
     required String heroId,
-    required String gruppenCode,
+    required String beitrittscode,
   }) async {
     _requireGruppenSyncAvailable();
-    final syncService = _ref.read(gruppenSyncServiceProvider);
-    final existiert = await syncService.gruppeExistiert(gruppenCode);
-    if (!existiert) {
-      throw StateError('Gruppe mit Code "$gruppenCode" existiert nicht.');
-    }
-
-    final gruppenName = await syncService.ladeGruppenName(gruppenCode);
-    final hero = await _loadHeroById(heroId);
-
-    // Doppelten Beitritt verhindern.
-    if (hero.gruppen.any((g) => g.gruppenCode == gruppenCode)) return;
-
-    final neueGruppen = List<HeroGruppenMitgliedschaft>.from(hero.gruppen)
-      ..add(
-        HeroGruppenMitgliedschaft(
-          gruppenCode: gruppenCode,
-          gruppenName: gruppenName,
-        ),
+    final code = GruppenBeitrittscode.parse(beitrittscode);
+    if (code == null) {
+      throw const GruppenException(
+        'Der Beitrittscode ist unvollständig. Bitte den ganzen Code '
+        'einfügen, den dir ein Gruppenmitglied geschickt hat.',
       );
-    await saveHero(hero.copyWith(gruppen: neueGruppen));
-
-    // Eigene Visitenkarte pushen.
-    await _pushEigeneVisitenkarte(heroId: heroId, gruppenCode: gruppenCode);
+    }
+    final syncService = _ref.read(gruppenSyncServiceProvider);
+    final info = await syncService.tritteBei(code);
+    await _traegeMitgliedschaftEin(heroId, info);
+    await _pushEigeneVisitenkarteBestEffort(heroId, info.groupId);
+    return info.groupId;
   }
 
-  /// Verlaesst eine Gruppe.
+  /// Liest den teilbaren Beitrittscode einer Gruppe (nur Mitglieder koennen es).
+  Future<String> ladeBeitrittscode(String gruppenCode) async {
+    _requireGruppenSyncAvailable();
+    final info = await _ref
+        .read(gruppenSyncServiceProvider)
+        .ladeGruppe(gruppenCode);
+    return info.beitrittscode.text;
+  }
+
+  /// Speichert die gemeinsamen Gruppennotizen; alle Mitglieder duerfen das.
+  Future<void> speichereGruppenNotizen({
+    required String gruppenCode,
+    required String text,
+  }) async {
+    _requireGruppenSyncAvailable();
+    await _ref
+        .read(gruppenSyncServiceProvider)
+        .speichereNotizen(gruppenCode, text);
+  }
+
+  /// Erneuert den Beitrittscode (nur Besitzer) und gibt die neue Form zurueck.
+  Future<String> erneuereBeitrittscode(String gruppenCode) async {
+    _requireGruppenSyncAvailable();
+    final code = await _ref
+        .read(gruppenSyncServiceProvider)
+        .erneuereBeitrittscode(gruppenCode);
+    return code.text;
+  }
+
+  /// Verlaesst eine Gruppe. Altgruppen (gesperrter Legacy-Pfad) werden nur
+  /// lokal vom Helden entfernt.
   Future<void> verlasseGruppe({
     required String heroId,
     required String gruppenCode,
   }) async {
-    _requireGruppenSyncAvailable();
-    final syncService = _ref.read(gruppenSyncServiceProvider);
-    await syncService.leaveGruppe(gruppenCode, heroId);
-    await syncService.stopListenerFuerGruppe(gruppenCode);
-
     final hero = await _loadHeroById(heroId);
-    final neueGruppen = hero.gruppen
-        .where((g) => g.gruppenCode != gruppenCode)
-        .toList(growable: false);
-    await saveHero(hero.copyWith(gruppen: neueGruppen));
+    final mitgliedschaft = hero.gruppen
+        .where((g) => g.gruppenCode == gruppenCode)
+        .firstOrNull;
+    if (mitgliedschaft != null && mitgliedschaft.kontoGruppe) {
+      _requireGruppenSyncAvailable();
+      await _ref.read(gruppenSyncServiceProvider).verlasseGruppe(gruppenCode);
+    }
+    await _entferneMitgliedschaft(heroId, gruppenCode);
   }
 
-  /// Fuegt einen manuell erstellten externen Helden zu einer Gruppe hinzu.
+  /// Loescht eine Gruppe fuer alle Mitglieder (nur Besitzer).
+  Future<void> loescheGruppe({
+    required String heroId,
+    required String gruppenCode,
+  }) async {
+    _requireGruppenSyncAvailable();
+    await _ref.read(gruppenSyncServiceProvider).loescheGruppe(gruppenCode);
+    await _entferneMitgliedschaft(heroId, gruppenCode);
+  }
+
+  /// Fuegt einen manuell erstellten Eintrag zu einer Gruppe hinzu.
+  ///
+  /// Der Eintrag wird als geteilte Gruppeninfo geschrieben: Alle Mitglieder
+  /// sehen und pflegen ihn. Erst nach dem erfolgreichen Upload landet er lokal.
   Future<void> addManuellerHeld({
     required String heroId,
     required String gruppenCode,
     required ExternerHeld held,
   }) async {
     _requireGruppenSyncAvailable();
-    // Externen Helden persistieren.
-    final externeRepo = _ref.read(externeHeldenRepositoryProvider);
-    await externeRepo.save(held);
-
-    // Referenz in der Gruppenconfig des Helden hinzufuegen.
     final hero = await _loadHeroById(heroId);
-    final neueGruppen = List<HeroGruppenMitgliedschaft>.from(hero.gruppen);
+    final mitgliedschaft = hero.gruppen
+        .where((g) => g.gruppenCode == gruppenCode)
+        .firstOrNull;
+    if (mitgliedschaft == null) return;
+    if (!mitgliedschaft.kontoGruppe) {
+      throw const GruppenException(_altgruppeMeldung);
+    }
+
+    await _ref
+        .read(gruppenSyncServiceProvider)
+        .pushGeteilterHeld(
+          gruppenCode,
+          HeldVisitenkarte.fromExternerHeld(held),
+        );
+    await _ref.read(externeHeldenRepositoryProvider).save(held);
+
+    // Frisch laden: Der Upload kann lange gedauert haben.
+    final aktuell = await _loadHeroById(heroId);
+    final neueGruppen = List<HeroGruppenMitgliedschaft>.from(aktuell.gruppen);
     final index = neueGruppen.indexWhere((g) => g.gruppenCode == gruppenCode);
     if (index < 0) return;
-
-    final mitgliedschaft = neueGruppen[index];
-    if (mitgliedschaft.externeHeldIds.contains(held.id)) return;
-
-    neueGruppen[index] = mitgliedschaft.copyWith(
-      externeHeldIds: [...mitgliedschaft.externeHeldIds, held.id],
+    final aktuelleMitgliedschaft = neueGruppen[index];
+    if (aktuelleMitgliedschaft.externeHeldIds.contains(held.id)) return;
+    neueGruppen[index] = aktuelleMitgliedschaft.copyWith(
+      externeHeldIds: [...aktuelleMitgliedschaft.externeHeldIds, held.id],
     );
-    await saveHero(hero.copyWith(gruppen: neueGruppen));
-
-    // Manuellen Helden direkt nach Firestore pushen.
-    final syncService = _ref.read(gruppenSyncServiceProvider);
-    final karte = HeldVisitenkarte.fromExternerHeld(held);
-    await syncService.pushVisitenkarte(gruppenCode, karte);
+    await saveHero(aktuell.copyWith(gruppen: neueGruppen));
   }
 
   /// Entfernt einen externen Helden aus einer Gruppe.
+  ///
+  /// Manuelle Eintraege einer Konto-Gruppe werden fuer alle Mitglieder
+  /// geloescht. Verknuepfte Mitglieder kehren beim naechsten Sync zurueck.
   Future<void> removeExternerHeld({
     required String heroId,
     required String gruppenCode,
     required String externerHeldId,
   }) async {
     final hero = await _loadHeroById(heroId);
-    final neueGruppen = List<HeroGruppenMitgliedschaft>.from(hero.gruppen);
+    final mitgliedschaft = hero.gruppen
+        .where((g) => g.gruppenCode == gruppenCode)
+        .firstOrNull;
+    if (mitgliedschaft == null) return;
+
+    final extern = _ref
+        .read(externeHeldenRepositoryProvider)
+        .loadById(externerHeldId);
+    if (mitgliedschaft.kontoGruppe && (extern?.istManuell ?? false)) {
+      _requireGruppenSyncAvailable();
+      await _ref
+          .read(gruppenSyncServiceProvider)
+          .entferneGeteiltenHeld(gruppenCode, externerHeldId);
+    }
+
+    final aktuell = await _loadHeroById(heroId);
+    final neueGruppen = List<HeroGruppenMitgliedschaft>.from(aktuell.gruppen);
     final index = neueGruppen.indexWhere((g) => g.gruppenCode == gruppenCode);
     if (index < 0) return;
-
-    final mitgliedschaft = neueGruppen[index];
-    neueGruppen[index] = mitgliedschaft.copyWith(
-      externeHeldIds: mitgliedschaft.externeHeldIds
+    neueGruppen[index] = neueGruppen[index].copyWith(
+      externeHeldIds: neueGruppen[index].externeHeldIds
           .where((id) => id != externerHeldId)
           .toList(growable: false),
     );
-    await saveHero(hero.copyWith(gruppen: neueGruppen));
+    await saveHero(aktuell.copyWith(gruppen: neueGruppen));
   }
 
-  /// Aktualisiert die eigene Visitenkarte in allen Gruppen des Helden.
+  /// Aktualisiert die eigene Visitenkarte in allen Konto-Gruppen des Helden.
   Future<void> syncVisitenkarten(String heroId) async {
     _requireGruppenSyncAvailable();
     final hero = await _loadHeroById(heroId);
-    if (hero.gruppen.isEmpty) return;
-
-    for (final gruppe in hero.gruppen) {
+    for (final gruppe in hero.gruppen.where((g) => g.kontoGruppe)) {
       await _pushEigeneVisitenkarte(
         heroId: heroId,
         gruppenCode: gruppe.gruppenCode,
@@ -1057,75 +1102,171 @@ class HeroActions {
     }
   }
 
-  /// Fuehrt einen vollstaendigen Sync fuer alle Gruppen des Helden durch:
-  /// 1. Eigene Visitenkarte pushen
-  /// 2. Manuell angelegte Helden pushen
-  /// 3. Fremde Mitglieder abholen und lokal ueberschreiben
+  /// Fuehrt einen vollstaendigen Sync fuer alle Konto-Gruppen des Helden durch:
+  /// 1. Gruppenname auffrischen
+  /// 2. Eigene Visitenkarte pushen
+  /// 3. Mitglieder und gemeinsame Eintraege abholen; neuere lokale gemeinsame
+  ///    Eintraege hochladen
+  /// 4. Nicht mehr vorhandene Eintraege aus der Gruppe des Helden entfernen
+  ///
+  /// Altgruppen (gesperrter Legacy-Pfad) bleiben unberuehrt. Schlaegt eine
+  /// Gruppe fehl, laufen die uebrigen weiter; der Fehler wird danach gesammelt
+  /// gemeldet.
   Future<void> syncGruppen(String heroId) async {
     _requireGruppenSyncAvailable();
     final hero = await _loadHeroById(heroId);
-    if (hero.gruppen.isEmpty) return;
+    final fehler = <String>[];
+    for (final gruppe in hero.gruppen.where((g) => g.kontoGruppe)) {
+      try {
+        await _syncGruppe(heroId, gruppe.gruppenCode);
+      } on GruppenException catch (error) {
+        final name = gruppe.gruppenName.isEmpty ? 'Gruppe' : gruppe.gruppenName;
+        fehler.add(
+          error.keinZugriff && !error.message.contains(name)
+              ? '$name: Kein Zugriff mehr (nicht mehr Mitglied?)'
+              : '$name: ${error.message}',
+        );
+      }
+    }
+    if (fehler.isNotEmpty) {
+      throw GruppenException(fehler.join('\n'));
+    }
+  }
 
+  /// Gleicht vor einem Gefecht die Konto-Gruppen des Helden ab, damit die
+  /// externen Gefaehrten (INI, Werte) aktuell sind.
+  ///
+  /// Beste Anstrengung mit Zeitlimit: Das Gefecht darf nie an der Cloud
+  /// scheitern. Gibt `null` zurueck, wenn nichts abzugleichen war oder alles
+  /// gelang, sonst eine Warnung fuer die Oberflaeche.
+  Future<String?> syncGruppenVorGefecht(
+    String heroId, {
+    Duration zeitlimit = const Duration(seconds: 8),
+  }) async {
+    if (!_ref.read(firebaseBootstrapProvider).isFirestoreAvailable) {
+      return null;
+    }
+    try {
+      final hero = await _loadHeroById(heroId);
+      if (!hero.gruppen.any((g) => g.kontoGruppe)) {
+        return null;
+      }
+      await syncGruppen(heroId).timeout(zeitlimit);
+      return null;
+    } on TimeoutException {
+      return 'Der Gruppenabgleich dauerte zu lange.';
+    } on Object catch (error) {
+      return '$error';
+    }
+  }
+
+  Future<void> _syncGruppe(String heroId, String gruppenCode) async {
     final syncService = _ref.read(gruppenSyncServiceProvider);
     final externeRepo = _ref.read(externeHeldenRepositoryProvider);
 
-    for (final gruppe in hero.gruppen) {
-      final gruppenCode = gruppe.gruppenCode;
+    final info = await syncService.ladeGruppe(gruppenCode);
+    await _pushEigeneVisitenkarte(heroId: heroId, gruppenCode: gruppenCode);
+    final inhalt = await syncService.ladeInhalt(gruppenCode);
+    final eigeneUid = syncService.eigeneUid;
 
-      // 1. Eigene Visitenkarte pushen.
-      await _pushEigeneVisitenkarte(heroId: heroId, gruppenCode: gruppenCode);
+    final gesehen = <String>[];
 
-      // 2. Manuelle Helden dieser Gruppe pushen.
-      for (final extId in gruppe.externeHeldIds) {
-        final ext = externeRepo.loadById(extId);
-        if (ext != null && ext.istManuell) {
-          final karte = HeldVisitenkarte.fromExternerHeld(ext);
-          await syncService.pushVisitenkarte(gruppenCode, karte);
-        }
-      }
-
-      // 3. Alle Mitglieder abholen und lokal aktualisieren.
-      final remoteMitglieder = await syncService.fetchMitglieder(gruppenCode);
-      final neueExterneIds = <String>[...gruppe.externeHeldIds];
-
-      // IDs lokal verwalteter manueller Helden — nicht ueberschreiben.
-      final lokaleManuelleIds = <String>{
-        for (final extId in gruppe.externeHeldIds)
-          if (externeRepo.loadById(extId)?.istManuell ?? false) extId,
-      };
-
-      for (final karte in remoteMitglieder) {
-        // Eigenen Helden ueberspringen.
-        if (karte.heroId == heroId) continue;
-
-        // Lokal manuell angelegte Helden nicht mit Remote-Daten
-        // ueberschreiben — sie werden nur gepusht, nie gepullt.
-        if (lokaleManuelleIds.contains(karte.heroId)) continue;
-
-        final externer = ExternerHeld.fromVisitenkarte(karte);
-        await externeRepo.save(externer);
-
-        if (!neueExterneIds.contains(karte.heroId)) {
-          neueExterneIds.add(karte.heroId);
-        }
-      }
-
-      // Aktualisierte externeHeldIds speichern, falls neue Mitglieder.
-      if (neueExterneIds.length != gruppe.externeHeldIds.length) {
-        final aktualisierterHero = await _loadHeroById(heroId);
-        final neueGruppen = List<HeroGruppenMitgliedschaft>.from(
-          aktualisierterHero.gruppen,
+    // Gemeinsame Eintraege: der neuere Stand gewinnt, in beide Richtungen.
+    for (final karte in inhalt.geteilte) {
+      final lokal = externeRepo.loadById(karte.heroId);
+      if (lokal == null || lokal.updatedAt.isBefore(karte.exportedAt)) {
+        await externeRepo.save(
+          ExternerHeld.fromVisitenkarte(karte, id: karte.heroId),
         );
-        final idx = neueGruppen.indexWhere((g) => g.gruppenCode == gruppenCode);
-        if (idx >= 0) {
-          neueGruppen[idx] = neueGruppen[idx].copyWith(
-            externeHeldIds: neueExterneIds,
-          );
-          await saveHero(aktualisierterHero.copyWith(gruppen: neueGruppen));
-        }
+      } else if (lokal.updatedAt.isAfter(karte.exportedAt) &&
+          lokal.istManuell) {
+        await syncService.pushGeteilterHeld(
+          gruppenCode,
+          HeldVisitenkarte.fromExternerHeld(lokal),
+        );
       }
+      gesehen.add(karte.heroId);
+    }
+
+    // Heldenkarten der anderen Mitglieder.
+    for (final mitglied in inhalt.mitglieder) {
+      if (mitglied.uid == eigeneUid) continue;
+      await externeRepo.save(ExternerHeld.fromVisitenkarte(mitglied.karte));
+      gesehen.add(mitglied.karte.heroId);
+    }
+
+    // Frisch laden und nur die eigenen Felder aendern.
+    final aktuell = await _loadHeroById(heroId);
+    final neueGruppen = List<HeroGruppenMitgliedschaft>.from(aktuell.gruppen);
+    final index = neueGruppen.indexWhere((g) => g.gruppenCode == gruppenCode);
+    if (index < 0) return;
+    final bisher = neueGruppen[index];
+    final behalten = bisher.externeHeldIds.where(gesehen.contains).toList();
+    final neueIds = <String>[
+      ...behalten,
+      for (final id in gesehen)
+        if (!behalten.contains(id)) id,
+    ];
+    final idsGeaendert =
+        neueIds.length != bisher.externeHeldIds.length ||
+        !neueIds.every(bisher.externeHeldIds.contains);
+    if (!idsGeaendert && info.name == bisher.gruppenName) return;
+    neueGruppen[index] = bisher.copyWith(
+      gruppenName: info.name,
+      externeHeldIds: neueIds,
+    );
+    await saveHero(aktuell.copyWith(gruppen: neueGruppen));
+  }
+
+  // Haengt die Konto-Gruppe an den Helden, sofern er sie noch nicht kennt.
+  Future<void> _traegeMitgliedschaftEin(String heroId, GruppenInfo info) async {
+    final hero = await _loadHeroById(heroId);
+    final neueGruppen = List<HeroGruppenMitgliedschaft>.from(hero.gruppen);
+    final index = neueGruppen.indexWhere((g) => g.gruppenCode == info.groupId);
+    if (index >= 0) {
+      if (neueGruppen[index].kontoGruppe) return;
+      neueGruppen[index] = neueGruppen[index].copyWith(
+        kontoGruppe: true,
+        gruppenName: info.name,
+      );
+    } else {
+      neueGruppen.add(
+        HeroGruppenMitgliedschaft(
+          gruppenCode: info.groupId,
+          gruppenName: info.name,
+          kontoGruppe: true,
+        ),
+      );
+    }
+    await saveHero(hero.copyWith(gruppen: neueGruppen));
+  }
+
+  Future<void> _entferneMitgliedschaft(
+    String heroId,
+    String gruppenCode,
+  ) async {
+    final hero = await _loadHeroById(heroId);
+    final neueGruppen = hero.gruppen
+        .where((g) => g.gruppenCode != gruppenCode)
+        .toList(growable: false);
+    await saveHero(hero.copyWith(gruppen: neueGruppen));
+  }
+
+  // Die Mitgliedschaft steht bereits; ein Fehler hier heilt der naechste Sync.
+  Future<void> _pushEigeneVisitenkarteBestEffort(
+    String heroId,
+    String gruppenCode,
+  ) async {
+    try {
+      await _pushEigeneVisitenkarte(heroId: heroId, gruppenCode: gruppenCode);
+    } on Exception {
+      // Nicht abbrechen: Beitritt bzw. Erstellung sind erfolgt.
     }
   }
+
+  static const String _altgruppeMeldung =
+      'Diese Gruppe stammt aus dem alten, gesperrten Format. Bitte erstelle '
+      'eine neue Gruppe und lade die Mitglieder erneut ein.';
 
   Future<void> _pushEigeneVisitenkarte({
     required String heroId,

@@ -8,15 +8,24 @@
     "beschreibung": "Automatische Seelenprüfung bei jedem Blickkontakt (ab 35 Entrückung).",
     "voraussetzungen": "—",
     "kosten": "500 AP (300 AP bei Praios)",
-    "erklarung_lang": "Ermöglicht dem Geweihten eine Automatische Seelenprüfung bei jedem, den er ansieht (ab 35 Entrückung oder 1 KaP/SR). Es können nur Identifikationen durchgeführt werden, die mit einer Seelenprüfung Grad III möglich sind; nicht aufstufbar. Die Paktiererfähigkeit Schutz vor göttlichem Wirken ist nutzlos – ein Paktierer mit dem entsprechenden Vorteil bemerkt jedoch den Blick des Makels.",
+    "erklarung_lang": "enc:3:hXp3EPdA2c8lTk6PK1/ng4cWXfD0xT0I8TOzapEkma0IlvPTZVDpnKnvw22J7WFyYRkzrpX0Y6vOinicyJi9r8ENcgl5j5XRFUhhFAI8LgaOlQXsAgoY41udK8qACkq248FqlUz+WtqhUaV7NlfZ1iIrhmecnJj+1QdtvQ8Iy1HGs4kjES7WBthepO7K6N8Pw0t2Uk5aKURCEY9uID6wEx0UB80++weeeU//nhF3OcD7VPkzpwI12M4tMb5Eot9M22eUs7mPxCQAw710MP5Uu3xJhaFfLtfgqmu6Ut/mx0ndSIIaHEKZDj6nYurU7NGWzSOIQe2SKk20rpyURSZnoCXzI1q84Erzwe3+yFgmaHmDurHed1TSq9TF4pp9yjJnApTUMAyc1BIRua4X4DoMPQailGF5njasu0MmejGG6BbPKobsqo5AWAXnv0xVx6DSg7yVGzjtdr6rWECQSoubwC99clTTmyuR7wB/oNWdPKoMdF4Kng243D7DC0qDRyOX6krF3ZIH87XS9rJLk0Y894UYvB0eeGsKXQpp28c1ZNmVFQr1om6mYg==",
     "quelle": "Epische Stufen S. 51",
     "hausregel": true,
     "nurEpisch": true,
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.karmal_sf",
-      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 51", "excerpt": "Blick des Makels" }],
-      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 51",
+          "excerpt": "Blick des Makels"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
     }
   },
   {
@@ -28,15 +37,24 @@
     "beschreibung": "Geweihter wirkt auf Dämonen und Paktierer der Nemesis wie Schreckgestalt I (ab 50 Entrückung).",
     "voraussetzungen": "CH 18",
     "kosten": "500 AP",
-    "erklarung_lang": "Der Geweihte gilt ab 50 Entrückung als Schreckgestalt I für alle Dämonen und Paktierer seiner Nemesis. Diese müssen eine MU-Probe + Entrückung/10 bestehen, um nicht den Nachteilen der Schreckgestalt zu unterliegen. Bei Wesen ohne angegebenen MU-Wert gilt 7 + GW/2 und falls der Dienst Kampf ausgeführt werden kann, noch einmal +3. Ab 80 Entrückung gilt der Effekt gegen alle Dämonen und Paktierer.",
+    "erklarung_lang": "enc:3:SDuOs9DpEdRAJD/MAWnybA83ZTVFIO4WPT6Ly6aGSKx3qMi/2AQA9d/CozXMzgS6SGoOZAeic+on6RtwXjf7s/Pr25lukBI0sI8V0ULwpS3Bpfl5E+GWK6G7im27WT7p37+ObkQUIKLyVFRVNqESdEkV+9p2B8hsV+qZGcgOjAjr/mPUZ097/J+N3jpPFz3LRyr+EuyGmFev48vy43bWrl+ZB4tjO2pHha3Rh8MClBM63POAfVBwqOsGTnO7RJ4Q/+D8LCU6uaDOMAQjMChhxcqpYuCHIpXxqXDcH8so/uucN98QKYYv0mW9Thsz9pwY4SXr0EyMmc6R6mmfGHRHUsjs39KR2KIXhh+iM2bmgAhkCoVBRTE7/erUtbyl/zySyEOFOeTUI/k23BNWbvWifk0uX6IjBYhKuEMwP/fQ5NZRIPkQPkz9tgUPjAWERr8TVl2olR6X1m7AM3nyC0xpO9yZcD3vKGEewGDe+rPQih/ScnKH90pCJUe6wF1UL6yrLZExNhqcpKv9MvOVHcjdqL4rm8QPJ7WoAj5gZqKmaeiLbOS/rUDTDTU4nsX2dQpeMg==",
     "quelle": "Epische Stufen S. 51",
     "hausregel": true,
     "nurEpisch": true,
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.karmal_sf",
-      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 51", "excerpt": "Furchtbringer" }],
-      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 51",
+          "excerpt": "Furchtbringer"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
     },
     "voraussetzungen_struktur": [
       {
@@ -55,15 +73,24 @@
     "beschreibung": "Dämonen durch Hautkontakt exorzieren; Paktierern LeP gleich investierter KaP entziehen.",
     "voraussetzungen": "MU 20, SF Karmale Substitution, SF Heilige Hand",
     "kosten": "400 AP",
-    "erklarung_lang": "Ein Geweihter kann unter Anwendung dieser Fähigkeit einen Dämon durch Hautkontakt exorzieren (Probe, kein Zeitaufwand; nur 60 % der KaP-Kosten). Manifestierte Dämonen werden dadurch vernichtet (normale Kosten). Paktierern können auf einen Schlag bis zu so vielen LeP entzogen werden, wie der Geweihte an KaP aufwendet. In allen Fällen gelten halbe Kosten bei der erzdämonischen Nemesis.",
+    "erklarung_lang": "enc:3:UwGhE16uJlLHwVodmVPI2S8Jg1+t5jOLSM6cuRAJsqrz7xo0kFu3ktmiPsgRaYnnbUinB3DDm5ybw2XKPYLdvmhSqUiU6n0UDEvvwMGi1uCZoINXndhx/FJN6ckPVKY9VfcTHWDAbkMVzTkPoVQoCAyv5ibNY+aAReL5trdACKq3h2ZS06qNgwR22pF6todobuar/T87DIXXuCs50Q6FsLt8LtG50FgwHt+Dsj7SfXh4UDZMnbxaIpoj2aABVYt5f/CkSgztm2LBdzRel68GREBT/9Wk7R7oXpiQX8Y60edWqr78kSQqqzIKSzviZWFbU6QALYDmNE54kAvjmaV2nxNgWcqrHdeE8R+LzfVciJgL4I3MNw28aSl8yd8LrA5xtbfKYIYjAS599Qy1QRfBkHCKjMd8he8DB9FMpzX8H9+l4VJRRWfAKw0m5Z1e1ffPeuh+IOKg1/bXR5nonMYwFOVb2SMvT63CU2OVbFkTdANQUQj5z0a3l8WumIgAV6/R+BHYDyJhrVdk05UyusUiKGuw6x6Fr+BH6x9HGs6vCe5uYIKW",
     "quelle": "Epische Stufen S. 51",
     "hausregel": true,
     "nurEpisch": true,
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.karmal_sf",
-      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 51", "excerpt": "Göttliche Berührung" }],
-      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 51",
+          "excerpt": "Göttliche Berührung"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
     },
     "voraussetzungen_struktur": [
       {
@@ -90,15 +117,24 @@
     "beschreibung": "Jede Waffe in der Hand des Geweihten gilt als geweiht und verletzend.",
     "voraussetzungen": "—",
     "kosten": "400 AP (300 AP bei Kor und Rondra)",
-    "erklarung_lang": "Jede Waffe, die der Geweihte führt, gilt in seiner Hand als geweiht und verletzend, wenn sie der Gottheit nicht prinzipiell widerspricht (z. B. Fernkampf bei Rondra oder jede Waffe bei Tsa).",
+    "erklarung_lang": "enc:3:c7DZloMOI5tpqktl6OnPXemkfX9m0n8A8lAiCjTaE0PwhBt9Ea9z9+Q86704ixDHdMmFZ8FilEoMGws+0sBirSdEnHpDFoLY8QRphzRDn+RSSDeMEe3Q/k8GpJo+w6NZ37Dk/ZnV5yZ5PxpaOLkH34W/PNZd1++ex0pcDOgHZbUbdp1mvYFJ0bnGO8LC8YSewnRVqpr2LTV+pMUHWEQnYUMvz0PAhNqMIHgAr1Vfz2fZhnS1+qB6N0idR8ROnG9f6sr2Tpid8VnacJsb3DUN3f7V5nCyZYKBerXG",
     "quelle": "Epische Stufen S. 51",
     "hausregel": true,
     "nurEpisch": true,
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.karmal_sf",
-      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 51", "excerpt": "Heilige Hand" }],
-      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 51",
+          "excerpt": "Heilige Hand"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
     }
   },
   {
@@ -110,15 +146,24 @@
     "beschreibung": "Generiert Entrückung 20 % schneller.",
     "voraussetzungen": "SF Göttliche Berührung",
     "kosten": "300 AP",
-    "erklarung_lang": "Der Geweihte generiert Entrückung 20 % schneller.",
+    "erklarung_lang": "enc:3:boQRuadlhZcNVtKDnii0REhNmu/kIEXe5gHvkRpAQvxKo5QWrBy5UzfHN19SIum7oHpsoSWQapD/VjnOG6KhOnEV1OFgzV4JbG1BCbT2",
     "quelle": "Epische Stufen S. 52",
     "hausregel": true,
     "nurEpisch": true,
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.karmal_sf",
-      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 52", "excerpt": "Hingebungsvoll" }],
-      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 52",
+          "excerpt": "Hingebungsvoll"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
     },
     "voraussetzungen_struktur": [
       {
@@ -136,15 +181,24 @@
     "beschreibung": "Überträgt Entrückung auf Lebewesen in CH/2 Schritt Umkreis mit halber Stärke.",
     "voraussetzungen": "CH oder MU 18",
     "kosten": "500 AP",
-    "erklarung_lang": "Geweihte können lernen, ihre Entrückung auf andere zu übertragen: Alle von Entrückung beeinflussbaren Lebewesen in seiner Umgebung sind ebenfalls von ihren Effekten betroffen. Die Entrückung gilt innerhalb von CH/2 Schritt mit halber Stärke. Nebeneffekte wie der göttliche Fingerzeig sind nicht inbegriffen, lediglich die Verschiebung der Eigenschaften und Talente. Sollte mit Mitstreitern abgesprochen werden, da Entrückung nicht für jeden ein angenehmer Zustand ist.",
+    "erklarung_lang": "enc:3:F1XAotMXzXblpOkw1ai4ZstqJA74jglhKR6lS8HsynpBjiB4qLAMDuabC/TmeGGiNdfuOor8gekrjoQ5n6Pl7ZMGpuNkiTdD7KxaamE9H9AhXGFFq1MQuVnbz7Rl6IBO9kZRJeEb8KIGardPOmx0Yovk3fvGLvwhUSBgqKnBQ5hceM09JKPQmLBwmgRfUh9M/7Rnghle7kFdMdAxbhH9qU4hgGnWc2kJiHcW8pcw6OllYUTpEvN2pNEjuuuqCl7a9v4hUHJXqbYRNuJah3jy40xzdlUNHvLVm20/nAI3LDQlfSeOYtIJ8pOddQPKwkhincvcTPxA0tqRHBGzyIHrlbswnOoZL1tHcJUPoJRroS00II0CKqGFu4mscQAdH5jBI4eqc7S2sF1+IQM/r4H3/OJ3s8YkQQcIZ+dSNnSAT257fo7nNF/K6kSZkeoQDOk6FKg3iEmUw2/Lyz/5PTp1+DM8YbY97OYrj768cRxy0S4/fHB2SZrhjLSjdTM1qYm10/MhBPbEZlaMe8ybc/niXnF2gL6J2wxT60uMYAP0VhK8bHkSKAz0w4r7lOcJPqdDvrlh3Ox9W7KBJ5cyH5S5e2x5NTysc9/2KWQRLaG2SkqwPzf61tO2BkGOktVsoDCW+Krn8QpoH4wPql1YocuiOkmxjupegrgtJw==",
     "quelle": "Epische Stufen S. 52",
     "hausregel": true,
     "nurEpisch": true,
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.karmal_sf",
-      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 52", "excerpt": "Inspirierende Aura" }],
-      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 52",
+          "excerpt": "Inspirierende Aura"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
     },
     "voraussetzungen_struktur": [
       {
@@ -173,15 +227,24 @@
     "beschreibung": "Ersetzt 1 pKaP durch 5 weitere KaP bei Liturgien (nur ein pKaP pro Probe).",
     "voraussetzungen": "LkW 21",
     "kosten": "400 AP",
-    "erklarung_lang": "Der Geweihte kann statt einem permanenten Karmapunkt fünf weitere normale KaP für eine Liturgie zahlen. Es kann nur ein pKaP pro Liturgie-Probe eingespart werden. Nicht einsetzbar, wenn auch die Wirkung der Liturgie permanent ist. Es wird entsprechend mehr Entrückung generiert.",
+    "erklarung_lang": "enc:3:TDowBn88vJCEuG9+cLnYunv10ScrXzlNxYdtk4a2T+63usndW86unT4ZlVHsPvIxHjprw5URgGc4bY9SAvOii/ltQgPQvynnqnRcHlCvIYA7c/SFOjXk0cBxo2tROSvY7OcZpJdmh4XnhW/JLoP2lBm25DovrC6A8BKK9rSxEtVm1ab9gi3vPM6/by02yzF5UXeY7IZwXKpOks+FQHC/FrBeM1ukEfbVmPCyMJaQVEF9CJaDV2rSd7ZzwrgJgRpjo3UzKlP/tOlmbZsJPq/VuHgTQN2dpwIAYBRhk2VeS5iuV/Q5jnr+EHQylFRfTEZRTxZC/n8gzF+LDays4/eiD9j0xjcxIsyuHa1KB7c7ujudgjw3Cpz7Jc7gQPxWwXEvmMl2HLToAhVhnCHZsgL7oyN2spKc",
     "quelle": "Epische Stufen S. 52",
     "hausregel": true,
     "nurEpisch": true,
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.karmal_sf",
-      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 52", "excerpt": "Karmale Substitution" }],
-      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 52",
+          "excerpt": "Karmale Substitution"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
     },
     "voraussetzungen_struktur": [
       {
@@ -199,15 +262,24 @@
     "beschreibung": "Die zusätzliche Erschwernis von +2 beim Aufstufen von Liturgien entfällt.",
     "voraussetzungen": "Liturgiekenntnis 21+, mindestens 10 Jahre Erfahrung als Geweihter",
     "kosten": "350 AP",
-    "erklarung_lang": "Der Geweihte ist mit den Liturgien seiner Gottheit so gut vertraut, dass die zusätzliche Erschwernis von 2 Punkten bei der Aufstufung von Liturgien entfällt. Eine Grad-II-Liturgie auf Grad III zu steigern (z. B. durch vergrößerte Reichweite) ergibt so eine Erschwernis von 4 Punkten statt 6.",
+    "erklarung_lang": "enc:3:WrzGqwHYzUK6qJJ4j0/8J6S9ztajtr56SRJhUy+Rbwdp0r1tEUiDOFD8N4oTQ1vcCFdTPEaMa9CGYpiE5ppaEU/SFXF0/pfBJrI1DmnYKtlKwPWYvEaGYRGhuzP62thBImSuer09+v6cHmtd4F8l1g8k6D83hIoJR5CAZVulLNMDYnDcvzRGjMnxiYabkxK0N4f/cgff4ZImp/ubp5WadgPnEBLXtafFhTjlGMO/zP8wUzTJ7pyzTtbwFeFf17VD+c66nuCx9zwxfGpCGZwoLHvhgo5UwW0bGr6oi3UmhESUb6Dsq5CoNR1VsVJBhK+Ce1W3/w51wawknrMP3DFH1QDKFPja4GCtnnybOw/cFpN9HSOtbq471esOFvOyMoC0tS/GuIQeVxhc80PQj12KB+USK1SWkS+NHinuT+nrV8EiyHs=",
     "quelle": "Epische Stufen S. 52",
     "hausregel": true,
     "nurEpisch": true,
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.karmal_sf",
-      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 52", "excerpt": "Liturgischer Meister" }],
-      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 52",
+          "excerpt": "Liturgischer Meister"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
     },
     "voraussetzungen_struktur": [
       {
@@ -230,15 +302,24 @@
     "beschreibung": "Stoßgebet (2), V/G/allgemein: Zusatzaktionen zur Parade je zusätzlichem Gegner.",
     "voraussetzungen": "Zwölfgötterkult",
     "kosten": "—",
-    "erklarung_lang": "Grad V, Reichweite selbst, Stoßgebet (2). Wirkung: Gibt dem Geweihten die Fähigkeit, sich blitzschnell zu bewegen und zu koordinieren: Für jeden zusätzlichen Gegner zum Ersten erhält er eine Zusatzaktion pro KR zur Parade. Diese wird nicht durch Manöver wie Hammerschlag eingeschränkt, die „alle Aktionen einer KR\" benötigen. Die Zusatzaktionen dürfen weder Meisterparaden, Windmühlen noch Gegenhalten-Manöver sein. Wirkungsdauer: LkP × 3 KR.",
+    "erklarung_lang": "enc:3:9NJKdpvj5elikCGS6VEWpyLU9MYTnVxbNfjYOsUW78yfzccXwE4qtTzPOfyohq7CHk4wXZT86mjuuNxsNyYHwFwN5qrxqzYScqXjwQXUNRJhqUi8hKpDBaAWZX+oku8XUJ9QcdSzynum/COnR4X4nGOyYtQYwTOPNlTsQrv00IuwQfJ4qYYcKY0OrtCiafL1gtsE3+43wNJjeLcT0uqOXokSwjdwUHjOsT9XcSAxYt+4Yzgk99llFkV9MY6gBw8/4kLFhseVGChs09UHg3RlENrRuRDXIgP55L8rMdyrpJUeanMprof5OJjkQGsWc+ORnsaLYW75CYXrwLvdVr9gNq3uj2xRMp3RywWFk53oTselPXyFfMopMqaaxqfY3+ydiLe7Y+JRqoZMSzO53a9xAkGFIcd5CPldxiAUJyDtf/QqVDluMTpFTd9xo4a2121w5ozlPHyMB1kEq7JUKfWJoMCHzhfwoYRRWHSnYjp21e6n/OmOVvMrRFUlJSFGDr1cM0brNkEH0s7Q65RX7ar3d3I626388YufR9brghGFuHl+lQw3j/tM0OL/belzzJSBi2btyNCCL44lbTTEQAtEj6FIVZpgVMDcN8ju5Uoo45sRBSxFF3x/DeiLESzptEBjiR5CyQ==",
     "quelle": "Epische Stufen S. 52",
     "hausregel": true,
     "nurEpisch": true,
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.liturgies",
-      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 52", "excerpt": "Ausgleichssegen" }],
-      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 52",
+          "excerpt": "Ausgleichssegen"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
     },
     "voraussetzungen_struktur": [
       {
@@ -259,15 +340,24 @@
     "beschreibung": "Götter-spezifische Schutzliturgie (Praios, Rondra, Efferd, Firun, Hesinde, Travia, Boron, Peraine, Tsa, Phex, Ingerimm, Rahja).",
     "voraussetzungen": "Gottheit-spezifisch (siehe Beschreibung)",
     "kosten": "—",
-    "erklarung_lang": "Variabler Grad, Reichweite G, Stoßgebet (6). Jede Kirche mit eigener Ausprägung. Praios/Kamaluq (IV): +LkP/2+5 Erschwernis auf nächsten gegnerischen Zauber; bei Misslingen Praios' Fluch (SR lang alle Sinne betäubt; KO-Probe +LkP+5 oder Selbstbeherrschungs-Probe +LkP+15). Rondra (IV): Schild/Umhang reflektiert Hinterhalt-Angriffe durch Blitzstrahlen; max. LkP Angriffe; Rückzug beendet Liturgie. Efferd/Swafnir (III): Wasserblase verhüllt, gezielte Angriffe nicht mehr möglich, Paraden +4 erschwert. Firun (II): +LkP/2 Kälteschutz (Reichweite G, P). Hesinde (IV): +LkP/2 RS gegen Merkmal Elementar; Elementar-Zauber wie Invercano parierbar. Travia (IV, ZZ): Geweihte und Schutzbefohlene +LkP/2 RS (geweiht) und TP, solange sie ihre Heimstatt verteidigen. Boron (IV): Schreckgestalt I gegen Untote; Grad V verstärkt auf Schreckgestalt II oder erweitert auf Thargunitoth-Paktierer; Grad VI beides. Peraine (V): Resistenz gegen alle Schadensquellen außer Dämonisch + Immunität gegen profane Waffen; darf nicht kämpfen und keine Mirakel-Minus-Talente nutzen. Tsa (IV, PP): Geweihter und Schutzbefohlene +LkP/2 RS (geweiht) und Regeneration I (nur neue LeP). Phex (V): LkP/4 Schutzgeister gegen Fallen, unausweichliche Kämpfe, Stürze; schützt nicht vor hinterhältigen Angriffen. Ingerimm (V): Waffen und Schild durchdrungen von Ingerimms Macht; Bruchtests um LkP/2 erschwert, gilt auch für unzerstörbare Waffen. Rahja (V): Feinde in 7 Schritt verfallen in Rausch, Finten und darauf aufbauende Manöver pro Manöver +LkP/2 erschwert.",
+    "erklarung_lang": "enc:3:Xn5oV+QGS5IIy+IzRoH5D8D8MxUOo0GQwmeqCZlN4eHnZJUHuWhM6LH7JDHAfVcJOoWm8YdvAxWze/8BKORdsuLSluXvmqMNzB3Xm43sa7G2X+WbIUU/OeaSyqvpR46tr/x5ZQ5d6UHIG1V+v+1a6YgqWng8RUKGqkuaXgOq9IRjyj787WdXNaaIEt/h8B2Xp8z8EkWeGOK+iQ4PbeYbN18u2Cnu1ZarlI1aWhaSeR9Fm1tD6C0NGxXQ89GHXv9m/fF1sfa/wpygvyJNlEgGrV56WVJ8JMBWyGEW3pszjMBqO2joyDgToftUz3nIrYuJNnXvnUbxucdk7JuydzVB/3o4//XSY8DPpQaPt6GZjSWHr9xlhS33Pr0a+BrDy3VCYOVLaqmIuRLuW4H4xuO3TnRkZQojWn9w06ymplFLeVdDGBf9dQNPW3raiYfPIKCMSjhAH6NFE//vwMt0vb9weV1HGpMMPzlFuk1rZ7A1Myc/BsZH2z1fY7vxcbyNsqlp9KBGLVpGjMdNSHoQmAPYn2+sjwx/v3Veaw92i+MAtKYdFG98hcXw00GGX/c2+s/6nVc2fWgAwBHnglPo7rysgAH98Zy+Bwn1orvcpsCsvOQS2iy9Jqf8S6/Y7YOPxjVkeNHgCLedVkBXM8B0K/W4NBxnlHsWRF0EtRjdjp3V8Ou0rhPdOW0zeccTGT1mzymmC3XOEsZYWgAav16FzqwSoHm/lK7geOaF52tDpsBcDSzZ2UWr547oe8MkSfWbGQvdZtAIDvYp01gbMeDGWAOoxkI3QtlIpvaLc4461GPoeiYeP/Prlm837EqJfb5KK4XNHfMTBibucmNfebjvvMfbD3GkI0cEgv3yWZCzSJIX2cjyt4UH3452ON+4lp2OJp+hEtRlMxo+aS275YOyX3eATtCaFQRolNwDg/xkNX0sdGqyjLVMf/ovCZxldXXjVLxFR7wmoHmP9XQJGvfgeyLWjhnXSCsCJpzVKmxAlIr+HRsSr/MzrRqhP/kDRwR64tNcqTn+M25vP/dXXL7Q3kGLtzG+u1F1MRsenMcyXb+8kfb5xVqQ9US3xTG/8Cy5LwjicbvIU17WATf90CAdx7wBwVo5M19bFnCpyy8AeGYVdxeKkAQ5rWMvES1CiNjEhgBe4aCXyGe2mO41LRtmoe7Dxc3agVwUFrHtV7EzB2Q8lTrmD5ToPnmfk/fg3ujmmZK2RSg9G5eoe7RE7F77GBDFwSRd8uBh6u1z33zvOocX1LBlrC0WmGygGH18x9tnSuP5tyy55ht9SyEY7q68y00xoAyNesYzU9afiD63YWOJh3l1YVtmtTOBvQzLMFdtfrL3HTlmUR9PNMe4H0Go3/B0FuX/DLVOzJMQRl4FicwOulQa1SBWlPwNy7mjr+jny8Q9FFN0yZYfKEBsq9mhMozV3YJ1mH331BWTcVODHotPYN+XpTJ32TyRy1sSBOQwtCRBe1o62MVDjYNR1qyJzEjpmqubCxnnrdBpr+KzAAA4gyV4yUV3wLDtGvAr2BrZIp0MKJFnPcADPrJvG1gyu6r4Shv/c8/8IsXN0xmrOPE99fKu3AcEhQ1K4QydLzFoMz/04m8jLT4aTG17EQ0R468of2GFRJotkBSPRuAxcFubh4epeVyZ/U/GsCUJFNwNmb+f0WLFv0SRnheFED5q/QCM7v7GkL8k13mSrO++SI/TKfkoTO3C/kB87PiIZh87G3bUxEpJ7El7u4kAg3tKTUsA3dh/LD+IV0vV/sCturMftek80imfB3QQnbzqLudIr6TL0ZwTAeqste93EB80Y6gJ7b2OiaO1wapCIfihoBMmRCV3wGOaQof6WLan/AQwlxwdpwF306H4oQnG456bn7kZXhoK4eK8RDFCOisDbNUFBYd48khMESSIH1xjZTJJeY8+ZvbGRPhGbRzFmN7Sk1A/mdzKRE0QR4VC0Gjsx+O0f4u4iP6ZpXnZTusGpHWvGIuQpPelrtYcFJhmWzULEZ4iiu2be32XWA+1T8m9yjR2X5lInK68BW5AvmXr8ZtYquI2eZ6Az0qf/uzwhgiZU7A9ELFvvWjhDX+bI6jacoSlFhr3Pkh7coKT",
     "quelle": "Epische Stufen S. 52–54",
     "hausregel": true,
     "nurEpisch": true,
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.liturgies",
-      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 52–54", "excerpt": "Göttlicher Schild" }],
-      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 52–54",
+          "excerpt": "Göttlicher Schild"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
     },
     "voraussetzungen_struktur": [
       {
@@ -286,15 +376,24 @@
     "beschreibung": "Grad III, Gebet: Ultimative Waffe gegen Dämonen – bündelt alle KaP in einer Welle.",
     "voraussetzungen": "MU 18",
     "kosten": "400 AP",
-    "erklarung_lang": "Grad III, Ritualdauer: Gebet. Sämtliche KaP werden in einer Welle mit LkP Schritt Reichweite gebündelt. Dämonen erleiden insgesamt (LkP+KaP) W6 TP Schaden; Gehörnte die Hälfte. Diener der entgegengesetzten Domäne werden sofort vernichtet (mindere) oder erhalten vollen Schaden (gehörnte). Paktierer: für jede Stufe Schutz vor göttlichem Wirken über III halbierter Schaden; entgegengesetzte Domäne erst ab IV halbieren. Der Gesamtschaden verteilt sich gleichmäßig (vor Modifikationen) auf alle gültigen Ziele in Reichweite.",
+    "erklarung_lang": "enc:3:pCGxO4O5rg1hXmHFbE4NYALRPZpUOC5AQOp5A7GDoXEGpFqKyylAW6cm7OURr50VYNs7YrQ60ksgo7fRWlNFOGPlQN91Hc0HjZO5dQjQQa3fhrAXnISmL307pGXfzWLmgt2KfNYzUR2ftm5EA6obGcrsGbt2Tf9o2keAvUqHJhc00dgvjSwCRtEMH+eamNRtMJZs6Unzn7Y606gETMczDOFAwOaL4E2Qpxmn9IueGdkTEanKPPVle01BdbhZsT8QJvu3n8SbfoRpdTeL0m+ECYEh8q9nlEMGpvBUbP70lR3ofU905VchOMMkERkFYWUDXRmsQpsBwFjOdLaIUefuwztgtmL+043ARQuyRgy24wEybeMJj4zpXrqS6EmCr0zqxPdljKTjisF86hbnepX6eRVGW63zj5b8UXdJNmEIZpDYU/QiuojJviLhXJUtEYXpA7QdQYFsQooMhQVuDHZFkTNNN6qxM/pGnCdYNO5dta710ARxDDFRGffjrSK/NqN+zmYknzyJ2h3cNj/PrKNWcdxMSp1o1+dIcTkaKXE5BX7rxIWMgNMfji6d5j0tOBeR9/G+VOOXxI0c5CD1JnVkMMSbzfXbrk5yHSTs14qq+bS1vpfCLSxXeS4//XM8ah+0ZeqjL6l6fGR/B743TNN9DgJ8GAwNOM6KOtTvFj4PbzpHUxDEJRvQveNGZZKsB7CA9/f6oVB8FP+tftY9N57z36aVu3AI24ToJd1A2ZFDVEbNyRqu",
     "quelle": "Epische Stufen S. 56",
     "hausregel": true,
     "nurEpisch": true,
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.liturgies",
-      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 56", "excerpt": "Karmale Explosion" }],
-      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 56",
+          "excerpt": "Karmale Explosion"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
     },
     "voraussetzungen_struktur": [
       {
@@ -314,15 +413,24 @@
     "beschreibung": "Entrückungsstufen 20/40/60/80/100: Durchdringender Blick, Zauberabsorption, Wahrer Blick, Zauberverzerrung, Aura der Herrschaft.",
     "voraussetzungen": "Geweihter des Praios; Entrückungsstufen ab 20; Stufen in Reihenfolge kaufen",
     "kosten": "200 AP pro Stufe (5 Stufen)",
-    "erklarung_lang": "20 – Durchdringender Blick: Halbierte Abzüge durch Schlechte Sicht. 40 – Zauberabsorption: Wer den Geweihten direkt zu verzaubern versucht, zahlt +50 % AsP und kann nicht mit spontanen Modifikationen sparen. 60 – Wahrer Blick: Immun gegen Illusion, Einfluss und jeden magischen/dämonischen Täuschungseffekt. 80 – Zauberverzerrung: Angreifer-Zauberer erhält Spruchhemmung und Rückschlag. 100 – Aura der Herrschaft: Jeder praiosgefällige Befehl gilt als Heiliger Befehl (Liturgie) mit 20 LkP; Selbstbeherrschungs-Probe zur Widerstand ggf. erleichtert bei Position der Unterlegenheit; Befehlsausführer +MU/4 Bonus.",
+    "erklarung_lang": "enc:3:hzc6eL1uHT3Lslz6D1t6psbJxLpTl/XiftmogRti8k8owbU/ZmDQt8RvQbQ3k72ngQ+ogPfpQ9tZkPW9A1ZRfnaiMCseu5YDos5zJZ9x0hWZYW6MF+vpNqa9ARyT9mQ2HTQOScVli7539Stp3TANmHj6JbgwUW9vKDr7kUZNQUgtbFFR66fMbb+ZMGmC1Q+lkaV/fqo5CFxVHvnegvWFwlvMagb7211KFn/k+/xB9IAjwo4JCkSElzbd/z1hy5D2QmJJTsZpgcqGAR7gpUGzgJOVMDSYkB2TVTNYe+fsojqtNa3DfAUlb49GInh9z02KJykEpIuHscbD+xRbBBH3gegkjQ9ugoF4XlcMgxY955+gEZ4Ie1HnnzmqTYb0P4TaKjofWvHQRx/Yiz83y+5ZWaT4RqyatRIEGtZWrOoPiOYQjPntyCRJzP7PHDw3a91MRxcK5bty66rDb2d+VjGizcvJRyD4WWdKIyVPiR683O1XLV6WBxa7HYY5z5Edj8nFUlD12LySqXIg/OOqbl+eXF79edkAC2IWxCOduNzYeYVNHbYSHCQkWook85HG9seLEa/+tqsruUKB4Q1Kk6N/CPNZskVp8xtakqU/UOEyaszBoiJw/GuJ+JWRCmt7tqIIXY9UFDRbyEs8KUahnz1icbYHfvjWOa0OpWqZfiLY4YhK3VPJtknsCgD1PK22/yINFXiNLH0y5iJEUIkpbbGIBgNCkh1uzZkhQTAt681jp+1a0w9AsxnfpvNs4P2JJ4NU1xzfkZ2tAuZNKBu3AT2iQVbgCIkqpXoqQ+E0gvHhWmhD36djg3cUINxv7u9jewo5zmVe+xQDrmZxvVmZKUSJn0uFKy0MhVK/kGF3bN/qO68=",
     "quelle": "Epische Stufen S. 57",
     "hausregel": true,
     "nurEpisch": true,
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.paths",
-      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 57", "excerpt": "Praios' Pfad" }],
-      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 57",
+          "excerpt": "Praios' Pfad"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
     },
     "voraussetzungen_struktur": [
       {
@@ -351,15 +459,24 @@
     "beschreibung": "20/40/60/80/100: Projektilschutz, Perfekter Angriff, Demoralisierung, Blitzschild, Aura des Löwen.",
     "voraussetzungen": "Geweihter der Rondra; Entrückung 20+; Stufen in Reihenfolge",
     "kosten": "200 AP pro Stufe (5 Stufen)",
-    "erklarung_lang": "20 – Projektilschutz: Fernkampfangriffe mit Waffen blocken (wie Schild); Projektilblock +2 je Stufe; Schild halbiert Fernkampf-Parade-Erschwernis um 4. 40 – Perfekter Angriff: AT +6 erschwert, darf Schaden (innerhalb des Möglichen) und Zone (Beine/Arme/Körper/Kopf) frei bestimmen. 60 – Demoralisierung: AT +8 erschwert; Getroffener MU-Probe +SP/2, bei Misslingen Ergebung (nicht gegen übernatürliche Wesen). 80 – Blitzschild: Fernkampfangriffe von Blitzen abgewehrt; PA-Wert Entrückung/5, sinkt um 3 je abgewehrtem Pfeil. 100 – Aura des Löwen: Verbündete in CH/2 Schritt immun gegen Furcht und richten MU/3 TP mehr im Nahkampf an.",
+    "erklarung_lang": "enc:3:A0Wq0IiG7rZGYbGcvjlWNcDnMi0Aenl3S1XxjDb9E38azd9yhC3cw8EUj5CjtwOVdJOiYXz5JF4vPHj44KB6njkH05yNpPzxCzWQVBOie6XKNlnmA+hNxDgOWjgYd3O/qfhqgXET5NSSx7QrDVVTIAr8/za5n+9/mqPXJsxCuZcP1WIuvqIewDEYSkrUWX2NAA3zUvtVQWTBIvttMK1ErmwEdqC7lV+hjg0ZxqBnlGYoAzv3jIDzrxWgjWIhMltj+2kTac6PcsQ74aE+9YL4lpcfFizvXsVq4Lqhyc4Fo3Xg8pdeNnKpLWihbyiQldBmVpzSJMOPJT59Hp27e9A86Almvv51BEya6mwwJgUIM7yizLhe+ubRWRZKtG3C4wfSaRld0rWE81HgGeromVVCEs94F5K/8VszCWkxagcH7MRKpcMl/uJPn1p+4vLUiuFPE1uYLw1Ekap0BTJXPthTwgdb+su1W/CfoPophx8OswSdlky7gwAz9QlH0TBQYAzhNNgmRZyiGyW84F9k7mKmRMjggPSTqU4NcYKKfS0DPC5xmH1kgqxQ95ZvyBKa7nxpxnCkJQLqzuPcrpiSu2NpyUvOeUUX++zF9jeSTm5uYWU3fOmr89FyMfaIeA6H2OY+pwL4Oq0dKv+ZsazTZeYZc1Ywqfuy49S3uBA8YOZQNwVm4EoWmvc/LzT/4FJY0xzqhtQ5EjKcLJ69uoEOIToGBj8ZxWr6A/pQzkIr77uJZuphd5oPtI5abkxVGi7+QgYw2huZXgWF1Zy9kqXmS5B52V3cDBe88T0kNopJ3JHQfjq3z3iunLVM2470/fp1nIHnWPJoAmrInD+F50xw7utr2mROwxx9UT/5rJL+uWRZienHkVI12GCmRx56HhnROja27wq0eg==",
     "quelle": "Epische Stufen S. 58",
     "hausregel": true,
     "nurEpisch": true,
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.paths",
-      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 58", "excerpt": "Rondras Pfad" }],
-      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 58",
+          "excerpt": "Rondras Pfad"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
     },
     "voraussetzungen_struktur": [
       {
@@ -388,15 +505,24 @@
     "beschreibung": "20/40/60/80/100: Sturmsprint, Zorn der See, Temporäre Formlosigkeit, Sturmflug, Meister der Formen.",
     "voraussetzungen": "Geweihter des Efferd; Entrückung 20+; Stufen in Reihenfolge",
     "kosten": "200 AP pro Stufe (5 Stufen)",
-    "erklarung_lang": "20 – Sturmsprint: Verdoppelt GS nach Modifikationen; 3/4/5/6-fach bei 40/60/80/100. 40 – Zorn der See: +Entrückung/10 TaW auf Einschüchtern, Aufwiegeln (Überreden/Überzeugen) und Kampfrausch (freiwillig). 60 – Temporäre Formlosigkeit: Kann während Sturmsprint ohne Geschwindigkeitsverlust durch schmale Öffnungen gleiten (Teiler = 1/10 aktuelle GS). 80 – Sturmflug: Fliegen mit GS×2 bei ≥ mittelstarkem Wind (ca. 30 Meilen/h); nicht mit Sturmsprint kombinierbar. 100 – Meister der Formen: Freunde in CH/2 Schritt (und der Geweihte) werden formbar wie Wasser: Ausweichen +3, kämpfen in der nächsthöheren DK ohne Einschränkung, Atmen und Bewegung im Wasser wie an Land.",
+    "erklarung_lang": "enc:3:P9h6yoLu8n8jE+YM3tU0RTBTS25tQpL/NmIoh8lt6uL1pThHfdHEShTsLhgAJAuqyQXH0xHKTFPf6S7hB8/TZO0hQyx+rcdigro29qPDRXEeRskEx2vnemlfVX9wIHLRz5WVM+fFyNrlBzPuOPe9OHTq3PL3G6QZkbjBn3YysCqhUxE6xuu3igX58cxZpVFleMTTFh4YrZHklxEmJ+bXljLxN1UYPdaIo1jINB1Ss36HMXzAK0TnchP4lY/8YIMMKkfYqv8j5xopsZtoKddCF8+fFRdBJVsSigbNiLBz5dA4s9+wXF12TRSOgketnEfN2PrRRjw7d7WEm6lEPzx/ChSslHYiMXFLGi6Mc8UgS9fEQPyQHiL/qSloLv+bSb+F6ESXr/7Xtd7DFzXExshuzgJ1uy5CS6g+WD6g/difsMos33xEHbNHqt212ahCXJLQs1yG2b1Pzh6vzuk+357dkcDQJYuuR9ErJNJEnPtvAKlYUw8PXg1U0/cyLTWIC2w1bK3BDEb+uYgK3bNA0t5PHYaiM8BQ4d6Vuhoj/dRJlgTL8l6cddVOZKgf6cBUoOGcAqhzpfzw9x/i4/jH6+oqHfKu512xptG4gPtt62VU2pZHasEOt+GEcmKrbZSwXcY+/HF0xd7rhiD37PLSqFHhc5313UyNvOzbSeHnGCw8nX7NFjZlTHPaxA8FVP52ZKdm6ZdcwCJhxGA9aiQ8O9qrjWBX9J0jBQ8DSY+/SY7uLhSIGdOr42soqBSZrrSimJt+NQZofdwel9nyW810p9U/nC3g6PmBc3a1BTdQs/huHNSuUExSBIpkVZSCtpVQNbhtK5oPsFEOkCTErvXnp2+wMDDTBB09Eu1hqR7dybCJGM20efk20cSUw8p9RTSuIGelwpF1CN/szxFjC90xFf9l48JqPVzks/zLux23JB+ntuwXLbOK1RvrNDgh9rlPVjs=",
     "quelle": "Epische Stufen S. 58–59",
     "hausregel": true,
     "nurEpisch": true,
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.paths",
-      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 58–59", "excerpt": "Efferds Pfad" }],
-      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 58–59",
+          "excerpt": "Efferds Pfad"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
     },
     "voraussetzungen_struktur": [
       {
@@ -425,15 +551,24 @@
     "beschreibung": "20/40/60/80/100: Bund der Aufnahme, Band der Treue, Band der Einheit, Zorn des Herdfeuers, Travias Trutzburg.",
     "voraussetzungen": "Geweihter der Travia; Entrückung 20+; Stufen in Reihenfolge",
     "kosten": "200 AP pro Stufe (5 Stufen)",
-    "erklarung_lang": "20 – Bund der Aufnahme: Gastfreundschaft kann nicht abgeschlagen werden, solange Bewirtung möglich ist; Bewirteter zahlt angemessenen Preis. 40 – Band der Treue: Jeder Zwietracht-Versuch um Entrückung/5 erschwert; bestehende Konflikte ruhen je nach Meisterentscheid. 60 – Band der Einheit: Gemeinsame Gruppenarbeit unter Begleitung des Geweihten erhält Entrückung/10 Erleichterung (keine Kampftalente/Mirakel-Talente). 80 – Zorn des Herdfeuers: Alle Feuerquellen in Sichtweite erwachen als Feuerelementare (Geist bis Meister, je nach Flammengröße) bei Angriff; rein defensiv. 100 – Travias Trutzburg: Wie Zorn, aber alle Feuerquellen des Komplexes (Zimmer/Taverne/Dorf/Stadt); Schutz-Proben im Einzugsbereich um 7 erleichtert.",
+    "erklarung_lang": "enc:3:rhk/7oK3xhxwwTZ+W4kdELm3H9siw6MT+hIttwF2HgTSOGMPG4lIufimeh7feS8v5EvRK2lPm0lHZ6DQ118TsuW8KenF9yPjXPv1NWw0e7AP0rYodLmcioTSS45u0WMufzl3e9nlJJpHlnEUQPgNHjK7RAzMkA/qMzyHeQkIqBE0+Vc9HfM0UbTe/o4HAfi28uK8k5CdxIvPJE0K6E+hyjwjvK+3OkPKF4O188MyFRGpEerFSmN046qCAnctk5bu7ueU7wDDPuWip5nCtvOF5vBfr1pTschDGz9aUuXA9691f74oFA9B7V0FDgTiBML4l+sTD7loXqwxrfmnAW06XGK+9fQuvk+jhDJmnPTqpFIgRnHADjo/0juVqxsIKCcvLX7UOdFR5uYVGpX7ntRokZlpjk82KGQbM2B923qU4hBLEyiwNzcE5rx4LBVl8J8QjdE7zwZq6nSzbeTrIHePyri0xTXTDNEwqcM4Njhm7vME65v37qXmJebRLBwyEGGZpEh6GP09rJlGx/gBZfHbW4aQoQojG8Pa2o1wY+JCcl6EdnOjN63dtc9/JEgnlX1MihomJo6XbhnrJ1ff2crbg2PiZUEK80e58WN3zBOBPmz8NDsaInwW7rhDmK3giXb4eQmb4rQqcKqOdlZ1iy0jjye4ITRq4UuGPsni59jwUlira1B6Huycrp4LXnjsXUiHqFdoKQqIdWWgiIP64Ih0GmPLiQV5Z5TsvxO8q4kfE/AARCNJFUER6eGR0WI+pcaJ2BBcvra8tFoTOw2bo7yJ5ehDnS+9UIjbsR9gUJaq+JWMHWa3iBrvA9ZrK+DpL8/4wu0y42i1kSc7co+cbnhoDdl5JZcLZvjfJbeMQaFrIBiZyYCCEnmirxYNs+6xCaIFlUF8c8oeOlV6AtFUotMStS43ksVI3qfhOIAovM3eRQNcGhTAR0jsp9gZH9LClXaYfgwl4sxWY6uW67cp7UhYRg+oNeUndxmNN8KJrd2FYi/vJiw5SQQzenNNK7AGyej/r1s=",
     "quelle": "Epische Stufen S. 59–60",
     "hausregel": true,
     "nurEpisch": true,
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.paths",
-      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 59–60", "excerpt": "Travias Pfad" }],
-      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 59–60",
+          "excerpt": "Travias Pfad"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
     },
     "voraussetzungen_struktur": [
       {
@@ -462,15 +597,24 @@
     "beschreibung": "20/40/60/80/100: Borons Ruhe, Vergessen, Traumversteck, Seelenhirte, Borons Urteil.",
     "voraussetzungen": "Geweihter des Boron; Entrückung 20+; Stufen in Reihenfolge",
     "kosten": "200 AP pro Stufe (5 Stufen)",
-    "erklarung_lang": "20 – Borons Ruhe: 1 KR Berührung beruhigt jede Person/jedes nicht-magische Tier; Aggression unterdrückt, Selbstverteidigung möglich. 40 – Vergessen: Permanente Löschung der Erinnerungen Anwesender an das während seiner Anwesenheit Geschehene (muss bei Ereignis-Ende Entrückung ≥ 40 haben). 60 – Traumversteck: Kann Träume durch Berührung betreten, Realitätsdichte frei wählen; verschwindet körperlich und versteckt sich im Bewusstsein des Schlafenden (kein Essen/Trinken möglich). 80 – Seelenhirte: Wird „positives Medium\"; nahe Geisterwesen helfen mit begrenzten Möglichkeiten; +1 bis +7 auf Talentproben. 100 – Borons Urteil: Treffer führen zur Kampfunfähigkeit (Somnigravis 25 ZfP); bei Thargunitoth-Nemesis Tod. Verbündete in CH/2 Schritt +MU/2 gTP gegen Thargunitoths Diener. Schlafende Gegner in Borons Schatten verborgen (nur Sinnesschärfe +20 entdeckt).",
+    "erklarung_lang": "enc:3:T1zWJ0f2SPEBydnvsI70T/2qdvC0Aiq/WW3ixQre3KKGdAuS9bDx2S+tk2picup+/VzIr2PfMFHTAd1ytVK/ou+lTQSLsrPXsmFnrtKBlRSGy+trl34TK6oIia7BayzLhjaf5jI0utDZnj5/vvBXjtsfSztY2Al6YehluRgV2KpzDhYQEHetjhEdGC+B0zvTQCfrfAoBxYQkuJCmYTpu7N2izJHio1I3rhpmzPdIgqh9BRFX+spZmghQRgjS/PWxnIJEgD6W/GGyCDOv9C6zXX/GeD7jvJ7yl5Lopq9Z9n64kgrwH3QP9gmrvRsFZP+zTONhX+TZ3N7q4ckw3Xg3jrsBCI8IZxGe3IKjLpjwcxWfDsu5mAxatoTM+H+RwoYnictRLITY9pCwul7hRghb69XjWAQkX8OWzBzJZJgC+Y8g1ADCoMvuQKzhTyOLCMb1uZJo2wJDuaqM8lZ+gL+Kys7aZeROKF2rZqSdIxoN0re9ymxFCJGoJiRiC4JGtTe0St6ocjYY7fQv07vGogUt862k1rMhuADNcVoUxxl2ASqxJnsqc/GZGCmpYRWD+40K1dTPC5IFH8HK8YN3Eb9d9KcnMK+XVo3X9t6cBMyfAUrrI558u/ycf3CNRvHGPSXVoqtWXU0/6izYEnw6CJ71INlqD6LXrpoEjJlPk0Us1NySbIUkYk85ac2Di6nSS8nxnlXkJdjD09zXS7i/r1rWY0OVR8MURhjp7H1oJ/xTy3xp4s5/x9KFWgZhB7FljT+g4E6aOEX7eFYXJPLjzLT44bWwo2ScqEBSST9OmHetRSwxNDrOXp7Cu+iXDdFUja3G+yX/Yqu9ehyl3uW59WBKlSP2IfR0pCQg6/hd5LWNKEKeHbckNPA+6WutdE2QLvlQzNBmBmVmc2DkNF0hAr3puY4pzj15NUNyuaFB4Xbzb7QESTxpdF2JJ0spS5pXvUUqUqeU625zxJ9VBI6r2OB2jtupgHFnK7GCOf2tgfzM0/fCrZieGhOUR/LTGizHrdI7sXYOeArHAK4h6TMg+5gdKo8LW/4xT8Lcyn5yzzrr3nqR54zfr282Z+Z/Z+hOMUXWYnnUXLHCByypg7aMZ4KBHYuHt+Hi447yJYVumG/WhD4gyNrRzec0pmg/V74LTcTJgAvBU7QSi6N6UkIx7hFRzRCzdZqxEKynCtM3G0hAxQ96Dz3KV/B3XGNdizGEqPoWxFxYzckRLro=",
     "quelle": "Epische Stufen S. 61",
     "hausregel": true,
     "nurEpisch": true,
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.paths",
-      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 61", "excerpt": "Borons Pfad" }],
-      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 61",
+          "excerpt": "Borons Pfad"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
     },
     "voraussetzungen_struktur": [
       {
@@ -499,15 +643,24 @@
     "beschreibung": "20/40/60/80/100: Gedächtnispalast, Präzisionsblick, Magisches Auge, Zauberblock, Elementarherrschaft.",
     "voraussetzungen": "Geweihter der Hesinde; Entrückung 20+; Stufen in Reihenfolge",
     "kosten": "200 AP pro Stufe (5 Stufen)",
-    "erklarung_lang": "20 – Gedächtnispalast: Alles während Entrückung Erlebte bleibt wie Eydeetisches Gedächtnis erhalten. 40 – Präzisionsblick: Sinnesschärfe-Proben zum Aufspüren von Dissonanzen (Architektur, Gerüche, Mechanik) um Entrückung/10 erleichtert; nur Fehler-Wahrnehmung, nicht Hintergrund. 60 – Magisches Auge: Wechsel zwischen normaler Wahrnehmung und Oculus Astralis mit Entrückung/5 ZfP. 80 – Zauberblock: Jeder Zauber per waffenloser PA abwehrbar (+8 erschwert; unsichtbare Zauber erfordern IN-Probe+ZfW/4 vor PA). 100 – Elementarherrschaft: Verbündete in CH/2 Schritt immun gegen magischen Elementarschaden (≥ 1 AsP erzeugt); eigene Elementarmagie kostet 1/3 weniger AsP.",
+    "erklarung_lang": "enc:3:qyCl3WapZEH6cDxxKuMf2njj0EUilDqL+6rHlO56jUKADwTUytdFzuuBK9mYfGlUDjgq+Wv7XcGdK3E2pVLldBk+XJ6kM6oVW1W9ce49BRV8KA4LKv/eytjwa6GI8CqShpP5m8yQmMNx1hQ1YTqBy9Bw73Cy3bMBSewQSywmvyliLKuM4RS8Qd/3KaVdk14Ad1koErXypfxBt0ILa0YWC1C0wRQaankLYCV1vXypTg9cXqh7khEoAnTYwcsyRrM3SDsf0WK45rQSNFCneqvLUvRYDVtH2lQUNAlpZyrloYNsxtW+bK0ZRJF7ZwFswNDtSseA7O8Ii7EeZ/mLbQW8smo+bTPHLZ+O618zf1r7Qc3KuVy3hiop/7yuEu6MQowBQbubGYdHA3NcSopxkcLxVZYQz7Q5c2F3fYdpkcelIqEwrrcsQgyxaNvpn4yHp5Z4Uo+ThTfDZ3bVOuLPkmqUTEjEl2dWcSXH1MAOTm6LbfqU7QLbq9JSXQNE/wszxZIq/5Fay4Nl0ZJYElM9jCa/ahAsxLXna8Yt4k73W1YdWKqIgaN2i1LniHHwy0ec5ad4lG+VOYNKHCXv0aj2uuangJs4WOMtA+87cNs90arwJhfmx+HAtIeWEToPxZ6CjK/LOUtCg9vIVO0uQeVxqaPRrkxsg/pu4K4tYusoiM70+ZJP/uB8cIcAtUvEW1wa+vseEVur7H5F+mDcpH6x/BsRrFqG1XlUZbHVXOADu+lreg4wBGa+7fmNf07BY3QJ8q/05DdMFLxPd0jxx0i22SIk/yYFSEde6s90QXEt7ZiVma2HTdiPliOwcDjBws+vTrcJpDlwMUsRXyyHD48ysgxg+oGWfxTvgZbOEYL5okwzIpXQluKHv1GxB6/pgeVaj9e4o89eG+j+u6JnIddcF40/Fa9afh4nsh+oU2otHQCHYeiD9GkgmKw6wPVhOIjq",
     "quelle": "Epische Stufen S. 62",
     "hausregel": true,
     "nurEpisch": true,
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.paths",
-      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 62", "excerpt": "Hesindes Pfad" }],
-      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 62",
+          "excerpt": "Hesindes Pfad"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
     },
     "voraussetzungen_struktur": [
       {
@@ -536,15 +689,24 @@
     "beschreibung": "20/40/60/80/100: Eins mit der Natur, Adlerauge, Entsagung, Jagdinstinkt, Unverwüstliche Aura.",
     "voraussetzungen": "Geweihter des Firun; Entrückung 20+; Stufen in Reihenfolge",
     "kosten": "200 AP pro Stufe (5 Stufen)",
-    "erklarung_lang": "20 – Eins mit der Natur: Chamelioni-ähnliche Tarnung in der Wildnis mit Entrückung/5 ZfP. 40 – Adlerauge: Misslungene Fernkampfangriffe gegen Dämonen/Daimoniden/Paktierer dürfen wiederholt werden. 60 – Entsagung: Muss weder essen, trinken noch schlafen; unendliche Ausdauer. 80 – Jagdinstinkt: Ziel kann nicht entrinnen (Magie oder Verstecke nützen nichts); Geweihter umgeht Fallen, bemerkt Hinterhalte; baut keine Entrückung ab solange auf der Jagd. 100 – Unverwüstliche Aura: Geweihter und Verbündete in CH/2 Schritt immun gegen natürliche Elementargewalt (keine AsP-Zauber); nicht in Extremfällen wie Lava. Kann einzelnen Gegner als Beute markieren; alle Verbündeten richten +IN/2 TP an.",
+    "erklarung_lang": "enc:3:wuXiG+dowOTdjseNJRMG+GPAYeNFQyads7HxSEAlBTVrdMEr9v82lR6aSX+K2cJfm+DJZje4A280YCOXN8nNt46R8cdGKfOw4B9t7IzQ1RrCOzrQ4HCJUrEjG+UYfyhijaDwiBOVPKq3+v7TiOTg6cKN+j6kFpLsSVdMjzDowBtYPC1ZNdckcPiH0s5di7IXG2U2PfoglMrmtgnBJwlAG86pzF1Ur5+yi7Ejdof5UORRbhGVUqmOtXIg4VjPhgVr6nenoXDHdHuE4HVWNtoVJaRr77RboIu8IJ0babz3uE1Sm2eFSS2pXiIRSBr27fwmRLE3c3DlOU1XlUWMxSPwNad0wKoRE6MsL8sSs0OGxva9x7JRpzhuKfv+CjhsQ2SpktPWw26ccnL9geB0BFM5li7tyEQRxxLZBh7XKg7HseVci+j8mTI/mGVKb2UodP3OXmLiOBnkxXocQ3MsGokUuFrORI+rdcKklDCaY9EKLxj3/LnShej4e64D+2IzOjogiFrtoLsH1IHE7to+OEq+KI3/51Re4M3E9mR79LmDCyhuMdZeYDPI1KkO/zLknQYtE0Kuuj3lPHsW6L4yULWrUhsGy58Upg4VsvJoQ88XhS7x6Qpmkr4FoUMGsAJDPfNcxg9OUW9DzREfFzUC3zTKJs3gsPbmKr2p8ZIzTdUqqMmXEVtupqf3IrEm+pBLREdRYvpSm3r76yf2Hn7EaXqLPPrWdiTMbl3Wr5sforOr6Yk88RTRYGDQUPJ3RTw0xIiBdVUIOnJwP2ANtjtZ8frGNjqN31SNaXOcqb9go0yVo1xY5NEq3O+aTjlInZ0oJYHiHxiStYQKo5DKjklwpm4zQTUq+WsrZA/FPky8dWTTjeU4bgTV703RZpGMghb+Nd4widXQjImO1BLxZ900rB2oMwu0a4p36PSuUzfLoEv7Jrt1Qso/XkYQk1nxl/zrggMxHHN5S6pihLYhvfiPG0pfQZ68/g==",
     "quelle": "Epische Stufen S. 63",
     "hausregel": true,
     "nurEpisch": true,
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.paths",
-      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 63", "excerpt": "Firuns Pfad" }],
-      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 63",
+          "excerpt": "Firuns Pfad"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
     },
     "voraussetzungen_struktur": [
       {
@@ -573,15 +735,24 @@
     "beschreibung": "20/40/60/80/100: Friedenstauben, Echsenhaut, Tsas Ohrfeige, Unbeschwert, Lebenshauch.",
     "voraussetzungen": "Geweihter der Tsa; Entrückung 20+; Stufen in Reihenfolge",
     "kosten": "200 AP pro Stufe (5 Stufen)",
-    "erklarung_lang": "20 – Friedenstauben: Taubenschwarm wie Duplicatus mit Entrückung/20 Kopien; getroffene Tauben explodieren in prismatischen Strahl (SP wie TP, keine Wunden, LeP-Minimum 3); Schaden verletzend gegen Asfaloth. 40 – Echsenhaut: Schlangenmensch-Biegsamkeit, Körperteile (außer Kopf/Torso) abwerfbar, wachsen binnen der Phase nach. 60 – Tsas Ohrfeige: Raufen/Ringen-AT + vergleichende MU-Probe (mit TP(A) als Bonus); bei Sieg Ergebung unter Flagge des Regenbogens (20 LkP) bis Tagesende. 80 – Unbeschwert: Vollständige Immunität gegen Angriffe auf die Psyche (Magie, Gesellschaftliche Talente etc.). 100 – Lebenshauch: Totenerweckung (Reversalis Schwarz/Rot) oder Wundenheilung durch Berührung; LeP und Wunden regenerieren in 1 KR; bis zu CH mal pro Tag, nicht mehrfach pro Person.",
+    "erklarung_lang": "enc:3:BORwILTMH3kXyRgQE+JiODKwcWuECVxP6d4bJ6ikNxuxER6Q9Y9/yf6lyF9xAAQGokm5ePBwL8yb0Q6ViOVWKHsrOMQyzSDK62Ce5EyLav8WDYlk5oNu54TNi/g2Nny5WyNasAU1zklmzEp4nHxdbuCRUxD5v+Xo5qN+RyaA/G3igy5HRQrvpdDzc81L/PlYgp6ECDOwu3SQ9sSWszkKNJn13XpnPMVqhW5MjhniuiQf2SFM0MQwDhROweoEb7ZDeW4lvdGKtBoXtVfBWz7X9Br1hyDnltNzhbRNXgRUMMkItgLNWEp5bEWVOYaCuTNqzPeUYo9lFp9Dwqxs3UblHpK9t2jo9suK/F3Ed84nPwaKBobfsntSEGXfkM35+pnUdRwnaTds1XpnK3/4fEqfzuWBIOOWRXd8sc8+YRK9r4cFwcWr8XDjM0YYpjeTH0HkN2mfTCuPVigD0Ta4VVlpXYyj3aklyjPYhKobStiSFxWEhh+uFYwLWHq3/nIC+dN7d2Xr7fp1irGpUgSv1ioJ3bD1wNzpY2+lFN56h6SBI2uBD+wc6t09flZ7WuAIMiZLkhOz8yDHBx9OaOdxpbpaETxjGGmgXj1hi3/bMsw/fAiIw/v5iOj7O+Kjtj40lT8UA81F3NEE/Q0d007nvbn9ig5XkZivOfpWPKSouStgjhjchFd9g8yNLHxtalGI2l9Bj9vFKUrvVErN16EwzkjqyPX8/LOjnylEh/V3yChfgcqrTP8l5HMrA4a2zqUeVBCM6e4p/vMLHGf3a8B85A7Lin4xLQcqmUI8N7HOlhFFldXVmozHpmWfQbyhhldD67qNIy23d7hPAC7dtpbcIQs45J7aC3belTsXYAtln2EGyQfJrTzUnrb6Q7oNtZMXBfWZ9s/8TSh09D2O/ju7j/QdeTSczbf32vuP7XzGpNU+DbMTAk8hhZ5VV3O/MVrb5dShiia+EQJsHtnKVWMaT1fFGLCL9OV+MK3zCm57IWtKP6xYCcFprl6ZtP2U5jslEVqi53W2i1qY2r4Ff62spX1+dE0TYZvYb0O9UNPDxQA2kHyI4P1rMPWb+yV6+LNBZeounK36",
     "quelle": "Epische Stufen S. 64",
     "hausregel": true,
     "nurEpisch": true,
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.paths",
-      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 64", "excerpt": "Tsas Pfad" }],
-      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 64",
+          "excerpt": "Tsas Pfad"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
     },
     "voraussetzungen_struktur": [
       {
@@ -610,15 +781,24 @@
     "beschreibung": "20/40/60/80/100: Herausgefordert, Sternenflug, Mysterium, Enigmatisch, Glücksbringer.",
     "voraussetzungen": "Geweihter des Phex; Entrückung 20+; Stufen in Reihenfolge",
     "kosten": "200 AP pro Stufe (5 Stufen)",
-    "erklarung_lang": "20 – Herausgefordert: Misslingende Proben bei überfordernder Erschwernis (> TaW) dürfen wiederholt werden; im Kampf gegen überlegene Gegner ignoriert er Entrückungs-Malus auf Kampfwerte. 40 – Sternenflug: Gleiten statt Fallen, maximal doppelte Fallhöhe horizontal, immun gegen Sturzschaden. 40 – Mysterium (zweite Stufe bei 40): Setzt Gesprächspartner ein unausweichliches Rätsel (solange keine Lebensgefahr); Lösung durch Ziel wird von Phex mit Geheimnis des Geweihten oder Offenbarung der Absicht belohnt. 80 – Enigmatisch: Konterproben (Paraden, Menschenkenntnis, Gegenargumente) auf Kampf- oder Gesellschaftliche Talente um Entrückung/4 − IN (des Gegners) erschwert. 100 – Glücksbringer: Gefährten in CH/2 Schritt dürfen 1× pro SR (im Kampf pro KR) Probe wiederholen; W20-Wurf 2 zählt als 1 (aber keine Speziellen Erfahrungen).",
+    "erklarung_lang": "enc:3:CozdWncFsFIA8xAqf0NoOqt96NNYZ0bNUgoWJkyNQb6ntCt1n/ZCWqj0TLiTDkFckH9SCfEPZy1xhHJbzSXoJ8/7OohrNCBBn4mnUkZ4vrgwz8AN4KlEh4vhFu9e+80bwU+580PfYnWA9qfIbd1wwS74f15muV0AQIWhtmJ6/muhddQKrp7si4Y7dRiVuZ0Elsri48GL/U/1Tg63IhYQWT4IdvvzwegXbFpKE8oGR7p4Tg00ak1g0/YKEffbrrWBI5RL17xP9Wj25K3ekxuiPGbhtWnjQckIpvnO+sN0prOAAeT1Go8cDC8QzKNRP2Dz2jB8er4gwkZaW9p1JY6cHdG/5WmJYB2XcG4ujyULLQZK0fU+/h+SKXOe4TBC64ITKNGjjk4WXBmgai5+MkV+mu+JdmC3LfMXUFWAC5Hp+LrbyL9Hdy0qxu2ThHzVDbYfpd9yKcJZ15MLjwI4rKeN479zTnsWtNAiJGzXqWpxOLC8ru1MQkPzBwP26pD8x14XMsxQZbP0lAUNTln5SUz0KO7+2sj4whiIpR6h//uUn7UrXVKBs1lcOAICF606shTSWHXqJqKLXI2upqIQwa2+sbRo0/wMVA6shzrw60eP33zIc6AR7yKSJXpnYOWr/oWcCxQ4vClWvWfFLd3/XWH5K6nNF6UNohlxm4SYjhKCvJrUHSr5p+FmuYt7aPAfVj2DVc6zkBUCa9z2ezBJEKJeStYs3KlRYpI2lIIntrfW7MHTLpYc0bmGhlMwbW6X4Q8hICx7uuL3Wi4TCvhvNDasHzrZ8gkGZOhhk7RdFaAUwCy67xRRxzuLd+ioK/q3Gi6kgCRKUq2gJBQyU5U9qdjjqh78UTOVbvgx56sEP6S+aG4iqMYE4TAg2rmQrhOQjtPvbp0rax2X+CjMvHIU9XiPgymZv9QTnCOTAQIIY8giyGEC/rYUDlOhcgnPv730rfHT904FZ2e/watgX+PeV6Ro33seOnjaAKxGrL6+cWsr9CD8mUZlwvFGwD7EsX/m1X/tnckbdZDPUJ0YnRU7FU1zvlTn9KEr03Z4hWGgF45F/sUffZAyqaovo03bRZJM0Mc5gOG4rgUtzOOGqVqxkt9JmCKFoA6KvF2/N1GsFn9aBeKDCPCMk1WKFgnZ5lTD16E6W0tpnMubcBmBPNfxW1ZTghPohZW1",
     "quelle": "Epische Stufen S. 65",
     "hausregel": true,
     "nurEpisch": true,
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.paths",
-      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 65", "excerpt": "Phexens Pfad" }],
-      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 65",
+          "excerpt": "Phexens Pfad"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
     },
     "voraussetzungen_struktur": [
       {
@@ -647,15 +827,24 @@
     "beschreibung": "20/40/60/80/100: Humushand, Robuste Gesundheit, Heilende Berührung, Rache der Natur, Fluss der Heilung.",
     "voraussetzungen": "Geweihter der Peraine; Entrückung 20+; Stufen in Reihenfolge",
     "kosten": "200 AP pro Stufe (5 Stufen)",
-    "erklarung_lang": "20 – Humushand: Ranken an berührten Oberflächen; Klettern auf diesen Flächen +Entrückung/10 erleichtert; heilt Pflanzen, macht Boden fruchtbar. 40 – Robuste Gesundheit: +Entrückung/10 auf KO gegen Wundschwelle, Krankheiten, Gifte. 60 – Heilende Berührung: 1W6 LeP/KR durch Direktkontakt (Ziel in Ruhe, nicht krank/vergiftet). 80 – Rache der Natur: Pflanzen in 7 Schritt werden mobilisiert (Bäume, Schlingpflanzen, Giftpflanzen); Angriffe geweiht und verletzend gegen Mishkara-Diener; AT/PA 17/13. 100 – Fluss der Heilung: Verbündete in CH/2 Schritt heilen 1W6 LeP/KR und sind immun gegen Erschöpfung; Heilkunde-Proben um 10 erleichtert.",
+    "erklarung_lang": "enc:3:Ty3o2gKcIKVLs2MXpw4anrA3Em4lxSlRg/IA9ZCrbz969U0oE+VWV6lwvI0Gt811OZclQDDBsjS6xEWmdmNPuCy+TdeEjEz95pfy20Vk/gAJ2ucL3ySp5Ua8lpIWG4lSYAi7/rAVP0NiSJhh2tHcdlnY5nEsi/6MMda0BI+2v8q0/LGY2F5xhDdi58c8CYmmWOmyBnLv3iNhy9g3Q/3SGoVtL36Bs3m7InLQNNs6zgUpPStAq7MVxX3qywJL01tejJ2wiiGhtyUoU8XOKgXl31lTl6VnZcE5/lL1msgY9i/y+scg/Vdp+lGqCRRLZD1FPfRPznIZzDP5KBp5UPk6+1uWIf2xbfkPnAS2dqoL1xq9g33nS9swwiRY+h09QXcxEKC4RD+VhX9mCaFw7+UWDefUEo6Y/Rgl3l67S7A9cqcoHFLj/7rqjo3SSgjlL7oeMQKRYhsB32wuO2TeulCxVHuLE1Fr3hEHtIrTSH8J/oUDHkX+i/XP8cxY3o6ka2xHFTM8ZkreEn4p0peiCvBWs6VVO8xGvvEulA++H61LDkRwboaB5FXojX0omQ+dHsMKxHmJRLSzemrcbLyug+2yp0/9TCYzV+VgkWLdvidmNiLrYE7zIwOe/jaqxdQmMCn/+b9qslSBzQultMuxaSsG0futYJ5BwAjw7DuRZdoLTirSOSyGEsdXEie903eda9Qv4efPEKYQsAtlnRjSm9Y7ntDBCvKxUbIHTFMpIk6kUVlHEej3lOc1170h83ugkvwAwuxj8L+cb5+2fQ2eZRMWjs9YdEYwJ04/Y8OVMEHPxDsGDIctp1wNQiPR5hBWbv8dWq33XFxxrMkK9PINk2gFCceMl3UC/7x/K8hQ/XEct5YzTDiKFcUn4nHxMAq0Zl3J0W738U8rypgqq8I=",
     "quelle": "Epische Stufen S. 66",
     "hausregel": true,
     "nurEpisch": true,
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.paths",
-      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 66", "excerpt": "Peraines Pfad" }],
-      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 66",
+          "excerpt": "Peraines Pfad"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
     },
     "voraussetzungen_struktur": [
       {
@@ -684,15 +873,24 @@
     "beschreibung": "20/40/60/80/100: Erz und Flammen, Meister der Werkbank, Meister der Schmiede, Esse und Rammbock, Herrscher über Feuer und Stahl.",
     "voraussetzungen": "Geweihter des Ingerimm; Entrückung 20+; Stufen in Reihenfolge",
     "kosten": "200 AP pro Stufe (5 Stufen)",
-    "erklarung_lang": "20 – Erz und Flammen: Je Hand ein Element (Erz ignoriert halben RS + Strukturschaden = TP; Feuer +2W6 Feuerschaden + entflammbar); beide bei Zweihändern; Ausrüstung geschützt. 40 – Meister der Werkbank: Berührung zerlegt verklebte/genagelte/vernähte Objekte in Bestandteile (nicht verschmiedet); Zusammenfügen in 1 SR. 60 – Meister der Schmiede: Wie Werkbank, aber auch geschmiedete/komplexe Konstrukte (Uhrwerke, Kettenhemden, Fallen, Schlösser) bis 50 Stein Gewicht. 80 – Esse und Rammbock: Flammenfaust bis ~1500 °C, Erzfaust 3W6+10 Strukturschaden ignoriert Härte; Metallbearbeitung ohne Schmiede (+7 Erleichterung). 100 – Herrscher über Feuer und Stahl: Verbündete in CH/2 Schritt erhalten Erz und Flammen; Geweihter kann Element-Fernangriff (21 Schritt, 6W6 TP Feuer/Erz, 2 Aktionen, kostenlos) und Materie auf 7 Schritt per Esse-und-Rammbock-Regeln manipulieren.",
+    "erklarung_lang": "enc:3:rXstlvveduhvFa67CQgaIYj7EGXs1VgHu2Bm1uT1vEcdArCbwq3BJ3l4Bg/qR1D9olUE1WsZPO/iXXx5s2dhn6/3TWbIK/GwnsBvSL+tJiE4yES8yDiTEyTXRACa3EOywF9P/HW3pQedIeBX2R6ycq0Al5AZaRvE77X+ITeJhnClPRrIASacl+EeeR8tlXQycDH52miRLFTb+++tQioHYjVD0dri9zWzHKj+8JpSIetSwDSPFx4U0Ig6tYiRqc+sSTuSJTpn5qeknCpOFLqnjgUM62v0xXgcKfRPFmE6UKDJdirzOL7t9VYaTKowcBlFPYzUYwO6ChjPAV5Ox55q9bQfdzZs9LXVzCkvFmNEag/UWFKXtwpnf8Umhu3UzimoEsabmDXRXLbdPayyWOPAyEufZymCVJ+u53Tp508y8fHTlb9Za9iiUT+UDQDAgA0HTjJt5vfv/TchYQ1GHeNWCekKzqItqOE1LfYDIWmnYZq0ToEVUdiuGjTjiJ6+ckqPdcW4DACLLdiAKN9tMkCXK7fxHgluStIPKUL94k2qWF1BW8/jLh7upY99pU0yt1819c7FSIOM+8GmQOUP9PfCwAQhiviTwN39bhAEiPmM8frECWHUCk8EXGqdHVV+CKRPPCZ2SByzsyNht3wqXNQFBYrfaVKBrz7mLq4YCFfFYHNEo4hulnf9YNtR4xHkQ/0KtiBgAROkpO6xCqN1tnZuiUtuhk8L8h3lQIJt1+lUbqxWvkFGMQ7iwcZmiSjWBZeLrecCRTAQXclu6hBboXDxCQ/RXysBwUSzfdrk6FRijoF7CRXay+BUQIZcEoQ3cJSpnNjH9dGqBOf0QwZXDna/4qscAUSukjdtNgbjJ4Irx26kMIUgW1wkhO8qUPVPRfw7aALzbITv9b82K8SW9oLPR+vYFkH0ZwpubtJ8dq+Vn0LMqy1hHX/ZZSs2LtevH946wk3jJ7CfM9w9CbQjiooJYPFhJUeEssiksKbinxG6jJObo/zWMW7oBcK/SO83llwUnV2vXliNEd3UqiE2eW/PG5cUDcRrDz/9QTjIZCC6OsB5+zPg3Ryz8JbW4R7r2qtTGsYeSjg8FZlsM/LkW3/YIEyJqVzU2z/3HFVaaSZCM+p7OYxZ7qsgdKnr3/s24Kg9DUZECDgloZqYoIqgHxcccYL++lys7LS3R6Yr3G1q57VAPtSvcM2gO0xQvDZ8KQ0V1W1+UMFg",
     "quelle": "Epische Stufen S. 67–68",
     "hausregel": true,
     "nurEpisch": true,
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.paths",
-      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 67–68", "excerpt": "Ingerimms Pfad" }],
-      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 67–68",
+          "excerpt": "Ingerimms Pfad"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
     },
     "voraussetzungen_struktur": [
       {
@@ -721,15 +919,24 @@
     "beschreibung": "20/40/60/80/100: Göttliche Anmut, Rahjas Leidenschaft, Königin der Nacht, Rahjas Verführung, Aura der Harmonie.",
     "voraussetzungen": "Geweihter der Rahja; Entrückung 20+; Stufen in Reihenfolge",
     "kosten": "200 AP pro Stufe (5 Stufen)",
-    "erklarung_lang": "20 – Göttliche Anmut: Entfallen bis zu Entrückung/5 Punkte Erschwernis auf Gesellschaftstalente durch Unangepasstheit (Kleidung, Kultur, Geschlecht). 40 – Rahjas Leidenschaft: Zusätzlich zu vergleichender Menschenkenntnis-Probe ist auch eine Selbstbeherrschungs-Probe in halber Höhe nötig, um sich dem Bann zu entziehen. 60 – Königin der Nacht: Berührung wirkt wie Levthans Feuer (MR ignoriert, Selbstbeherrschungs-Probe+Entrückung/10 zugestanden). 80 – Rahjas Verführung: Blickkontakt (wie Vipernblick); Ziel alle 5 KR Selbstbeherrschungs-Probe (+10, dann +15, dann +20); bei aufrechtem Blick wirkt Misslingen wie Bannbaladin mit max. ZfP für Entrückung/5 Stunden oder bis Entrückung unter 80 fällt. 100 – Aura der Harmonie: Schlechte Eigenschaften jedes Gefährten in CH×2 Schritt sinken um 10 Punkte, insgesamt max. 25 Punkte (möglichst gleichmäßig verteilt).",
+    "erklarung_lang": "enc:3:Nqw0W8eI+QtwLnFyCNSPFVgyVjOW6927J6CNttKEM6xPQrHsg3YGC4+NFXh2XPBCDNzMd9v/DHmJQQxz3JjWhEhGc4pngQPf+v87cszfyIhQk/Qq3ZxcwvyHjmGR0rV3W4FuS4MbMTR7ac1BnBI7YzskXhUVciX2a/YmgHEtSYkXQl+GW+ccJDak/42ByDAM8AO72q7TBVKRhkx+mG5PHjY5zsYnJCSvQL84fhtDj/i5iD9O9gbGPMD7svDgeH8tFrzt60YDkv8Eqj3/+Xw/RFIlcpVf+Da5fNBXYZy0L+1AOKO4kshQ8zPGeP7RUo4qXVnbmsG/KicIywR63dKPIg3xEXc3PuEAUevMm/vzzPWcQxDkTddf1gXrEdedhZtQfBK3vCuZwgCmdmEifmhnOvjTD+GMmpqUVXtrRtajPq/k2l/8/vLxAeDdZE/m42nWm/KUSEexeW/BaP3ym5lPYfRfPlDD3sFRRezFtsvWf/j9I0EMxkLH+5j67iHH0FHZpvCFu6aAa0Z6bEfcWaPECgvTTayG+cYgn7FQqdkY6X0hajI4MccydzaQk7SzZUWmGzHQvr+FdIQs5/4gKvm19Du2Nt6NHLXMl5cSIuBS+StQby9PbpDWLtX1xPVhiywH59iUTp97U3R4QdzPnStjFllV4A/nEeKNv8ZEDrugSYvv8CDv406Oddw900dup6rpNs+/r7LYluw9PuCLvbR7PfWksczxO+yW9rYKBExEfxyj9BE+UEKTw8L7qSbCvMiLb1RY3+kh5PAl8Boy4kWc7acUZAN/Vv4/A8x1jmT+0lKZKEFpKQn6dYWW2T0i3TWrS2445BbpA4tjohr9zsdwUbwflDrw7mB3kx/vEfZ0qt0u82/KXOsh2IYhIYj/4fIr2kJE6BbcPsC1qmygWK9/Ko0II2Aqz3BH2ADagEYRFR1Jq5S6IYkBLAWp5rr0Lrpu9PHi8C6osC3i6kgNqpEJyiGMUSSqg4PEAbp5FYNpckMakE3dQkIRoOk0AviKx4gprqmYCVudQkGUnsxL1qtWq707iXyv8VVxTekkJzKm60uVO7abEma7HVL+GP/deyln99OqnM1s7b5fQOjjuUFisLGK5rogYUKU10oQ/Ui5NnThadyArbjdUssNmH8igALzozEgdyepS1TnP+OA89JvuBvrTk096PV2dReQEz6RSbXaLxclLnrg0FhE0/mG5uh/t0RiHo4=",
     "quelle": "Epische Stufen S. 68",
     "hausregel": true,
     "nurEpisch": true,
     "ruleMeta": {
       "origin": "house_rule",
       "sourceKey": "epic_rules_v1.paths",
-      "citations": [{ "source": "Epische Stufen.pdf", "locator": "S. 68", "excerpt": "Rahjas Pfad" }],
-      "epic": { "requiresOptIn": true, "eligibleFromLevel": 21 }
+      "citations": [
+        {
+          "source": "Epische Stufen.pdf",
+          "locator": "S. 68",
+          "excerpt": "Rahjas Pfad"
+        }
+      ],
+      "epic": {
+        "requiresOptIn": true,
+        "eligibleFromLevel": 21
+      }
     },
     "voraussetzungen_struktur": [
       {
@@ -759,7 +966,7 @@
     "voraussetzungen": "TaW Götter/Kulte 5; Initiat der jeweiligen Kirche; Eigenschafts-Voraussetzungen jeweils 1 Punkt niedriger als die der entsprechenden Geweihten; je nach Kirche auch Einschränkungen für Zauberer",
     "verbreitung": "je nach Verbreitung der Kirche",
     "kosten": "50 AP; diese AP werden bei einer Spätweihe angerechnet",
-    "erklarung_lang": "Ein Akoluth – zumeist ein Ordensmitglied, ein Laienprediger der Kirche oder ein Altarhelfer – ist ein dienendes Mitglied seiner Kirche. Üblicherweise nimmt er alle Einschränkungen auf sich, die dem Moralkodex der jeweiligen Kirche entsprechen, und ist als Laienpriester seinem Kult verpflichtet. Er schuldet seinen Ordensoberen Gehorsam und kann gelegentlich zu wichtigen Missionen im Dienste der Gottheit aufgefordert werden, wofür allenfalls die Spesen ersetzt werden. Dafür steigt sein SO um +1. Außerdem hat er als Akoluth gelernt, rituelle Handlungen eines Priesters seiner Religion zu unterstützen und damit dessen Mirakelprobe zu erleichtern: Er erhält die SF Liturgiekenntnis seiner Kirche auf einem Wert von 3. Damit ist er auch in der Lage, Entrückung zu erfahren. In einigen Kirchen wird der Titel des Akoluthen als reiner Ehrentitel gesehen, der nicht mit dieser Sonderfertigkeit verbunden ist.",
+    "erklarung_lang": "enc:3:d2d5J1Z78RBGt8XC/ZLHq4haq1pLGgLa8IkIf40318kIDgnJl48cVu6e9jcdV4Cjg5lqu+2vID/5gSgR2G9bSMtFI1DlUpuoh2LdI0XbEAhTPpZN3ypNTI2WB5thZYklk3htf8/ILhpL6p5XHgDjleRbLjFFvk4Nqfk9O/mP6N06KUzWcpF8A0ugZIlAhURxUJDCT8e3J1hc0O3TVLqxE7TdZJpYq4VGs4jts9pXyaW/UUygWhROKfH5T/2lHaw4bNeVk9Firh3mgyhN7pFlpVUMGPmHEobAt1KUDFvSxwqBQHUz3HDq5IX/xqv1qPlCa9l11jOPGVVpVOa6UxBchpvTP8qTQawHzQ8W97ItlD6tWYZitn43qYvTlkhEXWCt9/mwnMg8jU/MQhazqaStI72KVhetlax8KcvRHqRYkN2X1ts4z+qXB9pOlCA5E3eIYEWQXfE0PLV6yjtR3yn5uiq53zvUY29McPWHuHDxlBKYnl4yKbs/w/WPzI5JdBicuFOZsv5yzr9T6y/dLKv2WUAveHLm+t0Gxkq2nFobqI1YWofpsAeIkHMtSm3et3kldAqiejnyqnVkoUUBfIVWTUJ7q5b9f07QWDJcIODVq/Bj81dsynK1I+K7F5oUqxk1srayS3lDfKKnxqb+yp0s3foOCidGqWZk5nb9awSxJdghBaRTSR/mMrGddpPHdrl6KPiE9aTvTrHikf5fsEf2PDvFHH2f73d1F/xjJLdCaBTIQ3vrJ4FBzgIk3zOyFV7ddZgBXvqb9a9D/BeHDmmvjbFu3PAr/McT6cNjOwrbgLkxtfKmXiniyxC+TutcQrn3VJd6he2ghVwk1f+xkDn5f4+dOO/B91C7Ra4AXOkoCXO1E9iZ8FgFCtobdjG0b+F/aC/9ZiJgFClYxanxm7pen7pr0Q9C/7HTVDXh8Yx4XAzPXwZxof5chiNCezTLK/BA95afQgr2tJJ6k8j9eW8c6LobmH9nk1I5MmVTzT6ESsIc/BRLQuCDAaMYmlV64ywZpUbphGZjCPs5OKwVPNBe7eCq+MXSZMO9IjQoOIj/4sBtPnzPiWBYkKQ80o64gNVAN4nv3Ip6XL5WZa80IFSNkpYsSqtscbUp6Xte/eZcOv52QhBBbG6XS9uSDpl2LAiJbSnhihFgjrzt3k7coPmelK3r474lmStZkqjbfuATDGLNJaixjpZkqOu9Jqy+yU80RgBr1gAKq3c17lTtKw52ZF2C97FqLZjejyOI70jcYQttbw==",
     "quelle": "Wege der Helden",
     "hausregel": false,
     "nurEpisch": false,
@@ -793,7 +1000,7 @@
     "voraussetzungen": "IN 15, CH 15, Liturgiekenntnis der eigenen Religion mindestens 12",
     "verbreitung": "je nach Kult 2-3",
     "kosten": "250 AP",
-    "erklarung_lang": "Im Laufe seines Lebens kann ein Geweihter lernen, die ihm verliehene göttliche Kraft nicht nur in sich zu tragen oder in Liturgien zu bündeln, sondern sie 'wie die Aura einer leibhaftigen Gottheit' zu verströmen. Dies äußert sich in Manifestationen, wie sie auch bei Mirakeln auftreten: Ein Praios-Geweihter etwa könnte von einer Aureole umgeben sein, eine Tsa-Geweihte Schmetterlinge anziehen, in der Nähe eines Boroni mag die Umgebung dunkler wirken und Geräusche leiser. Was genau geschieht und wie es auf die Umgebung wirkt, entscheidet der Meister. Aktiviert und 'abgeschaltet' wird die Aura jeweils durch eine Probe auf die Liturgiekenntnis. Der Geweihte verströmt dabei 1 KaP pro Spielrunde.",
+    "erklarung_lang": "enc:3:Lo2wpggFr+xNqLY4tuOt3JKg6SKdvrrov5h5OpPdP7VMancQdzg3T2JNjFHbcL405r+pJXiGf+C6QfuOy6bCNxf4ojWY+hE2KP5v6t+GsP62/mBVxZOSEHr905ZAkd5I4mqQ97lJTJTavAGNfPojyhEb1WWrWA8KXtQ2PKdy4JSkVJotkUaPTa2soqov/4F5HXexnetEsg3NrJzGUt8gPG360Nkcd4/W2+Nx/qeR+f8gPUS2MsdyiLe9kiYXQufLQI3/0bc11mOJNVD+PfeGrs4b4HGvLUc3RgmWIs/ec2ZhZbpyb8bbrja9l4PKPpx9sSz/stIcccuKoD65iZzAwPnCuJ9Q9w8sbNCdZ88fnH0fC0HVRpNX0IWSTT6OA2jxKZDzXKqjHQP+JmRzwN3yVLZ2V3gM6DV7SWh8jDK4hynV1b0KbH0LxT9Z6glzwx06PVQixvBDdGHJ8lttuMXjbPj4owHzfcAadLxwPwEOfuMWotEFzUBJ5H8MAOjth4gPwV8Ac+fosZ0t2lZPOYzbVnGlGteHucj22Kk2nC5oA6YTgZqPUoZjxUmH8W4pz9lLTWFLmoGFXJpiVHrkLbtGvsz47x25cYm0bFQiYHyR+7hok1RvyaWYskoILcM/+pjz7f6N5rRSSmX7zgHo0WZlXsBucdgINVQNPwS5NrQy2eEeuWQLApmVQgwjjmrEbzqlgbH6W7JymsICSID2seKmShQMffZLVY6jSqZrOfEn2uDk0XwrSU+xpY9s+WUHqS/l5ULaDPxvHakbcm3M98PYfvBjK19PEUv+dU85IQtRc1Jfo/A2W2bhXEkt5T8lD3BHCbi41AW7fsTsitgOyVhXmlYWz8MiRBYyJFdIjKDzYWR4TXIbyFCAtYinY5imSPv9t/ASOE9k/Iu8hUYUzt5gj206ozAIP3nzKeSPMqUaXG1d6fRtWk4AP8PjbskVv3hfrwF5dkDPGBeZPabsK8OS",
     "quelle": "Wege der Helden",
     "hausregel": false,
     "nurEpisch": false,
@@ -825,7 +1032,7 @@
     "voraussetzungen": "TaW Götter/Kulte 7; LkW 7 oder SF Kontakt zum Großen Geist",
     "verbreitung": "6",
     "kosten": "Erlernen der korrekten Anrufungen 50 AP (in den entsprechenden Vorteilen enthalten), Durchführung 300 AP (250 AP für Geweihte nicht-alveranischer Götter)",
-    "erklarung_lang": "Kenner der entsprechenden Anrufungen und Meditationen sind in der Lage, sich so sehr auf die Prinzipien der Göttlichkeit einzustimmen, dass sie durch diese Harmonisierung permanent Karmaenergie zu ihrem Grundwert hinzugewinnen. Im Rahmen der zwei Wochen dauernden Versenkungsübungen legt der Geweihte eine Mirakelprobe ab: Er erhält IN/4 + LkP*/10 KaP zu seinem Grundvorrat hinzu (für Geweihte nicht-alveranischer Götter: IN/5 + LkP*/10 KaP). Mit diesem Zugewinn ist auch eine Entrückung in Höhe des Zehnfachen der gewonnenen KaP verbunden. Es ist nur eine Karmalqueste pro Jahr üblich.",
+    "erklarung_lang": "enc:3:h4J980XPNYFbg9Em0yFAj+tQknIdHHzAC7tJiBtdJIYinuYSPmp7UsYRp6PyXHRuUCMhBVKh+Tvei/A9epAmdtvnr6LU+8CYsQU31H0fd9Bt635CL6QFj7vyTN8ZWxPg4fKy/pfTWhrVimDOc+rnC1gEYe1viThEtsWnlwAr9MpDp9tzRvnBXLfOYuCZ0u73+0+SS8wjFGRrgP2/XGEp8uNP3IXzrjBTqP8vCnXXEphDFFEPLLmPtOEp45s0+PSgOFFc1Az/Fi7lr377V/zPJGXk8PA+9tQeLlhf0b+4EKCu0CIY7d/g/gtzMfdbSRG95uN4CcmhzINfucw3NhAhiP826sBkjI0m9+PIcrM+Zv9WucqUUnZ5b3s/UbfkGwGOxrxN1tfGHGIcFo8DYxSzwY67W5jtPQfDGrDJPe/IFxm3OumXEz6qUIH8qQNlEJ0Txg2Um4KFdpHIeOurBvoYlPIk1xR8QwVIOROnJKBSPgrN1h/0W4VCyboeEN6AAhMgs/uEeN5wSaLGYBOHlxNwCZzQyP2Aq4MjERfSlTSiJJFYqTOljMvKP0HonOstsPLRftXXwgzDzGITM0JhUYxXXCZYfYQHWoZJthSs1KbRiNVhicRoGTJap7DkJ7kWP7uZYkIfvZbJwlN8TP/HA6MY++8lIg3K+p+bplThpTck9QYlnXeEcvNrVLL+q96+RbOpLX2nPscCOYUpKXaLog6cTHDy6TtslX24qNWSBKk3UbGei8w3tY5AE8nhxOMu3gGLoZajwuL9NzctwbIe0+i/ATj8SxRrty9YmijW6OPtET2oFF2pZtNDzAv/CR9Lfg==",
     "quelle": "Wege der Helden",
     "hausregel": false,
     "nurEpisch": false,
@@ -851,7 +1058,7 @@
     "voraussetzungen": "Vorteil Geweiht oder SF Spätweihe und passende Liturgiekenntnis, oder SF Kontakt zum Großen Geist",
     "verbreitung": "je nach Kirche und Grad der Liturgie",
     "kosten": "50 AP mal Grad der Liturgie",
-    "erklarung_lang": "Die Liturgien sind den Kirchen zugeordnet und hinsichtlich ihrer Mächtigkeit in sechs Grade aufgeteilt. Um eine Liturgie einer Kirche erlernen zu können, muss der Geweihte regeltechnisch über einen Liturgiekenntnis-Wert verfügen, der dem dreifachen Grad der gewünschten Liturgie entspricht; Liturgien fremder Kirchen gelten – wenn sie überhaupt zugänglich sind – als einen Grad höher als aufgeführt. Liturgien, die der Geweihte bereits durch die Profession erhalten hat, können auch angewendet werden, wenn der Liturgiekenntnis-Wert nicht ausreicht; durch die Profession verbilligte Liturgien können erst erlernt werden, wenn die LkW dafür ausreicht. Die Anwendung selbst erfordert eine Mirakelprobe (bei Hochschamanen: eine Probe auf Geister aufnehmen) und den Einsatz von KaP.",
+    "erklarung_lang": "enc:3:dmJ3tj6/nVOyrNX0xjzP4A3xApF/+Zn5+qAJkLCsvvwxb8a8TSbF/ocjnchfm2x8qqSkBIDyyh1iVHkqAV/ZJGAJE4hANaUFnAb8q9af+yvSjaFXFqWEKRogGrMwEZajeg0YTtGg0NznKbrSxsu5LVyO8W3r1ksG8/PG6cR630Fsj0nQYx1mw3AMnRT5BG7ZC2BE1lISRy2063yomH2FQ0DCG9/sPgAfpVXBWyzoO7kIA/enYCt5KA7r3Z86zyS0jlbSJrojNH5U8nSPhtvpyySwaH27bvzmKplUjuVgsQyYhFVZhDnjCAgIsQAGsvxe/ppC2Dc+SHCzsqQRPf9bfX0nUtuu4YyQBq4R14Fq0KHU6EuIDsrEwqEJDOQXCkcxI9BAPuoFkJ44HgmGa1ARlRVBFLMIU8k3jM9K+AhrfV6C8P5QB5Typj4AdrWM04Nz3ZfVdyzj3K9zjJWZqkL7ppBkKBdkurNOj4XrBr6DGFQ9V5GqmyGRsQfV30+PayE18qPa2u4V8RTxOx1UQfb+t3suo52iMJoWOz7gxsgbhg8tSGd/UZ/UchvPdKCbDo/a9/4YH9ceTPfjv78KDzTY/8L1Ti7PHhLlO5G/WexiMd8MzjZM+di6wxmGUvha3//GNySQISHLYdWllu1OVBJOF6uIuEP06u3F59lcUL1h/K9QbFY45mKwd+vvuwcWEQPEwGt3+L91oiM1ZZBQI5LoeDKzYay+cZelvWhTmDo0FqBzwY7Y2IMqRdJ00rlfLYtLeDDsEPS3fDYxD5/ml7+LejJwBzS5IqduSFXL8WHHsCosffshzh/8O1x4VXuIIYFyMuX/zTm0GR+AeArzj0Npki4FdAMUh2aTyhWJ5lvUvqWjfiM9+R9zvbhlh5OC9VcrIIgWh/59zL4XGx5sm9/LyYBAyL/U97OqEHI9RAhruw4U9fN+sS/tuI2Su2C2aWUzrxxFK2pThzBEUVkInAsqThYEaFOh5NRhkkqYiUWjMrnYLhWDtD6Cl2JgLvC9v/AFP0p5D1VmWgDYoH3o6S+7Ph64QAOL+NdVUAN0p/dfFQrUMN+6LGhDyc5xIm1l4yc+fHkv8iRq",
     "quelle": "Wege der Helden",
     "hausregel": false,
     "nurEpisch": false,
@@ -876,7 +1083,7 @@
     "beschreibung": "Der Schamane erhält die 'zweite Initiation' zum Hochschamanen und ist damit einer nicht-alveranischen Gottheit geweiht.",
     "voraussetzungen": "Der Held muss ein Schamane der Nivesen, Waldmenschen, Utulus oder Orks (Tairach-Priester) sein; CH 15; alle vier schamanistischen Ritualfertigkeiten je 10+",
     "kosten": "700 AP",
-    "erklarung_lang": "Der Schamane hat die 'zweite Initiation' zum Hochschamanen der Nivesen, Waldmenschen, Utulus oder Orks (Tairach) erhalten und ist damit einer nicht-alveranischen Gottheit geweiht. Dadurch ist er in der Lage, einen kleinen Teil der göttlichen Karmaenergie in sich zu tragen und mit ihr die Welt im Sinne seiner Gottheit zu ordnen. Er verfügt über einen Grundvorrat von 12 KaP und die Fähigkeit zum Wirken von Mirakeln. Er darf passende Liturgien im Wert von 8 Liturgiegraden erwerben. Die Regelung zur Weihe von Zauberern hat für Hochschamanen keine Gültigkeit.",
+    "erklarung_lang": "enc:3:COoYL0/kN+rknDk3JBrpDoqGp4vcvPhyRh8SIYLmtUjQOxeLLqiciHUut7uZUPOOmXdkU1RsgFxMXHs973M6Lq0Beb5eO+Ku8fmLSyc0d9z1APr8Prx7LemSDiCR3L7XdHMvKcKTcoaFFUMh9yvOiIERal8a9VPVyFDGu8mQ9exvJlqso+dNZ+EH3ywmxRHy/Qu0g1OeWJ9AZrtj2+leEhYZSd/l8ZI3ycJq6lwrQUotSjJhR6WtS3DwT8xzOOt0VdgX3a1zfvU5RMNbGgiT9/k4k4WR3hZsPQOz6hRF57rSWCHCpDfGSUSLFMZnofm+vT+8VXrSqqTStwm1l2R/Q2JdwbbuyuBiVwu7ctLA+RRX1721hl69qUkwFMArbnk3m73WfxVjc+2fksO9imQKYPjuqb8kO2apoC6kA43183kPYBmeQOetC86j5Q69ORJwspKiFVCxpS2huTcnj1C5P0J7nmsBtdgw4HjKbkv3NwgvXlufojykCa20MmJfiPXVANbsulMaVRMOSvgY+d8SzfxDNsyq8WVSSoG+e4iMWdMATcmnNasi4Gj2ek+QwGLWQzfyXpZzlS5a/lEgwdDN6WIYFennEcNwWZOSrA43dfiDwngnUYpLNV+D1pUWkK3H4ftWjyJ6qjFQuQpTSc16Or7nD01Mx5zrScLPG07JsP92ooHpvNvXCyi5NPC8YnxCyGhiWGzhZXx0xVp7xHQAW8ha0zK/euBh0OQo39e+tBX86gUYC7Z6u/ISvK/umHe1WzkVkEolIRwXL0tMkpJVFZWG",
     "quelle": "Wege der Helden",
     "hausregel": false,
     "nurEpisch": false,
@@ -915,7 +1122,7 @@
     "voraussetzungen": "Profession Schamane",
     "verbreitung": "6 bei den jeweiligen Kulturen",
     "kosten": "Ritualkenntnis der eigenen Tradition wird als Teil des Vorteils Halbzauberer aktiviert, die vier enthaltenen Fertigkeiten werden einzeln nach Spalte E gesteigert; Ritualkenntnis einer fremden Tradition kostet 250 AP Aktivierungskosten (erfordert meisterliche Erlaubnis), die Fertigkeiten werden dann nach Spalte G gesteigert",
-    "erklarung_lang": "Die Ritualkenntnis setzt sich zusammen aus den vier Ritualfertigkeiten Geister rufen (MU/IN/CH), Geister bannen (MU/CH/KK), Geister binden (KL/IN/CH) und Geister aufnehmen (MU/IN/KO). Jede der vier Fertigkeiten hat einen eigenen RkW (Ritualkenntniswert), auf den Proben abgelegt werden wie bei einem Talent; die übrig behaltenen Punkte werden mit RkP* bezeichnet. Die vier Fertigkeiten werden einzeln, unabhängig voneinander, nach Spalte E gesteigert; Startwert in allen vier Fertigkeiten ist 3. In dem unwahrscheinlichen Fall, dass der Held einen willigen Lehrmeister aus einer anderen schamanistischen Tradition findet, der ihm deren Ritualkenntnis beibringt, steigert er die vier Fertigkeiten dieser fremden Tradition nach Spalte G.",
+    "erklarung_lang": "enc:3:gQRQlu7z1wAJT4GnTcVGc543RICilBzmj//BaZNn2QIqgd2+/Z+5nGoRRgh0cPvxJ1UoRMjSyY3IoAVivgjE8eDj4DQiz600UNBXU/UQmWmI/Xse17lMLH5llPQc3E/91HLRCQ6je2KoqiQcIqXG6gns2vNAZPZ4k9fhKMQp5cYYVNDYwRpjUyih64SRBZTr4nd2lLExSxzZuEk3AdygTGFIvLaKU57s0P/E6Qbt2MD4TJuu+IKxl6jbA+4lgHZsE1AgMq58zTc3MN8mKFdUYjAilZ3pI1dM9RdrcPZdK4AqK60Ac5uM4A9DQDtqeFTeczPoLhb6upD5y4RWj9MlX+2L/fOjA7i1cY6D9elBfxLUhyqHXAj1G7uUOzjtDNRik7VcycpUHOr6YZ2RHzSMkM1juOAemOaaQ/H+cyCvep3wLp71VKROWwKJsvkg0j7NX5D31/Leo8XxY1Rz3Q8SM0AGLaT9YklrvSNi+fFSl+0zaM9TD251c4Ln1bShF0+gqJ57u2fH+k0fiyuFSAJKhUhC6zZP3TCZDvlESAR5aXcYtdBR0NDaFeJb9vEDzntHKY/knTw78/YoFeSpGZx3ewl2NdQDbXaNsLg/tU3+QBBYL54XRN8we97sRELUg0KrP2v76xn4PK/Q2Vl8+V4emGc+nTRi5nSwHcZxC1wA4VVjdHIZOE344LxnexuNHwq7FY6qknabShEAJmG89iOXc397bSNE9/4rEm2iKyIWqqcZVLAWPYtKfkl4e4CxZfdbOWcKUyvxSK0EAjwr+p8a7977S0D8tFeMmsdBztm4+z7rjm1v52VM6RpZM3Uk2DPS55UEh/EME9EdPu/s03BtlwZkrw8EtV0dzgqn7r0avO18ykf4juZO2R6Jfvorltfv2hZyLnJiaMZkL/ooPFqhSX+h8Hp1SDldebsUfusintPOSov23Syu4Qbz6jpZ9NIHhcjc2V4cJEBHE+bI8/hMZMzJpJO2GnAXf6cy/2tlohzC55ruTao2uo7lqOIQ",
     "quelle": "Wege der Helden",
     "hausregel": false,
     "nurEpisch": false,
@@ -937,7 +1144,7 @@
     "voraussetzungen": "Vorteil Geweiht oder SF Spätweihe oder Akoluth",
     "verbreitung": "7 bei der jeweiligen Kirche",
     "kosten": "Steigerungskosten nach Spalte F der Steigerungskostentabelle; Liturgiekenntnis der eigenen Kirche wird als Teil des Vorteils Geweiht oder der SF Spätweihe bzw. Akoluth aktiviert und dabei auf einen Startwert von 3 gesetzt",
-    "erklarung_lang": "Liturgiekenntnis wird im Spiel wie eine Gabe gehandhabt. Die Probe erfolgt auf Mut, Intuition und Charisma (MU/IN/CH). Der Startwert der Liturgiekenntnis beträgt 3. Die Steigerung erfordert stets einen Lehrmeister und wird nach Spalte F der Steigerungskostentabelle durchgeführt.",
+    "erklarung_lang": "enc:3:Y0toT26lqircLjMSE1/q6B68mBvYBMnXXn88IXKjhaM/l43624meyvUGViXNemF+M45WjuEEmxWRJE2K8u2wGr6Zk/8pXPd3ZjfQ2iWeZy36dTBSXLdnc1Z2xFMWfJcJQe7LBNnt0tdsMfWDeZnk+WiGsWFJNISwKB5qdYH7w0R3MCz386d5QUYMHMfCwjvLzDbDo/yKMgdsrRAdjWcyl6MooKduyjSCt3Zn2q4vZnfBmn7Mf7xOp5iNfAbfpn3bG69+JiThIdyXmoqP2ST8AXXB7cMl7guce0WtP/gd7KODupZgsmDQmO55lL9lg1Dzt4WgjHN4clhd6OOxZxD0jdjEa0bAnKe8Tavdp96QPUBdXjwu60Lp1tWymIl7O5cfpgsd5a6a4TQnmP5t9j0pPTosMRAT",
     "quelle": "Wege der Helden",
     "hausregel": false,
     "nurEpisch": false,
@@ -959,7 +1166,7 @@
     "voraussetzungen": "CH 11; weitere Eigenschafts-Voraussetzungen wie bei der betreffenden Geweihten-Profession; Talentwerte mindestens in Höhe der Boni der entsprechenden priesterlichen Profession; der Held muss sich zu den Lehren und Prinzipien der Gottheit und ihrer Kirche hingezogen fühlen; kann nicht bei Spielbeginn gewählt werden",
     "verbreitung": "3; erfordert immer die Zustimmung des Meisters",
     "kosten": "1.000 / 700 AP; für Halbzauberer 1.500 / 1.000 AP; für Vollzauberer 2.000 / 1.500 AP (jeweils alveranische / nicht-alveranische Gottheit)",
-    "erklarung_lang": "Der Held ist einer Gottheit geweiht, die entweder in Alveran residiert (einem/einer der Zwölfe) oder der die Sechste Sphäre als Wohnort zugeschrieben wird (ein sog. 'Halbgott'), und ist in der Lage, einen kleinen Teil der göttlichen Karmaenergie in sich zu tragen und mit ihr die Welt im Sinne seiner Gottheit zu ordnen. Er verfügt über einen Grundvorrat von 24 bzw. 12 KaP. Hinzu kommen die jeweils passende Liturgiekenntnis auf einem Wert von 3 wie auch die Fähigkeit zum Wirken von Mirakeln. Während der Vorbereitung auf seine Weihe hat er einige Liturgien seiner Glaubensgemeinschaft erlernt (im Gegenwert von 16 bzw. 8 Liturgiegraden). Der SO des Helden steigt auf den Mindestwert der entsprechenden Geweihten-Profession, oder um einen Punkt, wenn er bereits darüber liegt. Eine Spätweihe sollte nur Helden gewährt werden, die sich bereits in mehreren Abenteuern um die betreffende Kirche oder Religion verdient gemacht haben und die sich freiwillig zu den moralischen Werten ihrer Kirche bekennen.",
+    "erklarung_lang": "enc:3:g0tCdhRUQa1O8ZkPztPmFA0deGVEt9GAOjVy44KYmcNxhsxCm6U81VnbwhwrLTXwq50cmhoVdIZZSg+LRJNSE9Kt2FFzd4pkCR/VYuM0FNUJh/8VWvUSAUovpi3ueNOQchV6XVYwaBXRa7XeJ08zwvrNoaGhTszDjz5bkHC7sE6RbL3oR3upVE0QUh+UL8jXsgW45s5i4iDIy6GaBOLFKumvZIvmwBVMFvCR+vgVmzGX9IYclxZ9lsYxkCdyBFGi/2qTOInK4IXmxETKLqNqB4oNCzcNJLrWNmUXQEXvmz78J4Vu3vlNap/WKu59p3EfhKGPmwACfE6zQS45DbXMrYRD0DXtEnb5bYAb2zSn3co8IlsxAXHRlAEf740jjKdfJaeUefXC5kwxIFtsL5LkKsqP3w2ILG6tOWJgNHK9g0KqmgkXdsWBw115wHxzQ/xAuNR50qZg/3ap9/MVIRPikVHbmzgaHbVckBbg16I3I1E0mBVQwAtlqrMqbcAnbtM+WkjlnX/8oadx9RJS8VRyg+kwEYz1tndZEfeWXRzRPyD0W5gtnSqHMXXKjl48wvR5GmBwoK9F0fp1qXFsKxnJKjgG/bmcLirtrybTp+59e5bi7txOtOdqtzL3fVCrI9d0Rw7NkuqruqUOPBzUDNtOfqaBkEGyLNYdLFO+gHYxbGvq7WbL4ElUgnmvEeeAHU5H1Rulf5HhWNApc1TL4hCUtEMJBHJ5v3VREqW3aNQTNenQfo/jAPALFBtks1Mk6iZ/dShRPpLCtOc+IGRAydE57d43BPd515oE7Zs+Ke6sToqroyoieAV8Qbz30Y/9JWUXGPPkjHtDTKPQBlXXqBkvwxFCBZ2YMf6oJRlMHw7O89ft0Di2xWuEsmhXWP1djegr0QYg8k9XuBX0yoaUOnmh3GL+0+YKUdF+MW85S0sx4A3HlmDhYHQ/m5EoahJ0wiSIM81ux9CwY6J4srBZx/uL10tgVODsMWxdzkP4zjPUFrs4KsT/RbKIC+Yls8qy/PZNgk/F9J7HeToly8d5718oCGQ/tqDmpKoO/dOCiQnrKUwZa/S4XX4P2eAcaTkmrJ+AJoC2eymL+d2PEkMXTjvzawp6RlEQtSsnNVx+5DHjE05vehNycLE2aX8J9TbCe+7nlVGdm4BnsiM7lbuUeNKWE0uVCki0RURX/tYSGL5Ke0tyC8P7apjKL+S5TpxRJfd/hNuxa1Si7PZnwTegKLe9ZE1uVmKSB248h9tYBJ4fEOvdSlL8UBJTonyD5tXBlXYR6WezlOF/GvuUSxEDalr8Flq0xfaGvxaeYqnPcGI2xXsUFQOxhNUSL64IFiD1a5I865mxwR1KdYTj8LI9NRdH7B+ITkC465pA1d7B7LNhE2fn",
     "quelle": "Wege der Helden",
     "hausregel": false,
     "nurEpisch": false,

@@ -54,13 +54,40 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   Adaptermethoden nur mit konkretem Aufrufer und Test, beide Seiten im selben
   Commit. Die Brücke wird abschnittsweise entbehrlich, ihre Entfernung ist kein
   Abnahmekriterium.
+- **Der Konto-Sync steht als ruhiger Eintrag im Workspace**
+  (`_SyncAnzeige` in `karto_workspace.dart`, Key `karto-sync-anzeige`): breit im
+  Navigationsfuß, schmal als AppBar-Symbol mit Tooltip. Wortlaut und Rangfolge
+  (Konflikte, offene Entscheidungen, Fehler, laufender Abgleich, Zeitpunkt) liefert
+  `beschreibeKartoSync` aus dem `SyncStatusSnapshot`; ohne Konto gibt es keinen
+  Eintrag. Der Zeitpunkt ist absolut, weil der Statusstrom nur Änderungen meldet.
+  Konflikte löst man weiter unter „Einstellungen > Konto & Sync“.
 - **Die Spielansicht des Neubaus liegt in `lib/ui2/spielen/`.**
   `KartoSpielansicht` liest `heroComputedProvider(heroId)` **einmal** und reicht
   den `HeroComputedSnapshot` an alle Abschnitte weiter — auch an die
   Adaptermethoden, damit die Brücke für dieselben Werte keine zweite
-  Providerbeobachtung aufmacht. Die Reihenfolge ist überall Ressourcen,
-  Schnellaktionen, Eigenschaften, Vor- und Nachteile, Kampf, Effekte, Zustand,
-  Würfelprotokoll; ab
+  Providerbeobachtung aufmacht. Die Reihenfolge ist überall
+  Schnellaktionen (ganz oben), Ressourcen, Abenteuer samt Standort,
+  Eigenschaften, Vor- und Nachteile, Kampf, Effekte, Zustand,
+  Würfelprotokoll. Die Schnellaktionen enthalten „Regeln“ (Key
+  `karto-spiel-regeln`): der vorhandene Regelnachschlag über die Brücke
+  (`regelnNachschlagen`, `regelnNachschlagenVerfuegbar`); wo es keinen
+  Regelindex gibt (Mobile), entfällt der Knopf. Die Eigenschaften stehen als
+  schmale Würfelleiste (`KartoAbschnitt.dicht`,
+  `InspectorAttributeProbes(kompakt: true)`: einzeilige Karten in 8, 4 oder 2
+  Spalten; die klassische Optik bleibt beim Standard). Der Abschnitt
+  „Abenteuer“ (`karto_abenteuer_abschnitt.dart`) trägt Titel, aventurisches
+  Datum, Standort (`KartoStandortZeile`, hängt am Zustand, nicht am
+  Abenteuer), Kurzbeschreibung (3 Zeilen, „Mehr“), eine Schnell-Erfassung
+  für Notizen und die Karten für Personen und Notizen. Alles lässt sich dort
+  direkt ändern; „Öffnen“ (Key `karto-spiel-abenteuer-oeffnen`) bleibt der Weg
+  zum Vollblatt. Gezeigt werden zunächst drei Personen und vier Notizen nach
+  der gewählten Sortierung, „Alle zeigen“ klappt inline auf. Ohne laufendes
+  Abenteuer bleibt der Abschnitt mit dem Standort stehen. Der Seitenkopf heißt
+  immer schlicht „Am Spieltisch“. Der Schreibweg liegt gemeinsam mit dem
+  Abenteuerblatt im Mixin `KartoAbenteuerSchreiben`
+  (`karto_abenteuer_schreiben.dart`); die Standortspeicherung läuft weiter über
+  die Brücke (`standortSetzen`). Die Ressourcenwerte sind kompakt: Wert und
+  Fehlbetrag teilen eine Zeile, die ganze Zelle ist das Tippziel. Ab
   `KartoBreite.breit` wandern Kampf, Effekte und Zustand in eine Seitenspalte,
   das Protokoll bleibt der letzte Abschnitt beider Anordnungen. Den
   Re-Entrancy-Guard reicht `KartoWorkspace` als `KartoLaufzeitAktion` herein;
@@ -110,9 +137,14 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   `active_spell_rules.dart` von `combat_rules` und `magic_rules` importiert
   wird und sie deshalb nicht zurückholen darf.
 - Der Kopf von `WorkspaceManagementBody` (nur UI2) ist der
-  `KartoSeitenkopf`: Kontext „Heldenbogen“ (schmal ohne), Tab als Titel,
-  Helfertext als Unterzeile; `management-active-title`/`-helper` hängen über
-  `titelSchluessel`/`unterzeileSchluessel` daran. Die oberste Reiterreihe
+  `KartoSeitenkopf`, bewusst kompakt (auch auf Tablets): nur der Tab als
+  Titel, ohne Kontext- und Unterzeile (`WorkspaceTabSpec.helper` bleibt für die
+  klassische UI); `management-active-title` hängt über `titelSchluessel` daran.
+  Links von „Bearbeiten“ steht „Probe suchen“ (`management-probe-suche`, schmal
+  nur Symbol), dieselbe Suche wie im Spielen-Bereich; Strg/Cmd+K gilt in
+  Spielen und Verwalten (`_mitProbenkuerzel`). `CodexTabHeader` entfällt unter
+  Kartograph (nur `trailing` bleibt), weil der Seitenkopf schon titelt; die
+  Talente-Toolbar ist dort einzeilig. Die oberste Reiterreihe
   setzt Meer-Unterstrich und Schrift selbst, alle inneren Reiter kommen als
   ruhige Pille aus dem Feinschliff. In UI2 zeigt der Planungsverlauf keine
   AP-Zeilen (`AdvancementHistoryPanel.zeigeApZeilen: false`), die Bilanz
@@ -239,19 +271,22 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   (`lib/ui2/widgets/karto_seitenkopf.dart`): Kontextzeile, Titel, eine Aktion,
   getrennt durch Weißraum statt Linie. Er ist die **einzige** Verwendung von
   `titelGross`, und die Kontextzeile steht nur dort, nie über einem Abschnitt.
-  In der Spielansicht trägt das erste laufende Abenteuer mit Titel den
-  Seitentitel; `Am Spieltisch` rückt dann in die Kontextzeile, darunter folgen
-  optional `unterzeile` (aventurisches Datum, aktueller Stand vor Startdatum,
-  nur aus **demselben** Abenteuer) und eine auf 3 bzw. 2 Zeilen gekürzte
-  `beschreibung` (Zusammenfassung). Ohne laufendes Abenteuer bleibt
-  `Am Spieltisch` der Titel.
-  Einen Knopf gibt es dafür nicht: `KartoSeitenkopf.onTap` macht den ganzen
-  Abenteuerkopf antippbar (Pfeil hinter dem Titel, Tooltip „Abenteuer öffnen“,
-  Key `karto-spiel-abenteuer`). Er öffnet das Abenteuerblatt
-  (`lib/ui2/spielen/karto_abenteuerblatt.dart`, Dialoge in der Teildatei
+  In der Spielansicht bleibt der Titel `Am Spieltisch`; Titel, Datum und
+  Kurzbeschreibung des laufenden Abenteuers stehen im Abenteuerabschnitt.
+  `KartoSeitenkopf.onTap` bleibt als Baustein bestehen, die Spielansicht nutzt
+  es nicht mehr. Der Abenteuerabschnitt öffnet das Abenteuerblatt
+  (`lib/ui2/spielen/karto_abenteuerblatt.dart`, Dialoge geteilt in
   `karto_abenteuer_dialoge.dart`): Datum, Zusammenfassung,
   Notizen und Personen lesen und pflegen, Abschluss und Belohnungen bleiben in
-  der Verwaltung. Das Blatt ist eine eigene Seite (Grund `blatt`); Personen
+  der Verwaltung. Notizen und Personen sind sortierbar
+  (`karto_abenteuer_sortierung.dart`: zuletzt bearbeitet, neueste, älteste,
+  alphabetisch); die Wahl ist die geräteweite Einstellung
+  `AppSettings.abenteuerSortierung` und schreibt nie den Helden. „Zuletzt
+  bearbeitet“ liest `lastModified` an `HeroNoteEntry` und
+  `HeroAdventurePersonEntry` (UTC, nur bei Belegung im JSON); Blatt und
+  Verwaltungsdialoge stempeln nur echte Änderungen. Einträge ohne Stempel
+  folgen, jüngste Erfassung zuerst. Sortiert wird über Indizes, damit das
+  Bearbeiten weiter den Originalindex gegen den frischen Stand prüft. Das Blatt ist eine eigene Seite (Grund `blatt`); Personen
   und Notizen stehen als `feld`-Karten im `KartoKartenraster`
   (`lib/ui2/widgets/karto_kartenraster.dart`, geteilt mit der Heldenwahl),
   Personen mit demselben `KartoKompassring` wie die Heldenmarke, Anlegen als leise `senke`-Kachel am Rasterende. Es ist UI2-eigen, weil der Notizen-Tab beim Speichern seinen

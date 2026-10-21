@@ -258,8 +258,8 @@ void main() {
 
     // Probe mit den Eigenschaften der Hexe (KL 12, IN 14) und RK 3.
     expect(find.textContaining('Vertrautenzauber: Tiersinne'), findsOneWidget);
-    expect(find.text('KL: 12'), findsWidgets);
-    expect(find.text('IN: 14'), findsWidgets);
+    expect(find.textContaining('KL: 12'), findsWidgets);
+    expect(find.textContaining('IN: 14'), findsWidgets);
     expect(find.text('Pool: 3'), findsOneWidget, reason: 'RK 3');
     await tester.tap(find.text('Würfeln').last);
     await tester.pump();
@@ -295,8 +295,8 @@ void main() {
     await tippe(tester, 'vertrauten-wurf-0');
     await tippe(tester, 'vertrauten-zauber-wuerfeln-los');
 
-    expect(find.text('KL: 5'), findsWidgets);
-    expect(find.text('IN: 6'), findsWidgets);
+    expect(find.textContaining('KL: 5'), findsWidgets);
+    expect(find.textContaining('IN: 6'), findsWidgets);
     final modifikator = find.widgetWithText(TextField, '15');
     expect(modifikator, findsOneWidget);
   });

@@ -119,16 +119,28 @@ void main() {
       expect(kasten.decoration, isA<BoxDecoration>());
     });
 
-    testWidgets('steht unter Kartograph ohne Kasten', (tester) async {
+    testWidgets('entfaellt unter Kartograph, weil der Seitenkopf titelt', (
+      tester,
+    ) async {
       await zeige(tester, kartograph, kopf);
-      expect(
-        find.ancestor(
-          of: find.text('Ausrüstungs-Ledger'),
-          matching: find.byType(Container),
+      expect(find.text('Ausrüstungs-Ledger'), findsNothing);
+      expect(find.text('Traglast und Herkunft'), findsNothing);
+    });
+
+    testWidgets('behaelt unter Kartograph sein trailing-Widget', (
+      tester,
+    ) async {
+      await zeige(
+        tester,
+        kartograph,
+        const CodexTabHeader(
+          title: 'Ausrüstungs-Ledger',
+          subtitle: 'Traglast und Herkunft',
+          trailing: Text('Aktion'),
         ),
-        findsNothing,
       );
-      expect(stilVon(tester, 'Ausrüstungs-Ledger').fontFamily, kSchriftTitel);
+      expect(find.text('Aktion'), findsOneWidget);
+      expect(find.text('Ausrüstungs-Ledger'), findsNothing);
     });
   });
 
