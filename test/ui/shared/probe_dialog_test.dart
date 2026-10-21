@@ -284,9 +284,9 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Verbleibender Pool: 4'), findsOneWidget);
 
-    await tester.tap(find.byKey(
-      const ValueKey<String>('probe-dialog-specialization-keine'),
-    ));
+    await tester.tap(
+      find.byKey(const ValueKey<String>('probe-dialog-specialization-keine')),
+    );
     await tester.pumpAndSettle();
     expect(find.text('Verbleibender Pool: 2'), findsOneWidget);
   });

@@ -45,7 +45,7 @@ import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/state/sync_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/app_shell.dart';
-import 'package:dsa_heldenverwaltung/ui/screens/settings_screen.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_storage_error_screen.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/sync_conflict_gate.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_app_root.dart';
 
@@ -578,7 +578,7 @@ class _AppStartupGateState extends State<AppStartupGate> {
         }
         if (snapshot.hasError) {
           return _buildScope(
-            home: _HeroStorageErrorScreen(error: snapshot.error!),
+            home: HeroStorageErrorScreen(error: snapshot.error!),
           );
         }
 
@@ -672,53 +672,4 @@ class _HeroRepositoryBootstrapResult {
   final HiveVorgangsjournal vorgangsjournal;
   final CustomCatalogRepository customCatalogRepository;
   final HouseRulePackRepository houseRulePackRepository;
-}
-
-/// Fehleransicht fuer ungueltige oder nicht verfuegbare Heldenspeicherpfade.
-class _HeroStorageErrorScreen extends StatelessWidget {
-  const _HeroStorageErrorScreen({required this.error});
-
-  final Object error;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Heldenspeicher nicht verfügbar')),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 560),
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Die Heldendaten konnten nicht geladen werden.',
-                  style: Theme.of(context).textTheme.headlineSmall,
-                ),
-                const SizedBox(height: 16),
-                Text('$error', style: Theme.of(context).textTheme.bodyLarge),
-                const SizedBox(height: 16),
-                const Text(
-                  'Prüfe den konfigurierten Heldenspeicher in den '
-                  'Einstellungen. App-Einstellungen bleiben lokal verfügbar.',
-                ),
-                const SizedBox(height: 24),
-                FilledButton.icon(
-                  onPressed: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const SettingsScreen()),
-                    );
-                  },
-                  icon: const Icon(Icons.settings),
-                  label: const Text('Einstellungen öffnen'),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 }

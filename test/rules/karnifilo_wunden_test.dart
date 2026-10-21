@@ -41,11 +41,7 @@ void main() {
     level: 1,
     attributes: attribute,
     combatConfig: CombatConfig(
-      mainWeapon: MainWeaponSlot(
-        name: 'Schwert',
-        kkBase: 12,
-        kkThreshold: 3,
-      ),
+      mainWeapon: MainWeaponSlot(name: 'Schwert', kkBase: 12, kkThreshold: 3),
       offhandAssignment: OffhandAssignment(equipmentIndex: 0),
       offhandEquipment: <OffhandEquipmentEntry>[
         OffhandEquipmentEntry(

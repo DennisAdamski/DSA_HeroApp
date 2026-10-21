@@ -273,23 +273,26 @@ void main() {
       expect(b.hinweise.join(' '), isNot(contains('Fernkampfproben')));
     });
 
-    test('Konzentrationsstärke halbiert nur die Zauberproben (aufgerundet)', () {
-      final b = rechne(_mit([_blitz(5)]), konzentrationsstaerke: true);
+    test(
+      'Konzentrationsstärke halbiert nur die Zauberproben (aufgerundet)',
+      () {
+        final b = rechne(_mit([_blitz(5)]), konzentrationsstaerke: true);
 
-      expect(
-        probeMitSpellEffekten(_zauber(), b).initialSituationalModifier,
-        -3,
-      );
-      expect(b.fernkampfMalus, -5);
-      expect(
-        probeMitSpellEffekten(
-          _talent('Klettern'),
-          b,
-        ).initialSituationalModifier,
-        -5,
-      );
-      expect(b.hinweise.join(' '), contains('Konzentrationsstärke'));
-    });
+        expect(
+          probeMitSpellEffekten(_zauber(), b).initialSituationalModifier,
+          -3,
+        );
+        expect(b.fernkampfMalus, -5);
+        expect(
+          probeMitSpellEffekten(
+            _talent('Klettern'),
+            b,
+          ).initialSituationalModifier,
+          -5,
+        );
+        expect(b.hinweise.join(' '), contains('Konzentrationsstärke'));
+      },
+    );
 
     test('Blindkampf halbiert Talent- und Zauberproben (aufgerundet)', () {
       final b = rechne(_mit([_blitz(5)]), blindkampf: true);

@@ -95,10 +95,7 @@ void main() {
 
   test('Blindkampf halbiert alle Abzüge, der Betrag wird aufgerundet', () {
     // ZfP* 5 → 3 (aufgerundet), davon AT 2 und PA 1; ZfW 7 → INI −4.
-    final b = rechne(
-      _mit(_zustand(), _blitz('b', zfw: 7)),
-      blindkampf: true,
-    );
+    final b = rechne(_mit(_zustand(), _blitz('b', zfw: 7)), blindkampf: true);
 
     final mods = _quelle(b, 'Blitz dich find').mods;
     expect(mods.at, -2);
