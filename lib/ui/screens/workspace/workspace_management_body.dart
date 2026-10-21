@@ -159,11 +159,7 @@ class _WorkspaceManagementBodyState
 
   List<Widget> _buildGlobalActions({required bool compact}) {
     void probeSuchen() => unawaited(
-      showProbeQuickSearch(
-        context: context,
-        ref: ref,
-        heroId: widget.heroId,
-      ),
+      showProbeQuickSearch(context: context, ref: ref, heroId: widget.heroId),
     );
     return <Widget>[
       // Dieselbe Suche wie im Spielen-Bereich (Strg/Cmd+K), links der Aktionen.
@@ -255,12 +251,7 @@ class _ManagementHeader extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
         Padding(
-          padding: EdgeInsets.fromLTRB(
-            rand,
-            Abstand.weit,
-            rand,
-            0,
-          ),
+          padding: EdgeInsets.fromLTRB(rand, Abstand.weit, rand, 0),
           child: activeTab == null
               ? const SizedBox.shrink()
               : KartoSeitenkopf(

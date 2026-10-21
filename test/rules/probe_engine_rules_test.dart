@@ -44,26 +44,25 @@ ProbeResult _werte(ResolvedProbeRequest request, List<int> wuerfe, int mod) =>
 
 void main() {
   group('kleinsteReserveZumZiel', () {
-    test('liefert den knappsten Abstand, wenn alle Würfe unter dem Ziel liegen',
-        () {
-      final reserve = kleinsteReserveZumZiel(_werte(_talent(5), [9, 13, 4], 0));
-      expect(reserve, (abstand: 1, eigenschaft: 'KL'));
-    });
+    test(
+      'liefert den knappsten Abstand, wenn alle Würfe unter dem Ziel liegen',
+      () {
+        final reserve = kleinsteReserveZumZiel(
+          _werte(_talent(5), [9, 13, 4], 0),
+        );
+        expect(reserve, (abstand: 1, eigenschaft: 'KL'));
+      },
+    );
 
     test('bei Erschwernis über dem Pool gilt der gesenkte Zielwert', () {
       // Pool 3, Erschwernis -8: Rohpool -5, alle Ziele 5 niedriger (7/9/5).
       final result = _werte(_talent(3), [4, 6, 2], -8);
       expect(result.appliedAttributePenalty, -5);
-      expect(
-        kleinsteReserveZumZiel(result),
-        (abstand: 3, eigenschaft: 'MU'),
-      );
+      expect(kleinsteReserveZumZiel(result), (abstand: 3, eigenschaft: 'MU'));
     });
 
     test('gleiche Würfe wie Ziel ergeben Abstand 0', () {
-      final reserve = kleinsteReserveZumZiel(
-        _werte(_talent(0), [12, 3, 2], 0),
-      );
+      final reserve = kleinsteReserveZumZiel(_werte(_talent(0), [12, 3, 2], 0));
       expect(reserve?.abstand, 0);
     });
 
