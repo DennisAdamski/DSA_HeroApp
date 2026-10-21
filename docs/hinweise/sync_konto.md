@@ -29,6 +29,22 @@ harten Regeln und den Themenindex.
   manuellen Konto-Sync und Konfliktaufloesung. Ohne Login nutzt die App das
   lokale Offline-Profil; mit Login nutzt sie ein getrenntes Profil unter
   `Helden/accounts/<uid>`.
+- Abmelden entfernt die Online-Helden von diesem Gerät. Vorher gleicht
+  `bestaetigeUndMeldeAb` (`lib/ui/screens/auth/abmelden_dialog.dart`, Ablauf
+  `pruefeVorAbmeldung`) ein letztes Mal ab; offene Konflikte, nicht
+  abgeschlossene Entscheidungen oder ein Sync-Fehler lösen eine Warnung mit
+  „Trotzdem abmelden“ aus. Die lokale Bereinigung läuft im `AppStartupGate`
+  beim Wechsel der Konto-UID (`KontoProfilBereinigung`, nach dem Schließen aller
+  Boxen) und deckt damit jeden Abmeldeweg ab. Sie löscht nie über
+  `SyncingHeroRepository` (das schriebe Tombstones in die Cloud). Desktop/Mobil:
+  Die Boxen des Kontoprofils (`KontoProfilBereinigung.kontoBoxen`) werden
+  entfernt, Avatar-Dateien der Konto-Helden ebenfalls, außer ihre ID existiert
+  auch im Offline-Profil (`keepLocal` kopiert mit gleicher ID). Web: Offline- und
+  Konto-Profil teilen sich die Boxen, deshalb gehen nur Helden mit Sync-Stand
+  (`HiveSyncMetadataStore.heldenIds`) samt Zustand und Avatar-Zwischenspeicher.
+  `externe_helden_v1` bleibt bewusst liegen (manuelle externe Helden sind nur
+  lokal). Neue Konto-Boxen müssen in `kontoBoxen` eingetragen werden; der Test
+  `test/data/konto_profil_bereinigung_test.dart` fängt Vergessenes ab.
 - Konto-Sync für Helden läuft über `SyncingHeroRepository`, ein
   plattformspezifisches Remote-Gateway (`FirestoreHeroSyncGateway`, auf Windows
   `RestFirestoreHeroSyncGateway`), `HiveSyncMetadataStore` und die Modelle in

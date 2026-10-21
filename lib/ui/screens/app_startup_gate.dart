@@ -24,6 +24,7 @@ import 'package:dsa_heldenverwaltung/data/hive_settings_repository.dart';
 import 'package:dsa_heldenverwaltung/data/hive_sync_basis_store.dart';
 import 'package:dsa_heldenverwaltung/data/hive_sync_metadata_store.dart';
 import 'package:dsa_heldenverwaltung/data/hive_vorgangsjournal.dart';
+import 'package:dsa_heldenverwaltung/data/konto_profil_bereinigung.dart';
 import 'package:dsa_heldenverwaltung/data/house_rule_pack_repository.dart';
 import 'package:dsa_heldenverwaltung/data/rest_firestore_hero_sync_gateway.dart';
 import 'package:dsa_heldenverwaltung/data/rest_firestore_secrets_repository.dart';
@@ -177,9 +178,14 @@ class _AppStartupGateState extends State<AppStartupGate> {
       return;
     }
 
+    final previousUid = _currentAuthUid;
     _currentConfiguredPath = configuredPath;
     _currentAuthUid = targetUid;
-    _bootstrapFuture = _bootstrapHeroRepository(configuredPath, targetUid);
+    _bootstrapFuture = _bootstrapHeroRepository(
+      configuredPath,
+      targetUid,
+      previousUid: previousUid,
+    );
   }
 
   String? get _remoteSyncProfileUid {
@@ -191,8 +197,9 @@ class _AppStartupGateState extends State<AppStartupGate> {
 
   Future<_HeroRepositoryBootstrapResult> _bootstrapHeroRepository(
     String? configuredPath,
-    String? authUid,
-  ) async {
+    String? authUid, {
+    String? previousUid,
+  }) async {
     debugPrint('[startup] enter uid=${authUid ?? "null"}');
     try {
       final int generation = ++_loadGeneration;
@@ -227,6 +234,12 @@ class _AppStartupGateState extends State<AppStartupGate> {
       _activeHive = null;
       if (previousHive != null) {
         await previousHive.close();
+      }
+
+      // Abmelden (oder Kontowechsel): Die Online-Helden des alten Kontos
+      // liegen nicht laenger lokal. Die Boxen sind oben bereits geschlossen.
+      if (previousUid != null && previousUid != authUid) {
+        await _bereinigeKontoProfil(configuredPath, previousUid);
       }
 
       final offlineHeroesForReview = authUid == null
@@ -362,6 +375,27 @@ class _AppStartupGateState extends State<AppStartupGate> {
     } on Object catch (error, stackTrace) {
       debugPrint('[startup] FAILED: $error\n$stackTrace');
       rethrow;
+    }
+  }
+
+  /// Entfernt die lokalen Daten des Kontos [uid]. Darf den Start nie
+  /// verhindern: Ein Fehler wird nur gemeldet.
+  Future<void> _bereinigeKontoProfil(String? configuredPath, String uid) async {
+    try {
+      await KontoProfilBereinigung(storagePaths: widget.storagePaths)
+          .bereinige(configuredPath: configuredPath, uid: uid);
+      debugPrint('[startup] Kontoprofil bereinigt');
+    } on Object catch (error, stackTrace) {
+      FlutterError.reportError(
+        FlutterErrorDetails(
+          exception: error,
+          stack: stackTrace,
+          library: 'app_startup_gate',
+          context: ErrorDescription(
+            'Lokale Kontodaten konnten nach dem Abmelden nicht entfernt werden',
+          ),
+        ),
+      );
     }
   }
 
