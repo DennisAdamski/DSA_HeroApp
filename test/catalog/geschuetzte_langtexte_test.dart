@@ -23,7 +23,8 @@ void main() {
       test('$datei: $feld ist verschluesselt (v3)', () {
         final klartext = <String>[
           for (final eintrag in ladeKatalogDatei(datei))
-            if (_istKlartext(eintrag[feld])) '${eintrag['id'] ?? eintrag['name']}',
+            if (_istKlartext(eintrag[feld]))
+              '${eintrag['id'] ?? eintrag['name']}',
         ];
 
         expect(klartext, isEmpty);
