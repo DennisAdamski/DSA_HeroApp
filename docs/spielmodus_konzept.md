@@ -157,6 +157,13 @@ aus dem Tag `sqlite3-3.6.0` ist byte-identisch mit der aus `sqlite3-3.5.2`
 (SHA-256 `13d3f11d…6688a4`); `web/sqlite3.wasm` musste deshalb nicht getauscht
 werden, entspricht aber nachweislich dem neuen Tag.
 
+### Nachtrag 2026-10-22: sqlite3 3.7.1
+
+`package:sqlite3` steht auf 3.7.1 (Dependabot #237, hier um die passende
+`web/sqlite3.wasm` ergänzt). `web/sqlite3.wasm` ist durch die Datei aus dem Tag
+`sqlite3-3.7.1` ersetzt (SHA-256 `87c1869b…f64303`, vorher `fbcd2e82…be1a1f`).
+Der interaktive Browser-Test des Web-Pfads wurde dabei nicht durchgeführt.
+
 ### Nachtrag 2026-10-06: sqlite3 3.7.0
 
 `package:sqlite3` steht jetzt auf 3.7.0 (Dependabot #213). Das Release
