@@ -33,6 +33,7 @@ import 'package:dsa_heldenverwaltung/ui/screens/workspace/inspector/widgets/insp
 import 'package:dsa_heldenverwaltung/ui/screens/hero_overview/hero_regelprofil_section.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/herleitung_suche_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/probe_quick_search.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/workspace/rules_lookup_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/rest_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/schaden/schaden_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/schaden/schaden_ruecknahme.dart';
@@ -460,6 +461,19 @@ class KartoBestandsAdapterImpl
         ref: ref,
         heroId: heroId,
       ),
+    );
+  }
+
+  /// Der Regelwerk-Index läuft nur auf Desktop und im Web.
+  @override
+  bool get regelnNachschlagenVerfuegbar => isRulesLookupSupported();
+
+  /// Öffnet den vorhandenen Regelnachschlag (Volltextsuche in den Regelwerken).
+  @override
+  Future<void> regelnNachschlagen({required BuildContext context}) {
+    return _withKartoCompatContext(
+      context,
+      (themedContext) => showRulesLookupDialog(context: themedContext),
     );
   }
 

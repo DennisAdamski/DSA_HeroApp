@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_standort.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_theme.dart';
 
-/// Abschnitt „Standort“: Anzeige, Eingabe und Kartenlink.
+/// Standortzeile: Anzeige, Eingabe und Kartenlink.
 void main() {
   Future<void> zeige(
     WidgetTester tester, {
@@ -25,7 +25,7 @@ void main() {
         ),
         home: Scaffold(
           body: SingleChildScrollView(
-            child: KartoStandortAbschnitt(
+            child: KartoStandortZeile(
               standort: standort,
               onSpeichern: (text) async => gespeichert.add(text),
               oeffneLink: (uri) async {
@@ -46,7 +46,7 @@ void main() {
 
     expect(schluessel('karto-spiel-standort-leer'), findsOneWidget);
     expect(schluessel('karto-spiel-standort-karte'), findsNothing);
-    expect(find.text('Festhalten'), findsOneWidget);
+    expect(find.text('Standort festhalten'), findsOneWidget);
   });
 
   testWidgets('mit Standort: Name und Link auf Avesmaps', (tester) async {
@@ -59,7 +59,7 @@ void main() {
     );
 
     expect(find.text('Gareth'), findsOneWidget);
-    expect(find.text('Ändern'), findsOneWidget);
+    expect(schluessel('karto-spiel-standort-aendern'), findsOneWidget);
 
     await tester.tap(schluessel('karto-spiel-standort-karte'));
     await tester.pump();

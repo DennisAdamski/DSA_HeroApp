@@ -1,12 +1,17 @@
-part of 'karto_abenteuerblatt.dart';
+import 'package:flutter/material.dart';
 
-// Eingabedialoge des Abenteuerblatts (Notiz, Person, Zusammenfassung,
-// Datum). Sie schließen sich selbst und geben nur ihr Ergebnis zurück;
-// geschrieben wird ausschließlich im Blatt.
+import 'package:dsa_heldenverwaltung/domain/aventurian_date.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_adventure_entry.dart';
+import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
+
+// Eingabedialoge für Abenteuerblatt und Abenteuerabschnitt (Notiz, Person,
+// Zusammenfassung, Datum). Sie schließen sich selbst und geben nur ihr
+// Ergebnis zurück; geschrieben wird ausschließlich über
+// `KartoAbenteuerSchreiben`.
 
 /// Ergebnis der Notiz- und Personendialoge.
-class _ZweiFelder {
-  const _ZweiFelder(this.erstes, this.zweites, {this.loeschen = false});
+class KartoZweiFelder {
+  const KartoZweiFelder(this.erstes, this.zweites, {this.loeschen = false});
 
   final String erstes;
   final String zweites;
@@ -17,14 +22,14 @@ class _ZweiFelder {
 ///
 /// Schließt sich selbst und gibt sein Ergebnis zurück; geschrieben wird beim
 /// Aufrufer, damit das Abenteuer nur an einer Stelle verändert wird.
-class _ZweiFelderDialog extends StatefulWidget {
-  const _ZweiFelderDialog.notiz({this.erstes, this.zweites})
+class KartoZweiFelderDialog extends StatefulWidget {
+  const KartoZweiFelderDialog.notiz({super.key, this.erstes, this.zweites})
     : titelNeu = 'Neue Notiz',
       titelBearbeiten = 'Notiz bearbeiten',
       etikettErstes = 'Titel',
       etikettZweites = 'Notiz';
 
-  const _ZweiFelderDialog.person({this.erstes, this.zweites})
+  const KartoZweiFelderDialog.person({super.key, this.erstes, this.zweites})
     : titelNeu = 'Neue Person',
       titelBearbeiten = 'Person bearbeiten',
       etikettErstes = 'Name',
@@ -40,10 +45,10 @@ class _ZweiFelderDialog extends StatefulWidget {
   bool get bearbeitet => erstes != null || zweites != null;
 
   @override
-  State<_ZweiFelderDialog> createState() => _ZweiFelderDialogState();
+  State<KartoZweiFelderDialog> createState() => _KartoZweiFelderDialogState();
 }
 
-class _ZweiFelderDialogState extends State<_ZweiFelderDialog> {
+class _KartoZweiFelderDialogState extends State<KartoZweiFelderDialog> {
   late final TextEditingController _erstes = TextEditingController(
     text: widget.erstes ?? '',
   );
@@ -93,7 +98,7 @@ class _ZweiFelderDialogState extends State<_ZweiFelderDialog> {
           TextButton(
             onPressed: () =>
                 Navigator.of(context)
-                    .pop(const _ZweiFelder('', '', loeschen: true)),
+                    .pop(const KartoZweiFelder('', '', loeschen: true)),
             child: const Text('Löschen'),
           ),
         TextButton(
@@ -103,9 +108,9 @@ class _ZweiFelderDialogState extends State<_ZweiFelderDialog> {
         FilledButton(
           onPressed: _leer
               ? null
-              : () => Navigator.of(
-                  context,
-                ).pop(_ZweiFelder(_erstes.text.trim(), _zweites.text.trim())),
+              : () => Navigator.of(context).pop(
+                  KartoZweiFelder(_erstes.text.trim(), _zweites.text.trim()),
+                ),
           child: const Text('Speichern'),
         ),
       ],
@@ -114,16 +119,16 @@ class _ZweiFelderDialogState extends State<_ZweiFelderDialog> {
 }
 
 /// Mehrzeiliger Textdialog für die Zusammenfassung.
-class _TextDialog extends StatefulWidget {
-  const _TextDialog({required this.initial});
+class KartoTextDialog extends StatefulWidget {
+  const KartoTextDialog({super.key, required this.initial});
 
   final String initial;
 
   @override
-  State<_TextDialog> createState() => _TextDialogState();
+  State<KartoTextDialog> createState() => _KartoTextDialogState();
 }
 
-class _TextDialogState extends State<_TextDialog> {
+class _KartoTextDialogState extends State<KartoTextDialog> {
   late final TextEditingController _text = TextEditingController(
     text: widget.initial,
   );
@@ -163,16 +168,16 @@ class _TextDialogState extends State<_TextDialog> {
 }
 
 /// Aventurisches Datum: Tag, Göttermonat aus dem kanonischen Kalender, Jahr.
-class _DatumDialog extends StatefulWidget {
-  const _DatumDialog({required this.initial});
+class KartoDatumDialog extends StatefulWidget {
+  const KartoDatumDialog({super.key, required this.initial});
 
   final HeroAdventureDateValue initial;
 
   @override
-  State<_DatumDialog> createState() => _DatumDialogState();
+  State<KartoDatumDialog> createState() => _KartoDatumDialogState();
 }
 
-class _DatumDialogState extends State<_DatumDialog> {
+class _KartoDatumDialogState extends State<KartoDatumDialog> {
   late final TextEditingController _tag = TextEditingController(
     text: widget.initial.day,
   );

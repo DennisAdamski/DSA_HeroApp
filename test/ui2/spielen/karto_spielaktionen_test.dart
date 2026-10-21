@@ -19,12 +19,13 @@ void main() {
     WidgetTester tester, {
     double breite = 1440,
     HeroSheet? held,
+    bool regelnVerfuegbar = true,
   }) async {
     tester.view.devicePixelRatio = 1;
     tester.view.physicalSize = Size(breite, 1000);
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
-    final bestand = TestBestand();
+    final bestand = TestBestand()..regelnVerfuegbar = regelnVerfuegbar;
     final container = ProviderContainer(
       overrides: [
         heroRepositoryProvider.overrideWithValue(
@@ -65,6 +66,18 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('karto-spiel-probe')));
     await tester.pumpAndSettle();
     expect(bestand.aufrufe, ['probeSuchen:rondra']);
+  });
+
+  testWidgets('„Regeln“ öffnet den Regelnachschlag', (tester) async {
+    final bestand = await zeige(tester);
+    await tester.tap(find.byKey(const ValueKey('karto-spiel-regeln')));
+    await tester.pumpAndSettle();
+    expect(bestand.aufrufe, ['regeln']);
+  });
+
+  testWidgets('„Regeln“ fehlt, wo es keinen Regelindex gibt', (tester) async {
+    await zeige(tester, regelnVerfuegbar: false);
+    expect(find.byKey(const ValueKey('karto-spiel-regeln')), findsNothing);
   });
 
   testWidgets('„Rast“ ruft die vorhandene Rastbedienung auf', (tester) async {
@@ -167,8 +180,9 @@ void main() {
     final kampf = tester.getTopLeft(find.text('Kampf')).dy;
     final zustand = tester.getTopLeft(find.text('Zustand')).dy;
     final protokoll = tester.getTopLeft(find.text('Würfelprotokoll')).dy;
-    expect(ressourcen, lessThan(aktionen));
-    expect(aktionen, lessThan(eigenschaften));
+    // Die Schnellaktionen stehen ganz oben, noch vor den Ressourcen.
+    expect(aktionen, lessThan(ressourcen));
+    expect(ressourcen, lessThan(eigenschaften));
     expect(eigenschaften, lessThan(kampf));
     expect(kampf, lessThan(zustand));
     // Das Protokoll schliesst die Spalte ab; die Spezifikation nennt es

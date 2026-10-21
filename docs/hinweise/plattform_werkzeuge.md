@@ -26,7 +26,9 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   (`lib/ui/screens/workspace/probe_quick_search.dart`), Filter-Chips im
   Wuerfelprotokoll und den Regel-Nachschlag. Der Nachschlag liest die vom
   dsa-rules MCP-Indexer erzeugte SQLite-DB read-only per FTS5 und ist auf
-  Desktop und Web sichtbar (Mobile blendet den Einstieg weiterhin aus).
+  Desktop und Web sichtbar (Mobile blendet den Einstieg weiterhin aus). Einstiege
+  sind der Verwalten-Kopf und, über die Brücke `KartoBestandsAdapter`, die
+  Schnellaktionen der UI2-Spielansicht (Key `karto-spiel-regeln`).
   Implementierung unter `lib/data/rules_search/` (Conditional-Import-Fassade
   `rules_index_search.dart` mit IO-/Web-/Stub-Variante, plattformneutrale
   Typen in `rules_index_types.dart`), UI in

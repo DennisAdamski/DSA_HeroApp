@@ -97,6 +97,15 @@ abstract interface class KartoBestandsAdapter {
     required String heroId,
   });
 
+  /// Ob der Regelnachschlag auf dieser Plattform verfügbar ist.
+  ///
+  /// Der Regelwerk-Index läuft nur auf Desktop und im Web; wo er fehlt, blendet
+  /// die Spielansicht den Einstieg aus.
+  bool get regelnNachschlagenVerfuegbar;
+
+  /// Öffnet die Volltextsuche in den Regelwerken (heldenunabhängig).
+  Future<void> regelnNachschlagen({required BuildContext context});
+
   /// Öffnet die durchsuchbaren Berechnungsschritte aller erklärbaren Werte
   /// (ARCH-04); gerechnet wird ausschließlich in den Regelmodulen.
   Future<void> berechnungsschritte({

@@ -21,7 +21,6 @@ import 'package:dsa_heldenverwaltung/ui2/spielen/karto_begleiterkarte.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_laufendes_abenteuer.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_ressourcenleiste.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_spielaktionen.dart';
-import 'package:dsa_heldenverwaltung/ui2/spielen/karto_standort.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
 import 'package:dsa_heldenverwaltung/ui2/widgets/karto_flaeche.dart';
 import 'package:dsa_heldenverwaltung/ui2/widgets/karto_ornamente.dart';
@@ -94,11 +93,7 @@ class KartoSpielansicht extends ConsumerWidget {
           child: bestand.spielProtokoll(werte),
         );
         final rand = EdgeInsets.all(breite.seitenrand);
-        final kopf = _kopf(
-          context,
-          werte,
-          kompakt: breite == KartoBreite.schmal,
-        );
+        final kopf = _kopf(context, kompakt: breite == KartoBreite.schmal);
 
         // Ohne Seiteninhalt gäbe eine zweite Spalte nur leere Fläche.
         if (!breite.hatDetailspalte || seite.isEmpty) {
@@ -147,32 +142,12 @@ class KartoSpielansicht extends ConsumerWidget {
     );
   }
 
-  // Das laufende Abenteuer traegt den Seitentitel, die Ansicht rueckt in die
-  // Kontextzeile, und der ganze Kopf oeffnet das Abenteuerblatt. Ohne
-  // gepflegtes Abenteuer bleibt der Kopf schlicht — ein erfundener Titel waere
-  // schlimmer als gar keiner.
-  KartoSeitenkopf _kopf(
-    BuildContext context,
-    HeroComputedSnapshot werte, {
-    required bool kompakt,
-  }) {
-    final abenteuer = laufendesAbenteuer(werte.hero);
-    if (abenteuer == null) {
-      return KartoSeitenkopf(titel: 'Am Spieltisch', kompakt: kompakt);
-    }
-    return KartoSeitenkopf(
-      titel: abenteuer.title.trim(),
-      kontext: 'Am Spieltisch',
-      unterzeile: abenteuerDatum(abenteuer),
-      beschreibung: abenteuer.summary,
-      kompakt: kompakt,
-      tippHinweis: 'Abenteuer öffnen',
-      tippSchluessel: const ValueKey<String>('karto-spiel-abenteuer'),
-      onTap: () => _abenteuerOeffnen(context, abenteuer.id),
-    );
-  }
+  // Titel, Datum und Kurzbeschreibung des Abenteuers stehen im Abenteuer-
+  // abschnitt; der Kopf bleibt schlicht, damit sie nicht doppelt erscheinen.
+  KartoSeitenkopf _kopf(BuildContext context, {required bool kompakt}) =>
+      KartoSeitenkopf(titel: 'Am Spieltisch', kompakt: kompakt);
 
-  // Kopf, Abschnitt und Karten öffnen das Blatt auf demselben geschützten Weg.
+  // Der Abschnittskopf öffnet das Blatt auf einem geschützten Weg.
   Future<void> _abenteuerOeffnen(BuildContext context, String abenteuerId) =>
       aktion(() async {
         if (!await vorHeldenbearbeitung() || !context.mounted) return;
@@ -183,30 +158,17 @@ class KartoSpielansicht extends ConsumerWidget {
         );
       });
 
-  // Reihenfolge: Ressourcen, Aktionen, dann das laufende Abenteuer; die
-  // Eigenschaften folgen als schmale Würfelleiste.
+  // Reihenfolge: Schnellaktionen, Ressourcen, dann das Abenteuer mit Standort;
+  // die Eigenschaften folgen als schmale Würfelleiste.
   List<Widget> _hauptabschnitte(
     BuildContext context,
     WidgetRef ref,
     HeroComputedSnapshot werte,
   ) {
-    final abenteuer = laufendesAbenteuer(werte.hero);
     return <Widget>[
       KartoAbschnitt(
-        titel: 'Ressourcen',
-        child: KartoRessourcenleiste(
-          werte: werte,
-          onBearbeiten: (ressource) => aktion(
-            () => bestand.ressourceBearbeiten(
-              context: context,
-              heroId: heroId,
-              ressource: ressource,
-            ),
-          ),
-        ),
-      ),
-      KartoAbschnitt(
         titel: 'Schnellaktionen',
+        dicht: true,
         child: KartoSpielaktionen(
           kuerzelHinweis: 'Strg K',
           gefecht: GefechtEinstieg(
@@ -222,6 +184,10 @@ class KartoSpielansicht extends ConsumerWidget {
             () =>
                 bestand.probeSuchen(context: context, ref: ref, heroId: heroId),
           ),
+          // Der Regelindex läuft nur auf Desktop und im Web.
+          onRegeln: bestand.regelnNachschlagenVerfuegbar
+              ? () => aktion(() => bestand.regelnNachschlagen(context: context))
+              : null,
           onRast: () =>
               aktion(() => bestand.rast(context: context, heroId: heroId)),
           onSchaden: () => aktion(
@@ -233,12 +199,38 @@ class KartoSpielansicht extends ConsumerWidget {
           ),
         ),
       ),
-      if (abenteuer != null)
-        KartoAbenteuerAbschnitt(
-          abenteuer: abenteuer,
-          sortierung: ref.watch(abenteuerSortierungProvider),
-          onOeffnen: () => _abenteuerOeffnen(context, abenteuer.id),
+      KartoAbschnitt(
+        titel: 'Ressourcen',
+        dicht: true,
+        child: KartoRessourcenleiste(
+          werte: werte,
+          onBearbeiten: (ressource) => aktion(
+            () => bestand.ressourceBearbeiten(
+              context: context,
+              heroId: heroId,
+              ressource: ressource,
+            ),
+          ),
         ),
+      ),
+      KartoAbenteuerAbschnitt(
+        heroId: heroId,
+        abenteuer: laufendesAbenteuer(werte.hero),
+        standort: werte.state.standort,
+        sortierung: ref.watch(abenteuerSortierungProvider),
+        // Bewusst ohne `aktion`-Guard: der Dialog schließt sich selbst, und
+        // das Speichern läuft über den eingereihten Zustandsweg.
+        onStandortSpeichern: (standort) => bestand.standortSetzen(
+          context: context,
+          ref: ref,
+          heroId: heroId,
+          standort: standort,
+        ),
+        onOeffnen: () {
+          final abenteuer = laufendesAbenteuer(werte.hero);
+          if (abenteuer != null) _abenteuerOeffnen(context, abenteuer.id);
+        },
+      ),
       KartoAbschnitt(
         titel: 'Eigenschaften',
         dicht: true,
@@ -298,17 +290,6 @@ class KartoSpielansicht extends ConsumerWidget {
     HeroComputedSnapshot werte,
   ) {
     return <Widget>[
-      KartoStandortAbschnitt(
-        standort: werte.state.standort,
-        // Bewusst ohne `aktion`-Guard: der Dialog schließt sich selbst, und
-        // das Speichern läuft über den eingereihten Zustandsweg.
-        onSpeichern: (standort) => bestand.standortSetzen(
-          context: context,
-          ref: ref,
-          heroId: heroId,
-          standort: standort,
-        ),
-      ),
       KartoAbschnitt(
         titel: 'Kampf',
         aktion: GefechtEinstieg(
