@@ -55,6 +55,12 @@ Examples:
   `assets/catalogs/house_rules_v1/`.
 - Do not edit these files ad hoc inside feature work.
 - Regenerate or maintain them through the Python tooling in `tool/`.
+- After every import or edit that adds rulebook long texts (`erklarung_lang`,
+  `wirkung`, `variants`, ...), run `python tool/encrypt_catalog_fields.py
+  --format v3` (password from the git-ignored `docs/Passwort.env`). Register new
+  fields in `PROTECTED_FIELDS` and in
+  `test/catalog/geschuetzte_langtexte_test.dart`. Never commit rulebook text in
+  plain form.
 
 ### Custom catalog entries
 

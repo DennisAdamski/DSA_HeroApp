@@ -10,9 +10,11 @@ import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_anzeige_rules.da
 import 'package:dsa_heldenverwaltung/domain/hero_merkmal.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_breakpoints.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_bestands_adapter.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abenteuer_abschnitt.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abenteuerblatt.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abschnitt.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_begleiterkarte.dart';
@@ -91,11 +93,7 @@ class KartoSpielansicht extends ConsumerWidget {
           child: bestand.spielProtokoll(werte),
         );
         final rand = EdgeInsets.all(breite.seitenrand);
-        final kopf = _kopf(
-          context,
-          werte,
-          kompakt: breite == KartoBreite.schmal,
-        );
+        final kopf = _kopf(context, kompakt: breite == KartoBreite.schmal);
 
         // Ohne Seiteninhalt gäbe eine zweite Spalte nur leere Fläche.
         if (!breite.hatDetailspalte || seite.isEmpty) {
@@ -144,39 +142,24 @@ class KartoSpielansicht extends ConsumerWidget {
     );
   }
 
-  // Das laufende Abenteuer traegt den Seitentitel, die Ansicht rueckt in die
-  // Kontextzeile, und der ganze Kopf oeffnet das Abenteuerblatt. Ohne
-  // gepflegtes Abenteuer bleibt der Kopf schlicht — ein erfundener Titel waere
-  // schlimmer als gar keiner.
-  KartoSeitenkopf _kopf(
-    BuildContext context,
-    HeroComputedSnapshot werte, {
-    required bool kompakt,
-  }) {
-    final abenteuer = laufendesAbenteuer(werte.hero);
-    if (abenteuer == null) {
-      return KartoSeitenkopf(titel: 'Am Spieltisch', kompakt: kompakt);
-    }
-    return KartoSeitenkopf(
-      titel: abenteuer.title.trim(),
-      kontext: 'Am Spieltisch',
-      unterzeile: abenteuerDatum(abenteuer),
-      beschreibung: abenteuer.summary,
-      kompakt: kompakt,
-      tippHinweis: 'Abenteuer öffnen',
-      tippSchluessel: const ValueKey<String>('karto-spiel-abenteuer'),
-      onTap: () => aktion(() async {
+  // Titel, Datum und Kurzbeschreibung des Abenteuers stehen im Abenteuer-
+  // abschnitt; der Kopf bleibt schlicht, damit sie nicht doppelt erscheinen.
+  KartoSeitenkopf _kopf(BuildContext context, {required bool kompakt}) =>
+      KartoSeitenkopf(titel: 'Am Spieltisch', kompakt: kompakt);
+
+  // Der Abschnittskopf öffnet das Blatt auf einem geschützten Weg.
+  Future<void> _abenteuerOeffnen(BuildContext context, String abenteuerId) =>
+      aktion(() async {
         if (!await vorHeldenbearbeitung() || !context.mounted) return;
         await zeigeAbenteuerblatt(
           context: context,
           heroId: heroId,
-          abenteuerId: abenteuer.id,
+          abenteuerId: abenteuerId,
         );
-      }),
-    );
-  }
+      });
 
-  // Reihenfolge laut Spezifikation: Ressourcen zuerst, dann Aktionen.
+  // Reihenfolge: Schnellaktionen, Ressourcen, dann das Abenteuer mit Standort;
+  // die Eigenschaften folgen als schmale Würfelleiste.
   List<Widget> _hauptabschnitte(
     BuildContext context,
     WidgetRef ref,
@@ -184,20 +167,8 @@ class KartoSpielansicht extends ConsumerWidget {
   ) {
     return <Widget>[
       KartoAbschnitt(
-        titel: 'Ressourcen',
-        child: KartoRessourcenleiste(
-          werte: werte,
-          onBearbeiten: (ressource) => aktion(
-            () => bestand.ressourceBearbeiten(
-              context: context,
-              heroId: heroId,
-              ressource: ressource,
-            ),
-          ),
-        ),
-      ),
-      KartoAbschnitt(
         titel: 'Schnellaktionen',
+        dicht: true,
         child: KartoSpielaktionen(
           kuerzelHinweis: 'Strg K',
           gefecht: GefechtEinstieg(
@@ -213,6 +184,10 @@ class KartoSpielansicht extends ConsumerWidget {
             () =>
                 bestand.probeSuchen(context: context, ref: ref, heroId: heroId),
           ),
+          // Der Regelindex läuft nur auf Desktop und im Web.
+          onRegeln: bestand.regelnNachschlagenVerfuegbar
+              ? () => aktion(() => bestand.regelnNachschlagen(context: context))
+              : null,
           onRast: () =>
               aktion(() => bestand.rast(context: context, heroId: heroId)),
           onSchaden: () => aktion(
@@ -225,8 +200,40 @@ class KartoSpielansicht extends ConsumerWidget {
         ),
       ),
       KartoAbschnitt(
+        titel: 'Ressourcen',
+        dicht: true,
+        child: KartoRessourcenleiste(
+          werte: werte,
+          onBearbeiten: (ressource) => aktion(
+            () => bestand.ressourceBearbeiten(
+              context: context,
+              heroId: heroId,
+              ressource: ressource,
+            ),
+          ),
+        ),
+      ),
+      KartoAbenteuerAbschnitt(
+        heroId: heroId,
+        abenteuer: laufendesAbenteuer(werte.hero),
+        standort: werte.state.standort,
+        sortierung: ref.watch(abenteuerSortierungProvider),
+        // Bewusst ohne `aktion`-Guard: der Dialog schließt sich selbst, und
+        // das Speichern läuft über den eingereihten Zustandsweg.
+        onStandortSpeichern: (standort) => bestand.standortSetzen(
+          context: context,
+          ref: ref,
+          heroId: heroId,
+          standort: standort,
+        ),
+        onOeffnen: () {
+          final abenteuer = laufendesAbenteuer(werte.hero);
+          if (abenteuer != null) _abenteuerOeffnen(context, abenteuer.id);
+        },
+      ),
+      KartoAbschnitt(
         titel: 'Eigenschaften',
-        hinweis: 'Ein Tippen würfelt die Probe',
+        dicht: true,
         child: bestand.spielEigenschaftsproben(heroId: heroId, werte: werte),
       ),
       _merkmale(context, ref, werte),

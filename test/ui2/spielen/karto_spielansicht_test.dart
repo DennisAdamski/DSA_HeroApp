@@ -3,14 +3,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dsa_heldenverwaltung/domain/hero_adventure_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_note_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_resource_activation_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
+import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_base_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_bestands_adapter.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abenteuer_karten.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_spielansicht.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_theme.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
@@ -52,6 +55,19 @@ const _nebel = HeroAdventureEntry(
     month: 'phex',
     year: '1043',
   ),
+  notes: [
+    HeroNoteEntry(
+      title: 'Der Nebelreiter',
+      description: 'Reitet nur bei Neumond und meidet die Straße nach Gareth.',
+    ),
+  ],
+  people: [
+    HeroAdventurePersonEntry(
+      id: 'p1',
+      name: 'Alrik vom Blautann',
+      description: 'Wirt des „Grünen Krugs“, weiß mehr als er sagt.',
+    ),
+  ],
 );
 
 void main() {
@@ -198,23 +214,26 @@ void main() {
     expect(find.textContaining('7 /'), findsOneWidget);
   });
 
-  group('laufendes Abenteuer im Seitenkopf', () {
-    testWidgets('das Abenteuer trägt den Titel, die Ansicht den Kontext', (
+  group('laufendes Abenteuer im Abenteuerabschnitt', () {
+    testWidgets('Titel, Datum und Kurzbeschreibung stehen im Abschnitt', (
       tester,
     ) async {
       await zeige(tester, held: mitAbenteuern([_nebel]), breite: 1024);
-      final titel = tester.widget<Text>(find.text('Die Spuren im Nebel'));
-      final theme = Theme.of(tester.element(find.text('Die Spuren im Nebel')));
-      expect(titel.style!.fontSize, theme.textTheme.titelGross.fontSize);
-      expect(find.text('Am Spieltisch'), findsOneWidget);
+      // Der Seitenkopf bleibt schlicht und wiederholt nichts.
+      final theme = Theme.of(tester.element(find.text('Am Spieltisch')));
       expect(
-        tester.getTopLeft(find.text('Am Spieltisch')).dy,
-        lessThan(tester.getTopLeft(find.text('Die Spuren im Nebel')).dy),
+        tester.widget<Text>(find.text('Am Spieltisch')).style!.fontSize,
+        theme.textTheme.titelGross.fontSize,
       );
+      expect(find.text('Die Spuren im Nebel'), findsOneWidget);
       expect(find.text('12. Phex 1043 BF'), findsOneWidget);
       expect(
         find.text('Die Gruppe folgt der Spur des Nebelreiters.'),
         findsOneWidget,
+      );
+      expect(
+        tester.getTopLeft(find.text('Am Spieltisch')).dy,
+        lessThan(tester.getTopLeft(find.text('Die Spuren im Nebel')).dy),
       );
     });
 
@@ -230,32 +249,7 @@ void main() {
       expect(find.text('1. Phex 1043 BF'), findsOneWidget);
     });
 
-    testWidgets('Abenteuer öffnen prüft zuerst die Verwaltung', (tester) async {
-      var geprueft = 0;
-      await zeige(
-        tester,
-        held: mitAbenteuern([_nebel]),
-        breite: 1024,
-        vorAbenteuer: () async {
-          geprueft++;
-          return false;
-        },
-      );
-      await tester.tap(find.byKey(const ValueKey('karto-spiel-abenteuer')));
-      await tester.pumpAndSettle();
-      expect(geprueft, 1);
-      expect(find.byType(BottomSheet), findsNothing);
-    });
-
-    testWidgets('Abenteuer öffnen zeigt das Abenteuerblatt', (tester) async {
-      await zeige(tester, held: mitAbenteuern([_nebel]), breite: 1024);
-      await tester.tap(find.byKey(const ValueKey('karto-spiel-abenteuer')));
-      await tester.pumpAndSettle();
-      expect(find.byType(BottomSheet), findsOneWidget);
-      expect(find.text('Notizen'), findsOneWidget);
-    });
-
-    testWidgets('abgeschlossene Abenteuer bleiben aus dem Kopf', (
+    testWidgets('abgeschlossene Abenteuer bleiben aus dem Abschnitt', (
       tester,
     ) async {
       await zeige(
@@ -264,14 +258,8 @@ void main() {
           _nebel.copyWith(status: HeroAdventureStatus.completed),
         ]),
       );
-      final theme = Theme.of(tester.element(find.text('Am Spieltisch')));
-      expect(
-        tester.widget<Text>(find.text('Am Spieltisch')).style!.fontSize,
-        theme.textTheme.titel.fontSize,
-      );
       expect(find.text('Die Spuren im Nebel'), findsNothing);
       expect(find.textContaining('Phex'), findsNothing);
-      expect(find.byKey(const ValueKey('karto-spiel-abenteuer')), findsNothing);
     });
   });
 
@@ -290,6 +278,200 @@ void main() {
       expect(tester.takeException(), isNull);
     });
   }
+
+  group('Abenteuerabschnitt', () {
+    Finder schluessel(String name) => find.byKey(ValueKey<String>(name));
+
+    testWidgets(
+      'Schnellaktionen stehen vor den Ressourcen, dann das Abenteuer',
+      (tester) async {
+        await zeige(tester, held: mitAbenteuern([_nebel]));
+        final aktionen = tester.getTopLeft(find.text('Schnellaktionen')).dy;
+        final ressourcen = tester.getTopLeft(find.text('Ressourcen')).dy;
+        final abenteuer = tester
+            .getTopLeft(find.text('Die Spuren im Nebel'))
+            .dy;
+        final eigenschaften = tester.getTopLeft(find.text('Eigenschaften')).dy;
+        expect(aktionen, lessThan(ressourcen));
+        expect(ressourcen, lessThan(abenteuer));
+        expect(abenteuer, lessThan(eigenschaften));
+        expect(find.text('Alrik vom Blautann'), findsOneWidget);
+        expect(find.text('Der Nebelreiter'), findsOneWidget);
+      },
+    );
+
+    testWidgets('ohne laufendes Abenteuer bleibt der Standort', (tester) async {
+      await zeige(
+        tester,
+        held: mitAbenteuern([
+          _nebel.copyWith(status: HeroAdventureStatus.completed),
+        ]),
+      );
+      expect(schluessel('karto-spiel-abenteuer-oeffnen'), findsNothing);
+      expect(schluessel('karto-spiel-abenteuer-leer'), findsOneWidget);
+      expect(schluessel('karto-spiel-standort-aendern'), findsOneWidget);
+      expect(find.text('Der Nebelreiter'), findsNothing);
+      expect(schluessel('karto-spiel-abenteuer-schnellnotiz'), findsNothing);
+    });
+
+    testWidgets('der Standort steht im Abschnitt, nicht in der Seitenspalte', (
+      tester,
+    ) async {
+      await zeige(
+        tester,
+        held: mitAbenteuern([_nebel]),
+        zustaende: {
+          'praiodan': const HeroState.empty().copyWith(standort: 'Gareth'),
+        },
+        breite: 1440,
+      );
+      expect(find.text('Gareth'), findsOneWidget);
+      expect(find.text('Standort'), findsNothing);
+      final standort = tester.getTopLeft(find.text('Gareth')).dx;
+      final kampf = tester.getTopLeft(find.text('Kampf')).dx;
+      expect(standort, lessThan(kampf));
+    });
+
+    testWidgets('Standort speichert über die Brücke', (tester) async {
+      final bestand = TestBestand();
+      await zeige(tester, held: mitAbenteuern([_nebel]), bestand: bestand);
+      await tester.ensureVisible(schluessel('karto-spiel-standort-aendern'));
+      await tester.tap(schluessel('karto-spiel-standort-aendern'));
+      await tester.pumpAndSettle();
+      await tester.enterText(schluessel('karto-spiel-standort-feld'), 'Havena');
+      await tester.tap(schluessel('karto-spiel-standort-speichern'));
+      await tester.pumpAndSettle();
+      expect(bestand.aufrufe, contains('standort:praiodan:Havena'));
+    });
+
+    testWidgets('Öffnen prüft zuerst die Verwaltung', (tester) async {
+      var geprueft = 0;
+      await zeige(
+        tester,
+        held: mitAbenteuern([_nebel]),
+        vorAbenteuer: () async {
+          geprueft++;
+          return false;
+        },
+      );
+      await tester.ensureVisible(schluessel('karto-spiel-abenteuer-oeffnen'));
+      await tester.tap(schluessel('karto-spiel-abenteuer-oeffnen'));
+      await tester.pumpAndSettle();
+      expect(geprueft, 1);
+      expect(find.byType(BottomSheet), findsNothing);
+    });
+
+    testWidgets('Öffnen zeigt das Abenteuerblatt', (tester) async {
+      await zeige(tester, held: mitAbenteuern([_nebel]), breite: 1024);
+      await tester.ensureVisible(schluessel('karto-spiel-abenteuer-oeffnen'));
+      await tester.tap(schluessel('karto-spiel-abenteuer-oeffnen'));
+      await tester.pumpAndSettle();
+      expect(find.byType(BottomSheet), findsOneWidget);
+    });
+
+    testWidgets('eine Karte bearbeitet direkt, ohne Blatt', (tester) async {
+      await zeige(tester, held: mitAbenteuern([_nebel]), breite: 1024);
+      await tester.ensureVisible(find.text('Der Nebelreiter'));
+      await tester.tap(find.text('Der Nebelreiter'));
+      await tester.pumpAndSettle();
+      expect(find.byType(BottomSheet), findsNothing);
+      expect(find.text('Notiz bearbeiten'), findsOneWidget);
+    });
+
+    testWidgets('Schnellnotiz wird gespeichert und erscheint sofort', (
+      tester,
+    ) async {
+      final repo = FakeRepository(
+        heroes: [
+          mitAbenteuern([_nebel]),
+        ],
+      );
+      await zeige(
+        tester,
+        held: mitAbenteuern([_nebel]),
+        repository: repo,
+        breite: 1024,
+      );
+      final feld = schluessel('karto-spiel-abenteuer-schnellnotiz');
+      await tester.ensureVisible(feld);
+      await tester.enterText(feld, 'Brücke ist gesperrt');
+      await tester.testTextInput.receiveAction(TextInputAction.send);
+      await tester.pumpAndSettle();
+
+      final abenteuer = (await repo.loadHeroById('praiodan'))!
+          .adventures
+          .single;
+      expect(abenteuer.notes.map((n) => n.title), [
+        'Der Nebelreiter',
+        'Brücke ist gesperrt',
+      ]);
+      expect(find.text('Brücke ist gesperrt'), findsOneWidget);
+      // Das Feld ist für die nächste Notiz wieder leer.
+      expect(tester.widget<TextField>(feld).controller!.text, isEmpty);
+    });
+
+    testWidgets('leere Schnellnotiz schreibt nichts', (tester) async {
+      final repo = FakeRepository(
+        heroes: [
+          mitAbenteuern([_nebel]),
+        ],
+      );
+      await zeige(tester, held: mitAbenteuern([_nebel]), repository: repo);
+      final feld = schluessel('karto-spiel-abenteuer-schnellnotiz');
+      await tester.ensureVisible(feld);
+      await tester.enterText(feld, '   ');
+      await tester.testTextInput.receiveAction(TextInputAction.send);
+      await tester.pumpAndSettle();
+      final abenteuer = (await repo.loadHeroById('praiodan'))!
+          .adventures
+          .single;
+      expect(abenteuer.notes, hasLength(1));
+    });
+
+    testWidgets('weitere Karten klappen inline auf', (tester) async {
+      final viele = _nebel.copyWith(
+        notes: [
+          for (var i = 1; i <= 6; i++)
+            HeroNoteEntry(title: 'Notiz $i', description: ''),
+        ],
+      );
+      await zeige(tester, held: mitAbenteuern([viele]), breite: 1024);
+      expect(find.byType(KartoNotizkarte), findsNWidgets(4));
+      final alle = schluessel('karto-spiel-abenteuer-alle');
+      await tester.ensureVisible(alle);
+      await tester.tap(alle);
+      await tester.pumpAndSettle();
+      expect(find.byType(KartoNotizkarte), findsNWidgets(6));
+      await tester.ensureVisible(alle);
+      await tester.tap(alle);
+      await tester.pumpAndSettle();
+      expect(find.byType(KartoNotizkarte), findsNWidgets(4));
+    });
+
+    testWidgets('eine offene Planung schützt das Abenteuer', (tester) async {
+      final container = await zeige(tester, held: mitAbenteuern([_nebel]));
+      container
+          .read(advancementSessionProvider('praiodan').notifier)
+          .start(hero: mitAbenteuern([_nebel]), catalog: testCatalog);
+      await tester.pumpAndSettle();
+      expect(schluessel('karto-spiel-abenteuer-gesperrt'), findsOneWidget);
+      expect(schluessel('karto-spiel-abenteuer-schnellnotiz'), findsNothing);
+      expect(schluessel('karto-spiel-abenteuer-person-neu'), findsNothing);
+      // Lesen bleibt möglich; Karten sind nur nicht mehr antippbar.
+      expect(find.text('Der Nebelreiter'), findsOneWidget);
+    });
+
+    testWidgets('lange Kurzbeschreibung lässt sich aufklappen', (tester) async {
+      final lang = _nebel.copyWith(summary: List.filled(40, 'Nebel').join(' '));
+      await zeige(tester, held: mitAbenteuern([lang]));
+      final text = schluessel('karto-spiel-abenteuer-zusammenfassung');
+      expect(tester.widget<Text>(text).maxLines, 3);
+      await tester.ensureVisible(schluessel('karto-spiel-abenteuer-mehr'));
+      await tester.tap(schluessel('karto-spiel-abenteuer-mehr'));
+      await tester.pumpAndSettle();
+      expect(tester.widget<Text>(text).maxLines, isNull);
+    });
+  });
 
   group('Vor- und Nachteile', () {
     testWidgets('stehen nach den Eigenschaften und vor dem Kampf', (

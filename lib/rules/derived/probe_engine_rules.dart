@@ -234,6 +234,33 @@ ProbeResult _evaluateSummedProbe(
   );
 }
 
+/// Knappster Wurf einer Talent-/Zauberprobe, bei der **alle** Würfe auf oder
+/// unter ihrem Zielwert liegen: der kleinste Abstand `Zielwert − Wurf`.
+///
+/// Bei Erschwernis über dem Pool sind die Zielwerte bereits um den Malus
+/// gesenkt; der Abstand sagt dann, um wie viel mehr Erschwernis die Probe noch
+/// vertragen hätte. `null` bei anderen Probearten, bei einer Überschreitung
+/// und ohne Zielwerte.
+({int abstand, String eigenschaft})? kleinsteReserveZumZiel(
+  ProbeResult result,
+) {
+  if (!result.request.usesCompensationPool) return null;
+  final targets = result.effectiveTargetValues;
+  final labels = result.request.targets;
+  if (targets.isEmpty || result.diceValues.length < targets.length) return null;
+  if (result.targetOverflows.any((overflow) => overflow > 0)) return null;
+  int? bester;
+  var index = 0;
+  for (var i = 0; i < targets.length; i++) {
+    final abstand = targets[i] - result.diceValues[i];
+    if (bester == null || abstand < bester) {
+      bester = abstand;
+      index = i;
+    }
+  }
+  return (abstand: bester!, eigenschaft: labels[index].label);
+}
+
 int _overflow(int roll, int target) {
   final overflow = roll - target;
   return overflow > 0 ? overflow : 0;

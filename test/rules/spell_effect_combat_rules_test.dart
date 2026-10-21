@@ -93,14 +93,38 @@ void main() {
     expect(b.hinweise.single, contains('ZfP* fehlt'));
   });
 
-  test('Blindkampf halbiert laut Regelwerk – die App rechnet nicht selbst', () {
-    final b = rechne(_mit(_zustand(), _blitz('b')), blindkampf: true);
+  test('Blindkampf halbiert alle Abzüge, der Betrag wird aufgerundet', () {
+    // ZfP* 5 → 3 (aufgerundet), davon AT 2 und PA 1; ZfW 7 → INI −4.
+    final b = rechne(_mit(_zustand(), _blitz('b', zfw: 7)), blindkampf: true);
 
-    expect(b.statQuellen, isEmpty);
-    expect(b.heldenIniMalus, 0);
+    final mods = _quelle(b, 'Blitz dich find').mods;
+    expect(mods.at, -2);
+    expect(mods.pa, -1);
+    expect(b.heldenIniMalus, -4);
+    expect(b.fernkampfMalus, -3);
     expect(b.orientierenGesperrt, isTrue);
-    expect(b.fernkampfMalus, 0);
     expect(b.hinweise.single, contains('Blindkampf'));
+  });
+
+  test('Blindkampf mit geradem ZfP*: genau die Hälfte', () {
+    final b = rechne(
+      _mit(_zustand(), _blitz('b', zfp: 6, zfw: 12)),
+      blindkampf: true,
+    );
+
+    final mods = _quelle(b, 'Blitz dich find').mods;
+    expect(mods.at, -2);
+    expect(mods.pa, -1);
+    expect(b.heldenIniMalus, -6);
+    expect(b.fernkampfMalus, -3);
+  });
+
+  test('halbiertAufgerundet', () {
+    expect(halbiertAufgerundet(5), 3);
+    expect(halbiertAufgerundet(4), 2);
+    expect(halbiertAufgerundet(1), 1);
+    expect(halbiertAufgerundet(0), 0);
+    expect(halbiertAufgerundet(-3), 0);
   });
 
   test('Blitz erschwert den Fernkampf um ZfP*', () {

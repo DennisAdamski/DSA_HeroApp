@@ -376,7 +376,7 @@ List<ProbeQuickSearchCandidate> _buildTalentCandidates({
           title: talent.name,
           targets: wert.ziele,
           basePool: wert.taw,
-          hasSpecialization: wert.spezialisierung,
+          spezialisierungen: wert.spezialisierungen,
           tawHerleitung: wert.herleitung.taw,
         ),
       ),

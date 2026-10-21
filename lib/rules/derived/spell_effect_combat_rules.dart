@@ -137,6 +137,7 @@ class SpellEffectBeitraege {
     this.fernkampfQuelle,
     this.eigenschaftsQuellen = const <SpellEffectEigenschaftsQuelle>[],
     this.athletikVerdopplungQuelle,
+    this.kampfrauschQuelle,
     this.orientierenGesperrt = false,
     this.probenBeitraege = const <SpellEffectProbenBeitrag>[],
     this.hinweise = const <String>[],
@@ -156,6 +157,11 @@ class SpellEffectBeitraege {
   /// Axxeleratus (LC S. 36): Name der Quelle, wenn der Athletik-TaW für
   /// Sprints und Sprünge verdoppelt ist; sonst `null`.
   final String? athletikVerdopplungQuelle;
+
+  /// Karnifilo (LC S. 136): Name der Quelle, wenn Wunden AT und PA nicht
+  /// mindern und nicht kampfunfähig machen (`wundEffekteImKampfrausch`);
+  /// sonst `null`.
+  final String? kampfrauschQuelle;
 
   /// Summe aller [eigenschaftsQuellen].
   AttributeModifiers get eigenschaftsMods {
@@ -192,6 +198,7 @@ class SpellEffectBeitraege {
       fernkampfMalus == 0 &&
       eigenschaftsQuellen.isEmpty &&
       athletikVerdopplungQuelle == null &&
+      kampfrauschQuelle == null &&
       !orientierenGesperrt &&
       probenBeitraege.isEmpty &&
       hinweise.isEmpty;
@@ -258,6 +265,14 @@ SpellEffectBeitraege berechneSpellEffectBeitraegeFuerHeld({
   );
 }
 
+/// Die Hälfte von [wert], aufgerundet; negative Werte zählen als 0.
+///
+/// Tischregel Rundung (Nutzer, 18./19.10.2026): Kosten werden abgerundet,
+/// alle übrigen Werte aufgerundet, die MR ausgenommen. Bei halbierten
+/// Abzügen und Dauern wird der **Betrag** aufgerundet (Entscheid 19.10.2026,
+/// deckt sich mit der kaufmännischen Rundung aus WdZ S. 7).
+int halbiertAufgerundet(int wert) => wert <= 0 ? 0 : (wert + 1) ~/ 2;
+
 /// Quellname der Athletik-Verdopplung durch Axxeleratus.
 const String kAxxeleratusAthletikQuelle = 'Axxeleratus';
 
@@ -265,17 +280,17 @@ const String kAxxeleratusAthletikQuelle = 'Axxeleratus';
 ///
 /// - **Blitz** (LC S. 49): ZfP* gleichmäßig von AT- und PA-Basis abziehen, bei
 ///   ungeradem ZfP* zuerst von der Attacke; Helden-INI −ZfW; Orientieren
-///   gesperrt. Mit der SF Blindkampf halbieren sich die Abzüge — die Rundung
-///   steht nicht im Regelwerk, deshalb rechnet die App dann **nicht**
-///   automatisch, sondern meldet einen Hinweis ([blindkampf]).
-///   Außerdem sind Talent-, Zauber- und Fernkampfproben um ZfP* erschwert:
-///   Talent- und Zauberproben über [probenBeitraege], den Fernkampf über
-///   [SpellEffectBeitraege.fernkampfMalus] im FK-Wert der Waffe.
-///   Konzentrationsstärke halbiert die Abzüge auf **Zauberproben** (Rundung
-///   nicht belegt → Hinweis statt Zahl).
+///   gesperrt. Außerdem sind Talent-, Zauber- und Fernkampfproben um ZfP*
+///   erschwert: Talent- und Zauberproben über [probenBeitraege], den
+///   Fernkampf über [SpellEffectBeitraege.fernkampfMalus] im FK-Wert der
+///   Waffe. Mit der SF Blindkampf ([blindkampf]) halbieren sich alle Abzüge
+///   (ZfP* vor dem Aufteilen auf AT/PA, INI-Abzug ZfW), Konzentrationsstärke
+///   halbiert die auf **Zauberproben**; beide zusammen halbieren nur einmal.
+///   Gerundet wird nach [halbiertAufgerundet].
 /// - **Karnifilo** (LC S. 136): AT-Basis +5, PA-Basis −5 fest; MU/KK +5 und
 ///   KL/CH −5 als [SpellEffectEigenschaftsQuelle] (nicht über
 ///   `effektiveTempAttributeMods`, damit AT/PA nicht neu gerechnet werden).
+///   Wunden mindern AT/PA nicht ([SpellEffectBeitraege.kampfrauschQuelle]).
 /// - **Axxeleratus** ([axxeleratus], LC S. 36): Athletik-TaW für Sprints und
 ///   Sprünge verdoppelt; als bedingter Probenschritt, nie pauschal.
 /// - **Plumbumbarum** (LC S. 211): AT-Basis und INI-**Basis** je −ZfP*; keine
@@ -311,6 +326,7 @@ SpellEffectBeitraege berechneSpellEffectBeitraege({
   var fkMalus = 0;
   String? fkQuelle;
   var orientieren = false;
+  String? kampfrausch;
 
   for (final zauberId in kRechenbareZauberIds) {
     final stark = _staerksteInstanz(zustand, zauberId);
@@ -327,53 +343,64 @@ SpellEffectBeitraege berechneSpellEffectBeitraege({
     switch (zauberId) {
       case kBlitzZauberId:
         orientieren = true;
+        // Blindkampf senkt alle Abzüge auf die Hälfte, Konzentrationsstärke
+        // die auf Zauberproben (LC S. 49). Tischregel Rundung (19.10.2026):
+        // der halbierte Betrag wird aufgerundet; beide SF zusammen halbieren
+        // die Zauberproben nur einmal.
+        final abzug = blindkampf ? halbiertAufgerundet(staerke) : staerke;
+        final zauberAbzug = blindkampf || !konzentrationsstaerke
+            ? abzug
+            : halbiertAufgerundet(staerke);
         if (blindkampf) {
+          final zusatz = konzentrationsstaerke
+              ? '; Konzentrationsstärke halbiert die Zauberproben nicht ein '
+                    'zweites Mal'
+              : '';
           hinweise.add(
-            '$name: Blindkampf halbiert die Abzüge; die Rundung ist im '
-            'Regelwerk nicht belegt – Abzüge auf AT, PA, INI, Fernkampf und '
-            'Proben bitte manuell eintragen.',
+            '$name: Blindkampf halbiert die Abzüge (aufgerundet, '
+            'Tischregel)$zusatz.',
           );
-          break;
+        } else if (konzentrationsstaerke && staerke > 0) {
+          hinweise.add(
+            '$name: Konzentrationsstärke halbiert die Abzüge auf '
+            'Zauberproben (aufgerundet, Tischregel).',
+          );
         }
-        if (staerke > 0) {
-          proben.add(
-            SpellEffectProbenBeitrag(bezeichnung: name, wert: -staerke),
-          );
-          if (konzentrationsstaerke) {
-            hinweise.add(
-              '$name: Konzentrationsstärke halbiert die Abzüge auf '
-              'Zauberproben; die Rundung ist nicht belegt – Zauberproben '
-              'bitte manuell anpassen.',
-            );
-          } else {
-            proben.add(
-              SpellEffectProbenBeitrag(
-                bezeichnung: name,
-                wert: -staerke,
-                talent: false,
-                zauber: true,
-              ),
-            );
-          }
+        if (abzug > 0) {
+          proben.add(SpellEffectProbenBeitrag(bezeichnung: name, wert: -abzug));
           // „Fernkampf um … ZfP* Punkte erschwert“: im FK-Wert der Waffe.
-          fkMalus -= staerke;
+          fkMalus -= abzug;
           fkQuelle = name;
+        }
+        if (zauberAbzug > 0) {
+          proben.add(
+            SpellEffectProbenBeitrag(
+              bezeichnung: name,
+              wert: -zauberAbzug,
+              talent: false,
+              zauber: true,
+            ),
+          );
         }
         final zfw = stark.zfw;
         // Ungerades ZfP*: der Rest geht zuerst an die Attacke.
-        final atAnteil = (staerke + 1) ~/ 2;
-        final paAnteil = staerke ~/ 2;
+        final atAnteil = (abzug + 1) ~/ 2;
+        final paAnteil = abzug ~/ 2;
         quellen.add(
           StatModifikatorQuelle(
             bezeichnung: name,
             mods: StatModifiers(at: -atAnteil, pa: -paAnteil),
-            quelle: 'Zaubereffekt (ZfP* $staerke gleichmäßig auf AT/PA)',
+            quelle: blindkampf
+                ? 'Zaubereffekt (ZfP* $staerke, mit Blindkampf halbiert '
+                      'auf $abzug, gleichmäßig auf AT/PA)'
+                : 'Zaubereffekt (ZfP* $staerke gleichmäßig auf AT/PA)',
           ),
         );
         if (zfw == null) {
           hinweise.add('$name: ZfW fehlt – INI-Abzug nicht gerechnet.');
         } else {
-          iniMalus -= zfw < 0 ? 0 : zfw;
+          final iniAbzug = zfw < 0 ? 0 : zfw;
+          iniMalus -= blindkampf ? halbiertAufgerundet(iniAbzug) : iniAbzug;
           iniQuelle = name;
         }
       case kPlumbumbarumZauberId:
@@ -413,6 +440,7 @@ SpellEffectBeitraege berechneSpellEffectBeitraege({
             quelle: 'Zaubereffekt (Kampfrausch)',
           ),
         );
+        kampfrausch = name;
         hinweise
           ..add(
             '$name: MU +5, KK +5, KL −5 und CH −5 gelten für Proben, den '
@@ -423,10 +451,10 @@ SpellEffectBeitraege berechneSpellEffectBeitraege({
           ..add(
             '$name: erlaubt sind nur gewöhnliche AT/PA sowie Ausweichen, '
             'Befreiungsschlag, Hammerschlag, Niederwerfen, Schildparade, '
-            'Sturmangriff und Wuchtschlag. Wunden und LeP-/AuP-Verlust '
-            'behindern den Rasenden nicht (keine AT/PA-Einbußen durch '
-            'Wunden). Danach AuP 0 und ZfP*/2 Erschöpfung; sind alle Gegner '
-            'besiegt, greift er Gefährten an.',
+            'Sturmangriff und Wuchtschlag. Wunden mindern AT und PA nicht '
+            'und machen nicht kampfunfähig. Danach AuP 0 und '
+            '${halbiertAufgerundet(staerke)} Punkte Erschöpfung (ZfP*/2, '
+            'aufgerundet); sind alle Gegner besiegt, greift er Gefährten an.',
           );
       case kSeidenzungeZauberId:
         // Der Meister darf Überreden-Proben um ZfP* erleichtern (LC S. 237);
@@ -469,6 +497,7 @@ SpellEffectBeitraege berechneSpellEffectBeitraege({
       eigenschaften,
     ),
     athletikVerdopplungQuelle: athletikQuelle,
+    kampfrauschQuelle: kampfrausch,
     orientierenGesperrt: orientieren,
     probenBeitraege: List<SpellEffectProbenBeitrag>.unmodifiable(proben),
     hinweise: List<String>.unmodifiable(hinweise),

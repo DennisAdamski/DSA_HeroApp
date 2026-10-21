@@ -25,6 +25,7 @@ class HeldVisitenkarte {
     this.avatarThumbnailBase64,
     required this.exportedAt,
     this.istManuell = false,
+    this.notizen = '',
   });
 
   final String heroId;
@@ -46,6 +47,9 @@ class HeldVisitenkarte {
 
   /// `true` wenn der Held manuell angelegt wurde (kein echtes Spielergeraet).
   final bool istManuell;
+
+  /// Freitext zu manuell angelegten Helden (geteilte Gruppeninfo).
+  final String notizen;
 
   /// Erstellt eine Visitenkarte aus berechneten Heldenwerten.
   factory HeldVisitenkarte.fromHeroComputed(
@@ -85,6 +89,7 @@ class HeldVisitenkarte {
       avatarThumbnailBase64: held.avatarThumbnailBase64,
       exportedAt: held.updatedAt,
       istManuell: true,
+      notizen: held.notizen,
     );
   }
 
@@ -104,6 +109,7 @@ class HeldVisitenkarte {
         'avatarThumbnailBase64': avatarThumbnailBase64,
       'exportedAt': exportedAt.toUtc().toIso8601String(),
       if (istManuell) 'istManuell': true,
+      if (notizen.isNotEmpty) 'notizen': notizen,
     };
   }
 
@@ -138,6 +144,7 @@ class HeldVisitenkarte {
       avatarThumbnailBase64: json['avatarThumbnailBase64'] as String?,
       exportedAt: exportedAt,
       istManuell: json['istManuell'] as bool? ?? false,
+      notizen: json['notizen'] as String? ?? '',
     );
   }
 }

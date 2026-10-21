@@ -55,6 +55,29 @@ final class SyncDecodeException extends SyncException {
   const SyncDecodeException(super.message, {super.cause});
 }
 
+/// Der Held gehoert zu einer noch nicht abgeschlossenen Konfliktentscheidung.
+///
+/// Eine Loeschung wuerde sie nicht abbrechen: der Wiederanlauf stellte den
+/// Helden mit dem gewaehlten Stand wieder her. Deshalb wird nichts geloescht,
+/// bis die Entscheidung abgeschlossen ist. Kein [SyncException], weil sie nie
+/// ueber die Leitung kommt und keine Sync-Fehlerkategorie braucht.
+class HeldInKonfliktentscheidungException implements Exception {
+  /// Erstellt den Fehler fuer den Helden [heroId].
+  const HeldInKonfliktentscheidungException(this.heroId);
+
+  /// ID des gesperrten Helden.
+  final String heroId;
+
+  /// Benutzerlesbare Erklaerung mit dem naechsten Schritt.
+  String get message =>
+      'Für diesen Helden ist noch eine Konfliktentscheidung des Kontosyncs '
+      'offen. Bitte zuerst synchronisieren, bis sie abgeschlossen ist, und '
+      'dann erneut löschen.';
+
+  @override
+  String toString() => message;
+}
+
 /// Kategorie eines Sync-Fehlers fuer Status-Anzeige und UI-Entscheidungen.
 enum SyncErrorKind {
   /// Anmeldung erforderlich oder Token abgelaufen.

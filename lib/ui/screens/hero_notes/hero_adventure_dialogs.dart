@@ -1010,12 +1010,28 @@ class _AdventureNoteDialogState extends State<_AdventureNoteDialog> {
       return;
     }
 
+    final existing = widget.existing;
+    // Nur eine echte Aenderung zaehlt fuer „Zuletzt bearbeitet“.
+    final unveraendert =
+        existing != null &&
+        existing.title == title &&
+        existing.description == description;
+    final jetzt = DateTime.now().toUtc();
     Navigator.of(context).pop(
       _AdventureNoteDialogResult(
         // Per `copyWith`, damit unbekannte Felder erhalten bleiben.
-        entry:
-            widget.existing?.copyWith(title: title, description: description) ??
-            HeroNoteEntry(title: title, description: description),
+        entry: unveraendert
+            ? existing
+            : existing?.copyWith(
+                    title: title,
+                    description: description,
+                    lastModified: jetzt,
+                  ) ??
+                  HeroNoteEntry(
+                    title: title,
+                    description: description,
+                    lastModified: jetzt,
+                  ),
       ),
     );
   }
@@ -1148,12 +1164,20 @@ class _AdventurePersonDialogState extends State<_AdventurePersonDialog> {
       return;
     }
 
+    final description = _descriptionController.text.trim();
+    final initial = widget.initial;
+    // Nur eine echte Aenderung zaehlt fuer „Zuletzt bearbeitet“.
+    final unveraendert =
+        initial.name == name && initial.description == description;
     Navigator.of(context).pop(
       _AdventurePersonDialogResult(
-        entry: widget.initial.copyWith(
-          name: name,
-          description: _descriptionController.text.trim(),
-        ),
+        entry: unveraendert
+            ? initial
+            : initial.copyWith(
+                name: name,
+                description: description,
+                lastModified: DateTime.now().toUtc(),
+              ),
       ),
     );
   }

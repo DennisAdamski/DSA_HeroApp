@@ -40,6 +40,7 @@ import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/config/ui_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui/debug/ui_rebuild_observer.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/artefakt_anwenden.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_magic/zauber_liste_ordnung.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/active_spell_effects_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/dice_log_persistence.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/editor_entwurf_speichern.dart';
@@ -47,7 +48,6 @@ import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_edit_con
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/adaptive_table_columns.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/codex_section_card.dart';
-import 'package:dsa_heldenverwaltung/ui/widgets/codex_tab_header.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/resizable_table_columns.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
@@ -129,6 +129,12 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
   /// Held, aus dem der Entwurf gefüllt wurde; Ausgang des Abgleichs beim
   /// Speichern (ARCH-05).
   HeroSheet? _entwurfBasis;
+
+  // Anzeigeordnung der Zaubertabelle; lebt hier, weil die Tabelle beim
+  // Wechsel der Unterreiter neu entsteht.
+  ZauberSortierung _zauberSortierung = ZauberSortierung.name;
+  bool _zauberAufsteigend = true;
+  String? _zauberMerkmal;
 
   @override
   void initState() {
@@ -392,11 +398,6 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
         );
         return Column(
           children: [
-            const CodexTabHeader(
-              title: 'Arkane Matrizen',
-              subtitle: 'Zauber, Rituale und magische Sonderfertigkeiten mit Repräsentationen und Merkmalfokus.',
-              assetPath: 'assets/ui/codex/arcane_seal.png',
-            ),
             TabBar(
               controller: _innerTabController,
               tabs: const [
@@ -418,26 +419,13 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
                       ListView(
                         padding: const EdgeInsets.fromLTRB(0, 8, 0, 12),
                         children: [
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
-                            child: Align(
-                              alignment: Alignment.centerLeft,
-                              child: OutlinedButton.icon(
-                                key: const ValueKey<String>(
-                                  'magic-active-spells-open',
-                                ),
-                                onPressed: () {
-                                  showActiveSpellEffectsDialog(
-                                    context: context,
-                                    heroId: widget.heroId,
-                                  );
-                                },
-                                icon: const Icon(Icons.auto_awesome_outlined),
-                                label: const Text('Zauber aktivieren'),
-                              ),
-                            ),
-                          ),
                           _MagicActiveSpellsTable(
+                            onActivateSpells: () {
+                              showActiveSpellEffectsDialog(
+                                context: context,
+                                heroId: widget.heroId,
+                              );
+                            },
                             elementarharmonisiert:
                                 heroSpecialAbilityNames(
                                   hero,
@@ -448,6 +436,23 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
                                 ),
                             begabungen: begabungen,
                             activeSpellIds: activeSpellIds,
+                            // Gespeicherter ZfW: beim Tippen im Entwurf
+                            // springen die Zeilen sonst samt Fokus.
+                            zfwJeZauber: <String, int>{
+                              for (final eintrag in hero.spells.entries)
+                                eintrag.key: eintrag.value.spellValue ?? 0,
+                            },
+                            sortierung: _zauberSortierung,
+                            aufsteigend: _zauberAufsteigend,
+                            merkmal: _zauberMerkmal,
+                            onOrdnungChanged:
+                                (sortierung, aufsteigend, merkmal) {
+                                  setState(() {
+                                    _zauberSortierung = sortierung;
+                                    _zauberAufsteigend = aufsteigend;
+                                    _zauberMerkmal = merkmal;
+                                  });
+                                },
                             spellEntries: _draftSpells,
                             spellDefs: spellDefsById,
                             effectiveAttributes: effectiveAttributes,

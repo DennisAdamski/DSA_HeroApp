@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:dsa_heldenverwaltung/ui/theme/codex_theme.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/karto_variante.dart';
+import 'package:dsa_heldenverwaltung/ui2/foundation/karto_breakpoints.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
@@ -122,8 +123,12 @@ class CodexSectionCard extends StatelessWidget {
   Widget _kartograph(BuildContext context, KartoTheme karto) {
     final texte = Theme.of(context).textTheme;
     final zweitzeile = subtitle?.trim() ?? '';
+    // Unterhalb der breiten Klassen (Tablets, Telefone) zaehlt jede Zeile.
+    final dicht = kartoBreiteVon(context).index < KartoBreite.breit.index;
     return KartoFlaeche(
-      innen: padded ? Abstand.blockInnen : null,
+      innen: padded
+          ? (dicht ? const EdgeInsets.all(Abstand.weit) : Abstand.blockInnen)
+          : null,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -169,7 +174,7 @@ class CodexSectionCard extends StatelessWidget {
               ...?trailing == null ? null : <Widget>[trailing!],
             ],
           ),
-          const SizedBox(height: Abstand.weit),
+          SizedBox(height: dicht ? Abstand.normal : Abstand.weit),
           child,
         ],
       ),

@@ -81,8 +81,14 @@ class GefechtsTestBestand extends TestBestand implements KartoGefechtsAdapter {
 
   @override
   Future<ActiveSpellEffectDetail?> gefechtsArmatrutzWerte(
-    BuildContext context,
-  ) => _bruecke.gefechtsArmatrutzWerte(context);
+    BuildContext context, {
+    bool grenzePruefen = false,
+    int? grenze,
+  }) => _bruecke.gefechtsArmatrutzWerte(
+    context,
+    grenzePruefen: grenzePruefen,
+    grenze: grenze,
+  );
 
   @override
   Future<AttributeModifiers?> gefechtsAttributoWerte(BuildContext context) =>

@@ -22,6 +22,7 @@ class InspectorAttributeProbes extends ConsumerWidget {
     required this.heroId,
     required this.probenEigenschaften,
     this.grundwerte,
+    this.kompakt = false,
   });
 
   /// ID fuer das Protokollieren des Ergebnisses.
@@ -34,6 +35,10 @@ class InspectorAttributeProbes extends ConsumerWidget {
   /// Effektive Werte ohne Wunden; mit ihnen markieren die Karten den
   /// Wundabzug. Ohne Angabe gibt es keine Markierung.
   final Attributes? grundwerte;
+
+  /// Einzeilige, flache Karten in bis zu acht Spalten (Spielansicht des
+  /// Neubaus). Die klassische Optik bleibt beim Standard `false`.
+  final bool kompakt;
 
   /// Reihenfolge der acht Eigenschaften, wie auf dem Heldenbogen.
   List<AttributeProbeEintrag> get entries => _entriesFuer(probenEigenschaften);
@@ -61,10 +66,12 @@ class InspectorAttributeProbes extends ConsumerWidget {
     };
     return _AttributeGrid(
       entries: entries,
+      kompakt: kompakt,
       itemBuilder: (entry) => InspectorAttributeCard(
         key: ValueKey('inspector-probe-attr-${entry.label}'),
         label: entry.label,
         value: entry.value,
+        kompakt: kompakt,
         wundAbzug: entry.value - (ohneWunden[entry.label] ?? entry.value),
         onTap: () => showLoggedProbeDialog(
           context: context,
@@ -82,20 +89,32 @@ class InspectorAttributeProbes extends ConsumerWidget {
 
 // Haelt die Eigenschaftskarten auch in einer schmalen Spalte lesbar.
 class _AttributeGrid extends StatelessWidget {
-  const _AttributeGrid({required this.entries, required this.itemBuilder});
+  const _AttributeGrid({
+    required this.entries,
+    required this.itemBuilder,
+    required this.kompakt,
+  });
 
   static const double _spacing = 6;
-  static const double _minTileWidth = 48;
-  static const double _tileHeight = 58;
-  static const int _maxColumns = 4;
 
   final List<AttributeProbeEintrag> entries;
   final Widget Function(AttributeProbeEintrag entry) itemBuilder;
+  final bool kompakt;
+
+  double get _minTileWidth => kompakt ? 56 : 48;
+  double get _tileHeight => kompakt ? 36 : 58;
+  int get _maxColumns => kompakt ? 8 : 4;
 
   int _columnCount(double availableWidth) {
     final rawCount = ((availableWidth + _spacing) / (_minTileWidth + _spacing))
         .floor();
-    return rawCount.clamp(1, _maxColumns).toInt();
+    final count = rawCount.clamp(1, _maxColumns).toInt();
+    // Kompakt nur 8, 4 oder 2 Spalten: ungleiche Zeilen wie 5 + 3 lesen
+    // sich schlechter als zwei volle.
+    if (!kompakt) return count;
+    if (count >= 8) return 8;
+    if (count >= 4) return 4;
+    return count >= 2 ? 2 : 1;
   }
 
   @override

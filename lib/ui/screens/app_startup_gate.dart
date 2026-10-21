@@ -24,6 +24,7 @@ import 'package:dsa_heldenverwaltung/data/hive_settings_repository.dart';
 import 'package:dsa_heldenverwaltung/data/hive_sync_basis_store.dart';
 import 'package:dsa_heldenverwaltung/data/hive_sync_metadata_store.dart';
 import 'package:dsa_heldenverwaltung/data/hive_vorgangsjournal.dart';
+import 'package:dsa_heldenverwaltung/data/konto_profil_bereinigung.dart';
 import 'package:dsa_heldenverwaltung/data/house_rule_pack_repository.dart';
 import 'package:dsa_heldenverwaltung/data/rest_firestore_hero_sync_gateway.dart';
 import 'package:dsa_heldenverwaltung/data/rest_firestore_secrets_repository.dart';
@@ -44,7 +45,7 @@ import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/state/sync_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/app_shell.dart';
-import 'package:dsa_heldenverwaltung/ui/screens/settings_screen.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_storage_error_screen.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/sync_conflict_gate.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_app_root.dart';
 
@@ -177,9 +178,14 @@ class _AppStartupGateState extends State<AppStartupGate> {
       return;
     }
 
+    final previousUid = _currentAuthUid;
     _currentConfiguredPath = configuredPath;
     _currentAuthUid = targetUid;
-    _bootstrapFuture = _bootstrapHeroRepository(configuredPath, targetUid);
+    _bootstrapFuture = _bootstrapHeroRepository(
+      configuredPath,
+      targetUid,
+      previousUid: previousUid,
+    );
   }
 
   String? get _remoteSyncProfileUid {
@@ -191,8 +197,9 @@ class _AppStartupGateState extends State<AppStartupGate> {
 
   Future<_HeroRepositoryBootstrapResult> _bootstrapHeroRepository(
     String? configuredPath,
-    String? authUid,
-  ) async {
+    String? authUid, {
+    String? previousUid,
+  }) async {
     debugPrint('[startup] enter uid=${authUid ?? "null"}');
     try {
       final int generation = ++_loadGeneration;
@@ -227,6 +234,12 @@ class _AppStartupGateState extends State<AppStartupGate> {
       _activeHive = null;
       if (previousHive != null) {
         await previousHive.close();
+      }
+
+      // Abmelden (oder Kontowechsel): Die Online-Helden des alten Kontos
+      // liegen nicht laenger lokal. Die Boxen sind oben bereits geschlossen.
+      if (previousUid != null && previousUid != authUid) {
+        await _bereinigeKontoProfil(configuredPath, previousUid);
       }
 
       final offlineHeroesForReview = authUid == null
@@ -362,6 +375,27 @@ class _AppStartupGateState extends State<AppStartupGate> {
     } on Object catch (error, stackTrace) {
       debugPrint('[startup] FAILED: $error\n$stackTrace');
       rethrow;
+    }
+  }
+
+  /// Entfernt die lokalen Daten des Kontos [uid]. Darf den Start nie
+  /// verhindern: Ein Fehler wird nur gemeldet.
+  Future<void> _bereinigeKontoProfil(String? configuredPath, String uid) async {
+    try {
+      await KontoProfilBereinigung(storagePaths: widget.storagePaths)
+          .bereinige(configuredPath: configuredPath, uid: uid);
+      debugPrint('[startup] Kontoprofil bereinigt');
+    } on Object catch (error, stackTrace) {
+      FlutterError.reportError(
+        FlutterErrorDetails(
+          exception: error,
+          stack: stackTrace,
+          library: 'app_startup_gate',
+          context: ErrorDescription(
+            'Lokale Kontodaten konnten nach dem Abmelden nicht entfernt werden',
+          ),
+        ),
+      );
     }
   }
 
@@ -544,7 +578,7 @@ class _AppStartupGateState extends State<AppStartupGate> {
         }
         if (snapshot.hasError) {
           return _buildScope(
-            home: _HeroStorageErrorScreen(error: snapshot.error!),
+            home: HeroStorageErrorScreen(error: snapshot.error!),
           );
         }
 
@@ -638,53 +672,4 @@ class _HeroRepositoryBootstrapResult {
   final HiveVorgangsjournal vorgangsjournal;
   final CustomCatalogRepository customCatalogRepository;
   final HouseRulePackRepository houseRulePackRepository;
-}
-
-/// Fehleransicht fuer ungueltige oder nicht verfuegbare Heldenspeicherpfade.
-class _HeroStorageErrorScreen extends StatelessWidget {
-  const _HeroStorageErrorScreen({required this.error});
-
-  final Object error;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Heldenspeicher nicht verfügbar')),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 560),
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Die Heldendaten konnten nicht geladen werden.',
-                  style: Theme.of(context).textTheme.headlineSmall,
-                ),
-                const SizedBox(height: 16),
-                Text('$error', style: Theme.of(context).textTheme.bodyLarge),
-                const SizedBox(height: 16),
-                const Text(
-                  'Prüfe den konfigurierten Heldenspeicher in den '
-                  'Einstellungen. App-Einstellungen bleiben lokal verfügbar.',
-                ),
-                const SizedBox(height: 24),
-                FilledButton.icon(
-                  onPressed: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const SettingsScreen()),
-                    );
-                  },
-                  icon: const Icon(Icons.settings),
-                  label: const Text('Einstellungen öffnen'),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 }

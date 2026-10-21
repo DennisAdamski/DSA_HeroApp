@@ -63,6 +63,7 @@ test("groups_v2 erlaubt Lesen nur Mitgliedern und Verwaltung nur dem Besitzer", 
     await setDoc(doc(admin, "groups_v2", "runde-a"), {
       name: "Die Silberfüchse",
       ownerUid: "owner-a",
+      joinCode: "CODE-RUNDE-A",
     });
     await setDoc(doc(admin, "groups_v2", "runde-a", "members", "owner-a"), {
       role: "owner",
@@ -88,6 +89,12 @@ test("groups_v2 erlaubt Lesen nur Mitgliedern und Verwaltung nur dem Besitzer", 
   await assertSucceeds(
     updateDoc(doc(owner, "groups_v2", "runde-a"), { name: "Neu" }),
   );
+  await assertSucceeds(
+    updateDoc(doc(owner, "groups_v2", "runde-a"), { joinCode: "NEUER-CODE-1" }),
+  );
+  await assertFails(
+    updateDoc(doc(owner, "groups_v2", "runde-a"), { joinCode: "kurz" }),
+  );
   await assertFails(
     updateDoc(doc(member, "groups_v2", "runde-a"), { name: "Fremd" }),
   );
@@ -107,6 +114,7 @@ test("groups_v2 erlaubt Mitgliedern nur den eigenen Heldensnapshot", async () =>
     await setDoc(doc(admin, "groups_v2", "runde-b"), {
       name: "Runde B",
       ownerUid: "owner-b",
+      joinCode: "CODE-RUNDE-B",
     });
     for (const uid of ["owner-b", "member-b"]) {
       await setDoc(doc(admin, "groups_v2", "runde-b", "members", uid), {
@@ -151,6 +159,7 @@ test("unbestätigte Konten können private und Gruppen-Daten nicht lesen", async
     await setDoc(doc(admin, "groups_v2", "runde-unverified"), {
       name: "Runde",
       ownerUid: "account-unverified",
+      joinCode: "CODE-UNVERIFIED",
     });
     await setDoc(
       doc(
@@ -175,4 +184,147 @@ test("unbestätigte Konten können private und Gruppen-Daten nicht lesen", async
     .authenticatedContext("account-unverified")
     .firestore();
   await assertFails(getDoc(doc(withoutClaim, "users", "account-unverified")));
+});
+
+const gruppe = (name: string, ownerUid: string, joinCode: string) => ({
+  name,
+  ownerUid,
+  joinCode,
+});
+
+async function legeGruppeAn(
+  groupId: string,
+  ownerUid: string,
+  memberUids: string[],
+  joinCode = "BEITRITT-1234",
+) {
+  await environment!.withSecurityRulesDisabled(async (context) => {
+    const admin = context.firestore();
+    await setDoc(
+      doc(admin, "groups_v2", groupId),
+      gruppe("Testrunde", ownerUid, joinCode),
+    );
+    await setDoc(doc(admin, "groups_v2", groupId, "members", ownerUid), {
+      role: "owner",
+    });
+    for (const uid of memberUids) {
+      await setDoc(doc(admin, "groups_v2", groupId, "members", uid), {
+        role: "member",
+      });
+    }
+  });
+}
+
+const alsNutzer = (uid: string) =>
+  environment!.authenticatedContext(uid, {email_verified: true}).firestore();
+
+test("groups_v2: Besitzer legt Gruppe und eigenen Mitgliedseintrag an", async () => {
+  const owner = alsNutzer("owner-c");
+  await assertSucceeds(
+    setDoc(doc(owner, "groups_v2", "runde-c"), gruppe("Runde C", "owner-c", "BEITRITT-C-1")),
+  );
+  await assertSucceeds(
+    setDoc(doc(owner, "groups_v2", "runde-c", "members", "owner-c"), {
+      role: "owner",
+    }),
+  );
+  await assertSucceeds(getDoc(doc(owner, "groups_v2", "runde-c")));
+  // Fremde Besitzer-UID und fehlender Beitrittscode werden abgelehnt.
+  await assertFails(
+    setDoc(doc(owner, "groups_v2", "runde-c2"), gruppe("X", "jemand-anders", "BEITRITT-C-2")),
+  );
+  await assertFails(
+    setDoc(doc(owner, "groups_v2", "runde-c3"), { name: "X", ownerUid: "owner-c" }),
+  );
+});
+
+test("groups_v2: Beitritt gelingt nur mit dem richtigen Code als einfaches Mitglied", async () => {
+  await legeGruppeAn("runde-d", "owner-d", []);
+  const joiner = alsNutzer("joiner-d");
+  const eintrag = (uid: string) =>
+    doc(joiner, "groups_v2", "runde-d", "members", uid);
+
+  await assertFails(setDoc(eintrag("joiner-d"), { role: "member", joinCode: "FALSCH-FALSCH" }));
+  await assertFails(setDoc(eintrag("joiner-d"), { role: "member" }));
+  await assertFails(setDoc(eintrag("joiner-d"), { role: "owner", joinCode: "BEITRITT-1234" }));
+  await assertFails(setDoc(eintrag("jemand-anders"), { role: "member", joinCode: "BEITRITT-1234" }));
+  await assertFails(getDoc(doc(joiner, "groups_v2", "runde-d")));
+
+  await assertSucceeds(setDoc(eintrag("joiner-d"), { role: "member", joinCode: "BEITRITT-1234" }));
+  await assertSucceeds(getDoc(doc(joiner, "groups_v2", "runde-d")));
+
+  // Unbestätigte Konten dürfen nicht beitreten.
+  const unverified = environment!
+    .authenticatedContext("joiner-d2", {email_verified: false})
+    .firestore();
+  await assertFails(
+    setDoc(doc(unverified, "groups_v2", "runde-d", "members", "joiner-d2"), {
+      role: "member",
+      joinCode: "BEITRITT-1234",
+    }),
+  );
+  // Ein bestehendes Mitglied kann seinen Eintrag nicht überschreiben.
+  await assertFails(setDoc(eintrag("joiner-d"), { role: "member", joinCode: "BEITRITT-1234", joinedAt: 1 }));
+});
+
+test("groups_v2: Mitglied verlässt die Gruppe, Besitzer nicht", async () => {
+  await legeGruppeAn("runde-e", "owner-e", ["member-e"]);
+  const member = alsNutzer("member-e");
+  const owner = alsNutzer("owner-e");
+
+  await assertFails(deleteDoc(doc(member, "groups_v2", "runde-e", "members", "owner-e")));
+  await assertSucceeds(deleteDoc(doc(member, "groups_v2", "runde-e", "members", "member-e")));
+  await assertFails(getDoc(doc(member, "groups_v2", "runde-e")));
+  // Besitzer löscht nach dem Aufräumen die ganze Gruppe.
+  await assertSucceeds(deleteDoc(doc(owner, "groups_v2", "runde-e", "members", "owner-e")));
+  await assertSucceeds(deleteDoc(doc(owner, "groups_v2", "runde-e")));
+});
+
+test("groups_v2: Besitzer entfernt fremde Snapshots, Mitglieder nur den eigenen", async () => {
+  await legeGruppeAn("runde-f", "owner-f", ["member-f", "member-f2"]);
+  await environment!.withSecurityRulesDisabled(async (context) => {
+    const admin = context.firestore();
+    await setDoc(doc(admin, "groups_v2", "runde-f", "hero_snapshots", "member-f2"), { name: "B" });
+    await setDoc(doc(admin, "groups_v2", "runde-f", "hero_snapshots", "member-f"), { name: "A" });
+  });
+  const member = alsNutzer("member-f");
+  const owner = alsNutzer("owner-f");
+  await assertFails(deleteDoc(doc(member, "groups_v2", "runde-f", "hero_snapshots", "member-f2")));
+  await assertSucceeds(deleteDoc(doc(member, "groups_v2", "runde-f", "hero_snapshots", "member-f")));
+  await assertSucceeds(deleteDoc(doc(owner, "groups_v2", "runde-f", "hero_snapshots", "member-f2")));
+});
+
+test("groups_v2: geteilte Einträge dürfen alle Mitglieder pflegen, Fremde nicht", async () => {
+  await legeGruppeAn("runde-g", "owner-g", ["member-g", "member-g2"]);
+  const member = alsNutzer("member-g");
+  const other = alsNutzer("member-g2");
+  const owner = alsNutzer("owner-g");
+  const stranger = alsNutzer("stranger-g");
+  const entry = (db: ReturnType<typeof alsNutzer>) =>
+    doc(db, "groups_v2", "runde-g", "shared_heroes", "npc-1");
+
+  await assertFails(setDoc(entry(member), { name: "Fälscher", createdByUid: "owner-g" }));
+  await assertFails(setDoc(entry(stranger), { name: "Fremd", createdByUid: "stranger-g" }));
+  await assertSucceeds(setDoc(entry(member), { name: "Begleiter", createdByUid: "member-g" }));
+  await assertSucceeds(getDoc(entry(other)));
+  await assertFails(getDoc(entry(stranger)));
+  // Änderungen anderer Mitglieder behalten den Ersteller.
+  await assertSucceeds(updateDoc(entry(other), { name: "Begleiter II" }));
+  await assertFails(updateDoc(entry(other), { createdByUid: "member-g2" }));
+  await assertSucceeds(deleteDoc(entry(owner)));
+  await assertFails(deleteDoc(entry(stranger)));
+});
+
+test("groups_v2: gemeinsame Notizen schreiben alle Mitglieder, aber nur als Dokument 'notizen'", async () => {
+  await legeGruppeAn("runde-h", "owner-h", ["member-h"]);
+  const member = alsNutzer("member-h");
+  const stranger = alsNutzer("stranger-h");
+  const notiz = (db: ReturnType<typeof alsNutzer>, id = "notizen") =>
+    doc(db, "groups_v2", "runde-h", "shared_info", id);
+
+  await assertSucceeds(setDoc(notiz(member), { text: "Treffpunkt: Gasthaus", updatedByUid: "member-h" }));
+  await assertSucceeds(getDoc(notiz(alsNutzer("owner-h"))));
+  await assertFails(setDoc(notiz(member, "anderes"), { text: "x" }));
+  await assertFails(setDoc(notiz(member), { text: "x", unbekannt: 1 }));
+  await assertFails(setDoc(notiz(stranger), { text: "x" }));
 });

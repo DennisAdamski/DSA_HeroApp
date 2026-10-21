@@ -7,6 +7,7 @@ import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/data/hero_transfer_file_gateway.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/feedback/feedback_submission.dart';
+import 'package:dsa_heldenverwaltung/domain/sync_errors.dart';
 import 'package:dsa_heldenverwaltung/state/auth_providers.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
@@ -528,7 +529,15 @@ class _HeroesHomeScreenState extends ConsumerState<HeroesHomeScreen> {
     if (result != AdaptiveConfirmResult.confirm) {
       return;
     }
-    await ref.read(heroActionsProvider).deleteHero(hero.id);
+    try {
+      await ref.read(heroActionsProvider).deleteHero(hero.id);
+    } on HeldInKonfliktentscheidungException catch (error) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(error.message)));
+      }
+      return;
+    }
     if (!context.mounted) {
       return;
     }

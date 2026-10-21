@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:dsa_heldenverwaltung/catalog/spell_def.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_spell_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_spell_text_overrides.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_magie_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/herleitung_uebersicht_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/zauber_herleitung_rules.dart';
@@ -145,11 +146,31 @@ void main() {
         expect(probe.poolHerleitung, isNotNull);
         expect(probe.poolHerleitung!.wert, probe.basePool);
         expect(probe.basePool, 7);
-        expect(probe.ruleHint, contains('Kosten: 7 AsP.'));
+        expect(probe.kontext?.kosten, '7 AsP');
+        expect(probe.kontext?.kurzzeile, 'Kosten: 7 AsP');
       }
     });
 
-    test('Spezialisierung ist ein Schalter (+2), kein ZfW*-Schritt', () {
+    test('die Standard-Zauberprobe trägt keinen allgemeinen Regeltext', () {
+      final s = snapshot({'spell_test': const HeroSpellEntry(spellValue: 8)});
+      final wert = zauberProbenwertFuer(snapshot: s, spell: teurer)!;
+      expect(zauberprobeAus(wert: wert, titel: teurer.name).ruleHint, isEmpty);
+    });
+
+    test('Heldenoverrides haben im Kontext Vorrang vor dem Katalog', () {
+      final eintrag = const HeroSpellEntry(
+        spellValue: 8,
+        textOverrides: HeroSpellTextOverrides(
+          aspCost: '3 AsP',
+          variants: <String>['Variante A'],
+        ),
+      );
+      final kontext = zauberKontextAus(eintrag, teurer);
+      expect(kontext.kosten, '3 AsP');
+      expect(kontext.variantenRoh, ['Variante A']);
+    });
+
+    test('Spezialisierung ist eine Auswahl (+2), kein ZfW*-Schritt', () {
       final s = snapshot({
         'spell_test': const HeroSpellEntry(
           spellValue: 8,
@@ -166,7 +187,7 @@ void main() {
         expect(probe.specializationBonus, 2);
         expect(probe.initialSpecializationApplied, isFalse);
         expect(probe.basePool, 8);
-        expect(probe.ruleHint, contains('Reichweite'));
+        expect(probe.spezialisierungen, ['Reichweite']);
       }
     });
 

@@ -74,6 +74,12 @@ einen Themenindex; Details stehen nach Thema in [docs/hinweise/](docs/hinweise/)
 12. **Gruppen.** `gruppen/*` ist ein vollständig gesperrter Legacy-Pfad und
     wird nie clientseitig reaktiviert oder automatisch beansprucht.
     `groups_v2/*` ist UID-gebunden; Einladungen bleiben Backendoperationen.
+13. **Regelbuch-Langtexte verschluesseln.** Texte aus Regelwerken (`erklarung_lang`,
+    `wirkung`, `variants`, ...) nie im Klartext einchecken: nach Import/Aenderung
+    `python tool/encrypt_catalog_fields.py --format v3` (Passwort lokal in
+    `docs/Passwort.env`, in `.gitignore`), neue Felder in `PROTECTED_FIELDS` und
+    `test/catalog/geschuetzte_langtexte_test.dart`. Passwort nie ausgeben oder
+    committen; Regelrechnung liest kein verschluesseltes Feld.
 
 ## Themenindex (docs/hinweise/)
 

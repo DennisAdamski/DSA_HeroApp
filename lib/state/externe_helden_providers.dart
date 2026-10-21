@@ -4,6 +4,7 @@ import 'package:dsa_heldenverwaltung/data/gruppen_sync_service.dart';
 import 'package:dsa_heldenverwaltung/data/hive_externe_helden_repository.dart';
 import 'package:dsa_heldenverwaltung/domain/externer_held.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
+import 'package:dsa_heldenverwaltung/state/firebase_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 
 /// Firebase-Sync-Service fuer Heldengruppen.
@@ -58,4 +59,28 @@ final gruppenMitgliederProvider =
           .map((id) => allExterne[id])
           .whereType<ExternerHeld>()
           .toList(growable: false);
+    });
+
+/// Gruppeninfo samt Besitzerstatus des angemeldeten Kontos.
+typedef GruppenAnsicht = ({GruppenInfo info, bool istBesitzer});
+
+/// Laedt Name, Besitzer und Beitrittsgeheimnis einer Konto-Gruppe.
+///
+/// `null`, wenn Firestore nicht verfuegbar ist. Fehler (etwa verlorener
+/// Zugriff) erscheinen als `AsyncError`.
+final gruppenAnsichtProvider = FutureProvider.autoDispose
+    .family<GruppenAnsicht?, String>((ref, groupId) async {
+      final firebase = ref.watch(firebaseBootstrapProvider);
+      if (!firebase.isFirestoreAvailable) {
+        return null;
+      }
+      final service = ref.watch(gruppenSyncServiceProvider);
+      final info = await service.ladeGruppe(groupId);
+      return (info: info, istBesitzer: info.ownerUid == service.eigeneUid);
+    });
+
+/// Gemeinsame Gruppennotizen einer Konto-Gruppe (`shared_info/notizen`).
+final gruppenNotizenProvider = FutureProvider.autoDispose
+    .family<String, String>((ref, groupId) {
+      return ref.watch(gruppenSyncServiceProvider).ladeNotizen(groupId);
     });

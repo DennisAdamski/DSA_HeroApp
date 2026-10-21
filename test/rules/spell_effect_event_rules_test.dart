@@ -277,8 +277,15 @@ void main() {
       );
       expect(dauerVorschlag(kFalkenaugeZauberId, zfw: 9)!.amount, 9);
       expect(dauerVorschlag(kFalkenaugeZauberId), isNull);
-      // ZfW/2 Aktionen (Blitz): Rundung nicht belegt → kein Vorschlag.
-      expect(dauerVorschlag(kBlitzZauberId, zfw: 7), isNull);
+      // ZfW/2 Aktionen (Blitz), nach Tischregel aufgerundet; ohne ZfW nichts.
+      expect(dauerVorschlag(kBlitzZauberId, zfw: 7)!.amount, 4);
+      expect(dauerVorschlag(kBlitzZauberId, zfw: 8)!.amount, 4);
+      expect(
+        dauerVorschlag(kBlitzZauberId, zfw: 7)!.unit,
+        SpellDurationUnit.aktionen,
+      );
+      expect(dauerVorschlag(kBlitzZauberId), isNull);
+      expect(dauerVorschlag(kBlitzZauberId, zfw: 0), isNull);
       // Psychostabilis: nach AsP – ohne Angabe kein Vorschlag.
       expect(dauerVorschlag(kPsychostabilisZauberId), isNull);
     });

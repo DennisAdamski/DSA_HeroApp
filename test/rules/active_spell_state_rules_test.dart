@@ -207,4 +207,12 @@ void main() {
       expect(identical(nachher, vorher), isTrue);
     });
   });
+
+  test('Attributo-Bonus ZfP*/3, aufgerundet (Tischregel)', () {
+    expect(attributoBonusAusZfp(7), 3);
+    expect(attributoBonusAusZfp(6), 2);
+    expect(attributoBonusAusZfp(1), 1);
+    expect(attributoBonusAusZfp(0), 0);
+    expect(attributoBonusAusZfp(-2), 0);
+  });
 }

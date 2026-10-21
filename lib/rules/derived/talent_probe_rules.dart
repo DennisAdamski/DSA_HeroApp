@@ -1,6 +1,7 @@
 import 'package:dsa_heldenverwaltung/catalog/talent_def.dart';
 import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 
@@ -20,7 +21,7 @@ class TalentProbenwert {
     required this.taw,
     required this.ebe,
     required this.herleitung,
-    required this.spezialisierung,
+    this.spezialisierungen = const <String>[],
   });
 
   /// Drei Eigenschaften mit ihren Probenwerten (Wunden eingerechnet).
@@ -36,8 +37,26 @@ class TalentProbenwert {
   /// Summen.
   final TalentHerleitungen herleitung;
 
+  /// Namen der Spezialisierungen des Helden für dieses Talent.
+  final List<String> spezialisierungen;
+
   /// Der Held führt eine Spezialisierung für dieses Talent.
-  final bool spezialisierung;
+  bool get spezialisierung => spezialisierungen.isNotEmpty;
+}
+
+/// Spezialisierungen eines Talenteintrags als bereinigte Namensliste.
+///
+/// Die normalisierte Liste der Kampftalente hat Vorrang, sonst der
+/// Freitext (getrennt an Komma, Semikolon und Zeilenumbruch).
+List<String> talentSpezialisierungenAus(HeroTalentEntry eintrag) {
+  final roh = eintrag.combatSpecializations.isNotEmpty
+      ? eintrag.combatSpecializations
+      : eintrag.specializations.split(RegExp(r'[\n,;]+'));
+  final gesehen = <String>{};
+  return List<String>.unmodifiable([
+    for (final name in roh)
+      if (name.trim().isNotEmpty && gesehen.add(name.trim())) name.trim(),
+  ]);
 }
 
 /// Löst Eigenschaftsnamen in Probenziele mit den aktuellen Werten auf.
@@ -92,9 +111,7 @@ TalentProbenwert? talentProbenwertFuer({
     taw: herleitung.taw.wert,
     ebe: herleitung.ebe.wert,
     herleitung: herleitung,
-    spezialisierung:
-        eintrag.combatSpecializations.isNotEmpty ||
-        eintrag.specializations.trim().isNotEmpty,
+    spezialisierungen: talentSpezialisierungenAus(eintrag),
   );
 }
 
@@ -120,7 +137,7 @@ ResolvedProbeRequest? talentprobeFuer({
     title: talent.name,
     targets: wert.ziele,
     basePool: wert.taw,
-    hasSpecialization: wert.spezialisierung,
+    spezialisierungen: wert.spezialisierungen,
     initialSituationalModifier: initialSituationalModifier,
     tawHerleitung: wert.herleitung.taw,
   );

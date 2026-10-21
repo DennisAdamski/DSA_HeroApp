@@ -4,6 +4,7 @@ import 'package:dsa_heldenverwaltung/domain/begleiter_zustand.dart';
 import 'package:dsa_heldenverwaltung/domain/dice_log_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
+import 'package:dsa_heldenverwaltung/domain/sync_models.dart';
 import 'package:dsa_heldenverwaltung/domain/zustands_buchung.dart';
 
 void main() {
@@ -337,6 +338,56 @@ void main() {
         'currentLep': 3,
         'wunden': 2,
       });
+    });
+  });
+
+  group('standort', () {
+    const leer = HeroState(
+      currentLep: 12,
+      currentAsp: 7,
+      currentKap: 0,
+      currentAu: 16,
+    );
+
+    test('ohne Standort fehlt der Schlüssel und der Hash bleibt', () {
+      expect(leer.standort, '');
+      expect(leer.toJson().containsKey('standort'), isFalse);
+      expect(
+        heroStateContentHash(leer.copyWith(standort: '   ')),
+        heroStateContentHash(leer),
+        reason: 'nur Leerraum zählt nicht als Belegung',
+      );
+    });
+
+    test('Roundtrip mit Standort', () {
+      final mit = leer.copyWith(standort: 'Gareth');
+      final json = mit.toJson();
+      expect(json['standort'], 'Gareth');
+      expect(HeroState.fromJson(json).standort, 'Gareth');
+      expect(heroStateContentHash(mit), isNot(heroStateContentHash(leer)));
+    });
+
+    test('ein leerer Text entfernt den Standort wieder', () {
+      final entfernt = leer.copyWith(standort: 'Gareth').copyWith(standort: '');
+      expect(entfernt.toJson().containsKey('standort'), isFalse);
+    });
+
+    test('ein Wert falschen Typs wird tolerant als leer gelesen', () {
+      final geladen = HeroState.fromJson(<String, dynamic>{
+        ...leer.toJson(),
+        'standort': 42,
+      });
+      expect(geladen.standort, '');
+    });
+
+    test('der Schlüssel ist bekannt und landet nicht in unbekannteFelder', () {
+      expect(HeroState.jsonSchluessel, contains('standort'));
+      final geladen = HeroState.fromJson(<String, dynamic>{
+        ...leer.toJson(),
+        'standort': 'Gareth',
+        'zukunft': 1,
+      });
+      expect(geladen.unbekannteFelder.keys, ['zukunft']);
     });
   });
 }

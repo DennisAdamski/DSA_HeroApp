@@ -87,7 +87,7 @@ class KartoRessourcenwert extends StatelessWidget {
     final werteZeile = '$aktuell / $maximum';
     final zusatz = hinweis;
 
-    return Padding(
+    final inhalt = Padding(
       padding: const EdgeInsets.symmetric(
         horizontal: Abstand.weit,
         vertical: Abstand.normal,
@@ -110,43 +110,56 @@ class KartoRessourcenwert extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
+              // Nur Hinweis auf die Bedienbarkeit; getippt wird die ganze Zelle.
               if (onBearbeiten != null)
-                Tooltip(
-                  message: '$bezeichnung ändern',
-                  child: InkWell(
-                    onTap: onBearbeiten,
-                    borderRadius: BorderRadius.circular(kKartoRadiusKlein),
-                    child: SizedBox(
-                      width: 48,
-                      height: 48,
-                      child: Icon(
-                        Icons.tune,
-                        size: 18,
-                        color: karto.schriftLeise,
+                Icon(Icons.tune, size: 14, color: karto.schriftStumm),
+            ],
+          ),
+          const SizedBox(height: Abstand.eng),
+          // Wert und Fehlbetrag teilen sich eine Zeile: die Zelle bleibt so
+          // niedrig, dass vier Ressourcen auf einem Telefon in zwei Reihen
+          // passen. Eine Textzeile aus zwei Spans, nicht zwei Widgets:
+          // `find.text` wertet bei `Text.rich` den zusammengesetzten Klartext
+          // aus, die Zeile bleibt also als Ganzes auffindbar und vorlesbar.
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
+            children: [
+              Flexible(
+                child: Text.rich(
+                  TextSpan(
+                    style: texte.wertGross.copyWith(color: karto.schrift),
+                    children: <InlineSpan>[
+                      TextSpan(text: '$aktuell'),
+                      TextSpan(
+                        text: ' / $maximum',
+                        style: texte.wert.copyWith(color: karto.schriftStumm),
                       ),
+                    ],
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              if (zusatz != null) ...[
+                const SizedBox(width: Abstand.normal),
+                Expanded(
+                  child: Text(
+                    zusatz,
+                    maxLines: 1,
+                    textAlign: TextAlign.end,
+                    overflow: TextOverflow.ellipsis,
+                    style: texte.marke.copyWith(
+                      color: karto.schriftLeise,
+                      fontWeight: FontWeight.w500,
+                      letterSpacing: 0.2,
                     ),
                   ),
                 ),
+              ],
             ],
           ),
-          // Eine Textzeile aus zwei Spans, nicht zwei Widgets: `find.text`
-          // wertet bei `Text.rich` den zusammengesetzten Klartext aus, die
-          // Zeile bleibt also als Ganzes auffindbar und vorlesbar.
-          Text.rich(
-            TextSpan(
-              style: texte.wertGross.copyWith(color: karto.schrift),
-              children: <InlineSpan>[
-                TextSpan(text: '$aktuell'),
-                TextSpan(
-                  text: ' / $maximum',
-                  style: texte.wert.copyWith(color: karto.schriftStumm),
-                ),
-              ],
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          const SizedBox(height: Abstand.normal),
+          const SizedBox(height: Abstand.knapp),
           Semantics(
             label: bezeichnung,
             value: werteZeile,
@@ -160,27 +173,26 @@ class KartoRessourcenwert extends StatelessWidget {
                 curve: Bewegung.kurve,
                 builder: (context, anteil, _) => LinearProgressIndicator(
                   value: anteil,
-                  minHeight: 5,
+                  minHeight: 4,
                   backgroundColor: karto.raster,
                   valueColor: AlwaysStoppedAnimation<Color>(akzent),
                 ),
               ),
             ),
           ),
-          if (zusatz != null) ...[
-            const SizedBox(height: Abstand.knapp),
-            Text(
-              zusatz,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: texte.marke.copyWith(
-                color: karto.schriftLeise,
-                fontWeight: FontWeight.w500,
-                letterSpacing: 0.2,
-              ),
-            ),
-          ],
         ],
+      ),
+    );
+    if (onBearbeiten == null) return inhalt;
+    return Tooltip(
+      message: '$bezeichnung ändern',
+      child: Material(
+        type: MaterialType.transparency,
+        child: InkWell(
+          onTap: onBearbeiten,
+          borderRadius: BorderRadius.circular(kKartoRadiusKlein),
+          child: inhalt,
+        ),
       ),
     );
   }

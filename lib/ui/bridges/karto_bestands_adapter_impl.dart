@@ -21,6 +21,7 @@ import 'package:dsa_heldenverwaltung/ui/screens/heroes_home_screen.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/settings_screen.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/begleiter_zustand_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ressourcen_aenderung_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/standort_rules.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_begleiter_tab.dart'
     show zeigeVertrautenAktionen;
 import 'package:dsa_heldenverwaltung/ui/screens/shared/active_spell_effects_dialog.dart';
@@ -32,6 +33,7 @@ import 'package:dsa_heldenverwaltung/ui/screens/workspace/inspector/widgets/insp
 import 'package:dsa_heldenverwaltung/ui/screens/hero_overview/hero_regelprofil_section.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/herleitung_suche_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/probe_quick_search.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/workspace/rules_lookup_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/rest_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/schaden/schaden_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/schaden/schaden_ruecknahme.dart';
@@ -125,8 +127,14 @@ class KartoBestandsAdapterImpl
   /// Verwendet die vorhandene Armatrutz-Eingabe ohne frühes Speichern.
   @override
   Future<ActiveSpellEffectDetail?> gefechtsArmatrutzWerte(
-    BuildContext context,
-  ) => showArmatrutzInputDialog(context: context);
+    BuildContext context, {
+    bool grenzePruefen = false,
+    int? grenze,
+  }) => showArmatrutzInputDialog(
+    context: context,
+    grenzePruefen: grenzePruefen,
+    grenze: grenze,
+  );
 
   /// Verwendet die vorhandene Attributo-Eingabe ohne frühes Speichern.
   @override
@@ -269,6 +277,7 @@ class KartoBestandsAdapterImpl
         heroId: heroId,
         probenEigenschaften: werte.probenEigenschaften,
         grundwerte: werte.effectiveAttributes,
+        kompakt: true,
       ),
     );
   }
@@ -455,6 +464,19 @@ class KartoBestandsAdapterImpl
     );
   }
 
+  /// Der Regelwerk-Index läuft nur auf Desktop und im Web.
+  @override
+  bool get regelnNachschlagenVerfuegbar => isRulesLookupSupported();
+
+  /// Öffnet den vorhandenen Regelnachschlag (Volltextsuche in den Regelwerken).
+  @override
+  Future<void> regelnNachschlagen({required BuildContext context}) {
+    return _withKartoCompatContext(
+      context,
+      (themedContext) => showRulesLookupDialog(context: themedContext),
+    );
+  }
+
   /// Öffnet die vorhandene Rastbedienung.
   @override
   Future<void> rast({required BuildContext context, required String heroId}) {
@@ -531,6 +553,24 @@ class KartoBestandsAdapterImpl
       begleiter: begleiter,
       pool: pool,
       aenderung: aenderung,
+    );
+  }
+
+  /// Schreibt den Standort über den gemeinsamen Zustandsweg.
+  @override
+  Future<void> standortSetzen({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String heroId,
+    required String standort,
+  }) async {
+    await aendereZustandMitMeldung(
+      context: context,
+      ref: ref,
+      heroId: heroId,
+      was: 'Standort',
+      aenderung: (aktuell) =>
+          aktuell.copyWith(standort: bereinigeStandort(standort)),
     );
   }
 

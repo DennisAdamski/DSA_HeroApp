@@ -444,9 +444,10 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
 
   Widget _buildGroupJumpBar(List<String> groups) {
     final compact = MediaQuery.sizeOf(context).width < 600;
+    final karto = kartoVariante(context) != null;
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
+      padding: EdgeInsets.fromLTRB(8, 0, 8, karto ? 4 : 8),
       child: Row(
         children: groups.map((group) {
           final iconData = talentGroupIcons[group] ?? Icons.folder;
@@ -466,12 +467,14 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
               ? ActionChip(
                   label: Icon(iconData, size: 18),
                   tooltip: group,
+                  visualDensity: karto ? VisualDensity.compact : null,
                   onPressed: onPressed,
                 )
               : ActionChip(
                   avatar: Icon(iconData, size: 18),
                   label: Text(group),
                   tooltip: group,
+                  visualDensity: karto ? VisualDensity.compact : null,
                   onPressed: onPressed,
                 );
           return Padding(padding: const EdgeInsets.only(right: 6), child: chip);
@@ -484,51 +487,124 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
     required List<TalentDef> allTalents,
     required List<TalentDef> allCatalogTalents,
   }) {
+    final karto = kartoVariante(context) != null;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
+      padding: EdgeInsets.fromLTRB(8, 0, 8, karto ? 4 : 8),
       child: LayoutBuilder(
-        builder: (context, constraints) => Wrap(
-          alignment: WrapAlignment.end,
-          spacing: 8,
-          runSpacing: 8,
-          children: [
-            SizedBox(
-              width: constraints.maxWidth < 560
-                  ? constraints.maxWidth
-                  : constraints.maxWidth - 336,
-              child: TextField(
-                key: const ValueKey<String>('talents-group-search'),
-                controller: _searchController,
-                decoration: InputDecoration(
-                  hintText: 'Talente suchen\u2026',
-                  prefixIcon: const Icon(Icons.search),
-                  suffixIcon: _talentGroupFilter.isNotEmpty
-                      ? IconButton(
-                          icon: const Icon(Icons.clear),
-                          tooltip: 'Suche löschen',
-                          onPressed: () => _searchController.clear(),
-                        )
-                      : null,
-                  isDense: true,
-                  border: const OutlineInputBorder(),
-                ),
+        builder: (context, constraints) {
+          if (karto && constraints.maxWidth >= 560) {
+            return _buildSearchZeileKompakt(
+              allTalents: allTalents,
+              allCatalogTalents: allCatalogTalents,
+              mitBeschriftung: constraints.maxWidth >= 900,
+            );
+          }
+          return Wrap(
+            alignment: WrapAlignment.end,
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              SizedBox(
+                width: constraints.maxWidth < 560
+                    ? constraints.maxWidth
+                    : constraints.maxWidth - 336,
+                child: _buildTalentSuchfeld(),
               ),
-            ),
-            FilledButton.icon(
-              key: const ValueKey<String>('talents-catalog-open'),
-              onPressed: () => _openTalentCatalogAction(allTalents),
-              icon: const Icon(Icons.library_add),
-              label: const Text('+ Talent'),
-            ),
-            FilledButton.icon(
-              key: const ValueKey<String>('meta-talents-manage-open'),
-              onPressed: () => _openMetaTalentManagerAction(allCatalogTalents),
-              icon: const Icon(Icons.merge_type),
-              label: const Text('+ Meta-Talent'),
-            ),
-            _buildTabellenAnsichtToggle(),
-          ],
+              FilledButton.icon(
+                key: const ValueKey<String>('talents-catalog-open'),
+                onPressed: () => _openTalentCatalogAction(allTalents),
+                icon: const Icon(Icons.library_add),
+                label: const Text('+ Talent'),
+              ),
+              FilledButton.icon(
+                key: const ValueKey<String>('meta-talents-manage-open'),
+                onPressed: () =>
+                    _openMetaTalentManagerAction(allCatalogTalents),
+                icon: const Icon(Icons.merge_type),
+                label: const Text('+ Meta-Talent'),
+              ),
+              _buildTabellenAnsichtToggle(),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  /// Suchfeld, Anlegen-Aktionen und Ansichtsumschalter in einer Zeile.
+  ///
+  /// Nur unter Kartograph ab Tabletbreite: Die Zeile spart gegenueber dem
+  /// umbrechenden [Wrap] eine ganze Reihe. Schmaler als [mitBeschriftung]
+  /// tragen die Aktionen nur ihr Symbol und den Tooltip.
+  Widget _buildSearchZeileKompakt({
+    required List<TalentDef> allTalents,
+    required List<TalentDef> allCatalogTalents,
+    required bool mitBeschriftung,
+  }) {
+    const dicht = VisualDensity.compact;
+    Widget aktion({
+      required Key schluessel,
+      required VoidCallback onPressed,
+      required IconData icon,
+      required String beschriftung,
+    }) {
+      if (mitBeschriftung) {
+        return FilledButton.icon(
+          key: schluessel,
+          style: FilledButton.styleFrom(visualDensity: dicht),
+          onPressed: onPressed,
+          icon: Icon(icon),
+          label: Text(beschriftung),
+        );
+      }
+      return IconButton.filled(
+        key: schluessel,
+        visualDensity: dicht,
+        tooltip: beschriftung,
+        onPressed: onPressed,
+        icon: Icon(icon),
+      );
+    }
+
+    return Row(
+      children: [
+        Expanded(child: _buildTalentSuchfeld()),
+        const SizedBox(width: 8),
+        aktion(
+          schluessel: const ValueKey<String>('talents-catalog-open'),
+          onPressed: () => _openTalentCatalogAction(allTalents),
+          icon: Icons.library_add,
+          beschriftung: '+ Talent',
         ),
+        const SizedBox(width: 8),
+        aktion(
+          schluessel: const ValueKey<String>('meta-talents-manage-open'),
+          onPressed: () => _openMetaTalentManagerAction(allCatalogTalents),
+          icon: Icons.merge_type,
+          beschriftung: '+ Meta-Talent',
+        ),
+        const SizedBox(width: 8),
+        _buildTabellenAnsichtToggle(),
+      ],
+    );
+  }
+
+  Widget _buildTalentSuchfeld() {
+    return TextField(
+      key: const ValueKey<String>('talents-group-search'),
+      controller: _searchController,
+      decoration: InputDecoration(
+        hintText: 'Talente suchen…',
+        prefixIcon: const Icon(Icons.search),
+        suffixIcon: _talentGroupFilter.isNotEmpty
+            ? IconButton(
+                icon: const Icon(Icons.clear),
+                tooltip: 'Suche löschen',
+                onPressed: () => _searchController.clear(),
+              )
+            : null,
+        isDense: true,
+        border: const OutlineInputBorder(),
       ),
     );
   }
@@ -542,6 +618,9 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
     return SegmentedButton<TabellenAnsicht>(
       key: const ValueKey<String>('talents-view-mode-toggle'),
       showSelectedIcon: false,
+      style: kartoVariante(context) != null
+          ? const ButtonStyle(visualDensity: VisualDensity.compact)
+          : null,
       segments: const <ButtonSegment<TabellenAnsicht>>[
         ButtonSegment<TabellenAnsicht>(
           value: TabellenAnsicht.automatisch,

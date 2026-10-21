@@ -47,7 +47,14 @@ abstract interface class KartoGefechtsAdapter {
   });
 
   /// Erfragt den Armatrutz-RS und seine Wirkungsdauer; `null` bei Abbruch.
-  Future<ActiveSpellEffectDetail?> gefechtsArmatrutzWerte(BuildContext context);
+  ///
+  /// Mit [grenzePruefen] nennt die Eingabe die Regelgrenze ZfW/2 ([grenze],
+  /// `null` = ZfW unbekannt); die Eingabe selbst wird nicht gekappt.
+  Future<ActiveSpellEffectDetail?> gefechtsArmatrutzWerte(
+    BuildContext context, {
+    bool grenzePruefen = false,
+    int? grenze,
+  });
 
   /// Erfragt die Attributo-Boni; `null` bei Abbruch.
   Future<AttributeModifiers?> gefechtsAttributoWerte(BuildContext context);

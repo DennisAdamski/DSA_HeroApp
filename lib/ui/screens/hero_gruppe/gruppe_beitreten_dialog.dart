@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:dsa_heldenverwaltung/data/gruppen_sync_service.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 
-/// Zeigt einen Dialog zum Beitreten einer bestehenden Gruppe via Code.
+/// Zeigt einen Dialog zum Beitreten einer bestehenden Gruppe via Beitrittscode.
 ///
-/// Gibt den Gruppencode zurueck, oder `null` bei Abbruch.
+/// Gibt die ID der Gruppe zurueck, oder `null` bei Abbruch.
 Future<String?> showGruppeBeitretenDialog({
   required BuildContext context,
   required WidgetRef ref,
@@ -47,7 +48,7 @@ class _GruppeBeitretenDialogState extends State<_GruppeBeitretenDialog> {
         mainAxisSize: MainAxisSize.min,
         children: [
           const Text(
-            'Gib den Gruppencode ein, den du von einem '
+            'Füge den Beitrittscode ein, den du von einem '
             'Gruppenmitglied erhalten hast.',
           ),
           const SizedBox(height: 16),
@@ -55,8 +56,7 @@ class _GruppeBeitretenDialogState extends State<_GruppeBeitretenDialog> {
             controller: _controller,
             autofocus: true,
             decoration: InputDecoration(
-              labelText: 'Gruppencode',
-              hintText: 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx',
+              labelText: 'Beitrittscode',
               errorText: _fehler,
             ),
             onSubmitted: (_) => _beitreten(),
@@ -98,10 +98,16 @@ class _GruppeBeitretenDialogState extends State<_GruppeBeitretenDialog> {
     });
 
     try {
-      await widget.ref
+      final gruppenId = await widget.ref
           .read(heroActionsProvider)
-          .trittGruppeBei(heroId: widget.heroId, gruppenCode: code);
-      if (mounted) Navigator.of(context).pop(code);
+          .trittGruppeBei(heroId: widget.heroId, beitrittscode: code);
+      if (mounted) Navigator.of(context).pop(gruppenId);
+    } on GruppenException catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+        _fehler = error.message;
+      });
     } on StateError catch (error) {
       if (!mounted) return;
       setState(() {

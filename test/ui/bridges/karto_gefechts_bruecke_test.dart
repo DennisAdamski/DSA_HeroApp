@@ -138,6 +138,29 @@ void main() {
     final ActiveSpellEffectDetail? detail = await armatrutz;
     expect(detail?.amount, 3);
 
+    // Mit Grenze nennt die Eingabe ZfW/2 und kappt den Wert nicht.
+    final begrenzt = _adapter.gefechtsArmatrutzWerte(
+      kontext,
+      grenzePruefen: true,
+      grenze: 2,
+    );
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const ValueKey('armatrutz-input-rs')),
+      '4',
+    );
+    await tester.pump();
+    expect(
+      find.text(
+        'Höchstens 2 (ZfW/2, aufgerundet): Es wirken nur 2 Punkte, der '
+        'eingetragene Wert bleibt gespeichert.',
+      ),
+      findsOneWidget,
+    );
+    await tester.tap(find.byKey(const ValueKey('armatrutz-input-confirm')));
+    await tester.pumpAndSettle();
+    expect((await begrenzt)?.amount, 4);
+
     final attributo = _adapter.gefechtsAttributoWerte(kontext);
     await tester.pumpAndSettle();
     expect(find.text('Attributo – Boni eingeben'), findsOneWidget);

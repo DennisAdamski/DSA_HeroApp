@@ -404,7 +404,9 @@ void main() {
     await tester.pumpAndSettle();
     expect(authService.signOutCalls, 0);
 
-    await tester.tap(find.text('Abmelden').last);
+    // Offene Konflikte sind nicht gesichert: Der Dialog warnt.
+    expect(find.text('Ungesicherte Änderungen'), findsOneWidget);
+    await tester.tap(find.text('Trotzdem abmelden'));
     await tester.pumpAndSettle();
 
     expect(authService.signOutCalls, 1);

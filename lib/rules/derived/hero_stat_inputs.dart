@@ -103,12 +103,22 @@ HeroStatInputs computeHeroStatInputs({
       .werteAuf(hero.attributes);
   final effektiveHerleitungen = eigenschaften(mitTemporaer: true);
   final effective = effektiveHerleitungen.werteAuf(hero.attributes);
-  final wundEffekte = computeHeroWundEffekte(
+  final zauberEffekte = berechneSpellEffectBeitraegeFuerHeld(
+    held: hero,
+    zustand: state,
+    katalog: catalog,
+  );
+  final gezaehlteWunden = computeHeroWundEffekte(
     hero: hero,
     zustand: state.wpiZustand,
     epicAdvantagesActive: epicAdvantagesActive,
     parsed: parsed,
   );
+  // Im Kampfrausch (Karnifilo) mindern Wunden AT und PA nicht.
+  final kampfrausch = zauberEffekte.kampfrauschQuelle;
+  final wundEffekte = kampfrausch == null
+      ? gezaehlteWunden
+      : wundEffekteImKampfrausch(gezaehlteWunden, quelle: kampfrausch);
   return HeroStatInputs(
     parsed: parsed,
     inventory: inventoryMods,
@@ -117,11 +127,7 @@ HeroStatInputs computeHeroStatInputs({
     wounds: wundEffekte,
     textAufteilung: herkunftsQuellen(breakdown),
     eigenschaftHerleitungen: effektiveHerleitungen,
-    zauberEffekte: berechneSpellEffectBeitraegeFuerHeld(
-      held: hero,
-      zustand: state,
-      katalog: catalog,
-    ),
+    zauberEffekte: zauberEffekte,
   );
 }
 

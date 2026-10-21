@@ -1586,6 +1586,12 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
 
   @override
   Future<void> deleteHero(String heroId) async {
+    // Eine offene Konfliktentscheidung stellt den Helden beim Wiederanlauf
+    // wieder her; die Loeschung ginge still verloren. Also nichts loeschen.
+    await _journalBereit;
+    if (_istGesperrt(heroId)) {
+      throw HeldInKonfliktentscheidungException(heroId);
+    }
     await local.deleteHero(heroId);
     final metadata = await metadataStore.load(_heroKey(heroId));
     if (metadata != null && !metadata.isDeleted) {
@@ -1731,6 +1737,7 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
   /// Wartet, bis alle angestoßenen Zustands-Uploads übertragen sind.
   ///
   /// Für Abläufe, die danach die Cloud lesen (Tests, Abmelden).
+  @override
   Future<void> warteAufUebertragungen() => _zustandsUploads.warteAufAlle();
 
   // Überträgt den neuesten lokalen Zustand; Fehler reicht er weiter.
