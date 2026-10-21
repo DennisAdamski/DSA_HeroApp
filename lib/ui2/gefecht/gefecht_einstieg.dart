@@ -5,6 +5,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/gefecht_vorgaben_rules.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_provider.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_initiative_provider.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
+import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_bestands_adapter.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_gefechts_adapter.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_spielansicht.dart';
@@ -43,6 +44,22 @@ class GefechtEinstieg extends ConsumerWidget {
       if (!await vorBearbeitung() || !context.mounted) return;
       final controller = ref.read(gefechtProvider(heroId).notifier);
       if (!laeuft) {
+        // Vor dem Beginn die Gruppen abgleichen (Gefaehrten-INI und -Werte);
+        // ein Fehler haelt das Gefecht nie auf.
+        final warnung = await ref
+            .read(heroActionsProvider)
+            .syncGruppenVorGefecht(heroId);
+        if (!context.mounted) return;
+        if (warnung != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Gruppen nicht abgeglichen, das Gefecht nutzt den lokalen '
+                'Stand. $warnung',
+              ),
+            ),
+          );
+        }
         final c = werte.combatPreviewStats;
         int? wurf = c.initiativeFixedRollTotal;
         if (wurf == null) {
