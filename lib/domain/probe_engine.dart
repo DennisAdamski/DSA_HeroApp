@@ -55,6 +55,64 @@ class ProbeTargetValue {
   final int value;
 }
 
+/// Beschreibender Kontext einer Probe (etwa die Zauberdetails), nur zur
+/// Anzeige im Dialog.
+///
+/// [wirkung] und [variantenRoh] koennen geschuetzt (`enc:`) vorliegen; der
+/// Dialog loest sie mit dem Freischaltstatus auf. Leere Felder werden nicht
+/// angezeigt.
+class ProbeKontext {
+  /// Erzeugt einen Kontext aus den Textfeldern des Katalogeintrags.
+  const ProbeKontext({
+    this.wirkung = '',
+    this.variantenRoh = const <String>[],
+    this.kosten = '',
+    this.zauberdauer = '',
+    this.reichweite = '',
+    this.wirkungsdauer = '',
+    this.zielobjekt = '',
+    this.merkmale = '',
+    this.modifikationen = '',
+    this.quelle = '',
+  });
+
+  /// Wirkungsbeschreibung (Langtext, ggf. verschluesselt).
+  final String wirkung;
+
+  /// Varianten als Liste oder verschluesselter `enc:`-String.
+  final Object variantenRoh;
+
+  /// Kosten laut Katalog oder Heldenoverride.
+  final String kosten;
+
+  /// Zauberdauer.
+  final String zauberdauer;
+
+  /// Reichweite.
+  final String reichweite;
+
+  /// Wirkungsdauer.
+  final String wirkungsdauer;
+
+  /// Zielobjekt.
+  final String zielobjekt;
+
+  /// Merkmale.
+  final String merkmale;
+
+  /// Modifikationsoptionen.
+  final String modifikationen;
+
+  /// Quellreferenz.
+  final String quelle;
+
+  /// Kurzzeile mit Kosten und Zauberdauer fuer den eingeklappten Zustand.
+  String get kurzzeile => <String>[
+    if (kosten.trim().isNotEmpty) 'Kosten: ${kosten.trim()}',
+    if (zauberdauer.trim().isNotEmpty) 'Dauer: ${zauberdauer.trim()}',
+  ].join(' · ');
+}
+
 /// Vollstaendig aufgeloeste Probe fuer die UI und die Regelengine.
 class ResolvedProbeRequest {
   /// Erzeugt eine immutable Probeanfrage.
@@ -72,6 +130,8 @@ class ResolvedProbeRequest {
     this.fixedRollTotal,
     this.poolHerleitung,
     this.bedingterPoolSchritt,
+    this.spezialisierungen = const <String>[],
+    this.kontext,
   });
 
   /// Fachliche Probeart.
@@ -119,6 +179,13 @@ class ResolvedProbeRequest {
   /// Schalter an und wendet ihn über `wendeBedingtenPoolSchrittAn` an.
   final HerleitungsSchritt? bedingterPoolSchritt;
 
+  /// Namen der Spezialisierungen des Helden, aus denen der Dialog eine
+  /// auswaehlen laesst (+[specializationBonus] auf den Pool).
+  final List<String> spezialisierungen;
+
+  /// Beschreibender Kontext (Zauberdetails), nur zur Anzeige.
+  final ProbeKontext? kontext;
+
   /// Gibt eine Kopie mit geänderten Feldern zurück.
   ///
   /// Umbauten einer vorhandenen Probe laufen hierüber, damit
@@ -150,6 +217,8 @@ class ResolvedProbeRequest {
       bedingterPoolSchritt: clearBedingterPoolSchritt
           ? null
           : bedingterPoolSchritt ?? this.bedingterPoolSchritt,
+      spezialisierungen: spezialisierungen,
+      kontext: kontext,
     );
   }
 

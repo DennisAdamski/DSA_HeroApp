@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dsa_heldenverwaltung/domain/dice_log_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
+import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/dice_log_persistence.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/probe_dialog.dart';
 
@@ -46,6 +47,8 @@ Future<ProbeResult?> zeigeGefechtsprobe({
       onResolved?.call(result);
     },
     onDiceLogEntry: eintraege.add,
+    contentUnlocked: ref.read(catalogContentVisibleProvider),
+    contentPassword: ref.read(catalogContentPasswordProvider),
   );
   try {
     await persistDiceLogEntries(ref: ref, heroId: heroId, entries: eintraege);

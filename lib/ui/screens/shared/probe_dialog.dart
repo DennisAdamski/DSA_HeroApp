@@ -12,6 +12,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/trefferzonen_rules.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/config/ui_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_overview/herleitung_abschnitt.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/protected_content_helpers.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/animated_dice_row.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/karto_variante.dart';
 
@@ -23,6 +24,8 @@ Future<void> showProbeDialog({
   void Function(DiceLogEntry entry)? onDiceLogEntry,
   bool singleResolution = false,
   bool modifikatorGesperrt = false,
+  bool contentUnlocked = true,
+  String? contentPassword,
 }) {
   return showAdaptiveDetailSheet<void>(
     context: context,
@@ -32,6 +35,8 @@ Future<void> showProbeDialog({
       onDiceLogEntry: onDiceLogEntry,
       singleResolution: singleResolution,
       modifikatorGesperrt: modifikatorGesperrt,
+      contentUnlocked: contentUnlocked,
+      contentPassword: contentPassword,
     ),
   );
 }
@@ -47,6 +52,8 @@ class ProbeDialog extends StatefulWidget {
     this.onDiceLogEntry,
     this.singleResolution = false,
     this.modifikatorGesperrt = false,
+    this.contentUnlocked = true,
+    this.contentPassword,
   });
 
   /// Aufgeloeste Probe inklusive Zielwerte und Wuerfelkonfiguration.
@@ -61,6 +68,12 @@ class ProbeDialog extends StatefulWidget {
   /// einen Ort für Erschwernisse und keine zweite, ungezählte Eingabe mit
   /// umgekehrtem Vorzeichen.
   final bool modifikatorGesperrt;
+
+  /// Freischaltstatus für geschützte Zaubertexte im Kontext.
+  final bool contentUnlocked;
+
+  /// Passwort zum Entschlüsseln geschützter Zaubertexte.
+  final String? contentPassword;
 
   /// Optionale Test-Hook fuer deterministische Trefferzonen-Wuerfe.
   final int Function()? rollTrefferzone;
@@ -86,6 +99,9 @@ class _ProbeDialogState extends State<ProbeDialog> {
   final DiceRollController _trefferzonenDiceController = DiceRollController();
   late ProbeRollMode _mode;
   late bool _specializationApplied;
+
+  /// Gewählte Spezialisierung; `null` heißt keine (kein Bonus).
+  String? _gewaehlteSpezialisierung;
 
   /// Ob der bedingte Poolschritt (etwa Axxeleratus bei Sprint/Sprung) gilt.
   bool _bedingungAngewendet = false;
@@ -116,6 +132,9 @@ class _ProbeDialogState extends State<ProbeDialog> {
     super.initState();
     _mode = ProbeRollMode.digital;
     _specializationApplied = _request.initialSpecializationApplied;
+    if (_specializationApplied && _request.spezialisierungen.isNotEmpty) {
+      _gewaehlteSpezialisierung = _request.spezialisierungen.first;
+    }
     _modifierController = TextEditingController(
       text: _request.initialSituationalModifier.toString(),
     );
@@ -350,15 +369,18 @@ class _ProbeDialogState extends State<ProbeDialog> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (_request.subtitle.trim().isNotEmpty) Text(_request.subtitle),
-              const SizedBox(height: 8),
-              Text(
-                _request.ruleHint,
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
+              _buildKopfzeile(),
+              if (_zeigeRegelhinweis) ...[
+                const SizedBox(height: 8),
+                Text(
+                  _request.ruleHint,
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ],
               const SizedBox(height: 12),
               _buildSummary(),
               _buildPoolHerleitung(),
+              _buildKontext(),
               const SizedBox(height: 12),
               _buildControls(),
               const SizedBox(height: 16),
@@ -384,17 +406,116 @@ class _ProbeDialogState extends State<ProbeDialog> {
     );
   }
 
+  /// Der Regelhinweis erscheint nur, wenn er Text trägt; die Standardproben
+  /// (Talent, Zauber) liefern keinen allgemeinen Regeltext mehr.
+  bool get _zeigeRegelhinweis => _request.ruleHint.trim().isNotEmpty;
+
+  /// Untertitel; bei Talent-/Zauberproben die Eigenschaften mit ihren Werten
+  /// (`KL: 16 | GE: 14 | KK: 11`).
+  Widget _buildKopfzeile() {
+    final text = _request.usesCompensationPool && _request.targets.isNotEmpty
+        ? _request.targets
+              .map((target) => '${target.label}: ${target.value}')
+              .join(' | ')
+        : _request.subtitle.trim();
+    if (text.isEmpty) return const SizedBox.shrink();
+    return Text(
+      text,
+      key: const ValueKey<String>('probe-dialog-eigenschaften'),
+      style: _request.usesCompensationPool
+          ? Theme.of(context).textTheme.titleSmall
+          : null,
+    );
+  }
+
   Widget _buildSummary() {
+    final mitPool = _request.usesCompensationPool;
     final chips = <Widget>[
       Chip(label: Text(_request.diceSpec.label)),
-      for (final target in _request.targets)
-        Chip(label: Text('${target.label}: ${target.value}')),
-      if (_request.usesCompensationPool)
-        Chip(label: Text('Pool: ${_request.basePool}')),
-      if (_request.supportsSpecialization)
-        Chip(label: Text('Spezialisierung: +${_request.specializationBonus}')),
+      if (!mitPool)
+        for (final target in _request.targets)
+          Chip(label: Text('${target.label}: ${target.value}')),
+      if (mitPool) Chip(label: Text('Pool: ${_request.basePool}')),
     ];
     return Wrap(spacing: 8, runSpacing: 8, children: chips);
+  }
+
+  /// Aufklappbare Zauberdetails (Wirkung, Varianten, Modifikationen …).
+  Widget _buildKontext() {
+    final kontext = _request.kontext;
+    if (kontext == null) return const SizedBox.shrink();
+    final theme = Theme.of(context);
+    final wirkung = resolveProtectedValue(
+      raw: kontext.wirkung,
+      unlocked: widget.contentUnlocked,
+      password: widget.contentPassword,
+    );
+    final varianten = resolveProtectedList(
+      raw: kontext.variantenRoh,
+      unlocked: widget.contentUnlocked,
+      password: widget.contentPassword,
+    );
+    final gesperrt = wirkung == null || varianten == null;
+
+    Widget feld(String label, String wert) => Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: theme.textTheme.labelMedium),
+          const SizedBox(height: 2),
+          Text(wert),
+        ],
+      ),
+    );
+
+    final felder = <Widget>[
+      if (kontext.zauberdauer.isNotEmpty)
+        feld('Zauberdauer', kontext.zauberdauer),
+      if (kontext.kosten.isNotEmpty) feld('Kosten', kontext.kosten),
+      if (kontext.reichweite.isNotEmpty) feld('Reichweite', kontext.reichweite),
+      if (kontext.wirkungsdauer.isNotEmpty)
+        feld('Wirkungsdauer', kontext.wirkungsdauer),
+      if (kontext.zielobjekt.isNotEmpty) feld('Zielobjekt', kontext.zielobjekt),
+      if (kontext.merkmale.isNotEmpty) feld('Merkmale', kontext.merkmale),
+      if (wirkung != null && wirkung.trim().isNotEmpty)
+        feld('Wirkung', wirkung.trim()),
+      if (kontext.modifikationen.isNotEmpty)
+        feld('Modifikationen', kontext.modifikationen),
+      if (varianten != null && varianten.isNotEmpty)
+        Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Varianten', style: theme.textTheme.labelMedium),
+              const SizedBox(height: 2),
+              for (final variante in varianten)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 4),
+                  child: Text('• $variante'),
+                ),
+            ],
+          ),
+        ),
+      if (gesperrt) feld('Geschützte Texte', lockedContentHint),
+      if (kontext.quelle.isNotEmpty) feld('Quelle', kontext.quelle),
+    ];
+    if (felder.isEmpty) return const SizedBox.shrink();
+    final kurz = kontext.kurzzeile;
+    return Theme(
+      data: theme.copyWith(dividerColor: Colors.transparent),
+      child: ExpansionTile(
+        key: const ValueKey<String>('probe-dialog-kontext'),
+        tilePadding: EdgeInsets.zero,
+        childrenPadding: const EdgeInsets.only(bottom: 4),
+        dense: true,
+        title: const Text('Zauberdetails'),
+        subtitle: kurz.isEmpty ? null : Text(kurz),
+        expandedCrossAxisAlignment: CrossAxisAlignment.start,
+        children: felder,
+      ),
+    );
   }
 
   /// Aufklappbare Herleitung des Pools (TaW*); rechnet nichts nach.
@@ -448,41 +569,10 @@ class _ProbeDialogState extends State<ProbeDialog> {
               : (selection) => _setMode(selection.first),
         ),
         const SizedBox(height: 12),
-        TextField(
-          key: const ValueKey<String>('probe-dialog-modifier'),
-          controller: _modifierController,
-          enabled: !_locked && !_isAnimating && !widget.modifikatorGesperrt,
-          keyboardType: TextInputType.number,
-          inputFormatters: <TextInputFormatter>[
-            FilteringTextInputFormatter.allow(RegExp(r'-?[0-9]*')),
-          ],
-          decoration: InputDecoration(
-            labelText: 'Situativer Modifikator',
-            border: const OutlineInputBorder(),
-            helperText: widget.modifikatorGesperrt
-                ? 'Im Gefecht festgelegt.'
-                : 'Positive Werte erleichtern, negative erschweren.',
-          ),
-          onChanged: (_) => _liveRefresh(),
-        ),
+        _buildModifikator(),
         if (_request.supportsSpecialization) ...[
           const SizedBox(height: 8),
-          SwitchListTile(
-            key: const ValueKey<String>('probe-dialog-specialization'),
-            contentPadding: EdgeInsets.zero,
-            title: Text(
-              'Spezialisierung anwenden (+${_request.specializationBonus})',
-            ),
-            value: _specializationApplied,
-            onChanged: _locked || _isAnimating
-                ? null
-                : (value) {
-                    setState(() {
-                      _specializationApplied = value;
-                    });
-                    _liveRefresh();
-                  },
-          ),
+          _buildSpezialisierung(),
         ],
         if (widget.request.bedingterPoolSchritt case final schritt?) ...[
           const SizedBox(height: 8),
@@ -502,6 +592,134 @@ class _ProbeDialogState extends State<ProbeDialog> {
                   },
           ),
         ],
+      ],
+    );
+  }
+
+  bool get _modifikatorAenderbar =>
+      !_locked && !_isAnimating && !widget.modifikatorGesperrt;
+
+  void _aendereModifikator(int delta) {
+    if (!_modifikatorAenderbar) return;
+    final neu = (_situationalModifier + delta).toString();
+    _modifierController.value = TextEditingValue(
+      text: neu,
+      selection: TextSelection.collapsed(offset: neu.length),
+    );
+    _liveRefresh();
+  }
+
+  /// Modifikatorfeld mit −/+ Schaltern.
+  Widget _buildModifikator() {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(top: 4),
+          child: IconButton.outlined(
+            key: const ValueKey<String>('probe-dialog-modifier-minus'),
+            tooltip: 'Modifikator verringern',
+            onPressed: _modifikatorAenderbar
+                ? () => _aendereModifikator(-1)
+                : null,
+            icon: const Icon(Icons.remove),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: TextField(
+            key: const ValueKey<String>('probe-dialog-modifier'),
+            controller: _modifierController,
+            enabled: _modifikatorAenderbar,
+            textAlign: TextAlign.center,
+            keyboardType: const TextInputType.numberWithOptions(signed: true),
+            inputFormatters: <TextInputFormatter>[
+              FilteringTextInputFormatter.allow(RegExp(r'-?[0-9]*')),
+            ],
+            decoration: InputDecoration(
+              labelText: 'Situativer Modifikator',
+              border: const OutlineInputBorder(),
+              helperText: widget.modifikatorGesperrt
+                  ? 'Im Gefecht festgelegt.'
+                  : 'Positive Werte erleichtern, negative erschweren.',
+            ),
+            onChanged: (_) => _liveRefresh(),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Padding(
+          padding: const EdgeInsets.only(top: 4),
+          child: IconButton.outlined(
+            key: const ValueKey<String>('probe-dialog-modifier-plus'),
+            tooltip: 'Modifikator erhöhen',
+            onPressed: _modifikatorAenderbar
+                ? () => _aendereModifikator(1)
+                : null,
+            icon: const Icon(Icons.add),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _waehleSpezialisierung(String? name) {
+    setState(() {
+      _gewaehlteSpezialisierung = name;
+      _specializationApplied = name != null;
+    });
+    _liveRefresh();
+  }
+
+  /// Auswahl der angewendeten Spezialisierung (+Bonus); ohne Namen der
+  /// bisherige Schalter.
+  Widget _buildSpezialisierung() {
+    final bonus = _request.specializationBonus;
+    final sperre = _locked || _isAnimating;
+    if (_request.spezialisierungen.isEmpty) {
+      return SwitchListTile(
+        key: const ValueKey<String>('probe-dialog-specialization'),
+        contentPadding: EdgeInsets.zero,
+        title: Text('Spezialisierung anwenden (+$bonus)'),
+        value: _specializationApplied,
+        onChanged: sperre
+            ? null
+            : (value) {
+                setState(() {
+                  _specializationApplied = value;
+                });
+                _liveRefresh();
+              },
+      );
+    }
+    final wert = _request.type == ProbeType.spell ? 'ZfW' : 'TaW';
+    return Column(
+      key: const ValueKey<String>('probe-dialog-specialization'),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Spezialisierung (+$bonus auf $wert)',
+          style: Theme.of(context).textTheme.labelLarge,
+        ),
+        const SizedBox(height: 6),
+        Wrap(
+          spacing: 8,
+          runSpacing: 4,
+          children: [
+            ChoiceChip(
+              key: const ValueKey<String>('probe-dialog-specialization-keine'),
+              label: const Text('Keine'),
+              selected: _gewaehlteSpezialisierung == null,
+              onSelected: sperre ? null : (_) => _waehleSpezialisierung(null),
+            ),
+            for (final name in _request.spezialisierungen)
+              ChoiceChip(
+                key: ValueKey<String>('probe-dialog-specialization-$name'),
+                label: Text(name),
+                selected: _gewaehlteSpezialisierung == name,
+                onSelected: sperre ? null : (_) => _waehleSpezialisierung(name),
+              ),
+          ],
+        ),
       ],
     );
   }
@@ -545,7 +763,7 @@ class _ProbeDialogState extends State<ProbeDialog> {
             index,
           ) {
             return SizedBox(
-              width: 96,
+              width: _request.usesCompensationPool ? 112 : 96,
               child: TextField(
                 key: ValueKey<String>('probe-dialog-die-$index'),
                 controller: _manualDiceControllers[index],
@@ -555,7 +773,7 @@ class _ProbeDialogState extends State<ProbeDialog> {
                   FilteringTextInputFormatter.allow(RegExp(r'[0-9]*')),
                 ],
                 decoration: InputDecoration(
-                  labelText: 'Wurf ${index + 1}',
+                  labelText: _manuellesLabel(index),
                   border: const OutlineInputBorder(),
                 ),
                 onChanged: (_) => _updateManualResult(),
@@ -565,6 +783,16 @@ class _ProbeDialogState extends State<ProbeDialog> {
         ),
       ),
     );
+  }
+
+  /// Feldname eines manuellen Würfels: die zugehörige Eigenschaft samt Wert.
+  String _manuellesLabel(int index) {
+    final ziele = _request.targets;
+    if (_request.usesCompensationPool &&
+        ziele.length == _manualDiceControllers.length) {
+      return '${ziele[index].label} (${ziele[index].value})';
+    }
+    return 'Wurf ${index + 1}';
   }
 
   Widget _buildTrefferzonenSection() {
@@ -746,7 +974,10 @@ class _ProbeDialogState extends State<ProbeDialog> {
     if (_request.usesCompensationPool) {
       lines.add('Pool Start: ${result.compensationPoolStart}');
       if (result.appliedAttributePenalty != 0) {
-        lines.add('Attributmalus: ${result.appliedAttributePenalty}');
+        lines.add(
+          'Erschwernis über dem Pool: alle Zielwerte um '
+          '${-result.appliedAttributePenalty} gesenkt',
+        );
       }
       lines.add('Verbleibender Pool: ${result.remainingPool}');
     }
@@ -756,10 +987,29 @@ class _ProbeDialogState extends State<ProbeDialog> {
     } else if (_request.usesBinaryCheck) {
       lines.add('Wurf: ${result.diceValues.join(', ')}');
       lines.add('Zielwert: ${result.effectiveTargetValues.join(', ')}');
+    } else if (_request.usesCompensationPool &&
+        result.effectiveTargetValues.length == result.diceValues.length) {
+      for (var i = 0; i < result.diceValues.length; i++) {
+        final ziel = result.effectiveTargetValues[i];
+        final wurf = result.diceValues[i];
+        final ueber = result.targetOverflows[i];
+        lines.add(
+          '${_request.targets[i].label}: $wurf ${ueber > 0 ? '>' : '≤'} $ziel'
+          '${ueber > 0 ? ' (+$ueber)' : ''}',
+        );
+      }
     } else {
       lines.add('Würfe: ${result.diceValues.join(', ')}');
       lines.add('Zielwerte: ${result.effectiveTargetValues.join(', ')}');
       lines.add('Überschreitungen: ${result.targetOverflows.join(', ')}');
+    }
+
+    final reserve = kleinsteReserveZumZiel(result);
+    if (reserve != null) {
+      lines.add(
+        'Knappster Wurf: ${reserve.eigenschaft}, Abstand zum Zielwert '
+        '${reserve.abstand}',
+      );
     }
 
     if (result.automaticOutcome != AutomaticOutcome.none) {
