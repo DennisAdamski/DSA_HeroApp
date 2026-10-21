@@ -3,10 +3,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import 'package:dsa_heldenverwaltung/rules/derived/standort_rules.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
-import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abschnitt.dart';
-import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
-import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
-import 'package:dsa_heldenverwaltung/ui2/widgets/karto_flaeche.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_info_chip.dart';
 
 /// Öffnet [uri] außerhalb der App; `false` meldet, dass nichts geöffnet wurde.
 typedef KartoLinkOeffner = Future<bool> Function(Uri uri);
@@ -14,15 +11,15 @@ typedef KartoLinkOeffner = Future<bool> Function(Uri uri);
 Future<bool> _oeffneExtern(Uri uri) =>
     launchUrl(uri, mode: LaunchMode.externalApplication);
 
-/// Abschnitt „Standort“ der Spielansicht: hält den aktuellen Aufenthaltsort
-/// des Helden fest und verlinkt ihn auf die Avesmaps-Karte.
+/// Standort des Helden als Marke samt Kartenlink, für den Abenteuerabschnitt.
 ///
-/// Die Karte wird nicht eingebettet (die Seite verbietet das per
-/// `X-Frame-Options`), sondern im Browser geöffnet. Gespeichert wird nur der
-/// Ortsname; es werden keine Karten- oder Ortsdaten übernommen.
-class KartoStandortAbschnitt extends StatelessWidget {
-  /// Erstellt den Abschnitt für den gespeicherten [standort].
-  const KartoStandortAbschnitt({
+/// Hält den aktuellen Aufenthaltsort fest und verlinkt ihn auf die
+/// Avesmaps-Karte. Die Karte wird nicht eingebettet (die Seite verbietet das
+/// per `X-Frame-Options`), sondern im Browser geöffnet. Gespeichert wird nur
+/// der Ortsname; es werden keine Karten- oder Ortsdaten übernommen.
+class KartoStandortZeile extends StatelessWidget {
+  /// Erstellt die Zeile für den gespeicherten [standort].
+  const KartoStandortZeile({
     super.key,
     required this.standort,
     required this.onSpeichern,
@@ -40,48 +37,32 @@ class KartoStandortAbschnitt extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final texte = Theme.of(context).textTheme;
-    final karto = context.karto;
     final link = avesmapsLink(standort);
     final belegt = link != null;
 
-    return KartoAbschnitt(
-      titel: 'Standort',
-      stufe: KartoFlaechenstufe.senke,
-      symbol: Icons.place_outlined,
-      aktion: TextButton(
-        key: const ValueKey<String>('karto-spiel-standort-aendern'),
-        onPressed: () => _bearbeiten(context),
-        child: Text(belegt ? 'Ändern' : 'Festhalten'),
-      ),
-      child: belegt
-          ? Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  bereinigeStandort(standort),
-                  key: const ValueKey<String>('karto-spiel-standort-text'),
-                  style: texte.titleMedium,
-                ),
-                const SizedBox(height: Abstand.normal),
-                TextButton.icon(
-                  key: const ValueKey<String>('karto-spiel-standort-karte'),
-                  onPressed: () => _oeffnen(context, link),
-                  icon: const Icon(Icons.open_in_new, size: 18),
-                  label: const Text('Auf Avesmaps öffnen'),
-                ),
-                const SizedBox(height: Abstand.eng),
-                Text(
-                  'Die Karte findet Orte mit eigener Seite im Wiki Aventurica.',
-                  style: texte.etikett.copyWith(color: karto.schriftLeise),
-                ),
-              ],
-            )
-          : Text(
-              'Noch kein Standort festgehalten.',
-              key: const ValueKey<String>('karto-spiel-standort-leer'),
-              style: texte.legende,
-            ),
+    return Wrap(
+      spacing: Abstand.knapp,
+      runSpacing: Abstand.knapp,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: [
+        KartoInfoChip(
+          key: const ValueKey<String>('karto-spiel-standort-aendern'),
+          symbol: Icons.place_outlined,
+          text: belegt ? bereinigeStandort(standort) : 'Standort festhalten',
+          textKey: ValueKey<String>(
+            belegt ? 'karto-spiel-standort-text' : 'karto-spiel-standort-leer',
+          ),
+          leer: !belegt,
+          onTap: () => _bearbeiten(context),
+        ),
+        if (belegt)
+          IconButton(
+            key: const ValueKey<String>('karto-spiel-standort-karte'),
+            tooltip: 'Auf Avesmaps öffnen',
+            onPressed: () => _oeffnen(context, link),
+            icon: const Icon(Icons.open_in_new, size: 18),
+          ),
+      ],
     );
   }
 

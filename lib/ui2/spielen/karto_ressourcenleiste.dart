@@ -32,7 +32,7 @@ class KartoRessourcenleiste extends StatelessWidget {
   final ValueChanged<KartoRessource> onBearbeiten;
 
   // Schmalste Spalte, ab der zwei Ressourcen nebeneinander noch lesbar sind.
-  static const double _mindestbreite = 168;
+  static const double _mindestbreite = 132;
 
   @override
   Widget build(BuildContext context) {

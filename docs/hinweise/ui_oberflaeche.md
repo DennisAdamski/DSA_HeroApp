@@ -65,16 +65,29 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   `KartoSpielansicht` liest `heroComputedProvider(heroId)` **einmal** und reicht
   den `HeroComputedSnapshot` an alle Abschnitte weiter — auch an die
   Adaptermethoden, damit die Brücke für dieselben Werte keine zweite
-  Providerbeobachtung aufmacht. Die Reihenfolge ist überall Ressourcen,
-  Schnellaktionen, Abenteuer (nur mit laufendem Abenteuer), Eigenschaften,
-  Vor- und Nachteile, Kampf, Effekte, Zustand, Würfelprotokoll. Die
-  Eigenschaften stehen als schmale Würfelleiste (`KartoAbschnitt.dicht`,
+  Providerbeobachtung aufmacht. Die Reihenfolge ist überall
+  Schnellaktionen (ganz oben), Ressourcen, Abenteuer samt Standort,
+  Eigenschaften, Vor- und Nachteile, Kampf, Effekte, Zustand,
+  Würfelprotokoll. Die Schnellaktionen enthalten „Regeln“ (Key
+  `karto-spiel-regeln`): der vorhandene Regelnachschlag über die Brücke
+  (`regelnNachschlagen`, `regelnNachschlagenVerfuegbar`); wo es keinen
+  Regelindex gibt (Mobile), entfällt der Knopf. Die Eigenschaften stehen als
+  schmale Würfelleiste (`KartoAbschnitt.dicht`,
   `InspectorAttributeProbes(kompakt: true)`: einzeilige Karten in 8, 4 oder 2
   Spalten; die klassische Optik bleibt beim Standard). Der Abschnitt
-  „Abenteuer“ (`karto_abenteuer_abschnitt.dart`) zeigt die obersten drei
-  Personen und vier Notizen nach der gewählten Sortierung; Karten und
-  „Öffnen“ (Key `karto-spiel-abenteuer-oeffnen`) öffnen das Abenteuerblatt auf
-  demselben Weg wie der Seitenkopf; ab
+  „Abenteuer“ (`karto_abenteuer_abschnitt.dart`) trägt Titel, aventurisches
+  Datum, Standort (`KartoStandortZeile`, hängt am Zustand, nicht am
+  Abenteuer), Kurzbeschreibung (3 Zeilen, „Mehr“), eine Schnell-Erfassung
+  für Notizen und die Karten für Personen und Notizen. Alles lässt sich dort
+  direkt ändern; „Öffnen“ (Key `karto-spiel-abenteuer-oeffnen`) bleibt der Weg
+  zum Vollblatt. Gezeigt werden zunächst drei Personen und vier Notizen nach
+  der gewählten Sortierung, „Alle zeigen“ klappt inline auf. Ohne laufendes
+  Abenteuer bleibt der Abschnitt mit dem Standort stehen. Der Seitenkopf heißt
+  immer schlicht „Am Spieltisch“. Der Schreibweg liegt gemeinsam mit dem
+  Abenteuerblatt im Mixin `KartoAbenteuerSchreiben`
+  (`karto_abenteuer_schreiben.dart`); die Standortspeicherung läuft weiter über
+  die Brücke (`standortSetzen`). Die Ressourcenwerte sind kompakt: Wert und
+  Fehlbetrag teilen eine Zeile, die ganze Zelle ist das Tippziel. Ab
   `KartoBreite.breit` wandern Kampf, Effekte und Zustand in eine Seitenspalte,
   das Protokoll bleibt der letzte Abschnitt beider Anordnungen. Den
   Re-Entrancy-Guard reicht `KartoWorkspace` als `KartoLaufzeitAktion` herein;
@@ -258,16 +271,11 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   (`lib/ui2/widgets/karto_seitenkopf.dart`): Kontextzeile, Titel, eine Aktion,
   getrennt durch Weißraum statt Linie. Er ist die **einzige** Verwendung von
   `titelGross`, und die Kontextzeile steht nur dort, nie über einem Abschnitt.
-  In der Spielansicht trägt das erste laufende Abenteuer mit Titel den
-  Seitentitel; `Am Spieltisch` rückt dann in die Kontextzeile, darunter folgen
-  optional `unterzeile` (aventurisches Datum, aktueller Stand vor Startdatum,
-  nur aus **demselben** Abenteuer) und eine auf 3 bzw. 2 Zeilen gekürzte
-  `beschreibung` (Zusammenfassung). Ohne laufendes Abenteuer bleibt
-  `Am Spieltisch` der Titel.
-  Einen Knopf gibt es dafür nicht: `KartoSeitenkopf.onTap` macht den ganzen
-  Abenteuerkopf antippbar (Pfeil hinter dem Titel, Tooltip „Abenteuer öffnen“,
-  Key `karto-spiel-abenteuer`). Er öffnet das Abenteuerblatt
-  (`lib/ui2/spielen/karto_abenteuerblatt.dart`, Dialoge in der Teildatei
+  In der Spielansicht bleibt der Titel `Am Spieltisch`; Titel, Datum und
+  Kurzbeschreibung des laufenden Abenteuers stehen im Abenteuerabschnitt.
+  `KartoSeitenkopf.onTap` bleibt als Baustein bestehen, die Spielansicht nutzt
+  es nicht mehr. Der Abenteuerabschnitt öffnet das Abenteuerblatt
+  (`lib/ui2/spielen/karto_abenteuerblatt.dart`, Dialoge geteilt in
   `karto_abenteuer_dialoge.dart`): Datum, Zusammenfassung,
   Notizen und Personen lesen und pflegen, Abschluss und Belohnungen bleiben in
   der Verwaltung. Notizen und Personen sind sortierbar

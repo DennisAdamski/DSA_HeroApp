@@ -126,6 +126,17 @@ class TestBestand implements KartoBestandsAdapter {
     aufrufe.add('probeSuchen:$heroId');
   }
 
+  /// Schaltbar, damit Tests auch die Plattform ohne Regelindex prüfen können.
+  bool regelnVerfuegbar = true;
+
+  @override
+  bool get regelnNachschlagenVerfuegbar => regelnVerfuegbar;
+
+  @override
+  Future<void> regelnNachschlagen({required BuildContext context}) async {
+    aufrufe.add('regeln');
+  }
+
   @override
   Future<void> berechnungsschritte({
     required BuildContext context,
