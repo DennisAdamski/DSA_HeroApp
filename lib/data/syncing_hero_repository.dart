@@ -1737,6 +1737,7 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
   /// Wartet, bis alle angestoßenen Zustands-Uploads übertragen sind.
   ///
   /// Für Abläufe, die danach die Cloud lesen (Tests, Abmelden).
+  @override
   Future<void> warteAufUebertragungen() => _zustandsUploads.warteAufAlle();
 
   // Überträgt den neuesten lokalen Zustand; Fehler reicht er weiter.

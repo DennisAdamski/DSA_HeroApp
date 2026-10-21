@@ -38,6 +38,25 @@ class HiveSyncMetadataStore implements SyncMetadataStore {
     await _box.put(metadata.key.storageKey, metadata.toJson());
   }
 
+  /// IDs aller Helden, zu denen ein Sync-Stand vorliegt.
+  ///
+  /// Wer hier steht, wurde mit dem Konto abgeglichen und liegt damit auch
+  /// online. Unlesbare Schluessel werden uebersprungen.
+  Future<Set<String>> heldenIds() async {
+    final ids = <String>{};
+    for (final raw in _box.keys) {
+      try {
+        final key = SyncObjectKey.parse(raw.toString());
+        if (key.type == SyncObjectType.hero) {
+          ids.add(key.id);
+        }
+      } on FormatException {
+        continue;
+      }
+    }
+    return ids;
+  }
+
   /// Schliesst die zugrunde liegende Hive-Box.
   Future<void> close() async {
     await _box.close();

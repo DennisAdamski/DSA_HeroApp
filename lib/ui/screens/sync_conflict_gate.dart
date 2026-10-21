@@ -6,6 +6,7 @@ import 'package:dsa_heldenverwaltung/domain/sync_controller.dart';
 import 'package:dsa_heldenverwaltung/domain/sync_models.dart';
 import 'package:dsa_heldenverwaltung/state/auth_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/auth/abmelden_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/sync_konflikt_karte.dart';
 
 /// Blockiert die App-Nutzung, solange Konto-Sync-Konflikte offen sind.
@@ -181,21 +182,12 @@ class _SyncConflictScreen extends ConsumerWidget {
   Future<void> _confirmAndSignOut(
     BuildContext context,
     AuthService authService,
-  ) async {
-    final confirmed = await showAdaptiveConfirmDialog(
+  ) {
+    return bestaetigeUndMeldeAb(
       context: context,
-      title: 'Abmelden?',
-      content:
-          'Die offenen Konflikte bleiben ungelöst und werden beim nächsten '
-          'Anmelden erneut gezeigt. Deine Konto-Daten bleiben online '
-          'gespeichert, die App wechselt ins lokale Offline-Profil.',
-      confirmLabel: 'Abmelden',
-      isDestructive: true,
+      authService: authService,
+      syncController: controller,
     );
-    if (confirmed != AdaptiveConfirmResult.confirm) {
-      return;
-    }
-    await authService.signOut();
   }
 }
 

@@ -20,6 +20,7 @@ import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/state/sync_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/config/app_layout.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/auth/abmelden_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/auth/open_sign_in.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/catalog_management_screen.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/catalog_unlock_dialog.dart';
@@ -88,28 +89,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Future<void> _confirmAndSignOut() async {
-    final confirmed = await showDialog<bool>(
+    final authService = ref.read(authServiceProvider);
+    if (authService == null) return;
+    await bestaetigeUndMeldeAb(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Abmelden?'),
-        content: const Text(
-          'Nach dem Abmelden bleiben deine Helden in der Cloud gespeichert. '
-          'Du kannst dich jederzeit wieder anmelden.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: const Text('Abbrechen'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: const Text('Abmelden'),
-          ),
-        ],
-      ),
+      authService: authService,
+      syncController: ref.read(syncControllerProvider),
     );
-    if (confirmed != true) return;
-    await ref.read(authServiceProvider)?.signOut();
   }
 
   void _selectDestination(_SettingsDestination destination) {

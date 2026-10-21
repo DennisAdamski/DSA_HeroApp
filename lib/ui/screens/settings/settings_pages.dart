@@ -278,7 +278,11 @@ class _AccountSyncSettingsPage extends ConsumerWidget {
                 OutlinedButton.icon(
                   onPressed: authService == null
                       ? null
-                      : () => _confirmAndSignOut(context, authService),
+                      : () => _confirmAndSignOut(
+                          context,
+                          authService,
+                          syncController,
+                        ),
                   icon: const Icon(Icons.logout),
                   label: const Text('Abmelden'),
                 ),
@@ -387,30 +391,13 @@ class _AccountSyncSettingsPage extends ConsumerWidget {
   Future<void> _confirmAndSignOut(
     BuildContext context,
     AuthService authService,
-  ) async {
-    final confirmed = await showDialog<bool>(
+    AppSyncController? syncController,
+  ) {
+    return bestaetigeUndMeldeAb(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Abmelden?'),
-        content: const Text(
-          'Nach dem Abmelden bleibt dein Konto online gespeichert. '
-          'Der lokale Offline-Modus ist weiterhin verfügbar.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: const Text('Abbrechen'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: const Text('Abmelden'),
-          ),
-        ],
-      ),
+      authService: authService,
+      syncController: syncController,
     );
-    if (confirmed == true) {
-      await authService.signOut();
-    }
   }
 
   Future<void> _sendVerification(

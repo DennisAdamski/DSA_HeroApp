@@ -172,6 +172,31 @@ class AppStoragePaths {
     return targetPath;
   }
 
+  /// Berechnet den Profilpfad wie [prepareHeroStoragePath], legt ihn aber nie an.
+  ///
+  /// Fuer Aufraeumarbeiten (etwa nach dem Abmelden), die kein leeres
+  /// Verzeichnis neu erzeugen duerfen.
+  Future<String> resolveProfileStoragePath({
+    String? configuredPath,
+    String? profileId,
+  }) async {
+    final location = await describeHeroStorageLocation(
+      configuredPath: configuredPath,
+    );
+    if (location.usesCustomPath && location.validationError != null) {
+      throw HeroStoragePathException(location.validationError!);
+    }
+    final normalizedProfileId = profileId?.trim();
+    if (normalizedProfileId == null || normalizedProfileId.isEmpty) {
+      return location.effectivePath;
+    }
+    return path.join(
+      location.effectivePath,
+      accountProfilesDirectoryName,
+      Uri.encodeComponent(normalizedProfileId),
+    );
+  }
+
   /// Gibt zurueck, ob das Oeffnen eines Speicherordners moeglich ist.
   bool canOpenDirectories() {
     return canOpenStorageDirectory();
