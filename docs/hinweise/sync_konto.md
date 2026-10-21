@@ -42,8 +42,10 @@ harten Regeln und den Themenindex.
   auch im Offline-Profil (`keepLocal` kopiert mit gleicher ID). Web: Offline- und
   Konto-Profil teilen sich die Boxen, deshalb gehen nur Helden mit Sync-Stand
   (`HiveSyncMetadataStore.heldenIds`) samt Zustand und Avatar-Zwischenspeicher.
-  `externe_helden_v1` bleibt bewusst liegen (manuelle externe Helden sind nur
-  lokal). Neue Konto-Boxen müssen in `kontoBoxen` eingetragen werden; der Test
+  `externe_helden_v1` bleibt bewusst liegen: Die Box gehört nicht zum
+  Konto-Sync der Helden (Gruppen laufen getrennt über `gruppen/*`, siehe
+  `docs/gruppen_sharing_offene_schritte.md`), und manuell angelegte externe
+  Helden lassen sich daraus nicht wiederherstellen. Neue Konto-Boxen müssen in `kontoBoxen` eingetragen werden; der Test
   `test/data/konto_profil_bereinigung_test.dart` fängt Vergessenes ab.
 - Konto-Sync für Helden läuft über `SyncingHeroRepository`, ein
   plattformspezifisches Remote-Gateway (`FirestoreHeroSyncGateway`, auf Windows
