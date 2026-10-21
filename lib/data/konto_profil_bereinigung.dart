@@ -20,9 +20,10 @@ import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 /// - Web: Beide Profile teilen sich dieselben Boxen. Dort gelten Helden mit
 ///   Sync-Stand als Online-Helden; reine Offline-Helden bleiben.
 ///
-/// Die Box `externe_helden_v1` bleibt bewusst erhalten: Sie gehoert nicht zum
-/// Konto-Sync der Helden, und manuell angelegte externe Helden lassen sich
-/// nicht aus der Cloud wiederherstellen.
+/// Die Box `externe_helden_v1` bleibt bewusst unberuehrt: Sie gehoert nicht
+/// zum Heldensync. Die Eintraege der Konto-Gruppen (`groups_v2`) stellt der
+/// Gruppen-Sync nach dem naechsten Anmelden wieder her; manuell angelegte
+/// Eintraege alter, gesperrter Gruppen gibt es nur lokal.
 class KontoProfilBereinigung {
   /// Erstellt die Bereinigung mit den Test-Hooks fuer Plattform und Ablage.
   KontoProfilBereinigung({

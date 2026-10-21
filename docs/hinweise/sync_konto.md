@@ -42,10 +42,11 @@ harten Regeln und den Themenindex.
   auch im Offline-Profil (`keepLocal` kopiert mit gleicher ID). Web: Offline- und
   Konto-Profil teilen sich die Boxen, deshalb gehen nur Helden mit Sync-Stand
   (`HiveSyncMetadataStore.heldenIds`) samt Zustand und Avatar-Zwischenspeicher.
-  `externe_helden_v1` bleibt bewusst liegen: Die Box gehört nicht zum
-  Konto-Sync der Helden (Gruppen laufen getrennt über `gruppen/*`, siehe
-  `docs/gruppen_sharing_offene_schritte.md`), und manuell angelegte externe
-  Helden lassen sich daraus nicht wiederherstellen. Neue Konto-Boxen müssen in `kontoBoxen` eingetragen werden; der Test
+  `externe_helden_v1` bleibt bewusst unberührt: Die Box gehört nicht zum
+  Heldensync; ihre Einträge stammen aus Gruppen (`groups_v2`, siehe unten) und
+  kommen nach dem Anmelden mit dem Gruppen-Sync zurück. Nur manuelle Einträge
+  alter, gesperrter Gruppen existieren ausschließlich lokal. Neue Konto-Boxen
+  müssen in `kontoBoxen` eingetragen werden; der Test
   `test/data/konto_profil_bereinigung_test.dart` fängt Vergessenes ab.
 - Konto-Sync für Helden läuft über `SyncingHeroRepository`, ein
   plattformspezifisches Remote-Gateway (`FirestoreHeroSyncGateway`, auf Windows
@@ -129,3 +130,26 @@ harten Regeln und den Themenindex.
   E-Mail-Adresse steuern gemeinsam den privaten Konto-Sync;
   `isFirestoreAvailable` steht für native Firestore-Funktionen wie
   Gruppen-Cloudaktionen und bleibt auf Windows deaktiviert.
+- **Gruppen (`groups_v2`)** laufen über `GruppenSyncService`
+  (`lib/data/gruppen_sync_service.dart`) und die Gruppenaktionen in
+  `HeroActions` (`erstelleGruppe`, `trittGruppeBei`, `syncGruppen`, …). Aufbau:
+  `groups_v2/{id}` (`name`, `ownerUid`, `joinCode`) mit `members/{uid}`,
+  `hero_snapshots/{uid}` (eigene Heldenkarte), `shared_heroes/{eintrag}` und
+  `shared_info/notizen`. Beitritt ohne Backend: Der teilbare Beitrittscode ist
+  `<groupId>.<joinCode>` (`GruppenBeitrittscode`); die Regel `canJoinGroup`
+  vergleicht den `joinCode` per `get()` mit dem Gruppendokument, das nur
+  Mitglieder lesen. Der Besitzer erneuert den Code jederzeit (alte Codes
+  verfallen). Gemeinsame Einträge (NSC-Begleiter) und Notizen dürfen **alle**
+  Mitglieder schreiben; Heldenkarten nur das jeweilige Mitglied (eine Karte je
+  Konto und Gruppe). Mitglieder gehen selbst, der Besitzer löscht nur die ganze
+  Gruppe. Am Helden markiert `HeroGruppenMitgliedschaft.kontoGruppe` das neue
+  Format (nur bei `true` im JSON, Hash-Schutz); Gruppen ohne die Markierung
+  stammen aus dem gesperrten Pfad `gruppen/*`, werden nie synchronisiert und
+  lassen sich nur lokal entfernen. `syncGruppen` zieht den neueren Stand je
+  gemeinsamem Eintrag, schreibt neuere lokale Stände hoch und entfernt
+  Verschwundenes aus der Gruppe des Helden; es ändert nur `externeHeldIds` und
+  `gruppenName`. Ein gemeinsamer Eintrag landet erst nach dem Upload lokal.
+  Regeln: `functions/test/firestore_rules.rules.ts` (`npm run test:rules`,
+  Java 21). Offen: Mitglieder entfernen (Dienst `entferneMitglied` vorhanden,
+  keine Oberfläche), Live-Listener statt manuellem „Synchronisieren“, Gruppen
+  unter Windows (REST-Transport ohne Firestore-SDK).

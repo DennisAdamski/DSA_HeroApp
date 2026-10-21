@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/ui/screens/shared/planung_bearbeiten_guard.dart';
@@ -10,6 +9,7 @@ import 'package:dsa_heldenverwaltung/ui/screens/hero_gruppe/gruppe_beitreten_dia
 import 'package:dsa_heldenverwaltung/ui/screens/hero_gruppe/gruppe_details_section.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_gruppe/gruppe_erstellen_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_gruppe/gruppe_mitglieder_liste.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_gruppe/gruppe_notizen_karte.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_gruppe/manueller_held_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/karto_variante.dart';
@@ -290,13 +290,18 @@ class _GruppenDetailAnsicht extends ConsumerWidget {
         GruppeMitgliederListe(
           heroId: heroId,
           gruppenCode: mitgliedschaft.gruppenCode,
+          kontoGruppe: mitgliedschaft.kontoGruppe,
         ),
         const SizedBox(height: 16),
         _AktionsLeiste(
           heroId: heroId,
           gruppenCode: mitgliedschaft.gruppenCode,
-          syncAvailable: syncAvailable,
+          syncAvailable: syncAvailable && mitgliedschaft.kontoGruppe,
         ),
+        if (mitgliedschaft.kontoGruppe && syncAvailable) ...[
+          const SizedBox(height: 16),
+          GruppeNotizenKarte(gruppenCode: mitgliedschaft.gruppenCode),
+        ],
       ],
     );
   }
@@ -372,11 +377,6 @@ class _AktionsLeisteState extends ConsumerState<_AktionsLeiste> {
           icon: const Icon(Icons.person_add_outlined),
           label: const Text('Manuell hinzufügen'),
         ),
-        OutlinedButton.icon(
-          onPressed: _codeTeilen,
-          icon: const Icon(Icons.share_outlined),
-          label: const Text('Code teilen'),
-        ),
       ],
     );
   }
@@ -395,12 +395,6 @@ class _AktionsLeisteState extends ConsumerState<_AktionsLeiste> {
       heroId: widget.heroId,
       gruppenCode: widget.gruppenCode,
     );
-  }
-
-  void _codeTeilen() {
-    Clipboard.setData(ClipboardData(text: widget.gruppenCode));
-    ScaffoldMessenger.of(context)
-        .showSnackBar(const SnackBar(content: Text('Gruppencode kopiert')));
   }
 }
 
