@@ -2819,7 +2819,7 @@ Konsumenten nicht pro Anzeige PBKDF2/AES anwerfen, sitzt zwischen
 - v3-Werte nutzen den globalen Salt aus `manifest.catalog_salt_v3` — eine
   einzige PBKDF2-Ableitung pro Passwort, danach AES-GCM pro Wert (<1 ms).
   v2/v1-Werte bleiben rueckwaertskompatibel und laufen ueber den
-  langsameren Per-Wert-Pfad bis zur Migration der Assets.
+  langsameren Per-Wert-Pfad (die ausgelieferten Assets sind vollstaendig v3).
 - Passwoerter werden vor PBKDF2 NFC-normalisiert (`_passwordBytes` in
   `catalog_crypto.dart` via `package:unorm_dart`). Damit erzeugen `ü` als
   precomposed (U+00FC) und als `u`+Combining-Diaeresis (NFD) denselben
@@ -2836,12 +2836,18 @@ Konsumenten nicht pro Anzeige PBKDF2/AES anwerfen, sitzt zwischen
 
 `ProtectedContentCache` in `lib/ui/screens/shared/protected_content_helpers.dart`
 sieht nach diesem Schritt nur noch Klartext-Werte und greift seinen
-Pass-through-Branch — der Cache bleibt als Schutz fuer den Locked-Pfad und
-fuer noch nicht migrierte Assets erhalten.
+Pass-through-Branch — der Cache bleibt als Schutz fuer den Locked-Pfad
+erhalten.
 
-Re-Encryption / Migration der Asset-Dateien erfolgt mit
-`tool/encrypt_catalog_fields.py --format v3 --migrate --password "..."` (siehe
-Datei-Header).
+Geschuetzte Felder (`PROTECTED_FIELDS` im Tool, gespiegelt in
+`test/catalog/geschuetzte_langtexte_test.dart`): `wirkung`/`variants` in
+`magie.json` sowie `erklarung_lang` in `manoever.json`, `kampf_`, `allgemeine_`,
+`karmale_` und `magische_sonderfertigkeiten.json`.
+
+Verschluesselung und Re-Encryption der Asset-Dateien erfolgen mit
+`tool/encrypt_catalog_fields.py --format v3` (Passwort aus `docs/Passwort.env`,
+Umgebungsvariable `KATALOG_PASSWORT` oder `--password`; mit `--migrate` werden
+alte v1/v2-Werte umgeschluesselt, siehe Datei-Header).
 
 ### 5.2 `HeroComputedSnapshot` — Berechnungspipeline
 

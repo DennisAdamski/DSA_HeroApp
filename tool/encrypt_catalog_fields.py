@@ -11,6 +11,10 @@ Verwendung:
     python tool/encrypt_catalog_fields.py --password "geheim" --format v3
     python tool/encrypt_catalog_fields.py --password "geheim" --format v3 --decrypt
 
+    # Ohne --password: Umgebungsvariable KATALOG_PASSWORT oder lokale Datei
+    # docs/Passwort.env (Zeile `KATALOG_PASSWORT=<passwort>`, in .gitignore):
+    python tool/encrypt_catalog_fields.py --format v3
+
 Algorithmen:
 - v1: AES-256-CBC mit PBKDF2-Key-Derivation aus festem Salt (Legacy, 10k).
       Verschluesselte Werte: "enc:<base64>".
@@ -74,6 +78,8 @@ KEY_LENGTH = 32  # 256 Bit
 ENCRYPTED_PREFIX = 'enc:'
 MANIFEST_NAME = 'manifest.json'
 MANIFEST_SALT_KEY = 'catalog_salt_v3'
+PASSWORD_ENV_VAR = 'KATALOG_PASSWORT'
+PASSWORD_FILE = 'docs/Passwort.env'
 
 # --- Geschuetzte Felder pro Katalogdatei ---
 
@@ -87,6 +93,16 @@ PROTECTED_FIELDS: dict[str, dict[str, str]] = {
     'magie.json': {
         'wirkung': 'string',
         'variants': 'list',
+    },
+    # Regelbuch-Langtexte (Wege der Helden, Epische Stufen).
+    'allgemeine_sonderfertigkeiten.json': {
+        'erklarung_lang': 'string',
+    },
+    'karmale_sonderfertigkeiten.json': {
+        'erklarung_lang': 'string',
+    },
+    'magische_sonderfertigkeiten.json': {
+        'erklarung_lang': 'string',
     },
     # vertrautenmagie_rituale.json wird BEWUSST nicht verschluesselt:
     # der gleiche Inhalt liegt als Klartext-Preset in
@@ -250,6 +266,38 @@ def decrypt_value(encrypted: str, key: bytes, password: str | None = None) -> st
     return decrypt_value_v1(encrypted, derive_key_v1(password))
 
 
+# --- Passwort-Aufloesung ---
+
+def resolve_password(cli_value: str | None, project_dir: Path) -> str:
+    """Passwort aus --password, Umgebungsvariable oder lokaler Datei.
+
+    Die Datei ([PASSWORD_FILE]) steht in .gitignore. Erlaubt ist entweder
+    eine Zeile `KATALOG_PASSWORT=<passwort>` oder nur das Passwort selbst.
+    """
+    if cli_value:
+        return cli_value
+    env_value = os.environ.get(PASSWORD_ENV_VAR)
+    if env_value:
+        return env_value
+    file_path = project_dir / PASSWORD_FILE
+    if file_path.is_file():
+        for line in file_path.read_text(encoding='utf-8-sig').splitlines():
+            line = line.strip()
+            if not line or line.startswith('#'):
+                continue
+            prefix = f'{PASSWORD_ENV_VAR}='
+            if line.startswith(prefix):
+                line = line[len(prefix):]
+            if line:
+                return line
+    print(
+        f'Fehler: kein Passwort. --password angeben, {PASSWORD_ENV_VAR} setzen '
+        f'oder {PASSWORD_FILE} anlegen.',
+        file=sys.stderr,
+    )
+    sys.exit(1)
+
+
 # --- Manifest-Salt-Handling ---
 
 def load_or_create_manifest_salt(catalog_dir: Path, create_if_missing: bool) -> bytes | None:
@@ -280,6 +328,30 @@ def load_or_create_manifest_salt(catalog_dir: Path, create_if_missing: bool) -> 
         f.write('\n')
     print(f'  Neuer v3-Salt generiert und in {MANIFEST_NAME} gespeichert.')
     return salt
+
+
+def verify_password_v3(catalog_dir: Path, key: bytes) -> bool:
+    """Prueft den Schluessel an einem vorhandenen `enc:3:`-Wert.
+
+    Schuetzt davor, mit einem falschen Passwort neue Felder zu verschluesseln
+    (die App koennte sie dann nicht mehr zusammen mit den alten entsperren).
+    Ohne vorhandenen v3-Wert gibt es nichts zu pruefen.
+    """
+    for filename, fields in PROTECTED_FIELDS.items():
+        file_path = catalog_dir / filename
+        if not file_path.is_file():
+            continue
+        with open(file_path, 'r', encoding='utf-8-sig') as f:
+            data = json.load(f)
+        entries = data if isinstance(data, list) else data.get('rituals', [])
+        for entry in entries:
+            if not isinstance(entry, dict):
+                continue
+            for field_name in fields:
+                value = entry.get(field_name)
+                if is_encrypted(value) and value.startswith(ENCRYPTED_PREFIX + V3_MARKER):
+                    return decrypt_value_v3(value, key) is not None
+    return True
 
 
 # --- Datei-Verarbeitung ---
@@ -397,8 +469,12 @@ def main():
     )
     parser.add_argument(
         '--password',
-        required=True,
-        help='Passwort fuer die AES-Verschluesselung.',
+        default=None,
+        help=(
+            'Passwort fuer die AES-Verschluesselung. Ohne Angabe: Umgebungs'
+            f'variable {PASSWORD_ENV_VAR}, sonst lokale Datei {PASSWORD_FILE} '
+            '(in .gitignore).'
+        ),
     )
     parser.add_argument(
         '--decrypt',
@@ -425,6 +501,7 @@ def main():
 
     script_dir = Path(__file__).resolve().parent
     project_dir = script_dir.parent
+    args.password = resolve_password(args.password, project_dir)
     catalog_dir = (
         Path(args.catalog_dir)
         if args.catalog_dir
@@ -448,6 +525,13 @@ def main():
             )
             sys.exit(1)
         key = derive_key_v3(args.password, salt)
+        if not verify_password_v3(catalog_dir, key):
+            print(
+                'Fehler: Passwort passt nicht zu den bereits verschluesselten '
+                'Katalogwerten. Abbruch ohne Aenderung.',
+                file=sys.stderr,
+            )
+            sys.exit(1)
     else:
         key = derive_key_v1(args.password)
 
