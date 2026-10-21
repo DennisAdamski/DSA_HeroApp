@@ -149,6 +149,10 @@ harten Regeln und den Themenindex.
   gemeinsamem Eintrag, schreibt neuere lokale Stände hoch und entfernt
   Verschwundenes aus der Gruppe des Helden; es ändert nur `externeHeldIds` und
   `gruppenName`. Ein gemeinsamer Eintrag landet erst nach dem Upload lokal.
+  Abgeglichen wird beim „Synchronisieren“ auf der Gruppen-Seite und automatisch
+  vor „Gefecht beginnen“ (`syncGruppenVorGefecht` in `GefechtEinstieg`, acht
+  Sekunden Zeitlimit; ein Fehler zeigt nur eine Meldung, das Gefecht startet
+  mit dem lokalen Stand).
   Regeln: `functions/test/firestore_rules.rules.ts` (`npm run test:rules`,
   Java 21). Offen: Mitglieder entfernen (Dienst `entferneMitglied` vorhanden,
   keine Oberfläche), Live-Listener statt manuellem „Synchronisieren“, Gruppen

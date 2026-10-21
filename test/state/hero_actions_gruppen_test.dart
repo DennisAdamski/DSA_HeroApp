@@ -289,6 +289,59 @@ void main() {
     },
   );
 
+  test('Abgleich vor dem Gefecht holt die Gruppe und meldet nichts', () async {
+    await GruppenSyncService(
+      firestore: firestore,
+      uidProvider: () => 'freund',
+      idGenerator: () => 'g',
+      joinCodeGenerator: () => 'GEHEIM123456',
+    ).erstelleGruppe('Runde');
+    await firestore.doc('groups_v2/g/members/ich').set({'role': 'member'});
+    await firestore
+        .doc('groups_v2/g/hero_snapshots/freund')
+        .set(_karte('hero-freund', 'Rondra').toJson());
+    await aufbau(const [
+      HeroGruppenMitgliedschaft(gruppenCode: 'g', kontoGruppe: true),
+    ]);
+
+    final warnung = await container
+        .read(heroActionsProvider)
+        .syncGruppenVorGefecht('hero');
+
+    expect(warnung, isNull);
+    expect(externe.loadById('hero-freund')?.name, 'Rondra');
+  });
+
+  test(
+    'Abgleich vor dem Gefecht überspringt Helden ohne Konto-Gruppe',
+    () async {
+      await aufbau(const [HeroGruppenMitgliedschaft(gruppenCode: 'alt')]);
+
+      expect(
+        await container.read(heroActionsProvider).syncGruppenVorGefecht('hero'),
+        isNull,
+      );
+      expect((await firestore.collection('groups_v2').get()).docs, isEmpty);
+    },
+  );
+
+  test('Abgleich vor dem Gefecht wirft nie, sondern warnt', () async {
+    // Die Gruppe gibt es online nicht (mehr).
+    await aufbau(const [
+      HeroGruppenMitgliedschaft(
+        gruppenCode: 'weg',
+        gruppenName: 'Verschwunden',
+        kontoGruppe: true,
+      ),
+    ]);
+
+    final warnung = await container
+        .read(heroActionsProvider)
+        .syncGruppenVorGefecht('hero');
+
+    expect(warnung, contains('Verschwunden'));
+  });
+
   test('Altgruppen nehmen keine neuen gemeinsamen Einträge an', () async {
     await aufbau(const [HeroGruppenMitgliedschaft(gruppenCode: 'alt')]);
 

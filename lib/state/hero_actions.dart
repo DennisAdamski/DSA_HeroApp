@@ -1133,6 +1133,33 @@ class HeroActions {
     }
   }
 
+  /// Gleicht vor einem Gefecht die Konto-Gruppen des Helden ab, damit die
+  /// externen Gefaehrten (INI, Werte) aktuell sind.
+  ///
+  /// Beste Anstrengung mit Zeitlimit: Das Gefecht darf nie an der Cloud
+  /// scheitern. Gibt `null` zurueck, wenn nichts abzugleichen war oder alles
+  /// gelang, sonst eine Warnung fuer die Oberflaeche.
+  Future<String?> syncGruppenVorGefecht(
+    String heroId, {
+    Duration zeitlimit = const Duration(seconds: 8),
+  }) async {
+    if (!_ref.read(firebaseBootstrapProvider).isFirestoreAvailable) {
+      return null;
+    }
+    try {
+      final hero = await _loadHeroById(heroId);
+      if (!hero.gruppen.any((g) => g.kontoGruppe)) {
+        return null;
+      }
+      await syncGruppen(heroId).timeout(zeitlimit);
+      return null;
+    } on TimeoutException {
+      return 'Der Gruppenabgleich dauerte zu lange.';
+    } on Object catch (error) {
+      return '$error';
+    }
+  }
+
   Future<void> _syncGruppe(String heroId, String gruppenCode) async {
     final syncService = _ref.read(gruppenSyncServiceProvider);
     final externeRepo = _ref.read(externeHeldenRepositoryProvider);
