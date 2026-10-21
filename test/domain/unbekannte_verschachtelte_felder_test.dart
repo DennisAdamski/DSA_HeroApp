@@ -640,6 +640,7 @@ final _begleiterAbenteuerNotizen = <_Modell>[
     voll: () => const HeroGruppenMitgliedschaft(
       gruppenCode: 'g1',
       externeHeldIds: <String>['x'],
+      kontoGruppe: true,
     ).toJson(),
     lade: (json) => HeroGruppenMitgliedschaft.fromJson(json).toJson(),
     bearbeite: (json) =>

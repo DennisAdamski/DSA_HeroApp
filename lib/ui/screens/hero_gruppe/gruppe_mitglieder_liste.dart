@@ -15,10 +15,14 @@ class GruppeMitgliederListe extends ConsumerWidget {
     super.key,
     required this.heroId,
     required this.gruppenCode,
+    this.kontoGruppe = true,
   });
 
   final String heroId;
   final String gruppenCode;
+
+  /// `false` bei Altgruppen: Dort ist alles nur lokal und entfernbar.
+  final bool kontoGruppe;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -53,7 +57,11 @@ class GruppeMitgliederListe extends ConsumerWidget {
         for (final held in mitglieder)
           _ExternerHeldKarte(
             held: held,
-            onEntfernen: () => _entferneHeld(context, ref, held.id),
+            // Mitglieder einer Konto-Gruppe kehren beim Sync zurueck; nur
+            // gemeinsame Eintraege lassen sich (fuer alle) loeschen.
+            onEntfernen: !kontoGruppe || held.istManuell
+                ? () => _entferneHeld(context, ref, held.id)
+                : null,
           ),
       ],
     );
@@ -85,7 +93,7 @@ class _ExternerHeldKarte extends StatelessWidget {
   const _ExternerHeldKarte({required this.held, required this.onEntfernen});
 
   final ExternerHeld held;
-  final VoidCallback onEntfernen;
+  final VoidCallback? onEntfernen;
 
   @override
   Widget build(BuildContext context) {
@@ -118,7 +126,7 @@ class _ExternerHeldKarte extends StatelessWidget {
                       ),
                       if (held.istVerknuepft)
                         Tooltip(
-                          message: 'Verknüpft (Live-Sync)',
+                          message: 'Mitglied der Gruppe (Heldenkarte)',
                           child: Icon(
                             Icons.cloud_done_outlined,
                             size: 16,
@@ -127,7 +135,7 @@ class _ExternerHeldKarte extends StatelessWidget {
                         )
                       else
                         Tooltip(
-                          message: 'Manuell hinzugefügt',
+                          message: 'Gemeinsamer Eintrag der Gruppe',
                           child: Icon(
                             Icons.edit_outlined,
                             size: 16,
@@ -168,21 +176,22 @@ class _ExternerHeldKarte extends StatelessWidget {
                 ],
               ),
             ),
-            PopupMenuButton<String>(
-              onSelected: (value) {
-                if (value == 'entfernen') onEntfernen();
-              },
-              itemBuilder: (_) => [
-                const PopupMenuItem(
-                  value: 'entfernen',
-                  child: ListTile(
-                    leading: Icon(Icons.person_remove_outlined),
-                    title: Text('Entfernen'),
-                    dense: true,
+            if (onEntfernen != null)
+              PopupMenuButton<String>(
+                onSelected: (value) {
+                  if (value == 'entfernen') onEntfernen!();
+                },
+                itemBuilder: (_) => [
+                  const PopupMenuItem(
+                    value: 'entfernen',
+                    child: ListTile(
+                      leading: Icon(Icons.person_remove_outlined),
+                      title: Text('Entfernen'),
+                      dense: true,
+                    ),
                   ),
-                ),
-              ],
-            ),
+                ],
+              ),
           ],
         ),
       ),

@@ -13,8 +13,9 @@ service cloud.firestore {
       }
     }
 
-    // Neue Gruppen verwenden Firebase-UIDs als Identität. Einladungen
-    // verarbeitet ausschließlich das Backend; Clients sehen keine Hashes.
+    // Neue Gruppen verwenden Firebase-UIDs als Identität. Der Beitritt läuft
+    // über den `joinCode` im Gruppendokument (nur Mitglieder lesen ihn); die
+    // Sammlung `invitations` bleibt für ein späteres Backend reserviert.
     match /groups_v2/{groupId} {
       allow read: if isGroupMember(groupId);
       allow create: if isVerified()
@@ -27,9 +28,17 @@ service cloud.firestore {
 
       match /members/{memberId} {
         allow read: if isGroupMember(groupId);
-        allow create, update: if isGroupOwner(groupId)
-                              && validMember(request.resource.data);
-        allow delete: if isGroupOwner(groupId);
+        // Der Besitzer trägt Mitglieder ein; wer den Beitrittscode kennt,
+        // trägt sich selbst als Mitglied ein.
+        allow create: if (isGroupOwner(groupId) && validMember(request.resource.data))
+                      || canJoinGroup(groupId, memberId);
+        allow update: if isGroupOwner(groupId)
+                      && validMember(request.resource.data);
+        // Mitglieder dürfen gehen; der Besitzer löscht nur die ganze Gruppe.
+        allow delete: if isGroupOwner(groupId)
+                      || (isVerified()
+                          && request.auth.uid == memberId
+                          && resource.data.role == 'member');
       }
 
       match /hero_snapshots/{memberId} {
@@ -38,9 +47,29 @@ service cloud.firestore {
                               && request.auth.uid == memberId
                               && isGroupMember(groupId)
                               && request.resource.size() < 400 * 1024;
-        allow delete: if isVerified()
-                      && request.auth.uid == memberId
-                      && isGroupMember(groupId);
+        allow delete: if (isGroupMember(groupId) && request.auth.uid == memberId)
+                      || isGroupOwner(groupId);
+      }
+
+      // Geteilte Gruppeninfos: Alle Mitglieder dürfen gemeinsame Einträge
+      // (z. B. NSC-Begleiter) lesen, anlegen, ändern und löschen.
+      match /shared_heroes/{entryId} {
+        allow read: if isGroupMember(groupId);
+        allow create: if isGroupMember(groupId)
+                      && request.resource.data.createdByUid == request.auth.uid
+                      && request.resource.size() < 400 * 1024;
+        allow update: if isGroupMember(groupId)
+                      && request.resource.data.createdByUid == resource.data.createdByUid
+                      && request.resource.size() < 400 * 1024;
+        allow delete: if isGroupMember(groupId);
+      }
+
+      match /shared_info/{infoId} {
+        allow read: if isGroupMember(groupId);
+        allow create, update: if isGroupMember(groupId)
+                              && infoId == 'notizen'
+                              && validNotizen(request.resource.data);
+        allow delete: if isGroupOwner(groupId);
       }
 
       match /invitations/{invitationId} {
@@ -106,13 +135,36 @@ service cloud.firestore {
     }
 
     function validGroup(data) {
-      return data.keys().hasAll(['name', 'ownerUid'])
-             && data.keys().hasOnly(['name', 'ownerUid', 'createdAt', 'updatedAt'])
+      return data.keys().hasAll(['name', 'ownerUid', 'joinCode'])
+             && data.keys().hasOnly(['name', 'ownerUid', 'joinCode', 'createdAt', 'updatedAt'])
              && data.name is string
              && data.name.size() > 0
              && data.name.size() <= 100
              && data.ownerUid is string
-             && data.ownerUid.size() > 0;
+             && data.ownerUid.size() > 0
+             && data.joinCode is string
+             && data.joinCode.size() >= 8
+             && data.joinCode.size() <= 64;
+    }
+
+    // Selbstbeitritt: nur als einfaches Mitglied, nur mit dem Beitrittscode
+    // der Gruppe. `get` liest unabhängig von den Leserechten des Clients.
+    function canJoinGroup(groupId, memberId) {
+      let data = request.resource.data;
+      return isVerified()
+             && request.auth.uid == memberId
+             && data.keys().hasAll(['role', 'joinCode'])
+             && data.keys().hasOnly(['role', 'joinedAt', 'joinCode'])
+             && data.role == 'member'
+             && data.joinCode is string
+             && data.joinCode == get(/databases/$(database)/documents/groups_v2/$(groupId)).data.joinCode;
+    }
+
+    function validNotizen(data) {
+      return data.keys().hasAll(['text'])
+             && data.keys().hasOnly(['text', 'updatedByUid', 'updatedAt'])
+             && data.text is string
+             && data.text.size() <= 20000;
     }
 
     function validMember(data) {
