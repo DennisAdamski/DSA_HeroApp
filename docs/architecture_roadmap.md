@@ -1,6 +1,6 @@
 # To-do-Liste: Weiterentwicklung der Heldenverwaltung
 
-Stand: 20.10.2026. Diese Liste führt **nur Status und offene Punkte**. Abgenommene
+Stand: 22.10.2026. Diese Liste führt **nur Status und offene Punkte**. Abgenommene
 Aufgaben und der Verlauf der Teilstände stehen unverändert im
 [Archiv](archiv/README.md); Verweise wie „ARCH-05 Teilstand (3)“ in Code und
 Dokumentation meinen den dortigen Text.
@@ -282,9 +282,23 @@ im [Archiv](archiv/arch-04.md):
   16.10.2026).
 - [x] Epische Nachteile folgen dem Profil des Helden
   (`heroHouseRuleActiveProvider`, 16.10.2026).
-- [ ] Gruppenvorgabe („live von der Gruppe“): Verhalten bei mehreren Gruppen,
-  beim Verlassen und ohne Verbindung klären; die Firestore-Regeln verbieten
-  heute Gruppen-Updates, unter Windows ist Firestore nicht verfügbar.
+- [x] Gruppenvorgabe („live von der Gruppe“, Teilstand 16, 22.10.2026).
+  *Entscheidungen (Nutzer, 22.10.2026):* Ein Held kann mehreren Gruppen
+  angehören, folgt aber nur dem Regelprofil **einer** Gruppe, der **primären**.
+  Beim Verlassen bleibt das zuletzt aktive Regelprofil. Ohne Verbindung gilt das
+  gespeicherte Profil des Helden weiter. *Umsetzung:* `groups_v2` ersetzt den
+  gesperrten Legacy-Pfad; der Besitzer legt sein Profil als Vorgabe ab
+  (`shared_info/regelprofil`, JSON-Text, nur Besitzer schreibt, Mitglieder
+  lesen; Rules-Test in `functions/test/firestore_rules.rules.ts`). Am Helden
+  markiert `HeroGruppenMitgliedschaft.primaer` die primäre Konto-Gruppe (nur bei
+  `true` im JSON; die erste Konto-Gruppe wird von selbst primär, sonst
+  `setzePrimaereGruppe`). Die Vorgabe erscheint als Vorschau in der Karte
+  „Regelprofil“ (`gruppenVorgabeVorschauProvider`) und wirkt erst nach
+  „Übernehmen“; Held ohne Profil wird mit dem globalen Stand verglichen. Windows
+  (kein Firestore) und Offline lassen den Helden unverändert, eine bewusst
+  ignorierte Vorgabe bleibt als Hinweis stehen. Die Gruppenseite
+  (`GruppeRegelprofilKarte`) zeigt die Vorgabe, setzt die primäre Gruppe und
+  gibt dem Besitzer „Mein Regelprofil als Vorgabe“ bzw. „Vorgabe entfernen“.
 
 *Herleitungen:*
 
@@ -314,7 +328,11 @@ im [Archiv](archiv/arch-04.md):
   hergeleitete Lernspalte, die AsP-Kosten stehen als Katalogtext im Regelhinweis.
   Keines davon ist ein ZfW\*-Schritt.
 
-**Abnahme** erst, wenn Profilzuordnung (inkl. Gruppenvorgabe) abgehakt ist.
+**Abnahme:** Profilzuordnung inkl. Gruppenvorgabe ist umgesetzt (22.10.2026).
+Der Hauptpunkt bleibt offen, bis die Gruppenvorgabe mit zwei Konten gegen echtes
+Firebase geprüft ist (Rules veröffentlichen: `firebase deploy --only
+firestore:rules`) und der Punkt „bewusst offen aus den Lernregeln“ entschieden
+oder abgenommen ist.
 
 ## ARCH-05 — Schreibende Aktionen fachlich aufteilen
 

@@ -1,9 +1,12 @@
+import 'dart:convert';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:uuid/uuid.dart';
 
 import 'package:dsa_heldenverwaltung/domain/gruppen_beitrittscode.dart';
 import 'package:dsa_heldenverwaltung/domain/held_visitenkarte.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_regelprofil.dart';
 
 /// Fehler der Gruppenverwaltung mit einer für Nutzer lesbaren Meldung.
 class GruppenException implements Exception {
@@ -79,6 +82,7 @@ class GruppenInhalt {
 ///   hero_snapshots/{uid}         Visitenkarte des eigenen Helden
 ///   shared_heroes/{entryId}      gemeinsame Einträge (alle Mitglieder)
 ///   shared_info/notizen          gemeinsame Gruppennotizen (alle Mitglieder)
+///   shared_info/regelprofil      Regelprofil-Vorgabe (nur der Besitzer schreibt)
 /// ```
 ///
 /// Die Regeln in `firestore.rules` erzwingen die Rechte; der Dienst bildet nur
@@ -387,6 +391,59 @@ class GruppenSyncService {
             'updatedAt': FieldValue.serverTimestamp(),
           }),
       'Die Gruppennotizen konnten nicht gespeichert werden.',
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // Regelprofil-Vorgabe (ARCH-04)
+  // ---------------------------------------------------------------------------
+
+  DocumentReference<Map<String, dynamic>> _regelVorgabe(String groupId) =>
+      _gruppe(groupId).collection('shared_info').doc('regelprofil');
+
+  /// Liest die Regelprofil-Vorgabe der Gruppe.
+  ///
+  /// `null`, wenn die Gruppe keine Vorgabe hat oder sie sich nicht lesen lässt
+  /// (beschädigt oder von einer neueren App-Version geschrieben). Das Profil
+  /// liegt als JSON-Text im Dokument: Firestore erlaubt keine verschachtelten
+  /// Listen, und die Paketkopien dürfen beliebige Patches tragen.
+  Future<HeroRegelProfil?> ladeRegelVorgabe(String groupId) async {
+    final snapshot = await _geschuetzt(
+      () => _regelVorgabe(groupId).get(),
+      'Die Regelprofil-Vorgabe der Gruppe konnte nicht geladen werden.',
+    );
+    final text = snapshot.data()?['profilJson'];
+    if (text is! String || text.isEmpty) return null;
+    try {
+      final roh = jsonDecode(text);
+      if (roh is! Map) return null;
+      final profil = HeroRegelProfil.fromJson(Map<String, dynamic>.from(roh));
+      return profil.istVerstanden ? profil : null;
+    } on FormatException {
+      return null;
+    }
+  }
+
+  /// Setzt die Regelprofil-Vorgabe der Gruppe (nur Besitzer).
+  Future<void> speichereRegelVorgabe(String groupId, HeroRegelProfil profil) {
+    final uid = eigeneUid;
+    return _geschuetzt(
+      () => _regelVorgabe(groupId).set(<String, dynamic>{
+        'profilJson': jsonEncode(profil.toJson()),
+        'updatedByUid': uid,
+        'updatedAt': FieldValue.serverTimestamp(),
+      }),
+      'Nur der Gruppenersteller kann die Regelprofil-Vorgabe ändern.',
+    );
+  }
+
+  /// Entfernt die Regelprofil-Vorgabe der Gruppe (nur Besitzer).
+  ///
+  /// Helden, die sie bereits übernommen haben, behalten ihr Profil.
+  Future<void> entferneRegelVorgabe(String groupId) {
+    return _geschuetzt(
+      () => _regelVorgabe(groupId).delete(),
+      'Nur der Gruppenersteller kann die Regelprofil-Vorgabe entfernen.',
     );
   }
 
