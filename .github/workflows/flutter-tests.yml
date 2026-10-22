@@ -236,6 +236,9 @@ jobs:
         with:
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_HELDENSYNC_CCF0B }}
           projectId: heldensync-ccf0b
+          # firebase-tools 15.34.1 prüft zusätzlich serviceusage.services.get und scheitert
+          # mit 403; Pin, bis das geklärt ist.
+          firebaseToolsVersion: 15.34.0
           channelId: live
           target: ${{ (inputs.branch || github.ref_name) == 'test' && 'test' || 'production' }}
       - name: Hosting-URL dokumentieren
