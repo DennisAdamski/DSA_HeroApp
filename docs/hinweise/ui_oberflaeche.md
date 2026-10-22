@@ -131,6 +131,16 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   keine W20-/W6-Simulation. Strg/Cmd+K öffnet dieselbe Suche, aber nur im
   Bereich Spielen: der `IndexedStack` hält die anderen Bereiche am Leben,
   deshalb entscheidet der aktive Bereich, nicht die Position im Baum.
+- Häufige Proben (Favoriten, nur UI2): `HeroSheet.probenFavoriten` speichert je
+  Eintrag nur `art:ref` (`HeroProbenFavorit.id`, deterministisch, damit der
+  Sync-Merge die Liste je Element zusammenführt); nie Name oder Wert, Ziel und
+  Herleitung entstehen beim Würfeln. Die Kandidaten kommen aus
+  `beobachteProbeKandidaten` (`probe_quick_search.dart`), die Suche zeigt den
+  Stern nur mit `mitFavoriten: true` (klassische Oberfläche ohne). Schreiben nur
+  frisch über `aendereHeldMitMeldung` und die Listenregeln in
+  `proben_favoriten_rules.dart` (Höchstzahl `kProbenFavoritenMax`). Die Liste
+  im Spielbereich ist `ProbenFavoritenListe` hinter
+  `KartoBestandsAdapter.spielFavoritenproben`.
 - `InspectorArcaneEffectsBlock` ist Consumer-Wrapper um die darstellende
   `InspectorArcaneEffectsView`. Die Chipliste baut
   `lib/rules/derived/active_spell_display_rules.dart` — eigene Datei, weil

@@ -33,6 +33,7 @@ import 'package:dsa_heldenverwaltung/ui/screens/workspace/inspector/widgets/insp
 import 'package:dsa_heldenverwaltung/ui/screens/hero_overview/hero_regelprofil_section.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/herleitung_suche_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/probe_quick_search.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/workspace/proben_favoriten_liste.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/rules_lookup_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/rest_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/schaden/schaden_dialog.dart';
@@ -282,6 +283,12 @@ class KartoBestandsAdapterImpl
     );
   }
 
+  /// Baut die häufigen Proben des Helden.
+  @override
+  Widget spielFavoritenproben({required String heroId}) {
+    return _KartoCompatHost(child: ProbenFavoritenListe(heroId: heroId));
+  }
+
   /// Baut die vorhandenen Kampf-Schnellproben.
   @override
   Widget spielKampfproben({
@@ -460,6 +467,7 @@ class KartoBestandsAdapterImpl
         context: themedContext,
         ref: ref,
         heroId: heroId,
+        mitFavoriten: true,
       ),
     );
   }

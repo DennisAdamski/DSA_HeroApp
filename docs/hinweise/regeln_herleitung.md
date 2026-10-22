@@ -158,8 +158,9 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   Obergrenze, Wunden des Treffers soweit noch vorhanden, nur einmal je
   Buchung. Regeln in `schaden_ruecknahme_rules.dart`.
 - Nicht enthalten und bewusst nicht erfunden: allgemeiner Rücknahmeknopf,
-  KR-Zähler, persistente Favoriten, Offline-/Sync-Status ohne echten
-  Providerzustand. Ein Test in `test/ui2/spielen/` hält das fest.
+  KR-Zähler, Offline-/Sync-Status ohne echten Providerzustand. Ein Test in
+  `test/ui2/spielen/` hält das fest. Die häufigen Proben (Favoriten) sind seit
+  22.10.2026 gebaut, siehe `ui_oberflaeche.md`.
 - Epische Helden waehlen je eine geistige und eine koerperliche
   Haupteigenschaft (`HeroSheet.epicMainAttributes`). Sie definieren die Boni
   aus Kap. 2.1 und sind vom 25-%-AP-Aufschlag ausgenommen

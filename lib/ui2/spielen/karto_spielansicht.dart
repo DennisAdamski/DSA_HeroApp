@@ -158,8 +158,8 @@ class KartoSpielansicht extends ConsumerWidget {
         );
       });
 
-  // Reihenfolge: Schnellaktionen, Ressourcen, dann das Abenteuer mit Standort;
-  // die Eigenschaften folgen als schmale Würfelleiste.
+  // Reihenfolge: Schnellaktionen, Ressourcen, häufige Proben, dann das
+  // Abenteuer mit Standort; die Eigenschaften folgen als schmale Würfelleiste.
   List<Widget> _hauptabschnitte(
     BuildContext context,
     WidgetRef ref,
@@ -212,6 +212,19 @@ class KartoSpielansicht extends ConsumerWidget {
             ),
           ),
         ),
+      ),
+      KartoAbschnitt(
+        titel: 'Häufige Proben',
+        dicht: true,
+        aktion: TextButton(
+          key: const ValueKey<String>('karto-spiel-proben-waehlen'),
+          onPressed: () => aktion(
+            () =>
+                bestand.probeSuchen(context: context, ref: ref, heroId: heroId),
+          ),
+          child: const Text('Proben wählen'),
+        ),
+        child: bestand.spielFavoritenproben(heroId: heroId),
       ),
       KartoAbenteuerAbschnitt(
         heroId: heroId,

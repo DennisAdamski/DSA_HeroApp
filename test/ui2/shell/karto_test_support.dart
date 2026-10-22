@@ -59,6 +59,10 @@ class TestBestand implements KartoBestandsAdapter {
   }) => Text('Eigenschaftsproben $heroId');
 
   @override
+  Widget spielFavoritenproben({required String heroId}) =>
+      Text('Häufige Proben $heroId');
+
+  @override
   Widget spielKampfproben({
     required String heroId,
     required HeroComputedSnapshot werte,
