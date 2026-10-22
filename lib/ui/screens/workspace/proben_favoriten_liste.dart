@@ -35,8 +35,8 @@ class ProbenFavoritenListe extends ConsumerWidget {
     if (favoriten.isEmpty) {
       return const _Hinweis(
         text:
-            'Noch keine häufigen Proben. Markiere in der Probensuche eine '
-            'Probe mit dem Stern, dann liegt sie hier bereit.',
+            'Markiere in der Probensuche eine Probe mit dem Stern, dann '
+            'liegt sie hier als häufige Probe bereit.',
       );
     }
     if (kandidaten == null) {

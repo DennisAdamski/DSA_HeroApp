@@ -211,7 +211,7 @@ void main() {
 
     testWidgets('ohne Favoriten erscheint ein Hinweis', (tester) async {
       await zeige(tester);
-      expect(find.textContaining('Noch keine häufigen Proben'), findsOneWidget);
+      expect(find.textContaining('als häufige Probe bereit'), findsOneWidget);
     });
 
     testWidgets('zeigt Name und Wert aus dem aktuellen Helden', (tester) async {
