@@ -5,10 +5,16 @@ on:
     branches:
       - main
       - test
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
   pull_request:
     branches:
       - main
       - test
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
 
   workflow_call:
     inputs:
@@ -89,10 +95,21 @@ jobs:
       - name: Statische Analyse ausfuehren
         run: flutter analyze
 
-  test:
-    name: Unit- & Widget-Tests
+  test-shard:
+    name: Test-Shard ${{ matrix.shard.label }}
     runs-on: ubuntu-latest
-    needs: analyze
+    strategy:
+      fail-fast: false
+      matrix:
+        shard:
+          - index: 0
+            label: '1/4'
+          - index: 1
+            label: '2/4'
+          - index: 2
+            label: '3/4'
+          - index: 3
+            label: '4/4'
 
     steps:
       - name: Repository auschecken
@@ -111,7 +128,43 @@ jobs:
         run: flutter pub get
 
       - name: Tests ausfuehren
-        run: flutter test
+        run: |
+          mkdir -p reports
+          flutter test --no-pub \
+            --total-shards 4 \
+            --shard-index ${{ matrix.shard.index }} \
+            --file-reporter "json:reports/flutter-tests-${{ matrix.shard.index }}.json"
+
+      - name: Laufzeit zusammenfassen
+        if: always()
+        run: |
+          report="reports/flutter-tests-${{ matrix.shard.index }}.json"
+          if [ -f "$report" ]; then
+            python tool/summarize_flutter_tests.py \
+              "$report" \
+              --shard "${{ matrix.shard.label }}"
+          fi
+
+      - name: Testreport hochladen
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: flutter-tests-${{ matrix.shard.index }}
+          path: reports/flutter-tests-${{ matrix.shard.index }}.json
+          if-no-files-found: warn
+          retention-days: 3
+
+  test:
+    name: Unit- & Widget-Tests
+    if: always()
+    needs: test-shard
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Alle Test-Shards bestaetigen
+        env:
+          SHARD_RESULT: ${{ needs.test-shard.result }}
+        run: test "$SHARD_RESULT" = "success"
 
   loc-budget:
     name: LOC-Budget-Pruefung (Screens ≤ 700 Zeilen)
@@ -130,6 +183,14 @@ jobs:
 
       - name: Main-Test-Sync testen
         run: python tool/test_main_test_sync.py
+
+      - name: Testwerkzeuge und Regeltest-Inventur pruefen
+        run: |
+          python -m unittest \
+            tool/test_flutter_ci_structure.py \
+            tool/test_rule_test_evidence.py \
+            tool/test_summarize_flutter_tests.py
+          python tool/check_rule_test_evidence.py
 
       - name: LOC-Budget pruefen
         run: python tool/check_screen_loc_budget.py --max-lines 700
