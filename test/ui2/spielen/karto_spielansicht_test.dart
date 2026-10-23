@@ -267,7 +267,7 @@ void main() {
     });
   });
 
-  for (final breite in [320.0, 390.0, 744.0, 1024.0, 1440.0]) {
+  for (final breite in [320.0, 390.0, 744.0, kSeitenspalteAb, 1024.0, 1440.0]) {
     testWidgets('Spielansicht bei $breite dp ohne Überlauf', (tester) async {
       // Mit Abenteuerkopf: Titel, Datum und Zusammenfassung sind die
       // laengsten Zeilen der Ansicht.
@@ -282,6 +282,42 @@ void main() {
       expect(tester.takeException(), isNull);
     });
   }
+
+  group('Seitenspalte', () {
+    // Gemessen wird die Breite der Ansicht; im Workspace zieht die
+    // Navigation 248 dp ab, ein 1100 dp breites Fenster ergibt rund 850.
+    testWidgets('ab $kSeitenspalteAb dp steht der Kampf neben den Ressourcen', (
+      tester,
+    ) async {
+      await zeige(
+        tester,
+        held: mitAbenteuern([_nebel]),
+        breite: kSeitenspalteAb,
+      );
+      final ressourcen = tester.getTopLeft(find.text('Ressourcen'));
+      final kampf = tester.getTopLeft(find.text('Kampf'));
+      expect(kampf.dx, greaterThan(ressourcen.dx));
+      expect(kampf.dy, lessThan(ressourcen.dy));
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('darunter folgt er den Eigenschaften, vor dem Abenteuer', (
+      tester,
+    ) async {
+      await zeige(
+        tester,
+        held: mitAbenteuern([_nebel]),
+        breite: kSeitenspalteAb - 1,
+      );
+      final ressourcen = tester.getTopLeft(find.text('Ressourcen'));
+      final kampf = tester.getTopLeft(find.text('Kampf'));
+      final abenteuer = tester.getTopLeft(find.text('Die Spuren im Nebel'));
+      // Dieselbe Spalte: der Kampftitel trägt nur ein Symbol davor.
+      expect(kampf.dx, lessThan(kSeitenspalteAb / 2));
+      expect(kampf.dy, greaterThan(ressourcen.dy));
+      expect(kampf.dy, lessThan(abenteuer.dy));
+    });
+  });
 
   group('Regelnachschlag (SPIEL-04)', () {
     testWidgets('wird erst nach dem Entsperren der Katalog-Inhalte angeboten', (
@@ -332,18 +368,21 @@ void main() {
     Finder schluessel(String name) => find.byKey(ValueKey<String>(name));
 
     testWidgets(
-      'Schnellaktionen stehen vor den Ressourcen, dann das Abenteuer',
+      'Schnellaktionen, Ressourcen und Eigenschaften stehen vor dem Abenteuer',
       (tester) async {
         await zeige(tester, held: mitAbenteuern([_nebel]));
         final aktionen = tester.getTopLeft(find.text('Schnellaktionen')).dy;
         final ressourcen = tester.getTopLeft(find.text('Ressourcen')).dy;
+        final eigenschaften = tester.getTopLeft(find.text('Eigenschaften')).dy;
+        final kampf = tester.getTopLeft(find.text('Kampf')).dy;
         final abenteuer = tester
             .getTopLeft(find.text('Die Spuren im Nebel'))
             .dy;
-        final eigenschaften = tester.getTopLeft(find.text('Eigenschaften')).dy;
         expect(aktionen, lessThan(ressourcen));
-        expect(ressourcen, lessThan(abenteuer));
-        expect(abenteuer, lessThan(eigenschaften));
+        expect(ressourcen, lessThan(eigenschaften));
+        // Einspaltig rückt der Kampf vor das Abenteuer.
+        expect(eigenschaften, lessThan(kampf));
+        expect(kampf, lessThan(abenteuer));
         expect(find.text('Alrik vom Blautann'), findsOneWidget);
         expect(find.text('Der Nebelreiter'), findsOneWidget);
       },
@@ -702,9 +741,7 @@ void main() {
   });
 
   group('Vor- und Nachteile', () {
-    testWidgets('stehen nach den Eigenschaften und vor dem Kampf', (
-      tester,
-    ) async {
+    testWidgets('stehen einspaltig nach Kampf und Abenteuer', (tester) async {
       await zeige(
         tester,
         held: weltlich().copyWith(
@@ -716,10 +753,11 @@ void main() {
       expect(titel, findsOneWidget);
       expect(find.textContaining('Flink'), findsOneWidget);
       expect(find.textContaining('Goldgier 6'), findsOneWidget);
-      final oben = tester.getTopLeft(find.text('Eigenschaften')).dy;
-      final mitte = tester.getTopLeft(titel).dy;
-      final unten = tester.getTopLeft(find.text('Kampf')).dy;
-      expect(oben < mitte && mitte < unten, isTrue);
+      final eigenschaften = tester.getTopLeft(find.text('Eigenschaften')).dy;
+      final kampf = tester.getTopLeft(find.text('Kampf')).dy;
+      final merkmale = tester.getTopLeft(titel).dy;
+      expect(eigenschaften, lessThan(kampf));
+      expect(kampf, lessThan(merkmale));
     });
 
     testWidgets('Bearbeiten prüft zuerst die Verwaltung', (tester) async {

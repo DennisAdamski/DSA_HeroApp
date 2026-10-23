@@ -36,6 +36,17 @@ typedef KartoLaufzeitAktion = Future<void> Function(
   Future<void> Function() aktion,
 );
 
+/// Breite der Spielansicht, ab der Kampf, Effekte und Zustand daneben stehen.
+///
+/// Gemessen wird die Fläche der Ansicht, nicht das Fenster: im Workspace
+/// nimmt die Bereichsnavigation 248 dp weg. Mit der Fensterschwelle
+/// `kSchwelleBreit` (1024) erschien die Spalte deshalb erst ab rund 1270 dp
+/// Fensterbreite, und auf üblichen Laptops standen Kampf und Zustand
+/// zweieinhalb Bildschirme tief. Bei 840 bleiben der Hauptspalte neben der
+/// 280 dp breiten Seitenspalte noch knapp 500 dp: drei Ressourcen in einer
+/// Reihe und die Eigenschaften in zwei.
+const double kSeitenspalteAb = 840;
+
 /// Spielansicht: Ressourcen, Schnellaktionen, Kampf, Effekte und Protokoll.
 ///
 /// Liest `heroComputedProvider(heroId)` **einmal** und reicht den Snapshot an
@@ -86,7 +97,8 @@ class KartoSpielansicht extends ConsumerWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final breite = kartoBreiteFuer(constraints.maxWidth);
-        final haupt = _hauptabschnitte(context, ref, werte);
+        final oben = _spielabschnitte(context, ref, werte);
+        final unten = _nachschlagabschnitte(context, ref, werte);
         final seite = _seitenabschnitte(context, ref, werte);
         final protokoll = KartoAbschnitt(
           titel: 'Würfelprotokoll',
@@ -95,15 +107,17 @@ class KartoSpielansicht extends ConsumerWidget {
         final rand = EdgeInsets.all(breite.seitenrand);
         final kopf = _kopf(context, kompakt: breite == KartoBreite.schmal);
 
-        // Ohne Seiteninhalt gäbe eine zweite Spalte nur leere Fläche.
-        if (!breite.hatDetailspalte || seite.isEmpty) {
+        // Ohne Seiteninhalt gäbe eine zweite Spalte nur leere Fläche. Einspaltig
+        // rücken Kampf, Effekte und Zustand vor das Abenteuer: am Tisch werden
+        // sie öfter gebraucht als Notizen und Personen.
+        if (constraints.maxWidth < kSeitenspalteAb || seite.isEmpty) {
           return SingleChildScrollView(
             padding: rand,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 kopf,
-                ..._mitLuecken([...haupt, ...seite, protokoll]),
+                ..._mitLuecken([...oben, ...seite, ...unten, protokoll]),
                 const _Abschluss(),
               ],
             ),
@@ -121,7 +135,7 @@ class KartoSpielansicht extends ConsumerWidget {
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: _mitLuecken([...haupt, protokoll]),
+                      children: _mitLuecken([...oben, ...unten, protokoll]),
                     ),
                   ),
                   const SizedBox(width: Abstand.bahn),
@@ -158,9 +172,9 @@ class KartoSpielansicht extends ConsumerWidget {
         );
       });
 
-  // Reihenfolge: Schnellaktionen, Ressourcen, dann das Abenteuer mit Standort;
-  // die Eigenschaften folgen als schmale Würfelleiste.
-  List<Widget> _hauptabschnitte(
+  // Was am Tisch ständig gebraucht wird: Schnellaktionen, Ressourcen und die
+  // Eigenschaften als schmale Würfelleiste.
+  List<Widget> _spielabschnitte(
     BuildContext context,
     WidgetRef ref,
     HeroComputedSnapshot werte,
@@ -216,6 +230,22 @@ class KartoSpielansicht extends ConsumerWidget {
           ),
         ),
       ),
+      KartoAbschnitt(
+        titel: 'Eigenschaften',
+        dicht: true,
+        child: bestand.spielEigenschaftsproben(heroId: heroId, werte: werte),
+      ),
+    ];
+  }
+
+  // Was man nachschlägt statt würfelt: das laufende Abenteuer mit Standort,
+  // Personen und Notizen, dann die Vor- und Nachteile.
+  List<Widget> _nachschlagabschnitte(
+    BuildContext context,
+    WidgetRef ref,
+    HeroComputedSnapshot werte,
+  ) {
+    return <Widget>[
       KartoAbenteuerAbschnitt(
         heroId: heroId,
         abenteuer: laufendesAbenteuer(werte.hero),
@@ -237,11 +267,6 @@ class KartoSpielansicht extends ConsumerWidget {
         // geschützten Weg wie der Abschnittskopf.
         onAbenteuerOeffnen: (abenteuerId) =>
             _abenteuerOeffnen(context, abenteuerId),
-      ),
-      KartoAbschnitt(
-        titel: 'Eigenschaften',
-        dicht: true,
-        child: bestand.spielEigenschaftsproben(heroId: heroId, werte: werte),
       ),
       _merkmale(context, ref, werte),
     ];
@@ -287,8 +312,8 @@ class KartoSpielansicht extends ConsumerWidget {
     );
   }
 
-  // Auf breiten Fenstern steht diese Spalte neben den Spielaktionen; auf
-  // schmalen folgt sie ihnen in derselben Reihenfolge. Sie sitzt eine
+  // Ab [kSeitenspalteAb] steht diese Spalte neben den Spielaktionen; darunter
+  // folgt sie ihnen, noch vor dem Abenteuer. Sie sitzt eine
   // Flächenstufe tiefer, damit sie als Begleitspalte lesbar bleibt und nicht
   // mit der Hauptspalte um dieselbe Aufmerksamkeit konkurriert.
   List<Widget> _seitenabschnitte(

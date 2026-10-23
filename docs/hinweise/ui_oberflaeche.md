@@ -65,10 +65,10 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   `KartoSpielansicht` liest `heroComputedProvider(heroId)` **einmal** und reicht
   den `HeroComputedSnapshot` an alle Abschnitte weiter — auch an die
   Adaptermethoden, damit die Brücke für dieselben Werte keine zweite
-  Providerbeobachtung aufmacht. Die Reihenfolge ist überall
-  Schnellaktionen (ganz oben), Ressourcen, Abenteuer samt Standort,
-  Eigenschaften, Vor- und Nachteile, Kampf, Effekte, Zustand,
-  Würfelprotokoll. Die Schnellaktionen enthalten „Regeln“ (Key
+  Providerbeobachtung aufmacht. Die Reihenfolge folgt der Häufigkeit am
+  Tisch: Schnellaktionen (ganz oben), Ressourcen, Eigenschaften, dann
+  einspaltig Kampf, Effekte, Zustand (und Begleiter), danach Abenteuer samt
+  Standort, Vor- und Nachteile, Würfelprotokoll. Die Schnellaktionen enthalten „Regeln“ (Key
   `karto-spiel-regeln`): der vorhandene Regelnachschlag über die Brücke
   (`regelnNachschlagen`, `regelnNachschlagenVerfuegbar`); wo es keinen
   Regelindex gibt (Mobile), entfällt der Knopf. Die Eigenschaften stehen als
@@ -87,8 +87,11 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   Abenteuerblatt im Mixin `KartoAbenteuerSchreiben`
   (`karto_abenteuer_schreiben.dart`); die Standortspeicherung läuft weiter über
   die Brücke (`standortSetzen`). Die Ressourcenwerte sind kompakt: Wert und
-  Fehlbetrag teilen eine Zeile, die ganze Zelle ist das Tippziel. Ab
-  `KartoBreite.breit` wandern Kampf, Effekte und Zustand in eine Seitenspalte,
+  Fehlbetrag teilen eine Zeile, die ganze Zelle ist das Tippziel; der Wert hat
+  Vorrang, passt der Fehlbetrag nicht daneben, rückt er unter den Wert (das
+  Maximum wird nie gekürzt). Ab `kSeitenspalteAb` (840 dp **Ansichtsbreite**,
+  nicht Fensterbreite: die Navigation nimmt 248 dp weg) wandern Kampf,
+  Effekte, Zustand und Begleiter in eine Seitenspalte neben die Hauptspalte,
   das Protokoll bleibt der letzte Abschnitt beider Anordnungen. Den
   Re-Entrancy-Guard reicht `KartoWorkspace` als `KartoLaufzeitAktion` herein;
   die Spielansicht macht keinen zweiten Fehlerweg auf.
