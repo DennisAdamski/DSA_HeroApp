@@ -14,6 +14,9 @@ technische UI-Aspekte getrennt getestet werden.
 - Regeltests werden in `tool/rule_test_evidence.json` als offizielle Regel,
   Hausregel oder Produktvertrag inventarisiert. Buchseiten sind die kanonische
   Referenz; DSA-MCP-Chunks dokumentieren den konkret geprueften Kontext.
+- Umfangreiche Tests duerfen ihre fachlichen Gruppen in `*_cases.dart`-Parts
+  auslagern. Diese Parts gehoeren zur Quelleninventur; die `*_test.dart`-Datei
+  behaelt gemeinsame, unmittelbar lesbare Fixtures und registriert die Gruppen.
 - Tests schreiben ausschliesslich in pro Test erzeugte temporaere Verzeichnisse.
   Benutzernahe Cache- und Anwendungsdaten duerfen weder gelesen noch bereinigt
   werden.
@@ -354,7 +357,7 @@ langsamsten Dateien. Die Hive-Tests laufen dabei mit echtem Dateisystem. Automat
 | `test/workspace/workspace_tab_edit_controller_test.dart` | workspace | Tab-Edit-Controller |
 | `test/ui2/shell/app_root_switch_test.dart` | ui2 | Weiche zwischen bestehender und neuer Oberfläche |
 | `test/ui2/shell/karto_workspace_journey_test.dart` | ui2 | Durchgehender Ablauf mit echten Schreibvorgängen |
-| `test/ui2/shell/karto_workspace_visual_test.dart` | ui2 | Sieben Breiten × zwei Helligkeiten × Textskalierung 1/2; erzeugt mit `--dart-define=R3_SCREENSHOT_DIR=…` echte PNGs |
+| `test/ui2/shell/karto_workspace_visual_test.dart` | ui2 | Dokumentierte Paarabdeckung aller sieben Layoutbreiten, beider Helligkeiten und Textskalierung 1/2; erzeugt mit `--dart-define=R3_SCREENSHOT_DIR=…` echte PNGs |
 
 ## Fallstricke bei Oberflächentests
 
