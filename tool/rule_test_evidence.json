@@ -1,0 +1,1933 @@
+{
+    "schemaVersion":  1,
+    "generatedFrom":  "test/rules/**/*_test.dart und test/catalog/**/*_test.dart",
+    "auditPolicy":  "Nur vollständig gegen Buchseite und DSA-MCP-Kontext geprüfte Dateien dürfen verified sein.",
+    "files":  {
+                  "test/catalog/alchimika_catalog_test.dart":  {
+                                                                   "kind":  "official",
+                                                                   "status":  "conflict",
+                                                                   "summary":  "Regeltestbestand: alchimika catalog",
+                                                                   "sources":  [
+
+                                                                               ],
+                                                                   "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                   "followUp":  "RULE-AUDIT-MAGIC"
+                                                               },
+                  "test/catalog/catalog_crypto_golden_test.dart":  {
+                                                                       "kind":  "product_contract",
+                                                                       "status":  "verified",
+                                                                       "summary":  "Technischer Katalogvertrag: catalog crypto golden",
+                                                                       "sources":  [
+
+                                                                                   ]
+                                                                   },
+                  "test/catalog/catalog_crypto_test.dart":  {
+                                                                "kind":  "product_contract",
+                                                                "status":  "verified",
+                                                                "summary":  "Technischer Katalogvertrag: catalog crypto",
+                                                                "sources":  [
+
+                                                                            ]
+                                                            },
+                  "test/catalog/catalog_decrypt_runner_test.dart":  {
+                                                                        "kind":  "product_contract",
+                                                                        "status":  "verified",
+                                                                        "summary":  "Technischer Katalogvertrag: catalog decrypt runner",
+                                                                        "sources":  [
+
+                                                                                    ]
+                                                                    },
+                  "test/catalog/combat_special_ability_catalog_test.dart":  {
+                                                                                "kind":  "official",
+                                                                                "status":  "conflict",
+                                                                                "summary":  "Regeltestbestand: combat special ability catalog",
+                                                                                "sources":  [
+
+                                                                                            ],
+                                                                                "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                                "followUp":  "RULE-AUDIT-COMBAT"
+                                                                            },
+                  "test/catalog/general_special_ability_catalog_test.dart":  {
+                                                                                 "kind":  "product_contract",
+                                                                                 "status":  "verified",
+                                                                                 "summary":  "Technischer Katalogvertrag: general special ability catalog",
+                                                                                 "sources":  [
+
+                                                                                             ]
+                                                                             },
+                  "test/catalog/geschuetzte_langtexte_test.dart":  {
+                                                                       "kind":  "product_contract",
+                                                                       "status":  "verified",
+                                                                       "summary":  "Technischer Katalogvertrag: geschuetzte langtexte",
+                                                                       "sources":  [
+
+                                                                                   ]
+                                                                   },
+                  "test/catalog/hero_trait_text_test.dart":  {
+                                                                 "kind":  "product_contract",
+                                                                 "status":  "verified",
+                                                                 "summary":  "Technischer Katalogvertrag: hero trait text",
+                                                                 "sources":  [
+
+                                                                             ]
+                                                             },
+                  "test/catalog/hexalogie_katalog_test.dart":  {
+                                                                   "kind":  "official",
+                                                                   "status":  "conflict",
+                                                                   "summary":  "Regeltestbestand: hexalogie katalog",
+                                                                   "sources":  [
+
+                                                                               ],
+                                                                   "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                   "followUp":  "RULE-AUDIT-GENERAL"
+                                                               },
+                  "test/catalog/house_rule_catalog_resolver_test.dart":  {
+                                                                             "kind":  "product_contract",
+                                                                             "status":  "verified",
+                                                                             "summary":  "Technischer Katalogvertrag: house rule catalog resolver",
+                                                                             "sources":  [
+
+                                                                                         ]
+                                                                         },
+                  "test/catalog/kurzregel_katalog_test.dart":  {
+                                                                   "kind":  "product_contract",
+                                                                   "status":  "verified",
+                                                                   "summary":  "Technischer Katalogvertrag: kurzregel katalog",
+                                                                   "sources":  [
+
+                                                                               ]
+                                                               },
+                  "test/catalog/magic_special_ability_catalog_test.dart":  {
+                                                                               "kind":  "product_contract",
+                                                                               "status":  "verified",
+                                                                               "summary":  "Technischer Katalogvertrag: magic special ability catalog",
+                                                                               "sources":  [
+
+                                                                                           ]
+                                                                           },
+                  "test/catalog/regelprofil_aufloesung_test.dart":  {
+                                                                        "kind":  "product_contract",
+                                                                        "status":  "verified",
+                                                                        "summary":  "Technischer Katalogvertrag: regelprofil aufloesung",
+                                                                        "sources":  [
+
+                                                                                    ]
+                                                                    },
+                  "test/catalog/regelprofil_vergleich_test.dart":  {
+                                                                       "kind":  "product_contract",
+                                                                       "status":  "verified",
+                                                                       "summary":  "Technischer Katalogvertrag: regelprofil vergleich",
+                                                                       "sources":  [
+
+                                                                                   ]
+                                                                   },
+                  "test/catalog/reittier_ausbildung_katalog_test.dart":  {
+                                                                             "kind":  "official",
+                                                                             "status":  "conflict",
+                                                                             "summary":  "Regeltestbestand: reittier ausbildung katalog",
+                                                                             "sources":  [
+
+                                                                                         ],
+                                                                             "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                             "followUp":  "RULE-AUDIT-COMPANIONS"
+                                                                         },
+                  "test/catalog/special_ability_matching_test.dart":  {
+                                                                          "kind":  "product_contract",
+                                                                          "status":  "verified",
+                                                                          "summary":  "Technischer Katalogvertrag: special ability matching",
+                                                                          "sources":  [
+
+                                                                                      ]
+                                                                      },
+                  "test/catalog/special_ability_requirement_test.dart":  {
+                                                                             "kind":  "product_contract",
+                                                                             "status":  "verified",
+                                                                             "summary":  "Technischer Katalogvertrag: special ability requirement",
+                                                                             "sources":  [
+
+                                                                                         ]
+                                                                         },
+                  "test/catalog/spell_effect_catalog_test.dart":  {
+                                                                      "kind":  "product_contract",
+                                                                      "status":  "verified",
+                                                                      "summary":  "Technischer Katalogvertrag: spell effect catalog",
+                                                                      "sources":  [
+
+                                                                                  ]
+                                                                  },
+                  "test/catalog/talent_nutzung_katalog_test.dart":  {
+                                                                        "kind":  "official",
+                                                                        "status":  "conflict",
+                                                                        "summary":  "Regeltestbestand: talent nutzung katalog",
+                                                                        "sources":  [
+
+                                                                                    ],
+                                                                        "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                        "followUp":  "RULE-AUDIT-ADVANCEMENT"
+                                                                    },
+                  "test/catalog/trait_choice_catalog_test.dart":  {
+                                                                      "kind":  "product_contract",
+                                                                      "status":  "verified",
+                                                                      "summary":  "Technischer Katalogvertrag: trait choice catalog",
+                                                                      "sources":  [
+
+                                                                                  ]
+                                                                  },
+                  "test/catalog/trait_effect_catalog_test.dart":  {
+                                                                      "kind":  "product_contract",
+                                                                      "status":  "verified",
+                                                                      "summary":  "Technischer Katalogvertrag: trait effect catalog",
+                                                                      "sources":  [
+
+                                                                                  ]
+                                                                  },
+                  "test/catalog/vertrauten_katalog_test.dart":  {
+                                                                    "kind":  "official",
+                                                                    "status":  "conflict",
+                                                                    "summary":  "Regeltestbestand: vertrauten katalog",
+                                                                    "sources":  [
+
+                                                                                ],
+                                                                    "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                    "followUp":  "RULE-AUDIT-COMPANIONS"
+                                                                },
+                  "test/catalog/vertrautenmagie_preset_test.dart":  {
+                                                                        "kind":  "product_contract",
+                                                                        "status":  "verified",
+                                                                        "summary":  "Technischer Katalogvertrag: vertrautenmagie preset",
+                                                                        "sources":  [
+
+                                                                                    ]
+                                                                    },
+                  "test/rules/abenteuer_abschluss_rules_test.dart":  {
+                                                                         "kind":  "official",
+                                                                         "status":  "conflict",
+                                                                         "summary":  "Regeltestbestand: abenteuer abschluss rules",
+                                                                         "sources":  [
+
+                                                                                     ],
+                                                                         "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                         "followUp":  "RULE-AUDIT-GENERAL"
+                                                                     },
+                  "test/rules/active_spell_state_rules_test.dart":  {
+                                                                        "kind":  "official",
+                                                                        "status":  "conflict",
+                                                                        "summary":  "Regeltestbestand: active spell state rules",
+                                                                        "sources":  [
+
+                                                                                    ],
+                                                                        "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                        "followUp":  "RULE-AUDIT-MAGIC"
+                                                                    },
+                  "test/rules/advancement_ability_groups_test.dart":  {
+                                                                          "kind":  "official",
+                                                                          "status":  "conflict",
+                                                                          "summary":  "Regeltestbestand: advancement ability groups",
+                                                                          "sources":  [
+
+                                                                                      ],
+                                                                          "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                          "followUp":  "RULE-AUDIT-ADVANCEMENT"
+                                                                      },
+                  "test/rules/advancement_impact_rules_test.dart":  {
+                                                                        "kind":  "official",
+                                                                        "status":  "conflict",
+                                                                        "summary":  "Regeltestbestand: advancement impact rules",
+                                                                        "sources":  [
+
+                                                                                    ],
+                                                                        "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                        "followUp":  "RULE-AUDIT-ADVANCEMENT"
+                                                                    },
+                  "test/rules/advancement_maneuver_test.dart":  {
+                                                                    "kind":  "official",
+                                                                    "status":  "conflict",
+                                                                    "summary":  "Regeltestbestand: advancement maneuver",
+                                                                    "sources":  [
+
+                                                                                ],
+                                                                    "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                    "followUp":  "RULE-AUDIT-ADVANCEMENT"
+                                                                },
+                  "test/rules/advancement_rules_test.dart":  {
+                                                                 "kind":  "official",
+                                                                 "status":  "conflict",
+                                                                 "summary":  "Regeltestbestand: advancement rules",
+                                                                 "sources":  [
+
+                                                                             ],
+                                                                 "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                 "followUp":  "RULE-AUDIT-ADVANCEMENT"
+                                                             },
+                  "test/rules/advancement_scope_rules_test.dart":  {
+                                                                       "kind":  "official",
+                                                                       "status":  "conflict",
+                                                                       "summary":  "Regeltestbestand: advancement scope rules",
+                                                                       "sources":  [
+
+                                                                                   ],
+                                                                       "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                       "followUp":  "RULE-AUDIT-ADVANCEMENT"
+                                                                   },
+                  "test/rules/advancement_skill_tree_test.dart":  {
+                                                                      "kind":  "official",
+                                                                      "status":  "conflict",
+                                                                      "summary":  "Regeltestbestand: advancement skill tree",
+                                                                      "sources":  [
+
+                                                                                  ],
+                                                                      "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                      "followUp":  "RULE-AUDIT-ADVANCEMENT"
+                                                                  },
+                  "test/rules/advancement_steigerung_bereiche_test.dart":  {
+                                                                               "kind":  "house_rule",
+                                                                               "status":  "conflict",
+                                                                               "summary":  "Regeltestbestand: advancement steigerung bereiche",
+                                                                               "sources":  [
+
+                                                                                           ],
+                                                                               "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                               "followUp":  "RULE-AUDIT-ADVANCEMENT"
+                                                                           },
+                  "test/rules/adventure_rewards_rules_test.dart":  {
+                                                                       "kind":  "official",
+                                                                       "status":  "conflict",
+                                                                       "summary":  "Regeltestbestand: adventure rewards rules",
+                                                                       "sources":  [
+
+                                                                                   ],
+                                                                       "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                       "followUp":  "RULE-AUDIT-GENERAL"
+                                                                   },
+                  "test/rules/alchimika_elixier_rules_test.dart":  {
+                                                                       "kind":  "official",
+                                                                       "status":  "conflict",
+                                                                       "summary":  "Regeltestbestand: alchimika elixier rules",
+                                                                       "sources":  [
+
+                                                                                   ],
+                                                                       "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                       "followUp":  "RULE-AUDIT-MAGIC"
+                                                                   },
+                  "test/rules/alchimika_rules_test.dart":  {
+                                                               "kind":  "official",
+                                                               "status":  "conflict",
+                                                               "summary":  "Regeltestbestand: alchimika rules",
+                                                               "sources":  [
+
+                                                                           ],
+                                                               "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                               "followUp":  "RULE-AUDIT-MAGIC"
+                                                           },
+                  "test/rules/ap_level_rules_test.dart":  {
+                                                              "kind":  "official",
+                                                              "status":  "conflict",
+                                                              "summary":  "Regeltestbestand: ap level rules",
+                                                              "sources":  [
+
+                                                                          ],
+                                                              "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                              "followUp":  "RULE-AUDIT-ADVANCEMENT"
+                                                          },
+                  "test/rules/armatrutz_rules_test.dart":  {
+                                                               "kind":  "official",
+                                                               "status":  "conflict",
+                                                               "summary":  "Regeltestbestand: armatrutz rules",
+                                                               "sources":  [
+
+                                                                           ],
+                                                               "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                               "followUp":  "RULE-AUDIT-GENERAL"
+                                                           },
+                  "test/rules/artefakt_auxiliator_rules_test.dart":  {
+                                                                         "kind":  "official",
+                                                                         "status":  "conflict",
+                                                                         "summary":  "Regeltestbestand: artefakt auxiliator rules",
+                                                                         "sources":  [
+
+                                                                                     ],
+                                                                         "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                         "followUp":  "RULE-AUDIT-MAGIC"
+                                                                     },
+                  "test/rules/artefakt_intervall_rules_test.dart":  {
+                                                                        "kind":  "official",
+                                                                        "status":  "conflict",
+                                                                        "summary":  "Regeltestbestand: artefakt intervall rules",
+                                                                        "sources":  [
+
+                                                                                    ],
+                                                                        "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                        "followUp":  "RULE-AUDIT-MAGIC"
+                                                                    },
+                  "test/rules/artefakt_matrix_rules_test.dart":  {
+                                                                     "kind":  "official",
+                                                                     "status":  "conflict",
+                                                                     "summary":  "Regeltestbestand: artefakt matrix rules",
+                                                                     "sources":  [
+
+                                                                                 ],
+                                                                     "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                     "followUp":  "RULE-AUDIT-MAGIC"
+                                                                 },
+                  "test/rules/artefakt_spruchspeicher_rules_test.dart":  {
+                                                                             "kind":  "official",
+                                                                             "status":  "conflict",
+                                                                             "summary":  "Regeltestbestand: artefakt spruchspeicher rules",
+                                                                             "sources":  [
+
+                                                                                         ],
+                                                                             "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                             "followUp":  "RULE-AUDIT-MAGIC"
+                                                                         },
+                  "test/rules/artefakt_stapel_rules_test.dart":  {
+                                                                     "kind":  "official",
+                                                                     "status":  "conflict",
+                                                                     "summary":  "Regeltestbestand: artefakt stapel rules",
+                                                                     "sources":  [
+
+                                                                                 ],
+                                                                     "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                     "followUp":  "RULE-AUDIT-MAGIC"
+                                                                 },
+                  "test/rules/artefakt_zauber_liste_rules_test.dart":  {
+                                                                           "kind":  "official",
+                                                                           "status":  "conflict",
+                                                                           "summary":  "Regeltestbestand: artefakt zauber liste rules",
+                                                                           "sources":  [
+
+                                                                                       ],
+                                                                           "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                           "followUp":  "RULE-AUDIT-MAGIC"
+                                                                       },
+                  "test/rules/attribute_start_rules_test.dart":  {
+                                                                     "kind":  "official",
+                                                                     "status":  "conflict",
+                                                                     "summary":  "Regeltestbestand: attribute start rules",
+                                                                     "sources":  [
+
+                                                                                 ],
+                                                                     "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                     "followUp":  "RULE-AUDIT-ADVANCEMENT"
+                                                                 },
+                  "test/rules/attribute_trait_rules_test.dart":  {
+                                                                     "kind":  "official",
+                                                                     "status":  "conflict",
+                                                                     "summary":  "Regeltestbestand: attribute trait rules",
+                                                                     "sources":  [
+
+                                                                                 ],
+                                                                     "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                     "followUp":  "RULE-AUDIT-ADVANCEMENT"
+                                                                 },
+                  "test/rules/avatar_prompt_rules_test.dart":  {
+                                                                   "kind":  "official",
+                                                                   "status":  "conflict",
+                                                                   "summary":  "Regeltestbestand: avatar prompt rules",
+                                                                   "sources":  [
+
+                                                                               ],
+                                                                   "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                   "followUp":  "RULE-AUDIT-GENERAL"
+                                                               },
+                  "test/rules/avatar_rahmung_rules_test.dart":  {
+                                                                    "kind":  "official",
+                                                                    "status":  "conflict",
+                                                                    "summary":  "Regeltestbestand: avatar rahmung rules",
+                                                                    "sources":  [
+
+                                                                                ],
+                                                                    "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                    "followUp":  "RULE-AUDIT-GENERAL"
+                                                                },
+                  "test/rules/avatar_snapshot_diff_test.dart":  {
+                                                                    "kind":  "official",
+                                                                    "status":  "conflict",
+                                                                    "summary":  "Regeltestbestand: avatar snapshot diff",
+                                                                    "sources":  [
+
+                                                                                ],
+                                                                    "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                    "followUp":  "RULE-AUDIT-GENERAL"
+                                                                },
+                  "test/rules/basiswert_herleitung_rules_test.dart":  {
+                                                                          "kind":  "official",
+                                                                          "status":  "conflict",
+                                                                          "summary":  "Regeltestbestand: basiswert herleitung rules",
+                                                                          "sources":  [
+
+                                                                                      ],
+                                                                          "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                          "followUp":  "RULE-AUDIT-GENERAL"
+                                                                      },
+                  "test/rules/begleiter_aenderung_rules_test.dart":  {
+                                                                         "kind":  "official",
+                                                                         "status":  "conflict",
+                                                                         "summary":  "Regeltestbestand: begleiter aenderung rules",
+                                                                         "sources":  [
+
+                                                                                     ],
+                                                                         "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                         "followUp":  "RULE-AUDIT-COMPANIONS"
+                                                                     },
+                  "test/rules/begleiter_herleitung_rules_test.dart":  {
+                                                                          "kind":  "official",
+                                                                          "status":  "conflict",
+                                                                          "summary":  "Regeltestbestand: begleiter herleitung rules",
+                                                                          "sources":  [
+
+                                                                                      ],
+                                                                          "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                          "followUp":  "RULE-AUDIT-COMPANIONS"
+                                                                      },
+                  "test/rules/begleiter_wirkwert_rules_test.dart":  {
+                                                                        "kind":  "official",
+                                                                        "status":  "conflict",
+                                                                        "summary":  "Regeltestbestand: begleiter wirkwert rules",
+                                                                        "sources":  [
+
+                                                                                    ],
+                                                                        "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                        "followUp":  "RULE-AUDIT-COMPANIONS"
+                                                                    },
+                  "test/rules/bestandshelden_ausruestung_test.dart":  {
+                                                                          "kind":  "official",
+                                                                          "status":  "conflict",
+                                                                          "summary":  "Regeltestbestand: bestandshelden ausruestung",
+                                                                          "sources":  [
+
+                                                                                      ],
+                                                                          "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                          "followUp":  "RULE-AUDIT-GENERAL"
+                                                                      },
+                  "test/rules/bestandshelden_regelwerte_test.dart":  {
+                                                                         "kind":  "house_rule",
+                                                                         "status":  "conflict",
+                                                                         "summary":  "Regeltestbestand: bestandshelden regelwerte",
+                                                                         "sources":  [
+
+                                                                                     ],
+                                                                         "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                         "followUp":  "RULE-AUDIT-GENERAL"
+                                                                     },
+                  "test/rules/bogen_sofortaenderung_rules_test.dart":  {
+                                                                           "kind":  "official",
+                                                                           "status":  "conflict",
+                                                                           "summary":  "Regeltestbestand: bogen sofortaenderung rules",
+                                                                           "sources":  [
+
+                                                                                       ],
+                                                                           "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                           "followUp":  "RULE-AUDIT-GENERAL"
+                                                                       },
+                  "test/rules/bought_stat_limit_rules_test.dart":  {
+                                                                       "kind":  "official",
+                                                                       "status":  "conflict",
+                                                                       "summary":  "Regeltestbestand: bought stat limit rules",
+                                                                       "sources":  [
+
+                                                                                   ],
+                                                                       "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                       "followUp":  "RULE-AUDIT-GENERAL"
+                                                                   },
+                  "test/rules/combat_preview_modifier_sources_test.dart":  {
+                                                                               "kind":  "official",
+                                                                               "status":  "conflict",
+                                                                               "summary":  "Regeltestbestand: combat preview modifier sources",
+                                                                               "sources":  [
+
+                                                                                           ],
+                                                                               "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                               "followUp":  "RULE-AUDIT-COMBAT"
+                                                                           },
+                  "test/rules/combat_rules_test.dart":  {
+                                                            "kind":  "house_rule",
+                                                            "status":  "conflict",
+                                                            "summary":  "Regeltestbestand: combat rules",
+                                                            "sources":  [
+
+                                                                        ],
+                                                            "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                            "followUp":  "RULE-AUDIT-COMBAT"
+                                                        },
+                  "test/rules/combat_talent_validation_test.dart":  {
+                                                                        "kind":  "official",
+                                                                        "status":  "conflict",
+                                                                        "summary":  "Regeltestbestand: combat talent validation",
+                                                                        "sources":  [
+
+                                                                                    ],
+                                                                        "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                        "followUp":  "RULE-AUDIT-COMBAT"
+                                                                    },
+                  "test/rules/companion_steigerung_rules_test.dart":  {
+                                                                          "kind":  "official",
+                                                                          "status":  "conflict",
+                                                                          "summary":  "Regeltestbestand: companion steigerung rules",
+                                                                          "sources":  [
+
+                                                                                      ],
+                                                                          "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                          "followUp":  "RULE-AUDIT-ADVANCEMENT"
+                                                                      },
+                  "test/rules/cost_text_parsing_test.dart":  {
+                                                                 "kind":  "official",
+                                                                 "status":  "conflict",
+                                                                 "summary":  "Regeltestbestand: cost text parsing",
+                                                                 "sources":  [
+
+                                                                             ],
+                                                                 "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                 "followUp":  "RULE-AUDIT-GENERAL"
+                                                             },
+                  "test/rules/currency_rules_test.dart":  {
+                                                              "kind":  "official",
+                                                              "status":  "conflict",
+                                                              "summary":  "Regeltestbestand: currency rules",
+                                                              "sources":  [
+
+                                                                          ],
+                                                              "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                              "followUp":  "RULE-AUDIT-INVENTORY"
+                                                          },
+                  "test/rules/derived/aventurian_age_rules_test.dart":  {
+                                                                            "kind":  "official",
+                                                                            "status":  "conflict",
+                                                                            "summary":  "Regeltestbestand: aventurian age rules",
+                                                                            "sources":  [
+
+                                                                                        ],
+                                                                            "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                            "followUp":  "RULE-AUDIT-GENERAL"
+                                                                        },
+                  "test/rules/derived/standort_rules_test.dart":  {
+                                                                      "kind":  "official",
+                                                                      "status":  "conflict",
+                                                                      "summary":  "Regeltestbestand: standort rules",
+                                                                      "sources":  [
+
+                                                                                  ],
+                                                                      "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                      "followUp":  "RULE-AUDIT-GENERAL"
+                                                                  },
+                  "test/rules/derived_stats_test.dart":  {
+                                                             "kind":  "official",
+                                                             "status":  "conflict",
+                                                             "summary":  "Regeltestbestand: derived stats",
+                                                             "sources":  [
+
+                                                                         ],
+                                                             "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                             "followUp":  "RULE-AUDIT-GENERAL"
+                                                         },
+                  "test/rules/editor_entwurf_rules_test.dart":  {
+                                                                    "kind":  "official",
+                                                                    "status":  "conflict",
+                                                                    "summary":  "Regeltestbestand: editor entwurf rules",
+                                                                    "sources":  [
+
+                                                                                ],
+                                                                    "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                    "followUp":  "RULE-AUDIT-GENERAL"
+                                                                },
+                  "test/rules/eigenschaft_herleitung_rules_test.dart":  {
+                                                                            "kind":  "official",
+                                                                            "status":  "conflict",
+                                                                            "summary":  "Regeltestbestand: eigenschaft herleitung rules",
+                                                                            "sources":  [
+
+                                                                                        ],
+                                                                            "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                            "followUp":  "RULE-AUDIT-ADVANCEMENT"
+                                                                        },
+                  "test/rules/epic_ap_cost_rules_test.dart":  {
+                                                                  "kind":  "official",
+                                                                  "status":  "conflict",
+                                                                  "summary":  "Regeltestbestand: epic ap cost rules",
+                                                                  "sources":  [
+
+                                                                              ],
+                                                                  "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                  "followUp":  "RULE-AUDIT-ADVANCEMENT"
+                                                              },
+                  "test/rules/epic_main_attribute_rules_test.dart":  {
+                                                                         "kind":  "house_rule",
+                                                                         "status":  "conflict",
+                                                                         "summary":  "Regeltestbestand: epic main attribute rules",
+                                                                         "sources":  [
+
+                                                                                     ],
+                                                                         "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                         "followUp":  "RULE-AUDIT-ADVANCEMENT"
+                                                                     },
+                  "test/rules/erwerb_herleitung_rules_test.dart":  {
+                                                                       "kind":  "official",
+                                                                       "status":  "conflict",
+                                                                       "summary":  "Regeltestbestand: erwerb herleitung rules",
+                                                                       "sources":  [
+
+                                                                                   ],
+                                                                       "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                       "followUp":  "RULE-AUDIT-ADVANCEMENT"
+                                                                   },
+                  "test/rules/gefecht_aktionskatalog_rules_test.dart":  {
+                                                                            "kind":  "official",
+                                                                            "status":  "conflict",
+                                                                            "summary":  "Regeltestbestand: gefecht aktionskatalog rules",
+                                                                            "sources":  [
+
+                                                                                        ],
+                                                                            "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                            "followUp":  "RULE-AUDIT-COMBAT"
+                                                                        },
+                  "test/rules/gefecht_angriffsergebnis_test.dart":  {
+                                                                        "kind":  "official",
+                                                                        "status":  "conflict",
+                                                                        "summary":  "Regeltestbestand: gefecht angriffsergebnis",
+                                                                        "sources":  [
+
+                                                                                    ],
+                                                                        "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                        "followUp":  "RULE-AUDIT-COMBAT"
+                                                                    },
+                  "test/rules/gefecht_ansagefolge_rules_test.dart":  {
+                                                                         "kind":  "official",
+                                                                         "status":  "conflict",
+                                                                         "summary":  "Regeltestbestand: gefecht ansagefolge rules",
+                                                                         "sources":  [
+
+                                                                                     ],
+                                                                         "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                         "followUp":  "RULE-AUDIT-COMBAT"
+                                                                     },
+                  "test/rules/gefecht_ansagen_paket2_test.dart":  {
+                                                                      "kind":  "official",
+                                                                      "status":  "conflict",
+                                                                      "summary":  "Regeltestbestand: gefecht ansagen paket2",
+                                                                      "sources":  [
+
+                                                                                  ],
+                                                                      "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                      "followUp":  "RULE-AUDIT-COMBAT"
+                                                                  },
+                  "test/rules/gefecht_distanzschaden_test.dart":  {
+                                                                      "kind":  "official",
+                                                                      "status":  "conflict",
+                                                                      "summary":  "Regeltestbestand: gefecht distanzschaden",
+                                                                      "sources":  [
+
+                                                                                  ],
+                                                                      "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                      "followUp":  "RULE-AUDIT-COMBAT"
+                                                                  },
+                  "test/rules/gefecht_dk_folge_test.dart":  {
+                                                                "kind":  "official",
+                                                                "status":  "conflict",
+                                                                "summary":  "Regeltestbestand: gefecht dk folge",
+                                                                "sources":  [
+
+                                                                            ],
+                                                                "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                "followUp":  "RULE-AUDIT-COMBAT"
+                                                            },
+                  "test/rules/gefecht_fernkampf_rules_test.dart":  {
+                                                                       "kind":  "house_rule",
+                                                                       "status":  "conflict",
+                                                                       "summary":  "Regeltestbestand: gefecht fernkampf rules",
+                                                                       "sources":  [
+
+                                                                                   ],
+                                                                       "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                       "followUp":  "RULE-AUDIT-COMBAT"
+                                                                   },
+                  "test/rules/gefecht_freigabe_rules_test.dart":  {
+                                                                      "kind":  "official",
+                                                                      "status":  "conflict",
+                                                                      "summary":  "Regeltestbestand: gefecht freigabe rules",
+                                                                      "sources":  [
+
+                                                                                  ],
+                                                                      "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                      "followUp":  "RULE-AUDIT-COMBAT"
+                                                                  },
+                  "test/rules/gefecht_fremdwirkung_rules_test.dart":  {
+                                                                          "kind":  "official",
+                                                                          "status":  "conflict",
+                                                                          "summary":  "Regeltestbestand: gefecht fremdwirkung rules",
+                                                                          "sources":  [
+
+                                                                                      ],
+                                                                          "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                          "followUp":  "RULE-AUDIT-COMBAT"
+                                                                      },
+                  "test/rules/gefecht_gegner_rules_test.dart":  {
+                                                                    "kind":  "official",
+                                                                    "status":  "conflict",
+                                                                    "summary":  "Regeltestbestand: gefecht gegner rules",
+                                                                    "sources":  [
+
+                                                                                ],
+                                                                    "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                    "followUp":  "RULE-AUDIT-COMBAT"
+                                                                },
+                  "test/rules/gefecht_hand_rules_test.dart":  {
+                                                                  "kind":  "official",
+                                                                  "status":  "conflict",
+                                                                  "summary":  "Regeltestbestand: gefecht hand rules",
+                                                                  "sources":  [
+
+                                                                              ],
+                                                                  "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                  "followUp":  "RULE-AUDIT-COMBAT"
+                                                              },
+                  "test/rules/gefecht_held_rules_test.dart":  {
+                                                                  "kind":  "official",
+                                                                  "status":  "conflict",
+                                                                  "summary":  "Regeltestbestand: gefecht held rules",
+                                                                  "sources":  [
+
+                                                                              ],
+                                                                  "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                  "followUp":  "RULE-AUDIT-COMBAT"
+                                                              },
+                  "test/rules/gefecht_herleitung_rules_test.dart":  {
+                                                                        "kind":  "official",
+                                                                        "status":  "conflict",
+                                                                        "summary":  "Regeltestbestand: gefecht herleitung rules",
+                                                                        "sources":  [
+
+                                                                                    ],
+                                                                        "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                        "followUp":  "RULE-AUDIT-COMBAT"
+                                                                    },
+                  "test/rules/gefecht_initiative_rules_test.dart":  {
+                                                                        "kind":  "official",
+                                                                        "status":  "conflict",
+                                                                        "summary":  "Regeltestbestand: gefecht initiative rules",
+                                                                        "sources":  [
+
+                                                                                    ],
+                                                                        "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                        "followUp":  "RULE-AUDIT-COMBAT"
+                                                                    },
+                  "test/rules/gefecht_inventar_rules_test.dart":  {
+                                                                      "kind":  "official",
+                                                                      "status":  "conflict",
+                                                                      "summary":  "Regeltestbestand: gefecht inventar rules",
+                                                                      "sources":  [
+
+                                                                                  ],
+                                                                      "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                      "followUp":  "RULE-AUDIT-COMBAT"
+                                                                  },
+                  "test/rules/gefecht_kampfmittel_rules_test.dart":  {
+                                                                         "kind":  "official",
+                                                                         "status":  "conflict",
+                                                                         "summary":  "Regeltestbestand: gefecht kampfmittel rules",
+                                                                         "sources":  [
+
+                                                                                     ],
+                                                                         "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                         "followUp":  "RULE-AUDIT-COMBAT"
+                                                                     },
+                  "test/rules/gefecht_kampfwerte_rules_test.dart":  {
+                                                                        "kind":  "official",
+                                                                        "status":  "conflict",
+                                                                        "summary":  "Regeltestbestand: gefecht kampfwerte rules",
+                                                                        "sources":  [
+
+                                                                                    ],
+                                                                        "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                        "followUp":  "RULE-AUDIT-COMBAT"
+                                                                    },
+                  "test/rules/gefecht_klingen_rules_test.dart":  {
+                                                                     "kind":  "official",
+                                                                     "status":  "conflict",
+                                                                     "summary":  "Regeltestbestand: gefecht klingen rules",
+                                                                     "sources":  [
+
+                                                                                 ],
+                                                                     "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                     "followUp":  "RULE-AUDIT-COMBAT"
+                                                                 },
+                  "test/rules/gefecht_kontext_rules_test.dart":  {
+                                                                     "kind":  "official",
+                                                                     "status":  "conflict",
+                                                                     "summary":  "Regeltestbestand: gefecht kontext rules",
+                                                                     "sources":  [
+
+                                                                                 ],
+                                                                     "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                     "followUp":  "RULE-AUDIT-COMBAT"
+                                                                 },
+                  "test/rules/gefecht_laden_review_test.dart":  {
+                                                                    "kind":  "official",
+                                                                    "status":  "conflict",
+                                                                    "summary":  "Regeltestbestand: gefecht laden review",
+                                                                    "sources":  [
+
+                                                                                ],
+                                                                    "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                    "followUp":  "RULE-AUDIT-COMBAT"
+                                                                },
+                  "test/rules/gefecht_laden_rules_test.dart":  {
+                                                                   "kind":  "official",
+                                                                   "status":  "conflict",
+                                                                   "summary":  "Regeltestbestand: gefecht laden rules",
+                                                                   "sources":  [
+
+                                                                               ],
+                                                                   "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                   "followUp":  "RULE-AUDIT-COMBAT"
+                                                               },
+                  "test/rules/gefecht_ladezeit_paket3_test.dart":  {
+                                                                       "kind":  "official",
+                                                                       "status":  "conflict",
+                                                                       "summary":  "Regeltestbestand: gefecht ladezeit paket3",
+                                                                       "sources":  [
+
+                                                                                   ],
+                                                                       "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                       "followUp":  "RULE-AUDIT-COMBAT"
+                                                                   },
+                  "test/rules/gefecht_manoeverfolgen_rules_test.dart":  {
+                                                                            "kind":  "official",
+                                                                            "status":  "conflict",
+                                                                            "summary":  "Regeltestbestand: gefecht manoeverfolgen rules",
+                                                                            "sources":  [
+
+                                                                                        ],
+                                                                            "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                            "followUp":  "RULE-AUDIT-COMBAT"
+                                                                        },
+                  "test/rules/gefecht_meisterparade_rules_test.dart":  {
+                                                                           "kind":  "official",
+                                                                           "status":  "conflict",
+                                                                           "summary":  "Regeltestbestand: gefecht meisterparade rules",
+                                                                           "sources":  [
+
+                                                                                       ],
+                                                                           "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                           "followUp":  "RULE-AUDIT-COMBAT"
+                                                                       },
+                  "test/rules/gefecht_orientieren_rules_test.dart":  {
+                                                                         "kind":  "official",
+                                                                         "status":  "conflict",
+                                                                         "summary":  "Regeltestbestand: gefecht orientieren rules",
+                                                                         "sources":  [
+
+                                                                                     ],
+                                                                         "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                         "followUp":  "RULE-AUDIT-COMBAT"
+                                                                     },
+                  "test/rules/gefecht_patzer_rules_test.dart":  {
+                                                                    "kind":  "official",
+                                                                    "status":  "conflict",
+                                                                    "summary":  "Regeltestbestand: gefecht patzer rules",
+                                                                    "sources":  [
+
+                                                                                ],
+                                                                    "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                    "followUp":  "RULE-AUDIT-COMBAT"
+                                                                },
+                  "test/rules/gefecht_rules_test.dart":  {
+                                                             "kind":  "official",
+                                                             "status":  "conflict",
+                                                             "summary":  "Regeltestbestand: gefecht rules",
+                                                             "sources":  [
+
+                                                                         ],
+                                                             "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                             "followUp":  "RULE-AUDIT-COMBAT"
+                                                         },
+                  "test/rules/gefecht_talentprobe_rules_test.dart":  {
+                                                                         "kind":  "official",
+                                                                         "status":  "conflict",
+                                                                         "summary":  "Regeltestbestand: gefecht talentprobe rules",
+                                                                         "sources":  [
+
+                                                                                     ],
+                                                                         "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                         "followUp":  "RULE-AUDIT-COMBAT"
+                                                                     },
+                  "test/rules/gefecht_ueberzahl_rules_test.dart":  {
+                                                                       "kind":  "official",
+                                                                       "status":  "conflict",
+                                                                       "summary":  "Regeltestbestand: gefecht ueberzahl rules",
+                                                                       "sources":  [
+
+                                                                                   ],
+                                                                       "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                       "followUp":  "RULE-AUDIT-COMBAT"
+                                                                   },
+                  "test/rules/gefecht_umwandlung_paket2_test.dart":  {
+                                                                         "kind":  "official",
+                                                                         "status":  "conflict",
+                                                                         "summary":  "Regeltestbestand: gefecht umwandlung paket2",
+                                                                         "sources":  [
+
+                                                                                     ],
+                                                                         "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                         "followUp":  "RULE-AUDIT-COMBAT"
+                                                                     },
+                  "test/rules/gefecht_vorgaben_rules_test.dart":  {
+                                                                      "kind":  "official",
+                                                                      "status":  "conflict",
+                                                                      "summary":  "Regeltestbestand: gefecht vorgaben rules",
+                                                                      "sources":  [
+
+                                                                                  ],
+                                                                      "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                      "followUp":  "RULE-AUDIT-COMBAT"
+                                                                  },
+                  "test/rules/gefecht_waffen_sf_test.dart":  {
+                                                                 "kind":  "official",
+                                                                 "status":  "conflict",
+                                                                 "summary":  "Regeltestbestand: gefecht waffen sf",
+                                                                 "sources":  [
+
+                                                                             ],
+                                                                 "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                 "followUp":  "RULE-AUDIT-COMBAT"
+                                                             },
+                  "test/rules/gefecht_waffenbelegung_folge_test.dart":  {
+                                                                            "kind":  "official",
+                                                                            "status":  "conflict",
+                                                                            "summary":  "Regeltestbestand: gefecht waffenbelegung folge",
+                                                                            "sources":  [
+
+                                                                                        ],
+                                                                            "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                            "followUp":  "RULE-AUDIT-COMBAT"
+                                                                        },
+                  "test/rules/gefecht_wirken_rules_test.dart":  {
+                                                                    "kind":  "official",
+                                                                    "status":  "conflict",
+                                                                    "summary":  "Regeltestbestand: gefecht wirken rules",
+                                                                    "sources":  [
+
+                                                                                ],
+                                                                    "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                    "followUp":  "RULE-AUDIT-COMBAT"
+                                                                },
+                  "test/rules/gefecht_zauberliste_rules_test.dart":  {
+                                                                         "kind":  "official",
+                                                                         "status":  "conflict",
+                                                                         "summary":  "Regeltestbestand: gefecht zauberliste rules",
+                                                                         "sources":  [
+
+                                                                                     ],
+                                                                         "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                         "followUp":  "RULE-AUDIT-COMBAT"
+                                                                     },
+                  "test/rules/gefecht_ziehen_rules_test.dart":  {
+                                                                    "kind":  "official",
+                                                                    "status":  "conflict",
+                                                                    "summary":  "Regeltestbestand: gefecht ziehen rules",
+                                                                    "sources":  [
+
+                                                                                ],
+                                                                    "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                    "followUp":  "RULE-AUDIT-COMBAT"
+                                                                },
+                  "test/rules/gefecht_zielen_rules_test.dart":  {
+                                                                    "kind":  "official",
+                                                                    "status":  "conflict",
+                                                                    "summary":  "Regeltestbestand: gefecht zielen rules",
+                                                                    "sources":  [
+
+                                                                                ],
+                                                                    "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                    "followUp":  "RULE-AUDIT-COMBAT"
+                                                                },
+                  "test/rules/gefecht_zielwert_herleitung_rules_test.dart":  {
+                                                                                 "kind":  "official",
+                                                                                 "status":  "conflict",
+                                                                                 "summary":  "Regeltestbestand: gefecht zielwert herleitung rules",
+                                                                                 "sources":  [
+
+                                                                                             ],
+                                                                                 "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                                 "followUp":  "RULE-AUDIT-COMBAT"
+                                                                             },
+                  "test/rules/gefecht_zusatz_rules_test.dart":  {
+                                                                    "kind":  "official",
+                                                                    "status":  "conflict",
+                                                                    "summary":  "Regeltestbestand: gefecht zusatz rules",
+                                                                    "sources":  [
+
+                                                                                ],
+                                                                    "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                    "followUp":  "RULE-AUDIT-COMBAT"
+                                                                },
+                  "test/rules/herleitung_uebersicht_rules_test.dart":  {
+                                                                           "kind":  "official",
+                                                                           "status":  "conflict",
+                                                                           "summary":  "Regeltestbestand: herleitung uebersicht rules",
+                                                                           "sources":  [
+
+                                                                                       ],
+                                                                           "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                           "followUp":  "RULE-AUDIT-GENERAL"
+                                                                       },
+                  "test/rules/hero_begabung_rules_test.dart":  {
+                                                                   "kind":  "official",
+                                                                   "status":  "conflict",
+                                                                   "summary":  "Regeltestbestand: hero begabung rules",
+                                                                   "sources":  [
+
+                                                                               ],
+                                                                   "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                   "followUp":  "RULE-AUDIT-GENERAL"
+                                                               },
+                  "test/rules/hero_herkunft_bearbeitung_rules_test.dart":  {
+                                                                               "kind":  "official",
+                                                                               "status":  "conflict",
+                                                                               "summary":  "Regeltestbestand: hero herkunft bearbeitung rules",
+                                                                               "sources":  [
+
+                                                                                           ],
+                                                                               "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                               "followUp":  "RULE-AUDIT-GENERAL"
+                                                                           },
+                  "test/rules/hero_herkunft_migration_rules_test.dart":  {
+                                                                             "kind":  "official",
+                                                                             "status":  "conflict",
+                                                                             "summary":  "Regeltestbestand: hero herkunft migration rules",
+                                                                             "sources":  [
+
+                                                                                         ],
+                                                                             "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                             "followUp":  "RULE-AUDIT-GENERAL"
+                                                                         },
+                  "test/rules/hero_herkunft_rules_test.dart":  {
+                                                                   "kind":  "official",
+                                                                   "status":  "conflict",
+                                                                   "summary":  "Regeltestbestand: hero herkunft rules",
+                                                                   "sources":  [
+
+                                                                               ],
+                                                                   "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                   "followUp":  "RULE-AUDIT-GENERAL"
+                                                               },
+                  "test/rules/hero_merkmal_rules_test.dart":  {
+                                                                  "kind":  "official",
+                                                                  "status":  "conflict",
+                                                                  "summary":  "Regeltestbestand: hero merkmal rules",
+                                                                  "sources":  [
+
+                                                                              ],
+                                                                  "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                  "followUp":  "RULE-AUDIT-GENERAL"
+                                                              },
+                  "test/rules/hero_requirement_context_test.dart":  {
+                                                                        "kind":  "official",
+                                                                        "status":  "conflict",
+                                                                        "summary":  "Regeltestbestand: hero requirement context",
+                                                                        "sources":  [
+
+                                                                                    ],
+                                                                        "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                        "followUp":  "RULE-AUDIT-GENERAL"
+                                                                    },
+                  "test/rules/house_rule_registry_test.dart":  {
+                                                                   "kind":  "house_rule",
+                                                                   "status":  "conflict",
+                                                                   "summary":  "Regeltestbestand: house rule registry",
+                                                                   "sources":  [
+
+                                                                               ],
+                                                                   "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                   "followUp":  "RULE-AUDIT-GENERAL"
+                                                               },
+                  "test/rules/inventar_aenderung_rules_test.dart":  {
+                                                                        "kind":  "official",
+                                                                        "status":  "conflict",
+                                                                        "summary":  "Regeltestbestand: inventar aenderung rules",
+                                                                        "sources":  [
+
+                                                                                    ],
+                                                                        "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                        "followUp":  "RULE-AUDIT-INVENTORY"
+                                                                    },
+                  "test/rules/inventar_instanz_rules_test.dart":  {
+                                                                      "kind":  "official",
+                                                                      "status":  "conflict",
+                                                                      "summary":  "Regeltestbestand: inventar instanz rules",
+                                                                      "sources":  [
+
+                                                                                  ],
+                                                                      "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                      "followUp":  "RULE-AUDIT-INVENTORY"
+                                                                  },
+                  "test/rules/inventar_menge_rules_test.dart":  {
+                                                                    "kind":  "official",
+                                                                    "status":  "conflict",
+                                                                    "summary":  "Regeltestbestand: inventar menge rules",
+                                                                    "sources":  [
+
+                                                                                ],
+                                                                    "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                    "followUp":  "RULE-AUDIT-INVENTORY"
+                                                                },
+                  "test/rules/inventar_slot_instanz_rules_test.dart":  {
+                                                                           "kind":  "official",
+                                                                           "status":  "conflict",
+                                                                           "summary":  "Regeltestbestand: inventar slot instanz rules",
+                                                                           "sources":  [
+
+                                                                                       ],
+                                                                           "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                           "followUp":  "RULE-AUDIT-INVENTORY"
+                                                                       },
+                  "test/rules/inventar_stapel_rules_test.dart":  {
+                                                                     "kind":  "official",
+                                                                     "status":  "conflict",
+                                                                     "summary":  "Regeltestbestand: inventar stapel rules",
+                                                                     "sources":  [
+
+                                                                                 ],
+                                                                     "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                     "followUp":  "RULE-AUDIT-INVENTORY"
+                                                                 },
+                  "test/rules/inventar_summen_rules_test.dart":  {
+                                                                     "kind":  "official",
+                                                                     "status":  "conflict",
+                                                                     "summary":  "Regeltestbestand: inventar summen rules",
+                                                                     "sources":  [
+
+                                                                                 ],
+                                                                     "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                     "followUp":  "RULE-AUDIT-INVENTORY"
+                                                                 },
+                  "test/rules/inventar_verkauf_rules_test.dart":  {
+                                                                      "kind":  "official",
+                                                                      "status":  "conflict",
+                                                                      "summary":  "Regeltestbestand: inventar verkauf rules",
+                                                                      "sources":  [
+
+                                                                                  ],
+                                                                      "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                      "followUp":  "RULE-AUDIT-INVENTORY"
+                                                                  },
+                  "test/rules/inventar_zusammenfuehren_rules_test.dart":  {
+                                                                              "kind":  "official",
+                                                                              "status":  "conflict",
+                                                                              "summary":  "Regeltestbestand: inventar zusammenfuehren rules",
+                                                                              "sources":  [
+
+                                                                                          ],
+                                                                              "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                              "followUp":  "RULE-AUDIT-INVENTORY"
+                                                                          },
+                  "test/rules/inventory_modifier_rules_test.dart":  {
+                                                                        "kind":  "official",
+                                                                        "status":  "conflict",
+                                                                        "summary":  "Regeltestbestand: inventory modifier rules",
+                                                                        "sources":  [
+
+                                                                                    ],
+                                                                        "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                        "followUp":  "RULE-AUDIT-GENERAL"
+                                                                    },
+                  "test/rules/inventory_sync_rules_test.dart":  {
+                                                                    "kind":  "official",
+                                                                    "status":  "conflict",
+                                                                    "summary":  "Regeltestbestand: inventory sync rules",
+                                                                    "sources":  [
+
+                                                                                ],
+                                                                    "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                    "followUp":  "RULE-AUDIT-GENERAL"
+                                                                },
+                  "test/rules/kampf_aenderung_rules_test.dart":  {
+                                                                     "kind":  "official",
+                                                                     "status":  "conflict",
+                                                                     "summary":  "Regeltestbestand: kampf aenderung rules",
+                                                                     "sources":  [
+
+                                                                                 ],
+                                                                     "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                     "followUp":  "RULE-AUDIT-COMBAT"
+                                                                 },
+                  "test/rules/kampf_herleitung_rules_test.dart":  {
+                                                                      "kind":  "official",
+                                                                      "status":  "conflict",
+                                                                      "summary":  "Regeltestbestand: kampf herleitung rules",
+                                                                      "sources":  [
+
+                                                                                  ],
+                                                                      "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                      "followUp":  "RULE-AUDIT-COMBAT"
+                                                                  },
+                  "test/rules/kampf_slot_pruefung_rules_test.dart":  {
+                                                                         "kind":  "official",
+                                                                         "status":  "conflict",
+                                                                         "summary":  "Regeltestbestand: kampf slot pruefung rules",
+                                                                         "sources":  [
+
+                                                                                     ],
+                                                                         "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                         "followUp":  "RULE-AUDIT-COMBAT"
+                                                                     },
+                  "test/rules/kampfgegenstand_ablegen_rules_test.dart":  {
+                                                                             "kind":  "official",
+                                                                             "status":  "conflict",
+                                                                             "summary":  "Regeltestbestand: kampfgegenstand ablegen rules",
+                                                                             "sources":  [
+
+                                                                                         ],
+                                                                             "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                             "followUp":  "RULE-AUDIT-COMBAT"
+                                                                         },
+                  "test/rules/karnifilo_wunden_test.dart":  {
+                                                                "kind":  "official",
+                                                                "status":  "conflict",
+                                                                "summary":  "Regeltestbestand: karnifilo wunden",
+                                                                "sources":  [
+
+                                                                            ],
+                                                                "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                "followUp":  "RULE-AUDIT-COMBAT"
+                                                            },
+                  "test/rules/kurzregel_suche_rules_test.dart":  {
+                                                                     "kind":  "house_rule",
+                                                                     "status":  "conflict",
+                                                                     "summary":  "Regeltestbestand: kurzregel suche rules",
+                                                                     "sources":  [
+
+                                                                                 ],
+                                                                     "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                     "followUp":  "RULE-AUDIT-GENERAL"
+                                                                 },
+                  "test/rules/learn_rules_test.dart":  {
+                                                           "kind":  "official",
+                                                           "status":  "conflict",
+                                                           "summary":  "Regeltestbestand: learn rules",
+                                                           "sources":  [
+
+                                                                       ],
+                                                           "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                           "followUp":  "RULE-AUDIT-ADVANCEMENT"
+                                                       },
+                  "test/rules/learning_rules_test.dart":  {
+                                                              "kind":  "official",
+                                                              "status":  "conflict",
+                                                              "summary":  "Regeltestbestand: learning rules",
+                                                              "sources":  [
+
+                                                                          ],
+                                                              "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                              "followUp":  "RULE-AUDIT-ADVANCEMENT"
+                                                          },
+                  "test/rules/lernregeln_advancement_test.dart":  {
+                                                                      "kind":  "house_rule",
+                                                                      "status":  "conflict",
+                                                                      "summary":  "Regeltestbestand: lernregeln advancement",
+                                                                      "sources":  [
+
+                                                                                  ],
+                                                                      "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                      "followUp":  "RULE-AUDIT-ADVANCEMENT"
+                                                                  },
+                  "test/rules/magic_acquisition_rules_test.dart":  {
+                                                                       "kind":  "house_rule",
+                                                                       "status":  "conflict",
+                                                                       "summary":  "Regeltestbestand: magic acquisition rules",
+                                                                       "sources":  [
+
+                                                                                   ],
+                                                                       "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                       "followUp":  "RULE-AUDIT-MAGIC"
+                                                                   },
+                  "test/rules/magic_knowledge_advancement_test.dart":  {
+                                                                           "kind":  "official",
+                                                                           "status":  "conflict",
+                                                                           "summary":  "Regeltestbestand: magic knowledge advancement",
+                                                                           "sources":  [
+
+                                                                                       ],
+                                                                           "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                           "followUp":  "RULE-AUDIT-MAGIC"
+                                                                       },
+                  "test/rules/magic_rules_test.dart":  {
+                                                           "kind":  "official",
+                                                           "status":  "conflict",
+                                                           "summary":  "Regeltestbestand: magic rules",
+                                                           "sources":  [
+
+                                                                       ],
+                                                           "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                           "followUp":  "RULE-AUDIT-MAGIC"
+                                                       },
+                  "test/rules/magic_setup_rules_test.dart":  {
+                                                                 "kind":  "official",
+                                                                 "status":  "conflict",
+                                                                 "summary":  "Regeltestbestand: magic setup rules",
+                                                                 "sources":  [
+
+                                                                             ],
+                                                                 "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                 "followUp":  "RULE-AUDIT-MAGIC"
+                                                             },
+                  "test/rules/meta_talent_rules_test.dart":  {
+                                                                 "kind":  "official",
+                                                                 "status":  "conflict",
+                                                                 "summary":  "Regeltestbestand: meta talent rules",
+                                                                 "sources":  [
+
+                                                                             ],
+                                                                 "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                 "followUp":  "RULE-AUDIT-ADVANCEMENT"
+                                                             },
+                  "test/rules/modifier_source_breakdown_test.dart":  {
+                                                                         "kind":  "official",
+                                                                         "status":  "conflict",
+                                                                         "summary":  "Regeltestbestand: modifier source breakdown",
+                                                                         "sources":  [
+
+                                                                                     ],
+                                                                         "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                         "followUp":  "RULE-AUDIT-GENERAL"
+                                                                     },
+                  "test/rules/modifier_text_parser_test.dart":  {
+                                                                    "kind":  "official",
+                                                                    "status":  "conflict",
+                                                                    "summary":  "Regeltestbestand: modifier text parser",
+                                                                    "sources":  [
+
+                                                                                ],
+                                                                    "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                    "followUp":  "RULE-AUDIT-GENERAL"
+                                                                },
+                  "test/rules/probe_engine_rules_test.dart":  {
+                                                                  "kind":  "official",
+                                                                  "status":  "conflict",
+                                                                  "summary":  "Regeltestbestand: probe engine rules",
+                                                                  "sources":  [
+
+                                                                              ],
+                                                                  "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                  "followUp":  "RULE-AUDIT-GENERAL"
+                                                              },
+                  "test/rules/regelprofil_vorschau_rules_test.dart":  {
+                                                                          "kind":  "official",
+                                                                          "status":  "conflict",
+                                                                          "summary":  "Regeltestbestand: regelprofil vorschau rules",
+                                                                          "sources":  [
+
+                                                                                      ],
+                                                                          "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                          "followUp":  "RULE-AUDIT-GENERAL"
+                                                                      },
+                  "test/rules/reisebericht_rules_test.dart":  {
+                                                                  "kind":  "official",
+                                                                  "status":  "conflict",
+                                                                  "summary":  "Regeltestbestand: reisebericht rules",
+                                                                  "sources":  [
+
+                                                                              ],
+                                                                  "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                  "followUp":  "RULE-AUDIT-GENERAL"
+                                                              },
+                  "test/rules/reittier_ausbilderprobe_rules_test.dart":  {
+                                                                             "kind":  "official",
+                                                                             "status":  "conflict",
+                                                                             "summary":  "Regeltestbestand: reittier ausbilderprobe rules",
+                                                                             "sources":  [
+
+                                                                                         ],
+                                                                             "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                             "followUp":  "RULE-AUDIT-COMPANIONS"
+                                                                         },
+                  "test/rules/reittier_ausbildung_aenderung_rules_test.dart":  {
+                                                                                   "kind":  "official",
+                                                                                   "status":  "conflict",
+                                                                                   "summary":  "Regeltestbestand: reittier ausbildung aenderung rules",
+                                                                                   "sources":  [
+
+                                                                                               ],
+                                                                                   "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                                   "followUp":  "RULE-AUDIT-COMPANIONS"
+                                                                               },
+                  "test/rules/reittier_ausbildung_anzeige_rules_test.dart":  {
+                                                                                 "kind":  "official",
+                                                                                 "status":  "conflict",
+                                                                                 "summary":  "Regeltestbestand: reittier ausbildung anzeige rules",
+                                                                                 "sources":  [
+
+                                                                                             ],
+                                                                                 "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                                 "followUp":  "RULE-AUDIT-COMPANIONS"
+                                                                             },
+                  "test/rules/reittier_ausbildung_rules_test.dart":  {
+                                                                         "kind":  "official",
+                                                                         "status":  "conflict",
+                                                                         "summary":  "Regeltestbestand: reittier ausbildung rules",
+                                                                         "sources":  [
+
+                                                                                     ],
+                                                                         "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                         "followUp":  "RULE-AUDIT-COMPANIONS"
+                                                                     },
+                  "test/rules/requirement_evaluation_rules_test.dart":  {
+                                                                            "kind":  "official",
+                                                                            "status":  "conflict",
+                                                                            "summary":  "Regeltestbestand: requirement evaluation rules",
+                                                                            "sources":  [
+
+                                                                                        ],
+                                                                            "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                            "followUp":  "RULE-AUDIT-GENERAL"
+                                                                        },
+                  "test/rules/resource_activation_rules_test.dart":  {
+                                                                         "kind":  "official",
+                                                                         "status":  "conflict",
+                                                                         "summary":  "Regeltestbestand: resource activation rules",
+                                                                         "sources":  [
+
+                                                                                     ],
+                                                                         "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                         "followUp":  "RULE-AUDIT-INVENTORY"
+                                                                     },
+                  "test/rules/ressourcen_aenderung_rules_test.dart":  {
+                                                                          "kind":  "official",
+                                                                          "status":  "conflict",
+                                                                          "summary":  "Regeltestbestand: ressourcen aenderung rules",
+                                                                          "sources":  [
+
+                                                                                      ],
+                                                                          "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                          "followUp":  "RULE-AUDIT-INVENTORY"
+                                                                      },
+                  "test/rules/rest_outcome_rules_test.dart":  {
+                                                                  "kind":  "official",
+                                                                  "status":  "conflict",
+                                                                  "summary":  "Regeltestbestand: rest outcome rules",
+                                                                  "sources":  [
+
+                                                                              ],
+                                                                  "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                  "followUp":  "RULE-AUDIT-GENERAL"
+                                                              },
+                  "test/rules/rest_rules_test.dart":  {
+                                                          "kind":  "official",
+                                                          "status":  "conflict",
+                                                          "summary":  "Regeltestbestand: rest rules",
+                                                          "sources":  [
+
+                                                                      ],
+                                                          "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                          "followUp":  "RULE-AUDIT-GENERAL"
+                                                      },
+                  "test/rules/ritual_knowledge_rules_test.dart":  {
+                                                                      "kind":  "official",
+                                                                      "status":  "conflict",
+                                                                      "summary":  "Regeltestbestand: ritual knowledge rules",
+                                                                      "sources":  [
+
+                                                                                  ],
+                                                                      "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                      "followUp":  "RULE-AUDIT-MAGIC"
+                                                                  },
+                  "test/rules/ritual_rules_test.dart":  {
+                                                            "kind":  "official",
+                                                            "status":  "conflict",
+                                                            "summary":  "Regeltestbestand: ritual rules",
+                                                            "sources":  [
+
+                                                                        ],
+                                                            "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                            "followUp":  "RULE-AUDIT-MAGIC"
+                                                        },
+                  "test/rules/schaden_ruecknahme_rules_test.dart":  {
+                                                                        "kind":  "official",
+                                                                        "status":  "conflict",
+                                                                        "summary":  "Regeltestbestand: schaden ruecknahme rules",
+                                                                        "sources":  [
+
+                                                                                    ],
+                                                                        "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                        "followUp":  "RULE-AUDIT-COMBAT"
+                                                                    },
+                  "test/rules/schaden_rules_test.dart":  {
+                                                             "kind":  "official",
+                                                             "status":  "conflict",
+                                                             "summary":  "Regeltestbestand: schaden rules",
+                                                             "sources":  [
+
+                                                                         ],
+                                                             "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                             "followUp":  "RULE-AUDIT-COMBAT"
+                                                         },
+                  "test/rules/special_ability_chain_rules_test.dart":  {
+                                                                           "kind":  "official",
+                                                                           "status":  "conflict",
+                                                                           "summary":  "Regeltestbestand: special ability chain rules",
+                                                                           "sources":  [
+
+                                                                                       ],
+                                                                           "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                           "followUp":  "RULE-AUDIT-GENERAL"
+                                                                       },
+                  "test/rules/special_ability_variant_rules_test.dart":  {
+                                                                             "kind":  "official",
+                                                                             "status":  "conflict",
+                                                                             "summary":  "Regeltestbestand: special ability variant rules",
+                                                                             "sources":  [
+
+                                                                                         ],
+                                                                             "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                             "followUp":  "RULE-AUDIT-GENERAL"
+                                                                         },
+                  "test/rules/special_ability_visibility_rules_test.dart":  {
+                                                                                "kind":  "official",
+                                                                                "status":  "conflict",
+                                                                                "summary":  "Regeltestbestand: special ability visibility rules",
+                                                                                "sources":  [
+
+                                                                                            ],
+                                                                                "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                                "followUp":  "RULE-AUDIT-GENERAL"
+                                                                            },
+                  "test/rules/spell_catalog_filter_rules_test.dart":  {
+                                                                          "kind":  "official",
+                                                                          "status":  "conflict",
+                                                                          "summary":  "Regeltestbestand: spell catalog filter rules",
+                                                                          "sources":  [
+
+                                                                                      ],
+                                                                          "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                          "followUp":  "RULE-AUDIT-MAGIC"
+                                                                      },
+                  "test/rules/spell_duration_rules_test.dart":  {
+                                                                    "kind":  "official",
+                                                                    "status":  "conflict",
+                                                                    "summary":  "Regeltestbestand: spell duration rules",
+                                                                    "sources":  [
+
+                                                                                ],
+                                                                    "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                    "followUp":  "RULE-AUDIT-MAGIC"
+                                                                },
+                  "test/rules/spell_effect_combat_rules_test.dart":  {
+                                                                         "kind":  "official",
+                                                                         "status":  "conflict",
+                                                                         "summary":  "Regeltestbestand: spell effect combat rules",
+                                                                         "sources":  [
+
+                                                                                     ],
+                                                                         "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                         "followUp":  "RULE-AUDIT-COMBAT"
+                                                                     },
+                  "test/rules/spell_effect_combat_snapshot_test.dart":  {
+                                                                            "kind":  "official",
+                                                                            "status":  "conflict",
+                                                                            "summary":  "Regeltestbestand: spell effect combat snapshot",
+                                                                            "sources":  [
+
+                                                                                        ],
+                                                                            "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                            "followUp":  "RULE-AUDIT-COMBAT"
+                                                                        },
+                  "test/rules/spell_effect_event_rules_test.dart":  {
+                                                                        "kind":  "official",
+                                                                        "status":  "conflict",
+                                                                        "summary":  "Regeltestbestand: spell effect event rules",
+                                                                        "sources":  [
+
+                                                                                    ],
+                                                                        "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                        "followUp":  "RULE-AUDIT-MAGIC"
+                                                                    },
+                  "test/rules/spell_effect_healing_rules_test.dart":  {
+                                                                          "kind":  "official",
+                                                                          "status":  "conflict",
+                                                                          "summary":  "Regeltestbestand: spell effect healing rules",
+                                                                          "sources":  [
+
+                                                                                      ],
+                                                                          "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                          "followUp":  "RULE-AUDIT-MAGIC"
+                                                                      },
+                  "test/rules/spell_effect_instance_rules_test.dart":  {
+                                                                           "kind":  "official",
+                                                                           "status":  "conflict",
+                                                                           "summary":  "Regeltestbestand: spell effect instance rules",
+                                                                           "sources":  [
+
+                                                                                       ],
+                                                                           "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                           "followUp":  "RULE-AUDIT-MAGIC"
+                                                                       },
+                  "test/rules/spell_effect_probe_rules_test.dart":  {
+                                                                        "kind":  "official",
+                                                                        "status":  "conflict",
+                                                                        "summary":  "Regeltestbestand: spell effect probe rules",
+                                                                        "sources":  [
+
+                                                                                    ],
+                                                                        "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                        "followUp":  "RULE-AUDIT-MAGIC"
+                                                                    },
+                  "test/rules/spell_effect_profile_rules_test.dart":  {
+                                                                          "kind":  "official",
+                                                                          "status":  "conflict",
+                                                                          "summary":  "Regeltestbestand: spell effect profile rules",
+                                                                          "sources":  [
+
+                                                                                      ],
+                                                                          "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                          "followUp":  "RULE-AUDIT-MAGIC"
+                                                                      },
+                  "test/rules/spell_effect_protection_rules_test.dart":  {
+                                                                             "kind":  "official",
+                                                                             "status":  "conflict",
+                                                                             "summary":  "Regeltestbestand: spell effect protection rules",
+                                                                             "sources":  [
+
+                                                                                         ],
+                                                                             "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                             "followUp":  "RULE-AUDIT-MAGIC"
+                                                                         },
+                  "test/rules/spell_effect_rest_rules_test.dart":  {
+                                                                       "kind":  "official",
+                                                                       "status":  "conflict",
+                                                                       "summary":  "Regeltestbestand: spell effect rest rules",
+                                                                       "sources":  [
+
+                                                                                   ],
+                                                                       "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                       "followUp":  "RULE-AUDIT-MAGIC"
+                                                                   },
+                  "test/rules/steigerung_herleitung_rules_test.dart":  {
+                                                                           "kind":  "official",
+                                                                           "status":  "conflict",
+                                                                           "summary":  "Regeltestbestand: steigerung herleitung rules",
+                                                                           "sources":  [
+
+                                                                                       ],
+                                                                           "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                           "followUp":  "RULE-AUDIT-ADVANCEMENT"
+                                                                       },
+                  "test/rules/talent_be_rules_test.dart":  {
+                                                               "kind":  "official",
+                                                               "status":  "conflict",
+                                                               "summary":  "Regeltestbestand: talent be rules",
+                                                               "sources":  [
+
+                                                                           ],
+                                                               "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                               "followUp":  "RULE-AUDIT-ADVANCEMENT"
+                                                           },
+                  "test/rules/talent_herleitung_rules_test.dart":  {
+                                                                       "kind":  "official",
+                                                                       "status":  "conflict",
+                                                                       "summary":  "Regeltestbestand: talent herleitung rules",
+                                                                       "sources":  [
+
+                                                                                   ],
+                                                                       "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                       "followUp":  "RULE-AUDIT-ADVANCEMENT"
+                                                                   },
+                  "test/rules/talent_nutzung_rules_test.dart":  {
+                                                                    "kind":  "official",
+                                                                    "status":  "conflict",
+                                                                    "summary":  "Regeltestbestand: talent nutzung rules",
+                                                                    "sources":  [
+
+                                                                                ],
+                                                                    "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                    "followUp":  "RULE-AUDIT-ADVANCEMENT"
+                                                                },
+                  "test/rules/talent_specialization_hints_test.dart":  {
+                                                                           "kind":  "official",
+                                                                           "status":  "conflict",
+                                                                           "summary":  "Regeltestbestand: talent specialization hints",
+                                                                           "sources":  [
+
+                                                                                       ],
+                                                                           "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                           "followUp":  "RULE-AUDIT-ADVANCEMENT"
+                                                                       },
+                  "test/rules/talent_value_rules_test.dart":  {
+                                                                  "kind":  "official",
+                                                                  "status":  "conflict",
+                                                                  "summary":  "Regeltestbestand: talent value rules",
+                                                                  "sources":  [
+
+                                                                              ],
+                                                                  "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                  "followUp":  "RULE-AUDIT-ADVANCEMENT"
+                                                              },
+                  "test/rules/tp_ausdruck_rules_test.dart":  {
+                                                                 "kind":  "official",
+                                                                 "status":  "conflict",
+                                                                 "summary":  "Regeltestbestand: tp ausdruck rules",
+                                                                 "sources":  [
+
+                                                                             ],
+                                                                 "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                 "followUp":  "RULE-AUDIT-GENERAL"
+                                                             },
+                  "test/rules/tradition_rules_test.dart":  {
+                                                               "kind":  "official",
+                                                               "status":  "conflict",
+                                                               "summary":  "Regeltestbestand: tradition rules",
+                                                               "sources":  [
+
+                                                                           ],
+                                                               "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                               "followUp":  "RULE-AUDIT-MAGIC"
+                                                           },
+                  "test/rules/trait_ap_cost_rules_test.dart":  {
+                                                                   "kind":  "official",
+                                                                   "status":  "conflict",
+                                                                   "summary":  "Regeltestbestand: trait ap cost rules",
+                                                                   "sources":  [
+
+                                                                               ],
+                                                                   "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                   "followUp":  "RULE-AUDIT-ADVANCEMENT"
+                                                               },
+                  "test/rules/trefferzonen_rules_test.dart":  {
+                                                                  "kind":  "official",
+                                                                  "status":  "conflict",
+                                                                  "summary":  "Regeltestbestand: trefferzonen rules",
+                                                                  "sources":  [
+
+                                                                              ],
+                                                                  "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                  "followUp":  "RULE-AUDIT-COMBAT"
+                                                              },
+                  "test/rules/unarmed_style_rules_test.dart":  {
+                                                                   "kind":  "official",
+                                                                   "status":  "conflict",
+                                                                   "summary":  "Regeltestbestand: unarmed style rules",
+                                                                   "sources":  [
+
+                                                                               ],
+                                                                   "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                   "followUp":  "RULE-AUDIT-GENERAL"
+                                                               },
+                  "test/rules/vertrauten_ap_rules_test.dart":  {
+                                                                   "kind":  "official",
+                                                                   "status":  "conflict",
+                                                                   "summary":  "Regeltestbestand: vertrauten ap rules",
+                                                                   "sources":  [
+
+                                                                               ],
+                                                                   "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                   "followUp":  "RULE-AUDIT-ADVANCEMENT"
+                                                               },
+                  "test/rules/vertrauten_ausbildung_rules_test.dart":  {
+                                                                           "kind":  "official",
+                                                                           "status":  "conflict",
+                                                                           "summary":  "Regeltestbestand: vertrauten ausbildung rules",
+                                                                           "sources":  [
+
+                                                                                       ],
+                                                                           "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                           "followUp":  "RULE-AUDIT-COMPANIONS"
+                                                                       },
+                  "test/rules/vertrauten_bindung_rules_test.dart":  {
+                                                                        "kind":  "official",
+                                                                        "status":  "conflict",
+                                                                        "summary":  "Regeltestbestand: vertrauten bindung rules",
+                                                                        "sources":  [
+
+                                                                                    ],
+                                                                        "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                        "followUp":  "RULE-AUDIT-COMPANIONS"
+                                                                    },
+                  "test/rules/vertrauten_spiel_rules_test.dart":  {
+                                                                      "kind":  "official",
+                                                                      "status":  "conflict",
+                                                                      "summary":  "Regeltestbestand: vertrauten spiel rules",
+                                                                      "sources":  [
+
+                                                                                  ],
+                                                                      "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                      "followUp":  "RULE-AUDIT-COMPANIONS"
+                                                                  },
+                  "test/rules/vertrauten_voraussetzung_rules_test.dart":  {
+                                                                              "kind":  "official",
+                                                                              "status":  "conflict",
+                                                                              "summary":  "Regeltestbestand: vertrauten voraussetzung rules",
+                                                                              "sources":  [
+
+                                                                                          ],
+                                                                              "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                              "followUp":  "RULE-AUDIT-COMPANIONS"
+                                                                          },
+                  "test/rules/waffenlos_rules_test.dart":  {
+                                                               "kind":  "official",
+                                                               "status":  "conflict",
+                                                               "summary":  "Regeltestbestand: waffenlos rules",
+                                                               "sources":  [
+
+                                                                           ],
+                                                               "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                               "followUp":  "RULE-AUDIT-COMBAT"
+                                                           },
+                  "test/rules/waffenmeister_rules_test.dart":  {
+                                                                   "kind":  "official",
+                                                                   "status":  "conflict",
+                                                                   "summary":  "Regeltestbestand: waffenmeister rules",
+                                                                   "sources":  [
+
+                                                                               ],
+                                                                   "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                   "followUp":  "RULE-AUDIT-COMBAT"
+                                                               },
+                  "test/rules/wund_arm_kampf_test.dart":  {
+                                                              "kind":  "official",
+                                                              "status":  "conflict",
+                                                              "summary":  "Regeltestbestand: wund arm kampf",
+                                                              "sources":  [
+
+                                                                          ],
+                                                              "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                              "followUp":  "RULE-AUDIT-COMBAT"
+                                                          },
+                  "test/rules/wund_rules_test.dart":  {
+                                                          "kind":  "official",
+                                                          "status":  "conflict",
+                                                          "summary":  "Regeltestbestand: wund rules",
+                                                          "sources":  [
+
+                                                                      ],
+                                                          "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                          "followUp":  "RULE-AUDIT-COMBAT"
+                                                      },
+                  "test/rules/wund_zonen_rules_test.dart":  {
+                                                                "kind":  "house_rule",
+                                                                "status":  "conflict",
+                                                                "summary":  "Regeltestbestand: wund zonen rules",
+                                                                "sources":  [
+
+                                                                            ],
+                                                                "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                "followUp":  "RULE-AUDIT-COMBAT"
+                                                            },
+                  "test/rules/zauber_herleitung_rules_test.dart":  {
+                                                                       "kind":  "official",
+                                                                       "status":  "conflict",
+                                                                       "summary":  "Regeltestbestand: zauber herleitung rules",
+                                                                       "sources":  [
+
+                                                                                   ],
+                                                                       "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                       "followUp":  "RULE-AUDIT-MAGIC"
+                                                                   },
+                  "test/rules/zauber_lernspalte_rules_test.dart":  {
+                                                                       "kind":  "official",
+                                                                       "status":  "conflict",
+                                                                       "summary":  "Regeltestbestand: zauber lernspalte rules",
+                                                                       "sources":  [
+
+                                                                                   ],
+                                                                       "finding":  "Der vollständige Dateiinhalt ist noch nicht mit Buchseite und DSA-MCP-Kontext belegt oder bewusst als Produktvertrag bestätigt.",
+                                                                       "followUp":  "RULE-AUDIT-MAGIC"
+                                                                   }
+              }
+}
