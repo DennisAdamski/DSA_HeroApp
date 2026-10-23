@@ -19,27 +19,6 @@ import 'rules_index_test_fixture.dart';
 // SPIEL-04: Zugang zur Regel-Wissensbasis über die Cloud (Passwortnachweis,
 // Zugangs-Client, Download von der signierten URL, Installation).
 
-/// Pfad der Remote-Cache-Datei wie in `rules_index_search_io.dart` (dort
-/// privat, deshalb hier nachgebildet).
-String _cachePfad() {
-  final override = Platform.environment['DSA_MCP_DATA_DIR'];
-  final String dir;
-  if (override != null && override.isNotEmpty) {
-    dir = override;
-  } else {
-    final localAppData = Platform.environment['LOCALAPPDATA'];
-    dir = localAppData != null && localAppData.isNotEmpty
-        ? p.join(localAppData, 'dsa-rules-mcp')
-        : p.join(
-            Platform.environment['HOME'] ?? '',
-            '.local',
-            'share',
-            'dsa-rules-mcp',
-          );
-  }
-  return p.join(dir, 'index_remote.sqlite');
-}
-
 class _Gateway implements RulesIndexAccessGateway {
   _Gateway(this.release, {this.fehler});
 
@@ -358,30 +337,15 @@ void main() {
   });
 
   group('RulesIndexSyncService.syncFromCloud', () {
-    final cache = _cachePfad();
-    final gesichert = <String, List<int>>{};
+    late Directory dataDirectory;
+    late String cache;
 
-    // Die Tests schreiben in den echten Cache-Pfad (wie die bestehenden Tests
-    // des Sync-Dienstes). Eine vorhandene Datei bleibt dabei erhalten.
     setUp(() {
-      for (final suffix in const ['', '.tmp']) {
-        final datei = File('$cache$suffix');
-        if (datei.existsSync()) {
-          gesichert[suffix] = datei.readAsBytesSync();
-          datei.deleteSync();
-        }
-      }
+      dataDirectory = Directory.systemTemp.createTempSync('rules-index-cloud-');
+      cache = p.join(dataDirectory.path, 'index_remote.sqlite');
     });
 
-    tearDown(() {
-      for (final suffix in const ['', '.tmp']) {
-        final datei = File('$cache$suffix');
-        if (datei.existsSync()) datei.deleteSync();
-        final alt = gesichert[suffix];
-        if (alt != null) datei.writeAsBytesSync(alt);
-      }
-      gesichert.clear();
-    });
+    tearDown(() => dataDirectory.deleteSync(recursive: true));
 
     RulesIndexSyncService dienst(
       RulesIndexAccessGateway gateway,
@@ -389,6 +353,7 @@ void main() {
     ) => RulesIndexSyncService(
       remoteClient: RulesIndexRemoteClient(httpClient: client),
       accessGateway: gateway,
+      dataDirectory: dataDirectory.path,
     );
 
     test('lädt, prüft und installiert eine ungepackte Datei', () async {

@@ -22,12 +22,16 @@ class RulesIndexSyncService {
   RulesIndexSyncService({
     RulesIndexRemoteClient? remoteClient,
     this.accessGateway,
+    this.dataDirectory,
   }) : _remoteClient = remoteClient ?? RulesIndexRemoteClient();
 
   final RulesIndexRemoteClient _remoteClient;
 
   /// Zugang zur Cloud Function; `null`, wenn der Build keinen Server hat.
   final RulesIndexAccessGateway? accessGateway;
+
+  /// Optionales isoliertes Datenverzeichnis, insbesondere für Tests.
+  final String? dataDirectory;
 
   /// Lädt die Index-Datenbank vom Server und importiert sie.
   ///
@@ -41,7 +45,7 @@ class RulesIndexSyncService {
       password: config.effectivePassword,
     );
     _checkSqliteHeader(bytes);
-    return importRulesIndexDatabase(bytes);
+    return importRulesIndexDatabase(bytes, dataDirectory: dataDirectory);
   }
 
   /// Holt die Wissensbasis ueber die Cloud Function und installiert sie.
@@ -88,7 +92,10 @@ class RulesIndexSyncService {
     _checkSqliteHeader(bytes);
     return RulesIndexInstall(
       version: release.version,
-      search: await importRulesIndexDatabase(bytes),
+      search: await importRulesIndexDatabase(
+        bytes,
+        dataDirectory: dataDirectory,
+      ),
     );
   }
 
