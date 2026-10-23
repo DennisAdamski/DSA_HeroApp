@@ -1,4 +1,4 @@
-﻿import 'package:file_picker/file_picker.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -10,19 +10,80 @@ import 'package:dsa_heldenverwaltung/data/rules_search/rules_index_types.dart';
 import 'package:dsa_heldenverwaltung/state/rules_index_providers.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/catalog_unlock_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/workspace/kurzregeln_panel.dart';
 
-/// Prüft, ob die Regelsuche auf dieser Plattform angeboten werden kann.
+/// Prüft, ob der Regel-Nachschlag auf dieser Plattform angeboten werden kann.
 ///
-/// Delegiert an die Plattform-Fassade: Desktop und Web ja (Web setzt einen
-/// einmaligen Datei-Import voraus), Mobil nein.
-bool isRulesLookupSupported() => rulesIndexSearchSupported();
+/// Immer wahr: die mitgelieferten Kurzregeln laufen überall offline. Ob
+/// zusätzlich die Wissensbasis-Volltextsuche möglich ist, entscheidet
+/// [rulesIndexSearchSupported] (Desktop und Web ja, Mobil nein).
+bool isRulesLookupSupported() => true;
 
 /// Öffnet den Regel-Nachschlag-Dialog.
 Future<void> showRulesLookupDialog({required BuildContext context}) {
   return showDialog<void>(
     context: context,
-    builder: (_) => const RulesLookupDialog(),
+    builder: (_) => const RegelnNachschlagDialog(),
   );
+}
+
+/// Regel-Nachschlag mit zwei Reitern.
+///
+/// „Kurzregeln“ ist der Standardreiter und zeigt das mitgelieferte, eigene
+/// Kompendium; es funktioniert ohne Wissensbasis. „Wissensbasis“ ist die
+/// Volltextsuche ([RulesLookupDialog]) und entfällt auf Plattformen ohne
+/// Index-Unterstützung (Mobil), dort bleiben nur die Kurzregeln.
+class RegelnNachschlagDialog extends StatelessWidget {
+  /// Erzeugt den Dialog.
+  const RegelnNachschlagDialog({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final mitWissensbasis = rulesIndexSearchSupported();
+    return Dialog(
+      insetPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 24),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 640, maxHeight: 640),
+        child: mitWissensbasis ? const _Reiter() : const KurzregelnPanel(),
+      ),
+    );
+  }
+}
+
+/// Reiterleiste und Reiterinhalte des Regel-Nachschlags.
+class _Reiter extends StatelessWidget {
+  const _Reiter();
+
+  @override
+  Widget build(BuildContext context) {
+    return const DefaultTabController(
+      length: 2,
+      child: Column(
+        children: [
+          TabBar(
+            tabs: [
+              Tab(
+                key: ValueKey('rules-lookup-tab-kurzregeln'),
+                text: 'Kurzregeln',
+              ),
+              Tab(
+                key: ValueKey('rules-lookup-tab-wissensbasis'),
+                text: 'Wissensbasis',
+              ),
+            ],
+          ),
+          Expanded(
+            child: TabBarView(
+              children: [
+                KurzregelnPanel(),
+                RulesLookupDialog(eingebettet: true),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 /// Dialog für die Volltextsuche in der dsa-rules-Wissensbasis.
@@ -36,8 +97,17 @@ class RulesLookupDialog extends ConsumerStatefulWidget {
   /// Erzeugt den Dialog.
   ///
   /// [oeffneIndex] und [syncService] ersetzen in Tests den Zugriff auf die
-  /// lokale Index-Datenbank und den Server.
-  const RulesLookupDialog({super.key, this.oeffneIndex, this.syncService});
+  /// lokale Index-Datenbank und den Server. [eingebettet] lässt den
+  /// Dialograhmen weg, wenn der Inhalt in einem Reiter liegt.
+  const RulesLookupDialog({
+    super.key,
+    this.oeffneIndex,
+    this.syncService,
+    this.eingebettet = false,
+  });
+
+  /// Ob der Inhalt ohne eigenen Dialograhmen in einem Reiter steht.
+  final bool eingebettet;
 
   /// Öffnet die Index-Datenbank; ohne Angabe [openRulesIndexSearch].
   final Future<RulesIndexSearch?> Function()? oeffneIndex;
@@ -49,7 +119,8 @@ class RulesLookupDialog extends ConsumerStatefulWidget {
   ConsumerState<RulesLookupDialog> createState() => _RulesLookupDialogState();
 }
 
-class _RulesLookupDialogState extends ConsumerState<RulesLookupDialog> {
+class _RulesLookupDialogState extends ConsumerState<RulesLookupDialog>
+    with AutomaticKeepAliveClientMixin {
   RulesIndexSearch? _search;
   bool _loading = true;
   bool _importing = false;
@@ -68,6 +139,10 @@ class _RulesLookupDialogState extends ConsumerState<RulesLookupDialog> {
     RulesSourceCategory.regelbuecher,
     RulesSourceCategory.hausregeln,
   };
+
+  // Hält Suchtext und geöffneten Index beim Reiterwechsel am Spieltisch.
+  @override
+  bool get wantKeepAlive => widget.eingebettet;
 
   @override
   void initState() {
@@ -326,10 +401,14 @@ class _RulesLookupDialogState extends ConsumerState<RulesLookupDialog> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     ref.listen<RulesIndexSyncState>(
       rulesIndexAutoSyncProvider,
       _beiSyncAenderung,
     );
+    if (widget.eingebettet) {
+      return _buildContent();
+    }
     return Dialog(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 640, maxHeight: 640),
