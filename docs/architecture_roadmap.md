@@ -97,16 +97,22 @@ Teilumfang festlegen. Nach Wichtigkeit sortiert.
   herunterzählen. Offen: persistenter Rundenzähler (bisher bewusst nicht gebaut,
   siehe [redesign_acceptance.md](redesign_acceptance.md)); ohne Regelautomatik.
 - [ ] **SPIEL-04 — Regelnachschlag ohne Vorarbeit.** **Teilstand 23.10.2026
-  (Cloud-Weg, im Code fertig, noch nicht deployt):** Entscheidung: Anbieten erst
+  (Cloud-Weg, auf der Test-Site geprüft, Produktion offen):** Entscheidung: Anbieten erst
   nach dem Entsperren, nur mit Login, Laden im Hintergrund. Gebaut:
   `dsa-rules-cli publish` (Fassung ohne Vektoren und Quellpfade, gzip, rund
   47 MB), Cloud Function `rulesIndexApi` (Konto, App Check, Passwortnachweis,
   signierte URL), Hintergrundlader mit Fortschritt im Dialog, Gating der drei
   Einstiege; Details in
   [mcp_dsa_rules.md](mcp_dsa_rules.md#veröffentlichen-über-die-cloud-spiel-04).
-  **Offen, nur der Projektinhaber:** Secret `RULES_INDEX_PROOF` setzen,
-  Signierrecht vergeben, Function und Storage-Regeln deployen, erste Fassung
-  hochladen, im echten Browser und Desktop prüfen. **Teilstand davor:**
+  **Eingerichtet und geprüft am 23.10.2026:** Secret `RULES_INDEX_PROOF`,
+  Signierrecht, Storage-Regeln und `rulesIndexApiTest` sind live, die erste
+  Fassung (`index-2ee077a64054`, 47,2 MB) liegt in `rules/`. Auf
+  `heldensync-test.web.app` (entsperrt, angemeldet) lief der Hintergrund-
+  Download bis 117 von 117 MB, die Suche öffnete sich von selbst und lieferte
+  Treffer, nach dem Neuladen blieb die Wissensbasis erhalten. **Offen:**
+  `rulesIndexApi` (Produktion) deployen und `RULES_INDEX_PRODUCTION_ENABLED`
+  setzen, Prüfung auf der Produktions-Site; Desktop läuft über den lokalen
+  Index (App Check kennt dort nur den Debugprovider). **Teilstand davor:**
   Leerzustand des Regeln-Dialogs überarbeitet (Server-Download als Hauptweg,
   ehrlicher Hinweis ohne Server, Stand der Wissensbasis, Download auch auf Web
   mit Verweis auf den Upload bei CORS-Fehler; Details in
