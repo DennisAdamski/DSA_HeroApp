@@ -314,12 +314,22 @@ class KartoBestandsAdapterImpl
   /// Baut das vorhandene Würfelprotokoll mit den Einträgen des Zustands.
   @override
   Widget spielProtokoll(HeroComputedSnapshot werte) => _KartoCompatHost(
-    child: InspectorDiceLogSection(
-      entries: werte.state.diceLog,
-      aktion: (eintrag) => schadenRuecknahmeAktion(
-        eintrag: eintrag,
-        heroId: werte.hero.id,
-        zustand: werte.state,
+    child: Consumer(
+      builder: (context, ref, _) => InspectorDiceLogSection(
+        entries: werte.state.diceLog,
+        aktion: (eintrag) => schadenRuecknahmeAktion(
+          eintrag: eintrag,
+          heroId: werte.hero.id,
+          zustand: werte.state,
+        ),
+        // „Nochmal würfeln“ öffnet den normalen Probendialog derselben Probe
+        // über die Probensuche (SPIEL-05).
+        onWiederholen: (eintrag) => wiederholeProbeMitHinweis(
+          context: context,
+          ref: ref,
+          heroId: werte.hero.id,
+          entry: eintrag,
+        ),
       ),
     ),
   );

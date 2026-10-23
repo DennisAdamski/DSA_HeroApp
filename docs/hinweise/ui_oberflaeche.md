@@ -1,4 +1,4 @@
-# Oberfläche: Bestand, Kartograph (UI2), Theme und Bedienung
+﻿# Oberfläche: Bestand, Kartograph (UI2), Theme und Bedienung
 
 Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unverändert. Die kurze [CLAUDE.md](../../CLAUDE.md) enthält die harten Regeln und den Themenindex.
 
@@ -301,6 +301,55 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   jede weitere Aktion darin würde still verworfen. Bei offener Planung ist das
   Blatt schreibgeschützt, weil jede Heldenänderung den Inhalts-Hash der Runde
   bräche.
+  **Ort und Datum an Notizen und Personen (SPIEL-06):** `HeroNoteEntry` und
+  `HeroAdventurePersonEntry` tragen die Freitextfelder `ort` und `datum`
+  (aventurisches Datum als Anzeigetext, kein Datumswert; so bleibt auch „ca.
+  Mitte Boron“ möglich). Beide stehen nur bei Belegung im JSON, die Bestandshashes
+  bleiben. Neue Einträge (Dialog **und** Schnell-Erfassung) bekommen sie
+  vorbelegt: Ort aus `HeroState.standort` (`bereinigeStandort`), Datum aus
+  `abenteuerDatum` des Abenteuers; fehlt eines, bleibt das Feld leer, nichts
+  wird erfunden. Gelesen wird beim Anlegen in `_vorbelegung()` des Mixins
+  `KartoAbenteuerSchreiben`. Beim Bearbeiten stehen die gespeicherten Werte im
+  Dialog, ein Bestandseintrag wird nicht von selbst befüllt; unveränderte Felder
+  stempeln kein `lastModified`. Die „Quest“ ist das Abenteuer selbst und kein
+  eigenes Feld. Die Karten zeigen eine leise Zeile „Ort · Datum“.
+  **Suche** (`karto_abenteuer_suche.dart`): Suchknopf im Abenteuerabschnitt und
+  im Blatt, Suchfeld darunter. `sucheInAbenteuern` durchsucht Titel/Text/Ort/Datum
+  der Notizen und Name/Beschreibung/Ort/Datum der Personen **aller** Abenteuer
+  des Helden; jedes Wort muss vorkommen, Umlaute und Groß-/Kleinschreibung gelten
+  nicht (`vergleichsschluessel`, wie die Sortierung; „ö“ wird „o“, nicht „oe“).
+  Das Abenteuer, von dem aus gesucht wird, steht vorn (im Abschnitt das
+  laufende, im Blatt das gezeigte), die übrigen mit dem zuletzt angelegten
+  zuerst; Treffer folgen der gewählten Sortierung. Mit Suchtext ersetzen die
+  Treffer die Karten (das Limit von drei Personen/vier Notizen entfällt).
+  Treffer im eigenen Abenteuer bearbeitet man direkt, Treffer in anderen öffnen
+  deren Blatt (im Abschnitt über `onAbenteuerOeffnen` und damit den
+  Editorschutz, im Blatt direkt). Die Suche liest nur und schreibt nie.
+  **Würfelprotokoll (SPIEL-05):** `InspectorDiceLogSection` ist der gemeinsame
+  Baustein von Inspector-Probe-Tab und Spielansicht (über die Brücke
+  `spielProtokoll`). Spielabende: `gruppiereNachSpielabend`
+  (`dice_log_abende.dart`) teilt das Protokoll bei mehr als sechs Stunden Pause
+  (`kDiceLogAbendPause`); die Abende stehen fest, **bevor** gefiltert wird, ein
+  Filter verschluckt also keine Pause. Überschriften („Heute“, „Gestern“, „Fr,
+  16.10.2026“, dazu die Zahl der Würfe) gibt es nur bei mehr als einem Abend;
+  ein einziger Abend sieht aus wie zuvor (die klassische Optik bleibt). Reine
+  Anzeige. Ziele und Restpunkte: `DiceLogEntry` hat die additiven Felder
+  `zielwerte` (alle Zielwerte bei mehr als einem, in `jsonSchluessel`) und
+  `restpunkte` (verbleibender Pool); beide stehen nur bei Belegung im JSON und
+  werden nur für 3W20-Proben mit Ausgleichspool gesetzt
+  (`diceLogEntryFromResult`). Alte Einträge behalten ihre Anzeige („Ziel: n“),
+  weil sich TaP* nicht zurückrechnen lässt. Die Anzeige nennt „Ziele: 13/12/14“
+  und bei gelungener Probe „TaP*: n“ (Zauber „ZfP*“); bei Misslingen keine
+  Punkte. Nochmal würfeln: `onWiederholen` der Sektion blendet an Einträgen,
+  für die `diceLogEntryKannWiederholtWerden` gilt (Titel mit Präfix `Eigenschaftsprobe:`,
+  `Talentprobe:`, `Zauberprobe:` oder `Schnellprobe:` und passender Probeart,
+  weder neutral noch Buchung), einen Knopf ein. `wiederholeProbe`
+  (`probe_quick_search.dart`) sucht unter denselben Kandidaten wie die
+  Schnellsuche nach gleichem Titel **und** gleicher Art und öffnet den normalen
+  Probendialog mit den **aktuellen** Werten ohne die damaligen
+  Situationsmodifikatoren; `wiederholeProbeMitHinweis` meldet, wenn nichts
+  passt. Die Provider müssen geladen sein (die Protokollansicht hält sie
+  ohnehin offen).
   Der Seitentitel `Am Spieltisch` darf die Navigationsbeschriftung nicht
   wiederholen; die Navigationsprüfungen erwarten sie genau einmal.
   In der Planung entfällt der zusätzliche Seitentitel auf allen Breiten:

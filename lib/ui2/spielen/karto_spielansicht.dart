@@ -230,6 +230,10 @@ class KartoSpielansicht extends ConsumerWidget {
           final abenteuer = laufendesAbenteuer(werte.hero);
           if (abenteuer != null) _abenteuerOeffnen(context, abenteuer.id);
         },
+        // Suchtreffer in anderen Abenteuern öffnen deren Blatt, auf demselben
+        // geschützten Weg wie der Abschnittskopf.
+        onAbenteuerOeffnen: (abenteuerId) =>
+            _abenteuerOeffnen(context, abenteuerId),
       ),
       KartoAbschnitt(
         titel: 'Eigenschaften',

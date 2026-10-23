@@ -130,6 +130,103 @@ void main() {
     });
   });
 
+  group('Zielwerte und Restpunkte (SPIEL-05)', () {
+    ProbeResult talentErgebnis({required bool success, required int rest}) {
+      const request = ResolvedProbeRequest(
+        type: ProbeType.talent,
+        title: 'Talentprobe: Menschenkenntnis',
+        subtitle: 'KL/IN/CH',
+        ruleHint: 'hint',
+        diceSpec: DiceSpec(count: 3, sides: 20),
+        targets: <ProbeTargetValue>[
+          ProbeTargetValue(label: 'KL', value: 13),
+          ProbeTargetValue(label: 'IN', value: 12),
+          ProbeTargetValue(label: 'CH', value: 14),
+        ],
+      );
+      return ProbeResult(
+        request: request,
+        input: const ProbeRollInput(
+          mode: ProbeRollMode.digital,
+          diceValues: <int>[9, 15, 5],
+          situationalModifier: 0,
+          specializationApplied: false,
+        ),
+        diceValues: const <int>[9, 15, 5],
+        effectiveTargetValues: const <int>[13, 12, 14],
+        targetOverflows: const <int>[0, 3, 0],
+        compensationPoolStart: 5,
+        remainingPool: rest,
+        appliedAttributePenalty: 0,
+        total: 29,
+        success: success,
+        automaticOutcome: AutomaticOutcome.none,
+        specialExperience: false,
+        usedFixedRollTotal: false,
+      );
+    }
+
+    test('eine 3W20-Probe hält alle Zielwerte und die TaP* fest', () {
+      final entry = diceLogEntryFromResult(
+        talentErgebnis(success: true, rest: 2),
+      );
+
+      expect(entry.zielwerte, const [13, 12, 14]);
+      expect(entry.restpunkte, 2);
+      // Das Einzelziel bleibt für ältere Leser erhalten.
+      expect(entry.targetValue, 13);
+    });
+
+    test('Zielwerte und Restpunkte überstehen JSON', () {
+      final entry = diceLogEntryFromResult(
+        talentErgebnis(success: false, rest: -2),
+      );
+      final neu = DiceLogEntry.fromJson(entry.toJson());
+
+      expect(neu.zielwerte, const [13, 12, 14]);
+      expect(neu.restpunkte, -2);
+    });
+
+    test('bei Einzelwurf bleiben beide Felder leer und fehlen im JSON', () {
+      // Hash-Schutz: Bestandseinträge ändern sich im JSON nicht.
+      final einfach = diceLogEntryFromSimpleCheck(
+        title: 'Eigenschaftsprobe: MU',
+        subtitle: 'MU',
+        roll: 7,
+        targetValue: 12,
+      );
+      expect(einfach.zielwerte, isEmpty);
+      expect(einfach.restpunkte, isNull);
+      expect(einfach.toJson().containsKey('zielwerte'), isFalse);
+      expect(einfach.toJson().containsKey('restpunkte'), isFalse);
+
+      const alt = <String, dynamic>{
+        'timestamp': '2026-04-30T08:02:15.000Z',
+        'type': 'talent',
+        'title': 'Talentprobe: X',
+        'subtitle': '',
+        'success': true,
+        'diceValues': <int>[1, 2, 3],
+        'targetValue': 10,
+        'automaticOutcome': 'none',
+      };
+      final geladen = DiceLogEntry.fromJson(alt);
+      expect(geladen.zielwerte, isEmpty);
+      expect(geladen.restpunkte, isNull);
+      expect(geladen.toJson().containsKey('zielwerte'), isFalse);
+    });
+
+    test('ein Summenwurf bekommt keine Restpunkte', () {
+      final entry = diceLogEntryFromRoll(
+        title: 'Wurf',
+        subtitle: '',
+        diceValues: const <int>[3, 4, 5],
+      );
+      expect(entry.restpunkte, isNull);
+      expect(entry.zielwerte, isEmpty);
+    });
+  });
+
   group('diceLogEntryFromResult', () {
     test('maps ProbeResult of an attribute check', () {
       const request = ResolvedProbeRequest(

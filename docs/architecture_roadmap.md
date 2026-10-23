@@ -1,6 +1,6 @@
 # To-do-Liste: Weiterentwicklung der Heldenverwaltung
 
-Stand: 22.10.2026. Diese Liste führt **nur Status und offene Punkte**. Abgenommene
+Stand: 23.10.2026. Diese Liste führt **nur Status und offene Punkte**. Abgenommene
 Aufgaben und der Verlauf der Teilstände stehen unverändert im
 [Archiv](archiv/README.md); Verweise wie „ARCH-05 Teilstand (3)“ in Code und
 Dokumentation meinen den dortigen Text.
@@ -66,6 +66,70 @@ Ist-Zustand erneut prüfen und den konkreten Teilumfang festlegen.
   Zoo-Botanica), Hausregel-Abweichungen als eigenes Paket. Nicht Teil: Brauen,
   Rezepturenerwerb, Labor. Belege je Eintrag mit Buch und Seite, nichts ohne
   Beleg.
+
+## Spielabend: Vorschläge aus dem Spielerdurchgang (23.10.2026)
+
+Herkunft: Durchgang der Spielen-Ansicht auf `heldensync-test.web.app` aus
+Spielersicht (Dialoge Probe suchen, Rast, Schaden erhalten, Regeln, Effekte
+verwalten geöffnet, nichts bestätigt). **Nicht geprüft:** Gefecht beginnen und
+Inventar. Die Punkte sind Beobachtungen der Oberfläche, **keine Entscheidungen**
+und nicht gegen den Code geprüft. Vor einer Umsetzung Ist-Zustand prüfen und den
+Teilumfang festlegen. Nach Wichtigkeit sortiert.
+
+- [ ] **SPIEL-01 — Talente und Zauber in Reichweite.** Beobachtung: Die Probensuche
+  startet mit der Liste „Eigenschaften“; Talente und Zauber nur über Tippen oder
+  Strg+K, keine „Zuletzt gewürfelt“-Chips oder Favoriten. Eigenschaften und
+  Vor-/Nachteile (als Fließtext) belegen Platz, den man im Spiel selten braucht.
+  Vorschlag: Streifen mit sechs bis acht angepinnten oder zuletzt genutzten
+  Proben unter den Schnellaktionen, Vor-/Nachteile nach unten. Offen: Umfang und
+  Persistenz der Favoriten (siehe „Persönliche Favoriten“ in
+  [redesign_acceptance.md](redesign_acceptance.md)), Sync.
+- [ ] **SPIEL-02 — Gegenstände und Geld im Spiel.** Beobachtung: Auf der Spielen-Seite
+  weder Dukaten noch Munition, Tränke oder Proviant; zur Belastung nur der
+  Eintrag im Zustand-Block. Vorschlag: Block „Dabei“ mit Geld, Munition und
+  Verbrauchbarem (+/−); ein Trank wendet beim Benutzen Effekt und Menge
+  gemeinsam an (Anknüpfung an die TRANK-Pakete). Schreibwege nach den harten
+  Regeln (frisch schreiben, ein Dokument je Ablauf).
+- [ ] **SPIEL-03 — Zustände und Dauer.** Beobachtung: „Aktive Effekte“ kennt Zauber,
+  aber keine schnellen Marker für Betäubung, Furcht oder Schmerz; der
+  Kampfrundenzähler ist flüchtig und zählt keine Effektdauern herunter.
+  Vorschlag: freie Zustandsmarker mit optionaler Dauer, die beim Rundenwechsel
+  herunterzählen. Offen: persistenter Rundenzähler (bisher bewusst nicht gebaut,
+  siehe [redesign_acceptance.md](redesign_acceptance.md)); ohne Regelautomatik.
+- [ ] **SPIEL-04 — Regelnachschlag ohne Vorarbeit.** Beobachtung: „Regeln“ verlangt
+  zuerst den manuellen Upload der `index.sqlite`; am Spieltisch, besonders auf
+  Tablet oder Handy, praktisch eine Sackgasse. Vorschlag: mitgeliefertes
+  Regel-Kompendium aus eigenen Zusammenfassungen (Option C in
+  [spielmodus_konzept.md](spielmodus_konzept.md#24-regel-nachschlag-in-der-app));
+  keine Volltexte offizieller Regelwerke im Klartext (harte Regel 13).
+- [x] **SPIEL-05 — Würfelprotokoll.** Beobachtung: lange Liste ohne Trennung nach
+  Spielabend oder Datum, nur Uhrzeit, bei 3W20 nur das erste Ziel und keine
+  TaP*. **Umgesetzt 23.10.2026** (Details in
+  [ui_oberflaeche.md](hinweise/ui_oberflaeche.md)): Gliederung nach Spielabend
+  (Pause über sechs Stunden, Überschriften nur ab zwei Abenden), neue additive
+  Felder `zielwerte` und `restpunkte` am `DiceLogEntry` (Anzeige „Ziele:
+  13/12/14 | TaP*: 4“, nur für neue Würfe), „Nochmal würfeln“ an Eigenschafts-,
+  Talent-, Zauber- und Kampf-Schnellproben über den normalen Probendialog mit
+  aktuellen Werten. **Grenzen:** das Protokoll hält weiter höchstens
+  `HeroState.diceLogMax` (50) Einträge, ältere Abende fallen heraus; beim
+  Wiederholen gehen die damaligen Situationsmodifikatoren verloren; Gefechts-
+  aufträge, Schaden und Rast lassen sich nicht wiederholen.
+- [x] **SPIEL-06 — Notizen auffindbar machen.** Beobachtung: Notizen und Personen
+  sind schnell angelegt, aber nicht durchsuchbar und nicht Ort oder Quest
+  zugeordnet. Entscheidung 23.10.2026: Suche über **alle** Abenteuer (das
+  laufende zuerst) und, statt freier Schlagworte, feste Felder **Ort** (vorbelegt
+  aus dem Standort des Helden) und **Datum** (vorbelegt aus dem aktuellen Datum
+  des Abenteuers); die Quest ist das Abenteuer selbst. Das aktuelle Datum steht
+  als Chip schon im Abenteuerabschnitt der Spielansicht. **Umgesetzt**
+  (Notizen und Personen; Details in
+  [ui_oberflaeche.md](hinweise/ui_oberflaeche.md)): additive Felder `ort` und
+  `datum` an `HeroNoteEntry`/`HeroAdventurePersonEntry` (nur bei Belegung im
+  JSON), Vorbelegung in Dialog und Schnell-Erfassung, Zeile „Ort · Datum“ auf
+  den Karten, Suchknopf mit Suchfeld in Abschnitt und Blatt. Die Notizen im
+  Notizen-Tab der Verwaltung (Bestandsoberfläche) zeigen die neuen Felder noch
+  nicht, erhalten sie aber beim Bearbeiten (`copyWith`). **Offen:** Ort und
+  Datum im Bestandseditor, Suche über die allgemeinen Notizen des Helden
+  (`HeroSheet.notes`), Umlautfaltung „oe“→„ö“.
 
 ## Arbeitsweise und gemeinsame Grenzen
 
@@ -152,13 +216,13 @@ ist die in der Abnahme oben vermerkte unvollständige Wiederholung nachgeholt.
 *Checkliste für die manuelle Bedienprüfung (offen, Gerät nötig).* Erst wenn
 alle Punkte bestanden sind, ARCH-02 oben abhaken:
 
-- [ ] Übersicht: je Gruppe Rasse/Kultur/Profession einen direkten Modifikator
+- [x] Übersicht: je Gruppe Rasse/Kultur/Profession einen direkten Modifikator
   und ein freies Fragment anlegen, ändern, entfernen; Werte im Bogen stimmen.
-- [ ] Merkmal: Herkunft über den gemeinsamen Dialog ändern (Übersicht und
+- [x] Merkmal: Herkunft über den gemeinsamen Dialog ändern (Übersicht und
   UI2-Merkmalsblatt); Wirkung bleibt unverändert, nur das Metadatum wechselt.
-- [ ] Schmal (360 px) und Textfaktor 2: keine Überläufe in Herkunftskarten,
+- [x] Schmal (360 px) und Textfaktor 2: keine Überläufe in Herkunftskarten,
   Dialogen und Merkmalsblatt.
-- [ ] Offene Planung: Bearbeiten fragt nach, „Abbrechen“ erhält die Sitzung,
+- [x] Offene Planung: Bearbeiten fragt nach, „Abbrechen“ erhält die Sitzung,
   UI2-Merkmalsblatt ist schreibgeschützt.
 - [ ] Abweichung durch ältere App (Textfeld geändert): Bearbeiten gesperrt bis
   „Text übernehmen“ oder „Liste behalten“; nichts wird still aufgelöst.
@@ -167,6 +231,19 @@ alle Punkte bestanden sind, ARCH-02 oben abhaken:
 - [ ] Live-Sync mit zwei Geräten (Firebase): gleiche Änderung in einer Gruppe
   auf beiden Geräten ergibt einen sichtbaren Konflikt, verschiedene Gruppen
   führen still zusammen.
+
+*Stand der Bedienprüfung (23.10.2026).* Die vier ersten Punkte wurden mit dem
+Testhelden „x_Laila al-Beychaliban (Test)“ im Edge-Debugfenster
+(`flutter run -d edge --web-port=5000`, 360 px per Fenster-Emulation,
+Textfaktor 2 per Browser-Schriftgröße, keine Overflow-Meldungen in der Konsole)
+geprüft. Das Debugfenster kann nicht synchronisieren: der App-Check-Abruf liefert
+HTTP 403, weil das frische Profil einen nicht registrierten Debug-Token erzeugt.
+Auf `heldensync-test.web.app` (Build `66698c5`) wurde im echten Edge ein
+Kultur-Modifikator samt Freitext-Fragment angelegt, gespeichert, synchronisiert
+(0 offene Konflikte) und wieder entfernt; dort ist nur die Zwei-Geräte-Prüfung
+offen. Nicht geprüft: Abweichung durch ältere App und Export → Import. Kleine
+Optikmängel bei 360 px/Textfaktor 2 (kein Überlauf): der Button
+„+ Herkunftsmodifikator“ und der Dialogtitel brechen mitten im Wort um.
 
 ## ARCH-03 — Gemeinsame Ausrüstungsdaten für Inventar und Kampf
 

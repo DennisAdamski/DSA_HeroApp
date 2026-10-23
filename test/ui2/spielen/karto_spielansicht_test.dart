@@ -428,6 +428,185 @@ void main() {
       expect(abenteuer.notes, hasLength(1));
     });
 
+    testWidgets('Schnellnotiz übernimmt Standort und Datum des Abenteuers', (
+      tester,
+    ) async {
+      final repo = FakeRepository(
+        heroes: [
+          mitAbenteuern([_nebel]),
+        ],
+        states: {
+          'praiodan': const HeroState.empty().copyWith(standort: 'Gareth'),
+        },
+      );
+      await zeige(
+        tester,
+        held: mitAbenteuern([_nebel]),
+        repository: repo,
+        breite: 1024,
+      );
+      final feld = schluessel('karto-spiel-abenteuer-schnellnotiz');
+      await tester.ensureVisible(feld);
+      await tester.enterText(feld, 'Brücke ist gesperrt');
+      await tester.testTextInput.receiveAction(TextInputAction.send);
+      await tester.pumpAndSettle();
+
+      final notiz = (await repo.loadHeroById('praiodan'))!
+          .adventures
+          .single
+          .notes
+          .last;
+      expect(notiz.ort, 'Gareth');
+      expect(notiz.datum, '12. Phex 1043 BF');
+      expect(find.text('Gareth · 12. Phex 1043 BF'), findsOneWidget);
+    });
+
+    testWidgets('ohne Standort und Datum bleiben Ort und Datum leer', (
+      tester,
+    ) async {
+      final ohneDatum = mitAbenteuern([
+        _nebel.copyWith(
+          currentAventurianDate: const HeroAdventureDateValue(),
+          startAventurianDate: const HeroAdventureDateValue(),
+        ),
+      ]);
+      final repo = FakeRepository(heroes: [ohneDatum]);
+      await zeige(tester, held: ohneDatum, repository: repo, breite: 1024);
+      final feld = schluessel('karto-spiel-abenteuer-schnellnotiz');
+      await tester.ensureVisible(feld);
+      await tester.enterText(feld, 'Nur ein Hinweis');
+      await tester.testTextInput.receiveAction(TextInputAction.send);
+      await tester.pumpAndSettle();
+      final notiz = (await repo.loadHeroById('praiodan'))!
+          .adventures
+          .single
+          .notes
+          .last;
+      expect(notiz.ort, isEmpty);
+      expect(notiz.datum, isEmpty);
+      // Ohne beides keine leere Kontextzeile und kein Eintrag im JSON.
+      expect(notiz.toJson().containsKey('ort'), isFalse);
+      expect(notiz.toJson().containsKey('datum'), isFalse);
+    });
+
+    group('Suche', () {
+      const alt = HeroAdventureEntry(
+        id: 'alt',
+        title: 'Die alte Fracht',
+        status: HeroAdventureStatus.completed,
+        notes: [
+          HeroNoteEntry(
+            title: 'Nebelpass',
+            description: 'Zoll am Pass.',
+            ort: 'Punin',
+            datum: '3. Rahja 1040 BF',
+          ),
+        ],
+        people: [
+          HeroAdventurePersonEntry(
+            id: 'p9',
+            name: 'Zöllner Bero',
+            description: 'Kennt den Nebelpass.',
+          ),
+        ],
+      );
+
+      Future<void> suche(WidgetTester tester, String text) async {
+        // Beim zweiten Aufruf ist das Feld schon offen.
+        if (schluessel('karto-abenteuer-suche').evaluate().isEmpty) {
+          final knopf = schluessel('karto-abenteuer-suche-knopf');
+          await tester.ensureVisible(knopf);
+          await tester.tap(knopf);
+          await tester.pumpAndSettle();
+        }
+        await tester.enterText(schluessel('karto-abenteuer-suche'), text);
+        await tester.pumpAndSettle();
+      }
+
+      testWidgets('findet Treffer aller Abenteuer, das laufende steht vorn', (
+        tester,
+      ) async {
+        await zeige(tester, held: mitAbenteuern([alt, _nebel]), breite: 1024);
+        await suche(tester, 'nebel');
+
+        expect(schluessel('karto-abenteuer-suche-anzahl'), findsOneWidget);
+        expect(find.text('3 Treffer in 2 Abenteuern'), findsOneWidget);
+        expect(find.text('Laufendes Abenteuer'), findsOneWidget);
+        expect(find.text('Abgeschlossen'), findsOneWidget);
+        // Das laufende Abenteuer steht vor dem abgeschlossenen, obwohl es in
+        // der Liste des Helden hinten steht.
+        expect(
+          tester.getTopLeft(find.text('Der Nebelreiter')).dy,
+          lessThan(tester.getTopLeft(find.text('Nebelpass')).dy),
+        );
+        // Ort und Datum stehen an der Karte.
+        expect(find.text('Punin · 3. Rahja 1040 BF'), findsOneWidget);
+      });
+
+      testWidgets('sucht in Ort und Datum und ohne Rücksicht auf Umlaute', (
+        tester,
+      ) async {
+        await zeige(tester, held: mitAbenteuern([alt, _nebel]), breite: 1024);
+        await suche(tester, 'punin');
+        expect(find.text('Nebelpass'), findsOneWidget);
+        expect(find.text('Der Nebelreiter'), findsNothing);
+
+        await suche(tester, 'zollner');
+        expect(find.text('Zöllner Bero'), findsOneWidget);
+      });
+
+      testWidgets('ein Treffer im laufenden Abenteuer bearbeitet direkt', (
+        tester,
+      ) async {
+        await zeige(tester, held: mitAbenteuern([alt, _nebel]), breite: 1024);
+        await suche(tester, 'reiter');
+        await tester.tap(find.text('Der Nebelreiter'));
+        await tester.pumpAndSettle();
+        expect(find.byType(BottomSheet), findsNothing);
+        expect(find.text('Notiz bearbeiten'), findsOneWidget);
+      });
+
+      testWidgets(
+        'ein Treffer in einem anderen Abenteuer öffnet dessen Blatt',
+        (tester) async {
+          await zeige(tester, held: mitAbenteuern([alt, _nebel]), breite: 1024);
+          await suche(tester, 'zoll');
+          await tester.tap(find.text('Nebelpass'));
+          await tester.pumpAndSettle();
+          expect(find.byType(BottomSheet), findsOneWidget);
+          // Das Blatt des abgeschlossenen Abenteuers hat seine eigene
+          // Anlege-Kachel; der Titel steht jetzt auch im Blatt.
+          expect(schluessel('karto-abenteuer-notiz-neu'), findsOneWidget);
+          expect(find.text('Die alte Fracht'), findsNWidgets(2));
+        },
+      );
+
+      testWidgets('ohne Treffer sagt die Suche das, und Schließen räumt auf', (
+        tester,
+      ) async {
+        await zeige(tester, held: mitAbenteuern([alt, _nebel]), breite: 1024);
+        await suche(tester, 'drachenhort');
+        expect(schluessel('karto-abenteuer-suche-leer'), findsOneWidget);
+        expect(find.byType(KartoNotizkarte), findsNothing);
+
+        await tester.tap(schluessel('karto-abenteuer-suche-schliessen'));
+        await tester.pumpAndSettle();
+        expect(schluessel('karto-abenteuer-suche'), findsNothing);
+        expect(find.text('Der Nebelreiter'), findsOneWidget);
+      });
+
+      testWidgets(
+        'ohne laufendes Abenteuer durchsucht sie die abgeschlossenen',
+        (tester) async {
+          await zeige(tester, held: mitAbenteuern([alt]), breite: 1024);
+          await suche(tester, 'bero');
+          expect(find.text('Zöllner Bero'), findsOneWidget);
+          expect(find.text('Laufendes Abenteuer'), findsNothing);
+          expect(find.text('Abgeschlossen'), findsOneWidget);
+        },
+      );
+    });
+
     testWidgets('weitere Karten klappen inline auf', (tester) async {
       final viele = _nebel.copyWith(
         notes: [

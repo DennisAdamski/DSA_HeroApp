@@ -8,6 +8,7 @@ import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abenteuer_karten.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abenteuer_schreiben.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abenteuer_sortierung.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abenteuer_suche.dart';
 import 'package:dsa_heldenverwaltung/ui2/widgets/karto_kartenraster.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_laufendes_abenteuer.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
@@ -80,6 +81,53 @@ class _KartoAbenteuerblattState extends ConsumerState<KartoAbenteuerblatt>
   @override
   String get abenteuerId => widget.abenteuerId;
 
+  final TextEditingController _suchfeld = TextEditingController();
+  bool _sucheOffen = false;
+  String _suche = '';
+
+  @override
+  void dispose() {
+    _suchfeld.dispose();
+    super.dispose();
+  }
+
+  // Schaltet die Suche um; beim Schließen verschwindet auch der Suchtext.
+  void _sucheUmschalten() {
+    setState(() {
+      _sucheOffen = !_sucheOffen;
+      if (!_sucheOffen) {
+        _suchfeld.clear();
+        _suche = '';
+      }
+    });
+  }
+
+  // Treffer in diesem Abenteuer bearbeitet man hier; Treffer in anderen
+  // Abenteuern öffnen deren Blatt über diesem.
+  void _notizTreffer(AbenteuerTreffer treffer, int index) {
+    if (!treffer.aktuell) {
+      zeigeAbenteuerblatt(
+        context: context,
+        heroId: widget.heroId,
+        abenteuerId: treffer.abenteuer.id,
+      );
+    } else if (!gesperrt && !schreibt) {
+      notizBearbeiten(index, treffer.abenteuer.notes[index]);
+    }
+  }
+
+  void _personTreffer(AbenteuerTreffer treffer, int index) {
+    if (!treffer.aktuell) {
+      zeigeAbenteuerblatt(
+        context: context,
+        heroId: widget.heroId,
+        abenteuerId: treffer.abenteuer.id,
+      );
+    } else if (!gesperrt && !schreibt) {
+      personBearbeiten(treffer.abenteuer.people[index]);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final berechnet = ref.watch(heroComputedProvider(widget.heroId));
@@ -109,6 +157,18 @@ class _KartoAbenteuerblattState extends ConsumerState<KartoAbenteuerblatt>
     final sortierung = ref.watch(abenteuerSortierungProvider);
     final notizfolge = sortiereNotizen(notizen, sortierung);
     final personenfolge = sortierePersonen(personen, sortierung);
+    final suchtext = _suche.trim();
+    // Mit Suchtext ersetzen die Treffer aller Abenteuer die Karten dieses
+    // Abenteuers.
+    final suchend = _sucheOffen && suchtext.isNotEmpty;
+    final treffer = suchend
+        ? sucheInAbenteuern(
+            abenteuer: werte.hero.adventures,
+            aktuellId: widget.abenteuerId,
+            suchtext: suchtext,
+            sortierung: sortierung,
+          )
+        : const <AbenteuerTreffer>[];
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -160,64 +220,104 @@ class _KartoAbenteuerblattState extends ConsumerState<KartoAbenteuerblatt>
               ),
             ],
             const SizedBox(height: Abstand.bahn),
-            const Align(
-              alignment: Alignment.centerLeft,
-              child: KartoAbenteuerSortierwahl(),
+            Row(
+              children: [
+                // Flexible: bei großer Systemschrift darf die Sortierwahl
+                // schrumpfen, statt den Suchknopf aus dem Blatt zu schieben.
+                const Flexible(
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: KartoAbenteuerSortierwahl(),
+                  ),
+                ),
+                KartoAbenteuerSuchknopf(
+                  offen: _sucheOffen,
+                  onPressed: _sucheUmschalten,
+                ),
+              ],
             ),
-            const SizedBox(height: Abstand.normal),
-            _Kopfzeile(titel: 'Personen', anzahl: personen.length),
-            const SizedBox(height: Abstand.weit),
-            if (personen.isEmpty && gesperrt)
-              _leer('Noch keine Personen.')
-            else
-              KartoKartenraster(
-                mindestbreite: 220,
-                kinder: [
-                  for (final person in [
-                    for (final i in personenfolge) personen[i],
-                  ])
-                    KartoFigurenkarte(
-                      name: person.name,
-                      beschreibung: person.description,
-                      onTap: bearbeitbar
-                          ? () => personBearbeiten(person)
-                          : null,
-                    ),
-                  if (!gesperrt)
-                    KartoFreieKachel(
-                      key: const ValueKey<String>('karto-abenteuer-person-neu'),
-                      beschriftung: 'Person hinzufügen',
-                      symbol: Icons.person_add_alt,
-                      onTap: bearbeitbar ? personAnlegen : null,
-                    ),
-                ],
+            if (_sucheOffen) ...[
+              const SizedBox(height: Abstand.normal),
+              KartoAbenteuerSuchfeld(
+                controller: _suchfeld,
+                onChanged: (text) => setState(() => _suche = text),
+                onSchliessen: _sucheUmschalten,
               ),
-            const SizedBox(height: Abstand.rand),
-            _Kopfzeile(titel: 'Notizen', anzahl: notizen.length),
-            const SizedBox(height: Abstand.weit),
-            if (notizen.isEmpty && gesperrt)
-              _leer('Noch keine Notizen.')
-            else
-              KartoKartenraster(
-                mindestbreite: 300,
-                kinder: [
-                  for (final i in notizfolge)
-                    KartoNotizkarte(
-                      titel: notizen[i].title,
-                      text: notizen[i].description,
-                      onTap: bearbeitbar
-                          ? () => notizBearbeiten(i, notizen[i])
-                          : null,
-                    ),
-                  if (!gesperrt)
-                    KartoFreieKachel(
-                      key: const ValueKey<String>('karto-abenteuer-notiz-neu'),
-                      beschriftung: 'Notiz hinzufügen',
-                      symbol: Icons.note_add_outlined,
-                      onTap: bearbeitbar ? notizAnlegen : null,
-                    ),
-                ],
+            ],
+            if (suchend) ...[
+              const SizedBox(height: Abstand.weit),
+              KartoAbenteuerSuchergebnisse(
+                treffer: treffer,
+                suchtext: suchtext,
+                aktuellBeschriftung: 'Dieses Abenteuer',
+                onNotiz: _notizTreffer,
+                onPerson: _personTreffer,
               ),
+            ],
+            if (!suchend) ...[
+              const SizedBox(height: Abstand.normal),
+              _Kopfzeile(titel: 'Personen', anzahl: personen.length),
+              const SizedBox(height: Abstand.weit),
+              if (personen.isEmpty && gesperrt)
+                _leer('Noch keine Personen.')
+              else
+                KartoKartenraster(
+                  mindestbreite: 220,
+                  kinder: [
+                    for (final person in [
+                      for (final i in personenfolge) personen[i],
+                    ])
+                      KartoFigurenkarte(
+                        name: person.name,
+                        beschreibung: person.description,
+                        ort: person.ort,
+                        datum: person.datum,
+                        onTap: bearbeitbar
+                            ? () => personBearbeiten(person)
+                            : null,
+                      ),
+                    if (!gesperrt)
+                      KartoFreieKachel(
+                        key: const ValueKey<String>(
+                          'karto-abenteuer-person-neu',
+                        ),
+                        beschriftung: 'Person hinzufügen',
+                        symbol: Icons.person_add_alt,
+                        onTap: bearbeitbar ? personAnlegen : null,
+                      ),
+                  ],
+                ),
+              const SizedBox(height: Abstand.rand),
+              _Kopfzeile(titel: 'Notizen', anzahl: notizen.length),
+              const SizedBox(height: Abstand.weit),
+              if (notizen.isEmpty && gesperrt)
+                _leer('Noch keine Notizen.')
+              else
+                KartoKartenraster(
+                  mindestbreite: 300,
+                  kinder: [
+                    for (final i in notizfolge)
+                      KartoNotizkarte(
+                        titel: notizen[i].title,
+                        text: notizen[i].description,
+                        ort: notizen[i].ort,
+                        datum: notizen[i].datum,
+                        onTap: bearbeitbar
+                            ? () => notizBearbeiten(i, notizen[i])
+                            : null,
+                      ),
+                    if (!gesperrt)
+                      KartoFreieKachel(
+                        key: const ValueKey<String>(
+                          'karto-abenteuer-notiz-neu',
+                        ),
+                        beschriftung: 'Notiz hinzufügen',
+                        symbol: Icons.note_add_outlined,
+                        onTap: bearbeitbar ? notizAnlegen : null,
+                      ),
+                  ],
+                ),
+            ],
             const SizedBox(height: Abstand.rand),
             Text(
               'Abschluss und Belohnungen pflegst du in der Verwaltung.',

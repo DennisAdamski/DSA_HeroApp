@@ -213,6 +213,8 @@ class HeroAdventurePersonEntry {
     required this.id,
     this.name = '',
     this.description = '',
+    this.ort = '',
+    this.datum = '',
     this.lastModified,
     this.unbekannteFelder = const <String, Object?>{},
   });
@@ -225,6 +227,14 @@ class HeroAdventurePersonEntry {
 
   /// Kurze Kontextbeschreibung der Person.
   final String description;
+
+  /// Ort der Begegnung; leer bei Bestandspersonen. Nur belegt im JSON, damit
+  /// sich der Inhalts-Hash alter Helden nicht aendert.
+  final String ort;
+
+  /// Aventurisches Datum der Begegnung als Anzeigetext; leer bei
+  /// Bestandspersonen. Nur belegt im JSON.
+  final String datum;
 
   /// Zeitpunkt der letzten Bearbeitung (UTC); `null` bei Bestandspersonen.
   ///
@@ -246,6 +256,8 @@ class HeroAdventurePersonEntry {
     'id',
     'name',
     'description',
+    'ort',
+    'datum',
     'lastModified',
   };
 
@@ -254,6 +266,8 @@ class HeroAdventurePersonEntry {
     String? id,
     String? name,
     String? description,
+    String? ort,
+    String? datum,
     Object? lastModified = _copySentinel,
     Map<String, Object?>? unbekannteFelder,
   }) {
@@ -261,6 +275,8 @@ class HeroAdventurePersonEntry {
       id: id ?? this.id,
       name: name ?? this.name,
       description: description ?? this.description,
+      ort: ort ?? this.ort,
+      datum: datum ?? this.datum,
       lastModified: identical(lastModified, _copySentinel)
           ? this.lastModified
           : lastModified as DateTime?,
@@ -274,6 +290,8 @@ class HeroAdventurePersonEntry {
       'id': id,
       'name': name,
       'description': description,
+      if (ort.isNotEmpty) 'ort': ort,
+      if (datum.isNotEmpty) 'datum': datum,
       if (lastModified != null)
         'lastModified': lastModified!.toUtc().toIso8601String(),
     }, unbekannteFelder);
@@ -287,6 +305,8 @@ class HeroAdventurePersonEntry {
       id: getString('id'),
       name: getString('name'),
       description: getString('description'),
+      ort: getString('ort'),
+      datum: getString('datum'),
       lastModified: DateTime.tryParse(json['lastModified']?.toString() ?? ''),
       unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
     );

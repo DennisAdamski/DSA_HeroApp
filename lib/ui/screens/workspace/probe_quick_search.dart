@@ -5,6 +5,7 @@ import 'package:dsa_heldenverwaltung/catalog/spell_def.dart';
 import 'package:dsa_heldenverwaltung/catalog/talent_def.dart';
 import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
+import 'package:dsa_heldenverwaltung/domain/dice_log_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/talent_probe_rules.dart';
@@ -38,6 +39,82 @@ Future<void> showProbeQuickSearch({
     heroId: heroId,
     request: candidate.buildRequest(),
   );
+}
+
+/// Würfelt die Probe eines Protokolleintrags nochmal (SPIEL-05).
+///
+/// Die Probe wird unter denselben Kandidaten gesucht wie in der Schnellsuche;
+/// Titel und Probeart müssen zum [entry] passen. Geöffnet wird der normale
+/// Probendialog mit den **aktuellen** Werten des Helden und ohne die damaligen
+/// Situationsmodifikatoren, das Ergebnis wird wie jede Probe protokolliert.
+///
+/// Gibt `false` zurück, wenn die Probe nicht mehr gefunden wird (etwa weil der
+/// Zauber inzwischen fehlt) oder der Held noch nicht geladen ist; dann öffnet
+/// sich nichts.
+Future<bool> wiederholeProbe({
+  required BuildContext context,
+  required WidgetRef ref,
+  required String heroId,
+  required DiceLogEntry entry,
+}) async {
+  final hero = ref.read(heroByIdProvider(heroId));
+  final snapshot = ref.read(heroComputedProvider(heroId)).valueOrNull;
+  final catalog = ref.read(heroRulesCatalogProvider(heroId)).valueOrNull;
+  if (hero == null || snapshot == null || catalog == null) {
+    return false;
+  }
+  final candidates = _buildCandidates(
+    hero: hero,
+    snapshot: snapshot,
+    catalogTalents: catalog.talents,
+    catalogSpells: catalog.spells,
+    talentBeOverride: ref.read(talentBeOverrideProvider(heroId)),
+    epicAdvantagesActive: ref.read(heroEpicAdvantagesActiveProvider(heroId)),
+  );
+  for (final candidate in candidates) {
+    final request = candidate.buildRequest();
+    if (request.title != entry.title || request.type != entry.type) {
+      continue;
+    }
+    if (!context.mounted) {
+      return false;
+    }
+    await showLoggedProbeDialog(
+      context: context,
+      ref: ref,
+      heroId: heroId,
+      request: request,
+    );
+    return true;
+  }
+  return false;
+}
+
+/// Wie [wiederholeProbe], nennt aber in einer Meldung, wenn sich die Probe
+/// nicht wiederholen lässt. Für die Protokollansichten.
+Future<void> wiederholeProbeMitHinweis({
+  required BuildContext context,
+  required WidgetRef ref,
+  required String heroId,
+  required DiceLogEntry entry,
+}) async {
+  final meldung = ScaffoldMessenger.maybeOf(context);
+  final gefunden = await wiederholeProbe(
+    context: context,
+    ref: ref,
+    heroId: heroId,
+    entry: entry,
+  );
+  if (!gefunden) {
+    meldung?.showSnackBar(
+      const SnackBar(
+        content: Text(
+          'Diese Probe lässt sich nicht wiederholen: Sie steht nicht mehr im '
+          'Bogen.',
+        ),
+      ),
+    );
+  }
 }
 
 /// Kategorien der Schnellsuche in fester Anzeige-Reihenfolge.
