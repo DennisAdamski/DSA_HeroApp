@@ -174,3 +174,52 @@ def test_upload_befehle_laden_die_datei_vor_dem_verweis(tmp_path: Path) -> None:
     assert upload_commands(release, tmp_path, "gs://mein-bucket/")[1][-1] == (
         "gs://mein-bucket/rules/latest.json"
     )
+
+
+def test_upload_startet_gcloud_ueber_den_aufgeloesten_pfad(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # Unter Windows ist gcloud ein .cmd-Skript; der nackte Name startet es nicht.
+    from dsa_rules_mcp import cli
+
+    quelle = _source_db(tmp_path / "index.sqlite")
+    aufrufe: list[list[str]] = []
+
+    class Ergebnis:
+        returncode = 0
+
+    monkeypatch.setattr(cli.shutil, "which", lambda name: r"C:\sdk\bin\gcloud.CMD")
+    monkeypatch.setattr(
+        cli.subprocess, "run", lambda command, check: aufrufe.append(command) or Ergebnis()
+    )
+
+    status = cli._publish(quelle, str(tmp_path / "out"), "mein-bucket", tmp_path)
+
+    assert status == 0
+    assert len(aufrufe) == 2
+    assert all(command[0] == r"C:\sdk\bin\gcloud.CMD" for command in aufrufe)
+    assert aufrufe[0][-1].startswith("gs://mein-bucket/rules/index-")
+    assert aufrufe[1][-1] == "gs://mein-bucket/rules/latest.json"
+
+
+def test_upload_bricht_ab_und_laesst_den_verweis_stehen(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from dsa_rules_mcp import cli
+
+    quelle = _source_db(tmp_path / "index.sqlite")
+    aufrufe: list[list[str]] = []
+
+    class Fehlschlag:
+        returncode = 7
+
+    monkeypatch.setattr(cli.shutil, "which", lambda name: "gcloud")
+    monkeypatch.setattr(
+        cli.subprocess, "run", lambda command, check: aufrufe.append(command) or Fehlschlag()
+    )
+
+    status = cli._publish(quelle, str(tmp_path / "out"), "mein-bucket", tmp_path)
+
+    assert status == 7
+    # Nach dem fehlgeschlagenen Datei-Upload wird `latest.json` nicht angefasst.
+    assert len(aufrufe) == 1

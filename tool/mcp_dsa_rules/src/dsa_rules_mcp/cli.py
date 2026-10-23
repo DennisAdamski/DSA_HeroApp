@@ -98,13 +98,16 @@ def _publish(db_path: Path, out: str | None, bucket: str | None, data_dir: Path)
                   file=sys.stderr)
         print("\nOder gleich: dsa-rules-cli publish --upload <BUCKET>", file=sys.stderr)
         return 0
-    if shutil.which("gcloud") is None:
+    gcloud = shutil.which("gcloud")
+    if gcloud is None:
         print("Fehler: gcloud nicht gefunden. Befehle oben von Hand ausfuehren.",
               file=sys.stderr)
         return 1
     for command in commands:
         print("> " + " ".join(command), file=sys.stderr)
-        result = subprocess.run(command, check=False)
+        # Unter Windows ist `gcloud` ein .cmd-Skript, das der nackte Name nicht
+        # startet; `which` liefert den vollen Pfad samt Endung.
+        result = subprocess.run([gcloud, *command[1:]], check=False)
         if result.returncode != 0:
             print("Upload abgebrochen; `latest.json` zeigt weiter auf die alte Datei.",
                   file=sys.stderr)
