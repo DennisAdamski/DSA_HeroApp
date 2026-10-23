@@ -7,6 +7,7 @@ import 'package:dsa_heldenverwaltung/data/rules_search/rules_index_remote_client
 import 'package:dsa_heldenverwaltung/data/rules_search/rules_index_search.dart';
 import 'package:dsa_heldenverwaltung/data/rules_search/rules_index_sync_service.dart';
 import 'package:dsa_heldenverwaltung/data/rules_search/rules_index_types.dart';
+import 'package:dsa_heldenverwaltung/state/rules_index_providers.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/catalog_unlock_dialog.dart';
 
@@ -58,6 +59,10 @@ class _RulesLookupDialogState extends ConsumerState<RulesLookupDialog> {
   String _query = '';
   bool _searched = false;
 
+  /// Ob der Nutzer das Aktualisieren selbst angestoßen hat und eine
+  /// Rückmeldung erwartet, auch wenn nichts Neues da ist.
+  bool _manuellAktualisiert = false;
+
   /// Standardmäßig durchsuchte Kategorien (wie beim MCP-Server).
   final Set<RulesSourceCategory> _categories = <RulesSourceCategory>{
     RulesSourceCategory.regelbuecher,
@@ -86,6 +91,50 @@ class _RulesLookupDialogState extends ConsumerState<RulesLookupDialog> {
   void dispose() {
     _search?.dispose();
     super.dispose();
+  }
+
+  /// Öffnet die Datenbank neu, nachdem im Hintergrund eine neue Fassung
+  /// installiert wurde.
+  Future<void> _neuLaden() async {
+    _search?.dispose();
+    setState(() {
+      _search = null;
+      _loading = true;
+      _hits = const <RulesSearchHit>[];
+      _searched = false;
+      _query = '';
+    });
+    await _load();
+  }
+
+  /// Reagiert auf das Hintergrundladen: neue Fassung öffnen, bei manuellem
+  /// Aktualisieren auch „schon aktuell“ melden.
+  void _beiSyncAenderung(
+    RulesIndexSyncState? vorher,
+    RulesIndexSyncState jetzt,
+  ) {
+    if (vorher != null && jetzt.revision != vorher.revision) {
+      _manuellAktualisiert = false;
+      _neuLaden();
+      return;
+    }
+    if (_manuellAktualisiert &&
+        vorher != null &&
+        vorher.running &&
+        jetzt.phase == RulesIndexSyncPhase.done) {
+      _manuellAktualisiert = false;
+      ScaffoldMessenger.maybeOf(context)?.showSnackBar(
+        const SnackBar(content: Text('Die Wissensbasis ist aktuell.')),
+      );
+    }
+    if (jetzt.phase == RulesIndexSyncPhase.failed) _manuellAktualisiert = false;
+  }
+
+  /// Startet das Laden über die Cloud; [pruefen] fragt nur nach einer neueren
+  /// Fassung, sonst wird immer geladen.
+  void _cloudStarten({required bool pruefen}) {
+    _manuellAktualisiert = pruefen;
+    ref.read(rulesIndexAutoSyncProvider.notifier).start(force: !pruefen);
   }
 
   /// Führt die Suche mit aktueller Eingabe und Kategorie-Auswahl aus.
@@ -277,6 +326,10 @@ class _RulesLookupDialogState extends ConsumerState<RulesLookupDialog> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<RulesIndexSyncState>(
+      rulesIndexAutoSyncProvider,
+      _beiSyncAenderung,
+    );
     return Dialog(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 640, maxHeight: 640),
@@ -312,7 +365,12 @@ class _RulesLookupDialogState extends ConsumerState<RulesLookupDialog> {
   /// immer möglich, der Server-Download scheitert dort an fehlenden
   /// CORS-Freigaben des Servers und verweist dann auf den Upload.
   Widget _buildNotice() {
-    final konfiguriert = ref.watch(rulesIndexRemoteConfigProvider).isConfigured;
+    final cloud = ref.watch(rulesIndexCloudAvailableProvider);
+    // Der Cloud-Weg ersetzt den NAS-Weg, wo ein Build ihn hat.
+    final konfiguriert =
+        !cloud && ref.watch(rulesIndexRemoteConfigProvider).isConfigured;
+    final sync = ref.watch(rulesIndexAutoSyncProvider);
+    final angemeldet = ref.watch(rulesIndexSignedInProvider);
     final theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.all(24),
@@ -328,15 +386,18 @@ class _RulesLookupDialogState extends ConsumerState<RulesLookupDialog> {
               style: theme.textTheme.titleMedium,
             ),
             const SizedBox(height: 12),
-            Text(
-              konfiguriert
-                  ? 'Am einfachsten lädst du die Wissensbasis vom Server. Die '
-                        'App fragt dafür einmal das Katalogpasswort ab; danach '
-                        'bleibt sie auf diesem Gerät gespeichert.'
-                  : 'Für diesen Build ist kein Regel-Server eingerichtet. Die '
-                        'Wissensbasis musst du selbst bereitstellen.',
-              key: const ValueKey('rules-lookup-notice-server'),
-            ),
+            if (cloud)
+              _buildCloudStatus(sync, angemeldet: angemeldet)
+            else
+              Text(
+                konfiguriert
+                    ? 'Am einfachsten lädst du die Wissensbasis vom Server. Die '
+                          'App fragt dafür einmal das Katalogpasswort ab; danach '
+                          'bleibt sie auf diesem Gerät gespeichert.'
+                    : 'Für diesen Build ist kein Regel-Server eingerichtet. Die '
+                          'Wissensbasis musst du selbst bereitstellen.',
+                key: const ValueKey('rules-lookup-notice-server'),
+              ),
             const SizedBox(height: 12),
             Text(
               kIsWeb
@@ -392,6 +453,19 @@ class _RulesLookupDialogState extends ConsumerState<RulesLookupDialog> {
                         : const Icon(Icons.cloud_download_outlined),
                     label: const Text('Von Server laden'),
                   ),
+                if (cloud && angemeldet && !sync.running)
+                  FilledButton.icon(
+                    key: const ValueKey('rules-lookup-cloud-button'),
+                    onPressed: _importing
+                        ? null
+                        : () => _cloudStarten(pruefen: false),
+                    icon: const Icon(Icons.cloud_download_outlined),
+                    label: Text(
+                      sync.phase == RulesIndexSyncPhase.failed
+                          ? 'Erneut versuchen'
+                          : 'Wissensbasis laden',
+                    ),
+                  ),
               ],
             ),
           ],
@@ -400,10 +474,69 @@ class _RulesLookupDialogState extends ConsumerState<RulesLookupDialog> {
     );
   }
 
+  /// Zustand des Cloud-Ladens im Leerzustand: Fortschritt, Fehler oder die
+  /// Aufforderung, sich anzumelden beziehungsweise zu laden.
+  Widget _buildCloudStatus(
+    RulesIndexSyncState sync, {
+    required bool angemeldet,
+  }) {
+    final theme = Theme.of(context);
+    if (sync.running) {
+      final fraction = sync.fraction;
+      final text = switch (sync.phase) {
+        RulesIndexSyncPhase.preparing => 'Wird vorbereitet …',
+        RulesIndexSyncPhase.installing => 'Wird eingerichtet …',
+        _ =>
+          sync.total > 0
+              ? 'Wissensbasis wird geladen … ${_megabyte(sync.received)} von '
+                    '${_megabyte(sync.total)} MB'
+              : 'Wissensbasis wird geladen …',
+      };
+      return Column(
+        key: const ValueKey('rules-lookup-cloud-laeuft'),
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(text),
+          const SizedBox(height: 8),
+          LinearProgressIndicator(value: fraction),
+          const SizedBox(height: 8),
+          Text(
+            'Das läuft im Hintergrund; du kannst den Dialog schließen und '
+            'weiterspielen.',
+            style: theme.textTheme.bodySmall,
+          ),
+        ],
+      );
+    }
+    if (!angemeldet) {
+      return const Text(
+        'Zum Laden der Wissensbasis bitte anmelden. Danach startet der '
+        'Download von selbst.',
+        key: ValueKey('rules-lookup-cloud-anmelden'),
+      );
+    }
+    if (sync.phase == RulesIndexSyncPhase.failed) {
+      return Text(
+        sync.message ?? 'Die Wissensbasis konnte nicht geladen werden.',
+        key: const ValueKey('rules-lookup-cloud-fehler'),
+        style: TextStyle(color: theme.colorScheme.error),
+      );
+    }
+    return const Text(
+      'Die Wissensbasis (etwa 120 MB) wird einmal geladen und bleibt auf '
+      'diesem Gerät gespeichert.',
+      key: ValueKey('rules-lookup-cloud-bereit'),
+    );
+  }
+
+  String _megabyte(int bytes) => (bytes / 1048576).toStringAsFixed(0);
+
   /// Baut Suchfeld, Kategorie-Chips und Trefferliste.
   Widget _buildSearch() {
     final config = ref.watch(rulesIndexRemoteConfigProvider);
-    final konfiguriert = config.isConfigured;
+    final cloud = ref.watch(rulesIndexCloudAvailableProvider);
+    final cloudLaeuft = ref.watch(rulesIndexAutoSyncProvider).running;
+    final konfiguriert = cloud || config.isConfigured;
     final geladen = config.lastSyncedAt?.toLocal();
     final stand = geladen == null
         ? null
@@ -433,8 +566,12 @@ class _RulesLookupDialogState extends ConsumerState<RulesLookupDialog> {
                 IconButton(
                   key: const ValueKey('rules-lookup-sync-icon-button'),
                   tooltip: 'Index vom Server aktualisieren',
-                  onPressed: _syncing || _importing ? null : _syncFromServer,
-                  icon: _syncing
+                  onPressed: _syncing || _importing || cloudLaeuft
+                      ? null
+                      : (cloud
+                            ? () => _cloudStarten(pruefen: true)
+                            : _syncFromServer),
+                  icon: _syncing || cloudLaeuft
                       ? const SizedBox(
                           width: 16,
                           height: 16,

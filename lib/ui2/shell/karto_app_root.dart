@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:dsa_heldenverwaltung/state/rules_index_providers.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/heroes_home_screen.dart';
 import 'package:dsa_heldenverwaltung/ui/bridges/karto_bestands_adapter_impl.dart';
@@ -25,6 +26,10 @@ class AppRootSwitch extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Stößt das Laden der Regel-Wissensbasis im Hintergrund an, sobald das
+    // Katalogpasswort bekannt und jemand angemeldet ist. Der Wert ändert sich
+    // nie, der Aufruf löst also keinen Neubau aus.
+    ref.watch(rulesIndexAutoStartProvider);
     return switch (ref.watch(oberflaecheProvider)) {
       Oberflaeche.codex => const HeroesHomeScreen(),
       Oberflaeche.kartograph => const KartoShell(

@@ -184,8 +184,11 @@ class KartoSpielansicht extends ConsumerWidget {
             () =>
                 bestand.probeSuchen(context: context, ref: ref, heroId: heroId),
           ),
-          // Der Regelindex läuft nur auf Desktop und im Web.
-          onRegeln: bestand.regelnNachschlagenVerfuegbar
+          // Der Regelindex läuft nur auf Desktop und im Web und wird erst
+          // angeboten, wenn die Katalog-Inhalte entsperrt sind (SPIEL-04).
+          onRegeln:
+              bestand.regelnNachschlagenVerfuegbar &&
+                  ref.watch(catalogContentVisibleProvider)
               ? () => aktion(() => bestand.regelnNachschlagen(context: context))
               : null,
           onRast: () =>

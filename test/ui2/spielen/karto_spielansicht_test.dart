@@ -11,6 +11,7 @@ import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_base_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_bestands_adapter.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abenteuer_karten.dart';
@@ -81,6 +82,7 @@ void main() {
     double skalierung = 1,
     Brightness helligkeit = Brightness.light,
     Future<bool> Function()? vorAbenteuer,
+    bool regelnFreigeschaltet = false,
   }) async {
     tester.view.devicePixelRatio = 1;
     tester.view.physicalSize = Size(breite, 1000);
@@ -92,6 +94,8 @@ void main() {
           repository ?? FakeRepository(heroes: [held], states: zustaende),
         ),
         rulesCatalogProvider.overrideWith((ref) async => testCatalog),
+        if (regelnFreigeschaltet)
+          catalogContentVisibleProvider.overrideWithValue(true),
       ],
     );
     addTearDown(container.dispose);
@@ -278,6 +282,51 @@ void main() {
       expect(tester.takeException(), isNull);
     });
   }
+
+  group('Regelnachschlag (SPIEL-04)', () {
+    testWidgets('wird erst nach dem Entsperren der Katalog-Inhalte angeboten', (
+      tester,
+    ) async {
+      await zeige(tester, held: weltlich(), breite: 1024);
+      expect(
+        find.byKey(const ValueKey<String>('karto-spiel-regeln')),
+        findsNothing,
+      );
+      // Die übrigen Schnellaktionen bleiben unberührt.
+      expect(find.text('Probe suchen'), findsOneWidget);
+    });
+
+    testWidgets('nach dem Entsperren steht der Knopf da', (tester) async {
+      await zeige(
+        tester,
+        held: weltlich(),
+        breite: 1024,
+        regelnFreigeschaltet: true,
+      );
+      expect(
+        find.byKey(const ValueKey<String>('karto-spiel-regeln')),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets(
+      'ohne Regelindex auf der Plattform bleibt er auch entsperrt weg',
+      (tester) async {
+        final bestand = TestBestand()..regelnVerfuegbar = false;
+        await zeige(
+          tester,
+          held: weltlich(),
+          breite: 1024,
+          bestand: bestand,
+          regelnFreigeschaltet: true,
+        );
+        expect(
+          find.byKey(const ValueKey<String>('karto-spiel-regeln')),
+          findsNothing,
+        );
+      },
+    );
+  });
 
   group('Abenteuerabschnitt', () {
     Finder schluessel(String name) => find.byKey(ValueKey<String>(name));

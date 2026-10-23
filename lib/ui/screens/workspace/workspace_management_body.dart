@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/planung_bearbeiten_guard.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/herleitung_suche_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/probe_quick_search.dart';
@@ -106,6 +107,10 @@ class _WorkspaceManagementBodyState
     }
     final hero = snapshot.byId[widget.heroId];
     if (hero == null) return const Center(child: Text('Held nicht gefunden.'));
+    // Der Regelnachschlag wird erst nach dem Entsperren der Katalog-Inhalte
+    // angeboten (SPIEL-04); hier beobachtet, damit der Knopf beim Entsperren
+    // erscheint.
+    final regelnFreigeschaltet = ref.watch(catalogContentVisibleProvider);
     _coordinator.syncHero(hero, catalog: laufenderRegelkatalog(ref));
     if (_coordinator.visibleTabs.isEmpty) {
       return const Center(child: Text('Keine Bereiche verfügbar.'));
@@ -121,7 +126,10 @@ class _WorkspaceManagementBodyState
           heroId: widget.heroId,
           coordinator: _coordinator,
           compact: compact,
-          globalActions: _buildGlobalActions(compact: compact),
+          globalActions: _buildGlobalActions(
+            compact: compact,
+            regelnFreigeschaltet: regelnFreigeschaltet,
+          ),
         );
         return Column(
           children: <Widget>[
@@ -157,7 +165,10 @@ class _WorkspaceManagementBodyState
     );
   }
 
-  List<Widget> _buildGlobalActions({required bool compact}) {
+  List<Widget> _buildGlobalActions({
+    required bool compact,
+    required bool regelnFreigeschaltet,
+  }) {
     void probeSuchen() => unawaited(
       showProbeQuickSearch(context: context, ref: ref, heroId: widget.heroId),
     );
@@ -177,7 +188,7 @@ class _WorkspaceManagementBodyState
           icon: const Icon(Icons.search),
           label: const Text('Probe suchen'),
         ),
-      if (isRulesLookupSupported())
+      if (isRulesLookupSupported() && regelnFreigeschaltet)
         IconButton(
           key: const ValueKey<String>('management-rules-lookup'),
           tooltip: 'Regeln nachschlagen',

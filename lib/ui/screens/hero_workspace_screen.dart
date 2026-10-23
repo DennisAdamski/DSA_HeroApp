@@ -28,6 +28,7 @@ import 'package:dsa_heldenverwaltung/ui/screens/workspace/workspace_tab_spec.dar
 import 'package:dsa_heldenverwaltung/ui/screens/settings_screen.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/ui_shared/feedback/open_feedback.dart';
 
 part 'workspace/workspace_layout.dart';
@@ -158,7 +159,9 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
   ///
   /// Liefert `null`, wenn die Plattform keine lokale Wissensbasis hat.
   Widget? _buildRulesLookupAction() {
-    if (!isRulesLookupSupported()) {
+    // Erst nach dem Entsperren der Katalog-Inhalte (SPIEL-04); `build` beobachtet
+    // den Wert, hier genügt das Lesen.
+    if (!isRulesLookupSupported() || !ref.read(catalogContentVisibleProvider)) {
       return null;
     }
     return Tooltip(
@@ -292,6 +295,9 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
     final hero = ref.watch(heroByIdProvider(widget.heroId));
     final session = ref.watch(advancementSessionProvider(widget.heroId));
     ref.watch(rulesCatalogProvider);
+    // Der Regelnachschlag wird erst nach dem Entsperren angeboten; hier
+    // beobachtet, damit der Knopf beim Entsperren erscheint.
+    ref.watch(catalogContentVisibleProvider);
     final layout = appLayoutOf(context);
 
     if (hero == null) {

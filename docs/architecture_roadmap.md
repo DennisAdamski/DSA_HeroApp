@@ -96,7 +96,17 @@ Teilumfang festlegen. Nach Wichtigkeit sortiert.
   Vorschlag: freie Zustandsmarker mit optionaler Dauer, die beim Rundenwechsel
   herunterzählen. Offen: persistenter Rundenzähler (bisher bewusst nicht gebaut,
   siehe [redesign_acceptance.md](redesign_acceptance.md)); ohne Regelautomatik.
-- [ ] **SPIEL-04 — Regelnachschlag ohne Vorarbeit.** **Teilstand 23.10.2026:**
+- [ ] **SPIEL-04 — Regelnachschlag ohne Vorarbeit.** **Teilstand 23.10.2026
+  (Cloud-Weg, im Code fertig, noch nicht deployt):** Entscheidung: Anbieten erst
+  nach dem Entsperren, nur mit Login, Laden im Hintergrund. Gebaut:
+  `dsa-rules-cli publish` (Fassung ohne Vektoren und Quellpfade, gzip, rund
+  47 MB), Cloud Function `rulesIndexApi` (Konto, App Check, Passwortnachweis,
+  signierte URL), Hintergrundlader mit Fortschritt im Dialog, Gating der drei
+  Einstiege; Details in
+  [mcp_dsa_rules.md](mcp_dsa_rules.md#veröffentlichen-über-die-cloud-spiel-04).
+  **Offen, nur der Projektinhaber:** Secret `RULES_INDEX_PROOF` setzen,
+  Signierrecht vergeben, Function und Storage-Regeln deployen, erste Fassung
+  hochladen, im echten Browser und Desktop prüfen. **Teilstand davor:**
   Leerzustand des Regeln-Dialogs überarbeitet (Server-Download als Hauptweg,
   ehrlicher Hinweis ohne Server, Stand der Wissensbasis, Download auch auf Web
   mit Verweis auf den Upload bei CORS-Fehler; Details in

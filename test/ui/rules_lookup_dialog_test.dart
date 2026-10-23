@@ -8,6 +8,7 @@ import 'package:dsa_heldenverwaltung/data/rules_search/rules_index_sync_service.
 import 'package:dsa_heldenverwaltung/data/rules_search/rules_index_types.dart';
 import 'package:dsa_heldenverwaltung/domain/app_settings.dart';
 import 'package:dsa_heldenverwaltung/domain/rules_index_remote_config.dart';
+import 'package:dsa_heldenverwaltung/state/rules_index_providers.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/rules_lookup_dialog.dart';
 
@@ -142,6 +143,205 @@ void main() {
       expect(schluessel('rules-lookup-sync-icon-button'), findsOneWidget);
     });
   });
+
+  group('Cloud-Laden im Hintergrund (SPIEL-04)', () {
+    late _FesterSync sync;
+    late List<RulesIndexSearch?> indexe;
+
+    Future<void> zeige(
+      WidgetTester tester, {
+      bool angemeldet = true,
+      RulesIndexSyncState zustand = const RulesIndexSyncState(),
+      List<RulesIndexSearch?>? indexReihe,
+    }) async {
+      sync = _FesterSync(zustand);
+      indexe = indexReihe ?? <RulesIndexSearch?>[null];
+      var naechster = 0;
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            rulesIndexCloudAvailableProvider.overrideWithValue(true),
+            rulesIndexSignedInProvider.overrideWithValue(angemeldet),
+            rulesIndexRemoteConfigProvider.overrideWithValue(
+              const RulesIndexRemoteConfig(),
+            ),
+            rulesIndexAutoSyncProvider.overrideWith(() => sync),
+          ],
+          child: MaterialApp(
+            home: Scaffold(
+              body: RulesLookupDialog(
+                oeffneIndex: () async {
+                  final index = indexe[naechster.clamp(0, indexe.length - 1)];
+                  naechster++;
+                  return index;
+                },
+              ),
+            ),
+          ),
+        ),
+      );
+      // Kein pumpAndSettle: ein laufender Fortschrittsbalken animiert ohne
+      // Ende und ließe es nie zur Ruhe kommen.
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 50));
+    }
+
+    Finder schluessel(String name) => find.byKey(ValueKey<String>(name));
+
+    testWidgets('angemeldet und bereit: ein Knopf startet das Laden', (
+      tester,
+    ) async {
+      await zeige(tester);
+      expect(schluessel('rules-lookup-cloud-bereit'), findsOneWidget);
+      expect(find.text('Wissensbasis laden'), findsOneWidget);
+      // Der NAS-Weg ist ersetzt, solange der Build die Cloud hat.
+      expect(schluessel('rules-lookup-sync-button'), findsNothing);
+
+      await tester.tap(schluessel('rules-lookup-cloud-button'));
+      await tester.pump();
+      expect(sync.starts, <bool>[true]);
+    });
+
+    testWidgets('ohne Anmeldung steht die Aufforderung da, ohne Knopf', (
+      tester,
+    ) async {
+      await zeige(tester, angemeldet: false);
+      expect(schluessel('rules-lookup-cloud-anmelden'), findsOneWidget);
+      expect(schluessel('rules-lookup-cloud-button'), findsNothing);
+    });
+
+    testWidgets('beim Laden zeigt der Dialog den Fortschritt', (tester) async {
+      await zeige(
+        tester,
+        zustand: const RulesIndexSyncState(
+          phase: RulesIndexSyncPhase.downloading,
+          received: 52 * 1048576,
+          total: 117 * 1048576,
+        ),
+      );
+      expect(schluessel('rules-lookup-cloud-laeuft'), findsOneWidget);
+      expect(find.textContaining('52 von 117 MB'), findsOneWidget);
+      final balken = tester.widget<LinearProgressIndicator>(
+        find.byType(LinearProgressIndicator),
+      );
+      expect(balken.value, closeTo(52 / 117, 0.001));
+      expect(find.textContaining('im Hintergrund'), findsOneWidget);
+      expect(schluessel('rules-lookup-cloud-button'), findsNothing);
+    });
+
+    testWidgets('in der Vorbereitung ist der Fortschritt unbestimmt', (
+      tester,
+    ) async {
+      await zeige(
+        tester,
+        zustand: const RulesIndexSyncState(
+          phase: RulesIndexSyncPhase.preparing,
+        ),
+      );
+      expect(find.text('Wird vorbereitet …'), findsOneWidget);
+      expect(
+        tester
+            .widget<LinearProgressIndicator>(
+              find.byType(LinearProgressIndicator),
+            )
+            .value,
+        isNull,
+      );
+    });
+
+    testWidgets('ein Fehler steht im Dialog, der Knopf versucht es erneut', (
+      tester,
+    ) async {
+      await zeige(
+        tester,
+        zustand: const RulesIndexSyncState(
+          phase: RulesIndexSyncPhase.failed,
+          message: 'Das Katalogpasswort passt nicht zum Server.',
+        ),
+      );
+      expect(
+        find.text('Das Katalogpasswort passt nicht zum Server.'),
+        findsOneWidget,
+      );
+      expect(find.text('Erneut versuchen'), findsOneWidget);
+      await tester.tap(schluessel('rules-lookup-cloud-button'));
+      await tester.pump();
+      expect(sync.starts, <bool>[true]);
+    });
+
+    testWidgets('eine fertige Installation öffnet die Suche von selbst', (
+      tester,
+    ) async {
+      await zeige(
+        tester,
+        zustand: const RulesIndexSyncState(
+          phase: RulesIndexSyncPhase.downloading,
+          received: 1,
+          total: 2,
+        ),
+        indexReihe: <RulesIndexSearch?>[null, _LeererIndex()],
+      );
+      expect(schluessel('rules-lookup-search-field'), findsNothing);
+
+      sync.setze(
+        const RulesIndexSyncState(phase: RulesIndexSyncPhase.done, revision: 1),
+      );
+      await tester.pumpAndSettle();
+
+      expect(schluessel('rules-lookup-search-field'), findsOneWidget);
+      expect(schluessel('rules-lookup-cloud-laeuft'), findsNothing);
+    });
+
+    testWidgets('Aktualisieren in der Suche fragt nur nach Neuem und meldet '
+        '„schon aktuell“', (tester) async {
+      await zeige(tester, indexReihe: <RulesIndexSearch?>[_LeererIndex()]);
+      await tester.tap(schluessel('rules-lookup-sync-icon-button'));
+      await tester.pump();
+      expect(sync.starts, <bool>[false]);
+
+      sync.setze(
+        const RulesIndexSyncState(phase: RulesIndexSyncPhase.preparing),
+      );
+      await tester.pump();
+      sync.setze(const RulesIndexSyncState(phase: RulesIndexSyncPhase.done));
+      await tester.pump();
+
+      expect(find.text('Die Wissensbasis ist aktuell.'), findsOneWidget);
+    });
+
+    testWidgets('während des Ladens ist Aktualisieren gesperrt', (
+      tester,
+    ) async {
+      await zeige(
+        tester,
+        zustand: const RulesIndexSyncState(
+          phase: RulesIndexSyncPhase.downloading,
+          total: 10,
+        ),
+        indexReihe: <RulesIndexSearch?>[_LeererIndex()],
+      );
+      final knopf = tester.widget<IconButton>(
+        schluessel('rules-lookup-sync-icon-button'),
+      );
+      expect(knopf.onPressed, isNull);
+    });
+  });
+}
+
+/// Hintergrundlader mit festem Zustand; zeichnet Starts auf.
+class _FesterSync extends RulesIndexAutoSync {
+  _FesterSync(this._anfang);
+
+  final RulesIndexSyncState _anfang;
+  final List<bool> starts = <bool>[];
+
+  @override
+  RulesIndexSyncState build() => _anfang;
+
+  void setze(RulesIndexSyncState neu) => state = neu;
+
+  @override
+  Future<void> start({bool force = false}) async => starts.add(force);
 }
 
 class _Sync extends RulesIndexSyncService {

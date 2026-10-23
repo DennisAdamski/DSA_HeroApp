@@ -4,11 +4,15 @@ from __future__ import annotations
 
 import argparse
 import json
+import shutil
+import subprocess
 import sys
+from pathlib import Path
 from typing import Sequence
 
 from dsa_rules_mcp.config import ensure_data_dirs, load_config
 from dsa_rules_mcp.indexer.embedder import Embedder
+from dsa_rules_mcp.publish import PublishError, build_release, upload_commands
 from dsa_rules_mcp.store.db import open_database
 from dsa_rules_mcp.tools.find_topic import run_find_topic
 from dsa_rules_mcp.tools.list_sources import run_list_sources
@@ -44,11 +48,69 @@ def _parser() -> argparse.ArgumentParser:
     topic.add_argument("--limit", type=int, default=15)
 
     sub.add_parser("list", help="Indexierte PDFs anzeigen")
+
+    publish = sub.add_parser(
+        "publish",
+        help="Veroeffentlichungsfassung fuer die App bauen (ohne Vektoren, gzip)",
+    )
+    publish.add_argument(
+        "--out",
+        default=None,
+        help="Zielordner (Default: <Datenordner>/publish)",
+    )
+    publish.add_argument(
+        "--upload",
+        metavar="BUCKET",
+        default=None,
+        help="Danach per gcloud nach gs://BUCKET/rules/ hochladen (ohne: nur bauen "
+        "und die Befehle anzeigen)",
+    )
     return parser
 
 
 def _progress(message: str) -> None:
     print(message, file=sys.stderr)
+
+
+def _publish(db_path: Path, out: str | None, bucket: str | None, data_dir: Path) -> int:
+    """Baut die Veroeffentlichungsfassung; mit `--upload` laedt sie hoch.
+
+    Ohne `--upload` bleibt es beim Bauen und Anzeigen der Befehle: ein Upload
+    ist ein Betriebsschritt mit eigener Anmeldung und soll nie nebenbei laufen.
+    """
+    out_dir = Path(out) if out else data_dir / "publish"
+    try:
+        release = build_release(db_path, out_dir)
+    except PublishError as error:
+        print(f"Fehler: {error}", file=sys.stderr)
+        return 1
+    print(json.dumps(release, indent=2, ensure_ascii=False))
+    print(
+        f"\nGebaut in {out_dir}: {release['gzipBytes'] / 1048576:.1f} MB gepackt "
+        f"({release['sizeBytes'] / 1048576:.1f} MB entpackt).",
+        file=sys.stderr,
+    )
+    commands = upload_commands(release, out_dir, bucket or "<BUCKET>")
+    if bucket is None:
+        print("\nHochladen (Datei zuerst, dann der Verweis):", file=sys.stderr)
+        for command in commands:
+            print("  " + " ".join(f'"{part}"' if " " in part else part for part in command),
+                  file=sys.stderr)
+        print("\nOder gleich: dsa-rules-cli publish --upload <BUCKET>", file=sys.stderr)
+        return 0
+    if shutil.which("gcloud") is None:
+        print("Fehler: gcloud nicht gefunden. Befehle oben von Hand ausfuehren.",
+              file=sys.stderr)
+        return 1
+    for command in commands:
+        print("> " + " ".join(command), file=sys.stderr)
+        result = subprocess.run(command, check=False)
+        if result.returncode != 0:
+            print("Upload abgebrochen; `latest.json` zeigt weiter auf die alte Datei.",
+                  file=sys.stderr)
+            return result.returncode
+    print("Fertig. Die App sieht die neue Fassung beim naechsten Laden.", file=sys.stderr)
+    return 0
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -114,6 +176,9 @@ def main(argv: Sequence[str] | None = None) -> int:
             result = run_list_sources(connection, config)
             print(json.dumps(result, indent=2, ensure_ascii=False))
             return 0
+
+        if args.command == "publish":
+            return _publish(config.db_path, args.out, args.upload, config.data_dir)
 
         parser.print_help()
         return 1

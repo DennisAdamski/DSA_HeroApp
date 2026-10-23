@@ -154,6 +154,8 @@ jobs:
           BUILD_COMMIT: ${{ inputs.ref || github.sha }}
           BRANCH: ${{ inputs.branch || github.ref_name }}
           FEEDBACK_API_URL: ${{ (inputs.branch || github.ref_name) == 'test' && 'https://europe-west10-heldensync-ccf0b.cloudfunctions.net/feedbackApiTest' || (inputs.branch || github.ref_name) == 'main' && 'https://europe-west10-heldensync-ccf0b.cloudfunctions.net/feedbackApi' || '' }}
+          # Zugang zur Regel-Wissensbasis (SPIEL-04); leer heißt: kein Cloud-Weg.
+          RULES_INDEX_API_URL: ${{ (inputs.branch || github.ref_name) == 'test' && 'https://europe-west10-heldensync-ccf0b.cloudfunctions.net/rulesIndexApiTest' || (inputs.branch || github.ref_name) == 'main' && 'https://europe-west10-heldensync-ccf0b.cloudfunctions.net/rulesIndexApi' || '' }}
           FIREBASE_APP_CHECK_SITE_KEY: ${{ vars.FIREBASE_APP_CHECK_SITE_KEY }}
           LEGAL_RESPONSIBLE_NAME: ${{ vars.LEGAL_RESPONSIBLE_NAME }}
           LEGAL_STREET_ADDRESS: ${{ vars.LEGAL_STREET_ADDRESS }}
@@ -174,6 +176,7 @@ jobs:
             --dart-define=BUILD_COMMIT="$BUILD_COMMIT" \
             --dart-define=BUILD_TIME="$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
             --dart-define=FEEDBACK_API_URL="$FEEDBACK_API_URL" \
+            --dart-define=RULES_INDEX_API_URL="$RULES_INDEX_API_URL" \
             --dart-define=FIREBASE_APP_CHECK_SITE_KEY="$FIREBASE_APP_CHECK_SITE_KEY" \
             --dart-define=LEGAL_RESPONSIBLE_NAME="$LEGAL_RESPONSIBLE_NAME" \
             --dart-define=LEGAL_STREET_ADDRESS="$LEGAL_STREET_ADDRESS" \

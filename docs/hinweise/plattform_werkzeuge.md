@@ -77,3 +77,24 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   `syncService` am Dialog; `flutter test` laeuft sonst gegen die lokale
   Entwickler-Datenbank. Ob der Server im Browser erreichbar ist (CORS), ist
   **nicht geprueft**.
+  **Cloud-Weg (SPIEL-04):** Builds mit `RULES_INDEX_API_URL` laden die
+  Wissensbasis ueber die Cloud Function `rulesIndexApi`
+  (`functions/src/rules_index/api.ts`, Betrieb in
+  [mcp_dsa_rules.md](../mcp_dsa_rules.md)). Der Regelnachschlag wird in allen
+  drei Einstiegen (Spielansicht, `workspace_management_body.dart`,
+  `hero_workspace_screen.dart`) erst nach dem Entsperren
+  (`catalogContentVisibleProvider`) angeboten. `rulesIndexAutoStartProvider`
+  (beobachtet in `AppRootSwitch`) startet das Laden im Hintergrund, sobald
+  Passwort, Anmeldung, Katalog-Salt und Einstellungen da sind; es laeuft nur,
+  wenn die Wissensbasis fehlt oder `rulesIndexRefreshInterval` (14 Tage)
+  ueberschritten ist, und hoechstens einmal je Sitzung (`autoStart`). Manuell:
+  `RulesIndexAutoSync.start` ueber die Knoepfe im Dialog. Ablauf in
+  `RulesIndexSyncService.syncFromCloud`: Passwortnachweis (PBKDF2 per `compute`),
+  Zugang, Download der signierten URL (`downloadSigned`, ohne Zugangsdaten),
+  bei Bedarf Entpacken (`gunzipIfNeeded`, Web verlaesst sich auf
+  `Content-Encoding: gzip`), Pruefung von Groesse und SHA-256, erst dann Import.
+  Die installierte Version steht in `RulesIndexRemoteConfig.installedVersion`.
+  Der Dialog zeigt Fortschritt, Fehler (nie still) und oeffnet die Suche selbst,
+  sobald `RulesIndexSyncState.revision` steigt. Der NAS-Weg bleibt fuer Builds
+  ohne Cloud-URL bestehen. **Nicht geprueft:** der echte Lauf gegen Firebase
+  (Deploy, Secret, Signierrecht) und das Entpacken im Browser.
