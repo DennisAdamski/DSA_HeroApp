@@ -1,4 +1,4 @@
-import 'package:file_picker/file_picker.dart';
+﻿import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -27,12 +27,22 @@ Future<void> showRulesLookupDialog({required BuildContext context}) {
 /// Dialog für die Volltextsuche in der dsa-rules-Wissensbasis.
 ///
 /// Nutzt die vom MCP-Indexer gepflegte SQLite-Datenbank read-only und
-/// bietet eine reine FTS5-Keyword-Suche über wählbare Quellkategorien. Auf
-/// Web muss die Index-Datenbank zuvor einmalig hochgeladen werden, da dort
-/// kein Zugriff auf einen Nutzer-lokalen Standardpfad möglich ist.
+/// bietet eine reine FTS5-Keyword-Suche über wählbare Quellkategorien. Fehlt
+/// die Datenbank, bietet der Leerzustand den Server-Download an (sofern ein
+/// Server hinterlegt ist); auf Web außerdem den Datei-Upload, da dort kein
+/// Zugriff auf einen Nutzer-lokalen Standardpfad möglich ist.
 class RulesLookupDialog extends ConsumerStatefulWidget {
   /// Erzeugt den Dialog.
-  const RulesLookupDialog({super.key});
+  ///
+  /// [oeffneIndex] und [syncService] ersetzen in Tests den Zugriff auf die
+  /// lokale Index-Datenbank und den Server.
+  const RulesLookupDialog({super.key, this.oeffneIndex, this.syncService});
+
+  /// Öffnet die Index-Datenbank; ohne Angabe [openRulesIndexSearch].
+  final Future<RulesIndexSearch?> Function()? oeffneIndex;
+
+  /// Lädt vom Server; ohne Angabe ein [RulesIndexSyncService].
+  final RulesIndexSyncService? syncService;
 
   @override
   ConsumerState<RulesLookupDialog> createState() => _RulesLookupDialogState();
@@ -61,7 +71,7 @@ class _RulesLookupDialogState extends ConsumerState<RulesLookupDialog> {
   }
 
   Future<void> _load() async {
-    final search = await openRulesIndexSearch();
+    final search = await (widget.oeffneIndex ?? openRulesIndexSearch)();
     if (!mounted) {
       search?.dispose();
       return;
@@ -216,7 +226,8 @@ class _RulesLookupDialogState extends ConsumerState<RulesLookupDialog> {
     });
     final config = ref.read(rulesIndexRemoteConfigProvider);
     try {
-      final newSearch = await RulesIndexSyncService().syncFromServer(config);
+      final newSearch = await (widget.syncService ?? RulesIndexSyncService())
+          .syncFromServer(config);
       final oldSearch = _search;
       if (!mounted) {
         newSearch.dispose();
@@ -236,7 +247,13 @@ class _RulesLookupDialogState extends ConsumerState<RulesLookupDialog> {
         _query = '';
       });
     } on RulesIndexDownloadException catch (error) {
-      _handleSyncError(error.message);
+      _handleSyncError(
+        kIsWeb && error.kind == RulesIndexDownloadErrorKind.network
+            ? '${error.message}\n'
+                  'Im Browser blockiert der Server den Zugriff häufig (CORS). '
+                  'Lade stattdessen die index.sqlite hoch.'
+            : error.message,
+      );
     } on FormatException catch (error) {
       _handleSyncError(error.message);
     }
@@ -282,157 +299,141 @@ class _RulesLookupDialogState extends ConsumerState<RulesLookupDialog> {
       );
     }
     if (_search == null) {
-      return kIsWeb ? _buildImportNotice() : _buildUnavailableNotice();
+      return _buildNotice();
     }
     return _buildSearch();
   }
 
-  /// Hinweis, wenn die Index-Datenbank fehlt oder nicht lesbar ist (Desktop).
-  Widget _buildUnavailableNotice() {
+  /// Leerzustand, solange keine Index-Datenbank geöffnet werden kann.
+  ///
+  /// Nennt zuerst den bequemsten Weg: den Server-Download, sofern für diesen
+  /// Build ein Server hinterlegt ist. Der manuelle Weg (Desktop: selbst
+  /// bauen, Web: Datei hochladen) steht darunter. Auf Web ist der Upload
+  /// immer möglich, der Server-Download scheitert dort an fehlenden
+  /// CORS-Freigaben des Servers und verweist dann auf den Upload.
+  Widget _buildNotice() {
+    final konfiguriert = ref.watch(rulesIndexRemoteConfigProvider).isConfigured;
+    final theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.all(24),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Regel-Wissensbasis nicht gefunden',
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-          const SizedBox(height: 12),
-          const Text(
-            'Die Suche nutzt die lokale Index-Datenbank des dsa-rules '
-            'MCP-Servers. Entweder einmalig selbst aufbauen:\n\n'
-            'tool/mcp_dsa_rules → dsa-rules-cli refresh\n\n'
-            'oder direkt von einem konfigurierten Server laden.',
-          ),
-          if (_importError != null) ...[
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              kIsWeb
+                  ? 'Regel-Wissensbasis noch nicht importiert'
+                  : 'Regel-Wissensbasis nicht gefunden',
+              style: theme.textTheme.titleMedium,
+            ),
             const SizedBox(height: 12),
             Text(
-              _importError!,
-              style: TextStyle(color: Theme.of(context).colorScheme.error),
+              konfiguriert
+                  ? 'Am einfachsten lädst du die Wissensbasis vom Server. Die '
+                        'App fragt dafür einmal das Katalogpasswort ab; danach '
+                        'bleibt sie auf diesem Gerät gespeichert.'
+                  : 'Für diesen Build ist kein Regel-Server eingerichtet. Die '
+                        'Wissensbasis musst du selbst bereitstellen.',
+              key: const ValueKey('rules-lookup-notice-server'),
             ),
-          ],
-          const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text('Schließen'),
-              ),
-              const SizedBox(width: 8),
-              FilledButton.icon(
-                key: const ValueKey('rules-lookup-sync-button'),
-                onPressed: _syncing ? null : _syncFromServer,
-                icon: _syncing
-                    ? const SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Icon(Icons.cloud_download_outlined),
-                label: const Text('Von Server laden'),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// Hinweis auf Web, solange noch keine Index-Datenbank importiert wurde.
-  Widget _buildImportNotice() {
-    return Padding(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Regel-Wissensbasis noch nicht importiert',
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-          const SizedBox(height: 12),
-          const Text(
-            'Die Suche nutzt eine lokal importierte Index-Datenbank. Bitte '
-            'einmalig am Desktop mit tool/mcp_dsa_rules → '
-            'dsa-rules-cli refresh erzeugen und die entstandene '
-            'index.sqlite hier hochladen. Der Import bleibt danach in '
-            'diesem Browser gespeichert.',
-          ),
-          if (_importError != null) ...[
             const SizedBox(height: 12),
             Text(
-              _importError!,
-              style: TextStyle(color: Theme.of(context).colorScheme.error),
+              kIsWeb
+                  ? 'Alternativ: einmalig am Desktop mit tool/mcp_dsa_rules → '
+                        'dsa-rules-cli refresh die index.sqlite erzeugen und '
+                        'hier hochladen. Der Import bleibt danach in diesem '
+                        'Browser gespeichert.'
+                  : 'Alternativ: einmalig selbst aufbauen mit tool/mcp_dsa_rules '
+                        '→ dsa-rules-cli refresh.',
+              style: theme.textTheme.bodySmall,
             ),
-          ],
-          const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text('Schließen'),
-              ),
-              const SizedBox(width: 8),
-              FilledButton.icon(
-                key: const ValueKey('rules-lookup-import-button'),
-                onPressed: _importing ? null : _pickAndImport,
-                icon: _importing
-                    ? const SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Icon(Icons.upload_file_outlined),
-                label: const Text('index.sqlite hochladen'),
+            if (_importError != null) ...[
+              const SizedBox(height: 12),
+              Text(
+                _importError!,
+                key: const ValueKey('rules-lookup-notice-error'),
+                style: TextStyle(color: theme.colorScheme.error),
               ),
             ],
-          ),
-        ],
+            const SizedBox(height: 16),
+            Wrap(
+              alignment: WrapAlignment.end,
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Schließen'),
+                ),
+                if (kIsWeb)
+                  OutlinedButton.icon(
+                    key: const ValueKey('rules-lookup-import-button'),
+                    onPressed: _importing || _syncing ? null : _pickAndImport,
+                    icon: _importing
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.upload_file_outlined),
+                    label: const Text('index.sqlite hochladen'),
+                  ),
+                if (konfiguriert)
+                  FilledButton.icon(
+                    key: const ValueKey('rules-lookup-sync-button'),
+                    onPressed: _syncing || _importing ? null : _syncFromServer,
+                    icon: _syncing
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.cloud_download_outlined),
+                    label: const Text('Von Server laden'),
+                  ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
 
   /// Baut Suchfeld, Kategorie-Chips und Trefferliste.
   Widget _buildSearch() {
+    final config = ref.watch(rulesIndexRemoteConfigProvider);
+    final konfiguriert = config.isConfigured;
+    final geladen = config.lastSyncedAt?.toLocal();
+    final stand = geladen == null
+        ? null
+        : '${geladen.day.toString().padLeft(2, '0')}.'
+              '${geladen.month.toString().padLeft(2, '0')}.${geladen.year}';
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        if (kIsWeb)
-          Padding(
-            padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                IconButton(
-                  key: const ValueKey('rules-lookup-replace-button'),
-                  tooltip: 'Index ersetzen',
-                  onPressed: _importing ? null : _pickAndImport,
-                  icon: _importing
-                      ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Icon(Icons.upload_file_outlined),
-                ),
-              ],
-            ),
-          )
-        else
-          Padding(
-            padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 8, 0),
+          child: Row(
+            children: [
+              if (stand != null)
+                Expanded(
+                  child: Text(
+                    'Vom Server geladen am $stand',
+                    key: const ValueKey('rules-lookup-stand'),
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                )
+              else
+                const Spacer(),
+              if (konfiguriert)
                 IconButton(
                   key: const ValueKey('rules-lookup-sync-icon-button'),
                   tooltip: 'Index vom Server aktualisieren',
-                  onPressed: _syncing ? null : _syncFromServer,
+                  onPressed: _syncing || _importing ? null : _syncFromServer,
                   icon: _syncing
                       ? const SizedBox(
                           width: 16,
@@ -441,9 +442,22 @@ class _RulesLookupDialogState extends ConsumerState<RulesLookupDialog> {
                         )
                       : const Icon(Icons.cloud_download_outlined),
                 ),
-              ],
-            ),
+              if (kIsWeb)
+                IconButton(
+                  key: const ValueKey('rules-lookup-replace-button'),
+                  tooltip: 'Index ersetzen',
+                  onPressed: _importing || _syncing ? null : _pickAndImport,
+                  icon: _importing
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.upload_file_outlined),
+                ),
+            ],
           ),
+        ),
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
           child: TextField(

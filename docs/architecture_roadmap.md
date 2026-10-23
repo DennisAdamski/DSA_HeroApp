@@ -96,7 +96,14 @@ Teilumfang festlegen. Nach Wichtigkeit sortiert.
   Vorschlag: freie Zustandsmarker mit optionaler Dauer, die beim Rundenwechsel
   herunterzählen. Offen: persistenter Rundenzähler (bisher bewusst nicht gebaut,
   siehe [redesign_acceptance.md](redesign_acceptance.md)); ohne Regelautomatik.
-- [ ] **SPIEL-04 — Regelnachschlag ohne Vorarbeit.** Beobachtung: „Regeln“ verlangt
+- [ ] **SPIEL-04 — Regelnachschlag ohne Vorarbeit.** **Teilstand 23.10.2026:**
+  Leerzustand des Regeln-Dialogs überarbeitet (Server-Download als Hauptweg,
+  ehrlicher Hinweis ohne Server, Stand der Wissensbasis, Download auch auf Web
+  mit Verweis auf den Upload bei CORS-Fehler; Details in
+  [plattform_werkzeuge.md](hinweise/plattform_werkzeuge.md)). **Offen:** das
+  Kompendium aus eigenen Kurzfassungen (eigenes Paket: Inhalt, Quellenbeleg,
+  Verschlüsselung nach harter Regel 13), und die Prüfung, ob der Server im
+  Browser erreichbar ist. Beobachtung: „Regeln“ verlangt
   zuerst den manuellen Upload der `index.sqlite`; am Spieltisch, besonders auf
   Tablet oder Handy, praktisch eine Sackgasse. Vorschlag: mitgeliefertes
   Regel-Kompendium aus eigenen Zusammenfassungen (Option C in

@@ -1,4 +1,4 @@
-# Plattform, Werkzeuge, Feedback und Spielmodus
+﻿# Plattform, Werkzeuge, Feedback und Spielmodus
 
 Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unverändert. Die kurze [CLAUDE.md](../../CLAUDE.md) enthält die harten Regeln und den Themenindex.
 
@@ -66,3 +66,14 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   Feature ist stattdessen hinter dem bestehenden Katalog-Entschluesselungs-
   passwort gated (kein zweites Passwort). Details und der bewusste
   Schutz-Trade-off stehen in `docs/spielmodus_konzept.md` Abschnitt 6.
+  **Leerzustand (SPIEL-04):** ohne Index zeigt der Dialog einen gemeinsamen
+  Hinweis (`_buildNotice`). Der Server-Download steht als Hauptweg bereit,
+  sobald `RulesIndexRemoteConfig.isConfigured` gilt, sonst nennt der Hinweis
+  ehrlich, dass kein Regel-Server eingerichtet ist. Auf Web gibt es zusaetzlich
+  den Datei-Upload; scheitert der Browser-Download am Netz (meist fehlende
+  CORS-Freigabe des Servers), verweist die Fehlermeldung auf den Upload. Die
+  Suchansicht zeigt `Vom Server geladen am <Datum>` (`lastSyncedAt`) und
+  den Server-Aktualisieren-Knopf auch auf Web. Testnaht: `oeffneIndex` und
+  `syncService` am Dialog; `flutter test` laeuft sonst gegen die lokale
+  Entwickler-Datenbank. Ob der Server im Browser erreichbar ist (CORS), ist
+  **nicht geprueft**.
