@@ -207,5 +207,58 @@ void main() {
         expect(eintrag.thema, isNotEmpty, reason: eintrag.id);
       }
     });
+
+    test('Themen und Buchnamen der Belege sind bekannt', () {
+      // Bewusst enge Liste: ein Tippfehler im Buchnamen soll auffallen, statt
+      // einen Beleg zu erzeugen, den niemand nachschlagen kann.
+      const buecher = <String>[
+        'Basisregelwerk',
+        'Wege des Schwerts',
+        'Wege der Zauberei',
+        'Errata WdS',
+      ];
+      final themen = kurzregelThemen.map((t) => t.schluessel).toSet();
+      for (final eintrag in parseKurzregeln(
+        ladeKatalogDatei('kurzregeln.json'),
+      ).eintraege) {
+        expect(themen, contains(eintrag.thema), reason: eintrag.id);
+        for (final beleg in eintrag.quellen) {
+          expect(
+            buecher.any(beleg.startsWith),
+            isTrue,
+            reason: '${eintrag.id}: $beleg',
+          );
+        }
+      }
+    });
+
+    test('jede Hausregel nennt ihren Beleg im Klartext', () {
+      final roh = ladeKatalogDatei('kurzregeln.json');
+      final mitHausregel = roh.where((e) => e.containsKey('hausregel_text'));
+
+      expect(mitHausregel, isNotEmpty);
+      for (final eintrag in mitHausregel) {
+        expect(
+          '${eintrag['hausregel_quelle'] ?? ''}'.trim(),
+          isNotEmpty,
+          reason: '${eintrag['id']}',
+        );
+      }
+    });
+
+    test(
+      'ohne Passwort bleibt jeder Text gesperrt, kein Klartext sichtbar',
+      () {
+        final katalog = parseKurzregeln(ladeKatalogDatei('kurzregeln.json'));
+
+        expect(katalog.gesperrt, isTrue);
+        for (final eintrag in katalog.eintraege) {
+          expect(eintrag.kurztext, isEmpty, reason: eintrag.id);
+          expect(eintrag.hinweise, isEmpty, reason: eintrag.id);
+          expect(eintrag.hausregelText, isEmpty, reason: eintrag.id);
+          expect(eintrag.gesperrt, isTrue, reason: eintrag.id);
+        }
+      },
+    );
   });
 }

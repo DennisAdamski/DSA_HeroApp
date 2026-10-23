@@ -1,1 +1,1203 @@
-[]
+[
+  {
+    "id": "proben_talentprobe",
+    "titel": "Talentprobe",
+    "thema": "proben",
+    "schlagworte": [
+      "TaP",
+      "TaP*",
+      "Talentwert",
+      "Eigenschaftsprobe",
+      "W20",
+      "ausgleichen"
+    ],
+    "quellen": [
+      "Basisregelwerk, S. 110–112"
+    ],
+    "kurztext": "enc:3:L0LErAh+uuYz1UgfiqJFKXBK724jE46/UzSTn3Be6h7niE0Eemjgm2TgYHx8ZHSIfkJIMNfATx3I/OTDfnqb2nBNDx1ZExK063yZlY4snwALmRW/KOM6kD3lSY+njjjzXdvgNw7ljpzq5Axx00EnhwRKMQpLKoAz0PuZyCHU36cwBMS/2yGG7AGlR3ZFY6hCECJREP125Ehl72cSgLIzbv+mY132CJFSGdJ9yoXJkW8HzPt3xRTBSoc0EqE0CaIUQ8l9sJu5jH6vGDD+ceVqy4Z4MEqGlWY6yjqVPF51CD86Ivd4IYa3/ZGbq4QEXcZa627FqlxHX4/5GtV4xCwlZWNGSO3FuzvsKnZA7NLf+2/y6Qzew1YHLtm0aMyLvrMSd/M9octRIpYwMUtpAjELO5xGKcFMSwwIwj6lIPmF+ABVvNgw5/oXSooB+r/0dGbP16dtkEYbxW1S1GC8m16U5duKNmoo9MPxiQny9uDO4pJ5+LH/XiqYVJSimAIxL8N6QcusGWfyPBkyHu9a8OoHrfzYlyhjFbCFM/JGOAkXoQAdZvK++J1wd/iHGKWG2eQxBetb+DTFD2rzdwl0xbI=",
+    "hinweise": "enc:3:f2uhMAG3JDB3kNKtuzgV7WgrZU+uKFAsuAjV4ZEcQMPp+sf1RdQ7+/GdnaUhAhDkUJlJtqxQXloJJdLjpmQYekm0vpQGpeFb0ityU0TLsxG7IJw1MiR2sehynhv+vjIv8jPKjMYIjYNvmpi5ApYqQgBuToGafxOJYhA76VhXX7u8IjYIuly4qlAi0GlTyyITKnNcc5AT5GCH0JAlZ70UcE9iy7LkPlux8dyxhZzo903uts7RW8P8MvnaIHxhIO6MRbcwRpMZwVYoA7L5inhH5UqBjfyaUQkMHTafd7pvgJa4Cij39whlbE3sw9GuqJLW6J5tOEivhd59atMdOPzQzEun/NQ8AWDwmcTC6QzYoYfZ5NQYHYZr544TBEfhM1qRenqAuvK0IuCOcfdarNJyUYq3Fw2ClyK9hMPebmZcuCdVPKtkJQWYV0u8W3QfeqlXP3f+tVi/kyBerBwzym928pgIy2wWa3CP6MmtdPxEfCDDJV1XLaksegsXMXhtk9YHZttXJXFJbecFSvONJe0IVdfFm+kK+sHSae6a7BJlRyFLA2YXQ6ZiOQCvVPyy2tO0Ccn7gZqdTSU6iRVd8SUrsTTihIPRluAajrjequjF0vE+WFs54KdqRAP6/VplPICOT9wQlSPYNS+6u2xXxA+QLqUE6UH159ylAs3DZjAZ5bUOXuIGPGTLo6Ny07ndSTFhmqJOEG3OJ0ufqJoigc75blF4BNTXCHRmfqINXLWH3VdbuckpqQ0tUdJcRuRF5+bA2g0vRyV2H3ocVeE9Uh+u55o7mGZ5X93/KBkBBVT/Bl1Z3oHc2HXX2LUZKsQS"
+  },
+  {
+    "id": "proben_modifikatoren",
+    "titel": "Erschwernis und Erleichterung",
+    "thema": "proben",
+    "schlagworte": [
+      "Zuschlag",
+      "Abzug",
+      "Modifikator",
+      "Probe +",
+      "Talentwert verrechnen"
+    ],
+    "quellen": [
+      "Basisregelwerk, S. 111–112"
+    ],
+    "kurztext": "enc:3:o8XadbajcgP47fXL3lUWNk+zUIG5fiduwG6m48ijs+kU8INsP5WTlhbYSRlaQB7I8ghV+y0oqNnn/b4gKWbS1GamdL0I35BHCkrn+wn/pHC11tSbrSQ+sXj3JMQnUTJDMIPhJFMKnbYi/ebolkEuS1EwA909RNKAz0Ivu///OFlBTOx2z7akJvf6FLGTmSO2pnxsyIv8dx6eg8dUN3f/rUur5i4J1xlcrU4LmtUFHxYiY6CmM26t0Z11q7KJlnB3Tf4AZXPpz63bVs/DJZ6l2LBfgUSOtAl33EDFQ7G1y9fW/fqseMxP3liGX82Yl7b8BtDJ+ZnP9xehgGLdunx4t11pnUIBIZxJTkcwYw6Fqhdr1lqIOXiQFBtsZWo=",
+    "hinweise": "enc:3:YRm4n9e8aKGMLSmzczM89GV38lSKeUT9ravM3XB98NclIJIJnZOpjj88rB/lsSdLd52OLzHddlISdO2SCEpLk7kc6mx88zaqR/05XP4OffoyrvCGJ8Kk+XS59ec/LvtFy0FyP7XC3YY+HW2X6gxnPrwUSKd2pHtWCkzxM+9ogzaODNZDSTlH0lsGoVQtnUOm3ZApC6dEciBTatx7Fsz8g1A2ao8sSWKdH9G9TexW2/LPktbeoAPsq1jyzx6tpaGjktvG6dd6aWyGj+g1J11wpuY1btKwzxHWwUPp0FGo6T5QZN7wXy36YMDZUiS5aLxBjw/zgwgEaJEbOGdTV8D/ICz3tQgEtLsugHH3lOTlASk1MhdoJkIbgRvYk9AGqr1Yj65GuNQ1DjT7XFlKNoZF69ldm4nVnGu3bSihai+R1rOq7zaP1CqNgxWalpQyz0BZklDzxb50fQ1mRJDindOo9kjqVPq6qGCXv9QBX6NvoOF15AetcF8+LFDmoZYhMzOIiaL5s9C1AWmJEngllLlgUBTjZR1rXXZrTZ2uOnqI/xc="
+  },
+  {
+    "id": "proben_automatisch",
+    "titel": "Doppel-20 und Doppel-1 bei Talentproben",
+    "thema": "proben",
+    "schlagworte": [
+      "Patzer",
+      "kritischer Erfolg",
+      "Doppel-1",
+      "Doppel-20",
+      "Dreifach-1",
+      "Dreifach-20",
+      "spektakulär"
+    ],
+    "quellen": [
+      "Basisregelwerk, S. 113"
+    ],
+    "kurztext": "enc:3:az+FTjpRtnLtbTWzpDNs361xQpK3dMW+L1r8KSzAdFbk8pJNyDeogKnEhDPUBcrlG57u4pnjqhgwHHVhIsbjYEYDv7tej+/xJL5UwyHjx6rVGbleX/LyS//Ibv1q5kaNrLjTT4BJxRi6X39XhF9T3wpsIF1iIjCDYmxus2g7xVjig1wS0PlK3Cbcz/Vqgcn2HsgJXFEhz6/yV58QKjFSych045F90+LT514IqHL3FIMR24YhrLWkiyHF0SrNwPEuUttdM+uJe+MY7+GIObK4jHWdtMOHsy2xxsEQXcsgb2hGMW13cZ/P9ew21Pyu8kgaEVuLp1cCdORVDOgB9RKtaI8a2Yp9Dtq8oMtghwHPXXImomGqmAv8zFcr7EVf3tMnJXMfJRxnA3H5lX+1KnRr7rjDcijsJCjzKqvEBqSOsOXgDhdrIJX8GGqTGjYhQxwAyUjFBQ9tAb4OuvA77Go=",
+    "hinweise": "enc:3:ikmL1OwN7i70semlIl2rFlwPLL3VRlHqUJ9Sxu1A5ly50ZHcz9StoMx15xNOx63s9IyM1F1kYTneQ0pNxAZqATrOena0R4tePtK4y5sLj3jOCUkund3oZSmV+7rCfbTWHzEG1RW7TcXyj5fSIdPViN5ty9n/c8ECeN2P/PRK3F0bcr+BDsw/0Sm2aadHntzL7VSvoBretFIWiPB/4BiDmcF/h29fvWJ4qw9zAGW2n7HXfqjTUOYfAxEMMm7l0ZDO5scGa9CvlLPxzJBQLTWdHaGekFPgf458Hi/cA4V99WhR1/PNAMNrDilOiJhaDYLQxBExyqYjT6fKUb+WQYEsPoSijSbcsGQUL9hJHTMxixYhIk3Ztc5Fani+nA8IT8qv/u8vW0/HxzuYLsgUL6j712NKLJJFfrPDgcsrSKoZclplPPmxf4kSq0XNvan7unOGvHsk0vgldMfKfpKQRXetpzIjh8stv9uEzR9TNmViGpP2atr1wPl5W/N6W4h8SMVsT/T0xg=="
+  },
+  {
+    "id": "proben_offen_vergleichend",
+    "titel": "Offene und vergleichende Probe",
+    "thema": "proben",
+    "schlagworte": [
+      "TaP*",
+      "übrig behaltene Talentpunkte",
+      "Wettstreit",
+      "Vergleich",
+      "ansammeln"
+    ],
+    "quellen": [
+      "Basisregelwerk, S. 112–113"
+    ],
+    "kurztext": "enc:3:bQg+7Z+g25XbDxT9DM6So1gZBTlDa8kpBRZPW1xy96/8LGtpX31K8pnLolFIEsHjgt7b7QCQxheatfksE+bFgSOv1qkeoOyi4tujNTTiZ0LMSBDQeTJ8Dg2nFugRTWtxjNKnx86bNIQMlk0hfTDSZvh8v1IFce2AfXHhMmB4ovRZDCI2iSzQVLFLPkNgeo4J0H1lNiImZZjOl5HcumfoXRNmX/RRy6PE0AcEpcenMnQUENMjuBwKZcAgGvE3jxwhgOlYkxBnlBdOMgN7512ydBBnkkHuOR04QbHBcbV3HQZuIx458SPACyhH5BzhFMilMWjSo7BkhutanIjmg/Xwnqum1FDNtoYgL/+vZX+g759P3bv57gm6SaxIyvlTZz4B2fI83rozeiVCNLjGddu1AuCMeMv3/cv+b4T4Mbv9yCwU3HHsH/oxU3sH+xoVDvwkaEYNiM46OuDOmkjhq05QlC20gWC/ccwXjEywKrzNlB9zclc2T3PUwcNFjuN0HPbHAe2+ZlCfDb+J1Fx1vCjtsOAqNfLbDRp6cWwhxAld7PECVg==",
+    "hinweise": "enc:3:RASgaXyNLhu9lSH9lBRR6kLt6mfPA/m8ss6JM3S1oZCWM5hsGvvpuh3nPhIHwDTOQWIkQimmH/wS+a5kWat3MmMoth5V8JXqls1fi1vlpvPMpc6bShR2214H8t5IoGKdtJWnhHw9kzBozep8a4hoEOnxN6gG994LULQb0MNWMLDfULaZAHMe+nzqYgGzVCWXMY4rLqCYFSQmyH2/FnY6XA47OrwCS+KhwUtt9pb8omLN6oFGo1OUTvJctZkJXjJiRasOo9vFiq8DDr/3Zrw4Dwt489hMB4ELtFbiiuB2TGHyk1OGQIjl7kdkIA2CfWuUTQQ4Z7bJXsjp+CvrWWHfjbSdTEyhY58WL6Sq8zIHsaigi6P8hqeQuR7H6epFPPRMwfH83xVVThaIkin2bAo7QNtNnPVExIxmZdEYlJTwDQmhQ64rEqvk9fpJ6Gn8BJ7uwbv6FeQ/sp1BatbQjMwvsID10qWsI9Coh6ixIvL7iKr2tskxa0JcIuQNe9UAF3CPXaYHQC7I4AYh/FFYLFa+9Z2e8pzuSV9Iq1YRkOkXmr9KRRtCY5vLiYd4Ze3Bmiwy1LDcbaBETQyJnf/MM+W0Lwy9Y8gejPu7uk3YvOwb5DL57RRxjhn8GkDJeoDc8oDDVIX0WFJTgSN+oso6bHrDeOYrMMJ/AHZWxWXIpMfHm3oNabr8qnv/tCAhyKqwyaelYHhvGYfMUlWObHvAXf5fpvgpVHrTZmyGfz/JFgoaBi1EWzIbgkAQTk7YU0zvqnDdtPRk8tVqGXb2chQoKpYvLtcwne4h/0lBSoQqWn9bOC8Qhqr2Xu/eHcfkeJvBw6ssQt8tkPYSsVk="
+  },
+  {
+    "id": "proben_ableiten",
+    "titel": "Ableiten auf ein verwandtes Talent",
+    "thema": "proben",
+    "schlagworte": [
+      "Ersatztalent",
+      "Ausweichtalent",
+      "unbekanntes Talent"
+    ],
+    "quellen": [
+      "Basisregelwerk, S. 112"
+    ],
+    "kurztext": "enc:3:uFFF7Zy4B7av+ztdhePUWsvI1E4kB+uzgUv6FP7EbEXwn+ixE9mSsdu7efHBTWIvp9JMpkMbuIkNrcAtijfmuqwEFE5lgUM85dpWAb815gO3Yr2AP6v8YAXSvHguAEZdTi8Npps+kj1UbTxCWEd+DNdtWS7UHioqRoTwJJdqQTtWS/avTfH2grWo6EKYaNKrNOm1XimOwXW9PIbNtO1/l2Yy0o5u8ta8eMGyaYfvPnqgfDAwTZfpuFMvi/aA4amg0ZDKA2euXvNuNS68thpUu1W66ouQzFqGVRKPGk0u4jiicvQvKMyb2sfiZHa0MoW2Reto/hYFy51p4pCYRfY8WQx7tPwPv/wmzCA9QIlHwyCIoj4yV0WEKZ0fIORU9hdwBb5wGIOyVVGbKf0k3hD4S8zpNiFFpUVXGcbRCusCBp/PGcTbQg==",
+    "hinweise": "enc:3:3BDRikw1vrKIWYNdXvY1YKjp7RDHPgS/954jNRMbpMN8nhwEA8/sePTG77eYANM5JqjCeS5jFOVcjZliNdfYBB1ezVh9mZB3nviOnExzp7sK29puuONadfCrWoIsPFg6o02+oEXhJreY0GKqdu7FWzEYeVNz6dmFPMYphcLqyWbw0XY+Nt00o+R3uW7yuCQ6Q2P/9mxmuZQ9mep9NdmDT1IIvIOxL0TAq15m9lmq/9bHbeEZU/zcqZortvAfXfrx/qC+/lbIosFW7K92XqNKs2r/4NRo7J/7MM1AxNYEfFvbwsT4Ey5206SWluQT5CsQ5ueBroe+s92FRayYlZFode6qSSY7ZbMcFJzS3qEjR8VD8LN/ZrZCEvz2g+uDRkZChwVf1lasbarOJq7nRitP8A+3JL8Mkf1v5/CERX+f5rf8"
+  },
+  {
+    "id": "kampf_ablauf",
+    "titel": "Kampfrunde und Aktionen",
+    "thema": "kampf",
+    "schlagworte": [
+      "Kampfzeit",
+      "Initiativphase",
+      "Angriffsaktion",
+      "Abwehraktion",
+      "Freie Aktion",
+      "längerfristige Handlung"
+    ],
+    "quellen": [
+      "Wege des Schwerts, S. 52–54"
+    ],
+    "kurztext": "enc:3:fy/vIULqZBZx0jY+mgJJBqscANyE1caEvOuSLW6ufj6h3YwYBD39czfHO0svwsy3xm/rl57r8dMo67rjLtx4sFyDA4oozm+JF2ojxNSqAiyIXeah9+VDFL4cjCOle8CMagQtASSpeFmeL9WAehtYjezy6NyBTOwCMvDsLeIUtzGxvgm2ji5yuR4qBDTkcPA0UwnKpxhgMSYxHrjPOTij2qsWUm6FFR04X+50RkoWagoPDbTjuKMk0JGgz1uKACJMnHnR4SAaBcVmHe28zlKj9Rp1nj59FUljw3YsKzk+w2tGE1r2zexm3lHy36P1wFtwP4AuC/hSwRwrChwSGwRPSse3NhsYKuE6OHjC25nmbL9rLa5c4LJ4mamNouSGf0APAiiM3ORFHmtJtoYGiSIYuc0bDuEn+IoE7/K//QhRy7enQpevo8MttS2Qv7OUappP4LXAUGRGWyAJRQRbLVaKGYk/wJXr2d7lnqXk1Sd0JT3Nna5j4deeB7EtyYF41FHntFNPex6rzIk+EtGCUZyLAjkKTYZV",
+    "hinweise": "enc:3:zhWglxdlFwxaUtzK6x/mAJQ73z3L23dT+J6DEXmKCL0EiPJPKrNsCnyyOtcmPXq8X0E1Mj6KumjfUfyEITNKyF9Ih6MOP1zONFQOg7Ftc+LldJHCV5Brm60ZbCYpqEQAZCbtJry+TBQOGeqbVKYjKpMS4XpQaw/nncgbNoLTO3uLNLMSNdOGF7UpIvSS2CJOUv9N2/7pA+9jMWuCZkmnrJgs6byX5f/xnQ1+JO0G36JiWMaLCLoRG0Y9FJJlEVA1zxF7ATHUwoio4PkFWWgBqqtUmwzS+xQGdrkG/4fQfDNNe5NtL/k38t2Yp7/OkpU1/wrG4RWmf43MgbLUN9fmWr2FTMIA/K0SGZ3LKpm6sg0TXyB2PYfDwBOofyS1MX+Fi/5uEPdSZHhe+WnX/kFNYX84qna+1WojpQfgu5g83WvRP6wxq9bU9zHXNhslkqy6zmY9lfIpBqPebDit3ZhWdrlCBVUFJOkS39JaMf80s4PEcyfK3y9zCsQEc9oQJN+/GrRFC/tlRcFNOThHrOykLox675SdJp9U3NjRpG8T0FgkLfzizL4PF90NmvkKoJlJGKxrKkfcpeD32uWW6ZdTXJBaVvn4tOd0FdxxmNOWAF6oU8KknenEnS3MRpc4eobljz64m8V851rm6ALMv1pU8XH7Ae02RWiboFTEpG/Kkuo81Rg4Qy1mRdfnozgmb6FLXdn9cIN63t0/ax2/IOO02Tg8aK1GhfiUlVVpmn4arjoIg1C12nsFXMHNb92hd++LO9zWkXw0Ded3+VuJHTQnMHfK31bi"
+  },
+  {
+    "id": "kampf_aktionen",
+    "titel": "Aktionen im Kampf (Überblick)",
+    "thema": "kampf",
+    "schlagworte": [
+      "Freie Aktion",
+      "Bewegen",
+      "Sprinten",
+      "Waffe ziehen",
+      "Position",
+      "Atem holen",
+      "Nachladen",
+      "Zaubern"
+    ],
+    "quellen": [
+      "Wege des Schwerts, S. 54–55"
+    ],
+    "kurztext": "enc:3:TLERm2Su+DdBv/yeW1S5b1qIA+aocfw15B8BK6rXlxAxfLgGSS/UAjx5EqaWZImrhywi34nWY3rofU+FVPSk46SuzPv7oJMeGRFcDD67Fy0kTfK4z1NqGfMzw6tF8CSxA7ndquEQQ2ogUqDXzhecJdEc0seN/n9YtDCZpna1tsY9acxw5e8iSQV/+kAR6kcjeWmmkuruKazjQidfmhazNeaeNJUy5F0dhO7yQIYjV7+Y0hnkEfiKeZ7uEEIq8q33qm9Kgrpf64elqbnusJF97z3XXhQXWbjPjX9mCC6HfazyTBFYRcp5HFnZPvF6LeqdbzKNSHEB0/umaxqLLvBRnXA+nisC8F1ONQ+XZDXLtWnsgWTdnvjMAQWcrWbihYkammYskZyoCIa68F1emI0E06kwxftVkcJ/2LSCRrWqt3qcGw+1nJG5+97q3+pMqYbnMF93pKZYD1FC5iZrMJ2d9dOWv1iEr8LA9dRsBRDd0pyrBFc3rf8B4uBIQJcIZHyi3eYvn+qLsQ==",
+    "hinweise": "enc:3:zBRmq7rOMOQ8cSjw9H2yNzVFQplwiEMcsF/yde9Hov0bDznuOo8ILuosyFaEwgWbLfYKoIMCoNA3X4bGjQlCwQHxqTGwCAbLJ8AJgfWGjkajS4gAu6ZsB03XuRg2EEPLrD/RNdIm6quJDosnUhZL/bMGqQYKo0tFrBsSgwqlnxlqg1ldYZRndAKu5AHwrVEm5GEwNWWFQlAKkTlwomutSVTp6J9mLGWzh7vRTK2XnWPi3BK0oP9Ri5prSlb2o63rRlRE0yj9WTCFhpD4tqXNnmVYjm8y8/vTFugCzNKNHa4pTeFmZ8F2HR8cCYWJhSDPQnlIrr6cFnEgYVGQDqS5mvJi6a3V1Jw1m2MjaopCrUqIZ2Gg4NRbwkTPrySv9qHtXlFjr0jfErbcvhjPnT79qIlNeFqPy0zFwc5vD4uzRLaQwtmHwlys0ZxDZbTSvI6L530BRO+i/Cp/MXgDaqak73hRnb9ULUW1nmCwpRbytC5m73N2BdbzRkdjhkvzb4YCWqUvWaZj0iT1NDJF48mRLvDso37t2nGfu+IgW9Zum5JWCFaATjeMFb9Fow0O2v7in0Bf7SCgDOeFHVFcoQ8YPUjUK4zsc9LSdYpJKxN+XkcNnjh5ShB8Ju53NMRJSijZkjzckMq0HB+WzBh4pbEBbwdTi1wgrDCEpuHForDvvww0b/WmYJlR1hJvUI6dTwXz0QzRvwxaRkRuDPpDKiJY7s/OcozURvHRuRxhTegfGF7/qgWD3OpxnGkqUVGnrD4mftdymWxE8NvE5xnIc4xyS6Rk9HuHQWHAI/PXcOLGjpplZZ74ENGGUjS1cKhwmj2edjkuN1exU+2aEIq8V6wsSuNSVMhQEXEwBu3+o1NlUAOyJcP238W8/7inluOwOST+3Y2S0Yy2MU4QuJSOcYc1zKKKQawa9duRkXy0tdPFo1B9zWFiRx2K/DcwIz5dcNC8SYF4SA3sOVsDhKeP1sKr8wyKoW6NdJhrPiKPXweer5Y1CF9JwmxrrbTCh7Jq5auZqGVvObU="
+  },
+  {
+    "id": "kampf_initiative",
+    "titel": "Initiative",
+    "thema": "kampf",
+    "schlagworte": [
+      "INI",
+      "Initiative-Basiswert",
+      "Orientieren",
+      "Reihenfolge",
+      "Kampfreflexe",
+      "Kampfgespür"
+    ],
+    "quellen": [
+      "Wege des Schwerts, S. 52–55"
+    ],
+    "kurztext": "enc:3:LpRP9+ow9hkWCo6GEHBB8qg9Wf15CRwjF+pvfrtUDWohJT/Q68Z4v9deCZS9rMOjJeFxrMW2Wz1Yplz/jD/rQCiRTN5UC6GxwMb77OsZx3mlS3Fsy+Jp7K/yGMpUPRLV5Ywi7YC4H2VbxF7aPuVg04NnEOKm71IUHsVEmBajUi7BaV6icdMkHmSaK9rvVJ6ebx1iqAMR/uyUpisDOouwEXIzC5sDvE+Ms4L8weaEuXW+M+O4xZA6qGSVguTCEtWBCsvAa0wl9v2wUkVBBhJzXcsp0Yf9XHjOS7glg9UDJ4jOeVcJkxuZ1jrNCXO6ElACUP7cpWJHbNLxeosDVpZDwb/waTqi77m3z3kekO7BCjyTwRhz+KGTgZknkp5iofovT3fdspspyrBdmfmmuKIWBAZqJl+BrGrkijoxwfk093iL+KTN6+UxH3/Pc8r3XVVMvxPLk3fQhUETsXqs59Eh7Aei7W+nKEomAkH0DXFmIanb80WOucQ3DjJaNyLo6uyCmreWOLBU1brjCITe0mqttDojz2Ki6pcACsMZXSpMkTq+V+Rs",
+    "hinweise": "enc:3:qAvpnoPvr6bpaQsXLeJcjYV/d4WOEHcHRqQNC2KCEZ65a3CdHLuzkSBnsnBrDH4j6qcGs1dJKkKVD8H8Y0oPE7S7CiyUJPveAgN1+OsuLjJnSUEkvLYcP/bLMJeLhE/IptzbZnwb0WAT/C/j9oKBzgTJQNF2NAqta2+XiG257MpbJ0AHB45qZkFPr6qq5BPZL7hITtBh8eGVLZFCouFG3udgPl/fk2HuDS6+2hPvIODPQmev5t3s2yFMfxo3q3YXdWGwVWrZUSs4ruw/dmogivtdfJyEr7lBBbASwY+ZCvE2ME2/bZjyh/xMoanryQ0WVTKpC4kdu9XtG3DLPHKhbS5lpxVt/Dt8BzQCvE3gABvXTlbmZJpZFCDd2aFL1BzpOrajrUQ9snriT3wfpnHSNoUXZInoHlSSFFDDJHiKBYURonCFUMjJ5Ge4NKHqENQmzEo/fy7ftj8JbigC2qGyPppT+vCjMRJeraDHEh9A2LhrIR5vM22eL8/g6R0fZcQIwSiURI1oaItTBBx7MDNX5PqsjQS81NUnLTwttnkUNDcC6NoooWuq"
+  },
+  {
+    "id": "kampf_attacke_parade",
+    "titel": "Attacke und Parade",
+    "thema": "kampf",
+    "schlagworte": [
+      "AT",
+      "PA",
+      "Treffer",
+      "abwehren",
+      "W20"
+    ],
+    "quellen": [
+      "Wege des Schwerts, S. 55",
+      "Wege des Schwerts, S. 66"
+    ],
+    "kurztext": "enc:3:/ztSqComcjUZGnAEaROY0DoX/Iu5ARnr8SEWSkmfGv+245zJ0CGN3LWzz+oCCqQVKSPCq1/Ox527VQ/9YOmTRouyfqQpLdcCbMCVd7gVPv7wTL5dLTJZaiHFO8BHEZnqs6bd4g0z03guZnYdk09Y+oh1KEFoUkYXY29rLBZghjj0htoLmaND8OqeWs1VAB1ytRDeixXW8ozuQLcls2Hggs7vHP+5Jg8IkDY6LNYZIaGS5fn/BNvwEOFpReMg3X89QYdMgRAzhH02lffjY50huNtgHDduDFLtTWvqxz3wALdFm8IOH21lJpobBrFlyYuVY8k6Y8t5Ho8w3ZrKVvG772+kPgQBn1yO9FX3+HWorTjdt/bCWSxrUfwpTAK0ribg5YFeZct10y6aJgwGIABv10XQJYbrPuORMxHHk00QuOUtJYdBQuE6aTL7D9HEfW5aFJ+/lG9fYJwur7LnfnLSbzcB9x7oVIzsSiexGPNQyptG",
+    "hinweise": "enc:3:Q6ZCynagDbXe22scQqx9n0+ptqIIuH5PXxnJxtUEgRPf2ULprLzCd4rFl3v5ygfEln/Iadl+u0GzGxgyp3SxMjhVqHoJ/blYPWJTe8pyw6l252FujGc8KZFqQmXU1wXzamNGhfbjvL0poFQanLvpEE6r01DcvgBIvLE06stUGstbBxHtteyhWP6E9ueOhDzKwf4iSlyazuz4NaVwg/mI6Bw0EeOrh/82Ta0AcZWOL9wTUUBQ6SK/J2n/tAUvlqzC2ZGuzmYm4qpx/vYTaIquLGrBaEt8vJnW1ZJcxfrRfp/MTPzi6Q2oxvLnMmBNG6X1XV8Jnp6gagOUUEEIdBDM7zzTpBxV5zMu77kXT7QuS81i3kOBvM06xAxtHWMn6od4JTbPlOJq8NRK"
+  },
+  {
+    "id": "kampf_schaden",
+    "titel": "Trefferpunkte, Rüstungsschutz, Schadenspunkte",
+    "thema": "kampf",
+    "schlagworte": [
+      "TP",
+      "SP",
+      "RS",
+      "TP(A)",
+      "Ausdauer-Trefferpunkte",
+      "TP/KK",
+      "Körperkraft"
+    ],
+    "quellen": [
+      "Wege des Schwerts, S. 55–56",
+      "Wege des Schwerts, S. 82"
+    ],
+    "kurztext": "enc:3:cfW9za1xgit0q0Q9EO51Aco+nUy10cp0M3csdyVPpnF95wIGo7s4/+L+GhqF76YmiNl9uGk8yJLemGfWYbx8iVkqm8jr8RcwPH+UBhuo8RAyZmAia316Watv6p6QDTrWBa3RC0zhFT3flSOGbXOp5/foJ0haXHwThUyiKNJ7AEeYwo3kApCBIeEcrY4YaZtnQgxyrHYypC8YVs7RtzwrWGCtuJ7XLXELpgg4DRXmt+IIr+zGmh7HQbz1oQC42ZtEXEVkmnIgFc77/2Rxr98/ih44Z0u0iNmKDlV9PzHwBWRoghK5i1gSLlD8xG2qt7DYDvtAgiHS0MIBjqFtwUWIJRJkU2eDGROn9U9KwGgbiW/TaQeP/9z/vCFljkLim99eu1g7Qaj3ge2xrx3aSezqKBj1leOYH2MKyO0aGLZggF01K3z1TF3V2KV7S8/C78UsUVpwr9c4WSy3",
+    "hinweise": "enc:3:qM5TVlXyAQxCATxEr48DeRJnE1/1bxJFo2C6oyOnP3tzFIzcdiOIdzu5qSaHWAzAOsCruEdaCWcxnbVd2fUwhTf/Vhqum7RkWVlM66jl3Q/SJFH7TbyZNrnkYIl+JGifvQAhEUqjSMsjcfQn+vHklPbE9oIOQkMWhOjZW5bk8Tbke4Zs6j88WXF6NiPn3jnWesR5lm3Zu7ayhr/k4gP3LH7RkwMstvmRlkTRVwY3gecOUN+OErxlxSuVhPvghlhG7v9jR1kEe8kd+7Oj2T/6rVipu9nVA2dQ3gGTLjbvUy5Ygl5K4xg6YshPMXKAZmoB2DszCHgal5+hfK34E+H6S5/kwTz4gwzgHb9JDjOYBNjKiF2aqkGecvKJ8dfpfvAayPEmGCLSJKIVsF8UcGAzfmiF07Jhfh7iifHvc0rG/J5D1xMZzd7GYT9O/EZ/e/QuBeTiWVm2NDhDEVB/4k1w1j1Rody61dMmr96nX2+hQ045vkcyHGEM3S5DYubsTMprAVfYiamdOVxYNOQbsxbypS88KIfsAu/VQvYAcii2bpwlE0MXIdWcQI7+DMEcTquycyrqxeOzWMmp0p7nzO7SZQIIyk7cZJ1lEV8owoS/W3racOCfMDjtX+yuGtqtN5BemltXp53DJw==",
+    "hausregel_text": "enc:3:Zevge07ygoVobUbAcnora88uzY4hMbJae5Q6GT55YJzg7p9ogc/WNAQZltDPUmiQ/z/jq3Xxcvvd8uU/QO3iQ2aNP6TL/5AL04j8FmBsd6fVvmLhQKT4uoNBXfSf3o+uf8uIPzgjc6u6/nkGtiFq4HLRZ3wfYy6SBe68+QbC2B7y/aFH0mkwVxTgW3Nvbug6tmK9N88QLVepCxoM9keAVPpI8yIBwEADMtwpnosM+XG7dkjk",
+    "hausregel_quelle": "Erweiterung und Überarbeitung des Regelwerks, S. 3"
+  },
+  {
+    "id": "kampf_behinderung",
+    "titel": "Behinderung durch Rüstung (BE, eBE)",
+    "thema": "kampf",
+    "schlagworte": [
+      "BE",
+      "eBE",
+      "effektive Behinderung",
+      "Rüstung",
+      "Rüstungsgewöhnung"
+    ],
+    "quellen": [
+      "Wege des Schwerts, S. 56–57"
+    ],
+    "kurztext": "enc:3:6qMDpfItJ0t/BSqReLtDseiqIoIO3yROq/Wo6r8jdRFPCCVw7fn0izdPxLlkGO1jh9ie89Smr0tiE0WDJn5a99XfTpMa10QR0Pzgooq0ZHJIQzEHhddHtHgqDaZrhtqa6g9/A8jKwLssLfcG8MokAYISv/HUABIOffi771753kx1vvn0cDiir7RD1QJi7K17zMGE2SsfffVREKzPO9iy3CUYogMjgRjx369+T/XmVBKlFVDHK2D63b1hV4t7lPSQ7vQ7IvnsP+6XiYUzjPqqLAAQ4B7PKN3JxkM6UHJZO682Wnah7fWOZyUVXDUsdBLyS/ONQii46WVF8l0Xgmlgs8bPm08pdFYEXRyLrEnSMvxVguDDViWLMKs9QiuePcZ0HJW9qV/umxFUa/CaWi5I463Chcix98uJdAoUAkf/sOsbW5/pVVBTBms8Ftm7mMk6QbmULpTlRyX+Lw7ypw91ETMUwcSCVzHVDLKUZ4zuvwb+xQ==",
+    "hinweise": "enc:3:bx2CCWuAI6IDEZenSxk1MFbwZm2tw8U6rrblSq0WmStctayUMoqFLry0a/Si18lmmMaNqOpkNrgEHKsRBJHTdpJfOSJmbBuz1IBGz/xbvehDgLauKNeSM4mfRGk1Fd8Frr1ZmsSGp8NZn/CoUKqeKiS13b4BrqZZfnB05ZVL5Q37F7xHRD3bBmOaJQHGeTUP/PCdSsIcrf+lOIEpIn/aUFFtEG1H3Ez6Az99sWXglMRjiHd9FgyB58RH4qr/TkxJndhCWtPIGfSv0Sa7zhLCeWWjOtYVPzVvhOIP3RhOsF8x/f0K2prZLYJBIGmEol+jeHWUjR+jXuNR8ZU="
+  },
+  {
+    "id": "kampf_ansage",
+    "titel": "Ansage bei Manövern",
+    "thema": "kampf",
+    "schlagworte": [
+      "Ansage",
+      "Manöver misslungen",
+      "Erschwernis",
+      "Orientieren"
+    ],
+    "quellen": [
+      "Wege des Schwerts, S. 59"
+    ],
+    "kurztext": "enc:3:ZhdebY5lEFu2pOGP9JyHkXXRWQNX9Zi4hBK7PWmInP24NraYralvZmZPjOAK9klllTPzepF1obZR7SA2bOMGBCZqKSeVATziDrVJ2ULsTEVASKaj6w7Cch+dLHgOETK1mCRDH6Ilyf3kwbILQZFrfsDgk8jZNS46NKvuHhTcjstInCahXQZEp0QBrTJlTdOPa3OZvMsOysawfQgeElolB+WP7EscYp6FHFh9eGVSMNlgxF+WoBetFOK97pL3WSiF64fDzhvjdx3ONWPrBAmqcnzD9C5izb1e/UqsYN0XNJ8OlYuV13wF785VW9e9YDP5AQd0mfDmqh4vDSJeAttW9QR2BWayBS7wmIO/x++rnGU015d7aRVGOtWZEWR0x5KYP2bC/CdC5dyWGDDbAPholcI2ME7vJGNDlKh0c4GdLagaYNgCAiTQwahVv+X1JGzVQe26VttBE9nUMtEfa1skiowfYNoerWt3niWQM/ebUXwmG9CaJzXhwiK8quk41DWUTIIX/Og6CIP1yh7BiVB7zGuTqMKaUGuniWpV",
+    "hinweise": "enc:3:FaoyZg3qghm2h7Bd6Ni9NWOS7OzgTFYsPgNM1gLJFs0zhfEvB/jvTMtowG2lkeZE6QrpBnTPe2/oWEDYcF419X+LbpkOIvgkHo8f+UmN85Z0PhdzeUti0EBgNml817jRMGLgStWUWVx3AGAV5XTSPxJc9hw9j0aJQkvykFkqdCQp+7CVeRzIIq9n7GVhBMO52AqWczKnIhp2KciC5Bb0sMArQeHDXXtdrCTO/xIYCfCNpnLrC/aT4EsanAbeLsLj5QosYbBbtLAgEPQ7Jw2TGHJTfL4vZeSPiIVc4wCZFgJBhC+B6cjZpsIrFHLTGLZi9AQvK7LfUlBxPnrt0wMrr0v76wWt/c92s8WuP2IxObfzZigcMz5Pmdmyg/ap0unTuD4jRB0+Au4B6Y5uN6Aqx8dWrdGkL2SPsxWNoigeIyV096nXvsUPsXw/LVuGsIp3C4Ghq4FjVz3h+B9aFppPQHKZ/0X6vnBokAUVdI8ixfHPHuzPM/XwRjzxrdmcgALJ9fkc61p1BJwo6+PsklX+VtvbDQsFQFCDiAzpaOfFapFYfiqLn0V4goHFgor4AKgVmD182e3lRsWFARPg8NzVB6nDsDU2E9u1C5O8UkYbnZoD64GHlzlgPpE/gY6kJ25NbdHkVHM0YMg8WD1/N2fSCRrDabQE+ikNCbB0ZHhRrZu6g6FtQtOi8ie+u0Bkw7lL/EyQJSbcpB0NnLu8na3mddJhx8xDSW8+Zw=="
+  },
+  {
+    "id": "kampf_umwandeln",
+    "titel": "Aktionen umwandeln",
+    "thema": "kampf",
+    "schlagworte": [
+      "umwandeln",
+      "Angriff in Parade",
+      "Parade in Attacke",
+      "Optional"
+    ],
+    "quellen": [
+      "Wege des Schwerts, S. 81",
+      "Errata WdS, S. 4–5"
+    ],
+    "kurztext": "enc:3:rncyzk5Yi4TIS0iUJm+A2VWuSHwBrgyJR/5oF8XKunZXnyYfrOUXue5nciBPZK2ds+EBCpnn+0lWk7neRjZ3RBP3uqVOiuuujHLtMht3TUI5acAxmuMPHCEcvOt3xADc7Q7JKUgdn/i540MY1baEDoDC/v4WL8Mu0aFWXGmRgI3AX7I7X8cH2t8TmWAubz4pBl5p7BkehasA+gbvSXd2y0ZEo7LMUt+Sub4vhRJXd4AO5AArSn+RWVNj3D8h6AkPcxUMNe1c0/L80Ny310DcZJ5WfOfzUzxExKLSPjMRBQf1t2SHwxqmEwPPQICiLodlVV88ZXpwODIeJGpVQpfmUBifn2v4mZ6tZNPPuXekc7QIxic5wCQd6V5/oF0efOitO73ARcTeAbXjymtWLLDFwSung+uOxDIltw3Nq7yViJagiY/jpsq2jComlWJ3j1zDYxXk7XPaRWMZRngSEgs1Y4idmuR1SgFvb4QDz+h0AQ==",
+    "hinweise": "enc:3:pH9gWKoWwGMPZYFMWfpxiDtRkYC9rLZuvcemnHCR5qmjNeWrFAB3lisja4slF2RiwVcaZfIH8BUFT5dF+jNZ6SonrKEnJVo4PHSYLLII2pXEuRereDmruLwujGadyKWeHzpwcXRsJNb+BdOoko3JrwqSHo7m6FYqT9DfBGrRGzxeNUUgPlkVx8u5YgtEOEtmSZtCdGz+bclpFA+N8DtmNwLxjXbMJMtFildaie3Nar6iML1Jo5AW//4mspDcNPUJxKCAjCaLQGHnxLOtcmIh045WatuhlYXULmOUoZjPCQAC4t2EALpwtGsfe5Nf4gfwpDkxi9v8byyxr7ES2O82+ye8dAN38UyWbb9nPWSBBxmu2tTEtDfQvfspySzBzm0hQxfyUrzO9+6hjrBxEUr0GRVxe3namOLauiwwjdwpLREm/FYv43egVl46Q9ASNcvEn1e/dBag/HxGEMeSTA4zd4XrB7WLFsof+v3qqXSjtNCDIjCnyobB5BagEKEI909/lYhQlGRWFhVuTlgrXonwHTmR+w5rHiFaewQjTiGrLsBNe25yLbJL1ybMPdfFgct2DQMdzgMiGOyKVHlYpzn2b6TVDPIls6vO+78fyFIVS54Nw5zsxXAO3JjR6aDoZ/rHhkdz7zrnbeF1h5Vqmc25Qr81k7v4HMeQ5mgW/Lh0q4qPcewENf1I"
+  },
+  {
+    "id": "kampf_distanzklassen",
+    "titel": "Distanzklassen",
+    "thema": "kampf",
+    "schlagworte": [
+      "DK",
+      "Handgemenge",
+      "Nahkampf",
+      "Stangenwaffe",
+      "Pike",
+      "Distanz verkürzen",
+      "Optional"
+    ],
+    "quellen": [
+      "Wege des Schwerts, S. 59",
+      "Wege des Schwerts, S. 79–80"
+    ],
+    "kurztext": "enc:3:536GGq4cpWDWKbfp81wNub7YGLdO5cve/M7DAOpYu5S9CnY1lHra5Oh4RJhnjpGiPAF88BpEg1hsB8AZ5bJujWxdoZbCF+o2eHRXvWjOBazR/usq5yznniZ52w2Qvg7H9L8MzjGfg+u9NW989Djee82guEVb+B15HCmYf5Z4/aAjZ352E5oolJuC7I6otRUMKfFDnrESEgo9Wh8ol3m/MxMb0dcPlDC1XdbIRif8tITbBJRRM5iI/+N2X/klntsZbsBtKaY60ZvLZhbmrksuBDPPFQBcmO4kGQ1TKMWFzJCOb1QLY492s3VLfU4a1mwhGs0o3NUHTIDdCxGM05hlm5tKjoWZPib6GSzPEPft6+aoSTTmmQeSTkrOGTbRlQ0tDYGJLiLFm3LhqA7GpE9y3yRNSXK8ty85sZib+n13/Mr6k7ZHQm6w8RJt2dVXyN0v4rCqSPeLHHZ6uYmTj7cZLHaPS5X/f5gUyjFRp3J86rlUQR+GRyI6TcOY+Dd6+cwKyimj+s1C/SBHBAIf6k6SHmTEiIiC8dO3dGpWwdByfjCe56GpV2l2jak=",
+    "hinweise": "enc:3:MH1QCVlrG3bk6FQNrek+Zv8OhL8TVRQqCDDUhqBBriZSVhVWkqQrFsBGa7Kaysr7uy7bOQv2xhr1dAo0rX92Ukgj1m97WtiQD73xfqSkNb46049o8EjVEEluSZ5aqdAvVdYFol+sBEHM5Bb2M3VdS06vTbSgJUNYnKgxTP7TfTnIDYNZiQ6G02LVHIpIwYOhLqM+smxuWGftypNeOxdDF/6HKb++5Sl8zLWqZZvNdzGMTVpf9MQfQHG2Osb8rh+h2VEefaaHnrYEwMf5V18hJKMSUZadlJTcjxkOK1TP/vh1yNBIUSrXUAy/dpytsc8AXgGhx2xOxZP0a1av0eWPV9MfaNdHwZ1xolwP0HBaHBSDiPM5uwGSqxB2U15kFg9BUl6/xN+r0sra5vcyXteeTFNEh4zjbkigqr3Yd34EGJ3X2KZlo3Ml3rm2mTkKSFC11e+SgGU2SBqLSmjM1kPMfK+/f6WNzSz+yJN/GyGNC1ZPP992oZN2HEEECI6++QqJ+r5na++jHsSJLtRRYBtc+LKu6Sh0fOZmb4hTeZmcfw3gpIKhtBmIO85YEf6gQQGgnRJfDw==",
+    "hausregel_text": "enc:3:TYKAtIdIxAAyL8xcmzcPxHmPEcNa6+kck2XWYMYs0+LC1SPz5fGHOSG/H36EYk4UrSdsAlfG2tcKP9jYElinaL9O2ziOw0IdADsdMKjCEICmL+ymvhcUs5Mt4T7iH7xreTosJcXjst7mDuYNSMhqj+Lt4/rPPZLSJT/bJadJf01ZzB0/v0T/O23O6b3vEM4OkM7gpHx5UXGhmbqtSePGq3pEjNsrzujTI12xMKDaQE9Q6vodsKmflsJ3OqfFofWtnjMMCFnDTZJH7M0O/DP6TNeSBSssD6yCktI=",
+    "hausregel_quelle": "Erweiterung und Überarbeitung des Regelwerks, S. 3"
+  },
+  {
+    "id": "kampf_ueberzahl",
+    "titel": "Kampf gegen mehrere Gegner",
+    "thema": "kampf",
+    "schlagworte": [
+      "Überzahl",
+      "mehrere Gegner",
+      "Taktik",
+      "umstellt",
+      "Optional"
+    ],
+    "quellen": [
+      "Wege des Schwerts, S. 58",
+      "Wege des Schwerts, S. 80–81"
+    ],
+    "kurztext": "enc:3:M2P0ctdS8TwSVi43XENeSYpW4KWrUC6Q93r41ND2wGvj1qmshSG3XpLnNS+ZKQs7pXh6Hs4Lk0xabb1tbuYVzww7Ds2F68bgoGU/AdgSt0ZfHutf2rLBP8MeVlGC++1a7j5HEibCbH6Q2DicU7AKq9CINsJWybohAzWyU/vwjMlZML8U148M2hrnoxS3pkTLZrxwAAStouvZLcWeuD7zHkt9XB1FHfJNUyRiY5DnkT+/Iousx6p3jF3UVUcSw7/njH2EL2v/NwKhzn/+sLFmohq7J1nekexU3LJ7cFvQVJeb7hW1UE0mBdusAGh6qIQUYrKVkgg+azcWDs2bSAYTZvq+AmBp7mVHF81E0jG/wPJqQmX+Y399ypSFu3MSiyBmqpMd5Db/Q2HiOUfRexE7BzezRd0E7F+xOb+EXB8XT7wuC6ISkYtnWCXNaJZ4DKBEOQQAYA0ym5y4EofNSgFGkaI/aRi5iMHHA2XwWGmdUF1I1ZovZtSf2dKA4mf7qV7Yg2Xteej6XhhC38fFg5Xwnuite2/Njzqyv6FetqS9GgEuMg486SPCcpXjk1pEiYpbgxS9+Ec/9xT6HyKk4HNzBeApujnmwlYpU8RUtA==",
+    "hinweise": "enc:3:Sj+gEFX/VJtUNch+pXs/ZwGMFLRSfyNRlFpdab3x/r4CPSEVRVQT5MnXrHp90RmSkwidFawBt2dfltEQqC1NeGowSoxxWL3KYc0iZrkcTe1jthAuZjjZpKjMlLoOrg4hlExB0W8kbQJDhpGvKEWL5YELBS+z+2jbs/gN8wSH65ODxtpULrrPA4j7Wnw3BdM1I4GqLmmIVkfjHd8oqBePYFq2fUsC6crgwznaSDIbwjDiUap2YQNX64lxbhlH7Y8V+lgnktH69KG+OJLkRLintU6Vh9App0pdY85bHgF5CJyMY3iNnn5r9XOsd+Jttc2Iy3rPp9egveVNwGZrvYzl2zrGeNOxlSSCwlF6gQ/GkzP3yW4IcRztO7DwnXMjEp1qyQrEpFaJAheIIqo0iSgDFmp2FbRDayVJZ2G095uldtIxr2QAxI1bihzsi+5iBZ1AgCoUbk5KAo7qQbksaSz/chomylkureXlzXDPitcxe0KZxqn/OEmiGmsg5HqYQr9HBb6cobXtHHoaa41pC56EQChDnHsMHaVNNfTUIIhKCjMvEyBQ/06t6RKUBWvDBXxs44dMR/fiiWheVL5XfxDA"
+  },
+  {
+    "id": "kampf_passierschlag",
+    "titel": "Passierschlag",
+    "thema": "kampf",
+    "schlagworte": [
+      "Kontrollbereich",
+      "Freie Aktion",
+      "davonrennen",
+      "Optional"
+    ],
+    "quellen": [
+      "Wege des Schwerts, S. 83–84"
+    ],
+    "kurztext": "enc:3:+m74wDFjjvbWHHyRUfVQMP9LOAAXibXyCvp39Wdeh3lGOkb2lzIoBOkgAr5v0IDie8bnlK8+2O/RQG4jXO52cXc804DrwjWYwteMao5wPEA0cUFz0JaJDCys2Sr8C7Gc6Yfco2X03nuqVmqb1+2gHnhZyT5R1+gL3MoS8AAzom1sIwgrRwQvP/nc5sSVih4ii0hh26FRth83D6bcp6IYQ6bqfkp6hwqh3aqsJsx7eNW7d41XCE9w6uI/DD0dyW6EMpLYjqdjUTSPqaAQ/k91TiXUDbSuefivxwP1rZIKdIoUFYByWIRRlXD6Z1gNAihGK/59yiAgU5JpqJeEkGFynekGOsrgy0G4nByktxso6La0uqq0H3CChkmJupFO10sDudbPr6D5L/10nbKlXSwCfU/qDrZ5tqqXpgjNrB+gDlkMHs66x+QgVDUzpqqkG3nBgb3neHvGqyQ9eaVzasbx+65shE10hUsZj+lrps+jXMBqvYWmtpqwmzjN7We80dtzgpALquJYcoKJ2oy6lA==",
+    "hinweise": "enc:3:0lkOnkLMBiTs9leJZodejyxfniiu9GQ0zKwadOvLpm/Zx34dUfkNSW5b346BHbFX/TB3NS02i003zqp/nONEB7OSqdeME6rAg0mD3JDN31PvBpglNrd1q9DJ0u+NkAZKSEEZWHSFuG4YrIsoN4d63XrV9V3Q2M4nEmyx+yoOGnetLHiYu8tmpd8VOh+o/pK5YPJ797qk3VQCgq2P4sd0mCmZUsnH3tU/hrx+6NxPEHmKZc+zRDNy5IzOr7R/QNyomdZhiuqsaFR2ZalcbtQnrP+O+jOdb6K4+g4mIlAGqMK1jpgis7lsV/vhrtk59LrueZkvfa97I75BAIZZiRokMLO60hIaAS+GRQ+KGK45rE26565GrUtMqMsZGmTNEosZ48dHcOwkYla0mttKKA2drHNJLk1/DDxxktXozJE3/P1o5vJmAFEKq82Zu66IOC24dFVM1EWGpSYZvWfX3Z5Y1LnNwPv+KjWOXJ0wpNQ/qCP5V+oFVvi4DUPeO3Emm8pfrMfqivHCPKUgzHpXN35B1AhfghsGqzU116XCpLkFvzBZqrJBpACn5a5FfvVaerU212PI1MrLjiEkYZ1LJEWtYz4tPbBYBHyRM+AASDv36MH2y6JT1ySko1tlJ6UBD7vdEBv7oUkujkUdvbzjmmhGHdvFzC98oBqDv1A2hUN1ZNIsZ75z/L6W/c5soIl24tQG1sIZmKLaevSsA9tP/3im4C/G8Z2ZDDODzm5yMRFxgsElokGtQJ0lvUnDOjMa3DEG3g==",
+    "hausregel_text": "enc:3:/AgjITerd/aSSat4wFGXvDe8Vs22X+36/yrYvz7zPoSanoElmEBNSCWLjnigw9xsKFgjI7gMfD12MuOMBK+OMAb3wdbRdm3D90fZZYnHtvXBAaM9VH4qSKKYLEl3m9o5QyoDsVZNcdrBMCZ+4LF07OY/ElDJQ8jOk4iATMG5NZarZ1zOs7IB7df360bS3IotCBZ5iujTc8xwXixOk6AQUjkpSmw9Xu52ps0cG4Q9T3wpVDGEjS362osenOFwiIiKCan7ul6oSsbtFBoIZSpmDu3yU3K4k7ply0lwHDJf43DNO6vWRJ2J4w==",
+    "hausregel_quelle": "Erweiterung und Überarbeitung des Regelwerks, S. 2"
+  },
+  {
+    "id": "kampf_lage",
+    "titel": "Liegend, kniend, falsche Hand, überrumpelt",
+    "thema": "kampf",
+    "schlagworte": [
+      "liegend",
+      "kniend",
+      "Boden",
+      "aufstehen",
+      "falsche Hand",
+      "überrumpelt",
+      "wehrlos"
+    ],
+    "quellen": [
+      "Wege des Schwerts, S. 57–58"
+    ],
+    "kurztext": "enc:3:d0bjrOTptbiWU0MzY442ecydDU95UEqZeJOqwx1iI3ZQW/19yXKE9OIN+V6QeEO4YSQns7MV0CfmbScPL4iwuUlMuc4IHOToQ6sGgOIQnryGb9KZLXPEOJ5IdHJQg4zegkQ176OpilDvB20bv9VYC7aXAV0Xno8uDfzSNZxhjobzWCSre2RjaF9Pv7+Vvb3hU6LW0LmQFWt+q1VuVyl59MvXGOiAf66HiBEidgLOjAZRVgM31mW6VOrjrXlhzopnb27TA51Dtr1XGp1BwgyHKWD9bNC3kOEoGCPpG9CR8vIer/mDHdbx4T4iiRikJd2MT0fCzB+WXDuHhQmlGFPLprbQSgv2B9Dg4Ww5fjLRFftIb0nuz135r+6ccmrTastSqh+j0hhfnU7Bvi69OXvw/Hv2hh5zVj2hNg3P/BVS4XqrqZjzEB0thlv+HcL+AWDxz6OYZTSbc0JkQ7iZt7dY4fFaKfe2sKj8x9kYqPBwVm3SaWwluuue5UxRL3Qgb0jadUnWyui+N31K+BH6RuhMV8KG0Hlrh2PpZyvswGRsihwu+9g5FzHhPC8+2SH9jNrjFO0k+3Tmcd36qzw83AWO8PIV",
+    "hinweise": "enc:3:zj4mJWaDmnGAIuwc82+DBQEm+BHCO4+6eSzUPDBEkCDkeAGfAVCZC04Z9VJp+fTWoH1d/oEAZ/1+ESyqaHFQxEVEPTvsMpCGRxfXzEZb3Hb1ZyKJFZf3I86RlF1Uw2ArUqC4IMuMdnQmxGJvDB7ZZPSioo9bPNRa0Ax3aYlJJ1qnUKWm4IaLkJeu/m5H0RPLFFOolHDa5lO3Va6oh6/5yHvwO9YxqsmWYGWPNLr/QtoTjvvdHyEdcL+WQ/TML7Xseq+4eEznF6XHrnlyX35zaMYrSaR9lFABgY3MWjdtTXRHWODVjWbduXxiNR9axLWDVfmzz0uFwJZYBfVgMDIiINVpq9ys4RMrDBIxq134tTQXGKD94i4wQkFwknjWlek+wQfnwzC3wDftgF61Re/bgUt9VwYr+Fifyl2wPrt+g4HhwRzGo+bbRgOEHbxvmDw6WkFP8jPQO5w223V+p6J8rSAFahih17t97xvHcax0AU9TkQ=="
+  },
+  {
+    "id": "umgebung_nahkampf",
+    "titel": "Sicht, Wasser und enge Räume im Nahkampf",
+    "thema": "umgebung",
+    "schlagworte": [
+      "Dunkelheit",
+      "Mondlicht",
+      "Sternenlicht",
+      "unsichtbar",
+      "Wasser",
+      "beengt",
+      "Unterwasser"
+    ],
+    "quellen": [
+      "Wege des Schwerts, S. 58",
+      "Errata WdS, S. 1–2"
+    ],
+    "kurztext": "enc:3:53e6PdccMhlXZbajvbuVaxBBxC+OWzTrOUeY8XqFSlLobm3+INUHNLHkG65Wq2EoRbb6jbu0cZdWsn2o6OqJFHq0tn001hgrMGa8FBRQOFrxpGw12dSB0MP7gH0gzApdWF0ZCZcZHpaMB8duyo6d+csNx2ia8MYcQjM/nXNvsmHk/AqQUONG9jXAO0qo1BRiZwxUU5u/iajHCP0CSpRkXTKQMb/JtIsPX4lcP1jZO0kgtN/o2Cjrv3vQjOS3DiGo/Ilpi+dyGG4izoMC8D3vsW+uTtI/RIPF3OggRBNEjhnvsMWoWkOK8FiBfx44tcVZbVgWwHdmBOSpGQZnRXBF8oIatebyLT0TQQLl+w2jOgqsqpq8qqZe5DJtH9EssTJgMOIzNptRPV5ojGOONDzHbB56SmO45gI2uYgojvHKEOZt8oYVWMJp/SUTz+ZetQyRh1/zxB+lVu3kC6razBpvk27WX6fYB7qx3RwXnIoYXKhRlOUY1BBbhlTQfCKAMnsallfeX7dr/T4IS/ViHfYwMRkUG96NJd+QwJL/5qFbp+Ja6WZux98iwoBeneZH2qGzRcDroVpUtFwNm5bdLIAwoIyb3xlyR7Y7yx91",
+    "hinweise": "enc:3:feSsGj26XgKuR8ceufnSV4Eq57UOlWSyKbNFyQWicy8fyjKUsgnCkiy7zv234pGyeC8QlnDQEU2tNRf2yvkYCgC5/55Nesm9vp8fzAaI4eTfDNDoXo96T2R6D64VQeGEvxVQEXNk8vN/vpH429AhTpCWpZnuspsEGxIqkNh+ezEB/tAkdBpNjGNp8apY6Z1xzio0YmTPnJQlTV9wEyNO8bfgWHdghG8m0MGYu7dE5UzIAGLODLk/kJ/I8HhCOo9eAzhXGTMhRb3EqMKat9Ipy84pHywjJyqmd5Q1YZG4PesqRSrcSYqewuKhzz3mVT8uGRoDYFT77rIH9ri1unblrO8fvVpFqurhXTW0nWJGhv6Kf3qHmuP78epPytEQu8r/uWmWLIFTDYE+9vqnSf/0oAcJIX/QmNbz8raEHePYkkf74lnm04Xor+yYzkA6KUdBwIOa38Xx+cKgggIjdUcIDU6ykisvVGKDuK9qwMnT133UmWavj5WASSgCT0xYUj5/QwJNSLndjff0HzO2eLF+4PwCz+nGze4yUBQFJiyHj16Wy4pNzP9I4GUwys7qbvvgul704WiRhOOSxK79IW8pXpxplWzblM26dtqXxSkLzSksaGLasDGqXEfLzCZvy0tZqkarcTRO1z5IqJwAK/6req6qgnbJYo4="
+  },
+  {
+    "id": "kampf_ueberraschung",
+    "titel": "Überraschung und Hinterhalt",
+    "thema": "kampf",
+    "schlagworte": [
+      "Hinterhalt",
+      "überraschend",
+      "Initiative",
+      "Optional"
+    ],
+    "quellen": [
+      "Wege des Schwerts, S. 78"
+    ],
+    "kurztext": "enc:3:W5nicecMU0EeWymBOtmcHGbzIxPXadNAy8Jwr34QUpGQYrU3jKhQVyJlZpmxXBl/wFjc+xTtt6Pqdds9MW6hNlbyiTGOBhejym0Tjm0u+TCd7eC9NHXzQj8N4fzmfNFhxyuxbKZel9k9pkvFb/FSvMx9311QRm3o//vi6UBHdvt2eMhtcB+ia1++fShOpzc5N3SVY7DT4aewPjfzJNhIimhbhEPlPkO0qQcVsUm/6Xy7GtvdfDtOTPRx2FNJzgIOKVgDowpoOZXejnvz+jVXFMExWEzF3hS4GWlbl5ep6VO0vyOOGZ52uCngVuX6tTJxl91Pc8ZXWIL1nhuV9jALyYof/sjeNT1gxNPyIrRg1QKpQy8BS/fsq4j1vLmmz0WOICjhbaaL1ZdVoDUe3aX+Yfb3lzZLKiQ4Yw15MeY4SWVuyDN7xFB7Qpo/i2OaptnL9dWacJatPMzgIpw2GxGe7FzFc+h4N/O3kpkIpVRLzcEuIkg0RwRz30zaIsSICNwU4xROhxHW9WixC38X2F21VwWtdlNAW+vJhfe+lmTJfVHSWqeaMJrNwX1ohdEhxfAFqXL9+71TiLrKeU1kVmxpnoA=",
+    "hinweise": "enc:3:MjO4bxB41GZsw17uhwJbBF+DaKqpXq5oAzaOOZRzm5lmyX4HZM49Cb6JeFjWD5kzthw9vLDH/vGjZU7jui99HCF5KuVJVqfzkDiOTnuAyeS+7BXMcbU+SQ+OPrycfFS6tSiqxMf67De44dI9gFp5uTaEPx6v1ddcunhfN2vrvDA8oF13Y7z4Q72R+yyQ2V3Kjop8Cue9LALF/O+WT80JaqYYc4qAUocoyZhmJRkrdX+qhR3+e7LulR9q9hIlyES2qSQGwZ4I6rtYi3OSCBrFKmMLgHEgKcz3tWfPPX2o++fIvnsY3RA="
+  },
+  {
+    "id": "manoever_wuchtschlag",
+    "titel": "Wuchtschlag",
+    "thema": "kampf",
+    "schlagworte": [
+      "Ansage",
+      "Trefferpunkte erhöhen",
+      "Angriffsmanöver",
+      "Wucht"
+    ],
+    "quellen": [
+      "Wege des Schwerts, S. 65–66"
+    ],
+    "kurztext": "enc:3:F9HjPQp8BGN+CbbpXlp97g1XFEUhAghBRH37yRryvEZtU5x8bhB/7/0K6dOLMNvEaOjn5jdDHxCCOP/HXeV+2SNR5z+HfBxHznZNsETbcBCpTKfRn6u+DO22YDS498cAvxgsG/9SyqU+zBTTqg/4goAWpv06BFWgY+Z9mhUzweKLNV6mDwOSV4ktnH3iGMiIXGL/TRzbe1lJ0VnwYhUc76xbyfgAFOc1WLM1x2wpuWU6MkycVE53vkzDoHovANoa8+Mhjl9rrQVyxUSVkxswi+SNrPgIk8Lr2SO0qoeJX/BvUTQVir8cg4xAqGJlvNwis1v2NEw27HYKXl07ayNtKSSA40/rLZagx0IEcnmSim9p62GSA3AiGgC6Rg7+b5pYsBncmUsuAV2GYQS3khTGeFAV8vD0KYcZ3bTczDSglYq8TziQfdC1+n/kuELzuW95ICRfb7aRFmj2Ifu3/34BkRXnDq4vHNgHTkVC2KTZnb65+A==",
+    "hinweise": "enc:3:VMPoJnxckfWWiZVgY9ySko5l7QNm8SSozP+p9vF5jvpYlPSxICoDphc82OpCaKwF2IGChQ6uvXRbnzBYtaSgGCFvp04AiSeK3d/cbvuUG7BUcdOAkPr9TnH6VV8YfTKx5I4k5MjRHsP2O5g/3VfZekpnn6OMg6BhqEwQn8VDStgp/1wAXx+N5Jn+4lsmX6iSSWRsM9Xq5085Olp8pLh77FWnhaPt74BvjUCJhI190TKLpbF/16d8OomQt6LH6WooBej8SwHwaS/ygxYE7GnR3WmkoOFp6NpFf8t5BbLrckPL+wPmOltI5zn42zOdqVaXXBt2vFJqUWp6bviomxP1jZHiSagE02pUcRcKBp7FUkbx7cUntT852ZN+X/5Hb0ppcnBbTuB09czNWn1yzbmO+1BCKHS/0FhmY36gICdCyosI3Qhp1Zx37LGcNXu14GvgdksGM4VL//1tfOh52LEFDS1S5VhHx88gn+wx9phqJE892MbVb0WHWaWg/hmtu+udi7WxFFqHsQ/awlS684wBufHxhjGCrRk="
+  },
+  {
+    "id": "manoever_finte",
+    "titel": "Finte",
+    "thema": "kampf",
+    "schlagworte": [
+      "Ansage",
+      "Parade erschweren",
+      "Angriffsmanöver",
+      "täuschen"
+    ],
+    "quellen": [
+      "Wege des Schwerts, S. 62"
+    ],
+    "kurztext": "enc:3:5qhZFGyEtSjlxsSGEw2wr0dlonVdfIOlFDQaZYD3Qn3c4+/HzXGzACTZJ2Z/e7/GOoEdsM0DzOKFSk1wwzJislx4yrhbJEuUHiHHOvtCBRX9HvqKyFW7bUSpkZGwui4m+ocFGj/WLN4NTmCHw4U6t01L5yEjmAKmrou/gGXg5eW4cVklU+8hZisRLg7o1ViqTwU1i0NxoOohPICwRmnZwGKJhZqxSX0X/+uwAhgqOBseOqKgWzExEcFXwFIHEMBiyTAYS35EdxD36DbRVxtb9KRg+drCPluyo5vJFinaHG6zBqAmWCph/mZFV+3gI3vB6TaUbIwOUM7+LbviRDbwgLtcJhRicUinc2oUCGR/PR6/S24JdF5/a/SBBFV6iHDwHY3UVAS+2Aml3L0WfxBgmSsUlp201nAez8aZqBlaV9CYQsrOcHDjIXlQzJP89Q9i1t5yHt4MjqxavfpR5o65MAru+R1LGE2hG3AqX+DbbrZ2kg==",
+    "hinweise": "enc:3:/ocpOEdnMcxnP8sypSGf4AUN060JBFyYDhJTllhj5teac55GTWLad8QilxLzyrny7h86AsykmQFnhu++dhWC7o0zHcworD007t9gq/lCOmPzdRJnUCt2ZiJkdUAH1iknbcCtiySUlIBhtwu0lF0aAjRGPvjsC39XPuDpjmbPU0sEMoUO5sDRMe+lG3widOsry4bek9NBYQs2EpgYF8Jj7tFgJr7W8GlRCKyz3j/ITuHYO+WMR5A4n9Ttjb5jvbIy6S5C6IIRT494tP/jYgNdi/DKYed+j8yMI1hUWXEGjFZiNukMnhES8z0uU29C+ApIPz/6Ub6eUDWZgKZcybb+pozyrRn/ia5Dd6fvkvJkby6f5E64VNRzt7QO7cUHDqdI+bBtr9eCXZAUS2MLgf1QXk/7A7no7InNC8YaGY8D2FXI/czmN+EfcwtatAZDn4AHwCiqc7fwr3Bzl58KVY9BihQ20ZeYu7JvRvLsVLBQAnURmtbVc4tGa2ylLnRdbzvXuo+wkv/DeUlFIprg9ZHd0Csu1fSd9GnK+sz7BRqTv5PC8brXwtrBQCBsKj3qWvXytHJqY55id56O1exwy0gtnn83Tb7ZWDXLttQeQhYhQmHofSNKYjliEG65MGqD8aUwUkm2LUZjYVC0lIMIBLPYDCwSsshvAxs/wGZgQll7UJ0FS9loGTAZRgMClg4xeqhGt+FvwcUsDjLndHrBDlBtWYzZKY7GAUKkvVI="
+  },
+  {
+    "id": "manoever_gezielter_stich",
+    "titel": "Gezielter Stich",
+    "thema": "kampf",
+    "schlagworte": [
+      "Stichwaffe",
+      "Wunde",
+      "Rüstung ignorieren",
+      "verwundbare Stelle"
+    ],
+    "quellen": [
+      "Wege des Schwerts, S. 62–63",
+      "Errata WdS, S. 1–3"
+    ],
+    "kurztext": "enc:3:BVkf2hmQswIYdRFEi2RecjWxHmliAfW1ST/plW+ozqInTnwhFXydI/NwGuKB0DDYco8jaTtlEF4NX4rvKw1MN5u+rF9OBlqXmB+gpERVDge9h8k8NNDHlPyke9RYbsdrdmkNBcX6QvSO9/nqTzu558sDgRcH5vHQJkQ16RloqIs05PBWgsd3D+nzH8+Zo4ZnL0iDFUj5YpIOFNcQMOFv8/eSl1RQL9GcrpuYXnPxbUZGUVihpehX9dT3udMEIoBOOI2QW9YGITDB4BzHKX2ZfDkG51qdR+ri0PDnKg1GBQswCPl+LevAvLnVT2vT9XPW7+iDQ2672a3AEpYx1T1ny0gNwfL/GA0Veqbo7dezRCSiP5NCsoIVHONVl8HSE6l3VKON+7gJQCq1BZbkfz293ggHkz2N47Nk2K48trZOOat4X3J4jr5vDov7l3YeSA/yh4ZfodOBJyYLGLv1RyeN2BjWwjp2zeo2iuC4Bg+sgMWaWK8KQ7hNnq4NdeeN3D5XYzq6eQTzUanDutcP8+Q7U1XCkIKiGkuK05TuPS6ZJcAiUz4hImlWh2zSdOLoCE06p7+1SPi9yrVl1IGkuCnHtELcEU7GN3VP6lrNgaEr/sc3gPXNx/kNW0fgPgAsB3OGrwUSN1rLvp9cxhH2Ow==",
+    "hinweise": "enc:3:R0/dDpmh9fVzXGmK/T4hWTaQaED+Xo3I7daj2oMdP1JJVQhwwsw4aMJip7MFsFE512PwXSC9xpvZr13L393xZhMfjvvCMATYxLjbXPw/BFQhTOp7W3B3kXeIQASFB0F4K79d6tqm0VQFicrhgNmo/BycSQyEbsQQNciYXEKQRD+vb6J6SDC9W/MsjDZMzhH23/dncD2Mpg0jMPGmfH19vopC/sEc3Eix77qZeGg5Fm1sPTaY0Mxup+V2g8VnRpja6ATOfPurIqT3DhsdGDYY9i5YpYHrBR+pxOqYGKHvHd/oE+QGHARmWNs0B7nIr2RKOJSZ1ZaxyncP0UdRQlJ028LpG1+SiwGxmRWXC+9n9odRcqsXiONkvPvH+LBnaIaaw6VnkGEeW7SqX7NSj+W85fU+zHe+OJB5N+knO0Xqv/sREcvAK5d1uPQelBY/EOUITyHA2qZn1Q==",
+    "hausregel_text": "enc:3:a0/JfsM7Ly1OF42ofrPm02Q9/upiywIVHPoBVfvnu9OOaAt/+wbOZHvEHejOCk0g4TSrGGqXxhACVPF5UtgSbG2z3zw4z3rXVMYvhFwA1OAhIwtA828p8b4BFMXNRtIEoP3MfxP1auEMnVC7p8Rm7Qrmntblo4O7K2xofZh6h7AWbf+cKeaEkhH8oHT1Ln13YvAS9U0ufS0cmS4t7r6lfKfgFAdMrCMKkxv7rz4=",
+    "hausregel_quelle": "Erweiterung und Überarbeitung des Regelwerks, S. 4"
+  },
+  {
+    "id": "manoever_hammerschlag",
+    "titel": "Hammerschlag",
+    "thema": "kampf",
+    "schlagworte": [
+      "Wuchtschlag",
+      "Alles-oder-nichts",
+      "dreifacher Schaden",
+      "Hiebwaffe"
+    ],
+    "quellen": [
+      "Wege des Schwerts, S. 63"
+    ],
+    "kurztext": "enc:3:tC2ihspNKkPw41C5mO5DySJjpc/Y/AK25Y1vdwFTk7SH6MJo7nJRi+HSIh97ihO9tDrsTQb3Vyf9mo1lBmZ1CI7EfkDuGflFpEc3N4e36Y4cK024wZc0EAzmsZjS+XPboY9tqErabl+q+VX0iMj7X/oK7c/S1EVjo+0QJmG17lLiWHqCIPe0wxM26X6NubUuxTzq4EYbSSJWeb4Uvy6rHnkm2EFSoqKRPryYIQ6D9HhTctsRUk/IoPlDh202q5ReQ+qHRjacYntiSMi8xa4zynnE6SgVilg1Htf9J0waQiEJRHbTQSVCrzTw4ftzZRvO73livi0D+W+vtIUUYkvctpr2sKI86PwF0mvsxKdpu1xcFgTVlyer010SQ88TqsUtAGQyygoS6NeElxNFEvkZNpagraORajBLDL14GMTMDRuWQXJm4986nYMfJlX76Ss+btkPnVVZvctw0W0WzKFUdT6Ei5bWTAvyY04l9utlT1m9534cfxQ6QV4TWIRDdByA6ggBmxzQxZ7F3tJrgV0ciYOJQe8EfZmeVUgmfF/Q5O5L/U2K4qw/pMk=",
+    "hinweise": "enc:3:V/aozWPDPKvpOCwqQMZWYed48dt0DNAy1RigTcH9ZjVJgFhEV8ruMdlmbKy1UzQ9JCNbp3llSt2oJJOMPmQdRnt10qIPbq6XpbsH9HiiXNP4kva0QO6oKHRBACVmUdXmzBv9ykeIXv3up0svR3gj7NQ6JniP2ZzOYdI/mANOFoV876KzHo5PPArQFg2fy1NNanZz6lWCv5uS/rva+jUhYf1GDqzHnIXWR3e5lqDxTZGoueLTII6zehdZCF7leCLEFbYIxCYIe0wSkBwMf2YUwM1o+6o3cnh9Cqm1wxR+0SMrT2POvf5Dp/ptcwZOTz8Qj1Nrgm9HSIlX1PMsiIFFV4rB9qmDn5TSCUuqgXIDpwS/kwTR4n7KbHxwfEpr80Yy8T7CO2PL7x+Kvvfedimm+uMHX487hM9D+2jodmDZHKC+jrO6qA5ACzalLFSlODcZyT9ZK0udHQwCGQ5kS0Q3szeEP64NcuG/DyjJwktJMsANFSt3SDSokx1vBtdl/Y/m42YxCvDU/tJYrPkh7x5CnS0Y5kbZ8g8FSMHMHWCIM4L4rRR3AGmEooq3GhTTPpYCVBmii1D/rwVbjfUy1jNUDw0ozlVEisUiaN2fd3e7jq370kSpZVx1C1OOZqgDa3dKPpie7Y8AEENhSOqpIvlFPr02Ne+ZL0hQMtAUw+0Cvto65UrckD1/i+BWzld2Xc6Hjg=="
+  },
+  {
+    "id": "manoever_todesstoss",
+    "titel": "Todesstoß",
+    "thema": "kampf",
+    "schlagworte": [
+      "Stichwaffe",
+      "zwei Wunden",
+      "Alles-oder-nichts",
+      "Rüstung ignorieren"
+    ],
+    "quellen": [
+      "Wege des Schwerts, S. 65",
+      "Errata WdS, S. 1–3"
+    ],
+    "kurztext": "enc:3:+dnsux1h2SzrIkj+yN4Sai86ltmKqOeRKDc6UKzeuVQjoEIR5MtFUxQKxhzqfZ9HwPo1vwq0x2VeBjYMwYgxEpfyQNYmz5hLYm+qE54SmYYX9sf5c5lUvIcbvrtOs1urbKkiCJ4as0/fHdK8VYIk5VjGgUMfNdXLmOSz9eMPp7ItsUd/uN0RuI4hew/1Vg57Rwri8iAkRdol6OdsSfVajDNr3SFJcM5nAKa9n8lDQAmB44CGDirBYF9opzM2BuzO0Q/2sS/K3ux1v2xTbNyAz6Fg0ePI5/fSXTbAlYTLZAr24rE93bNYzZaQ+XqhcOpUpO7En+2uD43Umy/EK1upOAWJSHDsfC9YmO3OCTfjIgxp0uOUV6S+YwDd/LUo01Ecc0vCTm4Kdsei/LqMlycHpVd/vvfBBQ2f8roTZHiVhC9EJXjVpHbv0VzAGtRclNyxm3u8uBpvzFm0xD6sAMn97v0rI6OyRtWA+RE1DMU9qBWk4cJLuzgF8XmnaH5YZu7ulBFQb2S7I0xemOYVSik8LH9NidDtI5t3hBcCDIKhF9nQNhEOOawKOWYlEGF+auR6Zno2NPrgVPfpl0GRQpZL9E6weozEDt8XsE92RjqwmFNKn7PQeuIRC2UVDcAttv24yA==",
+    "hinweise": "enc:3:i7jvNXzuejGYB5Jqm0sd/ZpF1V+74l9ln96rR1vNP4NSaSrNqwIRPbxGnz8UDGK8BIWiHcZXgxtSxun6cpgCTprcCR94dEyI1/A4QwxL49oVgp4t5C30FsaynD+BIZecREWIMWejv+hoyLTxuvfFFgjEPDOhbXibQyO71RCMIpoHHg7Liaaq+jgedpTBEt6EgAmhDn+Sy3Qo/rtT9ThtJ8B2Isl62qpQRVRGx7oPTnqkbRcM4RRriIfosW+BmsFed3OfbXZMxRx2mDOt//5jTxSYnEySBfDpTTiD9jYhUiM9iz2KNJEqKqbgI4GW0ab2qKjfzpcZOwh0mWFxNhx3wPe87GYsDSqnm/z46Wt/pIC8ysCdGPjrnxwATVmpYyPOKkBckQ73C3ALQR9JxvXFOOvCKJa1S1isuuav4ARvcvgqjh4C91CDFS3VD18T1K+0FNWr7PfARnUada1rQbd12f1Tn9/oqct03c2Izcpcm2zB0mBURo076T83fiIziAjhUb1bxSPTk4qyMVXgLWWbtIeg3xWEWyPx4oDlK7aGCfKibJDDaJUREMUBvopdPeD15lJNtK3cPFdo4w=="
+  },
+  {
+    "id": "manoever_ausfall",
+    "titel": "Ausfall",
+    "thema": "kampf",
+    "schlagworte": [
+      "Angriffsserie",
+      "zurückdrängen",
+      "Distanz",
+      "Optional"
+    ],
+    "quellen": [
+      "Wege des Schwerts, S. 59–60",
+      "Errata WdS, S. 2"
+    ],
+    "kurztext": "enc:3:g3IJm88DsccO0GX0vQd+tAzz8SYdpxPRKPSHg5IbrpLxpWpNfs5q8ehY1eSpsRr5+tdJax1ZRGCU5q7Ibdw94nJMqmf6VYnQl4z/4sXQAsQ88CXf6SfxvU+HOrSafC6a443iwo+jhguhpfqLXd57xM5GY2aJBDlAWmgyrD0tEjDpgk7JNe/fMLMrkPcI7YKLwiQROk4kG8PmC0aagNSkB1LL9Z1pTi++v3+Qj+IfHACS6GRezpJG2vL8MHfaHy5v4y/D6fCFEST4WM6lKHYGYCVxcVzksogRaFZP+AvR1FCfdNGD/7PkxwDeIag6VVdste2E/vIi/OO1czBgAvifXRW/vIUzhbx9//43yuckEJQxZAJ2ii2gu/kGqCrVZDVD5bLyopD34HL5mjbhL54IwhZzVFkneRpxX9nWun9AwqydA73Q52UgSoEcboSb5Z4vkrucCsigIwiCbzaxSG+Y8tJxVkwxJwo5u4zaqN6RxmJq6z+UZ+MGj6uGElpY82q9wEJ3bxskgT0HDNPBs3XW77fV/XxnW4MSi0CrLScwOZ8m7IzFSsVLozcoKfcErgHatzHrz2HtFCARu+QCgZpjgFuq/A55ENKoMVICIX7e+M8qOl7dyn+1foS71zAC7zTGKJ42oKkk+lUaRS3IE21V9k6fwNy3/+uAVafoVRG4olpl",
+    "hinweise": "enc:3:Lwvq3/b4otV2nTqf5p/e0KkE5Z9555dbjy4GgLtaZna0yFDfH7MQmoUdpuRI+NT7F7xjozCk6vot7eykcyITPnCTv25mt//3WGbflbFWZWAJz8nnP1uVQH9binpYISOQvjHicaC1sSojRDpKTBoL8ToD69uF+SZ80vp7pa4LMkamPLqFupSm9gYsQfFEhxZ2KitKZYbwOO/lXae+wsiiovmhZYmvcvZw5wCCawurmUN45OeDEZwvw2ZxiMvvF4ZOJkQxyAcE6XjyUcjpLl1KKVau8eE1oLgxQE7gzOSaGdDowOe9gQwuFsjfTreiOsffKpEAfbLcdW4R8Zl4+lJrUMan7t1Kh/JUJCpA3tdq6qxrsHat2oWbs/nxi3Kyi0HZiB1hIw0AfebeSwaSAFR6/3dQLuQjRoGkRS/+9Vuc49SnqWLKsAtedTzoJpAkHu5l9eEV2k6106JJQQPoZPNCDdyspT8l4UUCh8viZjo6KzeIGkG3VBXngeqCFPC041pIYwVQd5qIkwe35koaTiLanwzaZOk4dgnhfFPa5qsn5aJzFBxLcVvLeK3TgrfH6CjXct1eORvxGoFDgwL8ziN1RVqwVjvCvsNqudAWSbqj2zNIqnxjGHPLrTdw0CX+xOzMrjFngoizc1OE49OPAc5JBMm475vv/5JVOLCidPl1Sp+95EcpeCp8EMB12LWdDDQfL0zYjcXXebTuH0Mjp5I7FNERgimxBRxrECTkbVm0Z7fZezg7FD3d/VfAvNkLjeIKUE7O6R8BDdPvH4MfQ3zUpjtE04BfnVNCGtxJLQU9Isg1nzGQ1AiNhZvRq0dfJfAT0xPv46s4bOMn3fVaNIoHUUM+OoIqvY5JQRI="
+  },
+  {
+    "id": "manoever_befreiungsschlag",
+    "titel": "Befreiungsschlag",
+    "thema": "kampf",
+    "schlagworte": [
+      "mehrere Gegner",
+      "Wuchtschlag",
+      "zurücktreiben",
+      "Optional"
+    ],
+    "quellen": [
+      "Wege des Schwerts, S. 60–61",
+      "Errata WdS, S. 1–2"
+    ],
+    "kurztext": "enc:3:LcfR6cIUBS+dexGbKVE1/EA9zQjeaZtOVvsT4onpgv3GHa4TFTQLM5RRmtBgjYfXzqwqg9gedq1bZ5mglWO9pHkyzz+OJdfjZSiuUhjXZY0a/IVs1ulE+zB04iuKx7MhgLXmBE5VHfMb1S6vFGLWZhHvwObbm/UdeYz4OpnZoauec1p1kW4Gf9dbIGmuCNHFQ5UunKtnhRePMRtLEdsVizcph5/hVXZY6CgQwunAwKIXe9KWyQDRv43SwscPRZKlN8Y98nIf6UjfpU2tlVK4QyqIM15a+iTg/Z4kVaAUeoOz7/iCm2AXwYoN0lIL82V0Y4pFMnH7Xrlx6/1BJwSieNGlg3+1D/MapzeGnC2AWm73+dkbVj09/XtSRt7o064FSfYk5w6aVxLCTJbJXSpu+9Ucm/qqYl0e64GPNxTCgXk+EcMfiYMmGpZh2of758PCA/+OEIJbNn5rFgNqCSQDEF1vM/ZXK2uC9msVkdpg3CUsGzHxQlMVOO5UJ82/TJaBo4ETk1TZHmIqG+AItqQFTY0F62tUjapPm5dzmJVmp6aeU8j6j3nM3KM3GnbNJpX2QWa86evRajO9XPR+tHrl",
+    "hinweise": "enc:3:9jCfjWc/Vf3d0aaOO10T6avahdDKmWJbuKeMlIEbJ2+WONxtfjHbZbG3LlsTJxZfgUC7GQyCCwG7R22fOAizNREo4DuygWl0e4btnRRdn/x9TuG/eKlU41Xq+vlwBAdDiL7/ivqMpLW9ox0byOx1VZ9l8zgGyuUmRBi8ONaul/ioa267YK8ZCO4Z/8vyd5mFigxnjeo/j3qfPvuKKSaJqIhGLFdC+eoTs4FPJiqxsGRfYxm2tO9I1ZkIzuZW+qhN2tuGqU9ih47rjt/IrdVwkCX6JnWdxqlpSDQuDoEPwsZ+tMrRMDyenNGcH2RTV5mCd7e9kucCNHACRtet22Utea0UgoXeZ7dm8VQa6MldSUjhezBUvJPYmokzUijOXeBJ4vYq1ewgugJ6xWrPIkwXcKGszs0qHPyNOYuGeqhUv4QPj0bTnS/3WZSvUXAFGrw1wt20FGOuNHIHMiI6ES8rAY9lD2J/sumJkZqTq3y3axgOenZ2Hcys37tZG9Y="
+  },
+  {
+    "id": "manoever_niederwerfen",
+    "titel": "Niederwerfen",
+    "thema": "kampf",
+    "schlagworte": [
+      "Sturz",
+      "KK-Probe",
+      "Wuchtschlag",
+      "liegt am Boden",
+      "Optional"
+    ],
+    "quellen": [
+      "Wege des Schwerts, S. 63–64"
+    ],
+    "kurztext": "enc:3:RDjhDiHjRZtL5EY41taQ+YlSDbldPG9B9q+taiYvrvoV/68iW1Whrc2UBYZGNba+DHdV15t8F5TGNnf0qiGwYALonZXIvxHS4YDM5L+zNxFJoiXHhv0D80eNQl+oLus3uDzntJgQev/l16MxITy+6IYQVoN9VJb2YIPGt2JHIr0o/u3z6LN4pfa9PfWeRoDWG14XKpY02Rp4YtI+YbVAFL67vV+lIKzCd4qXdPq5C8i92jb0n+MTzzjo1EHskgbLaHVvzrlTevo+zQ0JUI2OBjXjlW2Q8I0vqTs1NeQ2nv0n14u0ob/VQkudf5UBM2gDTt7zl3tn1XDi721WZxWMf/E2jbiyZyf+n8J+F2CM7DB57phGVlbrMDtCOesE5udOZD3vILWEDNqufIXOohlnTM4UwF/MT4CicObamtM0QhIWPIF79HhPXiBsLma9yxLwyO0On+64NVwDJzrms0U4SYl7TCLueJh4Aomf8eDI2t275OfIjsfIe9nlzJufVN+KDuY=",
+    "hinweise": "enc:3:g0zp9GE77sfdAhfLqzr/MNDudg3OGy0D8sCeHmEZ0lli4P0PlPiZo4kf+/aMKzv2+Gbz2CkIgEV3fUa6mrgRlB7gdG8B+6cBwrLvxK3ZjfR4Z7Aka/brwmV2RLstY1WzoyoYKqDkzr93CHXrWgYXLeMDT96EOzVAASs6gxVE8cGvY44AVI1bHhVcTrU2n4cVPjbFnfeue+Zl5Mugg0Gu2Ms1Z48hCJKgV8YDIqczQFHzFD4pKF05jjOx83J8bNk0uETIR+2HvUV1VCSjB14aebDcUQcWSVO/UjGmlFdrzZ8dS0IfsiLyU4R7W/k3FMst/VCs2wW/XpenLJe/64RCP03VvU82OjPT7llrNaYjphujulrVpM19YHR1bWPt+67S2jkC9FWpDFODOcM8u810bKD18i90LTgjxMvrC/6C82whoUfPQgExwBpHknhuxhoXU3tl58vBgENvQ/YaHJFf42rwWas9VhICsGwV/QzNkmCgRyj6Zfje0vSbbGOvieWCnnxedSF28nRh4IZb7Higg6hclw/gsT+dehfMmGPXDOSXojlxPGxxhv3qpLNBnc+uEuPo3TW2zrKdCYuGs/W9ToFcLFN168UjXOqmZKD9EAsfpxLHOBq//btJrON+XwjtRUa2wYtkojrC8MWeo9g9ZxLKeGYMW4TWdnGNKYCheC1zxWsEqkPjaTLuHlnBfnCZgU/wEc9bjgSIJwzSPRFF+LSitVCskN6VX+ZqMLIJEJQmg4w9z3oUz0LJlKc/ghx2Uyx9Muggywgdn+fQWWBZc8cpb0I0UQWM3m2j2EqfrmW3BzaXtuMmtrROcN7+IUrN",
+    "hausregel_text": "enc:3:DVjtbQkXnXsk1i3aci092jW/wwGd4MeFKkAmdu50JJti5qgD2OkBTsN3od4t/hs0K2IdQcNmvT9PBNhn+x0qBOyo9nIsC7gwO7FDnfniuLnIMk3/l2aEQ0qty0GbwO4vooYwtRW2J6JF3u7M/aQR5hAfHt3t2q6IR5iIS8jpgcYb5OoVPf7E2Fe+UEbCbcsgAITEZxHDuMt5ksz5U3L8umx8FdDdJxuyAybYqbCcAcI2TYbtIyVCpaLBSPojjMI20udiC0mixMHWndqWtypKxF6PsrrAC4/+1aCSaxgiyvCiF4koqWw2UPlP1MPGUuE3pCOueqcgmnupI+7vTYhRFwgPbqPP3EfmNt8kM3Z24MFx9/8cioVaJHrteBgFpw/+k9UGzb6DPQggwneyyAKnbQu6Q+aTFWycAS6luqvOYo5ieKc7Y2GKlxtE00yDhdGmgla2DJBJlw+IscfQABHpaEI95/hsKsAL7LgLNMuoubxHfUKCrHiU1Cd2aTN0L4GbTty++XU3lf8ajyakR3K4ylA8PKWkZshHV7Oh4xU1lTO2jGnuZKsbRjUYUp4hMhVhbbtsBERgPrT6c9TCtMX/6QMpZu/XvjfpBrckQaCmYoHVOkbU3aXWPWizqCXjSTS7A0b74LFk5dzsPpnSoBacSgoQPJJB1jFLJnzaqoRk5kFT4+a5h+YaGffyQ8ACgzTF/YFVa3tHI4vSzMfPPXbdtvB3pr+VADiB/Cvw7iJA7P7oecz66TmRmXo0bDVOSC1iMR67s7gDHEzqUJr+cGXSvWfivbH1HUeaqQxLmC7IM88qI6u8l6ch4hHQi6zTW7Ri7xceKJWWhiinhtACekYfDCM7BKzKj+gtqo7QjbOXAJSXftBmoyy49DTB",
+    "hausregel_quelle": "Erweiterung und Überarbeitung des Regelwerks, S. 4 und S. 18"
+  },
+  {
+    "id": "manoever_umreissen",
+    "titel": "Umreißen",
+    "thema": "kampf",
+    "schlagworte": [
+      "Beine wegziehen",
+      "Stab",
+      "Speer",
+      "Sturz",
+      "Optional"
+    ],
+    "quellen": [
+      "Wege des Schwerts, S. 65",
+      "Errata WdS, S. 1–2"
+    ],
+    "kurztext": "enc:3:yzcEyvOrCliWxB4eUJxV2PF3UHemgvYKOhnKca2HBj+s9fkOi4Ok0+hGAJ+LoW9kENNIyTOwMrCZ4se1b4fGDJUThkyWSHKzbwl2aa5gwlEw8cwt3Tl6dp7mkRLwrdq6hUdvtu9TxhE9ldVvRRjdGmklSDa8ARZVqtRFk1yIL+7SH67bWz0s26s0SJuwHFNmeIO5bxH/Y6rDQ936kqa0hm2GvfrEn7K4IbsNPDZL5FMjatT3JHiv5ebjXdFnpAnMNEh2PW27zkic7pLghtAuSP5ArXPuenTcsKg6sUQjnH2C+rm0PnMvvvwArDFJjy3+F2R6tjFuGLM/RHDMwbZeEisnWNl/bJZaK7il2+UGYyFu9IXiIEADmiD/s4iCU+mIf5BtDOo0rg1jZ0Ch3xBMGfTpRqfF/Ax8IREjbOkuz7V10/iSl6I8bINLIagETKw5ZN3Yr+taqZp6ZGF+KTPzRcjjQgZARI1XyXlnwVZbCHWxDcjSugOVRN6cMB3eTDl+hVsuqu4SfBllGAb+dE5d/SZf6VcBnqj6ss9jtQOTn2uTCr6CcDtwXPStcUPluOiXA+zNlBtsnZOKgLqpDpiJx7H5IxjOi+DTqeDgdd40P8fO7w8T101WTpu5r+zp/MGC92fcXmC4qw5z238wy1e1u2NLuS/snWvPlerjq/OKUj5sPYG9/GIKscrc3+IBVMwpaNh7",
+    "hinweise": "enc:3:4Ely0AB88IapAeGRvrF/1bByl0hKRlLwNedc9G0H7G3UKkgM80dHRGqyNAGIhjQRKQcq2YQ7L9rcarEy0B17n5pDYQFEZnI96MZBjoYrHEmf/c2Cx5LRuYlxTJwt5gixOsXqvuvTD2rQbK5nS33EgvliH3kMinDedksIg9JroVZLREz2SPxaHQFsW/R7NUerynlEUp99YXyo/Bay4Eq1/vEUAbaGGvjllwrHgzIssIdHjF4b1eoIdQzZgK9MgAsAZRshHKkZwgYuMwFKHXow4uH26sQ8HJW+LoDu6OzST5t2qABgyYd7SZUnGsqBCpsrcOTQGQ==",
+    "hausregel_text": "enc:3:R/wjW0P8DIiR3USrkWwfKEGL5qd1Y/rSaR4VwXnQglkl7oY2dH4VLoZ91pt3G6jRq8qVJSC+aN38kW+cO77ywcGKwKhDZKTzXEDbc1EIAWAwXEElaDkzCVHrayk3XFv2p/hd6jqJ0WpdDzqU/T4CnH+VoA==",
+    "hausregel_quelle": "Erweiterung und Überarbeitung des Regelwerks, S. 18"
+  },
+  {
+    "id": "manoever_entwaffnen",
+    "titel": "Entwaffnen",
+    "thema": "kampf",
+    "schlagworte": [
+      "Waffe aus der Hand",
+      "KK-Probe",
+      "Meisterliches Entwaffnen",
+      "Optional"
+    ],
+    "quellen": [
+      "Wege des Schwerts, S. 61–62",
+      "Wege des Schwerts, S. 68",
+      "Errata WdS, S. 1–3"
+    ],
+    "kurztext": "enc:3:iWgBocnoQl8uzJv/IWrocavY09YrH5EuzA8fuL9P1CzrRQXgbfSGgGhBvMwi3CBZA3CfNamo2ZWGxh7W5gHgJzC1Lk2/XMUFVLc6QbpLKOHY8u0kSMRaWXSFTDWVy5A99uZy6ap+C5neeqtf8jw90gmT0eoz+jx1F8AnJv/O4PvGpIrtbHz5IcbIEBov/jpG0EF5N42wzitQjbciC2v1wdQtst6xt8cFbkLFom8uR/c+rfXyAYSk/dnRfr6pK/ugCMh/YyuwQLlkFzbgfq7QxZzFl8PW5zIwdDImfJia1S1QYTnGhfKWGUXTwGZ/Ygy7uwr1WN3bH3rmBLTAXAZT098NQ4hojQVFSji/en2a6Gt+7YkCbIXSZCw5O98PTFqz8Nt/mzGpK9GnzGub80pQypin6jXBJLwum1BN2FSnuQ9JVDlSevOY3ev1MWWsPDNp7BTafTwglpRD+Sdw2Uf594UxRae5WnahGv1n2BJru4M3r0QbqqZNbFQ3tNqpAkrZFv3WtsID0OdjgyYvp9mnU103mEeDER/QjrRSK/zJ1OqZzL0x9MaVRBDhWE2PmC5v9yX4XXATwgf5u0c267k5YzWDLJVWPDU=",
+    "hinweise": "enc:3:NuwXIHvAs02lvPWa5+SBaGi8PX0ZG+3LMXhJevgdjm9db3mpFlRkRvrnKz2Dn6hyjTJfUQ/hkEa9MzANri8YOridiHqSVZah75pv4HVdJz58dEWeV7pujDkEoX4DJA0t4WHyW7lqOM/u854EVTmqyVcTedtsIS+6e1DwjYkmQmPt1E7ALwwYhPF7ErTqs0ArWF/h+2OETTh8zwekG90+H5utyh1ox5C25TqPv/0tP+SkbMSdxZ+Dq+Tvn8erEN34KtvdbOqeClur0G/DJMEFrEnPG4h59RoBwPFVtunh7gzldcwQpSRBZdy2qv4C828Yt/MhW4e9WcRILHK/CB3DqN3nf1TIKyz+V20/fZx3i/LhYfLjuY+0+Xr5mlcl3p8R7pizjbZMFwBwetaMYBGGFcfRZUJdnKAI4d7NgFfbho8rdPcT0am6AS4LGLq1eNf6EL2fjJvRIhv+Bc/dRAANQS3FcQMqnCLeF04gLGLQ7eFJQ+IeBzky766FjV0rlUj01cLHZjFq77eDvkDaRYsfnb8Yh/0TPLPfDXh5urgUqexOckXZJkuNWD1+NV4+qCJUhYc/b7J6cbSRo6n1G5EWa93wRe2DRASCSkBbAVWHMzAcTQ=="
+  },
+  {
+    "id": "manoever_stumpfer_schlag",
+    "titel": "Stumpfer Schlag",
+    "thema": "kampf",
+    "schlagworte": [
+      "TP(A)",
+      "betäuben",
+      "nicht töten",
+      "stumpfe Seite"
+    ],
+    "quellen": [
+      "Wege des Schwerts, S. 64"
+    ],
+    "kurztext": "enc:3:cNgJ+OmQ5eZ0og5vBdL01ssSsiju0vk9mILpY3JMu/20dEPFIihgKCUJsbMkug7jSQsOo5iO804QMMuGl9eQyOljshyzQXWmauIMePfyDphHBBPLygaNzBZ9hj9i6Vr1jCjgopTB3Ep/ndwW5KMe2sU1XJYoa3sPvOk1DasGSelgf4rU/6GbUq6L8WndxGX3+8r7Dt9gTUt78QQlyjlnHbRxRS0MzPUEgIrYuFeKgnVQU0lX9TDfges0g9X5Hm+FBKDCooCi0HlTiNmAuJ8Z5551YFVA/utIQjjs12E/jbu+CO+GhZLq3K/O2u+4kdtKXq/yvPQtwpREiSMTQSP3fow57QS/VTlUZsRyN+tLQktx81u0PXR5Dd3uhN69Hi2KUEmLMXWLqY4TF6UhhOiJ9bcSxIaTjkI4wHnkUflNw+D6liBWkBgBJR55PjzEZQj833U/g7FmIzjSSMFMry58CTN46e3fK+vMTxvHQXc=",
+    "hinweise": "enc:3:N7fXLOU9mnp3N4NHxqBmURCqRBHUfcJNllflBvgCtAObmt8FMw/7MutKGVblPStsI4ocVoWtGXse4rDBs4HoF2Zyg/03IbH9XdT/8TBWFwHsGHNVIGw7RiOfzXjOpqBOd/0QndU5ZzlhVZFzx72XfR7yDglbpV/pBhyNup2iydT2O+Xv5A3hF/uiDjlxdGC6W//iG2HDaVig1KXuXqop1UYTjyZR8EOlbz27RcGxWTN+VJqPs515HHlOwaeDDX5lpeLwm3EfsgxZChj9deL97BLl3dw41cVVVdhmP2uCZ40A4MyNmzC/Xc/HcWVSyDduAtx5dUxEzR0J2ZpMQhK24nRqO69sIh3+dWQwFVCGqpG8z0X9PnIGdg=="
+  },
+  {
+    "id": "manoever_betaeubungsschlag",
+    "titel": "Betäubungsschlag",
+    "thema": "kampf",
+    "schlagworte": [
+      "Bewusstlosigkeit",
+      "TP(A)",
+      "Knauf",
+      "ausschalten"
+    ],
+    "quellen": [
+      "Wege des Schwerts, S. 61"
+    ],
+    "kurztext": "enc:3:TC7fQaPIVn9l+DNbFmOZU4WYT6Z9fUUbDEhZcsFccQvSUve+xjHoVieFSLGrVHMm3vVcf+gF4FAitXuda6o4jfOchzIBinSDqnBKthoauqKJ4ibJ1++GLmkJoLD3rKh2f5pI+h2GoIa3EqrU6/ThwRVNkyusDqQZZBWPmnKzZYtBGYGHmTjZ2TsOKj/eQex6xyQGrIf6jHHx2NcF92rFtmn+U5ZgvYE9J0B1xTJoMA7rui9tRXcGBfo1m73cpASWrf43vTegPQu77MJoM3bySORrE8Tg40cWpppO5MwG4ItbMXQSNI0Y25QGBRSOZP+4Yg/X0eRaUkuKcnAxBn+wn1qYZbId1pHoXsMVMEiDW+wXtWCTTtiFbbE5qkW/xRnS1jFl9P9iPAgpnPJ7f1lmUeNLBsqhIYahKihXxwj/VBfazH+EyowAAjwSEQ5Qq5g732f9YR49HVOEXj4qkDUeUKKbYl+AW6kyCY4EuNNmUO80T/u/hDiyfpn3CMUGKja1bHs1qSDfP3Z0R4kz2GjFk7uABhaocieBpRjr99J2zY5yDnqfLZ1F1cefE/IaQfeyTmZya+c5qUi8zA8Px1DYQ7fvPAEAoHu1zGCTjn+f",
+    "hinweise": "enc:3:KjD5FCJBr+trcTVHfO7eTQdVnEGLKlbSXuXMdL6QoIwSK0ovMn313YGCwbgPv8ILJ3Be3/4VQL0IzbrjKEyoSS4HuUodciRCMW03pL98iwX7/8iG6G9xvzfMBmY0U5eiunpFSDyxXPaWw7s8jS8y+onfnsZRm/nhUyQDA9Gn/6+bFiFAlYeVLiL5H0qZti+8AaoBeQymNa6kwdvavaOSWRzdoMT1OHF9jKWQDeHXi0t+dYWGY6Vd+89RJWeJp8OW5yUH46W7bKQPOXhYxEA7gMR54QD3Cls7IqfVW1EoJSH167zy/7aiC8hndXht+VrSpn7/dH9uHJyhIyvd8mf7hI8X4cG2Vnl91WSGDPG2KRv7pj3UNixZtw48QygGzSdCoA1xcwpvOdll1gtX4lSOJH4tpzJGMwcXQONttp87EIJVk/5S6ZNvMf/xggvX9jMSVZFYOGQuVYLuIG32xzmrE8aG1nzS94brB5eSdYma9xACsZmvB/pf8ZYGcGXKrb0xZ7IZAVULop/LTO96Ov4jgHpV"
+  },
+  {
+    "id": "manoever_sturmangriff",
+    "titel": "Sturmangriff",
+    "thema": "kampf",
+    "schlagworte": [
+      "Anlauf",
+      "Wuchtschlag",
+      "Gegenhalten",
+      "GS",
+      "Optional"
+    ],
+    "quellen": [
+      "Wege des Schwerts, S. 64–65",
+      "Errata WdS, S. 2–3"
+    ],
+    "kurztext": "enc:3:srY/cLiqYuqajYf1Cj7xztH14roCNuJrMLU5Mt8uFSvgTkHL8nvyqVY7S3TSRgBWuDiWZ0+A3Cpa1QGh+rdiwxAFpJ+yuKUG9LAAtZ8CtAzwMyqktRW2DBeaL5s5mQYYcPNV7SbaUp95qUz9+yMwONj1b8lQyq9SyW9Hk/N9B2PlMrLhW/jgLyidb2CgveCBYgZXA0UoP6dpIlbJYNI04mUq/4rhwJtwmeZszxkmbvD9yNi4xG2HdNpJeBS27vU9T6Y6hgGW8+G3GrYjE8IPXf615JFVk8CtTPFcwCf2eCSzwYyBuzdwHMH2VSQ6rewnCEOcwqYSzcQxqf4vlENYinMEaOsI+DV/kWayYJKgezUoJNuk+APZFRQIO478RYzujM+qzr+IwoeK6ra/1bI1CjzI+1aGVijxmOnVyaMRJExbBVi+WZo1jljSc9B3QYHA2vHM4107uSw/M/T8BRbcdxdvh2b3OsVcKPVYWuW+ZQfWw1FTvnBDpXeaNQshKl0gmjlRqkG/7amMFn3k1KU2E9K3d85/SvmdHxynyYCD509VFKvr/g2dr4cmblGgNl0=",
+    "hinweise": "enc:3:zcsYBerSB7Qe2b9590mcLp21thqxknknmG21geDHJa8/4tUXDC1FuqPxNn4/bveJaYrprUnJBuCn60ZqxXGDC4W3/HF8xvUGW54v53tUp9CncubbuuDw7LZJG2OQ+/E3p1JDS6TuDLBD0nrRrj9E4oHSO5MY8R9DwRb7j3gwg2GQ4KXZ5YQZNSvX+k/IpNHzRCIOO5GLrdPRE61PW3KGFq0LwVJo1mersFBcqKDbJxLCZTJnhhWBnk8="
+  },
+  {
+    "id": "manoever_meisterparade",
+    "titel": "Meisterparade",
+    "thema": "kampf",
+    "schlagworte": [
+      "Ansage",
+      "Parade",
+      "Abwehrmanöver",
+      "nächste Aktion erleichtern"
+    ],
+    "quellen": [
+      "Wege des Schwerts, S. 69"
+    ],
+    "kurztext": "enc:3:zLTqRzQyx8OiCXCB6Dn9DjRepmfDyCwV4WlQeBZlMj9NPVRVlymAcgvFnmNKX7+z0uwougvBLoRHPtq6TAQo50VcsWKzONIFifUaagJ2Q3n6VPIab9pKxIRmtcddSpR65XQBAYTyDC1aYWuH1s1XFFjNsfLqUDKK7tkEcZh5doE2JrmpBgoSVtobPdkDz45vgDcUUMa6HCcHHe2XhMU6Z5McoFIUq6cFPGBXMGchrhiVgzF3zMCfs9jOGD9LwJUHZGmQFL6+iYlMGKPkCCRMSQ2lGCO4Dg9/xkKgdOBfBqgpu8DsnOGzSLrc4BE+JR6i5zTfFqBGEM0a7mEvakpDG8aWY/IuvaajswtbyGThcBwZ2yb2jl/tku8tkjXeEMOOYvLZoK7wNQGBAla1ndCMrxclydrK79G4yYRm80Et6Jc97HQ2O+tdNw==",
+    "hinweise": "enc:3:3BQPGpfsQRPCr+5Yj4dl1gksejr52baaJ5kTMsTI/hlx62csbb2EAvN4YfFsv0Z9lwfl2N8Q8csEVcCba41Zg5t0X73WS/F4bqXA00tnv6JdI9gINHLpkijhxb0jjK6ulp9/WTYC8M0R4pU/GyFix4XFFaQzv7dMIXRpiS0SG6tGpb+uxyNRyuSP0Mnb3uBJ+tdvn6I9tumFj1lqH6HlMO1o7gFAE1jP2G97JbTOwQQOJQbsFlw0W0tkF9HZxrSB2Y9iVjBFmKejHmJ+WrnObMz+wUK66NJSNYUwCYHip7Pnt19YcUOWSBqUQiXpYkMBqJjZcTsQOTRHLcNOv/jPXT/CXOxgakghKdmWXFxqfwvPkUy+SGU81OmwPvJJ7M0ILAVo0iUxj2YylAUfR7Pm7QJhS3aPyd3RHcVaWf0aDAYnRpGdv2HOOkm/jFw3TPK+MdY2iBY="
+  },
+  {
+    "id": "manoever_binden",
+    "titel": "Binden",
+    "thema": "kampf",
+    "schlagworte": [
+      "gegnerische Waffe",
+      "Fechten",
+      "Abwehr",
+      "Optional"
+    ],
+    "quellen": [
+      "Wege des Schwerts, S. 67"
+    ],
+    "kurztext": "enc:3:9RIThhT10DCfkgmks5lRVZC+d6hLsne45RhWC7okQRtOpBukRTVf4vtXIyBWx0CNF2L+3mYSh8aRFcjBxMrgF9LWjV/OkYSy8MoxgxpgoNR/0Vfe5ZZ536KdQAWEmbGyLE9ckyd3c5gJ7Vjmb7unKPmkQe9Hi3rGnlMnRSohPPnW2IKP1DjZkZxu0B8MgCIkwFOihIji26IETCk1LND9Kgd99jt32tyLQXIWsnZs/9FnaedkpuQzbFvl8BSGBN3MAvt3CnHZ+p/Zc22bBO+NrFmj2tfwsYhS9nO7HRynYFIbLh27Qs6xD/iR9B+6nAksKplnkLFWHyEudhvRpvZjAuXKxY7quuX/LvC1k+4yF7n/VlCH6gljZ/yUO01jFSwbZbsTPmg9IBdg65b9GLKo2De2JPNvYswKctKynzbTkezcvdHEaseJ72EYIs3gvsKUMLO3AEjMSXakN4+cJ5VDfpdnJZNBw9jYQysP/39NgJE3WtLz0B66QnV71bdSkZ4+4Wd8nx4CQYqeeJ/ztvRDzeehwqUNH36Yttav8FK6c/0Mf+EoEtzHuU9Eqctw0amLpp/KAdkYDVuesuf9YgvcTOiD88H8bVRMticPNvZwNuKviBOPkXZG6lOjtCk=",
+    "hinweise": "enc:3:4DO2iuI9G9YcyOCpgUUMHQPQ7fSLIJRyMWmiZl1mDW08/JNe5Id22M6p7oDZR4HYBLVA1skO+XwZYo7C6VaV7pctAM5FCApFnVhRloeBZKx5R51gFP9d1vLdPW7+kGuvImdEpNfSfK06AVg2USr4UGStsNlD/3tm4QMyA4H4O1KXgwQ/S5Tibniu+SWCyJ0xuvMTM2G0tHUdYQEhB8jOpYQ44azYSzD4PVRVAoQp6kHuznELIFIo9ka4lyHT0eGMaXqB9YPXZ2PmPI4kJ9CH+2IPJ7KOmAOjUL8At/2JwN92ZX6tjHwMUFu+LFSs+jshKZ5d/0imo+ZZVriGir4PobPGwv10dYuQYeX0x4OvZP+9dP0Owt6/dEvq5JbfDut0dgSUvvnDFh5r3Td3ZE3nQQ=="
+  },
+  {
+    "id": "manoever_gegenhalten",
+    "titel": "Gegenhalten",
+    "thema": "kampf",
+    "schlagworte": [
+      "Gegenangriff",
+      "Auflaufen lassen",
+      "gleichzeitige Attacke",
+      "Optional"
+    ],
+    "quellen": [
+      "Wege des Schwerts, S. 68–69",
+      "Errata WdS, S. 2–3"
+    ],
+    "kurztext": "enc:3:5TeCbusLFP/b463bwOG3ZmZDImuIFM/JxnjhMo4lfPy5MN9wlz8qF3n2+yXFiBqcrgYZLmb7zbaWbkR+w/PxpPFajntyHOdjSOdCLpapXJiEsz8S8Zr3v3t/HClfLWpI6aAtbbPDPS/cSLHItjBWvVLfpcBsa1WicreHBrS/Ae8DjhyJuKyoPTAcCjV0aOB4m6xI8ueP9cO/Sd7QT1BjjWKL+tI1IkpGu2FIo5eRD5/SDjOjoFyJ+FGDsOlZgYqR3D/+m3XvmvktVjGU03r72KBZt78EtsvrAVKbFONBkY3WHs8YYZwTUFfE6O914o4mbdl6Yj7ghfUg/FsP7cnLOjOSS72C34wQNSz+gLLYP7HFeKydUr4qkkeUhBwvr3faPEeMSeiokH5SfUfwjMPSnajkjfaqUudj7OYLKZjnhOfjgNI099+5JnZZLDZs92SpD/nGjHwqR0X0OQf1zArtEuQk67m8ptWeCdTd7OJ029Fx85rSe1Q6NI5K45Jqcm7wbGcsNjJ5L1bsdoPIDlnweJ2tVDAYlW0eKFOubQ/8o0G64/Y2Yy/rQpWps1gowMyvejsAYmfMN6Ybw8QnUqSZ9nEpSABoJEkU6KBEz8Im+H9+1EIlQidxhnEJ+LBiNwsd9pWEqMi7zctTc6hsdW6Uzo0=",
+    "hinweise": "enc:3:6Nx29p/bs+YZM2qIguVMceSbok7ESbx5iAEvB9dVm+jG+Qefx3C9z3fTidGVeFh8xT3tFjLZeSqHt1sGYtn1BXjBvF5+IvnPmS+6MqxUwPG/bO8JrZ5w4Q7+okl1FDWkfvvxthIyN4VFdV8C+w3YHLptzsfq8pjSt2sSyUuX3PPdOFBGNieE20j7NabYs1Bpz9729Ris+yeZxtEtnFwH8UqY0whNqp3H4imfaA/ZycbYsK7Y11oEIqUy7foH0fUtV2+r+x2Vw6A0rkBwLERSIpOgpcaoIolefvXeJobHsaMGWFooFnn8bUzpskm+9P1e2UGKZK4+RIE91m5/j5+P0918GiTiVV/nn7KNeblhTeiMOzsFUWiy0zgDrLKNlPv5wud+RgWOriYzyUTTsGSgLVfUuu9geupmfSXXvZ/N1I+10AEIOItB4LqEPTNORvSfNUcjzSerQ50tFGf5arxB2EAPcqdrApYw/sdDM0UvwcmbTW0toSRWkeT/PlR6mfF2aOgUd/yshbvBKifNQWT4MkoofjgOMg4Abwp7Lu7WBNRx"
+  },
+  {
+    "id": "manoever_ausweichen",
+    "titel": "Ausweichen und Gezieltes Ausweichen",
+    "thema": "kampf",
+    "schlagworte": [
+      "Freie Aktion",
+      "Abwehr",
+      "Ausweichen I",
+      "Distanzklasse"
+    ],
+    "quellen": [
+      "Wege des Schwerts, S. 66–67",
+      "Errata WdS, S. 2–3"
+    ],
+    "kurztext": "enc:3:546tYhtT1N8d9xt+fL+64B7WjKjhMN2nxuucN+Cz7d4qKDWM2O5ZUH3T0ysaRvL5DUAvLKuPe/uogZBT/pmt8FfHqcOGrNOwv9kisfwKPSZtEYe+rfdiF2/hK6fT6hNTJOakcynBBEuR6AhrAoAusSMLNaYXxgtigClGaK7jzDxtXFl1T49AIcYFGgm+GxFojesoikmJVap1xR5YQrLdiYd0x6uQ8E2aBM3MZbjZUDVBZRv/ASJ0fsQhj04rxFHg83ir0V79ECnaSK6PV2cl+ims9wHDWJOptdyvWxZIMktNSTBEAmpwI7kxgRX/2nW6eH2+Q0XZzIzarc0x5Lj5w+U3SuHKCUnsNGbvzXve38nZe5phguRV9MMok0UECZrAHh+G24u8v9Z9Np0dNmHFmRldDe8LbSAUrxmYY1xMxMHSPGX7Z9doBCw9c1ChlkJgTdFj+zy6QhZJelN3yExZbQfExzqent6MEUaCfFUL0mOH8Ss18lWp4IOHnQt3aFo5ZSZFi57+zWEqcxmzvcq/wrjBCi98z3DF27pUZBtieH8c6v7Q+eqPjHAxInzmeoyard7HRPyjrVepWkDETtmDxiA07541P2ULwlXKK0zNzRdTaa/s6arvJPXf1nLRb+jQi0Jmkj36ipeXYTsjNQ==",
+    "hinweise": "enc:3:HqOGWbuuhZZ3mpd7QqtIrHqaHl3M84egjRLl9X6BApgYk3ncR7Nte/WOIRfz3eh3PnkCfKwwxRnCCIgtu/uSfLcW7z9APV7+j9gqUMtSAvSj4LNAACerlgn+JCZkGWyVzwnVUbotAQ+bGDKxSaixDRKbquuO7ahQr9tPq/ZpPFqSP2xzFqCy46R8U3byzit8TfQwi2cK5SUbmBNrNVrANc3+hjsA8q/kheSq6pTOgQaJ385Mbbgfw/zAR/YyKq7xYmahAgNKbr5n/kaOAHwQINdHkRr016hF/yX9jGgyDGOEb1R19aBxh0tELR5qqpPpLsjNYh8gSpqVbM0aSqL2Y/iK11Vc54j8g4DatGfzwZXcNS85dvPwiPVjDDvmog/gHWcM0rZElviA8gBOo22uAqQqySIuG4NisQ80cX4uTkToGvflGsjwkvq9keZDIJT4deUq0vk8AowWnKop2Fupx161NApT9ICCyNyP6M9zd9kyBGWAr/pc0iYal2FEVgd+U4nC4lPil2vfMGelWP5xHyvm54WcVWDVK/ahDr6TUjWLDvKdJLzIL+PTt5sxsdjNOwCP83ihMyPJUWM2BXzf82Mho4ckeY/Y4Zbzo8LIPhRAN9TsOU/fT0eWDa/Vo+Fuua+W3+3hKdayFKbUYccfDpaNVsCmljiqIzDWSJoyA/SHDR25I/fUlLcmbGN+9ZfG9xkEMVIUzPcsteAXDHmKWX+LhoI=",
+    "hausregel_text": "enc:3:5I0zQbiNWvZZfafUD2ja5H7WeLkUoRT9a7pq9CYLie4E8v4fwO2/lBSHPKlct3cUNBCMvONNo5wuwgeICw6L3l8c5yrFHOUXzOT7g3JAe6L6sJ8gFFyGlqKd92ltXYZkEy0qn4BX9ExaemYgcJ+gS3GY0hwz9ID4w5ZrDdu522OFThMW8zozbD+K+QToIyjBp+rYRt7CAm4xiFVKvFS0oRBdmAkp3GbwsEyxp9KJexM1s/HAAAbO5ndwVqvQ6FNq7kaSjggKPvE7+rgXMcUQ7zZJLSoWkBCgwLZm9RXv9w8qpVbb1atPFKw01difaZe1rZ8eRgSKi7kmcnnU0CBiG5uypDfCkpO+Wj0SWvolnM7nv4T3/P8hVi7/DYvhF+5e8WEhhMW90eM6xv+mHZSZHWhNHvYZidRzClXCo8DcC9oXoBXaVGGnxkzuUJuBe5/4PwRC0dgm4NpY4M4zLT4/AGu6IWgs/JD27fR7Mv8wJR+qJ1Y8fBguDv+TuP+0fR8k7mZLgfaRfrr+lXcecRkfnI9mNGERJ+HFeuDp70WVCakaU6k2l57BpAYCKJCL",
+    "hausregel_quelle": "Erweiterung und Überarbeitung des Regelwerks, S. 2–3"
+  },
+  {
+    "id": "manoever_defensiver_kampfstil",
+    "titel": "Defensiver Kampfstil",
+    "thema": "kampf",
+    "schlagworte": [
+      "zweimal parieren",
+      "Abwehr",
+      "Optional"
+    ],
+    "quellen": [
+      "Wege des Schwerts, S. 67",
+      "Errata WdS, S. 2–3"
+    ],
+    "kurztext": "enc:3:czd0Oe1gKuLYgvE7CjhA9sJIhkPSi35wIwOSjWVSYRxw31bcVT8yVoXGAcSFldFHRALtADOyWkugyym2j0tDMzM+jdWsd3/9L/QWhbMX7Ui3gDY5cIzhRFWY9fiuWu/pk/cn9+RwHe0iGYw1Vi0vqMw2XOIZEv1MPoJihluLaD3pHXn1vM+Wj5TTHXtJ8S26FBzhQ/ueVQBb1yk8Hv8lo7DLfSQp3A7ApNW9qr6g44iy2UIwmyPl2NGgDFQfNSGtmPMoxsI4tH8QfQWmkmLPIjDnPx9eBcXc6Bx5ienfMun4DPqxi/Im3jcCy7Dh8iU0xpeXUCs6CMRDym0yfDxVDlENSymNELOGBN3rhw1xqR5z1R5oM5KEoRwkfslbG71mWWIM1msXIBZHk3/qsOXGqnkcTSuGcsv2EFEzLK3ADTJsW1FNR8EGSp942/x0IgsWUxnyozWwkK86ab5QxeoXdn0fUJOLRHsJM8S0ohMbJV+TetRePJz0GeuzLEeDtHJ56p5nxKWTCN6aHSfRpFa+c9WRsKEl/kG7JOVWtqI1erh9KLZuRXLFC6OPWSEm+PnHX+YOb3cs2XA=",
+    "hinweise": "enc:3:WM8yBQjT9rFcT8HB6ll7V1PNNcFqcXclhrs0jaEtNMEAwrFFwZr+U/CxI/rjdb0YaMvMNOOljCelG5U8xL/l9TEXnDIpAPLWtcZuwyWcoFLShjDReN8AweA99JLVbxqE0kZl38pGn8YCVVQprTpgOKGEKBc3a1Gtl+fvAeJjC5qrUV/2Y/igcZtyrqu6urnvxbrl5NErWQ8HdEUYLZExCuwo3iAPPtGLCLRmUSYEek2o/NWqTOp0RhcMTq6xk2SnBS5uzAQ2D4dF/Pq96io0sU/aJpnECU+q0NzYa2PpzgXhYM1CRRNUBHRCYHWLZ6bPQBvLJAMiXJi2TVDfB5SyeoMgqQfKU8wRp8pWFqhgvpdeHMAm6b1jkfnwllAK8Wsth0OfvVDDtbDQ8TkRpHew6Ov6HZUWBK+wH35JHKI="
+  },
+  {
+    "id": "manoever_schild_parierwaffe",
+    "titel": "Parade mit Schild und Parierwaffe",
+    "thema": "kampf",
+    "schlagworte": [
+      "Schildkampf",
+      "Linkhand",
+      "Parierwaffen",
+      "Schild",
+      "PA-Modifikator"
+    ],
+    "quellen": [
+      "Wege des Schwerts, S. 70–71",
+      "Errata WdS, S. 2–3"
+    ],
+    "kurztext": "enc:3:78m2uOA7J1X8BXptcqS/dFj6w87BsPqVFpWUNr3nARJq56lQBz9zu8P/2+htR+kco+dQTJJE0m1elkqlQ3qSrjTIT9xpDqfHMTzwuzUwzO+ytUu6fCevAOZDPEHdY5mZO2mQWyILEnzPwAAAYpsA011FRcr3cEEyRkWUZKBrXdAYDen2r2WOL+xfWIyyVxdRf0rJ7LYPkWkKstD7w3NVgYbH6FigxZ/7kZFOUoFNTYFrkAVUQVK/qHI2HLDiusZ/P4OabcwHLgYkqzK6J5Pd8VFJwnXFdlF9a3hX+MpotY5PQpqC0RtgMkFXDKvhH4wJZu2wPqqQN/md5XW1k7kPBXsGLkr9LbvK2th07FNreRK0qb0fumgay/IIYCvscmth0+AEwAIGD4EKqGVA4peXh4N+76qZHYfypReChhnfVvB9r/XbtNoFjUOUeV9gSyUCI5UaIp+zN6wFy6epd5a3tZrEQhMfe3gsLILSQ6eqvaDVF0MTFk2ikoPoDO1LndgqXS+IaWxtMBOXT+46pWuQL+RL5wCvPQnDzQQxATlSbMTq1kpQ+UHbm24NtJiEPxGltEu7qreYPw==",
+    "hinweise": "enc:3:R42Avb2SZDCd2m/MNbnc6buh9jLLySIV87xdNw1P+1r3jgzhfPgbNz+PuLrJwgBjxCgGkYI0ogudH8tg6Vq+nO0VTeG/xFAHsf2vx489b0iEDJDfHhDoqMfO+0pmYH/NRHvwJJC8akBN3RVOWkMT+xjnZNsC6aKvD9amhCviHFxZk95YCScqicdYX0cWTspXfhU7jHYr9lDdYH6gLVqUru7PHi3VZrfWFe7VlAe0Uem81wHTkPHeXnQ/en3HoE+/b17jAYzWFgc83ifG7IGSDYvpOCPMyVGJlwdvdt1klRYFwonPOjdfiVtlw+CS+e/PuXp/okD7JiNIKKZgRRBpBtZcls88m0Bkz/esJyBp8q6/5o1AANpFo1DhAAY3g70arqsj2MT5DhtQ+dOzvJEKBZ0OvT8pvAStxbXN2nPH4TSYMuDlzAQw5Y6Tc6HTWvF+bxMjf2FDsKmtUuL9kT0TM3uAp/4wkvEoPECk0FU7tieY+IiiGZxLZu5IKs7GXsa2TCc57CussJa1Xmtd2UjOiDgbxFvbQTbl8Hxw3PA3o36d4v4GBSA5jhZHe4XwPmemveMACEWZtQ015/xMfuy7n9evZvUUyuU50n3NyX99SCKiLAKMje6kXiD5jjQzDjvZyxLneexfAESUAORApZijeFB4n2FAUcZD6zpMgts5L+HCUvGI3UelFPC7u2z9IQrIhlzSU04rf+7ez2vUWpev"
+  },
+  {
+    "id": "kampf_gluecklich_kritisch",
+    "titel": "Glückliche Attacke und Kritischer Treffer",
+    "thema": "kampf",
+    "schlagworte": [
+      "Kritisch",
+      "Glücksschlag",
+      "Bestätigungswurf",
+      "Prüfwurf",
+      "verdoppelter Schaden",
+      "Optional"
+    ],
+    "quellen": [
+      "Wege des Schwerts, S. 84"
+    ],
+    "kurztext": "enc:3:1jSZuK4FakP8zMc9yz0ORlCH6aZpYo384Ry2FljUH8b+DqognywWpi2OJW7/8cKgz6RVXBORID6TgoUmqwFk0nZoMJu+y/gRIt1juc7D51YodtWRQLxEOyC9b4ZcNDT2OPTAlXCuTSvb0rEUheeY8YJHJWhI3474PkBJ3aquBLW1RdpWA5HvGgJ2efZuvMNJMoymkF3X3b6Ww6jG1oouYKzYH+R8ny2bDBcI11nn+qq69z67Uhh2YMIAqLk/aUmWB7gVgsFnnCckKqBmrrsf7cHRXkZE2uinD1FPsPJkAWmUmZlmUSEmcJ45GhttKH0YuMXJ/1y6+hONNjGpHiKmtqZxhE6nnMBLCF9D/SthF2SPiPL6Ns0KR+UgVJLJ9uRZGeaSsjfBOcs97p+87DmumG+iR1zx0jggsOa/KrtJFJtA9E/4tYpXguPdOxVkrIRNj5pOHutg0BgDYgkK/xDGw/yVZ091Oo1byi3tQmwrLljsX6ENJBXiA9wcKXEvYnVNe4Pzsje2quPbQdNAyMOfuHF7T3ktpr092kLx4UgrdFMVfPDVmCFziXkkNhhz0U6vFp/dITe/ZrUaU7F+EcRaQsYj5yhbqsrYri/BfRzp2eFkTazHsLB45BxFQN91Ly5ZhJ9HmVTw75WyhZiAmK8nM7QjLBdvbN8vSSL4vUlmCTghydnz7ffTiW3t0mfPWlKxNcTRVz0QSMNh2aFQXQl2SN5Ja4PQTh2ANEzEnqpOT2lyOeZRTUp3NgQq+TgAMnR8+E2P",
+    "hinweise": "enc:3:7pveQIe5wZ9gjBO7R8QN5W4Y5O4Kn+iX4rbkwrapJyyiyxg+w1db+/n6qulocp2yEFhTzu0Ya2C4mrgXHRYPi1uxc9WAco5wpbIhhezoZB+xJR9lGF90H3dn4Ds3UTIYGojC9qstBqgST37lNy9Ql77Sx8HRx28FqF2nMAfnZRiHgdntU/WcKEJjdelUMUDvD+o5ndF5lQ5Lc9TQSeMsZv7qA3DRh53Yf76vZqfRqVpTiEyIfKDaOzscww7DFrVefYo7n3V69LnTUm2UyYOEkrfwwtge+sCxcqsaOVQcf4TkIuO4NNHt4DARvMl+/IBo6SBVkGIXAL5YgsJfnPcgdJqvmw6zId1cv93oCfa5mUCf1KjMIGTe73skViyEbmB03HZrxh8dK2O9kD4GoU+BGZ1zIIt9VBcauPSJdt1HCjs+ew==",
+    "hausregel_text": "enc:3:HkgTWVIjFMClLqOwR5Hxf+tU6tMsxLeGvBtiOuDzVT7ZJITKx0xPjELNp37Le8B07tvDt2mIiztyBxzWOCf6moTrEwewqbggu63lNT5cZXLGd/kc5ccl1SZxozICmEJgZ6+RalQ3Rzpf+hAegnzmFr8fmdgQrCIsCa9zGW8ODdZvQqVnhYUJAMBjc49Ze3zA6coY0/E1ftgXEOG6Hb6wzv0JnPlSRHnMYQeHlgJqOGzLlp9DhoZgJA==",
+    "hausregel_quelle": "Erweiterung und Überarbeitung des Regelwerks, S. 3"
+  },
+  {
+    "id": "kampf_gluecklich_parade",
+    "titel": "Glückliche Parade",
+    "thema": "kampf",
+    "schlagworte": [
+      "Parade 1",
+      "Prüfwurf",
+      "Freie Aktion",
+      "Optional"
+    ],
+    "quellen": [
+      "Wege des Schwerts, S. 84"
+    ],
+    "kurztext": "enc:3:2wii92ryzg/N5N6AGbIrkQitR+cHdvsH5BcxHsUuEdASy/eyEm7TxkkPRnYzSMp9rz18nYxSyTWmXUQ0chQGcuLLWhlYbyKHv+6EvRxwIEV7pPjxcdbPDKmurIjBrNQye2frGPKqsz8mXni3RvuuVntilrcDfwQBjxiAX7UNEj8du8jyuXIdrorb0OqscR48qNef543H57jtNPsWksbjmCS0sbaWbbmH3BLWDl3uUeiQAFS09OgMgnqaFfgDGbZsXEyQlj7JIce9Yi8gaVLxTHNv/uFQHPCcRqHUnU/Wacm+O3zNYQCKRef0pghcvWi+HOdEgjvc23c626y1UnrgMm9Uehh1ZpUkMq10/pTwlLCF05VuekyHuv/aY27QJuBCPTyI9DAQuGokp6DKGqSYkQLx1j1YElKDSC5XswbVzOkbrYmuRa6qAV6JHNjjB7K99X8lp9pG6RjjlWun9n1MX2mKgpUTFZoh9ioxrRnEEdTk91Vh",
+    "hinweise": "enc:3:3seQ/w1zF4UWMLU4u2Z1I5wg2mEU635lQNzeNre0SsGMu3ExQFB0sHi4VRkfMGqqA9YCn/un18pl5mM0RiBiNxA2gPKeh9xCPzwxpWbazB7YpnZ2qe+TG2ysvdvTzxLlF7txlGZypJBHeCfm8vbiuyFshGh6iAnbHFOdZLO6o6kYQlbY5dyHwDjtY6J4nSsJyeCYQVuaq3NOP50WD/DNLyhkNUzc9ibyEtL7nHOsHXWdo/3IlMonFWfBcBWhECkkCqYqPvFh24zaupp0x7cEuZfH/i6Kag8kk10zZdPPcj9Skt0Jd9efCLCpXyEy0M4vhCMvpndcF8g/fDQLrYjYhuA1odBFjzUjmhjJaBau/BqdM3TQi6VxjgneYqi3n4DP2PKkR12Bwlw9RejcDfmSBi+wn8Uvz+tL8sqXmfn+OhxWYSVyciEzg+kQEp59"
+  },
+  {
+    "id": "kampf_patzer",
+    "titel": "Patzer bei Attacke und Parade",
+    "thema": "kampf",
+    "schlagworte": [
+      "Patzertabelle",
+      "20 gewürfelt",
+      "2W6",
+      "Waffe verloren",
+      "Sturz",
+      "Eigentreffer",
+      "Optional"
+    ],
+    "quellen": [
+      "Wege des Schwerts, S. 84–85"
+    ],
+    "kurztext": "enc:3:601gVlRz5IDDKNlwyqShf4iAFJt1ETGbMCkSqljHAWop0WZ1zbb0emgFijLV3gmLBjC23FnOEPpbu+kHL59S6udcHK5aleHD4zNmq8Y8J1/zewfN8kyCimH+HWYs8veiPZyNh/gGBK8BuB+6s3/jKeJer60Xt0FK+YRLH4/i+4osqb871MrkJFxKi1LYBolySijj6bAO1rzXFHATKP3XlPtw7lMUmlbIWyhZMqv/Xhh/A6eNj44vcyOwMdANE7lXP748eUcfE2JEx8XeOlshYqDE9kzByHThAERJgGp+cVWrmrE8mzy3B39W4TzyQ+thetyxXenZpzFgY9ogc/LJXhfm1VKQd1Ma/KzOdU74P08KIdybBOIB7hd8mTRNUVlWeKyHOS2oAmIbVU/AcLP3Bd+SBYIjhNOhZUOHdGK9CE62OBOZEge9uqlnq6bqvu08ynAWqpd/zd3dG/JhsZPt2YEK4WjuHdqPy8GzwU+wXj2ieME4tBKSwbFjZ1jh3t2o361MJFXQG6zP9EW7Udmwv6hDNHXAABqZETeDwP1W4iAXdWg8cNdj/3V/bX3JpVL1xKJi",
+    "hinweise": "enc:3:Lebb0rmnflhEdTCnfkdMauiYxPqbkKHMhU//0yy84gBYJIY9yc3/IChcWdy6OrRWh2CEqgXKuPNMbs6H2LB2mvXr125cG/WjtIwVbYlyBZYKc9Ay+gJugrRuvY+eeonSgzrPiw4WsjSsSdhCxhl5PaIZ6HaMVSUm6RNINDXbpDk/9Mq9hfcYmZ4uMGfCtcGT4J5KBOkAMzd7DL2EliguAEVUXxaP7C4ZaBE88rQoDIxesUau7v3FjRN2S3QB+ioAKAoIUMBITGa4RuXO5h1nj3F5sHuzr9fKbkRtx7N171UilD2AR1erW4u/r5rQ1D5pUv+nfKEJPwyOhE70XmiEQRxu5wCAOQk8Oi7vbJrATJA8lkytdKHxu9OTemLnU4+VqTQh/ALY9jmXlZfw2U9PSC6gAZOi5GtUbsLF7VOCNEOpsp0/xp/eBhMYgcc6URnMOK++KQuz0XMKADO1+iMROka1V6yx3riXxsGamYY+9K5/eJvplZZNQfjytyZmMz0kAY3HoRj1k8YJw3tFHpJ82xGwUWlg1Q74kckkskPVajUKkLY4n2nAFz8mmee6r+82Jgqj0RTXAGvGtOghmejN/mclktCjoCflC/JiW5H0NwsbDFopqPZgYSNYk3l+ftNNbcw9dMJ162Ar82yaYu4aUYO26tU87StAB798cFpYBvqEzU70ttfCPcLJ4+0SaX5d4+FoJuIe7KrO1ZxYCBVXDLZR9LaIPeWXBuP2sqp2G5Lp7SwMB3iyQqVePbkV66lhVHm35YemWV7Qy4HBvheFdB0esIHdjNFv5QFV+CsHijpbtOAXqs4s3h/fkkno6ItH6HDR1xbi3PRI1SBBzjTOJuSKqheMSpt48lgjnspEZLezypL8B6WTT50wtCOUQavjFL9As0hlI8SIa9vBedhkZy9mp8mgVw+n5c9pxiFOUQaCSG6ciUTz8ev99Ijl+7zeYLwIRUsMK+jM7eDIxr0sq9Z1BuAcmtWJtc+3a5q0RJQhppYA582FmnN8QyQPbFdEcHHBNhiDWrOL5r0Y3Ua/l5hdki88utk1Ltc0M/IKruQzoXqW/4GkfWHvxaacr90k+EBQRrDOs5blidhFcS24EsIDGDAe288H3yKz335vVuvh/ny34jS+P5JosCFEJre3W9Zw0iBRY/UJihKAiP6K+/ldj/TJeBgzej2pfIeEgMJ1I6G01wXqrVrGHa0="
+  },
+  {
+    "id": "kampf_bruchtest",
+    "titel": "Bruchfaktor und Bruchtest",
+    "thema": "kampf",
+    "schlagworte": [
+      "Bruchfaktor",
+      "BF",
+      "Waffe zerbricht",
+      "Schild zerbricht",
+      "Optional"
+    ],
+    "quellen": [
+      "Wege des Schwerts, S. 85–86"
+    ],
+    "kurztext": "enc:3:+H/OvUtRi/Jt43enFUhUGQ73+KZ13TVI3oDx5dyPqrnj4wkwu7vpoULrdznO/6/wfSdlfCxPc++q8r7gxZJLchQ8YhmiUClXvlb3V33p7MM9Xk7XkX1oFP8Do/f5zRZWQ4ypv980VdvQbQX2TlUfzdRbEpH1HQb+BnVyBzW8/t0VpmLzowYQGPifd5HrrRlBCTyz4Vuq7Iv4ms8uIz8kmsbEBh8NDvDnAk0hEgINnBMFqG78W73htqDyL/eejloxRFAiLH9IUzXWsBT+H8UKYLsDDWWHDLPNHtX7vWUJymvaEBGwqwbY1Bh6sfYyoR48mJaT7oip09RN5EjbXwJOwmkV7RFYznnAr5G5HrfI0xrZnxqYWH5ACEe9kLeBNVS6sM+P4+3tLVZo1hg+1OPS/ox/+Mmj2uuRwjjqdJhcNQLm8YtAk7ea3CTEJLgLGMdQ3SkPZC5X8ThFpNBg+tygl2yEzFjnfCd3c+J+oD1GPsvoF9sHtoZ+IZCqKssLjF7Xq0cRVYYmHqtkPmdGNvFPi0xH/9RErlcbXzsaUDj7hzK6TcsivbcdlJMNDSzgmD/cjPHQWDg7FvOdQjN/hBUXaOR66ZOj7B2mcyUwYwwAD/aqM+rO8F+K1L89OGJ03payIwmwvzCmnNKpF0CrK6SrYO6eAFl9OSLUU8GX9C1pZonpjkV4ogMU2+mOqg==",
+    "hinweise": "enc:3:Form08sMDOcEoltVHXwSAFBIoIfmtu6y6vK/mLbxWRheDRpltU6O0kq7eCytOiQoiLwl/Hfs037/n3nwzse104BjVz0GBw4uRIOYy6SZdQmuO6SJHdF0JhDbmwA1/lyKzwJBRP49rT98Qvi5h4BaZPJ/8A6q5zsgRmWmSs1ZZ5RKJe0FEqaC+FxkQDvPqLpaYV+DURrbwWalmg2bE0H8ALZ0kdWVyVy4ODnaewzhg5BAJQGhwrGvmpmpFb5KxUXWBjH836D1+Eu2kmzB0FbNHjQsTEBzwy8/lnlF3LM2G1ZlkWk2IsXeKYr1e2VSuX8do1gA6gz71RfHPyGNETuq/dk+HDbx3rBCuL08UG0I0mx4mW8eBZmRtBew1eRm3now9cnjeUD7zt5ukNTsq3BlQIPsdSTNHIqfBcU3lSUE/LWK0dO52/8E9F+83q9oZarWdd4AOSCeEn8EFk5vCyBG9Tg18eZa4Vr3",
+    "hausregel_text": "enc:3:0g4aogAVTPQKm2PfrMCnFIBv2KAUwMhdcylUlR3DHNG2dx6xOPxRjuh3VnBetj4HaHBi4J8zmJVB1Qqukc5NLHHD2aGttLmwvjhA+uOUvuDIAV6DwarsK/HQp9yT9C33x9yIg31Dikwot6G/Los7Evo=",
+    "hausregel_quelle": "Erweiterung und Überarbeitung des Regelwerks, S. 3"
+  },
+  {
+    "id": "wunden_schwellen",
+    "titel": "Wunden: Schwellen und Folgen",
+    "thema": "wunden",
+    "schlagworte": [
+      "Wundschwelle",
+      "KO/2",
+      "zwei Wunden",
+      "drei Wunden",
+      "Eisern",
+      "Glasknochen"
+    ],
+    "quellen": [
+      "Wege des Schwerts, S. 57–58"
+    ],
+    "kurztext": "enc:3:kWGAkRWG728pLzwjCOGarXp/RAI4JeEkTK3f7NE0Qq0kX23jR/4shORPnSI/31doRtQxErPg+4A8fGhSg9Je2pcc+5bbvnG25FAZQhRAMwicmLdMELy8IqF9lr3/gthexJ1xbxu4P859Z0nAj8glO5Gt9+orCOhhpaOB7WqB4pHIctrvP6RP177ZIuHwWvJvbyp7BRbdo+j/z5dUmoKZHBXRmFs3tsJvrMt6lKA3tTQRaP51TgYAVb7SThl04EyhmPTdu/BeaKsfmewmhexm+tSohrk65PwBmxn6j5nduPqAmRAI1rJV9TvgWP8jCBV4s9Efg4U/EtDVLI9+W0qxbIso8Ee3eGw6JCuH0xeqgoSRD95fOZsC1qife+CjqGWbGg6p4Y9fsTfMtZJ/+JPVJywUgDtYYqpzOIHBgBZ/R4zNB3bnm0sPyEO733Ds647eOs/kJr3AjnCqGN/jrkeV",
+    "hinweise": "enc:3:+ZBVaA/qSf5i1TcMa2G+9/cvMdRE3OBh1mKgGoCA/4pgyuaZMfcIhn8CINEsxz+xfYtpUzh5uP11kmf6HgFtMElnUXGlsD9TaHJfVmAIM1ZL7Rau4gPL4Bc6kNHmgj9eXBa8lurtXdH4MfHsi9lzfcYkktAIlMWNRwIYuXMOFqIiwq2WOZlnwV9M6+gUCI7KLWDQy0KUvTmy4qelMOcjYtAF1lDAljmHQVa6xxRTGRT7kuY2PBQqJZaM6n187Bs05kCJiJD42bBEzqq4lcgXzieOz+mg5tjmxLoTnzXq67ev0AOUkf2OLTq1nViVuwIEspT7GU2C5ek4aE1CoRlsii96EYRbIp9piJNAjWeGwEI3EPJCZO7Ro4jqkxDQr9IfFVGPy33zASYyphmBRE0WwzZ/zxJ3U3o+qoWPgnFtLGMCQ2a9qdC6QsAH0CzXRBTLj36cb2tKfaF2n3qh6fN3FS91vUX3NBrFyMWB+DFB7ES0LvL/zF93vB04n28DkOhUxDSaZrwRHnj9DeM+twW58wyloZ6l7luS5V1qpgCnhJi5dJ/wdx3rBtnY9ylhT0mffC92YGr0ipZVexZBz485AWmwzHMlVyEggqzW8GtDTADqsPUIKp5Yc/8Pf4LLRAsJmtBMkAYZup9J2SgpbHH5Di988xhwpoo872T8ZXU6JdNdtolDC59mqHE+ttiY+oEmw24nMOpHXAhFw/6JmrT3MhwmBiZo",
+    "hausregel_text": "enc:3:+LpExhmqtRcWU6tFl573qQ0OGotfNzfm/AaeXysUcfpl62wC/foUjstWZnt09gcvuLxblqx+Mw6g4QN7D6h5nTku55WTkpFxd7faJReKiznqp+UlpduFQ1OhqdMcOrCTE4ajef+Vc+H/gVCvaE7knS9CSRwAzE7ax8bGAT4a+15hJD/LejmmxXOF79kTiKT4LZSlf1u/dazSjlvBYJaU0UJOZBju7dB+C3/YiD1u63eOYxgZOCyKRrtJEV/OE8t1STNlsQFIKIelGf7ixXFHPxj8BSihPSCehZyZ2ZA5eKy7Mvirzn6+k9SbNK4Z+SN8qIf1uHflf4ZV82AeLFu6GXH+h9V1cxPyuz94cWlTNixU4r0RiGICi29XwQ==",
+    "hausregel_quelle": "Erweiterung und Überarbeitung des Regelwerks, S. 2–3"
+  },
+  {
+    "id": "wunden_ignorieren",
+    "titel": "Wunden ignorieren (Selbstbeherrschung)",
+    "thema": "wunden",
+    "schlagworte": [
+      "Selbstbeherrschung",
+      "Wundabzüge",
+      "Erschöpfung",
+      "Optional"
+    ],
+    "quellen": [
+      "Wege des Schwerts, S. 82–83"
+    ],
+    "kurztext": "enc:3:+kl4SYZCo/FLzUXnJmsJFi3AsLRWYf9PM1mQrD4+viJrFpmIv/WTiuUcPfWIZJ4SW+bwa7hf5jDaNGo3yOVJKn1oB2j/Du9vOfr789vAxyiliUZZ1F8mvC6JMDF/SPqnF76OJdCAM77ubEDnjSE5x0/sE/NDNU+0yjTyKfv//j4tLmkBauD1lOzeh1GXZrbAadijbtscDzpd8/rHvUYxMVME3xDCmIfN3b9DilSXGjTvJy4nlDgk+kMsucAKqR3EGw/o22i95OO7NscZBLmoPs6i5/0Dh4fIesUwmpGHozXxfF23ojQAbQmAnFrupfQBB40z9/+uMwnSeL4zhnS20Q5Z4sRKMYZw9yqyD1YWpg3oEKRqg1YuPfbU5VD9kEvVnMk7I5jJMPY/P5saGv7NZwBcdYNe9T1LkQoZsGaqz+WUAo9opdvyacK+ajjIwptUGdiRx3Vu6Z5dR2gsobpX5dpWZsMkQhAnk9wWoMXLFX4k/1Hai0/yKLdQWXizVmYm8mjjSrw9Q+243tUv+Xp2ho6iFVSLYf0vzxsrRqexHQdKgEVGFysIK04VKH/w43y/WjeH0hgkgiufvn6sETQXk54GDD1KEHlcfGmGm5g7FSgFvwI3T2djUZSzUhexGsF6lSHYYsZkdNn7Qif+1VO9gl3gAs9AVfgEPZZIGBEQoG36rhViOWbuDu1OajGvQrWGYUsnnpK3Z/MGQ71LfMgR9lWXGWB95KHldPgS",
+    "hinweise": "enc:3:mUFKppax4XiqjUp2tNMOYyCyVEEVe83MSRuIOJOHxB3OQKDWQhXYDtmkooPBoonCipr/ZGrv5TVJMyKZt+vlVqxxBezb73ifk5YSoKbhikg8YWZnhE/daeG6V3vDq3pNuNpA/cKAkClzxtUypTJzZGlV0OUE6rxPz/cSCNhy3P0mAtEbbuxl88h7RvFz41cTb21nH3Urv+qbpJo897JvlHDeuZntpH6x8VAJ7LMQfql9aruW08FBaFTYGN0X6pZ/oqY="
+  },
+  {
+    "id": "zustaende_schmerz",
+    "titel": "Schmerz bei Wunden",
+    "thema": "zustaende",
+    "schlagworte": [
+      "Schmerz",
+      "zu Boden gehen",
+      "Selbstbeherrschung",
+      "Wunde",
+      "Optional"
+    ],
+    "quellen": [
+      "Wege des Schwerts, S. 82"
+    ],
+    "kurztext": "enc:3:1L/MCSHxYcQ7hooTfCNmqu4YO0/GdlMoY3YvW6Oz06jPKElRBfvTPI5QIMr2pER+DabquYWLksOnZR3Xcjf2DCQdfnCjhpKSGd/nyfmdX0p50uVKOssk+f7UCWbX8tJhuUM35sVmahAF1HdrS3DVUu94v+GINBsE+ra0LQNwHc+GjRMmR+FSE19gHgBuv9m7la/WHKi1CTMOn/kENrJlpEEWSb2k993qgASJ4O95c5nkHW2YQQRFhbDM844+sc7nlUxa7qrP9BByzbGMEYvoDMUu1VvGDpMbmnur+/uBdudfi3x5kborZC8hnhAVVS+dMOCRSq06vmCvD+hicYlQUAA8RPD2HkjLd5/5jPCSl5T3jGuiieCOrAM5Y0EHvayD5apBTLOe42o/mV9RV3KOzUbF+ArTXgcNrNm7zz45DkzIBzS3U/nc5sMA/0rqixPGpDOpOfa+fl//6XA+AW4/ISwHEalJcXK1o3A0",
+    "hinweise": "enc:3:4pSiA3e4O8wNE33B5RI6tcoulb+Lxs20V4yOT1esbHuUEazEHcfwkqKEdE3XS5ru5vgnMCko7ndxEDQtDvpdr1paHb2bBFUjxN69oHWroz1DBnthSw6NzJU8zjLJU6uogJWece0uVc1Kakp7vgg/JApTsMEr+7CI5oBEDw=="
+  },
+  {
+    "id": "zustaende_kampfunfaehig",
+    "titel": "Kampfunfähigkeit und Lebensgefahr",
+    "thema": "zustaende",
+    "schlagworte": [
+      "5 LeP",
+      "LE 0",
+      "Zäher Hund",
+      "Eisern",
+      "sterbend",
+      "Erste Hilfe",
+      "Heilkunde Wunden"
+    ],
+    "quellen": [
+      "Wege des Schwerts, S. 56–57",
+      "Wege des Schwerts, S. 83",
+      "Errata WdS, S. 1"
+    ],
+    "kurztext": "enc:3:l4Xk6GdEBnMopFvw6ivRG/cMcLijHqjwpd+3C+G6Etew0gvGQlWKJRfdcVHpKFl3QQPHewDVrVzcII2xg2sC0zuj0aYAQ2yim3vuwl32JFCb2bll0BnxtVsxLErvvZh4vZGTmXoXuuRgdIsO7CEoP+PTw6uRht2uIx52D6RetrbJKpovrordrHNELR2X6hjEsa9gZvLGXPmRpDcPVm6ZfaozTJC3EZYWM2YH/lgIQ0Dp5TxoBmfk+rnfohnbnWg94u+341fsrnWBQQR3Q9UsfjjGgZpIxraKuQ5wrYbOzhNSaX7lU+LW+EwiMH5ouFEqO1qKUmfeZHbNn8W6Ofwel6drU5yCoR8CyJEYCo7LKCwsWeI/tF+T4ErNErnkMWI1wQ3HQ1uBMDloL+jnkHYA4qjjgS3av6KU29tLdb2Qen0AQXoboOeTd1Ld7Y+3eEtB5wqrO5VE+eGoDd+KnD3hJuKSkGElbhRfozCLKjUBLrC79oezGfDxVcFu+Hhl3xjNa+HEccg=",
+    "hinweise": "enc:3:uTtLQKBzZM3znSCpptmkI1XgIJROy4FEd9fuAhrnRZEz9NEoNai0IaBY5rDu/l1gC86CN7z87dZVj0vkAP8WIoxCD56E98eHHiaSiPEqNqzQh4yCsehcVJPss7kZqtD4+rupW6un9h/jnUkaa69/RcfXoIb5JekqMr/OvN6bfP4l7l9x419r7JdW5sMb4MQ5z83e/19m/h6atl3RYEshmvAJrnkWgm1XpInB1qj+rqaBDhQgAkc03CC7TZc5IDp5QTehGvNv79OAB0fgYLQ4jYTLaMwDe10i7aemp4evDDeS0t6m7vaQz/XjYti/PoA7y1hfdOjb4t5Q/ggrFWBpFgp+jFH5GEom1lAGKuUwoEDpxxFarFJNxgFA9cUazabsQJBJbJpp+rtRwkQaE+x9G49BEDDvCsVhjH7vlGXqT1Xid3arNzrpyly/aBYx/R0767+M10cTa+lo+Nz+Tw4h2GwtoBKF6qF9AYgCkKpp30LWUjrbzqRLc7JdgsP1oEg6YahN8jFUNf5rYzE8hGkQOU8Yu+qwMrtKh81dPyVI776XLLmrH4lrZCaUlmYAd3Ley9PmwxrryvnmbRpU/tpTSHQw2PVkLOcIpFbGs5zmN5ZoS+kg61gkYntn9B/ZvNdlJbOc9OogVAbIY3fXjeGQLvzbKfkfg7HQGAVIxX15gsCvMz7tHrKlkrLCzgHKbSHRGKVdmrAHRXt20bCpQSZduSacgKDljWvpoRpJZut7ixAViNaeKuCmbKDhneaFE9jDvvb/uHoCJ+vwByFW1Cv/pOCuu4A2HpzKDB1Q9aXe54ddwEsoQHp8tLvZ2g9YtFXTzjlB9d+wI0B3+0fdLtPoAs/dkw=="
+  },
+  {
+    "id": "wunden_niedrige_lep",
+    "titel": "Mali bei niedriger Lebensenergie",
+    "thema": "wunden",
+    "schlagworte": [
+      "Lebensenergie halb",
+      "Drittel",
+      "Viertel",
+      "Mali",
+      "Optional"
+    ],
+    "quellen": [
+      "Wege des Schwerts, S. 57"
+    ],
+    "kurztext": "enc:3:GtRcbposgLygi7ktwGtSRzGYnNPnRgt7gTIFU90huXLzbI04DOtFjAf0+WG6uRwB4r5wXRc2/sWlBu5lTldzeIbKNxq0cWGNl8RjE/u6Bq2TaV6dRHaXJn3/t5dDxWi776qFhK1Z8FTDicfXqT/wSoTynmTOHbRMlHa3yA3NnDVN7W5UusUQt02IVfXa1en4jIuOuYVIxAv3VzuV6UwRsk0QAb8NNbbrSzREOzn3p0IDuwJAtY0Ca+P0vD/g0r5niVnTMvquojIEm4gNJPxmsmBscy0hkNbdyjsjBjXuzddChmz1ghGSdz8WW9sV2JlipW2MIQidq1MnOwurwkBaq0ws0MkqA+rrxYWTPOwk+NSadzOHCVedzwyJ0FB8f1iSphPdveHSNmlY1kURmEedViLfD/yT19NmpvA5cmzwTjK8OKlxBmV8OmQ/AzfOsN4Q9hyR5lomUvqZhVJlw1eVRDexjA==",
+    "hinweise": "enc:3:/au2/y2s72giF+GlhQ6cLG5crpn1WTO4RKcIDTCHRL9dG4V+60Qcw2mrgq9XYNwfpOCpLRJ73+4HEoBatX2Ndq3ybpxC39tBkcAjV+Xr6xwptU8z7rwVS0soeVsSPjn4rUoVfb0WJz9+evMvumSitJtleMPEBdiOCR57mhu2ZbXfR6KtFJ0="
+  },
+  {
+    "id": "zustaende_betaeubung",
+    "titel": "Betäubung und Bewusstlosigkeit",
+    "thema": "zustaende",
+    "schlagworte": [
+      "betäubt",
+      "bewusstlos",
+      "TP(A)",
+      "Meucheln",
+      "Ausdauer 0"
+    ],
+    "quellen": [
+      "Wege des Schwerts, S. 61",
+      "Wege des Schwerts, S. 86–87"
+    ],
+    "kurztext": "enc:3:3sj7uvDMAP+6BccdMBa5G5lLBzJseG2jJD5PenwBQ4Ocu8dN1HgYuGWYUpCRbPfVw5OMGrDztHHKNAiVneT5XterRGx2zw+CqK3xNQbRlTMxRLr9ZjqIHf/HQY7U7lFiZzprzA0z2izYD6X+pRwlU8xDmjpVWgYZKoJVTvKucmHCR7CT6CWtBa7YfB64FDvfIVLwpY4p2ILz3r7qLkNP4JNhzzmkiZ9aMSIdSSR3KGbv94YVfM08o6i80Azi53PjkEQngI26+P/RvIONx0jWEFbNVXMTCYioxIU+kucizrOMjCKegY2O5++Alb0hkNEYH3n4lHCpyokzmFbNyY0BkW2+169siVnO7gGFk30imVG3061fNtwX6utBOMTLY/gIGlBehMtIDJMde+8AszUbFe6KpKjep2iKsj7bArE647KglEM6uIt9TcLW7xhQqSWboPbjutBtYkufPjMuh/Xpf8R5dMRLNp/N9Xn5XIs31vhoKZdk61YNC+sOBxvKxJ3oB6/01wL8MJ+kk6LM1MveXHGcZuzcQQ==",
+    "hinweise": "enc:3:e2jPgk3NhaeyKSFm2mjmb+Faw9nHLsjtOgN7NFVLJVsRVy+87vK/ct+qcYaHhbAeRNT+ihXNmSftXtM8t40NpXa/HETPj7h+2iL8ReXGmNDWvlOOCA2CPU/Smc2+wLKrK8scmPsivBrEDoq+uzWV27qMHB4yzAcv2gbwBGQle+BUbTjaFSiwWsYAK3N4zJnpUQNhFj3O8XX8HLSE/2droFCEXNSl1BetcqOqwL+/Kh8/nTWEFr7BhaMs9zXiZZ/76HZgm3LGUU3DdkNKC2YRDi5Fst95NQFTY9T8xBrc9CressShjdnSqw0fvZ/hih0b14xUFQ2iIwt3yaOD56vApBvJc+Bve96IKZtm9uHX/Y64EZmPaTY2dZgEvLUf0NTejgGHyfGOogoFJeFSRIMpJbYlzdFk1T2hN/s8vR5WNQ6jc3TeFpq9Bku+CXYKQYyihGeIXyOSd9gQYW7imPpWj/LHce7VC8k+V3NfqaevHrtoo3ZqEVjqodjx+Plw3L1o+YCULDwoFuHwlJAAbH7lnbcmtWGg0+SsmuWyThJ8BaaRbnzHuxs1KqVt00UsRiBA8VOtEwPkRDeIHYLHdkvPqPY3ZcUSSicJoNnv/g=="
+  },
+  {
+    "id": "zustaende_erschoepfung",
+    "titel": "Erschöpfung und Überanstrengung",
+    "thema": "zustaende",
+    "schlagworte": [
+      "Überanstrengung",
+      "Erschöpfungspunkte",
+      "Marsch",
+      "Rast",
+      "Optional"
+    ],
+    "quellen": [
+      "Wege des Schwerts, S. 138–139",
+      "Wege des Schwerts, S. 159"
+    ],
+    "kurztext": "enc:3:838F+3+CYSLfnNh/3zbAOANGqDbHRqijZ6BFKubraLWpUvAIR66GmgvVMqePkMBEB1hnjjXiOWQ/SPLESLBR350NYk8wXdi5JDD/aXT3AXPEkNjaMRg/FLaYz08gQz9yStwXTN7CcsLDw+XEMDoqZwz2xVXkqWo7Yn+YegiigVeyqdtBzRxhkKFOEh40jXUOVxHG9qdO9a/uToJeBOdzUQPob6PLZwonFq13/koq3eErj2frPRKQ+OxVyyGfEZ8vZ2hKZZwi8UcsyJ0qYJL+isDFJ5zINHR1czXTPsaA+0tayaa+qubwApUEoF2D5eqotmQ7+lFIYc4/XD8ilCdhV4agvggsuqYVlMGjtBJLtRPBeme8yyuPE8O7Amtr85DtFO9Kta8rmPzFyDpdT3TLzM5D/wkovaGq6LFrfNV9YJaCsHJ/ANuXf3YSj68rQVFy7kiMy3f4F9n1HkbbqhKwjof9xcZ4MiYFMMkkFn+eeyfxJvJtEi1w98iVqlQ7",
+    "hinweise": "enc:3:dGGrrAVl+fxt80ywGFyiPhSMIZH7ftRbW7OlA+Bc3lWiqyLY8nU0UNYrp2dTjDI2yOuCvBLsu7MlhCwHsjklx6ZEOV/6poOechAq8ECYANIRl7OFwqLmXfnGmmazyct+CX4bF9DsIZTMM4VRp3fIIZEle4Bilzo3wIwVKDkPo5elcDnIPy9J4/ePSafZ3zinU+s7m9rbJFBHLDKFM9kwT/yyHowDJF3JqUXxyiGlP46sMeO4aOWnLeZCghEb+/8juHarDzEH0BjW/4qsfv8hS9v6mL8PfB+bMWK80Pc6fz3EGHsYmDngIoKd5jUirGySf4lbgybqZW8K+rFxIL6eFivIaSLcitzUWqGURMXFkVuk4SqEeRnOKo9eiDXAjug3AqQW0GGpDSD1ZMoPJz04r8zaSkjoUeS1LJhsOAP50/pxqJMBdRDQEzIAGq4TNqcpKqOz8HG+s6LMWSS0lzs5UwNqr1pAAgD9/szKNbs/XHiUN4/76IQcIe2NQkXrVao/++i4tuTFLhL3RXF3MHoX/P5hzM/QoWlSeCpUXAT4vK33XuIpE7S31jTYJJx511AuiIi0q5y0bDgGjeSd4sl3LiAIx520/WGi",
+    "hausregel_text": "enc:3:GbrslGEOgkWjtZZ3kl6/1P2gbaJgti7lzEEup9FCTpikXw1RRm0tWPe3wsh7M8bg9P/JK7hebQLGZ+nErXET5VR2RkHvIl7iXpOtZGZB10XkrVIF2pSDcVGrows9cCGeNkCnGclcZoDsoh8QJL28e7M8BFe1CSqj5fDkuP4VlaaE/pmBHHpew+75Tcreg9GnTIHZRz0Gcff9EyLLoWksRjSq2JazZt/+NhazYzziu/X158IzZC/aCJLCn6owG1ZYvmxDBjBZXH6/+7FmI+cgXlRBCV20PORvhx8svl3GLw==",
+    "hausregel_quelle": "Erweiterung und Überarbeitung des Regelwerks, S. 3–4"
+  },
+  {
+    "id": "heilung_regeneration",
+    "titel": "Regeneration von LeP und AsP",
+    "thema": "heilung",
+    "schlagworte": [
+      "Nachtruhe",
+      "Rast",
+      "Schnelle Heilung",
+      "Ruhephase",
+      "Regeneration"
+    ],
+    "quellen": [
+      "Wege des Schwerts, S. 159–160"
+    ],
+    "kurztext": "enc:3:W67pi3EgcQX8NBDM0aRrkHaF5F+2p4pfxzAaXKY2PO3TMbclDVakA2HdyD396hvj2dXXExPcXTYaA/dsxBUhKgtnCZykDfLNxAFXt+/in0HGaAFaZyTPzgrcIw145GeFTUfL+OJzlJu078/pKpAN0fi7KmTZCe4HYGHXqvOiFxXZxJc95J91a2HoUi/KsGT1ytAXjl3Of/8rjCmN1ypijHh2fcI7r8NZD8URSc/+6w96pAlwJa/sp1MAeFYdo85g0zHIIBMRwQZ1hqHkn+f+Hjv2HOCRcvw9UjAB8Wxn3A3QzOReD1EtoIntuXA6PK9yVleeHZYKjyjal+lufxDxiwZN61AzR0V2keqvH72KXHDGcoW3yypWz+7/Bl3oquJYiLTTNbAJkLDGnijHHPleXSUsl5WFAy/7JUo7SUMWJw/RrV1eJza8Izow5A1aVxPKksUzhnIsAgOQpvtbDYGPsVtHeLLbThbFraLxyw8N2qEcwNxgo75nh9wot1QjXSUtlXJ/RuAqdv4ISn01GhToOIxV+8xHAHvsfOdRVpJYtBt+E2Xhm5P0gx4KlfWk424MHHS9IHFZB1lHjLn14DJyYkIDkY6JAhcjG3lJ8QvFrP/hvdldwf3G8NxCKQuynpA=",
+    "hinweise": "enc:3:gzO/d7/3dLrIIfHOB08HucGhNb0QKj1COM0MDDYeeeyYSfF2ZTWGiuBQjf00lZGlRHGtXQ374oUvpGuhziaFK1laGQPgJki6qiLVsWuMWefzXDy7PE4oeBS38zM+gjluS+QtD/JLw/lX+0pHpLAGHqUUk77SxLQvue986D/AmcztHOoGFizMpK1O8Qru5Rr3XeBqgL3BeeGqSSn8AY508IYWoxctLsua6m6wpnKqy1VZDkcjovxZIzuEveYz70aCr6mdDMm3/YiuctjX/HUpNa2/ZJBu+RA+k5fHEthc3mq8Wr5EADwPt9pOGQRjvDSaEywNTOUC0iC5isHzzd6C70xSrYbeiXToHSnPmd3Jt6gfYP00RxC7/T02X80ivaghWCTVxqDG/FEc4gFEsEwjjN7IoNaw8Byvad2KD4roWeaygpYtRC/y6kXVy1u46z3gxVsw8tFpcG+4BdtVK6X9dZZD7oDiPSpTSPR4JYH1iL9oeywOG+SqxJH52h9YuFoJkXp3niZhQooL4H295d8p6gPd4sMKP3FU03s/44f7R+ksgLRnS14pJcg7AJDmYSjyQcyadd8ZzKXKC6AoYn5fWUTmSOzR9nxe+gYC3g0AqBi+GGJpahiQGI7uLZjdUkNasSrPlT362liiqzFBig/TXhzj/g/RGtIuRigIVhk4fF4dNBHia0M8/+dZnw3kJg/0RuvjN9vHLNNIepBb2z8A6p6I5WPmr8b4Ok4B3Z0SXdTnFH23Pnow9fosECfFuzgy"
+  },
+  {
+    "id": "heilung_wunden",
+    "titel": "Heilung von Wunden",
+    "thema": "heilung",
+    "schlagworte": [
+      "Wunde heilen",
+      "Heilkunde Wunden",
+      "TaP*",
+      "KO-Probe",
+      "Balsam"
+    ],
+    "quellen": [
+      "Wege des Schwerts, S. 161",
+      "Errata WdS, S. 1"
+    ],
+    "kurztext": "enc:3:uX6Va0yke9eVIw1+EnY1IYKEJooo7Cgbj1zVuWvjO4451srzCMxTwbqgR/eK1sPbyuXHopnTSeyvYqVq6a1gplgMa8ipOYT5viXlMhPhrtTXETnuwziHyjHce1Scg6W2tGopVq/9WNISzepvKf56oBcjLD2vI6KClcG/5Fg+ZFh8kqRM7tfueR+WvgMRXiPodwkyh857dtIromKsBbhqpOjNFSQLE2XQ1bxvMSnzdFA3Z5Dartwn3q83cfj86BUoLCJhs2mYPT4llSkqFvSftw79f2uUohDTCacuKwG+yXq9pG0J1l3gYw9iHdvyRxVCIJEsLwkcjjJ+ZVg6H+Ftvd34Rv22haw92yGLJeW0uBxPPewz0gEc89BKj+xLNykbsOlzG6CO0xXiGWg6HADyG1+bQIGWtrEksGrhSWSsx/kTVXVX7sA3OcjTnmucSnrMBkGVhPv6wcJf2fKwd9Nwsaj1jC56ad2en6aJJVnhJpj/XlA9CTyzklA6kD31DAFAnbvC5Ivjt2xWClUhDzPWS9GTJV7gaXIo7PqpUMQZ8lX5X4xAksTqfXtBgWLjkt/xuqKPpVmdUBWchK3+k6HBjy84OD9rc6GhLzA=",
+    "hinweise": "enc:3:w9IcUc/I6BOhNyalXjExCqU348Rdz1i8MWSiyS+QycvTpZQyXflyqGXtrY53mtGf4yJm/YwbfTZ3G7bX4sa7b/tKBjNiOGdS0LfDfpfg1VG676f4HWHIiYTdOnGLxy18uvTV3okHRAzcvu3TCLnD0E+KvpuKuuSr6+4O8M/cQePyphjaSqJebHBqYjh6FFm4yi/Y4SvBvcz2vByqAgksKMcHJ7JuUdONuW3Pgyd2Xe5/x3hf9gOXrRJr1b0cJgM8ozEgEzz33rVnAHMQw013Xbt9WmBMw7xye5ANXUXRHa4IgtdSKD8BR9cRFfvNe8Bix9eRAYGTuphWacTZGWBMyewVHPx2e+nxS59urLSL8h8VQy+Br0GTUoTHFZDnyhPGBM5wm+QvZw4Tp9c7Ipo1Mz2yl5Iyqd9kpenKmIrH+vBpJRyTLYDPuCaWS8cNoOKcoHWSwy9wuTg7sTw7gJ5WvJ0CZgv13ExLpgRNq4OahZShuNhHq5BGDFf7L1eYz3qj6vWp+82IIftvcRsjpoweAHFKQRLgD+Cl1wJGu8yyT/2i/1yYV1WuAyMbyeKQMnzeVJ0d3cgeU9xDVwEMFviiKUo08T1QLdaqYkvkHgQz4AhUZWfd07gcmagqrzXO3awNhIksZWxS2ownIFn/dEBPaiC+/SUm75+cH1Do6hIUcUwDvAJyvMTyHe7JQXAiN4M9SCFk6VIdsTYCbGq5+womOkK4tE2jVJ92K3jldJEKD1uXa5cS0LI="
+  },
+  {
+    "id": "fernkampf_probe",
+    "titel": "Fernkampf-Probe: Zielgröße, Entfernung, Bewegung",
+    "thema": "fernkampf",
+    "schlagworte": [
+      "Schuss",
+      "Wurf",
+      "Zielgröße",
+      "Entfernung",
+      "Deckung",
+      "Sicht",
+      "Fernkampfwert"
+    ],
+    "quellen": [
+      "Wege des Schwerts, S. 93–96",
+      "Wege des Schwerts, S. 98"
+    ],
+    "kurztext": "enc:3:O1EH8cI09Li/eJEhaogMHgfQ6asZmRHQ29GR0NTfuzH9fjV55SQUSYBSnqwlwJohzJvVWmF6+V9cXLG/rlbvePSGYwesDP3JzNMXTX47oIDT6ehnJqwkwoeSx4jk6ZlH41uJDNTAOiJJjmI5hLEscdGe8gjNRHnTja+OsPzijWCPejqzQqFi1bhl2omlsOU8cO7zF0rEQdHLrX3SBXBIqW5tx192g3mdJ9LRGY09rSrIpBo/GoSGLzZsD8raglj7kcvIfwQ75FC6RYaCiGQikiaNfjhskF0H5BnwbdDybIZeV5gYfvISIfSADT3PyCg2MJrMvMMzl52AAn5eb8mvfzdGgX7PipvmTkwYHd9WwSlCYYTUcXzJtvSLTKjK4LjLeqtzLWy9PUykP3TmcWlm9TIFfs1QE8IS18yfqBcqHo/02Lz7YiLWq5eyFLHyEroLC6rNDa+mveMK9a4KiS2aYgQ2Zh+ssAa91iA3K9B/NXhZwbW4G/RR515CtvuXCE6puHntnPND0JZ2T3l3UEa1irZWJgwlR+2lGfB4XbQU6Vb4b/TelSGNKI/nxEartVRXDo2pGCWep/GgXTfWjyjj7wtG4sehwi9R3GrR3iFPD5xwi6ioQjfKP6I/L9iwV6VBGQYI",
+    "hinweise": "enc:3:5gMJP9Fy2C3iw37cHt+4R6JLk0i4QMdSABv0KkPheYx7CMruDRDntYpEBcZVaXY5DTYUevir1yLlAxcVmB7+lYEUEUtCwapWmIHpMZ37dUQaZnCyNwTjhrE7rxsPdCx+CgZlSdIYzFzToIIusAyjq2IyG218nUMLuscvlgTh1jYLKrIhgCQBl+s0chL3ezzaPKCT/RmcIGTv/fqd4oXErl8LKAijMkd8f5V2Psdg9NJ/ObzHHF9orL/scsla7SgnQBf8JYf3vIFVThtfwhZNqXXEO+hkyBmLbz3JJ75N0j8bqX1pbXA9WpVBzO2l/7dw6yhhDgs7OUbiwbmZecD8vFKNnB5Zq2FAyl7eo/uWpPJMypLjArJAL/IeR7/wm0RnTK4k0QOZkw2geG6ezc1k9usr33m6g/CcKLzivvGFqnf7y1/sMRjAnOJOvc+PjEwet5Z9mW7JcGFiagOy5hfqgr3tK1iPIZ4h1TE6WJjKS8xroTEiK0M+NBpPCKoETA3rrAXnm15PasRuBpuggjcmXIQkS1TeRJb2UkX2S1rNA02KpGZ66G2YxismRuPQorOy3ttd5al4AgeHhOlQg3KTzDXu6zd7PmTIDfbD0w7L3wpb7O7t0Fw1Q/ttq5kSYWouFgZGm41IYRzbYTcI1AYtA7Vil7Tqdeu+70OUYPvUqOyzkQ7VX50DnSu3T2Wxs5Sa9dgucGY7K2hs0h7W+S6di5LIwtwbavZDal3h2HDnXCnZmugC69jzMejEtQCmTgSQ0Cptj6qKJKXk7Kv9ARcwvdG6PEWerbIRjHyNbsVC1ncFDKnEJTYTAguvY0pj1UE0/CEHqNo8/dzlSXSDb84iReuA5tbl4VtiYMwdHpm1GcTDRxrfnGeuvdZv37UmadQ8AgmwLYIPTnQJ2ukj4fk7bYu4CCbsPA0uh4gNE62WfKvX3HloCa0j0aRlDcRmjJl91G3ehNFUTJzwhU2go8FYwGV7ku0riSwEWdK5Lv3YSpWl3UuqQcWHO/H+qVXms2ZLti31KBnR4gwsLa951qk7UAvBu7PHvNUX3WRma/yLxdfjFivmA6/oJfgzVwd8Dle2Duvq5mMple0p+63fBIDqJefL1Egr9fkboQ8bAnJAU96IOjICO1Y6n6/uyfmqbWe9tKOtLWHQFnUF0ZUOOBgNQJwagXmKKn1oCxfpzlurW/oiPQ3vJtAMeCCqI2qngYR3M2y69faQY0o8mxm+PDCelCmDZOw7pG0nZx/p0WmV+EtYIXTgUXoFIIny7U++jc7QsbnU+K8TRM7JyHl7fMbiKwaYCSYnxB8g3CCo/hjOQupcNuPiM1UOMWbEODM=",
+    "hausregel_text": "enc:3:5SZMizSHWqG4HPvWtMdqPLxqJ+2a2LPQeqGK9y34hAZ/PIEKF21coL+o0QLHm35rQwAr1QsQhf75SvRmCWvf7UH80HDmPsP7Ek3ro3x9Yruv6e4xcNRyBTmyI4HLOouTL5SpcQ0a1URoKENORbJnJiXEYIXJ5vIWcxdsEMGUoDJ080mfleJgTP2kiA/QaiAe/g8Ijq0UKph0VZTjQez1YpXo95RBCVMwYjJX2vADt6NhHIn3tFtJgk3tc4nAqjDMqyR4eqkdSBeF/wE2617U0gQC0azaJN2nba0TcDrBqCFwjPL6m9UG5uxeJpdOB/93aNFzllGsvvsXrXMli9kqMR464c9vX8vRplrwWouuErLsBPllW2/Ag+anK+qv6UBlbPnxyl3KfRjP/q84xvWg4DN+QC5cajYlLmRLlMZ2eEio1ZLWdaip52vH4fiC9R7J426vKSlf8zMrRVh4xFDxgCsm+MKKSHQrQ8r8IDCQgE4Hjcb7QMP4/ePw6lGljm5wGmklOHGH1g==",
+    "hausregel_quelle": "Erweiterung und Überarbeitung des Regelwerks, S. 3"
+  },
+  {
+    "id": "fernkampf_laden",
+    "titel": "Laden, Visieren und Schnellschuss",
+    "thema": "fernkampf",
+    "schlagworte": [
+      "Ladezeit",
+      "Schnellschuss",
+      "Bogen",
+      "Armbrust",
+      "Wurfwaffe",
+      "Visieren",
+      "Schnellladen"
+    ],
+    "quellen": [
+      "Wege des Schwerts, S. 94",
+      "Wege des Schwerts, S. 97",
+      "Errata WdS, S. 5–7"
+    ],
+    "kurztext": "enc:3:xmafXDOJ6rM7wnPGvPg/ZgaouH8wlAHat3vMXFiIznwGX2ZMpE0EcMa4+lcfhGu0VaImxB+CIJSHHqvX2M+jiDq/QxcaVJfJheW3qaVbTWDexsKQsufWhIpizGyjypyrAjJkqv2A3A/ZZhGMkZJhJ7Ekzei7SFY5neGZ8qQxNHJ/33mNOv6/EGODZwjooIeOX/t68dwvJs9KIGEin9vuxcIuVMfuvl0GdLFHkXRMBLeyN1He1lBqr+4km6hWVRie7SuqgIyNKXF7Eona8qQyiCnroiJluhJaUaJ/EIVq/qD37UFT31ZKWW4UWb2EtSr+IFJa3vURSSQW7v7KXjab/L/7SZaewncZrOcQ/AHcjQR7DckC0Ejt1o+khJkcn2G7yST3IFdRnazrDgF/gSLTEEcbO6iXUEzFMYKrOooZcVMUCuCS2gh+924qFymSslfSh7nv/sGzat5cfbr0YG9BWilstaT5H9ixRWlZmPiNyeRL8SwVNsJWwKH+kcPMpErlaHLKcTL6mpF2MEZDOVJTZO0D7Xda2NbDAXPzT30FxdpDMw34N8h8WK+dlHf/YYTj3APzvMvSPgKcPNLSzCRxIhB4kUqlaGpMHzeHSFxfTIEg7jRK8O69Ta1UAKToOkoztICfMLv61Q==",
+    "hinweise": "enc:3:h3sRM18YMTKm69JcRLCzdG7IFE7gfNkYT/qKvRrWJy1TRpzjh8ZEGWlgGAk9GkPxKEbSTRWwdHq/xhsqqpkFUTdyFVs9fudKSg9tf5zpurV8IO+ik8Hf+1Lov7aCT1vcfDyRIAHjirZ2nIScu09ACVRiy8kwiFcbRdnlhH8vkYLGLoBjttjx2j4J6Lq3UPW0Rrt1C3ppdfLEKrtfKQ/POJDPNFl80npnSFxSSeQJtBk7YSIFzE+ij43KHGNmvElcdBtDVRAe4SyCnRdJRvFu20aD0Xyv0wZD4Pzjs28TCqrWu85S+piQbHehucXtxTfo3dYT9+i3YmsYY4JtjG6zDJElHKMRwFhiMb+40s7JlOl9pAVN/qIeRoDHpe3/K78eCd6HaFUz5QvnSWpuJZERBB3iEgiVkXO1ikb5SQeJcwR960Eb6vY0pKAd1B57h3zn5DXNjPMUW4DI8R12Faqx+H1JdpiizzM9ofPyx9Op2aAUEhWn83KCFyCcwliqENex+bqrWtFmp6OwgjRH0lDGKvJeOG2PJl1iFRDv6F1K8lRXrosfSsCS1cF73MT3Q89/XysBCyKekq0f6y4WzEfxWBJ39buXUVi545CkVNJu5Rp8hTExcl1Hz4M06rU9Tln7ee8sOqhh7DGC7ESLD6YkMki9PwLwRn/KlBgc54NbA5AMog43bmwebxDIYPUOftBj0Jci10Bfg45qGOjnVcBagvx2EmUz42+coJYMHHL8ViHfoccsuFncerfrCmdhw7dTwd/1JmYYdTPJOmiXYci5YY1eLRl6x9p2dlaOrIW451JscMUOpFxVNvSgUoFPq21OONTo+9nWBPKsgqcGkhOEKHeFmsReosBhMTSFnG5/tFN7wq5GSGhAE3d7Ur4GslThOQ919os2ZpljrlatJB987mrfvkZkfaVjAI7aWAguRhf7O4tCCRZ3Zwd7s7kDZ4lFgogY0CykzwIQyTpkpW+DD7XlxFnILaG14z2gWs73ggBxWaFrQqplpVqcfobqTCcVxXgIl/zhgJcR1mE20Los4Udv/7dMj3+T2gzbbrTqxIjY24NGaDnFZk0V3iGOnQg+qhwWGuC/dOHhovI8eFM="
+  },
+  {
+    "id": "fernkampf_ansage_zielen",
+    "titel": "Fernkampf mit Ansage und Zielen",
+    "thema": "fernkampf",
+    "schlagworte": [
+      "Ansage",
+      "Scharfschütze",
+      "Meisterschütze",
+      "Zielen",
+      "Optional"
+    ],
+    "quellen": [
+      "Wege des Schwerts, S. 97"
+    ],
+    "kurztext": "enc:3:JBt+znuQQ+O+WPzxjxaW16qP7NTdHPv6TC4TyoJb/UHBbpYR6lJT3prgbVwwSkdkWpZ3JUfuK/aENpkYQPt/sKJKTd7BGceqDdFLD5EWEPq/8UjAWhsnBudFM9WNYfN42dst6xXL76+5XwL7BcYLqgdRKcnuuIDoiLn1xeJ+EOX0Ur0tXvbSXzQCTU10ibzlPC0MHYpltQTiobgJNpxrEoE1jiUu2uPSvv60OVPu0Iio5wvJboY0fyEkYZ6Zw5dkc+AYhM54QQhbM9BaHZz65THPEVRkZvGOcVD29Y7HGYfzcwgo39zZK+bpJLFEBa6q6koA8c3rizdWC1LJr07CZaGJTLRNhGcLzyqe6JWJEGvFzQn/gOyru70PfER9jANSeRTEeuZ2y3BB4K3i8LWVVklukfblEXwN2HR+xOlSSMBNwJzXJ7gymZ6P45/ZFOabDCokaNip50U8F0xulRq+C1Tk2HOIkxXgcfkvCQwoMSVAZZiDQIMjG2m9GDaPgr/RWjc9jbHDv849PyzZmhIsw8XBdr3wGP8Jb3fdiUEF+XHGu1pmfE1jOLsQHiIow+Hwu3hgvtK67NBExsUTPnKLdDy4nd1Vf9W/EN9Thq1qI2wZ1WBfqMAWmeCyqsrFt5iwXBjK2QWMtRHiThU=",
+    "hinweise": "enc:3:+qKFuQFGEt34Vq+gZUUu/cjeS2xyKtX1i/sW2gzbUnS2kCTaD6kc4XkBC0wo4pvGL3CKJy7lqPjNyShQmoRQMLIrQy2mcjzaRwHKJanccrV3q1refyc8eVudCTmaMKvq4H7L+G3FD0s4jA1voQQngxz9VcyZ61/YqkfjKCumhforR8wXa23hAtg20RME+NvX6Pk5RtxAdmp2Wp74J1WP3RFTnHrLiO4OZD8wn+MFGZZR8Vmg81DbW7BTpXz0Rt0iGhsIrIdlBUWM/7Xsi5LYppvjR6cIkc1s026395PQV6TQ0R4AoWhe9SwqxZcY8yXVkZDiI6e2Ehg6CzE9zBbW/8XpW3mpWG6kTngfFi3ZL8dzynJQ2g9egc70vQAdrMiL50EuwCoQY94WFQ3U1HUXWEZIiONZC+YMjxJMnH4EfqrCOJ4qEq4KrRcarNGSmRpGqaivnSiTNwgSKiCNWAiJBOLTyjb8H9/rh/cbVNeg+0TYpp1ykTGTxsQNq1tcYRgiVVN8cBfoGg=="
+  },
+  {
+    "id": "fernkampf_modifikatoren",
+    "titel": "Fernkampf: Wind, Steilschuss, Reiter, Wasser",
+    "thema": "fernkampf",
+    "schlagworte": [
+      "Seitenwind",
+      "Steilschuss",
+      "vom Pferd",
+      "Unterwasser",
+      "Berittener Schütze"
+    ],
+    "quellen": [
+      "Wege des Schwerts, S. 96",
+      "Wege des Schwerts, S. 98",
+      "Wege des Schwerts, S. 100"
+    ],
+    "kurztext": "enc:3:ComdgFhqmspyuc8AqbVwtoCwfm5ZGCbjUF6TixDnvv48UetJenUZhuoFUjGDZXw9nptj4uV3EAdyBdQfkMp8i94epNwOY6UoKDIdAab7C7AxRIIm4Kn2g2pqDm5EZ4cIe31SvAJAwsPIRSAFRjVLPtP7iMJcDq1e24My0BhxqP9TaUQNPw2EzZSiJknEdcmQdlWNlO8w6D5MP5Z/Mvju2T0wbh2qLVqaA4L9c+AfiXIPROtB/DH+Nk8i4OuTThqZRVNPzd8XycHcl8XVo3QM4RAgsBWt4czb/wQVS4i2IgEr6pU3kWM4hGDwSs2fjLG7wiXOp0Xq4gfYnj2j/xs7UhzLLq991MmIxYLXBsE01QNF+JYIO1DFQpFTSOgPz3yYxHLz6Vlxq2XZvfM0z3MBEF1sHdr9KAQhpVjRcOckUi951/+iSoxbHPQy6DJ4yKaXQlaFqUApi57XGLgIn5NrJnUS9EAsHceibfW9ZoC9O7yELeaACkJ0HtMCHrvBiBIkFF7ADGK7nhCkKnAUwwccixzBLfwudrghOHcclCTLZL9vScEI19oWG4GVHld2/5Y5x8rg+/M1aBtYkxfz/j6JubDqw8tBHAKyMA5JCcKVqhQ4ri5zb8PSNxP3dIbMnSnAHGVCgtuHsWTPX1sOVgSywPttcuM30tjJcT9FhnZync9iSp27BeLqiQddxpq1O4tLX5ewQXK2xHJSvEeFbQ==",
+    "hinweise": "enc:3:1SauKbk5l5vles3gJNPomSGtPP9PSaUUx1b+aQlvxrBtRfqwBHyiFSkogIMyrp5Jwy5SLQMk/oxWoXLSZApK8jWMFFRCiuWZQCRKyI1Y0s6jS4797AjyP/BflsFkZUXEi/q272mcyiyOFjpTgpqNUbPsqFzmLS2Xm3KCnD4nmR6xcxVsdjTTMP7U+AL4hPnyALGJLs57XXLOO1XmC334ae6ezPdWBheCJYOLTNbSIgbo04E/Uskjb0hqiNUx9Q4zryAiU3l7XvSzTPCi06fA3MKia6ViQjX7hH/jHZYv00/y6Zm9AyAbKwVJR62Pix1vhYN2vHaEKRLwzzUaLfTiaoxxJP/4emoU7ZexFA2kn47fZIbneUE6yuouzhUI3zcpczyiNv8P60dR9OnSKgNJxBSJQp8ErMCrye3So9Euza/+DxiibhGXhwis3tmKe+c/L7JmMkFxaswtScMriqmzxgHNddVZ3yhw41RgcKEMuuLhkHn6cWOLTLs1mVGjoAJOhHCCpGYfP3l/unGO+7N8avcvI5zY8pS/6kqaeFtOWmmi1ehrqqxL4ntmbe7hSqTOtweaMKsooQoORRr7Fd+y1ofO/vCuvo83PA4QPFq35ggx67jV"
+  },
+  {
+    "id": "fernkampf_abwehren",
+    "titel": "Fernkampfangriffe abwehren",
+    "thema": "fernkampf",
+    "schlagworte": [
+      "Ausweichen",
+      "Schild",
+      "Geschosse",
+      "Pfeil",
+      "Optional"
+    ],
+    "quellen": [
+      "Wege des Schwerts, S. 98–99"
+    ],
+    "kurztext": "enc:3:0BkWaljHsAMbBl2TihkhDPmkffJAXMx0V+bXgTyMocqLHd4CmuDHyq8wgbVZEBtFrclhQtTpo6tUFWuT7/q+1rfXqmDO0bAGKQZvYZfPpfWxA3xnkwaOfBY8oWJEys73sB7IPDLbc37gO+frl3vLJGofNo7OoClc0xIMSrr9na6fAioNavl3jmaDNtw/v7scAYfYMN9Y3dNcBXyV0a5WFB5lauV63VfynybM912WKxaZw5Ia+vb6AH+V20lEZAFD/KEtRyhh8y8Yvu+24CA9+94TFUo6pIN1ZkIcM9VNjM6r6iphTx44I312+dmbZkIMmOyivU9uVt0PwT/6utLw8YT/9gTaxkgyXFk5pMNHBfxgVk6d+1mfA+CZ37sMgnFVGxZn+ByNzOcHySsOsrDyKZrFRVdGGSNfbPuUUFFIIpdit8oYFxEcUal2MPCq1VZ4csCKyxRREIAzB5vPdRTGYbEMesqBopaEa2CoQkRRTLdLGLWy+ifGxA84YWMLra2poRs=",
+    "hinweise": "enc:3:7FlVQv3hJh04GpfTTwhY02Ay7l3BOyxr1LhCufoxK3upxF+t6DJ+TKe9kGa19nKOL4s/1aAo87HNYdc30SVUPZDjQC2mL4Hhm1CMfWVIeSJJfBcKa0vxuAdptRjZFLHl5/hvQezXNh+GW7y3doYaHpFT1Wds4fReovlq4zUF0q+dgu3WCnzzRdGotjBbzdc3PirCdHeoptoExlYdagmI"
+  },
+  {
+    "id": "fernkampf_gluecklich_patzer",
+    "titel": "Glückstreffer und Patzer im Fernkampf",
+    "thema": "fernkampf",
+    "schlagworte": [
+      "kritischer Treffer",
+      "Patzertabelle Fernkampf",
+      "Projektile finden",
+      "Optional"
+    ],
+    "quellen": [
+      "Wege des Schwerts, S. 99"
+    ],
+    "kurztext": "enc:3:eGsjHHwxbH5rr1Fg+uHLfRt+K/FZ9YVUQkUXKgLlhUWR7Qwn3Y7yJvP5ieUZER+SghJesHtGuXSlz04l3wDrusnMmViddK89Pcmkwp1jzeC2Lz1eGcXmsBaWj7pBwuWWV2uo8Fp5ukjDeAMseK1lkVkXy/hzVCt/LIuurhkpE0RpRebXuBOq9YNs6mfCOKGOgn0MLryXu+UYsN+jDeFJxXgRSU8hQwEJ0I/+n2JTTTzpcdPa3l5RxCOQgz7yURCPGU7dCvY0fgYTHHUKkqnli0EUvChQBHzstcGdqWc80/VhQmMpYRjJkUtzXZCtEf7okCtSjiduhD/ARgebaLA8ZNMSK6mCtda6N64j6L+vLB8JJAMmQXcOmjdCiU/BE+zwq3EqUsKGVb9DLWWysoQp+VZj4AFK3z5iwh69sE6t6S7UvbW0KREzFjzskAR6/AUZBNFS1WnfD3gkgPGwI9f88wKVKuv0xwVKCHXrzOCMhTxYVNTa5wzfbYe4T6KA+/CvcU3PVGe86vjfnON6LewZQYMR+8QcYJgMXkk7eAUgkUiZzjc8qDJfqAAiAs+jQOY7yjdZkn6VXN1jv2q7fw+iF3wIJ/SPe1gz9cJzoUUun07IUQA+xFjihdWT",
+    "hinweise": "enc:3:9g7hr+6Viu+5loWtYsbpZ4PAiGUXYVdf79xn0aiYSJ3k3JprPpoTfxtVej99C1t6XuVb2FvLvucBww5JXua8LkHZzdZ/YhDWkV47l38G5nX8TCrWk26nsZBO2IBeBQzNF0UFLg06qQfSEThQB00qpQVmhBk0iZFuRe+jgKyqRgabZhmFtb48U6Eh356hsI5q4HsYXfXP91dZBQM30CbEl8ugdLXdk36W9163yIzEnqsFUQCzpm96wO9pvYpI7A8RBua0HAzsUeI7uzKxRBuc7DmT1f3MtYcrykY27ZPEAWQ0OFkY9JXocAc50aPo34fbXXljcW7/m183qzZXpg3emtiWaztoM5hp6y3Sh4njkyB3fDSZ3mljrHdW+j1B+Md7xtV4797eltqwp9DYdc4hP+msHWRiMozv2KRJlbdmFrzTBFCTqShOrThXYK5zvKO6WrYIFl07zTFwXZFzqlNeQFHmlUM5QYGxpUNTDmJh/yGrkyKM7mMu6sg9UID35qmizaKBWaFhsoXeunNgBpavSbRLehKFBWJsE/ccGEXN6RVxTVsw1UINNofzY+nR0X7Y7hfi13WQRCAkPR11GphzfozrNObQ3nqfi0DRyuPZCyxVXEWWleGuzDVQM1iRGlrd6qsjjyu9lBwe05xZU0oYIIGRs+nPOe1K/a3tUqB68pXSkJ8xjStXbQZJfP1r3qA7VSaOWzum9mFNhfkmChV/k6e3uWNu9eZBJs/KQmUpWPyjcYeMLJJYDgY9D581J4sb+ZeSsKEvFLnkaAmQng2eZJ4KTg8iliqrKgkZ6Rp3NBCObp/38b1tc37NUfq25wTBDxX5w87p1Cd+cuM="
+  },
+  {
+    "id": "reiten_probe_sturz",
+    "titel": "Reiten-Proben im Kampf und Sturz",
+    "thema": "reiten",
+    "schlagworte": [
+      "Reiten-Probe",
+      "Sturz vom Pferd",
+      "Initiative",
+      "Reiterkampf",
+      "Kriegsreiterei"
+    ],
+    "quellen": [
+      "Wege des Schwerts, S. 100–101"
+    ],
+    "kurztext": "enc:3:Nrb+j4SLpxaWhI9z1ORBHXCGarU2Jy9HJY7LcJ7L3jcwvBogJWat+lWQUB/Q1iLWeh+HMibrdTt4wLAfcK7XIjvJWmfcgUGgQRH/fCf2r78Su5axUYDtZ5OglQlMajVUSOluD1mknDGyj0cbZdSLBl/SSPbwlm3Xkz7cfhHDQ58e2iwF2mx7R1+B1FZ/CjOBT5oS15V7r6x8lfD7eI3AIDTIrTWnJCjlICmL9kF3d0KG+e91xug8AJRVfJ5aGB1dit2CZnQK+9fLsaSJ6NQuGc500QMdTEteavY1gQFc8AvdeIAa7F5aA6UoEjEfxnEBB7izP6asrHaq2XiI1IY7BOCBKMNpvuQH86zB8coKESc4dXlUn5PuEiILwsM84uoGGxKaAbuE4PyOCG7OzTBkuaHgg5LdaxKzu3/gghd1qcC3TfVYN8xmLSAT14BXI5hdQ6ALsu5x24P13ypTJ5qmOQ/edfsbUTydGNR2YndgS8TsjZQzbqOagTC20a9gs7HBU+4h1XcmriWC4fa8HhTFR+Q1HmsqNa7BMT4X1FAaHJn8UrY9yTv+tPUhCf9uCdu8cmyWW9zyTZbXcvYFf0czQxQEUfcbM7zUz9NoECMi240Mcrp1RGcINevGWD//6XYZmfzVhbbwfFJ2a9IEkH6VUfxikkTIWPu3Gp0pR46/+N3Tj5mFgbp3i9u9M6Y/359+nATfYlpX6mZFpVNh2kPsC3ovLfay3eF+8O1zUG2aMcQXRpYlQE0FWOVr8y89+JWVXkDMJUjgt/j6USk0MpkqzvNSuDFyev673uptXQnSu2ePs9scWRc1NkuJVnuUXBD8",
+    "hinweise": "enc:3:jXWWwpqabJyGdQtv3QqQJV2kmCO/4ncGbT8hW0EJNuMailumaOAdfhqPpkJVH6xoyhWUZvieJrs0W1cMRvs+LEl5FDiVYp2L24KnyBrozB0O0VMcHDUxk/lcNoT8SKuVHBjrljlEbERcl3LvJ0/crV9/Mg8Z/gNuendhogU8bLQz+SNIcuKVyy31V9D1uCrLPtzFDz0OPDwAuvhFgLjaNCsq5Drs9U/EHTzOo6zsWrQNatTCxfyPM0rM1DMhmgyw6R03KE+nVYWF3bsaBGshwCxCxE7zfrj+P86QtDZ0sHjsgHjWS4CF9Nm/V3Jl2NJBE7bkYTqOr/53sxFIz83jrEk5pDTPB6jH4EUgIC0tVR1hyaNHTUUBL0baWmdN0FynULOgF8Fig7ObYmkdhiDhGSQ33mAMb+o98yaIa+FatyOOSdF7nb2/+JzEtp+V31C4/l7pdf65qxvTOVbbF8nAdkor1tW6PN4RhoPGXVGZ+7xQHjdx16r+M8Zo/4tVBTvkFi55c1wYl/uj+Yy2P9+rX0Xi7O7H1bSQtoKcOuhCZa9orlrrD4VxFctkWq1fY9vueoR5Loes/b6yrUrBmmXnrDB0JUZu+gNqqoh3BDg6Fvjq5b4hnR8LdvnNZ1NAXfXfTyrmC279NZ8zQK/ULSqkjjGeT5YH6pMaSmcrhUT6m7GI6ezVwpPVL/kZAfCWAyS9snH84AhPdRsNmFB+7HFfi4HIO8Vx4KcOvFAxtsLtBpTpHYwXgP6RDswSfGZx43M7Ljd61xIM8w=="
+  },
+  {
+    "id": "reiten_kampf",
+    "titel": "Kampf zu Pferd",
+    "thema": "reiten",
+    "schlagworte": [
+      "Reiter gegen Fußkämpfer",
+      "Reiter gegen Reiter",
+      "Lanze",
+      "Zweihandwaffen",
+      "Reiterkampf"
+    ],
+    "quellen": [
+      "Wege des Schwerts, S. 102–104"
+    ],
+    "kurztext": "enc:3:AHGonsoIrN5cO+7LkNSUCQi536WEIEcaZ/ONByTpgVV+TJ/rJM/AAutg+O8UiBMzHODChdbOkNn4GbTbKtuOO9HihpSl43McunhbNLznYlaXh3Aupx7VXKv2vW4W+DzibRLZMFdvglu742ac3kCCYJiv26igbOXI9BeCbBS8x/cpDr+43D3Iu+WcA9aYv1Rop4ddnvCFb9jIlRojSCJyajRWniocpVWyQLLBHSKP7QN8LxktFiVKIiO+3+1Bq6QHcTm8h8GLc0T5u5/oZVDDpfqV5Qvkks/ytQbwK7natpzsw+EZSoN64nBtC76nboKnmvvEx6be4VV1uFcrTAhsU0bTj425R16uaZbMFgRcGD6PCzSfnHnD3rHW+BeEk8yqJvih8KydnNYruByn1oGITIzLIlw9KRrOrE84IgZfGmVtsD+9TFRD8SmM3m/lYBcaqhPtm6hqjzYmQ0tCE3pMB/qh/Ciil9qnAjoiDd9+ieEW7GpBA4mCAxnmoBaTiQVKWcyoX5i82APOgHsl6P61IjLgyI9cG7uaxZnUVPxrMZX0Y7YyNgzEQMqWz+ckuqCmkD7TQbhY8GZ9g/4ouAJgeeOK7OrS6yDiBAYJmaRGTV8dHEW5boT/wmi6RUzWRS0mKvzmIRvQ/350liGGHyM5TFZWqSQGb8XyK2jV9mukzrEzmEDCdbrlHew9ycgdSex+Wx+cosbkuLnvgDXosDTDKRKXDk+n1Q==",
+    "hinweise": "enc:3:QFUWQd0MXvkAdpecv8Xouk8+y6lkcWA52P8z+Q9FNCahORiuf4ybwKoZkNp1/usTCoIRwuYou084UfiCjgJrAHw9Ev0XjlJrzfnk3waYehK9aMZH3HzS8rIT4EE8YI1PKtE7tnfrwZJf8ryO7XSg+5iT1LE1mzTKBRhFrOepW1eHc1B9XMeRo8joGAlQr3+/U20hhvAPVTch8Y65R1Db8AxfD/r9LIsNAOZCiqirP5e9BtAeQLsxqkmQE3lxkhoBLajkvdhZtwSsAv7yYrhO+sLjF9/kyA74z2inHZ41YYrThOTjfF4Bl1MjaIcYW2MALnLcj13mMpOB7Q82oJpBikFhE35zZtGc87QNIK4F8hYkYUP4i9zRaaV3IVDYow8xwRrrWvwHrCjCQPvwW/nOCye7HDQ35X8LwebNnC9GNfaFT4BgBFC0ksm52be7QL/i4cD9C7U8+5mdjoWcGLeNiG3+u2FkEOjZ1St1HDiV91iA06M0peEGhegVsTeU7jYcJNxX4A3+Sv97xMIJ2rzi/iDSbs8yr2Yvr72diEkAxqUFQuPcD3q1eftFprJsC/+IVjnYaH1vzD+p5+4BMLCTMAbNwsprhyG5qEoroE5N7i/+GEAd9R+y/oa4UVqCC7p1if2wfP+R19TbsBrruNZ3H95QXOW0fMX4+Haz1YLTjJk2RyzHCF8HjNtUpZBkxpmRMglOjWcEVftfeforXu6Z4AZVE9jHIOpQ97olQ+/LHhYcaeSEFXwviEEa3LKF4N6VfDO1CCD28XBJf3W4+Y70CN2jOZW6sjxRkS4CprPlaECrEE07yw3WJ5yBx4VCSoU=",
+    "hausregel_text": "enc:3:xFaGyGNvdl5U8eAPwQPyAe8J638ojMn55xP0g7j7BXn5O7fB3Gwua54w6ujnJ2caYPXGW74/C+HbW7CbxmyncyJ9q9k7+ROpzqBTEUwCLdYHXEdpjtd3cRkSBFrGGKa3DAY+0+N1xVQY4TvjIhbkJHW+ef6ekaQAyypOp7yL3yePSBXV1fS/MYsPZterAXYuXgeMROKy60g/3+vtQ9+f0o+OCTJZPEgn7mN6n9yaNvvze3ZbwhGMeUjMB3AOjPq5Vh6Hpz72ftpf24lQZIkU7zoACqu6MCDhaMzNbCazHofn1h7TnTCpDQeihxyfnJX7/JnUJPMY1ZUlugEJyLUy4cIinjqAh6AFEFWMdvXaJR6Jw+KkIIk5GuvwGwCesoTOkw9lz8azwsfKPo2T2/FJ0piPfsKfknyg29eBKNRtOrPBTddpvTV+fpE8ZuONL9WLFl5eYTKa83BPRLs9UTfwuNltOP2zz/0RKw+qOQJzLcP1P9wcz87YnUmj2sYlZm2XBtK1FVq423YFVfxP7J7VPOyMqr9MGTFmSCTwolE40C+nZuO8WisYaKGpVDjF7czkOp2DO7QuZZOzm4Xz8Yi6ZOD2Knogtr8flhySRfOWn4i4QFW0cBhwrQBJK0j9UzSZrGAyGfy8ARHDp2DUxcT1qs1k/7vokCHRpfJjqPj9hzPuGt9D/S0hrEcKNRUYsg67+2mtXqTuALKwHN32iT/Zrmxp8bBLU5M6gMBNrfSx3VXDtC/tp4/3dpRptgeZsqtPmOt3tZW5TYTPT0BjqMBhE7zX66b8AXs+IggMCeiqR/acOP6ZIL+S5Z//oWQK4Jb4nMwJoux1vqT15OeDx7ZMX+6Zmhm9eI0g9sFxkzwWRFszgDa/OxDsWH2HFXp6Bs9zNpMPpmu6NFk8MOxVDYrPw9BnDKO5E5WQU3xSdkulNpV9LbHpvGnik0xCiUNDszQeDa6vIuOT",
+    "hausregel_quelle": "Erweiterung und Überarbeitung des Regelwerks, S. 19–21 (Paket regelwerk_ueberarbeitung_v1.system)"
+  },
+  {
+    "id": "reiten_sturmangriff_niederreiten",
+    "titel": "Reiten: Sturmangriff, Niederreiten, Hufschlag",
+    "thema": "reiten",
+    "schlagworte": [
+      "Niederreiten",
+      "Trampeln",
+      "Hufschlag",
+      "Kriegsreiterei",
+      "Galopp"
+    ],
+    "quellen": [
+      "Wege des Schwerts, S. 104"
+    ],
+    "kurztext": "enc:3:7a34Shv3gFSl0PlAvHPl+uW1jTA8p68c9YGn27Vocc3ocjcumL9E9cvAUFADlAYLdKJr9r31YoKvCuoSEdKBTXVoZYIdHH5ITbSmeW8qIoFggmeZikpIUnFC4eNdps7ZT0GRjrXpyD5dmIQd1plxJ74EhTlZc7/pxeKOhT2cwsLUUTF0m/6C4J86JXAzvj9/HZYQqLTUIexkuOVw8TEyVDVja+cmwk4iOEw61ae64G5OSkF35qUo++87t5W8uBy/TbJNfwhy6CbeAaa0twwRxWNAfLB0spbtCyqMJnekcR62qS0Vh0jRtAwdmmvZcWfKVVLmyCxSjfh8lM3gUU/9ZNMqP/dbPl+Csb8rJSldtozjVrSvffHZRwzQVCfwsAGl4AdjwZzW54lbHtEo4wnL+uNmoQD/SG8kkKiGktye2hm4uNwzdq2jx6qBluuxzCHwTZMPoqZWiPn04ErLlNwrGnwrHZzfqoQEKkC7nvC9Pw22MXFcJrCuOaUmnXTfOQSJiWpN4pN8q12I8uGoTEFVwWF5OVyn+YqL925o8tdqSTOse6gAixZni6vhsr8tXC3eVIxyzefS3p7zpJpqI7jpWPqNMJv8+Yydj/IjkRKkKsF1dwIfbv44ExmNMIBDdMDQE6zmwpbnPNQOwsJYOM6NvJ/mnTDHKtsYH7TaHKVKa6xI4DnDNbWSyLY+xRIDW9mMWcsQGnYwKMM2AlJD27if0V5lFg/ANInO3u2MoZctxsKr8FTiEfaP7+eHgWWjnnjK6t6h8OEPJzrops2XwSiWspc43i8euo2JzpWMCigWMLKsuWMhNOWGTJhZmB5FuVlnpSTV/iPRc8BB4JiJlRmFeB/ZUNeV+lyfdtzJH6Gv1zjSw1M1uJ03pLRJQpvyXBrngRz6LCiDB+tPd66Wor19eACprgcxG+cp+UyaPJJZ6tAESiApjmQ6pMYM",
+    "hinweise": "enc:3:jsbSkRM9P13nqwWhJpfjLWAx1qKIFmsOnm1TfpS3AOz4Y2HH5ZNXWdpPFjnji2bxDxcVOwyzGnDpbrtr8qaCsbyVSSddveU1hrkz5bkIPqL/C8eXkzyLkwhq9MbST+8OeUFaEjnbNxpWBZMoI7myPj3V7283FDsmY1V1IaSMXXVhuPo5zdBp7SsrD880e0JrwyXmODExgjdCybQUOGZbdpdJ5RXHwi9NIDkRP5BcA0hlTJp8azpxKbI6vttFqv0dJsmgtNSTDz4XKNP0kpEgoq+GH28JH7hRRHBV5MFuSEaaqEP/8N3hzSe8M90DwMvo7ccPzxX+spkXb6aiMUWJPr1thKOhQ/nHgSdtI+wKzsPjB/9xlu62Qr1qkyfv+5yizi1m611DewFXT4VGvPn9T2NY70Z+Gg==",
+    "hausregel_text": "enc:3:d8qducBuMAcaRkXZVUGiLcCpGeQ/zmG3fH6R2VjaHXZ2qKlXHOX4ehTTRfc9kjdRgRufl5xEluYs8BE1T7aWhWTclfYez/xXCH5/j8dyQEOlYw4b5YYIePBL16vecjQHARmOmCsmP8IgkDScJCtGDkQ2Wx5argDCB3+bHbVGdrtSWxqyJpZYRq70I/xpXDhGWa2LtPmclSDLjBfQbVbsr/SFRjqNVSZPjzkjwXzSaxa/dEpdGV4vMjqUczcqlrXKxMVzk/5By7BeZxj9/ptEQJNyFqmSrf/NX8GXieX8byakY48IyOfCJE+yP0xJJx/brheBMUkfJV6NR6ClW+Y5EZEGfEqN7C9EA7aSe43XsqqRakbY8Ur+WYDATuI=",
+    "hausregel_quelle": "Erweiterung und Überarbeitung des Regelwerks, S. 19 (Paket regelwerk_ueberarbeitung_v1.system)"
+  },
+  {
+    "id": "reiten_reittier",
+    "titel": "Reittiere: Ausbildung und Pferderüstung",
+    "thema": "reiten",
+    "schlagworte": [
+      "ungearbeitet",
+      "erprobt",
+      "geschult",
+      "Streitross",
+      "Loyalität",
+      "Rossharnisch"
+    ],
+    "quellen": [
+      "Wege des Schwerts, S. 102"
+    ],
+    "kurztext": "enc:3:IvUbVcsnhasn5KTImhaoK49iVRi/8D4aQ7W8ZF7hRGgRVklradCZSpxTrrVT+Byou6L1GBzl8TyQjS6oGrXn5dMpwhcqaKapJrBZqTd1VJXixyeuwBdr6Lz/Ew8ZEUzJVZ7rYYlESx/F1AoZGflTFkt0zPx/PEdNKrB6sd8IyjXo5cJhMNXYHKNCRClIPgMg5RZZJakh0SLc1TpBhV7pjbSV6jyzJnzkdUtb+SejQdsRs35t6WTTvBSEbeTlCyAbqk1CFwEK1Booi0XXG8yb7wL82ghgac5dGYc7xzRhRH3x/R6yEZ0PeOUw4IpAnWomeFToHAYqkLma0YPV4gKxRaIgqRJkeqMssSZpUbBqDOlqdQB0OKTPfezBTf8UvY6NeaGWDx+stGJe5S6il09eUHFAX8w4KH+IXZeqvFfPkxfkWLh9M2UpvcmlTatMKea3HEAZ7Jtt5CFgw9irqbAM0oApKYx+l4RbxEEyPf9Bv8hKmxAcb+oZq5s=",
+    "hinweise": "enc:3:JTgS/kY5LmOXP2ahTERs+nhWtHU2jambZyU+gttD7U0vkX7+/uoLWQaLd/Z6UvvmL89XrdQJHrW1JZat4GPyquxagWm+eWwsgPycC5k8XRJMQNGJ7FV2tu2mbTTqYhOjeGcEWQM7d92VWXc2xuDA44DA15iIwa7H7+JiCQSq7rGDEh5u5c7YyTE+i7eWi/iyPD2502qJJfH6b/ZIdp4ONm3lQOe0RZE0PqmVx8iz5NYoRmH3eflsP1HOp8sFN8zR5Sb2xujBfvTX/wHYvJz1H26PpAbK49ivzS510ePDozv1np4="
+  },
+  {
+    "id": "umgebung_sturz",
+    "titel": "Schaden durch Stürze",
+    "thema": "umgebung",
+    "schlagworte": [
+      "Fallschaden",
+      "Sturzschaden",
+      "Körperbeherrschung",
+      "abrollen",
+      "Sprung"
+    ],
+    "quellen": [
+      "Wege des Schwerts, S. 144"
+    ],
+    "kurztext": "enc:3:P2Atwy7n5o4Kmx/kmJT+BazQyRNUO0CtTpmzs3IIcoSJU4kzUrRA3ePBe3RUpitfVx5fl+r+W25kkw3q7ZRUWduDDvgvHamB5domsB8IeRtVh2J9+ytuqkcivZXpZ/72be+jUhkHc70WpDHGbcj3HCJioAtkikARRjWkzyImN7iPzRmdKxXEJ+z7nFBI1DaJS0qdxEd6kHzi83Q8Fuh8vUf5JIRz/FRPueo0mIitdw5fTK+EKbRG4t4Eo7ebml1Hx+VQg6Hx79EqXvZgucCLetHnMVrzyqlTdQGqLu9U9LGUJrIporMf0XUiSEfNIJ2ma8RS7Z4+fKczFj/ju1iYozGa4kbZgCutT3xrUfjx++OE5gSkg+e3LyadJ62TcmhRbo5WaSopHBPqfHvUWvKCKmZszOMUM8iE5H1znHZYN0HqAoY79Hk/Aw+0pUrLqidcIk1zJH9xL0jJG37OrcaGPnxDVEE9oKa/CBKkr9bnsD9qmSa4eRH6laDCwVYZZ932Rg40wL4RUMq9DsdD9+73F7XLmBVDN8Nox5sJztQQkzZeOsH6hXu4uZGge2arr3E7ZFf5UEYM5BZT5rlDGWkAvL7rxPcbjrEwPjPmsh8XUIXqDcLVNUpiOE1bWgpOi+obMIUpFiArx4tUYxO1uCHM7rmvyr1MuAdsyb62Yb5kIZs61ErJ6Ti+SOFhXffp8cRM7qD9Ohkb4XHec1GcLcyGfWq0dpg=",
+    "hinweise": "enc:3:RqGi+xN4dCHs6k7ut2IkSy/LYgE3Jo+/Qe9oGDm2GaSUzCYM6ewSb9tL/IOs2z6YvqLKDdpL65YPDLTUOWwLnXUbfE1z9BHYPcEqFHytZdjk2pfUh98qSLJ5Kx3iinkrpTRns/F1YQs0j73bqnPuGUuaNZR4HLWF5KNSb98fBsLAo5lhvynh433ErLu4GsL2lVqnQ0qlUtVd9Ket9QbwPMYfekj2siHtamJSU+2ILQNZiUkbHcGjpjHlqodndhLHPCTsSba/pGbxJ6b17UD/q0NuD6ycTNkpnE6TtADM5mhVwsWH1SwggYmXlRp8QY/jx/FaJnoUdEEaQDtF5G4ZLnFSAiGGgRXN0Y3sgNx11wYWG/X6hFhT0gnyKvqQcAy+wg=="
+  },
+  {
+    "id": "magie_zauberprobe",
+    "titel": "Zauberprobe",
+    "thema": "magie",
+    "schlagworte": [
+      "ZfP",
+      "ZfW",
+      "Zauberfertigkeit",
+      "AsP",
+      "misslungen",
+      "Talentprobe"
+    ],
+    "quellen": [
+      "Wege der Zauberei, S. 12–13"
+    ],
+    "kurztext": "enc:3:8JR+p6/StnzbpEhoGkJTvp7sYr6NH9IEu7pfPyaGLlMJtytQoYBlRcdfgGeWL2dhn0Z7L3SduBtn1ZpXgqHBkphES+GW+SXmh4TTY5guRZV5sUGSoZNRTFlf2XA2QYQxlfSgfb3EwtylhJ/ZerXAsIJyRipiD3lVPSfQapwBNsZIfk7BvUJqmtlKqvXLyJ/NlomHSVRvF4OgSL+Nd2eI4FHgX1IgDEoM5Ag4Ah8CmzbtBZPPxvDSj/+w7hriObXemRA3+jsFh19aa7K+Xg1Ob84Qd6v9q4EomwvjeZ2H371Na1jRJ0FrBvNidA7fNlQ543h185nOd77WD/dAXYSNyhvQlm0+GrHgz58W98OiE42+jZ/xUcYtKnCyXwKeNUTQ6hOMfmHUFc8xy/aDThPK9ziLAt7idDoAEmGpFXz7GPhmiODlO1jFX1K84qUp6oDaIaAjXW1uS6Ts439leC8vogAhSdgvQRaB3upYZRtv1l6DDEm9criY2x4MYRydt3Bp0TuktJp9POp+UDmOfHKBDhi6UiUEVWUZoXC025IgKffCnbzjGAt8L4lE/XRwk4/GfLX4HdudouDmJkKFyjl5NrOHi+dKYMFQXEvLayiArSYPA42d7HMELI+U",
+    "hinweise": "enc:3:5B2W8QvfuIujxbLdINuHFxRbHg0PGbegh4MXv6O7prrdQiZ4n/sftN8ul5lu+RFMLB2x6PyU1tDsrLOPUqVrM20hzAP8hEH6j0f71k6t+Aa/RXjTEsi+cgEjv47IsERlPTNEWzQ89Q95TEEBpQD15xrdMDop1ja+4lJ8Owy8LRQAUvUebykmnzD967O3X1mQC1TzjK+lI//nenXItbAuo2DI+AUPrEAE12pjilEWtmtFb6wSHEueT8OIkJPXpfrXxRMLMoYvJgw+76Hgm4pR9BanYuIzrcyfyjhawPrYYArTBR7X39cq2hYASVkQBxG97qmENnK/fQbEk5t9vZynVxSTRaGTLkUiU0RX/GGwGukEe0mX8lJ4S1WndzCx5c8vMegVf+3Ajb85ndfnsrKHuCBZFx+xCyCZ8tRzK+y1Pif6jGM1sqpElkiEEwVeaTKxjr+bTMybu84HnPIPJ3JvBWlsY+XPH3JitwNVGhA3ZUspQz+41C55SoFDkunh6IX/uS8YPYfAZ221QbrFMmKONVpE27YAZBPkRkg5KMXtFS5N/zPc/GjZQhIU1wbGH68kiRJt0k8W765BAJEPAXNIjzj6AvKg2uejDc5P50uy6XRWhngX5OnbKweA/DmL8LALBQbFBayIuq2fyf+hJQQg7Yp24LmjhVsSasIRQmPrE9n4kVCqSi1lwBFCr33oH1PsbbdVHMeC28Piu8JAAQKJUWVDZ2QVuC6NFgjP5D7IGCxEfwa43Ydu8sUiTNgrVZDxNOW76BXMdi5C3mcomg=="
+  },
+  {
+    "id": "magie_erschwernisse",
+    "titel": "Erschwernisse der Zauberprobe",
+    "thema": "magie",
+    "schlagworte": [
+      "Magieresistenz",
+      "MR",
+      "aufrechterhalten",
+      "Wiederholung",
+      "Störung",
+      "Behinderung"
+    ],
+    "quellen": [
+      "Wege der Zauberei, S. 13–14"
+    ],
+    "kurztext": "enc:3:aYYqob+DgXkIrq6xKPu4y4wM89+CXWLfyoIpsdCkm/LiPc8bibeZHzPxCAR75Jfr9AYeTIlW+TaDoSIH83RxjSuAztVT0pZPpoXup6fqVLBqIV6dKOv5AxcfF/uG5qkfCy0aJ9hqWAQ4f/4fh2u9RzrTNXYitn3uEpEtcyRccxSLI4425henBnUBHBAYHmUf//idhix6lX0ccCEdU7tR26V1JkJ6jPEc4PrjSTtO/s7V24xi+eR5uorTEdvYIWtbsfO9NkOB0ebEJtcA/XvHMp6w30serzhOcOuw5g27z0w4/ejdUyYEwi3silq4dI3bfZyjw2eBjL/gHkTLGCVpHpj95jJVaq7WBBeJNqOLRlICTnLuOByPZjcJ/ykWxnKHPlow7OqZzm/7s9PIL1eAfVNRxiJVyLl8jSx0ltkoptTWZ9bq7HxBqcy8KxCtDIL3oVEbEWKHDMIPJ5CFBSBTp59i12SESkLtWR1sygxBQt4YQxRCplW20oBvMZAs23Zq3OpqD9DXDbHYD83Q17N9jAkDZZfzV2Bai7jNFrTjRYFsMAA9Mxah7ncWBIomh/NCKbWRsCwzcLqjOZ11gphYRd7PdW5XSNqKb940kZNcpY8=",
+    "hinweise": "enc:3:PRhG/eONumDa+EJiJnmxbf7E8CezVLbF4OBdrOnKa4WrqDv91PuyqgOaW9xGa20JtLd/yALt3xavWOapYduhX/AAkp7GX6caFPpIA8g+56kE8F1/lzXSSPfFo5pqIZpw+ojoMKG8qjzAnWVpSoiZiyjL36/ICEnlhEtNHCUp3f3yZsCmIJHs9UgfAp9k2DT5SplpsJSkENtaDABzHjSiNeXNOiD+9Dc5y4Kwnq8u2TbQcK9jIBn0lT86XJH7i2v40UQf7CDGKQiHbtFgJZ5ch0vtwyHybZ8JJsioR+TOK/gBfJeYi6RaL81H4ClxKRy793MM7rGbyEo4R7qCvZiUKlQPjOfHpknxlniZhGlqrNQa+Ru2YBv/mGXMBvMsQeA0y5jIdQFzCAhI2tdyQ0oL2uxCKCjv/Fl97jbYgSXVHqtP18wTtBvD6gOcBGnlfgwSu6kz3DoaF/Ct7dBCHOziQzK+WVMdk0LwBRe/y25the/YUNBBbCS6jrln/vt5MiF6bEUObOlh92HpMvp5X60YCXeOO3G18c7X2ToMWwN4ywc6npPs8lTpDbfT7R7wLWdENKeOlzd6/autVcbvAte7WXjTz8+34K1Gt+PXeSvioJKIH7Qx/fsN95nXKUIWtc4vuEsUezDM+TJwiOBXKSTImfJHA4l4opeil5uyUT42fib3dFWtEWHLHjjpuA45YYMRszViCBfCzOi+Fu4reknOArd5+EnPFQgI880AtOwiv7GSyzlxfI3zCP01v/jb5LqSvt1JhejKAIWAwCdwc5YrKL43R2r+iNabovPB8zn1lK6cj3ACBELpGINK6uFCUJA79prTih05KOcHZz1wNhgQNExzpeYP5XI="
+  },
+  {
+    "id": "magie_zfp_stern",
+    "titel": "ZfP*, offene Probe und automatische Ergebnisse",
+    "thema": "magie",
+    "schlagworte": [
+      "ZfP*",
+      "übrig behaltene Zauberfertigkeitspunkte",
+      "Minimaleffekt",
+      "Patzer",
+      "Ansammeln"
+    ],
+    "quellen": [
+      "Wege der Zauberei, S. 14–15"
+    ],
+    "kurztext": "enc:3:7Ik1JoLCJL7qS6hz7O/1OcOal8sMsJDp2ryW+C33p/lgG7I+22Hf4nloEkbv5urVcxzFFvCepTd8ICGK42zkya+WCdaIu6+tEQJZvUnY6zwHmdOsI39Fs5qi7in4Hxj/UwO8rOwXulXbfcekVkvAOE8eIGnlYW4kPf+J0ub9+miXLJwHtFYanpEpSyo9OB5RxNEIwmOBu0ifItxh1NldFZZtPV3mgrQr5v8Ld8BWsjz8Lv+EiPRhK8LT7Vwsqxwbvcgz58U2ZEw77gSNuPdGyoZlfL8plRkeMw3jH3nThW646OMcIetQjtTTbPFYBKf8kfXElhUYKNpe2DpqkGsx9cGJldOtK2cTf4w7aecrgDXDhUh3VB61jbBQw0tMLddywafFW2w1n1OQfccFWz5xumiRCHJet+wcNVjPW4cXy7ClrNyCKTzsCx0KQDOnRNT4Yu8yJ4WrdOhlRr/2v+aROWypbTvg1trEPcE3RawIL0Biy+SnJs+eFO2evVomXVNG0LOrsgLCTpbQufSqM2BEuOtmr3A2pzqWkECxJyLL2dQCgxxmWzJcsAjvKC7BovTqAkeeA451ZAntUSLzYOAp0M3h4NEGCOQupAzba+oqtAGTlYXVNYBHSx9sxEYl/yh0dCtJ2A==",
+    "hinweise": "enc:3:Cj4PiFb+jJeYbCsHEBrDHpuMfRrpQhNCZmc5vb6ofUVM+JtckVfZeFvXIYVi4upyf90mrN5s4vECltLettNOwcJQgl7ViiqJJnyz8fzpc2EBZdKjumhr483picfrehkFaR/+BmsI0NDLg5oEIlyQqCWDvjN5kHXqhd01nWEFt94fdEwjufkYVsAzXRrNPrcpyD4Eenj2p+wg1iBU/MsoIpXyt9PPBmyPdxptVfsqaawmEd9MGcT8CMu+2ebi+wnKijGBCpgULJW4cjr8xPaCFP1BRBDROB533btV+gnXPTFseqCFM+y+qLMMef+2QWFNRBUPMH1eOl0C2i4SayfUJL47wGPDUcVAKRWMAk/qfkfv0vAtBmw/ARYyaFuGL0q1E5tOkHgMQEkavj6ifnjCYrsrgQPo6BDdZYC8BtKQcaXrc3ksV/p+i3jBlIf7YX4z05W2x14vH+qbxEqxkhRXAyijFt+pRq5H"
+  },
+  {
+    "id": "magie_spontane_modifikation",
+    "titel": "Spontane Modifikation",
+    "thema": "magie",
+    "schlagworte": [
+      "Zauberdauer verkürzen",
+      "Reichweite",
+      "Wirkungsdauer",
+      "Kosten sparen",
+      "Erzwingen"
+    ],
+    "quellen": [
+      "Wege der Zauberei, S. 18–23"
+    ],
+    "kurztext": "enc:3:T2srtUsBxdAaDRVNdOSmvyzQz79mFb4FnUh9U2/sx0HSNiP/6IEl/H5VWPmKTDYP0f8JYdqQhz3/g39d6szM+y/L0egKIMHXXqPC7N/S6DEXgBb8PpX4rQkdmvRwBQTB0GCDSZyo7aoOlg3G9kBzV8q9alg3LSMjwc7M/qCvfGfhW5BefcbwIEyEpPv48XGvlzP/XSThNXDkYWO8t8YE9R5xdo8X0vPzVWh/+AkOiZVYXXdxkvdtkWbG347dv2xAG1QYK5rzNeGfO19B8xOy+gY8wnXPBg94XaLhkFIjjrjx3Xmy9tJsV7iubj/DHpblS7LLUlT8SbMHU/qGIpNNhd9FhXfWM41WALqAENyAak/fc+sBRQq1LNJ3o40hWabHdTqRg60xfEfVGeBhzDYMctdwAQ==",
+    "hinweise": "enc:3:y1qJu9dR/VPxdFt+F6T04YB94nvSLAJ4uJzu+jZZK4RL77H9pD2oVrXjAgrfz6zdedPPNMfiMBSkOLympByzaLA4QXzRPL/GfQ0/U7knp7vC4qHFx5tFMmPCHpFDs1Ji+tI/om/LAm0fhyPXazf9PpbJIszzxEJZFDNXDp5HfXM772udRS8n0zT5lDi6dSyd3kh6at2FPEpxWbJUDEq4kXxBROG7gEneZh0t8R0Xujr2U8knqee2kVeVkSw3G7ROQ8aqhZMpFg9IpBReyDFNFNgQYByi5fxwLPqXzZR3FP8t3jFhm1dMS3lJYuaZQRW/g3uUHJ0LvTiK84CGBpEJMqoQ5OEuqcKykj2pXfsDiZS63T1Xvo5saAezmGf19gvb6GNNYNJJQngSe/C/twofodT2LA453Xh1OYPwPVKIG0UsDoBktOaAq7WMdc3Zf4rKBCfrlcOiIObyz3QrhKdyJmeepWDy2cKSQodEfPCIfJbLpPPVwSFGkxy4uZuuuJ+gs0M2pywHz7wK5vaMxXv7+Q3X70IUGGU20nyD0OKJr3u3uNXw/6UNFFGfi6qEVECKDbat4ulQpUM7xieTtGbVXkZVtIOKnetuUz2lWpbycp0LRIiR42Dd/QJOXS9RBijWc9kIiWOfWENIjYI6XYDwd1q6EKnvdVh57PEUqSJIdTyC0ifAqvjLy/uYSZn5DynU+NRs5Xholjysueqg6SoFcg+33pWZOymFu3+JNYQNf6mZO4o1X/55VTzwn9VflN+8jSQVNahlkiBkYXN5kGCtsMgA2u5Q8wRYs1FRE4uQAG1KXOFQSV4vo/EOD7b8aG+cs+1RcN+ssnw0T/t44clfCAJGRYTImW77Gi/vUeKtFvgkl5lmMHKHAual5cmkcTU="
+  },
+  {
+    "id": "magie_zaubern_im_kampf",
+    "titel": "Zaubern im Kampf",
+    "thema": "magie",
+    "schlagworte": [
+      "Zauberdauer",
+      "Zauber unterbrechen",
+      "Reihenfolge der Zauber",
+      "Abwehr beim Zaubern"
+    ],
+    "quellen": [
+      "Wege des Schwerts, S. 54",
+      "Wege der Zauberei, S. 13–14"
+    ],
+    "kurztext": "enc:3:oJL/SPFBFGjJBh97MGYlIs7r4jb9bxJJTo23zjgJt5mmH/WdIr6PM7KYisoUt6hDa+haWpRiH4waULQwPidklHxZvw1I/eZ//4diSaYDDA61DdxayMPtcZmTLT+hxvyfVPWyRhVE0eToPvsR1SH54mrNqOIfRQXm8rtDPyob3uuZsg5ERhU8uImjmXZSXdzUeJbu7q0EfHcyjQAi9mXi6/p0edNwoDXs6Y2cvH63clr/e1zq6W2c9Cy/1MUIMym1zZsVliJ+i41iVZZQdl5FCWIsACpSmf/0KcKXu+Mbx3oBQjrKPIy/F6No149eeflV4gRM8RwcikSOuUCv/XL0/uttjy3zVCc7wC+UpO0yTuuykO72F5VA1nOpFYSOiTbdd0TctCBL9+PQucUI/2cZ+td0eOulINvr4ZSAmKEamlz8JKytMWuxXOXWgYpVYnOdCd+qtX925EV7YabUN/IJkA7E8R1XBMaZCl/gavtLwxvDw1sYrOjUfR8EpBgnDgUol7TtFcn9FRXz0skCNaF/2KIOT7hPkEhhzRmiGgtUWJG0awHwAMu1qXRwAHg3KI3qhMy3T7Xl9cGBhDM227EpiWjbjF1ij+ZcXZF15SCgKpKyv85nSmePKkhlt40EdYKx+fy9jJizD2WznNfQvNsg0nyO8Z9K5ypdCg==",
+    "hinweise": "enc:3:1MTsoqUsogud3SlnbHMaODxrSYCJb7HdXww5t57aTqf1xfQr6uwfgnKswMbaKwDlX0r8RccuBnGza00U5OiZ+vznilnfgar0e7xrCn7K/dENQkcE5p6Ytc6t4b2nV7nPxhT7WUGLvu8efLlqyGS5/fklmkaSsV78ed5GCPhB5Fy1+D1srzt8/NobF5JJYVzA4eJ9iedzlMWOryZ+sNIDO2Ixa73cEsEjJ1FoJMWX1XMqz+/MCJWEsF9YWpuaL4MLLA3GX57/D8gUhw43A1aIgqhpwMeZWtM1ZLFdaZWZ1Leudl18yfd4SFEkZJ7Do7JsgVC5hGVS/ymM5gsiZ19USnALyGp7Ek+yhQZlJqER75Y=",
+    "hausregel_text": "enc:3:YQG82W/cvKQRqgs9yuoMR/W4avrPpUSryRqzRgT1gOPIAvXFN1feH+hAGVGrNFgD5EHzkt6ZHiCN+CVGaZladZjz/icYwsGY011MbN8xfJKiD+7N4loAJbtB1n0RScFYJMPcn4eCejw3bQ3b5aqIBCKX8usH+TJUPYAexD8F8A2P2DSjFTgCL7S0Ds+2YdccRGNBWIJJMgoqMWq3qGyRcMgwe/P7UwP0s1Bj9vJuX7nxrrvWqX6+nnAie1hyBwja+w90F0T/UW4Mdb6pFpx6fuDLwIeq3T4mprICEumCxzintb086/st6e93i4SNkyprebFc9c+wyC8coVIPC+UNZygRumkO0HNZ9TeW4gD7XYZCy4nTmovbegvosTfEVOhBhOUlD+1+ARSzy4DQMlCNvXqE7vkBY/Utxaw+X8++bj0yftsFLDM0iLeFL1tmzOc4nnV2bpSJGgNipLEb0y2NyV4Y+7sAg6vhiBeQJaDbR0sWFov2IPX0LzVQG3iQCJmvHj8=",
+    "hausregel_quelle": "Hausregel-Dokument „Zeit, Magie & Balancing“, S. 1"
+  }
+]

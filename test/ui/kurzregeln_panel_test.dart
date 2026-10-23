@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:dsa_heldenverwaltung/catalog/kurzregel_def.dart';
 import 'package:dsa_heldenverwaltung/catalog/kurzregel_loader.dart';
 import 'package:dsa_heldenverwaltung/state/kurzregel_providers.dart';
+import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/kurzregeln_panel.dart';
 
 /// Erfundene Eintraege: geprueft werden Anzeige und Bedienung.
@@ -156,6 +157,42 @@ void main() {
       findsNWidgets(2),
     );
     expect(find.text('Quelle: Testbuch, S. 12'), findsOneWidget);
+  });
+
+  testWidgets('echtes Asset ohne Passwort: Liste mit Themen, Texte gesperrt', (
+    tester,
+  ) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(800, 900);
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [catalogContentPasswordProvider.overrideWithValue(null)],
+        child: const MaterialApp(home: Scaffold(body: KurzregelnPanel())),
+      ),
+    );
+    // rootBundle liest echt asynchron; im Fake-Async-Test braucht das echte Zeit.
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 300)),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Die Regeltexte sind gesperrt.'), findsOneWidget);
+    expect(find.byKey(const ValueKey('kurzregeln-thema-kampf')), findsOne);
+    expect(find.byKey(const ValueKey('kurzregeln-thema-magie')), findsOne);
+
+    await tester.enterText(
+      find.byKey(const ValueKey('kurzregeln-suchfeld')),
+      'Wuchtschlag',
+    );
+    await tester.pumpAndSettle();
+    // Titel und Schlagworte sind Klartext und damit auch gesperrt auffindbar.
+    expect(
+      find.byKey(const ValueKey('kurzregel-manoever_wuchtschlag')),
+      findsOne,
+    );
+    expect(tester.takeException(), isNull);
   });
 
   for (final breite in <double>[320, 390]) {
