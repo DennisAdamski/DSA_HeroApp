@@ -72,6 +72,8 @@ Drei Optionen:
 
 Urheberrecht: Volltexte offizieller Regelwerke sind für den Privatgebrauch auf dem eigenen Gerät unkritisch, dürfen aber nicht in Builds/Syncs wandern. Option A bleibt eine lokale, nutzerseitige Datenquelle; Option C sollte auf eigene Zusammenfassungen und Hausregeln beschränkt bleiben (Verschlüsselungsmuster existiert bereits). Hinweis: Ich bin kein Anwalt — im Zweifel die Fan-Richtlinien von Ulisses prüfen.
 
+**Option C – Stand:** umgesetzt als Reiter „Kurzregeln“ mit verschlüsseltem Asset `kurzregeln.json` und Quellenpflicht je Eintrag (67 Einträge); Redaktion und Grenzen siehe [kurzregeln_redaktion.md](kurzregeln_redaktion.md).
+
 **Web-Erweiterung von Option A:** Im Browser gibt es weder `dart:ffi` noch einen Nutzer-lokalen Standardpfad. Die Web-Variante nutzt `package:sqlite3/wasm.dart` (WebAssembly-Build von SQLite, `web/sqlite3.wasm`) mit einer `IndexedDbFileSystem`-Persistenz. Der Nutzer lädt die am Desktop mit `dsa-rules-cli refresh` erzeugte `index.sqlite` einmalig über einen Datei-Upload in der App hoch (`lib/data/rules_search/rules_index_search_web.dart`); sie bleibt danach origin-gebunden im Browser gespeichert und muss nicht bei jedem Seitenaufruf erneut hochgeladen werden. Es findet **keine** Kopplung an bestehende Cloud-Sync-Mechanismen (Helden-Sync etc.) statt — der Regeltext bleibt rein nutzerseitig auf dem jeweiligen Gerät/Browser, damit er nicht unbeabsichtigt zu einem Verbreitungsweg geschützter Volltexte wird. Eine serverseitige Reindexierung im Browser ist nicht möglich; Aktualisierungen erfordern weiterhin einen Desktop-Lauf plus manuellen Re-Upload.
 
 ## 3. Umsetzungsreihenfolge

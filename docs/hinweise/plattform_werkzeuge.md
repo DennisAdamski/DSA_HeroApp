@@ -98,3 +98,13 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   sobald `RulesIndexSyncState.revision` steigt. Der NAS-Weg bleibt fuer Builds
   ohne Cloud-URL bestehen. **Nicht geprueft:** der echte Lauf gegen Firebase
   (Deploy, Secret, Signierrecht) und das Entpacken im Browser.
+- Das Kurzregel-Kompendium (SPIEL-04, Option C) liefert eigene Kurzfassungen
+  häufiger Regeln als verschlüsseltes Asset `kurzregeln.json` (67 Einträge,
+  jeder mit Buch- und Seitenbeleg). Es ist der Standardreiter „Kurzregeln“ des
+  Regel-Nachschlags (`RegelnNachschlagDialog`) und läuft offline auf allen
+  Plattformen; der Einstieg erscheint daher auch auf Mobil
+  (`isRulesLookupSupported()` ist immer wahr, nur der Reiter „Wissensbasis“
+  hängt an `rulesIndexSearchSupported()`) und weiter erst nach dem Entsperren.
+  Hausregeln stehen getrennt von der offiziellen Regel. Aufbau,
+  Redaktionsablauf und Seitenversatz der Belege:
+  [kurzregeln_redaktion.md](../kurzregeln_redaktion.md).

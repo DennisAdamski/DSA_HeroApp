@@ -172,7 +172,8 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   Buchungsfunktion.
 - Geschuetzte Katalog-Felder (Wirkung/Varianten von Zaubern, Erklaerungstexte
   von Manoevern sowie von Kampf-, allgemeinen, karmalen und magischen
-  Sonderfertigkeiten) sind v3-verschluesselt
+  Sonderfertigkeiten, `kurztext`/`hinweise`/`hausregel_text` des
+  Kurzregel-Kompendiums) sind v3-verschluesselt
   (AES-GCM, globaler Salt im Manifest `catalog_salt_v3`). Beim Unlock
   entschluesselt `decryptedCatalogSourceDataProvider` den ganzen Katalog
   einmal — Detail in `docs/technical_overview.md` Abschnitt 5.3. Passwoerter
