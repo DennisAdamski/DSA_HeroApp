@@ -176,12 +176,22 @@ weiter auf die alte Fassung. Ohne `--upload` läuft nichts nach außen.
 2. Die Function braucht das Recht, URLs zu signieren: ihrem Dienstkonto die
    Rolle `Service Account Token Creator` auf sich selbst geben, sonst meldet sie
    `503 SERVICE_UNAVAILABLE`.
-3. Einschalten: Parameter `RULES_INDEX_TEST_ENABLED` und
-   `RULES_INDEX_PRODUCTION_ENABLED` (Standard `false`), dann
-   `firebase deploy --only functions,storage`.
+3. Einschalten: `RULES_INDEX_TEST_ENABLED=true` bzw.
+   `RULES_INDEX_PRODUCTION_ENABLED=true` in `functions/.env.heldensync-ccf0b`
+   eintragen (Standard `false`, wie beim Feedbackdienst), dann **gezielt**
+   deployen, nie pauschal (siehe [feedback_betrieb.md](feedback_betrieb.md)):
+   `firebase deploy --only storage`,
+   `firebase deploy --only functions:rulesIndexApiTest`, später
+   `firebase deploy --only functions:rulesIndexApi`.
 4. Die Builds tragen die URL über `--dart-define=RULES_INDEX_API_URL=...`
    (`flutter-tests.yml`, `tool/deploy_web.ps1`); ein Build ohne URL hat nur den
    manuellen Weg.
+
+App Check gilt wie beim Feedbackdienst: Windows kennt derzeit nur den
+Debugprovider, der Cloud-Weg läuft dort nicht; Windows nutzt weiter den lokal
+gebauten Index. Beim lokalen Web-Debuggen (`localhost:5000`) muss das
+Debug-Token der Sitzung in der Firebase-Konsole registriert sein, sonst liefert
+App Check 403 und die Function lehnt ab.
 
 Grenzen: Wer das Katalogpasswort und ein bestätigtes Konto hat, kommt an die
 Texte, das ist dasselbe Vertrauensmodell wie beim verschlüsselten Katalog. Der
