@@ -5,10 +5,10 @@ Stand: 23. Oktober 2026
 ## Ergebnis
 
 Die maschinenlesbare Inventur unter `tool/rule_test_evidence.json` erfasst alle
-196 Testdateien unter `test/rules/` und `test/catalog/`.
+209 Test- und thematische Case-Dateien unter `test/rules/` und `test/catalog/`.
 
 - 17 technische Katalogverträge sind als `product_contract` bestätigt.
-- 179 Dateien sind als `conflict` markiert.
+- 192 Dateien sind als `conflict` markiert.
 - Es gibt keine nicht inventarisierten oder als `unreviewed` geführten Dateien.
 
 `conflict` bedeutet in diesem Audit nicht automatisch, dass die implementierte

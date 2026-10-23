@@ -34,6 +34,27 @@ class RuleTestEvidenceValidationTest(unittest.TestCase):
         errors = validate_inventory(self.root, self._write_inventory(None))
         self.assertTrue(any("nicht inventarisiert" in error for error in errors))
 
+    def test_extracted_case_file_must_be_inventoried(self) -> None:
+        (self.root / "test" / "rules" / "sample_cases.dart").write_text(
+            "part of 'sample_test.dart';\n",
+            encoding="utf-8",
+        )
+        errors = validate_inventory(
+            self.root,
+            self._write_inventory(
+                {
+                    "kind": "product_contract",
+                    "status": "verified",
+                    "summary": "Beispiel",
+                    "sources": [],
+                }
+            ),
+        )
+        self.assertTrue(
+            any("sample_cases.dart" in error for error in errors),
+            errors,
+        )
+
     def test_unknown_kind_is_rejected(self) -> None:
         errors = validate_inventory(
             self.root,

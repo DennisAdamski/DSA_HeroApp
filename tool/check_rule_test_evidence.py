@@ -18,10 +18,11 @@ def _test_paths(root: Path) -> set[str]:
     for folder in (root / "test" / "rules", root / "test" / "catalog"):
         if not folder.exists():
             continue
-        paths.update(
-            path.relative_to(root).as_posix()
-            for path in folder.rglob("*_test.dart")
-        )
+        for pattern in ("*_test.dart", "*_cases.dart"):
+            paths.update(
+                path.relative_to(root).as_posix()
+                for path in folder.rglob(pattern)
+            )
     return paths
 
 
