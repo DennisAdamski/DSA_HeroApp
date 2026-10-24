@@ -5,16 +5,10 @@ on:
     branches:
       - main
       - test
-    paths-ignore:
-      - '**/*.md'
-      - 'docs/**'
   pull_request:
     branches:
       - main
       - test
-    paths-ignore:
-      - '**/*.md'
-      - 'docs/**'
 
   workflow_call:
     inputs:
@@ -26,6 +20,11 @@ on:
         description: Zielbranch der wiederverwendeten CI
         required: true
         type: string
+      run_full_suite:
+        description: Produkt-CI statt nur stabile Gates ausfuehren
+        required: false
+        default: true
+        type: boolean
     secrets:
       FIREBASE_SERVICE_ACCOUNT_HELDENSYNC_CCF0B:
         required: true
@@ -38,9 +37,47 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  changes:
+    name: Relevante Aenderungen bestimmen
+    runs-on: ubuntu-latest
+    outputs:
+      relevant: ${{ steps.detect.outputs.relevant }}
+
+    steps:
+      - name: Repository auschecken
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+          fetch-depth: 0
+
+      - name: Geaenderte Pfade einordnen
+        id: detect
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BEFORE_SHA: ${{ github.event.before }}
+          CURRENT_SHA: ${{ inputs.ref || github.sha }}
+          BASE_REF: ${{ github.base_ref }}
+          REUSABLE_RELEVANT: ${{ inputs.run_full_suite }}
+        run: |
+          if [ "$EVENT_NAME" = "workflow_call" ]; then
+            relevant="$REUSABLE_RELEVANT"
+          else
+            if [ "$EVENT_NAME" = "pull_request" ]; then
+              changed_files="$(git diff --name-only "origin/$BASE_REF"...HEAD)"
+            elif printf '%s' "$BEFORE_SHA" | grep -Eq '^0+$'; then
+              changed_files="$(git show --pretty='' --name-only "$CURRENT_SHA")"
+            else
+              changed_files="$(git diff --name-only "$BEFORE_SHA" "$CURRENT_SHA")"
+            fi
+            relevant="$(printf '%s\n' "$changed_files" | python tool/ci_relevant_changes.py)"
+          fi
+          echo "relevant=$relevant" >> "$GITHUB_OUTPUT"
+
   feedback-backend:
     name: Feedback-Backend
     runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.relevant == 'true'
 
     steps:
       - name: Repository auschecken
@@ -72,6 +109,8 @@ jobs:
   analyze:
     name: Statische Analyse & Lint
     runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.relevant == 'true'
 
     steps:
       - name: Repository auschecken
@@ -98,6 +137,8 @@ jobs:
   test-shard:
     name: Test-Shard ${{ matrix.shard.label }}
     runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.relevant == 'true'
     strategy:
       fail-fast: false
       matrix:
@@ -157,18 +198,26 @@ jobs:
   test:
     name: Unit- & Widget-Tests
     if: always()
-    needs: test-shard
+    needs: [changes, test-shard]
     runs-on: ubuntu-latest
 
     steps:
       - name: Alle Test-Shards bestaetigen
         env:
+          RELEVANT: ${{ needs.changes.outputs.relevant }}
           SHARD_RESULT: ${{ needs.test-shard.result }}
-        run: test "$SHARD_RESULT" = "success"
+        run: |
+          if [ "$RELEVANT" != "true" ]; then
+            echo "Nur Dokumentation geaendert; Flutter-Tests entfallen."
+            exit 0
+          fi
+          test "$SHARD_RESULT" = "success"
 
   loc-budget:
     name: LOC-Budget-Pruefung (Screens ≤ 700 Zeilen)
     runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.relevant == 'true'
 
     steps:
       - name: Repository auschecken
@@ -187,6 +236,7 @@ jobs:
       - name: Testwerkzeuge und Regeltest-Inventur pruefen
         run: |
           python -m unittest \
+            tool/test_ci_relevant_changes.py \
             tool/test_flutter_ci_structure.py \
             tool/test_rule_test_evidence.py \
             tool/test_summarize_flutter_tests.py
@@ -198,7 +248,8 @@ jobs:
   web-build:
     name: Web-Release-Build
     runs-on: ubuntu-latest
-    needs: analyze
+    needs: [changes, analyze]
+    if: needs.changes.outputs.relevant == 'true'
     steps:
       - uses: actions/checkout@v7
         with:
@@ -265,8 +316,8 @@ jobs:
 
   deploy:
     name: Firebase Hosting veröffentlichen
-    if: github.event_name == 'push' && (inputs.branch == '' || inputs.branch == 'test')
-    needs: [feedback-backend, analyze, test, loc-budget, web-build]
+    if: needs.changes.outputs.relevant == 'true' && github.event_name == 'push' && (inputs.branch == '' || inputs.branch == 'test')
+    needs: [changes, feedback-backend, analyze, test, loc-budget, web-build]
     runs-on: ubuntu-latest
     # Serialisierung verhindert parallele Veröffentlichungen auf dieselbe Site.
     concurrency:
@@ -290,6 +341,11 @@ jobs:
           current_sha="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/$BRANCH" --jq '.object.sha')"
           if [ "$current_sha" = "$EXPECTED_SHA" ]; then
             echo "deploy=true" >> "$GITHUB_OUTPUT"
+          elif git fetch --no-tags origin "$current_sha" && \
+              git merge-base --is-ancestor "$EXPECTED_SHA" "$current_sha" && \
+              [ "$(git diff --name-only "$EXPECTED_SHA" "$current_sha" | python tool/ci_relevant_changes.py)" = "false" ]; then
+            echo "deploy=true" >> "$GITHUB_OUTPUT"
+            echo "Seit dem geprueften Stand wurde nur Dokumentation geaendert."
           else
             echo "deploy=false" >> "$GITHUB_OUTPUT"
             echo "Überholter Branch-Stand: Veröffentlichung übersprungen."

@@ -22,8 +22,12 @@ void main() {
       // Provider beim Sync-Button-Tap), auch wenn dieser Test den Button
       // nicht betätigt und daher keine Provider-Overrides benötigt.
       await tester.pumpWidget(
-        const ProviderScope(
-          child: MaterialApp(home: Scaffold(body: RulesLookupDialog())),
+        ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+              body: RulesLookupDialog(oeffneIndex: () async => null),
+            ),
+          ),
         ),
       );
 
