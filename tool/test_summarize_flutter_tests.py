@@ -16,6 +16,18 @@ class FlutterTestReportSummaryTest(unittest.TestCase):
                 "test": {"id": 2, "suiteID": 1, "name": "a"},
             },
             {"type": "testDone", "time": 2010, "testID": 2, "result": "success"},
+            {
+                "type": "testStart",
+                "time": 2020,
+                "test": {"id": 3, "suiteID": 1, "name": "skip"},
+            },
+            {
+                "type": "testDone",
+                "time": 2020,
+                "testID": 3,
+                "result": "success",
+                "skipped": True,
+            },
             {"type": "done", "time": 2100, "success": True},
         ]
         with tempfile.TemporaryDirectory() as directory:
@@ -29,6 +41,7 @@ class FlutterTestReportSummaryTest(unittest.TestCase):
 
         self.assertIn("Shard 2/4", summary)
         self.assertIn("1 erfolgreich", summary)
+        self.assertIn("1 übersprungen", summary)
         self.assertIn("2.10 s", summary)
         self.assertIn("test/a_test.dart", summary)
         self.assertIn("2.00 s", summary)

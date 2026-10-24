@@ -47,7 +47,10 @@ def summarize_report(path: Path, *, shard_label: str) -> str:
                 suite_durations[suites.get(suite_id, "unbekannte Suite")] += max(
                     0, event.get("time", 0) - started_ms
                 )
-            counts[event.get("result", "unknown")] += 1
+            if event.get("skipped", False):
+                counts["skipped"] += 1
+            else:
+                counts[event.get("result", "unknown")] += 1
         elif event_type == "done":
             total_ms = event.get("time", total_ms)
 
