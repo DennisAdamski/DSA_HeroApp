@@ -16,11 +16,15 @@ class FlutterCiStructureTest(unittest.TestCase):
         self.workflow = WORKFLOW.read_text(encoding="utf-8")
         self.sync_workflow = SYNC_WORKFLOW.read_text(encoding="utf-8")
 
-    def test_four_native_flutter_shards_are_configured(self) -> None:
+    def test_four_file_level_flutter_shards_are_configured(self) -> None:
         indices = re.findall(r"^\s+- index: (\d+)$", self.workflow, re.MULTILINE)
         self.assertEqual(["0", "1", "2", "3"], indices)
-        self.assertIn("--total-shards 4", self.workflow)
-        self.assertIn("--shard-index ${{ matrix.shard.index }}", self.workflow)
+        self.assertNotIn(
+            "flutter test --no-pub \\\n            --total-shards",
+            self.workflow,
+        )
+        self.assertIn("python tool/flutter_test_shards.py", self.workflow)
+        self.assertIn('flutter test --no-pub "${test_files[@]}"', self.workflow)
         self.assertIn("fail-fast: false", self.workflow)
 
     def test_tests_do_not_wait_for_analysis_and_stable_gate_remains(self) -> None:

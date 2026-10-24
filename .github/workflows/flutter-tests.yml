@@ -171,9 +171,11 @@ jobs:
       - name: Tests ausfuehren
         run: |
           mkdir -p reports
-          flutter test --no-pub \
+          mapfile -t test_files < <(python tool/flutter_test_shards.py \
             --total-shards 4 \
-            --shard-index ${{ matrix.shard.index }} \
+            --shard-index ${{ matrix.shard.index }})
+          test "${#test_files[@]}" -gt 0
+          flutter test --no-pub "${test_files[@]}" \
             --file-reporter "json:reports/flutter-tests-${{ matrix.shard.index }}.json"
 
       - name: Laufzeit zusammenfassen
@@ -238,6 +240,7 @@ jobs:
           python -m unittest \
             tool/test_ci_relevant_changes.py \
             tool/test_flutter_ci_structure.py \
+            tool/test_flutter_test_shards.py \
             tool/test_rule_test_evidence.py \
             tool/test_summarize_flutter_tests.py
           python tool/check_rule_test_evidence.py
