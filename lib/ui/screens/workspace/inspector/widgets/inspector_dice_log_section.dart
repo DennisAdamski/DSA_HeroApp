@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:dsa_heldenverwaltung/domain/dice_log_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/zuletzt_gewuerfelt_rules.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/inspector/widgets/dice_log_abende.dart';
 import 'package:dsa_heldenverwaltung/ui/theme/codex_theme.dart';
 
@@ -56,19 +57,8 @@ enum DiceLogFilter {
 /// Nur die Proben, die die Probensuche selbst erzeugt: Eigenschafts-, Talent-
 /// und Zauberproben sowie die Kampf-Schnellproben. Schaden, Rast, Gefechts-
 /// aufträge, Summenwürfe und Buchungen haben keinen eigenen Probendialog.
-bool diceLogEntryKannWiederholtWerden(DiceLogEntry entry) {
-  if (entry.isNeutral || entry.buchungId != null) return false;
-  final passend = switch (entry.type) {
-    ProbeType.attribute => 'Eigenschaftsprobe: ',
-    ProbeType.talent => 'Talentprobe: ',
-    ProbeType.spell => 'Zauberprobe: ',
-    ProbeType.combatAttack ||
-    ProbeType.combatParry ||
-    ProbeType.dodge => 'Schnellprobe: ',
-    _ => null,
-  };
-  return passend != null && entry.title.startsWith(passend);
-}
+bool diceLogEntryKannWiederholtWerden(DiceLogEntry entry) =>
+    probeEintragIstWiederholbar(entry);
 
 /// Liste der zuletzt protokollierten Wuerfelproben mit Filter-Chips.
 ///

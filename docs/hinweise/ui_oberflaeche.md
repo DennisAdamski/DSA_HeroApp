@@ -339,6 +339,17 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   Treffer im eigenen Abenteuer bearbeitet man direkt, Treffer in anderen öffnen
   deren Blatt (im Abschnitt über `onAbenteuerOeffnen` und damit den
   Editorschutz, im Blatt direkt). Die Suche liest nur und schreibt nie.
+  **Zuletzt gewürfelt (SPIEL-01, Teilstand):** Unter den Schnellaktionen
+  steht ein Streifen mit bis zu `kZuletztGewuerfeltMax` (6) Marken
+  (`KartoZuletztGewuerfelt`, `karto_zuletzt_gewuerfelt.dart`). Welche Proben
+  erscheinen, entscheidet `zuletztGewuerfelteProben`
+  (`lib/rules/derived/zuletzt_gewuerfelt_rules.dart`): neueste zuerst, jede
+  Probe (Art und Titel) einmal, nur wiederholbare Einträge
+  (`probeEintragIstWiederholbar`, dieselbe Regel wie der Wiederholen-Knopf im
+  Protokoll). Ein Tipp öffnet über die Brücke (`probeWiederholen`) den normalen
+  Probendialog mit den aktuellen Werten. Der Streifen speichert und
+  synchronisiert nichts, er liest nur das Würfelprotokoll (höchstens
+  `HeroState.diceLogMax` Einträge); ohne wiederholbaren Wurf entfällt er.
   **Würfelprotokoll (SPIEL-05):** `InspectorDiceLogSection` ist der gemeinsame
   Baustein von Inspector-Probe-Tab und Spielansicht (über die Brücke
   `spielProtokoll`). Die Spielansicht zeigt nur die neuesten `kProtokollKurz`

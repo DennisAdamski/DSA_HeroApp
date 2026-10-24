@@ -1,6 +1,6 @@
 # To-do-Liste: Weiterentwicklung der Heldenverwaltung
 
-Stand: 23.10.2026. Diese Liste führt **nur Status und offene Punkte**. Abgenommene
+Stand: 24.10.2026. Diese Liste führt **nur Status und offene Punkte**. Abgenommene
 Aufgaben und der Verlauf der Teilstände stehen unverändert im
 [Archiv](archiv/README.md); Verweise wie „ARCH-05 Teilstand (3)“ in Code und
 Dokumentation meinen den dortigen Text.
@@ -84,6 +84,14 @@ Teilumfang festlegen. Nach Wichtigkeit sortiert.
   Proben unter den Schnellaktionen, Vor-/Nachteile nach unten. Offen: Umfang und
   Persistenz der Favoriten (siehe „Persönliche Favoriten“ in
   [redesign_acceptance.md](redesign_acceptance.md)), Sync.
+  **Teilstand 24.10.2026:** Streifen „Zuletzt gewürfelt“ (bis zu sechs
+  verschiedene Proben, neueste zuerst) unter den Schnellaktionen der
+  Spielansicht, abgeleitet aus dem Würfelprotokoll; ein Tipp wiederholt die
+  Probe im normalen Probendialog. Ohne neue Persistenz und ohne Sync
+  (`zuletzt_gewuerfelt_rules.dart`, Details in
+  [ui_oberflaeche.md](hinweise/ui_oberflaeche.md)). **Offen:** angepinnte
+  Favoriten (Persistenz und Sync), Vor-/Nachteile weiter nach unten rücken;
+  das Protokoll hält nur 50 Einträge, ältere Proben fallen aus dem Streifen.
 - [ ] **SPIEL-02 — Gegenstände und Geld im Spiel.** Beobachtung: Auf der Spielen-Seite
   weder Dukaten noch Munition, Tränke oder Proviant; zur Belastung nur der
   Eintrag im Zustand-Block. Vorschlag: Block „Dabei“ mit Geld, Munition und
