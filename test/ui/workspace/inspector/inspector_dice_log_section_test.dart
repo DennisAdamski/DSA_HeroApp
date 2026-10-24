@@ -412,4 +412,41 @@ void main() {
     expect(find.textContaining('Würfe: 15'), findsOneWidget);
     expect(find.textContaining('Gesamt: 15'), findsOneWidget);
   });
+
+  group('knappe Fassung (hoechstens)', () {
+    List<DiceLogEntry> sieben() => [
+      for (var i = 0; i < 7; i++)
+        _entry(hour: 8, minute: i, success: true, title: 'Wurf $i'),
+    ];
+
+    testWidgets('zeigt nur die neuesten und keine Filter', (tester) async {
+      await tester.pumpWidget(
+        _wrap(
+          SingleChildScrollView(
+            child: InspectorDiceLogSection(entries: sieben(), hoechstens: 5),
+          ),
+        ),
+      );
+      for (var i = 2; i < 7; i++) {
+        expect(find.text('Wurf $i'), findsOneWidget);
+      }
+      expect(find.text('Wurf 0'), findsNothing);
+      expect(find.text('Wurf 1'), findsNothing);
+      expect(find.byKey(const ValueKey('dice-log-filter-all')), findsNothing);
+    });
+
+    testWidgets('ohne Grenze bleibt alles wie bisher', (tester) async {
+      await tester.pumpWidget(
+        _wrap(
+          SingleChildScrollView(
+            child: InspectorDiceLogSection(entries: sieben()),
+          ),
+        ),
+      );
+      for (var i = 0; i < 7; i++) {
+        expect(find.text('Wurf $i'), findsOneWidget);
+      }
+      expect(find.byKey(const ValueKey('dice-log-filter-all')), findsOneWidget);
+    });
+  });
 }

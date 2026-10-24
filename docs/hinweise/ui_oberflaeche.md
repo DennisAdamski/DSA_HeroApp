@@ -68,7 +68,11 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   Providerbeobachtung aufmacht. Die Reihenfolge folgt der Häufigkeit am
   Tisch: Schnellaktionen (ganz oben), Ressourcen, Eigenschaften, dann
   einspaltig Kampf, Effekte, Zustand (und Begleiter), danach Abenteuer samt
-  Standort, Vor- und Nachteile, Würfelprotokoll. Die Schnellaktionen enthalten „Regeln“ (Key
+  Standort, Vor- und Nachteile, Würfelprotokoll. Jede Schnellaktion trägt eine
+  eigene Signalfarbe (`kartoSchnellaktionStil` in `karto_spielaktionen.dart`:
+  Gefecht `messing`, Probe `meer`, Regeln `kueste`, Rast `moos`, Schaden
+  `siegel`; Tönung 14 % auf `feld`, Symbol und Kante in der Farbe, Beschriftung
+  `schrift`). Die Schnellaktionen enthalten „Regeln“ (Key
   `karto-spiel-regeln`): der vorhandene Regelnachschlag über die Brücke
   (`regelnNachschlagen`, `regelnNachschlagenVerfuegbar`); wo es keinen
   Regelindex gibt (Mobile), entfällt der Knopf. Die Eigenschaften stehen als
@@ -133,7 +137,14 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   gewürfelt und protokolliert wird über `showLoggedProbeDialog` — UI2 kennt
   keine W20-/W6-Simulation. Strg/Cmd+K öffnet dieselbe Suche, aber nur im
   Bereich Spielen: der `IndexedStack` hält die anderen Bereiche am Leben,
-  deshalb entscheidet der aktive Bereich, nicht die Position im Baum.
+  deshalb entscheidet der aktive Bereich, nicht die Position im Baum. Das
+  Kürzel hängt an `KartoProbenkuerzel` (`lib/ui2/widgets/karto_probenkuerzel.dart`),
+  einem `HardwareKeyboard`-Handler statt `CallbackShortcuts`: im Browser fiel der
+  Fokus nach einem Klick auf freie Fläche aus dem Bereich, Flutter behandelte
+  die Taste nicht, und der Browser öffnete seine eigene Suche. Der Handler
+  greift nur, solange sein Bereich aktiv ist und seine Route oben liegt (nicht
+  unter Dialogen oder dem Gefecht, das dasselbe Widget nutzt); Strg+Umschalt+K
+  bleibt dem Browser.
 - `InspectorArcaneEffectsBlock` ist Consumer-Wrapper um die darstellende
   `InspectorArcaneEffectsView`. Die Chipliste baut
   `lib/rules/derived/active_spell_display_rules.dart` — eigene Datei, weil
@@ -330,7 +341,11 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   Editorschutz, im Blatt direkt). Die Suche liest nur und schreibt nie.
   **Würfelprotokoll (SPIEL-05):** `InspectorDiceLogSection` ist der gemeinsame
   Baustein von Inspector-Probe-Tab und Spielansicht (über die Brücke
-  `spielProtokoll`). Spielabende: `gruppiereNachSpielabend`
+  `spielProtokoll`). Die Spielansicht zeigt nur die neuesten `kProtokollKurz`
+  (5) Würfe ohne Filter (`hoechstens`); „Alle anzeigen (n)“ öffnet die ganze
+  Historie samt Filtern als Blatt (`zeigeWuerfelprotokoll`,
+  `karto_wuerfelprotokoll.dart`), das `heroComputedProvider` selbst liest.
+  Der Inspector-Tab der klassischen Oberfläche bleibt vollständig. Spielabende: `gruppiereNachSpielabend`
   (`dice_log_abende.dart`) teilt das Protokoll bei mehr als sechs Stunden Pause
   (`kDiceLogAbendPause`); die Abende stehen fest, **bevor** gefiltert wird, ein
   Filter verschluckt also keine Pause. Überschriften („Heute“, „Gestern“, „Fr,

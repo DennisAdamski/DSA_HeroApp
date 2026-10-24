@@ -67,7 +67,10 @@ abstract interface class KartoBestandsAdapter {
   });
 
   /// Baut das vorhandene Würfelprotokoll samt seiner Filter.
-  Widget spielProtokoll(HeroComputedSnapshot werte);
+  ///
+  /// Mit [hoechstens] nur die neuesten so vielen Würfe, ohne Filter – die
+  /// knappe Fassung der Spielansicht.
+  Widget spielProtokoll(HeroComputedSnapshot werte, {int? hoechstens});
 
   /// Baut Belastung, Wunden und Statuswerte aus denselben Werten.
   Widget spielZustand({

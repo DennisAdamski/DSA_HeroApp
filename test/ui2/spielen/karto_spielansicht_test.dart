@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:dsa_heldenverwaltung/domain/dice_log_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_adventure_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_note_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_resource_activation_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
+import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_base_providers.dart';
@@ -282,6 +284,92 @@ void main() {
       expect(tester.takeException(), isNull);
     });
   }
+
+  group('Würfelprotokoll', () {
+    List<DiceLogEntry> wuerfe(int anzahl) => [
+      for (var i = 0; i < anzahl; i++)
+        DiceLogEntry(
+          timestamp: DateTime.utc(2026, 9, 20, 20, i),
+          type: ProbeType.attribute,
+          title: 'Wurf $i',
+          subtitle: 'MU',
+          success: true,
+          diceValues: const [5],
+        ),
+    ];
+
+    testWidgets('zeigt knapp fünf und öffnet die ganze Historie', (
+      tester,
+    ) async {
+      final bestand = TestBestand();
+      await zeige(
+        tester,
+        held: weltlich(),
+        bestand: bestand,
+        zustaende: {
+          'praiodan': const HeroState.empty().copyWith(diceLog: wuerfe(7)),
+        },
+      );
+      expect(bestand.protokollGrenzen, everyElement(5));
+      final alle = find.byKey(
+        const ValueKey<String>('karto-spiel-protokoll-alle'),
+      );
+      expect(find.text('Alle anzeigen (7)'), findsOneWidget);
+      await tester.ensureVisible(alle);
+      await tester.tap(alle);
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey<String>('karto-spiel-protokoll-blatt')),
+        findsOneWidget,
+      );
+      expect(bestand.protokollGrenzen.last, isNull);
+      await tester.tap(find.byTooltip('Schließen'));
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey<String>('karto-spiel-protokoll-blatt')),
+        findsNothing,
+      );
+    });
+
+    testWidgets('bis fünf Würfe gibt es nichts zu öffnen', (tester) async {
+      await zeige(
+        tester,
+        held: weltlich(),
+        zustaende: {
+          'praiodan': const HeroState.empty().copyWith(diceLog: wuerfe(5)),
+        },
+      );
+      expect(
+        find.byKey(const ValueKey<String>('karto-spiel-protokoll-alle')),
+        findsNothing,
+      );
+    });
+  });
+
+  testWidgets('jede Schnellaktion trägt ihre eigene Farbe', (tester) async {
+    await zeige(
+      tester,
+      held: weltlich(),
+      breite: 1024,
+      regelnFreigeschaltet: true,
+    );
+    final farben = <Color?>{
+      for (final name in [
+        'karto-spiel-gefecht',
+        'karto-spiel-probe',
+        'karto-spiel-regeln',
+        'karto-spiel-rast',
+        'karto-spiel-schaden',
+      ])
+        tester
+            .widget<ButtonStyleButton>(find.byKey(ValueKey<String>(name)))
+            .style!
+            .iconColor!
+            .resolve(<WidgetState>{}),
+    };
+    expect(farben, hasLength(5));
+    expect(farben, isNot(contains(null)));
+  });
 
   group('Seitenspalte', () {
     // Gemessen wird die Breite der Ansicht; im Workspace zieht die
