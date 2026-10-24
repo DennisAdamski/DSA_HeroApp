@@ -986,8 +986,67 @@ class HeroActions {
     return code.text;
   }
 
+  /// Macht [gruppenCode] zur primären Gruppe des Helden (ARCH-04).
+  ///
+  /// Ein Held kann mehreren Gruppen angehören, folgt aber nur dem Regelprofil
+  /// der primären. Die bisherige primäre Gruppe wird abgewählt. Das Regelprofil
+  /// des Helden bleibt unberührt: Eine abweichende Vorgabe erscheint erst als
+  /// Vorschau. Nur Konto-Gruppen können primär sein.
+  Future<void> setzePrimaereGruppe({
+    required String heroId,
+    required String gruppenCode,
+  }) async {
+    final hero = await _loadHeroById(heroId);
+    final ziel = hero.gruppen
+        .where((g) => g.gruppenCode == gruppenCode)
+        .firstOrNull;
+    if (ziel == null) return;
+    if (!ziel.kontoGruppe) {
+      throw const GruppenException(_altgruppeMeldung);
+    }
+    if (ziel.primaer && hero.gruppen.where((g) => g.primaer).length == 1) {
+      return;
+    }
+    await saveHero(
+      hero.copyWith(
+        gruppen: [
+          for (final g in hero.gruppen)
+            g.primaer != (g.gruppenCode == gruppenCode)
+                ? g.copyWith(primaer: g.gruppenCode == gruppenCode)
+                : g,
+        ],
+      ),
+    );
+  }
+
+  /// Setzt [profil] als Regelprofil-Vorgabe der Gruppe (nur Besitzer).
+  ///
+  /// Mitglieder, deren primäre Gruppe es ist, bekommen die Vorgabe als Vorschau
+  /// angeboten; kein Held wird dadurch verändert.
+  Future<void> veroeffentlicheRegelVorgabe({
+    required String gruppenCode,
+    required HeroRegelProfil profil,
+  }) async {
+    _requireGruppenSyncAvailable();
+    await _ref
+        .read(gruppenSyncServiceProvider)
+        .speichereRegelVorgabe(gruppenCode, profil);
+  }
+
+  /// Entfernt die Regelprofil-Vorgabe der Gruppe (nur Besitzer). Helden, die
+  /// sie übernommen haben, behalten ihr Profil.
+  Future<void> entferneRegelVorgabe(String gruppenCode) async {
+    _requireGruppenSyncAvailable();
+    await _ref
+        .read(gruppenSyncServiceProvider)
+        .entferneRegelVorgabe(gruppenCode);
+  }
+
   /// Verlaesst eine Gruppe. Altgruppen (gesperrter Legacy-Pfad) werden nur
   /// lokal vom Helden entfernt.
+  ///
+  /// Das Regelprofil des Helden bleibt unverändert: Auch beim Verlassen der
+  /// primären Gruppe rechnet er mit dem zuletzt aktiven Profil weiter.
   Future<void> verlasseGruppe({
     required String heroId,
     required String gruppenCode,
@@ -1223,11 +1282,17 @@ class HeroActions {
     final hero = await _loadHeroById(heroId);
     final neueGruppen = List<HeroGruppenMitgliedschaft>.from(hero.gruppen);
     final index = neueGruppen.indexWhere((g) => g.gruppenCode == info.groupId);
+    // Die erste Konto-Gruppe wird primär; jede weitere bleibt es nicht von
+    // selbst, damit ein Held nie unbemerkt die Vorgabe wechselt.
+    final ersteKontoGruppe = !neueGruppen.any(
+      (g) => g.kontoGruppe && g.primaer,
+    );
     if (index >= 0) {
       if (neueGruppen[index].kontoGruppe) return;
       neueGruppen[index] = neueGruppen[index].copyWith(
         kontoGruppe: true,
         gruppenName: info.name,
+        primaer: ersteKontoGruppe,
       );
     } else {
       neueGruppen.add(
@@ -1235,6 +1300,7 @@ class HeroActions {
           gruppenCode: info.groupId,
           gruppenName: info.name,
           kontoGruppe: true,
+          primaer: ersteKontoGruppe,
         ),
       );
     }

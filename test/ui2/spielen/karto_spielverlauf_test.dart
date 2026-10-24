@@ -183,16 +183,30 @@ void main() {
       expect(find.textContaining('Noch keine'), findsOneWidget);
     });
 
-    testWidgets('vorhandene Einträge und Filter bleiben erhalten', (
+    testWidgets('vorhandene Einträge bleiben, die Filter stehen im Blatt', (
       tester,
     ) async {
       await zeigeEcht(
         tester,
         zustand: const HeroState.empty().withAppendedDiceLogEntries([
+          for (var i = 0; i < 5; i++) eintrag('Talentprobe: Wurf $i'),
           eintrag('Eigenschaftsprobe: MU'),
         ]),
       );
+      // Knapp: die fünf neuesten, ohne Filter.
       expect(find.text('Eigenschaftsprobe: MU'), findsOneWidget);
+      expect(find.text('Talentprobe: Wurf 0'), findsNothing);
+      expect(
+        find.byKey(const ValueKey('dice-log-filter-attribute')),
+        findsNothing,
+      );
+      final alle = find.byKey(
+        const ValueKey<String>('karto-spiel-protokoll-alle'),
+      );
+      await tester.ensureVisible(alle);
+      await tester.tap(alle);
+      await tester.pumpAndSettle();
+      expect(find.text('Talentprobe: Wurf 0'), findsOneWidget);
       expect(
         find.byKey(const ValueKey('dice-log-filter-attribute')),
         findsOneWidget,

@@ -12,6 +12,7 @@ import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/state/regelprofil_providers.dart';
 import 'package:dsa_heldenverwaltung/state/regelprofil_vorschau_providers.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_overview/hero_regelprofil_gruppe.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/zustand_aendern.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/codex_section_card.dart';
 
@@ -63,7 +64,12 @@ class HeroRegelprofilSection extends ConsumerWidget {
       child: ZustandFehlerBereich(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: [const ZustandFehlerAnzeige(), inhalt],
+          children: [
+            const ZustandFehlerAnzeige(),
+            inhalt,
+            if (hero.regelProfil == null || profil != null)
+              RegelprofilGruppenVorgabeHinweis(heroId: heroId),
+          ],
         ),
       ),
     );
@@ -411,7 +417,7 @@ class _RegelprofilVorschauDialogState
                               _waehle(paket, an, profil, paketKatalog),
                   ),
                 if (v != null)
-                  _VorschauInhalt(vorschau: v)
+                  RegelprofilVorschauInhalt(vorschau: v)
                 else
                   Text(
                     vorschau.isLoading
@@ -494,10 +500,22 @@ class _ZusatzPakete extends StatelessWidget {
   }
 }
 
-class _VorschauInhalt extends StatelessWidget {
-  const _VorschauInhalt({required this.vorschau});
+/// Inhalt einer Regelprofil-Vorschau: Pakete, erworbene Fähigkeiten, Werte,
+/// Katalogeinträge und Ein-/Ausblendungen. [einleitung] ersetzt den
+/// Standardhinweis über den festgehaltenen Stand.
+class RegelprofilVorschauInhalt extends StatelessWidget {
+  /// Erstellt den Inhalt für [vorschau].
+  const RegelprofilVorschauInhalt({
+    super.key,
+    required this.vorschau,
+    this.einleitung,
+  });
 
+  /// Anzuzeigende Vorschau.
   final RegelProfilVorschau vorschau;
+
+  /// Einleitender Hinweis; `null` zeigt den Standardtext.
+  final String? einleitung;
 
   static String _wert(Object? wert) => wert == null ? '–' : '$wert';
 
@@ -535,8 +553,9 @@ class _VorschauInhalt extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Der Held rechnet noch mit dem festgehaltenen Stand. Erst „Übernehmen“ '
-          'stellt ihn auf den aktuellen Paketstand um.',
+          einleitung ??
+              'Der Held rechnet noch mit dem festgehaltenen Stand. Erst '
+                  '„Übernehmen“ stellt ihn auf den aktuellen Paketstand um.',
           style: leise,
         ),
         const SizedBox(height: 12),
@@ -621,8 +640,8 @@ class _EintragZeile extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.only(left: 12, bottom: 4),
               child: Text(
-                '${f.pfad}: ${_VorschauInhalt._wert(f.vorher)} → '
-                '${_VorschauInhalt._wert(f.nachher)}${_paket(f.paketId)}',
+                '${f.pfad}: ${RegelprofilVorschauInhalt._wert(f.vorher)} → '
+                '${RegelprofilVorschauInhalt._wert(f.nachher)}${_paket(f.paketId)}',
                 style: Theme.of(context).textTheme.bodySmall,
               ),
             ),

@@ -2842,7 +2842,9 @@ erhalten.
 Geschuetzte Felder (`PROTECTED_FIELDS` im Tool, gespiegelt in
 `test/catalog/geschuetzte_langtexte_test.dart`): `wirkung`/`variants` in
 `magie.json` sowie `erklarung_lang` in `manoever.json`, `kampf_`, `allgemeine_`,
-`karmale_` und `magische_sonderfertigkeiten.json`.
+`karmale_` und `magische_sonderfertigkeiten.json` sowie `kurztext`, `hinweise`
+und `hausregel_text` in `kurzregeln.json` (Kurzregel-Kompendium; eigener Lader
+`lib/catalog/kurzregel_loader.dart`, nicht Teil des Bulk-Decrypts).
 
 Verschluesselung und Re-Encryption der Asset-Dateien erfolgen mit
 `tool/encrypt_catalog_fields.py --format v3` (Passwort aus `docs/Passwort.env`,

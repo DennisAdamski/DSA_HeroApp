@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:dsa_heldenverwaltung/domain/dice_log_entry.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/begleiter_zustand_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ressourcen_aenderung_rules.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
@@ -67,7 +68,10 @@ abstract interface class KartoBestandsAdapter {
   });
 
   /// Baut das vorhandene Würfelprotokoll samt seiner Filter.
-  Widget spielProtokoll(HeroComputedSnapshot werte);
+  ///
+  /// Mit [hoechstens] nur die neuesten so vielen Würfe, ohne Filter – die
+  /// knappe Fassung der Spielansicht.
+  Widget spielProtokoll(HeroComputedSnapshot werte, {int? hoechstens});
 
   /// Baut Belastung, Wunden und Statuswerte aus denselben Werten.
   Widget spielZustand({
@@ -95,6 +99,15 @@ abstract interface class KartoBestandsAdapter {
     required BuildContext context,
     required WidgetRef ref,
     required String heroId,
+  });
+
+  /// Würfelt die Probe eines Protokolleintrags nochmal über den normalen
+  /// Probendialog (SPIEL-01); meldet, wenn sie nicht mehr im Bogen steht.
+  Future<void> probeWiederholen({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String heroId,
+    required DiceLogEntry eintrag,
   });
 
   /// Ob der Regelnachschlag auf dieser Plattform verfügbar ist.

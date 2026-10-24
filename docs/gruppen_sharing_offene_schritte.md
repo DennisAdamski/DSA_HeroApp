@@ -1,6 +1,6 @@
 # Sicherheitsstatus: Heldengruppen-Sharing
 
-Stand: 21. Oktober 2026.
+Stand: 22. Oktober 2026.
 
 ## Legacy-Pfad ist gesperrt
 
@@ -26,6 +26,7 @@ groups_v2/{groupId}
   hero_snapshots/{uid}       Heldenkarte des Mitglieds
   shared_heroes/{entryId}    gemeinsame Einträge (z. B. NSC-Begleiter)
   shared_info/notizen        gemeinsame Gruppennotizen
+  shared_info/regelprofil    Regelprofil-Vorgabe der Gruppe (JSON-Text `profilJson`)
   invitations/{id}           für ein späteres Backend reserviert, gesperrt
 ```
 
@@ -40,7 +41,10 @@ groups_v2/{groupId}
 - **Schreibrechte:** Gruppe und Mitgliedereinträge verwaltet der Besitzer.
   Jedes Mitglied schreibt nur die eigene Heldenkarte. Gemeinsame Einträge und
   Notizen dürfen **alle Mitglieder** anlegen, ändern und löschen; der Ersteller
-  (`createdByUid`) eines Eintrags bleibt unveränderlich.
+  (`createdByUid`) eines Eintrags bleibt unveränderlich. Die Regelprofil-Vorgabe
+  (`shared_info/regelprofil`) schreibt und löscht **nur der Besitzer**; alle
+  Mitglieder lesen sie. Ein Held übernimmt sie nie von selbst (Vorschau mit
+  „Übernehmen“, nur für seine primäre Gruppe).
 - **Austritt:** Mitglieder löschen ihren eigenen Eintrag. Der Besitzer kann nur
   die ganze Gruppe löschen und fremde Heldenkarten entfernen.
 

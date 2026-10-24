@@ -135,7 +135,8 @@ harten Regeln und den Themenindex.
   `HeroActions` (`erstelleGruppe`, `trittGruppeBei`, `syncGruppen`, …). Aufbau:
   `groups_v2/{id}` (`name`, `ownerUid`, `joinCode`) mit `members/{uid}`,
   `hero_snapshots/{uid}` (eigene Heldenkarte), `shared_heroes/{eintrag}` und
-  `shared_info/notizen`. Beitritt ohne Backend: Der teilbare Beitrittscode ist
+  `shared_info/notizen` und `shared_info/regelprofil` (Regelprofil-Vorgabe,
+  nur der Besitzer schreibt, siehe `regeln_herleitung.md`). Beitritt ohne Backend: Der teilbare Beitrittscode ist
   `<groupId>.<joinCode>` (`GruppenBeitrittscode`); die Regel `canJoinGroup`
   vergleicht den `joinCode` per `get()` mit dem Gruppendokument, das nur
   Mitglieder lesen. Der Besitzer erneuert den Code jederzeit (alte Codes

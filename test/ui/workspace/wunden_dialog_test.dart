@@ -1,9 +1,13 @@
+﻿import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
+import 'package:dsa_heldenverwaltung/domain/dice_log_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
@@ -236,6 +240,108 @@ void main() {
     expect(modifikator(tester), '-4');
   });
 
+  DiceLogEntry protokoll(String titel, ProbeType art) => DiceLogEntry(
+    timestamp: DateTime.utc(2026, 10, 23, 8),
+    type: art,
+    title: titel,
+    subtitle: '',
+    success: true,
+    diceValues: const [9, 15, 5],
+    targetValue: 10,
+  );
+
+  // Öffnet die Probe eines Protokolleintrags wie die Protokollansicht. Die
+  // Provider sind vorher geladen, weil dort der Bogen ohnehin offen ist.
+  Future<bool?> wiederhole(
+    WidgetTester tester,
+    DiceLogEntry eintrag, {
+    bool mitHinweis = false,
+  }) async {
+    late BuildContext kontext;
+    late WidgetRef bezug;
+    await zeige(
+      tester,
+      oeffnen: (context, ref) async {
+        kontext = context;
+        bezug = ref;
+        ref.listenManual(heroComputedProvider('demo'), (_, _) {});
+        ref.listenManual(heroRulesCatalogProvider('demo'), (_, _) {});
+      },
+    );
+    await tester.pumpAndSettle();
+    bool? ergebnis;
+    if (mitHinweis) {
+      unawaited(
+        wiederholeProbeMitHinweis(
+          context: kontext,
+          ref: bezug,
+          heroId: 'demo',
+          entry: eintrag,
+        ),
+      );
+    } else {
+      unawaited(
+        wiederholeProbe(
+          context: kontext,
+          ref: bezug,
+          heroId: 'demo',
+          entry: eintrag,
+        ).then((gefunden) => ergebnis = gefunden),
+      );
+    }
+    await tester.pumpAndSettle();
+    return ergebnis;
+  }
+
+  testWidgets('Nochmal würfeln: öffnet die Probe aus dem Protokoll mit den '
+      'aktuellen Werten (SPIEL-05)', (tester) async {
+    await wiederhole(
+      tester,
+      protokoll('Talentprobe: Menschenkenntnis', ProbeType.talent),
+    );
+
+    // Dieselben gesenkten Werte wie in der Schnellsuche, keine alten
+    // Modifikatoren.
+    expect(find.textContaining('KL: 10'), findsOneWidget);
+    expect(find.textContaining('CH: 12'), findsOneWidget);
+    expect(modifikator(tester), '0');
+  });
+
+  testWidgets('Nochmal würfeln: eine Eigenschaftsprobe öffnet ihren Dialog', (
+    tester,
+  ) async {
+    await wiederhole(
+      tester,
+      protokoll('Eigenschaftsprobe: CH', ProbeType.attribute),
+    );
+    expect(find.byType(Dialog), findsOneWidget);
+    expect(find.textContaining('CH'), findsWidgets);
+  });
+
+  testWidgets('Nochmal würfeln: eine unbekannte Probe öffnet nichts und '
+      'meldet das', (tester) async {
+    await wiederhole(
+      tester,
+      protokoll('Talentprobe: Drachenreiten', ProbeType.talent),
+      mitHinweis: true,
+    );
+
+    expect(find.byType(Dialog), findsNothing);
+    expect(find.textContaining('nicht wiederholen'), findsOneWidget);
+  });
+
+  testWidgets('Nochmal würfeln: Titel und Probeart müssen zusammenpassen', (
+    tester,
+  ) async {
+    // Der Titel ist eine Talentprobe, die Art ein Zauber.
+    await wiederhole(
+      tester,
+      protokoll('Talentprobe: Menschenkenntnis', ProbeType.spell),
+      mitHinweis: true,
+    );
+    expect(find.byType(Dialog), findsNothing);
+    expect(find.textContaining('nicht wiederholen'), findsOneWidget);
+  });
   testWidgets('Schnellsuche: Talentprobe mit gesenkten Werten, ohne '
       'Startabzug', (tester) async {
     await zeige(

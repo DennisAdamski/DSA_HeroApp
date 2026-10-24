@@ -328,3 +328,29 @@ test("groups_v2: gemeinsame Notizen schreiben alle Mitglieder, aber nur als Doku
   await assertFails(setDoc(notiz(member), { text: "x", unbekannt: 1 }));
   await assertFails(setDoc(notiz(stranger), { text: "x" }));
 });
+
+test("groups_v2: Regelprofil-Vorgabe schreibt nur der Besitzer, alle Mitglieder lesen", async () => {
+  await legeGruppeAn("runde-i", "owner-i", ["member-i"]);
+  const owner = alsNutzer("owner-i");
+  const member = alsNutzer("member-i");
+  const stranger = alsNutzer("stranger-i");
+  const vorgabe = (db: ReturnType<typeof alsNutzer>) =>
+    doc(db, "groups_v2", "runde-i", "shared_info", "regelprofil");
+  const profil = JSON.stringify({ formatVersion: 1, catalogVersion: "house_rules_v1", pakete: [] });
+
+  await assertFails(setDoc(vorgabe(member), { profilJson: profil }));
+  await assertFails(setDoc(vorgabe(stranger), { profilJson: profil }));
+  await assertSucceeds(setDoc(vorgabe(owner), { profilJson: profil, updatedByUid: "owner-i" }));
+  await assertSucceeds(getDoc(vorgabe(member)));
+  await assertFails(getDoc(vorgabe(stranger)));
+  // Form: nur `profilJson` als nicht leerer Text, keine fremden Felder.
+  await assertFails(setDoc(vorgabe(owner), { profilJson: "" }));
+  await assertFails(setDoc(vorgabe(owner), { profilJson: { formatVersion: 1 } }));
+  await assertFails(setDoc(vorgabe(owner), { profilJson: profil, unbekannt: 1 }));
+  // Der Besitzer schreibt keine anderen Dokumente als 'notizen' und 'regelprofil'.
+  await assertFails(setDoc(doc(owner, "groups_v2", "runde-i", "shared_info", "anderes"), { profilJson: profil }));
+  // Notizen gehen weiterhin nur mit der Notizenform.
+  await assertFails(setDoc(doc(owner, "groups_v2", "runde-i", "shared_info", "notizen"), { profilJson: profil }));
+  await assertFails(deleteDoc(vorgabe(member)));
+  await assertSucceeds(deleteDoc(vorgabe(owner)));
+});

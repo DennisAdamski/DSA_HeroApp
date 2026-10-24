@@ -7,6 +7,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_base_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_shell.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_spielansicht.dart';
@@ -20,6 +21,8 @@ void main() {
     double breite = 1440,
     HeroSheet? held,
     bool regelnVerfuegbar = true,
+    // Der Regelnachschlag erscheint erst nach dem Entsperren (SPIEL-04).
+    bool regelnFreigeschaltet = true,
   }) async {
     tester.view.devicePixelRatio = 1;
     tester.view.physicalSize = Size(breite, 1000);
@@ -32,6 +35,8 @@ void main() {
           FakeRepository(heroes: [held ?? testHero()]),
         ),
         rulesCatalogProvider.overrideWith((ref) async => testCatalog),
+        if (regelnFreigeschaltet)
+          catalogContentVisibleProvider.overrideWithValue(true),
       ],
     );
     addTearDown(container.dispose);
@@ -73,6 +78,13 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('karto-spiel-regeln')));
     await tester.pumpAndSettle();
     expect(bestand.aufrufe, ['regeln']);
+  });
+
+  testWidgets('„Regeln“ fehlt, solange die Katalog-Inhalte gesperrt sind', (
+    tester,
+  ) async {
+    await zeige(tester, regelnFreigeschaltet: false);
+    expect(find.byKey(const ValueKey('karto-spiel-regeln')), findsNothing);
   });
 
   testWidgets('„Regeln“ fehlt, wo es keinen Regelindex gibt', (tester) async {
@@ -126,6 +138,34 @@ void main() {
     await tester.sendKeyUpEvent(LogicalKeyboardKey.control);
     await tester.pumpAndSettle();
     expect(bestand.aufrufe, ['probeSuchen:rondra']);
+  });
+
+  // Im Browser fiel der Fokus nach einem Klick auf freie Fläche aus dem
+  // Bereich; die Taste blieb unbehandelt, und der Browser öffnete seine Suche.
+  testWidgets(
+    'Strg+K greift auch ohne Fokus im Bereich und gilt als behandelt',
+    (tester) async {
+      final bestand = await zeige(tester);
+      FocusManager.instance.primaryFocus?.unfocus();
+      await tester.pump();
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.control);
+      final behandelt = await tester.sendKeyEvent(LogicalKeyboardKey.keyK);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.control);
+      await tester.pumpAndSettle();
+      expect(behandelt, isTrue);
+      expect(bestand.aufrufe, ['probeSuchen:rondra']);
+    },
+  );
+
+  testWidgets('Strg+Umschalt+K bleibt dem Browser', (tester) async {
+    final bestand = await zeige(tester);
+    await tester.sendKeyDownEvent(LogicalKeyboardKey.control);
+    await tester.sendKeyDownEvent(LogicalKeyboardKey.shift);
+    await tester.sendKeyEvent(LogicalKeyboardKey.keyK);
+    await tester.sendKeyUpEvent(LogicalKeyboardKey.shift);
+    await tester.sendKeyUpEvent(LogicalKeyboardKey.control);
+    await tester.pumpAndSettle();
+    expect(bestand.aufrufe, isEmpty);
   });
 
   testWidgets('Strg+K öffnet die Probensuche auch im Verwalten-Bereich', (

@@ -1,4 +1,4 @@
-# Oberfläche: Bestand, Kartograph (UI2), Theme und Bedienung
+﻿# Oberfläche: Bestand, Kartograph (UI2), Theme und Bedienung
 
 Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unverändert. Die kurze [CLAUDE.md](../../CLAUDE.md) enthält die harten Regeln und den Themenindex.
 
@@ -65,10 +65,14 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   `KartoSpielansicht` liest `heroComputedProvider(heroId)` **einmal** und reicht
   den `HeroComputedSnapshot` an alle Abschnitte weiter — auch an die
   Adaptermethoden, damit die Brücke für dieselben Werte keine zweite
-  Providerbeobachtung aufmacht. Die Reihenfolge ist überall
-  Schnellaktionen (ganz oben), Ressourcen, Abenteuer samt Standort,
-  Eigenschaften, Vor- und Nachteile, Kampf, Effekte, Zustand,
-  Würfelprotokoll. Die Schnellaktionen enthalten „Regeln“ (Key
+  Providerbeobachtung aufmacht. Die Reihenfolge folgt der Häufigkeit am
+  Tisch: Schnellaktionen (ganz oben), Ressourcen, Eigenschaften, dann
+  einspaltig Kampf, Effekte, Zustand (und Begleiter), danach Abenteuer samt
+  Standort, Vor- und Nachteile, Würfelprotokoll. Jede Schnellaktion trägt eine
+  eigene Signalfarbe (`kartoSchnellaktionStil` in `karto_spielaktionen.dart`:
+  Gefecht `messing`, Probe `meer`, Regeln `kueste`, Rast `moos`, Schaden
+  `siegel`; Tönung 14 % auf `feld`, Symbol und Kante in der Farbe, Beschriftung
+  `schrift`). Die Schnellaktionen enthalten „Regeln“ (Key
   `karto-spiel-regeln`): der vorhandene Regelnachschlag über die Brücke
   (`regelnNachschlagen`, `regelnNachschlagenVerfuegbar`); wo es keinen
   Regelindex gibt (Mobile), entfällt der Knopf. Die Eigenschaften stehen als
@@ -87,8 +91,11 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   Abenteuerblatt im Mixin `KartoAbenteuerSchreiben`
   (`karto_abenteuer_schreiben.dart`); die Standortspeicherung läuft weiter über
   die Brücke (`standortSetzen`). Die Ressourcenwerte sind kompakt: Wert und
-  Fehlbetrag teilen eine Zeile, die ganze Zelle ist das Tippziel. Ab
-  `KartoBreite.breit` wandern Kampf, Effekte und Zustand in eine Seitenspalte,
+  Fehlbetrag teilen eine Zeile, die ganze Zelle ist das Tippziel; der Wert hat
+  Vorrang, passt der Fehlbetrag nicht daneben, rückt er unter den Wert (das
+  Maximum wird nie gekürzt). Ab `kSeitenspalteAb` (840 dp **Ansichtsbreite**,
+  nicht Fensterbreite: die Navigation nimmt 248 dp weg) wandern Kampf,
+  Effekte, Zustand und Begleiter in eine Seitenspalte neben die Hauptspalte,
   das Protokoll bleibt der letzte Abschnitt beider Anordnungen. Den
   Re-Entrancy-Guard reicht `KartoWorkspace` als `KartoLaufzeitAktion` herein;
   die Spielansicht macht keinen zweiten Fehlerweg auf.
@@ -130,7 +137,14 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   gewürfelt und protokolliert wird über `showLoggedProbeDialog` — UI2 kennt
   keine W20-/W6-Simulation. Strg/Cmd+K öffnet dieselbe Suche, aber nur im
   Bereich Spielen: der `IndexedStack` hält die anderen Bereiche am Leben,
-  deshalb entscheidet der aktive Bereich, nicht die Position im Baum.
+  deshalb entscheidet der aktive Bereich, nicht die Position im Baum. Das
+  Kürzel hängt an `KartoProbenkuerzel` (`lib/ui2/widgets/karto_probenkuerzel.dart`),
+  einem `HardwareKeyboard`-Handler statt `CallbackShortcuts`: im Browser fiel der
+  Fokus nach einem Klick auf freie Fläche aus dem Bereich, Flutter behandelte
+  die Taste nicht, und der Browser öffnete seine eigene Suche. Der Handler
+  greift nur, solange sein Bereich aktiv ist und seine Route oben liegt (nicht
+  unter Dialogen oder dem Gefecht, das dasselbe Widget nutzt); Strg+Umschalt+K
+  bleibt dem Browser.
 - `InspectorArcaneEffectsBlock` ist Consumer-Wrapper um die darstellende
   `InspectorArcaneEffectsView`. Die Chipliste baut
   `lib/rules/derived/active_spell_display_rules.dart` — eigene Datei, weil
@@ -301,6 +315,70 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   jede weitere Aktion darin würde still verworfen. Bei offener Planung ist das
   Blatt schreibgeschützt, weil jede Heldenänderung den Inhalts-Hash der Runde
   bräche.
+  **Ort und Datum an Notizen und Personen (SPIEL-06):** `HeroNoteEntry` und
+  `HeroAdventurePersonEntry` tragen die Freitextfelder `ort` und `datum`
+  (aventurisches Datum als Anzeigetext, kein Datumswert; so bleibt auch „ca.
+  Mitte Boron“ möglich). Beide stehen nur bei Belegung im JSON, die Bestandshashes
+  bleiben. Neue Einträge (Dialog **und** Schnell-Erfassung) bekommen sie
+  vorbelegt: Ort aus `HeroState.standort` (`bereinigeStandort`), Datum aus
+  `abenteuerDatum` des Abenteuers; fehlt eines, bleibt das Feld leer, nichts
+  wird erfunden. Gelesen wird beim Anlegen in `_vorbelegung()` des Mixins
+  `KartoAbenteuerSchreiben`. Beim Bearbeiten stehen die gespeicherten Werte im
+  Dialog, ein Bestandseintrag wird nicht von selbst befüllt; unveränderte Felder
+  stempeln kein `lastModified`. Die „Quest“ ist das Abenteuer selbst und kein
+  eigenes Feld. Die Karten zeigen eine leise Zeile „Ort · Datum“.
+  **Suche** (`karto_abenteuer_suche.dart`): Suchknopf im Abenteuerabschnitt und
+  im Blatt, Suchfeld darunter. `sucheInAbenteuern` durchsucht Titel/Text/Ort/Datum
+  der Notizen und Name/Beschreibung/Ort/Datum der Personen **aller** Abenteuer
+  des Helden; jedes Wort muss vorkommen, Umlaute und Groß-/Kleinschreibung gelten
+  nicht (`vergleichsschluessel`, wie die Sortierung; „ö“ wird „o“, nicht „oe“).
+  Das Abenteuer, von dem aus gesucht wird, steht vorn (im Abschnitt das
+  laufende, im Blatt das gezeigte), die übrigen mit dem zuletzt angelegten
+  zuerst; Treffer folgen der gewählten Sortierung. Mit Suchtext ersetzen die
+  Treffer die Karten (das Limit von drei Personen/vier Notizen entfällt).
+  Treffer im eigenen Abenteuer bearbeitet man direkt, Treffer in anderen öffnen
+  deren Blatt (im Abschnitt über `onAbenteuerOeffnen` und damit den
+  Editorschutz, im Blatt direkt). Die Suche liest nur und schreibt nie.
+  **Zuletzt gewürfelt (SPIEL-01, Teilstand):** Unter den Schnellaktionen
+  steht ein Streifen mit bis zu `kZuletztGewuerfeltMax` (6) Marken
+  (`KartoZuletztGewuerfelt`, `karto_zuletzt_gewuerfelt.dart`). Welche Proben
+  erscheinen, entscheidet `zuletztGewuerfelteProben`
+  (`lib/rules/derived/zuletzt_gewuerfelt_rules.dart`): neueste zuerst, jede
+  Probe (Art und Titel) einmal, nur wiederholbare Einträge
+  (`probeEintragIstWiederholbar`, dieselbe Regel wie der Wiederholen-Knopf im
+  Protokoll). Ein Tipp öffnet über die Brücke (`probeWiederholen`) den normalen
+  Probendialog mit den aktuellen Werten. Der Streifen speichert und
+  synchronisiert nichts, er liest nur das Würfelprotokoll (höchstens
+  `HeroState.diceLogMax` Einträge); ohne wiederholbaren Wurf entfällt er.
+  **Würfelprotokoll (SPIEL-05):** `InspectorDiceLogSection` ist der gemeinsame
+  Baustein von Inspector-Probe-Tab und Spielansicht (über die Brücke
+  `spielProtokoll`). Die Spielansicht zeigt nur die neuesten `kProtokollKurz`
+  (5) Würfe ohne Filter (`hoechstens`); „Alle anzeigen (n)“ öffnet die ganze
+  Historie samt Filtern als Blatt (`zeigeWuerfelprotokoll`,
+  `karto_wuerfelprotokoll.dart`), das `heroComputedProvider` selbst liest.
+  Der Inspector-Tab der klassischen Oberfläche bleibt vollständig. Spielabende: `gruppiereNachSpielabend`
+  (`dice_log_abende.dart`) teilt das Protokoll bei mehr als sechs Stunden Pause
+  (`kDiceLogAbendPause`); die Abende stehen fest, **bevor** gefiltert wird, ein
+  Filter verschluckt also keine Pause. Überschriften („Heute“, „Gestern“, „Fr,
+  16.10.2026“, dazu die Zahl der Würfe) gibt es nur bei mehr als einem Abend;
+  ein einziger Abend sieht aus wie zuvor (die klassische Optik bleibt). Reine
+  Anzeige. Ziele und Restpunkte: `DiceLogEntry` hat die additiven Felder
+  `zielwerte` (alle Zielwerte bei mehr als einem, in `jsonSchluessel`) und
+  `restpunkte` (verbleibender Pool); beide stehen nur bei Belegung im JSON und
+  werden nur für 3W20-Proben mit Ausgleichspool gesetzt
+  (`diceLogEntryFromResult`). Alte Einträge behalten ihre Anzeige („Ziel: n“),
+  weil sich TaP* nicht zurückrechnen lässt. Die Anzeige nennt „Ziele: 13/12/14“
+  und bei gelungener Probe „TaP*: n“ (Zauber „ZfP*“); bei Misslingen keine
+  Punkte. Nochmal würfeln: `onWiederholen` der Sektion blendet an Einträgen,
+  für die `diceLogEntryKannWiederholtWerden` gilt (Titel mit Präfix `Eigenschaftsprobe:`,
+  `Talentprobe:`, `Zauberprobe:` oder `Schnellprobe:` und passender Probeart,
+  weder neutral noch Buchung), einen Knopf ein. `wiederholeProbe`
+  (`probe_quick_search.dart`) sucht unter denselben Kandidaten wie die
+  Schnellsuche nach gleichem Titel **und** gleicher Art und öffnet den normalen
+  Probendialog mit den **aktuellen** Werten ohne die damaligen
+  Situationsmodifikatoren; `wiederholeProbeMitHinweis` meldet, wenn nichts
+  passt. Die Provider müssen geladen sein (die Protokollansicht hält sie
+  ohnehin offen).
   Der Seitentitel `Am Spieltisch` darf die Navigationsbeschriftung nicht
   wiederholen; die Navigationsprüfungen erwarten sie genau einmal.
   In der Planung entfällt der zusätzliche Seitentitel auf allen Breiten:

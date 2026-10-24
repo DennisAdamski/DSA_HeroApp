@@ -1,4 +1,7 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_bewegung.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
@@ -121,33 +124,32 @@ class KartoRessourcenwert extends StatelessWidget {
           // passen. Eine Textzeile aus zwei Spans, nicht zwei Widgets:
           // `find.text` wertet bei `Text.rich` den zusammengesetzten Klartext
           // aus, die Zeile bleibt also als Ganzes auffindbar und vorlesbar.
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.baseline,
-            textBaseline: TextBaseline.alphabetic,
-            children: [
-              Flexible(
-                child: Text.rich(
+          //
+          // Der Wert hat Vorrang vor dem Fehlbetrag. Teilten sich beide den
+          // Platz, kuerzte eine schmale Zelle das Maximum zu „51 / …“ – die
+          // Zahl, um die es geht. Passt der Fehlbetrag nicht mehr daneben,
+          // rueckt er deshalb in eine eigene Zeile unter den Wert
+          // ([_WertZeile]).
+          _WertZeile(
+            wert: Text.rich(
+              TextSpan(
+                style: texte.wertGross.copyWith(color: karto.schrift),
+                children: <InlineSpan>[
+                  TextSpan(text: '$aktuell'),
                   TextSpan(
-                    style: texte.wertGross.copyWith(color: karto.schrift),
-                    children: <InlineSpan>[
-                      TextSpan(text: '$aktuell'),
-                      TextSpan(
-                        text: ' / $maximum',
-                        style: texte.wert.copyWith(color: karto.schriftStumm),
-                      ),
-                    ],
+                    text: ' / $maximum',
+                    style: texte.wert.copyWith(color: karto.schriftStumm),
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
+                ],
               ),
-              if (zusatz != null) ...[
-                const SizedBox(width: Abstand.normal),
-                Expanded(
-                  child: Text(
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            hinweis: zusatz == null
+                ? null
+                : Text(
                     zusatz,
                     maxLines: 1,
-                    textAlign: TextAlign.end,
                     overflow: TextOverflow.ellipsis,
                     style: texte.marke.copyWith(
                       color: karto.schriftLeise,
@@ -155,9 +157,6 @@ class KartoRessourcenwert extends StatelessWidget {
                       letterSpacing: 0.2,
                     ),
                   ),
-                ),
-              ],
-            ],
           ),
           const SizedBox(height: Abstand.knapp),
           Semantics(
@@ -196,4 +195,150 @@ class KartoRessourcenwert extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Wert und Fehlbetrag: nebeneinander auf gemeinsamer Grundlinie, wenn beide
+/// ungekuerzt passen, sonst der Fehlbetrag in einer eigenen Zeile darunter.
+///
+/// Ein eigenes Layout statt `LayoutBuilder`: die Ressourcenleiste gleicht die
+/// Zellen einer Reihe mit `IntrinsicHeight` an, und `LayoutBuilder` kann keine
+/// intrinsischen Masse liefern.
+class _WertZeile extends MultiChildRenderObjectWidget {
+  _WertZeile({required Widget wert, Widget? hinweis})
+    : super(children: <Widget>[wert, ?hinweis]);
+
+  @override
+  RenderObject createRenderObject(BuildContext context) => _RenderWertZeile();
+}
+
+class _WertZeileDaten extends ContainerBoxParentData<RenderBox> {}
+
+class _RenderWertZeile extends RenderBox
+    with
+        ContainerRenderObjectMixin<RenderBox, _WertZeileDaten>,
+        RenderBoxContainerDefaultsMixin<RenderBox, _WertZeileDaten> {
+  static const double _luecke = Abstand.normal;
+
+  RenderBox get _wert => firstChild!;
+  RenderBox? get _hinweis => childCount > 1 ? lastChild : null;
+
+  @override
+  void setupParentData(RenderBox child) {
+    if (child.parentData is! _WertZeileDaten) {
+      child.parentData = _WertZeileDaten();
+    }
+  }
+
+  // Ob beide in voller Laenge nebeneinander passen.
+  bool _nebeneinander(RenderBox hinweis, double breite) =>
+      _wert.getMaxIntrinsicWidth(double.infinity) +
+          _luecke +
+          hinweis.getMaxIntrinsicWidth(double.infinity) <=
+      breite;
+
+  @override
+  double computeMinIntrinsicWidth(double height) {
+    final hinweis = _hinweis;
+    final wert = _wert.getMinIntrinsicWidth(height);
+    return hinweis == null
+        ? wert
+        : math.max(wert, hinweis.getMinIntrinsicWidth(height));
+  }
+
+  @override
+  double computeMaxIntrinsicWidth(double height) {
+    final hinweis = _hinweis;
+    final wert = _wert.getMaxIntrinsicWidth(height);
+    return hinweis == null
+        ? wert
+        : wert + _luecke + hinweis.getMaxIntrinsicWidth(height);
+  }
+
+  @override
+  double computeMinIntrinsicHeight(double width) =>
+      computeMaxIntrinsicHeight(width);
+
+  // Nebeneinander bestimmt der grosse Wert die Hoehe; der Fehlbetrag ist
+  // kleiner gesetzt und reicht weder ueber noch unter ihn hinaus.
+  @override
+  double computeMaxIntrinsicHeight(double width) {
+    final hinweis = _hinweis;
+    final wert = _wert.getMaxIntrinsicHeight(width);
+    if (hinweis == null) return wert;
+    final klein = hinweis.getMaxIntrinsicHeight(width);
+    return _nebeneinander(hinweis, width)
+        ? math.max(wert, klein)
+        : wert + klein;
+  }
+
+  @override
+  Size computeDryLayout(covariant BoxConstraints constraints) {
+    final breite = constraints.hasBoundedWidth
+        ? constraints.maxWidth
+        : computeMaxIntrinsicWidth(double.infinity);
+    return constraints.constrain(
+      Size(breite, computeMaxIntrinsicHeight(breite)),
+    );
+  }
+
+  @override
+  void performLayout() {
+    final breite = constraints.hasBoundedWidth
+        ? constraints.maxWidth
+        : computeMaxIntrinsicWidth(double.infinity);
+    final locker = BoxConstraints(maxWidth: breite);
+    _wert.layout(locker, parentUsesSize: true);
+    final wertDaten = _wert.parentData! as _WertZeileDaten
+      ..offset = Offset.zero;
+    final hinweis = _hinweis;
+    if (hinweis == null) {
+      size = constraints.constrain(Size(breite, _wert.size.height));
+      return;
+    }
+    final hinweisDaten = hinweis.parentData! as _WertZeileDaten;
+    if (!_nebeneinander(hinweis, breite)) {
+      hinweis.layout(locker, parentUsesSize: true);
+      hinweisDaten.offset = Offset(0, _wert.size.height);
+      size = constraints.constrain(
+        Size(breite, _wert.size.height + hinweis.size.height),
+      );
+      return;
+    }
+    hinweis.layout(
+      BoxConstraints(maxWidth: breite - _wert.size.width - _luecke),
+      parentUsesSize: true,
+    );
+    // Gemeinsame Grundlinie, der Fehlbetrag buendig rechts.
+    final grundWert = _wert.getDistanceToBaseline(TextBaseline.alphabetic)!;
+    final grundHinweis = hinweis.getDistanceToBaseline(
+      TextBaseline.alphabetic,
+    )!;
+    final grund = math.max(grundWert, grundHinweis);
+    wertDaten.offset = Offset(0, grund - grundWert);
+    hinweisDaten.offset = Offset(
+      breite - hinweis.size.width,
+      grund - grundHinweis,
+    );
+    size = constraints.constrain(
+      Size(
+        breite,
+        math.max(
+          wertDaten.offset.dy + _wert.size.height,
+          hinweisDaten.offset.dy + hinweis.size.height,
+        ),
+      ),
+    );
+  }
+
+  @override
+  double? computeDistanceToActualBaseline(TextBaseline baseline) =>
+      defaultComputeDistanceToFirstActualBaseline(baseline);
+
+  @override
+  void paint(PaintingContext context, Offset offset) =>
+      defaultPaint(context, offset);
+
+  @override
+  bool hitTestChildren(BoxHitTestResult result, {required Offset position}) =>
+      defaultHitTestChildren(result, position: position);
 }

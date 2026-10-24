@@ -1,4 +1,4 @@
-/// Konfiguration fuer den optionalen Remote-Bezug der Regel-Index-DB.
+﻿/// Konfiguration fuer den optionalen Remote-Bezug der Regel-Index-DB.
 ///
 /// Die Zugangsdaten zum WebDAV-Ordner (z. B. Fritz!NAS) werden fuer
 /// Release-Builds per `--dart-define` fest eingebettet, damit alle
@@ -12,6 +12,7 @@ class RulesIndexRemoteConfig {
     this.username = '',
     this.password = '',
     this.lastSyncedAt,
+    this.installedVersion = '',
   });
 
   /// Override der Server-URL (WebDAV-Endpunkt der `index.sqlite`).
@@ -25,6 +26,10 @@ class RulesIndexRemoteConfig {
 
   /// Zeitpunkt des letzten erfolgreichen Downloads.
   final DateTime? lastSyncedAt;
+
+  /// Version der zuletzt über den Cloud-Zugang installierten Wissensbasis
+  /// (Veröffentlichungszeitpunkt); leer, solange keine installiert wurde.
+  final String installedVersion;
 
   static const String _buildDefaultServerUrl = String.fromEnvironment(
     'RULES_INDEX_SERVER_URL',
@@ -56,6 +61,7 @@ class RulesIndexRemoteConfig {
     String? username,
     String? password,
     Object? lastSyncedAt = _copySentinel,
+    String? installedVersion,
   }) {
     return RulesIndexRemoteConfig(
       serverUrl: serverUrl ?? this.serverUrl,
@@ -64,6 +70,7 @@ class RulesIndexRemoteConfig {
       lastSyncedAt: identical(lastSyncedAt, _copySentinel)
           ? this.lastSyncedAt
           : lastSyncedAt as DateTime?,
+      installedVersion: installedVersion ?? this.installedVersion,
     );
   }
 
@@ -72,6 +79,7 @@ class RulesIndexRemoteConfig {
     'username': username,
     'password': password,
     'lastSyncedAt': lastSyncedAt?.toIso8601String(),
+    if (installedVersion.isNotEmpty) 'installedVersion': installedVersion,
   };
 
   static RulesIndexRemoteConfig fromJson(Map<String, dynamic> json) {
@@ -83,6 +91,7 @@ class RulesIndexRemoteConfig {
       lastSyncedAt: rawLastSyncedAt == null
           ? null
           : DateTime.tryParse(rawLastSyncedAt),
+      installedVersion: (json['installedVersion'] as String?) ?? '',
     );
   }
 }

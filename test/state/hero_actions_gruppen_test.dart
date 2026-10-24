@@ -13,6 +13,7 @@ import 'package:dsa_heldenverwaltung/domain/externer_held.dart';
 import 'package:dsa_heldenverwaltung/domain/gruppen_beitrittscode.dart';
 import 'package:dsa_heldenverwaltung/domain/held_visitenkarte.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_gruppen_config.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_regelprofil.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/state/externe_helden_providers.dart';
 import 'package:dsa_heldenverwaltung/state/firebase_providers.dart';
@@ -30,13 +31,17 @@ const _attribute = Attributes(
   kk: 12,
 );
 
-HeroSheet _held({List<HeroGruppenMitgliedschaft> gruppen = const []}) {
+HeroSheet _held({
+  List<HeroGruppenMitgliedschaft> gruppen = const [],
+  HeroRegelProfil? regelProfil,
+}) {
   return HeroSheet(
     id: 'hero',
     name: 'Alrik',
     level: 1,
     attributes: _attribute,
     gruppen: gruppen,
+    regelProfil: regelProfil,
   );
 }
 
@@ -62,8 +67,13 @@ void main() {
   late GruppenSyncService dienst;
   late ProviderContainer container;
 
-  Future<void> aufbau(List<HeroGruppenMitgliedschaft> gruppen) async {
-    heldenSpeicher = FakeRepository(heroes: [_held(gruppen: gruppen)]);
+  Future<void> aufbau(
+    List<HeroGruppenMitgliedschaft> gruppen, {
+    HeroRegelProfil? regelProfil,
+  }) async {
+    heldenSpeicher = FakeRepository(
+      heroes: [_held(gruppen: gruppen, regelProfil: regelProfil)],
+    );
     container = ProviderContainer(
       overrides: [
         firebaseBootstrapProvider.overrideWithValue(
@@ -115,6 +125,8 @@ void main() {
     final gruppe = await gruppeVon('gruppe-1');
     expect(gruppe.kontoGruppe, isTrue);
     expect(gruppe.gruppenName, 'Die Thorwaler');
+    // Die erste Konto-Gruppe wird die primäre.
+    expect(gruppe.primaer, isTrue);
     expect(
       await container.read(heroActionsProvider).ladeBeitrittscode('gruppe-1'),
       'gruppe-1.CODE12345678',
@@ -401,4 +413,128 @@ void main() {
       expect((await heldenSpeicher.loadHeroById('hero'))!.gruppen, isEmpty);
     },
   );
+  group('Primäre Gruppe und Regelprofil (ARCH-04)', () {
+    final profil = HeroRegelProfil(
+      catalogVersion: 'house_rules_v1',
+      pakete: const <HeroRegelProfilPaket>[],
+    );
+
+    Future<void> besitzer(String id, String code) => GruppenSyncService(
+      firestore: firestore,
+      uidProvider: () => 'besitzer',
+      idGenerator: () => id,
+      joinCodeGenerator: () => code,
+    ).erstelleGruppe(id).then((_) {});
+
+    test('nur die erste Konto-Gruppe wird von selbst primär', () async {
+      await besitzer('g1', 'CODE00000001');
+      await besitzer('g2', 'CODE00000002');
+      await aufbau(const []);
+      final actions = container.read(heroActionsProvider);
+
+      await actions.trittGruppeBei(
+        heroId: 'hero',
+        beitrittscode: 'g1.CODE00000001',
+      );
+      await actions.trittGruppeBei(
+        heroId: 'hero',
+        beitrittscode: 'g2.CODE00000002',
+      );
+
+      expect((await gruppeVon('g1')).primaer, isTrue);
+      expect((await gruppeVon('g2')).primaer, isFalse);
+    });
+
+    test(
+      'Umstellen wählt genau eine Gruppe und lässt das Profil stehen',
+      () async {
+        await aufbau(const [
+          HeroGruppenMitgliedschaft(
+            gruppenCode: 'g1',
+            kontoGruppe: true,
+            primaer: true,
+          ),
+          HeroGruppenMitgliedschaft(gruppenCode: 'g2', kontoGruppe: true),
+        ], regelProfil: profil);
+
+        await container
+            .read(heroActionsProvider)
+            .setzePrimaereGruppe(heroId: 'hero', gruppenCode: 'g2');
+
+        expect((await gruppeVon('g1')).primaer, isFalse);
+        expect((await gruppeVon('g2')).primaer, isTrue);
+        expect(
+          (await heldenSpeicher.loadHeroById('hero'))!.regelProfil,
+          profil,
+        );
+      },
+    );
+
+    test('Altgruppen und unbekannte Gruppen werden nicht primär', () async {
+      await aufbau(const [
+        HeroGruppenMitgliedschaft(gruppenCode: 'alt'),
+        HeroGruppenMitgliedschaft(
+          gruppenCode: 'g1',
+          kontoGruppe: true,
+          primaer: true,
+        ),
+      ]);
+      final actions = container.read(heroActionsProvider);
+
+      await expectLater(
+        actions.setzePrimaereGruppe(heroId: 'hero', gruppenCode: 'alt'),
+        throwsA(isA<GruppenException>()),
+      );
+      await actions.setzePrimaereGruppe(heroId: 'hero', gruppenCode: 'fehlt');
+
+      expect((await gruppeVon('g1')).primaer, isTrue);
+      expect((await gruppeVon('alt')).primaer, isFalse);
+    });
+
+    test(
+      'Verlassen der primären Gruppe lässt das letzte Profil stehen',
+      () async {
+        await besitzer('g1', 'CODE00000001');
+        await aufbau(const [], regelProfil: profil);
+        final actions = container.read(heroActionsProvider);
+        await actions.trittGruppeBei(
+          heroId: 'hero',
+          beitrittscode: 'g1.CODE00000001',
+        );
+
+        await actions.verlasseGruppe(heroId: 'hero', gruppenCode: 'g1');
+
+        final held = (await heldenSpeicher.loadHeroById('hero'))!;
+        expect(held.gruppen, isEmpty);
+        expect(held.regelProfil, profil);
+      },
+    );
+
+    test('Die Aktionen setzen und entfernen die Vorgabe der Gruppe', () async {
+      await besitzer('g1', 'CODE00000001');
+      await aufbau(const [
+        HeroGruppenMitgliedschaft(gruppenCode: 'g1', kontoGruppe: true),
+      ]);
+      final actions = container.read(heroActionsProvider);
+
+      // `ich` ist hier nur Mitglied; der Dienst im Test kennt keine Regeln,
+      // der Besitzerschutz liegt in firestore.rules (functions/test).
+      await actions.veroeffentlicheRegelVorgabe(
+        gruppenCode: 'g1',
+        profil: profil,
+      );
+      expect(
+        (await firestore.doc('groups_v2/g1/shared_info/regelprofil').get())
+            .exists,
+        isTrue,
+      );
+
+      await actions.entferneRegelVorgabe('g1');
+      expect(
+        (await firestore.doc('groups_v2/g1/shared_info/regelprofil').get())
+            .exists,
+        isFalse,
+      );
+    });
+  });
 }

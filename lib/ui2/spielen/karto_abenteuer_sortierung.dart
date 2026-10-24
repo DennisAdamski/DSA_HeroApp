@@ -61,7 +61,7 @@ List<int> _sortiere(List<_Eintrag> eintraege, AbenteuerSortierung sortierung) {
       return indizes;
     case AbenteuerSortierung.alphabetisch:
       final schluessel = [
-        for (final e in eintraege) _vergleichsschluessel(e.text),
+        for (final e in eintraege) vergleichsschluessel(e.text),
       ];
       indizes.sort((a, b) {
         // Leere Titel ans Ende, sonst stünden „Ohne Titel“-Karten vorn.
@@ -75,8 +75,9 @@ List<int> _sortiere(List<_Eintrag> eintraege, AbenteuerSortierung sortierung) {
   }
 }
 
-// Umlaute wie ihre Grundbuchstaben, damit „Ärger“ neben „Ast“ steht.
-String _vergleichsschluessel(String text) => text
+/// Vergleichsform eines Textes: Umlaute wie ihre Grundbuchstaben, damit „Ärger“
+/// neben „Ast“ steht und die Suche „Ärger“ auch „aerger“ nicht verfehlt.
+String vergleichsschluessel(String text) => text
     .trim()
     .toLowerCase()
     .replaceAll('ä', 'a')

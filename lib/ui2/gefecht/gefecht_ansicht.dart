@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht.dart';
@@ -39,6 +38,7 @@ import 'package:dsa_heldenverwaltung/ui2/shell/karto_bestands_adapter.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_gefechts_adapter.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abschnitt.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_ressourcenleiste.dart';
+import 'package:dsa_heldenverwaltung/ui2/widgets/karto_probenkuerzel.dart';
 
 import 'gefecht_aktionsdialog.dart';
 
@@ -117,12 +117,11 @@ class _GefechtAnsichtState extends ConsumerState<GefechtAnsicht> {
         ?.value;
     final snapshot = geladen.asData?.value;
     // Strg/Cmd+K öffnet wie im Spielbereich die Probenauswahl, hier aber
-    // gefechtsbewusst; die Route liegt außerhalb des Workspace-Kürzels.
-    return CallbackShortcuts(
-      bindings: <ShortcutActivator, VoidCallback>{
-        const SingleActivator(LogicalKeyboardKey.keyK, control: true): _probe,
-        const SingleActivator(LogicalKeyboardKey.keyK, meta: true): _probe,
-      },
+    // gefechtsbewusst; solange diese Route oben liegt, schweigt das
+    // Workspace-Kürzel darunter.
+    return KartoProbenkuerzel(
+      aktiv: true,
+      onAusloesen: _probe,
       child: Focus(
         autofocus: true,
         child: PopScope(

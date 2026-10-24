@@ -2,15 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:dsa_heldenverwaltung/domain/dice_log_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_adventure_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_note_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_resource_activation_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
+import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_base_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_bestands_adapter.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abenteuer_karten.dart';
@@ -81,6 +84,7 @@ void main() {
     double skalierung = 1,
     Brightness helligkeit = Brightness.light,
     Future<bool> Function()? vorAbenteuer,
+    bool regelnFreigeschaltet = false,
   }) async {
     tester.view.devicePixelRatio = 1;
     tester.view.physicalSize = Size(breite, 1000);
@@ -92,6 +96,8 @@ void main() {
           repository ?? FakeRepository(heroes: [held], states: zustaende),
         ),
         rulesCatalogProvider.overrideWith((ref) async => testCatalog),
+        if (regelnFreigeschaltet)
+          catalogContentVisibleProvider.overrideWithValue(true),
       ],
     );
     addTearDown(container.dispose);
@@ -263,7 +269,7 @@ void main() {
     });
   });
 
-  for (final breite in [320.0, 390.0, 744.0, 1024.0, 1440.0]) {
+  for (final breite in [320.0, 390.0, 744.0, kSeitenspalteAb, 1024.0, 1440.0]) {
     testWidgets('Spielansicht bei $breite dp ohne Überlauf', (tester) async {
       // Mit Abenteuerkopf: Titel, Datum und Zusammenfassung sind die
       // laengsten Zeilen der Ansicht.
@@ -279,22 +285,242 @@ void main() {
     });
   }
 
+  group('Würfelprotokoll', () {
+    List<DiceLogEntry> wuerfe(int anzahl) => [
+      for (var i = 0; i < anzahl; i++)
+        DiceLogEntry(
+          timestamp: DateTime.utc(2026, 9, 20, 20, i),
+          type: ProbeType.attribute,
+          title: 'Wurf $i',
+          subtitle: 'MU',
+          success: true,
+          diceValues: const [5],
+        ),
+    ];
+
+    testWidgets('zeigt knapp fünf und öffnet die ganze Historie', (
+      tester,
+    ) async {
+      final bestand = TestBestand();
+      await zeige(
+        tester,
+        held: weltlich(),
+        bestand: bestand,
+        zustaende: {
+          'praiodan': const HeroState.empty().copyWith(diceLog: wuerfe(7)),
+        },
+      );
+      expect(bestand.protokollGrenzen, everyElement(5));
+      final alle = find.byKey(
+        const ValueKey<String>('karto-spiel-protokoll-alle'),
+      );
+      expect(find.text('Alle anzeigen (7)'), findsOneWidget);
+      await tester.ensureVisible(alle);
+      await tester.tap(alle);
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey<String>('karto-spiel-protokoll-blatt')),
+        findsOneWidget,
+      );
+      expect(bestand.protokollGrenzen.last, isNull);
+      await tester.tap(find.byTooltip('Schließen'));
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey<String>('karto-spiel-protokoll-blatt')),
+        findsNothing,
+      );
+    });
+
+    testWidgets('bis fünf Würfe gibt es nichts zu öffnen', (tester) async {
+      await zeige(
+        tester,
+        held: weltlich(),
+        zustaende: {
+          'praiodan': const HeroState.empty().copyWith(diceLog: wuerfe(5)),
+        },
+      );
+      expect(
+        find.byKey(const ValueKey<String>('karto-spiel-protokoll-alle')),
+        findsNothing,
+      );
+    });
+  });
+
+  group('Zuletzt gewürfelt', () {
+    DiceLogEntry talent(String name, int minute) => DiceLogEntry(
+      timestamp: DateTime.utc(2026, 10, 24, 20, minute),
+      type: ProbeType.talent,
+      title: 'Talentprobe: $name',
+      subtitle: 'MU/KL/GE',
+      success: true,
+      diceValues: const [5, 8, 12],
+    );
+
+    Finder marke(String name) => find.byKey(
+      ValueKey<String>('karto-spiel-zuletzt-talent-Talentprobe: $name'),
+    );
+
+    testWidgets('zeigt jede Probe einmal und wiederholt sie per Tipp', (
+      tester,
+    ) async {
+      final bestand = TestBestand();
+      await zeige(
+        tester,
+        held: weltlich(),
+        bestand: bestand,
+        zustaende: {
+          'praiodan': const HeroState.empty().copyWith(
+            diceLog: [
+              talent('Klettern', 1),
+              talent('Schleichen', 2),
+              talent('Klettern', 3),
+            ],
+          ),
+        },
+      );
+      expect(find.text('Zuletzt gewürfelt'), findsOneWidget);
+      expect(marke('Klettern'), findsOneWidget);
+      expect(marke('Schleichen'), findsOneWidget);
+      await tester.ensureVisible(marke('Schleichen'));
+      await tester.tap(marke('Schleichen'));
+      await tester.pumpAndSettle();
+      expect(
+        bestand.aufrufe,
+        contains('probeWiederholen:praiodan:Talentprobe: Schleichen'),
+      );
+    });
+
+    testWidgets('bleibt ohne wiederholbaren Wurf unsichtbar', (tester) async {
+      await zeige(tester, held: weltlich());
+      expect(find.text('Zuletzt gewürfelt'), findsNothing);
+    });
+  });
+
+  testWidgets('jede Schnellaktion trägt ihre eigene Farbe', (tester) async {
+    await zeige(
+      tester,
+      held: weltlich(),
+      breite: 1024,
+      regelnFreigeschaltet: true,
+    );
+    final farben = <Color?>{
+      for (final name in [
+        'karto-spiel-gefecht',
+        'karto-spiel-probe',
+        'karto-spiel-regeln',
+        'karto-spiel-rast',
+        'karto-spiel-schaden',
+      ])
+        tester
+            .widget<ButtonStyleButton>(find.byKey(ValueKey<String>(name)))
+            .style!
+            .iconColor!
+            .resolve(<WidgetState>{}),
+    };
+    expect(farben, hasLength(5));
+    expect(farben, isNot(contains(null)));
+  });
+
+  group('Seitenspalte', () {
+    // Gemessen wird die Breite der Ansicht; im Workspace zieht die
+    // Navigation 248 dp ab, ein 1100 dp breites Fenster ergibt rund 850.
+    testWidgets('ab $kSeitenspalteAb dp steht der Kampf neben den Ressourcen', (
+      tester,
+    ) async {
+      await zeige(
+        tester,
+        held: mitAbenteuern([_nebel]),
+        breite: kSeitenspalteAb,
+      );
+      final ressourcen = tester.getTopLeft(find.text('Ressourcen'));
+      final kampf = tester.getTopLeft(find.text('Kampf'));
+      expect(kampf.dx, greaterThan(ressourcen.dx));
+      expect(kampf.dy, lessThan(ressourcen.dy));
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('darunter folgt er den Eigenschaften, vor dem Abenteuer', (
+      tester,
+    ) async {
+      await zeige(
+        tester,
+        held: mitAbenteuern([_nebel]),
+        breite: kSeitenspalteAb - 1,
+      );
+      final ressourcen = tester.getTopLeft(find.text('Ressourcen'));
+      final kampf = tester.getTopLeft(find.text('Kampf'));
+      final abenteuer = tester.getTopLeft(find.text('Die Spuren im Nebel'));
+      // Dieselbe Spalte: der Kampftitel trägt nur ein Symbol davor.
+      expect(kampf.dx, lessThan(kSeitenspalteAb / 2));
+      expect(kampf.dy, greaterThan(ressourcen.dy));
+      expect(kampf.dy, lessThan(abenteuer.dy));
+    });
+  });
+
+  group('Regelnachschlag (SPIEL-04)', () {
+    testWidgets('wird erst nach dem Entsperren der Katalog-Inhalte angeboten', (
+      tester,
+    ) async {
+      await zeige(tester, held: weltlich(), breite: 1024);
+      expect(
+        find.byKey(const ValueKey<String>('karto-spiel-regeln')),
+        findsNothing,
+      );
+      // Die übrigen Schnellaktionen bleiben unberührt.
+      expect(find.text('Probe suchen'), findsOneWidget);
+    });
+
+    testWidgets('nach dem Entsperren steht der Knopf da', (tester) async {
+      await zeige(
+        tester,
+        held: weltlich(),
+        breite: 1024,
+        regelnFreigeschaltet: true,
+      );
+      expect(
+        find.byKey(const ValueKey<String>('karto-spiel-regeln')),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets(
+      'ohne Regelindex auf der Plattform bleibt er auch entsperrt weg',
+      (tester) async {
+        final bestand = TestBestand()..regelnVerfuegbar = false;
+        await zeige(
+          tester,
+          held: weltlich(),
+          breite: 1024,
+          bestand: bestand,
+          regelnFreigeschaltet: true,
+        );
+        expect(
+          find.byKey(const ValueKey<String>('karto-spiel-regeln')),
+          findsNothing,
+        );
+      },
+    );
+  });
+
   group('Abenteuerabschnitt', () {
     Finder schluessel(String name) => find.byKey(ValueKey<String>(name));
 
     testWidgets(
-      'Schnellaktionen stehen vor den Ressourcen, dann das Abenteuer',
+      'Schnellaktionen, Ressourcen und Eigenschaften stehen vor dem Abenteuer',
       (tester) async {
         await zeige(tester, held: mitAbenteuern([_nebel]));
         final aktionen = tester.getTopLeft(find.text('Schnellaktionen')).dy;
         final ressourcen = tester.getTopLeft(find.text('Ressourcen')).dy;
+        final eigenschaften = tester.getTopLeft(find.text('Eigenschaften')).dy;
+        final kampf = tester.getTopLeft(find.text('Kampf')).dy;
         final abenteuer = tester
             .getTopLeft(find.text('Die Spuren im Nebel'))
             .dy;
-        final eigenschaften = tester.getTopLeft(find.text('Eigenschaften')).dy;
         expect(aktionen, lessThan(ressourcen));
-        expect(ressourcen, lessThan(abenteuer));
-        expect(abenteuer, lessThan(eigenschaften));
+        expect(ressourcen, lessThan(eigenschaften));
+        // Einspaltig rückt der Kampf vor das Abenteuer.
+        expect(eigenschaften, lessThan(kampf));
+        expect(kampf, lessThan(abenteuer));
         expect(find.text('Alrik vom Blautann'), findsOneWidget);
         expect(find.text('Der Nebelreiter'), findsOneWidget);
       },
@@ -428,6 +654,185 @@ void main() {
       expect(abenteuer.notes, hasLength(1));
     });
 
+    testWidgets('Schnellnotiz übernimmt Standort und Datum des Abenteuers', (
+      tester,
+    ) async {
+      final repo = FakeRepository(
+        heroes: [
+          mitAbenteuern([_nebel]),
+        ],
+        states: {
+          'praiodan': const HeroState.empty().copyWith(standort: 'Gareth'),
+        },
+      );
+      await zeige(
+        tester,
+        held: mitAbenteuern([_nebel]),
+        repository: repo,
+        breite: 1024,
+      );
+      final feld = schluessel('karto-spiel-abenteuer-schnellnotiz');
+      await tester.ensureVisible(feld);
+      await tester.enterText(feld, 'Brücke ist gesperrt');
+      await tester.testTextInput.receiveAction(TextInputAction.send);
+      await tester.pumpAndSettle();
+
+      final notiz = (await repo.loadHeroById('praiodan'))!
+          .adventures
+          .single
+          .notes
+          .last;
+      expect(notiz.ort, 'Gareth');
+      expect(notiz.datum, '12. Phex 1043 BF');
+      expect(find.text('Gareth · 12. Phex 1043 BF'), findsOneWidget);
+    });
+
+    testWidgets('ohne Standort und Datum bleiben Ort und Datum leer', (
+      tester,
+    ) async {
+      final ohneDatum = mitAbenteuern([
+        _nebel.copyWith(
+          currentAventurianDate: const HeroAdventureDateValue(),
+          startAventurianDate: const HeroAdventureDateValue(),
+        ),
+      ]);
+      final repo = FakeRepository(heroes: [ohneDatum]);
+      await zeige(tester, held: ohneDatum, repository: repo, breite: 1024);
+      final feld = schluessel('karto-spiel-abenteuer-schnellnotiz');
+      await tester.ensureVisible(feld);
+      await tester.enterText(feld, 'Nur ein Hinweis');
+      await tester.testTextInput.receiveAction(TextInputAction.send);
+      await tester.pumpAndSettle();
+      final notiz = (await repo.loadHeroById('praiodan'))!
+          .adventures
+          .single
+          .notes
+          .last;
+      expect(notiz.ort, isEmpty);
+      expect(notiz.datum, isEmpty);
+      // Ohne beides keine leere Kontextzeile und kein Eintrag im JSON.
+      expect(notiz.toJson().containsKey('ort'), isFalse);
+      expect(notiz.toJson().containsKey('datum'), isFalse);
+    });
+
+    group('Suche', () {
+      const alt = HeroAdventureEntry(
+        id: 'alt',
+        title: 'Die alte Fracht',
+        status: HeroAdventureStatus.completed,
+        notes: [
+          HeroNoteEntry(
+            title: 'Nebelpass',
+            description: 'Zoll am Pass.',
+            ort: 'Punin',
+            datum: '3. Rahja 1040 BF',
+          ),
+        ],
+        people: [
+          HeroAdventurePersonEntry(
+            id: 'p9',
+            name: 'Zöllner Bero',
+            description: 'Kennt den Nebelpass.',
+          ),
+        ],
+      );
+
+      Future<void> suche(WidgetTester tester, String text) async {
+        // Beim zweiten Aufruf ist das Feld schon offen.
+        if (schluessel('karto-abenteuer-suche').evaluate().isEmpty) {
+          final knopf = schluessel('karto-abenteuer-suche-knopf');
+          await tester.ensureVisible(knopf);
+          await tester.tap(knopf);
+          await tester.pumpAndSettle();
+        }
+        await tester.enterText(schluessel('karto-abenteuer-suche'), text);
+        await tester.pumpAndSettle();
+      }
+
+      testWidgets('findet Treffer aller Abenteuer, das laufende steht vorn', (
+        tester,
+      ) async {
+        await zeige(tester, held: mitAbenteuern([alt, _nebel]), breite: 1024);
+        await suche(tester, 'nebel');
+
+        expect(schluessel('karto-abenteuer-suche-anzahl'), findsOneWidget);
+        expect(find.text('3 Treffer in 2 Abenteuern'), findsOneWidget);
+        expect(find.text('Laufendes Abenteuer'), findsOneWidget);
+        expect(find.text('Abgeschlossen'), findsOneWidget);
+        // Das laufende Abenteuer steht vor dem abgeschlossenen, obwohl es in
+        // der Liste des Helden hinten steht.
+        expect(
+          tester.getTopLeft(find.text('Der Nebelreiter')).dy,
+          lessThan(tester.getTopLeft(find.text('Nebelpass')).dy),
+        );
+        // Ort und Datum stehen an der Karte.
+        expect(find.text('Punin · 3. Rahja 1040 BF'), findsOneWidget);
+      });
+
+      testWidgets('sucht in Ort und Datum und ohne Rücksicht auf Umlaute', (
+        tester,
+      ) async {
+        await zeige(tester, held: mitAbenteuern([alt, _nebel]), breite: 1024);
+        await suche(tester, 'punin');
+        expect(find.text('Nebelpass'), findsOneWidget);
+        expect(find.text('Der Nebelreiter'), findsNothing);
+
+        await suche(tester, 'zollner');
+        expect(find.text('Zöllner Bero'), findsOneWidget);
+      });
+
+      testWidgets('ein Treffer im laufenden Abenteuer bearbeitet direkt', (
+        tester,
+      ) async {
+        await zeige(tester, held: mitAbenteuern([alt, _nebel]), breite: 1024);
+        await suche(tester, 'reiter');
+        await tester.tap(find.text('Der Nebelreiter'));
+        await tester.pumpAndSettle();
+        expect(find.byType(BottomSheet), findsNothing);
+        expect(find.text('Notiz bearbeiten'), findsOneWidget);
+      });
+
+      testWidgets(
+        'ein Treffer in einem anderen Abenteuer öffnet dessen Blatt',
+        (tester) async {
+          await zeige(tester, held: mitAbenteuern([alt, _nebel]), breite: 1024);
+          await suche(tester, 'zoll');
+          await tester.tap(find.text('Nebelpass'));
+          await tester.pumpAndSettle();
+          expect(find.byType(BottomSheet), findsOneWidget);
+          // Das Blatt des abgeschlossenen Abenteuers hat seine eigene
+          // Anlege-Kachel; der Titel steht jetzt auch im Blatt.
+          expect(schluessel('karto-abenteuer-notiz-neu'), findsOneWidget);
+          expect(find.text('Die alte Fracht'), findsNWidgets(2));
+        },
+      );
+
+      testWidgets('ohne Treffer sagt die Suche das, und Schließen räumt auf', (
+        tester,
+      ) async {
+        await zeige(tester, held: mitAbenteuern([alt, _nebel]), breite: 1024);
+        await suche(tester, 'drachenhort');
+        expect(schluessel('karto-abenteuer-suche-leer'), findsOneWidget);
+        expect(find.byType(KartoNotizkarte), findsNothing);
+
+        await tester.tap(schluessel('karto-abenteuer-suche-schliessen'));
+        await tester.pumpAndSettle();
+        expect(schluessel('karto-abenteuer-suche'), findsNothing);
+        expect(find.text('Der Nebelreiter'), findsOneWidget);
+      });
+
+      testWidgets(
+        'ohne laufendes Abenteuer durchsucht sie die abgeschlossenen',
+        (tester) async {
+          await zeige(tester, held: mitAbenteuern([alt]), breite: 1024);
+          await suche(tester, 'bero');
+          expect(find.text('Zöllner Bero'), findsOneWidget);
+          expect(find.text('Laufendes Abenteuer'), findsNothing);
+          expect(find.text('Abgeschlossen'), findsOneWidget);
+        },
+      );
+    });
+
     testWidgets('weitere Karten klappen inline auf', (tester) async {
       final viele = _nebel.copyWith(
         notes: [
@@ -474,9 +879,7 @@ void main() {
   });
 
   group('Vor- und Nachteile', () {
-    testWidgets('stehen nach den Eigenschaften und vor dem Kampf', (
-      tester,
-    ) async {
+    testWidgets('stehen einspaltig nach Kampf und Abenteuer', (tester) async {
       await zeige(
         tester,
         held: weltlich().copyWith(
@@ -488,10 +891,11 @@ void main() {
       expect(titel, findsOneWidget);
       expect(find.textContaining('Flink'), findsOneWidget);
       expect(find.textContaining('Goldgier 6'), findsOneWidget);
-      final oben = tester.getTopLeft(find.text('Eigenschaften')).dy;
-      final mitte = tester.getTopLeft(titel).dy;
-      final unten = tester.getTopLeft(find.text('Kampf')).dy;
-      expect(oben < mitte && mitte < unten, isTrue);
+      final eigenschaften = tester.getTopLeft(find.text('Eigenschaften')).dy;
+      final kampf = tester.getTopLeft(find.text('Kampf')).dy;
+      final merkmale = tester.getTopLeft(titel).dy;
+      expect(eigenschaften, lessThan(kampf));
+      expect(kampf, lessThan(merkmale));
     });
 
     testWidgets('Bearbeiten prüft zuerst die Verwaltung', (tester) async {

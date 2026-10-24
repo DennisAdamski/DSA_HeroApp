@@ -1,6 +1,6 @@
 # To-do-Liste: Weiterentwicklung der Heldenverwaltung
 
-Stand: 20.10.2026. Diese Liste führt **nur Status und offene Punkte**. Abgenommene
+Stand: 24.10.2026. Diese Liste führt **nur Status und offene Punkte**. Abgenommene
 Aufgaben und der Verlauf der Teilstände stehen unverändert im
 [Archiv](archiv/README.md); Verweise wie „ARCH-05 Teilstand (3)“ in Code und
 Dokumentation meinen den dortigen Text.
@@ -66,6 +66,107 @@ Ist-Zustand erneut prüfen und den konkreten Teilumfang festlegen.
   Zoo-Botanica), Hausregel-Abweichungen als eigenes Paket. Nicht Teil: Brauen,
   Rezepturenerwerb, Labor. Belege je Eintrag mit Buch und Seite, nichts ohne
   Beleg.
+
+## Spielabend: Vorschläge aus dem Spielerdurchgang (23.10.2026)
+
+Herkunft: Durchgang der Spielen-Ansicht auf `heldensync-test.web.app` aus
+Spielersicht (Dialoge Probe suchen, Rast, Schaden erhalten, Regeln, Effekte
+verwalten geöffnet, nichts bestätigt). **Nicht geprüft:** Gefecht beginnen und
+Inventar. Die Punkte sind Beobachtungen der Oberfläche, **keine Entscheidungen**
+und nicht gegen den Code geprüft. Vor einer Umsetzung Ist-Zustand prüfen und den
+Teilumfang festlegen. Nach Wichtigkeit sortiert.
+
+- [ ] **SPIEL-01 — Talente und Zauber in Reichweite.** Beobachtung: Die Probensuche
+  startet mit der Liste „Eigenschaften“; Talente und Zauber nur über Tippen oder
+  Strg+K, keine „Zuletzt gewürfelt“-Chips oder Favoriten. Eigenschaften und
+  Vor-/Nachteile (als Fließtext) belegen Platz, den man im Spiel selten braucht.
+  Vorschlag: Streifen mit sechs bis acht angepinnten oder zuletzt genutzten
+  Proben unter den Schnellaktionen, Vor-/Nachteile nach unten. Offen: Umfang und
+  Persistenz der Favoriten (siehe „Persönliche Favoriten“ in
+  [redesign_acceptance.md](redesign_acceptance.md)), Sync.
+  **Teilstand 24.10.2026:** Streifen „Zuletzt gewürfelt“ (bis zu sechs
+  verschiedene Proben, neueste zuerst) unter den Schnellaktionen der
+  Spielansicht, abgeleitet aus dem Würfelprotokoll; ein Tipp wiederholt die
+  Probe im normalen Probendialog. Ohne neue Persistenz und ohne Sync
+  (`zuletzt_gewuerfelt_rules.dart`, Details in
+  [ui_oberflaeche.md](hinweise/ui_oberflaeche.md)). **Offen:** angepinnte
+  Favoriten (Persistenz und Sync), Vor-/Nachteile weiter nach unten rücken;
+  das Protokoll hält nur 50 Einträge, ältere Proben fallen aus dem Streifen.
+- [ ] **SPIEL-02 — Gegenstände und Geld im Spiel.** Beobachtung: Auf der Spielen-Seite
+  weder Dukaten noch Munition, Tränke oder Proviant; zur Belastung nur der
+  Eintrag im Zustand-Block. Vorschlag: Block „Dabei“ mit Geld, Munition und
+  Verbrauchbarem (+/−); ein Trank wendet beim Benutzen Effekt und Menge
+  gemeinsam an (Anknüpfung an die TRANK-Pakete). Schreibwege nach den harten
+  Regeln (frisch schreiben, ein Dokument je Ablauf).
+- [ ] **SPIEL-03 — Zustände und Dauer.** Beobachtung: „Aktive Effekte“ kennt Zauber,
+  aber keine schnellen Marker für Betäubung, Furcht oder Schmerz; der
+  Kampfrundenzähler ist flüchtig und zählt keine Effektdauern herunter.
+  Vorschlag: freie Zustandsmarker mit optionaler Dauer, die beim Rundenwechsel
+  herunterzählen. Offen: persistenter Rundenzähler (bisher bewusst nicht gebaut,
+  siehe [redesign_acceptance.md](redesign_acceptance.md)); ohne Regelautomatik.
+- [ ] **SPIEL-04 — Regelnachschlag ohne Vorarbeit.** **Teilstand 23.10.2026
+  (Cloud-Weg, auf der Test-Site geprüft, Produktion offen):** Entscheidung: Anbieten erst
+  nach dem Entsperren, nur mit Login, Laden im Hintergrund. Gebaut:
+  `dsa-rules-cli publish` (Fassung ohne Vektoren und Quellpfade, gzip, rund
+  47 MB), Cloud Function `rulesIndexApi` (Konto, App Check, Passwortnachweis,
+  signierte URL), Hintergrundlader mit Fortschritt im Dialog, Gating der drei
+  Einstiege; Details in
+  [mcp_dsa_rules.md](mcp_dsa_rules.md#veröffentlichen-über-die-cloud-spiel-04).
+  **Eingerichtet und geprüft am 23.10.2026:** Secret `RULES_INDEX_PROOF`,
+  Signierrecht, Storage-Regeln und `rulesIndexApiTest` sind live, die erste
+  Fassung (`index-2ee077a64054`, 47,2 MB) liegt in `rules/`. Auf
+  `heldensync-test.web.app` (entsperrt, angemeldet) lief der Hintergrund-
+  Download bis 117 von 117 MB, die Suche öffnete sich von selbst und lieferte
+  Treffer, nach dem Neuladen blieb die Wissensbasis erhalten. **Offen:**
+  `rulesIndexApi` (Produktion) deployen und `RULES_INDEX_PRODUCTION_ENABLED`
+  setzen, Prüfung auf der Produktions-Site; Desktop läuft über den lokalen
+  Index (App Check kennt dort nur den Debugprovider). **Teilstand davor:**
+  Leerzustand des Regeln-Dialogs überarbeitet (Server-Download als Hauptweg,
+  ehrlicher Hinweis ohne Server, Stand der Wissensbasis, Download auch auf Web
+  mit Verweis auf den Upload bei CORS-Fehler; Details in
+  [plattform_werkzeuge.md](hinweise/plattform_werkzeuge.md)). **Kompendium
+  umgesetzt 23.10.2026:** Reiter „Kurzregeln“ (Standard) im Regel-Nachschlag
+  mit 67 eigenen Kurzfassungen aus Basisregelwerk, Wege des Schwerts, Wege der
+  Zauberei und Errata, je mit Buch- und Seitenbeleg, offizielle Regel und
+  Hausregel getrennt, v3-verschlüsselt (`kurzregeln.json`); läuft offline auch
+  auf Mobil. Aufbau, Redaktionsablauf und bewusste Lücken (Furcht, Paralyse,
+  seltene Manöver) in [kurzregeln_redaktion.md](kurzregeln_redaktion.md).
+  **Offen:** inhaltliche Durchsicht der Einträge am Spieltisch und Ausbau um
+  weitere Themen; optional ein Aktualisierungsweg über Firestore. Beobachtung
+  (zum Stand davor): „Regeln“ verlangt
+  zuerst den manuellen Upload der `index.sqlite`; am Spieltisch, besonders auf
+  Tablet oder Handy, praktisch eine Sackgasse. Vorschlag: mitgeliefertes
+  Regel-Kompendium aus eigenen Zusammenfassungen (Option C in
+  [spielmodus_konzept.md](spielmodus_konzept.md#24-regel-nachschlag-in-der-app));
+  keine Volltexte offizieller Regelwerke im Klartext (harte Regel 13).
+- [x] **SPIEL-05 — Würfelprotokoll.** Beobachtung: lange Liste ohne Trennung nach
+  Spielabend oder Datum, nur Uhrzeit, bei 3W20 nur das erste Ziel und keine
+  TaP*. **Umgesetzt 23.10.2026** (Details in
+  [ui_oberflaeche.md](hinweise/ui_oberflaeche.md)): Gliederung nach Spielabend
+  (Pause über sechs Stunden, Überschriften nur ab zwei Abenden), neue additive
+  Felder `zielwerte` und `restpunkte` am `DiceLogEntry` (Anzeige „Ziele:
+  13/12/14 | TaP*: 4“, nur für neue Würfe), „Nochmal würfeln“ an Eigenschafts-,
+  Talent-, Zauber- und Kampf-Schnellproben über den normalen Probendialog mit
+  aktuellen Werten. **Grenzen:** das Protokoll hält weiter höchstens
+  `HeroState.diceLogMax` (50) Einträge, ältere Abende fallen heraus; beim
+  Wiederholen gehen die damaligen Situationsmodifikatoren verloren; Gefechts-
+  aufträge, Schaden und Rast lassen sich nicht wiederholen.
+- [x] **SPIEL-06 — Notizen auffindbar machen.** Beobachtung: Notizen und Personen
+  sind schnell angelegt, aber nicht durchsuchbar und nicht Ort oder Quest
+  zugeordnet. Entscheidung 23.10.2026: Suche über **alle** Abenteuer (das
+  laufende zuerst) und, statt freier Schlagworte, feste Felder **Ort** (vorbelegt
+  aus dem Standort des Helden) und **Datum** (vorbelegt aus dem aktuellen Datum
+  des Abenteuers); die Quest ist das Abenteuer selbst. Das aktuelle Datum steht
+  als Chip schon im Abenteuerabschnitt der Spielansicht. **Umgesetzt**
+  (Notizen und Personen; Details in
+  [ui_oberflaeche.md](hinweise/ui_oberflaeche.md)): additive Felder `ort` und
+  `datum` an `HeroNoteEntry`/`HeroAdventurePersonEntry` (nur bei Belegung im
+  JSON), Vorbelegung in Dialog und Schnell-Erfassung, Zeile „Ort · Datum“ auf
+  den Karten, Suchknopf mit Suchfeld in Abschnitt und Blatt. Die Notizen im
+  Notizen-Tab der Verwaltung (Bestandsoberfläche) zeigen die neuen Felder noch
+  nicht, erhalten sie aber beim Bearbeiten (`copyWith`). **Offen:** Ort und
+  Datum im Bestandseditor, Suche über die allgemeinen Notizen des Helden
+  (`HeroSheet.notes`), Umlautfaltung „oe“→„ö“.
 
 ## Arbeitsweise und gemeinsame Grenzen
 
@@ -152,13 +253,13 @@ ist die in der Abnahme oben vermerkte unvollständige Wiederholung nachgeholt.
 *Checkliste für die manuelle Bedienprüfung (offen, Gerät nötig).* Erst wenn
 alle Punkte bestanden sind, ARCH-02 oben abhaken:
 
-- [ ] Übersicht: je Gruppe Rasse/Kultur/Profession einen direkten Modifikator
+- [x] Übersicht: je Gruppe Rasse/Kultur/Profession einen direkten Modifikator
   und ein freies Fragment anlegen, ändern, entfernen; Werte im Bogen stimmen.
-- [ ] Merkmal: Herkunft über den gemeinsamen Dialog ändern (Übersicht und
+- [x] Merkmal: Herkunft über den gemeinsamen Dialog ändern (Übersicht und
   UI2-Merkmalsblatt); Wirkung bleibt unverändert, nur das Metadatum wechselt.
-- [ ] Schmal (360 px) und Textfaktor 2: keine Überläufe in Herkunftskarten,
+- [x] Schmal (360 px) und Textfaktor 2: keine Überläufe in Herkunftskarten,
   Dialogen und Merkmalsblatt.
-- [ ] Offene Planung: Bearbeiten fragt nach, „Abbrechen“ erhält die Sitzung,
+- [x] Offene Planung: Bearbeiten fragt nach, „Abbrechen“ erhält die Sitzung,
   UI2-Merkmalsblatt ist schreibgeschützt.
 - [ ] Abweichung durch ältere App (Textfeld geändert): Bearbeiten gesperrt bis
   „Text übernehmen“ oder „Liste behalten“; nichts wird still aufgelöst.
@@ -167,6 +268,19 @@ alle Punkte bestanden sind, ARCH-02 oben abhaken:
 - [ ] Live-Sync mit zwei Geräten (Firebase): gleiche Änderung in einer Gruppe
   auf beiden Geräten ergibt einen sichtbaren Konflikt, verschiedene Gruppen
   führen still zusammen.
+
+*Stand der Bedienprüfung (23.10.2026).* Die vier ersten Punkte wurden mit dem
+Testhelden „x_Laila al-Beychaliban (Test)“ im Edge-Debugfenster
+(`flutter run -d edge --web-port=5000`, 360 px per Fenster-Emulation,
+Textfaktor 2 per Browser-Schriftgröße, keine Overflow-Meldungen in der Konsole)
+geprüft. Das Debugfenster kann nicht synchronisieren: der App-Check-Abruf liefert
+HTTP 403, weil das frische Profil einen nicht registrierten Debug-Token erzeugt.
+Auf `heldensync-test.web.app` (Build `66698c5`) wurde im echten Edge ein
+Kultur-Modifikator samt Freitext-Fragment angelegt, gespeichert, synchronisiert
+(0 offene Konflikte) und wieder entfernt; dort ist nur die Zwei-Geräte-Prüfung
+offen. Nicht geprüft: Abweichung durch ältere App und Export → Import. Kleine
+Optikmängel bei 360 px/Textfaktor 2 (kein Überlauf): der Button
+„+ Herkunftsmodifikator“ und der Dialogtitel brechen mitten im Wort um.
 
 ## ARCH-03 — Gemeinsame Ausrüstungsdaten für Inventar und Kampf
 
@@ -282,9 +396,23 @@ im [Archiv](archiv/arch-04.md):
   16.10.2026).
 - [x] Epische Nachteile folgen dem Profil des Helden
   (`heroHouseRuleActiveProvider`, 16.10.2026).
-- [ ] Gruppenvorgabe („live von der Gruppe“): Verhalten bei mehreren Gruppen,
-  beim Verlassen und ohne Verbindung klären; die Firestore-Regeln verbieten
-  heute Gruppen-Updates, unter Windows ist Firestore nicht verfügbar.
+- [x] Gruppenvorgabe („live von der Gruppe“, Teilstand 16, 22.10.2026).
+  *Entscheidungen (Nutzer, 22.10.2026):* Ein Held kann mehreren Gruppen
+  angehören, folgt aber nur dem Regelprofil **einer** Gruppe, der **primären**.
+  Beim Verlassen bleibt das zuletzt aktive Regelprofil. Ohne Verbindung gilt das
+  gespeicherte Profil des Helden weiter. *Umsetzung:* `groups_v2` ersetzt den
+  gesperrten Legacy-Pfad; der Besitzer legt sein Profil als Vorgabe ab
+  (`shared_info/regelprofil`, JSON-Text, nur Besitzer schreibt, Mitglieder
+  lesen; Rules-Test in `functions/test/firestore_rules.rules.ts`). Am Helden
+  markiert `HeroGruppenMitgliedschaft.primaer` die primäre Konto-Gruppe (nur bei
+  `true` im JSON; die erste Konto-Gruppe wird von selbst primär, sonst
+  `setzePrimaereGruppe`). Die Vorgabe erscheint als Vorschau in der Karte
+  „Regelprofil“ (`gruppenVorgabeVorschauProvider`) und wirkt erst nach
+  „Übernehmen“; Held ohne Profil wird mit dem globalen Stand verglichen. Windows
+  (kein Firestore) und Offline lassen den Helden unverändert, eine bewusst
+  ignorierte Vorgabe bleibt als Hinweis stehen. Die Gruppenseite
+  (`GruppeRegelprofilKarte`) zeigt die Vorgabe, setzt die primäre Gruppe und
+  gibt dem Besitzer „Mein Regelprofil als Vorgabe“ bzw. „Vorgabe entfernen“.
 
 *Herleitungen:*
 
@@ -314,7 +442,11 @@ im [Archiv](archiv/arch-04.md):
   hergeleitete Lernspalte, die AsP-Kosten stehen als Katalogtext im Regelhinweis.
   Keines davon ist ein ZfW\*-Schritt.
 
-**Abnahme** erst, wenn Profilzuordnung (inkl. Gruppenvorgabe) abgehakt ist.
+**Abnahme:** Profilzuordnung inkl. Gruppenvorgabe ist umgesetzt (22.10.2026).
+Der Hauptpunkt bleibt offen, bis die Gruppenvorgabe mit zwei Konten gegen echtes
+Firebase geprüft ist (Rules veröffentlichen: `firebase deploy --only
+firestore:rules`) und der Punkt „bewusst offen aus den Lernregeln“ entschieden
+oder abgenommen ist.
 
 ## ARCH-05 — Schreibende Aktionen fachlich aufteilen
 

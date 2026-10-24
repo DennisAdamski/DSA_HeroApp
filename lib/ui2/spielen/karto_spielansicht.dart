@@ -21,6 +21,9 @@ import 'package:dsa_heldenverwaltung/ui2/spielen/karto_begleiterkarte.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_laufendes_abenteuer.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_ressourcenleiste.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_spielaktionen.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_wuerfelprotokoll.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_zuletzt_gewuerfelt.dart';
+import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
 import 'package:dsa_heldenverwaltung/ui2/widgets/karto_flaeche.dart';
 import 'package:dsa_heldenverwaltung/ui2/widgets/karto_ornamente.dart';
@@ -35,6 +38,17 @@ import 'package:dsa_heldenverwaltung/ui2/gefecht/gefecht_einstieg.dart';
 typedef KartoLaufzeitAktion = Future<void> Function(
   Future<void> Function() aktion,
 );
+
+/// Breite der Spielansicht, ab der Kampf, Effekte und Zustand daneben stehen.
+///
+/// Gemessen wird die Fläche der Ansicht, nicht das Fenster: im Workspace
+/// nimmt die Bereichsnavigation 248 dp weg. Mit der Fensterschwelle
+/// `kSchwelleBreit` (1024) erschien die Spalte deshalb erst ab rund 1270 dp
+/// Fensterbreite, und auf üblichen Laptops standen Kampf und Zustand
+/// zweieinhalb Bildschirme tief. Bei 840 bleiben der Hauptspalte neben der
+/// 280 dp breiten Seitenspalte noch knapp 500 dp: drei Ressourcen in einer
+/// Reihe und die Eigenschaften in zwei.
+const double kSeitenspalteAb = 840;
 
 /// Spielansicht: Ressourcen, Schnellaktionen, Kampf, Effekte und Protokoll.
 ///
@@ -86,24 +100,24 @@ class KartoSpielansicht extends ConsumerWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final breite = kartoBreiteFuer(constraints.maxWidth);
-        final haupt = _hauptabschnitte(context, ref, werte);
+        final oben = _spielabschnitte(context, ref, werte);
+        final unten = _nachschlagabschnitte(context, ref, werte);
         final seite = _seitenabschnitte(context, ref, werte);
-        final protokoll = KartoAbschnitt(
-          titel: 'Würfelprotokoll',
-          child: bestand.spielProtokoll(werte),
-        );
+        final protokoll = _protokoll(context, werte);
         final rand = EdgeInsets.all(breite.seitenrand);
         final kopf = _kopf(context, kompakt: breite == KartoBreite.schmal);
 
-        // Ohne Seiteninhalt gäbe eine zweite Spalte nur leere Fläche.
-        if (!breite.hatDetailspalte || seite.isEmpty) {
+        // Ohne Seiteninhalt gäbe eine zweite Spalte nur leere Fläche. Einspaltig
+        // rücken Kampf, Effekte und Zustand vor das Abenteuer: am Tisch werden
+        // sie öfter gebraucht als Notizen und Personen.
+        if (constraints.maxWidth < kSeitenspalteAb || seite.isEmpty) {
           return SingleChildScrollView(
             padding: rand,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 kopf,
-                ..._mitLuecken([...haupt, ...seite, protokoll]),
+                ..._mitLuecken([...oben, ...seite, ...unten, protokoll]),
                 const _Abschluss(),
               ],
             ),
@@ -121,7 +135,7 @@ class KartoSpielansicht extends ConsumerWidget {
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: _mitLuecken([...haupt, protokoll]),
+                      children: _mitLuecken([...oben, ...unten, protokoll]),
                     ),
                   ),
                   const SizedBox(width: Abstand.bahn),
@@ -158,47 +172,15 @@ class KartoSpielansicht extends ConsumerWidget {
         );
       });
 
-  // Reihenfolge: Schnellaktionen, Ressourcen, dann das Abenteuer mit Standort;
-  // die Eigenschaften folgen als schmale Würfelleiste.
-  List<Widget> _hauptabschnitte(
+  // Was am Tisch ständig gebraucht wird: Schnellaktionen, Ressourcen und die
+  // Eigenschaften als schmale Würfelleiste.
+  List<Widget> _spielabschnitte(
     BuildContext context,
     WidgetRef ref,
     HeroComputedSnapshot werte,
   ) {
     return <Widget>[
-      KartoAbschnitt(
-        titel: 'Schnellaktionen',
-        dicht: true,
-        child: KartoSpielaktionen(
-          kuerzelHinweis: 'Strg K',
-          gefecht: GefechtEinstieg(
-            heroId: heroId,
-            werte: werte,
-            bestand: bestand,
-            aktion: aktion,
-            vorBearbeitung: vorHeldenbearbeitung,
-            hervorgehoben: true,
-            knopfKey: const ValueKey('karto-spiel-gefecht'),
-          ),
-          onProbeSuchen: () => aktion(
-            () =>
-                bestand.probeSuchen(context: context, ref: ref, heroId: heroId),
-          ),
-          // Der Regelindex läuft nur auf Desktop und im Web.
-          onRegeln: bestand.regelnNachschlagenVerfuegbar
-              ? () => aktion(() => bestand.regelnNachschlagen(context: context))
-              : null,
-          onRast: () =>
-              aktion(() => bestand.rast(context: context, heroId: heroId)),
-          onSchaden: () => aktion(
-            () => bestand.schadenErhalten(
-              context: context,
-              ref: ref,
-              heroId: heroId,
-            ),
-          ),
-        ),
-      ),
+      _schnellaktionen(context, ref, werte),
       KartoAbschnitt(
         titel: 'Ressourcen',
         dicht: true,
@@ -213,6 +195,88 @@ class KartoSpielansicht extends ConsumerWidget {
           ),
         ),
       ),
+      KartoAbschnitt(
+        titel: 'Eigenschaften',
+        dicht: true,
+        child: bestand.spielEigenschaftsproben(heroId: heroId, werte: werte),
+      ),
+    ];
+  }
+
+  // Die farbigen Schnellaktionen; darunter die zuletzt gewürfelten Proben, die
+  // sich mit einem Tipp wiederholen lassen (SPIEL-01).
+  Widget _schnellaktionen(
+    BuildContext context,
+    WidgetRef ref,
+    HeroComputedSnapshot werte,
+  ) {
+    return KartoAbschnitt(
+      titel: 'Schnellaktionen',
+      dicht: true,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          KartoSpielaktionen(
+            kuerzelHinweis: 'Strg K',
+            gefecht: GefechtEinstieg(
+              heroId: heroId,
+              werte: werte,
+              bestand: bestand,
+              aktion: aktion,
+              vorBearbeitung: vorHeldenbearbeitung,
+              hervorgehoben: true,
+              stil: kartoSchnellaktionStil(context, context.karto.messing),
+              knopfKey: const ValueKey('karto-spiel-gefecht'),
+            ),
+            onProbeSuchen: () => aktion(
+              () => bestand.probeSuchen(
+                context: context,
+                ref: ref,
+                heroId: heroId,
+              ),
+            ),
+            // Der Regelindex läuft nur auf Desktop und im Web und wird erst
+            // angeboten, wenn die Katalog-Inhalte entsperrt sind (SPIEL-04).
+            onRegeln:
+                bestand.regelnNachschlagenVerfuegbar &&
+                    ref.watch(catalogContentVisibleProvider)
+                ? () =>
+                      aktion(() => bestand.regelnNachschlagen(context: context))
+                : null,
+            onRast: () =>
+                aktion(() => bestand.rast(context: context, heroId: heroId)),
+            onSchaden: () => aktion(
+              () => bestand.schadenErhalten(
+                context: context,
+                ref: ref,
+                heroId: heroId,
+              ),
+            ),
+          ),
+          KartoZuletztGewuerfelt(
+            protokoll: werte.state.diceLog,
+            onWiederholen: (eintrag) => aktion(
+              () => bestand.probeWiederholen(
+                context: context,
+                ref: ref,
+                heroId: heroId,
+                eintrag: eintrag,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Was man nachschlägt statt würfelt: das laufende Abenteuer mit Standort,
+  // Personen und Notizen, dann die Vor- und Nachteile.
+  List<Widget> _nachschlagabschnitte(
+    BuildContext context,
+    WidgetRef ref,
+    HeroComputedSnapshot werte,
+  ) {
+    return <Widget>[
       KartoAbenteuerAbschnitt(
         heroId: heroId,
         abenteuer: laufendesAbenteuer(werte.hero),
@@ -230,11 +294,10 @@ class KartoSpielansicht extends ConsumerWidget {
           final abenteuer = laufendesAbenteuer(werte.hero);
           if (abenteuer != null) _abenteuerOeffnen(context, abenteuer.id);
         },
-      ),
-      KartoAbschnitt(
-        titel: 'Eigenschaften',
-        dicht: true,
-        child: bestand.spielEigenschaftsproben(heroId: heroId, werte: werte),
+        // Suchtreffer in anderen Abenteuern öffnen deren Blatt, auf demselben
+        // geschützten Weg wie der Abschnittskopf.
+        onAbenteuerOeffnen: (abenteuerId) =>
+            _abenteuerOeffnen(context, abenteuerId),
       ),
       _merkmale(context, ref, werte),
     ];
@@ -280,8 +343,8 @@ class KartoSpielansicht extends ConsumerWidget {
     );
   }
 
-  // Auf breiten Fenstern steht diese Spalte neben den Spielaktionen; auf
-  // schmalen folgt sie ihnen in derselben Reihenfolge. Sie sitzt eine
+  // Ab [kSeitenspalteAb] steht diese Spalte neben den Spielaktionen; darunter
+  // folgt sie ihnen, noch vor dem Abenteuer. Sie sitzt eine
   // Flächenstufe tiefer, damit sie als Begleitspalte lesbar bleibt und nicht
   // mit der Hauptspalte um dieselbe Aufmerksamkeit konkurriert.
   List<Widget> _seitenabschnitte(
@@ -347,6 +410,27 @@ class KartoSpielansicht extends ConsumerWidget {
           }),
         ),
     ];
+  }
+
+  // Am Tisch zählen die letzten Würfe; die ganze Historie samt Filtern
+  // öffnet „Alle anzeigen“ in einem eigenen Blatt.
+  Widget _protokoll(BuildContext context, HeroComputedSnapshot werte) {
+    final anzahl = werte.state.diceLog.length;
+    return KartoAbschnitt(
+      titel: 'Würfelprotokoll',
+      aktion: anzahl > kProtokollKurz
+          ? TextButton(
+              key: const ValueKey<String>('karto-spiel-protokoll-alle'),
+              onPressed: () => zeigeWuerfelprotokoll(
+                context: context,
+                heroId: heroId,
+                bestand: bestand,
+              ),
+              child: Text('Alle anzeigen ($anzahl)'),
+            )
+          : null,
+      child: bestand.spielProtokoll(werte, hoechstens: kProtokollKurz),
+    );
   }
 
   // Abschnitte bekommen einen gleichmäßigen Abstand statt eigener Ränder.
