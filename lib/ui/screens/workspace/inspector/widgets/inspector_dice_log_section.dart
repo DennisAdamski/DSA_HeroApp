@@ -86,7 +86,13 @@ class InspectorDiceLogSection extends StatefulWidget {
     this.aktion,
     this.onWiederholen,
     this.jetzt,
+    this.hoechstens,
   });
+
+  /// Zeigt nur die neuesten so vielen Würfe und keine Filter; `null` zeigt
+  /// alles. Für die knappe Fassung auf der Spielansicht, die das vollständige
+  /// Protokoll eigens öffnet.
+  final int? hoechstens;
 
   /// Protokolleintraege in chronologischer Reihenfolge.
   final List<DiceLogEntry> entries;
@@ -132,22 +138,30 @@ class _InspectorDiceLogSectionState extends State<InspectorDiceLogSection> {
     final abende = gruppiereNachSpielabend(widget.entries).reversed.toList();
     final mitUeberschrift = abende.length > 1;
     final jetzt = widget.jetzt ?? DateTime.now();
+    final grenze = widget.hoechstens;
+    // Knapp gibt es keinen Filter: die neuesten Würfe, gleich welcher Art.
+    final filter = grenze == null ? _filter : DiceLogFilter.all;
+    var rest = grenze ?? widget.entries.length;
     final gefiltert = [
       for (final abend in abende)
         (
           abend: abend,
-          eintraege: abend.eintraege
-              .where(_filter.matches)
-              .toList(growable: false)
-              .reversed
-              .toList(growable: false),
+          eintraege: () {
+            final neueste = abend.eintraege
+                .where(filter.matches)
+                .toList(growable: false)
+                .reversed
+                .take(rest)
+                .toList(growable: false);
+            rest -= neueste.length;
+            return neueste;
+          }(),
         ),
     ].where((gruppe) => gruppe.eintraege.isNotEmpty).toList(growable: false);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _buildFilterChips(),
-        const SizedBox(height: 8),
+        if (grenze == null) ...[_buildFilterChips(), const SizedBox(height: 8)],
         if (gefiltert.isEmpty)
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 12),

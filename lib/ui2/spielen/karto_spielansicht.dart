@@ -21,6 +21,8 @@ import 'package:dsa_heldenverwaltung/ui2/spielen/karto_begleiterkarte.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_laufendes_abenteuer.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_ressourcenleiste.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_spielaktionen.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_wuerfelprotokoll.dart';
+import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
 import 'package:dsa_heldenverwaltung/ui2/widgets/karto_flaeche.dart';
 import 'package:dsa_heldenverwaltung/ui2/widgets/karto_ornamente.dart';
@@ -100,10 +102,7 @@ class KartoSpielansicht extends ConsumerWidget {
         final oben = _spielabschnitte(context, ref, werte);
         final unten = _nachschlagabschnitte(context, ref, werte);
         final seite = _seitenabschnitte(context, ref, werte);
-        final protokoll = KartoAbschnitt(
-          titel: 'Würfelprotokoll',
-          child: bestand.spielProtokoll(werte),
-        );
+        final protokoll = _protokoll(context, werte);
         final rand = EdgeInsets.all(breite.seitenrand);
         final kopf = _kopf(context, kompakt: breite == KartoBreite.schmal);
 
@@ -192,6 +191,7 @@ class KartoSpielansicht extends ConsumerWidget {
             aktion: aktion,
             vorBearbeitung: vorHeldenbearbeitung,
             hervorgehoben: true,
+            stil: kartoSchnellaktionStil(context, context.karto.messing),
             knopfKey: const ValueKey('karto-spiel-gefecht'),
           ),
           onProbeSuchen: () => aktion(
@@ -379,6 +379,27 @@ class KartoSpielansicht extends ConsumerWidget {
           }),
         ),
     ];
+  }
+
+  // Am Tisch zählen die letzten Würfe; die ganze Historie samt Filtern
+  // öffnet „Alle anzeigen“ in einem eigenen Blatt.
+  Widget _protokoll(BuildContext context, HeroComputedSnapshot werte) {
+    final anzahl = werte.state.diceLog.length;
+    return KartoAbschnitt(
+      titel: 'Würfelprotokoll',
+      aktion: anzahl > kProtokollKurz
+          ? TextButton(
+              key: const ValueKey<String>('karto-spiel-protokoll-alle'),
+              onPressed: () => zeigeWuerfelprotokoll(
+                context: context,
+                heroId: heroId,
+                bestand: bestand,
+              ),
+              child: Text('Alle anzeigen ($anzahl)'),
+            )
+          : null,
+      child: bestand.spielProtokoll(werte, hoechstens: kProtokollKurz),
+    );
   }
 
   // Abschnitte bekommen einen gleichmäßigen Abstand statt eigener Ränder.

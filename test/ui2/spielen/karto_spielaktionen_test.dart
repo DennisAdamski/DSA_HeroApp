@@ -140,6 +140,34 @@ void main() {
     expect(bestand.aufrufe, ['probeSuchen:rondra']);
   });
 
+  // Im Browser fiel der Fokus nach einem Klick auf freie Fläche aus dem
+  // Bereich; die Taste blieb unbehandelt, und der Browser öffnete seine Suche.
+  testWidgets(
+    'Strg+K greift auch ohne Fokus im Bereich und gilt als behandelt',
+    (tester) async {
+      final bestand = await zeige(tester);
+      FocusManager.instance.primaryFocus?.unfocus();
+      await tester.pump();
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.control);
+      final behandelt = await tester.sendKeyEvent(LogicalKeyboardKey.keyK);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.control);
+      await tester.pumpAndSettle();
+      expect(behandelt, isTrue);
+      expect(bestand.aufrufe, ['probeSuchen:rondra']);
+    },
+  );
+
+  testWidgets('Strg+Umschalt+K bleibt dem Browser', (tester) async {
+    final bestand = await zeige(tester);
+    await tester.sendKeyDownEvent(LogicalKeyboardKey.control);
+    await tester.sendKeyDownEvent(LogicalKeyboardKey.shift);
+    await tester.sendKeyEvent(LogicalKeyboardKey.keyK);
+    await tester.sendKeyUpEvent(LogicalKeyboardKey.shift);
+    await tester.sendKeyUpEvent(LogicalKeyboardKey.control);
+    await tester.pumpAndSettle();
+    expect(bestand.aufrufe, isEmpty);
+  });
+
   testWidgets('Strg+K öffnet die Probensuche auch im Verwalten-Bereich', (
     tester,
   ) async {

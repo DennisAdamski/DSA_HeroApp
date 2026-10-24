@@ -313,10 +313,14 @@ class KartoBestandsAdapterImpl
 
   /// Baut das vorhandene Würfelprotokoll mit den Einträgen des Zustands.
   @override
-  Widget spielProtokoll(HeroComputedSnapshot werte) => _KartoCompatHost(
+  Widget spielProtokoll(
+    HeroComputedSnapshot werte, {
+    int? hoechstens,
+  }) => _KartoCompatHost(
     child: Consumer(
       builder: (context, ref, _) => InspectorDiceLogSection(
         entries: werte.state.diceLog,
+        hoechstens: hoechstens,
         aktion: (eintrag) => schadenRuecknahmeAktion(
           eintrag: eintrag,
           heroId: werte.hero.id,

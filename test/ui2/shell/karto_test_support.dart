@@ -76,9 +76,14 @@ class TestBestand implements KartoBestandsAdapter {
     required HeroComputedSnapshot werte,
   }) => Text('Effekte $heroId');
 
+  /// Grenzen, mit denen das Protokoll gebaut wurde (`null` = vollständig).
+  final List<int?> protokollGrenzen = <int?>[];
+
   @override
-  Widget spielProtokoll(HeroComputedSnapshot werte) =>
-      Text('Protokoll ${werte.state.diceLog.length}');
+  Widget spielProtokoll(HeroComputedSnapshot werte, {int? hoechstens}) {
+    protokollGrenzen.add(hoechstens);
+    return Text('Protokoll ${werte.state.diceLog.length}');
+  }
 
   @override
   Widget planKatalog(String heroId) => Text('Plankatalog $heroId');

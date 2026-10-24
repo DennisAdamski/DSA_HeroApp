@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
@@ -22,6 +21,7 @@ import 'package:dsa_heldenverwaltung/ui2/shell/karto_navigationsgrund.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_sync_anzeige.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_spielansicht.dart';
 import 'package:dsa_heldenverwaltung/ui2/widgets/karto_papier.dart';
+import 'package:dsa_heldenverwaltung/ui2/widgets/karto_probenkuerzel.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
 import 'package:dsa_heldenverwaltung/ui_shared/feedback/open_feedback.dart';
 
@@ -326,15 +326,9 @@ class _KartoWorkspaceState extends ConsumerState<KartoWorkspace> {
   // der Verwaltung verwirft; nur die Belegung wechselt.
   Widget _mitProbenkuerzel(Widget kind, KartoArbeitsbereich fuer) {
     final aktiv = _bereich == fuer;
-    return CallbackShortcuts(
-      bindings: aktiv
-          ? <ShortcutActivator, VoidCallback>{
-              const SingleActivator(LogicalKeyboardKey.keyK, control: true):
-                  _probeSuchen,
-              const SingleActivator(LogicalKeyboardKey.keyK, meta: true):
-                  _probeSuchen,
-            }
-          : const <ShortcutActivator, VoidCallback>{},
+    return KartoProbenkuerzel(
+      aktiv: aktiv,
+      onAusloesen: _probeSuchen,
       child: Focus(autofocus: aktiv, child: kind),
     );
   }
