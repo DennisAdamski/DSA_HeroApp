@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
+import 'package:dsa_heldenverwaltung/domain/dice_log_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/begleiter_zustand_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ressourcen_aenderung_rules.dart';
@@ -129,6 +130,16 @@ class TestBestand implements KartoBestandsAdapter {
     required String heroId,
   }) async {
     aufrufe.add('probeSuchen:$heroId');
+  }
+
+  @override
+  Future<void> probeWiederholen({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String heroId,
+    required DiceLogEntry eintrag,
+  }) async {
+    aufrufe.add('probeWiederholen:$heroId:${eintrag.title}');
   }
 
   /// Schaltbar, damit Tests auch die Plattform ohne Regelindex prüfen können.

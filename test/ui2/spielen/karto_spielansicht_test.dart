@@ -346,6 +346,56 @@ void main() {
     });
   });
 
+  group('Zuletzt gewürfelt', () {
+    DiceLogEntry talent(String name, int minute) => DiceLogEntry(
+      timestamp: DateTime.utc(2026, 10, 24, 20, minute),
+      type: ProbeType.talent,
+      title: 'Talentprobe: $name',
+      subtitle: 'MU/KL/GE',
+      success: true,
+      diceValues: const [5, 8, 12],
+    );
+
+    Finder marke(String name) => find.byKey(
+      ValueKey<String>('karto-spiel-zuletzt-talent-Talentprobe: $name'),
+    );
+
+    testWidgets('zeigt jede Probe einmal und wiederholt sie per Tipp', (
+      tester,
+    ) async {
+      final bestand = TestBestand();
+      await zeige(
+        tester,
+        held: weltlich(),
+        bestand: bestand,
+        zustaende: {
+          'praiodan': const HeroState.empty().copyWith(
+            diceLog: [
+              talent('Klettern', 1),
+              talent('Schleichen', 2),
+              talent('Klettern', 3),
+            ],
+          ),
+        },
+      );
+      expect(find.text('Zuletzt gewürfelt'), findsOneWidget);
+      expect(marke('Klettern'), findsOneWidget);
+      expect(marke('Schleichen'), findsOneWidget);
+      await tester.ensureVisible(marke('Schleichen'));
+      await tester.tap(marke('Schleichen'));
+      await tester.pumpAndSettle();
+      expect(
+        bestand.aufrufe,
+        contains('probeWiederholen:praiodan:Talentprobe: Schleichen'),
+      );
+    });
+
+    testWidgets('bleibt ohne wiederholbaren Wurf unsichtbar', (tester) async {
+      await zeige(tester, held: weltlich());
+      expect(find.text('Zuletzt gewürfelt'), findsNothing);
+    });
+  });
+
   testWidgets('jede Schnellaktion trägt ihre eigene Farbe', (tester) async {
     await zeige(
       tester,

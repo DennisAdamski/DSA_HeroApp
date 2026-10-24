@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:dsa_heldenverwaltung/domain/dice_log_entry.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/alchimika_elixier_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/avatar_rahmung_rules.dart';
 import 'package:dsa_heldenverwaltung/state/auth_providers.dart';
@@ -474,6 +475,25 @@ class KartoBestandsAdapterImpl
         context: themedContext,
         ref: ref,
         heroId: heroId,
+      ),
+    );
+  }
+
+  /// Wiederholt die Probe eines Protokolleintrags im normalen Probendialog.
+  @override
+  Future<void> probeWiederholen({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String heroId,
+    required DiceLogEntry eintrag,
+  }) {
+    return _withKartoCompatContext(
+      context,
+      (themedContext) => wiederholeProbeMitHinweis(
+        context: themedContext,
+        ref: ref,
+        heroId: heroId,
+        entry: eintrag,
       ),
     );
   }

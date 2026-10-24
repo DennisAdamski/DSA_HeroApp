@@ -22,6 +22,7 @@ import 'package:dsa_heldenverwaltung/ui2/spielen/karto_laufendes_abenteuer.dart'
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_ressourcenleiste.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_spielaktionen.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_wuerfelprotokoll.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_zuletzt_gewuerfelt.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
 import 'package:dsa_heldenverwaltung/ui2/widgets/karto_flaeche.dart';
@@ -179,43 +180,7 @@ class KartoSpielansicht extends ConsumerWidget {
     HeroComputedSnapshot werte,
   ) {
     return <Widget>[
-      KartoAbschnitt(
-        titel: 'Schnellaktionen',
-        dicht: true,
-        child: KartoSpielaktionen(
-          kuerzelHinweis: 'Strg K',
-          gefecht: GefechtEinstieg(
-            heroId: heroId,
-            werte: werte,
-            bestand: bestand,
-            aktion: aktion,
-            vorBearbeitung: vorHeldenbearbeitung,
-            hervorgehoben: true,
-            stil: kartoSchnellaktionStil(context, context.karto.messing),
-            knopfKey: const ValueKey('karto-spiel-gefecht'),
-          ),
-          onProbeSuchen: () => aktion(
-            () =>
-                bestand.probeSuchen(context: context, ref: ref, heroId: heroId),
-          ),
-          // Der Regelindex läuft nur auf Desktop und im Web und wird erst
-          // angeboten, wenn die Katalog-Inhalte entsperrt sind (SPIEL-04).
-          onRegeln:
-              bestand.regelnNachschlagenVerfuegbar &&
-                  ref.watch(catalogContentVisibleProvider)
-              ? () => aktion(() => bestand.regelnNachschlagen(context: context))
-              : null,
-          onRast: () =>
-              aktion(() => bestand.rast(context: context, heroId: heroId)),
-          onSchaden: () => aktion(
-            () => bestand.schadenErhalten(
-              context: context,
-              ref: ref,
-              heroId: heroId,
-            ),
-          ),
-        ),
-      ),
+      _schnellaktionen(context, ref, werte),
       KartoAbschnitt(
         titel: 'Ressourcen',
         dicht: true,
@@ -236,6 +201,72 @@ class KartoSpielansicht extends ConsumerWidget {
         child: bestand.spielEigenschaftsproben(heroId: heroId, werte: werte),
       ),
     ];
+  }
+
+  // Die farbigen Schnellaktionen; darunter die zuletzt gewürfelten Proben, die
+  // sich mit einem Tipp wiederholen lassen (SPIEL-01).
+  Widget _schnellaktionen(
+    BuildContext context,
+    WidgetRef ref,
+    HeroComputedSnapshot werte,
+  ) {
+    return KartoAbschnitt(
+      titel: 'Schnellaktionen',
+      dicht: true,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          KartoSpielaktionen(
+            kuerzelHinweis: 'Strg K',
+            gefecht: GefechtEinstieg(
+              heroId: heroId,
+              werte: werte,
+              bestand: bestand,
+              aktion: aktion,
+              vorBearbeitung: vorHeldenbearbeitung,
+              hervorgehoben: true,
+              stil: kartoSchnellaktionStil(context, context.karto.messing),
+              knopfKey: const ValueKey('karto-spiel-gefecht'),
+            ),
+            onProbeSuchen: () => aktion(
+              () => bestand.probeSuchen(
+                context: context,
+                ref: ref,
+                heroId: heroId,
+              ),
+            ),
+            // Der Regelindex läuft nur auf Desktop und im Web und wird erst
+            // angeboten, wenn die Katalog-Inhalte entsperrt sind (SPIEL-04).
+            onRegeln:
+                bestand.regelnNachschlagenVerfuegbar &&
+                    ref.watch(catalogContentVisibleProvider)
+                ? () =>
+                      aktion(() => bestand.regelnNachschlagen(context: context))
+                : null,
+            onRast: () =>
+                aktion(() => bestand.rast(context: context, heroId: heroId)),
+            onSchaden: () => aktion(
+              () => bestand.schadenErhalten(
+                context: context,
+                ref: ref,
+                heroId: heroId,
+              ),
+            ),
+          ),
+          KartoZuletztGewuerfelt(
+            protokoll: werte.state.diceLog,
+            onWiederholen: (eintrag) => aktion(
+              () => bestand.probeWiederholen(
+                context: context,
+                ref: ref,
+                heroId: heroId,
+                eintrag: eintrag,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   // Was man nachschlägt statt würfelt: das laufende Abenteuer mit Standort,
