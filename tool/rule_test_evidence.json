@@ -2237,8 +2237,8 @@
     },
     "test/rules/attribute_start_rules_test.dart": {
       "kind": "official",
-      "status": "verified",
-      "summary": "Die Datei sichert: Eigenschaftsmaximum = Anderthalbfaches des Wertes nach Abschluss der Generierung, aufgerundet bei .5 (14 -> 21, 13 -> 20, 9 x 1,5 = 13,5 -> 14), Herausragende Eigenschaft erhoeht Startwert und damit Maximum (KK 14 + 2 = 16, Maximum 24), der Rassenbonus wird nach dem Vorteil addiert (Thorwaler KK 17, Maximum 26, Buchbeispiel) und der epische Obergrenzenbonus (+2 auf ein Maximum, hoechstens +2 je Eigenschaft) wird aufgeschlagen. Alles stimmt mit WdS, WdH und der Hausregel 'Epische Stufen' ueberein. Die Regressions- und Hinweistests (startAttributes ignorieren, Schema-Quittierung fuer Bestandshelden) sind reine App-Vertraege.",
+      "status": "conflict",
+      "summary": "Die Datei sichert: Eigenschaftsmaximum = Anderthalbfaches des Wertes nach Abschluss der Generierung, aufgerundet bei .5 (14 -> 21, 13 -> 20, 9 x 1,5 = 13,5 -> 14), Herausragende Eigenschaft erhoeht Startwert und damit Maximum (KK 14 + 2 = 16, Maximum 24), der Rassenbonus wird nach dem Vorteil addiert (Thorwaler KK 17, Maximum 26, Buchbeispiel) und der epische Obergrenzenbonus (+2 auf ein Maximum, hoechstens +2 je Eigenschaft) wird aufgeschlagen. Alles stimmt mit WdS, WdH und der Hausregel 'Epische Stufen' ueberein. Die Regressions- und Hinweistests (startAttributes ignorieren, Schema-Quittierung fuer Bestandshelden) sind reine App-Vertraege. Stichprobe 2026-10-25: Teile der Erwartungen sind nicht durch die Quelle gedeckt (siehe Befund RULE-FIX-102).",
       "sources": [
         {
           "title": "Wege des Schwerts",
@@ -2266,6 +2266,58 @@
             25738
           ],
           "checkedOn": "2026-10-24"
+        }
+      ],
+      "conflicts": [
+        {
+          "conflictKey": "startwert-professions-eigenschaftsmodifikator",
+          "conflictType": "unresolved",
+          "priority": "P3",
+          "followUp": "RULE-FIX-102",
+          "finding": "Stichprobe 2026-10-25: Maximum = Anderthalbfaches des Wertes nach Generierung, bei .5 aufgerundet (WdS 165: 9 x 1,5 = 13,5 -> 14), Herausragende Eigenschaft KK 16 -> 24 und Thorwaler-Bonus -> 17 / 26 (WdH 252) sowie epischer Bonus max. +2 je Eigenschaft (Epische Stufen S. 3) sind belegt. Nicht belegt ist die Erwartung im ersten Test, dass auch ein Professions-Modifikator (professionModText 'CH+3', CH 10 -> 13) in den Startwert eingeht: WdS 165 nennt nur Rasse und Kultur, WdH 304–305 sagt 'Professionen sollten keinen Einfluss auf die Eigenschaften haben' (nur ausnahmsweise 'wenn ein Eigenschaftsbonus im Paket enthalten ist'). Die Testkommentar-Seite 'WdH S. 253' ist die PDF-Seite, gedruckt ist 252.",
+          "testCases": [
+            "HeroBackground(rasseModText: 'KL+1, MU+1', kulturModText: 'IN+2', professionModText: 'CH+3'), CH 10 -> effectiveStart.ch == 13: Professions-Eigenschaftsmodifikator ist durch keinen genannten Chunk gedeckt (WdS 165 nennt nur Rasse und Kultur; WdH 304–305, Chunks 4865/4866 raten von Eigenschaftsmods bei Professionen ab)"
+          ],
+          "expected": "Ein Professions-Eigenschaftsmodifikator (CH+3) fließt in den Startwert ein (CH 10 → 13).",
+          "bookRule": [
+            {
+              "title": "Wege des Schwerts",
+              "pages": "165",
+              "mcpChunks": [
+                7240,
+                7241
+              ],
+              "checkedOn": "2026-10-25"
+            },
+            {
+              "title": "Wege der Helden",
+              "pages": "252",
+              "mcpChunks": [
+                4716,
+                4717
+              ],
+              "checkedOn": "2026-10-25"
+            },
+            {
+              "title": "Wege der Helden",
+              "pages": "304–305 (Eigenbau: Professionen und Eigenschaftsmodifikationen)",
+              "mcpChunks": [
+                4865,
+                4866
+              ],
+              "checkedOn": "2026-10-25"
+            },
+            {
+              "title": "Epische Stufen",
+              "pages": "3 (PDF 2–3)",
+              "mcpChunks": [
+                25738
+              ],
+              "checkedOn": "2026-10-25"
+            }
+          ],
+          "deviation": "WdS S. 165 nennt für den Startwert nur Rasse und Kultur; WdH S. 304–305 rät bei Professionen von Eigenschaftsmodifikatoren ab und lässt sie nur ausnahmsweise zu, wenn der Bonus im Paket enthalten ist.",
+          "impact": "Startwert und Maximum (1,5 × Startwert) von Helden mit Professions-Eigenschaftsbonus hängen von dieser nicht eindeutig belegten Annahme ab."
         }
       ]
     },
@@ -4137,8 +4189,8 @@
     },
     "test/rules/companion_steigerung_rules_test.dart": {
       "kind": "official",
-      "status": "verified",
-      "summary": "Die Datei sichert die Steigerungsregeln fuer Vertraute (WdZ, 'Die Entwicklung des Vertrauten'): Steigerung nach Spalte F der SKT (erster Schritt 6 AP, zweiter 14, dritter 22; Eigenschaften/AT/PA/GS direkt nach aktuellem Wert, LeP/AsP/MR wie bei Helden hinzugekauft), kein Wert ueber das Anderthalbfache des Startwerts (Grundwert 20 -> 30, 7 -> 10 abgerundet, 1 -> kein Zuwachs), Ausnahmen AsP und Ritualkenntnis (RK) unbegrenzt, und dass INI, Loyalitaet und AuP nicht zu den steigerbaren Werten zaehlen (Buchliste nennt nur Attacke, Parade, RK, Eigenschaften inkl. GS/MR, LE, AE). Die Effektivwert-Hilfsfunktionen, AP-Verfuegbarkeit, Altbuchungs-Hinweise und Fehler beim veralteten Stand sind App-Vertraege.",
+      "status": "conflict",
+      "summary": "Die Datei sichert die Steigerungsregeln fuer Vertraute (WdZ, 'Die Entwicklung des Vertrauten'): Steigerung nach Spalte F der SKT (erster Schritt 6 AP, zweiter 14, dritter 22; Eigenschaften/AT/PA/GS direkt nach aktuellem Wert, LeP/AsP/MR wie bei Helden hinzugekauft), kein Wert ueber das Anderthalbfache des Startwerts (Grundwert 20 -> 30, 7 -> 10 abgerundet, 1 -> kein Zuwachs), Ausnahmen AsP und Ritualkenntnis (RK) unbegrenzt, und dass INI, Loyalitaet und AuP nicht zu den steigerbaren Werten zaehlen (Buchliste nennt nur Attacke, Parade, RK, Eigenschaften inkl. GS/MR, LE, AE). Die Effektivwert-Hilfsfunktionen, AP-Verfuegbarkeit, Altbuchungs-Hinweise und Fehler beim veralteten Stand sind App-Vertraege. Stichprobe 2026-10-25: Teile der Erwartungen sind nicht durch die Quelle gedeckt (siehe Befund RULE-FIX-101).",
       "sources": [
         {
           "title": "Wege der Zauberei",
@@ -4157,6 +4209,59 @@
             7248
           ],
           "checkedOn": "2026-10-24"
+        }
+      ],
+      "conflicts": [
+        {
+          "conflictKey": "vertrauter-grenze-anderthalbfach-rundung",
+          "conflictType": "unresolved",
+          "priority": "P3",
+          "followUp": "RULE-FIX-101",
+          "finding": "Stichprobe 2026-10-25: Spalte F (6/14/22 AP), direkte Steigerung von Eigenschaften/AT/PA/GS, LE/AE/MR hinzugekauft, Grenze 'Anderthalbfaches des Startwertes', AsP und RK unbegrenzt und die Liste der steigerbaren Werte (ohne INI/Loyalität/AuP) sind in WdZ 124 und SKT (WdS 168) belegt. Die Rundung ist es nicht: Die Tests erwarten 1,5 x 7 = 10 'abgerundet' (Zuwachs 3), LeP 11 -> +5, GS 1 -> kein Zuwachs. WdZ sagt nichts zur Rundung; die allgemeine Regel (WdH S. 6: 'echt gerundet, bei Halbierungen aufgerundet') und die analoge Regel WdS 165 (13,5 -> 14) ergeben 10,5 -> 11 (Zuwachs 4), 16,5 -> 17 (LeP +6) und 1,5 -> 2.",
+          "testCases": [
+            "vertrautenGrenze(7) erwartet 10 und vertrautenMaxStandUeber(7) == 3 ('abgerundet'); nach allgemeiner Rundungsregel 11 bzw. 4",
+            "vertrautenMaxStand(katze mit startLep 11, 'lep') erwartet 5 (floor 16,5); echt gerundet 17 -> 6",
+            "vertrautenMaxStandUeber(1) == 0 bzw. GS 1 'lässt keinen Zuwachs (floor 1,5 = 1)'; echt gerundet 1,5 -> 2, also Zuwachs 1"
+          ],
+          "expected": "1,5 × Startwert wird abgerundet (7 → 10, LeP 11 → +5, GS 1 → kein Zuwachs).",
+          "bookRule": [
+            {
+              "title": "Wege der Zauberei",
+              "pages": "124 (Die Entwicklung des Vertrauten; kein Wort zu Auf-/Abrunden)",
+              "mcpChunks": [
+                5267,
+                5268
+              ],
+              "checkedOn": "2026-10-25"
+            },
+            {
+              "title": "Wege des Schwerts",
+              "pages": "168 (SKT Spalte F: 6 / 14 / 22)",
+              "mcpChunks": [
+                7247,
+                7248
+              ],
+              "checkedOn": "2026-10-25"
+            },
+            {
+              "title": "Wege der Helden",
+              "pages": "6 (echt runden, Halbierungen aufrunden)",
+              "mcpChunks": [
+                4036
+              ],
+              "checkedOn": "2026-10-25"
+            },
+            {
+              "title": "Wege des Schwerts",
+              "pages": "165 (Eigenschaftsmaximum 9 x 1,5 = 13,5 -> 14)",
+              "mcpChunks": [
+                7240
+              ],
+              "checkedOn": "2026-10-25"
+            }
+          ],
+          "deviation": "Die Quelle nennt nur „nicht über das Anderthalbfache“, die Rundung steht nicht im Text; die allgemeine Rundungsregel (WdH S. 6) und die analoge Eigenschaftsgrenze (WdS S. 165: 13,5 → 14) sprächen für Aufrunden (7 → 11, LeP +6, GS 1 → 2). Abrunden ist als Obergrenze ebenfalls vertretbar.",
+          "impact": "Vertrauten-Obergrenzen und Steigerungszuwächse fallen bei ungeraden Startwerten je nach Lesart um 1 niedriger oder höher aus."
         }
       ]
     },
@@ -4222,8 +4327,8 @@
     },
     "test/rules/derived_stats_test.dart": {
       "kind": "official",
-      "status": "verified",
-      "summary": "Prüft computeDerivedStats. Bestätigt: LeP = (KO+KO+KK)/2, AU = (MU+KO+GE)/2, AsP = (MU+IN+CH)/2, MR = (MU+KL+KO)/5, INI = (MU+MU+IN+GE)/5, AT = (MU+GE+KK)/5, jeweils kaufmännisch gerundet; Stufenboni +1 LeP, +2 AU, +2 AsP je Stufe (Hausregel); Zukauf, Dauer- und Temp-Modifikatoren addieren sich; Attributo/temporäre Eigenschaften verändern LeP, AU und AsP nicht, wohl aber MR, INI und AT (Attributo-Text: LE, AU, AE werden nicht neu berechnet, andere Basiswerte können abweichen); Standard-Vor-/Nachteile Hohe Lebenskraft, Ausdauernd, Astralmacht, Hohe Magieresistenz, Niedrige Lebenskraft, Kurzatmig, Niedrige Astralkraft, Niedrige Magieresistenz wirken als Wirkungspunkte (Obergrenzen 6 bzw. 3); Herausragende Eigenschaft erhöht den Eigenschaftswert. Die Untergrenze 0 bei negativen Mods ist App-Logik (für MR belegt: darf nie unter 0 sinken). Offen bleibt der Deckel 21 beim LeP-Stufenanteil im Test mit Stufe 30. Gegenprüfung 2026-10-25: Epische Stufen: Der epische Status beginnt zwischen Stufe 21 und 22, danach 'gibt es Stufenboni nur noch auf AsP'. Der LeP-Deckel bei Stufe 21 (und AsP ohne Deckel) ist damit belegt; AuP-Deckel gilt für epische Helden laut Code über stufeFuerAu (epicStartAp), der Test-Held ist nicht als episch markiert und rechnet Au mit Stufe 30.",
+      "status": "conflict",
+      "summary": "Prüft computeDerivedStats. Bestätigt: LeP = (KO+KO+KK)/2, AU = (MU+KO+GE)/2, AsP = (MU+IN+CH)/2, MR = (MU+KL+KO)/5, INI = (MU+MU+IN+GE)/5, AT = (MU+GE+KK)/5, jeweils kaufmännisch gerundet; Stufenboni +1 LeP, +2 AU, +2 AsP je Stufe (Hausregel); Zukauf, Dauer- und Temp-Modifikatoren addieren sich; Attributo/temporäre Eigenschaften verändern LeP, AU und AsP nicht, wohl aber MR, INI und AT (Attributo-Text: LE, AU, AE werden nicht neu berechnet, andere Basiswerte können abweichen); Standard-Vor-/Nachteile Hohe Lebenskraft, Ausdauernd, Astralmacht, Hohe Magieresistenz, Niedrige Lebenskraft, Kurzatmig, Niedrige Astralkraft, Niedrige Magieresistenz wirken als Wirkungspunkte (Obergrenzen 6 bzw. 3); Herausragende Eigenschaft erhöht den Eigenschaftswert. Die Untergrenze 0 bei negativen Mods ist App-Logik (für MR belegt: darf nie unter 0 sinken). Offen bleibt der Deckel 21 beim LeP-Stufenanteil im Test mit Stufe 30. Gegenprüfung 2026-10-25: Epische Stufen: Der epische Status beginnt zwischen Stufe 21 und 22, danach 'gibt es Stufenboni nur noch auf AsP'. Der LeP-Deckel bei Stufe 21 (und AsP ohne Deckel) ist damit belegt; AuP-Deckel gilt für epische Helden laut Code über stufeFuerAu (epicStartAp), der Test-Held ist nicht als episch markiert und rechnet Au mit Stufe 30. Stichprobe 2026-10-25: Teile der Erwartungen sind nicht durch die Quelle gedeckt (siehe Befund RULE-FIX-103).",
       "sources": [
         {
           "title": "Wege der Helden (Basiswerte: LE, AU, Wundschwelle, AE, AT/PA/FK, INI, MR, GS)",
@@ -4317,6 +4422,79 @@
             25817
           ],
           "checkedOn": "2026-10-25"
+        }
+      ],
+      "conflicts": [
+        {
+          "conflictKey": "aup-stufenbonus-ab-stufe-21",
+          "conflictType": "unresolved",
+          "priority": "P2",
+          "followUp": "RULE-FIX-103",
+          "finding": "Stichprobe 2026-10-25: Formeln LeP=(KO+KO+KK)/2, AuP=(MU+KO+GE)/2, AsP=(MU+IN+CH)/2, MR=(MU+KL+KO)/5, INI=(MU+MU+IN+GE)/5, AT=(MU+GE+KK)/5 (echt gerundet), Stufenboni +1 LeP/+2 AuP/+2 AsP, die Obergrenzen der Vor-/Nachteile (6 bzw. 3) und Attributo (LE/AU/AE nicht neu berechnet) sind belegt; LeP-Deckel Stufe 21 folgt aus 'Epische Stufen' ('Stufenboni nur noch auf AsP'). Nicht gedeckt: In Test 1 (Stufe 30, kein epic-Flag) erwartet maxAu = 84, davon 60 Stufenbonus (30 x 2). Stufe 30 ist nach Epische Stufen (Status zwischen Stufe 21 und 22) episch, dann gibt es keine AuP-Stufenboni mehr (nur AsP); die 60 AuP sind durch keine Quelle belegt.",
+          "testCases": [
+            "level: 30, ko 14, mu 14, ge 12, bought au 2, persistent au 1, temp au 1: erwartet maxAu == 84 (20 + 2 + 2 + 60); Epische Stufen S. 5: ab epischem Status Stufenboni nur noch auf AsP, AuP-Bonus würde bei 21 x 2 = 42 enden (maxAu 66)"
+          ],
+          "expected": "Stufe 30 ohne Epic-Flag: maxAu 84 (davon 60 AuP Stufenbonus, 2 je Stufe).",
+          "bookRule": [
+            {
+              "title": "Wege der Helden (Basiswerte LE, AU, AE, AT/PA, INI, MR)",
+              "pages": "20–21",
+              "mcpChunks": [
+                4070,
+                4071,
+                4072
+              ],
+              "checkedOn": "2026-10-25"
+            },
+            {
+              "title": "Erweiterung und Überarbeitung des Regelwerks (+1 LeP, +2 AuP, +2 AsP je Stufe)",
+              "pages": "2",
+              "mcpChunks": [
+                25817
+              ],
+              "checkedOn": "2026-10-25"
+            },
+            {
+              "title": "Epische Stufen (Nachteile des epischen Status: Stufenboni nur noch AsP)",
+              "pages": "5–6 (PDF)",
+              "mcpChunks": [
+                25738,
+                25740
+              ],
+              "checkedOn": "2026-10-25"
+            },
+            {
+              "title": "Basisregelwerk (Attributo)",
+              "pages": "173",
+              "mcpChunks": [
+                683
+              ],
+              "checkedOn": "2026-10-25"
+            },
+            {
+              "title": "Basisregelwerk (Hohe Lebenskraft, Hohe Magieresistenz, Kurzatmig)",
+              "pages": "88–89, 95",
+              "mcpChunks": [
+                471,
+                472,
+                490,
+                491
+              ],
+              "checkedOn": "2026-10-25"
+            },
+            {
+              "title": "Wege der Helden (Astralmacht, Ausdauernd; Niedrige Lebenskraft, Niedrige MR, Niedrige Astralkraft)",
+              "pages": "247, 267",
+              "mcpChunks": [
+                4702,
+                4760,
+                4761
+              ],
+              "checkedOn": "2026-10-25"
+            }
+          ],
+          "deviation": "Nach „Epische Stufen“ gibt es ab dem epischen Status (zwischen Stufe 21 und 22) Stufenboni nur noch auf AsP; der AuP-Stufenbonus endete bei Stufe 21 (42, maxAu 66). Der Test erreicht Stufe 30 ohne Epic-Flag.",
+          "impact": "Maximale Ausdauer ab Stufe 22 wäre je nach Lesart um bis zu 18 AuP zu hoch; der Test fixiert den höheren Wert."
         }
       ]
     },
@@ -7704,8 +7882,8 @@
     },
     "test/rules/hero_herkunft_rules_test.dart": {
       "kind": "official",
-      "status": "verified",
-      "summary": "Überwiegend technischer Vertrag: die strukturierte Herkunftsliste führt vor dem veralteten Text, Fallbacks bei unbekannter Art/unbrauchbarem Ziel/unbekannter Containerversion, Reihenfolge der unbekannten Fragmente, Quellaufschlüsselung und Migration der Bestandshelden (Projektion vor/nach Migration identisch). Fachlich behauptet sind nur: Eigenschaftsmodifikatoren aus Rasse/Kultur wirken auf den laufenden Wert und den Startwert (Wege der Helden: Rassenbonus wird auf den Startwert addiert, Obergrenze 26 bei Startwert 17), Basiswertmodifikatoren (ASP/KAP/LEP/AUSWEICHEN/INI/GS/MR) wirken auf die jeweiligen Basiswerte; das stimmt mit dem Buch überein. Die automatische Magie-/Karma-Aktivierung durch ASP-/KAP-Kürzel ist eine App-Voreinstellung der Oberfläche, keine Buchregel.",
+      "status": "conflict",
+      "summary": "Überwiegend technischer Vertrag: die strukturierte Herkunftsliste führt vor dem veralteten Text, Fallbacks bei unbekannter Art/unbrauchbarem Ziel/unbekannter Containerversion, Reihenfolge der unbekannten Fragmente, Quellaufschlüsselung und Migration der Bestandshelden (Projektion vor/nach Migration identisch). Fachlich behauptet sind nur: Eigenschaftsmodifikatoren aus Rasse/Kultur wirken auf den laufenden Wert und den Startwert (Wege der Helden: Rassenbonus wird auf den Startwert addiert, Obergrenze 26 bei Startwert 17), Basiswertmodifikatoren (ASP/KAP/LEP/AUSWEICHEN/INI/GS/MR) wirken auf die jeweiligen Basiswerte; das stimmt mit dem Buch überein. Die automatische Magie-/Karma-Aktivierung durch ASP-/KAP-Kürzel ist eine App-Voreinstellung der Oberfläche, keine Buchregel. Stichprobe 2026-10-25: Teile der Erwartungen sind nicht durch die Quelle gedeckt (siehe Befund RULE-FIX-104).",
       "sources": [
         {
           "title": "Wege der Helden (Herausragende Eigenschaft: Rassenbonus nach Generierung addiert, Steigerungsgrenze vom modifizierten Startwert)",
@@ -7716,6 +7894,66 @@
             4718
           ],
           "checkedOn": "2026-10-25"
+        }
+      ],
+      "conflicts": [
+        {
+          "conflictKey": "herkunftsmodifikatoren-ausweichen-kap-profession-eigenschaft",
+          "conflictType": "source_gap",
+          "priority": "P3",
+          "followUp": "RULE-FIX-104",
+          "finding": "Stichprobe 2026-10-25: Der genannte Chunk (WdH 252) stützt nur die Aussage, dass Rassenboni auf den Startwert wirken. Die Erwartungen, dass Basiswert-Modifikatoren aus Herkunft (Aliase AE, KE, LE, AW, AU, MR, INI, GS) wirken und Profession-Eigenschaftsmods (KK+1 laut professionAttributeMods) zählen, sind dort nicht belegt: LE, AU, INI, MR, GS mit Rasse/Kultur/Profession stehen in WdH 20–22, AsP +18 bei Professionen in WdH 193; Ausweichen- und KaP-Herkunftsmodifikatoren sowie Eigenschaftsmods durch Professionen sind in den Regelbüchern nicht auffindbar (WdH 304 rät sogar davon ab). Der Rest ist technischer Vertrag.",
+          "testCases": [
+            "alle Aliase: 'AE+1, KE+2, LE+3, AW+1, AU+4, MR-1, INI+1, GS+1' -> statMods.ausweichen == 1 und kap == 2: Ausweichen-/KaP-Modifikator aus Rasse/Kultur/Profession ohne Buchbeleg",
+            "professionModText 'KK+1' -> professionAttributeMods.kk == 1: Professions-Eigenschaftsmod laut WdH 304 nicht regulär vorgesehen"
+          ],
+          "expected": "Herkunftsmodifikatoren für Ausweichen und KaP sowie Professions-Eigenschaftsmodifikatoren (KK+1) wirken auf die Werte.",
+          "bookRule": [
+            {
+              "title": "Wege der Helden",
+              "pages": "252",
+              "mcpChunks": [
+                4716,
+                4717,
+                4718
+              ],
+              "checkedOn": "2026-10-25"
+            },
+            {
+              "title": "Wege der Helden (Basiswerte mit Modifikation nach Rasse, Kultur und/oder Profession)",
+              "pages": "20–21",
+              "mcpChunks": [
+                4070,
+                4071,
+                4072
+              ],
+              "checkedOn": "2026-10-25"
+            },
+            {
+              "title": "Wege der Helden (Stoerrebrandt-Kolleg: AsP +18)",
+              "pages": "193",
+              "mcpChunks": [
+                4543
+              ],
+              "checkedOn": "2026-10-25"
+            },
+            {
+              "title": "Wege der Helden (Eigenbau: Professionen sollten keinen Einfluss auf Eigenschaften haben)",
+              "pages": "304–305",
+              "mcpChunks": [
+                4865,
+                4866
+              ],
+              "checkedOn": "2026-10-25"
+            }
+          ],
+          "deviation": "Basiswert-Modifikatoren für LE, AU, INI, MR, GS und AsP +18 sind belegt (WdH S. 20–22, 193); Ausweichen- und KaP-Modifikatoren aus Rasse/Kultur/Profession und Eigenschaftsmodifikatoren durch Professionen sind in den Regelbüchern nicht auffindbar (WdH S. 304 rät sogar davon ab).",
+          "impact": "Angezeigte Ausweichen- und KaP-Werte sowie Startwerte hängen von nicht belegten Herkunftsmodifikatoren ab; betrifft nur Helden mit solchen Einträgen.",
+          "searchedTerms": [
+            "Herkunftsmodifikator Ausweichen",
+            "Modifikator Karmalenergie KaP Rasse Kultur Profession",
+            "Profession Eigenschaftsmodifikator Startwert"
+          ]
         }
       ]
     },
