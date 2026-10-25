@@ -1,4 +1,4 @@
-﻿# Oberfläche: Bestand, Kartograph (UI2), Theme und Bedienung
+# Oberfläche: Bestand, Kartograph (UI2), Theme und Bedienung
 
 Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unverändert. Die kurze [CLAUDE.md](../../CLAUDE.md) enthält die harten Regeln und den Themenindex.
 
@@ -145,6 +145,16 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   greift nur, solange sein Bereich aktiv ist und seine Route oben liegt (nicht
   unter Dialogen oder dem Gefecht, das dasselbe Widget nutzt); Strg+Umschalt+K
   bleibt dem Browser.
+- Häufige Proben (Favoriten, nur UI2): `HeroSheet.probenFavoriten` speichert je
+  Eintrag nur `art:ref` (`HeroProbenFavorit.id`, deterministisch, damit der
+  Sync-Merge die Liste je Element zusammenführt); nie Name oder Wert, Ziel und
+  Herleitung entstehen beim Würfeln. Die Kandidaten kommen aus
+  `beobachteProbeKandidaten` (`probe_quick_search.dart`), die Suche zeigt den
+  Stern nur mit `mitFavoriten: true` (klassische Oberfläche ohne). Schreiben nur
+  frisch über `aendereHeldMitMeldung` und die Listenregeln in
+  `proben_favoriten_rules.dart` (Höchstzahl `kProbenFavoritenMax`). Die Liste
+  im Spielbereich ist `ProbenFavoritenListe` hinter
+  `KartoBestandsAdapter.spielFavoritenproben`.
 - `InspectorArcaneEffectsBlock` ist Consumer-Wrapper um die darstellende
   `InspectorArcaneEffectsView`. Die Chipliste baut
   `lib/rules/derived/active_spell_display_rules.dart` — eigene Datei, weil

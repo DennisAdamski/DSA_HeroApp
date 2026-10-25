@@ -170,7 +170,12 @@ class _WorkspaceManagementBodyState
     required bool regelnFreigeschaltet,
   }) {
     void probeSuchen() => unawaited(
-      showProbeQuickSearch(context: context, ref: ref, heroId: widget.heroId),
+      showProbeQuickSearch(
+        context: context,
+        ref: ref,
+        heroId: widget.heroId,
+        mitFavoriten: true,
+      ),
     );
     return <Widget>[
       // Dieselbe Suche wie im Spielen-Bereich (Strg/Cmd+K), links der Aktionen.

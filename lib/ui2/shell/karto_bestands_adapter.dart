@@ -58,6 +58,13 @@ abstract interface class KartoBestandsAdapter {
     required HeroComputedSnapshot werte,
   });
 
+  /// Baut die häufigen Proben des Helden (ARCH-01): antippbar, mit Verwalten
+  /// (Reihenfolge, Entfernen).
+  ///
+  /// Gewürfelt wird über denselben Weg wie in der Probensuche; gespeichert
+  /// wird nur ein Verweis je Probe, nie ein Wert.
+  Widget spielFavoritenproben({required String heroId});
+
   /// Baut die Anzeige laufender Effekte — ohne eigene Schaltfläche.
   ///
   /// Die Verwaltenaktion steht laut Projektrichtlinie im Abschnittskopf der
@@ -95,6 +102,9 @@ abstract interface class KartoBestandsAdapter {
   });
 
   /// Öffnet die gemeinsame Probensuche mit bestehenden Würfelaktionen.
+  ///
+  /// Jeder Treffer trägt einen Stern, der die Probe in die häufigen Proben
+  /// ([spielFavoritenproben]) aufnimmt.
   Future<void> probeSuchen({
     required BuildContext context,
     required WidgetRef ref,

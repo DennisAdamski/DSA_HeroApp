@@ -196,6 +196,22 @@ class KartoSpielansicht extends ConsumerWidget {
         ),
       ),
       KartoAbschnitt(
+        titel: 'Häufige Proben',
+        dicht: true,
+        aktion: TextButton(
+          key: const ValueKey<String>('karto-spiel-proben-waehlen'),
+          onPressed: () => aktion(
+            () => bestand.probeSuchen(
+              context: context,
+              ref: ref,
+              heroId: heroId,
+            ),
+          ),
+          child: const Text('Proben wählen'),
+        ),
+        child: bestand.spielFavoritenproben(heroId: heroId),
+      ),
+      KartoAbschnitt(
         titel: 'Eigenschaften',
         dicht: true,
         child: bestand.spielEigenschaftsproben(heroId: heroId, werte: werte),

@@ -220,7 +220,25 @@ Rücknahme am Protokolleintrag.
 
 **Offen bzw. abgespalten:**
 
-- Persönliche Favoriten (eigener Auftrag; Persistenz und Sync zu entscheiden).
+- [x] Persönliche Favoriten („Häufige Proben“, 22.10.2026). *Entscheidungen
+  (Nutzer, 22.10.2026):* Ablage **am Heldenbogen**, markiert werden **alle
+  Probenarten** der Probensuche (Eigenschaft, Kampfwert, Talent, Zauber), bedient
+  wird **nur in UI2**. *Umsetzung:* `HeroSheet.probenFavoriten` (nur bei Belegung
+  im JSON) mit `HeroProbenFavorit`: nur ein Verweis `art:ref` (`talent:tal_x`),
+  nie Name oder Wert. Die ID ist deterministisch, daher führt der Sync-Merge die
+  Liste je Element zusammen (verschiedene neue Favoriten zweier Geräte ergeben
+  keinen Konflikt, die Reihenfolge ist nur Anzeige). Höchstens 20
+  (`kProbenFavoritenMax`); Listenregeln in `proben_favoriten_rules.dart`.
+  Stern in der Probensuche (`mitFavoriten`, nur UI2: Spielen, Verwalten,
+  Strg K), Abschnitt „Häufige Proben“ im Spielbereich nach den Ressourcen
+  (`ProbenFavoritenListe`, über `KartoBestandsAdapter.spielFavoritenproben`):
+  Tipp würfelt wie in der Suche, Menü „Nach vorn / Nach hinten / Entfernen“.
+  Nicht auflösbare Favoriten (Zauber verlernt) bleiben gespeichert und lassen
+  sich über einen Hinweis entfernen. Ausweichproben auf verwandte Talente haben
+  keinen Stern (keine stabile Kennung). *Nicht gebaut:* die Filter
+  Alle/Talente/Zauber des Mockups. Tests: `hero_proben_favorit_test.dart`,
+  `proben_favoriten_rules_test.dart`, `karto_favoriten_bruecke_test.dart`,
+  `karto_spielansicht_test.dart`.
 - [x] Sync-Statusanzeige im Workspace: Fußeintrag der Navigation (breit) bzw.
   AppBar-Symbol mit Tooltip (schmal) aus `syncStatusProvider`, Zuordnung in
   `beschreibeKartoSync` (`lib/ui2/shell/karto_sync_anzeige.dart`); Tipp öffnet

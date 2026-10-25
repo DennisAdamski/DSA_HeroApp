@@ -878,6 +878,30 @@ void main() {
     });
   });
 
+  group('Häufige Proben', () {
+    testWidgets('stehen nach den Ressourcen und vor dem Abenteuer', (
+      tester,
+    ) async {
+      await zeige(tester, held: mitAbenteuern([_nebel]));
+      final ressourcen = tester.getTopLeft(find.text('Ressourcen')).dy;
+      final proben = tester.getTopLeft(find.text('Häufige Proben')).dy;
+      final abenteuer = tester.getTopLeft(find.text('Die Spuren im Nebel')).dy;
+      expect(ressourcen, lessThan(proben));
+      expect(proben, lessThan(abenteuer));
+      expect(find.text('Häufige Proben praiodan'), findsOneWidget);
+    });
+
+    testWidgets('„Proben wählen“ öffnet die Probensuche', (tester) async {
+      final bestand = TestBestand();
+      await zeige(tester, held: weltlich(), bestand: bestand);
+      await tester.tap(
+        find.byKey(const ValueKey('karto-spiel-proben-waehlen')),
+      );
+      await tester.pumpAndSettle();
+      expect(bestand.aufrufe, contains('probeSuchen:praiodan'));
+    });
+  });
+
   group('Vor- und Nachteile', () {
     testWidgets('stehen einspaltig nach Kampf und Abenteuer', (tester) async {
       await zeige(

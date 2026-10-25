@@ -15,6 +15,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_language_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_merkmal.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_meta_talent.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_note_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_proben_favorit.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_regelprofil.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_reisebericht.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_resource_activation_config.dart';
@@ -95,6 +96,7 @@ class HeroSheet {
     this.epicMainAttributes = const Attributes.zero(),
     this.epicActivationPolicy,
     this.regelProfil,
+    this.probenFavoriten = const <HeroProbenFavorit>[],
     this.epicLockedWaffenmeisterCategories = const <String>{},
     this.epicUnactivatedTalentIds = const <String>{},
   }) : rawStartAttributes = rawStartAttributes ?? startAttributes ?? attributes,
@@ -235,6 +237,13 @@ class HeroSheet {
   /// Belegung im JSON, damit Bestandshelden ihren Inhalts-Hash behalten.
   final HeroRegelProfil? regelProfil;
 
+  /// Häufig gewürfelte Proben des Spielers in Anzeigereihenfolge (ARCH-01).
+  ///
+  /// Nur Verweise auf Eigenschaft, Kampfwert, Talent oder Zauber, nie Werte.
+  /// Nur bei belegter Liste im JSON, damit Bestandshelden ihren Inhalts-Hash
+  /// behalten.
+  final List<HeroProbenFavorit> probenFavoriten;
+
   /// Waffenmeister-Kategorien, die beim Epic-Werden nicht erlernbar waren
   /// und daher auch nachtraeglich gesperrt bleiben.
   final Set<String> epicLockedWaffenmeisterCategories;
@@ -306,6 +315,7 @@ class HeroSheet {
     Attributes? epicMainAttributes,
     Object? epicActivationPolicy = _copySentinel,
     Object? regelProfil = _copySentinel,
+    List<HeroProbenFavorit>? probenFavoriten,
     Set<String>? epicLockedWaffenmeisterCategories,
     Set<String>? epicUnactivatedTalentIds,
   }) {
@@ -387,6 +397,7 @@ class HeroSheet {
       regelProfil: identical(regelProfil, _copySentinel)
           ? this.regelProfil
           : regelProfil as HeroRegelProfil?,
+      probenFavoriten: probenFavoriten ?? this.probenFavoriten,
       epicLockedWaffenmeisterCategories:
           epicLockedWaffenmeisterCategories ??
           this.epicLockedWaffenmeisterCategories,
@@ -456,6 +467,7 @@ class HeroSheet {
     'epicMainAttributes',
     'epicActivationPolicy',
     'regelProfil',
+    'probenFavoriten',
     'epicLockedWaffenmeisterCategories',
     'epicUnactivatedTalentIds',
     ...HeroAppearance.jsonSchluessel,
@@ -568,6 +580,11 @@ class HeroSheet {
       if (epicActivationPolicy != null)
         'epicActivationPolicy': epicActivationPolicy,
       if (regelProfil != null) 'regelProfil': regelProfil!.toJson(),
+      // Nur bei belegter Liste: Bestandshelden behalten ihren Inhalts-Hash.
+      if (probenFavoriten.isNotEmpty)
+        'probenFavoriten': probenFavoriten
+            .map((entry) => entry.toJson())
+            .toList(growable: false),
       'epicLockedWaffenmeisterCategories': epicLockedWaffenmeisterCategories
           .toList(growable: false),
       'epicUnactivatedTalentIds': epicUnactivatedTalentIds.toList(
@@ -824,6 +841,7 @@ class HeroSheet {
               Map<String, dynamic>.from(json['regelProfil'] as Map),
             )
           : null,
+      probenFavoriten: leseProbenFavoriten(json['probenFavoriten']),
       epicLockedWaffenmeisterCategories: _parseStringSet(
         json['epicLockedWaffenmeisterCategories'],
       ),
