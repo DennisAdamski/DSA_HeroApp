@@ -150,28 +150,34 @@ void main() {
   });
 
   group('Gedächtnis-Vorteile', () {
-    test(
-      'Gutes Gedächtnis: Wissenstalent, Zauber, Sprache — nicht Klettern',
-      () {
-        final hero = held(vorteile: 'Gutes Gedächtnis I');
-        for (final (kind, id) in <(AdvancementKind, String)>[
-          (AdvancementKind.talent, 'tal_geographie'),
-          (AdvancementKind.spell, 'spell_balsam_salabunde'),
-        ]) {
-          final faktoren = option(hero, kind, id).lernregeln.faktoren;
-          expect(faktoren, hasLength(1), reason: id);
-          expect((faktoren.single.zaehler, faktoren.single.nenner), (3, 4));
-        }
+    test('Gutes Gedächtnis: Zauber ja — Wissenstalent und Klettern nicht', () {
+      final hero = held(vorteile: 'Gutes Gedächtnis I');
+      final faktoren = option(
+        hero,
+        AdvancementKind.spell,
+        'spell_balsam_salabunde',
+      ).lernregeln.faktoren;
+      expect(faktoren, hasLength(1));
+      expect((faktoren.single.zaehler, faktoren.single.nenner), (3, 4));
+      for (final id in <String>['tal_geographie', 'tal_klettern']) {
         expect(
-          option(
-            hero,
-            AdvancementKind.talent,
-            'tal_klettern',
-          ).lernregeln.faktoren,
+          option(hero, AdvancementKind.talent, id).lernregeln.faktoren,
           isEmpty,
+          reason: id,
         );
-      },
-    );
+      }
+    });
+
+    test('Eidetisches Gedächtnis verbilligt auch Wissenstalente', () {
+      final hero = held(vorteile: 'Eidetisches Gedächtnis');
+      final faktoren = option(
+        hero,
+        AdvancementKind.talent,
+        'tal_geographie',
+      ).lernregeln.faktoren;
+      expect(faktoren, hasLength(1));
+      expect((faktoren.single.zaehler, faktoren.single.nenner), (1, 2));
+    });
 
     test('Eidetisches Gedächtnis halbiert und geht vor Gutem Gedächtnis', () {
       final hero = held(vorteile: 'Eidetisches Gedächtnis; Gutes Gedächtnis I');

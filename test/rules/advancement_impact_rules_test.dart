@@ -138,7 +138,7 @@ void main() {
         AttributeCode.ge,
         13,
       ).unlocked.map((e) => e.before.targetId),
-      ['sword'],
+      ['bow', 'sword'],
     );
     expect(
       _impact(

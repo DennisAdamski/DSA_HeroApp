@@ -1311,64 +1311,49 @@
             25740
           ],
           "checkedOn": "2026-10-24"
+        },
+        {
+          "title": "Wege des Schwerts",
+          "pages": "8",
+          "mcpChunks": [
+            6855
+          ],
+          "checkedOn": "2026-10-24"
+        },
+        {
+          "title": "Wege des Schwerts",
+          "pages": "12",
+          "mcpChunks": [
+            6864
+          ],
+          "checkedOn": "2026-10-24"
+        },
+        {
+          "title": "Wege des Schwerts",
+          "pages": "18",
+          "mcpChunks": [
+            6880
+          ],
+          "checkedOn": "2026-10-24"
+        },
+        {
+          "title": "Wege der Helden",
+          "pages": "18",
+          "mcpChunks": [
+            4066
+          ],
+          "checkedOn": "2026-10-24"
+        },
+        {
+          "title": "Erweiterung und Überarbeitung des Regelwerks",
+          "pages": "PDF S. 3",
+          "mcpChunks": [
+            25818
+          ],
+          "checkedOn": "2026-10-24"
         }
       ],
       "conflicts": [
-        {
-          "conflictKey": "fernkampf-talentmaximum-ff-ge-kk",
-          "conflictType": "contradiction",
-          "priority": "P1",
-          "followUp": "RULE-FIX-002",
-          "finding": "Der Test erwartet, dass eine Steigerung von GE (12 auf 13) nur das Nahkampftalent 'sword' entsperrt, nicht das Fernkampftalent 'bow'. Die App berechnet das Fernkampf-Maximum nur aus FF und KK (computeCombatTalentMaxValue und die epische Sondergrenze in advancement_value_options.dart). Laut Regelwerk zählen bei Fernkampf-Talenten FF, GE und KK (höchster Wert +3, Begabung +5). Mit GE 13 steigt das Maximum von 'bow' also von 15 auf 16 und es müsste ebenfalls entsperrt werden. Die Hausregel (FF*1,5+3 als zusätzliche Obergrenze) ändert nichts am Einbezug von GE: bei FF 12 beträgt diese Zusatzgrenze 21 und greift nicht. Die übrigen Aussagen des Testfalls (FF 13 entsperrt nur bow, KK 13 beide, Nahkampf GE/KK) stimmen mit dem Buch.",
-          "testCases": [
-            "Nahkampf und Fernkampf verwenden ihre eigenen Eigenschaften"
-          ],
-          "expected": "GE 12 auf 13 entsperrt nur ['sword']; Fernkampf-Maximum beruht nur auf FF und KK.",
-          "bookRule": [
-            {
-              "title": "Wege des Schwerts",
-              "pages": "8",
-              "mcpChunks": [
-                6855
-              ],
-              "checkedOn": "2026-10-24"
-            },
-            {
-              "title": "Wege des Schwerts",
-              "pages": "12",
-              "mcpChunks": [
-                6864
-              ],
-              "checkedOn": "2026-10-24"
-            },
-            {
-              "title": "Wege des Schwerts",
-              "pages": "18",
-              "mcpChunks": [
-                6880
-              ],
-              "checkedOn": "2026-10-24"
-            },
-            {
-              "title": "Wege der Helden",
-              "pages": "18",
-              "mcpChunks": [
-                4066
-              ],
-              "checkedOn": "2026-10-24"
-            },
-            {
-              "title": "Erweiterung und Überarbeitung des Regelwerks",
-              "pages": "PDF S. 3",
-              "mcpChunks": [
-                25818
-              ],
-              "checkedOn": "2026-10-24"
-            }
-          ],
-          "deviation": "Buch (drei Stellen übereinstimmend): Fernkampf-Maximum = höchster Wert aus FF, GE, KK plus 3 (Begabung plus 5). App und Test: nur FF und KK.",
-          "impact": "Produktcode: Fernkampf-Maximum (und epische Sondergrenze) zu niedrig, sobald GE die höchste der drei Eigenschaften ist; Steigerungsoptionen werden zu früh mit 'Maximum erreicht' gesperrt und die Entsperr-Vorschau lässt bow aus. Test: GE-Assertion für 'bow' muss nach Korrektur ['bow','sword'] lauten."
-        },
         {
           "conflictKey": "attributo-inventar-ressourcen-grenzen",
           "conflictType": "unresolved",
@@ -1411,6 +1396,14 @@
           "deviation": "Kein Widerspruch nachgewiesen; die Regel (temporäre Eigenschaften nicht für Ressourcen/Grenzen) ist im durchsuchten Material nicht auffindbar. Die Repo-Regel 6 (CLAUDE.md) legt sie als Designentscheidung fest.",
           "impact": "Nur Dokumentationslücke: ohne MCP-Beleg bleibt offen, ob Au/Steigerungsgrenzen Gegenstandsboni und Attributo so behandeln dürfen. Kein bekannter Spielwertfehler.",
           "recheck": "Gegenprüfung 2026-10-25: nur teilweise belegt."
+        }
+      ],
+      "resolved": [
+        {
+          "followUp": "RULE-FIX-002",
+          "conflictKey": "fernkampf-talentmaximum-ff-ge-kk",
+          "resolvedOn": "2026-10-25",
+          "note": "Produktcode und Test-Erwartung an die Quelle angepasst."
         }
       ]
     },
@@ -2699,43 +2692,25 @@
             25740
           ],
           "checkedOn": "2026-10-25"
+        },
+        {
+          "title": "Erweiterung und Überarbeitung des Regelwerks (GE-Aufwertung für INI, 'keine Mali durch den INI/GE')",
+          "pages": "3",
+          "mcpChunks": [
+            25818
+          ],
+          "checkedOn": "2026-10-25"
+        },
+        {
+          "title": "Basisregelwerk (Waffenloser Kampf: INI-Modifikator -2, TP/KK 10/3)",
+          "pages": "150",
+          "mcpChunks": [
+            632
+          ],
+          "checkedOn": "2026-10-25"
         }
       ],
       "conflicts": [
-        {
-          "conflictKey": "ini-ge-keine-mali",
-          "conflictType": "contradiction",
-          "priority": "P1",
-          "followUp": "RULE-FIX-003",
-          "finding": "Die Hausregel 'GE-Aufwertung für INI' (INI/GE = 26/7 - TP/KK) stellt klar: 'Es entstehen keine Mali durch den INI/GE.' computeIniGe rechnet jedoch (GE - (26 - kkBase)) / (7 - kkSchwelle) zur Null gerundet und lässt negative Werte zu. Folge in den erwarteten Kampfwerten: f02 (Magierstab 0/1: GE 11 -> -2), f03/f05/f09 (Raufen 10/3: Basis 16/4, GE 11 bzw. 12 -> -1) tragen einen INI-Malus. Mit der Hausregel wäre die INI f02 = 10 (statt 8), f03 = 8 (statt 7), f05 = 9 (statt 8), f09 = 9 (statt 8). f01 (GE 13 gegen 15/3) und f04 (GE 16) sind unauffällig, weil dort der Wert 0 ergibt.",
-          "testCases": [
-            "f02_geode_magisch",
-            "f03_geweihter_karmal",
-            "f05_freitext_merkmale",
-            "f09_strukturierte_merkmale"
-          ],
-          "expected": "kampf.ini = 8 (f02), 7 (f03), 8 (f05), 8 (f09); darin ist ein negativer INI/GE-Anteil enthalten.",
-          "bookRule": [
-            {
-              "title": "Erweiterung und Überarbeitung des Regelwerks (GE-Aufwertung für INI, 'keine Mali durch den INI/GE')",
-              "pages": "3",
-              "mcpChunks": [
-                25818
-              ],
-              "checkedOn": "2026-10-25"
-            },
-            {
-              "title": "Basisregelwerk (Waffenloser Kampf: INI-Modifikator -2, TP/KK 10/3)",
-              "pages": "150",
-              "mcpChunks": [
-                632
-              ],
-              "checkedOn": "2026-10-25"
-            }
-          ],
-          "deviation": "INI/GE darf nach Hausregel nicht negativ werden; die App und die Erwartungswerte ziehen 1-2 Punkte ab.",
-          "impact": "Angezeigte Kampf-INI (und davon abgeleitete INI-Parade, Ausweichen-Bonus ab INI 21) ist bei GE unter der Waffenbasis zu niedrig; betrifft computeIniGe/_computeWeaponInitiativeSnapshot und alle Waffen mit GE unter 26 - KK-Basis. Die Erwartungswerte der Datei müssten im selben Commit angepasst werden."
-        },
         {
           "conflictKey": "linkshaender-schwertarm",
           "conflictType": "unresolved",
@@ -2792,6 +2767,14 @@
           "deviation": "Die Gleichsetzung Linkshänder = linker Arm ist Schwertarm ist eine plausible, aber nicht belegte App-Folgerung.",
           "impact": "Nur Armwunden bei Linkshändern (AT/PA der Hauptwaffe vs. Schild); kein Einfluss auf andere Helden.",
           "recheck": "Gegenprüfung 2026-10-25: nur teilweise belegt."
+        }
+      ],
+      "resolved": [
+        {
+          "followUp": "RULE-FIX-003",
+          "conflictKey": "ini-ge-keine-mali",
+          "resolvedOn": "2026-10-25",
+          "note": "Produktcode und Test-Erwartung an die Quelle angepasst."
         }
       ]
     },
@@ -2960,73 +2943,42 @@
             7152
           ],
           "checkedOn": "2026-10-25"
+        },
+        {
+          "title": "Wege des Schwerts (Bei der Berechnung der Initiative wird der BE-Wert abgezogen, nicht der eBE-Wert; Rüstungsgewöhnung reduziert diesen Abzug)",
+          "pages": "56",
+          "mcpChunks": [
+            6977
+          ],
+          "checkedOn": "2026-10-25"
+        },
+        {
+          "title": "Wege des Schwerts (Initiative-Modifikatoren für die Rüstung in Höhe des BE-Werts; Beispiel Alrigio: Kusliker Säbel eBE = BE–2, BE 3, INI 8+W6)",
+          "pages": "53",
+          "mcpChunks": [
+            6968
+          ],
+          "checkedOn": "2026-10-25"
+        },
+        {
+          "title": "Basisregelwerk (Dolche eBE: BE–1)",
+          "pages": "131",
+          "mcpChunks": [
+            581
+          ],
+          "checkedOn": "2026-10-25"
+        },
+        {
+          "title": "Erweiterung und Überarbeitung des Regelwerks (GE-Aufwertung für INI: INI/GE = 26/7 – TP/KK; es entstehen keine Mali)",
+          "pages": "3",
+          "mcpChunks": [
+            25818,
+            25819
+          ],
+          "checkedOn": "2026-10-25"
         }
       ],
       "conflicts": [
-        {
-          "conflictKey": "ini-abzug-ebe-statt-be",
-          "conflictType": "contradiction",
-          "priority": "P1",
-          "followUp": "RULE-FIX-004",
-          "finding": "Die Helden-INI (und damit die Kampf-INI) wird in der Kampfvorschau um die eBE des Waffentalents gemindert (herleiteHeldenIni mit ebe aus computeEbe). Wege des Schwerts verlangt ausdrücklich den BE-Wert (nach Rüstungsgewöhnung), nicht den eBE-Wert. In f06 trägt der Held Lederzeug mit BE 2, Dolche haben eBE = BE–1, also eBE 1 (AT 0, PA –1). Der Golden-Wert ini = 8 entsteht aus 11 (INI-Basis) – 1 (eBE) – 2 (negativer INI/GE, siehe eigener Konflikt). Nach Buch wären es 11 – 2 (BE) = 9 vor dem INI/GE-Anteil. AT 13 und PA 10 (eBE-Aufteilung 0/–1) stimmen mit dem Buch überein.",
-          "testCases": [
-            "f06_gleichnamige_ausruestung"
-          ],
-          "expected": "kampf.ini = 8 für f06 (INI-Basis 11, Abzug eBE 1 statt BE 2)",
-          "bookRule": [
-            {
-              "title": "Wege des Schwerts (Bei der Berechnung der Initiative wird der BE-Wert abgezogen, nicht der eBE-Wert; Rüstungsgewöhnung reduziert diesen Abzug)",
-              "pages": "56",
-              "mcpChunks": [
-                6977
-              ],
-              "checkedOn": "2026-10-25"
-            },
-            {
-              "title": "Wege des Schwerts (Initiative-Modifikatoren für die Rüstung in Höhe des BE-Werts; Beispiel Alrigio: Kusliker Säbel eBE = BE–2, BE 3, INI 8+W6)",
-              "pages": "53",
-              "mcpChunks": [
-                6968
-              ],
-              "checkedOn": "2026-10-25"
-            },
-            {
-              "title": "Basisregelwerk (Dolche eBE: BE–1)",
-              "pages": "131",
-              "mcpChunks": [
-                581
-              ],
-              "checkedOn": "2026-10-25"
-            }
-          ],
-          "deviation": "App: INI-Abzug = eBE des gewählten Waffentalents (kann kleiner als BE sein). Buch: INI-Abzug = BE nach Rüstungsgewöhnung, unabhängig vom Talent.",
-          "impact": "Kämpfer mit Rüstung und Talenten mit eBE < BE (Dolche, Schwerter, Fechtwaffen u. a.) erhalten eine zu hohe INI; die Golden-Erwartung ini = 8 in f06 pinnt den Fehler (richtig wäre 9 vor INI/GE). Betrifft lib/rules/derived/combat_rules.dart (Helden-INI-Herleitung)."
-        },
-        {
-          "conflictKey": "ini-ge-keine-mali",
-          "conflictType": "contradiction",
-          "priority": "P1",
-          "followUp": "RULE-FIX-003",
-          "finding": "computeIniGe liefert (GE – (26 – kkBase)) / (7 – kkSchwelle) zur Null gerundet und lässt negative Ergebnisse zu. Die Hausregel „GE-Aufwertung für INI“ nennt INI/GE = 26/7 – TP/KK und stellt ausdrücklich fest: „Es entstehen keine Mali durch den INI/GE.“ In f06 (GE 14, Dolch-Slot ohne TP/KK-Pflege, Basis 0/Schwelle 1) ergibt sich INI/GE = –2, in f07 (GE 13, Langschwert ohne TP/KK-Angabe) ebenfalls –2. Die Golden-Werte ini = 8 (f06) und ini = 12 (f07) enthalten diesen Malus; ohne ihn wären es 10 bzw. 14 (f06 zusätzlich mit dem eBE-Befund).",
-          "testCases": [
-            "f06_gleichnamige_ausruestung",
-            "f07_legacy_schema1"
-          ],
-          "expected": "f06 kampf.ini = 8, f07 kampf.ini = 12 (jeweils mit INI/GE = –2)",
-          "bookRule": [
-            {
-              "title": "Erweiterung und Überarbeitung des Regelwerks (GE-Aufwertung für INI: INI/GE = 26/7 – TP/KK; es entstehen keine Mali)",
-              "pages": "3",
-              "mcpChunks": [
-                25818,
-                25819
-              ],
-              "checkedOn": "2026-10-25"
-            }
-          ],
-          "deviation": "App erlaubt negativen INI/GE; Hausregel kennt nur Boni (Untergrenze 0).",
-          "impact": "Waffen mit realistischen TP/KK-Werten und GE unter Basis minus Schwelle (z. B. GE 10 bei Schwert 11/4) erhalten einen Malus, den die Hausregel ausschließt. Die Golden-Tests f06 und f07 pinnen negative Werte (Fixtureslots mit Platzhalter-TP/KK 0/1 verstärken den Effekt). Betrifft lib/rules/derived/ini_rules.dart (computeIniGe)."
-        },
         {
           "conflictKey": "wunde-zone-atpa-auf-basiswert",
           "conflictType": "unresolved",
@@ -3102,6 +3054,20 @@
           "deviation": "Das Buch lässt offen, ob der zonale AT/PA-Abzug den Basiswert (und damit Ausweichen) oder nur den Waffen-AT/PA trifft. Die App entscheidet sich für die Basiswerte; die Hausregel hält die Entscheidung nicht fest.",
           "impact": "Bei der Lesart „nur Kampfwert“ wären atBase 8, paBase 8 und Ausweichen 14. Betrifft nur Basiswert-Anzeige und Ausweichen mit Zonenwunden in Brust, Bauch und Beinen; die Waffenwerte bleiben gleich.",
           "recheck": "Gegenprüfung 2026-10-25: nur teilweise belegt."
+        }
+      ],
+      "resolved": [
+        {
+          "followUp": "RULE-FIX-004",
+          "conflictKey": "ini-abzug-ebe-statt-be",
+          "resolvedOn": "2026-10-25",
+          "note": "Produktcode und Test-Erwartung an die Quelle angepasst."
+        },
+        {
+          "followUp": "RULE-FIX-003",
+          "conflictKey": "ini-ge-keine-mali",
+          "resolvedOn": "2026-10-25",
+          "note": "Produktcode und Test-Erwartung an die Quelle angepasst."
         }
       ]
     },
@@ -3223,73 +3189,42 @@
             6949
           ],
           "checkedOn": "2026-10-25"
+        },
+        {
+          "title": "Wege des Schwerts (Bei der Berechnung der Initiative wird der BE-Wert abgezogen, nicht der eBE-Wert; Rüstungsgewöhnung reduziert diesen Abzug)",
+          "pages": "56",
+          "mcpChunks": [
+            6977
+          ],
+          "checkedOn": "2026-10-25"
+        },
+        {
+          "title": "Wege des Schwerts (Initiative-Modifikatoren für die Rüstung in Höhe des BE-Werts; Beispiel Alrigio: Kusliker Säbel eBE = BE–2, BE 3, INI 8+W6)",
+          "pages": "53",
+          "mcpChunks": [
+            6968
+          ],
+          "checkedOn": "2026-10-25"
+        },
+        {
+          "title": "Basisregelwerk (Dolche eBE: BE–1)",
+          "pages": "131",
+          "mcpChunks": [
+            581
+          ],
+          "checkedOn": "2026-10-25"
+        },
+        {
+          "title": "Erweiterung und Überarbeitung des Regelwerks (GE-Aufwertung für INI: INI/GE = 26/7 – TP/KK; es entstehen keine Mali)",
+          "pages": "3",
+          "mcpChunks": [
+            25818,
+            25819
+          ],
+          "checkedOn": "2026-10-25"
         }
       ],
       "conflicts": [
-        {
-          "conflictKey": "ini-abzug-ebe-statt-be",
-          "conflictType": "contradiction",
-          "priority": "P1",
-          "followUp": "RULE-FIX-004",
-          "finding": "Die Helden-INI (und damit die Kampf-INI) wird in der Kampfvorschau um die eBE des Waffentalents gemindert (herleiteHeldenIni mit ebe aus computeEbe). Wege des Schwerts verlangt ausdrücklich den BE-Wert (nach Rüstungsgewöhnung), nicht den eBE-Wert. In f06 trägt der Held Lederzeug mit BE 2, Dolche haben eBE = BE–1, also eBE 1 (AT 0, PA –1). Der Golden-Wert ini = 8 entsteht aus 11 (INI-Basis) – 1 (eBE) – 2 (negativer INI/GE, siehe eigener Konflikt). Nach Buch wären es 11 – 2 (BE) = 9 vor dem INI/GE-Anteil. AT 13 und PA 10 (eBE-Aufteilung 0/–1) stimmen mit dem Buch überein.",
-          "testCases": [
-            "f06_gleichnamige_ausruestung"
-          ],
-          "expected": "kampf.ini = 8 für f06 (INI-Basis 11, Abzug eBE 1 statt BE 2)",
-          "bookRule": [
-            {
-              "title": "Wege des Schwerts (Bei der Berechnung der Initiative wird der BE-Wert abgezogen, nicht der eBE-Wert; Rüstungsgewöhnung reduziert diesen Abzug)",
-              "pages": "56",
-              "mcpChunks": [
-                6977
-              ],
-              "checkedOn": "2026-10-25"
-            },
-            {
-              "title": "Wege des Schwerts (Initiative-Modifikatoren für die Rüstung in Höhe des BE-Werts; Beispiel Alrigio: Kusliker Säbel eBE = BE–2, BE 3, INI 8+W6)",
-              "pages": "53",
-              "mcpChunks": [
-                6968
-              ],
-              "checkedOn": "2026-10-25"
-            },
-            {
-              "title": "Basisregelwerk (Dolche eBE: BE–1)",
-              "pages": "131",
-              "mcpChunks": [
-                581
-              ],
-              "checkedOn": "2026-10-25"
-            }
-          ],
-          "deviation": "App: INI-Abzug = eBE des gewählten Waffentalents (kann kleiner als BE sein). Buch: INI-Abzug = BE nach Rüstungsgewöhnung, unabhängig vom Talent.",
-          "impact": "Kämpfer mit Rüstung und Talenten mit eBE < BE (Dolche, Schwerter, Fechtwaffen u. a.) erhalten eine zu hohe INI; die Golden-Erwartung ini = 8 in f06 pinnt den Fehler (richtig wäre 9 vor INI/GE). Betrifft lib/rules/derived/combat_rules.dart (Helden-INI-Herleitung)."
-        },
-        {
-          "conflictKey": "ini-ge-keine-mali",
-          "conflictType": "contradiction",
-          "priority": "P1",
-          "followUp": "RULE-FIX-003",
-          "finding": "computeIniGe liefert (GE – (26 – kkBase)) / (7 – kkSchwelle) zur Null gerundet und lässt negative Ergebnisse zu. Die Hausregel „GE-Aufwertung für INI“ nennt INI/GE = 26/7 – TP/KK und stellt ausdrücklich fest: „Es entstehen keine Mali durch den INI/GE.“ In f06 (GE 14, Dolch-Slot ohne TP/KK-Pflege, Basis 0/Schwelle 1) ergibt sich INI/GE = –2, in f07 (GE 13, Langschwert ohne TP/KK-Angabe) ebenfalls –2. Die Golden-Werte ini = 8 (f06) und ini = 12 (f07) enthalten diesen Malus; ohne ihn wären es 10 bzw. 14 (f06 zusätzlich mit dem eBE-Befund).",
-          "testCases": [
-            "f06_gleichnamige_ausruestung",
-            "f07_legacy_schema1"
-          ],
-          "expected": "f06 kampf.ini = 8, f07 kampf.ini = 12 (jeweils mit INI/GE = –2)",
-          "bookRule": [
-            {
-              "title": "Erweiterung und Überarbeitung des Regelwerks (GE-Aufwertung für INI: INI/GE = 26/7 – TP/KK; es entstehen keine Mali)",
-              "pages": "3",
-              "mcpChunks": [
-                25818,
-                25819
-              ],
-              "checkedOn": "2026-10-25"
-            }
-          ],
-          "deviation": "App erlaubt negativen INI/GE; Hausregel kennt nur Boni (Untergrenze 0).",
-          "impact": "Waffen mit realistischen TP/KK-Werten und GE unter Basis minus Schwelle (z. B. GE 10 bei Schwert 11/4) erhalten einen Malus, den die Hausregel ausschließt. Die Golden-Tests f06 und f07 pinnen negative Werte (Fixtureslots mit Platzhalter-TP/KK 0/1 verstärken den Effekt). Betrifft lib/rules/derived/ini_rules.dart (computeIniGe)."
-        },
         {
           "conflictKey": "wunde-zone-atpa-auf-basiswert",
           "conflictType": "unresolved",
@@ -3421,6 +3356,20 @@
           "deviation": "Buch: keine ausdrückliche Regel, dass Linkshänder den Schwertarm links haben. App: Katalogschalter ‚linkshaender‘ vertauscht die Arme.",
           "impact": "Sachlich plausibel, aber ohne Quellenbeleg; die Erwartungswerte at/pa/schildPa des Linkshänder-Falls hängen von dieser Annahme ab (Daten in bestandshelden_regelwerte_basis_cases.dart).",
           "recheck": "Gegenprüfung 2026-10-25: nur teilweise belegt."
+        }
+      ],
+      "resolved": [
+        {
+          "followUp": "RULE-FIX-004",
+          "conflictKey": "ini-abzug-ebe-statt-be",
+          "resolvedOn": "2026-10-25",
+          "note": "Produktcode und Test-Erwartung an die Quelle angepasst."
+        },
+        {
+          "followUp": "RULE-FIX-003",
+          "conflictKey": "ini-ge-keine-mali",
+          "resolvedOn": "2026-10-25",
+          "note": "Produktcode und Test-Erwartung an die Quelle angepasst."
         }
       ]
     },
@@ -3752,60 +3701,34 @@
             7024
           ],
           "checkedOn": "2026-10-24"
+        },
+        {
+          "title": "Wege des Schwerts",
+          "pages": "PDF S. 79-80",
+          "mcpChunks": [
+            7039,
+            7040
+          ],
+          "checkedOn": "2026-10-24"
+        },
+        {
+          "title": "Wege des Schwerts",
+          "pages": "PDF S. 209-210",
+          "mcpChunks": [
+            7344
+          ],
+          "checkedOn": "2026-10-24"
+        },
+        {
+          "title": "Erweiterung und Überarbeitung des Regelwerks (Hausregel, Kampf: GE-Aufwertung für INI)",
+          "pages": "3 (PDF-Seite)",
+          "mcpChunks": [
+            25818
+          ],
+          "checkedOn": "2026-10-25"
         }
       ],
       "conflicts": [
-        {
-          "conflictKey": "ini-ge-keine-mali",
-          "conflictType": "contradiction",
-          "priority": "P1",
-          "followUp": "RULE-FIX-003",
-          "finding": "Gegenprüfung 2026-10-25: Hausregel: Alle nicht improvisierten Waffen erhalten INI/GE = 26/7 – TP/KK; es entstehen keine Mali durch den INI/GE; ändert sich TP/KK z.B. durch Waffenmeisterschaft, ändert sich das INI/GE-Verhältnis nicht mit (Beispiel Zweihänder 12/3 -> Schritt 14/4, GE 18 -> +1). Formel (geBase = 26 - KK-Basis, geSchwelle = 7 - KK-Schwelle) stimmt mit dem Test überein, aber der Test pinnt negative Werte (GE 12 -> -1), was 'keine Mali' widerspricht; zudem fehlt die Einschränkung auf nicht-improvisierte Waffen und die Fixierung auf das Basis-TP/KK.",
-          "testCases": [
-            "INI/GE rounds towards zero for positive and negative values",
-            "TP/KK 0/0 disables TP/KK and INI/GE calculations",
-            "kombinierte Helden+Waffen INI includes weapon ini mod and INI/GE",
-            "kampf initiative includes only weapon/offhand ini mods on top of helden initiative"
-          ],
-          "expected": "INI/GE = trunc((GE - (26 - KK-Basis)) / (7 - KK-Schwelle)) wird zur Waffen-INI addiert; bei TP/KK 0/0 entfällt INI/GE.",
-          "bookRule": [
-            {
-              "title": "Wege des Schwerts",
-              "pages": "PDF S. 79-80",
-              "mcpChunks": [
-                7039,
-                7040
-              ],
-              "checkedOn": "2026-10-24"
-            },
-            {
-              "title": "Heldendokument",
-              "pages": "PDF S. 3-4",
-              "mcpChunks": [
-                1482
-              ],
-              "checkedOn": "2026-10-24"
-            },
-            {
-              "title": "Wege des Schwerts",
-              "pages": "PDF S. 209-210",
-              "mcpChunks": [
-                7344
-              ],
-              "checkedOn": "2026-10-24"
-            },
-            {
-              "title": "Erweiterung und Überarbeitung des Regelwerks (Hausregel, Kampf: GE-Aufwertung für INI)",
-              "pages": "3 (PDF-Seite)",
-              "mcpChunks": [
-                25818
-              ],
-              "checkedOn": "2026-10-25"
-            }
-          ],
-          "deviation": "Test und Produkt weichen von der Quelle ab: Hausregel: Alle nicht improvisierten Waffen erhalten INI/GE = 26/7 – TP/KK; es entstehen keine Mali durch den INI/GE; ändert sich TP/KK z.B. durch Waffenmeisterschaft, ändert sich das INI/GE-Verhältnis nicht mit (Beispiel Zweihänder 12/3 -> Schritt 14/4, GE 18 -> +1). Formel (geBase = 26 - KK-Basis, geSchwelle = 7 - KK-Schwelle) stimmt mit dem Test überein, aber der Test pinnt negative Werte (GE 12 -> -1), was 'keine Mali' widerspricht; zudem fehlt die Einschränkung auf nicht-improvisierte Waffen und die Fixierung auf das Basis-TP/KK.",
-          "impact": "Der Zuschlag verschiebt die Waffen- und Kampf-INI jedes Nahkampf-Helden gegenüber der Buchlage (typisch um ±1 bis 3) und damit INI-Parade-Bonus und Ausweichen-Bonus; die Tests sichern genau diese nicht belegte Rechnung ab."
-        },
         {
           "conflictKey": "kampf-ini-hoehere-waffe-beider-haende",
           "conflictType": "source_gap",
@@ -3861,6 +3784,14 @@
           "deviation": "Untergrenze 0 für die Kampf-INI ist App-Entscheidung; das Buch schließt negative INI nicht aus.",
           "impact": "Nur bei extrem niedriger INI (z. B. hohe BE plus Abzüge); Randfall.",
           "recheck": "Gegenprüfung 2026-10-25: Lücke bestätigt (gezielte Suche auch in den Hausregeln)."
+        }
+      ],
+      "resolved": [
+        {
+          "followUp": "RULE-FIX-003",
+          "conflictKey": "ini-ge-keine-mali",
+          "resolvedOn": "2026-10-25",
+          "note": "Produktcode und Test-Erwartung an die Quelle angepasst."
         }
       ]
     },
@@ -4506,38 +4437,6 @@
       ],
       "conflicts": [
         {
-          "conflictKey": "epos-lehrmeister-nachlass-doppelt",
-          "conflictType": "contradiction",
-          "priority": "P1",
-          "followUp": "RULE-FIX-005",
-          "finding": "Hausregel 'Epische Stufen' Kap. 2.2: Der Lehrmeister verbilligt fuer epische Helden nicht, sondern hebt die 25-%-Verteuerung auf ('Konsequent gerechnet ... ein Lehrmeister in Zukunft die Kosten nicht verbilligt, sondern diese Verteuerung aufhebt'); netto 1,25 x 0,8 = 1,0 der Basiskosten. Die App hebt den Aufschlag auf UND zieht danach 20 % ab (apMitLehrmeister(Basis)) und kommt so auf 0,8 x Basis.",
-          "testCases": [
-            "Lehrmeister hebt den Aufschlag auf und senkt um 20 %",
-            "liefert in allen Kombinationen die bisherigen AP"
-          ],
-          "expected": "episch + Lehrmeister, Basis 40: apKosten == apMitLehrmeister(40) == 32 (der zweite Test fixiert dieselbe Kette fuer alle Kombinationen)",
-          "bookRule": [
-            {
-              "title": "Epische Stufen",
-              "pages": "5",
-              "mcpChunks": [
-                25740
-              ],
-              "checkedOn": "2026-10-24"
-            },
-            {
-              "title": "Erweiterung und Überarbeitung des Regelwerks",
-              "pages": "PDF S. 22–24 (Inhaltsverzeichnis: S. 19)",
-              "mcpChunks": [
-                25834
-              ],
-              "checkedOn": "2026-10-24"
-            }
-          ],
-          "deviation": "Buch: episch + Lehrmeister = Basiskosten (40); App: 32. Gleiches gilt fuer die Steigerungskette in steigerung_herleitung_rules.dart (anderer Prueflauf, gleiche Funktion applyEpicApSurcharge + apMitLehrmeister).",
-          "impact": "Epische Helden zahlen mit Lehrmeister 20 % zu wenig AP (Erwerb und Steigerung); der Test fixiert den falschen Wert."
-        },
-        {
           "conflictKey": "epic-aufschlag-gilt-nur-eigenschaften-talente-zauber",
           "conflictType": "unresolved",
           "priority": "P2",
@@ -4572,6 +4471,14 @@
           "deviation": "Ob der Aufschlag auf gewoehnliche SF/Manoever/Vor-/Nachteile ausgedehnt werden soll, laesst der Text offen; die App erweitert ihn ohne dokumentierte Entscheidung im MCP.",
           "impact": "Epische Helden zahlen beim Erwerb gewoehnlicher SF/Vor-/Nachteile moeglicherweise 25 % zu viel; Test bildet die App-Erweiterung ab.",
           "recheck": "Gegenprüfung 2026-10-25: nur teilweise belegt."
+        }
+      ],
+      "resolved": [
+        {
+          "followUp": "RULE-FIX-005",
+          "conflictKey": "epos-lehrmeister-nachlass-doppelt",
+          "resolvedOn": "2026-10-25",
+          "note": "Produktcode und Test-Erwartung an die Quelle angepasst."
         }
       ]
     },
@@ -8388,8 +8295,8 @@
     },
     "test/rules/learning_rules_test.dart": {
       "kind": "official",
-      "status": "conflict",
-      "summary": "Die Datei sichert Spaltenverschiebung (Reduktion bis A*, Obergrenze H), die effektive Zauberspalte (Hauszauber, Merkmalskenntnis, Begabung je eine Spalte und kumulativ; fremde Repraesentation 2 Spalten), Talentmaxima (hoechste Eigenschaft +3, Begabung +5; Nahkampf GE/KK), die Spezialisierungs-Schwellen TaW/ZfW 7/14/21/28, hoechstens vier Zauberspezialisierungen und die Kosten 20 AP x Aktivierungsfaktor x Ordnungszahl. Alles ausser dem Fernkampf-Maximum stimmt mit WdS, WdH und WdZ ueberein.",
+      "status": "verified",
+      "summary": "Die Datei sichert Spaltenverschiebung (Reduktion bis A*, Obergrenze H), die effektive Zauberspalte (Hauszauber, Merkmalskenntnis, Begabung je eine Spalte und kumulativ; fremde Repraesentation 2 Spalten), Talentmaxima (hoechste Eigenschaft +3, Begabung +5; Nahkampf GE/KK), die Spezialisierungs-Schwellen TaW/ZfW 7/14/21/28, hoechstens vier Zauberspezialisierungen und die Kosten 20 AP x Aktivierungsfaktor x Ordnungszahl. Alles ausser dem Fernkampf-Maximum stimmt mit WdS, WdH und WdZ ueberein. Befund RULE-FIX-006 am 2026-10-25 behoben; die Erwartungen stimmen jetzt mit der Quelle überein.",
       "sources": [
         {
           "title": "Wege des Schwerts",
@@ -8475,54 +8382,45 @@
             4063
           ],
           "checkedOn": "2026-10-24"
+        },
+        {
+          "title": "Wege des Schwerts",
+          "pages": "164",
+          "mcpChunks": [
+            7237
+          ],
+          "checkedOn": "2026-10-24"
+        },
+        {
+          "title": "Wege des Schwerts",
+          "pages": "8",
+          "mcpChunks": [
+            6855
+          ],
+          "checkedOn": "2026-10-24"
+        },
+        {
+          "title": "Erweiterung und Überarbeitung des Regelwerks",
+          "pages": "3",
+          "mcpChunks": [
+            25818
+          ],
+          "checkedOn": "2026-10-24"
         }
       ],
-      "conflicts": [
+      "resolved": [
         {
-          "conflictKey": "fernkampf-taw-maximum-ohne-ge",
-          "conflictType": "contradiction",
-          "priority": "P1",
           "followUp": "RULE-FIX-006",
-          "finding": "WdS (Talentwerte und Steigerung der Talente): Der Maximalwert eines Talents ist die hoechste beteiligte Eigenschaft +3; bei Nahkampf-Talenten zaehlen GE und KK, bei Fernkampf-Talenten FF, GE und KK. computeCombatTalentMaxValue wertet fuer Fernkampf nur FF und KK (GE fehlt). Die Hausregel 'Erweiterung' ergaenzt zusaetzlich FF x 1,5 + 3 als Grenze, wenn das Limit ueber GE oder KK bestimmt wird; auch das ist nicht umgesetzt.",
-          "testCases": [
-            "uses FF or KK for Fernkampf and ignores IN"
-          ],
-          "expected": "Fernkampf-Maximum = max(FF, KK) + 3 (+5 bei Begabung); Test benennt 'FF or KK'",
-          "bookRule": [
-            {
-              "title": "Wege des Schwerts",
-              "pages": "164",
-              "mcpChunks": [
-                7237
-              ],
-              "checkedOn": "2026-10-24"
-            },
-            {
-              "title": "Wege des Schwerts",
-              "pages": "8",
-              "mcpChunks": [
-                6855
-              ],
-              "checkedOn": "2026-10-24"
-            },
-            {
-              "title": "Erweiterung und Überarbeitung des Regelwerks",
-              "pages": "3",
-              "mcpChunks": [
-                25818
-              ],
-              "checkedOn": "2026-10-24"
-            }
-          ],
-          "deviation": "Buch: max(FF, GE, KK) + 3 (Begabung +5). App: max(FF, KK) + 3. Das Testbeispiel (KK 15 dominiert) deckt die Abweichung nicht auf.",
-          "impact": "Helden, deren GE hoeher ist als FF und KK, bekommen in Fernkampf-Talenten ein zu niedriges TaW-Maximum (Steigerungsgrenze)."
+          "conflictKey": "fernkampf-taw-maximum-ohne-ge",
+          "resolvedOn": "2026-10-25",
+          "note": "Produktcode und Test-Erwartung an die Quelle angepasst."
         }
       ]
     },
     "test/rules/lernregeln_advancement_test.dart": {
       "kind": "official",
-      "status": "conflict",
-      "summary": "Die Datei sichert die Lernregeln in den Steigerungsoptionen. Bestaetigt: Hexalogie (WdZ: Zauber mit hoechstem ZfW normal, alle anderen eine Spalte leichter aktiviert und bis zu diesem ZfW gesteigert; Gegenelement des Merkmalskenntnis-Elements profitiert nicht und wird eine Spalte schwerer: Wand aus Erz Spalte C + Hexalogie bis ZfW 9, Wand aus Luft Spalte E; Buchbeispiel Rafik), Sprachen/Schriften der eigenen Familie Spalte A, Begabung Sprachen -> A* (A+), Eidetisches Gedaechtnis halbiert Kosten, Lehrmeister nur bei Talenten und Zauberfertigkeiten (nicht bei Eigenschaften und zugekauften Grundwerten). Konflikt: Gutes Gedaechtnis wird auf Wissenstalente angewandt, die das Buch dafuer nicht nennt.",
+      "status": "verified",
+      "summary": "Die Datei sichert die Lernregeln in den Steigerungsoptionen. Bestaetigt: Hexalogie (WdZ: Zauber mit hoechstem ZfW normal, alle anderen eine Spalte leichter aktiviert und bis zu diesem ZfW gesteigert; Gegenelement des Merkmalskenntnis-Elements profitiert nicht und wird eine Spalte schwerer: Wand aus Erz Spalte C + Hexalogie bis ZfW 9, Wand aus Luft Spalte E; Buchbeispiel Rafik), Sprachen/Schriften der eigenen Familie Spalte A, Begabung Sprachen -> A* (A+), Eidetisches Gedaechtnis halbiert Kosten, Lehrmeister nur bei Talenten und Zauberfertigkeiten (nicht bei Eigenschaften und zugekauften Grundwerten). Konflikt: Gutes Gedaechtnis wird auf Wissenstalente angewandt, die das Buch dafuer nicht nennt. Befund RULE-FIX-007 am 2026-10-25 behoben; die Erwartungen stimmen jetzt mit der Quelle überein.",
       "sources": [
         {
           "title": "Wege der Zauberei",
@@ -8594,40 +8492,23 @@
             25834
           ],
           "checkedOn": "2026-10-24"
+        },
+        {
+          "title": "Wege der Helden",
+          "pages": "252",
+          "mcpChunks": [
+            4715,
+            4716
+          ],
+          "checkedOn": "2026-10-24"
         }
       ],
-      "conflicts": [
+      "resolved": [
         {
-          "conflictKey": "gutes-gedaechtnis-nicht-fuer-wissenstalente",
-          "conflictType": "contradiction",
-          "priority": "P1",
           "followUp": "RULE-FIX-007",
-          "finding": "Wege der Helden, Vorteil 'Gutes Gedaechtnis': Verbilligt auf drei Viertel werden Sprachen, Zauberfertigkeiten (nicht uebernatuerliche Begabungen) und bestimmte Sonderfertigkeiten (Gelaendekunde, Kulturkunde, Nandusgefaelliges Wissen, Ortskenntnis, Talentspezialisierungen bei Wissensfertigkeiten, Objektrituale ...). Wissenstalente selbst sind nicht genannt; nur 'Eidetisches Gedaechtnis' nennt ausdruecklich 'Alle Wissensfertigkeiten, Sprachen und Zauberfertigkeiten'. Der Test erwartet den Faktor 3/4 auch fuer das Wissenstalent Geographie.",
-          "testCases": [
-            "Gutes Gedächtnis: Wissenstalent, Zauber, Sprache — nicht Klettern"
-          ],
-          "expected": "Gutes Gedaechtnis I: Faktor 3/4 fuer tal_geographie (Wissenstalent) und spell_balsam_salabunde (Zauber); kein Faktor fuer Klettern",
-          "bookRule": [
-            {
-              "title": "Wege der Helden",
-              "pages": "252",
-              "mcpChunks": [
-                4715,
-                4716
-              ],
-              "checkedOn": "2026-10-24"
-            },
-            {
-              "title": "Wege der Helden",
-              "pages": "250",
-              "mcpChunks": [
-                4709
-              ],
-              "checkedOn": "2026-10-24"
-            }
-          ],
-          "deviation": "Buch: 3/4 nur fuer Sprachen, Zauberfertigkeiten und genannte Sonderfertigkeiten; App/Test: zusaetzlich Wissenstalente (LernzielArt.wissenstalent). Zauber- und Klettern-Erwartung stimmen.",
-          "impact": "Helden mit Gutem Gedaechtnis zahlen fuer Wissenstalente 25 % zu wenig AP; Eidetisches Gedaechtnis ist davon nicht betroffen."
+          "conflictKey": "gutes-gedaechtnis-nicht-fuer-wissenstalente",
+          "resolvedOn": "2026-10-25",
+          "note": "Produktcode und Test-Erwartung an die Quelle angepasst."
         }
       ]
     },
@@ -11317,41 +11198,25 @@
             25835
           ],
           "checkedOn": "2026-10-24"
+        },
+        {
+          "title": "Epische Stufen (Hausregel) Kap. 2.2 Nachteile",
+          "pages": "5",
+          "mcpChunks": [
+            25740
+          ],
+          "checkedOn": "2026-10-24"
+        },
+        {
+          "title": "Erweiterung und Überarbeitung des Regelwerks Kap. 6 Lehrmeister",
+          "pages": "24",
+          "mcpChunks": [
+            25834
+          ],
+          "checkedOn": "2026-10-24"
         }
       ],
       "conflicts": [
-        {
-          "conflictKey": "epos-lehrmeister-nachlass-doppelt",
-          "conflictType": "contradiction",
-          "priority": "P1",
-          "followUp": "RULE-FIX-005",
-          "finding": "Bei epischen Helden mit Lehrmeister rechnet die App: Verteuerung entfällt UND zusätzlich 20 % Nachlass (Ergebnis 0,8 x Basiskosten). Die Hausregel Epische Stufen Kap. 2.2 sagt: 'Konsequent gerechnet, bedeutet dies, dass ein Lehrmeister in Zukunft die Kosten nicht verbilligt, sondern diese Verteuerung aufhebt' (1,25 x 0,8 = 1,0). Die Kostenersparnis von 20 % (Kap. 6 der Erweiterung) ist die Gegenrechnung zum 25-%-Aufschlag, nicht ein zusätzlicher Rabatt. Nach der Hausregel kostet ein epischer Held mit Lehrmeister also so viel wie ein nicht epischer ohne Lehrmeister.",
-          "testCases": [
-            "Lehrmeister hebt den epischen Aufschlag auf und senkt um 20 %",
-            "Herleitung ergibt in allen Fällen die bisherigen AP-Kosten"
-          ],
-          "expected": "episch + Lehrmeister: Aufschlag 0 und apKosten = apMitLehrmeister(Kosten vor Aufschlag), also floor(0,8 x Basis).",
-          "bookRule": [
-            {
-              "title": "Epische Stufen (Hausregel) Kap. 2.2 Nachteile",
-              "pages": "5",
-              "mcpChunks": [
-                25740
-              ],
-              "checkedOn": "2026-10-24"
-            },
-            {
-              "title": "Erweiterung und Überarbeitung des Regelwerks Kap. 6 Lehrmeister",
-              "pages": "24",
-              "mcpChunks": [
-                25834
-              ],
-              "checkedOn": "2026-10-24"
-            }
-          ],
-          "deviation": "App: epischer Lehrmeister-Schüler zahlt 80 % der Normalkosten. Hausregel: 100 % der Normalkosten (Aufschlag und Nachlass heben sich auf).",
-          "impact": "Test und Produktverhalten (herleiteSteigerungskosten, alteKette im Test, Steigerungsdialog) buchen für epische Helden mit Lehrmeister 20 % zu wenig AP. Der Test pinnt den abweichenden Wert, auch in der 1000-Fälle-Kombination episch x Lehrmeister."
-        },
         {
           "conflictKey": "steigerung-rundung-faktoren-lehrmeister",
           "conflictType": "unresolved",
@@ -11432,6 +11297,14 @@
           "deviation": "Wortlaut 'ausgenommen sind Begabungen und Spezielle Erfahrungen' spricht eher für aufschlagsfreie SE-Schritte; die App schlägt auf.",
           "impact": "Epische Helden zahlen bei SE-Steigerungen ggf. bis zu 25 % zu viel; Auslegung durch den Regelautor nötig.",
           "recheck": "Gegenprüfung 2026-10-25: nur teilweise belegt."
+        }
+      ],
+      "resolved": [
+        {
+          "followUp": "RULE-FIX-005",
+          "conflictKey": "epos-lehrmeister-nachlass-doppelt",
+          "resolvedOn": "2026-10-25",
+          "note": "Produktcode und Test-Erwartung an die Quelle angepasst."
         }
       ]
     },

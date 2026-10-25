@@ -20,7 +20,7 @@ void _combatBasis() {
     expect(preview(zero).tpKk, 0);
   });
 
-  test('INI/GE rounds towards zero for positive and negative values', () {
+  test('INI/GE rounds towards zero and never becomes negative', () {
     // Erklärung da diese Regel etwas indirekt ist:
     // Bei einer KK-Basis von 10 berechnet sich eine GE-Basis von 16, da GE-Basis = 26 - KK-Basis.
     // Bei einer KK-Schwelle von 3 berechnet sich eine GE-Schwelle von 4, da GE-Schwelle = 7 - KK-Schwelle.
@@ -34,7 +34,8 @@ void _combatBasis() {
 
     expect(preview(positiveOne).iniGe, 1);
     expect(preview(positiveTwo).iniGe, 2);
-    expect(preview(negativeOne).iniGe, -1);
+    // Hausregel „Erweiterung und Überarbeitung": keine Mali durch INI/GE.
+    expect(preview(negativeOne).iniGe, 0);
     expect(preview(zero).iniGe, 0);
   });
 

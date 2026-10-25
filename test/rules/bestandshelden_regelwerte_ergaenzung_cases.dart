@@ -53,7 +53,7 @@ const _erwartetErgaenzung = <String, Map<String, Object?>>{
       'be': 2,
       'at': 13,
       'pa': 10,
-      'ini': 8,
+      'ini': 9,
       'ausweichen': 6,
       'schildPa': 0,
       'tp': '1W6+13',
@@ -116,7 +116,7 @@ const _erwartetErgaenzung = <String, Map<String, Object?>>{
       'be': 0,
       'at': 13,
       'pa': 12,
-      'ini': 12,
+      'ini': 14,
       'ausweichen': 8,
       // Alt-Nebenhand `offhand` (Holzschild): PA-Basis 8 + 2, ohne Schild-SF.
       'schildPa': 10,
