@@ -30,7 +30,20 @@ void main() {
       isMainAttribute: haupt,
       lehrmeisterHebtAuf: lehrmeister,
     );
-    return lehrmeister ? apMitLehrmeister(nachEpos) : nachEpos;
+    // Ein Lehrmeister hebt den epischen Aufschlag nur auf (Epische Stufen
+    // S. 5); den 20-%-Nachlass gibt es nur, wo kein Aufschlag aufzuheben war.
+    final aufschlagAufgehoben =
+        lehrmeister &&
+        applyEpicApSurcharge(
+              basis,
+              ruleActive: true,
+              isEpisch: episch,
+              isMainAttribute: haupt,
+            ) >
+            basis;
+    return lehrmeister && !aufschlagAufgehoben
+        ? apMitLehrmeister(nachEpos)
+        : nachEpos;
   }
 
   test('Herleitung ergibt in allen Fällen die bisherigen AP-Kosten', () {
@@ -104,7 +117,7 @@ void main() {
     },
   );
 
-  test('Lehrmeister hebt den epischen Aufschlag auf und senkt um 20 %', () {
+  test('Lehrmeister hebt den epischen Aufschlag nur auf, ohne zu senken', () {
     final k = herleiteSteigerungskosten(
       vonWert: 4,
       aufWert: 7,
@@ -116,8 +129,30 @@ void main() {
     final lm = k.herleitung.schritte.singleWhere(
       (s) => s.bezeichnung == kSteigerungLehrmeisterSchritt,
     );
-    expect(lm.betrag, lessThan(0));
-    expect(k.apKosten, apMitLehrmeister(k.kostenVorAufschlag));
+    expect(lm.betrag, 0);
+    expect(k.apKosten, k.kostenVorAufschlag);
+  });
+
+  test('Lehrmeister senkt um 20 %, wo kein epischer Aufschlag anfällt', () {
+    final nichtEpisch = herleiteSteigerungskosten(
+      vonWert: 4,
+      aufWert: 7,
+      komplexitaet: LearnCost.d,
+      mitLehrmeister: true,
+    );
+    expect(
+      nichtEpisch.apKosten,
+      apMitLehrmeister(nichtEpisch.kostenVorAufschlag),
+    );
+    final haupt = herleiteSteigerungskosten(
+      vonWert: 10,
+      aufWert: 11,
+      komplexitaet: LearnCost.h,
+      episch: true,
+      istHaupteigenschaft: true,
+      mitLehrmeister: true,
+    );
+    expect(haupt.apKosten, apMitLehrmeister(haupt.kostenVorAufschlag));
   });
 
   test('Haupteigenschaft zahlt keinen Aufschlag', () {

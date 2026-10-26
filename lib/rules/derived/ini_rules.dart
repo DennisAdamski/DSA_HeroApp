@@ -49,6 +49,8 @@ int computeSfIniBonus(
 // Die Konstante 7 ist die Spiegelkonstante zum KK-Schwellenwert:
 //   geThreshold = 7 - kkThreshold  →  GE-Aequivalent des KK-Stufensprungs.
 // Ist geThreshold == 0 (kkThreshold == 7), ist kein GE-Beitrag moeglich.
+// Hausregel "GE-Aufwertung fuer INI": Es entstehen keine Mali durch den
+// INI/GE, das Ergebnis ist also mindestens 0.
 int computeIniGe({
   required int ge,
   required int kkBase,
@@ -61,7 +63,8 @@ int computeIniGe({
   if (geThreshold == 0) {
     return 0;
   }
-  return roundDownTowardsZero((ge - geBase) / geThreshold);
+  final iniGe = roundDownTowardsZero((ge - geBase) / geThreshold);
+  return iniGe < 0 ? 0 : iniGe;
 }
 
 // Anzahl Ini-Wuerfel: 1 normal, 2 bei Klingentaenzer.

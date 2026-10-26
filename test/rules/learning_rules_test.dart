@@ -194,7 +194,33 @@ void main() {
       );
     });
 
-    test('uses FF or KK for Fernkampf and ignores IN', () {
+    test('uses FF, GE or KK for Fernkampf and ignores IN', () {
+      const geDominant = Attributes(
+        mu: 12,
+        kl: 14,
+        inn: 18,
+        ch: 11,
+        ff: 10,
+        ge: 16,
+        ko: 9,
+        kk: 15,
+      );
+      expect(
+        computeCombatTalentMaxValue(
+          effectiveAttributes: geDominant,
+          talentType: 'Fernkampf',
+          gifted: false,
+        ),
+        19,
+      );
+      expect(
+        computeCombatTalentMaxValue(
+          effectiveAttributes: geDominant,
+          talentType: 'Fernkampf',
+          gifted: true,
+        ),
+        21,
+      );
       expect(
         computeCombatTalentMaxValue(
           effectiveAttributes: attributes,

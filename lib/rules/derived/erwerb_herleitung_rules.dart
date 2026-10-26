@@ -6,7 +6,6 @@
 /// ergeben genau die gebuchten AP, die Oberfläche liest sie nur ab.
 library;
 
-import 'package:dsa_heldenverwaltung/domain/learn/learn_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/epic_ap_cost_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/herleitung.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/steigerung_herleitung_rules.dart';
@@ -64,13 +63,25 @@ Erwerbskosten herleiteErwerbskosten({
     isBegabung: keinAufschlag,
     lehrmeisterHebtAuf: mitLehrmeister,
   );
+  final aufschlagAufgehoben =
+      mitLehrmeister &&
+      applyEpicApSurcharge(
+            basiskosten,
+            ruleActive: true,
+            isEpisch: episch,
+            isEpicContent: epischerInhalt,
+            isBegabung: keinAufschlag,
+          ) >
+          nachAufschlag;
   final int nachLehrmeister;
   if (lehrmeisterVerdoppeltOhneIhn) {
     nachLehrmeister = mitLehrmeister ? nachAufschlag : nachAufschlag * 2;
   } else {
-    nachLehrmeister = mitLehrmeister
-        ? apMitLehrmeister(nachAufschlag)
-        : nachAufschlag;
+    nachLehrmeister = lehrmeisterNachlassNachAufschlag(
+      nachAufschlag,
+      mitLehrmeister: mitLehrmeister,
+      aufschlagAufgehoben: aufschlagAufgehoben,
+    );
   }
   return Erwerbskosten(
     kostenNachAufschlag: nachAufschlag,

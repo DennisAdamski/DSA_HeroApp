@@ -22,9 +22,13 @@ String? _text(String? wert) {
 const String kIniWurfSchritt = 'INI-Wurf';
 
 /// Initiative des Helden ohne Waffe, mindestens 0.
+///
+/// [be] ist die Behinderung durch die Rüstung nach Rüstungsgewöhnung als
+/// Modifikator (also ≤ 0); die Talent-BE-Regel (eBE) mindert die INI nicht
+/// (Wege des Schwerts S. 53/56).
 Herleitung herleiteHeldenIni({
   required int iniBasis,
-  required int ebe,
+  required int be,
   int sfBonus = 0,
   int kampfstil = 0,
   required int iniWurf,
@@ -42,10 +46,10 @@ Herleitung herleiteHeldenIni({
       quelle: 'Basiswert',
     ),
     HerleitungsSchritt(
-      bezeichnung: 'eBE',
-      betrag: ebe,
+      bezeichnung: 'BE',
+      betrag: be,
       art: HerleitungsArt.modifikator,
-      quelle: 'Behinderung',
+      quelle: 'Rüstung',
     ),
     HerleitungsSchritt(
       bezeichnung: 'SF-Bonus',
@@ -124,7 +128,8 @@ Herleitung herleiteWaffenIni({
       betrag: iniGe,
       art: HerleitungsArt.modifikator,
       formel: nutztIniGe
-          ? '(GE $ge − $geBasis) / $geSchwelle, zur Null gerundet'
+          ? '(GE $ge − $geBasis) / $geSchwelle, zur Null gerundet, '
+                'mindestens 0'
           : 'deaktiviert (0/0)',
     ),
     HerleitungsSchritt(

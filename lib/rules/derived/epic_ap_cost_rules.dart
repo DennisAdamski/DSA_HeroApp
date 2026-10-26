@@ -1,3 +1,5 @@
+import 'package:dsa_heldenverwaltung/domain/learn/learn_rules.dart';
+
 /// Wendet den epischen AP-Aufschlag auf Lernkosten an.
 ///
 /// Regelquelle: Hausregel „Epische Stufen", Kap. 2.2 —
@@ -31,6 +33,21 @@ int applyEpicApSurcharge(
   if (isMainAttribute) return baseApCost;
   if (lehrmeisterHebtAuf) return baseApCost;
   return (baseApCost * 1.25).round();
+}
+
+/// Wendet den Lehrmeister-Nachlass (20 %) auf [kosten] an.
+///
+/// Wo der Lehrmeister den epischen Aufschlag aufgehoben hat
+/// ([aufschlagAufgehoben]), bleibt es bei den Basiskosten: er hebt die
+/// Verteuerung nur auf und verbilligt nicht zusaetzlich (Epische Stufen
+/// S. 5, Kap. 2.2: "Konsequent gerechnet ...").
+int lehrmeisterNachlassNachAufschlag(
+  int kosten, {
+  required bool mitLehrmeister,
+  required bool aufschlagAufgehoben,
+}) {
+  if (!mitLehrmeister || aufschlagAufgehoben) return kosten;
+  return apMitLehrmeister(kosten);
 }
 
 /// Liefert den Aufschlagsanteil (25 %) fuer Anzeige-Zwecke.

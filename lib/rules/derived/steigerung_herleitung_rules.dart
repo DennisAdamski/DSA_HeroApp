@@ -143,9 +143,20 @@ Steigerungskosten herleiteSteigerungskosten({
     isMainAttribute: istHaupteigenschaft,
     lehrmeisterHebtAuf: mitLehrmeister,
   );
-  final nachLehrmeister = mitLehrmeister
-      ? apMitLehrmeister(nachAufschlag)
-      : nachAufschlag;
+  final aufschlagAufgehoben =
+      mitLehrmeister &&
+      applyEpicApSurcharge(
+            vorAufschlag,
+            ruleActive: epicRuleActive,
+            isEpisch: episch,
+            isMainAttribute: istHaupteigenschaft,
+          ) >
+          nachAufschlag;
+  final nachLehrmeister = lehrmeisterNachlassNachAufschlag(
+    nachAufschlag,
+    mitLehrmeister: mitLehrmeister,
+    aufschlagAufgehoben: aufschlagAufgehoben,
+  );
   final spalte = komplexitaetLabel(komplexitaet);
   final von = vonWert < 0 ? 'Aktivierung' : '$vonWert';
   return Steigerungskosten(

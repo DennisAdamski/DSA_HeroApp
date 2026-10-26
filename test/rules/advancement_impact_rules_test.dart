@@ -125,7 +125,7 @@ void main() {
     expect((entry.before.maxValue, entry.after.maxValue), (17, 18));
   });
 
-  test('Nahkampf und Fernkampf verwenden ihre eigenen Eigenschaften', () {
+  test('Nahkampf nutzt GE und KK, Fernkampf FF, GE und KK', () {
     final hero = _hero.copyWith(
       talents: {
         'sword': const HeroTalentEntry(talentValue: 15),
@@ -138,7 +138,7 @@ void main() {
         AttributeCode.ge,
         13,
       ).unlocked.map((e) => e.before.targetId),
-      ['sword'],
+      ['bow', 'sword'],
     );
     expect(
       _impact(

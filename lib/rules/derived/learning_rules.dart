@@ -128,7 +128,8 @@ int computeTalentMaxValue({
 
 /// Berechnet den maximalen Talentwert fuer Kampftalente.
 ///
-/// Nahkampf nutzt `GE` oder `KK`, Fernkampf `FF` oder `KK`.
+/// Nahkampf nutzt `GE` oder `KK`, Fernkampf `FF`, `GE` oder `KK`
+/// (Wege des Schwerts S. 8/12/18: höchster Wert der genannten Eigenschaften).
 int computeCombatTalentMaxValue({
   required Attributes effectiveAttributes,
   required String talentType,
@@ -137,7 +138,11 @@ int computeCombatTalentMaxValue({
   final normalizedType = talentType.trim().toLowerCase();
   final relevantCodes = switch (normalizedType) {
     'nahkampf' => const <AttributeCode>[AttributeCode.ge, AttributeCode.kk],
-    'fernkampf' => const <AttributeCode>[AttributeCode.ff, AttributeCode.kk],
+    'fernkampf' => const <AttributeCode>[
+      AttributeCode.ff,
+      AttributeCode.ge,
+      AttributeCode.kk,
+    ],
     _ => const <AttributeCode>[],
   };
   var maxValue = 0;

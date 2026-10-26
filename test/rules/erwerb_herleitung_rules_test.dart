@@ -25,7 +25,21 @@ int _bisher({
   if (verdoppelt) {
     return mitLehrmeister ? kosten : kosten * 2;
   }
-  return mitLehrmeister ? apMitLehrmeister(kosten) : kosten;
+  // Ein Lehrmeister hebt den epischen Aufschlag nur auf (Epische Stufen
+  // S. 5); den 20-%-Nachlass gibt es nur, wo kein Aufschlag aufzuheben war.
+  final aufschlagAufgehoben =
+      mitLehrmeister &&
+      applyEpicApSurcharge(
+            basis,
+            ruleActive: true,
+            isEpisch: episch,
+            isEpicContent: epischerInhalt,
+            isBegabung: keinAufschlag,
+          ) >
+          basis;
+  return mitLehrmeister && !aufschlagAufgehoben
+      ? apMitLehrmeister(kosten)
+      : kosten;
 }
 
 void main() {
@@ -101,14 +115,30 @@ void main() {
       );
     });
 
-    test('Lehrmeister hebt den Aufschlag auf und senkt um 20 %', () {
+    test('Lehrmeister hebt den epischen Aufschlag nur auf, ohne zu senken', () {
       final kosten = herleiteErwerbskosten(
         basiskosten: 40,
         episch: true,
         mitLehrmeister: true,
       );
       expect(kosten.aufschlag, 0);
-      expect(kosten.apKosten, apMitLehrmeister(40));
+      expect(kosten.apKosten, 40);
+    });
+
+    test('Lehrmeister senkt um 20 %, wo kein epischer Aufschlag anfällt', () {
+      expect(
+        herleiteErwerbskosten(basiskosten: 40, mitLehrmeister: true).apKosten,
+        apMitLehrmeister(40),
+      );
+      expect(
+        herleiteErwerbskosten(
+          basiskosten: 40,
+          episch: true,
+          keinAufschlag: true,
+          mitLehrmeister: true,
+        ).apKosten,
+        apMitLehrmeister(40),
+      );
     });
 
     test(
