@@ -12,18 +12,18 @@ Die maschinenlesbare Inventur `tool/rule_test_evidence.json` erfasst **211 Test-
 | `official` | 147 |
 | `house_rule` | 9 |
 | `product_contract` | 55 |
-| `verified` | 141 |
-| `conflict` (mindestens ein bestätigter Einzelbefund) | 70 |
+| `verified` | 139 |
+| `conflict` (mindestens ein bestätigter Einzelbefund) | 72 |
 
 Aufschlüsselung Art × Status:
 
 | Art | verified | conflict |
 | --- | ---: | ---: |
-| `official` | 78 | 69 |
+| `official` | 76 | 71 |
 | `house_rule` | 8 | 1 |
 | `product_contract` | 55 | 0 |
 
-Die 70 Konfliktdateien enthalten zusammen **100 fachlich verschiedene Einzelbefunde** mit je eigenem Folgeauftrag `RULE-FIX-NNN` (Priorität P1: 7, P2: 45, P3: 48). Ein Konflikt auf Dateiebene heißt: *mindestens* eine Erwartung der Datei ist nicht deckungsgleich mit dem Buch oder nicht belegbar; alle übrigen Erwartungen der Datei sind geprüft und stehen in der `summary` des Eintrags bzw. unter `sources`.
+Die 72 Konfliktdateien enthalten zusammen **98 offene fachlich verschiedene Einzelbefunde** mit je eigenem Folgeauftrag `RULE-FIX-NNN` (Priorität P1: 1, P2: 46, P3: 51); weitere 6 Befunde sind bereits behoben (siehe unten). Ein Konflikt auf Dateiebene heißt: *mindestens* eine Erwartung der Datei ist nicht deckungsgleich mit dem Buch oder nicht belegbar; alle übrigen Erwartungen der Datei sind geprüft und stehen in der `summary` des Eintrags bzw. unter `sources`.
 
 ## Geprüfte Pakete
 
@@ -36,7 +36,7 @@ Alle sechs Fachpakete wurden vollständig geprüft; kein Paket ist offen.
 | 3 Steigerung, Lernen, AP, Eigenschaften, Talentwerte | 28 | 17 | 11 | 4 |
 | 4 Vertraute, Begleiter, Reittiere | 13 | 8 | 5 | 2 |
 | 5 Inventar, Ressourcen, Währung | 11 | 11 | 0 | 8 |
-| 6 Allgemeine Regeln | 52 | 42 | 10 | 21 |
+| 6 Allgemeine Regeln | 52 | 40 | 12 | 21 |
 | 6 Verbleibende Katalogtests | 17 | 16 | 1 | 9 |
 
 Die zwei seit dem Start des Audits auf dem Branch hinzugekommenen Dateien (`zuletzt_gewuerfelt_rules_test.dart`, `proben_favoriten_rules_test.dart`) sind im Paket „Allgemeine Regeln“ mitgeführt; beide sind reine Anzeige-/Listenverträge.
@@ -46,7 +46,7 @@ Die zwei seit dem Start des Audits auf dem Branch hinzugekommenen Dateien (`zule
 - Die Dateien wurden gruppenweise (7 bis 12 Dateien je Gruppe) von Prüfagenten gegen den DSA-MCP gelesen und ausgewertet; die Ergebnisse wurden danach zentral in die Inventur übernommen und vom CI-Check strukturell validiert.
 - **Gegenlesen durch den Hauptagenten (Stichprobe gegen den MCP-Volltext):** Ausweichen „Umstellt (4+ Gegner): unmöglich“ (WdS, Chunk 7006), Axxeleratus-FF-Probe beim Laden (Basisregelwerk, Chunk 686), Lehrmeister hebt die epische Verteuerung nur auf (Epische Stufen, Chunk 25740), Fernkampf-Talentmaximum aus FF, GE oder KK (WdS, Chunk 7237), Gutes Gedächtnis ohne Wissenstalente (WdH, Chunk 4715), „keine Mali durch den INI/GE“ (Hausregel, Chunk 25818) und Begabung für Ritual wirkt nur auf das Ritual (WdH, Chunk 4703). Alle sieben Befunde bestätigten sich. Ein Befund (Fixturewert „Ausfall +2“) wurde als Nicht-Konflikt gestrichen, weil der Test dort keine Regel behauptet.
 - **Fehler im ersten Durchlauf:** Die Stichprobe zur INI/GE-Formel zeigte, dass ein Befund „Quelle fehlt“ falsch war – die Regel steht in einer Hausregel. Deshalb wurden **alle 83 Befunde vom Typ `source_gap`/`unresolved`** in einem zweiten, unabhängigen Durchlauf mit gezielter Suche in den Hausregel-Dokumenten und der allgemeinen Rundungsregel (WdH S. 6, Chunk 4036: Halbierungen werden aufgerundet) erneut geprüft. Ergebnis: 33 Lücken bestätigt, 39 nur teilweise belegt (Befund bleibt mit ergänztem Beleg), 11 durch eine Quelle entschieden (7 Abweichungen vom Test, 4 Übereinstimmungen; Letztere sind kein Befund mehr, vier Dateien wurden dadurch `verified`).
-- Nicht einzeln gegengelesen wurden die `verified`-Einträge und die übrigen Befunde; sie beruhen auf der Prüfung der Teilagenten und tragen Quelle, Seite und Chunk zur Nachprüfung in der Inventur.
+- **Stichprobe auf `verified`-Einträge (25. Oktober 2026):** 15 zufällig gezogene `verified`-Dateien (`official`/`house_rule`, fester Zufalls-Seed 20261025, 88 Kandidaten) wurden unabhängig gegen den MCP-Volltext gelesen. 11 bestätigten sich, **4 (27 %) hatten Lücken** und wurden auf `conflict` zurückgestuft (RULE-FIX-101 bis 104: Rundung der Vertrauten-Grenze, Professions-Eigenschaftsmodifikator im Startwert, AuP-Stufenbonus ab Stufe 21, nicht belegte Herkunftsmodifikatoren). Die Fehlerquote legt nahe, dass auch unter den übrigen `verified`-Einträgen mit Belegen für nur einen Teil der Erwartungen zu rechnen ist. **Die `verified`-Einträge sind deshalb nur stichprobenartig, nicht vollständig zweitgeprüft.** Eine vollständige Zweitprüfung der verbleibenden 73 `official`/`house_rule`-Einträge ist als nächster Schritt empfohlen.
 
 ## Prüfregeln
 
@@ -55,18 +55,18 @@ Die zwei seit dem Start des Audits auf dem Branch hinzugekommenen Dateien (`zule
 - `product_contract` nur nach Lektüre aller Testgruppen und mit schriftlicher Begründung (`rationale`). Von den ursprünglich 17 als technisch geführten Katalogverträgen blieben 9 reine Verträge; 8 enthielten Katalog-Regelaussagen und wurden als `house_rule` (2) bzw. `official` (6) neu eingestuft, davon eine mit Konflikt (`trait_effect_catalog_test.dart`).
 - Ein Konflikt braucht Testfälle, erwartete Aussage, Buchbeleg (`contradiction`/`unresolved`) bzw. erfolglose Suchbegriffe (`source_gap`), Abweichung, Auswirkung, Priorität und einen eigenen Folgeauftrag. Der CI-Check `python tool/check_rule_test_evidence.py` erzwingt das; gebündelte `RULE-AUDIT-*`-Kennungen und Platzhaltertexte werden abgelehnt.
 - Priorität: **P1** = Spielwert/Kosten falsch (Datenwirkung), **P2** = Randfall oder Variante, **P3** = Dokumentation, nicht belegte Rundung/Untergrenze, Kosmetik.
-- Dieses Audit ändert weder Produktlogik noch Test-Erwartungen.
+- Das Audit selbst änderte weder Produktlogik noch Test-Erwartungen; die Behebung einzelner P1-Befunde erfolgte danach als eigener Schritt (Abschnitt „Behobene Befunde“).
 
 ## Einordnung der Befunde
 
 | Fall | Dateien | Bedeutung |
 | --- | ---: | --- |
-| Test stimmt mit der Buchregel überein | 78 | `official`/`verified`: alle fachlichen Erwartungen belegt |
+| Test stimmt mit der Buchregel überein | 76 | `official`/`verified`: alle fachlichen Erwartungen belegt |
 | Dokumentierte Hausregel weicht bewusst ab | 8 | `house_rule`/`verified`: durch Hausregel-Dokument im MCP belegt |
 | Technischer Produktvertrag ohne Regelbehauptung | 55 | `product_contract`: Begründung je Datei in der Inventur |
-| Test oder Produkt widerspricht der Quelle | 29 | Dateien mit mindestens einem Befund `contradiction` (27 Einzelbefunde) |
-| Regelunklarheit, Buch entscheidet nicht | 43 | Dateien mit mindestens einem Befund `unresolved` (54 Einzelbefunde) |
-| Quelle im MCP nicht ausreichend verfügbar | 17 | Dateien mit mindestens einem Befund `source_gap` (19 Einzelbefunde) |
+| Test oder Produkt widerspricht der Quelle | 20 | Dateien mit mindestens einem Befund `contradiction` (21 Einzelbefunde) |
+| Regelunklarheit, Buch entscheidet nicht | 46 | Dateien mit mindestens einem Befund `unresolved` (57 Einzelbefunde) |
+| Quelle im MCP nicht ausreichend verfügbar | 18 | Dateien mit mindestens einem Befund `source_gap` (20 Einzelbefunde) |
 
 Die letzten drei Zeilen überschneiden sich, weil eine Datei Befunde mehrerer Typen tragen kann.
 
@@ -99,60 +99,6 @@ Folgeauftrag = je eine Zeile; das Beleg-Format ist *Buch S. gedruckte Seite (MCP
 - **Abweichung:** Buch: Ritualprobe -3 und halbe Lern-AP des gewählten Rituals. App/Test: eine Spalte billiger für die Ritualkenntnis der zugehörigen Ritualkategorie (Lernkomplexität), ohne Probenerleichterung und ohne Halbierung der Ritual-AP.
 - **Auswirkung:** Der Test sichert eine Wirkung ab, die das Buch nicht kennt; Steigerungskosten der Ritualkenntnis fallen bei Begabung für Ritual zu niedrig aus, die Probenerleichterung um 3 und die halben Ritual-AP fehlen. Betrifft nur Helden mit Begabung für Ritual (Zauberer, selten).
 
-#### RULE-FIX-002: Der Test erwartet, dass eine Steigerung von GE (12 auf 13) nur das Nahkampftalent 'sword' entsperrt, nicht das Fernkampftalent 'bow'. …
-
-- **Typ:** contradiction · **Dateien:** `advancement_impact_rules_test.dart`
-- **Testfälle:** Nahkampf und Fernkampf verwenden ihre eigenen Eigenschaften
-- **Erwartet (Test):** GE 12 auf 13 entsperrt nur ['sword']; Fernkampf-Maximum beruht nur auf FF und KK.
-- **Buchbeleg:** Wege des Schwerts S. 8 (Chunk 6855); Wege des Schwerts S. 12 (Chunk 6864); Wege des Schwerts S. 18 (Chunk 6880); Wege der Helden S. 18 (Chunk 4066); Erweiterung und Überarbeitung des Regelwerks S. PDF S. 3 (Chunk 25818)
-- **Abweichung:** Buch (drei Stellen übereinstimmend): Fernkampf-Maximum = höchster Wert aus FF, GE, KK plus 3 (Begabung plus 5). App und Test: nur FF und KK.
-- **Auswirkung:** Produktcode: Fernkampf-Maximum (und epische Sondergrenze) zu niedrig, sobald GE die höchste der drei Eigenschaften ist; Steigerungsoptionen werden zu früh mit 'Maximum erreicht' gesperrt und die Entsperr-Vorschau lässt bow aus. Test: GE-Assertion für 'bow' muss nach Korrektur ['bow','sword'] lauten.
-
-#### RULE-FIX-003: Die Hausregel 'GE-Aufwertung für INI' (INI/GE = 26/7 - TP/KK) stellt klar: 'Es entstehen keine Mali durch den INI/GE.' computeIniGe rechnet jedoch (GE - (26 - k …
-
-- **Typ:** contradiction · **Dateien:** `bestandshelden_regelwerte_basis_cases.dart`, `bestandshelden_regelwerte_ergaenzung_cases.dart`, `bestandshelden_regelwerte_test.dart`, `combat_basis_cases.dart`
-- **Testfälle:** f02_geode_magisch; f03_geweihter_karmal; f05_freitext_merkmale; f09_strukturierte_merkmale; f06_gleichnamige_ausruestung; f07_legacy_schema1; INI/GE rounds towards zero for positive and negative values; TP/KK 0/0 disables TP/KK and INI/GE calculations; …
-- **Erwartet (Test):** kampf.ini = 8 (f02), 7 (f03), 8 (f05), 8 (f09); darin ist ein negativer INI/GE-Anteil enthalten.
-- **Buchbeleg:** Erweiterung und Überarbeitung des Regelwerks S. 3 (Chunk 25818); Basisregelwerk S. 150 (Chunk 632)
-- **Abweichung:** INI/GE darf nach Hausregel nicht negativ werden; die App und die Erwartungswerte ziehen 1-2 Punkte ab.
-- **Auswirkung:** Angezeigte Kampf-INI (und davon abgeleitete INI-Parade, Ausweichen-Bonus ab INI 21) ist bei GE unter der Waffenbasis zu niedrig; betrifft computeIniGe/_computeWeaponInitiativeSnapshot und alle Waffen mit GE unter 26 - KK-Basis. Die Erwartungswerte der Datei müssten im selben Commit angepasst werden.
-
-#### RULE-FIX-004: Die Helden-INI (und damit die Kampf-INI) wird in der Kampfvorschau um die eBE des Waffentalents gemindert (herleiteHeldenIni mit ebe aus computeEbe). …
-
-- **Typ:** contradiction · **Dateien:** `bestandshelden_regelwerte_ergaenzung_cases.dart`, `bestandshelden_regelwerte_test.dart`
-- **Testfälle:** f06_gleichnamige_ausruestung
-- **Erwartet (Test):** kampf.ini = 8 für f06 (INI-Basis 11, Abzug eBE 1 statt BE 2)
-- **Buchbeleg:** Wege des Schwerts S. 56 (Chunk 6977); Wege des Schwerts S. 53 (Chunk 6968); Basisregelwerk S. 131 (Chunk 581)
-- **Abweichung:** App: INI-Abzug = eBE des gewählten Waffentalents (kann kleiner als BE sein). Buch: INI-Abzug = BE nach Rüstungsgewöhnung, unabhängig vom Talent.
-- **Auswirkung:** Kämpfer mit Rüstung und Talenten mit eBE < BE (Dolche, Schwerter, Fechtwaffen u. a.) erhalten eine zu hohe INI; die Golden-Erwartung ini = 8 in f06 pinnt den Fehler (richtig wäre 9 vor INI/GE). Betrifft lib/rules/derived/combat_rules.dart (Helden-INI-Herleitung).
-
-#### RULE-FIX-005: Hausregel 'Epische Stufen' Kap. 2.2: Der Lehrmeister verbilligt fuer epische Helden nicht, sondern hebt die 25-%-Verteuerung auf ('Konsequent gerechnet ... …
-
-- **Typ:** contradiction · **Dateien:** `erwerb_herleitung_rules_test.dart`, `steigerung_herleitung_rules_test.dart`
-- **Testfälle:** Lehrmeister hebt den Aufschlag auf und senkt um 20 %; liefert in allen Kombinationen die bisherigen AP; Lehrmeister hebt den epischen Aufschlag auf und senkt um 20 %; Herleitung ergibt in allen Fällen die bisherigen AP-Kosten
-- **Erwartet (Test):** episch + Lehrmeister, Basis 40: apKosten == apMitLehrmeister(40) == 32 (der zweite Test fixiert dieselbe Kette fuer alle Kombinationen)
-- **Buchbeleg:** Epische Stufen S. 5 (Chunk 25740); Erweiterung und Überarbeitung des Regelwerks S. PDF S. 22–24 (Inhaltsverzeichnis: S. 19) (Chunk 25834)
-- **Abweichung:** Buch: episch + Lehrmeister = Basiskosten (40); App: 32. Gleiches gilt fuer die Steigerungskette in steigerung_herleitung_rules.dart (anderer Prueflauf, gleiche Funktion applyEpicApSurcharge + apMitLehrmeister).
-- **Auswirkung:** Epische Helden zahlen mit Lehrmeister 20 % zu wenig AP (Erwerb und Steigerung); der Test fixiert den falschen Wert.
-
-#### RULE-FIX-006: WdS (Talentwerte und Steigerung der Talente): Der Maximalwert eines Talents ist die hoechste beteiligte Eigenschaft +3; …
-
-- **Typ:** contradiction · **Dateien:** `learning_rules_test.dart`
-- **Testfälle:** uses FF or KK for Fernkampf and ignores IN
-- **Erwartet (Test):** Fernkampf-Maximum = max(FF, KK) + 3 (+5 bei Begabung); Test benennt 'FF or KK'
-- **Buchbeleg:** Wege des Schwerts S. 164 (Chunk 7237); Wege des Schwerts S. 8 (Chunk 6855); Erweiterung und Überarbeitung des Regelwerks S. 3 (Chunk 25818)
-- **Abweichung:** Buch: max(FF, GE, KK) + 3 (Begabung +5). App: max(FF, KK) + 3. Das Testbeispiel (KK 15 dominiert) deckt die Abweichung nicht auf.
-- **Auswirkung:** Helden, deren GE hoeher ist als FF und KK, bekommen in Fernkampf-Talenten ein zu niedriges TaW-Maximum (Steigerungsgrenze).
-
-#### RULE-FIX-007: Wege der Helden, Vorteil 'Gutes Gedaechtnis': Verbilligt auf drei Viertel werden Sprachen, …
-
-- **Typ:** contradiction · **Dateien:** `lernregeln_advancement_test.dart`
-- **Testfälle:** Gutes Gedächtnis: Wissenstalent, Zauber, Sprache — nicht Klettern
-- **Erwartet (Test):** Gutes Gedaechtnis I: Faktor 3/4 fuer tal_geographie (Wissenstalent) und spell_balsam_salabunde (Zauber); kein Faktor fuer Klettern
-- **Buchbeleg:** Wege der Helden S. 252 (Chunk 4715, 4716); Wege der Helden S. 250 (Chunk 4709)
-- **Abweichung:** Buch: 3/4 nur fuer Sprachen, Zauberfertigkeiten und genannte Sonderfertigkeiten; App/Test: zusaetzlich Wissenstalente (LernzielArt.wissenstalent). Zauber- und Klettern-Erwartung stimmen.
-- **Auswirkung:** Helden mit Gutem Gedaechtnis zahlen fuer Wissenstalente 25 % zu wenig AP; Eidetisches Gedaechtnis ist davon nicht betroffen.
-
 ### P2: Randfall oder Variante
 
 | Folgeauftrag | Typ | Datei(en) | Abweichung | Buchbeleg / Suche | Auswirkung |
@@ -171,6 +117,7 @@ Folgeauftrag = je eine Zeile; das Beleg-Format ist *Buch S. gedruckte Seite (MCP
 | RULE-FIX-019 | contradiction | `bought_stat_limit_rules_test.dart` | AsP-Zukauf ist laut Buch auf CH begrenzt; die App modelliert für AsP keine Grenze (nur AP-Reichweite). Der KaP-Teil stimmt. | Basisregelwerk S. 206 (Chunk 763); Basisregelwerk S. 207 (Chunk 764); Wege der Götter S. 240 (Chunk 3774) | Der Zukauf-Dialog erlaubt mehr zugekaufte AsP als das Regelwerk. Der Test zementiert das Fehlen der Grenze; Anpassung in lib/rules/derived/bought_stat_limit_rules.dart. |
 | RULE-FIX-020 | source_gap | `combat_basis_cases.dart`, `combat_nebenhand_cases.dart` | Maximumsbildung über beide Hände ist im MCP nicht belegt (nur je Waffe ein INI-Mod, WdS 79/80). | Suche: Kämpfer mit zwei Waffen Initiative-Modifikator welche Waffe zählt; Initiative Modifikator Waffe zwei Waffen höhere INI-Modifikator; Zweitwaffe INI Parierwaffe Hauptwaffe; Beidhändiger Kampf Initiative; … | Doppelwaffen-Helden erhalten die bessere der beiden Waffen-INI. |
 | RULE-FIX-021 | unresolved | `combat_waffen_cases.dart` | Nur der Grundabzug -9 ohne Sonderfertigkeit ist im MCP nicht belegt; -6/-3/0 sind bestätigt. | Wege des Schwerts S. PDF S. 75-76 (Chunk 7029, 7030); Wege des Schwerts S. PDF S. 73-74 (Chunk 7021, 7022, 7024); Wege des Schwerts S. 75 (PDF 76) (Chunk 7030); Wege des Schwerts S. 73 (PDF 74) (Chunk 7024) | Nur Helden ohne Linkhand mit Zweitwaffe (falsche Hand) sind betroffen; der Test hängt an der -9. Produktverhalten (computeFalseHandModifiers) bleibt für Linkhand/BK I/BK II buchkonform. |
+| RULE-FIX-103 | unresolved | `derived_stats_test.dart` | Nach „Epische Stufen“ gibt es ab dem epischen Status (zwischen Stufe 21 und 22) Stufenboni nur noch auf AsP; der AuP-Stufenbonus endete bei Stufe 21 (42, maxAu 66). Der Test erreicht Stufe 30 ohne Epic-Flag. | Wege der Helden S. 20–21 (Chunk 4070, 4071, 4072); Erweiterung und Überarbeitung des Regelwerks S. 2 (Chunk 25817); Epische Stufen S. 5–6 (PDF) (Chunk 25738, 25740); Basisregelwerk S. 173 (Chunk 683); Basisregelwerk S. … | Maximale Ausdauer ab Stufe 22 wäre je nach Lesart um bis zu 18 AuP zu hoch; der Test fixiert den höheren Wert. |
 | RULE-FIX-022 | unresolved | `erwerb_herleitung_rules_test.dart` | Ob der Aufschlag auf gewoehnliche SF/Manoever/Vor-/Nachteile ausgedehnt werden soll, laesst der Text offen; die App erweitert ihn ohne dokumentierte Entscheidung im MCP. | Epische Stufen S. 5 (Chunk 25740); Epische Stufen S. 5-6 (PDF-Seite) (Chunk 25740) | Epische Helden zahlen beim Erwerb gewoehnlicher SF/Vor-/Nachteile moeglicherweise 25 % zu viel; Test bildet die App-Erweiterung ab. |
 | RULE-FIX-023 | unresolved | `gefecht_ansagen_paket2_test.dart` | Finte plus Sturmangriff ist im Buch nicht belegt (nur Wuchtschlag-Ansage); die App lässt es ohne Beleg zu. | Wege des Schwerts S. 63 (Chunk 6994, 6995); Wege des Schwerts S. 65 (Chunk 7000, 7001); Wege des Schwerts S. 64-65 (PDF 65-66) (Chunk 7000, 7001); Wege des Schwerts S. … | Zahlenwerte des Tests (+4, Ansagen einmal, GS-Bonus) stimmen; offen ist nur die Zulässigkeit der Finte-Komponente. Fachlich P2, falls der Tisch Finte beim Sturmangriff nicht erlaubt. |
 | RULE-FIX-024 | contradiction | `gefecht_freigabe_rules_test.dart` | Hausregel: Seitenwechsel +4, Voraussetzung Binden/Gezieltes Ausweichen, DK-abhängige Zusatzaktionen, INI-Bedingung. Test/Code: reiner PA-Zielwert ohne +4 und ohne Zusatzaktionen. | Erweiterung und Überarbeitung des Regelwerks S. 9–10 (Chunk 25825) | Test hält eine nicht regelkonforme Berechnung für richtig; Produktverhalten rechnet Seitenwechsel um 4 Punkte zu leicht und mit zu wenig Aktionskosten, sofern der Tisch die Hausregel nutzt. |
@@ -211,10 +158,12 @@ Folgeauftrag = je eine Zeile; das Beleg-Format ist *Buch S. gedruckte Seite (MCP
 | RULE-FIX-054 | unresolved | `advancement_impact_rules_test.dart` | Kein Widerspruch nachgewiesen; die Regel (temporäre Eigenschaften nicht für Ressourcen/Grenzen) ist im durchsuchten Material nicht auffindbar. Die Repo-Regel 6 (CLAUDE.md) legt sie als Designentscheidung fest. | Basisregelwerk S. PDF 19 (Chunk 312); Erweiterung und Überarbeitung des Regelwerks S. PDF 9-10 (Chunk 25824, 25825) | Nur Dokumentationslücke: ohne MCP-Beleg bleibt offen, ob Au/Steigerungsgrenzen Gegenstandsboni und Attributo so behandeln dürfen. Kein bekannter Spielwertfehler. |
 | RULE-FIX-055 | unresolved | `artefakt_auxiliator_rules_test.dart` | Reihenfolge ist eine App-Auslegung, die das Buch offenlässt. | Wege der Alchimie S. 87 (Chunk 2924) | Bei fremder Repräsentation und hohen gespeicherten ZfP* kann der Bonus um bis zu die Hälfte des Deckels abweichen; Meisterentscheid sinnvoll. |
 | RULE-FIX-056 | unresolved | `artefakt_intervall_rules_test.dart`, `artefakt_spruchspeicher_rules_test.dart` | Das Modell 'gleitendes Fenster je Anwendung' ist eine App-Auslegung für Mehrfachanwendungen. | Wege der Alchimie S. 81 (Chunk 2911); Stäbe, Ringe, Dschinnenlampen S. 11 (Chunk 2537) | Bei mehr als einer Anwendung je Intervall kann die App Anwendungen früher oder später freigeben als der Meister am Tisch; bei einer Anwendung je Intervall ist das Verhalten belegt. |
+| RULE-FIX-102 | unresolved | `attribute_start_rules_test.dart` | WdS S. 165 nennt für den Startwert nur Rasse und Kultur; WdH S. 304–305 rät bei Professionen von Eigenschaftsmodifikatoren ab und lässt sie nur ausnahmsweise zu, wenn der Bonus im Paket enthalten ist. | Wege des Schwerts S. 165 (Chunk 7240, 7241); Wege der Helden S. 252 (Chunk 4716, 4717); Wege der Helden S. 304–305 (Eigenbau: Professionen und Eigenschaftsmodifikationen) (Chunk 4865, 4866); Epische Stufen S. … | Startwert und Maximum (1,5 × Startwert) von Helden mit Professions-Eigenschaftsbonus hängen von dieser nicht eindeutig belegten Annahme ab. |
 | RULE-FIX-057 | unresolved | `basiswert_herleitung_rules_test.dart` | Keine Abweichung nachweisbar, aber die Rechenreihenfolge Wunden/Axxeleratus ist im Buch nicht festgelegt. | Liber Cantiones S. 36 (Chunk 1949); Wege des Schwerts S. 110 (Chunk 7116) | Nur der Randfall große Wundabzüge zusammen mit Axxeleratus; Flink/Behäbig werden zusätzlich erst nach der Verdopplung addiert, obwohl WdH Flink als Erhöhung der Basis-GS beschreibt. |
 | RULE-FIX-058 | unresolved | `bestandshelden_regelwerte_basis_cases.dart`, `bestandshelden_regelwerte_test.dart` | Die Gleichsetzung Linkshänder = linker Arm ist Schwertarm ist eine plausible, aber nicht belegte App-Folgerung. | Wege der Helden S. PDF S. 255 (Chunk 4722); Wege des Schwerts S. 57, 107 (Chunk 6980, 7111, 7112); Wege des Schwerts S. gedr. 107-108 (PDF 108-109) (Chunk 7111, 7114); Errata WdS S. PDF 4-5 (Chunk 25632) | Nur Armwunden bei Linkshändern (AT/PA der Hauptwaffe vs. Schild); kein Einfluss auf andere Helden. |
 | RULE-FIX-059 | contradiction | `bought_stat_limit_rules_test.dart` | Test und Produkt weichen von der Quelle ab: Allgemeine Rundungsregel: 'Wenn nicht ausdrücklich anders erwähnt, wird bei allen Rechnungen echt gerundet (ab n,50 auf), speziell bei Halbierungen wird aufgerundet' (WdH S. … | Basisregelwerk S. 202 (Chunk 753); Basisregelwerk S. 207 (Chunk 764); Wege der Helden S. 20 (Chunk 4070); Wege der Helden S. PDF 6 (Chunk 4036); Wege der Zauberei S. gedr. 6 (PDF 7) (Chunk 4955); Basisregelwerk S. … | Bei ungeraden KO-/MU-Werten sperrt die App den Zukauf einen Punkt früher als bei kaufmännischem Runden. AuP (voller KO-Wert) ist unproblematisch. |
 | RULE-FIX-060 | source_gap | `combat_basis_cases.dart`, `kampf_herleitung_rules_test.dart` | Untergrenze 0 für die Kampf-INI ist App-Entscheidung; das Buch schließt negative INI nicht aus. | Wege des Schwerts S. PDF S. 82 (Chunk 7046, 7047) | Nur bei extrem niedriger INI (z. B. hohe BE plus Abzüge); Randfall. |
+| RULE-FIX-101 | unresolved | `companion_steigerung_rules_test.dart` | Die Quelle nennt nur „nicht über das Anderthalbfache“, die Rundung steht nicht im Text; die allgemeine Rundungsregel (WdH S. 6) und die analoge Eigenschaftsgrenze (WdS S. … | Wege der Zauberei S. 124 (Die Entwicklung des Vertrauten; kein Wort zu Auf-/Abrunden) (Chunk 5267, 5268); Wege des Schwerts S. 168 (SKT Spalte F: 6 / 14 / 22) (Chunk 7247, 7248); Wege der Helden S. … | Vertrauten-Obergrenzen und Steigerungszuwächse fallen bei ungeraden Startwerten je nach Lesart um 1 niedriger oder höher aus. |
 | RULE-FIX-061 | unresolved | `gefecht_ansagefolge_rules_test.dart` | Buch lässt offen, ob die allgemeine Ansagefolge auch für die optionale FK-Ansage gilt; die App entscheidet sich ohne Beleg für 'nein'. | Wege des Schwerts S. 59 (Chunk 6985, 6986); Wege des Schwerts S. 97 (Chunk 7088, 7089); Wege des Schwerts S. gedr. 97 (PDF 98) (Chunk 7088, 7089); Basisregelwerk S. PDF 140 (Chunk 602) | Nur Randfall der optionalen FK-Ansage; Produktverhalten bleibt unverändert, solange der Tisch keine gegenteilige Regel festlegt. |
 | RULE-FIX-062 | unresolved | `gefecht_ansagen_paket2_test.dart` | App-Designentscheidung (Bindung an Waffenprofil/Geschoss/Ziel) ohne Buchbeleg; das Buch kennt nur Verfall bei Störung/Unterbrechung. | Wege des Schwerts S. gedr. 94 und 97 (PDF 95 und 98) (Chunk 7082, 7089); Errata WdS S. PDF 7 (Chunk 25635) | Randfall; die App ist strenger als das Buch. Testaussage selbst ist technisch konsistent. |
 | RULE-FIX-063 | unresolved | `gefecht_gegner_rules_test.dart` | Ausnahme für den Schützen selbst steht nicht im Buch; die Hausregel 'Fernkampf im Nahkampf' regelt nur den Passierschlag. | Wege des Schwerts S. gedr. 98 (PDF 99) (Chunk 7091); Erweiterung und Überarbeitung des Regelwerks S. PDF 2-3 (Chunk 25817, 25818) | Nur Voreinstellung der Zielsituation (im Gefecht änderbar); kein Datenrisiko. |
@@ -232,6 +181,7 @@ Folgeauftrag = je eine Zeile; das Beleg-Format ist *Buch S. gedruckte Seite (MCP
 | RULE-FIX-075 | unresolved | `gefecht_ueberzahl_rules_test.dart` | Zuteilung der Restpunkte nach Reihenfolge ist App-Konvention. | Wege des Schwerts S. 80 (PDF S. 81) (Chunk 7045) | Nur Verteilung zwischen gleichwertigen Gefährten; Summe und Gleichmäßigkeit stimmen. |
 | RULE-FIX-076 | unresolved | `gefecht_zielwert_herleitung_rules_test.dart` | App-Entscheidung (kein INI-Bonus für Gegenhalten), vom Buch weder bestätigt noch ausgeschlossen. | Wege des Schwerts S. 68–69 (Chunk 7011, 7012); Wege des Schwerts S. 78 (Chunk 7039); Erweiterung und Überarbeitung des Regelwerks S. 3 (Chunk 25818); Erweiterung und Überarbeitung des Regelwerks S. … | Gegenhalten-Zielwert bei INI > 20 ist je nach Auslegung bis zu 3 Punkte zu niedrig; betrifft nur den Randfall Gegenhalten bei sehr hoher INI. |
 | RULE-FIX-077 | source_gap | `gefecht_zusatz_rules_test.dart` | Buch schweigt zur Bindung an dasselbe Ausrüstungspaar bzw. zum Waffenwechsel mitten in der Runde. | Suche: Waffe wechseln im Kampf Initiative Waffenwechsel Aktion Kampfrunde; Zusatzaktion nur mit derselben Waffe wie die reguläre Aktion Zweitwaffe getauscht; Tod von Links zusätzliche Angriffsaktion Parierwaffe Linkhand; … | Randfall: Test sichert eine App-Designentscheidung, keine belegte Regel; Produktverhalten ist strenger als das Buch und kann nur in Sonderfällen (Waffentausch während der Runde) eine regelkonforme Zusatzaktion verhindern. |
+| RULE-FIX-104 | source_gap | `hero_herkunft_rules_test.dart` | Basiswert-Modifikatoren für LE, AU, INI, MR, GS und AsP +18 sind belegt (WdH S. 20–22, 193); Ausweichen- und KaP-Modifikatoren aus Rasse/Kultur/Profession und Eigenschaftsmodifikatoren durch Professionen sind in den Regelbüchern n … | Wege der Helden S. 252 (Chunk 4716, 4717, 4718); Wege der Helden S. 20–21 (Chunk 4070, 4071, 4072); Wege der Helden S. 193 (Chunk 4543); Wege der Helden S. 304–305 (Chunk 4865, 4866) | Angezeigte Ausweichen- und KaP-Werte sowie Startwerte hängen von nicht belegten Herkunftsmodifikatoren ab; betrifft nur Helden mit solchen Einträgen. |
 | RULE-FIX-078 | unresolved | `magic_knowledge_advancement_test.dart` | Buch: 0 AP über die Profession bzw. 250 AP nur für Fremdrepräsentation; App: 250 AP auch für eine bekannte Repräsentation. Die Folgerung ist weder bestätigt noch widerlegt. | Wege der Helden S. 289 (Chunk 4824, 4825) | Test: fixiert 250 AP für einen im Buch nicht geregelten Fall. Produkt: ein Meisterentscheid-Hinweis oder eine nachvollziehbare Herleitung (Repo-Designentscheidung) fehlt; Preis könnte am Tisch abweichen. |
 | RULE-FIX-079 | source_gap | `meta_talent_rules_test.dart` | Eigene BE-Regel je Meta-Talent ist eine App-Erweiterung ohne Buchbeleg. | Suche: Meta-Talent Behinderung effektive Behinderung Metatalent; Metatalente Konzept Talentwert errechnet sich aus Durchschnitt; Meta-Talent Talentwert Durchschnitt gerundet eBE; Meta-Talent Pirschjagd Ansitzjagd Behinderung; … | Betrifft nur selbst angelegte Meta-Talente mit BE-Regel; Buch-Meta-Talente haben keine BE. |
 | RULE-FIX-080 | source_gap | `modifier_text_parser_test.dart` | Das Buch nennt Rasse- und Kulturmodifikationen als Startwertbestandteil; Professionsmodifikatoren von Eigenschaften kommen dort nicht vor. Die App verallgemeinert auf alle drei Herkunftsgruppen. | Suche: Profession Modifikationen Eigenschaft +1; Modifikationen: MU +1 Profession Voraussetzungen; Eigenschaften steigern Maximum Anderthalbfache Wert zu Spielbeginn; Startwert Eigenschaft Modifikatoren Rasse Kultur Profession; … | Nur Randfall: Ein Held mit nutzerdefiniertem Professions-Eigenschaftsmodifikator bekäme ein anderes Eigenschaftsmaximum als ohne. Regulär ausgelieferte Professionen sind nicht betroffen. … |
@@ -255,6 +205,19 @@ Folgeauftrag = je eine Zeile; das Beleg-Format ist *Buch S. gedruckte Seite (MCP
 | RULE-FIX-098 | unresolved | `vertrauten_ausbildung_rules_test.dart` | Das Buch sagt 'üblicherweise nicht wählbar' (Regelfall, Meister kann abweichen); die App macht daraus ein hartes Verbot ohne Meisterausnahme (App-Entscheidung). | Wege der Zauberei S. 123 (Chunk 5266) | Ein Meister kann ein Kampftier-Training für einen Vertrauten in der App nicht erfassen; Randfall, keine falschen Werte. |
 | RULE-FIX-099 | unresolved | `wund_rules_test.dart`, `wund_zonen_rules_test.dart` | Anteilige und aufgerundete Rueckrechnung ist eine App-Ableitung; im MCP (WdS S. 57/108/161 f. gedruckt, BRW S. 195 f., Hausregeln) ist keine Regel dazu auffindbar. Gelesen wurden u. a. die Heilungskapitel inkl. … | Wege der Helden S. 6 (MCP-Seite) (Chunk 4036) | Nur Komfortwert fuer den Hinweistext 'aktuelle INI'; keine Spielwert-Rechnung (Kopf-INI senkt keine gespeicherte INI). Test und Produkt koennen unveraendert bleiben, wenn die Ableitung als Designentscheidung dokumentiert wird. |
 | RULE-FIX-100 | unresolved | `zauber_lernspalte_rules_test.dart` | App und Test setzen die SF allein als Aufhebung des Nachteils; das Buch beschreibt die Aufhebung im Zusammenhang mit der erlernten Merkmalskenntnis im Gegenelement. | Wege der Zauberei S. 381 (Chunk 5951); Wege der Zauberei S. 187 (Chunk 5432); Wege der Helden S. PDF S. 286 (Chunk 4813) | Nur Randfall (Held mit SF, aber ohne Merkmalskenntnis im Gegenelement); Lernspalte könnte dort um eine Spalte abweichen. Test ist als Regelaussage zu präzisieren oder Auslegung zu dokumentieren. |
+
+## Behobene Befunde
+
+Diese P1-Befunde wurden nach dem Audit in einem eigenen Schritt behoben: Produktcode und Test-Erwartung wurden gemeinsam an die Quelle angepasst, die gesamte Flutter-Testsuite und `flutter analyze` sind grün. Die Folgeauftrags-IDs bleiben bestehen; die Einträge stehen in der Inventur unter `resolved`.
+
+| Folgeauftrag | Behoben am | Regel | Dateien |
+| --- | --- | --- | --- |
+| RULE-FIX-002 | 2026-10-25 | Fernkampf-Talentmaximum aus FF, GE oder KK (Entsperr-Vorschau) | `advancement_impact_rules_test.dart` |
+| RULE-FIX-003 | 2026-10-25 | INI/GE ohne Mali (Hausregel „Erweiterung und Überarbeitung“, Chunk 25818) | `bestandshelden_regelwerte_basis_cases.dart`, `bestandshelden_regelwerte_ergaenzung_cases.dart`, `bestandshelden_regelwerte_test.dart`, `combat_basis_cases.dart` |
+| RULE-FIX-004 | 2026-10-25 | Initiative sinkt um die BE der Rüstung, nicht um die talentabhängige eBE | `bestandshelden_regelwerte_ergaenzung_cases.dart`, `bestandshelden_regelwerte_test.dart` |
+| RULE-FIX-005 | 2026-10-25 | Lehrmeister hebt den epischen Aufschlag nur auf, kein zusätzlicher Nachlass (Epische Stufen, Chunk 25740) | `erwerb_herleitung_rules_test.dart`, `steigerung_herleitung_rules_test.dart` |
+| RULE-FIX-006 | 2026-10-25 | Fernkampf-Talentmaximum aus FF, GE oder KK (Steigerungsgrenze) | `learning_rules_test.dart` |
+| RULE-FIX-007 | 2026-10-25 | Gutes Gedächtnis gilt nicht für Wissenstalente (Wege der Helden, Chunk 4715) | `lernregeln_advancement_test.dart` |
 
 ## Technische Verträge ohne Regelbehauptung
 
@@ -281,4 +244,4 @@ Während der Prüfung fielen Abweichungen im Produktcode oder in Katalogdaten au
 
 ## Umgang mit Abweichungen
 
-Dieses Arbeitspaket ändert keine Fachlogik und keine Test-Erwartungen. Jeder Folgeauftrag `RULE-FIX-NNN` ist fachlich abgegrenzt und ändert später Produktverhalten und Erwartungswerte gemeinsam; Einzelheiten (Testfälle, Beleg, Abweichung, Auswirkung) stehen in `tool/rule_test_evidence.json` unter `conflicts`.
+Das Audit änderte keine Fachlogik und keine Test-Erwartungen. Jeder Folgeauftrag `RULE-FIX-NNN` ist fachlich abgegrenzt und ändert später Produktverhalten und Erwartungswerte gemeinsam; Einzelheiten (Testfälle, Beleg, Abweichung, Auswirkung) stehen in `tool/rule_test_evidence.json` unter `conflicts`.

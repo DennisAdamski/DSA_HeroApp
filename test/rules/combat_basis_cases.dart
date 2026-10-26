@@ -34,7 +34,7 @@ void _combatBasis() {
 
     expect(preview(positiveOne).iniGe, 1);
     expect(preview(positiveTwo).iniGe, 2);
-    // Hausregel "GE-Aufwertung für INI": keine Mali durch den INI/GE.
+    // Hausregel „Erweiterung und Überarbeitung": keine Mali durch INI/GE.
     expect(preview(negativeOne).iniGe, 0);
     expect(preview(zero).iniGe, 0);
   });

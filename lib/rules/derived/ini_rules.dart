@@ -49,8 +49,10 @@ int computeSfIniBonus(
 // Die Konstante 7 ist die Spiegelkonstante zum KK-Schwellenwert:
 //   geThreshold = 7 - kkThreshold  →  GE-Aequivalent des KK-Stufensprungs.
 // Ist geThreshold == 0 (kkThreshold == 7), ist kein GE-Beitrag moeglich.
-// Hausregel "GE-Aufwertung fuer INI": Es entstehen keine Mali durch den
-// INI/GE, das Ergebnis ist also mindestens 0.
+//
+// Hausregel „Erweiterung und Ueberarbeitung des Regelwerks" (GE-Aufwertung fuer
+// INI): INI/GE = 26/7 - TP/KK; „Es entstehen keine Mali durch den INI/GE." Ein
+// Wert unter 0 faellt deshalb auf 0.
 int computeIniGe({
   required int ge,
   required int kkBase,

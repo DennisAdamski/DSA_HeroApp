@@ -150,7 +150,7 @@ void main() {
   });
 
   group('Gedächtnis-Vorteile', () {
-    test('Gutes Gedächtnis: Zauber und Sprache — weder Wissenstalent noch Klettern', () {
+    test('Gutes Gedächtnis: Zauber ja — Wissenstalent und Klettern nicht', () {
       final hero = held(vorteile: 'Gutes Gedächtnis I');
       final faktoren = option(
         hero,
@@ -159,9 +159,7 @@ void main() {
       ).lernregeln.faktoren;
       expect(faktoren, hasLength(1));
       expect((faktoren.single.zaehler, faktoren.single.nenner), (3, 4));
-      expect(lernkostenFaktoren(hero, LernzielArt.sprachschrift), hasLength(1));
-      // Wissenstalente nennt nur das Eidetische Gedächtnis (WdH S. 252).
-      for (final id in const ['tal_geographie', 'tal_klettern']) {
+      for (final id in <String>['tal_geographie', 'tal_klettern']) {
         expect(
           option(hero, AdvancementKind.talent, id).lernregeln.faktoren,
           isEmpty,
@@ -177,6 +175,7 @@ void main() {
         AdvancementKind.talent,
         'tal_geographie',
       ).lernregeln.faktoren;
+      expect(faktoren, hasLength(1));
       expect((faktoren.single.zaehler, faktoren.single.nenner), (1, 2));
     });
 

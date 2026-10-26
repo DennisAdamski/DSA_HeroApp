@@ -194,33 +194,7 @@ void main() {
       );
     });
 
-    test('uses FF, GE or KK for Fernkampf and ignores IN', () {
-      const geDominant = Attributes(
-        mu: 12,
-        kl: 14,
-        inn: 18,
-        ch: 11,
-        ff: 10,
-        ge: 16,
-        ko: 9,
-        kk: 15,
-      );
-      expect(
-        computeCombatTalentMaxValue(
-          effectiveAttributes: geDominant,
-          talentType: 'Fernkampf',
-          gifted: false,
-        ),
-        19,
-      );
-      expect(
-        computeCombatTalentMaxValue(
-          effectiveAttributes: geDominant,
-          talentType: 'Fernkampf',
-          gifted: true,
-        ),
-        21,
-      );
+    test('uses the highest of FF, GE and KK for Fernkampf and ignores IN', () {
       expect(
         computeCombatTalentMaxValue(
           effectiveAttributes: attributes,
@@ -238,6 +212,29 @@ void main() {
         20,
       );
     });
+
+    test(
+      'Fernkampf zaehlt GE, wenn GE die hoechste der drei Eigenschaften ist',
+      () {
+        final geschickt = attributes.copyWith(ff: 12, ge: 17, kk: 11);
+        expect(
+          computeCombatTalentMaxValue(
+            effectiveAttributes: geschickt,
+            talentType: 'Fernkampf',
+            gifted: false,
+          ),
+          20,
+        );
+        expect(
+          computeCombatTalentMaxValue(
+            effectiveAttributes: geschickt,
+            talentType: 'Fernkampf',
+            gifted: true,
+          ),
+          22,
+        );
+      },
+    );
   });
 
   group('requiredTawForSpecialization', () {

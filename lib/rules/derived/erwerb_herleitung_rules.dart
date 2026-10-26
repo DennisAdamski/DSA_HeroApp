@@ -44,9 +44,10 @@ class Erwerbskosten {
 ///
 /// Der epische Aufschlag gilt nur für [episch]e Helden und entfällt für
 /// [epischerInhalt], [keinAufschlag] (Begabung/Sondererfahrung) und mit
-/// [mitLehrmeister]. Mit [lehrmeisterUeblich] senkt ein Lehrmeister die
-/// Kosten um 20 %; gilt [lehrmeisterVerdoppeltOhneIhn], zählen die Kosten
-/// als Preis *mit* Lehrmeister und der Erwerb ohne ihn kostet das Doppelte.
+/// [mitLehrmeister]. Ein Lehrmeister senkt die Kosten um 20 %, hebt bei
+/// epischen Helden aber nur den Aufschlag auf; gilt
+/// [lehrmeisterVerdoppeltOhneIhn], zählen die Kosten als Preis *mit*
+/// Lehrmeister und der Erwerb ohne ihn kostet das Doppelte.
 Erwerbskosten herleiteErwerbskosten({
   required int basiskosten,
   bool episch = false,
@@ -77,11 +78,19 @@ Erwerbskosten herleiteErwerbskosten({
   if (lehrmeisterVerdoppeltOhneIhn) {
     nachLehrmeister = mitLehrmeister ? nachAufschlag : nachAufschlag * 2;
   } else {
-    nachLehrmeister = lehrmeisterNachlassNachAufschlag(
-      nachAufschlag,
-      mitLehrmeister: mitLehrmeister,
-      aufschlagAufgehoben: aufschlagAufgehoben,
-    );
+    // Ein Lehrmeister hebt den epischen Aufschlag auf, statt zusaetzlich zu
+    // verbilligen (Hausregel „Epische Stufen", Kap. 2.2).
+    final aufschlagAufgehoben =
+        mitLehrmeister &&
+        epicApSurchargeApplies(
+          ruleActive: true,
+          isEpisch: episch,
+          isEpicContent: epischerInhalt,
+          isBegabung: keinAufschlag,
+        );
+    nachLehrmeister = mitLehrmeister && !aufschlagAufgehoben
+        ? apMitLehrmeister(nachAufschlag)
+        : nachAufschlag;
   }
   return Erwerbskosten(
     kostenNachAufschlag: nachAufschlag,
@@ -116,7 +125,7 @@ Erwerbskosten herleiteErwerbskosten({
             betrag: nachLehrmeister - nachAufschlag,
             art: HerleitungsArt.modifikator,
             quelle: 'Lehrmeister',
-            bedingung: 'Lehrmeister mit TaW ≥ 15',
+            bedingung: 'Lehrmeister mit TaW ≥ 15, außer er hebt den epischen Aufschlag auf',
           ),
       ],
     ),

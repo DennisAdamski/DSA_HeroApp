@@ -89,7 +89,7 @@ class Steigerungskosten {
 /// `vonWert < 0` steht für die Aktivierung. [seAnzahl] Sondererfahrungen
 /// verbilligen die ersten Schritte um eine Spalte. Der epische Aufschlag
 /// gilt nur für [episch]e Helden und nicht für [istHaupteigenschaft]; ein
-/// [mitLehrmeister] hebt ihn auf und senkt die Kosten um 20 %.
+/// [mitLehrmeister] hebt ihn auf, ohne die Kosten zusätzlich um 20 % zu senken.
 Steigerungskosten herleiteSteigerungskosten({
   required int vonWert,
   required int aufWert,
@@ -143,20 +143,18 @@ Steigerungskosten herleiteSteigerungskosten({
     isMainAttribute: istHaupteigenschaft,
     lehrmeisterHebtAuf: mitLehrmeister,
   );
+  // Der Lehrmeister hebt den epischen Aufschlag auf, statt zusaetzlich zu
+  // verbilligen (Hausregel „Epische Stufen", Kap. 2.2).
   final aufschlagAufgehoben =
       mitLehrmeister &&
-      applyEpicApSurcharge(
-            vorAufschlag,
-            ruleActive: epicRuleActive,
-            isEpisch: episch,
-            isMainAttribute: istHaupteigenschaft,
-          ) >
-          nachAufschlag;
-  final nachLehrmeister = lehrmeisterNachlassNachAufschlag(
-    nachAufschlag,
-    mitLehrmeister: mitLehrmeister,
-    aufschlagAufgehoben: aufschlagAufgehoben,
-  );
+      epicApSurchargeApplies(
+        ruleActive: epicRuleActive,
+        isEpisch: episch,
+        isMainAttribute: istHaupteigenschaft,
+      );
+  final nachLehrmeister = mitLehrmeister && !aufschlagAufgehoben
+      ? apMitLehrmeister(nachAufschlag)
+      : nachAufschlag;
   final spalte = komplexitaetLabel(komplexitaet);
   final von = vonWert < 0 ? 'Aktivierung' : '$vonWert';
   return Steigerungskosten(
@@ -206,7 +204,7 @@ Steigerungskosten herleiteSteigerungskosten({
           betrag: nachLehrmeister - nachAufschlag,
           art: HerleitungsArt.modifikator,
           quelle: 'Lehrmeister',
-          bedingung: 'Lehrmeister mit TaW ≥ 15',
+          bedingung: 'Lehrmeister mit TaW ≥ 15, außer er hebt den epischen Aufschlag auf',
         ),
       ],
     ),

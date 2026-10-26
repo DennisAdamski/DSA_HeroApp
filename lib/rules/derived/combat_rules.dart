@@ -680,7 +680,7 @@ CombatPreviewStats computeCombatPreviewStats(
   );
   final heldenIniHerleitung = herleiteHeldenIni(
     iniBasis: iniBasis,
-    be: -beKampf,
+    beKampf: beKampf,
     sfBonus: sfIniBonus,
     kampfstil: unarmedStyleEffects.iniMod,
     iniWurf: iniWurfEffective,

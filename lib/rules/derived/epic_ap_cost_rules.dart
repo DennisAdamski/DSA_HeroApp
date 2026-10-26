@@ -35,19 +35,33 @@ int applyEpicApSurcharge(
   return (baseApCost * 1.25).round();
 }
 
-/// Wendet den Lehrmeister-Nachlass (20 %) auf [kosten] an.
+/// Ob der epische Aufschlag ohne Lehrmeister auf die Kosten greifen wuerde.
 ///
-/// Wo der Lehrmeister den epischen Aufschlag aufgehoben hat
-/// ([aufschlagAufgehoben]), bleibt es bei den Basiskosten: er hebt die
-/// Verteuerung nur auf und verbilligt nicht zusaetzlich (Epische Stufen
-/// S. 5, Kap. 2.2: "Konsequent gerechnet ...").
-int lehrmeisterNachlassNachAufschlag(
-  int kosten, {
-  required bool mitLehrmeister,
-  required bool aufschlagAufgehoben,
+/// Nur dann hebt ein Lehrmeister die Verteuerung auf: Hausregel „Epische
+/// Stufen", Kap. 2.2 — „ein Lehrmeister [verbilligt] in Zukunft die Kosten
+/// nicht ..., sondern [hebt] diese Verteuerung auf". Er verbilligt die Kosten
+/// also nicht zusaetzlich um 20 %; ein epischer Held mit Lehrmeister zahlt den
+/// Normalpreis. Wo kein Aufschlag anfaellt (Haupteigenschaft, Begabung,
+/// epischer Inhalt), gilt der gewohnte Nachlass des Lehrmeisters.
+bool epicApSurchargeApplies({
+  required bool ruleActive,
+  required bool isEpisch,
+  bool isEpicContent = false,
+  bool isBegabung = false,
+  bool isSpecialExperience = false,
+  bool isMainAttribute = false,
 }) {
-  if (!mitLehrmeister || aufschlagAufgehoben) return kosten;
-  return apMitLehrmeister(kosten);
+  const probe = 100;
+  return applyEpicApSurcharge(
+        probe,
+        ruleActive: ruleActive,
+        isEpisch: isEpisch,
+        isEpicContent: isEpicContent,
+        isBegabung: isBegabung,
+        isSpecialExperience: isSpecialExperience,
+        isMainAttribute: isMainAttribute,
+      ) !=
+      probe;
 }
 
 /// Liefert den Aufschlagsanteil (25 %) fuer Anzeige-Zwecke.
