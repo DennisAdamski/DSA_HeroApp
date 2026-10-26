@@ -185,7 +185,12 @@
             }
           ],
           "deviation": "Test und Produkt weichen von der Quelle ab: Epische Stufen nennt als Voraussetzungen des Rittmeisters ausdrücklich nur 'TaW Reiten 19, kein Zwerg' (350 AP), keine SF. Die Hausregel Reiterkampf sagt nur, der Rittmeister erfordere ein geschultes Pferd, ansonsten gelte die SF als Kriegsreiterei (Funktionsangabe, keine Voraussetzung); Kriegsreiterei selbst verlangt TaW Reiten 10 + Reiterkampf. Die SF-Voraussetzung ['Kriegsreiterei'] im Katalog ist daher nicht belegt (Ableitung, weicht vom Wortlaut ab).",
-          "impact": "Test und Katalog schließen Helden ohne Kriegsreiterei vom Erwerb der epischen SF Rittmeister aus, obwohl die Hausregel das nicht ausdrücklich verlangt; Randfall (nur episch)."
+          "impact": "Test und Katalog schließen Helden ohne Kriegsreiterei vom Erwerb der epischen SF Rittmeister aus, obwohl die Hausregel das nicht ausdrücklich verlangt; Randfall (nur episch).",
+          "secondCheck": {
+            "checkedOn": "2026-10-26",
+            "result": "confirmed",
+            "note": "Epische Stufen S. 9-10 (Chunk 25743): Voraussetzungen nur 'TaW Reiten 19, kein Zwerg'. Hausregel S. 20-21 (Chunk 25833): Rittmeister 'erfordert ein geschultes Pferd', sonst gilt die SF als Kriegsreiterei; Kriegsreiterei ist keine Voraussetzung."
+          }
         }
       ]
     },
@@ -609,7 +614,12 @@
           ],
           "deviation": "Zuordnung von Schützenpferd und Streitwagenpferd zu 'Kampfpferd' ist App-Auslegung ohne Buchbeleg; die Streit-/Kriegsrosse sind belegt.",
           "impact": "Reiten-Probe im Kampf auf geschultem Schützen-/Streitwagenpferd: −3 statt −1 (Spielwert, Randfall).",
-          "recheck": "Gegenprüfung 2026-10-25: nur teilweise belegt."
+          "recheck": "Gegenprüfung 2026-10-25: nur teilweise belegt.",
+          "secondCheck": {
+            "checkedOn": "2026-10-26",
+            "result": "open",
+            "note": "Zoo Botanica Aventurica S. 35 (Chunk 7964): geschult 'als Kampfpferd im Kampf -3, sonst -1'; die Zuordnung von Schützen- und Streitwagenpferd zum Kampfpferd bleibt ohne Beleg."
+          }
         },
         {
           "conflictKey": "reittier-gezielter-biss-kategorie",
@@ -1102,7 +1112,12 @@
           ],
           "deviation": "10 + 5 × Erschwernis ist keine Buchformel; nur der Rahmen 10–50 AP (für Tricks) und TaP* × 10 (Stufen) sind belegt.",
           "impact": "Nur Vorschlagswert im Dialog; Spielwert-Wirkung gering, Daten ändern sich nicht automatisch.",
-          "recheck": "Gegenprüfung 2026-10-25: nur teilweise belegt."
+          "recheck": "Gegenprüfung 2026-10-25: nur teilweise belegt.",
+          "secondCheck": {
+            "checkedOn": "2026-10-26",
+            "result": "confirmed",
+            "note": "Wege der Zauberei S. 124 (Chunk 5266): Tricks 10-50 AP, Ausbildungsstufen TaP* x 10; 10 + 5 x Erschwernis steht nicht im Buch."
+          }
         }
       ]
     },
@@ -1670,7 +1685,12 @@
             }
           ],
           "deviation": "Hausregel: Eisern setzt KO 15 voraus; App/Test: keine harte Eigenschaftsvoraussetzung (nur Meisterhinweis).",
-          "impact": "Produktcode: Voraussetzungen der Hausregel-Liste werden nicht geprüft (Eisern, Ausdauernder Zauberer, Zäher Hund, Gutes Gedächtnis KL 15, Wohlklang CH 15 usw.); die App ist damit großzügiger als die Hausregel. Die Hausregel ergänzt zudem 'Geweiht' (nicht im App-Set) und nennt nur 9 der 15 offiziellen Vorteile. Test: Held mit KO 14 darf Eisern nicht ohne Meisterentscheid erwerben."
+          "impact": "Produktcode: Voraussetzungen der Hausregel-Liste werden nicht geprüft (Eisern, Ausdauernder Zauberer, Zäher Hund, Gutes Gedächtnis KL 15, Wohlklang CH 15 usw.); die App ist damit großzügiger als die Hausregel. Die Hausregel ergänzt zudem 'Geweiht' (nicht im App-Set) und nennt nur 9 der 15 offiziellen Vorteile. Test: Held mit KO 14 darf Eisern nicht ohne Meisterentscheid erwerben.",
+          "secondCheck": {
+            "checkedOn": "2026-10-26",
+            "result": "confirmed",
+            "note": "Die Voraussetzungen (Eisern KO 15, Gutes Gedächtnis KL 15, Wohlklang CH 15 usw.) stehen in Chunk 25833 unter 'Voraussetzungen zum späteren Erwerb von Vorteilen'. Sie gelten nur für den Nachkauf mit AP, nicht für die Generierung."
+          }
         }
       ]
     },
@@ -1875,7 +1895,12 @@
             }
           ],
           "deviation": "Quelle nennt +2 AsP je Stufe fuer Vollzauberer; die App nutzt 6. 'fullCasterBonus konfigurierbar' (8) reicht nur einen Parameter durch und ist davon unberuehrt.",
-          "impact": "epicAspStufenbonus wird in lib/ derzeit nicht aufgerufen (nur Definition), daher keine Spielwertwirkung. Bei spaeterer Verdrahtung waere der Standard 6 statt 2 falsch."
+          "impact": "epicAspStufenbonus wird in lib/ derzeit nicht aufgerufen (nur Definition), daher keine Spielwertwirkung. Bei spaeterer Verdrahtung waere der Standard 6 statt 2 falsch.",
+          "secondCheck": {
+            "checkedOn": "2026-10-26",
+            "result": "confirmed",
+            "note": "Hausregel S. 2 (Chunk 25817): +1 LeP, +2 AuP, +2 AsP je Stufe; Epische Stufen S. 5-6 (Chunk 25740): ab episch nur noch AsP (Vollzauberer voll, Halbzauberer 1, Viertelzauberer 0)."
+          }
         }
       ]
     },
@@ -1959,7 +1984,12 @@
             }
           ],
           "deviation": "Abrunden statt kaufmännischem Runden (Halbe nach oben); ungerade gespeicherte ZfP* liefern 1 zu wenig.",
-          "impact": "berechneAuxiliatorBonus (wirksam ~/ 2) unterschätzt den Bonus bei ungerader Anzahl gespeicherter ZfP* und fremder Repräsentation; Test und Code müssten (n + 1) ~/ 2 festschreiben."
+          "impact": "berechneAuxiliatorBonus (wirksam ~/ 2) unterschätzt den Bonus bei ungerader Anzahl gespeicherter ZfP* und fremder Repräsentation; Test und Code müssten (n + 1) ~/ 2 festschreiben.",
+          "secondCheck": {
+            "checkedOn": "2026-10-26",
+            "result": "confirmed",
+            "note": "Wege der Zauberei S. 6 (Chunk 4955): alle Rundungen kaufmännisch; Wege der Alchimie S. 87 (Chunk 2924): bei fremder Repräsentation wirkt nur die Hälfte der ZfP*."
+          }
         },
         {
           "conflictKey": "auxiliator-halbieren-vor-deckeln",
@@ -2317,7 +2347,12 @@
             }
           ],
           "deviation": "WdS S. 165 nennt für den Startwert nur Rasse und Kultur; WdH S. 304–305 rät bei Professionen von Eigenschaftsmodifikatoren ab und lässt sie nur ausnahmsweise zu, wenn der Bonus im Paket enthalten ist.",
-          "impact": "Startwert und Maximum (1,5 × Startwert) von Helden mit Professions-Eigenschaftsbonus hängen von dieser nicht eindeutig belegten Annahme ab."
+          "impact": "Startwert und Maximum (1,5 × Startwert) von Helden mit Professions-Eigenschaftsbonus hängen von dieser nicht eindeutig belegten Annahme ab.",
+          "secondCheck": {
+            "checkedOn": "2026-10-26",
+            "result": "confirmed",
+            "note": "Wege der Helden S. 305 (Chunk 4866): 'Professionen sollten keinen Einfluss auf die Eigenschaften haben'; ein Eigenschaftsbonus im Professionspaket gilt als Ablehnungsgrund (Chunk 4865)."
+          }
         }
       ]
     },
@@ -3351,7 +3386,12 @@
           ],
           "deviation": "Das Buch lässt offen, ob der zonale AT/PA-Abzug den Basiswert (und damit Ausweichen) oder nur den Waffen-AT/PA trifft. Die App entscheidet sich für die Basiswerte; die Hausregel hält die Entscheidung nicht fest.",
           "impact": "Bei der Lesart „nur Kampfwert“ wären atBase 8, paBase 8 und Ausweichen 14. Betrifft nur Basiswert-Anzeige und Ausweichen mit Zonenwunden in Brust, Bauch und Beinen; die Waffenwerte bleiben gleich.",
-          "recheck": "Gegenprüfung 2026-10-25: nur teilweise belegt."
+          "recheck": "Gegenprüfung 2026-10-25: nur teilweise belegt.",
+          "secondCheck": {
+            "checkedOn": "2026-10-26",
+            "result": "open",
+            "note": "Wege des Schwerts S. 108-109 (Chunk 7111, 7114): Die Zonentabelle nennt AT und PA je Zone; der Satz zu Grundeigenschaften und AT/PA bricht im Chunk ab. Basiswert oder nur Waffenwert bleibt offen."
+          }
         },
         {
           "conflictKey": "linkshaender-schwertarm",
@@ -3553,7 +3593,12 @@
             }
           ],
           "deviation": "Test und Produkt weichen von der Quelle ab: Allgemeine Rundungsregel: 'Wenn nicht ausdrücklich anders erwähnt, wird bei allen Rechnungen echt gerundet (ab n,50 auf), speziell bei Halbierungen wird aufgerundet' (WdH S. 6; WdZ ebenso). Zukauf-Grenze 'Hälfte des KO-/MU-Werts' ergibt damit bei KO 15 den Wert 8 und bei MU 13 den Wert 7; der Test (7 und 6, abgerundet) weicht ab.",
-          "impact": "Bei ungeraden KO-/MU-Werten sperrt die App den Zukauf einen Punkt früher als bei kaufmännischem Runden. AuP (voller KO-Wert) ist unproblematisch."
+          "impact": "Bei ungeraden KO-/MU-Werten sperrt die App den Zukauf einen Punkt früher als bei kaufmännischem Runden. AuP (voller KO-Wert) ist unproblematisch.",
+          "secondCheck": {
+            "checkedOn": "2026-10-26",
+            "result": "confirmed",
+            "note": "Wege der Helden S. 6 (Chunk 4036) und Wege der Zauberei S. 7 (Chunk 4955): echtes Runden, Halbierungen werden aufgerundet."
+          }
         },
         {
           "conflictKey": "zukauf-asp-grenze-ch-fehlt",
@@ -3592,7 +3637,12 @@
             }
           ],
           "deviation": "AsP-Zukauf ist laut Buch auf CH begrenzt; die App modelliert für AsP keine Grenze (nur AP-Reichweite). Der KaP-Teil stimmt.",
-          "impact": "Der Zukauf-Dialog erlaubt mehr zugekaufte AsP als das Regelwerk. Der Test zementiert das Fehlen der Grenze; Anpassung in lib/rules/derived/bought_stat_limit_rules.dart."
+          "impact": "Der Zukauf-Dialog erlaubt mehr zugekaufte AsP als das Regelwerk. Der Test zementiert das Fehlen der Grenze; Anpassung in lib/rules/derived/bought_stat_limit_rules.dart.",
+          "secondCheck": {
+            "checkedOn": "2026-10-26",
+            "result": "confirmed",
+            "note": "Basisregelwerk S. 207 (Chunk 763): zugekaufte AsP höchstens in Höhe des CH-Werts."
+          }
         }
       ]
     },
@@ -4183,7 +4233,12 @@
           ],
           "deviation": "Nur der Grundabzug -9 ohne Sonderfertigkeit ist im MCP nicht belegt; -6/-3/0 sind bestätigt.",
           "impact": "Nur Helden ohne Linkhand mit Zweitwaffe (falsche Hand) sind betroffen; der Test hängt an der -9. Produktverhalten (computeFalseHandModifiers) bleibt für Linkhand/BK I/BK II buchkonform.",
-          "recheck": "Gegenprüfung 2026-10-25: nur teilweise belegt."
+          "recheck": "Gegenprüfung 2026-10-25: nur teilweise belegt.",
+          "secondCheck": {
+            "checkedOn": "2026-10-26",
+            "result": "open",
+            "note": "Wege des Schwerts S. 75 (Chunk 7030): Linkhand senkt den Abzug der falschen Hand auf AT -6 / PA -6; ein Grundabzug von -9 steht in Chunk 7029 und 7030 nicht."
+          }
         }
       ]
     },
@@ -4261,7 +4316,12 @@
             }
           ],
           "deviation": "Die Quelle nennt nur „nicht über das Anderthalbfache“, die Rundung steht nicht im Text; die allgemeine Rundungsregel (WdH S. 6) und die analoge Eigenschaftsgrenze (WdS S. 165: 13,5 → 14) sprächen für Aufrunden (7 → 11, LeP +6, GS 1 → 2). Abrunden ist als Obergrenze ebenfalls vertretbar.",
-          "impact": "Vertrauten-Obergrenzen und Steigerungszuwächse fallen bei ungeraden Startwerten je nach Lesart um 1 niedriger oder höher aus."
+          "impact": "Vertrauten-Obergrenzen und Steigerungszuwächse fallen bei ungeraden Startwerten je nach Lesart um 1 niedriger oder höher aus.",
+          "secondCheck": {
+            "checkedOn": "2026-10-26",
+            "result": "confirmed",
+            "note": "Wege der Zauberei S. 124 (Chunk 5267): kein Wert über das Anderthalbfache des Startwertes; eine Rundung nennt das Buch nicht."
+          }
         }
       ]
     },
@@ -4494,7 +4554,12 @@
             }
           ],
           "deviation": "Nach „Epische Stufen“ gibt es ab dem epischen Status (zwischen Stufe 21 und 22) Stufenboni nur noch auf AsP; der AuP-Stufenbonus endete bei Stufe 21 (42, maxAu 66). Der Test erreicht Stufe 30 ohne Epic-Flag.",
-          "impact": "Maximale Ausdauer ab Stufe 22 wäre je nach Lesart um bis zu 18 AuP zu hoch; der Test fixiert den höheren Wert."
+          "impact": "Maximale Ausdauer ab Stufe 22 wäre je nach Lesart um bis zu 18 AuP zu hoch; der Test fixiert den höheren Wert.",
+          "secondCheck": {
+            "checkedOn": "2026-10-26",
+            "result": "open",
+            "note": "Epische Stufen S. 5-6 (Chunk 25740): 'Stufenweise Boni gibt es nur noch auf AsP'; offen bleibt nur, wann der epische Status beginnt."
+          }
         }
       ]
     },
@@ -5194,7 +5259,12 @@
             }
           ],
           "deviation": "Hausregel: Seitenwechsel +4, Voraussetzung Binden/Gezieltes Ausweichen, DK-abhängige Zusatzaktionen, INI-Bedingung. Test/Code: reiner PA-Zielwert ohne +4 und ohne Zusatzaktionen.",
-          "impact": "Test hält eine nicht regelkonforme Berechnung für richtig; Produktverhalten rechnet Seitenwechsel um 4 Punkte zu leicht und mit zu wenig Aktionskosten, sofern der Tisch die Hausregel nutzt."
+          "impact": "Test hält eine nicht regelkonforme Berechnung für richtig; Produktverhalten rechnet Seitenwechsel um 4 Punkte zu leicht und mit zu wenig Aktionskosten, sofern der Tisch die Hausregel nutzt.",
+          "secondCheck": {
+            "checkedOn": "2026-10-26",
+            "result": "confirmed",
+            "note": "Hausregel S. 9-10 (Chunk 25825): Seitenwechsel +4, vorher Binden oder Gezieltes Ausweichen, DK-abhängige Aktionen, nur bei höherer INI des Anwenders."
+          }
         }
       ]
     },
@@ -5485,7 +5555,12 @@
           ],
           "deviation": "Wörtliche Lesart (Gegenhalten ist Abwehraktion, Abwehraktionen sind erleichtert) würde den Bonus zulassen; die App schließt ihn aus.",
           "impact": "Bei INI > 20 fehlen Gegenhalten bis zu 3 Punkte auf den Zielwert (Spielwert), sofern die wörtliche Lesart gemeint ist.",
-          "recheck": "Gegenprüfung 2026-10-25: Lücke bestätigt (gezielte Suche auch in den Hausregeln)."
+          "recheck": "Gegenprüfung 2026-10-25: Lücke bestätigt (gezielte Suche auch in den Hausregeln).",
+          "secondCheck": {
+            "checkedOn": "2026-10-26",
+            "result": "open",
+            "note": "Wege des Schwerts S. 78 (Chunk 7039): Optionalregel 'Hohe Initiative-Werte' erleichtert Abwehraktionen (INI über 20: +1); das Gegenhalten wird dort nicht erwähnt."
+          }
         },
         {
           "conflictKey": "langhandlung-waffe-ziehen-unterbrechung",
@@ -6039,7 +6114,12 @@
           ],
           "deviation": "Auslegung 'SF-Voraussetzung BE <= 4 gilt auch für Axxeleratus' ist nicht durch den Buchtext des Zaubers gedeckt; umgekehrt widerspricht das Buch ihr nicht ausdrücklich.",
           "impact": "Helden in BE >= 5 mit Axxeleratus erhalten keine Ladezeitverkürzung; Spielwert potenziell um 1 bis 2 Aktionen zu hoch. Test und Produktverhalten teilen die Auslegung.",
-          "recheck": "Gegenprüfung 2026-10-25: nur teilweise belegt."
+          "recheck": "Gegenprüfung 2026-10-25: nur teilweise belegt.",
+          "secondCheck": {
+            "checkedOn": "2026-10-26",
+            "result": "open",
+            "note": "Wege des Schwerts S. 95 (Chunk 7085): Schnellladen nur bei BE höchstens 4; Axxeleratus gibt nur die 'Entsprechung' der SF (Basisregelwerk, Chunk 686) und nennt die BE-Grenze nicht."
+          }
         },
         {
           "conflictKey": "laden-dauerwechsel-zahlung-erhalten",
@@ -6269,7 +6349,12 @@
             }
           ],
           "deviation": "Buch: weitere Aktionskürzung durch Axxeleratus nur bei bestandener FF-Probe; App: automatisch.",
-          "impact": "Ladezeit und Rundenplanung fallen im Gefecht um 1 Aktion zu kurz, wenn die FF-Probe misslingt. Der Test würde bei einer Korrektur (FF-Probe als Eingabe) angepasst werden müssen; Produktverhalten betrifft nur Helden mit SF Schnellladen plus Axxeleratus."
+          "impact": "Ladezeit und Rundenplanung fallen im Gefecht um 1 Aktion zu kurz, wenn die FF-Probe misslingt. Der Test würde bei einer Korrektur (FF-Probe als Eingabe) angepasst werden müssen; Produktverhalten betrifft nur Helden mit SF Schnellladen plus Axxeleratus.",
+          "secondCheck": {
+            "checkedOn": "2026-10-26",
+            "result": "confirmed",
+            "note": "Basisregelwerk S. 174 (Chunk 686): weitere Verkürzung um eine Aktion, mindestens 1 Aktion, FF-Probe erforderlich."
+          }
         }
       ]
     },
@@ -6751,7 +6836,12 @@
           ],
           "deviation": "Untergrenze 1 Aktion und 'Misserfolg verkürzt nichts' sind nicht im Buch belegt.",
           "impact": "Betrifft nur die Anzeige der Restdauer langer Talenteinsätze; Tischentscheidung bleibt möglich; keine Datenwirkung.",
-          "recheck": "Gegenprüfung 2026-10-25: nur teilweise belegt."
+          "recheck": "Gegenprüfung 2026-10-25: nur teilweise belegt.",
+          "secondCheck": {
+            "checkedOn": "2026-10-26",
+            "result": "open",
+            "note": "Wege des Schwerts S. 54 (Chunk 6972): Aktionszahl minus übrig behaltene TaP; eine Untergrenze von 1 Aktion nennt das Buch nicht."
+          }
         },
         {
           "conflictKey": "eigenschaftsprobe-zeitbedarf-vorgabe",
@@ -6892,7 +6982,12 @@
             }
           ],
           "deviation": "Kein Sperrwert für Ausweichen bei 4+ Gegnern; Tabelle erklärt es bei Umstellung für unmöglich.",
-          "impact": "Ausweichen wird bei Umstellung durch 4+ Gegner möglicherweise fälschlich angeboten; Randfall, keine Datenwirkung."
+          "impact": "Ausweichen wird bei Umstellung durch 4+ Gegner möglicherweise fälschlich angeboten; Randfall, keine Datenwirkung.",
+          "secondCheck": {
+            "checkedOn": "2026-10-26",
+            "result": "confirmed",
+            "note": "Wege des Schwerts S. 66 (Chunk 7006): Ausweichen-Tabelle 'Umstellt (4+ Gegner): unmöglich'."
+          }
         },
         {
           "conflictKey": "ueberzahl-zaehlregeln-teilnehmer",
@@ -7780,7 +7875,12 @@
             }
           ],
           "deviation": "Buch: Ritual-Begabung = Probe -3 und halbierte AP-Kosten des einzelnen Rituals, Ritualkenntnis bleibt Kategorie E. Test/Programm: Ritual-Begabung verschiebt die Spalte der Ritualkenntnis (E→D); die buchgemäßen Wirkungen (Probe -3, halbe Lernkosten des Rituals) werden durch diese Tests nicht abgesichert.",
-          "impact": "Steigerungskosten der Ritualkenntnis fallen für Helden mit Ritual-Begabung zu niedrig aus (ein vom Buch nicht vorgesehener Rabatt). Der Test zementiert dieses Verhalten; bei Korrektur müssen die beiden Testfälle und effektiveRitualkenntnisKomplexitaet/ritualkenntnis() in hero_begabung_rules.dart angepasst werden. Ob die Ausweitung eine bewusste Hausregel ist, ist im MCP nicht belegt."
+          "impact": "Steigerungskosten der Ritualkenntnis fallen für Helden mit Ritual-Begabung zu niedrig aus (ein vom Buch nicht vorgesehener Rabatt). Der Test zementiert dieses Verhalten; bei Korrektur müssen die beiden Testfälle und effektiveRitualkenntnisKomplexitaet/ritualkenntnis() in hero_begabung_rules.dart angepasst werden. Ob die Ausweitung eine bewusste Hausregel ist, ist im MCP nicht belegt.",
+          "secondCheck": {
+            "checkedOn": "2026-10-26",
+            "result": "confirmed",
+            "note": "WdH S. 249 (Chunk 4703): Ritualprobe um 3 erleichtert, halbe Lern-AP des Rituals; eine Lernspalten-Wirkung kennt das Buch nicht."
+          }
         },
         {
           "conflictKey": "lernspalte-deckelung-h-vor-erleichterung",
@@ -7804,7 +7904,12 @@
             }
           ],
           "deviation": "Buch: Netto-Verschiebung, Deckelung nur am Endergebnis (H + 1 - 1 = H). Programm: Zwischendeckelung nach der Verteuerung (H → H → G). Abweichung tritt nur an der H-Grenze auf (und spiegelbildlich nicht an A+, weil dort erst nach der Verteuerung verbilligt wird).",
-          "impact": "Randfall (Basis G/H mit gleichzeitiger Verteuerung und Verbilligung, z. B. H-Zauber in fremder Repräsentation mit Hauszauber/Begabung): Steigerungskosten eine Spalte zu niedrig. Betrifft effectiveTalentLernkomplexitaet und effectiveSpellLernkomplexitaet in learning_rules.dart sowie die Testbehauptung."
+          "impact": "Randfall (Basis G/H mit gleichzeitiger Verteuerung und Verbilligung, z. B. H-Zauber in fremder Repräsentation mit Hauszauber/Begabung): Steigerungskosten eine Spalte zu niedrig. Betrifft effectiveTalentLernkomplexitaet und effectiveSpellLernkomplexitaet in learning_rules.dart sowie die Testbehauptung.",
+          "secondCheck": {
+            "checkedOn": "2026-10-26",
+            "result": "confirmed",
+            "note": "Wege der Helden S. 19 (Chunk 4068): Verschiebungen sind kumulativ; Erleichterung jenseits A ergibt A+, Erschwernis über H ergibt H, nur am Endergebnis."
+          }
         },
         {
           "conflictKey": "begabung-sprachen-und-schriften-gruppe",
@@ -7852,7 +7957,12 @@
             }
           ],
           "deviation": "Test und Produkt weichen von der Quelle ab: WdH führt 'Sprachen und Schriften' als eine Talentgruppe (-7 GP) für Unfähigkeit; eine Aufteilung in Sprachen ODER Schriften kennt der Text nicht (Einzeltalent-Unfähigkeiten gibt es nur fest an Rasse/Kultur/Profession gebunden). Der Test pinnt Auswahl 'sprachgruppe' (Sprachen oder Schriften) bzw. für die Begabung nur 'sprachen'; das weicht ab. Die Begabungs-Passage (10 GP) wurde in dieser Prüfung nicht erneut als Chunk gefunden; belegt ist nur die Unfähigkeits-Passage.",
-          "impact": "Bei Buchlesart wären Schriftkosten für Begabte eine Spalte günstiger (A→A+) und eine Schrift-Unfähigkeit nicht neben der Sprachen-Begabung möglich. Betrifft die Zielzuordnung ziel sprachen/sprachgruppe in vorteile.json/nachteile.json und HeroBegabungen.sprachen()/schriften(); Entscheidung (Designentscheidung oder Fehler) liegt beim Projekt."
+          "impact": "Bei Buchlesart wären Schriftkosten für Begabte eine Spalte günstiger (A→A+) und eine Schrift-Unfähigkeit nicht neben der Sprachen-Begabung möglich. Betrifft die Zielzuordnung ziel sprachen/sprachgruppe in vorteile.json/nachteile.json und HeroBegabungen.sprachen()/schriften(); Entscheidung (Designentscheidung oder Fehler) liegt beim Projekt.",
+          "secondCheck": {
+            "checkedOn": "2026-10-26",
+            "result": "confirmed",
+            "note": "WdH S. 249 und 273 (Chunk 4704, 4774): Sprachen und Schriften sind eine Talentgruppe (Begabung 10 GP, Spalte A+; Unfähigkeit -7 GP); eine Einzelbegabung gibt es nicht."
+          }
         }
       ]
     },
@@ -8819,7 +8929,12 @@
             }
           ],
           "deviation": "Zwölf statt sechs dämonische Domänen; jede einzelne Domäne ist Merkmal der Stufe I. Fehlende Domänen werden als Stufe II (200 AP) bepreist und von der Stufentabelle nicht erfasst.",
-          "impact": "Test: bindet die Zählung 19/10/5 und die Katalogliste an eine unvollständige Domänenmenge. Produkt: Merkmalskenntnis (und davon abgeleitete Preise Arkane Meisterschaft/Großmeister) für offizielle Domänen außerhalb der sechs wird zu teuer, sobald sie im Katalog auftauchen (z. B. Agrimoth)."
+          "impact": "Test: bindet die Zählung 19/10/5 und die Katalogliste an eine unvollständige Domänenmenge. Produkt: Merkmalskenntnis (und davon abgeleitete Preise Arkane Meisterschaft/Großmeister) für offizielle Domänen außerhalb der sechs wird zu teuer, sobald sie im Katalog auftauchen (z. B. Agrimoth).",
+          "secondCheck": {
+            "checkedOn": "2026-10-26",
+            "result": "confirmed",
+            "note": "Wege der Zauberei S. 25 (Chunk 5006): Dämonisch hat 'zwölf bekannte Unter-Merkmale'; die Stufentabelle in Chunk 4704 führt die einzelne Domäne als Merkmal der Stufe I."
+          }
         }
       ]
     },
@@ -9047,7 +9162,12 @@
             }
           ],
           "deviation": "Verdoppelt werden müsste nur der Eigenschaftsanteil (plus Vor-/Nachteile/Rasse-Kultur-Profession-Modifikatoren), nicht der SF-Bonus von Kampfreflexe/Kampfgespür. Im Test ist Kampfreflexe aktiv; erwartet wird +4 zu viel (bei Kampfreflexe + Kampfgespür +6).",
-          "impact": "Test: schreibt die zu hohe Verdopplung fest. Produkt: Heldeninitiative mit aktivem Axxeleratus ist bei Kampfreflexe/Kampfgespür um 4 bzw. 6 zu hoch; betrifft die Kampfreihenfolge (docs/technical_overview.md führt Kampfreflexe/Kampfgespür als Boni auf IniBase und verdoppelt den berechneten IniBase-Anteil)."
+          "impact": "Test: schreibt die zu hohe Verdopplung fest. Produkt: Heldeninitiative mit aktivem Axxeleratus ist bei Kampfreflexe/Kampfgespür um 4 bzw. 6 zu hoch; betrifft die Kampfreihenfolge (docs/technical_overview.md führt Kampfreflexe/Kampfgespür als Boni auf IniBase und verdoppelt den berechneten IniBase-Anteil).",
+          "secondCheck": {
+            "checkedOn": "2026-10-26",
+            "result": "confirmed",
+            "note": "Liber Cantiones S. 36 (Chunk 1538): verdoppelt werden GS nach BE und der INI-Basiswert 'aus den Eigenschaften und eventuellen Vor-/Nachteilen', nicht der SF-Bonus."
+          }
         }
       ]
     },
@@ -9133,7 +9253,12 @@
             }
           ],
           "deviation": "Buch: min(gerundeter Mittelwert, 2 x niedrigster Bestandteil); App: nur Mittelwert.",
-          "impact": "Bei stark ungleichen Bestandteilen zeigt die App ein zu hohes Meta-TaW (Probe zu leicht)."
+          "impact": "Bei stark ungleichen Bestandteilen zeigt die App ein zu hohes Meta-TaW (Probe zu leicht).",
+          "secondCheck": {
+            "checkedOn": "2026-10-26",
+            "result": "confirmed",
+            "note": "Wege des Schwerts S. 189 (Chunk 7301): Der Talentwert eines Meta-Talents übersteigt nie den doppelten Wert des niedrigsten beteiligten Wertes."
+          }
         },
         {
           "conflictKey": "meta-talent-eigene-be-regel",
@@ -9724,7 +9849,12 @@
           ],
           "deviation": "Buch nennt keine Rundung und nicht eindeutig die Bezugswerte; KK 1 (aus 1,5) und AU Galopp 0 (aus 0,5) sind App-Entscheidungen.",
           "impact": "Wirkwerte (KK, LO, AU) ländlich weitergeführter Tiere können um 1 abweichen; Randfall.",
-          "recheck": "Gegenprüfung 2026-10-25: nur teilweise belegt."
+          "recheck": "Gegenprüfung 2026-10-25: nur teilweise belegt.",
+          "secondCheck": {
+            "checkedOn": "2026-10-26",
+            "result": "open",
+            "note": "Zoo Botanica Aventurica S. 34 (Chunk 7963): ländlich unerfahren KK +3, LO +4, AU +2/+1; für Tierwerte nennt das Buch keine Rundung."
+          }
         },
         {
           "conflictKey": "reittier-laendlich-erprobt-schulung",
@@ -9760,7 +9890,12 @@
           ],
           "deviation": "Tabelle (keine Ausbildung) und Fließtext (Weg ab unerfahren) widersprechen sich bzw. lassen die Schrittfolge offen; die App wählt die kürzeste Lesart.",
           "impact": "Probenanzahl/Zeitbedarf und Modifikationen beim Aufstieg ländlich erprobter Tiere zum geschulten Tier; Randfall.",
-          "recheck": "Gegenprüfung 2026-10-25: Lücke bestätigt (gezielte Suche auch in den Hausregeln)."
+          "recheck": "Gegenprüfung 2026-10-25: Lücke bestätigt (gezielte Suche auch in den Hausregeln).",
+          "secondCheck": {
+            "checkedOn": "2026-10-26",
+            "result": "open",
+            "note": "Zoo Botanica Aventurica S. 34 (Chunk 7963, 7962): Tabelle 'erprobt, ländlich: keine weitere Ausbildung möglich', Fließtext lässt ländliche Tiere nur bis erprobt (mit Einschränkungen) zu; Schrittfolge bleibt offen."
+          }
         },
         {
           "conflictKey": "reittier-nervositaet-erschwernis",
@@ -9816,7 +9951,12 @@
           ],
           "deviation": "+8 (Nachteilsbeschreibung) gegen +5 zusätzlich = +10 (SF-Beschreibung Stillstand); das Buch widerspricht sich.",
           "impact": "Erschwernis der nachträglichen Lernprobe Stillstand/Schrecksicher bei nervösen Tieren um 2 Punkte.",
-          "recheck": "Gegenprüfung 2026-10-25: nur teilweise belegt."
+          "recheck": "Gegenprüfung 2026-10-25: nur teilweise belegt.",
+          "secondCheck": {
+            "checkedOn": "2026-10-26",
+            "result": "confirmed",
+            "note": "Zoo Botanica Aventurica S. 36-37 (Chunk 7969, 7970): Stillstand 'zusätzliche 5 Punkte' bei Nervosität, Nervosität selbst 'Abrichten-Probe +8'."
+          }
         }
       ]
     },
@@ -9968,7 +10108,12 @@
             }
           ],
           "deviation": "Das Buch kennt für LeP <= 0 keine natürliche Regeneration ('An der Schwelle des Todes': heilt nicht auf natürlichem Wege, muss sofort behandelt werden). Die App hebt negative LeP durch Klemmen auf 0 an und würde bei vorhandenen Würfen zusätzlich LeP gutschreiben.",
-          "impact": "computeRestOutcome gibt einem sterbenden Helden (LeP <= 0) nach Schlaf oder Bettruhe LeP zurück; der Test zementiert dieses Verhalten. P2, weil es nur den Randfall LeP <= 0 betrifft."
+          "impact": "computeRestOutcome gibt einem sterbenden Helden (LeP <= 0) nach Schlaf oder Bettruhe LeP zurück; der Test zementiert dieses Verhalten. P2, weil es nur den Randfall LeP <= 0 betrifft.",
+          "secondCheck": {
+            "checkedOn": "2026-10-26",
+            "result": "confirmed",
+            "note": "Wege des Schwerts S. 161 (Chunk 7231): 'An der Schwelle des Todes' heilt ein Opfer mit LeP <= 0 nicht auf natürlichem Wege."
+          }
         },
         {
           "conflictKey": "rest-au-single-roll-per-rest",
@@ -10023,7 +10168,12 @@
           ],
           "deviation": "Buch: Ausdauer je Spielrunde der Ruhe (3W6, bei KO-Probe 3W6+6, bis zum Grundwert). App: ein Wurf je Rast und keiner bei kurzer Rast. Die Hausregel 'Erweiterung und Überarbeitung des Regelwerks' macht Ausdauer weitgehend spielunrelevant, ändert die Regeneration aber nicht ausdrücklich.",
           "impact": "Die Ausdauerwerte nach einer Rast weichen vom Buch ab (meist zu niedrig); die Tests sichern das einmalige Würfeln als Soll ab. P3, weil Ausdauer in der Hausregel kaum Spielrelevanz hat.",
-          "recheck": "Gegenprüfung 2026-10-25: nur teilweise belegt."
+          "recheck": "Gegenprüfung 2026-10-25: nur teilweise belegt.",
+          "secondCheck": {
+            "checkedOn": "2026-10-26",
+            "result": "confirmed",
+            "note": "Wege des Schwerts S. 160 (Chunk 7227): 3W6 AuP je Spielrunde Rast, 3W6+6 bei gelungener KO-Probe, höchstens bis zum Grundwert."
+          }
         },
         {
           "conflictKey": "rest-sleep-fixed-8-hours",
@@ -10066,7 +10216,12 @@
           ],
           "deviation": "Die 8 Stunden sind eine App-Annahme; das Buch fordert nur mindestens 6 Stunden für die Regeneration und lässt die Schlafdauer offen. Eine Repo-Dokumentation der Designentscheidung wurde nicht gefunden.",
           "impact": "Der Abbau von Erschöpfung nach Schlaf (bis zu 32 Punkte bzw. 16 Üa) hängt von der fest angenommenen Dauer ab; ein Held mit 6 Stunden Schlaf würde weniger abbauen.",
-          "recheck": "Gegenprüfung 2026-10-25: nur teilweise belegt."
+          "recheck": "Gegenprüfung 2026-10-25: nur teilweise belegt.",
+          "secondCheck": {
+            "checkedOn": "2026-10-26",
+            "result": "confirmed",
+            "note": "Wege des Schwerts S. 160 (Chunk 7228): nächtliche Regeneration nach 'wenigstens 6 Stunden' Ruhe; 8 Stunden stehen nicht im Buch."
+          }
         },
         {
           "conflictKey": "eigenschaftsprobe-1-20-optionalregel",
@@ -10097,7 +10252,12 @@
           ],
           "deviation": "Basis: eine Probe ist nur 'optional' bei einer 20 immer gescheitert und eine 1 optional immer gelungen; Standardregel ist roll <= Eigenschaftswert. Die App wendet die optionalen Regeln stets an. Eine Hausregel dazu wurde in der Kategorie hausregeln nicht gefunden.",
           "impact": "Bei KO oder IN >= 20 (gemäß Standardregel auch mit 20 gelungen) fällt der +1-Bonus bei einer 20 weg; bei sehr niedrigem Zielwert gibt eine 1 den Bonus. Effekt maximal 1 LeP/AsP je Phase.",
-          "recheck": "Gegenprüfung 2026-10-25: Lücke bestätigt (gezielte Suche auch in den Hausregeln)."
+          "recheck": "Gegenprüfung 2026-10-25: Lücke bestätigt (gezielte Suche auch in den Hausregeln).",
+          "secondCheck": {
+            "checkedOn": "2026-10-26",
+            "result": "confirmed",
+            "note": "Basisregelwerk S. 16 (Chunk 303): 'Optional: Patzer und Glückswürfe'."
+          }
         },
         {
           "conflictKey": "rest-values-above-max-lowered",
@@ -10211,7 +10371,12 @@
           ],
           "deviation": "Das 'oder' im Buch stützt die Lesart 'eine Stunde = ein Abbauzweck', schließt aber die anteilige Verrechnung des Stundenrests nicht aus. Eine Hausregel oder Repo-Doku zu dieser Rundungsentscheidung ist nicht auffindbar.",
           "impact": "Bei ungeradem Restwert Üa verzögert sich der Erschöpfungsabbau um bis zu eine Stunde; die zwei Tests legen die strenge Stundenlesart fest.",
-          "recheck": "Gegenprüfung 2026-10-25: Lücke bestätigt (gezielte Suche auch in den Hausregeln)."
+          "recheck": "Gegenprüfung 2026-10-25: Lücke bestätigt (gezielte Suche auch in den Hausregeln).",
+          "secondCheck": {
+            "checkedOn": "2026-10-26",
+            "result": "open",
+            "note": "Wege des Schwerts S. 160 (Chunk 7228): 'Pro Stunde Rast 1 Punkt Überanstrengung oder 2 Punkte Erschöpfung, Schlaf das Doppelte'; eine anteilige Verrechnung des Stundenrests nennt das Buch nicht."
+          }
         }
       ]
     },
@@ -10364,7 +10529,12 @@
           ],
           "deviation": "Buch fasst Brust/Rücken als einen Zonenbereich zusammen und nennt Brustwunden mit 1W6 Zusatz-SP; die Tabelle hat keine Rückenzeile. Test und schadensZusatzwuerfe (humanoidTrefferzonenTabelle ohne Rücken) geben für den Rücken keine Würfe, der Wundhinweis in wund_rules.dart nennt für den Rücken dagegen +NW6 SP.",
           "impact": "Bei Rückentreffern fehlt im Schadensdialog der 1W6-Zusatzschaden je Wunde, obwohl derselbe Wundzustand ihn als Erinnerung anzeigt; der Test sichert das aktuelle Verhalten ab. Entscheidung (Rücken = Brust oder bewusst ohne Zusatzschaden) fehlt im MCP-Bestand.",
-          "recheck": "Gegenprüfung 2026-10-25: nur teilweise belegt."
+          "recheck": "Gegenprüfung 2026-10-25: nur teilweise belegt.",
+          "secondCheck": {
+            "checkedOn": "2026-10-26",
+            "result": "confirmed",
+            "note": "Wege des Schwerts S. 108 (Chunk 7111, 7112): Die Zonentabelle hat keine Zeile 'Rücken'; der Text fasst 'Brust/Rücken' zusammen."
+          }
         },
         {
           "conflictKey": "schaden-wunde-in-voller-zone-zusatzwurf",
@@ -10387,7 +10557,12 @@
           ],
           "deviation": "Kein Buchbeleg für den INI-Malus-Wurf bei einer nicht mehr eintragbaren Wunde; reine App-Folgerung.",
           "impact": "Randfall ohne Spielwertfolge (die verfallene Wunde wird nicht gebucht); der Dialog könnte einen nicht gebuchten INI-Wurf anbieten.",
-          "recheck": "Gegenprüfung 2026-10-25: Lücke bestätigt (gezielte Suche auch in den Hausregeln)."
+          "recheck": "Gegenprüfung 2026-10-25: Lücke bestätigt (gezielte Suche auch in den Hausregeln).",
+          "secondCheck": {
+            "checkedOn": "2026-10-26",
+            "result": "open",
+            "note": "Wege des Schwerts S. 108 (Chunk 7113): 'Jede Körperzone kann maximal drei Wunden erleiden'; der INI-Wurf bei einer nicht mehr eintragbaren Wunde ist nicht geregelt."
+          }
         },
         {
           "conflictKey": "schaden-ausdauer-untergrenze-ueberlauf",
@@ -10890,7 +11065,12 @@
           ],
           "deviation": "Bei Zaubern in elfischer Repräsentation verdoppelt sich die Dauer (Falkenauge: Schuss binnen 2×ZfW KR; Adlerauge 2 SR; Seidenzunge 2×ZfP* SR).",
           "impact": "Test: prüft nur Normwerte. Produkt: Für Elfen (und Mag(Elf)-Wirker in elfischer Repräsentation) ist der vorgeschlagene Ablauf nur halb so lang wie regelkonform; der Nutzer muss korrigieren.",
-          "recheck": "Gegenprüfung 2026-10-25: nur teilweise belegt."
+          "recheck": "Gegenprüfung 2026-10-25: nur teilweise belegt.",
+          "secondCheck": {
+            "checkedOn": "2026-10-26",
+            "result": "confirmed",
+            "note": "Wege der Zauberei S. 321 (Chunk 5789): in elfischer Repräsentation hat jeder Zauber die doppelte Wirkungsdauer ohne Mehrkosten."
+          }
         }
       ]
     },
@@ -10990,9 +11170,8 @@
             },
             {
               "title": "Liber Cantiones (Hexenspeichel)",
-              "pages": "117–118",
+              "pages": "118",
               "mcpChunks": [
-                2062,
                 2063
               ],
               "checkedOn": "2026-10-24"
@@ -11007,7 +11186,12 @@
             }
           ],
           "deviation": "App verweigert die Berechnung und behauptet eine Regellücke; das Buch liefert die Rundung (kaufmännisch, also 3,5 -> 4).",
-          "impact": "Test zementiert eine falsche Regelaussage; Spieler können 7 AsP nicht einsetzen, obwohl 4 LeP regelkonform wären. Nur der Hexenspeichel-Wundfall ist betroffen."
+          "impact": "Test zementiert eine falsche Regelaussage; Spieler können 7 AsP nicht einsetzen, obwohl 4 LeP regelkonform wären. Nur der Hexenspeichel-Wundfall ist betroffen.",
+          "secondCheck": {
+            "checkedOn": "2026-10-26",
+            "result": "corrected",
+            "note": "Hexenspeichel steht in Liber Cantiones S. 118, Chunk 2063 (1 LeP je 2 AsP bei Wunden); Chunk 2062 ist HEXENKRALLEN und wurde aus dem Beleg entfernt. Wege der Zauberei S. 7 (Chunk 4955): kaufmännisches Runden."
+          }
         },
         {
           "conflictKey": "lach-dich-gesund-lep-unter-1-gesperrt",
@@ -11608,7 +11792,12 @@
             }
           ],
           "deviation": "Test und Produkt weichen von der Quelle ab: Die Hausregel nennt nur die halbierte eBE; die allgemeine Rundungsregel entscheidet: Halbierungen werden aufgerundet, eBE 3 -> 1,5 -> 2 (nicht 1). Der Test (zugunsten des Helden abgerundet auf 1) weicht davon ab.",
-          "impact": "Bei ungerader eBE kann die App 1 Punkt weniger Erschwernis ansetzen als eine aufrundende Tischregel; betrifft nur epische Helden mit KK als Haupteigenschaft."
+          "impact": "Bei ungerader eBE kann die App 1 Punkt weniger Erschwernis ansetzen als eine aufrundende Tischregel; betrifft nur epische Helden mit KK als Haupteigenschaft.",
+          "secondCheck": {
+            "checkedOn": "2026-10-26",
+            "result": "confirmed",
+            "note": "Epische Stufen S. 4 (Chunk 25739): halbierte effektive Behinderung bei KK-Talenten; Wege der Helden S. 6 (Chunk 4036): Halbierungen werden aufgerundet."
+          }
         }
       ]
     },
@@ -12021,7 +12210,12 @@
           ],
           "deviation": "Buch: Empfehlung ('sollte') ohne Rundungsregel. App: verbindlich, kumulativ abgerundet.",
           "impact": "Höchstens 1 AP Abweichung je Vergabe gegenüber einer anderen Rundungsmethode; kein Datenverlust.",
-          "recheck": "Gegenprüfung 2026-10-25: nur teilweise belegt."
+          "recheck": "Gegenprüfung 2026-10-25: nur teilweise belegt.",
+          "secondCheck": {
+            "checkedOn": "2026-10-26",
+            "result": "confirmed",
+            "note": "Wege der Zauberei S. 124 (Chunk 5267): der Vertraute 'sollte' ein Viertel der AP bekommen; eine Rundung nennt das Buch nicht."
+          }
         }
       ]
     },
@@ -12099,7 +12293,12 @@
           ],
           "deviation": "Das Buch sagt 'üblicherweise nicht wählbar' (Regelfall, Meister kann abweichen); die App macht daraus ein hartes Verbot ohne Meisterausnahme (App-Entscheidung).",
           "impact": "Ein Meister kann ein Kampftier-Training für einen Vertrauten in der App nicht erfassen; Randfall, keine falschen Werte.",
-          "recheck": "Gegenprüfung 2026-10-25: Lücke bestätigt (gezielte Suche auch in den Hausregeln)."
+          "recheck": "Gegenprüfung 2026-10-25: Lücke bestätigt (gezielte Suche auch in den Hausregeln).",
+          "secondCheck": {
+            "checkedOn": "2026-10-26",
+            "result": "confirmed",
+            "note": "Wege der Zauberei S. 124 (Chunk 5266): Kampftier-Ausbildung ist für Vertraute 'üblicherweise nicht wählbar'."
+          }
         }
       ]
     },
@@ -12180,7 +12379,12 @@
           ],
           "deviation": "Additiv gerechnete 5-AP-Zuschläge, 2 AP je Punkt innerhalb des Maximums, kostenfreier Spielraum bei AE/MR und die fehlende Obergrenze (Buch: +40 Punkte, 1,5 × Maximum nur nach Meisterabsprache) sind nicht eindeutig aus dem Buch ableitbar.",
           "impact": "Bindungskosten (Hexen-AP, Datenwirkung) eines Machtvollen Vertrauten können um das Doppelte pro Punkt über dem Maximum abweichen; nur bei Vorteil Machtvoller Vertrauter.",
-          "recheck": "Gegenprüfung 2026-10-25: Lücke bestätigt (gezielte Suche auch in den Hausregeln)."
+          "recheck": "Gegenprüfung 2026-10-25: Lücke bestätigt (gezielte Suche auch in den Hausregeln).",
+          "secondCheck": {
+            "checkedOn": "2026-10-26",
+            "result": "confirmed",
+            "note": "Wege der Zauberei S. 123 (Chunk 5263, 5264, 5266): bis zu 20 Punkte je +2 AP unterhalb des Maximums; zusätzliche AuP +2 AP, AsP/LeP +5 AP (je höchstens 3); Machtvoller Vertrauter: geistige Werte bis +40, darüber bis zum Anderthalbfachen mit 5 AP je Punkt, Bindung 120 AP."
+          }
         }
       ]
     },
@@ -12398,7 +12602,12 @@
             }
           ],
           "deviation": "WdS: INI-Mod 0 im reinen waffenlosen Kampf, -2 gegen Bewaffnete; BRW: -2 pauschal. Test und Vorschau pinnen -2 unabhängig vom Gegner.",
-          "impact": "Waffenlose Helden verlieren in der Vorschau 2 INI, obwohl der Gegner (unbewaffnet) 0 bedeuten würde; gegen Bewaffnete stimmt -2. Der Test sichert den Wert ohne Gegnerbezug ab."
+          "impact": "Waffenlose Helden verlieren in der Vorschau 2 INI, obwohl der Gegner (unbewaffnet) 0 bedeuten würde; gegen Bewaffnete stimmt -2. Der Test sichert den Wert ohne Gegnerbezug ab.",
+          "secondCheck": {
+            "checkedOn": "2026-10-26",
+            "result": "confirmed",
+            "note": "Wege des Schwerts S. 88 (Chunk 7063): INI-Modifikator im reinen waffenlosen Kampf 0, gegen Bewaffnete 'für gewöhnlich -2'."
+          }
         }
       ]
     },
@@ -12529,7 +12738,12 @@
           ],
           "deviation": "Buch begrenzt die Aussage auf AT/PA/FK/INI-Basis (und GE); die App dehnt sie auf LeP/AuP/MR/Wundschwelle/TP-KK aus.",
           "impact": "Spielwert: Brust-/Bauchwunden (KO/KK −1) und Kopfwunden (MU/KL −2) könnten nach strenger Lesart max. LeP, AuP, MR (und Wundschwelle) senken; die App senkt sie nie. Ausdrücklich entschieden im Repo (Eigenschaften nur für Proben), im MCP nicht belegt.",
-          "recheck": "Gegenprüfung 2026-10-25: nur teilweise belegt."
+          "recheck": "Gegenprüfung 2026-10-25: nur teilweise belegt.",
+          "secondCheck": {
+            "checkedOn": "2026-10-26",
+            "result": "confirmed",
+            "note": "Wege des Schwerts S. 108 (Chunk 7111): Die Zonentabelle nennt nur AT, PA, KO, KK, GE, GS, MU, KL, IN und INI-Basis; LeP, AuP, MR und Wundschwelle kommen nicht vor."
+          }
         }
       ]
     },
@@ -12784,7 +12998,12 @@
           ],
           "deviation": "Tabelle und Fliesstext des Buchs sind nicht deckungsgleich; die App folgt dem Fliesstext (kein Kampfunfaehig-Flag), die Tabelle liest sich strenger. Aufloesung nur per Designentscheidung/Hausregel moeglich.",
           "impact": "Betrifft nur das Flag kampfunfaehig bei der dritten Beinwunde (Hinweis bleibt gleich). Fernkampf/Zauber mit gestuerztem Helden ist im Fliesstext nicht ausgeschlossen. Keine Spielwert-Berechnung betroffen.",
-          "recheck": "Gegenprüfung 2026-10-25: nur teilweise belegt."
+          "recheck": "Gegenprüfung 2026-10-25: nur teilweise belegt.",
+          "secondCheck": {
+            "checkedOn": "2026-10-26",
+            "result": "open",
+            "note": "Wege des Schwerts S. 108-109 (Chunk 7111, 7114): Die Tabelle nennt für die dritte Beinwunde ausdrücklich 'Sturz, kampfunfähig'; der Fließtext sagt 'stürzt und nicht mehr in der Lage, am Nahkampf teilzunehmen'."
+          }
         },
         {
           "conflictKey": "wund-arm-kk-ff-unbedingt-in-probenwerten",
@@ -12820,7 +13039,12 @@
             }
           ],
           "deviation": "Der Armbezug gilt im Buch auch fuer KK und FF; die App wendet die Abzuege auf jede Probe an und ueberlaesst den Armbezug dem Tisch. Das ist laut docs/archiv/arch-05.md (Folgeauftrag 3) eine bewusste Vereinfachung, steht aber nicht im MCP.",
-          "impact": "Proben mit KK/FF, die den verwundeten Arm nicht betreffen, werden zu streng berechnet; AT/PA, FK, INI und alle abgeleiteten Werte sind nicht betroffen. Die Pruefung der Probenwerte (wendeWundVerlusteAn) haengt daran."
+          "impact": "Proben mit KK/FF, die den verwundeten Arm nicht betreffen, werden zu streng berechnet; AT/PA, FK, INI und alle abgeleiteten Werte sind nicht betroffen. Die Pruefung der Probenwerte (wendeWundVerlusteAn) haengt daran.",
+          "secondCheck": {
+            "checkedOn": "2026-10-26",
+            "result": "confirmed",
+            "note": "Wege des Schwerts S. 108-109 (Chunk 7114): Armwunde -2 auf AT, PA, KK und FF 'wenn er diesen Arm benutzt'."
+          }
         },
         {
           "conflictKey": "wund-kopf-ini-anteilig",
@@ -13010,7 +13234,12 @@
             }
           ],
           "deviation": "Test und Produkt weichen von der Quelle ab: Wortlaut: Wer Begabung oder Merkmalskenntnis Elementar (spezielles Element) hat, erleidet 'Nachteile in allen Zaubern, die das Merkmal des Gegenelementes tragen'; diese Zauber nutzen die nächsthöhere Spalte. Eine Ausnahme für Zauber mit mehreren Elementen steht weder dort noch in den Hausregeln; die wörtliche Lesart (Nebelleib trägt Elementar Wasser) ergibt Spalte E statt D, der Test (Betrag 0) weicht davon ab.",
-          "impact": "Betrifft nur Zauber mit zwei Elementen (z. B. Nebelleib, Nebelwand): Lernspalte und AP-Kosten könnten eine Spalte zu niedrig sein, falls die wörtliche Lesart gilt. Entscheidung (Buchlesart oder dokumentierte Hausregel) muss festgelegt werden."
+          "impact": "Betrifft nur Zauber mit zwei Elementen (z. B. Nebelleib, Nebelwand): Lernspalte und AP-Kosten könnten eine Spalte zu niedrig sein, falls die wörtliche Lesart gilt. Entscheidung (Buchlesart oder dokumentierte Hausregel) muss festgelegt werden.",
+          "secondCheck": {
+            "checkedOn": "2026-10-26",
+            "result": "confirmed",
+            "note": "Wege der Zauberei S. 381 (Chunk 5951): Begabung oder Merkmalskenntnis in einem Element macht die Zauber des Gegenelements eine Spalte schwerer."
+          }
         },
         {
           "conflictKey": "elementarharmonisiert-ohne-gegenelement-merkmalskenntnis",
