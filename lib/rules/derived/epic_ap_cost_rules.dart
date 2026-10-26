@@ -1,5 +1,3 @@
-import 'package:dsa_heldenverwaltung/domain/learn/learn_rules.dart';
-
 /// Wendet den epischen AP-Aufschlag auf Lernkosten an.
 ///
 /// Regelquelle: Hausregel „Epische Stufen", Kap. 2.2 —

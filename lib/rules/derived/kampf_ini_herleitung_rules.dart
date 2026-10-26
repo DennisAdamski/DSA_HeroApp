@@ -128,8 +128,7 @@ Herleitung herleiteWaffenIni({
       betrag: iniGe,
       art: HerleitungsArt.modifikator,
       formel: nutztIniGe
-          ? '(GE $ge − $geBasis) / $geSchwelle, zur Null gerundet, '
-                'mindestens 0'
+          ? '(GE $ge − $geBasis) / $geSchwelle, zur Null gerundet'
           : 'deaktiviert (0/0)',
     ),
     HerleitungsSchritt(

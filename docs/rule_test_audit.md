@@ -70,20 +70,6 @@ Die zwei seit dem Start des Audits auf dem Branch hinzugekommenen Dateien (`zule
 
 Die letzten drei Zeilen überschneiden sich, weil eine Datei Befunde mehrerer Typen tragen kann.
 
-## Umsetzungsstand der Folgeaufträge
-
-Die Inventur `tool/rule_test_evidence.json` bleibt ein Prüfstand vom 24./25. Oktober 2026 und wird nicht fortgeschrieben; ihre Erwartungstexte beschreiben den Stand *vor* der Korrektur. Bisher umgesetzt (Produktlogik und Test-Erwartung gemeinsam):
-
-| Folgeauftrag | Änderung |
-| --- | --- |
-| RULE-FIX-002, -006 | Fernkampf-Talentmaximum aus FF, GE oder KK (`computeCombatTalentMaxValue`, epische Sondergrenze in `advancement_value_options.dart`). |
-| RULE-FIX-005 | Lehrmeister hebt den epischen Aufschlag nur auf; der 20-%-Nachlass entfällt dann (`lehrmeisterNachlassNachAufschlag`). |
-| RULE-FIX-007 | Gutes Gedächtnis (¾) gilt nicht für Wissenstalente; Eidetisches Gedächtnis (½) unverändert. |
-| RULE-FIX-003 | `computeIniGe` liefert nie einen negativen Wert (Hausregel „keine Mali durch den INI/GE“). |
-| RULE-FIX-004 | Helden-INI wird um die BE nach Rüstungsgewöhnung gemindert, nicht um die eBE des Waffentalents. Neu berechnete Goldwerte: f01 10→8, f02 8→10, f03 7→8, f05 8→9, f06 8→9, f07 12→14, f09 8→9. |
-
-Zurückgestellt, weil nicht ausreichend definiert: RULE-FIX-001 (Begabung für Ritual braucht ein neues Wirkungsmodell). Die übrigen Widersprüche (P2/P3) werden einzeln mit dem Fachverantwortlichen geklärt, die `unresolved`- und `source_gap`-Befunde bleiben unverändert.
-
 ## Bestätigte Abweichungen: Widerspruch zur Buchregel
 
 Folgeauftrag = je eine Zeile; das Beleg-Format ist *Buch S. gedruckte Seite (MCP-Chunk)*. Auswirkung betrifft Test **und** Produktverhalten; behoben wird erst im jeweiligen Folgeauftrag, der Produktverhalten und Erwartung gemeinsam ändert.

@@ -125,7 +125,7 @@ void main() {
     expect((entry.before.maxValue, entry.after.maxValue), (17, 18));
   });
 
-  test('Nahkampf nutzt GE und KK, Fernkampf FF, GE und KK', () {
+  test('Nahkampf und Fernkampf verwenden ihre eigenen Eigenschaften', () {
     final hero = _hero.copyWith(
       talents: {
         'sword': const HeroTalentEntry(talentValue: 15),
