@@ -142,7 +142,8 @@ class SchutzAuffangErgebnis {
   /// Vom Schild aufgenommene TP.
   final int aufgefangen;
 
-  /// TP, die der Schild nicht mehr aufnimmt.
+  /// TP, die der Schild nicht mehr aufnimmt und die auf das Ziel durchschlagen
+  /// (Tischentscheid 27.10.2026; Liber Cantiones S. 92 nennt nur die Auflösung).
   final int durchschlag;
 
   /// Restvorrat vor dem Vorgang.

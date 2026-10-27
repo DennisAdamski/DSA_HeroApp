@@ -58,6 +58,11 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   `lib/ui_shared/merkmal_herkunft_dialog.dart` (Übersicht und UI2-Merkmalsblatt,
   nur Metadatum). Abschluss und Gesamtstatus laut
   [Plan](../superpowers/plans/2026-10-10-arch02-herkunftsmerkmale.md).
+  **Tischentscheid (27.10.2026):** Professionen dürfen Eigenschaftsmodifikatoren
+  tragen (selten, aber möglich); sie zählen wie Rasse und Kultur zum Startwert
+  und zum Maximum (1,5 × Startwert). Das Regelwerk belegt das nur für Rasse und
+  Kultur (RULE-FIX-080, -102, -104); eine Einschränkung auf Rasse/Kultur wird
+  bewusst nicht eingebaut.
 - Begabungen und Unfähigkeiten wirken über die Katalogwirkung `lernspalte`
   auf ihre Ziele; `ermittleBegabungen` (`hero_begabung_rules.dart`) liefert
   je Talent, Zauber, Sprache/Schrift und Ritualkenntnis einen

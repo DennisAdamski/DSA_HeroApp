@@ -52,6 +52,8 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   (`spell_effect_protection_rules.dart`, `fangeMagischenSchadenAuf` mit
   erwartetem Restvorrat gegen Doppelbuchung); der Durchschlag geht in den
   Schadensdialog, ein aufgezehrter Schild bleibt bis zum Beenden am Tisch.
+  Dass der Rest auf das Ziel durchschlägt, ist Tischentscheid (27.10.2026);
+  Liber Cantiones nennt nur, dass sich der Schild nach der TP-Zahl auflöst.
   Teilstand 2: Zauberheilung (Balsam, Hexenspeichel) ist ein einmaliges
   Ereignis über „Heilzauber erhalten“; Regeln in `spell_effect_healing_rules.dart`,
   Schreibweg `HeilungErhalten` (ein Dokument mit `ZustandsBuchung` Art
