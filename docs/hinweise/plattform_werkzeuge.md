@@ -12,6 +12,14 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   darauf. Die Sprachversion aus `environment: sdk:` steuert mit, welche Lints
   ueberhaupt feuern und wie breit `dart format` umbricht — ein SDK-Bump zieht
   beides nach sich.
+- Git-Hooks: `.githooks/pre-commit` formatiert gestagte `.dart`-Dateien
+  (`dart format`, danach erneut gestaged); Zwischencommits blockiert er nicht.
+  `.githooks/pre-push` fuehrt `flutter analyze` ueber das ganze Projekt aus
+  (wie die CI, dauert ca. 2 Minuten) und bricht den Push bei Befunden ab.
+  Aktivierung einmalig pro Clone mit `sh tool/setup_git_hooks.sh` (setzt
+  `core.hooksPath`). Dateien mit gestagten und ungestagten Aenderungen weist
+  der pre-commit-Hook ab, damit nichts ungewollt mitcommittet wird. Umgehen nur
+  bewusst mit `--no-verify`; die CI bleibt das verbindliche Gate.
 - Der Windows-Release-Audit fuer EXE/MSIX-Artefakte ist in `docs/windows_antivirus_audit.md` beschrieben; der zugehoerige Helfer liegt unter `tool/audit_windows_artifact.ps1`.
 - Direktes App-Feedback als GitHub-Issue ist lokal implementiert und in
   [docs/feedback_github_plan.md](../feedback_github_plan.md) sowie
