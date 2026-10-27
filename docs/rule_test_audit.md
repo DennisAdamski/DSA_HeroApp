@@ -12,18 +12,18 @@ Die maschinenlesbare Inventur `tool/rule_test_evidence.json` erfasst **211 Test-
 | `official` | 147 |
 | `house_rule` | 9 |
 | `product_contract` | 55 |
-| `verified` | 147 |
-| `conflict` (mindestens ein bestätigter Einzelbefund) | 64 |
+| `verified` | 149 |
+| `conflict` (mindestens ein bestätigter Einzelbefund) | 62 |
 
 Aufschlüsselung Art × Status:
 
 | Art | verified | conflict |
 | --- | ---: | ---: |
-| `official` | 84 | 63 |
+| `official` | 86 | 61 |
 | `house_rule` | 8 | 1 |
 | `product_contract` | 55 | 0 |
 
-Die 64 Konfliktdateien enthalten zusammen **79 offene fachlich verschiedene Einzelbefunde** mit je eigenem Folgeauftrag `RULE-FIX-NNN` (Priorität P1: 0, P2: 32, P3: 47); weitere 26 Befunde sind bereits behoben (siehe unten). Ein Konflikt auf Dateiebene heißt: *mindestens* eine Erwartung der Datei ist nicht deckungsgleich mit dem Buch oder nicht belegbar; alle übrigen Erwartungen der Datei sind geprüft und stehen in der `summary` des Eintrags bzw. unter `sources`.
+Die 62 Konfliktdateien enthalten zusammen **77 offene fachlich verschiedene Einzelbefunde** mit je eigenem Folgeauftrag `RULE-FIX-NNN` (Priorität P1: 0, P2: 30, P3: 47); weitere 28 Befunde sind bereits behoben (siehe unten). Ein Konflikt auf Dateiebene heißt: *mindestens* eine Erwartung der Datei ist nicht deckungsgleich mit dem Buch oder nicht belegbar; alle übrigen Erwartungen der Datei sind geprüft und stehen in der `summary` des Eintrags bzw. unter `sources`.
 
 ## Geprüfte Pakete
 
@@ -118,10 +118,10 @@ Damit liegt die Fehlerquote der Zweitprüfung bei 2 von 84 Dateien (rund 2 %); d
 
 | Fall | Dateien | Bedeutung |
 | --- | ---: | --- |
-| Test stimmt mit der Buchregel überein | 84 | `official`/`verified`: alle fachlichen Erwartungen belegt |
+| Test stimmt mit der Buchregel überein | 86 | `official`/`verified`: alle fachlichen Erwartungen belegt |
 | Dokumentierte Hausregel weicht bewusst ab | 8 | `house_rule`/`verified`: durch Hausregel-Dokument im MCP belegt |
 | Technischer Produktvertrag ohne Regelbehauptung | 55 | `product_contract`: Begründung je Datei in der Inventur |
-| Test oder Produkt widerspricht der Quelle | 7 | Dateien mit mindestens einem Befund `contradiction` (5 Einzelbefunde) |
+| Test oder Produkt widerspricht der Quelle | 4 | Dateien mit mindestens einem Befund `contradiction` (3 Einzelbefunde) |
 | Regelunklarheit, Buch entscheidet nicht | 46 | Dateien mit mindestens einem Befund `unresolved` (55 Einzelbefunde) |
 | Quelle im MCP nicht ausreichend verfügbar | 17 | Dateien mit mindestens einem Befund `source_gap` (19 Einzelbefunde) |
 
@@ -160,8 +160,6 @@ Folgeauftrag = je eine Zeile; das Beleg-Format ist *Buch S. gedruckte Seite (MCP
 | RULE-FIX-024 | contradiction | `gefecht_freigabe_rules_test.dart` | Hausregel: Seitenwechsel +4, Voraussetzung Binden/Gezieltes Ausweichen, DK-abhängige Zusatzaktionen, INI-Bedingung. Test/Code: reiner PA-Zielwert ohne +4 und ohne Zusatzaktionen. | Erweiterung und Überarbeitung des Regelwerks S. 9–10 (Chunk 25825) | Test hält eine nicht regelkonforme Berechnung für richtig; Produktverhalten rechnet Seitenwechsel um 4 Punkte zu leicht und mit zu wenig Aktionskosten, sofern der Tisch die Hausregel nutzt. |
 | RULE-FIX-025 | unresolved | `gefecht_held_rules_test.dart` | Wörtliche Lesart (Gegenhalten ist Abwehraktion, Abwehraktionen sind erleichtert) würde den Bonus zulassen; die App schließt ihn aus. | Wege des Schwerts S. 78 (Chunk 7039); Wege des Schwerts S. 68–69 (Chunk 7011, 7012) | Bei INI > 20 fehlen Gegenhalten bis zu 3 Punkte auf den Zielwert (Spielwert), sofern die wörtliche Lesart gemeint ist. |
 | RULE-FIX-026 | unresolved | `gefecht_laden_review_test.dart` | Auslegung 'SF-Voraussetzung BE <= 4 gilt auch für Axxeleratus' ist nicht durch den Buchtext des Zaubers gedeckt; umgekehrt widerspricht das Buch ihr nicht ausdrücklich. | Wege des Schwerts S. 95 (Chunk 7085); Basisregelwerk S. 174 (Chunk 686, 687); Errata WdS S. 5-7 (Dokumentseiten) (Chunk 25633, 25634, 25635) | Helden in BE >= 5 mit Axxeleratus erhalten keine Ladezeitverkürzung; Spielwert potenziell um 1 bis 2 Aktionen zu hoch. Test und Produktverhalten teilen die Auslegung. |
-| RULE-FIX-027 | contradiction | `gefecht_ladezeit_paket3_test.dart` | Buch: weitere Aktionskürzung durch Axxeleratus nur bei bestandener FF-Probe; App: automatisch. | Basisregelwerk S. 174 (Chunk 686, 687) | Ladezeit und Rundenplanung fallen im Gefecht um 1 Aktion zu kurz, wenn die FF-Probe misslingt. Der Test würde bei einer Korrektur (FF-Probe als Eingabe) angepasst werden müssen; … |
-| RULE-FIX-028 | contradiction | `gefecht_rules_test.dart`, `gefecht_ueberzahl_rules_test.dart` | App erlaubt Ausweichen auch bei 4 oder mehr Gegnern (nur Deckelung des Malus); die Ausweichen-Tabelle erklärt es bei Umstellung durch 4+ Gegner für unmöglich. | Wege des Schwerts S. 66 (PDF S. 67) (Chunk 7005, 7006); Wege des Schwerts S. 80 (PDF S. 81) (Chunk 7043); Errata WdS S. 4–5 (Chunk 25632) | Spielwert bei Umstellung durch vier oder mehr Gegner möglicherweise falsch (Ausweichen angeboten statt gesperrt); Randfall, keine Datenwirkung. |
 | RULE-FIX-029 | unresolved | `gefecht_waffenbelegung_folge_test.dart` | Die Regel 'Bogen/Armbrust = zweihändig' ist plausibel und indirekt gestützt, aber nicht ausdrücklich belegt. | Erweiterung und Überarbeitung des Regelwerks S. 14 (PDF-Seite) (Chunk 25827); Wege des Schwerts S. 70 (PDF 71) (Chunk 7017) | Betrifft Handbelegung und Zusatzaktionen von Fernkämpfern mit Schild/Zweitwaffe; falsch wäre nur der (seltene) Fall einer regelkonform einhändig geführten Schusswaffe außer der Balestrina. |
 | RULE-FIX-031 | source_gap | `kampf_herleitung_rules_test.dart` | Keine Quelle im MCP, die einen AT-WM-Bonus der Waffenmeisterschaft auf den Fernkampfwert bestätigt oder ausschließt; nur die im Test dokumentierte Entscheidung stützt die Erwartung (Repo-Entscheidung ohne MCP-Beleg). | Suche: Waffenmeister Bonus AT-WM Fernkampf Waffenmeisterschaft Bogen Wirkung; Ein Waffenmeister (Kurzbogen) Fernkampfwert Bonus; Waffenmeister Langbogen Kurzbogen Armbrust Besonderheiten Fernkampf; … | Der Test bindet eine nicht belegte Designentscheidung; das Produktverhalten (FK + WM-Bonus) ist ohne Hausregel-Beleg nicht verifizierbar. Betroffen nur Helden mit Fernkampf-Waffenmeisterschaft. |
 | RULE-FIX-032 | source_gap | `kampf_herleitung_rules_test.dart` | Regelgrundlage der 'höheren Waffen-INI' ist im MCP nicht auffindbar. | Suche: Beidhändiger Kampf zwei Waffen Initiative INI-Modifikator der beiden Waffen gilt der höhere; Doppelangriff Manöver Initiative beider Waffen höherer INI-Modifikator Zweitwaffe; … | Kampf-INI mit zwei Waffen (und damit INI-Bonus auf Abwehr und Ausweichen) hängt von einer unbelegten App-Regel ab. |
@@ -263,6 +261,8 @@ Diese Befunde wurden nach dem Audit in einem eigenen Schritt behoben: Produktcod
 | RULE-FIX-030 | 2026-10-27 | Begabung/Unfähigkeit: Netto-Verschiebung statt Zwischendeckelung | `hero_begabung_rules_test.dart` |
 | RULE-FIX-052 | 2026-10-27 | Gegenelement-Aufschlag auch bei Zaubern mit mehreren Elementen | `zauber_lernspalte_rules_test.dart` |
 | RULE-FIX-013 | 2026-10-27 | Voraussetzungen beim Nachkauf von Vorteilen prüfen | `advancement_steigerung_bereiche_test.dart` |
+| RULE-FIX-027 | 2026-10-27 | Axxeleratus-Laden nur nach gelungener FF-Probe (Hinweis im Ladedialog) | `gefecht_ladezeit_paket3_test.dart` |
+| RULE-FIX-028 | 2026-10-27 | Ausweichen bei Umkreisung (Hinweis im Ausweichen-Dialog) | `gefecht_rules_test.dart`, `gefecht_ueberzahl_rules_test.dart` |
 
 ## Technische Verträge ohne Regelbehauptung
 

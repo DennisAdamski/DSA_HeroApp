@@ -6281,7 +6281,7 @@
     },
     "test/rules/gefecht_ladezeit_paket3_test.dart": {
       "kind": "official",
-      "status": "conflict",
+      "status": "verified",
       "summary": "Testblock 1 (Armbrust-Schnellladen = drei Viertel der Ladezeit, echt gerundet: 4->3, 8->6, 5->4, 7->5) stimmt mit Wege des Schwerts S. 95 und der Rundungsregel überein. Testblock 2 kombiniert SF Schnellladen (Armbrust), Axxeleratus und die Waffenmeister-Halbierung der Armbrust-Ladezeit (4 -> 3 -> 2 -> 1): die Waffenmeister-Halbierung (Armbrust, einmalig) und die Wirkung von Axxeleratus (Entsprechung von Schnellladen, bei bereits vorhandener SF eine weitere Aktion kürzer, mindestens 1) sind belegt, die im Buch verlangte FF-Probe für die Axxeleratus-Kürzung fehlt aber in der Rechnung.",
       "sources": [
         {
@@ -6309,35 +6309,12 @@
           "checkedOn": "2026-10-24"
         }
       ],
-      "conflicts": [
+      "resolved": [
         {
-          "conflictKey": "axxeleratus-ladezeit-ff-probe",
-          "conflictType": "contradiction",
-          "priority": "P2",
           "followUp": "RULE-FIX-027",
-          "finding": "Das Basisregelwerk (Zauber Axxeleratus) verkürzt das Laden um eine weitere Aktion nur bei besessener SF und nur nach gelungener FF-Probe (nicht weniger als 1 Aktion). computeRangedReloadTime zieht diese Aktion bedingungslos ab, sobald Axxeleratus aktiv ist und die SF besessen wird; eine FF-Probe wird in der Ladezeit-Rechnung und im Gefecht nirgends abgefragt. Der Testfall prüft genau diese bedingungslose Kürzung (Armbrust 4: SF 3, SF+Axxeleratus 2, mit Waffenmeister 1). Die Zahlen 3 (nur SF) und die Halbierung sind korrekt.",
-          "testCases": [
-            "Armbrust SF plus Axxeleratus und Waffenmeister zentral gerechnet"
-          ],
-          "expected": "Mit besessener SF Schnellladen (Armbrust) und aktivem Axxeleratus sinkt die Ladezeit zusätzlich um 1 Aktion ohne weitere Bedingung (Basis 4 -> 2; mit Waffenmeister-Halbierung -> 1).",
-          "bookRule": [
-            {
-              "title": "Basisregelwerk (2. Auflage, 2011)",
-              "pages": "174",
-              "mcpChunks": [
-                686,
-                687
-              ],
-              "checkedOn": "2026-10-24"
-            }
-          ],
-          "deviation": "Buch: weitere Aktionskürzung durch Axxeleratus nur bei bestandener FF-Probe; App: automatisch.",
-          "impact": "Ladezeit und Rundenplanung fallen im Gefecht um 1 Aktion zu kurz, wenn die FF-Probe misslingt. Der Test würde bei einer Korrektur (FF-Probe als Eingabe) angepasst werden müssen; Produktverhalten betrifft nur Helden mit SF Schnellladen plus Axxeleratus.",
-          "secondCheck": {
-            "checkedOn": "2026-10-26",
-            "result": "confirmed",
-            "note": "Basisregelwerk S. 174 (Chunk 686): weitere Verkürzung um eine Aktion, mindestens 1 Aktion, FF-Probe erforderlich."
-          }
+          "conflictKey": "axxeleratus-ladezeit-ff-probe",
+          "resolvedOn": "2026-10-27",
+          "note": "Entscheidung: Die Ladezeit-Rechnung bleibt, weil die FF-Probe am Spieltisch fällt. Der Ladedialog weist bei aktivem Axxeleratus ausdrücklich darauf hin, dass die weitere Verkürzung nur nach gelungener FF-Probe gilt (Basisregelwerk S. 174). Widgettest gefecht_hinweise_test.dart."
         }
       ]
     },
@@ -6621,7 +6598,7 @@
     },
     "test/rules/gefecht_rules_test.dart": {
       "kind": "official",
-      "status": "conflict",
+      "status": "verified",
       "summary": "Bestätigt sind: INI < 0 -> keine Angriffsaktion mehr, nur eine Aktion für längerfristige Handlungen; Zusatzparade aus Schildkampf II ist eine zweite Schildparade (setzt eine erste Schildparade voraus, BE <= 4, kein Turmschild) und bezahlt weder Ausweichen noch Position noch längerfristige Handlungen; Kampfgespür-Umwandlung ohne Budgetgewinn; Umwandlung ist nach Ansage bindend, zweite Attacke +4; hoher INI-Bonus (>20/30/40 = +1/2/3) wird ab erster Aktion fixiert (Hausregel); liegend kein Ausweichen; Mehrgegnermalus PA -1 je weiterem Gegner, Ausweichen doppelt; freies Ausweichen -4 INI und Desorientierung; Rundenwechsel setzt Marken zurück. Widerspruch: der Test erwartet bei vier Gegnern ein mögliches Ausweichen mit +4, die Ausweichen-Tabelle nennt 'Umstellt (4+ Gegner): unmöglich'. Rein produktbezogene Teile (Status 'prüfen' bei unbekannter DK, Verhalten kostenfreier manueller Handlungen) enthalten keine Regelbehauptung.",
       "sources": [
         {
@@ -6699,46 +6676,12 @@
           "checkedOn": "2026-10-24"
         }
       ],
-      "conflicts": [
+      "resolved": [
         {
-          "conflictKey": "ausweichen-umstellt-vier-gegner",
-          "conflictType": "contradiction",
-          "priority": "P2",
           "followUp": "RULE-FIX-028",
-          "finding": "Der Test setzt s.copyWith(gegner: 4) und erwartet, dass freies Ausweichen nicht gesperrt ist und die Mehrgegner-Erschwernis bei 4 gedeckelt bleibt. Die WdS-Tabelle 'Proben-Modifikationen beim Ausweichen' (S. 66) führt jedoch 'Umstellt (4+ Gegner): unmöglich'. Die Überzahlregel (S. 80) und die Errata begrenzen nur den Malus (vierter Gegner 'bringt keinen weiteren Malus', Ausweichen maximal 4 Punkte), äußern sich aber nicht zur Möglichkeit des Ausweichens. Mögliche Gegenlesart: 'umstellt' meint vollständige Einkreisung, nicht bloß vier Gegner; das Buch definiert den Begriff nicht.",
-          "testCases": [
-            "Ausweichen ist liegend gesperrt, bei vier Gegnern gedeckelt"
-          ],
-          "expected": "Mit 4 Gegnern ist freies Ausweichen nicht gesperrt (Status nicht gesperrt) mit Erschwernis kGefechtsWeitereGegner = 4 (Parade 2).",
-          "bookRule": [
-            {
-              "title": "Wege des Schwerts",
-              "pages": "66 (PDF S. 67)",
-              "mcpChunks": [
-                7005,
-                7006
-              ],
-              "checkedOn": "2026-10-24"
-            },
-            {
-              "title": "Wege des Schwerts",
-              "pages": "80 (PDF S. 81)",
-              "mcpChunks": [
-                7043
-              ],
-              "checkedOn": "2026-10-24"
-            },
-            {
-              "title": "Errata WdS",
-              "pages": "4–5",
-              "mcpChunks": [
-                25632
-              ],
-              "checkedOn": "2026-10-24"
-            }
-          ],
-          "deviation": "App erlaubt Ausweichen auch bei 4 oder mehr Gegnern (nur Deckelung des Malus); die Ausweichen-Tabelle erklärt es bei Umstellung durch 4+ Gegner für unmöglich.",
-          "impact": "Spielwert bei Umstellung durch vier oder mehr Gegner möglicherweise falsch (Ausweichen angeboten statt gesperrt); Randfall, keine Datenwirkung."
+          "conflictKey": "ausweichen-umstellt-vier-gegner",
+          "resolvedOn": "2026-10-27",
+          "note": "Entscheidung: Die Regel bleibt Tischregel. Der Ausweichen-Dialog weist darauf hin, dass jeder weitere Kampfteilnehmer das Ausweichen erschwert und es ab einer Umkreisung (4 Teilnehmer) nicht mehr möglich ist. Widgettest gefecht_hinweise_test.dart."
         }
       ]
     },
@@ -6953,51 +6896,6 @@
       ],
       "conflicts": [
         {
-          "conflictKey": "ausweichen-umstellt-vier-gegner",
-          "conflictType": "contradiction",
-          "priority": "P2",
-          "followUp": "RULE-FIX-028",
-          "finding": "gefechtsAbwehrErschwernisWeitereGegner liefert für 4 und 5 Gegner die gedeckelten Werte (Parade 2, Ausweichen 4) und gefechtsVerteidigerlage/ausweichenErschwernis bietet damit Ausweichen gegen vier Gegner an. Die WdS-Ausweichen-Tabelle nennt 'Umstellt (4+ Gegner): unmöglich'; Überzahlregel und Errata begrenzen nur den Malus. Gegenlesart: 'umstellt' = vollständige Einkreisung (Buch definiert es nicht).",
-          "testCases": [
-            "Abwehr: PA −1 je weiterem Gegner, Ausweichen −2, drei im Blick"
-          ],
-          "expected": "Ausweichen-Erschwernis für n = 0..5 Gegner: [0, 0, 2, 4, 4, 4]; Verteidigerlage mit 4 Gegnern: ausweichenErschwernis 4.",
-          "bookRule": [
-            {
-              "title": "Wege des Schwerts",
-              "pages": "66 (PDF S. 67)",
-              "mcpChunks": [
-                7005,
-                7006
-              ],
-              "checkedOn": "2026-10-24"
-            },
-            {
-              "title": "Wege des Schwerts",
-              "pages": "80 (PDF S. 81)",
-              "mcpChunks": [
-                7043
-              ],
-              "checkedOn": "2026-10-24"
-            },
-            {
-              "title": "Errata WdS",
-              "pages": "4–5",
-              "mcpChunks": [
-                25632
-              ],
-              "checkedOn": "2026-10-24"
-            }
-          ],
-          "deviation": "Kein Sperrwert für Ausweichen bei 4+ Gegnern; Tabelle erklärt es bei Umstellung für unmöglich.",
-          "impact": "Ausweichen wird bei Umstellung durch 4+ Gegner möglicherweise fälschlich angeboten; Randfall, keine Datenwirkung.",
-          "secondCheck": {
-            "checkedOn": "2026-10-26",
-            "result": "confirmed",
-            "note": "Wege des Schwerts S. 66 (Chunk 7006): Ausweichen-Tabelle 'Umstellt (4+ Gegner): unmöglich'."
-          }
-        },
-        {
           "conflictKey": "ueberzahl-zaehlregeln-teilnehmer",
           "conflictType": "unresolved",
           "priority": "P3",
@@ -7096,6 +6994,14 @@
             "result": "confirmed",
             "note": "Wege des Schwerts S. 81 (Chunk 7045): Taktik verteilt die Punkte 'möglichst gleichmäßig', höchstens 6; wer den Rest erhält, ist offen."
           }
+        }
+      ],
+      "resolved": [
+        {
+          "followUp": "RULE-FIX-028",
+          "conflictKey": "ausweichen-umstellt-vier-gegner",
+          "resolvedOn": "2026-10-27",
+          "note": "Entscheidung: Die Regel bleibt Tischregel. Der Ausweichen-Dialog weist darauf hin, dass jeder weitere Kampfteilnehmer das Ausweichen erschwert und es ab einer Umkreisung (4 Teilnehmer) nicht mehr möglich ist. Widgettest gefecht_hinweise_test.dart."
         }
       ]
     },

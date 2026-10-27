@@ -115,6 +115,11 @@ class GefechtKontextfelder extends StatelessWidget {
             ),
           ),
         if (aw) ...[
+          const Text(
+            key: ValueKey('gefecht-ausweichen-umkreisung-hinweis'),
+            'Jeder weitere Kampfteilnehmer erschwert das Ausweichen; ab einer '
+            'Umkreisung (4 Teilnehmer) ist Ausweichen nicht mehr möglich.',
+          ),
           DropdownButtonFormField<int>(
             initialValue: k.gegnerzahl ?? gegnerVorgabe?.clamp(1, 6),
             decoration: const InputDecoration(
