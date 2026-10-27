@@ -1964,43 +1964,14 @@
             "result": "confirmed",
             "note": "Epische Stufen (Chunk 25738): nur '21000-23100 AP' für den epischen Status und 2100 AP Abstand zwischen Stufe 21 und 22; 'Stufen werden nach dem gleichen Muster hochgezählt'. Die Suche nach einer Stufentabelle liefert nur die Steigerungskosten-Tabelle (Chunk 744, 7247), keine AP-Schwellen je Stufe."
           }
-        },
+        }
+      ],
+      "resolved": [
         {
-          "conflictKey": "epic-asp-stufenbonus-vollzauberer-6-statt-2",
-          "conflictType": "contradiction",
-          "priority": "P2",
           "followUp": "RULE-FIX-016",
-          "finding": "Die Hausregel 'Erweiterung und Ueberarbeitung des Regelwerks' (Kap. 1) legt fest, dass Helden pro Stufe +1 LeP, +2 AuP und +2 AsP erhalten (nach DSA 4.0, wenn moeglich). 'Epische Stufen' (Kap. 2.2) belaesst im epischen Status nur den AsP-Stufenbonus: Vollzauberer in vollem Umfang (also +2 AsP je Stufe), Halbzauberer 1 AsP, Viertelzauberer 0. Die App und der Test setzen den Vollzauberer-Standardwert auf 6 AsP je Stufe ('entspricht der in den Grundregeln ueblichen Menge'); ein solcher Wert steht in keiner geprueften Quelle.",
-          "testCases": [
-            "Vollzauberer behaelt vollen Stufenbonus"
-          ],
-          "expected": "epicAspStufenbonus(voll, aktiv, episch) == 6 (Standard fullCasterBonus = 6)",
-          "bookRule": [
-            {
-              "title": "Erweiterung und Überarbeitung des Regelwerks",
-              "pages": "2",
-              "mcpChunks": [
-                25817,
-                25818
-              ],
-              "checkedOn": "2026-10-24"
-            },
-            {
-              "title": "Epische Stufen",
-              "pages": "5",
-              "mcpChunks": [
-                25740
-              ],
-              "checkedOn": "2026-10-24"
-            }
-          ],
-          "deviation": "Quelle nennt +2 AsP je Stufe fuer Vollzauberer; die App nutzt 6. 'fullCasterBonus konfigurierbar' (8) reicht nur einen Parameter durch und ist davon unberuehrt.",
-          "impact": "epicAspStufenbonus wird in lib/ derzeit nicht aufgerufen (nur Definition), daher keine Spielwertwirkung. Bei spaeterer Verdrahtung waere der Standard 6 statt 2 falsch.",
-          "secondCheck": {
-            "checkedOn": "2026-10-26",
-            "result": "confirmed",
-            "note": "Hausregel S. 2 (Chunk 25817): +1 LeP, +2 AuP, +2 AsP je Stufe; Epische Stufen S. 5-6 (Chunk 25740): ab episch nur noch AsP (Vollzauberer voll, Halbzauberer 1, Viertelzauberer 0)."
-          }
+          "conflictKey": "epic-asp-stufenbonus-vollzauberer-6-statt-2",
+          "resolvedOn": "2026-10-27",
+          "note": "Standardwert fullCasterBonus von 6 auf 2 gesetzt (Hausregel: +2 AsP je Stufe); Test angepasst."
         }
       ]
     },
@@ -3640,7 +3611,7 @@
     },
     "test/rules/bought_stat_limit_rules_test.dart": {
       "kind": "official",
-      "status": "conflict",
+      "status": "verified",
       "summary": "Prüft die Zukauf-Obergrenzen (computeBoughtStatMaximum) und die Kombination mit der AP-Reichweite. Bestätigt: LeP-Zukauf höchstens Hälfte der KO, AuP höchstens voller KO-Wert, MR höchstens Hälfte der MU (Basisregelwerk); KaP hat laut Wege der Götter praktisch keine Höchstgrenze; resolveBoughtStatDialogMaximum nimmt das Minimum aus AP-Reichweite und Regelmaximum (App-Logik, Test ‚nutzt die kleinere Grenze aus AP-Reichweite und Regelmaximum‘). Nicht bestätigt: Rundung der Hälfte bei ungeraden Werten (KO 15 → 7, MU 13 → 6) und die fehlende AsP-Grenze (Buch: höchstens CH).",
       "sources": [
         {
@@ -3670,58 +3641,18 @@
           "checkedOn": "2026-10-25"
         }
       ],
-      "conflicts": [
-        {
-          "conflictKey": "zukauf-asp-grenze-ch-fehlt",
-          "conflictType": "contradiction",
-          "priority": "P2",
-          "followUp": "RULE-FIX-019",
-          "finding": "Der Test ‚laesst AE und KE ohne harte Grenze‘ erwartet für asp und kap jeweils null. Für Karmaenergie stimmt das (Wege der Götter: praktisch keine Höchstgrenze für KaP). Für Astralenergie nennt das Basisregelwerk dagegen ausdrücklich eine Grenze: zugekaufte Astralpunkte höchstens in Höhe des CH-Werts.",
-          "testCases": [
-            "laesst AE und KE ohne harte Grenze"
-          ],
-          "expected": "computeBoughtStatMaximum für 'asp' und 'kap' ist null (keine Regelgrenze)",
-          "bookRule": [
-            {
-              "title": "Basisregelwerk (Astralenergie: Maximalwert des Zukaufs = CH-Wert; Spalte G)",
-              "pages": "206",
-              "mcpChunks": [
-                763
-              ],
-              "checkedOn": "2026-10-25"
-            },
-            {
-              "title": "Basisregelwerk (Steigerung in Stichworten: AsP Maximum zugekaufte Punkte in Höhe des CH-Werts)",
-              "pages": "207",
-              "mcpChunks": [
-                764
-              ],
-              "checkedOn": "2026-10-25"
-            },
-            {
-              "title": "Wege der Götter (Karmalqueste: praktisch keine Höchstgrenze für KaP)",
-              "pages": "240",
-              "mcpChunks": [
-                3774
-              ],
-              "checkedOn": "2026-10-25"
-            }
-          ],
-          "deviation": "AsP-Zukauf ist laut Buch auf CH begrenzt; die App modelliert für AsP keine Grenze (nur AP-Reichweite). Der KaP-Teil stimmt.",
-          "impact": "Der Zukauf-Dialog erlaubt mehr zugekaufte AsP als das Regelwerk. Der Test zementiert das Fehlen der Grenze; Anpassung in lib/rules/derived/bought_stat_limit_rules.dart.",
-          "secondCheck": {
-            "checkedOn": "2026-10-26",
-            "result": "confirmed",
-            "note": "Basisregelwerk S. 207 (Chunk 763): zugekaufte AsP höchstens in Höhe des CH-Werts."
-          }
-        }
-      ],
       "resolved": [
         {
           "followUp": "RULE-FIX-059",
           "conflictKey": "zukauf-grenze-halbe-ungerade-rundung",
           "resolvedOn": "2026-10-27",
           "note": "Produktcode (computeBoughtStatMaximum: (x + 1) ~/ 2) und Test-Erwartung an die Quelle angepasst."
+        },
+        {
+          "followUp": "RULE-FIX-019",
+          "conflictKey": "zukauf-asp-grenze-ch-fehlt",
+          "resolvedOn": "2026-10-27",
+          "note": "Produktcode (computeBoughtStatMaximum: 'asp' => CH) und Test-Erwartung an die Quelle angepasst; für KaP bleibt es bei keiner Grenze."
         }
       ]
     },
@@ -9714,35 +9645,6 @@
       ],
       "conflicts": [
         {
-          "conflictKey": "meta-talent-deckel-doppelter-niedrigster-wert",
-          "conflictType": "contradiction",
-          "priority": "P2",
-          "followUp": "RULE-FIX-035",
-          "finding": "WdS Anhang 3 (Meta-Talente): 'Der Talentwert berechnet sich aus den beteiligten Talenten. Allerdings kann er niemals den doppelten Wert des niedrigsten beteiligten Wertes uebersteigen' (Beispiel: Pirschjagd (35/5 =) 7, aber Tierkunde 1 -> hoechstens 2). computeMetaTalentBaseTaw bildet nur den gerundeten Durchschnitt; es gibt keine Deckelung. Die Testeingaben (7/8/8 und 9/6/3) liegen unterhalb der Deckel (14 bzw. 6) und decken die Abweichung nicht auf.",
-          "testCases": [
-            "meta talent base taw uses kaufmaennisch rounded mean",
-            "meta talent base taw includes combat talents by talentValue only"
-          ],
-          "expected": "Roh-TaW eines Meta-Talents = gerundeter Mittelwert der Bestandteile, ohne Deckelung",
-          "bookRule": [
-            {
-              "title": "Wege des Schwerts",
-              "pages": "189",
-              "mcpChunks": [
-                7301
-              ],
-              "checkedOn": "2026-10-24"
-            }
-          ],
-          "deviation": "Buch: min(gerundeter Mittelwert, 2 x niedrigster Bestandteil); App: nur Mittelwert.",
-          "impact": "Bei stark ungleichen Bestandteilen zeigt die App ein zu hohes Meta-TaW (Probe zu leicht).",
-          "secondCheck": {
-            "checkedOn": "2026-10-26",
-            "result": "confirmed",
-            "note": "Wege des Schwerts S. 189 (Chunk 7301): Der Talentwert eines Meta-Talents übersteigt nie den doppelten Wert des niedrigsten beteiligten Wertes."
-          }
-        },
-        {
           "conflictKey": "meta-talent-eigene-be-regel",
           "conflictType": "source_gap",
           "priority": "P3",
@@ -9768,6 +9670,14 @@
             "result": "confirmed",
             "note": "Neue Suche nach Behinderung bei Meta-Talenten (Wege des Schwerts S. 191, Chunk 7303-7305; Zoo Botanica Aventurica S. 61, Chunk 8032) ohne Hinweis auf eine eBE-Regel."
           }
+        }
+      ],
+      "resolved": [
+        {
+          "followUp": "RULE-FIX-035",
+          "conflictKey": "meta-talent-deckel-doppelter-niedrigster-wert",
+          "resolvedOn": "2026-10-27",
+          "note": "Produktcode (splitMetaTalentBaseTaw: Mittelwert, höchstens das Doppelte des niedrigsten Bestandteils) und Tests an die Quelle angepasst; die Herleitung nennt den Deckel."
         }
       ]
     },
@@ -10624,34 +10534,6 @@
       ],
       "conflicts": [
         {
-          "conflictKey": "rest-negative-lep-natural-healing",
-          "conflictType": "contradiction",
-          "priority": "P2",
-          "followUp": "RULE-FIX-038",
-          "finding": "Der Test 'Regeneration senkt Werte über dem Maximum und hebt negative LeP' erwartet, dass eine Schlaf-Regeneration bei LeP = -5 den Held auf LeP 0 setzt. Das Buch sagt, dass ein Opfer mit LeP 0 oder weniger nicht auf natürlichem Wege heilt, sondern sofort behandelt werden muss. Die App wendet die natürliche Regeneration (und die Klemmung auf 0) trotzdem an; auch ohne jeden Wurf steigt der Wert von -5 auf 0.",
-          "testCases": [
-            "Regeneration senkt Werte über dem Maximum und hebt negative LeP"
-          ],
-          "expected": "LeP -5 wird durch eine Schlaf-Regeneration auf 0 angehoben (negativ = 0).",
-          "bookRule": [
-            {
-              "title": "Wege des Schwerts",
-              "pages": "161",
-              "mcpChunks": [
-                7231
-              ],
-              "checkedOn": "2026-10-25"
-            }
-          ],
-          "deviation": "Das Buch kennt für LeP <= 0 keine natürliche Regeneration ('An der Schwelle des Todes': heilt nicht auf natürlichem Wege, muss sofort behandelt werden). Die App hebt negative LeP durch Klemmen auf 0 an und würde bei vorhandenen Würfen zusätzlich LeP gutschreiben.",
-          "impact": "computeRestOutcome gibt einem sterbenden Helden (LeP <= 0) nach Schlaf oder Bettruhe LeP zurück; der Test zementiert dieses Verhalten. P2, weil es nur den Randfall LeP <= 0 betrifft.",
-          "secondCheck": {
-            "checkedOn": "2026-10-26",
-            "result": "confirmed",
-            "note": "Wege des Schwerts S. 161 (Chunk 7231): 'An der Schwelle des Todes' heilt ein Opfer mit LeP <= 0 nicht auf natürlichem Wege."
-          }
-        },
-        {
           "conflictKey": "rest-au-single-roll-per-rest",
           "conflictType": "unresolved",
           "priority": "P3",
@@ -10845,6 +10727,14 @@
             "result": "confirmed",
             "note": "Wege des Schwerts S. 161 (Chunk 7229): LeP und AsP regenerieren 'nur bis auf den Grundwert, nicht darüber hinaus'; ein Absenken von Werten über dem Maximum steht nicht im Text."
           }
+        }
+      ],
+      "resolved": [
+        {
+          "followUp": "RULE-FIX-038",
+          "conflictKey": "rest-negative-lep-natural-healing",
+          "resolvedOn": "2026-10-27",
+          "note": "Produktcode (computeRestOutcome ändert LeP <= 0 nicht) und Test-Erwartung an die Quelle angepasst."
         }
       ]
     },
@@ -12298,7 +12188,7 @@
     },
     "test/rules/talent_be_rules_test.dart": {
       "kind": "official",
-      "status": "conflict",
+      "status": "verified",
       "summary": "Die Datei sichert die eBE-Berechnung für Talente: x-Regel (BE x N), minus-Regel (BE - N, nie positiv), '-' bzw. leer = keine Behinderung, Parser-Robustheit (App) und die epische KK-Halbierung (Hausregel). Bestätigt: BE x2 (Basis, körperliche Talente), BE - N mit Ergebnis nur bei positivem Wert als Erschwernis (Basis 'eBE = BE - X größer 0'), '-' = keine BE, Halbierung der effektiven Behinderung bei epischer Haupteigenschaft KK, Halbierung auch der minus-Regel (BE 7, -3 -> eBE 4 -> 2). Nicht belegt ist nur die Rundungsrichtung bei ungerader Behinderung.",
       "sources": [
         {
@@ -12328,42 +12218,12 @@
           "checkedOn": "2026-10-24"
         }
       ],
-      "conflicts": [
+      "resolved": [
         {
-          "conflictKey": "epos-kk-ebe-halbierung-rundung",
-          "conflictType": "contradiction",
-          "priority": "P3",
           "followUp": "RULE-FIX-094",
-          "finding": "Gegenprüfung 2026-10-25: Die Hausregel nennt nur die halbierte eBE; die allgemeine Rundungsregel entscheidet: Halbierungen werden aufgerundet, eBE 3 -> 1,5 -> 2 (nicht 1). Der Test (zugunsten des Helden abgerundet auf 1) weicht davon ab.",
-          "testCases": [
-            "rundet zugunsten des Helden ab"
-          ],
-          "expected": "computeTalentEbe(baseBe: 3, talentBeRule: 'x1', reductionMultiplier: 0.5) == -1 (abgerundet auf 1 Punkt Behinderung).",
-          "bookRule": [
-            {
-              "title": "Wege der Helden (Rundung: Halbierungen werden aufgerundet)",
-              "pages": "6 (MCP-Seite)",
-              "mcpChunks": [
-                4036
-              ],
-              "checkedOn": "2026-10-25"
-            },
-            {
-              "title": "Epische Stufen (Körperkraft: halbierte effektive Behinderung)",
-              "pages": "4 (PDF-Seite)",
-              "mcpChunks": [
-                25739
-              ],
-              "checkedOn": "2026-10-25"
-            }
-          ],
-          "deviation": "Test und Produkt weichen von der Quelle ab: Die Hausregel nennt nur die halbierte eBE; die allgemeine Rundungsregel entscheidet: Halbierungen werden aufgerundet, eBE 3 -> 1,5 -> 2 (nicht 1). Der Test (zugunsten des Helden abgerundet auf 1) weicht davon ab.",
-          "impact": "Bei ungerader eBE kann die App 1 Punkt weniger Erschwernis ansetzen als eine aufrundende Tischregel; betrifft nur epische Helden mit KK als Haupteigenschaft.",
-          "secondCheck": {
-            "checkedOn": "2026-10-26",
-            "result": "confirmed",
-            "note": "Epische Stufen S. 4 (Chunk 25739): halbierte effektive Behinderung bei KK-Talenten; Wege der Helden S. 6 (Chunk 4036): Halbierungen werden aufgerundet."
-          }
+          "conflictKey": "epos-kk-ebe-halbierung-rundung",
+          "resolvedOn": "2026-10-27",
+          "note": "Produktcode (_scaleReduction rundet echt) und Test-Erwartung an die Quelle angepasst; eBE 3 halbiert ergibt 2."
         }
       ]
     },

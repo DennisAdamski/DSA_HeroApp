@@ -41,14 +41,17 @@ void main() {
       );
     });
 
-    test('laesst AE und KE ohne harte Grenze', () {
+    test('begrenzt zugekaufte AsP auf den CH-Wert', () {
       expect(
         computeBoughtStatMaximum(
           statKey: 'asp',
           permanentAttributes: attributes,
         ),
-        isNull,
+        10,
       );
+    });
+
+    test('laesst die KE ohne harte Grenze', () {
       expect(
         computeBoughtStatMaximum(
           statKey: 'kap',

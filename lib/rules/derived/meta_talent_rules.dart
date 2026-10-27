@@ -73,21 +73,50 @@ Map<String, HeroTalentEntry> activateReferencedMetaTalentComponents({
   return normalized;
 }
 
-/// Berechnet den kaufmaennisch gerundeten Roh-TaW eines Meta-Talents.
-int computeMetaTalentBaseTaw({
+/// Mittelwert und Deckel des Roh-TaW eines Meta-Talents.
+///
+/// Wege des Schwerts Anhang 3: Der Talentwert ist der kaufmaennisch gerundete
+/// Mittelwert der Bestandteile, darf aber den doppelten Wert des niedrigsten
+/// Bestandteils nicht uebersteigen.
+({int mittelwert, int deckel, int wert, bool gedeckelt}) splitMetaTalentBaseTaw({
   required Map<String, HeroTalentEntry> talentEntries,
   required Iterable<String> componentTalentIds,
 }) {
   var count = 0;
   var sum = 0;
+  int? niedrigster;
   for (final talentId in componentTalentIds) {
-    sum += talentEntries[talentId]?.talentValue ?? 0;
+    final wert = talentEntries[talentId]?.talentValue ?? 0;
+    sum += wert;
     count++;
+    if (niedrigster == null || wert < niedrigster) {
+      niedrigster = wert;
+    }
   }
-  if (count == 0) {
-    return 0;
+  if (count == 0 || niedrigster == null) {
+    return (mittelwert: 0, deckel: 0, wert: 0, gedeckelt: false);
   }
-  return excelRound(sum / count);
+  final mittelwert = excelRound(sum / count);
+  final deckel = 2 * niedrigster;
+  final gedeckelt = deckel < mittelwert;
+  return (
+    mittelwert: mittelwert,
+    deckel: deckel,
+    wert: gedeckelt ? deckel : mittelwert,
+    gedeckelt: gedeckelt,
+  );
+}
+
+/// Berechnet den Roh-TaW eines Meta-Talents: kaufmaennisch gerundeter
+/// Mittelwert, hoechstens das Doppelte des niedrigsten Bestandteils.
+int computeMetaTalentBaseTaw({
+  required Map<String, HeroTalentEntry> talentEntries,
+  required Iterable<String> componentTalentIds,
+}) {
+  return splitMetaTalentBaseTaw(
+    talentEntries: talentEntries,
+    componentTalentIds: componentTalentIds,
+  ).wert;
 }
 
 /// Berechnet den angezeigten TaW eines Meta-Talents inklusive eBE.
