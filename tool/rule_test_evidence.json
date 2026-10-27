@@ -12763,84 +12763,6 @@
       ],
       "conflicts": [
         {
-          "conflictKey": "wund-bein-dritte-kampfunfaehig",
-          "conflictType": "unresolved",
-          "priority": "P2",
-          "followUp": "RULE-FIX-050",
-          "finding": "Der Test 'Arm und Bein legen nur das Glied lahm' erwartet fuer die dritte Wunde am Bein kampfunfaehig == false (nur Hinweis 'Sturz, keine Teilnahme am Nahkampf'). Der Fliesstext der Zonenwunden (WdS gedruckt S. 108) sagt: Bein 3. Wunde -> der Kaempfer stuerzt und kann nicht mehr am Nahkampf teilnehmen, allgemein 'macht die dritte Wunde diese Zone funktions- und/oder die Kaempferin kampfunfaehig'. Die Tabelle Trefferzonen (gedruckt S. 107 und Tabellen zum Kampf S. 197) nennt fuer Beine dritte Wunde aber 'Sturz, kampfunfaehig', waehrend sie bei Armen 'Arm handlungsunfaehig' schreibt. Im Buch stehen also zwei nicht deckungsgleiche Formulierungen; keine Errata (Errata WdS) und keine Hausregel loesen das auf. Arm-Teil des Tests (nicht kampfunfaehig, Arm aktionsunfaehig, Waffe faellt) und Kopf/Brust/Ruecken/Bauch-Teil sind eindeutig belegt. Gegenprüfung 2026-10-25: Quellen widersprechen sich nur in der Wortwahl: Tabelle nennt bei der dritten Beinwunde 'Sturz, kampfunfähig', der Fließtext 'stürzt und kann nicht mehr am Nahkampf teilnehmen' plus allgemein 'macht die Zone funktions- und/oder die Kämpferin kampfunfähig'; beim Arm steht ausdrücklich 'nicht kampfunfähig'. Weder Errata WdS noch eine Hausregel (Erweiterung, Epische Stufen) lösen das; der Test (kampfunfaehig=false für Bein) deckt nur die Fließtext-Lesart ab, die Tabelle stützt eher true.",
-          "testCases": [
-            "Arm und Bein legen nur das Glied lahm"
-          ],
-          "expected": "Dritte Beinwunde macht nicht kampfunfaehig (kampfunfaehig=false), nur Sturz und kein Nahkampf; dritte Armwunde ebenfalls nicht kampfunfaehig.",
-          "bookRule": [
-            {
-              "title": "Wege des Schwerts – Trefferzonen (Tabelle: Beine dritte Wunde 'Sturz, kampfunfähig')",
-              "pages": "107",
-              "mcpChunks": [
-                7111,
-                7112
-              ],
-              "checkedOn": "2026-10-24"
-            },
-            {
-              "title": "Wege des Schwerts – Zonenwunden Bein (Sturz und nicht mehr in der Lage, am Nahkampf teilzunehmen)",
-              "pages": "108",
-              "mcpChunks": [
-                7113,
-                7114
-              ],
-              "checkedOn": "2026-10-24"
-            },
-            {
-              "title": "Wege des Schwerts – Tabellen zum Kampf, Trefferzonen (Beine 'Sturz, kampfunfähig')",
-              "pages": "197",
-              "mcpChunks": [
-                7319
-              ],
-              "checkedOn": "2026-10-24"
-            },
-            {
-              "title": "Wege des Schwerts (Tabelle Trefferzonen und Zonenwunden)",
-              "pages": "gedr. 107-108 (PDF 108-109)",
-              "mcpChunks": [
-                7111,
-                7114
-              ],
-              "checkedOn": "2026-10-25"
-            },
-            {
-              "title": "Errata WdS",
-              "pages": "PDF 1-8 (keine Aussage zur Beinwunde)",
-              "mcpChunks": [
-                25628,
-                25629,
-                25630,
-                25631,
-                25632,
-                25633,
-                25634,
-                25635,
-                25636
-              ],
-              "checkedOn": "2026-10-25"
-            }
-          ],
-          "searchedTerms": [
-            "dritte Wunde Bein Sturz kampfunfähig (hausregeln)",
-            "Errata WdS Wunden Zonen Trefferzonen Bein Arm (hausregeln)",
-            "Zonenwunden Brust Wunde KO KK Abzug Kopf Wunde MU KL IN",
-            "Errata WdS gelesen (Chunks 25628-25636)"
-          ],
-          "deviation": "Tabelle und Fliesstext des Buchs sind nicht deckungsgleich; die App folgt dem Fliesstext (kein Kampfunfaehig-Flag), die Tabelle liest sich strenger. Aufloesung nur per Designentscheidung/Hausregel moeglich.",
-          "impact": "Betrifft nur das Flag kampfunfaehig bei der dritten Beinwunde (Hinweis bleibt gleich). Fernkampf/Zauber mit gestuerztem Helden ist im Fliesstext nicht ausgeschlossen. Keine Spielwert-Berechnung betroffen.",
-          "recheck": "Gegenprüfung 2026-10-25: nur teilweise belegt.",
-          "secondCheck": {
-            "checkedOn": "2026-10-26",
-            "result": "open",
-            "note": "Wege des Schwerts S. 108-109 (Chunk 7111, 7114): Die Tabelle nennt für die dritte Beinwunde ausdrücklich 'Sturz, kampfunfähig'; der Fließtext sagt 'stürzt und nicht mehr in der Lage, am Nahkampf teilzunehmen'."
-          }
-        },
-        {
           "conflictKey": "wund-kopf-ini-anteilig",
           "conflictType": "unresolved",
           "priority": "P3",
@@ -12887,6 +12809,12 @@
           "conflictKey": "wund-arm-kk-ff-unbedingt-in-probenwerten",
           "resolvedOn": "2026-10-28",
           "note": "Entscheidung: KK/FF −2 je Armwunde stehen nicht mehr in den Probenwerten. Der Probendialog fragt bei Proben mit KK/FF-Ziel je verwundetem Arm (mit Rolle Schwert-/Schildarm), ob die Armwunde einbezogen wird, und rechnet den Abzug dann auf die Zielwerte (WdS S. 108 f.). Proben von Vertrauten bleiben unberührt."
+        },
+        {
+          "followUp": "RULE-FIX-050",
+          "conflictKey": "wund-bein-dritte-kampfunfaehig",
+          "resolvedOn": "2026-10-28",
+          "note": "Tischentscheidung: Die dritte Bein- (wie Arm-)wunde setzt nicht kampfunfähig; die App zeigt nur den Hinweis „Sturz, keine Teilnahme am Nahkampf“ (WdS S. 108, Fließtext), der Tisch entscheidet über die Folgen. Die Tabelle (S. 107, „Sturz, kampfunfähig“) wird bewusst nicht streng umgesetzt. Kein Codeeingriff."
         }
       ]
     },

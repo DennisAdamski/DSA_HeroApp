@@ -144,7 +144,9 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   `wendeWundVerlusteAn`, **nie** über `effectiveAttributes` (WdS S. 111: nicht
   auf Basiswerte; die App lässt auch LeP, AuP, MR, Wundschwelle und TP/KK
   unberührt, Tischentscheidung RULE-FIX-049: Basiswerte ändern sich durch
-  Wunden nicht). Wer
+  Wunden nicht). Die dritte Arm- oder Beinwunde setzt nie `kampfunfaehig`,
+  nur einen Hinweis (RULE-FIX-050; die Tabelle WdS S. 107 sagt für das Bein
+  „kampfunfähig“, der Fließtext nur „kein Nahkampf“). Wer
   würfelt, nimmt die Probenwerte. Armwunden sind armgebunden
   (`schwertarmAtPaMalus` auf die Hauptwaffe, `schildarmAtPaMalus` auf
   Nebenhandwaffe und Schild-PA, nicht auf Fernkampf); rechts ist der
