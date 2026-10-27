@@ -226,15 +226,21 @@ void main() {
   });
 
   group('Sprachen und Schriften', () {
-    test('Sprachen-Begabung und Schriften-Unfähigkeit', () {
-      final fremd = catalog.sprachen.firstWhere(
-        (sprache) => sprache.familie != 'Garethi-Familie',
-      );
+    // Wege der Helden S. 248 und S. 273: Sprachen und Schriften sind eine
+    // Talentgruppe; Begabung und Unfähigkeit gelten für beide gemeinsam.
+    late final fremd = catalog.sprachen.firstWhere(
+      (sprache) => sprache.familie != 'Garethi-Familie',
+    );
+
+    String spalten(HeroSheet hero) =>
+        '${option(hero, AdvancementKind.language, fremd.id).learnCost?.name}/'
+        '${option(hero, AdvancementKind.script, 'sch_altes_alaani').learnCost?.name}';
+
+    test('Begabung gilt für Sprachen und Schriften', () {
       final ohne = held(muttersprache: 'spr_garethi');
       final hero = held(
         muttersprache: 'spr_garethi',
         vorteile: 'Begabung für Talentgruppe Sprachen',
-        nachteile: 'Unfähigkeit Talentgruppe Schriften',
       );
 
       expect(
@@ -247,8 +253,48 @@ void main() {
       );
       expect(
         option(hero, AdvancementKind.script, 'sch_altes_alaani').learnCost,
-        learnCostFromKomplexitaet('B'),
+        isNot(
+          option(ohne, AdvancementKind.script, 'sch_altes_alaani').learnCost,
+        ),
       );
+    });
+
+    test('Unfähigkeit gilt für die ganze Gruppe, auch bei Altauswahl', () {
+      final ohne = held(muttersprache: 'spr_garethi');
+      for (final auswahl in [
+        'Sprachen und Schriften',
+        'Sprachen',
+        'Schriften',
+      ]) {
+        final hero = held(
+          muttersprache: 'spr_garethi',
+          nachteile: 'Unfähigkeit Talentgruppe $auswahl',
+        );
+
+        expect(
+          option(hero, AdvancementKind.language, fremd.id).learnCost,
+          learnCostFromKomplexitaet('C'),
+          reason: auswahl,
+        );
+        expect(
+          option(hero, AdvancementKind.script, 'sch_altes_alaani').learnCost,
+          isNot(
+            option(ohne, AdvancementKind.script, 'sch_altes_alaani').learnCost,
+          ),
+          reason: auswahl,
+        );
+      }
+    });
+
+    test('Begabung und Unfähigkeit heben sich in der Gruppe auf', () {
+      final ohne = held(muttersprache: 'spr_garethi');
+      final hero = held(
+        muttersprache: 'spr_garethi',
+        vorteile: 'Begabung für Talentgruppe Sprachen',
+        nachteile: 'Unfähigkeit Talentgruppe Schriften',
+      );
+
+      expect(spalten(hero), spalten(ohne));
     });
   });
 

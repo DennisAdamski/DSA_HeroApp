@@ -855,7 +855,7 @@
     },
     "test/catalog/trait_effect_catalog_test.dart": {
       "kind": "official",
-      "status": "conflict",
+      "status": "verified",
       "summary": "Prüft die deklarativen Wirkungen (wirkungen) der Vor-/Nachteile. Mit dem Buch übereinstimmend: Basiswertwirkungen mit Maxima (Hohe Lebenskraft 6, Astralmacht 6, Ausdauernd 6 AuP, Hohe Magieresistenz 3, Kurzatmig 6, Niedrige Lebenskraft 6, Niedrige Astralkraft 6, Niedrige Magieresistenz 3) und Vorzeichen, Wundschwelle Eisern +2 / Glasknochen -2, Schalter Flink, Behäbig, Linkshänder, Rast-Wirkungen Schnelle Heilung I-III, Astrale Regeneration I-III, Schlechte Regeneration, Astraler Block (Voll-/Halb- und Viertelzauberer), Herausragende Eigenschaft mit Eigenschaftswahl, sowie die Lernspalten-Verschiebung von +1 für Begabung bzw. -1 für Unfähigkeit bei Merkmal, einzelnem Talent, Talentgruppen, Nah-/Fernkampf und Zauber. Zwei Teile weichen ab (siehe conflicts): Begabung für Ritual und die Aufteilung der Gruppe Sprachen/Schriften. Technische Tests (Art/Ziel bekannt, Merkmalsart passend, Round-trip, unbekannte Art) sind Struktur ohne Regelbehauptung; die konkrete Zielliste der 19 Merkmale mit Nicht-Lernspalten-Wirkung ist App-Scope; das Maximum 8 bei Herausragende Eigenschaft wird nicht getestet und steht im Buch nicht fest.",
       "sources": [
         {
@@ -943,53 +943,18 @@
           "checkedOn": "2026-10-25"
         }
       ],
-      "conflicts": [
-        {
-          "conflictKey": "begabung-sprachen-und-schriften-gruppe",
-          "conflictType": "contradiction",
-          "priority": "P2",
-          "followUp": "RULE-FIX-011",
-          "finding": "Gegenprüfung 2026-10-25: WdH führt 'Sprachen und Schriften' als eine Talentgruppe (-7 GP) für Unfähigkeit; eine Aufteilung in Sprachen ODER Schriften kennt der Text nicht (Einzeltalent-Unfähigkeiten gibt es nur fest an Rasse/Kultur/Profession gebunden). Der Test pinnt Auswahl 'sprachgruppe' (Sprachen oder Schriften) bzw. für die Begabung nur 'sprachen'; das weicht ab. Die Begabungs-Passage (10 GP) wurde in dieser Prüfung nicht erneut als Chunk gefunden; belegt ist nur die Unfähigkeits-Passage.",
-          "testCases": [
-            "jede Begabung und Unfähigkeit verschiebt die Lernspalte"
-          ],
-          "expected": "Begabung Sprachen: festes Ziel 'sprachen' ohne Auswahl; Unfähigkeit Sprachen/Schriften: Ziel 'sprachgruppe' mit Auswahl.",
-          "bookRule": [
-            {
-              "title": "Wege der Helden",
-              "pages": "248",
-              "mcpChunks": [
-                4704
-              ],
-              "checkedOn": "2026-10-25"
-            },
-            {
-              "title": "Wege der Helden",
-              "pages": "272",
-              "mcpChunks": [
-                4774
-              ],
-              "checkedOn": "2026-10-25"
-            },
-            {
-              "title": "Wege der Helden (Unfähigkeit für [Talentgruppe])",
-              "pages": "272 (PDF 273)",
-              "mcpChunks": [
-                4774
-              ],
-              "checkedOn": "2026-10-25"
-            }
-          ],
-          "deviation": "Test und Produkt weichen von der Quelle ab: WdH führt 'Sprachen und Schriften' als eine Talentgruppe (-7 GP) für Unfähigkeit; eine Aufteilung in Sprachen ODER Schriften kennt der Text nicht (Einzeltalent-Unfähigkeiten gibt es nur fest an Rasse/Kultur/Profession gebunden). Der Test pinnt Auswahl 'sprachgruppe' (Sprachen oder Schriften) bzw. für die Begabung nur 'sprachen'; das weicht ab. Die Begabungs-Passage (10 GP) wurde in dieser Prüfung nicht erneut als Chunk gefunden; belegt ist nur die Unfähigkeits-Passage.",
-          "impact": "Ein Held mit Begabung Sprachen und Schriften steigert Schriften zu den normalen Kosten statt eine Spalte günstiger; Unfähigkeit wirkt nur auf die gewählte Hälfte, obwohl das Buch die ganze Gruppe verteuert. Betrifft Steigerungskosten für Schriften/Sprachen."
-        }
-      ],
       "resolved": [
         {
           "followUp": "RULE-FIX-001",
           "conflictKey": "begabung-ritual-wirkt-auf-ritualkenntnis",
           "resolvedOn": "2026-10-27",
           "note": "Produktcode (ritualkenntnis() ignoriert Begabungen, nur Unfähigkeiten verschieben die Spalte) und Tests an die Quelle angepasst; die Marke am Ritual nennt Probe -3 und halbe Lern-AP. Probenerleichterung und halbe Lern-AP sind nicht gerechnet."
+        },
+        {
+          "followUp": "RULE-FIX-011",
+          "conflictKey": "begabung-sprachen-und-schriften-gruppe",
+          "resolvedOn": "2026-10-27",
+          "note": "Sprachen und Schriften sind eine Talentgruppe (Wege der Helden S. 248 und S. 272): Begabung und Unfähigkeit wirken auf beide gemeinsam, auch bei gespeicherten Altauswahlen „Sprachen“ oder „Schriften“. Katalog bietet „Sprachen und Schriften“ an."
         }
       ]
     },
@@ -5103,7 +5068,7 @@
     },
     "test/rules/gefecht_freigabe_rules_test.dart": {
       "kind": "official",
-      "status": "conflict",
+      "status": "verified",
       "summary": "Bestätigt sind: Niederwerfen ist eine Angriffsaktion (WdS), der Offensive Distanzklassenwechsel ist laut Hausregel ein Angriff mit DK-Wechsel, die Formationsparade ist ein Abwehrmanöver, das die Abwehraktion verbraucht, feste Katalogzuschläge (+4) werden genau einmal gerechnet, und Zweihandwaffen schließen eine Schildparade aus. Die übrigen Testgruppen (Filter, Pflichtangaben, manuelle Entscheidungen, passive SF ohne Einzelaktion, Zahlenvalidierung) sind App-Vertrag. Nicht übereinstimmend ist der Fall Seitenwechsel: Die Hausregel verlangt +4 Erschwernis, ein vorheriges Binden oder gezieltes Ausweichen und zusätzliche (Freie) Aktionen je nach DK; der Test erwartet den unveränderten PA-Zielwert und nur eine verbrauchte Parade. Gedruckte Seiten Wege des Schwerts = PDF-Seite minus 1.",
       "sources": [
         {
@@ -5140,34 +5105,12 @@
           "checkedOn": "2026-10-24"
         }
       ],
-      "conflicts": [
+      "resolved": [
         {
-          "conflictKey": "seitenwechsel-hausregel-zuschlag-aktionen",
-          "conflictType": "contradiction",
-          "priority": "P2",
           "followUp": "RULE-FIX-024",
-          "finding": "Der Test behandelt das Manöver Seitenwechsel ohne Typ als reine Parade: Zielwert gleich dem normalen PA-Zielwert, es wird nur eine Parade verbraucht (Angriff unberührt). Die Hausregel 'Erweiterung und Überarbeitung des Regelwerks' (Nahkampf, Seitenwechsel) beschreibt das Manöver als 4 Punkte erschwert, mit vorherigem Binden oder gezieltem Ausweichen als Voraussetzung und zusätzlichen Aktionen je nach DK (H eine Freie Aktion, N zwei Freie Aktionen, S eine normale Aktion, P unmöglich). Der Katalog-Erschwernistext 'Ausweichen oder Binden +4' wird vom Parser nicht als Zuschlag erkannt, daher entfällt das +4. Formationsparade ist dagegen belegt (Abwehrmanöver, Abwehraktion verbraucht).",
-          "testCases": [
-            "man_seitenwechsel ohne Typ verwendet PA-Zielwert und verbraucht nur PA"
-          ],
-          "expected": "Zielwert entspricht dem unveränderten PA-Zielwert, nur eine Parade wird verbraucht, Seitenwechsel ist ohne Zusatzaufwand ausführbar.",
-          "bookRule": [
-            {
-              "title": "Erweiterung und Überarbeitung des Regelwerks",
-              "pages": "9–10",
-              "mcpChunks": [
-                25825
-              ],
-              "checkedOn": "2026-10-24"
-            }
-          ],
-          "deviation": "Hausregel: Seitenwechsel +4, Voraussetzung Binden/Gezieltes Ausweichen, DK-abhängige Zusatzaktionen, INI-Bedingung. Test/Code: reiner PA-Zielwert ohne +4 und ohne Zusatzaktionen.",
-          "impact": "Test hält eine nicht regelkonforme Berechnung für richtig; Produktverhalten rechnet Seitenwechsel um 4 Punkte zu leicht und mit zu wenig Aktionskosten, sofern der Tisch die Hausregel nutzt.",
-          "secondCheck": {
-            "checkedOn": "2026-10-26",
-            "result": "confirmed",
-            "note": "Hausregel S. 9-10 (Chunk 25825): Seitenwechsel +4, vorher Binden oder Gezieltes Ausweichen, DK-abhängige Aktionen, nur bei höherer INI des Anwenders."
-          }
+          "conflictKey": "seitenwechsel-hausregel-zuschlag-aktionen",
+          "resolvedOn": "2026-10-27",
+          "note": "Seitenwechsel nach Hausregel (Erweiterung und Überarbeitung des Regelwerks S. 10): Abwehr +4, Zusatzaufwand nach DK (H eine freie, N zwei freie, S eine normale Aktion, P gesperrt), Hinweis auf Meisterzustimmung bei sehr großen Gegnern. Voraussetzung Binden/Gezieltes Ausweichen und höhere INI sind nur als Hinweis modelliert."
         }
       ]
     },
@@ -7750,7 +7693,7 @@
     },
     "test/rules/hero_begabung_rules_test.dart": {
       "kind": "official",
-      "status": "conflict",
+      "status": "verified",
       "summary": "Die Datei sichert die Wirkung von Begabung/Unfähigkeit auf die Steigerungsspalte ab. Bestätigt sind: Begabung für Einzeltalent und Talentgruppe (Körperliche Talente D→C, Handwerk unberührt), Nahkampf-Begabung (Schwerter E→D, Bogen bleibt E), Begabung für Zauber (eine Spalte günstiger, Maximum Eigenschaft+5 statt +3), Merkmals-Begabung/-Unfähigkeit je betroffenem Merkmal (Custodosigil C→B→A, Balsam bleibt C), Unfähigkeit eine Spalte teurer ohne Änderung des Maximums, Begabung+Unfähigkeit heben sich auf, Häkchen und Vorteil zusammen nur eine Spalte, Untergrenze A+ (im Programm A*) bei Zaubern, Fremdsprache anderer Familie Spalte B und Begabung Sprachen B→A. Rein technisch sind die Zuordnungs-/Kandidaten-/Ohne-Katalog-Tests und die Merkmalskarten-Texte. Nicht übereinstimmend bzw. nicht auflösbar sind drei Punkte (Ritualkenntnis-Begabung, Verrechnungsreihenfolge an der H-Grenze, getrennte Sprachen/Schriften-Gruppen).",
       "sources": [
         {
@@ -7818,61 +7761,6 @@
           "checkedOn": "2026-10-25"
         }
       ],
-      "conflicts": [
-        {
-          "conflictKey": "begabung-sprachen-und-schriften-gruppe",
-          "conflictType": "contradiction",
-          "priority": "P2",
-          "followUp": "RULE-FIX-011",
-          "finding": "Gegenprüfung 2026-10-25: WdH führt 'Sprachen und Schriften' als eine Talentgruppe (-7 GP) für Unfähigkeit; eine Aufteilung in Sprachen ODER Schriften kennt der Text nicht (Einzeltalent-Unfähigkeiten gibt es nur fest an Rasse/Kultur/Profession gebunden). Der Test pinnt Auswahl 'sprachgruppe' (Sprachen oder Schriften) bzw. für die Begabung nur 'sprachen'; das weicht ab. Die Begabungs-Passage (10 GP) wurde in dieser Prüfung nicht erneut als Chunk gefunden; belegt ist nur die Unfähigkeits-Passage.",
-          "testCases": [
-            "Sprachen-Begabung und Schriften-Unfähigkeit"
-          ],
-          "expected": "Begabung „Talentgruppe Sprachen“ wirkt nur auf Sprachen, „Unfähigkeit Talentgruppe Schriften“ nur auf Schriften; beide können gleichzeitig bestehen.",
-          "bookRule": [
-            {
-              "title": "Wege der Helden (Begabung Talentgruppe Sprachen und Schriften, 10 GP; keine Unfähigkeit in begabter Gruppe)",
-              "pages": "248",
-              "mcpChunks": [
-                4704
-              ],
-              "checkedOn": "2026-10-25"
-            },
-            {
-              "title": "Wege der Helden (Unfähigkeit: Sprachen und Schriften -7 GP)",
-              "pages": "272",
-              "mcpChunks": [
-                4774
-              ],
-              "checkedOn": "2026-10-25"
-            },
-            {
-              "title": "Wege des Schwerts (Sprachen/Schriften Steigerung)",
-              "pages": "30",
-              "mcpChunks": [
-                6911,
-                6912
-              ],
-              "checkedOn": "2026-10-25"
-            },
-            {
-              "title": "Wege der Helden (Unfähigkeit für [Talentgruppe])",
-              "pages": "272 (PDF 273)",
-              "mcpChunks": [
-                4774
-              ],
-              "checkedOn": "2026-10-25"
-            }
-          ],
-          "deviation": "Test und Produkt weichen von der Quelle ab: WdH führt 'Sprachen und Schriften' als eine Talentgruppe (-7 GP) für Unfähigkeit; eine Aufteilung in Sprachen ODER Schriften kennt der Text nicht (Einzeltalent-Unfähigkeiten gibt es nur fest an Rasse/Kultur/Profession gebunden). Der Test pinnt Auswahl 'sprachgruppe' (Sprachen oder Schriften) bzw. für die Begabung nur 'sprachen'; das weicht ab. Die Begabungs-Passage (10 GP) wurde in dieser Prüfung nicht erneut als Chunk gefunden; belegt ist nur die Unfähigkeits-Passage.",
-          "impact": "Bei Buchlesart wären Schriftkosten für Begabte eine Spalte günstiger (A→A+) und eine Schrift-Unfähigkeit nicht neben der Sprachen-Begabung möglich. Betrifft die Zielzuordnung ziel sprachen/sprachgruppe in vorteile.json/nachteile.json und HeroBegabungen.sprachen()/schriften(); Entscheidung (Designentscheidung oder Fehler) liegt beim Projekt.",
-          "secondCheck": {
-            "checkedOn": "2026-10-26",
-            "result": "confirmed",
-            "note": "WdH S. 249 und 273 (Chunk 4704, 4774): Sprachen und Schriften sind eine Talentgruppe (Begabung 10 GP, Spalte A+; Unfähigkeit -7 GP); eine Einzelbegabung gibt es nicht."
-          }
-        }
-      ],
       "resolved": [
         {
           "followUp": "RULE-FIX-001",
@@ -7885,6 +7773,12 @@
           "conflictKey": "lernspalte-deckelung-h-vor-erleichterung",
           "resolvedOn": "2026-10-27",
           "note": "learning_rules.dart: verschiebeLernkomplexitaet verrechnet alle Spaltenverschiebungen zur Netto-Summe und klemmt erst am Ende an A*/H (WdH S. 19); Talente, Zauber und Ritualkenntnisse nutzen sie. H + Unfähigkeit + Begabung bleibt H; Test angepasst."
+        },
+        {
+          "followUp": "RULE-FIX-011",
+          "conflictKey": "begabung-sprachen-und-schriften-gruppe",
+          "resolvedOn": "2026-10-27",
+          "note": "Sprachen und Schriften sind eine Talentgruppe (Wege der Helden S. 248 und S. 272): Begabung und Unfähigkeit wirken auf beide gemeinsam, auch bei gespeicherten Altauswahlen „Sprachen“ oder „Schriften“. Katalog bietet „Sprachen und Schriften“ an."
         }
       ]
     },

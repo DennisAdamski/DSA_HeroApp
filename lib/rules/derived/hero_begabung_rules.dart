@@ -165,20 +165,27 @@ class HeroBegabungen {
   }
 
   /// Befund fuer alle Sprachen.
-  LernspaltenBefund sprachen() => _sprachgruppe('sprachen');
+  LernspaltenBefund sprachen() => _sprachgruppe();
 
   /// Befund fuer alle Schriften.
-  LernspaltenBefund schriften() => _sprachgruppe('schriften');
+  LernspaltenBefund schriften() => _sprachgruppe();
 
-  LernspaltenBefund _sprachgruppe(String gruppe) {
+  // Sprachen und Schriften sind eine Talentgruppe (Wege der Helden S. 248 und
+  // S. 273): Begabung (10 GP) und Unfaehigkeit (-7 GP) gelten fuer beide
+  // gemeinsam. Gespeicherte Auswahlen „Sprachen“ oder „Schriften“ aelterer
+  // Staende wirken deshalb ebenfalls auf die ganze Gruppe.
+  LernspaltenBefund _sprachgruppe() {
     if (_wirkungen.isEmpty) {
       return LernspaltenBefund.keiner;
     }
     return _befund(
       (wirkung) => switch (wirkung.ziel) {
-        'sprachen' => gruppe == 'sprachen',
-        'sprachgruppe' ||
-        'talentgruppe' => _schluessel(wirkung.auswahl) == gruppe,
+        'sprachen' || 'sprachgruppe' => true,
+        'talentgruppe' => const <String>{
+          'sprachen',
+          'schriften',
+          'sprachen und schriften',
+        }.contains(_schluessel(wirkung.auswahl)),
         _ => false,
       },
     );
