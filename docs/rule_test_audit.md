@@ -12,18 +12,18 @@ Die maschinenlesbare Inventur `tool/rule_test_evidence.json` erfasst **212 Test-
 | `official` | 148 |
 | `house_rule` | 9 |
 | `product_contract` | 55 |
-| `verified` | 153 |
-| `conflict` (mindestens ein bestätigter Einzelbefund) | 59 |
+| `verified` | 154 |
+| `conflict` (mindestens ein bestätigter Einzelbefund) | 58 |
 
 Aufschlüsselung Art × Status:
 
 | Art | verified | conflict |
 | --- | ---: | ---: |
 | `official` | 90 | 58 |
-| `house_rule` | 8 | 1 |
+| `house_rule` | 9 | 0 |
 | `product_contract` | 55 | 0 |
 
-Die 59 Konfliktdateien enthalten zusammen **74 offene fachlich verschiedene Einzelbefunde** mit je eigenem Folgeauftrag `RULE-FIX-NNN` (Priorität P1: 0, P2: 27, P3: 47); weitere 31 Befunde sind bereits behoben (siehe unten). Ein Konflikt auf Dateiebene heißt: *mindestens* eine Erwartung der Datei ist nicht deckungsgleich mit dem Buch oder nicht belegbar; alle übrigen Erwartungen der Datei sind geprüft und stehen in der `summary` des Eintrags bzw. unter `sources`.
+Die 58 Konfliktdateien enthalten zusammen **73 offene fachlich verschiedene Einzelbefunde** mit je eigenem Folgeauftrag `RULE-FIX-NNN` (Priorität P1: 0, P2: 26, P3: 47); weitere 32 Befunde sind bereits behoben (siehe unten). Ein Konflikt auf Dateiebene heißt: *mindestens* eine Erwartung der Datei ist nicht deckungsgleich mit dem Buch oder nicht belegbar; alle übrigen Erwartungen der Datei sind geprüft und stehen in der `summary` des Eintrags bzw. unter `sources`.
 
 ## Geprüfte Pakete
 
@@ -119,10 +119,10 @@ Damit liegt die Fehlerquote der Zweitprüfung bei 2 von 84 Dateien (rund 2 %); d
 | Fall | Dateien | Bedeutung |
 | --- | ---: | --- |
 | Test stimmt mit der Buchregel überein | 90 | `official`/`verified`: alle fachlichen Erwartungen belegt |
-| Dokumentierte Hausregel weicht bewusst ab | 8 | `house_rule`/`verified`: durch Hausregel-Dokument im MCP belegt |
+| Dokumentierte Hausregel weicht bewusst ab | 9 | `house_rule`/`verified`: durch Hausregel-Dokument im MCP belegt |
 | Technischer Produktvertrag ohne Regelbehauptung | 55 | `product_contract`: Begründung je Datei in der Inventur |
 | Test oder Produkt widerspricht der Quelle | 0 | Dateien mit mindestens einem Befund `contradiction` (0 Einzelbefunde) |
-| Regelunklarheit, Buch entscheidet nicht | 46 | Dateien mit mindestens einem Befund `unresolved` (55 Einzelbefunde) |
+| Regelunklarheit, Buch entscheidet nicht | 45 | Dateien mit mindestens einem Befund `unresolved` (54 Einzelbefunde) |
 | Quelle im MCP nicht ausreichend verfügbar | 17 | Dateien mit mindestens einem Befund `source_gap` (19 Einzelbefunde) |
 
 Die letzten drei Zeilen überschneiden sich, weil eine Datei Befunde mehrerer Typen tragen kann.
@@ -171,7 +171,6 @@ Folgeauftrag = je eine Zeile; das Beleg-Format ist *Buch S. gedruckte Seite (MCP
 | RULE-FIX-045 | source_gap | `spell_effect_probe_rules_test.dart` | Umsetzung der TaW-Verdopplung als zusätzlicher Poolschritt mit unverdoppelter eBE/Modifikator ist App-Entscheidung; das Buch lässt die Reihenfolge (vor/nach eBE) offen. | Suche: Athletik TaW verdoppelt Sprint Sprung Berechnung; Sprungweite Athletik-Probe TaP* Spann; Axxeleratus Athletik Talentprobe Pool eBE; Axxeleratus Hausregel Athletik; … | Poolwert und damit TaP* bei Sprint/Sprung-Proben unter Axxeleratus können vom Tisch-Buch-Ergebnis abweichen; nur bedingter Schalter, Standardproben bleiben unberührt. |
 | RULE-FIX-046 | unresolved | `steigerung_herleitung_rules_test.dart` | Wortlaut 'ausgenommen sind Begabungen und Spezielle Erfahrungen' spricht eher für aufschlagsfreie SE-Schritte; die App schlägt auf. | Epische Stufen S. 5 (Chunk 25740); Epische Stufen S. 5-6 (PDF-Seite) (Chunk 25740) | Epische Helden zahlen bei SE-Steigerungen ggf. bis zu 25 % zu viel; Auslegung durch den Regelautor nötig. |
 | RULE-FIX-047 | unresolved | `vertrauten_bindung_rules_test.dart` | Additiv gerechnete 5-AP-Zuschläge, 2 AP je Punkt innerhalb des Maximums, kostenfreier Spielraum bei AE/MR und die fehlende Obergrenze (Buch: +40 Punkte, … | Wege der Zauberei S. 123 (Chunk 5263, 5264, 5266) | Bindungskosten (Hexen-AP, Datenwirkung) eines Machtvollen Vertrauten können um das Doppelte pro Punkt über dem Maximum abweichen; nur bei Vorteil Machtvoller Vertrauter. |
-| RULE-FIX-049 | unresolved | `wund_arm_kampf_test.dart` | Buch begrenzt die Aussage auf AT/PA/FK/INI-Basis (und GE); die App dehnt sie auf LeP/AuP/MR/Wundschwelle/TP-KK aus. | Wege des Schwerts S. gedr. 108 (PDF 109) (Chunk 7114); Basisregelwerk S. PDF 195 (Chunk 735); Basisregelwerk S. PDF 193 (Chunk 731); Basisregelwerk S. PDF 19 (Chunk 312) | Spielwert: Brust-/Bauchwunden (KO/KK −1) und Kopfwunden (MU/KL −2) könnten nach strenger Lesart max. LeP, AuP, MR (und Wundschwelle) senken; die App senkt sie nie. … |
 | RULE-FIX-050 | unresolved | `wund_zonen_rules_test.dart` | Tabelle und Fliesstext des Buchs sind nicht deckungsgleich; die App folgt dem Fliesstext (kein Kampfunfaehig-Flag), die Tabelle liest sich strenger. Aufloesung nur per Designentscheidung/Hausregel moeglich. | Wege des Schwerts – Trefferzonen S. 107 (Chunk 7111, 7112); Wege des Schwerts – Zonenwunden Bein S. 108 (Chunk 7113, 7114); Wege des Schwerts – Tabellen zum Kampf, Trefferzonen S. 197 (Chunk 7319); Wege des Schwerts S. gedr. … | Betrifft nur das Flag kampfunfaehig bei der dritten Beinwunde (Hinweis bleibt gleich). Fernkampf/Zauber mit gestuerztem Helden ist im Fliesstext nicht ausgeschlossen. Keine Spielwert-Berechnung betroffen. |
 
 ### P3: Rundung, Untergrenze, Dokumentation, Unklarheit
@@ -263,6 +262,7 @@ Diese Befunde wurden nach dem Audit in einem eigenen Schritt behoben: Produktcod
 | RULE-FIX-011 | 2026-10-27 | Sprachen und Schriften sind eine Talentgruppe: Begabung und Unfähigkeit wirken auf beide (Wege der Helden S. 248, S. 272) | `trait_effect_catalog_test.dart`, `hero_begabung_rules_test.dart` |
 | RULE-FIX-024 | 2026-10-27 | Seitenwechsel: Abwehr +4 und Zusatzaufwand nach DK (Hausregel S. 10) | `gefecht_freigabe_rules_test.dart` |
 | RULE-FIX-051 | 2026-10-28 | Armwunde: KK/FF −2 gelten nur mit dem verwundeten Arm; der Probendialog fragt je Arm, ob der Abzug einbezogen wird (WdS S. 108 f.) | `wund_zonen_rules_test.dart`, `probe_zielabzug_rules_test.dart` |
+| RULE-FIX-049 | 2026-10-28 | Tischentscheidung: Wundbedingte Eigenschaftsverluste wirken nur auf Proben; LeP, AuP, MR, Wundschwelle und TP/KK ändern sich durch Wunden nicht | `wund_arm_kampf_test.dart` |
 
 ## Technische Verträge ohne Regelbehauptung
 

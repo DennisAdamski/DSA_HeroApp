@@ -12518,7 +12518,7 @@
     },
     "test/rules/wund_arm_kampf_test.dart": {
       "kind": "house_rule",
-      "status": "conflict",
+      "status": "verified",
       "summary": "Die Datei sichert, dass jede Wunde die allgemeinen Abzüge (AT/PA/FK/INI-Basis −2, GS −1, GE −2) und die Zonenabzüge kombiniert anrechnet (Hausregel), dass Armwunden AT/PA −2 nur für die Waffe in diesem Arm bringen (Schwertarm = Hauptwaffe, Schildarm = Schild/Nebenhand, Linkshänder vertauscht), dass Eigenschaftsverluste (Kopf MU/KL/IN −2, Brust KO/KK −1, Arm FF/KK −2, GE −2) nur Proben treffen, dass AT/PA/FK/INI-Basis davon unberührt bleiben und dass die GS durch Wunden nicht unter 1 sinkt (GS 8 bei GE 11–15). Das stimmt mit WdS (Zonenwunden, Seite zu Wunden und Basiswerten), BRW und der Hausregel „Erweiterung und Überarbeitung des Regelwerks“ (kombinierte Wunden) überein. Nicht belegbar ist die Behauptung, dass auch LeP-, AuP-, MR-, Wundschwelle- und TP/KK-Werte von wundbedingten KO-/KK-/MU-/KL-Verlusten unberührt bleiben.",
       "sources": [
         {
@@ -12568,69 +12568,12 @@
           "checkedOn": "2026-10-24"
         }
       ],
-      "conflicts": [
+      "resolved": [
         {
-          "conflictKey": "wunden-eigenschaften-abgeleitete-werte",
-          "conflictType": "unresolved",
-          "priority": "P2",
           "followUp": "RULE-FIX-049",
-          "finding": "Der Test 'Wunden ändern keine abgeleiteten Werte über Eigenschaften' fordert, dass maxLep, maxAu, MR, Wundschwelle und tpExpression bei Wunden unverändert bleiben, obwohl Kopf-, Brust- und Armwunden MU/KL/IN/KO/KK senken. Das Buch (WdS Zonenwunden, BRW) sagt nur: Veränderungen der Grundeigenschaften durch Wunden wirken sich nicht auf AT-, PA-, FK- und INI-Basiswert aus (die GE-Änderung hat keine weiteren Auswirkungen auf irgendwelche Basiswerte). Für LeP, AuP, MR, Wundschwelle und TP/KK ist im MCP nichts ausdrücklich geregelt; die Aussage ist eine App-Verallgemeinerung. Die Teile des Tests zu effectiveAttributes, den Probenwerten (MU −2, GE −6, KK −3, KO −1, FF −2) sowie zu AT/PA/FK/INI stimmen mit dem Buch. Gegenprüfung 2026-10-25: Belegt (Test passt): Wundbedingte Eigenschaftsänderungen wirken nicht auf AT-/PA-/FK-/INI-Basis; Basisregelwerk sagt analog, GE-Änderung habe keine weiteren Auswirkungen auf Basiswerte, bei Erschöpfung/Überanstrengung (KO-Senkung) würden die Grundwerte LE, AU und MR 'nicht reduziert', und LE/AU berechnen sich 'zu Spielbeginn' aus den Eigenschaften. Für Wundschwelle und TP/KK nach Wunden steht nirgends etwas; Hausregel-Dokumente (Erweiterung S. 3 'kombinierte Wirkung von Zonen- und Gesamtsystem') regeln das nicht.",
-          "testCases": [
-            "Wunden ändern keine abgeleiteten Werte über Eigenschaften"
-          ],
-          "expected": "maxLep, maxAu, mr, wundschwelle und tpExpression sind mit und ohne Wunden identisch.",
-          "bookRule": [
-            {
-              "title": "Wege des Schwerts (Zonenwunden)",
-              "pages": "gedr. 108 (PDF 109)",
-              "mcpChunks": [
-                7114
-              ],
-              "checkedOn": "2026-10-25"
-            },
-            {
-              "title": "Basisregelwerk (Wunden, Gesamtsystem)",
-              "pages": "PDF 195",
-              "mcpChunks": [
-                735
-              ],
-              "checkedOn": "2026-10-25"
-            },
-            {
-              "title": "Basisregelwerk (Erschöpfung/Überanstrengung)",
-              "pages": "PDF 193",
-              "mcpChunks": [
-                731
-              ],
-              "checkedOn": "2026-10-25"
-            },
-            {
-              "title": "Basisregelwerk (Lebenspunkte, Astralpunkte und Ausdauer)",
-              "pages": "PDF 19",
-              "mcpChunks": [
-                312
-              ],
-              "checkedOn": "2026-10-25"
-            }
-          ],
-          "searchedTerms": [
-            "Veränderungen der Grundeigenschaften durch Wunden Basiswerte",
-            "Wunde KO KK Verlust Lebensenergie Wundschwelle neu berechnen",
-            "Eigenschaftsverlust Wunde Magieresistenz",
-            "temporäre Eigenschaftsänderung abgeleitete Werte LeP AuP",
-            "Wunden Eigenschaften Lebensenergie Wundschwelle Magieresistenz unverändert (hausregeln)",
-            "Wunde Kopf Brust Abzug Eigenschaft ... Wundschwelle sinkt (hausregeln)",
-            "Eigenschaft temporär verändert Basiswerte nicht neu berechnen",
-            "Grundwerte LE AU MR werden nicht reduziert"
-          ],
-          "deviation": "Buch begrenzt die Aussage auf AT/PA/FK/INI-Basis (und GE); die App dehnt sie auf LeP/AuP/MR/Wundschwelle/TP-KK aus.",
-          "impact": "Spielwert: Brust-/Bauchwunden (KO/KK −1) und Kopfwunden (MU/KL −2) könnten nach strenger Lesart max. LeP, AuP, MR (und Wundschwelle) senken; die App senkt sie nie. Ausdrücklich entschieden im Repo (Eigenschaften nur für Proben), im MCP nicht belegt.",
-          "recheck": "Gegenprüfung 2026-10-25: nur teilweise belegt.",
-          "secondCheck": {
-            "checkedOn": "2026-10-26",
-            "result": "confirmed",
-            "note": "Wege des Schwerts S. 108 (Chunk 7111): Die Zonentabelle nennt nur AT, PA, KO, KK, GE, GS, MU, KL, IN und INI-Basis; LeP, AuP, MR und Wundschwelle kommen nicht vor."
-          }
+          "conflictKey": "wunden-eigenschaften-abgeleitete-werte",
+          "resolvedOn": "2026-10-28",
+          "note": "Tischentscheidung: Wundbedingte Eigenschaftsverluste wirken nur auf Proben. LeP, AuP, MR, Wundschwelle und TP/KK sind Basiswerte und ändern sich durch Wunden nicht (WdS S. 111 nennt nur AT/PA/FK/INI-Basis ausdrücklich; BRW S. 193 lässt LE/AU/MR bei Eigenschaftsverlust unberührt). Kein Codeeingriff."
         }
       ]
     },

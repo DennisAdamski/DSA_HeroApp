@@ -142,7 +142,9 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   Proben-Erschwernis gibt es nicht. Eigenschaftsverluste wirken **nur auf
   Proben**: über `HeroComputedSnapshot.probenEigenschaften` bzw.
   `wendeWundVerlusteAn`, **nie** über `effectiveAttributes` (WdS S. 111: nicht
-  auf Basiswerte; die App lässt auch LeP, MR und Wundschwelle unberührt). Wer
+  auf Basiswerte; die App lässt auch LeP, AuP, MR, Wundschwelle und TP/KK
+  unberührt, Tischentscheidung RULE-FIX-049: Basiswerte ändern sich durch
+  Wunden nicht). Wer
   würfelt, nimmt die Probenwerte. Armwunden sind armgebunden
   (`schwertarmAtPaMalus` auf die Hauptwaffe, `schildarmAtPaMalus` auf
   Nebenhandwaffe und Schild-PA, nicht auf Fernkampf); rechts ist der
