@@ -23,7 +23,7 @@ Aufschlüsselung Art × Status:
 | `house_rule` | 8 | 1 |
 | `product_contract` | 55 | 0 |
 
-Die 71 Konfliktdateien enthalten zusammen **89 offene fachlich verschiedene Einzelbefunde** mit je eigenem Folgeauftrag `RULE-FIX-NNN` (Priorität P1: 1, P2: 40, P3: 48); weitere 16 Befunde sind bereits behoben (siehe unten). Ein Konflikt auf Dateiebene heißt: *mindestens* eine Erwartung der Datei ist nicht deckungsgleich mit dem Buch oder nicht belegbar; alle übrigen Erwartungen der Datei sind geprüft und stehen in der `summary` des Eintrags bzw. unter `sources`.
+Die 71 Konfliktdateien enthalten zusammen **88 offene fachlich verschiedene Einzelbefunde** mit je eigenem Folgeauftrag `RULE-FIX-NNN` (Priorität P1: 0, P2: 40, P3: 48); weitere 17 Befunde sind bereits behoben (siehe unten). Ein Konflikt auf Dateiebene heißt: *mindestens* eine Erwartung der Datei ist nicht deckungsgleich mit dem Buch oder nicht belegbar; alle übrigen Erwartungen der Datei sind geprüft und stehen in der `summary` des Eintrags bzw. unter `sources`.
 
 ## Geprüfte Pakete
 
@@ -121,7 +121,7 @@ Damit liegt die Fehlerquote der Zweitprüfung bei 2 von 84 Dateien (rund 2 %); d
 | Test stimmt mit der Buchregel überein | 77 | `official`/`verified`: alle fachlichen Erwartungen belegt |
 | Dokumentierte Hausregel weicht bewusst ab | 8 | `house_rule`/`verified`: durch Hausregel-Dokument im MCP belegt |
 | Technischer Produktvertrag ohne Regelbehauptung | 55 | `product_contract`: Begründung je Datei in der Inventur |
-| Test oder Produkt widerspricht der Quelle | 13 | Dateien mit mindestens einem Befund `contradiction` (13 Einzelbefunde) |
+| Test oder Produkt widerspricht der Quelle | 13 | Dateien mit mindestens einem Befund `contradiction` (12 Einzelbefunde) |
 | Regelunklarheit, Buch entscheidet nicht | 47 | Dateien mit mindestens einem Befund `unresolved` (56 Einzelbefunde) |
 | Quelle im MCP nicht ausreichend verfügbar | 18 | Dateien mit mindestens einem Befund `source_gap` (20 Einzelbefunde) |
 
@@ -262,6 +262,7 @@ Diese Befunde wurden nach dem Audit in einem eigenen Schritt behoben: Produktcod
 | RULE-FIX-016 | 2026-10-27 | Epischer AsP-Stufenbonus für Vollzauberer ist +2 statt 6 | `ap_level_rules_test.dart` |
 | RULE-FIX-038 | 2026-10-27 | Rast heilt Helden mit 0 LeP oder weniger nicht auf natürlichem Wege | `rest_outcome_rules_test.dart` |
 | RULE-FIX-101 | 2026-10-27 | Vertrauten-Obergrenze 1,5 x Startwert wird echt gerundet (7 -> 11, LeP 11 -> 17, GS 1 -> 2) | `companion_steigerung_rules_test.dart` |
+| RULE-FIX-001 | 2026-10-27 | Begabung für Ritual verschiebt die Spalte der Ritualkenntnis nicht mehr (Wege der Helden S. 248) | `trait_effect_catalog_test.dart`, `hero_begabung_rules_test.dart` |
 
 ## Technische Verträge ohne Regelbehauptung
 

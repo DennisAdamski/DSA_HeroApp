@@ -2607,9 +2607,12 @@ wenn der Vorteil entfernt ist.
 - Uebrige Unfaehigkeiten verteuern zusammen eine Spalte, das Maximum bleibt.
   Verteuert wird zuerst (bis `H`), dann verbilligt (bis `A*`).
 - Sprachen/Schriften verschieben die Spalte der Steigerungsoption.
-- Eine Ritual-Begabung verbilligt die eigene Ritualkenntnis der Kategorie,
-  die das Ritual fuehrt oder deren Name der Traditionsritual-SF mit diesem
-  Ritual entspricht (Untergrenze `A`); das Ritual traegt eine Marke.
+- Eine Ritual-Begabung verschiebt die Spalte der Ritualkenntnis nicht (Wege
+  der Helden S. 248: Ritualprobe des einen Rituals um 3 erleichtert, halbe
+  Lern-AP); das Ritual traegt nur eine Marke mit diesem Hinweis. Die
+  Probenerleichterung und die halben Lern-AP sind nicht gerechnet. Eine
+  Unfaehigkeit (negativer Betrag) wuerde die Ritualkenntnis der Kategorie
+  weiter verschieben (Untergrenze `A`).
 Verbraucher: `AdvancementContext.begabungen` (einmal je Optionsaufbau),
 `CatalogRuleResolver.resolveTalentComplexity` (`unfaehigkeitsSchritte`),
 Talente-, Kampf- und Magie-Tab samt ihren Katalogvorschauen und dem

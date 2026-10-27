@@ -1001,30 +1001,6 @@
       ],
       "conflicts": [
         {
-          "conflictKey": "begabung-ritual-wirkt-auf-ritualkenntnis",
-          "conflictType": "contradiction",
-          "priority": "P1",
-          "followUp": "RULE-FIX-001",
-          "finding": "adv_begabung_ritual ist als lernspalte-Wirkung (Ziel 'ritual', betrag +1) katalogisiert und wird in hero_begabung_rules.dart auf die Lernkomplexität der Ritualkenntnis der Kategorie angewendet (eine Spalte billiger, Untergrenze A). Nach dem Buch wirkt die Begabung für ein einzelnes Ritual anders: Die Ritualprobe für dieses Ritual ist um 3 Punkte erleichtert und die AP-Kosten zum Erlernen dieses Rituals (nicht die Ausführungskosten) werden halbiert; GP-Kosten = 1/50 der AP des Rituals, höchstens drei Rituale. Eine Spaltenverschiebung der Ritualkenntnis kommt im Buch nicht vor. Alle anderen Begabungs-/Unfähigkeitsfälle des Tests (Merkmal, Talent, Talentgruppe, Nahkampf, Fernkampf, Zauber) stimmen mit dem Buch überein. Eine Hausregel dazu wurde im MCP (hausregeln) nicht gefunden; im Repo beschreiben docs/technical_overview.md (Abschnitt Begabung/Unfähigkeit) und docs/rules_mapping_house_rules_v1.md die Ritualkenntnis-Verbilligung als bewusste App-Umsetzung.",
-          "testCases": [
-            "jede Begabung und Unfähigkeit verschiebt die Lernspalte"
-          ],
-          "expected": "Begabung für [Ritual] (adv_begabung_ritual) trägt eine lernspalte-Wirkung mit Ziel 'ritual' und betrag +1 (mit Auswahl des Rituals).",
-          "bookRule": [
-            {
-              "title": "Wege der Helden",
-              "pages": "248",
-              "mcpChunks": [
-                4703,
-                4704
-              ],
-              "checkedOn": "2026-10-25"
-            }
-          ],
-          "deviation": "Buch: Ritualprobe -3 und halbe Lern-AP des gewählten Rituals. App/Test: eine Spalte billiger für die Ritualkenntnis der zugehörigen Ritualkategorie (Lernkomplexität), ohne Probenerleichterung und ohne Halbierung der Ritual-AP.",
-          "impact": "Der Test sichert eine Wirkung ab, die das Buch nicht kennt; Steigerungskosten der Ritualkenntnis fallen bei Begabung für Ritual zu niedrig aus, die Probenerleichterung um 3 und die halben Ritual-AP fehlen. Betrifft nur Helden mit Begabung für Ritual (Zauberer, selten)."
-        },
-        {
           "conflictKey": "begabung-sprachen-und-schriften-gruppe",
           "conflictType": "contradiction",
           "priority": "P2",
@@ -1062,6 +1038,14 @@
           ],
           "deviation": "Test und Produkt weichen von der Quelle ab: WdH führt 'Sprachen und Schriften' als eine Talentgruppe (-7 GP) für Unfähigkeit; eine Aufteilung in Sprachen ODER Schriften kennt der Text nicht (Einzeltalent-Unfähigkeiten gibt es nur fest an Rasse/Kultur/Profession gebunden). Der Test pinnt Auswahl 'sprachgruppe' (Sprachen oder Schriften) bzw. für die Begabung nur 'sprachen'; das weicht ab. Die Begabungs-Passage (10 GP) wurde in dieser Prüfung nicht erneut als Chunk gefunden; belegt ist nur die Unfähigkeits-Passage.",
           "impact": "Ein Held mit Begabung Sprachen und Schriften steigert Schriften zu den normalen Kosten statt eine Spalte günstiger; Unfähigkeit wirkt nur auf die gewählte Hälfte, obwohl das Buch die ganze Gruppe verteuert. Betrifft Steigerungskosten für Schriften/Sprachen."
+        }
+      ],
+      "resolved": [
+        {
+          "followUp": "RULE-FIX-001",
+          "conflictKey": "begabung-ritual-wirkt-auf-ritualkenntnis",
+          "resolvedOn": "2026-10-27",
+          "note": "Produktcode (ritualkenntnis() ignoriert Begabungen, nur Unfähigkeiten verschieben die Spalte) und Tests an die Quelle angepasst; die Marke am Ritual nennt Probe -3 und halbe Lern-AP. Probenerleichterung und halbe Lern-AP sind nicht gerechnet."
         }
       ]
     },
@@ -8061,43 +8045,6 @@
       ],
       "conflicts": [
         {
-          "conflictKey": "begabung-ritual-wirkt-auf-ritualkenntnis",
-          "conflictType": "contradiction",
-          "priority": "P1",
-          "followUp": "RULE-FIX-001",
-          "finding": "Die Datei erwartet, dass eine Begabung für ein Ritual (Vorteil „Begabung für [Ritual]“) die Steigerungsspalte der Ritualkenntnis der zugehörigen Tradition um eine Spalte verbilligt (Basis E → D, auch für eine Kategorie, die das Ritual führt) und dass die Ritualkenntnis dabei nicht unter A fällt. Laut Wege der Helden wirkt die Begabung für ein Ritual ausschließlich auf das einzelne Ritual: Die Ritualprobe ist um 3 Punkte erleichtert und die AP-Kosten zum Erlernen des Rituals betragen nur die Hälfte. Für die Ritualkenntnis der eigenen Tradition gilt unverändert Steigerungskategorie E (Alchimisten D); eine Spaltenverschiebung durch Begabung ist dort nicht vorgesehen. Auch in den Hausregel-Quellen des MCP (Suche nach Begabung/Ritual/Ritualkenntnis/Steigerung) fand sich keine abweichende Regel; die Repo-Doku docs/rules_mapping_house_rules_v1.md nennt die Ritualkenntnis ohne MCP-Beleg.",
-          "testCases": [
-            "Ritual-Begabung verbilligt die Ritualkenntnis seiner Tradition",
-            "Ritualkenntnis fällt nicht unter A"
-          ],
-          "expected": "Begabung für ein Ritual verschiebt die Ritualkenntnis seiner Tradition um eine Spalte nach links (E → D); Ritualkenntnisse fallen nicht unter A.",
-          "bookRule": [
-            {
-              "title": "Wege der Helden (Begabung für [Ritual]: Ritualprobe -3, halbe Lern-AP, max. drei Rituale)",
-              "pages": "248",
-              "mcpChunks": [
-                4703
-              ],
-              "checkedOn": "2026-10-25"
-            },
-            {
-              "title": "Wege der Helden (Steigern von Ritualkenntnissen: Kategorie E, Alchimisten D)",
-              "pages": "19",
-              "mcpChunks": [
-                4068
-              ],
-              "checkedOn": "2026-10-25"
-            }
-          ],
-          "deviation": "Buch: Ritual-Begabung = Probe -3 und halbierte AP-Kosten des einzelnen Rituals, Ritualkenntnis bleibt Kategorie E. Test/Programm: Ritual-Begabung verschiebt die Spalte der Ritualkenntnis (E→D); die buchgemäßen Wirkungen (Probe -3, halbe Lernkosten des Rituals) werden durch diese Tests nicht abgesichert.",
-          "impact": "Steigerungskosten der Ritualkenntnis fallen für Helden mit Ritual-Begabung zu niedrig aus (ein vom Buch nicht vorgesehener Rabatt). Der Test zementiert dieses Verhalten; bei Korrektur müssen die beiden Testfälle und effektiveRitualkenntnisKomplexitaet/ritualkenntnis() in hero_begabung_rules.dart angepasst werden. Ob die Ausweitung eine bewusste Hausregel ist, ist im MCP nicht belegt.",
-          "secondCheck": {
-            "checkedOn": "2026-10-26",
-            "result": "confirmed",
-            "note": "WdH S. 249 (Chunk 4703): Ritualprobe um 3 erleichtert, halbe Lern-AP des Rituals; eine Lernspalten-Wirkung kennt das Buch nicht."
-          }
-        },
-        {
           "conflictKey": "lernspalte-deckelung-h-vor-erleichterung",
           "conflictType": "contradiction",
           "priority": "P2",
@@ -8178,6 +8125,14 @@
             "result": "confirmed",
             "note": "WdH S. 249 und 273 (Chunk 4704, 4774): Sprachen und Schriften sind eine Talentgruppe (Begabung 10 GP, Spalte A+; Unfähigkeit -7 GP); eine Einzelbegabung gibt es nicht."
           }
+        }
+      ],
+      "resolved": [
+        {
+          "followUp": "RULE-FIX-001",
+          "conflictKey": "begabung-ritual-wirkt-auf-ritualkenntnis",
+          "resolvedOn": "2026-10-27",
+          "note": "Produktcode (ritualkenntnis() ignoriert Begabungen, nur Unfähigkeiten verschieben die Spalte) und Tests an die Quelle angepasst; die Marke am Ritual nennt Probe -3 und halbe Lern-AP. Probenerleichterung und halbe Lern-AP sind nicht gerechnet."
         }
       ]
     },

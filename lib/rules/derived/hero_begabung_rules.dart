@@ -186,8 +186,13 @@ class HeroBegabungen {
 
   /// Befund fuer die Ritualkenntnis einer Ritualkategorie des Helden.
   ///
-  /// Ein begabtes Ritual gehoert zu der Kategorie, die es fuehrt, oder deren
-  /// Name der Traditionsritual-Sonderfertigkeit mit diesem Ritual entspricht.
+  /// Eine Begabung fuer ein Ritual verschiebt die Spalte der Ritualkenntnis
+  /// nicht: Nach Wege der Helden S. 248 erleichtert sie nur die Ritualprobe
+  /// dieses einen Rituals um 3 und halbiert dessen Lern-AP. Beruecksichtigt
+  /// werden deshalb nur Unfaehigkeiten (negativer Betrag), die ein Ritual der
+  /// Kategorie betreffen. Ein solches Ritual gehoert zu der Kategorie, die es
+  /// fuehrt, oder deren Name der Traditionsritual-Sonderfertigkeit mit diesem
+  /// Ritual entspricht.
   LernspaltenBefund ritualkenntnis(HeroRitualCategory kategorie) {
     if (_wirkungen.isEmpty) {
       return LernspaltenBefund.keiner;
@@ -197,7 +202,7 @@ class HeroBegabungen {
     };
     final kategorieName = _ohneKuerzel(kategorie.name);
     return _befund((wirkung) {
-      if (wirkung.ziel != 'ritual') {
+      if (wirkung.ziel != 'ritual' || wirkung.betrag >= 0) {
         return false;
       }
       final ritual = _schluessel(wirkung.auswahl);

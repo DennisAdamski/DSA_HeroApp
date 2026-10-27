@@ -270,7 +270,10 @@ void main() {
       );
     }
 
-    test('Ritual-Begabung verbilligt die Ritualkenntnis seiner Tradition', () {
+    test('Ritual-Begabung verschiebt die Spalte der Ritualkenntnis nicht', () {
+      // Wege der Helden S. 248: Die Begabung für ein Ritual erleichtert nur
+      // dessen Ritualprobe um 3 und halbiert dessen Lern-AP; die Spalte der
+      // Ritualkenntnis bleibt unverändert.
       final stab = kategorie('Stabzauber');
       final eigene = kategorie(
         'Meine Rituale',
@@ -290,8 +293,8 @@ void main() {
         );
       }
 
-      expect(wirksam(stab), 'D');
-      expect(wirksam(eigene), 'D');
+      expect(wirksam(stab), 'E');
+      expect(wirksam(eigene), 'E');
       expect(wirksam(fremd), 'E');
       expect(begabungen.ritualBegabungen('Hammerschlag'), [
         'Begabung für Hammerschlag',
