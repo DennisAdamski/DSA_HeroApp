@@ -113,6 +113,29 @@ class ProbeKontext {
   ].join(' · ');
 }
 
+/// Zielwert-Abzug, der nur auf Wunsch des Spielers in die Probe eingeht.
+///
+/// Etwa der KK-/FF-Abzug einer Armwunde: Er gilt nur, wenn die Probe mit dem
+/// verwundeten Arm gelingen muss (WdS S. 108 f.). Der Dialog bietet jeden
+/// Abzug als Schalter an und rechnet ihn auf die passenden Zielwerte.
+class ProbeZielAbzug {
+  /// Erzeugt einen Abzug; [abzuege] bildet das Ziellabel (`KK`) auf den
+  /// Betrag ab (negativ = erschwert).
+  const ProbeZielAbzug({required this.bezeichnung, required this.abzuege});
+
+  /// Anzeigename, z. B. `Rechter Arm (Schwertarm)`.
+  final String bezeichnung;
+
+  /// Abzug je Ziellabel, z. B. `{'KK': -2, 'FF': -2}`.
+  final Map<String, int> abzuege;
+
+  /// Kurztext der Abzüge, z. B. `KK −2, FF −2`.
+  String get kurztext => abzuege.entries
+      .where((eintrag) => eintrag.value != 0)
+      .map((eintrag) => '${eintrag.key} −${eintrag.value.abs()}')
+      .join(', ');
+}
+
 /// Vollstaendig aufgeloeste Probe fuer die UI und die Regelengine.
 class ResolvedProbeRequest {
   /// Erzeugt eine immutable Probeanfrage.
@@ -132,6 +155,7 @@ class ResolvedProbeRequest {
     this.bedingterPoolSchritt,
     this.spezialisierungen = const <String>[],
     this.kontext,
+    this.bedingteZielAbzuege = const <ProbeZielAbzug>[],
   });
 
   /// Fachliche Probeart.
@@ -186,6 +210,12 @@ class ResolvedProbeRequest {
   /// Beschreibender Kontext (Zauberdetails), nur zur Anzeige.
   final ProbeKontext? kontext;
 
+  /// Abzüge auf die [targets], die der Dialog als Schalter anbietet.
+  ///
+  /// Sie sind in [targets] **nicht** enthalten; `wendeZielAbzuegeAn` rechnet
+  /// die gewählten ein.
+  final List<ProbeZielAbzug> bedingteZielAbzuege;
+
   /// Gibt eine Kopie mit geänderten Feldern zurück.
   ///
   /// Umbauten einer vorhandenen Probe laufen hierüber, damit
@@ -199,6 +229,7 @@ class ResolvedProbeRequest {
     Herleitung? poolHerleitung,
     HerleitungsSchritt? bedingterPoolSchritt,
     bool clearBedingterPoolSchritt = false,
+    List<ProbeZielAbzug>? bedingteZielAbzuege,
   }) {
     return ResolvedProbeRequest(
       type: type,
@@ -219,6 +250,7 @@ class ResolvedProbeRequest {
           : bedingterPoolSchritt ?? this.bedingterPoolSchritt,
       spezialisierungen: spezialisierungen,
       kontext: kontext,
+      bedingteZielAbzuege: bedingteZielAbzuege ?? this.bedingteZielAbzuege,
     );
   }
 

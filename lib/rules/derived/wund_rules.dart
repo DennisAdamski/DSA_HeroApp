@@ -17,7 +17,9 @@ import 'package:dsa_heldenverwaltung/rules/derived/wund_zonen_rules.dart';
 /// ([schwertarmAtPaMalus], [schildarmAtPaMalus]) rechnet erst die
 /// Kampfvorschau der Waffe im jeweiligen Arm an. [eigenschaftsVerluste]
 /// gelten ausschließlich für Proben ([wendeWundVerlusteAn]), nie für
-/// abgeleitete Werte (WdS S. 111).
+/// abgeleitete Werte (WdS S. 111). KK und FF der Armwunden stehen getrennt
+/// in [armEigenschaftsVerluste]: Sie gelten nur, „wenn er diesen Arm
+/// benutzt“ (WdS S. 108 f.), und der Probendialog fragt danach.
 class WundEffekte {
   /// Erstellt ein Ergebnis; ohne Angaben wirkt nichts.
   const WundEffekte({
@@ -29,6 +31,7 @@ class WundEffekte {
     this.schwertarmAtPaMalus = 0,
     this.schildarmAtPaMalus = 0,
     this.eigenschaftsVerluste = const AttributeModifiers(),
+    this.armEigenschaftsVerluste = const <WundZone, AttributeModifiers>{},
     this.aktuellerIniMalus = 0,
     this.hinweise = const <String>[],
     this.kampfunfaehig = false,
@@ -62,6 +65,12 @@ class WundEffekte {
 
   /// Eigenschaftsverluste für Proben (GE je Wunde, dazu die Zonen).
   final AttributeModifiers eigenschaftsVerluste;
+
+  /// KK- und FF-Verluste der Armwunden je Armzone für Proben mit diesem Arm.
+  ///
+  /// Sie stecken **nicht** in [eigenschaftsVerluste]; der Probendialog bietet
+  /// sie je verwundetem Arm als Schalter an (WdS S. 108 f.).
+  final Map<WundZone, AttributeModifiers> armEigenschaftsVerluste;
 
   /// Gewürfelter Verlust der **aktuellen** INI durch Kopfwunden (≥ 0).
   ///
@@ -97,6 +106,7 @@ class WundEffekte {
       gsMalus != 0 ||
       schwertarmAtPaMalus != 0 ||
       schildarmAtPaMalus != 0 ||
+      armEigenschaftsVerluste.isNotEmpty ||
       !_istLeer(eigenschaftsVerluste);
 }
 
@@ -207,6 +217,7 @@ WundEffekte computeWundEffekte(
   var schwertarm = 0;
   var schildarm = 0;
   var eigenschaften = const AttributeModifiers();
+  final armEigenschaften = <WundZone, AttributeModifiers>{};
   final zonenMitDritterWunde = <WundZone>[];
 
   for (final zone in WundZone.values) {
@@ -221,8 +232,17 @@ WundEffekte computeWundEffekte(
       fk += (kWundAllgemein.fk + zonal.fk) * effektiv;
       iniBasis += (kWundAllgemein.iniBasis + zonal.iniBasis) * effektiv;
       gs += (kWundAllgemein.gs + zonal.gs) * effektiv;
-      final verluste = kWundAllgemein.eigenschaften + zonal.eigenschaften;
+      // Armgebundene Eigenschaften (KK, FF) gelten nur mit diesem Arm.
+      final verluste = zonal.armgebunden
+          ? kWundAllgemein.eigenschaften
+          : kWundAllgemein.eigenschaften + zonal.eigenschaften;
       eigenschaften = eigenschaften + skaliereEigenschaften(verluste, effektiv);
+      if (zonal.armgebunden) {
+        armEigenschaften[zone] = skaliereEigenschaften(
+          zonal.eigenschaften,
+          effektiv,
+        );
+      }
       final rolle = armRolleFuer(zone, linkshaender: linkshaender);
       if (rolle == ArmRolle.schwertarm) {
         schwertarm += zonal.at * effektiv;
@@ -246,6 +266,9 @@ WundEffekte computeWundEffekte(
     schwertarmAtPaMalus: schwertarm,
     schildarmAtPaMalus: schildarm,
     eigenschaftsVerluste: eigenschaften,
+    armEigenschaftsVerluste: Map<WundZone, AttributeModifiers>.unmodifiable(
+      armEigenschaften,
+    ),
     aktuellerIniMalus: aktuellerIniMalus,
     hinweise: _wundHinweise(
       zustand,
@@ -303,7 +326,7 @@ List<String> _wundHinweise(
       final betrag = -wundZonenWirkung(zone).eigenschaften.kk * effektiv;
       hinweise.add(
         '${anzeige(zone)}: KK und FF −$betrag gelten nur für Handlungen '
-        'mit diesem Arm',
+        'mit diesem Arm (der Probendialog fragt danach)',
       );
     }
   }
@@ -407,6 +430,7 @@ WundEffekte wundEffekteImKampfrausch(
     iniBasisMalus: effekte.iniBasisMalus,
     gsMalus: effekte.gsMalus,
     eigenschaftsVerluste: effekte.eigenschaftsVerluste,
+    armEigenschaftsVerluste: effekte.armEigenschaftsVerluste,
     aktuellerIniMalus: effekte.aktuellerIniMalus,
     hinweise: <String>[
       ...effekte.hinweise,

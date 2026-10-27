@@ -55,8 +55,9 @@ const _erwartetBasis = <String, Map<String, Object?>>{
     },
     // KO 14 / 2 + Eisern 2 (WdS S. 58); bis ARCH-05 (4) ohne Eisern: 7.
     'wundschwelle': 9,
-    // Statt pauschal Proben −3: GE −2 allgemein, FF/KK −2 vom Arm.
-    'wundEigenschaften': <String, Object?>{'ff': -2, 'ge': -2, 'kk': -2},
+    // Statt pauschal Proben −3: GE −2 allgemein; FF/KK −2 vom Arm bietet der
+    // Probendialog nur für Proben mit diesem Arm an (WdS S. 108 f.).
+    'wundEigenschaften': <String, Object?>{'ge': -2},
     'sbErschwernis': 4,
     'magie': false,
     'karma': false,
@@ -124,8 +125,9 @@ const _erwartetBasis = <String, Map<String, Object?>>{
     },
     // KO 14 / 2 + Eisern 2 (WdS S. 58); bis ARCH-05 (4) ohne Eisern: 7.
     'wundschwelle': 9,
-    // Statt pauschal Proben −3: GE −2 allgemein, FF/KK −2 vom Arm.
-    'wundEigenschaften': <String, Object?>{'ff': -2, 'ge': -2, 'kk': -2},
+    // Statt pauschal Proben −3: GE −2 allgemein; FF/KK −2 vom Arm bietet der
+    // Probendialog nur für Proben mit diesem Arm an (WdS S. 108 f.).
+    'wundEigenschaften': <String, Object?>{'ge': -2},
     'sbErschwernis': 4,
     'magie': false,
     'karma': false,

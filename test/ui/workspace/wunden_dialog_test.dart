@@ -145,7 +145,8 @@ void main() {
     expect(
       find.text(
         'AT −4  PA −4  FK −4  INI-Basis −6  GS −2  Schildarm AT/PA −2  '
-        'Proben: MU −2, KL −2, IN −2, FF −2, GE −4, KK −2',
+        'Proben: MU −2, KL −2, IN −2, GE −4  '
+        'Proben mit Linker Arm (Schildarm): FF −2, KK −2',
       ),
       findsOneWidget,
     );
@@ -197,12 +198,12 @@ void main() {
     await tester.tap(find.text('SB-Probe (TaW 7)'));
     await tester.pumpAndSettle();
 
-    // MU −2 (Kopf), KK −2 (Arm), KO unverändert.
+    // MU −2 (Kopf); KK −2 der Armwunde gilt nur mit diesem Arm, KO unverändert.
     expect(
       find.byKey(const ValueKey<String>('probe-dialog-eigenschaften')),
       findsOneWidget,
     );
-    expect(find.text('MU: 10 | KO: 12 | KK: 10'), findsOneWidget);
+    expect(find.text('MU: 10 | KO: 12 | KK: 12'), findsOneWidget);
     expect(modifikator(tester), '-8');
     // TaW* der Selbstbeherrschung ist aufklappbar hergeleitet (ARCH-04).
     expect(find.text('TaW* herleiten'), findsOneWidget);

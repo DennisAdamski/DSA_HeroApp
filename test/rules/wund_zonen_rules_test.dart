@@ -105,12 +105,20 @@ void main() {
       );
       expect(rechts.schwertarmAtPaMalus, -2);
       expect(rechts.schildarmAtPaMalus, 0);
-      expect(verluste(rechts), {'ff': -2, 'ge': -2, 'kk': -2});
+      // KK/FF gelten nur mit diesem Arm und stehen getrennt (WdS S. 108 f.).
+      expect(verluste(rechts), {'ge': -2});
+      expect(
+        {
+          for (final e in rechts.armEigenschaftsVerluste.entries)
+            e.key: (e.value.kk, e.value.ff),
+        },
+        {WundZone.rechterArm: (-2, -2)},
+      );
       expect(
         rechts.hinweise,
         contains(
           'Rechter Arm (Schwertarm): KK und FF −2 gelten nur für '
-          'Handlungen mit diesem Arm',
+          'Handlungen mit diesem Arm (der Probendialog fragt danach)',
         ),
       );
 
@@ -143,11 +151,11 @@ void main() {
         'mu': -2,
         'kl': -2,
         'inn': -2,
-        'ff': -2,
         'ge': -8,
         'ko': -2,
-        'kk': -4,
+        'kk': -2,
       });
+      expect(e.armEigenschaftsVerluste.keys, [WundZone.rechterArm]);
     });
   });
 
@@ -317,10 +325,11 @@ void main() {
       expect(probe.kl, 10);
       expect(probe.inn, 10);
       expect(probe.ch, 12);
-      expect(probe.ff, 10);
+      // KK/FF der Armwunde gelten nur auf Wunsch im Probendialog.
+      expect(probe.ff, 12);
       expect(probe.ge, 8);
       expect(probe.ko, 12);
-      expect(probe.kk, 10);
+      expect(probe.kk, 12);
     });
 
     test('Wunden senken die GS nie unter 1', () {
@@ -343,7 +352,8 @@ void main() {
         'INI-Basis −2',
         'GS −1',
         'Schildarm AT/PA −2',
-        'Proben: FF −2, GE −2, KK −2',
+        'Proben: GE −2',
+        'Proben mit Linker Arm (Schildarm): FF −2, KK −2',
       ]);
       expect(beschreibeWundAbzuege(effekte(const {})), isEmpty);
     });

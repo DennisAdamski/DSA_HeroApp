@@ -147,7 +147,13 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   (`schwertarmAtPaMalus` auf die Hauptwaffe, `schildarmAtPaMalus` auf
   Nebenhandwaffe und Schild-PA, nicht auf Fernkampf); rechts ist der
   Schwertarm, mit dem Katalogschalter `linkshaender` (Vorteil Linkshänder)
-  links. Die gespeicherten 2W6 der Kopfwunde (`kopfIniMalus`) betreffen nur die
+  links. KK/FF −2 je Armwunde stehen **nicht** in den Probenwerten, sondern in
+  `WundEffekte.armEigenschaftsVerluste` (RULE-FIX-051, „wenn er diesen Arm
+  benutzt“): `showLoggedProbeDialog` und die Gefechtsprobe hängen sie über
+  `probeMitArmwunden` als `ResolvedProbeRequest.bedingteZielAbzuege` an
+  Proben mit KK/FF-Ziel, der Probendialog bietet je Arm einen Schalter an
+  (anfangs aus, `wendeZielAbzuegeAn`). Proben von Vertrauten bekommen sie
+  nicht. Die gespeicherten 2W6 der Kopfwunde (`kopfIniMalus`) betreffen nur die
   aktuelle INI und sind Hinweis, kein Basisabzug. Wunden senken die GS nie
   unter 1 (`begrenzeWundGs`). Anzeige über `wund_anzeige_rules.dart`.
 - „Schaden zurücknehmen“ (ARCH-06) gibt es nur am Protokolleintrag einer

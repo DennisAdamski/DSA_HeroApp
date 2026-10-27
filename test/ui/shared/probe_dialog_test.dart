@@ -169,6 +169,53 @@ void main() {
     );
   });
 
+  testWidgets('Armwunde: Schalter rechnet KK/FF ein und wieder aus', (
+    tester,
+  ) async {
+    const request = ResolvedProbeRequest(
+      type: ProbeType.talent,
+      title: 'Talentprobe: Athletik',
+      subtitle: 'MU / GE / KK',
+      ruleHint: 'rule',
+      diceSpec: DiceSpec(count: 3, sides: 20),
+      targets: <ProbeTargetValue>[
+        ProbeTargetValue(label: 'MU', value: 14),
+        ProbeTargetValue(label: 'GE', value: 12),
+        ProbeTargetValue(label: 'KK', value: 13),
+      ],
+      basePool: 7,
+      bedingteZielAbzuege: <ProbeZielAbzug>[
+        ProbeZielAbzug(
+          bezeichnung: 'Rechter Arm (Schwertarm)',
+          abzuege: <String, int>{'KK': -2, 'FF': -2},
+        ),
+      ],
+    );
+
+    await tester.pumpWidget(_wrap(const ProbeDialog(request: request)));
+    await tester.pumpAndSettle();
+
+    final schalter = find.byKey(
+      const ValueKey<String>('probe-dialog-zielabzug-0'),
+    );
+    expect(schalter, findsOneWidget);
+    expect(
+      find.text('Rechter Arm (Schwertarm) einbeziehen (KK −2, FF −2)'),
+      findsOneWidget,
+    );
+    expect(find.text('MU: 14 | GE: 12 | KK: 13'), findsOneWidget);
+
+    await tester.ensureVisible(schalter);
+    await tester.tap(schalter);
+    await tester.pumpAndSettle();
+    expect(find.text('MU: 14 | GE: 12 | KK: 11'), findsOneWidget);
+
+    await tester.ensureVisible(schalter);
+    await tester.tap(schalter);
+    await tester.pumpAndSettle();
+    expect(find.text('MU: 14 | GE: 12 | KK: 13'), findsOneWidget);
+  });
+
   testWidgets('Talentproben zeigen den Spezialisierungs-Toggle', (
     tester,
   ) async {
