@@ -15,7 +15,10 @@ void main() {
   const ladeHinweis = ValueKey('gefecht-laden-axxeleratus-hinweis');
   const ausweichHinweis = ValueKey('gefecht-ausweichen-umkreisung-hinweis');
 
-  Future<void> zeigeLadedialog(WidgetTester t, HeroComputedSnapshot snap) async {
+  Future<void> zeigeLadedialog(
+    WidgetTester t,
+    HeroComputedSnapshot snap,
+  ) async {
     await t.pumpWidget(
       MaterialApp(
         home: Scaffold(

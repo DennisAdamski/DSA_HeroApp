@@ -201,11 +201,8 @@ class KartoSpielansicht extends ConsumerWidget {
         aktion: TextButton(
           key: const ValueKey<String>('karto-spiel-proben-waehlen'),
           onPressed: () => aktion(
-            () => bestand.probeSuchen(
-              context: context,
-              ref: ref,
-              heroId: heroId,
-            ),
+            () =>
+                bestand.probeSuchen(context: context, ref: ref, heroId: heroId),
           ),
           child: const Text('Proben wählen'),
         ),

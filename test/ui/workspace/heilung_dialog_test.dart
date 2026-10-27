@@ -144,7 +144,9 @@ void main() {
     expect(z.currentLep, 17);
   });
 
-  testWidgets('Hexenspeichel rundet ungerade AsP bei Wunden auf', (tester) async {
+  testWidgets('Hexenspeichel rundet ungerade AsP bei Wunden auf', (
+    tester,
+  ) async {
     await zeigePanel(tester, _zustand());
     await tester.tap(find.text('Hexenspeichel'));
     await tester.pumpAndSettle();

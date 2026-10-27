@@ -52,7 +52,8 @@ class _LadedialogState extends State<GefechtLadedialog> {
     // angezeigte Ladezeit setzt den Erfolg voraus.
     final axxeleratusLaden =
         widget.kampfmittel.art != GefechtsKampfmittelArt.nebenwaffe &&
-        (stats.schnellladenBogenTemporary || stats.schnellladenArmbrustTemporary);
+        (stats.schnellladenBogenTemporary ||
+            stats.schnellladenArmbrustTemporary);
     return AlertDialog(
       title: Text('${w?.name ?? 'Waffe'} laden / vorbereiten'),
       content: SizedBox(

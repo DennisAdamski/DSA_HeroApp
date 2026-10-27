@@ -78,7 +78,8 @@ Map<String, HeroTalentEntry> activateReferencedMetaTalentComponents({
 /// Wege des Schwerts Anhang 3: Der Talentwert ist der kaufmaennisch gerundete
 /// Mittelwert der Bestandteile, darf aber den doppelten Wert des niedrigsten
 /// Bestandteils nicht uebersteigen.
-({int mittelwert, int deckel, int wert, bool gedeckelt}) splitMetaTalentBaseTaw({
+({int mittelwert, int deckel, int wert, bool gedeckelt})
+splitMetaTalentBaseTaw({
   required Map<String, HeroTalentEntry> talentEntries,
   required Iterable<String> componentTalentIds,
 }) {

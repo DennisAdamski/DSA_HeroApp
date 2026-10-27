@@ -68,29 +68,32 @@ void main() {
     );
   });
 
-  test('meta talent base taw: cap equal to or above the mean changes nothing', () {
-    final entries = <String, HeroTalentEntry>{
-      'tal_a': const HeroTalentEntry(talentValue: 7),
-      'tal_b': const HeroTalentEntry(talentValue: 7),
-      'tal_c': const HeroTalentEntry(talentValue: 14),
-    };
+  test(
+    'meta talent base taw: cap equal to or above the mean changes nothing',
+    () {
+      final entries = <String, HeroTalentEntry>{
+        'tal_a': const HeroTalentEntry(talentValue: 7),
+        'tal_b': const HeroTalentEntry(talentValue: 7),
+        'tal_c': const HeroTalentEntry(talentValue: 14),
+      };
 
-    final detail = splitMetaTalentBaseTaw(
-      talentEntries: entries,
-      componentTalentIds: const <String>['tal_a', 'tal_b', 'tal_c'],
-    );
-
-    // Mittelwert 28/3 = 9,33 -> 9, Deckel 14.
-    expect(detail.wert, 9);
-    expect(detail.gedeckelt, isFalse);
-    expect(
-      splitMetaTalentBaseTaw(
+      final detail = splitMetaTalentBaseTaw(
         talentEntries: entries,
-        componentTalentIds: const <String>[],
-      ).wert,
-      0,
-    );
-  });
+        componentTalentIds: const <String>['tal_a', 'tal_b', 'tal_c'],
+      );
+
+      // Mittelwert 28/3 = 9,33 -> 9, Deckel 14.
+      expect(detail.wert, 9);
+      expect(detail.gedeckelt, isFalse);
+      expect(
+        splitMetaTalentBaseTaw(
+          talentEntries: entries,
+          componentTalentIds: const <String>[],
+        ).wert,
+        0,
+      );
+    },
+  );
 
   test('meta talent computed taw applies own be rule after mean', () {
     final ebe = computeMetaTalentEbe(baseBe: 2, beRule: 'x2');

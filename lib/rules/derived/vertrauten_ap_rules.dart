@@ -22,7 +22,8 @@ import 'package:dsa_heldenverwaltung/rules/derived/begleiter_aenderung_rules.dar
 /// (ab ,5 auf; 6 AP ergeben 2, 5 AP ergeben 1).
 int vertrautenApAnteil(int abenteuerAp) => abenteuerAp <= 0
     ? 0
-    : (abenteuerAp + kVertrautenApAnteilNenner ~/ 2) ~/ kVertrautenApAnteilNenner;
+    : (abenteuerAp + kVertrautenApAnteilNenner ~/ 2) ~/
+          kVertrautenApAnteilNenner;
 
 /// Verteilt eine Änderung der Abenteuer-AP der Hexe um [deltaAbenteuerAp]
 /// auf alle Vertrauten mit eingerichtetem Anteil.

@@ -26,7 +26,12 @@ void main() {
       expect(merkmalsklassifikation('Heilung'), 1);
       expect(merkmalsklassifikation('Elementar (Feuer)'), 1);
       expect(merkmalsklassifikation('Dämonisch (Mishkara)'), 1);
-      for (final domaene in ['Agrimoth', 'Belhalhar', 'Belkelel', 'Belshirash']) {
+      for (final domaene in [
+        'Agrimoth',
+        'Belhalhar',
+        'Belkelel',
+        'Belshirash',
+      ]) {
         expect(merkmalsklassifikation('Dämonisch ($domaene)'), 1);
         expect(merkmalskenntnisApCost('Dämonisch ($domaene)'), 100);
       }

@@ -339,22 +339,25 @@ void main() {
       expect(ueberMaximum.after.currentAu, 20);
     });
 
-    test('bei 0 LeP oder weniger heilt die Rast nicht auf natürlichem Wege', () {
-      // Wege des Schwerts S. 161: Lebensbedrohlich Verletzte müssen behandelt
-      // werden, Schlaf und Bettruhe ändern ihre LeP nicht.
-      for (final lep in [-5, 0]) {
-        final outcome = computeRestOutcome(
-          input: _eingabe(
-            RestActivity.schlaf,
-            rolls: const {RestRollSlot.phase1Lep: 6},
-          ),
-          current: _werte(lep: lep),
-        );
+    test(
+      'bei 0 LeP oder weniger heilt die Rast nicht auf natürlichem Wege',
+      () {
+        // Wege des Schwerts S. 161: Lebensbedrohlich Verletzte müssen behandelt
+        // werden, Schlaf und Bettruhe ändern ihre LeP nicht.
+        for (final lep in [-5, 0]) {
+          final outcome = computeRestOutcome(
+            input: _eingabe(
+              RestActivity.schlaf,
+              rolls: const {RestRollSlot.phase1Lep: 6},
+            ),
+            current: _werte(lep: lep),
+          );
 
-        expect(outcome.after.currentLep, lep);
-        expect(outcome.phases.single.lepGain, 0);
-      }
-    });
+          expect(outcome.after.currentLep, lep);
+          expect(outcome.phases.single.lepGain, 0);
+        }
+      },
+    );
 
     test('ohne Magie sinken AsP über dem Maximum auf das Maximum', () {
       final outcome = computeRestOutcome(
