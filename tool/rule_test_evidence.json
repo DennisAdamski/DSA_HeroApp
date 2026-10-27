@@ -1513,7 +1513,7 @@
     },
     "test/rules/advancement_steigerung_bereiche_test.dart": {
       "kind": "official",
-      "status": "conflict",
+      "status": "verified",
       "summary": "Die Datei sichert GP-Tarife (Eisern 7 GP, Astrale Regeneration 4/8 GP, Höhenangst 3 GP je 2 Punkte, Kurzatmig 1 GP je 2 AuP, Einarmig 15/Gelähmter Arm 7, Unfähigkeit Merkmal 2/3/4, Verbindungen = GP), nachträglichen Vorteilserwerb zum 50-fachen GP-Wert mit den 15 Vorteilen aus WdS (Eisern 350 AP, Differenzkosten gestufter Vorteile), Nachteilsabbau (Schlechte Eigenschaften 50 x GP je Punkt bzw. 75 x im Selbststudium, übrige 100 x GP, gesellschaftliche nie mit AP), epische Sperren (keine Vorteile, Abbau nur über Spezielle Erfahrung), Merkmalskenntnisse (100/200/300 AP, Leiteigenschaft 13/15/17), Waffenmeister (400 AP, 2500 AP Kampf-SF, TaW 18, Spezialisierung, 32 Eigenschaftspunkte mit GE mindestens 13) und den Waffen-Großmeister sowie Tradition/Gottheit-Passung. Alles bestätigt außer dem Erwerb von Eisern mit KO 14, den eine Hausregel an KO 15 knüpft.",
       "sources": [
         {
@@ -1618,43 +1618,12 @@
           "checkedOn": "2026-10-24"
         }
       ],
-      "conflicts": [
+      "resolved": [
         {
-          "conflictKey": "nachtraeglicher-vorteilserwerb-eisern-ko15",
-          "conflictType": "contradiction",
-          "priority": "P2",
           "followUp": "RULE-FIX-013",
-          "finding": "Die Hausregel 'Erweiterung und Überarbeitung des Regelwerks' (Abschnitt 4) legt für den späteren Erwerb von Vorteilen per AP konkrete Voraussetzungen fest, u. a. Eisern: KO 15, 350 AP; Ausdauernder Zauberer KO 15; Zäher Hund KO 15; Eisenaffine Aura Rüstungsgewöhnung II; Soziale Anpassungsfähigkeit CH 15 und Menschenkenntnis 18. Die Tests erwarten, dass ein Held mit KO 14 'Eisern' ohne Sperre (unavailableReason null) planen und per Replay fehlerfrei erwerben kann; die App zeigt nur den allgemeinen Hinweis 'Absprache mit dem Meister, gekoppelt an passende Eigenschaften'. Der Preis 350 AP stimmt mit Buch (50 x 7 GP) und Hausregel überein. WdS empfiehlt die Kopplung an Eigenschaften nur ('sollten Sie auf jeden Fall koppeln, z. B. KO 15 für Eisern'), die Hausregel macht sie verbindlich.",
-          "testCases": [
-            "nur die freigegebenen Vorteile erscheinen, mit 50 × GP",
-            "Erwerb schreibt Liste und Projektion, doppelt ist gesperrt"
-          ],
-          "expected": "Held mit KO 14 kann Eisern (350 AP) ohne Voraussetzungsprüfung erwerben.",
-          "bookRule": [
-            {
-              "title": "Erweiterung und Überarbeitung des Regelwerks",
-              "pages": "PDF S. 20-21",
-              "mcpChunks": [
-                25833
-              ],
-              "checkedOn": "2026-10-24"
-            },
-            {
-              "title": "Wege des Schwerts",
-              "pages": "169",
-              "mcpChunks": [
-                7251
-              ],
-              "checkedOn": "2026-10-24"
-            }
-          ],
-          "deviation": "Hausregel: Eisern setzt KO 15 voraus; App/Test: keine harte Eigenschaftsvoraussetzung (nur Meisterhinweis).",
-          "impact": "Produktcode: Voraussetzungen der Hausregel-Liste werden nicht geprüft (Eisern, Ausdauernder Zauberer, Zäher Hund, Gutes Gedächtnis KL 15, Wohlklang CH 15 usw.); die App ist damit großzügiger als die Hausregel. Die Hausregel ergänzt zudem 'Geweiht' (nicht im App-Set) und nennt nur 9 der 15 offiziellen Vorteile. Test: Held mit KO 14 darf Eisern nicht ohne Meisterentscheid erwerben.",
-          "secondCheck": {
-            "checkedOn": "2026-10-26",
-            "result": "confirmed",
-            "note": "Die Voraussetzungen (Eisern KO 15, Gutes Gedächtnis KL 15, Wohlklang CH 15 usw.) stehen in Chunk 25833 unter 'Voraussetzungen zum späteren Erwerb von Vorteilen'. Sie gelten nur für den Nachkauf mit AP, nicht für die Generierung."
-          }
+          "conflictKey": "nachtraeglicher-vorteilserwerb-eisern-ko15",
+          "resolvedOn": "2026-10-27",
+          "note": "kNachtraeglicheVorteilVoraussetzungen bildet die Tabelle der Hausregel (Abschnitt 4) ab (Eisern KO 15, Gutes Gedächtnis KL 15, Wohlklang CH 15 usw.); resolveAdvantageAdvancement prüft sie als Checkliste, ein offener Punkt verlangt wie bei Sonderfertigkeiten einen ausdrücklichen Meisterentscheid. Tests ergänzt."
         }
       ]
     },
@@ -13299,60 +13268,6 @@
       ],
       "conflicts": [
         {
-          "conflictKey": "gegenelement-zauber-mit-zwei-elementen",
-          "conflictType": "contradiction",
-          "priority": "P2",
-          "followUp": "RULE-FIX-052",
-          "finding": "Gegenprüfung 2026-10-25: Wortlaut: Wer Begabung oder Merkmalskenntnis Elementar (spezielles Element) hat, erleidet 'Nachteile in allen Zaubern, die das Merkmal des Gegenelementes tragen'; diese Zauber nutzen die nächsthöhere Spalte. Eine Ausnahme für Zauber mit mehreren Elementen steht weder dort noch in den Hausregeln; die wörtliche Lesart (Nebelleib trägt Elementar Wasser) ergibt Spalte E statt D, der Test (Betrag 0) weicht davon ab.",
-          "testCases": [
-            "Zauber mit zwei Elementen löst keinen Nachteil aus"
-          ],
-          "expected": "Nebelleib (Form, Elementar (Luft), Elementar (Wasser)) wird bei Merkmalskenntnis Elementar (Feuer) ohne Gegenelement-Aufschlag gelernt (Betrag 0).",
-          "bookRule": [
-            {
-              "title": "Wege der Zauberei (Gegenelement: Nachteile in allen Zaubern, die das Merkmal des Gegenelementes tragen)",
-              "pages": "381",
-              "mcpChunks": [
-                5950,
-                5951
-              ],
-              "checkedOn": "2026-10-24"
-            },
-            {
-              "title": "Wege der Zauberei (Hexalogien: Gegenelement-Zauber)",
-              "pages": "383",
-              "mcpChunks": [
-                5957
-              ],
-              "checkedOn": "2026-10-24"
-            },
-            {
-              "title": "Wege der Zauberei (Elementarismus, Gegenelement)",
-              "pages": "gedr. 381 (PDF 382)",
-              "mcpChunks": [
-                5950,
-                5951
-              ],
-              "checkedOn": "2026-10-25"
-            },
-            {
-              "title": "Wege der Zauberei (Merkmal Elementar, Merkmalskenntnis)",
-              "pages": "gedr. 25 (PDF 26)",
-              "mcpChunks": [
-                5007
-              ],
-              "checkedOn": "2026-10-25"
-            }
-          ],
-          "deviation": "Test und Produkt weichen von der Quelle ab: Wortlaut: Wer Begabung oder Merkmalskenntnis Elementar (spezielles Element) hat, erleidet 'Nachteile in allen Zaubern, die das Merkmal des Gegenelementes tragen'; diese Zauber nutzen die nächsthöhere Spalte. Eine Ausnahme für Zauber mit mehreren Elementen steht weder dort noch in den Hausregeln; die wörtliche Lesart (Nebelleib trägt Elementar Wasser) ergibt Spalte E statt D, der Test (Betrag 0) weicht davon ab.",
-          "impact": "Betrifft nur Zauber mit zwei Elementen (z. B. Nebelleib, Nebelwand): Lernspalte und AP-Kosten könnten eine Spalte zu niedrig sein, falls die wörtliche Lesart gilt. Entscheidung (Buchlesart oder dokumentierte Hausregel) muss festgelegt werden.",
-          "secondCheck": {
-            "checkedOn": "2026-10-26",
-            "result": "confirmed",
-            "note": "Wege der Zauberei S. 381 (Chunk 5951): Begabung oder Merkmalskenntnis in einem Element macht die Zauber des Gegenelements eine Spalte schwerer."
-          }
-        },
-        {
           "conflictKey": "elementarharmonisiert-ohne-gegenelement-merkmalskenntnis",
           "conflictType": "unresolved",
           "priority": "P3",
@@ -13401,6 +13316,14 @@
             "result": "confirmed",
             "note": "Wege der Zauberei S. 382 (Chunk 5951): Elementarharmonisierte Aura erlaubt die Merkmalskenntnis im Gegenelement, damit entfällt der Nachteil; die Wirkung ohne diese Merkmalskenntnis ist nicht ausdrücklich genannt."
           }
+        }
+      ],
+      "resolved": [
+        {
+          "followUp": "RULE-FIX-052",
+          "conflictKey": "gegenelement-zauber-mit-zwei-elementen",
+          "resolvedOn": "2026-10-27",
+          "note": "zauberLernspalte wertet die Gegenelement-Nachteile wörtlich nach WdZ S. 381: Jeder Zauber, der das Merkmal des Gegenelements eines bevorzugten Elements trägt, ist eine Spalte schwerer, auch bei zwei Elementen (Nebelleib bei Merkmalskenntnis Feuer: Wasser = Gegenelement). Test angepasst."
         }
       ]
     },

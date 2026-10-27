@@ -177,10 +177,16 @@ AdvancementOption? resolveAdvantageAdvancement(
         '50 × GP-Wert ($kMerkmalSteigerungQuelle)'
         '${def.costText.trim().isEmpty ? '' : ' · ${def.costText.trim()}'}',
     requirements: [
+      ...evaluateRequirements(
+        kNachtraeglicheVorteilVoraussetzungen[id] ??
+            const <SpecialAbilityRequirement>[],
+        context.requirementContext,
+      ),
       _hinweisBefund(
         'Nachträglicher Erwerb nur in Absprache mit dem Meister, '
         'gekoppelt an passende Eigenschaften und Zeitaufwand '
-        '($kMerkmalSteigerungQuelle)',
+        '($kMerkmalSteigerungQuelle; Voraussetzungen: Hausregel '
+        '„Erweiterung und Überarbeitung des Regelwerks“, Abschnitt 4)',
       ),
     ],
   );

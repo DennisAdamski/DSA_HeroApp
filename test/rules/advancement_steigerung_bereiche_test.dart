@@ -12,6 +12,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/advancement_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/advancement_trait_options.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/advancement_waffenmeister_options.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/karma_gottheit_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/requirement_evaluation_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/special_ability_visibility_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/trait_advancement_rules.dart';
 
@@ -112,7 +113,9 @@ void main() {
     });
 
     test('Erwerb schreibt Liste und Projektion, doppelt ist gesperrt', () {
-      final ergebnis = replay(_hero, [
+      // Hausregel Abschnitt 4: Eisern setzt KO 15 voraus.
+      final stark = _hero.copyWith(attributes: _attributes.copyWith(ko: 15));
+      final ergebnis = replay(stark, [
         _eintrag(AdvancementKind.advantage, 'adv_eisern', {
           kMerkmalOptionAuswahl: '',
         }, apCost: 350),
@@ -120,7 +123,7 @@ void main() {
       expect(ergebnis.errors, isEmpty);
       expect(ergebnis.hero.vorteilEintraege.single.katalogId, 'adv_eisern');
       expect(ergebnis.hero.vorteileText, 'Eisern');
-      expect(ergebnis.hero.apAvailable, _hero.apAvailable - 350);
+      expect(ergebnis.hero.apAvailable, stark.apAvailable - 350);
       final erneut = resolveAdvancementOption(
         hero: ergebnis.hero,
         catalog: catalog,
@@ -128,6 +131,66 @@ void main() {
         targetId: 'adv_eisern',
       );
       expect(erneut!.unavailableReason, 'Bereits vorhanden');
+    });
+
+    test(
+      'fehlende Voraussetzung der Hausregel verlangt einen Meisterentscheid',
+      () {
+        final option = resolveAdvancementOption(
+          hero: _hero,
+          catalog: catalog,
+          kind: AdvancementKind.advantage,
+          targetId: 'adv_eisern',
+        )!;
+        expect(option.unavailableReason, isNull);
+        final offen = offeneVoraussetzungen(option.requirements);
+        expect(offen.map((r) => r.sollText), ['KO 15']);
+
+        final eintrag = _eintrag(AdvancementKind.advantage, 'adv_eisern', {
+          kMerkmalOptionAuswahl: '',
+        }, apCost: 350);
+        expect(replay(_hero, [eintrag]).errors, isNotEmpty);
+        final entschieden = replay(_hero, [
+          _eintrag(AdvancementKind.advantage, 'adv_eisern', {
+            kMerkmalOptionAuswahl: '',
+            'meisterentscheid': 'true',
+          }, apCost: 350),
+        ]);
+        expect(entschieden.errors, isEmpty);
+        expect(
+          entschieden.hero.vorteilEintraege.single.katalogId,
+          'adv_eisern',
+        );
+      },
+    );
+
+    test('Voraussetzungen der Hausregel je Vorteil', () {
+      List<String> offen(String id, HeroSheet hero) => offeneVoraussetzungen(
+        resolveAdvancementOption(
+          hero: hero,
+          catalog: catalog,
+          kind: AdvancementKind.advantage,
+          targetId: id,
+        )!.requirements,
+      ).map((r) => r.sollText).toList();
+
+      expect(offen('adv_gutes_gedaechtnis', _hero), ['KL 15']);
+      expect(
+        offen(
+          'adv_gutes_gedaechtnis',
+          _hero.copyWith(attributes: _attributes.copyWith(kl: 15)),
+        ),
+        isEmpty,
+      );
+      expect(offen('adv_zaeher_hund', _hero), ['KO 15']);
+      expect(offen('adv_ausdauernder_zauberer', _hero), ['KO 15']);
+      expect(offen('adv_wohlklang', _hero), hasLength(2));
+      expect(offen('adv_soziale_anpassungsfaehigkeit', _hero), hasLength(2));
+      expect(offen('adv_entfernungssinn', _hero), hasLength(2));
+      expect(offen('adv_eisenaffine_aura', _hero), hasLength(1));
+      expect(offen('adv_feste_matrix', _hero), hasLength(1));
+      // Ohne Eintrag in der Hausregel-Tabelle bleibt es beim Meisterhinweis.
+      expect(offen('adv_guter_ruf', _hero), isEmpty);
     });
 
     test('gestufte Vorteile kosten nur die GP-Differenz', () {

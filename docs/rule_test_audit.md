@@ -12,18 +12,18 @@ Die maschinenlesbare Inventur `tool/rule_test_evidence.json` erfasst **211 Test-
 | `official` | 147 |
 | `house_rule` | 9 |
 | `product_contract` | 55 |
-| `verified` | 146 |
-| `conflict` (mindestens ein bestätigter Einzelbefund) | 65 |
+| `verified` | 147 |
+| `conflict` (mindestens ein bestätigter Einzelbefund) | 64 |
 
 Aufschlüsselung Art × Status:
 
 | Art | verified | conflict |
 | --- | ---: | ---: |
-| `official` | 83 | 64 |
+| `official` | 84 | 63 |
 | `house_rule` | 8 | 1 |
 | `product_contract` | 55 | 0 |
 
-Die 65 Konfliktdateien enthalten zusammen **81 offene fachlich verschiedene Einzelbefunde** mit je eigenem Folgeauftrag `RULE-FIX-NNN` (Priorität P1: 0, P2: 34, P3: 47); weitere 24 Befunde sind bereits behoben (siehe unten). Ein Konflikt auf Dateiebene heißt: *mindestens* eine Erwartung der Datei ist nicht deckungsgleich mit dem Buch oder nicht belegbar; alle übrigen Erwartungen der Datei sind geprüft und stehen in der `summary` des Eintrags bzw. unter `sources`.
+Die 64 Konfliktdateien enthalten zusammen **79 offene fachlich verschiedene Einzelbefunde** mit je eigenem Folgeauftrag `RULE-FIX-NNN` (Priorität P1: 0, P2: 32, P3: 47); weitere 26 Befunde sind bereits behoben (siehe unten). Ein Konflikt auf Dateiebene heißt: *mindestens* eine Erwartung der Datei ist nicht deckungsgleich mit dem Buch oder nicht belegbar; alle übrigen Erwartungen der Datei sind geprüft und stehen in der `summary` des Eintrags bzw. unter `sources`.
 
 ## Geprüfte Pakete
 
@@ -118,10 +118,10 @@ Damit liegt die Fehlerquote der Zweitprüfung bei 2 von 84 Dateien (rund 2 %); d
 
 | Fall | Dateien | Bedeutung |
 | --- | ---: | --- |
-| Test stimmt mit der Buchregel überein | 83 | `official`/`verified`: alle fachlichen Erwartungen belegt |
+| Test stimmt mit der Buchregel überein | 84 | `official`/`verified`: alle fachlichen Erwartungen belegt |
 | Dokumentierte Hausregel weicht bewusst ab | 8 | `house_rule`/`verified`: durch Hausregel-Dokument im MCP belegt |
 | Technischer Produktvertrag ohne Regelbehauptung | 55 | `product_contract`: Begründung je Datei in der Inventur |
-| Test oder Produkt widerspricht der Quelle | 9 | Dateien mit mindestens einem Befund `contradiction` (7 Einzelbefunde) |
+| Test oder Produkt widerspricht der Quelle | 7 | Dateien mit mindestens einem Befund `contradiction` (5 Einzelbefunde) |
 | Regelunklarheit, Buch entscheidet nicht | 46 | Dateien mit mindestens einem Befund `unresolved` (55 Einzelbefunde) |
 | Quelle im MCP nicht ausreichend verfügbar | 17 | Dateien mit mindestens einem Befund `source_gap` (19 Einzelbefunde) |
 
@@ -149,7 +149,6 @@ Folgeauftrag = je eine Zeile; das Beleg-Format ist *Buch S. gedruckte Seite (MCP
 | RULE-FIX-009 | unresolved | `catalog/reittier_ausbildung_katalog_test.dart` | Zuordnung von Schützenpferd und Streitwagenpferd zu 'Kampfpferd' ist App-Auslegung ohne Buchbeleg; die Streit-/Kriegsrosse sind belegt. | Zoo Botanica Aventurica S. 34 (Chunk 7964); Zoo Botanica Aventurica S. 30 (Chunk 7953, 7956); Zoo Botanica Aventurica S. 29 (Chunk 7952); Wege des Schwerts S. 102 (PDF 103) (Chunk 7100); Zoo-Botanica Aventurica S. … | Reiten-Probe im Kampf auf geschultem Schützen-/Streitwagenpferd: −3 statt −1 (Spielwert, Randfall). |
 | RULE-FIX-010 | unresolved | `catalog/reittier_ausbildung_katalog_test.dart` | Das Buch widerspricht sich selbst (speziell vs. allgemein). Die App folgt für Biss der Manöverliste, für Tritt der SF-Liste; eine einheitliche Quelle gibt es nicht. | Zoo Botanica Aventurica S. 35 (Chunk 7967); Zoo Botanica Aventurica S. 38 (Chunk 7976) | Entscheidet, ob Biss/Tritt per Abrichten +5 nachträglich lernbar sind (allgemein) oder nur über eine Variante (speziell). Betrifft pferdeSfLernbarkeit; Randfall. |
 | RULE-FIX-011 | contradiction | `catalog/trait_effect_catalog_test.dart`, `hero_begabung_rules_test.dart` | Test und Produkt weichen von der Quelle ab: WdH führt 'Sprachen und Schriften' als eine Talentgruppe (-7 GP) für Unfähigkeit; … | Wege der Helden S. 248 (Chunk 4704); Wege der Helden S. 272 (Chunk 4774); Wege der Helden S. 272 (PDF 273) (Chunk 4774) | Ein Held mit Begabung Sprachen und Schriften steigert Schriften zu den normalen Kosten statt eine Spalte günstiger; Unfähigkeit wirkt nur auf die gewählte Hälfte, obwohl das Buch die ganze Gruppe verteuert. … |
-| RULE-FIX-013 | contradiction | `advancement_steigerung_bereiche_test.dart` | Hausregel: Eisern setzt KO 15 voraus; App/Test: keine harte Eigenschaftsvoraussetzung (nur Meisterhinweis). | Erweiterung und Überarbeitung des Regelwerks S. PDF S. 20-21 (Chunk 25833); Wege des Schwerts S. 169 (Chunk 7251) | Produktcode: Voraussetzungen der Hausregel-Liste werden nicht geprüft (Eisern, Ausdauernder Zauberer, Zäher Hund, Gutes Gedächtnis KL 15, Wohlklang CH 15 usw.); die App ist damit großzügiger als die Hausregel. … |
 | RULE-FIX-014 | source_gap | `alchimika_elixier_rules_test.dart` | Keine Quelle belegt die Addition (und keine verbietet sie); beim Attributo gilt dagegen laut Repo die Tischregel 'bester Wert'. | Suche: mehrere Elixiere gleichzeitig Wirkungen addieren; Wechselwirkungen Alchimika; Elixier mehrfach einnehmen Überdosis; Eigenschaftssteigerung nicht kumulativ; … | Mehrfacheinnahme kann Eigenschaftsboni höher ausweisen als eine mögliche Meisterentscheidung; betrifft nur Mehrfachquellen, Einzelwirkungen sind belegt. |
 | RULE-FIX-015 | unresolved | `ap_level_rules_test.dart` | Nur die Schwellen 21000 und 23100 AP (und der Abstand 2100) stehen im MCP (Epische Stufen S. 2); die uebrigen getesteten Schwellen und die Formel sind App-Konvention ohne Quellenbeleg. | Epische Stufen S. 2-3 (PDF-Seite) (Chunk 25738) | Betrifft nur Anzeige der Stufe und die Epik-Schwelle (Stufe 21/22 sind belegt). Test und Produktverhalten bleiben moeglicherweise richtig; … |
 | RULE-FIX-018 | unresolved | `bestandshelden_regelwerte_ergaenzung_cases.dart`, `bestandshelden_regelwerte_test.dart` | Das Buch lässt offen, ob der zonale AT/PA-Abzug den Basiswert (und damit Ausweichen) oder nur den Waffen-AT/PA trifft. Die App entscheidet sich für die Basiswerte; die Hausregel hält die Entscheidung nicht fest. | Wege des Schwerts S. 107–108 (Chunk 7111, 7112, 7114); Wege des Schwerts S. 57 (Chunk 6979); Erweiterung und Überarbeitung des Regelwerks S. 3 (Chunk 25818); Wege des Schwerts S. … | Bei der Lesart „nur Kampfwert“ wären atBase 8, paBase 8 und Ausweichen 14. Betrifft nur Basiswert-Anzeige und Ausweichen mit Zonenwunden in Brust, Bauch und Beinen; die Waffenwerte bleiben gleich. |
@@ -179,7 +178,6 @@ Folgeauftrag = je eine Zeile; das Beleg-Format ist *Buch S. gedruckte Seite (MCP
 | RULE-FIX-049 | unresolved | `wund_arm_kampf_test.dart` | Buch begrenzt die Aussage auf AT/PA/FK/INI-Basis (und GE); die App dehnt sie auf LeP/AuP/MR/Wundschwelle/TP-KK aus. | Wege des Schwerts S. gedr. 108 (PDF 109) (Chunk 7114); Basisregelwerk S. PDF 195 (Chunk 735); Basisregelwerk S. PDF 193 (Chunk 731); Basisregelwerk S. PDF 19 (Chunk 312) | Spielwert: Brust-/Bauchwunden (KO/KK −1) und Kopfwunden (MU/KL −2) könnten nach strenger Lesart max. LeP, AuP, MR (und Wundschwelle) senken; die App senkt sie nie. … |
 | RULE-FIX-050 | unresolved | `wund_zonen_rules_test.dart` | Tabelle und Fliesstext des Buchs sind nicht deckungsgleich; die App folgt dem Fliesstext (kein Kampfunfaehig-Flag), die Tabelle liest sich strenger. Aufloesung nur per Designentscheidung/Hausregel moeglich. | Wege des Schwerts – Trefferzonen S. 107 (Chunk 7111, 7112); Wege des Schwerts – Zonenwunden Bein S. 108 (Chunk 7113, 7114); Wege des Schwerts – Tabellen zum Kampf, Trefferzonen S. 197 (Chunk 7319); Wege des Schwerts S. gedr. … | Betrifft nur das Flag kampfunfaehig bei der dritten Beinwunde (Hinweis bleibt gleich). Fernkampf/Zauber mit gestuerztem Helden ist im Fliesstext nicht ausgeschlossen. Keine Spielwert-Berechnung betroffen. |
 | RULE-FIX-051 | contradiction | `wund_zonen_rules_test.dart` | Der Armbezug gilt im Buch auch fuer KK und FF; die App wendet die Abzuege auf jede Probe an und ueberlaesst den Armbezug dem Tisch. … | Wege des Schwerts – Zonenwunden Arm S. 108 (Chunk 7113, 7114); Wege des Schwerts – Trefferzonen S. 107 (Chunk 7111, 7112) | Proben mit KK/FF, die den verwundeten Arm nicht betreffen, werden zu streng berechnet; AT/PA, FK, INI und alle abgeleiteten Werte sind nicht betroffen. Die Pruefung der Probenwerte (wendeWundVerlusteAn) haengt daran. |
-| RULE-FIX-052 | contradiction | `zauber_lernspalte_rules_test.dart` | Test und Produkt weichen von der Quelle ab: Wortlaut: Wer Begabung oder Merkmalskenntnis Elementar (spezielles Element) hat, erleidet 'Nachteile in allen Zaubern, die das Merkmal des Gegenelementes tragen'; … | Wege der Zauberei S. 381 (Chunk 5950, 5951); Wege der Zauberei S. 383 (Chunk 5957); Wege der Zauberei S. gedr. 381 (PDF 382) (Chunk 5950, 5951); Wege der Zauberei S. gedr. 25 (PDF 26) (Chunk 5007) | Betrifft nur Zauber mit zwei Elementen (z. B. Nebelleib, Nebelwand): Lernspalte und AP-Kosten könnten eine Spalte zu niedrig sein, falls die wörtliche Lesart gilt. … |
 
 ### P3: Rundung, Untergrenze, Dokumentation, Unklarheit
 
@@ -263,6 +261,8 @@ Diese Befunde wurden nach dem Audit in einem eigenen Schritt behoben: Produktcod
 | RULE-FIX-097 | 2026-10-27 | Vertrauten-AP: ein Viertel der Abenteuer-AP, kumulativ echt gerundet statt abgerundet | `vertrauten_ap_rules_test.dart` |
 | RULE-FIX-033 | 2026-10-27 | Zwölf dämonische Domänen als Merkmale der Stufe I | `magic_acquisition_rules_test.dart` |
 | RULE-FIX-030 | 2026-10-27 | Begabung/Unfähigkeit: Netto-Verschiebung statt Zwischendeckelung | `hero_begabung_rules_test.dart` |
+| RULE-FIX-052 | 2026-10-27 | Gegenelement-Aufschlag auch bei Zaubern mit mehreren Elementen | `zauber_lernspalte_rules_test.dart` |
+| RULE-FIX-013 | 2026-10-27 | Voraussetzungen beim Nachkauf von Vorteilen prüfen | `advancement_steigerung_bereiche_test.dart` |
 
 ## Technische Verträge ohne Regelbehauptung
 
