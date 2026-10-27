@@ -7945,35 +7945,6 @@
       ],
       "conflicts": [
         {
-          "conflictKey": "lernspalte-deckelung-h-vor-erleichterung",
-          "conflictType": "contradiction",
-          "priority": "P2",
-          "followUp": "RULE-FIX-030",
-          "finding": "Der Test „Reihenfolge: erst verteuern, dann verbilligen“ erwartet für ein Talent mit Basis H, Begabung und einer Unfähigkeit-Spalte das Ergebnis G (Verteuerung wird zuerst bei H gedeckelt, danach wirkt die Begabung). Wege der Helden verlangt dagegen: Alle Verschiebungen sind kumulativ, die wirkliche Steigerungsspalte ergibt sich erst aus der Summe aller Veränderungen; eine Erleichterung jenseits von A bedeutet A+, eine Erschwerung über H hinaus ist nicht möglich (dann gilt H). Die Summe aus +1 (Unfähigkeit) und -1 (Begabung) ist 0, das Ergebnis H, nicht G. Der zweite Teil des Tests (Zauber B, Begabung und 3 Zusatzspalten → A* = A+) stimmt mit dem Buch überein.",
-          "testCases": [
-            "Reihenfolge: erst verteuern, dann verbilligen"
-          ],
-          "expected": "effectiveTalentLernkomplexitaet(Basis H, gifted, 1 Unfähigkeit) = G (Zwischenergebnis wird bei H gekappt, dann um eine Spalte verbilligt).",
-          "bookRule": [
-            {
-              "title": "Wege der Helden (Steigern von Zaubern: Verschiebungen kumulativ, Summe aller Veränderungen, A+/H-Grenzen)",
-              "pages": "19",
-              "mcpChunks": [
-                4067,
-                4068
-              ],
-              "checkedOn": "2026-10-25"
-            }
-          ],
-          "deviation": "Buch: Netto-Verschiebung, Deckelung nur am Endergebnis (H + 1 - 1 = H). Programm: Zwischendeckelung nach der Verteuerung (H → H → G). Abweichung tritt nur an der H-Grenze auf (und spiegelbildlich nicht an A+, weil dort erst nach der Verteuerung verbilligt wird).",
-          "impact": "Randfall (Basis G/H mit gleichzeitiger Verteuerung und Verbilligung, z. B. H-Zauber in fremder Repräsentation mit Hauszauber/Begabung): Steigerungskosten eine Spalte zu niedrig. Betrifft effectiveTalentLernkomplexitaet und effectiveSpellLernkomplexitaet in learning_rules.dart sowie die Testbehauptung.",
-          "secondCheck": {
-            "checkedOn": "2026-10-26",
-            "result": "confirmed",
-            "note": "Wege der Helden S. 19 (Chunk 4068): Verschiebungen sind kumulativ; Erleichterung jenseits A ergibt A+, Erschwernis über H ergibt H, nur am Endergebnis."
-          }
-        },
-        {
           "conflictKey": "begabung-sprachen-und-schriften-gruppe",
           "conflictType": "contradiction",
           "priority": "P2",
@@ -8033,6 +8004,12 @@
           "conflictKey": "begabung-ritual-wirkt-auf-ritualkenntnis",
           "resolvedOn": "2026-10-27",
           "note": "Produktcode (ritualkenntnis() ignoriert Begabungen, nur Unfähigkeiten verschieben die Spalte) und Tests an die Quelle angepasst; die Marke am Ritual nennt Probe -3 und halbe Lern-AP. Probenerleichterung und halbe Lern-AP sind nicht gerechnet."
+        },
+        {
+          "followUp": "RULE-FIX-030",
+          "conflictKey": "lernspalte-deckelung-h-vor-erleichterung",
+          "resolvedOn": "2026-10-27",
+          "note": "learning_rules.dart: verschiebeLernkomplexitaet verrechnet alle Spaltenverschiebungen zur Netto-Summe und klemmt erst am Ende an A*/H (WdH S. 19); Talente, Zauber und Ritualkenntnisse nutzen sie. H + Unfähigkeit + Begabung bleibt H; Test angepasst."
         }
       ]
     },
@@ -9070,7 +9047,7 @@
     },
     "test/rules/magic_acquisition_rules_test.dart": {
       "kind": "official",
-      "status": "conflict",
+      "status": "verified",
       "summary": "Bestätigt sind die Merkmalskenntnis-Preise 100/200/300 AP je Stufe I/II/III, die Zuordnung der Stufen für die getesteten Merkmale (Heilung, Elementar (Feuer), Dämonisch (Mishkara) = I; Antimagie, Objekt = II; Limbus, Dämonisch/Elementar gesamt = III), die Repräsentationskosten (erste frei, zweite 2.000 AP Vollzauberer / 3.000 AP Halbzauberer, dritte 4.000 AP nur Vollzauberer, darüber keine Regelangabe) und die 250 AP für die Ritualkenntnis einer Fremdrepräsentation. Nicht bestätigt: die Merkmalsliste mit nur sechs dämonischen Domänen.",
       "sources": [
         {
@@ -9096,53 +9073,12 @@
           "checkedOn": "2026-10-24"
         }
       ],
-      "conflicts": [
+      "resolved": [
         {
-          "conflictKey": "merkmale-daemonische-domaenen-unvollstaendig",
-          "conflictType": "contradiction",
-          "priority": "P2",
           "followUp": "RULE-FIX-033",
-          "finding": "Das Buch kennt für „Dämonisch“ zwölf Unter-Merkmale (je eine Domäne, alle Stufe I = 100 AP) und sechs Elementar-Unter-Merkmale. Die App-Konstanten (kMerkmale / kMerkmaleKlassifikationI) führen nur sechs Domänen (Amazeroth, Asfaloth, Blakharaz, Lolgramoth, Mishkara, Thargunitoth): 19 statt 25 Merkmale in Stufe I, 34 statt 40 insgesamt. Der Katalog enthält bereits „Dämonisch (Agrimoth)“ (1 Treffer in den Katalog-JSONs), das in merkmalsklassifikation() auf den Fallback Stufe II fällt (200 AP statt 100 AP). Der Test schreibt die unvollständige Liste (Anzahl 19/10/5 und Gleichheit mit kMerkmale) fest und adelt den Stufe-II-Fallback.",
-          "testCases": [
-            "deckt genau die 34 Katalog-Merkmale ab",
-            "behandelt unbekannte Merkmale als Stufe II"
-          ],
-          "expected": "Stufe I hat genau 19 Merkmale (6 dämonische Domänen, 6 Elemente, 7 weitere); insgesamt 34 Merkmale; unbekannte Merkmale kosten wie Stufe II.",
-          "bookRule": [
-            {
-              "title": "Wege der Zauberei",
-              "pages": "25",
-              "mcpChunks": [
-                5006,
-                5007
-              ],
-              "checkedOn": "2026-10-24"
-            },
-            {
-              "title": "Wege der Helden",
-              "pages": "248; 288",
-              "mcpChunks": [
-                4704,
-                4822
-              ],
-              "checkedOn": "2026-10-24"
-            },
-            {
-              "title": "Liber Cantiones",
-              "pages": "6",
-              "mcpChunks": [
-                1904
-              ],
-              "checkedOn": "2026-10-24"
-            }
-          ],
-          "deviation": "Zwölf statt sechs dämonische Domänen; jede einzelne Domäne ist Merkmal der Stufe I. Fehlende Domänen werden als Stufe II (200 AP) bepreist und von der Stufentabelle nicht erfasst.",
-          "impact": "Test: bindet die Zählung 19/10/5 und die Katalogliste an eine unvollständige Domänenmenge. Produkt: Merkmalskenntnis (und davon abgeleitete Preise Arkane Meisterschaft/Großmeister) für offizielle Domänen außerhalb der sechs wird zu teuer, sobald sie im Katalog auftauchen (z. B. Agrimoth).",
-          "secondCheck": {
-            "checkedOn": "2026-10-26",
-            "result": "confirmed",
-            "note": "Wege der Zauberei S. 25 (Chunk 5006): Dämonisch hat 'zwölf bekannte Unter-Merkmale'; die Stufentabelle in Chunk 4704 führt die einzelne Domäne als Merkmal der Stufe I."
-          }
+          "conflictKey": "merkmale-daemonische-domaenen-unvollstaendig",
+          "resolvedOn": "2026-10-27",
+          "note": "kMerkmale, kMerkmaleKlassifikationI und die Stufe-I-Varianten von Arkane Meisterschaft/Merkmalsgroßmeister führen alle zwölf dämonischen Domänen (zusätzlich Agrimoth, Belhalhar, Belkelel, Belshirash, Charyptoroth, Tasfarelel; WdZ S. 394); Stufe I hat 25, insgesamt 40 Merkmale; Tests angepasst."
         }
       ]
     },

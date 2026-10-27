@@ -11,15 +11,22 @@ const List<String> kRepresentationen = [
   'Srl', // Scharlatane
 ];
 
-/// Alle 34 bekannten Zauber-Merkmale aus dem Katalog.
+/// Alle 40 bekannten Zauber-Merkmale: die zwölf dämonischen Domänen, die sechs
+/// Elemente und die übrigen Merkmale (WdZ S. 25).
 const List<String> kMerkmale = [
   'Antimagie',
   'Beschwörung',
+  'Dämonisch (Agrimoth)',
   'Dämonisch (Amazeroth)',
   'Dämonisch (Asfaloth)',
+  'Dämonisch (Belhalhar)',
+  'Dämonisch (Belkelel)',
+  'Dämonisch (Belshirash)',
   'Dämonisch (Blakharaz)',
+  'Dämonisch (Charyptoroth)',
   'Dämonisch (Lolgramoth)',
   'Dämonisch (Mishkara)',
+  'Dämonisch (Tasfarelel)',
   'Dämonisch (Thargunitoth)',
   'Dämonisch (allgemein)',
   'Eigenschaften',

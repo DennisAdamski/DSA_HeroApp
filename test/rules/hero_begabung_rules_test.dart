@@ -357,14 +357,53 @@ void main() {
     ]);
   });
 
-  test('Reihenfolge: erst verteuern, dann verbilligen', () {
+  test('Verschiebungen sind kumulativ, geklemmt wird erst die Summe', () {
+    // Wege der Helden S. 19: H + Unfähigkeit (+1) + Begabung (−1) bleibt H.
     expect(
       effectiveTalentLernkomplexitaet(
         basisKomplexitaet: 'H',
         gifted: true,
         unfaehigkeitsSchritte: 1,
       ),
-      'G',
+      'H',
+    );
+    expect(
+      effectiveTalentLernkomplexitaet(
+        basisKomplexitaet: 'H',
+        gifted: false,
+        unfaehigkeitsSchritte: 3,
+      ),
+      'H',
+    );
+    expect(
+      effectiveTalentLernkomplexitaet(
+        basisKomplexitaet: 'B',
+        gifted: true,
+        unfaehigkeitsSchritte: 2,
+      ),
+      'C',
+    );
+    expect(
+      effectiveSpellLernkomplexitaet(
+        basisKomplexitaet: 'G',
+        istHauszauber: false,
+        zauberMerkmale: const [],
+        heldMerkmalskenntnisse: const [],
+        gifted: true,
+        penaltySteps: 3,
+      ),
+      'H',
+    );
+    expect(
+      effectiveSpellLernkomplexitaet(
+        basisKomplexitaet: 'C',
+        istHauszauber: true,
+        zauberMerkmale: const [],
+        heldMerkmalskenntnisse: const [],
+        gifted: false,
+        penaltySteps: 2,
+      ),
+      'D',
     );
     expect(
       effectiveSpellLernkomplexitaet(

@@ -297,8 +297,8 @@ final Expando<({RulesCatalog catalog, HeroBegabungen begabungen})> _begabungen =
 
 /// Effektive Lernkomplexitaet einer eigenen Ritualkenntnis.
 ///
-/// Wie bei Talenten: erst verteuern, dann um hoechstens eine Spalte
-/// verbilligen. Ritualkenntnisse kennen kein `A*`; `A` ist die Untergrenze.
+/// Wie bei Talenten: Verteuerung und Begabung verrechnen sich zur
+/// Netto-Verschiebung, geklemmt wird erst am Ende. Ritualkenntnisse kennen kein `A*`; `A` ist die Untergrenze.
 String effektiveRitualkenntnisKomplexitaet({
   required String basisKomplexitaet,
   required LernspaltenBefund befund,

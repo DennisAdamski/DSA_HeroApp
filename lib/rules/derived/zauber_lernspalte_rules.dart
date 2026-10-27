@@ -238,9 +238,9 @@ bool _bevorzugt(
 /// Lernspalte eines Talents (auch Sprache oder Schrift) als Herleitung in
 /// Spalten: Katalogspalte, Begabung und Unfähigkeit.
 ///
-/// Wie bei Zaubern wird zuerst verteuert, dann um höchstens eine Spalte
-/// verbilligt (`effectiveTalentLernkomplexitaet`); Grenzen der Tabelle stehen
-/// als Ausgleichsschritt da.
+/// Wie bei Zaubern verrechnen sich Begabung und Unfähigkeit zur
+/// Netto-Verschiebung (`effectiveTalentLernkomplexitaet`); erst die Summe wird
+/// an die Tabellenränder geklemmt, die Klemmung steht als Ausgleichsschritt da.
 Herleitung herleiteTalentLernspalte({
   required String basisSpalte,
   required LernspaltenBefund befund,

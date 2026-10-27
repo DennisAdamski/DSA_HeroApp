@@ -12,18 +12,18 @@ Die maschinenlesbare Inventur `tool/rule_test_evidence.json` erfasst **211 Test-
 | `official` | 147 |
 | `house_rule` | 9 |
 | `product_contract` | 55 |
-| `verified` | 145 |
-| `conflict` (mindestens ein bestätigter Einzelbefund) | 66 |
+| `verified` | 146 |
+| `conflict` (mindestens ein bestätigter Einzelbefund) | 65 |
 
 Aufschlüsselung Art × Status:
 
 | Art | verified | conflict |
 | --- | ---: | ---: |
-| `official` | 82 | 65 |
+| `official` | 83 | 64 |
 | `house_rule` | 8 | 1 |
 | `product_contract` | 55 | 0 |
 
-Die 66 Konfliktdateien enthalten zusammen **83 offene fachlich verschiedene Einzelbefunde** mit je eigenem Folgeauftrag `RULE-FIX-NNN` (Priorität P1: 0, P2: 36, P3: 47); weitere 22 Befunde sind bereits behoben (siehe unten). Ein Konflikt auf Dateiebene heißt: *mindestens* eine Erwartung der Datei ist nicht deckungsgleich mit dem Buch oder nicht belegbar; alle übrigen Erwartungen der Datei sind geprüft und stehen in der `summary` des Eintrags bzw. unter `sources`.
+Die 65 Konfliktdateien enthalten zusammen **81 offene fachlich verschiedene Einzelbefunde** mit je eigenem Folgeauftrag `RULE-FIX-NNN` (Priorität P1: 0, P2: 34, P3: 47); weitere 24 Befunde sind bereits behoben (siehe unten). Ein Konflikt auf Dateiebene heißt: *mindestens* eine Erwartung der Datei ist nicht deckungsgleich mit dem Buch oder nicht belegbar; alle übrigen Erwartungen der Datei sind geprüft und stehen in der `summary` des Eintrags bzw. unter `sources`.
 
 ## Geprüfte Pakete
 
@@ -118,10 +118,10 @@ Damit liegt die Fehlerquote der Zweitprüfung bei 2 von 84 Dateien (rund 2 %); d
 
 | Fall | Dateien | Bedeutung |
 | --- | ---: | --- |
-| Test stimmt mit der Buchregel überein | 82 | `official`/`verified`: alle fachlichen Erwartungen belegt |
+| Test stimmt mit der Buchregel überein | 83 | `official`/`verified`: alle fachlichen Erwartungen belegt |
 | Dokumentierte Hausregel weicht bewusst ab | 8 | `house_rule`/`verified`: durch Hausregel-Dokument im MCP belegt |
 | Technischer Produktvertrag ohne Regelbehauptung | 55 | `product_contract`: Begründung je Datei in der Inventur |
-| Test oder Produkt widerspricht der Quelle | 10 | Dateien mit mindestens einem Befund `contradiction` (9 Einzelbefunde) |
+| Test oder Produkt widerspricht der Quelle | 9 | Dateien mit mindestens einem Befund `contradiction` (7 Einzelbefunde) |
 | Regelunklarheit, Buch entscheidet nicht | 46 | Dateien mit mindestens einem Befund `unresolved` (55 Einzelbefunde) |
 | Quelle im MCP nicht ausreichend verfügbar | 17 | Dateien mit mindestens einem Befund `source_gap` (19 Einzelbefunde) |
 
@@ -164,10 +164,8 @@ Folgeauftrag = je eine Zeile; das Beleg-Format ist *Buch S. gedruckte Seite (MCP
 | RULE-FIX-027 | contradiction | `gefecht_ladezeit_paket3_test.dart` | Buch: weitere Aktionskürzung durch Axxeleratus nur bei bestandener FF-Probe; App: automatisch. | Basisregelwerk S. 174 (Chunk 686, 687) | Ladezeit und Rundenplanung fallen im Gefecht um 1 Aktion zu kurz, wenn die FF-Probe misslingt. Der Test würde bei einer Korrektur (FF-Probe als Eingabe) angepasst werden müssen; … |
 | RULE-FIX-028 | contradiction | `gefecht_rules_test.dart`, `gefecht_ueberzahl_rules_test.dart` | App erlaubt Ausweichen auch bei 4 oder mehr Gegnern (nur Deckelung des Malus); die Ausweichen-Tabelle erklärt es bei Umstellung durch 4+ Gegner für unmöglich. | Wege des Schwerts S. 66 (PDF S. 67) (Chunk 7005, 7006); Wege des Schwerts S. 80 (PDF S. 81) (Chunk 7043); Errata WdS S. 4–5 (Chunk 25632) | Spielwert bei Umstellung durch vier oder mehr Gegner möglicherweise falsch (Ausweichen angeboten statt gesperrt); Randfall, keine Datenwirkung. |
 | RULE-FIX-029 | unresolved | `gefecht_waffenbelegung_folge_test.dart` | Die Regel 'Bogen/Armbrust = zweihändig' ist plausibel und indirekt gestützt, aber nicht ausdrücklich belegt. | Erweiterung und Überarbeitung des Regelwerks S. 14 (PDF-Seite) (Chunk 25827); Wege des Schwerts S. 70 (PDF 71) (Chunk 7017) | Betrifft Handbelegung und Zusatzaktionen von Fernkämpfern mit Schild/Zweitwaffe; falsch wäre nur der (seltene) Fall einer regelkonform einhändig geführten Schusswaffe außer der Balestrina. |
-| RULE-FIX-030 | contradiction | `hero_begabung_rules_test.dart` | Buch: Netto-Verschiebung, Deckelung nur am Endergebnis (H + 1 - 1 = H). Programm: Zwischendeckelung nach der Verteuerung (H → H → G). … | Wege der Helden S. 19 (Chunk 4067, 4068) | Randfall (Basis G/H mit gleichzeitiger Verteuerung und Verbilligung, z. B. H-Zauber in fremder Repräsentation mit Hauszauber/Begabung): Steigerungskosten eine Spalte zu niedrig. … |
 | RULE-FIX-031 | source_gap | `kampf_herleitung_rules_test.dart` | Keine Quelle im MCP, die einen AT-WM-Bonus der Waffenmeisterschaft auf den Fernkampfwert bestätigt oder ausschließt; nur die im Test dokumentierte Entscheidung stützt die Erwartung (Repo-Entscheidung ohne MCP-Beleg). | Suche: Waffenmeister Bonus AT-WM Fernkampf Waffenmeisterschaft Bogen Wirkung; Ein Waffenmeister (Kurzbogen) Fernkampfwert Bonus; Waffenmeister Langbogen Kurzbogen Armbrust Besonderheiten Fernkampf; … | Der Test bindet eine nicht belegte Designentscheidung; das Produktverhalten (FK + WM-Bonus) ist ohne Hausregel-Beleg nicht verifizierbar. Betroffen nur Helden mit Fernkampf-Waffenmeisterschaft. |
 | RULE-FIX-032 | source_gap | `kampf_herleitung_rules_test.dart` | Regelgrundlage der 'höheren Waffen-INI' ist im MCP nicht auffindbar. | Suche: Beidhändiger Kampf zwei Waffen Initiative INI-Modifikator der beiden Waffen gilt der höhere; Doppelangriff Manöver Initiative beider Waffen höherer INI-Modifikator Zweitwaffe; … | Kampf-INI mit zwei Waffen (und damit INI-Bonus auf Abwehr und Ausweichen) hängt von einer unbelegten App-Regel ab. |
-| RULE-FIX-033 | contradiction | `magic_acquisition_rules_test.dart` | Zwölf statt sechs dämonische Domänen; jede einzelne Domäne ist Merkmal der Stufe I. Fehlende Domänen werden als Stufe II (200 AP) bepreist und von der Stufentabelle nicht erfasst. | Wege der Zauberei S. 25 (Chunk 5006, 5007); Wege der Helden S. 248; 288 (Chunk 4704, 4822); Liber Cantiones S. 6 (Chunk 1904) | Test: bindet die Zählung 19/10/5 und die Katalogliste an eine unvollständige Domänenmenge. Produkt: Merkmalskenntnis (und davon abgeleitete Preise Arkane Meisterschaft/Großmeister) für offizielle Domänen außerhalb der sechs wird z … |
 | RULE-FIX-036 | unresolved | `reittier_ausbildung_rules_test.dart` | Buch nennt keine Rundung und nicht eindeutig die Bezugswerte; Die Rundung ist geklärt (Halbierungen werden aufgerundet, KK 1,5 -> 2, AU Galopp 0,5 -> 1; Code und Test angepasst); offen bleibt, welcher Schritt halbiert wird. | Zoo Botanica Aventurica S. 34 (Chunk 7965); Zoo Botanica Aventurica S. 33 (Chunk 7963); Zoo-Botanica Aventurica S. PDF 35 (Chunk 7965) | Wirkwerte (KK, LO, AU) ländlich weitergeführter Tiere können um 1 abweichen; Randfall. |
 | RULE-FIX-037 | unresolved | `reittier_ausbildung_rules_test.dart` | Tabelle (keine Ausbildung) und Fließtext (Weg ab unerfahren) widersprechen sich bzw. lassen die Schrittfolge offen; die App wählt die kürzeste Lesart. | Zoo Botanica Aventurica S. 33 (Chunk 7963); Zoo Botanica Aventurica S. 34 (Chunk 7965) | Probenanzahl/Zeitbedarf und Modifikationen beim Aufstieg ländlich erprobter Tiere zum geschulten Tier; Randfall. |
 | RULE-FIX-039 | unresolved | `schaden_rules_test.dart` | Buch fasst Brust/Rücken als einen Zonenbereich zusammen und nennt Brustwunden mit 1W6 Zusatz-SP; die Tabelle hat keine Rückenzeile. … | Wege des Schwerts S. PDF S. 108–109 (Chunk 7111, 7112, 7113, 7114); Wege des Schwerts S. 107-108 (PDF 108-109) (Chunk 7111, 7112, 7114) | Bei Rückentreffern fehlt im Schadensdialog der 1W6-Zusatzschaden je Wunde, obwohl derselbe Wundzustand ihn als Erinnerung anzeigt; der Test sichert das aktuelle Verhalten ab. … |
@@ -263,6 +261,8 @@ Diese Befunde wurden nach dem Audit in einem eigenen Schritt behoben: Produktcod
 | RULE-FIX-012 | 2026-10-27 | Attributo-Bonus ZfP*/3 wird echt gerundet (ZfP* 7 -> 2, 8 -> 3) | `active_spell_state_rules_test.dart` |
 | RULE-FIX-048 | 2026-10-27 | Waffenloser Kampf: INI-Modifikator 0 im reinen waffenlosen Kampf, -2 nur gegen Bewaffnete | `waffenlos_rules_test.dart` |
 | RULE-FIX-097 | 2026-10-27 | Vertrauten-AP: ein Viertel der Abenteuer-AP, kumulativ echt gerundet statt abgerundet | `vertrauten_ap_rules_test.dart` |
+| RULE-FIX-033 | 2026-10-27 | Zwölf dämonische Domänen als Merkmale der Stufe I | `magic_acquisition_rules_test.dart` |
+| RULE-FIX-030 | 2026-10-27 | Begabung/Unfähigkeit: Netto-Verschiebung statt Zwischendeckelung | `hero_begabung_rules_test.dart` |
 
 ## Technische Verträge ohne Regelbehauptung
 
