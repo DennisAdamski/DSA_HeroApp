@@ -108,8 +108,9 @@ class SchadensZusatzwurf {
 /// Grundlage ist die Standard-Trefferzonentabelle: Kopfwunden bringen je
 /// Wunde 2W6 INI-Malus, Brust- und Bauchwunden je Wunde 1W6 zusätzliche SP.
 /// Erreicht die Zone mit diesem Treffer ihre dritte Wunde, kommen die Würfe
-/// der dritten Wunde hinzu (Kopf: 2W6 SP). Zonen ohne Tabellenwürfe liefern
-/// eine leere Liste.
+/// der dritten Wunde hinzu (Kopf: 2W6 SP). Der Rücken zählt wie die Brust
+/// („Brust/Rücken“, WdS S. 108). Zonen ohne Tabellenwürfe liefern eine leere
+/// Liste.
 List<SchadensZusatzwurf> schadensZusatzwuerfe({
   required WundZone zone,
   required int bisherigeWunden,
@@ -118,9 +119,10 @@ List<SchadensZusatzwurf> schadensZusatzwuerfe({
   if (neueWunden <= 0) {
     return const <SchadensZusatzwurf>[];
   }
+  final tabellenZone = zone == WundZone.ruecken ? WundZone.brust : zone;
   TrefferzonenEintrag? eintrag;
   for (final kandidat in humanoidTrefferzonenTabelle.eintraege) {
-    if (kandidat.zone == zone) {
+    if (kandidat.zone == tabellenZone) {
       eintrag = kandidat;
       break;
     }

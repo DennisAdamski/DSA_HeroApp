@@ -92,6 +92,18 @@ void main() {
       expect(wuerfe.single.wirkung, TrefferzonenZusatzwirkung.schaden);
     });
 
+    test('Rücken zählt wie die Brust: 1W6 SP je neuer Wunde', () {
+      final wuerfe = schadensZusatzwuerfe(
+        zone: WundZone.ruecken,
+        bisherigeWunden: 1,
+        neueWunden: 2,
+      );
+      expect(wuerfe, hasLength(1));
+      expect(wuerfe.single.label, 'Extraschaden');
+      expect(wuerfe.single.diceSpec.label, '2W6');
+      expect(wuerfe.single.wirkung, TrefferzonenZusatzwirkung.schaden);
+    });
+
     test('Kopf: INI-Malus je Wunde, dritte Wunde bringt 2W6 SP', () {
       final wuerfe = schadensZusatzwuerfe(
         zone: WundZone.kopf,
@@ -117,7 +129,7 @@ void main() {
       expect(wuerfe.map((wurf) => wurf.label), ['INI-Malus']);
     });
 
-    test('ohne Wunden und für Arme/Beine keine Würfe', () {
+    test('ohne Wunden und für Arme und Beine keine Würfe', () {
       expect(
         schadensZusatzwuerfe(
           zone: WundZone.brust,
@@ -131,7 +143,6 @@ void main() {
         WundZone.rechterArm,
         WundZone.linkesBein,
         WundZone.rechtesBein,
-        WundZone.ruecken,
       ]) {
         expect(
           schadensZusatzwuerfe(zone: zone, bisherigeWunden: 0, neueWunden: 2),
