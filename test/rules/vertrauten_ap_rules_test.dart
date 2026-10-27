@@ -50,10 +50,20 @@ void main() {
     test('schreibt exakt ab dem Einrichten gut, auch über Reste', () {
       var held = _hexe([_vertrauter(erfasst: 0)]);
       held = mitVertrautenApAnteil(held, 6);
-      expect(held.companions.single.apGesamt, 11);
+      expect(held.companions.single.apGesamt, 12, reason: 'round(6/4) = 2');
       held = mitVertrautenApAnteil(held, 6);
-      expect(held.companions.single.apGesamt, 13, reason: '⌊12/4⌋ = 3');
+      expect(held.companions.single.apGesamt, 13, reason: 'round(12/4) = 3');
       expect(held.companions.single.vertrautenBindung!.abenteuerApErfasst, 12);
+    });
+
+    test('der Anteil wird echt gerundet', () {
+      expect(vertrautenApAnteil(0), 0);
+      expect(vertrautenApAnteil(1), 0);
+      expect(vertrautenApAnteil(2), 1);
+      expect(vertrautenApAnteil(5), 1);
+      expect(vertrautenApAnteil(6), 2);
+      expect(vertrautenApAnteil(7), 2);
+      expect(vertrautenApAnteil(101), 25);
     });
 
     test('eine Rücknahme zieht den Anteil wieder ab', () {
@@ -112,7 +122,8 @@ void main() {
           HeroAdventureEntry(id: 'b', apReward: 500),
         ],
       );
-      expect(vertrautenNachtragsvorschlag(held, reiseberichtAp: 102), 100);
+      // (300 + 102) / 4 = 100,5 wird auf 101 gerundet.
+      expect(vertrautenNachtragsvorschlag(held, reiseberichtAp: 102), 101);
     });
   });
 

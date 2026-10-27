@@ -12,18 +12,18 @@ Die maschinenlesbare Inventur `tool/rule_test_evidence.json` erfasst **211 Test-
 | `official` | 147 |
 | `house_rule` | 9 |
 | `product_contract` | 55 |
-| `verified` | 144 |
-| `conflict` (mindestens ein bestätigter Einzelbefund) | 67 |
+| `verified` | 145 |
+| `conflict` (mindestens ein bestätigter Einzelbefund) | 66 |
 
 Aufschlüsselung Art × Status:
 
 | Art | verified | conflict |
 | --- | ---: | ---: |
-| `official` | 81 | 66 |
+| `official` | 82 | 65 |
 | `house_rule` | 8 | 1 |
 | `product_contract` | 55 | 0 |
 
-Die 67 Konfliktdateien enthalten zusammen **84 offene fachlich verschiedene Einzelbefunde** mit je eigenem Folgeauftrag `RULE-FIX-NNN` (Priorität P1: 0, P2: 36, P3: 48); weitere 21 Befunde sind bereits behoben (siehe unten). Ein Konflikt auf Dateiebene heißt: *mindestens* eine Erwartung der Datei ist nicht deckungsgleich mit dem Buch oder nicht belegbar; alle übrigen Erwartungen der Datei sind geprüft und stehen in der `summary` des Eintrags bzw. unter `sources`.
+Die 66 Konfliktdateien enthalten zusammen **83 offene fachlich verschiedene Einzelbefunde** mit je eigenem Folgeauftrag `RULE-FIX-NNN` (Priorität P1: 0, P2: 36, P3: 47); weitere 22 Befunde sind bereits behoben (siehe unten). Ein Konflikt auf Dateiebene heißt: *mindestens* eine Erwartung der Datei ist nicht deckungsgleich mit dem Buch oder nicht belegbar; alle übrigen Erwartungen der Datei sind geprüft und stehen in der `summary` des Eintrags bzw. unter `sources`.
 
 ## Geprüfte Pakete
 
@@ -118,11 +118,11 @@ Damit liegt die Fehlerquote der Zweitprüfung bei 2 von 84 Dateien (rund 2 %); d
 
 | Fall | Dateien | Bedeutung |
 | --- | ---: | --- |
-| Test stimmt mit der Buchregel überein | 81 | `official`/`verified`: alle fachlichen Erwartungen belegt |
+| Test stimmt mit der Buchregel überein | 82 | `official`/`verified`: alle fachlichen Erwartungen belegt |
 | Dokumentierte Hausregel weicht bewusst ab | 8 | `house_rule`/`verified`: durch Hausregel-Dokument im MCP belegt |
 | Technischer Produktvertrag ohne Regelbehauptung | 55 | `product_contract`: Begründung je Datei in der Inventur |
 | Test oder Produkt widerspricht der Quelle | 10 | Dateien mit mindestens einem Befund `contradiction` (9 Einzelbefunde) |
-| Regelunklarheit, Buch entscheidet nicht | 47 | Dateien mit mindestens einem Befund `unresolved` (56 Einzelbefunde) |
+| Regelunklarheit, Buch entscheidet nicht | 46 | Dateien mit mindestens einem Befund `unresolved` (55 Einzelbefunde) |
 | Quelle im MCP nicht ausreichend verfügbar | 17 | Dateien mit mindestens einem Befund `source_gap` (19 Einzelbefunde) |
 
 Die letzten drei Zeilen überschneiden sich, weil eine Datei Befunde mehrerer Typen tragen kann.
@@ -231,7 +231,6 @@ Folgeauftrag = je eine Zeile; das Beleg-Format ist *Buch S. gedruckte Seite (MCP
 | RULE-FIX-092 | unresolved | `spell_effect_probe_rules_test.dart` | Keine Aussage zur Kombination beider SF; die App wählt einmalige Halbierung. | Liber Cantiones S. 49 (Chunk 1969, 1970, 1971); Wege der Zauberei S. 6 (Chunk 4954, 4955, 4956); Liber Cantiones S. 50 (MCP-Seite) (Chunk 1559); Wege der Helden S. 6 (MCP-Seite) (Chunk 4036) | Zauberprobenabzug von Blitz bei Helden mit beiden SF (-3 statt -2 bei ZfP* 5) ist eine Auslegung; seltener Randfall. |
 | RULE-FIX-095 | source_gap | `talent_specialization_hints_test.dart` | Keine Abweichung gefunden, aber die Negativaussage ist für die übrigen fünf Gaben nicht belegt. | Suche: Gabe Tierempathie Spezialisierung; Talentspezialisierung Sonderfertigkeit Gaben nicht; Gefahreninstinkt Gabe Spezialisierung; Zwergennase Prophezeien Magiegespür Geräuschhexerei Gabe Startwert; … | Betrifft nur die Tabellenabdeckung (Hinweisanzeige); keine Rechen- oder Datenwirkung. |
 | RULE-FIX-096 | source_gap | `trefferzonen_rules_test.dart` | Buch: Erschwernis/Erleichterung um 2 bzw. 1 für Kopf und Beine; App: allgemeine Würfelverschiebung mit Clamping. Die Zuordnung der Zwergen-/Kleinwuchsverschiebung auf Tabellenwürfe ist eine App-Folgerung. | Suche: Zwergenwuchs Trefferzone Kopf erschwert Beine erleichtert; Kleinwüchsig Trefferzone Verschiebung; Trefferzone Wurf Modifikator W20 verschieben; Trefferzonen Tabelle Modifikator Klemmen; … | Die getesteten Zahlen (+2, −10, ±5) sind synthetisch; ein Spielwertfehler entsteht nur, wenn die Zwergen-/Kleinwuchs-Modifikatoren falsch auf diese Mechanik abgebildet werden (hier nicht getestet). |
-| RULE-FIX-097 | unresolved | `vertrauten_ap_rules_test.dart` | Buch: Empfehlung ('sollte') ohne Rundungsregel. App: verbindlich, kumulativ abgerundet. | Wege der Zauberei S. 125 (MCP-Seite) (Chunk 5267, 5268); Wege der Helden S. 6 (MCP-Seite) (Chunk 4036) | Höchstens 1 AP Abweichung je Vergabe gegenüber einer anderen Rundungsmethode; kein Datenverlust. |
 | RULE-FIX-098 | unresolved | `vertrauten_ausbildung_rules_test.dart` | Das Buch sagt 'üblicherweise nicht wählbar' (Regelfall, Meister kann abweichen); die App macht daraus ein hartes Verbot ohne Meisterausnahme (App-Entscheidung). | Wege der Zauberei S. 123 (Chunk 5266) | Ein Meister kann ein Kampftier-Training für einen Vertrauten in der App nicht erfassen; Randfall, keine falschen Werte. |
 | RULE-FIX-099 | unresolved | `wund_rules_test.dart`, `wund_zonen_rules_test.dart` | Anteilige und aufgerundete Rueckrechnung ist eine App-Ableitung; im MCP (WdS S. 57/108/161 f. gedruckt, BRW S. 195 f., Hausregeln) ist keine Regel dazu auffindbar. Gelesen wurden u. a. die Heilungskapitel inkl. … | Wege der Helden S. 6 (MCP-Seite) (Chunk 4036) | Nur Komfortwert fuer den Hinweistext 'aktuelle INI'; keine Spielwert-Rechnung (Kopf-INI senkt keine gespeicherte INI). Test und Produkt koennen unveraendert bleiben, wenn die Ableitung als Designentscheidung dokumentiert wird. |
 | RULE-FIX-100 | unresolved | `zauber_lernspalte_rules_test.dart` | App und Test setzen die SF allein als Aufhebung des Nachteils; das Buch beschreibt die Aufhebung im Zusammenhang mit der erlernten Merkmalskenntnis im Gegenelement. | Wege der Zauberei S. 381 (Chunk 5951); Wege der Zauberei S. 187 (Chunk 5432); Wege der Helden S. PDF S. 286 (Chunk 4813) | Nur Randfall (Held mit SF, aber ohne Merkmalskenntnis im Gegenelement); Lernspalte könnte dort um eine Spalte abweichen. Test ist als Regelaussage zu präzisieren oder Auslegung zu dokumentieren. |
@@ -263,6 +262,7 @@ Diese Befunde wurden nach dem Audit in einem eigenen Schritt behoben: Produktcod
 | RULE-FIX-008 | 2026-10-27 | Rittmeister verlangt keine SF Kriegsreiterei (nur TaW Reiten 19, kein Zwerg) | `combat_special_ability_catalog_test.dart` |
 | RULE-FIX-012 | 2026-10-27 | Attributo-Bonus ZfP*/3 wird echt gerundet (ZfP* 7 -> 2, 8 -> 3) | `active_spell_state_rules_test.dart` |
 | RULE-FIX-048 | 2026-10-27 | Waffenloser Kampf: INI-Modifikator 0 im reinen waffenlosen Kampf, -2 nur gegen Bewaffnete | `waffenlos_rules_test.dart` |
+| RULE-FIX-097 | 2026-10-27 | Vertrauten-AP: ein Viertel der Abenteuer-AP, kumulativ echt gerundet statt abgerundet | `vertrauten_ap_rules_test.dart` |
 
 ## Technische Verträge ohne Regelbehauptung
 

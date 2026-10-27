@@ -12372,7 +12372,7 @@
     },
     "test/rules/vertrauten_ap_rules_test.dart": {
       "kind": "official",
-      "status": "conflict",
+      "status": "verified",
       "summary": "Die Datei sichert den AP-Anteil des Vertrauten (1/4 der Abenteuer-AP der Hexe ohne Abzug bei ihr, WdZ), die Übertragung eigener AP der Hexe auf den Vertrauten (Hexe zahlt als ausgegebene AP, permanent), Loyalität +1 je volle 50 übertragene AP bis höchstens 25 (Start 15) sowie die Bindung/Idempotenz/Konsistenzprüfungen. Bestätigt sind 1/4-Anteil (200 AP -> 50), Übertragung 80 AP (Hexe -80 frei, Vertrauter +80), Loyalität 30 -> 110 übertragene AP = +2 (15 -> 17), Obergrenze 25. Offen bleibt die Rundung/Restverwaltung des Viertels (kumulativ abgerundet).",
       "sources": [
         {
@@ -12393,53 +12393,12 @@
           "checkedOn": "2026-10-24"
         }
       ],
-      "conflicts": [
+      "resolved": [
         {
-          "conflictKey": "vertrauter-ap-viertel-rundung",
-          "conflictType": "unresolved",
-          "priority": "P3",
           "followUp": "RULE-FIX-097",
-          "finding": "Das Buch sagt nur: Bei pauschaler AP-Vergabe 'sollte der Vertraute ein Viertel der AP bekommen, die die Hexe erhält; diese AP werden nicht von den Punkten der Hexe abgezogen'. Die App macht daraus ein festes Viertel mit kumulativer Abrundung (Gutschrift = floor(neu/4) - floor(alt/4), Rücknahme symmetrisch, Zähler nie unter 0). Der Test 'schreibt exakt ab dem Einrichten gut, auch über Reste' (6 + 6 AP -> 3 AP statt 1 + 1) und 'eine Rücknahme zieht den Anteil wieder ab' (101 -> 25, -101 -> 0) pinnen diese Rundung bzw. Restverwaltung. Das Buch regelt weder Rundung noch Reste noch die Rücknahme; die 'Nutzerentscheidung 8. Oktober 2026' steht nur im Quellcodekommentar, nicht im MCP. Gegenprüfung 2026-10-25: Das Buch sagt nur 'ein Viertel' (Empfehlung); die allgemeine Rundungsregel (echt runden) wäre die Lesart pro AP-Vergabe, was gegen das reine Abrunden (6 + 6 AP -> 3) spricht; kumulative Restverwaltung und Rücknahme sind nirgends geregelt (Nutzerentscheidung nur im Quellcode).",
-          "testCases": [
-            "schreibt exakt ab dem Einrichten gut, auch über Reste",
-            "eine Rücknahme zieht den Anteil wieder ab",
-            "Vorschlag: ¼ der angewendeten Abenteuer- und Reisebericht-AP"
-          ],
-          "expected": "Vertraute erhalten floor(Summe der Abenteuer-AP seit Einrichtung / 4); Vorschlag für den Nachtrag floor((Abenteuer-AP + Reisebericht-AP) / 4).",
-          "bookRule": [
-            {
-              "title": "Wege der Zauberei (Vertrauter, AP-Anteil)",
-              "pages": "125 (MCP-Seite)",
-              "mcpChunks": [
-                5267,
-                5268
-              ],
-              "checkedOn": "2026-10-25"
-            },
-            {
-              "title": "Wege der Helden (Rundung: echt runden)",
-              "pages": "6 (MCP-Seite)",
-              "mcpChunks": [
-                4036
-              ],
-              "checkedOn": "2026-10-25"
-            }
-          ],
-          "searchedTerms": [
-            "Vertrauter ein Viertel der AP Hexe",
-            "Vertrauter Abenteuerpunkte abrunden Rundung",
-            "Vertrauter AP Reste Viertel",
-            "Vertrauter Rücknahme AP",
-            "Vertrauter sollte ein Viertel der AP bekommen die die Hexe erhält nicht abgezogen"
-          ],
-          "deviation": "Buch: Empfehlung ('sollte') ohne Rundungsregel. App: verbindlich, kumulativ abgerundet.",
-          "impact": "Höchstens 1 AP Abweichung je Vergabe gegenüber einer anderen Rundungsmethode; kein Datenverlust.",
-          "recheck": "Gegenprüfung 2026-10-25: nur teilweise belegt.",
-          "secondCheck": {
-            "checkedOn": "2026-10-26",
-            "result": "confirmed",
-            "note": "Wege der Zauberei S. 124 (Chunk 5267): der Vertraute 'sollte' ein Viertel der AP bekommen; eine Rundung nennt das Buch nicht."
-          }
+          "conflictKey": "vertrauter-ap-viertel-rundung",
+          "resolvedOn": "2026-10-27",
+          "note": "Produktcode (vertrautenApAnteil: (AP + 2) ~/ 4, kumulativ weiter über round(neu/4) - round(alt/4)) und Tests angepasst; Entscheid 27.10.2026: echt runden statt abrunden."
         }
       ]
     },

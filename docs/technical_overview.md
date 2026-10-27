@@ -2727,7 +2727,8 @@ Vertraute steigen mit eigenen AP nach Komplexität F (WdZ S. 125). Die Grenzen
 stehen in `companion_steigerung_rules.dart`:
 
 - INI, Loyalität und AuP sind gesperrt.
-- Kein Wert steigt über ⌊1,5 × Startwert⌋, ausgenommen AsP und RK.
+- Kein Wert steigt über das echt gerundete 1,5 × Startwert (7 ergibt 11),
+  ausgenommen AsP und RK.
 - GS steigt je Bewegungsart über `HeroCompanionSpeed.steigerung`.
 - Altbuchungen bleiben stehen und bekommen nur einen Hinweis.
 
@@ -2738,7 +2739,8 @@ zugehörigen Regeln:
 
 - `vertrauten_bindung_rules.dart`: Generierung und Bindung. Die Kosten gehen
   als `apSpent` der Hexe in derselben Änderung.
-- `vertrauten_ap_rules.dart`: ¼ der Abenteuer-AP. Die Regel ist in
+- `vertrauten_ap_rules.dart`: ¼ der Abenteuer-AP, kumulativ echt gerundet
+  (`round(neu/4) - round(alt/4)`, Entscheidung 27.10.2026). Die Regel ist in
   Abenteuerabschluss und Reisebericht samt Rücknahmen eingehängt. Dazu kommen
   die einmalige Einrichtung und die Übertragung mit Loyalität.
 - `vertrauten_ausbildung_rules.dart`: Zauberzugang je Art, Lernen aus den AP
