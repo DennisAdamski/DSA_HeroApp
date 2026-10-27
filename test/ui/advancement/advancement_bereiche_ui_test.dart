@@ -158,7 +158,11 @@ void main() {
       container.read(advancementSessionProvider(_hero.id))!;
 
   testWidgets('Grundlagen planen einen nachträglichen Vorteil', (tester) async {
-    final setup = await open(tester);
+    // Eisern setzt beim Nachkauf KO 15 voraus (Hausregel, Abschnitt 4).
+    final setup = await open(
+      tester,
+      hero: _hero.copyWith(attributes: _hero.attributes.copyWith(ko: 15)),
+    );
     await zuAbschnitt(tester, 'grundlagen', 'vorteile');
     await tester.tap(
       find.byKey(const ValueKey('advancement-plan-advantage-adv_eisern')),
