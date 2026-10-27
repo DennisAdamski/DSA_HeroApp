@@ -176,13 +176,17 @@ void main() {
   });
 
   group('Hexenspeichel', () {
-    test('Wunden: 1 LeP je 2 AsP, ungerade AsP sind nicht belegt', () {
+    test('Wunden: 1 LeP je 2 AsP, ungerade AsP werden aufgerundet', () {
       final p = pruefeHeilung(_zustand(), _speichel(asp: 8), maxLep: 40);
       expect(p.lep, 4);
       expect(p.kosten, 8);
+      expect(p.hinweise.where((h) => h.contains('aufgerundet')), isEmpty);
+      // Allgemeine Rundungsregel: Halbierungen werden aufgerundet (7 -> 3,5 -> 4).
       final ungerade = pruefeHeilung(_zustand(), _speichel(asp: 7), maxLep: 40);
-      expect(ungerade.gueltig, isFalse);
-      expect(ungerade.fehler.first, contains('Rundung'));
+      expect(ungerade.gueltig, isTrue);
+      expect(ungerade.lep, 4);
+      expect(ungerade.kosten, 7);
+      expect(ungerade.hinweise.any((h) => h.contains('aufgerundet')), isTrue);
     });
 
     test('Krankheit 1 LeP je AsP, Vergiftung 2 LeP je AsP', () {

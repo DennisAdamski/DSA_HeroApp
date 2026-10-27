@@ -51,8 +51,8 @@ class AuxiliatorBerechnung {
 /// höchstens so viele wie der ZfW des Anwenders im gesprochenen Zauber
 /// ([anwenderZfw]). Gehören gesprochener und gespeicherter Spruch nicht zur
 /// selben Repräsentation ([gleicheRepraesentation]), kommt nur die Hälfte der
-/// gespeicherten ZfP* zur Wirkung (abgerundet; die Regel nennt keine
-/// Rundung). Ein Spruch, der ohne den Auxiliator misslungen wäre
+/// gespeicherten ZfP* zur Wirkung (aufgerundet: Halbierungen werden nach der
+/// allgemeinen Rundungsregel aufgerundet). Ein Spruch, der ohne den Auxiliator misslungen wäre
 /// ([spruchGelungen] ist `false`), erhält keinen Bonus.
 AuxiliatorBerechnung berechneAuxiliatorBonus({
   required int? gespeicherteZfp,
@@ -69,7 +69,7 @@ AuxiliatorBerechnung berechneAuxiliatorBonus({
   var wirksam = gespeicherteZfp;
   var halbiert = false;
   if (!gleicheRepraesentation) {
-    wirksam = wirksam ~/ 2;
+    wirksam = (wirksam + 1) ~/ 2;
     halbiert = true;
   }
   if (anwenderZfw == null) {

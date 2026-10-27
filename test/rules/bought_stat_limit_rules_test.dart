@@ -17,12 +17,13 @@ void main() {
     );
 
     test('begrenzt LeP auf KO halbiert, AU auf KO und MR auf MU halbiert', () {
+      // Halbierungen werden aufgerundet: KO 15 -> 8, MU 13 -> 7.
       expect(
         computeBoughtStatMaximum(
           statKey: 'lep',
           permanentAttributes: attributes,
         ),
-        7,
+        8,
       );
       expect(
         computeBoughtStatMaximum(
@@ -36,7 +37,7 @@ void main() {
           statKey: 'mr',
           permanentAttributes: attributes,
         ),
-        6,
+        7,
       );
     });
 

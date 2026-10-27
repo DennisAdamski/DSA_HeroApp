@@ -58,8 +58,9 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   Ereignis über „Heilzauber erhalten“; Regeln in `spell_effect_healing_rules.dart`,
   Schreibweg `HeilungErhalten` (ein Dokument mit `ZustandsBuchung` Art
   `heilung`, `aspDelta` und Protokoll, idempotent über die Vorgangs-ID). Nie
-  geraten: ungerade AsP bei Wunden (Hexenspeichel) und Rettung von der
-  Schwelle des Todes. Teilstand 3: Ruhe Körper ist ein eigener Schlafablauf
+  geraten: die Rettung von der Schwelle des Todes. Ungerade AsP bei Wunden
+  (Hexenspeichel) werden nach der allgemeinen Rundungsregel aufgerundet
+  (7 AsP ergeben 4 LeP). Teilstand 3: Ruhe Körper ist ein eigener Schlafablauf
   (`spell_effect_rest_rules.dart`, `RuheKoerperErhalten`), der die normale
   Regeneration der Stunden ersetzt; Heilungs-Vor-/Nachteile und „evtl. 1 AsP“
   werden nicht gerechnet, der Zaubernde trägt die Kosten.

@@ -144,7 +144,7 @@ void main() {
     expect(z.currentLep, 17);
   });
 
-  testWidgets('Hexenspeichel verlangt gerade AsP bei Wunden', (tester) async {
+  testWidgets('Hexenspeichel rundet ungerade AsP bei Wunden auf', (tester) async {
     await zeigePanel(tester, _zustand());
     await tester.tap(find.text('Hexenspeichel'));
     await tester.pumpAndSettle();
@@ -152,10 +152,11 @@ void main() {
     await tester.enterText(_key('heilung-asp'), '7');
     await tester.pumpAndSettle();
 
-    expect(find.textContaining('Rundung'), findsOneWidget);
+    expect(find.textContaining('aufgerundet'), findsOneWidget);
+    expect(find.textContaining('LeP 10 → 14'), findsOneWidget);
     expect(
       tester.widget<FilledButton>(_key('heilung-uebernehmen')).onPressed,
-      isNull,
+      isNotNull,
     );
 
     await tester.tap(find.text('Krankheit'));
