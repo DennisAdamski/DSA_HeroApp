@@ -34,11 +34,12 @@ const String activeSpellEffectAxxeleratus = 'effect_spell_axxeleratus';
 const String activeSpellEffectAttributo = 'effect_spell_attributo';
 
 /// Bonus eines Attributo auf die gesteigerte Eigenschaft: ZfP*/3 Punkte
-/// (LC S. 30), nach Tischregel (18./19.10.2026) aufgerundet; ZfP* 7 ergibt 3.
-/// Negative ZfP* zählen als 0. Nur ein Vorschlag für die Eingabe, gespeichert
-/// wird der eingetragene Bonus.
+/// (LC S. 31), echt gerundet (Wege der Helden S. 6, Entscheidung 27.10.2026;
+/// vorher Tischregel Aufrunden): ZfP* 7 ergibt 2, ZfP* 8 ergibt 3, ZfP* 1
+/// ergibt 0. Negative ZfP* zählen als 0. Nur ein Vorschlag für die Eingabe,
+/// gespeichert wird der eingetragene Bonus.
 int attributoBonusAusZfp(int zfpStern) =>
-    zfpStern <= 0 ? 0 : (zfpStern + 2) ~/ 3;
+    zfpStern <= 0 ? 0 : (zfpStern + 1) ~/ 3;
 
 /// Effekt-ID fuer den laufenden Armatrutz.
 const String activeSpellEffectArmatrutz = 'effect_spell_armatrutz';

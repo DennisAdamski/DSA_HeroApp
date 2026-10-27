@@ -77,7 +77,8 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   `ResolvedProbeRequest.bedingterPoolSchritt` außerhalb des Pools; der
   Probendialog bietet sie als Schalter an (`wendeBedingtenPoolSchrittAn`).
   Tischregel Rundung: Kosten abrunden, übrige Spielerwerte aufrunden, MR
-  ausgenommen; bei halbierten Abzügen und Dauern den Betrag aufrunden
+  ausgenommen (Ausnahme: der Attributo-Bonus ZfP*/3 wird echt gerundet,
+  Entscheidung 27.10.2026); bei halbierten Abzügen und Dauern den Betrag aufrunden
   (`halbiertAufgerundet`). Blitz mit Blindkampf halbiert alle Abzüge,
   Konzentrationsstärke die Zauberproben, beide zusammen nur einmal.
   Karnifilo: Wunden mindern AT/PA nicht und machen nicht kampfunfähig, nur

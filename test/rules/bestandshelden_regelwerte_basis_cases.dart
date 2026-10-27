@@ -257,7 +257,7 @@ const _erwartetBasis = <String, Map<String, Object?>>{
       'be': 0,
       'at': 7,
       'pa': 7,
-      'ini': 8, // ohne Waffe: Fausthieb INI −2 mit INI/GE aus TP/KK 10/3 (AA S. 150)
+      'ini': 10, // ohne Waffe: INI-Modifikator 0 (WdS S. 88) mit INI/GE aus TP/KK 10/3 (AA S. 150)
       'ausweichen': 7,
       'schildPa': 0,
       'tp': '1W6', // ohne Waffe: Fausthieb 1W6 TP(A), TP/KK 10/3 statt Platzhalter mit voller KK
@@ -377,7 +377,7 @@ const _erwartetBasis = <String, Map<String, Object?>>{
       'be': 0,
       'at': 7,
       'pa': 7,
-      'ini': 9, // ohne Waffe: Fausthieb INI −2 mit INI/GE aus TP/KK 10/3 (AA S. 150)
+      'ini': 11, // ohne Waffe: INI-Modifikator 0 (WdS S. 88) mit INI/GE aus TP/KK 10/3 (AA S. 150)
       'ausweichen': 7,
       'schildPa': 0,
       'tp': '1W6', // ohne Waffe: Fausthieb 1W6 TP(A), TP/KK 10/3 statt Platzhalter mit voller KK
@@ -441,7 +441,7 @@ const _erwartetBasis = <String, Map<String, Object?>>{
       'be': 0,
       'at': 7,
       'pa': 7,
-      'ini': 9, // ohne Waffe: Fausthieb INI −2 mit INI/GE aus TP/KK 10/3 (AA S. 150)
+      'ini': 11, // ohne Waffe: INI-Modifikator 0 (WdS S. 88) mit INI/GE aus TP/KK 10/3 (AA S. 150)
       'ausweichen': 8,
       'schildPa': 0,
       'tp': '1W6', // ohne Waffe: Fausthieb 1W6 TP(A), TP/KK 10/3 statt Platzhalter mit voller KK

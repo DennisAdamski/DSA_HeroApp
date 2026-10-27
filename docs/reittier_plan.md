@@ -31,8 +31,9 @@ an; Ausbildung ist Freitext, und Reiterkampf ist nicht modelliert.
 - **Widersprüche in der ZBA:** Gezielter Biss gilt als *allgemein* (S. 39, nicht
   S. 36). Bei Nervosität lernt ein Pferd Schrecksicher und Stillstand nur mit
   Abrichten +8 (S. 37).
-- **Rittmeister** setzt die SF Kriegsreiterei voraus; die Hausregel lässt ihn
-  ohne geschultes Pferd ohnehin nur als Kriegsreiterei gelten.
+- **Rittmeister** verlangt laut Epische Stufen nur TaW Reiten 19 und kein
+  Zwerg, keine SF (Entscheidung 27.10.2026); die Hausregel lässt ihn ohne
+  geschultes Pferd nur als Kriegsreiterei gelten.
 - **Halbierte Ausbildungsmodifikationen** (fundiert begonnen, ländlich
   weitergeführt) werden aufgerundet (allgemeine Rundungsregel, Entscheidung
   27.10.2026).
