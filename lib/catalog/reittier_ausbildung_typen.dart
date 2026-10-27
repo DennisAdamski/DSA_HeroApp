@@ -119,22 +119,24 @@ class ReittierModifikationen {
     );
   }
 
-  /// Halbe Modifikationen, abgerundet.
+  /// Halbe Modifikationen, aufgerundet.
   ///
   /// Gilt für ein fundiert begonnenes Tier, das ländlich weitergeführt wird
-  /// (ZBA S. 35). Die Werte sind dort stets positiv, `~/` rundet also ab.
+  /// (ZBA S. 35). Bei Halbierungen wird aufgerundet (Wege der Helden S. 6);
+  /// die Werte sind dort stets positiv, `(x + 1) ~/ 2` rundet also auf.
   ReittierModifikationen halbiert() {
+    int halb(int x) => (x + 1) ~/ 2;
     return ReittierModifikationen(
-      lo: lo ~/ 2,
-      kk: kk ~/ 2,
-      at: at ~/ 2,
-      tpTritt: tpTritt ~/ 2,
-      gsTrab: gsTrab ~/ 2,
-      gsGalopp: gsGalopp ~/ 2,
-      auTrab: auTrab ~/ 2,
-      auGalopp: auGalopp ~/ 2,
-      tkFaktor: tkFaktor ~/ 2,
-      zkFaktor: zkFaktor ~/ 2,
+      lo: halb(lo),
+      kk: halb(kk),
+      at: halb(at),
+      tpTritt: halb(tpTritt),
+      gsTrab: halb(gsTrab),
+      gsGalopp: halb(gsGalopp),
+      auTrab: halb(auTrab),
+      auGalopp: halb(auGalopp),
+      tkFaktor: halb(tkFaktor),
+      zkFaktor: halb(zkFaktor),
     );
   }
 

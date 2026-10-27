@@ -34,7 +34,8 @@ an; Ausbildung ist Freitext, und Reiterkampf ist nicht modelliert.
 - **Rittmeister** setzt die SF Kriegsreiterei voraus; die Hausregel lässt ihn
   ohne geschultes Pferd ohnehin nur als Kriegsreiterei gelten.
 - **Halbierte Ausbildungsmodifikationen** (fundiert begonnen, ländlich
-  weitergeführt) werden abgerundet.
+  weitergeführt) werden aufgerundet (allgemeine Rundungsregel, Entscheidung
+  27.10.2026).
 - **GS(+a/+b) und AU(+a/+b)** der Ausbildungsvarianten gelten für Trab/Galopp.
 - **Pferde-Vor-/Nachteile** bleiben Freitext; Regeln erkennen Lernfähig,
   Nervosität, Gutmütig und Magiegespür über den Text.

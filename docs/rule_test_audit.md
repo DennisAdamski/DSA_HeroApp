@@ -12,18 +12,18 @@ Die maschinenlesbare Inventur `tool/rule_test_evidence.json` erfasst **211 Test-
 | `official` | 147 |
 | `house_rule` | 9 |
 | `product_contract` | 55 |
-| `verified` | 139 |
-| `conflict` (mindestens ein bestätigter Einzelbefund) | 72 |
+| `verified` | 140 |
+| `conflict` (mindestens ein bestätigter Einzelbefund) | 71 |
 
 Aufschlüsselung Art × Status:
 
 | Art | verified | conflict |
 | --- | ---: | ---: |
-| `official` | 76 | 71 |
+| `official` | 77 | 70 |
 | `house_rule` | 8 | 1 |
 | `product_contract` | 55 | 0 |
 
-Die 72 Konfliktdateien enthalten zusammen **90 offene fachlich verschiedene Einzelbefunde** mit je eigenem Folgeauftrag `RULE-FIX-NNN` (Priorität P1: 1, P2: 40, P3: 49); weitere 15 Befunde sind bereits behoben (siehe unten). Ein Konflikt auf Dateiebene heißt: *mindestens* eine Erwartung der Datei ist nicht deckungsgleich mit dem Buch oder nicht belegbar; alle übrigen Erwartungen der Datei sind geprüft und stehen in der `summary` des Eintrags bzw. unter `sources`.
+Die 71 Konfliktdateien enthalten zusammen **89 offene fachlich verschiedene Einzelbefunde** mit je eigenem Folgeauftrag `RULE-FIX-NNN` (Priorität P1: 1, P2: 40, P3: 48); weitere 16 Befunde sind bereits behoben (siehe unten). Ein Konflikt auf Dateiebene heißt: *mindestens* eine Erwartung der Datei ist nicht deckungsgleich mit dem Buch oder nicht belegbar; alle übrigen Erwartungen der Datei sind geprüft und stehen in der `summary` des Eintrags bzw. unter `sources`.
 
 ## Geprüfte Pakete
 
@@ -118,11 +118,11 @@ Damit liegt die Fehlerquote der Zweitprüfung bei 2 von 84 Dateien (rund 2 %); d
 
 | Fall | Dateien | Bedeutung |
 | --- | ---: | --- |
-| Test stimmt mit der Buchregel überein | 76 | `official`/`verified`: alle fachlichen Erwartungen belegt |
+| Test stimmt mit der Buchregel überein | 77 | `official`/`verified`: alle fachlichen Erwartungen belegt |
 | Dokumentierte Hausregel weicht bewusst ab | 8 | `house_rule`/`verified`: durch Hausregel-Dokument im MCP belegt |
 | Technischer Produktvertrag ohne Regelbehauptung | 55 | `product_contract`: Begründung je Datei in der Inventur |
 | Test oder Produkt widerspricht der Quelle | 13 | Dateien mit mindestens einem Befund `contradiction` (13 Einzelbefunde) |
-| Regelunklarheit, Buch entscheidet nicht | 48 | Dateien mit mindestens einem Befund `unresolved` (57 Einzelbefunde) |
+| Regelunklarheit, Buch entscheidet nicht | 47 | Dateien mit mindestens einem Befund `unresolved` (56 Einzelbefunde) |
 | Quelle im MCP nicht ausreichend verfügbar | 18 | Dateien mit mindestens einem Befund `source_gap` (20 Einzelbefunde) |
 
 Die letzten drei Zeilen überschneiden sich, weil eine Datei Befunde mehrerer Typen tragen kann.
@@ -171,7 +171,7 @@ Folgeauftrag = je eine Zeile; das Beleg-Format ist *Buch S. gedruckte Seite (MCP
 | RULE-FIX-032 | source_gap | `kampf_herleitung_rules_test.dart` | Regelgrundlage der 'höheren Waffen-INI' ist im MCP nicht auffindbar. | Suche: Beidhändiger Kampf zwei Waffen Initiative INI-Modifikator der beiden Waffen gilt der höhere; Doppelangriff Manöver Initiative beider Waffen höherer INI-Modifikator Zweitwaffe; … | Kampf-INI mit zwei Waffen (und damit INI-Bonus auf Abwehr und Ausweichen) hängt von einer unbelegten App-Regel ab. |
 | RULE-FIX-033 | contradiction | `magic_acquisition_rules_test.dart` | Zwölf statt sechs dämonische Domänen; jede einzelne Domäne ist Merkmal der Stufe I. Fehlende Domänen werden als Stufe II (200 AP) bepreist und von der Stufentabelle nicht erfasst. | Wege der Zauberei S. 25 (Chunk 5006, 5007); Wege der Helden S. 248; 288 (Chunk 4704, 4822); Liber Cantiones S. 6 (Chunk 1904) | Test: bindet die Zählung 19/10/5 und die Katalogliste an eine unvollständige Domänenmenge. Produkt: Merkmalskenntnis (und davon abgeleitete Preise Arkane Meisterschaft/Großmeister) für offizielle Domänen außerhalb der sechs wird z … |
 | RULE-FIX-034 | contradiction | `magic_rules_test.dart` | Verdoppelt werden müsste nur der Eigenschaftsanteil (plus Vor-/Nachteile/Rasse-Kultur-Profession-Modifikatoren), nicht der SF-Bonus von Kampfreflexe/Kampfgespür. … | Liber Cantiones S. 36 (Chunk 1537, 1538, 1539); Basisregelwerk S. 174 (Chunk 686, 687); Wege des Schwerts S. PDF S. 209–210 (Referenztabelle am Bandende, ohne gedruckte Seitenzahl) (Chunk 7343, 7344); Basisregelwerk S. … | Test: schreibt die zu hohe Verdopplung fest. Produkt: Heldeninitiative mit aktivem Axxeleratus ist bei Kampfreflexe/Kampfgespür um 4 bzw. … |
-| RULE-FIX-036 | unresolved | `reittier_ausbildung_rules_test.dart` | Buch nennt keine Rundung und nicht eindeutig die Bezugswerte; KK 1 (aus 1,5) und AU Galopp 0 (aus 0,5) sind App-Entscheidungen. | Zoo Botanica Aventurica S. 34 (Chunk 7965); Zoo Botanica Aventurica S. 33 (Chunk 7963); Zoo-Botanica Aventurica S. PDF 35 (Chunk 7965) | Wirkwerte (KK, LO, AU) ländlich weitergeführter Tiere können um 1 abweichen; Randfall. |
+| RULE-FIX-036 | unresolved | `reittier_ausbildung_rules_test.dart` | Buch nennt keine Rundung und nicht eindeutig die Bezugswerte; Die Rundung ist geklärt (Halbierungen werden aufgerundet, KK 1,5 -> 2, AU Galopp 0,5 -> 1; Code und Test angepasst); offen bleibt, welcher Schritt halbiert wird. | Zoo Botanica Aventurica S. 34 (Chunk 7965); Zoo Botanica Aventurica S. 33 (Chunk 7963); Zoo-Botanica Aventurica S. PDF 35 (Chunk 7965) | Wirkwerte (KK, LO, AU) ländlich weitergeführter Tiere können um 1 abweichen; Randfall. |
 | RULE-FIX-037 | unresolved | `reittier_ausbildung_rules_test.dart` | Tabelle (keine Ausbildung) und Fließtext (Weg ab unerfahren) widersprechen sich bzw. lassen die Schrittfolge offen; die App wählt die kürzeste Lesart. | Zoo Botanica Aventurica S. 33 (Chunk 7963); Zoo Botanica Aventurica S. 34 (Chunk 7965) | Probenanzahl/Zeitbedarf und Modifikationen beim Aufstieg ländlich erprobter Tiere zum geschulten Tier; Randfall. |
 | RULE-FIX-039 | unresolved | `schaden_rules_test.dart` | Buch fasst Brust/Rücken als einen Zonenbereich zusammen und nennt Brustwunden mit 1W6 Zusatz-SP; die Tabelle hat keine Rückenzeile. … | Wege des Schwerts S. PDF S. 108–109 (Chunk 7111, 7112, 7113, 7114); Wege des Schwerts S. 107-108 (PDF 108-109) (Chunk 7111, 7112, 7114) | Bei Rückentreffern fehlt im Schadensdialog der 1W6-Zusatzschaden je Wunde, obwohl derselbe Wundzustand ihn als Erinnerung anzeigt; der Test sichert das aktuelle Verhalten ab. … |
 | RULE-FIX-040 | source_gap | `spell_effect_combat_rules_test.dart`, `spell_effect_combat_snapshot_test.dart` | Kein Buchbeleg für die Stapelungs- und Ausschlusslogik; Tischregel des Repos. | Suche: derselbe Zauber mehrfach auf dasselbe Ziel nicht kumulativ; Zauberwirkungen Stapelung nur stärkste Wirkung; mehrere Zauber addieren sich Kampfwerte; gleicher Zauber mehrfach gewirkt Wirkung ersetzt; … | Bei zwei Quellen desselben Zaubers (z. B. zwei Blitz) rechnet die App nur die stärkste; das Buch lässt offen, ob sie sich addieren, ersetzen oder nur eine wirkt. |
@@ -199,7 +199,6 @@ Folgeauftrag = je eine Zeile; das Beleg-Format ist *Buch S. gedruckte Seite (MCP
 | RULE-FIX-057 | unresolved | `basiswert_herleitung_rules_test.dart` | Keine Abweichung nachweisbar, aber die Rechenreihenfolge Wunden/Axxeleratus ist im Buch nicht festgelegt. | Liber Cantiones S. 36 (Chunk 1949); Wege des Schwerts S. 110 (Chunk 7116) | Nur der Randfall große Wundabzüge zusammen mit Axxeleratus; Flink/Behäbig werden zusätzlich erst nach der Verdopplung addiert, obwohl WdH Flink als Erhöhung der Basis-GS beschreibt. |
 | RULE-FIX-058 | unresolved | `bestandshelden_regelwerte_basis_cases.dart`, `bestandshelden_regelwerte_test.dart` | Die Gleichsetzung Linkshänder = linker Arm ist Schwertarm ist eine plausible, aber nicht belegte App-Folgerung. | Wege der Helden S. PDF S. 255 (Chunk 4722); Wege des Schwerts S. 57, 107 (Chunk 6980, 7111, 7112); Wege des Schwerts S. gedr. 107-108 (PDF 108-109) (Chunk 7111, 7114); Errata WdS S. PDF 4-5 (Chunk 25632) | Nur Armwunden bei Linkshändern (AT/PA der Hauptwaffe vs. Schild); kein Einfluss auf andere Helden. |
 | RULE-FIX-060 | source_gap | `combat_basis_cases.dart`, `kampf_herleitung_rules_test.dart` | Untergrenze 0 für die Kampf-INI ist App-Entscheidung; das Buch schließt negative INI nicht aus. | Wege des Schwerts S. PDF S. 82 (Chunk 7046, 7047) | Nur bei extrem niedriger INI (z. B. hohe BE plus Abzüge); Randfall. |
-| RULE-FIX-101 | unresolved | `companion_steigerung_rules_test.dart` | Die Quelle nennt nur „nicht über das Anderthalbfache“, die Rundung steht nicht im Text; die allgemeine Rundungsregel (WdH S. 6) und die analoge Eigenschaftsgrenze (WdS S. … | Wege der Zauberei S. 124 (Die Entwicklung des Vertrauten; kein Wort zu Auf-/Abrunden) (Chunk 5267, 5268); Wege des Schwerts S. 168 (SKT Spalte F: 6 / 14 / 22) (Chunk 7247, 7248); Wege der Helden S. … | Vertrauten-Obergrenzen und Steigerungszuwächse fallen bei ungeraden Startwerten je nach Lesart um 1 niedriger oder höher aus. |
 | RULE-FIX-061 | unresolved | `gefecht_ansagefolge_rules_test.dart` | Buch lässt offen, ob die allgemeine Ansagefolge auch für die optionale FK-Ansage gilt; die App entscheidet sich ohne Beleg für 'nein'. | Wege des Schwerts S. 59 (Chunk 6985, 6986); Wege des Schwerts S. 97 (Chunk 7088, 7089); Wege des Schwerts S. gedr. 97 (PDF 98) (Chunk 7088, 7089); Basisregelwerk S. PDF 140 (Chunk 602) | Nur Randfall der optionalen FK-Ansage; Produktverhalten bleibt unverändert, solange der Tisch keine gegenteilige Regel festlegt. |
 | RULE-FIX-062 | unresolved | `gefecht_ansagen_paket2_test.dart` | App-Designentscheidung (Bindung an Waffenprofil/Geschoss/Ziel) ohne Buchbeleg; das Buch kennt nur Verfall bei Störung/Unterbrechung. | Wege des Schwerts S. gedr. 94 und 97 (PDF 95 und 98) (Chunk 7082, 7089); Errata WdS S. PDF 7 (Chunk 25635) | Randfall; die App ist strenger als das Buch. Testaussage selbst ist technisch konsistent. |
 | RULE-FIX-063 | unresolved | `gefecht_gegner_rules_test.dart` | Ausnahme für den Schützen selbst steht nicht im Buch; die Hausregel 'Fernkampf im Nahkampf' regelt nur den Passierschlag. | Wege des Schwerts S. gedr. 98 (PDF 99) (Chunk 7091); Erweiterung und Überarbeitung des Regelwerks S. PDF 2-3 (Chunk 25817, 25818) | Nur Voreinstellung der Zielsituation (im Gefecht änderbar); kein Datenrisiko. |
@@ -262,6 +261,7 @@ Diese Befunde wurden nach dem Audit in einem eigenen Schritt behoben: Produktcod
 | RULE-FIX-094 | 2026-10-27 | Epische KK-Halbierung der eBE rundet auf (eBE 3 -> 2) | `talent_be_rules_test.dart` |
 | RULE-FIX-016 | 2026-10-27 | Epischer AsP-Stufenbonus für Vollzauberer ist +2 statt 6 | `ap_level_rules_test.dart` |
 | RULE-FIX-038 | 2026-10-27 | Rast heilt Helden mit 0 LeP oder weniger nicht auf natürlichem Wege | `rest_outcome_rules_test.dart` |
+| RULE-FIX-101 | 2026-10-27 | Vertrauten-Obergrenze 1,5 x Startwert wird echt gerundet (7 -> 11, LeP 11 -> 17, GS 1 -> 2) | `companion_steigerung_rules_test.dart` |
 
 ## Technische Verträge ohne Regelbehauptung
 

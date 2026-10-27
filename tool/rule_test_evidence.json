@@ -4279,7 +4279,7 @@
     },
     "test/rules/companion_steigerung_rules_test.dart": {
       "kind": "official",
-      "status": "conflict",
+      "status": "verified",
       "summary": "Die Datei sichert die Steigerungsregeln fuer Vertraute (WdZ, 'Die Entwicklung des Vertrauten'): Steigerung nach Spalte F der SKT (erster Schritt 6 AP, zweiter 14, dritter 22; Eigenschaften/AT/PA/GS direkt nach aktuellem Wert, LeP/AsP/MR wie bei Helden hinzugekauft), kein Wert ueber das Anderthalbfache des Startwerts (Grundwert 20 -> 30, 7 -> 10 abgerundet, 1 -> kein Zuwachs), Ausnahmen AsP und Ritualkenntnis (RK) unbegrenzt, und dass INI, Loyalitaet und AuP nicht zu den steigerbaren Werten zaehlen (Buchliste nennt nur Attacke, Parade, RK, Eigenschaften inkl. GS/MR, LE, AE). Die Effektivwert-Hilfsfunktionen, AP-Verfuegbarkeit, Altbuchungs-Hinweise und Fehler beim veralteten Stand sind App-Vertraege. Stichprobe 2026-10-25: Teile der Erwartungen sind nicht durch die Quelle gedeckt (siehe Befund RULE-FIX-101).",
       "sources": [
         {
@@ -4301,62 +4301,12 @@
           "checkedOn": "2026-10-24"
         }
       ],
-      "conflicts": [
+      "resolved": [
         {
-          "conflictKey": "vertrauter-grenze-anderthalbfach-rundung",
-          "conflictType": "unresolved",
-          "priority": "P3",
           "followUp": "RULE-FIX-101",
-          "finding": "Stichprobe 2026-10-25: Spalte F (6/14/22 AP), direkte Steigerung von Eigenschaften/AT/PA/GS, LE/AE/MR hinzugekauft, Grenze 'Anderthalbfaches des Startwertes', AsP und RK unbegrenzt und die Liste der steigerbaren Werte (ohne INI/Loyalität/AuP) sind in WdZ 124 und SKT (WdS 168) belegt. Die Rundung ist es nicht: Die Tests erwarten 1,5 x 7 = 10 'abgerundet' (Zuwachs 3), LeP 11 -> +5, GS 1 -> kein Zuwachs. WdZ sagt nichts zur Rundung; die allgemeine Regel (WdH S. 6: 'echt gerundet, bei Halbierungen aufgerundet') und die analoge Regel WdS 165 (13,5 -> 14) ergeben 10,5 -> 11 (Zuwachs 4), 16,5 -> 17 (LeP +6) und 1,5 -> 2.",
-          "testCases": [
-            "vertrautenGrenze(7) erwartet 10 und vertrautenMaxStandUeber(7) == 3 ('abgerundet'); nach allgemeiner Rundungsregel 11 bzw. 4",
-            "vertrautenMaxStand(katze mit startLep 11, 'lep') erwartet 5 (floor 16,5); echt gerundet 17 -> 6",
-            "vertrautenMaxStandUeber(1) == 0 bzw. GS 1 'lässt keinen Zuwachs (floor 1,5 = 1)'; echt gerundet 1,5 -> 2, also Zuwachs 1"
-          ],
-          "expected": "1,5 × Startwert wird abgerundet (7 → 10, LeP 11 → +5, GS 1 → kein Zuwachs).",
-          "bookRule": [
-            {
-              "title": "Wege der Zauberei",
-              "pages": "124 (Die Entwicklung des Vertrauten; kein Wort zu Auf-/Abrunden)",
-              "mcpChunks": [
-                5267,
-                5268
-              ],
-              "checkedOn": "2026-10-25"
-            },
-            {
-              "title": "Wege des Schwerts",
-              "pages": "168 (SKT Spalte F: 6 / 14 / 22)",
-              "mcpChunks": [
-                7247,
-                7248
-              ],
-              "checkedOn": "2026-10-25"
-            },
-            {
-              "title": "Wege der Helden",
-              "pages": "6 (echt runden, Halbierungen aufrunden)",
-              "mcpChunks": [
-                4036
-              ],
-              "checkedOn": "2026-10-25"
-            },
-            {
-              "title": "Wege des Schwerts",
-              "pages": "165 (Eigenschaftsmaximum 9 x 1,5 = 13,5 -> 14)",
-              "mcpChunks": [
-                7240
-              ],
-              "checkedOn": "2026-10-25"
-            }
-          ],
-          "deviation": "Die Quelle nennt nur „nicht über das Anderthalbfache“, die Rundung steht nicht im Text; die allgemeine Rundungsregel (WdH S. 6) und die analoge Eigenschaftsgrenze (WdS S. 165: 13,5 → 14) sprächen für Aufrunden (7 → 11, LeP +6, GS 1 → 2). Abrunden ist als Obergrenze ebenfalls vertretbar.",
-          "impact": "Vertrauten-Obergrenzen und Steigerungszuwächse fallen bei ungeraden Startwerten je nach Lesart um 1 niedriger oder höher aus.",
-          "secondCheck": {
-            "checkedOn": "2026-10-26",
-            "result": "confirmed",
-            "note": "Wege der Zauberei S. 124 (Chunk 5267): kein Wert über das Anderthalbfache des Startwertes; eine Rundung nennt das Buch nicht."
-          }
+          "conflictKey": "vertrauter-grenze-anderthalbfach-rundung",
+          "resolvedOn": "2026-10-27",
+          "note": "Produktcode (vertrautenGrenze: (3 x + 1) ~/ 2) und Test-Erwartungen angepasst; das Anderthalbfache des Startwerts wird echt gerundet."
         }
       ]
     },
@@ -10252,7 +10202,7 @@
           "testCases": [
             "fundiert begonnen, laendlich weitergefuehrt: halbe Werte, abgerundet"
           ],
-          "expected": "ReittierModifikationen(lo: 2, kk: 1, auTrab: 1) (Halbierung der ländlichen Werte, abgerundet).",
+          "expected": "ReittierModifikationen(lo: 2, kk: 2, auTrab: 1, auGalopp: 1) (Halbierung der ländlichen Werte, aufgerundet).",
           "bookRule": [
             {
               "title": "Zoo Botanica Aventurica",
@@ -10283,13 +10233,17 @@
             "fundierte Grundausbildung nicht fundiert weitergearbeitet erprobtes Tier nur noch die Hälfte der angegebenen Modifikationen",
             "Reittier Ausbildung ländlich erprobt keine weitere Ausbildung möglich fundierte Ausbildung erschwerte Proben (beide Quellenkategorien inkl. hausregeln)"
           ],
-          "deviation": "Buch nennt keine Rundung und nicht eindeutig die Bezugswerte; KK 1 (aus 1,5) und AU Galopp 0 (aus 0,5) sind App-Entscheidungen.",
+          "deviation": "Buch nennt nicht eindeutig die Bezugswerte (ländlicher oder fundierter Schritt); die Rundung ist per Tischentscheid und allgemeiner Rundungsregel (Halbierungen werden aufgerundet) geklärt, KK 3 -> 2 und AU Galopp 1 -> 1.",
           "impact": "Wirkwerte (KK, LO, AU) ländlich weitergeführter Tiere können um 1 abweichen; Randfall.",
           "recheck": "Gegenprüfung 2026-10-25: nur teilweise belegt.",
           "secondCheck": {
             "checkedOn": "2026-10-26",
             "result": "open",
             "note": "Zoo Botanica Aventurica S. 34 (Chunk 7963): ländlich unerfahren KK +3, LO +4, AU +2/+1; für Tierwerte nennt das Buch keine Rundung."
+          },
+          "tableDecision": {
+            "decidedOn": "2026-10-27",
+            "text": "Halbierte Werte werden aufgerundet (Wege der Helden S. 6); Code und Test angepasst. Offen bleibt nur, welcher Schritt halbiert wird."
           }
         },
         {
