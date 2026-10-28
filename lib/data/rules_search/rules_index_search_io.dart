@@ -20,16 +20,18 @@ bool rulesIndexSearchSupported() {
 /// heruntergeladene Cache-Datei) ist vorhanden/lesbar. Der Aufrufer zeigt
 /// dann einen Hinweis. Async aus Symmetrie mit der Web-Variante, die die
 /// Index-Datei erst asynchron laden kann.
+/// [dataDirectory] isoliert Dateioperationen für Tests; produktiv bleibt der
+/// Plattformstandard maßgeblich.
 ///
 /// Die lokal per `dsa-rules-cli refresh` gebaute Datei hat Vorrang vor dem
 /// Server-Cache — ein Entwickler/Power-User, der den Index selbst pflegt,
 /// soll nicht durch einen alten Server-Stand überstimmt werden.
-Future<RulesIndexSearch?> openRulesIndexSearch() async {
+Future<RulesIndexSearch?> openRulesIndexSearch({String? dataDirectory}) async {
   if (!rulesIndexSearchSupported()) {
     return null;
   }
-  return _tryOpenAt(_resolveDefaultDbPath()) ??
-      _tryOpenAt(_resolveRemoteCacheDbPath());
+  return _tryOpenAt(_resolveDefaultDbPath(dataDirectory)) ??
+      _tryOpenAt(_resolveRemoteCacheDbPath(dataDirectory));
 }
 
 RulesIndexSearch? _tryOpenAt(String path) {
@@ -54,9 +56,14 @@ RulesIndexSearch? _tryOpenAt(String path) {
 /// validieren, bevor ein zuvor funktionierender Cache ersetzt wird — ein
 /// abgebrochener/fehlerhafter Download darf keine funktionierende Kopie
 /// zerstören.
-Future<RulesIndexSearch> importRulesIndexDatabase(Uint8List bytes) async {
-  final targetPath = _resolveRemoteCacheDbPath();
-  await Directory(_resolveDataDir()).create(recursive: true);
+/// [dataDirectory] isoliert Dateioperationen für Tests; produktiv bleibt der
+/// Plattformstandard maßgeblich.
+Future<RulesIndexSearch> importRulesIndexDatabase(
+  Uint8List bytes, {
+  String? dataDirectory,
+}) async {
+  final targetPath = _resolveRemoteCacheDbPath(dataDirectory);
+  await Directory(_resolveDataDir(dataDirectory)).create(recursive: true);
 
   final tmpPath = '$targetPath.tmp';
   final tmpFile = File(tmpPath);
@@ -94,7 +101,10 @@ Future<RulesIndexSearch> importRulesIndexDatabase(Uint8List bytes) async {
 ///
 /// Entspricht der Auflösung des MCP-Servers: `DSA_MCP_DATA_DIR` hat Vorrang,
 /// danach `%LOCALAPPDATA%/dsa-rules-mcp`, sonst `~/.local/share/dsa-rules-mcp`.
-String _resolveDataDir() {
+String _resolveDataDir(String? dataDirectory) {
+  if (dataDirectory != null && dataDirectory.isNotEmpty) {
+    return dataDirectory;
+  }
   final override = Platform.environment['DSA_MCP_DATA_DIR'];
   if (override != null && override.isNotEmpty) {
     return override;
@@ -108,12 +118,12 @@ String _resolveDataDir() {
 }
 
 /// Standardpfad der lokal per `dsa-rules-cli refresh` gebauten Datenbank.
-String _resolveDefaultDbPath() =>
-    '${_resolveDataDir()}${Platform.pathSeparator}index.sqlite';
+String _resolveDefaultDbPath(String? dataDirectory) =>
+    '${_resolveDataDir(dataDirectory)}${Platform.pathSeparator}index.sqlite';
 
 /// Pfad der per Server-Sync heruntergeladenen Cache-Datenbank.
-String _resolveRemoteCacheDbPath() =>
-    '${_resolveDataDir()}${Platform.pathSeparator}index_remote.sqlite';
+String _resolveRemoteCacheDbPath(String? dataDirectory) =>
+    '${_resolveDataDir(dataDirectory)}${Platform.pathSeparator}index_remote.sqlite';
 
 /// Read-only-Zugriff auf die vom dsa-rules MCP-Indexer erzeugte SQLite-DB.
 ///

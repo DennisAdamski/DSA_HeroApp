@@ -219,6 +219,7 @@ Technischer Stack:
 - Tablet-Layouts fuer iPad und breite Fenster: Icon-Rail im Portrait, permanenter Inspector im Landscape und ein kompakter zweizeiliger Workspace-Header mit aktivem Bereich, Bildausschnitt und Kernwerten
 - Proben-Schnellsuche in der Workspace-AppBar: durchsucht Eigenschaften, Kampfwerte, Talente und Zauber des Helden und oeffnet direkt den Probendialog inklusive Wuerfelprotokoll
 - Wuerfelprotokoll mit Filter-Chips nach Probeart (Eigenschaft, Talent, Zauber, Kampf) und sessiontauglichem Umfang von 50 Eintraegen
+- Regel-Nachschlag mit Reiter "Kurzregeln": mitgeliefertes, offline und auf allen Plattformen nutzbares Kompendium aus eigenen Kurzfassungen (Buch- und Seitenbeleg je Eintrag, Hausregeln getrennt, verschluesselt; `docs/kurzregeln_redaktion.md`)
 - Regel-Nachschlag auf Desktop und Web: FTS5-Volltextsuche read-only auf der Index-Datenbank des dsa-rules MCP-Servers mit waehlbaren Quellkategorien; Desktop liest sie vom lokalen Standardpfad, Web nutzt sqlite3-WASM/IndexedDB nach einmaligem Datei-Upload der `index.sqlite` (Konzept in `docs/spielmodus_konzept.md`)
 
 ### Inventar, Chroniken, Kontakte und Abenteuer

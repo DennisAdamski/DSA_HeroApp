@@ -17,6 +17,8 @@ class KartoFigurenkarte extends StatelessWidget {
     super.key,
     required this.name,
     required this.beschreibung,
+    this.ort = '',
+    this.datum = '',
     this.onTap,
   });
 
@@ -25,6 +27,12 @@ class KartoFigurenkarte extends StatelessWidget {
 
   /// Rolle oder Zusammenhang, auf wenige Zeilen gekuerzt.
   final String beschreibung;
+
+  /// Ort der Begegnung; leer zeigt nichts.
+  final String ort;
+
+  /// Aventurisches Datum der Begegnung; leer zeigt nichts.
+  final String datum;
 
   /// Oeffnet die Bearbeitung; `null` zeigt die Karte nur an.
   final VoidCallback? onTap;
@@ -53,6 +61,7 @@ class KartoFigurenkarte extends StatelessWidget {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
+                _Kontextzeile(ort: ort, datum: datum),
                 if (rolle.isNotEmpty) ...[
                   const SizedBox(height: Abstand.eng),
                   Text(
@@ -81,6 +90,8 @@ class KartoNotizkarte extends StatelessWidget {
     super.key,
     required this.titel,
     required this.text,
+    this.ort = '',
+    this.datum = '',
     this.onTap,
   });
 
@@ -89,6 +100,12 @@ class KartoNotizkarte extends StatelessWidget {
 
   /// Notiztext.
   final String text;
+
+  /// Ort der Notiz; leer zeigt nichts.
+  final String ort;
+
+  /// Aventurisches Datum der Notiz; leer zeigt nichts.
+  final String datum;
 
   /// Oeffnet die Bearbeitung; `null` zeigt die Karte nur an.
   final VoidCallback? onTap;
@@ -113,6 +130,7 @@ class KartoNotizkarte extends StatelessWidget {
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
+          _Kontextzeile(ort: ort, datum: datum),
           if (inhalt.isNotEmpty) ...[
             const SizedBox(height: Abstand.knapp),
             Text(
@@ -123,6 +141,36 @@ class KartoNotizkarte extends StatelessWidget {
             ),
           ],
         ],
+      ),
+    );
+  }
+}
+
+/// Leise Zeile „Ort · Datum“ unter dem Titel einer Karte.
+///
+/// Zeigt nur, was belegt ist; Bestandseintraege ohne beides bekommen keine
+/// leere Zeile.
+class _Kontextzeile extends StatelessWidget {
+  const _Kontextzeile({required this.ort, required this.datum});
+
+  final String ort;
+  final String datum;
+
+  @override
+  Widget build(BuildContext context) {
+    final teile = [
+      ort.trim(),
+      datum.trim(),
+    ].where((teil) => teil.isNotEmpty).toList();
+    if (teile.isEmpty) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(top: Abstand.eng),
+      child: Text(
+        teile.join(' · '),
+        style: Theme.of(context).textTheme.etikett
+            .copyWith(color: context.karto.schriftLeise),
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
       ),
     );
   }

@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/domain/dice_log_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/probe_engine_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/spell_effect_probe_rules.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
@@ -62,10 +63,28 @@ ResolvedProbeRequest probeMitZaubereffekten({
   return probeMitSpellEffekten(request, snapshot.derivedStats.zauberEffekte);
 }
 
+/// Bietet die KK-/FF-Abzüge verwundeter Arme des Helden [heroId] als
+/// Schalter im Probendialog an (WdS S. 108 f.: „wenn er diesen Arm benutzt“).
+///
+/// Ohne berechneten Helden, ohne Armwunden oder ohne KK-/FF-Ziel bleibt
+/// [request] unverändert.
+ResolvedProbeRequest probeMitArmwunden({
+  required WidgetRef ref,
+  required String heroId,
+  required ResolvedProbeRequest request,
+}) {
+  final snapshot = ref.read(heroComputedProvider(heroId)).asData?.value;
+  if (snapshot == null) {
+    return request;
+  }
+  return probeMitArmwundenAbzug(request, snapshot.wundEffekte);
+}
+
 /// Oeffnet den Probe-Dialog und protokolliert Haupt- und Nebenwuerfe.
 ///
 /// [zaubereffekteAnwenden] ist für Proben fremder Wesen (Vertraute) `false`:
-/// Die Zauberwirkungen am Helden gelten nur für seine eigenen Proben.
+/// Die Zauberwirkungen und Armwunden am Helden gelten nur für seine eigenen
+/// Proben.
 ///
 /// Protokolliert wird ohne Warten, damit der Dialog sofort weiterlaeuft;
 /// ein Speicherfehler erscheint trotzdem als Snackbar.
@@ -96,7 +115,15 @@ Future<void> showLoggedProbeDialog({
   return showProbeDialog(
     context: context,
     request: zaubereffekteAnwenden
-        ? probeMitZaubereffekten(ref: ref, heroId: heroId, request: request)
+        ? probeMitArmwunden(
+            ref: ref,
+            heroId: heroId,
+            request: probeMitZaubereffekten(
+              ref: ref,
+              heroId: heroId,
+              request: request,
+            ),
+          )
         : request,
     onResolved: (result) {
       onResolved?.call(result);

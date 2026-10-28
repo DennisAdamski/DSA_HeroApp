@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_ressourcenwert.dart';
@@ -118,6 +119,44 @@ void main() {
     );
     expect(tester.takeException(), isNull);
     expect(find.text('128 / 140'), findsOneWidget);
+  });
+
+  // Auf dem Telefon stand „51 / …“: Wert und Fehlbetrag teilten sich die
+  // Zeile, und gekuerzt wurde ausgerechnet das Maximum.
+  for (final breite in [200.0, 320.0]) {
+    testWidgets('bei $breite dp bleibt der Wert ungekürzt', (tester) async {
+      await zeige(
+        tester,
+        aktuell: 51,
+        maximum: 55,
+        kuerzel: 'LeP',
+        onBearbeiten: () {},
+        breite: breite,
+      );
+      final wert = tester.renderObject<RenderParagraph>(find.text('51 / 55'));
+      expect(wert.didExceedMaxLines, isFalse);
+      expect(find.text('4 LeP fehlen'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+  }
+
+  testWidgets('passt der Fehlbetrag nicht daneben, steht er darunter', (
+    tester,
+  ) async {
+    await zeige(tester, aktuell: 51, maximum: 55, kuerzel: 'LeP', breite: 150);
+    final wert = tester.getBottomLeft(find.text('51 / 55'));
+    final hinweis = tester.getTopLeft(find.text('4 LeP fehlen'));
+    expect(hinweis.dy, greaterThanOrEqualTo(wert.dy));
+  });
+
+  testWidgets('mit Platz stehen Wert und Fehlbetrag in einer Zeile', (
+    tester,
+  ) async {
+    await zeige(tester, aktuell: 51, maximum: 55, kuerzel: 'LeP', breite: 320);
+    final wert = tester.getRect(find.text('51 / 55'));
+    final hinweis = tester.getRect(find.text('4 LeP fehlen'));
+    expect(hinweis.left, greaterThan(wert.right));
+    expect(hinweis.top, lessThan(wert.bottom));
   });
 
   group('Hinweis unter dem Balken', () {

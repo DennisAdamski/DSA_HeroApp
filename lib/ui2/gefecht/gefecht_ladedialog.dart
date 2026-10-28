@@ -47,6 +47,13 @@ class _LadedialogState extends State<GefechtLadedialog> {
     final dauer = widget.kampfmittel.art == GefechtsKampfmittelArt.nebenwaffe
         ? widget.snapshot.combatPreviewStats.offhandPreview?.reloadTimeDisplay
         : widget.snapshot.combatPreviewStats.reloadTimeDisplay;
+    final stats = widget.snapshot.combatPreviewStats;
+    // Axxeleratus verkürzt das Laden nur nach gelungener FF-Probe; die
+    // angezeigte Ladezeit setzt den Erfolg voraus.
+    final axxeleratusLaden =
+        widget.kampfmittel.art != GefechtsKampfmittelArt.nebenwaffe &&
+        (stats.schnellladenBogenTemporary ||
+            stats.schnellladenArmbrustTemporary);
     return AlertDialog(
       title: Text('${w?.name ?? 'Waffe'} laden / vorbereiten'),
       content: SizedBox(
@@ -61,6 +68,13 @@ class _LadedialogState extends State<GefechtLadedialog> {
                 'Nur reguläre Aktionen bezahlen die Vorbereitung. '
                 'Munition wird erst beim ausgeführten Schuss verbraucht.',
               ),
+              if (axxeleratusLaden)
+                const Text(
+                  key: ValueKey('gefecht-laden-axxeleratus-hinweis'),
+                  'Axxeleratus aktiv: Die weitere Verkürzung der Ladezeit '
+                  'gilt nur nach gelungener FF-Probe (Basisregelwerk S. 174); '
+                  'bei Misserfolg bleibt es eine Aktion länger.',
+                ),
               if (bekannt == null)
                 DropdownButtonFormField<bool>(
                   key: const ValueKey('gefecht-laden-anfang'),

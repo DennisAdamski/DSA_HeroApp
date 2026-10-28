@@ -139,6 +139,66 @@ command = "tool/mcp_dsa_rules/.venv/Scripts/python.exe"
 args = ["-m", "dsa_rules_mcp.server"]
 ```
 
+## Veröffentlichen über die Cloud (SPIEL-04)
+
+Die App lädt die Wissensbasis nach dem Entsperren der Katalog-Inhalte
+(Katalogpasswort) und mit Anmeldung **im Hintergrund** über die Cloud Function
+`rulesIndexApi`. Die Datei liegt gepackt in Firebase Storage unter `rules/`,
+`storage.rules` sperrt diesen Pfad für alle Clients. Die Function prüft
+Firebase-Konto (bestätigte E-Mail), App Check und einen Passwortnachweis und
+liefert dann eine **zehn Minuten gültige** signierte URL. Der Nachweis ist
+`SHA-256("rules-index-v1|" + v3-Katalogschlüssel)`; Passwort und Schlüssel
+verlassen das Gerät nie (`lib/data/rules_search/rules_index_proof.dart`,
+`tool/rules_index_proof.py`, Parität per Golden-Test gesichert).
+
+**Veröffentlichen** (nach `dsa-rules-cli refresh`):
+
+```powershell
+dsa-rules-cli publish                    # baut nur, zeigt die Upload-Befehle
+dsa-rules-cli publish --upload <BUCKET>  # baut und lädt per gcloud hoch
+```
+
+`publish` baut eine Fassung **ohne Vektoren** (die App nutzt nur die
+Volltextsuche) und **ohne lokale Quellpfade** (`sources.path` wird zu
+`quelle-<id>`), prüft sie (Volltextsuche findet etwas, keine Pfade übrig),
+packt sie mit gzip (rund 47 MB statt 168 MB) und schreibt
+`index-<sha12>.sqlite.gz` und `latest.json` nach `<Datenordner>/publish`. Der
+Upload lädt **erst die Datei** (`Content-Encoding: gzip`, damit Browser und Dart
+sie selbst entpacken), **dann** `latest.json`; bricht er ab, zeigt der Verweis
+weiter auf die alte Fassung. Ohne `--upload` läuft nichts nach außen.
+
+**Einmalig einrichten** (nur der Projektinhaber kann das):
+
+1. `python tool/rules_index_proof.py` gibt den Nachweis aus (Passwort aus
+   `docs/Passwort.env`, wird nie ausgegeben), dann
+   `firebase functions:secrets:set RULES_INDEX_PROOF` und den Nachweis einfügen.
+   Ändern sich Katalogpasswort oder `catalog_salt_v3`, das Secret neu setzen.
+2. Die Function braucht das Recht, URLs zu signieren: ihrem Dienstkonto die
+   Rolle `Service Account Token Creator` auf sich selbst geben, sonst meldet sie
+   `503 SERVICE_UNAVAILABLE`.
+3. Einschalten: `RULES_INDEX_TEST_ENABLED=true` bzw.
+   `RULES_INDEX_PRODUCTION_ENABLED=true` in `functions/.env.heldensync-ccf0b`
+   eintragen (Standard `false`, wie beim Feedbackdienst), dann **gezielt**
+   deployen, nie pauschal (siehe [feedback_betrieb.md](feedback_betrieb.md)):
+   `firebase deploy --only storage`,
+   `firebase deploy --only functions:rulesIndexApiTest`, später
+   `firebase deploy --only functions:rulesIndexApi`.
+4. Die Builds tragen die URL über `--dart-define=RULES_INDEX_API_URL=...`
+   (`flutter-tests.yml`, `tool/deploy_web.ps1`); ein Build ohne URL hat nur den
+   manuellen Weg.
+
+App Check gilt wie beim Feedbackdienst: Windows kennt derzeit nur den
+Debugprovider, der Cloud-Weg läuft dort nicht; Windows nutzt weiter den lokal
+gebauten Index. Beim lokalen Web-Debuggen (`localhost:5000`) muss das
+Debug-Token der Sitzung in der Firebase-Konsole registriert sein, sonst liefert
+App Check 403 und die Function lehnt ab.
+
+Grenzen: Wer das Katalogpasswort und ein bestätigtes Konto hat, kommt an die
+Texte, das ist dasselbe Vertrauensmodell wie beim verschlüsselten Katalog. Der
+Server bremst falsche Nachweise (eine Sekunde) und begrenzt sich auf drei
+Instanzen, ein Ratelimit je Konto gibt es nicht. Ein Rückfall für Builds ohne
+Cloud-Anbindung bleibt der Server-Sync unten.
+
 ## Veröffentlichen (Server-Sync für die App)
 
 Die Flutter-App kann `index.sqlite` alternativ zum manuellen Weg (lokal

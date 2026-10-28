@@ -226,15 +226,21 @@ void main() {
   });
 
   group('Sprachen und Schriften', () {
-    test('Sprachen-Begabung und Schriften-Unfähigkeit', () {
-      final fremd = catalog.sprachen.firstWhere(
-        (sprache) => sprache.familie != 'Garethi-Familie',
-      );
+    // Wege der Helden S. 248 und S. 273: Sprachen und Schriften sind eine
+    // Talentgruppe; Begabung und Unfähigkeit gelten für beide gemeinsam.
+    late final fremd = catalog.sprachen.firstWhere(
+      (sprache) => sprache.familie != 'Garethi-Familie',
+    );
+
+    String spalten(HeroSheet hero) =>
+        '${option(hero, AdvancementKind.language, fremd.id).learnCost?.name}/'
+        '${option(hero, AdvancementKind.script, 'sch_altes_alaani').learnCost?.name}';
+
+    test('Begabung gilt für Sprachen und Schriften', () {
       final ohne = held(muttersprache: 'spr_garethi');
       final hero = held(
         muttersprache: 'spr_garethi',
         vorteile: 'Begabung für Talentgruppe Sprachen',
-        nachteile: 'Unfähigkeit Talentgruppe Schriften',
       );
 
       expect(
@@ -247,8 +253,48 @@ void main() {
       );
       expect(
         option(hero, AdvancementKind.script, 'sch_altes_alaani').learnCost,
-        learnCostFromKomplexitaet('B'),
+        isNot(
+          option(ohne, AdvancementKind.script, 'sch_altes_alaani').learnCost,
+        ),
       );
+    });
+
+    test('Unfähigkeit gilt für die ganze Gruppe, auch bei Altauswahl', () {
+      final ohne = held(muttersprache: 'spr_garethi');
+      for (final auswahl in [
+        'Sprachen und Schriften',
+        'Sprachen',
+        'Schriften',
+      ]) {
+        final hero = held(
+          muttersprache: 'spr_garethi',
+          nachteile: 'Unfähigkeit Talentgruppe $auswahl',
+        );
+
+        expect(
+          option(hero, AdvancementKind.language, fremd.id).learnCost,
+          learnCostFromKomplexitaet('C'),
+          reason: auswahl,
+        );
+        expect(
+          option(hero, AdvancementKind.script, 'sch_altes_alaani').learnCost,
+          isNot(
+            option(ohne, AdvancementKind.script, 'sch_altes_alaani').learnCost,
+          ),
+          reason: auswahl,
+        );
+      }
+    });
+
+    test('Begabung und Unfähigkeit heben sich in der Gruppe auf', () {
+      final ohne = held(muttersprache: 'spr_garethi');
+      final hero = held(
+        muttersprache: 'spr_garethi',
+        vorteile: 'Begabung für Talentgruppe Sprachen',
+        nachteile: 'Unfähigkeit Talentgruppe Schriften',
+      );
+
+      expect(spalten(hero), spalten(ohne));
     });
   });
 
@@ -270,7 +316,10 @@ void main() {
       );
     }
 
-    test('Ritual-Begabung verbilligt die Ritualkenntnis seiner Tradition', () {
+    test('Ritual-Begabung verschiebt die Spalte der Ritualkenntnis nicht', () {
+      // Wege der Helden S. 248: Die Begabung für ein Ritual erleichtert nur
+      // dessen Ritualprobe um 3 und halbiert dessen Lern-AP; die Spalte der
+      // Ritualkenntnis bleibt unverändert.
       final stab = kategorie('Stabzauber');
       final eigene = kategorie(
         'Meine Rituale',
@@ -290,8 +339,8 @@ void main() {
         );
       }
 
-      expect(wirksam(stab), 'D');
-      expect(wirksam(eigene), 'D');
+      expect(wirksam(stab), 'E');
+      expect(wirksam(eigene), 'E');
       expect(wirksam(fremd), 'E');
       expect(begabungen.ritualBegabungen('Hammerschlag'), [
         'Begabung für Hammerschlag',
@@ -354,14 +403,53 @@ void main() {
     ]);
   });
 
-  test('Reihenfolge: erst verteuern, dann verbilligen', () {
+  test('Verschiebungen sind kumulativ, geklemmt wird erst die Summe', () {
+    // Wege der Helden S. 19: H + Unfähigkeit (+1) + Begabung (−1) bleibt H.
     expect(
       effectiveTalentLernkomplexitaet(
         basisKomplexitaet: 'H',
         gifted: true,
         unfaehigkeitsSchritte: 1,
       ),
-      'G',
+      'H',
+    );
+    expect(
+      effectiveTalentLernkomplexitaet(
+        basisKomplexitaet: 'H',
+        gifted: false,
+        unfaehigkeitsSchritte: 3,
+      ),
+      'H',
+    );
+    expect(
+      effectiveTalentLernkomplexitaet(
+        basisKomplexitaet: 'B',
+        gifted: true,
+        unfaehigkeitsSchritte: 2,
+      ),
+      'C',
+    );
+    expect(
+      effectiveSpellLernkomplexitaet(
+        basisKomplexitaet: 'G',
+        istHauszauber: false,
+        zauberMerkmale: const [],
+        heldMerkmalskenntnisse: const [],
+        gifted: true,
+        penaltySteps: 3,
+      ),
+      'H',
+    );
+    expect(
+      effectiveSpellLernkomplexitaet(
+        basisKomplexitaet: 'C',
+        istHauszauber: true,
+        zauberMerkmale: const [],
+        heldMerkmalskenntnisse: const [],
+        gifted: false,
+        penaltySteps: 2,
+      ),
+      'D',
     );
     expect(
       effectiveSpellLernkomplexitaet(

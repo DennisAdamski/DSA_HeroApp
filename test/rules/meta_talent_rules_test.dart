@@ -43,6 +43,58 @@ void main() {
     expect(result, 6);
   });
 
+  test('meta talent base taw is capped at twice the lowest component', () {
+    // Wege des Schwerts Anhang 3: Pirschjagd (35/5 =) 7, aber Tierkunde 1
+    // -> hoechstens 2.
+    final entries = <String, HeroTalentEntry>{
+      'tal_a': const HeroTalentEntry(talentValue: 10),
+      'tal_b': const HeroTalentEntry(talentValue: 12),
+      'tal_c': const HeroTalentEntry(talentValue: 1),
+      'tal_d': const HeroTalentEntry(talentValue: 6),
+    };
+    const ids = <String>['tal_a', 'tal_b', 'tal_c', 'tal_d'];
+
+    final detail = splitMetaTalentBaseTaw(
+      talentEntries: entries,
+      componentTalentIds: ids,
+    );
+
+    expect(detail.mittelwert, 7);
+    expect(detail.deckel, 2);
+    expect(detail.gedeckelt, isTrue);
+    expect(
+      computeMetaTalentBaseTaw(talentEntries: entries, componentTalentIds: ids),
+      2,
+    );
+  });
+
+  test(
+    'meta talent base taw: cap equal to or above the mean changes nothing',
+    () {
+      final entries = <String, HeroTalentEntry>{
+        'tal_a': const HeroTalentEntry(talentValue: 7),
+        'tal_b': const HeroTalentEntry(talentValue: 7),
+        'tal_c': const HeroTalentEntry(talentValue: 14),
+      };
+
+      final detail = splitMetaTalentBaseTaw(
+        talentEntries: entries,
+        componentTalentIds: const <String>['tal_a', 'tal_b', 'tal_c'],
+      );
+
+      // Mittelwert 28/3 = 9,33 -> 9, Deckel 14.
+      expect(detail.wert, 9);
+      expect(detail.gedeckelt, isFalse);
+      expect(
+        splitMetaTalentBaseTaw(
+          talentEntries: entries,
+          componentTalentIds: const <String>[],
+        ).wert,
+        0,
+      );
+    },
+  );
+
   test('meta talent computed taw applies own be rule after mean', () {
     final ebe = computeMetaTalentEbe(baseBe: 2, beRule: 'x2');
     final result = computeMetaTalentComputedTaw(baseTaw: 7, ebe: ebe);

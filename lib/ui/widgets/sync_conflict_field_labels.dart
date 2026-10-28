@@ -66,6 +66,7 @@ const Map<String, String> syncFieldLabels = <String, String>{
   'epicAttributeMaxBonus': 'Epik: Eigenschaftsmaximum-Bonus',
   'epicMainAttributes': 'Epik: Haupteigenschaften',
   'epicActivationPolicy': 'Epik: Aktivierungsregel',
+  'probenFavoriten': 'Häufige Proben',
   'epicLockedWaffenmeisterCategories': 'Epik: Gesperrte Waffenmeister',
   'epicUnactivatedTalentIds': 'Epik: Nicht aktivierte Talente',
   // HeroSheet: flach eingemischte Aussehen-Felder.

@@ -2,6 +2,12 @@
 
 Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unverändert. Die kurze [CLAUDE.md](../../CLAUDE.md) enthält die harten Regeln und den Themenindex.
 
+- **Rundung (Entscheidung 27.10.2026):** Wo Regelwerk oder Hausregel keine
+  Rundung nennen, gilt „echt gerundet“ (ab n,50 auf, Halbierungen auf; Wege der
+  Helden S. 6). Das gilt auch für den Lehrmeister-Nachlass von 20 %. Gedächtnis
+  (3/4) und epischer Aufschlag (1,25) runden so; `apMitLehrmeister`
+  (`lib/domain/learn/learn_rules.dart`) rechnet ganzzahlig `(4 x + 2) ~/ 5`
+  (RULE-FIX-093, behoben).
 - Steigerungen laufen getrennt von manuellen Korrekturen als Sitzung:
   `lib/domain/hero_advancement_entry.dart` trägt persistierbare Einträge,
   `lib/rules/derived/advancement*.dart` Optionen und Replay,

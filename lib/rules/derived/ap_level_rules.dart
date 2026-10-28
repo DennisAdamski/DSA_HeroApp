@@ -76,15 +76,16 @@ enum ZaubererKategorie { keine, viertel, halb, voll }
 /// Stufenboni gibt es nur noch auf AsP, und Halbzauberer bekommen
 /// nur 1 AsP je Stufe, Viertelzauberer gar nichts mehr.
 ///
-/// Der Standardwert fuer Vollzauberer (6 AsP) entspricht der in den
-/// Grundregeln ueblichen Menge und kann ueber [fullCasterBonus] ueberschrieben
+/// Der Standardwert fuer Vollzauberer (2 AsP) ist der AsP-Stufenbonus der
+/// Hausregel „Erweiterung und Ueberarbeitung des Regelwerks" (Kap. 1: +1 LeP,
+/// +2 AuP und +2 AsP je Stufe); er kann ueber [fullCasterBonus] ueberschrieben
 /// werden, um mit abweichenden Hausregeln kompatibel zu bleiben.
 /// Liefert 0, wenn die Regel inaktiv ist oder der Held nicht episch ist.
 int epicAspStufenbonus({
   required ZaubererKategorie kategorie,
   required bool ruleActive,
   required bool isEpisch,
-  int fullCasterBonus = 6,
+  int fullCasterBonus = 2,
 }) {
   if (!ruleActive || !isEpisch) return 0;
   return switch (kategorie) {

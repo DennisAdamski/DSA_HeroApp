@@ -106,11 +106,22 @@ class _ProbeDialogState extends State<ProbeDialog> {
   /// Ob der bedingte Poolschritt (etwa Axxeleratus bei Sprint/Sprung) gilt.
   bool _bedingungAngewendet = false;
 
+  /// Indizes der eingerechneten `bedingteZielAbzuege` (etwa Armwunden).
+  final Set<int> _zielAbzuegeAktiv = <int>{};
+
   /// Die Probe, wie sie gerade gewertet wird: mit angewendetem bedingten
-  /// Poolschritt, wenn der Schalter an ist (Rechnung in den Regeln).
-  ResolvedProbeRequest get _request => _bedingungAngewendet
-      ? wendeBedingtenPoolSchrittAn(widget.request)
-      : widget.request;
+  /// Poolschritt und den gewählten Zielabzügen, wenn die Schalter an sind
+  /// (Rechnung in den Regeln).
+  ResolvedProbeRequest get _request {
+    final mitPool = _bedingungAngewendet
+        ? wendeBedingtenPoolSchrittAn(widget.request)
+        : widget.request;
+    return wendeZielAbzuegeAn(mitPool, <ProbeZielAbzug>[
+      for (final index in _zielAbzuegeAktiv.toList()..sort())
+        widget.request.bedingteZielAbzuege[index],
+    ]);
+  }
+
   late final TextEditingController _modifierController;
   late final List<TextEditingController> _manualDiceControllers;
   ProbeResult? _result;
@@ -587,6 +598,29 @@ class _ProbeDialogState extends State<ProbeDialog> {
                 : (value) {
                     setState(() {
                       _bedingungAngewendet = value;
+                    });
+                    _liveRefresh();
+                  },
+          ),
+        ],
+        for (final (index, abzug)
+            in widget.request.bedingteZielAbzuege.indexed) ...[
+          const SizedBox(height: 8),
+          SwitchListTile(
+            key: ValueKey<String>('probe-dialog-zielabzug-$index'),
+            contentPadding: EdgeInsets.zero,
+            title: Text('${abzug.bezeichnung} einbeziehen (${abzug.kurztext})'),
+            subtitle: const Text('Wunde gilt nur, wenn der Arm benutzt wird'),
+            value: _zielAbzuegeAktiv.contains(index),
+            onChanged: _locked || _isAnimating
+                ? null
+                : (value) {
+                    setState(() {
+                      if (value) {
+                        _zielAbzuegeAktiv.add(index);
+                      } else {
+                        _zielAbzuegeAktiv.remove(index);
+                      }
                     });
                     _liveRefresh();
                   },

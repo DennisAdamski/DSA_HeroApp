@@ -1,12 +1,15 @@
 import 'package:dsa_heldenverwaltung/domain/attribute_modifiers.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/wund_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/wund_zonen_rules.dart';
 
 /// Kurztexte aller wirksamen Wundabzüge für Zusammenfassungen.
 ///
 /// Reihenfolge: allgemeine Kampfwerte, armgebundene Abzüge, zuletzt die
-/// Eigenschaftsverluste für Proben in einem Eintrag, z. B.
+/// Eigenschaftsverluste für Proben in einem Eintrag, danach je verwundetem
+/// Arm der KK-/FF-Abzug, den der Probendialog auf Wunsch einrechnet, z. B.
 /// `['AT −3', 'PA −3', 'FK −2', 'INI-Basis −2', 'GS −1',
-/// 'Schildarm AT/PA −2', 'Proben: GE −2, FF −2, KK −2']`. Leer, wenn nichts
+/// 'Schildarm AT/PA −2', 'Proben: GE −2',
+/// 'Proben mit Linker Arm (Schildarm): FF −2, KK −2']`. Leer, wenn nichts
 /// wirkt. Der Inspector und der Wundendialog zeigen dieselben Texte.
 List<String> beschreibeWundAbzuege(WundEffekte effekte) {
   final teile = <String>[];
@@ -26,6 +29,16 @@ List<String> beschreibeWundAbzuege(WundEffekte effekte) {
   final eigenschaften = _eigenschaftsTexte(effekte.eigenschaftsVerluste);
   if (eigenschaften.isNotEmpty) {
     teile.add('Proben: ${eigenschaften.join(', ')}');
+  }
+  for (final eintrag in effekte.armEigenschaftsVerluste.entries) {
+    final arm = _eigenschaftsTexte(eintrag.value);
+    if (arm.isNotEmpty) {
+      final zone = wundZonenAnzeige(
+        eintrag.key,
+        linkshaender: effekte.linkshaender,
+      );
+      teile.add('Proben mit $zone: ${arm.join(', ')}');
+    }
   }
   return teile;
 }

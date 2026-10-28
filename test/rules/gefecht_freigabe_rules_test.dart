@@ -81,8 +81,11 @@ void main() {
     a,
   );
 
+  // Seitenwechsel (Hausregel S. 10): Abwehr +4 und in der DK N zusätzlich
+  // zwei freie Aktionen; die Formations-Parade kostet nur die Parade.
   for (final id in ['man_formations_parade', 'man_seitenwechsel']) {
-    test('$id ohne Typ verwendet PA-Zielwert und verbraucht nur PA', () {
+    final seitenwechsel = id == 'man_seitenwechsel';
+    test('$id ohne Typ nutzt den PA-Zielwert und bucht den Aufwand', () {
       final json = jsonDecode(
         File('assets/catalogs/house_rules_v1/manoever.json').readAsStringSync(),
       ) as List;
@@ -138,10 +141,11 @@ void main() {
       final at = pruefeGefechtsaktion(s, w, Gefechtsaktion.angriff);
       expect(p.aktion, Gefechtsaktion.parade);
       expect(p.ausfuehrbar, isTrue, reason: p.gruende.join(' '));
-      expect(p.zielwert, pa.zielwert);
+      expect(p.zielwert, pa.zielwert! - (seitenwechsel ? 4 : 0));
       expect(p.zielwert, isNot(at.zielwert));
       final nachher = verbraucheGefechtsaktion(s, w, p, erfolg: true);
       expect(nachher.paradenVerbraucht, 1);
+      expect(nachher.freieVerbraucht, seitenwechsel ? 2 : 0);
       expect(nachher.angriffeVerbraucht, 0);
       expect(nachher.regulaereParade, isTrue);
       expect(nachher.regulaereAttacke, isFalse);
@@ -149,6 +153,52 @@ void main() {
       expect(nachher.kontext.finte, 0);
     });
   }
+
+  group('Seitenwechsel nach DK', () {
+    test('H eine freie, N zwei freie, S eine normale Aktion, P gesperrt', () {
+      expect(gefechtsSeitenwechsel(dk: 'H').freie, 1);
+      expect(gefechtsSeitenwechsel(dk: 'N').freie, 2);
+      final s = gefechtsSeitenwechsel(dk: 'S');
+      expect((s.freie, s.normale), (0, 1));
+      final p = gefechtsSeitenwechsel(dk: 'P');
+      expect(p.sperren, ['Seitenwechsel ist in der DK P nicht möglich.']);
+    });
+
+    test('Ohne DK und gegen sehr große Gegner bleiben Hinweise', () {
+      final ohne = gefechtsSeitenwechsel(dk: null);
+      expect((ohne.freie, ohne.normale), (0, 0));
+      expect(ohne.hinweise.first, contains('DK festlegen'));
+      expect(
+        gefechtsSeitenwechsel(dk: 'H', grosserGegner: true).hinweise,
+        contains('Gegen sehr große Gegner nur mit Meisterzustimmung.'),
+      );
+    });
+
+    test('Die Prüfung sperrt in der DK P und braucht freie Aktionen', () {
+      final json = jsonDecode(
+        File('assets/catalogs/house_rules_v1/manoever.json').readAsStringSync(),
+      ) as List;
+      final m = json
+          .map((m) => ManeuverDef.fromJson(m as Map<String, dynamic>))
+          .singleWhere((m) => m.id == 'man_seitenwechsel');
+      final p = pruefen(auftrag(m: m, dk: 'P'));
+      expect(
+        p.sperrgruende,
+        contains('Seitenwechsel ist in der DK P nicht möglich.'),
+      );
+      // Nach einer verbrauchten freien Aktion fehlt eine der zwei geforderten.
+      final erschoepft = pruefeGefechtAuftrag(
+        const Gefechtszustand(iniWurf: 6, dk: 'N', freieVerbraucht: 1),
+        snapshot,
+        testCatalog,
+        auftrag(m: m),
+      );
+      expect(
+        erschoepft.sperrgruende,
+        contains('Keine freie Aktion verfügbar.'),
+      );
+    });
+  });
 
   test('Fehlende DK bleibt auch nach Kostenänderung konkret fehlend', () {
     const m = ManeuverDef(id: 'a', name: 'Attacke', typ: 'Attacke');

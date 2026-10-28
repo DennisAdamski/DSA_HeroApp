@@ -78,8 +78,8 @@ int parseBeModifier(String raw) {
 //
 // [reductionMultiplier] skaliert die errechnete Behinderung. Das deckt die
 // epische KK-Haupteigenschaft ab (Kap. 2.1: halbierte eBE bei KK-Talenten).
-// Neutralwert ist 1.0. Gerundet wird abwaerts, also zugunsten des Helden --
-// dieselbe Richtung wie bei computeAtEbePart.
+// Neutralwert ist 1.0. Gerundet wird echt, bei der Halbierung also auf
+// (eBE 3 ergibt 2, nicht 1).
 int computeTalentEbe({
   required int baseBe,
   required String talentBeRule,
@@ -119,12 +119,13 @@ int computeTalentEbe({
   );
 }
 
-// Skaliert eine nicht-negative Behinderung und rundet zugunsten des Helden ab.
+// Skaliert eine nicht-negative Behinderung und rundet echt (ab ,5 auf; bei
+// Halbierungen wird aufgerundet, Wege der Helden S. 6).
 int _scaleReduction(int reduction, double multiplier) {
   if (multiplier == 1.0 || reduction <= 0) {
     return reduction;
   }
-  final scaled = (reduction * multiplier).floor();
+  final scaled = (reduction * multiplier).round();
   return scaled < 0 ? 0 : scaled;
 }
 

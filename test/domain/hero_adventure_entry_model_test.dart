@@ -83,6 +83,56 @@ void main() {
       );
     });
 
+    test('Notiz und Person tragen Ort und Datum durch Speichern und Laden', () {
+      const notiz = HeroNoteEntry(
+        title: 'Wirt',
+        ort: 'Punin',
+        datum: '17. Boron 1020 BF',
+      );
+      const person = HeroAdventurePersonEntry(
+        id: 'p1',
+        name: 'Alrik',
+        ort: 'Gareth',
+        datum: '3. Rahja 1040 BF',
+      );
+
+      final notizNeu = HeroNoteEntry.fromJson(notiz.toJson());
+      final personNeu = HeroAdventurePersonEntry.fromJson(person.toJson());
+
+      expect(notizNeu.ort, 'Punin');
+      expect(notizNeu.datum, '17. Boron 1020 BF');
+      expect(personNeu.ort, 'Gareth');
+      expect(personNeu.datum, '3. Rahja 1040 BF');
+    });
+
+    test('Ort und Datum erscheinen nur bei Belegung im JSON (Hash-Schutz)', () {
+      // Bestandseinträge dürfen sich im JSON nicht ändern, sonst ändert sich
+      // der Inhalts-Hash jedes Bestandshelden und der Sync meldet Konflikte.
+      final notiz = const HeroNoteEntry(title: 'Wirt').toJson();
+      final person = const HeroAdventurePersonEntry(
+        id: 'p1',
+        name: 'Alrik',
+      ).toJson();
+      expect(notiz.containsKey('ort'), isFalse);
+      expect(notiz.containsKey('datum'), isFalse);
+      expect(person.containsKey('ort'), isFalse);
+      expect(person.containsKey('datum'), isFalse);
+
+      // Ein Bestands-JSON lädt unverändert zurück.
+      const altNotiz = <String, dynamic>{'title': 'Wirt', 'description': 'x'};
+      expect(HeroNoteEntry.fromJson(altNotiz).toJson(), altNotiz);
+    });
+
+    test('copyWith erhält Ort und Datum und setzt sie gezielt', () {
+      const notiz = HeroNoteEntry(title: 'T', ort: 'Punin', datum: 'heute');
+      expect(notiz.copyWith(title: 'U').ort, 'Punin');
+      expect(notiz.copyWith(title: 'U').datum, 'heute');
+      expect(notiz.copyWith(ort: '').ort, isEmpty);
+      const person = HeroAdventurePersonEntry(id: 'p', ort: 'Gareth');
+      expect(person.copyWith(name: 'N').ort, 'Gareth');
+      expect(person.copyWith(datum: 'morgen').datum, 'morgen');
+    });
+
     test('loads legacy payloads with current status and empty new fields', () {
       final entry = HeroAdventureEntry.fromJson(<String, dynamic>{
         'id': 'adv_legacy',

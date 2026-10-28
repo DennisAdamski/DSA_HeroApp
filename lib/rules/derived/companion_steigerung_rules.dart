@@ -22,10 +22,11 @@ const LearnCost kVertrauterKomplexitaet = LearnCost.f;
 int companionApVerfuegbar(HeroCompanion c) =>
     (c.apGesamt ?? 0) - (c.apAusgegeben ?? 0);
 
-/// Hoechster Gesamtwert nach WdZ S. 125: das abgerundete Anderthalbfache
-/// des Startwerts.
+/// Hoechster Gesamtwert nach WdZ S. 125: das Anderthalbfache des Startwerts,
+/// echt gerundet (Wege der Helden S. 6; wie bei den Eigenschaften des Helden
+/// ergibt 1,5 x 7 = 10,5 den Wert 11).
 int vertrautenGrenze(int startwert) =>
-    startwert <= 0 ? startwert : (startwert * 3) ~/ 2;
+    startwert <= 0 ? startwert : (startwert * 3 + 1) ~/ 2;
 
 /// Hoechster Steigerungsstand ueber dem Startwert [startwert].
 int vertrautenMaxStandUeber(int startwert) =>

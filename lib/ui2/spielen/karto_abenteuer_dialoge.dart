@@ -11,32 +11,60 @@ import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
 
 /// Ergebnis der Notiz- und Personendialoge.
 class KartoZweiFelder {
-  const KartoZweiFelder(this.erstes, this.zweites, {this.loeschen = false});
+  const KartoZweiFelder(
+    this.erstes,
+    this.zweites, {
+    this.ort = '',
+    this.datum = '',
+    this.loeschen = false,
+  });
 
   final String erstes;
   final String zweites;
+
+  /// Ort des Eintrags, ohne Randleerzeichen; leer, wenn keiner angegeben ist.
+  final String ort;
+
+  /// Aventurisches Datum als Text, ohne Randleerzeichen; leer ohne Angabe.
+  final String datum;
   final bool loeschen;
 }
 
-/// Gemeinsamer Dialog für Notizen (Titel, Text) und Personen (Name, Rolle).
+/// Gemeinsamer Dialog für Notizen (Titel, Text) und Personen (Name, Rolle),
+/// beide mit Ort und aventurischem Datum.
 ///
 /// Schließt sich selbst und gibt sein Ergebnis zurück; geschrieben wird beim
-/// Aufrufer, damit das Abenteuer nur an einer Stelle verändert wird.
+/// Aufrufer, damit das Abenteuer nur an einer Stelle verändert wird. Ort und
+/// Datum eines **neuen** Eintrags legt der Aufrufer als Vorbelegung ein (Standort
+/// des Helden, Datum des Abenteuers); beim Bearbeiten stehen die gespeicherten
+/// Werte darin.
 class KartoZweiFelderDialog extends StatefulWidget {
-  const KartoZweiFelderDialog.notiz({super.key, this.erstes, this.zweites})
-    : titelNeu = 'Neue Notiz',
-      titelBearbeiten = 'Notiz bearbeiten',
-      etikettErstes = 'Titel',
-      etikettZweites = 'Notiz';
+  const KartoZweiFelderDialog.notiz({
+    super.key,
+    this.erstes,
+    this.zweites,
+    this.ort = '',
+    this.datum = '',
+  }) : titelNeu = 'Neue Notiz',
+       titelBearbeiten = 'Notiz bearbeiten',
+       etikettErstes = 'Titel',
+       etikettZweites = 'Notiz';
 
-  const KartoZweiFelderDialog.person({super.key, this.erstes, this.zweites})
-    : titelNeu = 'Neue Person',
-      titelBearbeiten = 'Person bearbeiten',
-      etikettErstes = 'Name',
-      etikettZweites = 'Beschreibung';
+  const KartoZweiFelderDialog.person({
+    super.key,
+    this.erstes,
+    this.zweites,
+    this.ort = '',
+    this.datum = '',
+  }) : titelNeu = 'Neue Person',
+       titelBearbeiten = 'Person bearbeiten',
+       etikettErstes = 'Name',
+       etikettZweites = 'Beschreibung';
 
   final String? erstes;
   final String? zweites;
+  final String ort;
+  final String datum;
   final String titelNeu;
   final String titelBearbeiten;
   final String etikettErstes;
@@ -55,11 +83,19 @@ class _KartoZweiFelderDialogState extends State<KartoZweiFelderDialog> {
   late final TextEditingController _zweites = TextEditingController(
     text: widget.zweites ?? '',
   );
+  late final TextEditingController _ort = TextEditingController(
+    text: widget.ort,
+  );
+  late final TextEditingController _datum = TextEditingController(
+    text: widget.datum,
+  );
 
   @override
   void dispose() {
     _erstes.dispose();
     _zweites.dispose();
+    _ort.dispose();
+    _datum.dispose();
     super.dispose();
   }
 
@@ -71,26 +107,45 @@ class _KartoZweiFelderDialogState extends State<KartoZweiFelderDialog> {
       title: Text(widget.bearbeitet ? widget.titelBearbeiten : widget.titelNeu),
       content: SizedBox(
         width: Breite.klein,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              key: const ValueKey<String>('karto-abenteuer-feld-1'),
-              controller: _erstes,
-              autofocus: true,
-              decoration: InputDecoration(labelText: widget.etikettErstes),
-              onChanged: (_) => setState(() {}),
-            ),
-            const SizedBox(height: Abstand.weit),
-            TextField(
-              key: const ValueKey<String>('karto-abenteuer-feld-2'),
-              controller: _zweites,
-              minLines: 3,
-              maxLines: 8,
-              decoration: InputDecoration(labelText: widget.etikettZweites),
-              onChanged: (_) => setState(() {}),
-            ),
-          ],
+        // Mit Ort und Datum wird der Dialog hoch; auf kleinen Bildschirmen und
+        // bei Tastatur bleibt er so erreichbar.
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                key: const ValueKey<String>('karto-abenteuer-feld-1'),
+                controller: _erstes,
+                autofocus: true,
+                decoration: InputDecoration(labelText: widget.etikettErstes),
+                onChanged: (_) => setState(() {}),
+              ),
+              const SizedBox(height: Abstand.weit),
+              TextField(
+                key: const ValueKey<String>('karto-abenteuer-feld-2'),
+                controller: _zweites,
+                minLines: 3,
+                maxLines: 8,
+                decoration: InputDecoration(labelText: widget.etikettZweites),
+                onChanged: (_) => setState(() {}),
+              ),
+              const SizedBox(height: Abstand.weit),
+              TextField(
+                key: const ValueKey<String>('karto-abenteuer-feld-ort'),
+                controller: _ort,
+                decoration: const InputDecoration(labelText: 'Ort'),
+              ),
+              const SizedBox(height: Abstand.weit),
+              TextField(
+                key: const ValueKey<String>('karto-abenteuer-feld-datum'),
+                controller: _datum,
+                decoration: const InputDecoration(
+                  labelText: 'Datum',
+                  hintText: 'z. B. 17. Boron 1020 BF',
+                ),
+              ),
+            ],
+          ),
         ),
       ),
       actions: [
@@ -109,7 +164,12 @@ class _KartoZweiFelderDialogState extends State<KartoZweiFelderDialog> {
           onPressed: _leer
               ? null
               : () => Navigator.of(context).pop(
-                  KartoZweiFelder(_erstes.text.trim(), _zweites.text.trim()),
+                  KartoZweiFelder(
+                    _erstes.text.trim(),
+                    _zweites.text.trim(),
+                    ort: _ort.text.trim(),
+                    datum: _datum.text.trim(),
+                  ),
                 ),
           child: const Text('Speichern'),
         ),

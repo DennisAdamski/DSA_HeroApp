@@ -502,7 +502,9 @@ Widget _ritualTitel(String name, List<String> begabungen, {required Key key}) {
       const SizedBox(width: 4),
       Tooltip(
         key: key,
-        message: 'Begabung: ${begabungen.join(', ')}',
+        message:
+            'Begabung: ${begabungen.join(', ')} '
+            '(Ritualprobe um 3 erleichtert, halbe Lern-AP des Rituals)',
         child: const Icon(
           Icons.auto_awesome,
           size: 16,

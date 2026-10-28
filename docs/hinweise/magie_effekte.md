@@ -52,12 +52,15 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   (`spell_effect_protection_rules.dart`, `fangeMagischenSchadenAuf` mit
   erwartetem Restvorrat gegen Doppelbuchung); der Durchschlag geht in den
   Schadensdialog, ein aufgezehrter Schild bleibt bis zum Beenden am Tisch.
+  Dass der Rest auf das Ziel durchschlägt, ist Tischentscheid (27.10.2026);
+  Liber Cantiones nennt nur, dass sich der Schild nach der TP-Zahl auflöst.
   Teilstand 2: Zauberheilung (Balsam, Hexenspeichel) ist ein einmaliges
   Ereignis über „Heilzauber erhalten“; Regeln in `spell_effect_healing_rules.dart`,
   Schreibweg `HeilungErhalten` (ein Dokument mit `ZustandsBuchung` Art
   `heilung`, `aspDelta` und Protokoll, idempotent über die Vorgangs-ID). Nie
-  geraten: ungerade AsP bei Wunden (Hexenspeichel) und Rettung von der
-  Schwelle des Todes. Teilstand 3: Ruhe Körper ist ein eigener Schlafablauf
+  geraten: die Rettung von der Schwelle des Todes. Ungerade AsP bei Wunden
+  (Hexenspeichel) werden nach der allgemeinen Rundungsregel aufgerundet
+  (7 AsP ergeben 4 LeP). Teilstand 3: Ruhe Körper ist ein eigener Schlafablauf
   (`spell_effect_rest_rules.dart`, `RuheKoerperErhalten`), der die normale
   Regeneration der Stunden ersetzt; Heilungs-Vor-/Nachteile und „evtl. 1 AsP“
   werden nicht gerechnet, der Zaubernde trägt die Kosten.
@@ -74,7 +77,8 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   `ResolvedProbeRequest.bedingterPoolSchritt` außerhalb des Pools; der
   Probendialog bietet sie als Schalter an (`wendeBedingtenPoolSchrittAn`).
   Tischregel Rundung: Kosten abrunden, übrige Spielerwerte aufrunden, MR
-  ausgenommen; bei halbierten Abzügen und Dauern den Betrag aufrunden
+  ausgenommen (Ausnahme: der Attributo-Bonus ZfP*/3 wird echt gerundet,
+  Entscheidung 27.10.2026); bei halbierten Abzügen und Dauern den Betrag aufrunden
   (`halbiertAufgerundet`). Blitz mit Blindkampf halbiert alle Abzüge,
   Konzentrationsstärke die Zauberproben, beide zusammen nur einmal.
   Karnifilo: Wunden mindern AT/PA nicht und machen nicht kampfunfähig, nur

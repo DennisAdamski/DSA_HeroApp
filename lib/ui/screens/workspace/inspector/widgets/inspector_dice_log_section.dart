@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import 'package:dsa_heldenverwaltung/domain/dice_log_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/zuletzt_gewuerfelt_rules.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/workspace/inspector/widgets/dice_log_abende.dart';
 import 'package:dsa_heldenverwaltung/ui/theme/codex_theme.dart';
 
 /// Filtergruppen fuer das Wuerfelprotokoll.
@@ -50,18 +52,37 @@ enum DiceLogFilter {
   }
 }
 
+/// Ob sich ein Protokolleintrag über die Probensuche wiederholen lässt.
+///
+/// Nur die Proben, die die Probensuche selbst erzeugt: Eigenschafts-, Talent-
+/// und Zauberproben sowie die Kampf-Schnellproben. Schaden, Rast, Gefechts-
+/// aufträge, Summenwürfe und Buchungen haben keinen eigenen Probendialog.
+bool diceLogEntryKannWiederholtWerden(DiceLogEntry entry) =>
+    probeEintragIstWiederholbar(entry);
+
 /// Liste der zuletzt protokollierten Wuerfelproben mit Filter-Chips.
 ///
 /// Erwartet die Eintraege in chronologischer Reihenfolge (aelteste zuerst,
 /// neueste am Ende der Liste – wie sie der `HeroState.diceLog` haelt).
 /// Die Anzeige dreht das intern um, damit der neueste Eintrag oben steht.
+/// Liegen Würfe aus mehreren Spielabenden vor (Pause von mehr als sechs
+/// Stunden), stehen Überschriften zwischen den Abenden; bei einem einzigen
+/// Abend bleibt die Liste ohne Überschrift wie bisher.
 class InspectorDiceLogSection extends StatefulWidget {
   /// Erzeugt die Protokoll-Sektion fuer die uebergebenen Eintraege.
   const InspectorDiceLogSection({
     super.key,
     required this.entries,
     this.aktion,
+    this.onWiederholen,
+    this.jetzt,
+    this.hoechstens,
   });
+
+  /// Zeigt nur die neuesten so vielen Würfe und keine Filter; `null` zeigt
+  /// alles. Für die knappe Fassung auf der Spielansicht, die das vollständige
+  /// Protokoll eigens öffnet.
+  final int? hoechstens;
 
   /// Protokolleintraege in chronologischer Reihenfolge.
   final List<DiceLogEntry> entries;
@@ -69,6 +90,15 @@ class InspectorDiceLogSection extends StatefulWidget {
   /// Optionale Aktion je Eintrag (etwa „Zurücknehmen“ einer
   /// Schadensbuchung); `null` heißt: keine. Die Sektion selbst schreibt nie.
   final Widget? Function(DiceLogEntry entry)? aktion;
+
+  /// Würfelt die Probe eines Eintrags nochmal; `null` blendet den Knopf aus.
+  /// Der Knopf erscheint nur an Einträgen, für die
+  /// [diceLogEntryKannWiederholtWerden] gilt. Die Sektion selbst würfelt nie.
+  final Future<void> Function(DiceLogEntry entry)? onWiederholen;
+
+  /// Zeitpunkt für „Heute“ und „Gestern“; ohne Angabe die aktuelle Zeit. Für
+  /// Tests ersetzbar.
+  final DateTime? jetzt;
 
   @override
   State<InspectorDiceLogSection> createState() =>
@@ -93,16 +123,36 @@ class _InspectorDiceLogSectionState extends State<InspectorDiceLogSection> {
       );
     }
 
-    final filtered = widget.entries
-        .where(_filter.matches)
-        .toList(growable: false);
-    final reversed = filtered.reversed.toList(growable: false);
+    // Die Abende stehen fest, bevor gefiltert wird: ein Filter darf keine
+    // Pause verschlucken und zwei Abende zu einem machen.
+    final abende = gruppiereNachSpielabend(widget.entries).reversed.toList();
+    final mitUeberschrift = abende.length > 1;
+    final jetzt = widget.jetzt ?? DateTime.now();
+    final grenze = widget.hoechstens;
+    // Knapp gibt es keinen Filter: die neuesten Würfe, gleich welcher Art.
+    final filter = grenze == null ? _filter : DiceLogFilter.all;
+    var rest = grenze ?? widget.entries.length;
+    final gefiltert = [
+      for (final abend in abende)
+        (
+          abend: abend,
+          eintraege: () {
+            final neueste = abend.eintraege
+                .where(filter.matches)
+                .toList(growable: false)
+                .reversed
+                .take(rest)
+                .toList(growable: false);
+            rest -= neueste.length;
+            return neueste;
+          }(),
+        ),
+    ].where((gruppe) => gruppe.eintraege.isNotEmpty).toList(growable: false);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _buildFilterChips(),
-        const SizedBox(height: 8),
-        if (reversed.isEmpty)
+        if (grenze == null) ...[_buildFilterChips(), const SizedBox(height: 8)],
+        if (gefiltert.isEmpty)
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 12),
             child: Text(
@@ -113,9 +163,27 @@ class _InspectorDiceLogSectionState extends State<InspectorDiceLogSection> {
               ),
             ),
           ),
-        for (final entry in reversed) ...[
-          _DiceLogEntryRow(entry: entry, aktion: widget.aktion?.call(entry)),
-          const SizedBox(height: 6),
+        for (final gruppe in gefiltert) ...[
+          if (mitUeberschrift)
+            _AbendUeberschrift(
+              key: ValueKey(
+                'dice-log-abend-${gruppe.abend.eintraege.first.timestamp.millisecondsSinceEpoch}',
+              ),
+              text: diceLogAbendUeberschrift(gruppe.abend.beginn, jetzt),
+              anzahl: gruppe.eintraege.length,
+            ),
+          for (final entry in gruppe.eintraege) ...[
+            _DiceLogEntryRow(
+              entry: entry,
+              aktion: widget.aktion?.call(entry),
+              onWiederholen:
+                  widget.onWiederholen != null &&
+                      diceLogEntryKannWiederholtWerden(entry)
+                  ? () => widget.onWiederholen!(entry)
+                  : null,
+            ),
+            const SizedBox(height: 6),
+          ],
         ],
       ],
     );
@@ -140,11 +208,54 @@ class _InspectorDiceLogSectionState extends State<InspectorDiceLogSection> {
   }
 }
 
+/// Überschrift eines Spielabends mit der Zahl seiner (gefilterten) Würfe.
+class _AbendUeberschrift extends StatelessWidget {
+  const _AbendUeberschrift({
+    super.key,
+    required this.text,
+    required this.anzahl,
+  });
+
+  final String text;
+  final int anzahl;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(2, 8, 2, 6),
+      child: Wrap(
+        spacing: 8,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        children: [
+          Text(
+            text,
+            style: theme.textTheme.labelLarge?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          Text(
+            anzahl == 1 ? '1 Wurf' : '$anzahl Würfe',
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _DiceLogEntryRow extends StatelessWidget {
-  const _DiceLogEntryRow({required this.entry, this.aktion});
+  const _DiceLogEntryRow({
+    required this.entry,
+    this.aktion,
+    this.onWiederholen,
+  });
 
   final DiceLogEntry entry;
   final Widget? aktion;
+  final VoidCallback? onWiederholen;
 
   @override
   Widget build(BuildContext context) {
@@ -213,7 +324,8 @@ class _DiceLogEntryRow extends StatelessWidget {
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: theme.colorScheme.onSurfaceVariant,
                         ),
-                        maxLines: 1,
+                        // Ziele und TaP* machen die Zeile bei 3W20 länger.
+                        maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
                   ],
@@ -240,6 +352,21 @@ class _DiceLogEntryRow extends StatelessWidget {
                       color: theme.colorScheme.onSurfaceVariant,
                     ),
                   ),
+                  if (onWiederholen != null)
+                    IconButton(
+                      key: ValueKey(
+                        'dice-log-wiederholen-${entry.timestamp.millisecondsSinceEpoch}',
+                      ),
+                      tooltip: 'Nochmal würfeln',
+                      onPressed: onWiederholen,
+                      icon: const Icon(Icons.replay, size: 18),
+                      visualDensity: VisualDensity.compact,
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(
+                        minWidth: 32,
+                        minHeight: 32,
+                      ),
+                    ),
                   ?aktion,
                 ],
               ),
@@ -262,12 +389,24 @@ class _DiceLogEntryRow extends StatelessWidget {
       parts.add('Würfe: ${entry.diceValues.join(', ')}');
     }
     final target = entry.targetValue;
-    if (target != null) {
+    if (entry.zielwerte.length > 1) {
+      // Bei 3W20 gehört zu jedem Würfel ein eigener Zielwert.
+      parts.add('Ziele: ${entry.zielwerte.join('/')}');
+    } else if (target != null) {
       parts.add('Ziel: $target');
     }
     final total = entry.total;
     if (total != null) {
       parts.add('Gesamt: $total');
+    }
+    final rest = entry.restpunkte;
+    if (rest != null && entry.success && rest >= 0) {
+      final name = switch (entry.type) {
+        ProbeType.talent => 'TaP*',
+        ProbeType.spell => 'ZfP*',
+        _ => 'Rest',
+      };
+      parts.add('$name: $rest');
     }
     return parts.join(' | ');
   }

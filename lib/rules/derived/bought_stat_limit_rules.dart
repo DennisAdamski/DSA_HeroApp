@@ -9,9 +9,13 @@ int? computeBoughtStatMaximum({
   required Attributes permanentAttributes,
 }) {
   return switch (statKey) {
-    'lep' => permanentAttributes.ko ~/ 2,
+    // Halbierungen werden aufgerundet (Wege der Helden S. 6).
+    'lep' => (permanentAttributes.ko + 1) ~/ 2,
     'au' => permanentAttributes.ko,
-    'mr' => permanentAttributes.mu ~/ 2,
+    'mr' => (permanentAttributes.mu + 1) ~/ 2,
+    // Zugekaufte Astralpunkte hoechstens in Hoehe des CH-Werts
+    // (Basisregelwerk S. 207). Karmaenergie hat keine Regelgrenze.
+    'asp' => permanentAttributes.ch,
     _ => null,
   };
 }

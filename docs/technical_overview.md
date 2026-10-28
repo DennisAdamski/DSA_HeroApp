@@ -2607,9 +2607,12 @@ wenn der Vorteil entfernt ist.
 - Uebrige Unfaehigkeiten verteuern zusammen eine Spalte, das Maximum bleibt.
   Verteuert wird zuerst (bis `H`), dann verbilligt (bis `A*`).
 - Sprachen/Schriften verschieben die Spalte der Steigerungsoption.
-- Eine Ritual-Begabung verbilligt die eigene Ritualkenntnis der Kategorie,
-  die das Ritual fuehrt oder deren Name der Traditionsritual-SF mit diesem
-  Ritual entspricht (Untergrenze `A`); das Ritual traegt eine Marke.
+- Eine Ritual-Begabung verschiebt die Spalte der Ritualkenntnis nicht (Wege
+  der Helden S. 248: Ritualprobe des einen Rituals um 3 erleichtert, halbe
+  Lern-AP); das Ritual traegt nur eine Marke mit diesem Hinweis. Die
+  Probenerleichterung und die halben Lern-AP sind nicht gerechnet. Eine
+  Unfaehigkeit (negativer Betrag) wuerde die Ritualkenntnis der Kategorie
+  weiter verschieben (Untergrenze `A`).
 Verbraucher: `AdvancementContext.begabungen` (einmal je Optionsaufbau),
 `CatalogRuleResolver.resolveTalentComplexity` (`unfaehigkeitsSchritte`),
 Talente-, Kampf- und Magie-Tab samt ihren Katalogvorschauen und dem
@@ -2724,7 +2727,8 @@ Vertraute steigen mit eigenen AP nach Komplexität F (WdZ S. 125). Die Grenzen
 stehen in `companion_steigerung_rules.dart`:
 
 - INI, Loyalität und AuP sind gesperrt.
-- Kein Wert steigt über ⌊1,5 × Startwert⌋, ausgenommen AsP und RK.
+- Kein Wert steigt über das echt gerundete 1,5 × Startwert (7 ergibt 11),
+  ausgenommen AsP und RK.
 - GS steigt je Bewegungsart über `HeroCompanionSpeed.steigerung`.
 - Altbuchungen bleiben stehen und bekommen nur einen Hinweis.
 
@@ -2735,7 +2739,8 @@ zugehörigen Regeln:
 
 - `vertrauten_bindung_rules.dart`: Generierung und Bindung. Die Kosten gehen
   als `apSpent` der Hexe in derselben Änderung.
-- `vertrauten_ap_rules.dart`: ¼ der Abenteuer-AP. Die Regel ist in
+- `vertrauten_ap_rules.dart`: ¼ der Abenteuer-AP, kumulativ echt gerundet
+  (`round(neu/4) - round(alt/4)`, Entscheidung 27.10.2026). Die Regel ist in
   Abenteuerabschluss und Reisebericht samt Rücknahmen eingehängt. Dazu kommen
   die einmalige Einrichtung und die Übertragung mit Loyalität.
 - `vertrauten_ausbildung_rules.dart`: Zauberzugang je Art, Lernen aus den AP
@@ -2842,7 +2847,9 @@ erhalten.
 Geschuetzte Felder (`PROTECTED_FIELDS` im Tool, gespiegelt in
 `test/catalog/geschuetzte_langtexte_test.dart`): `wirkung`/`variants` in
 `magie.json` sowie `erklarung_lang` in `manoever.json`, `kampf_`, `allgemeine_`,
-`karmale_` und `magische_sonderfertigkeiten.json`.
+`karmale_` und `magische_sonderfertigkeiten.json` sowie `kurztext`, `hinweise`
+und `hausregel_text` in `kurzregeln.json` (Kurzregel-Kompendium; eigener Lader
+`lib/catalog/kurzregel_loader.dart`, nicht Teil des Bulk-Decrypts).
 
 Verschluesselung und Re-Encryption der Asset-Dateien erfolgen mit
 `tool/encrypt_catalog_fields.py --format v3` (Passwort aus `docs/Passwort.env`,

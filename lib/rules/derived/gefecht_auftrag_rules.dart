@@ -112,6 +112,7 @@ Gefechtspruefung _pruefeGefechtAuftrag(
       eigenerAuftrag: eigenerAuftrag,
       distanzSchritte: auftrag.distanzSchritte,
       kampfmittel: wahl,
+      grosserGegner: auftrag.grosserGegner,
     );
   } else if (auftrag.manuell || auftrag.probe != null) {
     p = pruefeManuelleGefechtsaktion(

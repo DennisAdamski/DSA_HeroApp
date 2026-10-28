@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:dsa_heldenverwaltung/domain/dice_log_entry.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/alchimika_elixier_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/avatar_rahmung_rules.dart';
 import 'package:dsa_heldenverwaltung/state/auth_providers.dart';
@@ -33,6 +34,7 @@ import 'package:dsa_heldenverwaltung/ui/screens/workspace/inspector/widgets/insp
 import 'package:dsa_heldenverwaltung/ui/screens/hero_overview/hero_regelprofil_section.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/herleitung_suche_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/probe_quick_search.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/workspace/proben_favoriten_liste.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/rules_lookup_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/rest_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/schaden/schaden_dialog.dart';
@@ -282,6 +284,12 @@ class KartoBestandsAdapterImpl
     );
   }
 
+  /// Baut die häufigen Proben des Helden.
+  @override
+  Widget spielFavoritenproben({required String heroId}) {
+    return _KartoCompatHost(child: ProbenFavoritenListe(heroId: heroId));
+  }
+
   /// Baut die vorhandenen Kampf-Schnellproben.
   @override
   Widget spielKampfproben({
@@ -313,13 +321,27 @@ class KartoBestandsAdapterImpl
 
   /// Baut das vorhandene Würfelprotokoll mit den Einträgen des Zustands.
   @override
-  Widget spielProtokoll(HeroComputedSnapshot werte) => _KartoCompatHost(
-    child: InspectorDiceLogSection(
-      entries: werte.state.diceLog,
-      aktion: (eintrag) => schadenRuecknahmeAktion(
-        eintrag: eintrag,
-        heroId: werte.hero.id,
-        zustand: werte.state,
+  Widget spielProtokoll(
+    HeroComputedSnapshot werte, {
+    int? hoechstens,
+  }) => _KartoCompatHost(
+    child: Consumer(
+      builder: (context, ref, _) => InspectorDiceLogSection(
+        entries: werte.state.diceLog,
+        hoechstens: hoechstens,
+        aktion: (eintrag) => schadenRuecknahmeAktion(
+          eintrag: eintrag,
+          heroId: werte.hero.id,
+          zustand: werte.state,
+        ),
+        // „Nochmal würfeln“ öffnet den normalen Probendialog derselben Probe
+        // über die Probensuche (SPIEL-05).
+        onWiederholen: (eintrag) => wiederholeProbeMitHinweis(
+          context: context,
+          ref: ref,
+          heroId: werte.hero.id,
+          entry: eintrag,
+        ),
       ),
     ),
   );
@@ -460,6 +482,26 @@ class KartoBestandsAdapterImpl
         context: themedContext,
         ref: ref,
         heroId: heroId,
+        mitFavoriten: true,
+      ),
+    );
+  }
+
+  /// Wiederholt die Probe eines Protokolleintrags im normalen Probendialog.
+  @override
+  Future<void> probeWiederholen({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String heroId,
+    required DiceLogEntry eintrag,
+  }) {
+    return _withKartoCompatContext(
+      context,
+      (themedContext) => wiederholeProbeMitHinweis(
+        context: themedContext,
+        ref: ref,
+        heroId: heroId,
+        entry: eintrag,
       ),
     );
   }

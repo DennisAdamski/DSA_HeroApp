@@ -52,21 +52,41 @@ String increaseLernkomplexitaet({
   return kLernkomplexitaeten[increasedIndex];
 }
 
+/// Verschiebt eine Lernkomplexitaet um die Netto-Spaltenzahl [schritte].
+///
+/// Positive Werte erschweren (nach rechts), negative erleichtern. Alle
+/// Verschiebungen sind kumulativ; erst die Summe wird an die Tabellenraender
+/// geklemmt: ueber `H` hinaus gilt `H`, jenseits von `A` die Spalte `A+`
+/// (hier `A*`) — Wege der Helden S. 19. Unbekannte Kategorien bleiben
+/// unveraendert.
+String verschiebeLernkomplexitaet({
+  required String basisKomplexitaet,
+  required int schritte,
+}) {
+  final index = kLernkomplexitaeten.indexOf(basisKomplexitaet.trim());
+  if (index < 0 || schritte == 0) {
+    return basisKomplexitaet;
+  }
+  return kLernkomplexitaeten[(index + schritte).clamp(
+    0,
+    kLernkomplexitaeten.length - 1,
+  )];
+}
+
 /// Berechnet die effektive Lernkomplexitaet eines Talents.
 ///
-/// [unfaehigkeitsSchritte] verteuert zuerst (bis `H`), danach senkt eine
-/// Begabung um eine Spalte (bis `A*`) — dieselbe Reihenfolge wie bei Zaubern.
+/// [unfaehigkeitsSchritte] verteuern, eine Begabung erleichtert um eine Spalte.
+/// Beide verrechnen sich zur Netto-Verschiebung, die erst am Ende an `A*`/`H`
+/// geklemmt wird (Wege der Helden S. 19; Unfaehigkeit und Begabung heben sich
+/// also auf, auch bei `H`) — dieselbe Regel wie bei Zaubern.
 String effectiveTalentLernkomplexitaet({
   required String basisKomplexitaet,
   required bool gifted,
   int unfaehigkeitsSchritte = 0,
 }) {
-  return reduceLernkomplexitaet(
-    basisKomplexitaet: increaseLernkomplexitaet(
-      basisKomplexitaet: basisKomplexitaet,
-      increaseSteps: unfaehigkeitsSchritte,
-    ),
-    reductionSteps: gifted ? 1 : 0,
+  return verschiebeLernkomplexitaet(
+    basisKomplexitaet: basisKomplexitaet,
+    schritte: unfaehigkeitsSchritte - (gifted ? 1 : 0),
   );
 }
 
@@ -75,7 +95,8 @@ String effectiveTalentLernkomplexitaet({
 /// Hauszauber, passende Merkmalskenntnisse und Begabung summieren sich jeweils
 /// als eigene Reduktionsstufe. [zusatzReduktion] traegt weitere Stufen (je
 /// begabtem Merkmal), [penaltySteps] die Verteuerungen (fremde
-/// Repraesentation, je unfaehigem Merkmal); verteuert wird zuerst.
+/// Repraesentation, je unfaehigem Merkmal). Alles wird zur Netto-Verschiebung
+/// verrechnet und erst am Ende an `A*`/`H` geklemmt (Wege der Helden S. 19).
 String effectiveSpellLernkomplexitaet({
   required String basisKomplexitaet,
   required bool istHauszauber,
@@ -93,13 +114,9 @@ String effectiveSpellLernkomplexitaet({
       (hatMerkmalReduktion ? 1 : 0) +
       (gifted ? 1 : 0) +
       zusatzReduktion;
-  final penalizedKomplexitaet = increaseLernkomplexitaet(
+  return verschiebeLernkomplexitaet(
     basisKomplexitaet: basisKomplexitaet,
-    increaseSteps: penaltySteps,
-  );
-  return reduceLernkomplexitaet(
-    basisKomplexitaet: penalizedKomplexitaet,
-    reductionSteps: reductionSteps,
+    schritte: penaltySteps - reductionSteps,
   );
 }
 
@@ -128,7 +145,8 @@ int computeTalentMaxValue({
 
 /// Berechnet den maximalen Talentwert fuer Kampftalente.
 ///
-/// Nahkampf nutzt `GE` oder `KK`, Fernkampf `FF` oder `KK`.
+/// Nahkampf nutzt die hoehere von `GE` und `KK`, Fernkampf die hoechste von
+/// `FF`, `GE` und `KK` (Wege des Schwerts, Steigerung der Talente).
 int computeCombatTalentMaxValue({
   required Attributes effectiveAttributes,
   required String talentType,
@@ -137,7 +155,11 @@ int computeCombatTalentMaxValue({
   final normalizedType = talentType.trim().toLowerCase();
   final relevantCodes = switch (normalizedType) {
     'nahkampf' => const <AttributeCode>[AttributeCode.ge, AttributeCode.kk],
-    'fernkampf' => const <AttributeCode>[AttributeCode.ff, AttributeCode.kk],
+    'fernkampf' => const <AttributeCode>[
+      AttributeCode.ff,
+      AttributeCode.ge,
+      AttributeCode.kk,
+    ],
     _ => const <AttributeCode>[],
   };
   var maxValue = 0;

@@ -21,6 +21,7 @@
 library;
 
 import 'package:dsa_heldenverwaltung/catalog/hero_trait_def.dart';
+import 'package:dsa_heldenverwaltung/catalog/special_ability_requirement.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/magic_acquisition_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/trait_ap_cost_rules.dart';
 
@@ -42,6 +43,112 @@ const Set<String> kNachtraeglichErwerbbareVorteile = <String>{
   'adv_wohlklang',
   'adv_zaeher_hund',
 };
+
+/// Voraussetzungen für den späteren Erwerb mit AP (Hausregel „Erweiterung und
+/// Überarbeitung des Regelwerks“, Abschnitt 4). Sie gelten nur für den
+/// Nachkauf, nicht für die Generierung. Offene Punkte sperren den Erwerb nicht,
+/// verlangen aber einen ausdrücklichen Meisterentscheid.
+const Map<String, List<SpecialAbilityRequirement>>
+kNachtraeglicheVorteilVoraussetzungen =
+    <String, List<SpecialAbilityRequirement>>{
+      'adv_ausdauernder_zauberer': <SpecialAbilityRequirement>[
+        SpecialAbilityRequirement(
+          art: RequirementArt.eigenschaft,
+          code: 'KO',
+          min: 15,
+        ),
+      ],
+      'adv_eisenaffine_aura': <SpecialAbilityRequirement>[
+        SpecialAbilityRequirement(
+          art: RequirementArt.sonderfertigkeit,
+          name: 'Rüstungsgewöhnung',
+          stufe: 2,
+        ),
+      ],
+      'adv_eisern': <SpecialAbilityRequirement>[
+        SpecialAbilityRequirement(
+          art: RequirementArt.eigenschaft,
+          code: 'KO',
+          min: 15,
+        ),
+      ],
+      'adv_entfernungssinn': <SpecialAbilityRequirement>[
+        SpecialAbilityRequirement(
+          art: RequirementArt.talent,
+          name: 'Sinnesschärfe',
+          min: 16,
+        ),
+        SpecialAbilityRequirement(
+          art: RequirementArt.eigenschaft,
+          code: 'IN',
+          min: 16,
+        ),
+      ],
+      'adv_feste_matrix': <SpecialAbilityRequirement>[
+        SpecialAbilityRequirement(
+          art: RequirementArt.oderGruppe,
+          bedingungen: <SpecialAbilityRequirement>[
+            SpecialAbilityRequirement(
+              art: RequirementArt.leiteigenschaft,
+              min: 16,
+            ),
+            SpecialAbilityRequirement(
+              art: RequirementArt.eigenschaft,
+              code: 'KL',
+              min: 16,
+            ),
+          ],
+        ),
+      ],
+      'adv_gutes_gedaechtnis': <SpecialAbilityRequirement>[
+        SpecialAbilityRequirement(
+          art: RequirementArt.eigenschaft,
+          code: 'KL',
+          min: 15,
+        ),
+      ],
+      'adv_soziale_anpassungsfaehigkeit': <SpecialAbilityRequirement>[
+        SpecialAbilityRequirement(
+          art: RequirementArt.eigenschaft,
+          code: 'CH',
+          min: 15,
+        ),
+        SpecialAbilityRequirement(
+          art: RequirementArt.talent,
+          name: 'Menschenkenntnis',
+          min: 18,
+        ),
+      ],
+      'adv_wohlklang': <SpecialAbilityRequirement>[
+        SpecialAbilityRequirement(
+          art: RequirementArt.eigenschaft,
+          code: 'CH',
+          min: 15,
+        ),
+        SpecialAbilityRequirement(
+          art: RequirementArt.oderGruppe,
+          bedingungen: <SpecialAbilityRequirement>[
+            SpecialAbilityRequirement(
+              art: RequirementArt.talent,
+              name: 'Singen',
+              min: 15,
+            ),
+            SpecialAbilityRequirement(
+              art: RequirementArt.talent,
+              name: 'Stimmen Imitieren',
+              min: 15,
+            ),
+          ],
+        ),
+      ],
+      'adv_zaeher_hund': <SpecialAbilityRequirement>[
+        SpecialAbilityRequirement(
+          art: RequirementArt.eigenschaft,
+          code: 'KO',
+          min: 15,
+        ),
+      ],
+    };
 
 /// Gesellschaftliche Nachteile; sie werden im Spiel abgebaut, nicht mit AP
 /// (WdS S. 170 nennt „Gesucht oder Schulden“ als Beispiele).

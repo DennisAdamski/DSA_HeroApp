@@ -104,6 +104,13 @@ PROTECTED_FIELDS: dict[str, dict[str, str]] = {
     'magische_sonderfertigkeiten.json': {
         'erklarung_lang': 'string',
     },
+    # Kurzregel-Kompendium (eigene Zusammenfassungen, Spielmodus SPIEL-04).
+    # Titel, Thema, Schlagworte und Quellenbelege bleiben Klartext.
+    'kurzregeln.json': {
+        'kurztext': 'string',
+        'hinweise': 'list',
+        'hausregel_text': 'string',
+    },
     # vertrautenmagie_rituale.json wird BEWUSST nicht verschluesselt:
     # der gleiche Inhalt liegt als Klartext-Preset in
     # lib/catalog/vertrautenmagie_preset.dart und wird per

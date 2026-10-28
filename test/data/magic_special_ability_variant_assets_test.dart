@@ -77,17 +77,17 @@ void main() {
       ]);
     });
 
-    test('beide decken exakt die 34 Katalog-Merkmale ab', () {
+    test('beide decken exakt die 40 Merkmale ab', () {
       for (final id in [
         'emsf_merkmalsgrossmeister',
         'emsf_arkane_meisterschaft',
       ]) {
         final ability = byId(id);
-        expect(ability.alleVarianten, hasLength(34), reason: id);
+        expect(ability.alleVarianten, hasLength(40), reason: id);
         expect(ability.alleVarianten.toSet(), kMerkmale.toSet(), reason: id);
         expect(
           ability.variantenGruppen.map((gruppe) => gruppe.varianten.length),
-          [19, 10, 5],
+          [25, 10, 5],
           reason: id,
         );
       }

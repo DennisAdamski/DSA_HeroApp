@@ -165,20 +165,27 @@ class HeroBegabungen {
   }
 
   /// Befund fuer alle Sprachen.
-  LernspaltenBefund sprachen() => _sprachgruppe('sprachen');
+  LernspaltenBefund sprachen() => _sprachgruppe();
 
   /// Befund fuer alle Schriften.
-  LernspaltenBefund schriften() => _sprachgruppe('schriften');
+  LernspaltenBefund schriften() => _sprachgruppe();
 
-  LernspaltenBefund _sprachgruppe(String gruppe) {
+  // Sprachen und Schriften sind eine Talentgruppe (Wege der Helden S. 248 und
+  // S. 273): Begabung (10 GP) und Unfaehigkeit (-7 GP) gelten fuer beide
+  // gemeinsam. Gespeicherte Auswahlen „Sprachen“ oder „Schriften“ aelterer
+  // Staende wirken deshalb ebenfalls auf die ganze Gruppe.
+  LernspaltenBefund _sprachgruppe() {
     if (_wirkungen.isEmpty) {
       return LernspaltenBefund.keiner;
     }
     return _befund(
       (wirkung) => switch (wirkung.ziel) {
-        'sprachen' => gruppe == 'sprachen',
-        'sprachgruppe' ||
-        'talentgruppe' => _schluessel(wirkung.auswahl) == gruppe,
+        'sprachen' || 'sprachgruppe' => true,
+        'talentgruppe' => const <String>{
+          'sprachen',
+          'schriften',
+          'sprachen und schriften',
+        }.contains(_schluessel(wirkung.auswahl)),
         _ => false,
       },
     );
@@ -186,8 +193,13 @@ class HeroBegabungen {
 
   /// Befund fuer die Ritualkenntnis einer Ritualkategorie des Helden.
   ///
-  /// Ein begabtes Ritual gehoert zu der Kategorie, die es fuehrt, oder deren
-  /// Name der Traditionsritual-Sonderfertigkeit mit diesem Ritual entspricht.
+  /// Eine Begabung fuer ein Ritual verschiebt die Spalte der Ritualkenntnis
+  /// nicht: Nach Wege der Helden S. 248 erleichtert sie nur die Ritualprobe
+  /// dieses einen Rituals um 3 und halbiert dessen Lern-AP. Beruecksichtigt
+  /// werden deshalb nur Unfaehigkeiten (negativer Betrag), die ein Ritual der
+  /// Kategorie betreffen. Ein solches Ritual gehoert zu der Kategorie, die es
+  /// fuehrt, oder deren Name der Traditionsritual-Sonderfertigkeit mit diesem
+  /// Ritual entspricht.
   LernspaltenBefund ritualkenntnis(HeroRitualCategory kategorie) {
     if (_wirkungen.isEmpty) {
       return LernspaltenBefund.keiner;
@@ -197,7 +209,7 @@ class HeroBegabungen {
     };
     final kategorieName = _ohneKuerzel(kategorie.name);
     return _befund((wirkung) {
-      if (wirkung.ziel != 'ritual') {
+      if (wirkung.ziel != 'ritual' || wirkung.betrag >= 0) {
         return false;
       }
       final ritual = _schluessel(wirkung.auswahl);
@@ -292,8 +304,8 @@ final Expando<({RulesCatalog catalog, HeroBegabungen begabungen})> _begabungen =
 
 /// Effektive Lernkomplexitaet einer eigenen Ritualkenntnis.
 ///
-/// Wie bei Talenten: erst verteuern, dann um hoechstens eine Spalte
-/// verbilligen. Ritualkenntnisse kennen kein `A*`; `A` ist die Untergrenze.
+/// Wie bei Talenten: Verteuerung und Begabung verrechnen sich zur
+/// Netto-Verschiebung, geklemmt wird erst am Ende. Ritualkenntnisse kennen kein `A*`; `A` ist die Untergrenze.
 String effektiveRitualkenntnisKomplexitaet({
   required String basisKomplexitaet,
   required LernspaltenBefund befund,

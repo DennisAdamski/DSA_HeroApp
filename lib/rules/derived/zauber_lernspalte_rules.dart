@@ -97,11 +97,20 @@ ZauberLernspalte zauberLernspalte({
   final hauszauber = eintrag?.hauszauber ?? false;
   final begabt = (eintrag?.gifted ?? false) || befund.begabungen.isNotEmpty;
   final merkmalskenntnis = merkmale.any(merkmalskenntnisse.contains);
-  final element = einzigesElement(merkmale);
-  final gegenelement =
-      !elementarharmonisiert &&
-      element != null &&
-      _bevorzugt(element.gegenelement, merkmalskenntnisse, begabteMerkmale);
+  // Wörtlich nach WdZ S. 381: Nachteile in allen Zaubern, die das Merkmal des
+  // Gegenelements tragen; auch bei Zaubern mit mehreren Elementen (Nebelleib).
+  final element = elementarharmonisiert
+      ? null
+      : <Magieelement>{for (final m in merkmale) ?elementAusMerkmal(m)}
+            .where(
+              (e) => _bevorzugt(
+                e.gegenelement,
+                merkmalskenntnisse,
+                begabteMerkmale,
+              ),
+            )
+            .firstOrNull;
+  final gegenelement = element != null;
 
   final fremd = fremdeReprSpalten;
   final spalte = effectiveSpellLernkomplexitaet(
@@ -238,9 +247,9 @@ bool _bevorzugt(
 /// Lernspalte eines Talents (auch Sprache oder Schrift) als Herleitung in
 /// Spalten: Katalogspalte, Begabung und Unfähigkeit.
 ///
-/// Wie bei Zaubern wird zuerst verteuert, dann um höchstens eine Spalte
-/// verbilligt (`effectiveTalentLernkomplexitaet`); Grenzen der Tabelle stehen
-/// als Ausgleichsschritt da.
+/// Wie bei Zaubern verrechnen sich Begabung und Unfähigkeit zur
+/// Netto-Verschiebung (`effectiveTalentLernkomplexitaet`); erst die Summe wird
+/// an die Tabellenränder geklemmt, die Klemmung steht als Ausgleichsschritt da.
 Herleitung herleiteTalentLernspalte({
   required String basisSpalte,
   required LernspaltenBefund befund,

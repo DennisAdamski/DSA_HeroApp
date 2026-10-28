@@ -5,14 +5,18 @@ import 'package:dsa_heldenverwaltung/rules/derived/magic_acquisition_rules.dart'
 
 void main() {
   group('Merkmalsklassifikation', () {
-    test('deckt genau die 34 Katalog-Merkmale ab', () {
+    test('deckt genau die 40 Merkmale ab (zwölf dämonische Domänen)', () {
       final klassifiziert = <String>[
         ...kMerkmaleKlassifikationI,
         ...kMerkmaleKlassifikationII,
         ...kMerkmaleKlassifikationIII,
       ];
 
-      expect(kMerkmaleKlassifikationI, hasLength(19));
+      expect(kMerkmaleKlassifikationI, hasLength(25));
+      expect(
+        kMerkmaleKlassifikationI.where((m) => m.startsWith('Dämonisch (')),
+        hasLength(12),
+      );
       expect(kMerkmaleKlassifikationII, hasLength(10));
       expect(kMerkmaleKlassifikationIII, hasLength(5));
       expect(klassifiziert.toSet(), kMerkmale.toSet());
@@ -22,6 +26,17 @@ void main() {
       expect(merkmalsklassifikation('Heilung'), 1);
       expect(merkmalsklassifikation('Elementar (Feuer)'), 1);
       expect(merkmalsklassifikation('Dämonisch (Mishkara)'), 1);
+      for (final domaene in [
+        'Agrimoth',
+        'Belhalhar',
+        'Belkelel',
+        'Belshirash',
+      ]) {
+        expect(merkmalsklassifikation('Dämonisch ($domaene)'), 1);
+        expect(merkmalskenntnisApCost('Dämonisch ($domaene)'), 100);
+      }
+      expect(merkmalsklassifikation('Dämonisch (Charyptoroth)'), 1);
+      expect(merkmalsklassifikation('Dämonisch (Tasfarelel)'), 1);
       expect(merkmalsklassifikation('Antimagie'), 2);
       expect(merkmalsklassifikation('Objekt'), 2);
       expect(merkmalsklassifikation('Limbus'), 3);

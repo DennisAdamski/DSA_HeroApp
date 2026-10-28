@@ -6,6 +6,8 @@ class HeroNoteEntry {
   const HeroNoteEntry({
     this.title = '',
     this.description = '',
+    this.ort = '',
+    this.datum = '',
     this.lastModified,
     this.unbekannteFelder = const <String, Object?>{},
   });
@@ -15,6 +17,17 @@ class HeroNoteEntry {
 
   /// Vollstaendige Beschreibung der Notiz.
   final String description;
+
+  /// Ort, an dem die Notiz entstand; leer bei Bestandsnotizen.
+  ///
+  /// Nur belegt im JSON, damit sich der Inhalts-Hash alter Helden nicht
+  /// aendert.
+  final String ort;
+
+  /// Aventurisches Datum der Notiz als Anzeigetext (etwa `17. Boron 1020 BF`);
+  /// leer bei Bestandsnotizen. Bewusst Freitext: so bleibt auch eine ungefaehre
+  /// Angabe moeglich. Nur belegt im JSON.
+  final String datum;
 
   /// Zeitpunkt der letzten Bearbeitung (UTC); `null` bei Bestandsnotizen.
   ///
@@ -30,6 +43,8 @@ class HeroNoteEntry {
   static const Set<String> jsonSchluessel = <String>{
     'title',
     'description',
+    'ort',
+    'datum',
     'lastModified',
   };
 
@@ -37,12 +52,16 @@ class HeroNoteEntry {
   HeroNoteEntry copyWith({
     String? title,
     String? description,
+    String? ort,
+    String? datum,
     Object? lastModified = _copySentinel,
     Map<String, Object?>? unbekannteFelder,
   }) {
     return HeroNoteEntry(
       title: title ?? this.title,
       description: description ?? this.description,
+      ort: ort ?? this.ort,
+      datum: datum ?? this.datum,
       lastModified: identical(lastModified, _copySentinel)
           ? this.lastModified
           : lastModified as DateTime?,
@@ -55,6 +74,8 @@ class HeroNoteEntry {
     return mitUnbekanntenFeldern(<String, dynamic>{
       'title': title,
       'description': description,
+      if (ort.isNotEmpty) 'ort': ort,
+      if (datum.isNotEmpty) 'datum': datum,
       if (lastModified != null)
         'lastModified': lastModified!.toUtc().toIso8601String(),
     }, unbekannteFelder);
@@ -67,6 +88,8 @@ class HeroNoteEntry {
     return HeroNoteEntry(
       title: getString('title'),
       description: getString('description'),
+      ort: getString('ort'),
+      datum: getString('datum'),
       lastModified: DateTime.tryParse(json['lastModified']?.toString() ?? ''),
       unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
     );

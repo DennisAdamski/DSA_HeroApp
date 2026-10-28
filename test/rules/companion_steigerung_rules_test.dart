@@ -22,14 +22,15 @@ void main() {
       expect(vertrautenMaxStandUeber(20), 10);
     });
 
-    test('1,5 × 7 = 10 (abgerundet), Zuwachs 3', () {
-      expect(vertrautenGrenze(7), 10);
-      expect(vertrautenMaxStandUeber(7), 3);
+    test('1,5 × 7 = 10,5 wird auf 11 gerundet, Zuwachs 4', () {
+      expect(vertrautenGrenze(7), 11);
+      expect(vertrautenMaxStandUeber(7), 4);
     });
 
-    test('Startwert 0 und 1 lassen keinen Zuwachs', () {
+    test('Startwert 0 lässt keinen Zuwachs, 1,5 × 1 wird auf 2 gerundet', () {
       expect(vertrautenMaxStandUeber(0), 0);
-      expect(vertrautenMaxStandUeber(1), 0);
+      expect(vertrautenGrenze(1), 2);
+      expect(vertrautenMaxStandUeber(1), 1);
     });
   });
 
@@ -54,7 +55,8 @@ void main() {
     });
 
     test('LeP und MR bis 1,5 × Startwert insgesamt', () {
-      expect(vertrautenMaxStand(katze, 'lep'), 5);
+      // 1,5 × 11 = 16,5 -> 17, also 6 über dem Start.
+      expect(vertrautenMaxStand(katze, 'lep'), 6);
       expect(vertrautenMaxStand(katze, 'mr'), 2);
     });
 
@@ -167,11 +169,11 @@ void main() {
           c,
           ziel: const BegleiterSteigerungsziel.geschwindigkeit('Boden'),
           erwarteterStand: 0,
-          neuerStand: 1,
+          neuerStand: 2,
           apKosten: 1,
         ),
         throwsStateError,
-        reason: 'GS 1 lässt keinen Zuwachs (⌊1,5⌋ = 1)',
+        reason: 'GS 1 lässt höchstens einen Zuwachs (1,5 wird auf 2 gerundet)',
       );
     });
 

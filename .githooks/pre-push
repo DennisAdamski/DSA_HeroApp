@@ -1,0 +1,9 @@
+#!/bin/sh
+# Fuehrt vor jedem Push die Projektanalyse aus, wie die CI.
+# Umgehen nur bewusst mit: git push --no-verify
+
+echo "pre-push: flutter analyze"
+flutter analyze || {
+  echo "pre-push: flutter analyze meldet Probleme, Push abgebrochen." >&2
+  exit 1
+}

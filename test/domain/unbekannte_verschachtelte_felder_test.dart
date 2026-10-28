@@ -32,6 +32,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_herkunfts_modifikator.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_merkmal.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_meta_talent.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_note_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_proben_favorit.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_regelprofil.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_reisebericht.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_resource_activation_config.dart';
@@ -641,6 +642,7 @@ final _begleiterAbenteuerNotizen = <_Modell>[
       gruppenCode: 'g1',
       externeHeldIds: <String>['x'],
       kontoGruppe: true,
+      primaer: true,
     ).toJson(),
     lade: (json) => HeroGruppenMitgliedschaft.fromJson(json).toJson(),
     bearbeite: (json) =>
@@ -649,6 +651,16 @@ final _begleiterAbenteuerNotizen = <_Modell>[
             .toJson(),
     unbekannt: (json) =>
         HeroGruppenMitgliedschaft.fromJson(json).unbekannteFelder,
+  ),
+  _Modell(
+    'HeroProbenFavorit',
+    schluessel: HeroProbenFavorit.jsonSchluessel,
+    voll: () =>
+        HeroProbenFavorit.von(ProbenFavoritArt.talent, 'tal_a').toJson(),
+    lade: (json) => HeroProbenFavorit.fromJson(json)!.toJson(),
+    bearbeite: (json) =>
+        HeroProbenFavorit.fromJson(json)!.copyWith(id: 'zauber:z_a').toJson(),
+    unbekannt: (json) => HeroProbenFavorit.fromJson(json)!.unbekannteFelder,
   ),
 ];
 

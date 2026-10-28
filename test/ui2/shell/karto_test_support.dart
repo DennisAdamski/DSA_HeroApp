@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
+import 'package:dsa_heldenverwaltung/domain/dice_log_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/begleiter_zustand_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ressourcen_aenderung_rules.dart';
@@ -59,6 +60,10 @@ class TestBestand implements KartoBestandsAdapter {
   }) => Text('Eigenschaftsproben $heroId');
 
   @override
+  Widget spielFavoritenproben({required String heroId}) =>
+      Text('Häufige Proben $heroId');
+
+  @override
   Widget spielKampfproben({
     required String heroId,
     required HeroComputedSnapshot werte,
@@ -76,9 +81,14 @@ class TestBestand implements KartoBestandsAdapter {
     required HeroComputedSnapshot werte,
   }) => Text('Effekte $heroId');
 
+  /// Grenzen, mit denen das Protokoll gebaut wurde (`null` = vollständig).
+  final List<int?> protokollGrenzen = <int?>[];
+
   @override
-  Widget spielProtokoll(HeroComputedSnapshot werte) =>
-      Text('Protokoll ${werte.state.diceLog.length}');
+  Widget spielProtokoll(HeroComputedSnapshot werte, {int? hoechstens}) {
+    protokollGrenzen.add(hoechstens);
+    return Text('Protokoll ${werte.state.diceLog.length}');
+  }
 
   @override
   Widget planKatalog(String heroId) => Text('Plankatalog $heroId');
@@ -124,6 +134,16 @@ class TestBestand implements KartoBestandsAdapter {
     required String heroId,
   }) async {
     aufrufe.add('probeSuchen:$heroId');
+  }
+
+  @override
+  Future<void> probeWiederholen({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String heroId,
+    required DiceLogEntry eintrag,
+  }) async {
+    aufrufe.add('probeWiederholen:$heroId:${eintrag.title}');
   }
 
   /// Schaltbar, damit Tests auch die Plattform ohne Regelindex prüfen können.

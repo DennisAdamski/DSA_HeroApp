@@ -66,9 +66,12 @@ service cloud.firestore {
 
       match /shared_info/{infoId} {
         allow read: if isGroupMember(groupId);
-        allow create, update: if isGroupMember(groupId)
-                              && infoId == 'notizen'
-                              && validNotizen(request.resource.data);
+        allow create, update: if (isGroupMember(groupId)
+                                  && infoId == 'notizen'
+                                  && validNotizen(request.resource.data))
+                              || (isGroupOwner(groupId)
+                                  && infoId == 'regelprofil'
+                                  && validRegelprofil(request.resource.data));
         allow delete: if isGroupOwner(groupId);
       }
 
@@ -165,6 +168,16 @@ service cloud.firestore {
              && data.keys().hasOnly(['text', 'updatedByUid', 'updatedAt'])
              && data.text is string
              && data.text.size() <= 20000;
+    }
+
+    // Regelprofil-Vorgabe der Gruppe: das Profil liegt als JSON-Text im Feld
+    // `profilJson`. Es schreibt nur der Besitzer; alle Mitglieder lesen.
+    function validRegelprofil(data) {
+      return data.keys().hasAll(['profilJson'])
+             && data.keys().hasOnly(['profilJson', 'updatedByUid', 'updatedAt'])
+             && data.profilJson is string
+             && data.profilJson.size() > 0
+             && data.profilJson.size() <= 900000;
     }
 
     function validMember(data) {
