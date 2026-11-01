@@ -66,9 +66,10 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   den `HeroComputedSnapshot` an alle Abschnitte weiter — auch an die
   Adaptermethoden, damit die Brücke für dieselben Werte keine zweite
   Providerbeobachtung aufmacht. Die Reihenfolge folgt der Häufigkeit am
-  Tisch: Schnellaktionen (ganz oben), Ressourcen, Eigenschaften, dann
-  einspaltig Kampf, Effekte, Zustand (und Begleiter), danach Abenteuer samt
-  Standort, Vor- und Nachteile, Würfelprotokoll. Jede Schnellaktion trägt eine
+  Tisch: Schnellaktionen (ganz oben), Ressourcen, Häufige Proben,
+  Eigenschaften, Kampf, Effekte, Zustand (und Begleiter), Dabei, Abenteuer
+  samt Standort, Vor- und Nachteile, Würfelprotokoll. Das ist nur die
+  Standardanordnung; jede Kachel lässt sich verschieben (Kachelraster, unten). Jede Schnellaktion trägt eine
   eigene Signalfarbe (`kartoSchnellaktionStil` in `karto_spielaktionen.dart`:
   Gefecht `messing`, Probe `meer`, Regeln `kueste`, Rast `moos`, Schaden
   `siegel`; Tönung 14 % auf `feld`, Symbol und Kante in der Farbe, Beschriftung
@@ -93,12 +94,34 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   die Brücke (`standortSetzen`). Die Ressourcenwerte sind kompakt: Wert und
   Fehlbetrag teilen eine Zeile, die ganze Zelle ist das Tippziel; der Wert hat
   Vorrang, passt der Fehlbetrag nicht daneben, rückt er unter den Wert (das
-  Maximum wird nie gekürzt). Ab `kSeitenspalteAb` (840 dp **Ansichtsbreite**,
-  nicht Fensterbreite: die Navigation nimmt 248 dp weg) wandern Kampf,
-  Effekte, Zustand und Begleiter in eine Seitenspalte neben die Hauptspalte,
-  das Protokoll bleibt der letzte Abschnitt beider Anordnungen. Den
+  Maximum wird nie gekürzt). Den
   Re-Entrancy-Guard reicht `KartoWorkspace` als `KartoLaufzeitAktion` herein;
   die Spielansicht macht keinen zweiten Fehlerweg auf.
+- **Kachelraster der Spielansicht (SPIEL-07).** Statt Haupt- und Seitenspalte
+  stehen die Abschnitte als Kacheln im `KartoKachelraster`
+  (`karto_kachelraster.dart`): Rastereinheit mindestens 300 dp
+  (`kRasterEinheitMin`), Spaltenzahl aus der **Ansichtsbreite**, höchstens 4;
+  Breiten `schmal` (1 Einheit), `mittel` (2), `voll` (ganze Zeile), auf die
+  Spaltenzahl gekappt. Höhe = Inhalt; jede Kachel landet in ihrer Reihenfolge
+  an der höchsten freien Stelle (dicht gepackt, keine Löcher unter kurzen
+  Kacheln). Kinder werden ohne Intrinsics ausgelegt, `LayoutBuilder` in Kacheln
+  ist erlaubt. Was eine Kachel erlaubt (Breiten, Standardbreite, Ausblenden,
+  Einklappen), legt `KartoSpielkachelArt` in `karto_spielraster_ordnung.dart`
+  fest; Schnellaktionen und Ressourcen lassen sich weder ausblenden noch
+  einklappen. Gespeichert wird **je Held** in `HeroSheet.spielansicht`
+  (`HeroSpielansicht`/`HeroSpielkachel`, nur bei Belegung im JSON; Kacheln mit
+  `id`, damit der Sync je Kachel zusammenführt). `loeseSpielansichtAuf` setzt
+  fehlende Kacheln an ihre Standardstelle und übergeht unbekannte IDs,
+  `schreibeSpielansicht` lässt diese samt unbekannter Felder an ihrer Stelle
+  stehen und schreibt die Standardbreite nicht. „Anordnen“ im Seitenkopf
+  öffnet nach `vorHeldenbearbeitung` einen Entwurf (Ziehen am Griff, Pfeile,
+  Breitenmenü, Ausblenden, „Standard“); erst „Fertig“ schreibt einmal frisch
+  über `updateHero`, ohne Änderung gar nicht. Den Einklappknopf zeigt der
+  äußerste `KartoAbschnitt` einer Kachel über `KartoKachelSteuerung`; er
+  schreibt sofort nur den einen Eintrag (`mitEingeklappt`). Während einer
+  Planung sind Anordnen und Einklappen gesperrt. „Dabei“ hält Betrag,
+  Stift und Münzschritte beieinander und lässt die Verbrauchsgegenstände ab
+  `kDabeiZweispaltigAb` (560 dp Kachelbreite) zweispaltig fließen.
 - **Vor- und Nachteile bearbeitet UI2 im Merkmalsblatt**
   (`lib/ui2/merkmale/`), nach dem Muster des Abenteuerblatts: modal, eigener
   Schreibweg über `HeroActions.updateHero` und `aendereMerkmale`

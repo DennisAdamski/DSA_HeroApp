@@ -20,6 +20,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_regelprofil.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_reisebericht.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_resource_activation_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_rituals.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_spielansicht.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_spell_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/magic_special_ability.dart';
@@ -97,6 +98,7 @@ class HeroSheet {
     this.epicActivationPolicy,
     this.regelProfil,
     this.probenFavoriten = const <HeroProbenFavorit>[],
+    this.spielansicht,
     this.epicLockedWaffenmeisterCategories = const <String>{},
     this.epicUnactivatedTalentIds = const <String>{},
   }) : rawStartAttributes = rawStartAttributes ?? startAttributes ?? attributes,
@@ -244,6 +246,12 @@ class HeroSheet {
   /// behalten.
   final List<HeroProbenFavorit> probenFavoriten;
 
+  /// Angepasste Kachelanordnung der Spielansicht (SPIEL-07).
+  ///
+  /// `null` zeigt die Standardanordnung. Nur bei Belegung im JSON, damit
+  /// Bestandshelden ihren Inhalts-Hash behalten.
+  final HeroSpielansicht? spielansicht;
+
   /// Waffenmeister-Kategorien, die beim Epic-Werden nicht erlernbar waren
   /// und daher auch nachtraeglich gesperrt bleiben.
   final Set<String> epicLockedWaffenmeisterCategories;
@@ -316,6 +324,7 @@ class HeroSheet {
     Object? epicActivationPolicy = _copySentinel,
     Object? regelProfil = _copySentinel,
     List<HeroProbenFavorit>? probenFavoriten,
+    Object? spielansicht = _copySentinel,
     Set<String>? epicLockedWaffenmeisterCategories,
     Set<String>? epicUnactivatedTalentIds,
   }) {
@@ -398,6 +407,9 @@ class HeroSheet {
           ? this.regelProfil
           : regelProfil as HeroRegelProfil?,
       probenFavoriten: probenFavoriten ?? this.probenFavoriten,
+      spielansicht: identical(spielansicht, _copySentinel)
+          ? this.spielansicht
+          : spielansicht as HeroSpielansicht?,
       epicLockedWaffenmeisterCategories:
           epicLockedWaffenmeisterCategories ??
           this.epicLockedWaffenmeisterCategories,
@@ -468,6 +480,7 @@ class HeroSheet {
     'epicActivationPolicy',
     'regelProfil',
     'probenFavoriten',
+    'spielansicht',
     'epicLockedWaffenmeisterCategories',
     'epicUnactivatedTalentIds',
     ...HeroAppearance.jsonSchluessel,
@@ -585,6 +598,7 @@ class HeroSheet {
         'probenFavoriten': probenFavoriten
             .map((entry) => entry.toJson())
             .toList(growable: false),
+      if (spielansicht != null) 'spielansicht': spielansicht!.toJson(),
       'epicLockedWaffenmeisterCategories': epicLockedWaffenmeisterCategories
           .toList(growable: false),
       'epicUnactivatedTalentIds': epicUnactivatedTalentIds.toList(
@@ -842,6 +856,11 @@ class HeroSheet {
             )
           : null,
       probenFavoriten: leseProbenFavoriten(json['probenFavoriten']),
+      spielansicht: json['spielansicht'] is Map
+          ? HeroSpielansicht.fromJson(
+              Map<String, dynamic>.from(json['spielansicht'] as Map),
+            )
+          : null,
       epicLockedWaffenmeisterCategories: _parseStringSet(
         json['epicLockedWaffenmeisterCategories'],
       ),

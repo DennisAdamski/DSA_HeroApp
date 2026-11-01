@@ -177,6 +177,15 @@ Teilumfang festlegen. Nach Wichtigkeit sortiert.
   nicht, erhalten sie aber beim Bearbeiten (`copyWith`). **Offen:** Ort und
   Datum im Bestandseditor, Suche über die allgemeinen Notizen des Helden
   (`HeroSheet.notes`), Umlautfaltung „oe“→„ö“.
+- [x] **SPIEL-07 — Spielansicht selbst anordnen.** Beobachtung: Die feste
+  Haupt- und Seitenspalte verschenkte Platz (breite Abschnitte wie „Dabei“ mit
+  viel Leerraum), Reihenfolge und Umfang ließen sich nicht anpassen. **Umgesetzt
+  01.11.2026** (Details in [ui_oberflaeche.md](hinweise/ui_oberflaeche.md)):
+  Kachelraster mit Spaltenzahl nach Breite, je Kachel Reihenfolge, Breite
+  (schmal/mittel/voll), Ausblenden und Einklappen, soweit die Kachel es
+  erlaubt; gespeichert je Held in `HeroSheet.spielansicht` und damit über den
+  Helden-Sync abgeglichen. **Offen:** kontoweite Vorlage für alle Helden,
+  Anordnen während einer offenen Planung.
 
 ## Arbeitsweise und gemeinsame Grenzen
 

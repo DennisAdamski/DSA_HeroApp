@@ -1,0 +1,164 @@
+import 'package:flutter_test/flutter_test.dart';
+
+import 'package:dsa_heldenverwaltung/domain/hero_spielansicht.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_spielraster_ordnung.dart';
+
+final _alle = KartoSpielkachelArt.values.toSet();
+
+List<String> _ids(List<KartoSpielkachel> kacheln) => [
+  for (final kachel in kacheln) kachel.art.id,
+];
+
+void main() {
+  group('loeseSpielansichtAuf', () {
+    test('ohne Anordnung gilt die Standardanordnung', () {
+      final kacheln = loeseSpielansichtAuf(null, verfuegbar: _alle);
+      expect(_ids(kacheln), [
+        for (final art in KartoSpielkachelArt.values) art.id,
+      ]);
+      expect(kacheln.every((k) => k.breite == k.art.standard), isTrue);
+    });
+
+    test('gespeicherte Reihenfolge, fehlende Kacheln an ihrer Stelle', () {
+      final kacheln = loeseSpielansichtAuf(
+        const HeroSpielansicht(
+          kacheln: [
+            HeroSpielkachel(id: 'protokoll'),
+            HeroSpielkachel(id: 'schnellaktionen'),
+          ],
+        ),
+        verfuegbar: _alle,
+      );
+      final ids = _ids(kacheln);
+      expect(ids.first, 'protokoll');
+      expect(ids[1], 'schnellaktionen');
+      expect(ids[2], 'ressourcen');
+      expect(ids, hasLength(KartoSpielkachelArt.values.length));
+    });
+
+    test('unbekannte und nicht verfügbare IDs werden übergangen', () {
+      final kacheln = loeseSpielansichtAuf(
+        const HeroSpielansicht(
+          kacheln: [
+            HeroSpielkachel(id: 'zukunft'),
+            HeroSpielkachel(id: 'begleiter'),
+          ],
+        ),
+        verfuegbar: _alle.difference({KartoSpielkachelArt.begleiter}),
+      );
+      expect(_ids(kacheln), isNot(contains('zukunft')));
+      expect(_ids(kacheln), isNot(contains('begleiter')));
+    });
+
+    test('nicht Erlaubtes fällt auf den Standard zurück', () {
+      final kacheln = loeseSpielansichtAuf(
+        const HeroSpielansicht(
+          kacheln: [
+            // Kampf erlaubt keine volle Breite, Ressourcen kein Ausblenden,
+            // Schnellaktionen kein Einklappen.
+            HeroSpielkachel(id: 'kampf', breite: SpielkachelBreite.voll),
+            HeroSpielkachel(id: 'ressourcen', ausgeblendet: true),
+            HeroSpielkachel(id: 'schnellaktionen', eingeklappt: true),
+          ],
+        ),
+        verfuegbar: _alle,
+      );
+      KartoSpielkachel kachel(KartoSpielkachelArt art) =>
+          kacheln.firstWhere((k) => k.art == art);
+      expect(
+        kachel(KartoSpielkachelArt.kampf).breite,
+        SpielkachelBreite.schmal,
+      );
+      expect(kachel(KartoSpielkachelArt.ressourcen).ausgeblendet, isFalse);
+      expect(kachel(KartoSpielkachelArt.schnellaktionen).eingeklappt, isFalse);
+    });
+  });
+
+  group('schreibeSpielansicht', () {
+    test('Standardbreite wird nicht geschrieben, Wünsche schon', () {
+      final kacheln = aendereSpielkachel(
+        loeseSpielansichtAuf(null, verfuegbar: _alle),
+        KartoSpielkachelArt.dabei,
+        (k) => k.copyWith(breite: SpielkachelBreite.mittel, ausgeblendet: true),
+      );
+      final ansicht = schreibeSpielansicht(kacheln, basis: null);
+      expect(ansicht.kachel('kampf')!.breite, isNull);
+      expect(ansicht.kachel('dabei')!.breite, SpielkachelBreite.mittel);
+      expect(ansicht.kachel('dabei')!.ausgeblendet, isTrue);
+    });
+
+    test('unbekannte Einträge und Felder bleiben an ihrer Stelle', () {
+      final basis = HeroSpielansicht.fromJson(<String, dynamic>{
+        'kacheln': <Object?>[
+          <String, Object?>{'id': 'schnellaktionen', 'farbe': 'rot'},
+          <String, Object?>{'id': 'zukunft'},
+          <String, Object?>{'id': 'begleiter', 'eingeklappt': true},
+          <String, Object?>{'id': 'ressourcen'},
+        ],
+      });
+      final verfuegbar = _alle.difference({KartoSpielkachelArt.begleiter});
+      final kacheln = loeseSpielansichtAuf(basis, verfuegbar: verfuegbar);
+      final ansicht = schreibeSpielansicht(kacheln, basis: basis);
+      final ids = ansicht.kacheln.map((k) => k.id).toList();
+      expect(ids.take(4), [
+        'schnellaktionen',
+        'zukunft',
+        'begleiter',
+        'ressourcen',
+      ]);
+      expect(ansicht.kachel('begleiter')!.eingeklappt, isTrue);
+      expect(ansicht.kacheln.first.toJson()['farbe'], 'rot');
+    });
+
+    test('Rundreise über Auflösen und Schreiben ist stabil', () {
+      final kacheln = verschiebeSpielkachel(
+        loeseSpielansichtAuf(null, verfuegbar: _alle),
+        4,
+        0,
+      );
+      final ansicht = schreibeSpielansicht(kacheln, basis: null);
+      expect(loeseSpielansichtAuf(ansicht, verfuegbar: _alle), kacheln);
+    });
+  });
+
+  group('mitEingeklappt', () {
+    test('ohne Anordnung entsteht nur der eine Eintrag', () {
+      final ansicht = mitEingeklappt(
+        null,
+        KartoSpielkachelArt.kampf,
+        eingeklappt: true,
+      );
+      expect(ansicht.kacheln.map((k) => k.id), ['kampf']);
+      expect(ansicht.kacheln.single.eingeklappt, isTrue);
+      // Die Reihenfolge der übrigen bleibt beim Auflösen der Standard.
+      expect(
+        _ids(loeseSpielansichtAuf(ansicht, verfuegbar: _alle)),
+        _ids(loeseSpielansichtAuf(null, verfuegbar: _alle)),
+      );
+    });
+
+    test('ändert nur den einen Eintrag', () {
+      const basis = HeroSpielansicht(
+        kacheln: [
+          HeroSpielkachel(id: 'dabei', breite: SpielkachelBreite.mittel),
+          HeroSpielkachel(id: 'kampf', eingeklappt: true),
+        ],
+      );
+      final ansicht = mitEingeklappt(
+        basis,
+        KartoSpielkachelArt.kampf,
+        eingeklappt: false,
+      );
+      expect(ansicht.kachel('kampf')!.eingeklappt, isFalse);
+      expect(ansicht.kachel('dabei'), basis.kachel('dabei'));
+    });
+  });
+
+  test('verschiebeSpielkachel setzt die Kachel an die Zielstelle', () {
+    final start = loeseSpielansichtAuf(null, verfuegbar: _alle);
+    final vor = verschiebeSpielkachel(start, 4, 1);
+    expect(vor[1].art, KartoSpielkachelArt.kampf);
+    final zurueck = verschiebeSpielkachel(vor, 1, 4);
+    expect(zurueck, start);
+  });
+}

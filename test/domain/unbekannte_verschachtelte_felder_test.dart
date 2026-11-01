@@ -39,6 +39,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_resource_activation_config.dart
 import 'package:dsa_heldenverwaltung/domain/hero_rituals.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_spell_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_spielansicht.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_spell_text_overrides.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
@@ -661,6 +662,33 @@ final _begleiterAbenteuerNotizen = <_Modell>[
     bearbeite: (json) =>
         HeroProbenFavorit.fromJson(json)!.copyWith(id: 'zauber:z_a').toJson(),
     unbekannt: (json) => HeroProbenFavorit.fromJson(json)!.unbekannteFelder,
+  ),
+  _Modell(
+    'HeroSpielkachel',
+    schluessel: HeroSpielkachel.jsonSchluessel,
+    voll: () => const HeroSpielkachel(
+      id: 'kampf',
+      breite: SpielkachelBreite.mittel,
+      ausgeblendet: true,
+      eingeklappt: true,
+    ).toJson(),
+    lade: (json) => HeroSpielkachel.fromJson(json)!.toJson(),
+    bearbeite: (json) =>
+        HeroSpielkachel.fromJson(json)!.copyWith(eingeklappt: false).toJson(),
+    unbekannt: (json) => HeroSpielkachel.fromJson(json)!.unbekannteFelder,
+  ),
+  _Modell(
+    'HeroSpielansicht',
+    schluessel: HeroSpielansicht.jsonSchluessel,
+    voll: () => const HeroSpielansicht(
+      kacheln: <HeroSpielkachel>[HeroSpielkachel(id: 'kampf')],
+    ).toJson(),
+    lade: (json) => HeroSpielansicht.fromJson(json).toJson(),
+    bearbeite: (json) =>
+        HeroSpielansicht.fromJson(json)
+            .copyWith(kacheln: const <HeroSpielkachel>[])
+            .toJson(),
+    unbekannt: (json) => HeroSpielansicht.fromJson(json).unbekannteFelder,
   ),
 ];
 
@@ -1620,6 +1648,26 @@ final _enumFelder = <_EnumFeld>[
     andersJson: 'fundiert',
     ersatz: (json) => ReittierAusbildungsschritt.fromJson(json).art,
     erwarteterErsatz: ReittierAusbildungsart.laendlich,
+  ),
+  _EnumFeld(
+    'HeroSpielkachel.breite',
+    'breite',
+    voll: () => const HeroSpielkachel(
+      id: 'kampf',
+      breite: SpielkachelBreite.mittel,
+    ).toJson(),
+    lade: (json) => HeroSpielkachel.fromJson(json)!.toJson(),
+    gleich: (json) {
+      final kachel = HeroSpielkachel.fromJson(json)!;
+      return kachel.copyWith(breite: kachel.breite, eingeklappt: true).toJson();
+    },
+    anders: (json) =>
+        HeroSpielkachel.fromJson(json)!
+            .copyWith(breite: SpielkachelBreite.voll)
+            .toJson(),
+    andersJson: 'voll',
+    ersatz: (json) => HeroSpielkachel.fromJson(json)!.breite,
+    erwarteterErsatz: null,
   ),
 ];
 

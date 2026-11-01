@@ -16,6 +16,9 @@ import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
 /// Anzahl Verbrauchsgegenstände, die ohne „Alle zeigen“ sichtbar bleiben.
 const int kDabeiSichtbar = 6;
 
+/// Kachelbreite, ab der die Verbrauchsgegenstände zweispaltig fließen.
+const double kDabeiZweispaltigAb = 560;
+
 /// Block „Dabei“ der Spielansicht (SPIEL-02): Geld und Verbrauchsgegenstände.
 ///
 /// Zeigt den Geldstand mit Münzschritten und die Verbrauchsgegenstände des
@@ -120,21 +123,45 @@ class _KartoDabeiAbschnittState extends ConsumerState<KartoDabeiAbschnitt> {
               style: texte.fliess.copyWith(color: karto.schriftLeise),
             )
           else
-            for (var i = 0; i < sichtbar.length; i++)
-              _Verbrauchszeile(
-                index: i,
-                eintrag: sichtbar[i],
-                gesperrt: gesperrt,
-                onSchritt: (delta) => _schreibe(
-                  (held) =>
-                      mitVerbrauchsmengenSchritt(held, sichtbar[i], delta),
-                ),
-                onBenutzen:
-                    widget.onBenutzen != null &&
-                        dabeiBenutzbar(catalog: katalog, eintrag: sichtbar[i])
-                    ? () => widget.onBenutzen!(sichtbar[i])
-                    : null,
-              ),
+            // Auf breiter Kachel fließen die Zeilen in zwei Spalten; sonst
+            // stünden Name und Knöpfe eine halbe Seite auseinander.
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final zweispaltig = constraints.maxWidth >= kDabeiZweispaltigAb;
+                final zeilenbreite = zweispaltig
+                    ? (constraints.maxWidth - Abstand.bahn) / 2
+                    : constraints.maxWidth;
+                return Wrap(
+                  spacing: Abstand.bahn,
+                  children: [
+                    for (var i = 0; i < sichtbar.length; i++)
+                      SizedBox(
+                        width: zeilenbreite,
+                        child: _Verbrauchszeile(
+                          index: i,
+                          eintrag: sichtbar[i],
+                          gesperrt: gesperrt,
+                          onSchritt: (delta) => _schreibe(
+                            (held) => mitVerbrauchsmengenSchritt(
+                              held,
+                              sichtbar[i],
+                              delta,
+                            ),
+                          ),
+                          onBenutzen:
+                              widget.onBenutzen != null &&
+                                  dabeiBenutzbar(
+                                    catalog: katalog,
+                                    eintrag: sichtbar[i],
+                                  )
+                              ? () => widget.onBenutzen!(sichtbar[i])
+                              : null,
+                        ),
+                      ),
+                  ],
+                );
+              },
+            ),
           if (widget.verbrauch.length > kDabeiSichtbar)
             Align(
               alignment: Alignment.centerLeft,
@@ -205,39 +232,60 @@ class _Geld extends StatelessWidget {
       );
     }
 
+    // Betrag, Stift und Münzschritte stehen beieinander und brechen erst
+    // um, wenn die Kachel schmal ist; kein leerer Raum dazwischen.
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Row(
+        Wrap(
+          spacing: Abstand.weit,
+          runSpacing: Abstand.eng,
+          crossAxisAlignment: WrapCrossAlignment.center,
           children: [
             Text(
               'Geld',
               style: texte.marke.copyWith(color: karto.schriftLeise),
             ),
-            const SizedBox(width: Abstand.weit),
-            Expanded(
-              child: InkWell(
-                key: const ValueKey<String>('karto-dabei-geld'),
-                onTap: gesperrt || !lesbar ? null : onBetrag,
-                borderRadius: BorderRadius.circular(kKartoRadiusKlein),
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(minHeight: 40),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      lesbar ? text : dukaten.trim(),
-                      key: const ValueKey<String>('karto-dabei-geld-wert'),
-                      style: texte.wert.copyWith(color: karto.schrift),
+            InkWell(
+              key: const ValueKey<String>('karto-dabei-geld'),
+              onTap: gesperrt || !lesbar ? null : onBetrag,
+              borderRadius: BorderRadius.circular(kKartoRadiusKlein),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(minHeight: 40),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Flexible(
+                      child: Text(
+                        lesbar ? text : dukaten.trim(),
+                        key: const ValueKey<String>('karto-dabei-geld-wert'),
+                        style: texte.wert.copyWith(color: karto.schrift),
+                      ),
                     ),
-                  ),
+                    if (!gesperrt && lesbar) ...[
+                      const SizedBox(width: Abstand.knapp),
+                      Tooltip(
+                        message: 'Betrag hinzufügen oder abziehen',
+                        child: Icon(
+                          Icons.edit_outlined,
+                          size: 16,
+                          color: karto.meer,
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
               ),
             ),
-            if (!gesperrt && lesbar)
-              Tooltip(
-                message: 'Betrag hinzufügen oder abziehen',
-                child: Icon(Icons.edit_outlined, size: 16, color: karto.meer),
-              ),
+            Wrap(
+              spacing: Abstand.normal,
+              runSpacing: Abstand.eng,
+              children: [
+                muenze('D', 'Dukat', dsaKreuzerPerDukat),
+                muenze('S', 'Silbertaler', dsaKreuzerPerSilber),
+                muenze('K', 'Kreuzer', 1),
+              ],
+            ),
           ],
         ),
         if (!lesbar)
@@ -249,16 +297,6 @@ class _Geld extends StatelessWidget {
               style: texte.etikett.copyWith(color: karto.siegel),
             ),
           ),
-        const SizedBox(height: Abstand.eng),
-        Wrap(
-          spacing: Abstand.normal,
-          runSpacing: Abstand.eng,
-          children: [
-            muenze('D', 'Dukat', dsaKreuzerPerDukat),
-            muenze('S', 'Silbertaler', dsaKreuzerPerSilber),
-            muenze('K', 'Kreuzer', 1),
-          ],
-        ),
       ],
     );
   }
