@@ -368,6 +368,27 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   `SettingsActions.setMerkmaleAufgeklappt`): geräteweit und ohne Sync (der
   Remote-Abgleich der Einstellungen betrifft nur Geheimnisse), nie der Held,
   daher ohne `aktion`-Guard und ohne Editorprüfung. Standard ist eingeklappt.
+  **Dabei (SPIEL-02, Teilstand):** `KartoDabeiAbschnitt`
+  (`karto_dabei_abschnitt.dart`) steht in der Hauptspalte vor dem Abenteuer
+  und zeigt den Geldstand (`HeroSheet.dukaten`) mit Münzschritten D/S/K sowie
+  einem Dialog „Betrag ändern“ (Hinzufügen/Abziehen) und die
+  Verbrauchsgegenstände des Inventars mit −/+ (ab `kDabeiSichtbar` = 6 mit
+  „Alle zeigen“). Die Regeln liegen in `spiel_dabei_rules.dart`:
+  `dabeiVerbrauchsgegenstaende` nimmt nur manuelle Verbrauchsgegenstände des
+  Helden (keine mit dem Kampf verknüpften, keine abgelegten, keine von
+  Begleitern getragenen); Munition bleibt im Kampfbereich. Jeder Klick schreibt
+  frisch über `HeroActions.updateHero`: `mitGeldSchritt` und
+  `mitVerbrauchsmengenSchritt` rechnen vom **gespeicherten** Wert, finden den
+  Eintrag über die Instanz-ID und ändern nur ihr Feld (Menge über
+  `mitInventarMenge`, 0 bis 9999, ein aufgebrauchter Eintrag bleibt stehen).
+  Anders als der Münzknopf im Inventar kappt `mitGeldSchritt` nie still bei 0:
+  ein Abzug über den Bestand ist ein `StateError`, die Abzugsknöpfe sind dann
+  gesperrt. Freitext- oder von einer älteren App abweichende Mengen und ein
+  unlesbarer Geldstand bleiben unangetastet (Hinweis statt Schritt). Der Block
+  sperrt sich während einer Planung; die Schritte reihen sich je Held ein und
+  haben bewusst keinen Doppelklickschutz, damit jeder Klick zählt. Ohne
+  `aktion`-Guard und ohne Editorprüfung, wie der Abenteuerabschnitt: der
+  Editorentwurf gleicht sich feldweise mit dem gespeicherten Bogen ab.
   **Würfelprotokoll (SPIEL-05):** `InspectorDiceLogSection` ist der gemeinsame
   Baustein von Inspector-Probe-Tab und Spielansicht (über die Brücke
   `spielProtokoll`). Die Spielansicht zeigt nur die neuesten `kProtokollKurz`

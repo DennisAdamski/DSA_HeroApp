@@ -97,6 +97,16 @@ Teilumfang festlegen. Nach Wichtigkeit sortiert.
   Verbrauchbarem (+/−); ein Trank wendet beim Benutzen Effekt und Menge
   gemeinsam an (Anknüpfung an die TRANK-Pakete). Schreibwege nach den harten
   Regeln (frisch schreiben, ein Dokument je Ablauf).
+  **Teilstand 01.11.2026:** Block „Dabei“ mit Geldstand (Münzschritte D/S/K,
+  Dialog „Betrag ändern“) und Verbrauchsgegenständen mit −/+ in der
+  Spielansicht; jeder Klick schreibt frisch und ändert nur sein Feld
+  (`spiel_dabei_rules.dart`, `karto_dabei_abschnitt.dart`, Details in
+  [ui_oberflaeche.md](hinweise/ui_oberflaeche.md)). **Offen:** Munition mit
+  −/+ (Menge sitzt im Kampf-Slot und im Inventar zugleich, `slotRef`-Regeln,
+  Gefecht schreibt dieselben Werte); Trank oder Heilmittel benutzen aus dem
+  Block (Anwenden-/Einnehmen-Dialog, danach das Stück abbuchen: Zustand und
+  Bogen sind zwei Dokumente, also zwei Schritte nacheinander, nicht atomar);
+  Belastung im Block; Verbrauchsgegenstände von Begleitern.
 - [ ] **SPIEL-03 — Zustände und Dauer.** Beobachtung: „Aktive Effekte“ kennt Zauber,
   aber keine schnellen Marker für Betäubung, Furcht oder Schmerz; der
   Kampfrundenzähler ist flüchtig und zählt keine Effektdauern herunter.

@@ -5,6 +5,7 @@ import 'package:dsa_heldenverwaltung/ui2/merkmale/karto_merkmalsblatt.dart';
 import 'package:dsa_heldenverwaltung/ui2/merkmale/karto_merkmal_karten.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_zuordnung_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/spiel_dabei_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_wirkung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_anzeige_rules.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_merkmal.dart';
@@ -18,6 +19,7 @@ import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abenteuer_abschnitt.dart'
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abenteuerblatt.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abschnitt.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_begleiterkarte.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_dabei_abschnitt.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_laufendes_abenteuer.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_ressourcenleiste.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_spielaktionen.dart';
@@ -282,14 +284,21 @@ class KartoSpielansicht extends ConsumerWidget {
     );
   }
 
-  // Was man nachschlägt statt würfelt: das laufende Abenteuer mit Standort,
-  // Personen und Notizen, dann die Vor- und Nachteile.
+  // Was man nachschlägt statt würfelt: was der Held dabei hat, das laufende
+  // Abenteuer mit Standort, Personen und Notizen, dann die Vor- und Nachteile.
   List<Widget> _nachschlagabschnitte(
     BuildContext context,
     WidgetRef ref,
     HeroComputedSnapshot werte,
   ) {
     return <Widget>[
+      // Geld und Verbrauchsgegenstände am Tisch (SPIEL-02); schreibt selbst und
+      // frisch, nie über den Snapshot dieser Ansicht.
+      KartoDabeiAbschnitt(
+        heroId: heroId,
+        dukaten: werte.hero.dukaten,
+        verbrauch: dabeiVerbrauchsgegenstaende(werte.hero.inventoryEntries),
+      ),
       KartoAbenteuerAbschnitt(
         heroId: heroId,
         abenteuer: laufendesAbenteuer(werte.hero),

@@ -1013,6 +1013,9 @@ void main() {
           return false;
         },
       );
+      await tester.ensureVisible(
+        find.byKey(const ValueKey('karto-spiel-merkmale')),
+      );
       await tester.tap(find.byKey(const ValueKey('karto-spiel-merkmale')));
       await tester.pumpAndSettle();
       expect(geprueft, 1);
@@ -1021,6 +1024,9 @@ void main() {
 
     testWidgets('Bearbeiten öffnet das Merkmalsblatt', (tester) async {
       await zeige(tester, held: weltlich(), breite: 1024);
+      await tester.ensureVisible(
+        find.byKey(const ValueKey('karto-spiel-merkmale')),
+      );
       await tester.tap(find.byKey(const ValueKey('karto-spiel-merkmale')));
       await tester.pumpAndSettle();
       expect(find.byType(BottomSheet), findsOneWidget);
