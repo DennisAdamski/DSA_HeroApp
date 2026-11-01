@@ -124,7 +124,8 @@ class KartoAnordnenHinweis extends StatelessWidget {
       children: [
         Text(
           'Kacheln am Griff ziehen oder mit den Pfeilen verschieben. '
-          'Gespeichert wird mit „Fertig“.',
+          'Gespeichert wird mit „Fertig“. Danach rücken mittlere Kacheln '
+          'schmal in freie Lücken, wenn das Platz spart.',
           style: texte.etikett.copyWith(color: karto.schriftLeise),
         ),
         if (ausgeblendet.isNotEmpty) ...[
@@ -283,14 +284,8 @@ class _Leiste extends StatelessWidget {
                 ),
               ),
             ),
-            Expanded(
-              child: Text(
-                art.titel,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: texte.marke.copyWith(color: karto.schrift),
-              ),
-            ),
+            // Der Titel steht schon im Kopf der Kachel darunter.
+            const Spacer(),
             IconButton(
               key: ValueKey<String>('$schluessel-vor'),
               tooltip: '${art.titel} nach vorn',

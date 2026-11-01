@@ -24,8 +24,9 @@ void main() {
   Future<void> zeige(
     WidgetTester tester,
     double breite,
-    List<(SpielkachelBreite, double)> kacheln,
-  ) async {
+    List<(SpielkachelBreite, double)> kacheln, {
+    Set<int> ausweichen = const <int>{},
+  }) async {
     tester.view.devicePixelRatio = 1;
     tester.view.physicalSize = const Size(1200, 800);
     addTearDown(tester.view.resetPhysicalSize);
@@ -43,6 +44,7 @@ void main() {
                 for (final (i, (art, hoehe)) in kacheln.indexed)
                   KartoRasterKachel(
                     breite: art,
+                    ausweichen: ausweichen.contains(i),
                     child: SizedBox(key: ValueKey<int>(i), height: hoehe),
                   ),
               ],
@@ -95,5 +97,58 @@ void main() {
       (SpielkachelBreite.voll, 20),
     ]);
     expect(lage(tester, 2), const Rect.fromLTWH(0, 110, 610, 20));
+  });
+
+  testWidgets('eine mittlere Kachel weicht schmal in eine Lücke aus', (
+    tester,
+  ) async {
+    await zeige(
+      tester,
+      920,
+      const [
+        (SpielkachelBreite.mittel, 300),
+        (SpielkachelBreite.schmal, 50),
+        (SpielkachelBreite.mittel, 100),
+        (SpielkachelBreite.mittel, 100),
+      ],
+      ausweichen: {2},
+    );
+    // Rechts ist ab 60 frei, zwei Spalten erst ab 310.
+    expect(lage(tester, 2), const Rect.fromLTWH(620, 60, 300, 100));
+    // Ohne Erlaubnis bleibt die Kachel mittel.
+    expect(lage(tester, 3), const Rect.fromLTWH(0, 310, 610, 100));
+  });
+
+  testWidgets('ein kleiner Höhenvorteil lohnt das Ausweichen nicht', (
+    tester,
+  ) async {
+    await zeige(
+      tester,
+      920,
+      const [
+        (SpielkachelBreite.mittel, 100),
+        (SpielkachelBreite.schmal, 50),
+        (SpielkachelBreite.mittel, 100),
+      ],
+      ausweichen: {2},
+    );
+    expect(lage(tester, 2), const Rect.fromLTWH(0, 110, 610, 100));
+  });
+
+  testWidgets('folgt noch eine schmale Kachel, füllt sie die Lücke', (
+    tester,
+  ) async {
+    await zeige(
+      tester,
+      920,
+      const [
+        (SpielkachelBreite.mittel, 300),
+        (SpielkachelBreite.mittel, 100),
+        (SpielkachelBreite.schmal, 50),
+      ],
+      ausweichen: {1},
+    );
+    expect(lage(tester, 1), const Rect.fromLTWH(0, 310, 610, 100));
+    expect(lage(tester, 2), const Rect.fromLTWH(620, 0, 300, 50));
   });
 }
