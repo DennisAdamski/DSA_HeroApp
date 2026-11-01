@@ -7,9 +7,11 @@
 // Gibt es nichts zu ändern, kommt der Held selbst zurück, damit nichts
 // gespeichert wird.
 
+import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/alchimika_elixier_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/currency_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/inventar_aenderung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/inventar_menge_rules.dart';
@@ -35,6 +37,19 @@ List<HeroInventoryEntry> dabeiVerbrauchsgegenstaende(
 ) => List<HeroInventoryEntry>.unmodifiable(
   eintraege.where(istDabeiVerbrauchsgegenstand),
 );
+
+/// Ob [eintrag] im Block „Dabei“ „Benutzen“ anbietet (Trank, Heilmittel,
+/// Elixier).
+///
+/// Dieselbe Entscheidung wie im Gefechtsinventar: eine hinterlegte
+/// Vitalwirkung oder eine Eigenschaftswirkung des Katalogelixiers. Die Wirkung
+/// und das Abbuchen des Stücks bucht der jeweilige Dialog, nicht der Block.
+bool dabeiBenutzbar({
+  required RulesCatalog? catalog,
+  required HeroInventoryEntry eintrag,
+}) =>
+    (eintrag.vitalwirkung?.istBelegt ?? false) ||
+    hatElixierWirkung(catalog, eintrag);
 
 /// Gezeigter Name eines Eintrags; ein leerer Name heißt „Unbenannt“.
 String dabeiName(HeroInventoryEntry eintrag) {

@@ -4,6 +4,7 @@ import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
+import 'package:dsa_heldenverwaltung/domain/vitalwirkung.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/currency_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/spiel_dabei_rules.dart';
 
@@ -51,6 +52,7 @@ HeroSheet _held({
 );
 
 void main() {
+  benutzenTests();
   group('Auswahl der Verbrauchsgegenstände', () {
     test('nur manuelle Verbrauchsgegenstände des Helden', () {
       final fackel = _verbrauch('Fackel', '3', id: 'a');
@@ -254,6 +256,40 @@ void main() {
       final held = _held(dukaten: 'ca. viel');
       expect(() => mitGeldSchritt(held, 1), throwsA(isA<StateError>()));
       expect(identical(mitGeldSchritt(held, 0), held), isTrue);
+    });
+  });
+}
+
+// „Benutzen“ im Block: dieselbe Entscheidung wie im Gefechtsinventar.
+void benutzenTests() {
+  group('dabeiBenutzbar', () {
+    test('Vitalwirkung macht einen Eintrag benutzbar', () {
+      const trank = HeroInventoryEntry(
+        gegenstand: 'Heiltrank',
+        anzahl: '2',
+        itemType: InventoryItemType.verbrauchsgegenstand,
+        vitalwirkung: Vitalwirkung(lep: 5),
+      );
+      expect(dabeiBenutzbar(catalog: null, eintrag: trank), isTrue);
+    });
+
+    test('ohne Wirkung und ohne Katalog bleibt es beim Zählen', () {
+      const fackel = HeroInventoryEntry(
+        gegenstand: 'Fackel',
+        anzahl: '3',
+        itemType: InventoryItemType.verbrauchsgegenstand,
+      );
+      expect(dabeiBenutzbar(catalog: null, eintrag: fackel), isFalse);
+    });
+
+    test('eine leere Vitalwirkung zählt nicht', () {
+      const leer = HeroInventoryEntry(
+        gegenstand: 'Verband',
+        anzahl: '1',
+        itemType: InventoryItemType.verbrauchsgegenstand,
+        vitalwirkung: Vitalwirkung(),
+      );
+      expect(dabeiBenutzbar(catalog: null, eintrag: leer), isFalse);
     });
   });
 }

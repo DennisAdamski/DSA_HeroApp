@@ -6,6 +6,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/currency_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/spiel_dabei_rules.dart';
 import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
+import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abschnitt.dart';
@@ -30,6 +31,7 @@ class KartoDabeiAbschnitt extends ConsumerStatefulWidget {
     required this.heroId,
     required this.dukaten,
     required this.verbrauch,
+    this.onBenutzen,
   });
 
   /// ID im gemeinsam genutzten Heldenspeicher.
@@ -40,6 +42,12 @@ class KartoDabeiAbschnitt extends ConsumerStatefulWidget {
 
   /// Verbrauchsgegenstände aus `dabeiVerbrauchsgegenstaende`.
   final List<HeroInventoryEntry> verbrauch;
+
+  /// Öffnet den Dialog zum Benutzen eines Tranks, Heilmittels oder Elixiers.
+  ///
+  /// Der Dialog bucht Wirkung und Verbrauch selbst und zeigt seine Fehler;
+  /// dieser Block schreibt dabei nichts. Ohne Rückruf entfällt „Benutzen“.
+  final Future<void> Function(HeroInventoryEntry eintrag)? onBenutzen;
 
   @override
   ConsumerState<KartoDabeiAbschnitt> createState() =>
@@ -76,6 +84,9 @@ class _KartoDabeiAbschnittState extends ConsumerState<KartoDabeiAbschnitt> {
   Widget build(BuildContext context) {
     final gesperrt =
         ref.watch(advancementSessionProvider(widget.heroId)) != null;
+    final katalog = ref
+        .watch(heroRulesCatalogProvider(widget.heroId))
+        .valueOrNull;
     final karto = context.karto;
     final texte = Theme.of(context).textTheme;
     final sichtbar = _alle
@@ -118,6 +129,11 @@ class _KartoDabeiAbschnittState extends ConsumerState<KartoDabeiAbschnitt> {
                   (held) =>
                       mitVerbrauchsmengenSchritt(held, sichtbar[i], delta),
                 ),
+                onBenutzen:
+                    widget.onBenutzen != null &&
+                        dabeiBenutzbar(catalog: katalog, eintrag: sichtbar[i])
+                    ? () => widget.onBenutzen!(sichtbar[i])
+                    : null,
               ),
           if (widget.verbrauch.length > kDabeiSichtbar)
             Align(
@@ -255,12 +271,14 @@ class _Verbrauchszeile extends StatelessWidget {
     required this.eintrag,
     required this.gesperrt,
     required this.onSchritt,
+    required this.onBenutzen,
   });
 
   final int index;
   final HeroInventoryEntry eintrag;
   final bool gesperrt;
   final void Function(int delta) onSchritt;
+  final VoidCallback? onBenutzen;
 
   @override
   Widget build(BuildContext context) {
@@ -283,6 +301,15 @@ class _Verbrauchszeile extends StatelessWidget {
               ),
             ),
           ),
+          if (onBenutzen != null)
+            Tooltip(
+              message: '${dabeiName(eintrag)} benutzen',
+              child: TextButton(
+                key: ValueKey<String>('karto-dabei-$index-benutzen'),
+                onPressed: gesperrt || aufgebraucht ? null : onBenutzen,
+                child: const Text('Benutzen'),
+              ),
+            ),
           _MengeSchritt(
             schluessel: 'karto-dabei-$index',
             menge: menge,

@@ -384,7 +384,14 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   Anders als der Münzknopf im Inventar kappt `mitGeldSchritt` nie still bei 0:
   ein Abzug über den Bestand ist ein `StateError`, die Abzugsknöpfe sind dann
   gesperrt. Freitext- oder von einer älteren App abweichende Mengen und ein
-  unlesbarer Geldstand bleiben unangetastet (Hinweis statt Schritt). Der Block
+  unlesbarer Geldstand bleiben unangetastet (Hinweis statt Schritt). **Benutzen:**
+  Verbrauchsgegenstände mit Vitalwirkung oder Elixierwirkung
+  (`dabeiBenutzbar`, dieselbe Entscheidung wie im Gefechtsinventar) zeigen
+  „Benutzen“ (nur, wenn die Bestandsbrücke ein `KartoGefechtsAdapter` ist, und
+  nicht bei Menge 0). Es öffnet über `gefechtsVitalwirkung` den bestehenden
+  Anwenden-/Einnehmen-Dialog, der Wirkung (Zustand) und das Stück (Bogen)
+  selbst bucht; der Block schreibt dabei nichts. Der Aufruf läuft über `aktion`.
+  Der Block
   sperrt sich während einer Planung; die Schritte reihen sich je Held ein und
   haben bewusst keinen Doppelklickschutz, damit jeder Klick zählt. Ohne
   `aktion`-Guard und ohne Editorprüfung, wie der Abenteuerabschnitt: der

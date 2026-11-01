@@ -15,6 +15,7 @@ import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_breakpoints.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_bestands_adapter.dart';
+import 'package:dsa_heldenverwaltung/ui2/shell/karto_gefechts_adapter.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abenteuer_abschnitt.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abenteuerblatt.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abschnitt.dart';
@@ -298,6 +299,19 @@ class KartoSpielansicht extends ConsumerWidget {
         heroId: heroId,
         dukaten: werte.hero.dukaten,
         verbrauch: dabeiVerbrauchsgegenstaende(werte.hero.inventoryEntries),
+        // Trank, Heilmittel und Elixier benutzen den Dialog des Gefechts-
+        // inventars; er bucht Wirkung und Stück selbst.
+        onBenutzen: switch (bestand) {
+          final KartoGefechtsAdapter gefechtsBruecke => (eintrag) => aktion(
+            () => gefechtsBruecke.gefechtsVitalwirkung(
+              context: context,
+              ref: ref,
+              heroId: heroId,
+              eintrag: eintrag,
+            ),
+          ),
+          _ => null,
+        },
       ),
       KartoAbenteuerAbschnitt(
         heroId: heroId,

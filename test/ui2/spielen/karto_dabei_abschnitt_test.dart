@@ -5,10 +5,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
+import 'package:dsa_heldenverwaltung/domain/vitalwirkung.dart';
 import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
+import 'package:dsa_heldenverwaltung/ui2/shell/karto_gefechts_adapter.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_spielansicht.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_theme.dart';
 
@@ -51,8 +53,9 @@ void main() {
   Future<ProviderContainer> zeigeMit(
     WidgetTester tester,
     FakeRepository repo,
-    String heroId,
-  ) async {
+    String heroId, {
+    TestBestand? bestand,
+  }) async {
     tester.view.devicePixelRatio = 1;
     tester.view.physicalSize = const Size(390, 1400);
     addTearDown(tester.view.resetPhysicalSize);
@@ -75,7 +78,7 @@ void main() {
           home: Scaffold(
             body: KartoSpielansicht(
               heroId: heroId,
-              bestand: TestBestand(),
+              bestand: bestand ?? TestBestand(),
               aktion: (auftrag) => auftrag(),
               vorHeldenbearbeitung: () async => true,
             ),
@@ -89,10 +92,11 @@ void main() {
 
   Future<({ProviderContainer container, FakeRepository repo})> zeige(
     WidgetTester tester,
-    HeroSheet held,
-  ) async {
+    HeroSheet held, {
+    TestBestand? bestand,
+  }) async {
     final repo = FakeRepository(heroes: [held]);
-    final container = await zeigeMit(tester, repo, held.id);
+    final container = await zeigeMit(tester, repo, held.id, bestand: bestand);
     return (container: container, repo: repo);
   }
 
@@ -335,6 +339,70 @@ void main() {
     expect(find.text('Weniger zeigen'), findsOneWidget);
   });
 
+  testWidgets('Benutzen erscheint nur mit Brücke und Wirkung', (tester) async {
+    final held = _held(
+      eintraege: [
+        _verbrauch('Fackel', 3),
+        _verbrauch(
+          'Heiltrank',
+          2,
+        ).copyWith(vitalwirkung: const Vitalwirkung(lep: 5)),
+      ],
+    );
+    // Ohne Gefechtsbrücke bleibt es beim Zählen.
+    await zeige(tester, held);
+    expect(_k('karto-dabei-1-benutzen'), findsNothing);
+
+    // Mit Brücke nur beim Eintrag mit Wirkung.
+    await zeige(tester, held, bestand: _BestandMitGegenstand());
+    expect(_k('karto-dabei-0-benutzen'), findsNothing);
+    expect(_k('karto-dabei-1-benutzen'), findsOneWidget);
+  });
+
+  testWidgets('Benutzen öffnet den Dialog, der Block schreibt nichts', (
+    tester,
+  ) async {
+    final bestand = _BestandMitGegenstand();
+    final aufbau = await zeige(
+      tester,
+      _held(
+        eintraege: [
+          _verbrauch(
+            'Heiltrank',
+            2,
+          ).copyWith(vitalwirkung: const Vitalwirkung(lep: 5)),
+        ],
+      ),
+      bestand: bestand,
+    );
+    await tippe(tester, _k('karto-dabei-0-benutzen'));
+    expect(bestand.benutzt, ['Heiltrank']);
+    final gespeichert = (await aufbau.repo.loadHeroById('praiodan'))!;
+    expect(gespeichert.inventoryEntries.first.menge, 2);
+  });
+
+  testWidgets('ein aufgebrauchter Trank lässt sich nicht benutzen', (
+    tester,
+  ) async {
+    final bestand = _BestandMitGegenstand();
+    await zeige(
+      tester,
+      _held(
+        eintraege: [
+          _verbrauch(
+            'Heiltrank',
+            0,
+          ).copyWith(vitalwirkung: const Vitalwirkung(lep: 5)),
+        ],
+      ),
+      bestand: bestand,
+    );
+    await tester.ensureVisible(_k('karto-dabei-0-benutzen'));
+    await tester.tap(_k('karto-dabei-0-benutzen'), warnIfMissed: false);
+    await tester.pumpAndSettle();
+    expect(bestand.benutzt, isEmpty);
+  });
+
   testWidgets('eine offene Planung sperrt alle Schritte', (tester) async {
     final held = _held();
     final aufbau = await zeige(tester, held);
@@ -375,4 +443,26 @@ class _AndererStand extends FakeRepository {
   Future<void> saveHero(HeroSheet hero) async {
     zuletztGespeichert = hero;
   }
+}
+
+/// Bestand mit Gefechtsbrücke, die nur das Benutzen eines Gegenstands vermerkt.
+class _BestandMitGegenstand extends TestBestand
+    implements KartoGefechtsAdapter {
+  /// Namen der Gegenstände, für die der Dialog geöffnet wurde.
+  final List<String> benutzt = <String>[];
+
+  @override
+  Future<bool> gefechtsVitalwirkung({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String heroId,
+    required HeroInventoryEntry eintrag,
+  }) async {
+    benutzt.add(eintrag.gegenstand);
+    return true;
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) =>
+      throw UnimplementedError('${invocation.memberName}');
 }

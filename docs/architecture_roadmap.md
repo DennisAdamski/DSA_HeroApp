@@ -101,11 +101,12 @@ Teilumfang festlegen. Nach Wichtigkeit sortiert.
   Dialog „Betrag ändern“) und Verbrauchsgegenständen mit −/+ in der
   Spielansicht; jeder Klick schreibt frisch und ändert nur sein Feld
   (`spiel_dabei_rules.dart`, `karto_dabei_abschnitt.dart`, Details in
-  [ui_oberflaeche.md](hinweise/ui_oberflaeche.md)). **Offen:** Munition mit
-  −/+ (Menge sitzt im Kampf-Slot und im Inventar zugleich, `slotRef`-Regeln,
-  Gefecht schreibt dieselben Werte); Trank oder Heilmittel benutzen aus dem
-  Block (Anwenden-/Einnehmen-Dialog, danach das Stück abbuchen: Zustand und
-  Bogen sind zwei Dokumente, also zwei Schritte nacheinander, nicht atomar);
+  [ui_oberflaeche.md](hinweise/ui_oberflaeche.md)). **Trank benutzen
+  (01.11.2026):** Einträge mit Vitalwirkung oder Katalogelixier tragen im Block
+  „Benutzen“; es öffnet denselben Dialog wie das Gefechtsinventar
+  (`gefechtsVitalwirkung`, Anwenden bzw. Einnehmen), der Wirkung und Stück
+  selbst bucht. **Offen:** Munition mit −/+ (Menge sitzt im Kampf-Slot und im
+  Inventar zugleich, `slotRef`-Regeln, Gefecht schreibt dieselben Werte);
   Belastung im Block; Verbrauchsgegenstände von Begleitern.
 - [ ] **SPIEL-03 — Zustände und Dauer.** Beobachtung: „Aktive Effekte“ kennt Zauber,
   aber keine schnellen Marker für Betäubung, Furcht oder Schmerz; der
