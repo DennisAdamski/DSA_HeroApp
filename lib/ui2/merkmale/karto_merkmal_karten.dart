@@ -125,15 +125,20 @@ class _Pille extends StatelessWidget {
 
 /// Kompakte Uebersicht der Vor- und Nachteile fuer die Spielansicht.
 ///
-/// Zeigt je Art eine Zeile mit den Kurzformen (`Jähzorn 6`); bearbeitet wird
-/// im Merkmalsblatt. Mehrdeutige Eintraege tragen ein Fragezeichen, damit die
-/// offene Zuordnung am Tisch auffaellt.
+/// Eingeklappt steht je Art eine Zeile mit den Kurzformen (`Jähzorn 6`), die
+/// bei Platzmangel mit Auslassung endet; das sind hoechstens zwei Zeilen.
+/// Aufgeklappt steht jeder Eintrag einzeln, mit seinen Wirkungstexten. Der
+/// Zustand gehoert dem Aufrufer ([aufgeklappt], [onUmschalten]); die Uebersicht
+/// speichert nichts. Bearbeitet wird im Merkmalsblatt. Mehrdeutige Eintraege
+/// tragen ein Fragezeichen, damit die offene Zuordnung am Tisch auffaellt.
 class KartoMerkmalsuebersicht extends StatelessWidget {
   /// Erstellt die Uebersicht aus aufbereiteten Vor- und Nachteilen.
   const KartoMerkmalsuebersicht({
     super.key,
     required this.vorteile,
     required this.nachteile,
+    this.aufgeklappt = false,
+    this.onUmschalten,
   });
 
   /// Aufbereitete Vorteile in gespeicherter Reihenfolge.
@@ -141,6 +146,15 @@ class KartoMerkmalsuebersicht extends StatelessWidget {
 
   /// Aufbereitete Nachteile in gespeicherter Reihenfolge.
   final List<MerkmalAnzeige> nachteile;
+
+  /// Ob jeder Eintrag einzeln samt Wirkung gezeigt wird.
+  final bool aufgeklappt;
+
+  /// Klappt auf oder zu; `null` blendet den Umschalter aus.
+  final ValueChanged<bool>? onUmschalten;
+
+  static String _kurz(MerkmalAnzeige a) =>
+      a.herkunft == MerkmalHerkunft.pruefen ? '${a.kurz} (?)' : a.kurz;
 
   @override
   Widget build(BuildContext context) {
@@ -152,37 +166,98 @@ class KartoMerkmalsuebersicht extends StatelessWidget {
         style: texte.fliess.copyWith(color: karto.schriftLeise),
       );
     }
+    final gruppen = [('Vorteile', vorteile), ('Nachteile', nachteile)];
+    final anzahl = vorteile.length + nachteile.length;
     return Column(
+      mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        for (final (titel, liste) in [
-          ('Vorteile', vorteile),
-          ('Nachteile', nachteile),
-        ])
+        for (final (titel, liste) in gruppen)
           if (liste.isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(bottom: Abstand.normal),
-              child: Text.rich(
-                TextSpan(
-                  children: [
-                    TextSpan(
-                      text: '$titel  ',
-                      style: texte.etikett.copyWith(color: karto.schriftLeise),
-                    ),
-                    TextSpan(
-                      text: liste
-                          .map(
-                            (a) => a.herkunft == MerkmalHerkunft.pruefen
-                                ? '${a.kurz} (?)'
-                                : a.kurz,
-                          )
-                          .join(' · '),
-                      style: texte.fliess,
-                    ),
-                  ],
-                ),
-              ),
+              child: aufgeklappt
+                  ? _Aufgeklappt(titel: titel, liste: liste)
+                  : _Zeile(titel: titel, liste: liste),
             ),
+        if (onUmschalten != null)
+          TextButton.icon(
+            key: const ValueKey<String>('karto-spiel-merkmale-umschalten'),
+            onPressed: () => onUmschalten!(!aufgeklappt),
+            icon: Icon(
+              aufgeklappt ? Icons.expand_less : Icons.expand_more,
+              size: 18,
+            ),
+            label: Text(aufgeklappt ? 'Einklappen' : 'Alle zeigen ($anzahl)'),
+          ),
+      ],
+    );
+  }
+}
+
+/// Eine Zeile je Art, bei Platzmangel mit Auslassung.
+class _Zeile extends StatelessWidget {
+  const _Zeile({required this.titel, required this.liste});
+
+  final String titel;
+  final List<MerkmalAnzeige> liste;
+
+  @override
+  Widget build(BuildContext context) {
+    final texte = Theme.of(context).textTheme;
+    final karto = context.karto;
+    return Text.rich(
+      TextSpan(
+        children: [
+          TextSpan(
+            text: '$titel  ',
+            style: texte.etikett.copyWith(color: karto.schriftLeise),
+          ),
+          TextSpan(
+            text: liste.map(KartoMerkmalsuebersicht._kurz).join(' · '),
+            style: texte.fliess,
+          ),
+        ],
+      ),
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+    );
+  }
+}
+
+/// Alle Eintraege einer Art untereinander, mit Wirkungstexten.
+class _Aufgeklappt extends StatelessWidget {
+  const _Aufgeklappt({required this.titel, required this.liste});
+
+  final String titel;
+  final List<MerkmalAnzeige> liste;
+
+  @override
+  Widget build(BuildContext context) {
+    final texte = Theme.of(context).textTheme;
+    final karto = context.karto;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(titel, style: texte.etikett.copyWith(color: karto.schriftLeise)),
+        for (final eintrag in liste)
+          Padding(
+            padding: const EdgeInsets.only(top: Abstand.eng),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  KartoMerkmalsuebersicht._kurz(eintrag),
+                  style: texte.fliess,
+                ),
+                if (eintrag.wirkungen.isNotEmpty)
+                  Text(
+                    eintrag.wirkungen.join(' · '),
+                    style: texte.fliess.copyWith(color: karto.schriftLeise),
+                  ),
+              ],
+            ),
+          ),
       ],
     );
   }

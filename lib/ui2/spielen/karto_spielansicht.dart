@@ -352,6 +352,12 @@ class KartoSpielansicht extends ConsumerWidget {
       child: KartoMerkmalsuebersicht(
         vorteile: aufbereiten(abgleich.vorteile, true),
         nachteile: aufbereiten(abgleich.nachteile, false),
+        aufgeklappt: ref.watch(merkmaleAufgeklapptProvider),
+        // Rein geraetelokal: ein Tipp aendert nur die Einstellung, nie den
+        // Helden; deshalb ohne `aktion`-Guard und ohne Editorpruefung.
+        onUmschalten: (aufgeklappt) => ref
+            .read(settingsActionsProvider)
+            .setMerkmaleAufgeklappt(aufgeklappt),
       ),
     );
   }

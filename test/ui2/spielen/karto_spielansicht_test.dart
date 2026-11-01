@@ -1,7 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:dsa_heldenverwaltung/data/hive_settings_repository.dart';
+import 'package:dsa_heldenverwaltung/domain/app_settings.dart';
 import 'package:dsa_heldenverwaltung/domain/dice_log_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_adventure_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_note_entry.dart';
@@ -85,6 +89,7 @@ void main() {
     Brightness helligkeit = Brightness.light,
     Future<bool> Function()? vorAbenteuer,
     bool regelnFreigeschaltet = false,
+    HiveSettingsRepository? einstellungen,
   }) async {
     tester.view.devicePixelRatio = 1;
     tester.view.physicalSize = Size(breite, 1000);
@@ -96,6 +101,8 @@ void main() {
           repository ?? FakeRepository(heroes: [held], states: zustaende),
         ),
         rulesCatalogProvider.overrideWith((ref) async => testCatalog),
+        if (einstellungen != null)
+          settingsRepositoryProvider.overrideWithValue(einstellungen),
         if (regelnFreigeschaltet)
           catalogContentVisibleProvider.overrideWithValue(true),
       ],
@@ -922,6 +929,79 @@ void main() {
       expect(kampf, lessThan(merkmale));
     });
 
+    testWidgets('sind eingeklappt und klappen per Tipp auf und zu', (
+      tester,
+    ) async {
+      final einstellungen = _Einstellungen();
+      addTearDown(einstellungen.close);
+      final container = await zeige(
+        tester,
+        held: weltlich().copyWith(
+          vorteileText: 'Flink',
+          nachteileText: 'Goldgier 6',
+        ),
+        einstellungen: einstellungen,
+      );
+      final umschalter = find.byKey(
+        const ValueKey('karto-spiel-merkmale-umschalten'),
+      );
+      expect(find.text('Alle zeigen (2)'), findsOneWidget);
+      expect(find.textContaining('Vorteile  Flink'), findsOneWidget);
+
+      await tester.ensureVisible(umschalter);
+      await tester.tap(umschalter);
+      await tester.pumpAndSettle();
+      expect(find.text('Einklappen'), findsOneWidget);
+      expect(find.text('Vorteile'), findsOneWidget);
+      expect(find.text('Flink'), findsOneWidget);
+      expect(container.read(merkmaleAufgeklapptProvider), isTrue);
+      expect(einstellungen.load().merkmaleAufgeklappt, isTrue);
+
+      await tester.ensureVisible(umschalter);
+      await tester.tap(umschalter);
+      await tester.pumpAndSettle();
+      expect(find.text('Alle zeigen (2)'), findsOneWidget);
+      expect(einstellungen.load().merkmaleAufgeklappt, isFalse);
+    });
+
+    testWidgets('öffnen aufgeklappt, wenn das Gerät es so gespeichert hat', (
+      tester,
+    ) async {
+      final einstellungen = _Einstellungen(
+        const AppSettings(merkmaleAufgeklappt: true),
+      );
+      addTearDown(einstellungen.close);
+      await zeige(
+        tester,
+        held: weltlich().copyWith(vorteileText: 'Flink'),
+        einstellungen: einstellungen,
+      );
+      expect(find.text('Einklappen'), findsOneWidget);
+    });
+
+    testWidgets('das Umschalten schreibt nie den Helden', (tester) async {
+      final einstellungen = _Einstellungen();
+      addTearDown(einstellungen.close);
+      final held = weltlich().copyWith(vorteileText: 'Flink');
+      final repo = FakeRepository(heroes: [held]);
+      await zeige(
+        tester,
+        held: held,
+        repository: repo,
+        einstellungen: einstellungen,
+      );
+      final umschalter = find.byKey(
+        const ValueKey('karto-spiel-merkmale-umschalten'),
+      );
+      await tester.ensureVisible(umschalter);
+      await tester.tap(umschalter);
+      await tester.pumpAndSettle();
+      expect(einstellungen.load().merkmaleAufgeklappt, isTrue);
+      // `saveHero` ersetzt den Eintrag durch eine neue Instanz.
+      expect(identical(await repo.loadHeroById(held.id), held), isTrue);
+      expect(await repo.loadHeroState(held.id), isNull);
+    });
+
     testWidgets('Bearbeiten prüft zuerst die Verwaltung', (tester) async {
       var geprueft = 0;
       await zeige(
@@ -970,4 +1050,41 @@ class _LesefehlerRepository extends FakeRepository {
   @override
   Stream<HeroState> watchHeroState(String heroId) =>
       Stream<HeroState>.error(StateError('Lesefehler'));
+}
+
+/// Einstellungsspeicher im Speicher, mit Änderungsstrom.
+class _Einstellungen implements HiveSettingsRepository {
+  _Einstellungen([AppSettings einstellungen = const AppSettings()])
+    : _einstellungen = einstellungen;
+
+  final StreamController<AppSettings> _strom =
+      StreamController<AppSettings>.broadcast();
+  AppSettings _einstellungen;
+
+  @override
+  Future<void> close() => _strom.close();
+
+  @override
+  AppSettings load() => _einstellungen;
+
+  @override
+  Future<void> save(AppSettings settings) async {
+    _einstellungen = settings;
+    _strom.add(settings);
+  }
+
+  @override
+  Stream<AppSettings> watch() => _strom.stream;
+
+  @override
+  Future<void> attachUser(String uid, {Object? remote, Object? cipher}) async {}
+
+  @override
+  Future<void> detachUser() async {}
+
+  @override
+  bool get isAttached => false;
+
+  @override
+  String? get attachedUid => null;
 }

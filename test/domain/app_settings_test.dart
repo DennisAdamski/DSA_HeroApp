@@ -174,4 +174,23 @@ void main() {
       'magic.activeSpells': <String, double>{'name': 280},
     });
   });
+
+  test('Aufklappzustand der Merkmale round-trippt und startet zugeklappt', () {
+    expect(const AppSettings().merkmaleAufgeklappt, isFalse);
+
+    final restored = AppSettings.fromJson(
+      const AppSettings(merkmaleAufgeklappt: true).toJson(),
+    );
+    expect(restored.merkmaleAufgeklappt, isTrue);
+
+    // Alte Einstellungen kennen den Schluessel noch nicht.
+    final alt = const AppSettings().toJson()..remove('merkmaleAufgeklappt');
+    expect(AppSettings.fromJson(alt).merkmaleAufgeklappt, isFalse);
+    expect(
+      const AppSettings(merkmaleAufgeklappt: true)
+          .copyWith(dunkelModus: true)
+          .merkmaleAufgeklappt,
+      isTrue,
+    );
+  });
 }

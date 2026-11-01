@@ -360,6 +360,14 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   Probendialog mit den aktuellen Werten. Der Streifen speichert und
   synchronisiert nichts, er liest nur das Würfelprotokoll (höchstens
   `HeroState.diceLogMax` Einträge); ohne wiederholbaren Wurf entfällt er.
+  **Vor- und Nachteile klappen auf (SPIEL-01):** `KartoMerkmalsuebersicht`
+  zeigt eingeklappt je Art eine Zeile mit Auslassung (höchstens zwei Zeilen),
+  aufgeklappt jeden Eintrag einzeln mit Wirkungstexten. Der Umschalter (Key
+  `karto-spiel-merkmale-umschalten`, „Alle zeigen (n)“ / „Einklappen“) schreibt
+  nur `AppSettings.merkmaleAufgeklappt` (`merkmaleAufgeklapptProvider`,
+  `SettingsActions.setMerkmaleAufgeklappt`): geräteweit und ohne Sync (der
+  Remote-Abgleich der Einstellungen betrifft nur Geheimnisse), nie der Held,
+  daher ohne `aktion`-Guard und ohne Editorprüfung. Standard ist eingeklappt.
   **Würfelprotokoll (SPIEL-05):** `InspectorDiceLogSection` ist der gemeinsame
   Baustein von Inspector-Probe-Tab und Spielansicht (über die Brücke
   `spielProtokoll`). Die Spielansicht zeigt nur die neuesten `kProtokollKurz`
