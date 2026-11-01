@@ -4,15 +4,15 @@ Stand: 25. Oktober 2026 (Prüfdatum der Quellenblöcke: 24./25. Oktober 2026)
 
 ## Ergebnis
 
-Die maschinenlesbare Inventur `tool/rule_test_evidence.json` erfasst **212 Test- und thematische Case-Dateien** unter `test/rules/` und `test/catalog/`. Jede Datei wurde vollständig gelesen und ihre fachlichen Erwartungen gegen den DSA-MCP (Regelbücher und Hausregeln) geprüft; der pauschale Platzhalterbefund „noch nicht vollständig geprüft“ existiert nicht mehr.
+Die maschinenlesbare Inventur `tool/rule_test_evidence.json` erfasst **213 Test- und thematische Case-Dateien** unter `test/rules/` und `test/catalog/`. Jede Datei wurde vollständig gelesen und ihre fachlichen Erwartungen gegen den DSA-MCP (Regelbücher und Hausregeln) geprüft; der pauschale Platzhalterbefund „noch nicht vollständig geprüft“ existiert nicht mehr.
 
 | Kennzahl | Dateien |
 | --- | ---: |
-| geprüfte Dateien gesamt | 212 |
+| geprüfte Dateien gesamt | 213 |
 | `official` | 148 |
 | `house_rule` | 9 |
-| `product_contract` | 55 |
-| `verified` | 154 |
+| `product_contract` | 56 |
+| `verified` | 155 |
 | `conflict` (mindestens ein bestätigter Einzelbefund) | 58 |
 
 Aufschlüsselung Art × Status:
@@ -21,7 +21,7 @@ Aufschlüsselung Art × Status:
 | --- | ---: | ---: |
 | `official` | 90 | 58 |
 | `house_rule` | 9 | 0 |
-| `product_contract` | 55 | 0 |
+| `product_contract` | 56 | 0 |
 
 Die 58 Konfliktdateien enthalten zusammen **71 offene fachlich verschiedene Einzelbefunde** mit je eigenem Folgeauftrag `RULE-FIX-NNN` (Priorität P1: 0, P2: 24, P3: 47); weitere 34 Befunde sind bereits behoben (siehe unten). Ein Konflikt auf Dateiebene heißt: *mindestens* eine Erwartung der Datei ist nicht deckungsgleich mit dem Buch oder nicht belegbar; alle übrigen Erwartungen der Datei sind geprüft und stehen in der `summary` des Eintrags bzw. unter `sources`.
 
@@ -39,7 +39,7 @@ Alle sechs Fachpakete wurden vollständig geprüft; kein Paket ist offen.
 | 6 Allgemeine Regeln | 52 | 39 | 13 | 21 |
 | 6 Verbleibende Katalogtests | 17 | 16 | 1 | 9 |
 
-Die zwei seit dem Start des Audits auf dem Branch hinzugekommenen Dateien (`zuletzt_gewuerfelt_rules_test.dart`, `proben_favoriten_rules_test.dart`) sind im Paket „Allgemeine Regeln“ mitgeführt; beide sind reine Anzeige-/Listenverträge.
+Die drei seit dem Start des Audits auf dem Branch hinzugekommenen Dateien (`zuletzt_gewuerfelt_rules_test.dart`, `proben_favoriten_rules_test.dart`, `spiel_dabei_rules_test.dart`) sind im Paket „Allgemeine Regeln“ mitgeführt; alle drei sind reine Anzeige-/Listen- bzw. Schreibverträge.
 
 ## Qualitätssicherung und Gegenprüfung
 
