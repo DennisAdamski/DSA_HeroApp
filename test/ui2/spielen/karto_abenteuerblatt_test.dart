@@ -206,6 +206,67 @@ void main() {
     expect(abenteuer.people.single.name, 'Alrik');
   });
 
+  testWidgets('Plus zählt das Datum weiter und rollt Monat und Jahr', (
+    tester,
+  ) async {
+    await zeige(
+      tester,
+      held: testHero().copyWith(
+        adventures: [
+          _nebel.copyWith(
+            currentAventurianDate: const HeroAdventureDateValue(
+              day: '29',
+              month: 'rahja',
+              year: '1043',
+            ),
+          ),
+        ],
+      ),
+    );
+    expect(find.text('29. Rahja 1043 BF'), findsOneWidget);
+
+    await tester.tap(key('karto-abenteuer-datum-plus'));
+    await tester.pumpAndSettle();
+    expect(find.text('30. Rahja 1043 BF'), findsOneWidget);
+
+    await tester.tap(key('karto-abenteuer-datum-plus'));
+    await tester.pumpAndSettle();
+    expect(find.text('1. Namenlose Tage 1043 BF'), findsOneWidget);
+
+    for (var i = 0; i < 5; i++) {
+      await tester.tap(key('karto-abenteuer-datum-plus'));
+      await tester.pumpAndSettle();
+    }
+    expect(find.text('1. Praios 1044 BF'), findsOneWidget);
+    final datum = (await gespeichert()).currentAventurianDate;
+    expect([datum.day, datum.month, datum.year], ['1', 'praios', '1044']);
+  });
+
+  testWidgets('Plus fehlt ohne Datum', (tester) async {
+    await zeige(tester);
+    expect(key('karto-abenteuer-datum-plus'), findsNothing);
+  });
+
+  testWidgets('Plus ist während einer Planung ausgegraut', (tester) async {
+    await zeige(
+      tester,
+      planOffen: true,
+      held: testHero().copyWith(
+        adventures: [
+          _nebel.copyWith(
+            currentAventurianDate: const HeroAdventureDateValue(
+              day: '1',
+              month: 'praios',
+              year: '1043',
+            ),
+          ),
+        ],
+      ),
+    );
+    final knopf = tester.widget<IconButton>(key('karto-abenteuer-datum-plus'));
+    expect(knopf.onPressed, isNull);
+  });
+
   testWidgets('Bearbeiten erhält Felder einer neueren App-Version', (
     tester,
   ) async {

@@ -9,6 +9,7 @@ import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abenteuer_karten.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abenteuer_schreiben.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abenteuer_sortierung.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abenteuer_suche.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_info_chip.dart';
 import 'package:dsa_heldenverwaltung/ui2/widgets/karto_kartenraster.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_laufendes_abenteuer.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
@@ -182,13 +183,24 @@ class _KartoAbenteuerblattState extends ConsumerState<KartoAbenteuerblatt>
             const SizedBox(height: Abstand.normal),
             Align(
               alignment: Alignment.centerLeft,
-              child: _Datumsmarke(
-                datum: abenteuerDatum(aktuell),
-                onTap: gesperrt
-                    ? null
-                    : () {
-                        if (bearbeitbar) datumAendern(aktuell);
-                      },
+              child: Wrap(
+                spacing: Abstand.normal,
+                runSpacing: Abstand.knapp,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  _Datumsmarke(
+                    datum: abenteuerDatum(aktuell),
+                    onTap: gesperrt
+                        ? null
+                        : () {
+                            if (bearbeitbar) datumAendern(aktuell);
+                          },
+                  ),
+                  if (naechsterAbenteuerTag(aktuell) != null)
+                    KartoTagPlusKnopf(
+                      onPressed: bearbeitbar ? datumEinenTagWeiter : null,
+                    ),
+                ],
               ),
             ),
             const SizedBox(height: Abstand.block),

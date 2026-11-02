@@ -1,6 +1,7 @@
 import 'package:dsa_heldenverwaltung/domain/aventurian_date.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_adventure_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/aventurian_calendar_rules.dart';
 
 /// Erstes laufendes Abenteuer mit Titel, oder `null`.
 ///
@@ -26,6 +27,31 @@ String? abenteuerDatum(HeroAdventureEntry abenteuer) {
     if (!datum.hasContent) continue;
     return formatAventurianDate(
       AventurianDate.fromParts(datum.day, datum.month, datum.year),
+    );
+  }
+  return null;
+}
+
+/// Der Tag nach dem Datum des Abenteuers als neuer „aktueller Stand“, oder
+/// `null`, wenn sich das Datum nicht weiterzählen lässt.
+///
+/// Basis ist wie bei [abenteuerDatum] der aktuelle Stand, ersatzweise das
+/// Startdatum desselben Abenteuers. Unbekannte Felder des aktuellen Stands
+/// bleiben erhalten; Monat und Jahr rollen über die Grenzen mit.
+HeroAdventureDateValue? naechsterAbenteuerTag(HeroAdventureEntry abenteuer) {
+  for (final datum in <HeroAdventureDateValue>[
+    abenteuer.currentAventurianDate,
+    abenteuer.startAventurianDate,
+  ]) {
+    if (!datum.hasContent) continue;
+    final weiter = naechsterAventurischerTag(
+      AventurianDate.fromParts(datum.day, datum.month, datum.year),
+    );
+    if (weiter == null) return null;
+    return abenteuer.currentAventurianDate.copyWith(
+      day: weiter.day,
+      month: weiter.month,
+      year: weiter.year,
     );
   }
   return null;
