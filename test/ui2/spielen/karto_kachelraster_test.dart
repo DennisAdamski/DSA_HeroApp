@@ -25,7 +25,8 @@ void main() {
     WidgetTester tester,
     double breite,
     List<(SpielkachelBreite, double)> kacheln, {
-    Set<int> ausweichen = const <int>{},
+    // Nenngewichte je Kachel; ohne Angabe gilt die Höhe als Gewicht.
+    Map<int, double> gewichte = const <int, double>{},
   }) async {
     tester.view.devicePixelRatio = 1;
     tester.view.physicalSize = const Size(1200, 800);
@@ -44,7 +45,7 @@ void main() {
                 for (final (i, (art, hoehe)) in kacheln.indexed)
                   KartoRasterKachel(
                     breite: art,
-                    ausweichen: ausweichen.contains(i),
+                    gewicht: gewichte[i] ?? hoehe,
                     child: SizedBox(key: ValueKey<int>(i), height: hoehe),
                   ),
               ],
@@ -99,56 +100,71 @@ void main() {
     expect(lage(tester, 2), const Rect.fromLTWH(0, 110, 610, 20));
   });
 
-  testWidgets('eine mittlere Kachel weicht schmal in eine Lücke aus', (
-    tester,
-  ) async {
-    await zeige(
-      tester,
-      920,
-      const [
-        (SpielkachelBreite.mittel, 300),
-        (SpielkachelBreite.schmal, 50),
-        (SpielkachelBreite.mittel, 100),
-        (SpielkachelBreite.mittel, 100),
-      ],
-      ausweichen: {2},
+  test('Belegung: höchste freie Stelle nach Gewicht, links vor rechts', () {
+    ({int spanne, double gewicht}) k(int spanne, double gewicht) =>
+        (spanne: spanne, gewicht: gewicht);
+    expect(
+      kartoRasterBelegung([
+        k(3, 50),
+        k(2, 200),
+        k(1, 80),
+        k(1, 80),
+        k(1, 40),
+      ], 3),
+      [0, 0, 2, 2, 2],
     );
-    // Rechts ist ab 60 frei, zwei Spalten erst ab 310.
-    expect(lage(tester, 2), const Rect.fromLTWH(620, 60, 300, 100));
-    // Ohne Erlaubnis bleibt die Kachel mittel.
-    expect(lage(tester, 3), const Rect.fromLTWH(0, 310, 610, 100));
+    expect(kartoRasterBelegung([k(1, 10), k(1, 10), k(1, 10)], 2), [0, 1, 0]);
+    // Zu breite Spannen werden auf die Spaltenzahl gekappt.
+    expect(kartoRasterBelegung([k(3, 10), k(1, 10)], 2), [0, 0]);
   });
 
-  testWidgets('ein kleiner Höhenvorteil lohnt das Ausweichen nicht', (
-    tester,
-  ) async {
-    await zeige(
-      tester,
-      920,
-      const [
-        (SpielkachelBreite.mittel, 100),
-        (SpielkachelBreite.schmal, 50),
-        (SpielkachelBreite.mittel, 100),
-      ],
-      ausweichen: {2},
-    );
-    expect(lage(tester, 2), const Rect.fromLTWH(0, 110, 610, 100));
+  testWidgets('die echte Höhe ändert die Spalte nicht', (tester) async {
+    // Gewichte wie in einer „normalen“ Ansicht: A und B gleich schwer.
+    const kacheln = [
+      (SpielkachelBreite.schmal, 400.0),
+      (SpielkachelBreite.schmal, 100.0),
+      (SpielkachelBreite.schmal, 100.0),
+    ];
+    const gewichte = {0: 200.0, 1: 200.0, 2: 200.0};
+    await zeige(tester, 920, kacheln, gewichte: gewichte);
+    final vorher = [for (var i = 0; i < 3; i++) lage(tester, i).left];
+    expect(vorher, [0, 310, 620]);
+
+    // Kachel 0 klappt ein (50 statt 400): alle bleiben in ihrer Spalte.
+    await zeige(tester, 920, const [
+      (SpielkachelBreite.schmal, 50.0),
+      (SpielkachelBreite.schmal, 100.0),
+      (SpielkachelBreite.schmal, 100.0),
+    ], gewichte: gewichte);
+    expect([for (var i = 0; i < 3; i++) lage(tester, i).left], vorher);
   });
 
-  testWidgets('folgt noch eine schmale Kachel, füllt sie die Lücke', (
-    tester,
-  ) async {
-    await zeige(
-      tester,
-      920,
-      const [
-        (SpielkachelBreite.mittel, 300),
-        (SpielkachelBreite.mittel, 100),
-        (SpielkachelBreite.schmal, 50),
-      ],
-      ausweichen: {1},
-    );
-    expect(lage(tester, 1), const Rect.fromLTWH(0, 310, 610, 100));
-    expect(lage(tester, 2), const Rect.fromLTWH(620, 0, 300, 50));
-  });
+  testWidgets(
+    'Einklappen verschiebt nur Kacheln darunter in derselben Spalte',
+    (tester) async {
+      const gewichte = {0: 200.0, 1: 200.0, 2: 200.0, 3: 200.0, 4: 200.0};
+      List<(SpielkachelBreite, double)> liste(double erste) => [
+        (SpielkachelBreite.schmal, erste),
+        (SpielkachelBreite.schmal, 100),
+        (SpielkachelBreite.schmal, 100),
+        (SpielkachelBreite.schmal, 100),
+        (SpielkachelBreite.schmal, 100),
+      ];
+      await zeige(tester, 920, liste(300), gewichte: gewichte);
+      final offen = [for (var i = 0; i < 5; i++) lage(tester, i).topLeft];
+      await zeige(tester, 920, liste(40), gewichte: gewichte);
+      final zu = [for (var i = 0; i < 5; i++) lage(tester, i).topLeft];
+      for (var i = 0; i < 5; i++) {
+        expect(
+          zu[i].dx,
+          offen[i].dx,
+          reason: 'Kachel $i bleibt in ihrer Spalte',
+        );
+      }
+      // Nur die Kachel unter der eingeklappten (gleiche Spalte) rückt hoch.
+      expect(zu[3].dy, lessThan(offen[3].dy));
+      expect(zu[1].dy, offen[1].dy);
+      expect(zu[2].dy, offen[2].dy);
+    },
+  );
 }

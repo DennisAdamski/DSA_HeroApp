@@ -11,7 +11,6 @@ import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_wirkung_rules.da
 import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_anzeige_rules.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_merkmal.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
-import 'package:dsa_heldenverwaltung/domain/hero_spielansicht.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
@@ -181,13 +180,7 @@ class _KartoSpielansichtState extends ConsumerState<KartoSpielansicht> {
                         'karto-kachel-${kacheln[i].art.id}',
                       ),
                       breite: kacheln[i].breite,
-                      // Beim Anordnen gilt die gewählte Breite genau, damit
-                      // die Breitenwahl sichtbar wirkt.
-                      ausweichen:
-                          entwurf == null &&
-                          kacheln[i].art.breiten.contains(
-                            SpielkachelBreite.schmal,
-                          ),
+                      gewicht: kacheln[i].art.gewicht,
                       child: _kachel(
                         context,
                         werte,

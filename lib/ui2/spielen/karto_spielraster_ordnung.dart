@@ -12,6 +12,7 @@ enum KartoSpielkachelArt {
     'Schnellaktionen',
     breiten: SpielkachelBreite.values,
     standard: SpielkachelBreite.voll,
+    gewicht: 200,
     ausblendbar: false,
     einklappbar: false,
   ),
@@ -21,6 +22,7 @@ enum KartoSpielkachelArt {
     'Ressourcen',
     breiten: SpielkachelBreite.values,
     standard: SpielkachelBreite.mittel,
+    gewicht: 120,
     ausblendbar: false,
     einklappbar: false,
   ),
@@ -30,6 +32,7 @@ enum KartoSpielkachelArt {
     'Häufige Proben',
     breiten: SpielkachelBreite.values,
     standard: SpielkachelBreite.mittel,
+    gewicht: 200,
   ),
 
   /// Eigenschaften als Würfelleiste.
@@ -40,6 +43,7 @@ enum KartoSpielkachelArt {
       SpielkachelBreite.voll,
     ],
     standard: SpielkachelBreite.mittel,
+    gewicht: 140,
   ),
 
   /// Kampfproben und Gefecht.
@@ -50,6 +54,7 @@ enum KartoSpielkachelArt {
       SpielkachelBreite.mittel,
     ],
     standard: SpielkachelBreite.schmal,
+    gewicht: 260,
   ),
 
   /// Laufende Zauber und Effekte.
@@ -60,6 +65,7 @@ enum KartoSpielkachelArt {
       SpielkachelBreite.mittel,
     ],
     standard: SpielkachelBreite.schmal,
+    gewicht: 200,
   ),
 
   /// Wunden, Erschöpfung und weitere Zustände.
@@ -70,6 +76,7 @@ enum KartoSpielkachelArt {
       SpielkachelBreite.mittel,
     ],
     standard: SpielkachelBreite.schmal,
+    gewicht: 240,
   ),
 
   /// Begleiter mit laufenden Werten; nur mit Begleitern vorhanden.
@@ -77,6 +84,7 @@ enum KartoSpielkachelArt {
     'Begleiter',
     breiten: SpielkachelBreite.values,
     standard: SpielkachelBreite.schmal,
+    gewicht: 220,
   ),
 
   /// Geld und Verbrauchsgegenstände.
@@ -87,6 +95,7 @@ enum KartoSpielkachelArt {
       SpielkachelBreite.mittel,
     ],
     standard: SpielkachelBreite.schmal,
+    gewicht: 280,
   ),
 
   /// Laufendes Abenteuer mit Standort, Notizen und Personen.
@@ -97,6 +106,7 @@ enum KartoSpielkachelArt {
       SpielkachelBreite.voll,
     ],
     standard: SpielkachelBreite.mittel,
+    gewicht: 360,
   ),
 
   /// Vor- und Nachteile.
@@ -104,6 +114,7 @@ enum KartoSpielkachelArt {
     'Vor- und Nachteile',
     breiten: SpielkachelBreite.values,
     standard: SpielkachelBreite.mittel,
+    gewicht: 300,
   ),
 
   /// Die letzten Würfe.
@@ -111,12 +122,14 @@ enum KartoSpielkachelArt {
     'Würfelprotokoll',
     breiten: SpielkachelBreite.values,
     standard: SpielkachelBreite.mittel,
+    gewicht: 300,
   );
 
   const KartoSpielkachelArt(
     this.titel, {
     required this.breiten,
     required this.standard,
+    required this.gewicht,
     this.ausblendbar = true,
     this.einklappbar = true,
   });
@@ -129,6 +142,14 @@ enum KartoSpielkachelArt {
 
   /// Breite ohne gespeicherten Wunsch.
   final SpielkachelBreite standard;
+
+  /// Richtwert für die Höhe in dp; nur das Verhältnis der Kacheln zählt.
+  ///
+  /// Das Raster wählt die Spalte einer Kachel aus diesen Gewichten und nicht
+  /// aus der echten Höhe. So bleibt die Anordnung stabil, wenn eine Kachel
+  /// eingeklappt wird oder ihr Inhalt wächst. Das Gewicht wird nicht
+  /// gespeichert.
+  final double gewicht;
 
   /// Ob die Kachel von der Seite genommen werden darf.
   final bool ausblendbar;

@@ -124,8 +124,7 @@ class KartoAnordnenHinweis extends StatelessWidget {
       children: [
         Text(
           'Kacheln am Griff ziehen oder mit den Pfeilen verschieben. '
-          'Gespeichert wird mit „Fertig“. Danach rücken mittlere Kacheln '
-          'schmal in freie Lücken, wenn das Platz spart.',
+          'Gespeichert wird mit „Fertig“.',
           style: texte.etikett.copyWith(color: karto.schriftLeise),
         ),
         if (ausgeblendet.isNotEmpty) ...[

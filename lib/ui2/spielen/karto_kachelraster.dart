@@ -22,12 +22,6 @@ int kartoRasterSpalten(double breite, {double luecke = Abstand.bahn}) {
   return spalten.clamp(1, kRasterSpaltenMax);
 }
 
-/// Höhenvorteil, ab dem eine mittlere Kachel schmal in eine Lücke ausweicht.
-///
-/// Darunter lohnt das Ausweichen nicht: die Kachel würde schmaler und damit
-/// höher, ohne sichtbar Platz zu sparen.
-const double kRasterAusweichenAb = 96;
-
 /// Belegte Rastereinheiten einer Kachel der [breite] bei [spalten] Spalten.
 int kartoRasterSpanne(SpielkachelBreite breite, int spalten) =>
     switch (breite) {
@@ -36,20 +30,58 @@ int kartoRasterSpanne(SpielkachelBreite breite, int spalten) =>
       SpielkachelBreite.voll => spalten,
     };
 
+/// Startspalte jeder Kachel, berechnet aus **Nenngewichten** statt Höhen.
+///
+/// Jede Kachel ([spanne] Spalten, Nennhöhe [gewicht]) landet in der
+/// Reihenfolge der Liste an der höchsten freien Stelle, links vor rechts.
+/// Weil nur Spanne und Gewicht eingehen, bleibt die Spalte einer Kachel
+/// stabil, wenn sich ihre echte Höhe oder die einer anderen Kachel ändert,
+/// etwa beim Einklappen oder bei neuen Daten.
+List<int> kartoRasterBelegung(
+  List<({int spanne, double gewicht})> kacheln,
+  int spalten,
+) {
+  final boden = List<double>.filled(spalten, 0);
+  final starts = <int>[];
+  for (final kachel in kacheln) {
+    final spanne = math.min(kachel.spanne, spalten);
+    final (start, oben) = _hoechsteStelle(boden, spanne);
+    for (var i = start; i < start + spanne; i++) {
+      boden[i] = oben + kachel.gewicht;
+    }
+    starts.add(start);
+  }
+  return starts;
+}
+
+// Linkeste Stelle, an der [spanne] Spalten am höchsten frei sind.
+(int, double) _hoechsteStelle(List<double> boden, int spanne) {
+  var beste = 0;
+  var besteHoehe = double.infinity;
+  for (var start = 0; start + spanne <= boden.length; start++) {
+    var oben = 0.0;
+    for (var i = start; i < start + spanne; i++) {
+      oben = math.max(oben, boden[i]);
+    }
+    if (oben < besteHoehe) {
+      besteHoehe = oben;
+      beste = start;
+    }
+  }
+  return (beste, besteHoehe);
+}
+
 /// Raster der Spielansicht (SPIEL-07): Kacheln mit eigener Höhe, dicht gepackt.
 ///
 /// Die Spaltenzahl folgt der Breite ([kartoRasterSpalten]). Jede Kachel
-/// belegt ihre Spanne ([KartoRasterKachel]) und landet in der Reihenfolge der
-/// Kinder an der höchsten freien Stelle, links vor rechts. So entstehen unter
-/// kurzen Kacheln keine Löcher wie in einem Zeilenraster. Bleibt neben
-/// mittleren Kacheln nur eine Spalte frei, könnte keine von ihnen die Lücke
-/// füllen. Folgt keine schmale Kachel mehr, rückt eine mittlere Kachel, die
-/// schmal sein darf ([KartoRasterKachel.ausweichen]), schmal hinein, sobald
-/// sie dort mindestens [kRasterAusweichenAb] höher steht. Gespeichert bleibt ihre
-/// gewählte Breite; sie gilt wieder, sobald die Lücke fehlt. Die Kinder werden mit
-/// fester Breite und freier Höhe ausgelegt, ohne Intrinsics, damit Kacheln
-/// mit `LayoutBuilder` funktionieren. Fokus- und Lesefolge bleiben die
-/// Reihenfolge der Kinder.
+/// belegt ihre Spanne ([KartoRasterKachel]). Die **Spalte** bestimmt
+/// [kartoRasterBelegung] aus den Nenngewichten ([KartoRasterKachel.gewicht]),
+/// nie aus der echten Höhe: Einklappen oder neue Daten verschieben deshalb
+/// nur Kacheln darunter in derselben Spalte, keine wechselt Spalte oder
+/// Breite. Die senkrechte Lage folgt dagegen der echten Unterkante der
+/// Kacheln darüber. Die Kinder werden mit fester Breite und freier Höhe
+/// ausgelegt, ohne Intrinsics, damit Kacheln mit `LayoutBuilder` funktionieren.
+/// Fokus- und Lesefolge bleiben die Reihenfolge der Kinder.
 class KartoKachelraster extends MultiChildRenderObjectWidget {
   /// Raster aus [children], die je in einer [KartoRasterKachel] stecken.
   const KartoKachelraster({
@@ -80,23 +112,23 @@ class KartoRasterKachel extends ParentDataWidget<KartoRasterParentData> {
   const KartoRasterKachel({
     super.key,
     required this.breite,
-    this.ausweichen = false,
+    this.gewicht = 1,
     required super.child,
   });
 
   /// Gewünschte Breite; wird auf die Spaltenzahl gekappt.
   final SpielkachelBreite breite;
 
-  /// Ob eine mittlere Kachel schmal in eine Lücke ausweichen darf.
-  final bool ausweichen;
+  /// Nennhöhe für die Spaltenwahl; nur das Verhältnis zählt.
+  final double gewicht;
 
   @override
   void applyParentData(RenderObject renderObject) {
     final daten = renderObject.parentData! as KartoRasterParentData;
-    if (daten.breite != breite || daten.ausweichen != ausweichen) {
+    if (daten.breite != breite || daten.gewicht != gewicht) {
       daten
         ..breite = breite
-        ..ausweichen = ausweichen;
+        ..gewicht = gewicht;
       renderObject.parent?.markNeedsLayout();
     }
   }
@@ -110,8 +142,8 @@ class KartoRasterParentData extends ContainerBoxParentData<RenderBox> {
   /// Breite der Kachel; ohne Angabe eine Einheit.
   SpielkachelBreite breite = SpielkachelBreite.schmal;
 
-  /// Ob die Kachel schmal in eine Lücke ausweichen darf.
-  bool ausweichen = false;
+  /// Nennhöhe für die Spaltenwahl.
+  double gewicht = 1;
 }
 
 /// Render-Objekt zu [KartoKachelraster].
@@ -146,67 +178,43 @@ class RenderKartoKachelraster extends RenderBox
         : constraints.minWidth;
     final spalten = kartoRasterSpalten(breite, luecke: luecke);
     final einheit = (breite - luecke * (spalten - 1)) / spalten;
-    // Unterkante je Spalte, samt folgender Lücke.
-    final boden = List<double>.filled(spalten, 0);
-
-    // Wie viele schmale Kacheln noch folgen: solange eine kommt, füllt sie
-    // die Lücke, und keine mittlere Kachel muss dafür schmaler werden.
-    var schmaleDanach = 0;
-    var zaehler = firstChild;
-    while (zaehler != null) {
-      final daten = zaehler.parentData! as KartoRasterParentData;
-      if (kartoRasterSpanne(daten.breite, spalten) == 1) schmaleDanach++;
-      zaehler = daten.nextSibling;
+    // Spalten aus den Nenngewichten; die Höhen gehen nicht ein.
+    final nenn = <({int spanne, double gewicht})>[];
+    for (var c = firstChild; c != null; c = childAfter(c)) {
+      final daten = c.parentData! as KartoRasterParentData;
+      nenn.add((
+        spanne: kartoRasterSpanne(daten.breite, spalten),
+        gewicht: daten.gewicht,
+      ));
     }
+    final starts = kartoRasterBelegung(nenn, spalten);
 
+    // Echte Unterkante je Spalte, samt folgender Lücke.
+    final boden = List<double>.filled(spalten, 0);
+    var stelle = 0;
     var child = firstChild;
     while (child != null) {
       final daten = child.parentData! as KartoRasterParentData;
-      var spanne = kartoRasterSpanne(daten.breite, spalten);
-      if (spanne == 1) schmaleDanach--;
-      var (beste, besteHoehe) = _hoechsteStelle(boden, spanne);
-      if (daten.ausweichen &&
-          schmaleDanach == 0 &&
-          daten.breite == SpielkachelBreite.mittel &&
-          spanne > 1) {
-        final (start, oben) = _hoechsteStelle(boden, 1);
-        if (besteHoehe - oben >= kRasterAusweichenAb) {
-          spanne = 1;
-          beste = start;
-          besteHoehe = oben;
-        }
+      final spanne = nenn[stelle].spanne;
+      final start = starts[stelle++];
+      var oben = 0.0;
+      for (var i = start; i < start + spanne; i++) {
+        oben = math.max(oben, boden[i]);
       }
       final kachelbreite = einheit * spanne + luecke * (spanne - 1);
       child.layout(
         BoxConstraints.tightFor(width: kachelbreite),
         parentUsesSize: true,
       );
-      daten.offset = Offset((einheit + luecke) * beste, besteHoehe);
-      for (var i = beste; i < beste + spanne; i++) {
-        boden[i] = besteHoehe + child.size.height + luecke;
+      daten.offset = Offset((einheit + luecke) * start, oben);
+      for (var i = start; i < start + spanne; i++) {
+        boden[i] = oben + child.size.height + luecke;
       }
       child = daten.nextSibling;
     }
 
     final hoehe = firstChild == null ? 0.0 : boden.reduce(math.max) - luecke;
     size = constraints.constrain(Size(breite, math.max(0, hoehe)));
-  }
-
-  // Linkeste Stelle, an der [spanne] Spalten am höchsten frei sind.
-  static (int, double) _hoechsteStelle(List<double> boden, int spanne) {
-    var beste = 0;
-    var besteHoehe = double.infinity;
-    for (var start = 0; start + spanne <= boden.length; start++) {
-      var oben = 0.0;
-      for (var i = start; i < start + spanne; i++) {
-        oben = math.max(oben, boden[i]);
-      }
-      if (oben < besteHoehe) {
-        besteHoehe = oben;
-        beste = start;
-      }
-    }
-    return (beste, besteHoehe);
   }
 
   @override

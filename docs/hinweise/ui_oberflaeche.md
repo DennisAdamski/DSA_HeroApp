@@ -102,9 +102,13 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   (`karto_kachelraster.dart`): Rastereinheit mindestens 300 dp
   (`kRasterEinheitMin`), Spaltenzahl aus der **Ansichtsbreite**, höchstens 4;
   Breiten `schmal` (1 Einheit), `mittel` (2), `voll` (ganze Zeile), auf die
-  Spaltenzahl gekappt. Höhe = Inhalt; jede Kachel landet in ihrer Reihenfolge
-  an der höchsten freien Stelle (dicht gepackt, keine Löcher unter kurzen
-  Kacheln). Kinder werden ohne Intrinsics ausgelegt, `LayoutBuilder` in Kacheln
+  Spaltenzahl gekappt. Höhe = Inhalt. Die **Spalte** jeder Kachel folgt nur aus
+  Reihenfolge, Breite und dem Richtgewicht der Art
+  (`KartoSpielkachelArt.gewicht`, `kartoRasterBelegung`), nie aus der echten
+  Höhe: Einklappen oder neue Daten verschieben nur Kacheln darunter in
+  derselben Spalte, keine wechselt Spalte oder Breite (ein früheres
+  „Ausweichen“ in Lücken entfiel). Die senkrechte Lage folgt der echten
+  Unterkante. Kinder werden ohne Intrinsics ausgelegt, `LayoutBuilder` in Kacheln
   ist erlaubt. Was eine Kachel erlaubt (Breiten, Standardbreite, Ausblenden,
   Einklappen), legt `KartoSpielkachelArt` in `karto_spielraster_ordnung.dart`
   fest; Schnellaktionen und Ressourcen lassen sich weder ausblenden noch
