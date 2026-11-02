@@ -405,6 +405,93 @@ void main() {
     });
   });
 
+  group('Kachel vergrößern', () {
+    Finder k(String name) => find.byKey(ValueKey<String>(name));
+
+    testWidgets('Klick auf den Namen öffnet die Kachel als Dialog', (
+      tester,
+    ) async {
+      await zeige(tester, held: mitAbenteuern([_nebel]), breite: 1280);
+      expect(k('karto-kachel-ressourcen-popup'), findsNothing);
+      expect(find.text('Ressourcen'), findsOneWidget);
+
+      await tester.tap(k('karto-kachel-ressourcen-vergroessern'));
+      await tester.pumpAndSettle();
+      expect(k('karto-kachel-ressourcen-popup'), findsOneWidget);
+      // Der Inhalt steht jetzt zweimal da: in der Kachel und im Dialog.
+      expect(find.text('Ressourcen'), findsNWidgets(2));
+      // Der Dialog hat keine Bedienknöpfe der Kachel (Einklappen).
+      expect(
+        find.descendant(
+          of: k('karto-kachel-ressourcen-popup'),
+          matching: find.byIcon(Icons.expand_less),
+        ),
+        findsNothing,
+      );
+
+      await tester.tap(k('karto-kachel-popup-zu'));
+      await tester.pumpAndSettle();
+      expect(k('karto-kachel-ressourcen-popup'), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('jede Kachel lässt sich vergrößern und schließen', (
+      tester,
+    ) async {
+      await zeige(tester, held: mitAbenteuern([_nebel]), breite: 1280);
+      for (final art in [
+        'ressourcen',
+        'proben',
+        'eigenschaften',
+        'kampf',
+        'effekte',
+        'zustand',
+        'dabei',
+        'abenteuer',
+        'merkmale',
+        'protokoll',
+      ]) {
+        await tester.ensureVisible(k('karto-kachel-$art-vergroessern'));
+        await tester.tap(k('karto-kachel-$art-vergroessern'));
+        await tester.pumpAndSettle();
+        expect(k('karto-kachel-$art-popup'), findsOneWidget, reason: art);
+        await tester.tap(k('karto-kachel-popup-zu'));
+        await tester.pumpAndSettle();
+        expect(k('karto-kachel-$art-popup'), findsNothing, reason: art);
+      }
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('auch schmal und eingeklappt öffnet der Name den Dialog', (
+      tester,
+    ) async {
+      await zeige(
+        tester,
+        held: weltlich().copyWith(
+          spielansicht: const HeroSpielansicht(
+            kacheln: [HeroSpielkachel(id: 'kampf', eingeklappt: true)],
+          ),
+        ),
+        breite: 390,
+      );
+      await tester.ensureVisible(k('karto-kachel-kampf-vergroessern'));
+      await tester.tap(k('karto-kachel-kampf-vergroessern'));
+      await tester.pumpAndSettle();
+      expect(k('karto-kachel-kampf-popup'), findsOneWidget);
+      expect(find.text('Kampfproben praiodan'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('im Anordnen-Modus gibt es keinen Vergrößern-Knopf', (
+      tester,
+    ) async {
+      await zeige(tester, held: weltlich(), breite: 1280);
+      await tester.tap(k('karto-spiel-anordnen'));
+      await tester.pumpAndSettle();
+      expect(k('karto-kachel-ressourcen-vergroessern'), findsNothing);
+    });
+  });
+
   group('Schnellaktionen im Seitenkopf', () {
     Finder k(String name) => find.byKey(ValueKey<String>(name));
 

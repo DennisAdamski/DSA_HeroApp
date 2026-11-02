@@ -69,7 +69,8 @@ class KartoAbschnitt extends StatelessWidget {
     final eingeklappt = steuerung?.eingeklappt ?? false;
     final zweitzeile = hinweis?.trim() ?? '';
     final akzentFarbe = akzent?.farbe(karto);
-    final ueberschrift = symbol == null
+    final vergroessern = steuerung?.onVergroessern;
+    final titelBlock = symbol == null
         ? Text(titel, style: texte.abschnitt)
         : Row(
             mainAxisSize: MainAxisSize.min,
@@ -78,6 +79,35 @@ class KartoAbschnitt extends StatelessWidget {
               const SizedBox(width: Abstand.normal),
               Flexible(child: Text(titel, style: texte.abschnitt)),
             ],
+          );
+    // Mit Rückruf ist der Name die Klickfläche für die vergrößerte Ansicht;
+    // das leise Symbol zeigt, dass sich hinter ihm etwas öffnet.
+    final ueberschrift = vergroessern == null
+        ? titelBlock
+        : Tooltip(
+            message: '$titel vergrößern',
+            child: InkWell(
+              key: ValueKey<String>(
+                'karto-kachel-${steuerung!.kennung}-vergroessern',
+              ),
+              onTap: vergroessern,
+              borderRadius: BorderRadius.circular(kKartoRadiusKlein),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: Abstand.haar),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Flexible(child: titelBlock),
+                    const SizedBox(width: Abstand.knapp),
+                    Icon(
+                      Icons.open_in_full,
+                      size: 14,
+                      color: karto.schriftLeise,
+                    ),
+                  ],
+                ),
+              ),
+            ),
           );
 
     final flaeche = KartoFlaeche(
@@ -212,6 +242,7 @@ class KartoKachelSteuerung extends InheritedWidget {
     required this.kennung,
     this.eingeklappt = false,
     this.onEinklappen,
+    this.onVergroessern,
     this.dicht = true,
     this.groesse = KartoKachelGroesse.normal,
     required super.child,
@@ -223,6 +254,7 @@ class KartoKachelSteuerung extends InheritedWidget {
   }) : kennung = '',
        eingeklappt = false,
        onEinklappen = null,
+       onVergroessern = null,
        dicht = false;
 
   /// Kennung der Kachel für Schlüssel und Tests.
@@ -233,6 +265,9 @@ class KartoKachelSteuerung extends InheritedWidget {
 
   /// Schaltet das Einklappen; ohne Rückruf entfällt der Knopf.
   final ValueChanged<bool>? onEinklappen;
+
+  /// Öffnet die Kachel vergrößert; ohne Rückruf bleibt der Name Text.
+  final VoidCallback? onVergroessern;
 
   /// Knapper Innenabstand wie bei [KartoAbschnitt.dicht].
   final bool dicht;
@@ -262,7 +297,8 @@ class KartoKachelSteuerung extends InheritedWidget {
       oldWidget.eingeklappt != eingeklappt ||
       oldWidget.dicht != dicht ||
       oldWidget.groesse != groesse ||
-      oldWidget.onEinklappen != onEinklappen;
+      oldWidget.onEinklappen != onEinklappen ||
+      oldWidget.onVergroessern != onVergroessern;
 }
 
 /// Die zwei Hervorhebungen einer Begleitfläche.

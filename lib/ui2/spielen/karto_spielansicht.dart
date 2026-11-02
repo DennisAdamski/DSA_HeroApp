@@ -255,7 +255,8 @@ class _KartoSpielansichtState extends ConsumerState<KartoSpielansicht> {
         onEinklappen: art.einklappbar && !gesperrt
             ? (wert) => _einklappen(art, wert)
             : null,
-        child: _inhalt(context, werte, art),
+        onVergroessern: () => _vergroessern(art),
+        child: _inhalt(context, werte, art, ref),
       ),
     );
   }
@@ -264,6 +265,7 @@ class _KartoSpielansichtState extends ConsumerState<KartoSpielansicht> {
     BuildContext context,
     HeroComputedSnapshot werte,
     KartoSpielkachelArt art,
+    WidgetRef leser,
   ) => switch (art) {
     KartoSpielkachelArt.ressourcen => _ressourcen(context, werte),
     KartoSpielkachelArt.proben => _proben(context),
@@ -282,10 +284,82 @@ class _KartoSpielansichtState extends ConsumerState<KartoSpielansicht> {
     ),
     KartoSpielkachelArt.begleiter => _begleiter(context, werte),
     KartoSpielkachelArt.dabei => _dabei(context, werte),
-    KartoSpielkachelArt.abenteuer => _abenteuer(context, werte),
-    KartoSpielkachelArt.merkmale => _merkmale(context, werte),
+    KartoSpielkachelArt.abenteuer => _abenteuer(context, werte, leser),
+    KartoSpielkachelArt.merkmale => _merkmale(context, werte, leser),
     KartoSpielkachelArt.protokoll => _protokoll(context, werte),
   };
+
+  // Öffnet die Kachel groß in einem Dialog. Der Dialog liest den Helden selbst
+  // (`heroComputedProvider`), damit ein Wurf oder eine Änderung darin sofort
+  // erscheint, statt den beim Öffnen erfassten Stand zu zeigen. Er liest nur;
+  // geschrieben wird ausschließlich über dieselben Aktionen wie in der Kachel.
+  Future<void> _vergroessern(KartoSpielkachelArt art) {
+    return showDialog<void>(
+      context: context,
+      builder: (dialogContext) => Consumer(
+        builder: (context, leser, _) {
+          final werte = leser.watch(heroComputedProvider(heroId)).asData?.value;
+          return Dialog(
+            key: ValueKey<String>('karto-kachel-${art.id}-popup'),
+            backgroundColor: context.karto.blatt,
+            insetPadding: const EdgeInsets.all(Abstand.block),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 960),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(
+                        0,
+                        Abstand.eng,
+                        Abstand.eng,
+                        0,
+                      ),
+                      child: IconButton(
+                        key: const ValueKey<String>('karto-kachel-popup-zu'),
+                        tooltip: 'Schließen',
+                        icon: const Icon(Icons.close),
+                        onPressed: () => Navigator.of(dialogContext).pop(),
+                      ),
+                    ),
+                  ),
+                  Flexible(
+                    child: werte == null
+                        ? const Padding(
+                            padding: EdgeInsets.all(Abstand.bahn),
+                            child: Center(child: CircularProgressIndicator()),
+                          )
+                        : SingleChildScrollView(
+                            padding: const EdgeInsets.fromLTRB(
+                              Abstand.block,
+                              0,
+                              Abstand.block,
+                              Abstand.block,
+                            ),
+                            child: LayoutBuilder(
+                              builder: (context, constraints) =>
+                                  KartoKachelSteuerung(
+                                    kennung: art.id,
+                                    dicht: false,
+                                    groesse: KartoKachelGroesse.fuerBreite(
+                                      constraints.maxWidth,
+                                    ),
+                                    child: _inhalt(context, werte, art, leser),
+                                  ),
+                            ),
+                          ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
 
   // Anordnen beginnt nach derselben Editorprüfung wie das Merkmalsblatt:
   // ein offener Verwaltungsentwurf überschriebe die Anordnung sonst wieder.
@@ -500,34 +574,41 @@ class _KartoSpielansichtState extends ConsumerState<KartoSpielansicht> {
       );
 
   // Das laufende Abenteuer mit Standort, Personen und Notizen.
-  Widget _abenteuer(BuildContext context, HeroComputedSnapshot werte) =>
-      KartoAbenteuerAbschnitt(
-        heroId: heroId,
-        abenteuer: laufendesAbenteuer(werte.hero),
-        standort: werte.state.standort,
-        sortierung: ref.watch(abenteuerSortierungProvider),
-        // Bewusst ohne `aktion`-Guard: der Dialog schließt sich selbst, und
-        // das Speichern läuft über den eingereihten Zustandsweg.
-        onStandortSpeichern: (standort) => bestand.standortSetzen(
-          context: context,
-          ref: ref,
-          heroId: heroId,
-          standort: standort,
-        ),
-        onOeffnen: () {
-          final abenteuer = laufendesAbenteuer(werte.hero);
-          if (abenteuer != null) _abenteuerOeffnen(context, abenteuer.id);
-        },
-        // Suchtreffer in anderen Abenteuern öffnen deren Blatt, auf demselben
-        // geschützten Weg wie der Abschnittskopf.
-        onAbenteuerOeffnen: (abenteuerId) =>
-            _abenteuerOeffnen(context, abenteuerId),
-      );
+  Widget _abenteuer(
+    BuildContext context,
+    HeroComputedSnapshot werte,
+    WidgetRef leser,
+  ) => KartoAbenteuerAbschnitt(
+    heroId: heroId,
+    abenteuer: laufendesAbenteuer(werte.hero),
+    standort: werte.state.standort,
+    sortierung: leser.watch(abenteuerSortierungProvider),
+    // Bewusst ohne `aktion`-Guard: der Dialog schließt sich selbst, und
+    // das Speichern läuft über den eingereihten Zustandsweg.
+    onStandortSpeichern: (standort) => bestand.standortSetzen(
+      context: context,
+      ref: ref,
+      heroId: heroId,
+      standort: standort,
+    ),
+    onOeffnen: () {
+      final abenteuer = laufendesAbenteuer(werte.hero);
+      if (abenteuer != null) _abenteuerOeffnen(context, abenteuer.id);
+    },
+    // Suchtreffer in anderen Abenteuern öffnen deren Blatt, auf demselben
+    // geschützten Weg wie der Abschnittskopf.
+    onAbenteuerOeffnen: (abenteuerId) =>
+        _abenteuerOeffnen(context, abenteuerId),
+  );
 
   // Vor- und Nachteile kompakt; bearbeitet wird im Merkmalsblatt, nach
   // derselben Editorprüfung wie beim Abenteuerblatt.
-  Widget _merkmale(BuildContext context, HeroComputedSnapshot werte) {
-    final catalog = ref.watch(heroRulesCatalogProvider(heroId)).valueOrNull;
+  Widget _merkmale(
+    BuildContext context,
+    HeroComputedSnapshot werte,
+    WidgetRef leser,
+  ) {
+    final catalog = leser.watch(heroRulesCatalogProvider(heroId)).valueOrNull;
     // Ohne geladenen Katalog zeigt die Übersicht die gespeicherten Texte;
     // bearbeitet werden kann erst mit Katalog.
     final katalog = catalog == null
@@ -556,7 +637,7 @@ class _KartoSpielansichtState extends ConsumerState<KartoSpielansicht> {
       child: KartoMerkmalsuebersicht(
         vorteile: aufbereiten(abgleich.vorteile, true),
         nachteile: aufbereiten(abgleich.nachteile, false),
-        aufgeklappt: ref.watch(merkmaleAufgeklapptProvider),
+        aufgeklappt: leser.watch(merkmaleAufgeklapptProvider),
         // Rein geraetelokal: ein Tipp aendert nur die Einstellung, nie den
         // Helden; deshalb ohne `aktion`-Guard und ohne Editorpruefung.
         onUmschalten: (aufgeklappt) => ref
