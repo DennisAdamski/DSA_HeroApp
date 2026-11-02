@@ -66,10 +66,15 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   den `HeroComputedSnapshot` an alle Abschnitte weiter — auch an die
   Adaptermethoden, damit die Brücke für dieselben Werte keine zweite
   Providerbeobachtung aufmacht. Die Reihenfolge folgt der Häufigkeit am
-  Tisch: Schnellaktionen (ganz oben), Ressourcen, Häufige Proben,
+  Tisch: Ressourcen, Häufige Proben,
   Eigenschaften, Kampf, Effekte, Zustand (und Begleiter), Dabei, Abenteuer
   samt Standort, Vor- und Nachteile, Würfelprotokoll. Das ist nur die
-  Standardanordnung; jede Kachel lässt sich verschieben (Kachelraster, unten). Jede Schnellaktion trägt eine
+  Standardanordnung; jede Kachel lässt sich verschieben (Kachelraster, unten).
+  Die Schnellaktionen sind **keine Kachel**: sie stehen fest im Seitenkopf
+  zwischen „Am Spieltisch“ und „Anordnen“ (`KartoSeitenkopf.mitte`; ab
+  `kMitteNebenTitelAb` (900 dp) in einer Zeile, schmaler unter der Titelzeile),
+  auch im Anordnen-Modus. Ein früher gespeicherter Eintrag `schnellaktionen`
+  wird beim Auflösen übergangen und bleibt erhalten. Jede Schnellaktion trägt eine
   eigene Signalfarbe (`kartoSchnellaktionStil` in `karto_spielaktionen.dart`:
   Gefecht `messing`, Probe `meer`, Regeln `kueste`, Rast `moos`, Schaden
   `siegel`; Tönung 14 % auf `feld`, Symbol und Kante in der Farbe, Beschriftung
@@ -111,8 +116,7 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   Unterkante. Kinder werden ohne Intrinsics ausgelegt, `LayoutBuilder` in Kacheln
   ist erlaubt. Was eine Kachel erlaubt (Breiten, Standardbreite, Ausblenden,
   Einklappen), legt `KartoSpielkachelArt` in `karto_spielraster_ordnung.dart`
-  fest; Schnellaktionen und Ressourcen lassen sich weder ausblenden noch
-  einklappen. Gespeichert wird **je Held** in `HeroSheet.spielansicht`
+  fest; Ressourcen lassen sich weder ausblenden noch einklappen. Gespeichert wird **je Held** in `HeroSheet.spielansicht`
   (`HeroSpielansicht`/`HeroSpielkachel`, nur bei Belegung im JSON; Kacheln mit
   `id`, damit der Sync je Kachel zusammenführt). `loeseSpielansichtAuf` setzt
   fehlende Kacheln an ihre Standardstelle und übergeht unbekannte IDs,
@@ -384,7 +388,7 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   Treffer im eigenen Abenteuer bearbeitet man direkt, Treffer in anderen öffnen
   deren Blatt (im Abschnitt über `onAbenteuerOeffnen` und damit den
   Editorschutz, im Blatt direkt). Die Suche liest nur und schreibt nie.
-  **Zuletzt gewürfelt (SPIEL-01, Teilstand):** Unter den Schnellaktionen
+  **Zuletzt gewürfelt (SPIEL-01, Teilstand):** Unter den Schnellaktionen im Seitenkopf
   steht ein Streifen mit bis zu `kZuletztGewuerfeltMax` (6) Marken
   (`KartoZuletztGewuerfelt`, `karto_zuletzt_gewuerfelt.dart`). Welche Proben
   erscheinen, entscheidet `zuletztGewuerfelteProben`

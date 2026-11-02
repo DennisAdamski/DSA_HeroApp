@@ -156,7 +156,6 @@ class KartoAnordnenHinweis extends StatelessWidget {
 
 /// Symbol einer Kachel für die kompakte Anordnungskarte.
 IconData spielkachelSymbol(KartoSpielkachelArt art) => switch (art) {
-  KartoSpielkachelArt.schnellaktionen => Icons.bolt_outlined,
   KartoSpielkachelArt.ressourcen => Icons.favorite_outline,
   KartoSpielkachelArt.proben => Icons.casino_outlined,
   KartoSpielkachelArt.eigenschaften => Icons.insights_outlined,

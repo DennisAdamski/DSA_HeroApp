@@ -142,6 +142,9 @@ class _KartoSpielansichtState extends ConsumerState<KartoSpielansicht> {
               KartoSeitenkopf(
                 titel: 'Am Spieltisch',
                 kompakt: breite == KartoBreite.schmal,
+                // Fest zwischen Titel und „Anordnen“; keine Kachel, also
+                // weder verschiebbar noch ausblendbar.
+                mitte: _schnellaktionen(context, werte),
                 aktion: entwurf == null
                     ? KartoAnordnenKnopf(
                         gesperrt: gesperrt,
@@ -262,7 +265,6 @@ class _KartoSpielansichtState extends ConsumerState<KartoSpielansicht> {
     HeroComputedSnapshot werte,
     KartoSpielkachelArt art,
   ) => switch (art) {
-    KartoSpielkachelArt.schnellaktionen => _schnellaktionen(context, werte),
     KartoSpielkachelArt.ressourcen => _ressourcen(context, werte),
     KartoSpielkachelArt.proben => _proben(context),
     KartoSpielkachelArt.eigenschaften => KartoAbschnitt(
@@ -420,65 +422,58 @@ class _KartoSpielansichtState extends ConsumerState<KartoSpielansicht> {
     child: bestand.spielFavoritenproben(heroId: heroId),
   );
 
-  // Die farbigen Schnellaktionen; darunter die zuletzt gewürfelten Proben, die
-  // sich mit einem Tipp wiederholen lassen (SPIEL-01).
+  // Die farbigen Schnellaktionen im Seitenkopf; darunter die zuletzt gewürfelten
+  // Proben, die sich mit einem Tipp wiederholen lassen (SPIEL-01).
   Widget _schnellaktionen(BuildContext context, HeroComputedSnapshot werte) {
-    return KartoAbschnitt(
-      titel: 'Schnellaktionen',
-      dicht: true,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          KartoSpielaktionen(
-            kuerzelHinweis: 'Strg K',
-            gefecht: GefechtEinstieg(
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        KartoSpielaktionen(
+          kuerzelHinweis: 'Strg K',
+          gefecht: GefechtEinstieg(
+            heroId: heroId,
+            werte: werte,
+            bestand: bestand,
+            aktion: aktion,
+            vorBearbeitung: vorHeldenbearbeitung,
+            hervorgehoben: true,
+            stil: kartoSchnellaktionStil(context, context.karto.messing),
+            knopfKey: const ValueKey('karto-spiel-gefecht'),
+          ),
+          onProbeSuchen: () => aktion(
+            () =>
+                bestand.probeSuchen(context: context, ref: ref, heroId: heroId),
+          ),
+          // Der Regelindex läuft nur auf Desktop und im Web und wird erst
+          // angeboten, wenn die Katalog-Inhalte entsperrt sind (SPIEL-04).
+          onRegeln:
+              bestand.regelnNachschlagenVerfuegbar &&
+                  ref.watch(catalogContentVisibleProvider)
+              ? () => aktion(() => bestand.regelnNachschlagen(context: context))
+              : null,
+          onRast: () =>
+              aktion(() => bestand.rast(context: context, heroId: heroId)),
+          onSchaden: () => aktion(
+            () => bestand.schadenErhalten(
+              context: context,
+              ref: ref,
               heroId: heroId,
-              werte: werte,
-              bestand: bestand,
-              aktion: aktion,
-              vorBearbeitung: vorHeldenbearbeitung,
-              hervorgehoben: true,
-              stil: kartoSchnellaktionStil(context, context.karto.messing),
-              knopfKey: const ValueKey('karto-spiel-gefecht'),
-            ),
-            onProbeSuchen: () => aktion(
-              () => bestand.probeSuchen(
-                context: context,
-                ref: ref,
-                heroId: heroId,
-              ),
-            ),
-            // Der Regelindex läuft nur auf Desktop und im Web und wird erst
-            // angeboten, wenn die Katalog-Inhalte entsperrt sind (SPIEL-04).
-            onRegeln:
-                bestand.regelnNachschlagenVerfuegbar &&
-                    ref.watch(catalogContentVisibleProvider)
-                ? () =>
-                      aktion(() => bestand.regelnNachschlagen(context: context))
-                : null,
-            onRast: () =>
-                aktion(() => bestand.rast(context: context, heroId: heroId)),
-            onSchaden: () => aktion(
-              () => bestand.schadenErhalten(
-                context: context,
-                ref: ref,
-                heroId: heroId,
-              ),
             ),
           ),
-          KartoZuletztGewuerfelt(
-            protokoll: werte.state.diceLog,
-            onWiederholen: (eintrag) => aktion(
-              () => bestand.probeWiederholen(
-                context: context,
-                ref: ref,
-                heroId: heroId,
-                eintrag: eintrag,
-              ),
+        ),
+        KartoZuletztGewuerfelt(
+          protokoll: werte.state.diceLog,
+          onWiederholen: (eintrag) => aktion(
+            () => bestand.probeWiederholen(
+              context: context,
+              ref: ref,
+              heroId: heroId,
+              eintrag: eintrag,
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 

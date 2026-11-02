@@ -24,16 +24,31 @@ void main() {
         const HeroSpielansicht(
           kacheln: [
             HeroSpielkachel(id: 'protokoll'),
-            HeroSpielkachel(id: 'schnellaktionen'),
+            HeroSpielkachel(id: 'ressourcen'),
           ],
         ),
         verfuegbar: _alle,
       );
       final ids = _ids(kacheln);
       expect(ids.first, 'protokoll');
-      expect(ids[1], 'schnellaktionen');
-      expect(ids[2], 'ressourcen');
+      expect(ids[1], 'ressourcen');
+      expect(ids[2], 'proben');
       expect(ids, hasLength(KartoSpielkachelArt.values.length));
+    });
+
+    test('der frühere Eintrag der Schnellaktionen wird übergangen', () {
+      // Die Schnellaktionen stehen fest im Seitenkopf und sind keine Kachel.
+      final kacheln = loeseSpielansichtAuf(
+        const HeroSpielansicht(
+          kacheln: [HeroSpielkachel(id: 'schnellaktionen')],
+        ),
+        verfuegbar: _alle,
+      );
+      expect(_ids(kacheln), isNot(contains('schnellaktionen')));
+      expect(
+        _ids(kacheln),
+        _ids(loeseSpielansichtAuf(null, verfuegbar: _alle)),
+      );
     });
 
     test('unbekannte und nicht verfügbare IDs werden übergangen', () {
@@ -54,11 +69,14 @@ void main() {
       final kacheln = loeseSpielansichtAuf(
         const HeroSpielansicht(
           kacheln: [
-            // Kampf erlaubt keine volle Breite, Ressourcen kein Ausblenden,
-            // Schnellaktionen kein Einklappen.
+            // Kampf erlaubt keine volle Breite, Ressourcen weder Ausblenden
+            // noch Einklappen.
             HeroSpielkachel(id: 'kampf', breite: SpielkachelBreite.voll),
-            HeroSpielkachel(id: 'ressourcen', ausgeblendet: true),
-            HeroSpielkachel(id: 'schnellaktionen', eingeklappt: true),
+            HeroSpielkachel(
+              id: 'ressourcen',
+              ausgeblendet: true,
+              eingeklappt: true,
+            ),
           ],
         ),
         verfuegbar: _alle,
@@ -70,7 +88,7 @@ void main() {
         SpielkachelBreite.schmal,
       );
       expect(kachel(KartoSpielkachelArt.ressourcen).ausgeblendet, isFalse);
-      expect(kachel(KartoSpielkachelArt.schnellaktionen).eingeklappt, isFalse);
+      expect(kachel(KartoSpielkachelArt.ressourcen).eingeklappt, isFalse);
     });
   });
 
@@ -101,7 +119,7 @@ void main() {
       final ansicht = schreibeSpielansicht(kacheln, basis: basis);
       final ids = ansicht.kacheln.map((k) => k.id).toList();
       expect(ids.take(4), [
-        'schnellaktionen',
+        'schnellaktionen', // früherer Eintrag, bleibt erhalten
         'zukunft',
         'begleiter',
         'ressourcen',
@@ -113,7 +131,7 @@ void main() {
     test('Rundreise über Auflösen und Schreiben ist stabil', () {
       final kacheln = verschiebeSpielkachel(
         loeseSpielansichtAuf(null, verfuegbar: _alle),
-        4,
+        3,
         0,
       );
       final ansicht = schreibeSpielansicht(kacheln, basis: null);
@@ -156,9 +174,10 @@ void main() {
 
   test('verschiebeSpielkachel setzt die Kachel an die Zielstelle', () {
     final start = loeseSpielansichtAuf(null, verfuegbar: _alle);
-    final vor = verschiebeSpielkachel(start, 4, 1);
+    final kampf = start.indexWhere((x) => x.art == KartoSpielkachelArt.kampf);
+    final vor = verschiebeSpielkachel(start, kampf, 1);
     expect(vor[1].art, KartoSpielkachelArt.kampf);
-    final zurueck = verschiebeSpielkachel(vor, 1, 4);
+    final zurueck = verschiebeSpielkachel(vor, 1, kampf);
     expect(zurueck, start);
   });
 
@@ -166,15 +185,15 @@ void main() {
     final start = loeseSpielansichtAuf(null, verfuegbar: _alle);
     const k = KartoSpielkachelArt.kampf;
     const z = KartoSpielkachelArt.zustand;
-    const s0 = KartoSpielkachelArt.schnellaktionen;
+    const s0 = KartoSpielkachelArt.ressourcen;
 
     test('davor und danach richten sich nach der Zielkachel', () {
       final davor = fuegeSpielkachelEin(start, z, s0, davor: true);
       expect(_ids(davor).first, 'zustand');
-      expect(_ids(davor)[1], 'schnellaktionen');
+      expect(_ids(davor)[1], 'ressourcen');
       final danach = fuegeSpielkachelEin(start, z, s0, davor: false);
       expect(_ids(danach).indexOf('zustand'), 1);
-      expect(_ids(danach).first, 'schnellaktionen');
+      expect(_ids(danach).first, 'ressourcen');
     });
 
     test('nach hinten gezogen steht die Kachel direkt vor oder hinter dem '

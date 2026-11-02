@@ -215,7 +215,7 @@ void main() {
   ) async {
     await zeige(tester, breite: 390);
     final ressourcen = tester.getTopLeft(find.text('Ressourcen')).dy;
-    final aktionen = tester.getTopLeft(find.text('Schnellaktionen')).dy;
+    final aktionen = tester.getTopLeft(find.text('Probe suchen')).dy;
     final eigenschaften = tester.getTopLeft(find.text('Eigenschaften')).dy;
     final kampf = tester.getTopLeft(find.text('Kampf')).dy;
     final zustand = tester.getTopLeft(find.text('Zustand')).dy;

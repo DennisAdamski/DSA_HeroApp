@@ -405,6 +405,49 @@ void main() {
     });
   });
 
+  group('Schnellaktionen im Seitenkopf', () {
+    Finder k(String name) => find.byKey(ValueKey<String>(name));
+
+    testWidgets('breit: zwischen Titel und Anordnen, in einer Zeile', (
+      tester,
+    ) async {
+      await zeige(tester, held: weltlich(), breite: 1600);
+      final titel = tester.getRect(find.text('Am Spieltisch'));
+      final probe = tester.getRect(k('karto-spiel-probe'));
+      final schaden = tester.getRect(k('karto-spiel-schaden'));
+      final anordnen = tester.getRect(k('karto-spiel-anordnen'));
+      expect(probe.left, greaterThan(titel.right));
+      expect(schaden.right, lessThan(anordnen.left));
+      expect(probe.center.dy, closeTo(titel.center.dy, 40));
+      // Keine Kachel mehr: kein Abschnitt dieses Namens, kein Raster-Eintrag.
+      expect(find.text('Schnellaktionen'), findsNothing);
+      expect(k('karto-kachel-schnellaktionen'), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('schmal: unter der Titelzeile, vor allen Kacheln', (
+      tester,
+    ) async {
+      await zeige(tester, held: weltlich(), breite: 390);
+      final titel = tester.getRect(find.text('Am Spieltisch'));
+      final probe = tester.getRect(k('karto-spiel-probe'));
+      final ressourcen = tester.getTopLeft(find.text('Ressourcen'));
+      expect(probe.top, greaterThan(titel.bottom));
+      expect(probe.bottom, lessThan(ressourcen.dy));
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('bleiben im Anordnen-Modus fest stehen', (tester) async {
+      await zeige(tester, held: weltlich(), breite: 1600);
+      await tester.tap(k('karto-spiel-anordnen'));
+      await tester.pumpAndSettle();
+      expect(k('karto-spiel-probe'), findsOneWidget);
+      expect(k('karto-spiel-rast'), findsOneWidget);
+      expect(k('karto-spiel-anordnen-fertig'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+  });
+
   testWidgets('jede Schnellaktion trägt ihre eigene Farbe', (tester) async {
     await zeige(
       tester,
@@ -467,7 +510,7 @@ void main() {
           spielansicht: const HeroSpielansicht(
             kacheln: [
               HeroSpielkachel(id: 'kampf'),
-              HeroSpielkachel(id: 'schnellaktionen'),
+              HeroSpielkachel(id: 'ressourcen'),
               HeroSpielkachel(id: 'protokoll', ausgeblendet: true),
               HeroSpielkachel(id: 'zukunft_kachel'),
             ],
@@ -475,8 +518,8 @@ void main() {
         ),
       );
       final kampf = tester.getTopLeft(find.text('Kampf'));
-      final schnell = tester.getTopLeft(find.text('Schnellaktionen'));
-      expect(kampf.dy, lessThan(schnell.dy));
+      final ressourcen = tester.getTopLeft(find.text('Ressourcen'));
+      expect(kampf.dy, lessThan(ressourcen.dy));
       expect(find.text('Würfelprotokoll'), findsNothing);
       expect(tester.takeException(), isNull);
     });
@@ -565,7 +608,7 @@ void main() {
       // Die Karte ist kompakt: der volle Inhalt steht nicht mehr da.
       expect(find.text('Effekte verwalten'), findsNothing);
 
-      final geste = await ziehe(tester, 'zustand', 'schnellaktionen', 0.1);
+      final geste = await ziehe(tester, 'zustand', 'ressourcen', 0.1);
       expect(k('karto-einfuegelinie-davor'), findsOneWidget);
       expect(k('karto-einfuegelinie-danach'), findsNothing);
       await geste.up();
@@ -574,7 +617,7 @@ void main() {
 
       final ids = await gespeicherteIds(tester, repo);
       expect(ids.first, 'zustand');
-      expect(ids[1], 'schnellaktionen');
+      expect(ids[1], 'ressourcen');
     });
 
     testWidgets('Ziehen: Loslassen auf der hinteren Hälfte fügt danach ein', (
@@ -585,13 +628,13 @@ void main() {
       await tester.tap(k('karto-spiel-anordnen'));
       await tester.pumpAndSettle();
 
-      final geste = await ziehe(tester, 'zustand', 'schnellaktionen', 0.9);
+      final geste = await ziehe(tester, 'zustand', 'ressourcen', 0.9);
       expect(k('karto-einfuegelinie-danach'), findsOneWidget);
       await geste.up();
       await tester.pumpAndSettle();
 
       final ids = await gespeicherteIds(tester, repo);
-      expect(ids.indexOf('zustand'), ids.indexOf('schnellaktionen') + 1);
+      expect(ids.indexOf('zustand'), ids.indexOf('ressourcen') + 1);
     });
 
     testWidgets('Ziehen und Wegziehen ohne Loslassen auf dem Ziel ändert '
@@ -601,7 +644,7 @@ void main() {
       await tester.tap(k('karto-spiel-anordnen'));
       await tester.pumpAndSettle();
 
-      final geste = await ziehe(tester, 'zustand', 'schnellaktionen', 0.1);
+      final geste = await ziehe(tester, 'zustand', 'ressourcen', 0.1);
       await geste.moveTo(const Offset(2, 2));
       await tester.pump();
       expect(k('karto-einfuegelinie-davor'), findsNothing);
@@ -750,7 +793,7 @@ void main() {
       'Schnellaktionen, Ressourcen und Eigenschaften stehen vor dem Abenteuer',
       (tester) async {
         await zeige(tester, held: mitAbenteuern([_nebel]));
-        final aktionen = tester.getTopLeft(find.text('Schnellaktionen')).dy;
+        final aktionen = tester.getTopLeft(find.text('Probe suchen')).dy;
         final ressourcen = tester.getTopLeft(find.text('Ressourcen')).dy;
         final eigenschaften = tester.getTopLeft(find.text('Eigenschaften')).dy;
         final kampf = tester.getTopLeft(find.text('Kampf')).dy;

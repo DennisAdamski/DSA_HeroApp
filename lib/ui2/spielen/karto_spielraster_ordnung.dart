@@ -2,21 +2,15 @@ import 'package:dsa_heldenverwaltung/domain/hero_spielansicht.dart';
 
 /// Die Kacheln der Spielansicht und was jede erlaubt (SPIEL-07).
 ///
+/// Die Schnellaktionen sind keine Kachel: sie stehen fest im Seitenkopf
+/// zwischen Titel und „Anordnen“. Ein früher gespeicherter Eintrag
+/// `schnellaktionen` wird übergangen und bleibt unverändert erhalten.
+///
 /// Die Reihenfolge der Werte ist die Standardanordnung: zuerst, was am Tisch
 /// ständig gebraucht wird, dann Kampf, Effekte und Zustand, zuletzt, was man
 /// nachschlägt. Breiten, Ausblenden und Einklappen legt die Kachel selbst fest;
 /// gespeicherte Wünsche, die sie nicht erlaubt, fallen beim Auflösen weg.
 enum KartoSpielkachelArt {
-  /// Farbige Schnellaktionen und zuletzt gewürfelte Proben.
-  schnellaktionen(
-    'Schnellaktionen',
-    breiten: SpielkachelBreite.values,
-    standard: SpielkachelBreite.voll,
-    gewicht: 200,
-    ausblendbar: false,
-    einklappbar: false,
-  ),
-
   /// LeP, AsP, KaP und Ausdauer.
   ressourcen(
     'Ressourcen',
