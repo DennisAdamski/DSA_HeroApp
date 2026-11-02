@@ -334,6 +334,27 @@ List<KartoSpielkachel> verschiebeSpielkachel(
   return List<KartoSpielkachel>.unmodifiable(ergebnis);
 }
 
+/// Fügt die Kachel [gezogen] [davor] oder dahinter an die Kachel [ziel] ein.
+///
+/// Anders als [verschiebeSpielkachel] richtet sich die Stelle nach der
+/// Zielkachel und nicht nach einem Index, den das Entfernen der gezogenen
+/// Kachel verschieben würde. Unbekannte oder gleiche Kacheln ändern nichts.
+List<KartoSpielkachel> fuegeSpielkachelEin(
+  List<KartoSpielkachel> kacheln,
+  KartoSpielkachelArt gezogen,
+  KartoSpielkachelArt ziel, {
+  required bool davor,
+}) {
+  if (gezogen == ziel) return kacheln;
+  final von = kacheln.indexWhere((k) => k.art == gezogen);
+  if (von < 0 || !kacheln.any((k) => k.art == ziel)) return kacheln;
+  final ergebnis = [...kacheln];
+  final kachel = ergebnis.removeAt(von);
+  final stelle = ergebnis.indexWhere((k) => k.art == ziel);
+  ergebnis.insert(davor ? stelle : stelle + 1, kachel);
+  return List<KartoSpielkachel>.unmodifiable(ergebnis);
+}
+
 /// Ersetzt die Kachel [art] durch [aenderung] ihrer bisherigen Fassung.
 List<KartoSpielkachel> aendereSpielkachel(
   List<KartoSpielkachel> kacheln,

@@ -118,12 +118,20 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   fehlende Kacheln an ihre Standardstelle und übergeht unbekannte IDs,
   `schreibeSpielansicht` lässt diese samt unbekannter Felder an ihrer Stelle
   stehen und schreibt die Standardbreite nicht. „Anordnen“ im Seitenkopf
-  öffnet nach `vorHeldenbearbeitung` einen Entwurf (Ziehen am Griff, Pfeile,
-  Breitenmenü, Ausblenden, „Standard“); erst „Fertig“ schreibt einmal frisch
+  öffnet nach `vorHeldenbearbeitung` einen Entwurf. Darin steht statt des
+  vollen Inhalts je Kachel eine kompakte `KartoAnordnungskarte` (Symbol, Titel,
+  Breite; gleiche Spalte wie später): Ziehen am Griff oder am Titel (nach
+  kurzem Halten), eine Einfügelinie zeigt „davor“ oder „danach“, abgelegt wird
+  einfügend (`fuegeSpielkachelEin`), dazu Pfeile, Breitenmenü, Ausblenden,
+  „Standard“; erst „Fertig“ schreibt einmal frisch
   über `updateHero`, ohne Änderung gar nicht. Den Einklappknopf zeigt der
   äußerste `KartoAbschnitt` einer Kachel über `KartoKachelSteuerung`; er
   schreibt sofort nur den einen Eintrag (`mitEingeklappt`). Während einer
-  Planung sind Anordnen und Einklappen gesperrt. „Dabei“ hält Betrag,
+  Planung sind Anordnen und Einklappen gesperrt. Jede Kachel kennt ihre **Größenstufe** `KartoKachelGroesse`
+  (`kompakt` <420, `normal` <700, `weit` ab 700 dp **Kachelbreite**, nicht
+  Fensterbreite), über `KartoKachelSteuerung.groesseVon(context)` auch in
+  verschachtelten Abschnitten lesbar; Inhalte zeigen mit der Stufe mehr oder
+  ordnen sich um, statt nur zu strecken. „Dabei“ hält Betrag,
   Stift und Münzschritte beieinander und lässt die Verbrauchsgegenstände ab
   `kDabeiZweispaltigAb` (560 dp Kachelbreite) zweispaltig fließen.
 - **Vor- und Nachteile bearbeitet UI2 im Merkmalsblatt**

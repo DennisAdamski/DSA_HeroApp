@@ -8,6 +8,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_kachelraster.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_spielansicht.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_theme.dart';
 
@@ -156,11 +157,16 @@ void main() {
     expect(bestand.aufrufe, ['vertrautenAktionen:hexe:mira']);
   });
 
-  testWidgets('breit steht der Abschnitt in der Seitenspalte', (tester) async {
+  testWidgets('breit steht der Abschnitt im Raster neben anderen Kacheln, '
+      'vor dem Protokoll', (tester) async {
     await zeige(tester, begleiter: const [mira], breite: 1400);
     expect(find.text('Begleiter'), findsOneWidget);
-    final begleiter = tester.getTopLeft(find.text('Begleiter')).dx;
-    final protokoll = tester.getTopLeft(find.text('Würfelprotokoll')).dx;
-    expect(begleiter, greaterThan(protokoll));
+    final begleiter = tester.getTopLeft(find.text('Begleiter'));
+    final protokoll = tester.getTopLeft(find.text('Würfelprotokoll'));
+    final ressourcen = tester.getTopLeft(find.text('Ressourcen').first);
+    // Eine schmale Kachel steht nicht in der ersten Spalte unter allem,
+    // sondern rechts davon; die Standardreihenfolge hält sie vor dem Protokoll.
+    expect(begleiter.dx, greaterThan(ressourcen.dx + kRasterEinheitMin));
+    expect(begleiter.dy, lessThan(protokoll.dy));
   });
 }

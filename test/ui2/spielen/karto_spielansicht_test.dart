@@ -521,7 +521,40 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('Ziehen am Griff setzt die Kachel an die Stelle des Ziels', (
+    // Zieht den Griff der Kachel [von] auf [ziel]; [anteil] ist die Stelle
+    // in der Zielkarte (0 = linke Kante, 1 = rechte Kante).
+    Future<TestGesture> ziehe(
+      WidgetTester tester,
+      String von,
+      String ziel,
+      double anteil,
+    ) async {
+      final griff = tester.getCenter(k('karto-kachel-$von-griff'));
+      final rect = tester.getRect(k('karto-kachel-$ziel'));
+      final ort = Offset(
+        rect.left + rect.width * anteil,
+        rect.top + rect.height / 2,
+      );
+      final geste = await tester.startGesture(griff);
+      await geste.moveBy(const Offset(0, -20));
+      await tester.pump();
+      await geste.moveTo(ort);
+      await tester.pump();
+      return geste;
+    }
+
+    Future<List<String>> gespeicherteIds(
+      WidgetTester tester,
+      _ZaehlendesRepository repo,
+    ) async {
+      await tester.tap(k('karto-spiel-anordnen-fertig'));
+      await tester.pumpAndSettle();
+      return (await repo.loadHeroById('praiodan'))!.spielansicht!.kacheln
+          .map((k) => k.id)
+          .toList();
+    }
+
+    testWidgets('Ziehen: Linie zeigt davor, Loslassen fügt davor ein', (
       tester,
     ) async {
       final repo = _ZaehlendesRepository(heroes: [weltlich()]);
@@ -529,22 +562,54 @@ void main() {
       await tester.tap(k('karto-spiel-anordnen'));
       await tester.pumpAndSettle();
 
-      final griff = tester.getCenter(k('karto-kachel-zustand-griff'));
-      final ziel = tester.getCenter(k('karto-kachel-schnellaktionen'));
-      final geste = await tester.startGesture(griff);
-      await geste.moveBy(const Offset(0, -20));
-      await tester.pump();
-      await geste.moveTo(ziel);
-      await tester.pump();
+      // Die Karte ist kompakt: der volle Inhalt steht nicht mehr da.
+      expect(find.text('Effekte verwalten'), findsNothing);
+
+      final geste = await ziehe(tester, 'zustand', 'schnellaktionen', 0.1);
+      expect(k('karto-einfuegelinie-davor'), findsOneWidget);
+      expect(k('karto-einfuegelinie-danach'), findsNothing);
+      await geste.up();
+      await tester.pumpAndSettle();
+      expect(k('karto-einfuegelinie-davor'), findsNothing);
+
+      final ids = await gespeicherteIds(tester, repo);
+      expect(ids.first, 'zustand');
+      expect(ids[1], 'schnellaktionen');
+    });
+
+    testWidgets('Ziehen: Loslassen auf der hinteren Hälfte fügt danach ein', (
+      tester,
+    ) async {
+      final repo = _ZaehlendesRepository(heroes: [weltlich()]);
+      await zeige(tester, held: weltlich(), repository: repo, breite: 1280);
+      await tester.tap(k('karto-spiel-anordnen'));
+      await tester.pumpAndSettle();
+
+      final geste = await ziehe(tester, 'zustand', 'schnellaktionen', 0.9);
+      expect(k('karto-einfuegelinie-danach'), findsOneWidget);
       await geste.up();
       await tester.pumpAndSettle();
 
+      final ids = await gespeicherteIds(tester, repo);
+      expect(ids.indexOf('zustand'), ids.indexOf('schnellaktionen') + 1);
+    });
+
+    testWidgets('Ziehen und Wegziehen ohne Loslassen auf dem Ziel ändert '
+        'nichts', (tester) async {
+      final repo = _ZaehlendesRepository(heroes: [weltlich()]);
+      await zeige(tester, held: weltlich(), repository: repo, breite: 1280);
+      await tester.tap(k('karto-spiel-anordnen'));
+      await tester.pumpAndSettle();
+
+      final geste = await ziehe(tester, 'zustand', 'schnellaktionen', 0.1);
+      await geste.moveTo(const Offset(2, 2));
+      await tester.pump();
+      expect(k('karto-einfuegelinie-davor'), findsNothing);
+      await geste.up();
+      await tester.pumpAndSettle();
       await tester.tap(k('karto-spiel-anordnen-fertig'));
       await tester.pumpAndSettle();
-      final ids = (await repo.loadHeroById('praiodan'))!.spielansicht!.kacheln
-          .map((k) => k.id)
-          .toList();
-      expect(ids.first, 'zustand');
+      expect(repo.speicherungen, 0);
     });
 
     testWidgets('Abbrechen und unveränderte Anordnung schreiben nichts', (

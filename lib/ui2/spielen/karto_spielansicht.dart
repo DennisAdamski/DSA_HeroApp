@@ -216,9 +216,9 @@ class _KartoSpielansichtState extends ConsumerState<KartoSpielansicht> {
         art,
   };
 
-  // Eine Kachel: im Normalmodus mit Einklappknopf, im Anordnen-Modus mit
-  // Bedienleiste über dem stillgelegten Inhalt. [anordnung] nennt die
-  // Stelle im Entwurf und die sichtbaren Nachbarn.
+  // Eine Kachel: im Normalmodus mit Einklappknopf, im Anordnen-Modus eine
+  // kompakte Karte mit Bedienung statt des vollen Inhalts. [anordnung] nennt
+  // die Stelle im Entwurf und die sichtbaren Nachbarn.
   Widget _kachel(
     BuildContext context,
     HeroComputedSnapshot werte,
@@ -227,32 +227,33 @@ class _KartoSpielansichtState extends ConsumerState<KartoSpielansicht> {
     required ({int index, int? vor, int? nach})? anordnung,
   }) {
     final art = kachel.art;
+    if (anordnung != null) {
+      final (:index, :vor, :nach) = anordnung;
+      return KartoAnordnungskarte(
+        kachel: kachel,
+        onAblegen: (gezogen, seite) =>
+            _fuegeEin(gezogen, art, davor: seite == KartoEinfuegeSeite.davor),
+        onNachVorn: vor == null ? null : () => _verschiebe(index, vor),
+        onNachHinten: nach == null ? null : () => _verschiebe(index, nach),
+        onBreite: (breite) =>
+            _aendereEntwurf(art, (k) => k.copyWith(breite: breite)),
+        onAusblenden: art.ausblendbar
+            ? () => _aendereEntwurf(art, (k) => k.copyWith(ausgeblendet: true))
+            : null,
+      );
+    }
     // Die Größenstufe folgt der echten Kachelbreite; das Raster legt seine
     // Kinder mit fester Breite aus, daher misst der LayoutBuilder genau sie.
-    final inhalt = LayoutBuilder(
+    return LayoutBuilder(
       builder: (context, constraints) => KartoKachelSteuerung(
         kennung: art.id,
         eingeklappt: kachel.eingeklappt,
         groesse: KartoKachelGroesse.fuerBreite(constraints.maxWidth),
-        onEinklappen: art.einklappbar && !gesperrt && anordnung == null
+        onEinklappen: art.einklappbar && !gesperrt
             ? (wert) => _einklappen(art, wert)
             : null,
         child: _inhalt(context, werte, art),
       ),
-    );
-    if (anordnung == null) return inhalt;
-    final (:index, :vor, :nach) = anordnung;
-    return KartoAnordnungskachel(
-      kachel: kachel,
-      onAblegen: (gezogen) => _verschiebeArt(gezogen, index),
-      onNachVorn: vor == null ? null : () => _verschiebe(index, vor),
-      onNachHinten: nach == null ? null : () => _verschiebe(index, nach),
-      onBreite: (breite) =>
-          _aendereEntwurf(art, (k) => k.copyWith(breite: breite)),
-      onAusblenden: art.ausblendbar
-          ? () => _aendereEntwurf(art, (k) => k.copyWith(ausgeblendet: true))
-          : null,
-      child: inhalt,
     );
   }
 
@@ -306,10 +307,18 @@ class _KartoSpielansichtState extends ConsumerState<KartoSpielansicht> {
     setState(() => _entwurf = verschiebeSpielkachel(entwurf, von, nach));
   }
 
-  // Die gezogene Kachel nimmt den Platz der Zielkachel ein.
-  void _verschiebeArt(KartoSpielkachelArt gezogen, int ziel) {
-    final von = _entwurf?.indexWhere((k) => k.art == gezogen) ?? -1;
-    if (von >= 0) _verschiebe(von, ziel);
+  // Die gezogene Kachel wird vor oder hinter der Zielkachel eingefügt.
+  void _fuegeEin(
+    KartoSpielkachelArt gezogen,
+    KartoSpielkachelArt ziel, {
+    required bool davor,
+  }) {
+    final entwurf = _entwurf;
+    if (entwurf == null) return;
+    setState(
+      () =>
+          _entwurf = fuegeSpielkachelEin(entwurf, gezogen, ziel, davor: davor),
+    );
   }
 
   // Einziger Schreibweg der Anordnung: frisch laden, nur `spielansicht`

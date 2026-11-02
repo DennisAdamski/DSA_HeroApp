@@ -161,4 +161,60 @@ void main() {
     final zurueck = verschiebeSpielkachel(vor, 1, 4);
     expect(zurueck, start);
   });
+
+  group('fuegeSpielkachelEin', () {
+    final start = loeseSpielansichtAuf(null, verfuegbar: _alle);
+    const k = KartoSpielkachelArt.kampf;
+    const z = KartoSpielkachelArt.zustand;
+    const s0 = KartoSpielkachelArt.schnellaktionen;
+
+    test('davor und danach richten sich nach der Zielkachel', () {
+      final davor = fuegeSpielkachelEin(start, z, s0, davor: true);
+      expect(_ids(davor).first, 'zustand');
+      expect(_ids(davor)[1], 'schnellaktionen');
+      final danach = fuegeSpielkachelEin(start, z, s0, davor: false);
+      expect(_ids(danach).indexOf('zustand'), 1);
+      expect(_ids(danach).first, 'schnellaktionen');
+    });
+
+    test('nach hinten gezogen steht die Kachel direkt vor oder hinter dem '
+        'Ziel', () {
+      final davor = fuegeSpielkachelEin(
+        start,
+        k,
+        KartoSpielkachelArt.protokoll,
+        davor: true,
+      );
+      final ids = _ids(davor);
+      expect(ids.indexOf('kampf'), ids.indexOf('protokoll') - 1);
+      final danach = fuegeSpielkachelEin(
+        start,
+        k,
+        KartoSpielkachelArt.protokoll,
+        davor: false,
+      );
+      expect(_ids(danach).last, 'kampf');
+    });
+
+    test('Kacheln bleiben vollständig, gleiche und fremde ändern nichts', () {
+      final ergebnis = fuegeSpielkachelEin(start, k, z, davor: false);
+      expect(_ids(ergebnis).toSet(), _ids(start).toSet());
+      expect(ergebnis, hasLength(start.length));
+      expect(fuegeSpielkachelEin(start, k, k, davor: true), start);
+      final ohneZiel = start.where((x) => x.art != z).toList();
+      expect(fuegeSpielkachelEin(ohneZiel, k, z, davor: true), ohneZiel);
+    });
+
+    test('behält Breite, Ausblenden und Einklappen der Kachel', () {
+      final geaendert = aendereSpielkachel(
+        start,
+        k,
+        (x) => x.copyWith(breite: SpielkachelBreite.mittel, eingeklappt: true),
+      );
+      final neu = fuegeSpielkachelEin(geaendert, k, s0, davor: true);
+      final kampf = neu.firstWhere((x) => x.art == k);
+      expect(kampf.breite, SpielkachelBreite.mittel);
+      expect(kampf.eingeklappt, isTrue);
+    });
+  });
 }
