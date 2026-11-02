@@ -35,34 +35,31 @@ class KartoZuletztGewuerfelt extends StatelessWidget {
     final karto = context.karto;
     final texte = Theme.of(context).textTheme;
 
+    // Eine Zeile: Beschriftung und Marken laufen ineinander, damit der Streifen
+    // im Seitenkopf nicht zwei Zeilen braucht.
     return Padding(
-      padding: const EdgeInsets.only(top: Abstand.weit),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      padding: const EdgeInsets.only(top: Abstand.normal),
+      child: Wrap(
+        spacing: Abstand.normal,
+        runSpacing: Abstand.normal,
+        crossAxisAlignment: WrapCrossAlignment.center,
         children: [
           Text(
             'Zuletzt gewürfelt',
             style: texte.marke.copyWith(color: karto.schriftLeise),
           ),
-          const SizedBox(height: Abstand.normal),
-          Wrap(
-            spacing: Abstand.normal,
-            runSpacing: Abstand.normal,
-            children: [
-              for (final eintrag in proben)
-                Tooltip(
-                  message: 'Nochmal würfeln: ${probenKurzname(eintrag)}',
-                  child: KartoInfoChip(
-                    key: ValueKey<String>(
-                      'karto-spiel-zuletzt-${eintrag.type.name}-${eintrag.title}',
-                    ),
-                    symbol: Icons.replay,
-                    text: probenKurzname(eintrag),
-                    onTap: () => onWiederholen(eintrag),
-                  ),
+          for (final eintrag in proben)
+            Tooltip(
+              message: 'Nochmal würfeln: ${probenKurzname(eintrag)}',
+              child: KartoInfoChip(
+                key: ValueKey<String>(
+                  'karto-spiel-zuletzt-${eintrag.type.name}-${eintrag.title}',
                 ),
-            ],
-          ),
+                symbol: Icons.replay,
+                text: probenKurzname(eintrag),
+                onTap: () => onWiederholen(eintrag),
+              ),
+            ),
         ],
       ),
     );

@@ -5,7 +5,7 @@ import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
 
 /// Breite, ab der [KartoSeitenkopf.mitte] neben dem Titel statt darunter steht.
-const double kMitteNebenTitelAb = 900;
+const double kMitteNebenTitelAb = 1200;
 
 /// Kopfzeile einer Arbeitsflaeche: Kontextzeile, Titel, eine Aktion.
 ///
@@ -62,8 +62,9 @@ class KartoSeitenkopf extends StatelessWidget {
   /// Feste Leiste zwischen Titel und [aktion], etwa die Schnellaktionen der
   /// Spielansicht.
   ///
-  /// Ab [kMitteNebenTitelAb] steht sie in derselben Zeile und füllt den Platz
-  /// zwischen Titel und [aktion]; schmaler rückt sie unter die Titelzeile.
+  /// Ab [kMitteNebenTitelAb] steht sie in derselben Zeile zwischen Titel und
+  /// [aktion] und bricht dort nie um (sie schrumpft höchstens); schmaler rückt
+  /// sie unter die Titelzeile und darf dort umbrechen.
   final Widget? mitte;
 
   /// Leise Zeile direkt unter dem Titel, etwa das aventurische Datum.
@@ -182,8 +183,14 @@ class KartoSeitenkopf extends StatelessWidget {
               children: [
                 Flexible(child: ueberschrift),
                 const SizedBox(width: Abstand.bahn),
+                // Skaliert nur im Notfall herunter, statt umzubrechen: die
+                // Leiste bleibt eine Zeile, der Titel behält seine Höhe.
                 Expanded(
-                  child: Align(alignment: Alignment.center, child: mitte),
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: mitte,
+                  ),
                 ),
                 if (aktion != null) ...[
                   const SizedBox(width: Abstand.bahn),

@@ -411,7 +411,12 @@ void main() {
     testWidgets('breit: zwischen Titel und Anordnen, in einer Zeile', (
       tester,
     ) async {
-      await zeige(tester, held: weltlich(), breite: 1600);
+      await zeige(
+        tester,
+        held: weltlich(),
+        breite: 1600,
+        regelnFreigeschaltet: true,
+      );
       final titel = tester.getRect(find.text('Am Spieltisch'));
       final probe = tester.getRect(k('karto-spiel-probe'));
       final schaden = tester.getRect(k('karto-spiel-schaden'));
@@ -419,9 +424,29 @@ void main() {
       expect(probe.left, greaterThan(titel.right));
       expect(schaden.right, lessThan(anordnen.left));
       expect(probe.center.dy, closeTo(titel.center.dy, 40));
+      // Alle Knöpfe stehen in einer Reihe.
+      for (final name in ['gefecht', 'regeln', 'rast', 'schaden']) {
+        final knopf = tester.getRect(k('karto-spiel-$name'));
+        expect(knopf.center.dy, closeTo(probe.center.dy, 1), reason: name);
+      }
       // Keine Kachel mehr: kein Abschnitt dieses Namens, kein Raster-Eintrag.
       expect(find.text('Schnellaktionen'), findsNothing);
       expect(k('karto-kachel-schnellaktionen'), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('mittelbreit: Knöpfe unter Titel und Anordnen', (tester) async {
+      await zeige(
+        tester,
+        held: weltlich(),
+        breite: 1100,
+        regelnFreigeschaltet: true,
+      );
+      final titel = tester.getRect(find.text('Am Spieltisch'));
+      final anordnen = tester.getRect(k('karto-spiel-anordnen'));
+      final probe = tester.getRect(k('karto-spiel-probe'));
+      expect(anordnen.center.dy, closeTo(titel.center.dy, 40));
+      expect(probe.top, greaterThan(titel.bottom));
       expect(tester.takeException(), isNull);
     });
 

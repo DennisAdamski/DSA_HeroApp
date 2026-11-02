@@ -72,7 +72,7 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   Standardanordnung; jede Kachel lässt sich verschieben (Kachelraster, unten).
   Die Schnellaktionen sind **keine Kachel**: sie stehen fest im Seitenkopf
   zwischen „Am Spieltisch“ und „Anordnen“ (`KartoSeitenkopf.mitte`; ab
-  `kMitteNebenTitelAb` (900 dp) in einer Zeile, schmaler unter der Titelzeile),
+  `kMitteNebenTitelAb` (1200 dp, bricht dort nie um) in einer Zeile, schmaler unter der Titelzeile),
   auch im Anordnen-Modus. Ein früher gespeicherter Eintrag `schnellaktionen`
   wird beim Auflösen übergangen und bleibt erhalten. Jede Schnellaktion trägt eine
   eigene Signalfarbe (`kartoSchnellaktionStil` in `karto_spielaktionen.dart`:

@@ -54,7 +54,7 @@ class KartoSpielaktionen extends StatelessWidget {
     final texte = Theme.of(context).textTheme;
 
     return Wrap(
-      spacing: Abstand.weit,
+      spacing: Abstand.normal,
       runSpacing: Abstand.normal,
       crossAxisAlignment: WrapCrossAlignment.center,
       children: [
@@ -134,7 +134,7 @@ ButtonStyle kartoSchnellaktionStil(BuildContext context, Color farbe) {
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(kKartoRadiusKlein),
     ),
-    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
   ).copyWith(
     overlayColor: WidgetStateProperty.resolveWith<Color?>(
       (zustand) =>
