@@ -429,6 +429,10 @@ void main() {
         final knopf = tester.getRect(k('karto-spiel-$name'));
         expect(knopf.center.dy, closeTo(probe.center.dy, 1), reason: name);
       }
+      // „Anordnen“ steht ganz rechts, am Rand der Kacheln (Seitenrand 36).
+      expect(anordnen.right, closeTo(1600 - 36 - 12, 14));
+      // Das Kürzel ist kein Chip neben den Knöpfen mehr.
+      expect(find.text('Strg K'), findsNothing);
       // Keine Kachel mehr: kein Abschnitt dieses Namens, kein Raster-Eintrag.
       expect(find.text('Schnellaktionen'), findsNothing);
       expect(k('karto-kachel-schnellaktionen'), findsNothing);

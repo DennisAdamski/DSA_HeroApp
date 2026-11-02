@@ -73,7 +73,7 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   Die Schnellaktionen sind **keine Kachel**: sie stehen fest im Seitenkopf
   zwischen „Am Spieltisch“ und „Anordnen“ (`KartoSeitenkopf.mitte`; ab
   `kMitteNebenTitelAb` (1200 dp, bricht dort nie um) in einer Zeile, schmaler unter der Titelzeile),
-  auch im Anordnen-Modus. Ein früher gespeicherter Eintrag `schnellaktionen`
+  auch im Anordnen-Modus; das Kürzel Strg+K steht nur im Tooltip von „Probe suchen“, nicht als Chip. Standardbreiten (per Simulation auf wenig Leerfläche bei 2–4 Spalten gewählt): Ressourcen ganze Breite, Vor- und Nachteile sowie Protokoll schmal, Abenteuer Gewicht 450. Ein früher gespeicherter Eintrag `schnellaktionen`
   wird beim Auflösen übergangen und bleibt erhalten. Jede Schnellaktion trägt eine
   eigene Signalfarbe (`kartoSchnellaktionStil` in `karto_spielaktionen.dart`:
   Gefecht `messing`, Probe `meer`, Regeln `kueste`, Rast `moos`, Schaden

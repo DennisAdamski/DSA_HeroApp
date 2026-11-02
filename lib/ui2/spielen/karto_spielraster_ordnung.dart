@@ -15,7 +15,7 @@ enum KartoSpielkachelArt {
   ressourcen(
     'Ressourcen',
     breiten: SpielkachelBreite.values,
-    standard: SpielkachelBreite.mittel,
+    standard: SpielkachelBreite.voll,
     gewicht: 120,
     ausblendbar: false,
     einklappbar: false,
@@ -100,14 +100,14 @@ enum KartoSpielkachelArt {
       SpielkachelBreite.voll,
     ],
     standard: SpielkachelBreite.mittel,
-    gewicht: 360,
+    gewicht: 450,
   ),
 
   /// Vor- und Nachteile.
   merkmale(
     'Vor- und Nachteile',
     breiten: SpielkachelBreite.values,
-    standard: SpielkachelBreite.mittel,
+    standard: SpielkachelBreite.schmal,
     gewicht: 300,
   ),
 
@@ -115,7 +115,7 @@ enum KartoSpielkachelArt {
   protokoll(
     'Würfelprotokoll',
     breiten: SpielkachelBreite.values,
-    standard: SpielkachelBreite.mittel,
+    standard: SpielkachelBreite.schmal,
     gewicht: 300,
   );
 

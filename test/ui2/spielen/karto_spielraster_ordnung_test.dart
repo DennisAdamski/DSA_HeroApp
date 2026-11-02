@@ -19,6 +19,15 @@ void main() {
       expect(kacheln.every((k) => k.breite == k.art.standard), isTrue);
     });
 
+    test('Standardbreiten: Ressourcen als Band, Nachschlagekacheln schmal', () {
+      for (final art in KartoSpielkachelArt.values) {
+        expect(art.breiten, contains(art.standard), reason: art.id);
+      }
+      expect(KartoSpielkachelArt.ressourcen.standard, SpielkachelBreite.voll);
+      expect(KartoSpielkachelArt.merkmale.standard, SpielkachelBreite.schmal);
+      expect(KartoSpielkachelArt.protokoll.standard, SpielkachelBreite.schmal);
+    });
+
     test('gespeicherte Reihenfolge, fehlende Kacheln an ihrer Stelle', () {
       final kacheln = loeseSpielansichtAuf(
         const HeroSpielansicht(

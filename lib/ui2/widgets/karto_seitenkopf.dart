@@ -181,7 +181,9 @@ class KartoSeitenkopf extends StatelessWidget {
             return Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Flexible(child: ueberschrift),
+                // Nicht flexibel: sonst teilte sich der Titel den freien Platz
+                // mit der Mitte, und „Anordnen“ stünde nicht am rechten Rand.
+                ueberschrift,
                 const SizedBox(width: Abstand.bahn),
                 // Skaliert nur im Notfall herunter, statt umzubrechen: die
                 // Leiste bleibt eine Zeile, der Titel behält seine Höhe.
