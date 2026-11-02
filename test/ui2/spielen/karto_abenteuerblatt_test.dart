@@ -13,6 +13,7 @@ import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abenteuerblatt.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_theme.dart';
+import 'package:dsa_heldenverwaltung/ui2/widgets/karto_flaeche.dart';
 
 import '../shell/karto_test_support.dart';
 
@@ -242,6 +243,30 @@ void main() {
     expect([datum.day, datum.month, datum.year], ['1', 'praios', '1044']);
   });
 
+  testWidgets('Plus sitzt in derselben Marke wie das Datum', (tester) async {
+    await zeige(
+      tester,
+      held: testHero().copyWith(
+        adventures: [
+          _nebel.copyWith(
+            currentAventurianDate: const HeroAdventureDateValue(
+              day: '1',
+              month: 'praios',
+              year: '1043',
+            ),
+          ),
+        ],
+      ),
+    );
+    final marke = find.ancestor(
+      of: key('karto-abenteuer-datum'),
+      matching: find.byType(KartoFlaeche),
+    );
+    expect(
+      find.descendant(of: marke, matching: key('karto-abenteuer-datum-plus')),
+      findsOneWidget,
+    );
+  });
   testWidgets('Plus fehlt ohne Datum', (tester) async {
     await zeige(tester);
     expect(key('karto-abenteuer-datum-plus'), findsNothing);
@@ -263,8 +288,8 @@ void main() {
         ],
       ),
     );
-    final knopf = tester.widget<IconButton>(key('karto-abenteuer-datum-plus'));
-    expect(knopf.onPressed, isNull);
+    final knopf = tester.widget<InkWell>(key('karto-abenteuer-datum-plus'));
+    expect(knopf.onTap, isNull);
   });
 
   testWidgets('Bearbeiten erhält Felder einer neueren App-Version', (

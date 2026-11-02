@@ -19,6 +19,7 @@ class KartoInfoChip extends StatelessWidget {
     this.leer = false,
     this.onTap,
     this.textKey,
+    this.plus,
   });
 
   /// Symbol vor dem Text.
@@ -35,6 +36,10 @@ class KartoInfoChip extends StatelessWidget {
 
   /// Schlüssel für den Text, damit Tests Wert und Aufforderung unterscheiden.
   final Key? textKey;
+
+  /// Optionales „+“-Segment am rechten Rand, das zur Marke gehört (etwa
+  /// „Einen Tag weiter“ am Datum); siehe [KartoTagPlusKnopf].
+  final Widget? plus;
 
   @override
   Widget build(BuildContext context) {
@@ -66,49 +71,76 @@ class KartoInfoChip extends StatelessWidget {
         ),
       ),
     );
+    final flaeche = onTap == null
+        ? inhalt
+        : Material(
+            type: MaterialType.transparency,
+            child: InkWell(
+              onTap: onTap,
+              borderRadius: BorderRadius.circular(kKartoRadiusKlein),
+              child: inhalt,
+            ),
+          );
     return KartoFlaeche(
       stufe: KartoFlaechenstufe.senke,
       klein: true,
-      child: onTap == null
-          ? inhalt
-          : Material(
-              type: MaterialType.transparency,
-              child: InkWell(
-                onTap: onTap,
-                borderRadius: BorderRadius.circular(kKartoRadiusKlein),
-                child: inhalt,
+      child: plus == null
+          ? flaeche
+          : IntrinsicHeight(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Flexible(child: flaeche),
+                  plus!,
+                ],
               ),
             ),
     );
   }
 }
 
-/// „+“-Knopf neben der Datumsmarke: zählt das aventurische Datum um einen Tag
-/// weiter. Am Monats- und Jahresende rollt das Datum über (siehe
+/// „+“-Segment am rechten Rand einer Datumsmarke: zählt das aventurische Datum
+/// um einen Tag weiter. Am Monats- und Jahresende rollt das Datum über (siehe
 /// `addAventurianDays`).
+///
+/// Kein eigenes Feld, sondern Teil der Marke: eine feine Trennlinie setzt das
+/// Segment ab, die Fläche der Marke läuft darunter durch. So ist erkennbar,
+/// dass das Plus zum Datum gehört.
 class KartoTagPlusKnopf extends StatelessWidget {
-  /// Erstellt den Knopf; ohne [onPressed] ist er gesperrt.
+  /// Erstellt das Segment; ohne [onPressed] ist es gesperrt.
   const KartoTagPlusKnopf({super.key, this.onPressed});
 
-  /// Zählt einen Tag weiter; `null` sperrt den Knopf.
+  /// Zählt einen Tag weiter; `null` sperrt das Segment.
   final VoidCallback? onPressed;
 
   @override
   Widget build(BuildContext context) {
     final karto = context.karto;
-    return KartoFlaeche(
-      stufe: KartoFlaechenstufe.senke,
-      klein: true,
+    final aktiv = onPressed != null;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        border: Border(left: BorderSide(color: karto.hoehenlinie)),
+      ),
       child: Material(
         type: MaterialType.transparency,
-        child: IconButton(
+        child: InkWell(
           key: const ValueKey<String>('karto-abenteuer-datum-plus'),
-          tooltip: 'Einen Tag weiter',
-          icon: const Icon(Icons.add, size: 18),
-          color: karto.schrift,
-          constraints: const BoxConstraints.tightFor(width: 40, height: 40),
-          padding: EdgeInsets.zero,
-          onPressed: onPressed,
+          onTap: onPressed,
+          borderRadius: const BorderRadius.horizontal(
+            right: Radius.circular(kKartoRadiusKlein),
+          ),
+          child: Tooltip(
+            message: 'Einen Tag weiter',
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+              child: Icon(
+                Icons.add,
+                size: 18,
+                color: aktiv ? karto.schrift : karto.schriftStumm,
+              ),
+            ),
+          ),
         ),
       ),
     );

@@ -183,24 +183,18 @@ class _KartoAbenteuerblattState extends ConsumerState<KartoAbenteuerblatt>
             const SizedBox(height: Abstand.normal),
             Align(
               alignment: Alignment.centerLeft,
-              child: Wrap(
-                spacing: Abstand.normal,
-                runSpacing: Abstand.knapp,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                children: [
-                  _Datumsmarke(
-                    datum: abenteuerDatum(aktuell),
-                    onTap: gesperrt
-                        ? null
-                        : () {
-                            if (bearbeitbar) datumAendern(aktuell);
-                          },
-                  ),
-                  if (naechsterAbenteuerTag(aktuell) != null)
-                    KartoTagPlusKnopf(
-                      onPressed: bearbeitbar ? datumEinenTagWeiter : null,
-                    ),
-                ],
+              child: _Datumsmarke(
+                datum: abenteuerDatum(aktuell),
+                onTap: gesperrt
+                    ? null
+                    : () {
+                        if (bearbeitbar) datumAendern(aktuell);
+                      },
+                plus: naechsterAbenteuerTag(aktuell) == null
+                    ? null
+                    : KartoTagPlusKnopf(
+                        onPressed: bearbeitbar ? datumEinenTagWeiter : null,
+                      ),
               ),
             ),
             const SizedBox(height: Abstand.block),
@@ -386,10 +380,13 @@ class _Kopfzeile extends StatelessWidget {
 
 /// Aventurisches Datum als kleine Marke; antippbar, wenn bearbeitbar.
 class _Datumsmarke extends StatelessWidget {
-  const _Datumsmarke({required this.datum, this.onTap});
+  const _Datumsmarke({required this.datum, this.onTap, this.plus});
 
   final String? datum;
   final VoidCallback? onTap;
+
+  /// „+“-Segment innerhalb der Marke (Datum um einen Tag weiter).
+  final Widget? plus;
 
   @override
   Widget build(BuildContext context) {
@@ -419,18 +416,30 @@ class _Datumsmarke extends StatelessWidget {
         ],
       ),
     );
+    final flaeche = onTap == null
+        ? inhalt
+        : Material(
+            type: MaterialType.transparency,
+            child: InkWell(
+              key: const ValueKey<String>('karto-abenteuer-datum'),
+              onTap: onTap,
+              borderRadius: BorderRadius.circular(kKartoRadiusKlein),
+              child: inhalt,
+            ),
+          );
     return KartoFlaeche(
       stufe: KartoFlaechenstufe.senke,
       klein: true,
-      child: onTap == null
-          ? inhalt
-          : Material(
-              type: MaterialType.transparency,
-              child: InkWell(
-                key: const ValueKey<String>('karto-abenteuer-datum'),
-                onTap: onTap,
-                borderRadius: BorderRadius.circular(kKartoRadiusKlein),
-                child: inhalt,
+      child: plus == null
+          ? flaeche
+          : IntrinsicHeight(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Flexible(child: flaeche),
+                  plus!,
+                ],
               ),
             ),
     );
