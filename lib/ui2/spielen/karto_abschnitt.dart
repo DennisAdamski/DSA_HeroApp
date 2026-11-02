@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_kachelgroesse.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
 import 'package:dsa_heldenverwaltung/ui2/widgets/karto_flaeche.dart';
@@ -138,7 +139,10 @@ class KartoAbschnitt extends StatelessWidget {
             // Die Steuerung gilt nur dem äußersten Abschnitt einer Kachel.
             steuerung == null
                 ? child
-                : KartoKachelSteuerung._leer(child: child),
+                : KartoKachelSteuerung._leer(
+                    groesse: steuerung.groesse,
+                    child: child,
+                  ),
           ],
         ],
       ),
@@ -209,14 +213,17 @@ class KartoKachelSteuerung extends InheritedWidget {
     this.eingeklappt = false,
     this.onEinklappen,
     this.dicht = true,
+    this.groesse = KartoKachelGroesse.normal,
     required super.child,
   });
 
-  const KartoKachelSteuerung._leer({required super.child})
-    : kennung = '',
-      eingeklappt = false,
-      onEinklappen = null,
-      dicht = false;
+  const KartoKachelSteuerung._leer({
+    required this.groesse,
+    required super.child,
+  }) : kennung = '',
+       eingeklappt = false,
+       onEinklappen = null,
+       dicht = false;
 
   /// Kennung der Kachel für Schlüssel und Tests.
   final String kennung;
@@ -230,6 +237,19 @@ class KartoKachelSteuerung extends InheritedWidget {
   /// Knapper Innenabstand wie bei [KartoAbschnitt.dicht].
   final bool dicht;
 
+  /// Größenstufe nach der tatsächlichen Breite der Kachel.
+  final KartoKachelGroesse groesse;
+
+  /// Größenstufe der umgebenden Kachel; außerhalb einer Kachel
+  /// [KartoKachelGroesse.normal].
+  ///
+  /// Gilt auch in verschachtelten Abschnitten, deren Steuerung leer ist.
+  static KartoKachelGroesse groesseVon(BuildContext context) =>
+      context
+          .dependOnInheritedWidgetOfExactType<KartoKachelSteuerung>()
+          ?.groesse ??
+      KartoKachelGroesse.normal;
+
   static KartoKachelSteuerung? _von(BuildContext context) {
     final steuerung = context
         .dependOnInheritedWidgetOfExactType<KartoKachelSteuerung>();
@@ -241,6 +261,7 @@ class KartoKachelSteuerung extends InheritedWidget {
       oldWidget.kennung != kennung ||
       oldWidget.eingeklappt != eingeklappt ||
       oldWidget.dicht != dicht ||
+      oldWidget.groesse != groesse ||
       oldWidget.onEinklappen != onEinklappen;
 }
 

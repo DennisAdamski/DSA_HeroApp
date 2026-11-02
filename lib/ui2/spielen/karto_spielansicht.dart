@@ -23,6 +23,7 @@ import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abenteuerblatt.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abschnitt.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_begleiterkarte.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_dabei_abschnitt.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_kachelgroesse.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_kachelraster.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_laufendes_abenteuer.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_ressourcenleiste.dart';
@@ -226,13 +227,18 @@ class _KartoSpielansichtState extends ConsumerState<KartoSpielansicht> {
     required ({int index, int? vor, int? nach})? anordnung,
   }) {
     final art = kachel.art;
-    final inhalt = KartoKachelSteuerung(
-      kennung: art.id,
-      eingeklappt: kachel.eingeklappt,
-      onEinklappen: art.einklappbar && !gesperrt && anordnung == null
-          ? (wert) => _einklappen(art, wert)
-          : null,
-      child: _inhalt(context, werte, art),
+    // Die Größenstufe folgt der echten Kachelbreite; das Raster legt seine
+    // Kinder mit fester Breite aus, daher misst der LayoutBuilder genau sie.
+    final inhalt = LayoutBuilder(
+      builder: (context, constraints) => KartoKachelSteuerung(
+        kennung: art.id,
+        eingeklappt: kachel.eingeklappt,
+        groesse: KartoKachelGroesse.fuerBreite(constraints.maxWidth),
+        onEinklappen: art.einklappbar && !gesperrt && anordnung == null
+            ? (wert) => _einklappen(art, wert)
+            : null,
+        child: _inhalt(context, werte, art),
+      ),
     );
     if (anordnung == null) return inhalt;
     final (:index, :vor, :nach) = anordnung;
