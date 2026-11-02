@@ -405,6 +405,165 @@ void main() {
     });
   });
 
+  group('Kachel vergrößern', () {
+    Finder k(String name) => find.byKey(ValueKey<String>(name));
+
+    testWidgets('Klick auf den Namen öffnet die Kachel als Dialog', (
+      tester,
+    ) async {
+      await zeige(tester, held: mitAbenteuern([_nebel]), breite: 1280);
+      expect(k('karto-kachel-ressourcen-popup'), findsNothing);
+      expect(find.text('Ressourcen'), findsOneWidget);
+
+      await tester.tap(k('karto-kachel-ressourcen-vergroessern'));
+      await tester.pumpAndSettle();
+      expect(k('karto-kachel-ressourcen-popup'), findsOneWidget);
+      // Der Inhalt steht jetzt zweimal da: in der Kachel und im Dialog.
+      expect(find.text('Ressourcen'), findsNWidgets(2));
+      // Der Dialog hat keine Bedienknöpfe der Kachel (Einklappen).
+      expect(
+        find.descendant(
+          of: k('karto-kachel-ressourcen-popup'),
+          matching: find.byIcon(Icons.expand_less),
+        ),
+        findsNothing,
+      );
+
+      await tester.tap(k('karto-kachel-popup-zu'));
+      await tester.pumpAndSettle();
+      expect(k('karto-kachel-ressourcen-popup'), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('jede Kachel lässt sich vergrößern und schließen', (
+      tester,
+    ) async {
+      await zeige(tester, held: mitAbenteuern([_nebel]), breite: 1280);
+      for (final art in [
+        'ressourcen',
+        'proben',
+        'eigenschaften',
+        'kampf',
+        'effekte',
+        'zustand',
+        'dabei',
+        'abenteuer',
+        'merkmale',
+        'protokoll',
+      ]) {
+        await tester.ensureVisible(k('karto-kachel-$art-vergroessern'));
+        await tester.tap(k('karto-kachel-$art-vergroessern'));
+        await tester.pumpAndSettle();
+        expect(k('karto-kachel-$art-popup'), findsOneWidget, reason: art);
+        await tester.tap(k('karto-kachel-popup-zu'));
+        await tester.pumpAndSettle();
+        expect(k('karto-kachel-$art-popup'), findsNothing, reason: art);
+      }
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('auch schmal und eingeklappt öffnet der Name den Dialog', (
+      tester,
+    ) async {
+      await zeige(
+        tester,
+        held: weltlich().copyWith(
+          spielansicht: const HeroSpielansicht(
+            kacheln: [HeroSpielkachel(id: 'kampf', eingeklappt: true)],
+          ),
+        ),
+        breite: 390,
+      );
+      await tester.ensureVisible(k('karto-kachel-kampf-vergroessern'));
+      await tester.tap(k('karto-kachel-kampf-vergroessern'));
+      await tester.pumpAndSettle();
+      expect(k('karto-kachel-kampf-popup'), findsOneWidget);
+      expect(find.text('Kampfproben praiodan'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('im Anordnen-Modus gibt es keinen Vergrößern-Knopf', (
+      tester,
+    ) async {
+      await zeige(tester, held: weltlich(), breite: 1280);
+      await tester.tap(k('karto-spiel-anordnen'));
+      await tester.pumpAndSettle();
+      expect(k('karto-kachel-ressourcen-vergroessern'), findsNothing);
+    });
+  });
+
+  group('Schnellaktionen im Seitenkopf', () {
+    Finder k(String name) => find.byKey(ValueKey<String>(name));
+
+    testWidgets('breit: zwischen Titel und Anordnen, in einer Zeile', (
+      tester,
+    ) async {
+      await zeige(
+        tester,
+        held: weltlich(),
+        breite: 1600,
+        regelnFreigeschaltet: true,
+      );
+      final titel = tester.getRect(find.text('Am Spieltisch'));
+      final probe = tester.getRect(k('karto-spiel-probe'));
+      final schaden = tester.getRect(k('karto-spiel-schaden'));
+      final anordnen = tester.getRect(k('karto-spiel-anordnen'));
+      expect(probe.left, greaterThan(titel.right));
+      expect(schaden.right, lessThan(anordnen.left));
+      expect(probe.center.dy, closeTo(titel.center.dy, 40));
+      // Alle Knöpfe stehen in einer Reihe.
+      for (final name in ['gefecht', 'regeln', 'rast', 'schaden']) {
+        final knopf = tester.getRect(k('karto-spiel-$name'));
+        expect(knopf.center.dy, closeTo(probe.center.dy, 1), reason: name);
+      }
+      // „Anordnen“ steht ganz rechts, am Rand der Kacheln (Seitenrand 36).
+      expect(anordnen.right, closeTo(1600 - 36 - 12, 14));
+      // Das Kürzel ist kein Chip neben den Knöpfen mehr.
+      expect(find.text('Strg K'), findsNothing);
+      // Keine Kachel mehr: kein Abschnitt dieses Namens, kein Raster-Eintrag.
+      expect(find.text('Schnellaktionen'), findsNothing);
+      expect(k('karto-kachel-schnellaktionen'), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('mittelbreit: Knöpfe unter Titel und Anordnen', (tester) async {
+      await zeige(
+        tester,
+        held: weltlich(),
+        breite: 1100,
+        regelnFreigeschaltet: true,
+      );
+      final titel = tester.getRect(find.text('Am Spieltisch'));
+      final anordnen = tester.getRect(k('karto-spiel-anordnen'));
+      final probe = tester.getRect(k('karto-spiel-probe'));
+      expect(anordnen.center.dy, closeTo(titel.center.dy, 40));
+      expect(probe.top, greaterThan(titel.bottom));
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('schmal: unter der Titelzeile, vor allen Kacheln', (
+      tester,
+    ) async {
+      await zeige(tester, held: weltlich(), breite: 390);
+      final titel = tester.getRect(find.text('Am Spieltisch'));
+      final probe = tester.getRect(k('karto-spiel-probe'));
+      final ressourcen = tester.getTopLeft(find.text('Ressourcen'));
+      expect(probe.top, greaterThan(titel.bottom));
+      expect(probe.bottom, lessThan(ressourcen.dy));
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('bleiben im Anordnen-Modus fest stehen', (tester) async {
+      await zeige(tester, held: weltlich(), breite: 1600);
+      await tester.tap(k('karto-spiel-anordnen'));
+      await tester.pumpAndSettle();
+      expect(k('karto-spiel-probe'), findsOneWidget);
+      expect(k('karto-spiel-rast'), findsOneWidget);
+      expect(k('karto-spiel-anordnen-fertig'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+  });
+
   testWidgets('jede Schnellaktion trägt ihre eigene Farbe', (tester) async {
     await zeige(
       tester,
@@ -467,7 +626,7 @@ void main() {
           spielansicht: const HeroSpielansicht(
             kacheln: [
               HeroSpielkachel(id: 'kampf'),
-              HeroSpielkachel(id: 'schnellaktionen'),
+              HeroSpielkachel(id: 'ressourcen'),
               HeroSpielkachel(id: 'protokoll', ausgeblendet: true),
               HeroSpielkachel(id: 'zukunft_kachel'),
             ],
@@ -475,8 +634,8 @@ void main() {
         ),
       );
       final kampf = tester.getTopLeft(find.text('Kampf'));
-      final schnell = tester.getTopLeft(find.text('Schnellaktionen'));
-      expect(kampf.dy, lessThan(schnell.dy));
+      final ressourcen = tester.getTopLeft(find.text('Ressourcen'));
+      expect(kampf.dy, lessThan(ressourcen.dy));
       expect(find.text('Würfelprotokoll'), findsNothing);
       expect(tester.takeException(), isNull);
     });
@@ -521,7 +680,40 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('Ziehen am Griff setzt die Kachel an die Stelle des Ziels', (
+    // Zieht den Griff der Kachel [von] auf [ziel]; [anteil] ist die Stelle
+    // in der Zielkarte (0 = linke Kante, 1 = rechte Kante).
+    Future<TestGesture> ziehe(
+      WidgetTester tester,
+      String von,
+      String ziel,
+      double anteil,
+    ) async {
+      final griff = tester.getCenter(k('karto-kachel-$von-griff'));
+      final rect = tester.getRect(k('karto-kachel-$ziel'));
+      final ort = Offset(
+        rect.left + rect.width * anteil,
+        rect.top + rect.height / 2,
+      );
+      final geste = await tester.startGesture(griff);
+      await geste.moveBy(const Offset(0, -20));
+      await tester.pump();
+      await geste.moveTo(ort);
+      await tester.pump();
+      return geste;
+    }
+
+    Future<List<String>> gespeicherteIds(
+      WidgetTester tester,
+      _ZaehlendesRepository repo,
+    ) async {
+      await tester.tap(k('karto-spiel-anordnen-fertig'));
+      await tester.pumpAndSettle();
+      return (await repo.loadHeroById('praiodan'))!.spielansicht!.kacheln
+          .map((k) => k.id)
+          .toList();
+    }
+
+    testWidgets('Ziehen: Linie zeigt davor, Loslassen fügt davor ein', (
       tester,
     ) async {
       final repo = _ZaehlendesRepository(heroes: [weltlich()]);
@@ -529,22 +721,54 @@ void main() {
       await tester.tap(k('karto-spiel-anordnen'));
       await tester.pumpAndSettle();
 
-      final griff = tester.getCenter(k('karto-kachel-zustand-griff'));
-      final ziel = tester.getCenter(k('karto-kachel-schnellaktionen'));
-      final geste = await tester.startGesture(griff);
-      await geste.moveBy(const Offset(0, -20));
-      await tester.pump();
-      await geste.moveTo(ziel);
-      await tester.pump();
+      // Die Karte ist kompakt: der volle Inhalt steht nicht mehr da.
+      expect(find.text('Effekte verwalten'), findsNothing);
+
+      final geste = await ziehe(tester, 'zustand', 'ressourcen', 0.1);
+      expect(k('karto-einfuegelinie-davor'), findsOneWidget);
+      expect(k('karto-einfuegelinie-danach'), findsNothing);
+      await geste.up();
+      await tester.pumpAndSettle();
+      expect(k('karto-einfuegelinie-davor'), findsNothing);
+
+      final ids = await gespeicherteIds(tester, repo);
+      expect(ids.first, 'zustand');
+      expect(ids[1], 'ressourcen');
+    });
+
+    testWidgets('Ziehen: Loslassen auf der hinteren Hälfte fügt danach ein', (
+      tester,
+    ) async {
+      final repo = _ZaehlendesRepository(heroes: [weltlich()]);
+      await zeige(tester, held: weltlich(), repository: repo, breite: 1280);
+      await tester.tap(k('karto-spiel-anordnen'));
+      await tester.pumpAndSettle();
+
+      final geste = await ziehe(tester, 'zustand', 'ressourcen', 0.9);
+      expect(k('karto-einfuegelinie-danach'), findsOneWidget);
       await geste.up();
       await tester.pumpAndSettle();
 
+      final ids = await gespeicherteIds(tester, repo);
+      expect(ids.indexOf('zustand'), ids.indexOf('ressourcen') + 1);
+    });
+
+    testWidgets('Ziehen und Wegziehen ohne Loslassen auf dem Ziel ändert '
+        'nichts', (tester) async {
+      final repo = _ZaehlendesRepository(heroes: [weltlich()]);
+      await zeige(tester, held: weltlich(), repository: repo, breite: 1280);
+      await tester.tap(k('karto-spiel-anordnen'));
+      await tester.pumpAndSettle();
+
+      final geste = await ziehe(tester, 'zustand', 'ressourcen', 0.1);
+      await geste.moveTo(const Offset(2, 2));
+      await tester.pump();
+      expect(k('karto-einfuegelinie-davor'), findsNothing);
+      await geste.up();
+      await tester.pumpAndSettle();
       await tester.tap(k('karto-spiel-anordnen-fertig'));
       await tester.pumpAndSettle();
-      final ids = (await repo.loadHeroById('praiodan'))!.spielansicht!.kacheln
-          .map((k) => k.id)
-          .toList();
-      expect(ids.first, 'zustand');
+      expect(repo.speicherungen, 0);
     });
 
     testWidgets('Abbrechen und unveränderte Anordnung schreiben nichts', (
@@ -685,7 +909,7 @@ void main() {
       'Schnellaktionen, Ressourcen und Eigenschaften stehen vor dem Abenteuer',
       (tester) async {
         await zeige(tester, held: mitAbenteuern([_nebel]));
-        final aktionen = tester.getTopLeft(find.text('Schnellaktionen')).dy;
+        final aktionen = tester.getTopLeft(find.text('Probe suchen')).dy;
         final ressourcen = tester.getTopLeft(find.text('Ressourcen')).dy;
         final eigenschaften = tester.getTopLeft(find.text('Eigenschaften')).dy;
         final kampf = tester.getTopLeft(find.text('Kampf')).dy;

@@ -4,6 +4,9 @@ import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
 
+/// Breite, ab der [KartoSeitenkopf.mitte] neben dem Titel statt darunter steht.
+const double kMitteNebenTitelAb = 1200;
+
 /// Kopfzeile einer Arbeitsflaeche: Kontextzeile, Titel, eine Aktion.
 ///
 /// Optional folgen dem Titel eine leise [unterzeile] und eine kurze
@@ -28,6 +31,7 @@ class KartoSeitenkopf extends StatelessWidget {
     required this.titel,
     this.kontext,
     this.aktion,
+    this.mitte,
     this.unterzeile,
     this.beschreibung,
     this.kompakt = false,
@@ -54,6 +58,14 @@ class KartoSeitenkopf extends StatelessWidget {
 
   /// Einzelne Aktion rechts neben dem Titel.
   final Widget? aktion;
+
+  /// Feste Leiste zwischen Titel und [aktion], etwa die Schnellaktionen der
+  /// Spielansicht.
+  ///
+  /// Ab [kMitteNebenTitelAb] steht sie in derselben Zeile zwischen Titel und
+  /// [aktion] und bricht dort nie um (sie schrumpft höchstens); schmaler rückt
+  /// sie unter die Titelzeile und darf dort umbrechen.
+  final Widget? mitte;
 
   /// Leise Zeile direkt unter dem Titel, etwa das aventurische Datum.
   final String? unterzeile;
@@ -164,20 +176,57 @@ class KartoSeitenkopf extends StatelessWidget {
       padding: EdgeInsets.only(bottom: kompakt ? Abstand.block : Abstand.bahn),
       child: LayoutBuilder(
         builder: (context, constraints) {
-          if (aktion == null) return ueberschrift;
-          // Wrap statt Row: eine ausgeschriebene Aktion passt neben einem
-          // langen Titel auf Tabletbreiten sonst nicht mehr in die Zeile.
-          return Wrap(
-            alignment: WrapAlignment.spaceBetween,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            spacing: Abstand.weit,
-            runSpacing: Abstand.weit,
+          final mitte = this.mitte;
+          if (mitte != null && constraints.maxWidth >= kMitteNebenTitelAb) {
+            return Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // Nicht flexibel: sonst teilte sich der Titel den freien Platz
+                // mit der Mitte, und „Anordnen“ stünde nicht am rechten Rand.
+                ueberschrift,
+                const SizedBox(width: Abstand.bahn),
+                // Skaliert nur im Notfall herunter, statt umzubrechen: die
+                // Leiste bleibt eine Zeile, der Titel behält seine Höhe.
+                Expanded(
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: mitte,
+                  ),
+                ),
+                if (aktion != null) ...[
+                  const SizedBox(width: Abstand.bahn),
+                  aktion!,
+                ],
+              ],
+            );
+          }
+          final zeile = aktion == null
+              // Wrap statt Row: eine ausgeschriebene Aktion passt neben einem
+              // langen Titel auf Tabletbreiten sonst nicht mehr in die Zeile.
+              ? ueberschrift
+              : Wrap(
+                  alignment: WrapAlignment.spaceBetween,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: Abstand.weit,
+                  runSpacing: Abstand.weit,
+                  children: [
+                    ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxWidth: constraints.maxWidth,
+                      ),
+                      child: ueberschrift,
+                    ),
+                    aktion!,
+                  ],
+                );
+          if (mitte == null) return zeile;
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              ConstrainedBox(
-                constraints: BoxConstraints(maxWidth: constraints.maxWidth),
-                child: ueberschrift,
-              ),
-              aktion!,
+              zeile,
+              const SizedBox(height: Abstand.weit),
+              mitte,
             ],
           );
         },

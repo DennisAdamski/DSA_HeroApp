@@ -83,6 +83,19 @@ mixin KartoAbenteuerSchreiben<T extends ConsumerStatefulWidget>
     await schreibe((a) => a.copyWith(currentAventurianDate: datum));
   }
 
+  /// Zählt das aktuelle Datum um einen Tag weiter (Monat und Jahr rollen mit).
+  ///
+  /// Gerechnet wird vom frisch geladenen Stand, nicht vom gerenderten.
+  Future<void> datumEinenTagWeiter() {
+    return schreibe((a) {
+      final weiter = naechsterAbenteuerTag(a);
+      if (weiter == null) {
+        throw StateError('Das Datum lässt sich nicht weiterzählen.');
+      }
+      return a.copyWith(currentAventurianDate: weiter);
+    });
+  }
+
   /// Fragt die Zusammenfassung ab und speichert sie.
   Future<void> zusammenfassungAendern(HeroAdventureEntry abenteuer) async {
     final text = await showDialog<String>(

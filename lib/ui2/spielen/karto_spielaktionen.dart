@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_stroke.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
-import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
 
 /// Schnellaktionen des Spielbereichs.
 ///
@@ -45,26 +44,33 @@ class KartoSpielaktionen extends StatelessWidget {
   /// Öffnet den geführten Ablauf „Schaden erhalten“.
   final VoidCallback onSchaden;
 
-  /// Tastaturkürzel, das dieselbe Suche öffnet, etwa `Strg K`.
+  /// Tastaturkürzel, das dieselbe Suche öffnet, etwa `Strg K`; erscheint nur im
+  /// Tooltip der Probensuche.
   final String? kuerzelHinweis;
 
   @override
   Widget build(BuildContext context) {
     final karto = context.karto;
-    final texte = Theme.of(context).textTheme;
 
     return Wrap(
-      spacing: Abstand.weit,
+      spacing: Abstand.normal,
       runSpacing: Abstand.normal,
       crossAxisAlignment: WrapCrossAlignment.center,
       children: [
         ?gefecht,
-        FilledButton.tonalIcon(
-          key: const ValueKey<String>('karto-spiel-probe'),
-          style: kartoSchnellaktionStil(context, karto.meer),
-          onPressed: onProbeSuchen,
-          icon: const Icon(Icons.search),
-          label: const Text('Probe suchen'),
+        // Das Kürzel steht nur im Tooltip: als Chip neben „Schaden erhalten“
+        // las es sich wie dessen Tastenkürzel.
+        Tooltip(
+          message: kuerzelHinweis == null
+              ? 'Probe suchen'
+              : 'Probe suchen ($kuerzelHinweis)',
+          child: FilledButton.tonalIcon(
+            key: const ValueKey<String>('karto-spiel-probe'),
+            style: kartoSchnellaktionStil(context, karto.meer),
+            onPressed: onProbeSuchen,
+            icon: const Icon(Icons.search),
+            label: const Text('Probe suchen'),
+          ),
         ),
         if (onRegeln != null)
           FilledButton.tonalIcon(
@@ -88,26 +94,6 @@ class KartoSpielaktionen extends StatelessWidget {
           icon: const Icon(Icons.heart_broken_outlined),
           label: const Text('Schaden erhalten'),
         ),
-        if (kuerzelHinweis != null)
-          DecoratedBox(
-            decoration: BoxDecoration(
-              border: Border.all(
-                color: karto.hoehenlinie,
-                width: Strich.hoehenlinie,
-              ),
-              borderRadius: BorderRadius.circular(kKartoRadius),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: Abstand.knapp,
-                vertical: Abstand.haar,
-              ),
-              child: Text(
-                kuerzelHinweis!,
-                style: texte.marke.copyWith(color: karto.schriftLeise),
-              ),
-            ),
-          ),
       ],
     );
   }
@@ -134,7 +120,7 @@ ButtonStyle kartoSchnellaktionStil(BuildContext context, Color farbe) {
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(kKartoRadiusKlein),
     ),
-    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
   ).copyWith(
     overlayColor: WidgetStateProperty.resolveWith<Color?>(
       (zustand) =>

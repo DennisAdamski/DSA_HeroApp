@@ -66,10 +66,15 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   den `HeroComputedSnapshot` an alle Abschnitte weiter — auch an die
   Adaptermethoden, damit die Brücke für dieselben Werte keine zweite
   Providerbeobachtung aufmacht. Die Reihenfolge folgt der Häufigkeit am
-  Tisch: Schnellaktionen (ganz oben), Ressourcen, Häufige Proben,
+  Tisch: Ressourcen, Häufige Proben,
   Eigenschaften, Kampf, Effekte, Zustand (und Begleiter), Dabei, Abenteuer
   samt Standort, Vor- und Nachteile, Würfelprotokoll. Das ist nur die
-  Standardanordnung; jede Kachel lässt sich verschieben (Kachelraster, unten). Jede Schnellaktion trägt eine
+  Standardanordnung; jede Kachel lässt sich verschieben (Kachelraster, unten).
+  Die Schnellaktionen sind **keine Kachel**: sie stehen fest im Seitenkopf
+  zwischen „Am Spieltisch“ und „Anordnen“ (`KartoSeitenkopf.mitte`; ab
+  `kMitteNebenTitelAb` (1200 dp, bricht dort nie um) in einer Zeile, schmaler unter der Titelzeile),
+  auch im Anordnen-Modus; das Kürzel Strg+K steht nur im Tooltip von „Probe suchen“, nicht als Chip. **Vergrößern:** Jede Kachel hat in ihrer Kopfzeile den Namen als Klickfläche (Key `karto-kachel-<id>-vergroessern`, `KartoKachelSteuerung.onVergroessern`, leises `open_in_full`-Symbol); sie öffnet die Kachel in einem Dialog (`_vergroessern` in `karto_spielansicht.dart`, Key `karto-kachel-<id>-popup`, Schließen `karto-kachel-popup-zu`). Der Dialog liest `heroComputedProvider` selbst (nie den beim Öffnen erfassten Snapshot), baut denselben Inhalt mit Größenstufe nach echter Breite ohne Einklappknopf und schreibt nur über die Aktionen der Kachel. Im Anordnen-Modus gibt es den Knopf nicht. Standardbreiten (per Simulation auf wenig Leerfläche bei 2–4 Spalten gewählt): Ressourcen ganze Breite, Vor- und Nachteile sowie Protokoll schmal, Abenteuer Gewicht 450. Ein früher gespeicherter Eintrag `schnellaktionen`
+  wird beim Auflösen übergangen und bleibt erhalten. Jede Schnellaktion trägt eine
   eigene Signalfarbe (`kartoSchnellaktionStil` in `karto_spielaktionen.dart`:
   Gefecht `messing`, Probe `meer`, Regeln `kueste`, Rast `moos`, Schaden
   `siegel`; Tönung 14 % auf `feld`, Symbol und Kante in der Farbe, Beschriftung
@@ -102,24 +107,35 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   (`karto_kachelraster.dart`): Rastereinheit mindestens 300 dp
   (`kRasterEinheitMin`), Spaltenzahl aus der **Ansichtsbreite**, höchstens 4;
   Breiten `schmal` (1 Einheit), `mittel` (2), `voll` (ganze Zeile), auf die
-  Spaltenzahl gekappt. Höhe = Inhalt; jede Kachel landet in ihrer Reihenfolge
-  an der höchsten freien Stelle (dicht gepackt, keine Löcher unter kurzen
-  Kacheln). Kinder werden ohne Intrinsics ausgelegt, `LayoutBuilder` in Kacheln
+  Spaltenzahl gekappt. Höhe = Inhalt. Die **Spalte** jeder Kachel folgt nur aus
+  Reihenfolge, Breite und dem Richtgewicht der Art
+  (`KartoSpielkachelArt.gewicht`, `kartoRasterBelegung`), nie aus der echten
+  Höhe: Einklappen oder neue Daten verschieben nur Kacheln darunter in
+  derselben Spalte, keine wechselt Spalte oder Breite (ein früheres
+  „Ausweichen“ in Lücken entfiel). Die senkrechte Lage folgt der echten
+  Unterkante. Kinder werden ohne Intrinsics ausgelegt, `LayoutBuilder` in Kacheln
   ist erlaubt. Was eine Kachel erlaubt (Breiten, Standardbreite, Ausblenden,
   Einklappen), legt `KartoSpielkachelArt` in `karto_spielraster_ordnung.dart`
-  fest; Schnellaktionen und Ressourcen lassen sich weder ausblenden noch
-  einklappen. Gespeichert wird **je Held** in `HeroSheet.spielansicht`
+  fest; Ressourcen lassen sich weder ausblenden noch einklappen. Gespeichert wird **je Held** in `HeroSheet.spielansicht`
   (`HeroSpielansicht`/`HeroSpielkachel`, nur bei Belegung im JSON; Kacheln mit
   `id`, damit der Sync je Kachel zusammenführt). `loeseSpielansichtAuf` setzt
   fehlende Kacheln an ihre Standardstelle und übergeht unbekannte IDs,
   `schreibeSpielansicht` lässt diese samt unbekannter Felder an ihrer Stelle
   stehen und schreibt die Standardbreite nicht. „Anordnen“ im Seitenkopf
-  öffnet nach `vorHeldenbearbeitung` einen Entwurf (Ziehen am Griff, Pfeile,
-  Breitenmenü, Ausblenden, „Standard“); erst „Fertig“ schreibt einmal frisch
+  öffnet nach `vorHeldenbearbeitung` einen Entwurf. Darin steht statt des
+  vollen Inhalts je Kachel eine kompakte `KartoAnordnungskarte` (Symbol, Titel,
+  Breite; gleiche Spalte wie später): Ziehen am Griff oder am Titel (nach
+  kurzem Halten), eine Einfügelinie zeigt „davor“ oder „danach“, abgelegt wird
+  einfügend (`fuegeSpielkachelEin`), dazu Pfeile, Breitenmenü, Ausblenden,
+  „Standard“; erst „Fertig“ schreibt einmal frisch
   über `updateHero`, ohne Änderung gar nicht. Den Einklappknopf zeigt der
   äußerste `KartoAbschnitt` einer Kachel über `KartoKachelSteuerung`; er
   schreibt sofort nur den einen Eintrag (`mitEingeklappt`). Während einer
-  Planung sind Anordnen und Einklappen gesperrt. „Dabei“ hält Betrag,
+  Planung sind Anordnen und Einklappen gesperrt. Jede Kachel kennt ihre **Größenstufe** `KartoKachelGroesse`
+  (`kompakt` <420, `normal` <700, `weit` ab 700 dp **Kachelbreite**, nicht
+  Fensterbreite), über `KartoKachelSteuerung.groesseVon(context)` auch in
+  verschachtelten Abschnitten lesbar; Inhalte zeigen mit der Stufe mehr oder
+  ordnen sich um, statt nur zu strecken. „Dabei“ hält Betrag,
   Stift und Münzschritte beieinander und lässt die Verbrauchsgegenstände ab
   `kDabeiZweispaltigAb` (560 dp Kachelbreite) zweispaltig fließen.
 - **Vor- und Nachteile bearbeitet UI2 im Merkmalsblatt**
@@ -372,7 +388,7 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   Treffer im eigenen Abenteuer bearbeitet man direkt, Treffer in anderen öffnen
   deren Blatt (im Abschnitt über `onAbenteuerOeffnen` und damit den
   Editorschutz, im Blatt direkt). Die Suche liest nur und schreibt nie.
-  **Zuletzt gewürfelt (SPIEL-01, Teilstand):** Unter den Schnellaktionen
+  **Zuletzt gewürfelt (SPIEL-01, Teilstand):** Unter den Schnellaktionen im Seitenkopf
   steht ein Streifen mit bis zu `kZuletztGewuerfeltMax` (6) Marken
   (`KartoZuletztGewuerfelt`, `karto_zuletzt_gewuerfelt.dart`). Welche Proben
   erscheinen, entscheidet `zuletztGewuerfelteProben`

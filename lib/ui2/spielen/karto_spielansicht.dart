@@ -11,7 +11,6 @@ import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_wirkung_rules.da
 import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_anzeige_rules.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_merkmal.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
-import 'package:dsa_heldenverwaltung/domain/hero_spielansicht.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
@@ -24,6 +23,7 @@ import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abenteuerblatt.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abschnitt.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_begleiterkarte.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_dabei_abschnitt.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_kachelgroesse.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_kachelraster.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_laufendes_abenteuer.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_ressourcenleiste.dart';
@@ -142,6 +142,9 @@ class _KartoSpielansichtState extends ConsumerState<KartoSpielansicht> {
               KartoSeitenkopf(
                 titel: 'Am Spieltisch',
                 kompakt: breite == KartoBreite.schmal,
+                // Fest zwischen Titel und „Anordnen“; keine Kachel, also
+                // weder verschiebbar noch ausblendbar.
+                mitte: _schnellaktionen(context, werte),
                 aktion: entwurf == null
                     ? KartoAnordnenKnopf(
                         gesperrt: gesperrt,
@@ -181,13 +184,7 @@ class _KartoSpielansichtState extends ConsumerState<KartoSpielansicht> {
                         'karto-kachel-${kacheln[i].art.id}',
                       ),
                       breite: kacheln[i].breite,
-                      // Beim Anordnen gilt die gewählte Breite genau, damit
-                      // die Breitenwahl sichtbar wirkt.
-                      ausweichen:
-                          entwurf == null &&
-                          kacheln[i].art.breiten.contains(
-                            SpielkachelBreite.schmal,
-                          ),
+                      gewicht: kacheln[i].art.gewicht,
                       child: _kachel(
                         context,
                         werte,
@@ -222,9 +219,9 @@ class _KartoSpielansichtState extends ConsumerState<KartoSpielansicht> {
         art,
   };
 
-  // Eine Kachel: im Normalmodus mit Einklappknopf, im Anordnen-Modus mit
-  // Bedienleiste über dem stillgelegten Inhalt. [anordnung] nennt die
-  // Stelle im Entwurf und die sichtbaren Nachbarn.
+  // Eine Kachel: im Normalmodus mit Einklappknopf, im Anordnen-Modus eine
+  // kompakte Karte mit Bedienung statt des vollen Inhalts. [anordnung] nennt
+  // die Stelle im Entwurf und die sichtbaren Nachbarn.
   Widget _kachel(
     BuildContext context,
     HeroComputedSnapshot werte,
@@ -233,27 +230,34 @@ class _KartoSpielansichtState extends ConsumerState<KartoSpielansicht> {
     required ({int index, int? vor, int? nach})? anordnung,
   }) {
     final art = kachel.art;
-    final inhalt = KartoKachelSteuerung(
-      kennung: art.id,
-      eingeklappt: kachel.eingeklappt,
-      onEinklappen: art.einklappbar && !gesperrt && anordnung == null
-          ? (wert) => _einklappen(art, wert)
-          : null,
-      child: _inhalt(context, werte, art),
-    );
-    if (anordnung == null) return inhalt;
-    final (:index, :vor, :nach) = anordnung;
-    return KartoAnordnungskachel(
-      kachel: kachel,
-      onAblegen: (gezogen) => _verschiebeArt(gezogen, index),
-      onNachVorn: vor == null ? null : () => _verschiebe(index, vor),
-      onNachHinten: nach == null ? null : () => _verschiebe(index, nach),
-      onBreite: (breite) =>
-          _aendereEntwurf(art, (k) => k.copyWith(breite: breite)),
-      onAusblenden: art.ausblendbar
-          ? () => _aendereEntwurf(art, (k) => k.copyWith(ausgeblendet: true))
-          : null,
-      child: inhalt,
+    if (anordnung != null) {
+      final (:index, :vor, :nach) = anordnung;
+      return KartoAnordnungskarte(
+        kachel: kachel,
+        onAblegen: (gezogen, seite) =>
+            _fuegeEin(gezogen, art, davor: seite == KartoEinfuegeSeite.davor),
+        onNachVorn: vor == null ? null : () => _verschiebe(index, vor),
+        onNachHinten: nach == null ? null : () => _verschiebe(index, nach),
+        onBreite: (breite) =>
+            _aendereEntwurf(art, (k) => k.copyWith(breite: breite)),
+        onAusblenden: art.ausblendbar
+            ? () => _aendereEntwurf(art, (k) => k.copyWith(ausgeblendet: true))
+            : null,
+      );
+    }
+    // Die Größenstufe folgt der echten Kachelbreite; das Raster legt seine
+    // Kinder mit fester Breite aus, daher misst der LayoutBuilder genau sie.
+    return LayoutBuilder(
+      builder: (context, constraints) => KartoKachelSteuerung(
+        kennung: art.id,
+        eingeklappt: kachel.eingeklappt,
+        groesse: KartoKachelGroesse.fuerBreite(constraints.maxWidth),
+        onEinklappen: art.einklappbar && !gesperrt
+            ? (wert) => _einklappen(art, wert)
+            : null,
+        onVergroessern: () => _vergroessern(art),
+        child: _inhalt(context, werte, art, ref),
+      ),
     );
   }
 
@@ -261,8 +265,8 @@ class _KartoSpielansichtState extends ConsumerState<KartoSpielansicht> {
     BuildContext context,
     HeroComputedSnapshot werte,
     KartoSpielkachelArt art,
+    WidgetRef leser,
   ) => switch (art) {
-    KartoSpielkachelArt.schnellaktionen => _schnellaktionen(context, werte),
     KartoSpielkachelArt.ressourcen => _ressourcen(context, werte),
     KartoSpielkachelArt.proben => _proben(context),
     KartoSpielkachelArt.eigenschaften => KartoAbschnitt(
@@ -280,10 +284,82 @@ class _KartoSpielansichtState extends ConsumerState<KartoSpielansicht> {
     ),
     KartoSpielkachelArt.begleiter => _begleiter(context, werte),
     KartoSpielkachelArt.dabei => _dabei(context, werte),
-    KartoSpielkachelArt.abenteuer => _abenteuer(context, werte),
-    KartoSpielkachelArt.merkmale => _merkmale(context, werte),
+    KartoSpielkachelArt.abenteuer => _abenteuer(context, werte, leser),
+    KartoSpielkachelArt.merkmale => _merkmale(context, werte, leser),
     KartoSpielkachelArt.protokoll => _protokoll(context, werte),
   };
+
+  // Öffnet die Kachel groß in einem Dialog. Der Dialog liest den Helden selbst
+  // (`heroComputedProvider`), damit ein Wurf oder eine Änderung darin sofort
+  // erscheint, statt den beim Öffnen erfassten Stand zu zeigen. Er liest nur;
+  // geschrieben wird ausschließlich über dieselben Aktionen wie in der Kachel.
+  Future<void> _vergroessern(KartoSpielkachelArt art) {
+    return showDialog<void>(
+      context: context,
+      builder: (dialogContext) => Consumer(
+        builder: (context, leser, _) {
+          final werte = leser.watch(heroComputedProvider(heroId)).asData?.value;
+          return Dialog(
+            key: ValueKey<String>('karto-kachel-${art.id}-popup'),
+            backgroundColor: context.karto.blatt,
+            insetPadding: const EdgeInsets.all(Abstand.block),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 960),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(
+                        0,
+                        Abstand.eng,
+                        Abstand.eng,
+                        0,
+                      ),
+                      child: IconButton(
+                        key: const ValueKey<String>('karto-kachel-popup-zu'),
+                        tooltip: 'Schließen',
+                        icon: const Icon(Icons.close),
+                        onPressed: () => Navigator.of(dialogContext).pop(),
+                      ),
+                    ),
+                  ),
+                  Flexible(
+                    child: werte == null
+                        ? const Padding(
+                            padding: EdgeInsets.all(Abstand.bahn),
+                            child: Center(child: CircularProgressIndicator()),
+                          )
+                        : SingleChildScrollView(
+                            padding: const EdgeInsets.fromLTRB(
+                              Abstand.block,
+                              0,
+                              Abstand.block,
+                              Abstand.block,
+                            ),
+                            child: LayoutBuilder(
+                              builder: (context, constraints) =>
+                                  KartoKachelSteuerung(
+                                    kennung: art.id,
+                                    dicht: false,
+                                    groesse: KartoKachelGroesse.fuerBreite(
+                                      constraints.maxWidth,
+                                    ),
+                                    child: _inhalt(context, werte, art, leser),
+                                  ),
+                            ),
+                          ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
 
   // Anordnen beginnt nach derselben Editorprüfung wie das Merkmalsblatt:
   // ein offener Verwaltungsentwurf überschriebe die Anordnung sonst wieder.
@@ -307,10 +383,18 @@ class _KartoSpielansichtState extends ConsumerState<KartoSpielansicht> {
     setState(() => _entwurf = verschiebeSpielkachel(entwurf, von, nach));
   }
 
-  // Die gezogene Kachel nimmt den Platz der Zielkachel ein.
-  void _verschiebeArt(KartoSpielkachelArt gezogen, int ziel) {
-    final von = _entwurf?.indexWhere((k) => k.art == gezogen) ?? -1;
-    if (von >= 0) _verschiebe(von, ziel);
+  // Die gezogene Kachel wird vor oder hinter der Zielkachel eingefügt.
+  void _fuegeEin(
+    KartoSpielkachelArt gezogen,
+    KartoSpielkachelArt ziel, {
+    required bool davor,
+  }) {
+    final entwurf = _entwurf;
+    if (entwurf == null) return;
+    setState(
+      () =>
+          _entwurf = fuegeSpielkachelEin(entwurf, gezogen, ziel, davor: davor),
+    );
   }
 
   // Einziger Schreibweg der Anordnung: frisch laden, nur `spielansicht`
@@ -412,65 +496,58 @@ class _KartoSpielansichtState extends ConsumerState<KartoSpielansicht> {
     child: bestand.spielFavoritenproben(heroId: heroId),
   );
 
-  // Die farbigen Schnellaktionen; darunter die zuletzt gewürfelten Proben, die
-  // sich mit einem Tipp wiederholen lassen (SPIEL-01).
+  // Die farbigen Schnellaktionen im Seitenkopf; darunter die zuletzt gewürfelten
+  // Proben, die sich mit einem Tipp wiederholen lassen (SPIEL-01).
   Widget _schnellaktionen(BuildContext context, HeroComputedSnapshot werte) {
-    return KartoAbschnitt(
-      titel: 'Schnellaktionen',
-      dicht: true,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          KartoSpielaktionen(
-            kuerzelHinweis: 'Strg K',
-            gefecht: GefechtEinstieg(
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        KartoSpielaktionen(
+          kuerzelHinweis: 'Strg K',
+          gefecht: GefechtEinstieg(
+            heroId: heroId,
+            werte: werte,
+            bestand: bestand,
+            aktion: aktion,
+            vorBearbeitung: vorHeldenbearbeitung,
+            hervorgehoben: true,
+            stil: kartoSchnellaktionStil(context, context.karto.messing),
+            knopfKey: const ValueKey('karto-spiel-gefecht'),
+          ),
+          onProbeSuchen: () => aktion(
+            () =>
+                bestand.probeSuchen(context: context, ref: ref, heroId: heroId),
+          ),
+          // Der Regelindex läuft nur auf Desktop und im Web und wird erst
+          // angeboten, wenn die Katalog-Inhalte entsperrt sind (SPIEL-04).
+          onRegeln:
+              bestand.regelnNachschlagenVerfuegbar &&
+                  ref.watch(catalogContentVisibleProvider)
+              ? () => aktion(() => bestand.regelnNachschlagen(context: context))
+              : null,
+          onRast: () =>
+              aktion(() => bestand.rast(context: context, heroId: heroId)),
+          onSchaden: () => aktion(
+            () => bestand.schadenErhalten(
+              context: context,
+              ref: ref,
               heroId: heroId,
-              werte: werte,
-              bestand: bestand,
-              aktion: aktion,
-              vorBearbeitung: vorHeldenbearbeitung,
-              hervorgehoben: true,
-              stil: kartoSchnellaktionStil(context, context.karto.messing),
-              knopfKey: const ValueKey('karto-spiel-gefecht'),
-            ),
-            onProbeSuchen: () => aktion(
-              () => bestand.probeSuchen(
-                context: context,
-                ref: ref,
-                heroId: heroId,
-              ),
-            ),
-            // Der Regelindex läuft nur auf Desktop und im Web und wird erst
-            // angeboten, wenn die Katalog-Inhalte entsperrt sind (SPIEL-04).
-            onRegeln:
-                bestand.regelnNachschlagenVerfuegbar &&
-                    ref.watch(catalogContentVisibleProvider)
-                ? () =>
-                      aktion(() => bestand.regelnNachschlagen(context: context))
-                : null,
-            onRast: () =>
-                aktion(() => bestand.rast(context: context, heroId: heroId)),
-            onSchaden: () => aktion(
-              () => bestand.schadenErhalten(
-                context: context,
-                ref: ref,
-                heroId: heroId,
-              ),
             ),
           ),
-          KartoZuletztGewuerfelt(
-            protokoll: werte.state.diceLog,
-            onWiederholen: (eintrag) => aktion(
-              () => bestand.probeWiederholen(
-                context: context,
-                ref: ref,
-                heroId: heroId,
-                eintrag: eintrag,
-              ),
+        ),
+        KartoZuletztGewuerfelt(
+          protokoll: werte.state.diceLog,
+          onWiederholen: (eintrag) => aktion(
+            () => bestand.probeWiederholen(
+              context: context,
+              ref: ref,
+              heroId: heroId,
+              eintrag: eintrag,
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -497,34 +574,41 @@ class _KartoSpielansichtState extends ConsumerState<KartoSpielansicht> {
       );
 
   // Das laufende Abenteuer mit Standort, Personen und Notizen.
-  Widget _abenteuer(BuildContext context, HeroComputedSnapshot werte) =>
-      KartoAbenteuerAbschnitt(
-        heroId: heroId,
-        abenteuer: laufendesAbenteuer(werte.hero),
-        standort: werte.state.standort,
-        sortierung: ref.watch(abenteuerSortierungProvider),
-        // Bewusst ohne `aktion`-Guard: der Dialog schließt sich selbst, und
-        // das Speichern läuft über den eingereihten Zustandsweg.
-        onStandortSpeichern: (standort) => bestand.standortSetzen(
-          context: context,
-          ref: ref,
-          heroId: heroId,
-          standort: standort,
-        ),
-        onOeffnen: () {
-          final abenteuer = laufendesAbenteuer(werte.hero);
-          if (abenteuer != null) _abenteuerOeffnen(context, abenteuer.id);
-        },
-        // Suchtreffer in anderen Abenteuern öffnen deren Blatt, auf demselben
-        // geschützten Weg wie der Abschnittskopf.
-        onAbenteuerOeffnen: (abenteuerId) =>
-            _abenteuerOeffnen(context, abenteuerId),
-      );
+  Widget _abenteuer(
+    BuildContext context,
+    HeroComputedSnapshot werte,
+    WidgetRef leser,
+  ) => KartoAbenteuerAbschnitt(
+    heroId: heroId,
+    abenteuer: laufendesAbenteuer(werte.hero),
+    standort: werte.state.standort,
+    sortierung: leser.watch(abenteuerSortierungProvider),
+    // Bewusst ohne `aktion`-Guard: der Dialog schließt sich selbst, und
+    // das Speichern läuft über den eingereihten Zustandsweg.
+    onStandortSpeichern: (standort) => bestand.standortSetzen(
+      context: context,
+      ref: ref,
+      heroId: heroId,
+      standort: standort,
+    ),
+    onOeffnen: () {
+      final abenteuer = laufendesAbenteuer(werte.hero);
+      if (abenteuer != null) _abenteuerOeffnen(context, abenteuer.id);
+    },
+    // Suchtreffer in anderen Abenteuern öffnen deren Blatt, auf demselben
+    // geschützten Weg wie der Abschnittskopf.
+    onAbenteuerOeffnen: (abenteuerId) =>
+        _abenteuerOeffnen(context, abenteuerId),
+  );
 
   // Vor- und Nachteile kompakt; bearbeitet wird im Merkmalsblatt, nach
   // derselben Editorprüfung wie beim Abenteuerblatt.
-  Widget _merkmale(BuildContext context, HeroComputedSnapshot werte) {
-    final catalog = ref.watch(heroRulesCatalogProvider(heroId)).valueOrNull;
+  Widget _merkmale(
+    BuildContext context,
+    HeroComputedSnapshot werte,
+    WidgetRef leser,
+  ) {
+    final catalog = leser.watch(heroRulesCatalogProvider(heroId)).valueOrNull;
     // Ohne geladenen Katalog zeigt die Übersicht die gespeicherten Texte;
     // bearbeitet werden kann erst mit Katalog.
     final katalog = catalog == null
@@ -553,7 +637,7 @@ class _KartoSpielansichtState extends ConsumerState<KartoSpielansicht> {
       child: KartoMerkmalsuebersicht(
         vorteile: aufbereiten(abgleich.vorteile, true),
         nachteile: aufbereiten(abgleich.nachteile, false),
-        aufgeklappt: ref.watch(merkmaleAufgeklapptProvider),
+        aufgeklappt: leser.watch(merkmaleAufgeklapptProvider),
         // Rein geraetelokal: ein Tipp aendert nur die Einstellung, nie den
         // Helden; deshalb ohne `aktion`-Guard und ohne Editorpruefung.
         onUmschalten: (aufgeklappt) => ref

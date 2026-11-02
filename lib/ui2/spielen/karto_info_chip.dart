@@ -82,3 +82,35 @@ class KartoInfoChip extends StatelessWidget {
     );
   }
 }
+
+/// „+“-Knopf neben der Datumsmarke: zählt das aventurische Datum um einen Tag
+/// weiter. Am Monats- und Jahresende rollt das Datum über (siehe
+/// `addAventurianDays`).
+class KartoTagPlusKnopf extends StatelessWidget {
+  /// Erstellt den Knopf; ohne [onPressed] ist er gesperrt.
+  const KartoTagPlusKnopf({super.key, this.onPressed});
+
+  /// Zählt einen Tag weiter; `null` sperrt den Knopf.
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final karto = context.karto;
+    return KartoFlaeche(
+      stufe: KartoFlaechenstufe.senke,
+      klein: true,
+      child: Material(
+        type: MaterialType.transparency,
+        child: IconButton(
+          key: const ValueKey<String>('karto-abenteuer-datum-plus'),
+          tooltip: 'Einen Tag weiter',
+          icon: const Icon(Icons.add, size: 18),
+          color: karto.schrift,
+          constraints: const BoxConstraints.tightFor(width: 40, height: 40),
+          padding: EdgeInsets.zero,
+          onPressed: onPressed,
+        ),
+      ),
+    );
+  }
+}

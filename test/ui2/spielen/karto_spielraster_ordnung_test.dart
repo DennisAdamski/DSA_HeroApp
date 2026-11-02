@@ -19,21 +19,45 @@ void main() {
       expect(kacheln.every((k) => k.breite == k.art.standard), isTrue);
     });
 
+    test('Standardbreiten: Ressourcen als Band, Nachschlagekacheln schmal', () {
+      for (final art in KartoSpielkachelArt.values) {
+        expect(art.breiten, contains(art.standard), reason: art.id);
+      }
+      expect(KartoSpielkachelArt.ressourcen.standard, SpielkachelBreite.voll);
+      expect(KartoSpielkachelArt.merkmale.standard, SpielkachelBreite.schmal);
+      expect(KartoSpielkachelArt.protokoll.standard, SpielkachelBreite.schmal);
+    });
+
     test('gespeicherte Reihenfolge, fehlende Kacheln an ihrer Stelle', () {
       final kacheln = loeseSpielansichtAuf(
         const HeroSpielansicht(
           kacheln: [
             HeroSpielkachel(id: 'protokoll'),
-            HeroSpielkachel(id: 'schnellaktionen'),
+            HeroSpielkachel(id: 'ressourcen'),
           ],
         ),
         verfuegbar: _alle,
       );
       final ids = _ids(kacheln);
       expect(ids.first, 'protokoll');
-      expect(ids[1], 'schnellaktionen');
-      expect(ids[2], 'ressourcen');
+      expect(ids[1], 'ressourcen');
+      expect(ids[2], 'proben');
       expect(ids, hasLength(KartoSpielkachelArt.values.length));
+    });
+
+    test('der frühere Eintrag der Schnellaktionen wird übergangen', () {
+      // Die Schnellaktionen stehen fest im Seitenkopf und sind keine Kachel.
+      final kacheln = loeseSpielansichtAuf(
+        const HeroSpielansicht(
+          kacheln: [HeroSpielkachel(id: 'schnellaktionen')],
+        ),
+        verfuegbar: _alle,
+      );
+      expect(_ids(kacheln), isNot(contains('schnellaktionen')));
+      expect(
+        _ids(kacheln),
+        _ids(loeseSpielansichtAuf(null, verfuegbar: _alle)),
+      );
     });
 
     test('unbekannte und nicht verfügbare IDs werden übergangen', () {
@@ -54,11 +78,14 @@ void main() {
       final kacheln = loeseSpielansichtAuf(
         const HeroSpielansicht(
           kacheln: [
-            // Kampf erlaubt keine volle Breite, Ressourcen kein Ausblenden,
-            // Schnellaktionen kein Einklappen.
+            // Kampf erlaubt keine volle Breite, Ressourcen weder Ausblenden
+            // noch Einklappen.
             HeroSpielkachel(id: 'kampf', breite: SpielkachelBreite.voll),
-            HeroSpielkachel(id: 'ressourcen', ausgeblendet: true),
-            HeroSpielkachel(id: 'schnellaktionen', eingeklappt: true),
+            HeroSpielkachel(
+              id: 'ressourcen',
+              ausgeblendet: true,
+              eingeklappt: true,
+            ),
           ],
         ),
         verfuegbar: _alle,
@@ -70,7 +97,7 @@ void main() {
         SpielkachelBreite.schmal,
       );
       expect(kachel(KartoSpielkachelArt.ressourcen).ausgeblendet, isFalse);
-      expect(kachel(KartoSpielkachelArt.schnellaktionen).eingeklappt, isFalse);
+      expect(kachel(KartoSpielkachelArt.ressourcen).eingeklappt, isFalse);
     });
   });
 
@@ -101,7 +128,7 @@ void main() {
       final ansicht = schreibeSpielansicht(kacheln, basis: basis);
       final ids = ansicht.kacheln.map((k) => k.id).toList();
       expect(ids.take(4), [
-        'schnellaktionen',
+        'schnellaktionen', // früherer Eintrag, bleibt erhalten
         'zukunft',
         'begleiter',
         'ressourcen',
@@ -113,7 +140,7 @@ void main() {
     test('Rundreise über Auflösen und Schreiben ist stabil', () {
       final kacheln = verschiebeSpielkachel(
         loeseSpielansichtAuf(null, verfuegbar: _alle),
-        4,
+        3,
         0,
       );
       final ansicht = schreibeSpielansicht(kacheln, basis: null);
@@ -156,9 +183,66 @@ void main() {
 
   test('verschiebeSpielkachel setzt die Kachel an die Zielstelle', () {
     final start = loeseSpielansichtAuf(null, verfuegbar: _alle);
-    final vor = verschiebeSpielkachel(start, 4, 1);
+    final kampf = start.indexWhere((x) => x.art == KartoSpielkachelArt.kampf);
+    final vor = verschiebeSpielkachel(start, kampf, 1);
     expect(vor[1].art, KartoSpielkachelArt.kampf);
-    final zurueck = verschiebeSpielkachel(vor, 1, 4);
+    final zurueck = verschiebeSpielkachel(vor, 1, kampf);
     expect(zurueck, start);
+  });
+
+  group('fuegeSpielkachelEin', () {
+    final start = loeseSpielansichtAuf(null, verfuegbar: _alle);
+    const k = KartoSpielkachelArt.kampf;
+    const z = KartoSpielkachelArt.zustand;
+    const s0 = KartoSpielkachelArt.ressourcen;
+
+    test('davor und danach richten sich nach der Zielkachel', () {
+      final davor = fuegeSpielkachelEin(start, z, s0, davor: true);
+      expect(_ids(davor).first, 'zustand');
+      expect(_ids(davor)[1], 'ressourcen');
+      final danach = fuegeSpielkachelEin(start, z, s0, davor: false);
+      expect(_ids(danach).indexOf('zustand'), 1);
+      expect(_ids(danach).first, 'ressourcen');
+    });
+
+    test('nach hinten gezogen steht die Kachel direkt vor oder hinter dem '
+        'Ziel', () {
+      final davor = fuegeSpielkachelEin(
+        start,
+        k,
+        KartoSpielkachelArt.protokoll,
+        davor: true,
+      );
+      final ids = _ids(davor);
+      expect(ids.indexOf('kampf'), ids.indexOf('protokoll') - 1);
+      final danach = fuegeSpielkachelEin(
+        start,
+        k,
+        KartoSpielkachelArt.protokoll,
+        davor: false,
+      );
+      expect(_ids(danach).last, 'kampf');
+    });
+
+    test('Kacheln bleiben vollständig, gleiche und fremde ändern nichts', () {
+      final ergebnis = fuegeSpielkachelEin(start, k, z, davor: false);
+      expect(_ids(ergebnis).toSet(), _ids(start).toSet());
+      expect(ergebnis, hasLength(start.length));
+      expect(fuegeSpielkachelEin(start, k, k, davor: true), start);
+      final ohneZiel = start.where((x) => x.art != z).toList();
+      expect(fuegeSpielkachelEin(ohneZiel, k, z, davor: true), ohneZiel);
+    });
+
+    test('behält Breite, Ausblenden und Einklappen der Kachel', () {
+      final geaendert = aendereSpielkachel(
+        start,
+        k,
+        (x) => x.copyWith(breite: SpielkachelBreite.mittel, eingeklappt: true),
+      );
+      final neu = fuegeSpielkachelEin(geaendert, k, s0, davor: true);
+      final kampf = neu.firstWhere((x) => x.art == k);
+      expect(kampf.breite, SpielkachelBreite.mittel);
+      expect(kampf.eingeklappt, isTrue);
+    });
   });
 }

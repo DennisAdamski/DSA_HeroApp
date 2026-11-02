@@ -4191,6 +4191,13 @@
         "note": "Geographia Aventurica S. 203 (Chunk 1354) erneut gelesen: zwölf Monate zu 30 Tagen (Praios bis Rahja), fünf Namenlose Tage zwischen 30. Rahja und 1. Praios, Jahreszählung nach Bosparans Fall."
       }
     },
+    "test/rules/derived/aventurian_calendar_rules_test.dart": {
+      "kind": "product_contract",
+      "status": "verified",
+      "summary": "Prüft das Weiterzählen des aventurischen Datums um Tage (Plus-Knopf der Spielseite): Innerhalb eines Monats steigt nur der Tag; nach dem 30. eines Göttermonats beginnt der nächste (Tsa → Phex), nach dem 30. Rahja folgen die Namenlosen Tage, nach dem 5. Namenlosen Tag der 1. Praios im Folgejahr. Die Jahresschreibweise (‚1043 BF‘) bleibt erhalten, ein ganzes Jahr (365 Tage) ergibt dasselbe Datum im Folgejahr, rückwärts rollt über die Jahresgrenze, unlesbare oder außerhalb des Kalenders liegende Angaben ergeben null und unbekannte Felder bleiben erhalten.",
+      "rationale": "Beide Testgruppen und lib/rules/derived/aventurian_calendar_rules.dart gelesen: reine Kalenderarithmetik (Tag im Jahr 1 bis 365, Division durch 365, Monat = Tag ~/ 30) und Zeichenketten-Handling der Jahresangabe. Das Regelwerk trifft zum Weiterzählen per Knopf keine Aussage. Der zugrunde liegende Kalenderaufbau (zwölf Monate zu 30 Tagen, Phex zwischen Tsa und Peraine, fünf Namenlose Tage vor dem 1. Praios) ist bereits im Eintrag zu aventurian_age_rules_test gegen die Geographia Aventurica belegt; hier wird er nur wiederverwendet, nicht neu behauptet.",
+      "sources": []
+    },
     "test/rules/derived/standort_rules_test.dart": {
       "kind": "product_contract",
       "status": "verified",

@@ -253,6 +253,10 @@ class _KartoAbenteuerAbschnittState
                 leer: datum == null,
                 onTap: bearbeitbar ? () => datumAendern(abenteuer) : null,
               ),
+              if (naechsterAbenteuerTag(abenteuer) != null)
+                KartoTagPlusKnopf(
+                  onPressed: bearbeitbar ? datumEinenTagWeiter : null,
+                ),
               _standort(),
             ],
           ),

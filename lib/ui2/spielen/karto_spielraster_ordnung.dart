@@ -2,25 +2,21 @@ import 'package:dsa_heldenverwaltung/domain/hero_spielansicht.dart';
 
 /// Die Kacheln der Spielansicht und was jede erlaubt (SPIEL-07).
 ///
+/// Die Schnellaktionen sind keine Kachel: sie stehen fest im Seitenkopf
+/// zwischen Titel und „Anordnen“. Ein früher gespeicherter Eintrag
+/// `schnellaktionen` wird übergangen und bleibt unverändert erhalten.
+///
 /// Die Reihenfolge der Werte ist die Standardanordnung: zuerst, was am Tisch
 /// ständig gebraucht wird, dann Kampf, Effekte und Zustand, zuletzt, was man
 /// nachschlägt. Breiten, Ausblenden und Einklappen legt die Kachel selbst fest;
 /// gespeicherte Wünsche, die sie nicht erlaubt, fallen beim Auflösen weg.
 enum KartoSpielkachelArt {
-  /// Farbige Schnellaktionen und zuletzt gewürfelte Proben.
-  schnellaktionen(
-    'Schnellaktionen',
-    breiten: SpielkachelBreite.values,
-    standard: SpielkachelBreite.voll,
-    ausblendbar: false,
-    einklappbar: false,
-  ),
-
   /// LeP, AsP, KaP und Ausdauer.
   ressourcen(
     'Ressourcen',
     breiten: SpielkachelBreite.values,
-    standard: SpielkachelBreite.mittel,
+    standard: SpielkachelBreite.voll,
+    gewicht: 120,
     ausblendbar: false,
     einklappbar: false,
   ),
@@ -30,6 +26,7 @@ enum KartoSpielkachelArt {
     'Häufige Proben',
     breiten: SpielkachelBreite.values,
     standard: SpielkachelBreite.mittel,
+    gewicht: 200,
   ),
 
   /// Eigenschaften als Würfelleiste.
@@ -40,6 +37,7 @@ enum KartoSpielkachelArt {
       SpielkachelBreite.voll,
     ],
     standard: SpielkachelBreite.mittel,
+    gewicht: 140,
   ),
 
   /// Kampfproben und Gefecht.
@@ -50,6 +48,7 @@ enum KartoSpielkachelArt {
       SpielkachelBreite.mittel,
     ],
     standard: SpielkachelBreite.schmal,
+    gewicht: 260,
   ),
 
   /// Laufende Zauber und Effekte.
@@ -60,6 +59,7 @@ enum KartoSpielkachelArt {
       SpielkachelBreite.mittel,
     ],
     standard: SpielkachelBreite.schmal,
+    gewicht: 200,
   ),
 
   /// Wunden, Erschöpfung und weitere Zustände.
@@ -70,6 +70,7 @@ enum KartoSpielkachelArt {
       SpielkachelBreite.mittel,
     ],
     standard: SpielkachelBreite.schmal,
+    gewicht: 240,
   ),
 
   /// Begleiter mit laufenden Werten; nur mit Begleitern vorhanden.
@@ -77,6 +78,7 @@ enum KartoSpielkachelArt {
     'Begleiter',
     breiten: SpielkachelBreite.values,
     standard: SpielkachelBreite.schmal,
+    gewicht: 220,
   ),
 
   /// Geld und Verbrauchsgegenstände.
@@ -87,6 +89,7 @@ enum KartoSpielkachelArt {
       SpielkachelBreite.mittel,
     ],
     standard: SpielkachelBreite.schmal,
+    gewicht: 280,
   ),
 
   /// Laufendes Abenteuer mit Standort, Notizen und Personen.
@@ -97,26 +100,30 @@ enum KartoSpielkachelArt {
       SpielkachelBreite.voll,
     ],
     standard: SpielkachelBreite.mittel,
+    gewicht: 450,
   ),
 
   /// Vor- und Nachteile.
   merkmale(
     'Vor- und Nachteile',
     breiten: SpielkachelBreite.values,
-    standard: SpielkachelBreite.mittel,
+    standard: SpielkachelBreite.schmal,
+    gewicht: 300,
   ),
 
   /// Die letzten Würfe.
   protokoll(
     'Würfelprotokoll',
     breiten: SpielkachelBreite.values,
-    standard: SpielkachelBreite.mittel,
+    standard: SpielkachelBreite.schmal,
+    gewicht: 300,
   );
 
   const KartoSpielkachelArt(
     this.titel, {
     required this.breiten,
     required this.standard,
+    required this.gewicht,
     this.ausblendbar = true,
     this.einklappbar = true,
   });
@@ -129,6 +136,14 @@ enum KartoSpielkachelArt {
 
   /// Breite ohne gespeicherten Wunsch.
   final SpielkachelBreite standard;
+
+  /// Richtwert für die Höhe in dp; nur das Verhältnis der Kacheln zählt.
+  ///
+  /// Das Raster wählt die Spalte einer Kachel aus diesen Gewichten und nicht
+  /// aus der echten Höhe. So bleibt die Anordnung stabil, wenn eine Kachel
+  /// eingeklappt wird oder ihr Inhalt wächst. Das Gewicht wird nicht
+  /// gespeichert.
+  final double gewicht;
 
   /// Ob die Kachel von der Seite genommen werden darf.
   final bool ausblendbar;
@@ -310,6 +325,27 @@ List<KartoSpielkachel> verschiebeSpielkachel(
   final ergebnis = [...kacheln];
   final kachel = ergebnis.removeAt(von);
   ergebnis.insert(nach.clamp(0, ergebnis.length), kachel);
+  return List<KartoSpielkachel>.unmodifiable(ergebnis);
+}
+
+/// Fügt die Kachel [gezogen] [davor] oder dahinter an die Kachel [ziel] ein.
+///
+/// Anders als [verschiebeSpielkachel] richtet sich die Stelle nach der
+/// Zielkachel und nicht nach einem Index, den das Entfernen der gezogenen
+/// Kachel verschieben würde. Unbekannte oder gleiche Kacheln ändern nichts.
+List<KartoSpielkachel> fuegeSpielkachelEin(
+  List<KartoSpielkachel> kacheln,
+  KartoSpielkachelArt gezogen,
+  KartoSpielkachelArt ziel, {
+  required bool davor,
+}) {
+  if (gezogen == ziel) return kacheln;
+  final von = kacheln.indexWhere((k) => k.art == gezogen);
+  if (von < 0 || !kacheln.any((k) => k.art == ziel)) return kacheln;
+  final ergebnis = [...kacheln];
+  final kachel = ergebnis.removeAt(von);
+  final stelle = ergebnis.indexWhere((k) => k.art == ziel);
+  ergebnis.insert(davor ? stelle : stelle + 1, kachel);
   return List<KartoSpielkachel>.unmodifiable(ergebnis);
 }
 
