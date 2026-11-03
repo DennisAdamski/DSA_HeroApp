@@ -169,6 +169,9 @@ String? _wirkungstext(HeroTraitEffect wirkung, HeroMerkmal eintrag) {
       };
     case HeroTraitEffectArt.lernspalte:
       return _lernspaltenText(wirkung, eintrag.auswahl.trim());
+    case HeroTraitEffectArt.meisterhandwerk:
+      final auswahl = eintrag.auswahl.trim();
+      return auswahl.isEmpty ? null : 'AsP-Einsatz bei Proben auf $auswahl';
     case HeroTraitEffectArt.unbekannt:
       return null;
   }

@@ -13,6 +13,7 @@ import 'package:dsa_heldenverwaltung/ui_shared/merkmal_herkunft_dialog.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_anzeige_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_wirkung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_zuordnung_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/meisterhandwerk_rules.dart';
 import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
@@ -258,6 +259,29 @@ class _KartoMerkmalsblattState extends ConsumerState<KartoMerkmalsblatt> {
         wert: angaben.wert,
         auswahl: angaben.auswahl,
       );
+    }
+    final bisher = ref
+        .read(heroComputedProvider(widget.heroId))
+        .asData
+        ?.value
+        .hero
+        .vorteilEintraege;
+    if (!mounted) return;
+    if (vorteil &&
+        bisher != null &&
+        meisterhandwerkGrenzeUeberschritten(
+          fuegeMerkmalHinzu(bisher, neu, def: def),
+          catalog: catalog,
+        )) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Meisterhandwerk gilt für höchstens '
+            '$kMeisterhandwerkMaxTalente Talente.',
+          ),
+        ),
+      );
+      return;
     }
     HeroSheet? setupBasis;
     HeroSheet? setup;

@@ -2435,7 +2435,8 @@ traegt vier optionale Felder:
 `resolveTraitChoices(trait, catalog)` fuehrt beides zusammen: feste `choices`
 zuerst, danach die aufgeloeste Quelle alphabetisch, dedupliziert. Bekannte
 Quellen stehen in `kKnownTraitChoiceSources`: `eigenschaften`, `talente`,
-`talente_handwerk`, `talente_kampf_koerper`, `talente_sonstige`,
+`talente_handwerk`, `talente_kampf_koerper`, `talente_meisterhandwerk`,
+`talente_sonstige`,
 `talentgruppen`, `talentgruppen_kampf_koerper`, `talentgruppen_sonstige`,
 `zauber`, `rituale`, `merkmale`, `schlechte_eigenschaften`, `sprachen`,
 `schriften`.

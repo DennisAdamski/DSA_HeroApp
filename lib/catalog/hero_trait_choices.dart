@@ -8,6 +8,14 @@ const List<String> kTraitChoiceCombatBodyTalentGroups = <String>[
   'Körperliche Talente',
 ];
 
+/// Talentgruppen, die Magisches Meisterhandwerk zulaesst (WdH S. 256).
+const List<String> kMeisterhandwerkTalentGroups = <String>[
+  'Körperliche Talente',
+  'Natur Talente',
+  'Gesellschaftliche Talente',
+  'Handwerkliche Talente',
+];
+
 /// Bekannte Werte fuer `HeroTraitDef.choiceSource`.
 ///
 /// Wird von `test/catalog/trait_choice_catalog_test.dart` gegen den echten
@@ -18,6 +26,7 @@ const Set<String> kKnownTraitChoiceSources = <String>{
   'talente',
   'talente_handwerk',
   'talente_kampf_koerper',
+  'talente_meisterhandwerk',
   'talente_sonstige',
   'talentgruppen',
   'talentgruppen_kampf_koerper',
@@ -89,6 +98,18 @@ List<String> _resolveChoiceSource(String source, RulesCatalog? catalog) {
       return _sorted(
         catalog.talents
             .where((talent) => _isGroup(talent.group, 'Handwerkliche Talente'))
+            .map((talent) => talent.name),
+      );
+    case 'talente_meisterhandwerk':
+      // WdH S. 256: nur Körperliche, Natur-, Gesellschafts- oder
+      // Handwerkstalente; Wissenstalente nur ausnahmsweise (freie Eingabe).
+      return _sorted(
+        catalog.talents
+            .where(
+              (talent) => kMeisterhandwerkTalentGroups.any(
+                (known) => _isGroup(talent.group, known),
+              ),
+            )
             .map((talent) => talent.name),
       );
     case 'talente_kampf_koerper':

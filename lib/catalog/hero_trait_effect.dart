@@ -29,6 +29,10 @@ enum HeroTraitEffectArt {
   /// Talentgruppe, Zauber, Merkmal, Ritual, Sprachen/Schriften).
   lernspalte,
 
+  /// Magisches Meisterhandwerk (WdH S. 256, WdZ S. 37): AsP-Einsatz bei
+  /// Proben auf das Talent aus der Auswahl.
+  meisterhandwerk,
+
   /// Von dieser Version nicht verstandene Art; wirkt nicht.
   unbekannt,
 }
@@ -149,6 +153,7 @@ const Map<HeroTraitEffectArt, Set<String>> kHeroTraitEffectZiele =
         'merkmal',
         'ritual',
       },
+      HeroTraitEffectArt.meisterhandwerk: <String>{'talent'},
     };
 
 int? _leseOptionaleZahl(Map<String, dynamic> json, String key) {

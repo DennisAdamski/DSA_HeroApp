@@ -61,7 +61,9 @@ void main() {
     final mitWirkung = <String>{
       for (final trait in alle)
         if (trait.wirkungen.any(
-          (wirkung) => wirkung.art != HeroTraitEffectArt.lernspalte,
+          (wirkung) =>
+              wirkung.art != HeroTraitEffectArt.lernspalte &&
+              wirkung.art != HeroTraitEffectArt.meisterhandwerk,
         ))
           trait.id,
     };
@@ -86,6 +88,24 @@ void main() {
       'dis_astraler_block_zauberer',
       'dis_astraler_block_viertelzauberer',
     });
+  });
+
+  test('Meisterhandwerk wirkt in allen drei Varianten auf das Talent', () {
+    final ziele = <String, String>{
+      for (final trait in alle)
+        for (final wirkung in trait.wirkungen)
+          if (wirkung.art == HeroTraitEffectArt.meisterhandwerk)
+            trait.id: wirkung.ziel,
+    };
+    expect(ziele, <String, String>{
+      'adv_meisterhandwerk_viertelzauberer': 'talent',
+      'adv_meisterhandwerk_halbzauberer': 'talent',
+      'adv_meisterhandwerk_vollzauberer': 'talent',
+    });
+    for (final id in ziele.keys) {
+      final def = alle.singleWhere((trait) => trait.id == id);
+      expect(def.choiceSource, 'talente_meisterhandwerk', reason: id);
+    }
   });
 
   test('jede Begabung und Unfähigkeit verschiebt die Lernspalte', () {

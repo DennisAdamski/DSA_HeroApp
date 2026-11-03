@@ -73,6 +73,19 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   Spalte. Neue Kostenstellen nehmen den Befund, nie `entry.gifted` allein.
   Der Textweg kennt keine Lernspalten (bewusste Ausnahme im
   Äquivalenztest).
+- Magisches Meisterhandwerk (WdH S. 256, WdZ S. 37): die drei Vorteile
+  `adv_meisterhandwerk_viertel/halb/vollzauberer` tragen die Wirkung
+  `meisterhandwerk` (Ziel `talent`) und wählen aus `talente_meisterhandwerk`
+  (Körper-, Natur-, Gesellschafts-, Handwerkstalente; Wissenstalente per
+  Freitext). `meisterhandwerk_rules.dart` liefert Angebot, Vorabeinsatz
+  (+2 TaW je AsP, höchstens doppelter TaW), Rettung und TaP*-Verbesserung
+  (1:1 bis TaP*, darüber bis TaW 2 AsP + 1 Erschöpfung) sowie die Grenze von
+  fünf Talenten über alle Varianten (geprüft in beiden Hinzufügen-Wegen).
+  Der Probendialog bietet es nur über `showLoggedProbeDialog` bei aktiver
+  Magie an; gebucht wird über den Ablauf `MeisterhandwerkEinsetzen` (AsP,
+  Erschöpfung, neutraler Protokolleintrag in einem Dokument). Die
+  Gefechtsbrücke (`singleResolution`) bietet es nicht an. Wie `lernspalte`
+  wirkt es nur über die Katalog-ID.
 - Zauber-Erwerbsblatt: `lib/rules/derived/spell_catalog_filter_rules.dart`
   kombiniert gelernte Repräsentationen, ein Merkmal und Mindestverbreitung.
   Maßgeblich ist die tatsächliche Zauberrepräsentation (`Dru(Elf)2` → `Elf`);

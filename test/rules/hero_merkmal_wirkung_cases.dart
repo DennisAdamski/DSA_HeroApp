@@ -164,12 +164,15 @@ void _merkmalWirkung() {
   });
 
   group('Äquivalenz: Katalog-ID und Textweg rechnen gleich', () {
-    // Bewusste Ausnahme: `lernspalte` (Begabung/Unfähigkeit) wirkt nur über
-    // die Katalog-ID. Der Textweg kannte nie Lernspalten; freie oder
-    // mehrdeutige Begabungstexte wirken erst nach der Zuordnung
-    // (`test/rules/hero_begabung_rules_test.dart`).
+    // Bewusste Ausnahmen: `lernspalte` (Begabung/Unfähigkeit) und
+    // `meisterhandwerk` wirken nur über die Katalog-ID. Der Textweg kannte
+    // beide nie; freie oder mehrdeutige Texte wirken erst nach der Zuordnung
+    // (`test/rules/hero_begabung_rules_test.dart`,
+    // `test/rules/meisterhandwerk_rules_test.dart`).
     bool wirktUeberText(HeroTraitDef def) => def.wirkungen.any(
-      (wirkung) => wirkung.art != HeroTraitEffectArt.lernspalte,
+      (wirkung) =>
+          wirkung.art != HeroTraitEffectArt.lernspalte &&
+          wirkung.art != HeroTraitEffectArt.meisterhandwerk,
     );
     final wirkende = <(HeroTraitDef, bool)>[
       for (final def in vorteile)

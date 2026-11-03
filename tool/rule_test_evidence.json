@@ -9077,6 +9077,30 @@
         "note": "Wege der Helden S. 285 und 290 (Chunk 4809, 4825) und Basisregelwerk S. 184 (Chunk 712) erneut gelesen: Ritualkenntnis der eigenen Tradition kommt mit der Profession, Startwert 3; Elfen 'verfügen über keine spezialisierte Ritualkenntnis' (Astrale Meditation), ihre Traditionsrituale sind Elfenlieder."
       }
     },
+    "test/rules/meisterhandwerk_rules_test.dart": {
+      "kind": "official",
+      "status": "verified",
+      "summary": "Sichert Magisches Meisterhandwerk ab. Bestätigt sind: alle drei Varianten (Viertel-, Halb-, Vollzauberer) wirken auf das gewählte Talent, höchstens fünf Talente insgesamt; vorab +2 TaW je AsP bis höchstens zum doppelten TaW (TaW 7 → 3 AsP), Überschuss bleibt TaP*; nachträglich rettet je fehlendem TaP ein AsP eine misslungene Probe (nicht bei Patzer, nicht bei mehr fehlenden TaP als TaW, gerettet mit TaP* 0); eine gelungene Probe gewinnt je AsP einen TaP* bis zur Höhe ihrer TaP*, jeder weitere TaP* bis zum TaW kostet 2 AsP und 1 Erschöpfung. App-Vertrag sind: Ersatzproben und TaW 0 erhalten kein Angebot, der Roh-TaW kommt aus der Pool-Herleitung, eine gerettete Probe wird nicht weiter verbessert, die Buchungstexte und dass ohne Katalog nichts wirkt.",
+      "sources": [
+        {
+          "title": "Wege der Helden (Vorteil Meisterhandwerk: Talente, Vorab- und Nachtragseinsatz, GP je Zaubererstatus)",
+          "pages": "256",
+          "mcpChunks": [
+            4725
+          ],
+          "checkedOn": "2026-11-02"
+        },
+        {
+          "title": "Wege der Zauberei (Magiedilettanten: Magisches Meisterhandwerk, Rettung, TaP*-Verbesserung, 2 AsP und Erschöpfung bis TaW)",
+          "pages": "37",
+          "mcpChunks": [
+            5034,
+            5035
+          ],
+          "checkedOn": "2026-11-02"
+        }
+      ]
+    },
     "test/rules/meta_talent_rules_test.dart": {
       "kind": "official",
       "status": "conflict",
