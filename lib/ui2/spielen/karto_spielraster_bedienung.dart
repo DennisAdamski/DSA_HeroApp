@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 
 import 'package:dsa_heldenverwaltung/domain/hero_spielansicht.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_kachelgroesse.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_spielraster_ordnung.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
@@ -199,10 +200,19 @@ class KartoAnordnungskarte extends StatefulWidget {
     required this.onNachHinten,
     required this.onBreite,
     required this.onAusblenden,
+    this.vorschau,
   });
 
   /// Wirksame Einstellung der Kachel im Entwurf.
   final KartoSpielkachel kachel;
+
+  /// Baut den Inhalt der Kachel für die Vorschau in der Größenstufe, die sie
+  /// bei der aktuellen Breite hätte; ohne Rückruf entfällt die Vorschau. Die
+  /// Karte sperrt die Bedienung des Inhalts und begrenzt seine Höhe.
+  final Widget Function(KartoKachelGroesse groesse)? vorschau;
+
+  /// Höhe des Vorschaubereichs; längerer Inhalt wird unten ausgeblendet.
+  static const double vorschauHoehe = 180;
 
   /// Eine andere, hierher gezogene Kachel soll [KartoEinfuegeSeite] dieser
   /// Karte eingefügt werden.
@@ -274,6 +284,7 @@ class _KartoAnordnungskarteState extends State<KartoAnordnungskarte> {
                     karte: widget,
                     ziel: ziel,
                     karto: karto,
+                    kachelbreite: constraints.maxWidth,
                     onZieht: (zieht) => setState(() => _zieht = zieht),
                   ),
                   if (ziel && _seite != null)
@@ -297,12 +308,16 @@ class _Karte extends StatelessWidget {
     required this.karte,
     required this.ziel,
     required this.karto,
+    required this.kachelbreite,
     required this.onZieht,
   });
 
   final KartoAnordnungskarte karte;
   final bool ziel;
   final KartoTheme karto;
+
+  /// Breite, die die Kachel im Raster tatsächlich hat.
+  final double kachelbreite;
   final ValueChanged<bool> onZieht;
 
   @override
@@ -386,8 +401,11 @@ class _Karte extends StatelessWidget {
           ),
         ),
         child: ConstrainedBox(
-          // Höhe nach Richtgewicht, damit das Raster seine Spalten zeigt.
-          constraints: BoxConstraints(minHeight: 88 + art.gewicht * 0.25),
+          // Ohne Vorschau Höhe nach Richtgewicht, damit das Raster seine
+          // Spalten zeigt; mit Vorschau bestimmt sie die Höhe.
+          constraints: BoxConstraints(
+            minHeight: widget.vorschau == null ? 88 + art.gewicht * 0.25 : 0,
+          ),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: Abstand.eng),
             child: Column(
@@ -459,10 +477,105 @@ class _Karte extends StatelessWidget {
                       ),
                   ],
                 ),
+                if (widget.vorschau != null)
+                  _Vorschau(
+                    schluessel: schluessel,
+                    karto: karto,
+                    groesse: KartoKachelGroesse.fuerBreite(kachelbreite),
+                    kachelbreite: kachelbreite,
+                    inhalt: widget.vorschau!,
+                  ),
               ],
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+String _groessenName(KartoKachelGroesse groesse) => switch (groesse) {
+  KartoKachelGroesse.kompakt => 'Kompakt',
+  KartoKachelGroesse.normal => 'Normal',
+  KartoKachelGroesse.weit => 'Weit',
+};
+
+/// Gesperrte Vorschau des Kachelinhalts in der Größenstufe der Karte.
+///
+/// Der Inhalt wird mit der echten Kachelbreite ausgelegt, ist aber weder
+/// bedienbar noch fokussierbar noch für Bildschirmleser sichtbar; die Höhe ist
+/// auf [KartoAnordnungskarte.vorschauHoehe] begrenzt und blendet unten aus.
+class _Vorschau extends StatelessWidget {
+  const _Vorschau({
+    required this.schluessel,
+    required this.karto,
+    required this.groesse,
+    required this.kachelbreite,
+    required this.inhalt,
+  });
+
+  final String schluessel;
+  final KartoTheme karto;
+  final KartoKachelGroesse groesse;
+  final double kachelbreite;
+  final Widget Function(KartoKachelGroesse groesse) inhalt;
+
+  @override
+  Widget build(BuildContext context) {
+    final texte = Theme.of(context).textTheme;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: Abstand.eng),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              Abstand.normal,
+              0,
+              Abstand.normal,
+              Abstand.eng,
+            ),
+            child: Text(
+              'Vorschau: ${_groessenName(groesse)} · '
+              '${kachelbreite.round()} dp',
+              key: ValueKey<String>('$schluessel-vorschau-stufe'),
+              style: texte.etikett.copyWith(color: karto.schriftLeise),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(kKartoRadiusKlein),
+            child: Material(
+              color: karto.blatt,
+              child: SizedBox(
+                key: ValueKey<String>('$schluessel-vorschau'),
+                height: KartoAnordnungskarte.vorschauHoehe,
+                child: ShaderMask(
+                  blendMode: BlendMode.dstIn,
+                  shaderCallback: (bounds) => const LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Colors.white, Colors.white, Colors.transparent],
+                    stops: [0, 0.8, 1],
+                  ).createShader(bounds),
+                  child: ExcludeSemantics(
+                    child: ExcludeFocus(
+                      child: IgnorePointer(
+                        child: OverflowBox(
+                          alignment: Alignment.topLeft,
+                          minHeight: 0,
+                          maxHeight: double.infinity,
+                          child: inhalt(groesse),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -87,6 +87,7 @@ void main() {
     Map<String, HeroState>? zustaende,
     TestBestand? bestand,
     double breite = 390,
+    double hoehe = 1000,
     double skalierung = 1,
     Brightness helligkeit = Brightness.light,
     Future<bool> Function()? vorAbenteuer,
@@ -94,7 +95,7 @@ void main() {
     HiveSettingsRepository? einstellungen,
   }) async {
     tester.view.devicePixelRatio = 1;
-    tester.view.physicalSize = Size(breite, 1000);
+    tester.view.physicalSize = Size(breite, hoehe);
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
     final container = ProviderContainer(
@@ -717,12 +718,18 @@ void main() {
       tester,
     ) async {
       final repo = _ZaehlendesRepository(heroes: [weltlich()]);
-      await zeige(tester, held: weltlich(), repository: repo, breite: 1280);
+      await zeige(
+        tester,
+        held: weltlich(),
+        repository: repo,
+        breite: 1280,
+        hoehe: 2400,
+      );
       await tester.tap(k('karto-spiel-anordnen'));
       await tester.pumpAndSettle();
 
-      // Die Karte ist kompakt: der volle Inhalt steht nicht mehr da.
-      expect(find.text('Effekte verwalten'), findsNothing);
+      // Die Karte zeigt den Inhalt nur als gesperrte Vorschau.
+      expect(k('karto-kachel-effekte-vorschau'), findsOneWidget);
 
       final geste = await ziehe(tester, 'zustand', 'ressourcen', 0.1);
       expect(k('karto-einfuegelinie-davor'), findsOneWidget);
@@ -740,7 +747,13 @@ void main() {
       tester,
     ) async {
       final repo = _ZaehlendesRepository(heroes: [weltlich()]);
-      await zeige(tester, held: weltlich(), repository: repo, breite: 1280);
+      await zeige(
+        tester,
+        held: weltlich(),
+        repository: repo,
+        breite: 1280,
+        hoehe: 2400,
+      );
       await tester.tap(k('karto-spiel-anordnen'));
       await tester.pumpAndSettle();
 
@@ -756,7 +769,13 @@ void main() {
     testWidgets('Ziehen und Wegziehen ohne Loslassen auf dem Ziel ändert '
         'nichts', (tester) async {
       final repo = _ZaehlendesRepository(heroes: [weltlich()]);
-      await zeige(tester, held: weltlich(), repository: repo, breite: 1280);
+      await zeige(
+        tester,
+        held: weltlich(),
+        repository: repo,
+        breite: 1280,
+        hoehe: 2400,
+      );
       await tester.tap(k('karto-spiel-anordnen'));
       await tester.pumpAndSettle();
 
@@ -855,6 +874,86 @@ void main() {
         expect(tester.takeException(), isNull);
       });
     }
+
+    testWidgets('Anordnen zeigt je Kachel eine Vorschau mit Größenstufe', (
+      tester,
+    ) async {
+      await zeige(
+        tester,
+        held: magisch().copyWith(adventures: const [_nebel]),
+        breite: 1280,
+        hoehe: 4000,
+      );
+      await tester.tap(k('karto-spiel-anordnen'));
+      await tester.pumpAndSettle();
+
+      for (final id in [
+        'ressourcen',
+        'eigenschaften',
+        'zustand',
+        'abenteuer',
+      ]) {
+        expect(k('karto-kachel-$id-vorschau'), findsOneWidget, reason: id);
+        expect(k('karto-kachel-$id-vorschau-stufe'), findsOneWidget);
+      }
+      // Ressourcen liegen auf ganzer Breite: weit.
+      expect(
+        find.descendant(
+          of: k('karto-kachel-ressourcen'),
+          matching: find.textContaining('Vorschau: Weit'),
+        ),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('Vorschau folgt der gewählten Breite', (tester) async {
+      await zeige(tester, held: weltlich(), breite: 1280, hoehe: 4000);
+      await tester.tap(k('karto-spiel-anordnen'));
+      await tester.pumpAndSettle();
+      Finder stufe(String text) => find.descendant(
+        of: k('karto-kachel-ressourcen'),
+        matching: find.textContaining('Vorschau: $text'),
+      );
+
+      expect(stufe('Weit'), findsOneWidget);
+      expect(k('karto-ressource-lebensenergie-plus-1'), findsOneWidget);
+
+      await tester.tap(k('karto-kachel-ressourcen-breite'));
+      await tester.pumpAndSettle();
+      await tester.tap(k('karto-kachel-ressourcen-breite-schmal'));
+      await tester.pumpAndSettle();
+
+      expect(stufe('Weit'), findsNothing);
+      expect(k('karto-ressource-lebensenergie-plus-1'), findsNothing);
+    });
+
+    testWidgets('die Vorschau ist nicht bedienbar und schreibt nichts', (
+      tester,
+    ) async {
+      final bestand = TestBestand();
+      final repo = _ZaehlendesRepository(heroes: [weltlich()]);
+      await zeige(
+        tester,
+        held: weltlich(),
+        repository: repo,
+        bestand: bestand,
+        breite: 1280,
+        hoehe: 4000,
+      );
+      await tester.tap(k('karto-spiel-anordnen'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(
+        k('karto-ressource-lebensenergie-plus-1'),
+        warnIfMissed: false,
+      );
+      await tester.pump();
+      expect(bestand.aufrufe, isEmpty);
+
+      await tester.tap(k('karto-spiel-anordnen-fertig'));
+      await tester.pumpAndSettle();
+      expect(repo.speicherungen, 0);
+    });
   });
 
   group('Ressourcen-Schritte (SPIEL-07)', () {

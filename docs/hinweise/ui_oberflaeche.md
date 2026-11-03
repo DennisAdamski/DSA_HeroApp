@@ -133,9 +133,14 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   fehlende Kacheln an ihre Standardstelle und übergeht unbekannte IDs,
   `schreibeSpielansicht` lässt diese samt unbekannter Felder an ihrer Stelle
   stehen und schreibt die Standardbreite nicht. „Anordnen“ im Seitenkopf
-  öffnet nach `vorHeldenbearbeitung` einen Entwurf. Darin steht statt des
-  vollen Inhalts je Kachel eine kompakte `KartoAnordnungskarte` (Symbol, Titel,
-  Breite; gleiche Spalte wie später): Ziehen am Griff oder am Titel (nach
+  öffnet nach `vorHeldenbearbeitung` einen Entwurf. Darin steht je Kachel eine
+  `KartoAnordnungskarte` (Symbol, Titel, Breite; gleiche Spalte wie später) mit
+  gesperrter **Live-Vorschau** des echten Inhalts (Key `karto-kachel-<id>-vorschau`,
+  Etikett mit Stufe und Breite `…-vorschau-stufe`): der Inhalt wird in der
+  Größenstufe der echten Kachelbreite gebaut (`vorschau`-Rückruf aus `_kachel`),
+  ist mit `IgnorePointer`/`ExcludeFocus`/`ExcludeSemantics` nicht bedienbar, 180 dp
+  hoch (`vorschauHoehe`) und blendet unten aus; sie folgt sofort einer geänderten
+  Breite. Ziehen am Griff oder am Titel (nach
   kurzem Halten), eine Einfügelinie zeigt „davor“ oder „danach“, abgelegt wird
   einfügend (`fuegeSpielkachelEin`), dazu Pfeile, Breitenmenü, Ausblenden,
   „Standard“; erst „Fertig“ schreibt einmal frisch

@@ -244,6 +244,13 @@ class _KartoSpielansichtState extends ConsumerState<KartoSpielansicht> {
         onAusblenden: art.ausblendbar
             ? () => _aendereEntwurf(art, (k) => k.copyWith(ausgeblendet: true))
             : null,
+        // Der echte Inhalt in der Stufe, die die Kachel bei dieser Breite
+        // hätte; ausgeklappt, damit man sieht, was darin steht.
+        vorschau: (groesse) => KartoKachelSteuerung(
+          kennung: art.id,
+          groesse: groesse,
+          child: _inhalt(context, werte, art, ref),
+        ),
       );
     }
     // Die Größenstufe folgt der echten Kachelbreite; das Raster legt seine
