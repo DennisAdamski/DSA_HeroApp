@@ -8,7 +8,8 @@ import 'package:dsa_heldenverwaltung/ui2/spielen/karto_info_chip.dart';
 /// Öffnet [uri] außerhalb der App; `false` meldet, dass nichts geöffnet wurde.
 typedef KartoLinkOeffner = Future<bool> Function(Uri uri);
 
-Future<bool> _oeffneExtern(Uri uri) =>
+/// Öffnet [uri] im Browser bzw. in der zuständigen App außerhalb der App.
+Future<bool> oeffneExtern(Uri uri) =>
     launchUrl(uri, mode: LaunchMode.externalApplication);
 
 /// Standort des Helden als Marke samt Kartenlink, für den Abenteuerabschnitt.
@@ -23,7 +24,7 @@ class KartoStandortZeile extends StatelessWidget {
     super.key,
     required this.standort,
     required this.onSpeichern,
-    this.oeffneLink = _oeffneExtern,
+    this.oeffneLink = oeffneExtern,
   });
 
   /// Gespeicherter Standort; leer, solange keiner festgehalten ist.

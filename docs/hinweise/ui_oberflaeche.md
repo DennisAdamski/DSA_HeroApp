@@ -360,7 +360,11 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   (`lib/ui2/spielen/karto_abenteuerblatt.dart`, Dialoge geteilt in
   `karto_abenteuer_dialoge.dart`): Datum, Zusammenfassung,
   Notizen und Personen lesen und pflegen, Abschluss und Belohnungen bleiben in
-  der Verwaltung. Notizen und Personen sind sortierbar
+  der Verwaltung. Der Datumsdialog (`KartoDatumDialog`) zeigt unter den Feldern
+  die **Feiertage in der Nähe** des gewählten Tages (7 Tage davor, 14 danach;
+  Rechnung in `feiertageInDerNaehe`, nicht im Widget), folgt Tag und Monat
+  sofort und verlinkt die Feiertagsliste der Wiki Aventurica über den
+  injizierbaren `KartoLinkOeffner` (`oeffneExtern` aus `karto_standort.dart`). Notizen und Personen sind sortierbar
   (`karto_abenteuer_sortierung.dart`: zuletzt bearbeitet, neueste, älteste,
   alphabetisch); die Wahl ist die geräteweite Einstellung
   `AppSettings.abenteuerSortierung` und schreibt nie den Helden. „Zuletzt

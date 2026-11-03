@@ -2,7 +2,13 @@ import 'package:flutter/material.dart';
 
 import 'package:dsa_heldenverwaltung/domain/aventurian_date.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_adventure_entry.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/aventurian_age_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/aventurian_holiday_data.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/aventurian_holiday_rules.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_standort.dart';
+import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
+import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
 
 // Eingabedialoge für Abenteuerblatt und Abenteuerabschnitt (Notiz, Person,
 // Zusammenfassung, Datum). Sie schließen sich selbst und geben nur ihr
@@ -228,10 +234,21 @@ class _KartoTextDialogState extends State<KartoTextDialog> {
 }
 
 /// Aventurisches Datum: Tag, Göttermonat aus dem kanonischen Kalender, Jahr.
+///
+/// Unter den Feldern stehen die Feiertage in der Nähe des gewählten Tages (siehe
+/// `feiertageInDerNaehe`); sie folgen den Eingaben sofort. Ein Link führt zur
+/// umfassenderen Liste der Wiki Aventurica.
 class KartoDatumDialog extends StatefulWidget {
-  const KartoDatumDialog({super.key, required this.initial});
+  const KartoDatumDialog({
+    super.key,
+    required this.initial,
+    this.oeffneLink = oeffneExtern,
+  });
 
   final HeroAdventureDateValue initial;
+
+  /// Öffnet den Link zur Feiertagsliste; in Tests ersetzbar.
+  final KartoLinkOeffner oeffneLink;
 
   @override
   State<KartoDatumDialog> createState() => _KartoDatumDialogState();
@@ -247,15 +264,46 @@ class _KartoDatumDialogState extends State<KartoDatumDialog> {
   late String _monat = normalizeAventurianMonth(widget.initial.month);
 
   @override
+  void initState() {
+    super.initState();
+    _tag.addListener(_tagGeaendert);
+  }
+
+  @override
   void dispose() {
+    _tag.removeListener(_tagGeaendert);
     _tag.dispose();
     _jahr.dispose();
     super.dispose();
   }
 
+  // Die Feiertage hängen am Tag; Cursorbewegungen im Feld ändern den Text nicht.
+  late String _letzterTag = widget.initial.day;
+
+  void _tagGeaendert() {
+    if (_tag.text == _letzterTag) return;
+    setState(() => _letzterTag = _tag.text);
+  }
+
+  Future<void> _oeffneWiki() async {
+    final bote = ScaffoldMessenger.maybeOf(context);
+    var geoeffnet = false;
+    try {
+      geoeffnet = await widget.oeffneLink(Uri.parse(feiertagWikiListeUrl));
+    } catch (_) {
+      geoeffnet = false;
+    }
+    if (!geoeffnet) {
+      bote?.showSnackBar(
+        const SnackBar(content: Text('Der Link konnte nicht geöffnet werden.')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
+      scrollable: true,
       title: const Text('Aktuelles Datum'),
       content: SizedBox(
         width: Breite.klein,
@@ -293,6 +341,11 @@ class _KartoDatumDialogState extends State<KartoDatumDialog> {
                 suffixText: 'BF',
               ),
             ),
+            const SizedBox(height: Abstand.bahn),
+            _Feiertage(
+              datum: AventurianDate(day: _tag.text.trim(), month: _monat),
+              onWiki: _oeffneWiki,
+            ),
           ],
         ),
       ),
@@ -310,6 +363,100 @@ class _KartoDatumDialogState extends State<KartoDatumDialog> {
             ),
           ),
           child: const Text('Speichern'),
+        ),
+      ],
+    );
+  }
+}
+
+// Feiertage in der Nähe des Datums im Datumsdialog. Gerechnet wird in
+// `feiertageInDerNaehe`; hier wird nur angezeigt.
+class _Feiertage extends StatelessWidget {
+  const _Feiertage({required this.datum, required this.onWiki});
+
+  final AventurianDate datum;
+  final VoidCallback onWiki;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final leise = textTheme.etikett.copyWith(color: context.karto.schriftLeise);
+    final lesbar = aventurianDayOfYear(datum) != null;
+    final treffer = feiertageInDerNaehe(datum);
+
+    return Column(
+      key: const ValueKey<String>('karto-datum-feiertage'),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Feiertage in der Nähe', style: textTheme.titleSmall),
+        const SizedBox(height: Abstand.normal),
+        if (!lesbar)
+          Text('Tag und Monat wählen, um Feiertage zu sehen.', style: leise)
+        else if (treffer.isEmpty)
+          Text('Keine Feiertage in der Nähe.', style: leise)
+        else
+          for (var i = 0; i < treffer.length; i++)
+            Padding(
+              padding: const EdgeInsets.only(bottom: Abstand.normal),
+              child: _FeiertagZeile(
+                key: ValueKey<String>('karto-datum-feiertag-$i'),
+                treffer: treffer[i],
+              ),
+            ),
+        Align(
+          alignment: AlignmentDirectional.centerStart,
+          child: TextButton.icon(
+            key: const ValueKey<String>('karto-datum-feiertage-wiki'),
+            onPressed: onWiki,
+            icon: const Icon(Icons.open_in_new, size: 16),
+            label: const Text('Mehr Feiertage: Wiki Aventurica'),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _FeiertagZeile extends StatelessWidget {
+  const _FeiertagZeile({super.key, required this.treffer});
+
+  final FeiertagTreffer treffer;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final feiertag = treffer.feiertag;
+    final geltung = feiertagGeltungText(feiertag);
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 88,
+          child: Text(
+            feiertagAbstandText(treffer.abstandTage),
+            style: textTheme.etikett.copyWith(
+              color: context.karto.schriftLeise,
+            ),
+          ),
+        ),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '${feiertagDatumText(feiertag)} · ${feiertag.name}',
+                style: textTheme.bodyMedium,
+              ),
+              if (geltung.isNotEmpty)
+                Text(
+                  geltung,
+                  style: textTheme.etikett.copyWith(
+                    color: context.karto.schriftLeise,
+                  ),
+                ),
+            ],
+          ),
         ),
       ],
     );

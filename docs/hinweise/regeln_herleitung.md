@@ -106,6 +106,19 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   die Appearance-Felder landen flach im Helden-JSON und gehen in
   `heroContentHash` ein — sonst ändert sich jeder Bestandsheld und der
   Konto-Sync meldet beim nächsten Speichern Konflikte.
+- Feiertage: `lib/domain/aventurischer_feiertag.dart` (Modell, nicht
+  persistiert) und die Tabelle `aventurischeFeiertage` in
+  `lib/rules/derived/aventurian_holiday_data.dart`; Grundstock ist die Liste
+  „Fest- und Feiertage“ der Geographia Aventurica (S. 203 f.), die umfassendere
+  Liste führt die Wiki Aventurica (`feiertagWikiListeUrl`). Eingetragen werden
+  nur Kurzfakten (Name, Datum, `art`, `gottheit`, `verbreitung`), keine
+  Beschreibungstexte aus Regelwerken (Regel 13). Nicht aufgenommen sind Feste mit
+  Wochentag- oder Mondbezug und die monatsfüllenden Theaterfestspiele; das
+  Modell kennt nur datumsfeste Tage. `feiertageInDerNaehe`
+  (`aventurian_holiday_rules.dart`) rechnet zyklisch über 365 Tage inkl.
+  Namenloser Tage; der Parameter `filter` ist der Haken für die spätere
+  Einschränkung nach Region, Volk oder Kirche (`art`/`verbreitung` tragen die
+  Daten dafür).
 - Traditionen und Leiteigenschaften stehen in
   `lib/rules/derived/tradition_rules.dart` (Wege der Zauberei S. 19). Die
   Traditionen eines Helden sind die Vereinigung aus `representationen` und den
