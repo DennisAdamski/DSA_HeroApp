@@ -4198,6 +4198,13 @@
       "rationale": "Beide Testgruppen und lib/rules/derived/aventurian_calendar_rules.dart gelesen: reine Kalenderarithmetik (Tag im Jahr 1 bis 365, Division durch 365, Monat = Tag ~/ 30) und Zeichenketten-Handling der Jahresangabe. Das Regelwerk trifft zum Weiterzählen per Knopf keine Aussage. Der zugrunde liegende Kalenderaufbau (zwölf Monate zu 30 Tagen, Phex zwischen Tsa und Peraine, fünf Namenlose Tage vor dem 1. Praios) ist bereits im Eintrag zu aventurian_age_rules_test gegen die Geographia Aventurica belegt; hier wird er nur wiederverwendet, nicht neu behauptet.",
       "sources": []
     },
+    "test/rules/derived/reiseroute_rules_test.dart": {
+      "kind": "product_contract",
+      "status": "verified",
+      "summary": "Prüft die Reiseroute des Helden: Stationen ordnen sich nach dem aventurischen Kalender (auch über Monats-, Namenlose-Tage- und Jahresgrenzen), Stationen ohne Datum bleiben hinter ihrem Vorgänger, gleicher Tag behält die Erfassungsreihenfolge. Etappen nennen Tage und Luftlinie zur vorigen Station (eine Karteneinheit = drei Meilen), der Abenteuerfilter nummeriert neu. Der Vorschlag einer neuen Station übernimmt bereinigten Standort, Datum und laufendes Abenteuer; Hinzufügen, Ersetzen und Entfernen wirken gezielt per ID, ein Held ohne Stationen schreibt keinen Schlüssel.",
+      "rationale": "Testdatei und lib/rules/derived/reiseroute_rules.dart gelesen: reine Produktlogik (Sortierung, Kalenderarithmetik über aventurian_age_rules, Listenänderungen per copyWith). Das Regelwerk trifft zur Reiseroute keine Aussage; der Kalenderaufbau ist im Eintrag zu aventurian_age_rules_test belegt, der Maßstab von drei Meilen je Karteneinheit stammt aus der Avesmaps-API-Dokumentation und wird hier nicht als Regel behauptet.",
+      "sources": []
+    },
     "test/rules/derived/standort_rules_test.dart": {
       "kind": "product_contract",
       "status": "verified",

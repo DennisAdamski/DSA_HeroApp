@@ -103,6 +103,14 @@ enum KartoSpielkachelArt {
     gewicht: 450,
   ),
 
+  /// Reiseroute: Stationen mit Ort, Datum und Notiz.
+  reiseroute(
+    'Reiseroute',
+    breiten: SpielkachelBreite.values,
+    standard: SpielkachelBreite.schmal,
+    gewicht: 280,
+  ),
+
   /// Vor- und Nachteile.
   merkmale(
     'Vor- und Nachteile',

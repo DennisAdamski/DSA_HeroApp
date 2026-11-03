@@ -165,6 +165,7 @@ IconData spielkachelSymbol(KartoSpielkachelArt art) => switch (art) {
   KartoSpielkachelArt.begleiter => Icons.pets_outlined,
   KartoSpielkachelArt.dabei => Icons.backpack_outlined,
   KartoSpielkachelArt.abenteuer => Icons.map_outlined,
+  KartoSpielkachelArt.reiseroute => Icons.route_outlined,
   KartoSpielkachelArt.merkmale => Icons.workspace_premium_outlined,
   KartoSpielkachelArt.protokoll => Icons.history,
 };

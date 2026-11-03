@@ -138,6 +138,9 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   ordnen sich um, statt nur zu strecken. „Dabei“ hält Betrag,
   Stift und Münzschritte beieinander und lässt die Verbrauchsgegenstände ab
   `kDabeiZweispaltigAb` (560 dp Kachelbreite) zweispaltig fließen.
+  Die Kachel „Reiseroute“ (`karto_reiseroute.dart`) zeigt die jüngsten
+  Stationen von `HeroSheet.reiseStationen` als Zeitleiste und öffnet das
+  Reiseroute-Blatt; Details in [reiseroute_plan.md](../reiseroute_plan.md).
 - **Vor- und Nachteile bearbeitet UI2 im Merkmalsblatt**
   (`lib/ui2/merkmale/`), nach dem Muster des Abenteuerblatts: modal, eigener
   Schreibweg über `HeroActions.updateHero` und `aendereMerkmale`

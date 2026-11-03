@@ -34,6 +34,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_meta_talent.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_note_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_proben_favorit.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_regelprofil.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_reise_station.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_reisebericht.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_resource_activation_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_rituals.dart';
@@ -549,6 +550,29 @@ final _begleiterAbenteuerNotizen = <_Modell>[
             .toJson(),
     unbekannt: (json) =>
         HeroAdventurePersonEntry.fromJson(json).unbekannteFelder,
+  ),
+  _Modell(
+    'HeroReiseStation',
+    schluessel: HeroReiseStation.jsonSchluessel,
+    voll: () => HeroReiseStation(
+      id: 's1',
+      ort: 'Gareth',
+      datum: const HeroAdventureDateValue(
+        day: '1',
+        month: 'praios',
+        year: '1040',
+      ),
+      notiz: 'Ankunft',
+      adventureId: 'a1',
+      ortId: 'o1',
+      kartenX: 512.5,
+      kartenY: 600,
+      lastModified: DateTime.utc(2026, 3, 1),
+    ).toJson(),
+    lade: (json) => HeroReiseStation.fromJson(json).toJson(),
+    bearbeite: (json) =>
+        HeroReiseStation.fromJson(json).copyWith(notiz: 'N').toJson(),
+    unbekannt: (json) => HeroReiseStation.fromJson(json).unbekannteFelder,
   ),
   _Modell(
     'HeroAdventureLootEntry',

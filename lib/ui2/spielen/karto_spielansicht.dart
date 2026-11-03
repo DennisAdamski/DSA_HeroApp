@@ -26,6 +26,7 @@ import 'package:dsa_heldenverwaltung/ui2/spielen/karto_dabei_abschnitt.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_kachelgroesse.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_kachelraster.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_laufendes_abenteuer.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_reiseroute.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_ressourcenleiste.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_spielaktionen.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_spielraster_bedienung.dart';
@@ -285,6 +286,10 @@ class _KartoSpielansichtState extends ConsumerState<KartoSpielansicht> {
     KartoSpielkachelArt.begleiter => _begleiter(context, werte),
     KartoSpielkachelArt.dabei => _dabei(context, werte),
     KartoSpielkachelArt.abenteuer => _abenteuer(context, werte, leser),
+    KartoSpielkachelArt.reiseroute => KartoReiserouteKachel(
+      heroId: heroId,
+      stationen: werte.hero.reiseStationen,
+    ),
     KartoSpielkachelArt.merkmale => _merkmale(context, werte, leser),
     KartoSpielkachelArt.protokoll => _protokoll(context, werte),
   };
