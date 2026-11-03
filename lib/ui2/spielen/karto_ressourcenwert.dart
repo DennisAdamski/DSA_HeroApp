@@ -38,6 +38,8 @@ class KartoRessourcenwert extends StatelessWidget {
     this.farbe,
     this.kuerzel,
     this.onBearbeiten,
+    this.onSchritt,
+    this.schluessel,
   });
 
   /// Ausgeschriebener Name, etwa `Lebenspunkte`.
@@ -62,6 +64,20 @@ class KartoRessourcenwert extends StatelessWidget {
 
   /// Oeffnet die Bearbeitung. `null` blendet das Bearbeitungsziel aus.
   final VoidCallback? onBearbeiten;
+
+  /// Meldet einen Schritt der Knoepfe unter dem Balken (`-5`, `-1`, `1`, `5`).
+  /// `null` blendet die Knopfreihe aus.
+  ///
+  /// Das Widget meldet nur den Schritt; gerechnet wird beim Speichern auf dem
+  /// gespeicherten Wert, nie auf dem hier gezeigten.
+  final ValueChanged<int>? onSchritt;
+
+  /// Namensteil der Schluessel der Knoepfe, etwa `lebensenergie` fuer
+  /// `karto-ressource-lebensenergie-plus-1`.
+  final String? schluessel;
+
+  /// Schritte der Knopfreihe, von klein nach gross.
+  static const List<int> schritte = <int>[-5, -1, 1, 5];
 
   /// Abstand zum Maximum in Worten, oder `null` ohne [kuerzel] und Maximum.
   ///
@@ -179,6 +195,24 @@ class KartoRessourcenwert extends StatelessWidget {
               ),
             ),
           ),
+          if (onSchritt != null) ...[
+            const SizedBox(height: Abstand.normal),
+            Row(
+              children: [
+                for (final (i, schritt) in schritte.indexed) ...[
+                  if (i > 0) const SizedBox(width: Abstand.eng),
+                  Expanded(
+                    child: _SchrittKnopf(
+                      schluesselTeil: 'karto-ressource-${schluessel ?? 'wert'}',
+                      bezeichnung: bezeichnung,
+                      schritt: schritt,
+                      onSchritt: onSchritt!,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ],
         ],
       ),
     );
@@ -192,6 +226,45 @@ class KartoRessourcenwert extends StatelessWidget {
           borderRadius: BorderRadius.circular(kKartoRadiusKlein),
           child: inhalt,
         ),
+      ),
+    );
+  }
+}
+
+/// Ein Knopf der Schrittreihe unter dem Balken.
+///
+/// Mindestens 48 dp hoch; die Breite teilen sich die vier Knoepfe der Reihe.
+/// Das Minuszeichen ist das echte „−“ (U+2212), nicht der Bindestrich.
+class _SchrittKnopf extends StatelessWidget {
+  const _SchrittKnopf({
+    required this.schluesselTeil,
+    required this.bezeichnung,
+    required this.schritt,
+    required this.onSchritt,
+  });
+
+  final String schluesselTeil;
+  final String bezeichnung;
+  final int schritt;
+  final ValueChanged<int> onSchritt;
+
+  @override
+  Widget build(BuildContext context) {
+    final karto = context.karto;
+    final beschriftung = schritt < 0 ? '\u2212${-schritt}' : '+$schritt';
+    final name = schritt < 0 ? 'minus-${-schritt}' : 'plus-$schritt';
+    return Tooltip(
+      message: '$bezeichnung $beschriftung',
+      child: OutlinedButton(
+        key: ValueKey<String>('$schluesselTeil-$name'),
+        onPressed: () => onSchritt(schritt),
+        style: OutlinedButton.styleFrom(
+          minimumSize: const Size(0, 48),
+          padding: EdgeInsets.zero,
+          foregroundColor: karto.schrift,
+          side: BorderSide(color: karto.hoehenlinie),
+        ),
+        child: Text(beschriftung),
       ),
     );
   }

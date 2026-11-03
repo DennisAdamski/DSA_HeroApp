@@ -41,6 +41,76 @@ Future<void> zeigeRessourcenBlatt({
   );
 }
 
+String _kurzName(KartoRessource ressource) => switch (ressource) {
+  KartoRessource.lebensenergie => 'LeP',
+  KartoRessource.ausdauer => 'AuP',
+  KartoRessource.astralenergie => 'AsP',
+  KartoRessource.karma => 'KaP',
+};
+
+int _aktuellVon(HeroState state, KartoRessource ressource) =>
+    switch (ressource) {
+      KartoRessource.lebensenergie => state.currentLep,
+      KartoRessource.ausdauer => state.currentAu,
+      KartoRessource.astralenergie => state.currentAsp,
+      KartoRessource.karma => state.currentKap,
+    };
+
+HeroState _mitWertVon(HeroState state, KartoRessource ressource, int wert) =>
+    switch (ressource) {
+      KartoRessource.lebensenergie => state.copyWith(currentLep: wert),
+      KartoRessource.ausdauer => state.copyWith(currentAu: wert),
+      KartoRessource.astralenergie => state.copyWith(currentAsp: wert),
+      KartoRessource.karma => state.copyWith(currentKap: wert),
+    };
+
+/// Wendet [aenderung] auf den **frisch geladenen** Wert der [ressource] an.
+///
+/// Gemeinsamer Schreibweg für das Ressourcenblatt und die Knöpfe der
+/// Spielansicht: Der Zustand wird neu gelesen, nur diese eine Ressource
+/// ersetzt und nie auf einem beim Rendern erfassten Wert gerechnet. Dadurch
+/// zählt auch jeder schnelle Klick.
+Future<void> schreibeRessourcenAenderung({
+  required BuildContext context,
+  required WidgetRef ref,
+  required String heroId,
+  required KartoRessource ressource,
+  required RessourcenAenderung aenderung,
+}) {
+  return aendereZustandMitMeldung(
+    context: context,
+    ref: ref,
+    heroId: heroId,
+    was: _kurzName(ressource),
+    aenderung: (aktuell) => _mitWertVon(
+      aktuell,
+      ressource,
+      aenderung.wendeAn(_aktuellVon(aktuell, ressource)),
+    ),
+  );
+}
+
+/// Verschiebt die [ressource] um [schritt], nie unter [kVitalFloor].
+///
+/// Wie im Blatt gibt es keine Obergrenze: Überheilung bleibt möglich. Die
+/// Untergrenze bleibt hier und nicht in der Oberfläche, damit UI2 keine Regel
+/// kennt.
+Future<void> schreibeRessourcenSchritt({
+  required BuildContext context,
+  required WidgetRef ref,
+  required String heroId,
+  required KartoRessource ressource,
+  required int schritt,
+}) {
+  return schreibeRessourcenAenderung(
+    context: context,
+    ref: ref,
+    heroId: heroId,
+    ressource: ressource,
+    aenderung: RessourcenAenderung.schritt(schritt, untergrenze: kVitalFloor),
+  );
+}
+
 // Liest den gemeinsamen Snapshot und speichert über den vorhandenen Schreibweg.
 class _RessourcenBlatt extends ConsumerWidget {
   const _RessourcenBlatt({required this.heroId, required this.ressource});
@@ -48,12 +118,7 @@ class _RessourcenBlatt extends ConsumerWidget {
   final String heroId;
   final KartoRessource ressource;
 
-  String get _kurz => switch (ressource) {
-    KartoRessource.lebensenergie => 'LeP',
-    KartoRessource.ausdauer => 'AuP',
-    KartoRessource.astralenergie => 'AsP',
-    KartoRessource.karma => 'KaP',
-  };
+  String get _kurz => _kurzName(ressource);
 
   String get _lang => switch (ressource) {
     KartoRessource.lebensenergie => 'Lebenspunkte',
@@ -69,34 +134,20 @@ class _RessourcenBlatt extends ConsumerWidget {
     KartoRessource.karma => VitalKind.kap,
   };
 
-  int _aktuell(HeroState state) => switch (ressource) {
-    KartoRessource.lebensenergie => state.currentLep,
-    KartoRessource.ausdauer => state.currentAu,
-    KartoRessource.astralenergie => state.currentAsp,
-    KartoRessource.karma => state.currentKap,
-  };
+  int _aktuell(HeroState state) => _aktuellVon(state, ressource);
 
-  HeroState _mitWert(HeroState state, int wert) => switch (ressource) {
-    KartoRessource.lebensenergie => state.copyWith(currentLep: wert),
-    KartoRessource.ausdauer => state.copyWith(currentAu: wert),
-    KartoRessource.astralenergie => state.copyWith(currentAsp: wert),
-    KartoRessource.karma => state.copyWith(currentKap: wert),
-  };
-
-  // Gemeinsamer Schreibweg: frisch laden, die Änderung auf den gespeicherten
-  // Wert anwenden und nur diese Ressource ersetzen.
+  // Gemeinsamer Schreibweg: siehe [schreibeRessourcenAenderung].
   Future<void> _speichere(
     BuildContext context,
     WidgetRef ref,
     RessourcenAenderung aenderung,
-  ) async {
-    await aendereZustandMitMeldung(
+  ) {
+    return schreibeRessourcenAenderung(
       context: context,
       ref: ref,
       heroId: heroId,
-      was: _kurz,
-      aenderung: (current) =>
-          _mitWert(current, aenderung.wendeAn(_aktuell(current))),
+      ressource: ressource,
+      aenderung: aenderung,
     );
   }
 

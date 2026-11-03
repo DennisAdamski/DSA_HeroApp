@@ -572,6 +572,24 @@ class KartoBestandsAdapterImpl
     );
   }
 
+  /// Verschiebt die Ressource über den gemeinsamen Zustandsweg des Blatts.
+  @override
+  Future<void> ressourceSchritt({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String heroId,
+    required KartoRessource ressource,
+    required int schritt,
+  }) {
+    return schreibeRessourcenSchritt(
+      context: context,
+      ref: ref,
+      heroId: heroId,
+      ressource: ressource,
+      schritt: schritt,
+    );
+  }
+
   /// Schreibt den laufenden Wert über den gemeinsamen Zustandsweg.
   @override
   Future<void> begleiterWertAendern({

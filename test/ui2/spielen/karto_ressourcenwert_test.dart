@@ -13,6 +13,7 @@ void main() {
     required int maximum,
     String? kuerzel,
     VoidCallback? onBearbeiten,
+    ValueChanged<int>? onSchritt,
     double breite = 320,
     double skalierung = 1,
   }) async {
@@ -38,6 +39,8 @@ void main() {
             maximum: maximum,
             kuerzel: kuerzel,
             onBearbeiten: onBearbeiten,
+            onSchritt: onSchritt,
+            schluessel: 'lebensenergie',
           ),
         ),
       ),
@@ -213,5 +216,83 @@ void main() {
     expect(balken(), inExclusiveRange(0.25, 0.75));
     await tester.pumpAndSettle();
     expect(balken(), 0.75);
+  });
+
+  group('Schrittknöpfe', () {
+    Finder knopf(String name) =>
+        find.byKey(ValueKey<String>('karto-ressource-lebensenergie-$name'));
+
+    testWidgets('ohne Rückruf gibt es keine Knöpfe', (tester) async {
+      await zeige(tester, aktuell: 23, maximum: 35, onBearbeiten: () {});
+      for (final name in ['minus-5', 'minus-1', 'plus-1', 'plus-5']) {
+        expect(knopf(name), findsNothing);
+      }
+    });
+
+    testWidgets('jeder Knopf meldet genau seinen Schritt', (tester) async {
+      final schritte = <int>[];
+      await zeige(
+        tester,
+        aktuell: 23,
+        maximum: 35,
+        onBearbeiten: () {},
+        onSchritt: schritte.add,
+      );
+      for (final name in ['minus-5', 'minus-1', 'plus-1', 'plus-5']) {
+        await tester.tap(knopf(name));
+      }
+      await tester.pump();
+      expect(schritte, [-5, -1, 1, 5]);
+    });
+
+    testWidgets('ein Schritt öffnet nicht zusätzlich die Bearbeitung', (
+      tester,
+    ) async {
+      var geoeffnet = 0;
+      await zeige(
+        tester,
+        aktuell: 23,
+        maximum: 35,
+        onBearbeiten: () => geoeffnet++,
+        onSchritt: (_) {},
+      );
+      await tester.tap(knopf('plus-1'));
+      await tester.pump();
+      expect(geoeffnet, 0);
+    });
+
+    testWidgets('Knöpfe sind mindestens 48 dp hoch und benannt', (
+      tester,
+    ) async {
+      await zeige(tester, aktuell: 23, maximum: 35, onSchritt: (_) {});
+      for (final name in ['minus-5', 'minus-1', 'plus-1', 'plus-5']) {
+        final groesse = tester.getSize(knopf(name));
+        expect(groesse.height, greaterThanOrEqualTo(48), reason: name);
+        expect(groesse.width, greaterThanOrEqualTo(40), reason: name);
+      }
+      // Das echte Minuszeichen, nicht der Bindestrich.
+      expect(find.text('\u22125'), findsOneWidget);
+      expect(find.text('+5'), findsOneWidget);
+      expect(find.byTooltip('Lebenspunkte \u22121'), findsOneWidget);
+    });
+
+    for (final breite in [240.0, 320.0, 700.0]) {
+      testWidgets('bei $breite dp und Textskalierung 2 ohne Überlauf', (
+        tester,
+      ) async {
+        await zeige(
+          tester,
+          aktuell: 128,
+          maximum: 140,
+          kuerzel: 'LeP',
+          onBearbeiten: () {},
+          onSchritt: (_) {},
+          breite: breite,
+          skalierung: 2,
+        );
+        expect(tester.takeException(), isNull);
+        expect(find.text('128 / 140'), findsOneWidget);
+      });
+    }
   });
 }
