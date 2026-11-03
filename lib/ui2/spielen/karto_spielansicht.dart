@@ -485,6 +485,15 @@ class _KartoSpielansichtState extends ConsumerState<KartoSpielansicht> {
               ressource: ressource,
             ),
           ),
+          // Bewusst ohne `aktion`-Guard: jeder schnelle Klick zählt. Gerechnet
+          // wird im Bestand auf dem frisch geladenen, gespeicherten Wert.
+          onSchritt: (ressource, schritt) => bestand.ressourceSchritt(
+            context: context,
+            ref: ref,
+            heroId: heroId,
+            ressource: ressource,
+            schritt: schritt,
+          ),
         ),
       );
 

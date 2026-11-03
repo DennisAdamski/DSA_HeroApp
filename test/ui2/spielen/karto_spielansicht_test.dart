@@ -857,6 +857,143 @@ void main() {
     }
   });
 
+  group('Ressourcen-Schritte (SPIEL-07)', () {
+    Finder k(String schluessel) => find.byKey(ValueKey<String>(schluessel));
+    const namen = ['minus-5', 'minus-1', 'plus-1', 'plus-5'];
+
+    // Held mit allen vier Ressourcen: LeP, AuP, AsP und KaP.
+    HeroSheet vierRessourcen() => weltlich().copyWith(
+      resourceActivationConfig: const HeroResourceActivationConfig(
+        magicEnabledOverride: true,
+        divineEnabledOverride: true,
+      ),
+    );
+
+    testWidgets('weit: Knöpfe melden den Schritt der angetippten Ressource', (
+      tester,
+    ) async {
+      final bestand = TestBestand();
+      await zeige(tester, held: weltlich(), bestand: bestand, breite: 1280);
+      await tester.tap(k('karto-ressource-lebensenergie-plus-1'));
+      await tester.tap(k('karto-ressource-ausdauer-minus-5'));
+      await tester.pump();
+      expect(bestand.aufrufe, [
+        'ressourceSchritt:praiodan:lebensenergie:1',
+        'ressourceSchritt:praiodan:ausdauer:-5',
+      ]);
+      // Der Schritt öffnet nicht zusätzlich das Ressourcenblatt.
+      expect(bestand.aufrufe.where((a) => a.startsWith('ressource:')), isEmpty);
+    });
+
+    testWidgets('schnelle Klicks gehen nicht verloren (kein Guard)', (
+      tester,
+    ) async {
+      final bestand = TestBestand();
+      await zeige(tester, held: weltlich(), bestand: bestand, breite: 1280);
+      for (var i = 0; i < 5; i++) {
+        await tester.tap(k('karto-ressource-lebensenergie-plus-1'));
+      }
+      expect(bestand.aufrufe, hasLength(5));
+    });
+
+    testWidgets('kompakt (390 dp) und ohne Kachelbreite zeigen keine Knöpfe', (
+      tester,
+    ) async {
+      await zeige(tester, held: weltlich(), breite: 390);
+      for (final name in namen) {
+        expect(k('karto-ressource-lebensenergie-$name'), findsNothing);
+      }
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('schmal angeordnet bleibt die Kachel ohne Knöpfe', (
+      tester,
+    ) async {
+      final repo = FakeRepository(
+        heroes: [
+          weltlich().copyWith(
+            spielansicht: const HeroSpielansicht(
+              kacheln: [
+                HeroSpielkachel(
+                  id: 'ressourcen',
+                  breite: SpielkachelBreite.schmal,
+                ),
+              ],
+            ),
+          ),
+        ],
+      );
+      await zeige(tester, held: weltlich(), repository: repo, breite: 1280);
+      // Eine Rastereinheit ist unter 700 dp: nicht weit.
+      expect(k('karto-ressource-lebensenergie-plus-1'), findsNothing);
+    });
+
+    testWidgets('im Vergrößern-Dialog erscheinen die Knöpfe und schreiben', (
+      tester,
+    ) async {
+      final bestand = TestBestand();
+      await zeige(tester, held: weltlich(), bestand: bestand, breite: 1280);
+      await tester.tap(k('karto-kachel-ressourcen-vergroessern'));
+      await tester.pumpAndSettle();
+      final dialog = k('karto-kachel-ressourcen-popup');
+      expect(dialog, findsOneWidget);
+      final plus = find.descendant(
+        of: dialog,
+        matching: k('karto-ressource-lebensenergie-plus-5'),
+      );
+      expect(plus, findsOneWidget);
+      await tester.tap(plus);
+      await tester.pump();
+      expect(bestand.aufrufe, ['ressourceSchritt:praiodan:lebensenergie:5']);
+    });
+
+    testWidgets('vier Ressourcen: 2×2 bei Platz für drei, eine Reihe bei '
+        'Platz für vier', (tester) async {
+      Offset lage(String art) => tester.getTopLeft(k('karto-ressource-$art'));
+
+      await zeige(tester, held: vierRessourcen(), breite: 1024);
+      var orte = [
+        for (final art in [
+          'lebensenergie',
+          'ausdauer',
+          'astralenergie',
+          'karma',
+        ])
+          lage(art),
+      ];
+      expect(orte.map((o) => o.dx).toSet(), hasLength(2));
+      expect(orte.map((o) => o.dy).toSet(), hasLength(2));
+
+      await zeige(tester, held: vierRessourcen(), breite: 1920);
+      orte = [
+        for (final art in [
+          'lebensenergie',
+          'ausdauer',
+          'astralenergie',
+          'karma',
+        ])
+          lage(art),
+      ];
+      expect(orte.map((o) => o.dy).toSet(), hasLength(1));
+      expect(tester.takeException(), isNull);
+    });
+
+    for (final breite in [744.0, 1024.0, 1440.0]) {
+      testWidgets(
+        'weit bei $breite dp ohne Überlauf, auch mit Textskalierung 2',
+        (tester) async {
+          await zeige(
+            tester,
+            held: vierRessourcen(),
+            breite: breite,
+            skalierung: 2,
+          );
+          expect(tester.takeException(), isNull);
+        },
+      );
+    }
+  });
+
   group('Regelnachschlag (SPIEL-04)', () {
     testWidgets('wird erst nach dem Entsperren der Katalog-Inhalte angeboten', (
       tester,

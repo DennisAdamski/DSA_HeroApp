@@ -208,6 +208,17 @@ class TestBestand implements KartoBestandsAdapter {
   }
 
   @override
+  Future<void> ressourceSchritt({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String heroId,
+    required KartoRessource ressource,
+    required int schritt,
+  }) async {
+    aufrufe.add('ressourceSchritt:$heroId:${ressource.name}:$schritt');
+  }
+
+  @override
   Future<void> begleiterWertAendern({
     required BuildContext context,
     required WidgetRef ref,

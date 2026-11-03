@@ -172,6 +172,21 @@ abstract interface class KartoBestandsAdapter {
     required KartoRessource ressource,
   });
 
+  /// Verschiebt eine Ressource des Helden um [schritt] (Knöpfe der breiten
+  /// Ressourcenkachel).
+  ///
+  /// Gerechnet wird im Bestand auf dem frisch geladenen, gespeicherten Wert,
+  /// nie auf dem angezeigten; die Untergrenze und die Überheilung bleiben dort.
+  /// Die Spielansicht ruft das ohne Re-Entrancy-Guard auf, damit jeder
+  /// schnelle Klick zählt.
+  Future<void> ressourceSchritt({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String heroId,
+    required KartoRessource ressource,
+    required int schritt,
+  });
+
   /// Ändert einen laufenden Wert (LeP, AsP, AuP) eines Begleiters (V2).
   ///
   /// Gerechnet wird im Bestand auf dem gespeicherten Wert

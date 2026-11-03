@@ -99,7 +99,18 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   die Brücke (`standortSetzen`). Die Ressourcenwerte sind kompakt: Wert und
   Fehlbetrag teilen eine Zeile, die ganze Zelle ist das Tippziel; der Wert hat
   Vorrang, passt der Fehlbetrag nicht daneben, rückt er unter den Wert (das
-  Maximum wird nie gekürzt). Den
+  Maximum wird nie gekürzt). **In einer weiten Kachel** (`KartoKachelGroesse.weit`,
+  also auch im Vergrößern-Dialog) trägt jede Zelle eine Knopfreihe −5, −1, +1, +5
+  unter dem Balken (`KartoRessourcenwert.onSchritt`, Keys
+  `karto-ressource-<art>-minus-5|minus-1|plus-1|plus-5`). Die Zellen sind dann
+  mindestens 240 dp breit, und die Spaltenzahl ist ausgewogen
+  (`KartoRessourcenleiste.ausgewogeneSpalten`: 4 Ressourcen bei Platz für 3 ergeben
+  2×2). Kompakt und normal bleibt alles wie vorher. Geschrieben wird über
+  `KartoBestandsAdapter.ressourceSchritt` und `schreibeRessourcenSchritt`
+  (`karto_spiel_bruecke.dart`, gemeinsam mit dem Ressourcenblatt):
+  `aendereZustandMitMeldung` auf dem frisch geladenen Wert, Untergrenze
+  `kVitalFloor` (−10), keine Obergrenze (Überheilung). Ohne `aktion`-Guard, damit
+  jeder schnelle Klick zählt; UI2 kennt keine Grenze. Den
   Re-Entrancy-Guard reicht `KartoWorkspace` als `KartoLaufzeitAktion` herein;
   die Spielansicht macht keinen zweiten Fehlerweg auf.
 - **Kachelraster der Spielansicht (SPIEL-07).** Statt Haupt- und Seitenspalte
