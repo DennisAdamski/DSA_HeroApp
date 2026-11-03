@@ -239,6 +239,10 @@ class FirestoreHeroSyncGateway
       await _mapFirestoreErrors(() => docRef.set(fields, setOptions));
       return;
     }
+    // Der Fehler wird erst nach der Transaktion geworfen: Eine Dart-Exception
+    // aus dem Callback läuft im Web durch das JS-SDK und kommt dort als
+    // untypisiertes NativeError an, `on SyncPreconditionException` griffe nie.
+    SyncPreconditionException? abweichung;
     await _mapFirestoreErrors(
       () => _firestore.runTransaction((transaction) async {
         final snapshot = await transaction.get(docRef);
@@ -250,16 +254,22 @@ class FirestoreHeroSyncGateway
               )
             : null;
         if (currentRevision != previousRevision) {
-          throw SyncPreconditionException(
+          abweichung = SyncPreconditionException(
             'Remote-Revision hat sich geändert '
             '($previousRevision -> $currentRevision).',
             expectedRevision: previousRevision,
             actualRevision: currentRevision,
           );
+          return;
         }
+        abweichung = null;
         transaction.set(docRef, fields, setOptions);
       }),
     );
+    final fehler = abweichung;
+    if (fehler != null) {
+      throw fehler;
+    }
   }
 
   /// Führt eine Firestore-Operation aus und übersetzt [FirebaseException]s
