@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_spielansicht.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
 import 'package:dsa_heldenverwaltung/domain/vitalwirkung.dart';
 import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
@@ -55,9 +56,11 @@ void main() {
     FakeRepository repo,
     String heroId, {
     TestBestand? bestand,
+    double breite = 390,
+    double skalierung = 1,
   }) async {
     tester.view.devicePixelRatio = 1;
-    tester.view.physicalSize = const Size(390, 1400);
+    tester.view.physicalSize = Size(breite, 1400);
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
     final container = ProviderContainer(
@@ -74,6 +77,11 @@ void main() {
           theme: buildKartoTheme(
             brightness: Brightness.light,
             centerAppBarTitle: false,
+          ),
+          builder: (context, kind) => MediaQuery(
+            data: MediaQuery.of(context)
+                .copyWith(textScaler: TextScaler.linear(skalierung)),
+            child: kind!,
           ),
           home: Scaffold(
             body: KartoSpielansicht(
@@ -94,9 +102,18 @@ void main() {
     WidgetTester tester,
     HeroSheet held, {
     TestBestand? bestand,
+    double breite = 390,
+    double skalierung = 1,
   }) async {
     final repo = FakeRepository(heroes: [held]);
-    final container = await zeigeMit(tester, repo, held.id, bestand: bestand);
+    final container = await zeigeMit(
+      tester,
+      repo,
+      held.id,
+      bestand: bestand,
+      breite: breite,
+      skalierung: skalierung,
+    );
     return (container: container, repo: repo);
   }
 
@@ -337,6 +354,76 @@ void main() {
     await tippe(tester, _k('karto-dabei-alle'));
     expect(find.text('Ding 9'), findsOneWidget);
     expect(find.text('Weniger zeigen'), findsOneWidget);
+  });
+
+  group('weite Stufe (SPIEL-07)', () {
+    HeroSheet mitBreite(int anzahl, SpielkachelBreite? breite) =>
+        _held(
+          eintraege: [
+            for (var i = 1; i <= anzahl; i++) _verbrauch('Ding $i', i),
+          ],
+        ).copyWith(
+          spielansicht: breite == null
+              ? null
+              : HeroSpielansicht(
+                  kacheln: [HeroSpielkachel(id: 'dabei', breite: breite)],
+                ),
+        );
+
+    testWidgets('mittel zeigt zwölf Gegenstände in zwei Spalten', (
+      tester,
+    ) async {
+      await zeige(
+        tester,
+        mitBreite(15, SpielkachelBreite.mittel),
+        breite: 1280,
+      );
+      await tester.ensureVisible(_k('karto-dabei-alle'));
+      expect(find.text('Ding 12'), findsOneWidget);
+      expect(find.text('Ding 13'), findsNothing);
+      expect(find.text('Alle zeigen (3 weitere)'), findsOneWidget);
+      final erste = tester.getTopLeft(find.text('Ding 1'));
+      final zweite = tester.getTopLeft(find.text('Ding 2'));
+      expect(zweite.dy, erste.dy);
+      expect(zweite.dx, greaterThan(erste.dx));
+
+      await tippe(tester, _k('karto-dabei-alle'));
+      expect(find.text('Ding 15'), findsOneWidget);
+    });
+
+    testWidgets('bis zwölf gibt es nichts aufzuklappen', (tester) async {
+      await zeige(
+        tester,
+        mitBreite(12, SpielkachelBreite.mittel),
+        breite: 1280,
+      );
+      await tester.ensureVisible(find.text('Ding 12'));
+      expect(find.text('Ding 12'), findsOneWidget);
+      expect(_k('karto-dabei-alle'), findsNothing);
+    });
+
+    testWidgets('die Standardbreite bleibt bei sechs', (tester) async {
+      await zeige(tester, mitBreite(15, null), breite: 390);
+      await tester.ensureVisible(_k('karto-dabei-alle'));
+      expect(find.text('Ding 6'), findsOneWidget);
+      expect(find.text('Ding 7'), findsNothing);
+      expect(find.text('Alle zeigen (9 weitere)'), findsOneWidget);
+    });
+
+    for (final breite in [744.0, 1024.0, 1440.0, 1920.0]) {
+      for (final skalierung in [1.0, 2.0]) {
+        testWidgets('mittel bei $breite dp, Schrift $skalierung, ohne '
+            'Überlauf', (tester) async {
+          await zeige(
+            tester,
+            mitBreite(15, SpielkachelBreite.mittel),
+            breite: breite,
+            skalierung: skalierung,
+          );
+          expect(tester.takeException(), isNull);
+        });
+      }
+    }
   });
 
   testWidgets('Benutzen erscheint nur mit Brücke und Wirkung', (tester) async {

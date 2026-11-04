@@ -10,11 +10,15 @@ import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abschnitt.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_kachelgroesse.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
 
 /// Anzahl Verbrauchsgegenstände, die ohne „Alle zeigen“ sichtbar bleiben.
 const int kDabeiSichtbar = 6;
+
+/// Dasselbe in einer weiten Kachel (SPIEL-07): zwei Spalten à sechs Zeilen.
+const int kDabeiSichtbarWeit = 12;
 
 /// Kachelbreite, ab der die Verbrauchsgegenstände zweispaltig fließen.
 const double kDabeiZweispaltigAb = 560;
@@ -92,9 +96,14 @@ class _KartoDabeiAbschnittState extends ConsumerState<KartoDabeiAbschnitt> {
         .valueOrNull;
     final karto = context.karto;
     final texte = Theme.of(context).textTheme;
+    // Die weite Kachel hat zwei Spalten und zeigt entsprechend mehr.
+    final grenze =
+        KartoKachelSteuerung.groesseVon(context) == KartoKachelGroesse.weit
+        ? kDabeiSichtbarWeit
+        : kDabeiSichtbar;
     final sichtbar = _alle
         ? widget.verbrauch
-        : widget.verbrauch.take(kDabeiSichtbar).toList();
+        : widget.verbrauch.take(grenze).toList();
     final verborgen = widget.verbrauch.length - sichtbar.length;
 
     return KartoAbschnitt(
@@ -162,7 +171,7 @@ class _KartoDabeiAbschnittState extends ConsumerState<KartoDabeiAbschnitt> {
                 );
               },
             ),
-          if (widget.verbrauch.length > kDabeiSichtbar)
+          if (widget.verbrauch.length > grenze)
             Align(
               alignment: Alignment.centerLeft,
               child: TextButton(

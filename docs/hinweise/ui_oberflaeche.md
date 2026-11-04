@@ -213,6 +213,20 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   unter `tabellenBreiteMin` (520 dp) oder bei Schrift über das 1,3-Fache auf die
   Karten zurück, weil feste Spalten dann nicht mehr tragen. Daten sind
   unverändert (`DiceLogEntry`), Schreibwege auch.
+  **Häufige Proben:** In `weit` stehen die Proben nebeneinander
+  (`ProbenFavoritenListe.spaltenbreite`, vom Adapter mit
+  `KartoBestandsAdapterImpl.kFavoritenSpaltenbreite` = 260 dp gesetzt; höchstens
+  3 Spalten, ausgewogen wie `kartoAusgewogeneSpalten`: 4 Proben bei Platz für 3
+  ergeben 2×2; Key `proben-favoriten-spalten-<n>`), in der Reihenfolge der
+  Favoriten von links nach rechts. Tipp, Menü und Schreibweg bleiben
+  unverändert; mehr Information gibt es nicht (Name und Detail aus den
+  Kandidaten der Suche). **Dabei:** In `weit` zeigt der Block
+  `kDabeiSichtbarWeit` (12) statt `kDabeiSichtbar` (6) Verbrauchsgegenstände,
+  weil sie ohnehin in zwei Spalten fließen. **Aktive Effekte:** unverändert. Es
+  gibt höchstens drei Chips (Axxeleratus, Armatrutz, Attributo), die schon als
+  `Wrap` nebeneinander stehen; die Datenlage (`ActiveSpellEffectChip`: Name,
+  Bonus, Restlaufzeit) trägt keine weitere Darstellung, ein Füllinhalt wäre
+  unehrlich.
 - **Vor- und Nachteile bearbeitet UI2 im Merkmalsblatt**
   (`lib/ui2/merkmale/`), nach dem Muster des Abenteuerblatts: modal, eigener
   Schreibweg über `HeroActions.updateHero` und `aendereMerkmale`

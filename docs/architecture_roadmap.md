@@ -186,6 +186,18 @@ Teilumfang festlegen. Nach Wichtigkeit sortiert.
   erlaubt; gespeichert je Held in `HeroSheet.spielansicht` und damit über den
   Helden-Sync abgeglichen. **Offen:** kontoweite Vorlage für alle Helden,
   Anordnen während einer offenen Planung.
+  **Größenstufen der Kacheln (04.11.2026):** Jede Kachel kennt
+  `kompakt`/`normal`/`weit` nach ihrer eigenen Breite und zeigt in `weit` mehr
+  oder anderes, ohne Standardbreiten zu ändern: Ressourcen (±5/±1), Kampf
+  (Panel „Kampfwerte“), Zustand (zwei Spalten), Eigenschaften (Wundabzug an der
+  Karte), Begleiter (nebeneinander, Block „Kampf“), Abenteuer (Personen neben
+  Notizen), Reiseroute (5 Stationen, Avesmaps-Link), Vor- und Nachteile (3 Zeilen,
+  Spalten), Würfelprotokoll (8 Würfe als Tabelle), Häufige Proben (Spalten),
+  Dabei (12 Gegenstände). Aktive Effekte bleiben bewusst unverändert (höchstens
+  drei Chips, nichts Weiteres in den Daten). Details und Schwellen in
+  [ui_oberflaeche.md](hinweise/ui_oberflaeche.md). **Offen:** Sichtprüfung im
+  Web (Kachel per Anordnen auf „Mittel“, Fenster ziehen, Schrift 2,
+  Vergrößern-Dialog).
 
 ## Arbeitsweise und gemeinsame Grenzen
 
