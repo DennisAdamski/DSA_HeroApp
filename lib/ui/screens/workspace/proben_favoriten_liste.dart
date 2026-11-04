@@ -21,10 +21,23 @@ import 'package:dsa_heldenverwaltung/ui/screens/workspace/probe_quick_search.dar
 /// der Möglichkeit, sie zu entfernen.
 class ProbenFavoritenListe extends ConsumerWidget {
   /// Erzeugt die Liste für einen Helden.
-  const ProbenFavoritenListe({super.key, required this.heroId});
+  const ProbenFavoritenListe({
+    super.key,
+    required this.heroId,
+    this.spaltenbreite,
+  });
 
   /// Held, dessen häufige Proben gezeigt werden.
   final String heroId;
+
+  /// Mindestbreite einer Spalte; `null` stellt die Proben untereinander. Mit
+  /// Wert stehen sie bei genug Platz nebeneinander (höchstens
+  /// [spaltenMax]), in der Reihenfolge der Favoriten von links nach rechts.
+  /// Für die weite Kachel der Spielansicht.
+  final double? spaltenbreite;
+
+  /// Obergrenze der Spalten bei gesetzter [spaltenbreite].
+  static const int spaltenMax = 3;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -57,43 +70,82 @@ class ProbenFavoritenListe extends ConsumerWidget {
         if (!nachId.containsKey(favorit.id)) favorit.id,
     };
 
+    Widget zeile(int i) => _ProbenZeile(
+      kandidat: sichtbar[i].kandidat,
+      onWuerfeln: () => showLoggedProbeDialog(
+        context: context,
+        ref: ref,
+        heroId: heroId,
+        request: sichtbar[i].kandidat.buildRequest(),
+      ),
+      onNachVorn: i == 0
+          ? null
+          : () => _verschiebe(
+              context,
+              ref,
+              sichtbar[i].kandidat.favorit!.id,
+              sichtbar[i - 1].stelle - sichtbar[i].stelle,
+            ),
+      onNachHinten: i == sichtbar.length - 1
+          ? null
+          : () => _verschiebe(
+              context,
+              ref,
+              sichtbar[i].kandidat.favorit!.id,
+              sichtbar[i + 1].stelle - sichtbar[i].stelle,
+            ),
+      onEntfernen: () => _aendere(
+        context,
+        ref,
+        (liste) =>
+            entferneProbenFavoriten(liste, {sichtbar[i].kandidat.favorit!.id}),
+      ),
+    );
+
+    final breite = spaltenbreite;
     return Material(
       type: MaterialType.transparency,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          for (var i = 0; i < sichtbar.length; i++)
-            _ProbenZeile(
-              kandidat: sichtbar[i].kandidat,
-              onWuerfeln: () => showLoggedProbeDialog(
-                context: context,
-                ref: ref,
-                heroId: heroId,
-                request: sichtbar[i].kandidat.buildRequest(),
-              ),
-              onNachVorn: i == 0
-                  ? null
-                  : () => _verschiebe(
-                      context,
-                      ref,
-                      sichtbar[i].kandidat.favorit!.id,
-                      sichtbar[i - 1].stelle - sichtbar[i].stelle,
-                    ),
-              onNachHinten: i == sichtbar.length - 1
-                  ? null
-                  : () => _verschiebe(
-                      context,
-                      ref,
-                      sichtbar[i].kandidat.favorit!.id,
-                      sichtbar[i + 1].stelle - sichtbar[i].stelle,
-                    ),
-              onEntfernen: () => _aendere(
-                context,
-                ref,
-                (liste) => entferneProbenFavoriten(liste, {
-                  sichtbar[i].kandidat.favorit!.id,
-                }),
-              ),
+          if (breite == null)
+            for (var i = 0; i < sichtbar.length; i++) zeile(i)
+          else
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final spalten = _spalten(
+                  constraints.maxWidth,
+                  breite,
+                  sichtbar.length,
+                );
+                return Column(
+                  key: ValueKey('proben-favoriten-spalten-$spalten'),
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    for (
+                      var start = 0;
+                      start < sichtbar.length;
+                      start += spalten
+                    )
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          for (var k = 0; k < spalten; k++)
+                            Expanded(
+                              child: start + k < sichtbar.length
+                                  ? Padding(
+                                      padding: EdgeInsets.only(
+                                        left: k == 0 ? 0 : 8,
+                                      ),
+                                      child: zeile(start + k),
+                                    )
+                                  : const SizedBox.shrink(),
+                            ),
+                        ],
+                      ),
+                  ],
+                );
+              },
             ),
           if (fehlend.isNotEmpty)
             _NichtVerfuegbar(
@@ -135,6 +187,22 @@ class ProbenFavoritenListe extends ConsumerWidget {
           aktuell.copyWith(probenFavoriten: aenderung(aktuell.probenFavoriten)),
     );
   }
+}
+
+/// Spaltenzahl für [anzahl] Proben bei [platz] dp und mindestens [minBreite]
+/// dp je Spalte: soweit möglich eine Zahl, die [anzahl] teilt (4 Proben bei
+/// Platz für 3 ergeben 2×2), sonst der volle Platz.
+int _spalten(double platz, double minBreite, int anzahl) {
+  final moeglich = (platz / minBreite).floor().clamp(
+    1,
+    ProbenFavoritenListe.spaltenMax,
+  );
+  if (anzahl <= 1 || moeglich == 1) return 1;
+  if (anzahl < moeglich) return anzahl;
+  for (var spalten = moeglich; spalten >= 2; spalten--) {
+    if (anzahl % spalten == 0) return spalten;
+  }
+  return moeglich;
 }
 
 enum _Aktion { nachVorn, nachHinten, entfernen }

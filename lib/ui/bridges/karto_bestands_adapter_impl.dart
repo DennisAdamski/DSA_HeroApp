@@ -293,10 +293,25 @@ class KartoBestandsAdapterImpl
     );
   }
 
-  /// Baut die häufigen Proben des Helden.
+  /// Mindestbreite einer Spalte der häufigen Proben in einer weiten Kachel.
+  static const double kFavoritenSpaltenbreite = 260;
+
+  /// Baut die häufigen Proben des Helden, in einer weiten Kachel in Spalten.
   @override
   Widget spielFavoritenproben({required String heroId}) {
-    return _KartoCompatHost(child: ProbenFavoritenListe(heroId: heroId));
+    return _KartoCompatHost(
+      // In einer weiten Kachel stehen die Proben nebeneinander.
+      child: Builder(
+        builder: (context) => ProbenFavoritenListe(
+          heroId: heroId,
+          spaltenbreite:
+              KartoKachelSteuerung.groesseVon(context) ==
+                  KartoKachelGroesse.weit
+              ? KartoBestandsAdapterImpl.kFavoritenSpaltenbreite
+              : null,
+        ),
+      ),
+    );
   }
 
   /// Baut die vorhandenen Kampf-Schnellproben.

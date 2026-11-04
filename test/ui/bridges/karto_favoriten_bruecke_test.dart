@@ -14,6 +14,8 @@ import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
 import 'package:dsa_heldenverwaltung/ui/bridges/karto_bestands_adapter_impl.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/probe_quick_search.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abschnitt.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_kachelgroesse.dart';
 
 // Häufige Proben (ARCH-01): Stern in der Probensuche, Liste im Spielbereich.
 const _attribute = Attributes(
@@ -75,9 +77,12 @@ void main() {
     List<HeroProbenFavorit> favoriten = const [],
     bool mitSuche = false,
     bool klassischeSuche = false,
+    KartoKachelGroesse? groesse,
+    double breite = 1200,
+    double skalierung = 1,
   }) async {
     tester.view.devicePixelRatio = 1.0;
-    tester.view.physicalSize = const Size(1200, 2400);
+    tester.view.physicalSize = Size(breite, 2400);
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
     final repo = FakeRepository(
@@ -91,6 +96,11 @@ void main() {
           rulesCatalogProvider.overrideWith((ref) async => _katalog),
         ],
         child: MaterialApp(
+          builder: (context, kind) => MediaQuery(
+            data: MediaQuery.of(context)
+                .copyWith(textScaler: TextScaler.linear(skalierung)),
+            child: kind!,
+          ),
           home: Scaffold(
             body: Consumer(
               builder: (context, ref, _) => Column(
@@ -111,7 +121,15 @@ void main() {
                   ),
                   Expanded(
                     child: SingleChildScrollView(
-                      child: adapter.spielFavoritenproben(heroId: 'demo'),
+                      child: groesse == null
+                          ? adapter.spielFavoritenproben(heroId: 'demo')
+                          : KartoKachelSteuerung(
+                              kennung: 'proben',
+                              groesse: groesse,
+                              child: adapter.spielFavoritenproben(
+                                heroId: 'demo',
+                              ),
+                            ),
                     ),
                   ),
                 ],
@@ -219,6 +237,88 @@ void main() {
       expect(find.text('Menschenkenntnis'), findsOneWidget);
       expect(find.text('KL/IN/CH · TaW* 5'), findsOneWidget);
       expect(find.text('Selbstbeherrschung'), findsOneWidget);
+    });
+
+    group('weite Stufe (SPIEL-07)', () {
+      final vier = [
+        ...beide,
+        HeroProbenFavorit.von(ProbenFavoritArt.eigenschaft, 'MU'),
+        HeroProbenFavorit.von(ProbenFavoritArt.eigenschaft, 'KL'),
+      ];
+
+      testWidgets('stehen die Proben nebeneinander', (tester) async {
+        await zeige(tester, favoriten: vier, groesse: KartoKachelGroesse.weit);
+        Offset ort(String id) => tester.getTopLeft(_key('proben-favorit-$id'));
+        // Vier Proben bei Platz für drei ergeben 2×2, von links nach rechts.
+        expect(_key('proben-favoriten-spalten-2'), findsOneWidget);
+        final erste = ort('talent:tal_menschenkenntnis');
+        final zweite = ort('talent:tal_selbstbeherrschung');
+        final dritte = ort('eigenschaft:MU');
+        expect(zweite.dy, erste.dy);
+        expect(zweite.dx, greaterThan(erste.dx + 200));
+        expect(dritte.dy, greaterThan(erste.dy));
+        expect(dritte.dx, erste.dx);
+      });
+
+      testWidgets('bleiben sie in den schmaleren Stufen untereinander', (
+        tester,
+      ) async {
+        for (final groesse in [
+          null,
+          KartoKachelGroesse.kompakt,
+          KartoKachelGroesse.normal,
+        ]) {
+          await zeige(tester, favoriten: vier, groesse: groesse);
+          final erste = tester.getTopLeft(
+            _key('proben-favorit-talent:tal_menschenkenntnis'),
+          );
+          final zweite = tester.getTopLeft(
+            _key('proben-favorit-talent:tal_selbstbeherrschung'),
+          );
+          expect(zweite.dx, erste.dx, reason: '$groesse');
+          expect(zweite.dy, greaterThan(erste.dy), reason: '$groesse');
+        }
+      });
+
+      testWidgets('Bedienung bleibt: Tipp würfelt, Menü ordnet um', (
+        tester,
+      ) async {
+        final repo = await zeige(
+          tester,
+          favoriten: vier,
+          groesse: KartoKachelGroesse.weit,
+        );
+        await tester.tap(
+          _key('proben-favorit-menue-talent:tal_menschenkenntnis'),
+        );
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Nach hinten'));
+        await tester.pumpAndSettle();
+        expect(_ids(await repo.loadHeroById('demo')).take(2), [
+          'talent:tal_selbstbeherrschung',
+          'talent:tal_menschenkenntnis',
+        ]);
+        await tester.tap(_key('proben-favorit-eigenschaft:MU'));
+        await tester.pumpAndSettle();
+        expect(find.text('Würfeln'), findsWidgets);
+      });
+
+      for (final breite in [600.0, 744.0, 1024.0, 1920.0]) {
+        for (final skalierung in [1.0, 2.0]) {
+          testWidgets('ohne Überlauf bei $breite dp und Schrift $skalierung', (
+            tester,
+          ) async {
+            await zeige(
+              tester,
+              favoriten: vier,
+              groesse: KartoKachelGroesse.weit,
+              breite: breite,
+              skalierung: skalierung,
+            );
+            expect(tester.takeException(), isNull);
+          });
+        }
+      }
     });
 
     testWidgets('ein Tipp öffnet den Probendialog', (tester) async {
