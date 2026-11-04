@@ -20,12 +20,17 @@ class InspectorWundenSection extends ConsumerStatefulWidget {
     required this.heroState,
     required this.wundEffekte,
     required this.wundschwelle,
+    this.anfangsAufgeklappt = false,
   });
 
   final String heroId;
   final HeroState heroState;
   final WundEffekte wundEffekte;
   final int wundschwelle;
+
+  /// Ob die Sektion beim Aufbau schon aufgeklappt ist; danach entscheidet der
+  /// Nutzer. Die weite Zustandskachel der Spielansicht zeigt sie offen.
+  final bool anfangsAufgeklappt;
 
   @override
   ConsumerState<InspectorWundenSection> createState() =>
@@ -34,7 +39,7 @@ class InspectorWundenSection extends ConsumerStatefulWidget {
 
 class _InspectorWundenSectionState
     extends ConsumerState<InspectorWundenSection> {
-  bool _expanded = false;
+  late bool _expanded = widget.anfangsAufgeklappt;
 
   Future<void> _wundeHinzufuegen(WundZone zone) => fuegeWundeHinzu(
     context: context,

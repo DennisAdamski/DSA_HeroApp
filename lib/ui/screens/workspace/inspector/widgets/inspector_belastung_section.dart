@@ -11,10 +11,15 @@ class InspectorBelastungSection extends ConsumerStatefulWidget {
     super.key,
     required this.heroId,
     required this.heroState,
+    this.anfangsAufgeklappt = false,
   });
 
   final String heroId;
   final HeroState heroState;
+
+  /// Ob die Sektion beim Aufbau schon aufgeklappt ist; danach entscheidet der
+  /// Nutzer. Die weite Zustandskachel der Spielansicht zeigt sie offen.
+  final bool anfangsAufgeklappt;
 
   @override
   ConsumerState<InspectorBelastungSection> createState() =>
@@ -23,7 +28,7 @@ class InspectorBelastungSection extends ConsumerStatefulWidget {
 
 class _InspectorBelastungSectionState
     extends ConsumerState<InspectorBelastungSection> {
-  bool _expanded = false;
+  late bool _expanded = widget.anfangsAufgeklappt;
 
   // Zählt vom gespeicherten Wert aus, nicht vom Stand beim Rendern: zwei
   // schnelle Klicks zählen so zweimal, andere Felder bleiben unberührt.

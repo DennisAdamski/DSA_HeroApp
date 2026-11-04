@@ -161,7 +161,14 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   Waffenmeisterschaft. Reine Anzeige aus der Kampfvorschau, ohne Rechnung; die
   wichtigsten Zeilen stehen oben, weil die Anordnen-Vorschau nur 180 dp zeigt.
   Die Kachel bleibt standardmäßig schmal; das Panel erscheint nach dem
-  Verbreitern oder im Vergrößern-Dialog. „Dabei“ hält Betrag,
+  Verbreitern oder im Vergrößern-Dialog. **Zustand:** In `weit` mit mindestens
+  `KartoZustandsblock.zweiSpaltenAb` (624 dp) stehen zwei Spalten nebeneinander
+  (`karto_spiel_bruecke.dart`): links Belastung über Wunden, beide von Anfang an
+  aufgeklappt (`anfangsAufgeklappt`, danach frei einklappbar, nicht gespeichert),
+  rechts die Statuswerte ohne Trennlinie (`mitTrenner: false`). Schmaler, in
+  `kompakt`/`normal` und außerhalb einer Kachel bleibt es bei der einen Spalte
+  mit eingeklappten Abschnitten. Die klassischen Abschnitte bekamen nur
+  optionale Parameter mit unverändertem Standard; Schreibwege unverändert. „Dabei“ hält Betrag,
   Stift und Münzschritte beieinander und lässt die Verbrauchsgegenstände ab
   `kDabeiZweispaltigAb` (560 dp Kachelbreite) zweispaltig fließen.
   Die Kachel „Reiseroute“ (`karto_reiseroute.dart`) zeigt die jüngsten
