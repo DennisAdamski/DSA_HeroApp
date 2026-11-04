@@ -23,6 +23,7 @@ class InspectorAttributeProbes extends ConsumerWidget {
     required this.probenEigenschaften,
     this.grundwerte,
     this.kompakt = false,
+    this.abzugZeigen = false,
   });
 
   /// ID fuer das Protokollieren des Ergebnisses.
@@ -39,6 +40,10 @@ class InspectorAttributeProbes extends ConsumerWidget {
   /// Einzeilige, flache Karten in bis zu acht Spalten (Spielansicht des
   /// Neubaus). Die klassische Optik bleibt beim Standard `false`.
   final bool kompakt;
+
+  /// Zeigt einen Wundabzug als „−2“ an der Karte (weite Kachel der
+  /// Spielansicht). Der Standard `false` lässt die Karten unverändert.
+  final bool abzugZeigen;
 
   /// Reihenfolge der acht Eigenschaften, wie auf dem Heldenbogen.
   List<AttributeProbeEintrag> get entries => _entriesFuer(probenEigenschaften);
@@ -72,6 +77,7 @@ class InspectorAttributeProbes extends ConsumerWidget {
         label: entry.label,
         value: entry.value,
         kompakt: kompakt,
+        abzugZeigen: abzugZeigen,
         wundAbzug: entry.value - (ohneWunden[entry.label] ?? entry.value),
         onTap: () => showLoggedProbeDialog(
           context: context,

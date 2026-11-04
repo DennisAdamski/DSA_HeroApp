@@ -161,7 +161,11 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   Waffenmeisterschaft. Reine Anzeige aus der Kampfvorschau, ohne Rechnung; die
   wichtigsten Zeilen stehen oben, weil die Anordnen-Vorschau nur 180 dp zeigt.
   Die Kachel bleibt standardmäßig schmal; das Panel erscheint nach dem
-  Verbreitern oder im Vergrößern-Dialog. **Zustand:** In `weit` mit mindestens
+  Verbreitern oder im Vergrößern-Dialog. **Eigenschaften:** Die Kachel passt ihre Spalten (8, 4, 2, 1) schon an die Breite an;
+  in `weit` zeigt eine Karte einen Wundabzug zusätzlich als „−4“ an der Karte
+  selbst (`InspectorAttributeCard.abzugZeigen`, vom Adapter über die Stufe
+  geschaltet), sonst nur im Tooltip. Mehr gibt die Datenlage nicht her, die
+  Stufen `kompakt`/`normal` bleiben unverändert. **Zustand:** In `weit` mit mindestens
   `KartoZustandsblock.zweiSpaltenAb` (624 dp) stehen zwei Spalten nebeneinander
   (`karto_spiel_bruecke.dart`): links Belastung über Wunden, beide von Anfang an
   aufgeklappt (`anfangsAufgeklappt`, danach frei einklappbar, nicht gespeichert),

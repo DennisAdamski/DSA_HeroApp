@@ -55,6 +55,8 @@ import 'package:dsa_heldenverwaltung/domain/active_spell_effects_state.dart';
 import 'package:dsa_heldenverwaltung/domain/attribute_modifiers.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_gefechts_adapter.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abschnitt.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_kachelgroesse.dart';
 
 import 'karto_gefechts_bruecke.dart';
 
@@ -275,11 +277,18 @@ class KartoBestandsAdapterImpl
     required HeroComputedSnapshot werte,
   }) {
     return _KartoCompatHost(
-      child: InspectorAttributeProbes(
-        heroId: heroId,
-        probenEigenschaften: werte.probenEigenschaften,
-        grundwerte: werte.effectiveAttributes,
-        kompakt: true,
+      // Die Stufe der umgebenden Kachel entscheidet, ob ein Wundabzug an der
+      // Karte steht (weit) oder nur im Tooltip.
+      child: Builder(
+        builder: (context) => InspectorAttributeProbes(
+          heroId: heroId,
+          probenEigenschaften: werte.probenEigenschaften,
+          grundwerte: werte.effectiveAttributes,
+          kompakt: true,
+          abzugZeigen:
+              KartoKachelSteuerung.groesseVon(context) ==
+              KartoKachelGroesse.weit,
+        ),
       ),
     );
   }
