@@ -194,6 +194,13 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   Die Kachel „Reiseroute“ (`karto_reiseroute.dart`) zeigt die jüngsten
   Stationen von `HeroSheet.reiseStationen` als Zeitleiste und öffnet das
   Reiseroute-Blatt; Details in [reiseroute_plan.md](../reiseroute_plan.md).
+  **Vor- und Nachteile:** In `weit` zeigt die eingeklappte Übersicht
+  (`KartoMerkmalsuebersicht`) je Art bis zu `kMerkmaleZeilenWeit` (3) statt einer
+  Zeile, also mehr Einträge ohne Aufklappen; aufgeklappt stehen Vorteile und
+  Nachteile nebeneinander (Key `karto-merkmale-spalten`), solange beide Arten
+  Einträge haben. Mehr gibt die Datenlage nicht her (Wirkungstexte stehen schon
+  aufgeklappt). Kompakt, normal und außerhalb einer Kachel unverändert; der
+  Aufklappzustand bleibt die geräteweite Einstellung.
 - **Vor- und Nachteile bearbeitet UI2 im Merkmalsblatt**
   (`lib/ui2/merkmale/`), nach dem Muster des Abenteuerblatts: modal, eigener
   Schreibweg über `HeroActions.updateHero` und `aendereMerkmale`

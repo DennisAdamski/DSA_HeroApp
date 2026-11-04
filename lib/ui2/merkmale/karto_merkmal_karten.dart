@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_anzeige_rules.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abenteuer_karten.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abschnitt.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_kachelgroesse.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
 
@@ -123,6 +125,9 @@ class _Pille extends StatelessWidget {
   }
 }
 
+/// Zeilen je Art in der eingeklappten Uebersicht einer weiten Kachel.
+const int kMerkmaleZeilenWeit = 3;
+
 /// Kompakte Uebersicht der Vor- und Nachteile fuer die Spielansicht.
 ///
 /// Eingeklappt steht je Art eine Zeile mit den Kurzformen (`Jähzorn 6`), die
@@ -131,6 +136,12 @@ class _Pille extends StatelessWidget {
 /// Zustand gehoert dem Aufrufer ([aufgeklappt], [onUmschalten]); die Uebersicht
 /// speichert nichts. Bearbeitet wird im Merkmalsblatt. Mehrdeutige Eintraege
 /// tragen ein Fragezeichen, damit die offene Zuordnung am Tisch auffaellt.
+///
+/// In einer weiten Kachel ([KartoKachelGroesse.weit], auch im Vergroessern-
+/// Dialog) zeigt jede eingeklappte Art bis zu [kMerkmaleZeilenWeit] Zeilen
+/// statt einer, und aufgeklappt stehen Vorteile und Nachteile nebeneinander,
+/// solange beide Arten Eintraege haben. Kompakt und normal bleibt alles wie
+/// vorher.
 class KartoMerkmalsuebersicht extends StatelessWidget {
   /// Erstellt die Uebersicht aus aufbereiteten Vor- und Nachteilen.
   const KartoMerkmalsuebersicht({
@@ -166,19 +177,45 @@ class KartoMerkmalsuebersicht extends StatelessWidget {
         style: texte.fliess.copyWith(color: karto.schriftLeise),
       );
     }
-    final gruppen = [('Vorteile', vorteile), ('Nachteile', nachteile)];
+    final weit =
+        KartoKachelSteuerung.groesseVon(context) == KartoKachelGroesse.weit;
+    final gruppen = [
+      for (final (titel, liste) in [
+        ('Vorteile', vorteile),
+        ('Nachteile', nachteile),
+      ])
+        if (liste.isNotEmpty) (titel, liste),
+    ];
     final anzahl = vorteile.length + nachteile.length;
+    Widget gruppe(String titel, List<MerkmalAnzeige> liste) => aufgeklappt
+        ? _Aufgeklappt(titel: titel, liste: liste)
+        : _Zeile(
+            titel: titel,
+            liste: liste,
+            zeilen: weit ? kMerkmaleZeilenWeit : 1,
+          );
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        for (final (titel, liste) in gruppen)
-          if (liste.isNotEmpty)
+        if (weit && aufgeklappt && gruppen.length == 2)
+          Padding(
+            padding: const EdgeInsets.only(bottom: Abstand.normal),
+            child: Row(
+              key: const ValueKey<String>('karto-merkmale-spalten'),
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(child: gruppe(gruppen[0].$1, gruppen[0].$2)),
+                const SizedBox(width: Abstand.block),
+                Expanded(child: gruppe(gruppen[1].$1, gruppen[1].$2)),
+              ],
+            ),
+          )
+        else
+          for (final (titel, liste) in gruppen)
             Padding(
               padding: const EdgeInsets.only(bottom: Abstand.normal),
-              child: aufgeklappt
-                  ? _Aufgeklappt(titel: titel, liste: liste)
-                  : _Zeile(titel: titel, liste: liste),
+              child: gruppe(titel, liste),
             ),
         if (onUmschalten != null)
           TextButton.icon(
@@ -195,12 +232,17 @@ class KartoMerkmalsuebersicht extends StatelessWidget {
   }
 }
 
-/// Eine Zeile je Art, bei Platzmangel mit Auslassung.
+/// Bis zu [zeilen] Zeilen je Art, bei Platzmangel mit Auslassung.
 class _Zeile extends StatelessWidget {
-  const _Zeile({required this.titel, required this.liste});
+  const _Zeile({
+    required this.titel,
+    required this.liste,
+    required this.zeilen,
+  });
 
   final String titel;
   final List<MerkmalAnzeige> liste;
+  final int zeilen;
 
   @override
   Widget build(BuildContext context) {
@@ -219,7 +261,7 @@ class _Zeile extends StatelessWidget {
           ),
         ],
       ),
-      maxLines: 1,
+      maxLines: zeilen,
       overflow: TextOverflow.ellipsis,
     );
   }

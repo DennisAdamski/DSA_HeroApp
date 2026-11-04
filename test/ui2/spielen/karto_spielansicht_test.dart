@@ -1981,6 +1981,103 @@ void main() {
       expect(await repo.loadHeroState(held.id), isNull);
     });
 
+    group('weite Stufe (SPIEL-07)', () {
+      Finder k(String schluessel) => find.byKey(ValueKey<String>(schluessel));
+
+      HeroSheet breit(SpielkachelBreite? breite) => weltlich().copyWith(
+        vorteileText: 'Flink, Zäher Hund',
+        nachteileText: 'Goldgier 6',
+        spielansicht: breite == null
+            ? null
+            : HeroSpielansicht(
+                kacheln: [HeroSpielkachel(id: 'merkmale', breite: breite)],
+              ),
+      );
+
+      testWidgets('aufgeklappt stehen die Arten nebeneinander', (tester) async {
+        final einstellungen = _Einstellungen(
+          const AppSettings(merkmaleAufgeklappt: true),
+        );
+        addTearDown(einstellungen.close);
+        await zeige(
+          tester,
+          held: breit(SpielkachelBreite.mittel),
+          breite: 1280,
+          einstellungen: einstellungen,
+        );
+        expect(k('karto-merkmale-spalten'), findsOneWidget);
+        final vorteile = tester.getTopLeft(find.text('Vorteile'));
+        final nachteile = tester.getTopLeft(find.text('Nachteile'));
+        expect(nachteile.dy, vorteile.dy);
+        expect(nachteile.dx, greaterThan(vorteile.dx));
+      });
+
+      testWidgets('die Standardbreite bleibt unverändert untereinander', (
+        tester,
+      ) async {
+        final einstellungen = _Einstellungen(
+          const AppSettings(merkmaleAufgeklappt: true),
+        );
+        addTearDown(einstellungen.close);
+        await zeige(
+          tester,
+          held: breit(null),
+          breite: 1280,
+          einstellungen: einstellungen,
+        );
+        expect(k('karto-merkmale-spalten'), findsNothing);
+        expect(
+          tester.getTopLeft(find.text('Nachteile')).dy,
+          greaterThan(tester.getTopLeft(find.text('Vorteile')).dy),
+        );
+      });
+
+      testWidgets('der Vergrößern-Dialog zeigt die Spalten', (tester) async {
+        final einstellungen = _Einstellungen(
+          const AppSettings(merkmaleAufgeklappt: true),
+        );
+        addTearDown(einstellungen.close);
+        await zeige(
+          tester,
+          held: breit(null),
+          breite: 1280,
+          einstellungen: einstellungen,
+        );
+        await tester.tap(k('karto-kachel-merkmale-vergroessern'));
+        await tester.pumpAndSettle();
+        expect(
+          find.descendant(
+            of: k('karto-kachel-merkmale-popup'),
+            matching: k('karto-merkmale-spalten'),
+          ),
+          findsOneWidget,
+        );
+      });
+
+      for (final breite in [744.0, 1024.0, 1440.0, 1920.0]) {
+        for (final skalierung in [1.0, 2.0]) {
+          testWidgets('mittel bei $breite dp, Schrift $skalierung, ohne '
+              'Überlauf, auch im Anordnen', (tester) async {
+            final einstellungen = _Einstellungen(
+              const AppSettings(merkmaleAufgeklappt: true),
+            );
+            addTearDown(einstellungen.close);
+            await zeige(
+              tester,
+              held: breit(SpielkachelBreite.mittel),
+              breite: breite,
+              skalierung: skalierung,
+              einstellungen: einstellungen,
+            );
+            expect(tester.takeException(), isNull);
+            await tester.tap(k('karto-spiel-anordnen'));
+            await tester.pumpAndSettle();
+            expect(tester.takeException(), isNull);
+          });
+        }
+      }
+    });
+
     testWidgets('Bearbeiten prüft zuerst die Verwaltung', (tester) async {
       var geprueft = 0;
       await zeige(
