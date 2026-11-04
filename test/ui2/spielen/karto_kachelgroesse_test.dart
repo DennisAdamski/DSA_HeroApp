@@ -9,8 +9,11 @@ void main() {
     expect(KartoKachelGroesse.fuerBreite(300), KartoKachelGroesse.kompakt);
     expect(KartoKachelGroesse.fuerBreite(419.9), KartoKachelGroesse.kompakt);
     expect(KartoKachelGroesse.fuerBreite(420), KartoKachelGroesse.normal);
-    expect(KartoKachelGroesse.fuerBreite(699.9), KartoKachelGroesse.normal);
-    expect(KartoKachelGroesse.fuerBreite(700), KartoKachelGroesse.weit);
+    expect(KartoKachelGroesse.fuerBreite(599.9), KartoKachelGroesse.normal);
+    expect(KartoKachelGroesse.fuerBreite(600), KartoKachelGroesse.weit);
+    // Die kleinste mittlere Kachel (zwei Einheiten zu 300 dp und eine Lücke)
+    // ist bereits weit.
+    expect(KartoKachelGroesse.fuerBreite(616), KartoKachelGroesse.weit);
     expect(
       KartoKachelGroesse.fuerBreite(double.infinity),
       KartoKachelGroesse.normal,

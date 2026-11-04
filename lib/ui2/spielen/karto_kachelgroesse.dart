@@ -9,17 +9,21 @@ enum KartoKachelGroesse {
   /// Eine schmale Rastereinheit: nur das Wichtigste.
   kompakt,
 
-  /// Eine breitere Einheit oder zwei Einheiten: die gewohnte Darstellung.
+  /// Eine breite Einheit (große Fenster): die gewohnte Darstellung.
   normal,
 
   /// Viel Platz: zusätzliche Angaben und nebeneinander statt untereinander.
+  ///
+  /// Jede mittlere (zwei Einheiten, mindestens 616 dp) und jede volle Kachel
+  /// ist weit; eine schmale erst in sehr großen Fenstern, in denen eine
+  /// Rastereinheit selbst 600 dp erreicht.
   weit;
 
   /// Kachelbreite, ab der eine Kachel nicht mehr [kompakt] ist.
   static const double normalAb = 420;
 
   /// Kachelbreite, ab der eine Kachel [weit] ist.
-  static const double weitAb = 700;
+  static const double weitAb = 600;
 
   /// Stufe für die verfügbare Kachelbreite [breite].
   ///

@@ -956,6 +956,146 @@ void main() {
     });
   });
 
+  group('Kampf-Kachel (SPIEL-07)', () {
+    Finder k(String schluessel) => find.byKey(ValueKey<String>(schluessel));
+
+    // Held, dessen Kampf-Kachel auf die Breite [breite] gestellt ist.
+    HeroSheet kampfBreite(SpielkachelBreite breite) => weltlich().copyWith(
+      spielansicht: HeroSpielansicht(
+        kacheln: [HeroSpielkachel(id: 'kampf', breite: breite)],
+      ),
+    );
+
+    testWidgets('standardmäßig schmal zeigt sie kein Panel', (tester) async {
+      for (final breite in [390.0, 1280.0, 1920.0]) {
+        await zeige(tester, held: weltlich(), breite: breite);
+        expect(find.text('Kampfproben praiodan'), findsOneWidget);
+        expect(k('karto-kampf-werte'), findsNothing, reason: '$breite dp');
+      }
+    });
+
+    for (final breite in [1024.0, 1280.0, 1440.0, 1920.0]) {
+      testWidgets('mittel zeigt das Panel bei $breite dp', (tester) async {
+        await zeige(
+          tester,
+          held: kampfBreite(SpielkachelBreite.mittel),
+          breite: breite,
+        );
+        expect(k('karto-kampf-werte'), findsOneWidget);
+        expect(k('karto-kampf-ini'), findsOneWidget);
+        expect(find.text('Kampfproben praiodan'), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      });
+    }
+
+    testWidgets('mittel zeigt das Panel schon bei 744 dp', (tester) async {
+      await zeige(
+        tester,
+        held: kampfBreite(SpielkachelBreite.mittel),
+        breite: 744,
+      );
+      expect(k('karto-kampf-werte'), findsOneWidget);
+    });
+
+    testWidgets('eine einspaltige Ansicht bleibt ohne Panel', (tester) async {
+      await zeige(
+        tester,
+        held: kampfBreite(SpielkachelBreite.mittel),
+        breite: 390,
+      );
+      expect(k('karto-kampf-werte'), findsNothing);
+    });
+
+    testWidgets('der Vergrößern-Dialog zeigt das Panel auch bei schmaler '
+        'Kachel', (tester) async {
+      await zeige(tester, held: weltlich(), breite: 1280);
+      expect(k('karto-kampf-werte'), findsNothing);
+      await tester.tap(k('karto-kachel-kampf-vergroessern'));
+      await tester.pumpAndSettle();
+      expect(
+        find.descendant(
+          of: k('karto-kachel-kampf-popup'),
+          matching: k('karto-kampf-werte'),
+        ),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('Anordnen: die Vorschau zeigt das Panel in der weiten Stufe', (
+      tester,
+    ) async {
+      await zeige(
+        tester,
+        held: kampfBreite(SpielkachelBreite.mittel),
+        breite: 1280,
+      );
+      await tester.tap(k('karto-spiel-anordnen'));
+      await tester.pumpAndSettle();
+      expect(
+        tester.widget<Text>(k('karto-kachel-kampf-vorschau-stufe')).data,
+        startsWith('Vorschau: Weit'),
+      );
+      expect(
+        find.descendant(
+          of: k('karto-kachel-kampf-vorschau'),
+          matching: k('karto-kampf-werte'),
+        ),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('Anordnen: eine schmale Kachel zeigt in der Vorschau kein '
+        'Panel', (tester) async {
+      await zeige(tester, held: weltlich(), breite: 1280);
+      await tester.tap(k('karto-spiel-anordnen'));
+      await tester.pumpAndSettle();
+      expect(
+        find.descendant(
+          of: k('karto-kachel-kampf-vorschau'),
+          matching: k('karto-kampf-werte'),
+        ),
+        findsNothing,
+      );
+    });
+
+    testWidgets('Breite im Anordnen ändern lässt die Vorschau sofort folgen', (
+      tester,
+    ) async {
+      await zeige(tester, held: weltlich(), breite: 1280);
+      await tester.tap(k('karto-spiel-anordnen'));
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(k('karto-kachel-kampf-breite'));
+      await tester.tap(k('karto-kachel-kampf-breite'));
+      await tester.pumpAndSettle();
+      await tester.tap(k('karto-kachel-kampf-breite-mittel').last);
+      await tester.pumpAndSettle();
+      expect(
+        find.descendant(
+          of: k('karto-kachel-kampf-vorschau'),
+          matching: k('karto-kampf-werte'),
+        ),
+        findsOneWidget,
+      );
+    });
+
+    // Mit Schrift 2 gilt die Prüfung der Kachel selbst; der Anordnen-Modus
+    // wird mit normaler Schrift geprüft, weil der Seitenkopf dort bei 1440 dp
+    // und Schrift 2 überläuft (nicht Teil der Kampf-Kachel).
+    for (final breite in [744.0, 1024.0, 1440.0, 1920.0]) {
+      testWidgets('weit bei $breite dp ohne Überlauf, mit Schrift 2 und im '
+          'Anordnen', (tester) async {
+        final held = kampfBreite(SpielkachelBreite.mittel);
+        await zeige(tester, held: held, breite: breite, skalierung: 2);
+        expect(k('karto-kampf-werte'), findsOneWidget);
+        expect(tester.takeException(), isNull);
+        await zeige(tester, held: held, breite: breite);
+        await tester.tap(k('karto-spiel-anordnen'));
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+      });
+    }
+  });
+
   group('Ressourcen-Schritte (SPIEL-07)', () {
     Finder k(String schluessel) => find.byKey(ValueKey<String>(schluessel));
     const namen = ['minus-5', 'minus-1', 'plus-1', 'plus-5'];

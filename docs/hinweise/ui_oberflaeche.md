@@ -148,10 +148,20 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   äußerste `KartoAbschnitt` einer Kachel über `KartoKachelSteuerung`; er
   schreibt sofort nur den einen Eintrag (`mitEingeklappt`). Während einer
   Planung sind Anordnen und Einklappen gesperrt. Jede Kachel kennt ihre **Größenstufe** `KartoKachelGroesse`
-  (`kompakt` <420, `normal` <700, `weit` ab 700 dp **Kachelbreite**, nicht
+  (`kompakt` <420, `normal` <600, `weit` ab 600 dp **Kachelbreite**, nicht
   Fensterbreite), über `KartoKachelSteuerung.groesseVon(context)` auch in
   verschachtelten Abschnitten lesbar; Inhalte zeigen mit der Stufe mehr oder
-  ordnen sich um, statt nur zu strecken. „Dabei“ hält Betrag,
+  ordnen sich um, statt nur zu strecken (mittlere und volle Kacheln sind immer
+  `weit`, eine schmale erst in sehr großen Fenstern). **Kampf:** In `weit` steht
+  neben den Probenchips das Panel „Kampfwerte“ (`karto_kampfinhalt.dart`,
+  `KartoKampfInhalt`/`KartoKampfwerte`): belegte Hände (`gefechtsHandbelegung`),
+  INI (`kampfInitiative` + Würfel), TP (`gefechtsAngriffsanzeige`), RS, BE
+  (Keys `karto-kampf-ini|tp|rs|be`), bei Fernkampf Ladezeit, Geschoss,
+  Entfernung, bei Belegung Wundabzug von Schwert-/Schildarm und
+  Waffenmeisterschaft. Reine Anzeige aus der Kampfvorschau, ohne Rechnung; die
+  wichtigsten Zeilen stehen oben, weil die Anordnen-Vorschau nur 180 dp zeigt.
+  Die Kachel bleibt standardmäßig schmal; das Panel erscheint nach dem
+  Verbreitern oder im Vergrößern-Dialog. „Dabei“ hält Betrag,
   Stift und Münzschritte beieinander und lässt die Verbrauchsgegenstände ab
   `kDabeiZweispaltigAb` (560 dp Kachelbreite) zweispaltig fließen.
   Die Kachel „Reiseroute“ (`karto_reiseroute.dart`) zeigt die jüngsten

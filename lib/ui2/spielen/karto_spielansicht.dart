@@ -25,6 +25,7 @@ import 'package:dsa_heldenverwaltung/ui2/spielen/karto_begleiterkarte.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_dabei_abschnitt.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_kachelgroesse.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_kachelraster.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_kampfinhalt.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_laufendes_abenteuer.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_reiseroute.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_ressourcenleiste.dart';
@@ -683,7 +684,11 @@ class _KartoSpielansichtState extends ConsumerState<KartoSpielansicht> {
     stufe: KartoFlaechenstufe.senke,
     symbol: Icons.shield_outlined,
     akzent: KartoAkzent.messing,
-    child: bestand.spielKampfproben(heroId: heroId, werte: werte),
+    // In einer weiten Kachel kommen die Kampfwerte neben die Probenchips.
+    child: KartoKampfInhalt(
+      proben: bestand.spielKampfproben(heroId: heroId, werte: werte),
+      werte: werte,
+    ),
   );
 
   Widget _effekte(BuildContext context, HeroComputedSnapshot werte) =>
