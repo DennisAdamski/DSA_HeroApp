@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abschnitt.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_kachelgroesse.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_bestands_adapter.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
 
@@ -12,6 +15,57 @@ import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
 /// `HeroState.diceLogMax` Einträge, nach Spielabenden gegliedert) schob die
 /// Seite sonst um mehrere Bildschirme nach unten.
 const int kProtokollKurz = 5;
+
+/// So viele Würfe zeigt eine weite Kachel (als Tabelle).
+const int kProtokollWeit = 8;
+
+/// Kachel „Würfelprotokoll“: die letzten Würfe und der Weg zur ganzen Historie.
+///
+/// Eine eigene Klasse, damit sie die Größenstufe der umgebenden Kachel lesen
+/// kann: in `weit` stehen [kProtokollWeit] statt [kProtokollKurz] Würfe da (der
+/// Bestandsbaustein setzt sie dann als Tabelle), und der Knopf „Alle anzeigen“
+/// folgt dieser Grenze.
+class KartoProtokollAbschnitt extends StatelessWidget {
+  /// Erstellt die Kachel für [heroId] aus dem Stand [werte].
+  const KartoProtokollAbschnitt({
+    super.key,
+    required this.heroId,
+    required this.werte,
+    required this.bestand,
+  });
+
+  /// Held, dessen Protokoll das Blatt öffnet.
+  final String heroId;
+
+  /// Stand mit dem Würfelprotokoll.
+  final HeroComputedSnapshot werte;
+
+  /// Baut das Protokoll aus dem Bestand.
+  final KartoBestandsAdapter bestand;
+
+  @override
+  Widget build(BuildContext context) {
+    final weit =
+        KartoKachelSteuerung.groesseVon(context) == KartoKachelGroesse.weit;
+    final grenze = weit ? kProtokollWeit : kProtokollKurz;
+    final anzahl = werte.state.diceLog.length;
+    return KartoAbschnitt(
+      titel: 'Würfelprotokoll',
+      aktion: anzahl > grenze
+          ? TextButton(
+              key: const ValueKey<String>('karto-spiel-protokoll-alle'),
+              onPressed: () => zeigeWuerfelprotokoll(
+                context: context,
+                heroId: heroId,
+                bestand: bestand,
+              ),
+              child: Text('Alle anzeigen ($anzahl)'),
+            )
+          : null,
+      child: bestand.spielProtokoll(werte, hoechstens: grenze),
+    );
+  }
+}
 
 /// Öffnet das vollständige Würfelprotokoll samt Filtern als Blatt.
 ///

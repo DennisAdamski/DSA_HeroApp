@@ -25,6 +25,7 @@ import 'package:dsa_heldenverwaltung/ui2/shell/karto_bestands_adapter.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abenteuer_karten.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_kachelraster.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_spielansicht.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_wuerfelprotokoll.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_theme.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
 
@@ -387,6 +388,105 @@ void main() {
         find.byKey(const ValueKey<String>('karto-spiel-protokoll-alle')),
         findsNothing,
       );
+    });
+
+    group('weite Stufe (SPIEL-07)', () {
+      HeroSheet mitBreite(SpielkachelBreite? breite) => weltlich().copyWith(
+        spielansicht: breite == null
+            ? null
+            : HeroSpielansicht(
+                kacheln: [HeroSpielkachel(id: 'protokoll', breite: breite)],
+              ),
+      );
+
+      Map<String, HeroState> zustand(int anzahl) => {
+        'praiodan': const HeroState.empty().copyWith(diceLog: wuerfe(anzahl)),
+      };
+
+      testWidgets('mittel baut acht Würfe und öffnet erst ab neun', (
+        tester,
+      ) async {
+        final bestand = TestBestand();
+        await zeige(
+          tester,
+          held: mitBreite(SpielkachelBreite.mittel),
+          bestand: bestand,
+          zustaende: zustand(9),
+          breite: 1280,
+        );
+        expect(bestand.protokollGrenzen, everyElement(kProtokollWeit));
+        expect(find.text('Alle anzeigen (9)'), findsOneWidget);
+
+        await zeige(
+          tester,
+          held: mitBreite(SpielkachelBreite.mittel),
+          zustaende: zustand(8),
+          breite: 1280,
+        );
+        expect(
+          find.byKey(const ValueKey<String>('karto-spiel-protokoll-alle')),
+          findsNothing,
+        );
+      });
+
+      testWidgets('die Standardbreite bleibt bei fünf Würfen', (tester) async {
+        final bestand = TestBestand();
+        await zeige(
+          tester,
+          held: mitBreite(null),
+          bestand: bestand,
+          zustaende: zustand(9),
+          breite: 390,
+        );
+        expect(bestand.protokollGrenzen, everyElement(kProtokollKurz));
+        expect(find.text('Alle anzeigen (9)'), findsOneWidget);
+      });
+
+      testWidgets('der Vergrößern-Dialog baut die weite Fassung', (
+        tester,
+      ) async {
+        final bestand = TestBestand();
+        await zeige(
+          tester,
+          held: mitBreite(null),
+          bestand: bestand,
+          zustaende: zustand(9),
+          breite: 1280,
+        );
+        bestand.protokollGrenzen.clear();
+        final vergroessern = find.byKey(
+          const ValueKey<String>('karto-kachel-protokoll-vergroessern'),
+        );
+        await tester.ensureVisible(vergroessern);
+        await tester.tap(vergroessern);
+        await tester.pumpAndSettle();
+        expect(
+          find.byKey(const ValueKey<String>('karto-kachel-protokoll-popup')),
+          findsOneWidget,
+        );
+        expect(bestand.protokollGrenzen.last, kProtokollWeit);
+      });
+
+      for (final breite in [744.0, 1024.0, 1440.0, 1920.0]) {
+        for (final skalierung in [1.0, 2.0]) {
+          testWidgets('mittel bei $breite dp, Schrift $skalierung, ohne '
+              'Überlauf, auch im Anordnen', (tester) async {
+            await zeige(
+              tester,
+              held: mitBreite(SpielkachelBreite.mittel),
+              zustaende: zustand(12),
+              breite: breite,
+              skalierung: skalierung,
+            );
+            expect(tester.takeException(), isNull);
+            await tester.tap(
+              find.byKey(const ValueKey<String>('karto-spiel-anordnen')),
+            );
+            await tester.pumpAndSettle();
+            expect(tester.takeException(), isNull);
+          });
+        }
+      }
     });
   });
 

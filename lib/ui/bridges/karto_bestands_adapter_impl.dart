@@ -328,7 +328,8 @@ class KartoBestandsAdapterImpl
     );
   }
 
-  /// Baut das vorhandene Würfelprotokoll mit den Einträgen des Zustands.
+  /// Baut das vorhandene Würfelprotokoll mit den Einträgen des Zustands, in
+  /// einer weiten Kachel mit Grenze als Tabelle.
   @override
   Widget spielProtokoll(
     HeroComputedSnapshot werte, {
@@ -338,6 +339,11 @@ class KartoBestandsAdapterImpl
       builder: (context, ref, _) => InspectorDiceLogSection(
         entries: werte.state.diceLog,
         hoechstens: hoechstens,
+        // Die weite Kachel zeigt die Würfe als Tabelle; nur mit Grenze, denn
+        // das ganze Protokoll samt Filtern steht im Blatt.
+        tabellarisch:
+            hoechstens != null &&
+            KartoKachelSteuerung.groesseVon(context) == KartoKachelGroesse.weit,
         aktion: (eintrag) => schadenRuecknahmeAktion(
           eintrag: eintrag,
           heroId: werte.hero.id,

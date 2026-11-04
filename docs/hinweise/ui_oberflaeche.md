@@ -201,6 +201,18 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   Einträge haben. Mehr gibt die Datenlage nicht her (Wirkungstexte stehen schon
   aufgeklappt). Kompakt, normal und außerhalb einer Kachel unverändert; der
   Aufklappzustand bleibt die geräteweite Einstellung.
+  **Würfelprotokoll:** Die Kachel ist die Klasse `KartoProtokollAbschnitt`
+  (`karto_wuerfelprotokoll.dart`), damit sie die Stufe lesen kann. In `weit`
+  zeigt sie `kProtokollWeit` (8) statt `kProtokollKurz` (5) Würfe, „Alle
+  anzeigen“ erscheint erst darüber, und der Adapter (`spielProtokoll`) setzt die
+  Würfe als **Tabelle** (`InspectorDiceLogSection.tabellarisch`: Kopfzeile Zeit,
+  Probe, Würfe, Ziel, Ergebnis; Restpunkte TaP*/ZfP* unter dem Ergebnis, dort
+  auch „Nochmal würfeln“ und die Rücknahme-Aktion; Keys
+  `dice-log-tabellenkopf`, `dice-log-zeile-<ms>`). Die Tabelle gilt nur mit
+  Grenze (das Blatt mit allen Würfen und Filtern bleibt bei Karten) und fällt
+  unter `tabellenBreiteMin` (520 dp) oder bei Schrift über das 1,3-Fache auf die
+  Karten zurück, weil feste Spalten dann nicht mehr tragen. Daten sind
+  unverändert (`DiceLogEntry`), Schreibwege auch.
 - **Vor- und Nachteile bearbeitet UI2 im Merkmalsblatt**
   (`lib/ui2/merkmale/`), nach dem Muster des Abenteuerblatts: modal, eigener
   Schreibweg über `HeroActions.updateHero` und `aendereMerkmale`

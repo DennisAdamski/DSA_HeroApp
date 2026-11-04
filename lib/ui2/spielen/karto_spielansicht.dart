@@ -299,7 +299,7 @@ class _KartoSpielansichtState extends ConsumerState<KartoSpielansicht> {
       stationen: werte.hero.reiseStationen,
     ),
     KartoSpielkachelArt.merkmale => _merkmale(context, werte, leser),
-    KartoSpielkachelArt.protokoll => _protokoll(context, werte),
+    KartoSpielkachelArt.protokoll => _protokoll(werte),
   };
 
   // Öffnet die Kachel groß in einem Dialog. Der Dialog liest den Helden selbst
@@ -730,25 +730,10 @@ class _KartoSpielansichtState extends ConsumerState<KartoSpielansicht> {
       );
 
   // Am Tisch zählen die letzten Würfe; die ganze Historie samt Filtern
-  // öffnet „Alle anzeigen“ in einem eigenen Blatt.
-  Widget _protokoll(BuildContext context, HeroComputedSnapshot werte) {
-    final anzahl = werte.state.diceLog.length;
-    return KartoAbschnitt(
-      titel: 'Würfelprotokoll',
-      aktion: anzahl > kProtokollKurz
-          ? TextButton(
-              key: const ValueKey<String>('karto-spiel-protokoll-alle'),
-              onPressed: () => zeigeWuerfelprotokoll(
-                context: context,
-                heroId: heroId,
-                bestand: bestand,
-              ),
-              child: Text('Alle anzeigen ($anzahl)'),
-            )
-          : null,
-      child: bestand.spielProtokoll(werte, hoechstens: kProtokollKurz),
-    );
-  }
+  // öffnet „Alle anzeigen“ in einem eigenen Blatt. Die Größenstufe der Kachel
+  // liest `KartoProtokollAbschnitt` selbst.
+  Widget _protokoll(HeroComputedSnapshot werte) =>
+      KartoProtokollAbschnitt(heroId: heroId, werte: werte, bestand: bestand);
 
   // Fehlertexte bleiben auch bei großer Schrift erreichbar.
   Widget _meldung(

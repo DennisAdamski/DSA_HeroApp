@@ -449,4 +449,117 @@ void main() {
       expect(find.byKey(const ValueKey('dice-log-filter-all')), findsOneWidget);
     });
   });
+
+  group('Tabellenansicht (tabellarisch)', () {
+    final kopf = find.byKey(const ValueKey('dice-log-tabellenkopf'));
+
+    Widget breit(Widget child, {double breite = 700, double schrift = 1}) =>
+        MaterialApp(
+          builder: (context, kind) => MediaQuery(
+            data: MediaQuery.of(context)
+                .copyWith(textScaler: TextScaler.linear(schrift)),
+            child: kind!,
+          ),
+          home: Scaffold(
+            body: SingleChildScrollView(
+              child: SizedBox(width: breite, child: child),
+            ),
+          ),
+        );
+
+    DiceLogEntry talent() => DiceLogEntry(
+      timestamp: DateTime.utc(2026, 4, 30, 8, 0),
+      type: ProbeType.talent,
+      title: 'Talentprobe: Klettern',
+      subtitle: 'MU/KL/GE',
+      success: true,
+      diceValues: const [5, 8, 12],
+      targetValue: 12,
+      zielwerte: const [12, 13, 14],
+      restpunkte: 4,
+    );
+
+    testWidgets('zeigt Kopfzeile, Spalten und Restpunkte', (tester) async {
+      await tester.pumpWidget(
+        breit(InspectorDiceLogSection(entries: [talent()], tabellarisch: true)),
+      );
+      expect(kopf, findsOneWidget);
+      for (final text in ['Zeit', 'Probe', 'Würfe', 'Ziel', 'Ergebnis']) {
+        expect(find.text(text), findsOneWidget);
+      }
+      expect(find.text('Talentprobe: Klettern'), findsOneWidget);
+      expect(find.text('5 · 8 · 12'), findsOneWidget);
+      expect(find.text('12/13/14'), findsOneWidget);
+      expect(find.text('GELUNGEN'), findsOneWidget);
+      expect(find.text('TaP*: 4'), findsOneWidget);
+    });
+
+    testWidgets('behält Wiederholen und Aktion', (tester) async {
+      var wiederholt = 0;
+      await tester.pumpWidget(
+        breit(
+          InspectorDiceLogSection(
+            entries: [talent()],
+            tabellarisch: true,
+            aktion: (_) => const Text('Zurücknehmen'),
+            onWiederholen: (_) async => wiederholt++,
+          ),
+        ),
+      );
+      expect(find.text('Zurücknehmen'), findsOneWidget);
+      await tester.tap(find.byTooltip('Nochmal würfeln'));
+      expect(wiederholt, 1);
+    });
+
+    testWidgets('ohne den Schalter bleibt es bei Karten', (tester) async {
+      await tester.pumpWidget(
+        breit(InspectorDiceLogSection(entries: [talent()])),
+      );
+      expect(kopf, findsNothing);
+      expect(find.textContaining('Würfe: 5, 8, 12'), findsOneWidget);
+    });
+
+    testWidgets('unter 520 dp oder bei großer Schrift bleibt es bei Karten', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        breit(
+          InspectorDiceLogSection(entries: [talent()], tabellarisch: true),
+          breite: 480,
+        ),
+      );
+      expect(kopf, findsNothing);
+      expect(find.textContaining('Würfe: 5, 8, 12'), findsOneWidget);
+
+      await tester.pumpWidget(
+        breit(
+          InspectorDiceLogSection(entries: [talent()], tabellarisch: true),
+          schrift: 2,
+        ),
+      );
+      expect(kopf, findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('Summenwurf und neutraler Wurf haben ihr Kurzwort', (
+      tester,
+    ) async {
+      final ini = DiceLogEntry(
+        timestamp: DateTime.utc(2026, 4, 30, 8, 5),
+        type: ProbeType.initiative,
+        title: 'Initiative',
+        subtitle: '',
+        success: true,
+        isNeutral: true,
+        diceValues: const [4],
+        total: 13,
+      );
+      await tester.pumpWidget(
+        breit(InspectorDiceLogSection(entries: [ini], tabellarisch: true)),
+      );
+      expect(find.text('WURF'), findsOneWidget);
+      expect(find.text('Gesamt: 13'), findsOneWidget);
+      expect(find.text('–'), findsOneWidget);
+    });
+  });
 }
