@@ -165,7 +165,14 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   in `weit` zeigt eine Karte einen Wundabzug zusätzlich als „−4“ an der Karte
   selbst (`InspectorAttributeCard.abzugZeigen`, vom Adapter über die Stufe
   geschaltet), sonst nur im Tooltip. Mehr gibt die Datenlage nicht her, die
-  Stufen `kompakt`/`normal` bleiben unverändert. **Zustand:** In `weit` mit mindestens
+  Stufen `kompakt`/`normal` bleiben unverändert. **Begleiter:** In `weit` stehen mehrere Begleiter nebeneinander
+  (Karten ab `KartoBegleiterAbschnitt.kartenbreiteMin` = 320 dp, Spalten über
+  `kartoAusgewogeneSpalten`), und jede Karte trägt einen Block „Kampf“ aus
+  `begleiterKampfprofil` (INI, RS, BE, MR, Geschwindigkeiten, je Angriff AT, PA,
+  TP, DK, beim Reittier der Ausbildungsstand; Keys
+  `karto-begleiter-<id>-kampf|kampfwerte|angriff-<i>|reittier`). Ab 540 dp
+  Kartenbreite steht der Block rechts neben den Werten, sonst darunter. Die
+  Bedienung der Werte ist unverändert. **Zustand:** In `weit` mit mindestens
   `KartoZustandsblock.zweiSpaltenAb` (624 dp) stehen zwei Spalten nebeneinander
   (`karto_spiel_bruecke.dart`): links Belastung über Wunden, beide von Anfang an
   aufgeklappt (`anfangsAufgeklappt`, danach frei einklappbar, nicht gespeichert),

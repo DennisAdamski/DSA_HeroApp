@@ -42,3 +42,16 @@ enum KartoKachelGroesse {
   /// Ob die Kachel [weit] ist.
   bool get istWeit => this == weit;
 }
+
+/// Spaltenzahl für [anzahl] gleich breite Elemente bei Platz für [platz]
+/// Spalten, ohne eine fast leere letzte Reihe.
+///
+/// Gewählt wird die größte Zahl bis [platz], die [anzahl] gleichmäßig teilt
+/// (4 Elemente bei Platz für 3 ergeben 2×2 statt 3+1); teilt keine, gilt
+/// [platz] (3 Elemente bei Platz für 2 ergeben 2+1).
+int kartoAusgewogeneSpalten(int platz, int anzahl) {
+  for (var spalten = platz; spalten >= 2; spalten--) {
+    if (anzahl % spalten == 0) return spalten;
+  }
+  return platz;
+}

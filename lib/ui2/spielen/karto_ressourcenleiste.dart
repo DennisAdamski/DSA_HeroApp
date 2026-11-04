@@ -47,15 +47,9 @@ class KartoRessourcenleiste extends StatelessWidget {
   // Schmalste Zelle mit Knopfreihe: vier Knoepfe zu je 48 dp samt Rand.
   static const double _mindestbreiteMitSchritt = 240;
 
-  /// Spaltenzahl mit Knopfreihe: die groesste Zahl bis [platz], die [anzahl]
-  /// gleichmaessig teilt (4 Ressourcen bei Platz fuer 3 ergeben 2x2 statt
-  /// 3+1); teilt keine, gilt [platz].
-  static int ausgewogeneSpalten(int platz, int anzahl) {
-    for (var spalten = platz; spalten >= 2; spalten--) {
-      if (anzahl % spalten == 0) return spalten;
-    }
-    return platz;
-  }
+  /// Spaltenzahl mit Knopfreihe, siehe [kartoAusgewogeneSpalten].
+  static int ausgewogeneSpalten(int platz, int anzahl) =>
+      kartoAusgewogeneSpalten(platz, anzahl);
 
   @override
   Widget build(BuildContext context) {
