@@ -172,7 +172,13 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   TP, DK, beim Reittier der Ausbildungsstand; Keys
   `karto-begleiter-<id>-kampf|kampfwerte|angriff-<i>|reittier`). Ab 540 dp
   Kartenbreite steht der Block rechts neben den Werten, sonst darunter. Die
-  Bedienung der Werte ist unverändert. **Zustand:** In `weit` mit mindestens
+  Bedienung der Werte ist unverändert. **Abenteuer:** Karten und Kartenraster waren schon breitenabhängig. In `weit`
+  stehen Personen und Notizen **nebeneinander** (Key
+  `karto-spiel-abenteuer-spalten`, Personen 2 : Notizen 3), solange beide
+  vorhanden sind und nicht gesucht wird; sonst wie bisher untereinander. Die
+  Obergrenzen (3 Personen, 4 Notizen) ergeben ähnlich hohe Spalten.
+  Zu beachten: eine mittlere Kachel ist immer weit, die Kachel erlaubt nur
+  „Mittel“ und „Voll“; nicht weit ist sie nur bei einspaltiger Ansicht. **Zustand:** In `weit` mit mindestens
   `KartoZustandsblock.zweiSpaltenAb` (624 dp) stehen zwei Spalten nebeneinander
   (`karto_spiel_bruecke.dart`): links Belastung über Wunden, beide von Anfang an
   aufgeklappt (`anfangsAufgeklappt`, danach frei einklappbar, nicht gespeichert),

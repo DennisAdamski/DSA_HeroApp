@@ -79,6 +79,39 @@ const _nebel = HeroAdventureEntry(
   ],
 );
 
+const _viele = HeroAdventureEntry(
+  id: 'viele',
+  title: 'Der lange Weg',
+  summary: 'Eine Reise mit vielen Begegnungen.',
+  startAventurianDate: HeroAdventureDateValue(
+    day: '1',
+    month: 'phex',
+    year: '1043',
+  ),
+  currentAventurianDate: HeroAdventureDateValue(
+    day: '5',
+    month: 'phex',
+    year: '1043',
+  ),
+  notes: [
+    HeroNoteEntry(title: 'Die Furt', description: 'Nur bei Niedrigwasser.'),
+    HeroNoteEntry(title: 'Der Zoll', description: 'Zwei Dukaten je Karren.'),
+    HeroNoteEntry(title: 'Das Gerücht', description: 'Ein Schatz im Moor.'),
+  ],
+  people: [
+    HeroAdventurePersonEntry(
+      id: 'p1',
+      name: 'Alrik vom Blautann',
+      description: 'Wirt des „Grünen Krugs“.',
+    ),
+    HeroAdventurePersonEntry(
+      id: 'p2',
+      name: 'Thesia',
+      description: 'Fährfrau an der Furt.',
+    ),
+  ],
+);
+
 void main() {
   Future<ProviderContainer> zeige(
     WidgetTester tester, {
@@ -1089,6 +1122,99 @@ void main() {
             skalierung: skalierung,
           );
           expect(k('karto-kampf-werte'), findsOneWidget);
+          expect(tester.takeException(), isNull);
+          await tester.tap(k('karto-spiel-anordnen'));
+          await tester.pumpAndSettle();
+          expect(tester.takeException(), isNull);
+        });
+      }
+    }
+  });
+
+  group('Abenteuer-Kachel (SPIEL-07)', () {
+    Finder k(String schluessel) => find.byKey(ValueKey<String>(schluessel));
+
+    testWidgets('weit: Personen und Notizen stehen nebeneinander', (
+      tester,
+    ) async {
+      await zeige(tester, held: mitAbenteuern([_viele]), breite: 1280);
+      expect(k('karto-spiel-abenteuer-spalten'), findsOneWidget);
+      final personen = tester.getTopLeft(find.text('Personen \u00b7 2'));
+      final notizen = tester.getTopLeft(find.text('Notizen \u00b7 3'));
+      expect(notizen.dx, greaterThan(personen.dx));
+      expect(notizen.dy, personen.dy);
+      // Beide Spalten bleiben vollständig bedienbar.
+      expect(find.text('Alrik vom Blautann'), findsOneWidget);
+      expect(find.text('Die Furt'), findsOneWidget);
+    });
+
+    testWidgets('eine einspaltige Ansicht stapelt Personen über Notizen', (
+      tester,
+    ) async {
+      for (final breite in [390.0, 560.0]) {
+        await zeige(tester, held: mitAbenteuern([_viele]), breite: breite);
+        expect(k('karto-spiel-abenteuer-spalten'), findsNothing);
+        final personen = tester.getTopLeft(find.text('Personen \u00b7 2'));
+        final notizen = tester.getTopLeft(find.text('Notizen \u00b7 3'));
+        expect(notizen.dy, greaterThan(personen.dy), reason: '$breite dp');
+      }
+    });
+
+    testWidgets('mit nur Personen oder nur Notizen gibt es keine Spalten', (
+      tester,
+    ) async {
+      await zeige(
+        tester,
+        held: mitAbenteuern([_viele.copyWith(notes: const [])]),
+        breite: 1280,
+      );
+      expect(k('karto-spiel-abenteuer-spalten'), findsNothing);
+      expect(find.text('Personen \u00b7 2'), findsOneWidget);
+      await zeige(
+        tester,
+        held: mitAbenteuern([_viele.copyWith(people: const [])]),
+        breite: 1280,
+      );
+      expect(k('karto-spiel-abenteuer-spalten'), findsNothing);
+      expect(find.text('Notizen \u00b7 3'), findsOneWidget);
+    });
+
+    testWidgets('der Vergrößern-Dialog zeigt die Spalten', (tester) async {
+      await zeige(tester, held: mitAbenteuern([_viele]), breite: 1280);
+      await tester.tap(k('karto-kachel-abenteuer-vergroessern'));
+      await tester.pumpAndSettle();
+      expect(
+        find.descendant(
+          of: k('karto-kachel-abenteuer-popup'),
+          matching: k('karto-spiel-abenteuer-spalten'),
+        ),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('Anordnen: die Vorschau trägt die Spalten', (tester) async {
+      await zeige(tester, held: mitAbenteuern([_viele]), breite: 1280);
+      await tester.tap(k('karto-spiel-anordnen'));
+      await tester.pumpAndSettle();
+      expect(
+        find.descendant(
+          of: k('karto-kachel-abenteuer-vorschau'),
+          matching: k('karto-spiel-abenteuer-spalten'),
+        ),
+        findsOneWidget,
+      );
+    });
+
+    for (final breite in [744.0, 1024.0, 1440.0, 1920.0]) {
+      for (final skalierung in [1.0, 2.0]) {
+        testWidgets('bei $breite dp, Schrift $skalierung, ohne Überlauf, auch '
+            'im Anordnen', (tester) async {
+          await zeige(
+            tester,
+            held: mitAbenteuern([_viele]),
+            breite: breite,
+            skalierung: skalierung,
+          );
           expect(tester.takeException(), isNull);
           await tester.tap(k('karto-spiel-anordnen'));
           await tester.pumpAndSettle();
