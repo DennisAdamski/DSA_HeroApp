@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
@@ -5,6 +7,11 @@ import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
 
 /// Breite, ab der [KartoSeitenkopf.mitte] neben dem Titel statt darunter steht.
+///
+/// Gilt für normale Schrift. Mit größerer Schrift wächst die Schwelle im selben
+/// Verhältnis: Titel und Aktion sind in der Zeile nicht flexibel und werden mit
+/// der Schrift breiter, die Mitte hätte sonst keinen Platz mehr und die Zeile
+/// liefe über.
 const double kMitteNebenTitelAb = 1200;
 
 /// Kopfzeile einer Arbeitsflaeche: Kontextzeile, Titel, eine Aktion.
@@ -62,9 +69,10 @@ class KartoSeitenkopf extends StatelessWidget {
   /// Feste Leiste zwischen Titel und [aktion], etwa die Schnellaktionen der
   /// Spielansicht.
   ///
-  /// Ab [kMitteNebenTitelAb] steht sie in derselben Zeile zwischen Titel und
-  /// [aktion] und bricht dort nie um (sie schrumpft höchstens); schmaler rückt
-  /// sie unter die Titelzeile und darf dort umbrechen.
+  /// Ab [kMitteNebenTitelAb] (bei größerer Schrift entsprechend später) steht
+  /// sie in derselben Zeile zwischen Titel und [aktion] und bricht dort nie um
+  /// (sie schrumpft höchstens); schmaler rückt sie unter die Titelzeile und
+  /// darf dort umbrechen.
   final Widget? mitte;
 
   /// Leise Zeile direkt unter dem Titel, etwa das aventurische Datum.
@@ -177,7 +185,13 @@ class KartoSeitenkopf extends StatelessWidget {
       child: LayoutBuilder(
         builder: (context, constraints) {
           final mitte = this.mitte;
-          if (mitte != null && constraints.maxWidth >= kMitteNebenTitelAb) {
+          // Titel und Aktion wachsen mit der Schrift; die Schwelle auch.
+          final skala = math.max(
+            1.0,
+            MediaQuery.textScalerOf(context).scale(16) / 16,
+          );
+          if (mitte != null &&
+              constraints.maxWidth >= kMitteNebenTitelAb * skala) {
             return Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [

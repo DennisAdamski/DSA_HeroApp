@@ -72,7 +72,7 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   Standardanordnung; jede Kachel lässt sich verschieben (Kachelraster, unten).
   Die Schnellaktionen sind **keine Kachel**: sie stehen fest im Seitenkopf
   zwischen „Am Spieltisch“ und „Anordnen“ (`KartoSeitenkopf.mitte`; ab
-  `kMitteNebenTitelAb` (1200 dp, bricht dort nie um) in einer Zeile, schmaler unter der Titelzeile),
+  `kMitteNebenTitelAb` (1200 dp, bricht dort nie um; **die Schwelle wächst mit der Schriftskalierung**, weil Titel und Aktion nicht flexibel sind und sonst die Zeile überläuft) in einer Zeile, schmaler unter der Titelzeile),
   auch im Anordnen-Modus; das Kürzel Strg+K steht nur im Tooltip von „Probe suchen“, nicht als Chip. **Vergrößern:** Jede Kachel hat in ihrer Kopfzeile den Namen als Klickfläche (Key `karto-kachel-<id>-vergroessern`, `KartoKachelSteuerung.onVergroessern`, leises `open_in_full`-Symbol); sie öffnet die Kachel in einem Dialog (`_vergroessern` in `karto_spielansicht.dart`, Key `karto-kachel-<id>-popup`, Schließen `karto-kachel-popup-zu`). Der Dialog liest `heroComputedProvider` selbst (nie den beim Öffnen erfassten Snapshot), baut denselben Inhalt mit Größenstufe nach echter Breite ohne Einklappknopf und schreibt nur über die Aktionen der Kachel. Im Anordnen-Modus gibt es den Knopf nicht. Standardbreiten (per Simulation auf wenig Leerfläche bei 2–4 Spalten gewählt): Ressourcen ganze Breite, Vor- und Nachteile sowie Protokoll schmal, Abenteuer Gewicht 450. Ein früher gespeicherter Eintrag `schnellaktionen`
   wird beim Auflösen übergangen und bleibt erhalten. Jede Schnellaktion trägt eine
   eigene Signalfarbe (`kartoSchnellaktionStil` in `karto_spielaktionen.dart`:

@@ -1078,21 +1078,23 @@ void main() {
       );
     });
 
-    // Mit Schrift 2 gilt die Prüfung der Kachel selbst; der Anordnen-Modus
-    // wird mit normaler Schrift geprüft, weil der Seitenkopf dort bei 1440 dp
-    // und Schrift 2 überläuft (nicht Teil der Kampf-Kachel).
     for (final breite in [744.0, 1024.0, 1440.0, 1920.0]) {
-      testWidgets('weit bei $breite dp ohne Überlauf, mit Schrift 2 und im '
-          'Anordnen', (tester) async {
-        final held = kampfBreite(SpielkachelBreite.mittel);
-        await zeige(tester, held: held, breite: breite, skalierung: 2);
-        expect(k('karto-kampf-werte'), findsOneWidget);
-        expect(tester.takeException(), isNull);
-        await zeige(tester, held: held, breite: breite);
-        await tester.tap(k('karto-spiel-anordnen'));
-        await tester.pumpAndSettle();
-        expect(tester.takeException(), isNull);
-      });
+      for (final skalierung in [1.0, 2.0]) {
+        testWidgets('weit bei $breite dp, Schrift $skalierung, ohne '
+            'Überlauf, auch im Anordnen', (tester) async {
+          await zeige(
+            tester,
+            held: kampfBreite(SpielkachelBreite.mittel),
+            breite: breite,
+            skalierung: skalierung,
+          );
+          expect(k('karto-kampf-werte'), findsOneWidget);
+          expect(tester.takeException(), isNull);
+          await tester.tap(k('karto-spiel-anordnen'));
+          await tester.pumpAndSettle();
+          expect(tester.takeException(), isNull);
+        });
+      }
     }
   });
 
