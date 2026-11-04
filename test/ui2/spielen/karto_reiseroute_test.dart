@@ -10,6 +10,8 @@ import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abschnitt.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_kachelgroesse.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_reiseroute.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_theme.dart';
 
@@ -43,9 +45,12 @@ void main() {
     WidgetTester tester, {
     HeroSheet? held,
     bool planOffen = false,
+    KartoKachelGroesse? groesse,
+    double breite = 900,
+    double skalierung = 1,
   }) async {
     tester.view.devicePixelRatio = 1;
-    tester.view.physicalSize = const Size(900, 1200);
+    tester.view.physicalSize = Size(breite, 1200);
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
     repo = FakeRepository(
@@ -72,6 +77,11 @@ void main() {
             brightness: Brightness.light,
             centerAppBarTitle: false,
           ),
+          builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(context)
+                .copyWith(textScaler: TextScaler.linear(skalierung)),
+            child: child!,
+          ),
           home: Scaffold(
             body: SingleChildScrollView(
               child: Consumer(
@@ -81,10 +91,18 @@ void main() {
                       .asData
                       ?.value;
                   if (werte == null) return const SizedBox.shrink();
-                  return KartoReiserouteKachel(
+                  final kachel = KartoReiserouteKachel(
                     heroId: 'rondra',
                     stationen: werte.hero.reiseStationen,
                   );
+                  // Wie in der Spielansicht liegt sie in einer Kachel.
+                  return groesse == null
+                      ? kachel
+                      : KartoKachelSteuerung(
+                          kennung: 'reiseroute',
+                          groesse: groesse,
+                          child: kachel,
+                        );
                 },
               ),
             ),
@@ -188,5 +206,108 @@ void main() {
       ),
     );
     expect(knopf.onPressed, isNull);
+  });
+
+  group('Größenstufen (SPIEL-07)', () {
+    // Sieben Stationen mit langen Notizen, zeitlich geordnet.
+    final stationen = [
+      for (var i = 1; i <= 7; i++)
+        HeroReiseStation(
+          id: 's$i',
+          ort: 'Ort $i',
+          datum: HeroAdventureDateValue(
+            day: '$i',
+            month: 'boron',
+            year: '1043',
+          ),
+          notiz:
+              'Eine lange Notiz zu Station $i, die sich über mehrere Zeilen '
+              'erstreckt und deshalb gekürzt werden muss, wenn nicht genug '
+              'Platz da ist. Noch mehr Text, damit es sicher mehr als vier '
+              'Zeilen werden, auch in einer breiten Kachel mit großer Schrift.',
+          adventureId: 'nebel',
+        ),
+    ];
+    final held = _held(stationen: stationen);
+
+    int notizZeilen(WidgetTester tester, String ort) {
+      final text = find.descendant(
+        of: key('karto-reise-station-s${ort.substring(4)}'),
+        matching: find.textContaining('Eine lange Notiz'),
+      );
+      return tester.widget<Text>(text).maxLines!;
+    }
+
+    for (final (groesse, anzahl, zeilen, link) in [
+      (
+        KartoKachelGroesse.kompakt,
+        kReiserouteKurz,
+        kReiserouteNotizKurz,
+        false,
+      ),
+      (KartoKachelGroesse.normal, kReiserouteKurz, kReiserouteNotizKurz, false),
+      (KartoKachelGroesse.weit, kReiserouteWeit, kReiserouteNotizWeit, true),
+    ]) {
+      testWidgets('${groesse.name}: $anzahl Stationen, $zeilen Notizzeilen', (
+        tester,
+      ) async {
+        await zeige(tester, held: held, groesse: groesse);
+        // Gezeigt werden die jüngsten Stationen, die ältesten fehlen.
+        final sichtbar = [
+          for (var i = 1; i <= 7; i++)
+            if (key('karto-reise-station-s$i').evaluate().isNotEmpty) i,
+        ];
+        expect(sichtbar, [for (var i = 8 - anzahl; i <= 7; i++) i]);
+        expect(notizZeilen(tester, 'Ort 7'), zeilen);
+        expect(
+          find.byTooltip('Auf Avesmaps zeigen'),
+          link ? findsNWidgets(anzahl) : findsNothing,
+        );
+        expect(find.text('Ganze Route (7)'), findsOneWidget);
+      });
+    }
+
+    testWidgets('ohne Kachel gilt die gewohnte Darstellung', (tester) async {
+      await zeige(tester, held: held);
+      expect(key('karto-reise-station-s4').evaluate(), isEmpty);
+      expect(key('karto-reise-station-s5'), findsOneWidget);
+      expect(find.byTooltip('Auf Avesmaps zeigen'), findsNothing);
+    });
+
+    testWidgets('bis zur Obergrenze steht kein Zähler am Knopf', (
+      tester,
+    ) async {
+      await zeige(
+        tester,
+        held: _held(stationen: stationen.take(kReiserouteWeit).toList()),
+        groesse: KartoKachelGroesse.weit,
+      );
+      expect(find.text('Ganze Route'), findsOneWidget);
+      expect(find.textContaining('Ganze Route ('), findsNothing);
+    });
+
+    testWidgets('eine Station lässt sich in der weiten Kachel bearbeiten', (
+      tester,
+    ) async {
+      await zeige(tester, held: held, groesse: KartoKachelGroesse.weit);
+      await tester.tap(key('karto-reise-station-s7'));
+      await tester.pumpAndSettle();
+      expect(find.byType(Dialog), findsWidgets);
+    });
+
+    for (final breite in [360.0, 744.0, 1280.0]) {
+      testWidgets('weit bei $breite dp und Schrift 2 ohne Überlauf', (
+        tester,
+      ) async {
+        await zeige(
+          tester,
+          held: held,
+          groesse: KartoKachelGroesse.weit,
+          breite: breite,
+          skalierung: 2,
+        );
+        expect(tester.takeException(), isNull);
+      });
+    }
   });
 }

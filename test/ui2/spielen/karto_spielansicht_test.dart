@@ -9,6 +9,7 @@ import 'package:dsa_heldenverwaltung/domain/app_settings.dart';
 import 'package:dsa_heldenverwaltung/domain/dice_log_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_adventure_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_note_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_reise_station.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_resource_activation_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_spielansicht.dart';
@@ -1221,6 +1222,83 @@ void main() {
           expect(tester.takeException(), isNull);
         });
       }
+    }
+  });
+
+  group('Reiseroute-Kachel (SPIEL-07)', () {
+    Finder k(String schluessel) => find.byKey(ValueKey<String>(schluessel));
+
+    HeroSheet mitStationen(SpielkachelBreite? breite) => weltlich().copyWith(
+      reiseStationen: [
+        for (var i = 1; i <= 7; i++)
+          HeroReiseStation(
+            id: 's$i',
+            ort: 'Ort $i',
+            datum: HeroAdventureDateValue(
+              day: '$i',
+              month: 'boron',
+              year: '1043',
+            ),
+          ),
+      ],
+      spielansicht: breite == null
+          ? null
+          : HeroSpielansicht(
+              kacheln: [HeroSpielkachel(id: 'reiseroute', breite: breite)],
+            ),
+    );
+
+    int sichtbar() => [
+      for (var i = 1; i <= 7; i++)
+        if (k('karto-reise-station-s$i').evaluate().isNotEmpty) i,
+    ].length;
+
+    testWidgets('standardmäßig schmal zeigt sie die jüngsten drei', (
+      tester,
+    ) async {
+      await zeige(tester, held: mitStationen(null), breite: 1280);
+      expect(sichtbar(), 3);
+    });
+
+    testWidgets('mittel ist weit und zeigt fünf Stationen mit Kartenlink', (
+      tester,
+    ) async {
+      await zeige(
+        tester,
+        held: mitStationen(SpielkachelBreite.mittel),
+        breite: 1280,
+      );
+      expect(sichtbar(), 5);
+      expect(find.byTooltip('Auf Avesmaps zeigen'), findsNWidgets(5));
+    });
+
+    testWidgets('der Vergrößern-Dialog zeigt fünf Stationen', (tester) async {
+      await zeige(tester, held: mitStationen(null), breite: 1280);
+      await tester.tap(k('karto-kachel-reiseroute-vergroessern'));
+      await tester.pumpAndSettle();
+      expect(
+        find.descendant(
+          of: k('karto-kachel-reiseroute-popup'),
+          matching: find.byTooltip('Auf Avesmaps zeigen'),
+        ),
+        findsNWidgets(5),
+      );
+    });
+
+    for (final breite in [744.0, 1280.0, 1920.0]) {
+      testWidgets('weit bei $breite dp mit Schrift 2 ohne Überlauf, auch im '
+          'Anordnen', (tester) async {
+        await zeige(
+          tester,
+          held: mitStationen(SpielkachelBreite.mittel),
+          breite: breite,
+          skalierung: 2,
+        );
+        expect(tester.takeException(), isNull);
+        await tester.tap(k('karto-spiel-anordnen'));
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+      });
     }
   });
 

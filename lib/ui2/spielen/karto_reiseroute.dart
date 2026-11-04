@@ -10,12 +10,22 @@ import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_stroke.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abschnitt.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_kachelgroesse.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_reiseroute_schreiben.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
 
 /// Wie viele Stationen die Kachel zeigt; alle weiteren stehen im Blatt.
 const int kReiserouteKurz = 3;
+
+/// Wie viele Stationen eine weite Kachel (SPIEL-07) zeigt.
+const int kReiserouteWeit = 5;
+
+/// Wie viele Notizzeilen je Station eine normale Kachel zeigt.
+const int kReiserouteNotizKurz = 2;
+
+/// Wie viele Notizzeilen je Station eine weite Kachel zeigt.
+const int kReiserouteNotizWeit = 4;
 
 /// Reiseroute als Kachel der Spielansicht: die jüngsten Stationen als
 /// Zeitleiste, eine neue Station mit einem Tipp.
@@ -46,9 +56,14 @@ class _KartoReiserouteKachelState extends ConsumerState<KartoReiserouteKachel>
   @override
   Widget build(BuildContext context) {
     final etappen = reiseEtappen(widget.stationen);
-    final juengste = etappen.length <= kReiserouteKurz
+    // Weit: mehr Stationen, mehr von jeder Notiz und der Kartenlink, den
+    // sonst nur das Blatt hat.
+    final weit =
+        KartoKachelSteuerung.groesseVon(context) == KartoKachelGroesse.weit;
+    final anzahl = weit ? kReiserouteWeit : kReiserouteKurz;
+    final juengste = etappen.length <= anzahl
         ? etappen
-        : etappen.sublist(etappen.length - kReiserouteKurz);
+        : etappen.sublist(etappen.length - anzahl);
     final bedienbar = !gesperrt && !schreibt;
     final texte = Theme.of(context).textTheme;
 
@@ -72,8 +87,9 @@ class _KartoReiserouteKachelState extends ConsumerState<KartoReiserouteKachel>
           else
             KartoReiseZeitleiste(
               etappen: juengste,
-              notizZeilen: 2,
+              notizZeilen: weit ? kReiserouteNotizWeit : kReiserouteNotizKurz,
               onStation: bedienbar ? stationBearbeiten : null,
+              mitKartenlink: weit,
             ),
           if (etappen.isNotEmpty)
             Align(
@@ -83,7 +99,7 @@ class _KartoReiserouteKachelState extends ConsumerState<KartoReiserouteKachel>
                 onPressed: () =>
                     zeigeReiseroute(context: context, heroId: widget.heroId),
                 child: Text(
-                  etappen.length > kReiserouteKurz
+                  etappen.length > anzahl
                       ? 'Ganze Route (${etappen.length})'
                       : 'Ganze Route',
                 ),
