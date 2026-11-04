@@ -4198,6 +4198,24 @@
       "rationale": "Beide Testgruppen und lib/rules/derived/aventurian_calendar_rules.dart gelesen: reine Kalenderarithmetik (Tag im Jahr 1 bis 365, Division durch 365, Monat = Tag ~/ 30) und Zeichenketten-Handling der Jahresangabe. Das Regelwerk trifft zum Weiterzählen per Knopf keine Aussage. Der zugrunde liegende Kalenderaufbau (zwölf Monate zu 30 Tagen, Phex zwischen Tsa und Peraine, fünf Namenlose Tage vor dem 1. Praios) ist bereits im Eintrag zu aventurian_age_rules_test gegen die Geographia Aventurica belegt; hier wird er nur wiederverwendet, nicht neu behauptet.",
       "sources": []
     },
+    "test/rules/derived/aventurian_holiday_rules_test.dart": {
+      "kind": "official",
+      "status": "verified",
+      "summary": "Prüft die Feiertagstabelle und die Auswahl in der Nähe eines Datums. Aus der Liste „Fest- und Feiertage“ der Geographia Aventurica stammen die Testdaten: Tag des Schwures 5. Rondra (Rondra, zwölfgöttergläubige Lande), Nationalfeiertag im Mittelreich 6.–9. Rondra, Bosparans Fall 8. Rondra (Liebliches Feld, Trauertag), Schwertfest 15./16. Rondra, Maraskanisches Neujahrsfest 19. Rondra, Tag der Erneuerung 30. Tsa / 1. Phex, 4. Rastullahellah 9. Efferd (Novadis), Reinigungsfest 30. Rahja, 3. Rastullahellah am 1. Namenlosen Tag, Sommersonnenwende 1. Praios. Der Kalender (zwölf Monate zu 30 Tagen, fünf Namenlose Tage vor dem 1. Praios) folgt der Quelle. Alle genannten Daten stimmen mit dem Buchtext überein. Die übrigen Fälle (Abstand in Tagen über den Jahreswechsel, Sortierung, Fenster und Filter, unlesbare Daten, Anzeigetexte) sind App-Logik ohne Regelbehauptung.",
+      "sources": [
+        {
+          "title": "Geographia Aventurica (2. Auflage) – Kalender und Feiertage, Fest- und Feiertage",
+          "pages": "PDF S. 203–204",
+          "mcpChunks": [
+            1354,
+            1355,
+            1356,
+            1357
+          ],
+          "checkedOn": "2026-11-05"
+        }
+      ]
+    },
     "test/rules/derived/reiseroute_rules_test.dart": {
       "kind": "product_contract",
       "status": "verified",
