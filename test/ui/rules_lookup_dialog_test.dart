@@ -3,8 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dsa_heldenverwaltung/data/hive_settings_repository.dart';
-import 'package:dsa_heldenverwaltung/data/rules_search/rules_index_remote_client.dart';
-import 'package:dsa_heldenverwaltung/data/rules_search/rules_index_sync_service.dart';
 import 'package:dsa_heldenverwaltung/data/rules_search/rules_index_types.dart';
 import 'package:dsa_heldenverwaltung/domain/app_settings.dart';
 import 'package:dsa_heldenverwaltung/domain/rules_index_remote_config.dart';
@@ -56,112 +54,33 @@ void main() {
     },
   );
 
-  group('Leerzustand ohne Index (SPIEL-04)', () {
-    const konfiguriert = RulesIndexRemoteConfig(
-      serverUrl: 'https://regeln.example/index.sqlite',
-    );
-
-    late _Settings repo;
-
-    Future<_Sync> zeige(
-      WidgetTester tester, {
-      RulesIndexRemoteConfig config = const RulesIndexRemoteConfig(),
-      RulesIndexSearch? index,
-      Object? syncFehler,
-    }) async {
-      final sync = _Sync(index: index, fehler: syncFehler);
-      repo = _Settings();
+  group('Leerzustand ohne Cloud (SPIEL-04)', () {
+    testWidgets('ohne Server: ehrlicher Hinweis statt toter Knopf', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            rulesIndexRemoteConfigProvider.overrideWithValue(config),
+            rulesIndexCloudAvailableProvider.overrideWithValue(false),
             catalogContentVisibleProvider.overrideWithValue(true),
-            settingsActionsProvider.overrideWithValue(SettingsActions(repo)),
+            settingsActionsProvider.overrideWithValue(
+              SettingsActions(_Settings()),
+            ),
           ],
           child: MaterialApp(
             home: Scaffold(
-              body: RulesLookupDialog(
-                oeffneIndex: () async => null,
-                syncService: sync,
-              ),
+              body: RulesLookupDialog(oeffneIndex: () async => null),
             ),
           ),
         ),
       );
       await tester.pumpAndSettle();
-      return sync;
-    }
-
-    Finder schluessel(String name) => find.byKey(ValueKey<String>(name));
-
-    testWidgets('mit Server: Download steht als Hauptweg bereit', (
-      tester,
-    ) async {
-      await zeige(tester, config: konfiguriert);
-      expect(find.textContaining('nicht gefunden'), findsOneWidget);
-      expect(find.textContaining('vom Server'), findsWidgets);
-      expect(schluessel('rules-lookup-sync-button'), findsOneWidget);
-      expect(tester.takeException(), isNull);
-    });
-
-    testWidgets('ohne Server: ehrlicher Hinweis statt toter Knopf', (
-      tester,
-    ) async {
-      await zeige(tester);
-      expect(schluessel('rules-lookup-sync-button'), findsNothing);
       expect(find.textContaining('kein Regel-Server'), findsOneWidget);
-    });
-
-    testWidgets('ein Fehler beim Download steht im Dialog', (tester) async {
-      await zeige(
-        tester,
-        config: konfiguriert,
-        syncFehler: const RulesIndexDownloadException(
-          RulesIndexDownloadErrorKind.network,
-          'Server nicht erreichbar: x',
-        ),
-      );
-      await tester.tap(schluessel('rules-lookup-sync-button'));
-      await tester.pumpAndSettle();
-      expect(find.text('Server nicht erreichbar: x'), findsOneWidget);
-      // Der Knopf ist danach wieder bedienbar.
       expect(
-        tester
-            .widget<FilledButton>(schluessel('rules-lookup-sync-button'))
-            .onPressed,
-        isNotNull,
+        find.byKey(const ValueKey<String>('rules-lookup-cloud-button')),
+        findsNothing,
       );
-    });
-
-    testWidgets('nach dem Download erscheint die Suche mit Stand', (
-      tester,
-    ) async {
-      final sync = await zeige(
-        tester,
-        config: konfiguriert.copyWith(lastSyncedAt: DateTime(2026, 10, 20, 9)),
-        index: _LeererIndex(),
-      );
-      await tester.tap(schluessel('rules-lookup-sync-button'));
-      await tester.pumpAndSettle();
-      expect(sync.aufrufe, 1);
-      expect(schluessel('rules-lookup-search-field'), findsOneWidget);
-      expect(find.text('Vom Server geladen am 20.10.2026'), findsOneWidget);
-      expect(schluessel('rules-lookup-sync-icon-button'), findsOneWidget);
-    });
-
-    testWidgets('der Server-Download gibt eine Cloud-Fassung frei (REV-06)', (
-      tester,
-    ) async {
-      await zeige(
-        tester,
-        config: konfiguriert.copyWith(installedVersion: '2026-10-01T00:00:00Z'),
-        index: _LeererIndex(),
-      );
-      await tester.tap(schluessel('rules-lookup-sync-button'));
-      await tester.pumpAndSettle();
-      final gespeichert = repo.settings.rulesIndexRemoteConfig;
-      expect(gespeichert.installedVersion, isEmpty);
-      expect(gespeichert.lastSyncedAt, isNotNull);
+      expect(tester.takeException(), isNull);
     });
   });
 
@@ -363,21 +282,6 @@ class _FesterSync extends RulesIndexAutoSync {
 
   @override
   Future<void> start({bool force = false}) async => starts.add(force);
-}
-
-class _Sync extends RulesIndexSyncService {
-  _Sync({this.index, this.fehler});
-
-  final RulesIndexSearch? index;
-  final Object? fehler;
-  int aufrufe = 0;
-
-  @override
-  Future<RulesIndexSearch> syncFromServer(RulesIndexRemoteConfig config) async {
-    aufrufe++;
-    if (fehler != null) throw fehler!;
-    return index!;
-  }
 }
 
 class _LeererIndex implements RulesIndexSearch {

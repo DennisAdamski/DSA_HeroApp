@@ -67,27 +67,18 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   `sqlite3_flutter_libs` liesse Desktop und Mobile ohne native Bibliothek
   zurueck. Aus demselben Grund gibt es keinen `open.overrideFor`-Aufruf
   mehr; das Laden uebernimmt vollstaendig der Hook.
-- Zusaetzlich zum manuellen Weg (lokal bauen bzw. Web-Upload) kann die
-  Index-DB per Server-Sync bezogen werden (`lib/domain/rules_index_remote_config.dart`,
-  `lib/data/rules_search/rules_index_remote_client.dart`,
-  `lib/data/rules_search/rules_index_sync_service.dart`; Desktop-Cache-Pfad
-  `index_remote.sqlite` in `rules_index_search_io.dart`, UI in
-  `_RulesIndexServerCard` (`settings_pages.dart`) und im
-  Regel-Nachschlag-Dialog). Die Datei bleibt unverschluesselt; das Download-
-  Feature ist stattdessen hinter dem bestehenden Katalog-Entschluesselungs-
-  passwort gated (kein zweites Passwort). Details und der bewusste
-  Schutz-Trade-off stehen in `docs/spielmodus_konzept.md` Abschnitt 6.
+- Zusaetzlich zum manuellen Weg (lokal bauen bzw. Web-Upload) wird die
+  Wissensbasis ueber die Cloud bezogen (Cloud-Weg unten; Desktop-Cache-Pfad
+  `index_remote.sqlite` in `rules_index_search_io.dart`). Der fruehere
+  WebDAV-Bezug (Fritz!NAS, `RULES_INDEX_SERVER_*`, Einstellungskarte) ist
+  entfallen; gespeicherte Zugangsdaten daraus verwirft
+  `RulesIndexRemoteConfig.fromJson`.
   **Leerzustand (SPIEL-04):** ohne Index zeigt der Dialog einen gemeinsamen
-  Hinweis (`_buildNotice`). Der Server-Download steht als Hauptweg bereit,
-  sobald `RulesIndexRemoteConfig.isConfigured` gilt, sonst nennt der Hinweis
-  ehrlich, dass kein Regel-Server eingerichtet ist. Auf Web gibt es zusaetzlich
-  den Datei-Upload; scheitert der Browser-Download am Netz (meist fehlende
-  CORS-Freigabe des Servers), verweist die Fehlermeldung auf den Upload. Die
-  Suchansicht zeigt `Vom Server geladen am <Datum>` (`lastSyncedAt`) und
-  den Server-Aktualisieren-Knopf auch auf Web. Testnaht: `oeffneIndex` und
-  `syncService` am Dialog; `flutter test` laeuft sonst gegen die lokale
-  Entwickler-Datenbank. Ob der Server im Browser erreichbar ist (CORS), ist
-  **nicht geprueft**.
+  Hinweis (`_buildNotice`): mit Cloud deren Zustand und Knopf, sonst ehrlich,
+  dass kein Regel-Server eingerichtet ist. Auf Web gibt es zusaetzlich den
+  Datei-Upload. Die Suchansicht zeigt `Vom Server geladen am <Datum>`
+  (`lastSyncedAt`) und den Aktualisieren-Knopf. Testnaht: `oeffneIndex` am
+  Dialog; `flutter test` laeuft sonst gegen die lokale Entwickler-Datenbank.
   **Cloud-Weg (SPIEL-04):** Builds mit `RULES_INDEX_API_URL` laden die
   Wissensbasis ueber die Cloud Function `rulesIndexApi`
   (`functions/src/rules_index/api.ts`, Betrieb in
@@ -105,9 +96,9 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   bei Bedarf Entpacken (`gunzipIfNeeded`, Web verlaesst sich auf
   `Content-Encoding: gzip`), Pruefung von Groesse und SHA-256, erst dann Import.
   Die installierte Version steht in `RulesIndexRemoteConfig.installedVersion`;
-  WebDAV-Download und Dateiimport schreiben dieselbe Cache-Datei und leeren
-  sie deshalb, damit der Cloud-Abgleich eine fremde Datei nie für die
-  veröffentlichte Fassung hält. Den Dienst gibt es nur über
+  der Dateiimport schreibt dieselbe Cache-Datei und leert sie deshalb, damit
+  der Cloud-Abgleich eine fremde Datei nie für die veröffentlichte Fassung
+  hält. Den Dienst gibt es nur über
   `rulesIndexSyncServiceProvider`.
   Der Dialog zeigt Fortschritt, Fehler (nie still) und oeffnet die Suche selbst,
   sobald `RulesIndexSyncState.revision` steigt. Der NAS-Weg bleibt fuer Builds

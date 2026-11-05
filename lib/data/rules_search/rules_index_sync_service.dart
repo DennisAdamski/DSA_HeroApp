@@ -6,18 +6,16 @@ import 'package:dsa_heldenverwaltung/data/rules_search/rules_index_proof.dart';
 import 'package:dsa_heldenverwaltung/data/rules_search/rules_index_remote_client.dart';
 import 'package:dsa_heldenverwaltung/data/rules_search/rules_index_search.dart';
 import 'package:dsa_heldenverwaltung/data/rules_search/rules_index_types.dart';
-import 'package:dsa_heldenverwaltung/domain/rules_index_remote_config.dart';
 
 /// Erste 15 ASCII-Zeichen der SQLite-Dateisignatur (16. Byte ist ein
 /// Null-Terminator, siehe
 /// https://www.sqlite.org/fileformat.html#the_database_header).
 const _sqliteHeaderMagicPrefix = 'SQLite format 3';
 
-/// Orchestriert den Remote-Bezug der Regel-Index-DB: Download vom
-/// konfigurierten Server, ein defensiver Formatcheck und Übergabe an den
-/// plattformspezifischen Importpfad (`importRulesIndexDatabase`), der auf
-/// Web bereits fürs manuelle Hochladen existiert und auf Desktop denselben
-/// Weg nun auch für den Server-Download nutzt.
+/// Orchestriert den Cloud-Bezug der Regel-Wissensbasis: Zugang erfragen,
+/// signierte Datei laden, prüfen und an den plattformspezifischen Importpfad
+/// (`importRulesIndexDatabase`) übergeben, den auch das manuelle Hochladen
+/// nutzt.
 class RulesIndexSyncService {
   RulesIndexSyncService({
     RulesIndexRemoteClient? remoteClient,
@@ -32,21 +30,6 @@ class RulesIndexSyncService {
 
   /// Optionales isoliertes Datenverzeichnis, insbesondere für Tests.
   final String? dataDirectory;
-
-  /// Lädt die Index-Datenbank vom Server und importiert sie.
-  ///
-  /// Wirft [RulesIndexDownloadException] bei Netzwerk-/Serverfehlern und
-  /// [FormatException], wenn die Antwort keine gültige Regel-Index-Datenbank
-  /// enthält (z. B. eine HTML-Fehlerseite statt der erwarteten Datei).
-  Future<RulesIndexSearch> syncFromServer(RulesIndexRemoteConfig config) async {
-    final bytes = await _remoteClient.download(
-      serverUrl: config.effectiveServerUrl,
-      username: config.effectiveUsername,
-      password: config.effectivePassword,
-    );
-    _checkSqliteHeader(bytes);
-    return importRulesIndexDatabase(bytes, dataDirectory: dataDirectory);
-  }
 
   /// Holt die Wissensbasis ueber die Cloud Function und installiert sie.
   ///

@@ -208,6 +208,12 @@ Browser-Automatisierungswerkzeug (z. B. `chromium-cli`, Playwright), um
 
 ## 6. Entscheidungsrevision: zentraler Server-Sync (Stand 2026-08-02)
 
+> **Abgelöst (2026-11-05):** Der hier beschriebene WebDAV-Bezug über die
+> Fritz!NAS ist entfernt. Die Wissensbasis kommt über die Cloud Function
+> `rulesIndexApi` mit Passwortnachweis und signierter URL (siehe
+> `docs/hinweise/plattform_werkzeuge.md`, Cloud-Weg). Der Abschnitt bleibt als
+> Entscheidungsgeschichte stehen.
+
 Abschnitt 2.4 (Option A) legte bewusst fest, dass die Index-Datenbank eine
 **lokale, nutzerseitige Datenquelle** bleibt und **keine** Kopplung an
 Netzwerk-/Sync-Mechanismen erhält, um nicht unbeabsichtigt zu einem

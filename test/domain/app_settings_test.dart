@@ -91,22 +91,15 @@ void main() {
   test('rulesIndexRemoteConfig round-trips through json', () {
     final settings = AppSettings(
       rulesIndexRemoteConfig: RulesIndexRemoteConfig(
-        serverUrl: 'https://example.myfritz.net/nas/index.sqlite',
-        username: 'dsa-rules-reader',
-        password: 'secret',
         lastSyncedAt: DateTime.utc(2026, 8, 1, 12, 30),
+        installedVersion: 'v1',
       ),
     );
 
     final json = settings.toJson();
     final restored = AppSettings.fromJson(json);
 
-    expect(
-      restored.rulesIndexRemoteConfig.serverUrl,
-      'https://example.myfritz.net/nas/index.sqlite',
-    );
-    expect(restored.rulesIndexRemoteConfig.username, 'dsa-rules-reader');
-    expect(restored.rulesIndexRemoteConfig.password, 'secret');
+    expect(restored.rulesIndexRemoteConfig.installedVersion, 'v1');
     expect(
       restored.rulesIndexRemoteConfig.lastSyncedAt,
       DateTime.utc(2026, 8, 1, 12, 30),
@@ -116,7 +109,7 @@ void main() {
   test('missing rulesIndexRemoteConfig defaults to unconfigured value', () {
     final settings = AppSettings.fromJson(const <String, dynamic>{});
 
-    expect(settings.rulesIndexRemoteConfig.isConfigured, isFalse);
+    expect(settings.rulesIndexRemoteConfig.installedVersion, isEmpty);
     expect(settings.rulesIndexRemoteConfig.lastSyncedAt, isNull);
   });
 

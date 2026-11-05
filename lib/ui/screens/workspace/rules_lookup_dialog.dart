@@ -3,13 +3,10 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:dsa_heldenverwaltung/data/rules_search/rules_index_remote_client.dart';
 import 'package:dsa_heldenverwaltung/data/rules_search/rules_index_search.dart';
-import 'package:dsa_heldenverwaltung/data/rules_search/rules_index_sync_service.dart';
 import 'package:dsa_heldenverwaltung/data/rules_search/rules_index_types.dart';
 import 'package:dsa_heldenverwaltung/state/rules_index_providers.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
-import 'package:dsa_heldenverwaltung/ui/screens/catalog_unlock_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/kurzregeln_panel.dart';
 
 /// Prüft, ob der Regel-Nachschlag auf dieser Plattform angeboten werden kann.
@@ -96,13 +93,12 @@ class _Reiter extends StatelessWidget {
 class RulesLookupDialog extends ConsumerStatefulWidget {
   /// Erzeugt den Dialog.
   ///
-  /// [oeffneIndex] und [syncService] ersetzen in Tests den Zugriff auf die
-  /// lokale Index-Datenbank und den Server. [eingebettet] lässt den
-  /// Dialograhmen weg, wenn der Inhalt in einem Reiter liegt.
+  /// [oeffneIndex] ersetzt in Tests den Zugriff auf die lokale
+  /// Index-Datenbank. [eingebettet] lässt den Dialograhmen weg, wenn der
+  /// Inhalt in einem Reiter liegt.
   const RulesLookupDialog({
     super.key,
     this.oeffneIndex,
-    this.syncService,
     this.eingebettet = false,
   });
 
@@ -111,9 +107,6 @@ class RulesLookupDialog extends ConsumerStatefulWidget {
 
   /// Öffnet die Index-Datenbank; ohne Angabe [openRulesIndexSearch].
   final Future<RulesIndexSearch?> Function()? oeffneIndex;
-
-  /// Lädt vom Server; ohne Angabe ein [RulesIndexSyncService].
-  final RulesIndexSyncService? syncService;
 
   @override
   ConsumerState<RulesLookupDialog> createState() => _RulesLookupDialogState();
@@ -124,7 +117,6 @@ class _RulesLookupDialogState extends ConsumerState<RulesLookupDialog>
   RulesIndexSearch? _search;
   bool _loading = true;
   bool _importing = false;
-  bool _syncing = false;
   String? _importError;
   List<RulesSearchHit> _hits = const <RulesSearchHit>[];
   String _query = '';
@@ -338,82 +330,6 @@ class _RulesLookupDialogState extends ConsumerState<RulesLookupDialog>
     }
   }
 
-  /// Lädt die Index-Datenbank vom konfigurierten Server und ersetzt den
-  /// aktuell geöffneten Index (falls vorhanden) nach erfolgreicher Validierung.
-  ///
-  /// Setzt voraus, dass der Nutzer das Katalog-Entschlüsselungspasswort
-  /// kennt: fehlt es noch, wird zuerst [showCatalogUnlockDialog] geöffnet.
-  Future<void> _syncFromServer() async {
-    var unlocked = ref.read(catalogContentVisibleProvider);
-    if (!unlocked) {
-      unlocked = await showCatalogUnlockDialog(context: context, ref: ref);
-      if (!unlocked || !mounted) {
-        return;
-      }
-    }
-
-    setState(() {
-      _syncing = true;
-      _importError = null;
-    });
-    final config = ref.read(rulesIndexRemoteConfigProvider);
-    try {
-      // Eigene Variable: als rechte Seite von `??` liest `ref.read` sonst
-      // mit nullbarem Typ.
-      final RulesIndexSyncService dienst = ref.read(
-        rulesIndexSyncServiceProvider,
-      );
-      final newSearch = await (widget.syncService ?? dienst).syncFromServer(
-        config,
-      );
-      final oldSearch = _search;
-      if (!mounted) {
-        newSearch.dispose();
-        return;
-      }
-      oldSearch?.dispose();
-      // Die Datei stammt nicht aus der Cloud: deren Fassung gilt nicht mehr.
-      await ref
-          .read(settingsActionsProvider)
-          .saveRulesIndexRemoteConfig(
-            config.copyWith(lastSyncedAt: DateTime.now(), installedVersion: ''),
-          );
-      setState(() {
-        _search = newSearch;
-        _syncing = false;
-        _hits = const <RulesSearchHit>[];
-        _searched = false;
-        _query = '';
-      });
-    } on RulesIndexDownloadException catch (error) {
-      _handleSyncError(
-        kIsWeb && error.kind == RulesIndexDownloadErrorKind.network
-            ? '${error.message}\n'
-                  'Im Browser blockiert der Server den Zugriff häufig (CORS). '
-                  'Lade stattdessen die index.sqlite hoch.'
-            : error.message,
-      );
-    } on FormatException catch (error) {
-      _handleSyncError(error.message);
-    }
-  }
-
-  /// Zeigt einen Sync-Fehler im Leerzustand-Hinweistext, oder als Snackbar,
-  /// wenn bereits eine funktionierende Suche geöffnet ist.
-  void _handleSyncError(String message) {
-    if (!mounted) {
-      return;
-    }
-    setState(() {
-      _syncing = false;
-      _importError = message;
-    });
-    if (_search != null) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(message)));
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -453,16 +369,11 @@ class _RulesLookupDialogState extends ConsumerState<RulesLookupDialog>
 
   /// Leerzustand, solange keine Index-Datenbank geöffnet werden kann.
   ///
-  /// Nennt zuerst den bequemsten Weg: den Server-Download, sofern für diesen
-  /// Build ein Server hinterlegt ist. Der manuelle Weg (Desktop: selbst
-  /// bauen, Web: Datei hochladen) steht darunter. Auf Web ist der Upload
-  /// immer möglich, der Server-Download scheitert dort an fehlenden
-  /// CORS-Freigaben des Servers und verweist dann auf den Upload.
+  /// Nennt zuerst den bequemsten Weg: das Laden über die Cloud, sofern der
+  /// Build sie hat. Der manuelle Weg (Desktop: selbst bauen, Web: Datei
+  /// hochladen) steht darunter.
   Widget _buildNotice() {
     final cloud = ref.watch(rulesIndexCloudAvailableProvider);
-    // Der Cloud-Weg ersetzt den NAS-Weg, wo ein Build ihn hat.
-    final konfiguriert =
-        !cloud && ref.watch(rulesIndexRemoteConfigProvider).isConfigured;
     final sync = ref.watch(rulesIndexAutoSyncProvider);
     final angemeldet = ref.watch(rulesIndexSignedInProvider);
     final theme = Theme.of(context);
@@ -483,14 +394,10 @@ class _RulesLookupDialogState extends ConsumerState<RulesLookupDialog>
             if (cloud)
               _buildCloudStatus(sync, angemeldet: angemeldet)
             else
-              Text(
-                konfiguriert
-                    ? 'Am einfachsten lädst du die Wissensbasis vom Server. Die '
-                          'App fragt dafür einmal das Katalogpasswort ab; danach '
-                          'bleibt sie auf diesem Gerät gespeichert.'
-                    : 'Für diesen Build ist kein Regel-Server eingerichtet. Die '
-                          'Wissensbasis musst du selbst bereitstellen.',
-                key: const ValueKey('rules-lookup-notice-server'),
+              const Text(
+                'Für diesen Build ist kein Regel-Server eingerichtet. Die '
+                'Wissensbasis musst du selbst bereitstellen.',
+                key: ValueKey('rules-lookup-notice-server'),
               ),
             const SizedBox(height: 12),
             Text(
@@ -524,7 +431,7 @@ class _RulesLookupDialogState extends ConsumerState<RulesLookupDialog>
                 if (kIsWeb)
                   OutlinedButton.icon(
                     key: const ValueKey('rules-lookup-import-button'),
-                    onPressed: _importing || _syncing ? null : _pickAndImport,
+                    onPressed: _importing ? null : _pickAndImport,
                     icon: _importing
                         ? const SizedBox(
                             width: 16,
@@ -533,19 +440,6 @@ class _RulesLookupDialogState extends ConsumerState<RulesLookupDialog>
                           )
                         : const Icon(Icons.upload_file_outlined),
                     label: const Text('index.sqlite hochladen'),
-                  ),
-                if (konfiguriert)
-                  FilledButton.icon(
-                    key: const ValueKey('rules-lookup-sync-button'),
-                    onPressed: _syncing || _importing ? null : _syncFromServer,
-                    icon: _syncing
-                        ? const SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Icon(Icons.cloud_download_outlined),
-                    label: const Text('Von Server laden'),
                   ),
                 if (cloud && angemeldet && !sync.running)
                   FilledButton.icon(
@@ -630,7 +524,6 @@ class _RulesLookupDialogState extends ConsumerState<RulesLookupDialog>
     final config = ref.watch(rulesIndexRemoteConfigProvider);
     final cloud = ref.watch(rulesIndexCloudAvailableProvider);
     final cloudLaeuft = ref.watch(rulesIndexAutoSyncProvider).running;
-    final konfiguriert = cloud || config.isConfigured;
     final geladen = config.lastSyncedAt?.toLocal();
     final stand = geladen == null
         ? null
@@ -656,16 +549,14 @@ class _RulesLookupDialogState extends ConsumerState<RulesLookupDialog>
                 )
               else
                 const Spacer(),
-              if (konfiguriert)
+              if (cloud)
                 IconButton(
                   key: const ValueKey('rules-lookup-sync-icon-button'),
                   tooltip: 'Index vom Server aktualisieren',
-                  onPressed: _syncing || _importing || cloudLaeuft
+                  onPressed: _importing || cloudLaeuft
                       ? null
-                      : (cloud
-                            ? () => _cloudStarten(pruefen: true)
-                            : _syncFromServer),
-                  icon: _syncing || cloudLaeuft
+                      : () => _cloudStarten(pruefen: true),
+                  icon: cloudLaeuft
                       ? const SizedBox(
                           width: 16,
                           height: 16,
@@ -677,7 +568,7 @@ class _RulesLookupDialogState extends ConsumerState<RulesLookupDialog>
                 IconButton(
                   key: const ValueKey('rules-lookup-replace-button'),
                   tooltip: 'Index ersetzen',
-                  onPressed: _importing || _syncing ? null : _pickAndImport,
+                  onPressed: _importing ? null : _pickAndImport,
                   icon: _importing
                       ? const SizedBox(
                           width: 16,

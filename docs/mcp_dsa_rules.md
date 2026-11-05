@@ -196,27 +196,9 @@ App Check 403 und die Function lehnt ab.
 Grenzen: Wer das Katalogpasswort und ein bestätigtes Konto hat, kommt an die
 Texte, das ist dasselbe Vertrauensmodell wie beim verschlüsselten Katalog. Der
 Server bremst falsche Nachweise (eine Sekunde) und begrenzt sich auf drei
-Instanzen, ein Ratelimit je Konto gibt es nicht. Ein Rückfall für Builds ohne
-Cloud-Anbindung bleibt der Server-Sync unten.
-
-## Veröffentlichen (Server-Sync für die App)
-
-Die Flutter-App kann `index.sqlite` alternativ zum manuellen Weg (lokal
-bauen bzw. Web-Upload) per Server-Sync beziehen (siehe
-`docs/spielmodus_konzept.md` Abschnitt 6). Dafür nach einem vollständigen
-Rebuild die Datei unverändert auf die konfigurierte Fritz!NAS/WebDAV-
-Freigabe hochladen:
-
-```powershell
-dsa-rules-cli refresh --force
-# Danach index.sqlite manuell (z.B. per Fritz!NAS-Weboberflaeche oder
-# WebDAV-Client) auf die Freigabe hochladen, die in
-# RulesIndexRemoteConfig / RULES_INDEX_SERVER_URL referenziert wird.
-```
-
-Kein Verschlüsselungsschritt nötig — die App gated den Download stattdessen
-über das bestehende Katalog-Entschlüsselungspasswort. Kein CI-Automatismus,
-bewusst ein manueller Betriebsschritt.
+Instanzen, ein Ratelimit je Konto gibt es nicht. Builds ohne Cloud-Anbindung
+haben nur den manuellen Weg (lokal bauen bzw. Web-Upload); der frühere
+WebDAV-Bezug über eine Fritz!NAS-Freigabe ist entfallen.
 
 ## Troubleshooting
 
