@@ -17,6 +17,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/meisterhandwerk_rules.dart';
 import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_held_schreiben.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui2/merkmale/karto_merkmal_dialoge.dart';
 import 'package:dsa_heldenverwaltung/ui2/merkmale/karto_merkmal_karten.dart';
@@ -72,9 +73,14 @@ class KartoMerkmalsblatt extends ConsumerStatefulWidget {
   ConsumerState<KartoMerkmalsblatt> createState() => _KartoMerkmalsblattState();
 }
 
-class _KartoMerkmalsblattState extends ConsumerState<KartoMerkmalsblatt> {
-  bool _schreibt = false;
-  String? _fehler;
+class _KartoMerkmalsblattState extends ConsumerState<KartoMerkmalsblatt>
+    with KartoHeldSchreiben<KartoMerkmalsblatt> {
+  @override
+  String get heroId => widget.heroId;
+
+  @override
+  String get planungsSperre =>
+      'Während einer Planung sind Vor- und Nachteile gesperrt.';
 
   @override
   Widget build(BuildContext context) {
@@ -90,8 +96,7 @@ class _KartoMerkmalsblattState extends ConsumerState<KartoMerkmalsblatt> {
     }
     final katalog = MerkmalKatalog.von(catalog);
     final abgleich = werteMerkmaleAus(werte.hero, catalog: catalog).abgleich;
-    final gesperrt =
-        ref.watch(advancementSessionProvider(widget.heroId)) != null;
+    final gesperrt = this.gesperrt;
     final karto = context.karto;
 
     return LayoutBuilder(
@@ -117,12 +122,12 @@ class _KartoMerkmalsblattState extends ConsumerState<KartoMerkmalsblatt> {
                 farbe: karto.schriftLeise,
               ),
             ],
-            if (_fehler != null) ...[
+            if (fehler != null) ...[
               const SizedBox(height: Abstand.block),
               _Hinweiszeile(
                 key: const ValueKey<String>('karto-merkmal-fehler'),
                 symbol: Icons.error_outline,
-                text: _fehler!,
+                text: fehler!,
                 farbe: karto.siegel,
               ),
             ],
@@ -155,7 +160,7 @@ class _KartoMerkmalsblattState extends ConsumerState<KartoMerkmalsblatt> {
     required bool gesperrt,
   }) {
     final schluessel = vorteil ? 'vorteile' : 'nachteile';
-    final bearbeitbar = !gesperrt && abweichung == null && !_schreibt;
+    final bearbeitbar = !gesperrt && abweichung == null && !schreibt;
     return [
       _Kopfzeile(
         titel: vorteil ? 'Vorteile' : 'Nachteile',
@@ -167,7 +172,7 @@ class _KartoMerkmalsblattState extends ConsumerState<KartoMerkmalsblatt> {
           key: ValueKey<String>('karto-merkmal-abweichung-$schluessel'),
           schluessel: schluessel,
           abweichung: abweichung,
-          entscheidbar: !gesperrt && !_schreibt,
+          entscheidbar: !gesperrt && !schreibt,
           onEntscheiden: (textUebernehmen) => _schreibe(
             (held, katalog) => loeseMerkmalAbweichung(
               held,
@@ -462,43 +467,17 @@ class _KartoMerkmalsblattState extends ConsumerState<KartoMerkmalsblatt> {
     );
   }
 
-  // Einziger Schreibweg des Blatts: frisch laden, gezielt ändern, speichern.
-  // Doppelte Auslösung verhindert [_schreibt].
+  // Einziger Schreibweg des Blatts: frisch laden, gezielt ändern, speichern
+  // ([KartoHeldSchreiben]); der Katalog wird erst beim Anwenden gelesen.
   Future<void> _schreibe(
     HeroSheet Function(HeroSheet held, MerkmalKatalog katalog) aenderung,
-  ) async {
-    if (_schreibt) return;
-    setState(() {
-      _schreibt = true;
-      _fehler = null;
-    });
-    try {
-      if (ref.read(advancementSessionProvider(widget.heroId)) != null) {
-        throw StateError(
-          'Während einer Planung sind Vor- und Nachteile gesperrt.',
-        );
-      }
-      final catalog = ref
-          .read(heroRulesCatalogProvider(widget.heroId))
-          .valueOrNull;
-      if (catalog == null) {
-        throw StateError('Der Regelkatalog ist noch nicht geladen.');
-      }
-      final katalog = MerkmalKatalog.von(catalog);
-      await ref
-          .read(heroActionsProvider)
-          .updateHero(widget.heroId, (held) => aenderung(held, katalog));
-    } catch (error) {
-      if (mounted) {
-        setState(() => _fehler = 'Speichern fehlgeschlagen: ${_text(error)}');
-      }
-    } finally {
-      if (mounted) setState(() => _schreibt = false);
+  ) => schreibeHeld((held) {
+    final catalog = ref.read(heroRulesCatalogProvider(heroId)).valueOrNull;
+    if (catalog == null) {
+      throw StateError('Der Regelkatalog ist noch nicht geladen.');
     }
-  }
-
-  String _text(Object error) =>
-      error is StateError ? error.message : error.toString();
+    return aenderung(held, MerkmalKatalog.von(catalog));
+  });
 
   Widget _meldung(String text) => Center(
     child: Padding(

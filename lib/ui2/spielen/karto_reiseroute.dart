@@ -9,6 +9,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/standort_rules.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_stroke.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_held_schreiben.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abschnitt.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_kachelgroesse.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_reiseroute_schreiben.dart';
@@ -49,7 +50,9 @@ class KartoReiserouteKachel extends ConsumerStatefulWidget {
 }
 
 class _KartoReiserouteKachelState extends ConsumerState<KartoReiserouteKachel>
-    with KartoReiserouteSchreiben<KartoReiserouteKachel> {
+    with
+        KartoHeldSchreiben<KartoReiserouteKachel>,
+        KartoReiserouteSchreiben<KartoReiserouteKachel> {
   @override
   String get heroId => widget.heroId;
 
@@ -151,7 +154,9 @@ class KartoReiserouteBlatt extends ConsumerStatefulWidget {
 }
 
 class _KartoReiserouteBlattState extends ConsumerState<KartoReiserouteBlatt>
-    with KartoReiserouteSchreiben<KartoReiserouteBlatt> {
+    with
+        KartoHeldSchreiben<KartoReiserouteBlatt>,
+        KartoReiserouteSchreiben<KartoReiserouteBlatt> {
   @override
   String get heroId => widget.heroId;
 
@@ -216,7 +221,7 @@ class _KartoReiserouteBlattState extends ConsumerState<KartoReiserouteBlatt>
           Padding(
             padding: const EdgeInsets.only(top: Abstand.normal),
             child: Text(
-              'Während einer Planung ist die Reiseroute gesperrt.',
+              planungsSperre,
               style: texte.legende.copyWith(color: karto.wachs),
             ),
           ),

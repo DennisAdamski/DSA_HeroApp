@@ -5,55 +5,22 @@ import 'package:uuid/uuid.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_reise_station.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/reiseroute_rules.dart';
-import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_held_schreiben.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_reiseroute_dialog.dart';
 
 /// Gemeinsamer Schreibweg für Reiseroute-Kachel und Reiseroute-Blatt.
 ///
-/// Frisch laden, nur die Stationsliste über die Regeln in
-/// `reiseroute_rules.dart` ändern, speichern. Doppelte Auslösung verhindert
-/// [schreibt]; während einer Planung ist alles gesperrt.
+/// Ändert nur die Stationsliste über die Regeln in `reiseroute_rules.dart`;
+/// geschrieben wird über [KartoHeldSchreiben.schreibeHeld].
 mixin KartoReiserouteSchreiben<T extends ConsumerStatefulWidget>
-    on ConsumerState<T> {
-  /// ID im gemeinsam genutzten Heldenspeicher.
-  String get heroId;
-
-  /// Ob gerade ein Schreibvorgang läuft.
-  bool schreibt = false;
-
-  /// Letzter Schreibfehler für die Anzeige, oder `null`.
-  String? fehler;
-
-  /// Ob eine offene Planung die Reiseroute schreibschützt.
-  bool get gesperrt => ref.watch(advancementSessionProvider(heroId)) != null;
-
-  /// Einziger Schreibweg: frisch laden, nur die Stationsliste ändern.
-  Future<void> schreibe(HeroSheet Function(HeroSheet held) aenderung) async {
-    if (schreibt) return;
-    setState(() {
-      schreibt = true;
-      fehler = null;
-    });
-    try {
-      if (ref.read(advancementSessionProvider(heroId)) != null) {
-        throw StateError('Während einer Planung ist die Reiseroute gesperrt.');
-      }
-      await ref.read(heroActionsProvider).updateHero(heroId, aenderung);
-    } catch (error) {
-      if (mounted) {
-        setState(() => fehler = 'Speichern fehlgeschlagen: ${_text(error)}');
-      }
-    } finally {
-      if (mounted) setState(() => schreibt = false);
-    }
-  }
+    on ConsumerState<T>, KartoHeldSchreiben<T> {
+  @override
+  String get planungsSperre =>
+      'Während einer Planung ist die Reiseroute gesperrt.';
 
   // Zeitstempel für „Zuletzt bearbeitet“; UTC wie alle Zeitpunkte im Modell.
   DateTime _jetzt() => DateTime.now().toUtc();
-
-  String _text(Object error) =>
-      error is StateError ? error.message : error.toString();
 
   /// Legt eine Station über den Dialog an, vorbelegt mit Standort, Datum und
   /// laufendem Abenteuer.
@@ -83,7 +50,7 @@ mixin KartoReiserouteSchreiben<T extends ConsumerStatefulWidget>
       adventureId: eingabe.adventureId,
       lastModified: _jetzt(),
     );
-    await schreibe((held) => fuegeReiseStationHinzu(held, station));
+    await schreibeHeld((held) => fuegeReiseStationHinzu(held, station));
   }
 
   /// Bearbeitet oder löscht [station].
@@ -102,10 +69,10 @@ mixin KartoReiserouteSchreiben<T extends ConsumerStatefulWidget>
     if (eingabe == null || eingabe.gleichWie(station)) return;
     if (eingabe.loeschen) {
       if (!await _bestaetigeLoeschen()) return;
-      await schreibe((held) => entferneReiseStation(held, station.id));
+      await schreibeHeld((held) => entferneReiseStation(held, station.id));
       return;
     }
-    await schreibe(
+    await schreibeHeld(
       (held) => ersetzeReiseStation(
         held,
         station.id,

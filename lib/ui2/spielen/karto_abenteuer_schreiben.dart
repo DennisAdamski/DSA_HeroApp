@@ -5,9 +5,9 @@ import 'package:uuid/uuid.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_adventure_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_note_entry.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/standort_rules.dart';
-import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abenteuer_dialoge.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_held_schreiben.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_laufendes_abenteuer.dart';
 
 /// Gemeinsamer Schreibweg für Abenteuerblatt und Abenteuerabschnitt.
@@ -19,58 +19,24 @@ import 'package:dsa_heldenverwaltung/ui2/spielen/karto_laufendes_abenteuer.dart'
 ///
 /// Gespeichert wird hier selbst und nicht über die Laufzeitaktion des
 /// Workspace: das Öffnen des Blatts läuft bereits in deren Re-Entrancy-Guard,
-/// jede weitere Aktion darin würde still verworfen. Doppelte Auslösung
-/// verhindert [schreibt]; während einer Planung ist alles gesperrt.
+/// jede weitere Aktion darin würde still verworfen. Sperre, Doppelklick-Schutz
+/// und Fehlertext kommen aus [KartoHeldSchreiben].
 mixin KartoAbenteuerSchreiben<T extends ConsumerStatefulWidget>
-    on ConsumerState<T> {
-  /// ID im gemeinsam genutzten Heldenspeicher.
-  String get heroId;
-
+    on ConsumerState<T>, KartoHeldSchreiben<T> {
   /// Stabile ID des bearbeiteten Abenteuers.
   String get abenteuerId;
 
-  /// Ob gerade ein Schreibvorgang läuft.
-  bool schreibt = false;
+  @override
+  String get planungsSperre =>
+      'Während einer Planung ist das Abenteuer gesperrt.';
 
-  /// Letzter Schreibfehler für die Anzeige, oder `null`.
-  String? fehler;
-
-  /// Ob eine offene Planung das Abenteuer schreibschützt.
-  bool get gesperrt => ref.watch(advancementSessionProvider(heroId)) != null;
-
-  /// Einziger Schreibweg: frisch laden, nur dieses Abenteuer ersetzen.
+  /// Frisch laden, nur dieses Abenteuer ersetzen ([ersetzeAbenteuer]).
   Future<void> schreibe(
     HeroAdventureEntry Function(HeroAdventureEntry abenteuer) aenderung,
-  ) async {
-    if (schreibt) return;
-    setState(() {
-      schreibt = true;
-      fehler = null;
-    });
-    try {
-      if (ref.read(advancementSessionProvider(heroId)) != null) {
-        throw StateError('Während einer Planung ist das Abenteuer gesperrt.');
-      }
-      await ref
-          .read(heroActionsProvider)
-          .updateHero(
-            heroId,
-            (held) => ersetzeAbenteuer(held, abenteuerId, aenderung),
-          );
-    } catch (error) {
-      if (mounted) {
-        setState(() => fehler = 'Speichern fehlgeschlagen: ${_text(error)}');
-      }
-    } finally {
-      if (mounted) setState(() => schreibt = false);
-    }
-  }
+  ) => schreibeHeld((held) => ersetzeAbenteuer(held, abenteuerId, aenderung));
 
   // Zeitstempel für „Zuletzt bearbeitet“; UTC wie alle Zeitpunkte im Modell.
   DateTime _jetzt() => DateTime.now().toUtc();
-
-  String _text(Object error) =>
-      error is StateError ? error.message : error.toString();
 
   /// Fragt das aktuelle Datum ab und speichert es.
   Future<void> datumAendern(HeroAdventureEntry abenteuer) async {

@@ -5,6 +5,7 @@ import 'package:dsa_heldenverwaltung/domain/app_settings.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_adventure_entry.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_held_schreiben.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abenteuer_karten.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abenteuer_schreiben.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abenteuer_sortierung.dart';
@@ -87,7 +88,9 @@ class KartoAbenteuerAbschnitt extends ConsumerStatefulWidget {
 
 class _KartoAbenteuerAbschnittState
     extends ConsumerState<KartoAbenteuerAbschnitt>
-    with KartoAbenteuerSchreiben<KartoAbenteuerAbschnitt> {
+    with
+        KartoHeldSchreiben<KartoAbenteuerAbschnitt>,
+        KartoAbenteuerSchreiben<KartoAbenteuerAbschnitt> {
   final TextEditingController _schnell = TextEditingController();
   final TextEditingController _suchfeld = TextEditingController();
   bool _alleZeigen = false;

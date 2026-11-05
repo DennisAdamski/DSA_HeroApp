@@ -23,6 +23,7 @@ import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abenteuerblatt.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abschnitt.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_begleiterkarte.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_dabei_abschnitt.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_held_schreiben.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_kachelgroesse.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_kachelraster.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_kampfinhalt.dart';
@@ -93,12 +94,17 @@ class KartoSpielansicht extends ConsumerStatefulWidget {
   ConsumerState<KartoSpielansicht> createState() => _KartoSpielansichtState();
 }
 
-class _KartoSpielansichtState extends ConsumerState<KartoSpielansicht> {
+class _KartoSpielansichtState extends ConsumerState<KartoSpielansicht>
+    with KartoHeldSchreiben<KartoSpielansicht> {
   /// Entwurf des Anordnen-Modus; `null` außerhalb des Modus.
   List<KartoSpielkachel>? _entwurf;
-  bool _speichert = false;
 
+  @override
   String get heroId => widget.heroId;
+
+  @override
+  String get planungsSperre =>
+      'Während einer Planung ruhen Anordnen und Einklappen.';
   KartoBestandsAdapter get bestand => widget.bestand;
   KartoLaufzeitAktion get aktion => widget.aktion;
   Future<bool> Function() get vorHeldenbearbeitung =>
@@ -153,7 +159,7 @@ class _KartoSpielansichtState extends ConsumerState<KartoSpielansicht> {
                         onPressed: () => _anordnenBeginnen(gespeichert),
                       )
                     : KartoAnordnenAbschluss(
-                        speichert: _speichert,
+                        speichert: schreibt,
                         onStandard: () => setState(
                           () => _entwurf = loeseSpielansichtAuf(
                             null,
@@ -414,22 +420,17 @@ class _KartoSpielansichtState extends ConsumerState<KartoSpielansicht> {
   // ersetzen (ARCH-05). Ohne Änderung wird nichts geschrieben.
   Future<void> _anordnenBeenden(List<KartoSpielkachel> gespeichert) async {
     final entwurf = _entwurf;
-    if (entwurf == null || _speichert) return;
+    if (entwurf == null || schreibt) return;
     if (_gleich(entwurf, gespeichert)) {
       setState(() => _entwurf = null);
       return;
     }
-    setState(() => _speichert = true);
     final gelungen = await _schreibe(
       (held) => held.copyWith(
         spielansicht: schreibeSpielansicht(entwurf, basis: held.spielansicht),
       ),
     );
-    if (!mounted) return;
-    setState(() {
-      _speichert = false;
-      if (gelungen) _entwurf = null;
-    });
+    if (gelungen && mounted) setState(() => _entwurf = null);
   }
 
   // Einklappen schreibt sofort und nur den einen Eintrag.
@@ -443,22 +444,26 @@ class _KartoSpielansichtState extends ConsumerState<KartoSpielansicht> {
           eingeklappt: eingeklappt,
         ),
       ),
+      einzeln: false,
     );
   }
 
-  Future<bool> _schreibe(HeroSheet Function(HeroSheet held) aenderung) async {
-    try {
-      await ref.read(heroActionsProvider).updateHero(heroId, aenderung);
-      return true;
-    } catch (error) {
-      if (mounted) {
-        final text = error is StateError ? error.message : error.toString();
-        ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-          SnackBar(content: Text('Anordnung nicht gespeichert: $text')),
-        );
-      }
-      return false;
+  // Fehler erscheinen als Hinweis am Seitenrand, nicht in einer Kachel.
+  Future<bool> _schreibe(
+    HeroSheet Function(HeroSheet held) aenderung, {
+    bool einzeln = true,
+  }) async {
+    final gelungen = await schreibeHeld(
+      aenderung,
+      einzeln: einzeln,
+      fehlerPraefix: 'Anordnung nicht gespeichert: ',
+    );
+    final text = fehler;
+    if (!gelungen && text != null && mounted) {
+      ScaffoldMessenger.maybeOf(context)
+          ?.showSnackBar(SnackBar(content: Text(text)));
     }
+    return gelungen;
   }
 
   static bool _gleich(List<KartoSpielkachel> a, List<KartoSpielkachel> b) {

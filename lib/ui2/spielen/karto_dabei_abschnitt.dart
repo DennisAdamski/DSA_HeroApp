@@ -5,11 +5,11 @@ import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/currency_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/spiel_dabei_rules.dart';
-import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abschnitt.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_held_schreiben.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_kachelgroesse.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
@@ -61,22 +61,19 @@ class KartoDabeiAbschnitt extends ConsumerStatefulWidget {
       _KartoDabeiAbschnittState();
 }
 
-class _KartoDabeiAbschnittState extends ConsumerState<KartoDabeiAbschnitt> {
+class _KartoDabeiAbschnittState extends ConsumerState<KartoDabeiAbschnitt>
+    with KartoHeldSchreiben<KartoDabeiAbschnitt> {
   bool _alle = false;
-  String? _fehler;
 
-  // Einziger Schreibweg: frisch laden, nur das eigene Feld ändern, speichern.
+  @override
+  String get heroId => widget.heroId;
+
+  @override
+  String get planungsSperre => 'Während einer Planung ist „Dabei“ gesperrt.';
+
   // Bewusst ohne Sperre gegen Doppelklicks: jeder Klick soll zählen.
-  Future<void> _schreibe(HeroSheet Function(HeroSheet held) aenderung) async {
-    if (_fehler != null) setState(() => _fehler = null);
-    try {
-      await ref.read(heroActionsProvider).updateHero(widget.heroId, aenderung);
-    } catch (error) {
-      if (!mounted) return;
-      final text = error is StateError ? error.message : error.toString();
-      setState(() => _fehler = text);
-    }
-  }
+  Future<void> _schreibe(HeroSheet Function(HeroSheet held) aenderung) =>
+      schreibeHeld(aenderung, einzeln: false, fehlerPraefix: '');
 
   Future<void> _betragAendern() async {
     final ergebnis = await showDialog<int>(
@@ -89,8 +86,7 @@ class _KartoDabeiAbschnittState extends ConsumerState<KartoDabeiAbschnitt> {
 
   @override
   Widget build(BuildContext context) {
-    final gesperrt =
-        ref.watch(advancementSessionProvider(widget.heroId)) != null;
+    final gesperrt = this.gesperrt;
     final katalog = ref
         .watch(heroRulesCatalogProvider(widget.heroId))
         .valueOrNull;
@@ -185,15 +181,15 @@ class _KartoDabeiAbschnittState extends ConsumerState<KartoDabeiAbschnitt> {
           if (gesperrt) ...[
             const SizedBox(height: Abstand.normal),
             Text(
-              'Während einer Planung ist „Dabei“ gesperrt.',
+              planungsSperre,
               key: const ValueKey<String>('karto-dabei-gesperrt'),
               style: texte.etikett.copyWith(color: karto.schriftLeise),
             ),
           ],
-          if (_fehler != null) ...[
+          if (fehler != null) ...[
             const SizedBox(height: Abstand.normal),
             Text(
-              _fehler!,
+              fehler!,
               key: const ValueKey<String>('karto-dabei-fehler'),
               style: texte.etikett.copyWith(color: karto.siegel),
             ),

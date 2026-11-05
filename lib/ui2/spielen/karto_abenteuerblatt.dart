@@ -5,6 +5,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_adventure_entry.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_held_schreiben.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abenteuer_karten.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abenteuer_schreiben.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abenteuer_sortierung.dart';
@@ -75,7 +76,9 @@ class KartoAbenteuerblatt extends ConsumerStatefulWidget {
 }
 
 class _KartoAbenteuerblattState extends ConsumerState<KartoAbenteuerblatt>
-    with KartoAbenteuerSchreiben<KartoAbenteuerblatt> {
+    with
+        KartoHeldSchreiben<KartoAbenteuerblatt>,
+        KartoAbenteuerSchreiben<KartoAbenteuerblatt> {
   @override
   String get heroId => widget.heroId;
 

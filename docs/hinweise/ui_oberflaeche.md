@@ -95,7 +95,15 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   Abenteuer bleibt der Abschnitt mit dem Standort stehen. Der Seitenkopf heißt
   immer schlicht „Am Spieltisch“. Der Schreibweg liegt gemeinsam mit dem
   Abenteuerblatt im Mixin `KartoAbenteuerSchreiben`
-  (`karto_abenteuer_schreiben.dart`); die Standortspeicherung läuft weiter über
+  (`karto_abenteuer_schreiben.dart`). Alle ui2-Schreibwege auf den Bogen
+  (Abenteuer, Reiseroute, Dabei, Merkmalsblatt, Anordnen/Einklappen) laufen
+  über `KartoHeldSchreiben` (`karto_held_schreiben.dart`): frisch über
+  `updateHero`, Planungssperre mit `planungsSperre`, wahlweise Doppelklick-Schutz
+  (`einzeln`), Fehlertext in `fehler`. Die Editorprüfung
+  (`vorHeldenbearbeitung`) gehört nicht in diesen Weg: Sie ist keine
+  Datensicherung (Editorentwürfe gleichen je Schlüssel frisch ab), sondern bleibt
+  Stellen vorbehalten, die einen eigenen Bearbeitungsmodus beginnen. Die
+  Standortspeicherung läuft weiter über
   die Brücke (`standortSetzen`). Die Ressourcenwerte sind kompakt: Wert und
   Fehlbetrag teilen eine Zeile, die ganze Zelle ist das Tippziel; der Wert hat
   Vorrang, passt der Fehlbetrag nicht daneben, rückt er unter den Wert (das
