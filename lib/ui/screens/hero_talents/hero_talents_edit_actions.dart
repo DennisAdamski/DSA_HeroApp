@@ -30,7 +30,6 @@ extension _HeroTalentEditActions on _HeroTalentTableTabState {
     _draftTalentSpecialAbilities = List<TalentSpecialAbility>.from(
       hero.talentSpecialAbilities,
     );
-    _invalidCombatTalentIds = <String>{};
     _draftSprachen = Map<String, HeroLanguageEntry>.from(hero.sprachen);
     _draftSchriften = Map<String, HeroScriptEntry>.from(hero.schriften);
     _draftMuttersprache = hero.muttersprache;
@@ -74,7 +73,6 @@ extension _HeroTalentEditActions on _HeroTalentTableTabState {
     }
     _editController.clearSyncSignature();
     _syncDraftFromHero(hero, force: true);
-    _invalidCombatTalentIds = <String>{};
     _editController.startEdit();
   }
 
@@ -82,49 +80,6 @@ extension _HeroTalentEditActions on _HeroTalentTableTabState {
     final basis = _entwurfBasis;
     if (basis == null) {
       return;
-    }
-    if (widget.scope == _TalentTabScope.combat) {
-      // Held-gebundener Katalog (Regelprofil); Warten über das Abo, damit ein
-      // Ladefehler das Speichern beendet statt es hängen zu lassen.
-      final RulesCatalog catalog;
-      try {
-        catalog = await warteAufAsyncWert(
-          ref,
-          heroRulesCatalogProvider(widget.heroId),
-        );
-      } on Object catch (error) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                'Speichern nicht möglich, Regelkatalog fehlt: $error',
-              ),
-            ),
-          );
-        }
-        return;
-      }
-      if (!mounted) {
-        return;
-      }
-      final issues = validateCombatTalentDistribution(
-        talents: catalog.talents,
-        talentEntries: _draftTalents,
-        filter: _matchesScope,
-      );
-      if (issues.isNotEmpty) {
-        if (mounted) {
-          setState(() {
-            _invalidCombatTalentIds = issues
-                .map((entry) => entry.talentId)
-                .toSet();
-          });
-          ScaffoldMessenger.of(context)
-              .showSnackBar(SnackBar(content: Text(issues.first.message)));
-        }
-        return;
-      }
-      _invalidCombatTalentIds = <String>{};
     }
     final entwurf = basis.copyWith(
       talents: activateReferencedMetaTalentComponents(
@@ -173,7 +128,6 @@ extension _HeroTalentEditActions on _HeroTalentTableTabState {
       _editController.clearSyncSignature();
       _syncDraftFromHero(hero, force: true);
     }
-    _invalidCombatTalentIds = <String>{};
     _editController.markDiscarded();
   }
 

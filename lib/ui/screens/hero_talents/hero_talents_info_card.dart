@@ -48,23 +48,6 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
     );
   }
 
-  Widget _buildCombatActionBar({required List<TalentDef> allTalents}) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
-      child: Align(
-        alignment: Alignment.centerRight,
-        child: _editController.isEditing
-            ? FilledButton.icon(
-                key: const ValueKey<String>('combat-talents-catalog-open'),
-                onPressed: () => _showTalentKatalog(context, allTalents),
-                icon: const Icon(Icons.library_add),
-                label: const Text('Kampftalente verwalten'),
-              )
-            : const SizedBox.shrink(),
-      ),
-    );
-  }
-
   Future<void> _openTalentBeScreen({
     required String heroId,
     required int combatBaseBe,

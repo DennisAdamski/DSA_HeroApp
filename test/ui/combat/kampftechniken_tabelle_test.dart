@@ -10,7 +10,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
-import 'package:dsa_heldenverwaltung/ui/screens/hero_talents_tab.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_combat_tab.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 
 import '../../test_support/begabung_katalog.dart';
@@ -79,8 +79,7 @@ void main() {
     FakeRepository repo,
     RulesCatalog catalog,
   ) async {
-    // ResponsiveAdaptiveTable schaltet bei zu schmalen Viewports auf Karten
-    // um; Combat-Talent-Tabelle braucht ~1080 px im Edit-Modus.
+    // Die Kampftalent-Tabelle braucht im Edit-Modus rund 1100 px Breite.
     tester.view.physicalSize = const Size(1400, 1000);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(() {
@@ -97,7 +96,7 @@ void main() {
         ],
         child: MaterialApp(
           home: Scaffold(
-            body: HeroCombatTalentsTab(
+            body: HeroCombatTab(
               heroId: 'demo',
               onDirtyChanged: (_) {},
               onEditingChanged: (_) {},
@@ -110,6 +109,10 @@ void main() {
         ),
       ),
     );
+    await tester.pumpAndSettle();
+    final reiter = find.widgetWithText(Tab, 'Kampftechniken');
+    await tester.ensureVisible(reiter);
+    await tester.tap(reiter);
     await tester.pumpAndSettle();
     expect(actions, isNotNull);
     return actions!;
@@ -147,7 +150,7 @@ void main() {
     expect(find.text('Ersatzweise'), findsAtLeastNWidgets(1));
     expect(find.text('AT'), findsAtLeastNWidgets(1));
     expect(find.text('PA'), findsAtLeastNWidgets(1));
-    expect(find.text('Eigenschaften'), findsNothing);
+    expect(find.text('max TaW'), findsAtLeastNWidgets(1));
   });
 
   testWidgets(
@@ -185,20 +188,10 @@ void main() {
       await openCombatTab(tester, repo, buildCatalog());
 
       expect(find.text('C'), findsNWidgets(2));
-      expect(find.text('18'), findsNothing);
-
-      await tester.tap(find.text('Dolche'));
-      await tester.pumpAndSettle();
-      expect(find.text('18'), findsOneWidget);
-      await tester.tap(find.text('Schließen'));
-      await tester.pumpAndSettle();
-
-      await tester.tap(find.text('Boegen'));
-      await tester.pumpAndSettle();
-      expect(find.text('18'), findsOneWidget);
+      // Spalte „max TaW“: Begabung hebt beide Maxima auf 18.
+      expect(find.text('max TaW'), findsNWidgets(2));
+      expect(find.text('18'), findsNWidgets(2));
       expect(find.text('23'), findsNothing);
-      await tester.tap(find.text('Schließen'));
-      await tester.pumpAndSettle();
     },
   );
 
@@ -240,22 +233,14 @@ void main() {
     expect(find.byTooltip('Begabung für Nahkampf-Talente'), findsOneWidget);
     expect(find.byTooltip('Unfähigkeit Fernkampf-Talente'), findsOneWidget);
 
-    // Maximum: GE/KK 13 + 5 bei Begabung, + 3 bei Unfähigkeit.
-    await tester.tap(find.text('Dolche'));
-    await tester.pumpAndSettle();
+    // Spalte „max TaW“: GE/KK 13 + 5 bei Begabung, + 3 bei Unfähigkeit.
     expect(find.text('18'), findsOneWidget);
-    await tester.tap(find.text('Schließen'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Boegen'));
-    await tester.pumpAndSettle();
     expect(find.text('16'), findsOneWidget);
-    await tester.tap(find.text('Schließen'));
-    await tester.pumpAndSettle();
 
     await actions.startEdit();
     await tester.pumpAndSettle();
     final haekchen = tester.widget<Checkbox>(
-      find.byKey(const ValueKey<String>('talents-gifted-tal_nah')),
+      find.byKey(const ValueKey<String>('combat-talents-gifted-tal_nah')),
     );
     expect(haekchen.value, isTrue);
     expect(haekchen.onChanged, isNull);
@@ -498,7 +483,7 @@ void main() {
     );
 
     final specButton = find.byKey(
-      const ValueKey<String>('talents-combat-spec-add-tal_nah'),
+      const ValueKey<String>('combat-spec-add-tal_nah'),
     );
     await tester.ensureVisible(specButton);
     await tester.tap(specButton);
@@ -552,7 +537,7 @@ void main() {
     await tester.pumpAndSettle();
 
     final specButton = find.byKey(
-      const ValueKey<String>('talents-combat-spec-add-tal_nah'),
+      const ValueKey<String>('combat-spec-add-tal_nah'),
     );
     await tester.ensureVisible(specButton);
     await tester.tap(specButton);
