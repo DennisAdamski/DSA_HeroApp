@@ -84,7 +84,29 @@ extension _HeroTalentEditActions on _HeroTalentTableTabState {
       return;
     }
     if (widget.scope == _TalentTabScope.combat) {
-      final catalog = await ref.read(rulesCatalogProvider.future);
+      // Held-gebundener Katalog (Regelprofil); Warten über das Abo, damit ein
+      // Ladefehler das Speichern beendet statt es hängen zu lassen.
+      final RulesCatalog catalog;
+      try {
+        catalog = await warteAufAsyncWert(
+          ref,
+          heroRulesCatalogProvider(widget.heroId),
+        );
+      } on Object catch (error) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Speichern nicht möglich, Regelkatalog fehlt: $error',
+              ),
+            ),
+          );
+        }
+        return;
+      }
+      if (!mounted) {
+        return;
+      }
       final issues = validateCombatTalentDistribution(
         talents: catalog.talents,
         talentEntries: _draftTalents,

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/spell_effect_instance_rules.dart';
 
 import 'package:dsa_heldenverwaltung/ui/screens/shared/planung_bearbeiten_guard.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/async_wert_abwarten.dart';
 import 'package:dsa_heldenverwaltung/catalog/house_rule_provenance.dart';
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
@@ -32,7 +33,6 @@ import 'package:dsa_heldenverwaltung/rules/derived/unarmed_style_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/waffenlos_slot_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/waffenmeister_rules.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
-import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/config/platform_adaptive.dart';
