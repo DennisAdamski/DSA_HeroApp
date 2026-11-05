@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/domain/aventurian_date.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_adventure_entry.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/aventurian_age_rules.dart';
-import 'package:dsa_heldenverwaltung/rules/derived/aventurian_holiday_data.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/aventurian_holiday_rules.dart';
+import 'package:dsa_heldenverwaltung/state/feiertag_providers.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_datum_felder.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_standort.dart';
@@ -366,18 +367,21 @@ class _KartoDatumDialogState extends State<KartoDatumDialog> {
 
 // Feiertage in der Nähe des Datums im Datumsdialog. Gerechnet wird in
 // `feiertageInDerNaehe`; hier wird nur angezeigt.
-class _Feiertage extends StatelessWidget {
+class _Feiertage extends ConsumerWidget {
   const _Feiertage({required this.datum, required this.onWiki});
 
   final AventurianDate datum;
   final VoidCallback onWiki;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final textTheme = Theme.of(context).textTheme;
     final leise = textTheme.etikett.copyWith(color: context.karto.schriftLeise);
     final lesbar = aventurianDayOfYear(datum) != null;
-    final treffer = feiertageInDerNaehe(datum);
+    final katalog = ref.watch(feiertagKatalogProvider).asData?.value;
+    final treffer = katalog == null
+        ? const <FeiertagTreffer>[]
+        : feiertageInDerNaehe(datum, feiertage: katalog.feiertage);
 
     return Column(
       key: const ValueKey<String>('karto-datum-feiertage'),
@@ -387,6 +391,8 @@ class _Feiertage extends StatelessWidget {
         const SizedBox(height: Abstand.normal),
         if (!lesbar)
           Text('Tag und Monat wählen, um Feiertage zu sehen.', style: leise)
+        else if (katalog == null)
+          Text('Feiertage werden geladen …', style: leise)
         else if (treffer.isEmpty)
           Text('Keine Feiertage in der Nähe.', style: leise)
         else

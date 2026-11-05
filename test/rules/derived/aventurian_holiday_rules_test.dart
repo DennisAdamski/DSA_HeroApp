@@ -1,19 +1,67 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dsa_heldenverwaltung/domain/aventurian_date.dart';
 import 'package:dsa_heldenverwaltung/domain/aventurischer_feiertag.dart';
-import 'package:dsa_heldenverwaltung/rules/derived/aventurian_holiday_data.dart';
+import 'package:dsa_heldenverwaltung/catalog/feiertag_loader.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/aventurian_holiday_rules.dart';
 
 AventurianDate _d(String tag, String monat) =>
     AventurianDate(day: tag, month: monat, year: '1043');
 
+// Die eingecheckte Katalogdatei, wie die App sie lädt (REV-12).
+final FeiertagKatalog _katalog = parseFeiertage(
+  jsonDecode(File(feiertageAssetPfad).readAsStringSync()) as List<dynamic>,
+);
+final List<AventurischerFeiertag> aventurischeFeiertage = _katalog.feiertage;
+
+List<FeiertagTreffer> _naehe(
+  AventurianDate datum, {
+  int tageDavor = feiertageTageDavor,
+  int tageDanach = feiertageTageDanach,
+  bool Function(AventurischerFeiertag feiertag)? filter,
+}) => feiertageInDerNaehe(
+  datum,
+  feiertage: aventurischeFeiertage,
+  tageDavor: tageDavor,
+  tageDanach: tageDanach,
+  filter: filter,
+);
+
 Map<String, int> _abstaende(AventurianDate datum) => {
-  for (final t in feiertageInDerNaehe(datum)) t.feiertag.name: t.abstandTage,
+  for (final t in _naehe(datum)) t.feiertag.name: t.abstandTage,
 };
 
 void main() {
   group('Feiertagstabelle', () {
+    test('die Katalogdatei ist vollständig lesbar', () {
+      expect(_katalog.verworfen, isEmpty);
+      expect(aventurischeFeiertage, hasLength(44));
+    });
+
+    test('unlesbare Einträge werden gemeldet, nicht still übergangen', () {
+      final katalog = parseFeiertage(<dynamic>[
+        'kein Objekt',
+        <String, dynamic>{'name': 'Ohne Tag', 'monat': 'praios'},
+        <String, dynamic>{
+          'name': 'Falscher Monat',
+          'tag': 1,
+          'monat': 'mond',
+          'art': 'kulturell',
+        },
+        <String, dynamic>{
+          'name': 'Gut',
+          'tag': 2,
+          'monat': 'praios',
+          'art': 'weltlich',
+        },
+      ]);
+      expect(katalog.feiertage.map((f) => f.name), ['Gut']);
+      expect(katalog.verworfen, hasLength(3));
+    });
+
     test('liegt vollständig im Jahr und hat Namen', () {
       expect(aventurischeFeiertage, isNotEmpty);
       for (final f in aventurischeFeiertage) {
@@ -83,7 +131,7 @@ void main() {
     });
 
     test('sortiert Vergangenes zuerst und dann nach Name', () {
-      final treffer = feiertageInDerNaehe(_d('8', 'rondra'));
+      final treffer = _naehe(_d('8', 'rondra'));
       final abstaende = treffer.map((t) => t.abstandTage).toList();
       expect(abstaende, orderedEquals([...abstaende]..sort()));
       final heute = treffer.where((t) => t.abstandTage == 0).toList();
@@ -160,22 +208,18 @@ void main() {
     });
 
     test('nicht lesbare Daten ergeben nichts', () {
-      expect(feiertageInDerNaehe(const AventurianDate()), isEmpty);
-      expect(feiertageInDerNaehe(_d('', 'rondra')), isEmpty);
-      expect(feiertageInDerNaehe(_d('5', '')), isEmpty);
-      expect(feiertageInDerNaehe(_d('31', 'rondra')), isEmpty);
-      expect(feiertageInDerNaehe(_d('6', 'namenlose_tage')), isEmpty);
+      expect(_naehe(const AventurianDate()), isEmpty);
+      expect(_naehe(_d('', 'rondra')), isEmpty);
+      expect(_naehe(_d('5', '')), isEmpty);
+      expect(_naehe(_d('31', 'rondra')), isEmpty);
+      expect(_naehe(_d('6', 'namenlose_tage')), isEmpty);
     });
 
     test('Fenster und Filter lassen sich einschränken', () {
-      final nurHeute = feiertageInDerNaehe(
-        _d('8', 'rondra'),
-        tageDavor: 0,
-        tageDanach: 0,
-      );
+      final nurHeute = _naehe(_d('8', 'rondra'), tageDavor: 0, tageDanach: 0);
       expect(nurHeute.map((t) => t.abstandTage).toSet(), {0});
 
-      final ohneNovadis = feiertageInDerNaehe(
+      final ohneNovadis = _naehe(
         _d('9', 'efferd'),
         filter: (f) => f.verbreitung != 'Novadis',
       );
@@ -184,7 +228,7 @@ void main() {
         isFalse,
       );
       expect(
-        feiertageInDerNaehe(_d('9', 'efferd'))
+        _naehe(_d('9', 'efferd'))
             .any((t) => t.feiertag.name == '4. Rastullahellah'),
         isTrue,
       );

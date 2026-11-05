@@ -2,7 +2,11 @@ import 'package:dsa_heldenverwaltung/domain/aventurian_date.dart';
 import 'package:dsa_heldenverwaltung/domain/aventurischer_feiertag.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/aventurian_age_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/aventurian_calendar_rules.dart';
-import 'package:dsa_heldenverwaltung/rules/derived/aventurian_holiday_data.dart';
+
+/// Liste der Feiertage in der Wiki Aventurica; umfassender als der Katalog
+/// (`feiertage.json`).
+const String feiertagWikiListeUrl =
+    'https://de.wiki-aventurica.de/wiki/Feiertag/Liste';
 
 /// Tage vor dem Datum, in denen ein Feiertag noch als „in der Nähe“ gilt.
 const int feiertageTageDavor = 7;
@@ -23,7 +27,8 @@ class FeiertagTreffer {
   final int abstandTage;
 }
 
-/// Sucht die Feiertage rund um [datum].
+/// Sucht unter [feiertage] (aus dem Katalog, `feiertagKatalogProvider`) die
+/// Feiertage rund um [datum].
 ///
 /// Es zählen Tag und Monat; das Jahr bleibt unbeachtet, weil die Feiertage
 /// jährlich wiederkehren. Das Jahr wird zyklisch gelesen: nach den Namenlosen
@@ -34,9 +39,10 @@ class FeiertagTreffer {
 /// [tageDanach] Tage bevorsteht oder gerade läuft. Das Ergebnis ist nach Abstand
 /// sortiert (Vergangenes zuerst), bei gleichem Abstand nach Name. [filter] ist
 /// der Haken für spätere Einschränkungen nach Region, Volk oder Kirche; ohne ihn
-/// zählen alle Einträge aus [aventurischeFeiertage].
+/// zählen alle [feiertage].
 List<FeiertagTreffer> feiertageInDerNaehe(
   AventurianDate datum, {
+  required List<AventurischerFeiertag> feiertage,
   int tageDavor = feiertageTageDavor,
   int tageDanach = feiertageTageDanach,
   bool Function(AventurischerFeiertag feiertag)? filter,
@@ -45,7 +51,7 @@ List<FeiertagTreffer> feiertageInDerNaehe(
   if (tag == null) return const <FeiertagTreffer>[];
 
   final treffer = <FeiertagTreffer>[];
-  for (final feiertag in aventurischeFeiertage) {
+  for (final feiertag in feiertage) {
     if (filter != null && !filter(feiertag)) continue;
     final abstand = _abstand(feiertag, tag);
     if (abstand >= -tageDavor && abstand <= tageDanach) {

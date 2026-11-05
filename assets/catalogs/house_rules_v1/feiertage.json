@@ -1,0 +1,350 @@
+[
+  {
+    "name": "Sommersonnenwende",
+    "tag": 1,
+    "monat": "praios",
+    "art": "religioes",
+    "gottheit": "Praios",
+    "verbreitung": "zwölfgöttergläubige Lande"
+  },
+  {
+    "name": "Praiosfest und Greifenfest",
+    "tag": 2,
+    "monat": "praios",
+    "bis_tag": 3,
+    "art": "weltlich",
+    "verbreitung": "Mittelreich"
+  },
+  {
+    "name": "Tag des Schwures",
+    "tag": 5,
+    "monat": "rondra",
+    "art": "religioes",
+    "gottheit": "Rondra",
+    "verbreitung": "zwölfgöttergläubige Lande"
+  },
+  {
+    "name": "Nationalfeiertag im Mittelreich",
+    "tag": 6,
+    "monat": "rondra",
+    "bis_tag": 9,
+    "art": "weltlich",
+    "verbreitung": "Mittelreich"
+  },
+  {
+    "name": "Bosparans Fall",
+    "tag": 8,
+    "monat": "rondra",
+    "art": "trauertag",
+    "verbreitung": "Liebliches Feld"
+  },
+  {
+    "name": "Schwertfest",
+    "tag": 15,
+    "monat": "rondra",
+    "bis_tag": 16,
+    "art": "religioes",
+    "gottheit": "Rondra",
+    "verbreitung": "zwölfgöttergläubige Lande"
+  },
+  {
+    "name": "Maraskanisches Neujahrsfest",
+    "tag": 19,
+    "monat": "rondra",
+    "art": "kulturell",
+    "verbreitung": "Maraskan"
+  },
+  {
+    "name": "Tag des Wassers",
+    "tag": 1,
+    "monat": "efferd",
+    "art": "religioes",
+    "gottheit": "Efferd",
+    "verbreitung": "Küstenstädte"
+  },
+  {
+    "name": "4. Rastullahellah",
+    "tag": 9,
+    "monat": "efferd",
+    "art": "religioes",
+    "gottheit": "Rastullah",
+    "verbreitung": "Novadis"
+  },
+  {
+    "name": "Nebelfest",
+    "tag": 16,
+    "monat": "efferd",
+    "art": "religioes",
+    "gottheit": "Phex",
+    "verbreitung": "zwölfgöttergläubige Lande"
+  },
+  {
+    "name": "Fischerfest",
+    "tag": 30,
+    "monat": "efferd",
+    "art": "religioes",
+    "gottheit": "Efferd",
+    "verbreitung": "Küstengebiete"
+  },
+  {
+    "name": "Prüfungsfest",
+    "tag": 30,
+    "monat": "efferd",
+    "art": "religioes",
+    "gottheit": "Hesinde",
+    "verbreitung": "Zentren des Hesinde-Kultes"
+  },
+  {
+    "name": "Tag der Heimkehr",
+    "tag": 1,
+    "monat": "travia",
+    "art": "kulturell",
+    "verbreitung": "Thorwal, Norbarden, Bornland"
+  },
+  {
+    "name": "Fest der eingebrachten Früchte",
+    "tag": 1,
+    "monat": "travia",
+    "bis_tag": 3,
+    "art": "religioes",
+    "gottheit": "Travia",
+    "verbreitung": "zwölfgöttergläubige Lande"
+  },
+  {
+    "name": "Tag der Helden",
+    "tag": 4,
+    "monat": "travia",
+    "art": "religioes",
+    "gottheit": "Rondra",
+    "verbreitung": "Zentren des Rondra-Kults"
+  },
+  {
+    "name": "Tag der Treue",
+    "tag": 12,
+    "monat": "travia",
+    "art": "religioes",
+    "gottheit": "Travia",
+    "verbreitung": "zwölfgöttergläubige Lande"
+  },
+  {
+    "name": "Tag des Hl. Gilborn",
+    "tag": 29,
+    "monat": "travia",
+    "art": "gedenktag",
+    "gottheit": "Praios",
+    "verbreitung": "Zentren der Praios-Kirche"
+  },
+  {
+    "name": "Totenfest",
+    "tag": 1,
+    "monat": "boron",
+    "art": "religioes",
+    "gottheit": "Boron",
+    "verbreitung": "zwölfgöttergläubige Lande"
+  },
+  {
+    "name": "Gauklerfest in Khunchom",
+    "tag": 2,
+    "monat": "boron",
+    "bis_tag": 8,
+    "art": "kulturell",
+    "verbreitung": "Khunchom"
+  },
+  {
+    "name": "5. Rastullahellah",
+    "tag": 22,
+    "monat": "boron",
+    "art": "religioes",
+    "gottheit": "Rastullah",
+    "verbreitung": "Novadis"
+  },
+  {
+    "name": "Tag des großen Schlafes",
+    "tag": 30,
+    "monat": "boron",
+    "art": "religioes",
+    "gottheit": "Boron",
+    "verbreitung": "Al’Anfa"
+  },
+  {
+    "name": "Rohals Verhüllung",
+    "tag": 7,
+    "monat": "hesinde",
+    "art": "gedenktag",
+    "verbreitung": "Zentren der Gildenzauberei"
+  },
+  {
+    "name": "Beginn der Opernsaison in Vinsalt",
+    "tag": 20,
+    "monat": "hesinde",
+    "art": "kulturell",
+    "verbreitung": "Vinsalt"
+  },
+  {
+    "name": "Erleuchtungsfest",
+    "tag": 30,
+    "monat": "hesinde",
+    "art": "religioes",
+    "gottheit": "Hesinde",
+    "verbreitung": "zwölfgöttergläubige Lande"
+  },
+  {
+    "name": "Tag der Jagd",
+    "tag": 1,
+    "monat": "firun",
+    "art": "religioes",
+    "gottheit": "Firun",
+    "verbreitung": "Norden und Mittelreich"
+  },
+  {
+    "name": "Nationalfeiertag im Bornland",
+    "tag": 8,
+    "monat": "firun",
+    "art": "weltlich",
+    "verbreitung": "Bornland"
+  },
+  {
+    "name": "Tag der Ifirn",
+    "tag": 30,
+    "monat": "firun",
+    "art": "religioes",
+    "gottheit": "Ifirn",
+    "verbreitung": "schneebedeckte Lande"
+  },
+  {
+    "name": "1. Rastullahellah",
+    "tag": 5,
+    "monat": "tsa",
+    "art": "religioes",
+    "gottheit": "Rastullah",
+    "verbreitung": "Novadis"
+  },
+  {
+    "name": "Unabhängigkeitstag",
+    "tag": 19,
+    "monat": "tsa",
+    "art": "weltlich",
+    "verbreitung": "Horasreich"
+  },
+  {
+    "name": "Tag der Erneuerung",
+    "tag": 30,
+    "monat": "tsa",
+    "bis_tag": 1,
+    "bis_monat": "phex",
+    "art": "religioes",
+    "gottheit": "Tsa",
+    "verbreitung": "Nordaventurien"
+  },
+  {
+    "name": "Tag des Phex",
+    "tag": 16,
+    "monat": "phex",
+    "art": "religioes",
+    "gottheit": "Phex",
+    "verbreitung": "zwölfgöttergläubige Lande"
+  },
+  {
+    "name": "Glückstag",
+    "tag": 24,
+    "monat": "phex",
+    "art": "religioes",
+    "gottheit": "Phex",
+    "verbreitung": "zwölfgöttergläubige Lande"
+  },
+  {
+    "name": "Versenkungsfest",
+    "tag": 30,
+    "monat": "phex",
+    "art": "religioes",
+    "gottheit": "Hesinde",
+    "verbreitung": "hesindegläubige Lande"
+  },
+  {
+    "name": "Saatfest",
+    "tag": 1,
+    "monat": "peraine",
+    "art": "religioes",
+    "gottheit": "Peraine",
+    "verbreitung": "ländliche Gebiete"
+  },
+  {
+    "name": "Tag der Hl. Thalionmel",
+    "tag": 4,
+    "monat": "peraine",
+    "art": "religioes",
+    "gottheit": "Rondra",
+    "verbreitung": "Westaventurien, besonders Neetha"
+  },
+  {
+    "name": "Jährliches Bardentreffen",
+    "tag": 7,
+    "monat": "peraine",
+    "bis_tag": 12,
+    "art": "kulturell",
+    "verbreitung": "Honingen, Norburg, Bethana und Zorgan im Wechsel"
+  },
+  {
+    "name": "2. Rastullahellah",
+    "tag": 18,
+    "monat": "peraine",
+    "art": "religioes",
+    "gottheit": "Rastullah",
+    "verbreitung": "Novadis"
+  },
+  {
+    "name": "Tag des Feuers",
+    "tag": 1,
+    "monat": "ingerimm",
+    "art": "religioes",
+    "gottheit": "Angrosch",
+    "verbreitung": "Zwerge"
+  },
+  {
+    "name": "Tag des Aufbruchs",
+    "tag": 8,
+    "monat": "ingerimm",
+    "art": "kulturell",
+    "verbreitung": "Zwerge"
+  },
+  {
+    "name": "Tag der Waffenschmiede",
+    "tag": 21,
+    "monat": "ingerimm",
+    "art": "religioes",
+    "gottheit": "Ingerimm",
+    "verbreitung": "Städte"
+  },
+  {
+    "name": "Schlacht an der Trollpforte",
+    "tag": 22,
+    "monat": "ingerimm",
+    "art": "gedenktag",
+    "verbreitung": "Mittelreich"
+  },
+  {
+    "name": "Fest der Freuden",
+    "tag": 1,
+    "monat": "rahja",
+    "bis_tag": 7,
+    "art": "religioes",
+    "gottheit": "Rahja",
+    "verbreitung": "zwölfgöttergläubige Lande"
+  },
+  {
+    "name": "Reinigungsfest",
+    "tag": 30,
+    "monat": "rahja",
+    "art": "religioes",
+    "gottheit": "Hesinde",
+    "verbreitung": "hesindegläubige Lande"
+  },
+  {
+    "name": "3. Rastullahellah",
+    "tag": 1,
+    "monat": "namenlose_tage",
+    "art": "religioes",
+    "gottheit": "Rastullah",
+    "verbreitung": "Novadis"
+  }
+]

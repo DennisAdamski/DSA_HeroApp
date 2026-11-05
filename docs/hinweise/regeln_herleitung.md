@@ -108,8 +108,12 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   `heroContentHash` ein — sonst ändert sich jeder Bestandsheld und der
   Konto-Sync meldet beim nächsten Speichern Konflikte.
 - Feiertage: `lib/domain/aventurischer_feiertag.dart` (Modell, nicht
-  persistiert) und die Tabelle `aventurischeFeiertage` in
-  `lib/rules/derived/aventurian_holiday_data.dart`; Grundstock ist die Liste
+  persistiert) und die Katalogdatei
+  `assets/catalogs/house_rules_v1/feiertage.json` (gelesen über
+  `parseFeiertage`/`ladeFeiertage` in `lib/catalog/feiertag_loader.dart` und
+  `feiertagKatalogProvider`; unlesbare Einträge stehen in `verworfen`). Die
+  Regeln bekommen die Liste übergeben (`feiertageInDerNaehe(feiertage:)`).
+  Grundstock ist die Liste
   „Fest- und Feiertage“ der Geographia Aventurica (S. 203 f.), die umfassendere
   Liste führt die Wiki Aventurica (`feiertagWikiListeUrl`). Eingetragen werden
   nur Kurzfakten (Name, Datum, `art`, `gottheit`, `verbreitung`), keine

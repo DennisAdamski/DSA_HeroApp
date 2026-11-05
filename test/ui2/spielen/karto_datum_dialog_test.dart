@@ -1,12 +1,23 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:dsa_heldenverwaltung/catalog/feiertag_loader.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_adventure_entry.dart';
-import 'package:dsa_heldenverwaltung/rules/derived/aventurian_holiday_data.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/aventurian_holiday_rules.dart';
+import 'package:dsa_heldenverwaltung/state/feiertag_providers.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abenteuer_dialoge.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_theme.dart';
 
 Finder _key(String name) => find.byKey(ValueKey<String>(name));
+
+// Die eingecheckte Katalogdatei; rootBundle lädt in der FakeAsync-Zone nicht.
+final FeiertagKatalog _katalog = parseFeiertage(
+  jsonDecode(File(feiertageAssetPfad).readAsStringSync()) as List<dynamic>,
+);
 
 void main() {
   late HeroAdventureDateValue? ergebnis;
@@ -25,32 +36,37 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
     await tester.pumpWidget(
-      MaterialApp(
-        theme: buildKartoTheme(
-          brightness: Brightness.light,
-          centerAppBarTitle: false,
-        ),
-        builder: (context, child) => MediaQuery(
-          data: MediaQuery.of(context)
-              .copyWith(textScaler: TextScaler.linear(skalierung)),
-          child: child!,
-        ),
-        home: Scaffold(
-          body: Builder(
-            builder: (context) => TextButton(
-              onPressed: () async {
-                ergebnis = await showDialog<HeroAdventureDateValue>(
-                  context: context,
-                  builder: (_) => KartoDatumDialog(
-                    initial: initial,
-                    oeffneLink: (uri) async {
-                      geoeffnet.add(uri);
-                      return linkGelingt;
-                    },
-                  ),
-                );
-              },
-              child: const Text('öffnen'),
+      ProviderScope(
+        overrides: [
+          feiertagKatalogProvider.overrideWith((ref) async => _katalog),
+        ],
+        child: MaterialApp(
+          theme: buildKartoTheme(
+            brightness: Brightness.light,
+            centerAppBarTitle: false,
+          ),
+          builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(context)
+                .copyWith(textScaler: TextScaler.linear(skalierung)),
+            child: child!,
+          ),
+          home: Scaffold(
+            body: Builder(
+              builder: (context) => TextButton(
+                onPressed: () async {
+                  ergebnis = await showDialog<HeroAdventureDateValue>(
+                    context: context,
+                    builder: (_) => KartoDatumDialog(
+                      initial: initial,
+                      oeffneLink: (uri) async {
+                        geoeffnet.add(uri);
+                        return linkGelingt;
+                      },
+                    ),
+                  );
+                },
+                child: const Text('öffnen'),
+              ),
             ),
           ),
         ),
