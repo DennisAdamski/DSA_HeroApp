@@ -47,16 +47,12 @@ void main() {
 
   group('parseKurzregeln', () {
     test('entschluesselt Texte und Listen mit richtigem Passwort', () {
-      final katalog = parseKurzregeln(
-        [
-          eintrag(
-            hausregelText: 'Erfundene Abweichung',
-            hausregelQuelle: 'testpaket_v1',
-          ),
-        ],
-        passwort: passwort,
-        salt: salt,
-      );
+      final katalog = parseKurzregeln([
+        eintrag(
+          hausregelText: 'Erfundene Abweichung',
+          hausregelQuelle: 'testpaket_v1',
+        ),
+      ], schluessel: schluessel);
 
       final regel = katalog.eintraege.single;
       expect(regel.kurztext, 'Erfundener Kurztext');
@@ -80,11 +76,9 @@ void main() {
     });
 
     test('falsches Passwort zeigt keinen Chiffretext', () {
-      final katalog = parseKurzregeln(
-        [eintrag()],
-        passwort: 'falsch',
-        salt: salt,
-      );
+      final katalog = parseKurzregeln([
+        eintrag(),
+      ], schluessel: deriveCatalogKey(password: 'falsch', salt: salt));
 
       final regel = katalog.eintraege.single;
       expect(regel.kurztext, isEmpty);
@@ -111,11 +105,9 @@ void main() {
     });
 
     test('Hausregeltext verlangt eine Hausregel-Quelle', () {
-      final katalog = parseKurzregeln(
-        [eintrag(id: 'x', hausregelText: 'Abweichung')],
-        passwort: passwort,
-        salt: salt,
-      );
+      final katalog = parseKurzregeln([
+        eintrag(id: 'x', hausregelText: 'Abweichung'),
+      ], schluessel: schluessel);
 
       expect(katalog.eintraege, isEmpty);
       expect(katalog.verworfen['x'], contains('hausregel_quelle fehlt'));
@@ -171,16 +163,17 @@ void main() {
       expect(katalog.eintraege, isEmpty);
     });
 
-    test('liest Liste und Salt aus den Assets', () async {
-      final manifest = jsonEncode({'catalog_salt_v3': base64Encode(salt)});
-      final katalog = await ladeKurzregeln(
-        passwort: passwort,
-        lader: (pfad) async =>
-            pfad == kurzregelnAssetPfad ? jsonEncode([eintrag()]) : manifest,
-      );
+    test(
+      'liest die Liste aus dem Asset und entschluesselt mit dem Schluessel',
+      () async {
+        final katalog = await ladeKurzregeln(
+          schluessel: schluessel,
+          lader: (pfad) async => jsonEncode([eintrag()]),
+        );
 
-      expect(katalog.eintraege.single.kurztext, 'Erfundener Kurztext');
-    });
+        expect(katalog.eintraege.single.kurztext, 'Erfundener Kurztext');
+      },
+    );
 
     test(
       'Nicht-Liste und kaputtes JSON ergeben ein leeres Kompendium',

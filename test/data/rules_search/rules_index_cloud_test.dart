@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:path/path.dart' as p;
 
+import 'package:dsa_heldenverwaltung/catalog/catalog_crypto.dart';
 import 'package:dsa_heldenverwaltung/data/rules_search/rules_index_access_client.dart';
 import 'package:dsa_heldenverwaltung/data/rules_search/rules_index_gunzip.dart';
 import 'package:dsa_heldenverwaltung/data/rules_search/rules_index_proof.dart';
@@ -54,6 +55,15 @@ void main() {
       // `rules_index_proof('testpasswort', bytes(range(32)))`.
       expect(
         rulesIndexProof(password: 'testpasswort', salt: salt),
+        '265b04b8273a639db346e8c5daec2fc840356986d6fdc095988b94d00ccb58d3',
+      );
+    });
+
+    test('aus dem abgeleiteten Schlüssel derselbe Nachweis (REV-07)', () {
+      expect(
+        rulesIndexProofAusSchluessel(
+          deriveCatalogKey(password: 'testpasswort', salt: salt),
+        ),
         '265b04b8273a639db346e8c5daec2fc840356986d6fdc095988b94d00ccb58d3',
       );
     });

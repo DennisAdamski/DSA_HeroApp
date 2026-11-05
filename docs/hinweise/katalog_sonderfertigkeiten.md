@@ -194,7 +194,11 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   Kurzregel-Kompendiums) sind v3-verschluesselt
   (AES-GCM, globaler Salt im Manifest `catalog_salt_v3`). Beim Unlock
   entschluesselt `decryptedCatalogSourceDataProvider` den ganzen Katalog
-  einmal — Detail in `docs/technical_overview.md` Abschnitt 5.3. Passwoerter
+  einmal — Detail in `docs/technical_overview.md` Abschnitt 5.3. Den
+  v3-Schluessel leitet nur `catalogKeyV3Provider` ab (einmal je Passwort, per
+  `compute`); Katalog, Kurzregeln (`kurzregelKatalogProvider`) und der
+  Passwortnachweis der Wissensbasis (`rulesIndexProofAusSchluessel`) lesen ihn
+  dort und leiten nie selbst ab. Passwoerter
   werden vor PBKDF2 NFC-normalisiert, damit Eingaben mit Umlauten
   unabhaengig von NFC/NFD-Codepoint-Repraesentation funktionieren.
 - **Regelbuch-Langtexte nie im Klartext einchecken.** Neue oder neu importierte

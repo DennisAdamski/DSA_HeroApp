@@ -15,7 +15,7 @@ der übrige Regelnachschlag erst nach dem Entsperren der Katalog-Inhalte.
 | Modell mit Quellenprüfung | `lib/catalog/kurzregel_def.dart` (`KurzregelDef.probleme`) |
 | Lader und Entschlüsselung | `lib/catalog/kurzregel_loader.dart` (`ladeKurzregeln`, `parseKurzregeln`) |
 | Suche (Umlaute egal, Titel vor Text) | `lib/rules/derived/kurzregel_suche_rules.dart` |
-| Provider | `lib/state/kurzregel_providers.dart` (hängt nur am Katalogpasswort) |
+| Provider | `lib/state/kurzregel_providers.dart` (hängt nur am Katalogschlüssel `catalogKeyV3Provider`) |
 | Oberfläche | `lib/ui/screens/workspace/kurzregeln_panel.dart`, Reiter in `rules_lookup_dialog.dart` (`RegelnNachschlagDialog`) |
 | Prüfskript | `tool/check_kurzregeln.py` |
 

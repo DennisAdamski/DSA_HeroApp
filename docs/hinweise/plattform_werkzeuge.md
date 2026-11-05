@@ -93,11 +93,11 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   `hero_workspace_screen.dart`) erst nach dem Entsperren
   (`catalogContentVisibleProvider`) angeboten. `rulesIndexAutoStartProvider`
   (beobachtet in `AppRootSwitch`) startet das Laden im Hintergrund, sobald
-  Passwort, Anmeldung, Katalog-Salt und Einstellungen da sind; es laeuft nur,
+  Passwort, Anmeldung, Katalogschluessel (`rulesIndexCatalogKeyProvider`) und Einstellungen da sind; es laeuft nur,
   wenn die Wissensbasis fehlt oder `rulesIndexRefreshInterval` (14 Tage)
   ueberschritten ist, und hoechstens einmal je Sitzung (`autoStart`). Manuell:
   `RulesIndexAutoSync.start` ueber die Knoepfe im Dialog. Ablauf in
-  `RulesIndexSyncService.syncFromCloud`: Passwortnachweis (PBKDF2 per `compute`),
+  `RulesIndexSyncService.syncFromCloud`: Passwortnachweis aus dem schon abgeleiteten Katalogschluessel,
   Zugang, Download der signierten URL (`downloadSigned`, ohne Zugangsdaten),
   bei Bedarf Entpacken (`gunzipIfNeeded`, Web verlaesst sich auf
   `Content-Encoding: gzip`), Pruefung von Groesse und SHA-256, erst dann Import.

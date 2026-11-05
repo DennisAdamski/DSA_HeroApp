@@ -1,4 +1,6 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:dsa_heldenverwaltung/catalog/catalog_crypto.dart';
 
 import 'package:dsa_heldenverwaltung/catalog/catalog_decrypt_runner.dart';
 import 'package:dsa_heldenverwaltung/catalog/catalog_loader.dart';
@@ -83,8 +85,30 @@ final decryptedCatalogSourceDataProvider = FutureProvider<CatalogSourceData>((
     encrypted: baseData,
     password: password,
     globalSaltV3: baseData.catalogSaltV3,
+    v3Key: await ref.watch(catalogKeyV3Provider.future),
   );
 });
+
+/// v3-Katalogschlüssel aus Inhalts-Passwort und globalem Katalog-Salt.
+///
+/// Die einzige PBKDF2-Ableitung (100000 Runden) der App: Katalog,
+/// Kurzregel-Kompendium und der Passwortnachweis der Wissensbasis lesen den
+/// Schlüssel hier, statt ihn je selbst abzuleiten. Gerechnet wird über
+/// [compute] (im Web im Hauptthread). `null` ohne Passwort oder Salt.
+final catalogKeyV3Provider = FutureProvider<CatalogKey?>((ref) async {
+  final password = ref.watch(catalogContentPasswordProvider);
+  if (password == null || password.isEmpty) return null;
+  final baseData = await ref.watch(baseCatalogSourceDataProvider.future);
+  final salt = baseData.catalogSaltV3;
+  if (salt == null) return null;
+  return compute(_leiteKatalogSchluesselAb, <Object>[password, salt]);
+});
+
+CatalogKey _leiteKatalogSchluesselAb(List<Object> argumente) =>
+    deriveCatalogKey(
+      password: argumente[0] as String,
+      salt: argumente[1] as Uint8List,
+    );
 
 /// Zusammengefuehrte Hausregel-Pakete aus Assets und Heldenspeicher.
 final houseRulePackCatalogProvider = FutureProvider<HouseRulePackCatalog>((

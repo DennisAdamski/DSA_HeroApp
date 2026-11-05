@@ -15,17 +15,21 @@ const String rulesIndexProofPrefix = 'rules-index-v1|';
 /// (PBKDF2, globaler Katalog-Salt). Der Server kennt nur diesen Hash, nie das
 /// Passwort, und der Katalogschluessel selbst verlaesst das Geraet nicht.
 ///
-/// Die PBKDF2-Ableitung ist teuer (100000 Runden); der Aufruf gehoert in
-/// einen Hintergrundlauf, nicht in den Bau eines Widgets.
-String rulesIndexProof({required String password, required Uint8List salt}) {
-  final key = deriveCatalogKey(password: password, salt: salt);
-  return sha256Hex(
-    Uint8List.fromList(<int>[
-      ...utf8.encode(rulesIndexProofPrefix),
-      ...key.bytes,
-    ]),
-  );
-}
+/// Die App rechnet ihn aus dem schon abgeleiteten Schluessel
+/// ([rulesIndexProofAusSchluessel], `catalogKeyV3Provider`); diese Form mit
+/// eigener, teurer Ableitung dient Werkzeugen und Tests.
+String rulesIndexProof({required String password, required Uint8List salt}) =>
+    rulesIndexProofAusSchluessel(
+      deriveCatalogKey(password: password, salt: salt),
+    );
+
+/// Passwortnachweis aus dem bereits abgeleiteten v3-Katalogschluessel.
+String rulesIndexProofAusSchluessel(CatalogKey key) => sha256Hex(
+  Uint8List.fromList(<int>[
+    ...utf8.encode(rulesIndexProofPrefix),
+    ...key.bytes,
+  ]),
+);
 
 /// SHA-256 der [bytes] als Kleinbuchstaben-Hex.
 String sha256Hex(Uint8List bytes) {

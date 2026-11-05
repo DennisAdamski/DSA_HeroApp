@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:dsa_heldenverwaltung/catalog/catalog_crypto.dart';
 import 'package:dsa_heldenverwaltung/data/rules_search/rules_index_access_client.dart';
 import 'package:dsa_heldenverwaltung/data/rules_search/rules_index_proof.dart';
 import 'package:dsa_heldenverwaltung/data/rules_search/rules_index_remote_client.dart';
@@ -61,22 +62,17 @@ final rulesIndexSignedInProvider = Provider<bool>(
   (ref) => ref.watch(authUserProvider).valueOrNull != null,
 );
 
-/// Globaler Salt des Katalogs (`catalog_salt_v3`) für den Passwortnachweis;
-/// `null`, solange der Katalog nicht geladen ist.
-final rulesIndexCatalogSaltProvider = Provider<Uint8List?>(
-  (ref) => ref.watch(baseCatalogSourceDataProvider).valueOrNull?.catalogSaltV3,
+/// Abgeleiteter Katalogschlüssel für den Passwortnachweis; `null`, solange
+/// Passwort oder Katalog fehlen oder die Ableitung noch läuft.
+final rulesIndexCatalogKeyProvider = Provider<CatalogKey?>(
+  (ref) => ref.watch(catalogKeyV3Provider).valueOrNull,
 );
 
-/// Rechnet den Passwortnachweis.
-///
-/// PBKDF2 mit 100000 Runden dauert einige Sekunden: abseits des UI-Threads,
-/// wo es Isolates gibt (im Web läuft `compute` im Hauptthread). In Tests
-/// ersetzbar, damit sie nicht jedes Mal rechnen.
+/// Rechnet den Passwortnachweis aus dem Katalogschlüssel; in Tests ersetzbar.
 final rulesIndexProofBuilderProvider =
-    Provider<Future<String> Function(String password, Uint8List salt)>(
+    Provider<Future<String> Function(CatalogKey key)>(
       (ref) =>
-          (password, salt) =>
-              compute(_berechneNachweis, <Object>[password, salt]),
+          (key) async => rulesIndexProofAusSchluessel(key),
     );
 
 /// Öffnet die lokale Wissensbasis; in Tests ersetzbar.
@@ -191,7 +187,7 @@ class RulesIndexAutoSync extends Notifier<RulesIndexSyncState> {
     if (_autoVersucht || state.running) return;
     if (!rulesIndexSearchSupported()) return;
     if (!ref.read(rulesIndexCloudAvailableProvider)) return;
-    if (!_entsperrt() || _salt() == null) return;
+    if (!_entsperrt() || _schluessel() == null) return;
     if (!ref.read(rulesIndexSignedInProvider)) return;
     final einstellungen = ref.read(appSettingsProvider);
     if (!einstellungen.hasValue) return;
@@ -220,8 +216,8 @@ class RulesIndexAutoSync extends Notifier<RulesIndexSyncState> {
       );
       return;
     }
-    final salt = _salt();
-    if (salt == null) {
+    final schluessel = _schluessel();
+    if (schluessel == null) {
       state = state.copyWith(
         phase: RulesIndexSyncPhase.failed,
         message: 'Der Katalog ist noch nicht geladen.',
@@ -231,10 +227,7 @@ class RulesIndexAutoSync extends Notifier<RulesIndexSyncState> {
 
     state = state.copyWith(phase: RulesIndexSyncPhase.preparing);
     try {
-      final proof = await ref.read(rulesIndexProofBuilderProvider)(
-        password,
-        salt,
-      );
+      final proof = await ref.read(rulesIndexProofBuilderProvider)(schluessel);
       final config = ref.read(rulesIndexRemoteConfigProvider);
       final result = await ref
           .read(rulesIndexSyncServiceProvider)
@@ -292,7 +285,7 @@ class RulesIndexAutoSync extends Notifier<RulesIndexSyncState> {
 
   bool _entsperrt() => ref.read(catalogContentVisibleProvider);
 
-  Uint8List? _salt() => ref.read(rulesIndexCatalogSaltProvider);
+  CatalogKey? _schluessel() => ref.read(rulesIndexCatalogKeyProvider);
 }
 
 /// Zustand und Steuerung des Hintergrundladens.
@@ -313,13 +306,7 @@ final rulesIndexAutoStartProvider = Provider<void>((ref) {
   ref
     ..listen(catalogContentVisibleProvider, (_, _) => pruefe())
     ..listen(rulesIndexSignedInProvider, (_, _) => pruefe())
-    ..listen(rulesIndexCatalogSaltProvider, (_, _) => pruefe())
+    ..listen(rulesIndexCatalogKeyProvider, (_, _) => pruefe())
     ..listen(appSettingsProvider, (_, _) => pruefe());
   pruefe();
 });
-
-/// Rechnet den Passwortnachweis; Einstieg für [compute].
-String _berechneNachweis(List<Object> argumente) => rulesIndexProof(
-  password: argumente[0] as String,
-  salt: argumente[1] as Uint8List,
-);

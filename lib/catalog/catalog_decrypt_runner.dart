@@ -32,6 +32,7 @@ Future<CatalogSourceData> decryptAllCatalogValues({
   required CatalogSourceData encrypted,
   required String password,
   required Uint8List? globalSaltV3,
+  CatalogKey? v3Key,
 }) async {
   final encCount = _countEncValues(encrypted);
   if (encCount == 0) {
@@ -46,6 +47,7 @@ Future<CatalogSourceData> decryptAllCatalogValues({
     reisebericht: encrypted.reisebericht,
     password: password,
     globalSaltV3: globalSaltV3,
+    v3KeyBytes: v3Key?.bytes,
   );
 
   final result = encCount >= _offThreadDecryptThreshold
@@ -76,7 +78,12 @@ _DecryptPayload _decryptPayloadIsolateEntry(_DecryptPayload payload) {
 
 /// Fuehrt die eigentliche Bulk-Entschluesselung synchron aus.
 _DecryptPayload _decryptPayload(_DecryptPayload payload) {
-  final v3Key = payload.globalSaltV3 == null
+  // Ein schon abgeleiteter Schlüssel (`catalogKeyV3Provider`) spart die
+  // PBKDF2-Ableitung; ohne ihn wird sie hier einmal gerechnet.
+  final vorab = payload.v3KeyBytes;
+  final v3Key = vorab != null
+      ? CatalogKey(vorab)
+      : payload.globalSaltV3 == null
       ? null
       : deriveCatalogKey(
           password: payload.password,
@@ -240,10 +247,12 @@ class _DecryptPayload {
     required this.reisebericht,
     required this.password,
     required this.globalSaltV3,
+    this.v3KeyBytes,
   });
 
   final Map<String, List<Map<String, dynamic>>> sectionsRaw;
   final List<Map<String, dynamic>> reisebericht;
   final String password;
   final Uint8List? globalSaltV3;
+  final Uint8List? v3KeyBytes;
 }

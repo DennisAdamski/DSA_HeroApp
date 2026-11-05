@@ -10,21 +10,11 @@ import 'package:dsa_heldenverwaltung/catalog/kurzregel_def.dart';
 const String kurzregelnAssetPfad =
     'assets/catalogs/house_rules_v1/kurzregeln.json';
 
-/// Manifest, dessen `catalog_salt_v3` auch die Kurzregeln verschluesselt.
-const String kurzregelnManifestPfad =
-    'assets/catalogs/house_rules_v1/manifest.json';
-
 /// Felder, die das Encrypt-Tool als Text verschluesselt.
 const List<String> _textFelder = <String>['kurztext', 'hausregel_text'];
 
 /// Felder, die das Encrypt-Tool als JSON-Liste verschluesselt.
 const List<String> _listenFelder = <String>['hinweise'];
-
-/// Schwelle fuer die Auslagerung der Entschluesselung in einen Isolate.
-///
-/// Wie in `catalog_decrypt_runner.dart`: darunter ist der Spawn teurer als
-/// die Entschluesselung selbst.
-const int _isolateSchwelle = 64;
 
 /// Geladenes Kompendium samt Diagnose.
 class KurzregelKatalog {
@@ -45,18 +35,12 @@ class KurzregelKatalog {
 
 /// Parst die Rohliste des Assets zu einem [KurzregelKatalog].
 ///
-/// Mit [passwort] und [salt] werden `enc:3:`-Werte entschluesselt; ohne
-/// bleiben die Texte leer und die Eintraege tragen [KurzregelDef.gesperrt].
+/// Mit dem v3-Katalogschluessel [schluessel] (`catalogKeyV3Provider`) werden
+/// `enc:3:`-Werte entschluesselt; ohne bleiben die Texte leer und die
+/// Eintraege tragen [KurzregelDef.gesperrt].
 /// Eintraege mit Problemen ([KurzregelDef.probleme]) landen in
 /// [KurzregelKatalog.verworfen], statt unbelegt angezeigt zu werden.
-KurzregelKatalog parseKurzregeln(
-  List<dynamic> roh, {
-  String? passwort,
-  Uint8List? salt,
-}) {
-  final schluessel = (passwort == null || passwort.isEmpty || salt == null)
-      ? null
-      : deriveCatalogKey(password: passwort, salt: salt);
+KurzregelKatalog parseKurzregeln(List<dynamic> roh, {CatalogKey? schluessel}) {
   final eintraege = <KurzregelDef>[];
   final verworfen = <String, List<String>>{};
   for (final element in roh) {
@@ -118,39 +102,6 @@ Map<String, dynamic> _entschluesselt(
   return kopie;
 }
 
-/// Zaehlt verschluesselte Felder, um die Isolate-Auslagerung zu entscheiden.
-int _zaehleVerschluesselte(List<dynamic> roh) {
-  var anzahl = 0;
-  for (final element in roh) {
-    if (element is! Map) {
-      continue;
-    }
-    for (final wert in element.values) {
-      if (wert is String && isEncryptedValue(wert)) {
-        anzahl++;
-      }
-    }
-  }
-  return anzahl;
-}
-
-/// Argumentpaket fuer [compute]: nur sendbare Typen.
-class _ParseAuftrag {
-  const _ParseAuftrag(this.roh, this.passwort, this.salt);
-
-  final List<dynamic> roh;
-  final String? passwort;
-  final Uint8List? salt;
-}
-
-KurzregelKatalog _parseImIsolate(_ParseAuftrag auftrag) {
-  return parseKurzregeln(
-    auftrag.roh,
-    passwort: auftrag.passwort,
-    salt: auftrag.salt,
-  );
-}
-
 /// Signatur zum Laden eines Text-Assets (Testnaht fuer `rootBundle`).
 typedef AssetBundleLader = Future<String> Function(String pfad);
 
@@ -158,8 +109,10 @@ typedef AssetBundleLader = Future<String> Function(String pfad);
 ///
 /// Fehlt das Asset oder ist es kein JSON-Array, ist das Kompendium leer: die
 /// Kurzregeln sind eine Zusatzfunktion und duerfen keinen Start verhindern.
+/// Entschluesselt wird mit dem schon abgeleiteten [schluessel]; die paar
+/// AES-Werte brauchen keinen eigenen Isolate.
 Future<KurzregelKatalog> ladeKurzregeln({
-  String? passwort,
+  CatalogKey? schluessel,
   AssetBundleLader? lader,
 }) async {
   final laden = lader ?? rootBundle.loadString;
@@ -176,30 +129,9 @@ Future<KurzregelKatalog> ladeKurzregeln({
   } on FormatException {
     return const KurzregelKatalog();
   }
-  final salt = await _ladeSalt(laden);
-  final auftrag = _ParseAuftrag(roh, passwort, salt);
-  final entschluesseln =
-      passwort != null && passwort.isNotEmpty && salt != null;
-  if (entschluesseln && _zaehleVerschluesselte(roh) >= _isolateSchwelle) {
-    return compute(_parseImIsolate, auftrag);
-  }
-  return _parseImIsolate(auftrag);
-}
-
-Future<Uint8List?> _ladeSalt(AssetBundleLader laden) async {
-  try {
-    final manifest = jsonDecode(
-      _ohneBom(await laden(kurzregelnManifestPfad)),
-    ) as Map<String, dynamic>;
-    final salt = manifest['catalog_salt_v3'];
-    return salt is String ? base64Decode(salt) : null;
-  } on FlutterError {
-    return null;
-  } on FormatException {
-    return null;
-  }
+  return parseKurzregeln(roh, schluessel: schluessel);
 }
 
 String _ohneBom(String text) {
-  return text.startsWith('﻿') ? text.substring(1) : text;
+  return text.startsWith('\uFEFF') ? text.substring(1) : text;
 }

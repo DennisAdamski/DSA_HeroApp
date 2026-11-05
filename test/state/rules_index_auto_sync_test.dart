@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:dsa_heldenverwaltung/catalog/catalog_crypto.dart';
 import 'package:dsa_heldenverwaltung/data/hive_settings_repository.dart';
 import 'package:dsa_heldenverwaltung/data/rules_search/rules_index_remote_client.dart';
 import 'package:dsa_heldenverwaltung/data/rules_search/rules_index_sync_service.dart';
@@ -90,7 +91,7 @@ class _Dienst extends RulesIndexSyncService {
 }
 
 void main() {
-  final salt = Uint8List(32);
+  final katalogSchluessel = CatalogKey(Uint8List(32));
 
   Future<({ProviderContainer container, _Repo repo, _Dienst dienst})> aufbau({
     bool angemeldet = true,
@@ -99,7 +100,6 @@ void main() {
     bool indexVorhanden = false,
     RulesIndexRemoteConfig config = const RulesIndexRemoteConfig(),
     _Dienst? dienst,
-    Uint8List? katalogSalt,
   }) async {
     final repo = _Repo(
       AppSettings(
@@ -113,10 +113,10 @@ void main() {
         settingsRepositoryProvider.overrideWithValue(repo),
         rulesIndexCloudAvailableProvider.overrideWithValue(cloud),
         rulesIndexSignedInProvider.overrideWithValue(angemeldet),
-        rulesIndexCatalogSaltProvider.overrideWithValue(katalogSalt ?? salt),
+        rulesIndexCatalogKeyProvider.overrideWithValue(katalogSchluessel),
         rulesIndexSyncServiceProvider.overrideWithValue(d),
         rulesIndexProofBuilderProvider.overrideWithValue(
-          (password, salt) async => 'nachweis-$password',
+          (key) async => 'nachweis-${key.bytes.length}',
         ),
         rulesIndexOpenerProvider.overrideWithValue(
           () async => indexVorhanden ? _Index() : null,
@@ -148,7 +148,7 @@ void main() {
 
       expect(t.dienst.aufrufe, hasLength(1));
       final aufruf = t.dienst.aufrufe.single;
-      expect(aufruf.proof, 'nachweis-pw');
+      expect(aufruf.proof, 'nachweis-32');
       // Fehlt die Datei, wird auch bei gleicher Version geladen.
       expect(aufruf.ueberspringen, isFalse);
       expect(zustand(t.container).phase, RulesIndexSyncPhase.done);
@@ -300,15 +300,15 @@ void main() {
     expect(zustand(t.container).phase, RulesIndexSyncPhase.idle);
   });
 
-  test('start ohne Katalog-Salt meldet, dass der Katalog fehlt', () async {
+  test('start ohne Katalogschlüssel meldet, dass der Katalog fehlt', () async {
     final t = await aufbau();
-    // Salt nachträglich entfernen: neuer Container mit leerem Salt.
+    // Schlüssel fehlt: neuer Container ohne abgeleiteten Schlüssel.
     final leer = ProviderContainer(
       overrides: [
         settingsRepositoryProvider.overrideWithValue(t.repo),
         rulesIndexCloudAvailableProvider.overrideWithValue(true),
         rulesIndexSignedInProvider.overrideWithValue(true),
-        rulesIndexCatalogSaltProvider.overrideWithValue(null),
+        rulesIndexCatalogKeyProvider.overrideWithValue(null),
         rulesIndexSyncServiceProvider.overrideWithValue(t.dienst),
       ],
     );
