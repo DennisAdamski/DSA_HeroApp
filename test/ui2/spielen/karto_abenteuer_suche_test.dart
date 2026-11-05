@@ -34,7 +34,7 @@ void main() {
           id: 'p1',
           name: 'Ärger-Alrik',
           description: 'Wirt in Gareth',
-          datum: '3. Rahja 1040 BF',
+          datum: HeroAdventureDateValue(day: '3', month: 'rahja', year: '1040'),
         ),
       ],
     );

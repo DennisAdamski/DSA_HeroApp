@@ -74,7 +74,7 @@ List<AbenteuerTreffer> sucheInAbenteuern({
           eintrag.notes[i].title,
           eintrag.notes[i].description,
           eintrag.notes[i].ort,
-          eintrag.notes[i].datum,
+          eintrag.notes[i].datum.anzeigeText,
         ]))
           i,
     ];
@@ -84,7 +84,7 @@ List<AbenteuerTreffer> sucheInAbenteuern({
           eintrag.people[i].name,
           eintrag.people[i].description,
           eintrag.people[i].ort,
-          eintrag.people[i].datum,
+          eintrag.people[i].datum.anzeigeText,
         ]))
           i,
     ];
@@ -257,7 +257,7 @@ class KartoAbenteuerSuchergebnisse extends StatelessWidget {
                     name: gruppe.abenteuer.people[i].name,
                     beschreibung: gruppe.abenteuer.people[i].description,
                     ort: gruppe.abenteuer.people[i].ort,
-                    datum: gruppe.abenteuer.people[i].datum,
+                    datum: gruppe.abenteuer.people[i].datum.anzeigeText,
                     onTap: onPerson == null ? null : () => onPerson!(gruppe, i),
                   ),
               ],
@@ -273,7 +273,7 @@ class KartoAbenteuerSuchergebnisse extends StatelessWidget {
                     titel: gruppe.abenteuer.notes[i].title,
                     text: gruppe.abenteuer.notes[i].description,
                     ort: gruppe.abenteuer.notes[i].ort,
-                    datum: gruppe.abenteuer.notes[i].datum,
+                    datum: gruppe.abenteuer.notes[i].datum.anzeigeText,
                     onTap: onNotiz == null ? null : () => onNotiz!(gruppe, i),
                   ),
               ],

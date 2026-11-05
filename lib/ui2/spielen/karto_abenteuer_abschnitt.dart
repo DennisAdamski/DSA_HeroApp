@@ -234,7 +234,7 @@ class _KartoAbenteuerAbschnittState
                 name: personen[i].name,
                 beschreibung: personen[i].description,
                 ort: personen[i].ort,
-                datum: personen[i].datum,
+                datum: personen[i].datum.anzeigeText,
                 onTap: bearbeitbar ? () => personBearbeiten(personen[i]) : null,
               ),
           ],
@@ -257,7 +257,7 @@ class _KartoAbenteuerAbschnittState
                 titel: notizen[i].title,
                 text: notizen[i].description,
                 ort: notizen[i].ort,
-                datum: notizen[i].datum,
+                datum: notizen[i].datum.anzeigeText,
                 onTap: bearbeitbar
                     ? () => notizBearbeiten(i, notizen[i])
                     : null,

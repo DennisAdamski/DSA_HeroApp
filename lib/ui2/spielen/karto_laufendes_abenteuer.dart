@@ -20,16 +20,20 @@ HeroAdventureEntry? laufendesAbenteuer(HeroSheet held) {
 /// Bewusst nur aus demselben Abenteuer: `resolveCurrentAdventureDate` wiche auf
 /// andere Abenteuer aus, und das Datum passte dann nicht zum Titel.
 String? abenteuerDatum(HeroAdventureEntry abenteuer) {
+  final datum = abenteuerDatumWert(abenteuer);
+  return datum.hasContent ? datum.anzeigeText : null;
+}
+
+/// Datum, das das Abenteuer gerade trägt: das aktuelle, sonst das Startdatum,
+/// sonst ein leeres.
+HeroAdventureDateValue abenteuerDatumWert(HeroAdventureEntry abenteuer) {
   for (final datum in <HeroAdventureDateValue>[
     abenteuer.currentAventurianDate,
     abenteuer.startAventurianDate,
   ]) {
-    if (!datum.hasContent) continue;
-    return formatAventurianDate(
-      AventurianDate.fromParts(datum.day, datum.month, datum.year),
-    );
+    if (datum.hasContent) return datum;
   }
-  return null;
+  return const HeroAdventureDateValue();
 }
 
 /// Der Tag nach dem Datum des Abenteuers als neuer „aktueller Stand“, oder

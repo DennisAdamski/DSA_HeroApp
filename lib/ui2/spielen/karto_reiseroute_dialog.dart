@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-import 'package:dsa_heldenverwaltung/domain/aventurian_date.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_adventure_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_reise_station.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_datum_felder.dart';
 
 /// Ergebnis des Stationsdialogs: die geänderten Felder oder der Löschwunsch.
 class KartoReiseStationEingabe {
@@ -35,9 +35,7 @@ class KartoReiseStationEingabe {
       ort == station.ort &&
       notiz == station.notiz &&
       adventureId == station.adventureId &&
-      datum.day == station.datum.day &&
-      datum.month == station.datum.month &&
-      datum.year == station.datum.year;
+      datum.gleicheAngabe(station.datum);
 }
 
 /// Erfasst oder bearbeitet eine Station der Reiseroute: Ort, aventurisches
@@ -69,23 +67,15 @@ class _KartoReiseStationDialogState extends State<KartoReiseStationDialog> {
   late final TextEditingController _ort = TextEditingController(
     text: widget.station.ort,
   );
-  late final TextEditingController _tag = TextEditingController(
-    text: widget.station.datum.day,
-  );
-  late final TextEditingController _jahr = TextEditingController(
-    text: widget.station.datum.year,
-  );
+  late HeroAdventureDateValue _datum = widget.station.datum;
   late final TextEditingController _notiz = TextEditingController(
     text: widget.station.notiz,
   );
-  late String _monat = normalizeAventurianMonth(widget.station.datum.month);
   late String _abenteuerId = widget.station.adventureId;
 
   @override
   void dispose() {
     _ort.dispose();
-    _tag.dispose();
-    _jahr.dispose();
     _notiz.dispose();
     super.dispose();
   }
@@ -93,9 +83,7 @@ class _KartoReiseStationDialogState extends State<KartoReiseStationDialog> {
   bool get _leer =>
       _ort.text.trim().isEmpty &&
       _notiz.text.trim().isEmpty &&
-      _tag.text.trim().isEmpty &&
-      _jahr.text.trim().isEmpty &&
-      _monat.isEmpty;
+      !_datum.hasContent;
 
   @override
   Widget build(BuildContext context) {
@@ -123,51 +111,10 @@ class _KartoReiseStationDialogState extends State<KartoReiseStationDialog> {
                 onChanged: (_) => setState(() {}),
               ),
               const SizedBox(height: Abstand.weit),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(
-                    width: 64,
-                    child: TextField(
-                      key: const ValueKey<String>('karto-reise-tag'),
-                      controller: _tag,
-                      keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(labelText: 'Tag'),
-                      onChanged: (_) => setState(() {}),
-                    ),
-                  ),
-                  const SizedBox(width: Abstand.normal),
-                  Expanded(
-                    child: DropdownButtonFormField<String>(
-                      key: const ValueKey<String>('karto-reise-monat'),
-                      initialValue: _monat,
-                      isExpanded: true,
-                      decoration: const InputDecoration(labelText: 'Monat'),
-                      items: [
-                        const DropdownMenuItem(value: '', child: Text('—')),
-                        for (final monat in aventurianMonths)
-                          DropdownMenuItem(
-                            value: monat.value,
-                            child: Text(monat.label),
-                          ),
-                      ],
-                      onChanged: (wert) => setState(() => _monat = wert ?? ''),
-                    ),
-                  ),
-                  const SizedBox(width: Abstand.normal),
-                  SizedBox(
-                    width: 96,
-                    child: TextField(
-                      key: const ValueKey<String>('karto-reise-jahr'),
-                      controller: _jahr,
-                      decoration: const InputDecoration(
-                        labelText: 'Jahr',
-                        suffixText: 'BF',
-                      ),
-                      onChanged: (_) => setState(() {}),
-                    ),
-                  ),
-                ],
+              KartoDatumFelder(
+                kennung: 'karto-reise',
+                initial: widget.station.datum,
+                onChanged: (datum) => setState(() => _datum = datum),
               ),
               const SizedBox(height: Abstand.weit),
               DropdownButtonFormField<String>(
@@ -231,12 +178,7 @@ class _KartoReiseStationDialogState extends State<KartoReiseStationDialog> {
               : () => Navigator.of(context).pop(
                   KartoReiseStationEingabe(
                     ort: _ort.text.trim(),
-                    // Per `copyWith`, damit unbekannte Felder erhalten bleiben.
-                    datum: widget.station.datum.copyWith(
-                      day: _tag.text.trim(),
-                      month: _monat,
-                      year: _jahr.text.trim(),
-                    ),
+                    datum: _datum,
                     notiz: _notiz.text.trim(),
                     adventureId: _abenteuerId,
                   ),

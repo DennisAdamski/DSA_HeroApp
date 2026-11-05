@@ -6,6 +6,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/aventurian_age_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/aventurian_holiday_data.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/aventurian_holiday_rules.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_datum_felder.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_standort.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
@@ -21,7 +22,7 @@ class KartoZweiFelder {
     this.erstes,
     this.zweites, {
     this.ort = '',
-    this.datum = '',
+    this.datum = const HeroAdventureDateValue(),
     this.loeschen = false,
   });
 
@@ -31,8 +32,8 @@ class KartoZweiFelder {
   /// Ort des Eintrags, ohne Randleerzeichen; leer, wenn keiner angegeben ist.
   final String ort;
 
-  /// Aventurisches Datum als Text, ohne Randleerzeichen; leer ohne Angabe.
-  final String datum;
+  /// Aventurisches Datum; leer ohne Angabe.
+  final HeroAdventureDateValue datum;
   final bool loeschen;
 }
 
@@ -50,7 +51,7 @@ class KartoZweiFelderDialog extends StatefulWidget {
     this.erstes,
     this.zweites,
     this.ort = '',
-    this.datum = '',
+    this.datum = const HeroAdventureDateValue(),
   }) : titelNeu = 'Neue Notiz',
        titelBearbeiten = 'Notiz bearbeiten',
        etikettErstes = 'Titel',
@@ -61,7 +62,7 @@ class KartoZweiFelderDialog extends StatefulWidget {
     this.erstes,
     this.zweites,
     this.ort = '',
-    this.datum = '',
+    this.datum = const HeroAdventureDateValue(),
   }) : titelNeu = 'Neue Person',
        titelBearbeiten = 'Person bearbeiten',
        etikettErstes = 'Name',
@@ -70,7 +71,7 @@ class KartoZweiFelderDialog extends StatefulWidget {
   final String? erstes;
   final String? zweites;
   final String ort;
-  final String datum;
+  final HeroAdventureDateValue datum;
   final String titelNeu;
   final String titelBearbeiten;
   final String etikettErstes;
@@ -92,16 +93,13 @@ class _KartoZweiFelderDialogState extends State<KartoZweiFelderDialog> {
   late final TextEditingController _ort = TextEditingController(
     text: widget.ort,
   );
-  late final TextEditingController _datum = TextEditingController(
-    text: widget.datum,
-  );
+  late HeroAdventureDateValue _datum = widget.datum;
 
   @override
   void dispose() {
     _erstes.dispose();
     _zweites.dispose();
     _ort.dispose();
-    _datum.dispose();
     super.dispose();
   }
 
@@ -142,13 +140,10 @@ class _KartoZweiFelderDialogState extends State<KartoZweiFelderDialog> {
                 decoration: const InputDecoration(labelText: 'Ort'),
               ),
               const SizedBox(height: Abstand.weit),
-              TextField(
-                key: const ValueKey<String>('karto-abenteuer-feld-datum'),
-                controller: _datum,
-                decoration: const InputDecoration(
-                  labelText: 'Datum',
-                  hintText: 'z. B. 17. Boron 1020 BF',
-                ),
+              KartoDatumFelder(
+                kennung: 'karto-abenteuer-feld-datum',
+                initial: widget.datum,
+                onChanged: (datum) => _datum = datum,
               ),
             ],
           ),
@@ -174,7 +169,7 @@ class _KartoZweiFelderDialogState extends State<KartoZweiFelderDialog> {
                     _erstes.text.trim(),
                     _zweites.text.trim(),
                     ort: _ort.text.trim(),
-                    datum: _datum.text.trim(),
+                    datum: _datum,
                   ),
                 ),
           child: const Text('Speichern'),

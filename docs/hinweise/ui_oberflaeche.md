@@ -458,12 +458,14 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   Blatt schreibgeschützt, weil jede Heldenänderung den Inhalts-Hash der Runde
   bräche.
   **Ort und Datum an Notizen und Personen (SPIEL-06):** `HeroNoteEntry` und
-  `HeroAdventurePersonEntry` tragen die Freitextfelder `ort` und `datum`
-  (aventurisches Datum als Anzeigetext, kein Datumswert; so bleibt auch „ca.
-  Mitte Boron“ möglich). Beide stehen nur bei Belegung im JSON, die Bestandshashes
-  bleiben. Neue Einträge (Dialog **und** Schnell-Erfassung) bekommen sie
-  vorbelegt: Ort aus `HeroState.standort` (`bereinigeStandort`), Datum aus
-  `abenteuerDatum` des Abenteuers; fehlt eines, bleibt das Feld leer, nichts
+  `HeroAdventurePersonEntry` tragen `ort` (Freitext) und `datum` als
+  `HeroAdventureDateValue` wie Reisestationen und Abenteuer (Tag, Monat, Jahr;
+  Teilangaben erlaubt; eingegeben über `KartoDatumFelder`). Ein Datum, das eine
+  Zwischenfassung als Text speicherte, zerlegt `HeroAdventureDateValue.lese`;
+  Unlesbares bleibt vollständig im Jahr. Beide stehen nur bei Belegung im JSON
+  (`istBelegt`), die Bestandshashes bleiben. Neue Einträge (Dialog **und**
+  Schnell-Erfassung) bekommen sie vorbelegt: Ort aus `HeroState.standort`
+  (`bereinigeStandort`), Datum aus `abenteuerDatumWert` des Abenteuers; fehlt eines, bleibt das Feld leer, nichts
   wird erfunden. Gelesen wird beim Anlegen in `_vorbelegung()` des Mixins
   `KartoAbenteuerSchreiben`. Beim Bearbeiten stehen die gespeicherten Werte im
   Dialog, ein Bestandseintrag wird nicht von selbst befüllt; unveränderte Felder

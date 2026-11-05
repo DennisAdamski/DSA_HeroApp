@@ -29,13 +29,8 @@ int? reiseStationTagesnummer(HeroReiseStation station) {
 }
 
 /// Formatiertes Datum der Station, oder `null` ohne Datum.
-String? reiseStationDatumText(HeroReiseStation station) {
-  final datum = station.datum;
-  if (!datum.hasContent) return null;
-  return formatAventurianDate(
-    AventurianDate.fromParts(datum.day, datum.month, datum.year),
-  );
-}
+String? reiseStationDatumText(HeroReiseStation station) =>
+    station.datum.hasContent ? station.datum.anzeigeText : null;
 
 /// Stationen in zeitlicher Reihenfolge.
 ///

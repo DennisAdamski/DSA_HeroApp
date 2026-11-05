@@ -111,12 +111,23 @@ mixin KartoAbenteuerSchreiben<T extends ConsumerStatefulWidget>
   ///
   /// Gelesen wird beim Aufruf, nicht beim Bauen, damit der Stand von jetzt
   /// gilt. Fehlt eines von beiden, bleibt das Feld leer; nichts wird erfunden.
-  ({String ort, String datum}) _vorbelegung() {
+  ({String ort, HeroAdventureDateValue datum}) _vorbelegung() {
     final werte = ref.read(heroComputedProvider(heroId)).asData?.value;
-    if (werte == null) return (ort: '', datum: '');
-    String datum = '';
+    if (werte == null) {
+      return (ort: '', datum: const HeroAdventureDateValue());
+    }
+    var datum = const HeroAdventureDateValue();
     for (final abenteuer in werte.hero.adventures) {
-      if (abenteuer.id == abenteuerId) datum = abenteuerDatum(abenteuer) ?? '';
+      // Nur Tag, Monat und Jahr: Felder einer neueren Version gehören zum
+      // Abenteuerdatum, nicht zur neuen Notiz.
+      if (abenteuer.id == abenteuerId) {
+        final quelle = abenteuerDatumWert(abenteuer);
+        datum = HeroAdventureDateValue(
+          day: quelle.day,
+          month: quelle.month,
+          year: quelle.year,
+        );
+      }
     }
     return (ort: bereinigeStandort(werte.state.standort), datum: datum);
   }
@@ -154,7 +165,7 @@ mixin KartoAbenteuerSchreiben<T extends ConsumerStatefulWidget>
     String titel,
     String beschreibung, {
     String ort = '',
-    String datum = '',
+    HeroAdventureDateValue datum = const HeroAdventureDateValue(),
   }) {
     final notiz = HeroNoteEntry(
       title: titel,
@@ -183,7 +194,7 @@ mixin KartoAbenteuerSchreiben<T extends ConsumerStatefulWidget>
         ergebnis.erstes == notiz.title &&
         ergebnis.zweites == notiz.description &&
         ergebnis.ort == notiz.ort &&
-        ergebnis.datum == notiz.datum) {
+        ergebnis.datum.gleicheAngabe(notiz.datum)) {
       return;
     }
     if (ergebnis.loeschen && !await _bestaetigeLoeschen('Notiz')) return;
@@ -248,7 +259,7 @@ mixin KartoAbenteuerSchreiben<T extends ConsumerStatefulWidget>
         ergebnis.erstes == person.name &&
         ergebnis.zweites == person.description &&
         ergebnis.ort == person.ort &&
-        ergebnis.datum == person.datum) {
+        ergebnis.datum.gleicheAngabe(person.datum)) {
       return;
     }
     if (ergebnis.loeschen && !await _bestaetigeLoeschen('Person')) return;

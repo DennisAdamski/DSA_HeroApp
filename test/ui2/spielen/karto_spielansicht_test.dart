@@ -1769,7 +1769,7 @@ void main() {
           .notes
           .last;
       expect(notiz.ort, 'Gareth');
-      expect(notiz.datum, '12. Phex 1043 BF');
+      expect(notiz.datum.anzeigeText, '12. Phex 1043 BF');
       expect(find.text('Gareth · 12. Phex 1043 BF'), findsOneWidget);
     });
 
@@ -1795,7 +1795,7 @@ void main() {
           .notes
           .last;
       expect(notiz.ort, isEmpty);
-      expect(notiz.datum, isEmpty);
+      expect(notiz.datum.hasContent, isFalse);
       // Ohne beides keine leere Kontextzeile und kein Eintrag im JSON.
       expect(notiz.toJson().containsKey('ort'), isFalse);
       expect(notiz.toJson().containsKey('datum'), isFalse);
@@ -1811,7 +1811,11 @@ void main() {
             title: 'Nebelpass',
             description: 'Zoll am Pass.',
             ort: 'Punin',
-            datum: '3. Rahja 1040 BF',
+            datum: HeroAdventureDateValue(
+              day: '3',
+              month: 'rahja',
+              year: '1040',
+            ),
           ),
         ],
         people: [

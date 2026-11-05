@@ -277,7 +277,7 @@ class _KartoAbenteuerblattState extends ConsumerState<KartoAbenteuerblatt>
                         name: person.name,
                         beschreibung: person.description,
                         ort: person.ort,
-                        datum: person.datum,
+                        datum: person.datum.anzeigeText,
                         onTap: bearbeitbar
                             ? () => personBearbeiten(person)
                             : null,
@@ -307,7 +307,7 @@ class _KartoAbenteuerblattState extends ConsumerState<KartoAbenteuerblatt>
                         titel: notizen[i].title,
                         text: notizen[i].description,
                         ort: notizen[i].ort,
-                        datum: notizen[i].datum,
+                        datum: notizen[i].datum.anzeigeText,
                         onTap: bearbeitbar
                             ? () => notizBearbeiten(i, notizen[i])
                             : null,

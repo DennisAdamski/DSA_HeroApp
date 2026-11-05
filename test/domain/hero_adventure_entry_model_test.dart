@@ -87,23 +87,57 @@ void main() {
       const notiz = HeroNoteEntry(
         title: 'Wirt',
         ort: 'Punin',
-        datum: '17. Boron 1020 BF',
+        datum: HeroAdventureDateValue(day: '17', month: 'boron', year: '1020'),
       );
       const person = HeroAdventurePersonEntry(
         id: 'p1',
         name: 'Alrik',
         ort: 'Gareth',
-        datum: '3. Rahja 1040 BF',
+        datum: HeroAdventureDateValue(day: '3', month: 'rahja', year: '1040'),
       );
 
       final notizNeu = HeroNoteEntry.fromJson(notiz.toJson());
       final personNeu = HeroAdventurePersonEntry.fromJson(person.toJson());
 
       expect(notizNeu.ort, 'Punin');
-      expect(notizNeu.datum, '17. Boron 1020 BF');
+      expect(notizNeu.datum.anzeigeText, '17. Boron 1020 BF');
+      expect(notizNeu.toJson()['datum'], <String, dynamic>{
+        'day': '17',
+        'month': 'boron',
+        'year': '1020',
+      });
       expect(personNeu.ort, 'Gareth');
-      expect(personNeu.datum, '3. Rahja 1040 BF');
+      expect(personNeu.datum.anzeigeText, '3. Rahja 1040 BF');
     });
+
+    test(
+      'ein als Freitext gespeichertes Datum wird zerlegt, nie verworfen',
+      () {
+        // Eine Zwischenfassung speicherte das Datum von Notiz und Person als
+        // Text; er wird beim Lesen strukturiert.
+        final notiz = HeroNoteEntry.fromJson(const <String, dynamic>{
+          'title': 'Wirt',
+          'datum': '17. Boron 1020 BF',
+        });
+        expect(notiz.datum.day, '17');
+        expect(notiz.datum.month, 'boron');
+        expect(notiz.datum.year, '1020 BF');
+        expect(notiz.datum.anzeigeText, '17. Boron 1020 BF');
+
+        final ohneTag = HeroAdventurePersonEntry.fromJson(
+          const <String, dynamic>{'id': 'p', 'datum': 'Namenlose Tage'},
+        );
+        expect(ohneTag.datum.month, 'namenlose_tage');
+        expect(ohneTag.datum.day, isEmpty);
+
+        // Unlesbarer Text bleibt vollständig erhalten.
+        final unklar = HeroNoteEntry.fromJson(const <String, dynamic>{
+          'title': 'T',
+          'datum': 'kurz vor dem Fest',
+        });
+        expect(unklar.datum.anzeigeText, 'kurz vor dem Fest');
+      },
+    );
 
     test('Ort und Datum erscheinen nur bei Belegung im JSON (Hash-Schutz)', () {
       // Bestandseinträge dürfen sich im JSON nicht ändern, sonst ändert sich
@@ -124,13 +158,15 @@ void main() {
     });
 
     test('copyWith erhält Ort und Datum und setzt sie gezielt', () {
-      const notiz = HeroNoteEntry(title: 'T', ort: 'Punin', datum: 'heute');
+      const heute = HeroAdventureDateValue(day: '1', month: 'praios');
+      const notiz = HeroNoteEntry(title: 'T', ort: 'Punin', datum: heute);
       expect(notiz.copyWith(title: 'U').ort, 'Punin');
-      expect(notiz.copyWith(title: 'U').datum, 'heute');
+      expect(notiz.copyWith(title: 'U').datum, same(heute));
       expect(notiz.copyWith(ort: '').ort, isEmpty);
       const person = HeroAdventurePersonEntry(id: 'p', ort: 'Gareth');
       expect(person.copyWith(name: 'N').ort, 'Gareth');
-      expect(person.copyWith(datum: 'morgen').datum, 'morgen');
+      const morgen = HeroAdventureDateValue(day: '2', month: 'praios');
+      expect(person.copyWith(datum: morgen).datum, same(morgen));
     });
 
     test('loads legacy payloads with current status and empty new fields', () {

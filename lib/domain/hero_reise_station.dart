@@ -114,8 +114,7 @@ class HeroReiseStation {
     return mitUnbekanntenFeldern(<String, dynamic>{
       'id': id,
       if (ort.isNotEmpty) 'ort': ort,
-      if (datum.hasContent || datum.unbekannteFelder.isNotEmpty)
-        'datum': datum.toJson(),
+      if (datum.istBelegt) 'datum': datum.toJson(),
       if (notiz.isNotEmpty) 'notiz': notiz,
       if (adventureId.isNotEmpty) 'adventureId': adventureId,
       if (ortId.isNotEmpty) 'ortId': ortId,
@@ -129,14 +128,11 @@ class HeroReiseStation {
   /// Laedt eine Station tolerant gegenueber fehlenden Feldern.
   static HeroReiseStation fromJson(Map<String, dynamic> json) {
     String getString(String key) => json[key]?.toString() ?? '';
-    final datumRoh = json['datum'];
 
     return HeroReiseStation(
       id: getString('id'),
       ort: getString('ort'),
-      datum: datumRoh is Map
-          ? HeroAdventureDateValue.fromJson(Map<String, dynamic>.from(datumRoh))
-          : const HeroAdventureDateValue(),
+      datum: HeroAdventureDateValue.lese(json['datum']),
       notiz: getString('notiz'),
       adventureId: getString('adventureId'),
       ortId: getString('ortId'),

@@ -1,3 +1,4 @@
+import 'package:dsa_heldenverwaltung/domain/hero_adventure_date_value.dart';
 import 'package:dsa_heldenverwaltung/domain/unbekannte_json_felder.dart';
 
 /// Einzelne freie Notiz eines Helden mit Titel und Langbeschreibung.
@@ -7,7 +8,7 @@ class HeroNoteEntry {
     this.title = '',
     this.description = '',
     this.ort = '',
-    this.datum = '',
+    this.datum = const HeroAdventureDateValue(),
     this.lastModified,
     this.unbekannteFelder = const <String, Object?>{},
   });
@@ -24,10 +25,10 @@ class HeroNoteEntry {
   /// aendert.
   final String ort;
 
-  /// Aventurisches Datum der Notiz als Anzeigetext (etwa `17. Boron 1020 BF`);
-  /// leer bei Bestandsnotizen. Bewusst Freitext: so bleibt auch eine ungefaehre
-  /// Angabe moeglich. Nur belegt im JSON.
-  final String datum;
+  /// Aventurisches Datum der Notiz; leer bei Bestandsnotizen. Tag, Monat und
+  /// Jahr bleiben Freitext, Teilangaben sind erlaubt. Nur belegt im JSON
+  /// ([HeroAdventureDateValue.istBelegt]).
+  final HeroAdventureDateValue datum;
 
   /// Zeitpunkt der letzten Bearbeitung (UTC); `null` bei Bestandsnotizen.
   ///
@@ -53,7 +54,7 @@ class HeroNoteEntry {
     String? title,
     String? description,
     String? ort,
-    String? datum,
+    HeroAdventureDateValue? datum,
     Object? lastModified = _copySentinel,
     Map<String, Object?>? unbekannteFelder,
   }) {
@@ -75,7 +76,7 @@ class HeroNoteEntry {
       'title': title,
       'description': description,
       if (ort.isNotEmpty) 'ort': ort,
-      if (datum.isNotEmpty) 'datum': datum,
+      if (datum.istBelegt) 'datum': datum.toJson(),
       if (lastModified != null)
         'lastModified': lastModified!.toUtc().toIso8601String(),
     }, unbekannteFelder);
@@ -89,7 +90,7 @@ class HeroNoteEntry {
       title: getString('title'),
       description: getString('description'),
       ort: getString('ort'),
-      datum: getString('datum'),
+      datum: HeroAdventureDateValue.lese(json['datum']),
       lastModified: DateTime.tryParse(json['lastModified']?.toString() ?? ''),
       unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
     );

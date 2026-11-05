@@ -415,6 +415,23 @@ void main() {
     String feldText(WidgetTester tester, String name) =>
         tester.widget<TextField>(key(name)).controller!.text;
 
+    // Tag, Monat (Schlüssel) und Jahr des Datumsfelds im Dialog.
+    String datumFelder(WidgetTester tester) {
+      final monat = tester
+          .widget<DropdownButton<String>>(
+            find.descendant(
+              of: key('karto-abenteuer-feld-datum-monat'),
+              matching: find.byType(DropdownButton<String>),
+            ),
+          )
+          .value;
+      return [
+        feldText(tester, 'karto-abenteuer-feld-datum-tag'),
+        monat ?? '',
+        feldText(tester, 'karto-abenteuer-feld-datum-jahr'),
+      ].join('|');
+    }
+
     testWidgets('eine neue Notiz bekommt Standort und Datum vorbelegt', (
       tester,
     ) async {
@@ -422,17 +439,14 @@ void main() {
       await tester.tap(key('karto-abenteuer-notiz-neu'));
       await tester.pumpAndSettle();
       expect(feldText(tester, 'karto-abenteuer-feld-ort'), 'Gareth');
-      expect(
-        feldText(tester, 'karto-abenteuer-feld-datum'),
-        '12. Phex 1043 BF',
-      );
+      expect(datumFelder(tester), '12|phex|1043');
 
       await tester.enterText(key('karto-abenteuer-feld-1'), 'Karte');
       await speichern(tester);
 
       final notiz = (await gespeichert()).notes.last;
       expect(notiz.ort, 'Gareth');
-      expect(notiz.datum, '12. Phex 1043 BF');
+      expect(notiz.datum.anzeigeText, '12. Phex 1043 BF');
       expect(find.text('Gareth · 12. Phex 1043 BF'), findsOneWidget);
     });
 
@@ -444,12 +458,13 @@ void main() {
       await tester.pumpAndSettle();
       await tester.enterText(key('karto-abenteuer-feld-1'), 'Karte');
       await tester.enterText(key('karto-abenteuer-feld-ort'), 'Havena');
-      await tester.enterText(key('karto-abenteuer-feld-datum'), '');
+      await tester.enterText(key('karto-abenteuer-feld-datum-tag'), '');
+      await tester.enterText(key('karto-abenteuer-feld-datum-jahr'), '1044');
       await speichern(tester);
 
       final notiz = (await gespeichert()).notes.last;
       expect(notiz.ort, 'Havena');
-      expect(notiz.datum, isEmpty);
+      expect(notiz.datum.anzeigeText, 'Phex 1044 BF');
     });
 
     testWidgets('ohne Standort und Datum bleiben beide Felder leer', (
@@ -459,7 +474,7 @@ void main() {
       await tester.tap(key('karto-abenteuer-notiz-neu'));
       await tester.pumpAndSettle();
       expect(feldText(tester, 'karto-abenteuer-feld-ort'), isEmpty);
-      expect(feldText(tester, 'karto-abenteuer-feld-datum'), isEmpty);
+      expect(datumFelder(tester), '||');
     });
 
     testWidgets('eine Person bekommt Ort und Datum ebenfalls vorbelegt', (
@@ -473,7 +488,7 @@ void main() {
 
       final person = (await gespeichert()).people.last;
       expect(person.ort, 'Gareth');
-      expect(person.datum, '12. Phex 1043 BF');
+      expect(person.datum.anzeigeText, '12. Phex 1043 BF');
     });
 
     testWidgets('Bearbeiten zeigt gespeicherte Werte, nicht die Vorbelegung', (
@@ -489,7 +504,11 @@ void main() {
                   title: 'Wirt',
                   description: 'Weiß mehr.',
                   ort: 'Punin',
-                  datum: '3. Rahja 1040 BF',
+                  datum: HeroAdventureDateValue(
+                    day: '3',
+                    month: 'rahja',
+                    year: '1040',
+                  ),
                 ),
               ],
             ),
@@ -500,10 +519,7 @@ void main() {
       await tester.tap(find.text('Weiß mehr.'));
       await tester.pumpAndSettle();
       expect(feldText(tester, 'karto-abenteuer-feld-ort'), 'Punin');
-      expect(
-        feldText(tester, 'karto-abenteuer-feld-datum'),
-        '3. Rahja 1040 BF',
-      );
+      expect(datumFelder(tester), '3|rahja|1040');
     });
 
     testWidgets(
@@ -542,14 +558,18 @@ void main() {
       await speichern(tester);
       await tester.tap(find.text('Alrik'));
       await tester.pumpAndSettle();
-      await tester.enterText(key('karto-abenteuer-feld-datum'), '1. Praios');
+      await tester.enterText(key('karto-abenteuer-feld-datum-tag'), '1');
+      await tester.tap(key('karto-abenteuer-feld-datum-monat'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Praios').last);
+      await tester.pumpAndSettle();
       await speichern(tester);
 
       final abenteuer = await gespeichert();
       expect(abenteuer.notes.single.ort, 'Punin');
       expect(abenteuer.notes.single.lastModified, isNotNull);
       expect(abenteuer.notes.single.unbekannteFelder, feld);
-      expect(abenteuer.people.single.datum, '1. Praios');
+      expect(abenteuer.people.single.datum.anzeigeText, '1. Praios');
       expect(abenteuer.people.single.unbekannteFelder, feld);
     });
 
@@ -578,7 +598,7 @@ void main() {
           await tester.pumpAndSettle();
           await tester.tap(key('karto-abenteuer-notiz-neu'));
           await tester.pumpAndSettle();
-          expect(key('karto-abenteuer-feld-datum'), findsOneWidget);
+          expect(key('karto-abenteuer-feld-datum-monat'), findsOneWidget);
           expect(tester.takeException(), isNull);
         },
       );
