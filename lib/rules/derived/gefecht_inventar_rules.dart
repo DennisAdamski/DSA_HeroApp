@@ -1,3 +1,4 @@
+import 'package:dsa_heldenverwaltung/rules/derived/excel_rounding.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
@@ -131,5 +132,5 @@ int gefechtsBenutzungsdauer(GefechtsAufbewahrung a, {bool ffGelungen = false}) {
   final halbierbar =
       a == GefechtsAufbewahrung.guerteltasche ||
       a == GefechtsAufbewahrung.rucksack;
-  return ffGelungen && halbierbar ? (basis + 1) ~/ 2 : basis;
+  return ffGelungen && halbierbar ? halbiertAufgerundet(basis) : basis;
 }

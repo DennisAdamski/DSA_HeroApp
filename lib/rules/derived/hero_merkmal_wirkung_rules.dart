@@ -53,6 +53,20 @@ class LernspaltenWirkung {
   final String quelle;
 }
 
+/// Talent, fuer das der Held Magisches Meisterhandwerk hat.
+///
+/// Ausgewertet in `meisterhandwerk_rules.dart`; hier nur gesammelt.
+class MeisterhandwerkWirkung {
+  /// Erstellt eine gesammelte Meisterhandwerk-Wirkung.
+  const MeisterhandwerkWirkung({required this.auswahl, required this.quelle});
+
+  /// Gewaehltes Talent (Name aus der Auswahl).
+  final String auswahl;
+
+  /// Kurztext des Merkmals, z. B. `Meisterhandwerk Schmieden`.
+  final String quelle;
+}
+
 /// Summe der deklarativen Wirkungen katalogisierter Merkmale.
 class MerkmalWirkungen {
   /// Erstellt ein Wirkungsergebnis; ohne Angaben wirkt nichts.
@@ -69,6 +83,7 @@ class MerkmalWirkungen {
     this.schlechteRegeneration = false,
     this.astralerBlock = false,
     this.lernspalten = const <LernspaltenWirkung>[],
+    this.meisterhandwerk = const <MeisterhandwerkWirkung>[],
   });
 
   /// Eigenschaftsmodifikatoren (laufend).
@@ -107,6 +122,9 @@ class MerkmalWirkungen {
   /// Begabungen und Unfaehigkeiten in Eintragsreihenfolge.
   final List<LernspaltenWirkung> lernspalten;
 
+  /// Meisterhandwerk-Talente in Eintragsreihenfolge.
+  final List<MeisterhandwerkWirkung> meisterhandwerk;
+
   /// Fasst die Wirkungen von Vor- und Nachteilen zusammen.
   MerkmalWirkungen kombiniert(MerkmalWirkungen andere) {
     return MerkmalWirkungen(
@@ -126,6 +144,9 @@ class MerkmalWirkungen {
         ...lernspalten,
         ...andere.lernspalten,
       ]),
+      meisterhandwerk: List<MeisterhandwerkWirkung>.unmodifiable(
+        <MeisterhandwerkWirkung>[...meisterhandwerk, ...andere.meisterhandwerk],
+      ),
     );
   }
 }
@@ -265,6 +286,8 @@ class _Rechner {
   var _schlechteRegeneration = false;
   var _astralerBlock = false;
   final List<LernspaltenWirkung> _lernspalten = <LernspaltenWirkung>[];
+  final List<MeisterhandwerkWirkung> _meisterhandwerk =
+      <MeisterhandwerkWirkung>[];
 
   // Wundschwellenboni zaehlen je Katalogeintrag einmal, wie die fruehere
   // Namensregel (`Eisern` zweimal eingetragen bleibt +2).
@@ -349,6 +372,21 @@ class _Rechner {
             ),
           ),
         );
+      case HeroTraitEffectArt.meisterhandwerk:
+        final auswahl = eintrag.auswahl.trim();
+        if (auswahl.isEmpty) {
+          return;
+        }
+        _meisterhandwerk.add(
+          MeisterhandwerkWirkung(
+            auswahl: auswahl,
+            quelle: merkmalTextFuer(
+              def,
+              auswahl: eintrag.auswahl,
+              wert: eintrag.wert,
+            ),
+          ),
+        );
       case HeroTraitEffectArt.unbekannt:
         return;
     }
@@ -368,6 +406,9 @@ class _Rechner {
       schlechteRegeneration: _schlechteRegeneration,
       astralerBlock: _astralerBlock,
       lernspalten: List<LernspaltenWirkung>.unmodifiable(_lernspalten),
+      meisterhandwerk: List<MeisterhandwerkWirkung>.unmodifiable(
+        _meisterhandwerk,
+      ),
     );
   }
 }

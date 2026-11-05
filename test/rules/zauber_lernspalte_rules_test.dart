@@ -159,11 +159,36 @@ void main() {
       expect(s.spalte, 'D');
     });
 
-    test('Zauber mit zwei Elementen löst keinen Nachteil aus', () {
+    test('Zauber mit zwei Elementen: das Gegenelement zählt wörtlich', () {
+      // Nebelleib trägt Luft und Wasser; Wasser ist das Gegenelement von Feuer
+      // (WdZ S. 381: „alle Zauber, die das Merkmal des Gegenelementes tragen“).
       final s = spalteFuer(
         'spell_nebelleib',
         hero: const <String, HeroSpellEntry>{},
         merkmalskenntnisse: const <String>['Elementar (Feuer)'],
+      );
+      expect(
+        s.herleitung.schritte
+            .singleWhere((x) => x.bezeichnung == kSpalteGegenelementSchritt)
+            .betrag,
+        1,
+      );
+      expect(s.gegenelementHinweis, contains('bevorzugt Feuer'));
+
+      final harmonisiert = spalteFuer(
+        'spell_nebelleib',
+        hero: const <String, HeroSpellEntry>{},
+        merkmalskenntnisse: const <String>['Elementar (Feuer)'],
+        harmonisiert: true,
+      );
+      expect(harmonisiert.gegenelementHinweis, isNull);
+    });
+
+    test('ohne Gegenelement unter den Merkmalen bleibt es bei 0', () {
+      final s = spalteFuer(
+        'spell_nebelleib',
+        hero: const <String, HeroSpellEntry>{},
+        merkmalskenntnisse: const <String>['Elementar (Humus)'],
       );
       expect(
         s.herleitung.schritte

@@ -11,6 +11,15 @@ technische UI-Aspekte getrennt getestet werden.
 - UI-Tests unter `test/ui/` pruefen nur technische Aspekte:
   Rendering, Interaktion, Navigation, Persistenz-Flows.
 - Mischtests (Regel + Technik in einer Testklasse) sind nicht erlaubt.
+- Regeltests werden in `tool/rule_test_evidence.json` als offizielle Regel,
+  Hausregel oder Produktvertrag inventarisiert. Buchseiten sind die kanonische
+  Referenz; DSA-MCP-Chunks dokumentieren den konkret geprueften Kontext.
+- Umfangreiche Tests duerfen ihre fachlichen Gruppen in `*_cases.dart`-Parts
+  auslagern. Diese Parts gehoeren zur Quelleninventur; die `*_test.dart`-Datei
+  behaelt gemeinsame, unmittelbar lesbare Fixtures und registriert die Gruppen.
+- Tests schreiben ausschliesslich in pro Test erzeugte temporaere Verzeichnisse.
+  Benutzernahe Cache- und Anwendungsdaten duerfen weder gelesen noch bereinigt
+  werden.
 
 ## Ordnerstruktur
 
@@ -272,8 +281,11 @@ veröffentlichen das geprüfte Artefakt. Android-Builds und automatische
 Branch-Previews entfallen. Automatische Main-Test-Merges rufen dieselbe CI
 mit dem exakten Test-Commit auf. Siehe [Web-Veröffentlichung](web_deployment.md).
 
-Die CI (`.github/workflows/flutter-tests.yml`) führt alle Tests auf
-`ubuntu-latest` aus, die Hive-Tests also mit echtem Dateisystem. Automatisch
+Die CI (`.github/workflows/flutter-tests.yml`) führt alle Tests auf vier nativen
+Flutter-Shards unter `ubuntu-latest` aus; Analyse und Tests starten unabhaengig.
+Der abschliessende Job `Unit- & Widget-Tests` ist das stabile Gate fuer alle
+vier Shards. Jeder Shard erzeugt einen JSON-Report samt Laufzeit und den zehn
+langsamsten Dateien. Die Hive-Tests laufen dabei mit echtem Dateisystem. Automatisch
 **nicht** abgedeckt sind und bleiben manuell zu prüfen:
 
 - Web: Hive auf IndexedDB, Avatar-Cache, Datei-Upload im Regel-Nachschlag;
@@ -345,7 +357,7 @@ Die CI (`.github/workflows/flutter-tests.yml`) führt alle Tests auf
 | `test/workspace/workspace_tab_edit_controller_test.dart` | workspace | Tab-Edit-Controller |
 | `test/ui2/shell/app_root_switch_test.dart` | ui2 | Weiche zwischen bestehender und neuer Oberfläche |
 | `test/ui2/shell/karto_workspace_journey_test.dart` | ui2 | Durchgehender Ablauf mit echten Schreibvorgängen |
-| `test/ui2/shell/karto_workspace_visual_test.dart` | ui2 | Sieben Breiten × zwei Helligkeiten × Textskalierung 1/2; erzeugt mit `--dart-define=R3_SCREENSHOT_DIR=…` echte PNGs |
+| `test/ui2/shell/karto_workspace_visual_test.dart` | ui2 | Dokumentierte Paarabdeckung aller sieben Layoutbreiten, beider Helligkeiten und Textskalierung 1/2; erzeugt mit `--dart-define=R3_SCREENSHOT_DIR=…` echte PNGs |
 
 ## Fallstricke bei Oberflächentests
 
@@ -391,4 +403,9 @@ flutter test test/rules
 flutter test test/ui
 flutter test test/ui2
 flutter test
+flutter test --total-shards 4 --shard-index 0
+flutter test --total-shards 4 --shard-index 1
+flutter test --total-shards 4 --shard-index 2
+flutter test --total-shards 4 --shard-index 3
+python tool/check_rule_test_evidence.py
 ```

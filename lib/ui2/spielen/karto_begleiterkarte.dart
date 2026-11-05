@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 
 import 'package:dsa_heldenverwaltung/domain/begleiter_zustand.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_companion.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/begleiter_kampfprofil_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/begleiter_zustand_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/reittier_ausbildung_anzeige_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ressourcen_aenderung_rules.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abschnitt.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_kachelgroesse.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
 import 'package:dsa_heldenverwaltung/ui2/widgets/karto_flaeche.dart';
@@ -48,27 +51,62 @@ class KartoBegleiterAbschnitt extends StatelessWidget {
   /// Öffnet die Vertrautenaktionen eines gebundenen Vertrauten.
   final void Function(HeroCompanion vertrauter) onVertrautenAktionen;
 
+  /// Schmalste Karte, ab der mehrere Begleiter in einer weiten Kachel
+  /// nebeneinander stehen.
+  static const double kartenbreiteMin = 320;
+
   @override
   Widget build(BuildContext context) {
     if (begleiter.isEmpty) return const SizedBox.shrink();
+    final weit = KartoKachelSteuerung.istWeit(context);
+    Widget karte(int i) => _Karte(
+      begleiter: begleiter[i],
+      zustand: zustaende[begleiter[i].id] ?? const BegleiterZustand(),
+      onWert: onWert,
+      onVertrautenAktionen: onVertrautenAktionen,
+      mitKampf: weit,
+    );
     return KartoAbschnitt(
       titel: 'Begleiter',
       stufe: KartoFlaechenstufe.senke,
       symbol: Icons.pets_outlined,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          for (var i = 0; i < begleiter.length; i++) ...[
-            if (i > 0) const SizedBox(height: Abstand.normal),
-            _Karte(
-              begleiter: begleiter[i],
-              zustand: zustaende[begleiter[i].id] ?? const BegleiterZustand(),
-              onWert: onWert,
-              onVertrautenAktionen: onVertrautenAktionen,
+      child: weit
+          // Weit: mehrere Begleiter nebeneinander, dazu je Karte die
+          // Kampfwerte. Die Spalten sind ausgewogen (zwei Begleiter bei
+          // Platz für drei ergeben zwei Spalten, nicht 2+0).
+          ? LayoutBuilder(
+              builder: (context, constraints) {
+                const luecke = Abstand.normal;
+                final platz =
+                    ((constraints.maxWidth + luecke) /
+                            (kartenbreiteMin + luecke))
+                        .floor()
+                        .clamp(1, begleiter.length);
+                final spalten = kartoAusgewogeneSpalten(
+                  platz,
+                  begleiter.length,
+                );
+                final breite =
+                    (constraints.maxWidth - luecke * (spalten - 1)) / spalten;
+                return Wrap(
+                  spacing: luecke,
+                  runSpacing: luecke,
+                  children: [
+                    for (var i = 0; i < begleiter.length; i++)
+                      SizedBox(width: breite, child: karte(i)),
+                  ],
+                );
+              },
+            )
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                for (var i = 0; i < begleiter.length; i++) ...[
+                  if (i > 0) const SizedBox(height: Abstand.normal),
+                  karte(i),
+                ],
+              ],
             ),
-          ],
-        ],
-      ),
     );
   }
 }
@@ -79,12 +117,19 @@ class _Karte extends StatelessWidget {
     required this.zustand,
     required this.onWert,
     required this.onVertrautenAktionen,
+    required this.mitKampf,
   });
 
   final HeroCompanion begleiter;
   final BegleiterZustand zustand;
   final KartoBegleiterWert onWert;
   final void Function(HeroCompanion vertrauter) onVertrautenAktionen;
+
+  /// Ob die Kampfwerte der Karte mit angezeigt werden (weite Kachel).
+  final bool mitKampf;
+
+  // Kartenbreite, ab der Werte und Kampfwerte nebeneinander stehen.
+  static const double _zweispaltigAb = 540;
 
   static String _typ(BegleiterTyp typ) => switch (typ) {
     BegleiterTyp.vertrauter => 'Vertrauter',
@@ -106,6 +151,38 @@ class _Karte extends StatelessWidget {
     final vertrauterGebunden =
         begleiter.typ == BegleiterTyp.vertrauter &&
         begleiter.vertrautenBindung != null;
+    final zeilen = <Widget>[
+      for (final pool in pools)
+        _PoolZeile(
+          schluessel: 'karto-begleiter-${begleiter.id}-${pool.name}',
+          pool: pool,
+          aktuell: _aktuell(pool),
+          maximum: begleiterPoolMaximum(begleiter, pool),
+          onSchritt: (schritt) => onWert(
+            begleiter,
+            pool,
+            begleiterPoolSchritt(
+              pool,
+              begleiterPoolMaximum(begleiter, pool),
+              schritt,
+            ),
+          ),
+        ),
+      if (pools.isEmpty)
+        Text(
+          'Keine Maximalwerte eingetragen.',
+          style: texte.bodySmall?.copyWith(color: karto.schriftLeise),
+        ),
+      if (vertrauterGebunden)
+        Align(
+          alignment: Alignment.centerLeft,
+          child: TextButton(
+            key: ValueKey<String>('karto-begleiter-${begleiter.id}-aktionen'),
+            onPressed: () => onVertrautenAktionen(begleiter),
+            child: const Text('Vertrautenaktionen'),
+          ),
+        ),
+    ];
     return KartoFlaeche(
       key: ValueKey<String>('karto-begleiter-${begleiter.id}'),
       stufe: KartoFlaechenstufe.blatt,
@@ -129,37 +206,37 @@ class _Karte extends StatelessWidget {
               ),
             ],
           ),
-          for (final pool in pools)
-            _PoolZeile(
-              schluessel: 'karto-begleiter-${begleiter.id}-${pool.name}',
-              pool: pool,
-              aktuell: _aktuell(pool),
-              maximum: begleiterPoolMaximum(begleiter, pool),
-              onSchritt: (schritt) => onWert(
-                begleiter,
-                pool,
-                begleiterPoolSchritt(
-                  pool,
-                  begleiterPoolMaximum(begleiter, pool),
-                  schritt,
-                ),
-              ),
-            ),
-          if (pools.isEmpty)
-            Text(
-              'Keine Maximalwerte eingetragen.',
-              style: texte.bodySmall?.copyWith(color: karto.schriftLeise),
-            ),
-          if (vertrauterGebunden)
-            Align(
-              alignment: Alignment.centerLeft,
-              child: TextButton(
-                key: ValueKey<String>(
-                  'karto-begleiter-${begleiter.id}-aktionen',
-                ),
-                onPressed: () => onVertrautenAktionen(begleiter),
-                child: const Text('Vertrautenaktionen'),
-              ),
+          if (!mitKampf)
+            ...zeilen
+          else
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final kampf = _Kampf(begleiter: begleiter);
+                if (constraints.maxWidth >= _zweispaltigAb) {
+                  return Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        flex: 3,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: zeilen,
+                        ),
+                      ),
+                      const SizedBox(width: Abstand.block),
+                      Expanded(flex: 2, child: kampf),
+                    ],
+                  );
+                }
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    ...zeilen,
+                    const SizedBox(height: Abstand.normal),
+                    kampf,
+                  ],
+                );
+              },
             ),
         ],
       ),
@@ -173,6 +250,73 @@ class _Karte extends StatelessWidget {
         BegleiterPool.aup => zustand.currentAup,
       }) ??
       begleiterPoolMaximum(begleiter, pool);
+}
+
+// Kampfwerte aus dem Kampfprofil (bereits mit Steigerungen und Rüstung
+// verrechnet): INI, RS, BE, MR, Geschwindigkeiten, je Angriff AT, PA, TP, DK
+// und beim Reittier der Ausbildungsstand. Nur Anordnung, keine Rechnung.
+class _Kampf extends StatelessWidget {
+  const _Kampf({required this.begleiter});
+
+  final HeroCompanion begleiter;
+
+  @override
+  Widget build(BuildContext context) {
+    final karto = context.karto;
+    final texte = Theme.of(context).textTheme;
+    final profil = begleiterKampfprofil(begleiter);
+    final schluessel = 'karto-begleiter-${begleiter.id}';
+    final kopf = [
+      if (profil.ini != null) 'INI ${profil.ini}',
+      'RS ${profil.rs}',
+      'BE ${profil.be}',
+      if (profil.mr != null) 'MR ${profil.mr}',
+      ...profil.geschwindigkeiten,
+    ].join(' \u00b7 ');
+    return Column(
+      key: ValueKey<String>('$schluessel-kampf'),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(top: Abstand.knapp),
+          child: Text(
+            'Kampf',
+            style: texte.etikett.copyWith(color: karto.schriftLeise),
+          ),
+        ),
+        Text(
+          kopf,
+          key: ValueKey<String>('$schluessel-kampfwerte'),
+          style: texte.fliess.copyWith(color: karto.schrift),
+        ),
+        for (final (i, a) in profil.angriffe.indexed)
+          Padding(
+            padding: const EdgeInsets.only(top: Abstand.eng),
+            child: Text(
+              [
+                a.name,
+                if (a.at != null) 'AT ${a.at}',
+                if (a.pa != null) 'PA ${a.pa}' else 'keine PA',
+                if (a.tp.trim().isNotEmpty) 'TP ${a.tp}',
+                if (a.dk.trim().isNotEmpty) 'DK ${a.dk}',
+              ].join(' \u00b7 '),
+              key: ValueKey<String>('$schluessel-angriff-$i'),
+              style: texte.fliess.copyWith(color: karto.schrift),
+            ),
+          ),
+        if (profil.reittier case final reittier?)
+          Padding(
+            padding: const EdgeInsets.only(top: Abstand.eng),
+            child: Text(
+              reittierProfilText(reittier),
+              key: ValueKey<String>('$schluessel-reittier'),
+              style: texte.fliess.copyWith(color: karto.schriftLeise),
+            ),
+          ),
+      ],
+    );
+  }
 }
 
 class _PoolZeile extends StatelessWidget {

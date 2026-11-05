@@ -30,9 +30,15 @@ Future<ProbeResult?> zeigeGefechtsprobe({
   final eintraege = <DiceLogEntry>[];
   // Zauberproben tragen ihre Zaubereffekte bereits im Zuschlag des
   // Wirkdialogs (`gefechtsZauberZuschlag`); nur Talentproben nicht.
-  final angepasst = request.type == ProbeType.talent
+  final mitEffekten = request.type == ProbeType.talent
       ? probeMitZaubereffekten(ref: ref, heroId: heroId, request: request)
       : request;
+  // Armwunden: KK/FF gelten nur mit dem verwundeten Arm, der Dialog fragt.
+  final angepasst = probeMitArmwunden(
+    ref: ref,
+    heroId: heroId,
+    request: mitEffekten,
+  );
   await showProbeDialog(
     context: context,
     request: angepasst,

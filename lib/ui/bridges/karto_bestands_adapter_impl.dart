@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:dsa_heldenverwaltung/domain/dice_log_entry.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/alchimika_elixier_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/avatar_rahmung_rules.dart';
 import 'package:dsa_heldenverwaltung/state/auth_providers.dart';
@@ -33,6 +34,7 @@ import 'package:dsa_heldenverwaltung/ui/screens/workspace/inspector/widgets/insp
 import 'package:dsa_heldenverwaltung/ui/screens/hero_overview/hero_regelprofil_section.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/herleitung_suche_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/probe_quick_search.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/workspace/proben_favoriten_liste.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/rules_lookup_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/rest_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/schaden/schaden_dialog.dart';
@@ -53,6 +55,7 @@ import 'package:dsa_heldenverwaltung/domain/active_spell_effects_state.dart';
 import 'package:dsa_heldenverwaltung/domain/attribute_modifiers.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_gefechts_adapter.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abschnitt.dart';
 
 import 'karto_gefechts_bruecke.dart';
 
@@ -273,11 +276,35 @@ class KartoBestandsAdapterImpl
     required HeroComputedSnapshot werte,
   }) {
     return _KartoCompatHost(
-      child: InspectorAttributeProbes(
-        heroId: heroId,
-        probenEigenschaften: werte.probenEigenschaften,
-        grundwerte: werte.effectiveAttributes,
-        kompakt: true,
+      // Die Stufe der umgebenden Kachel entscheidet, ob ein Wundabzug an der
+      // Karte steht (weit) oder nur im Tooltip.
+      child: Builder(
+        builder: (context) => InspectorAttributeProbes(
+          heroId: heroId,
+          probenEigenschaften: werte.probenEigenschaften,
+          grundwerte: werte.effectiveAttributes,
+          kompakt: true,
+          abzugZeigen: KartoKachelSteuerung.istWeit(context),
+        ),
+      ),
+    );
+  }
+
+  /// Mindestbreite einer Spalte der häufigen Proben in einer weiten Kachel.
+  static const double kFavoritenSpaltenbreite = 260;
+
+  /// Baut die häufigen Proben des Helden, in einer weiten Kachel in Spalten.
+  @override
+  Widget spielFavoritenproben({required String heroId}) {
+    return _KartoCompatHost(
+      // In einer weiten Kachel stehen die Proben nebeneinander.
+      child: Builder(
+        builder: (context) => ProbenFavoritenListe(
+          heroId: heroId,
+          spaltenbreite: KartoKachelSteuerung.istWeit(context)
+              ? KartoBestandsAdapterImpl.kFavoritenSpaltenbreite
+              : null,
+        ),
       ),
     );
   }
@@ -311,15 +338,34 @@ class KartoBestandsAdapterImpl
     );
   }
 
-  /// Baut das vorhandene Würfelprotokoll mit den Einträgen des Zustands.
+  /// Baut das vorhandene Würfelprotokoll mit den Einträgen des Zustands, in
+  /// einer weiten Kachel mit Grenze als Tabelle.
   @override
-  Widget spielProtokoll(HeroComputedSnapshot werte) => _KartoCompatHost(
-    child: InspectorDiceLogSection(
-      entries: werte.state.diceLog,
-      aktion: (eintrag) => schadenRuecknahmeAktion(
-        eintrag: eintrag,
-        heroId: werte.hero.id,
-        zustand: werte.state,
+  Widget spielProtokoll(
+    HeroComputedSnapshot werte, {
+    int? hoechstens,
+  }) => _KartoCompatHost(
+    child: Consumer(
+      builder: (context, ref, _) => InspectorDiceLogSection(
+        entries: werte.state.diceLog,
+        hoechstens: hoechstens,
+        // Die weite Kachel zeigt die Würfe als Tabelle; nur mit Grenze, denn
+        // das ganze Protokoll samt Filtern steht im Blatt.
+        tabellarisch:
+            hoechstens != null && KartoKachelSteuerung.istWeit(context),
+        aktion: (eintrag) => schadenRuecknahmeAktion(
+          eintrag: eintrag,
+          heroId: werte.hero.id,
+          zustand: werte.state,
+        ),
+        // „Nochmal würfeln“ öffnet den normalen Probendialog derselben Probe
+        // über die Probensuche (SPIEL-05).
+        onWiederholen: (eintrag) => wiederholeProbeMitHinweis(
+          context: context,
+          ref: ref,
+          heroId: werte.hero.id,
+          entry: eintrag,
+        ),
       ),
     ),
   );
@@ -460,6 +506,26 @@ class KartoBestandsAdapterImpl
         context: themedContext,
         ref: ref,
         heroId: heroId,
+        mitFavoriten: true,
+      ),
+    );
+  }
+
+  /// Wiederholt die Probe eines Protokolleintrags im normalen Probendialog.
+  @override
+  Future<void> probeWiederholen({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String heroId,
+    required DiceLogEntry eintrag,
+  }) {
+    return _withKartoCompatContext(
+      context,
+      (themedContext) => wiederholeProbeMitHinweis(
+        context: themedContext,
+        ref: ref,
+        heroId: heroId,
+        entry: eintrag,
       ),
     );
   }
@@ -527,6 +593,24 @@ class KartoBestandsAdapterImpl
         heroId: heroId,
         ressource: ressource,
       ),
+    );
+  }
+
+  /// Verschiebt die Ressource über den gemeinsamen Zustandsweg des Blatts.
+  @override
+  Future<void> ressourceSchritt({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String heroId,
+    required KartoRessource ressource,
+    required int schritt,
+  }) {
+    return schreibeRessourcenSchritt(
+      context: context,
+      ref: ref,
+      heroId: heroId,
+      ressource: ressource,
+      schritt: schritt,
     );
   }
 

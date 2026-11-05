@@ -4,10 +4,14 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dsa_heldenverwaltung/domain/begleiter_zustand.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_companion.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_spielansicht.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/begleiter_kampfprofil_rules.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_begleiterkarte.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_kachelraster.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_spielansicht.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_theme.dart';
 
@@ -41,8 +45,17 @@ void main() {
     required List<HeroCompanion> begleiter,
     Map<String, BegleiterZustand> werte = const {},
     double breite = 390,
+    SpielkachelBreite? kachel,
+    double skalierung = 1,
   }) async {
-    final held = testHero('hexe', 'Hexe').copyWith(companions: begleiter);
+    final held = testHero('hexe', 'Hexe').copyWith(
+      companions: begleiter,
+      spielansicht: kachel == null
+          ? null
+          : HeroSpielansicht(
+              kacheln: [HeroSpielkachel(id: 'begleiter', breite: kachel)],
+            ),
+    );
     final bestand = TestBestand();
     tester.view.devicePixelRatio = 1;
     tester.view.physicalSize = Size(breite, 2400);
@@ -69,6 +82,11 @@ void main() {
           theme: buildKartoTheme(
             brightness: Brightness.light,
             centerAppBarTitle: false,
+          ),
+          builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(context)
+                .copyWith(textScaler: TextScaler.linear(skalierung)),
+            child: child!,
           ),
           home: Scaffold(
             body: KartoSpielansicht(
@@ -156,11 +174,221 @@ void main() {
     expect(bestand.aufrufe, ['vertrautenAktionen:hexe:mira']);
   });
 
-  testWidgets('breit steht der Abschnitt in der Seitenspalte', (tester) async {
+  testWidgets('breit steht der Abschnitt im Raster neben anderen Kacheln, '
+      'vor dem Protokoll', (tester) async {
     await zeige(tester, begleiter: const [mira], breite: 1400);
     expect(find.text('Begleiter'), findsOneWidget);
-    final begleiter = tester.getTopLeft(find.text('Begleiter')).dx;
-    final protokoll = tester.getTopLeft(find.text('Würfelprotokoll')).dx;
-    expect(begleiter, greaterThan(protokoll));
+    final begleiter = tester.getTopLeft(find.text('Begleiter'));
+    final protokoll = tester.getTopLeft(find.text('Würfelprotokoll'));
+    final ressourcen = tester.getTopLeft(find.text('Ressourcen').first);
+    // Eine schmale Kachel steht nicht in der ersten Spalte unter allem,
+    // sondern rechts davon; die Standardreihenfolge hält sie vor dem Protokoll.
+    expect(begleiter.dx, greaterThan(ressourcen.dx + kRasterEinheitMin));
+    expect(begleiter.dy, lessThan(protokoll.dy));
+  });
+
+  group('weite Kachel (SPIEL-07)', () {
+    const wolf = HeroCompanion(
+      id: 'wolf',
+      name: 'Wolf',
+      typ: BegleiterTyp.sonstigerBegleiter,
+      maxLep: 30,
+      startLep: 30,
+      geschwindigkeiten: [HeroCompanionSpeed(art: 'Boden', wert: 9)],
+      angriffe: [
+        HeroCompanionAttack(
+          id: 'a1',
+          name: 'Biss',
+          dk: 'H',
+          at: 12,
+          pa: 8,
+          tp: '1W6+2',
+        ),
+      ],
+    );
+
+    Finder k(String schluessel) => find.byKey(ValueKey<String>(schluessel));
+    String text(WidgetTester tester, String schluessel) =>
+        tester.widget<Text>(k(schluessel)).data!;
+
+    testWidgets('weit zeigt die Kampfwerte aus dem Kampfprofil', (
+      tester,
+    ) async {
+      await zeige(
+        tester,
+        begleiter: const [wolf],
+        breite: 1280,
+        kachel: SpielkachelBreite.mittel,
+      );
+      final p = begleiterKampfprofil(wolf);
+      expect(
+        text(tester, 'karto-begleiter-wolf-kampfwerte'),
+        [
+          if (p.ini != null) 'INI ${p.ini}',
+          'RS ${p.rs}',
+          'BE ${p.be}',
+          if (p.mr != null) 'MR ${p.mr}',
+          ...p.geschwindigkeiten,
+        ].join(' \u00b7 '),
+      );
+      expect(
+        text(tester, 'karto-begleiter-wolf-kampfwerte'),
+        contains('Boden 9'),
+      );
+      final angriff = text(tester, 'karto-begleiter-wolf-angriff-0');
+      expect(angriff, contains('Biss'));
+      expect(angriff, contains('AT ${p.angriffe.first.at}'));
+      expect(angriff, contains('PA ${p.angriffe.first.pa}'));
+      expect(angriff, contains('TP 1W6+2'));
+      expect(angriff, contains('DK H'));
+    });
+
+    testWidgets('standardmäßig schmal zeigt sie keine Kampfwerte', (
+      tester,
+    ) async {
+      for (final breite in [390.0, 1280.0, 1920.0]) {
+        await zeige(tester, begleiter: const [wolf], breite: breite);
+        expect(
+          k('karto-begleiter-wolf-kampf'),
+          findsNothing,
+          reason: '$breite',
+        );
+        expect(wert('wolf', 'lep'), findsOneWidget);
+      }
+    });
+
+    testWidgets('mittel bei 1440 dp ist weit', (tester) async {
+      await zeige(
+        tester,
+        begleiter: const [wolf],
+        breite: 1440,
+        kachel: SpielkachelBreite.mittel,
+      );
+      expect(k('karto-begleiter-wolf-kampf'), findsOneWidget);
+    });
+
+    testWidgets('eine breite Karte stellt Werte und Kampfwerte nebeneinander', (
+      tester,
+    ) async {
+      await zeige(
+        tester,
+        begleiter: const [wolf],
+        breite: 1280,
+        kachel: SpielkachelBreite.mittel,
+      );
+      final lep = tester.getRect(wert('wolf', 'lep'));
+      final kampf = tester.getRect(k('karto-begleiter-wolf-kampf'));
+      expect(kampf.left, greaterThan(lep.right));
+    });
+
+    testWidgets('mehrere Begleiter stehen nebeneinander', (tester) async {
+      await zeige(
+        tester,
+        begleiter: const [mira, wolf],
+        breite: 1280,
+        kachel: SpielkachelBreite.mittel,
+      );
+      final a = tester.getRect(k('karto-begleiter-mira'));
+      final b = tester.getRect(k('karto-begleiter-wolf'));
+      expect(b.left, greaterThanOrEqualTo(a.right));
+      expect(b.top, a.top);
+      // Jede Karte ist breit genug für ihre Werte.
+      expect(
+        a.width,
+        greaterThanOrEqualTo(KartoBegleiterAbschnitt.kartenbreiteMin),
+      );
+    });
+
+    testWidgets('schmale Karten stapeln Werte und Kampfwerte', (tester) async {
+      await zeige(
+        tester,
+        begleiter: const [mira, wolf],
+        breite: 1280,
+        kachel: SpielkachelBreite.mittel,
+      );
+      final lep = tester.getRect(wert('wolf', 'lep'));
+      final kampf = tester.getRect(k('karto-begleiter-wolf-kampf'));
+      expect(kampf.top, greaterThanOrEqualTo(lep.bottom));
+    });
+
+    testWidgets('ohne Angriffe zeigt der Block nur die Kopfzeile', (
+      tester,
+    ) async {
+      await zeige(
+        tester,
+        begleiter: const [rosse],
+        breite: 1280,
+        kachel: SpielkachelBreite.mittel,
+      );
+      expect(k('karto-begleiter-rosse-kampfwerte'), findsOneWidget);
+      expect(k('karto-begleiter-rosse-angriff-0'), findsNothing);
+    });
+
+    testWidgets('Bedienung der Werte bleibt in der weiten Kachel', (
+      tester,
+    ) async {
+      final bestand = await zeige(
+        tester,
+        begleiter: const [mira],
+        breite: 1280,
+        kachel: SpielkachelBreite.mittel,
+      );
+      await tester.tap(
+        find.byKey(const ValueKey('karto-begleiter-mira-lep-plus-1')),
+      );
+      await tester.pump();
+      expect(bestand.aufrufe, ['begleiter:hexe:mira:lep:schritt1']);
+    });
+
+    testWidgets('der Vergrößern-Dialog zeigt die Kampfwerte', (tester) async {
+      await zeige(tester, begleiter: const [wolf], breite: 1280);
+      expect(k('karto-begleiter-wolf-kampf'), findsNothing);
+      await tester.tap(k('karto-kachel-begleiter-vergroessern'));
+      await tester.pumpAndSettle();
+      expect(
+        find.descendant(
+          of: k('karto-kachel-begleiter-popup'),
+          matching: k('karto-begleiter-wolf-kampf'),
+        ),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('Anordnen: die Vorschau zeigt die Kampfwerte', (tester) async {
+      await zeige(
+        tester,
+        begleiter: const [wolf],
+        breite: 1280,
+        kachel: SpielkachelBreite.mittel,
+      );
+      await tester.tap(k('karto-spiel-anordnen'));
+      await tester.pumpAndSettle();
+      expect(
+        find.descendant(
+          of: k('karto-kachel-begleiter-vorschau'),
+          matching: k('karto-begleiter-wolf-kampf'),
+        ),
+        findsOneWidget,
+      );
+    });
+
+    for (final breite in [744.0, 1024.0, 1440.0, 1920.0]) {
+      for (final skalierung in [1.0, 2.0]) {
+        testWidgets('bei $breite dp, Schrift $skalierung, ohne Überlauf, auch '
+            'im Anordnen', (tester) async {
+          await zeige(
+            tester,
+            begleiter: const [mira, wolf, rosse],
+            breite: breite,
+            kachel: SpielkachelBreite.mittel,
+            skalierung: skalierung,
+          );
+          expect(tester.takeException(), isNull);
+          await tester.tap(k('karto-spiel-anordnen'));
+          await tester.pumpAndSettle();
+          expect(tester.takeException(), isNull);
+        });
+      }
+    }
   });
 }

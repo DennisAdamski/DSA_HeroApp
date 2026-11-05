@@ -17,12 +17,13 @@ void main() {
     );
 
     test('begrenzt LeP auf KO halbiert, AU auf KO und MR auf MU halbiert', () {
+      // Halbierungen werden aufgerundet: KO 15 -> 8, MU 13 -> 7.
       expect(
         computeBoughtStatMaximum(
           statKey: 'lep',
           permanentAttributes: attributes,
         ),
-        7,
+        8,
       );
       expect(
         computeBoughtStatMaximum(
@@ -36,18 +37,21 @@ void main() {
           statKey: 'mr',
           permanentAttributes: attributes,
         ),
-        6,
+        7,
       );
     });
 
-    test('laesst AE und KE ohne harte Grenze', () {
+    test('begrenzt zugekaufte AsP auf den CH-Wert', () {
       expect(
         computeBoughtStatMaximum(
           statKey: 'asp',
           permanentAttributes: attributes,
         ),
-        isNull,
+        10,
       );
+    });
+
+    test('laesst die KE ohne harte Grenze', () {
       expect(
         computeBoughtStatMaximum(
           statKey: 'kap',

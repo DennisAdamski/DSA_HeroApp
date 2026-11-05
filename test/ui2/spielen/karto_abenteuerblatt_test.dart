@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_adventure_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_note_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_base_providers.dart';
@@ -12,6 +13,7 @@ import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abenteuerblatt.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_theme.dart';
+import 'package:dsa_heldenverwaltung/ui2/widgets/karto_flaeche.dart';
 
 import '../shell/karto_test_support.dart';
 
@@ -43,12 +45,18 @@ void main() {
     double skalierung = 1,
     Brightness helligkeit = Brightness.light,
     AbenteuerSortierung? sortierung,
+    String? standort,
   }) async {
     tester.view.devicePixelRatio = 1;
     tester.view.physicalSize = Size(breite, 1200);
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
-    repo = FakeRepository(heroes: [held ?? _held()]);
+    repo = FakeRepository(
+      heroes: [held ?? _held()],
+      states: standort == null
+          ? null
+          : {'rondra': const HeroState.empty().copyWith(standort: standort)},
+    );
     final container = ProviderContainer(
       overrides: [
         heroRepositoryProvider.overrideWithValue(repo),
@@ -199,6 +207,91 @@ void main() {
     expect(abenteuer.people.single.name, 'Alrik');
   });
 
+  testWidgets('Plus zählt das Datum weiter und rollt Monat und Jahr', (
+    tester,
+  ) async {
+    await zeige(
+      tester,
+      held: testHero().copyWith(
+        adventures: [
+          _nebel.copyWith(
+            currentAventurianDate: const HeroAdventureDateValue(
+              day: '29',
+              month: 'rahja',
+              year: '1043',
+            ),
+          ),
+        ],
+      ),
+    );
+    expect(find.text('29. Rahja 1043 BF'), findsOneWidget);
+
+    await tester.tap(key('karto-abenteuer-datum-plus'));
+    await tester.pumpAndSettle();
+    expect(find.text('30. Rahja 1043 BF'), findsOneWidget);
+
+    await tester.tap(key('karto-abenteuer-datum-plus'));
+    await tester.pumpAndSettle();
+    expect(find.text('1. Namenlose Tage 1043 BF'), findsOneWidget);
+
+    for (var i = 0; i < 5; i++) {
+      await tester.tap(key('karto-abenteuer-datum-plus'));
+      await tester.pumpAndSettle();
+    }
+    expect(find.text('1. Praios 1044 BF'), findsOneWidget);
+    final datum = (await gespeichert()).currentAventurianDate;
+    expect([datum.day, datum.month, datum.year], ['1', 'praios', '1044']);
+  });
+
+  testWidgets('Plus sitzt in derselben Marke wie das Datum', (tester) async {
+    await zeige(
+      tester,
+      held: testHero().copyWith(
+        adventures: [
+          _nebel.copyWith(
+            currentAventurianDate: const HeroAdventureDateValue(
+              day: '1',
+              month: 'praios',
+              year: '1043',
+            ),
+          ),
+        ],
+      ),
+    );
+    final marke = find.ancestor(
+      of: key('karto-abenteuer-datum'),
+      matching: find.byType(KartoFlaeche),
+    );
+    expect(
+      find.descendant(of: marke, matching: key('karto-abenteuer-datum-plus')),
+      findsOneWidget,
+    );
+  });
+  testWidgets('Plus fehlt ohne Datum', (tester) async {
+    await zeige(tester);
+    expect(key('karto-abenteuer-datum-plus'), findsNothing);
+  });
+
+  testWidgets('Plus ist während einer Planung ausgegraut', (tester) async {
+    await zeige(
+      tester,
+      planOffen: true,
+      held: testHero().copyWith(
+        adventures: [
+          _nebel.copyWith(
+            currentAventurianDate: const HeroAdventureDateValue(
+              day: '1',
+              month: 'praios',
+              year: '1043',
+            ),
+          ),
+        ],
+      ),
+    );
+    final knopf = tester.widget<InkWell>(key('karto-abenteuer-datum-plus'));
+    expect(knopf.onTap, isNull);
+  });
+
   testWidgets('Bearbeiten erhält Felder einer neueren App-Version', (
     tester,
   ) async {
@@ -304,6 +397,322 @@ void main() {
   ) async {
     await zeige(tester, abenteuerId: 'weg');
     expect(find.text('Dieses Abenteuer gibt es nicht mehr.'), findsOneWidget);
+  });
+
+  group('Ort und Datum', () {
+    HeroSheet mitDatum() => testHero().copyWith(
+      adventures: [
+        _nebel.copyWith(
+          currentAventurianDate: const HeroAdventureDateValue(
+            day: '12',
+            month: 'phex',
+            year: '1043',
+          ),
+        ),
+      ],
+    );
+
+    String feldText(WidgetTester tester, String name) =>
+        tester.widget<TextField>(key(name)).controller!.text;
+
+    // Tag, Monat (Schlüssel) und Jahr des Datumsfelds im Dialog.
+    String datumFelder(WidgetTester tester) {
+      final monat = tester
+          .widget<DropdownButton<String>>(
+            find.descendant(
+              of: key('karto-abenteuer-feld-datum-monat'),
+              matching: find.byType(DropdownButton<String>),
+            ),
+          )
+          .value;
+      return [
+        feldText(tester, 'karto-abenteuer-feld-datum-tag'),
+        monat ?? '',
+        feldText(tester, 'karto-abenteuer-feld-datum-jahr'),
+      ].join('|');
+    }
+
+    testWidgets('eine neue Notiz bekommt Standort und Datum vorbelegt', (
+      tester,
+    ) async {
+      await zeige(tester, held: mitDatum(), standort: 'Gareth');
+      await tester.tap(key('karto-abenteuer-notiz-neu'));
+      await tester.pumpAndSettle();
+      expect(feldText(tester, 'karto-abenteuer-feld-ort'), 'Gareth');
+      expect(datumFelder(tester), '12|phex|1043');
+
+      await tester.enterText(key('karto-abenteuer-feld-1'), 'Karte');
+      await speichern(tester);
+
+      final notiz = (await gespeichert()).notes.last;
+      expect(notiz.ort, 'Gareth');
+      expect(notiz.datum.anzeigeText, '12. Phex 1043 BF');
+      expect(find.text('Gareth · 12. Phex 1043 BF'), findsOneWidget);
+    });
+
+    testWidgets('die Vorbelegung lässt sich ändern oder leeren', (
+      tester,
+    ) async {
+      await zeige(tester, held: mitDatum(), standort: 'Gareth');
+      await tester.tap(key('karto-abenteuer-notiz-neu'));
+      await tester.pumpAndSettle();
+      await tester.enterText(key('karto-abenteuer-feld-1'), 'Karte');
+      await tester.enterText(key('karto-abenteuer-feld-ort'), 'Havena');
+      await tester.enterText(key('karto-abenteuer-feld-datum-tag'), '');
+      await tester.enterText(key('karto-abenteuer-feld-datum-jahr'), '1044');
+      await speichern(tester);
+
+      final notiz = (await gespeichert()).notes.last;
+      expect(notiz.ort, 'Havena');
+      expect(notiz.datum.anzeigeText, 'Phex 1044 BF');
+    });
+
+    testWidgets('ohne Standort und Datum bleiben beide Felder leer', (
+      tester,
+    ) async {
+      await zeige(tester);
+      await tester.tap(key('karto-abenteuer-notiz-neu'));
+      await tester.pumpAndSettle();
+      expect(feldText(tester, 'karto-abenteuer-feld-ort'), isEmpty);
+      expect(datumFelder(tester), '||');
+    });
+
+    testWidgets('eine Person bekommt Ort und Datum ebenfalls vorbelegt', (
+      tester,
+    ) async {
+      await zeige(tester, held: mitDatum(), standort: 'Gareth');
+      await tester.tap(key('karto-abenteuer-person-neu'));
+      await tester.pumpAndSettle();
+      await tester.enterText(key('karto-abenteuer-feld-1'), 'Yasmina');
+      await speichern(tester);
+
+      final person = (await gespeichert()).people.last;
+      expect(person.ort, 'Gareth');
+      expect(person.datum.anzeigeText, '12. Phex 1043 BF');
+    });
+
+    testWidgets('Bearbeiten zeigt gespeicherte Werte, nicht die Vorbelegung', (
+      tester,
+    ) async {
+      await zeige(
+        tester,
+        held: testHero().copyWith(
+          adventures: [
+            _nebel.copyWith(
+              notes: const [
+                HeroNoteEntry(
+                  title: 'Wirt',
+                  description: 'Weiß mehr.',
+                  ort: 'Punin',
+                  datum: HeroAdventureDateValue(
+                    day: '3',
+                    month: 'rahja',
+                    year: '1040',
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+        standort: 'Gareth',
+      );
+      await tester.tap(find.text('Weiß mehr.'));
+      await tester.pumpAndSettle();
+      expect(feldText(tester, 'karto-abenteuer-feld-ort'), 'Punin');
+      expect(datumFelder(tester), '3|rahja|1040');
+    });
+
+    testWidgets(
+      'ein Bestandseintrag wird beim Öffnen nicht von selbst befüllt',
+      (tester) async {
+        await zeige(tester, held: mitDatum(), standort: 'Gareth');
+        await tester.tap(find.text('Weiß mehr.'));
+        await tester.pumpAndSettle();
+        expect(feldText(tester, 'karto-abenteuer-feld-ort'), isEmpty);
+        // Unverändert speichern schreibt nichts: kein Ort, kein Stempel.
+        await speichern(tester);
+        final notiz = (await gespeichert()).notes.single;
+        expect(notiz.ort, isEmpty);
+        expect(notiz.lastModified, isNull);
+      },
+    );
+
+    testWidgets('Ort und Datum nachtragen stempelt und erhält Fremdfelder', (
+      tester,
+    ) async {
+      const feld = <String, Object?>{'zukunftsfeld': 1};
+      await zeige(
+        tester,
+        held: testHero().copyWith(
+          adventures: [
+            _nebel.copyWith(
+              notes: [_nebel.notes.single.copyWith(unbekannteFelder: feld)],
+              people: [_nebel.people.single.copyWith(unbekannteFelder: feld)],
+            ),
+          ],
+        ),
+      );
+      await tester.tap(find.text('Weiß mehr.'));
+      await tester.pumpAndSettle();
+      await tester.enterText(key('karto-abenteuer-feld-ort'), 'Punin');
+      await speichern(tester);
+      await tester.tap(find.text('Alrik'));
+      await tester.pumpAndSettle();
+      await tester.enterText(key('karto-abenteuer-feld-datum-tag'), '1');
+      await tester.tap(key('karto-abenteuer-feld-datum-monat'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Praios').last);
+      await tester.pumpAndSettle();
+      await speichern(tester);
+
+      final abenteuer = await gespeichert();
+      expect(abenteuer.notes.single.ort, 'Punin');
+      expect(abenteuer.notes.single.lastModified, isNotNull);
+      expect(abenteuer.notes.single.unbekannteFelder, feld);
+      expect(abenteuer.people.single.datum.anzeigeText, '1. Praios');
+      expect(abenteuer.people.single.unbekannteFelder, feld);
+    });
+
+    for (final breite in [320.0, 390.0]) {
+      testWidgets(
+        'der Dialog läuft bei $breite dp mit Textfaktor 2 nicht über',
+        (tester) async {
+          await zeige(
+            tester,
+            held: mitDatum(),
+            standort: 'Gareth',
+            breite: breite,
+            skalierung: 2,
+          );
+          // Bei großer Schrift liegt die Kachel unter dem sichtbaren Rand.
+          await tester.scrollUntilVisible(
+            key('karto-abenteuer-notiz-neu'),
+            300,
+            scrollable: find
+                .descendant(
+                  of: find.byType(KartoAbenteuerblatt),
+                  matching: find.byType(Scrollable),
+                )
+                .first,
+          );
+          await tester.pumpAndSettle();
+          await tester.tap(key('karto-abenteuer-notiz-neu'));
+          await tester.pumpAndSettle();
+          expect(key('karto-abenteuer-feld-datum-monat'), findsOneWidget);
+          expect(tester.takeException(), isNull);
+        },
+      );
+    }
+  });
+
+  group('Suche', () {
+    const alt = HeroAdventureEntry(
+      id: 'alt',
+      title: 'Die alte Fracht',
+      status: HeroAdventureStatus.completed,
+      notes: [
+        HeroNoteEntry(
+          title: 'Wirt am Pass',
+          description: 'Zoll am Pass.',
+          ort: 'Punin',
+        ),
+      ],
+    );
+
+    HeroSheet zwei() => testHero().copyWith(adventures: const [alt, _nebel]);
+
+    Future<void> suche(WidgetTester tester, String text) async {
+      if (key('karto-abenteuer-suche').evaluate().isEmpty) {
+        await tester.tap(key('karto-abenteuer-suche-knopf'));
+        await tester.pumpAndSettle();
+      }
+      await tester.enterText(key('karto-abenteuer-suche'), text);
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('durchsucht alle Abenteuer, dieses steht vorn', (tester) async {
+      await zeige(tester, held: zwei());
+      await suche(tester, 'wirt');
+
+      // „Wirt“ steckt in der Notiz und in „Schankwirt“ der Person, dazu die
+      // Notiz „Wirt am Pass“ im anderen Abenteuer.
+      expect(find.text('3 Treffer in 2 Abenteuern'), findsOneWidget);
+      expect(find.text('Dieses Abenteuer'), findsOneWidget);
+      expect(find.text('Abgeschlossen'), findsOneWidget);
+      expect(
+        tester.getTopLeft(find.text('Wirt')).dy,
+        lessThan(tester.getTopLeft(find.text('Wirt am Pass')).dy),
+      );
+      // Die Karten des Abenteuers selbst weichen den Treffern.
+      expect(find.text('Noch keine Zusammenfassung.'), findsNothing);
+      expect(key('karto-abenteuer-person-neu'), findsNothing);
+    });
+
+    testWidgets('Treffer im eigenen Abenteuer lassen sich bearbeiten', (
+      tester,
+    ) async {
+      await zeige(tester, held: zwei());
+      await suche(tester, 'wirt');
+      await tester.tap(find.text('Weiß mehr.'));
+      await tester.pumpAndSettle();
+      await tester.enterText(key('karto-abenteuer-feld-2'), 'Weiß alles.');
+      await speichern(tester);
+
+      final held = (await repo.loadHeroById('rondra'))!;
+      final nebel = held.adventures.firstWhere((a) => a.id == 'nebel');
+      final alt = held.adventures.firstWhere((a) => a.id == 'alt');
+      expect(nebel.notes.single.description, 'Weiß alles.');
+      // Das andere Abenteuer bleibt unberührt.
+      expect(alt.notes.single.description, 'Zoll am Pass.');
+    });
+
+    testWidgets('Treffer in einem anderen Abenteuer öffnet dessen Blatt', (
+      tester,
+    ) async {
+      await zeige(tester, held: zwei());
+      await suche(tester, 'zoll');
+      await tester.tap(find.text('Wirt am Pass'));
+      await tester.pumpAndSettle();
+      // Zwei Blätter übereinander: Titel beider Abenteuer sind vorhanden.
+      expect(find.byType(BottomSheet), findsNWidgets(2));
+      expect(find.text('Die alte Fracht'), findsWidgets);
+    });
+
+    testWidgets('Schließen der Suche zeigt die Karten wieder', (tester) async {
+      await zeige(tester, held: zwei());
+      await suche(tester, 'zoll');
+      await tester.tap(key('karto-abenteuer-suche-schliessen'));
+      await tester.pumpAndSettle();
+      expect(key('karto-abenteuer-suche'), findsNothing);
+      expect(find.text('Weiß mehr.'), findsOneWidget);
+    });
+
+    testWidgets('ohne Treffer meldet die Suche das', (tester) async {
+      await zeige(tester, held: zwei());
+      await suche(tester, 'drachenhort');
+      expect(key('karto-abenteuer-suche-leer'), findsOneWidget);
+    });
+
+    testWidgets('während einer Planung sind eigene Treffer nur lesbar', (
+      tester,
+    ) async {
+      await zeige(tester, held: zwei(), planOffen: true);
+      await suche(tester, 'wirt');
+      await tester.tap(find.text('Weiß mehr.'));
+      await tester.pumpAndSettle();
+      expect(find.byType(AlertDialog), findsNothing);
+    });
+
+    for (final breite in [320.0, 390.0]) {
+      testWidgets('Suche bei $breite dp mit Textfaktor 2 ohne Überlauf', (
+        tester,
+      ) async {
+        await zeige(tester, held: zwei(), breite: breite, skalierung: 2);
+        await suche(tester, 'wirt');
+        expect(find.text('Wirt am Pass'), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      });
+    }
   });
 
   group('Sortierung', () {

@@ -286,6 +286,19 @@ extension _HeroOverviewTraitsSection on _HeroOverviewTabState {
       neu,
       def: def,
     );
+    if (keyName == 'vorteile' &&
+        meisterhandwerkGrenzeUeberschritten(updated, catalog: catalog)) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Meisterhandwerk gilt für höchstens '
+            '$kMeisterhandwerkMaxTalente Talente.',
+          ),
+        ),
+      );
+      return;
+    }
     if (keyName == 'vorteile' && offersMagicSetup(def?.id) && catalog != null) {
       final hero = _latestHero;
       if (hero == null || !mounted) return;

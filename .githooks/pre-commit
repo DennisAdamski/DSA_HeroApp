@@ -1,0 +1,20 @@
+#!/bin/sh
+# Formatiert gestagte Dart-Dateien vor jedem Commit (schnell, nie blockierend
+# ausser bei Formatfehlern). Die Analyse laeuft im pre-push-Hook.
+# Umgehen nur bewusst mit: git commit --no-verify
+
+files=$(git diff --cached --name-only --diff-filter=ACMR | grep '\.dart$')
+[ -z "$files" ] && exit 0
+
+# Dateien mit ungestagten Änderungen nicht automatisch mit-stagen
+partial=$(git diff --name-only | grep '\.dart$')
+for f in $files; do
+  if echo "$partial" | grep -qxF "$f"; then
+    echo "pre-commit: $f hat gestagte und ungestagte Änderungen; bitte vollständig stagen oder stashen." >&2
+    exit 1
+  fi
+done
+
+echo "pre-commit: dart format"
+echo "$files" | tr '\n' '\0' | xargs -0 dart format || exit 1
+echo "$files" | tr '\n' '\0' | xargs -0 git add

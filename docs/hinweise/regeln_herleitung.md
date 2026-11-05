@@ -79,7 +79,19 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   wählt der Nutzer im Vorschaudialog (flüchtige Auswahl,
   `regelProfilVorschauMitZusatzProvider`, Elternpakete werden ergänzt). In UI2
   öffnet „Regelprofil“ im Workspace-Menü dieselbe Karte
-  (`KartoBestandsAdapter.regelprofil`). Offen: Gruppenvorgabe.
+  (`KartoBestandsAdapter.regelprofil`). **Gruppenvorgabe** (Teilstand 16): Der
+  Besitzer einer Konto-Gruppe legt sein Profil als Vorgabe ab
+  (`shared_info/regelprofil`, JSON-Text im Feld `profilJson`). Ein Held kann
+  mehreren Gruppen angehören, folgt aber nur der **primären**
+  (`HeroGruppenMitgliedschaft.primaer`, genau eine Konto-Gruppe; die erste
+  Konto-Gruppe wird von selbst primär, `setzePrimaereGruppe` wechselt). Die
+  Vorgabe erscheint nur als Vorschau (`gruppenVorgabeVorschauProvider`,
+  `regelprofil_gruppe_providers.dart`; Held ohne Profil wird mit dem globalen
+  Stand verglichen; gerechnet wird über denselben
+  `regelProfilWechselVorschauProvider` wie die Update-Vorschau) und wirkt erst nach „Übernehmen“ (`uebernehmeRegelProfil`
+  mit dem gespeicherten Profil als `von`). Verlassen der Gruppe, entfernte oder
+  fehlende Vorgabe, Offline-Betrieb und Windows (kein Firestore) lassen das
+  Profil des Helden unverändert.
 - Aventurische Waehrungsumrechnung fuer Dukaten/Silber/Kreuzer liegt in
   `lib/rules/derived/currency_rules.dart`.
 - Der aventurische Kalender liegt kanonisch in `lib/domain/aventurian_date.dart`:
@@ -95,6 +107,23 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   die Appearance-Felder landen flach im Helden-JSON und gehen in
   `heroContentHash` ein — sonst ändert sich jeder Bestandsheld und der
   Konto-Sync meldet beim nächsten Speichern Konflikte.
+- Feiertage: `lib/domain/aventurischer_feiertag.dart` (Modell, nicht
+  persistiert) und die Katalogdatei
+  `assets/catalogs/house_rules_v1/feiertage.json` (gelesen über
+  `parseFeiertage`/`ladeFeiertage` in `lib/catalog/feiertag_loader.dart` und
+  `feiertagKatalogProvider`; unlesbare Einträge stehen in `verworfen`). Die
+  Regeln bekommen die Liste übergeben (`feiertageInDerNaehe(feiertage:)`).
+  Grundstock ist die Liste
+  „Fest- und Feiertage“ der Geographia Aventurica (S. 203 f.), die umfassendere
+  Liste führt die Wiki Aventurica (`feiertagWikiListeUrl`). Eingetragen werden
+  nur Kurzfakten (Name, Datum, `art`, `gottheit`, `verbreitung`), keine
+  Beschreibungstexte aus Regelwerken (Regel 13). Nicht aufgenommen sind Feste mit
+  Wochentag- oder Mondbezug und die monatsfüllenden Theaterfestspiele; das
+  Modell kennt nur datumsfeste Tage. `feiertageInDerNaehe`
+  (`aventurian_holiday_rules.dart`) rechnet zyklisch über 365 Tage inkl.
+  Namenloser Tage; der Parameter `filter` ist der Haken für die spätere
+  Einschränkung nach Region, Volk oder Kirche (`art`/`verbreitung` tragen die
+  Daten dafür).
 - Traditionen und Leiteigenschaften stehen in
   `lib/rules/derived/tradition_rules.dart` (Wege der Zauberei S. 19). Die
   Traditionen eines Helden sind die Vereinigung aus `representationen` und den
@@ -131,12 +160,22 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   Proben-Erschwernis gibt es nicht. Eigenschaftsverluste wirken **nur auf
   Proben**: über `HeroComputedSnapshot.probenEigenschaften` bzw.
   `wendeWundVerlusteAn`, **nie** über `effectiveAttributes` (WdS S. 111: nicht
-  auf Basiswerte; die App lässt auch LeP, MR und Wundschwelle unberührt). Wer
+  auf Basiswerte; die App lässt auch LeP, AuP, MR, Wundschwelle und TP/KK
+  unberührt, Tischentscheidung RULE-FIX-049: Basiswerte ändern sich durch
+  Wunden nicht). Die dritte Arm- oder Beinwunde setzt nie `kampfunfaehig`,
+  nur einen Hinweis (RULE-FIX-050; die Tabelle WdS S. 107 sagt für das Bein
+  „kampfunfähig“, der Fließtext nur „kein Nahkampf“). Wer
   würfelt, nimmt die Probenwerte. Armwunden sind armgebunden
   (`schwertarmAtPaMalus` auf die Hauptwaffe, `schildarmAtPaMalus` auf
   Nebenhandwaffe und Schild-PA, nicht auf Fernkampf); rechts ist der
   Schwertarm, mit dem Katalogschalter `linkshaender` (Vorteil Linkshänder)
-  links. Die gespeicherten 2W6 der Kopfwunde (`kopfIniMalus`) betreffen nur die
+  links. KK/FF −2 je Armwunde stehen **nicht** in den Probenwerten, sondern in
+  `WundEffekte.armEigenschaftsVerluste` (RULE-FIX-051, „wenn er diesen Arm
+  benutzt“): `showLoggedProbeDialog` und die Gefechtsprobe hängen sie über
+  `probeMitArmwunden` als `ResolvedProbeRequest.bedingteZielAbzuege` an
+  Proben mit KK/FF-Ziel, der Probendialog bietet je Arm einen Schalter an
+  (anfangs aus, `wendeZielAbzuegeAn`). Proben von Vertrauten bekommen sie
+  nicht. Die gespeicherten 2W6 der Kopfwunde (`kopfIniMalus`) betreffen nur die
   aktuelle INI und sind Hinweis, kein Basisabzug. Wunden senken die GS nie
   unter 1 (`begrenzeWundGs`). Anzeige über `wund_anzeige_rules.dart`.
 - „Schaden zurücknehmen“ (ARCH-06) gibt es nur am Protokolleintrag einer
@@ -147,8 +186,9 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   Obergrenze, Wunden des Treffers soweit noch vorhanden, nur einmal je
   Buchung. Regeln in `schaden_ruecknahme_rules.dart`.
 - Nicht enthalten und bewusst nicht erfunden: allgemeiner Rücknahmeknopf,
-  KR-Zähler, persistente Favoriten, Offline-/Sync-Status ohne echten
-  Providerzustand. Ein Test in `test/ui2/spielen/` hält das fest.
+  KR-Zähler, Offline-/Sync-Status ohne echten Providerzustand. Ein Test in
+  `test/ui2/spielen/` hält das fest. Die häufigen Proben (Favoriten) sind seit
+  22.10.2026 gebaut, siehe `ui_oberflaeche.md`.
 - Epische Helden waehlen je eine geistige und eine koerperliche
   Haupteigenschaft (`HeroSheet.epicMainAttributes`). Sie definieren die Boni
   aus Kap. 2.1 und sind vom 25-%-AP-Aufschlag ausgenommen

@@ -32,12 +32,15 @@ import 'package:dsa_heldenverwaltung/domain/hero_herkunfts_modifikator.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_merkmal.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_meta_talent.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_note_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_proben_favorit.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_regelprofil.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_reise_station.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_reisebericht.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_resource_activation_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_rituals.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_spell_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_spielansicht.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_spell_text_overrides.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
@@ -549,6 +552,29 @@ final _begleiterAbenteuerNotizen = <_Modell>[
         HeroAdventurePersonEntry.fromJson(json).unbekannteFelder,
   ),
   _Modell(
+    'HeroReiseStation',
+    schluessel: HeroReiseStation.jsonSchluessel,
+    voll: () => HeroReiseStation(
+      id: 's1',
+      ort: 'Gareth',
+      datum: const HeroAdventureDateValue(
+        day: '1',
+        month: 'praios',
+        year: '1040',
+      ),
+      notiz: 'Ankunft',
+      adventureId: 'a1',
+      ortId: 'o1',
+      kartenX: 512.5,
+      kartenY: 600,
+      lastModified: DateTime.utc(2026, 3, 1),
+    ).toJson(),
+    lade: (json) => HeroReiseStation.fromJson(json).toJson(),
+    bearbeite: (json) =>
+        HeroReiseStation.fromJson(json).copyWith(notiz: 'N').toJson(),
+    unbekannt: (json) => HeroReiseStation.fromJson(json).unbekannteFelder,
+  ),
+  _Modell(
     'HeroAdventureLootEntry',
     schluessel: HeroAdventureLootEntry.jsonSchluessel,
     voll: () => const HeroAdventureLootEntry(id: 'l1', name: 'Kette').toJson(),
@@ -641,6 +667,7 @@ final _begleiterAbenteuerNotizen = <_Modell>[
       gruppenCode: 'g1',
       externeHeldIds: <String>['x'],
       kontoGruppe: true,
+      primaer: true,
     ).toJson(),
     lade: (json) => HeroGruppenMitgliedschaft.fromJson(json).toJson(),
     bearbeite: (json) =>
@@ -649,6 +676,43 @@ final _begleiterAbenteuerNotizen = <_Modell>[
             .toJson(),
     unbekannt: (json) =>
         HeroGruppenMitgliedschaft.fromJson(json).unbekannteFelder,
+  ),
+  _Modell(
+    'HeroProbenFavorit',
+    schluessel: HeroProbenFavorit.jsonSchluessel,
+    voll: () =>
+        HeroProbenFavorit.von(ProbenFavoritArt.talent, 'tal_a').toJson(),
+    lade: (json) => HeroProbenFavorit.fromJson(json)!.toJson(),
+    bearbeite: (json) =>
+        HeroProbenFavorit.fromJson(json)!.copyWith(id: 'zauber:z_a').toJson(),
+    unbekannt: (json) => HeroProbenFavorit.fromJson(json)!.unbekannteFelder,
+  ),
+  _Modell(
+    'HeroSpielkachel',
+    schluessel: HeroSpielkachel.jsonSchluessel,
+    voll: () => const HeroSpielkachel(
+      id: 'kampf',
+      breite: SpielkachelBreite.mittel,
+      ausgeblendet: true,
+      eingeklappt: true,
+    ).toJson(),
+    lade: (json) => HeroSpielkachel.fromJson(json)!.toJson(),
+    bearbeite: (json) =>
+        HeroSpielkachel.fromJson(json)!.copyWith(eingeklappt: false).toJson(),
+    unbekannt: (json) => HeroSpielkachel.fromJson(json)!.unbekannteFelder,
+  ),
+  _Modell(
+    'HeroSpielansicht',
+    schluessel: HeroSpielansicht.jsonSchluessel,
+    voll: () => const HeroSpielansicht(
+      kacheln: <HeroSpielkachel>[HeroSpielkachel(id: 'kampf')],
+    ).toJson(),
+    lade: (json) => HeroSpielansicht.fromJson(json).toJson(),
+    bearbeite: (json) =>
+        HeroSpielansicht.fromJson(json)
+            .copyWith(kacheln: const <HeroSpielkachel>[])
+            .toJson(),
+    unbekannt: (json) => HeroSpielansicht.fromJson(json).unbekannteFelder,
   ),
 ];
 
@@ -1608,6 +1672,26 @@ final _enumFelder = <_EnumFeld>[
     andersJson: 'fundiert',
     ersatz: (json) => ReittierAusbildungsschritt.fromJson(json).art,
     erwarteterErsatz: ReittierAusbildungsart.laendlich,
+  ),
+  _EnumFeld(
+    'HeroSpielkachel.breite',
+    'breite',
+    voll: () => const HeroSpielkachel(
+      id: 'kampf',
+      breite: SpielkachelBreite.mittel,
+    ).toJson(),
+    lade: (json) => HeroSpielkachel.fromJson(json)!.toJson(),
+    gleich: (json) {
+      final kachel = HeroSpielkachel.fromJson(json)!;
+      return kachel.copyWith(breite: kachel.breite, eingeklappt: true).toJson();
+    },
+    anders: (json) =>
+        HeroSpielkachel.fromJson(json)!
+            .copyWith(breite: SpielkachelBreite.voll)
+            .toJson(),
+    andersJson: 'voll',
+    ersatz: (json) => HeroSpielkachel.fromJson(json)!.breite,
+    erwarteterErsatz: null,
   ),
 ];
 

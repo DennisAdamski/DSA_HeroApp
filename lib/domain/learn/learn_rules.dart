@@ -77,11 +77,15 @@ const Map<String, LearnCost> kGrundwertKomplexitaeten = <String, LearnCost>{
 }
 
 /// Reduziert Basiskosten fuer einen Lehrmeister um 20 Prozent.
+///
+/// Es wird echt gerundet (Wege der Helden S. 6, Tischentscheid 27.10.2026):
+/// 4/5 der Basiskosten hat nur Nachkommastellen in Fuenfteln, ein exaktes
+/// ,5 kommt nie vor. `(4 x + 2) ~/ 5` rechnet ohne Gleitkomma.
 int apMitLehrmeister(int basiskosten) {
   if (basiskosten <= 0) {
     return 0;
   }
-  return (basiskosten * 0.8).floor();
+  return (basiskosten * 4 + 2) ~/ 5;
 }
 
 /// Berechnet die Dukatenkosten fuer eine Steigerung mit Lehrmeister.

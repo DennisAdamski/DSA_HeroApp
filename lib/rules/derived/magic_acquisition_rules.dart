@@ -15,11 +15,17 @@ const int kRitualkenntnisFremdeTraditionAp = 250;
 
 /// Merkmale der Klassifikation I (WdH S. 289).
 const List<String> kMerkmaleKlassifikationI = [
+  'Dämonisch (Agrimoth)',
   'Dämonisch (Amazeroth)',
   'Dämonisch (Asfaloth)',
+  'Dämonisch (Belhalhar)',
+  'Dämonisch (Belkelel)',
+  'Dämonisch (Belshirash)',
   'Dämonisch (Blakharaz)',
+  'Dämonisch (Charyptoroth)',
   'Dämonisch (Lolgramoth)',
   'Dämonisch (Mishkara)',
+  'Dämonisch (Tasfarelel)',
   'Dämonisch (Thargunitoth)',
   'Elementar (Eis)',
   'Elementar (Erz)',

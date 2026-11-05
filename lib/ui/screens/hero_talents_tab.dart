@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/proben_favoriten_rules.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_proben_favorit.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/planung_bearbeiten_guard.dart';
 import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
 import 'package:flutter/services.dart';

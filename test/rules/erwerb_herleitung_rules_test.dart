@@ -5,7 +5,9 @@ import 'package:dsa_heldenverwaltung/rules/derived/epic_ap_cost_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/erwerb_herleitung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/steigerung_herleitung_rules.dart';
 
-/// Die bisherige Kette aus `erwerb_dialog.dart`, unverändert nachgebaut.
+/// Die Kette aus `erwerb_dialog.dart`, unabhängig nachgebaut. Ein Lehrmeister
+/// hebt den epischen Aufschlag nur auf (Hausregel „Epische Stufen“, Kap. 2.2);
+/// gibt es keinen Aufschlag, gilt sein gewohnter Nachlass.
 int _bisher({
   required int basis,
   required bool episch,
@@ -25,12 +27,16 @@ int _bisher({
   if (verdoppelt) {
     return mitLehrmeister ? kosten : kosten * 2;
   }
-  return mitLehrmeister ? apMitLehrmeister(kosten) : kosten;
+  final aufschlagAufgehoben =
+      mitLehrmeister && episch && !epischerInhalt && !keinAufschlag;
+  return mitLehrmeister && !aufschlagAufgehoben
+      ? apMitLehrmeister(kosten)
+      : kosten;
 }
 
 void main() {
   group('herleiteErwerbskosten', () {
-    test('liefert in allen Kombinationen die bisherigen AP', () {
+    test('liefert in allen Kombinationen die erwarteten AP', () {
       const bools = <bool>[false, true];
       for (final basis in <int>[0, 1, 3, 7, 10, 25, 40, 95, 150]) {
         for (final episch in bools) {
@@ -101,14 +107,30 @@ void main() {
       );
     });
 
-    test('Lehrmeister hebt den Aufschlag auf und senkt um 20 %', () {
+    test('Lehrmeister hebt den Aufschlag nur auf, senkt nicht zusätzlich', () {
       final kosten = herleiteErwerbskosten(
         basiskosten: 40,
         episch: true,
         mitLehrmeister: true,
       );
       expect(kosten.aufschlag, 0);
-      expect(kosten.apKosten, apMitLehrmeister(40));
+      expect(kosten.apKosten, 40);
+    });
+
+    test('Lehrmeister senkt um 20 %, wo kein epischer Aufschlag anfällt', () {
+      expect(
+        herleiteErwerbskosten(basiskosten: 40, mitLehrmeister: true).apKosten,
+        apMitLehrmeister(40),
+      );
+      expect(
+        herleiteErwerbskosten(
+          basiskosten: 40,
+          episch: true,
+          keinAufschlag: true,
+          mitLehrmeister: true,
+        ).apKosten,
+        apMitLehrmeister(40),
+      );
     });
 
     test(

@@ -329,20 +329,35 @@ void main() {
       expect(outcome.after.currentAsp, phase.aspRecovered);
     });
 
-    test('Regeneration senkt Werte über dem Maximum und hebt negative LeP', () {
+    test('Regeneration senkt Werte über dem Maximum', () {
       final ueberMaximum = computeRestOutcome(
         input: _eingabe(RestActivity.schlaf, maxLep: 20, maxAu: 20),
         current: _werte(lep: 25, au: 25, asp: 5),
       );
-      final negativ = computeRestOutcome(
-        input: _eingabe(RestActivity.schlaf),
-        current: _werte(lep: -5),
-      );
 
       expect(ueberMaximum.after.currentLep, 20);
       expect(ueberMaximum.after.currentAu, 20);
-      expect(negativ.after.currentLep, 0);
     });
+
+    test(
+      'bei 0 LeP oder weniger heilt die Rast nicht auf natürlichem Wege',
+      () {
+        // Wege des Schwerts S. 161: Lebensbedrohlich Verletzte müssen behandelt
+        // werden, Schlaf und Bettruhe ändern ihre LeP nicht.
+        for (final lep in [-5, 0]) {
+          final outcome = computeRestOutcome(
+            input: _eingabe(
+              RestActivity.schlaf,
+              rolls: const {RestRollSlot.phase1Lep: 6},
+            ),
+            current: _werte(lep: lep),
+          );
+
+          expect(outcome.after.currentLep, lep);
+          expect(outcome.phases.single.lepGain, 0);
+        }
+      },
+    );
 
     test('ohne Magie sinken AsP über dem Maximum auf das Maximum', () {
       final outcome = computeRestOutcome(

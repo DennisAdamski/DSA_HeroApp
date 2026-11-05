@@ -1,5 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/proben_favoriten_rules.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_proben_favorit.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/magic_setup_rules.dart';
 import 'package:dsa_heldenverwaltung/ui_shared/magic_setup_dialog.dart';
 import 'package:flutter/services.dart';
@@ -30,6 +32,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/hero_herkunft_migration_rules
 import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_anzeige_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_wirkung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_zuordnung_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/meisterhandwerk_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifikator_aenderung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/resource_activation_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/house_rules/house_rule_registry.dart';

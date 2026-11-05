@@ -66,9 +66,11 @@ bool waffenlosKampfbereit(CombatConfig config) {
 
 /// Virtueller Waffenslot des waffenlosen Kampfes; wird nie gespeichert.
 ///
-/// Werte des Katalogeintrags „Hände“ (AA S. 150): TP/KK 10/3, INI −2. Die
-/// WM −1/−2 gilt nur, sobald ein Beteiligter eine Waffe führt; sie hängt vom
-/// Gegner ab und steht deshalb als Hinweis, nicht im Grundwert.
+/// Werte nach Wege des Schwerts S. 88 und dem Katalogeintrag „Hände“
+/// (AA S. 150): TP/KK 10/3, INI-Modifikator 0 im reinen waffenlosen Kampf
+/// (Entscheidung 27.10.2026: Wege des Schwerts). Der INI-Modifikator −2 und
+/// die WM −1/−2 gelten nur gegen Bewaffnete; sie hängen vom Gegner ab und
+/// stehen deshalb als Hinweis, nicht im Grundwert.
 MainWeaponSlot waffenloserSlot(WaffenlosesTalent talent) => MainWeaponSlot(
   id: talent.kampfmittelId,
   name: '${talent.talentName} (waffenlos)',
@@ -76,7 +78,7 @@ MainWeaponSlot waffenloserSlot(WaffenlosesTalent talent) => MainWeaponSlot(
   distanceClass: 'H',
   kkBase: 10,
   kkThreshold: 3,
-  iniMod: -2,
+  iniMod: 0,
   isOneHanded: false,
 );
 

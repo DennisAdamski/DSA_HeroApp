@@ -22,9 +22,13 @@ String? _text(String? wert) {
 const String kIniWurfSchritt = 'INI-Wurf';
 
 /// Initiative des Helden ohne Waffe, mindestens 0.
+///
+/// Die Initiative sinkt um die BE der Rüstung ([beKampf], nach
+/// Rüstungsgewöhnung), unabhängig vom Talent der geführten Waffe: Wege des
+/// Schwerts, Initiative. Die talentabhängige eBE gilt nur für Proben, AT und PA.
 Herleitung herleiteHeldenIni({
   required int iniBasis,
-  required int ebe,
+  required int beKampf,
   int sfBonus = 0,
   int kampfstil = 0,
   required int iniWurf,
@@ -42,10 +46,10 @@ Herleitung herleiteHeldenIni({
       quelle: 'Basiswert',
     ),
     HerleitungsSchritt(
-      bezeichnung: 'eBE',
-      betrag: ebe,
+      bezeichnung: 'BE Kampf',
+      betrag: -beKampf,
       art: HerleitungsArt.modifikator,
-      quelle: 'Behinderung',
+      quelle: 'Rüstung',
     ),
     HerleitungsSchritt(
       bezeichnung: 'SF-Bonus',

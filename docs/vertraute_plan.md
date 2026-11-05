@@ -103,8 +103,8 @@ beide Felder nicht, deshalb führt `veroeffentlichte_app.dart` sie als neu.
 Die Regeln stehen in `lib/rules/derived/companion_steigerung_rules.dart`:
 
 - `vertrautenWertSteigerbar`: INI, Loyalität und AuP sind gesperrt.
-- `vertrautenMaxStand`: höchster Steigerungsstand, nämlich ⌊1,5 × Startwert⌋
-  − Startwert. AsP und RK sind unbegrenzt.
+- `vertrautenMaxStand`: höchster Steigerungsstand, nämlich das echt gerundete
+  1,5 × Startwert − Startwert (7 ergibt 11). AsP und RK sind unbegrenzt.
 - `vertrautenSteigerungshinweis(e)`: Hinweise auf Altbuchungen, die den Regeln
   widersprechen.
 

@@ -19,6 +19,9 @@ class DiceLogEntry {
     this.total,
     this.isNeutral = false,
     this.buchungId,
+    this.zielwerte = const <int>[],
+    this.restpunkte,
+    this.probenVerweis,
     this.unbekannteFelder = const <String, Object?>{},
     this.unbekannteEnumWerte = const <String, Object?>{},
   });
@@ -58,6 +61,24 @@ class DiceLogEntry {
   /// Einträgen.
   final String? buchungId;
 
+  /// Alle Zielwerte einer Probe mit mehreren Würfen (3W20), in Wurfreihenfolge;
+  /// leer bei Einzelwurf und bei älteren Einträgen. [targetValue] hält weiter
+  /// nur den ersten. Nur belegt im JSON, damit sich der Inhalts-Hash alter
+  /// Helden nicht ändert.
+  final List<int> zielwerte;
+
+  /// Verbleibende Punkte der Probe (TaP*/ZfP*, der Rest des Ausgleichspools);
+  /// `null` bei Einzelwurf, Summenwurf und älteren Einträgen. Bei
+  /// misslungener Probe negativ. Nur belegt im JSON.
+  final int? restpunkte;
+
+  /// Stabiler Verweis auf die gewürfelte Probe im Format der häufigen Proben
+  /// (`talent:tal_klettern`, `eigenschaft:MU`, `kampf:attacke`; siehe
+  /// `HeroProbenFavorit`). Über ihn wiederholt „Nochmal würfeln“ die Probe
+  /// unabhängig vom Titeltext. `null` bei älteren Einträgen und Würfen ohne
+  /// eigene Probe. Nur belegt im JSON.
+  final String? probenVerweis;
+
   /// JSON-Felder einer neueren App-Version; bleiben beim Speichern erhalten
   /// (siehe `unbekannte_json_felder.dart`).
   final Map<String, Object?> unbekannteFelder;
@@ -83,6 +104,9 @@ class DiceLogEntry {
     'total',
     'isNeutral',
     'buchungId',
+    'zielwerte',
+    'restpunkte',
+    'probenVerweis',
   };
 
   Map<String, dynamic> toJson() {
@@ -99,6 +123,9 @@ class DiceLogEntry {
         if (total != null) 'total': total,
         if (isNeutral) 'isNeutral': true,
         'buchungId': ?buchungId,
+        if (zielwerte.isNotEmpty) 'zielwerte': List<int>.from(zielwerte),
+        'restpunkte': ?restpunkte,
+        'probenVerweis': ?probenVerweis,
       }, unbekannteFelder),
       unbekannteEnumWerte,
     );
@@ -132,6 +159,12 @@ class DiceLogEntry {
       total: (json['total'] as num?)?.toInt(),
       isNeutral: json['isNeutral'] as bool? ?? false,
       buchungId: json['buchungId'] as String?,
+      zielwerte: ((json['zielwerte'] as List?) ?? const <dynamic>[])
+          .whereType<num>()
+          .map((e) => e.toInt())
+          .toList(growable: false),
+      restpunkte: (json['restpunkte'] as num?)?.toInt(),
+      probenVerweis: _leseVerweis(json['probenVerweis']),
       unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
       unbekannteEnumWerte: festeEnumWerte(enumRoh),
     );
@@ -157,8 +190,19 @@ DiceLogEntry diceLogEntryFromResult(ProbeResult result, {DateTime? timestamp}) {
     automaticOutcome: result.automaticOutcome,
     total: usesTotal ? result.total : null,
     isNeutral: usesTotal,
+    // Mehrere Zielwerte heißen: Probe mit Ausgleichspool (TaP*/ZfP*).
+    zielwerte: !usesTotal && result.effectiveTargetValues.length > 1
+        ? List<int>.from(result.effectiveTargetValues)
+        : const <int>[],
+    restpunkte: !usesTotal && result.effectiveTargetValues.length > 1
+        ? result.remainingPool
+        : null,
+    probenVerweis: request.verweis,
   );
 }
+
+String? _leseVerweis(Object? roh) =>
+    roh is String && roh.trim().isNotEmpty ? roh : null;
 
 /// Baut einen neutralen Protokolleintrag fuer einfache Summenwuerfe.
 DiceLogEntry diceLogEntryFromRoll({

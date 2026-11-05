@@ -19,11 +19,25 @@ jobs:
       contents: write
     outputs:
       changed: ${{ steps.merge.outputs.changed }}
+      relevant: ${{ steps.relevance.outputs.relevant }}
       sha: ${{ steps.merge.outputs.sha }}
     steps:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
+      - name: Produktrelevante Aenderungen bestimmen
+        id: relevance
+        env:
+          BEFORE_SHA: ${{ github.event.before }}
+          CURRENT_SHA: ${{ github.sha }}
+        run: |
+          if printf '%s' "$BEFORE_SHA" | grep -Eq '^0+$'; then
+            changed_files="$(git show --pretty='' --name-only "$CURRENT_SHA")"
+          else
+            changed_files="$(git diff --name-only "$BEFORE_SHA" "$CURRENT_SHA")"
+          fi
+          relevant="$(printf '%s\n' "$changed_files" | python tool/ci_relevant_changes.py)"
+          echo "relevant=$relevant" >> "$GITHUB_OUTPUT"
       - name: Testbranch aktualisieren
         id: merge
         run: bash tool/sync_main_to_test.sh
@@ -36,5 +50,6 @@ jobs:
     with:
       ref: ${{ needs.sync.outputs.sha }}
       branch: test
+      run_full_suite: ${{ needs.sync.outputs.relevant == 'true' }}
     secrets:
       FIREBASE_SERVICE_ACCOUNT_HELDENSYNC_CCF0B: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_HELDENSYNC_CCF0B }}

@@ -37,9 +37,11 @@ void main() {
       expect(_rechne(gespeichert: 6, zfw: 6).gedeckelt, isFalse);
     });
 
-    test('fremde Repräsentation: nur die Hälfte, abgerundet', () {
-      expect(_rechne(gespeichert: 7, gleich: false).bonus, 3);
+    test('fremde Repräsentation: nur die Hälfte, aufgerundet', () {
+      // Halbierungen werden aufgerundet (Wege der Helden S. 6): 7 -> 3,5 -> 4.
+      expect(_rechne(gespeichert: 7, gleich: false).bonus, 4);
       expect(_rechne(gespeichert: 8, gleich: false).bonus, 4);
+      expect(_rechne(gespeichert: 1, gleich: false).bonus, 1);
       expect(_rechne(gespeichert: 7, gleich: false).halbiert, isTrue);
     });
 

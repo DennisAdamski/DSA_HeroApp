@@ -159,7 +159,8 @@ List<String> waffenloseHinweise(WaffenloseKampfwerte w) => [
   if (!w.kampftechnikAktiv)
     'Ohne waffenlose Kampftechnik: je KR Raufen oder Ringen festlegen, '
         'Wechsel kostet eine Aktion Position; nur Standard-AT/PA.',
-  'Gegen Bewaffnete (optional, WdS S. 89; AA S. 150): AT −1, PA −2; gelungene PA '
+  'Gegen Bewaffnete (optional, WdS S. 88 f.; AA S. 150): INI −2, AT −1, PA −2; '
+      'gelungene PA '
       'gegen eine Waffe außerhalb von DK Handgemenge: halber Schaden. '
       'Fernkampf und Lanzen nicht waffenlos parierbar. Panzerhandschuh, '
       'beschlagene Stiefel oder Metallhelm: +2 TP(A) auf Schläge, Tritte, '

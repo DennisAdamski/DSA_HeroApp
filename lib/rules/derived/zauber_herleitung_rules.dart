@@ -16,6 +16,8 @@
 /// - AsP-Kosten: Katalogtext, oft Freitext; nur Hinweis im Probendialog.
 library;
 
+import 'package:dsa_heldenverwaltung/rules/derived/proben_favoriten_rules.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_proben_favorit.dart';
 import 'package:dsa_heldenverwaltung/catalog/spell_def.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_spell_entry.dart';
@@ -142,9 +144,13 @@ ZauberProbenwert? zauberProbenwertFuer({
 
 /// Zauberprobe über den gemeinsamen Probenbauer, mit ZfW*-Herleitung,
 /// Spezialisierungsschalter und Kostenhinweis.
+///
+/// [zauberId] ist die Katalog-ID; mit ihr trägt die Probe ihren stabilen
+/// Verweis ins Würfelprotokoll.
 ResolvedProbeRequest zauberprobeAus({
   required ZauberProbenwert wert,
   required String titel,
+  String? zauberId,
 }) => buildSpellProbeRequest(
   title: titel,
   targets: wert.ziele,
@@ -153,6 +159,9 @@ ResolvedProbeRequest zauberprobeAus({
   zfwHerleitung: wert.herleitung,
   hinweise: zauberprobenHinweise(wert),
   kontext: wert.kontext,
+  verweis: zauberId == null || zauberId.trim().isEmpty
+      ? null
+      : probenVerweis(ProbenFavoritArt.zauber, zauberId),
 );
 
 /// Hinweise zur Zauberprobe. Spezialisierungen (Auswahl im Dialog) und Kosten

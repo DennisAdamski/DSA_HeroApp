@@ -9,27 +9,38 @@ import 'package:dsa_heldenverwaltung/data/rules_search/rules_index_types.dart';
 
 import 'rules_search/rules_index_test_fixture.dart';
 
-/// Löst denselben Remote-Cache-Pfad wie `rules_index_search_io.dart` auf
-/// (Pfad-Auflösungsfunktion dort ist privat, daher hier dupliziert), damit
-/// Tests die Datei nach dem Lauf wieder entfernen können.
-String _resolveRemoteCacheDbPathForCleanup() {
-  final override = Platform.environment['DSA_MCP_DATA_DIR'];
-  final String dataDir;
-  if (override != null && override.isNotEmpty) {
-    dataDir = override;
-  } else {
-    final localAppData = Platform.environment['LOCALAPPDATA'];
-    if (localAppData != null && localAppData.isNotEmpty) {
-      dataDir = p.join(localAppData, 'dsa-rules-mcp');
-    } else {
-      final home = Platform.environment['HOME'] ?? '';
-      dataDir = p.join(home, '.local', 'share', 'dsa-rules-mcp');
-    }
-  }
-  return p.join(dataDir, 'index_remote.sqlite');
-}
-
 void main() {
+  test(
+    'explizites Datenverzeichnis lässt benachbarte Benutzerdateien unberührt',
+    () async {
+      final basis = Directory.systemTemp.createTempSync(
+        'rules-index-isolation-',
+      );
+      addTearDown(() => basis.deleteSync(recursive: true));
+      final testDaten = Directory(p.join(basis.path, 'test-daten'));
+      final benutzerDaten = Directory(p.join(basis.path, 'benutzer-daten'))
+        ..createSync();
+      final sentinel = File(p.join(benutzerDaten.path, 'index_remote.sqlite'))
+        ..writeAsStringSync('nicht verändern');
+
+      final search = await importRulesIndexDatabase(
+        buildMinimalRulesIndexBytes(),
+        dataDirectory: testDaten.path,
+      );
+      search.dispose();
+      final reopened = await openRulesIndexSearch(
+        dataDirectory: testDaten.path,
+      );
+      reopened?.dispose();
+
+      expect(sentinel.readAsStringSync(), 'nicht verändern');
+      expect(
+        File(p.join(testDaten.path, 'index_remote.sqlite')).existsSync(),
+        isTrue,
+      );
+    },
+  );
+
   test('rulesIndexSearchSupported liefert auf dem Testrechner true', () {
     // flutter test laeuft auf der Dart-VM eines Desktop-Betriebssystems
     // (Windows/Linux/macOS), nie auf Mobile/Web.
@@ -37,7 +48,11 @@ void main() {
   });
 
   test('openRulesIndexSearch loest asynchron auf und gibt frei', () async {
-    final future = openRulesIndexSearch();
+    final dataDirectory = Directory.systemTemp.createTempSync(
+      'rules-index-open-',
+    );
+    addTearDown(() => dataDirectory.deleteSync(recursive: true));
+    final future = openRulesIndexSearch(dataDirectory: dataDirectory.path);
     expect(future, isA<Future<RulesIndexSearch?>>());
 
     final search = await future;
@@ -48,23 +63,27 @@ void main() {
   });
 
   group('importRulesIndexDatabase (Remote-Cache-Pfad)', () {
-    final remoteCachePath = _resolveRemoteCacheDbPathForCleanup();
+    late Directory dataDirectory;
+    late String remoteCachePath;
 
-    tearDown(() {
-      for (final suffix in const ['', '.tmp']) {
-        final file = File('$remoteCachePath$suffix');
-        if (file.existsSync()) {
-          file.deleteSync();
-        }
-      }
+    setUp(() {
+      dataDirectory = Directory.systemTemp.createTempSync(
+        'rules-index-import-',
+      );
+      remoteCachePath = p.join(dataDirectory.path, 'index_remote.sqlite');
     });
+
+    tearDown(() => dataDirectory.deleteSync(recursive: true));
 
     test(
       'importiert eine gueltige Datenbank und macht sie durchsuchbar',
       () async {
         final bytes = buildMinimalRulesIndexBytes();
 
-        final search = await importRulesIndexDatabase(bytes);
+        final search = await importRulesIndexDatabase(
+          bytes,
+          dataDirectory: dataDirectory.path,
+        );
         try {
           expect(File(remoteCachePath).existsSync(), isTrue);
           final hits = search.search(
@@ -83,10 +102,15 @@ void main() {
       'als Fallback, wenn keine lokale index.sqlite existiert',
       () async {
         final bytes = buildMinimalRulesIndexBytes();
-        final imported = await importRulesIndexDatabase(bytes);
+        final imported = await importRulesIndexDatabase(
+          bytes,
+          dataDirectory: dataDirectory.path,
+        );
         imported.dispose();
 
-        final search = await openRulesIndexSearch();
+        final search = await openRulesIndexSearch(
+          dataDirectory: dataDirectory.path,
+        );
         expect(search, isNotNull);
         search?.dispose();
       },
@@ -98,7 +122,7 @@ void main() {
         final bytes = Uint8List.fromList('not a database'.codeUnits);
 
         await expectLater(
-          importRulesIndexDatabase(bytes),
+          importRulesIndexDatabase(bytes, dataDirectory: dataDirectory.path),
           throwsA(isA<FormatException>()),
         );
         expect(File('$remoteCachePath.tmp').existsSync(), isFalse);
@@ -109,13 +133,19 @@ void main() {
     test('ein fehlgeschlagener Import laesst einen zuvor funktionierenden '
         'Cache unangetastet', () async {
       final validBytes = buildMinimalRulesIndexBytes();
-      final firstImport = await importRulesIndexDatabase(validBytes);
+      final firstImport = await importRulesIndexDatabase(
+        validBytes,
+        dataDirectory: dataDirectory.path,
+      );
       firstImport.dispose();
       final workingBytesOnDisk = File(remoteCachePath).readAsBytesSync();
 
       final corruptBytes = Uint8List.fromList('not a database'.codeUnits);
       await expectLater(
-        importRulesIndexDatabase(corruptBytes),
+        importRulesIndexDatabase(
+          corruptBytes,
+          dataDirectory: dataDirectory.path,
+        ),
         throwsA(isA<FormatException>()),
       );
 

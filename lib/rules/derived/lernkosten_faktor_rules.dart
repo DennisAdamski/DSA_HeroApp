@@ -1,8 +1,10 @@
 /// Vorteile, die die AP-Kosten des Lernens im Ganzen senken (ARCH-04).
 ///
-/// Gutes Gedächtnis und Eidetisches Gedächtnis (Wege der Helden S. 251/253)
-/// verbilligen Wissenstalente, Sprachen und Schriften sowie Zauberfertigkeiten
-/// auf drei Viertel bzw. die Hälfte der Kosten. Sie wirken auf die Kosten nach
+/// Eidetisches Gedächtnis (Wege der Helden S. 252) verbilligt Wissenstalente,
+/// Sprachen und Schriften sowie Zauberfertigkeiten auf die Hälfte der Kosten.
+/// Gutes Gedächtnis (Wege der Helden S. 252) nennt Wissenstalente nicht und
+/// verbilligt Sprachen und Schriften sowie Zauberfertigkeiten auf drei Viertel
+/// der Kosten. Die Faktoren wirken auf die Kosten nach
 /// allen Spaltenverschiebungen (Begabung, Sondererfahrung, Hexalogie …) und
 /// schließen einander aus. Die Akademische Ausbildung (Gelehrter/Magier) gilt
 /// nur bei der Heldenerschaffung und taucht deshalb hier nicht auf.
@@ -71,6 +73,8 @@ List<LernkostenFaktor> lernkostenFaktoren(HeroSheet hero, LernzielArt art) {
     ];
   }
   if (_hatVorteil(hero, kGutesGedaechtnisId, 'gutes gedächtnis')) {
+    // Das Buch nennt für Gutes Gedächtnis keine Wissenstalente.
+    if (art == LernzielArt.wissenstalent) return const <LernkostenFaktor>[];
     return const <LernkostenFaktor>[
       LernkostenFaktor(
         bezeichnung: 'Gutes Gedächtnis (¾)',

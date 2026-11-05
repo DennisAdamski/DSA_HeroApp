@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:dsa_heldenverwaltung/rules/derived/string_normalize.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_adventure_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_note_entry.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
@@ -61,7 +62,7 @@ List<int> _sortiere(List<_Eintrag> eintraege, AbenteuerSortierung sortierung) {
       return indizes;
     case AbenteuerSortierung.alphabetisch:
       final schluessel = [
-        for (final e in eintraege) _vergleichsschluessel(e.text),
+        for (final e in eintraege) vergleichsschluessel(e.text),
       ];
       indizes.sort((a, b) {
         // Leere Titel ans Ende, sonst stünden „Ohne Titel“-Karten vorn.
@@ -75,14 +76,9 @@ List<int> _sortiere(List<_Eintrag> eintraege, AbenteuerSortierung sortierung) {
   }
 }
 
-// Umlaute wie ihre Grundbuchstaben, damit „Ärger“ neben „Ast“ steht.
-String _vergleichsschluessel(String text) => text
-    .trim()
-    .toLowerCase()
-    .replaceAll('ä', 'a')
-    .replaceAll('ö', 'o')
-    .replaceAll('ü', 'u')
-    .replaceAll('ß', 'ss');
+/// Vergleichsform eines Textes: Umlaute wie ihre Grundbuchstaben, damit „Ärger“
+/// neben „Ast“ steht und die Suche „Ärger“ auch „aerger“ nicht verfehlt.
+String vergleichsschluessel(String text) => suchFaltung(text);
 
 /// Leise Auswahl der Reihenfolge von Notizen und Personen.
 ///

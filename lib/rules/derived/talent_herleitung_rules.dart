@@ -387,19 +387,26 @@ Herleitung herleiteMetaTalentTaw({
   final werte = <int>[
     for (final id in componentTalentIds) talentEntries[id]?.talentValue ?? 0,
   ];
+  final basis = splitMetaTalentBaseTaw(
+    talentEntries: talentEntries,
+    componentTalentIds: componentTalentIds,
+  );
   return Herleitung(
     bezeichnung: 'TaW*',
     schritte: <HerleitungsSchritt>[
       HerleitungsSchritt(
-        bezeichnung: 'Mittelwert der Bestandteile',
-        betrag: computeMetaTalentBaseTaw(
-          talentEntries: talentEntries,
-          componentTalentIds: componentTalentIds,
-        ),
+        bezeichnung: basis.gedeckelt
+            ? 'Mittelwert der Bestandteile (gedeckelt)'
+            : 'Mittelwert der Bestandteile',
+        betrag: basis.wert,
         art: HerleitungsArt.grundwert,
         formel: werte.isEmpty
             ? null
-            : '(${werte.join(' + ')}) / ${werte.length}, kaufmännisch gerundet',
+            : '(${werte.join(' + ')}) / ${werte.length}, kaufmännisch '
+                  'gerundet = ${basis.mittelwert}'
+                  '${basis.gedeckelt ? ', höchstens das Doppelte des niedrigsten '
+                            'Bestandteils (2 × ${basis.deckel ~/ 2} = '
+                            '${basis.deckel})' : ''}',
       ),
       HerleitungsSchritt(
         bezeichnung: kTalentEbeSchritt,

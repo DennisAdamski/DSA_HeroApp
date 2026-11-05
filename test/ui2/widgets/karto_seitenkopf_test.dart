@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_spielraster_bedienung.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_theme.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
 import 'package:dsa_heldenverwaltung/ui2/widgets/karto_seitenkopf.dart';
@@ -177,5 +178,120 @@ void main() {
     // Abschnittskanten ein Liniengitter; getrennt wird hier durch Weissraum.
     await pumpKopf(tester, const KartoSeitenkopf(titel: 'Am Spieltisch'));
     expect(find.byType(Divider), findsNothing);
+  });
+
+  group('feste Mitte neben dem Titel', () {
+    const mitteSchluessel = ValueKey<String>('test-mitte');
+
+    // Wie die Schnellaktionen: eine Leiste, die umbrechen darf.
+    Widget mitteLeiste() => Wrap(
+      key: mitteSchluessel,
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        for (final name in [
+          'Probe suchen',
+          'Regeln',
+          'Rast',
+          'Schaden',
+          'Gefecht',
+        ])
+          OutlinedButton(onPressed: () {}, child: Text(name)),
+      ],
+    );
+
+    Future<void> zeigeKopf(
+      WidgetTester tester, {
+      required double breite,
+      required double skalierung,
+    }) async {
+      tester.view.devicePixelRatio = 1;
+      tester.view.physicalSize = Size(breite, 900);
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: buildKartoTheme(
+            brightness: Brightness.light,
+            centerAppBarTitle: false,
+          ),
+          builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(context)
+                .copyWith(textScaler: TextScaler.linear(skalierung)),
+            child: child!,
+          ),
+          home: Scaffold(
+            body: Align(
+              alignment: Alignment.topLeft,
+              child: KartoSeitenkopf(
+                titel: 'Am Spieltisch',
+                mitte: mitteLeiste(),
+                // Die Aktion des Anordnen-Modus ist die breiteste.
+                aktion: KartoAnordnenAbschluss(
+                  speichert: false,
+                  onStandard: () {},
+                  onAbbrechen: () {},
+                  onFertig: () {},
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+    }
+
+    // Ob die Mitte in der Zeile des Titels steht (sonst darunter).
+    bool nebenTitel(WidgetTester tester) {
+      final titel = tester.getRect(find.text('Am Spieltisch'));
+      final mitte = tester.getRect(find.byKey(mitteSchluessel));
+      return mitte.top < titel.bottom;
+    }
+
+    for (final breite in [1200.0, 1440.0, 1920.0]) {
+      for (final skalierung in [1.0, 1.3, 1.5, 2.0]) {
+        testWidgets('bei $breite dp und Schrift $skalierung ohne Überlauf', (
+          tester,
+        ) async {
+          await zeigeKopf(tester, breite: breite, skalierung: skalierung);
+          expect(tester.takeException(), isNull);
+        });
+      }
+    }
+
+    testWidgets('normale Schrift: ab 1200 dp neben dem Titel', (tester) async {
+      await zeigeKopf(tester, breite: 1200, skalierung: 1);
+      expect(nebenTitel(tester), isTrue);
+    });
+
+    testWidgets('normale Schrift: unter 1200 dp unter dem Titel', (
+      tester,
+    ) async {
+      await zeigeKopf(tester, breite: 1100, skalierung: 1);
+      expect(nebenTitel(tester), isFalse);
+    });
+
+    testWidgets('große Schrift rückt die Mitte unter den Titel', (
+      tester,
+    ) async {
+      await zeigeKopf(tester, breite: 1440, skalierung: 2);
+      expect(nebenTitel(tester), isFalse);
+      // Mit genug Breite steht sie auch dann wieder daneben.
+      await zeigeKopf(tester, breite: 2600, skalierung: 2);
+      expect(nebenTitel(tester), isTrue);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('die Schwelle wächst mit der Schrift', (tester) async {
+      await zeigeKopf(tester, breite: 1440, skalierung: 1.5);
+      expect(nebenTitel(tester), isFalse);
+      await zeigeKopf(tester, breite: 1920, skalierung: 1.5);
+      expect(nebenTitel(tester), isTrue);
+    });
+
+    testWidgets('kleinere Schrift senkt die Schwelle nicht', (tester) async {
+      await zeigeKopf(tester, breite: 1100, skalierung: 0.8);
+      expect(nebenTitel(tester), isFalse);
+    });
   });
 }

@@ -2,6 +2,14 @@ rules_version = '2';
 
 service firebase.storage {
   match /b/{bucket}/o {
+    // Regel-Wissensbasis (SPIEL-04): Clients lesen und schreiben hier nie.
+    // Die Cloud Function `rulesIndexApi` verteilt kurzlebige URLs, hochgeladen
+    // wird von Hand (`dsa-rules-cli publish`). Ohne diese Regel wäre `rules/`
+    // zwar ebenfalls gesperrt, aber nur durch das Fehlen einer Freigabe.
+    match /rules/{allPaths=**} {
+      allow read, write: if false;
+    }
+
     // Avatarbilder gehoeren ausschliesslich ihrem Konto.
     //
     // `delete` steht bewusst getrennt von `write`: Bei einer Loeschung ist

@@ -42,8 +42,9 @@ class WundWirkung {
   /// Eigenschaftsverluste, die ausschließlich bei Proben zählen.
   final AttributeModifiers eigenschaften;
 
-  /// [at] und [pa] gelten nur für Waffen in diesem Arm („wenn er diesen Arm
-  /// benutzt“, WdS S. 109) und nicht allgemein.
+  /// [at], [pa] und die KK-/FF-Verluste in [eigenschaften] gelten nur für
+  /// Waffen und Handlungen mit diesem Arm („wenn er diesen Arm benutzt“,
+  /// WdS S. 109) und nicht allgemein.
   final bool armgebunden;
 }
 

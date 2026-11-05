@@ -20,6 +20,11 @@ on:
         description: Zielbranch der wiederverwendeten CI
         required: true
         type: string
+      run_full_suite:
+        description: Produkt-CI statt nur stabile Gates ausfuehren
+        required: false
+        default: true
+        type: boolean
     secrets:
       FIREBASE_SERVICE_ACCOUNT_HELDENSYNC_CCF0B:
         required: true
@@ -32,9 +37,47 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  changes:
+    name: Relevante Aenderungen bestimmen
+    runs-on: ubuntu-latest
+    outputs:
+      relevant: ${{ steps.detect.outputs.relevant }}
+
+    steps:
+      - name: Repository auschecken
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+          fetch-depth: 0
+
+      - name: Geaenderte Pfade einordnen
+        id: detect
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BEFORE_SHA: ${{ github.event.before }}
+          CURRENT_SHA: ${{ inputs.ref || github.sha }}
+          BASE_REF: ${{ github.base_ref }}
+          REUSABLE_RELEVANT: ${{ inputs.run_full_suite }}
+        run: |
+          if [ "$EVENT_NAME" = "workflow_call" ]; then
+            relevant="$REUSABLE_RELEVANT"
+          else
+            if [ "$EVENT_NAME" = "pull_request" ]; then
+              changed_files="$(git diff --name-only "origin/$BASE_REF"...HEAD)"
+            elif printf '%s' "$BEFORE_SHA" | grep -Eq '^0+$'; then
+              changed_files="$(git show --pretty='' --name-only "$CURRENT_SHA")"
+            else
+              changed_files="$(git diff --name-only "$BEFORE_SHA" "$CURRENT_SHA")"
+            fi
+            relevant="$(printf '%s\n' "$changed_files" | python tool/ci_relevant_changes.py)"
+          fi
+          echo "relevant=$relevant" >> "$GITHUB_OUTPUT"
+
   feedback-backend:
     name: Feedback-Backend
     runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.relevant == 'true'
 
     steps:
       - name: Repository auschecken
@@ -66,6 +109,8 @@ jobs:
   analyze:
     name: Statische Analyse & Lint
     runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.relevant == 'true'
 
     steps:
       - name: Repository auschecken
@@ -89,10 +134,23 @@ jobs:
       - name: Statische Analyse ausfuehren
         run: flutter analyze
 
-  test:
-    name: Unit- & Widget-Tests
+  test-shard:
+    name: Test-Shard ${{ matrix.shard.label }}
     runs-on: ubuntu-latest
-    needs: analyze
+    needs: changes
+    if: needs.changes.outputs.relevant == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        shard:
+          - index: 0
+            label: '1/4'
+          - index: 1
+            label: '2/4'
+          - index: 2
+            label: '3/4'
+          - index: 3
+            label: '4/4'
 
     steps:
       - name: Repository auschecken
@@ -111,11 +169,57 @@ jobs:
         run: flutter pub get
 
       - name: Tests ausfuehren
-        run: flutter test
+        run: |
+          mkdir -p reports
+          mapfile -t test_files < <(python tool/flutter_test_shards.py \
+            --total-shards 4 \
+            --shard-index ${{ matrix.shard.index }})
+          test "${#test_files[@]}" -gt 0
+          flutter test --no-pub "${test_files[@]}" \
+            --file-reporter "json:reports/flutter-tests-${{ matrix.shard.index }}.json"
+
+      - name: Laufzeit zusammenfassen
+        if: always()
+        run: |
+          report="reports/flutter-tests-${{ matrix.shard.index }}.json"
+          if [ -f "$report" ]; then
+            python tool/summarize_flutter_tests.py \
+              "$report" \
+              --shard "${{ matrix.shard.label }}"
+          fi
+
+      - name: Testreport hochladen
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: flutter-tests-${{ matrix.shard.index }}
+          path: reports/flutter-tests-${{ matrix.shard.index }}.json
+          if-no-files-found: warn
+          retention-days: 3
+
+  test:
+    name: Unit- & Widget-Tests
+    if: always()
+    needs: [changes, test-shard]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Alle Test-Shards bestaetigen
+        env:
+          RELEVANT: ${{ needs.changes.outputs.relevant }}
+          SHARD_RESULT: ${{ needs.test-shard.result }}
+        run: |
+          if [ "$RELEVANT" != "true" ]; then
+            echo "Nur Dokumentation geaendert; Flutter-Tests entfallen."
+            exit 0
+          fi
+          test "$SHARD_RESULT" = "success"
 
   loc-budget:
     name: LOC-Budget-Pruefung (Screens ≤ 700 Zeilen)
     runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.relevant == 'true'
 
     steps:
       - name: Repository auschecken
@@ -131,13 +235,24 @@ jobs:
       - name: Main-Test-Sync testen
         run: python tool/test_main_test_sync.py
 
+      - name: Testwerkzeuge und Regeltest-Inventur pruefen
+        run: |
+          python -m unittest \
+            tool/test_ci_relevant_changes.py \
+            tool/test_flutter_ci_structure.py \
+            tool/test_flutter_test_shards.py \
+            tool/test_rule_test_evidence.py \
+            tool/test_summarize_flutter_tests.py
+          python tool/check_rule_test_evidence.py
+
       - name: LOC-Budget pruefen
         run: python tool/check_screen_loc_budget.py --max-lines 700
 
   web-build:
     name: Web-Release-Build
     runs-on: ubuntu-latest
-    needs: analyze
+    needs: [changes, analyze]
+    if: needs.changes.outputs.relevant == 'true'
     steps:
       - uses: actions/checkout@v7
         with:
@@ -154,6 +269,8 @@ jobs:
           BUILD_COMMIT: ${{ inputs.ref || github.sha }}
           BRANCH: ${{ inputs.branch || github.ref_name }}
           FEEDBACK_API_URL: ${{ (inputs.branch || github.ref_name) == 'test' && 'https://europe-west10-heldensync-ccf0b.cloudfunctions.net/feedbackApiTest' || (inputs.branch || github.ref_name) == 'main' && 'https://europe-west10-heldensync-ccf0b.cloudfunctions.net/feedbackApi' || '' }}
+          # Zugang zur Regel-Wissensbasis (SPIEL-04); leer heißt: kein Cloud-Weg.
+          RULES_INDEX_API_URL: ${{ (inputs.branch || github.ref_name) == 'test' && 'https://europe-west10-heldensync-ccf0b.cloudfunctions.net/rulesIndexApiTest' || (inputs.branch || github.ref_name) == 'main' && 'https://europe-west10-heldensync-ccf0b.cloudfunctions.net/rulesIndexApi' || '' }}
           FIREBASE_APP_CHECK_SITE_KEY: ${{ vars.FIREBASE_APP_CHECK_SITE_KEY }}
           LEGAL_RESPONSIBLE_NAME: ${{ vars.LEGAL_RESPONSIBLE_NAME }}
           LEGAL_STREET_ADDRESS: ${{ vars.LEGAL_STREET_ADDRESS }}
@@ -174,6 +291,7 @@ jobs:
             --dart-define=BUILD_COMMIT="$BUILD_COMMIT" \
             --dart-define=BUILD_TIME="$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
             --dart-define=FEEDBACK_API_URL="$FEEDBACK_API_URL" \
+            --dart-define=RULES_INDEX_API_URL="$RULES_INDEX_API_URL" \
             --dart-define=FIREBASE_APP_CHECK_SITE_KEY="$FIREBASE_APP_CHECK_SITE_KEY" \
             --dart-define=LEGAL_RESPONSIBLE_NAME="$LEGAL_RESPONSIBLE_NAME" \
             --dart-define=LEGAL_STREET_ADDRESS="$LEGAL_STREET_ADDRESS" \
@@ -201,8 +319,8 @@ jobs:
 
   deploy:
     name: Firebase Hosting veröffentlichen
-    if: github.event_name == 'push' && (inputs.branch == '' || inputs.branch == 'test')
-    needs: [feedback-backend, analyze, test, loc-budget, web-build]
+    if: needs.changes.outputs.relevant == 'true' && github.event_name == 'push' && (inputs.branch == '' || inputs.branch == 'test')
+    needs: [changes, feedback-backend, analyze, test, loc-budget, web-build]
     runs-on: ubuntu-latest
     # Serialisierung verhindert parallele Veröffentlichungen auf dieselbe Site.
     concurrency:
@@ -226,6 +344,11 @@ jobs:
           current_sha="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/$BRANCH" --jq '.object.sha')"
           if [ "$current_sha" = "$EXPECTED_SHA" ]; then
             echo "deploy=true" >> "$GITHUB_OUTPUT"
+          elif git fetch --no-tags origin "$current_sha" && \
+              git merge-base --is-ancestor "$EXPECTED_SHA" "$current_sha" && \
+              [ "$(git diff --name-only "$EXPECTED_SHA" "$current_sha" | python tool/ci_relevant_changes.py)" = "false" ]; then
+            echo "deploy=true" >> "$GITHUB_OUTPUT"
+            echo "Seit dem geprueften Stand wurde nur Dokumentation geaendert."
           else
             echo "deploy=false" >> "$GITHUB_OUTPUT"
             echo "Überholter Branch-Stand: Veröffentlichung übersprungen."

@@ -2,6 +2,8 @@ import 'dart:math';
 
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/herleitung.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/wund_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/wund_zonen_rules.dart';
 
 /// Abstraktion ueber die Zufallsquelle der Wuerfel-Engine.
 abstract interface class DiceRoller {
@@ -43,6 +45,85 @@ ResolvedProbeRequest wendeBedingtenPoolSchrittAn(ResolvedProbeRequest request) {
             schritte: <HerleitungsSchritt>[...herleitung.schritte, schritt],
           ),
     clearBedingterPoolSchritt: true,
+  );
+}
+
+/// Ob [abzug] mindestens einen Zielwert von [request] betrifft.
+bool zielAbzugBetrifftProbe(
+  ResolvedProbeRequest request,
+  ProbeZielAbzug abzug,
+) {
+  return request.targets.any((ziel) => (abzug.abzuege[ziel.label] ?? 0) != 0);
+}
+
+/// Rechnet die gewählten [abzuege] auf die Zielwerte von [request].
+///
+/// Ohne Auswahl kommt dieselbe Instanz zurück. Das Ergebnis trägt keine
+/// bedingten Abzüge mehr, damit sie nicht doppelt zählen.
+ResolvedProbeRequest wendeZielAbzuegeAn(
+  ResolvedProbeRequest request,
+  Iterable<ProbeZielAbzug> abzuege,
+) {
+  final gewaehlt = abzuege.toList();
+  if (gewaehlt.isEmpty) {
+    return request;
+  }
+  return request.copyWith(
+    targets: <ProbeTargetValue>[
+      for (final ziel in request.targets)
+        ProbeTargetValue(
+          label: ziel.label,
+          value:
+              ziel.value +
+              gewaehlt.fold<int>(
+                0,
+                (summe, abzug) => summe + (abzug.abzuege[ziel.label] ?? 0),
+              ),
+        ),
+    ],
+    bedingteZielAbzuege: const <ProbeZielAbzug>[],
+  );
+}
+
+/// Die KK-/FF-Abzüge der verwundeten Arme als wählbare Zielabzüge.
+///
+/// Je Arm ein Eintrag mit Rolle („Schwertarm“/„Schildarm“), weil der Abzug
+/// nur mit dem Arm gilt, der die Handlung ausführt (WdS S. 108 f.).
+List<ProbeZielAbzug> armWundenZielAbzuege(WundEffekte wunden) {
+  return <ProbeZielAbzug>[
+    for (final eintrag in wunden.armEigenschaftsVerluste.entries)
+      if (eintrag.value.kk != 0 || eintrag.value.ff != 0)
+        ProbeZielAbzug(
+          bezeichnung: wundZonenAnzeige(
+            eintrag.key,
+            linkshaender: wunden.linkshaender,
+          ),
+          abzuege: <String, int>{
+            'KK': eintrag.value.kk,
+            'FF': eintrag.value.ff,
+          },
+        ),
+  ];
+}
+
+/// Hängt die Armwunden-Abzüge an alle Proben, die KK oder FF würfeln.
+///
+/// Proben ohne KK/FF und Helden ohne Armwunden bleiben unverändert.
+ResolvedProbeRequest probeMitArmwundenAbzug(
+  ResolvedProbeRequest request,
+  WundEffekte wunden,
+) {
+  final passend = armWundenZielAbzuege(wunden)
+      .where((abzug) => zielAbzugBetrifftProbe(request, abzug))
+      .toList();
+  if (passend.isEmpty) {
+    return request;
+  }
+  return request.copyWith(
+    bedingteZielAbzuege: <ProbeZielAbzug>[
+      ...request.bedingteZielAbzuege,
+      ...passend,
+    ],
   );
 }
 

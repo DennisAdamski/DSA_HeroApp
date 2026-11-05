@@ -1,3 +1,6 @@
+export 'package:dsa_heldenverwaltung/domain/hero_adventure_date_value.dart';
+
+import 'package:dsa_heldenverwaltung/domain/hero_adventure_date_value.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_note_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
 import 'package:dsa_heldenverwaltung/domain/unbekannte_json_felder.dart';
@@ -126,86 +129,6 @@ class HeroAdventureSeReward {
   }
 }
 
-/// Strukturierter Datumswert fuer Abenteuerangaben.
-class HeroAdventureDateValue {
-  /// Erzeugt ein persistierbares Abenteuerdatum.
-  const HeroAdventureDateValue({
-    this.day = '',
-    this.month = '',
-    this.year = '',
-    this.unbekannteFelder = const <String, Object?>{},
-  });
-
-  /// Tag des Datums.
-  final String day;
-
-  /// Monat des Datums.
-  final String month;
-
-  /// Jahr des Datums.
-  final String year;
-
-  /// Gibt an, ob mindestens ein Datumsfeld belegt ist.
-  bool get hasContent {
-    return day.trim().isNotEmpty ||
-        month.trim().isNotEmpty ||
-        year.trim().isNotEmpty;
-  }
-
-  /// JSON-Felder einer neueren App-Version; bleiben beim Speichern erhalten
-  /// (siehe `unbekannte_json_felder.dart`).
-  final Map<String, Object?> unbekannteFelder;
-
-  /// Alle Schluessel, die [fromJson] liest; alles andere bleibt erhalten.
-  static const Set<String> jsonSchluessel = <String>{'day', 'month', 'year'};
-
-  /// Liefert eine Kopie mit gezielt ersetzten Feldern.
-  HeroAdventureDateValue copyWith({
-    String? day,
-    String? month,
-    String? year,
-    Map<String, Object?>? unbekannteFelder,
-  }) {
-    return HeroAdventureDateValue(
-      day: day ?? this.day,
-      month: month ?? this.month,
-      year: year ?? this.year,
-      unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
-    );
-  }
-
-  /// Serialisiert das Datum fuer Persistenz und Export.
-  Map<String, dynamic> toJson() {
-    return mitUnbekanntenFeldern(<String, dynamic>{
-      'day': day,
-      'month': month,
-      'year': year,
-    }, unbekannteFelder);
-  }
-
-  /// Laedt ein Abenteuerdatum tolerant gegenueber fehlenden Feldern.
-  static HeroAdventureDateValue fromJson(Map<String, dynamic> json) {
-    String getString(String key) => json[key]?.toString() ?? '';
-
-    return HeroAdventureDateValue(
-      day: getString('day'),
-      month: getString('month'),
-      year: getString('year'),
-      unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
-    );
-  }
-
-  /// Wandelt ein `DateTime` in ein weltliches Abenteuerdatum um.
-  static HeroAdventureDateValue fromDateTime(DateTime value) {
-    final localValue = value.toLocal();
-    return HeroAdventureDateValue(
-      day: localValue.day.toString().padLeft(2, '0'),
-      month: localValue.month.toString().padLeft(2, '0'),
-      year: localValue.year.toString(),
-    );
-  }
-}
-
 /// Beschreibt eine abenteuerspezifische Person oder NSC-Referenz.
 class HeroAdventurePersonEntry {
   /// Erzeugt einen persistierbaren Personeneintrag.
@@ -213,6 +136,8 @@ class HeroAdventurePersonEntry {
     required this.id,
     this.name = '',
     this.description = '',
+    this.ort = '',
+    this.datum = const HeroAdventureDateValue(),
     this.lastModified,
     this.unbekannteFelder = const <String, Object?>{},
   });
@@ -225,6 +150,14 @@ class HeroAdventurePersonEntry {
 
   /// Kurze Kontextbeschreibung der Person.
   final String description;
+
+  /// Ort der Begegnung; leer bei Bestandspersonen. Nur belegt im JSON, damit
+  /// sich der Inhalts-Hash alter Helden nicht aendert.
+  final String ort;
+
+  /// Aventurisches Datum der Begegnung; leer bei Bestandspersonen. Nur
+  /// belegt im JSON ([HeroAdventureDateValue.istBelegt]).
+  final HeroAdventureDateValue datum;
 
   /// Zeitpunkt der letzten Bearbeitung (UTC); `null` bei Bestandspersonen.
   ///
@@ -246,6 +179,8 @@ class HeroAdventurePersonEntry {
     'id',
     'name',
     'description',
+    'ort',
+    'datum',
     'lastModified',
   };
 
@@ -254,6 +189,8 @@ class HeroAdventurePersonEntry {
     String? id,
     String? name,
     String? description,
+    String? ort,
+    HeroAdventureDateValue? datum,
     Object? lastModified = _copySentinel,
     Map<String, Object?>? unbekannteFelder,
   }) {
@@ -261,6 +198,8 @@ class HeroAdventurePersonEntry {
       id: id ?? this.id,
       name: name ?? this.name,
       description: description ?? this.description,
+      ort: ort ?? this.ort,
+      datum: datum ?? this.datum,
       lastModified: identical(lastModified, _copySentinel)
           ? this.lastModified
           : lastModified as DateTime?,
@@ -274,6 +213,8 @@ class HeroAdventurePersonEntry {
       'id': id,
       'name': name,
       'description': description,
+      if (ort.isNotEmpty) 'ort': ort,
+      if (datum.istBelegt) 'datum': datum.toJson(),
       if (lastModified != null)
         'lastModified': lastModified!.toUtc().toIso8601String(),
     }, unbekannteFelder);
@@ -287,6 +228,8 @@ class HeroAdventurePersonEntry {
       id: getString('id'),
       name: getString('name'),
       description: getString('description'),
+      ort: getString('ort'),
+      datum: HeroAdventureDateValue.lese(json['datum']),
       lastModified: DateTime.tryParse(json['lastModified']?.toString() ?? ''),
       unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
     );
@@ -751,13 +694,13 @@ class HeroAdventureEntry {
           )
           .where((entry) => entry.hasContent)
           .toList(growable: false),
-      startWorldDate: _parseAdventureDateValue(json['startWorldDate']),
-      startAventurianDate: _parseAdventureDateValue(
+      startWorldDate: HeroAdventureDateValue.lese(json['startWorldDate']),
+      startAventurianDate: HeroAdventureDateValue.lese(
         json['startAventurianDate'],
       ),
-      endWorldDate: _parseAdventureDateValue(json['endWorldDate']),
-      endAventurianDate: _parseAdventureDateValue(json['endAventurianDate']),
-      currentAventurianDate: _parseAdventureDateValue(
+      endWorldDate: HeroAdventureDateValue.lese(json['endWorldDate']),
+      endAventurianDate: HeroAdventureDateValue.lese(json['endAventurianDate']),
+      currentAventurianDate: HeroAdventureDateValue.lese(
         json['currentAventurianDate'],
       ),
       apReward: _normalizeReward((json['apReward'] as num?)?.toInt() ?? 0),
@@ -802,13 +745,6 @@ HeroAdventureSeTargetType? _erkenneAdventureSeTargetType(Object? raw) {
     'eigenschaft' => HeroAdventureSeTargetType.eigenschaft,
     _ => null,
   };
-}
-
-HeroAdventureDateValue _parseAdventureDateValue(dynamic raw) {
-  if (raw is Map) {
-    return HeroAdventureDateValue.fromJson(raw.cast<String, dynamic>());
-  }
-  return const HeroAdventureDateValue();
 }
 
 bool _hasAdventureNoteContent(HeroNoteEntry entry) {

@@ -47,14 +47,14 @@ void main() {
       );
     });
 
-    test('Vollzauberer behaelt vollen Stufenbonus', () {
+    test('Vollzauberer behaelt vollen Stufenbonus (+2 AsP je Stufe)', () {
       expect(
         epicAspStufenbonus(
           kategorie: ZaubererKategorie.voll,
           ruleActive: true,
           isEpisch: true,
         ),
-        6,
+        2,
       );
     });
 

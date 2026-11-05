@@ -23,11 +23,16 @@ class GefechtEinstieg extends ConsumerWidget {
     required this.aktion,
     required this.vorBearbeitung,
     this.hervorgehoben = false,
+    this.stil,
     this.knopfKey = const ValueKey('gefecht-beginnen'),
   });
 
   /// Gefüllter Knopf mit Symbol, etwa unter den Schnellaktionen.
   final bool hervorgehoben;
+
+  /// Eigener Stil des hervorgehobenen Knopfs, etwa die Messingfarbe der
+  /// Schnellaktionen; `null` nimmt den Stil des Themes.
+  final ButtonStyle? stil;
 
   /// Schlüssel des Knopfs; mehrere Einstiege brauchen verschiedene Schlüssel.
   final Key knopfKey;
@@ -97,6 +102,7 @@ class GefechtEinstieg extends ConsumerWidget {
     if (hervorgehoben) {
       return FilledButton.tonalIcon(
         key: knopfKey,
+        style: stil,
         onPressed: oeffnen,
         icon: Icon(laeuft ? Icons.play_arrow : Icons.shield_outlined),
         label: text,

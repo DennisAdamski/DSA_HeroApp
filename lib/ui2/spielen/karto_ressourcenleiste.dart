@@ -4,6 +4,8 @@ import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_stroke.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_bestands_adapter.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abschnitt.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_kachelgroesse.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_ressourcenwert.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
 
@@ -23,6 +25,7 @@ class KartoRessourcenleiste extends StatelessWidget {
     super.key,
     required this.werte,
     required this.onBearbeiten,
+    this.onSchritt,
   });
 
   /// Gemeinsamer Snapshot; die Leiste liest keinen Provider selbst.
@@ -31,8 +34,22 @@ class KartoRessourcenleiste extends StatelessWidget {
   /// Meldet, welche Ressource bearbeitet werden soll.
   final ValueChanged<KartoRessource> onBearbeiten;
 
+  /// Meldet einen Schritt (`-5`, `-1`, `1`, `5`) einer Ressource.
+  ///
+  /// Die Knoepfe erscheinen nur in einer **weiten** Kachel
+  /// ([KartoKachelGroesse.weit]); ohne Rueckruf oder ausserhalb einer Kachel
+  /// bleibt die Leiste wie bisher.
+  final void Function(KartoRessource ressource, int schritt)? onSchritt;
+
   // Schmalste Spalte, ab der zwei Ressourcen nebeneinander noch lesbar sind.
   static const double _mindestbreite = 132;
+
+  // Schmalste Zelle mit Knopfreihe: vier Knoepfe zu je 48 dp samt Rand.
+  static const double _mindestbreiteMitSchritt = 240;
+
+  /// Spaltenzahl mit Knopfreihe, siehe [kartoAusgewogeneSpalten].
+  static int ausgewogeneSpalten(int platz, int anzahl) =>
+      kartoAusgewogeneSpalten(platz, anzahl);
 
   @override
   Widget build(BuildContext context) {
@@ -41,6 +58,8 @@ class KartoRessourcenleiste extends StatelessWidget {
     final abgeleitet = werte.derivedStats;
     final magie = werte.resourceActivation.magic.isEnabled;
     final goettlich = werte.resourceActivation.divine.isEnabled;
+    final mitSchritt =
+        onSchritt != null && KartoKachelSteuerung.istWeit(context);
 
     final eintraege =
         <
@@ -104,8 +123,14 @@ class KartoRessourcenleiste extends StatelessWidget {
         final verfuegbar = constraints.hasBoundedWidth
             ? constraints.maxWidth
             : _mindestbreite;
-        final rohSpalten = (verfuegbar / _mindestbreite).floor();
-        final spalten = rohSpalten.clamp(1, eintraege.length).toInt();
+        final mindest = mitSchritt ? _mindestbreiteMitSchritt : _mindestbreite;
+        final platz = (verfuegbar / mindest)
+            .floor()
+            .clamp(1, eintraege.length)
+            .toInt();
+        final spalten = mitSchritt
+            ? ausgewogeneSpalten(platz, eintraege.length)
+            : platz;
 
         final reihen = <List<int>>[];
         for (var start = 0; start < eintraege.length; start += spalten) {
@@ -153,6 +178,13 @@ class KartoRessourcenleiste extends StatelessWidget {
                           kuerzel: eintraege[reihen[r][c]].kuerzel,
                           onBearbeiten: () =>
                               onBearbeiten(eintraege[reihen[r][c]].art),
+                          schluessel: eintraege[reihen[r][c]].art.name,
+                          onSchritt: mitSchritt
+                              ? (schritt) => onSchritt!(
+                                  eintraege[reihen[r][c]].art,
+                                  schritt,
+                                )
+                              : null,
                         ),
                       ),
                     ],

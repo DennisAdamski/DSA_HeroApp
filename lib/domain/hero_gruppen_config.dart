@@ -12,6 +12,7 @@ class HeroGruppenMitgliedschaft {
     this.gruppenName = '',
     this.externeHeldIds = const <String>[],
     this.kontoGruppe = false,
+    this.primaer = false,
     this.unbekannteFelder = const <String, Object?>{},
   });
 
@@ -31,6 +32,15 @@ class HeroGruppenMitgliedschaft {
   /// `gruppen/*`: Sie werden nie synchronisiert oder automatisch übernommen.
   final bool kontoGruppe;
 
+  /// `true` bei der primären Gruppe des Helden (ARCH-04).
+  ///
+  /// Ein Held kann mehreren Gruppen angehören, folgt aber höchstens dem
+  /// Regelprofil **einer** Gruppe: der primären. Nur eine Konto-Gruppe kann
+  /// primär sein; die Eindeutigkeit stellen die Gruppenaktionen in
+  /// `HeroActions` her. Die Markierung schreibt nie ein Regelprofil: Eine
+  /// geänderte Gruppenvorgabe erscheint nur als Vorschau.
+  final bool primaer;
+
   /// JSON-Felder einer neueren App-Version; bleiben beim Speichern erhalten
   /// (siehe `unbekannte_json_felder.dart`).
   final Map<String, Object?> unbekannteFelder;
@@ -41,6 +51,7 @@ class HeroGruppenMitgliedschaft {
     'gruppenName',
     'externeHeldIds',
     'kontoGruppe',
+    'primaer',
   };
 
   HeroGruppenMitgliedschaft copyWith({
@@ -48,6 +59,7 @@ class HeroGruppenMitgliedschaft {
     String? gruppenName,
     List<String>? externeHeldIds,
     bool? kontoGruppe,
+    bool? primaer,
     Map<String, Object?>? unbekannteFelder,
   }) {
     return HeroGruppenMitgliedschaft(
@@ -55,6 +67,7 @@ class HeroGruppenMitgliedschaft {
       gruppenName: gruppenName ?? this.gruppenName,
       externeHeldIds: externeHeldIds ?? this.externeHeldIds,
       kontoGruppe: kontoGruppe ?? this.kontoGruppe,
+      primaer: primaer ?? this.primaer,
       unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
     );
   }
@@ -66,6 +79,7 @@ class HeroGruppenMitgliedschaft {
       'externeHeldIds': externeHeldIds,
       // Nur bei Belegung, damit sich der Hash von Bestandshelden nicht ändert.
       if (kontoGruppe) 'kontoGruppe': true,
+      if (primaer) 'primaer': true,
     }, unbekannteFelder);
   }
 
@@ -76,6 +90,7 @@ class HeroGruppenMitgliedschaft {
       gruppenName: json['gruppenName'] as String? ?? '',
       externeHeldIds: rawIds.whereType<String>().toList(growable: false),
       kontoGruppe: json['kontoGruppe'] == true,
+      primaer: json['primaer'] == true,
       unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
     );
   }

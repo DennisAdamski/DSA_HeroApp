@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
@@ -6,6 +7,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/combat_rules.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/inspector/widgets/inspector_attribute_probes.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/inspector/widgets/inspector_combat_probes.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/inspector/widgets/inspector_dice_log_section.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/workspace/probe_quick_search.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/schaden/schaden_ruecknahme.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/codex_section_card.dart';
 
@@ -60,12 +62,20 @@ class InspectorProbeTab extends StatelessWidget {
           CodexSectionCard(
             title: 'Würfel-Protokoll',
             subtitle: 'Letzte ${HeroState.diceLogMax}',
-            child: InspectorDiceLogSection(
-              entries: heroState.diceLog,
-              aktion: (eintrag) => schadenRuecknahmeAktion(
-                eintrag: eintrag,
-                heroId: heroId,
-                zustand: heroState,
+            child: Consumer(
+              builder: (context, ref, _) => InspectorDiceLogSection(
+                entries: heroState.diceLog,
+                aktion: (eintrag) => schadenRuecknahmeAktion(
+                  eintrag: eintrag,
+                  heroId: heroId,
+                  zustand: heroState,
+                ),
+                onWiederholen: (eintrag) => wiederholeProbeMitHinweis(
+                  context: context,
+                  ref: ref,
+                  heroId: heroId,
+                  entry: eintrag,
+                ),
               ),
             ),
           ),

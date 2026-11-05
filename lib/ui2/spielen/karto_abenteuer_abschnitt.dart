@@ -3,10 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/domain/app_settings.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_adventure_entry.dart';
+import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_held_schreiben.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abenteuer_karten.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abenteuer_schreiben.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abenteuer_sortierung.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abenteuer_suche.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abschnitt.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_info_chip.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_laufendes_abenteuer.dart';
@@ -39,6 +42,7 @@ class KartoAbenteuerAbschnitt extends ConsumerStatefulWidget {
     required this.sortierung,
     required this.onStandortSpeichern,
     required this.onOeffnen,
+    this.onAbenteuerOeffnen,
     this.oeffneLink,
   });
 
@@ -60,6 +64,10 @@ class KartoAbenteuerAbschnitt extends ConsumerStatefulWidget {
   /// Öffnet das Vollblatt des Abenteuers.
   final VoidCallback onOeffnen;
 
+  /// Öffnet das Blatt eines **anderen** Abenteuers, wenn die Suche dort einen
+  /// Treffer antippt; `null` lässt solche Treffer nur lesen.
+  final void Function(String abenteuerId)? onAbenteuerOeffnen;
+
   /// Öffnet den Kartenlink; `null` nimmt den Systembrowser. In Tests ersetzbar.
   final KartoLinkOeffner? oeffneLink;
 
@@ -79,10 +87,15 @@ class KartoAbenteuerAbschnitt extends ConsumerStatefulWidget {
 
 class _KartoAbenteuerAbschnittState
     extends ConsumerState<KartoAbenteuerAbschnitt>
-    with KartoAbenteuerSchreiben<KartoAbenteuerAbschnitt> {
+    with
+        KartoHeldSchreiben<KartoAbenteuerAbschnitt>,
+        KartoAbenteuerSchreiben<KartoAbenteuerAbschnitt> {
   final TextEditingController _schnell = TextEditingController();
+  final TextEditingController _suchfeld = TextEditingController();
   bool _alleZeigen = false;
   bool _textOffen = false;
+  bool _sucheOffen = false;
+  String _suche = '';
 
   @override
   String get heroId => widget.heroId;
@@ -93,7 +106,76 @@ class _KartoAbenteuerAbschnittState
   @override
   void dispose() {
     _schnell.dispose();
+    _suchfeld.dispose();
     super.dispose();
+  }
+
+  // Schaltet die Suche um; beim Schließen verschwindet auch der Suchtext.
+  void _sucheUmschalten() {
+    setState(() {
+      _sucheOffen = !_sucheOffen;
+      if (!_sucheOffen) {
+        _suchfeld.clear();
+        _suche = '';
+      }
+    });
+  }
+
+  // Treffer im laufenden Abenteuer bearbeitet man hier; Treffer in anderen
+  // Abenteuern öffnen deren Blatt.
+  void _notizTreffer(AbenteuerTreffer treffer, int index) {
+    if (!treffer.aktuell) {
+      widget.onAbenteuerOeffnen?.call(treffer.abenteuer.id);
+    } else if (!gesperrt && !schreibt) {
+      notizBearbeiten(index, treffer.abenteuer.notes[index]);
+    }
+  }
+
+  void _personTreffer(AbenteuerTreffer treffer, int index) {
+    if (!treffer.aktuell) {
+      widget.onAbenteuerOeffnen?.call(treffer.abenteuer.id);
+    } else if (!gesperrt && !schreibt) {
+      personBearbeiten(treffer.abenteuer.people[index]);
+    }
+  }
+
+  // Suchfeld und Ergebnisse unter der Schnell-Erfassung. Gesucht wird in allen
+  // Abenteuern des Helden; das laufende steht vorn.
+  List<Widget> _suchbereich(String aktuellId) {
+    if (!_sucheOffen) return const <Widget>[];
+    final suchtext = _suche.trim();
+    final alle =
+        ref
+            .watch(heroComputedProvider(widget.heroId))
+            .asData
+            ?.value
+            .hero
+            .adventures ??
+        const <HeroAdventureEntry>[];
+    final treffer = sucheInAbenteuern(
+      abenteuer: alle,
+      aktuellId: aktuellId,
+      suchtext: suchtext,
+      sortierung: widget.sortierung,
+    );
+    return [
+      const SizedBox(height: Abstand.weit),
+      KartoAbenteuerSuchfeld(
+        controller: _suchfeld,
+        onChanged: (text) => setState(() => _suche = text),
+        onSchliessen: _sucheUmschalten,
+      ),
+      if (suchtext.isNotEmpty) ...[
+        const SizedBox(height: Abstand.weit),
+        KartoAbenteuerSuchergebnisse(
+          treffer: treffer,
+          suchtext: suchtext,
+          aktuellBeschriftung: 'Laufendes Abenteuer',
+          onNotiz: _notizTreffer,
+          onPerson: _personTreffer,
+        ),
+      ],
+    ];
   }
 
   KartoStandortZeile _standort() {
@@ -133,6 +215,58 @@ class _KartoAbenteuerAbschnittState
         (personen.length - personenSicht.length) +
         (notizen.length - notizenSicht.length);
     final datum = abenteuerDatum(abenteuer);
+    // Mit Suchtext ersetzen die Treffer die Karten des laufenden Abenteuers.
+    final suchend = _sucheOffen && _suche.trim().isNotEmpty;
+
+    final weit = KartoKachelSteuerung.istWeit(context);
+
+    // Überschrift mit Anzahl und das Kartenraster der Personen.
+    Widget personenBlock() => Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _Zwischenzeile(titel: 'Personen', anzahl: personen.length),
+        const SizedBox(height: Abstand.normal),
+        KartoKartenraster(
+          mindestbreite: 200,
+          kinder: [
+            for (final i in personenSicht)
+              KartoFigurenkarte(
+                name: personen[i].name,
+                beschreibung: personen[i].description,
+                ort: personen[i].ort,
+                datum: personen[i].datum.anzeigeText,
+                onTap: bearbeitbar ? () => personBearbeiten(personen[i]) : null,
+              ),
+          ],
+        ),
+      ],
+    );
+
+    // Dasselbe für die Notizen.
+    Widget notizenBlock() => Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _Zwischenzeile(titel: 'Notizen', anzahl: notizen.length),
+        const SizedBox(height: Abstand.normal),
+        KartoKartenraster(
+          mindestbreite: 260,
+          kinder: [
+            for (final i in notizenSicht)
+              KartoNotizkarte(
+                titel: notizen[i].title,
+                text: notizen[i].description,
+                ort: notizen[i].ort,
+                datum: notizen[i].datum.anzeigeText,
+                onTap: bearbeitbar
+                    ? () => notizBearbeiten(i, notizen[i])
+                    : null,
+              ),
+          ],
+        ),
+      ],
+    );
 
     return KartoAbschnitt(
       titel: abenteuer.title.trim(),
@@ -142,6 +276,10 @@ class _KartoAbenteuerAbschnittState
         crossAxisAlignment: WrapCrossAlignment.center,
         spacing: Abstand.knapp,
         children: [
+          KartoAbenteuerSuchknopf(
+            offen: _sucheOffen,
+            onPressed: _sucheUmschalten,
+          ),
           const KartoAbenteuerSortierwahl(),
           TextButton(
             key: const ValueKey<String>('karto-spiel-abenteuer-oeffnen'),
@@ -167,6 +305,11 @@ class _KartoAbenteuerAbschnittState
                     (gesperrt ? 'Kein Datum erfasst' : 'Datum festlegen'),
                 leer: datum == null,
                 onTap: bearbeitbar ? () => datumAendern(abenteuer) : null,
+                plus: naechsterAbenteuerTag(abenteuer) == null
+                    ? null
+                    : KartoTagPlusKnopf(
+                        onPressed: bearbeitbar ? datumEinenTagWeiter : null,
+                      ),
               ),
               _standort(),
             ],
@@ -195,50 +338,43 @@ class _KartoAbenteuerAbschnittState
               farbe: karto.siegel,
             ),
           ],
-          if (personen.isEmpty && notizen.isEmpty) ...[
+          ..._suchbereich(abenteuer.id),
+          if (!suchend && personen.isEmpty && notizen.isEmpty) ...[
             const SizedBox(height: Abstand.weit),
             Text(
               'Noch keine Notizen oder Personen.',
               style: texte.fliess.copyWith(color: karto.schriftLeise),
             ),
           ],
-          if (personen.isNotEmpty) ...[
+          // Weit: Personen und Notizen stehen nebeneinander statt
+          // untereinander; die Obergrenzen (3 Personen, 4 Notizen) ergeben
+          // ähnlich hohe Spalten.
+          if (!suchend &&
+              weit &&
+              personen.isNotEmpty &&
+              notizen.isNotEmpty) ...[
             const SizedBox(height: Abstand.block),
-            _Zwischenzeile(titel: 'Personen', anzahl: personen.length),
-            const SizedBox(height: Abstand.normal),
-            KartoKartenraster(
-              mindestbreite: 200,
-              kinder: [
-                for (final i in personenSicht)
-                  KartoFigurenkarte(
-                    name: personen[i].name,
-                    beschreibung: personen[i].description,
-                    onTap: bearbeitbar
-                        ? () => personBearbeiten(personen[i])
-                        : null,
-                  ),
+            Row(
+              key: const ValueKey<String>('karto-spiel-abenteuer-spalten'),
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(flex: 2, child: personenBlock()),
+                const SizedBox(width: Abstand.bahn),
+                Expanded(flex: 3, child: notizenBlock()),
               ],
             ),
+          ] else ...[
+            if (!suchend && personen.isNotEmpty) ...[
+              const SizedBox(height: Abstand.block),
+              personenBlock(),
+            ],
+            if (!suchend && notizen.isNotEmpty) ...[
+              const SizedBox(height: Abstand.block),
+              notizenBlock(),
+            ],
           ],
-          if (notizen.isNotEmpty) ...[
-            const SizedBox(height: Abstand.block),
-            _Zwischenzeile(titel: 'Notizen', anzahl: notizen.length),
-            const SizedBox(height: Abstand.normal),
-            KartoKartenraster(
-              mindestbreite: 260,
-              kinder: [
-                for (final i in notizenSicht)
-                  KartoNotizkarte(
-                    titel: notizen[i].title,
-                    text: notizen[i].description,
-                    onTap: bearbeitbar
-                        ? () => notizBearbeiten(i, notizen[i])
-                        : null,
-                  ),
-              ],
-            ),
-          ],
-          if (verborgen > 0 || (_alleZeigen && _gibtMehr(abenteuer))) ...[
+          if (!suchend &&
+              (verborgen > 0 || (_alleZeigen && _gibtMehr(abenteuer)))) ...[
             const SizedBox(height: Abstand.normal),
             Align(
               alignment: Alignment.centerLeft,
@@ -269,6 +405,10 @@ class _KartoAbenteuerAbschnittState
       titel: 'Abenteuer',
       symbol: Icons.explore_outlined,
       akzent: KartoAkzent.messing,
+      aktion: KartoAbenteuerSuchknopf(
+        offen: _sucheOffen,
+        onPressed: _sucheUmschalten,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisSize: MainAxisSize.min,
@@ -283,6 +423,7 @@ class _KartoAbenteuerAbschnittState
             style: Theme.of(context).textTheme.fliess
                 .copyWith(color: karto.schriftLeise),
           ),
+          ..._suchbereich(''),
         ],
       ),
     );

@@ -10,6 +10,7 @@ import 'package:dsa_heldenverwaltung/ui/screens/hero_gruppe/gruppe_details_secti
 import 'package:dsa_heldenverwaltung/ui/screens/hero_gruppe/gruppe_erstellen_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_gruppe/gruppe_mitglieder_liste.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_gruppe/gruppe_notizen_karte.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_gruppe/gruppe_regelprofil_karte.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_gruppe/manueller_held_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/karto_variante.dart';
@@ -301,6 +302,11 @@ class _GruppenDetailAnsicht extends ConsumerWidget {
         if (mitgliedschaft.kontoGruppe && syncAvailable) ...[
           const SizedBox(height: 16),
           GruppeNotizenKarte(gruppenCode: mitgliedschaft.gruppenCode),
+          const SizedBox(height: 16),
+          GruppeRegelprofilKarte(
+            heroId: heroId,
+            gruppenCode: mitgliedschaft.gruppenCode,
+          ),
         ],
       ],
     );

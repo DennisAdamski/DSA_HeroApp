@@ -1,3 +1,4 @@
+import 'package:dsa_heldenverwaltung/rules/derived/excel_rounding.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
@@ -188,7 +189,7 @@ int gefechtsWirkdauer(
       ? dauer
       : zauberkontrolle
       ? 1
-      : (dauer + 1) ~/ 2;
+      : halbiertAufgerundet(dauer);
 }
 
 /// Bestätigte Standardkosten nach WdZ und LL; Sonderfälle benötigen ein Profil.
@@ -206,7 +207,7 @@ int gefechtsWirkkosten(
     }
     return kosten < 5 ? 1 : kosten ~/ 5;
   }
-  return (kosten + 1) ~/ 2;
+  return halbiertAufgerundet(kosten);
 }
 
 /// Gewöhnliche Grade I–VI kosten fünf KaP je Grad (permanente Kosten separat).

@@ -235,7 +235,10 @@ an alle Abschnitte weiter, auch an die Adaptermethoden. Der provisorische
 (seit dem UI2-Merkmalsblatt, ARCH-02), Kampf, Effekte, Zustand,
 Würfelprotokoll. Ab `KartoBreite.breit` stehen Kampf, Effekte und
 Zustand in einer Seitenspalte (280 dp, ab `sehrBreit` 320 dp); das Protokoll
-schließt beide Anordnungen ab.
+schließt beide Anordnungen ab. *Stand 23.10.2026:* Reihenfolge und Schwelle
+geändert (Schnellaktionen, Ressourcen, Eigenschaften, Kampf/Effekte/Zustand,
+Abenteuer, Vor- und Nachteile, Protokoll; Seitenspalte ab 840 dp
+Ansichtsbreite), siehe [ui_oberflaeche.md](hinweise/ui_oberflaeche.md).
 
 **Tatsächlich gebauter Adaptervertrag.** `spielDetails` ist **entfallen** — die
 neue Anordnung ersetzt es, und die Brücke soll abschnittsweise kleiner werden.

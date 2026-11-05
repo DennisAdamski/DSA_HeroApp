@@ -455,14 +455,15 @@ void main() {
         find.byKey(const ValueKey<String>('spell-instance-attributo-hinzu')),
       );
       await tester.pumpAndSettle();
-      // ZfP* 7 schlägt ZfP*/3 aufgerundet vor; eingetragen wird von Hand.
+      // ZfP* 8 schlägt ZfP*/3 echt gerundet vor (2,67 -> 3); eingetragen wird
+      // von Hand.
       await tester.enterText(
         find.byKey(const ValueKey<String>('attributo-input-zfp')),
-        '7',
+        '8',
       );
       await tester.pump();
       expect(
-        find.text('Bonus laut Regelwerk: 3 (ZfP*/3, aufgerundet).'),
+        find.text('Bonus laut Regelwerk: 3 (ZfP*/3, gerundet).'),
         findsOneWidget,
       );
       await tester.enterText(

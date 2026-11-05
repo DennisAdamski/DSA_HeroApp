@@ -11,6 +11,8 @@ import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
 import 'package:dsa_heldenverwaltung/ui/bridges/karto_bestands_adapter_impl.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/inspector/widgets/inspector_attribute_card.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_bestands_adapter.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abschnitt.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_kachelgroesse.dart';
 
 import '../../ui2/shell/karto_test_support.dart';
 
@@ -148,9 +150,12 @@ void main() {
     Future<FakeRepository> zeigeProben(
       WidgetTester tester, {
       HeroState? zustand,
+      KartoKachelGroesse? groesse,
+      double breite = 900,
+      double skalierung = 1,
     }) async {
       tester.view.devicePixelRatio = 1;
-      tester.view.physicalSize = const Size(900, 1200);
+      tester.view.physicalSize = Size(breite, 1200);
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
       final repo = FakeRepository(
@@ -168,6 +173,11 @@ void main() {
         UncontrolledProviderScope(
           container: container,
           child: MaterialApp(
+            builder: (context, child) => MediaQuery(
+              data: MediaQuery.of(context)
+                  .copyWith(textScaler: TextScaler.linear(skalierung)),
+              child: child!,
+            ),
             home: Scaffold(
               body: Consumer(
                 builder: (context, ref, _) {
@@ -178,10 +188,18 @@ void main() {
                   if (werte == null) {
                     return const CircularProgressIndicator();
                   }
-                  return adapter.spielEigenschaftsproben(
+                  final proben = adapter.spielEigenschaftsproben(
                     heroId: 'rondra',
                     werte: werte,
                   );
+                  // Wie in der Spielansicht liegt der Baustein in einer Kachel.
+                  return groesse == null
+                      ? proben
+                      : KartoKachelSteuerung(
+                          kennung: 'eigenschaften',
+                          groesse: groesse,
+                          child: proben,
+                        );
                 },
               ),
             ),
@@ -248,6 +266,72 @@ void main() {
       );
       expect(mu.wundAbzug, 0);
     });
+
+    // Beinwunde: GE −2 allgemein und −2 aus der Zone, zusammen −4.
+    const beinwunde = HeroState(
+      currentLep: 30,
+      currentAsp: 0,
+      currentKap: 0,
+      currentAu: 30,
+      wpiZustand: WundZustand(
+        wundenProZone: <WundZone, int>{WundZone.linkesBein: 1},
+      ),
+    );
+
+    Finder abzugAn(String label, String text) => find.descendant(
+      of: find.byKey(ValueKey('inspector-probe-attr-$label')),
+      matching: find.text(text),
+    );
+
+    testWidgets('weit zeigt den Wundabzug an der Karte, nicht nur im Tooltip', (
+      tester,
+    ) async {
+      await zeigeProben(
+        tester,
+        zustand: beinwunde,
+        groesse: KartoKachelGroesse.weit,
+      );
+      expect(abzugAn('GE', '\u22124'), findsOneWidget);
+      // Der Tooltip bleibt zusätzlich bestehen.
+      expect(find.byTooltip(RegExp(r'^Wunden −4')), findsOneWidget);
+      // Eigenschaften ohne Abzug tragen keinen.
+      expect(abzugAn('MU', '\u22124'), findsNothing);
+      expect(find.textContaining('\u2212'), findsOneWidget);
+    });
+
+    for (final groesse in <KartoKachelGroesse?>[
+      KartoKachelGroesse.kompakt,
+      KartoKachelGroesse.normal,
+      null,
+    ]) {
+      testWidgets('${groesse?.name ?? 'ohne Kachel'}: der Abzug steht nur im '
+          'Tooltip', (tester) async {
+        await zeigeProben(tester, zustand: beinwunde, groesse: groesse);
+        expect(find.textContaining('\u2212'), findsNothing);
+        expect(find.byTooltip(RegExp(r'^Wunden −4')), findsOneWidget);
+      });
+    }
+
+    testWidgets('weit ohne Wunden zeigt keinen Abzug', (tester) async {
+      await zeigeProben(tester, groesse: KartoKachelGroesse.weit);
+      expect(find.textContaining('\u2212'), findsNothing);
+    });
+
+    for (final breite in [360.0, 600.0, 900.0, 1400.0]) {
+      testWidgets('weit mit Abzug bei $breite dp, Schrift 2, ohne Überlauf', (
+        tester,
+      ) async {
+        await zeigeProben(
+          tester,
+          zustand: beinwunde,
+          groesse: KartoKachelGroesse.weit,
+          breite: breite,
+          skalierung: 2,
+        );
+        expect(tester.takeException(), isNull);
+        expect(abzugAn('GE', '\u22124'), findsOneWidget);
+      });
+    }
 
     testWidgets('alle acht Eigenschaften stehen zur Verfügung', (tester) async {
       await zeigeProben(tester);

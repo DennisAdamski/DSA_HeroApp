@@ -1,6 +1,7 @@
 import 'package:dsa_heldenverwaltung/domain/aventurian_date.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_adventure_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/aventurian_calendar_rules.dart';
 
 /// Erstes laufendes Abenteuer mit Titel, oder `null`.
 ///
@@ -19,13 +20,42 @@ HeroAdventureEntry? laufendesAbenteuer(HeroSheet held) {
 /// Bewusst nur aus demselben Abenteuer: `resolveCurrentAdventureDate` wiche auf
 /// andere Abenteuer aus, und das Datum passte dann nicht zum Titel.
 String? abenteuerDatum(HeroAdventureEntry abenteuer) {
+  final datum = abenteuerDatumWert(abenteuer);
+  return datum.hasContent ? datum.anzeigeText : null;
+}
+
+/// Datum, das das Abenteuer gerade trägt: das aktuelle, sonst das Startdatum,
+/// sonst ein leeres.
+HeroAdventureDateValue abenteuerDatumWert(HeroAdventureEntry abenteuer) {
+  for (final datum in <HeroAdventureDateValue>[
+    abenteuer.currentAventurianDate,
+    abenteuer.startAventurianDate,
+  ]) {
+    if (datum.hasContent) return datum;
+  }
+  return const HeroAdventureDateValue();
+}
+
+/// Der Tag nach dem Datum des Abenteuers als neuer „aktueller Stand“, oder
+/// `null`, wenn sich das Datum nicht weiterzählen lässt.
+///
+/// Basis ist wie bei [abenteuerDatum] der aktuelle Stand, ersatzweise das
+/// Startdatum desselben Abenteuers. Unbekannte Felder des aktuellen Stands
+/// bleiben erhalten; Monat und Jahr rollen über die Grenzen mit.
+HeroAdventureDateValue? naechsterAbenteuerTag(HeroAdventureEntry abenteuer) {
   for (final datum in <HeroAdventureDateValue>[
     abenteuer.currentAventurianDate,
     abenteuer.startAventurianDate,
   ]) {
     if (!datum.hasContent) continue;
-    return formatAventurianDate(
+    final weiter = naechsterAventurischerTag(
       AventurianDate.fromParts(datum.day, datum.month, datum.year),
+    );
+    if (weiter == null) return null;
+    return abenteuer.currentAventurianDate.copyWith(
+      day: weiter.day,
+      month: weiter.month,
+      year: weiter.year,
     );
   }
   return null;

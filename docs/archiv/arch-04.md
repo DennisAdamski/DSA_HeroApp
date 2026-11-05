@@ -766,3 +766,45 @@ seriell: 6241 bestanden, 3 übersprungen, 0 fehlgeschlagen. Commit `89331747`.
 
 *Offen.* Unverändert die Punkte unter „Herleitungen“ in der Roadmap
 (Eigenschaftsprobe als Ausweichen, bewusst offene Lernregeln).
+
+**Teilstand 16, 22.10.2026 — Gruppenvorgabe.**
+
+*Entscheidungen (Nutzer).* Ein Held kann mehreren Gruppen angehören, folgt aber
+nur einem Regelsatz: dem der **primären** Gruppe. Beim Verlassen verbleibt das
+zuletzt aktive Regelprofil. Ohne Verbindung bleibt das gespeicherte Profil
+maßgeblich. Die Vorgabe kommt weiterhin nur als Vorschau und wirkt erst nach
+„Übernehmen“ (Hartregel „Ein Regelprofil wird nie automatisch geschrieben“).
+
+*Umsetzung.* `groups_v2/{id}/shared_info/regelprofil` trägt das Profil als
+JSON-Text (`profilJson`, höchstens 900 000 Zeichen); Firestore verbietet
+verschachtelte Listen, die Paketkopien dürfen beliebige Patches tragen. Die
+Regel `validRegelprofil` erlaubt nur dem Besitzer Schreiben und Löschen, alle
+Mitglieder lesen. `GruppenSyncService.ladeRegelVorgabe` liefert `null` bei
+fehlender, beschädigter oder zu neuer Vorgabe. `HeroGruppenMitgliedschaft.primaer`
+(nur bei `true` im JSON) markiert die primäre Konto-Gruppe;
+`HeroActions.setzePrimaereGruppe` hält sie eindeutig, die erste beigetretene
+oder erstellte Konto-Gruppe wird von selbst primär. `gruppenVorgabeVorschauProvider`
+vergleicht das Profil des Helden (ohne Profil den globalen Stand) mit der
+Vorgabe der primären Gruppe über `vergleicheAufloesungen` und
+`erstelleRegelProfilVorschau`; Windows, fehlende Vorgabe, gleicher Stand und ein
+nicht verstandenes Heldenprofil ergeben `null`, ein Abrufsfehler bleibt
+`AsyncError` und ändert nichts am Helden. Oberfläche: Hinweis und Dialog
+`RegelprofilGruppenVorgabeDialog` in der Karte „Regelprofil“
+(`hero_regelprofil_gruppe.dart`), `GruppeRegelprofilKarte` auf der Gruppenseite
+(primäre Gruppe festlegen, Besitzer: Vorgabe setzen/entfernen).
+
+*Prüfungen.* `functions/test/firestore_rules.rules.ts` (Besitzer schreibt,
+Mitglieder lesen, Form), `test/data/gruppen_sync_service_test.dart`,
+`test/state/hero_actions_gruppen_test.dart` (primär, Verlassen lässt das Profil
+stehen), `test/state/regelprofil_gruppe_provider_test.dart`,
+`test/ui/overview/hero_regelprofil_gruppe_test.dart`,
+`test/ui/gruppe/gruppe_regelprofil_karte_test.dart`,
+`test/domain/hero_gruppen_config_test.dart`. `flutter analyze --no-pub` ohne Befund; Gesamtsuite
+seriell: 6419 bestanden, 3 übersprungen, 0 fehlgeschlagen; Rules-Tests 12/12.
+
+*Offen.* Die Rules müssen vor der ersten Nutzung veröffentlicht werden
+(`firebase deploy --only firestore:rules --project heldensync-ccf0b`, vorher
+`npm run test:rules`). Prüfung mit zwei Konten gegen echtes Firebase.
+Bewusst nicht gebaut: Live-Listener (die Vorgabe wird beim Öffnen der Karte
+gelesen), Verlauf alter Vorgaben, automatisches Wechseln der primären Gruppe
+beim Verlassen.

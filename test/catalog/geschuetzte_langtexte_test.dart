@@ -16,6 +16,7 @@ void main() {
     'karmale_sonderfertigkeiten.json': ['erklarung_lang'],
     'magische_sonderfertigkeiten.json': ['erklarung_lang'],
     'magie.json': ['wirkung', 'variants'],
+    'kurzregeln.json': ['kurztext', 'hinweise', 'hausregel_text'],
   };
 
   geschuetzt.forEach((datei, felder) {

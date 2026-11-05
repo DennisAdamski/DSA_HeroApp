@@ -208,10 +208,14 @@ void main() {
     });
   });
 
-  test('Attributo-Bonus ZfP*/3, aufgerundet (Tischregel)', () {
-    expect(attributoBonusAusZfp(7), 3);
+  test('Attributo-Bonus ZfP*/3, echt gerundet (Wege der Helden S. 6)', () {
+    expect(attributoBonusAusZfp(7), 2);
+    expect(attributoBonusAusZfp(8), 3);
     expect(attributoBonusAusZfp(6), 2);
-    expect(attributoBonusAusZfp(1), 1);
+    expect(attributoBonusAusZfp(5), 2);
+    expect(attributoBonusAusZfp(4), 1);
+    expect(attributoBonusAusZfp(2), 1);
+    expect(attributoBonusAusZfp(1), 0);
     expect(attributoBonusAusZfp(0), 0);
     expect(attributoBonusAusZfp(-2), 0);
   });

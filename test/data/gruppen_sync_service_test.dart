@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:math';
 
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
@@ -6,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:dsa_heldenverwaltung/data/gruppen_sync_service.dart';
 import 'package:dsa_heldenverwaltung/domain/gruppen_beitrittscode.dart';
 import 'package:dsa_heldenverwaltung/domain/held_visitenkarte.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_regelprofil.dart';
 
 HeldVisitenkarte _karte(String heroId, {String name = 'Alrik'}) {
   return HeldVisitenkarte(
@@ -306,6 +308,93 @@ void main() {
           reason: sammlung,
         );
       }
+    });
+
+    group('Regelprofil-Vorgabe', () {
+      final profil = HeroRegelProfil(
+        catalogVersion: 'house_rules_v1',
+        pakete: [
+          HeroRegelProfilPaket(
+            paketId: 'epic_rules_v1',
+            pruefsumme: 'abc',
+            manifest: const <String, Object?>{
+              'id': 'epic_rules_v1',
+              'title': 'Epische Regeln',
+              // Verschachtelte Listen sind in Firestore-Feldern verboten.
+              'patches': <Object?>[
+                <Object?>[1, 2],
+              ],
+            },
+          ),
+        ],
+      );
+
+      GruppenSyncService besitzer() => _dienst(
+        firestore,
+        'owner',
+        ids: <String>['g'],
+        codes: <String>['GEHEIM123456'],
+      );
+
+      test('ohne Vorgabe gibt es keine', () async {
+        final dienst = besitzer();
+        await dienst.erstelleGruppe('Runde');
+
+        expect(await dienst.ladeRegelVorgabe('g'), isNull);
+      });
+
+      test(
+        'Besitzer setzt die Vorgabe, Mitglieder lesen dasselbe Profil',
+        () async {
+          final dienst = besitzer();
+          await dienst.erstelleGruppe('Runde');
+          await dienst.speichereRegelVorgabe('g', profil);
+          final mitglied = _dienst(firestore, 'spieler');
+          await mitglied.tritteBei(
+            const GruppenBeitrittscode(groupId: 'g', joinCode: 'GEHEIM123456'),
+          );
+
+          final geladen = await mitglied.ladeRegelVorgabe('g');
+
+          expect(geladen, profil);
+          expect(
+            geladen!.pakete.single.manifest,
+            profil.pakete.single.manifest,
+          );
+          final doc = await firestore
+              .doc('groups_v2/g/shared_info/regelprofil')
+              .get();
+          expect(doc.data(), containsPair('updatedByUid', 'owner'));
+          expect(doc.data()!['profilJson'], isA<String>());
+        },
+      );
+
+      test('Entfernen löscht die Vorgabe', () async {
+        final dienst = besitzer();
+        await dienst.erstelleGruppe('Runde');
+        await dienst.speichereRegelVorgabe('g', profil);
+
+        await dienst.entferneRegelVorgabe('g');
+
+        expect(await dienst.ladeRegelVorgabe('g'), isNull);
+      });
+
+      test('beschädigte oder zu neue Vorgaben zählen als keine', () async {
+        final dienst = besitzer();
+        await dienst.erstelleGruppe('Runde');
+        final ziel = firestore.doc('groups_v2/g/shared_info/regelprofil');
+
+        await ziel.set(<String, dynamic>{'profilJson': '{kaputt'});
+        expect(await dienst.ladeRegelVorgabe('g'), isNull);
+
+        await ziel.set(<String, dynamic>{'profilJson': '[1,2]'});
+        expect(await dienst.ladeRegelVorgabe('g'), isNull);
+
+        await ziel.set(<String, dynamic>{
+          'profilJson': jsonEncode(profil.copyWith(formatVersion: 99).toJson()),
+        });
+        expect(await dienst.ladeRegelVorgabe('g'), isNull);
+      });
     });
 
     test('ohne Anmeldung gibt es eine verständliche Meldung', () async {

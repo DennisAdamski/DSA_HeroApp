@@ -1680,16 +1680,12 @@
     "typ": "sonderfertigkeit",
     "seite": "Epische Stufen S. 9",
     "beschreibung": "Erlaubt weitere Manöver zu Pferd und verbessert die Werte des Reittiers.",
-    "voraussetzungen": "TaW Reiten 19, SF Kriegsreiterei, kein Zwerg",
+    "voraussetzungen": "TaW Reiten 19, kein Zwerg",
     "voraussetzungen_struktur": [
       {
         "art": "talent",
         "name": "Reiten",
         "min": 19
-      },
-      {
-        "art": "sonderfertigkeit",
-        "name": "Kriegsreiterei"
       },
       {
         "art": "rasse_verboten",

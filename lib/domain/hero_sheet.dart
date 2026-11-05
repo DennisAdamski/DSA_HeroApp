@@ -15,10 +15,13 @@ import 'package:dsa_heldenverwaltung/domain/hero_language_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_merkmal.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_meta_talent.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_note_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_proben_favorit.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_regelprofil.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_reise_station.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_reisebericht.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_resource_activation_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_rituals.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_spielansicht.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_spell_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/magic_special_ability.dart';
@@ -95,6 +98,9 @@ class HeroSheet {
     this.epicMainAttributes = const Attributes.zero(),
     this.epicActivationPolicy,
     this.regelProfil,
+    this.probenFavoriten = const <HeroProbenFavorit>[],
+    this.spielansicht,
+    this.reiseStationen = const <HeroReiseStation>[],
     this.epicLockedWaffenmeisterCategories = const <String>{},
     this.epicUnactivatedTalentIds = const <String>{},
   }) : rawStartAttributes = rawStartAttributes ?? startAttributes ?? attributes,
@@ -235,6 +241,25 @@ class HeroSheet {
   /// Belegung im JSON, damit Bestandshelden ihren Inhalts-Hash behalten.
   final HeroRegelProfil? regelProfil;
 
+  /// Häufig gewürfelte Proben des Spielers in Anzeigereihenfolge (ARCH-01).
+  ///
+  /// Nur Verweise auf Eigenschaft, Kampfwert, Talent oder Zauber, nie Werte.
+  /// Nur bei belegter Liste im JSON, damit Bestandshelden ihren Inhalts-Hash
+  /// behalten.
+  final List<HeroProbenFavorit> probenFavoriten;
+
+  /// Angepasste Kachelanordnung der Spielansicht (SPIEL-07).
+  ///
+  /// `null` zeigt die Standardanordnung. Nur bei Belegung im JSON, damit
+  /// Bestandshelden ihren Inhalts-Hash behalten.
+  final HeroSpielansicht? spielansicht;
+
+  /// Stationen der Reiseroute in Erfassungsreihenfolge (Ort, Datum, Notiz).
+  ///
+  /// Nur bei belegter Liste im JSON, damit Bestandshelden ihren Inhalts-Hash
+  /// behalten.
+  final List<HeroReiseStation> reiseStationen;
+
   /// Waffenmeister-Kategorien, die beim Epic-Werden nicht erlernbar waren
   /// und daher auch nachtraeglich gesperrt bleiben.
   final Set<String> epicLockedWaffenmeisterCategories;
@@ -306,6 +331,9 @@ class HeroSheet {
     Attributes? epicMainAttributes,
     Object? epicActivationPolicy = _copySentinel,
     Object? regelProfil = _copySentinel,
+    List<HeroProbenFavorit>? probenFavoriten,
+    Object? spielansicht = _copySentinel,
+    List<HeroReiseStation>? reiseStationen,
     Set<String>? epicLockedWaffenmeisterCategories,
     Set<String>? epicUnactivatedTalentIds,
   }) {
@@ -387,6 +415,11 @@ class HeroSheet {
       regelProfil: identical(regelProfil, _copySentinel)
           ? this.regelProfil
           : regelProfil as HeroRegelProfil?,
+      probenFavoriten: probenFavoriten ?? this.probenFavoriten,
+      spielansicht: identical(spielansicht, _copySentinel)
+          ? this.spielansicht
+          : spielansicht as HeroSpielansicht?,
+      reiseStationen: reiseStationen ?? this.reiseStationen,
       epicLockedWaffenmeisterCategories:
           epicLockedWaffenmeisterCategories ??
           this.epicLockedWaffenmeisterCategories,
@@ -456,6 +489,9 @@ class HeroSheet {
     'epicMainAttributes',
     'epicActivationPolicy',
     'regelProfil',
+    'probenFavoriten',
+    'spielansicht',
+    'reiseStationen',
     'epicLockedWaffenmeisterCategories',
     'epicUnactivatedTalentIds',
     ...HeroAppearance.jsonSchluessel,
@@ -568,6 +604,17 @@ class HeroSheet {
       if (epicActivationPolicy != null)
         'epicActivationPolicy': epicActivationPolicy,
       if (regelProfil != null) 'regelProfil': regelProfil!.toJson(),
+      // Nur bei belegter Liste: Bestandshelden behalten ihren Inhalts-Hash.
+      if (probenFavoriten.isNotEmpty)
+        'probenFavoriten': probenFavoriten
+            .map((entry) => entry.toJson())
+            .toList(growable: false),
+      if (spielansicht != null) 'spielansicht': spielansicht!.toJson(),
+      // Nur bei belegter Liste: Bestandshelden behalten ihren Inhalts-Hash.
+      if (reiseStationen.isNotEmpty)
+        'reiseStationen': reiseStationen
+            .map((entry) => entry.toJson())
+            .toList(growable: false),
       'epicLockedWaffenmeisterCategories': epicLockedWaffenmeisterCategories
           .toList(growable: false),
       'epicUnactivatedTalentIds': epicUnactivatedTalentIds.toList(
@@ -824,6 +871,13 @@ class HeroSheet {
               Map<String, dynamic>.from(json['regelProfil'] as Map),
             )
           : null,
+      probenFavoriten: leseProbenFavoriten(json['probenFavoriten']),
+      spielansicht: json['spielansicht'] is Map
+          ? HeroSpielansicht.fromJson(
+              Map<String, dynamic>.from(json['spielansicht'] as Map),
+            )
+          : null,
+      reiseStationen: leseReiseStationen(json['reiseStationen']),
       epicLockedWaffenmeisterCategories: _parseStringSet(
         json['epicLockedWaffenmeisterCategories'],
       ),

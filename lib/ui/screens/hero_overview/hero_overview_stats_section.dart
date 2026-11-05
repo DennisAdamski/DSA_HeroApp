@@ -862,6 +862,7 @@ extension _HeroOverviewStatsSection on _HeroOverviewTabState {
                     snapshot.probenEigenschaften,
                     attrKey,
                   ),
+                  verweis: probenVerweis(ProbenFavoritArt.eigenschaft, label),
                 ),
               ),
               icon: const Icon(Icons.casino_outlined),

@@ -1,4 +1,5 @@
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/probe_request_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/herleitung.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/spell_effect_combat_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/talent_herleitung_rules.dart';
@@ -75,7 +76,7 @@ SpellEffectProbenAnpassung probenAnpassungFuer(
 /// `null` für andere Probenarten oder Titel ohne diese Form. Der Titel
 /// entsteht zentral in `buildTalentProbeRequest`.
 String? talentNameAusProbe(ResolvedProbeRequest probe) {
-  const praefix = 'Talentprobe: ';
+  const praefix = kTalentprobeTitel;
   if (probe.type != ProbeType.talent || !probe.title.startsWith(praefix)) {
     return null;
   }

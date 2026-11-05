@@ -255,12 +255,18 @@ void main() {
     expect(gefechtsMittelSchluessel(_raufen), 'waffenlos:waffenlos:raufen');
   });
 
-  test('Ohne Waffe rechnet die Vorschau Raufen mit Fausthieb-INI −2', () {
+  test('Ohne Waffe rechnet die Vorschau Raufen mit INI-Modifikator 0', () {
+    // Wege des Schwerts S. 88: im reinen waffenlosen Kampf 0, nur gegen
+    // Bewaffnete -2 (steht als Hinweis).
     final s = _snapshot(katalog);
     final c = s.combatPreviewStats;
     expect(c.waffenlos, isTrue);
     expect(vorschauHauptwaffe(s.hero.combatConfig).name, 'Raufen (waffenlos)');
-    expect(c.kombinierteHeldenWaffenIni, c.heldenInitiative - 2 + c.iniGe);
+    expect(c.kombinierteHeldenWaffenIni, c.heldenInitiative + c.iniGe);
+    expect(
+      _profil(s, 'waffenlos:raufen').anteile.join('\n'),
+      contains('INI −2'),
+    );
     expect(c.at, _profil(s, 'waffenlos:raufen').at);
     final bewaffnet = _snapshot(katalog, config: _saebel);
     expect(bewaffnet.combatPreviewStats.waffenlos, isFalse);

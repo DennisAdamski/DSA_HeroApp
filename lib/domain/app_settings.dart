@@ -53,6 +53,7 @@ class AppSettings {
     this.tabellenAnsicht = TabellenAnsicht.automatisch,
     this.abenteuerSortierung = AbenteuerSortierung.zuletztBearbeitet,
     this.summaryRailCollapsed = false,
+    this.merkmaleAufgeklappt = false,
     this.tableColumnWidths = const <String, Map<String, double>>{},
     this.catalogContentPassword,
     this.rulesIndexRemoteConfig = const RulesIndexRemoteConfig(),
@@ -84,6 +85,9 @@ class AppSettings {
   /// Ob die Kernwerte-Rail im Workspace zugeklappt ist.
   final bool summaryRailCollapsed;
 
+  /// Ob die Vor- und Nachteile der Spielansicht aufgeklappt sind (geraeteweit).
+  final bool merkmaleAufgeklappt;
+
   /// Geräteweit gespeicherte Spaltenbreiten nach Tabellen- und Spalten-ID.
   final Map<String, Map<String, double>> tableColumnWidths;
 
@@ -111,6 +115,7 @@ class AppSettings {
     TabellenAnsicht? tabellenAnsicht,
     AbenteuerSortierung? abenteuerSortierung,
     bool? summaryRailCollapsed,
+    bool? merkmaleAufgeklappt,
     Map<String, Map<String, double>>? tableColumnWidths,
     Object? catalogContentPassword = _copySentinel,
     RulesIndexRemoteConfig? rulesIndexRemoteConfig,
@@ -132,6 +137,7 @@ class AppSettings {
       tabellenAnsicht: tabellenAnsicht ?? this.tabellenAnsicht,
       abenteuerSortierung: abenteuerSortierung ?? this.abenteuerSortierung,
       summaryRailCollapsed: summaryRailCollapsed ?? this.summaryRailCollapsed,
+      merkmaleAufgeklappt: merkmaleAufgeklappt ?? this.merkmaleAufgeklappt,
       tableColumnWidths: tableColumnWidths ?? this.tableColumnWidths,
       catalogContentPassword: identical(catalogContentPassword, _copySentinel)
           ? this.catalogContentPassword
@@ -155,6 +161,7 @@ class AppSettings {
     'tabellenAnsicht': tabellenAnsicht.name,
     'abenteuerSortierung': abenteuerSortierung.name,
     'summaryRailCollapsed': summaryRailCollapsed,
+    'merkmaleAufgeklappt': merkmaleAufgeklappt,
     'tableColumnWidths': <String, Map<String, double>>{
       for (final entry in tableColumnWidths.entries)
         entry.key: Map<String, double>.from(entry.value),
@@ -201,6 +208,7 @@ class AppSettings {
       tabellenAnsicht: tabellenAnsicht,
       abenteuerSortierung: abenteuerSortierung,
       summaryRailCollapsed: json['summaryRailCollapsed'] as bool? ?? false,
+      merkmaleAufgeklappt: json['merkmaleAufgeklappt'] as bool? ?? false,
       tableColumnWidths: _parseTableColumnWidths(json['tableColumnWidths']),
       catalogContentPassword: _parseNullableString(
         json['catalogContentPassword'],

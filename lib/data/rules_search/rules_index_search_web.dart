@@ -24,7 +24,7 @@ bool rulesIndexSearchSupported() => true;
 
 /// Öffnet die zuvor importierte Regel-Volltextsuche oder liefert `null`,
 /// wenn noch keine Index-Datenbank importiert wurde.
-Future<RulesIndexSearch?> openRulesIndexSearch() async {
+Future<RulesIndexSearch?> openRulesIndexSearch({String? dataDirectory}) async {
   final sqlite = await _ensureSqlite();
   final fs = await _ensureFileSystem();
   if (fs.xAccess(_dbFileName, 0) == 0) {
@@ -47,7 +47,10 @@ Future<RulesIndexSearch?> openRulesIndexSearch() async {
 /// funktionierende Datenbank nicht zerstören. Wirft eine [FormatException],
 /// wenn [bytes] keine gültige Regel-Index-Datenbank enthält (z. B. falsche
 /// Datei oder fehlendes FTS5-Schema).
-Future<RulesIndexSearch> importRulesIndexDatabase(Uint8List bytes) async {
+Future<RulesIndexSearch> importRulesIndexDatabase(
+  Uint8List bytes, {
+  String? dataDirectory,
+}) async {
   final sqlite = await _ensureSqlite();
   final fs = await _ensureFileSystem();
   _disableWalMode(bytes);

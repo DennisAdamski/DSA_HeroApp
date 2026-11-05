@@ -310,6 +310,8 @@ Gefechtspruefung pruefeGefechtsaktion(
   int distanzSchritte = 0,
   List<Gefechtsmodifikator> zuschlagsAnteile = const [],
   List<Gefechtsmodifikator> zauberAnteile = const [],
+  int zusatzFreie = 0,
+  int zusatzNormale = 0,
 }) {
   final pruefen = <String>[...pruefGruende];
   final sperren = <String>[
@@ -584,6 +586,8 @@ Gefechtspruefung pruefeGefechtsaktion(
         'Waffenbindung, Sonderfertigkeit und Art der Zusatzaktion prüfen.',
       );
   }
+  f += zusatzFreie;
+  p += zusatzNormale;
   if (ausweichen) {
     if (s.haltung == Gefechtshaltung.liegend) {
       sperren.add('Liegend kein Ausweichen.');

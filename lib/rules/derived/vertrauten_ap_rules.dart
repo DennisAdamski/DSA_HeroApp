@@ -4,21 +4,25 @@
 // Der Vertraute erhält fest ein Viertel der AP, die die Hexe durch
 // Abenteuerabschluss und Reisebericht bekommt, ohne Abzug bei ihr. Der
 // Zähler `abenteuerApErfasst` rechnet ab dem Einrichten exakt: Gutgeschrieben
-// wird jeweils ⌊neu / 4⌋ − ⌊alt / 4⌋, eine Rücknahme zieht ebenso ab.
+// wird jeweils round(neu / 4) − round(alt / 4), eine Rücknahme zieht ebenso ab.
+// Es wird echt gerundet (Wege der Helden S. 6, Entscheidung 27.10.2026; vorher
+// abgerundet).
 // Übertragene AP zahlt die Hexe als ausgegebene AP; je volle 50 steigt die
 // Loyalität um 1, höchstens auf 25.
 
 import 'dart:math' as math;
 
+import 'package:dsa_heldenverwaltung/rules/derived/excel_rounding.dart';
 import 'package:dsa_heldenverwaltung/catalog/vertrauten_katalog.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_companion.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ap_level_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/begleiter_aenderung_rules.dart';
 
-/// Anteil des Vertrauten an [abenteuerAp] Abenteuer-AP der Hexe.
+/// Anteil des Vertrauten an [abenteuerAp] Abenteuer-AP der Hexe, echt gerundet
+/// (ab ,5 auf; 6 AP ergeben 2, 5 AP ergeben 1).
 int vertrautenApAnteil(int abenteuerAp) =>
-    abenteuerAp <= 0 ? 0 : abenteuerAp ~/ kVertrautenApAnteilNenner;
+    abenteuerAp <= 0 ? 0 : echtGerundet(abenteuerAp, kVertrautenApAnteilNenner);
 
 /// Verteilt eine Änderung der Abenteuer-AP der Hexe um [deltaAbenteuerAp]
 /// auf alle Vertrauten mit eingerichtetem Anteil.

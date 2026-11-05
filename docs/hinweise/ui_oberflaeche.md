@@ -65,10 +65,20 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   `KartoSpielansicht` liest `heroComputedProvider(heroId)` **einmal** und reicht
   den `HeroComputedSnapshot` an alle Abschnitte weiter — auch an die
   Adaptermethoden, damit die Brücke für dieselben Werte keine zweite
-  Providerbeobachtung aufmacht. Die Reihenfolge ist überall
-  Schnellaktionen (ganz oben), Ressourcen, Abenteuer samt Standort,
-  Eigenschaften, Vor- und Nachteile, Kampf, Effekte, Zustand,
-  Würfelprotokoll. Die Schnellaktionen enthalten „Regeln“ (Key
+  Providerbeobachtung aufmacht. Die Reihenfolge folgt der Häufigkeit am
+  Tisch: Ressourcen, Häufige Proben,
+  Eigenschaften, Kampf, Effekte, Zustand (und Begleiter), Dabei, Abenteuer
+  samt Standort, Vor- und Nachteile, Würfelprotokoll. Das ist nur die
+  Standardanordnung; jede Kachel lässt sich verschieben (Kachelraster, unten).
+  Die Schnellaktionen sind **keine Kachel**: sie stehen fest im Seitenkopf
+  zwischen „Am Spieltisch“ und „Anordnen“ (`KartoSeitenkopf.mitte`; ab
+  `kMitteNebenTitelAb` (1200 dp, bricht dort nie um; **die Schwelle wächst mit der Schriftskalierung**, weil Titel und Aktion nicht flexibel sind und sonst die Zeile überläuft) in einer Zeile, schmaler unter der Titelzeile),
+  auch im Anordnen-Modus; das Kürzel Strg+K steht nur im Tooltip von „Probe suchen“, nicht als Chip. **Vergrößern:** Jede Kachel hat in ihrer Kopfzeile den Namen als Klickfläche (Key `karto-kachel-<id>-vergroessern`, `KartoKachelSteuerung.onVergroessern`, leises `open_in_full`-Symbol); sie öffnet die Kachel in einem Dialog (`_vergroessern` in `karto_spielansicht.dart`, Key `karto-kachel-<id>-popup`, Schließen `karto-kachel-popup-zu`). Der Dialog liest `heroComputedProvider` selbst (nie den beim Öffnen erfassten Snapshot), baut denselben Inhalt mit Größenstufe nach echter Breite ohne Einklappknopf und schreibt nur über die Aktionen der Kachel. Im Anordnen-Modus gibt es den Knopf nicht. Standardbreiten (per Simulation auf wenig Leerfläche bei 2–4 Spalten gewählt): Ressourcen ganze Breite, Vor- und Nachteile sowie Protokoll schmal, Abenteuer Gewicht 450. Ein früher gespeicherter Eintrag `schnellaktionen`
+  wird beim Auflösen übergangen und bleibt erhalten. Jede Schnellaktion trägt eine
+  eigene Signalfarbe (`kartoSchnellaktionStil` in `karto_spielaktionen.dart`:
+  Gefecht `messing`, Probe `meer`, Regeln `kueste`, Rast `moos`, Schaden
+  `siegel`; Tönung 14 % auf `feld`, Symbol und Kante in der Farbe, Beschriftung
+  `schrift`). Die Schnellaktionen enthalten „Regeln“ (Key
   `karto-spiel-regeln`): der vorhandene Regelnachschlag über die Brücke
   (`regelnNachschlagen`, `regelnNachschlagenVerfuegbar`); wo es keinen
   Regelindex gibt (Mobile), entfällt der Knopf. Die Eigenschaften stehen als
@@ -85,13 +95,146 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   Abenteuer bleibt der Abschnitt mit dem Standort stehen. Der Seitenkopf heißt
   immer schlicht „Am Spieltisch“. Der Schreibweg liegt gemeinsam mit dem
   Abenteuerblatt im Mixin `KartoAbenteuerSchreiben`
-  (`karto_abenteuer_schreiben.dart`); die Standortspeicherung läuft weiter über
+  (`karto_abenteuer_schreiben.dart`). Alle ui2-Schreibwege auf den Bogen
+  (Abenteuer, Reiseroute, Dabei, Merkmalsblatt, Anordnen/Einklappen) laufen
+  über `KartoHeldSchreiben` (`karto_held_schreiben.dart`): frisch über
+  `updateHero`, Planungssperre mit `planungsSperre`, wahlweise Doppelklick-Schutz
+  (`einzeln`), Fehlertext in `fehler`. Die Editorprüfung
+  (`vorHeldenbearbeitung`) gehört nicht in diesen Weg: Sie ist keine
+  Datensicherung (Editorentwürfe gleichen je Schlüssel frisch ab), sondern bleibt
+  Stellen vorbehalten, die einen eigenen Bearbeitungsmodus beginnen. Die
+  Standortspeicherung läuft weiter über
   die Brücke (`standortSetzen`). Die Ressourcenwerte sind kompakt: Wert und
-  Fehlbetrag teilen eine Zeile, die ganze Zelle ist das Tippziel. Ab
-  `KartoBreite.breit` wandern Kampf, Effekte und Zustand in eine Seitenspalte,
-  das Protokoll bleibt der letzte Abschnitt beider Anordnungen. Den
+  Fehlbetrag teilen eine Zeile, die ganze Zelle ist das Tippziel; der Wert hat
+  Vorrang, passt der Fehlbetrag nicht daneben, rückt er unter den Wert (das
+  Maximum wird nie gekürzt). **In einer weiten Kachel** (`KartoKachelGroesse.weit`,
+  also auch im Vergrößern-Dialog) trägt jede Zelle eine Knopfreihe −5, −1, +1, +5
+  unter dem Balken (`KartoRessourcenwert.onSchritt`, Keys
+  `karto-ressource-<art>-minus-5|minus-1|plus-1|plus-5`). Die Zellen sind dann
+  mindestens 240 dp breit, und die Spaltenzahl ist ausgewogen
+  (`KartoRessourcenleiste.ausgewogeneSpalten`: 4 Ressourcen bei Platz für 3 ergeben
+  2×2). Kompakt und normal bleibt alles wie vorher. Geschrieben wird über
+  `KartoBestandsAdapter.ressourceSchritt` und `schreibeRessourcenSchritt`
+  (`karto_spiel_bruecke.dart`, gemeinsam mit dem Ressourcenblatt):
+  `aendereZustandMitMeldung` auf dem frisch geladenen Wert, Untergrenze
+  `kVitalFloor` (−10), keine Obergrenze (Überheilung). Ohne `aktion`-Guard, damit
+  jeder schnelle Klick zählt; UI2 kennt keine Grenze. Den
   Re-Entrancy-Guard reicht `KartoWorkspace` als `KartoLaufzeitAktion` herein;
   die Spielansicht macht keinen zweiten Fehlerweg auf.
+- **Kachelraster der Spielansicht (SPIEL-07).** Statt Haupt- und Seitenspalte
+  stehen die Abschnitte als Kacheln im `KartoKachelraster`
+  (`karto_kachelraster.dart`): Rastereinheit mindestens 300 dp
+  (`kRasterEinheitMin`), Spaltenzahl aus der **Ansichtsbreite**, höchstens 4;
+  Breiten `schmal` (1 Einheit), `mittel` (2), `voll` (ganze Zeile), auf die
+  Spaltenzahl gekappt. Höhe = Inhalt. Die **Spalte** jeder Kachel folgt nur aus
+  Reihenfolge, Breite und dem Richtgewicht der Art
+  (`KartoSpielkachelArt.gewicht`, `kartoRasterBelegung`), nie aus der echten
+  Höhe: Einklappen oder neue Daten verschieben nur Kacheln darunter in
+  derselben Spalte, keine wechselt Spalte oder Breite (ein früheres
+  „Ausweichen“ in Lücken entfiel). Die senkrechte Lage folgt der echten
+  Unterkante. Kinder werden ohne Intrinsics ausgelegt, `LayoutBuilder` in Kacheln
+  ist erlaubt. Was eine Kachel erlaubt (Breiten, Standardbreite, Ausblenden,
+  Einklappen), legt `KartoSpielkachelArt` in `karto_spielraster_ordnung.dart`
+  fest; Ressourcen lassen sich weder ausblenden noch einklappen. Gespeichert wird **je Held** in `HeroSheet.spielansicht`
+  (`HeroSpielansicht`/`HeroSpielkachel`, nur bei Belegung im JSON; Kacheln mit
+  `id`, damit der Sync je Kachel zusammenführt). `loeseSpielansichtAuf` setzt
+  fehlende Kacheln an ihre Standardstelle und übergeht unbekannte IDs,
+  `schreibeSpielansicht` lässt diese samt unbekannter Felder an ihrer Stelle
+  stehen und schreibt die Standardbreite nicht. „Anordnen“ im Seitenkopf
+  öffnet nach `vorHeldenbearbeitung` einen Entwurf. Darin steht je Kachel eine
+  `KartoAnordnungskarte` (Symbol, Titel, Breite; gleiche Spalte wie später) mit
+  gesperrter **Live-Vorschau** des echten Inhalts (Key `karto-kachel-<id>-vorschau`,
+  Etikett mit Stufe und Breite `…-vorschau-stufe`): der Inhalt wird in der
+  Größenstufe der echten Kachelbreite gebaut (`vorschau`-Rückruf aus `_kachel`),
+  ist mit `IgnorePointer`/`ExcludeFocus`/`ExcludeSemantics` nicht bedienbar, 180 dp
+  hoch (`vorschauHoehe`) und blendet unten aus; sie folgt sofort einer geänderten
+  Breite. Ziehen am Griff oder am Titel (nach
+  kurzem Halten), eine Einfügelinie zeigt „davor“ oder „danach“, abgelegt wird
+  einfügend (`fuegeSpielkachelEin`), dazu Pfeile, Breitenmenü, Ausblenden,
+  „Standard“; erst „Fertig“ schreibt einmal frisch
+  über `updateHero`, ohne Änderung gar nicht. Den Einklappknopf zeigt der
+  äußerste `KartoAbschnitt` einer Kachel über `KartoKachelSteuerung`; er
+  schreibt sofort nur den einen Eintrag (`mitEingeklappt`). Während einer
+  Planung sind Anordnen und Einklappen gesperrt. Jede Kachel kennt ihre **Größenstufe** `KartoKachelGroesse`
+  (`kompakt` <420, `normal` <600, `weit` ab 600 dp **Kachelbreite**, nicht
+  Fensterbreite), über `KartoKachelSteuerung.groesseVon(context)` auch in
+  verschachtelten Abschnitten lesbar; Inhalte zeigen mit der Stufe mehr oder
+  ordnen sich um, statt nur zu strecken (mittlere und volle Kacheln sind immer
+  `weit`, eine schmale erst in sehr großen Fenstern). **Kampf:** In `weit` steht
+  neben den Probenchips das Panel „Kampfwerte“ (`karto_kampfinhalt.dart`,
+  `KartoKampfInhalt`/`KartoKampfwerte`): belegte Hände (`gefechtsHandbelegung`),
+  INI (`kampfInitiative` + Würfel), TP (`gefechtsAngriffsanzeige`), RS, BE
+  (Keys `karto-kampf-ini|tp|rs|be`), bei Fernkampf Ladezeit, Geschoss,
+  Entfernung, bei Belegung Wundabzug von Schwert-/Schildarm und
+  Waffenmeisterschaft. Reine Anzeige aus der Kampfvorschau, ohne Rechnung; die
+  wichtigsten Zeilen stehen oben, weil die Anordnen-Vorschau nur 180 dp zeigt.
+  Die Kachel bleibt standardmäßig schmal; das Panel erscheint nach dem
+  Verbreitern oder im Vergrößern-Dialog. **Eigenschaften:** Die Kachel passt ihre Spalten (8, 4, 2, 1) schon an die Breite an;
+  in `weit` zeigt eine Karte einen Wundabzug zusätzlich als „−4“ an der Karte
+  selbst (`InspectorAttributeCard.abzugZeigen`, vom Adapter über die Stufe
+  geschaltet), sonst nur im Tooltip. Mehr gibt die Datenlage nicht her, die
+  Stufen `kompakt`/`normal` bleiben unverändert. **Begleiter:** In `weit` stehen mehrere Begleiter nebeneinander
+  (Karten ab `KartoBegleiterAbschnitt.kartenbreiteMin` = 320 dp, Spalten über
+  `kartoAusgewogeneSpalten`), und jede Karte trägt einen Block „Kampf“ aus
+  `begleiterKampfprofil` (INI, RS, BE, MR, Geschwindigkeiten, je Angriff AT, PA,
+  TP, DK, beim Reittier der Ausbildungsstand; Keys
+  `karto-begleiter-<id>-kampf|kampfwerte|angriff-<i>|reittier`). Ab 540 dp
+  Kartenbreite steht der Block rechts neben den Werten, sonst darunter. Die
+  Bedienung der Werte ist unverändert. **Abenteuer:** Karten und Kartenraster waren schon breitenabhängig. In `weit`
+  stehen Personen und Notizen **nebeneinander** (Key
+  `karto-spiel-abenteuer-spalten`, Personen 2 : Notizen 3), solange beide
+  vorhanden sind und nicht gesucht wird; sonst wie bisher untereinander. Die
+  Obergrenzen (3 Personen, 4 Notizen) ergeben ähnlich hohe Spalten.
+  Zu beachten: eine mittlere Kachel ist immer weit, die Kachel erlaubt nur
+  „Mittel“ und „Voll“; nicht weit ist sie nur bei einspaltiger Ansicht. **Reiseroute:** In `weit` zeigt die Kachel `kReiserouteWeit` (5) statt
+  `kReiserouteKurz` (3) Stationen, `kReiserouteNotizWeit` (4) statt 2 Notizzeilen
+  und je Station den Avesmaps-Link, den sonst nur das Blatt hat; der Zähler am
+  Knopf „Ganze Route“ folgt der Obergrenze der Stufe. **Zustand:** In `weit` mit mindestens
+  `KartoZustandsblock.zweiSpaltenAb` (624 dp) stehen zwei Spalten nebeneinander
+  (`karto_spiel_bruecke.dart`): links Belastung über Wunden, beide von Anfang an
+  aufgeklappt (`anfangsAufgeklappt`, danach frei einklappbar, nicht gespeichert),
+  rechts die Statuswerte ohne Trennlinie (`mitTrenner: false`). Schmaler, in
+  `kompakt`/`normal` und außerhalb einer Kachel bleibt es bei der einen Spalte
+  mit eingeklappten Abschnitten. Die klassischen Abschnitte bekamen nur
+  optionale Parameter mit unverändertem Standard; Schreibwege unverändert. „Dabei“ hält Betrag,
+  Stift und Münzschritte beieinander und lässt die Verbrauchsgegenstände ab
+  `kDabeiZweispaltigAb` (560 dp Kachelbreite) zweispaltig fließen.
+  Die Kachel „Reiseroute“ (`karto_reiseroute.dart`) zeigt die jüngsten
+  Stationen von `HeroSheet.reiseStationen` als Zeitleiste und öffnet das
+  Reiseroute-Blatt; Details in [reiseroute_plan.md](../reiseroute_plan.md).
+  **Vor- und Nachteile:** In `weit` zeigt die eingeklappte Übersicht
+  (`KartoMerkmalsuebersicht`) je Art bis zu `kMerkmaleZeilenWeit` (3) statt einer
+  Zeile, also mehr Einträge ohne Aufklappen; aufgeklappt stehen Vorteile und
+  Nachteile nebeneinander (Key `karto-merkmale-spalten`), solange beide Arten
+  Einträge haben. Mehr gibt die Datenlage nicht her (Wirkungstexte stehen schon
+  aufgeklappt). Kompakt, normal und außerhalb einer Kachel unverändert; der
+  Aufklappzustand bleibt die geräteweite Einstellung.
+  **Würfelprotokoll:** Die Kachel ist die Klasse `KartoProtokollAbschnitt`
+  (`karto_wuerfelprotokoll.dart`), damit sie die Stufe lesen kann. In `weit`
+  zeigt sie `kProtokollWeit` (8) statt `kProtokollKurz` (5) Würfe, „Alle
+  anzeigen“ erscheint erst darüber, und der Adapter (`spielProtokoll`) setzt die
+  Würfe als **Tabelle** (`InspectorDiceLogSection.tabellarisch`: Kopfzeile Zeit,
+  Probe, Würfe, Ziel, Ergebnis; Restpunkte TaP*/ZfP* unter dem Ergebnis, dort
+  auch „Nochmal würfeln“ und die Rücknahme-Aktion; Keys
+  `dice-log-tabellenkopf`, `dice-log-zeile-<ms>`). Die Tabelle gilt nur mit
+  Grenze (das Blatt mit allen Würfen und Filtern bleibt bei Karten) und fällt
+  unter `tabellenBreiteMin` (520 dp) oder bei Schrift über das 1,3-Fache auf die
+  Karten zurück, weil feste Spalten dann nicht mehr tragen. Daten sind
+  unverändert (`DiceLogEntry`), Schreibwege auch.
+  **Häufige Proben:** In `weit` stehen die Proben nebeneinander
+  (`ProbenFavoritenListe.spaltenbreite`, vom Adapter mit
+  `KartoBestandsAdapterImpl.kFavoritenSpaltenbreite` = 260 dp gesetzt; höchstens
+  3 Spalten, ausgewogen wie `kartoAusgewogeneSpalten`: 4 Proben bei Platz für 3
+  ergeben 2×2; Key `proben-favoriten-spalten-<n>`), in der Reihenfolge der
+  Favoriten von links nach rechts. Tipp, Menü und Schreibweg bleiben
+  unverändert; mehr Information gibt es nicht (Name und Detail aus den
+  Kandidaten der Suche). **Dabei:** In `weit` zeigt der Block
+  `kDabeiSichtbarWeit` (12) statt `kDabeiSichtbar` (6) Verbrauchsgegenstände,
+  weil sie ohnehin in zwei Spalten fließen. **Aktive Effekte:** unverändert. Es
+  gibt höchstens drei Chips (Axxeleratus, Armatrutz, Attributo), die schon als
+  `Wrap` nebeneinander stehen; die Datenlage (`ActiveSpellEffectChip`: Name,
+  Bonus, Restlaufzeit) trägt keine weitere Darstellung, ein Füllinhalt wäre
+  unehrlich.
 - **Vor- und Nachteile bearbeitet UI2 im Merkmalsblatt**
   (`lib/ui2/merkmale/`), nach dem Muster des Abenteuerblatts: modal, eigener
   Schreibweg über `HeroActions.updateHero` und `aendereMerkmale`
@@ -130,7 +273,24 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   gewürfelt und protokolliert wird über `showLoggedProbeDialog` — UI2 kennt
   keine W20-/W6-Simulation. Strg/Cmd+K öffnet dieselbe Suche, aber nur im
   Bereich Spielen: der `IndexedStack` hält die anderen Bereiche am Leben,
-  deshalb entscheidet der aktive Bereich, nicht die Position im Baum.
+  deshalb entscheidet der aktive Bereich, nicht die Position im Baum. Das
+  Kürzel hängt an `KartoProbenkuerzel` (`lib/ui2/widgets/karto_probenkuerzel.dart`),
+  einem `HardwareKeyboard`-Handler statt `CallbackShortcuts`: im Browser fiel der
+  Fokus nach einem Klick auf freie Fläche aus dem Bereich, Flutter behandelte
+  die Taste nicht, und der Browser öffnete seine eigene Suche. Der Handler
+  greift nur, solange sein Bereich aktiv ist und seine Route oben liegt (nicht
+  unter Dialogen oder dem Gefecht, das dasselbe Widget nutzt); Strg+Umschalt+K
+  bleibt dem Browser.
+- Häufige Proben (Favoriten, nur UI2): `HeroSheet.probenFavoriten` speichert je
+  Eintrag nur `art:ref` (`HeroProbenFavorit.id`, deterministisch, damit der
+  Sync-Merge die Liste je Element zusammenführt); nie Name oder Wert, Ziel und
+  Herleitung entstehen beim Würfeln. Die Kandidaten kommen aus
+  `beobachteProbeKandidaten` (`probe_quick_search.dart`), die Suche zeigt den
+  Stern nur mit `mitFavoriten: true` (klassische Oberfläche ohne). Schreiben nur
+  frisch über `aendereHeldMitMeldung` und die Listenregeln in
+  `proben_favoriten_rules.dart` (Höchstzahl `kProbenFavoritenMax`). Die Liste
+  im Spielbereich ist `ProbenFavoritenListe` hinter
+  `KartoBestandsAdapter.spielFavoritenproben`.
 - `InspectorArcaneEffectsBlock` ist Consumer-Wrapper um die darstellende
   `InspectorArcaneEffectsView`. Die Chipliste baut
   `lib/rules/derived/active_spell_display_rules.dart` — eigene Datei, weil
@@ -278,7 +438,11 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   (`lib/ui2/spielen/karto_abenteuerblatt.dart`, Dialoge geteilt in
   `karto_abenteuer_dialoge.dart`): Datum, Zusammenfassung,
   Notizen und Personen lesen und pflegen, Abschluss und Belohnungen bleiben in
-  der Verwaltung. Notizen und Personen sind sortierbar
+  der Verwaltung. Der Datumsdialog (`KartoDatumDialog`) zeigt unter den Feldern
+  die **Feiertage in der Nähe** des gewählten Tages (7 Tage davor, 14 danach;
+  Rechnung in `feiertageInDerNaehe`, nicht im Widget), folgt Tag und Monat
+  sofort und verlinkt die Feiertagsliste der Wiki Aventurica über den
+  injizierbaren `KartoLinkOeffner` (`oeffneExtern` aus `karto_standort.dart`). Notizen und Personen sind sortierbar
   (`karto_abenteuer_sortierung.dart`: zuletzt bearbeitet, neueste, älteste,
   alphabetisch); die Wahl ist die geräteweite Einstellung
   `AppSettings.abenteuerSortierung` und schreibt nie den Helden. „Zuletzt
@@ -301,6 +465,113 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   jede weitere Aktion darin würde still verworfen. Bei offener Planung ist das
   Blatt schreibgeschützt, weil jede Heldenänderung den Inhalts-Hash der Runde
   bräche.
+  **Ort und Datum an Notizen und Personen (SPIEL-06):** `HeroNoteEntry` und
+  `HeroAdventurePersonEntry` tragen `ort` (Freitext) und `datum` als
+  `HeroAdventureDateValue` wie Reisestationen und Abenteuer (Tag, Monat, Jahr;
+  Teilangaben erlaubt; eingegeben über `KartoDatumFelder`). Ein Datum, das eine
+  Zwischenfassung als Text speicherte, zerlegt `HeroAdventureDateValue.lese`;
+  Unlesbares bleibt vollständig im Jahr. Beide stehen nur bei Belegung im JSON
+  (`istBelegt`), die Bestandshashes bleiben. Neue Einträge (Dialog **und**
+  Schnell-Erfassung) bekommen sie vorbelegt: Ort aus `HeroState.standort`
+  (`bereinigeStandort`), Datum aus `abenteuerDatumWert` des Abenteuers; fehlt eines, bleibt das Feld leer, nichts
+  wird erfunden. Gelesen wird beim Anlegen in `_vorbelegung()` des Mixins
+  `KartoAbenteuerSchreiben`. Beim Bearbeiten stehen die gespeicherten Werte im
+  Dialog, ein Bestandseintrag wird nicht von selbst befüllt; unveränderte Felder
+  stempeln kein `lastModified`. Die „Quest“ ist das Abenteuer selbst und kein
+  eigenes Feld. Die Karten zeigen eine leise Zeile „Ort · Datum“.
+  **Suche** (`karto_abenteuer_suche.dart`): Suchknopf im Abenteuerabschnitt und
+  im Blatt, Suchfeld darunter. `sucheInAbenteuern` durchsucht Titel/Text/Ort/Datum
+  der Notizen und Name/Beschreibung/Ort/Datum der Personen **aller** Abenteuer
+  des Helden; jedes Wort muss vorkommen, Umlaute und Groß-/Kleinschreibung gelten
+  nicht (`vergleichsschluessel` = `suchFaltung` aus `string_normalize.dart`, dieselbe Faltung wie Probensuche und Kurzregeln: „ö“, „oe“ und „o“ fallen zusammen).
+  Das Abenteuer, von dem aus gesucht wird, steht vorn (im Abschnitt das
+  laufende, im Blatt das gezeigte), die übrigen mit dem zuletzt angelegten
+  zuerst; Treffer folgen der gewählten Sortierung. Mit Suchtext ersetzen die
+  Treffer die Karten (das Limit von drei Personen/vier Notizen entfällt).
+  Treffer im eigenen Abenteuer bearbeitet man direkt, Treffer in anderen öffnen
+  deren Blatt (im Abschnitt über `onAbenteuerOeffnen` und damit den
+  Editorschutz, im Blatt direkt). Die Suche liest nur und schreibt nie.
+  **Zuletzt gewürfelt (SPIEL-01, Teilstand):** Unter den Schnellaktionen im Seitenkopf
+  steht ein Streifen mit bis zu `kZuletztGewuerfeltMax` (6) Marken
+  (`KartoZuletztGewuerfelt`, `karto_zuletzt_gewuerfelt.dart`). Welche Proben
+  erscheinen, entscheidet `zuletztGewuerfelteProben`
+  (`lib/rules/derived/zuletzt_gewuerfelt_rules.dart`): neueste zuerst, jede
+  Probe (Verweis, sonst Art und Titel) einmal, nur wiederholbare Einträge
+  (`probeEintragIstWiederholbar`, dieselbe Regel wie der Wiederholen-Knopf im
+  Protokoll). Ein Tipp öffnet über die Brücke (`probeWiederholen`) den normalen
+  Probendialog mit den aktuellen Werten. Der Streifen speichert und
+  synchronisiert nichts, er liest nur das Würfelprotokoll (höchstens
+  `HeroState.diceLogMax` Einträge); ohne wiederholbaren Wurf entfällt er.
+  **Vor- und Nachteile klappen auf (SPIEL-01):** `KartoMerkmalsuebersicht`
+  zeigt eingeklappt je Art eine Zeile mit Auslassung (höchstens zwei Zeilen),
+  aufgeklappt jeden Eintrag einzeln mit Wirkungstexten. Der Umschalter (Key
+  `karto-spiel-merkmale-umschalten`, „Alle zeigen (n)“ / „Einklappen“) schreibt
+  nur `AppSettings.merkmaleAufgeklappt` (`merkmaleAufgeklapptProvider`,
+  `SettingsActions.setMerkmaleAufgeklappt`): geräteweit und ohne Sync (der
+  Remote-Abgleich der Einstellungen betrifft nur Geheimnisse), nie der Held,
+  daher ohne `aktion`-Guard und ohne Editorprüfung. Standard ist eingeklappt.
+  **Dabei (SPIEL-02, Teilstand):** `KartoDabeiAbschnitt`
+  (`karto_dabei_abschnitt.dart`) steht in der Hauptspalte vor dem Abenteuer
+  und zeigt den Geldstand (`HeroSheet.dukaten`) mit Münzschritten D/S/K sowie
+  einem Dialog „Betrag ändern“ (Hinzufügen/Abziehen) und die
+  Verbrauchsgegenstände des Inventars mit −/+ (ab `kDabeiSichtbar` = 6 mit
+  „Alle zeigen“). Die Regeln liegen in `spiel_dabei_rules.dart`:
+  `dabeiVerbrauchsgegenstaende` nimmt nur manuelle Verbrauchsgegenstände des
+  Helden (keine mit dem Kampf verknüpften, keine abgelegten, keine von
+  Begleitern getragenen); Munition bleibt im Kampfbereich. Jeder Klick schreibt
+  frisch über `HeroActions.updateHero`: `mitGeldSchritt` und
+  `mitVerbrauchsmengenSchritt` rechnen vom **gespeicherten** Wert, finden den
+  Eintrag über die Instanz-ID und ändern nur ihr Feld (Menge über
+  `mitInventarMenge`, 0 bis 9999, ein aufgebrauchter Eintrag bleibt stehen).
+  Anders als der Münzknopf im Inventar kappt `mitGeldSchritt` nie still bei 0:
+  ein Abzug über den Bestand ist ein `StateError`, die Abzugsknöpfe sind dann
+  gesperrt. Freitext- oder von einer älteren App abweichende Mengen und ein
+  unlesbarer Geldstand bleiben unangetastet (Hinweis statt Schritt). **Benutzen:**
+  Verbrauchsgegenstände mit Vitalwirkung oder Elixierwirkung
+  (`dabeiBenutzbar`, dieselbe Entscheidung wie im Gefechtsinventar) zeigen
+  „Benutzen“ (nur, wenn die Bestandsbrücke ein `KartoGefechtsAdapter` ist, und
+  nicht bei Menge 0). Es öffnet über `gefechtsVitalwirkung` den bestehenden
+  Anwenden-/Einnehmen-Dialog, der Wirkung (Zustand) und das Stück (Bogen)
+  selbst bucht; der Block schreibt dabei nichts. Der Aufruf läuft über `aktion`.
+  Der Block
+  sperrt sich während einer Planung; die Schritte reihen sich je Held ein und
+  haben bewusst keinen Doppelklickschutz, damit jeder Klick zählt. Ohne
+  `aktion`-Guard und ohne Editorprüfung, wie der Abenteuerabschnitt: der
+  Editorentwurf gleicht sich feldweise mit dem gespeicherten Bogen ab.
+  **Würfelprotokoll (SPIEL-05):** `InspectorDiceLogSection` ist der gemeinsame
+  Baustein von Inspector-Probe-Tab und Spielansicht (über die Brücke
+  `spielProtokoll`). Die Spielansicht zeigt nur die neuesten `kProtokollKurz`
+  (5) Würfe ohne Filter (`hoechstens`); „Alle anzeigen (n)“ öffnet die ganze
+  Historie samt Filtern als Blatt (`zeigeWuerfelprotokoll`,
+  `karto_wuerfelprotokoll.dart`), das `heroComputedProvider` selbst liest.
+  Der Inspector-Tab der klassischen Oberfläche bleibt vollständig. Spielabende: `gruppiereNachSpielabend`
+  (`dice_log_abende.dart`) teilt das Protokoll bei mehr als sechs Stunden Pause
+  (`kDiceLogAbendPause`); die Abende stehen fest, **bevor** gefiltert wird, ein
+  Filter verschluckt also keine Pause. Überschriften („Heute“, „Gestern“, „Fr,
+  16.10.2026“, dazu die Zahl der Würfe) gibt es nur bei mehr als einem Abend;
+  ein einziger Abend sieht aus wie zuvor (die klassische Optik bleibt). Reine
+  Anzeige. Ziele und Restpunkte: `DiceLogEntry` hat die additiven Felder
+  `zielwerte` (alle Zielwerte bei mehr als einem, in `jsonSchluessel`) und
+  `restpunkte` (verbleibender Pool); beide stehen nur bei Belegung im JSON und
+  werden nur für 3W20-Proben mit Ausgleichspool gesetzt
+  (`diceLogEntryFromResult`). Alte Einträge behalten ihre Anzeige („Ziel: n“),
+  weil sich TaP* nicht zurückrechnen lässt. Die Anzeige nennt „Ziele: 13/12/14“
+  und bei gelungener Probe „TaP*: n“ (Zauber „ZfP*“); bei Misslingen keine
+  Punkte. Nochmal würfeln: `onWiederholen` der Sektion blendet an Einträgen,
+  für die `probeEintragIstWiederholbar` gilt, einen Knopf ein. Maßgeblich ist
+  der stabile `DiceLogEntry.probenVerweis` (Format der häufigen Proben,
+  `talent:<id>`, `zauber:<id>`, `eigenschaft:<Kürzel>`, `kampf:attacke`; erzeugt
+  über `probenVerweis()` und `ResolvedProbeRequest.verweis`, nur bei Belegung im
+  JSON). Nur Einträge ohne Verweis (ältere, Ersatzproben, Gefecht) werden noch am
+  Titelpräfix (`kTalentprobeTitel` usw. in `probe_request_rules.dart`) und an der
+  Probeart erkannt. Weder neutrale Einträge noch Buchungen. `wiederholeProbe`
+  (`probe_quick_search.dart`) sucht unter denselben Kandidaten wie die
+  Schnellsuche nach dem Verweis (`candidate.favorit.id`), ohne Verweis nach
+  gleichem Titel **und** gleicher Art, und öffnet den normalen
+  Probendialog mit den **aktuellen** Werten ohne die damaligen
+  Situationsmodifikatoren; `wiederholeProbeMitHinweis` meldet, wenn nichts
+  passt. Die Provider müssen geladen sein (die Protokollansicht hält sie
+  ohnehin offen).
   Der Seitentitel `Am Spieltisch` darf die Navigationsbeschriftung nicht
   wiederholen; die Navigationsprüfungen erwarten sie genau einmal.
   In der Planung entfällt der zusätzliche Seitentitel auf allen Breiten:

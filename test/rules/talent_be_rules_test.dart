@@ -63,11 +63,28 @@ void main() {
       );
     });
 
-    test('rundet zugunsten des Helden ab', () {
-      // Reduktion 3 -> 1,5 -> 1
+    test('rundet Halbierungen auf (Wege der Helden S. 6)', () {
+      // Reduktion 3 -> 1,5 -> 2
       expect(
         computeTalentEbe(
           baseBe: 3,
+          talentBeRule: 'x1',
+          reductionMultiplier: 0.5,
+        ),
+        -2,
+      );
+      // Reduktion 5 -> 2,5 -> 3, Reduktion 1 -> 0,5 -> 1
+      expect(
+        computeTalentEbe(
+          baseBe: 5,
+          talentBeRule: 'x1',
+          reductionMultiplier: 0.5,
+        ),
+        -3,
+      );
+      expect(
+        computeTalentEbe(
+          baseBe: 1,
           talentBeRule: 'x1',
           reductionMultiplier: 0.5,
         ),

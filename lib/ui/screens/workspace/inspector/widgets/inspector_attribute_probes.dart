@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:dsa_heldenverwaltung/domain/hero_proben_favorit.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/proben_favoriten_rules.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/dice_log_persistence.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/probe_request_factory.dart';
@@ -23,6 +25,7 @@ class InspectorAttributeProbes extends ConsumerWidget {
     required this.probenEigenschaften,
     this.grundwerte,
     this.kompakt = false,
+    this.abzugZeigen = false,
   });
 
   /// ID fuer das Protokollieren des Ergebnisses.
@@ -39,6 +42,10 @@ class InspectorAttributeProbes extends ConsumerWidget {
   /// Einzeilige, flache Karten in bis zu acht Spalten (Spielansicht des
   /// Neubaus). Die klassische Optik bleibt beim Standard `false`.
   final bool kompakt;
+
+  /// Zeigt einen Wundabzug als „−2“ an der Karte (weite Kachel der
+  /// Spielansicht). Der Standard `false` lässt die Karten unverändert.
+  final bool abzugZeigen;
 
   /// Reihenfolge der acht Eigenschaften, wie auf dem Heldenbogen.
   List<AttributeProbeEintrag> get entries => _entriesFuer(probenEigenschaften);
@@ -72,6 +79,7 @@ class InspectorAttributeProbes extends ConsumerWidget {
         label: entry.label,
         value: entry.value,
         kompakt: kompakt,
+        abzugZeigen: abzugZeigen,
         wundAbzug: entry.value - (ohneWunden[entry.label] ?? entry.value),
         onTap: () => showLoggedProbeDialog(
           context: context,
@@ -80,6 +88,7 @@ class InspectorAttributeProbes extends ConsumerWidget {
           request: buildAttributeProbeRequest(
             label: entry.label,
             effectiveValue: entry.value,
+            verweis: probenVerweis(ProbenFavoritArt.eigenschaft, entry.label),
           ),
         ),
       ),

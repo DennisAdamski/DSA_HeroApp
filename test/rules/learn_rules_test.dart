@@ -63,6 +63,16 @@ void main() {
     expect(apMitLehrmeister(100), 80);
   });
 
+  test('apMitLehrmeister rundet echt (Wege der Helden S. 6)', () {
+    // 7 x 0,8 = 5,6; 6 x 0,8 = 4,8; 8 x 0,8 = 6,4; 12 x 0,8 = 9,6.
+    expect(apMitLehrmeister(7), 6);
+    expect(apMitLehrmeister(6), 5);
+    expect(apMitLehrmeister(8), 6);
+    expect(apMitLehrmeister(12), 10);
+    expect(apMitLehrmeister(0), 0);
+    expect(apMitLehrmeister(-3), 0);
+  });
+
   test('dukatenFuerLehrmeister uses the agreed formula', () {
     expect(dukatenFuerLehrmeister(80, 15), 24.0);
   });

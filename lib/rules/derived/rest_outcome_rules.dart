@@ -327,7 +327,8 @@ List<RestRollSlot> applicableRestRollSlots(RestOutcomeInput input) {
 /// Reihenfolge: Ausdauer, Zustandsabbau, dann die Regenerationsphasen, wobei
 /// jede Phase auf der vorigen aufbaut. Gewonnene Punkte werden auf das
 /// jeweilige Maximum begrenzt; ein Wert über dem Maximum sinkt dabei auf das
-/// Maximum, ein negativer Wert steigt auf 0. Ein negatives Maximum gilt als 0.
+/// Maximum. Bei 0 LeP oder weniger regeneriert der Held nicht natuerlich: seine
+/// LeP bleiben unveraendert. Ein negatives Maximum gilt als 0.
 RestOutcome computeRestOutcome({
   required RestOutcomeInput input,
   required RestVitals current,
@@ -387,9 +388,16 @@ RestOutcome computeRestOutcome({
       magicLeadAttribute: input.magicLeadAttribute,
       magicEnabled: input.magicEnabled,
     );
-    final lepGain = math.min(result.lepRecovered, maxLep - nextLep);
+    // Bei 0 LeP oder weniger heilt der Held nicht auf natuerlichem Wege
+    // (Wege des Schwerts S. 161, „An der Schwelle des Todes"): er muss
+    // behandelt werden, die Rast aendert seine LeP nicht.
+    final lepGain = nextLep <= 0
+        ? 0
+        : math.min(result.lepRecovered, maxLep - nextLep);
     final aspGain = math.min(result.aspRecovered, maxAsp - nextAsp);
-    nextLep = (nextLep + lepGain).clamp(0, maxLep);
+    if (nextLep > 0) {
+      nextLep = (nextLep + lepGain).clamp(0, maxLep);
+    }
     nextAsp = (nextAsp + aspGain).clamp(0, maxAsp);
     phases.add(
       RestPhaseOutcome(result: result, lepGain: lepGain, aspGain: aspGain),

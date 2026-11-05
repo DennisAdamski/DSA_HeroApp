@@ -7,6 +7,7 @@ import 'package:dsa_heldenverwaltung/domain/dice_log_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/domain/trefferzonen.dart';
 import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/meisterhandwerk_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/probe_engine_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/trefferzonen_rules.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
@@ -26,6 +27,8 @@ Future<void> showProbeDialog({
   bool modifikatorGesperrt = false,
   bool contentUnlocked = true,
   String? contentPassword,
+  MeisterhandwerkAngebot? meisterhandwerk,
+  void Function(MeisterhandwerkBuchung buchung)? onMeisterhandwerk,
 }) {
   return showAdaptiveDetailSheet<void>(
     context: context,
@@ -37,6 +40,8 @@ Future<void> showProbeDialog({
       modifikatorGesperrt: modifikatorGesperrt,
       contentUnlocked: contentUnlocked,
       contentPassword: contentPassword,
+      meisterhandwerk: meisterhandwerk,
+      onMeisterhandwerk: onMeisterhandwerk,
     ),
   );
 }
@@ -54,6 +59,8 @@ class ProbeDialog extends StatefulWidget {
     this.modifikatorGesperrt = false,
     this.contentUnlocked = true,
     this.contentPassword,
+    this.meisterhandwerk,
+    this.onMeisterhandwerk,
   });
 
   /// Aufgeloeste Probe inklusive Zielwerte und Wuerfelkonfiguration.
@@ -89,6 +96,13 @@ class ProbeDialog extends StatefulWidget {
   /// Wird fuer Nebenwuerfe innerhalb des Dialogs aufgerufen.
   final void Function(DiceLogEntry entry)? onDiceLogEntry;
 
+  /// Magisches Meisterhandwerk fuer diese Talentprobe; `null` ohne.
+  final MeisterhandwerkAngebot? meisterhandwerk;
+
+  /// Bucht einen AsP-Einsatz des Meisterhandwerks (vorab beim Abschluss
+  /// eines Wurfs, nachtraeglich beim Bestaetigen).
+  final void Function(MeisterhandwerkBuchung buchung)? onMeisterhandwerk;
+
   @override
   State<ProbeDialog> createState() => _ProbeDialogState();
 }
@@ -106,11 +120,39 @@ class _ProbeDialogState extends State<ProbeDialog> {
   /// Ob der bedingte Poolschritt (etwa Axxeleratus bei Sprint/Sprung) gilt.
   bool _bedingungAngewendet = false;
 
+  /// Indizes der eingerechneten `bedingteZielAbzuege` (etwa Armwunden).
+  final Set<int> _zielAbzuegeAktiv = <int>{};
+
+  /// Meisterhandwerk-Angebot mit dem im Dialog verbleibenden AsP-Vorrat.
+  MeisterhandwerkAngebot? _meisterhandwerk;
+
+  /// Vor dem Wurf eingesetzte AsP (+2 TaW je AsP).
+  int _mhVorabAsp = 0;
+
+  /// Gewünschte zusätzliche TaP* einer nachträglichen Verbesserung.
+  int _mhNachtragPunkte = 1;
+
+  /// Ergebnis, für das `onResolved` zuletzt gefeuert hat. Nur dafür ist ein
+  /// nachträglicher Einsatz möglich (nicht für live umgerechnete Ergebnisse).
+  ProbeResult? _aufgeloest;
+
+  /// Beschreibung des nachträglichen Einsatzes für [_aufgeloest].
+  String? _mhNachtragText;
+
   /// Die Probe, wie sie gerade gewertet wird: mit angewendetem bedingten
-  /// Poolschritt, wenn der Schalter an ist (Rechnung in den Regeln).
-  ResolvedProbeRequest get _request => _bedingungAngewendet
-      ? wendeBedingtenPoolSchrittAn(widget.request)
-      : widget.request;
+  /// Poolschritt, Meisterhandwerk-Vorabeinsatz und den gewählten
+  /// Zielabzügen, wenn die Schalter an sind (Rechnung in den Regeln).
+  ResolvedProbeRequest get _request {
+    final mitBedingung = _bedingungAngewendet
+        ? wendeBedingtenPoolSchrittAn(widget.request)
+        : widget.request;
+    final mitPool = wendeMeisterhandwerkVorabAn(mitBedingung, _mhVorabAsp);
+    return wendeZielAbzuegeAn(mitPool, <ProbeZielAbzug>[
+      for (final index in _zielAbzuegeAktiv.toList()..sort())
+        widget.request.bedingteZielAbzuege[index],
+    ]);
+  }
+
   late final TextEditingController _modifierController;
   late final List<TextEditingController> _manualDiceControllers;
   ProbeResult? _result;
@@ -130,6 +172,7 @@ class _ProbeDialogState extends State<ProbeDialog> {
   @override
   void initState() {
     super.initState();
+    _meisterhandwerk = widget.meisterhandwerk;
     _mode = ProbeRollMode.digital;
     _specializationApplied = _request.initialSpecializationApplied;
     if (_specializationApplied && _request.spezialisierungen.isNotEmpty) {
@@ -201,12 +244,90 @@ class _ProbeDialogState extends State<ProbeDialog> {
   }
 
   /// Feuert `onResolved` einmalig fuer das aktuelle Ergebnis.
+  ///
+  /// Ein Meisterhandwerk-Vorabeinsatz wird danach je Wurf gebucht.
   void _notifyResolved() {
     final result = _result;
     final callback = widget.onResolved;
     if (result == null || _locked) return;
     _resolved = true;
     callback?.call(result);
+    final angebot = _meisterhandwerk;
+    final vorab = _mhVorabAsp;
+    setState(() {
+      _aufgeloest = result;
+      _mhNachtragText = null;
+      _mhNachtragPunkte = 1;
+      if (angebot != null && vorab > 0) {
+        final rest = angebot.mitAsp(angebot.verfuegbareAsp - vorab);
+        _meisterhandwerk = rest;
+        _mhVorabAsp = math.min(vorab, meisterhandwerkMaxVorabAsp(rest));
+      }
+    });
+    if (angebot != null && vorab > 0) {
+      widget.onMeisterhandwerk?.call(
+        meisterhandwerkVorabBuchung(angebot, vorab),
+      );
+    }
+  }
+
+  /// Ändert den Vorabeinsatz. Ein vorhandenes Ergebnis zählt dann nicht mehr:
+  /// Gebucht wird erst der nächste Wurf.
+  void _setzeVorabAsp(int asp) {
+    final angebot = _meisterhandwerk;
+    if (angebot == null || _locked || _isAnimating) return;
+    final neu = asp.clamp(0, meisterhandwerkMaxVorabAsp(angebot));
+    if (neu == _mhVorabAsp) return;
+    setState(() {
+      _mhVorabAsp = neu;
+      if (_mode == ProbeRollMode.digital) {
+        _result = null;
+        _lastDigitalValues = null;
+      }
+    });
+    if (_mode == ProbeRollMode.manual) {
+      _updateManualResult();
+    }
+  }
+
+  /// Möglicher nachträglicher Einsatz für das angezeigte Ergebnis.
+  MeisterhandwerkNachtrag? get _mhNachtrag {
+    final angebot = _meisterhandwerk;
+    final result = _result;
+    if (angebot == null ||
+        result == null ||
+        widget.singleResolution ||
+        _mhNachtragText != null ||
+        !identical(result, _aufgeloest)) {
+      return null;
+    }
+    return meisterhandwerkNachtragFuer(
+      result: result,
+      angebot: angebot,
+      verfuegbareAsp: angebot.verfuegbareAsp,
+    );
+  }
+
+  /// Wendet den nachträglichen Einsatz an und bucht ihn.
+  void _setzeNachtragEin(MeisterhandwerkNachtrag nachtrag) {
+    final angebot = _meisterhandwerk;
+    final result = _result;
+    if (angebot == null || result == null) return;
+    final punkte = _mhNachtragPunkte.clamp(
+      1,
+      math.max<int>(1, nachtrag.maxPunkte),
+    );
+    final buchung = meisterhandwerkNachtragBuchung(angebot, nachtrag, punkte);
+    final neu = wendeMeisterhandwerkNachtragAn(result, nachtrag, punkte);
+    setState(() {
+      _result = neu;
+      _aufgeloest = neu;
+      _mhNachtragText = buchung.beschreibung;
+      final rest = angebot.mitAsp(angebot.verfuegbareAsp - buchung.asp);
+      _meisterhandwerk = rest;
+      _mhVorabAsp = math.min(_mhVorabAsp, meisterhandwerkMaxVorabAsp(rest));
+    });
+    widget.onMeisterhandwerk?.call(buchung);
   }
 
   /// Wertet den letzten Digitalwurf mit den aktuellen Modifikatoren aus.
@@ -592,6 +713,146 @@ class _ProbeDialogState extends State<ProbeDialog> {
                   },
           ),
         ],
+        if (_meisterhandwerk case final angebot?) ...[
+          const SizedBox(height: 8),
+          _buildMeisterhandwerkVorab(angebot),
+        ],
+        for (final (index, abzug)
+            in widget.request.bedingteZielAbzuege.indexed) ...[
+          const SizedBox(height: 8),
+          SwitchListTile(
+            key: ValueKey<String>('probe-dialog-zielabzug-$index'),
+            contentPadding: EdgeInsets.zero,
+            title: Text('${abzug.bezeichnung} einbeziehen (${abzug.kurztext})'),
+            subtitle: const Text('Wunde gilt nur, wenn der Arm benutzt wird'),
+            value: _zielAbzuegeAktiv.contains(index),
+            onChanged: _locked || _isAnimating
+                ? null
+                : (value) {
+                    setState(() {
+                      if (value) {
+                        _zielAbzuegeAktiv.add(index);
+                      } else {
+                        _zielAbzuegeAktiv.remove(index);
+                      }
+                    });
+                    _liveRefresh();
+                  },
+          ),
+        ],
+      ],
+    );
+  }
+
+  /// Vorabeinsatz des Meisterhandwerks mit −/+ Schaltern.
+  Widget _buildMeisterhandwerkVorab(MeisterhandwerkAngebot angebot) {
+    final theme = Theme.of(context);
+    final max = meisterhandwerkMaxVorabAsp(angebot);
+    final sperre = _locked || _isAnimating;
+    return Row(
+      key: const ValueKey<String>('probe-dialog-meisterhandwerk'),
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '${angebot.quelle}: AsP vorab',
+                style: theme.textTheme.labelLarge,
+              ),
+              const SizedBox(height: 2),
+              Text(
+                '+2 TaW je AsP, höchstens +${2 * max} '
+                '(${angebot.verfuegbareAsp} AsP verfügbar). Nachträglich: '
+                '1 AsP je fehlendem TaP oder TaP*; nicht bei Patzer oder '
+                'vergleichenden Proben.',
+                style: theme.textTheme.bodySmall,
+              ),
+            ],
+          ),
+        ),
+        IconButton(
+          key: const ValueKey<String>('probe-dialog-mh-vorab-minus'),
+          tooltip: 'Weniger AsP einsetzen',
+          onPressed: sperre || _mhVorabAsp <= 0
+              ? null
+              : () => _setzeVorabAsp(_mhVorabAsp - 1),
+          icon: const Icon(Icons.remove),
+        ),
+        Text(
+          '$_mhVorabAsp',
+          key: const ValueKey<String>('probe-dialog-mh-vorab-wert'),
+          style: theme.textTheme.titleMedium,
+        ),
+        IconButton(
+          key: const ValueKey<String>('probe-dialog-mh-vorab-plus'),
+          tooltip: 'Mehr AsP einsetzen',
+          onPressed: sperre || _mhVorabAsp >= max
+              ? null
+              : () => _setzeVorabAsp(_mhVorabAsp + 1),
+          icon: const Icon(Icons.add),
+        ),
+      ],
+    );
+  }
+
+  /// Nachträglicher Einsatz unter dem Ergebnis (Rettung oder Verbesserung).
+  Widget _buildMeisterhandwerkNachtrag() {
+    final theme = Theme.of(context);
+    final text = _mhNachtragText;
+    if (text != null) {
+      return Text(
+        'Meisterhandwerk eingesetzt: $text',
+        key: const ValueKey<String>('probe-dialog-mh-eingesetzt'),
+        style: theme.textTheme.bodySmall,
+      );
+    }
+    final nachtrag = _mhNachtrag;
+    if (nachtrag == null) return const SizedBox.shrink();
+    if (nachtrag.art == MeisterhandwerkNachtragArt.rettung) {
+      return FilledButton.tonalIcon(
+        key: const ValueKey<String>('probe-dialog-mh-retten'),
+        onPressed: () => _setzeNachtragEin(nachtrag),
+        icon: const Icon(Icons.auto_fix_high),
+        label: Text('Mit ${nachtrag.rettungsKosten} AsP retten'),
+      );
+    }
+    final punkte = _mhNachtragPunkte.clamp(1, nachtrag.maxPunkte);
+    final kosten = meisterhandwerkNachtragKosten(nachtrag, punkte);
+    final erschoepfung = kosten.erschoepfung > 0
+        ? ', ${kosten.erschoepfung} Erschöpfung'
+        : '';
+    return Row(
+      children: [
+        IconButton(
+          key: const ValueKey<String>('probe-dialog-mh-punkte-minus'),
+          tooltip: 'Weniger TaP*',
+          onPressed: punkte <= 1
+              ? null
+              : () => setState(() => _mhNachtragPunkte = punkte - 1),
+          icon: const Icon(Icons.remove),
+        ),
+        Expanded(
+          child: Text(
+            'TaP* +$punkte: ${kosten.asp} AsP$erschoepfung',
+            key: const ValueKey<String>('probe-dialog-mh-punkte'),
+            textAlign: TextAlign.center,
+          ),
+        ),
+        IconButton(
+          key: const ValueKey<String>('probe-dialog-mh-punkte-plus'),
+          tooltip: 'Mehr TaP*',
+          onPressed: punkte >= nachtrag.maxPunkte
+              ? null
+              : () => setState(() => _mhNachtragPunkte = punkte + 1),
+          icon: const Icon(Icons.add),
+        ),
+        const SizedBox(width: 8),
+        FilledButton.tonal(
+          key: const ValueKey<String>('probe-dialog-mh-verbessern'),
+          onPressed: () => _setzeNachtragEin(nachtrag),
+          child: const Text('Einsetzen'),
+        ),
       ],
     );
   }
@@ -1048,6 +1309,10 @@ class _ProbeDialogState extends State<ProbeDialog> {
                   child: Text(line),
                 ),
               ),
+              if (_meisterhandwerk != null) ...[
+                const SizedBox(height: 4),
+                _buildMeisterhandwerkNachtrag(),
+              ],
             ],
           ),
         ),

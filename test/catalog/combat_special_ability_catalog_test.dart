@@ -43,7 +43,8 @@ void main() {
       expect(sfVoraussetzungen('ksf_reiterkampf'), isEmpty);
       expect(sfVoraussetzungen('ksf_turnierreiterei'), ['Reiterkampf']);
       expect(sfVoraussetzungen('ksf_kriegsreiterei'), ['Reiterkampf']);
-      expect(sfVoraussetzungen('esf_rittmeister'), ['Kriegsreiterei']);
+      // Epische Stufen S. 9: nur TaW Reiten 19 und kein Zwerg, keine SF.
+      expect(sfVoraussetzungen('esf_rittmeister'), isEmpty);
     },
   );
 

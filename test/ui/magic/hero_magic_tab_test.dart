@@ -2461,7 +2461,7 @@ void main() {
       );
     });
 
-    testWidgets('Ritual-Begabung verbilligt die Ritualkenntnis', (
+    testWidgets('Ritual-Begabung markiert das Ritual, die Spalte bleibt', (
       tester,
     ) async {
       await openMagicTab(
@@ -2490,10 +2490,8 @@ void main() {
       await tester.tap(find.text('Rituale'));
       await _pumpAndSettleIgnoringKnownOverflow(tester);
 
-      expect(
-        find.textContaining('Kompl. D (Basis E; Begabung für Hexenfluch)'),
-        findsOneWidget,
-      );
+      // Wege der Helden S. 248: keine Spaltenverschiebung der Ritualkenntnis.
+      expect(find.textContaining('Kompl. D (Basis E'), findsNothing);
       expect(
         find.byKey(const ValueKey<String>('magic-ritual-begabt-0-0')),
         findsOneWidget,

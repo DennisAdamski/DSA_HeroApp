@@ -65,15 +65,16 @@ class _AttributoInputDialogState extends State<_AttributoInputDialog> {
     return parsed.clamp(-99, 99);
   }
 
-  // Regelwert aus den ZfP*: ZfP*/3, aufgerundet (LC S. 30, Tischregel).
+  // Regelwert aus den ZfP*: ZfP*/3, echt gerundet (LC S. 31, Wege der Helden
+  // S. 6).
   String _zfpHinweis() {
     final zfp = int.tryParse(_zfpController.text.trim());
     if (zfp == null) {
-      return 'Bonus laut Regelwerk: ZfP*/3 (aufgerundet) auf die gesteigerte '
+      return 'Bonus laut Regelwerk: ZfP*/3 (gerundet) auf die gesteigerte '
           'Eigenschaft.';
     }
     return 'Bonus laut Regelwerk: ${attributoBonusAusZfp(zfp)} '
-        '(ZfP*/3, aufgerundet).';
+        '(ZfP*/3, gerundet).';
   }
 
   AttributeModifiers _buildResult() {

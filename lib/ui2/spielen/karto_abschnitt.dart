@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_kachelgroesse.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
 import 'package:dsa_heldenverwaltung/ui2/widgets/karto_flaeche.dart';
@@ -63,9 +64,13 @@ class KartoAbschnitt extends StatelessWidget {
   Widget build(BuildContext context) {
     final karto = context.karto;
     final texte = Theme.of(context).textTheme;
+    final steuerung = KartoKachelSteuerung._von(context);
+    final knapp = dicht || (steuerung?.dicht ?? false);
+    final eingeklappt = steuerung?.eingeklappt ?? false;
     final zweitzeile = hinweis?.trim() ?? '';
     final akzentFarbe = akzent?.farbe(karto);
-    final ueberschrift = symbol == null
+    final vergroessern = steuerung?.onVergroessern;
+    final titelBlock = symbol == null
         ? Text(titel, style: texte.abschnitt)
         : Row(
             mainAxisSize: MainAxisSize.min,
@@ -75,55 +80,100 @@ class KartoAbschnitt extends StatelessWidget {
               Flexible(child: Text(titel, style: texte.abschnitt)),
             ],
           );
+    // Mit Rückruf ist der Name die Klickfläche für die vergrößerte Ansicht;
+    // das leise Symbol zeigt, dass sich hinter ihm etwas öffnet.
+    final ueberschrift = vergroessern == null
+        ? titelBlock
+        : Tooltip(
+            message: '$titel vergrößern',
+            child: InkWell(
+              key: ValueKey<String>(
+                'karto-kachel-${steuerung!.kennung}-vergroessern',
+              ),
+              onTap: vergroessern,
+              borderRadius: BorderRadius.circular(kKartoRadiusKlein),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: Abstand.haar),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Flexible(child: titelBlock),
+                    const SizedBox(width: Abstand.knapp),
+                    Icon(
+                      Icons.open_in_full,
+                      size: 14,
+                      color: karto.schriftLeise,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
 
     final flaeche = KartoFlaeche(
       stufe: stufe,
       toenung: akzent?.toenung(karto),
-      innen: EdgeInsets.all(dicht ? Abstand.weit : Abstand.block),
+      innen: EdgeInsets.all(knapp ? Abstand.weit : Abstand.block),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisSize: MainAxisSize.min,
         children: [
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final kopf = Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  ueberschrift,
-                  if (zweitzeile.isNotEmpty) ...[
-                    const SizedBox(height: Abstand.eng),
-                    // Etikett statt der kursiven Legende: kursiv gesetzte
-                    // Serife in Fliesstextgroesse liest sich als zweite
-                    // Ueberschrift, nicht als Beiwerk.
-                    Text(
-                      zweitzeile,
-                      style: texte.etikett.copyWith(color: karto.schriftLeise),
-                    ),
+          _mitEinklappknopf(
+            steuerung: steuerung,
+            karto: karto,
+            kopfzeile: LayoutBuilder(
+              builder: (context, constraints) {
+                final kopf = Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ueberschrift,
+                    if (zweitzeile.isNotEmpty) ...[
+                      const SizedBox(height: Abstand.eng),
+                      // Etikett statt der kursiven Legende: kursiv gesetzte
+                      // Serife in Fliesstextgroesse liest sich als zweite
+                      // Ueberschrift, nicht als Beiwerk.
+                      Text(
+                        zweitzeile,
+                        style: texte.etikett.copyWith(
+                          color: karto.schriftLeise,
+                        ),
+                      ),
+                    ],
                   ],
-                ],
-              );
-              if (aktion == null) return kopf;
-              // Wrap statt Row: in einer schmalen Seitenspalte passt eine
-              // ausgeschriebene Kopfaktion sonst nicht mehr neben den Titel
-              // und laeuft um Bruchteile eines Pixels ueber.
-              return Wrap(
-                alignment: WrapAlignment.spaceBetween,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                spacing: Abstand.normal,
-                runSpacing: Abstand.normal,
-                children: [
-                  ConstrainedBox(
-                    constraints: BoxConstraints(maxWidth: constraints.maxWidth),
-                    child: kopf,
-                  ),
-                  aktion!,
-                ],
-              );
-            },
+                );
+                if (aktion == null) return kopf;
+                // Wrap statt Row: in einer schmalen Seitenspalte passt eine
+                // ausgeschriebene Kopfaktion sonst nicht mehr neben den Titel
+                // und laeuft um Bruchteile eines Pixels ueber.
+                return Wrap(
+                  alignment: WrapAlignment.spaceBetween,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: Abstand.normal,
+                  runSpacing: Abstand.normal,
+                  children: [
+                    ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxWidth: constraints.maxWidth,
+                      ),
+                      child: kopf,
+                    ),
+                    aktion!,
+                  ],
+                );
+              },
+            ),
           ),
-          SizedBox(height: dicht ? Abstand.normal : Abstand.weit),
-          child,
+          if (!eingeklappt) ...[
+            SizedBox(height: knapp ? Abstand.normal : Abstand.weit),
+            // Die Steuerung gilt nur dem äußersten Abschnitt einer Kachel.
+            steuerung == null
+                ? child
+                : KartoKachelSteuerung._leer(
+                    groesse: steuerung.groesse,
+                    child: child,
+                  ),
+          ],
         ],
       ),
     );
@@ -147,6 +197,115 @@ class KartoAbschnitt extends StatelessWidget {
       ),
     );
   }
+
+  // Der Einklappknopf steht neben Titel und Kopfaktion, nicht in deren
+  // Umbruch: so bleibt er auch in einer schmalen Kachel rechts oben.
+  Widget _mitEinklappknopf({
+    required KartoKachelSteuerung? steuerung,
+    required KartoTheme karto,
+    required Widget kopfzeile,
+  }) {
+    final einklappen = steuerung?.onEinklappen;
+    if (steuerung == null || einklappen == null) return kopfzeile;
+    final eingeklappt = steuerung.eingeklappt;
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(child: kopfzeile),
+        IconButton(
+          key: ValueKey<String>('karto-kachel-${steuerung.kennung}-einklappen'),
+          tooltip: eingeklappt ? '$titel aufklappen' : '$titel einklappen',
+          visualDensity: VisualDensity.compact,
+          icon: Icon(
+            eingeklappt ? Icons.expand_more : Icons.expand_less,
+            color: karto.schriftLeise,
+          ),
+          onPressed: () => einklappen(!eingeklappt),
+        ),
+      ],
+    );
+  }
+}
+
+/// Reicht die Einstellungen einer Rasterkachel an ihren Abschnitt (SPIEL-07).
+///
+/// Die Spielansicht legt sie um jede Kachel; der äußerste [KartoAbschnitt]
+/// darin zeigt dann den Einklappknopf, blendet eingeklappt seinen Inhalt aus
+/// und setzt im Raster den knappen Innenabstand. Verschachtelte Abschnitte
+/// bleiben unberührt, damit nicht jede Teilkarte einen Knopf bekommt. So
+/// müssen die Kacheln, die ihren Abschnitt selbst bauen (Dabei, Abenteuer,
+/// Begleiter), nichts durchreichen.
+class KartoKachelSteuerung extends InheritedWidget {
+  /// Steuerung der Kachel [kennung].
+  const KartoKachelSteuerung({
+    super.key,
+    required this.kennung,
+    this.eingeklappt = false,
+    this.onEinklappen,
+    this.onVergroessern,
+    this.dicht = true,
+    this.groesse = KartoKachelGroesse.normal,
+    required super.child,
+  });
+
+  const KartoKachelSteuerung._leer({
+    required this.groesse,
+    required super.child,
+  }) : kennung = '',
+       eingeklappt = false,
+       onEinklappen = null,
+       onVergroessern = null,
+       dicht = false;
+
+  /// Kennung der Kachel für Schlüssel und Tests.
+  final String kennung;
+
+  /// Ob nur der Kopf sichtbar ist.
+  final bool eingeklappt;
+
+  /// Schaltet das Einklappen; ohne Rückruf entfällt der Knopf.
+  final ValueChanged<bool>? onEinklappen;
+
+  /// Öffnet die Kachel vergrößert; ohne Rückruf bleibt der Name Text.
+  final VoidCallback? onVergroessern;
+
+  /// Knapper Innenabstand wie bei [KartoAbschnitt.dicht].
+  final bool dicht;
+
+  /// Größenstufe nach der tatsächlichen Breite der Kachel.
+  final KartoKachelGroesse groesse;
+
+  /// Größenstufe der umgebenden Kachel; außerhalb einer Kachel
+  /// [KartoKachelGroesse.normal].
+  ///
+  /// Gilt auch in verschachtelten Abschnitten, deren Steuerung leer ist.
+  static KartoKachelGroesse groesseVon(BuildContext context) =>
+      context
+          .dependOnInheritedWidgetOfExactType<KartoKachelSteuerung>()
+          ?.groesse ??
+      KartoKachelGroesse.normal;
+
+  /// Ob die umgebende Kachel [KartoKachelGroesse.weit] ist.
+  ///
+  /// Der übliche Schalter der Kachelinhalte: mehr Angaben und nebeneinander
+  /// statt untereinander. Außerhalb einer Kachel `false`.
+  static bool istWeit(BuildContext context) =>
+      groesseVon(context) == KartoKachelGroesse.weit;
+
+  static KartoKachelSteuerung? _von(BuildContext context) {
+    final steuerung = context
+        .dependOnInheritedWidgetOfExactType<KartoKachelSteuerung>();
+    return steuerung == null || steuerung.kennung.isEmpty ? null : steuerung;
+  }
+
+  @override
+  bool updateShouldNotify(KartoKachelSteuerung oldWidget) =>
+      oldWidget.kennung != kennung ||
+      oldWidget.eingeklappt != eingeklappt ||
+      oldWidget.dicht != dicht ||
+      oldWidget.groesse != groesse ||
+      oldWidget.onEinklappen != onEinklappen ||
+      oldWidget.onVergroessern != onVergroessern;
 }
 
 /// Die zwei Hervorhebungen einer Begleitfläche.

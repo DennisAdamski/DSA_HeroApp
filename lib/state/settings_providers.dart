@@ -161,6 +161,12 @@ final summaryRailCollapsedProvider = Provider<bool>((ref) {
       false;
 });
 
+/// Ob die Vor- und Nachteile der Spielansicht aufgeklappt sind (nur dieses Geraet).
+final merkmaleAufgeklapptProvider = Provider<bool>((ref) {
+  return ref.watch(appSettingsProvider).valueOrNull?.merkmaleAufgeklappt ??
+      false;
+});
+
 /// true wenn ein gueltiges Entschluesselungspasswort gespeichert ist.
 /// Damit sind geschuetzte Kataloginhalte dauerhaft freigeschaltet.
 final catalogContentVisibleProvider = Provider<bool>((ref) {
@@ -278,6 +284,13 @@ class SettingsActions {
     await _repo.save(
       current.copyWith(summaryRailCollapsed: !current.summaryRailCollapsed),
     );
+  }
+
+  /// Klappt die Vor- und Nachteile der Spielansicht auf oder zu.
+  Future<void> setMerkmaleAufgeklappt(bool aufgeklappt) async {
+    final current = _repo.load();
+    if (current.merkmaleAufgeklappt == aufgeklappt) return;
+    await _repo.save(current.copyWith(merkmaleAufgeklappt: aufgeklappt));
   }
 
   /// Speichert eine einzelne Spaltenbreite, ohne andere Tabellen anzutasten.

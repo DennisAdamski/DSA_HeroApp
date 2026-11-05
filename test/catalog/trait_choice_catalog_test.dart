@@ -72,6 +72,25 @@ void main() {
     expect(leer, isEmpty);
   });
 
+  test('Meisterhandwerk bietet Körper-, Natur-, Gesellschafts- und '
+      'Handwerkstalente an (WdH S. 256)', () {
+    final def = advantages.singleWhere(
+      (trait) => trait.id == 'adv_meisterhandwerk_viertelzauberer',
+    );
+    final auswahl = resolveTraitChoices(def, catalog);
+    expect(
+      auswahl,
+      containsAll(<String>[
+        'Singen',
+        'Musizieren',
+        'Grobschmied',
+        'Fährtensuchen',
+      ]),
+    );
+    expect(auswahl, isNot(contains('Schwerter')));
+    expect(auswahl, isNot(contains('Magiekunde')));
+  });
+
   test('ein Eintrag ohne Liste erlaubt Freitext', () {
     // Sonst waere er nicht mehr ausfuellbar: kein Dropdown, kein Textfeld.
     final gesperrt = mitAuswahl

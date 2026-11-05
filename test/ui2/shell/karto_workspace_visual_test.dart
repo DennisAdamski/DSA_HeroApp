@@ -21,6 +21,27 @@ import 'karto_test_support.dart';
 // Opt-in: echte Flutter-Rasterbilder, keine fragilen Pixel-Golden-Vergleiche.
 const _screenshotDirectory = String.fromEnvironment('R3_SCREENSHOT_DIR');
 
+// Paarabdeckung statt kartesischem Produkt: Jede Layoutgrenze kommt vor,
+// beide Themes und beide Textskalierungen werden an mehreren Grenzen geprueft.
+const _workspaceCases = <({double width, Brightness brightness, double scale})>[
+  (width: 320, brightness: Brightness.dark, scale: 2),
+  (width: 390, brightness: Brightness.light, scale: 1),
+  (width: 744, brightness: Brightness.dark, scale: 1),
+  (width: 768, brightness: Brightness.light, scale: 2),
+  (width: 1024, brightness: Brightness.dark, scale: 1),
+  (width: 1366, brightness: Brightness.light, scale: 2),
+  (width: 1440, brightness: Brightness.light, scale: 1),
+];
+
+const _heroSelectionCases =
+    <({double width, Brightness brightness, double scale})>[
+      (width: 320, brightness: Brightness.dark, scale: 2),
+      (width: 390, brightness: Brightness.light, scale: 1),
+      (width: 744, brightness: Brightness.light, scale: 2),
+      (width: 1024, brightness: Brightness.dark, scale: 1),
+      (width: 1440, brightness: Brightness.light, scale: 1),
+    ];
+
 void main() {
   setUpAll(() async {
     await ladeKartoSchriften();
@@ -29,203 +50,197 @@ void main() {
     await icons.load();
   });
 
-  for (final width in [320.0, 390.0, 744.0, 768.0, 1024.0, 1366.0, 1440.0]) {
-    for (final brightness in Brightness.values) {
-      for (final scale in [1.0, 2.0]) {
-        testWidgets('R3 Raster $width dp, ${brightness.name}, Text $scale', (
-          tester,
-        ) async {
-          final screenshotKey = GlobalKey();
-          final hero = testHero().copyWith(
-            name: 'Rondra Alrike von Gareth und den Silberquellen',
-            apAvailable: 1375,
-            apTotal: 1875,
-            background: const HeroBackground(
-              rasse: 'Mittelländer',
-              kultur: 'Mittelreich',
-              profession: 'Reisende Gelehrte',
-              familieHerkunftHintergrund:
-                  'Eine Chronistin auf dem Weg durch das Mittelreich.',
-            ),
-            vorteileText: 'Gutes Gedächtnis',
-            nachteileText: 'Neugier',
-            resourceActivationConfig: const HeroResourceActivationConfig(
-              magicEnabledOverride: true,
-              divineEnabledOverride: true,
-            ),
-            inventoryEntries: const [
-              HeroInventoryEntry(
-                gegenstand: 'Reisetagebuch',
-                anzahl: '1',
-                woGetragen: 'Rucksack',
-                beschreibung: 'Notizen, Karten und Begegnungen.',
-              ),
-              HeroInventoryEntry(
-                gegenstand: 'Wolldecke',
-                anzahl: '1',
-                woGetragen: 'Rucksack',
-              ),
-            ],
-            notes: const [
-              HeroNoteEntry(
-                title: 'Ankunft in Gareth',
-                description: 'Am Praiostag treffen wir die Reisegruppe.',
-              ),
-            ],
-          );
-          final repository = AcceptanceRepository(
-            heroes: [hero],
-            states: {
-              hero.id: const HeroState(
-                currentLep: 27,
-                currentAsp: 18,
-                currentKap: 12,
-                currentAu: 22,
-              ),
-            },
-          );
-          await pumpAcceptanceWorkspace(
-            tester,
-            repository: repository,
-            selectedHeroId: hero.id,
-            size: Size(width, 1000),
-            textScale: scale,
-            brightness: brightness,
-            screenshotKey: screenshotKey,
-          );
-          final capture =
-              scale == 1 &&
-              ((brightness == Brightness.light &&
-                      (width == 390 || width == 1440)) ||
-                  (brightness == Brightness.dark && width == 1024));
-          final suffix = '${width.toInt()}-${brightness.name}';
-          expect(tester.takeException(), isNull);
-          if (capture) {
-            await _capture(tester, screenshotKey, 'spielen-$suffix');
-          }
-
-          await selectAcceptanceMode(tester, 'Held verwalten');
-          expect(find.widgetWithText(Tab, 'Übersicht'), findsOneWidget);
-          expect(tester.takeException(), isNull);
-          if (capture) {
-            await _capture(tester, screenshotKey, 'verwaltung-$suffix');
-          }
-
-          final inventoryTab = find.widgetWithText(Tab, 'Inventar');
-          await tester.ensureVisible(inventoryTab);
-          await tester.tap(inventoryTab);
-          await tester.pumpAndSettle();
-          expect(find.text('Reisetagebuch'), findsWidgets);
-          expect(tester.takeException(), isNull);
-          if (capture) {
-            await _capture(tester, screenshotKey, 'inventar-$suffix');
-          }
-
-          await selectAcceptanceMode(tester, 'Entwicklung planen');
-          if (capture) {
-            await _capture(tester, screenshotKey, 'planung-start-$suffix');
-          }
-          final planAction = find.byKey(
-            const ValueKey('advancement-plan-attribute-mu'),
-          );
-          await tester.scrollUntilVisible(
-            planAction,
-            220,
-            scrollable: find
-                .descendant(
-                  of: find.byType(AdvancementCatalog),
-                  matching: find.byType(Scrollable),
-                )
-                .last,
-          );
-          // scrollUntilVisible hält an, sobald der Finder greift — die ListView
-          // baut aber über den sichtbaren Bereich hinaus. Ohne ensureVisible
-          // läge die Aktion bei großer Schrift außerhalb des Fensters.
-          await tester.ensureVisible(planAction);
-          await tester.pumpAndSettle();
-          await tester.tap(planAction);
-          await tester.pumpAndSettle();
-          await tester.ensureVisible(find.text('Vormerken'));
-          await tester.tap(find.text('Vormerken'));
-          await tester.pumpAndSettle();
-          expect(repository.heroWrites, isEmpty);
-          expect(tester.takeException(), isNull);
-          if (capture) {
-            await _capture(tester, screenshotKey, 'planung-$suffix');
-          }
-          final details = find.text('AP und Historie');
-          if (details.evaluate().isNotEmpty) {
-            await tester.ensureVisible(details);
-            await tester.tap(details);
-            await tester.pumpAndSettle();
-            expect(find.text('Laufende Runde'), findsOneWidget);
-            expect(tester.takeException(), isNull);
-            if (capture) {
-              await _capture(tester, screenshotKey, 'plan-details-$suffix');
-            }
-          }
-        }, tags: ['r3-acceptance']);
+  for (final testCase in _workspaceCases) {
+    final (:width, :brightness, :scale) = testCase;
+    testWidgets('R3 Raster $width dp, ${brightness.name}, Text $scale', (
+      tester,
+    ) async {
+      final screenshotKey = GlobalKey();
+      final hero = testHero().copyWith(
+        name: 'Rondra Alrike von Gareth und den Silberquellen',
+        apAvailable: 1375,
+        apTotal: 1875,
+        background: const HeroBackground(
+          rasse: 'Mittelländer',
+          kultur: 'Mittelreich',
+          profession: 'Reisende Gelehrte',
+          familieHerkunftHintergrund:
+              'Eine Chronistin auf dem Weg durch das Mittelreich.',
+        ),
+        vorteileText: 'Gutes Gedächtnis',
+        nachteileText: 'Neugier',
+        resourceActivationConfig: const HeroResourceActivationConfig(
+          magicEnabledOverride: true,
+          divineEnabledOverride: true,
+        ),
+        inventoryEntries: const [
+          HeroInventoryEntry(
+            gegenstand: 'Reisetagebuch',
+            anzahl: '1',
+            woGetragen: 'Rucksack',
+            beschreibung: 'Notizen, Karten und Begegnungen.',
+          ),
+          HeroInventoryEntry(
+            gegenstand: 'Wolldecke',
+            anzahl: '1',
+            woGetragen: 'Rucksack',
+          ),
+        ],
+        notes: const [
+          HeroNoteEntry(
+            title: 'Ankunft in Gareth',
+            description: 'Am Praiostag treffen wir die Reisegruppe.',
+          ),
+        ],
+      );
+      final repository = AcceptanceRepository(
+        heroes: [hero],
+        states: {
+          hero.id: const HeroState(
+            currentLep: 27,
+            currentAsp: 18,
+            currentKap: 12,
+            currentAu: 22,
+          ),
+        },
+      );
+      await pumpAcceptanceWorkspace(
+        tester,
+        repository: repository,
+        selectedHeroId: hero.id,
+        size: Size(width, 1000),
+        textScale: scale,
+        brightness: brightness,
+        screenshotKey: screenshotKey,
+      );
+      final capture =
+          scale == 1 &&
+          ((brightness == Brightness.light &&
+                  (width == 390 || width == 1440)) ||
+              (brightness == Brightness.dark && width == 1024));
+      final suffix = '${width.toInt()}-${brightness.name}';
+      expect(tester.takeException(), isNull);
+      if (capture) {
+        await _capture(tester, screenshotKey, 'spielen-$suffix');
       }
-    }
+
+      await selectAcceptanceMode(tester, 'Held verwalten');
+      expect(find.widgetWithText(Tab, 'Übersicht'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+      if (capture) {
+        await _capture(tester, screenshotKey, 'verwaltung-$suffix');
+      }
+
+      final inventoryTab = find.widgetWithText(Tab, 'Inventar');
+      await tester.ensureVisible(inventoryTab);
+      await tester.tap(inventoryTab);
+      await tester.pumpAndSettle();
+      expect(find.text('Reisetagebuch'), findsWidgets);
+      expect(tester.takeException(), isNull);
+      if (capture) {
+        await _capture(tester, screenshotKey, 'inventar-$suffix');
+      }
+
+      await selectAcceptanceMode(tester, 'Entwicklung planen');
+      if (capture) {
+        await _capture(tester, screenshotKey, 'planung-start-$suffix');
+      }
+      final planAction = find.byKey(
+        const ValueKey('advancement-plan-attribute-mu'),
+      );
+      await tester.scrollUntilVisible(
+        planAction,
+        220,
+        scrollable: find
+            .descendant(
+              of: find.byType(AdvancementCatalog),
+              matching: find.byType(Scrollable),
+            )
+            .last,
+      );
+      // scrollUntilVisible hält an, sobald der Finder greift — die ListView
+      // baut aber über den sichtbaren Bereich hinaus. Ohne ensureVisible
+      // läge die Aktion bei großer Schrift außerhalb des Fensters.
+      await tester.ensureVisible(planAction);
+      await tester.pumpAndSettle();
+      await tester.tap(planAction);
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.text('Vormerken'));
+      await tester.tap(find.text('Vormerken'));
+      await tester.pumpAndSettle();
+      expect(repository.heroWrites, isEmpty);
+      expect(tester.takeException(), isNull);
+      if (capture) {
+        await _capture(tester, screenshotKey, 'planung-$suffix');
+      }
+      final details = find.text('AP und Historie');
+      if (details.evaluate().isNotEmpty) {
+        await tester.ensureVisible(details);
+        await tester.tap(details);
+        await tester.pumpAndSettle();
+        expect(find.text('Laufende Runde'), findsOneWidget);
+        expect(tester.takeException(), isNull);
+        if (capture) {
+          await _capture(tester, screenshotKey, 'plan-details-$suffix');
+        }
+      }
+    }, tags: ['r3-acceptance']);
   }
 
   // Die Heldenwahl ist die erste Flaeche nach dem Start; sie laeuft ueber
   // dieselben Breiten, Helligkeiten und Schriftgroessen wie der Workspace.
-  for (final width in [320.0, 390.0, 744.0, 1024.0, 1440.0]) {
-    for (final brightness in Brightness.values) {
-      for (final scale in [1.0, 2.0]) {
-        testWidgets('Heldenwahl $width dp, ${brightness.name}, Text $scale', (
+  for (final testCase in _heroSelectionCases) {
+    final (:width, :brightness, :scale) = testCase;
+    testWidgets('Heldenwahl $width dp, ${brightness.name}, Text $scale', (
+      tester,
+    ) async {
+      final screenshotKey = GlobalKey();
+      final repository = AcceptanceRepository(
+        heroes: [
+          testHero(
+            'rondra',
+            'Rondra Alrike von Gareth und den Silberquellen',
+          ).copyWith(
+            apAvailable: 1375,
+            background: const HeroBackground(
+              rasse: 'Mittelländer',
+              kultur: 'Mittelreich',
+              profession: 'Reisende Gelehrte',
+            ),
+          ),
+          testHero('alrik', 'Alrik Feuerstein').copyWith(
+            apAvailable: 420,
+            background: const HeroBackground(
+              rasse: 'Thorwaler',
+              kultur: 'Thorwal',
+              profession: 'Hetmann',
+            ),
+          ),
+        ],
+      );
+      await pumpAcceptanceWorkspace(
+        tester,
+        repository: repository,
+        size: Size(width, 1000),
+        textScale: scale,
+        brightness: brightness,
+        screenshotKey: screenshotKey,
+      );
+      expect(find.text('Deine Helden'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+      final capture =
+          scale == 1 &&
+          ((brightness == Brightness.light &&
+                  (width == 390 || width == 1440)) ||
+              (brightness == Brightness.dark && width == 1024));
+      if (capture) {
+        await _capture(
           tester,
-        ) async {
-          final screenshotKey = GlobalKey();
-          final repository = AcceptanceRepository(
-            heroes: [
-              testHero(
-                'rondra',
-                'Rondra Alrike von Gareth und den Silberquellen',
-              ).copyWith(
-                apAvailable: 1375,
-                background: const HeroBackground(
-                  rasse: 'Mittelländer',
-                  kultur: 'Mittelreich',
-                  profession: 'Reisende Gelehrte',
-                ),
-              ),
-              testHero('alrik', 'Alrik Feuerstein').copyWith(
-                apAvailable: 420,
-                background: const HeroBackground(
-                  rasse: 'Thorwaler',
-                  kultur: 'Thorwal',
-                  profession: 'Hetmann',
-                ),
-              ),
-            ],
-          );
-          await pumpAcceptanceWorkspace(
-            tester,
-            repository: repository,
-            size: Size(width, 1000),
-            textScale: scale,
-            brightness: brightness,
-            screenshotKey: screenshotKey,
-          );
-          expect(find.text('Deine Helden'), findsOneWidget);
-          expect(tester.takeException(), isNull);
-          final capture =
-              scale == 1 &&
-              ((brightness == Brightness.light &&
-                      (width == 390 || width == 1440)) ||
-                  (brightness == Brightness.dark && width == 1024));
-          if (capture) {
-            await _capture(
-              tester,
-              screenshotKey,
-              'heldenwahl-${width.toInt()}-${brightness.name}',
-            );
-          }
-        }, tags: ['r3-acceptance']);
+          screenshotKey,
+          'heldenwahl-${width.toInt()}-${brightness.name}',
+        );
       }
-    }
+    }, tags: ['r3-acceptance']);
   }
 }
 

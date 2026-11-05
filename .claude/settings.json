@@ -13,7 +13,8 @@
   },
   "permissions": {
     "allow": [
-      "Bash(flutter test:*)"
+      "Bash(flutter test:*)",
+      "mcp__dsa-rules"
     ]
   }
 }

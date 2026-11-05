@@ -58,6 +58,11 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   `lib/ui_shared/merkmal_herkunft_dialog.dart` (Übersicht und UI2-Merkmalsblatt,
   nur Metadatum). Abschluss und Gesamtstatus laut
   [Plan](../superpowers/plans/2026-10-10-arch02-herkunftsmerkmale.md).
+  **Tischentscheid (27.10.2026):** Professionen dürfen Eigenschaftsmodifikatoren
+  tragen (selten, aber möglich); sie zählen wie Rasse und Kultur zum Startwert
+  und zum Maximum (1,5 × Startwert). Das Regelwerk belegt das nur für Rasse und
+  Kultur (RULE-FIX-080, -102, -104); eine Einschränkung auf Rasse/Kultur wird
+  bewusst nicht eingebaut.
 - Begabungen und Unfähigkeiten wirken über die Katalogwirkung `lernspalte`
   auf ihre Ziele; `ermittleBegabungen` (`hero_begabung_rules.dart`) liefert
   je Talent, Zauber, Sprache/Schrift und Ritualkenntnis einen
@@ -68,6 +73,19 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   Spalte. Neue Kostenstellen nehmen den Befund, nie `entry.gifted` allein.
   Der Textweg kennt keine Lernspalten (bewusste Ausnahme im
   Äquivalenztest).
+- Magisches Meisterhandwerk (WdH S. 256, WdZ S. 37): die drei Vorteile
+  `adv_meisterhandwerk_viertel/halb/vollzauberer` tragen die Wirkung
+  `meisterhandwerk` (Ziel `talent`) und wählen aus `talente_meisterhandwerk`
+  (Körper-, Natur-, Gesellschafts-, Handwerkstalente; Wissenstalente per
+  Freitext). `meisterhandwerk_rules.dart` liefert Angebot, Vorabeinsatz
+  (+2 TaW je AsP, höchstens doppelter TaW), Rettung und TaP*-Verbesserung
+  (1:1 bis TaP*, darüber bis TaW 2 AsP + 1 Erschöpfung) sowie die Grenze von
+  fünf Talenten über alle Varianten (geprüft in beiden Hinzufügen-Wegen).
+  Der Probendialog bietet es nur über `showLoggedProbeDialog` bei aktiver
+  Magie an; gebucht wird über den Ablauf `MeisterhandwerkEinsetzen` (AsP,
+  Erschöpfung, neutraler Protokolleintrag in einem Dokument). Die
+  Gefechtsbrücke (`singleResolution`) bietet es nicht an. Wie `lernspalte`
+  wirkt es nur über die Katalog-ID.
 - Zauber-Erwerbsblatt: `lib/rules/derived/spell_catalog_filter_rules.dart`
   kombiniert gelernte Repräsentationen, ein Merkmal und Mindestverbreitung.
   Maßgeblich ist die tatsächliche Zauberrepräsentation (`Dru(Elf)2` → `Elf`);
@@ -172,10 +190,15 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   Buchungsfunktion.
 - Geschuetzte Katalog-Felder (Wirkung/Varianten von Zaubern, Erklaerungstexte
   von Manoevern sowie von Kampf-, allgemeinen, karmalen und magischen
-  Sonderfertigkeiten) sind v3-verschluesselt
+  Sonderfertigkeiten, `kurztext`/`hinweise`/`hausregel_text` des
+  Kurzregel-Kompendiums) sind v3-verschluesselt
   (AES-GCM, globaler Salt im Manifest `catalog_salt_v3`). Beim Unlock
   entschluesselt `decryptedCatalogSourceDataProvider` den ganzen Katalog
-  einmal — Detail in `docs/technical_overview.md` Abschnitt 5.3. Passwoerter
+  einmal — Detail in `docs/technical_overview.md` Abschnitt 5.3. Den
+  v3-Schluessel leitet nur `catalogKeyV3Provider` ab (einmal je Passwort, per
+  `compute`); Katalog, Kurzregeln (`kurzregelKatalogProvider`) und der
+  Passwortnachweis der Wissensbasis (`rulesIndexProofAusSchluessel`) lesen ihn
+  dort und leiten nie selbst ab. Passwoerter
   werden vor PBKDF2 NFC-normalisiert, damit Eingaben mit Umlauten
   unabhaengig von NFC/NFD-Codepoint-Repraesentation funktionieren.
 - **Regelbuch-Langtexte nie im Klartext einchecken.** Neue oder neu importierte

@@ -186,6 +186,7 @@ Gefechtspruefung pruefeGefechtsmanoever(
   int distanzSchritte = 0,
   GefechtsKampfmittelwahl? kampfmittel,
   bool geteilteProbe = false,
+  bool grosserGegner = false,
 }) {
   final config = snapshot.hero.combatConfig;
   final profil = _profilOderWaffenlos(snapshot, kampfmittel);
@@ -287,6 +288,10 @@ Gefechtspruefung pruefeGefechtsmanoever(
           : snapshot.combatPreviewStats.waffenmeisterManeuverReductions[m
                 .id]) ??
       0;
+  final seitenwechsel = m.id == 'man_seitenwechsel'
+      ? gefechtsSeitenwechsel(dk: s.dk, grosserGegner: grosserGegner)
+      : null;
+  sperren.addAll(seitenwechsel?.sperren ?? const []);
   // Benannte Anteile des Gesamtzuschlags; der Rest ist die eigene Eingabe.
   final zuschlagsAnteile = [
     Gefechtsmodifikator('Manöverzuschlag', gefechtsManoeverZuschlag(m)),
@@ -303,6 +308,8 @@ Gefechtspruefung pruefeGefechtsmanoever(
     aktion,
     zuschlag: zuschlag + zuschlagsAnteile.fold(0, (summe, t) => summe + t.wert),
     zuschlagsAnteile: zuschlagsAnteile,
+    zusatzFreie: seitenwechsel?.freie ?? 0,
+    zusatzNormale: seitenwechsel?.normale ?? 0,
     manuellerZielwert: zielwert,
     abwehrAufAttacke: m.name.toLowerCase() == 'gegenhalten',
     sperrGruende: sperren,
@@ -313,6 +320,7 @@ Gefechtspruefung pruefeGefechtsmanoever(
       if (schild.zuschlag != 0)
         'Schildführung: zusätzlicher Manöverzuschlag +${schild.zuschlag}; AT-WM bereits im Grundwert.',
       'Manövervoraussetzungen, Aktionskosten und Folgen manuell prüfen.',
+      ...?seitenwechsel?.hinweise,
       if (snapshot.combatPreviewStats.waffenmeisterManeuverReductions
           .containsKey(m.id))
         'Waffenmeister-Erleichterung wurde automatisch genau einmal abgezogen.',
@@ -320,6 +328,59 @@ Gefechtspruefung pruefeGefechtsmanoever(
       if (m.name.toLowerCase().contains('hammerschlag')) 'Alle nicht freien Aktionen müssen ungenutzt sein; Talent, Gegnergröße und Schild prüfen.',
     ],
   );
+}
+
+/// Zusatzaufwand und Sperren des Manövers Seitenwechsel.
+class GefechtsSeitenwechsel {
+  /// Wird ausschließlich von [gefechtsSeitenwechsel] gebildet.
+  const GefechtsSeitenwechsel({
+    this.freie = 0,
+    this.normale = 0,
+    this.sperren = const [],
+    this.hinweise = const [],
+  });
+
+  /// Zusätzliche freie Aktionen neben der Abwehraktion.
+  final int freie;
+
+  /// Zusätzliche normale Aktionen neben der Abwehraktion.
+  final int normale;
+
+  /// Gründe, aus denen das Manöver nicht möglich ist.
+  final List<String> sperren;
+
+  /// Bedingungen, die der Tisch bestätigt.
+  final List<String> hinweise;
+}
+
+/// Hausregel „Erweiterung und Überarbeitung des Regelwerks“ S. 10: Je nach DK
+/// kostet Seitenwechsel in H eine freie Aktion, in N zwei freie Aktionen, in S
+/// eine normale Aktion; in P ist er nicht möglich. Sehr große Gegner gehen nur
+/// mit Meisterzustimmung ([grosserGegner]). Der Zuschlag +4 steht im Katalog.
+GefechtsSeitenwechsel gefechtsSeitenwechsel({
+  required String? dk,
+  bool grosserGegner = false,
+}) {
+  final hinweise = <String>[
+    'Seitenwechsel: vorher Binden oder Gezieltes Ausweichen; nur bei höherer '
+        'INI als der Gegner. Ein großer Gegner zählt als eine DK weiter entfernt.',
+    if (grosserGegner) 'Gegen sehr große Gegner nur mit Meisterzustimmung.',
+  ];
+  return switch (dk?.trim().toUpperCase()) {
+    'H' => GefechtsSeitenwechsel(freie: 1, hinweise: hinweise),
+    'N' => GefechtsSeitenwechsel(freie: 2, hinweise: hinweise),
+    'S' => GefechtsSeitenwechsel(normale: 1, hinweise: hinweise),
+    'P' => const GefechtsSeitenwechsel(
+      sperren: ['Seitenwechsel ist in der DK P nicht möglich.'],
+    ),
+    _ => GefechtsSeitenwechsel(
+      hinweise: [
+        'Seitenwechsel: DK festlegen (H: 1 freie, N: 2 freie, S: 1 normale '
+            'Aktion zusätzlich).',
+        ...hinweise,
+      ],
+    ),
+  };
 }
 
 /// Ordnet das Manöver für Budget, Pflichtkontext und Bedienung identisch ein.

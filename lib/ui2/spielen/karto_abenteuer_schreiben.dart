@@ -4,9 +4,10 @@ import 'package:uuid/uuid.dart';
 
 import 'package:dsa_heldenverwaltung/domain/hero_adventure_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_note_entry.dart';
-import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/standort_rules.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abenteuer_dialoge.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_held_schreiben.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_laufendes_abenteuer.dart';
 
 /// Gemeinsamer Schreibweg für Abenteuerblatt und Abenteuerabschnitt.
@@ -18,58 +19,24 @@ import 'package:dsa_heldenverwaltung/ui2/spielen/karto_laufendes_abenteuer.dart'
 ///
 /// Gespeichert wird hier selbst und nicht über die Laufzeitaktion des
 /// Workspace: das Öffnen des Blatts läuft bereits in deren Re-Entrancy-Guard,
-/// jede weitere Aktion darin würde still verworfen. Doppelte Auslösung
-/// verhindert [schreibt]; während einer Planung ist alles gesperrt.
+/// jede weitere Aktion darin würde still verworfen. Sperre, Doppelklick-Schutz
+/// und Fehlertext kommen aus [KartoHeldSchreiben].
 mixin KartoAbenteuerSchreiben<T extends ConsumerStatefulWidget>
-    on ConsumerState<T> {
-  /// ID im gemeinsam genutzten Heldenspeicher.
-  String get heroId;
-
+    on ConsumerState<T>, KartoHeldSchreiben<T> {
   /// Stabile ID des bearbeiteten Abenteuers.
   String get abenteuerId;
 
-  /// Ob gerade ein Schreibvorgang läuft.
-  bool schreibt = false;
+  @override
+  String get planungsSperre =>
+      'Während einer Planung ist das Abenteuer gesperrt.';
 
-  /// Letzter Schreibfehler für die Anzeige, oder `null`.
-  String? fehler;
-
-  /// Ob eine offene Planung das Abenteuer schreibschützt.
-  bool get gesperrt => ref.watch(advancementSessionProvider(heroId)) != null;
-
-  /// Einziger Schreibweg: frisch laden, nur dieses Abenteuer ersetzen.
+  /// Frisch laden, nur dieses Abenteuer ersetzen ([ersetzeAbenteuer]).
   Future<void> schreibe(
     HeroAdventureEntry Function(HeroAdventureEntry abenteuer) aenderung,
-  ) async {
-    if (schreibt) return;
-    setState(() {
-      schreibt = true;
-      fehler = null;
-    });
-    try {
-      if (ref.read(advancementSessionProvider(heroId)) != null) {
-        throw StateError('Während einer Planung ist das Abenteuer gesperrt.');
-      }
-      await ref
-          .read(heroActionsProvider)
-          .updateHero(
-            heroId,
-            (held) => ersetzeAbenteuer(held, abenteuerId, aenderung),
-          );
-    } catch (error) {
-      if (mounted) {
-        setState(() => fehler = 'Speichern fehlgeschlagen: ${_text(error)}');
-      }
-    } finally {
-      if (mounted) setState(() => schreibt = false);
-    }
-  }
+  ) => schreibeHeld((held) => ersetzeAbenteuer(held, abenteuerId, aenderung));
 
   // Zeitstempel für „Zuletzt bearbeitet“; UTC wie alle Zeitpunkte im Modell.
   DateTime _jetzt() => DateTime.now().toUtc();
-
-  String _text(Object error) =>
-      error is StateError ? error.message : error.toString();
 
   /// Fragt das aktuelle Datum ab und speichert es.
   Future<void> datumAendern(HeroAdventureEntry abenteuer) async {
@@ -82,6 +49,19 @@ mixin KartoAbenteuerSchreiben<T extends ConsumerStatefulWidget>
     await schreibe((a) => a.copyWith(currentAventurianDate: datum));
   }
 
+  /// Zählt das aktuelle Datum um einen Tag weiter (Monat und Jahr rollen mit).
+  ///
+  /// Gerechnet wird vom frisch geladenen Stand, nicht vom gerenderten.
+  Future<void> datumEinenTagWeiter() {
+    return schreibe((a) {
+      final weiter = naechsterAbenteuerTag(a);
+      if (weiter == null) {
+        throw StateError('Das Datum lässt sich nicht weiterzählen.');
+      }
+      return a.copyWith(currentAventurianDate: weiter);
+    });
+  }
+
   /// Fragt die Zusammenfassung ab und speichert sie.
   Future<void> zusammenfassungAendern(HeroAdventureEntry abenteuer) async {
     final text = await showDialog<String>(
@@ -92,30 +72,72 @@ mixin KartoAbenteuerSchreiben<T extends ConsumerStatefulWidget>
     await schreibe((a) => a.copyWith(summary: text.trim()));
   }
 
+  /// Ort und Datum, die ein **neuer** Eintrag vorbelegt bekommt: Standort des
+  /// Helden und aventurisches Datum dieses Abenteuers.
+  ///
+  /// Gelesen wird beim Aufruf, nicht beim Bauen, damit der Stand von jetzt
+  /// gilt. Fehlt eines von beiden, bleibt das Feld leer; nichts wird erfunden.
+  ({String ort, HeroAdventureDateValue datum}) _vorbelegung() {
+    final werte = ref.read(heroComputedProvider(heroId)).asData?.value;
+    if (werte == null) {
+      return (ort: '', datum: const HeroAdventureDateValue());
+    }
+    var datum = const HeroAdventureDateValue();
+    for (final abenteuer in werte.hero.adventures) {
+      // Nur Tag, Monat und Jahr: Felder einer neueren Version gehören zum
+      // Abenteuerdatum, nicht zur neuen Notiz.
+      if (abenteuer.id == abenteuerId) {
+        final quelle = abenteuerDatumWert(abenteuer);
+        datum = HeroAdventureDateValue(
+          day: quelle.day,
+          month: quelle.month,
+          year: quelle.year,
+        );
+      }
+    }
+    return (ort: bereinigeStandort(werte.state.standort), datum: datum);
+  }
+
   /// Legt eine Notiz über den Dialog an.
   Future<void> notizAnlegen() async {
+    final vorgabe = _vorbelegung();
     final ergebnis = await showDialog<KartoZweiFelder>(
       context: context,
-      builder: (_) => const KartoZweiFelderDialog.notiz(),
+      builder: (_) =>
+          KartoZweiFelderDialog.notiz(ort: vorgabe.ort, datum: vorgabe.datum),
     );
     if (ergebnis == null || ergebnis.loeschen) return;
-    await _notizHinzufuegen(ergebnis.erstes, ergebnis.zweites);
+    await _notizHinzufuegen(
+      ergebnis.erstes,
+      ergebnis.zweites,
+      ort: ergebnis.ort,
+      datum: ergebnis.datum,
+    );
   }
 
   /// Hält eine Notiz aus einer einzelnen Zeile fest (Schnell-Erfassung).
   ///
   /// Leere Eingaben werden verworfen. Der Text wird der Titel; die Beschreibung
-  /// bleibt leer und lässt sich später über die Karte ergänzen.
+  /// bleibt leer und lässt sich später über die Karte ergänzen. Ort und Datum
+  /// kommen aus der Vorbelegung (Standort des Helden, Datum des Abenteuers).
   Future<void> notizSchnell(String text) async {
     final titel = text.trim();
     if (titel.isEmpty) return;
-    await _notizHinzufuegen(titel, '');
+    final vorgabe = _vorbelegung();
+    await _notizHinzufuegen(titel, '', ort: vorgabe.ort, datum: vorgabe.datum);
   }
 
-  Future<void> _notizHinzufuegen(String titel, String beschreibung) {
+  Future<void> _notizHinzufuegen(
+    String titel,
+    String beschreibung, {
+    String ort = '',
+    HeroAdventureDateValue datum = const HeroAdventureDateValue(),
+  }) {
     final notiz = HeroNoteEntry(
       title: titel,
       description: beschreibung,
+      ort: ort,
+      datum: datum,
       lastModified: _jetzt(),
     );
     return schreibe((a) => a.copyWith(notes: [...a.notes, notiz]));
@@ -128,13 +150,17 @@ mixin KartoAbenteuerSchreiben<T extends ConsumerStatefulWidget>
       builder: (_) => KartoZweiFelderDialog.notiz(
         erstes: notiz.title,
         zweites: notiz.description,
+        ort: notiz.ort,
+        datum: notiz.datum,
       ),
     );
     if (ergebnis == null) return;
     // Unverändert gespeichert: kein neuer Zeitstempel, kein Schreiben.
     if (!ergebnis.loeschen &&
         ergebnis.erstes == notiz.title &&
-        ergebnis.zweites == notiz.description) {
+        ergebnis.zweites == notiz.description &&
+        ergebnis.ort == notiz.ort &&
+        ergebnis.datum.gleicheAngabe(notiz.datum)) {
       return;
     }
     if (ergebnis.loeschen && !await _bestaetigeLoeschen('Notiz')) return;
@@ -154,6 +180,8 @@ mixin KartoAbenteuerSchreiben<T extends ConsumerStatefulWidget>
         notizen[index] = notizen[index].copyWith(
           title: ergebnis.erstes,
           description: ergebnis.zweites,
+          ort: ergebnis.ort,
+          datum: ergebnis.datum,
           lastModified: _jetzt(),
         );
       }
@@ -163,15 +191,19 @@ mixin KartoAbenteuerSchreiben<T extends ConsumerStatefulWidget>
 
   /// Legt eine Person über den Dialog an.
   Future<void> personAnlegen() async {
+    final vorgabe = _vorbelegung();
     final ergebnis = await showDialog<KartoZweiFelder>(
       context: context,
-      builder: (_) => const KartoZweiFelderDialog.person(),
+      builder: (_) =>
+          KartoZweiFelderDialog.person(ort: vorgabe.ort, datum: vorgabe.datum),
     );
     if (ergebnis == null || ergebnis.loeschen) return;
     final person = HeroAdventurePersonEntry(
       id: const Uuid().v4(),
       name: ergebnis.erstes,
       description: ergebnis.zweites,
+      ort: ergebnis.ort,
+      datum: ergebnis.datum,
       lastModified: _jetzt(),
     );
     await schreibe((a) => a.copyWith(people: [...a.people, person]));
@@ -184,12 +216,16 @@ mixin KartoAbenteuerSchreiben<T extends ConsumerStatefulWidget>
       builder: (_) => KartoZweiFelderDialog.person(
         erstes: person.name,
         zweites: person.description,
+        ort: person.ort,
+        datum: person.datum,
       ),
     );
     if (ergebnis == null) return;
     if (!ergebnis.loeschen &&
         ergebnis.erstes == person.name &&
-        ergebnis.zweites == person.description) {
+        ergebnis.zweites == person.description &&
+        ergebnis.ort == person.ort &&
+        ergebnis.datum.gleicheAngabe(person.datum)) {
       return;
     }
     if (ergebnis.loeschen && !await _bestaetigeLoeschen('Person')) return;
@@ -206,6 +242,8 @@ mixin KartoAbenteuerSchreiben<T extends ConsumerStatefulWidget>
               p.copyWith(
                 name: ergebnis.erstes,
                 description: ergebnis.zweites,
+                ort: ergebnis.ort,
+                datum: ergebnis.datum,
                 lastModified: _jetzt(),
               ),
         ],

@@ -99,7 +99,7 @@ AdvancementOption? _talentOption(AdvancementContext context, String id) {
         );
   if (hero.isEpisch && hero.epicUnactivatedTalentIds.contains(id)) {
     final names = combat
-        ? (def.type == 'fernkampf' ? ['FF', 'KK'] : ['GE', 'KK'])
+        ? (def.type == 'fernkampf' ? ['FF', 'GE', 'KK'] : ['GE', 'KK'])
         : def.attributes;
     for (final name in names) {
       final code = parseAttributeCode(name);

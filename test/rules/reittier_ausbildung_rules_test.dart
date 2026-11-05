@@ -79,7 +79,7 @@ void main() {
     });
 
     test('fundiert begonnen, laendlich weitergefuehrt: halbe Werte, '
-        'abgerundet', () {
+        'aufgerundet', () {
       const a = ReittierAusbildung(
         ausgangsstufe: unerfahren,
         ausgangsart: fundiert,
@@ -90,7 +90,8 @@ void main() {
 
       expect(
         reittierAusbildungsModifikationen(a),
-        const ReittierModifikationen(lo: 2, kk: 1, auTrab: 1),
+        // KK 3 -> 1,5 -> 2; AU Galopp 1 -> 0,5 -> 1.
+        const ReittierModifikationen(lo: 2, kk: 2, auTrab: 1, auGalopp: 1),
       );
       expect(istFundiertBegonnenLaendlichWeitergefuehrt(a), isTrue);
     });

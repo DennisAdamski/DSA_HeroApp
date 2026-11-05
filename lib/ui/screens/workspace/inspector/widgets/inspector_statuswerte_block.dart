@@ -41,6 +41,7 @@ class InspectorStatuswerteBlock extends ConsumerWidget {
     required this.derived,
     required this.combat,
     this.eingebettet = false,
+    this.mitTrenner = true,
   });
 
   final String heroId;
@@ -50,6 +51,10 @@ class InspectorStatuswerteBlock extends ConsumerWidget {
 
   /// Verzichtet auf die eigene Karte samt Untertitel.
   final bool eingebettet;
+
+  /// Ob im eingebetteten Zustand eine Trennlinie über der Überschrift steht.
+  /// Steht der Block neben anderen Abschnitten statt darunter, entfällt sie.
+  final bool mitTrenner;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -160,8 +165,10 @@ class InspectorStatuswerteBlock extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Divider(height: 1, color: theme.colorScheme.outlineVariant),
-        const SizedBox(height: 12),
+        if (mitTrenner) ...[
+          Divider(height: 1, color: theme.colorScheme.outlineVariant),
+          const SizedBox(height: 12),
+        ],
         Text('Statuswerte', style: theme.textTheme.titleSmall),
         const SizedBox(height: 8),
         zeilen,

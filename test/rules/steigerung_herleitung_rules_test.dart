@@ -7,7 +7,9 @@ import 'package:dsa_heldenverwaltung/rules/derived/lernkosten_faktor_rules.dart'
 import 'package:dsa_heldenverwaltung/rules/derived/steigerung_herleitung_rules.dart';
 
 void main() {
-  /// Die bisherige Kette des Steigerungsdialogs, unabhängig nachgebaut.
+  /// Die Kette des Steigerungsdialogs, unabhängig nachgebaut. Ein Lehrmeister
+  /// hebt den epischen Aufschlag nur auf (Hausregel „Epische Stufen“,
+  /// Kap. 2.2); gibt es keinen Aufschlag, gilt sein gewohnter Nachlass.
   int alteKette({
     required int von,
     required int auf,
@@ -30,10 +32,13 @@ void main() {
       isMainAttribute: haupt,
       lehrmeisterHebtAuf: lehrmeister,
     );
-    return lehrmeister ? apMitLehrmeister(nachEpos) : nachEpos;
+    final aufschlagAufgehoben = lehrmeister && episch && !haupt;
+    return lehrmeister && !aufschlagAufgehoben
+        ? apMitLehrmeister(nachEpos)
+        : nachEpos;
   }
 
-  test('Herleitung ergibt in allen Fällen die bisherigen AP-Kosten', () {
+  test('Herleitung ergibt in allen Fällen die erwarteten AP-Kosten', () {
     var faelle = 0;
     for (final spalte in LearnCost.values) {
       for (final von in const [-1, 0, 3, 9]) {
@@ -104,20 +109,45 @@ void main() {
     },
   );
 
-  test('Lehrmeister hebt den epischen Aufschlag auf und senkt um 20 %', () {
-    final k = herleiteSteigerungskosten(
-      vonWert: 4,
-      aufWert: 7,
-      komplexitaet: LearnCost.d,
-      episch: true,
-      mitLehrmeister: true,
-    );
-    expect(k.aufschlag, 0);
-    final lm = k.herleitung.schritte.singleWhere(
-      (s) => s.bezeichnung == kSteigerungLehrmeisterSchritt,
-    );
-    expect(lm.betrag, lessThan(0));
-    expect(k.apKosten, apMitLehrmeister(k.kostenVorAufschlag));
+  test(
+    'Lehrmeister hebt den epischen Aufschlag nur auf, senkt nicht zusätzlich',
+    () {
+      final k = herleiteSteigerungskosten(
+        vonWert: 4,
+        aufWert: 7,
+        komplexitaet: LearnCost.d,
+        episch: true,
+        mitLehrmeister: true,
+      );
+      expect(k.aufschlag, 0);
+      final lm = k.herleitung.schritte.singleWhere(
+        (s) => s.bezeichnung == kSteigerungLehrmeisterSchritt,
+      );
+      expect(lm.betrag, 0);
+      expect(k.apKosten, k.kostenVorAufschlag);
+    },
+  );
+
+  test('Lehrmeister senkt um 20 %, wo kein epischer Aufschlag anfällt', () {
+    for (final (episch, haupt) in const [(false, false), (true, true)]) {
+      final k = herleiteSteigerungskosten(
+        vonWert: 4,
+        aufWert: 7,
+        komplexitaet: LearnCost.d,
+        episch: episch,
+        istHaupteigenschaft: haupt,
+        mitLehrmeister: true,
+      );
+      final lm = k.herleitung.schritte.singleWhere(
+        (s) => s.bezeichnung == kSteigerungLehrmeisterSchritt,
+      );
+      expect(lm.betrag, lessThan(0), reason: 'episch $episch haupt $haupt');
+      expect(
+        k.apKosten,
+        apMitLehrmeister(k.kostenVorAufschlag),
+        reason: 'episch $episch haupt $haupt',
+      );
+    }
   });
 
   test('Haupteigenschaft zahlt keinen Aufschlag', () {

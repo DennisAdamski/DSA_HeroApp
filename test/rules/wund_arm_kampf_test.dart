@@ -183,9 +183,17 @@ void main() {
     );
     expect(mit.probenEigenschaften.mu, ohne.probenEigenschaften.mu - 2);
     expect(mit.probenEigenschaften.ge, ohne.probenEigenschaften.ge - 6);
-    expect(mit.probenEigenschaften.kk, ohne.probenEigenschaften.kk - 3);
+    // KK/FF der Armwunde stehen nicht in den Probenwerten: Der Probendialog
+    // bietet sie nur für Proben mit diesem Arm an (WdS S. 108 f.).
+    expect(mit.probenEigenschaften.kk, ohne.probenEigenschaften.kk - 1);
     expect(mit.probenEigenschaften.ko, ohne.probenEigenschaften.ko - 1);
-    expect(mit.probenEigenschaften.ff, ohne.probenEigenschaften.ff - 2);
+    expect(mit.probenEigenschaften.ff, ohne.probenEigenschaften.ff);
+    final arm = mit.wundEffekte.armEigenschaftsVerluste;
+    expect(arm.keys, [WundZone.linkerArm]);
+    expect(
+      (arm[WundZone.linkerArm]!.kk, arm[WundZone.linkerArm]!.ff),
+      (-2, -2),
+    );
   });
 
   test('Wunden senken die GS nie unter 1', () {

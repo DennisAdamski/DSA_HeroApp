@@ -7,6 +7,7 @@ import 'package:dsa_heldenverwaltung/ablaeufe/auxiliator_einsetzen.dart';
 import 'package:dsa_heldenverwaltung/ablaeufe/elixier_einnehmen.dart';
 import 'package:dsa_heldenverwaltung/ablaeufe/heilung_erhalten.dart';
 import 'package:dsa_heldenverwaltung/ablaeufe/matrix_ausloesen.dart';
+import 'package:dsa_heldenverwaltung/ablaeufe/meisterhandwerk_einsetzen.dart';
 import 'package:dsa_heldenverwaltung/ablaeufe/rast_abschliessen.dart';
 import 'package:dsa_heldenverwaltung/ablaeufe/regelprofil_uebernehmen.dart';
 import 'package:dsa_heldenverwaltung/ablaeufe/ruhe_koerper_erhalten.dart';
@@ -39,6 +40,17 @@ final vertrautenVereinigungProvider = Provider<VertrautenVereinigung>((ref) {
 /// Bindet den Ablauf „Matrixgeber auslösen“ an das aktive Heldenrepository.
 final matrixAusloesenProvider = Provider<MatrixAusloesen>((ref) {
   return MatrixAusloesen(
+    repository: ref.watch(heroRepositoryProvider),
+    uhr: DateTime.now,
+  );
+});
+
+/// Bindet den Ablauf „Meisterhandwerk einsetzen“ an das aktive
+/// Heldenrepository.
+final meisterhandwerkEinsetzenProvider = Provider<MeisterhandwerkEinsetzen>((
+  ref,
+) {
+  return MeisterhandwerkEinsetzen(
     repository: ref.watch(heroRepositoryProvider),
     uhr: DateTime.now,
   );

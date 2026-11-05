@@ -12,6 +12,17 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   darauf. Die Sprachversion aus `environment: sdk:` steuert mit, welche Lints
   ueberhaupt feuern und wie breit `dart format` umbricht — ein SDK-Bump zieht
   beides nach sich.
+- Git-Hooks: `.githooks/pre-commit` formatiert gestagte `.dart`-Dateien
+  (`dart format`, danach erneut gestaged); Zwischencommits blockiert er nicht.
+  `.githooks/pre-push` prueft zuerst die Regeltest-Inventur
+  (`tool/check_rule_test_evidence.py`; jede neue Datei unter `test/rules` und
+  `test/catalog` braucht einen Eintrag in `tool/rule_test_evidence.json`) und
+  fuehrt dann `flutter analyze` ueber das ganze Projekt aus (wie die CI, dauert
+  ca. 2 Minuten); bei Befunden bricht der Push ab.
+  Aktivierung einmalig pro Clone mit `sh tool/setup_git_hooks.sh` (setzt
+  `core.hooksPath`). Dateien mit gestagten und ungestagten Aenderungen weist
+  der pre-commit-Hook ab, damit nichts ungewollt mitcommittet wird. Umgehen nur
+  bewusst mit `--no-verify`; die CI bleibt das verbindliche Gate.
 - Der Windows-Release-Audit fuer EXE/MSIX-Artefakte ist in `docs/windows_antivirus_audit.md` beschrieben; der zugehoerige Helfer liegt unter `tool/audit_windows_artifact.ps1`.
 - Direktes App-Feedback als GitHub-Issue ist lokal implementiert und in
   [docs/feedback_github_plan.md](../feedback_github_plan.md) sowie
@@ -56,13 +67,50 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   `sqlite3_flutter_libs` liesse Desktop und Mobile ohne native Bibliothek
   zurueck. Aus demselben Grund gibt es keinen `open.overrideFor`-Aufruf
   mehr; das Laden uebernimmt vollstaendig der Hook.
-- Zusaetzlich zum manuellen Weg (lokal bauen bzw. Web-Upload) kann die
-  Index-DB per Server-Sync bezogen werden (`lib/domain/rules_index_remote_config.dart`,
-  `lib/data/rules_search/rules_index_remote_client.dart`,
-  `lib/data/rules_search/rules_index_sync_service.dart`; Desktop-Cache-Pfad
-  `index_remote.sqlite` in `rules_index_search_io.dart`, UI in
-  `_RulesIndexServerCard` (`settings_pages.dart`) und im
-  Regel-Nachschlag-Dialog). Die Datei bleibt unverschluesselt; das Download-
-  Feature ist stattdessen hinter dem bestehenden Katalog-Entschluesselungs-
-  passwort gated (kein zweites Passwort). Details und der bewusste
-  Schutz-Trade-off stehen in `docs/spielmodus_konzept.md` Abschnitt 6.
+- Zusaetzlich zum manuellen Weg (lokal bauen bzw. Web-Upload) wird die
+  Wissensbasis ueber die Cloud bezogen (Cloud-Weg unten; Desktop-Cache-Pfad
+  `index_remote.sqlite` in `rules_index_search_io.dart`). Der fruehere
+  WebDAV-Bezug (Fritz!NAS, `RULES_INDEX_SERVER_*`, Einstellungskarte) ist
+  entfallen; gespeicherte Zugangsdaten daraus verwirft
+  `RulesIndexRemoteConfig.fromJson`.
+  **Leerzustand (SPIEL-04):** ohne Index zeigt der Dialog einen gemeinsamen
+  Hinweis (`_buildNotice`): mit Cloud deren Zustand und Knopf, sonst ehrlich,
+  dass kein Regel-Server eingerichtet ist. Auf Web gibt es zusaetzlich den
+  Datei-Upload. Die Suchansicht zeigt `Vom Server geladen am <Datum>`
+  (`lastSyncedAt`) und den Aktualisieren-Knopf. Testnaht: `oeffneIndex` am
+  Dialog; `flutter test` laeuft sonst gegen die lokale Entwickler-Datenbank.
+  **Cloud-Weg (SPIEL-04):** Builds mit `RULES_INDEX_API_URL` laden die
+  Wissensbasis ueber die Cloud Function `rulesIndexApi`
+  (`functions/src/rules_index/api.ts`, Betrieb in
+  [mcp_dsa_rules.md](../mcp_dsa_rules.md)). Der Regelnachschlag wird in allen
+  drei Einstiegen (Spielansicht, `workspace_management_body.dart`,
+  `hero_workspace_screen.dart`) erst nach dem Entsperren
+  (`catalogContentVisibleProvider`) angeboten. `rulesIndexAutoStartProvider`
+  (beobachtet in `AppRootSwitch`) startet das Laden im Hintergrund, sobald
+  Passwort, Anmeldung, Katalogschluessel (`rulesIndexCatalogKeyProvider`) und Einstellungen da sind; es laeuft nur,
+  wenn die Wissensbasis fehlt oder `rulesIndexRefreshInterval` (14 Tage)
+  ueberschritten ist, und hoechstens einmal je Sitzung (`autoStart`). Manuell:
+  `RulesIndexAutoSync.start` ueber die Knoepfe im Dialog. Ablauf in
+  `RulesIndexSyncService.syncFromCloud`: Passwortnachweis aus dem schon abgeleiteten Katalogschluessel,
+  Zugang, Download der signierten URL (`downloadSigned`, ohne Zugangsdaten),
+  bei Bedarf Entpacken (`gunzipIfNeeded`, Web verlaesst sich auf
+  `Content-Encoding: gzip`), Pruefung von Groesse und SHA-256, erst dann Import.
+  Die installierte Version steht in `RulesIndexRemoteConfig.installedVersion`;
+  der Dateiimport schreibt dieselbe Cache-Datei und leert sie deshalb, damit
+  der Cloud-Abgleich eine fremde Datei nie für die veröffentlichte Fassung
+  hält. Den Dienst gibt es nur über
+  `rulesIndexSyncServiceProvider`.
+  Der Dialog zeigt Fortschritt, Fehler (nie still) und oeffnet die Suche selbst,
+  sobald `RulesIndexSyncState.revision` steigt. Der NAS-Weg bleibt fuer Builds
+  ohne Cloud-URL bestehen. **Nicht geprueft:** der echte Lauf gegen Firebase
+  (Deploy, Secret, Signierrecht) und das Entpacken im Browser.
+- Das Kurzregel-Kompendium (SPIEL-04, Option C) liefert eigene Kurzfassungen
+  häufiger Regeln als verschlüsseltes Asset `kurzregeln.json` (67 Einträge,
+  jeder mit Buch- und Seitenbeleg). Es ist der Standardreiter „Kurzregeln“ des
+  Regel-Nachschlags (`RegelnNachschlagDialog`) und läuft offline auf allen
+  Plattformen; der Einstieg erscheint daher auch auf Mobil
+  (`isRulesLookupSupported()` ist immer wahr, nur der Reiter „Wissensbasis“
+  hängt an `rulesIndexSearchSupported()`) und weiter erst nach dem Entsperren.
+  Hausregeln stehen getrennt von der offiziellen Regel. Aufbau,
+  Redaktionsablauf und Seitenversatz der Belege:
+  [kurzregeln_redaktion.md](../kurzregeln_redaktion.md).

@@ -15,6 +15,7 @@ class InspectorAttributeCard extends StatelessWidget {
     required this.onTap,
     this.wundAbzug = 0,
     this.kompakt = false,
+    this.abzugZeigen = false,
   });
 
   final String label;
@@ -26,6 +27,22 @@ class InspectorAttributeCard extends StatelessWidget {
 
   /// Einzeilig „MU 14“ statt Kürzel über Wert.
   final bool kompakt;
+
+  /// Zeigt den Wundabzug ([wundAbzug] < 0) als „−2“ an der Karte selbst statt
+  /// nur im Tooltip. Ohne Wundabzug bleibt die Karte unverändert.
+  final bool abzugZeigen;
+
+  // Kleiner Abzug in Fehlerfarbe mit echtem Minuszeichen, oder `null`.
+  Widget? _abzug(ThemeData theme) {
+    if (!abzugZeigen || wundAbzug >= 0) return null;
+    return Text(
+      '\u2212${-wundAbzug}',
+      style: theme.textTheme.labelSmall?.copyWith(
+        color: theme.colorScheme.error,
+        fontWeight: FontWeight.bold,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -42,6 +59,7 @@ class InspectorAttributeCard extends StatelessWidget {
   }
 
   Widget _zeile(ThemeData theme, CodexTheme codex) {
+    final abzug = _abzug(theme);
     return Row(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.baseline,
@@ -63,11 +81,13 @@ class InspectorAttributeCard extends StatelessWidget {
             color: wundAbzug == 0 ? null : theme.colorScheme.error,
           ),
         ),
+        if (abzug != null) ...[const SizedBox(width: 4), abzug],
       ],
     );
   }
 
   Widget _karte(ThemeData theme, CodexTheme codex) {
+    final abzug = _abzug(theme);
     return Material(
       color: codex.parchment,
       borderRadius: BorderRadius.circular(8),
@@ -107,6 +127,7 @@ class InspectorAttributeCard extends StatelessWidget {
                               : theme.colorScheme.error,
                         ),
                       ),
+                      ?abzug,
                     ],
                   ),
           ),

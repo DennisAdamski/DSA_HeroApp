@@ -1,3 +1,5 @@
+import 'package:dsa_heldenverwaltung/rules/derived/proben_favoriten_rules.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_proben_favorit.dart';
 import 'package:dsa_heldenverwaltung/catalog/talent_def.dart';
 import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
@@ -140,6 +142,7 @@ ResolvedProbeRequest? talentprobeFuer({
     spezialisierungen: wert.spezialisierungen,
     initialSituationalModifier: initialSituationalModifier,
     tawHerleitung: wert.herleitung.taw,
+    verweis: probenVerweis(ProbenFavoritArt.talent, talent.id),
   );
 }
 

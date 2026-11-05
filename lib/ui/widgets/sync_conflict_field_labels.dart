@@ -66,6 +66,8 @@ const Map<String, String> syncFieldLabels = <String, String>{
   'epicAttributeMaxBonus': 'Epik: Eigenschaftsmaximum-Bonus',
   'epicMainAttributes': 'Epik: Haupteigenschaften',
   'epicActivationPolicy': 'Epik: Aktivierungsregel',
+  'probenFavoriten': 'Häufige Proben',
+  'spielansicht': 'Spielansicht',
   'epicLockedWaffenmeisterCategories': 'Epik: Gesperrte Waffenmeister',
   'epicUnactivatedTalentIds': 'Epik: Nicht aktivierte Talente',
   // HeroSheet: flach eingemischte Aussehen-Felder.
@@ -94,6 +96,11 @@ const Map<String, String> syncFieldLabels = <String, String>{
   'stand': 'Stand',
   'titel': 'Titel',
   'sozialstatus': 'Sozialstatus',
+  // Spielansicht (HeroSpielansicht.toJson).
+  'kacheln': 'Kacheln',
+  'breite': 'Breite',
+  'ausgeblendet': 'Ausgeblendet',
+  'eingeklappt': 'Eingeklappt',
   // Eigenschafts-Kuerzel (Attributes.toJson).
   'mu': 'MU',
   'kl': 'KL',

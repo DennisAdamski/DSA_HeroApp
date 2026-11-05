@@ -50,6 +50,13 @@ $feedbackApiUrls = @{
 }
 $feedbackApiUrl = $feedbackApiUrls[$Target]
 
+# Zugang zur Regel-Wissensbasis (SPIEL-04), siehe docs/mcp_dsa_rules.md.
+$rulesIndexApiUrls = @{
+    test = 'https://europe-west10-heldensync-ccf0b.cloudfunctions.net/rulesIndexApiTest'
+    production = 'https://europe-west10-heldensync-ccf0b.cloudfunctions.net/rulesIndexApi'
+}
+$rulesIndexApiUrl = $rulesIndexApiUrls[$Target]
+
 Write-Host '== flutter clean =='
 flutter clean
 
@@ -67,6 +74,7 @@ flutter build web --release --no-wasm-dry-run --no-web-resources-cdn `
     "--dart-define=BUILD_COMMIT=$commit" `
     "--dart-define=BUILD_TIME=$buildTime" `
     "--dart-define=FEEDBACK_API_URL=$feedbackApiUrl" `
+    "--dart-define=RULES_INDEX_API_URL=$rulesIndexApiUrl" `
     "--dart-define=FIREBASE_APP_CHECK_SITE_KEY=$AppCheckSiteKey" `
     "--dart-define=LEGAL_RESPONSIBLE_NAME=$LegalResponsibleName" `
     "--dart-define=LEGAL_STREET_ADDRESS=$LegalStreetAddress" `

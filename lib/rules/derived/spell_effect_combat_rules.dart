@@ -1,3 +1,4 @@
+import 'package:dsa_heldenverwaltung/rules/derived/excel_rounding.dart';
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/attribute_modifiers.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
@@ -271,7 +272,6 @@ SpellEffectBeitraege berechneSpellEffectBeitraegeFuerHeld({
 /// alle übrigen Werte aufgerundet, die MR ausgenommen. Bei halbierten
 /// Abzügen und Dauern wird der **Betrag** aufgerundet (Entscheid 19.10.2026,
 /// deckt sich mit der kaufmännischen Rundung aus WdZ S. 7).
-int halbiertAufgerundet(int wert) => wert <= 0 ? 0 : (wert + 1) ~/ 2;
 
 /// Quellname der Athletik-Verdopplung durch Axxeleratus.
 const String kAxxeleratusAthletikQuelle = 'Axxeleratus';

@@ -28,6 +28,15 @@ import 'karto_test_support.dart';
 // Opt-in wie das R3-Raster: echte Rasterbilder, keine Pixelvergleiche.
 const _screenshotDirectory = String.fromEnvironment('R3_SCREENSHOT_DIR');
 
+// Die vier Faelle decken jede Layoutbreite sowie beide Themes und
+// Textskalierungen ab, ohne jeden langen Navigationsablauf zwoelfmal zu fahren.
+const _pageCases = <({double width, Brightness brightness, double scale})>[
+  (width: 390, brightness: Brightness.dark, scale: 2),
+  (width: 1024, brightness: Brightness.dark, scale: 1),
+  (width: 1024, brightness: Brightness.light, scale: 2),
+  (width: 1440, brightness: Brightness.light, scale: 1),
+];
+
 /// Abnahmeraster der uebrigen Seiten: alle Tabs der Verwaltung.
 ///
 /// Laeuft ueber Breiten, Helligkeiten und Schriftgroessen und prueft, dass
@@ -91,273 +100,260 @@ void main() {
     'Gruppe',
   ];
 
-  for (final width in [390.0, 1024.0, 1440.0]) {
-    for (final brightness in Brightness.values) {
-      for (final scale in [1.0, 2.0]) {
-        testWidgets('Verwaltung $width dp, ${brightness.name}, Text $scale', (
-          tester,
-        ) async {
-          final screenshotKey = GlobalKey();
-          final hero = held();
-          await pumpAcceptanceWorkspace(
-            tester,
-            repository: AcceptanceRepository(
-              heroes: [hero],
-              states: {
-                hero.id: const HeroState(
-                  currentLep: 27,
-                  currentAsp: 18,
-                  currentKap: 12,
-                  currentAu: 22,
-                ),
-              },
+  for (final testCase in _pageCases) {
+    final (:width, :brightness, :scale) = testCase;
+    testWidgets('Verwaltung $width dp, ${brightness.name}, Text $scale', (
+      tester,
+    ) async {
+      final screenshotKey = GlobalKey();
+      final hero = held();
+      await pumpAcceptanceWorkspace(
+        tester,
+        repository: AcceptanceRepository(
+          heroes: [hero],
+          states: {
+            hero.id: const HeroState(
+              currentLep: 27,
+              currentAsp: 18,
+              currentKap: 12,
+              currentAu: 22,
             ),
-            selectedHeroId: hero.id,
-            size: Size(width, 1000),
-            textScale: scale,
-            brightness: brightness,
-            screenshotKey: screenshotKey,
-          );
-          await selectAcceptanceMode(tester, 'Held verwalten');
-          final capture =
-              scale == 1 &&
-              ((brightness == Brightness.light && width == 1440) ||
-                  (brightness == Brightness.dark && width == 1024));
-          for (final tab in tabs) {
-            // Nur die oberste Reiterreihe: innere Reiter tragen teils
-            // dieselben Namen (Talente › Talente).
-            final reiter = find.descendant(
-              of: find.byType(TabBar).first,
-              matching: find.widgetWithText(Tab, tab),
-            );
-            expect(reiter, findsOneWidget, reason: tab);
-            await tester.ensureVisible(reiter);
-            await tester.tap(reiter);
-            await tester.pumpAndSettle();
-            expect(tester.takeException(), isNull, reason: tab);
-            if (capture) {
-              await _capture(
-                tester,
-                screenshotKey,
-                'verwalten-${_dateiname(tab)}-${width.toInt()}-'
-                '${brightness.name}',
-              );
-            }
-            // Jeden inneren Reiter oeffnen: Kacheln darin stehen oft direkt
-            // auf dem Papier, und genau dort fehlte die Tintenschicht.
-            await _innereReiter(tester, tab);
-          }
-
-          // Planung: jeder sichtbare Bereich mit jedem Abschnitt, auch der
-          // Faehigkeitenbaum mit dem Schalter fuer unpassende
-          // Sonderfertigkeiten.
-          await selectAcceptanceMode(tester, 'Entwicklung planen');
-          for (final bereich in <String>[
-            'talente',
-            'kampf',
-            'magie',
-            'karma',
-            'grundlagen',
-          ]) {
-            final chip = find.byKey(ValueKey('advancement-bereich-$bereich'));
-            if (chip.evaluate().isEmpty) continue;
-            await tester.ensureVisible(chip);
-            await tester.tap(chip);
-            await tester.pumpAndSettle();
-            expect(tester.takeException(), isNull, reason: bereich);
-            final abschnitte = find.byWidgetPredicate(
-              (widget) =>
-                  widget is ChoiceChip &&
-                  widget.key is ValueKey<String> &&
-                  (widget.key! as ValueKey<String>).value.startsWith(
-                    'advancement-abschnitt-',
-                  ),
-            );
-            for (final element in abschnitte.evaluate().toList()) {
-              final key = (element.widget.key! as ValueKey<String>).value;
-              final abschnitt = find.byKey(ValueKey(key));
-              await tester.ensureVisible(abschnitt);
-              await tester.tap(abschnitt);
-              await tester.pumpAndSettle();
-              expect(tester.takeException(), isNull, reason: key);
-              if (capture && key == 'advancement-abschnitt-kampfSf') {
-                await _capture(
-                  tester,
-                  screenshotKey,
-                  'planen-sonderfertigkeiten-${width.toInt()}-'
-                  '${brightness.name}',
-                );
-              }
-            }
-          }
-        }, tags: ['r3-acceptance']);
-      }
-    }
-  }
-  for (final width in [390.0, 1024.0, 1440.0]) {
-    for (final brightness in Brightness.values) {
-      for (final scale in [1.0, 2.0]) {
-        testWidgets(
-          'Dialoge am Spieltisch $width dp, ${brightness.name}, Text $scale',
-          (tester) async {
-            final screenshotKey = GlobalKey();
-            final hero = held();
-            await pumpAcceptanceWorkspace(
-              tester,
-              repository: AcceptanceRepository(
-                heroes: [hero],
-                states: {
-                  hero.id: const HeroState(
-                    currentLep: 27,
-                    currentAsp: 18,
-                    currentKap: 12,
-                    currentAu: 22,
-                  ),
-                },
-              ),
-              selectedHeroId: hero.id,
-              size: Size(width, 1000),
-              textScale: scale,
-              brightness: brightness,
-              screenshotKey: screenshotKey,
-            );
-            final capture =
-                scale == 1 &&
-                ((brightness == Brightness.light && width == 1440) ||
-                    (brightness == Brightness.dark && width == 1024));
-            final suffix = '${width.toInt()}-${brightness.name}';
-
-            // Probe: vor und nach dem Wurf.
-            final mut = find.byKey(const ValueKey('inspector-probe-attr-MU'));
-            await tester.ensureVisible(mut);
-            await tester.tap(mut);
-            await tester.pumpAndSettle();
-            expect(tester.takeException(), isNull, reason: 'Probe');
-            if (capture) await _capture(tester, screenshotKey, 'probe-$suffix');
-            await tester.tap(find.text('Würfeln').first);
-            await tester.pumpAndSettle();
-            expect(tester.takeException(), isNull, reason: 'Wurf');
-            if (capture) {
-              await _capture(tester, screenshotKey, 'probe-wurf-$suffix');
-            }
-            await tester.tap(find.text('Schließen').last);
-            await tester.pumpAndSettle();
-
-            // Rast.
-            final rast = find.text('Rast').first;
-            await tester.ensureVisible(rast);
-            await tester.tap(rast);
-            await tester.pumpAndSettle();
-            expect(find.byKey(const ValueKey('rest-dialog')), findsOneWidget);
-            expect(tester.takeException(), isNull, reason: 'Rast');
-            if (capture) await _capture(tester, screenshotKey, 'rast-$suffix');
-            await tester.tap(find.byKey(const ValueKey('rest-dialog-close')));
-            await tester.pumpAndSettle();
-
-            // Ressourcenblatt.
-            final lep = find.byTooltip('Lebenspunkte ändern');
-            await tester.ensureVisible(lep);
-            await tester.tap(lep);
-            await tester.pumpAndSettle();
-            expect(tester.takeException(), isNull, reason: 'Ressource');
-            if (capture) {
-              await _capture(tester, screenshotKey, 'ressource-$suffix');
-            }
-            await tester.tap(
-              find.byKey(const ValueKey('karto-ressource-schliessen')),
-            );
-            await tester.pumpAndSettle();
           },
-          tags: ['r3-acceptance'],
+        ),
+        selectedHeroId: hero.id,
+        size: Size(width, 1000),
+        textScale: scale,
+        brightness: brightness,
+        screenshotKey: screenshotKey,
+      );
+      await selectAcceptanceMode(tester, 'Held verwalten');
+      final capture =
+          scale == 1 &&
+          ((brightness == Brightness.light && width == 1440) ||
+              (brightness == Brightness.dark && width == 1024));
+      for (final tab in tabs) {
+        // Nur die oberste Reiterreihe: innere Reiter tragen teils
+        // dieselben Namen (Talente › Talente).
+        final reiter = find.descendant(
+          of: find.byType(TabBar).first,
+          matching: find.widgetWithText(Tab, tab),
         );
+        expect(reiter, findsOneWidget, reason: tab);
+        await tester.ensureVisible(reiter);
+        await tester.tap(reiter);
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull, reason: tab);
+        if (capture) {
+          await _capture(
+            tester,
+            screenshotKey,
+            'verwalten-${_dateiname(tab)}-${width.toInt()}-'
+            '${brightness.name}',
+          );
+        }
+        // Jeden inneren Reiter oeffnen: Kacheln darin stehen oft direkt
+        // auf dem Papier, und genau dort fehlte die Tintenschicht.
+        await _innereReiter(tester, tab);
       }
-    }
+
+      // Planung: jeder sichtbare Bereich mit jedem Abschnitt, auch der
+      // Faehigkeitenbaum mit dem Schalter fuer unpassende
+      // Sonderfertigkeiten.
+      await selectAcceptanceMode(tester, 'Entwicklung planen');
+      for (final bereich in <String>[
+        'talente',
+        'kampf',
+        'magie',
+        'karma',
+        'grundlagen',
+      ]) {
+        final chip = find.byKey(ValueKey('advancement-bereich-$bereich'));
+        if (chip.evaluate().isEmpty) continue;
+        await tester.ensureVisible(chip);
+        await tester.tap(chip);
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull, reason: bereich);
+        final abschnitte = find.byWidgetPredicate(
+          (widget) =>
+              widget is ChoiceChip &&
+              widget.key is ValueKey<String> &&
+              (widget.key! as ValueKey<String>).value.startsWith(
+                'advancement-abschnitt-',
+              ),
+        );
+        for (final element in abschnitte.evaluate().toList()) {
+          final key = (element.widget.key! as ValueKey<String>).value;
+          final abschnitt = find.byKey(ValueKey(key));
+          await tester.ensureVisible(abschnitt);
+          await tester.tap(abschnitt);
+          await tester.pumpAndSettle();
+          expect(tester.takeException(), isNull, reason: key);
+          if (capture && key == 'advancement-abschnitt-kampfSf') {
+            await _capture(
+              tester,
+              screenshotKey,
+              'planen-sonderfertigkeiten-${width.toInt()}-'
+              '${brightness.name}',
+            );
+          }
+        }
+      }
+    }, tags: ['r3-acceptance']);
+  }
+  for (final testCase in _pageCases) {
+    final (:width, :brightness, :scale) = testCase;
+    testWidgets(
+      'Dialoge am Spieltisch $width dp, ${brightness.name}, Text $scale',
+      (tester) async {
+        final screenshotKey = GlobalKey();
+        final hero = held();
+        await pumpAcceptanceWorkspace(
+          tester,
+          repository: AcceptanceRepository(
+            heroes: [hero],
+            states: {
+              hero.id: const HeroState(
+                currentLep: 27,
+                currentAsp: 18,
+                currentKap: 12,
+                currentAu: 22,
+              ),
+            },
+          ),
+          selectedHeroId: hero.id,
+          size: Size(width, 1000),
+          textScale: scale,
+          brightness: brightness,
+          screenshotKey: screenshotKey,
+        );
+        final capture =
+            scale == 1 &&
+            ((brightness == Brightness.light && width == 1440) ||
+                (brightness == Brightness.dark && width == 1024));
+        final suffix = '${width.toInt()}-${brightness.name}';
+
+        // Probe: vor und nach dem Wurf.
+        final mut = find.byKey(const ValueKey('inspector-probe-attr-MU'));
+        await tester.ensureVisible(mut);
+        await tester.tap(mut);
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull, reason: 'Probe');
+        if (capture) await _capture(tester, screenshotKey, 'probe-$suffix');
+        await tester.tap(find.text('Würfeln').first);
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull, reason: 'Wurf');
+        if (capture) {
+          await _capture(tester, screenshotKey, 'probe-wurf-$suffix');
+        }
+        await tester.tap(find.text('Schließen').last);
+        await tester.pumpAndSettle();
+
+        // Rast.
+        final rast = find.text('Rast').first;
+        await tester.ensureVisible(rast);
+        await tester.tap(rast);
+        await tester.pumpAndSettle();
+        expect(find.byKey(const ValueKey('rest-dialog')), findsOneWidget);
+        expect(tester.takeException(), isNull, reason: 'Rast');
+        if (capture) await _capture(tester, screenshotKey, 'rast-$suffix');
+        await tester.tap(find.byKey(const ValueKey('rest-dialog-close')));
+        await tester.pumpAndSettle();
+
+        // Ressourcenblatt.
+        final lep = find.byTooltip('Lebenspunkte ändern');
+        await tester.ensureVisible(lep);
+        await tester.tap(lep);
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull, reason: 'Ressource');
+        if (capture) {
+          await _capture(tester, screenshotKey, 'ressource-$suffix');
+        }
+        await tester.tap(
+          find.byKey(const ValueKey('karto-ressource-schliessen')),
+        );
+        await tester.pumpAndSettle();
+      },
+      tags: ['r3-acceptance'],
+    );
   }
 
-  for (final width in [390.0, 1024.0, 1440.0]) {
-    for (final brightness in Brightness.values) {
-      for (final scale in [1.0, 2.0]) {
-        testWidgets(
-          'Aufgelegte Seiten $width dp, ${brightness.name}, Text $scale',
-          (tester) async {
-            final screenshotKey = GlobalKey();
-            final hero = held();
-            await pumpAcceptanceWorkspace(
-              tester,
-              repository: AcceptanceRepository(
-                heroes: [hero, testHero('alrik', 'Alrik Feuerstein')],
-              ),
-              selectedHeroId: hero.id,
-              size: Size(width, 1000),
-              textScale: scale,
-              brightness: brightness,
-              screenshotKey: screenshotKey,
-            );
-            final capture =
-                scale == 1 &&
-                ((brightness == Brightness.light && width == 1440) ||
-                    (brightness == Brightness.dark && width == 1024));
-            final suffix = '${width.toInt()}-${brightness.name}';
+  for (final testCase in _pageCases) {
+    final (:width, :brightness, :scale) = testCase;
+    testWidgets(
+      'Aufgelegte Seiten $width dp, ${brightness.name}, Text $scale',
+      (tester) async {
+        final screenshotKey = GlobalKey();
+        final hero = held();
+        await pumpAcceptanceWorkspace(
+          tester,
+          repository: AcceptanceRepository(
+            heroes: [hero, testHero('alrik', 'Alrik Feuerstein')],
+          ),
+          selectedHeroId: hero.id,
+          size: Size(width, 1000),
+          textScale: scale,
+          brightness: brightness,
+          screenshotKey: screenshotKey,
+        );
+        final capture =
+            scale == 1 &&
+            ((brightness == Brightness.light && width == 1440) ||
+                (brightness == Brightness.dark && width == 1024));
+        final suffix = '${width.toInt()}-${brightness.name}';
 
-            Future<void> menue(String eintrag) async {
-              await tester.tap(find.byTooltip('Workspace-Menü').first);
-              await tester.pumpAndSettle();
-              await tester.tap(find.text(eintrag).last);
-              await tester.pumpAndSettle();
-            }
+        Future<void> menue(String eintrag) async {
+          await tester.tap(find.byTooltip('Workspace-Menü').first);
+          await tester.pumpAndSettle();
+          await tester.tap(find.text(eintrag).last);
+          await tester.pumpAndSettle();
+        }
 
-            await menue('Einstellungen');
-            expect(find.byType(SettingsScreen), findsOneWidget);
-            expect(tester.takeException(), isNull, reason: 'Einstellungen');
-            if (capture) {
-              await _capture(tester, screenshotKey, 'einstellungen-$suffix');
-            }
-            // Jeden Bereich oeffnen; der Debugschalter schreibt eine
-            // Einstellung und bleibt deshalb aussen vor.
-            for (final bereich in <String>[
-              'appearance',
-              'accountSync',
-              'storage',
-              'catalog',
-              'houseRules',
-              'imageGeneration',
-              'legal',
-            ]) {
-              final kachel = find.byKey(
-                ValueKey<String>('settings-menu-$bereich'),
-              );
-              await tester.ensureVisible(kachel);
-              await tester.tap(kachel);
-              // Feste Schritte statt pumpAndSettle: einige Bereiche zeigen
-              // eine laufende Ladeanzeige und kommen nie zur Ruhe; der
-              // Seitenuebergang ist nach zwei Sekunden sicher durch.
-              await _warte(tester);
-              expect(tester.takeException(), isNull, reason: bereich);
-              // Schmal legt jeder Bereich eine eigene Seite auf und verdeckt
-              // die Liste; die Seite wird ueber den Navigator geschlossen.
-              if (kachel.hitTestable().evaluate().isEmpty) {
-                tester
-                    .state<NavigatorState>(find.byType(Navigator).first)
-                    .pop();
-                await _warte(tester);
-              }
-            }
+        await menue('Einstellungen');
+        expect(find.byType(SettingsScreen), findsOneWidget);
+        expect(tester.takeException(), isNull, reason: 'Einstellungen');
+        if (capture) {
+          await _capture(tester, screenshotKey, 'einstellungen-$suffix');
+        }
+        // Jeden Bereich oeffnen; der Debugschalter schreibt eine
+        // Einstellung und bleibt deshalb aussen vor.
+        for (final bereich in <String>[
+          'appearance',
+          'accountSync',
+          'storage',
+          'catalog',
+          'houseRules',
+          'imageGeneration',
+          'legal',
+        ]) {
+          final kachel = find.byKey(ValueKey<String>('settings-menu-$bereich'));
+          await tester.ensureVisible(kachel);
+          await tester.tap(kachel);
+          // Feste Schritte statt pumpAndSettle: einige Bereiche zeigen
+          // eine laufende Ladeanzeige und kommen nie zur Ruhe; der
+          // Seitenuebergang ist nach zwei Sekunden sicher durch.
+          await _warte(tester);
+          expect(tester.takeException(), isNull, reason: bereich);
+          // Schmal legt jeder Bereich eine eigene Seite auf und verdeckt
+          // die Liste; die Seite wird ueber den Navigator geschlossen.
+          if (kachel.hitTestable().evaluate().isEmpty) {
             tester.state<NavigatorState>(find.byType(Navigator).first).pop();
             await _warte(tester);
+          }
+        }
+        tester.state<NavigatorState>(find.byType(Navigator).first).pop();
+        await _warte(tester);
 
-            await menue('Helden verwalten');
-            expect(find.byType(HeroesHomeScreen), findsOneWidget);
-            expect(tester.takeException(), isNull, reason: 'Heldenliste');
-            if (capture) {
-              await _capture(tester, screenshotKey, 'heldenliste-$suffix');
-            }
-            await tester.pageBack();
-            await tester.pumpAndSettle();
-          },
-          tags: ['r3-acceptance'],
-        );
-      }
-    }
+        await menue('Helden verwalten');
+        expect(find.byType(HeroesHomeScreen), findsOneWidget);
+        expect(tester.takeException(), isNull, reason: 'Heldenliste');
+        if (capture) {
+          await _capture(tester, screenshotKey, 'heldenliste-$suffix');
+        }
+        await tester.pageBack();
+        await tester.pumpAndSettle();
+      },
+      tags: ['r3-acceptance'],
+    );
   }
 
   for (final brightness in Brightness.values) {

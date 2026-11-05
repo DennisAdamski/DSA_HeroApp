@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:dsa_heldenverwaltung/rules/derived/excel_rounding.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
 import 'package:dsa_heldenverwaltung/domain/zustands_buchung.dart';
@@ -139,7 +140,8 @@ int? _zurueckgegebeneLep(HeilEingabe e) {
       return e.asp;
     case kHexenspeichelZauberId:
       return switch (e.schaden) {
-        HeilSchaden.wunde => e.asp ~/ 2,
+        // 1 LeP je 2 AsP, echt gerundet (7 AsP -> 3,5 -> 4 LeP).
+        HeilSchaden.wunde => halbiertAufgerundet(e.asp),
         HeilSchaden.krankheit => e.asp,
         HeilSchaden.vergiftung => 2 * e.asp,
       };
@@ -201,10 +203,9 @@ HeilPruefung pruefeHeilung(
       );
     }
     if (eingabe.schaden == HeilSchaden.wunde && eingabe.asp.isOdd) {
-      fehler.add(
-        'Bei Wunden gibt es 1 LeP je 2 AsP; für eine ungerade Zahl ist die '
-        'Rundung im Regelwerk nicht festgelegt. Bitte eine gerade Zahl AsP '
-        'einsetzen.',
+      hinweise.add(
+        'Bei Wunden gibt es 1 LeP je 2 AsP; die ungerade Zahl wird '
+        'aufgerundet (allgemeine Rundungsregel).',
       );
     }
     if (eingabe.selbstGewirkt) {
