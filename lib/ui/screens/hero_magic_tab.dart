@@ -57,6 +57,7 @@ import 'package:dsa_heldenverwaltung/ui/widgets/erwerb_dialog.dart';
 import 'package:uuid/uuid.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_begabung_rules.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/begabung_haekchen.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/string_normalize.dart';
 
 part 'hero_magic/magic_active_spells_table.dart';
 part 'hero_magic/magic_artefakt_zauber_section.dart';

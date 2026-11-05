@@ -80,7 +80,7 @@ class _TalentCatalogTableState extends State<_TalentCatalogTable> {
     if (_searchQuery.isNotEmpty) {
       final needle = _searchQuery.toLowerCase();
       talents = talents
-          .where((t) => t.name.toLowerCase().contains(needle))
+          .where((t) => passtZurSuche(t.name, needle))
           .toList(growable: false);
     }
     return talents;

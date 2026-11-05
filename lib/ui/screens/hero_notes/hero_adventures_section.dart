@@ -1024,8 +1024,8 @@ class _EditableAdventureSeRewardCard extends StatelessWidget {
                 final query = value.text.toLowerCase();
                 return targetOptions.where(
                   (o) =>
-                      o.label.toLowerCase().contains(query) ||
-                      o.id.toLowerCase().contains(query),
+                      passtZurSuche(o.label, query) ||
+                      passtZurSuche(o.id, query),
                 );
               },
               onSelected: rewardLocked

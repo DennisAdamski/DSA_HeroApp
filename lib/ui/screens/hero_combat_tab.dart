@@ -66,6 +66,7 @@ import 'package:dsa_heldenverwaltung/ui/widgets/karto_variante.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/requirement_checklist.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_begabung_rules.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/begabung_haekchen.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/string_normalize.dart';
 
 part 'hero_combat/hero_combat_talents_subtab.dart';
 part 'hero_combat/combat_talent_catalog_table.dart';

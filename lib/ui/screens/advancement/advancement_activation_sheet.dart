@@ -12,6 +12,7 @@ import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/config/ui_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/advancement/advancement_option_card.dart';
 import 'package:dsa_heldenverwaltung/ui/theme/codex_theme.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/string_normalize.dart';
 
 /// Auswahlblatt für Katalogeinträge, die der Held noch nicht führt.
 ///
@@ -159,7 +160,7 @@ class _AdvancementActivationSheetState
             return false;
           }
           if (!filter.matches(option)) return false;
-          return option.label.toLowerCase().contains(query);
+          return passtZurSuche(option.label, query);
         }).toList()..sort(
           (a, b) => a.label.toLowerCase().compareTo(b.label.toLowerCase()),
         );

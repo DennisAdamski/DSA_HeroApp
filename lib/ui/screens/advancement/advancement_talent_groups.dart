@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_advancement_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/validation/combat_talent_validation.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/advancement_options.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/string_normalize.dart';
 
 /// Darstellung einer Katalog-Gruppe in Sprungleiste und Abschnittskopf. Talente
 /// und Sonderfertigkeiten teilen sich dieselben Bausteine.
@@ -60,13 +62,6 @@ enum TalentGruppe implements GruppenAnzeige {
       helligkeit == Brightness.dark ? _dunkel : _hell;
 }
 
-String _normalisiert(String text) => text
-    .toLowerCase()
-    .replaceAll('ä', 'ae')
-    .replaceAll('ö', 'oe')
-    .replaceAll('ü', 'ue')
-    .replaceAll('ß', 'ss');
-
 /// Ordnet einen Katalogeintrag seiner Talentgruppe zu.
 ///
 /// Sprachen und Schriften haben eigene Arten; Talente folgen der Gruppe ihrer
@@ -90,13 +85,9 @@ TalentGruppe talentGruppeFuer(AdvancementOption option, RulesCatalog catalog) {
 
 /// Ordnet eine Talentdefinition ihrer Gruppe zu.
 TalentGruppe talentGruppeFuerDefinition(TalentDef def) {
-  final gruppe = _normalisiert(def.group);
-  if (gruppe.contains('kampf') ||
-      def.weaponCategory.isNotEmpty ||
-      def.type == 'nahkampf' ||
-      def.type == 'fernkampf') {
-    return TalentGruppe.kampf;
-  }
+  // Dieselbe Erkennung wie Talente- und Kampf-Tab.
+  if (isCombatTalentDef(def)) return TalentGruppe.kampf;
+  final gruppe = normalizeCombatToken(def.group);
   if (gruppe.contains('koerper')) return TalentGruppe.koerper;
   if (gruppe.contains('gesellschaft')) return TalentGruppe.gesellschaft;
   if (gruppe.contains('natur')) return TalentGruppe.natur;

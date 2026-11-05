@@ -16,4 +16,18 @@ void main() {
       expect(suchFaltung('  Alte Brücke '), 'alte brucke');
     });
   });
+
+  group('passtZurSuche', () {
+    test('findet Teilwörter unabhängig von Umlaut-Schreibweise', () {
+      expect(passtZurSuche('Fährtensuchen', 'faehrten'), isTrue);
+      expect(passtZurSuche('Faehrtensuchen', 'FÄHRTEN'), isTrue);
+      expect(passtZurSuche('Kräuter Suchen', ' kräuter '), isTrue);
+      expect(passtZurSuche('Schwerter', 'axt'), isFalse);
+    });
+
+    test('leere Anfrage passt immer', () {
+      expect(passtZurSuche('Dolche', ''), isTrue);
+      expect(passtZurSuche('Dolche', '   '), isTrue);
+    });
+  });
 }

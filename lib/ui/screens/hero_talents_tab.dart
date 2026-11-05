@@ -59,6 +59,7 @@ import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/karto_variante.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_begabung_rules.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/begabung_haekchen.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/string_normalize.dart';
 
 part 'hero_talents/hero_talents_cells.dart';
 part 'hero_talents/hero_talents_edit_actions.dart';
@@ -389,10 +390,7 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
                     final talents = filterQuery.isEmpty
                         ? allGroupTalents
                         : allGroupTalents
-                              .where(
-                                (t) =>
-                                    t.name.toLowerCase().contains(filterQuery),
-                              )
+                              .where((t) => passtZurSuche(t.name, filterQuery))
                               .toList(growable: false);
                     if (talents.isEmpty) return const <Widget>[];
                     final isCollapsed = _collapsedGroups.contains(group);
@@ -446,9 +444,7 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
                           ? _draftMetaTalents
                           : _draftMetaTalents
                                 .where(
-                                  (m) => m.name.toLowerCase().contains(
-                                    filterQuery,
-                                  ),
+                                  (m) => passtZurSuche(m.name, filterQuery),
                                 )
                                 .toList(growable: false);
                       if (visibleMeta.isEmpty) {

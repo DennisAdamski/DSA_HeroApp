@@ -9,6 +9,7 @@ import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/protected_content_helpers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/held_katalog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/planung_bearbeiten_guard.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/string_normalize.dart';
 
 /// Fragt einen in ein Artefakt gesprochenen Zauber ab.
 ///
@@ -311,7 +312,7 @@ class _ArtefaktZauberDialogState extends ConsumerState<_ArtefaktZauberDialog> {
     final treffer = katalog == null || suchtext.isEmpty
         ? const <SpellDef>[]
         : katalog.spells
-              .where((s) => s.name.toLowerCase().contains(suchtext))
+              .where((s) => passtZurSuche(s.name, suchtext))
               .take(6)
               .toList(growable: false);
     return AlertDialog(

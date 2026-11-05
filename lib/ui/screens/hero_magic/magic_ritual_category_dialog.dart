@@ -112,7 +112,7 @@ class _RitualCategoryDialogState extends State<_RitualCategoryDialog> {
     }
     final needle = _talentSearch.toLowerCase();
     return sorted
-        .where((talent) => talent.name.toLowerCase().contains(needle))
+        .where((talent) => passtZurSuche(talent.name, needle))
         .toList(growable: false);
   }
 

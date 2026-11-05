@@ -5,6 +5,7 @@ import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/held_katalog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/planung_bearbeiten_guard.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/string_normalize.dart';
 
 /// Displaynamen fuer Stat-Modifikator-Felder.
 const Map<String, String> kStatFieldLabels = {
@@ -383,7 +384,7 @@ class _ModifierRowState extends ConsumerState<_ModifierRow> {
           optionsBuilder: (value) {
             if (value.text.isEmpty) return talents;
             final query = value.text.toLowerCase();
-            return talents.where((t) => t.name.toLowerCase().contains(query));
+            return talents.where((t) => passtZurSuche(t.name, query));
           },
           onSelected: (t) => _emit(targetId: t.id),
           fieldViewBuilder: (context, ctrl, focusNode, onSubmitted) {

@@ -16,6 +16,7 @@ import 'package:dsa_heldenverwaltung/ui/screens/shared/special_ability_details_d
 import 'package:dsa_heldenverwaltung/ui/screens/shared/special_ability_variant_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/erwerb_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/karto_variante.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/string_normalize.dart';
 
 /// Oeffnet einen durchsuchbaren Katalog-Browser fuer allgemeine, karmale
 /// oder magische Sonderfertigkeiten (analog zum Chip-Raster im Kampf-Tab).
@@ -279,7 +280,7 @@ class _SpecialAbilityPickerScreenState
     }).toList();
     final filtered = query.isEmpty
         ? visible
-        : visible.where((a) => a.name.toLowerCase().contains(query)).toList();
+        : visible.where((a) => passtZurSuche(a.name, query)).toList();
     final grouped = <String, List<SpecialAbilityDef>>{};
     for (final ability in filtered) {
       final key = ability.kategorie.trim().isEmpty

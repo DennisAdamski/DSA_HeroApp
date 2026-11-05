@@ -26,6 +26,7 @@ import 'advancement_specialization_dialog.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/advancement_specialization_rules.dart';
 
 import 'package:dsa_heldenverwaltung/ui/theme/codex_theme.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/string_normalize.dart';
 
 /// Durchsuchbarer Steigerungskatalog auf Basis der ungespeicherten Vorschau.
 // Eine Listenzeile bleibt immer sichtbar; darunter wäre der Katalog nur
@@ -284,8 +285,7 @@ class _AdvancementCatalogState extends ConsumerState<AdvancementCatalog> {
       )),
     );
     final filtered = options.where((option) {
-      return abschnitt.matches(option) &&
-          option.label.toLowerCase().contains(query);
+      return abschnitt.matches(option) && passtZurSuche(option.label, query);
     }).toList();
     final plannedTargets = <String>{
       for (final entry in session.entries)

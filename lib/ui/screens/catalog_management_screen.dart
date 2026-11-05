@@ -10,6 +10,7 @@ import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/catalog_entry_editor_screen.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/string_normalize.dart';
 
 /// Einstiegsscreen für die Verwaltung synchronisierbarer Custom-Kataloge.
 class CatalogManagementScreen extends ConsumerWidget {
@@ -292,8 +293,7 @@ class _CatalogSectionScreenState extends ConsumerState<CatalogSectionScreen> {
           if (searchNeedle.isEmpty) {
             return true;
           }
-          final haystack = '${entry.name} ${entry.id}'.trim().toLowerCase();
-          return haystack.contains(searchNeedle);
+          return passtZurSuche('${entry.name} ${entry.id}', searchNeedle);
         })
         .toList(growable: false);
   }

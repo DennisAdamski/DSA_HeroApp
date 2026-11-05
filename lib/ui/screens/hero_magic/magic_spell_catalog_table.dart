@@ -114,7 +114,7 @@ class _MagicSpellCatalogTableState extends State<_MagicSpellCatalogTable> {
     if (_searchQuery.isNotEmpty) {
       final needle = _searchQuery.toLowerCase();
       spells = spells
-          .where((spell) => spell.name.toLowerCase().contains(needle))
+          .where((spell) => passtZurSuche(spell.name, needle))
           .toList(growable: false);
     }
 

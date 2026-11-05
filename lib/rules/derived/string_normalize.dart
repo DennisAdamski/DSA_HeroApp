@@ -29,3 +29,9 @@ String suchFaltung(String text) => text
     .replaceAll('ae', 'a')
     .replaceAll('oe', 'o')
     .replaceAll('ue', 'u');
+
+/// Ob [text] die Suchanfrage [anfrage] enthält, tolerant gegenüber Groß-
+/// und Kleinschreibung, Randleerzeichen und Umlaut-Schreibweisen
+/// (siehe [suchFaltung]). Eine leere Anfrage passt immer.
+bool passtZurSuche(String text, String anfrage) =>
+    suchFaltung(text).contains(suchFaltung(anfrage));

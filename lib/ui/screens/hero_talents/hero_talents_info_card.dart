@@ -696,7 +696,7 @@ class _TalentBeConfigDialogState extends ConsumerState<TalentBeConfigDialog> {
             TextField(
               key: const ValueKey<String>('talents-be-override-field'),
               controller: _overrideController,
-              keyboardType: TextInputType.number,
+              keyboardType: const TextInputType.numberWithOptions(signed: true),
               inputFormatters: <TextInputFormatter>[
                 FilteringTextInputFormatter.allow(RegExp(r'-?[0-9]*')),
               ],

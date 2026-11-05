@@ -23,8 +23,8 @@ extension _HeroOverviewTraitDialogs on _HeroOverviewTabState {
                     trait.costText,
                     trait.source,
                     ...trait.markers,
-                  ].join(' ').toLowerCase();
-                  return haystack.contains(query);
+                  ].join(' ');
+                  return passtZurSuche(haystack, query);
                 })
                 .take(80)
                 .toList(growable: false);

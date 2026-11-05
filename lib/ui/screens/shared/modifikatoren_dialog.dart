@@ -90,6 +90,10 @@ class _ModifikatorenDialogState extends State<_ModifikatorenDialog> {
   // unbekannte Felder beim Speichern erhalten.
   late List<HeroTalentModifier?> _originale;
 
+  // Zeilen mit Wert, aber ohne Beschreibung; sie blockieren das Speichern,
+  // statt still zu verschwinden.
+  Set<int> _fehlendeBeschreibung = <int>{};
+
   String get _p => widget.schluesselPrefix;
 
   @override
@@ -138,9 +142,30 @@ class _ModifikatorenDialogState extends State<_ModifikatorenDialog> {
         _descriptionControllers,
       )..removeAt(index);
       _originale = List<HeroTalentModifier?>.of(_originale)..removeAt(index);
+      _fehlendeBeschreibung = <int>{};
     });
     modifierController.dispose();
     descriptionController.dispose();
+  }
+
+  int _wertAus(int index) =>
+      int.tryParse(_modifierControllers[index].text.trim()) ?? 0;
+
+  /// Speichert, wenn jede Zeile mit Wert eine Beschreibung hat. Leere Zeilen
+  /// (Wert 0, keine Beschreibung) fallen weg; eine Zeile mit Wert ohne
+  /// Beschreibung wird markiert, statt den Wert still zu verwerfen.
+  void _speichern() {
+    final fehlend = <int>{
+      for (var index = 0; index < _descriptionControllers.length; index++)
+        if (_descriptionControllers[index].text.trim().isEmpty &&
+            _wertAus(index) != 0)
+          index,
+    };
+    if (fehlend.isNotEmpty) {
+      setState(() => _fehlendeBeschreibung = fehlend);
+      return;
+    }
+    Navigator.of(context).pop(_buildModifiers());
   }
 
   List<HeroTalentModifier> _buildModifiers() {
@@ -150,8 +175,7 @@ class _ModifikatorenDialogState extends State<_ModifikatorenDialog> {
       if (description.isEmpty) {
         continue;
       }
-      final modifier =
-          int.tryParse(_modifierControllers[index].text.trim()) ?? 0;
+      final modifier = _wertAus(index);
       final original = _originale[index];
       modifiers.add(
         original == null
@@ -177,7 +201,10 @@ class _ModifikatorenDialogState extends State<_ModifikatorenDialog> {
               child: TextField(
                 key: ValueKey<String>('$_p-modifier-value-$index'),
                 controller: _modifierControllers[index],
-                keyboardType: TextInputType.number,
+                // Mit Vorzeichen: die reine Zifferntastatur (iOS) hat kein Minus.
+                keyboardType: const TextInputType.numberWithOptions(
+                  signed: true,
+                ),
                 inputFormatters: <TextInputFormatter>[
                   FilteringTextInputFormatter.allow(RegExp(r'-?\d*')),
                 ],
@@ -196,10 +223,18 @@ class _ModifikatorenDialogState extends State<_ModifikatorenDialog> {
                 inputFormatters: <TextInputFormatter>[
                   LengthLimitingTextInputFormatter(60),
                 ],
+                onChanged: (_) {
+                  if (_fehlendeBeschreibung.contains(index)) {
+                    setState(() => _fehlendeBeschreibung.remove(index));
+                  }
+                },
                 decoration: InputDecoration(
                   border: const OutlineInputBorder(),
                   isDense: true,
                   labelText: 'Beschreibung ${index + 1}',
+                  errorText: _fehlendeBeschreibung.contains(index)
+                      ? 'Beschreibung fehlt'
+                      : null,
                 ),
               ),
             ),
@@ -285,7 +320,7 @@ class _ModifikatorenDialogState extends State<_ModifikatorenDialog> {
         ),
         FilledButton(
           key: ValueKey<String>('$_p-modifiers-save'),
-          onPressed: () => Navigator.of(context).pop(_buildModifiers()),
+          onPressed: _speichern,
           child: const Text('Speichern'),
         ),
       ],

@@ -13,7 +13,7 @@ extension _HeroTalentsGrouping on _HeroTalentTableTabState {
   }
 
   int _groupPriority(String group) {
-    final normalized = _normalizeGroupToken(group);
+    final normalized = normalizeCombatToken(group);
     if (normalized == 'koerperlichetalente' ||
         normalized == 'korperlichetalente') {
       return 0;
@@ -31,16 +31,6 @@ extension _HeroTalentsGrouping on _HeroTalentTableTabState {
       return 4;
     }
     return 99;
-  }
-
-  String _normalizeGroupToken(String raw) {
-    var text = raw.toLowerCase().trim();
-    text = text
-        .replaceAll(String.fromCharCode(228), 'ae')
-        .replaceAll(String.fromCharCode(246), 'oe')
-        .replaceAll(String.fromCharCode(252), 'ue')
-        .replaceAll(String.fromCharCode(223), 'ss');
-    return text.replaceAll(RegExp(r'[^a-z]'), '');
   }
 
   Map<String, List<TalentDef>> _groupTalents(List<TalentDef> talents) {
