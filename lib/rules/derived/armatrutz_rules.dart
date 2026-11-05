@@ -1,3 +1,4 @@
+import 'package:dsa_heldenverwaltung/rules/derived/excel_rounding.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/active_spell_rules.dart';
@@ -38,8 +39,7 @@ int? armatrutzRsGrenze({required HeroSheet sheet}) {
   if (zfw == null) {
     return null;
   }
-  final normalisiert = zfw < 0 ? 0 : zfw;
-  return (normalisiert + 1) ~/ 2;
+  return halbiertAufgerundet(zfw);
 }
 
 /// Der wirksame zusaetzliche RS: [gespeichert], hoechstens [grenze].
@@ -120,7 +120,8 @@ String describeArmatrutzWert({
 int computeArmatrutzAspCost({required int rsBonus, int zfpStar = 0}) {
   final normalizedRs = rsBonus < 0 ? 0 : rsBonus;
   final normalizedZfp = zfpStar < 0 ? 0 : zfpStar;
-  final rawCost = normalizedRs * normalizedRs - (normalizedZfp + 1) ~/ 2;
+  final rawCost =
+      normalizedRs * normalizedRs - halbiertAufgerundet(normalizedZfp);
   return rawCost < kArmatrutzMinAspCost ? kArmatrutzMinAspCost : rawCost;
 }
 

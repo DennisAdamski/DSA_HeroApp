@@ -4216,6 +4216,13 @@
         }
       ]
     },
+    "test/rules/derived/excel_rounding_test.dart": {
+      "kind": "product_contract",
+      "status": "verified",
+      "summary": "Die Datei sichert die zentralen Rundungshelfer ab: halbiertAufgerundet halbiert und rundet auf (Werte bis 0 ergeben 0), echtGerundet rundet einen Bruch ab ,5 weg von 0, auch für negative Zähler.",
+      "rationale": "Technischer Vertrag der Hilfsfunktionen; die Rundungsregel selbst (Wege der Helden S. 6) belegen die Regeltests der aufrufenden Regeln. Eine eigene Quellenprüfung ist für die Arithmetik nicht anwendbar.",
+      "sources": []
+    },
     "test/rules/derived/reiseroute_rules_test.dart": {
       "kind": "product_contract",
       "status": "verified",

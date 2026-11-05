@@ -1,3 +1,4 @@
+import 'package:dsa_heldenverwaltung/rules/derived/excel_rounding.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 
 /// Liefert die fachliche Zukauf-Grenze fuer kaufbare Grundwerte.
@@ -10,9 +11,9 @@ int? computeBoughtStatMaximum({
 }) {
   return switch (statKey) {
     // Halbierungen werden aufgerundet (Wege der Helden S. 6).
-    'lep' => (permanentAttributes.ko + 1) ~/ 2,
+    'lep' => halbiertAufgerundet(permanentAttributes.ko),
     'au' => permanentAttributes.ko,
-    'mr' => (permanentAttributes.mu + 1) ~/ 2,
+    'mr' => halbiertAufgerundet(permanentAttributes.mu),
     // Zugekaufte Astralpunkte hoechstens in Hoehe des CH-Werts
     // (Basisregelwerk S. 207). Karmaenergie hat keine Regelgrenze.
     'asp' => permanentAttributes.ch,

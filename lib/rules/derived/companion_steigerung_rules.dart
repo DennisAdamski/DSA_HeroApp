@@ -10,6 +10,7 @@ library;
 
 import 'dart:math' as math;
 
+import 'package:dsa_heldenverwaltung/rules/derived/excel_rounding.dart';
 import 'package:dsa_heldenverwaltung/domain/learn/learn_complexity.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_companion/hero_companion.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_companion/hero_companion_attack.dart';
@@ -26,7 +27,7 @@ int companionApVerfuegbar(HeroCompanion c) =>
 /// echt gerundet (Wege der Helden S. 6; wie bei den Eigenschaften des Helden
 /// ergibt 1,5 x 7 = 10,5 den Wert 11).
 int vertrautenGrenze(int startwert) =>
-    startwert <= 0 ? startwert : (startwert * 3 + 1) ~/ 2;
+    startwert <= 0 ? startwert : echtGerundet(startwert * 3, 2);
 
 /// Hoechster Steigerungsstand ueber dem Startwert [startwert].
 int vertrautenMaxStandUeber(int startwert) =>

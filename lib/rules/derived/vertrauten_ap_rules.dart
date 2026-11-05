@@ -12,6 +12,7 @@
 
 import 'dart:math' as math;
 
+import 'package:dsa_heldenverwaltung/rules/derived/excel_rounding.dart';
 import 'package:dsa_heldenverwaltung/catalog/vertrauten_katalog.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_companion.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
@@ -20,10 +21,8 @@ import 'package:dsa_heldenverwaltung/rules/derived/begleiter_aenderung_rules.dar
 
 /// Anteil des Vertrauten an [abenteuerAp] Abenteuer-AP der Hexe, echt gerundet
 /// (ab ,5 auf; 6 AP ergeben 2, 5 AP ergeben 1).
-int vertrautenApAnteil(int abenteuerAp) => abenteuerAp <= 0
-    ? 0
-    : (abenteuerAp + kVertrautenApAnteilNenner ~/ 2) ~/
-          kVertrautenApAnteilNenner;
+int vertrautenApAnteil(int abenteuerAp) =>
+    abenteuerAp <= 0 ? 0 : echtGerundet(abenteuerAp, kVertrautenApAnteilNenner);
 
 /// Verteilt eine Änderung der Abenteuer-AP der Hexe um [deltaAbenteuerAp]
 /// auf alle Vertrauten mit eingerichtetem Anteil.

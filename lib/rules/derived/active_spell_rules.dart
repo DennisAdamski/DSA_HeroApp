@@ -1,3 +1,4 @@
+import 'package:dsa_heldenverwaltung/rules/derived/excel_rounding.dart';
 import 'package:dsa_heldenverwaltung/domain/attribute_modifiers.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
@@ -39,7 +40,7 @@ const String activeSpellEffectAttributo = 'effect_spell_attributo';
 /// ergibt 0. Negative ZfP* zählen als 0. Nur ein Vorschlag für die Eingabe,
 /// gespeichert wird der eingetragene Bonus.
 int attributoBonusAusZfp(int zfpStern) =>
-    zfpStern <= 0 ? 0 : (zfpStern + 1) ~/ 3;
+    zfpStern <= 0 ? 0 : echtGerundet(zfpStern, 3);
 
 /// Effekt-ID fuer den laufenden Armatrutz.
 const String activeSpellEffectArmatrutz = 'effect_spell_armatrutz';

@@ -1,3 +1,4 @@
+import 'package:dsa_heldenverwaltung/rules/derived/excel_rounding.dart';
 import 'package:dsa_heldenverwaltung/domain/artefakt_daten.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
@@ -69,7 +70,7 @@ AuxiliatorBerechnung berechneAuxiliatorBonus({
   var wirksam = gespeicherteZfp;
   var halbiert = false;
   if (!gleicheRepraesentation) {
-    wirksam = (wirksam + 1) ~/ 2;
+    wirksam = halbiertAufgerundet(wirksam);
     halbiert = true;
   }
   if (anwenderZfw == null) {

@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:dsa_heldenverwaltung/rules/derived/excel_rounding.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
 import 'package:dsa_heldenverwaltung/domain/zustands_buchung.dart';
@@ -140,7 +141,7 @@ int? _zurueckgegebeneLep(HeilEingabe e) {
     case kHexenspeichelZauberId:
       return switch (e.schaden) {
         // 1 LeP je 2 AsP, echt gerundet (7 AsP -> 3,5 -> 4 LeP).
-        HeilSchaden.wunde => (e.asp + 1) ~/ 2,
+        HeilSchaden.wunde => halbiertAufgerundet(e.asp),
         HeilSchaden.krankheit => e.asp,
         HeilSchaden.vergiftung => 2 * e.asp,
       };
