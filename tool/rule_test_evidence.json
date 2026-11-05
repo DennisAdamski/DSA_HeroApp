@@ -4230,6 +4230,13 @@
       "rationale": "Beide Testgruppen und lib/rules/derived/standort_rules.dart gelesen: Zeichenkettenbereinigung und URL-Bau für einen externen Kartendienst. Ortsnamen (‚Gareth‘, ‚Bad Garetz Süd‘) sind Eingabebeispiele ohne Regelbehauptung; das Regelwerk trifft zu Anzeigetext und Link-Format keine Aussage.",
       "sources": []
     },
+    "test/rules/derived/string_normalize_test.dart": {
+      "kind": "product_contract",
+      "status": "verified",
+      "summary": "Die Datei sichert die gemeinsame Suchfaltung suchFaltung ab: Umlaut, Umschreibung mit e und Grundbuchstabe fallen zusammen (Betäubung/Betaeubung/Betaubung), ß wird ss, Randleerzeichen entfallen, innere bleiben.",
+      "rationale": "Reine Textnormalisierung für die Suchen der App (Probensuche, Kurzregeln, Abenteuer); sie trifft keine Regelaussage, eine Quellenprüfung gegen das Buch ist nicht anwendbar.",
+      "sources": []
+    },
     "test/rules/derived_stats_test.dart": {
       "kind": "official",
       "status": "conflict",

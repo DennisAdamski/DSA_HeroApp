@@ -9,6 +9,7 @@ import 'package:dsa_heldenverwaltung/domain/dice_log_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_proben_favorit.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/string_normalize.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/probe_request_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/proben_favoriten_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/talent_probe_rules.dart';
@@ -631,13 +632,7 @@ List<ProbeQuickSearchCandidate> _buildSpellCandidates({
   return candidates;
 }
 
-/// Normalisiert Suchtokens für robuste, umlaut-tolerante Vergleiche.
-String _normalizeSearchToken(String raw) {
-  var text = raw.toLowerCase().trim();
-  text = text
-      .replaceAll('ä', 'ae')
-      .replaceAll('ö', 'oe')
-      .replaceAll('ü', 'ue')
-      .replaceAll('ß', 'ss');
-  return text.replaceAll(RegExp(r'[^a-z0-9]'), '');
-}
+/// Normalisiert Suchtokens für robuste, umlaut-tolerante Vergleiche: dieselbe
+/// Faltung wie alle Suchen ([suchFaltung]), dazu ohne Leer- und Satzzeichen.
+String _normalizeSearchToken(String raw) =>
+    suchFaltung(raw).replaceAll(RegExp(r'[^a-z0-9]'), '');

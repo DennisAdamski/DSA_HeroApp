@@ -44,6 +44,10 @@ void main() {
     expect(ids(sucheKurzregeln(alle, 'BETÄUBUNG')), ['a', 'b']);
   });
 
+  test('Umschreibung mit e findet wie in der Probensuche (REV-08)', () {
+    expect(ids(sucheKurzregeln(alle, 'Betaeubung')), ['a', 'b']);
+  });
+
   test('Titeltreffer stehen vor Textreffern', () {
     expect(ids(sucheKurzregeln(alle, 'betäubung')), ['a', 'b']);
   });

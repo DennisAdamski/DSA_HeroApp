@@ -483,7 +483,7 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   im Blatt, Suchfeld darunter. `sucheInAbenteuern` durchsucht Titel/Text/Ort/Datum
   der Notizen und Name/Beschreibung/Ort/Datum der Personen **aller** Abenteuer
   des Helden; jedes Wort muss vorkommen, Umlaute und Groß-/Kleinschreibung gelten
-  nicht (`vergleichsschluessel`, wie die Sortierung; „ö“ wird „o“, nicht „oe“).
+  nicht (`vergleichsschluessel` = `suchFaltung` aus `string_normalize.dart`, dieselbe Faltung wie Probensuche und Kurzregeln: „ö“, „oe“ und „o“ fallen zusammen).
   Das Abenteuer, von dem aus gesucht wird, steht vorn (im Abschnitt das
   laufende, im Blatt das gezeigte), die übrigen mit dem zuletzt angelegten
   zuerst; Treffer folgen der gewählten Sortierung. Mit Suchtext ersetzen die

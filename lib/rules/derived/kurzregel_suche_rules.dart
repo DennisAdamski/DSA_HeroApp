@@ -1,17 +1,5 @@
 import 'package:dsa_heldenverwaltung/catalog/kurzregel_def.dart';
-
-/// Faltet Text fuer die tolerante Suche: Kleinschreibung ohne Umlaut-Zeichen.
-///
-/// „Betäubung“ und „Betaubung“ sollen sich gegenseitig finden, weil am
-/// Spieltisch oft ohne Umlaute getippt wird.
-String kurzregelSuchtext(String text) {
-  return text
-      .toLowerCase()
-      .replaceAll('ä', 'a')
-      .replaceAll('ö', 'o')
-      .replaceAll('ü', 'u')
-      .replaceAll('ß', 'ss');
-}
+import 'package:dsa_heldenverwaltung/rules/derived/string_normalize.dart';
 
 /// Filtert und ordnet Kurzregeln nach [anfrage] und optionalem [thema].
 ///
@@ -25,7 +13,7 @@ List<KurzregelDef> sucheKurzregeln(
   String anfrage, {
   String? thema,
 }) {
-  final woerter = kurzregelSuchtext(anfrage)
+  final woerter = suchFaltung(anfrage)
       .split(RegExp(r'\s+'))
       .where((wort) => wort.isNotEmpty)
       .toList(growable: false);
@@ -53,10 +41,10 @@ List<KurzregelDef> sucheKurzregeln(
 
 /// Summe der Wortwerte oder 0, wenn ein Suchwort nirgends vorkommt.
 int _bewerte(KurzregelDef eintrag, List<String> woerter) {
-  final titel = kurzregelSuchtext(eintrag.titel);
-  final schlagworte = kurzregelSuchtext(eintrag.schlagworte.join(' '));
-  final themaLabel = kurzregelSuchtext(kurzregelThemaLabel(eintrag.thema));
-  final text = kurzregelSuchtext(
+  final titel = suchFaltung(eintrag.titel);
+  final schlagworte = suchFaltung(eintrag.schlagworte.join(' '));
+  final themaLabel = suchFaltung(kurzregelThemaLabel(eintrag.thema));
+  final text = suchFaltung(
     [eintrag.kurztext, ...eintrag.hinweise, eintrag.hausregelText].join(' '),
   );
   var summe = 0;
