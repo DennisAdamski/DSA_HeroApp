@@ -1,6 +1,6 @@
-import 'dart:convert';
-
 import 'package:http/http.dart' as http;
+
+import 'package:dsa_heldenverwaltung/data/cloud_function_transport.dart';
 
 /// Abstraktion für das serverseitige Ausstellen eines Registrierungstickets.
 abstract interface class RegistrationInviteGateway {
@@ -15,7 +15,11 @@ class RegistrationInviteClient implements RegistrationInviteGateway {
     required this.endpoint,
     required this.appCheckTokenProvider,
     http.Client? httpClient,
-  }) : _http = httpClient ?? http.Client();
+  }) : _transport = CloudFunctionTransport(
+         endpoint: endpoint,
+         appCheckTokenProvider: appCheckTokenProvider,
+         httpClient: httpClient,
+       );
 
   /// Basis-URL der Registration-Invite-Function.
   final Uri endpoint;
@@ -23,43 +27,30 @@ class RegistrationInviteClient implements RegistrationInviteGateway {
   /// Liefert unmittelbar vor dem Aufruf einen frischen App-Check-Token.
   final Future<String?> Function() appCheckTokenProvider;
 
-  final http.Client _http;
+  final CloudFunctionTransport _transport;
 
   @override
   Future<void> issueTicket({
     required String email,
     required String keyword,
   }) async {
-    final appCheckToken = await appCheckTokenProvider();
-    if (appCheckToken == null || appCheckToken.trim().isEmpty) {
+    final http.Response response;
+    try {
+      response = await _transport.postJson(_transport.route('tickets'), {
+        'email': email.trim(),
+        'keyword': keyword,
+      });
+    } on CloudFunctionTokenFehlt {
       throw const RegistrationInviteException('APP_CHECK_REQUIRED');
     }
-    final response = await _http.post(
-      _route('tickets'),
-      headers: {
-        'content-type': 'application/json',
-        'x-firebase-appcheck': appCheckToken.trim(),
-      },
-      body: jsonEncode({'email': email.trim(), 'keyword': keyword}),
-    );
     if (response.statusCode == 204) {
       return;
     }
-    var code = 'SERVICE_UNAVAILABLE';
-    try {
-      final body = jsonDecode(response.body) as Map<String, dynamic>;
-      code = body['code'] as String? ?? code;
-    } on Object {
-      // Nicht vertrauenswürdige Serverantworten werden nicht an die UI gereicht.
-    }
+    // Nicht vertrauenswürdige Serverantworten werden nicht an die UI gereicht.
+    final code =
+        CloudFunctionTransport.leseJson(response.body)?['code'] as String? ??
+        'SERVICE_UNAVAILABLE';
     throw RegistrationInviteException(code, statusCode: response.statusCode);
-  }
-
-  Uri _route(String child) {
-    final base = endpoint.path.endsWith('/')
-        ? endpoint.path.substring(0, endpoint.path.length - 1)
-        : endpoint.path;
-    return endpoint.replace(path: '$base/$child');
   }
 }
 

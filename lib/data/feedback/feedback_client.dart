@@ -1,8 +1,8 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
+import 'package:dsa_heldenverwaltung/data/cloud_function_transport.dart';
 import 'package:dsa_heldenverwaltung/domain/feedback/feedback_result.dart';
 import 'package:dsa_heldenverwaltung/domain/feedback/feedback_submission.dart';
 
@@ -24,7 +24,13 @@ class FeedbackClient implements FeedbackGateway {
     required this.appCheckTokenProvider,
     http.Client? httpClient,
     this.timeout = const Duration(seconds: 12),
-  }) : _http = httpClient ?? http.Client();
+  }) : _transport = CloudFunctionTransport(
+         endpoint: endpoint,
+         idTokenProvider: idTokenProvider,
+         appCheckTokenProvider: appCheckTokenProvider,
+         httpClient: httpClient,
+         timeout: timeout,
+       );
 
   /// Basis-URL genau eines serverseitig festgelegten Zielsystems.
   final Uri endpoint;
@@ -38,24 +44,18 @@ class FeedbackClient implements FeedbackGateway {
   /// Maximale Wartezeit; ein Ablauf gilt wegen möglicher Erstellung als unklar.
   final Duration timeout;
 
-  final http.Client _http;
+  final CloudFunctionTransport _transport;
 
   /// Sendet eine Meldung genau einmal; Transportabbrüche werden `uncertain`.
   @override
   Future<FeedbackResult> submit(FeedbackSubmission submission) async {
     try {
-      final tokens = await _requiredTokens();
-      final response = await _http
-          .post(
-            _route('submissions'),
-            headers: <String, String>{
-              'authorization': 'Bearer ${tokens.idToken}',
-              'x-firebase-appcheck': tokens.appCheckToken,
-              'content-type': 'application/json',
-            },
-            body: jsonEncode(submission.toJson()),
-          )
-          .timeout(timeout);
+      final response = await _mitTokenfehler(
+        () => _transport.postJson(
+          _transport.route('submissions'),
+          submission.toJson(),
+        ),
+      );
       return _decode(response);
     } on TimeoutException {
       return FeedbackResult(
@@ -73,17 +73,12 @@ class FeedbackClient implements FeedbackGateway {
   /// Fragt den kontogebundenen Status ab, ohne einen neuen POST auszulösen.
   @override
   Future<FeedbackResult> status(String requestId) async {
-    final tokens = await _requiredTokens();
     try {
-      final response = await _http
-          .get(
-            _route('submissions/${Uri.encodeComponent(requestId)}'),
-            headers: <String, String>{
-              'authorization': 'Bearer ${tokens.idToken}',
-              'x-firebase-appcheck': tokens.appCheckToken,
-            },
-          )
-          .timeout(timeout);
+      final response = await _mitTokenfehler(
+        () => _transport.get(
+          _transport.route('submissions/${Uri.encodeComponent(requestId)}'),
+        ),
+      );
       return _decode(response);
     } on TimeoutException {
       return FeedbackResult(
@@ -98,37 +93,26 @@ class FeedbackClient implements FeedbackGateway {
     }
   }
 
-  Future<_FeedbackTokens> _requiredTokens() async {
-    final idToken = await idTokenProvider();
-    if (idToken == null || idToken.trim().isEmpty) {
-      throw const FeedbackClientException('AUTH_REQUIRED', statusCode: 401);
-    }
-    final appCheckToken = await appCheckTokenProvider();
-    if (appCheckToken == null || appCheckToken.trim().isEmpty) {
-      throw const FeedbackClientException(
-        'APP_CHECK_REQUIRED',
+  // Ein fehlendes Token wird zum Fehlercode des Dienstes; gesendet wurde dann
+  // nichts, die Meldung ist also nicht `uncertain`.
+  Future<http.Response> _mitTokenfehler(
+    Future<http.Response> Function() aufruf,
+  ) async {
+    try {
+      return await aufruf();
+    } on CloudFunctionTokenFehlt catch (fehlt) {
+      throw FeedbackClientException(
+        fehlt.art == CloudFunctionTokenArt.konto
+            ? 'AUTH_REQUIRED'
+            : 'APP_CHECK_REQUIRED',
         statusCode: 401,
       );
     }
-    return _FeedbackTokens(
-      idToken: idToken.trim(),
-      appCheckToken: appCheckToken.trim(),
-    );
-  }
-
-  Uri _route(String child) {
-    final base = endpoint.path.endsWith('/')
-        ? endpoint.path
-        : '${endpoint.path}/';
-    return endpoint.replace(path: '$base$child');
   }
 
   FeedbackResult _decode(http.Response response) {
-    Map<String, dynamic> json;
-    try {
-      final decoded = jsonDecode(response.body);
-      json = (decoded as Map).cast<String, dynamic>();
-    } catch (_) {
+    final json = CloudFunctionTransport.leseJson(response.body);
+    if (json == null) {
       throw FeedbackClientException(
         'INVALID_RESPONSE',
         statusCode: response.statusCode,
@@ -142,13 +126,6 @@ class FeedbackClient implements FeedbackGateway {
     }
     return FeedbackResult.fromJson(json);
   }
-}
-
-class _FeedbackTokens {
-  const _FeedbackTokens({required this.idToken, required this.appCheckToken});
-
-  final String idToken;
-  final String appCheckToken;
 }
 
 /// Stabiler, nutzerlesbar übersetzbarer Fehler des Feedbackdienstes.

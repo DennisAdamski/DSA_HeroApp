@@ -1,8 +1,8 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
+import 'package:dsa_heldenverwaltung/data/cloud_function_transport.dart';
 import 'package:dsa_heldenverwaltung/data/rules_search/rules_index_remote_client.dart';
 
 /// Veroeffentlichte Fassung der Regel-Wissensbasis samt Download-URL.
@@ -50,7 +50,13 @@ class RulesIndexAccessClient implements RulesIndexAccessGateway {
     required this.appCheckTokenProvider,
     http.Client? httpClient,
     this.timeout = const Duration(seconds: 20),
-  }) : _http = httpClient ?? http.Client();
+  }) : _transport = CloudFunctionTransport(
+         endpoint: endpoint,
+         idTokenProvider: idTokenProvider,
+         appCheckTokenProvider: appCheckTokenProvider,
+         httpClient: httpClient,
+         timeout: timeout,
+       );
 
   /// URL der Cloud Function (Build-Konfiguration `RULES_INDEX_API_URL`).
   final Uri endpoint;
@@ -64,38 +70,23 @@ class RulesIndexAccessClient implements RulesIndexAccessGateway {
   /// Maximale Wartezeit auf die Antwort der Function.
   final Duration timeout;
 
-  final http.Client _http;
+  final CloudFunctionTransport _transport;
 
   @override
   Future<RulesIndexRelease> requestAccess({required String proof}) async {
-    final idToken = (await _tokenOrNull(idTokenProvider))?.trim() ?? '';
-    if (idToken.isEmpty) {
-      throw const RulesIndexDownloadException(
-        RulesIndexDownloadErrorKind.unauthorized,
-        'Zum Laden der Wissensbasis bitte anmelden.',
-      );
-    }
-    final appCheck = (await _tokenOrNull(appCheckTokenProvider))?.trim() ?? '';
-    if (appCheck.isEmpty) {
-      throw const RulesIndexDownloadException(
-        RulesIndexDownloadErrorKind.unauthorized,
-        'Die App konnte sich nicht beim Server ausweisen (App Check).',
-      );
-    }
-
     final http.Response response;
     try {
-      response = await _http
-          .post(
-            endpoint,
-            headers: <String, String>{
-              'authorization': 'Bearer $idToken',
-              'x-firebase-appcheck': appCheck,
-              'content-type': 'application/json',
-            },
-            body: jsonEncode(<String, String>{'proof': proof}),
-          )
-          .timeout(timeout);
+      response = await _transport.postJson(
+        _transport.route(''),
+        <String, String>{'proof': proof},
+      );
+    } on CloudFunctionTokenFehlt catch (fehlt) {
+      throw RulesIndexDownloadException(
+        RulesIndexDownloadErrorKind.unauthorized,
+        fehlt.art == CloudFunctionTokenArt.konto
+            ? 'Zum Laden der Wissensbasis bitte anmelden.'
+            : 'Die App konnte sich nicht beim Server ausweisen (App Check).',
+      );
     } on TimeoutException {
       throw const RulesIndexDownloadException(
         RulesIndexDownloadErrorKind.network,
@@ -110,24 +101,8 @@ class RulesIndexAccessClient implements RulesIndexAccessGateway {
     return _decode(response);
   }
 
-  // Ein fehlendes Konto liefert `null`, ein Fehler beim Holen gilt als
-  // fehlendes Token; beides endet in einer verstaendlichen Meldung.
-  Future<String?> _tokenOrNull(Future<String?> Function() provider) async {
-    try {
-      return await provider();
-    } on Object {
-      return null;
-    }
-  }
-
   RulesIndexRelease _decode(http.Response response) {
-    Map<String, dynamic>? json;
-    try {
-      final decoded = jsonDecode(response.body);
-      if (decoded is Map) json = decoded.cast<String, dynamic>();
-    } on Object {
-      json = null;
-    }
+    final json = CloudFunctionTransport.leseJson(response.body);
     final code = json?['code'] as String?;
     switch (response.statusCode) {
       case 200:
