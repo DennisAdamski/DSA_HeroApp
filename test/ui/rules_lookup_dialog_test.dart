@@ -61,6 +61,8 @@ void main() {
       serverUrl: 'https://regeln.example/index.sqlite',
     );
 
+    late _Settings repo;
+
     Future<_Sync> zeige(
       WidgetTester tester, {
       RulesIndexRemoteConfig config = const RulesIndexRemoteConfig(),
@@ -68,7 +70,7 @@ void main() {
       Object? syncFehler,
     }) async {
       final sync = _Sync(index: index, fehler: syncFehler);
-      final repo = _Settings();
+      repo = _Settings();
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
@@ -145,6 +147,21 @@ void main() {
       expect(schluessel('rules-lookup-search-field'), findsOneWidget);
       expect(find.text('Vom Server geladen am 20.10.2026'), findsOneWidget);
       expect(schluessel('rules-lookup-sync-icon-button'), findsOneWidget);
+    });
+
+    testWidgets('der Server-Download gibt eine Cloud-Fassung frei (REV-06)', (
+      tester,
+    ) async {
+      await zeige(
+        tester,
+        config: konfiguriert.copyWith(installedVersion: '2026-10-01T00:00:00Z'),
+        index: _LeererIndex(),
+      );
+      await tester.tap(schluessel('rules-lookup-sync-button'));
+      await tester.pumpAndSettle();
+      final gespeichert = repo.settings.rulesIndexRemoteConfig;
+      expect(gespeichert.installedVersion, isEmpty);
+      expect(gespeichert.lastSyncedAt, isNotNull);
     });
   });
 

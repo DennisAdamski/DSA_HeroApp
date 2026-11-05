@@ -302,6 +302,14 @@ class _RulesLookupDialogState extends ConsumerState<RulesLookupDialog>
     final bytes = await file.readAsBytes();
     try {
       final newSearch = await importRulesIndexDatabase(bytes);
+      // Eine von Hand importierte Datei ist keine Cloud-Fassung mehr; der
+      // nächste Cloud-Abgleich darf sie durch die veröffentlichte ersetzen.
+      final config = ref.read(rulesIndexRemoteConfigProvider);
+      if (config.installedVersion.isNotEmpty) {
+        await ref
+            .read(settingsActionsProvider)
+            .saveRulesIndexRemoteConfig(config.copyWith(installedVersion: ''));
+      }
       final oldSearch = _search;
       if (!mounted) {
         newSearch.dispose();
@@ -350,18 +358,25 @@ class _RulesLookupDialogState extends ConsumerState<RulesLookupDialog>
     });
     final config = ref.read(rulesIndexRemoteConfigProvider);
     try {
-      final newSearch = await (widget.syncService ?? RulesIndexSyncService())
-          .syncFromServer(config);
+      // Eigene Variable: als rechte Seite von `??` liest `ref.read` sonst
+      // mit nullbarem Typ.
+      final RulesIndexSyncService dienst = ref.read(
+        rulesIndexSyncServiceProvider,
+      );
+      final newSearch = await (widget.syncService ?? dienst).syncFromServer(
+        config,
+      );
       final oldSearch = _search;
       if (!mounted) {
         newSearch.dispose();
         return;
       }
       oldSearch?.dispose();
+      // Die Datei stammt nicht aus der Cloud: deren Fassung gilt nicht mehr.
       await ref
           .read(settingsActionsProvider)
           .saveRulesIndexRemoteConfig(
-            config.copyWith(lastSyncedAt: DateTime.now()),
+            config.copyWith(lastSyncedAt: DateTime.now(), installedVersion: ''),
           );
       setState(() {
         _search = newSearch;

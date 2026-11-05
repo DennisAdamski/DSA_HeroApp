@@ -101,7 +101,11 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   Zugang, Download der signierten URL (`downloadSigned`, ohne Zugangsdaten),
   bei Bedarf Entpacken (`gunzipIfNeeded`, Web verlaesst sich auf
   `Content-Encoding: gzip`), Pruefung von Groesse und SHA-256, erst dann Import.
-  Die installierte Version steht in `RulesIndexRemoteConfig.installedVersion`.
+  Die installierte Version steht in `RulesIndexRemoteConfig.installedVersion`;
+  WebDAV-Download und Dateiimport schreiben dieselbe Cache-Datei und leeren
+  sie deshalb, damit der Cloud-Abgleich eine fremde Datei nie für die
+  veröffentlichte Fassung hält. Den Dienst gibt es nur über
+  `rulesIndexSyncServiceProvider`.
   Der Dialog zeigt Fortschritt, Fehler (nie still) und oeffnet die Suche selbst,
   sobald `RulesIndexSyncState.revision` steigt. Der NAS-Weg bleibt fuer Builds
   ohne Cloud-URL bestehen. **Nicht geprueft:** der echte Lauf gegen Firebase

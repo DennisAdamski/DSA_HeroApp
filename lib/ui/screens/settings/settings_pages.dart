@@ -1250,12 +1250,15 @@ class _RulesIndexServerCardState extends ConsumerState<_RulesIndexServerCard> {
     setState(() => _syncing = true);
     final config = ref.read(rulesIndexRemoteConfigProvider);
     try {
-      final search = await RulesIndexSyncService().syncFromServer(config);
+      final search = await ref
+          .read(rulesIndexSyncServiceProvider)
+          .syncFromServer(config);
       search.dispose();
+      // Die Datei stammt nicht aus der Cloud: deren Fassung gilt nicht mehr.
       await ref
           .read(settingsActionsProvider)
           .saveRulesIndexRemoteConfig(
-            config.copyWith(lastSyncedAt: DateTime.now()),
+            config.copyWith(lastSyncedAt: DateTime.now(), installedVersion: ''),
           );
       if (!mounted) {
         return;
