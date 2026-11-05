@@ -14,7 +14,6 @@ import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_anzeige_rules.da
 import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_wirkung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_zuordnung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/meisterhandwerk_rules.dart';
-import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_held_schreiben.dart';

@@ -12,7 +12,6 @@ import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abenteuer_sortierung.dart
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abenteuer_suche.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abschnitt.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_info_chip.dart';
-import 'package:dsa_heldenverwaltung/ui2/spielen/karto_kachelgroesse.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_laufendes_abenteuer.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_standort.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';

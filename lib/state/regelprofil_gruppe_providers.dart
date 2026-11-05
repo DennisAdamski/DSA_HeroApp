@@ -1,15 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:dsa_heldenverwaltung/catalog/regelprofil_vergleich.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_gruppen_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_regelprofil.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/regelprofil_vorschau_rules.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
-import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/externe_helden_providers.dart';
 import 'package:dsa_heldenverwaltung/state/firebase_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
-import 'package:dsa_heldenverwaltung/state/regelprofil_providers.dart';
 import 'package:dsa_heldenverwaltung/state/regelprofil_vorschau_providers.dart';
 
 /// Primäre Konto-Gruppe des Helden (ARCH-04); `null`, wenn er keine hat.

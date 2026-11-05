@@ -56,7 +56,6 @@ import 'package:dsa_heldenverwaltung/domain/attribute_modifiers.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_gefechts_adapter.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abschnitt.dart';
-import 'package:dsa_heldenverwaltung/ui2/spielen/karto_kachelgroesse.dart';
 
 import 'karto_gefechts_bruecke.dart';
 

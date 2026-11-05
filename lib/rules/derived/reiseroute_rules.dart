@@ -5,7 +5,6 @@ import 'package:dsa_heldenverwaltung/domain/hero_adventure_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_reise_station.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/aventurian_age_rules.dart';
-import 'package:dsa_heldenverwaltung/rules/derived/aventurian_calendar_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/standort_rules.dart';
 
 /// Regeln zur Reiseroute eines Helden: Reihenfolge der Stationen, Abstände
