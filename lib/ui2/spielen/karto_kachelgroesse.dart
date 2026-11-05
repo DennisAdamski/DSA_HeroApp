@@ -35,12 +35,6 @@ enum KartoKachelGroesse {
     if (breite >= normalAb) return normal;
     return kompakt;
   }
-
-  /// Ob die Kachel mindestens [normal] groß ist.
-  bool get mindestensNormal => this != kompakt;
-
-  /// Ob die Kachel [weit] ist.
-  bool get istWeit => this == weit;
 }
 
 /// Spaltenzahl für [anzahl] gleich breite Elemente bei Platz für [platz]

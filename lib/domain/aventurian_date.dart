@@ -44,6 +44,11 @@ const int aventurianDaysPerMonth = 30;
 /// Anzahl der Namenlosen Tage am Jahresende.
 const int aventurianNamenloseTageCount = 5;
 
+/// Tage in einem aventurischen Jahr: zwölf Monate zu 30 Tagen plus fünf
+/// Namenlose Tage.
+const int aventurianDaysPerYear =
+    12 * aventurianDaysPerMonth + aventurianNamenloseTageCount;
+
 /// Ein aventurisches Datum aus Tag, Monat und Jahr.
 ///
 /// Alle Felder bleiben `String`, weil die Eingabefelder der App Freitext

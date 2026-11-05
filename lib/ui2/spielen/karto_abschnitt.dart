@@ -285,6 +285,13 @@ class KartoKachelSteuerung extends InheritedWidget {
           ?.groesse ??
       KartoKachelGroesse.normal;
 
+  /// Ob die umgebende Kachel [KartoKachelGroesse.weit] ist.
+  ///
+  /// Der übliche Schalter der Kachelinhalte: mehr Angaben und nebeneinander
+  /// statt untereinander. Außerhalb einer Kachel `false`.
+  static bool istWeit(BuildContext context) =>
+      groesseVon(context) == KartoKachelGroesse.weit;
+
   static KartoKachelSteuerung? _von(BuildContext context) {
     final steuerung = context
         .dependOnInheritedWidgetOfExactType<KartoKachelSteuerung>();

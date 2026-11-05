@@ -59,8 +59,7 @@ class KartoRessourcenleiste extends StatelessWidget {
     final magie = werte.resourceActivation.magic.isEnabled;
     final goettlich = werte.resourceActivation.divine.isEnabled;
     final mitSchritt =
-        onSchritt != null &&
-        KartoKachelSteuerung.groesseVon(context) == KartoKachelGroesse.weit;
+        onSchritt != null && KartoKachelSteuerung.istWeit(context);
 
     final eintraege =
         <

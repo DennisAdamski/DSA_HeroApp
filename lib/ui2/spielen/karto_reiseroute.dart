@@ -61,8 +61,7 @@ class _KartoReiserouteKachelState extends ConsumerState<KartoReiserouteKachel>
     final etappen = reiseEtappen(widget.stationen);
     // Weit: mehr Stationen, mehr von jeder Notiz und der Kartenlink, den
     // sonst nur das Blatt hat.
-    final weit =
-        KartoKachelSteuerung.groesseVon(context) == KartoKachelGroesse.weit;
+    final weit = KartoKachelSteuerung.istWeit(context);
     final anzahl = weit ? kReiserouteWeit : kReiserouteKurz;
     final juengste = etappen.length <= anzahl
         ? etappen

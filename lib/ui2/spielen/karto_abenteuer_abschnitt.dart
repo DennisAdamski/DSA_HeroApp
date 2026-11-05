@@ -219,8 +219,7 @@ class _KartoAbenteuerAbschnittState
     // Mit Suchtext ersetzen die Treffer die Karten des laufenden Abenteuers.
     final suchend = _sucheOffen && _suche.trim().isNotEmpty;
 
-    final weit =
-        KartoKachelSteuerung.groesseVon(context) == KartoKachelGroesse.weit;
+    final weit = KartoKachelSteuerung.istWeit(context);
 
     // Überschrift mit Anzahl und das Kartenraster der Personen.
     Widget personenBlock() => Column(

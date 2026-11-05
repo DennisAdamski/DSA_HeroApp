@@ -93,8 +93,7 @@ class _KartoDabeiAbschnittState extends ConsumerState<KartoDabeiAbschnitt>
     final karto = context.karto;
     final texte = Theme.of(context).textTheme;
     // Die weite Kachel hat zwei Spalten und zeigt entsprechend mehr.
-    final grenze =
-        KartoKachelSteuerung.groesseVon(context) == KartoKachelGroesse.weit
+    final grenze = KartoKachelSteuerung.istWeit(context)
         ? kDabeiSichtbarWeit
         : kDabeiSichtbar;
     final sichtbar = _alle

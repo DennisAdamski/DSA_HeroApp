@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dsa_heldenverwaltung/domain/aventurian_date.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/aventurian_age_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/aventurian_calendar_rules.dart';
 
 AventurianDate _d(String tag, String monat, String jahr) =>
@@ -87,6 +88,22 @@ void main() {
         [zurueck.day, zurueck.month, zurueck.year],
         ['5', 'namenlose_tage', '1042'],
       );
+    });
+  });
+
+  group('aventurianTagUndMonat (REV-14)', () {
+    test('ist das Gegenstück zu aventurianDayOfYear', () {
+      for (final nummer in [1, 30, 31, 360, 361, 365]) {
+        final (:tag, :monat) = aventurianTagUndMonat(nummer);
+        expect(
+          aventurianDayOfYear(
+            AventurianDate(day: '$tag', month: monat.value, year: '1040'),
+          ),
+          nummer,
+        );
+      }
+      expect(aventurianTagUndMonat(31).monat.value, 'rondra');
+      expect(aventurianTagUndMonat(365).tag, 5);
     });
   });
 }

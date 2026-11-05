@@ -58,8 +58,7 @@ class KartoBegleiterAbschnitt extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (begleiter.isEmpty) return const SizedBox.shrink();
-    final weit =
-        KartoKachelSteuerung.groesseVon(context) == KartoKachelGroesse.weit;
+    final weit = KartoKachelSteuerung.istWeit(context);
     Widget karte(int i) => _Karte(
       begleiter: begleiter[i],
       zustand: zustaende[begleiter[i].id] ?? const BegleiterZustand(),

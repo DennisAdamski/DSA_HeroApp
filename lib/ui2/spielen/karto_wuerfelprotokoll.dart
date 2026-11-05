@@ -45,8 +45,7 @@ class KartoProtokollAbschnitt extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final weit =
-        KartoKachelSteuerung.groesseVon(context) == KartoKachelGroesse.weit;
+    final weit = KartoKachelSteuerung.istWeit(context);
     final grenze = weit ? kProtokollWeit : kProtokollKurz;
     final anzahl = werte.state.diceLog.length;
     return KartoAbschnitt(

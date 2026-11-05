@@ -33,7 +33,7 @@ class KartoKampfInhalt extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (KartoKachelSteuerung.groesseVon(context) != KartoKachelGroesse.weit) {
+    if (!KartoKachelSteuerung.istWeit(context)) {
       return proben;
     }
     final karto = context.karto;
@@ -75,6 +75,10 @@ class KartoKampfwerte extends StatelessWidget {
 
   /// Gemeinsamer Snapshot.
   final HeroComputedSnapshot werte;
+
+  // Panelbreite, ab der die Werte zweispaltig stehen: jede Spalte reicht dann
+  // noch für „14 + 1W6“.
+  static const double _zweispaltigAb = 200;
 
   // Betrag eines Wundabzugs (≤ 0) mit echtem Minuszeichen.
   static String _abzug(int wert) => wert < 0 ? '−${-wert}' : '$wert';
@@ -163,8 +167,7 @@ class KartoKampfwerte extends StatelessWidget {
         const SizedBox(height: Abstand.normal),
         LayoutBuilder(
           builder: (context, constraints) {
-            // Zwei Spalten, solange jede für „14 + 1W6“ reicht.
-            final zweispaltig = constraints.maxWidth >= 200;
+            final zweispaltig = constraints.maxWidth >= _zweispaltigAb;
             final breite = zweispaltig
                 ? (constraints.maxWidth - Abstand.block) / 2
                 : constraints.maxWidth;

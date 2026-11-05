@@ -95,14 +95,9 @@ class AventurischerFeiertag {
   bool get istEintaegig => vonTagImJahr == bisTagImJahr;
 
   /// Anzahl der Tage des Zeitraums, auch über den Jahreswechsel.
-  int get dauerTage => (bisTagImJahr - vonTagImJahr) % _tageImJahr + 1;
+  int get dauerTage =>
+      (bisTagImJahr - vonTagImJahr) % aventurianDaysPerYear + 1;
 }
-
-// Tage in einem aventurischen Jahr (zwölf Monate zu 30 Tagen plus fünf
-// Namenlose Tage); dieselbe Zahl wie `aventurianDaysPerYear`, die in der
-// Regelschicht liegt und das Modell nicht importieren soll.
-const int _tageImJahr =
-    12 * aventurianDaysPerMonth + aventurianNamenloseTageCount;
 
 int _tagImJahr(int tag, String monat) {
   final index = aventurianMonthIndex(monat);

@@ -86,11 +86,8 @@ String feiertagDatumText(AventurischerFeiertag feiertag) {
 }
 
 ({int tag, String monat}) _tagUndMonat(int tagImJahr) {
-  final index = (tagImJahr - 1) ~/ aventurianDaysPerMonth;
-  return (
-    tag: (tagImJahr - 1) % aventurianDaysPerMonth + 1,
-    monat: aventurianMonths[index].label,
-  );
+  final (:tag, :monat) = aventurianTagUndMonat(tagImJahr);
+  return (tag: tag, monat: monat.label);
 }
 
 /// Abstand als Text: `heute`, `morgen`, `gestern`, `in 3 Tagen` oder

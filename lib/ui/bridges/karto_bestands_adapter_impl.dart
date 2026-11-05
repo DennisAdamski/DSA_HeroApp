@@ -285,9 +285,7 @@ class KartoBestandsAdapterImpl
           probenEigenschaften: werte.probenEigenschaften,
           grundwerte: werte.effectiveAttributes,
           kompakt: true,
-          abzugZeigen:
-              KartoKachelSteuerung.groesseVon(context) ==
-              KartoKachelGroesse.weit,
+          abzugZeigen: KartoKachelSteuerung.istWeit(context),
         ),
       ),
     );
@@ -304,9 +302,7 @@ class KartoBestandsAdapterImpl
       child: Builder(
         builder: (context) => ProbenFavoritenListe(
           heroId: heroId,
-          spaltenbreite:
-              KartoKachelSteuerung.groesseVon(context) ==
-                  KartoKachelGroesse.weit
+          spaltenbreite: KartoKachelSteuerung.istWeit(context)
               ? KartoBestandsAdapterImpl.kFavoritenSpaltenbreite
               : null,
         ),
@@ -357,8 +353,7 @@ class KartoBestandsAdapterImpl
         // Die weite Kachel zeigt die Würfe als Tabelle; nur mit Grenze, denn
         // das ganze Protokoll samt Filtern steht im Blatt.
         tabellarisch:
-            hoechstens != null &&
-            KartoKachelSteuerung.groesseVon(context) == KartoKachelGroesse.weit,
+            hoechstens != null && KartoKachelSteuerung.istWeit(context),
         aktion: (eintrag) => schadenRuecknahmeAktion(
           eintrag: eintrag,
           heroId: werte.hero.id,

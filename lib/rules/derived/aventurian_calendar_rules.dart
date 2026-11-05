@@ -1,10 +1,6 @@
 import 'package:dsa_heldenverwaltung/domain/aventurian_date.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/aventurian_age_rules.dart';
 
-/// Tage in einem aventurischen Jahr: zwoelf Monate zu 30 Tagen plus fuenf
-/// Namenlose Tage.
-const int aventurianDaysPerYear =
-    12 * aventurianDaysPerMonth + aventurianNamenloseTageCount;
 
 /// Muster fuer die erste ganze Zahl einer Jahresangabe.
 final RegExp _jahreszahl = RegExp(r'-?\d+');
@@ -27,15 +23,28 @@ AventurianDate? addAventurianDays(AventurianDate date, int days) {
   final gesamt = (tagImJahr - 1) + days;
   final jahresSchritt = _abgerundet(gesamt, aventurianDaysPerYear);
   final neuerTag = gesamt - jahresSchritt * aventurianDaysPerYear;
-  final monat = aventurianMonths[neuerTag ~/ aventurianDaysPerMonth];
+  final (:tag, :monat) = aventurianTagUndMonat(neuerTag + 1);
 
   return date.copyWith(
-    day: '${neuerTag % aventurianDaysPerMonth + 1}',
+    day: '$tag',
     month: monat.value,
     year: date.year.trim().replaceFirstMapped(
       _jahreszahl,
       (_) => '${jahr + jahresSchritt}',
     ),
+  );
+}
+
+/// Tag im Monat und Monat zur laufenden Tagesnummer [tagImJahr] (1 = 1. Praios,
+/// 365 = 5. Namenloser Tag); Gegenstück zu `aventurianDayOfYear`.
+({int tag, AventurianMonth monat}) aventurianTagUndMonat(int tagImJahr) {
+  assert(
+    tagImJahr >= 1 && tagImJahr <= aventurianDaysPerYear,
+    'Tagesnummer außerhalb des Jahres',
+  );
+  return (
+    tag: (tagImJahr - 1) % aventurianDaysPerMonth + 1,
+    monat: aventurianMonths[(tagImJahr - 1) ~/ aventurianDaysPerMonth],
   );
 }
 

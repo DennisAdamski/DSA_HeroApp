@@ -177,8 +177,7 @@ class KartoMerkmalsuebersicht extends StatelessWidget {
         style: texte.fliess.copyWith(color: karto.schriftLeise),
       );
     }
-    final weit =
-        KartoKachelSteuerung.groesseVon(context) == KartoKachelGroesse.weit;
+    final weit = KartoKachelSteuerung.istWeit(context);
     final gruppen = [
       for (final (titel, liste) in [
         ('Vorteile', vorteile),

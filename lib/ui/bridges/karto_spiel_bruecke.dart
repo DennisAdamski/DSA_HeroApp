@@ -244,8 +244,7 @@ class KartoZustandsblock extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final weit =
-        KartoKachelSteuerung.groesseVon(context) == KartoKachelGroesse.weit;
+    final weit = KartoKachelSteuerung.istWeit(context);
     // Belastung und Wunden melden Speicherfehler hier, nicht als Snackbar.
     return ZustandFehlerBereich(
       child: LayoutBuilder(
