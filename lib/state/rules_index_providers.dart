@@ -274,6 +274,13 @@ class RulesIndexAutoSync extends Notifier<RulesIndexSyncState> {
         phase: RulesIndexSyncPhase.failed,
         message: error.message,
       );
+    } on Object catch (error) {
+      // Dateisystem- oder Einstellungsfehler: ohne diesen Zweig bliebe die
+      // Phase auf `downloading` und `running` sperrte jeden weiteren Versuch.
+      state = state.copyWith(
+        phase: RulesIndexSyncPhase.failed,
+        message: 'Die Wissensbasis konnte nicht eingerichtet werden: $error',
+      );
     }
   }
 

@@ -1,4 +1,4 @@
-﻿import 'dart:typed_data';
+import 'dart:typed_data';
 
 import 'package:dsa_heldenverwaltung/data/rules_search/rules_index_access_client.dart';
 import 'package:dsa_heldenverwaltung/data/rules_search/rules_index_gunzip.dart';

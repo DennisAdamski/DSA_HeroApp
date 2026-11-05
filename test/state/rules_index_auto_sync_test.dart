@@ -263,6 +263,25 @@ void main() {
     },
   );
 
+  test(
+    'andere Fehler beenden das Laden, ein neuer Versuch bleibt möglich',
+    () async {
+      final t = await aufbau(
+        dienst: _Dienst(fehler: StateError('Datei ist gesperrt')),
+      );
+
+      await steuerung(t.container).start(force: true);
+
+      expect(zustand(t.container).phase, RulesIndexSyncPhase.failed);
+      expect(zustand(t.container).running, isFalse);
+      expect(zustand(t.container).message, contains('Datei ist gesperrt'));
+      expect(t.repo.settings.rulesIndexRemoteConfig.installedVersion, isEmpty);
+
+      await steuerung(t.container).start(force: true);
+      expect(t.dienst.aufrufe, hasLength(2));
+    },
+  );
+
   test('von Hand ohne Konto erklärt start die Anmeldung', () async {
     final t = await aufbau(angemeldet: false);
 

@@ -1,4 +1,4 @@
-﻿"""Veroeffentlichungsfassung der Regel-Index-Datenbank fuer die App.
+"""Veroeffentlichungsfassung der Regel-Index-Datenbank fuer die App.
 
 Die App nutzt nur die FTS5-Volltextsuche. Die Vektoren der semantischen Suche
 (`chunks_vec`) machen knapp die Haelfte der Datei aus und bleiben deshalb

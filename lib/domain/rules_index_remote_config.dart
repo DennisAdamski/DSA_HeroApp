@@ -1,4 +1,4 @@
-﻿/// Konfiguration fuer den optionalen Remote-Bezug der Regel-Index-DB.
+/// Konfiguration fuer den optionalen Remote-Bezug der Regel-Index-DB.
 ///
 /// Die Zugangsdaten zum WebDAV-Ordner (z. B. Fritz!NAS) werden fuer
 /// Release-Builds per `--dart-define` fest eingebettet, damit alle

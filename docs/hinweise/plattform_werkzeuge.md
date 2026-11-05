@@ -1,4 +1,4 @@
-﻿# Plattform, Werkzeuge, Feedback und Spielmodus
+# Plattform, Werkzeuge, Feedback und Spielmodus
 
 Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unverändert. Die kurze [CLAUDE.md](../../CLAUDE.md) enthält die harten Regeln und den Themenindex.
 
