@@ -156,6 +156,7 @@ class ResolvedProbeRequest {
     this.spezialisierungen = const <String>[],
     this.kontext,
     this.bedingteZielAbzuege = const <ProbeZielAbzug>[],
+    this.verweis,
   });
 
   /// Fachliche Probeart.
@@ -216,6 +217,14 @@ class ResolvedProbeRequest {
   /// die gewählten ein.
   final List<ProbeZielAbzug> bedingteZielAbzuege;
 
+  /// Stabiler Verweis auf die Probe im Format der häufigen Proben
+  /// (`talent:<id>`, `zauber:<id>`, `eigenschaft:<Kürzel>`, `kampf:attacke`).
+  ///
+  /// Landet im Würfelprotokoll (`DiceLogEntry.probenVerweis`), damit sich die
+  /// Probe ohne Titelvergleich wiederholen lässt. `null` bei Proben, die sich
+  /// nicht über die Probensuche wiederholen lassen (Ersatzproben, Begleiter).
+  final String? verweis;
+
   /// Gibt eine Kopie mit geänderten Feldern zurück.
   ///
   /// Umbauten einer vorhandenen Probe laufen hierüber, damit
@@ -230,6 +239,7 @@ class ResolvedProbeRequest {
     HerleitungsSchritt? bedingterPoolSchritt,
     bool clearBedingterPoolSchritt = false,
     List<ProbeZielAbzug>? bedingteZielAbzuege,
+    String? verweis,
   }) {
     return ResolvedProbeRequest(
       type: type,
@@ -251,6 +261,7 @@ class ResolvedProbeRequest {
       spezialisierungen: spezialisierungen,
       kontext: kontext,
       bedingteZielAbzuege: bedingteZielAbzuege ?? this.bedingteZielAbzuege,
+      verweis: verweis ?? this.verweis,
     );
   }
 

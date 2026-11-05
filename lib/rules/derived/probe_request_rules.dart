@@ -2,14 +2,28 @@ import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 
 import 'herleitung.dart';
 
+/// Titelpräfix der Eigenschaftsproben (`Eigenschaftsprobe: MU`).
+const String kEigenschaftsprobeTitel = 'Eigenschaftsprobe: ';
+
+/// Titelpräfix der Talentproben (`Talentprobe: Klettern`).
+const String kTalentprobeTitel = 'Talentprobe: ';
+
+/// Titelpräfix der Zauberproben (`Zauberprobe: Armatrutz`).
+const String kZauberprobeTitel = 'Zauberprobe: ';
+
+/// Titelpräfix der Kampf-Schnellproben (`Schnellprobe: AT`).
+const String kSchnellprobeTitel = 'Schnellprobe: ';
+
 /// Baut eine aufgeloeste Eigenschaftsprobe.
 ResolvedProbeRequest buildAttributeProbeRequest({
   required String label,
   required int effectiveValue,
+  String? verweis,
 }) {
   return ResolvedProbeRequest(
     type: ProbeType.attribute,
-    title: 'Eigenschaftsprobe: $label',
+    title: '$kEigenschaftsprobeTitel$label',
+    verweis: verweis,
     subtitle: label,
     ruleHint: '1W20 auf den Eigenschaftswert; 1 ist immer Erfolg, 20 immer Misslingen.',
     diceSpec: const DiceSpec(count: 1, sides: 20),
@@ -35,6 +49,7 @@ ResolvedProbeRequest buildTalentProbeRequest({
   List<String> spezialisierungen = const <String>[],
   int initialSituationalModifier = 0,
   Herleitung? tawHerleitung,
+  String? verweis,
 }) {
   assert(
     tawHerleitung == null || tawHerleitung.wert == basePool,
@@ -42,7 +57,8 @@ ResolvedProbeRequest buildTalentProbeRequest({
   );
   return ResolvedProbeRequest(
     type: ProbeType.talent,
-    title: 'Talentprobe: $title',
+    title: '$kTalentprobeTitel$title',
+    verweis: verweis,
     subtitle: targets.map((target) => target.label).join(' / '),
     ruleHint: '',
     diceSpec: const DiceSpec(count: 3, sides: 20),
@@ -77,6 +93,7 @@ ResolvedProbeRequest buildSpellProbeRequest({
   Herleitung? zfwHerleitung,
   List<String> hinweise = const <String>[],
   ProbeKontext? kontext,
+  String? verweis,
 }) {
   assert(
     zfwHerleitung == null || zfwHerleitung.wert == basePool,
@@ -84,7 +101,8 @@ ResolvedProbeRequest buildSpellProbeRequest({
   );
   return ResolvedProbeRequest(
     type: ProbeType.spell,
-    title: 'Zauberprobe: $title',
+    title: '$kZauberprobeTitel$title',
+    verweis: verweis,
     subtitle: targets.map((target) => target.label).join(' / '),
     ruleHint: hinweise.join(' '),
     diceSpec: const DiceSpec(count: 3, sides: 20),
@@ -105,10 +123,12 @@ ResolvedProbeRequest buildCombatCheckProbeRequest({
   required ProbeType type,
   required String title,
   required int targetValue,
+  String? verweis,
 }) {
   return ResolvedProbeRequest(
     type: type,
     title: title,
+    verweis: verweis,
     subtitle: 'Kampfprobe',
     ruleHint: '1W20 gegen den aktuellen Kampfwert; v1 wertet nur das normale <= Ergebnis.',
     diceSpec: const DiceSpec(count: 1, sides: 20),

@@ -488,7 +488,7 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   (`KartoZuletztGewuerfelt`, `karto_zuletzt_gewuerfelt.dart`). Welche Proben
   erscheinen, entscheidet `zuletztGewuerfelteProben`
   (`lib/rules/derived/zuletzt_gewuerfelt_rules.dart`): neueste zuerst, jede
-  Probe (Art und Titel) einmal, nur wiederholbare Einträge
+  Probe (Verweis, sonst Art und Titel) einmal, nur wiederholbare Einträge
   (`probeEintragIstWiederholbar`, dieselbe Regel wie der Wiederholen-Knopf im
   Protokoll). Ein Tipp öffnet über die Brücke (`probeWiederholen`) den normalen
   Probendialog mit den aktuellen Werten. Der Streifen speichert und
@@ -550,11 +550,16 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   weil sich TaP* nicht zurückrechnen lässt. Die Anzeige nennt „Ziele: 13/12/14“
   und bei gelungener Probe „TaP*: n“ (Zauber „ZfP*“); bei Misslingen keine
   Punkte. Nochmal würfeln: `onWiederholen` der Sektion blendet an Einträgen,
-  für die `diceLogEntryKannWiederholtWerden` gilt (Titel mit Präfix `Eigenschaftsprobe:`,
-  `Talentprobe:`, `Zauberprobe:` oder `Schnellprobe:` und passender Probeart,
-  weder neutral noch Buchung), einen Knopf ein. `wiederholeProbe`
+  für die `probeEintragIstWiederholbar` gilt, einen Knopf ein. Maßgeblich ist
+  der stabile `DiceLogEntry.probenVerweis` (Format der häufigen Proben,
+  `talent:<id>`, `zauber:<id>`, `eigenschaft:<Kürzel>`, `kampf:attacke`; erzeugt
+  über `probenVerweis()` und `ResolvedProbeRequest.verweis`, nur bei Belegung im
+  JSON). Nur Einträge ohne Verweis (ältere, Ersatzproben, Gefecht) werden noch am
+  Titelpräfix (`kTalentprobeTitel` usw. in `probe_request_rules.dart`) und an der
+  Probeart erkannt. Weder neutrale Einträge noch Buchungen. `wiederholeProbe`
   (`probe_quick_search.dart`) sucht unter denselben Kandidaten wie die
-  Schnellsuche nach gleichem Titel **und** gleicher Art und öffnet den normalen
+  Schnellsuche nach dem Verweis (`candidate.favorit.id`), ohne Verweis nach
+  gleichem Titel **und** gleicher Art, und öffnet den normalen
   Probendialog mit den **aktuellen** Werten ohne die damaligen
   Situationsmodifikatoren; `wiederholeProbeMitHinweis` meldet, wenn nichts
   passt. Die Provider müssen geladen sein (die Protokollansicht hält sie

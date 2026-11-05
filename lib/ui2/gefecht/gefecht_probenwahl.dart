@@ -79,7 +79,7 @@ List<GefechtProbenkandidat> gefechtsProbenkandidaten(
       talentBeOverride: talentBeOverride,
     ))
       GefechtProbenkandidat(
-        e.request.title.replaceFirst('Talentprobe: ', ''),
+        e.request.title.replaceFirst(kTalentprobeTitel, ''),
         'Ausweichen · Meisterentscheid · TaW* ${e.request.basePool}'
         '${e.option.bedingung == null ? '' : ' · ${e.option.bedingung}'}',
         e.request,

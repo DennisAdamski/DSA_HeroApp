@@ -131,8 +131,12 @@ void main() {
   });
 
   group('Zielwerte und Restpunkte (SPIEL-05)', () {
-    ProbeResult talentErgebnis({required bool success, required int rest}) {
-      const request = ResolvedProbeRequest(
+    ProbeResult talentErgebnis({
+      required bool success,
+      required int rest,
+      String? verweis,
+    }) {
+      final request = ResolvedProbeRequest(
         type: ProbeType.talent,
         title: 'Talentprobe: Menschenkenntnis',
         subtitle: 'KL/IN/CH',
@@ -143,6 +147,7 @@ void main() {
           ProbeTargetValue(label: 'IN', value: 12),
           ProbeTargetValue(label: 'CH', value: 14),
         ],
+        verweis: verweis,
       );
       return ProbeResult(
         request: request,
@@ -175,6 +180,22 @@ void main() {
       expect(entry.restpunkte, 2);
       // Das Einzelziel bleibt für ältere Leser erhalten.
       expect(entry.targetValue, 13);
+    });
+
+    test('der Probenverweis kommt aus der Anfrage und übersteht JSON', () {
+      final entry = diceLogEntryFromResult(
+        talentErgebnis(success: true, rest: 2, verweis: 'talent:tal_klettern'),
+      );
+      expect(entry.probenVerweis, 'talent:tal_klettern');
+      expect(
+        DiceLogEntry.fromJson(entry.toJson()).probenVerweis,
+        'talent:tal_klettern',
+      );
+      // Ohne Verweis fehlt das Feld im JSON (Hash-Schutz).
+      final ohne = diceLogEntryFromResult(
+        talentErgebnis(success: true, rest: 2),
+      );
+      expect(ohne.toJson().containsKey('probenVerweis'), isFalse);
     });
 
     test('Zielwerte und Restpunkte überstehen JSON', () {

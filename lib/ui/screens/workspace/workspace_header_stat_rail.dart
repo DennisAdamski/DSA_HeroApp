@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:dsa_heldenverwaltung/domain/hero_proben_favorit.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/proben_favoriten_rules.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/resource_activation_rules.dart';
@@ -120,6 +122,7 @@ class WorkspaceHeaderStatRail extends ConsumerWidget {
         request: buildAttributeProbeRequest(
           label: label,
           effectiveValue: value,
+          verweis: probenVerweis(ProbenFavoritArt.eigenschaft, label),
         ),
       );
     }

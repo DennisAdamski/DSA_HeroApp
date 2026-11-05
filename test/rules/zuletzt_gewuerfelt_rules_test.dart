@@ -10,6 +10,7 @@ DiceLogEntry _eintrag(
   int minute = 0,
   bool neutral = false,
   String? buchungId,
+  String? verweis,
 }) => DiceLogEntry(
   timestamp: DateTime.utc(2026, 10, 24, 20, minute),
   type: typ,
@@ -19,6 +20,7 @@ DiceLogEntry _eintrag(
   diceValues: const [5],
   isNeutral: neutral,
   buchungId: buchungId,
+  probenVerweis: verweis,
 );
 
 void main() {
@@ -124,6 +126,33 @@ void main() {
 
     test('leeres Protokoll ergibt eine leere Liste', () {
       expect(zuletztGewuerfelteProben(const []), isEmpty);
+    });
+  });
+
+  group('Probenverweis (REV-02)', () {
+    test('ein Eintrag mit Verweis ist unabhängig vom Titel wiederholbar', () {
+      expect(
+        probeEintragIstWiederholbar(
+          _eintrag('Klettern', verweis: 'talent:tal_klettern'),
+        ),
+        isTrue,
+      );
+      // Ein Verweis unbekannter Art wird nicht geraten.
+      expect(
+        probeEintragIstWiederholbar(
+          _eintrag('Talentprobe: Klettern', verweis: 'liturgie:x'),
+        ),
+        isFalse,
+      );
+    });
+
+    test('derselbe Verweis erscheint nur einmal, auch bei anderem Titel', () {
+      final liste = zuletztGewuerfelteProben([
+        _eintrag('Talentprobe: Klettern', minute: 1, verweis: 'talent:k'),
+        _eintrag('Talentprobe: Klettern (neu)', minute: 2, verweis: 'talent:k'),
+      ]);
+      expect(liste, hasLength(1));
+      expect(liste.single.title, 'Talentprobe: Klettern (neu)');
     });
   });
 }

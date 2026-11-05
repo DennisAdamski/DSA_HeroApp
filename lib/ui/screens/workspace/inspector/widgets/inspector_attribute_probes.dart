@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:dsa_heldenverwaltung/domain/hero_proben_favorit.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/proben_favoriten_rules.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/dice_log_persistence.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/probe_request_factory.dart';
@@ -86,6 +88,7 @@ class InspectorAttributeProbes extends ConsumerWidget {
           request: buildAttributeProbeRequest(
             label: entry.label,
             effectiveValue: entry.value,
+            verweis: probenVerweis(ProbenFavoritArt.eigenschaft, entry.label),
           ),
         ),
       ),

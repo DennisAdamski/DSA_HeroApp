@@ -241,15 +241,17 @@ void main() {
     expect(modifikator(tester), '-4');
   });
 
-  DiceLogEntry protokoll(String titel, ProbeType art) => DiceLogEntry(
-    timestamp: DateTime.utc(2026, 10, 23, 8),
-    type: art,
-    title: titel,
-    subtitle: '',
-    success: true,
-    diceValues: const [9, 15, 5],
-    targetValue: 10,
-  );
+  DiceLogEntry protokoll(String titel, ProbeType art, {String? verweis}) =>
+      DiceLogEntry(
+        timestamp: DateTime.utc(2026, 10, 23, 8),
+        type: art,
+        title: titel,
+        probenVerweis: verweis,
+        subtitle: '',
+        success: true,
+        diceValues: const [9, 15, 5],
+        targetValue: 10,
+      );
 
   // Öffnet die Probe eines Protokolleintrags wie die Protokollansicht. Die
   // Provider sind vorher geladen, weil dort der Bogen ohnehin offen ist.
@@ -306,6 +308,36 @@ void main() {
     expect(find.textContaining('KL: 10'), findsOneWidget);
     expect(find.textContaining('CH: 12'), findsOneWidget);
     expect(modifikator(tester), '0');
+  });
+
+  testWidgets('Nochmal würfeln: der Verweis findet die Probe auch nach '
+      'Umbenennen des Titels (REV-02)', (tester) async {
+    await wiederhole(
+      tester,
+      protokoll(
+        'Talentprobe: Alter Name',
+        ProbeType.talent,
+        verweis: 'talent:tal_menschenkenntnis',
+      ),
+    );
+    // Der offene Dialog ist die aktuelle Menschenkenntnis-Probe.
+    expect(find.byType(Dialog), findsOneWidget);
+    expect(find.textContaining('Menschenkenntnis'), findsWidgets);
+    expect(find.textContaining('KL: 10'), findsOneWidget);
+  });
+
+  testWidgets('Nochmal würfeln: ein Verweis auf eine fehlende Probe öffnet '
+      'nichts, auch bei passendem Titel', (tester) async {
+    final gefunden = await wiederhole(
+      tester,
+      protokoll(
+        'Talentprobe: Menschenkenntnis',
+        ProbeType.talent,
+        verweis: 'talent:tal_gibt_es_nicht',
+      ),
+    );
+    expect(gefunden, isFalse);
+    expect(find.byType(Dialog), findsNothing);
   });
 
   testWidgets('Nochmal würfeln: eine Eigenschaftsprobe öffnet ihren Dialog', (

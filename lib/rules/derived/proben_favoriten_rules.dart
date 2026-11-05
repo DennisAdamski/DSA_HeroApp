@@ -6,6 +6,13 @@ import 'package:dsa_heldenverwaltung/domain/hero_proben_favorit.dart';
 /// wieder die Probensuche.
 const int kProbenFavoritenMax = 20;
 
+/// Stabiler Verweis auf eine Probe, etwa `talent:tal_klettern`.
+///
+/// Dasselbe Format wie die ID der häufigen Proben; Probenanfragen tragen ihn
+/// ins Würfelprotokoll (`ResolvedProbeRequest.verweis`).
+String probenVerweis(ProbenFavoritArt art, String ref) =>
+    HeroProbenFavorit.von(art, ref).id;
+
 /// Ob [favorit] in [liste] steht (Vergleich über die ID).
 bool istProbenFavorit(
   Iterable<HeroProbenFavorit> liste,

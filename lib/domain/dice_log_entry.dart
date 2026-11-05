@@ -21,6 +21,7 @@ class DiceLogEntry {
     this.buchungId,
     this.zielwerte = const <int>[],
     this.restpunkte,
+    this.probenVerweis,
     this.unbekannteFelder = const <String, Object?>{},
     this.unbekannteEnumWerte = const <String, Object?>{},
   });
@@ -71,6 +72,13 @@ class DiceLogEntry {
   /// misslungener Probe negativ. Nur belegt im JSON.
   final int? restpunkte;
 
+  /// Stabiler Verweis auf die gewürfelte Probe im Format der häufigen Proben
+  /// (`talent:tal_klettern`, `eigenschaft:MU`, `kampf:attacke`; siehe
+  /// `HeroProbenFavorit`). Über ihn wiederholt „Nochmal würfeln“ die Probe
+  /// unabhängig vom Titeltext. `null` bei älteren Einträgen und Würfen ohne
+  /// eigene Probe. Nur belegt im JSON.
+  final String? probenVerweis;
+
   /// JSON-Felder einer neueren App-Version; bleiben beim Speichern erhalten
   /// (siehe `unbekannte_json_felder.dart`).
   final Map<String, Object?> unbekannteFelder;
@@ -98,6 +106,7 @@ class DiceLogEntry {
     'buchungId',
     'zielwerte',
     'restpunkte',
+    'probenVerweis',
   };
 
   Map<String, dynamic> toJson() {
@@ -116,6 +125,7 @@ class DiceLogEntry {
         'buchungId': ?buchungId,
         if (zielwerte.isNotEmpty) 'zielwerte': List<int>.from(zielwerte),
         'restpunkte': ?restpunkte,
+        'probenVerweis': ?probenVerweis,
       }, unbekannteFelder),
       unbekannteEnumWerte,
     );
@@ -154,6 +164,7 @@ class DiceLogEntry {
           .map((e) => e.toInt())
           .toList(growable: false),
       restpunkte: (json['restpunkte'] as num?)?.toInt(),
+      probenVerweis: _leseVerweis(json['probenVerweis']),
       unbekannteFelder: sammleUnbekannteFelder(json, jsonSchluessel),
       unbekannteEnumWerte: festeEnumWerte(enumRoh),
     );
@@ -186,8 +197,12 @@ DiceLogEntry diceLogEntryFromResult(ProbeResult result, {DateTime? timestamp}) {
     restpunkte: !usesTotal && result.effectiveTargetValues.length > 1
         ? result.remainingPool
         : null,
+    probenVerweis: request.verweis,
   );
 }
+
+String? _leseVerweis(Object? roh) =>
+    roh is String && roh.trim().isNotEmpty ? roh : null;
 
 /// Baut einen neutralen Protokolleintrag fuer einfache Summenwuerfe.
 DiceLogEntry diceLogEntryFromRoll({

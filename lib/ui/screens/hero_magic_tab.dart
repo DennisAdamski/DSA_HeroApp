@@ -520,6 +520,7 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
                                 request: zauberprobeAus(
                                   wert: wert,
                                   titel: spell.name,
+                                  zauberId: spell.id,
                                 ),
                               );
                             },

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:dsa_heldenverwaltung/domain/hero_proben_favorit.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/proben_favoriten_rules.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/combat_rules.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/dice_log_persistence.dart';
@@ -62,8 +64,9 @@ class InspectorCombatProbes extends ConsumerWidget {
                 ref,
                 buildCombatCheckProbeRequest(
                   type: ProbeType.combatAttack,
-                  title: 'Schnellprobe: AT',
+                  title: '${kSchnellprobeTitel}AT',
                   targetValue: combat.at,
+                  verweis: probenVerweis(ProbenFavoritArt.kampf, 'attacke'),
                 ),
               ),
             ),
@@ -76,8 +79,9 @@ class InspectorCombatProbes extends ConsumerWidget {
                 ref,
                 buildCombatCheckProbeRequest(
                   type: ProbeType.combatParry,
-                  title: 'Schnellprobe: PA',
+                  title: '${kSchnellprobeTitel}PA',
                   targetValue: combat.pa,
+                  verweis: probenVerweis(ProbenFavoritArt.kampf, 'parade'),
                 ),
               ),
             ),
@@ -90,8 +94,9 @@ class InspectorCombatProbes extends ConsumerWidget {
                 ref,
                 buildCombatCheckProbeRequest(
                   type: ProbeType.dodge,
-                  title: 'Schnellprobe: AW',
+                  title: '${kSchnellprobeTitel}AW',
                   targetValue: combat.ausweichen,
+                  verweis: probenVerweis(ProbenFavoritArt.kampf, 'ausweichen'),
                 ),
               ),
             ),

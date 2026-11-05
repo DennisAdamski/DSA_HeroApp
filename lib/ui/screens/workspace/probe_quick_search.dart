@@ -9,6 +9,7 @@ import 'package:dsa_heldenverwaltung/domain/dice_log_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_proben_favorit.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/probe_request_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/proben_favoriten_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/talent_probe_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/zauber_herleitung_rules.dart';
@@ -50,8 +51,9 @@ Future<void> showProbeQuickSearch({
 
 /// Würfelt die Probe eines Protokolleintrags nochmal (SPIEL-05).
 ///
-/// Die Probe wird unter denselben Kandidaten gesucht wie in der Schnellsuche;
-/// Titel und Probeart müssen zum [entry] passen. Geöffnet wird der normale
+/// Die Probe wird unter denselben Kandidaten gesucht wie in der Schnellsuche:
+/// über [DiceLogEntry.probenVerweis], bei älteren Einträgen ohne Verweis über
+/// Titel und Probeart. Geöffnet wird der normale
 /// Probendialog mit den **aktuellen** Werten des Helden und ohne die damaligen
 /// Situationsmodifikatoren, das Ergebnis wird wie jede Probe protokolliert.
 ///
@@ -78,9 +80,15 @@ Future<bool> wiederholeProbe({
     talentBeOverride: ref.read(talentBeOverrideProvider(heroId)),
     epicAdvantagesActive: ref.read(heroEpicAdvantagesActiveProvider(heroId)),
   );
+  // Der stabile Verweis gewinnt; nur Einträge ohne ihn suchen über den Titel.
+  final verweis = entry.probenVerweis;
   for (final candidate in candidates) {
+    if (verweis != null) {
+      if (candidate.favorit?.id != verweis) continue;
+    }
     final request = candidate.buildRequest();
-    if (request.title != entry.title || request.type != entry.type) {
+    if (verweis == null &&
+        (request.title != entry.title || request.type != entry.type)) {
       continue;
     }
     if (!context.mounted) {
@@ -448,8 +456,14 @@ List<ProbeQuickSearchCandidate> _buildAttributeCandidates(
         name: label,
         favorit: HeroProbenFavorit.von(ProbenFavoritArt.eigenschaft, label),
         detail: 'Eigenschaftsprobe · Wert $value$wundText',
-        buildRequest: () =>
-            buildAttributeProbeRequest(label: label, effectiveValue: value),
+        buildRequest: () => buildAttributeProbeRequest(
+          label: label,
+          effectiveValue: value,
+          verweis: HeroProbenFavorit.von(
+            ProbenFavoritArt.eigenschaft,
+            label,
+          ).id,
+        ),
       ),
     );
   }
@@ -469,8 +483,9 @@ List<ProbeQuickSearchCandidate> _buildCombatCandidates(
       detail: 'Haupthand · AT ${combat.at}',
       buildRequest: () => buildCombatCheckProbeRequest(
         type: ProbeType.combatAttack,
-        title: 'Schnellprobe: AT',
+        title: '${kSchnellprobeTitel}AT',
         targetValue: combat.at,
+        verweis: probenVerweis(ProbenFavoritArt.kampf, 'attacke'),
       ),
     ),
     ProbeQuickSearchCandidate(
@@ -480,8 +495,9 @@ List<ProbeQuickSearchCandidate> _buildCombatCandidates(
       detail: 'Haupthand · PA ${combat.pa}',
       buildRequest: () => buildCombatCheckProbeRequest(
         type: ProbeType.combatParry,
-        title: 'Schnellprobe: PA',
+        title: '${kSchnellprobeTitel}PA',
         targetValue: combat.pa,
+        verweis: probenVerweis(ProbenFavoritArt.kampf, 'parade'),
       ),
     ),
     ProbeQuickSearchCandidate(
@@ -491,8 +507,9 @@ List<ProbeQuickSearchCandidate> _buildCombatCandidates(
       detail: 'AW ${combat.ausweichen}',
       buildRequest: () => buildCombatCheckProbeRequest(
         type: ProbeType.dodge,
-        title: 'Schnellprobe: AW',
+        title: '${kSchnellprobeTitel}AW',
         targetValue: combat.ausweichen,
+        verweis: probenVerweis(ProbenFavoritArt.kampf, 'ausweichen'),
       ),
     ),
   ];
@@ -538,6 +555,7 @@ List<ProbeQuickSearchCandidate> _buildTalentCandidates({
           basePool: wert.taw,
           spezialisierungen: wert.spezialisierungen,
           tawHerleitung: wert.herleitung.taw,
+          verweis: probenVerweis(ProbenFavoritArt.talent, talent.id),
         ),
       ),
     );
@@ -553,7 +571,7 @@ List<ProbeQuickSearchCandidate> _buildTalentCandidates({
     candidates.add(
       ProbeQuickSearchCandidate(
         category: ProbeQuickSearchCategory.talent,
-        name: e.request.title.replaceFirst('Talentprobe: ', ''),
+        name: e.request.title.replaceFirst(kTalentprobeTitel, ''),
         detail:
             '$chain · Ausweichen, TaW* ${e.request.basePool} · '
             'Meisterentscheid'
@@ -601,7 +619,8 @@ List<ProbeQuickSearchCandidate> _buildSpellCandidates({
         name: spell.name,
         favorit: HeroProbenFavorit.von(ProbenFavoritArt.zauber, spell.id),
         detail: '$chain · ZfW* ${wert.zfw}',
-        buildRequest: () => zauberprobeAus(wert: wert, titel: spell.name),
+        buildRequest: () =>
+            zauberprobeAus(wert: wert, titel: spell.name, zauberId: spell.id),
       ),
     );
   }

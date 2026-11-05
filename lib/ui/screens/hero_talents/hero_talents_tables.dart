@@ -337,6 +337,7 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
             heroId: widget.heroId,
             request: buildTalentProbeRequest(
               title: talent.name,
+              verweis: probenVerweis(ProbenFavoritArt.talent, talent.id),
               targets: _buildProbeTargets(
                 _probenEigenschaften(effectiveAttributes),
                 talent.attributes,
@@ -665,6 +666,7 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
             heroId: widget.heroId,
             request: buildTalentProbeRequest(
               title: talent.name,
+              verweis: probenVerweis(ProbenFavoritArt.talent, talent.id),
               targets: _buildProbeTargets(
                 _probenEigenschaften(effectiveAttributes),
                 talent.attributes,
