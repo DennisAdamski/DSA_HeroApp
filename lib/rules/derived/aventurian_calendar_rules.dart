@@ -1,7 +1,6 @@
 import 'package:dsa_heldenverwaltung/domain/aventurian_date.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/aventurian_age_rules.dart';
 
-
 /// Muster fuer die erste ganze Zahl einer Jahresangabe.
 final RegExp _jahreszahl = RegExp(r'-?\d+');
 

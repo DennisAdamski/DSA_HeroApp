@@ -14,8 +14,11 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   beides nach sich.
 - Git-Hooks: `.githooks/pre-commit` formatiert gestagte `.dart`-Dateien
   (`dart format`, danach erneut gestaged); Zwischencommits blockiert er nicht.
-  `.githooks/pre-push` fuehrt `flutter analyze` ueber das ganze Projekt aus
-  (wie die CI, dauert ca. 2 Minuten) und bricht den Push bei Befunden ab.
+  `.githooks/pre-push` prueft zuerst die Regeltest-Inventur
+  (`tool/check_rule_test_evidence.py`; jede neue Datei unter `test/rules` und
+  `test/catalog` braucht einen Eintrag in `tool/rule_test_evidence.json`) und
+  fuehrt dann `flutter analyze` ueber das ganze Projekt aus (wie die CI, dauert
+  ca. 2 Minuten); bei Befunden bricht der Push ab.
   Aktivierung einmalig pro Clone mit `sh tool/setup_git_hooks.sh` (setzt
   `core.hooksPath`). Dateien mit gestagten und ungestagten Aenderungen weist
   der pre-commit-Hook ab, damit nichts ungewollt mitcommittet wird. Umgehen nur

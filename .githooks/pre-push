@@ -1,6 +1,20 @@
 #!/bin/sh
-# Fuehrt vor jedem Push die Projektanalyse aus, wie die CI.
+# Fuehrt vor jedem Push die schnellen CI-Pruefungen aus: Regeltest-Inventur
+# und Projektanalyse.
 # Umgehen nur bewusst mit: git push --no-verify
+
+# Neue Testdateien unter test/rules und test/catalog brauchen einen Eintrag in
+# tool/rule_test_evidence.json; die CI bricht sonst erst nach dem Push ab.
+py=$(command -v python3 || command -v python)
+if [ -n "$py" ]; then
+  echo "pre-push: Regeltest-Inventur"
+  "$py" tool/check_rule_test_evidence.py || {
+    echo "pre-push: Regeltest-Inventur unvollstaendig, Push abgebrochen." >&2
+    exit 1
+  }
+else
+  echo "pre-push: kein Python gefunden, Regeltest-Inventur uebersprungen." >&2
+fi
 
 echo "pre-push: flutter analyze"
 flutter analyze || {

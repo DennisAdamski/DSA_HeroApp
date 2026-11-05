@@ -1,4 +1,5 @@
 import 'package:dsa_heldenverwaltung/domain/hero_proben_favorit.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/liste_verschieben.dart';
 
 /// Höchstzahl häufiger Proben je Held.
 ///
@@ -55,13 +56,7 @@ List<HeroProbenFavorit> verschiebeProbenFavorit(
   int schritte,
 ) {
   final von = liste.indexWhere((eintrag) => eintrag.id == id);
-  if (von < 0 || schritte == 0) return liste;
-  final nach = (von + schritte).clamp(0, liste.length - 1);
-  if (nach == von) return liste;
-  final kopie = List<HeroProbenFavorit>.of(liste);
-  final eintrag = kopie.removeAt(von);
-  kopie.insert(nach, eintrag);
-  return List<HeroProbenFavorit>.unmodifiable(kopie);
+  return verschiebeListenEintrag(liste, von, von + schritte);
 }
 
 /// Entfernt alle Favoriten mit den [ids].

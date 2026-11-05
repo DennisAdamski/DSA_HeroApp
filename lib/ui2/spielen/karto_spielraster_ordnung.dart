@@ -1,4 +1,5 @@
 import 'package:dsa_heldenverwaltung/domain/hero_spielansicht.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/liste_verschieben.dart';
 
 /// Die Kacheln der Spielansicht und was jede erlaubt (SPIEL-07).
 ///
@@ -328,13 +329,7 @@ List<KartoSpielkachel> verschiebeSpielkachel(
   List<KartoSpielkachel> kacheln,
   int von,
   int nach,
-) {
-  if (von < 0 || von >= kacheln.length) return kacheln;
-  final ergebnis = [...kacheln];
-  final kachel = ergebnis.removeAt(von);
-  ergebnis.insert(nach.clamp(0, ergebnis.length), kachel);
-  return List<KartoSpielkachel>.unmodifiable(ergebnis);
-}
+) => verschiebeListenEintrag(kacheln, von, nach);
 
 /// Fügt die Kachel [gezogen] [davor] oder dahinter an die Kachel [ziel] ein.
 ///
