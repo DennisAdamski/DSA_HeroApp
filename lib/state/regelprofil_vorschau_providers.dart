@@ -53,6 +53,28 @@ final regelProfilVergleichMitZusatzProvider =
       AsyncValue<RegelProfilVergleich>,
       RegelProfilVergleichSchluessel
     >((ref, schluessel) {
+      final vorschlag = ref.watch(regelProfilVorschlagProvider(schluessel));
+      final neu = vorschlag.valueOrNull;
+      if (vorschlag.hasError) {
+        return AsyncValue<RegelProfilVergleich>.error(
+          vorschlag.error!,
+          vorschlag.stackTrace ?? StackTrace.current,
+        );
+      }
+      if (neu == null) return const AsyncValue<RegelProfilVergleich>.loading();
+      return ref.watch(
+        regelProfilWechselVergleichProvider((alt: schluessel.profil, neu: neu)),
+      );
+    });
+
+/// Vorschlag zum Profil: jedes Paket auf seinem aktuellen Stand, dazu die
+/// gewählten Zusatzpakete samt fehlender Elternpakete (`schlageProfilVor`).
+/// Er wird nur berechnet, nie geschrieben.
+final regelProfilVorschlagProvider =
+    Provider.family<
+      AsyncValue<HeroRegelProfil>,
+      RegelProfilVergleichSchluessel
+    >((ref, schluessel) {
       final profil = schluessel.profil;
       final basis = ref.watch(decryptedCatalogSourceDataProvider);
       final paketKatalog = ref.watch(houseRulePackCatalogProvider);
@@ -62,7 +84,7 @@ final regelProfilVergleichMitZusatzProvider =
           ? paketKatalog
           : null;
       if (fehler != null) {
-        return AsyncValue<RegelProfilVergleich>.error(
+        return AsyncValue<HeroRegelProfil>.error(
           fehler.error!,
           fehler.stackTrace ?? StackTrace.current,
         );
@@ -70,46 +92,119 @@ final regelProfilVergleichMitZusatzProvider =
       final basisDaten = basis.valueOrNull;
       final pakete = paketKatalog.valueOrNull;
       if (basisDaten == null || pakete == null) {
-        return const AsyncValue<RegelProfilVergleich>.loading();
+        return const AsyncValue<HeroRegelProfil>.loading();
       }
       final gewaehlt = schluessel.zusatz.isEmpty
           ? const <String>{}
           : schluessel.zusatz.split(',').toSet();
-      final vorschlag = schlageProfilVor(
-        profil: profil,
-        aktuellerPaketKatalog: pakete,
-        catalogVersion: basisDaten.version,
-        zusaetzlichePaketIds: zusatzPaketeMitElternpaketen(
-          gewaehlt: gewaehlt,
+      return AsyncValue<HeroRegelProfil>.data(
+        schlageProfilVor(
           profil: profil,
           aktuellerPaketKatalog: pakete,
+          catalogVersion: basisDaten.version,
+          zusaetzlichePaketIds: zusatzPaketeMitElternpaketen(
+            gewaehlt: gewaehlt,
+            profil: profil,
+            aktuellerPaketKatalog: pakete,
+          ),
         ),
       );
-      final alt = ref.watch(regelProfilAufloesungProvider(profil));
-      final neu = ref.watch(regelProfilAufloesungProvider(vorschlag));
-      final aufloesungsFehler = alt.hasError
+    });
+
+/// Schlüssel eines Profilwechsels: bisheriges und neues Profil.
+typedef RegelProfilWechsel = ({HeroRegelProfil alt, HeroRegelProfil neu});
+
+/// Katalogvergleich eines beliebigen Profilwechsels [RegelProfilWechsel]
+/// (ARCH-04): Update auf den aktuellen Paketstand ebenso wie die Übernahme der
+/// Gruppenvorgabe. Beide Seiten kommen aus `regelProfilAufloesungProvider`.
+final regelProfilWechselVergleichProvider =
+    Provider.family<AsyncValue<RegelProfilVergleich>, RegelProfilWechsel>((
+      ref,
+      wechsel,
+    ) {
+      final pakete = ref.watch(houseRulePackCatalogProvider);
+      final alt = ref.watch(regelProfilAufloesungProvider(wechsel.alt));
+      final neu = ref.watch(regelProfilAufloesungProvider(wechsel.neu));
+      final fehler = pakete.hasError
+          ? pakete
+          : alt.hasError
           ? alt
           : neu.hasError
           ? neu
           : null;
-      if (aufloesungsFehler != null) {
+      if (fehler != null) {
         return AsyncValue<RegelProfilVergleich>.error(
-          aufloesungsFehler.error!,
-          aufloesungsFehler.stackTrace ?? StackTrace.current,
+          fehler.error!,
+          fehler.stackTrace ?? StackTrace.current,
         );
       }
+      final paketWert = pakete.valueOrNull;
       final altWert = alt.valueOrNull;
       final neuWert = neu.valueOrNull;
-      if (altWert == null || neuWert == null) {
+      if (paketWert == null || altWert == null || neuWert == null) {
         return const AsyncValue<RegelProfilVergleich>.loading();
       }
       return AsyncValue<RegelProfilVergleich>.data(
         vergleicheAufloesungen(
-          altesProfil: profil,
-          neuesProfil: vorschlag,
+          altesProfil: wechsel.alt,
+          neuesProfil: wechsel.neu,
           alt: altWert,
           neu: neuWert,
-          aktuellerPaketKatalog: pakete,
+          aktuellerPaketKatalog: paketWert,
+        ),
+      );
+    });
+
+/// Schlüssel der Wechselvorschau: Held und Profilwechsel.
+typedef RegelProfilWechselVorschauSchluessel = ({
+  String heroId,
+  HeroRegelProfil alt,
+  HeroRegelProfil neu,
+});
+
+/// Vorschau, was sich für den Helden durch einen Profilwechsel ändert
+/// (ARCH-04). Sie liest nur; geschrieben wird ausschließlich durch die
+/// ausdrückliche Übernahme. Wert `null`, solange der Held fehlt.
+final regelProfilWechselVorschauProvider =
+    Provider.family<
+      AsyncValue<RegelProfilVorschau?>,
+      RegelProfilWechselVorschauSchluessel
+    >((ref, schluessel) {
+      final hero = ref.watch(heroByIdProvider(schluessel.heroId));
+      if (hero == null) {
+        return const AsyncValue<RegelProfilVorschau?>.data(null);
+      }
+      final vergleich = ref.watch(
+        regelProfilWechselVergleichProvider((
+          alt: schluessel.alt,
+          neu: schluessel.neu,
+        )),
+      );
+      final zustand = ref.watch(heroStateProvider(schluessel.heroId));
+      final fehler = vergleich.hasError
+          ? vergleich
+          : zustand.hasError
+          ? zustand
+          : null;
+      if (fehler != null) {
+        return AsyncValue<RegelProfilVorschau?>.error(
+          fehler.error!,
+          fehler.stackTrace ?? StackTrace.current,
+        );
+      }
+      final vergleichWert = vergleich.valueOrNull;
+      final zustandWert = zustand.valueOrNull;
+      if (vergleichWert == null || zustandWert == null) {
+        return const AsyncValue<RegelProfilVorschau?>.loading();
+      }
+      return AsyncValue<RegelProfilVorschau?>.data(
+        erstelleRegelProfilVorschau(
+          hero: hero,
+          state: zustandWert,
+          vergleich: vergleichWert,
+          talentBeOverride: ref.watch(
+            talentBeOverrideProvider(schluessel.heroId),
+          ),
         ),
       );
     });
@@ -140,41 +235,29 @@ final regelProfilVorschauMitZusatzProvider =
     >((ref, schluessel) {
       final heroId = schluessel.heroId;
       final profil = ref.watch(heroRegelProfilProvider(heroId));
-      final hero = ref.watch(heroByIdProvider(heroId));
-      if (profil == null || hero == null) {
+      if (profil == null || ref.watch(heroByIdProvider(heroId)) == null) {
         return const AsyncValue<RegelProfilVorschau?>.data(null);
       }
-      final vergleich = ref.watch(
-        regelProfilVergleichMitZusatzProvider((
+      final vorschlag = ref.watch(
+        regelProfilVorschlagProvider((
           profil: profil,
           zusatz: schluessel.zusatz,
         )),
       );
-      if (vergleich.hasError) {
+      if (vorschlag.hasError) {
         return AsyncValue<RegelProfilVorschau?>.error(
-          vergleich.error!,
-          vergleich.stackTrace ?? StackTrace.current,
+          vorschlag.error!,
+          vorschlag.stackTrace ?? StackTrace.current,
         );
       }
-      final zustand = ref.watch(heroStateProvider(heroId));
-      if (zustand.hasError) {
-        return AsyncValue<RegelProfilVorschau?>.error(
-          zustand.error!,
-          zustand.stackTrace ?? StackTrace.current,
-        );
-      }
-      final vergleichWert = vergleich.valueOrNull;
-      final zustandWert = zustand.valueOrNull;
-      if (vergleichWert == null || zustandWert == null) {
-        return const AsyncValue<RegelProfilVorschau?>.loading();
-      }
-      return AsyncValue<RegelProfilVorschau?>.data(
-        erstelleRegelProfilVorschau(
-          hero: hero,
-          state: zustandWert,
-          vergleich: vergleichWert,
-          talentBeOverride: ref.watch(talentBeOverrideProvider(heroId)),
-        ),
+      final neu = vorschlag.valueOrNull;
+      if (neu == null) return const AsyncValue<RegelProfilVorschau?>.loading();
+      return ref.watch(
+        regelProfilWechselVorschauProvider((
+          heroId: heroId,
+          alt: profil,
+          neu: neu,
+        )),
       );
     });
 

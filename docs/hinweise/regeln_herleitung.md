@@ -87,7 +87,8 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   Konto-Gruppe wird von selbst primär, `setzePrimaereGruppe` wechselt). Die
   Vorgabe erscheint nur als Vorschau (`gruppenVorgabeVorschauProvider`,
   `regelprofil_gruppe_providers.dart`; Held ohne Profil wird mit dem globalen
-  Stand verglichen) und wirkt erst nach „Übernehmen“ (`uebernehmeRegelProfil`
+  Stand verglichen; gerechnet wird über denselben
+  `regelProfilWechselVorschauProvider` wie die Update-Vorschau) und wirkt erst nach „Übernehmen“ (`uebernehmeRegelProfil`
   mit dem gespeicherten Profil als `von`). Verlassen der Gruppe, entfernte oder
   fehlende Vorgabe, Offline-Betrieb und Windows (kein Firestore) lassen das
   Profil des Helden unverändert.

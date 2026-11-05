@@ -104,50 +104,23 @@ final gruppenVorgabeVorschauProvider = Provider.autoDispose
         bisher = wert;
       }
 
-      final alt = ref.watch(regelProfilAufloesungProvider(bisher));
-      final neu = ref.watch(regelProfilAufloesungProvider(vorgabe));
-      final aufloesungsFehler = alt.hasError
-          ? alt
-          : neu.hasError
-          ? neu
-          : null;
-      if (aufloesungsFehler != null) {
+      final vorschauAsync = ref.watch(
+        regelProfilWechselVorschauProvider((
+          heroId: heroId,
+          alt: bisher,
+          neu: vorgabe,
+        )),
+      );
+      if (vorschauAsync.hasError) {
         return AsyncValue<GruppenVorgabeVorschau?>.error(
-          aufloesungsFehler.error!,
-          aufloesungsFehler.stackTrace ?? StackTrace.current,
+          vorschauAsync.error!,
+          vorschauAsync.stackTrace ?? StackTrace.current,
         );
       }
-      final zustand = ref.watch(heroStateProvider(heroId));
-      if (zustand.hasError) {
-        return AsyncValue<GruppenVorgabeVorschau?>.error(
-          zustand.error!,
-          zustand.stackTrace ?? StackTrace.current,
-        );
-      }
-      final paketKatalog = ref.watch(houseRulePackCatalogProvider).valueOrNull;
-      final altWert = alt.valueOrNull;
-      final neuWert = neu.valueOrNull;
-      final zustandWert = zustand.valueOrNull;
-      if (altWert == null ||
-          neuWert == null ||
-          zustandWert == null ||
-          paketKatalog == null) {
+      final vorschau = vorschauAsync.valueOrNull;
+      if (vorschau == null) {
         return const AsyncValue<GruppenVorgabeVorschau?>.loading();
       }
-
-      final vergleich = vergleicheAufloesungen(
-        altesProfil: bisher,
-        neuesProfil: vorgabe,
-        alt: altWert,
-        neu: neuWert,
-        aktuellerPaketKatalog: paketKatalog,
-      );
-      final vorschau = erstelleRegelProfilVorschau(
-        hero: hero,
-        state: zustandWert,
-        vergleich: vergleich,
-        talentBeOverride: ref.watch(talentBeOverrideProvider(heroId)),
-      );
       // Gleicher Stand wie die Vorgabe und nichts zu melden: nichts anbieten.
       if (!vorschau.uebernehmbar && vorschau.istLeer) {
         return const AsyncValue<GruppenVorgabeVorschau?>.data(null);
