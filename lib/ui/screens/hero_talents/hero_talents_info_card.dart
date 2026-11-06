@@ -177,7 +177,7 @@ extension _HeroTalentsInfoCard on _HeroTalentTableTabState {
                             key: ValueKey<String>(
                               'talents-special-abilities-delete-$index',
                             ),
-                            icon: const Icon(Icons.delete, size: 18),
+                            icon: const Icon(Icons.delete_outline, size: 18),
                             tooltip: 'Entfernen',
                             onPressed: () => _removeTalentSpecialAbility(index),
                           ),

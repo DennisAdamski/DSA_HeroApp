@@ -43,7 +43,7 @@ class InventoryFilterBar extends StatelessWidget {
             runSpacing: 8,
             children: [
               CodexBadge(
-                label: _formatWeight(totalWeightGramm),
+                label: formatInventarGewicht(totalWeightGramm),
                 icon: Icons.scale_outlined,
                 tone: CodexBadgeTone.accent,
               ),
@@ -77,7 +77,7 @@ class InventoryFilterBar extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
             child: Text(
-              'Gesamt: ${_formatWeight(totalWeightGramm)} / $totalValueSilber S',
+              'Gesamt: ${formatInventarGewicht(totalWeightGramm)} / $totalValueSilber S',
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
               ),
@@ -97,14 +97,6 @@ class InventoryFilterBar extends StatelessWidget {
         visualDensity: VisualDensity.compact,
       ),
     );
-  }
-
-  String _formatWeight(int gramm) {
-    if (gramm >= 1000) {
-      final kg = gramm / 1000.0;
-      return '${kg.toStringAsFixed(kg.truncateToDouble() == kg ? 0 : 1)} kg';
-    }
-    return '$gramm g';
   }
 }
 
@@ -133,4 +125,14 @@ bool matchesInventoryFilter(
     case InventoryFilter.geschosse:
       return source == InventoryItemSource.geschoss;
   }
+}
+
+/// Gewicht in Gramm als „850 g“ bzw. „1,5 kg“ (eine Nachkommastelle).
+String formatInventarGewicht(int gramm) {
+  if (gramm >= 1000) {
+    final kg = gramm / 1000.0;
+    final text = kg.toStringAsFixed(kg.truncateToDouble() == kg ? 0 : 1);
+    return '${text.replaceAll('.', ',')} kg';
+  }
+  return '$gramm g';
 }

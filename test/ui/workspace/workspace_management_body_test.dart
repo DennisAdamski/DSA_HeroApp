@@ -245,7 +245,7 @@ void main() {
     await beginDirtyOverview(tester);
 
     final result = await requestLeave(tester, guard);
-    await tester.tap(find.widgetWithText(TextButton, 'Nein'));
+    await tester.tap(find.widgetWithText(TextButton, 'Weiter bearbeiten'));
     await tester.pumpAndSettle();
 
     expect(await result, isFalse);
@@ -283,7 +283,7 @@ void main() {
     await beginDirtyOverview(tester);
 
     final result = await requestLeave(tester, guard);
-    await tester.tap(find.text('Ja'));
+    await tester.tap(find.text('Verwerfen'));
     await tester.pumpAndSettle();
 
     expect(await result, isTrue);

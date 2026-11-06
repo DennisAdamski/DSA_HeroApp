@@ -533,7 +533,7 @@ class _RitualCategoryDialogState extends State<_RitualCategoryDialog> {
                             'magic-ritual-category-field-remove-$index',
                           ),
                           onPressed: () => _removeFieldDef(index),
-                          icon: const Icon(Icons.delete, size: 18),
+                          icon: const Icon(Icons.delete_outline, size: 18),
                           tooltip: 'Feld entfernen',
                         ),
                       ],

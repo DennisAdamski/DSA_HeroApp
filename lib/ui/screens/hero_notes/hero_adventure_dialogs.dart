@@ -1458,20 +1458,9 @@ String _adventureCompletionTitle(HeroAdventureEntry entry) {
   return title.isEmpty ? 'Abenteuer' : title;
 }
 
-String _formatAdventureDukatenDraft(double value) {
-  if (value <= 0) {
-    return '';
-  }
-  final isWhole = value == value.roundToDouble();
-  if (isWhole) {
-    return value.round().toString();
-  }
-  final trimmed = value
-      .toStringAsFixed(2)
-      .replaceFirst(RegExp(r'0+$'), '')
-      .replaceFirst(RegExp(r'\.$'), '');
-  return trimmed.replaceAll('.', ',');
-}
+// Leer für „keine Dukaten“, sonst das kanonische Dukatenformat.
+String _formatAdventureDukatenDraft(double value) =>
+    value <= 0 ? '' : formatDsaCurrencyDukaten(dukatenToDsaKreuzer(value));
 
 double? _parseAdventureDukatenDraft(String rawValue) {
   final normalized = rawValue.trim();

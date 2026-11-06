@@ -156,7 +156,7 @@ class _CombatArmorSectionState extends State<CombatArmorSection> {
               key: ValueKey<String>('combat-armor-remove-$i'),
               tooltip: 'Rüstung entfernen',
               onPressed: () => _removePiece(i),
-              icon: const Icon(Icons.delete),
+              icon: const Icon(Icons.delete_outline),
             ),
           ],
         ),

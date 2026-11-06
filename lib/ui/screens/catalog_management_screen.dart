@@ -11,6 +11,7 @@ import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/catalog_entry_editor_screen.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/string_normalize.dart';
+import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 
 /// Einstiegsscreen für die Verwaltung synchronisierbarer Custom-Kataloge.
 class CatalogManagementScreen extends ConsumerWidget {
@@ -388,28 +389,15 @@ class CatalogEntryDetailScreen extends ConsumerWidget {
                     const SizedBox(width: 12),
                     FilledButton.tonalIcon(
                       onPressed: () async {
-                        final confirmed = await showDialog<bool>(
+                        final confirmed = await showAdaptiveConfirmDialog(
                           context: context,
-                          builder: (dialogContext) => AlertDialog(
-                            title: const Text('Custom-Eintrag löschen?'),
-                            content: Text(
+                          title: 'Custom-Eintrag löschen?',
+                          content:
                               'Der Eintrag "${resolvedEntry.name}" wird aus dem Heldenspeicher entfernt.',
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () =>
-                                    Navigator.of(dialogContext).pop(false),
-                                child: const Text('Abbrechen'),
-                              ),
-                              FilledButton(
-                                onPressed: () =>
-                                    Navigator.of(dialogContext).pop(true),
-                                child: const Text('Löschen'),
-                              ),
-                            ],
-                          ),
+                          confirmLabel: 'Löschen',
+                          isDestructive: true,
                         );
-                        if (confirmed != true) {
+                        if (confirmed != AdaptiveConfirmResult.confirm) {
                           return;
                         }
                         await ref

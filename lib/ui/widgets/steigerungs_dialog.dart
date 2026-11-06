@@ -11,6 +11,7 @@ import 'package:dsa_heldenverwaltung/ui/screens/hero_overview/herleitung_abschni
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/config/ui_spacing.dart';
 import 'package:dsa_heldenverwaltung/domain/learn/learn_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/currency_rules.dart';
 
 /// Ergebnis eines bestaetigten Steigerungsdialogs.
 class SteigerungsErgebnis {
@@ -303,9 +304,9 @@ class _SteigerungsDialogState extends State<_SteigerungsDialog> {
     return hinweise.join(' | ');
   }
 
-  String _formatDukaten(double value) {
-    return value.toStringAsFixed(1).replaceAll('.', ',');
-  }
+  // Kanonisches Dukatenformat (Kreuzer-genau, Dezimalkomma).
+  String _formatDukaten(double value) =>
+      formatDsaCurrencyDukaten(dukatenToDsaKreuzer(value));
 
   @override
   Widget build(BuildContext context) {

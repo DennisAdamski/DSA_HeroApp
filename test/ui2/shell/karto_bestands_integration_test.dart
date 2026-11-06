@@ -310,11 +310,11 @@ void main() {
     expect(container.read(advancementSessionProvider('rondra')), isNull);
     expect(find.textContaining('Schreibfehler'), findsOneWidget);
     await mode(tester, 'Spielen');
-    await tester.tap(find.text('Nein'));
+    await tester.tap(find.text('Weiter bearbeiten'));
     await tester.pumpAndSettle();
     expect(find.text('Ungespeichert'), findsOneWidget);
     await mode(tester, 'Spielen');
-    await tester.tap(find.text('Ja'));
+    await tester.tap(find.text('Verwerfen'));
     await tester.pumpAndSettle();
     expect(
       find.descendant(
@@ -334,14 +334,14 @@ void main() {
     await tester.binding.handlePopRoute();
     await tester.pumpAndSettle();
     expect(find.textContaining('Ungespeicherte Änderungen'), findsOneWidget);
-    await tester.tap(find.text('Nein'));
+    await tester.tap(find.text('Weiter bearbeiten'));
     await tester.pumpAndSettle();
     await tester.tap(find.byTooltip('Workspace-Menü'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Zur bestehenden Oberfläche'));
     await tester.pumpAndSettle();
     expect(find.textContaining('Ungespeicherte Änderungen'), findsOneWidget);
-    await tester.tap(find.text('Nein'));
+    await tester.tap(find.text('Weiter bearbeiten'));
     await tester.pumpAndSettle();
     expect(container.read(selectedHeroIdProvider), 'rondra');
     expect(find.text('Ungespeichert'), findsOneWidget);
