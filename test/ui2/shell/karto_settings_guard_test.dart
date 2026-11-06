@@ -53,24 +53,23 @@ void main() {
         await tester.pumpAndSettle();
         final provider = advancementSessionProvider('rondra');
         final sessionId = container.read(provider)!.sessionId;
-        if (decision == 'Übernehmen') {
-          container
-              .read(provider.notifier)
-              .add(
-                HeroAdvancementEntry(
-                  id: 'mut',
-                  sessionId: sessionId,
-                  createdAt: DateTime.utc(2026, 9, 20),
-                  kind: AdvancementKind.attribute,
-                  targetId: 'mu',
-                  label: 'Mut',
-                  fromValue: 14,
-                  toValue: 15,
-                  apCost: 100,
-                ),
-              );
-          await tester.pumpAndSettle();
-        }
+        // Nur eine Planung mit Einträgen fragt nach; eine leere endet still.
+        container
+            .read(provider.notifier)
+            .add(
+              HeroAdvancementEntry(
+                id: 'mut',
+                sessionId: sessionId,
+                createdAt: DateTime.utc(2026, 9, 20),
+                kind: AdvancementKind.attribute,
+                targetId: 'mu',
+                label: 'Mut',
+                fromValue: 14,
+                toValue: 15,
+                apCost: 100,
+              ),
+            );
+        await tester.pumpAndSettle();
         await tester.tap(find.byTooltip('Workspace-Menü'));
         await tester.pumpAndSettle();
         await tester.tap(find.text('Einstellungen'));

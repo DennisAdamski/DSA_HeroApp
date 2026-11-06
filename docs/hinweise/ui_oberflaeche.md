@@ -336,7 +336,8 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   behält die technische Schreibsperre als Rückfall. Wechsel, die den Workspace
   abbauen (Heldenwahl,
   Heldenliste, Rückkehr zur Bestandsoberfläche, System-Zurück), fragen
-  zusätzlich nach dem offenen Plan; aufgelegte Screens (Einstellungen,
+  zusätzlich nach dem offenen Plan, sofern er Einträge hat (ein leerer
+  Plan endet in beiden Oberflächen ohne Rückfrage); aufgelegte Screens (Einstellungen,
   Token-Blatt) prüfen nur den Editor, weil die Sitzung im gemeinsamen
   `ProviderScope` liegt und einen Push überlebt.
   Beim tatsächlichen Oberflächenwechsel in den Einstellungen greift jedoch
