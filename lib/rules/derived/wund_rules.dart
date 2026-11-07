@@ -3,6 +3,7 @@ import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
 import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/string_normalize.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/wund_zonen_rules.dart';
 
 /// Aggregierte Wundauswirkungen nach Gesamt- **und** Zonensystem.
@@ -179,8 +180,8 @@ WundschwellenStufen computeWundschwellenStufen({
   final modSumme = _sumWundschwelleMods(mods);
   final namedBonus =
       merkmalBonus +
-      (_containsNamedToken(vorteileText, const {'eisern'}) ? 2 : 0) +
-      (_containsNamedToken(nachteileText, const {'glasknochen'}) ? -2 : 0);
+      (containsNamedToken(vorteileText, const {'eisern'}) ? 2 : 0) +
+      (containsNamedToken(nachteileText, const {'glasknochen'}) ? -2 : 0);
   final gesamtBonus = modSumme + namedBonus;
 
   return WundschwellenStufen(
@@ -469,27 +470,3 @@ int _sumWundschwelleMods(List<HeroTalentModifier> mods) {
 }
 
 int _roundKaufmaennisch(double value) => value.round();
-
-bool _containsNamedToken(String text, Set<String> targets) {
-  for (final rawFragment in text.split(RegExp(r'[\n,;]+'))) {
-    final fragment = rawFragment.trim();
-    if (fragment.isEmpty) {
-      continue;
-    }
-    final normalizedFragment = fragment
-        .toLowerCase()
-        .replaceAll(String.fromCharCode(228), 'a')
-        .replaceAll(String.fromCharCode(246), 'o')
-        .replaceAll(String.fromCharCode(252), 'u')
-        .replaceAll(String.fromCharCode(223), 'ss');
-    final tokens = normalizedFragment
-        .split(RegExp(r'[^a-z0-9]+'))
-        .where((entry) => entry.isNotEmpty);
-    for (final token in tokens) {
-      if (targets.contains(token)) {
-        return true;
-      }
-    }
-  }
-  return false;
-}
