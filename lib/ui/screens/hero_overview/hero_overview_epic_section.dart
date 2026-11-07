@@ -91,8 +91,8 @@ extension _HeroOverviewEpicSection on _HeroOverviewTabState {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  '• Stufenboni für AsP reduziert '
-                  '(Vollzauberer +6, Halbzauberer +1 AsP)',
+                  '• Je epischer Stufe nur noch AsP-Bonus '
+                  '(Vollzauberer +2, Halbzauberer +1, Viertelzauberer 0)',
                   style: theme.textTheme.bodyMedium,
                 ),
               ],
