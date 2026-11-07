@@ -1776,7 +1776,10 @@ void main() {
 
     await tester.binding.handlePopRoute();
     await tester.pumpAndSettle();
-    expect(find.widgetWithText(TextButton, 'Weiter bearbeiten'), findsOneWidget);
+    expect(
+      find.widgetWithText(TextButton, 'Weiter bearbeiten'),
+      findsOneWidget,
+    );
 
     await tester.tap(find.widgetWithText(TextButton, 'Weiter bearbeiten'));
     await tester.pumpAndSettle();
