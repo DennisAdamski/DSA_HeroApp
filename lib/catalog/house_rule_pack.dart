@@ -407,6 +407,7 @@ class HouseRulePackCatalog {
     addAll(builtIn.packs, preferExisting: true);
     addAll(imported.packs, preferExisting: true);
 
+    final katalog = HouseRulePackCatalog(packs: packs);
     for (final pack in packs) {
       final parentId = pack.parentPackId.trim();
       if (parentId.isNotEmpty && !packsById.containsKey(parentId)) {
@@ -419,12 +420,56 @@ class HouseRulePackCatalog {
                 'Parent-Paket "$parentId" ist unbekannt; das Paket bleibt als Root sichtbar.',
           ),
         );
+      } else if (katalog.liegtInZyklus(pack.id)) {
+        issues.add(
+          HouseRulePackIssue(
+            packId: pack.id,
+            packTitle: pack.title,
+            filePath: pack.filePath,
+            message:
+                'Parent-Kette über "$parentId" läuft im Kreis; das Paket bleibt als Root sichtbar.',
+          ),
+        );
       }
     }
     return HouseRulePackCatalog(
       packs: List<HouseRulePackManifest>.unmodifiable(packs),
       issues: List<HouseRulePackIssue>.unmodifiable(issues),
     );
+  }
+
+  /// Elternpakete von [packId], vom direkten Elternpaket aufwärts.
+  ///
+  /// Endet an einem Root, an einer unbekannten Eltern-ID oder dort, wo die
+  /// Kette in sich zurückläuft (ein importiertes Paket kann sich selbst oder
+  /// im Kreis als Eltern nennen). Jedes Paket steht höchstens einmal darin.
+  List<HouseRulePackManifest> elternKette(String packId) {
+    final kette = <HouseRulePackManifest>[];
+    final besucht = <String>{packId.trim()};
+    var current = find(packId);
+    while (current != null) {
+      final parentId = current.parentPackId.trim();
+      if (parentId.isEmpty || !besucht.add(parentId)) break;
+      final parent = find(parentId);
+      if (parent == null) break;
+      kette.add(parent);
+      current = parent;
+    }
+    return kette;
+  }
+
+  /// Ob [packId] in seiner eigenen Elternkette wieder auftaucht.
+  bool liegtInZyklus(String packId) {
+    final id = packId.trim();
+    final besucht = <String>{};
+    var current = find(id);
+    while (current != null && besucht.add(current.id)) {
+      final parentId = current.parentPackId.trim();
+      if (parentId.isEmpty) return false;
+      if (parentId == id) return true;
+      current = find(parentId);
+    }
+    return false;
   }
 
   /// Sucht ein Paket per ID.
@@ -446,7 +491,9 @@ class HouseRulePackCatalog {
       packs
           .where((pack) {
             final parentId = pack.parentPackId.trim();
-            return parentId.isEmpty || !contains(parentId);
+            return parentId.isEmpty ||
+                !contains(parentId) ||
+                liegtInZyklus(pack.id);
           })
           .toList(growable: false)
         ..sort(
@@ -476,23 +523,10 @@ class HouseRulePackCatalog {
   bool _isPackActive({
     required HouseRulePackManifest pack,
     required Set<String> disabledPackIds,
-  }) {
-    var current = pack;
-    while (true) {
-      if (disabledPackIds.contains(current.id)) {
-        return false;
-      }
-      final parentId = current.parentPackId.trim();
-      if (parentId.isEmpty) {
-        return true;
-      }
-      final parent = find(parentId);
-      if (parent == null) {
-        return true;
-      }
-      current = parent;
-    }
-  }
+  }) =>
+      !disabledPackIds.contains(pack.id) &&
+      elternKette(pack.id)
+          .every((elter) => !disabledPackIds.contains(elter.id));
 }
 
 /// Loest String-IDs tolerant zu [CatalogSectionId] auf.

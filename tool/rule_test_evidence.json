@@ -345,6 +345,13 @@
         "note": "Wege der Helden S. 249 und 16 (Chunk 4704, 4058), Erweiterung und Überarbeitung des Regelwerks S. 2 und 22 (Chunk 25817, 25834), Wege des Schwerts S. 169 (Chunk 7248) erneut gelesen: Begabung eine Spalte leichter bis A+, Körperliche Talente Spalte D, Hausregel Akrobatik A*, Verpflichtungen laut Hausregel nicht immer 12 GP."
       }
     },
+    "test/catalog/house_rule_pack_kette_test.dart": {
+      "kind": "product_contract",
+      "status": "verified",
+      "summary": "Drei Tests zur Elternkette der Hausregel-Pakete: Kette bis zum Root, Selbstreferenz und Zweierkreis enden, Aktivierung folgt der Kette, Zyklen werden als Problem gemeldet und das Paket bleibt als Root sichtbar.",
+      "rationale": "Synthetische Pakete ohne Patches; geprüft wird nur die Paketverwaltung der App (Ladeschutz gegen zyklische Importe). Keine Regelbehauptung, kein Katalogeintrag.",
+      "sources": []
+    },
     "test/catalog/kurzregel_katalog_test.dart": {
       "kind": "product_contract",
       "status": "verified",
