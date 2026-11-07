@@ -11,12 +11,12 @@ import 'package:dsa_heldenverwaltung/rules/derived/gefecht_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_wirken_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/inventar_verbrauch_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/probe_request_rules.dart';
-import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_initiative_provider.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_provider.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_gefechts_adapter.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_held_schreiben.dart';
 
 /// Zeigt das Inventar und benutzt auf Wunsch einen Gegenstand.
 ///
@@ -233,17 +233,14 @@ Future<void> schliesseGefechtsGegenstandAb({
     ),
   );
   if (ja != true) return;
-  if (ref.read(advancementSessionProvider(heroId)) != null) {
-    throw StateError(
-      'Während einer offenen Steigerungsrunde wird das Inventar nicht geändert.',
-    );
-  }
-  await ref
-      .read(heroActionsProvider)
-      .updateHero(
-        heroId,
-        (held) => mitVerbrauchtemInventarEintrag(held, eintrag),
-      );
+  await aendereHeldAusserhalbPlanung(
+    ref,
+    heroId,
+    (held) => mitVerbrauchtemInventarEintrag(held, eintrag),
+    sperre:
+        'Während einer offenen Steigerungsrunde wird das Inventar nicht '
+        'geändert.',
+  );
 }
 
 // Gruppierte, lesbare Inventarliste; nur Benutzbares hat einen Knopf.
