@@ -32,37 +32,67 @@ Future<List<HeroTalentModifier>?> showStatModifierDetailDialog({
 }) {
   return showAdaptiveDetailSheet<List<HeroTalentModifier>>(
     context: context,
-    builder: (_) => _StatModifierDetailDialog(
-      statLabel: statLabel,
+    builder: (_) => ModifierDetailDialog(
+      label: statLabel,
+      keyPrefix: 'stat',
+      ergebnisBezeichnung: statLabel,
+      zusammenfassung: [(label: 'Gesamt', value: total, fett: true)],
       namedModifiers: namedModifiers,
       parsedSources: parsedSources,
-      total: total,
       herleitung: herleitung,
     ),
   );
 }
 
-class _StatModifierDetailDialog extends StatefulWidget {
-  const _StatModifierDetailDialog({
-    required this.statLabel,
+/// Zeile der Zusammenfassung unter den Quellen, wenn keine Herleitung vorliegt.
+typedef ModifierZusammenfassung = ({String label, int value, bool fett});
+
+/// Gemeinsamer Detail- und Bearbeitungsdialog für benannte Modifikatoren von
+/// Basiswerten und Eigenschaften.
+///
+/// [label] steht im Titel, [keyPrefix] ('stat' oder 'attr') bildet die
+/// Schlüssel der Felder und Knöpfe, [ergebnisBezeichnung] beschriftet die
+/// Ergebniszeile der Herleitung und [zusammenfassung] zeigt ohne Herleitung
+/// die Summenzeilen.
+class ModifierDetailDialog extends StatefulWidget {
+  /// Erzeugt den Dialog; die Ergebnisse liefern die Aufrufer.
+  const ModifierDetailDialog({
+    super.key,
+    required this.label,
+    required this.keyPrefix,
+    required this.ergebnisBezeichnung,
+    required this.zusammenfassung,
     required this.namedModifiers,
     required this.parsedSources,
-    required this.total,
     required this.herleitung,
   });
 
-  final String statLabel;
+  /// Anzeigename von Basiswert oder Eigenschaft.
+  final String label;
+
+  /// Präfix der Schlüssel ('stat' oder 'attr').
+  final String keyPrefix;
+
+  /// Beschriftung der Ergebniszeile der Herleitung.
+  final String ergebnisBezeichnung;
+
+  /// Summenzeilen, wenn keine [herleitung] vorliegt.
+  final List<ModifierZusammenfassung> zusammenfassung;
+
+  /// Vom Benutzer gepflegte benannte Modifikatoren.
   final List<HeroTalentModifier> namedModifiers;
+
+  /// Read-only Quellen, wenn keine [herleitung] vorliegt.
   final List<ModifierSourceEntry> parsedSources;
-  final int total;
+
+  /// Herleitung des Regelmoduls (ARCH-04).
   final Herleitung? herleitung;
 
   @override
-  State<_StatModifierDetailDialog> createState() =>
-      _StatModifierDetailDialogState();
+  State<ModifierDetailDialog> createState() => _ModifierDetailDialogState();
 }
 
-class _StatModifierDetailDialogState extends State<_StatModifierDetailDialog> {
+class _ModifierDetailDialogState extends State<ModifierDetailDialog> {
   late List<TextEditingController> _modifierControllers;
   late List<TextEditingController> _descriptionControllers;
 
@@ -153,7 +183,9 @@ class _StatModifierDetailDialogState extends State<_StatModifierDetailDialog> {
             SizedBox(
               width: 92,
               child: TextField(
-                key: ValueKey<String>('stat-modifier-value-$index'),
+                key: ValueKey<String>(
+                  '${widget.keyPrefix}-modifier-value-$index',
+                ),
                 controller: _modifierControllers[index],
                 keyboardType: TextInputType.number,
                 inputFormatters: <TextInputFormatter>[
@@ -169,7 +201,9 @@ class _StatModifierDetailDialogState extends State<_StatModifierDetailDialog> {
             const SizedBox(width: kDialogInlineSpacing),
             Expanded(
               child: TextField(
-                key: ValueKey<String>('stat-modifier-description-$index'),
+                key: ValueKey<String>(
+                  '${widget.keyPrefix}-modifier-description-$index',
+                ),
                 controller: _descriptionControllers[index],
                 inputFormatters: <TextInputFormatter>[
                   LengthLimitingTextInputFormatter(60),
@@ -200,7 +234,7 @@ class _StatModifierDetailDialogState extends State<_StatModifierDetailDialog> {
         .toList();
 
     return AlertDialog(
-      title: Text('Modifikatoren: ${widget.statLabel}'),
+      title: Text('Modifikatoren: ${widget.label}'),
       content: SizedBox(
         width: kDialogWidthLarge,
         child: SingleChildScrollView(
@@ -219,7 +253,7 @@ class _StatModifierDetailDialogState extends State<_StatModifierDetailDialog> {
               Align(
                 alignment: Alignment.centerLeft,
                 child: OutlinedButton.icon(
-                  key: const ValueKey<String>('stat-modifiers-add'),
+                  key: ValueKey<String>('${widget.keyPrefix}-modifiers-add'),
                   onPressed: _addModifierField,
                   icon: const Icon(Icons.add),
                   label: const Text('Modifikator hinzufuegen'),
@@ -229,9 +263,9 @@ class _StatModifierDetailDialogState extends State<_StatModifierDetailDialog> {
                 const SizedBox(height: kDialogSectionSpacing),
                 HerleitungsAbschnitt(
                   herleitung: herleitung,
-                  ergebnisBezeichnung: widget.statLabel,
-                  ergebnisKey: const ValueKey<String>(
-                    'stat-herleitung-ergebnis',
+                  ergebnisBezeichnung: widget.ergebnisBezeichnung,
+                  ergebnisKey: ValueKey<String>(
+                    '${widget.keyPrefix}-herleitung-ergebnis',
                   ),
                 ),
               ] else ...[
@@ -243,7 +277,8 @@ class _StatModifierDetailDialogState extends State<_StatModifierDetailDialog> {
                   ),
                 ],
                 const Divider(height: kDialogSectionSpacing * 2),
-                _sourceRow(theme, 'Gesamt', widget.total, bold: true),
+                for (final zeile in widget.zusammenfassung)
+                  _sourceRow(theme, zeile.label, zeile.value, bold: zeile.fett),
               ],
             ],
           ),
@@ -255,7 +290,7 @@ class _StatModifierDetailDialogState extends State<_StatModifierDetailDialog> {
           child: const Text('Abbrechen'),
         ),
         FilledButton(
-          key: const ValueKey<String>('stat-modifiers-save'),
+          key: ValueKey<String>('${widget.keyPrefix}-modifiers-save'),
           onPressed: () => Navigator.of(context).pop(_buildModifiers()),
           child: const Text('Speichern'),
         ),

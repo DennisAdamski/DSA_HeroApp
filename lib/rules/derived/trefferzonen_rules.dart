@@ -1,6 +1,7 @@
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/domain/trefferzonen.dart';
 import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/wund_anzeige_rules.dart';
 
 // ---------------------------------------------------------------------------
 // Standard-Humanoid-Trefferzonen-Tabelle (DSA 4.1)
@@ -222,7 +223,7 @@ String _buildZusatzwurfDetailText({
     return diceSpec.label;
   }
 
-  final wundenLabel = wunden == 1 ? '1 Wunde' : '$wunden Wunden';
+  final wundenLabel = wundenText(wunden);
   final basisSpec = DiceSpec(
     count: basiswurf.diceCount,
     sides: basiswurf.diceSides,

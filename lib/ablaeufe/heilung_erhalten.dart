@@ -3,6 +3,7 @@ import 'package:dsa_heldenverwaltung/data/hero_repository.dart';
 import 'package:dsa_heldenverwaltung/domain/dice_log_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/spell_effect_healing_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/wund_anzeige_rules.dart';
 
 /// Titel des Protokolleintrags einer Heilung.
 const String heilungProtokollTitel = 'Heilung erhalten';
@@ -27,7 +28,7 @@ DiceLogEntry baueHeilungsProtokoll({
     '+${anwendung.lep} LeP',
     if (anwendung.asp > 0) '−${anwendung.asp} AsP',
     if (anwendung.wunden > 0 && zone != null)
-      '${anwendung.wunden == 1 ? '1 Wunde' : '${anwendung.wunden} Wunden'} '
+      '${wundenText(anwendung.wunden)} '
           '${wundZoneLabel[zone]} geschlossen',
   ];
   return diceLogEntryFromRoll(

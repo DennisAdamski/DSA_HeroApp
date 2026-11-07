@@ -61,7 +61,7 @@ String sbUnterdrueckungHerleitung({
     gesamtWunden: gesamtWunden,
     neueWunden: neueWunden,
   );
-  final wunden = gesamtWunden == 1 ? '1 Wunde' : '$gesamtWunden Wunden';
+  final wunden = wundenText(gesamtWunden);
   final basis = neueWunden == 1
       ? '4 × $wunden insgesamt = $voll'
       : '$voll ($neueWunden Wunden aus einem Treffer)';
@@ -95,3 +95,6 @@ List<String> _eigenschaftsTexte(AttributeModifiers mods) {
 }
 
 // Betrag mit echtem Minuszeichen bzw. Plus.
+
+/// „1 Wunde“ oder „n Wunden“.
+String wundenText(int anzahl) => anzahl == 1 ? '1 Wunde' : '$anzahl Wunden';

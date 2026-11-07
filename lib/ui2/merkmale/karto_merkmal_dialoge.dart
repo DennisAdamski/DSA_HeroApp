@@ -6,6 +6,7 @@ import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/trait_advancement_rules.dart';
+import 'package:dsa_heldenverwaltung/ui2/widgets/karto_bestaetigen.dart';
 
 /// Auswahl im Katalogdialog: ein Katalogeintrag oder ein freier Eintrag.
 class KartoMerkmalWahl {
@@ -99,24 +100,15 @@ Future<KartoMerkmalWahl?> zeigeMerkmalKandidaten({
 
 /// Fragt vor dem Entfernen eines Eintrags nach.
 Future<bool> bestaetigeMerkmalEntfernen(BuildContext context, String name) {
-  return showDialog<bool>(
-    context: context,
-    builder: (context) => AlertDialog(
-      title: Text('„$name“ entfernen?'),
-      content: const Text('Der Eintrag wird aus der Liste gelöscht.'),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(false),
-          child: const Text('Abbrechen'),
-        ),
-        FilledButton(
-          key: const ValueKey<String>('karto-merkmal-entfernen-bestaetigen'),
-          onPressed: () => Navigator.of(context).pop(true),
-          child: const Text('Entfernen'),
-        ),
-      ],
+  return kartoBestaetigen(
+    context,
+    titel: '„$name“ entfernen?',
+    text: 'Der Eintrag wird aus der Liste gelöscht.',
+    bestaetigen: 'Entfernen',
+    bestaetigenKey: const ValueKey<String>(
+      'karto-merkmal-entfernen-bestaetigen',
     ),
-  ).then((ja) => ja ?? false);
+  );
 }
 
 /// Suche im Katalog; der freie Eintrag steht immer oben.

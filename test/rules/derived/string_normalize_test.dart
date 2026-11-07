@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dsa_heldenverwaltung/rules/derived/string_normalize.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/wund_anzeige_rules.dart';
 
 void main() {
   group('suchFaltung (REV-08)', () {
@@ -47,5 +48,11 @@ void main() {
     test('ganze Token, keine Teilstücke', () {
       expect(containsNamedToken('Eiserner Wille', {'eisern'}), isFalse);
     });
+  });
+
+  test('wundenText nennt die Einzahl nur bei genau einer Wunde', () {
+    expect(wundenText(1), '1 Wunde');
+    expect(wundenText(0), '0 Wunden');
+    expect(wundenText(3), '3 Wunden');
   });
 }

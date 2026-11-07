@@ -4,6 +4,7 @@ import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_fragment_text.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/schaden_ruecknahme_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/schaden_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/wund_anzeige_rules.dart';
 
 /// Titel des Protokolleintrags einer Schadensbuchung.
 const String schadenProtokollTitel = 'Schaden erhalten';
@@ -42,9 +43,7 @@ DiceLogEntry baueSchadensProtokoll({
     );
   }
   if (hinzugefuegteWunden > 0) {
-    teile.add(
-      hinzugefuegteWunden == 1 ? '1 Wunde' : '$hinzugefuegteWunden Wunden',
-    );
+    teile.add(wundenText(hinzugefuegteWunden));
   }
   if (buchung.zusatzSchaden > 0) {
     teile.add('+${buchung.zusatzSchaden} SP Zusatz');
@@ -79,9 +78,7 @@ DiceLogEntry baueRuecknahmeProtokoll({
   ];
   final zone = plan.zone;
   if (zone != null && plan.wundenEntfernt > 0) {
-    final wunden = plan.wundenEntfernt == 1
-        ? '1 Wunde'
-        : '${plan.wundenEntfernt} Wunden';
+    final wunden = wundenText(plan.wundenEntfernt);
     teile.add('$wunden ${wundZoneLabel[zone]} entfernt');
   }
   if (plan.wundenNichtMehrVorhanden > 0) {

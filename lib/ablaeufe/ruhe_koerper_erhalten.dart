@@ -3,6 +3,7 @@ import 'package:dsa_heldenverwaltung/data/hero_repository.dart';
 import 'package:dsa_heldenverwaltung/domain/dice_log_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/spell_effect_rest_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/wund_anzeige_rules.dart';
 
 /// Titel des Protokolleintrags eines Schlafs unter Ruhe Körper.
 const String ruheKoerperProtokollTitel = 'Ruhe Körper';
@@ -19,7 +20,7 @@ DiceLogEntry baueRuheKoerperProtokoll({
 }) {
   final wunden = <String>[
     for (final eintrag in anwendung.wunden.entries)
-      '${eintrag.value == 1 ? '1 Wunde' : '${eintrag.value} Wunden'} '
+      '${wundenText(eintrag.value)} '
           '${wundZoneLabel[eintrag.key]}',
   ];
   final teile = <String>[

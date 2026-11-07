@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
 import 'package:dsa_heldenverwaltung/rules/derived/herleitung.dart';
-import 'package:dsa_heldenverwaltung/rules/derived/modifier_fragment_text.dart';
 import 'package:dsa_heldenverwaltung/ui/config/ui_spacing.dart';
+import 'package:dsa_heldenverwaltung/ui_shared/herleitung_anzeige.dart';
+
+export 'package:dsa_heldenverwaltung/ui_shared/herleitung_anzeige.dart';
 
 /// Zeigt eine [Herleitung] des Regelmoduls (ARCH-04) als Abschnitt eines
 /// Modifikatordialogs: sichtbare Schritte mit Rechenweg, Quelle und
@@ -53,117 +55,6 @@ class HerleitungsAbschnitt extends StatelessWidget {
           fett: true,
           vorzeichen: false,
         ),
-      ],
-    );
-  }
-}
-
-/// Die sichtbaren Schritte einer [Herleitung] mit Rechenweg, Quelle und
-/// Bedingung, ohne Überschrift und Ergebniszeile.
-///
-/// Gemeinsam genutzt von [HerleitungsAbschnitt] und den Berechnungsschritten
-/// der Kampfvorschau; rechnet nichts.
-class HerleitungsSchritte extends StatelessWidget {
-  /// Erzeugt die Liste der sichtbaren Schritte von [herleitung].
-  const HerleitungsSchritte({super.key, required this.herleitung});
-
-  /// Anzuzeigende Herleitung.
-  final Herleitung herleitung;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        for (final schritt in herleitung.sichtbareSchritte)
-          _SchrittZeile(schritt: schritt),
-      ],
-    );
-  }
-}
-
-/// Eine Zeile „Bezeichnung  Wert“ im Stil der Modifikatordialoge.
-class HerleitungsZeile extends StatelessWidget {
-  /// Erzeugt die Zeile; mit [vorzeichen] erscheint ein „+“ vor positiven
-  /// Werten.
-  const HerleitungsZeile({
-    super.key,
-    required this.bezeichnung,
-    required this.wert,
-    this.fett = false,
-    this.vorzeichen = true,
-  });
-
-  /// Linke Beschriftung.
-  final String bezeichnung;
-
-  /// Angezeigter Betrag.
-  final int wert;
-
-  /// Hebt die Zeile hervor (Ergebnis).
-  final bool fett;
-
-  /// Zeigt ein „+“ vor positiven Werten.
-  final bool vorzeichen;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final style = fett
-        ? theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold)
-        : theme.textTheme.bodySmall;
-    final labelStyle = fett
-        ? style
-        : style?.copyWith(color: theme.colorScheme.onSurfaceVariant);
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
-      child: Row(
-        children: [
-          SizedBox(width: 140, child: Text(bezeichnung, style: labelStyle)),
-          Text(
-            vorzeichen ? mitVorzeichen(wert, nullText: '+0') : '$wert',
-            style: style,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// Ein Schritt mit Betrag und darunter Rechenweg, Quelle oder Bedingung.
-class _SchrittZeile extends StatelessWidget {
-  const _SchrittZeile({required this.schritt});
-
-  final HerleitungsSchritt schritt;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final details = <String>[
-      ?schritt.formel,
-      ?schritt.quelle,
-      ?schritt.bedingung,
-    ].join(' · ');
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        HerleitungsZeile(
-          bezeichnung: schritt.bezeichnung,
-          wert: schritt.betrag,
-          vorzeichen: schritt.art != HerleitungsArt.grundwert,
-        ),
-        if (details.isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 2),
-            child: Text(
-              details,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-                fontStyle: FontStyle.italic,
-              ),
-            ),
-          ),
       ],
     );
   }
