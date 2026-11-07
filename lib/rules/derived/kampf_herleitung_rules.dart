@@ -11,6 +11,7 @@ import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/excel_rounding.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/herleitung.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_fragment_text.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/roemische_zahl_rules.dart';
 
 /// Herleitungen der Kampfvorschau für die Haupthand.
 class KampfHerleitungen {
@@ -190,7 +191,7 @@ Herleitung herleiteBeKampf({
       betrag: -rgReduktion,
       art: HerleitungsArt.sonderfertigkeit,
       quelle: ruestungsgewoehnung > 0
-          ? 'Rüstungsgewöhnung ${_roemisch(ruestungsgewoehnung)}'
+          ? 'Rüstungsgewöhnung ${roemischeZahl(ruestungsgewoehnung)}'
           : null,
     ),
   ];
@@ -203,13 +204,6 @@ Herleitung herleiteBeKampf({
     ),
   );
 }
-
-String _roemisch(int stufe) => switch (stufe) {
-  1 => 'I',
-  2 => 'II',
-  3 => 'III',
-  _ => '$stufe',
-};
 
 /// Effektive Behinderung: −BE Kampf − BE-Regel des Talents, höchstens 0.
 Herleitung herleiteEbe({
