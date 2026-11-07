@@ -569,11 +569,9 @@ CombatPreviewStats computeCombatPreviewStats(
   final tpCalc = tpHerleitung.wert;
 
   // --- Sonderfertigkeit-Boni (ini_rules, ausweichen_rules, waffen_rules) ---
-  final sfIniBonus = computeSfIniBonus(
-    special,
-    hasFlinkFromVorteile: parsed.hasFlinkFromVorteile,
-    hasBehaebigFromNachteile: parsed.hasBehaebigFromNachteile,
-  );
+  // Kampfreflexe und Kampfgespür wirken schon in der INI-Basis
+  // (`basiswert_herleitung_rules.dart`); oberhalb gibt es keinen SF-Bonus.
+  const sfIniBonus = 0;
   final sfAusweichenBonus = computeSfAusweichenBonus(special);
   final ausweichenTextMod =
       (parsed.hasFlinkFromVorteile ? 1 : 0) +

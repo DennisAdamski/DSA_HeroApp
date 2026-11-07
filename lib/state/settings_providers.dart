@@ -155,12 +155,6 @@ final abenteuerSortierungProvider = Provider<AbenteuerSortierung>((ref) {
       AbenteuerSortierung.zuletztBearbeitet;
 });
 
-/// Ob die Kernwerte-Rail im Workspace zugeklappt ist.
-final summaryRailCollapsedProvider = Provider<bool>((ref) {
-  return ref.watch(appSettingsProvider).valueOrNull?.summaryRailCollapsed ??
-      false;
-});
-
 /// Ob die Vor- und Nachteile der Spielansicht aufgeklappt sind (nur dieses Geraet).
 final merkmaleAufgeklapptProvider = Provider<bool>((ref) {
   return ref.watch(appSettingsProvider).valueOrNull?.merkmaleAufgeklappt ??
@@ -276,14 +270,6 @@ class SettingsActions {
   Future<void> saveRulesIndexRemoteConfig(RulesIndexRemoteConfig config) async {
     final current = _repo.load();
     await _repo.save(current.copyWith(rulesIndexRemoteConfig: config));
-  }
-
-  /// Schaltet den Collapse-Zustand der Kernwerte-Rail um.
-  Future<void> toggleSummaryRailCollapsed() async {
-    final current = _repo.load();
-    await _repo.save(
-      current.copyWith(summaryRailCollapsed: !current.summaryRailCollapsed),
-    );
   }
 
   /// Klappt die Vor- und Nachteile der Spielansicht auf oder zu.

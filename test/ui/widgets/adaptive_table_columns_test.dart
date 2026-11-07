@@ -22,30 +22,6 @@ void main() {
     expect(column.columnWidth, isA<MinColumnWidth>());
   });
 
-  test('buildAdaptiveDataColumns keeps spec order', () {
-    const specs = <AdaptiveDataColumnSpec>[
-      AdaptiveDataColumnSpec(
-        label: Text('Name'),
-        width: AdaptiveTableColumnSpec(minWidth: 120, maxWidth: 180),
-      ),
-      AdaptiveDataColumnSpec(
-        label: Text('Mod'),
-        width: AdaptiveTableColumnSpec(minWidth: 56, maxWidth: 96),
-        numeric: true,
-      ),
-    ];
-
-    final columns = buildAdaptiveDataColumns(specs);
-
-    expect(columns, hasLength(2));
-    final firstLabel = (columns[0].label as Align).child as FittedBox;
-    final secondLabel = (columns[1].label as Align).child as FittedBox;
-    expect(((firstLabel.child as Text).data), 'Name');
-    expect(columns[0].numeric, isFalse);
-    expect(((secondLabel.child as Text).data), 'Mod');
-    expect(columns[1].numeric, isTrue);
-  });
-
   test('responsive layout grows only flex columns within max bounds', () {
     const specs = <AdaptiveDataColumnSpec>[
       AdaptiveDataColumnSpec(
@@ -275,7 +251,7 @@ void main() {
               child: DataTable(
                 horizontalMargin: 0,
                 columnSpacing: 0,
-                columns: buildAdaptiveDataColumns(specs),
+                columns: [for (final spec in specs) spec.toDataColumn()],
                 rows: <DataRow>[
                   DataRow(
                     cells: <DataCell>[

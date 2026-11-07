@@ -875,7 +875,7 @@ class _HouseRulesSettingsPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final disabled = ref.watch(disabledHouseRulePackIdsProvider);
+    final disabled = ref.watch(catalogDisabledHouseRulePackIdsProvider);
     final actions = ref.read(settingsActionsProvider);
     final packCatalogAsync = ref.watch(houseRulePackCatalogProvider);
     final issuesAsync = ref.watch(houseRuleIssueSnapshotProvider);

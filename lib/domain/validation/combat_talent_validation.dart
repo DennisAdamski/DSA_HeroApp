@@ -34,20 +34,6 @@ bool isCombatTalentDef(TalentDef talent) {
   return type == 'nahkampf' || type == 'fernkampf';
 }
 
-/// Bereinigt eine Liste von Talent-IDs: trimmt Leerzeichen, entfernt
-/// Leerstrings und Duplikate. Gibt ein unveraenderliches Set zurueck.
-Set<String> normalizeHiddenTalentIds(Iterable<String> hiddenTalentIds) {
-  final normalized = <String>{};
-  for (final id in hiddenTalentIds) {
-    final trimmed = id.trim();
-    if (trimmed.isEmpty) {
-      continue;
-    }
-    normalized.add(trimmed);
-  }
-  return normalized;
-}
-
 /// Validiert die AT/PA-Verteilung aller Kampftalente eines Helden.
 ///
 /// DSA-Regel: Der Talentwert (TaW) wird auf AT und PA aufgeteilt.

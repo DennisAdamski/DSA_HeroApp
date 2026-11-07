@@ -18,27 +18,6 @@ int computeIniBase(HeroSheet sheet, StatModifiers mods) {
   return grundwertIni(sheet.attributes) + mods.iniBase;
 }
 
-// INI-Basis-Modifikatoren aus Kampfsonderfertigkeiten.
-int computeIniBaseBonus(CombatSpecialRules special) {
-  var total = 0;
-  if (special.kampfreflexe) {
-    total += kKampfreflexeIniBonus;
-  }
-  if (special.kampfgespuer) {
-    total += kKampfgespuerIniBonus;
-  }
-  return total;
-}
-
-// Zusätzlicher SF-Bonus auf Initiative oberhalb der Basis.
-int computeSfIniBonus(
-  CombatSpecialRules special, {
-  required bool hasFlinkFromVorteile,
-  required bool hasBehaebigFromNachteile,
-}) {
-  return 0;
-}
-
 // GE-basierter Waffenkomponent der Initiative.
 //
 // Waffen definieren ihre TP-Staerke ueber einen KK-Bereich ([kkBase], [kkThreshold]).

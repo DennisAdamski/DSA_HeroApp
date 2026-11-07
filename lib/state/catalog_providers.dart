@@ -125,16 +125,6 @@ final houseRulePackCatalogProvider = FutureProvider<HouseRulePackCatalog>((
   return HouseRulePackCatalog.merge(builtIn: builtIn, imported: imported);
 });
 
-/// Feld-Provenienz fuer Hausregel-Overrides im wirksamen Katalog.
-final catalogRuleResolverProvider = FutureProvider<CatalogRuleResolver>((
-  ref,
-) async {
-  final runtimeData = await ref.watch(catalogRuntimeDataProvider.future);
-  return CatalogRuleResolver(
-    provenanceIndex: runtimeData.houseRuleProvenanceIndex,
-  );
-});
-
 /// Aufgeloeste Laufzeitdaten aus Basis-Assets und konfliktfreien Customs.
 final catalogRuntimeDataProvider = FutureProvider<CatalogRuntimeData>((
   ref,

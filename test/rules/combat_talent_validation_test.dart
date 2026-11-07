@@ -20,16 +20,6 @@ void main() {
     );
   }
 
-  test('normalizeHiddenTalentIds trims and deduplicates ids', () {
-    final ids = normalizeHiddenTalentIds(<String>[
-      '  sword  ',
-      '',
-      'sword',
-      'bow',
-    ]);
-    expect(ids, <String>{'sword', 'bow'});
-  });
-
   test('isCombatTalentDef detects combat talents by group and type', () {
     final byGroup = TalentDef(
       id: 'a',

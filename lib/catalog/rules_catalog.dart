@@ -82,15 +82,6 @@ class RulesCatalog {
   final Map<String, dynamic> metadata; // Sonstige Metadaten aus dem Manifest
   final CatalogRuleResolver ruleResolver; // Hausregel-Provenienz fuer UI/Regeln
 
-  /// Sucht ein Manöver anhand des Namens (Groß-/Kleinschreibung wird ignoriert).
-  ManeuverDef? maneuverByName(String name) {
-    final needle = name.trim().toLowerCase();
-    for (final m in maneuvers) {
-      if (m.name.trim().toLowerCase() == needle) return m;
-    }
-    return null;
-  }
-
   factory RulesCatalog.fromJson(Map<String, dynamic> json) {
     final talentsRaw = (json['talents'] as List?) ?? const [];
     final spellsRaw = (json['spells'] as List?) ?? const [];

@@ -45,10 +45,6 @@ class TalentNutzungDef {
   final List<TalentErsatzDef> ersatz;
 }
 
-/// Empfohlener Mindestzuschlag, wenn der Meister statt einer Talentprobe
-/// eine Eigenschaftsprobe verlangt (Basisregelwerk S. 113).
-const int kEigenschaftsprobeErsatzZuschlag = 7;
-
 /// Nutzungsregel des Talents [talentId]; `null` für unbekannte Talente
 /// (etwa eigene Katalogeinträge).
 TalentNutzungDef? talentNutzungFuer(String talentId) =>

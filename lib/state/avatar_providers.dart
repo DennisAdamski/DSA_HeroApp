@@ -80,12 +80,6 @@ final kiImageCountProvider = Provider.family<int, String>((ref, heroId) {
   return hero.appearance.avatarGallery.where((e) => e.quelle == 'ki').length;
 });
 
-/// Aktuelle Anzahl der Helden des Nutzers.
-final heroCountProvider = Provider<int>((ref) {
-  final snapshot = ref.watch(heroIndexProvider).valueOrNull;
-  return snapshot?.sortedIds.length ?? 0;
-});
-
 /// Ob der aktive Provider Referenzbild-basierte Generierung unterstuetzt.
 final avatarSupportsReferenceProvider = Provider<bool>((ref) {
   return ref.watch(avatarApiClientProvider)?.supportsReferenceImage ?? false;

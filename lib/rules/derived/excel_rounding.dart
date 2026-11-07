@@ -1,5 +1,4 @@
 int excelRound(num value) => value.round();
-int excelCeil(num value) => value.ceil();
 
 // Rundet in Richtung Null (entspricht truncate).
 int roundDownTowardsZero(num value) => value.truncate();

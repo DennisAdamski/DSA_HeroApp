@@ -861,44 +861,6 @@ class HeroActions {
     await saveHero(updated);
   }
 
-  /// Entfernt den Avatar eines Helden (Legacy-Methode, entfernt alle Bilder).
-  Future<void> removeHeroAvatar(String heroId) async {
-    final hero = await _loadHeroById(heroId);
-    if (hero.appearance.avatarFileName.isEmpty &&
-        hero.appearance.avatarGallery.isEmpty) {
-      return;
-    }
-    final heroStoragePath = await _resolveHeroStoragePath();
-    final storage = _ref.read(avatarFileStorageProvider);
-
-    // Haupt-Avatar loeschen
-    if (hero.appearance.avatarFileName.isNotEmpty) {
-      await storage.deleteAvatar(
-        heroStoragePath: heroStoragePath,
-        avatarFileName: hero.appearance.avatarFileName,
-      );
-    }
-
-    // Alle Gallery-Bilder loeschen; die Cloud-Seite erledigt der Decorator.
-    for (final entry in hero.appearance.avatarGallery) {
-      await storage.deleteGalleryImage(
-        heroStoragePath: heroStoragePath,
-        fileName: entry.fileName,
-      );
-    }
-
-    final updated = hero.copyWith(
-      appearance: hero.appearance.copyWith(
-        avatarFileName: '',
-        avatarGallery: const [],
-        primaerbildId: '',
-        aktivesBildId: '',
-        avatarSnapshot: () => null,
-      ),
-    );
-    await saveHero(updated);
-  }
-
   // ---------------------------------------------------------------------------
   // Gruppen-Verwaltung (groups_v2)
   // ---------------------------------------------------------------------------
@@ -1131,18 +1093,6 @@ class HeroActions {
           .toList(growable: false),
     );
     await saveHero(aktuell.copyWith(gruppen: neueGruppen));
-  }
-
-  /// Aktualisiert die eigene Visitenkarte in allen Konto-Gruppen des Helden.
-  Future<void> syncVisitenkarten(String heroId) async {
-    _requireGruppenSyncAvailable();
-    final hero = await _loadHeroById(heroId);
-    for (final gruppe in hero.gruppen.where((g) => g.kontoGruppe)) {
-      await _pushEigeneVisitenkarte(
-        heroId: heroId,
-        gruppenCode: gruppe.gruppenCode,
-      );
-    }
   }
 
   /// Fuehrt einen vollstaendigen Sync fuer alle Konto-Gruppen des Helden durch:

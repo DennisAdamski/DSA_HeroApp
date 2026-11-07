@@ -24,11 +24,6 @@ class CatalogLoader {
   /// Asset-Pfad zur Standard-Manifest-Datei.
   final String defaultAssetPath;
 
-  /// Laedt den Standard-Katalog aus [defaultAssetPath].
-  Future<RulesCatalog> loadDefaultCatalog() {
-    return loadFromAsset(defaultAssetPath);
-  }
-
   /// Laedt die Rohdaten des Standard-Katalogs aus [defaultAssetPath].
   Future<CatalogSourceData> loadDefaultSourceData() {
     return loadSourceData(defaultAssetPath);
