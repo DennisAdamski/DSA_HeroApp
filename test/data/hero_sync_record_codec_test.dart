@@ -205,6 +205,64 @@ void main() {
     });
   });
 
+  // Die Schreibvorbedingung muss dieselbe Revision sehen wie der Decoder,
+  // auch bei Altdokumenten ohne Revision und Zeitstempel (REV-19).
+  group('revisionAusDokument', () {
+    test('matches the decoded legacy revision of a hero', () {
+      final data = <String, dynamic>{
+        'deleted': false,
+        'payload': hero('h-1', 'Alrik').toJson(),
+      };
+
+      final decoded = decodeRemoteHeroRecord(
+        id: 'h-1',
+        data: data,
+        updatedAt: null,
+      );
+
+      expect(
+        revisionAusDokument(data, null, art: SyncDokumentArt.held),
+        decoded!.revision,
+      );
+      expect(decoded.revision, startsWith('legacy-'));
+      expect(decoded.revision, isNot('legacy-'));
+    });
+
+    test('matches the decoded legacy revision of a state', () {
+      final data = <String, dynamic>{
+        'deleted': false,
+        'payload': const HeroState(
+          currentLep: 10,
+          currentAsp: 0,
+          currentKap: 0,
+          currentAu: 20,
+        ).toJson(),
+      };
+
+      final decoded = decodeRemoteHeroStateRecord(
+        heroId: 'h-1',
+        data: data,
+        updatedAt: null,
+      );
+
+      expect(
+        revisionAusDokument(data, null, art: SyncDokumentArt.zustand),
+        decoded!.revision,
+      );
+    });
+
+    test('uses the stored revision when present', () {
+      expect(
+        revisionAusDokument(
+          <String, dynamic>{'revision': 'r-1', 'payload': 'kaputt'},
+          null,
+          art: SyncDokumentArt.held,
+        ),
+        'r-1',
+      );
+    });
+  });
+
   test('newSyncRevision produces unique, sortable revisions', () {
     final first = newSyncRevision();
     final second = newSyncRevision();

@@ -40,6 +40,7 @@ class FirestoreHeroSyncGateway
         lastModifiedValue: FieldValue.serverTimestamp(),
       ),
       previousRevision: previousRevision,
+      art: SyncDokumentArt.held,
       setOptions: SetOptions(merge: true),
     );
     return RemoteHeroRecord(
@@ -65,6 +66,7 @@ class FirestoreHeroSyncGateway
         lastModifiedValue: FieldValue.serverTimestamp(),
       ),
       previousRevision: previousRevision,
+      art: SyncDokumentArt.zustand,
       setOptions: SetOptions(merge: true),
     );
     return RemoteHeroStateRecord(
@@ -127,6 +129,7 @@ class FirestoreHeroSyncGateway
         lastModifiedValue: FieldValue.serverTimestamp(),
       ),
       previousRevision: previousRevision,
+      art: SyncDokumentArt.held,
     );
     return RemoteHeroRecord(
       id: hero.id,
@@ -156,6 +159,7 @@ class FirestoreHeroSyncGateway
         lastModifiedValue: FieldValue.serverTimestamp(),
       ),
       previousRevision: previousRevision,
+      art: SyncDokumentArt.zustand,
     );
     return RemoteHeroStateRecord(
       heroId: heroId,
@@ -233,6 +237,7 @@ class FirestoreHeroSyncGateway
     DocumentReference<Map<String, dynamic>> docRef,
     Map<String, dynamic> fields, {
     required String? previousRevision,
+    required SyncDokumentArt art,
     SetOptions? setOptions,
   }) async {
     if (previousRevision == null) {
@@ -248,9 +253,10 @@ class FirestoreHeroSyncGateway
         final snapshot = await transaction.get(docRef);
         final data = snapshot.data();
         final currentRevision = snapshot.exists && data != null
-            ? readSyncRevision(
+            ? revisionAusDokument(
                 data,
                 _readTimestamp(data[HeroSyncRecordFields.lastModified]),
+                art: art,
               )
             : null;
         if (currentRevision != previousRevision) {
