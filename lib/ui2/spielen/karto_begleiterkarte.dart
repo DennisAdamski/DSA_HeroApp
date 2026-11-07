@@ -4,6 +4,7 @@ import 'package:dsa_heldenverwaltung/domain/begleiter_zustand.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_companion.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/begleiter_kampfprofil_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/begleiter_zustand_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/modifier_fragment_text.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/reittier_ausbildung_anzeige_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ressourcen_aenderung_rules.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
@@ -344,7 +345,7 @@ class _PoolZeile extends StatelessWidget {
         height: 40,
         child: Center(
           child: Text(
-            schritt > 0 ? '+$schritt' : '−${schritt.abs()}',
+            mitVorzeichen(schritt),
             style: texte.etikett.copyWith(color: karto.schrift),
           ),
         ),

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/herleitung.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/modifier_fragment_text.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/config/ui_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_overview/herleitung_abschnitt.dart';
@@ -286,13 +287,12 @@ class _StatModifierDetailDialogState extends State<_StatModifierDetailDialog> {
     final labelStyle = bold
         ? style
         : style?.copyWith(color: theme.colorScheme.onSurfaceVariant);
-    final sign = value >= 0 ? '+' : '';
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
       child: Row(
         children: [
           SizedBox(width: 140, child: Text(label, style: labelStyle)),
-          Text('$sign$value', style: style),
+          Text(mitVorzeichen(value, nullText: '+0'), style: style),
         ],
       ),
     );

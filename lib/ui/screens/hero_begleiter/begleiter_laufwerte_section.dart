@@ -112,7 +112,7 @@ class _PoolZeile extends ConsumerWidget {
       ),
       onPressed: () =>
           _aendere(context, ref, begleiterPoolSchritt(pool, maximum, schritt)),
-      child: Text(schritt > 0 ? '+$schritt' : '−${schritt.abs()}'),
+      child: Text(mitVorzeichen(schritt)),
     );
     return Padding(
       padding: const EdgeInsets.only(bottom: 4),

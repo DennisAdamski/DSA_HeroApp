@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/advancement_impact_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/modifier_fragment_text.dart';
 import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/karto_variante.dart';
@@ -240,7 +241,7 @@ class _StatZeile extends StatelessWidget {
                               vertical: 1,
                             ),
                             child: Text(
-                              '${stat.delta > 0 ? '+' : ''}${stat.delta}',
+                              mitVorzeichen(stat.delta, nullText: '0'),
                               style: theme.textTheme.labelSmall?.copyWith(
                                 color: farbe,
                                 fontWeight: FontWeight.bold,
@@ -262,6 +263,6 @@ class _StatZeile extends StatelessWidget {
 // Auch ohne Farbwahrnehmung bleibt jede Änderung durch Pfeil und Delta erkennbar.
 String _statText(AdvancementStatChange stat) {
   final delta = stat.delta;
-  final suffix = delta == 0 ? '' : ' (${delta > 0 ? '+' : ''}$delta)';
+  final suffix = delta == 0 ? '' : ' (${mitVorzeichen(delta)})';
   return '${stat.label} ${stat.before} → ${stat.after}$suffix';
 }

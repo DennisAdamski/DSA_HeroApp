@@ -1684,7 +1684,7 @@ void main() {
       );
       final taw = find.byKey(const ValueKey<String>('talent-detail-taw-tal_a'));
       expect(
-        find.descendant(of: taw, matching: find.text('-2')),
+        find.descendant(of: taw, matching: find.text('−2')),
         findsOneWidget,
       );
     },

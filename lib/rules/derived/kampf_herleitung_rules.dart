@@ -10,6 +10,7 @@ library;
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/excel_rounding.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/herleitung.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/modifier_fragment_text.dart';
 
 /// Herleitungen der Kampfvorschau für die Haupthand.
 class KampfHerleitungen {
@@ -96,8 +97,6 @@ String? _text(String? wert) {
   final getrimmt = wert?.trim() ?? '';
   return getrimmt.isEmpty ? null : getrimmt;
 }
-
-String _mitVorzeichen(int wert) => wert >= 0 ? '+$wert' : '$wert';
 
 /// Schrittnamen des Parierwaffenanteils in der Haupthand-PA; das Gefecht
 /// trennt damit die Hauptwaffenparade von der Kombination.
@@ -659,8 +658,8 @@ Herleitung herleiteTpZuschlag({
   String? geschossName,
 }) {
   final wmHinweis = waffenmeisterKkBasis != 0 || waffenmeisterKkSchwelle != 0
-      ? 'Waffenmeister: Basis ${_mitVorzeichen(waffenmeisterKkBasis)}, '
-            'Schwelle ${_mitVorzeichen(waffenmeisterKkSchwelle)}'
+      ? 'Waffenmeister: Basis ${mitVorzeichen(waffenmeisterKkBasis, nullText: '+0')}, '
+            'Schwelle ${mitVorzeichen(waffenmeisterKkSchwelle, nullText: '+0')}'
       : null;
   return Herleitung(
     bezeichnung: 'TP',
@@ -686,7 +685,7 @@ Herleitung herleiteTpZuschlag({
         HerleitungsSchritt(
           bezeichnung:
               '${zauberName ?? 'Zaubereffekt'} '
-              '(KK ${_mitVorzeichen(zauberKk)})',
+              '(KK ${mitVorzeichen(zauberKk, nullText: '+0')})',
           betrag: zauberTpKk,
           art: HerleitungsArt.zauber,
           formel:

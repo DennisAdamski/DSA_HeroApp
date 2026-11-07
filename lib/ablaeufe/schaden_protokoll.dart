@@ -1,6 +1,7 @@
 import 'package:dsa_heldenverwaltung/domain/dice_log_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/modifier_fragment_text.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/schaden_ruecknahme_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/schaden_rules.dart';
 
@@ -36,8 +37,9 @@ DiceLogEntry baueSchadensProtokoll({
     teile.add(wundZoneLabel[zone]!);
   }
   if (buchung.angriffsModifikator != 0) {
-    final vorzeichen = buchung.angriffsModifikator > 0 ? '+' : '−';
-    teile.add('WS $vorzeichen${buchung.angriffsModifikator.abs()}');
+    teile.add(
+      'WS ${mitVorzeichen(buchung.angriffsModifikator, nullText: '−0')}',
+    );
   }
   if (hinzugefuegteWunden > 0) {
     teile.add(

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_fernkampf_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_kampfmittel_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/modifier_fragment_text.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_ladezustand_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/kampf_aenderung_rules.dart';
@@ -70,9 +71,9 @@ class GefechtGeschosse extends StatelessWidget {
     TextStyle? legende,
   ) {
     final mods = [
-      if (g.atMod != 0) 'AT ${_vorzeichen(g.atMod)}',
-      if (g.tpMod != 0) 'TP ${_vorzeichen(g.tpMod)}',
-      if (g.iniMod != 0) 'INI ${_vorzeichen(g.iniMod)}',
+      if (g.atMod != 0) 'AT ${mitVorzeichen(g.atMod)}',
+      if (g.tpMod != 0) 'TP ${mitVorzeichen(g.tpMod)}',
+      if (g.iniMod != 0) 'INI ${mitVorzeichen(g.iniMod)}',
     ];
     final name = g.name.trim().isEmpty ? 'Geschoss ${i + 1}' : g.name.trim();
     return Row(
@@ -110,8 +111,6 @@ class GefechtGeschosse extends StatelessWidget {
       ],
     );
   }
-
-  static String _vorzeichen(int w) => w > 0 ? '+$w' : '$w';
 }
 
 /// Fragt die Zahl aufgehobener Geschosse ab und bucht sie auf den Bestand.

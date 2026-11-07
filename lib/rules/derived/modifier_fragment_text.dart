@@ -50,3 +50,13 @@ String? modifierFragmentRemainderAfterAlias(
   }
   return normalizedFragment.substring(prefix.length).trim();
 }
+
+/// Ganzzahl mit Vorzeichen und typografischem Minus (U+2212): „+3“, „−1“.
+///
+/// [nullText] ist die Anzeige für 0; Standard „±0“. Stellen, die 0 heute
+/// anders zeigen, übergeben „+0“ oder „0“.
+String mitVorzeichen(int wert, {String nullText = '±0'}) => switch (wert) {
+  > 0 => '+$wert',
+  < 0 => '−${-wert}',
+  _ => nullText,
+};

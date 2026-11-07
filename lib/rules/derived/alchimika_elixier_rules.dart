@@ -8,6 +8,7 @@ import 'package:dsa_heldenverwaltung/domain/spell_duration.dart';
 import 'package:dsa_heldenverwaltung/domain/spell_effect_instance.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/active_spell_state_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/alchimika_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/modifier_fragment_text.dart';
 
 // Elixiere der Tugenden (TRANK, Teilstand 2).
 //
@@ -98,7 +99,6 @@ SpellDurationUnit? _einheit(String name) {
 /// Kurztext einer Eigenschaftsänderung für Dialog und Protokoll, z. B.
 /// `MU +3 · 3 Spielrunden`.
 String beschreibeElixierEigenschaft(AlchimikumEigenschaft e) {
-  final vorzeichen = e.wert >= 0 ? '+' : '−';
   final einheit = switch (e.einheit) {
     'spielrunden' => e.dauer == 1 ? 'Spielrunde' : 'Spielrunden',
     'stunden' => e.dauer == 1 ? 'Stunde' : 'Stunden',
@@ -107,7 +107,7 @@ String beschreibeElixierEigenschaft(AlchimikumEigenschaft e) {
     'minuten' => e.dauer == 1 ? 'Minute' : 'Minuten',
     _ => e.einheit,
   };
-  return '${e.eigenschaft} $vorzeichen${e.wert.abs()} · ${e.dauer} $einheit';
+  return '${e.eigenschaft} ${mitVorzeichen(e.wert, nullText: '+0')} · ${e.dauer} $einheit';
 }
 
 /// Die Wirkungsquellen eines eingenommenen Elixiers: je Eigenschaftsänderung

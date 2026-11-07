@@ -8,6 +8,7 @@ library;
 
 import 'package:dsa_heldenverwaltung/rules/derived/herleitung.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/kampf_ini_herleitung_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/modifier_fragment_text.dart';
 
 /// Schrittname des Sitzungsanteils, der den INI-Bonus der Vorschau ersetzt.
 const String kGefechtsIniBonusSchritt = 'INI-Bonus (Sitzung)';
@@ -121,7 +122,7 @@ int ausweichenOhneIniBonus(Herleitung? vorschau, {required int rueckfall}) =>
 
 String _schrittText(HerleitungsSchritt s) {
   if (s.art == HerleitungsArt.grundwert) return '${s.bezeichnung} ${s.betrag}';
-  return '${s.bezeichnung} ${s.betrag >= 0 ? '+' : '−'}${s.betrag.abs()}';
+  return '${s.bezeichnung} ${mitVorzeichen(s.betrag, nullText: '+0')}';
 }
 
 /// Erklärzeile „[titel]: Wert (Schritt, Schritt, …)“ aus den sichtbaren

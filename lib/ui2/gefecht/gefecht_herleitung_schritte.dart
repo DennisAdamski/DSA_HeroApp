@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:dsa_heldenverwaltung/rules/derived/herleitung.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/modifier_fragment_text.dart';
 
 /// Eine [Herleitung] des Gefechts als Überschrift, sichtbare Schritte mit
 /// Rechenweg, Quelle und Bedingung und Ergebniszeile.
@@ -81,7 +82,10 @@ class _Zeile extends StatelessWidget {
       child: Row(
         children: [
           Expanded(child: Text(bezeichnung, style: stil)),
-          Text('${vorzeichen && wert >= 0 ? '+' : ''}$wert', style: stil),
+          Text(
+            vorzeichen ? mitVorzeichen(wert, nullText: '+0') : '$wert',
+            style: stil,
+          ),
         ],
       ),
     );

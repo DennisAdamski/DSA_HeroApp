@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:dsa_heldenverwaltung/rules/derived/herleitung.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/modifier_fragment_text.dart';
 import 'package:dsa_heldenverwaltung/ui/config/ui_spacing.dart';
 
 /// Zeigt eine [Herleitung] des Regelmoduls (ARCH-04) als Abschnitt eines
@@ -115,13 +116,15 @@ class HerleitungsZeile extends StatelessWidget {
     final labelStyle = fett
         ? style
         : style?.copyWith(color: theme.colorScheme.onSurfaceVariant);
-    final sign = vorzeichen && wert >= 0 ? '+' : '';
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
       child: Row(
         children: [
           SizedBox(width: 140, child: Text(bezeichnung, style: labelStyle)),
-          Text('$sign$wert', style: style),
+          Text(
+            vorzeichen ? mitVorzeichen(wert, nullText: '+0') : '$wert',
+            style: style,
+          ),
         ],
       ),
     );
