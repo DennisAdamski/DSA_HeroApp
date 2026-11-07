@@ -8,6 +8,7 @@
 // gespeichert wird.
 
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
+import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
@@ -15,6 +16,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/alchimika_elixier_rules.dart'
 import 'package:dsa_heldenverwaltung/rules/derived/currency_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/inventar_aenderung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/inventar_menge_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/kampf_aenderung_rules.dart';
 
 /// Höchstmenge eines Verbrauchsgegenstands; mehr lässt der Block nicht zu.
 const int kDabeiMengeHoechstbestand = 9999;
@@ -173,4 +175,146 @@ HeroSheet mitGeldSchritt(HeroSheet held, int deltaKreuzer) {
     );
   }
   return mitDukatenSchritt(held, deltaKreuzer);
+}
+
+/// Ein Geschossbestand einer Fernkampfwaffe im Block „Dabei“.
+///
+/// Der Bestand gehört dem Kampf-Slot (`RangedProjectile.count`); der
+/// verknüpfte Inventareintrag ist nur seine Projektion und wird beim
+/// Speichern abgeglichen. Deshalb schreibt der Block Munition über die
+/// Kampfkonfiguration ([mitMunitionsSchritt]), nie über das Inventar.
+class DabeiMunition {
+  /// Erstellt den Verweis auf das Geschoss [geschoss] der Waffe [waffe].
+  const DabeiMunition({
+    required this.waffe,
+    required this.waffenIndex,
+    required this.geschoss,
+    required this.geschossIndex,
+    required this.aktiv,
+  });
+
+  /// Angezeigter Stand der Waffe.
+  final MainWeaponSlot waffe;
+
+  /// Angezeigte Position der Waffe; hilft nur bei Slots ohne ID.
+  final int waffenIndex;
+
+  /// Angezeigter Stand des Geschosses.
+  final RangedProjectile geschoss;
+
+  /// Angezeigte Position des Geschosses in seiner Waffe.
+  final int geschossIndex;
+
+  /// Ob das Geschoss das gewählte Geschoss der Waffe ist.
+  final bool aktiv;
+
+  /// Gezeigter Name des Geschosses.
+  String get name => geschoss.name.trim();
+
+  /// Gezeigter Name der Waffe.
+  String get waffenName => waffe.name.trim();
+
+  /// Gespeicherter Bestand.
+  int get anzahl => geschoss.count;
+
+  /// Ob der angezeigte Bestand ein Geschoss hergibt.
+  bool get kannAbziehen => anzahl > 0;
+
+  /// Ob der angezeigte Bestand unter [kGeschossHoechstbestand] liegt.
+  bool get kannHinzufuegen => anzahl < kGeschossHoechstbestand;
+}
+
+/// Die Geschossbestände aller Fernkampfwaffen in gespeicherter Reihenfolge.
+///
+/// Wie im Inventarabgleich zählen nur benannte Waffen, die Geschosse führen,
+/// und nur benannte Geschosse; unbenannte haben keinen Inventareintrag und
+/// keinen stabilen Verweis.
+List<DabeiMunition> dabeiMunition(CombatConfig config) {
+  final ergebnis = <DabeiMunition>[];
+  final slots = config.weaponSlots;
+  for (var w = 0; w < slots.length; w++) {
+    final waffe = slots[w];
+    if (waffe.name.trim().isEmpty || !waffe.fuehrtGeschosse) continue;
+    final profil = waffe.rangedProfile;
+    for (var g = 0; g < profil.projectiles.length; g++) {
+      final geschoss = profil.projectiles[g];
+      if (geschoss.name.trim().isEmpty) continue;
+      ergebnis.add(
+        DabeiMunition(
+          waffe: waffe,
+          waffenIndex: w,
+          geschoss: geschoss,
+          geschossIndex: g,
+          aktiv: profil.selectedProjectileIndex == g,
+        ),
+      );
+    }
+  }
+  return List<DabeiMunition>.unmodifiable(ergebnis);
+}
+
+/// Verschiebt den Bestand des Geschosses [angezeigt] um [delta] Stück.
+///
+/// Gerechnet wird vom **gespeicherten** Bestand, damit mehrere schnelle Klicks
+/// nacheinander alle zählen; begrenzt auf 0 bis [kGeschossHoechstbestand].
+/// Waffe und Geschoss werden über ihre IDs gefunden, ohne ID über Name und
+/// angezeigte Position (der Bestand selbst darf sich inzwischen geändert
+/// haben). Ändert sich nichts, kommt der Held selbst zurück.
+///
+/// Wirft einen [StateError], wenn Waffe oder Geschoss fehlen.
+HeroSheet mitMunitionsSchritt(
+  HeroSheet held,
+  DabeiMunition angezeigt,
+  int delta,
+) {
+  if (delta == 0) return held;
+  return mitKampfAenderung(held, (config) {
+    final slots = config.weaponSlots;
+    final w = _findeMunitionswaffe(slots, angezeigt);
+    if (w < 0) {
+      throw StateError(
+        '„${angezeigt.waffenName}“ wurde inzwischen geändert oder entfernt.',
+      );
+    }
+    final waffe = slots[w];
+    final geschosse = waffe.rangedProfile.projectiles;
+    final g = _findeMunitionsgeschoss(geschosse, angezeigt);
+    if (g < 0) {
+      throw StateError(
+        '„${angezeigt.name}“ wurde inzwischen geändert oder entfernt.',
+      );
+    }
+    return mitGeschossSchritt(
+      config,
+      waffe,
+      geschosse[g],
+      delta,
+      index: w,
+      geschossIndex: g,
+    );
+  });
+}
+
+// Position der angezeigten Waffe: per ID, ohne ID per Name an der angezeigten
+// Position, sonst die erste gleichnamige Fernkampfwaffe.
+int _findeMunitionswaffe(List<MainWeaponSlot> slots, DabeiMunition m) {
+  final id = m.waffe.id;
+  if (id.isNotEmpty) return slots.indexWhere((s) => s.id == id);
+  bool passt(MainWeaponSlot s) =>
+      s.fuehrtGeschosse && s.name.trim() == m.waffenName;
+  if (m.waffenIndex < slots.length && passt(slots[m.waffenIndex])) {
+    return m.waffenIndex;
+  }
+  return slots.indexWhere(passt);
+}
+
+// Position des angezeigten Geschosses; wie [_findeMunitionswaffe].
+int _findeMunitionsgeschoss(List<RangedProjectile> geschosse, DabeiMunition m) {
+  final id = m.geschoss.id;
+  if (id.isNotEmpty) return geschosse.indexWhere((g) => g.id == id);
+  bool passt(RangedProjectile g) => g.name.trim() == m.name;
+  if (m.geschossIndex < geschosse.length && passt(geschosse[m.geschossIndex])) {
+    return m.geschossIndex;
+  }
+  return geschosse.indexWhere(passt);
 }

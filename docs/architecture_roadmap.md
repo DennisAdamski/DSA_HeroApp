@@ -16,7 +16,7 @@ Ist-Zustand erneut prüfen und den konkreten Teilumfang festlegen.
 | --- | --- | --- |
 | Architektur (ARCH) | 01, 03, 05, 06 abgenommen | 02 und 04: Code fertig, manuelle Prüfung fehlt; 07 begleitend |
 | Fachlicher Ausbau | MAG-EFF: 17 Zauberprofile; TRANK: Teilstände 1 und 2 | weitere Zauber zurückgestellt; Elixiere, Kräuter, Verbandszeug offen |
-| Spielabend (SPIEL) | 01, 05, 06, 07 | 02 (Munition, Belastung), 03 (nicht begonnen), 04 (Produktion) |
+| Spielabend (SPIEL) | 01, 05, 06, 07 | 02 (Belastung, Begleiter), 03 (nicht begonnen), 04 (Produktion) |
 | Weitere Themen | Gefecht, Gefechtslage 1–7, Reittiere P1, Vertraute V1/V2, Reiseroute Stufe 1, Gruppen v2, Feedback, Redesign R1–R3, Aufräumserie REV-01–16 | siehe [Weitere Themen](#weitere-themen-stand-05112026) |
 
 **Größter Hebel:** Viele Hauptpunkte warten nur noch auf eine **manuelle
@@ -122,9 +122,15 @@ Teilumfang festlegen. Nach Wichtigkeit sortiert.
   (01.11.2026):** Einträge mit Vitalwirkung oder Katalogelixier tragen im Block
   „Benutzen“; es öffnet denselben Dialog wie das Gefechtsinventar
   (`gefechtsVitalwirkung`, Anwenden bzw. Einnehmen), der Wirkung und Stück
-  selbst bucht. **Offen:** Munition mit −/+ (Menge sitzt im Kampf-Slot und im
-  Inventar zugleich, `slotRef`-Regeln, Gefecht schreibt dieselben Werte);
-  Belastung im Block; Verbrauchsgegenstände von Begleitern.
+  selbst bucht. **Munition (07.11.2026):** Abschnitt „Munition“ mit −/+ je
+  Geschoss benannter Fernkampfwaffen. Der Kampf-Slot führt den Bestand,
+  geschrieben wird nur `RangedProjectile.count` über `mitMunitionsSchritt`
+  (`mitKampfAenderung` + `mitGeschossSchritt`, vom gespeicherten Wert); das
+  Inventar gleicht `updateHero` ab. Während eines laufenden Gefechts ist die
+  Munition im Block gesperrt, weil das Gefecht Ladezustand und Schuss am
+  Bestand führt (Tests in `spiel_dabei_rules_test.dart` und
+  `karto_dabei_abschnitt_test.dart`). **Offen:** Belastung im Block;
+  Verbrauchsgegenstände von Begleitern.
 - [ ] **SPIEL-03 — Zustände und Dauer.** Beobachtung: „Aktive Effekte“ kennt Zauber,
   aber keine schnellen Marker für Betäubung, Furcht oder Schmerz; der
   Kampfrundenzähler ist flüchtig und zählt keine Effektdauern herunter.

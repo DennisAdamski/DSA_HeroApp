@@ -534,6 +534,20 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   nicht bei Menge 0). Es öffnet über `gefechtsVitalwirkung` den bestehenden
   Anwenden-/Einnehmen-Dialog, der Wirkung (Zustand) und das Stück (Bogen)
   selbst bucht; der Block schreibt dabei nichts. Der Aufruf läuft über `aktion`.
+  **Munition (07.11.2026):** Zwischen Geld und Verbrauchsgegenständen steht,
+  sobald eine benannte Fernkampfwaffe benannte Geschosse führt, der Abschnitt
+  „Munition“ (`dabeiMunition`, je Geschoss Name, Waffe, „aktiv“ für das
+  gewählte Geschoss, Bestand mit −/+; Keys `karto-dabei-munition-<i>`). Der
+  Bestand gehört dem Kampf-Slot (`RangedProjectile.count`): `mitMunitionsSchritt`
+  ändert über `mitKampfAenderung`/`mitGeschossSchritt` nur diesen Bestand,
+  gerechnet vom gespeicherten Wert (0 bis `kGeschossHoechstbestand`), Waffe und
+  Geschoss über ihre IDs, ohne ID über Name und Position. Den verknüpften
+  Inventareintrag gleicht `updateHero` beim Speichern selbst ab; der Block
+  schreibt nie ins Inventar. Solange ein Gefecht des Helden läuft
+  (`gefechtProvider`), ist die Munition gesperrt (Hinweis
+  `kDabeiMunitionImGefecht`), weil das Gefecht Ladezustand und Schuss am
+  Bestand führt und eine fremde Bestandsänderung den Ladezustand zurücksetzen
+  würde; Geld und Verbrauchsgegenstände bleiben bedienbar.
   Der Block
   sperrt sich während einer Planung; die Schritte reihen sich je Held ein und
   haben bewusst keinen Doppelklickschutz, damit jeder Klick zählt. Ohne
