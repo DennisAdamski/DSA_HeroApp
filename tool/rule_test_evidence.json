@@ -8216,6 +8216,21 @@
         "note": "Wege der Helden S. 21 (Chunk 4071), Wege der Zauberei S. 19 und 32 (Chunk 4987, 5022) erneut gelesen: AT-Basis (MU+GE+KK)/5, PA-Basis (IN+GE+KK)/5, FK-Basis (IN+FF+KK)/5, INI-Basis (MU+MU+IN+GE)/5, Leiteigenschaft Gildenmagier KL, Gedankenschutz MU 15, IN 13, SF Eiserner Wille I."
       }
     },
+    "test/rules/hohe_ini_bonus_test.dart": {
+      "kind": "official",
+      "status": "verified",
+      "summary": "Prüft den Bonus der optionalen Regel „Hohe Initiative-Werte“: über 20 +1, über 30 +2, über 40 +3, kein Bonus unter 21 und keine vierte Stufe über 50. Kampfvorschau (PA, Ausweichen) und Gefecht nutzen dieselbe Funktion.",
+      "sources": [
+        {
+          "title": "Wege des Schwerts (Optional: Hohe Initiative-Werte)",
+          "pages": "78",
+          "mcpChunks": [
+            7039
+          ],
+          "checkedOn": "2026-11-07"
+        }
+      ]
+    },
     "test/rules/house_rule_registry_test.dart": {
       "kind": "product_contract",
       "status": "verified",

@@ -1,6 +1,7 @@
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/excel_rounding.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/ini_rules.dart';
 
 // Sonderfertigkeit-Bonus auf Ausweichen (Ausweichen I/II/III).
 int computeSfAusweichenBonus(CombatSpecialRules special) {
@@ -30,11 +31,9 @@ int computeAkrobatikBonus(Map<String, HeroTalentEntry> talents) {
   return raw > 0 ? raw : 0;
 }
 
-// INI-Bonus auf Ausweichen: ab Kampf-INI 21 aufwaerts, ROUNDUP((INI-20)/10).
-int computeIniAusweichenBonus({required int kampfInitiative}) {
-  if (kampfInitiative < 21) return 0;
-  return roundUpAwayFromZero((kampfInitiative - 20) / 10);
-}
+// INI-Bonus auf Ausweichen: der Bonus der hohen Initiative (WdS S. 78).
+int computeIniAusweichenBonus({required int kampfInitiative}) =>
+    hoheIniBonus(kampfInitiative);
 
 // Endwert Ausweichen: max(0, PA-Basis + SF-Bonus + Akrobatik + Axx + INI-Bonus + Mod - beKampf).
 int computeAusweichen({

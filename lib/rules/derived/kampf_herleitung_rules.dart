@@ -624,7 +624,8 @@ Herleitung herleitePaMitIniParade({
         bezeichnung: 'INI-Parade-Bonus',
         betrag: iniParadeMod,
         art: HerleitungsArt.modifikator,
-        formel: '(Kampf-INI $kampfInitiative − 11) / 10',
+        formel:
+            'Kampf-INI $kampfInitiative: über 20 +1, über 30 +2, über 40 +3',
       ),
     ],
   );
