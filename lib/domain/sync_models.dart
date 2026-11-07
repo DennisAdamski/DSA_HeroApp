@@ -6,6 +6,7 @@ import 'package:pointycastle/digests/sha256.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/sync_errors.dart';
+import 'package:dsa_heldenverwaltung/domain/unbekannte_json_felder.dart';
 
 /// Beschreibt die Arten von Nutzerobjekten, die der Konto-Sync verwaltet.
 enum SyncObjectType {
@@ -374,22 +375,9 @@ String heroStateContentHash(HeroState state) {
 /// Map-Schluessel werden rekursiv sortiert, damit unterschiedliche
 /// Einfuege-Reihenfolgen denselben Hash ergeben.
 String stableContentHash(Object? value) {
-  final canonical = _canonicalize(value);
+  final canonical = kanonischeJsonForm(value);
   final json = jsonEncode(canonical);
   final bytes = Uint8List.fromList(utf8.encode(json));
   final digest = SHA256Digest().process(bytes);
   return base64Url.encode(digest);
-}
-
-Object? _canonicalize(Object? value) {
-  if (value is Map) {
-    final sortedKeys = value.keys.map((key) => key.toString()).toList()..sort();
-    return <String, Object?>{
-      for (final key in sortedKeys) key: _canonicalize(value[key]),
-    };
-  }
-  if (value is Iterable) {
-    return value.map(_canonicalize).toList(growable: false);
-  }
-  return value;
 }

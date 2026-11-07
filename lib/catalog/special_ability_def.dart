@@ -202,8 +202,8 @@ class SpecialAbilityDef implements SpecialAbilityEntry {
         'varianten_freitext',
         fallback: true,
       ),
-      apErstwerb: _readNullableInt(json, 'ap_erstwerb'),
-      apFolgeerwerb: _readNullableInt(json, 'ap_folgeerwerb'),
+      apErstwerb: readCatalogNullableInt(json, 'ap_erstwerb'),
+      apFolgeerwerb: readCatalogNullableInt(json, 'ap_folgeerwerb'),
       voraussetzungenStruktur: readCatalogObjectList(
         json,
         'voraussetzungen_struktur',
@@ -254,15 +254,4 @@ class SpecialAbilityDef implements SpecialAbilityEntry {
       if (ruleMeta != null) 'ruleMeta': ruleMeta!.toJson(),
     };
   }
-}
-
-int? _readNullableInt(Map<String, dynamic> json, String key) {
-  final value = json[key];
-  if (value is int) {
-    return value;
-  }
-  if (value is num) {
-    return value.toInt();
-  }
-  return null;
 }

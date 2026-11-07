@@ -98,8 +98,8 @@ class HeroTraitDef {
       traitType: readCatalogString(json, 'traitType', fallback: ''),
       costText: readCatalogString(json, 'costText', fallback: ''),
       valueKind: readCatalogString(json, 'valueKind', fallback: 'binary'),
-      minValue: _readNullableInt(json, 'minValue'),
-      maxValue: _readNullableInt(json, 'maxValue'),
+      minValue: readCatalogNullableInt(json, 'minValue'),
+      maxValue: readCatalogNullableInt(json, 'maxValue'),
       unit: readCatalogString(json, 'unit', fallback: ''),
       selectionTemplate: readCatalogString(
         json,
@@ -145,15 +145,4 @@ class HeroTraitDef {
         'wirkungen': wirkungen.map((wirkung) => wirkung.toJson()).toList(),
     };
   }
-}
-
-int? _readNullableInt(Map<String, dynamic> json, String key) {
-  final value = json[key];
-  if (value is int) {
-    return value;
-  }
-  if (value is num) {
-    return value.toInt();
-  }
-  return null;
 }

@@ -181,8 +181,8 @@ class SpecialAbilityRequirement {
       code: readCatalogString(json, 'code', fallback: '').trim(),
       name: readCatalogString(json, 'name', fallback: '').trim(),
       namen: readCatalogStringList(json, 'namen'),
-      min: _readNullableInt(json, 'min'),
-      stufe: _readNullableInt(json, 'stufe'),
+      min: readCatalogNullableInt(json, 'min'),
+      stufe: readCatalogNullableInt(json, 'stufe'),
       text: readCatalogString(
         json,
         'text',
@@ -264,15 +264,4 @@ String _keyForArt(RequirementArt art) {
     }
   }
   return 'hinweis';
-}
-
-int? _readNullableInt(Map<String, dynamic> json, String key) {
-  final value = json[key];
-  if (value is int) {
-    return value;
-  }
-  if (value is num) {
-    return value.toInt();
-  }
-  return null;
 }
