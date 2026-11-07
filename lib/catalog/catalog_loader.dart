@@ -8,6 +8,7 @@ import 'package:dsa_heldenverwaltung/catalog/house_rule_pack.dart';
 import 'package:dsa_heldenverwaltung/catalog/house_rule_provenance.dart';
 import 'package:dsa_heldenverwaltung/catalog/catalog_runtime_data.dart';
 import 'package:dsa_heldenverwaltung/catalog/catalog_section_id.dart';
+import 'package:dsa_heldenverwaltung/catalog/json_asset.dart';
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 
 /// Laedt und validiert das Split-JSON-Katalogformat aus Flutter-Assets.
@@ -408,7 +409,7 @@ Future<Object?> _decodeJsonAdaptive(String raw) {
 /// Wirft [FormatException] wenn der Inhalt kein JSON-Objekt ist.
 Future<Map<String, dynamic>> _loadJsonObject(String assetPath) async {
   final raw = await rootBundle.loadString(assetPath, cache: false);
-  final decoded = await _decodeJsonAdaptive(raw);
+  final decoded = await _decodeJsonAdaptive(ohneBom(raw));
   if (decoded is Map<String, dynamic>) {
     return decoded;
   }
@@ -423,7 +424,7 @@ Future<Map<String, dynamic>> _loadJsonObject(String assetPath) async {
 /// Wirft [FormatException] wenn der Inhalt kein JSON-Array aus Objekten ist.
 Future<List<Map<String, dynamic>>> _loadJsonList(String assetPath) async {
   final raw = await rootBundle.loadString(assetPath, cache: false);
-  final decoded = await _decodeJsonAdaptive(raw);
+  final decoded = await _decodeJsonAdaptive(ohneBom(raw));
   if (decoded is! List) {
     throw FormatException(
       'Catalog section asset must be a JSON array: $assetPath',

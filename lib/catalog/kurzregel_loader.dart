@@ -1,9 +1,7 @@
-import 'dart:convert';
-
 import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart' show rootBundle;
 
 import 'package:dsa_heldenverwaltung/catalog/catalog_crypto.dart';
+import 'package:dsa_heldenverwaltung/catalog/json_asset.dart';
 import 'package:dsa_heldenverwaltung/catalog/kurzregel_def.dart';
 
 /// Asset des Kurzregel-Kompendiums (Top-Level-Liste, Texte v3-verschluesselt).
@@ -115,11 +113,9 @@ Future<KurzregelKatalog> ladeKurzregeln({
   CatalogKey? schluessel,
   AssetBundleLader? lader,
 }) async {
-  final laden = lader ?? rootBundle.loadString;
   final List<dynamic> roh;
   try {
-    final text = _ohneBom(await laden(kurzregelnAssetPfad));
-    final decoded = jsonDecode(text);
+    final decoded = await ladeJsonAsset(kurzregelnAssetPfad, lader: lader);
     if (decoded is! List) {
       return const KurzregelKatalog();
     }
@@ -130,8 +126,4 @@ Future<KurzregelKatalog> ladeKurzregeln({
     return const KurzregelKatalog();
   }
   return parseKurzregeln(roh, schluessel: schluessel);
-}
-
-String _ohneBom(String text) {
-  return text.startsWith('\uFEFF') ? text.substring(1) : text;
 }

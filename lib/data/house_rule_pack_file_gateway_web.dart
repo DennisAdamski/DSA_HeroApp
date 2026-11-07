@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:file_picker/file_picker.dart';
 
+import 'package:dsa_heldenverwaltung/data/dateiname.dart';
 import 'package:dsa_heldenverwaltung/data/house_rule_pack_file_gateway.dart';
 import 'package:dsa_heldenverwaltung/data/web_download.dart';
 
@@ -27,7 +28,7 @@ class WebHouseRulePackFileGateway implements HouseRulePackFileGateway {
     required String fileNameBase,
     required String jsonPayload,
   }) async {
-    final safeName = sanitizeDownloadFileName(
+    final safeName = bereinigeDateiname(
       fileNameBase,
       fallback: 'hausregelpaket',
     );

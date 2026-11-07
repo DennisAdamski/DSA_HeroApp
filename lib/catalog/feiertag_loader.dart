@@ -1,7 +1,4 @@
-import 'dart:convert';
-
-import 'package:flutter/services.dart' show rootBundle;
-
+import 'package:dsa_heldenverwaltung/catalog/json_asset.dart';
 import 'package:dsa_heldenverwaltung/domain/aventurischer_feiertag.dart';
 
 /// Asset der datumsfesten Feiertage (Top-Level-Liste).
@@ -98,9 +95,8 @@ FeiertagKatalog parseFeiertage(List<dynamic> roh) {
 Future<FeiertagKatalog> ladeFeiertage({
   Future<String> Function(String pfad)? lader,
 }) async {
-  final laden = lader ?? rootBundle.loadString;
   try {
-    final decoded = jsonDecode(await laden(feiertageAssetPfad));
+    final decoded = await ladeJsonAsset(feiertageAssetPfad, lader: lader);
     return decoded is List ? parseFeiertage(decoded) : const FeiertagKatalog();
   } on Object {
     return const FeiertagKatalog();

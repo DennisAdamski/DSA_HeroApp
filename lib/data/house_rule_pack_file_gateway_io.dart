@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
+import 'package:dsa_heldenverwaltung/data/dateiname.dart';
 import 'package:dsa_heldenverwaltung/data/house_rule_pack_file_gateway.dart';
 
 /// Dateigateway fuer Desktop- und Mobile-Plattformen.
@@ -30,7 +31,10 @@ class IoHouseRulePackFileGateway implements HouseRulePackFileGateway {
     required String fileNameBase,
     required String jsonPayload,
   }) async {
-    final safeName = _sanitizeFileName(fileNameBase);
+    final safeName = bereinigeDateiname(
+      fileNameBase,
+      fallback: 'hausregelpaket',
+    );
     final fileName = '$safeName.dsa-house-rule.json';
 
     if (_isDesktopPlatform()) {
@@ -91,11 +95,6 @@ class IoHouseRulePackFileGateway implements HouseRulePackFileGateway {
       case TargetPlatform.fuchsia:
         return false;
     }
-  }
-
-  String _sanitizeFileName(String value) {
-    final trimmed = value.trim().isEmpty ? 'hausregelpaket' : value.trim();
-    return trimmed.replaceAll(RegExp(r'[<>:"/\\|?*\x00-\x1F]'), '_');
   }
 }
 

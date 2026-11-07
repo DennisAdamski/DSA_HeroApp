@@ -78,6 +78,13 @@
       "rationale": "Alle 9 Tests gelesen. Die Einträge sind synthetische Maps (z. B. id 'spell.foo', wirkung 'Geheime Wirkung', 'Variante A/B/C'); Feldnamen wie wirkung/variants dienen nur als Struktur. Es wird kein Katalog-Inhalt als Buchaussage behauptet, nur Entschlüsselungs- und Durchreichverhalten.",
       "sources": []
     },
+    "test/catalog/catalog_source_data_copy_test.dart": {
+      "kind": "product_contract",
+      "status": "verified",
+      "summary": "Prüft, dass CatalogSourceData.copyWith den v3-Salt und die übrigen Rohdatenfelder erhält und nur die übergebenen Sektionen ersetzt.",
+      "rationale": "Datenvertrag der Katalogschicht ohne Regelbehauptung.",
+      "sources": []
+    },
     "test/catalog/combat_special_ability_catalog_test.dart": {
       "kind": "official",
       "status": "verified",
@@ -350,6 +357,13 @@
       "status": "verified",
       "summary": "Drei Tests zur Elternkette der Hausregel-Pakete: Kette bis zum Root, Selbstreferenz und Zweierkreis enden, Aktivierung folgt der Kette, Zyklen werden als Problem gemeldet und das Paket bleibt als Root sichtbar.",
       "rationale": "Synthetische Pakete ohne Patches; geprüft wird nur die Paketverwaltung der App (Ladeschutz gegen zyklische Importe). Keine Regelbehauptung, kein Katalogeintrag.",
+      "sources": []
+    },
+    "test/catalog/json_asset_test.dart": {
+      "kind": "product_contract",
+      "status": "verified",
+      "summary": "Prüft das Lesen von JSON-Assets mit und ohne führende BOM und die Weitergabe von Formatfehlern.",
+      "rationale": "Technischer Ladevertrag ohne Regelbehauptung.",
       "sources": []
     },
     "test/catalog/kurzregel_katalog_test.dart": {

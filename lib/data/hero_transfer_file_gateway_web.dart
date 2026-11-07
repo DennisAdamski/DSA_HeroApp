@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:file_picker/file_picker.dart';
 
+import 'package:dsa_heldenverwaltung/data/dateiname.dart';
 import 'package:dsa_heldenverwaltung/data/hero_transfer_file_gateway.dart';
 import 'package:dsa_heldenverwaltung/data/web_download.dart';
 
@@ -25,7 +26,7 @@ class WebHeroTransferFileGateway implements HeroTransferFileGateway {
     required String fileNameBase,
     required String jsonPayload,
   }) async {
-    final safeName = sanitizeDownloadFileName(fileNameBase, fallback: 'held');
+    final safeName = bereinigeDateiname(fileNameBase, fallback: 'held');
     final fileName = '$safeName.dsa-hero.json';
     triggerJsonDownload(fileName: fileName, jsonPayload: jsonPayload);
 
