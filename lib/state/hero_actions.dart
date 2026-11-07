@@ -574,13 +574,13 @@ class HeroActions {
   }
 
   // Legt eingebettete eigene Katalogeinträge eines Exports an und lädt den
-  // Katalog neu.
-  Future<void> _uebernimmTransferKatalog(
+  // Katalog neu; liefert die Anzahl der übernommenen Einträge.
+  Future<int> _uebernimmTransferKatalog(
     List<HeroTransferCatalogEntry> eintraege,
   ) async {
     final runtimeData = await _ref.read(catalogRuntimeDataProvider.future);
     final repository = _ref.read(customCatalogRepositoryProvider);
-    await repository.importTransferEntries(
+    final uebernommen = await repository.importTransferEntries(
       catalogVersion: runtimeData.baseData.version,
       entries: eintraege
           .map(
@@ -593,7 +593,10 @@ class HeroActions {
           )
           .toList(growable: false),
     );
-    _ref.read(catalogActionsProvider).reloadCatalog();
+    if (uebernommen > 0) {
+      _ref.read(catalogActionsProvider).reloadCatalog();
+    }
+    return uebernommen;
   }
 
   /// Speichert ein KI-generiertes Avatar-Bild und legt einen Gallery-Eintrag an.

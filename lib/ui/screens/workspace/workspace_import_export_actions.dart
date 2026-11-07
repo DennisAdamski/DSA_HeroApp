@@ -96,9 +96,19 @@ class WorkspaceImportExportActions {
 /// damit ein fehlendes Porträt nie stumm wie „kein Bild“ aussieht.
 String importMeldung(HeldImportErgebnis ergebnis) {
   final fehlend = ergebnis.fehlendeBilder;
-  if (fehlend <= 0) {
+  final ausgelassen = ergebnis.ausgelasseneKatalogeintraege;
+  if (fehlend <= 0 && ausgelassen <= 0) {
     return 'Held erfolgreich importiert';
   }
-  final bilder = fehlend == 1 ? '1 Bild konnte' : '$fehlend Bilder konnten';
-  return 'Held importiert – $bilder nicht gespeichert werden.';
+  final hinweise = <String>[
+    if (fehlend > 0)
+      fehlend == 1
+          ? '1 Bild konnte nicht gespeichert werden'
+          : '$fehlend Bilder konnten nicht gespeichert werden',
+    if (ausgelassen > 0)
+      ausgelassen == 1
+          ? '1 eigener Katalogeintrag wurde nicht übernommen'
+          : '$ausgelassen eigene Katalogeinträge wurden nicht übernommen',
+  ];
+  return 'Held importiert – ${hinweise.join(', ')}.';
 }
