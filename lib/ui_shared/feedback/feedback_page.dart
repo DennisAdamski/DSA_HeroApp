@@ -12,7 +12,7 @@ import 'package:dsa_heldenverwaltung/state/feedback/feedback_controller.dart';
 import 'package:dsa_heldenverwaltung/state/feedback/feedback_providers.dart';
 import 'package:dsa_heldenverwaltung/state/firebase_providers.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
-import 'package:dsa_heldenverwaltung/ui/config/app_layout.dart';
+import 'package:dsa_heldenverwaltung/ui_shared/layout/breiten_schwellen.dart';
 import 'package:dsa_heldenverwaltung/ui_shared/feedback/feedback_preview_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui_shared/feedback/feedback_result_view.dart';
 
@@ -310,7 +310,7 @@ class _FeedbackPageState extends ConsumerState<FeedbackPage> {
       viewportWidth: media.size.width,
       viewportHeight: media.size.height,
       devicePixelRatio: media.devicePixelRatio,
-      layoutClass: appLayoutOf(context).name,
+      layoutClass: layoutKlassenName(MediaQuery.sizeOf(context).width),
       interfaceVariant: settings.oberflaeche.name,
       brightness: Theme.of(context).brightness.name,
       tableMode: switch (settings.tabellenAnsicht) {

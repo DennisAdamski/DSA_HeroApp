@@ -1,9 +1,14 @@
 import 'package:flutter/widgets.dart';
 
+import 'package:dsa_heldenverwaltung/ui_shared/layout/breiten_schwellen.dart';
+
+export 'package:dsa_heldenverwaltung/ui_shared/layout/breiten_schwellen.dart'
+    show kSchwelleBreit, kSchwelleSehrBreit, kSchwelleTablet;
+
 /// Breitenklassen der neuen Oberflaeche.
 ///
-/// Die Schwellen sind absichtlich dieselben wie in
-/// `lib/ui/config/app_layout.dart`. Waehrend beide Oberflaechen nebeneinander
+/// Die Schwellen sind absichtlich dieselben wie im Bestand
+/// (`lib/ui_shared/layout/breiten_schwellen.dart`). Waehrend beide Oberflaechen nebeneinander
 /// laufen, sollen sie an denselben Stellen umbrechen; ein Wechsel der
 /// Oberflaeche darf das Layout nicht zusaetzlich verschieben.
 enum KartoBreite {
@@ -19,15 +24,6 @@ enum KartoBreite {
   /// Grosse Desktopfenster, Platz fuer drei Spalten.
   sehrBreit,
 }
-
-/// Untergrenze fuer Tablet-Layouts.
-const double kSchwelleTablet = 744;
-
-/// Untergrenze fuer breite Layouts.
-const double kSchwelleBreit = 1024;
-
-/// Untergrenze fuer sehr breite Layouts.
-const double kSchwelleSehrBreit = 1366;
 
 /// Ermittelt die Breitenklasse aus einer verfuegbaren Breite.
 KartoBreite kartoBreiteFuer(double breite) {
