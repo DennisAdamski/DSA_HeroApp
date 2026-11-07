@@ -5,6 +5,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/currency_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/spiel_dabei_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/inventar_aenderung_rules.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
@@ -27,7 +28,7 @@ const double kDabeiZweispaltigAb = 560;
 /// Zeigt den Geldstand mit Münzschritten und die Verbrauchsgegenstände des
 /// Inventars mit +/−. Jeder Klick schreibt **frisch**: den gespeicherten Helden
 /// laden, nur den Geldstand oder die Menge dieses einen Eintrags ändern,
-/// speichern (`mitGeldSchritt`, `mitVerbrauchsmengenSchritt`). Die Schritte
+/// speichern (`mitDukatenSchritt`, `mitVerbrauchsmengenSchritt`). Die Schritte
 /// reihen sich je Held ein, deshalb zählt auch ein schneller Doppelklick. Gesperrt
 /// ist alles während einer offenen Planung. Der Block rechnet nichts selbst.
 class KartoDabeiAbschnitt extends ConsumerStatefulWidget {
@@ -80,7 +81,7 @@ class _KartoDabeiAbschnittState extends ConsumerState<KartoDabeiAbschnitt>
       builder: (_) => _BetragDialog(dukaten: widget.dukaten),
     );
     if (ergebnis == null || ergebnis == 0) return;
-    await _schreibe((held) => mitGeldSchritt(held, ergebnis));
+    await _schreibe((held) => mitDukatenSchritt(held, ergebnis));
   }
 
   @override
@@ -110,7 +111,7 @@ class _KartoDabeiAbschnittState extends ConsumerState<KartoDabeiAbschnitt>
             dukaten: widget.dukaten,
             gesperrt: gesperrt,
             onSchritt: (kreuzer) =>
-                _schreibe((held) => mitGeldSchritt(held, kreuzer)),
+                _schreibe((held) => mitDukatenSchritt(held, kreuzer)),
             onBetrag: _betragAendern,
           ),
           const SizedBox(height: Abstand.weit),

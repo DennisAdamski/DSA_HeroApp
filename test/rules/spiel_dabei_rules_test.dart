@@ -7,6 +7,7 @@ import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
 import 'package:dsa_heldenverwaltung/domain/vitalwirkung.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/currency_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/spiel_dabei_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/inventar_aenderung_rules.dart';
 
 // Block „Dabei“ (SPIEL-02): Geldstand und Verbrauchsgegenstände zählen. Die
 // Schritte rechnen vom gespeicherten Wert, ändern nur ihr eigenes Feld und
@@ -229,18 +230,18 @@ void main() {
 
     test('Schritt rechnet vom gespeicherten Geldstand', () {
       var held = _held(dukaten: '12,5');
-      held = mitGeldSchritt(held, dsaKreuzerPerSilber);
+      held = mitDukatenSchritt(held, dsaKreuzerPerSilber);
       expect(held.dukaten, '12,6');
-      held = mitGeldSchritt(held, -dsaKreuzerPerDukat);
+      held = mitDukatenSchritt(held, -dsaKreuzerPerDukat);
       expect(held.dukaten, '11,6');
-      held = mitGeldSchritt(held, 3);
+      held = mitDukatenSchritt(held, 3);
       expect(held.dukaten, '11,603');
     });
 
     test('Abzug über den Bestand wirft, statt still bei 0 zu kappen', () {
       final held = _held(dukaten: '1');
       expect(
-        () => mitGeldSchritt(held, -(dsaKreuzerPerDukat + 1)),
+        () => mitDukatenSchritt(held, -(dsaKreuzerPerDukat + 1)),
         throwsA(
           isA<StateError>().having(
             (e) => e.message,
@@ -249,13 +250,13 @@ void main() {
           ),
         ),
       );
-      expect(mitGeldSchritt(held, -dsaKreuzerPerDukat).dukaten, '0');
+      expect(mitDukatenSchritt(held, -dsaKreuzerPerDukat).dukaten, '0');
     });
 
     test('unlesbarer Geldstand wirft; Schritt 0 ändert nichts', () {
       final held = _held(dukaten: 'ca. viel');
-      expect(() => mitGeldSchritt(held, 1), throwsA(isA<StateError>()));
-      expect(identical(mitGeldSchritt(held, 0), held), isTrue);
+      expect(() => mitDukatenSchritt(held, 1), throwsA(isA<StateError>()));
+      expect(identical(mitDukatenSchritt(held, 0), held), isTrue);
     });
   });
 }

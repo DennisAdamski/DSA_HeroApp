@@ -152,25 +152,3 @@ int? dabeiBetragKreuzer(String eingabe) {
   if (kreuzer == null || kreuzer <= 0) return null;
   return kreuzer;
 }
-
-/// Verschiebt den gespeicherten Geldstand um [deltaKreuzer].
-///
-/// Anders als der Münzknopf im Inventar kappt dieser Weg nie still bei 0: Ein
-/// Abzug über den Bestand hinaus ist ein [StateError], damit am Tisch kein
-/// Betrag verloren geht, der gar nicht da war. Ist der gespeicherte Text kein
-/// Betrag, wirft die Funktion ebenfalls.
-HeroSheet mitGeldSchritt(HeroSheet held, int deltaKreuzer) {
-  if (deltaKreuzer == 0) return held;
-  final aktuell = parseDsaCurrencyToKreuzer(held.dukaten);
-  if (aktuell == null) {
-    throw StateError(
-      'Der gespeicherte Dukatenwert ist nicht numerisch lesbar.',
-    );
-  }
-  if (aktuell + deltaKreuzer < 0) {
-    throw StateError(
-      'Nicht genug Geld: ${formatDsaCurrencyBreakdown(aktuell)} vorhanden.',
-    );
-  }
-  return mitDukatenSchritt(held, deltaKreuzer);
-}
