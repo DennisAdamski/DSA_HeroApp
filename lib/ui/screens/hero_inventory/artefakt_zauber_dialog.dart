@@ -5,9 +5,11 @@ import 'package:dsa_heldenverwaltung/catalog/spell_def.dart';
 import 'package:dsa_heldenverwaltung/domain/artefakt_daten.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_wirken_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/magic_rules.dart';
-import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/protected_content_helpers.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/held_katalog.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/planung_bearbeiten_guard.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/string_normalize.dart';
 
 /// Fragt einen in ein Artefakt gesprochenen Zauber ab.
 ///
@@ -22,16 +24,22 @@ Future<ArtefaktZauber?> zeigeArtefaktZauberDialog(
   BuildContext context, {
   ArtefaktZauber? start,
 }) {
+  // Die Dialogroute liegt außerhalb des Verwaltungsbereichs; die Helden-ID
+  // wird deshalb hier gelesen und mitgegeben.
+  final heroId = PlanungsBearbeitungsBereich.heldVon(context);
   return showDialog<ArtefaktZauber>(
     context: context,
-    builder: (_) => _ArtefaktZauberDialog(start: start),
+    builder: (_) => _ArtefaktZauberDialog(start: start, heroId: heroId),
   );
 }
 
 class _ArtefaktZauberDialog extends ConsumerStatefulWidget {
-  const _ArtefaktZauberDialog({this.start});
+  const _ArtefaktZauberDialog({this.start, this.heroId});
 
   final ArtefaktZauber? start;
+
+  /// Held, dessen Katalog (Regelprofil) die Zauberauswahl liefert.
+  final String? heroId;
 
   @override
   ConsumerState<_ArtefaktZauberDialog> createState() =>
@@ -295,7 +303,7 @@ class _ArtefaktZauberDialogState extends ConsumerState<_ArtefaktZauberDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final katalog = ref.watch(rulesCatalogProvider).asData?.value;
+    final katalog = beobachteHeldenKatalog(ref, widget.heroId).asData?.value;
     final spellId = _zauber.spellId;
     final def = katalog == null || spellId == null
         ? null
@@ -304,7 +312,7 @@ class _ArtefaktZauberDialogState extends ConsumerState<_ArtefaktZauberDialog> {
     final treffer = katalog == null || suchtext.isEmpty
         ? const <SpellDef>[]
         : katalog.spells
-              .where((s) => s.name.toLowerCase().contains(suchtext))
+              .where((s) => passtZurSuche(s.name, suchtext))
               .take(6)
               .toList(growable: false);
     return AlertDialog(

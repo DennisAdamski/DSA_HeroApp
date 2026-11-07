@@ -1730,7 +1730,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 220));
 
     if (find.textContaining('Ungespeicherte').evaluate().isNotEmpty) {
-      await tester.tap(find.widgetWithText(TextButton, 'Nein'));
+      await tester.tap(find.widgetWithText(TextButton, 'Weiter bearbeiten'));
       await tester.pump(const Duration(milliseconds: 400));
     }
 
@@ -1776,15 +1776,18 @@ void main() {
 
     await tester.binding.handlePopRoute();
     await tester.pumpAndSettle();
-    expect(find.widgetWithText(TextButton, 'Nein'), findsOneWidget);
+    expect(
+      find.widgetWithText(TextButton, 'Weiter bearbeiten'),
+      findsOneWidget,
+    );
 
-    await tester.tap(find.widgetWithText(TextButton, 'Nein'));
+    await tester.tap(find.widgetWithText(TextButton, 'Weiter bearbeiten'));
     await tester.pumpAndSettle();
     expect(find.text('Basisinformationen'), findsOneWidget);
 
     await tester.binding.handlePopRoute();
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Ja').first);
+    await tester.tap(find.text('Verwerfen').first);
     await tester.pumpAndSettle();
     expect(find.text('DSA Helden'), findsOneWidget);
   });

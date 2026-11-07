@@ -71,7 +71,7 @@ class _RangedProjectileEditorDialogState
   @override
   Widget build(BuildContext context) {
     return AdaptiveInputDialog(
-      title: widget.isNew ? 'Geschoss hinzufuegen' : 'Geschoss bearbeiten',
+      title: widget.isNew ? 'Geschoss hinzufügen' : 'Geschoss bearbeiten',
       maxWidth: kDialogWidthSmall,
       content: Column(
         mainAxisSize: MainAxisSize.min,

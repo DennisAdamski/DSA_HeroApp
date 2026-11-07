@@ -336,7 +336,8 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   behält die technische Schreibsperre als Rückfall. Wechsel, die den Workspace
   abbauen (Heldenwahl,
   Heldenliste, Rückkehr zur Bestandsoberfläche, System-Zurück), fragen
-  zusätzlich nach dem offenen Plan; aufgelegte Screens (Einstellungen,
+  zusätzlich nach dem offenen Plan, sofern er Einträge hat (ein leerer
+  Plan endet in beiden Oberflächen ohne Rückfrage); aufgelegte Screens (Einstellungen,
   Token-Blatt) prüfen nur den Editor, weil die Sitzung im gemeinsamen
   `ProviderScope` liegt und einen Push überlebt.
   Beim tatsächlichen Oberflächenwechsel in den Einstellungen greift jedoch
@@ -612,7 +613,13 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   seiner Abhängigkeiten gar nicht erst neu gebaut. Beides zusammen ergibt
   einen Ladezustand, der nie endet. Wer warten muss, abonniert stattdessen den
   `AsyncValue` (`ref.listenManual`) und wertet `error` und `hasValue` aus;
-  Muster: `_awaitCatalogReady` in `lib/ui/screens/heroes_home_screen.dart`.
+  Muster: `_awaitCatalogReady` in `lib/ui/screens/heroes_home_screen.dart`,
+  allgemein `warteAufAsyncWert` (`ui/screens/shared/async_wert_abwarten.dart`,
+  mit Timeout). Held-gebundene Bausteine, die auch heldenlos laufen, lesen
+  den Katalog über `beobachteHeldenKatalog`
+  (`ui/screens/shared/held_katalog.dart`); Dialogrouten liegen außerhalb des
+  `PlanungsBearbeitungsBereich`, die Helden-ID wird deshalb beim Öffnen
+  mitgegeben.
   Die Katalogkette in `lib/state/catalog_providers.dart` benutzt weiterhin
   `await ref.watch(dep.future)` — bewusst: ein `ref.watch(dep)` im
   Provider-Body macht den Provider rebuild-abhängig und bricht dadurch den

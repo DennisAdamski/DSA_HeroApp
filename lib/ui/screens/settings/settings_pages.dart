@@ -472,7 +472,8 @@ class _AccountSyncSettingsPage extends ConsumerWidget {
     }
     final local = value.toLocal();
     String two(int number) => number.toString().padLeft(2, '0');
-    return '${local.year}-${two(local.month)}-${two(local.day)} '
+    // Deutsches Datumsformat wie in der übrigen Oberfläche.
+    return '${two(local.day)}.${two(local.month)}.${local.year} '
         '${two(local.hour)}:${two(local.minute)}';
   }
 }
@@ -1138,26 +1139,14 @@ class _CatalogContentPasswordCard extends ConsumerWidget {
   }
 
   Future<void> _removePassword(BuildContext context, WidgetRef ref) async {
-    final confirmed = await showDialog<bool>(
+    final confirmed = await showAdaptiveConfirmDialog(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Passwort entfernen?'),
-        content: const Text(
-          'Geschützte Kataloginhalte werden danach wieder als gesperrt angezeigt.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: const Text('Abbrechen'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: const Text('Entfernen'),
-          ),
-        ],
-      ),
+      title: 'Passwort entfernen?',
+      content: 'Geschützte Kataloginhalte werden danach wieder als gesperrt angezeigt.',
+      confirmLabel: 'Entfernen',
+      isDestructive: true,
     );
-    if (confirmed != true) {
+    if (confirmed != AdaptiveConfirmResult.confirm) {
       return;
     }
     await ref.read(settingsActionsProvider).setCatalogContentPassword(null);

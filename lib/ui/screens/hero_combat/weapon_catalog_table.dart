@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/adaptive_table_columns.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/string_normalize.dart';
 
 const double weaponCatalogTableColumnSpacing = 12.0;
 const double weaponCatalogTableHorizontalMargin = 12.0;
@@ -95,7 +96,7 @@ class _WeaponCatalogTableState extends State<WeaponCatalogTable> {
 
     final needle = _searchQuery.toLowerCase();
     return weapons
-        .where((weapon) => weapon.name.toLowerCase().contains(needle))
+        .where((weapon) => passtZurSuche(weapon.name, needle))
         .toList(growable: false);
   }
 
@@ -124,7 +125,7 @@ class _WeaponCatalogTableState extends State<WeaponCatalogTable> {
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
           child: Text(
-            'Waffe aus Vorlage hinzufuegen, Werte sind danach frei editierbar.',
+            'Waffe aus Vorlage hinzufügen, Werte sind danach frei editierbar.',
             style: theme.textTheme.bodySmall?.copyWith(
               color: theme.colorScheme.onSurfaceVariant,
             ),
@@ -200,7 +201,7 @@ class _WeaponCatalogTableState extends State<WeaponCatalogTable> {
                                       Icons.add_circle_outline,
                                       size: 20,
                                     ),
-                                    tooltip: 'Als Vorlage hinzufuegen',
+                                    tooltip: 'Als Vorlage hinzufügen',
                                     padding: EdgeInsets.zero,
                                     constraints: const BoxConstraints.tightFor(
                                       width: 24,

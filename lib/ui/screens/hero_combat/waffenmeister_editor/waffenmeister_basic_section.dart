@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_combat/weapon_editor/weapon_editor_section_card.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/string_normalize.dart';
 
 /// Erlaubte Eigenschaftskuerzel fuer die Waffenmeister-Anforderungen.
 const _attributeOptions = ['MU', 'IN', 'FF', 'GE', 'KK'];
@@ -91,9 +92,7 @@ class WaffenmeisterBasicSection extends StatelessWidget {
               optionsBuilder: (textEditingValue) {
                 final query = textEditingValue.text.toLowerCase();
                 if (query.isEmpty) return weaponTypes;
-                return weaponTypes.where(
-                  (type) => type.toLowerCase().contains(query),
-                );
+                return weaponTypes.where((type) => passtZurSuche(type, query));
               },
               fieldViewBuilder: (context, controller, focusNode, onSubmitted) {
                 return TextField(

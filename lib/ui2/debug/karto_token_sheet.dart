@@ -109,7 +109,7 @@ class KartoTokenSheet extends StatelessWidget {
             titel: 'Navigation',
             erklaerung:
                 'Die Navigation bleibt dunkel und verwendet eigene '
-                'Textrollen fuer aktive und ruhige Ziele.',
+                'Textrollen für aktive und ruhige Ziele.',
             child: Container(
               color: t.navigation,
               padding: const EdgeInsets.all(Abstand.block),

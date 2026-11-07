@@ -116,7 +116,7 @@ class _OpenItemAddDialogState extends State<_OpenItemAddDialog> {
     final hasKlassifikationen = widget.def.klassifikationen.isNotEmpty;
 
     return AdaptiveInputDialog(
-      title: '${widget.def.name}: Eintrag hinzufuegen',
+      title: '${widget.def.name}: Eintrag hinzufügen',
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,

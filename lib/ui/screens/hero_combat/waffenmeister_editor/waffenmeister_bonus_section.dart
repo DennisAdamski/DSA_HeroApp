@@ -167,7 +167,7 @@ class WaffenmeisterBonusSection extends StatelessWidget {
                 ),
                 const SizedBox(width: 4),
                 IconButton(
-                  icon: const Icon(Icons.delete, size: 20),
+                  icon: const Icon(Icons.delete_outline, size: 20),
                   visualDensity: VisualDensity.compact,
                   onPressed: () => onRemoveBonus(index),
                 ),

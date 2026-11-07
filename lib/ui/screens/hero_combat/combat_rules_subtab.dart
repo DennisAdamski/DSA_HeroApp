@@ -271,7 +271,7 @@ extension _CombatRulesSubtab on _HeroCombatTabState {
                               ),
                             ),
                             IconButton(
-                              icon: const Icon(Icons.delete),
+                              icon: const Icon(Icons.delete_outline),
                               tooltip: 'Entfernen',
                               onPressed: () {
                                 final next = List<WaffenmeisterConfig>.from(

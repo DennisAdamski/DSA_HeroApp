@@ -1024,8 +1024,8 @@ class _EditableAdventureSeRewardCard extends StatelessWidget {
                 final query = value.text.toLowerCase();
                 return targetOptions.where(
                   (o) =>
-                      o.label.toLowerCase().contains(query) ||
-                      o.id.toLowerCase().contains(query),
+                      passtZurSuche(o.label, query) ||
+                      passtZurSuche(o.id, query),
                 );
               },
               onSelected: rewardLocked
@@ -1275,14 +1275,6 @@ String _lootRewardLabel(HeroAdventureLootEntry loot) {
   return label.isEmpty ? 'Gegenstand' : label;
 }
 
-String _formatDukatenReward(double value) {
-  final isWhole = value == value.roundToDouble();
-  if (isWhole) {
-    return value.round().toString();
-  }
-  final trimmed = value
-      .toStringAsFixed(2)
-      .replaceFirst(RegExp(r'0+$'), '')
-      .replaceFirst(RegExp(r'\.$'), '');
-  return trimmed.replaceAll('.', ',');
-}
+// Kanonisches Dukatenformat (Kreuzer-genau, Dezimalkomma).
+String _formatDukatenReward(double value) =>
+    formatDsaCurrencyDukaten(dukatenToDsaKreuzer(value));

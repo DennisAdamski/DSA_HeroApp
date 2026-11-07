@@ -18,6 +18,8 @@ import 'package:dsa_heldenverwaltung/ui2/shell/karto_gefechts_adapter.dart';
 
 import 'gefecht_zahlfeld.dart';
 
+import 'package:dsa_heldenverwaltung/rules/derived/string_normalize.dart';
+
 /// Eine wählbare Talent- oder Eigenschaftsprobe des Gefechts.
 class GefechtProbenkandidat {
   /// [request] ist bereits mit dem TaW* bzw. Eigenschaftswert aufgelöst.
@@ -213,9 +215,7 @@ class _ProbenwahlState extends State<_Probenwahl> {
     // Ausweichproben (Meisterentscheid) erscheinen nur bei einer Suche.
     final treffer = widget.kandidaten
         .where(
-          (k) => suche.isEmpty
-              ? !k.ausweichen
-              : k.name.toLowerCase().contains(suche),
+          (k) => suche.isEmpty ? !k.ausweichen : passtZurSuche(k.name, suche),
         )
         .take(60)
         .toList();

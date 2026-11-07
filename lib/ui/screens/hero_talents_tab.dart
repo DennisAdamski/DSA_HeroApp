@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/proben_favoriten_rules.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_proben_favorit.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/planung_bearbeiten_guard.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/modifikatoren_dialog.dart';
 import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -33,7 +34,6 @@ import 'package:dsa_heldenverwaltung/rules/derived/talent_herleitung_rules.dart'
 import 'package:dsa_heldenverwaltung/rules/derived/talent_probe_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/talent_specialization_hints.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
-import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
@@ -46,7 +46,6 @@ import 'package:dsa_heldenverwaltung/ui/widgets/adaptive_table_columns.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/responsive_adaptive_table.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/resizable_table_columns.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_overview/herleitung_abschnitt.dart';
-import 'package:dsa_heldenverwaltung/ui/screens/hero_talents/combat_specialization_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/dice_log_persistence.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/editor_entwurf_speichern.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/probe_request_factory.dart';
@@ -60,6 +59,7 @@ import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/karto_variante.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_begabung_rules.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/begabung_haekchen.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/string_normalize.dart';
 
 part 'hero_talents/hero_talents_cells.dart';
 part 'hero_talents/hero_talents_edit_actions.dart';
@@ -73,8 +73,6 @@ part 'hero_talents/talent_catalog_table.dart';
 part 'hero_talents/talent_detail_dialog.dart';
 part 'hero_talents/talent_modifiers_dialog.dart';
 
-enum _TalentTabScope { nonCombat, combat }
-
 class HeroTalentsTab extends _HeroTalentTableTab {
   const HeroTalentsTab({
     super.key,
@@ -84,26 +82,13 @@ class HeroTalentsTab extends _HeroTalentTableTab {
     required super.onEditingChanged,
     required super.onRegisterDiscard,
     required super.onRegisterEditActions,
-  }) : super(scope: _TalentTabScope.nonCombat);
-}
-
-class HeroCombatTalentsTab extends _HeroTalentTableTab {
-  const HeroCombatTalentsTab({
-    super.key,
-    required super.heroId,
-    super.showInlineActions = true,
-    required super.onDirtyChanged,
-    required super.onEditingChanged,
-    required super.onRegisterDiscard,
-    required super.onRegisterEditActions,
-  }) : super(scope: _TalentTabScope.combat);
+  });
 }
 
 class _HeroTalentTableTab extends ConsumerStatefulWidget {
   const _HeroTalentTableTab({
     super.key,
     required this.heroId,
-    required this.scope,
     required this.showInlineActions,
     required this.onDirtyChanged,
     required this.onEditingChanged,
@@ -112,7 +97,6 @@ class _HeroTalentTableTab extends ConsumerStatefulWidget {
   });
 
   final String heroId;
-  final _TalentTabScope scope;
   final bool showInlineActions;
   final void Function(bool isDirty) onDirtyChanged;
   final void Function(bool isEditing) onEditingChanged;
@@ -157,7 +141,6 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
   RulesCatalog? _latestCatalog;
   Map<String, HeroTalentEntry> _draftTalents = <String, HeroTalentEntry>{};
   List<HeroMetaTalent> _draftMetaTalents = <HeroMetaTalent>[];
-  Set<String> _invalidCombatTalentIds = <String>{};
   List<TalentSpecialAbility> _draftTalentSpecialAbilities =
       <TalentSpecialAbility>[];
   Map<String, HeroLanguageEntry> _draftSprachen = <String, HeroLanguageEntry>{};
@@ -204,14 +187,12 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
         }
       },
     );
-    if (widget.scope == _TalentTabScope.nonCombat) {
-      _subTabController = TabController(length: 3, vsync: this);
-      _subTabController!.addListener(() {
-        if (mounted) {
-          setState(() {});
-        }
-      });
-    }
+    _subTabController = TabController(length: 3, vsync: this);
+    _subTabController!.addListener(() {
+      if (mounted) {
+        setState(() {});
+      }
+    });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         _registerWithParent();
@@ -259,22 +240,18 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
         data: (catalog) {
           _latestCatalogRuleResolver = catalog.ruleResolver;
           _latestCatalog = catalog;
-          final combatBaseBe = widget.scope == _TalentTabScope.nonCombat
-              ? computeCombatPreviewStats(
-                  hero,
-                  state,
-                  catalogTalents: catalog.talents,
-                  catalogManeuvers: catalog.maneuvers,
-                  catalogCombatSpecialAbilities: catalog.combatSpecialAbilities,
-                  catalog: catalog,
-                ).beKampf
-              : null;
+          final combatBaseBe = computeCombatPreviewStats(
+            hero,
+            state,
+            catalogTalents: catalog.talents,
+            catalogManeuvers: catalog.maneuvers,
+            catalogCombatSpecialAbilities: catalog.combatSpecialAbilities,
+            catalog: catalog,
+          ).beKampf;
           final talentBeOverride = ref.watch(talentBeOverrideProvider(hero.id));
-          final activeTalentBe = combatBaseBe == null
-              ? 0
-              : (talentBeOverride ?? combatBaseBe);
-          _beKampf = combatBaseBe ?? 0;
-          _beOverride = combatBaseBe == null ? null : talentBeOverride;
+          final activeTalentBe = talentBeOverride ?? combatBaseBe;
+          _beKampf = combatBaseBe;
+          _beOverride = talentBeOverride;
           _inventarQuellen =
               ref
                   .watch(heroComputedProvider(widget.heroId))
@@ -285,13 +262,11 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
           final relevantTalents = catalog.talents
               .where(_matchesScope)
               .toList(growable: false);
-          final effectiveAttributes = widget.scope == _TalentTabScope.nonCombat
-              ? computeEffectiveAttributes(
-                  hero,
-                  tempAttributeMods: effektiveTempAttributeMods(state),
-                  catalog: catalog,
-                )
-              : null;
+          final effectiveAttributes = computeEffectiveAttributes(
+            hero,
+            tempAttributeMods: effektiveTempAttributeMods(state),
+            catalog: catalog,
+          );
           return ValueListenableBuilder<int>(
             valueListenable: _tableRevision,
             builder: (context, revision, child) {
@@ -318,55 +293,39 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
               final talentTabChildren = <Widget>[
                 if (showTalentsHeader) ...[
                   CodexTabHeader(
-                    title: widget.scope == _TalentTabScope.combat
-                        ? 'Kampftechniken'
-                        : 'Talente & Bildung',
-                    subtitle: widget.scope == _TalentTabScope.combat
-                        ? 'AT/PA-Verteilung, Waffengattungen und Spezialisierungen im taktischen Codex.'
-                        : 'Talentgruppen, Sonderfertigkeiten sowie Sprachen und Schriften in verdichteter Darstellung.',
-                    assetPath: widget.scope == _TalentTabScope.combat
-                        ? 'assets/ui/codex/combat_silhouette.png'
-                        : 'assets/ui/codex/compass_mark.png',
+                    title: 'Talente & Bildung',
+                    subtitle: 'Talentgruppen, Sonderfertigkeiten sowie Sprachen und Schriften in verdichteter Darstellung.',
+                    assetPath: 'assets/ui/codex/compass_mark.png',
                   ),
                   const SizedBox(height: 12),
                 ],
-                if (widget.scope == _TalentTabScope.nonCombat &&
-                    widget.showInlineActions)
+                if (widget.showInlineActions)
                   _buildTopActionBar(
                     heroId: hero.id,
-                    combatBaseBe: combatBaseBe ?? 0,
+                    combatBaseBe: combatBaseBe,
                     activeTalentBe: activeTalentBe,
                   ),
-                if (widget.scope == _TalentTabScope.combat &&
-                    widget.showInlineActions)
-                  _buildCombatActionBar(allTalents: relevantTalents),
-                if (widget.scope == _TalentTabScope.nonCombat)
-                  TabBar(
-                    controller: _subTabController,
-                    isScrollable: karto,
-                    tabAlignment: karto ? TabAlignment.start : null,
-                    tabs: const [
-                      Tab(text: 'Talente'),
-                      Tab(text: 'Sonderfertigkeiten'),
-                      Tab(text: 'Sprachen & Schriften'),
-                    ],
-                  ),
-                if (widget.scope == _TalentTabScope.nonCombat &&
-                    _subTabController?.index == 0)
+                TabBar(
+                  controller: _subTabController,
+                  isScrollable: karto,
+                  tabAlignment: karto ? TabAlignment.start : null,
+                  tabs: const [
+                    Tab(text: 'Talente'),
+                    Tab(text: 'Sonderfertigkeiten'),
+                    Tab(text: 'Sprachen & Schriften'),
+                  ],
+                ),
+                if (_subTabController?.index == 0)
                   _buildSearchHeader(
                     allTalents: relevantTalents,
                     allCatalogTalents: catalog.talents,
                   ),
-                if (widget.scope == _TalentTabScope.nonCombat &&
-                    _subTabController?.index == 0 &&
+                if (_subTabController?.index == 0 &&
                     filterQuery.isEmpty &&
                     groups.length > 1)
                   _buildGroupJumpBar(groups),
-                if (widget.scope == _TalentTabScope.nonCombat &&
-                    _subTabController!.index == 1)
-                  _buildSpecialAbilitiesTab(),
-                if (widget.scope == _TalentTabScope.nonCombat &&
-                    _subTabController!.index == 2)
+                if (_subTabController!.index == 1) _buildSpecialAbilitiesTab(),
+                if (_subTabController!.index == 2)
                   _SprachenSchriftenTab(
                     heroId: widget.heroId,
                     draftSprachen: _draftSprachen,
@@ -420,8 +379,7 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
                       _markFieldChanged();
                     },
                   ),
-                if (widget.scope == _TalentTabScope.combat ||
-                    _subTabController?.index == 0)
+                if (_subTabController?.index == 0)
                   ...groups.expand((group) {
                     final allGroupTalents =
                         List<TalentDef>.from(grouped[group]!)..sort(
@@ -432,10 +390,7 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
                     final talents = filterQuery.isEmpty
                         ? allGroupTalents
                         : allGroupTalents
-                              .where(
-                                (t) =>
-                                    t.name.toLowerCase().contains(filterQuery),
-                              )
+                              .where((t) => passtZurSuche(t.name, filterQuery))
                               .toList(growable: false);
                     if (talents.isEmpty) return const <Widget>[];
                     final isCollapsed = _collapsedGroups.contains(group);
@@ -463,11 +418,9 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
                           ),
                           child: isCollapsed
                               ? const SizedBox.shrink()
-                              : widget.scope == _TalentTabScope.combat
-                              ? _buildCombatTalentsTable(talents: talents)
                               : _buildTalentsTable(
                                   talents: talents,
-                                  effectiveAttributes: effectiveAttributes!,
+                                  effectiveAttributes: effectiveAttributes,
                                   activeBaseBe: activeTalentBe,
                                   inventoryTalentMods:
                                       ref
@@ -483,8 +436,7 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
                       ),
                     ];
                   }),
-                if (widget.scope == _TalentTabScope.nonCombat &&
-                    (_subTabController?.index == 0) &&
+                if ((_subTabController?.index == 0) &&
                     _draftMetaTalents.isNotEmpty)
                   Builder(
                     builder: (context) {
@@ -492,9 +444,7 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
                           ? _draftMetaTalents
                           : _draftMetaTalents
                                 .where(
-                                  (m) => m.name.toLowerCase().contains(
-                                    filterQuery,
-                                  ),
+                                  (m) => passtZurSuche(m.name, filterQuery),
                                 )
                                 .toList(growable: false);
                       if (visibleMeta.isEmpty) {
@@ -503,7 +453,7 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
                       return _buildMetaTalentsCard(
                         metaTalents: visibleMeta,
                         catalogTalents: catalog.talents,
-                        effectiveAttributes: effectiveAttributes!,
+                        effectiveAttributes: effectiveAttributes,
                         activeBaseBe: activeTalentBe,
                       );
                     },

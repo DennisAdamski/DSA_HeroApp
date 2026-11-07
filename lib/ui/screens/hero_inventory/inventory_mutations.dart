@@ -245,7 +245,7 @@ extension _HeroInventoryMutations on _HeroInventoryTabState {
 
     final confirmed = await showAdaptiveConfirmDialog(
       context: context,
-      title: 'Gegenstand löschen',
+      title: 'Gegenstand löschen?',
       content: 'Soll „${_entryName(entry)}“ wirklich gelöscht werden?',
       confirmLabel: 'Löschen',
       isDestructive: true,

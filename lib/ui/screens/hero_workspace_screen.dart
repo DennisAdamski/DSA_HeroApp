@@ -30,6 +30,7 @@ import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/ui_shared/feedback/open_feedback.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/async_wert_abwarten.dart';
 
 part 'workspace/workspace_layout.dart';
 part 'workspace/workspace_advancement.dart';
@@ -103,10 +104,13 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
       if (!mounted) {
         return;
       }
+      // Über das Abo statt `.future`: hält die Katalogkette aktiv und endet
+      // auch bei einem Fehler; der Katalog des Helden wärmt sein Regelprofil.
       unawaited(
-        ref
-            .read(rulesCatalogProvider.future)
-            .then<void>((_) {}, onError: (Object error, StackTrace stack) {}),
+        warteAufAsyncWert(
+          ref,
+          heroRulesCatalogProvider(widget.heroId),
+        ).then<void>((_) {}, onError: (Object error, StackTrace stack) {}),
       );
     });
   }

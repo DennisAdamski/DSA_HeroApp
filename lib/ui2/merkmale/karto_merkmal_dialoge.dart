@@ -4,6 +4,7 @@ import 'package:dsa_heldenverwaltung/catalog/hero_trait_def.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/string_normalize.dart';
 
 /// Auswahl im Katalogdialog: ein Katalogeintrag oder ein freier Eintrag.
 class KartoMerkmalWahl {
@@ -161,9 +162,12 @@ class _KatalogDialogState extends State<_KatalogDialog> {
         .where(
           (def) =>
               begriff.isEmpty ||
-              '${def.name} ${def.costText} ${def.markers.join(' ')}'
-                  .toLowerCase()
-                  .contains(begriff),
+              // Dieselben Felder wie die Auswahl der Bestandsoberfläche.
+              passtZurSuche(
+                '${def.name} ${def.costText} ${def.source} '
+                '${def.markers.join(' ')}',
+                begriff,
+              ),
         )
         .take(80)
         .toList(growable: false);

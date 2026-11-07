@@ -230,6 +230,7 @@ Future<AdaptiveConfirmResult> showAdaptiveConfirmDialog({
   required String confirmLabel,
   String? saveLabel,
   bool isDestructive = false,
+  Key? confirmKey,
 }) async {
   final result = await showDialog<AdaptiveConfirmResult>(
     context: context,
@@ -249,6 +250,7 @@ Future<AdaptiveConfirmResult> showAdaptiveConfirmDialog({
             child: Text(saveLabel),
           ),
         TextButton(
+          key: confirmKey,
           onPressed: () =>
               Navigator.of(dialogContext).pop(AdaptiveConfirmResult.confirm),
           style: isDestructive
