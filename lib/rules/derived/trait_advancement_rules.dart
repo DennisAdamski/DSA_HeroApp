@@ -202,6 +202,14 @@ bool merkmalTraegtWert(HeroTraitDef def) =>
     def.valueKind == 'level' ||
     def.valueKind == 'points';
 
+/// Ob das Template eine Auswahl (`{choice}`) enthält.
+bool merkmalBrauchtAuswahl(HeroTraitDef def) =>
+    def.selectionTemplate.contains('{choice}');
+
+/// Ob ein Katalogeintrag beim Hinzufügen Auswahl oder Wert braucht.
+bool merkmalBrauchtAngaben(HeroTraitDef def) =>
+    merkmalBrauchtAuswahl(def) || merkmalTraegtWert(def);
+
 /// GP-Wert eines Vor- oder Nachteils abhängig von Wert und Auswahl.
 class MerkmalGpTarif {
   const MerkmalGpTarif._(this._rechne, {required this.wertAbhaengig});

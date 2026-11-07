@@ -54,9 +54,16 @@ int begleiterAktuellerPool(
   HeroState state,
   BegleiterPool pool,
 ) {
-  final gespeichert = _gespeichert(state.begleiterZustaende[c.id], pool);
-  return gespeichert ?? begleiterPoolMaximum(c, pool);
+  return begleiterAktuellerPoolAus(c, state.begleiterZustaende[c.id], pool);
 }
+
+/// Wie [begleiterAktuellerPool], für Oberflächen, die den Zustandseintrag
+/// des Begleiters schon in der Hand haben.
+int begleiterAktuellerPoolAus(
+  HeroCompanion c,
+  BegleiterZustand? zustand,
+  BegleiterPool pool,
+) => _gespeichert(zustand, pool) ?? begleiterPoolMaximum(c, pool);
 
 /// Schritt um [schritt] mit den Grenzen des Pools: nach unten
 /// [BegleiterPool.untergrenze], nach oben das Maximum [maximum].

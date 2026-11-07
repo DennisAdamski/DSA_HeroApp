@@ -73,6 +73,7 @@ import 'package:dsa_heldenverwaltung/ui/widgets/karto_variante.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
 import 'package:dsa_heldenverwaltung/ui2/widgets/karto_ornamente.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/trait_advancement_rules.dart';
 
 part 'hero_overview/hero_avatar_section.dart';
 part 'hero_overview/hero_overview_base_info_section.dart';

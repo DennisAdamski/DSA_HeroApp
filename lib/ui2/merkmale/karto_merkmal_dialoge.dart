@@ -4,6 +4,7 @@ import 'package:dsa_heldenverwaltung/catalog/hero_trait_def.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/trait_advancement_rules.dart';
 
 /// Auswahl im Katalogdialog: ein Katalogeintrag oder ein freier Eintrag.
 class KartoMerkmalWahl {
@@ -19,21 +20,6 @@ class KartoMerkmalWahl {
 
 /// Auswahl und Wert eines katalogisierten Merkmals.
 typedef KartoMerkmalWerte = ({String auswahl, int? wert});
-
-/// Ob ein Katalogeintrag Auswahl oder Wert braucht.
-bool merkmalBrauchtAngaben(HeroTraitDef def) {
-  return merkmalBrauchtAuswahl(def) || merkmalBrauchtWert(def);
-}
-
-/// Ob das Template eine Auswahl (`{choice}`) enthaelt.
-bool merkmalBrauchtAuswahl(HeroTraitDef def) =>
-    def.selectionTemplate.contains('{choice}');
-
-/// Ob das Merkmal einen Zahlenwert traegt.
-bool merkmalBrauchtWert(HeroTraitDef def) =>
-    def.selectionTemplate.contains('{value}') ||
-    def.valueKind == 'level' ||
-    def.valueKind == 'points';
 
 /// Zeigt die Katalogsuche fuer Vor- oder Nachteile.
 Future<KartoMerkmalWahl?> zeigeMerkmalKatalog({
@@ -293,7 +279,7 @@ class _WerteDialogState extends State<_WerteDialog> {
   @override
   Widget build(BuildContext context) {
     final brauchtAuswahl = merkmalBrauchtAuswahl(widget.def);
-    final brauchtWert = merkmalBrauchtWert(widget.def);
+    final brauchtWert = merkmalTraegtWert(widget.def);
     final beschriftung = widget.def.choiceLabel.trim().isEmpty
         ? 'Auswahl'
         : widget.def.choiceLabel.trim();

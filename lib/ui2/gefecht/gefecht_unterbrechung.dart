@@ -6,8 +6,8 @@ import 'package:dsa_heldenverwaltung/state/gefecht_provider.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_initiative_provider.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_wirken_rules.dart';
-import 'package:dsa_heldenverwaltung/rules/derived/hero_requirement_context.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_gefechts_adapter.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/spell_effect_combat_rules.dart';
 
 import 'gefecht_wirkabschluss.dart';
 
@@ -231,10 +231,7 @@ Future<void> stoereGefechtsWirken({
     talentBeOverride: ref.read(talentBeOverrideProvider(heroId)),
   );
   if (request == null) throw StateError('Selbstbeherrschungswerte fehlen.');
-  final konz = heroSpecialAbilityNames(
-    snapshot.hero,
-    catalog: katalog,
-  ).any((n) => n.toLowerCase().startsWith('konzentrationsstärke'));
+  final konz = heldKenntKonzentrationsstaerke(snapshot.hero, katalog);
   final ctl = ref.read(gefechtProvider(heroId).notifier);
   final id = UniqueKey().toString();
   if (!ctl.reservieren(id)) return;

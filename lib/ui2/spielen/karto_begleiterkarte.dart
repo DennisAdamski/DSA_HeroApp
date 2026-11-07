@@ -244,12 +244,7 @@ class _Karte extends StatelessWidget {
   }
 
   int _aktuell(BegleiterPool pool) =>
-      (switch (pool) {
-        BegleiterPool.lep => zustand.currentLep,
-        BegleiterPool.asp => zustand.currentAsp,
-        BegleiterPool.aup => zustand.currentAup,
-      }) ??
-      begleiterPoolMaximum(begleiter, pool);
+      begleiterAktuellerPoolAus(begleiter, zustand, pool);
 }
 
 // Kampfwerte aus dem Kampfprofil (bereits mit Steigerungen und Rüstung
