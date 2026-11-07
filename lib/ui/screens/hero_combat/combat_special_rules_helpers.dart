@@ -23,8 +23,6 @@ extension _CombatSpecialRulesHelpers on _HeroCombatTabState {
     return buildHeroRequirementContext(
       hero.copyWith(combatConfig: _draftCombatConfig),
       catalog: catalog,
-      mods:
-          hero.persistentMods + aggregateNamedStatModifiers(hero.statModifiers),
     );
   }
 

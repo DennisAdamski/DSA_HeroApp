@@ -417,18 +417,19 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
     final isInvalid = _invalidCombatTalentIds.contains(talent.id);
     final complexityResolution = _resolveTalentComplexity(talent, entry);
 
-    final effective = _latestHero != null
-        ? computeEffectiveAttributes(_latestHero!, catalog: _latestCatalog)
-        : const Attributes(
-            mu: 0,
-            kl: 0,
-            inn: 0,
-            ch: 0,
-            ff: 0,
-            ge: 0,
-            ko: 0,
-            kk: 0,
-          );
+    final effective =
+        _latestEffektiveEigenschaften ??
+        _latestHero?.attributes ??
+        const Attributes(
+          mu: 0,
+          kl: 0,
+          inn: 0,
+          ch: 0,
+          ff: 0,
+          ge: 0,
+          ko: 0,
+          kk: 0,
+        );
 
     final cells = <Widget>[
       _tappableNameCell(
@@ -745,18 +746,19 @@ extension _HeroTalentsTables on _HeroTalentTableTabState {
     final entry = _entryForTalent(talent.id);
     final isInvalid = _invalidCombatTalentIds.contains(talent.id);
     final complexityResolution = _resolveTalentComplexity(talent, entry);
-    final effective = _latestHero != null
-        ? computeEffectiveAttributes(_latestHero!, catalog: _latestCatalog)
-        : const Attributes(
-            mu: 0,
-            kl: 0,
-            inn: 0,
-            ch: 0,
-            ff: 0,
-            ge: 0,
-            ko: 0,
-            kk: 0,
-          );
+    final effective =
+        _latestEffektiveEigenschaften ??
+        _latestHero?.attributes ??
+        const Attributes(
+          mu: 0,
+          kl: 0,
+          inn: 0,
+          ch: 0,
+          ff: 0,
+          ge: 0,
+          ko: 0,
+          kk: 0,
+        );
     final specs = entry.combatSpecializations.isNotEmpty
         ? entry.combatSpecializations
         : _splitSpecializationTokens(entry.specializations);

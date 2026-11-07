@@ -28,7 +28,6 @@ import 'package:dsa_heldenverwaltung/rules/derived/hero_requirement_context.dart
 import 'package:dsa_heldenverwaltung/rules/derived/learning_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/magic_acquisition_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/magic_rules.dart';
-import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/special_ability_variant_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/zauber_herleitung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/zauber_lernspalte_rules.dart';
@@ -386,10 +385,14 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
         };
         final begabungen = ermittleBegabungen(hero, catalog: catalog);
         _latestBegabungen = begabungen;
-        final effectiveAttributes = computeEffectiveAttributes(
-          hero,
-          catalog: catalog,
-        );
+        // Eine Quelle für effektive Eigenschaften (REV-22).
+        final effectiveAttributes =
+            ref
+                .watch(heroComputedProvider(widget.heroId))
+                .asData
+                ?.value
+                .effectiveAttributes ??
+            hero.attributes;
         final contentUnlocked = ref.watch(catalogContentVisibleProvider);
         final contentPassword = ref.watch(catalogContentPasswordProvider);
         _syncProtectedContentCache(

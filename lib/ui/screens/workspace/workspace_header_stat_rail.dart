@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_proben_favorit.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/proben_favoriten_rules.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
-import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/resource_activation_rules.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
@@ -87,12 +86,12 @@ class WorkspaceHeaderStatRail extends ConsumerWidget {
     final computedAsync = ref.watch(heroComputedProvider(heroId));
     final talentBeOverride = ref.watch(talentBeOverrideProvider(heroId));
     final computed = computedAsync.valueOrNull;
-    // Ersatz, solange der Snapshot laedt; Vor-/Nachteile wirken wie dort
-    // ueber ihre Katalog-ID (ARCH-02).
-    final catalog = ref.watch(heroRulesCatalogProvider(heroId)).valueOrNull;
+    // Solange der Snapshot laedt, stehen die gespeicherten Werte da; eine
+    // zweite, abweichende Rechnung gibt es nicht (REV-22).
     final effectiveAttributes =
-        computed?.effectiveAttributes ??
-        computeEffectiveAttributes(hero, catalog: catalog);
+        computed?.effectiveAttributes ?? hero.attributes;
+    // Vor-/Nachteile wirken auch im Ersatz ueber ihre Katalog-ID (ARCH-02).
+    final catalog = ref.watch(heroRulesCatalogProvider(heroId)).valueOrNull;
     // Gewürfelt wird gegen die Probenwerte (Wunden eingerechnet), angezeigt
     // bleibt der effektive Eigenschaftswert.
     final probe = computed?.probenEigenschaften ?? effectiveAttributes;

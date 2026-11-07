@@ -21,7 +21,6 @@ import 'hero_begabung_rules.dart';
 import 'hero_requirement_context.dart';
 import 'learning_rules.dart';
 import 'magic_rules.dart';
-import 'modifier_parser.dart';
 import 'modifier_source_breakdown.dart';
 import 'requirement_evaluation_rules.dart';
 import 'special_ability_chain_rules.dart';
@@ -182,10 +181,7 @@ class AdvancementContext {
 
   /// Prüfkontext für Erwerbsvoraussetzungen.
   late final HeroRequirementContext requirementContext =
-      buildHeroRequirementContext(
-        hero.copyWith(attributes: permanentAttributes),
-        catalog: catalog,
-      );
+      buildHeroRequirementContext(hero, catalog: catalog);
 
   final Map<AdvancementKind, Set<String>> _ownedAbilityIds = {};
   final Map<AdvancementKind, Set<String>> _actionableAbilityIds = {};
@@ -348,8 +344,4 @@ AdvancementOption? resolveAdvancementOptionIn({
 Attributes advancementPermanentAttributes(
   HeroSheet hero, {
   required RulesCatalog? catalog,
-}) {
-  final parsed = parseModifierTextsForHero(hero, catalog: catalog);
-  final named = aggregateNamedAttributeModifiers(hero.attributeModifiers);
-  return applyAttributeModifiers(hero.attributes, parsed.attributeMods + named);
-}
+}) => dauerhafteEigenschaften(hero, catalog: catalog);

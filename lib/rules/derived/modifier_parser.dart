@@ -104,19 +104,6 @@ ModifierParseResult mitMerkmalWirkungen(
   );
 }
 
-/// Berechnet effektive Attribute inklusive Textmodifikatoren.
-Attributes computeEffectiveAttributes(
-  HeroSheet hero, {
-  AttributeModifiers tempAttributeMods = const AttributeModifiers(),
-  required RulesCatalog? catalog,
-}) {
-  final parsed = parseModifierTextsForHero(hero, catalog: catalog);
-  return applyAttributeModifiers(
-    hero.attributes,
-    parsed.attributeMods + tempAttributeMods,
-  );
-}
-
 /// Addiert die Attributmodifikatoren auf den Basiswertesatz.
 Attributes applyAttributeModifiers(Attributes base, AttributeModifiers mods) {
   return base.copyWith(

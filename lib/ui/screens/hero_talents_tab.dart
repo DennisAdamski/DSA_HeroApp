@@ -5,7 +5,6 @@ import 'package:dsa_heldenverwaltung/ui/screens/shared/planung_bearbeiten_guard.
 import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:dsa_heldenverwaltung/rules/derived/spell_effect_instance_rules.dart';
 
 import 'package:dsa_heldenverwaltung/catalog/house_rule_provenance.dart';
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
@@ -28,7 +27,6 @@ import 'package:dsa_heldenverwaltung/rules/derived/hero_requirement_context.dart
 import 'package:dsa_heldenverwaltung/rules/derived/inventory_modifier_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/learning_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/meta_talent_rules.dart';
-import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/talent_herleitung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/talent_probe_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/talent_specialization_hints.dart';
@@ -154,6 +152,9 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
   /// Zuletzt gebauter Regelkatalog; die Tabellen rechnen Vor-/Nachteile damit
   /// ueber ihre Katalog-ID (ARCH-02).
   RulesCatalog? _latestCatalog;
+
+  /// Effektive Eigenschaften aus dem Helden-Snapshot (`heroComputedProvider`).
+  Attributes? _latestEffektiveEigenschaften;
   Map<String, HeroTalentEntry> _draftTalents = <String, HeroTalentEntry>{};
   List<HeroMetaTalent> _draftMetaTalents = <HeroMetaTalent>[];
   Set<String> _invalidCombatTalentIds = <String>{};
@@ -258,15 +259,23 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
         data: (catalog) {
           _latestCatalogRuleResolver = catalog.ruleResolver;
           _latestCatalog = catalog;
+          final berechnet = ref
+              .watch(heroComputedProvider(widget.heroId))
+              .asData
+              ?.value;
+          // Kampf-BE aus demselben Snapshot wie Kampf-Tab und Inspector;
+          // die Ersatzrechnung greift nur, solange er noch fehlt.
           final combatBaseBe = widget.scope == _TalentTabScope.nonCombat
-              ? computeCombatPreviewStats(
-                  hero,
-                  state,
-                  catalogTalents: catalog.talents,
-                  catalogManeuvers: catalog.maneuvers,
-                  catalogCombatSpecialAbilities: catalog.combatSpecialAbilities,
-                  catalog: catalog,
-                ).beKampf
+              ? berechnet?.combatPreviewStats.beKampf ??
+                    computeCombatPreviewStats(
+                      hero,
+                      state,
+                      catalogTalents: catalog.talents,
+                      catalogManeuvers: catalog.maneuvers,
+                      catalogCombatSpecialAbilities:
+                          catalog.combatSpecialAbilities,
+                      catalog: catalog,
+                    ).beKampf
               : null;
           final talentBeOverride = ref.watch(talentBeOverrideProvider(hero.id));
           final activeTalentBe = combatBaseBe == null
@@ -275,21 +284,16 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
           _beKampf = combatBaseBe ?? 0;
           _beOverride = combatBaseBe == null ? null : talentBeOverride;
           _inventarQuellen =
-              ref
-                  .watch(heroComputedProvider(widget.heroId))
-                  .asData
-                  ?.value
-                  .inventoryTalentQuellen ??
+              berechnet?.inventoryTalentQuellen ??
               const <String, List<InventoryModifierQuelle>>{};
+          // Eine Quelle für effektive Eigenschaften (REV-22).
+          _latestEffektiveEigenschaften =
+              berechnet?.effectiveAttributes ?? hero.attributes;
           final relevantTalents = catalog.talents
               .where(_matchesScope)
               .toList(growable: false);
           final effectiveAttributes = widget.scope == _TalentTabScope.nonCombat
-              ? computeEffectiveAttributes(
-                  hero,
-                  tempAttributeMods: effektiveTempAttributeMods(state),
-                  catalog: catalog,
-                )
+              ? _latestEffektiveEigenschaften
               : null;
           return ValueListenableBuilder<int>(
             valueListenable: _tableRevision,
