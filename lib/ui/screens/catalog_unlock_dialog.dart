@@ -9,6 +9,7 @@ import 'package:dsa_heldenverwaltung/catalog/catalog_section_id.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
+import 'package:dsa_heldenverwaltung/state/warte_auf_wert.dart';
 
 /// Oeffnet einen Dialog zur Eingabe des Katalog-Entschluesselungspassworts.
 ///
@@ -25,7 +26,7 @@ Future<bool> showCatalogUnlockDialog({
   // Passworts nutzlos, weil keine `enc:`-Werte mehr gefunden werden).
   final CatalogSourceData sourceData;
   try {
-    sourceData = await ref.read(baseCatalogSourceDataProvider.future);
+    sourceData = await warteAufWertImWidget(ref, baseCatalogSourceDataProvider);
   } on Object {
     if (!context.mounted) return false;
     ScaffoldMessenger.of(context).showSnackBar(

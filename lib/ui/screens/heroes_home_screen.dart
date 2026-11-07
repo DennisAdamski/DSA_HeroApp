@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/data/hero_transfer_file_gateway.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/feedback/feedback_submission.dart';
@@ -26,6 +25,7 @@ import 'package:dsa_heldenverwaltung/ui/widgets/codex_page_scaffold.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/codex_split_view.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/karto_variante.dart';
 import 'package:dsa_heldenverwaltung/ui_shared/feedback/open_feedback.dart';
+import 'package:dsa_heldenverwaltung/state/warte_auf_wert.dart';
 
 /// Startscreen fuer die Heldenauswahl mit iPad-tauglicher Vorschau.
 class HeroesHomeScreen extends ConsumerStatefulWidget {
@@ -69,48 +69,17 @@ class _HeroesHomeScreenState extends ConsumerState<HeroesHomeScreen> {
     return _catalogPrewarmFuture ??= _awaitCatalogReady();
   }
 
-  /// Wartet, bis der Regelkatalog einen Wert **oder** einen Fehler hat.
-  ///
-  /// Bewusst ueber `listenManual` statt ueber `rulesCatalogProvider.future`.
-  /// In Riverpod 3.2 hat `.future` zwei Eigenschaften, die zusammen genau den
-  /// beobachteten Dauer-Ladebalken erzeugen:
-  ///
-  /// - Scheitert der Provider, geht er in `AsyncLoading` **mit** angehaengtem
-  ///   Fehler, und die Future wird nie erfuellt — auch ihr `onError` feuert
-  ///   nie. Der alte Code konnte den Fehler deshalb gar nicht bemerken.
-  /// - Ohne aktiven Listener wird ein Provider nach einer Aenderung seiner
-  ///   Abhaengigkeiten nicht neu gebaut. Ein `read(...future)` allein haelt
-  ///   die Kette nicht am Leben.
-  ///
-  /// Das Abo loest beides: Es liefert Wert und Fehler, und es haelt die
-  /// Katalogkette so lange aktiv, bis eines von beidem da ist.
+  /// Wartet, bis der Regelkatalog einen Wert **oder** einen Fehler hat
+  /// (`warteAufWertImWidget`, Regel 9).
   ///
   /// [includeCurrentState] muss beim Neuversuch `false` sein: Direkt nach
-  /// `invalidate` traegt der Provider noch den Fehler des Vorlaufs, ein
-  /// sofortiges Auswerten wuerde den Neuversuch also augenblicklich wieder
-  /// als gescheitert melden.
-  Future<void> _awaitCatalogReady({bool includeCurrentState = true}) {
-    final completer = Completer<void>();
-
-    void settle(AsyncValue<RulesCatalog> value) {
-      if (completer.isCompleted) {
-        return;
-      }
-      final error = value.error;
-      if (error != null) {
-        completer.completeError(error, value.stackTrace ?? StackTrace.current);
-      } else if (value.hasValue) {
-        completer.complete();
-      }
-    }
-
-    final subscription = ref.listenManual<AsyncValue<RulesCatalog>>(
-      rulesCatalogProvider,
-      (_, next) => settle(next),
-      fireImmediately: includeCurrentState,
-    );
-    return completer.future.whenComplete(subscription.close);
-  }
+  /// `invalidate` traegt der Provider noch den Fehler des Vorlaufs.
+  Future<void> _awaitCatalogReady({bool includeCurrentState = true}) =>
+      warteAufWertImWidget(
+        ref,
+        rulesCatalogProvider,
+        aktuellenStandEinbeziehen: includeCurrentState,
+      );
 
   // Verwirft den gemerkten Ladeversuch, damit `Erneut versuchen` tatsaechlich
   // neu laedt, statt derselben gescheiterten Future erneut zuzuhoeren.

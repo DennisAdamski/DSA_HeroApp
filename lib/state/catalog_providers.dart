@@ -13,6 +13,7 @@ import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/data/custom_catalog_repository.dart';
 import 'package:dsa_heldenverwaltung/data/house_rule_pack_repository.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
+import 'package:dsa_heldenverwaltung/state/warte_auf_wert.dart';
 
 /// Laedt die Basis-Assets und typisiert daraus Laufzeitkataloge.
 final catalogLoaderProvider = Provider<CatalogLoader>((ref) {
@@ -220,7 +221,10 @@ class CatalogActions {
       );
     }
 
-    final adminSnapshot = await _ref.read(catalogAdminSnapshotProvider.future);
+    final adminSnapshot = await warteAufWert(
+      _ref,
+      catalogAdminSnapshotProvider,
+    );
     final baseConflict = adminSnapshot
         .section(section)
         .baseEntries
@@ -267,7 +271,10 @@ class CatalogActions {
     required CatalogSectionId section,
     required String entryId,
   }) async {
-    final adminSnapshot = await _ref.read(catalogAdminSnapshotProvider.future);
+    final adminSnapshot = await warteAufWert(
+      _ref,
+      catalogAdminSnapshotProvider,
+    );
     final repository = _ref.read(customCatalogRepositoryProvider);
     await repository.deleteEntry(
       catalogVersion: adminSnapshot.catalogVersion,

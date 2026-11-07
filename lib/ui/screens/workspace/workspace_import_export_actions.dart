@@ -7,6 +7,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_transfer_bundle.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
+import 'package:dsa_heldenverwaltung/state/warte_auf_wert.dart';
 
 /// Kapselt Import-/Export-Aktionen fuer die Workspace-Shell.
 class WorkspaceImportExportActions {
@@ -49,8 +50,9 @@ class WorkspaceImportExportActions {
     WidgetRef ref,
     HeroTransferBundle bundle,
   ) async {
-    final existing = await ref.read(
-      heroByIdFutureProvider(bundle.hero.id).future,
+    final existing = await warteAufWertImWidget(
+      ref,
+      heroByIdFutureProvider(bundle.hero.id),
     );
     if (existing == null) {
       return ImportConflictResolution.overwriteExisting;

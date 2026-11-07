@@ -1,0 +1,69 @@
+import 'dart:async';
+
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show ProviderListenable;
+
+/// Wartet auf den nächsten fertigen Wert oder Fehler einer asynchronen Quelle.
+///
+/// Ersatz für `ref.read(provider.future)` (CLAUDE.md, Regel 9). Jene Future
+/// hat in Riverpod 3 zwei Fallen:
+///
+/// - Scheitert der Provider, geht er in `AsyncLoading` **mit** angehängtem
+///   Fehler (automatischer Neuversuch); die Future wird dann nie erfüllt,
+///   auch ihr `onError` feuert nie.
+/// - Ohne aktiven Listener wird ein Provider nach einer Änderung seiner
+///   Abhängigkeiten nicht neu gebaut; ein `read(...future)` allein hält die
+///   Kette nicht am Leben.
+///
+/// Das Abo löst beides: Es endet mit dem ersten Fehler (auch während eines
+/// Neuversuchs) oder dem ersten fertigen Wert und hält die Kette bis dahin
+/// aktiv. Ein Wert, der gerade neu geladen wird, gilt noch nicht als fertig.
+///
+/// [aktuellenStandEinbeziehen] muss nach einem `invalidate` `false` sein:
+/// Der Provider trägt dann noch den Fehler des Vorlaufs, ein sofortiges
+/// Auswerten meldete den Neuversuch augenblicklich als gescheitert.
+Future<T> warteAufWert<T>(
+  Ref ref,
+  ProviderListenable<AsyncValue<T>> quelle, {
+  bool aktuellenStandEinbeziehen = true,
+}) => _warte<T>(
+  (melde) => ref.listen<AsyncValue<T>>(
+    quelle,
+    (_, naechster) => melde(naechster),
+    fireImmediately: aktuellenStandEinbeziehen,
+  ),
+);
+
+/// Wie [warteAufWert], für Widgets mit einem [WidgetRef].
+Future<T> warteAufWertImWidget<T>(
+  WidgetRef ref,
+  ProviderListenable<AsyncValue<T>> quelle, {
+  bool aktuellenStandEinbeziehen = true,
+}) => _warte<T>(
+  (melde) => ref.listenManual<AsyncValue<T>>(
+    quelle,
+    (_, naechster) => melde(naechster),
+    fireImmediately: aktuellenStandEinbeziehen,
+  ),
+);
+
+Future<T> _warte<T>(
+  ProviderSubscription<AsyncValue<T>> Function(
+    void Function(AsyncValue<T> wert) melde,
+  )
+  abonniere,
+) {
+  final ergebnis = Completer<T>();
+  void melde(AsyncValue<T> wert) {
+    if (ergebnis.isCompleted) return;
+    final fehler = wert.error;
+    if (fehler != null) {
+      ergebnis.completeError(fehler, wert.stackTrace ?? StackTrace.current);
+    } else if (wert.hasValue && !wert.isLoading) {
+      ergebnis.complete(wert.requireValue);
+    }
+  }
+
+  final abo = abonniere(melde);
+  return ergebnis.future.whenComplete(abo.close);
+}
