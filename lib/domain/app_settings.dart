@@ -1,4 +1,5 @@
 import 'package:dsa_heldenverwaltung/domain/avatar_config.dart';
+import 'package:dsa_heldenverwaltung/domain/copy_with_sentinel.dart';
 import 'package:dsa_heldenverwaltung/domain/rules_index_remote_config.dart';
 
 /// Aktive Oberflaeche der App.
@@ -108,8 +109,8 @@ class AppSettings {
   AppSettings copyWith({
     bool? debugModus,
     bool? dunkelModus,
-    Object? heroStoragePath = _copySentinel,
-    Object? lastSelectedHeroId = _copySentinel,
+    Object? heroStoragePath = keepFieldValue,
+    Object? lastSelectedHeroId = keepFieldValue,
     AvatarApiConfig? avatarApiConfig,
     Oberflaeche? oberflaeche,
     TabellenAnsicht? tabellenAnsicht,
@@ -117,7 +118,7 @@ class AppSettings {
     bool? summaryRailCollapsed,
     bool? merkmaleAufgeklappt,
     Map<String, Map<String, double>>? tableColumnWidths,
-    Object? catalogContentPassword = _copySentinel,
+    Object? catalogContentPassword = keepFieldValue,
     RulesIndexRemoteConfig? rulesIndexRemoteConfig,
     Set<String>? disabledHouseRulePackIds,
     @Deprecated('Use disabledHouseRulePackIds instead')
@@ -126,10 +127,10 @@ class AppSettings {
     return AppSettings(
       debugModus: debugModus ?? this.debugModus,
       dunkelModus: dunkelModus ?? this.dunkelModus,
-      heroStoragePath: identical(heroStoragePath, _copySentinel)
+      heroStoragePath: identical(heroStoragePath, keepFieldValue)
           ? this.heroStoragePath
           : heroStoragePath as String?,
-      lastSelectedHeroId: identical(lastSelectedHeroId, _copySentinel)
+      lastSelectedHeroId: identical(lastSelectedHeroId, keepFieldValue)
           ? this.lastSelectedHeroId
           : lastSelectedHeroId as String?,
       avatarApiConfig: avatarApiConfig ?? this.avatarApiConfig,
@@ -139,7 +140,7 @@ class AppSettings {
       summaryRailCollapsed: summaryRailCollapsed ?? this.summaryRailCollapsed,
       merkmaleAufgeklappt: merkmaleAufgeklappt ?? this.merkmaleAufgeklappt,
       tableColumnWidths: tableColumnWidths ?? this.tableColumnWidths,
-      catalogContentPassword: identical(catalogContentPassword, _copySentinel)
+      catalogContentPassword: identical(catalogContentPassword, keepFieldValue)
           ? this.catalogContentPassword
           : catalogContentPassword as String?,
       rulesIndexRemoteConfig:
@@ -279,5 +280,3 @@ class AppSettings {
     return trimmed.isEmpty ? null : trimmed;
   }
 }
-
-const Object _copySentinel = Object();

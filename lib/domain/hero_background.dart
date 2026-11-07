@@ -1,3 +1,4 @@
+import 'package:dsa_heldenverwaltung/domain/copy_with_sentinel.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_herkunft.dart';
 
 /// Herkunft und sozialer Hintergrund eines Helden.
@@ -58,7 +59,7 @@ class HeroBackground {
     String? stand,
     String? titel,
     int? sozialstatus,
-    Object? herkunftsModifikatoren = _unveraendert,
+    Object? herkunftsModifikatoren = keepFieldValue,
   }) {
     return HeroBackground(
       rasse: rasse ?? this.rasse,
@@ -72,7 +73,7 @@ class HeroBackground {
       stand: stand ?? this.stand,
       titel: titel ?? this.titel,
       sozialstatus: sozialstatus ?? this.sozialstatus,
-      herkunftsModifikatoren: identical(herkunftsModifikatoren, _unveraendert)
+      herkunftsModifikatoren: identical(herkunftsModifikatoren, keepFieldValue)
           ? this.herkunftsModifikatoren
           : herkunftsModifikatoren as HeroHerkunftsModifikatoren?,
     );
@@ -114,5 +115,3 @@ class HeroBackground {
     );
   }
 }
-
-const Object _unveraendert = Object();

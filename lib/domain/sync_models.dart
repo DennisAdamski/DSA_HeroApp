@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:pointycastle/digests/sha256.dart';
 
+import 'package:dsa_heldenverwaltung/domain/copy_with_sentinel.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/sync_errors.dart';
@@ -327,8 +328,8 @@ class SyncStatusSnapshot {
     String? accountId,
     String? email,
     bool? isSyncing,
-    Object? lastSuccessfulSync = _copySentinel,
-    Object? lastFailure = _copySentinel,
+    Object? lastSuccessfulSync = keepFieldValue,
+    Object? lastFailure = keepFieldValue,
     List<SyncConflict>? openConflicts,
     int? ausstehendeVorgaenge,
   }) {
@@ -336,10 +337,10 @@ class SyncStatusSnapshot {
       accountId: accountId ?? this.accountId,
       email: email ?? this.email,
       isSyncing: isSyncing ?? this.isSyncing,
-      lastSuccessfulSync: identical(lastSuccessfulSync, _copySentinel)
+      lastSuccessfulSync: identical(lastSuccessfulSync, keepFieldValue)
           ? this.lastSuccessfulSync
           : lastSuccessfulSync as DateTime?,
-      lastFailure: identical(lastFailure, _copySentinel)
+      lastFailure: identical(lastFailure, keepFieldValue)
           ? this.lastFailure
           : lastFailure as SyncFailure?,
       openConflicts: openConflicts ?? this.openConflicts,
@@ -347,8 +348,6 @@ class SyncStatusSnapshot {
     );
   }
 }
-
-const Object _copySentinel = Object();
 
 /// Erzeugt einen stabilen Content-Hash fuer ein [HeroSheet].
 ///

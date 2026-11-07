@@ -1,5 +1,6 @@
 export 'package:dsa_heldenverwaltung/domain/hero_adventure_date_value.dart';
 
+import 'package:dsa_heldenverwaltung/domain/copy_with_sentinel.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_adventure_date_value.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_note_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
@@ -191,7 +192,7 @@ class HeroAdventurePersonEntry {
     String? description,
     String? ort,
     HeroAdventureDateValue? datum,
-    Object? lastModified = _copySentinel,
+    Object? lastModified = keepFieldValue,
     Map<String, Object?>? unbekannteFelder,
   }) {
     return HeroAdventurePersonEntry(
@@ -200,7 +201,7 @@ class HeroAdventurePersonEntry {
       description: description ?? this.description,
       ort: ort ?? this.ort,
       datum: datum ?? this.datum,
-      lastModified: identical(lastModified, _copySentinel)
+      lastModified: identical(lastModified, keepFieldValue)
           ? this.lastModified
           : lastModified as DateTime?,
       unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
@@ -762,5 +763,3 @@ int _normalizeReward(int value) {
 double _normalizeDukatenReward(double value) {
   return value < 0 ? 0 : value;
 }
-
-const Object _copySentinel = Object();

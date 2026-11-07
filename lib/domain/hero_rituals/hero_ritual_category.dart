@@ -1,3 +1,4 @@
+import 'package:dsa_heldenverwaltung/domain/copy_with_sentinel.dart';
 import 'package:dsa_heldenverwaltung/domain/unbekannte_json_felder.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_rituals/hero_ritual_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_rituals/hero_ritual_field.dart';
@@ -163,7 +164,7 @@ class HeroRitualCategory {
     String? id,
     String? name,
     HeroRitualKnowledgeMode? knowledgeMode,
-    Object? ownKnowledge = _keepNullableField,
+    Object? ownKnowledge = keepFieldValue,
     String? traditionId,
     List<String>? derivedTalentIds,
     List<HeroRitualFieldDef>? additionalFieldDefs,
@@ -176,7 +177,7 @@ class HeroRitualCategory {
       traditionId: traditionId ?? this.traditionId,
       name: name ?? this.name,
       knowledgeMode: knowledgeMode ?? this.knowledgeMode,
-      ownKnowledge: identical(ownKnowledge, _keepNullableField)
+      ownKnowledge: identical(ownKnowledge, keepFieldValue)
           ? this.ownKnowledge
           : ownKnowledge as HeroRitualKnowledge?,
       derivedTalentIds: derivedTalentIds ?? this.derivedTalentIds,
@@ -315,8 +316,6 @@ HeroRitualKnowledgeMode? _ritualKnowledgeModeErkennen(Object? raw) {
       return null;
   }
 }
-
-const Object _keepNullableField = Object();
 
 bool _ritualListEqual<T>(List<T> a, List<T> b) {
   if (a.length != b.length) return false;

@@ -2,6 +2,7 @@ import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/bought_stats.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config/inventar_verweise.dart';
+import 'package:dsa_heldenverwaltung/domain/copy_with_sentinel.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_appearance.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_adventure_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_advancement_entry.dart';
@@ -316,7 +317,7 @@ class HeroSheet {
     List<HeroAdvancementEntry>? advancementHistory,
     List<UnbekannterVerlaufseintrag>? unbekannteVerlaufseintraege,
     Map<String, Object?>? unbekannteFelder,
-    Object? lastModified = _copySentinel,
+    Object? lastModified = keepFieldValue,
     HeroAttributeSePool? attributeSePool,
     HeroStatSePool? statSePool,
     List<HeroCompanion>? companions,
@@ -329,10 +330,10 @@ class HeroSheet {
     int? epicStartAp,
     Attributes? epicAttributeMaxBonus,
     Attributes? epicMainAttributes,
-    Object? epicActivationPolicy = _copySentinel,
-    Object? regelProfil = _copySentinel,
+    Object? epicActivationPolicy = keepFieldValue,
+    Object? regelProfil = keepFieldValue,
     List<HeroProbenFavorit>? probenFavoriten,
-    Object? spielansicht = _copySentinel,
+    Object? spielansicht = keepFieldValue,
     List<HeroReiseStation>? reiseStationen,
     Set<String>? epicLockedWaffenmeisterCategories,
     Set<String>? epicUnactivatedTalentIds,
@@ -392,7 +393,7 @@ class HeroSheet {
       unbekannteVerlaufseintraege:
           unbekannteVerlaufseintraege ?? this.unbekannteVerlaufseintraege,
       unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
-      lastModified: identical(lastModified, _copySentinel)
+      lastModified: identical(lastModified, keepFieldValue)
           ? this.lastModified
           : lastModified as DateTime?,
       attributeSePool: attributeSePool ?? this.attributeSePool,
@@ -409,14 +410,14 @@ class HeroSheet {
       epicAttributeMaxBonus:
           epicAttributeMaxBonus ?? this.epicAttributeMaxBonus,
       epicMainAttributes: epicMainAttributes ?? this.epicMainAttributes,
-      epicActivationPolicy: identical(epicActivationPolicy, _copySentinel)
+      epicActivationPolicy: identical(epicActivationPolicy, keepFieldValue)
           ? this.epicActivationPolicy
           : epicActivationPolicy as String?,
-      regelProfil: identical(regelProfil, _copySentinel)
+      regelProfil: identical(regelProfil, keepFieldValue)
           ? this.regelProfil
           : regelProfil as HeroRegelProfil?,
       probenFavoriten: probenFavoriten ?? this.probenFavoriten,
-      spielansicht: identical(spielansicht, _copySentinel)
+      spielansicht: identical(spielansicht, keepFieldValue)
           ? this.spielansicht
           : spielansicht as HeroSpielansicht?,
       reiseStationen: reiseStationen ?? this.reiseStationen,
@@ -905,8 +906,6 @@ Set<String> _parseStringSet(dynamic raw) {
   }
   return Set<String>.unmodifiable(result);
 }
-
-const Object _copySentinel = Object();
 
 List<TalentSpecialAbility> _parseTalentSpecialAbilities(dynamic raw) {
   if (raw is List) {
