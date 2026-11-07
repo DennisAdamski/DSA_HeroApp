@@ -466,15 +466,9 @@ class _AccountSyncSettingsPage extends ConsumerWidget {
         '(${_formatSyncTime(report.zuletztGelaufen)})';
   }
 
-  String _formatSyncTime(DateTime? value) {
-    if (value == null) {
-      return 'Noch nie';
-    }
-    final local = value.toLocal();
-    String two(int number) => number.toString().padLeft(2, '0');
-    return '${local.year}-${two(local.month)}-${two(local.day)} '
-        '${two(local.hour)}:${two(local.minute)}';
-  }
+  String _formatSyncTime(DateTime? value) => value == null
+      ? 'Noch nie'
+      : formatiereSyncZeitpunkt(value, jetzt: DateTime.now());
 }
 
 /// Zeigt die bereits entschiedenen Offline-Helden und macht sie widerrufbar.

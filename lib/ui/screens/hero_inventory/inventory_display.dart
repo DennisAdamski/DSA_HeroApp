@@ -36,21 +36,6 @@ extension _HeroInventoryDisplay on _HeroInventoryTabState {
     }
   }
 
-  String _formatWeight(int gramm) {
-    if (gramm <= 0) {
-      return '–';
-    }
-
-    if (gramm >= 1000) {
-      final kilo = gramm / 1000.0;
-      final hasDecimal = kilo.truncateToDouble() != kilo;
-      final value = kilo.toStringAsFixed(hasDecimal ? 1 : 0);
-      return '$value kg';
-    }
-
-    return '$gramm g';
-  }
-
   String _formatValue(int silber) {
     if (silber <= 0) {
       return '–';
