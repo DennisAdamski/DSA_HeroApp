@@ -91,10 +91,7 @@ TalentGruppe talentGruppeFuer(AdvancementOption option, RulesCatalog catalog) {
 /// Ordnet eine Talentdefinition ihrer Gruppe zu.
 TalentGruppe talentGruppeFuerDefinition(TalentDef def) {
   final gruppe = _normalisiert(def.group);
-  if (gruppe.contains('kampf') ||
-      def.weaponCategory.isNotEmpty ||
-      def.type == 'nahkampf' ||
-      def.type == 'fernkampf') {
+  if (gruppe.contains('kampf') || def.istKampftalent) {
     return TalentGruppe.kampf;
   }
   if (gruppe.contains('koerper')) return TalentGruppe.koerper;

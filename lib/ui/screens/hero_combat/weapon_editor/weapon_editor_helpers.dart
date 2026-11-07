@@ -1,5 +1,7 @@
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/kampf_slot_pruefung_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/string_normalize.dart';
 
 /// Normalisiert Legacy-Fernkampfwaffen auf das aktuelle Distanzschema.
 MainWeaponSlot normalizeWeaponEditorSlot(MainWeaponSlot slot) {
@@ -9,26 +11,9 @@ MainWeaponSlot normalizeWeaponEditorSlot(MainWeaponSlot slot) {
   return slot.copyWith(rangedProfile: slot.rangedProfile.copyWith());
 }
 
-/// Leitet den Kampftyp aus dem Talent ab.
-WeaponCombatType combatTypeForTalent(TalentDef talent) {
-  return talent.type.trim().toLowerCase() == 'fernkampf'
-      ? WeaponCombatType.ranged
-      : WeaponCombatType.melee;
-}
-
 /// Ermittelt den Kampftyp aus einer Katalogwaffe.
 WeaponCombatType combatTypeForCatalogWeapon(WeaponDef weapon) {
   return weaponCombatTypeFromJson(weapon.type);
-}
-
-String _normalizeToken(String raw) {
-  var value = raw.trim().toLowerCase();
-  value = value
-      .replaceAll(String.fromCharCode(228), 'ae')
-      .replaceAll(String.fromCharCode(246), 'oe')
-      .replaceAll(String.fromCharCode(252), 'ue')
-      .replaceAll(String.fromCharCode(223), 'ss');
-  return value.replaceAll(RegExp(r'[^a-z0-9]+'), '');
 }
 
 /// Liefert alle Talente fuer den gewaehlten Kampftyp.
@@ -37,7 +22,7 @@ List<TalentDef> combatTypeTalents(
   WeaponCombatType combatType,
 ) {
   return combatTalents
-      .where((talent) => combatTypeForTalent(talent) == combatType)
+      .where((talent) => combatTypeFromTalent(talent) == combatType)
       .toList(growable: false)
     ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
 }
@@ -74,7 +59,7 @@ List<TalentDef> talentOptionsForWeaponType({
   required List<TalentDef> combatTalents,
   required List<WeaponDef> catalogWeapons,
 }) {
-  final token = _normalizeToken(weaponType);
+  final token = normalizeCombatToken(weaponType);
   final filteredTalents = combatTypeTalents(
     combatTalents,
     draftWeapon.combatType,
@@ -88,12 +73,12 @@ List<TalentDef> talentOptionsForWeaponType({
     if (combatTypeForCatalogWeapon(weapon) != draftWeapon.combatType) {
       continue;
     }
-    if (_normalizeToken(weapon.name) != token) {
+    if (normalizeCombatToken(weapon.name) != token) {
       continue;
     }
-    final skillToken = _normalizeToken(weapon.combatSkill);
+    final skillToken = normalizeCombatToken(weapon.combatSkill);
     for (final talent in filteredTalents) {
-      if (_normalizeToken(talent.name) == skillToken) {
+      if (normalizeCombatToken(talent.name) == skillToken) {
         allowedById.add(talent.id);
       }
     }
@@ -102,7 +87,7 @@ List<TalentDef> talentOptionsForWeaponType({
   for (final talent in filteredTalents) {
     final categories = talent.weaponCategory.split(RegExp(r'[\n,;]+'));
     for (final category in categories) {
-      if (_normalizeToken(category) == token) {
+      if (normalizeCombatToken(category) == token) {
         allowedById.add(talent.id);
         break;
       }

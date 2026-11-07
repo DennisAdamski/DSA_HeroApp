@@ -66,5 +66,5 @@ bool isRangedCombatTalent(TalentDef? talent) {
   if (talent == null) {
     return false;
   }
-  return normalizeCombatToken(talent.type) == 'fernkampf';
+  return talent.istFernkampf;
 }

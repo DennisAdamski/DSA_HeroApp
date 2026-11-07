@@ -44,13 +44,6 @@ const int kWaffenmeisterKampfSfAp = 2500;
 /// Quellenangabe für Hinweise.
 const String kWaffenmeisterQuelle = 'Wege des Schwerts S. 192';
 
-/// Ob ein Talent ein Kampftalent ist (wie der Steigerungskatalog).
-bool istKampftalent(TalentDef def) =>
-    def.group == 'Kampftalent' ||
-    def.type == 'nahkampf' ||
-    def.type == 'fernkampf' ||
-    def.weaponCategory.isNotEmpty;
-
 /// Liest die geplante Konfiguration; `null` bei fehlender oder kaputter Angabe.
 WaffenmeisterConfig? leseWaffenmeisterKonfiguration(
   Map<String, String> options,
@@ -274,7 +267,7 @@ AdvancementOption? resolveWaffenmeister(
   final talent = context.catalog.talents
       .where((def) => def.id == talentId)
       .firstOrNull;
-  if (talent == null || !istKampftalent(talent)) return null;
+  if (talent == null || !talent.istKampftalent) return null;
   final config = leseWaffenmeisterKonfiguration(options);
   final eintrag = context.hero.talents[talentId];
   String? grund;
@@ -298,9 +291,7 @@ AdvancementOption? resolveWaffenmeister(
     final auto = computeAutoPointCost(
       steigerung: talent.steigerung,
       isAttackOnly:
-          talent.type.toLowerCase() == 'fernkampf' ||
-          name == 'peitsche' ||
-          name == 'lanzenreiten',
+          talent.istFernkampf || name == 'peitsche' || name == 'lanzenreiten',
       hasAdditionalWeapons: config.additionalWeaponTypes.isNotEmpty,
     );
     final verteilt = computeTotalAllocated(config.bonuses);
