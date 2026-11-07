@@ -124,7 +124,14 @@ extension _CombatStateHelpers on _HeroCombatTabState {
       return;
     }
 
-    final catalog = await ref.read(rulesCatalogProvider.future);
+    // Der Tab beobachtet den Heldenkatalog; ohne geladenen Katalog wird
+    // nicht gespeichert (kein Warten auf `.future`, Regel 9).
+    final catalog = ref
+        .read(heroRulesCatalogProvider(widget.heroId))
+        .valueOrNull;
+    if (catalog == null) {
+      return;
+    }
     final weaponValidation = pruefeKampfSlots(
       config: _draftCombatConfig,
       catalog: catalog,

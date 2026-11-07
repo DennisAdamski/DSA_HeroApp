@@ -33,7 +33,6 @@ import 'package:dsa_heldenverwaltung/rules/derived/talent_herleitung_rules.dart'
 import 'package:dsa_heldenverwaltung/rules/derived/talent_probe_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/talent_specialization_hints.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
-import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';

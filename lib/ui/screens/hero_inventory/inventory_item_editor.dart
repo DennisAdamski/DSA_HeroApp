@@ -15,7 +15,6 @@ import 'package:dsa_heldenverwaltung/rules/derived/inventar_menge_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/inventar_stapel_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/kampfgegenstand_ablegen_rules.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
-import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/alchimika_auswahl_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/artefakt_anwenden.dart';
@@ -174,12 +173,11 @@ class _InventoryItemEditorState extends ConsumerState<InventoryItemEditor> {
   // Übernimmt ein Katalogmittel (TRANK) in den Entwurf. Nichts wird gespeichert
   // oder gebucht; der Nutzer kann alles danach ändern.
   Future<void> _waehleAlchimikum() async {
-    final heroId = PlanungsBearbeitungsBereich.heldVon(context);
-    final katalog =
-        (heroId == null
-                ? ref.read(rulesCatalogProvider)
-                : ref.read(heroRulesCatalogProvider(heroId)))
-            .valueOrNull;
+    final katalog = katalogImBereich(
+      context,
+      ref,
+      beobachten: false,
+    ).valueOrNull;
     final mittel = katalog?.alchimika ?? const <AlchimikumDef>[];
     if (mittel.isEmpty) {
       setState(

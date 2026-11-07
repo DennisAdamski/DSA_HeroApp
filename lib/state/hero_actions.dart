@@ -193,7 +193,7 @@ class HeroActions {
     // Vor-/Nachteile: Alttext beim ersten Speichern migrieren, sonst den
     // Text als Projektion der Liste schreiben (ARCH-02). Ohne geladenen
     // Katalog wird nicht migriert; gewartet wird darauf bewusst nicht.
-    final profil = _verstandenesProfil(hero);
+    final profil = verstandenesRegelProfil(hero);
     final catalog = validationCatalog ?? _katalogDesHelden(profil);
     final heroMitMerkmalen =
         merkmaleZumSpeichern(
@@ -382,40 +382,20 @@ class HeroActions {
     }
 
     // Ein Held mit Regelprofil rechnet nach dessen Katalog (ARCH-04).
-    final abo = profil == null
-        ? _ref.listen<AsyncValue<RulesCatalog>>(
-            rulesCatalogProvider,
-            (_, naechster) => pruefe(naechster),
-            fireImmediately: true,
-          )
-        : _ref.listen<AsyncValue<RulesCatalog>>(
-            regelProfilAufloesungProvider(profil)
-                .select((a) => a.whenData((r) => r.katalog)),
-            (_, naechster) => pruefe(naechster),
-            fireImmediately: true,
-          );
+    final abo = _ref.listen<AsyncValue<RulesCatalog>>(
+      regelkatalogFuer(profil),
+      (_, naechster) => pruefe(naechster),
+      fireImmediately: true,
+    );
     return ergebnis.future
         .timeout(katalogWartezeit, onTimeout: () => null)
         .whenComplete(abo.close);
   }
 
-  // Das Profil des Helden, falls diese App-Version es versteht.
-  HeroRegelProfil? _verstandenesProfil(HeroSheet hero) {
-    final profil = hero.regelProfil;
-    return profil != null && profil.istVerstanden ? profil : null;
-  }
-
   // Der bereits geladene Katalog, nach dem der Held rechnet; `null` solange er
   // noch lädt (gewartet wird beim Speichern bewusst nicht).
-  RulesCatalog? _katalogDesHelden(HeroRegelProfil? profil) {
-    if (profil == null) {
-      return _ref.read(rulesCatalogProvider).valueOrNull;
-    }
-    return _ref
-        .read(regelProfilAufloesungProvider(profil))
-        .valueOrNull
-        ?.katalog;
-  }
+  RulesCatalog? _katalogDesHelden(HeroRegelProfil? profil) =>
+      _ref.read(regelkatalogFuer(profil)).valueOrNull;
 
   /// Loescht einen Helden und seinen Zustand dauerhaft aus dem Repository.
   ///

@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
-import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/planung_bearbeiten_guard.dart';
 
 /// Displaynamen fuer Stat-Modifikator-Felder.
 const Map<String, String> kStatFieldLabels = {
@@ -181,7 +181,7 @@ class _ModifierRowState extends ConsumerState<_ModifierRow> {
   @override
   Widget build(BuildContext context) {
     final mod = widget.modifier;
-    final catalog = ref.watch(rulesCatalogProvider).asData?.value;
+    final catalog = katalogImBereich(context, ref).asData?.value;
 
     // Talente aus dem Katalog sortiert nach Name
     final talents = catalog == null

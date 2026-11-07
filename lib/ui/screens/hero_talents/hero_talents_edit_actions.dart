@@ -84,7 +84,14 @@ extension _HeroTalentEditActions on _HeroTalentTableTabState {
       return;
     }
     if (widget.scope == _TalentTabScope.combat) {
-      final catalog = await ref.read(rulesCatalogProvider.future);
+      // Der Tab beobachtet den Heldenkatalog; ohne geladenen Katalog wird
+      // nicht gespeichert (kein Warten auf `.future`, Regel 9).
+      final catalog = ref
+          .read(heroRulesCatalogProvider(widget.heroId))
+          .valueOrNull;
+      if (catalog == null) {
+        return;
+      }
       final issues = validateCombatTalentDistribution(
         talents: catalog.talents,
         talentEntries: _draftTalents,

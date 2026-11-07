@@ -1,6 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show ProviderListenable;
 
 import 'package:dsa_heldenverwaltung/catalog/regelprofil_aufloesung.dart';
+import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_regelprofil.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 
@@ -32,3 +35,23 @@ final regelProfilAufloesungProvider =
         loader: ref.watch(catalogLoaderProvider),
       );
     });
+
+/// Quelle des Regelkatalogs zu einem verstandenen Regelprofil (ARCH-04).
+///
+/// Ohne Profil (`null`) ist das der globale `rulesCatalogProvider`, sonst der
+/// aus den Paketkopien aufgelöste Katalog. Gemeinsame Auflösung für
+/// [heroRulesCatalogProvider] und für Schreibwege, die das Profil eines noch
+/// nicht gespeicherten Helden prüfen.
+ProviderListenable<AsyncValue<RulesCatalog>> regelkatalogFuer(
+  HeroRegelProfil? profil,
+) => profil == null
+    ? rulesCatalogProvider
+    : regelProfilAufloesungProvider(profil)
+          .select((aufloesung) => aufloesung.whenData((r) => r.katalog));
+
+/// Das Profil, nach dem [hero] rechnet; `null`, wenn er keines hat oder
+/// diese App-Version es nicht versteht.
+HeroRegelProfil? verstandenesRegelProfil(HeroSheet hero) {
+  final profil = hero.regelProfil;
+  return profil != null && profil.istVerstanden ? profil : null;
+}

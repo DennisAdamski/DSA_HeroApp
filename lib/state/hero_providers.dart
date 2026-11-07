@@ -16,7 +16,6 @@ import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/resource_activation_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/house_rules/house_rule_registry.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
-import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_actions.dart';
 import 'package:dsa_heldenverwaltung/state/hero_base_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
@@ -131,15 +130,11 @@ final heroRegelProfilProvider = Provider.family<HeroRegelProfil?, String>((
 /// Vorwärmen, Overrides in Tests und alle bisherigen Werte unverändert. Mit
 /// Profil entsteht der Katalog aus den Paketkopien des Helden.
 final heroRulesCatalogProvider =
-    Provider.family<AsyncValue<RulesCatalog>, String>((ref, heroId) {
-      final profil = ref.watch(heroRegelProfilProvider(heroId));
-      if (profil == null) {
-        return ref.watch(rulesCatalogProvider);
-      }
-      return ref
-          .watch(regelProfilAufloesungProvider(profil))
-          .whenData((aufloesung) => aufloesung.katalog);
-    });
+    Provider.family<AsyncValue<RulesCatalog>, String>(
+      (ref, heroId) => ref.watch(
+        regelkatalogFuer(ref.watch(heroRegelProfilProvider(heroId))),
+      ),
+    );
 
 /// Ob ein Hausregel-Paket für den Helden wirkt: nach seinem Profil, sonst
 /// nach den Einstellungen. Die Elternkette der Pakete gilt in beiden Fällen.

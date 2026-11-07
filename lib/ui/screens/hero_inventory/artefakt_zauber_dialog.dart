@@ -5,8 +5,8 @@ import 'package:dsa_heldenverwaltung/catalog/spell_def.dart';
 import 'package:dsa_heldenverwaltung/domain/artefakt_daten.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_wirken_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/magic_rules.dart';
-import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/planung_bearbeiten_guard.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/protected_content_helpers.dart';
 
 /// Fragt einen in ein Artefakt gesprochenen Zauber ab.
@@ -22,16 +22,22 @@ Future<ArtefaktZauber?> zeigeArtefaktZauberDialog(
   BuildContext context, {
   ArtefaktZauber? start,
 }) {
+  // Der Dialog liegt außerhalb des Heldenbereichs; der Held wird mitgegeben,
+  // damit die Zauberliste aus seinem Katalog kommt.
+  final heroId = PlanungsBearbeitungsBereich.heldVon(context);
   return showDialog<ArtefaktZauber>(
     context: context,
-    builder: (_) => _ArtefaktZauberDialog(start: start),
+    builder: (_) => _ArtefaktZauberDialog(start: start, heroId: heroId),
   );
 }
 
 class _ArtefaktZauberDialog extends ConsumerStatefulWidget {
-  const _ArtefaktZauberDialog({this.start});
+  const _ArtefaktZauberDialog({this.start, this.heroId});
 
   final ArtefaktZauber? start;
+
+  /// Held, aus dessen Katalog die Zauber stammen; `null` heißt global.
+  final String? heroId;
 
   @override
   ConsumerState<_ArtefaktZauberDialog> createState() =>
@@ -295,7 +301,11 @@ class _ArtefaktZauberDialogState extends ConsumerState<_ArtefaktZauberDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final katalog = ref.watch(rulesCatalogProvider).asData?.value;
+    final katalog = katalogImBereich(
+      context,
+      ref,
+      heroId: widget.heroId,
+    ).asData?.value;
     final spellId = _zauber.spellId;
     final def = katalog == null || spellId == null
         ? null
