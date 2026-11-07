@@ -9162,6 +9162,13 @@
         }
       ]
     },
+    "test/rules/merkmal_suche_rules_test.dart": {
+      "kind": "product_contract",
+      "status": "verified",
+      "summary": "Prüft die gemeinsame Katalogsuche für Vor- und Nachteile: Umlautfaltung, Suche über Name, Quelle und Marker, nur aktive Einträge, Kürzung auf 80 Treffer.",
+      "rationale": "Such- und Anzeigelogik der App ohne Regelbehauptung; die Namen im Test sind reine Beispieleingaben.",
+      "sources": []
+    },
     "test/rules/meta_talent_rules_test.dart": {
       "kind": "official",
       "status": "conflict",

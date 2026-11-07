@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:dsa_heldenverwaltung/catalog/hero_trait_def.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/merkmal_suche_rules.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
@@ -141,18 +142,7 @@ class _KatalogDialogState extends State<_KatalogDialog> {
   @override
   Widget build(BuildContext context) {
     final karto = context.karto;
-    final begriff = _suche.text.trim().toLowerCase();
-    final treffer = widget.defs
-        .where((def) => def.active)
-        .where(
-          (def) =>
-              begriff.isEmpty ||
-              '${def.name} ${def.costText} ${def.markers.join(' ')}'
-                  .toLowerCase()
-                  .contains(begriff),
-        )
-        .take(80)
-        .toList(growable: false);
+    final treffer = sucheMerkmale(widget.defs, _suche.text);
     return AlertDialog(
       title: Text('${widget.art} auswählen'),
       content: SizedBox(

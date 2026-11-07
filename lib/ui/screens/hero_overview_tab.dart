@@ -1,5 +1,6 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/merkmal_suche_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/proben_favoriten_rules.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_proben_favorit.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/magic_setup_rules.dart';

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/proben_favoriten_rules.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_proben_favorit.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/string_normalize.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/planung_bearbeiten_guard.dart';
 import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
 import 'package:flutter/services.dart';
@@ -316,7 +317,7 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
                   }
                   return a.toLowerCase().compareTo(b.toLowerCase());
                 });
-              final filterQuery = _talentGroupFilter.trim().toLowerCase();
+              final filterQuery = suchFaltung(_talentGroupFilter);
 
               final talentTabChildren = <Widget>[
                 if (showTalentsHeader) ...[
@@ -437,7 +438,7 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
                         : allGroupTalents
                               .where(
                                 (t) =>
-                                    t.name.toLowerCase().contains(filterQuery),
+                                    suchFaltung(t.name).contains(filterQuery),
                               )
                               .toList(growable: false);
                     if (talents.isEmpty) return const <Widget>[];

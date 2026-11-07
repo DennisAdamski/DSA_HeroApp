@@ -9,6 +9,7 @@ import 'special_ability_visibility_toggle.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/requirement_evaluation_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/special_ability_chain_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/special_ability_variant_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/string_normalize.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/config/ui_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/special_ability_chain_card.dart';
@@ -263,7 +264,7 @@ class _SpecialAbilityPickerScreenState
 
   @override
   Widget build(BuildContext context) {
-    final query = _searchController.text.trim().toLowerCase();
+    final query = suchFaltung(_searchController.text);
     final hero = widget.hero;
     final activation = hero == null
         ? null
@@ -279,7 +280,7 @@ class _SpecialAbilityPickerScreenState
     }).toList();
     final filtered = query.isEmpty
         ? visible
-        : visible.where((a) => a.name.toLowerCase().contains(query)).toList();
+        : visible.where((a) => suchFaltung(a.name).contains(query)).toList();
     final grouped = <String, List<SpecialAbilityDef>>{};
     for (final ability in filtered) {
       final key = ability.kategorie.trim().isEmpty

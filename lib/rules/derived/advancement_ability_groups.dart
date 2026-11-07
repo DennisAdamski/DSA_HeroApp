@@ -6,6 +6,8 @@ import 'package:dsa_heldenverwaltung/domain/hero_advancement_entry.dart';
 import 'advancement_options.dart';
 import 'advancement_skill_tree.dart';
 
+import 'package:dsa_heldenverwaltung/rules/derived/string_normalize.dart';
+
 /// Oberste Gliederung des Fähigkeitenbaums. Die Namen entsprechen den
 /// Kategorien der Knoten im [AdvancementSkillTree].
 enum FaehigkeitenBereich {
@@ -252,7 +254,7 @@ Map<FaehigkeitenGruppe, FaehigkeitenGruppeInhalt> gruppiereFaehigkeiten({
   }
 
   final result = <FaehigkeitenGruppe, FaehigkeitenGruppeInhalt>{};
-  final suche = query.toLowerCase();
+  final suche = suchFaltung(query);
   for (final gruppe in FaehigkeitenGruppe.values) {
     final alle = mitglieder[gruppe];
     if (alle == null || (bereich != null && gruppe.bereich != bereich)) {
@@ -300,7 +302,7 @@ Map<FaehigkeitenGruppe, FaehigkeitenGruppeInhalt> gruppiereFaehigkeiten({
           if (graph.nodes[id]!.option != null) graph.nodes[id]!,
       ];
       if (echte.isEmpty) continue;
-      if (!echte.any((n) => n.label.toLowerCase().contains(suche))) continue;
+      if (!echte.any((n) => suchFaltung(n.label).contains(suche))) continue;
       if (nurErlernbar &&
           !echte.any((n) => n.status == SkillTreeStatus.available)) {
         continue;

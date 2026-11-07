@@ -78,9 +78,9 @@ class _TalentCatalogTableState extends State<_TalentCatalogTable> {
   List<TalentDef> _filteredTalents() {
     var talents = widget.allTalents;
     if (_searchQuery.isNotEmpty) {
-      final needle = _searchQuery.toLowerCase();
+      final needle = suchFaltung(_searchQuery);
       talents = talents
-          .where((t) => t.name.toLowerCase().contains(needle))
+          .where((t) => suchFaltung(t.name).contains(needle))
           .toList(growable: false);
     }
     return talents;
