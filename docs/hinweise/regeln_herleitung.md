@@ -3,6 +3,12 @@
 Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unverändert. Die kurze [CLAUDE.md](../../CLAUDE.md) enthält die harten Regeln und den Themenindex.
 
 - Regellogik gehoert nach `lib/rules/derived/`.
+- Regelentscheidung „Hohe Initiative“ (WdS S. 78, REV-32): Der Bonus auf PA,
+  Ausweichen und Gefechtsabwehr kommt allein aus `hoheIniBonus`
+  (`ini_rules.dart`): INI über 20 +1, über 30 +2, über 40 +3. Die Bücher
+  kennen keine vierte Stufe, auch INI über 50 bleibt bei +3 (früher rechnete
+  die Kampfvorschau dort +4, das Gefecht +3). Nicht wieder staffeln; die
+  Grenzfälle pinnt `test/rules/hohe_ini_bonus_test.dart`.
 - Erklärbare Werte (ARCH-04) liefern Regelmodule als `Herleitung`
   (`lib/rules/derived/herleitung.dart`): additive Schritte mit Art, Formel,
   Quelle und Bedingung, der Wert ist die Summe. Begrenzungen und

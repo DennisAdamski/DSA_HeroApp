@@ -90,6 +90,16 @@ extension _HeroTalentEditActions on _HeroTalentTableTabState {
           .read(heroRulesCatalogProvider(widget.heroId))
           .valueOrNull;
       if (catalog == null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Der Regelkatalog des Helden lädt noch. '
+                'Bitte gleich noch einmal speichern.',
+              ),
+            ),
+          );
+        }
         return;
       }
       final issues = validateCombatTalentDistribution(

@@ -12,7 +12,11 @@ String normalizeCombatToken(String raw) {
   return value.replaceAll(RegExp(r'[^a-z0-9]+'), '');
 }
 
-/// Faltet Text für die tolerante Suche und für Vergleichsschlüssel.
+/// Faltet Text für die tolerante Suche (`contains`-Filter).
+///
+/// Nicht für Gleichheitsvergleiche: Die Faltung kürzt jedes `ae`, `oe` und
+/// `ue` und lässt so verschiedene Namen zusammenfallen; dafür gibt es
+/// [vergleichsSchluessel].
 ///
 /// Klein geschrieben, ohne Randleerzeichen; Umlaute und ihre Umschreibungen
 /// fallen zusammen (`ä`, `ae` und `a` werden `a`, ebenso `ö`/`oe` und

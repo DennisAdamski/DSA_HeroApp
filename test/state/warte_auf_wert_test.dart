@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -62,6 +63,37 @@ void main() {
       fertig.complete(7);
 
       expect(await ergebnis, 7);
+    });
+  });
+
+  group('warteAufWertImWidget', () {
+    testWidgets('wird auch nach dem Verlassen des Widgets erfüllt', (
+      tester,
+    ) async {
+      final fertig = Completer<int>();
+      final quelle = FutureProvider<int>((ref) => fertig.future);
+      late WidgetRef widgetRef;
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            home: Consumer(
+              builder: (context, ref, _) {
+                widgetRef = ref;
+                return const SizedBox();
+              },
+            ),
+          ),
+        ),
+      );
+
+      final antwort = warteAufWertImWidget(widgetRef, quelle);
+      // Bildschirm verlassen, bevor der Provider fertig ist.
+      await tester.pumpWidget(const ProviderScope(child: SizedBox()));
+      fertig.complete(7);
+      await tester.pump();
+      await tester.pump();
+
+      expect(await antwort, 7);
     });
   });
 }

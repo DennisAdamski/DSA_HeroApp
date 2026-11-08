@@ -35,17 +35,24 @@ Future<T> warteAufWert<T>(
 );
 
 /// Wie [warteAufWert], für Widgets mit einem [WidgetRef].
+///
+/// Das Abo hängt am [ProviderContainer] und nicht am Widget: `listenManual`
+/// würde beim Verlassen des Bildschirms geschlossen, und die Future bliebe für
+/// immer offen. So wird sie auch nach dem Dispose noch erfüllt.
 Future<T> warteAufWertImWidget<T>(
   WidgetRef ref,
   ProviderListenable<AsyncValue<T>> quelle, {
   bool aktuellenStandEinbeziehen = true,
-}) => _warte<T>(
-  (melde) => ref.listenManual<AsyncValue<T>>(
-    quelle,
-    (_, naechster) => melde(naechster),
-    fireImmediately: aktuellenStandEinbeziehen,
-  ),
-);
+}) {
+  final container = ProviderScope.containerOf(ref.context, listen: false);
+  return _warte<T>(
+    (melde) => container.listen<AsyncValue<T>>(
+      quelle,
+      (_, naechster) => melde(naechster),
+      fireImmediately: aktuellenStandEinbeziehen,
+    ),
+  );
+}
 
 Future<T> _warte<T>(
   ProviderSubscription<AsyncValue<T>> Function(

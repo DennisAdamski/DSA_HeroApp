@@ -541,6 +541,53 @@ void _reiseberichtBelohnungen() {
       expect(result.attributes.inn, 12);
     });
 
+    test('Namen, die sich nur durch ein e unterscheiden, bleiben getrennt', () {
+      const katalogBauer = RulesCatalog(
+        version: 'test',
+        source: 'test',
+        weapons: [],
+        spells: [],
+        talents: [
+          TalentDef(
+            id: 'tal_baur',
+            name: 'Baur',
+            group: 'Gesellschaftliche Talente',
+            steigerung: 'B',
+            attributes: ['KL', 'IN', 'CH'],
+          ),
+          TalentDef(
+            id: 'tal_bauer',
+            name: 'Bauer',
+            group: 'Gesellschaftliche Talente',
+            steigerung: 'B',
+            attributes: ['KL', 'IN', 'CH'],
+          ),
+        ],
+      );
+      final heldBauer = held.copyWith(
+        talents: const {
+          'tal_baur': HeroTalentEntry(talentValue: 1),
+          'tal_bauer': HeroTalentEntry(talentValue: 1),
+        },
+      );
+      const bauernSe = ReiseberichtRewards(
+        seRewards: [
+          ReiseberichtSeReward(sourceId: 'rb_1', talentName: 'Bauer'),
+        ],
+        newAppliedIds: {'rb_1'},
+      );
+
+      final result = applyReiseberichtRewards(
+        hero: heldBauer,
+        rewards: bauernSe,
+        updatedState: const HeroReisebericht(),
+        catalog: katalogBauer,
+      );
+
+      expect(result.talents['tal_bauer']!.specialExperiences, 1);
+      expect(result.talents['tal_baur']!.specialExperiences, 0);
+    });
+
     test('Wahl-Eigenschaft akzeptiert auch den ausgeschriebenen Namen', () {
       const def = ReiseberichtDef(
         id: 'rb_wahl',

@@ -740,15 +740,16 @@ String? _findTalentIdByName(
   RulesCatalog? catalog,
 ) {
   if (talents.containsKey(talentName)) return talentName;
-  final gesucht = suchFaltung(talentName);
+  final gesucht = vergleichsSchluessel(talentName);
   if (gesucht.isEmpty) return null;
   for (final talent in catalog?.talents ?? const <TalentDef>[]) {
-    if (suchFaltung(talent.name) == gesucht && talents.containsKey(talent.id)) {
+    if (vergleichsSchluessel(talent.name) == gesucht &&
+        talents.containsKey(talent.id)) {
       return talent.id;
     }
   }
   for (final id in talents.keys) {
-    if (suchFaltung(id) == gesucht) return id;
+    if (vergleichsSchluessel(id) == gesucht) return id;
   }
   return null;
 }
