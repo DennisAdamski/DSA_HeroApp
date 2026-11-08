@@ -298,7 +298,7 @@ List<WorkspaceTabSpec> visibleWorkspaceTabsForHero({
 /// anstossen (es wird nach dem ersten Frame vorgewaermt); sobald es laeuft,
 /// bauen sie bei seinem Abschluss neu.
 RulesCatalog? laufenderRegelkatalog(WidgetRef ref) {
-  if (!ref.exists(rulesCatalogProvider)) {
+  if (!ref.read(rulesCatalogProvider.exists)) {
     return null;
   }
   return ref.watch(rulesCatalogProvider).valueOrNull;

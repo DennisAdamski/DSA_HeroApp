@@ -43,8 +43,6 @@ class IoHouseRulePackFileGateway implements HouseRulePackFileGateway {
         fileName: fileName,
         bytes: utf8.encode(jsonPayload),
         mimeType: 'application/json',
-        type: FileType.custom,
-        allowedExtensions: const <String>['json'],
       );
       if (savedUri == null) {
         return const HouseRulePackExportOutcome(
