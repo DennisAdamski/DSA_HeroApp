@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/held_katalog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/planung_bearbeiten_guard.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/string_normalize.dart';
 
 /// Displaynamen fuer Stat-Modifikator-Felder.
 const Map<String, String> kStatFieldLabels = {
@@ -42,10 +44,16 @@ class InventoryModifierEditor extends StatefulWidget {
     super.key,
     required this.modifiers,
     required this.onChanged,
+    this.heroId,
   });
 
   final List<InventoryItemModifier> modifiers;
   final ValueChanged<List<InventoryItemModifier>> onChanged;
+
+  /// Held, dessen Katalog (Regelprofil) die Talentauswahl liefert. Ohne
+  /// Angabe gilt der umgebende [PlanungsBearbeitungsBereich], sonst der
+  /// globale Katalog.
+  final String? heroId;
 
   @override
   State<InventoryModifierEditor> createState() =>
@@ -109,6 +117,7 @@ class _InventoryModifierEditorState extends State<InventoryModifierEditor> {
           _ModifierRow(
             key: ValueKey<int>(i),
             modifier: _mods[i],
+            heroId: widget.heroId,
             onChanged: (mod) => _updateAt(i, mod),
             onDelete: () => _remove(i),
           ),
@@ -128,11 +137,13 @@ class _ModifierRow extends ConsumerStatefulWidget {
   const _ModifierRow({
     super.key,
     required this.modifier,
+    required this.heroId,
     required this.onChanged,
     required this.onDelete,
   });
 
   final InventoryItemModifier modifier;
+  final String? heroId;
   final ValueChanged<InventoryItemModifier> onChanged;
   final VoidCallback onDelete;
 
@@ -181,7 +192,10 @@ class _ModifierRowState extends ConsumerState<_ModifierRow> {
   @override
   Widget build(BuildContext context) {
     final mod = widget.modifier;
-    final catalog = katalogImBereich(context, ref).asData?.value;
+    final catalog = beobachteHeldenKatalog(
+      ref,
+      widget.heroId ?? PlanungsBearbeitungsBereich.heldVon(context),
+    ).asData?.value;
 
     // Talente aus dem Katalog sortiert nach Name
     final talents = catalog == null
@@ -369,7 +383,7 @@ class _ModifierRowState extends ConsumerState<_ModifierRow> {
           optionsBuilder: (value) {
             if (value.text.isEmpty) return talents;
             final query = value.text.toLowerCase();
-            return talents.where((t) => t.name.toLowerCase().contains(query));
+            return talents.where((t) => passtZurSuche(t.name, query));
           },
           onSelected: (t) => _emit(targetId: t.id),
           fieldViewBuilder: (context, ctrl, focusNode, onSubmitted) {

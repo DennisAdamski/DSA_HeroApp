@@ -71,7 +71,7 @@ class _CombatTalentCatalogTableState extends State<_CombatTalentCatalogTable> {
     if (_searchQuery.isNotEmpty) {
       final needle = suchFaltung(_searchQuery);
       talents = talents
-          .where((t) => suchFaltung(t.name).contains(needle))
+          .where((t) => passtZurSuche(t.name, needle))
           .toList(growable: false);
     }
     return talents;

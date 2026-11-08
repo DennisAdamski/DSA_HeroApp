@@ -130,7 +130,10 @@ void main() {
 
       expect(find.byType(TextFormField), findsOneWidget);
       final textField = tester.widget<TextField>(find.byType(TextField));
-      expect(textField.keyboardType, TextInputType.number);
+      expect(
+        textField.keyboardType,
+        const TextInputType.numberWithOptions(signed: true),
+      );
     });
 
     testWidgets('Suffix-Icon wird im Edit-Modus angezeigt', (tester) async {

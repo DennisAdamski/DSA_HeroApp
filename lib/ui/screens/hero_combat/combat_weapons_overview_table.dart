@@ -545,7 +545,7 @@ class CombatWeaponsOverviewTable extends StatelessWidget {
                 onPressed: weapons.length <= 1 && slot.name.trim().isEmpty
                     ? null
                     : () => onWeaponRemove(entry.index, slot),
-                icon: const Icon(Icons.delete),
+                icon: const Icon(Icons.delete_outline),
               ),
             ],
           );

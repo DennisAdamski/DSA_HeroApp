@@ -89,4 +89,18 @@ void main() {
     expect(parseDsaCurrencyToKreuzer(''), 0);
     expect(parseDsaCurrencyToKreuzer('abc'), isNull);
   });
+
+  group('passtZurSuche', () {
+    test('findet Teilwörter unabhängig von Umlaut-Schreibweise', () {
+      expect(passtZurSuche('Fährtensuchen', 'faehrten'), isTrue);
+      expect(passtZurSuche('Faehrtensuchen', 'FÄHRTEN'), isTrue);
+      expect(passtZurSuche('Kräuter Suchen', ' kräuter '), isTrue);
+      expect(passtZurSuche('Schwerter', 'axt'), isFalse);
+    });
+
+    test('leere Anfrage passt immer', () {
+      expect(passtZurSuche('Dolche', ''), isTrue);
+      expect(passtZurSuche('Dolche', '   '), isTrue);
+    });
+  });
 }

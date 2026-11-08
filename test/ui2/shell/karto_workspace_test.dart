@@ -276,9 +276,40 @@ void main() {
     },
   );
 
-  testWidgets('System-Zurück prüft einen leeren offenen Plan', (tester) async {
+  testWidgets('System-Zurück beendet einen leeren Plan ohne Rückfrage', (
+    tester,
+  ) async {
     final container = await pumpShell(tester, selected: 'rondra');
     await modus(tester, 'Entwicklung planen');
+    expect(container.read(advancementSessionProvider('rondra')), isNotNull);
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    // Nichts geplant, nichts zu verlieren: wie in der Bestandsoberfläche.
+    expect(find.text('Entwicklung noch in Planung'), findsNothing);
+    expect(container.read(advancementSessionProvider('rondra')), isNull);
+    expect(container.read(selectedHeroIdProvider), isNull);
+  });
+
+  testWidgets('System-Zurück prüft einen Plan mit Einträgen', (tester) async {
+    final container = await pumpShell(tester, selected: 'rondra');
+    await modus(tester, 'Entwicklung planen');
+    final provider = advancementSessionProvider('rondra');
+    container
+        .read(provider.notifier)
+        .add(
+          HeroAdvancementEntry(
+            id: 'entry',
+            sessionId: container.read(provider)!.sessionId,
+            createdAt: DateTime.utc(2026, 9, 20),
+            kind: AdvancementKind.attribute,
+            targetId: 'mu',
+            label: 'Mut',
+            fromValue: 14,
+            toValue: 15,
+            apCost: 100,
+          ),
+        );
+    await tester.pumpAndSettle();
     await tester.binding.handlePopRoute();
     await tester.pumpAndSettle();
     expect(find.text('Weiterplanen'), findsOneWidget);

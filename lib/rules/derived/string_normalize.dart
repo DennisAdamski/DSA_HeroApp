@@ -82,3 +82,9 @@ bool containsNamedToken(String text, Set<String> targets) {
   }
   return false;
 }
+
+/// Ob [text] die Suchanfrage [anfrage] enthält, tolerant gegenüber Groß-
+/// und Kleinschreibung, Randleerzeichen und Umlaut-Schreibweisen
+/// (siehe [suchFaltung]). Eine leere Anfrage passt immer.
+bool passtZurSuche(String text, String anfrage) =>
+    suchFaltung(text).contains(suchFaltung(anfrage));

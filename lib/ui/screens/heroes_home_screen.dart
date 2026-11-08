@@ -489,7 +489,7 @@ class _HeroesHomeScreenState extends ConsumerState<HeroesHomeScreen> {
   }) async {
     final result = await showAdaptiveConfirmDialog(
       context: context,
-      title: 'Held löschen',
+      title: 'Held löschen?',
       content: 'Soll "${hero.name}" wirklich gelöscht werden?',
       confirmLabel: 'Löschen',
       cancelLabel: 'Abbrechen',

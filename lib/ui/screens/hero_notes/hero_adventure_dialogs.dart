@@ -18,12 +18,14 @@ Future<HeroAdventureEntry?> _showAdventureCreateDialog({
 
 Future<HeroAdventureEntry?> _showAdventureCompletionDialog({
   required BuildContext context,
+  required String heroId,
   required HeroAdventureEntry initial,
   required _AdventureRewardTargetOptions rewardTargetOptions,
 }) {
   return showAdaptiveDetailSheet<HeroAdventureEntry>(
     context: context,
     builder: (_) => _AdventureCompletionDialog(
+      heroId: heroId,
       initial: initial,
       rewardTargetOptions: rewardTargetOptions,
     ),
@@ -98,12 +100,17 @@ class _AdventureDateDraft {
 
 Future<HeroAdventureLootEntry?> _showAdventureLootItemDialog({
   required BuildContext context,
+  required String heroId,
   required HeroAdventureLootEntry initial,
   required bool isNew,
 }) {
   return showAdaptiveDetailSheet<HeroAdventureLootEntry>(
     context: context,
-    builder: (_) => _AdventureLootItemDialog(initial: initial, isNew: isNew),
+    builder: (_) => _AdventureLootItemDialog(
+      heroId: heroId,
+      initial: initial,
+      isNew: isNew,
+    ),
   );
 }
 
@@ -267,10 +274,13 @@ class _AdventureCreateDialogState extends State<_AdventureCreateDialog> {
 
 class _AdventureCompletionDialog extends StatefulWidget {
   const _AdventureCompletionDialog({
+    required this.heroId,
     required this.initial,
     required this.rewardTargetOptions,
   });
 
+  /// Held, für den abgeschlossen wird; reicht ihn an die Beutedialoge weiter.
+  final String heroId;
   final HeroAdventureEntry initial;
   final _AdventureRewardTargetOptions rewardTargetOptions;
 
@@ -320,6 +330,7 @@ class _AdventureCompletionDialogState
   Future<void> _addLootEntry() async {
     final result = await _showAdventureLootItemDialog(
       context: context,
+      heroId: widget.heroId,
       initial: HeroAdventureLootEntry(id: _uuid.v4()),
       isNew: true,
     );
@@ -337,6 +348,7 @@ class _AdventureCompletionDialogState
     }
     final result = await _showAdventureLootItemDialog(
       context: context,
+      heroId: widget.heroId,
       initial: _loot[index],
       isNew: false,
     );
@@ -690,8 +702,14 @@ class _AdventureLootEditorCard extends StatelessWidget {
 }
 
 class _AdventureLootItemDialog extends StatefulWidget {
-  const _AdventureLootItemDialog({required this.initial, required this.isNew});
+  const _AdventureLootItemDialog({
+    required this.heroId,
+    required this.initial,
+    required this.isNew,
+  });
 
+  /// Held, dessen Katalog (Regelprofil) die Modifikatorziele liefert.
+  final String heroId;
   final HeroAdventureLootEntry initial;
   final bool isNew;
 
@@ -943,6 +961,7 @@ class _AdventureLootItemDialogState extends State<_AdventureLootItemDialog> {
                 _AdventureSubsectionHeader(title: 'Modifikatoren'),
                 const SizedBox(height: 4),
                 InventoryModifierEditor(
+                  heroId: widget.heroId,
                   modifiers: _draft.modifiers,
                   onChanged: (mods) =>
                       setState(() => _draft = _draft.copyWith(modifiers: mods)),
@@ -1435,6 +1454,7 @@ String _adventureCompletionTitle(HeroAdventureEntry entry) {
   return title.isEmpty ? 'Abenteuer' : title;
 }
 
+// Leer für „keine Dukaten“, sonst das kanonische Dukatenformat.
 String _formatAdventureDukatenDraft(double value) =>
     value <= 0 ? '' : formatDsaCurrencyDukaten(dukatenToDsaKreuzer(value));
 

@@ -1,6 +1,6 @@
 # To-do-Liste: Weiterentwicklung der Heldenverwaltung
 
-Stand: 01.11.2026. Diese Liste führt **nur Status und offene Punkte**. Abgenommene
+Stand: 05.11.2026. Diese Liste führt **nur Status und offene Punkte**. Abgenommene
 Aufgaben und der Verlauf der Teilstände stehen unverändert im
 [Archiv](archiv/README.md); Verweise wie „ARCH-05 Teilstand (3)“ in Code und
 Dokumentation meinen den dortigen Text.
@@ -9,6 +9,23 @@ Grundlage ist die Diskussion „Wenn du die App komplett neu bauen würdest, was
 würdest du anpassen?“ (18.09.2026) mit sieben Vorschlägen (ARCH-01 bis ARCH-07)
 und dem fachlichen Ausbau MAG-EFF und TRANK. Vor einer Umsetzung den jeweiligen
 Ist-Zustand erneut prüfen und den konkreten Teilumfang festlegen.
+
+## Kurzüberblick (05.11.2026)
+
+| Bereich | Erledigt | Teilweise / offen |
+| --- | --- | --- |
+| Architektur (ARCH) | 01, 03, 05, 06 abgenommen | 02 und 04: Code fertig, manuelle Prüfung fehlt; 07 begleitend |
+| Fachlicher Ausbau | MAG-EFF: 17 Zauberprofile; TRANK: Teilstände 1 und 2 | weitere Zauber zurückgestellt; Elixiere, Kräuter, Verbandszeug offen |
+| Spielabend (SPIEL) | 01, 05, 06, 07 | 02 (Munition, Belastung), 03 (nicht begonnen), 04 (Produktion) |
+| Weitere Themen | Gefecht, Gefechtslage 1–7, Reittiere P1, Vertraute V1/V2, Reiseroute Stufe 1, Gruppen v2, Feedback, Redesign R1–R3, Aufräumserie REV-01–16 | siehe [Weitere Themen](#weitere-themen-stand-05112026) |
+
+**Größter Hebel:** Viele Hauptpunkte warten nur noch auf eine **manuelle
+Prüfsitzung mit zwei Geräten bzw. zwei Konten gegen echtes Firebase**. Eine
+Sitzung deckt ab: ARCH-02 (Abweichung durch ältere App, Export → Import,
+Zwei-Geräte-Sync), ARCH-04 (Gruppenvorgabe), ARCH-06 (Geräte- und
+Live-Firebase-Prüfung) und den Großteil von ARCH-07 (Web/IndexedDB, native
+Pfade, `file_picker`). Danach bleiben fachlich vor allem die Lernregeln aus
+ARCH-04, SPIEL-02/-03 und der Produktionsschritt von SPIEL-04.
 
 ## Fachlicher Ausbau: MAG-EFF – Zaubereffekte
 
@@ -176,7 +193,9 @@ Teilumfang festlegen. Nach Wichtigkeit sortiert.
   Notizen-Tab der Verwaltung (Bestandsoberfläche) zeigen die neuen Felder noch
   nicht, erhalten sie aber beim Bearbeiten (`copyWith`). **Offen:** Ort und
   Datum im Bestandseditor, Suche über die allgemeinen Notizen des Helden
-  (`HeroSheet.notes`), Umlautfaltung „oe“→„ö“.
+  (`HeroSheet.notes`). *Erledigt 05.11.2026:* Umlautfaltung (`suchFaltung`,
+  REV-08: „ö“, „oe“ und „o“ fallen zusammen); das Datum ist strukturiert
+  gespeichert (`HeroAdventureDateValue`, REV-01).
 - [x] **SPIEL-07 — Spielansicht selbst anordnen.** Beobachtung: Die feste
   Haupt- und Seitenspalte verschenkte Platz (breite Abschnitte wie „Dabei“ mit
   viel Leerraum), Reihenfolge und Umfang ließen sich nicht anpassen. **Umgesetzt
@@ -198,6 +217,46 @@ Teilumfang festlegen. Nach Wichtigkeit sortiert.
   [ui_oberflaeche.md](hinweise/ui_oberflaeche.md). **Offen:** Sichtprüfung im
   Web (Kachel per Anordnen auf „Mittel“, Fenster ziehen, Schrift 2,
   Vergrößern-Dialog).
+
+## Weitere Themen (Stand 05.11.2026)
+
+Themen außerhalb von ARCH, MAG-EFF, TRANK und SPIEL. Details stehen im jeweils
+verlinkten Plan; hier nur Status und offene Punkte.
+
+| Thema | Status | Offen |
+| --- | --- | --- |
+| Gefecht ([Implementierung](gefecht_implementation.md), [Folgepakete](gefecht_folgepakete_plan.md)) | umgesetzt, Review und Restschulden abgeschlossen | – |
+| [Gefechtslage](gefecht_lage_konzept.md) | Schritte 1–7 umgesetzt (16.10.2026) | Konzentration auf einen Gegner (Paradesperre), Bedienung der Taktik |
+| [Reittiere](reittier_plan.md) | P1 umgesetzt (08.10.2026) | P2 Spielansicht (u. a. Wunden der Begleiter), P3 Reiterkampf |
+| [Vertraute](vertraute_plan.md) | V1 und V2 umgesetzt (08.10.2026) | V3 Gefecht |
+| [Reiseroute](reiseroute_plan.md) | Stufe 1 umgesetzt (03.11.2026): Stationsliste, Spielkachel, Zeitleiste | Stufe 0 (Anfrage an Avesmaps), danach Stufe 2 (Ortssuche, Karte) |
+| [Gruppen v2](gruppen_sharing_offene_schritte.md) | abgesichert, Legacy-Pfad `gruppen/*` gesperrt | Mitglieder in der Oberfläche entfernen, Live-Listener, Windows-Transport, Emulator-Test, optional einmalige Einladungen |
+| [Feedback als GitHub-Issue](feedback_github_plan.md) | in Produktion (16.10.2026) | – |
+| [Redesign R1–R3](redesign_implementation.md) | umgesetzt, [Abnahme](redesign_acceptance.md) | – |
+| Meisterhandwerk ([Hinweise](hinweise/katalog_sonderfertigkeiten.md)) | AsP-Einsatz bei Proben auf das gewählte Talent (03.11.2026) | – |
+| Aventurischer Kalender ([Hinweise](hinweise/regeln_herleitung.md)) | Feiertage als Katalogdatei `feiertage.json`, „Feiertage in der Nähe“ im Datumsdialog, Datum per Plus-Taste weiterzählen (02.–05.11.2026) | – |
+
+**Aufräumserie REV-01 bis REV-16 (05.11.2026, Merge #246).** Ergebnis eines
+Code-Reviews; alle Punkte sind umgesetzt, die IDs stehen in den Commits und
+Tests:
+
+- REV-01: Notizen und Personen speichern ihr Datum strukturiert
+  (`HeroAdventureDateValue`, gemeinsame Eingabe `KartoDatumFelder`).
+- REV-02: Das Würfelprotokoll merkt sich die Probe über einen stabilen Verweis.
+- REV-03/-04: Das Hintergrundladen der Wissensbasis endet bei jedem Fehler;
+  BOMs entfernt.
+- REV-05: ein Schreibweg für die Kartograph-Oberflächen (`karto_held_schreiben.dart`).
+- REV-06: Die Bezugswege der Wissensbasis halten die Cloud-Fassung konsistent;
+  WebDAV-Bezug entfernt.
+- REV-07: Katalogschlüssel nur einmal ableiten.
+- REV-08: eine Suchfaltung (`suchFaltung`) für Probensuche, Kurzregeln und Abenteuer.
+- REV-09: Rundungsregel (WdH S. 6) an einer Stelle (`excel_rounding.dart`).
+- REV-10: Profilwechsel-Vorschau einmal komponiert.
+- REV-11: gemeinsamer Transport der Cloud-Function-Clients (`cloud_function_transport.dart`).
+- REV-12: Feiertage als Katalogdatei statt Dart-Tabelle.
+- REV-13/-14: Weit-Prüfung der Kacheln und Kalenderumrechnung je einmal.
+- REV-15/-16: ein Helfer zum Verschieben in Listen (`liste_verschieben.dart`),
+  Regeltest-Inventur im Pre-Push-Hook.
 
 ## Arbeitsweise und gemeinsame Grenzen
 

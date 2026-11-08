@@ -124,22 +124,27 @@ extension _CombatStateHelpers on _HeroCombatTabState {
       return;
     }
 
-    // Der Tab beobachtet den Heldenkatalog; ohne geladenen Katalog wird
-    // nicht gespeichert (kein Warten auf `.future`, Regel 9).
-    final catalog = ref
-        .read(heroRulesCatalogProvider(widget.heroId))
-        .valueOrNull;
-    if (catalog == null) {
+    // Held-gebundener Katalog (Regelprofil); Warten über das Abo, damit ein
+    // Ladefehler das Speichern beendet statt es hängen zu lassen.
+    final RulesCatalog catalog;
+    try {
+      catalog = await warteAufAsyncWert(
+        ref,
+        heroRulesCatalogProvider(widget.heroId),
+      );
+    } on Object catch (error) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text(
-              'Der Regelkatalog des Helden lädt noch. '
-              'Bitte gleich noch einmal speichern.',
+              'Speichern nicht möglich, Regelkatalog fehlt: $error',
             ),
           ),
         );
       }
+      return;
+    }
+    if (!mounted) {
       return;
     }
     final weaponValidation = pruefeKampfSlots(

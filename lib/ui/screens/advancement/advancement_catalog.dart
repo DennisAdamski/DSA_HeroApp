@@ -285,8 +285,7 @@ class _AdvancementCatalogState extends ConsumerState<AdvancementCatalog> {
       )),
     );
     final filtered = options.where((option) {
-      return abschnitt.matches(option) &&
-          suchFaltung(option.label).contains(query);
+      return abschnitt.matches(option) && passtZurSuche(option.label, query);
     }).toList();
     final plannedTargets = <String>{
       for (final entry in session.entries)

@@ -150,9 +150,7 @@ class _ProbenwahlState extends State<_Probenwahl> {
     // Ausweichproben (Meisterentscheid) erscheinen nur bei einer Suche.
     final treffer = widget.kandidaten
         .where(
-          (k) => suche.isEmpty
-              ? !k.ausweichen
-              : suchFaltung(k.name).contains(suche),
+          (k) => suche.isEmpty ? !k.ausweichen : passtZurSuche(k.name, suche),
         )
         .take(60)
         .toList();

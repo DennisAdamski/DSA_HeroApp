@@ -407,7 +407,7 @@ class _WorkspaceHeaderStatRailBody extends StatelessWidget {
                   children: [
                     TextButton(
                       onPressed: () => Navigator.of(sheetContext).pop(),
-                      child: const Text('Schliessen'),
+                      child: const Text('Schließen'),
                     ),
                   ],
                 ),

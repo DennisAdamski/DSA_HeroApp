@@ -280,7 +280,7 @@ class _SpecialAbilityPickerScreenState
     }).toList();
     final filtered = query.isEmpty
         ? visible
-        : visible.where((a) => suchFaltung(a.name).contains(query)).toList();
+        : visible.where((a) => passtZurSuche(a.name, query)).toList();
     final grouped = <String, List<SpecialAbilityDef>>{};
     for (final ability in filtered) {
       final key = ability.kategorie.trim().isEmpty

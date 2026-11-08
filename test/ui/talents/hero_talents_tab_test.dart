@@ -1486,6 +1486,20 @@ void main() {
       );
       await tester.pumpAndSettle();
 
+      // Ein Wert ohne Beschreibung verschwindet nicht still: der Dialog
+      // bleibt offen und markiert die Zeile.
+      expect(find.text('Beschreibung fehlt'), findsOneWidget);
+
+      // Ohne Wert ist die Zeile leer und fällt beim Speichern weg.
+      await tester.enterText(
+        find.byKey(const ValueKey<String>('talent-modifier-value-1')),
+        '0',
+      );
+      await tester.tap(
+        find.byKey(const ValueKey<String>('talent-modifiers-save')),
+      );
+      await tester.pumpAndSettle();
+
       await actions.save();
       await tester.pumpAndSettle();
 

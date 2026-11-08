@@ -39,10 +39,14 @@ Future<T> warteAufWert<T>(
 /// Das Abo hängt am [ProviderContainer] und nicht am Widget: `listenManual`
 /// würde beim Verlassen des Bildschirms geschlossen, und die Future bliebe für
 /// immer offen. So wird sie auch nach dem Dispose noch erfüllt.
+///
+/// Mit [zeitlimit] endet das Warten spätestens dann mit einer
+/// [TimeoutException]; das hilft, wo eine Kette Fehler verschlucken kann.
 Future<T> warteAufWertImWidget<T>(
   WidgetRef ref,
   ProviderListenable<AsyncValue<T>> quelle, {
   bool aktuellenStandEinbeziehen = true,
+  Duration? zeitlimit,
 }) {
   final container = ProviderScope.containerOf(ref.context, listen: false);
   return _warte<T>(
@@ -51,6 +55,7 @@ Future<T> warteAufWertImWidget<T>(
       (_, naechster) => melde(naechster),
       fireImmediately: aktuellenStandEinbeziehen,
     ),
+    zeitlimit: zeitlimit,
   );
 }
 
@@ -58,8 +63,9 @@ Future<T> _warte<T>(
   ProviderSubscription<AsyncValue<T>> Function(
     void Function(AsyncValue<T> wert) melde,
   )
-  abonniere,
-) {
+  abonniere, {
+  Duration? zeitlimit,
+}) {
   final ergebnis = Completer<T>();
   void melde(AsyncValue<T> wert) {
     if (ergebnis.isCompleted) return;
@@ -72,5 +78,8 @@ Future<T> _warte<T>(
   }
 
   final abo = abonniere(melde);
-  return ergebnis.future.whenComplete(abo.close);
+  final future = zeitlimit == null
+      ? ergebnis.future
+      : ergebnis.future.timeout(zeitlimit);
+  return future.whenComplete(abo.close);
 }

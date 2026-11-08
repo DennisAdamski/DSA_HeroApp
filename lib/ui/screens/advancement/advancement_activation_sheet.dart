@@ -160,7 +160,7 @@ class _AdvancementActivationSheetState
             return false;
           }
           if (!filter.matches(option)) return false;
-          return suchFaltung(option.label).contains(query);
+          return passtZurSuche(option.label, query);
         }).toList()..sort(
           (a, b) => a.label.toLowerCase().compareTo(b.label.toLowerCase()),
         );

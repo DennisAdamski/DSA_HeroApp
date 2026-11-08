@@ -270,7 +270,7 @@ class _HeroBegleiterTabState extends ConsumerState<HeroBegleiterTab>
     if (index < 0) return;
     final result = await showAdaptiveConfirmDialog(
       context: context,
-      title: 'Begleiter löschen',
+      title: 'Begleiter löschen?',
       content:
           'Möchtest du "${_draftCompanions[index].name}" wirklich löschen?',
       confirmLabel: 'Löschen',

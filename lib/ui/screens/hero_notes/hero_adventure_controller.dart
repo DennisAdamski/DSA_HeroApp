@@ -412,6 +412,7 @@ extension _HeroNotesAdventureController on _HeroNotesTabState {
         ?.value;
     final completionEntry = await _showAdventureCompletionDialog(
       context: context,
+      heroId: widget.heroId,
       initial: adventure,
       rewardTargetOptions: _AdventureRewardTargetOptions(
         talent: _targetOptionsForType(

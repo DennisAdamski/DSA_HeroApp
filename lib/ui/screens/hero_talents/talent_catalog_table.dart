@@ -80,7 +80,7 @@ class _TalentCatalogTableState extends State<_TalentCatalogTable> {
     if (_searchQuery.isNotEmpty) {
       final needle = suchFaltung(_searchQuery);
       talents = talents
-          .where((t) => suchFaltung(t.name).contains(needle))
+          .where((t) => passtZurSuche(t.name, needle))
           .toList(growable: false);
     }
     return talents;

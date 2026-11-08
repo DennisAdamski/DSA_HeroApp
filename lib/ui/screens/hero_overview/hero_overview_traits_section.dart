@@ -8,6 +8,7 @@ part of 'package:dsa_heldenverwaltung/ui/screens/hero_overview_tab.dart';
 /// und der Held unberuehrt — die Migration uebernimmt dann `saveHero`.
 extension _HeroOverviewTraitsSection on _HeroOverviewTabState {
   Widget _buildTraitSelectionSection() {
+    // Held-gebunden: Mit Regelprofil gelten die Einträge seiner Pakete.
     final catalogAsync = ref.watch(heroRulesCatalogProvider(widget.heroId));
     final catalog = catalogAsync.valueOrNull;
     final advantages = catalog?.advantages ?? const <HeroTraitDef>[];

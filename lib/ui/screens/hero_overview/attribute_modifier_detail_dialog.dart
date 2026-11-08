@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
-import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/herleitung.dart';
-import 'package:dsa_heldenverwaltung/ui/screens/hero_overview/stat_modifier_detail_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/modifikatoren_dialog.dart';
 
 /// Oeffnet den kombinierten Detail- und Bearbeitungsdialog fuer Eigenschafts-
-/// Modifikatoren.
+/// Modifikatoren (gemeinsamer Baustein: [showModifikatorenDialog]).
 ///
 /// [attributeLabel]: Anzeigename der Eigenschaft (z.B. "MU", "KL").
 /// [baseValue]: Aktueller Basiswert der Eigenschaft.
@@ -26,19 +25,18 @@ Future<List<HeroTalentModifier>?> showAttributeModifierDetailDialog({
   required int effectiveValue,
   Herleitung? herleitung,
 }) {
-  return showAdaptiveDetailSheet<List<HeroTalentModifier>>(
+  return showModifikatorenDialog(
     context: context,
-    builder: (_) => ModifierDetailDialog(
-      label: attributeLabel,
-      keyPrefix: 'attr',
-      ergebnisBezeichnung: 'Aktuell',
-      zusammenfassung: [
-        (label: 'Wert', value: baseValue, fett: false),
-        (label: 'Aktuell', value: effectiveValue, fett: true),
-      ],
-      namedModifiers: namedModifiers,
-      parsedSources: parsedSources,
-      herleitung: herleitung,
-    ),
+    bezeichnung: attributeLabel,
+    schluesselPrefix: 'attr',
+    modifikatoren: namedModifiers,
+    abschnittTitel: 'Eigene Modifikatoren',
+    herleitung: herleitung,
+    ergebnisBezeichnung: 'Aktuell',
+    quellen: parsedSources,
+    summenZeilen: [
+      (label: 'Wert', value: baseValue, fett: false),
+      (label: 'Aktuell', value: effectiveValue, fett: true),
+    ],
   );
 }
