@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
+import 'package:dsa_heldenverwaltung/domain/gefecht.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_spielansicht.dart';
@@ -9,6 +11,7 @@ import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
 import 'package:dsa_heldenverwaltung/domain/vitalwirkung.dart';
 import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
+import 'package:dsa_heldenverwaltung/state/gefecht_provider.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_gefechts_adapter.dart';
@@ -488,6 +491,107 @@ void main() {
     await tester.tap(_k('karto-dabei-0-benutzen'), warnIfMissed: false);
     await tester.pumpAndSettle();
     expect(bestand.benutzt, isEmpty);
+  });
+
+  group('Munition', () {
+    HeroSheet schuetze() => _held().copyWith(
+      combatConfig: const CombatConfig(
+        weapons: [
+          MainWeaponSlot(
+            id: 'w-bogen',
+            name: 'Kurzbogen',
+            combatType: WeaponCombatType.ranged,
+            rangedProfile: RangedWeaponProfile(
+              projectiles: [
+                RangedProjectile(id: 'p-pfeil', name: 'Pfeile', count: 2),
+              ],
+              selectedProjectileIndex: 0,
+            ),
+          ),
+        ],
+      ),
+    );
+
+    int bestand(HeroSheet held) => held
+        .combatConfig
+        .weaponSlots
+        .single
+        .rangedProfile
+        .projectiles
+        .single
+        .count;
+
+    testWidgets('ohne Fernkampfwaffe kein Abschnitt', (tester) async {
+      await zeige(tester, _held());
+      expect(find.text('Munition'), findsNothing);
+    });
+
+    testWidgets('zeigt Geschoss, Waffe und Bestand', (tester) async {
+      await zeige(tester, schuetze());
+      await tester.ensureVisible(_k('karto-dabei-munition-0'));
+      expect(find.text('Munition'), findsOneWidget);
+      expect(find.text('Pfeile'), findsOneWidget);
+      expect(find.text('Kurzbogen · aktiv'), findsOneWidget);
+      expect(tester.widget<Text>(_k('karto-dabei-munition-0-menge')).data, '2');
+    });
+
+    testWidgets('Schritte zählen alle und führen das Inventar mit', (
+      tester,
+    ) async {
+      final aufbau = await zeige(tester, schuetze());
+      final minus = _k('karto-dabei-munition-0-minus');
+      await tester.ensureVisible(minus);
+      await tester.tap(minus);
+      await tester.tap(minus);
+      await tester.pumpAndSettle();
+      final gespeichert = (await aufbau.repo.loadHeroById('praiodan'))!;
+      expect(bestand(gespeichert), 0);
+      // Der verknüpfte Inventareintrag folgt dem Slot.
+      final eintrag = gespeichert.inventoryEntries.singleWhere(
+        (e) => e.source == InventoryItemSource.geschoss,
+      );
+      expect(eintrag.anzahl, '0');
+      expect(gespeichert.dukaten, '12,5');
+      expect(tester.widget<Text>(_k('karto-dabei-munition-0-menge')).data, '0');
+      // Leer: Minus gesperrt, Plus bleibt.
+      await tippe(tester, minus);
+      expect(bestand((await aufbau.repo.loadHeroById('praiodan'))!), 0);
+      await tippe(tester, _k('karto-dabei-munition-0-plus'));
+      expect(bestand((await aufbau.repo.loadHeroById('praiodan'))!), 1);
+    });
+
+    testWidgets('schmal mit Schrift 2 ohne Überlauf', (tester) async {
+      await zeige(tester, schuetze(), breite: 360, skalierung: 2);
+      await tester.ensureVisible(_k('karto-dabei-munition-0'));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('ein laufendes Gefecht sperrt die Munition', (tester) async {
+      final aufbau = await zeige(tester, schuetze());
+      aufbau.container
+          .read(gefechtProvider('praiodan').notifier)
+          .setzen(const Gefechtszustand(iniWurf: 6, dk: 'N'));
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(_k('karto-dabei-munition-gefecht'));
+      await tippe(tester, _k('karto-dabei-munition-0-plus'));
+      expect(bestand((await aufbau.repo.loadHeroById('praiodan'))!), 2);
+      // Geld bleibt bedienbar.
+      await tippe(tester, _k('karto-dabei-geld-d-plus'));
+      expect((await aufbau.repo.loadHeroById('praiodan'))!.dukaten, '13,5');
+    });
+
+    testWidgets('eine offene Planung sperrt auch die Munition', (tester) async {
+      final held = schuetze();
+      final aufbau = await zeige(tester, held);
+      aufbau.container
+          .read(advancementSessionProvider('praiodan').notifier)
+          .start(hero: held, catalog: testCatalog);
+      await tester.pumpAndSettle();
+      await tippe(tester, _k('karto-dabei-munition-0-plus'));
+      expect(bestand((await aufbau.repo.loadHeroById('praiodan'))!), 2);
+      expect(_k('karto-dabei-munition-gefecht'), findsNothing);
+    });
   });
 
   testWidgets('eine offene Planung sperrt alle Schritte', (tester) async {

@@ -585,6 +585,7 @@ class _KartoSpielansichtState extends ConsumerState<KartoSpielansicht>
         heroId: heroId,
         dukaten: werte.hero.dukaten,
         verbrauch: dabeiVerbrauchsgegenstaende(werte.hero.inventoryEntries),
+        munition: dabeiMunition(werte.hero.combatConfig),
         // Trank, Heilmittel und Elixier benutzen den Dialog des Gefechts-
         // inventars; er bucht Wirkung und Stück selbst.
         onBenutzen: switch (bestand) {

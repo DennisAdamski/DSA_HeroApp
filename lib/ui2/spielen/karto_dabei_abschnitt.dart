@@ -7,6 +7,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/currency_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/spiel_dabei_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/inventar_aenderung_rules.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
+import 'package:dsa_heldenverwaltung/state/gefecht_provider.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abschnitt.dart';
@@ -23,12 +24,22 @@ const int kDabeiSichtbarWeit = 12;
 /// Kachelbreite, ab der die Verbrauchsgegenstände zweispaltig fließen.
 const double kDabeiZweispaltigAb = 560;
 
-/// Block „Dabei“ der Spielansicht (SPIEL-02): Geld und Verbrauchsgegenstände.
+/// Satz unter der Munition, solange ein Gefecht des Helden läuft.
+const String kDabeiMunitionImGefecht =
+    'Im laufenden Gefecht zählt das Gefecht die Munition.';
+
+/// Block „Dabei“ der Spielansicht (SPIEL-02): Geld, Munition und
+/// Verbrauchsgegenstände.
 ///
-/// Zeigt den Geldstand mit Münzschritten und die Verbrauchsgegenstände des
-/// Inventars mit +/−. Jeder Klick schreibt **frisch**: den gespeicherten Helden
-/// laden, nur den Geldstand oder die Menge dieses einen Eintrags ändern,
-/// speichern (`mitDukatenSchritt`, `mitVerbrauchsmengenSchritt`). Die Schritte
+/// Zeigt den Geldstand mit Münzschritten, die Geschossbestände der
+/// Fernkampfwaffen und die Verbrauchsgegenstände des Inventars mit +/−. Jeder
+/// Klick schreibt **frisch**: den gespeicherten Helden laden, nur den
+/// Geldstand, den Bestand dieses Geschosses oder die Menge dieses einen
+/// Eintrags ändern, speichern (`mitDukatenSchritt`, `mitMunitionsSchritt`,
+/// `mitVerbrauchsmengenSchritt`). Munition zählt am Kampf-Slot; das Inventar
+/// gleicht `updateHero` beim Speichern selbst ab. Solange ein Gefecht des
+/// Helden läuft, gehört die Munition dem Gefecht (Ladezustand, Schuss) und
+/// ist hier gesperrt. Die Schritte
 /// reihen sich je Held ein, deshalb zählt auch ein schneller Doppelklick. Gesperrt
 /// ist alles während einer offenen Planung. Der Block rechnet nichts selbst.
 class KartoDabeiAbschnitt extends ConsumerStatefulWidget {
@@ -38,6 +49,7 @@ class KartoDabeiAbschnitt extends ConsumerStatefulWidget {
     required this.heroId,
     required this.dukaten,
     required this.verbrauch,
+    this.munition = const <DabeiMunition>[],
     this.onBenutzen,
   });
 
@@ -49,6 +61,9 @@ class KartoDabeiAbschnitt extends ConsumerStatefulWidget {
 
   /// Verbrauchsgegenstände aus `dabeiVerbrauchsgegenstaende`.
   final List<HeroInventoryEntry> verbrauch;
+
+  /// Geschossbestände aus `dabeiMunition`; leer heißt kein Abschnitt.
+  final List<DabeiMunition> munition;
 
   /// Öffnet den Dialog zum Benutzen eines Tranks, Heilmittels oder Elixiers.
   ///
@@ -100,6 +115,7 @@ class _KartoDabeiAbschnittState extends ConsumerState<KartoDabeiAbschnitt>
         ? widget.verbrauch
         : widget.verbrauch.take(grenze).toList();
     final verborgen = widget.verbrauch.length - sichtbar.length;
+    final imGefecht = ref.watch(gefechtProvider(widget.heroId)) != null;
 
     return KartoAbschnitt(
       titel: 'Dabei',
@@ -114,6 +130,37 @@ class _KartoDabeiAbschnittState extends ConsumerState<KartoDabeiAbschnitt>
                 _schreibe((held) => mitDukatenSchritt(held, kreuzer)),
             onBetrag: _betragAendern,
           ),
+          if (widget.munition.isNotEmpty) ...[
+            const SizedBox(height: Abstand.weit),
+            Text(
+              'Munition',
+              style: texte.marke.copyWith(color: karto.schriftLeise),
+            ),
+            const SizedBox(height: Abstand.eng),
+            _Zeilen(
+              children: [
+                for (var i = 0; i < widget.munition.length; i++)
+                  _Munitionszeile(
+                    index: i,
+                    munition: widget.munition[i],
+                    gesperrt: gesperrt || imGefecht,
+                    onSchritt: (delta) => _schreibe(
+                      (held) =>
+                          mitMunitionsSchritt(held, widget.munition[i], delta),
+                    ),
+                  ),
+              ],
+            ),
+            if (imGefecht && !gesperrt)
+              Padding(
+                padding: const EdgeInsets.only(top: Abstand.eng),
+                child: Text(
+                  kDabeiMunitionImGefecht,
+                  key: const ValueKey<String>('karto-dabei-munition-gefecht'),
+                  style: texte.etikett.copyWith(color: karto.schriftLeise),
+                ),
+              ),
+          ],
           const SizedBox(height: Abstand.weit),
           Text(
             'Verbrauchsgegenstände',
@@ -127,44 +174,27 @@ class _KartoDabeiAbschnittState extends ConsumerState<KartoDabeiAbschnitt>
               style: texte.fliess.copyWith(color: karto.schriftLeise),
             )
           else
-            // Auf breiter Kachel fließen die Zeilen in zwei Spalten; sonst
-            // stünden Name und Knöpfe eine halbe Seite auseinander.
-            LayoutBuilder(
-              builder: (context, constraints) {
-                final zweispaltig = constraints.maxWidth >= kDabeiZweispaltigAb;
-                final zeilenbreite = zweispaltig
-                    ? (constraints.maxWidth - Abstand.bahn) / 2
-                    : constraints.maxWidth;
-                return Wrap(
-                  spacing: Abstand.bahn,
-                  children: [
-                    for (var i = 0; i < sichtbar.length; i++)
-                      SizedBox(
-                        width: zeilenbreite,
-                        child: _Verbrauchszeile(
-                          index: i,
-                          eintrag: sichtbar[i],
-                          gesperrt: gesperrt,
-                          onSchritt: (delta) => _schreibe(
-                            (held) => mitVerbrauchsmengenSchritt(
-                              held,
-                              sichtbar[i],
-                              delta,
-                            ),
-                          ),
-                          onBenutzen:
-                              widget.onBenutzen != null &&
-                                  dabeiBenutzbar(
-                                    catalog: katalog,
-                                    eintrag: sichtbar[i],
-                                  )
-                              ? () => widget.onBenutzen!(sichtbar[i])
-                              : null,
-                        ),
-                      ),
-                  ],
-                );
-              },
+            _Zeilen(
+              children: [
+                for (var i = 0; i < sichtbar.length; i++)
+                  _Verbrauchszeile(
+                    index: i,
+                    eintrag: sichtbar[i],
+                    gesperrt: gesperrt,
+                    onSchritt: (delta) => _schreibe(
+                      (held) =>
+                          mitVerbrauchsmengenSchritt(held, sichtbar[i], delta),
+                    ),
+                    onBenutzen:
+                        widget.onBenutzen != null &&
+                            dabeiBenutzbar(
+                              catalog: katalog,
+                              eintrag: sichtbar[i],
+                            )
+                        ? () => widget.onBenutzen!(sichtbar[i])
+                        : null,
+                  ),
+              ],
             ),
           if (widget.verbrauch.length > grenze)
             Align(
@@ -302,6 +332,95 @@ class _Geld extends StatelessWidget {
             ),
           ),
       ],
+    );
+  }
+}
+
+/// Zeilen des Blocks; auf breiter Kachel fließen sie in zwei Spalten, sonst
+/// stünden Name und Knöpfe eine halbe Seite auseinander.
+class _Zeilen extends StatelessWidget {
+  const _Zeilen({required this.children});
+
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final zweispaltig = constraints.maxWidth >= kDabeiZweispaltigAb;
+        final zeilenbreite = zweispaltig
+            ? (constraints.maxWidth - Abstand.bahn) / 2
+            : constraints.maxWidth;
+        return Wrap(
+          spacing: Abstand.bahn,
+          children: [
+            for (final zeile in children)
+              SizedBox(width: zeilenbreite, child: zeile),
+          ],
+        );
+      },
+    );
+  }
+}
+
+/// Zeile eines Geschossbestands: Geschoss, Waffe, Bestand, − und +.
+class _Munitionszeile extends StatelessWidget {
+  const _Munitionszeile({
+    required this.index,
+    required this.munition,
+    required this.gesperrt,
+    required this.onSchritt,
+  });
+
+  final int index;
+  final DabeiMunition munition;
+  final bool gesperrt;
+  final void Function(int delta) onSchritt;
+
+  @override
+  Widget build(BuildContext context) {
+    final karto = context.karto;
+    final texte = Theme.of(context).textTheme;
+    final leer = !munition.kannAbziehen;
+    return Padding(
+      key: ValueKey<String>('karto-dabei-munition-$index'),
+      padding: const EdgeInsets.only(top: Abstand.eng),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  munition.name,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: texte.fliess.copyWith(
+                    color: leer ? karto.schriftStumm : karto.schrift,
+                  ),
+                ),
+                Text(
+                  munition.aktiv
+                      ? '${munition.waffenName} · aktiv'
+                      : munition.waffenName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: texte.etikett.copyWith(color: karto.schriftLeise),
+                ),
+              ],
+            ),
+          ),
+          _MengeSchritt(
+            schluessel: 'karto-dabei-munition-$index',
+            menge: '${munition.anzahl}',
+            name: '${munition.name} (${munition.waffenName})',
+            onMinus: gesperrt || leer ? null : () => onSchritt(-1),
+            onPlus: gesperrt || !munition.kannHinzufuegen
+                ? null
+                : () => onSchritt(1),
+          ),
+        ],
+      ),
     );
   }
 }

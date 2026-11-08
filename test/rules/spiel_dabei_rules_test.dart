@@ -1,11 +1,13 @@
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
+import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
 import 'package:dsa_heldenverwaltung/domain/vitalwirkung.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/currency_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/kampf_aenderung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/spiel_dabei_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/inventar_aenderung_rules.dart';
 
@@ -54,6 +56,7 @@ HeroSheet _held({
 
 void main() {
   benutzenTests();
+  munitionTests();
   group('Auswahl der Verbrauchsgegenstände', () {
     test('nur manuelle Verbrauchsgegenstände des Helden', () {
       final fackel = _verbrauch('Fackel', '3', id: 'a');
@@ -291,6 +294,171 @@ void benutzenTests() {
         vitalwirkung: Vitalwirkung(),
       );
       expect(dabeiBenutzbar(catalog: null, eintrag: leer), isFalse);
+    });
+  });
+}
+
+MainWeaponSlot _bogen({
+  String id = 'w-bogen',
+  String name = 'Kurzbogen',
+  List<RangedProjectile> geschosse = const [],
+  int aktiv = 0,
+  WeaponCombatType typ = WeaponCombatType.ranged,
+}) => MainWeaponSlot(
+  id: id,
+  name: name,
+  combatType: typ,
+  rangedProfile: RangedWeaponProfile(
+    projectiles: geschosse,
+    selectedProjectileIndex: aktiv,
+  ),
+);
+
+HeroSheet _schuetze(List<MainWeaponSlot> waffen) =>
+    _held().copyWith(combatConfig: CombatConfig(weapons: waffen));
+
+// Munition (SPIEL-02): Geschossbestände der Fernkampfwaffen zählen am
+// Kampf-Slot, vom gespeicherten Wert aus.
+void munitionTests() {
+  group('Munition', () {
+    const pfeile = RangedProjectile(id: 'p-pfeil', name: 'Pfeile', count: 20);
+    const jagd = RangedProjectile(id: 'p-jagd', name: 'Jagdpfeile', count: 4);
+
+    test('nur benannte Geschosse benannter Fernkampfwaffen', () {
+      final config = CombatConfig(
+        weapons: [
+          _bogen(
+            geschosse: const [
+              pfeile,
+              RangedProjectile(name: ' '),
+              jagd,
+            ],
+            aktiv: 2,
+          ),
+          _bogen(id: 'w-schwert', name: 'Schwert', typ: WeaponCombatType.melee),
+          _bogen(id: '', name: ' ', geschosse: const [pfeile]),
+        ],
+      );
+      final liste = dabeiMunition(config);
+      expect(liste.map((m) => m.name), ['Pfeile', 'Jagdpfeile']);
+      expect(liste.map((m) => m.geschossIndex), [0, 2]);
+      expect(liste.map((m) => m.aktiv), [false, true]);
+      expect(liste.first.waffenName, 'Kurzbogen');
+      expect(liste.first.anzahl, 20);
+    });
+
+    test('Schritt ändert nur den Bestand dieses Geschosses', () {
+      final held = _schuetze([
+        _bogen(geschosse: const [pfeile, jagd]),
+      ]);
+      final m = dabeiMunition(held.combatConfig)[1];
+      final neu = mitMunitionsSchritt(held, m, -1);
+      final geschosse =
+          neu.combatConfig.weaponSlots.single.rangedProfile.projectiles;
+      expect(geschosse.map((g) => g.count), [20, 3]);
+      expect(neu.dukaten, held.dukaten);
+      expect(neu.inventoryEntries, held.inventoryEntries);
+    });
+
+    test('rechnet vom gespeicherten Bestand, nicht vom angezeigten', () {
+      final angezeigt = dabeiMunition(
+        _schuetze([
+          _bogen(geschosse: const [pfeile]),
+        ]).combatConfig,
+      ).single;
+      final gespeichert = _schuetze([
+        _bogen(geschosse: [pfeile.copyWith(count: 7)]),
+      ]);
+      final neu = mitMunitionsSchritt(gespeichert, angezeigt, -1);
+      expect(
+        neu
+            .combatConfig
+            .weaponSlots
+            .single
+            .rangedProfile
+            .projectiles
+            .single
+            .count,
+        6,
+      );
+    });
+
+    test('ohne ID über Name und Position, auch bei geändertem Bestand', () {
+      const ohneId = RangedProjectile(name: 'Bolzen', count: 10);
+      final angezeigt = dabeiMunition(
+        _schuetze([
+          _bogen(id: '', name: 'Armbrust', geschosse: const [ohneId]),
+        ]).combatConfig,
+      ).single;
+      final gespeichert = _schuetze([
+        _bogen(
+          id: '',
+          name: 'Armbrust',
+          geschosse: [ohneId.copyWith(count: 9)],
+        ),
+      ]);
+      final neu = mitMunitionsSchritt(gespeichert, angezeigt, 1);
+      expect(
+        neu
+            .combatConfig
+            .weaponSlots
+            .single
+            .rangedProfile
+            .projectiles
+            .single
+            .count,
+        10,
+      );
+    });
+
+    test('bei 0 und am Höchstbestand ändert sich nichts', () {
+      final leer = _schuetze([
+        _bogen(geschosse: [pfeile.copyWith(count: 0)]),
+      ]);
+      final m = dabeiMunition(leer.combatConfig).single;
+      expect(m.kannAbziehen, isFalse);
+      expect(identical(mitMunitionsSchritt(leer, m, -1), leer), isTrue);
+
+      final voll = _schuetze([
+        _bogen(geschosse: [pfeile.copyWith(count: kGeschossHoechstbestand)]),
+      ]);
+      final v = dabeiMunition(voll.combatConfig).single;
+      expect(v.kannHinzufuegen, isFalse);
+      expect(identical(mitMunitionsSchritt(voll, v, 1), voll), isTrue);
+    });
+
+    test('entfernte Waffe oder entferntes Geschoss melden den Grund', () {
+      final m = dabeiMunition(
+        _schuetze([
+          _bogen(geschosse: const [pfeile]),
+        ]).combatConfig,
+      ).single;
+      expect(
+        () => mitMunitionsSchritt(_schuetze(const []), m, 1),
+        throwsA(
+          isA<StateError>().having(
+            (e) => e.message,
+            'message',
+            contains('Kurzbogen'),
+          ),
+        ),
+      );
+      expect(
+        () => mitMunitionsSchritt(
+          _schuetze([
+            _bogen(geschosse: const [jagd]),
+          ]),
+          m,
+          1,
+        ),
+        throwsA(
+          isA<StateError>().having(
+            (e) => e.message,
+            'message',
+            contains('Pfeile'),
+          ),
+        ),
+      );
     });
   });
 }
