@@ -11,11 +11,11 @@ import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_rituals.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
-import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/combat_special_ability_state.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_wirkung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ini_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/kampfbasis_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/modifier_source_breakdown.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/requirement_evaluation_rules.dart';
 
 import 'maneuver_rules.dart';
@@ -28,14 +28,18 @@ import 'package:dsa_heldenverwaltung/rules/derived/tradition_rules.dart';
 /// [catalog] darf `null` sein; dann bleiben Zauber- und Talentwerte leer und
 /// die betroffenen Voraussetzungen melden „nicht vorhanden“ statt zu raten.
 ///
-/// [mods] fliesst in die Kampf-Basiswerte ein. Der Standardwert rechnet ohne
-/// Modifikatoren; Aufrufer, die die echten Werte kennen (Kampf-Tab), reichen
-/// sie durch, damit Checkliste und Kampfvorschau dieselbe Zahl zeigen.
+/// Eigenschaften und Kampf-Basiswerte sind die dauerhaften Werte
+/// ([dauerhafteEigenschaften], [dauerhafteStatModifikatoren]): ohne Inventar,
+/// temporäre Boni und Wunden. Steigerung, Kampf-Tab, Magie, Talente und
+/// Gefecht prüfen so gegen dieselbe Zahl.
 HeroRequirementContext buildHeroRequirementContext(
   HeroSheet hero, {
   RulesCatalog? catalog,
-  StatModifiers mods = const StatModifiers(),
 }) {
+  final basisHeld = hero.copyWith(
+    attributes: dauerhafteEigenschaften(hero, catalog: catalog),
+  );
+  final mods = dauerhafteStatModifikatoren(hero, catalog: catalog);
   final ritualkenntnisse = _ritualkenntnisse(hero, catalog: catalog);
   // Vor-/Nachteile mit aktuellem Katalognamen und gespeichertem Text
   // (ARCH-02); ein umbenannter Eintrag erfuellt so weiter seine Forderung.
@@ -43,7 +47,7 @@ HeroRequirementContext buildHeroRequirementContext(
   return HeroRequirementContext(
     eigenschaften: <String, int>{
       for (final code in AttributeCode.values)
-        attributeCodeKey(code): readAttributeValue(hero.attributes, code),
+        attributeCodeKey(code): readAttributeValue(basisHeld.attributes, code),
     },
     sonderfertigkeiten: heroSpecialAbilityNames(hero, catalog: catalog),
     zauberwerte: _werteNachName(
@@ -73,10 +77,10 @@ HeroRequirementContext buildHeroRequirementContext(
     rasse: hero.background.rasse,
     leiteigenschaftOverride: hero.magicLeadAttribute,
     basiswerte: <String, int>{
-      'AT': computeAt(hero, mods),
-      'PA': computePa(hero, mods),
-      'FK': computeFk(hero, mods),
-      'INI': computeIniBase(hero, mods),
+      'AT': computeAt(basisHeld, mods),
+      'PA': computePa(basisHeld, mods),
+      'FK': computeFk(basisHeld, mods),
+      'INI': computeIniBase(basisHeld, mods),
     },
     manoever: _manoeverNamen(hero, catalog: catalog),
     waffenmeisterschaften: _waffenmeisterTalente(hero, catalog: catalog),

@@ -1,3 +1,4 @@
+import 'package:dsa_heldenverwaltung/domain/copy_with_sentinel.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_adventure_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/unbekannte_json_felder.dart';
 
@@ -84,9 +85,9 @@ class HeroReiseStation {
     String? notiz,
     String? adventureId,
     String? ortId,
-    Object? kartenX = _copySentinel,
-    Object? kartenY = _copySentinel,
-    Object? lastModified = _copySentinel,
+    Object? kartenX = keepFieldValue,
+    Object? kartenY = keepFieldValue,
+    Object? lastModified = keepFieldValue,
     Map<String, Object?>? unbekannteFelder,
   }) {
     return HeroReiseStation(
@@ -96,13 +97,13 @@ class HeroReiseStation {
       notiz: notiz ?? this.notiz,
       adventureId: adventureId ?? this.adventureId,
       ortId: ortId ?? this.ortId,
-      kartenX: identical(kartenX, _copySentinel)
+      kartenX: identical(kartenX, keepFieldValue)
           ? this.kartenX
           : kartenX as double?,
-      kartenY: identical(kartenY, _copySentinel)
+      kartenY: identical(kartenY, keepFieldValue)
           ? this.kartenY
           : kartenY as double?,
-      lastModified: identical(lastModified, _copySentinel)
+      lastModified: identical(lastModified, keepFieldValue)
           ? this.lastModified
           : lastModified as DateTime?,
       unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
@@ -154,5 +155,3 @@ List<HeroReiseStation> leseReiseStationen(Object? roh) {
         HeroReiseStation.fromJson(Map<String, dynamic>.from(eintrag)),
   ]);
 }
-
-const Object _copySentinel = Object();

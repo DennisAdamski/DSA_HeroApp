@@ -36,10 +36,6 @@ extension _HeroInventoryDisplay on _HeroInventoryTabState {
     }
   }
 
-  // Einzelzeilen zeigen ohne Gewicht einen Strich statt „0 g“.
-  String _formatWeight(int gramm) =>
-      gramm <= 0 ? '–' : formatInventarGewicht(gramm);
-
   String _formatValue(int silber) {
     if (silber <= 0) {
       return '–';

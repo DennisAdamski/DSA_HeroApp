@@ -226,6 +226,38 @@ void main() {
       },
     );
 
+    // Altdokument ohne Revision und Zeitstempel: Lesen und Schreibvorbedingung
+    // müssen dieselbe Rückfall-Revision bilden (REV-19).
+    test('accepts the decoded legacy revision of an old document', () async {
+      final requests = <http.Request>[];
+      final remoteHero = hero('h-1', 'Alrik');
+      final legacyDocument = {
+        'name':
+            'projects/test-project/databases/(default)/documents/'
+            'users/user-1/heroes/h-1',
+        'updateTime': '2026-01-01T12:00:00Z',
+        'fields': {
+          'deleted': {'booleanValue': false},
+          'payload': _firestoreValue(remoteHero.toJson()),
+        },
+      };
+      final client = MockClient((request) async {
+        requests.add(request);
+        if (request.method == 'GET') {
+          return http.Response(jsonEncode(legacyDocument), 200);
+        }
+        return http.Response(request.body, 200);
+      });
+      final remote = await gateway(client: client).loadHero('h-1');
+      requests.clear();
+
+      await gateway(client: client)
+          .saveHero(hero('h-1', 'Alrik 2'), previousRevision: remote!.revision);
+
+      expect(remote.revision, 'legacy-${heroContentHash(remoteHero)}');
+      expect(requests.map((r) => r.method), ['GET', 'PATCH']);
+    });
+
     test('aborts the save without PATCH when the revision moved', () async {
       final requests = <http.Request>[];
       final remoteHero = hero('h-1', 'Alrik');

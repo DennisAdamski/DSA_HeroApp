@@ -7,6 +7,7 @@ import 'gefecht_fernkampf_rules.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 
 import 'gefecht_meisterparade_rules.dart';
+import 'ini_rules.dart';
 import 'gefecht_ansagefolge_rules.dart';
 import 'gefecht_ueberzahl_rules.dart'
     show gefechtsAbwehrErschwernisWeitereGegner;
@@ -107,14 +108,7 @@ int gefechtsInitiative(Gefechtszustand s, Gefechtswerte w) =>
 /// Hohe INI gilt ab der ersten tatsächlich verbrauchten Aktion bis Rundenende.
 int gefechtsIniBonus(Gefechtszustand s, Gefechtswerte w) {
   if (s.fixierterIniBonus != null) return s.fixierterIniBonus!;
-  final ini = gefechtsInitiative(s, w);
-  return ini > 40
-      ? 3
-      : ini > 30
-      ? 2
-      : ini > 20
-      ? 1
-      : 0;
+  return hoheIniBonus(gefechtsInitiative(s, w));
 }
 
 // Grundwert des Ausweichens: manuell bestätigt (ohne INI-Bonus) oder die

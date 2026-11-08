@@ -5,7 +5,6 @@
 export 'package:dsa_heldenverwaltung/rules/derived/kampf_slot_pruefung_rules.dart'
     show
         combatTypeFromTalent,
-        normalizeToken,
         parseWeaponCategoryValues,
         weaponTypeOptionsForTalent;
 
@@ -17,6 +16,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/combat_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_stat_inputs.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/kampf_slot_pruefung_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/string_normalize.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 
 /// Kampfvorschau des Kampf-Tabs mit denselben Eingaben wie Inspector und
@@ -104,12 +104,12 @@ String findTalentIdByName(
   String combatSkillName,
   List<TalentDef> combatTalents,
 ) {
-  final needle = normalizeToken(combatSkillName);
+  final needle = normalizeCombatToken(combatSkillName);
   if (needle.isEmpty) {
     return '';
   }
   for (final talent in combatTalents) {
-    if (normalizeToken(talent.name) == needle) {
+    if (normalizeCombatToken(talent.name) == needle) {
       return talent.id;
     }
   }

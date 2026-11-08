@@ -1,7 +1,7 @@
-import 'dart:async';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show ProviderListenable;
+
+import 'package:dsa_heldenverwaltung/state/warte_auf_wert.dart';
 
 /// Wartet, bis [provider] einen Wert **oder** einen Fehler trägt.
 ///
@@ -12,31 +12,10 @@ import 'package:flutter_riverpod/misc.dart' show ProviderListenable;
 /// oder Fehler da sind; ein Fehler wird als Fehler der Future weitergereicht.
 ///
 /// Die Katalogkette kann Fehler verschlucken, deshalb endet das Warten
-/// spätestens nach [timeout] mit einer [TimeoutException].
-/// Muster: `_awaitCatalogReady` in `heroes_home_screen.dart`.
+/// spätestens nach [timeout] mit einer `TimeoutException`. Die Rechnung selbst
+/// steht in `warteAufWertImWidget` (`state/warte_auf_wert.dart`).
 Future<T> warteAufAsyncWert<T>(
   WidgetRef ref,
   ProviderListenable<AsyncValue<T>> provider, {
   Duration timeout = const Duration(seconds: 30),
-}) {
-  final completer = Completer<T>();
-
-  void settle(AsyncValue<T> value) {
-    if (completer.isCompleted) {
-      return;
-    }
-    final error = value.error;
-    if (error != null) {
-      completer.completeError(error, value.stackTrace ?? StackTrace.current);
-    } else if (value.hasValue) {
-      completer.complete(value.requireValue);
-    }
-  }
-
-  final subscription = ref.listenManual<AsyncValue<T>>(
-    provider,
-    (_, next) => settle(next),
-    fireImmediately: true,
-  );
-  return completer.future.timeout(timeout).whenComplete(subscription.close);
-}
+}) => warteAufWertImWidget<T>(ref, provider, zeitlimit: timeout);

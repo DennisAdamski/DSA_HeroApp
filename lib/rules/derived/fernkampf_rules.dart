@@ -20,12 +20,3 @@ int computeRangedAtValue({
       manualAtMod +
       zauberMalus;
 }
-
-/// Addiert Distanz- und Geschossmodifikator auf den TP-Gesamtwert.
-int computeRangedTpCalc({
-  required int baseTpCalc,
-  required int distanceTpMod,
-  required int projectileTpMod,
-}) {
-  return baseTpCalc + distanceTpMod + projectileTpMod;
-}

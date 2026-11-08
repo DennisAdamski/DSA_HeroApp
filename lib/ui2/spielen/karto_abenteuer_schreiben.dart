@@ -9,6 +9,7 @@ import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abenteuer_dialoge.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_held_schreiben.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_laufendes_abenteuer.dart';
+import 'package:dsa_heldenverwaltung/ui2/widgets/karto_bestaetigen.dart';
 
 /// Gemeinsamer Schreibweg für Abenteuerblatt und Abenteuerabschnitt.
 ///
@@ -252,23 +253,11 @@ mixin KartoAbenteuerSchreiben<T extends ConsumerStatefulWidget>
   }
 
   Future<bool> _bestaetigeLoeschen(String was) async {
-    final ja = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('$was löschen?'),
-        content: const Text('Das lässt sich nicht rückgängig machen.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Abbrechen'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Löschen'),
-          ),
-        ],
-      ),
+    return kartoBestaetigen(
+      context,
+      titel: '$was löschen?',
+      text: 'Das lässt sich nicht rückgängig machen.',
+      bestaetigen: 'Löschen',
     );
-    return ja ?? false;
   }
 }

@@ -17,6 +17,9 @@ import 'package:dsa_heldenverwaltung/rules/derived/rest_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/wund_rules.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/hero_stat_inputs.dart';
+
 import '../catalog/catalog_reference_names.dart';
 
 /// Strukturierte Vor- und Nachteile (ARCH-02): Zuordnung der Alttexte,
@@ -75,3 +78,13 @@ void main() {
   _merkmalWirkung();
   _merkmalBearbeitung();
 }
+
+/// Effektive Eigenschaften über die eine Quelle `computeHeroStatInputs`.
+Attributes _effektiv(HeroSheet held, RulesCatalog? katalog) =>
+    computeHeroStatInputs(
+      hero: held,
+      state: const HeroState.empty(),
+      talents: const [],
+      epicAdvantagesActive: false,
+      catalog: katalog,
+    ).effective;

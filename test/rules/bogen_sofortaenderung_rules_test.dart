@@ -340,6 +340,25 @@ void main() {
       expect(ergebnis.dukaten, '7,1');
     });
 
+    // Inventar und Spielansicht teilen den Geldschritt; keiner kappt still
+    // bei 0 (REV-25).
+    test('ein Abzug über den Bestand hinaus wird gemeldet', () {
+      expect(
+        () => mitDukatenSchritt(
+          _held.copyWith(dukaten: '0,5'),
+          -dsaKreuzerPerDukat,
+        ),
+        throwsStateError,
+      );
+      expect(
+        mitDukatenSchritt(
+          _held.copyWith(dukaten: '1'),
+          -dsaKreuzerPerDukat,
+        ).dukaten,
+        '0',
+      );
+    });
+
     test('ein unlesbarer Geldstand wird gemeldet', () {
       expect(
         () => mitDukatenSchritt(

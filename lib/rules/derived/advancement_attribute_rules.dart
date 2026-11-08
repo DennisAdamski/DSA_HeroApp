@@ -1,6 +1,5 @@
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
-import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 
 import 'attribute_start_rules.dart';
@@ -24,22 +23,6 @@ HeroSheet applyAdvancementAttributeValue(
     code.name,
   );
   return hero.copyWith(
-    attributes: _withAttributeValue(hero.attributes, code, targetValue - delta),
+    attributes: withAttributeValue(hero.attributes, code, targetValue - delta),
   );
 }
-
-// Erhält alle nicht gesteigerten Eigenschaften unverändert.
-Attributes _withAttributeValue(
-  Attributes attrs,
-  AttributeCode code,
-  int value,
-) => switch (code) {
-  AttributeCode.mu => attrs.copyWith(mu: value),
-  AttributeCode.kl => attrs.copyWith(kl: value),
-  AttributeCode.inn => attrs.copyWith(inn: value),
-  AttributeCode.ch => attrs.copyWith(ch: value),
-  AttributeCode.ff => attrs.copyWith(ff: value),
-  AttributeCode.ge => attrs.copyWith(ge: value),
-  AttributeCode.ko => attrs.copyWith(ko: value),
-  AttributeCode.kk => attrs.copyWith(kk: value),
-};

@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
-import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht.dart';
-import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_held_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_talent_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_wirken_rules.dart';
-import 'package:dsa_heldenverwaltung/rules/derived/probe_request_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/string_normalize.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/talent_probe_rules.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_initiative_provider.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_provider.dart';
@@ -18,92 +16,29 @@ import 'package:dsa_heldenverwaltung/ui2/shell/karto_gefechts_adapter.dart';
 
 import 'gefecht_zahlfeld.dart';
 
-import 'package:dsa_heldenverwaltung/rules/derived/string_normalize.dart';
-
-/// Eine wählbare Talent- oder Eigenschaftsprobe des Gefechts.
-class GefechtProbenkandidat {
-  /// [request] ist bereits mit dem TaW* bzw. Eigenschaftswert aufgelöst.
-  const GefechtProbenkandidat(
-    this.name,
-    this.detail,
-    this.request, {
-    this.ausweichen = false,
-  });
-  final String name, detail;
-  final ResolvedProbeRequest request;
-
-  /// Ausweichprobe auf ein verwandtes Talent (Meisterentscheid); erscheint
-  /// nur bei einer Suche.
-  final bool ausweichen;
-}
-
-/// Talente mit TaW* und Eigenschaften, alphabetisch; Kampftalente fehlen.
+/// Talente mit TaW* samt Ausweichproben, danach die Eigenschaften.
 ///
-/// AT, PA und Zauber laufen über ihre eigenen Gefechtsaktionen, damit Budget,
-/// Distanz und Wirkdauer gelten.
-List<GefechtProbenkandidat> gefechtsProbenkandidaten(
+/// Dieselben Kandidaten wie die Probensuche (`talentProbenKandidaten`,
+/// `eigenschaftsProbenKandidaten`): gleiche Werte, Texte, Reihenfolge und
+/// stabile Verweise. AT, PA und Zauber laufen über ihre eigenen
+/// Gefechtsaktionen, damit Budget, Distanz und Wirkdauer gelten.
+List<ProbenKandidat> gefechtsProbenkandidaten(
   HeroComputedSnapshot snapshot,
   RulesCatalog katalog, {
   required bool epicAdvantagesActive,
   int? talentBeOverride,
-}) {
-  final talente = <GefechtProbenkandidat>[];
-  for (final t in katalog.talents) {
-    if (t.group == 'Kampftalent') continue;
-    final wert = talentProbenwertFuer(
-      snapshot: snapshot,
-      talent: t,
-      epicAdvantagesActive: epicAdvantagesActive,
-      talentBeOverride: talentBeOverride,
-    );
-    if (wert == null) continue;
-    final kette = wert.ziele.map((z) => z.label).join('/');
-    talente.add(
-      GefechtProbenkandidat(
-        t.name,
-        '$kette · TaW* ${wert.taw}',
-        buildTalentProbeRequest(
-          title: t.name,
-          targets: wert.ziele,
-          basePool: wert.taw,
-          spezialisierungen: wert.spezialisierungen,
-          tawHerleitung: wert.herleitung.taw,
-        ),
-      ),
-    );
-  }
-  talente.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
-  final ausweichen = [
-    for (final e in talentErsatzproben(
-      snapshot: snapshot,
-      katalog: katalog.talents,
-      epicAdvantagesActive: epicAdvantagesActive,
-      talentBeOverride: talentBeOverride,
-    ))
-      GefechtProbenkandidat(
-        e.request.title.replaceFirst(kTalentprobeTitel, ''),
-        'Ausweichen · Meisterentscheid · TaW* ${e.request.basePool}'
-        '${e.option.bedingung == null ? '' : ' · ${e.option.bedingung}'}',
-        e.request,
-        ausweichen: true,
-      ),
-  ];
-  final eigenschaften = [
-    for (final code in AttributeCode.values)
-      GefechtProbenkandidat(
-        attributeCodeKey(code),
-        'Eigenschaft · ${readAttributeValue(snapshot.probenEigenschaften, code)}',
-        buildAttributeProbeRequest(
-          label: attributeCodeKey(code),
-          effectiveValue: readAttributeValue(
-            snapshot.probenEigenschaften,
-            code,
-          ),
-        ),
-      ),
-  ];
-  return [...talente, ...ausweichen, ...eigenschaften];
-}
+}) => [
+  ...talentProbenKandidaten(
+    snapshot: snapshot,
+    katalog: katalog.talents,
+    epicAdvantagesActive: epicAdvantagesActive,
+    talentBeOverride: talentBeOverride,
+  ),
+  ...eigenschaftsProbenKandidaten(
+    probenEigenschaften: snapshot.probenEigenschaften,
+    grundwerte: snapshot.effectiveAttributes,
+  ),
+];
 
 /// Wählt eine Probe, ihren Zeitbedarf und würfelt sie im Gefecht.
 ///
@@ -123,7 +58,7 @@ Future<void> zeigeGefechtsTalentprobe({
     throw StateError('Spielwerte oder Regelkatalog werden geladen.');
   }
   final episch = ref.read(heroEpicAdvantagesActiveProvider(heroId));
-  final kandidat = await showDialog<GefechtProbenkandidat>(
+  final kandidat = await showDialog<ProbenKandidat>(
     context: context,
     builder: (_) => _Probenwahl(
       kandidaten: gefechtsProbenkandidaten(
@@ -202,7 +137,7 @@ Future<void> zeigeGefechtsTalentprobe({
 // Durchsuchbare Auswahl; Treffer in alphabetischer Reihenfolge.
 class _Probenwahl extends StatefulWidget {
   const _Probenwahl({required this.kandidaten});
-  final List<GefechtProbenkandidat> kandidaten;
+  final List<ProbenKandidat> kandidaten;
   @override
   State<_Probenwahl> createState() => _ProbenwahlState();
 }
@@ -211,7 +146,7 @@ class _ProbenwahlState extends State<_Probenwahl> {
   String _suche = '';
   @override
   Widget build(BuildContext context) {
-    final suche = _suche.trim().toLowerCase();
+    final suche = suchFaltung(_suche);
     // Ausweichproben (Meisterentscheid) erscheinen nur bei einer Suche.
     final treffer = widget.kandidaten
         .where(
@@ -270,7 +205,7 @@ class _Zeitbedarf extends StatefulWidget {
     required this.zustand,
     required this.werte,
   });
-  final GefechtProbenkandidat kandidat;
+  final ProbenKandidat kandidat;
   final Gefechtszustand zustand;
   final Gefechtswerte werte;
   @override

@@ -5,6 +5,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/attribute_trait_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/direkter_modifikator_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parse_result.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/standard_stat_modifier_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/string_normalize.dart';
 
 /// Zerlegt freie Texte in einzelne Modifikator-Fragmente und summiert diese.
 ///
@@ -20,15 +21,15 @@ ModifierParseResult parseModifierTexts({
   var startAttrMods = const AttributeModifiers();
   var statMods = const StatModifiers();
   final unknown = <String>[];
-  final hasFlinkFromVorteile = _containsNamedToken(vorteileText, const {
+  final hasFlinkFromVorteile = containsNamedToken(vorteileText, const {
     'flink',
   });
-  final hasBehaebigFromNachteile = _containsNamedToken(nachteileText, const {
+  final hasBehaebigFromNachteile = containsNamedToken(nachteileText, const {
     'behaebig',
     'behabig',
   });
   // Umlaute werden zu `a` normalisiert: `Linkshänder` wird `linkshander`.
-  final hasLinkshaenderFromVorteile = _containsNamedToken(vorteileText, const {
+  final hasLinkshaenderFromVorteile = containsNamedToken(vorteileText, const {
     'linkshander',
     'linkshaender',
   });
@@ -142,36 +143,4 @@ ModifierParseResult parseModifierTexts({
     hasLinkshaenderFromVorteile: hasLinkshaenderFromVorteile,
     unknownFragments: List<String>.unmodifiable(unknown),
   );
-}
-
-// Prueft, ob ein benanntes Token (z. B. 'flink', 'behaebig') im Text vorkommt.
-//
-// Deutsche Umlaute werden vor dem Vergleich normalisiert (ae, oe, ue, ss),
-// weil Nutzer Vorteile unterschiedlich eintippen koennen
-// ('Behäbig', 'Behaebig', 'BEHÄBIG'). Die Zeichencodes sind Unicode-Codepoints
-// der Umlaute: 228=ä, 246=ö, 252=ü, 223=ß.
-// Anschliessend wird der Text an nicht-alphanumerischen Zeichen in Tokens
-// aufgeteilt und jeder Token gegen die Ziel-Menge geprueft.
-bool _containsNamedToken(String text, Set<String> targets) {
-  for (final rawFragment in text.split(RegExp(r'[\n,;]+'))) {
-    final fragment = rawFragment.trim();
-    if (fragment.isEmpty) {
-      continue;
-    }
-    final normalizedFragment = fragment
-        .toLowerCase()
-        .replaceAll(String.fromCharCode(228), 'a')
-        .replaceAll(String.fromCharCode(246), 'o')
-        .replaceAll(String.fromCharCode(252), 'u')
-        .replaceAll(String.fromCharCode(223), 'ss');
-    final tokens = normalizedFragment
-        .split(RegExp(r'[^a-z0-9]+'))
-        .where((entry) => entry.isNotEmpty);
-    for (final token in tokens) {
-      if (targets.contains(token)) {
-        return true;
-      }
-    }
-  }
-  return false;
 }

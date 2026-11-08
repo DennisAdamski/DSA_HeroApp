@@ -12,6 +12,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/schaden_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/spell_effect_instance_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/spell_effect_protection_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/trefferzonen_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/wund_anzeige_rules.dart';
 import 'package:dsa_heldenverwaltung/state/ablauf_providers.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';

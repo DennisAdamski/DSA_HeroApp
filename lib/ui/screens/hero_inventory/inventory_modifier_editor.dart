@@ -335,8 +335,7 @@ class _ModifierRowState extends ConsumerState<_ModifierRow> {
       final group = talent.group.trim();
       if (group.isNotEmpty &&
           !group.toLowerCase().contains('kampf') &&
-          talent.type != 'nahkampf' &&
-          talent.type != 'fernkampf') {
+          !talent.istKampftalent) {
         groups.add(group);
       }
     }

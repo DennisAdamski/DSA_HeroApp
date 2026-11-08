@@ -136,19 +136,23 @@ class CustomCatalogRepository {
     }
   }
 
-  /// Importiert eingebettete Transfer-Eintraege in den Heldenspeicher.
-  Future<void> importTransferEntries({
+  /// Importiert eingebettete Transfer-Eintraege in den Heldenspeicher und
+  /// liefert die Anzahl der uebernommenen Eintraege.
+  Future<int> importTransferEntries({
     required String catalogVersion,
     required Iterable<CustomCatalogEntryRecord> entries,
   }) async {
     _ensureHeroStoragePath();
+    var anzahl = 0;
     for (final entry in entries) {
       await saveEntry(
         catalogVersion: catalogVersion,
         section: entry.section,
         entry: entry.data,
       );
+      anzahl++;
     }
+    return anzahl;
   }
 
   /// Laedt eine gezielte Menge vorhandener Custom-Eintraege fuer den Export.

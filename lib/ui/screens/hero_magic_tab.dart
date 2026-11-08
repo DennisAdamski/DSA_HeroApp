@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/string_normalize.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/planung_bearbeiten_guard.dart';
 import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
 import 'package:flutter/services.dart';
@@ -28,7 +29,6 @@ import 'package:dsa_heldenverwaltung/rules/derived/hero_requirement_context.dart
 import 'package:dsa_heldenverwaltung/rules/derived/learning_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/magic_acquisition_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/magic_rules.dart';
-import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/special_ability_variant_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/zauber_herleitung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/zauber_lernspalte_rules.dart';
@@ -57,7 +57,6 @@ import 'package:dsa_heldenverwaltung/ui/widgets/erwerb_dialog.dart';
 import 'package:uuid/uuid.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_begabung_rules.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/begabung_haekchen.dart';
-import 'package:dsa_heldenverwaltung/rules/derived/string_normalize.dart';
 
 part 'hero_magic/magic_active_spells_table.dart';
 part 'hero_magic/magic_artefakt_zauber_section.dart';
@@ -387,10 +386,14 @@ class _HeroMagicTabState extends ConsumerState<HeroMagicTab>
         };
         final begabungen = ermittleBegabungen(hero, catalog: catalog);
         _latestBegabungen = begabungen;
-        final effectiveAttributes = computeEffectiveAttributes(
-          hero,
-          catalog: catalog,
-        );
+        // Eine Quelle für effektive Eigenschaften (REV-22).
+        final effectiveAttributes =
+            ref
+                .watch(heroComputedProvider(widget.heroId))
+                .asData
+                ?.value
+                .effectiveAttributes ??
+            hero.attributes;
         final contentUnlocked = ref.watch(catalogContentVisibleProvider);
         final contentPassword = ref.watch(catalogContentPasswordProvider);
         _syncProtectedContentCache(

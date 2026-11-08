@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 
 import 'package:dsa_heldenverwaltung/catalog/hero_trait_def.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/merkmal_suche_rules.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
-import 'package:dsa_heldenverwaltung/rules/derived/string_normalize.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/trait_advancement_rules.dart';
+import 'package:dsa_heldenverwaltung/ui2/widgets/karto_bestaetigen.dart';
 
 /// Auswahl im Katalogdialog: ein Katalogeintrag oder ein freier Eintrag.
 class KartoMerkmalWahl {
@@ -20,21 +22,6 @@ class KartoMerkmalWahl {
 
 /// Auswahl und Wert eines katalogisierten Merkmals.
 typedef KartoMerkmalWerte = ({String auswahl, int? wert});
-
-/// Ob ein Katalogeintrag Auswahl oder Wert braucht.
-bool merkmalBrauchtAngaben(HeroTraitDef def) {
-  return merkmalBrauchtAuswahl(def) || merkmalBrauchtWert(def);
-}
-
-/// Ob das Template eine Auswahl (`{choice}`) enthaelt.
-bool merkmalBrauchtAuswahl(HeroTraitDef def) =>
-    def.selectionTemplate.contains('{choice}');
-
-/// Ob das Merkmal einen Zahlenwert traegt.
-bool merkmalBrauchtWert(HeroTraitDef def) =>
-    def.selectionTemplate.contains('{value}') ||
-    def.valueKind == 'level' ||
-    def.valueKind == 'points';
 
 /// Zeigt die Katalogsuche fuer Vor- oder Nachteile.
 Future<KartoMerkmalWahl?> zeigeMerkmalKatalog({
@@ -113,24 +100,15 @@ Future<KartoMerkmalWahl?> zeigeMerkmalKandidaten({
 
 /// Fragt vor dem Entfernen eines Eintrags nach.
 Future<bool> bestaetigeMerkmalEntfernen(BuildContext context, String name) {
-  return showDialog<bool>(
-    context: context,
-    builder: (context) => AlertDialog(
-      title: Text('„$name“ entfernen?'),
-      content: const Text('Der Eintrag wird aus der Liste gelöscht.'),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(false),
-          child: const Text('Abbrechen'),
-        ),
-        FilledButton(
-          key: const ValueKey<String>('karto-merkmal-entfernen-bestaetigen'),
-          onPressed: () => Navigator.of(context).pop(true),
-          child: const Text('Entfernen'),
-        ),
-      ],
+  return kartoBestaetigen(
+    context,
+    titel: '„$name“ entfernen?',
+    text: 'Der Eintrag wird aus der Liste gelöscht.',
+    bestaetigen: 'Entfernen',
+    bestaetigenKey: const ValueKey<String>(
+      'karto-merkmal-entfernen-bestaetigen',
     ),
-  ).then((ja) => ja ?? false);
+  );
 }
 
 /// Suche im Katalog; der freie Eintrag steht immer oben.
@@ -156,21 +134,7 @@ class _KatalogDialogState extends State<_KatalogDialog> {
   @override
   Widget build(BuildContext context) {
     final karto = context.karto;
-    final begriff = _suche.text.trim().toLowerCase();
-    final treffer = widget.defs
-        .where((def) => def.active)
-        .where(
-          (def) =>
-              begriff.isEmpty ||
-              // Dieselben Felder wie die Auswahl der Bestandsoberfläche.
-              passtZurSuche(
-                '${def.name} ${def.costText} ${def.source} '
-                '${def.markers.join(' ')}',
-                begriff,
-              ),
-        )
-        .take(80)
-        .toList(growable: false);
+    final treffer = sucheMerkmale(widget.defs, _suche.text);
     return AlertDialog(
       title: Text('${widget.art} auswählen'),
       content: SizedBox(
@@ -297,7 +261,7 @@ class _WerteDialogState extends State<_WerteDialog> {
   @override
   Widget build(BuildContext context) {
     final brauchtAuswahl = merkmalBrauchtAuswahl(widget.def);
-    final brauchtWert = merkmalBrauchtWert(widget.def);
+    final brauchtWert = merkmalTraegtWert(widget.def);
     final beschriftung = widget.def.choiceLabel.trim().isEmpty
         ? 'Auswahl'
         : widget.def.choiceLabel.trim();

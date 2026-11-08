@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/modifier_fragment_text.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_combat/weapon_editor/weapon_editor_section_card.dart';
 
 /// Bearbeitet fernkampfspezifische Distanz- und Geschossdaten.
@@ -131,11 +132,9 @@ class WeaponRangedSection extends StatelessWidget {
   }
 
   String _projectileSummary(RangedProjectile projectile) {
-    final tpSign = projectile.tpMod >= 0 ? '+' : '';
-    final iniSign = projectile.iniMod >= 0 ? '+' : '';
-    final atSign = projectile.atMod >= 0 ? '+' : '';
-    return 'Anzahl ${projectile.count}, TP $tpSign${projectile.tpMod}, '
-        'INI $iniSign${projectile.iniMod}, AT $atSign${projectile.atMod}';
+    String mod(int wert) => mitVorzeichen(wert, nullText: '+0');
+    return 'Anzahl ${projectile.count}, TP ${mod(projectile.tpMod)}, '
+        'INI ${mod(projectile.iniMod)}, AT ${mod(projectile.atMod)}';
   }
 
   Widget _numberField({

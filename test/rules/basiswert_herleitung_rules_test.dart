@@ -319,5 +319,62 @@ void main() {
         expect(h.iniBase.wert, d.iniBase);
       });
     }
+
+    group('epischer AsP-Stufenbonus (Epische Stufen, Kap. 2.2)', () {
+      // Stufe 24, Aktivierung bei Stufe 21 (21.000 ausgegebene AP): drei
+      // epische Stufen.
+      HeroSheet episch() => const HeroSheet(
+        id: 'h',
+        name: 'Held',
+        level: 24,
+        attributes: _attribute,
+        isEpisch: true,
+        epicStartAp: 21000,
+      );
+
+      int asp(String? status) => _rechne(
+        episch(),
+        parsed: const ModifierParseResult().mitZaubererStatus(status),
+      ).maxAsp;
+      final basis = grundwertAsp(_attribute);
+
+      test('Vollzauberer behält 2 AsP je Stufe', () {
+        expect(asp('full'), basis + 48);
+      });
+
+      test('Halbzauberer bekommt je epischer Stufe nur 1 AsP', () {
+        expect(asp('half'), basis + 42 + 3);
+      });
+
+      test('Viertelzauberer bekommt keine epischen AsP', () {
+        expect(asp('quarter'), basis + 42);
+      });
+
+      test('ohne erkannten Status bleibt der volle Bonus', () {
+        expect(asp(null), basis + 48);
+      });
+
+      test('die Herleitung nennt Aktivierungsstufe und epische Stufen', () {
+        final schritt =
+            _rechne(
+              episch(),
+              parsed: const ModifierParseResult().mitZaubererStatus('half'),
+            ).herleitungen!.maxAsp.schritte.firstWhere(
+              (s) => s.art == HerleitungsArt.stufe,
+            );
+        expect(schritt.betrag, 45);
+        expect(schritt.formel, contains('3 epische Stufen'));
+      });
+
+      test('nicht epische Helden rechnen unverändert Stufe × 2', () {
+        const held = HeroSheet(
+          id: 'h',
+          name: 'Held',
+          level: 24,
+          attributes: _attribute,
+        );
+        expect(_rechne(held).maxAsp, basis + 48);
+      });
+    });
   });
 }

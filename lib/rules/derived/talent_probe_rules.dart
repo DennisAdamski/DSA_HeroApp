@@ -255,3 +255,130 @@ List<TalentErsatzProbe> talentErsatzproben({
   });
   return ergebnis;
 }
+
+/// Eine würfelbare Talent- oder Eigenschaftsprobe für Suchlisten.
+///
+/// Probensuche (Bestand) und Gefecht (Kartograph) bauen ihre Auswahl
+/// daraus, damit Werte, Verweise, Texte und Reihenfolge übereinstimmen.
+class ProbenKandidat {
+  /// Erstellt einen Kandidaten; [request] ist bereits aufgelöst.
+  const ProbenKandidat({
+    required this.name,
+    required this.detail,
+    required this.request,
+    this.favorit,
+    this.ausweichen = false,
+  });
+
+  /// Anzeigename, gegen den gesucht wird.
+  final String name;
+
+  /// Sekundärzeile: Eigenschaftskette und Wert.
+  final String detail;
+
+  /// Fertige Probe; trägt bei Talenten und Eigenschaften einen stabilen
+  /// Verweis für „Nochmal würfeln“ und die häufigen Proben.
+  final ResolvedProbeRequest request;
+
+  /// Verweis für die häufigen Proben; `null` bei Ausweichproben.
+  final HeroProbenFavorit? favorit;
+
+  /// Ausweichprobe auf ein verwandtes Talent (Meisterentscheid).
+  final bool ausweichen;
+}
+
+/// Talentproben aller aktiven, würfelbaren Talente samt Ausweichproben,
+/// gemeinsam alphabetisch sortiert.
+///
+/// Kampftalente fehlen, weil sie über AT/PA gewürfelt werden; würfelbar sind
+/// nur Talente mit vollständiger Drei-Eigenschaften-Kette.
+List<ProbenKandidat> talentProbenKandidaten({
+  required HeroComputedSnapshot snapshot,
+  required List<TalentDef> katalog,
+  required bool epicAdvantagesActive,
+  int? talentBeOverride,
+}) {
+  final kandidaten = <ProbenKandidat>[];
+  for (final talent in katalog) {
+    if (talent.group == 'Kampftalent') continue;
+    final wert = talentProbenwertFuer(
+      snapshot: snapshot,
+      talent: talent,
+      epicAdvantagesActive: epicAdvantagesActive,
+      talentBeOverride: talentBeOverride,
+    );
+    if (wert == null) continue;
+    final kette = wert.ziele.map((ziel) => ziel.label).join('/');
+    kandidaten.add(
+      ProbenKandidat(
+        name: talent.name,
+        detail: '$kette · TaW* ${wert.taw}',
+        favorit: HeroProbenFavorit.von(ProbenFavoritArt.talent, talent.id),
+        request: buildTalentProbeRequest(
+          title: talent.name,
+          targets: wert.ziele,
+          basePool: wert.taw,
+          spezialisierungen: wert.spezialisierungen,
+          tawHerleitung: wert.herleitung.taw,
+          verweis: probenVerweis(ProbenFavoritArt.talent, talent.id),
+        ),
+      ),
+    );
+  }
+  // Ausweichproben auf verwandte Talente (Meisterentscheid, Basis S. 113).
+  for (final e in talentErsatzproben(
+    snapshot: snapshot,
+    katalog: katalog,
+    epicAdvantagesActive: epicAdvantagesActive,
+    talentBeOverride: talentBeOverride,
+  )) {
+    final kette = e.request.targets.map((ziel) => ziel.label).join('/');
+    kandidaten.add(
+      ProbenKandidat(
+        name: e.request.title.replaceFirst(kTalentprobeTitel, ''),
+        detail:
+            '$kette · Ausweichen, TaW* ${e.request.basePool} · '
+            'Meisterentscheid'
+            '${e.option.bedingung == null ? '' : ' · ${e.option.bedingung}'}',
+        request: e.request,
+        ausweichen: true,
+      ),
+    );
+  }
+  kandidaten.sort(
+    (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+  );
+  return kandidaten;
+}
+
+/// Die acht Eigenschaftsproben aus den Probenwerten (Wunden eingerechnet);
+/// [grundwerte] zeigen den Wundabzug im Detailtext.
+List<ProbenKandidat> eigenschaftsProbenKandidaten({
+  required Attributes probenEigenschaften,
+  required Attributes grundwerte,
+}) => [
+  for (final code in AttributeCode.values)
+    _eigenschaftsKandidat(code, probenEigenschaften, grundwerte),
+];
+
+ProbenKandidat _eigenschaftsKandidat(
+  AttributeCode code,
+  Attributes probenEigenschaften,
+  Attributes grundwerte,
+) {
+  final label = attributeCodeKey(code);
+  final wert = readAttributeValue(probenEigenschaften, code);
+  final abzug = wert - readAttributeValue(grundwerte, code);
+  final wundText = abzug == 0 ? '' : ' (Wunden −${-abzug})';
+  final favorit = HeroProbenFavorit.von(ProbenFavoritArt.eigenschaft, label);
+  return ProbenKandidat(
+    name: label,
+    detail: 'Eigenschaftsprobe · Wert $wert$wundText',
+    favorit: favorit,
+    request: buildAttributeProbeRequest(
+      label: label,
+      effectiveValue: wert,
+      verweis: favorit.id,
+    ),
+  );
+}

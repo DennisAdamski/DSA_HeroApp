@@ -1,3 +1,4 @@
+import 'package:dsa_heldenverwaltung/domain/copy_with_sentinel.dart';
 import 'package:dsa_heldenverwaltung/domain/unbekannte_json_felder.dart';
 
 /// Breite einer Kachel im Raster der Spielansicht (SPIEL-07).
@@ -60,7 +61,7 @@ class HeroSpielkachel {
 
   HeroSpielkachel copyWith({
     String? id,
-    Object? breite = _unveraendert,
+    Object? breite = keepFieldValue,
     bool? ausgeblendet,
     bool? eingeklappt,
     Map<String, Object?>? unbekannteFelder,
@@ -68,7 +69,7 @@ class HeroSpielkachel {
   }) {
     return HeroSpielkachel(
       id: id ?? this.id,
-      breite: identical(breite, _unveraendert)
+      breite: identical(breite, keepFieldValue)
           ? this.breite
           : breite as SpielkachelBreite?,
       ausgeblendet: ausgeblendet ?? this.ausgeblendet,
@@ -80,7 +81,7 @@ class HeroSpielkachel {
             // Nur ein anderer Wert ändert; wer den Ersatz durchreicht, lässt den
             // Rohwert einer neueren Version stehen.
             'breite':
-                !identical(breite, _unveraendert) && breite != this.breite,
+                !identical(breite, keepFieldValue) && breite != this.breite,
           }),
     );
   }
@@ -226,5 +227,3 @@ class HeroSpielansicht {
     unbekannteFelderHash(unbekannteFelder),
   );
 }
-
-const Object _unveraendert = Object();

@@ -689,10 +689,7 @@ class _AdventureDateSummary extends StatelessWidget {
               width: blockWidth,
               child: _ReadOnlyTextBlock(
                 title: 'Aventurisch',
-                value: _formatDateValue(
-                  aventurianDate,
-                  usesAventurianMonthLabel: true,
-                ),
+                value: aventurianDate.anzeigeText,
                 emptyValue: 'Nicht gepflegt.',
               ),
             ),
@@ -1248,15 +1245,10 @@ String _personChipLabel(HeroAdventurePersonEntry person) {
   return name.isEmpty ? 'Person' : name;
 }
 
-String _formatDateValue(
-  HeroAdventureDateValue value, {
-  bool usesAventurianMonthLabel = false,
-}) {
+String _formatDateValue(HeroAdventureDateValue value) {
   final parts = <String>[
     value.day.trim(),
-    usesAventurianMonthLabel
-        ? _aventurianMonthLabel(value.month)
-        : value.month.trim(),
+    value.month.trim(),
     value.year.trim(),
   ].where((entry) => entry.isNotEmpty).toList(growable: false);
   return parts.join(' ').trim();

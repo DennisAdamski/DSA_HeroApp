@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:dsa_heldenverwaltung/rules/derived/string_normalize.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/advancement/advancement_impact_panel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -26,7 +27,6 @@ import 'advancement_specialization_dialog.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/advancement_specialization_rules.dart';
 
 import 'package:dsa_heldenverwaltung/ui/theme/codex_theme.dart';
-import 'package:dsa_heldenverwaltung/rules/derived/string_normalize.dart';
 
 /// Durchsuchbarer Steigerungskatalog auf Basis der ungespeicherten Vorschau.
 // Eine Listenzeile bleibt immer sichtbar; darunter wäre der Katalog nur
@@ -277,7 +277,7 @@ class _AdvancementCatalogState extends ConsumerState<AdvancementCatalog> {
     final abschnitt = bereiche.contains(_abschnitt.bereich)
         ? _abschnitt
         : _Abschnitt.eigenschaften;
-    final query = _searchController.text.trim().toLowerCase();
+    final query = suchFaltung(_searchController.text);
     final options = ref.watch(
       advancementOptionsProvider((
         heroId: widget.heroId,

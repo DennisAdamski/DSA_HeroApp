@@ -6,7 +6,7 @@ import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_magie_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_wirken_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_fremdwirkung_rules.dart';
-import 'package:dsa_heldenverwaltung/rules/derived/hero_requirement_context.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/spell_effect_combat_rules.dart';
 
 /// Bestätigt variable Profile und bindet bekannte Dauer/Kosten an die echte Probe.
 class GefechtWirkdialog extends StatefulWidget {
@@ -20,8 +20,12 @@ class GefechtWirkdialog extends StatefulWidget {
     this.talentBeOverride,
     this.epicAdvantagesActive = false,
     this.aufrechterhaltenVorschlag = 0,
+    this.katalog,
   });
   final HeroComputedSnapshot snapshot;
+
+  /// Katalog des Helden; Sonderfertigkeiten wirken über ihre ID (ARCH-02).
+  final RulesCatalog? katalog;
 
   /// Vorübergehende Talent-BE des Helden für die Liturgieprobe.
   final int? talentBeOverride;
@@ -124,8 +128,10 @@ class _WirkdialogState extends State<GefechtWirkdialog> {
         : gefechtsZauberZuschlag(
             widget.snapshot,
             aufrechterhalten: aufrecht,
-            simultanzaubern: heroSpecialAbilityNames(widget.snapshot.hero)
-                .any((n) => n.toLowerCase().startsWith('simultanzaubern')),
+            simultanzaubern: heldKenntSimultanzaubern(
+              widget.snapshot.hero,
+              widget.katalog,
+            ),
           );
     final probe = basis == null || zuschlag == null
         ? null
@@ -374,9 +380,10 @@ class _WirkdialogState extends State<GefechtWirkdialog> {
                     identitaet: id,
                     neueSpielrunde: _neueSr,
                     permanentManuell: karmal && _grad >= 5,
-                    zauberkontrolle: heroSpecialAbilityNames(
+                    zauberkontrolle: heldKenntZauberkontrolle(
                       widget.snapshot.hero,
-                    ).any((n) => n.toLowerCase().startsWith('zauberkontrolle')),
+                      widget.katalog,
+                    ),
                   ),
                 ))
               : null,

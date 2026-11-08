@@ -95,21 +95,6 @@ List<String> extractLearnedRepresentations(String availability) {
   return result;
 }
 
-/// Extrahiert die Haupttraditions-Kuerzel aus einem availability-String.
-///
-/// Duplikate werden entfernt.
-List<String> extractTraditions(String availability) {
-  final entries = parseSpellAvailability(availability);
-  final seen = <String>{};
-  final result = <String>[];
-  for (final entry in entries) {
-    if (seen.add(entry.tradition)) {
-      result.add(entry.tradition);
-    }
-  }
-  return result;
-}
-
 /// Filtert Availability-Eintraege auf die Haupttraditionen des Helden.
 ///
 /// Fuer `Dru(Elf)2` reicht also ein Held mit `Dru`, auch wenn `Elf` selbst
@@ -125,14 +110,6 @@ List<SpellAvailabilityEntry> availableSpellEntriesForRepresentations(
   return entries
       .where((entry) => heroRepresentations.contains(entry.tradition))
       .toList(growable: false);
-}
-
-/// Prueft, ob ein Held genau diesen Availability-Eintrag lernen darf.
-bool canLearnSpellFromEntry(
-  SpellAvailabilityEntry entry,
-  List<String> heroRepresentations,
-) {
-  return heroRepresentations.contains(entry.tradition);
 }
 
 /// Sucht einen Availability-Eintrag ueber gelernte Repr. und Herkunft.
@@ -163,44 +140,6 @@ String formatAvailabilityEntries(String availability) {
     return '-';
   }
   return entries.map((entry) => entry.displayLabel).join('; ');
-}
-
-/// Legacy-Helfer fuer Altpfade, die noch eine einzelne Verbreitungszahl erwarten.
-///
-/// Neue Anzeige- und Auswahlpfade sollen stattdessen mit
-/// [availableSpellEntriesForRepresentations] arbeiten.
-int? spellAvailabilityForRepresentations(
-  String availability,
-  List<String> heroRepresentations,
-) {
-  final entries = availableSpellEntriesForRepresentations(
-    availability,
-    heroRepresentations,
-  );
-  int? bestVerbreitung;
-  for (final entry in entries) {
-    if (bestVerbreitung == null || entry.verbreitung < bestVerbreitung) {
-      bestVerbreitung = entry.verbreitung;
-    }
-  }
-  return bestVerbreitung;
-}
-
-/// Kennzeichnet eine gespeicherte Zauber-Repr. als Fremdrepr. des Eintrags.
-bool isForeignSpellRepresentation({
-  required String availability,
-  required String learnedRepresentation,
-  String? originTradition,
-}) {
-  final entry = findSpellAvailabilityEntry(
-    availability: availability,
-    learnedRepresentation: learnedRepresentation,
-    originTradition: originTradition,
-  );
-  if (entry == null) {
-    return false;
-  }
-  return entry.isForeignRepresentation;
 }
 
 /// Liefert true, wenn die gespeicherten Felder einen in fremder Repr. gelernten
@@ -439,14 +378,6 @@ int computeAxxeleratusPaBaseBonus({required bool axxeleratusActive}) {
 /// verbesserten Parade-Basiswert hinzu.
 int computeAxxeleratusAusweichenBonus({required bool axxeleratusActive}) {
   return axxeleratusActive ? 2 : 0;
-}
-
-/// Verdoppelt den Eigenschaftsanteil der Initiative, wenn Axxeleratus aktiv ist.
-int computeAxxeleratusIniBase({
-  required int iniBase,
-  required bool axxeleratusActive,
-}) {
-  return axxeleratusActive ? iniBase * 2 : iniBase;
 }
 
 /// Liefert den Axxeleratus-Zusatz auf die Heldeninitiative.

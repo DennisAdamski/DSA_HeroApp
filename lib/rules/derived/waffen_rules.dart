@@ -66,41 +66,5 @@ bool isRangedCombatTalent(TalentDef? talent) {
   if (talent == null) {
     return false;
   }
-  return normalizeCombatToken(talent.type) == 'fernkampf';
-}
-
-// PA-Bonus durch Nebenhand (Schild, Parierdolch, Linkhand).
-int computeOffhandPaBonus({
-  required OffhandMode mode,
-  required int basePaMod,
-  required CombatSpecialRules special,
-}) {
-  switch (mode) {
-    case OffhandMode.none:
-      return 0;
-    case OffhandMode.linkhand:
-      return basePaMod + 1;
-    case OffhandMode.shield:
-      if (special.schildkampfII) {
-        return basePaMod + 5;
-      }
-      if (special.schildkampfI) {
-        return basePaMod + 3;
-      }
-      if (special.linkhandActive) {
-        return basePaMod + 1;
-      }
-      return basePaMod;
-    case OffhandMode.parryWeapon:
-      if (special.parierwaffenII) {
-        return basePaMod + 2;
-      }
-      if (special.parierwaffenI) {
-        return basePaMod - 1;
-      }
-      if (special.linkhandActive) {
-        return basePaMod - 4;
-      }
-      return basePaMod;
-  }
+  return talent.istFernkampf;
 }

@@ -35,7 +35,7 @@ class _GefechtManoeverlisteState extends State<GefechtManoeverliste> {
             prefixIcon: Icon(Icons.search),
           ),
           onChanged: (v) => setState(() {
-            _suche = v.toLowerCase();
+            _suche = v;
           }),
         ),
         const SizedBox(height: 8),

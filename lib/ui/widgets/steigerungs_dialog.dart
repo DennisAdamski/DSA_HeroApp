@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:dsa_heldenverwaltung/domain/learn/learn_complexity.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/herleitung.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/learning_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/modifier_fragment_text.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/steigerung_herleitung_rules.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_overview/herleitung_abschnitt.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
@@ -616,7 +617,7 @@ class _SpaltenSchritte extends StatelessWidget {
             schritt.art == HerleitungsArt.grundwert
                 ? '${schritt.bezeichnung}: ${schritt.formel ?? ''}'
                 : '${schritt.bezeichnung}: '
-                      '${schritt.betrag > 0 ? '+' : ''}${schritt.betrag} '
+                      '${mitVorzeichen(schritt.betrag, nullText: '0')} '
                       '${schritt.betrag.abs() == 1 ? 'Spalte' : 'Spalten'}'
                       '${(schritt.quelle ?? '').isEmpty ? '' : ' · ${schritt.quelle}'}',
             style: stil,

@@ -41,6 +41,59 @@ String readSyncRevision(
   return 'legacy-$fallbackHash';
 }
 
+/// Art eines Sync-Dokuments; bestimmt den Inhalts-Hash alter Dokumente.
+enum SyncDokumentArt {
+  /// Heldenbogen unter `heroes/`.
+  held,
+
+  /// Laufzeitzustand unter `hero_states/`.
+  zustand,
+}
+
+/// Liest die Revision eines gespeicherten Dokuments so, wie die Decoder sie
+/// melden.
+///
+/// Die Vorbedingung beim Schreiben vergleicht mit der Revision, die der
+/// Client beim Lesen bekommen hat. Für alte Dokumente ohne Revision und ohne
+/// Zeitstempel muss deshalb derselbe Rückfall-Hash entstehen wie in
+/// [decodeRemoteHeroRecord] und [decodeRemoteHeroStateRecord]; sonst schlägt
+/// jeder Push dauerhaft mit einer Vorbedingungsverletzung fehl.
+String revisionAusDokument(
+  Map<String, dynamic> data,
+  DateTime? updatedAt, {
+  required SyncDokumentArt art,
+}) {
+  final gespeichert = data[HeroSyncRecordFields.revision] as String?;
+  final geloescht = data[HeroSyncRecordFields.deleted] as bool? ?? false;
+  if ((gespeichert != null && gespeichert.isNotEmpty) ||
+      updatedAt != null ||
+      geloescht) {
+    return readSyncRevision(data, updatedAt);
+  }
+  final payload = data[HeroSyncRecordFields.payload];
+  if (payload is! Map) {
+    return readSyncRevision(data, updatedAt);
+  }
+  return readSyncRevision(
+    data,
+    updatedAt,
+    fallbackHash: _inhaltsHash(data, _castMap(payload), art),
+  );
+}
+
+String _inhaltsHash(
+  Map<String, dynamic> data,
+  Map<String, dynamic> payload,
+  SyncDokumentArt art,
+) =>
+    data[HeroSyncRecordFields.contentHash] as String? ??
+    switch (art) {
+      SyncDokumentArt.held => heroContentHash(HeroSheet.fromJson(payload)),
+      SyncDokumentArt.zustand => heroStateContentHash(
+        HeroState.fromJson(payload),
+      ),
+    };
+
 /// Schreib-Felder für einen Helden- oder Zustands-Payload.
 ///
 /// [lastModifiedValue] ist transportspezifisch: `FieldValue.serverTimestamp()`
@@ -104,6 +157,7 @@ RemoteHeroRecord? decodeRemoteHeroRecord({
   final contentHash =
       data[HeroSyncRecordFields.contentHash] as String? ??
       heroContentHash(hero);
+  // Dieselbe Formel wie `revisionAusDokument` (Schreibvorbedingung).
   return RemoteHeroRecord(
     id: id,
     hero: hero,

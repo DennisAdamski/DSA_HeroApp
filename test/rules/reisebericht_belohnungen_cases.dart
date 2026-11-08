@@ -232,6 +232,7 @@ void _reiseberichtBelohnungen() {
         hero: hero,
         rewards: rewards,
         updatedState: updatedState,
+        catalog: null,
       );
 
       expect(result.apTotal, 130);
@@ -266,6 +267,7 @@ void _reiseberichtBelohnungen() {
         hero: hero,
         rewards: rewards,
         updatedState: const HeroReisebericht(checkedIds: {'rb_1'}),
+        catalog: null,
       );
 
       expect(result.talents['Kriegskunst']!.specialExperiences, 1);
@@ -304,6 +306,7 @@ void _reiseberichtBelohnungen() {
         hero: hero,
         rewards: rewards,
         updatedState: const HeroReisebericht(),
+        catalog: null,
       );
 
       expect(result.talents['Gassenwissen']!.talentModifiers.length, 1);
@@ -345,6 +348,7 @@ void _reiseberichtBelohnungen() {
         hero: hero,
         rewards: rewards,
         updatedState: const HeroReisebericht(),
+        catalog: null,
       );
 
       expect(result.attributes.mu, 13);
@@ -394,6 +398,7 @@ void _reiseberichtBelohnungen() {
         hero: hero,
         rewards: rewards,
         updatedState: updatedState,
+        catalog: null,
       );
 
       expect(result.apTotal, 100);
@@ -425,9 +430,181 @@ void _reiseberichtBelohnungen() {
         hero: hero,
         rewards: rewards,
         updatedState: const HeroReisebericht(appliedRewardIds: {'rb_x'}),
+        catalog: null,
       );
 
       expect(result.apTotal, 0);
+    });
+  });
+
+  // Echte Helden führen Talente unter ihrer Katalog-ID; der Reisebericht
+  // nennt Klarnamen, auch ohne Umlaute (REV-17).
+  group('Talentauflösung über den Katalog', () {
+    const katalog = RulesCatalog(
+      version: 'test',
+      source: 'test',
+      weapons: [],
+      spells: [],
+      talents: [
+        TalentDef(
+          id: 'tal_gassenwissen',
+          name: 'Gassenwissen',
+          group: 'Gesellschaftliche Talente',
+          steigerung: 'B',
+          attributes: ['KL', 'IN', 'CH'],
+        ),
+        TalentDef(
+          id: 'tal_koerperbeherrschung',
+          name: 'Körperbeherrschung',
+          group: 'Körperliche Talente',
+          steigerung: 'D',
+          attributes: ['MU', 'IN', 'GE'],
+        ),
+      ],
+    );
+    final held = HeroSheet(
+      id: 'h1',
+      name: 'Testor',
+      level: 1,
+      attributes: const Attributes(
+        mu: 12,
+        kl: 12,
+        inn: 12,
+        ch: 12,
+        ff: 12,
+        ge: 12,
+        ko: 12,
+        kk: 12,
+      ),
+      talents: const {
+        'tal_gassenwissen': HeroTalentEntry(talentValue: 3),
+        'tal_koerperbeherrschung': HeroTalentEntry(talentValue: 4),
+      },
+    );
+    const rewards = ReiseberichtRewards(
+      seRewards: [
+        ReiseberichtSeReward(
+          sourceId: 'rb_1',
+          talentName: 'Koerperbeherrschung',
+        ),
+      ],
+      talentBoni: [
+        ReiseberichtTalentBonus(
+          sourceId: 'rb_2',
+          talentName: 'Gassenwissen',
+          wert: 1,
+          beschreibung: 'Reisebericht: Stadtkenner',
+        ),
+      ],
+      eigenschaftsBoni: [
+        ReiseberichtEigenschaftsBonus(
+          sourceId: 'rb_3',
+          eigenschaft: 'in',
+          wert: 1,
+        ),
+      ],
+      newAppliedIds: {'rb_1', 'rb_2', 'rb_3'},
+    );
+
+    test('bucht SE, Talentbonus und IN auf die Talent-IDs', () {
+      final result = applyReiseberichtRewards(
+        hero: held,
+        rewards: rewards,
+        updatedState: const HeroReisebericht(),
+        catalog: katalog,
+      );
+
+      expect(result.talents['tal_koerperbeherrschung']!.specialExperiences, 1);
+      expect(
+        result.talents['tal_gassenwissen']!.talentModifiers.single.modifier,
+        1,
+      );
+      expect(result.attributes.inn, 13);
+    });
+
+    test('nimmt dieselben Belohnungen wieder zurück', () {
+      final gebucht = applyReiseberichtRewards(
+        hero: held,
+        rewards: rewards,
+        updatedState: const HeroReisebericht(),
+        catalog: katalog,
+      );
+      final result = revokeReiseberichtRewards(
+        hero: gebucht,
+        rewards: rewards,
+        updatedState: gebucht.reisebericht,
+        catalog: katalog,
+      );
+
+      expect(result.talents['tal_koerperbeherrschung']!.specialExperiences, 0);
+      expect(result.talents['tal_gassenwissen']!.talentModifiers, isEmpty);
+      expect(result.attributes.inn, 12);
+    });
+
+    test('Namen, die sich nur durch ein e unterscheiden, bleiben getrennt', () {
+      const katalogBauer = RulesCatalog(
+        version: 'test',
+        source: 'test',
+        weapons: [],
+        spells: [],
+        talents: [
+          TalentDef(
+            id: 'tal_baur',
+            name: 'Baur',
+            group: 'Gesellschaftliche Talente',
+            steigerung: 'B',
+            attributes: ['KL', 'IN', 'CH'],
+          ),
+          TalentDef(
+            id: 'tal_bauer',
+            name: 'Bauer',
+            group: 'Gesellschaftliche Talente',
+            steigerung: 'B',
+            attributes: ['KL', 'IN', 'CH'],
+          ),
+        ],
+      );
+      final heldBauer = held.copyWith(
+        talents: const {
+          'tal_baur': HeroTalentEntry(talentValue: 1),
+          'tal_bauer': HeroTalentEntry(talentValue: 1),
+        },
+      );
+      const bauernSe = ReiseberichtRewards(
+        seRewards: [
+          ReiseberichtSeReward(sourceId: 'rb_1', talentName: 'Bauer'),
+        ],
+        newAppliedIds: {'rb_1'},
+      );
+
+      final result = applyReiseberichtRewards(
+        hero: heldBauer,
+        rewards: bauernSe,
+        updatedState: const HeroReisebericht(),
+        catalog: katalogBauer,
+      );
+
+      expect(result.talents['tal_bauer']!.specialExperiences, 1);
+      expect(result.talents['tal_baur']!.specialExperiences, 0);
+    });
+
+    test('Wahl-Eigenschaft akzeptiert auch den ausgeschriebenen Namen', () {
+      const def = ReiseberichtDef(
+        id: 'rb_wahl',
+        name: 'Wahl',
+        kategorie: 'k',
+        typ: 'meta',
+        eigenschaftsBonus: [
+          ReiseberichtEigenschaftsBonusDef(eigenschaft: 'wahl', wert: 1),
+        ],
+      );
+      const state = HeroReisebericht(
+        wahlSeZuordnungen: {'rb_wahl': 'Intuition'},
+      );
+
+      final pending = computePendingRewards(catalog: [def], state: state);
+
+      expect(pending.eigenschaftsBoni.single.eigenschaft, 'in');
     });
   });
 

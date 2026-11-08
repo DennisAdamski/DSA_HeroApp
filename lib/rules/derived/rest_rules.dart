@@ -9,6 +9,7 @@ import 'package:dsa_heldenverwaltung/domain/talent_special_ability.dart';
 import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_wirkung_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/string_normalize.dart';
 
 /// Art des Zustandsabbaus fuer Erschöpfung und Überanstrengung.
 enum RestConditionMode { rast, schlaf }
@@ -455,9 +456,9 @@ int _maxNamedAbilityLevel(
 }
 
 bool _containsNamedAbility(Iterable<String> abilities, String target) {
-  final wanted = _normalizeNamedEntry(target);
+  final wanted = vergleichsSchluessel(target);
   for (final ability in abilities) {
-    final normalized = _normalizeNamedEntry(ability);
+    final normalized = vergleichsSchluessel(ability);
     if (normalized.contains(wanted)) {
       return true;
     }
@@ -466,10 +467,10 @@ bool _containsNamedAbility(Iterable<String> abilities, String target) {
 }
 
 bool _containsNamedEntry(String text, String target) {
-  final wanted = _normalizeNamedEntry(target);
+  final wanted = vergleichsSchluessel(target);
   final entries = text.split(RegExp(r'[\n,;]+'));
   for (final entry in entries) {
-    final normalized = _normalizeNamedEntry(entry);
+    final normalized = vergleichsSchluessel(entry);
     if (normalized.contains(wanted)) {
       return true;
     }
@@ -480,9 +481,9 @@ bool _containsNamedEntry(String text, String target) {
 int _maxNamedLevel(String text, String baseName, int maxLevel) {
   final entries = text.split(RegExp(r'[\n,;]+'));
   var found = 0;
-  final wanted = _normalizeNamedEntry(baseName);
+  final wanted = vergleichsSchluessel(baseName);
   for (final entry in entries) {
-    final normalized = _normalizeNamedEntry(entry);
+    final normalized = vergleichsSchluessel(entry);
     if (!normalized.contains(wanted)) {
       continue;
     }
@@ -519,16 +520,6 @@ int _extractTrailingLevel(String normalized) {
     return 1;
   }
   return 0;
-}
-
-String _normalizeNamedEntry(String value) {
-  var text = value.toLowerCase().trim();
-  text = text
-      .replaceAll(String.fromCharCode(228), 'ae')
-      .replaceAll(String.fromCharCode(246), 'oe')
-      .replaceAll(String.fromCharCode(252), 'ue')
-      .replaceAll(String.fromCharCode(223), 'ss');
-  return text.replaceAll(RegExp(r'[^a-z0-9]+'), ' ').trim();
 }
 
 int _clampNonNegative(int value) => value < 0 ? 0 : value;

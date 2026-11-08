@@ -11,12 +11,13 @@ import 'package:dsa_heldenverwaltung/rules/derived/gefecht_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_wirken_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/inventar_verbrauch_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/probe_request_rules.dart';
-import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_initiative_provider.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_provider.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_gefechts_adapter.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_held_schreiben.dart';
+import 'package:dsa_heldenverwaltung/ui2/widgets/karto_bestaetigen.dart';
 
 /// Zeigt das Inventar und benutzt auf Wunsch einen Gegenstand.
 ///
@@ -211,39 +212,26 @@ Future<void> schliesseGefechtsGegenstandAb({
     return;
   }
   if (!inventarAbbuchbar(eintrag)) return;
-  final ja = await showDialog<bool>(
-    context: context,
-    builder: (ctx) => AlertDialog(
-      title: Text(eintrag.gegenstand),
-      content: Text(
+  if (!context.mounted) return;
+  final ja = await kartoBestaetigen(
+    context,
+    titel: eintrag.gegenstand,
+    text:
         'Benutzung abgeschlossen. Ein Stück abbuchen? '
         'Bestand ${inventarMenge(eintrag)} → ${inventarMenge(eintrag)! - 1}.',
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(ctx, false),
-          child: const Text('Nicht abbuchen'),
-        ),
-        FilledButton(
-          key: const ValueKey('gefecht-gegenstand-abbuchen'),
-          onPressed: () => Navigator.pop(ctx, true),
-          child: const Text('Abbuchen'),
-        ),
-      ],
-    ),
+    abbrechen: 'Nicht abbuchen',
+    bestaetigen: 'Abbuchen',
+    bestaetigenKey: const ValueKey('gefecht-gegenstand-abbuchen'),
   );
-  if (ja != true) return;
-  if (ref.read(advancementSessionProvider(heroId)) != null) {
-    throw StateError(
-      'Während einer offenen Steigerungsrunde wird das Inventar nicht geändert.',
-    );
-  }
-  await ref
-      .read(heroActionsProvider)
-      .updateHero(
-        heroId,
-        (held) => mitVerbrauchtemInventarEintrag(held, eintrag),
-      );
+  if (!ja) return;
+  await aendereHeldAusserhalbPlanung(
+    ref,
+    heroId,
+    (held) => mitVerbrauchtemInventarEintrag(held, eintrag),
+    sperre:
+        'Während einer offenen Steigerungsrunde wird das Inventar nicht '
+        'geändert.',
+  );
 }
 
 // Gruppierte, lesbare Inventarliste; nur Benutzbares hat einen Knopf.

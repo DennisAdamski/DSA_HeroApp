@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/proben_favoriten_rules.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_proben_favorit.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/string_normalize.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/planung_bearbeiten_guard.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/modifikatoren_dialog.dart';
 import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:dsa_heldenverwaltung/rules/derived/spell_effect_instance_rules.dart';
 
 import 'package:dsa_heldenverwaltung/catalog/house_rule_provenance.dart';
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
@@ -29,7 +29,6 @@ import 'package:dsa_heldenverwaltung/rules/derived/hero_requirement_context.dart
 import 'package:dsa_heldenverwaltung/rules/derived/inventory_modifier_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/learning_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/meta_talent_rules.dart';
-import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/talent_herleitung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/talent_probe_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/talent_specialization_hints.dart';
@@ -59,7 +58,6 @@ import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/karto_variante.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_begabung_rules.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/begabung_haekchen.dart';
-import 'package:dsa_heldenverwaltung/rules/derived/string_normalize.dart';
 
 part 'hero_talents/hero_talents_cells.dart';
 part 'hero_talents/hero_talents_edit_actions.dart';
@@ -139,6 +137,7 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
   /// Zuletzt gebauter Regelkatalog; die Tabellen rechnen Vor-/Nachteile damit
   /// ueber ihre Katalog-ID (ARCH-02).
   RulesCatalog? _latestCatalog;
+
   Map<String, HeroTalentEntry> _draftTalents = <String, HeroTalentEntry>{};
   List<HeroMetaTalent> _draftMetaTalents = <HeroMetaTalent>[];
   List<TalentSpecialAbility> _draftTalentSpecialAbilities =
@@ -240,33 +239,35 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
         data: (catalog) {
           _latestCatalogRuleResolver = catalog.ruleResolver;
           _latestCatalog = catalog;
-          final combatBaseBe = computeCombatPreviewStats(
-            hero,
-            state,
-            catalogTalents: catalog.talents,
-            catalogManeuvers: catalog.maneuvers,
-            catalogCombatSpecialAbilities: catalog.combatSpecialAbilities,
-            catalog: catalog,
-          ).beKampf;
+          final berechnet = ref
+              .watch(heroComputedProvider(widget.heroId))
+              .asData
+              ?.value;
+          // Kampf-BE aus demselben Snapshot wie Kampf-Tab und Inspector;
+          // die Ersatzrechnung greift nur, solange er noch fehlt.
+          final combatBaseBe =
+              berechnet?.combatPreviewStats.beKampf ??
+              computeCombatPreviewStats(
+                hero,
+                state,
+                catalogTalents: catalog.talents,
+                catalogManeuvers: catalog.maneuvers,
+                catalogCombatSpecialAbilities: catalog.combatSpecialAbilities,
+                catalog: catalog,
+              ).beKampf;
           final talentBeOverride = ref.watch(talentBeOverrideProvider(hero.id));
           final activeTalentBe = talentBeOverride ?? combatBaseBe;
           _beKampf = combatBaseBe;
           _beOverride = talentBeOverride;
           _inventarQuellen =
-              ref
-                  .watch(heroComputedProvider(widget.heroId))
-                  .asData
-                  ?.value
-                  .inventoryTalentQuellen ??
+              berechnet?.inventoryTalentQuellen ??
               const <String, List<InventoryModifierQuelle>>{};
           final relevantTalents = catalog.talents
               .where(_matchesScope)
               .toList(growable: false);
-          final effectiveAttributes = computeEffectiveAttributes(
-            hero,
-            tempAttributeMods: effektiveTempAttributeMods(state),
-            catalog: catalog,
-          );
+          // Eine Quelle für effektive Eigenschaften (REV-22).
+          final effectiveAttributes =
+              berechnet?.effectiveAttributes ?? hero.attributes;
           return ValueListenableBuilder<int>(
             valueListenable: _tableRevision,
             builder: (context, revision, child) {
@@ -288,7 +289,7 @@ class _HeroTalentTableTabState extends ConsumerState<_HeroTalentTableTab>
                   }
                   return a.toLowerCase().compareTo(b.toLowerCase());
                 });
-              final filterQuery = _talentGroupFilter.trim().toLowerCase();
+              final filterQuery = suchFaltung(_talentGroupFilter);
 
               final talentTabChildren = <Widget>[
                 if (showTalentsHeader) ...[

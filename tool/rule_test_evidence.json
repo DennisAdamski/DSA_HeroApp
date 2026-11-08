@@ -78,6 +78,13 @@
       "rationale": "Alle 9 Tests gelesen. Die Einträge sind synthetische Maps (z. B. id 'spell.foo', wirkung 'Geheime Wirkung', 'Variante A/B/C'); Feldnamen wie wirkung/variants dienen nur als Struktur. Es wird kein Katalog-Inhalt als Buchaussage behauptet, nur Entschlüsselungs- und Durchreichverhalten.",
       "sources": []
     },
+    "test/catalog/catalog_source_data_copy_test.dart": {
+      "kind": "product_contract",
+      "status": "verified",
+      "summary": "Prüft, dass CatalogSourceData.copyWith den v3-Salt und die übrigen Rohdatenfelder erhält und nur die übergebenen Sektionen ersetzt.",
+      "rationale": "Datenvertrag der Katalogschicht ohne Regelbehauptung.",
+      "sources": []
+    },
     "test/catalog/combat_special_ability_catalog_test.dart": {
       "kind": "official",
       "status": "verified",
@@ -344,6 +351,20 @@
         "result": "confirmed",
         "note": "Wege der Helden S. 249 und 16 (Chunk 4704, 4058), Erweiterung und Überarbeitung des Regelwerks S. 2 und 22 (Chunk 25817, 25834), Wege des Schwerts S. 169 (Chunk 7248) erneut gelesen: Begabung eine Spalte leichter bis A+, Körperliche Talente Spalte D, Hausregel Akrobatik A*, Verpflichtungen laut Hausregel nicht immer 12 GP."
       }
+    },
+    "test/catalog/house_rule_pack_kette_test.dart": {
+      "kind": "product_contract",
+      "status": "verified",
+      "summary": "Drei Tests zur Elternkette der Hausregel-Pakete: Kette bis zum Root, Selbstreferenz und Zweierkreis enden, Aktivierung folgt der Kette, Zyklen werden als Problem gemeldet und das Paket bleibt als Root sichtbar.",
+      "rationale": "Synthetische Pakete ohne Patches; geprüft wird nur die Paketverwaltung der App (Ladeschutz gegen zyklische Importe). Keine Regelbehauptung, kein Katalogeintrag.",
+      "sources": []
+    },
+    "test/catalog/json_asset_test.dart": {
+      "kind": "product_contract",
+      "status": "verified",
+      "summary": "Prüft das Lesen von JSON-Assets mit und ohne führende BOM und die Weitergabe von Formatfehlern.",
+      "rationale": "Technischer Ladevertrag ohne Regelbehauptung.",
+      "sources": []
     },
     "test/catalog/kurzregel_katalog_test.dart": {
       "kind": "product_contract",
@@ -8209,6 +8230,21 @@
         "note": "Wege der Helden S. 21 (Chunk 4071), Wege der Zauberei S. 19 und 32 (Chunk 4987, 5022) erneut gelesen: AT-Basis (MU+GE+KK)/5, PA-Basis (IN+GE+KK)/5, FK-Basis (IN+FF+KK)/5, INI-Basis (MU+MU+IN+GE)/5, Leiteigenschaft Gildenmagier KL, Gedankenschutz MU 15, IN 13, SF Eiserner Wille I."
       }
     },
+    "test/rules/hohe_ini_bonus_test.dart": {
+      "kind": "official",
+      "status": "verified",
+      "summary": "Prüft den Bonus der optionalen Regel „Hohe Initiative-Werte“: über 20 +1, über 30 +2, über 40 +3, kein Bonus unter 21 und keine vierte Stufe über 50. Kampfvorschau (PA, Ausweichen) und Gefecht nutzen dieselbe Funktion.",
+      "sources": [
+        {
+          "title": "Wege des Schwerts (Optional: Hohe Initiative-Werte)",
+          "pages": "78",
+          "mcpChunks": [
+            7039
+          ],
+          "checkedOn": "2026-11-07"
+        }
+      ]
+    },
     "test/rules/house_rule_registry_test.dart": {
       "kind": "product_contract",
       "status": "verified",
@@ -9139,6 +9175,13 @@
           "checkedOn": "2026-11-02"
         }
       ]
+    },
+    "test/rules/merkmal_suche_rules_test.dart": {
+      "kind": "product_contract",
+      "status": "verified",
+      "summary": "Prüft die gemeinsame Katalogsuche für Vor- und Nachteile: Umlautfaltung, Suche über Name, Quelle und Marker, nur aktive Einträge, Kürzung auf 80 Treffer.",
+      "rationale": "Such- und Anzeigelogik der App ohne Regelbehauptung; die Namen im Test sind reine Beispieleingaben.",
+      "sources": []
     },
     "test/rules/meta_talent_rules_test.dart": {
       "kind": "official",

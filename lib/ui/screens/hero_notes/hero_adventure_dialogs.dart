@@ -1449,10 +1449,6 @@ String _normalizeAventurianMonthValue(String rawValue) {
   return normalizeAventurianMonth(rawValue);
 }
 
-String _aventurianMonthLabel(String rawValue) {
-  return aventurianMonthLabel(rawValue);
-}
-
 String _adventureCompletionTitle(HeroAdventureEntry entry) {
   final title = entry.title.trim();
   return title.isEmpty ? 'Abenteuer' : title;
@@ -1462,11 +1458,8 @@ String _adventureCompletionTitle(HeroAdventureEntry entry) {
 String _formatAdventureDukatenDraft(double value) =>
     value <= 0 ? '' : formatDsaCurrencyDukaten(dukatenToDsaKreuzer(value));
 
+/// Liest Dukaten wie `12,5` oder `12 D 5 S`; leer ist 0, Unlesbares `null`.
 double? _parseAdventureDukatenDraft(String rawValue) {
-  final normalized = rawValue.trim();
-  if (normalized.isEmpty) {
-    return 0;
-  }
-  final compact = normalized.replaceAll(' ', '');
-  return double.tryParse(compact.replaceAll(',', '.'));
+  final kreuzer = parseDsaCurrencyToKreuzer(rawValue);
+  return kreuzer == null ? null : kreuzer / dsaKreuzerPerDukat;
 }

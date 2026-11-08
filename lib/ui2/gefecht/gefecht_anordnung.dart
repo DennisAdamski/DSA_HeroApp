@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:dsa_heldenverwaltung/ui_shared/layout/breiten_schwellen.dart';
 
 /// Breite, ab der die Gefechtsansicht zweispaltig wird.
-const kGefechtZweispaltig = 744.0;
+const kGefechtZweispaltig = kSchwelleTablet;
 
 /// Breite, ab der die Gefechtsansicht dreispaltig wird.
 const kGefechtDreispaltig = 1100.0;

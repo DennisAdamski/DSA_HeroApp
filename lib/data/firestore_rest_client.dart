@@ -17,6 +17,8 @@ class FirestoreRestClient {
     required this.projectId,
     required this.idTokenProvider,
     this.databaseId = '(default)',
+    this.zeitlimit = const Duration(seconds: 30),
+    this.schreibZeitlimit = const Duration(minutes: 2),
     http.Client? httpClient,
   }) : _http = httpClient ?? http.Client();
 
@@ -28,6 +30,15 @@ class FirestoreRestClient {
 
   /// Liefert das aktuelle Firebase Auth ID Token für Security Rules.
   final Future<String?> Function() idTokenProvider;
+
+  /// Längste Wartezeit je Request; danach meldet [SyncNetworkException] das
+  /// Zeitlimit, statt den Abgleich unbegrenzt hängen zu lassen.
+  final Duration zeitlimit;
+
+  /// Längere Wartezeit für schreibende Requests: Ein clientseitiger Abbruch
+  /// stoppt den Server nicht, und ein Heldendokument kann auf langsamen
+  /// Verbindungen länger als [zeitlimit] brauchen.
+  final Duration schreibZeitlimit;
 
   final http.Client _http;
 
@@ -100,6 +111,7 @@ class FirestoreRestClient {
         headers: headers,
         body: jsonEncode(body),
       ),
+      zeitlimit: schreibZeitlimit,
     );
     return _decodeFields(_decodeSuccess(response));
   }
@@ -132,9 +144,12 @@ class FirestoreRestClient {
 
   /// Führt einen HTTP-Request aus und übersetzt Transportfehler in
   /// [SyncNetworkException].
-  Future<http.Response> _send(Future<http.Response> Function() request) async {
+  Future<http.Response> _send(
+    Future<http.Response> Function() request, {
+    Duration? zeitlimit,
+  }) async {
     try {
-      return await request();
+      return await request().timeout(zeitlimit ?? this.zeitlimit);
     } on http.ClientException catch (error) {
       throw SyncNetworkException(
         'Firestore-REST ist nicht erreichbar: ${error.message}',

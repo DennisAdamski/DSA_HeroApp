@@ -25,6 +25,25 @@ int stufeFuerAu(HeroSheet sheet) => sheet.isEpisch
     ? math.min(computeLevelFromSpentAp(sheet.epicStartAp), sheet.level)
     : sheet.level;
 
+/// AsP aus der Stufe.
+///
+/// Bis zur Aktivierungsstufe ([stufeFuerAu]) gibt jede Stufe 2 AsP. Jede
+/// epische Stufe darüber bringt nur noch den Bonus der [kategorie]
+/// (Vollzauberer 2, Halbzauberer 1, Viertelzauberer 0; Hausregel „Epische
+/// Stufen“, Kap. 2.2). Nicht epische Helden rechnen `Stufe × 2`.
+int stufenanteilAsp(HeroSheet sheet, ZaubererKategorie kategorie) {
+  final aktivierung = stufeFuerAu(sheet);
+  final epischeStufen = sheet.level - aktivierung;
+  if (epischeStufen <= 0) return sheet.level * 2;
+  return aktivierung * 2 +
+      epischeStufen *
+          epicAspStufenbonus(
+            kategorie: kategorie,
+            ruleActive: true,
+            isEpisch: sheet.isEpisch,
+          );
+}
+
 /// AsP-Grundwert aus Eigenschaften: round((MU+IN+CH)/2).
 int grundwertAsp(Attributes a) => excelRound((a.mu + a.inn + a.ch) / 2);
 
@@ -46,10 +65,15 @@ int computeMaxAu(HeroSheet sheet, StatModifiers mods) {
   return clampNonNegative(total);
 }
 
-// Maximale Astralenergie: round((MU+IN+CH)/2) + level*2 + gekauft + Mod.
-int computeMaxAsp(HeroSheet sheet, StatModifiers mods) {
+// Maximale Astralenergie: round((MU+IN+CH)/2) + Stufenanteil + gekauft + Mod.
+int computeMaxAsp(
+  HeroSheet sheet,
+  StatModifiers mods, {
+  ZaubererKategorie kategorie = ZaubererKategorie.voll,
+}) {
   final base = grundwertAsp(sheet.attributes);
-  final total = base + mods.asp + sheet.bought.asp + sheet.level * 2;
+  final total =
+      base + mods.asp + sheet.bought.asp + stufenanteilAsp(sheet, kategorie);
   return clampNonNegative(total);
 }
 

@@ -1,5 +1,6 @@
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/maneuver_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/modifier_fragment_text.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/string_normalize.dart';
 
 const String _beidhaendigerKampfIId = 'ksf_beidhaendiger_kampf_i';
@@ -237,7 +238,7 @@ TwoWeaponCombatSnapshot computeTwoWeaponCombatSnapshot({
   final notes = <String>[];
   if (hasOffhandWeapon) {
     notes.add(
-      'Nebenhand nutzt ${falseHandModifiers.label}: AT ${_signed(falseHandModifiers.atMod)}, PA ${_signed(falseHandModifiers.paMod)}.',
+      'Nebenhand nutzt ${falseHandModifiers.label}: AT ${mitVorzeichen(falseHandModifiers.atMod, nullText: '0')}, PA ${mitVorzeichen(falseHandModifiers.paMod, nullText: '0')}.',
     );
   }
   if ((hasBeidhaendigerKampfII &&
@@ -497,11 +498,4 @@ bool _identicalWeapons({
         : offhandWeapon.weaponType,
   );
   return mainToken.isNotEmpty && mainToken == offhandToken;
-}
-
-String _signed(int value) {
-  if (value > 0) {
-    return '+$value';
-  }
-  return value.toString();
 }

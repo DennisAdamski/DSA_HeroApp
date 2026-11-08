@@ -7,7 +7,6 @@ import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/feedback/feedback_submission.dart';
 import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
-import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/advancement/advancement_catalog.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/config/app_layout.dart';
@@ -298,7 +297,7 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
   Widget build(BuildContext context) {
     final hero = ref.watch(heroByIdProvider(widget.heroId));
     final session = ref.watch(advancementSessionProvider(widget.heroId));
-    ref.watch(rulesCatalogProvider);
+    ref.watch(heroRulesCatalogProvider(widget.heroId));
     // Der Regelnachschlag wird erst nach dem Entsperren angeboten; hier
     // beobachtet, damit der Knopf beim Entsperren erscheint.
     ref.watch(catalogContentVisibleProvider);

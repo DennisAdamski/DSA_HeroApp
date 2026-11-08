@@ -2,6 +2,7 @@ import 'package:dsa_heldenverwaltung/domain/avatar_style.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/avatar_snapshot_diff.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/string_normalize.dart';
 
 /// Baut einen vollstaendigen Bildgenerierungs-Prompt aus Heldendaten.
 ///
@@ -105,7 +106,7 @@ String buildAvatarPrompt({
 
 /// Mappt DSA-Rassen auf visuelle Beschreibungen.
 String mapRaceToVisualDescription(String rasse) {
-  final normalized = _normalizeForLookup(rasse);
+  final normalized = vergleichsSchluessel(rasse);
   if (normalized.isEmpty) return '';
 
   if (normalized.contains('halbelf') ||
@@ -133,7 +134,7 @@ String mapRaceToVisualDescription(String rasse) {
 
 /// Mappt Geschlecht auf englische Beschreibung.
 String mapGenderToDescription(String geschlecht) {
-  final normalized = _normalizeForLookup(geschlecht);
+  final normalized = vergleichsSchluessel(geschlecht);
   if (normalized.isEmpty) return '';
 
   if (normalized.contains('weib') || normalized == 'w' || normalized == 'f') {
@@ -222,7 +223,7 @@ String _estimateBodyBuild(String groesse, String gewicht) {
 }
 
 String _mapCultureToDescription(String kultur) {
-  final normalized = _normalizeForLookup(kultur);
+  final normalized = vergleichsSchluessel(kultur);
   if (normalized.isEmpty) return '';
 
   if (normalized.contains('aranien')) {
@@ -251,7 +252,7 @@ String _mapCultureToDescription(String kultur) {
 }
 
 String _mapProfessionToDescription(String profession) {
-  final normalized = _normalizeForLookup(profession);
+  final normalized = vergleichsSchluessel(profession);
   if (normalized.isEmpty) return '';
 
   if (normalized.contains('balayan') || normalized.contains('ishannah')) {
@@ -304,8 +305,8 @@ String _buildCombatIdentity(HeroSheet hero) {
 }
 
 String _buildStatusHint(HeroSheet hero) {
-  final title = _normalizeForLookup(hero.background.titel);
-  final stand = _normalizeForLookup(hero.background.stand);
+  final title = vergleichsSchluessel(hero.background.titel);
+  final stand = vergleichsSchluessel(hero.background.stand);
   final sozialstatus = hero.background.sozialstatus;
 
   if (title.contains('baron') ||
@@ -329,7 +330,7 @@ String _buildStatusHint(HeroSheet hero) {
 }
 
 String _buildPersonaHint(String backgroundText) {
-  final normalized = _normalizeForLookup(backgroundText);
+  final normalized = vergleichsSchluessel(backgroundText);
   if (normalized.contains('deckname') || normalized.contains('alias')) {
     return 'carefully curated, refined presentation as if maintaining a '
         'convincing cover identity';
@@ -338,7 +339,7 @@ String _buildPersonaHint(String backgroundText) {
 }
 
 String _buildDemeanor(HeroSheet hero) {
-  final source = _normalizeForLookup(
+  final source = vergleichsSchluessel(
     '${hero.vorteileText} ${hero.nachteileText}',
   );
   final details = <String>[];
@@ -374,7 +375,7 @@ String _buildEquipmentDetails(HeroSheet hero) {
     if (cleaned.isEmpty) {
       return;
     }
-    final normalized = _normalizeForLookup(cleaned);
+    final normalized = vergleichsSchluessel(cleaned);
     if (seen.contains(normalized)) {
       return;
     }
@@ -429,11 +430,11 @@ String _buildMagicHint(HeroSheet hero) {
     return '';
   }
 
-  final spellIds = hero.spells.keys.map(_normalizeForLookup).join(' ');
+  final spellIds = hero.spells.keys.map(vergleichsSchluessel).join(' ');
   final inventoryText = hero.inventoryEntries
       .map(
         (entry) =>
-            _normalizeForLookup('${entry.gegenstand} ${entry.beschreibung}'),
+            vergleichsSchluessel('${entry.gegenstand} ${entry.beschreibung}'),
       )
       .join(' ');
   if (spellIds.contains('axxeleratus') ||
@@ -446,7 +447,7 @@ String _buildMagicHint(HeroSheet hero) {
 
 String _buildAppearanceDetails(HeroSheet hero) {
   final details = <String>[];
-  final normalized = _normalizeForLookup(hero.appearance.aussehen);
+  final normalized = vergleichsSchluessel(hero.appearance.aussehen);
 
   if (normalized.contains('panther') && normalized.contains('tattoo')) {
     details.add('visible panther tattoo');
@@ -461,7 +462,7 @@ String _buildAppearanceDetails(HeroSheet hero) {
 }
 
 String _mapWeaponToDescription(String name, String weaponType) {
-  final normalized = _normalizeForLookup('$name $weaponType');
+  final normalized = vergleichsSchluessel('$name $weaponType');
   if (normalized.isEmpty) {
     return '';
   }
@@ -490,7 +491,7 @@ String _mapWeaponToDescription(String name, String weaponType) {
 }
 
 String _mapEquipmentNameToDescription(String name) {
-  final normalized = _normalizeForLookup(name);
+  final normalized = vergleichsSchluessel(name);
   if (normalized.contains('kriegsfaecher')) {
     return 'a bladed war fan';
   }
@@ -501,7 +502,7 @@ String _mapEquipmentNameToDescription(String name) {
 }
 
 String _mapArmorToDescription(String name) {
-  final normalized = _normalizeForLookup(name);
+  final normalized = vergleichsSchluessel(name);
   if (normalized.contains('tuchruestung')) {
     return 'layered cloth armor';
   }
@@ -512,7 +513,7 @@ String _mapArmorToDescription(String name) {
 }
 
 String _mapInventoryItemToDescription(HeroInventoryEntry entry) {
-  final normalized = _normalizeForLookup(
+  final normalized = vergleichsSchluessel(
     '${entry.gegenstand} ${entry.typ} ${entry.beschreibung}',
   );
   if (normalized.isEmpty) {
@@ -550,7 +551,7 @@ List<String> _dedupeParts(List<String> rawParts) {
     if (normalizedWhitespace.isEmpty) {
       continue;
     }
-    final normalized = _normalizeForLookup(normalizedWhitespace);
+    final normalized = vergleichsSchluessel(normalizedWhitespace);
     if (normalized.isEmpty || seen.contains(normalized)) {
       continue;
     }
@@ -609,19 +610,6 @@ int? _parseWeightInKg(String value) {
     return parsed.round();
   }
   return null;
-}
-
-String _normalizeForLookup(String value) {
-  return value
-      .trim()
-      .toLowerCase()
-      .replaceAll('ä', 'ae')
-      .replaceAll('ö', 'oe')
-      .replaceAll('ü', 'ue')
-      .replaceAll('ß', 'ss')
-      .replaceAll(RegExp(r'[^a-z0-9]+'), ' ')
-      .replaceAll(RegExp(r'\s+'), ' ')
-      .trim();
 }
 
 // ---------------------------------------------------------------------------

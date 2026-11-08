@@ -338,7 +338,7 @@ extension _HeroOverviewTraitsSection on _HeroOverviewTabState {
                     .eintrag(eintrag.katalogId, vorteil: keyName == 'vorteile')
         : null;
     HeroMerkmal? ersetzt;
-    if (def != null && _brauchtTraitWahl(def)) {
+    if (def != null && merkmalBrauchtAngaben(def)) {
       final wahl = await _showTraitValueDialog(
         def,
         initialChoice: eintrag.auswahl,
@@ -379,20 +379,13 @@ extension _HeroOverviewTraitsSection on _HeroOverviewTabState {
     _setzeMerkmale(keyName, List<HeroMerkmal>.of(eintraege)..[index] = ersetzt);
   }
 
-  bool _brauchtTraitWahl(HeroTraitDef trait) {
-    return trait.selectionTemplate.contains('{choice}') ||
-        trait.selectionTemplate.contains('{value}') ||
-        trait.valueKind == 'level' ||
-        trait.valueKind == 'points';
-  }
-
   Future<_TraitWahl?> _showTraitValueDialog(
     HeroTraitDef trait, {
     String initialChoice = '',
     int? initialValue,
   }) async {
-    final needsChoice = trait.selectionTemplate.contains('{choice}');
-    if (!_brauchtTraitWahl(trait)) {
+    final needsChoice = merkmalBrauchtAuswahl(trait);
+    if (!merkmalBrauchtAngaben(trait)) {
       return (auswahl: '', wert: null);
     }
     final catalog = ref
@@ -403,10 +396,7 @@ extension _HeroOverviewTraitsSection on _HeroOverviewTabState {
       builder: (dialogContext) => _TraitValueDialog(
         trait: trait,
         needsChoice: needsChoice,
-        needsValue:
-            trait.selectionTemplate.contains('{value}') ||
-            trait.valueKind == 'level' ||
-            trait.valueKind == 'points',
+        needsValue: merkmalTraegtWert(trait),
         choices: needsChoice
             ? resolveTraitChoices(trait, catalog)
             : const <String>[],

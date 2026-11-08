@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/inventar_summen_rules.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/codex_badge.dart';
 
 /// Aktiver Filtertyp in der Inventar-Ansicht.
@@ -43,7 +44,7 @@ class InventoryFilterBar extends StatelessWidget {
             runSpacing: 8,
             children: [
               CodexBadge(
-                label: formatInventarGewicht(totalWeightGramm),
+                label: formatiereGewichtGramm(totalWeightGramm),
                 icon: Icons.scale_outlined,
                 tone: CodexBadgeTone.accent,
               ),
@@ -77,7 +78,7 @@ class InventoryFilterBar extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
             child: Text(
-              'Gesamt: ${formatInventarGewicht(totalWeightGramm)} / $totalValueSilber S',
+              'Gesamt: ${formatiereGewichtGramm(totalWeightGramm)} / $totalValueSilber S',
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
               ),
@@ -125,14 +126,4 @@ bool matchesInventoryFilter(
     case InventoryFilter.geschosse:
       return source == InventoryItemSource.geschoss;
   }
-}
-
-/// Gewicht in Gramm als „850 g“ bzw. „1,5 kg“ (eine Nachkommastelle).
-String formatInventarGewicht(int gramm) {
-  if (gramm >= 1000) {
-    final kg = gramm / 1000.0;
-    final text = kg.toStringAsFixed(kg.truncateToDouble() == kg ? 0 : 1);
-    return '${text.replaceAll('.', ',')} kg';
-  }
-  return '$gramm g';
 }

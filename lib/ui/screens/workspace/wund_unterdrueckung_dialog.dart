@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
-import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
-import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/talent_value_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/wund_anzeige_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/wund_rules.dart';
@@ -128,12 +125,7 @@ class _WundUnterdrueckungDialog extends StatelessWidget {
                     // Wunden (WdS S. 83 zaehlt sie schon mit).
                     final effectiveAttrs = wendeWundVerlusteAn(
                       sbProbeSnapshot(ref, heroId)?.effectiveAttributes ??
-                          computeEffectiveAttributes(
-                            hero,
-                            catalog: ref
-                                .read(heroRulesCatalogProvider(heroId))
-                                .valueOrNull,
-                          ),
+                          hero.attributes,
                       wundEffekte,
                     );
                     const sbCodes = [

@@ -140,6 +140,7 @@ DerivedStats computeDerivedStatsFromInputs({
     quellen: quellen,
     hasFlinkFromVorteile: parsedModifiers.hasFlinkFromVorteile,
     hasBehaebigFromNachteile: parsedModifiers.hasBehaebigFromNachteile,
+    zaubererStatus: parsedModifiers.zaubererStatus,
     wundGs: wundStatMods.gs,
     zauberEigenschaften: zauberEffekte.eigenschaftsQuellen,
   );

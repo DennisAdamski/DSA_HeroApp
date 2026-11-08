@@ -4,6 +4,7 @@ import 'package:dsa_heldenverwaltung/state/gefecht_provider.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_initiative_provider.dart';
 import 'package:dsa_heldenverwaltung/state/gefecht_patzer_provider.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_patzer_rules.dart';
+import 'package:dsa_heldenverwaltung/ui2/widgets/karto_bestaetigen.dart';
 
 /// Beendet die Sitzung nach frischer Prüfung und löst ihre Gruppenmitgliedschaft.
 Future<void> beendeGefechtsansicht({
@@ -19,27 +20,17 @@ Future<void> beendeGefechtsansicht({
       'Laufende Handlung zuerst abschließen oder Abbruch bestätigen.',
     );
   }
-  final ok = await showDialog<bool>(
-    context: context,
-    builder: (context) => AlertDialog(
-      title: const Text('Gefecht beenden?'),
-      content: const Text(
+  if (!context.mounted) return;
+  final ok = await kartoBestaetigen(
+    context,
+    titel: 'Gefecht beenden?',
+    text:
         'Runde, INI und Aktionsmarken werden verworfen. '
         'Gespeicherte Ressourcen, Ausrüstung und Protokolle bleiben erhalten.',
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context, false),
-          child: const Text('Weiterkämpfen'),
-        ),
-        FilledButton(
-          onPressed: () => Navigator.pop(context, true),
-          child: const Text('Beenden'),
-        ),
-      ],
-    ),
+    abbrechen: 'Weiterkämpfen',
+    bestaetigen: 'Beenden',
   );
-  if (ok == true && context.mounted) {
+  if (ok && context.mounted) {
     final aktuell = ref.read(gefechtMitInitiativeProvider(heroId));
     if (gefechtFolgewuerfeOffen(ref.read(gefechtPatzerProvider(heroId))) ||
         aktuell?.handlung != null ||

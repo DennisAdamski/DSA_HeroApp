@@ -18,27 +18,6 @@ int computeIniBase(HeroSheet sheet, StatModifiers mods) {
   return grundwertIni(sheet.attributes) + mods.iniBase;
 }
 
-// INI-Basis-Modifikatoren aus Kampfsonderfertigkeiten.
-int computeIniBaseBonus(CombatSpecialRules special) {
-  var total = 0;
-  if (special.kampfreflexe) {
-    total += kKampfreflexeIniBonus;
-  }
-  if (special.kampfgespuer) {
-    total += kKampfgespuerIniBonus;
-  }
-  return total;
-}
-
-// Zusätzlicher SF-Bonus auf Initiative oberhalb der Basis.
-int computeSfIniBonus(
-  CombatSpecialRules special, {
-  required bool hasFlinkFromVorteile,
-  required bool hasBehaebigFromNachteile,
-}) {
-  return 0;
-}
-
 // GE-basierter Waffenkomponent der Initiative.
 //
 // Waffen definieren ihre TP-Staerke ueber einen KK-Bereich ([kkBase], [kkThreshold]).
@@ -74,8 +53,18 @@ int computeIniDiceCount(CombatSpecialRules special) {
   return special.klingentaenzer ? 2 : 1;
 }
 
-// Ini-Parade-Mod: max(0, truncate((kampfInitiative - 11) / 10)).
-int computeIniParadeMod(int kampfInitiative) {
-  final raw = roundDownTowardsZero((kampfInitiative - 11) / 10);
-  return raw > 0 ? raw : 0;
-}
+/// Bonus auf Abwehraktionen durch hohe Initiative (WdS S. 78, optionale Regel
+/// „Hohe Initiative-Werte“): über 20 +1, über 30 +2, über 40 +3.
+///
+/// Das Buch kennt keine Stufe über +3; auch ein Wert über 50 bleibt bei +3.
+/// Kampfvorschau (PA, Ausweichen) und Gefecht rechnen beide hiermit.
+int hoheIniBonus(int ini) => ini > 40
+    ? 3
+    : ini > 30
+    ? 2
+    : ini > 20
+    ? 1
+    : 0;
+
+/// Ini-Parade-Mod der Kampfvorschau: der Bonus der hohen Initiative.
+int computeIniParadeMod(int kampfInitiative) => hoheIniBonus(kampfInitiative);

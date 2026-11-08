@@ -148,6 +148,7 @@ class _HeroReiseberichtTabState extends ConsumerState<HeroReiseberichtTab>
         aktuell: aktuell,
         entwurf: entwurf,
         katalog: catalog.reisebericht,
+        catalog: catalog,
         erzwingen: erzwungen.contains('reisebericht'),
       ),
     );

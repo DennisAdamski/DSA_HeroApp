@@ -466,16 +466,9 @@ class _AccountSyncSettingsPage extends ConsumerWidget {
         '(${_formatSyncTime(report.zuletztGelaufen)})';
   }
 
-  String _formatSyncTime(DateTime? value) {
-    if (value == null) {
-      return 'Noch nie';
-    }
-    final local = value.toLocal();
-    String two(int number) => number.toString().padLeft(2, '0');
-    // Deutsches Datumsformat wie in der übrigen Oberfläche.
-    return '${two(local.day)}.${two(local.month)}.${local.year} '
-        '${two(local.hour)}:${two(local.minute)}';
-  }
+  String _formatSyncTime(DateTime? value) => value == null
+      ? 'Noch nie'
+      : formatiereSyncZeitpunkt(value, jetzt: DateTime.now());
 }
 
 /// Zeigt die bereits entschiedenen Offline-Helden und macht sie widerrufbar.
@@ -876,7 +869,7 @@ class _HouseRulesSettingsPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final disabled = ref.watch(disabledHouseRulePackIdsProvider);
+    final disabled = ref.watch(catalogDisabledHouseRulePackIdsProvider);
     final actions = ref.read(settingsActionsProvider);
     final packCatalogAsync = ref.watch(houseRulePackCatalogProvider);
     final issuesAsync = ref.watch(houseRuleIssueSnapshotProvider);

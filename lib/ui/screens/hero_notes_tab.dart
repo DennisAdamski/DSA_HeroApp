@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
+import 'package:dsa_heldenverwaltung/rules/derived/currency_rules.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/planung_bearbeiten_guard.dart';
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/aventurian_date.dart';
@@ -25,7 +26,6 @@ import 'package:dsa_heldenverwaltung/ui/widgets/list_tile_material.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/karto_variante.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/codex_section_card.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/string_normalize.dart';
-import 'package:dsa_heldenverwaltung/rules/derived/currency_rules.dart';
 
 part 'hero_notes/hero_notes_sections.dart';
 part 'hero_notes/hero_adventure_controller.dart';

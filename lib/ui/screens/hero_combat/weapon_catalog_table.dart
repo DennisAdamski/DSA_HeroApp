@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
-import 'package:dsa_heldenverwaltung/ui/widgets/adaptive_table_columns.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/string_normalize.dart';
+import 'package:dsa_heldenverwaltung/ui/widgets/adaptive_table_columns.dart';
 
 const double weaponCatalogTableColumnSpacing = 12.0;
 const double weaponCatalogTableHorizontalMargin = 12.0;
@@ -94,7 +94,7 @@ class _WeaponCatalogTableState extends State<WeaponCatalogTable> {
       return weapons;
     }
 
-    final needle = _searchQuery.toLowerCase();
+    final needle = suchFaltung(_searchQuery);
     return weapons
         .where((weapon) => passtZurSuche(weapon.name, needle))
         .toList(growable: false);

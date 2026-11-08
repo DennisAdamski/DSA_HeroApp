@@ -12,6 +12,7 @@ import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/config/ui_spacing.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/zustand_aendern.dart';
 
 /// Öffnet den Dialog „Elixier einnehmen“ (TRANK).
 ///
@@ -116,12 +117,13 @@ class _ElixierPanelState extends ConsumerState<ElixierPanel> {
         _eingenommen = true;
       }
       if (verbrauchen) {
-        await ref
-            .read(heroActionsProvider)
-            .updateHero(
-              widget.heroId,
-              (held) => mitVerbrauchtemInventarEintrag(held, widget.eintrag),
-            );
+        // Gemeinsamer Bogen-Schreibweg samt Planungssperre (REV-24).
+        await aendereHeldImEditor(
+          ref: ref,
+          heroId: widget.heroId,
+          aenderung: (held) =>
+              mitVerbrauchtemInventarEintrag(held, widget.eintrag),
+        );
       }
       if (mounted) {
         widget.onFertig();

@@ -1,8 +1,10 @@
-import 'package:dsa_heldenverwaltung/catalog/reisebericht_def.dart';
+import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
+import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_reisebericht.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/string_normalize.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/vertrauten_ap_rules.dart';
 
 // ---------------------------------------------------------------------------
@@ -279,17 +281,20 @@ HeroSheet bucheReisebericht({
   required ReiseberichtBuchung buchung,
   required HeroReisebericht gebucht,
   required HeroReisebericht entwurf,
+  required RulesCatalog? catalog,
 }) {
   final zustand = entwurf.copyWith(appliedRewardIds: gebucht.appliedRewardIds);
   final zurueckgenommen = revokeReiseberichtRewards(
     hero: hero,
     rewards: buchung.zurueck,
     updatedState: zustand,
+    catalog: catalog,
   );
   return applyReiseberichtRewards(
     hero: zurueckgenommen,
     rewards: buchung.neu,
     updatedState: zurueckgenommen.reisebericht,
+    catalog: catalog,
   );
 }
 
@@ -565,11 +570,11 @@ ReiseberichtEigenschaftsBonus? _resolveEigenschaft(
     final chosen = state.wahlSeZuordnungen[defId];
     if (chosen == null || chosen.isEmpty) return null;
     // Versuche Eigenschaftscode aufzuloesen
-    final code = _eigenschaftCodeFromName(chosen);
+    final code = parseAttributeCode(chosen);
     if (code != null) {
       return ReiseberichtEigenschaftsBonus(
         sourceId: defId,
-        eigenschaft: code,
+        eigenschaft: attributeCodeKey(code).toLowerCase(),
         wert: eb.wert,
       );
     }
@@ -582,38 +587,19 @@ ReiseberichtEigenschaftsBonus? _resolveEigenschaft(
   );
 }
 
-String? _eigenschaftCodeFromName(String name) {
-  switch (name.toUpperCase()) {
-    case 'MU':
-      return 'mu';
-    case 'KL':
-      return 'kl';
-    case 'IN':
-      return 'in';
-    case 'CH':
-      return 'ch';
-    case 'FF':
-      return 'ff';
-    case 'GE':
-      return 'ge';
-    case 'KO':
-      return 'ko';
-    case 'KK':
-      return 'kk';
-    default:
-      return null;
-  }
-}
-
 // ---------------------------------------------------------------------------
 // Reward-Anwendung
 // ---------------------------------------------------------------------------
 
 /// Wendet berechnete Belohnungen auf den Helden an.
+///
+/// Der Reisebericht nennt Talente mit Klarnamen, der Held kennt sie unter
+/// ihrer ID (`tal_gassenwissen`); [catalog] übersetzt zwischen beiden.
 HeroSheet applyReiseberichtRewards({
   required HeroSheet hero,
   required ReiseberichtRewards rewards,
   required HeroReisebericht updatedState,
+  required RulesCatalog? catalog,
 }) {
   if (rewards.isEmpty) {
     return hero.copyWith(
@@ -632,7 +618,7 @@ HeroSheet applyReiseberichtRewards({
 
   // Talent-SE anwenden
   for (final se in rewards.seRewards) {
-    final talentId = _findTalentIdByName(se.talentName, talents);
+    final talentId = _findTalentIdByName(se.talentName, talents, catalog);
     if (talentId != null && talents.containsKey(talentId)) {
       final entry = talents[talentId]!;
       talents[talentId] = entry.copyWith(
@@ -643,7 +629,7 @@ HeroSheet applyReiseberichtRewards({
 
   // Talent-Boni anwenden
   for (final tb in rewards.talentBoni) {
-    final talentId = _findTalentIdByName(tb.talentName, talents);
+    final talentId = _findTalentIdByName(tb.talentName, talents, catalog);
     if (talentId != null && talents.containsKey(talentId)) {
       final entry = talents[talentId]!;
       final newModifiers = List<HeroTalentModifier>.of(entry.talentModifiers)
@@ -680,6 +666,7 @@ HeroSheet revokeReiseberichtRewards({
   required HeroSheet hero,
   required ReiseberichtRewards rewards,
   required HeroReisebericht updatedState,
+  required RulesCatalog? catalog,
 }) {
   if (rewards.isEmpty) {
     return hero.copyWith(
@@ -697,7 +684,7 @@ HeroSheet revokeReiseberichtRewards({
 
   // Talent-SE entfernen
   for (final se in rewards.seRewards) {
-    final talentId = _findTalentIdByName(se.talentName, talents);
+    final talentId = _findTalentIdByName(se.talentName, talents, catalog);
     if (talentId != null && talents.containsKey(talentId)) {
       final entry = talents[talentId]!;
       final newSe = (entry.specialExperiences - 1).clamp(0, 999);
@@ -707,7 +694,7 @@ HeroSheet revokeReiseberichtRewards({
 
   // Talent-Boni entfernen (suche nach passender Beschreibung)
   for (final tb in rewards.talentBoni) {
-    final talentId = _findTalentIdByName(tb.talentName, talents);
+    final talentId = _findTalentIdByName(tb.talentName, talents, catalog);
     if (talentId != null && talents.containsKey(talentId)) {
       final entry = talents[talentId]!;
       final newModifiers = List<HeroTalentModifier>.of(entry.talentModifiers);
@@ -742,46 +729,41 @@ HeroSheet revokeReiseberichtRewards({
 // Hilfsfunktionen
 // ---------------------------------------------------------------------------
 
-/// Sucht eine Talent-ID anhand des Anzeigenamens.
+/// Sucht die Talent-ID des Helden zu einem Talentnamen aus dem Reisebericht.
+///
+/// Der Reisebericht nennt Klarnamen („Gassenwissen“, auch ohne Umlaute
+/// „Koerperbeherrschung“), der Held führt Talente unter ihrer Katalog-ID.
+/// Ein Schlüssel, der dem Namen selbst entspricht, gilt weiter (Altbestand).
 String? _findTalentIdByName(
   String talentName,
   Map<String, HeroTalentEntry> talents,
+  RulesCatalog? catalog,
 ) {
-  // Exakte Suche ueber die Keys (die IDs enthalten den Namen normalisiert)
-  for (final entry in talents.entries) {
-    if (entry.key == talentName) return entry.key;
+  if (talents.containsKey(talentName)) return talentName;
+  final gesucht = vergleichsSchluessel(talentName);
+  if (gesucht.isEmpty) return null;
+  for (final talent in catalog?.talents ?? const <TalentDef>[]) {
+    if (vergleichsSchluessel(talent.name) == gesucht &&
+        talents.containsKey(talent.id)) {
+      return talent.id;
+    }
   }
-  // Fallback: Case-insensitive Suche
-  final needle = talentName.toLowerCase();
-  for (final entry in talents.entries) {
-    if (entry.key.toLowerCase() == needle) return entry.key;
+  for (final id in talents.keys) {
+    if (vergleichsSchluessel(id) == gesucht) return id;
   }
   return null;
 }
 
 Attributes _applyEigenschaftsBonus(
   Attributes attributes,
-  String code,
+  String eigenschaft,
   int bonus,
 ) {
-  switch (code) {
-    case 'mu':
-      return attributes.copyWith(mu: attributes.mu + bonus);
-    case 'kl':
-      return attributes.copyWith(kl: attributes.kl + bonus);
-    case 'in':
-      return attributes.copyWith(inn: attributes.inn + bonus);
-    case 'ch':
-      return attributes.copyWith(ch: attributes.ch + bonus);
-    case 'ff':
-      return attributes.copyWith(ff: attributes.ff + bonus);
-    case 'ge':
-      return attributes.copyWith(ge: attributes.ge + bonus);
-    case 'ko':
-      return attributes.copyWith(ko: attributes.ko + bonus);
-    case 'kk':
-      return attributes.copyWith(kk: attributes.kk + bonus);
-    default:
-      return attributes;
-  }
+  final code = parseAttributeCode(eigenschaft);
+  if (code == null) return attributes;
+  return withAttributeValue(
+    attributes,
+    code,
+    readAttributeValue(attributes, code) + bonus,
+  );
 }

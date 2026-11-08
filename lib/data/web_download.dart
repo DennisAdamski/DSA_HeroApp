@@ -32,11 +32,3 @@ void triggerJsonDownload({
   anchor.remove();
   web.URL.revokeObjectURL(url);
 }
-
-/// Entfernt Zeichen, die in Dateinamen nicht zulaessig sind.
-///
-/// [fallback] greift, wenn der Wunschname leer ist oder nur Leerzeichen traegt.
-String sanitizeDownloadFileName(String value, {required String fallback}) {
-  final trimmed = value.trim().isEmpty ? fallback : value.trim();
-  return trimmed.replaceAll(RegExp(r'[<>:"/\|?*\x00-\x1F]'), '_');
-}

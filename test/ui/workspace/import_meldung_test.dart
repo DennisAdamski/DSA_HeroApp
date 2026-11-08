@@ -21,4 +21,28 @@ void main() {
       'Held importiert – 3 Bilder konnten nicht gespeichert werden.',
     );
   });
+
+  test('ausgelassene Katalogeinträge werden genannt', () {
+    expect(
+      importMeldung(
+        const HeldImportErgebnis(
+          heroId: 'h',
+          fehlendeBilder: 0,
+          ausgelasseneKatalogeintraege: 2,
+        ),
+      ),
+      'Held importiert – 2 eigene Katalogeinträge wurden nicht übernommen.',
+    );
+    expect(
+      importMeldung(
+        const HeldImportErgebnis(
+          heroId: 'h',
+          fehlendeBilder: 1,
+          ausgelasseneKatalogeintraege: 1,
+        ),
+      ),
+      'Held importiert – 1 Bild konnte nicht gespeichert werden, '
+      '1 eigener Katalogeintrag wurde nicht übernommen.',
+    );
+  });
 }

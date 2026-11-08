@@ -13,6 +13,7 @@ class ModifierParseResult {
     this.hasFlinkFromVorteile = false,
     this.hasBehaebigFromNachteile = false,
     this.hasLinkshaenderFromVorteile = false,
+    this.zaubererStatus,
     this.unknownFragments = const <String>[],
   });
 
@@ -33,5 +34,23 @@ class ModifierParseResult {
 
   /// Vorteil Linkshaender: der linke Arm ist der Schwertarm (Armwunden).
   final bool hasLinkshaenderFromVorteile;
+
+  /// Zaubererstatus (`full`, `half`, `quarter`) aus den wirksamen Vorteilen.
+  ///
+  /// Nur für epische Helden mit Katalog gefüllt: allein dort hängt der
+  /// AsP-Stufenbonus daran (Hausregel „Epische Stufen“, Kap. 2.2).
+  final String? zaubererStatus;
   final List<String> unknownFragments;
+
+  /// Kopie mit gesetztem [zaubererStatus].
+  ModifierParseResult mitZaubererStatus(String? status) => ModifierParseResult(
+    attributeMods: attributeMods,
+    startAttributeMods: startAttributeMods,
+    statMods: statMods,
+    hasFlinkFromVorteile: hasFlinkFromVorteile,
+    hasBehaebigFromNachteile: hasBehaebigFromNachteile,
+    hasLinkshaenderFromVorteile: hasLinkshaenderFromVorteile,
+    zaubererStatus: status,
+    unknownFragments: unknownFragments,
+  );
 }

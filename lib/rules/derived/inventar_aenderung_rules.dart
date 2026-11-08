@@ -240,18 +240,24 @@ HeroSheet mitDukaten(HeroSheet held, String wert) {
 
 /// Verschiebt den gespeicherten Geldstand um [deltaKreuzer].
 ///
+/// Einziger Geldschritt für Inventar, Verkauf und Spielansicht (REV-25).
 /// Gerechnet wird ab dem gespeicherten Text, damit jeder schnelle Klick auf
-/// einen Münzknopf zählt. Ist er nicht als Betrag lesbar, wirft die Funktion
-/// einen [StateError], statt einen falschen Wert zu schreiben.
+/// einen Münzknopf zählt. Ein Abzug über den Bestand hinaus ist ein
+/// [StateError] statt einer stillen Kappung bei 0, damit kein Betrag
+/// verloren geht, der gar nicht da war. Ist der gespeicherte Text kein
+/// Betrag, wirft die Funktion ebenfalls.
 HeroSheet mitDukatenSchritt(HeroSheet held, int deltaKreuzer) {
-  final neu = adjustDsaCurrencyText(
-    rawValue: held.dukaten,
-    deltaKreuzer: deltaKreuzer,
-  );
-  if (neu == null) {
+  if (deltaKreuzer == 0) return held;
+  final aktuell = parseDsaCurrencyToKreuzer(held.dukaten);
+  if (aktuell == null) {
     throw StateError(
       'Der gespeicherte Dukatenwert ist nicht numerisch lesbar.',
     );
   }
-  return mitDukaten(held, neu);
+  if (aktuell + deltaKreuzer < 0) {
+    throw StateError(
+      'Nicht genug Geld: ${formatDsaCurrencyBreakdown(aktuell)} vorhanden.',
+    );
+  }
+  return mitDukaten(held, formatDsaCurrencyDukaten(aktuell + deltaKreuzer));
 }

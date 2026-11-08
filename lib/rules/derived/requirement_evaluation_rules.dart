@@ -9,6 +9,7 @@ library;
 
 import 'package:dsa_heldenverwaltung/catalog/special_ability_requirement.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/karma_gottheit_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/roemische_zahl_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/special_ability_variant_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/tradition_rules.dart';
 
@@ -320,7 +321,7 @@ RequirementCheckResult _pruefeSonderfertigkeit(
 ) {
   final geforderteStufe = requirement.stufe ?? 0;
   final soll = geforderteStufe > 0
-      ? 'SF ${requirement.name} ${_roemischeZahl(geforderteStufe)}'
+      ? 'SF ${requirement.name} ${roemischeZahl(geforderteStufe)}'
       : 'SF ${requirement.name}';
 
   var besteStufe = -1;
@@ -353,7 +354,7 @@ RequirementCheckResult _pruefeSonderfertigkeit(
     requirement: requirement,
     status: RequirementStatus.nichtErfuellt,
     sollText: soll,
-    istText: 'nur Stufe ${_roemischeZahl(besteStufe)}',
+    istText: 'nur Stufe ${roemischeZahl(besteStufe)}',
   );
 }
 
@@ -379,7 +380,7 @@ int? besessenStufeFuer(String gespeicherterName, String basisName) {
   }
   final rest = name.substring(basis.length).trim();
   final ersterToken = rest.split(' ').first;
-  return _roemischeZahlWert(ersterToken) ?? 0;
+  return roemischeZahlWert(ersterToken) ?? 0;
 }
 
 RequirementCheckResult _pruefeWert(
@@ -732,28 +733,4 @@ RequirementCheckResult _pruefeGruppe(
         .join('; '),
     teilergebnisse: teilergebnisse,
   );
-}
-
-const List<String> _roemischeZahlen = <String>[
-  '',
-  'I',
-  'II',
-  'III',
-  'IV',
-  'V',
-  'VI',
-  'VII',
-];
-
-String _roemischeZahl(int wert) => wert > 0 && wert < _roemischeZahlen.length
-    ? _roemischeZahlen[wert]
-    : '$wert';
-
-int? _roemischeZahlWert(String token) {
-  final needle = token.trim().toUpperCase();
-  if (needle.isEmpty) {
-    return null;
-  }
-  final index = _roemischeZahlen.indexOf(needle);
-  return index > 0 ? index : null;
 }

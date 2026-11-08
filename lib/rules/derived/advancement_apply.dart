@@ -121,7 +121,7 @@ HeroSheet _applyTalent(
     talentValue: entry.toValue,
     specialExperiences: old.specialExperiences - entry.seSpent,
   );
-  if (def.type == 'fernkampf') {
+  if (def.istFernkampf) {
     next = next.copyWith(atValue: entry.toValue!, paValue: 0);
   } else if (def.type == 'nahkampf') {
     final delta = entry.toValue! - (old.talentValue ?? 0);

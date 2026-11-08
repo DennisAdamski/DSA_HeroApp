@@ -7,12 +7,12 @@ import 'package:dsa_heldenverwaltung/catalog/spell_def.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_advancement_entry.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/advancement_options.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/spell_catalog_filter_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/string_normalize.dart';
 import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/config/ui_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/advancement/advancement_option_card.dart';
 import 'package:dsa_heldenverwaltung/ui/theme/codex_theme.dart';
-import 'package:dsa_heldenverwaltung/rules/derived/string_normalize.dart';
 
 /// Auswahlblatt für Katalogeinträge, die der Held noch nicht führt.
 ///
@@ -142,7 +142,7 @@ class _AdvancementActivationSheetState
     final filters = _availableFilters(options);
     // Ohne sichtbare Chips gilt immer der volle Umfang.
     final filter = filters.contains(_filter) ? _filter : _ActivationFilter.all;
-    final query = _searchController.text.trim().toLowerCase();
+    final query = suchFaltung(_searchController.text);
     final filtered =
         options.where((option) {
           if (option.kind == AdvancementKind.spell) {

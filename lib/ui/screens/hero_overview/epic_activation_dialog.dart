@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 
 import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/attribute_start_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/epic_main_attribute_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/epic_status_rules.dart';
 
 /// Ergebnis der epischen Aktivierung: die vom Spieler gewählten Punkte,
 /// die beiden Haupteigenschaften (je 1 für die gewählte geistige und
@@ -64,8 +66,8 @@ class EpicActivationDialog extends StatefulWidget {
 }
 
 class _EpicActivationDialogState extends State<EpicActivationDialog> {
-  static const int _maxTotal = 5;
-  static const int _maxPerAttr = 2;
+  static const int _maxTotal = kEpischeObergrenzenPunkte;
+  static const int _maxPerAttr = kEpischerObergrenzenBonusJeEigenschaft;
 
   static const List<(String, String)> _mentalAttrs = [
     ('Mut', 'mu'),
@@ -169,13 +171,12 @@ class _EpicActivationDialogState extends State<EpicActivationDialog> {
     setState(() => _bonus[key] = next);
   }
 
-  /// Berechnet den Basismax-Wert (vor epischem Bonus) aus dem Startwert.
-  int _baseMax(String key) {
-    return (_startValue(key) * 1.5).ceil();
-  }
+  /// Basismaximum (vor epischem Bonus) aus der zentralen Regel (Regel 6).
+  late final Attributes _basisMaxima = computeAttributeMaximums(
+    widget.effectiveStartAttributes,
+  );
 
-  int _startValue(String key) =>
-      _attributeValue(widget.effectiveStartAttributes, key);
+  int _baseMax(String key) => _attributeValue(_basisMaxima, key);
 
   int _currentValue(String key) => _attributeValue(widget.currentValues, key);
 

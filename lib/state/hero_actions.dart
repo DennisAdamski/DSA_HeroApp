@@ -60,6 +60,7 @@ import 'package:dsa_heldenverwaltung/state/hero_providers.dart'
     show heroComputedProvider;
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart'
     show heroStorageLocationProvider;
+import 'package:dsa_heldenverwaltung/state/warte_auf_wert.dart';
 
 /// Höchstdauer, die das Speichern eines Helden auf den Regelkatalog wartet.
 ///
@@ -193,7 +194,7 @@ class HeroActions {
     // Vor-/Nachteile: Alttext beim ersten Speichern migrieren, sonst den
     // Text als Projektion der Liste schreiben (ARCH-02). Ohne geladenen
     // Katalog wird nicht migriert; gewartet wird darauf bewusst nicht.
-    final profil = _verstandenesProfil(hero);
+    final profil = verstandenesRegelProfil(hero);
     final catalog = validationCatalog ?? _katalogDesHelden(profil);
     final heroMitMerkmalen =
         merkmaleZumSpeichern(
@@ -382,40 +383,20 @@ class HeroActions {
     }
 
     // Ein Held mit Regelprofil rechnet nach dessen Katalog (ARCH-04).
-    final abo = profil == null
-        ? _ref.listen<AsyncValue<RulesCatalog>>(
-            rulesCatalogProvider,
-            (_, naechster) => pruefe(naechster),
-            fireImmediately: true,
-          )
-        : _ref.listen<AsyncValue<RulesCatalog>>(
-            regelProfilAufloesungProvider(profil)
-                .select((a) => a.whenData((r) => r.katalog)),
-            (_, naechster) => pruefe(naechster),
-            fireImmediately: true,
-          );
+    final abo = _ref.listen<AsyncValue<RulesCatalog>>(
+      regelkatalogFuer(profil),
+      (_, naechster) => pruefe(naechster),
+      fireImmediately: true,
+    );
     return ergebnis.future
         .timeout(katalogWartezeit, onTimeout: () => null)
         .whenComplete(abo.close);
   }
 
-  // Das Profil des Helden, falls diese App-Version es versteht.
-  HeroRegelProfil? _verstandenesProfil(HeroSheet hero) {
-    final profil = hero.regelProfil;
-    return profil != null && profil.istVerstanden ? profil : null;
-  }
-
   // Der bereits geladene Katalog, nach dem der Held rechnet; `null` solange er
   // noch lädt (gewartet wird beim Speichern bewusst nicht).
-  RulesCatalog? _katalogDesHelden(HeroRegelProfil? profil) {
-    if (profil == null) {
-      return _ref.read(rulesCatalogProvider).valueOrNull;
-    }
-    return _ref
-        .read(regelProfilAufloesungProvider(profil))
-        .valueOrNull
-        ?.katalog;
-  }
+  RulesCatalog? _katalogDesHelden(HeroRegelProfil? profil) =>
+      _ref.read(regelkatalogFuer(profil)).valueOrNull;
 
   /// Loescht einen Helden und seinen Zustand dauerhaft aus dem Repository.
   ///
@@ -438,7 +419,7 @@ class HeroActions {
     final codec = _ref.read(heroTransferCodecProvider);
     final hero = await _loadHeroById(heroId);
     final state = (await repo.loadHeroState(heroId)) ?? const HeroState.empty();
-    final runtimeData = await _ref.read(catalogRuntimeDataProvider.future);
+    final runtimeData = await warteAufWert(_ref, catalogRuntimeDataProvider);
     final transferCatalogEntries = _buildTransferCatalogEntries(
       hero: hero,
       runtimeData: runtimeData,
@@ -574,13 +555,13 @@ class HeroActions {
   }
 
   // Legt eingebettete eigene Katalogeinträge eines Exports an und lädt den
-  // Katalog neu.
-  Future<void> _uebernimmTransferKatalog(
+  // Katalog neu; liefert die Anzahl der übernommenen Einträge.
+  Future<int> _uebernimmTransferKatalog(
     List<HeroTransferCatalogEntry> eintraege,
   ) async {
-    final runtimeData = await _ref.read(catalogRuntimeDataProvider.future);
+    final runtimeData = await warteAufWert(_ref, catalogRuntimeDataProvider);
     final repository = _ref.read(customCatalogRepositoryProvider);
-    await repository.importTransferEntries(
+    final uebernommen = await repository.importTransferEntries(
       catalogVersion: runtimeData.baseData.version,
       entries: eintraege
           .map(
@@ -593,7 +574,10 @@ class HeroActions {
           )
           .toList(growable: false),
     );
-    _ref.read(catalogActionsProvider).reloadCatalog();
+    if (uebernommen > 0) {
+      _ref.read(catalogActionsProvider).reloadCatalog();
+    }
+    return uebernommen;
   }
 
   /// Speichert ein KI-generiertes Avatar-Bild und legt einen Gallery-Eintrag an.
@@ -877,44 +861,6 @@ class HeroActions {
     await saveHero(updated);
   }
 
-  /// Entfernt den Avatar eines Helden (Legacy-Methode, entfernt alle Bilder).
-  Future<void> removeHeroAvatar(String heroId) async {
-    final hero = await _loadHeroById(heroId);
-    if (hero.appearance.avatarFileName.isEmpty &&
-        hero.appearance.avatarGallery.isEmpty) {
-      return;
-    }
-    final heroStoragePath = await _resolveHeroStoragePath();
-    final storage = _ref.read(avatarFileStorageProvider);
-
-    // Haupt-Avatar loeschen
-    if (hero.appearance.avatarFileName.isNotEmpty) {
-      await storage.deleteAvatar(
-        heroStoragePath: heroStoragePath,
-        avatarFileName: hero.appearance.avatarFileName,
-      );
-    }
-
-    // Alle Gallery-Bilder loeschen; die Cloud-Seite erledigt der Decorator.
-    for (final entry in hero.appearance.avatarGallery) {
-      await storage.deleteGalleryImage(
-        heroStoragePath: heroStoragePath,
-        fileName: entry.fileName,
-      );
-    }
-
-    final updated = hero.copyWith(
-      appearance: hero.appearance.copyWith(
-        avatarFileName: '',
-        avatarGallery: const [],
-        primaerbildId: '',
-        aktivesBildId: '',
-        avatarSnapshot: () => null,
-      ),
-    );
-    await saveHero(updated);
-  }
-
   // ---------------------------------------------------------------------------
   // Gruppen-Verwaltung (groups_v2)
   // ---------------------------------------------------------------------------
@@ -1147,18 +1093,6 @@ class HeroActions {
           .toList(growable: false),
     );
     await saveHero(aktuell.copyWith(gruppen: neueGruppen));
-  }
-
-  /// Aktualisiert die eigene Visitenkarte in allen Konto-Gruppen des Helden.
-  Future<void> syncVisitenkarten(String heroId) async {
-    _requireGruppenSyncAvailable();
-    final hero = await _loadHeroById(heroId);
-    for (final gruppe in hero.gruppen.where((g) => g.kontoGruppe)) {
-      await _pushEigeneVisitenkarte(
-        heroId: heroId,
-        gruppenCode: gruppe.gruppenCode,
-      );
-    }
   }
 
   /// Fuehrt einen vollstaendigen Sync fuer alle Konto-Gruppen des Helden durch:
@@ -1415,7 +1349,7 @@ class HeroActions {
 
   /// Ermittelt den aktuell wirksamen Heldenspeicherpfad.
   Future<String> _resolveHeroStoragePath() async {
-    final location = await _ref.read(heroStorageLocationProvider.future);
+    final location = await warteAufWert(_ref, heroStorageLocationProvider);
     return location.effectivePath;
   }
 

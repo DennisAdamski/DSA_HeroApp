@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dsa_heldenverwaltung/catalog/house_rule_pack.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/house_rules_providers.dart';
+import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 
 void main() {
   const epicMaster = HouseRulePackManifest(
@@ -60,7 +61,7 @@ void main() {
   ProviderContainer buildContainer(Set<String> disabled) {
     final container = ProviderContainer(
       overrides: [
-        disabledHouseRulePackIdsProvider.overrideWithValue(disabled),
+        catalogDisabledHouseRulePackIdsProvider.overrideWithValue(disabled),
         houseRulePackCatalogProvider.overrideWith((ref) async => packCatalog),
       ],
     );

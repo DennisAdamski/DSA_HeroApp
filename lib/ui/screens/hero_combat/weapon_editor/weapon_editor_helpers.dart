@@ -1,5 +1,6 @@
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/kampf_slot_pruefung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/string_normalize.dart';
 
 /// Normalisiert Legacy-Fernkampfwaffen auf das aktuelle Distanzschema.
@@ -8,13 +9,6 @@ MainWeaponSlot normalizeWeaponEditorSlot(MainWeaponSlot slot) {
     return slot;
   }
   return slot.copyWith(rangedProfile: slot.rangedProfile.copyWith());
-}
-
-/// Leitet den Kampftyp aus dem Talent ab.
-WeaponCombatType combatTypeForTalent(TalentDef talent) {
-  return talent.type.trim().toLowerCase() == 'fernkampf'
-      ? WeaponCombatType.ranged
-      : WeaponCombatType.melee;
 }
 
 /// Ermittelt den Kampftyp aus einer Katalogwaffe.
@@ -28,7 +22,7 @@ List<TalentDef> combatTypeTalents(
   WeaponCombatType combatType,
 ) {
   return combatTalents
-      .where((talent) => combatTypeForTalent(talent) == combatType)
+      .where((talent) => combatTypeFromTalent(talent) == combatType)
       .toList(growable: false)
     ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
 }
