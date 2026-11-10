@@ -366,6 +366,38 @@
       "rationale": "Technischer Ladevertrag ohne Regelbehauptung.",
       "sources": []
     },
+    "test/catalog/kraeuter_katalog_test.dart": {
+      "kind": "official",
+      "status": "verified",
+      "summary": "Sichert die Kräutertabellen (kraeuter.json) gegen Wege des Entdeckers S. 114–118 ab: 47 Kräuter, jede der zwölf Landschaften hat Einträge, Namen sind eindeutig; Stichproben Wirselkraut (Bestimmung +5, in Tundra und Steppe häufig), Satuariensbusch (Bestimmung −2), Donf im Dschungel zweimal (Seeufer selten, Flussufer sehr selten), Thonnys (Bestimmung +12, während der Blüte +5) und die sechs Kräuter des Hochgebirges (Atan-Kiefer, Atmon, Blutblatt, Olginwurz, Bleichmohn, Talaschin). Die Lese-Tests (unvollständige Einträge werden mit Grund verworfen, ungültige Wurzel und fehlendes Asset ergeben einen leeren Katalog) sind technischer Katalogvertrag. Erntezeit und Grundmenge je Kraut stammen aus dem Herbarium der Zoo Botanica (Stichproben: Zwölfblatt Ernte Hesinde bis Praios, 12 Stängel pro Pflanze; Tigermohn nur im Travia; Wirselkraut jede Zeit außer Winter; Alraune ganzjährig).",
+      "rationale": "Test, lib/catalog/kraeuter_loader.dart und tool/import_kraeuter.py gelesen; die Stichproben per DSA-MCP gegen die Tabellen geprüft. Die Datei enthält nur Kurzfakten (Name, Bestimmung, Häufigkeit je Landschaft, einzeilige Wirkung), keine Beschreibungstexte. Das Buch führt Egelschreck im Lichten Wald doppelt (gelegentlich und selten); beide Einträge sind übernommen. Erntezeit und Grundmenge wurden aus dem Index der Zoo Botanica (S. 228–277) gelesen und gegen die Bestimmungswerte der Landschaftstabellen abgeglichen: Chonchinis hat in der Zoo Botanica Bestimmung +6, in Wege des Entdeckers +5 (der Katalog führt +5). Spätsommer (Egelschreck) ist als Efferd eingetragen.",
+      "sources": [
+        {
+          "title": "Wege des Entdeckers – Kräuter und ihre Verbreitung (Landschaftstabellen)",
+          "pages": "114–118",
+          "mcpChunks": [
+            6309,
+            6310,
+            6311,
+            6312,
+            6313
+          ],
+          "checkedOn": "2026-11-11"
+        },
+        {
+          "title": "Zoo Botanica Aventurica – Herbarium Aventuricum (Ernte, Grundmenge je Pflanze)",
+          "pages": "228–277",
+          "mcpChunks": [
+            8449,
+            8554,
+            8518,
+            8447,
+            8468
+          ],
+          "checkedOn": "2026-11-11"
+        }
+      ]
+    },
     "test/catalog/kurzregel_katalog_test.dart": {
       "kind": "product_contract",
       "status": "verified",
@@ -4244,6 +4276,83 @@
       "rationale": "Technischer Vertrag der Hilfsfunktionen; die Rundungsregel selbst (Wege der Helden S. 6) belegen die Regeltests der aufrufenden Regeln. Eine eigene Quellenprüfung ist für die Arithmetik nicht anwendbar.",
       "sources": []
     },
+    "test/rules/derived/kraeutersuche_rules_test.dart": {
+      "kind": "official",
+      "status": "verified",
+      "summary": "Sichert die Kräutersuche (Wege des Entdeckers S. 113–118) ab: Suchschwierigkeit = Bestimmung plus Häufigkeit (sehr häufig +1, häufig +2, gelegentlich +4, selten +8, sehr selten +16); Grundmengen bei gezielter Suche = TaP* geteilt durch die halbe Suchschwierigkeit, aufgerundet; bei beliebiger Suche wird ein Kraut mit höchstens der halben TaP* als Suchschwierigkeit gewählt und seine Suchschwierigkeit abgezogen, bis nichts mehr passt; Würzkräuter geben die halben TaP* als Erleichterung für Kochen-Proben (je Probe höchstens 3), Konservierungsmittel je TaP* einen Tag Haltbarkeit; zwei Stunden Suche steigern den TaW um die Hälfte; Erschwernisse für passende Geländekunde −3, ähnliche −1, passende Ortskenntnis −7 und je 3 AsP −1; die Jahreszeit-Modifikationen und Pauschal-Suchschwierigkeiten der zwölf Landschaftstabellen (Dichter Wald Sommer/Herbst 0, Winter +6, Frühling +4; Lichter Wald −6/0/−2; Hochgebirge +6/+12/+10; Wüste +12 usw.). Eine gelungene Talentprobe zählt immer als mindestens 1 TaP* (Basisregelwerk S. 113 f.). Die Jahreszeiten folgen dem Sonnenlauf: Sommer ab 1. Praios, Herbst ab 1. Travia, Winter ab 1. Firun, Frühling ab 1. Peraine (Geographia Aventurica S. 189). Die TaP* einer Metatalent-Probe dürfen den TaW (bei zwei Stunden den erhöhten TaW) nicht übersteigen, auch wenn die Probe erleichtert ist (Wege des Entdeckers S. 106). Die Erntezeit der Kräuter (Zoo Botanica, Herbarium: Angabe „Ernte“) bestimmt, ob nutzbare Pflanzenteile im Monat der Suche zu ernten sind; ohne Monat gelten alle Kräuter.",
+      "rationale": "Datei und lib/rules/derived/kraeutersuche_rules.dart vollständig gelesen, alle Regelzahlen per DSA-MCP gegen den Buchtext geprüft. App-Entscheidungen ohne Buchaussage sind getrennt: die Auswahl der Funde bei beliebiger Suche ist nach Häufigkeit gewichtet (das Buch überlässt sie dem Meister), halbe TaW- und TaP*-Punkte werden kaufmännisch aufgerundet, die Namenlosen Tage zählen zum Frühling, die Jahreszeit-Zeile der Landschaftstabellen gilt als vollständige Landschaftserschwernis (sie enthält den Regionszuschlag des Nahrungssammelns bereits), bei Suchschwierigkeit unter 1 wird mit 1 gerechnet, die Zuordnung der Ortsunterarten zu Landschaften sowie Vorschau und TaP*-Verteilung (rechnerische Hilfen über alle 8000 Würfe). Bei den Pauschal-Suchschwierigkeiten gilt die im Buch genannte Summe, obwohl die Summanden einzelner Landschaften nicht zu ihr passen (z. B. Wüste: Bestimmung +2, selten +16, Summe +6). Zusätzliche App-Entscheidungen: Kräuter außerhalb ihrer Erntezeit werden standardmäßig nicht gefunden (Modus nurErntezeit; das Buch nennt für andere Zeiten nur einen höheren Bestimmungswert nach Meisterermessen, Modus alle blendet nichts aus); Erntezeiten mit Teilen oder Gebieten (z. B. Satuariensbusch, Mibelrohr) gelten als Vereinigung der Monate.",
+      "sources": [
+        {
+          "title": "Wege des Entdeckers – Kräuter Suchen (Talent, Dauer, Modifikationen, Probenergebnis)",
+          "pages": "112–114",
+          "mcpChunks": [
+            6306,
+            6307,
+            6308
+          ],
+          "checkedOn": "2026-11-11"
+        },
+        {
+          "title": "Wege des Entdeckers – Kräuter und ihre Verbreitung (Landschaftstabellen)",
+          "pages": "114–118",
+          "mcpChunks": [
+            6309,
+            6310,
+            6311,
+            6312,
+            6313
+          ],
+          "checkedOn": "2026-11-11"
+        },
+        {
+          "title": "Basisregelwerk (2. Auflage 2011) – Talentproben, mindestens 1 TaP* bei Erfolg",
+          "pages": "113–114",
+          "mcpChunks": [
+            534,
+            535,
+            536
+          ],
+          "checkedOn": "2026-11-11"
+        },
+        {
+          "title": "Geographia Aventurica (2. Auflage) – Sonnenbahn, Sonnenwenden und Tagundnachtgleichen",
+          "pages": "189",
+          "mcpChunks": [
+            1325,
+            1326
+          ],
+          "checkedOn": "2026-11-11"
+        },
+        {
+          "title": "Wege des Entdeckers – Metatalente zum Jagen und Sammeln (TaP* nicht über dem TaW)",
+          "pages": "106–107",
+          "mcpChunks": [
+            6293,
+            6294
+          ],
+          "checkedOn": "2026-11-11"
+        },
+        {
+          "title": "Wege des Schwerts – Anhang 3: Metatalent Kräuter Suchen (Suchschwierigkeit, zwei Stunden)",
+          "pages": "190–191",
+          "mcpChunks": [
+            7302,
+            7303,
+            7304
+          ],
+          "checkedOn": "2026-11-11"
+        },
+        {
+          "title": "Zoo Botanica Aventurica – Herbarium: Erläuterungen (Verbreitung, Bestimmung, Ernte, Grundmenge)",
+          "pages": "227",
+          "mcpChunks": [
+            8436,
+            8437
+          ],
+          "checkedOn": "2026-11-11"
+        }
+      ]
+    },
     "test/rules/derived/reiseroute_rules_test.dart": {
       "kind": "product_contract",
       "status": "verified",
@@ -4254,8 +4363,8 @@
     "test/rules/derived/standort_rules_test.dart": {
       "kind": "product_contract",
       "status": "verified",
-      "summary": "Prüft die Bereinigung des Standorttexts (Leerraum außen entfernen, innen falten, Höchstlänge kürzen) und den Aufbau des Avesmaps-Siedlungslinks (URL-Kodierung, kein Link bei leerem Standort).",
-      "rationale": "Beide Testgruppen und lib/rules/derived/standort_rules.dart gelesen: Zeichenkettenbereinigung und URL-Bau für einen externen Kartendienst. Ortsnamen (‚Gareth‘, ‚Bad Garetz Süd‘) sind Eingabebeispiele ohne Regelbehauptung; das Regelwerk trifft zu Anzeigetext und Link-Format keine Aussage.",
+      "summary": "Prüft die Bereinigung des Standorttexts (Leerraum außen entfernen, innen falten, Höchstlänge kürzen), den Aufbau des Avesmaps-Siedlungslinks (URL-Kodierung, kein Link bei leerem Standort), die Suche der Ortsauswahl (gleicher Name vor Namensanfang vor Wortanfang vor Teilstring vor Regiontreffer, Umlaute und Umschreibungen gleichwertig, Siedlungen vor Regionen vor Staaten, Begrenzung, Freitext ohne Treffer) die Entscheidung, ob ein Kartenlink sinnvoll ist (nur Siedlungen; unbekannte Namen behalten ihn) und den Link auf die Wiki-Aventurica-Seite (voller Seitenname, Siedlung vor Staat, Kodierung, kein Link für Freitext).",
+      "rationale": "Testgruppen und lib/rules/derived/standort_rules.dart gelesen: Zeichenkettenbereinigung, URL-Bau für einen externen Kartendienst und Suchrangfolge über ein Ortsverzeichnis. Ortsnamen (‚Gareth‘, ‚Havena‘, ‚Bad Garetz Süd‘) sind Eingabebeispiele ohne Regelbehauptung; das Regelwerk trifft zu Anzeigetext, Link-Format und Suchrangfolge keine Aussage.",
       "sources": []
     },
     "test/rules/derived/string_normalize_test.dart": {
@@ -13125,6 +13234,13 @@
       "status": "verified",
       "summary": "Sichert die reine Anzeige-/Auswahllogik der Spielansicht ab: welche Würfelprotokoll-Einträge als wiederholbare Probe gelten (Titelpräfix je ProbeType, nicht neutral, keine Buchung), Kurzname ohne Präfix, Liste der zuletzt gewürfelten verschiedenen Proben (neueste zuerst, Dedup nach Art+Titel, Begrenzung auf kZuletztGewuerfeltMax=6 bzw. hoechstens, Sortierung nach Zeitstempel, unveränderte Eingabe, unveränderbare Ausgabe, leeres Protokoll).",
       "rationale": "Datei und Produktionslogik (lib/rules/derived/zuletzt_gewuerfelt_rules.dart, DiceLogEntry) vollständig gelesen. Alle 9 Testfälle prüfen Protokoll-Filterung, Titelpräfixe, Deduplikation, Sortierung, die Obergrenze 6 (Komfortwert für ein Tablet-Layout) und Immutability; keine Zahl, Formel oder Voraussetzung einer DSA-Probe wird behauptet, die Fixturewerte (Talent-/Probentitel, Würfelwert 5, Zeitstempel) sind reine Beispieleingaben. Per MCP gesucht nach 'Probe wiederholen zuletzt gewürfelte Proben Würfelprotokoll' und 'Probe wiederholen erneut würfeln nach misslungener Probe': das Buch kennt nur kontextbezogene Wiederholungsregeln einzelner Zauber/Effekte (Treffer u. a. Wege der Zauberei, Chunk 5001, PDF S. 24, Wiederholung einer misslungenen Zauberprobe mit Erschwernis), aber kein Würfelprotokoll und keine Regel, welche Proben 'wiederholbar' sind; die Funktion bewertet nicht, ob eine Wiederholung regelkonform ist, sondern listet nur frühere Proben als Schnellzugriff.",
+      "sources": []
+    },
+    "test/catalog/ort_katalog_test.dart": {
+      "kind": "product_contract",
+      "status": "verified",
+      "summary": "Prüft das Lesen des Ortsverzeichnisses (Name, Art, Unterart, Region, Seitenname, Stand; unvollständige Einträge werden mit Grund verworfen, ungültige Wurzel und fehlendes Asset ergeben einen leeren Katalog) und die Datei orte.json selbst (lesbar, Stand als Datum, über 1000 Siedlungen und über 500 Regionen, Gareth, Havena und Thorwal als Siedlung, keine Klammerzusätze im Namen, keine doppelten Name-Art-Paare).",
+      "rationale": "Test und lib/catalog/ort_loader.dart gelesen: technischer Katalogvertrag für ein aus der Wiki Aventurica (CC BY-SA) importiertes Namensverzeichnis. Es enthält nur Kurzfakten ohne Regelaussage; die Mindestzahlen sind Plausibilitätsgrenzen für den Import, keine Behauptung über den Umfang Aventuriens.",
       "sources": []
     }
   }

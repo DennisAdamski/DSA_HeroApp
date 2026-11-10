@@ -4,9 +4,11 @@ import 'package:url_launcher/url_launcher.dart';
 
 import 'package:dsa_heldenverwaltung/domain/hero_adventure_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_reise_station.dart';
+import 'package:dsa_heldenverwaltung/domain/ort_eintrag.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/reiseroute_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/standort_rules.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/state/ort_providers.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_stroke.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_held_schreiben.dart';
@@ -258,6 +260,9 @@ class _KartoReiserouteBlattState extends ConsumerState<KartoReiserouteBlatt>
             etappen: etappen,
             onStation: bedienbar ? stationBearbeiten : null,
             mitKartenlink: true,
+            orte:
+                ref.watch(ortKatalogProvider).asData?.value.orte ??
+                const <OrtEintrag>[],
           ),
       ],
     );
@@ -274,6 +279,7 @@ class KartoReiseZeitleiste extends StatelessWidget {
     this.onStation,
     this.notizZeilen,
     this.mitKartenlink = false,
+    this.orte = const <OrtEintrag>[],
   });
 
   /// Darzustellende Etappen, bereits zeitlich geordnet.
@@ -285,8 +291,12 @@ class KartoReiseZeitleiste extends StatelessWidget {
   /// Höchstzahl der Notizzeilen; `null` zeigt die ganze Notiz.
   final int? notizZeilen;
 
-  /// Ob je Station ein Link auf die Avesmaps-Karte erscheint.
+  /// Ob je Station Links erscheinen: auf die Avesmaps-Karte (nur Siedlungen)
+  /// und, bei Orten des Ortsverzeichnisses, in das Wiki Aventurica.
   final bool mitKartenlink;
+
+  /// Ortsverzeichnis für die Links; leer, solange es nicht geladen ist.
+  final List<OrtEintrag> orte;
 
   @override
   Widget build(BuildContext context) {
@@ -300,6 +310,7 @@ class KartoReiseZeitleiste extends StatelessWidget {
             letzter: i == etappen.length - 1,
             notizZeilen: notizZeilen,
             mitKartenlink: mitKartenlink,
+            orte: orte,
             onTap: onStation == null
                 ? null
                 : () => onStation!(etappen[i].station),
@@ -316,6 +327,7 @@ class _ZeitleistenEintrag extends StatelessWidget {
     required this.letzter,
     required this.notizZeilen,
     required this.mitKartenlink,
+    required this.orte,
     required this.onTap,
   });
 
@@ -324,6 +336,7 @@ class _ZeitleistenEintrag extends StatelessWidget {
   final bool letzter;
   final int? notizZeilen;
   final bool mitKartenlink;
+  final List<OrtEintrag> orte;
   final VoidCallback? onTap;
 
   static const double _marke = 26;
@@ -337,7 +350,10 @@ class _ZeitleistenEintrag extends StatelessWidget {
     final notiz = station.notiz.trim();
     final datum = reiseStationDatumText(station);
     final abstand = erster ? null : reiseEtappenAbstandText(etappe);
-    final link = mitKartenlink ? avesmapsLink(ort) : null;
+    final link = mitKartenlink && kartenlinkSinnvoll(ort, orte)
+        ? avesmapsLink(ort)
+        : null;
+    final wikiLink = mitKartenlink ? wikiAventuricaLink(ort, orte) : null;
 
     final inhalt = Padding(
       padding: EdgeInsets.only(
@@ -370,6 +386,15 @@ class _ZeitleistenEintrag extends StatelessWidget {
                   icon: const Icon(Icons.open_in_new, size: 18),
                   onPressed: () =>
                       launchUrl(link, mode: LaunchMode.externalApplication),
+                ),
+              if (wikiLink != null)
+                IconButton(
+                  key: ValueKey<String>('karto-reise-wiki-${station.id}'),
+                  tooltip: 'Im Wiki Aventurica lesen',
+                  visualDensity: VisualDensity.compact,
+                  icon: const Icon(Icons.menu_book_outlined, size: 18),
+                  onPressed: () =>
+                      launchUrl(wikiLink, mode: LaunchMode.externalApplication),
                 ),
             ],
           ),

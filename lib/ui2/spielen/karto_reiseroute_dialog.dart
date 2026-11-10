@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 
 import 'package:dsa_heldenverwaltung/domain/hero_adventure_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_reise_station.dart';
+import 'package:dsa_heldenverwaltung/domain/ort_eintrag.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_datum_felder.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_ort_feld.dart';
 
 /// Ergebnis des Stationsdialogs: die geänderten Felder oder der Löschwunsch.
 class KartoReiseStationEingabe {
@@ -47,6 +49,7 @@ class KartoReiseStationDialog extends StatefulWidget {
     required this.station,
     required this.abenteuer,
     this.bearbeitet = false,
+    this.orte = const <OrtEintrag>[],
   });
 
   /// Vorbelegung bzw. bestehende Station.
@@ -57,6 +60,9 @@ class KartoReiseStationDialog extends StatefulWidget {
 
   /// Ob eine vorhandene Station bearbeitet wird.
   final bool bearbeitet;
+
+  /// Ortsverzeichnis für die Vorschläge im Ortsfeld.
+  final List<OrtEintrag> orte;
 
   @override
   State<KartoReiseStationDialog> createState() =>
@@ -100,14 +106,11 @@ class _KartoReiseStationDialogState extends State<KartoReiseStationDialog> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              TextField(
-                key: const ValueKey<String>('karto-reise-ort'),
+              KartoOrtFeld(
+                feldSchluessel: const ValueKey<String>('karto-reise-ort'),
                 controller: _ort,
+                orte: widget.orte,
                 autofocus: !widget.bearbeitet && widget.station.ort.isEmpty,
-                decoration: const InputDecoration(
-                  labelText: 'Ort',
-                  hintText: 'z. B. Gareth',
-                ),
                 onChanged: (_) => setState(() {}),
               ),
               const SizedBox(height: Abstand.weit),

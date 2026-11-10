@@ -15,7 +15,7 @@ Ist-Zustand erneut prüfen und den konkreten Teilumfang festlegen.
 | Bereich | Erledigt | Teilweise / offen |
 | --- | --- | --- |
 | Architektur (ARCH) | 01, 03, 05, 06 abgenommen | 02 und 04: Code fertig, manuelle Prüfung fehlt; 07 begleitend |
-| Fachlicher Ausbau | MAG-EFF: 17 Zauberprofile; TRANK: Teilstände 1 und 2 | weitere Zauber zurückgestellt; Elixiere, Kräuter, Verbandszeug offen |
+| Fachlicher Ausbau | MAG-EFF: 17 Zauberprofile; TRANK: Teilstände 1 und 2 | weitere Zauber zurückgestellt; Elixiere, Verbandszeug offen; Kräutersuche als Regelfunktion vorhanden (ohne Oberfläche) |
 | Spielabend (SPIEL) | 01, 02, 05, 06, 07 | 03 (nicht begonnen), 04 (Produktion) |
 | Weitere Themen | Gefecht, Gefechtslage 1–7, Reittiere P1, Vertraute V1/V2, Reiseroute Stufe 1, Gruppen v2, Feedback, Redesign R1–R3, Aufräumserie REV-01–16 | siehe [Weitere Themen](#weitere-themen-stand-05112026) |
 

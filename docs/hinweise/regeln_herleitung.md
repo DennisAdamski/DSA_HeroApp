@@ -221,3 +221,19 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   Dauerhaftes: die KK aus `permanentAttributes` (ohne laufende Zauber), die
   epische Vervielfachung und `HeroSheet.tragkraftBoni` (Bärenrune: RkP\* × 10
   Stein, Hausregel KK +1). Kurzzeitzauber werden bewusst nicht eingerechnet.
+
+  **Kräutersuche (11.11.2026):** `lib/rules/derived/kraeutersuche_rules.dart`
+  setzt Wege des Entdeckers S. 113–118 um, ohne Oberfläche und ohne Schreiben am
+  Helden. Eingabe ist `KraeuterSucheEingabe` (Landschaft, Jahreszeit, Dauer
+  1 oder 2 Stunden, TaW „Kräuter Suchen“ aus `computeMetaTalentBaseTaw`, drei
+  Eigenschaftswerte, Geländekunde, Ortskenntnis, AsP, Modus beliebig/gezielt/
+  Würzkräuter/Konservierung); `fuehreKraeutersucheDurch` würfelt über einen
+  `DiceRoller`, `kraeuterVorschau` rechnet ohne Wurf die Fundchancen. Die
+  Zeile „Modifikation der Probe nach Jahreszeit“ der Landschaftstabelle ist die
+  vollständige Landschaftserschwernis (sie enthält den Regionszuschlag schon);
+  nicht zusätzlich ansetzen. Erschwernis wird als negativer Poolmodifikator an
+  die Probe gegeben. Die Landschaft wählt der Aufrufer; `kraeuterLandschaftenFuerOrt`
+  schlägt sie aus der Unterart eines Orts vor. **Offen:** Das Metatalent
+  `meta_kraeutersuchen` wird in `hero_actions.dart` mit MU/IN/FF angelegt, das
+  Buch nennt KL/IN/FF; wegen der Bestandshelden (Hash) nicht stillschweigend
+  ändern, die Eigenschaften werden der Suche daher übergeben.

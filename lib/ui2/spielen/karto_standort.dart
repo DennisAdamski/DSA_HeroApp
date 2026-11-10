@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import 'package:dsa_heldenverwaltung/domain/ort_eintrag.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/standort_rules.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_info_chip.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_ort_feld.dart';
 
 /// Öffnet [uri] außerhalb der App; `false` meldet, dass nichts geöffnet wurde.
 typedef KartoLinkOeffner = Future<bool> Function(Uri uri);
@@ -17,7 +19,10 @@ Future<bool> oeffneExtern(Uri uri) =>
 /// Hält den aktuellen Aufenthaltsort fest und verlinkt ihn auf die
 /// Avesmaps-Karte. Die Karte wird nicht eingebettet (die Seite verbietet das
 /// per `X-Frame-Options`), sondern im Browser geöffnet. Gespeichert wird nur
-/// der Ortsname; es werden keine Karten- oder Ortsdaten übernommen.
+/// der Ortsname; es werden keine Karten- oder Ortsdaten übernommen. Die
+/// Eingabe schlägt Orte aus dem Ortsverzeichnis vor ([orte]), bleibt aber
+/// frei. Zu bekannten Orten führt ein zweiter Link in das Wiki Aventurica. Für Regionen, Flüsse und Straßen entfällt der Kartenlink, weil
+/// Avesmaps nur Siedlungen öffnet.
 class KartoStandortZeile extends StatelessWidget {
   /// Erstellt die Zeile für den gespeicherten [standort].
   const KartoStandortZeile({
@@ -25,6 +30,7 @@ class KartoStandortZeile extends StatelessWidget {
     required this.standort,
     required this.onSpeichern,
     this.oeffneLink = oeffneExtern,
+    this.orte = const <OrtEintrag>[],
   });
 
   /// Gespeicherter Standort; leer, solange keiner festgehalten ist.
@@ -36,10 +42,16 @@ class KartoStandortZeile extends StatelessWidget {
   /// Öffnet den Kartenlink; in Tests ersetzbar.
   final KartoLinkOeffner oeffneLink;
 
+  /// Ortsverzeichnis für die Vorschläge; leer, solange es nicht geladen ist.
+  final List<OrtEintrag> orte;
+
   @override
   Widget build(BuildContext context) {
-    final link = avesmapsLink(standort);
-    final belegt = link != null;
+    final belegt = bereinigeStandort(standort).isNotEmpty;
+    final link = belegt && kartenlinkSinnvoll(standort, orte)
+        ? avesmapsLink(standort)
+        : null;
+    final wikiLink = wikiAventuricaLink(standort, orte);
 
     return Wrap(
       spacing: Abstand.knapp,
@@ -56,12 +68,19 @@ class KartoStandortZeile extends StatelessWidget {
           leer: !belegt,
           onTap: () => _bearbeiten(context),
         ),
-        if (belegt)
+        if (link != null)
           IconButton(
             key: const ValueKey<String>('karto-spiel-standort-karte'),
             tooltip: 'Auf Avesmaps öffnen',
             onPressed: () => _oeffnen(context, link),
             icon: const Icon(Icons.open_in_new, size: 18),
+          ),
+        if (wikiLink != null)
+          IconButton(
+            key: const ValueKey<String>('karto-spiel-standort-wiki'),
+            tooltip: 'Im Wiki Aventurica lesen',
+            onPressed: () => _oeffnen(context, wikiLink),
+            icon: const Icon(Icons.menu_book_outlined, size: 18),
           ),
       ],
     );
@@ -70,7 +89,8 @@ class KartoStandortZeile extends StatelessWidget {
   Future<void> _bearbeiten(BuildContext context) async {
     final neu = await showDialog<String>(
       context: context,
-      builder: (_) => _StandortDialog(anfang: bereinigeStandort(standort)),
+      builder: (_) =>
+          _StandortDialog(anfang: bereinigeStandort(standort), orte: orte),
     );
     if (neu == null) return;
     await onSpeichern(bereinigeStandort(neu));
@@ -86,9 +106,7 @@ class KartoStandortZeile extends StatelessWidget {
     }
     if (!geoeffnet) {
       bote?.showSnackBar(
-        const SnackBar(
-          content: Text('Die Karte konnte nicht geöffnet werden.'),
-        ),
+        const SnackBar(content: Text('Der Link konnte nicht geöffnet werden.')),
       );
     }
   }
@@ -97,9 +115,10 @@ class KartoStandortZeile extends StatelessWidget {
 // Eingabe des Standorts. Gibt den Text zurück; „Entfernen“ gibt einen leeren
 // Text zurück, Abbrechen gibt null zurück.
 class _StandortDialog extends StatefulWidget {
-  const _StandortDialog({required this.anfang});
+  const _StandortDialog({required this.anfang, required this.orte});
 
   final String anfang;
+  final List<OrtEintrag> orte;
 
   @override
   State<_StandortDialog> createState() => _StandortDialogState();
@@ -120,16 +139,12 @@ class _StandortDialogState extends State<_StandortDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: const Text('Standort festhalten'),
-      content: TextField(
-        key: const ValueKey<String>('karto-spiel-standort-feld'),
+      content: KartoOrtFeld(
+        feldSchluessel: const ValueKey<String>('karto-spiel-standort-feld'),
         controller: _controller,
+        orte: widget.orte,
         autofocus: true,
         maxLength: kStandortMaxLaenge,
-        textInputAction: TextInputAction.done,
-        decoration: const InputDecoration(
-          labelText: 'Ort',
-          hintText: 'z. B. Gareth',
-        ),
         onSubmitted: (text) => Navigator.of(context).pop(text),
       ),
       actions: [

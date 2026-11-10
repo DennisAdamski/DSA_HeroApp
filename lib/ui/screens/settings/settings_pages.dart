@@ -1332,6 +1332,14 @@ class _LegalSettingsPage extends StatelessWidget {
                 style: theme.textTheme.bodyMedium,
               ),
               const SizedBox(height: 8),
+              Text(
+                'Die Ortsauswahl nutzt Ortsnamen der Wiki Aventurica '
+                '(de.wiki-aventurica.de, CC BY-SA). Quelle und Lizenz stehen '
+                'unter „Lizenzen anzeigen“.',
+                key: const ValueKey<String>('settings-legal-wiki-aventurica'),
+                style: theme.textTheme.bodyMedium,
+              ),
+              const SizedBox(height: 8),
               TextButton.icon(
                 key: const ValueKey<String>('settings-legal-licenses'),
                 onPressed: () => showLicensePage(

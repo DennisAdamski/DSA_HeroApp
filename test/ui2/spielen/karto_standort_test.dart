@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:dsa_heldenverwaltung/domain/ort_eintrag.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_standort.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_theme.dart';
 
@@ -12,6 +13,7 @@ void main() {
     required List<String> gespeichert,
     List<Uri>? geoeffnet,
     bool oeffnenGelingt = true,
+    List<OrtEintrag> orte = const <OrtEintrag>[],
   }) async {
     tester.view.devicePixelRatio = 1;
     tester.view.physicalSize = const Size(390, 800);
@@ -27,6 +29,7 @@ void main() {
           body: SingleChildScrollView(
             child: KartoStandortZeile(
               standort: standort,
+              orte: orte,
               onSpeichern: (text) async => gespeichert.add(text),
               oeffneLink: (uri) async {
                 geoeffnet?.add(uri);
@@ -78,10 +81,7 @@ void main() {
     await tester.tap(schluessel('karto-spiel-standort-karte'));
     await tester.pump();
 
-    expect(
-      find.text('Die Karte konnte nicht geöffnet werden.'),
-      findsOneWidget,
-    );
+    expect(find.text('Der Link konnte nicht geöffnet werden.'), findsOneWidget);
   });
 
   testWidgets('Eingabe wird bereinigt gespeichert', (tester) async {
@@ -122,5 +122,103 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(gespeichert, ['']);
+  });
+
+  final verzeichnis = <OrtEintrag>[
+    OrtEintrag(name: 'Gareth', art: OrtArt.siedlung, region: 'Garetien'),
+    OrtEintrag(name: 'Albernia', art: OrtArt.staat),
+  ];
+
+  testWidgets('Vorschlag aus dem Verzeichnis wird gespeichert', (tester) async {
+    final gespeichert = <String>[];
+    await zeige(tester, gespeichert: gespeichert, orte: verzeichnis);
+
+    await tester.tap(schluessel('karto-spiel-standort-aendern'));
+    await tester.pumpAndSettle();
+    await tester.enterText(schluessel('karto-spiel-standort-feld'), 'gar');
+    await tester.pumpAndSettle();
+    await tester.tap(schluessel('karto-ort-vorschlag-0'));
+    await tester.pumpAndSettle();
+    await tester.tap(schluessel('karto-spiel-standort-speichern'));
+    await tester.pumpAndSettle();
+
+    expect(gespeichert, ['Gareth']);
+  });
+
+  testWidgets('Freitext bleibt trotz Verzeichnis möglich', (tester) async {
+    final gespeichert = <String>[];
+    await zeige(tester, gespeichert: gespeichert, orte: verzeichnis);
+
+    await tester.tap(schluessel('karto-spiel-standort-aendern'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      schluessel('karto-spiel-standort-feld'),
+      'Auf der Reichsstraße',
+    );
+    await tester.tap(schluessel('karto-spiel-standort-speichern'));
+    await tester.pumpAndSettle();
+
+    expect(gespeichert, ['Auf der Reichsstraße']);
+  });
+
+  testWidgets('für eine Region entfällt der Kartenlink', (tester) async {
+    await zeige(
+      tester,
+      standort: 'Albernia',
+      gespeichert: [],
+      orte: verzeichnis,
+    );
+
+    expect(find.text('Albernia'), findsOneWidget);
+    expect(schluessel('karto-spiel-standort-karte'), findsNothing);
+  });
+
+  testWidgets('für eine Siedlung bleibt der Kartenlink', (tester) async {
+    await zeige(tester, standort: 'Gareth', gespeichert: [], orte: verzeichnis);
+
+    expect(schluessel('karto-spiel-standort-karte'), findsOneWidget);
+  });
+
+  testWidgets('bekannter Ort führt auch ins Wiki Aventurica', (tester) async {
+    final geoeffnet = <Uri>[];
+    await zeige(
+      tester,
+      standort: 'Gareth',
+      gespeichert: [],
+      geoeffnet: geoeffnet,
+      orte: verzeichnis,
+    );
+
+    await tester.tap(schluessel('karto-spiel-standort-wiki'));
+    await tester.pump();
+
+    expect(
+      geoeffnet.single.toString(),
+      'https://de.wiki-aventurica.de/wiki/Gareth',
+    );
+  });
+
+  testWidgets('Region hat Wiki-Link, aber keinen Kartenlink', (tester) async {
+    await zeige(
+      tester,
+      standort: 'Albernia',
+      gespeichert: [],
+      orte: verzeichnis,
+    );
+
+    expect(schluessel('karto-spiel-standort-wiki'), findsOneWidget);
+    expect(schluessel('karto-spiel-standort-karte'), findsNothing);
+  });
+
+  testWidgets('Freitext hat keinen Wiki-Link', (tester) async {
+    await zeige(
+      tester,
+      standort: 'Auf der Reichsstraße',
+      gespeichert: [],
+      orte: verzeichnis,
+    );
+
+    expect(schluessel('karto-spiel-standort-wiki'), findsNothing);
+    expect(schluessel('karto-spiel-standort-karte'), findsOneWidget);
   });
 }

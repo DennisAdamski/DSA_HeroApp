@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:dsa_heldenverwaltung/domain/ort_eintrag.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/standort_rules.dart';
 
 void main() {
@@ -36,6 +37,151 @@ void main() {
     test('ohne Standort gibt es keinen Link', () {
       expect(avesmapsLink(''), isNull);
       expect(avesmapsLink('   '), isNull);
+    });
+  });
+
+  group('sucheOrte', () {
+    final orte = <OrtEintrag>[
+      OrtEintrag(name: 'Gareth', art: OrtArt.siedlung, region: 'Garetien'),
+      OrtEintrag(name: 'Garetien', art: OrtArt.region),
+      OrtEintrag(name: 'Neu-Gareth', art: OrtArt.siedlung),
+      OrtEintrag(name: 'Alt Gareth', art: OrtArt.siedlung),
+      OrtEintrag(name: 'Havena', art: OrtArt.siedlung, region: 'Albernia'),
+      OrtEintrag(name: 'Albernia', art: OrtArt.staat),
+      OrtEintrag(name: 'Kühlwasser', art: OrtArt.siedlung),
+      OrtEintrag(name: 'Reichsstraße', art: OrtArt.strasse),
+      OrtEintrag(name: 'Reichsstraße', art: OrtArt.region),
+    ];
+
+    List<String> namen(String eingabe, {int? limit}) => [
+      for (final ort
+          in limit == null
+              ? sucheOrte(eingabe, orte)
+              : sucheOrte(eingabe, orte, limit: limit))
+        ort.name,
+    ];
+
+    test('leere Eingabe liefert nichts', () {
+      expect(sucheOrte('', orte), isEmpty);
+      expect(sucheOrte('   ', orte), isEmpty);
+    });
+
+    test('gleicher Name geht vor Namensanfang, Wortanfang und Teilstring', () {
+      expect(namen('gareth'), <String>['Gareth', 'Alt Gareth', 'Neu-Gareth']);
+      expect(namen('areth'), <String>['Gareth', 'Alt Gareth', 'Neu-Gareth']);
+    });
+
+    test('Namensanfang geht vor Wortanfang', () {
+      final treffer = namen('gar');
+      expect(treffer.first, 'Gareth');
+      expect(
+        treffer.indexOf('Garetien'),
+        lessThan(treffer.indexOf('Alt Gareth')),
+      );
+    });
+
+    test('Umlaute und Umschreibungen finden sich gegenseitig', () {
+      expect(namen('kuehlwasser'), <String>['Kühlwasser']);
+      expect(namen('KÜHL'), <String>['Kühlwasser']);
+      expect(namen('reichsstrasse'), contains('Reichsstraße'));
+    });
+
+    test('Treffer in der Region listet die Orte der Region', () {
+      expect(namen('albernia'), <String>['Albernia', 'Havena']);
+    });
+
+    test('bei gleichem Rang gehen Regionen vor Straßen', () {
+      final arten = [
+        for (final ort in sucheOrte('Reichsstraße', orte)) ort.art,
+      ];
+      expect(arten, <OrtArt>[OrtArt.region, OrtArt.strasse]);
+    });
+
+    test('begrenzt auf limit', () {
+      expect(namen('a', limit: 2), hasLength(2));
+      expect(namen('a', limit: 0), isEmpty);
+    });
+
+    test('Freitext ohne Treffer liefert nichts', () {
+      expect(namen('Auf der Reichsstraße nach Gareth'), isEmpty);
+    });
+  });
+
+  group('kartenlinkSinnvoll', () {
+    final orte = <OrtEintrag>[
+      OrtEintrag(name: 'Gareth', art: OrtArt.siedlung),
+      OrtEintrag(name: 'Albernia', art: OrtArt.staat),
+      OrtEintrag(name: 'Havena', art: OrtArt.staat),
+      OrtEintrag(name: 'Havena', art: OrtArt.siedlung),
+    ];
+
+    test('Siedlung: ja', () {
+      expect(kartenlinkSinnvoll('Gareth', orte), isTrue);
+      expect(kartenlinkSinnvoll(' gareth ', orte), isTrue);
+    });
+
+    test('nur als Region oder Staat bekannt: nein', () {
+      expect(kartenlinkSinnvoll('Albernia', orte), isFalse);
+    });
+
+    test('auch Siedlung gleichen Namens: ja', () {
+      expect(kartenlinkSinnvoll('Havena', orte), isTrue);
+    });
+
+    test('unbekannter Freitext behält den Link, leerer nicht', () {
+      expect(kartenlinkSinnvoll('Bad Garetz Süd', orte), isTrue);
+      expect(kartenlinkSinnvoll('   ', orte), isFalse);
+      expect(kartenlinkSinnvoll('Gareth', const <OrtEintrag>[]), isTrue);
+    });
+  });
+
+  group('wikiAventuricaLink', () {
+    final orte = <OrtEintrag>[
+      OrtEintrag(name: 'Gareth', art: OrtArt.siedlung),
+      OrtEintrag(
+        name: 'Havena',
+        art: OrtArt.siedlung,
+        seite: 'Havena (Siedlung)',
+      ),
+      OrtEintrag(name: 'Thorwal', art: OrtArt.staat, seite: 'Thorwal (Staat)'),
+      OrtEintrag(name: 'Thorwal', art: OrtArt.siedlung),
+      OrtEintrag(name: 'Kühlwasser', art: OrtArt.siedlung),
+      OrtEintrag(name: 'Alter Hafen', art: OrtArt.region),
+    ];
+
+    test('führt auf die Wiki-Seite des Orts', () {
+      expect(
+        wikiAventuricaLink('Gareth', orte).toString(),
+        'https://de.wiki-aventurica.de/wiki/Gareth',
+      );
+    });
+
+    test('nimmt den vollen Seitennamen, wenn er vom Namen abweicht', () {
+      expect(
+        wikiAventuricaLink('Havena', orte)!.path,
+        '/wiki/Havena_(Siedlung)',
+      );
+    });
+
+    test('Siedlung geht vor Staat bei gleichem Namen', () {
+      expect(wikiAventuricaLink('Thorwal', orte)!.path, '/wiki/Thorwal');
+    });
+
+    test('ignoriert Schreibweise, kodiert Umlaute und Leerzeichen', () {
+      expect(
+        wikiAventuricaLink(' kuehlwasser ', orte)!.toString(),
+        'https://de.wiki-aventurica.de/wiki/K%C3%BChlwasser',
+      );
+      expect(
+        wikiAventuricaLink('alter hafen', orte)!.path,
+        '/wiki/Alter_Hafen',
+      );
+    });
+
+    test('Freitext und leerer Standort haben keinen Link', () {
+      expect(wikiAventuricaLink('Auf der Reichsstraße', orte), isNull);
+      expect(wikiAventuricaLink('   ', orte), isNull);
+      expect(wikiAventuricaLink('Gareth', const <OrtEintrag>[]), isNull);
     });
   });
 }

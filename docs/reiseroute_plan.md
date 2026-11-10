@@ -42,6 +42,16 @@ und später auf einer Aventurien-Karte.
   `test/ui2/spielen/karto_reiseroute_test.dart`, Eintrag in
   `test/domain/unbekannte_verschachtelte_felder_test.dart`.
 
+## Ortsauswahl aus der Wiki Aventurica (umgesetzt)
+
+Standort und Station schlagen Orte aus `orte.json` vor (Siedlungen, Regionen,
+Staaten, Flüsse, Straßen; auch „unterwegs durch …“). Das Verzeichnis ist ein
+Snapshot der Wiki Aventurica (CC BY-SA), erzeugt von `tool/import_wiki_orte.py`,
+siehe `docs/catalog_import_workflow.md`. Gespeichert wird weiter nur der Name als
+Text; es gibt keine `ortId` und keine Koordinaten. Damit ist die Ortsauswahl
+unabhängig von der offenen Anfrage an Avesmaps (Stufe 0); für Karte und
+Luftlinie braucht Stufe 2 weiterhin dessen Koordinaten.
+
 ## Avesmaps: Recherche (Stand 2026-11-02)
 
 - **Repository:** github.com/valentin-schwind/avesmaps. Nur der Programmcode

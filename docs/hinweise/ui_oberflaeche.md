@@ -87,7 +87,9 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   Spalten; die klassische Optik bleibt beim Standard). Der Abschnitt
   „Abenteuer“ (`karto_abenteuer_abschnitt.dart`) trägt Titel, aventurisches
   Datum, Standort (`KartoStandortZeile`, hängt am Zustand, nicht am
-  Abenteuer), Kurzbeschreibung (3 Zeilen, „Mehr“), eine Schnell-Erfassung
+  Abenteuer; die Eingabe schlägt Orte aus `orte.json` vor, `KartoOrtFeld` mit
+  `sucheOrte`, Freitext bleibt erlaubt, der Kartenlink entfällt für Namen, die
+  nur als Region, Staat, Fluss oder Straße bekannt sind, `kartenlinkSinnvoll`), Kurzbeschreibung (3 Zeilen, „Mehr“), eine Schnell-Erfassung
   für Notizen und die Karten für Personen und Notizen. Alles lässt sich dort
   direkt ändern; „Öffnen“ (Key `karto-spiel-abenteuer-oeffnen`) bleibt der Weg
   zum Vollblatt. Gezeigt werden zunächst drei Personen und vier Notizen nach

@@ -3,8 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
 import 'package:dsa_heldenverwaltung/domain/hero_reise_station.dart';
+import 'package:dsa_heldenverwaltung/domain/ort_eintrag.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/reiseroute_rules.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/state/ort_providers.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_held_schreiben.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_reiseroute_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui2/widgets/karto_bestaetigen.dart';
@@ -21,6 +23,10 @@ mixin KartoReiserouteSchreiben<T extends ConsumerStatefulWidget>
 
   // Zeitstempel für „Zuletzt bearbeitet“; UTC wie alle Zeitpunkte im Modell.
   DateTime _jetzt() => DateTime.now().toUtc();
+
+  // Ortsverzeichnis für die Vorschläge; leer, solange es nicht geladen ist.
+  List<OrtEintrag> _orte() =>
+      ref.read(ortKatalogProvider).asData?.value.orte ?? const <OrtEintrag>[];
 
   /// Legt eine Station über den Dialog an, vorbelegt mit Standort, Datum und
   /// laufendem Abenteuer.
@@ -40,6 +46,7 @@ mixin KartoReiserouteSchreiben<T extends ConsumerStatefulWidget>
       builder: (_) => KartoReiseStationDialog(
         station: vorschlag,
         abenteuer: werte.hero.adventures,
+        orte: _orte(),
       ),
     );
     if (eingabe == null || eingabe.loeschen) return;
@@ -63,6 +70,7 @@ mixin KartoReiserouteSchreiben<T extends ConsumerStatefulWidget>
         station: station,
         abenteuer: werte.hero.adventures,
         bearbeitet: true,
+        orte: _orte(),
       ),
     );
     // Unverändert gespeichert: kein neuer Zeitstempel, kein Schreiben.
