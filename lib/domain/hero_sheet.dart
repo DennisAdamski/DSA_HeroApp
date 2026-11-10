@@ -25,6 +25,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_rituals.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_spielansicht.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_spell_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_tragkraft_bonus.dart';
 import 'package:dsa_heldenverwaltung/domain/magic_special_ability.dart';
 import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
 import 'package:dsa_heldenverwaltung/domain/unbekannte_json_felder.dart';
@@ -102,6 +103,7 @@ class HeroSheet {
     this.probenFavoriten = const <HeroProbenFavorit>[],
     this.spielansicht,
     this.reiseStationen = const <HeroReiseStation>[],
+    this.tragkraftBoni = const <HeroTragkraftBonus>[],
     this.epicLockedWaffenmeisterCategories = const <String>{},
     this.epicUnactivatedTalentIds = const <String>{},
   }) : rawStartAttributes = rawStartAttributes ?? startAttributes ?? attributes,
@@ -261,6 +263,12 @@ class HeroSheet {
   /// behalten.
   final List<HeroReiseStation> reiseStationen;
 
+  /// Dauerhafte Tragkraftquellen wie eine Bärenrune (SPIEL-02).
+  ///
+  /// Nur Dauerhaftes, keine Kurzzeitzauber. Nur bei belegter Liste im JSON,
+  /// damit Bestandshelden ihren Inhalts-Hash behalten.
+  final List<HeroTragkraftBonus> tragkraftBoni;
+
   /// Waffenmeister-Kategorien, die beim Epic-Werden nicht erlernbar waren
   /// und daher auch nachtraeglich gesperrt bleiben.
   final Set<String> epicLockedWaffenmeisterCategories;
@@ -335,6 +343,7 @@ class HeroSheet {
     List<HeroProbenFavorit>? probenFavoriten,
     Object? spielansicht = keepFieldValue,
     List<HeroReiseStation>? reiseStationen,
+    List<HeroTragkraftBonus>? tragkraftBoni,
     Set<String>? epicLockedWaffenmeisterCategories,
     Set<String>? epicUnactivatedTalentIds,
   }) {
@@ -421,6 +430,7 @@ class HeroSheet {
           ? this.spielansicht
           : spielansicht as HeroSpielansicht?,
       reiseStationen: reiseStationen ?? this.reiseStationen,
+      tragkraftBoni: tragkraftBoni ?? this.tragkraftBoni,
       epicLockedWaffenmeisterCategories:
           epicLockedWaffenmeisterCategories ??
           this.epicLockedWaffenmeisterCategories,
@@ -493,6 +503,7 @@ class HeroSheet {
     'probenFavoriten',
     'spielansicht',
     'reiseStationen',
+    'tragkraftBoni',
     'epicLockedWaffenmeisterCategories',
     'epicUnactivatedTalentIds',
     ...HeroAppearance.jsonSchluessel,
@@ -614,6 +625,11 @@ class HeroSheet {
       // Nur bei belegter Liste: Bestandshelden behalten ihren Inhalts-Hash.
       if (reiseStationen.isNotEmpty)
         'reiseStationen': reiseStationen
+            .map((entry) => entry.toJson())
+            .toList(growable: false),
+      // Nur bei belegter Liste: Bestandshelden behalten ihren Inhalts-Hash.
+      if (tragkraftBoni.isNotEmpty)
+        'tragkraftBoni': tragkraftBoni
             .map((entry) => entry.toJson())
             .toList(growable: false),
       'epicLockedWaffenmeisterCategories': epicLockedWaffenmeisterCategories
@@ -879,6 +895,7 @@ class HeroSheet {
             )
           : null,
       reiseStationen: leseReiseStationen(json['reiseStationen']),
+      tragkraftBoni: leseTragkraftBoni(json['tragkraftBoni']),
       epicLockedWaffenmeisterCategories: _parseStringSet(
         json['epicLockedWaffenmeisterCategories'],
       ),

@@ -1282,6 +1282,9 @@ void main() {
 
     testWidgets('der Vergrößern-Dialog zeigt die Spalten', (tester) async {
       await zeige(tester, held: mitAbenteuern([_viele]), breite: 1280);
+      // Die Kachel steht unter dem Block „Dabei“ und liegt außerhalb des
+      // ersten Bildschirms.
+      await tester.ensureVisible(k('karto-kachel-abenteuer-vergroessern'));
       await tester.tap(k('karto-kachel-abenteuer-vergroessern'));
       await tester.pumpAndSettle();
       expect(

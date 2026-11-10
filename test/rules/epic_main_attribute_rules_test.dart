@@ -249,7 +249,7 @@ void main() {
       });
     });
 
-    test('KK liefert genau einen automatischen und drei manuelle Boni', () {
+    test('KK liefert genau zwei automatische und zwei manuelle Boni', () {
       final boni = activeEpicMainAttributeBonuses(
         ruleActive: true,
         isEpisch: true,
@@ -260,11 +260,11 @@ void main() {
         boni
             .where((b) => b.umsetzung == EpicBonusUmsetzung.automatisch)
             .map((b) => b.text),
-        <String>['eBE bei KK-Talenten halbiert'],
+        <String>['eBE bei KK-Talenten halbiert', 'Tragkraft KK × 1,5'],
       );
       expect(
         boni.where((b) => b.umsetzung == EpicBonusUmsetzung.manuell).length,
-        3,
+        2,
       );
     });
 

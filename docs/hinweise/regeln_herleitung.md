@@ -204,8 +204,9 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   Stern-Symbol der Sektion `AP und Level`.
 - Die Haupteigenschafts-Boni aus Kap. 2.1 liegen als
   `epicMainAttributeBonuses` mit `EpicBonusUmsetzung` je Einzelbonus vor.
-  Gerechnet werden nur zwei: eBE-Halbierung bei KK-Talenten
-  (`epicTalentEbeMultiplier` → `computeTalentEbe`) und bei KO die halbierte
+  Gerechnet werden nur drei: eBE-Halbierung bei KK-Talenten
+  (`epicTalentEbeMultiplier` → `computeTalentEbe`), bei KK die Tragkraft × 1,5
+  (`epicTragkraftMultiplier` → `herleiteTragkraft`, `tragkraft_rules.dart`) und bei KO die halbierte
   SB-Erschwernis beim Unterdrücken von Wunden
   (`computeSbUnterdrueckungErschwernis(halbiert:)`, Schalter
   `WundEffekte.unterdrueckungHalbiert`, gesetzt in `computeHeroWundEffekte`);
@@ -213,4 +214,10 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   erscheint als Hinweis in der Kampfvorschau (Muster:
   `buildAxxeleratusDefenseHint`). Alle uebrigen Boni sind in der UI
   ausdruecklich als `manuell` gekennzeichnet — mangels Modell fuer
-  Tragkraft, Gift, Krankheit, Handwerk und gezieltes Ausweichen.
+  Gift, Krankheit, Handwerk und gezieltes Ausweichen.
+  **Last und Tragkraft (SPIEL-02, 10.11.2026):** `berechneTragkraft` liefert
+  `TragkraftErgebnis` (Last, Tragkraft als `Herleitung` in Stein, BE-Zuschlag,
+  Stufe) aus WdS S. 144; der Snapshot trägt es als `tragkraft`. Es zählt nur
+  Dauerhaftes: die KK aus `permanentAttributes` (ohne laufende Zauber), die
+  epische Vervielfachung und `HeroSheet.tragkraftBoni` (Bärenrune: RkP\* × 10
+  Stein, Hausregel KK +1). Kurzzeitzauber werden bewusst nicht eingerechnet.

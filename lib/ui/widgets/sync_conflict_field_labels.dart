@@ -67,6 +67,7 @@ const Map<String, String> syncFieldLabels = <String, String>{
   'epicMainAttributes': 'Epik: Haupteigenschaften',
   'epicActivationPolicy': 'Epik: Aktivierungsregel',
   'probenFavoriten': 'Häufige Proben',
+  'tragkraftBoni': 'Tragkraftquellen',
   'spielansicht': 'Spielansicht',
   'epicLockedWaffenmeisterCategories': 'Epik: Gesperrte Waffenmeister',
   'epicUnactivatedTalentIds': 'Epik: Nicht aktivierte Talente',

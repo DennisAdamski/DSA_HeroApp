@@ -129,8 +129,17 @@ Teilumfang festlegen. Nach Wichtigkeit sortiert.
   Inventar gleicht `updateHero` ab. Während eines laufenden Gefechts ist die
   Munition im Block gesperrt, weil das Gefecht Ladezustand und Schuss am
   Bestand führt (Tests in `spiel_dabei_rules_test.dart` und
-  `karto_dabei_abschnitt_test.dart`). **Offen:** Belastung im Block;
-  Verbrauchsgegenstände von Begleitern.
+  `karto_dabei_abschnitt_test.dart`). **Belastung (10.11.2026):** Abschnitt
+  „Belastung“ im Block: getragenes Gewicht gegen die Tragkraft (WdS S. 144:
+  TK = KK in Stein; Last mit halbem Gewicht für Kleidung und Rüstung am Leib
+  und mit dem Gewicht des Geldes), BE-Folge und Hinweise, dauerhafte
+  Tragkraftquellen wie die Bärenrune (`HeroSheet.tragkraftBoni`, nur
+  Dauerhaftes, keine Kurzzeitzauber), epische KK-Haupteigenschaft × 1,5, dazu
+  Erschöpfung und Überanstrengung mit −/+ (`tragkraft_rules.dart`,
+  `tragkraft_rules_test.dart`, Details in
+  [ui_oberflaeche.md](hinweise/ui_oberflaeche.md)). **Offen:**
+  Verbrauchsgegenstände von Begleitern; die optionale Reiseregel „BE aus
+  zusätzlicher Last je 25 %“ (Erschöpfung im Marsch) ist nicht eingerechnet.
 - [ ] **SPIEL-03 — Zustände und Dauer.** Beobachtung: „Aktive Effekte“ kennt Zauber,
   aber keine schnellen Marker für Betäubung, Furcht oder Schmerz; der
   Kampfrundenzähler ist flüchtig und zählt keine Effektdauern herunter.

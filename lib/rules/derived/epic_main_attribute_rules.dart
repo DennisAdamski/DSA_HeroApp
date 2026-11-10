@@ -44,7 +44,7 @@ class EpicMainAttributeBonus {
 /// Quelle: Hausregeln Kap. 2.1 – „Haupteigenschaften". Bewusst in
 /// Einzelaussagen zerlegt, weil eine Eigenschaft Boni mit
 /// unterschiedlichem Umsetzungsgrad mischt (KK: eBE-Halbierung wird
-/// gerechnet, Tragkraft nicht).
+/// gerechnet, ebenso die Tragkraft).
 const List<EpicMainAttributeBonus> epicMainAttributeBonuses =
     <EpicMainAttributeBonus>[
       EpicMainAttributeBonus(
@@ -147,7 +147,7 @@ const List<EpicMainAttributeBonus> epicMainAttributeBonuses =
       EpicMainAttributeBonus(
         code: AttributeCode.kk,
         text: 'Tragkraft KK × 1,5',
-        umsetzung: EpicBonusUmsetzung.manuell,
+        umsetzung: EpicBonusUmsetzung.automatisch,
       ),
       EpicMainAttributeBonus(
         code: AttributeCode.kk,

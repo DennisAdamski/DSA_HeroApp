@@ -7,6 +7,7 @@ import 'package:dsa_heldenverwaltung/domain/gefecht.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_spielansicht.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_tragkraft_bonus.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
 import 'package:dsa_heldenverwaltung/domain/vitalwirkung.dart';
 import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
@@ -609,6 +610,173 @@ void main() {
     final gespeichert = (await aufbau.repo.loadHeroById('praiodan'))!;
     expect(gespeichert.dukaten, '12,5');
     expect(gespeichert.inventoryEntries.first.menge, 3);
+  });
+
+  group('Belastung (Last und Tragkraft)', () {
+    HeroInventoryEntry schwer(int gramm) => HeroInventoryEntry(
+      gegenstand: 'Amboss',
+      anzahl: '1',
+      menge: 1,
+      instanzId: 'amboss',
+      gewichtGramm: gramm,
+    );
+
+    String text(WidgetTester tester, String schluessel) =>
+        tester.widget<Text>(_k(schluessel)).data!;
+
+    testWidgets('zeigt Last, Tragkraft und deren Herleitung', (tester) async {
+      await zeige(tester, _held(eintraege: [schwer(4500)], dukaten: '0'));
+      await tester.ensureVisible(_k('karto-dabei-last'));
+      expect(text(tester, 'karto-dabei-last'), 'Last 4,5 von 13 Stein');
+      expect(
+        text(tester, 'karto-dabei-tragkraft-formel'),
+        'Tragkraft 13 (Körperkraft)',
+      );
+      expect(_k('karto-dabei-last-hinweis'), findsNothing);
+      expect(_k('karto-dabei-last-ohne-gewicht'), findsNothing);
+    });
+
+    testWidgets(
+      'über der Tragkraft steht die Folge, ohne Gewicht der Hinweis',
+      (tester) async {
+        await zeige(
+          tester,
+          _held(
+            dukaten: '0',
+            eintraege: [
+              schwer(14000),
+              const HeroInventoryEntry(gegenstand: 'Beutel', instanzId: 'b'),
+            ],
+          ),
+        );
+        await tester.ensureVisible(_k('karto-dabei-last'));
+        expect(text(tester, 'karto-dabei-last'), 'Last 14 von 13 Stein');
+        expect(text(tester, 'karto-dabei-last-hinweis'), contains('BE +1'));
+        expect(
+          text(tester, 'karto-dabei-last-ohne-gewicht'),
+          startsWith('1 getragener Eintrag hat kein Gewicht'),
+        );
+      },
+    );
+
+    testWidgets(
+      'Erschöpfung und Überanstrengung zählen vom gespeicherten Wert',
+      (tester) async {
+        final aufbau = await zeige(tester, _held());
+        final plus = _k('karto-dabei-erschoepfung-plus');
+        await tester.ensureVisible(plus);
+        await tester.tap(plus);
+        await tester.tap(plus);
+        await tester.pumpAndSettle();
+        expect((await aufbau.repo.loadHeroState('praiodan'))!.erschoepfung, 2);
+        expect(text(tester, 'karto-dabei-erschoepfung-menge'), '2');
+
+        await tippe(tester, _k('karto-dabei-erschoepfung-minus'));
+        expect((await aufbau.repo.loadHeroState('praiodan'))!.erschoepfung, 1);
+
+        await tippe(tester, _k('karto-dabei-ueberanstrengung-plus'));
+        final zustand = (await aufbau.repo.loadHeroState('praiodan'))!;
+        expect(zustand.ueberanstrengung, 1);
+        expect(zustand.erschoepfung, 1);
+        // Der Bogen bleibt unberührt.
+        expect((await aufbau.repo.loadHeroById('praiodan'))!.dukaten, '12,5');
+      },
+    );
+
+    testWidgets('Minus ist bei 0 gesperrt', (tester) async {
+      final aufbau = await zeige(tester, _held());
+      await tippe(tester, _k('karto-dabei-erschoepfung-minus'));
+      expect(
+        (await aufbau.repo.loadHeroState('praiodan'))?.erschoepfung ?? 0,
+        0,
+      );
+    });
+
+    testWidgets('Bärenrune: RkP* mal 10 Stein, Hausregel KK +1', (
+      tester,
+    ) async {
+      final aufbau = await zeige(tester, _held(dukaten: '0'));
+      await tippe(tester, _k('karto-dabei-baerenrune'));
+      await tester.enterText(_k('karto-dabei-baerenrune-rkp'), '7');
+      await tester.tap(_k('karto-dabei-baerenrune-kk'));
+      await tester.pumpAndSettle();
+      await tester.tap(_k('karto-dabei-baerenrune-ok'));
+      await tester.pumpAndSettle();
+
+      final quellen = (await aufbau.repo.loadHeroById('praiodan'))!
+          .tragkraftBoni;
+      expect(quellen, hasLength(1));
+      expect(quellen.single.stein, 70);
+      expect(quellen.single.kk, 1);
+      expect(quellen.single.name, 'Bärenrune (RkP* 7)');
+      await tester.ensureVisible(_k('karto-dabei-last'));
+      // 13 + 1 + 70
+      expect(text(tester, 'karto-dabei-last'), 'Last 0 von 84 Stein');
+      expect(find.text('Bärenrune (RkP* 7)'), findsOneWidget);
+    });
+
+    testWidgets('Bärenrune verlangt RkP* über 0', (tester) async {
+      final aufbau = await zeige(tester, _held());
+      await tippe(tester, _k('karto-dabei-baerenrune'));
+      await tester.tap(_k('karto-dabei-baerenrune-ok'));
+      await tester.pumpAndSettle();
+      expect(
+        find.text('Bitte die RkP* als Zahl über 0 eingeben.'),
+        findsOneWidget,
+      );
+      expect(
+        (await aufbau.repo.loadHeroById('praiodan'))!.tragkraftBoni,
+        isEmpty,
+      );
+    });
+
+    testWidgets('andere Quelle anlegen und wieder entfernen', (tester) async {
+      final aufbau = await zeige(tester, _held(dukaten: '0'));
+      await tippe(tester, _k('karto-dabei-tragkraft-quelle'));
+      await tester.enterText(
+        _k('karto-dabei-quelle-name'),
+        'Gürtel der Stärke',
+      );
+      await tester.enterText(_k('karto-dabei-quelle-stein'), '5');
+      await tester.tap(_k('karto-dabei-quelle-ok'));
+      await tester.pumpAndSettle();
+      expect(
+        (await aufbau.repo.loadHeroById('praiodan'))!.tragkraftBoni.single.name,
+        'Gürtel der Stärke',
+      );
+      await tester.ensureVisible(_k('karto-dabei-last'));
+      expect(text(tester, 'karto-dabei-last'), 'Last 0 von 18 Stein');
+
+      await tippe(tester, _k('karto-dabei-tragkraft-0-entfernen'));
+      expect(
+        (await aufbau.repo.loadHeroById('praiodan'))!.tragkraftBoni,
+        isEmpty,
+      );
+      expect(text(tester, 'karto-dabei-last'), 'Last 0 von 13 Stein');
+    });
+
+    testWidgets('Quellen sind während einer Planung gesperrt, Zähler nicht', (
+      tester,
+    ) async {
+      final held = _held(dukaten: '0').copyWith(
+        tragkraftBoni: const [
+          HeroTragkraftBonus(id: 'a', name: 'Rune', stein: 10),
+        ],
+      );
+      final aufbau = await zeige(tester, held);
+      aufbau.container
+          .read(advancementSessionProvider('praiodan').notifier)
+          .start(hero: held, catalog: testCatalog);
+      await tester.pumpAndSettle();
+
+      await tippe(tester, _k('karto-dabei-tragkraft-0-entfernen'));
+      expect(
+        (await aufbau.repo.loadHeroById('praiodan'))!.tragkraftBoni,
+        hasLength(1),
+      );
+      await tippe(tester, _k('karto-dabei-erschoepfung-plus'));
+      expect((await aufbau.repo.loadHeroState('praiodan'))!.erschoepfung, 1);
+    });
   });
 }
 

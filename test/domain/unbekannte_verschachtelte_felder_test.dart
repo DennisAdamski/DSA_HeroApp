@@ -33,6 +33,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_merkmal.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_meta_talent.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_note_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_proben_favorit.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_tragkraft_bonus.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_regelprofil.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_reise_station.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_reisebericht.dart';
@@ -686,6 +687,20 @@ final _begleiterAbenteuerNotizen = <_Modell>[
     bearbeite: (json) =>
         HeroProbenFavorit.fromJson(json)!.copyWith(id: 'zauber:z_a').toJson(),
     unbekannt: (json) => HeroProbenFavorit.fromJson(json)!.unbekannteFelder,
+  ),
+  _Modell(
+    'HeroTragkraftBonus',
+    schluessel: HeroTragkraftBonus.jsonSchluessel,
+    voll: () => const HeroTragkraftBonus(
+      id: 't1',
+      name: 'Bärenrune (RkP* 7)',
+      stein: 70,
+      kk: 1,
+    ).toJson(),
+    lade: (json) => HeroTragkraftBonus.fromJson(json)!.toJson(),
+    bearbeite: (json) =>
+        HeroTragkraftBonus.fromJson(json)!.copyWith(stein: 80).toJson(),
+    unbekannt: (json) => HeroTragkraftBonus.fromJson(json)!.unbekannteFelder,
   ),
   _Modell(
     'HeroSpielkachel',

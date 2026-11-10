@@ -3275,10 +3275,10 @@ ueber die Settings-Katalogverwaltung bearbeitet.
 - Alle drei Effekte sind über das Hausregel-Paket `epic_rules_v1.advantages`
   (`isHouseRuleActiveProvider`) geschaltet — dieselbe Regel, die schon die
   Bonus-Anzeige steuert.
+- **KK Tragkraft × 1,5** rechnet seit 10.11.2026 `berechneTragkraft`
+  (`tragkraft_rules.dart`, Anzeige im Block „Dabei“ der Spielansicht).
 - **Weiterhin nicht unterstützt** (in der UI als „manuell" ausgewiesen), weil
   der jeweilige Regelbereich nicht modelliert ist:
-  KK Tragkraft × 1,5 (es gibt keine Tragkraftberechnung für Helden;
-  `tragkraft` existiert nur als Freitextfeld auf `HeroCompanion`),
   MU MR +7 gegen angstauslösende Zauber (MR ist ein einzelner Kennwert,
   „angstauslösend" ist nicht kategorisiert),
   KO Gift ×0,5 und Krankheit ×0,7 (kein Gift-/Krankheitsmodell),

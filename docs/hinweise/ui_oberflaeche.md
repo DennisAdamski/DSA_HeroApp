@@ -548,6 +548,39 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   `kDabeiMunitionImGefecht`), weil das Gefecht Ladezustand und Schuss am
   Bestand führt und eine fremde Bestandsänderung den Ladezustand zurücksetzen
   würde; Geld und Verbrauchsgegenstände bleiben bedienbar.
+  **Belastung (10.11.2026):** Am Ende des Blocks steht der Abschnitt
+  „Belastung“ (`_Belastung`), gespeist aus `HeroComputedSnapshot.tragkraft`
+  (`berechneTragkraft` in `tragkraft_rules.dart`, WdS S. 144). Er zeigt „Last x
+  von y Stein“ (1 Stein = 1 kg), die Herleitung der Tragkraft in einer Zeile
+  (`tragkraftFormel`), bei Überschreitung die Folge (`TragkraftErgebnis.hinweis`:
+  BE +1 je angefangene 50 % über der TK, über 2 × TK Verschnaufpausen alle KO
+  Spielrunden, ab 4 × TK Absetzen alle 5 × KO Schritt) und, falls getragene
+  Einträge kein Gewicht haben, einen Hinweis, dass die Last ein Mindestwert ist.
+  **Last** = Gewicht aller vom Helden getragenen Einträge (Stückgewicht × Menge;
+  was ein Begleiter trägt, zählt nicht) plus Geld (Dukat 25 g, Silbertaler,
+  Heller und Kreuzer je 5 g bei kleinstmöglicher Münzzahl, Geographia
+  Aventurica S. 141) plus die **Hälfte** von Kleidung und Rüstung am Leib
+  (`istAmLeibGetragen`: angelegte Rüstungsteile und manuell geführte,
+  ausgerüstete Ausrüstung; Waffen und Gepäck zählen voll). **Tragkraft** =
+  dauerhafte KK (`HeroStatInputs.permanent`, ohne laufende Zauber wie Attributo
+  oder Karnifilo, im Snapshot als `permanentAttributes`), bei epischer
+  KK-Haupteigenschaft mit aktiver Regel × 1,5 (aufgerundet, Epische Stufen Kap.
+  2.1), plus die Tragkraftquellen des Helden. Die Quellen liegen additiv in
+  `HeroSheet.tragkraftBoni` (`HeroTragkraftBonus`: Name, `stein`, optional `kk`
+  nur für die Tragkraft; nur bei belegter Liste im JSON, Sync-Merge je ID). Nur
+  **Dauerhaftes** gehört dorthin (Bärenrune bis zur Sonnenwende, dauerhafte
+  Gegenstände), keine Kurzzeitzauber. „+ Bärenrune“ rechnet RkP\* × 10 Stein
+  (Wege der Alchimie S. 161) und bietet die Hausregel „KK +1“ („Erweiterung und
+  Überarbeitung des Regelwerks“ Kap. 10) als Schalter; „+ Andere
+  Tragkraftquelle“ nimmt Name, Stein und KK. Quellen schreiben frisch über
+  `updateHero` (`mitTragkraftBonus`, `ohneTragkraftBonus`) und sind während einer
+  Planung gesperrt. Darunter stehen Erschöpfung und Überanstrengung mit −/+
+  (Laufzeitzustand, geschrieben über `updateHeroState` vom gespeicherten Wert,
+  nie unter 0, auch während einer Planung bedienbar wie im Zustandsblock).
+  Offen: Gepäck-Gewichte der Waffen- und Rüstungs-Slots sind nur so genau wie
+  das im Inventar eingetragene Gewicht; die optionale Reiseregel „BE aus
+  zusätzlicher Last je 25 %“ (WdS S. 144, Erschöpfung im Marsch) ist nicht
+  eingerechnet.
   Der Block
   sperrt sich während einer Planung; die Schritte reihen sich je Held ein und
   haben bewusst keinen Doppelklickschutz, damit jeder Klick zählt. Ohne
