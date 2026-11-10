@@ -91,6 +91,9 @@ Hinweis zu `flutter clean`:
 4. Architektur und Aufbau der betroffenen Loesung kritisch pruefen (Sinnhaftigkeit, Kopplung, Wartbarkeit).
 5. Nur minimal notwendige Aenderungen durchfuehren.
 6. Nach Aenderungen mindestens `flutter analyze` und relevante `flutter test`-Laeufe ausfuehren.
+   Dart-Dateien vor dem Commit mit `dart format` formatieren (die CI prueft das);
+   in frischen Clones einmalig `sh tool/setup_git_hooks.sh` ausfuehren, damit die
+   Hooks aus `.githooks/` laufen (Details: `docs/hinweise/plattform_werkzeuge.md`).
 7. Bei erfolgreichem Testlauf einen passenden Commit mit praeziser Nachricht erstellen.
 8. Ergebnis und verbleibende Risiken transparent dokumentieren.
 

@@ -1,6 +1,10 @@
 #!/bin/bash
 set -euo pipefail
 
+# Versionierte Git-Hooks (dart format, flutter analyze) in jedem Klon aktivieren;
+# core.hooksPath ist lokale Git-Konfiguration und kommt nicht mit dem Klon mit.
+git -C "${CLAUDE_PROJECT_DIR:-.}" config core.hooksPath .githooks 2>/dev/null || true
+
 # Nur in Remote-Umgebungen (Claude Code im Web) ausführen
 if [ "${CLAUDE_CODE_REMOTE:-}" != "true" ]; then
   exit 0
