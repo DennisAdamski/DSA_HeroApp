@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/gefecht.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_companion.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_spielansicht.dart';
@@ -610,6 +611,127 @@ void main() {
     final gespeichert = (await aufbau.repo.loadHeroById('praiodan'))!;
     expect(gespeichert.dukaten, '12,5');
     expect(gespeichert.inventoryEntries.first.menge, 3);
+  });
+
+  group('Verbrauchsgegenstände von Begleitern', () {
+    HeroInventoryEntry beiBegleiter(String name, int menge, String traegerId) =>
+        HeroInventoryEntry(
+          gegenstand: name,
+          anzahl: '$menge',
+          menge: menge,
+          instanzId: 'id-$name',
+          itemType: InventoryItemType.verbrauchsgegenstand,
+          traegerTyp: InventoryTraeger.begleiter,
+          traegerId: traegerId,
+        );
+
+    HeroSheet heldMit() =>
+        _held(
+          dukaten: '0',
+          eintraege: [
+            _verbrauch('Fackel', 3),
+            beiBegleiter('Hafer', 5, 'b1'),
+            beiBegleiter('Wasser', 2, 'b1'),
+            beiBegleiter('Futter', 4, 'b2'),
+          ],
+        ).copyWith(
+          companions: const [
+            HeroCompanion(id: 'b1', name: 'Rosinante'),
+            HeroCompanion(id: 'b2', name: 'Falke'),
+          ],
+        );
+
+    testWidgets('zeigt je Begleiter eine Gruppe, getrennt vom Helden', (
+      tester,
+    ) async {
+      await zeige(tester, heldMit());
+      await tester.ensureVisible(_k('karto-dabei-begleiter-0'));
+      expect(
+        tester.widget<Text>(_k('karto-dabei-begleiter-0')).data,
+        'Beim Begleiter: Rosinante',
+      );
+      expect(
+        tester.widget<Text>(_k('karto-dabei-begleiter-1')).data,
+        'Beim Begleiter: Falke',
+      );
+      expect(find.text('Hafer'), findsOneWidget);
+      expect(find.text('Futter'), findsOneWidget);
+      // Der Held behält seine eigene Liste, ohne „Benutzen“ am Begleiter.
+      expect(tester.widget<Text>(_k('karto-dabei-0-menge')).data, '3');
+      expect(
+        tester.widget<Text>(_k('karto-dabei-begleiter-0-0-menge')).data,
+        '5',
+      );
+      expect(_k('karto-dabei-begleiter-0-0-benutzen'), findsNothing);
+    });
+
+    testWidgets(
+      '−/+ zählt vom gespeicherten Wert und ändert nur diesen Eintrag',
+      (tester) async {
+        final aufbau = await zeige(tester, heldMit());
+        final minus = _k('karto-dabei-begleiter-0-0-minus');
+        await tester.ensureVisible(minus);
+        await tester.tap(minus);
+        await tester.tap(minus);
+        await tester.pumpAndSettle();
+        final gespeichert = (await aufbau.repo.loadHeroById('praiodan'))!;
+        final hafer = gespeichert.inventoryEntries.firstWhere(
+          (e) => e.gegenstand == 'Hafer',
+        );
+        expect(hafer.menge, 3);
+        expect(hafer.anzahl, '3');
+        // Träger bleibt der Begleiter, alles andere unberührt.
+        expect(hafer.traegerTyp, InventoryTraeger.begleiter);
+        expect(hafer.traegerId, 'b1');
+        expect(
+          gespeichert.inventoryEntries
+              .firstWhere((e) => e.gegenstand == 'Wasser')
+              .menge,
+          2,
+        );
+        expect(
+          gespeichert.inventoryEntries
+              .firstWhere((e) => e.gegenstand == 'Fackel')
+              .menge,
+          3,
+        );
+        expect(
+          tester.widget<Text>(_k('karto-dabei-begleiter-0-0-menge')).data,
+          '3',
+        );
+
+        await tippe(tester, _k('karto-dabei-begleiter-1-0-plus'));
+        expect(
+          (await aufbau.repo.loadHeroById('praiodan'))!.inventoryEntries
+              .firstWhere((e) => e.gegenstand == 'Futter')
+              .menge,
+          5,
+        );
+      },
+    );
+
+    testWidgets('ohne Begleiterlast gibt es keine Gruppe', (tester) async {
+      await zeige(tester, _held());
+      expect(_k('karto-dabei-begleiter-0'), findsNothing);
+    });
+
+    testWidgets('eine offene Planung sperrt auch die Begleiterzeilen', (
+      tester,
+    ) async {
+      final held = heldMit();
+      final aufbau = await zeige(tester, held);
+      aufbau.container
+          .read(advancementSessionProvider('praiodan').notifier)
+          .start(hero: held, catalog: testCatalog);
+      await tester.pumpAndSettle();
+      await tippe(tester, _k('karto-dabei-begleiter-0-0-minus'));
+      expect(
+        (await aufbau.repo.loadHeroById('praiodan'))!.inventoryEntries
+            .firstWhere((e) => e.gegenstand == 'Hafer')
+            .menge,
+        5,
+      );
+    });
   });
 
   group('Belastung (Last und Tragkraft)', () {

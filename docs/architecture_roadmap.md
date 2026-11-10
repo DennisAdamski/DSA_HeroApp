@@ -16,7 +16,7 @@ Ist-Zustand erneut prüfen und den konkreten Teilumfang festlegen.
 | --- | --- | --- |
 | Architektur (ARCH) | 01, 03, 05, 06 abgenommen | 02 und 04: Code fertig, manuelle Prüfung fehlt; 07 begleitend |
 | Fachlicher Ausbau | MAG-EFF: 17 Zauberprofile; TRANK: Teilstände 1 und 2 | weitere Zauber zurückgestellt; Elixiere, Kräuter, Verbandszeug offen |
-| Spielabend (SPIEL) | 01, 05, 06, 07 | 02 (Belastung, Begleiter), 03 (nicht begonnen), 04 (Produktion) |
+| Spielabend (SPIEL) | 01, 02, 05, 06, 07 | 03 (nicht begonnen), 04 (Produktion) |
 | Weitere Themen | Gefecht, Gefechtslage 1–7, Reittiere P1, Vertraute V1/V2, Reiseroute Stufe 1, Gruppen v2, Feedback, Redesign R1–R3, Aufräumserie REV-01–16 | siehe [Weitere Themen](#weitere-themen-stand-05112026) |
 
 **Größter Hebel:** Viele Hauptpunkte warten nur noch auf eine **manuelle
@@ -25,7 +25,7 @@ Sitzung deckt ab: ARCH-02 (Abweichung durch ältere App, Export → Import,
 Zwei-Geräte-Sync), ARCH-04 (Gruppenvorgabe), ARCH-06 (Geräte- und
 Live-Firebase-Prüfung) und den Großteil von ARCH-07 (Web/IndexedDB, native
 Pfade, `file_picker`). Danach bleiben fachlich vor allem die Lernregeln aus
-ARCH-04, SPIEL-02/-03 und der Produktionsschritt von SPIEL-04.
+ARCH-04, SPIEL-03 und der Produktionsschritt von SPIEL-04.
 
 ## Fachlicher Ausbau: MAG-EFF – Zaubereffekte
 
@@ -108,7 +108,7 @@ Teilumfang festlegen. Nach Wichtigkeit sortiert.
   `AppSettings.merkmaleAufgeklappt`, kein Sync, 01.11.2026). Details in
   [ui_oberflaeche.md](hinweise/ui_oberflaeche.md). Bewusst offen: Das Protokoll
   hält nur 50 Einträge, ältere Proben fallen aus dem Streifen.
-- [ ] **SPIEL-02 — Gegenstände und Geld im Spiel.** Beobachtung: Auf der Spielen-Seite
+- [x] **SPIEL-02 — Gegenstände und Geld im Spiel.** Beobachtung: Auf der Spielen-Seite
   weder Dukaten noch Munition, Tränke oder Proviant; zur Belastung nur der
   Eintrag im Zustand-Block. Vorschlag: Block „Dabei“ mit Geld, Munition und
   Verbrauchbarem (+/−); ein Trank wendet beim Benutzen Effekt und Menge
@@ -133,14 +133,16 @@ Teilumfang festlegen. Nach Wichtigkeit sortiert.
   „Belastung“ im Block: getragenes Gewicht gegen die Tragkraft (WdS S. 144:
   TK = KK in Stein; Last mit halbem Gewicht für alles, was eng am Körper
   getragen wird (Rüstung, Kleidung, getragene Ausrüstung, Waffen in den Händen)
-  und mit dem Gewicht des Geldes), BE-Folge und Hinweise, dauerhafte
+  und mit dem Gewicht des Geldes, BE-Folge und Hinweise, dauerhafte
   Tragkraftquellen wie die Bärenrune (`HeroSheet.tragkraftBoni`, nur
   Dauerhaftes, keine Kurzzeitzauber), epische KK-Haupteigenschaft × 1,5, dazu
   Erschöpfung und Überanstrengung mit −/+ (`tragkraft_rules.dart`,
   `tragkraft_rules_test.dart`, Details in
-  [ui_oberflaeche.md](hinweise/ui_oberflaeche.md)). **Offen:**
-  Verbrauchsgegenstände von Begleitern; die optionale Reiseregel „BE aus
-  zusätzlicher Last je 25 %“ (Erschöpfung im Marsch) ist nicht eingerechnet.
+  [ui_oberflaeche.md](hinweise/ui_oberflaeche.md)). **Begleiter (10.11.2026):**
+  Verbrauchsgegenstände, die Begleiter tragen, stehen je Begleiter im Block
+  und zählen mit −/+ (ohne „Benutzen“; `dabeiBegleiterVerbrauch`). **Grenze:**
+  die optionale Reiseregel „BE aus zusätzlicher Last je 25 %“ (Erschöpfung im
+  Marsch) ist nicht eingerechnet. SPIEL-02 damit abgeschlossen.
 - [ ] **SPIEL-03 — Zustände und Dauer.** Beobachtung: „Aktive Effekte“ kennt Zauber,
   aber keine schnellen Marker für Betäubung, Furcht oder Schmerz; der
   Kampfrundenzähler ist flüchtig und zählt keine Effektdauern herunter.

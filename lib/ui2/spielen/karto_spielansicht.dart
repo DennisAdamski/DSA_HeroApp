@@ -586,6 +586,7 @@ class _KartoSpielansichtState extends ConsumerState<KartoSpielansicht>
         dukaten: werte.hero.dukaten,
         verbrauch: dabeiVerbrauchsgegenstaende(werte.hero.inventoryEntries),
         munition: dabeiMunition(werte.hero.combatConfig),
+        begleiterVerbrauch: dabeiBegleiterVerbrauch(werte.hero),
         tragkraft: werte.tragkraft,
         tragkraftBoni: werte.hero.tragkraftBoni,
         erschoepfung: werte.state.erschoepfung,

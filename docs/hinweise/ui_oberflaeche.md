@@ -519,7 +519,16 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   „Alle zeigen“). Die Regeln liegen in `spiel_dabei_rules.dart`:
   `dabeiVerbrauchsgegenstaende` nimmt nur manuelle Verbrauchsgegenstände des
   Helden (keine mit dem Kampf verknüpften, keine abgelegten, keine von
-  Begleitern getragenen); Munition bleibt im Kampfbereich. Jeder Klick schreibt
+  Begleitern getragenen); Munition bleibt im Kampfbereich. **Beim Begleiter
+  (10.11.2026):** Was ein Begleiter trägt, steht darunter je Begleiter als
+  „Beim Begleiter: <Name>“ (`dabeiBegleiterVerbrauch`, Reihenfolge der
+  Begleiter am Helden; Einträge eines nicht mehr vorhandenen Begleiters in
+  einer Gruppe „Begleiter“; gleiche Auswahl wie beim Helden mit Träger
+  `begleiter`, `istDabeiBegleiterVerbrauchsgegenstand`). Die Zeilen zählen mit
+  −/+ über denselben Schritt `mitVerbrauchsmengenSchritt` (Träger und Träger-ID
+  bleiben), haben aber kein „Benutzen“, weil der Held sie nicht bei sich hat;
+  Keys `karto-dabei-begleiter-<gruppe>-<zeile>`. Die Last des Begleiters zählt
+  nicht zur Belastung des Helden. Jeder Klick schreibt
   frisch über `HeroActions.updateHero`: `mitGeldSchritt` und
   `mitVerbrauchsmengenSchritt` rechnen vom **gespeicherten** Wert, finden den
   Eintrag über die Instanz-ID und ändern nur ihr Feld (Menge über

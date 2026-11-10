@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_companion.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
@@ -80,6 +81,112 @@ void main() {
       // Eine ältere App hat `anzahl` abweichend von `menge` geändert.
       expect(dabeiMengeAenderbar(_verbrauch('A', '5', menge: 4)), isFalse);
     });
+  });
+
+  group('Verbrauchsgegenstände von Begleitern', () {
+    HeroInventoryEntry beiBegleiter(
+      String name,
+      String anzahl,
+      String? traegerId, {
+      InventoryItemSource source = InventoryItemSource.manuell,
+      InventoryItemType typ = InventoryItemType.verbrauchsgegenstand,
+    }) => _verbrauch(
+      name,
+      anzahl,
+      id: 'id-$name',
+      menge: int.tryParse(anzahl),
+      source: source,
+      typ: typ,
+      traeger: InventoryTraeger.begleiter,
+    ).copyWith(traegerId: traegerId);
+
+    HeroSheet heldMit(List<HeroInventoryEntry> eintraege) =>
+        _held(eintraege: eintraege).copyWith(
+          companions: const [
+            HeroCompanion(id: 'b1', name: 'Rosinante'),
+            HeroCompanion(id: 'b2', name: 'Falke'),
+          ],
+        );
+
+    test('Auswahl: nur manuelle Verbrauchsgegenstände von Begleitern', () {
+      expect(
+        istDabeiBegleiterVerbrauchsgegenstand(beiBegleiter('Hafer', '5', 'b1')),
+        isTrue,
+      );
+      // Der Held trägt es selbst: gehört in die Liste des Helden.
+      expect(
+        istDabeiBegleiterVerbrauchsgegenstand(_verbrauch('Fackel', '3')),
+        isFalse,
+      );
+      expect(
+        istDabeiBegleiterVerbrauchsgegenstand(
+          beiBegleiter(
+            'Pfeil',
+            '9',
+            'b1',
+            source: InventoryItemSource.geschoss,
+          ),
+        ),
+        isFalse,
+      );
+      expect(
+        istDabeiBegleiterVerbrauchsgegenstand(
+          beiBegleiter('Sattel', '1', 'b1', typ: InventoryItemType.ausruestung),
+        ),
+        isFalse,
+      );
+    });
+
+    test(
+      'gruppiert nach Begleiter in deren Reihenfolge, Verwaiste zuletzt',
+      () {
+        final held = heldMit([
+          beiBegleiter('Futter', '2', 'b2'),
+          beiBegleiter('Hafer', '5', 'b1'),
+          beiBegleiter('Wasser', '3', 'b1'),
+          beiBegleiter('Brot', '1', 'weg'),
+          _verbrauch('Fackel', '3'),
+        ]);
+        final gruppen = dabeiBegleiterVerbrauch(held);
+        expect(gruppen.map((g) => g.name), ['Rosinante', 'Falke', 'Begleiter']);
+        expect(gruppen[0].eintraege.map((e) => e.gegenstand), [
+          'Hafer',
+          'Wasser',
+        ]);
+        expect(gruppen[1].eintraege.single.gegenstand, 'Futter');
+        expect(gruppen[2].begleiterId, '');
+        // Die Liste des Helden bleibt unberührt.
+        expect(dabeiVerbrauchsgegenstaende(held.inventoryEntries).length, 1);
+      },
+    );
+
+    test('ohne Verbrauchsgegenstand eines Begleiters keine Gruppe', () {
+      expect(
+        dabeiBegleiterVerbrauch(heldMit([_verbrauch('Fackel', '3')])),
+        isEmpty,
+      );
+    });
+
+    test('ein unbenannter Begleiter heißt „Begleiter“', () {
+      final held = _held(eintraege: [beiBegleiter('Hafer', '5', 'b1')])
+          .copyWith(companions: const [HeroCompanion(id: 'b1')]);
+      expect(dabeiBegleiterVerbrauch(held).single.name, 'Begleiter');
+    });
+
+    test(
+      'die Menge zählt vom gespeicherten Wert und trifft nur den Eintrag',
+      () {
+        final hafer = beiBegleiter('Hafer', '5', 'b1');
+        final held = heldMit([hafer, beiBegleiter('Wasser', '3', 'b1')]);
+        final neu = mitVerbrauchsmengenSchritt(held, hafer, -2);
+        expect(neu.inventoryEntries[0].menge, 3);
+        expect(neu.inventoryEntries[0].anzahl, '3');
+        expect(neu.inventoryEntries[1].menge, 3);
+        // Der Träger bleibt, der Eintrag geht nicht an den Helden über.
+        expect(neu.inventoryEntries[0].traegerTyp, InventoryTraeger.begleiter);
+        expect(neu.inventoryEntries[0].traegerId, 'b1');
+      },
+    );
   });
 
   group('Menge ändern', () {

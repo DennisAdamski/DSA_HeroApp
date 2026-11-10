@@ -54,6 +54,7 @@ class KartoDabeiAbschnitt extends ConsumerStatefulWidget {
     required this.dukaten,
     required this.verbrauch,
     this.munition = const <DabeiMunition>[],
+    this.begleiterVerbrauch = const <DabeiBegleiterVerbrauch>[],
     this.tragkraft,
     this.tragkraftBoni = const <HeroTragkraftBonus>[],
     this.erschoepfung = 0,
@@ -72,6 +73,11 @@ class KartoDabeiAbschnitt extends ConsumerStatefulWidget {
 
   /// Geschossbestände aus `dabeiMunition`; leer heißt kein Abschnitt.
   final List<DabeiMunition> munition;
+
+  /// Verbrauchsgegenstände, die Begleiter tragen, nach Begleiter gruppiert
+  /// (`dabeiBegleiterVerbrauch`); leer heißt kein Abschnitt. Sie lassen sich
+  /// zählen, aber nicht benutzen: Der Held hat sie nicht bei sich.
+  final List<DabeiBegleiterVerbrauch> begleiterVerbrauch;
 
   /// Last und Tragkraft aus dem Regelmodul; ohne Wert entfällt „Belastung“.
   final TragkraftErgebnis? tragkraft;
@@ -269,6 +275,38 @@ class _KartoDabeiAbschnittState extends ConsumerState<KartoDabeiAbschnitt>
                 ),
               ),
             ),
+          for (var g = 0; g < widget.begleiterVerbrauch.length; g++) ...[
+            const SizedBox(height: Abstand.weit),
+            Text(
+              'Beim Begleiter: ${widget.begleiterVerbrauch[g].name}',
+              key: ValueKey<String>('karto-dabei-begleiter-$g'),
+              style: texte.marke.copyWith(color: karto.schriftLeise),
+            ),
+            const SizedBox(height: Abstand.eng),
+            _Zeilen(
+              children: [
+                for (
+                  var i = 0;
+                  i < widget.begleiterVerbrauch[g].eintraege.length;
+                  i++
+                )
+                  _Verbrauchszeile(
+                    index: i,
+                    schluessel: 'karto-dabei-begleiter-$g-$i',
+                    eintrag: widget.begleiterVerbrauch[g].eintraege[i],
+                    gesperrt: gesperrt,
+                    onSchritt: (delta) => _schreibe(
+                      (held) => mitVerbrauchsmengenSchritt(
+                        held,
+                        widget.begleiterVerbrauch[g].eintraege[i],
+                        delta,
+                      ),
+                    ),
+                    onBenutzen: null,
+                  ),
+              ],
+            ),
+          ],
           if (widget.tragkraft != null) ...[
             const SizedBox(height: Abstand.weit),
             _Belastung(
@@ -688,6 +726,7 @@ class _Munitionszeile extends StatelessWidget {
 class _Verbrauchszeile extends StatelessWidget {
   const _Verbrauchszeile({
     required this.index,
+    this.schluessel,
     required this.eintrag,
     required this.gesperrt,
     required this.onSchritt,
@@ -695,6 +734,9 @@ class _Verbrauchszeile extends StatelessWidget {
   });
 
   final int index;
+
+  /// Schlüssel-Präfix der Zeile; ohne Angabe `karto-dabei-<index>`.
+  final String? schluessel;
   final HeroInventoryEntry eintrag;
   final bool gesperrt;
   final void Function(int delta) onSchritt;
@@ -725,13 +767,15 @@ class _Verbrauchszeile extends StatelessWidget {
             Tooltip(
               message: '${dabeiName(eintrag)} benutzen',
               child: TextButton(
-                key: ValueKey<String>('karto-dabei-$index-benutzen'),
+                key: ValueKey<String>(
+                  '${schluessel ?? 'karto-dabei-$index'}-benutzen',
+                ),
                 onPressed: gesperrt || aufgebraucht ? null : onBenutzen,
                 child: const Text('Benutzen'),
               ),
             ),
           _MengeSchritt(
-            schluessel: 'karto-dabei-$index',
+            schluessel: schluessel ?? 'karto-dabei-$index',
             menge: menge,
             name: dabeiName(eintrag),
             onMinus: aenderbar && !aufgebraucht ? () => onSchritt(-1) : null,

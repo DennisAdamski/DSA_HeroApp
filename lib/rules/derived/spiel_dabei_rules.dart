@@ -33,6 +33,77 @@ bool istDabeiVerbrauchsgegenstand(HeroInventoryEntry eintrag) {
       eintrag.traegerTyp == InventoryTraeger.held;
 }
 
+/// Ob [eintrag] ein Verbrauchsgegenstand ist, den ein **Begleiter** trägt
+/// (Packtier, Vertrauter, Reittier).
+///
+/// Gleiche Bedingungen wie bei [istDabeiVerbrauchsgegenstand], nur mit dem
+/// Begleiter als Träger. Die Last des Begleiters belastet den Helden nicht.
+bool istDabeiBegleiterVerbrauchsgegenstand(HeroInventoryEntry eintrag) {
+  return eintrag.itemType == InventoryItemType.verbrauchsgegenstand &&
+      !isCombatLinkedInventorySource(eintrag.source) &&
+      eintrag.abgelegt == null &&
+      eintrag.traegerTyp == InventoryTraeger.begleiter;
+}
+
+/// Verbrauchsgegenstände, die ein Begleiter trägt, unter dessen Namen.
+class DabeiBegleiterVerbrauch {
+  /// Erstellt die Gruppe für den Begleiter [begleiterId].
+  const DabeiBegleiterVerbrauch({
+    required this.begleiterId,
+    required this.name,
+    required this.eintraege,
+  });
+
+  /// ID des Begleiters; leer bei Einträgen ohne Träger-ID.
+  final String begleiterId;
+
+  /// Gezeigter Name; „Begleiter“, wenn es den Begleiter nicht mehr gibt.
+  final String name;
+
+  /// Die Verbrauchsgegenstände in gespeicherter Reihenfolge.
+  final List<HeroInventoryEntry> eintraege;
+}
+
+/// Die Verbrauchsgegenstände aller Begleiter, nach Begleiter gruppiert.
+///
+/// Die Gruppen folgen der Reihenfolge der Begleiter am Helden; Einträge eines
+/// nicht mehr vorhandenen Begleiters stehen zuletzt in einer Gruppe
+/// „Begleiter“. Begleiter ohne Verbrauchsgegenstand erscheinen nicht.
+List<DabeiBegleiterVerbrauch> dabeiBegleiterVerbrauch(HeroSheet held) {
+  final alle = held.inventoryEntries
+      .where(istDabeiBegleiterVerbrauchsgegenstand)
+      .toList(growable: false);
+  if (alle.isEmpty) return const <DabeiBegleiterVerbrauch>[];
+  final ergebnis = <DabeiBegleiterVerbrauch>[];
+  final bekannt = <String>{};
+  for (final begleiter in held.companions) {
+    bekannt.add(begleiter.id);
+    final eigene = alle.where((e) => e.traegerId == begleiter.id).toList();
+    if (eigene.isEmpty) continue;
+    final name = begleiter.name.trim();
+    ergebnis.add(
+      DabeiBegleiterVerbrauch(
+        begleiterId: begleiter.id,
+        name: name.isEmpty ? 'Begleiter' : name,
+        eintraege: List<HeroInventoryEntry>.unmodifiable(eigene),
+      ),
+    );
+  }
+  final verwaist = alle
+      .where((e) => !bekannt.contains(e.traegerId))
+      .toList(growable: false);
+  if (verwaist.isNotEmpty) {
+    ergebnis.add(
+      DabeiBegleiterVerbrauch(
+        begleiterId: '',
+        name: 'Begleiter',
+        eintraege: List<HeroInventoryEntry>.unmodifiable(verwaist),
+      ),
+    );
+  }
+  return List<DabeiBegleiterVerbrauch>.unmodifiable(ergebnis);
+}
+
 /// Die Verbrauchsgegenstände des Blocks in gespeicherter Reihenfolge.
 List<HeroInventoryEntry> dabeiVerbrauchsgegenstaende(
   List<HeroInventoryEntry> eintraege,
@@ -98,7 +169,8 @@ HeroSheet mitVerbrauchsmengenSchritt(
     throw StateError('Der Gegenstand wurde inzwischen geändert oder entfernt.');
   }
   final gespeichert = held.inventoryEntries[index];
-  if (!istDabeiVerbrauchsgegenstand(gespeichert)) {
+  if (!istDabeiVerbrauchsgegenstand(gespeichert) &&
+      !istDabeiBegleiterVerbrauchsgegenstand(gespeichert)) {
     throw StateError(
       '„${dabeiName(gespeichert)}“ ist kein Verbrauchsgegenstand mehr.',
     );
