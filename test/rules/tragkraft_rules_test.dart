@@ -8,7 +8,8 @@ import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/tragkraft_rules.dart';
 
 // Last und Tragkraft (SPIEL-02, WdS S. 144): TK = KK in Stein, Last = Gewicht
-// der Gegenstände plus die Hälfte von Kleidung und Rüstung am Leib. Nur
+// der Gegenstände plus die Hälfte dessen, was eng am Körper getragen wird
+// (Kleidung, Rüstung, getragene Ausrüstung, Waffen in den Händen). Nur
 // Dauerhaftes zählt; die Eigenschaften kommen ohne laufende Zauber herein.
 
 const Attributes _werte = Attributes(
@@ -177,7 +178,7 @@ void main() {
       expect(_rechne(_held(eintraege: [getragen])).amLeibGramm, 10000);
     });
 
-    test('manuell geführte, angelegte Ausrüstung zählt halb', () {
+    test('getragene Ausrüstung und Kleidung zählen halb', () {
       final kleidung = _stueck(
         2000,
         typ: InventoryItemType.ausruestung,
@@ -186,14 +187,44 @@ void main() {
       expect(_rechne(_held(eintraege: [kleidung])).lastGramm, 1000);
     });
 
-    test('Waffen in der Hand zählen voll', () {
+    test('Waffen und Schild in den Händen zählen halb, abgelegt voll', () {
       final schwert = _stueck(
         3000,
         source: InventoryItemSource.waffe,
         typ: InventoryItemType.ausruestung,
         ausgeruestet: true,
       );
-      expect(_rechne(_held(eintraege: [schwert])).lastGramm, 3000);
+      final schild = _stueck(
+        4000,
+        source: InventoryItemSource.nebenhand,
+        typ: InventoryItemType.ausruestung,
+        ausgeruestet: true,
+      );
+      final imGepaeck = _stueck(
+        3000,
+        source: InventoryItemSource.waffe,
+        typ: InventoryItemType.ausruestung,
+      );
+      expect(_rechne(_held(eintraege: [schwert, schild])).lastGramm, 3500);
+      expect(_rechne(_held(eintraege: [imGepaeck])).lastGramm, 3000);
+    });
+
+    test('Geschosse, Verbrauchsgut und Sonstiges zählen voll', () {
+      final pfeile = _stueck(
+        500,
+        menge: 10,
+        source: InventoryItemSource.geschoss,
+        typ: InventoryItemType.verbrauchsgegenstand,
+      );
+      final beutel = _stueck(2000);
+      final proviant = _stueck(
+        1000,
+        typ: InventoryItemType.verbrauchsgegenstand,
+        ausgeruestet: true,
+      );
+      final e = _rechne(_held(eintraege: [pfeile, beutel, proviant]));
+      expect(e.lastGramm, 5000 + 2000 + 1000);
+      expect(e.amLeibGramm, 0);
     });
 
     test('Was ein Begleiter trägt, belastet den Helden nicht', () {

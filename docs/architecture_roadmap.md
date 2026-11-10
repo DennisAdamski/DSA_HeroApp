@@ -131,7 +131,8 @@ Teilumfang festlegen. Nach Wichtigkeit sortiert.
   Bestand führt (Tests in `spiel_dabei_rules_test.dart` und
   `karto_dabei_abschnitt_test.dart`). **Belastung (10.11.2026):** Abschnitt
   „Belastung“ im Block: getragenes Gewicht gegen die Tragkraft (WdS S. 144:
-  TK = KK in Stein; Last mit halbem Gewicht für Kleidung und Rüstung am Leib
+  TK = KK in Stein; Last mit halbem Gewicht für alles, was eng am Körper
+  getragen wird (Rüstung, Kleidung, getragene Ausrüstung, Waffen in den Händen)
   und mit dem Gewicht des Geldes), BE-Folge und Hinweise, dauerhafte
   Tragkraftquellen wie die Bärenrune (`HeroSheet.tragkraftBoni`, nur
   Dauerhaftes, keine Kurzzeitzauber), epische KK-Haupteigenschaft × 1,5, dazu

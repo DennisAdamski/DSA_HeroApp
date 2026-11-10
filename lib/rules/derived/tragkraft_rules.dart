@@ -4,7 +4,10 @@
 // in Stein entspricht der Körperkraft; 1 Stein sind 1 kg (Geographia
 // Aventurica S. 140). Die Last ist das Gewicht von Ausrüstung, Waffen, Geld,
 // Tränken und Artefakten, die der Held trägt, plus die **Hälfte** des Gewichts
-// von Kleidung und Rüstung, die am Leib getragen werden.
+// von Kleidung und Rüstung, die am Leib getragen werden. Die App rechnet nach
+// Tischregel alles zur Hälfte, was eng am Körper getragen wird (Rüstung,
+// Kleidung, getragene Ausrüstung, Waffen in den Händen); siehe
+// [istAmLeibGetragen].
 //
 // Pro angefangenen 50 % Last über der TK steigt die BE um einen Punkt (Kampf,
 // Talentproben, taktische Bewegung). Über der doppelten TK braucht der Held
@@ -136,20 +139,17 @@ class TragkraftErgebnis {
   };
 }
 
-/// Ob [e] als Kleidung oder Rüstung am Leib zählt (halbes Gewicht).
+/// Ob [e] eng am Körper getragen wird und deshalb nur zur Hälfte zählt.
 ///
-/// Das sind die angelegten Rüstungsteile des Kampfbereichs und manuell
-/// geführte, ausgerüstete Ausrüstungsstücke. Waffen in der Hand, Nebenhand-
-/// gegenstände und alles im Gepäck zählen voll („ein auf den Rucksack
-/// geschnalltes Kettenhemd zählt mit seinem vollen Gewicht“).
-bool istAmLeibGetragen(HeroInventoryEntry e) {
-  if (!e.istAusgeruestet) return false;
-  return switch (e.source) {
-    InventoryItemSource.ruestung => true,
-    InventoryItemSource.manuell => e.itemType == InventoryItemType.ausruestung,
-    _ => false,
-  };
-}
+/// Am Körper getragen sind angelegte Rüstung und Kleidung, getragene
+/// Ausrüstungsgegenstände und die Waffen (samt Schild oder Parierwaffe) in den
+/// Händen: alles, was als Ausrüstung angelegt bzw. ausgerüstet ist. Das Buch
+/// nennt nur Kleidung und Rüstung (WdS S. 144); Ausrüstung und Waffen in der
+/// Hand rechnet diese Tischregel dazu. Alles andere zählt voll, auch eine
+/// Waffe oder Rüstung im Gepäck („ein auf den Rucksack geschnalltes
+/// Kettenhemd zählt mit seinem vollen Gewicht“), Geschosse und Verbrauchsgut.
+bool istAmLeibGetragen(HeroInventoryEntry e) =>
+    e.istAusgeruestet && e.itemType == InventoryItemType.ausruestung;
 
 /// Gewicht des Geldes [dukaten] in Gramm bei kleinstmöglicher Münzzahl.
 ///

@@ -559,9 +559,12 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   **Last** = Gewicht aller vom Helden getragenen Einträge (Stückgewicht × Menge;
   was ein Begleiter trägt, zählt nicht) plus Geld (Dukat 25 g, Silbertaler,
   Heller und Kreuzer je 5 g bei kleinstmöglicher Münzzahl, Geographia
-  Aventurica S. 141) plus die **Hälfte** von Kleidung und Rüstung am Leib
-  (`istAmLeibGetragen`: angelegte Rüstungsteile und manuell geführte,
-  ausgerüstete Ausrüstung; Waffen und Gepäck zählen voll). **Tragkraft** =
+  Aventurica S. 141) plus die **Hälfte** von allem, was eng am Körper
+  getragen wird (`istAmLeibGetragen`, Tischregel des Nutzers vom 10.11.2026:
+  Rüstung, Kleidung, getragene Ausrüstungsgegenstände und Waffen in den
+  Händen, also jede angelegte bzw. ausgerüstete Ausrüstung; das Buch nennt nur
+  Kleidung und Rüstung, WdS S. 144). Alles andere zählt voll: Gepäck, nicht
+  angelegte Waffen und Rüstungen, Geschosse und Verbrauchsgut. **Tragkraft** =
   dauerhafte KK (`HeroStatInputs.permanent`, ohne laufende Zauber wie Attributo
   oder Karnifilo, im Snapshot als `permanentAttributes`), bei epischer
   KK-Haupteigenschaft mit aktiver Regel × 1,5 (aufgerundet, Epische Stufen Kap.
