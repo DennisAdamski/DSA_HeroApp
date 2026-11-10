@@ -11598,6 +11598,58 @@
       "rationale": "Datei und lib/rules/derived/spiel_dabei_rules.dart vollstaendig gelesen. Es geht um Auswahl-, Schreib- und Verlustfreiheitslogik eines App-Blocks; Gegenstaende (Fackel, Proviant, Heiltrank) und Mengen sind Beispieleingaben ohne Regelbezug, das Buch kennt weder Verbrauchsgegenstands-Arten noch Hoechstmengen. Die einzigen Zahlen mit Regelbezug sind die Muenzfaktoren (1 Dukat = 10 Silbertaler = 1.000 Kreuzer; 12,53 -> 12 D / 5 S / 30 K); sie stuetzen sich auf die bereits verifizierte Umrechnung in test/rules/currency_rules_test.dart (Basisregelwerk S. 265, MCP-Chunks 902 bis 905), hier werden sie nur angewendet. Per MCP erneut gesucht nach 'Dukat Silbertaler Kreuzer Umrechnung Muenzen': Treffer ist u. a. Geographia Aventurica, Chunk 1232 (Masse, Geld, Gewichte), bereits in der verifizierten Umrechnung belegt; keine abweichende Aussage gefunden.",
       "sources": []
     },
+    "test/rules/tragkraft_rules_test.dart": {
+      "kind": "official",
+      "status": "verified",
+      "summary": "Sichert Last und Tragkraft des Helden (SPIEL-02) gegen Wege des Schwerts S. 144 ab: Tragkraft in Stein entspricht der Körperkraft; die Last ist das Gewicht des Getragenen plus die Hälfte von Kleidung und Rüstung am Leib (ein auf den Rucksack geschnalltes Kettenhemd zählt voll); pro angefangenen 50 % Last über der Tragkraft steigt die BE um 1; über der doppelten Tragkraft sind Verschnaufpausen alle KO Spielrunden fällig, ab der vierfachen Tragkraft muss die Last alle 5 × KO Schritt abgesetzt werden. Die Bärenrune erhöht die Tragkraft um RkP* × 10 Stein (Wege der Alchimie S. 161); die Hausregel ergänzt KK +1. Die epische KK-Haupteigenschaft rechnet die Tragkraftgrenzenbasis mit KK × 1,5 statt KK (Epische Stufen S. 4, Aufrundung nach der Tischregel). 1 Stein sind 1 kg, 1 Unze 25 g; ein Dukat besteht aus einer Unze Gold, Silbertaler, Heller und Kreuzer wiegen je 5 Skrupel (Geographia Aventurica S. 140 f.).",
+      "rationale": "Datei und lib/rules/derived/tragkraft_rules.dart vollständig gelesen, alle Regelzahlen per DSA-MCP gegen den Buchtext geprüft. App-Entscheidungen ohne Buchaussage sind getrennt: welche Einträge als „am Leib getragen“ gelten (angelegte Rüstungsteile und manuell geführte, ausgerüstete Ausrüstung), die kleinstmögliche Münzzahl für das Geldgewicht, das Zählen nur dauerhafter Quellen (keine Kurzzeitzauber) sowie die Schreib- und Anzeigelogik (Einträge ohne Gewicht, Begleiterlast, Quellenliste, Formatierung). Nicht eingerechnet ist die optionale Reiseregel „BE aus zusätzlicher Last je 25 %“ (WdS S. 144).",
+      "sources": [
+        {
+          "title": "Wege des Schwerts – Last und Tragkraft",
+          "pages": "144",
+          "mcpChunks": [
+            7189,
+            7190
+          ],
+          "checkedOn": "2026-11-10"
+        },
+        {
+          "title": "Wege der Alchimie (2. Auflage 2012) – Bärenrune",
+          "pages": "161",
+          "mcpChunks": [
+            3071,
+            3072
+          ],
+          "checkedOn": "2026-11-10"
+        },
+        {
+          "title": "Geographia Aventurica (2. Auflage) – Maße, Geld, Gewichte",
+          "pages": "140–141",
+          "mcpChunks": [
+            1232,
+            1233,
+            1234
+          ],
+          "checkedOn": "2026-11-10"
+        },
+        {
+          "title": "Hausregel: Erweiterung und Überarbeitung des Regelwerks – Runen & Zauberzeichen (Bärenrune KK +1)",
+          "pages": "27",
+          "mcpChunks": [
+            25836
+          ],
+          "checkedOn": "2026-11-10"
+        },
+        {
+          "title": "Hausregel: Epische Stufen – Haupteigenschaft Körperkraft",
+          "pages": "4",
+          "mcpChunks": [
+            25739
+          ],
+          "checkedOn": "2026-11-10"
+        }
+      ]
+    },
     "test/rules/steigerung_herleitung_rules_test.dart": {
       "kind": "official",
       "status": "conflict",
