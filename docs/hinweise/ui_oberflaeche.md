@@ -204,6 +204,29 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   Die Kachel „Reiseroute“ (`karto_reiseroute.dart`) zeigt die jüngsten
   Stationen von `HeroSheet.reiseStationen` als Zeitleiste und öffnet das
   Reiseroute-Blatt; Details in [reiseroute_plan.md](../reiseroute_plan.md).
+  **Wildnis (12.11.2026):** Die Kachel „Wildnis“ (`KartoSpielkachelArt.wildnis`,
+  `ui2/spielen/wildnis/karto_wildnis_kachel.dart`) ist **eine** Kachel für alle
+  Wildnistätigkeiten; oben wählt man die Tätigkeit (der Umschalter erscheint ab
+  zwei Tätigkeiten). Gemeinsam sind Standort, Landschaft (Vorschlag aus
+  `findeOrt` + `landschaftenFuerOrt`), Jahreszeit (aus
+  `resolveCurrentAdventureDate`), Geländekunde und Ortskenntnis (aus
+  `werteWildnisSonderfertigkeitenAus`, von Hand überschreibbar), Dauer, AsP,
+  Erschwernis, TaW aus den Bestandteil-Talenten, die Probe über
+  `KartoGefechtsAdapter.gefechtsProbe` (schreibt selbst ins Würfelprotokoll,
+  kein Import aus `lib/ui`; ohne Gefechtsbrücke bleibt der Knopf gesperrt) und
+  die Ergebnisanzeige. Die Kachel schreibt nichts am Helden; Eingaben und
+  Ergebnis leben nur im Widget, jede Eingabe verwirft das Ergebnis. AsP werden
+  nicht abgebucht. Das Vergrößern-Popup liefert das Raster; in `weit` zeigt die
+  Vorschau mehr Zeilen (`kWildnisVorschauWeit` statt `kWildnisVorschauKurz`).
+  **Neue Tätigkeit** (Nahrung sammeln, Pirschjagd …): Unterklasse von
+  `KartoWildnisTaetigkeit` (`karto_wildnis_taetigkeit.dart`: Talentbestandteile,
+  Eigenschaften, Landschaften und Landschaftsvorschlag je Ort, Dauern, eigene
+  Wahlen `KartoWildnisOption`, `erschwernis`, `baueProbe`, `auswerten`,
+  `vorschau`) plus Regelfunktion in `lib/rules/derived/`, dann ein Eintrag in
+  `kartoWildnisTaetigkeiten`; Kachel und Raster bleiben unverändert. Als
+  erste ist `KartoKraeutersucheTaetigkeit` (KL/IN/FF laut WdE S. 113, nicht das
+  MU/IN/FF des Standard-Metatalents) umgesetzt. Standardplatz: vor dem
+  Würfelprotokoll, damit bestehende Anordnungen nicht verschoben werden.
   **Vor- und Nachteile:** In `weit` zeigt die eingeklappte Übersicht
   (`KartoMerkmalsuebersicht`) je Art bis zu `kMerkmaleZeilenWeit` (3) statt einer
   Zeile, also mehr Einträge ohne Aufklappen; aufgeklappt stehen Vorteile und

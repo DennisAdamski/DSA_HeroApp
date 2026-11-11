@@ -13242,6 +13242,63 @@
       "summary": "Prüft das Lesen des Ortsverzeichnisses (Name, Art, Unterart, Region, Seitenname, Stand; unvollständige Einträge werden mit Grund verworfen, ungültige Wurzel und fehlendes Asset ergeben einen leeren Katalog) und die Datei orte.json selbst (lesbar, Stand als Datum, über 1000 Siedlungen und über 500 Regionen, Gareth, Havena und Thorwal als Siedlung, keine Klammerzusätze im Namen, keine doppelten Name-Art-Paare).",
       "rationale": "Test und lib/catalog/ort_loader.dart gelesen: technischer Katalogvertrag für ein aus der Wiki Aventurica (CC BY-SA) importiertes Namensverzeichnis. Es enthält nur Kurzfakten ohne Regelaussage; die Mindestzahlen sind Plausibilitätsgrenzen für den Import, keine Behauptung über den Umfang Aventuriens.",
       "sources": []
+    },
+    "test/rules/derived/wildnis_probe_rules_test.dart": {
+      "kind": "official",
+      "status": "verified",
+      "summary": "Sichert den tätigkeitsneutralen Kern der Wildnisproben ab: Die Erschwernis ist die Summe aus Basiserschwernis (Landschaft, Jahreszeit, Dauer), Geländekunde (passend −3, ähnlich −1), passender Ortskenntnis (−7), eingesetzten AsP (je 3 AsP −1) und situativer Erschwernis (Wege des Entdeckers S. 112 f.); die Probe ist eine Talentprobe 3W20 gegen drei Eigenschaften mit dem TaW als Pool und der negierten Erschwernis als Modifikator. Die TaP* einer gelungenen Probe sind mindestens 1 und höchstens der TaW. Die Kräutersuche nutzt denselben Kern, bildet ihre Landschaften auf Geländekunden ab und zeigt ihr Ergebnis in der gemeinsamen Anzeigeform.",
+      "rationale": "Datei und lib/rules/derived/wildnis_probe_rules.dart vollständig gelesen, die Zahlen (−3/−1/−7, 3 AsP je Punkt) per DSA-MCP gegen den Buchtext von Wege des Entdeckers S. 113 geprüft; die Zoo Botanica nennt für die Jagd dieselbe Erleichterung durch Geländekunde und Ortskenntnis. App-Entscheidungen ohne Buchaussage: angebrochene 3 AsP zählen nicht, negative AsP erleichtern nichts, die Zuordnung der Kräuterlandschaften zu den Geländekunden (Waldkundig für dichten und lichten Wald, Gebirgskundig auch im Hochgebirge; ähnlich: Dschungel und Maraskan sowie Steppenkundig im Grasland, weil das Buch die Ähnlichkeit dem Meister überlässt) und die Textform der Ergebnisanzeige. Die Deckelung der Erleichterung durch Sonderfertigkeiten auf 0 (Zoo Botanica S. 224) ist bewusst nicht umgesetzt.",
+      "sources": [
+        {
+          "title": "Wege des Entdeckers – Nahrung sammeln und Kräuter Suchen (Modifikationen nach Sonderfertigkeiten, Region, AsP)",
+          "pages": "112–113",
+          "mcpChunks": [
+            6305,
+            6306,
+            6307
+          ],
+          "checkedOn": "2026-11-11"
+        },
+        {
+          "title": "Zoo Botanica Aventurica – Jagdtalente: Geländekunde und Ortskenntnis verringern die Erschwernis",
+          "pages": "61, 224",
+          "mcpChunks": [
+            8031,
+            8032,
+            8430
+          ],
+          "checkedOn": "2026-11-11"
+        }
+      ]
+    },
+    "test/rules/derived/wildnis_sonderfertigkeit_rules_test.dart": {
+      "kind": "official",
+      "status": "verified",
+      "summary": "Sichert die Erkennung von Geländekunde und Ortskenntnis aus den Sonderfertigkeiten des Helden ab: Geländekunde wird je Gelände erworben (Waldkundig, Dschungelkundig, Maraskankundig, Sumpfkundig, Steppenkundig, Gebirgskundig, Wüstenkundig, Eiskundig, Höhlenkundig, Meereskundig) und erleichtert Proben im vertrauten Gelände um 3, ähnliches Gelände nach Meisterentscheid um 1; Ortskenntnis wird je Ort oder Strecke erworben und lässt 7 Punkte Erschwernis entfallen, wenn der Held am passenden Ort ist (Wege der Helden S. 276–278; Wege des Entdeckers S. 112 f.).",
+      "rationale": "Datei und lib/rules/derived/wildnis_sonderfertigkeit_rules.dart vollständig gelesen, die Regelzahlen und die Geländearten per DSA-MCP gegen Wege der Helden und Wege des Entdeckers geprüft. App-Entscheidungen ohne Buchaussage: Die Sonderfertigkeiten werden aus dem gespeicherten Namen `Basisname (Variante)` gelesen, Umlaute und die Kurzform der Variante (`Wald`) gelten gleich, Altbestand ohne oder mit unbekannter Variante zählt nicht, die beste Stufe mehrerer Geländekunden gewinnt, ähnliche Gelände nennt die Landschaftsabbildung der Tätigkeit ausdrücklich, und die Ortskenntnis gilt nur für den Standort des Helden (Vergleich nach Suchfaltung, ein Klammerzusatz der Variante wie `Gareth (Südquartier)` wird übergangen), nicht für jede Landschaft gleicher Art. Die Erkennung ist eine Vorbelegung und schreibt nichts am Helden.",
+      "sources": [
+        {
+          "title": "Wege der Helden – Geländekunde und Ortskenntnis",
+          "pages": "276–278",
+          "mcpChunks": [
+            4785,
+            4786,
+            4787,
+            4788
+          ],
+          "checkedOn": "2026-11-11"
+        },
+        {
+          "title": "Wege des Entdeckers – Nahrung sammeln und Kräuter Suchen (Modifikationen nach Sonderfertigkeiten, Region, AsP)",
+          "pages": "112–113",
+          "mcpChunks": [
+            6305,
+            6306,
+            6307
+          ],
+          "checkedOn": "2026-11-11"
+        }
+      ]
     }
   }
 }

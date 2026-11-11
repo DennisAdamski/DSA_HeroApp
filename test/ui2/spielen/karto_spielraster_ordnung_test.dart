@@ -28,6 +28,31 @@ void main() {
       expect(KartoSpielkachelArt.protokoll.standard, SpielkachelBreite.schmal);
     });
 
+    test('Wildnis steht vor dem Protokoll und ergänzt eine gespeicherte '
+        'Anordnung ohne sie zu verschieben', () {
+      expect(KartoSpielkachelArt.wildnis.standard, SpielkachelBreite.schmal);
+      expect(KartoSpielkachelArt.wildnis.id, 'wildnis');
+      expect(
+        KartoSpielkachelArt.values.indexOf(KartoSpielkachelArt.wildnis),
+        KartoSpielkachelArt.values.indexOf(KartoSpielkachelArt.protokoll) - 1,
+      );
+      // Ein Held, der die Kachel noch nicht kennt: seine Reihenfolge bleibt,
+      // die neue Kachel kommt hinter ihre Vorgängerin.
+      final ohneWildnis = loeseSpielansichtAuf(
+        const HeroSpielansicht(
+          kacheln: [
+            HeroSpielkachel(id: 'merkmale'),
+            HeroSpielkachel(id: 'protokoll'),
+            HeroSpielkachel(id: 'ressourcen'),
+          ],
+        ),
+        verfuegbar: _alle,
+      );
+      final ids = _ids(ohneWildnis);
+      expect(ids.take(2), ['merkmale', 'protokoll']);
+      expect(ids, contains('wildnis'));
+    });
+
     test('gespeicherte Reihenfolge, fehlende Kacheln an ihrer Stelle', () {
       final kacheln = loeseSpielansichtAuf(
         const HeroSpielansicht(

@@ -3,6 +3,12 @@ import 'package:dsa_heldenverwaltung/domain/kraeuter_eintrag.dart';
 import 'package:dsa_heldenverwaltung/domain/ort_eintrag.dart';
 import 'package:dsa_heldenverwaltung/domain/probe_engine.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/probe_engine_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/wildnis_probe_rules.dart';
+
+// Die Geländekunde gehört dem tätigkeitsneutralen Kern; die Kräutersuche
+// reicht sie unverändert weiter, damit bestehende Aufrufer nichts ändern.
+export 'package:dsa_heldenverwaltung/rules/derived/wildnis_probe_rules.dart'
+    show Gelaendekunde;
 
 // Regelgrundlage: Wege des Entdeckers S. 113 f. („Kräuter Suchen“) und
 // S. 114–118 (Landschaftstabellen „Kräuter und ihre Verbreitung“); TaP*-Minimum
@@ -23,24 +29,7 @@ const int kKraeuterSucheAusfuehrlicheStunden = 2;
 const int kWuerzkraeuterMaxErleichterungProKochenProbe = 3;
 
 /// Erschwernis durch passende Ortskenntnis (Sonderfertigkeit).
-const int kKraeuterOrtskenntnisErschwernis = -7;
-
-/// Welche Geländekunde der Held für die durchsuchte Landschaft hat.
-enum Gelaendekunde {
-  /// Keine passende Geländekunde.
-  keine(0),
-
-  /// Ähnliche Geländekunde (Meisterentscheid).
-  aehnlich(-1),
-
-  /// Passende Geländekunde.
-  passend(-3);
-
-  const Gelaendekunde(this.erschwernis);
-
-  /// Erschwernis der Kräuter-Suchen-Probe.
-  final int erschwernis;
-}
+const int kKraeuterOrtskenntnisErschwernis = kOrtskenntnisErschwernis;
 
 /// Was der Held sucht.
 enum KraeuterSuchmodus {
@@ -245,14 +234,9 @@ class KraeuterSucheEingabe {
 /// Ortskenntnis (−7), eingesetzten AsP (je 3 AsP −1) und situativer
 /// Erschwernis.
 int kraeuterProbenErschwernis(KraeuterSucheEingabe eingabe) {
-  return kraeuterLandschaftsErschwernis(
-        eingabe.landschaft,
-        eingabe.jahreszeit,
-      ) +
-      eingabe.gelaendekunde.erschwernis +
-      (eingabe.ortskenntnis ? kKraeuterOrtskenntnisErschwernis : 0) -
-      (eingabe.eingesetzteAsp < 0 ? 0 : eingabe.eingesetzteAsp ~/ 3) +
-      eingabe.situativeErschwernis;
+  return wildnisProbenErschwernis(
+    _alsWildnisEingabe(eingabe, taw: eingabe.taw),
+  );
 }
 
 /// Baut die Talentprobe „Kräuter suchen“ (3W20 gegen die Eigenschaften, TaW
@@ -265,28 +249,132 @@ ResolvedProbeRequest baueKraeutersucheProbe(KraeuterSucheEingabe eingabe) {
       'Die Kräutersuche würfelt gegen genau drei Eigenschaften.',
     );
   }
-  return ResolvedProbeRequest(
-    type: ProbeType.talent,
-    title: 'Kräuter suchen',
-    subtitle: eingabe.eigenschaften.map((e) => e.label).join('/'),
-    ruleHint: 'Wege des Entdeckers S. 113',
-    diceSpec: const DiceSpec(count: 3, sides: 20),
-    targets: List<ProbeTargetValue>.unmodifiable(eingabe.eigenschaften),
-    basePool: kraeuterSuchenTawBeiDauer(eingabe.taw, eingabe.dauerStunden),
-    initialSituationalModifier: -kraeuterProbenErschwernis(eingabe),
+  return baueWildnisProbe(
+    _alsWildnisEingabe(
+      eingabe,
+      taw: kraeuterSuchenTawBeiDauer(eingabe.taw, eingabe.dauerStunden),
+    ),
+    titel: 'Kräuter suchen',
+    regelHinweis: 'Wege des Entdeckers S. 113',
+  );
+}
+
+/// Die Kräutersuche als allgemeine Wildnisprobe: Landschaft und Jahreszeit
+/// bilden die Basiserschwernis.
+WildnisProbeEingabe _alsWildnisEingabe(
+  KraeuterSucheEingabe eingabe, {
+  required int taw,
+}) {
+  return WildnisProbeEingabe(
+    taw: taw,
+    eigenschaften: eingabe.eigenschaften,
+    basisErschwernis: kraeuterLandschaftsErschwernis(
+      eingabe.landschaft,
+      eingabe.jahreszeit,
+    ),
+    gelaendekunde: eingabe.gelaendekunde,
+    ortskenntnis: eingabe.ortskenntnis,
+    eingesetzteAsp: eingabe.eingesetzteAsp,
+    situativeErschwernis: eingabe.situativeErschwernis,
   );
 }
 
 /// TaP* der Probe: bei Misserfolg 0, sonst die übrigen Punkte, mindestens 1
-/// (Basisregelwerk S. 113 f.: eine gelungene Probe gilt immer als
-/// mindestens 1 TaP*) und höchstens der TaW bei der gewählten Dauer (Wege des
-/// Entdeckers S. 106: bei Metatalenten dürfen die TaP* den TaW nicht
-/// übersteigen, auch wenn die Probe erleichtert ist).
-int kraeuterTapStern(ProbeResult probe) {
-  if (!probe.success) return 0;
-  final deckel = probe.request.basePool < 1 ? 1 : probe.request.basePool;
-  final rest = probe.remainingPool < 1 ? 1 : probe.remainingPool;
-  return rest > deckel ? deckel : rest;
+/// und höchstens der TaW bei der gewählten Dauer (siehe [wildnisTapStern]).
+int kraeuterTapStern(ProbeResult probe) => wildnisTapStern(probe);
+
+/// Die Landschaft der Kräutertabellen als Landschaftsoption der allgemeinen
+/// Wildnisproben, samt den Geländearten, für die eine Geländekunde passt.
+///
+/// Passend ist die Geländekunde der Landschaftsart (Waldkundig im dichten
+/// und im lichten Wald, Gebirgskundig auch im Hochgebirge usw.). Ähnlich
+/// (Meisterentscheid) gelten die ausdrücklich benachbarten Arten: Dschungel
+/// und Maraskanischer Dschungel sowie Steppenkundigkeit im Grasland, das keine
+/// eigene Geländekunde hat.
+WildnisLandschaft kraeuterLandschaftAlsWildnis(Kraeuterlandschaft landschaft) {
+  final (gelaende, aehnlich) = switch (landschaft) {
+    Kraeuterlandschaft.dichterWald || Kraeuterlandschaft.lichterWald => (
+      const <Gelaendeart>{Gelaendeart.wald},
+      const <Gelaendeart>{},
+    ),
+    Kraeuterlandschaft.dschungel => (
+      const <Gelaendeart>{Gelaendeart.dschungel},
+      const <Gelaendeart>{Gelaendeart.maraskan},
+    ),
+    Kraeuterlandschaft.maraskanDschungel => (
+      const <Gelaendeart>{Gelaendeart.maraskan},
+      const <Gelaendeart>{Gelaendeart.dschungel},
+    ),
+    Kraeuterlandschaft.suempfeNord || Kraeuterlandschaft.suempfeSued => (
+      const <Gelaendeart>{Gelaendeart.sumpf},
+      const <Gelaendeart>{},
+    ),
+    Kraeuterlandschaft.tundra => (
+      const <Gelaendeart>{Gelaendeart.eis},
+      const <Gelaendeart>{},
+    ),
+    Kraeuterlandschaft.graslandHeide => (
+      const <Gelaendeart>{},
+      const <Gelaendeart>{Gelaendeart.steppe},
+    ),
+    Kraeuterlandschaft.savanneSteppe => (
+      const <Gelaendeart>{Gelaendeart.steppe},
+      const <Gelaendeart>{},
+    ),
+    Kraeuterlandschaft.gebirge || Kraeuterlandschaft.hochgebirge => (
+      const <Gelaendeart>{Gelaendeart.gebirge},
+      const <Gelaendeart>{},
+    ),
+    Kraeuterlandschaft.wueste => (
+      const <Gelaendeart>{Gelaendeart.wueste},
+      const <Gelaendeart>{},
+    ),
+  };
+  return WildnisLandschaft(
+    schluessel: landschaft.name,
+    bezeichnung: landschaft.bezeichnung,
+    gelaende: gelaende,
+    aehnlicheGelaende: aehnlich,
+  );
+}
+
+/// Das Ergebnis einer Kräutersuche in der Form der allgemeinen
+/// Wildnisanzeige: ein Fund je Zeile, bei Würz- und Konservierungssuche die
+/// jeweilige Wirkung.
+WildnisErgebnis kraeuterErgebnisAlsWildnis(KraeuterSucheErgebnis ergebnis) {
+  final zeilen = <WildnisErgebnisZeile>[
+    for (final fund in ergebnis.funde)
+      WildnisErgebnisZeile(
+        titel: fund.bezeichnung,
+        detail:
+            '${fund.grundmengen} ${fund.grundmengen == 1 ? 'Grundmenge' : 'Grundmengen'}'
+            ' · Suchschwierigkeit ${fund.suchschwierigkeit}',
+      ),
+    if (ergebnis.wuerzPunkte > 0)
+      WildnisErgebnisZeile(
+        titel: 'Würzkräuter',
+        detail:
+            '${ergebnis.wuerzPunkte} Punkte Erleichterung auf Kochen-Proben '
+            '(je Probe höchstens $kWuerzkraeuterMaxErleichterungProKochenProbe)',
+      ),
+    if (ergebnis.haltbarkeitTage > 0)
+      WildnisErgebnisZeile(
+        titel: 'Konservierung',
+        detail: '${ergebnis.haltbarkeitTage} Tage zusätzliche Haltbarkeit',
+      ),
+    if (ergebnis.restpunkte > 0)
+      WildnisErgebnisZeile(
+        titel: 'Restpunkte',
+        detail: '${ergebnis.restpunkte} TaP* ohne passenden Fund',
+      ),
+  ];
+  return WildnisErgebnis(
+    probe: ergebnis.probe,
+    erschwernis: ergebnis.erschwernis,
+    tapStern: ergebnis.tapStern,
+    zeilen: zeilen,
+    hinweis: ergebnis.hinweis,
+  );
 }
 
 /// Ob die nutzbaren Teile von [kraut] im Monat [monat] zu ernten sind.

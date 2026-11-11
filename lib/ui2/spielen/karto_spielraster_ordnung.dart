@@ -120,6 +120,18 @@ enum KartoSpielkachelArt {
     gewicht: 300,
   ),
 
+  /// Wildnistätigkeiten wie Kräuter suchen: Landschaft, Jahreszeit,
+  /// Geländekunde und Ortskenntnis, Probe und Ausbeute.
+  ///
+  /// Hinter den Kacheln zum Nachschlagen, weil sie nur bei Bedarf gebraucht
+  /// wird; vor dem Würfelprotokoll, das die Würfe der Kachel mitführt.
+  wildnis(
+    'Wildnis',
+    breiten: SpielkachelBreite.values,
+    standard: SpielkachelBreite.schmal,
+    gewicht: 520,
+  ),
+
   /// Die letzten Würfe.
   protokoll(
     'Würfelprotokoll',

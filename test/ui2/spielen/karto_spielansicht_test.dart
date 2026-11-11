@@ -310,7 +310,9 @@ void main() {
         ]),
       );
       expect(find.text('Die Spuren im Nebel'), findsNothing);
-      expect(find.textContaining('Phex'), findsNothing);
+      // Das Datum des Abschnitts; die Wildnis-Kachel nennt den Monat der
+      // Jahreszeit, daher nicht der Monatsname allein.
+      expect(find.textContaining('1043 BF'), findsNothing);
     });
   });
 
@@ -584,6 +586,7 @@ void main() {
         'dabei',
         'abenteuer',
         'merkmale',
+        'wildnis',
         'protokoll',
       ]) {
         await tester.ensureVisible(k('karto-kachel-$art-vergroessern'));
