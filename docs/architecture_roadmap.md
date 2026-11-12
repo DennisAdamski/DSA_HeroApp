@@ -247,7 +247,7 @@ verlinkten Plan; hier nur Status und offene Punkte.
 | [Gefechtslage](gefecht_lage_konzept.md) | Schritte 1–7 umgesetzt (16.10.2026) | Konzentration auf einen Gegner (Paradesperre), Bedienung der Taktik |
 | [Reittiere](reittier_plan.md) | P1 umgesetzt (08.10.2026) | P2 Spielansicht (u. a. Wunden der Begleiter), P3 Reiterkampf |
 | [Vertraute](vertraute_plan.md) | V1 und V2 umgesetzt (08.10.2026) | V3 Gefecht |
-| [Reiseroute](reiseroute_plan.md) | Stufe 1 umgesetzt (03.11.2026): Stationsliste, Spielkachel, Zeitleiste | Stufe 0 (Anfrage an Avesmaps), danach Stufe 2 (Ortssuche, Karte) |
+| [Reiseroute](reiseroute_plan.md) | Stufe 1 umgesetzt (03.11.2026): Stationsliste, Spielkachel, Zeitleiste. Avesmaps hat am 12.11.2026 geantwortet: Ortsdaten und Route über die Entwickler-API v1 erlaubt, Kacheln nicht | Stufe 2: Variante wählen (Ortsdaten, Reisewege, Karte), siehe Plan |
 | [Gruppen v2](gruppen_sharing_offene_schritte.md) | abgesichert, Legacy-Pfad `gruppen/*` gesperrt | Mitglieder in der Oberfläche entfernen, Live-Listener, Windows-Transport, Emulator-Test, optional einmalige Einladungen |
 | [Feedback als GitHub-Issue](feedback_github_plan.md) | in Produktion (16.10.2026) | – |
 | [Redesign R1–R3](redesign_implementation.md) | umgesetzt, [Abnahme](redesign_acceptance.md) | – |
