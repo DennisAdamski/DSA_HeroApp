@@ -58,9 +58,16 @@ class AvesmapsOrteAnforderung extends Notifier<bool> {
   @override
   bool build() => false;
 
-  /// Fordert das Ortsverzeichnis an; wiederholte Aufrufe ändern nichts.
+  /// Auch erneute Nutzeraktionen sollen die Ortsliste auf Frische prüfen.
+  @override
+  bool updateShouldNotify(bool previous, bool next) => true;
+
+  /// Fordert das Ortsverzeichnis an oder prüft es erneut auf Nutzerwunsch.
+  ///
+  /// Gleichzeitige Anforderungen teilen sich den Repository-Abruf. Tagescache
+  /// und Wartezeit nach Fehlern gelten auch für erneute Anforderungen.
   void fordereAn() {
-    if (!state) state = true;
+    state = true;
   }
 }
 
@@ -99,7 +106,11 @@ final avesmapsOrteProvider = FutureProvider<List<AvesmapsOrt>>((ref) async {
 /// das Ergebnis bleibt im Speicher. Fehler ergeben `null`.
 final avesmapsOrtsdetailsProvider =
     FutureProvider.family<AvesmapsOrtsdetails?, String>((ref, id) async {
-      if (!ref.watch(avesmapsOrteAnforderungProvider)) return null;
+      // Wiederholte Listenanforderungen laden erfolgreiche Details nicht neu.
+      final angefordert = ref.watch(
+        avesmapsOrteAnforderungProvider.select((wert) => wert),
+      );
+      if (!angefordert) return null;
       final client = ref.watch(avesmapsClientProvider);
       if (client == null) return null;
       try {

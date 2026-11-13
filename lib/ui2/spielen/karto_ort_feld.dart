@@ -74,6 +74,9 @@ class KartoOrtFeld extends StatefulWidget {
 class _KartoOrtFeldState extends State<KartoOrtFeld> {
   final FocusNode _fokus = FocusNode();
   final GlobalKey _feldKey = GlobalKey();
+  // Enter muss dieselbe Auswahl wie die sichtbare Liste verwenden, auch bei
+  // Online-Treffern und einer Auswahl mit den Pfeiltasten.
+  ({String text, OrtEintrag ort})? _sichtbarerVorschlag;
 
   @override
   void dispose() {
@@ -112,9 +115,10 @@ class _KartoOrtFeldState extends State<KartoOrtFeld> {
 
   // Offen ist ein Vorschlag, solange er sich vom getippten Text unterscheidet.
   bool _vorschlagOffen(String text) {
-    final treffer = sucheOrte(text, widget.orte);
-    if (treffer.isEmpty) return false;
-    return treffer.first.name != bereinigeStandort(text);
+    final vorschlag = _sichtbarerVorschlag;
+    return vorschlag != null &&
+        vorschlag.text == text &&
+        vorschlag.ort.name != bereinigeStandort(text);
   }
 
   @override
@@ -158,11 +162,18 @@ class _KartoOrtFeldState extends State<KartoOrtFeld> {
             },
           );
         },
-        optionsViewBuilder: (context, onSelected, optionen) => _Vorschlagsliste(
-          breite: _feldBreite(),
-          optionen: optionen.toList(growable: false),
-          onSelected: onSelected,
-        ),
+        optionsViewBuilder: (context, onSelected, optionen) {
+          final liste = optionen.toList(growable: false);
+          final index = AutocompleteHighlightedOption.of(context);
+          _sichtbarerVorschlag = liste.isEmpty
+              ? null
+              : (text: widget.controller.text, ort: liste[index]);
+          return _Vorschlagsliste(
+            breite: _feldBreite(),
+            optionen: liste,
+            onSelected: onSelected,
+          );
+        },
       ),
     );
   }

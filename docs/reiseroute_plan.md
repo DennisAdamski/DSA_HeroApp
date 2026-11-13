@@ -205,7 +205,10 @@ grafische Darstellung ansteht; bis dahin gilt die Luftlinie.
   Override aus (Tests fragen nie das Netz) und wird nur in
   `AppStartupGate._buildScope` eingeschaltet. Geladen wird erst nach
   `AvesmapsOrteAnforderung.fordereAn()`, also wenn ein Ortsfeld oder das
-  Reiseroute-Blatt aufgeht.
+  Reiseroute-Blatt aufgeht. Jede erneute Anforderung prüft die Liste wieder;
+  Tagescache und `Retry-After` bzw. die Fehlerpause bleiben im Repository
+  wirksam. Nach einem Fehlschlag bleibt „Kartendaten laden“ bedienbar.
+  Erfolgreiche Ortsdetails werden dabei nicht erneut geladen.
 
 **Auswahl und Verweis.**
 
@@ -224,7 +227,10 @@ grafische Darstellung ansteht; bis dahin gilt die Luftlinie.
 - A1: Solange die Liste angefordert, aber nicht vorhanden ist, fragt das
   Ortsfeld nach 400 ms Tipppause `/suche` und mischt die Treffer unter die
   lokalen Vorschläge (`avesmapsOnlineSucheProvider`). Mit lokaler Liste gibt es
-  keine Suchanfragen.
+  keine Suchanfragen. Enter übernimmt den aktuell hervorgehobenen Vorschlag
+  auch aus der Online-Suche; erst eine weitere Eingabetaste schickt den
+  übernommenen Namen ab. Die Standortdialoge in Abenteuer- und Standort-Kachel
+  beobachten das laufende Verzeichnis, statt beim Öffnen eine Liste einzufrieren.
 
 **Tabelle.** Das Reiseroute-Blatt zeigt die Stationen zuerst als Tabelle
 (`KartoReiseTabelle`: Nummer, Datum mit Abstand zur vorigen Station, Ort,

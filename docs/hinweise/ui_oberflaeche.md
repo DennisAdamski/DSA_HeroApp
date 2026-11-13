@@ -209,7 +209,12 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   Zeitleiste (`karto-reise-ansicht`). Ortsfelder lesen
   `ortsverzeichnisProvider` (Wiki Aventurica plus Avesmaps); wer ein neues
   Ortsfeld baut, ruft beim Öffnen `AvesmapsOrteAnforderung.fordereAn()`, nie
-  beim Bauen der Spielansicht. In Tests bleibt Avesmaps ohne Override aus;
+  beim Bauen der Spielansicht. Erneutes Öffnen prüft die Liste wieder unter
+  Beachtung von Tagescache und Fehlerpause. Standortdialoge beobachten ohne
+  feste `orte`-Liste das laufende Verzeichnis und die Online-Suche;
+  `KartoStandortZeile.liveOrte` aktiviert dies für die Abenteuer-Kachel.
+  Enter übernimmt den sichtbaren hervorgehobenen Vorschlag auch online.
+  In Tests bleibt Avesmaps ohne Override aus;
   Orte mit Position kommen dort über `avesmapsOrteProvider.overrideWith`.
   **Standort (13.11.2026):** Die Kachel „Standort“
   (`KartoSpielkachelArt.standort` hinter der Reiseroute,

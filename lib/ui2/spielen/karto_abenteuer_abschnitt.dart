@@ -191,6 +191,7 @@ class _KartoAbenteuerAbschnittState
             onSpeichern: widget.onStandortSpeichern,
             orte: orte,
             onBearbeiten: fordereOrteAn,
+            liveOrte: true,
           )
         : KartoStandortZeile(
             standort: widget.standort,
@@ -198,6 +199,7 @@ class _KartoAbenteuerAbschnittState
             oeffneLink: link,
             orte: orte,
             onBearbeiten: fordereOrteAn,
+            liveOrte: true,
           );
   }
 

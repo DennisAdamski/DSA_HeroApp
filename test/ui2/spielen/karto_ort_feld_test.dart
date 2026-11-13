@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dsa_heldenverwaltung/domain/avesmaps_ort.dart';
@@ -158,6 +159,54 @@ void main() {
   });
 
   group('Online-Suche als Ersatz', () {
+    testWidgets(
+      'Enter übernimmt den sichtbaren Online-Treffer vor dem Abschicken',
+      (tester) async {
+        await zeige(
+          tester,
+          verzeichnis: const <OrtEintrag>[],
+          onlineSuche: (_) async => const [
+            AvesmapsOrt(id: 'g', name: 'Gareth', x: 551, y: 533),
+          ],
+        );
+        await tester.enterText(schluessel('ort-feld'), 'Gar');
+        await tester.pump(KartoOrtFeld.onlinePause);
+        await tester.pumpAndSettle();
+        expect(find.text('Gareth'), findsOneWidget);
+        await tester.testTextInput.receiveAction(TextInputAction.done);
+        await tester.pumpAndSettle();
+        expect(gewaehlt.map((ort) => ort.ortId), <String>['g']);
+        expect(controller.text, 'Gareth');
+        expect(abgeschickt, isEmpty);
+        await tester.testTextInput.receiveAction(TextInputAction.done);
+        await tester.pumpAndSettle();
+        expect(abgeschickt, <String>['Gareth']);
+      },
+    );
+
+    testWidgets(
+      'Enter übernimmt auch den mit Pfeiltaste gewählten Online-Treffer',
+      (tester) async {
+        await zeige(
+          tester,
+          verzeichnis: const <OrtEintrag>[],
+          onlineSuche: (_) async => const [
+            AvesmapsOrt(id: 'g', name: 'Gareth', x: 551, y: 533),
+            AvesmapsOrt(id: 't', name: 'Garetz', x: 550, y: 530),
+          ],
+        );
+        await tester.enterText(schluessel('ort-feld'), 'Gar');
+        await tester.pump(KartoOrtFeld.onlinePause);
+        await tester.pumpAndSettle();
+        await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
+        await tester.pump();
+        await tester.testTextInput.receiveAction(TextInputAction.done);
+        await tester.pumpAndSettle();
+        expect(gewaehlt.map((ort) => ort.ortId), <String>['t']);
+        expect(abgeschickt, isEmpty);
+      },
+    );
+
     testWidgets('fragt erst nach der Tipppause und nur für den letzten Text', (
       tester,
     ) async {

@@ -8,6 +8,7 @@ import 'package:http/testing.dart';
 import 'package:dsa_heldenverwaltung/catalog/ort_loader.dart';
 import 'package:dsa_heldenverwaltung/data/avesmaps/avesmaps_client.dart';
 import 'package:dsa_heldenverwaltung/data/avesmaps/avesmaps_orte_speicher.dart';
+import 'package:dsa_heldenverwaltung/data/avesmaps/avesmaps_orte_repository.dart';
 import 'package:dsa_heldenverwaltung/domain/avesmaps_ort.dart';
 import 'package:dsa_heldenverwaltung/domain/ort_eintrag.dart';
 import 'package:dsa_heldenverwaltung/state/avesmaps_providers.dart';
@@ -28,6 +29,52 @@ class _Speicher implements AvesmapsOrteSpeicher {
 const String _garethId = '80558060-4299-54aa-b520-814b10819885';
 
 void main() {
+  test('erneute Anforderung lädt nach Retry-After, ohne frische Liste neu abzurufen', () async {
+    var jetzt = DateTime.utc(2026, 11, 13);
+    var anfragen = 0;
+    final client = AvesmapsClient(
+      httpClient: MockClient((_) async {
+        anfragen++;
+        if (anfragen == 1) {
+          return http.Response('', 503, headers: {'retry-after': '1200'});
+        }
+        return http.Response(
+          '{"orte":[{"id":"g","name":"Gareth","x":551,"y":533}]}',
+          200,
+        );
+      }),
+    );
+    addTearDown(client.close);
+    final repository = AvesmapsOrteRepository(
+      client: client,
+      speicher: _Speicher(),
+      jetzt: () => jetzt,
+    );
+    final container = ProviderContainer(
+      overrides: [
+        avesmapsOrteRepositoryProvider.overrideWith((ref) async => repository),
+      ],
+    );
+    addTearDown(container.dispose);
+    final anforderung = container.read(
+      avesmapsOrteAnforderungProvider.notifier,
+    );
+    anforderung.fordereAn();
+    expect(await container.read(avesmapsOrteProvider.future), isEmpty);
+    jetzt = jetzt.add(const Duration(minutes: 16));
+    anforderung.fordereAn();
+    expect(await container.read(avesmapsOrteProvider.future), isEmpty);
+    expect(anfragen, 1);
+    jetzt = jetzt.add(const Duration(minutes: 4));
+    anforderung.fordereAn();
+    final orte = await container.read(avesmapsOrteProvider.future);
+    expect(orte.map((ort) => ort.name), <String>['Gareth']);
+    expect(anfragen, 2);
+    anforderung.fordereAn();
+    expect(await container.read(avesmapsOrteProvider.future), isNotEmpty);
+    expect(anfragen, 2);
+  });
+
   final wiki = OrtKatalog(
     orte: <OrtEintrag>[
       OrtEintrag(name: 'Gareth', art: OrtArt.siedlung, region: 'Garetien'),
@@ -147,6 +194,8 @@ void main() {
     final details = await container.read(
       avesmapsOrtsdetailsProvider(_garethId).future,
     );
+    await container.read(avesmapsOrtsdetailsProvider(_garethId).future);
+    container.read(avesmapsOrteAnforderungProvider.notifier).fordereAn();
     await container.read(avesmapsOrtsdetailsProvider(_garethId).future);
     const andere = '5acdf435-80fc-4a34-980f-41020b31a8d3';
 

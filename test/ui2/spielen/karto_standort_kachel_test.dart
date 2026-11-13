@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -103,6 +104,7 @@ Future<_Aufbau> _zeige(
   String standort = 'Gareth',
   bool abrufbar = true,
   bool lokal = false,
+  Future<http.Response> Function(http.Request)? antwort,
   double breite = 420,
   OrtsfaktenKatalog fakten = const OrtsfaktenKatalog(),
 }) async {
@@ -130,6 +132,7 @@ Future<_Aufbau> _zeige(
           AvesmapsClient(
             httpClient: MockClient((anfrage) async {
               aufbau.anfragen.add(anfrage.url.path);
+              if (antwort != null) return antwort(anfrage);
               if (anfrage.url.path.endsWith('/orte')) {
                 return _json(<String, Object?>{'vertrag': 1, 'orte': _orte});
               }
@@ -178,6 +181,45 @@ String _text(WidgetTester tester, String schluessel) =>
     (tester.widget(k(schluessel)) as Text).data ?? '';
 
 void main() {
+  testWidgets('offener Standortdialog übernimmt nachgeladene Orte', (
+    tester,
+  ) async {
+    final antwort = Completer<http.Response>();
+    final aufbau = await _zeige(
+      tester,
+      standort: '',
+      antwort: (_) => antwort.future,
+    );
+    await tester.tap(k('karto-standort-kachel-festhalten'));
+    await tester.pumpAndSettle();
+    antwort.complete(_json(<String, Object?>{'vertrag': 1, 'orte': _orte}));
+    await tester.pumpAndSettle();
+    await tester.enterText(k('karto-spiel-standort-feld'), 'Feh');
+    await tester.pumpAndSettle();
+    expect(find.text('Fehring'), findsOneWidget);
+    await tester.tap(find.text('Fehring'));
+    await tester.pumpAndSettle();
+    await tester.tap(k('karto-spiel-standort-speichern'));
+    await tester.pumpAndSettle();
+    expect(aufbau.gespeichert, <String>['Fehring']);
+  });
+
+  testWidgets('nach Abruffehler bleibt Kartendaten laden bedienbar', (
+    tester,
+  ) async {
+    final aufbau = await _zeige(
+      tester,
+      antwort: (_) async => http.Response('', 503),
+    );
+    await tester.tap(k('karto-standort-kachel-laden'));
+    await tester.pumpAndSettle();
+    expect(k('karto-standort-kachel-laden'), findsOneWidget);
+    await tester.tap(k('karto-standort-kachel-laden'));
+    await tester.pumpAndSettle();
+    // Ein zweiter Klick während der Sperrzeit fragt nicht noch einmal das Netz.
+    expect(aufbau.anfragen, <String>['/api/v1/orte']);
+  });
+
   testWidgets('ohne Standort: Hinweis und Festhalten über den Dialog', (
     tester,
   ) async {

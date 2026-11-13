@@ -96,11 +96,7 @@ class KartoStandortKachel extends ConsumerWidget {
     Future<void> bearbeiten() async {
       // Wie beim Ortsfeld: das Öffnen der Eingabe fordert die Ortsliste an.
       fordereAn();
-      final neu = await zeigeStandortDialog(
-        context,
-        standort: name,
-        orte: ref.read(ortsverzeichnisProvider),
-      );
+      final neu = await zeigeStandortDialog(context, standort: name);
       if (neu == null) return;
       await onSpeichern(neu);
     }
@@ -124,7 +120,10 @@ class KartoStandortKachel extends ConsumerWidget {
               details: details,
               avesmaps: avesmaps,
               laedt: angefordert && liste.isLoading,
-              ladenMoeglich: abrufbar && !angefordert,
+              ladenMoeglich:
+                  abrufbar &&
+                  !liste.isLoading &&
+                  (!angefordert || avesmaps.isEmpty),
               onLaden: fordereAn,
               oeffneLink: oeffneLink,
               routenPunkte: _merker.routenPunkte(stationen),
