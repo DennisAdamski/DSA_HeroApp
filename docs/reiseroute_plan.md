@@ -242,7 +242,8 @@ nach Abenteuer gilt für beide Ansichten.
 `https://avesmaps.de`. Quellenzeile `kOrtsdatenQuellen` im Blatt,
 Lizenzeintrag „Avesmaps (Ortsdaten)“ (`avesmaps_lizenz.dart`),
 Datenschutzerklärung Abschnitt 6 und Zeile im Verzeichnis der
-Verarbeitungstätigkeiten (Rechtsgrundlage dort noch zu bestätigen).
+Verarbeitungstätigkeiten (Art. 6 Abs. 1 lit. b DSGVO; das Kartenbild der
+eigenen Kacheln lit. f).
 
 **Tests.** `test/data/avesmaps/`, `test/state/avesmaps_providers_test.dart`,
 `test/rules/derived/standort_rules_test.dart`,

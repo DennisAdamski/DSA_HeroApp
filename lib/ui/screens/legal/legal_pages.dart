@@ -176,7 +176,9 @@ class PrivacyPolicyScreen extends StatelessWidget {
               'von avesmaps.de, sondern, sofern vorhanden, von einer '
               'eigenen Firebase-Hosting-Seite dieser App; dabei fallen nur '
               'die technisch nötigen Verbindungsdaten (IP-Adresse, '
-              'Browserangaben) an.',
+              'Browserangaben) an. Rechtsgrundlage für den Abruf der '
+              'Ortsdaten ist Art. 6 Abs. 1 lit. b DSGVO, für die '
+              'Auslieferung des Kartenbilds Art. 6 Abs. 1 lit. f DSGVO.',
         ),
         const _LegalSection(
           title: '7. Empfänger und Drittlandtransfers',
