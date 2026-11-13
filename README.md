@@ -1,371 +1,102 @@
 # DSA Heldenverwaltung
 
-Flutter-App zur Verwaltung von Helden fuer *Das Schwarze Auge* (DSA) mit lokalem Datenmodell, regelgestuetzten Berechnungen und katalogbasierten Inhalten.
+Flutter-App zur Verwaltung von Helden für *Das Schwarze Auge* (DSA) mit lokalem
+Datenmodell, regelgestützten Berechnungen und katalogbasierten Inhalten.
+Eigenschaften, Talente, Kampf, Magie, Inventar, Chroniken, Kontakte, Abenteuer,
+Import/Export und Hausregel-Kataloge laufen in einer Anwendung zusammen; ein
+optionales Konto synchronisiert Helden zwischen Geräten.
 
-Die App ist auf eine moeglichst umfangreiche Heldenverwaltung ausgelegt: Eigenschaften, Talente, Kampf, Magie, Inventar, Chroniken, Kontakte, Abenteuer, Import/Export und hausregelbasierte Katalogdaten werden in einer lokalen Anwendung zusammengefuehrt.
+- **Web-App:** https://heldensync-ccf0b.web.app
+- **Testversion:** https://heldensync-test.web.app
+
+DSA Heldenverwaltung ist ein inoffizielles, kostenloses Fanprojekt und steht
+nicht in Verbindung zu Ulisses Spiele.
 
 ## Inhalt
 
-Einbindbare Fantasy-Symbole und dekorative Assets mit Vorschau:
-[Fantasy-Assets](docs/fantasy_assets.md).
-
-Waffenarten und Waffengruppen: [29 Fantasy-Waffensymbole](docs/fantasy_weapon_assets.md).
-
-- [DSA Heldenverwaltung](#dsa-heldenverwaltung)
-  - [Inhalt](#inhalt)
-  - [Projektueberblick](#projektueberblick)
-  - [Funktionsumfang](#funktionsumfang)
-    - [Heldenverwaltung](#heldenverwaltung)
-    - [Speicherung](#speicherung)
-    - [Uebersicht und Stammdaten](#uebersicht-und-stammdaten)
-    - [Talente und Sprachen](#talente-und-sprachen)
-    - [Kampf](#kampf)
-    - [Magie](#magie)
-    - [Workspace und Regeneration](#workspace-und-regeneration)
-    - [Inventar, Chroniken, Kontakte und Abenteuer](#inventar-chroniken-kontakte-und-abenteuer)
-    - [Datenimport und Kataloge](#datenimport-und-kataloge)
-  - [Technischer Aufbau](#technischer-aufbau)
-  - [Schnellstart](#schnellstart)
-  - [Wie eine solche App aufgebaut werden kann](#wie-eine-solche-app-aufgebaut-werden-kann)
-  - [Projektstruktur](#projektstruktur)
-  - [Tests und Qualitaet](#tests-und-qualitaet)
-  - [Windows-Antivirus-Audit](#windows-antivirus-audit)
-  - [Erstellen einer Windows App](#erstellen-einer-windows-app)
-  - [Weiterfuehrende Dokumentation](#weiterfuehrende-dokumentation)
-  - [Hinweise](#hinweise)
-
-## Projektueberblick
-
-Die App verwaltet DSA-Helden lokal auf dem Geraet und kombiniert dabei drei Kernbereiche:
-
-- Persistente Heldendaten mit separatem Laufzeitzustand
-- Getrennter lokaler Einstellungsordner und optional konfigurierbarer
-  Heldenspeicher auf Desktop-Plattformen
-- Regelberechnungen fuer abgeleitete Werte und Kampfvorschau
-- Katalogdaten aus versionierten JSON-Assets auf Basis externer Excel-Quellen
-
-Technischer Stack:
-
-- Flutter + Dart
-- `flutter_riverpod` fuer State-Management
-- `Hive` fuer lokale Persistenz
-- JSON-Import/-Export fuer Heldendaten
-- Python-Tools unter `tool/` fuer Katalogaufbereitung und Wartung
-- Optionale Firebase-Functions für typisiertes In-App-Feedback als GitHub-Issue
+- [Funktionsumfang](#funktionsumfang)
+- [Technischer Aufbau](#technischer-aufbau)
+- [Schnellstart](#schnellstart)
+- [Tests und Qualität](#tests-und-qualität)
+- [Veröffentlichung](#veröffentlichung)
+- [Projektstruktur](#projektstruktur)
+- [Dokumentation](#dokumentation)
+- [Pflege dieser Seite](#pflege-dieser-seite)
 
 ## Funktionsumfang
 
-### Heldenverwaltung
+Die ausführliche Beschreibung steht in
+[Funktionsumfang im Detail](docs/funktionsumfang.md).
 
-- Anlegen neuer Helden mit Roh-Startwerten fuer die acht DSA-Eigenschaften
-- Persistenz aller Heldendaten inklusive Schema-Versionierung
-- Separate Speicherung des Laufzeitzustands wie aktuelle LeP, AsP, KaP und Ausdauer
-- Seed-Import von Beispielhelden aus `assets/heroes/`
-- Optionaler eigener Heldenspeicherordner auf Windows, macOS und Linux
-- Die Startseite merkt sich den zuletzt ausgewaehlten Helden und zeigt ihn
-  direkt wieder in der Vorschau an
+- **Helden:** Anlegen mit Roh-Startwerten, Stammdaten und Biografie, Vor- und
+  Nachteile aus dem Katalog, effektive Startwerte und Eigenschaftsmaxima.
+- **Drei Arbeitsbereiche:** **Spielen**, **Held verwalten** und **Entwicklung
+  planen**. Die Planung ist eine heldenweite Steigerungsrunde: Änderungen werden
+  erst mit **Änderungen übernehmen** wirksam, inklusive AP-Reservierung, Historie
+  und Fähigkeitenbaum für Sonderfertigkeiten und Manöver.
+- **Talente und Sprachen:** allgemeine Talente, Kampf- und Meta-Talente,
+  Spezialisierungen, Sondererfahrungen, Begabungen, Sprachen und Schriften.
+- **Kampf:** Waffen, Nebenhand, Parierwaffen, Schilde und Rüstungen mit
+  Kampfvorschau; eine flüchtige Gefechtssitzung führt Runden, INI, Aktionen,
+  Distanzklassen und Fernkampf.
+  Details: [Gefecht](docs/gefecht_implementation.md).
+- **Magie:** Zauber, Repräsentationen, Traditionen, Rituale und laufende
+  Zaubereffekte. Details: [Magische Kenntnisse](docs/magische_kenntnisse.md),
+  [Zaubereffekte](docs/zaubereffekte_integrationsplan.md).
+- **Spieltisch:** Vitalwerte, Rast und Regeneration, „Schaden erhalten“ mit
+  Trefferzonen und Wunden, Proben-Schnellsuche, Würfelprotokoll und
+  Regel-Nachschlag mit Kurzregeln.
+- **Inventar und Abenteuer:** Ausrüstung, Dukaten, Chroniken, Kontakte und
+  Abenteuer mit geführtem Abschluss (AP, Sondererfahrungen, Beute).
+- **Begleiter:** Reittiere und Vertraute
+  ([Reittiere](docs/reittier_plan.md), [Vertraute](docs/vertraute_plan.md)).
+- **Daten und Kataloge:** Import/Export als JSON-Bundle, eigene
+  Katalogeinträge, aktivierbare Hausregel-Pakete und eine Katalogverwaltung in
+  den Einstellungen.
+- **Speicherung und Sync:** lokal ohne Konto; mit Login getrenntes Konto-Profil
+  und Abgleich über Firestore mit sichtbarer Konfliktentscheidung.
+  Details: [Konto-Sync](docs/hinweise/sync_konto.md).
 
-### Speicherung
-
-- App-Einstellungen liegen immer lokal in einem separaten App-Ordner unter
-  `Application Support` bzw. auf Windows in `AppData`
-- Heldendaten nutzen standardmaessig einen eigenen Unterordner und koennen auf
-  Desktop-Plattformen auf einen frei gewaehlten Ordner umgestellt werden
-- Ein optionaler Konto-Login ist auf allen Plattformen verfuegbar. Ohne Login
-  arbeitet die App weiter im lokalen Offline-Profil; mit Login nutzt sie ein
-  getrenntes lokales Konto-Profil unter `Helden/accounts/<uid>` und spiegelt
-  Helden sowie Laufzeitzustaende nach Firestore.
-- Der Settings-Bereich `Konto & Sync` zeigt Loginstatus, letzten erfolgreichen
-  Sync, offene Konflikte und einen manuellen Sync-Button. Bei Unterschieden
-  zwischen Offline- und Konto-Daten entscheidet der Nutzer zwischen lokal,
-  online oder beide behalten.
-  Bei Offline-Helden erklärt der Vergleich, dass „Nur Lokal“ den Konto-Stand
-  durch den Offline-Stand ersetzt oder einen fehlenden Konto-Held übernimmt.
-  Speicherzeitpunkte erscheinen nur, wenn beide Seiten einen besitzen.
-- Auf Windows nutzt der Konto-Sync bewusst die Firestore REST API statt des
-  nativen `cloud_firestore`-Pluginpfads. Firebase Auth liefert dafür das
-  ID-Token; Firestore Security Rules schützen die gleichen User-Dokumente.
-- Auf Web-Zielplattformen liegen Einstellungen und Heldendaten stattdessen im
-  browserlokalen Speicher; die UI zeigt dafuer den logischen Pfad
-  `Browser-Speicher/...` an
-- Custom-Kataloge werden im aktiven Heldenspeicher unter
-  `custom_catalogs/<katalogversion>/<sektion>/<id>.json` gespeichert und
-  koennen dadurch ueber einen synchronisierten Cloud-Ordner mitlaufen
-- Ein ungueltiger benutzerdefinierter Heldenspeicherpfad fuehrt zu einem
-  klaren Fehlerzustand statt zu einem stillen Fallback
-- Standardpfade liegen direkt unter dem app-spezifischen Support-Ordner, also
-  z. B. `.../DSA Heldenverwaltung/Einstellungen` und
-  `.../DSA Heldenverwaltung/Helden`
-
-### Uebersicht und Stammdaten
-
-- **Bearbeiten** korrigiert Werte manuell ohne automatische AP-Buchung.
-- **Steigern** öffnet eine eigene, heldenweite Steigerungsrunde. Geplante
-  Änderungen werden erst mit **Änderungen übernehmen** gemeinsam wirksam.
-  Der Inspektor zeigt AP-Reservierungen und die Historie. Einträge der laufenden
-  Runde sind einzeln entfernbar, übernommene Einträge bleiben fest. Werden durch
-  Entfernen Folgeeinträge ungültig, müssen diese vor der Übernahme korrigiert
-  werden. Auf kleinen Bildschirmen ist die Historie im **Detailpanel** erreichbar.
-- Eigenschaften, Talente und Zauber erscheinen als kompakte Kacheln. Auf breiten
-  Fenstern stehen die Basiswerte neben den Eigenschaften und die AP-Bilanz
-  rechts über dem Verlauf. Talente bieten zusätzlich **+ Spezialisierung**:
-  der Erwerb nutzt die Vorschau und reserviert AP, bis die Runde übernommen wird.
-  Zauberkacheln bieten ausschließlich Wertsteigerungen.
-- Für Talente, Sprachen, Schriften und Zauber zeigt der Steigerungskatalog nur Einträge, die der Held bereits auf dem Bogen
-  führt — auch solche, die eingeblendet, aber noch nicht aktiviert sind. Alles
-  Weitere kommt je Kategorie über **Talent, Sprache oder Schrift erlernen**,
-  **Zauber erlernen** bzw. **Sonderfertigkeit erwerben** aus einem
-  durchsuchbaren Erwerbsblatt. Die Auswahl führt direkt in den
-  Steigerungsdialog: Aktivieren und Steigern sind ein Schritt, der Zielwert ist
-  frei wählbar und die Aktivierungskosten sind enthalten. Sucht man in der
-  Hauptliste ins Leere, führt ein Hinweis mit demselben Suchtext ins Erwerbsblatt.
-- Bei **Sonderfertigkeiten** zeigt ein Fähigkeitenbaum Sonderfertigkeiten und
-  Manöver mit ihren Voraussetzungen, einschließlich UND-/ODER-Verknüpfungen.
-  Filter trennen Kampf, Allgemein, Magie und Karma; die Suche erhält zugehörige
-  Vorstufen. Knoten zeigen Erwerbsstatus und AP-Kosten und öffnen Details zum
-  Vormerken. Getrennt lernbare Manöver werden pro passendem Kampftalent erworben.
-  Die geöffneten Details zeigen außerdem die verfügbaren Beschreibungen und
-  Regeltexte, Originalvoraussetzungen, Variantenkosten, Kampfboni und Quellen.
-  Geschützte Texte nutzen die Katalogfreischaltung aus den Einstellungen.
-- Magische und karmale Sonderfertigkeiten werden in Auswahl und Fähigkeitenbaum
-  ohne passende Befähigung standardmäßig ausgeblendet. **Unpassende
-  Sonderfertigkeiten anzeigen** überschreibt dies dauerhaft je Held. Bereits
-  erworbene oder vorgemerkte Fähigkeiten bleiben sichtbar; fehlende Vorstufen,
-  Eigenschaften oder AP blenden zukünftige Ziele nicht aus. Der Schalter ändert
-  keine Erwerbsvoraussetzungen und erhält laufende Steigerungsentwürfe.
-- Unter **Eigenschaften** zeigt die Basiswerte-Karte die Summen vor der Runde
-  und nach den vorgemerkten Änderungen. Der Eigenschaftsdialog zeigt live die
-  zusätzliche Wirkung des Zielwerts sowie bisher begrenzte Talente, Kampftalente
-  und Zauber, die dadurch weiter steigerbar werden. Diese Auskunft beschreibt
-  den regeltechnischen Spielraum unabhängig von den noch verfügbaren AP.
-
-- Pflege von Name, Rasse, Kultur, Profession und Biografiedaten
-- Verwaltung von AP, Stufe, Ressourcen und textbasierten Modifikatoren
-- Katalogbasierte Auswahl von Vorteilen und Nachteilen in der Übersicht;
-  gespeichert wird weiterhin kompatibel in den Textfeldern des Helden
-- Berechnung effektiver Startwerte und Eigenschaftsmaxima
-- Gefuehrte AP-Steigerung fuer Eigenschaften und kaufbare Grundwerte
-- Abenteuer-Sondererfahrungen fuer Eigenschaften und Grundwerte werden direkt in den Steigerungsdialogen angezeigt und beim Steigern verbraucht
-- Parsing von Modifikator-Texten aus Vor-/Nachteilen sowie R/K/P-Feldern,
-  inklusive Standardnamen wie Hohe Lebenskraft, Astralmacht oder Kurzatmig
-
-### Talente und Sprachen
-
-- Verwaltung allgemeiner Talente, Kampftalente und Meta-Talente
-- Validierung von AT/PA-Aufteilungen bei Kampftalenten
-- Unterstuetzung fuer Talentspezialisierungen, Sondererfahrungen, Begabungen und strukturierte Talent-Sonderfertigkeiten
-- Steigerungsdialog fuer Talente mit Live-AP-Kosten, SE-Verbrauch, manueller Komplexitaetskorrektur und Lehrmeister-Rabatt
-- AP-Steigerung für Kampftalente im eigenen Steigerungsmodus
-- Eigener Bereich fuer Sprachen und Schriften auf Basis von Katalogdaten
-
-### Kampf
-
-- Im Bereich Spielen startet „Gefecht beginnen“ eine flüchtige Sitzung je Held;
-  die bisherige Kampfverwaltung bleibt erreichbar. Navigation erhält die Sitzung,
-  Beenden oder ein App-Neustart verwirft sie.
-- Die Gefechtsansicht führt Runden, INI, Umwandlung, Haltung, DK und getrennte
-  Aktionsmarken. „Prüfen“ verlangt eine Bestätigung; erkannte Sperren bleiben
-  verbindlich. Ausrüstung wechselt im eigenen Popup, längere Ziehhandlungen
-  werden erst nach Abschluss wirksam.
-- Proben, Ressourcen, Wunden und Effekte verwenden die bisherigen Fachwege.
-  Meisterparade erfragt eine eigene Ansage und erleichtert bei Erfolg einmalig
-  die nächste Angriffs-/Abwehraktion. Misslungene unterstützte Nahkampf-Ansagen
-  setzen einen sichtbaren Folgemalus bis einschließlich nächster AT/PA oder
-  Orientieren. Gegnerische Trefferfolgen bleiben manuell. Bei positiver
-  Schildansage wird die am Tisch geklärte Grenze erfragt.
-  Optionales Zielen baut bis zu vier Punkte anderer Fernkampfzuschläge ab und
-  bezahlt dafür reguläre Aktionen; Ansage und Gezielter Schuss bleiben unverändert.
-  [Umfang und Prüfungen der ersten Version](docs/gefecht_implementation.md)
-  dokumentieren die verbleibenden manuellen Regeln.
-
-- Pflege von Nah- und Fernkampfwaffen in einer gemeinsamen Kampfkonfiguration
-- Unterstuetzung fuer Nebenhand, Parierwaffen, Schilde und Ruestungen
-- Kampfvorschau mit AT, PA, TP, INI, Ladezeit, Distanzstufen und Geschossen
-- Aktionskarte fuer beidhändigen Kampf mit Falsche-Hand-Mali, Doppelangriff und Zusatzaktionen aus Beidhändigem Kampf beziehungsweise Parierwaffen
-- Verwaltung aktiver Manoever und katalogbasierter Kampf-Sonderfertigkeiten
-- Kampf-Sonderfertigkeiten und Manöver bleiben als getrennte Katalogquellen modelliert; die Kampf-UI filtert Doppelungen anhand der Manöver-Namen aus
-- Waffenmeister-Baukasten mit Voraussetzungen, Boni und Vorschau der Wirkung
-- Beruecksichtigung waffenloser Kampfstile und freigeschalteter Manoever
-
-### Magie
-
-- Verwaltung gelernter Zauber inklusive Repruesentation, Tradition und Begabung
-- Automatische Aktivierung des Magie-Bereichs ueber AE/AsP-Modifikatoren aus
-  Rasse, Kultur, Profession oder Vorteilen mit optionalem manuellem Override
-- Globale Leiteigenschaft fuer magische Regeneration im Magie-Bereich
-- Anzeige von Verfuegbarkeit, Lernkomplexitaet und heldenspezifischen Anpassungen
-- Steigerungsdialog fuer Zauber mit Fremdrepr.-, Hauszauber-, manueller Komplexitaetskorrektur und Lehrmeisterlogik
-- Eigener Ritual-Bereich mit Ritualkategorien, Ritualkenntnissen und Ritualen
-- Pflege magischer Sonderfertigkeiten mit Beschreibung und aktiver Zaubereffekte
-- Laufende Zaubereffekte (Axxeleratus, Attributo, Armatrutz) mit optionaler
-  Wirkungsdauer in Kampfrunden, Spielrunden oder laengeren Zeiteinheiten samt
-  manuellem Countdown; der Armatrutz addiert seinen erzauberten RS zur
-  getragenen Ruestung, ohne Behinderung zu erzeugen
-
-### Workspace und Regeneration
-
-- Vitalwerte enthalten neben LeP, Au, AsP und KaP auch Erschoepfung und Ueberanstrengung mit direkter manueller Anpassung
-- Rast-Aktion als Lagerfeuer-Symbol oben rechts in den Vitalwerten fuer Ausruhen, Schlafphase und Bettruhe
-- Strukturierte Regenerationslogik fuer LeP, Au und AsP inklusive KO-/IN-Proben und Umweltmodifikatoren
-- Dauerhafte Verwaltung von Erschoepfung und Ueberanstrengung im `HeroState`
-- Optionaler Fullrestore fuer lange Abwesenheiten: alle Vitalwerte auf Maximum und keine Wunden mehr
-- Vorschau und Sammeluebernahme der Rast-Ergebnisse direkt im Workspace
-- „Schaden erhalten“ in den Vitalwerten und als Schnellaktion der Spielansicht: TP abzueglich RS, Trefferzone per Auswahl oder W20, Wundvorschlag aus den Wundschwellen samt Angriffsmodifikator (die Wundzahl entscheidet der Nutzer), Zusatzwuerfe der Zone, Ausdauerschaden (TP(A)) und ein nachvollziehbarer Protokolleintrag
-- Wunden wirken nach Gesamt- und Zonensystem (Hausregel, WdS S. 58 und
-  108 f.): allgemeine Abzuege plus die Zone, Armwunden nur auf die Waffe
-  in diesem Arm (Schwert- bzw. Schildarm, Linkshaender beruecksichtigt),
-  Eigenschaftsverluste nur auf Proben; Hinweise zu dritten Wunden und
-  zum Kopf-INI-Wurf
-- Tablet-Layouts fuer iPad und breite Fenster: Icon-Rail im Portrait, permanenter Inspector im Landscape und ein kompakter zweizeiliger Workspace-Header mit aktivem Bereich, Bildausschnitt und Kernwerten
-- Proben-Schnellsuche in der Workspace-AppBar: durchsucht Eigenschaften, Kampfwerte, Talente und Zauber des Helden und oeffnet direkt den Probendialog inklusive Wuerfelprotokoll
-- Wuerfelprotokoll mit Filter-Chips nach Probeart (Eigenschaft, Talent, Zauber, Kampf) und sessiontauglichem Umfang von 50 Eintraegen
-- Regel-Nachschlag mit Reiter "Kurzregeln": mitgeliefertes, offline und auf allen Plattformen nutzbares Kompendium aus eigenen Kurzfassungen (Buch- und Seitenbeleg je Eintrag, Hausregeln getrennt, verschluesselt; `docs/kurzregeln_redaktion.md`)
-- Regel-Nachschlag auf Desktop und Web: FTS5-Volltextsuche read-only auf der Index-Datenbank des dsa-rules MCP-Servers mit waehlbaren Quellkategorien; Desktop liest sie vom lokalen Standardpfad, Web nutzt sqlite3-WASM/IndexedDB nach einmaligem Datei-Upload der `index.sqlite` (Konzept in `docs/spielmodus_konzept.md`)
-
-### Inventar, Chroniken, Kontakte und Abenteuer
-
-- Direkt bearbeitbares Inventar als kompakte Tabelle fuer Ausruestung und sonstige Gegenstaende inklusive magischer und geweihter Markierungen
-- Dukatenstand im Inventar mit direkter Eingabe sowie +/- Schritten fuer Dukaten, Silbertaler und Kreuzer
-- Freie Chroniken mit Titel und Beschreibung
-- Verbindungen/Kontakte mit Ort, Sozialstatus, Loyalitaet, Beschreibung und optionaler Abenteuer-Zuordnung
-- Abenteuer als Chip-Uebersicht mit fokussierter Detailansicht; neue Abenteuer, Notizen und Personen werden jeweils ueber Popups angelegt oder bearbeitet
-- Abenteuer pflegen Status (`Aktuell` oder `Abgeschlossen`), weltliche und aventurische Start-/Enddaten, ein aktuelles aventurisches Datum, abenteuerbezogene Notizen und Personen direkt in der Detailansicht
-- AP-Belohnung, fest zugeordnete Sondererfahrungen, Dukaten und Abschluss-Beute werden gesammelt im gefuehrten `Abschliessen`-Dialog gepflegt und anschliessend atomar in AP, SE-Pools, Dukatenstand und Inventar uebernommen
-- Ein Abschluss kann fachlich sicher wieder zurueckgenommen werden; Abenteuer-Beute bleibt dabei bewusst vom Kampf-Inventar entkoppelt
-
-### Datenimport und Kataloge
-
-- Import und Export kompletter Helden als JSON-Bundle
-- Gruppen-Snapshots und Firestore-Sync uebertragen Avatarbilder nur als
-  kompakte, quadratische Vorschaubilder um das erkannte Gesicht; wenn kein
-  kleines Thumbnail erzeugt werden kann, erscheint auf anderen Geraeten
-  stattdessen der Platzhalter
-- Beschnittene Avatarflaechen (Heldenmarke, Album, Workspace-Header) richten
-  sich automatisch am Gesicht aus. Die Erkennung (BlazeFace, Apache 2.0)
-  rechnet in reinem Dart auf dem Geraet, auch im Web. Neue Bilder tragen
-  das Ergebnis am Galerieeintrag und synchronisieren es mit; ein manueller
-  Header-Ausschnitt hat weiterhin Vorrang
-- Konto-Sync fuer Helden speichert Avatar-Dateien selbst noch nicht remote.
-  Bildreferenzen bleiben erhalten; fehlende lokale Dateien werden in der UI
-  wie bisher als Platzhalter behandelt.
-- Konfliktbehandlung beim Import vorhandener Helden
-- Katalogdaten aus `assets/catalogs/house_rules_v1/`
-- `vorteile.json` und `nachteile.json` katalogisieren die WdH-Uebersichten
-  sowie paketgesteuerte Hausregel-Ergaenzungen mit Kosten-, Marker- und
-  Quellenmetadaten, aber ohne wörtliche Langregeltexte
-- Katalogeintraege koennen strukturierte Herkunfts- und Freischaltmetadaten
-  (`ruleMeta`) fuer offizielle Regeln, Hausregeln, Quellbelege und epische
-  Opt-in-Inhalte tragen
-- Epische Helden waehlen je eine geistige und eine koerperliche
-  Haupteigenschaft; diese beiden steigern sich ohne den epischen
-  AP-Aufschlag und sind ueber `AP und Level > Stern-Symbol` nachtraeglich
-  korrigierbar
-- Von den Haupteigenschafts-Boni rechnet die App die eBE-Halbierung bei
-  KK-Talenten und bei KO die halbierte SB-Erschwernis beim Unterdruecken
-  von Wunden (die halbierte Erschoepfung erscheint als Hinweis); die
-  IN-Finte erscheint als Hinweis in der Kampfvorschau. Alle uebrigen Boni
-  sind in der Heldenuebersicht ausdruecklich als `manuell` gekennzeichnet
-- Breite Datenlisten lassen sich unter `Einstellungen > Darstellung` sowie im
-  Kopf des Talente-Tabs zwischen automatischer, Tabellen- und Kartenansicht
-  umschalten
-- Textlastige Spalten der Haupttabellen lassen sich am rechten Rand ihres
-  Tabellenkopfs verbreitern; die Breiten werden geraeteweit gespeichert und
-  koennen je Tabelle zurueckgesetzt werden
-- Hausregeln werden als global aktivierbare Paket-Manifeste geladen; eingebaute
-  Pakete liegen unter `assets/catalogs/house_rules_v1/packs/`, importierte
-  Pakete im Heldenspeicher unter `house_rule_packs/<version>/<packId>/`
-- Eingebaute Pack-Manifeste muessen zusaetzlich explizit in `pubspec.yaml`
-  als Flutter-Assets eingetragen sein, damit sie in den Einstellungen
-  waehlbar werden
-- Importierte Hausregel-Pakete koennen direkt in
-  `Einstellungen > Hausregeln > Hausregelverwaltung oeffnen` angelegt,
-  bearbeitet, importiert, exportiert und geloescht werden
-- Der In-App-Editor bietet eine strukturierte Patch-Oberflaeche plus
-  einen JSON-Tab fuer das vollstaendige Manifest; eingebaute Pakete bleiben
-  schreibgeschuetzt und koennen nur als Vorlage geklont werden
-- Settings-Bereich `Katalogverwaltung` zum Einsehen aller Basisdaten sowie zum
-  Anlegen, Bearbeiten und Loeschen synchronisierbarer Custom-Eintraege
-- Der Settings-Bereich nutzt adaptive Unterseiten: auf schmalen Layouts als
-  Drilldown-Navigation, ab Tablet-Landscape mit linker Bereichsliste und
-  rechter Detailansicht
-- Settings-Bereich `Rechtliches` fuer Autor-, Fanprojekt-, Marken- und
-  Rechtehinweise zu DSA und Ulisses Spiele
-- Hero-Exporte koennen benoetigte Custom-Katalogeintraege mitsenden, damit
-  referenzierte Hausregeln beim Import direkt wieder aufloesbar sind
-- Reisebericht-Daten liegen bewusst separat unter
-  `assets/catalogs/reiseberichte/house_rules_v1/` und gehoeren nicht zur
-  editierbaren Settings-Katalogverwaltung
-- Aufbereitung der Runtime-Kataloge aus Excel-Quellen ueber Skripte in `tool/`
+Plattformen: Web, Windows, macOS, Linux, iOS/iPadOS und Android.
 
 ## Technischer Aufbau
 
-Die App folgt einer klar getrennten Schichtenarchitektur:
-
 ```text
-UI (lib/ui/)
+UI (lib/ui/ Bestand, lib/ui2/ Neubau „Kartograph“)
   -> State Layer mit Riverpod (lib/state/)
-    -> Anwendungsablaeufe ohne Riverpod (lib/ablaeufe/)
+    -> Anwendungsabläufe ohne Riverpod (lib/ablaeufe/)
     -> Domain-Modelle (lib/domain/)
     -> Regelmodule (lib/rules/derived/)
     -> Repository/Data Layer (lib/data/)
     -> Katalog-Layer (lib/catalog/)
-
-Die UI nutzt seit dem iPad-Redesign ein gemeinsames Layoutmodell aus
-`lib/ui/config/app_layout.dart` und wiederverwendbare Split-Views aus
-`lib/ui/widgets/codex_split_view.dart`, damit Home und Workspace auf
-Tablet-Breiten konsistent zwischen Fokusansicht und Master-Detail wechseln.
 ```
 
-Die Oberflaeche wird derzeit neu gebaut. Bestand (`lib/ui/`) und Neubau
-(`lib/ui2/`, Bildsprache „Kartograph") laufen nebeneinander; umgeschaltet wird
-unter `Einstellungen > Darstellung`. Beide teilen sich Heldenspeicher, Sync,
-Kataloge und Regelmodule vollstaendig — der Neubau hat weder ein eigenes
-Startup-Gate noch ein eigenes Repository. Er gliedert einen Helden in die drei
-Arbeitsbereiche **Spielen**, **Held verwalten** und **Entwicklung planen**.
-Die fachlich umfangreichen Bestandsansichten erreicht er waehrend des Uebergangs
-ueber den injizierten `KartoBestandsAdapter` (`lib/ui/bridges/`); Tabs,
-Editoraktionen und Leave-Guard der Verwaltung teilen sich beide Oberflaechen
-ueber denselben `WorkspaceManagementCoordinator`.
+Technischer Stack: Flutter und Dart, `flutter_riverpod`, `hive_ce` für die
+lokale Persistenz, Firebase (Auth, Firestore, Storage, Hosting, App Check) für
+Konto und Web, Python-Werkzeuge unter `tool/` für Katalogaufbereitung und
+Wartung.
 
-Eine offene Entwicklungsplanung bleibt beim Wechsel zu **Held verwalten**
-erhalten. Die Verwaltung ist zum Ansehen zugänglich. Vor einer Bearbeitung
-erscheint die Warnung, dass die geplante Entwicklung verloren geht:
-**Abbrechen** erhält den Plan, **Planung verwerfen und bearbeiten** verwirft
-ihn und ermöglicht die Änderung. Geplante Steigerungen werden dabei nicht
-übernommen. Das gilt auch für direkte Aktionen wie das Hinzufügen eines
-Inventargegenstands; eine laufende Planübernahme bleibt geschützt.
+Grundprinzipien:
 
-Im Magiebereich der Entwicklungsplanung lassen sich **Repräsentationen** erwerben
-und **Ritualkenntnisse** aktivieren oder steigern. Kosten, Voraussetzungen und
-bestätigte Meisterentscheide gehören zur Planung; gespeichert wird erst beim
-Übernehmen der Runde. **Magische Tradition einrichten** ergänzt im Magie-Editor
-enthaltene oder bereits vorhandene Kenntnisse ohne zusätzliche AP. Derselbe
-Dialog wird beim Erfassen von Voll-/Halbzauberer angeboten.
-Eine gemeinsame Ritualkenntnis je Tradition kann mehrere Ritualgruppen versorgen.
-Alte eigene Werte werden erst nach ausdrücklicher Auswahl angebunden.
-Details und Abgrenzungen: [Magische Kenntnisse](docs/magische_kenntnisse.md).
+- Domain-Modelle sind unveränderlich, serialisierbar und werden nur additiv
+  erweitert; unbekannte Felder bleiben erhalten.
+- Regellogik liegt ausschließlich in `lib/rules/derived/`. UI und Provider
+  rufen Regelmodule auf, rechnen aber nicht selbst.
+- Schreibende Abläufe wie „Rast abschließen“ oder „Schaden erhalten“ liegen in
+  `lib/ablaeufe/`: frisch laden, über Regeln rechnen, speichern.
+- Katalogdaten werden zur Laufzeit aus Split-JSON unter
+  `assets/catalogs/house_rules_v1/` geladen.
+- Bestand und Neubau der Oberfläche laufen parallel und werden unter
+  `Einstellungen > Darstellung` umgeschaltet. Sie teilen Heldenspeicher, Sync,
+  Kataloge und Regelmodule.
 
-Grundprinzipien des Projekts:
-
-- Domain-Modelle sind immutable und serialisierbar
-- Regellogik liegt ausschliesslich in `lib/rules/derived/`
-- UI und Provider rufen Regelmodule auf, rechnen aber nicht selbst
-- Schreibende Ablaeufe wie „Rast abschliessen“ und „Schaden erhalten“ liegen als eigene
-  Anwendungsablaeufe in `lib/ablaeufe/`: frisch laden, ueber Regeln rechnen,
-  stempeln, speichern; Fehler zeigt die aufrufende Oberflaeche
-  (Bestandsaufnahme in `docs/schreibpfade_inventar.md`)
-- Katalogdaten werden zur Laufzeit aus Split-JSON geladen
-- `HeroSheet` nutzt Schema-Version `23`, `HeroState` Schema-Version `5`
+Mehr dazu: [Technischer Überblick](docs/technical_overview.md) und
+[Architektur-Roadmap](docs/architecture_roadmap.md).
 
 ## Schnellstart
 
-Voraussetzungen:
-
-- Flutter SDK
-- Dart SDK
-- Je nach Zielplattform Android Studio, Xcode oder passende Desktop-Toolchains
-
-Projekt lokal starten:
+Voraussetzungen: Flutter SDK (stable) und je nach Zielplattform Xcode, Android
+Studio oder die passende Desktop-Toolchain.
 
 ```bash
 flutter pub get
@@ -374,84 +105,31 @@ flutter test
 flutter run
 ```
 
-iOS/Xcode-Setup auf macOS:
+Lokales Web-Debuggen:
 
 ```bash
-bash tool/ios_bootstrap_spm.sh
+flutter run -d chrome --web-port=5000
 ```
 
-Details dazu stehen in `docs/ios_xcode_setup.md`.
+Schlägt die Firebase-Initialisierung fehl, startet die App im lokalen Modus;
+nur Konto und Cloud-Funktionen bleiben dann deaktiviert.
 
-Wichtig fuer Tests auf dem eigenen iPad:
+**iOS/iPadOS:** `bash tool/ios_bootstrap_spm.sh` auf einem Mac mit Xcode 15+,
+Details in [iOS/Xcode-Setup](docs/ios_xcode_setup.md).
 
-- Der erste iOS-Bootstrap muss auf einem Mac mit Xcode 15+ laufen und
-  aktualisiert dabei das Xcode-Projekt fuer den SPM-Workflow.
-- In Xcode brauchst du fuer persoenliches Signing einen eigenen, eindeutigen
-  Bundle Identifier.
-- Wenn du den Bundle Identifier aenderst und den Gruppen-Sync ueber Firebase
-  nutzen willst, solltest du anschliessend `flutterfire configure` erneut
-  ausfuehren, damit `lib/firebase_options.dart` wieder dazu passt.
-- Schlaegt die Firebase-Initialisierung fehl, startet die App trotzdem im
-  lokalen Modus weiter; nur Gruppen-Sync und andere Cloud-Funktionen bleiben
-  deaktiviert.
+**Windows:**
 
-## Wie eine solche App aufgebaut werden kann
-
-Wenn du diese App erweitern oder eine aehnliche DSA- oder Charakterverwaltungs-App bauen willst, ist die vorhandene Struktur bereits ein brauchbares Referenzmuster:
-
-1. Modelle fuer persistierte Heldendaten und separaten Laufzeitzustand definieren.
-2. Regelberechnungen als reine Funktionen kapseln, statt sie in Widgets oder State-Klassen zu verteilen.
-3. Ein Repository-Interface zwischen UI und Persistenz ziehen, damit Speichertechnik austauschbar bleibt.
-4. Katalogdaten versioniert und getrennt vom Code halten.
-5. Import/Export frueh als stabiles Bundle-Format modellieren.
-6. Reaktive UI ueber Provider/Snapshots aufbauen, damit abgeleitete Werte zentral berechnet werden.
-
-Fuer die konkrete Umsetzung im Projekt sind diese Dokus die besten Einstiege:
-
-- `docs/technical_overview.md` fuer Architektur, Datenfluss und Modellschichten
-- `docs/catalog_import_workflow.md` fuer den Weg von Excel nach Runtime-JSON
-- `docs/pdf_agent_workflow.md` fuer den lokalen PDF-Agenten und die DSA-Wissensbasis
-- `docs/rules_mapping_house_rules_v1.md` fuer die fachliche Zuordnung der Hausregeln
-- `docs/test_strategy.md` fuer Testaufbau und Qualitaetssicherung
-- [Architektur-To-do-Liste](docs/architecture_roadmap.md) für sieben geplante
-  Verbesserungen mit Einstiegspunkten, Abhängigkeiten und Abnahmekriterien
-- [Zaubereffekte-Integrationsplan](docs/zaubereffekte_integrationsplan.md)
-  für den geplanten Ausbau von Charakterwirkungen im Kampf und Spielgeschehen
-  (Roadmap MAG-EFF, Katalog-Screening und DSA-Regelbelege)
-- [Klickbares Codex-Mockup](docs/mockups/README.md) für die geplanten Bereiche
-  Spielen, Held verwalten und Entwicklung planen
-- [Redesign-Umsetzungspläne](docs/redesign_implementation.md) mit drei
-  Arbeitspaketen, kopierfertigen Agentenprompts und Modell-Empfehlung
-
-## Projektstruktur
-
-```text
-lib/
-  catalog/        Katalog-Loader und Runtime-Katalog
-  data/           Repository, Persistenz und Datei-I/O
-  domain/         Persistierte und Laufzeit-Modelle
-  rules/derived/  Fach- und Regellogik
-  state/          Riverpod-Provider und berechnete Snapshots
-  ui/             Screens, Widgets und Workspace-Layout
-  ui/bridges/     Uebergangsbruecke der Bestandsansichten zur neuen Oberflaeche
-  ui2/            Neubau „Kartograph": Token, Rahmen und drei Arbeitsbereiche
-
-assets/
-  catalogs/house_rules_v1/  Split-JSON-Kataloge
-  catalogs/reiseberichte/   Separater Reisebericht-Katalog
-  heroes/                   Seed-Helden
-
-tool/
-  Python- und Shell-Helfer fuer Import, Analyse und Wartung
-  pdf_catalog_agent/  Lokaler Dokument-Agent fuer PDF-, DOCX- und ODT-Wissensbasis
-
-docs/
-  Technische und prozessuale Projektdokumentation
+```bash
+flutter build windows --release
+dart run msix:create
 ```
 
-## Tests und Qualitaet
+`flutter_secure_storage_windows` braucht ATL/MFC aus Visual Studio. Scheitert
+der Build an `atlstr.h` oder `atls.lib`, in der verwendeten Visual-Studio- bzw.
+Build-Tools-Instanz die Komponente `C++ ATL/MFC` nachinstallieren. Prüfung von
+Release-Artefakten: [Windows-Antivirus-Audit](docs/windows_antivirus_audit.md).
 
-Empfohlene Standardbefehle:
+## Tests und Qualität
 
 ```bash
 flutter analyze
@@ -460,121 +138,70 @@ python tool/check_screen_loc_budget.py --max-lines 700
 python -m unittest tool.test_pdf_catalog_agent
 ```
 
-Fuer AES-verschluesselte PDFs im `pdf_catalog_agent` wird zusaetzlich
-`cryptography>=3.1` in der aktiven Python-Laufzeit benoetigt.
+`flutter analyze` bricht in der CI auch bei `info`-Lints ab. Für
+AES-verschlüsselte PDFs im `pdf_catalog_agent` wird zusätzlich
+`cryptography>=3.1` benötigt. Testaufbau und Regeln:
+[Teststrategie](docs/test_strategy.md).
 
-Zusatzlich vorhanden:
+## Veröffentlichung
 
-- Widget- und State-Tests fuer UI, Provider und Regeln
-- Performance-Guardrails fuer Rebuild-Verhalten
-- Manuelles UI-Profiling ueber Flutter DevTools bei Bedarf
+Arbeitsbranch → PR nach `test` → Abnahme → PR von `test` nach `main`.
+`test` veröffentlicht nach erfolgreichen Prüfungen auf
+https://heldensync-test.web.app, `main` die produktive Version. Pushes auf
+`main` werden automatisch nach `test` gemergt. Beide Versionen teilen Konten
+und Cloud-Helden. Details: [Web-Veröffentlichung](docs/web_deployment.md).
 
-Weitere Referenzen:
+## Projektstruktur
 
-- `lib/catalog/vertrautenmagie_preset.dart` enthaelt das getypte
-  Vertrautenmagie-Preset fuer freie Ritualkategorien.
-- `assets/catalogs/house_rules_v1/vertrautenmagie_rituale.json` enthaelt das
-  passende JSON-Snippet derselben Daten fuer Import, Review und Referenz.
+```text
+lib/
+  ablaeufe/       Schreibende Anwendungsabläufe
+  catalog/        Katalog-Loader und Runtime-Katalog
+  data/           Repository, Persistenz und Datei-I/O
+  domain/         Persistierte und Laufzeit-Modelle
+  rules/derived/  Fach- und Regellogik
+  state/          Riverpod-Provider und berechnete Snapshots
+  ui/             Bestandsoberfläche
+  ui/bridges/     Übergangsbrücke der Bestandsansichten zum Neubau
+  ui2/            Neubau „Kartograph“
 
-## Windows-Antivirus-Audit
+assets/
+  catalogs/house_rules_v1/  Split-JSON-Kataloge und Hausregel-Pakete
+  catalogs/reiseberichte/   Separater Reisebericht-Katalog
+  heroes/                   Beispielhelden
 
-Fuer Release-Pruefungen auf Windows gibt es eine eigene Dokumentation unter
-`docs/windows_antivirus_audit.md`. Sie fasst die statischen Audit-Befunde,
-heuristisch auffaellige, aber legitime Laufzeitfunktionen und den empfohlenen
-Pruefablauf fuer EXE- oder MSIX-Artefakte zusammen.
-
-Fuer die optionale Artefaktpruefung liegt ein PowerShell-Helfer unter
-`tool/audit_windows_artifact.ps1`. Er dokumentiert SHA-256, Dateimetadaten,
-Authenticode-Status und optional einen lokalen Microsoft-Defender-Scan.
-
-## Erstellen einer Windows App
-
-```bash
-flutter pub get
-flutter build windows --release
-dart run msix:create
+tool/             Python- und Shell-Helfer für Import, Analyse, CI und Wartung
+docs/             Technische und fachliche Projektdokumentation
 ```
 
-Der Windows-Build nutzt `flutter_secure_storage_windows`. Dessen native
-Implementierung benoetigt ATL/MFC-Header und Bibliotheken aus Visual Studio.
-`windows/CMakeLists.txt` loest diese Pfade gezielt fuer das Plugin auf, weil
-CMake bei mehreren Visual-Studio-Installationen sonst eine Build-Tools-Instanz
-ohne ATL/MFC waehlen kann. Falls der Build trotzdem mit `atlstr.h` oder
-`atls.lib` scheitert, in der tatsaechlich verwendeten Visual-Studio- oder
-Build-Tools-Instanz die Komponente `C++ ATL/MFC` nachinstallieren.
+## Dokumentation
 
-## Weiterfuehrende Dokumentation
+- Einstieg für Entwicklung und Agenten: [CLAUDE.md](CLAUDE.md),
+  [AGENTS.md](AGENTS.md) und die Themenhinweise unter
+  [docs/hinweise/](docs/hinweise/)
+- Architektur: [Technischer Überblick](docs/technical_overview.md),
+  [Architektur-Roadmap](docs/architecture_roadmap.md),
+  [Schreibpfade](docs/schreibpfade_inventar.md)
+- Kataloge: [Katalog-Import](docs/catalog_import_workflow.md),
+  [Hausregel-Zuordnung](docs/rules_mapping_house_rules_v1.md),
+  [PDF-Agent](docs/pdf_agent_workflow.md),
+  [Kurzregel-Kompendium](docs/kurzregeln_redaktion.md)
+- Fachpläne: [Gefecht](docs/gefecht_implementation.md),
+  [Zaubereffekte](docs/zaubereffekte_integrationsplan.md),
+  [Spielmodus](docs/spielmodus_konzept.md),
+  [Reiseroute](docs/reiseroute_plan.md),
+  [Redesign](docs/redesign_implementation.md)
+- Betrieb: [Web-Veröffentlichung](docs/web_deployment.md),
+  [Sicherheit](docs/security_operations.md),
+  [Datenschutz und Rechtstexte](docs/legal_privacy_operations.md),
+  [Feedback](docs/feedback_betrieb.md),
+  [UI-Performance](docs/ui_performance_measurements.md)
 
-- `docs/technical_overview.md`
-- `docs/catalog_import_workflow.md`
-- `docs/pdf_agent_workflow.md`
-- `docs/rules_mapping_house_rules_v1.md`
-- `docs/test_strategy.md`
-- `docs/ui_performance_measurements.md`
-- `docs/ios_xcode_setup.md`
-- `docs/windows_antivirus_audit.md`
-- `docs/feedback_github_plan.md`
-- `docs/feedback_betrieb.md`
+## Pflege dieser Seite
 
-## Hinweise
-
-- Die kanonische Katalogquelle fuer die App bleibt `assets/catalogs/house_rules_v1/`.
-- Benutzerdefinierte Katalogeintraege liegen nie im Einstellungsordner,
-  sondern immer im aktuell aktiven Heldenspeicher.
-- `assets/catalogs/reiseberichte/house_rules_v1/reisebericht.json` bleibt ein
-  separater Runtime-Katalog ausserhalb der editierbaren Settings-Sektionen.
-- Excel-Dateien im Repo-Root sind Upstream-Quellen fuer die Katalogaufbereitung.
-- Platzhalter- und Legacy-Dateien werden bewusst nicht automatisch entfernt.
-
-Die Gefechtsansicht führt Orientieren, Gegner-/Distanzkontext, Ziehen und
-bestätigte Zauber-/Karmahandlungen über gemeinsame Regelprüfungen. Laufende
-Gefechte bleiben flüchtig; Ressourcen und unterstützte Folgen werden über
-bestehende frische Schreibwege übernommen. Regelquellen und manuelle Grenzen:
-[Gefechtsausbau](docs/gefecht_next_plan.md), [Implementierung](docs/gefecht_implementation.md).
-
-Manöver lassen sich nach Angriff, Verteidigung oder Sonstige, Lernstand und
-bekannten Sperren filtern. Finte, Wuchtschlag und Fernkampfansage haben getrennte
-Eingaben; ohne die ersten beiden SF wirkt die aufgerundete halbe Ansage.
-Tastaturfokus und Cursor bleiben auch bei wechselnden Hinweisen erhalten.
-Unterstützte Schadenangriffe bieten einen eigenen, waffengebundenen Schadenswurf.
-FK-Schaden verwendet das Band der eingegebenen Schussentfernung; lässt es sich
-nicht bestimmen, muss der TP-Distanzanteil am Tisch geklärt werden.
-Entwaffnen und Umreißen erzeugen keinen Schaden; ungeklärte Varianten verlangen
-eine manuelle Abwicklung ohne vorgegebenen Waffenschaden. Jede Angriffsfolge wird
-einzeln abgeschlossen. „Schaden würfeln“ bleibt eine allgemeine Probe. FK-Ansagen verlangen bezahlte
-zusätzliche Zielzeit: „Zusatz-Zielen beginnen“ und „Fortsetzen“ bezahlen reguläre
-Aktionen über Runden, danach führt „Schuss ausführen“ den gehaltenen Auftrag aus.
-Optionales Zielen wird mit „Zielen beginnen“ auf demselben Weg bezahlt und baut
-bis zu vier Punkte anderer Zuschläge ab; FK-Ansage und Gezielter Schuss bleiben.
-Aktuelle DK und Sitzungskontext bleiben beim Schuss und bei Probeabbruch erhalten.
-„Laden / Vorbereiten“ erfragt einen unbekannten Anfang pro geführter Fernkampfwaffe.
-Nach einem Profilwechsel kann der unbekannte Ladezustand auch im Schussdialog
-frisch bestätigt werden. Eine passend bekannte ungeladene Waffe bleibt gesperrt.
-Bezahlte Ladezeit bleibt bei geänderter Dauer erhalten; Waffen- oder Geschosswechsel
-übertragen keinen Fortschritt. Munition wird einmal beim ausgeführten Schuss
-übernommen. Ein Speicherfehler bietet Übernahme-Retry ohne erneuten Wurf.
-Kampfgespür erlaubt spontane Umwandlung unter Erhalt aller verbrauchten Marken.
-
-Ausführbare Aktionen benötigen konkrete Angaben
-und gegebenenfalls einzelne manuelle Entscheidungen; Regelhinweise allein
-sperren keine Probe. Freie Zusatzwerte starten bei 0, feste Katalogzuschläge
-werden getrennt einmal angewendet. Eine später geleerte oder ungültige
-FK-Zahleingabe bleibt offen, auch nach Waffenwechsel. Distanzklassen stehen
-mit vollständigem Namen in Rundenleiste und Aktionsdialog.
-„Distanzklasse ändern“ öffnet einen eigenen Dialog für Annäherung/Entfernung
-um eine oder zwei Klassen, mit Finte, ohne Schaden und mit AT plus freiem Schritt.
-Der normale Angriff enthält keine DK-Wechselwahl.
-
-Im Gefecht sind Haupt- und Nebenhand ausdrücklich wählbar; Ziehen und
-Wegstecken wirken erst nach ihrer bestätigten Dauer.
-Bogen und gewöhnliche Armbrust belegen auch bei alten einhändigen Standardwerten
-beide Hände. Die Waffenart Balestrina bleibt einhändig; Wurfwaffen behalten ihre
-Metadaten. Unzulässige Nebenhandbelegungen sperren auch Zusatzaktionen.
-
-## Web-CI und Testversion
-
-`test` veröffentlicht nach erfolgreichen Prüfungen auf https://heldensync-test.web.app;
-`main` veröffentlicht die produktive Version. Arbeitsbranches werden nur bei
-offenen PRs nach `test` oder `main` geprüft. Beide Versionen teilen Firebase-Daten.
-Pushes auf `main` werden automatisch nach `test` gemergt und dort erneut geprüft.
-Details: [Web-Veröffentlichung](docs/web_deployment.md).
+Diese README ist die Startseite des Repositorys. Sie enthält nur, was sich
+selten ändert: Zweck, Links, Funktionsbereiche in einer Zeile, Aufbau,
+Schnellstart und Dokumentationsindex. Detailbeschreibungen neuer Funktionen
+gehören in [Funktionsumfang im Detail](docs/funktionsumfang.md) oder den
+passenden Fachplan, nicht hierher. Keine schnell veraltenden Zahlen wie
+Schemaversionen eintragen.
