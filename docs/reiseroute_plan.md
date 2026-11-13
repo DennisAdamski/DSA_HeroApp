@@ -10,7 +10,7 @@ und später auf einer Aventurien-Karte.
 | --- | --- | --- |
 | 0 | Anfrage an Avesmaps (Ortsverzeichnis, Kacheln, CORS, Namensnennung) | beantwortet (12.11.2026): Ortsdaten und Route ja, Kacheln nein |
 | 1 | Stationsliste am Helden, Spielkachel „Reiseroute“, Blatt mit Zeitleiste | umgesetzt |
-| 2 | Ortssuche mit Koordinaten, Reisewege, Karte mit Route und Pins | Möglichkeiten unten, Entscheidung offen |
+| 2 | Ortssuche mit Koordinaten, Reisewege, Karte mit Route und Pins | A2 und A1 gewählt (13.11.2026); Unterbau umgesetzt, Datenmodell und Ortsfeld offen |
 
 ## Stufe 1 (umgesetzt)
 
@@ -178,6 +178,22 @@ zwischenspeichern:
   auch für Orte, die das Wiki-Verzeichnis nicht kennt.
 - Rücklink mit dem Seitennamen aus `wiki.url`, wie von Avesmaps gewünscht. Orte
   ohne Wiki-Seite bekommen keinen Link statt eines toten.
+
+### Unterbau für A2 und A1 (umgesetzt 13.11.2026)
+
+Noch ohne Anbindung an die Oberfläche; die App stellt damit keine Anfrage.
+
+- `AvesmapsOrt` (`lib/domain/avesmaps_ort.dart`): `id`, `name`, `art`, `x`,
+  `y`. Liegt nur im lokalen Zwischenspeicher, nie im Heldendokument.
+- `AvesmapsClient` (`lib/data/avesmaps/avesmaps_client.dart`): `ladeOrte()`
+  und `suche()`. Liest tolerant, setzt die Kennung nur außerhalb des Webs,
+  meldet `429`/`503` samt `Retry-After` als `AvesmapsFehler` und wiederholt
+  nichts von sich aus.
+- `AvesmapsOrteRepository` mit `HiveAvesmapsOrteSpeicher` (Box
+  `avesmaps_orte_v1` im Heldenspeicher): Liste höchstens einmal in 24 Stunden,
+  nur auf Aufruf; nach einem Fehlschlag 15 Minuten Pause bzw. die Wartezeit
+  des Servers; scheitert das Auffrischen, gilt die ältere Liste weiter.
+- Tests: `test/data/avesmaps/`.
 
 ### Für alle Bausteine
 
