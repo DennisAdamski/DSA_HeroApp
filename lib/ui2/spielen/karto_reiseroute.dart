@@ -11,6 +11,7 @@ import 'package:dsa_heldenverwaltung/state/avesmaps_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_stroke.dart';
+import 'package:dsa_heldenverwaltung/ui2/karte/karto_karten_blatt.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_held_schreiben.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abschnitt.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_reise_tabelle.dart';
@@ -221,6 +222,13 @@ class _KartoReiserouteBlattState extends ConsumerState<KartoReiserouteBlatt>
         Row(
           children: [
             Expanded(child: Text('Reiseroute', style: texte.titel)),
+            IconButton(
+              key: const ValueKey<String>('karto-reise-blatt-karte'),
+              tooltip: 'Auf der Karte zeigen',
+              icon: const Icon(Icons.map_outlined),
+              onPressed: () => zeigeKarte(context, heroId: heroId),
+            ),
+            const SizedBox(width: Abstand.knapp),
             FilledButton.icon(
               key: const ValueKey<String>('karto-reise-blatt-station-neu'),
               onPressed: bedienbar ? stationAnlegen : null,

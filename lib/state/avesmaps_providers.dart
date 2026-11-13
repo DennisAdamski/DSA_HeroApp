@@ -5,6 +5,7 @@ import 'package:dsa_heldenverwaltung/data/avesmaps/avesmaps_client.dart';
 import 'package:dsa_heldenverwaltung/data/avesmaps/avesmaps_orte_repository.dart';
 import 'package:dsa_heldenverwaltung/data/avesmaps/avesmaps_orte_speicher.dart';
 import 'package:dsa_heldenverwaltung/domain/avesmaps_ort.dart';
+import 'package:dsa_heldenverwaltung/domain/avesmaps_ortsdetails.dart';
 import 'package:dsa_heldenverwaltung/domain/ort_eintrag.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/standort_rules.dart';
 import 'package:dsa_heldenverwaltung/state/ort_providers.dart';
@@ -26,6 +27,16 @@ final avesmapsClientProvider = Provider<AvesmapsClient?>((ref) {
   return client;
 });
 
+/// Lokaler Zwischenspeicher des Ortsverzeichnisses; `null`, solange der
+/// Abruf aus ist.
+final avesmapsOrteSpeicherProvider = FutureProvider<AvesmapsOrteSpeicher?>((
+  ref,
+) async {
+  if (!ref.watch(avesmapsAktivProvider)) return null;
+  final speicherort = await ref.watch(heroStorageLocationProvider.future);
+  return HiveAvesmapsOrteSpeicher(speicherPfad: speicherort.effectivePath);
+});
+
 /// Hält das Ortsverzeichnis von Avesmaps lokal vor; `null`, solange der Abruf
 /// aus ist.
 final avesmapsOrteRepositoryProvider = FutureProvider<AvesmapsOrteRepository?>((
@@ -33,11 +44,9 @@ final avesmapsOrteRepositoryProvider = FutureProvider<AvesmapsOrteRepository?>((
 ) async {
   final client = ref.watch(avesmapsClientProvider);
   if (client == null) return null;
-  final speicherort = await ref.watch(heroStorageLocationProvider.future);
-  return AvesmapsOrteRepository(
-    client: client,
-    speicher: HiveAvesmapsOrteSpeicher(speicherPfad: speicherort.effectivePath),
-  );
+  final speicher = await ref.watch(avesmapsOrteSpeicherProvider.future);
+  if (speicher == null) return null;
+  return AvesmapsOrteRepository(client: client, speicher: speicher);
 });
 
 /// Merkt, ob in dieser Sitzung ein Ortsfeld oder die Reiseroute geöffnet
@@ -61,22 +70,44 @@ final avesmapsOrteAnforderungProvider =
       AvesmapsOrteAnforderung.new,
     );
 
-/// Das Ortsverzeichnis von Avesmaps; leer, solange es nicht angefordert,
-/// nicht vorhanden oder nicht abrufbar ist.
+/// Das Ortsverzeichnis von Avesmaps; leer, solange es weder lokal vorliegt
+/// noch abrufbar ist.
+///
+/// Vor der Anforderung kommt nur die lokal gespeicherte Liste eines früheren
+/// Abrufs zurück, ohne Netzzugriff. Erst nach der Anforderung darf das
+/// Repository die Liste (höchstens einmal am Tag) neu laden.
 ///
 /// Wirft nicht: Das Verzeichnis ergänzt die Ortsauswahl nur, der Ort bleibt
 /// frei eintragbar.
 final avesmapsOrteProvider = FutureProvider<List<AvesmapsOrt>>((ref) async {
-  if (!ref.watch(avesmapsOrteAnforderungProvider)) {
-    return const <AvesmapsOrt>[];
-  }
   try {
+    if (!ref.watch(avesmapsOrteAnforderungProvider)) {
+      final speicher = await ref.watch(avesmapsOrteSpeicherProvider.future);
+      return (await speicher?.lade())?.orte ?? const <AvesmapsOrt>[];
+    }
     final repository = await ref.watch(avesmapsOrteRepositoryProvider.future);
     return (await repository?.ladeOrte())?.orte ?? const <AvesmapsOrt>[];
   } on Object {
     return const <AvesmapsOrt>[];
   }
 });
+
+/// Die Details des Avesmaps-Orts mit der Kennung `id` (Wiki-Artikel,
+/// Gebiete), oder `null`.
+///
+/// Fragt erst nach der Anforderung und dann je Ort einmal in der Sitzung;
+/// das Ergebnis bleibt im Speicher. Fehler ergeben `null`.
+final avesmapsOrtsdetailsProvider =
+    FutureProvider.family<AvesmapsOrtsdetails?, String>((ref, id) async {
+      if (!ref.watch(avesmapsOrteAnforderungProvider)) return null;
+      final client = ref.watch(avesmapsClientProvider);
+      if (client == null) return null;
+      try {
+        return await client.ladeOrt(id);
+      } on AvesmapsFehler {
+        return null;
+      }
+    });
 
 /// Auswahlliste der Orte: das Ortsverzeichnis der Wiki Aventurica, ergänzt
 /// um Orte und Kartenpositionen aus Avesmaps, sobald diese vorliegen.

@@ -35,6 +35,7 @@ import 'package:dsa_heldenverwaltung/ui2/spielen/karto_spielraster_bedienung.dar
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_spielraster_ordnung.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_wuerfelprotokoll.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_zuletzt_gewuerfelt.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/standort/karto_standort_kachel.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/wildnis/karto_wildnis_kachel.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
@@ -304,6 +305,19 @@ class _KartoSpielansichtState extends ConsumerState<KartoSpielansicht>
     KartoSpielkachelArt.reiseroute => KartoReiserouteKachel(
       heroId: heroId,
       stationen: werte.hero.reiseStationen,
+    ),
+    // Schreibt nur den Standort, über denselben Zustandsweg wie die
+    // Standortzeile der Abenteuer-Kachel.
+    KartoSpielkachelArt.standort => KartoStandortKachel(
+      standort: werte.state.standort,
+      heroId: heroId,
+      stationen: werte.hero.reiseStationen,
+      onSpeichern: (standort) => bestand.standortSetzen(
+        context: context,
+        ref: ref,
+        heroId: heroId,
+        standort: standort,
+      ),
     ),
     // Schreibt nichts am Helden; gewürfelt wird über die Gefechtsbrücke, die
     // selbst ins Würfelprotokoll schreibt.

@@ -210,6 +210,17 @@ python tool/import_wiki_orte.py --limit 40 # Stichprobe je Vorlage
 - Übernommen werden nur Kurzfakten, keine Beschreibungstexte; deshalb ist nichts
   verschlüsselt. Die Quellenangabe steht in der Lizenzansicht der App
   (`lib/data/wiki_aventurica_lizenz.dart`) und im Bereich „Rechtliches“.
+- **Ortsfakten:** `python tool/import_wiki_ortsfakten.py` schreibt
+  `assets/catalogs/house_rules_v1/ortsfakten.json`: je Siedlung (Schlüssel
+  ist der Wiki-Seitenname wie `seite`/`name` in `orte.json`) Einwohner
+  (Hauptzahl und Text), Oberhaupt, Herrschaftsform, Verkehrswege; dazu alle
+  Seiten mit `Infobox Bauwerk`, deren `Standort` auf eine Siedlung verlinkt
+  (Name, Art, Zugehörigkeit). Nur Infobox-Kurzfakten, keine Texte. Lädt
+  `ortsfaktenProvider` (`lib/catalog/ortsfakten_loader.dart`); angezeigt in
+  der Standort-Kachel und der Infotafel der Karte (`ortsfakten_rules.dart`:
+  Tempel getrennt, übrige Bauwerke nach Bedeutung). Prüfen mit
+  `flutter test test/catalog/ortsfakten_katalog_test.dart` und
+  `python -m unittest tool/test_import_wiki_ortsfakten.py`.
 - Nach einem neuen Import `flutter test test/catalog/ort_katalog_test.dart`
   laufen lassen. Der Import ist höflich (eigener User-Agent, Pausen, `maxlag`)
   und dauert einige Minuten.

@@ -13299,6 +13299,34 @@
           "checkedOn": "2026-11-11"
         }
       ]
+    },
+    "test/rules/derived/karten_rules_test.dart": {
+      "kind": "product_contract",
+      "status": "verified",
+      "summary": "Prüft die Kartenpunkte der Reiseroute (nur Stationen mit Kartenposition, Etappennummer bleibt die der Zeitleiste), den Kartenausschnitt um Route und Standort (Rand, Mindestkante, Ersatz ohne Punkte) und die Begrenzung des Ortsverzeichnisses (umschließendes Rechteck, ohne Orte die ganze Karte).",
+      "rationale": "Testdatei und lib/rules/derived/karten_rules.dart gelesen: reine Geometrie im Koordinatensystem von Avesmaps (0 bis 1024, y nach Norden) für die Kartendarstellung. Das Regelwerk trifft dazu keine Aussage; der Maßstab von drei Meilen je Karteneinheit stammt aus der Avesmaps-Dokumentation und ist im Eintrag zu reiseroute_rules_test vermerkt.",
+      "sources": []
+    },
+    "test/rules/derived/standort_lage_rules_test.dart": {
+      "kind": "product_contract",
+      "status": "verified",
+      "summary": "Prüft die Himmelsrichtung zwischen zwei Kartenpunkten (y nach Norden), die Zuordnung des Standorts zu einem Avesmaps-Ort (über die Kennung des verbundenen Verzeichnisses, sonst nur ein eindeutig gleicher Name), die Orte in der Nähe (nur Siedlungen, nächste zuerst, begrenzt), die Meilenformatierung, das tolerante Lesen der Ortsdetails mit Gebietszeile und Reich, den Rücklink auf Avesmaps (Seitenname, sonst Kennung, sonst Name), die Positionsanzeige und die Lageskizze (kleinster Halbmesser mit genug Siedlungen, normierte Versätze, Beschriftung bedeutender Orte, Höchstzahl der Namen).",
+      "rationale": "Testgruppen und lib/rules/derived/standort_lage_rules.dart gelesen: Abstands- und Richtungsrechnung über Kartenkoordinaten, Textformatierung und Link-Bau für einen externen Kartendienst. Das Regelwerk trifft zu Anzeige, Nachbarschaftsliste und Link-Format keine Aussage; Ortsnamen sind Eingabebeispiele ohne Regelbehauptung.",
+      "sources": []
+    },
+    "test/rules/derived/ortsfakten_rules_test.dart": {
+      "kind": "product_contract",
+      "status": "verified",
+      "summary": "Prüft die Ortsauskunft aus dem Wiki-Katalog (Zuordnung über den Wiki-Seitennamen, nur Siedlungen), die Trennung in Tempel samt Schreinen und Heiligtümern (ein Unheiligtum zählt nicht) und übrige Bauwerke nach Bedeutung, die Reihung reihum je Art, die Gruppierung der Tempel nach Gottheit aus der Zugehörigkeit, die Einwohneranzeige mit Tausenderpunkten sowie ihre Teilung in Zahl und Zusatz, die Bauwerkzeile und den Wiki-Link sowie die Zuordnung eines Avesmaps-Orts zu seinem Eintrag über Kennung oder Namen.",
+      "rationale": "Testdatei und lib/rules/derived/ortsfakten_rules.dart gelesen: Anzeige- und Sortierlogik über Katalogdaten aus der Wiki Aventurica. Das Regelwerk trifft zu Einwohnerformat, Bauwerksrangfolge und Link-Format keine Aussage; Orts- und Bauwerksnamen sind Eingabebeispiele ohne Regelbehauptung.",
+      "sources": []
+    },
+    "test/catalog/ortsfakten_katalog_test.dart": {
+      "kind": "product_contract",
+      "status": "verified",
+      "summary": "Prüft das Lesen der Ortsfakten (Einwohner, Oberhaupt, Verkehrswege, Bauwerke je Siedlung; Unlesbares und leere Einträge fallen weg, ungültige Wurzel und fehlendes Asset ergeben einen leeren Katalog) und die Datei ortsfakten.json selbst (datiert, über 1000 Siedlungen und Bauwerke, Gareth und Punin mit Einwohnern, Oberhaupt und Tempeln, Schlüssel fast immer Seiten des Ortsverzeichnisses, nur kurze Angaben).",
+      "rationale": "Testdatei, lib/catalog/ortsfakten_loader.dart und tool/import_wiki_ortsfakten.py gelesen: maschinell aus Infoboxen der Wiki Aventurica (CC BY-SA) ausgelesene Kurzfakten ohne Beschreibungstext. Geprüft wird die Datenhaltung, keine Regel des Regelwerks; Einwohnerzahlen sind Wiki-Angaben ohne Regelbehauptung.",
+      "sources": []
     }
   }
 }

@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import 'package:dsa_heldenverwaltung/domain/avesmaps_ort.dart';
+import 'package:dsa_heldenverwaltung/domain/avesmaps_ortsdetails.dart';
 
 /// Kennung der App gegenüber Avesmaps, so mit dem Betreiber abgesprochen
 /// (Issue 7 im Avesmaps-Repository).
@@ -24,6 +25,9 @@ enum AvesmapsFehlerArt {
 
   /// Der Dienst ist gerade nicht bedienbar (503).
   nichtVerfuegbar,
+
+  /// Den angefragten Ort gibt es nicht (404).
+  unbekannt,
 
   /// Unerwarteter Status oder unlesbare Antwort.
   antwort,
@@ -127,6 +131,36 @@ class AvesmapsClient {
     );
   }
 
+  /// Lädt die Details des Orts [id] (Wiki-Artikel, Gebiete).
+  ///
+  /// Liefert `null`, wenn es den Ort nicht (mehr) gibt oder die Kennung keine
+  /// UUID ist; wirft sonst einen [AvesmapsFehler].
+  Future<AvesmapsOrtsdetails?> ladeOrt(String id) async {
+    final kennung = id.trim();
+    if (!_uuid.hasMatch(kennung)) return null;
+    final Map<String, dynamic> antwort;
+    try {
+      antwort = await _hole(_weg('orte/$kennung'));
+    } on AvesmapsFehler catch (fehler) {
+      if (fehler.art == AvesmapsFehlerArt.unbekannt) return null;
+      rethrow;
+    }
+    final details = AvesmapsOrtsdetails.ausJson(antwort);
+    if (details == null) {
+      throw const AvesmapsFehler(
+        AvesmapsFehlerArt.antwort,
+        'Avesmaps hat keine lesbaren Ortsdetails geliefert.',
+      );
+    }
+    return details;
+  }
+
+  // Form der Ortskennung laut Schnittstelle; andere Werte beantwortet sie mit
+  // 400, die Anfrage entfällt deshalb.
+  static final RegExp _uuid = RegExp(
+    r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$',
+  );
+
   /// Gibt den HTTP-Client frei.
   void close() => _httpClient.close();
 
@@ -154,6 +188,11 @@ class AvesmapsClient {
     switch (antwort.statusCode) {
       case 200:
         break;
+      case 404:
+        throw const AvesmapsFehler(
+          AvesmapsFehlerArt.unbekannt,
+          'Diesen Ort gibt es bei Avesmaps nicht.',
+        );
       case 429:
         throw AvesmapsFehler(
           AvesmapsFehlerArt.gedrosselt,

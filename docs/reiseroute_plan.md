@@ -10,7 +10,7 @@ und später auf einer Aventurien-Karte.
 | --- | --- | --- |
 | 0 | Anfrage an Avesmaps (Ortsverzeichnis, Kacheln, CORS, Namensnennung) | beantwortet (12.11.2026): Ortsdaten und Route ja, Kacheln nein |
 | 1 | Stationsliste am Helden, Spielkachel „Reiseroute“, Blatt mit Zeitleiste | umgesetzt |
-| 2 | Ortssuche mit Koordinaten, Reisewege, Karte mit Route und Pins | A2 und A1 sowie Tabellenansicht umgesetzt (13.11.2026); Reisewege und grafische Darstellung offen |
+| 2 | Ortssuche mit Koordinaten, Reisewege, Karte mit Route und Pins | A2, A1, Tabellenansicht, Ortsdetails (D), Standort-Kachel und Aventurien-Karte im Avesmaps-Stil (C2, C3 vorbereitet) umgesetzt (13.11.2026); Reisewege und Kartenbild (Schlüssel) offen |
 
 ## Stufe 1 (umgesetzt)
 
@@ -247,6 +247,112 @@ Verarbeitungstätigkeiten (Rechtsgrundlage dort noch zu bestätigen).
 Standort (`HeroState`), Anreise zwischen Stationen (B2) und die grafische
 Darstellung (C2).
 
+### Standort-Kachel und Ortsdetails (umgesetzt 13.11.2026)
+
+**Vorbild.** Die Ortsansicht von avesmaps.de, aus dem ausgelieferten Bundle
+gelesen (Vue + MapLibre, `main-*.js`, `gemeinsam-*.js`, `main-*.css`; nichts
+ausgeführt): Infotafel 400 px breit, Bezeichnungsspalte 96 px,
+Kartenvorschau 116×72; Kopf mit Bild/Wappen, Titel und Untertitel, Fakten als
+Bezeichnung/Wert-Liste, „In der Nähe“, Aktionen („Reiseziel hinzufügen“,
+„Link teilen“). Die Siedlungsfakten der Seite (Einwohner, Oberhaupt,
+Handelszone, Verkehrswege, Tempel …) kommen aus internen Schnittstellen und
+dem Wiki-Infokasten, nicht aus der API v1, und werden nicht übernommen.
+Rücklink-Regel der Seite: Seitenname hinter `/wiki/` aus `wiki.url` als
+`?siedlung=`, ohne Artikel `?place=<id>`.
+
+**Umsetzung.**
+
+- `AvesmapsClient.ladeOrt` (`/orte/{id}`, 404 und ungültige Kennung ergeben
+  `null`), Modell `AvesmapsOrtsdetails`/`AvesmapsGebiet` nur im Speicher.
+- `avesmapsOrtsdetailsProvider` je Ort einmal pro Sitzung, nur nach der
+  Anforderung. `avesmapsOrteProvider` liest vor der Anforderung die lokal
+  gespeicherte Tagesliste (ohne Netz); `avesmapsOrteSpeicherProvider` trennt
+  den Speicher vom Repository.
+- `standort_lage_rules.dart`: `ortZumStandort`, `orteInDerNaehe` (nur
+  Siedlungen, ohne Gebäude und Stadtviertel), `gebietsZeile`/`reichDesOrts`,
+  `avesmapsOrtLink`, `lageskizze` (Halbmesser 15/30/60/120 Meilen, der kleinste
+  mit sechs Siedlungen; bis zu sechs Namen ab der Kleinstadt).
+- Kachel „Standort“ mit eigener Lageskizze statt Kartenausschnitt (C2 für den
+  Standort); Knopf „Kartendaten laden“, solange nichts vorliegt.
+- Datenschutzerklärung Abschnitt 6 und Verzeichnis der Verarbeitungstätigkeiten
+  nennen die Kachel und den Abruf der Ortsdetails.
+
+**Offen.** Rücklinks der Reiseroute über die Ortsdetails, Sichtprüfung im
+Web. Die Lageskizze ist inzwischen ein Ausschnitt der Aventurien-Karte (siehe
+unten).
+
+### Aventurien-Karte im Avesmaps-Stil (umgesetzt 13.11.2026)
+
+**Befund aus dem Bundle von avesmaps.de** (gelesen, nichts ausgeführt):
+
+- Avesmaps zeichnet mit MapLibre aus eigenen Vektorkacheln
+  (`/tiles/vector/<ebene>/{z}/{x}/{y}`: Orte, Wege, Gebiete, Gewässer,
+  Höhenlinien) über Rasterserien `modern`, `original`, `old`
+  (`/tiles/raster/<serie>/<revision>/{z}/{x}/{y}.webp`, 512 px, bis z6 =
+  32768 px). Alle Serien stammen aus der Ulisses-Karte. Für fremde Apps
+  gesperrt; die App lädt davon nichts.
+- **Karten-API** (nicht in `openapi.json`): Der Betreiber stellt einen Zugang
+  aus (Link oder Schlüssel `avk_…`, Frist `laeuftAb`, begrenzte Abrufe; Fehler
+  `karten_zugang_zuviele`, `…_gesehen`, `…_unbekannt`, nach Ablauf `410`).
+  `…/oeffnen` liefert `karten[]` (`id`, `art` png/svg, `bytes`, `pixel`),
+  `datei`, `nennung[]`, `lizenz.uri`; das Paket kommt als ZIP mit
+  DSA-Fanprojekt-Logo. PNG in 8192 bis 65536 px; `modern` ist der
+  Avesmaps-Stil ohne Beschriftung im Bild. SVG mit wählbaren Ebenen (Orte,
+  Wege, Gebiete, Landschaften, Kraftlinien, Beschriftungen) wäre später eine
+  Vektorlage.
+- **Designkanon** (`avesmaps.json` im Bundle): Palette, Durchmesser und
+  Schriftgrößen der Ortsmarken je Zoomband 0–8 und Ortsklasse, Goldring der
+  Metropolen ab Band 3, Rauten für Bauwerke ab Band 4, Ortsnamen weiß mit
+  schwarzem Saum in „Faculty Glyphic“, Route `#1452f7` mit weißem Saum,
+  Querfeldein als Pillen 10/14, Wegpunkt-Scheibe und Reisender. Maßstab: bei
+  Zoom z misst eine Karteneinheit 0,5 · 2^z px. Übernommen sind nur Zahlen
+  und Farben, kein Code (`lib/ui2/karte/karto_karten_stil.dart`).
+
+**Umsetzung.**
+
+- Eigene Karte ohne Kartenbibliothek (`lib/ui2/karte/`): Kamera mit dem
+  Maßstab von Avesmaps, Maler für Orte, Namen (gierig, ohne Überlappung,
+  rechts vor links), Route als Luftlinie in Pillen, nummerierte Wegpunkte,
+  Reisender am Standort, Kompass und Meilenmaßstab. Ohne Kartenbild: Papier
+  und Landschimmer aus der Ortsdichte.
+- Kartenbild (C3): `KartenKachelSpeicher` lädt Kacheln einer selbst
+  gehosteten Site; Adresse per `--dart-define=KARTEN_KACHELN`, Manifest
+  `aktuell.json` (`KartenKachelManifest`). Ohne Adresse oder bei Fehlern
+  bleibt der Rückfall. Werkzeug `tool/avesmaps_karte_kacheln.py`, Hosting und
+  Ablauf in `docs/web_deployment.md` („Kartenkacheln“).
+- Einbau: Die Lageskizze der Standort-Kachel ist ein fester Kartenausschnitt
+  mit der Route; ein Tipp öffnet die Karte im Vollbild (`zeigeKarte`) mit
+  Zoom, Infotafel zu Ort oder Station und „Bearbeiten“ über
+  `KartoReiserouteSchreiben`. Das Reiseroute-Blatt hat „Auf der Karte
+  zeigen“. Regeln: `karten_rules.dart`.
+- Pflichtteile: Ecke „Ortsdaten: Avesmaps“, mit Kartenbild zusätzlich
+  Ulisses-Zeile, Logo und Lizenz-URI; Lizenzseite mit Kartenmaterial (nur in
+  Builds mit Kacheln) und Faculty Glyphic (OFL).
+
+**Ortsfakten (13.11.2026).** Einwohner, Oberhaupt, Herrschaftsform und
+Verkehrswege sowie Tempel und wichtige Orte je Siedlung kommen aus den
+Infoboxen der Wiki Aventurica (`ortsfakten.json`, siehe
+`docs/catalog_import_workflow.md`), nicht von Avesmaps: dort stammen dieselben
+Fakten aus internen Schnittstellen ohne Zusage. Verknüpft wird über den
+Wiki-Seitennamen; Dörfer ohne Wiki-Artikel bleiben ohne Fakten. Infotafel
+der Karte: Einwohner, Oberhaupt und je drei Namen.
+
+**Gestaltung der Standort-Kachel (13.11.2026).** Kopf mit Name (Titel) und
+einem Satz zur Einordnung („Metropole in Alt-Gareth“), daneben Avesmaps und
+Wiki als Symbolknöpfe. Darunter die Karte als Blickfang, dann der Steckbrief:
+Einwohnerzahl als Leitzeile mit dem Wiki-Zusatz leise darunter, Oberhaupt,
+Herrschaft, Lage, Wege als Marken und Tempel als Marken je Gottheit mit
+Anzahl (`tempelNachGottheit`; mehrere Tempel öffnen eine Liste, einer direkt
+das Wiki). Dann „Wichtige Orte“ mit Symbol je Art, reihum nach Art geordnet
+(`reiheNachVielfalt`, Palast vor Burg vor Akademie …, Botschaften zuletzt),
+und „In der Nähe“ mit Richtungspfeil. Weit: Karte und Steckbrief links,
+wichtige Orte und Nachbarn rechts. Die Kartenposition (x/y) zeigt die Kachel
+nicht mehr.
+
+**Offen.** Zugang anfragen (Serie `modern`, 16384 px, eigenes Hosting,
+nicht-kommerziell), schneiden, veröffentlichen, `KARTEN_KACHELN` in CI und
+`tool/deploy_web.ps1` setzen; Sichtprüfung neben avesmaps.de bei z2, z4, z6.
+
 ### Für alle Bausteine
 
 - **Client:** `lib/data/avesmaps/` mit `package:http` (schon vorhanden), ohne
@@ -274,11 +380,11 @@ Darstellung (C2).
    Zeitleiste.
 2. **2b:** B2 und D. Ergebnis: echte Weglängen und Reisetage, Gebietszeile,
    genaue Rücklinks.
-3. **2c:** C2 Routenskizze, mit `linie` aus 2b.
+3. **2c (umgesetzt):** C2 als Aventurien-Karte mit Luftlinie; `linie` aus 2b
+   kommt als durchgezogene Linie dazu.
 4. **2d:** B3 Reiseplaner.
-5. **2e:** C3 erst nach Schlüssel und eigener Lizenzprüfung; sonst bleibt der
-   Fallback: eigenes Kartenbild des Nutzers, lokal gespeichert wie die
-   Avatare.
+5. **2e (vorbereitet):** C3 mit Schlüssel: Werkzeug, Karten-Site und Anzeige
+   stehen; es fehlen Zugang und Veröffentlichung.
 
 ### Rückfragen an Avesmaps
 

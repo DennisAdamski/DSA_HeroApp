@@ -585,6 +585,7 @@ void main() {
         'zustand',
         'dabei',
         'abenteuer',
+        'standort',
         'merkmale',
         'wildnis',
         'protokoll',
@@ -1639,15 +1640,27 @@ void main() {
         },
         breite: 1440,
       );
-      expect(find.text('Gareth'), findsOneWidget);
-      expect(find.text('Standort'), findsNothing);
+      // Der Standort steht in der Abenteuer-Kachel und in der eigenen
+      // Standort-Kachel, nirgends sonst.
+      final imAbenteuer = find.descendant(
+        of: find.byKey(const ValueKey<String>('karto-kachel-abenteuer')),
+        matching: find.text('Gareth'),
+      );
+      final inDerKachel = find.descendant(
+        of: find.byKey(const ValueKey<String>('karto-kachel-standort')),
+        matching: find.text('Gareth'),
+      );
+      expect(imAbenteuer, findsOneWidget);
+      expect(inDerKachel, findsOneWidget);
+      expect(find.text('Gareth'), findsNWidgets(2));
       expect(
         find.descendant(
-          of: find.byKey(const ValueKey<String>('karto-kachel-abenteuer')),
-          matching: find.text('Gareth'),
+          of: find.byKey(const ValueKey<String>('karto-kachel-standort')),
+          matching: find.text('Standort'),
         ),
         findsOneWidget,
       );
+      expect(find.text('Standort'), findsOneWidget);
     });
 
     testWidgets('Standort speichert über die Brücke', (tester) async {
@@ -2153,6 +2166,8 @@ void main() {
           breite: 1280,
           einstellungen: einstellungen,
         );
+        // Die Standort-Kachel davor schiebt sie unter den ersten Bildschirm.
+        await tester.ensureVisible(k('karto-kachel-merkmale-vergroessern'));
         await tester.tap(k('karto-kachel-merkmale-vergroessern'));
         await tester.pumpAndSettle();
         expect(

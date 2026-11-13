@@ -1,11 +1,31 @@
+import 'dart:convert';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
 
 import 'package:dsa_heldenverwaltung/catalog/ort_loader.dart';
+import 'package:dsa_heldenverwaltung/data/avesmaps/avesmaps_client.dart';
+import 'package:dsa_heldenverwaltung/data/avesmaps/avesmaps_orte_speicher.dart';
 import 'package:dsa_heldenverwaltung/domain/avesmaps_ort.dart';
 import 'package:dsa_heldenverwaltung/domain/ort_eintrag.dart';
 import 'package:dsa_heldenverwaltung/state/avesmaps_providers.dart';
 import 'package:dsa_heldenverwaltung/state/ort_providers.dart';
+
+class _Speicher implements AvesmapsOrteSpeicher {
+  _Speicher([this.liste]);
+
+  AvesmapsOrtsliste? liste;
+
+  @override
+  Future<AvesmapsOrtsliste?> lade() async => liste;
+
+  @override
+  Future<void> merke(AvesmapsOrtsliste neu) async => liste = neu;
+}
+
+const String _garethId = '80558060-4299-54aa-b520-814b10819885';
 
 void main() {
   final wiki = OrtKatalog(
@@ -31,11 +51,54 @@ void main() {
     expect(container.read(ortsverzeichnisProvider), same(wiki.orte));
   });
 
+  test('vor der Anforderung gilt nur die lokal gespeicherte Liste, ohne '
+      'Netz', () async {
+    var anfragen = 0;
+    final container = ProviderContainer(
+      overrides: [
+        avesmapsAktivProvider.overrideWithValue(true),
+        avesmapsClientProvider.overrideWithValue(
+          AvesmapsClient(
+            httpClient: MockClient((_) async {
+              anfragen++;
+              return http.Response('', 503);
+            }),
+          ),
+        ),
+        avesmapsOrteSpeicherProvider.overrideWith(
+          (ref) async => _Speicher(
+            AvesmapsOrtsliste(
+              orte: const <AvesmapsOrt>[
+                AvesmapsOrt(id: _garethId, name: 'Gareth', x: 551.6, y: 533),
+              ],
+              // Alt: nach der Anforderung würde neu geladen.
+              abgerufen: DateTime.utc(2020),
+            ),
+          ),
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    final orte = await container.read(avesmapsOrteProvider.future);
+
+    expect(orte.single.name, 'Gareth');
+    expect(container.read(avesmapsOnlineSucheProvider), isNull);
+    expect(
+      await container.read(avesmapsOrtsdetailsProvider(_garethId).future),
+      isNull,
+    );
+    expect(anfragen, 0);
+  });
+
   test(
-    'vor der Anforderung bleibt das Ortsverzeichnis von Avesmaps leer',
+    'ohne lokale Liste bleibt das Verzeichnis vor der Anforderung leer',
     () async {
       final container = ProviderContainer(
-        overrides: [avesmapsAktivProvider.overrideWithValue(true)],
+        overrides: [
+          avesmapsAktivProvider.overrideWithValue(true),
+          avesmapsOrteSpeicherProvider.overrideWith((ref) async => _Speicher()),
+        ],
       );
       addTearDown(container.dispose);
 
@@ -43,6 +106,57 @@ void main() {
       expect(container.read(avesmapsOnlineSucheProvider), isNull);
     },
   );
+
+  test('Ortsdetails nach der Anforderung, je Ort einmal; Fehler ergeben '
+      'null', () async {
+    final angefragt = <String>[];
+    final container = ProviderContainer(
+      overrides: [
+        avesmapsAktivProvider.overrideWithValue(true),
+        avesmapsOrteSpeicherProvider.overrideWith((ref) async => _Speicher()),
+        avesmapsClientProvider.overrideWithValue(
+          AvesmapsClient(
+            httpClient: MockClient((anfrage) async {
+              angefragt.add(anfrage.url.path);
+              if (anfrage.url.path.endsWith(_garethId)) {
+                return http.Response.bytes(
+                  utf8.encode(
+                    jsonEncode(<String, Object?>{
+                      'id': _garethId,
+                      'name': 'Gareth',
+                      'art': 'metropole',
+                      'x': 551.625,
+                      'y': 532.969,
+                      'wiki': <String, Object?>{
+                        'url': 'https://de.wiki-aventurica.de/wiki/Gareth',
+                      },
+                    }),
+                  ),
+                  200,
+                );
+              }
+              return http.Response('', 503);
+            }),
+          ),
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+    container.read(avesmapsOrteAnforderungProvider.notifier).fordereAn();
+
+    final details = await container.read(
+      avesmapsOrtsdetailsProvider(_garethId).future,
+    );
+    await container.read(avesmapsOrtsdetailsProvider(_garethId).future);
+    const andere = '5acdf435-80fc-4a34-980f-41020b31a8d3';
+
+    expect(details?.wikiUrl, 'https://de.wiki-aventurica.de/wiki/Gareth');
+    expect(
+      await container.read(avesmapsOrtsdetailsProvider(andere).future),
+      isNull,
+    );
+    expect(angefragt.where((w) => w.endsWith(_garethId)), hasLength(1));
+  });
 
   test('die Auswahlliste mischt beide Verzeichnisse, sobald Avesmaps '
       'vorliegt', () async {

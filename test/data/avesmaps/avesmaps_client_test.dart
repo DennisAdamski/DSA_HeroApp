@@ -226,4 +226,117 @@ void main() {
       ),
     );
   });
+
+  group('ladeOrt', () {
+    const id = '80558060-4299-54aa-b520-814b10819885';
+    // Aufgezeichnete Antwort von `GET /api/v1/orte/{id}` (13.11.2026).
+    const details = <String, Object?>{
+      'vertrag': 1,
+      'id': id,
+      'name': 'Gareth',
+      'art': 'metropole',
+      'x': 551.625,
+      'y': 532.969,
+      'wiki': <String, Object?>{
+        'url': 'https://de.wiki-aventurica.de/wiki/Gareth',
+        'titel': 'Gareth',
+      },
+      'gebiete': <Object?>[
+        <Object?>[
+          <String, Object?>{
+            'id': '3359118f-bdfe-4569-8277-3f25c2d62463',
+            'name': 'Heiliges Neues Kaiserreich vom Greifenthron zu Gareth',
+            'art': 'Kaiserreich',
+          },
+          <String, Object?>{
+            'id': '99dacb52-93f1-4698-8746-1dd9d4b55992',
+            'name': 'Königreich Garetien',
+            'art': 'Königreich',
+          },
+          <String, Object?>{
+            'id': '159ad4fd-54de-4459-9e89-e0344fc7670c',
+            'name': 'Kaisermark Gareth',
+            'art': 'Kaisermark',
+          },
+          <String, Object?>{
+            'id': 'b883cc39-969d-4991-bf6e-1f5427f9e117',
+            'name': 'Alt-Gareth',
+            'art': 'Herrschaftsgebiet',
+          },
+        ],
+      ],
+      'spaeterDazu': <String, Object?>{'egal': true},
+    };
+
+    test('liest Wiki-Artikel und Gebiete', () async {
+      late http.Request anfrage;
+      final client = AvesmapsClient(
+        httpClient: MockClient((request) async {
+          anfrage = request;
+          return _json(details);
+        }),
+      );
+
+      final ort = await client.ladeOrt(id);
+
+      expect('${anfrage.url}', 'https://avesmaps.de/api/v1/orte/$id');
+      expect(ort, isNotNull);
+      expect(ort!.ort.artBezeichnung, 'Metropole');
+      expect(ort.wikiTitel, 'Gareth');
+      expect(
+        ort.gebiete.single.map((g) => g.name),
+        contains('Königreich Garetien'),
+      );
+    });
+
+    test('404 und ungültige Kennung ergeben null, ohne Anfrage bei '
+        'ungültiger Kennung', () async {
+      var anfragen = 0;
+      final client = AvesmapsClient(
+        httpClient: MockClient((_) async {
+          anfragen++;
+          return _json(<String, Object?>{
+            'error': <String, Object?>{'code': 'place_not_found'},
+          }, status: 404);
+        }),
+      );
+
+      expect(await client.ladeOrt(id), isNull);
+      expect(anfragen, 1);
+      expect(await client.ladeOrt('Gareth'), isNull);
+      expect(await client.ladeOrt('../orte'), isNull);
+      expect(anfragen, 1);
+    });
+
+    test('Drossel und unlesbare Details bleiben Fehler', () async {
+      final gedrosselt = AvesmapsClient(
+        httpClient: MockClient((_) async => http.Response('', 429)),
+      );
+      await expectLater(
+        gedrosselt.ladeOrt(id),
+        throwsA(
+          isA<AvesmapsFehler>().having(
+            (f) => f.art,
+            'art',
+            AvesmapsFehlerArt.gedrosselt,
+          ),
+        ),
+      );
+      final unlesbar = AvesmapsClient(
+        httpClient: MockClient(
+          (_) async => _json(<String, Object?>{'vertrag': 1, 'id': id}),
+        ),
+      );
+      await expectLater(
+        unlesbar.ladeOrt(id),
+        throwsA(
+          isA<AvesmapsFehler>().having(
+            (f) => f.art,
+            'art',
+            AvesmapsFehlerArt.antwort,
+          ),
+        ),
+      );
+    });
+  });
 }

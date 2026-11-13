@@ -11,7 +11,10 @@ const String kWikiAventuricaLizenzText =
     'https://de.wiki-aventurica.de/wiki/Wiki_Aventurica:Lizenzbestimmungen; '
     'die Autorinnen und Autoren der einzelnen Seiten nennt jeweils deren '
     'Versionsgeschichte im Wiki.\n\n'
-    'Übernommen sind nur Kurzangaben (Name, Art, Region), keine '
+    'Ebenso stammen die Kurzfakten zu Siedlungen (Einwohner, Oberhaupt, '
+    'Herrschaftsform, Verkehrswege) und ihre Bauwerke (Name, Art, '
+    'Zugehörigkeit) aus den Infoboxen der Wiki.\n\n'
+    'Übernommen sind nur Kurzangaben, keine '
     'Beschreibungstexte. Die Daten wurden maschinell ausgelesen und '
     'aufbereitet; Fehler gehen nicht zulasten der Wiki.';
 

@@ -112,6 +112,15 @@ enum KartoSpielkachelArt {
     gewicht: 280,
   ),
 
+  /// Aktueller Standort nach dem Vorbild der Ortsansicht von Avesmaps:
+  /// Ortsklasse, Gebiete, Lageskizze und Orte in der Nähe.
+  standort(
+    'Standort',
+    breiten: SpielkachelBreite.values,
+    standard: SpielkachelBreite.schmal,
+    gewicht: 380,
+  ),
+
   /// Vor- und Nachteile.
   merkmale(
     'Vor- und Nachteile',

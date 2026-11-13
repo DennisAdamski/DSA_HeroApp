@@ -211,6 +211,34 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   Ortsfeld baut, ruft beim Öffnen `AvesmapsOrteAnforderung.fordereAn()`, nie
   beim Bauen der Spielansicht. In Tests bleibt Avesmaps ohne Override aus;
   Orte mit Position kommen dort über `avesmapsOrteProvider.overrideWith`.
+  **Standort (13.11.2026):** Die Kachel „Standort“
+  (`KartoSpielkachelArt.standort` hinter der Reiseroute,
+  `ui2/spielen/standort/karto_standort_kachel.dart`) folgt der Infotafel von
+  Avesmaps: Name, Ortsklasse und Gebiet, eigene Lageskizze
+  (`KartoLageskizze`, `CustomPainter`, kein Kartenbild), Fakten mit 96 dp
+  Bezeichnungsspalte, „In der Nähe“ (`kNaheOrteKurz`/`kNaheOrteWeit`) und
+  Rücklinks. Rechnung in `standort_lage_rules.dart`. Avesmaps-Daten erst nach
+  „Kartendaten laden“ (`fordereAn()`); eine früher geladene Tagesliste liest
+  `avesmapsOrteProvider` auch ohne Anforderung aus dem Speicher (ohne Netz).
+  Ortsdetails (`avesmapsOrtsdetailsProvider`) nur nach der Anforderung. Der
+  Eingabedialog ist `zeigeStandortDialog`; gespeichert wird über
+  `standortSetzen`. Tests überschreiben `avesmapsOrteSpeicherProvider` statt
+  den Heldenspeicher zu öffnen.
+  **Karte (13.11.2026):** `lib/ui2/karte/` zeichnet die Aventurien-Karte im
+  Stil von Avesmaps selbst (`KartoKarte`, `CustomPainter`, keine
+  Kartenbibliothek); die Lageskizze der Standort-Kachel ist ein nicht
+  interaktiver Ausschnitt, `zeigeKarte` das Vollbild. Stilwerte nur aus
+  `karto_karten_stil.dart` (Kanon von Avesmaps, Marken kippen nicht mit dem
+  Theme), Geometrie aus `karten_rules.dart`. Kein Kartenbild von avesmaps.de;
+  Kacheln nur von der eigenen Site (`KARTEN_KACHELN`, ohne Angabe Papier mit
+  Landschimmer, Tests laden so nie ein Bild). Der Kachelspeicher lädt nur in
+  `benoetige`, nie beim Zeichnen. Ein Tipp auf die interaktive Karte kommt
+  wegen des Doppeltipps verzögert (in Tests 400 ms pumpen).
+  Ortsfakten (Einwohner, Tempel, wichtige Orte) kommen aus
+  `ortsfaktenProvider`; Tests überschreiben ihn statt das Asset zu laden.
+  Die Standort-Kachel gliedert mit `_Rubrik` (Bezeichnung plus Haarlinie),
+  Wege und Gottheiten sind `_Marke`n; Reihenfolge und Gruppierung rechnen
+  `reiheNachVielfalt` und `tempelNachGottheit`, nie das Widget.
   **Wildnis (12.11.2026):** Die Kachel „Wildnis“ (`KartoSpielkachelArt.wildnis`,
   `ui2/spielen/wildnis/karto_wildnis_kachel.dart`) ist **eine** Kachel für alle
   Wildnistätigkeiten; oben wählt man die Tätigkeit (der Umschalter erscheint ab

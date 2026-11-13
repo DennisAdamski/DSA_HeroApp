@@ -93,13 +93,13 @@ class KartoStandortZeile extends StatelessWidget {
 
   Future<void> _bearbeiten(BuildContext context) async {
     onBearbeiten?.call();
-    final neu = await showDialog<String>(
-      context: context,
-      builder: (_) =>
-          _StandortDialog(anfang: bereinigeStandort(standort), orte: orte),
+    final neu = await zeigeStandortDialog(
+      context,
+      standort: standort,
+      orte: orte,
     );
     if (neu == null) return;
-    await onSpeichern(bereinigeStandort(neu));
+    await onSpeichern(neu);
   }
 
   Future<void> _oeffnen(BuildContext context, Uri link) async {
@@ -116,6 +116,24 @@ class KartoStandortZeile extends StatelessWidget {
       );
     }
   }
+}
+
+/// Fragt den Standort ab, vorbelegt mit [standort] und mit Vorschlägen aus
+/// [orte].
+///
+/// Liefert den bereinigten Text; ein leerer Text heißt „Standort entfernen“,
+/// `null` heißt abgebrochen. Gespeichert wird hier nichts.
+Future<String?> zeigeStandortDialog(
+  BuildContext context, {
+  required String standort,
+  required List<OrtEintrag> orte,
+}) async {
+  final neu = await showDialog<String>(
+    context: context,
+    builder: (_) =>
+        _StandortDialog(anfang: bereinigeStandort(standort), orte: orte),
+  );
+  return neu == null ? null : bereinigeStandort(neu);
 }
 
 // Eingabe des Standorts. Gibt den Text zurück; „Entfernen“ gibt einen leeren

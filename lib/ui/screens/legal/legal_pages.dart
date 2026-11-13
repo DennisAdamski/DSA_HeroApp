@@ -159,16 +159,24 @@ class PrivacyPolicyScreen extends StatelessWidget {
           title: '6. Ortsdaten von Avesmaps',
           text:
               'Wenn du ein Ortsfeld (Standort, Station der Reiseroute) oder '
-              'die Reiseroute öffnest, ruft die App das Ortsverzeichnis des '
-              'Fanprojekts Avesmaps (avesmaps.de) ab, höchstens einmal '
-              'täglich, und speichert es lokal. Liegt das Verzeichnis noch '
-              'nicht vor, sendet die App stattdessen den eingegebenen '
-              'Ortsnamen als Suchanfrage. Dabei erhält der Betreiber von '
+              'die Reiseroute öffnest oder in der Standort-Kachel '
+              '„Kartendaten laden“ wählst, ruft die App das Ortsverzeichnis '
+              'des Fanprojekts Avesmaps (avesmaps.de) ab, höchstens einmal '
+              'täglich, und speichert es lokal. Danach lädt die '
+              'Standort-Kachel zum Standort dessen Gebiete und Wiki-Artikel '
+              '(nur die Kennung des Orts wird gesendet). Liegt das '
+              'Verzeichnis noch nicht vor, sendet die App stattdessen den '
+              'eingegebenen Ortsnamen als Suchanfrage. Dabei erhält der '
+              'Betreiber von '
               'Avesmaps technisch bedingt deine IP-Adresse und, in den Apps, '
               'die Kennung „DSA_HeroApp“; im Browser die üblichen '
               'Browserangaben. Heldendaten oder Kontodaten werden nicht '
               'übertragen. Die Verarbeitung erfolgt für die von dir '
-              'aufgerufene Ortsauswahl.',
+              'aufgerufene Ortsauswahl. Ein Kartenbild lädt die App nicht '
+              'von avesmaps.de, sondern, sofern vorhanden, von einer '
+              'eigenen Firebase-Hosting-Seite dieser App; dabei fallen nur '
+              'die technisch nötigen Verbindungsdaten (IP-Adresse, '
+              'Browserangaben) an.',
         ),
         const _LegalSection(
           title: '7. Empfänger und Drittlandtransfers',
