@@ -112,7 +112,9 @@ Kartenfassung bekommt eine neue Revision, alte Builds laden weiter ihre
 Kacheln. Wegen Flutter Web (CanvasKit lädt Bilder per `fetch`) liefert die
 Site `Access-Control-Allow-Origin: *`; die Kacheln sind ohnehin öffentlich.
 Lizenzpflichten (nur nicht-kommerziell, Fanprojekt-Logo, Ulisses-Zeile,
-Lizenz-URI) stehen in [reiseroute_plan.md](reiseroute_plan.md).
+Lizenz-URI) stehen in [reiseroute_plan.md](reiseroute_plan.md), der ganze
+Ablauf ab Erhalt des Zugangs in
+[avesmaps_kartenzugang.md](avesmaps_kartenzugang.md).
 
 ## Automatische Übernahme von main
 

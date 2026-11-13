@@ -356,9 +356,11 @@ und „In der Nähe“ mit Richtungspfeil. Weit: Karte und Steckbrief links,
 wichtige Orte und Nachbarn rechts. Die Kartenposition (x/y) zeigt die Kachel
 nicht mehr.
 
-**Offen.** Zugang anfragen (Serie `modern`, 16384 px, eigenes Hosting,
-nicht-kommerziell), schneiden, veröffentlichen, `KARTEN_KACHELN` in CI und
-`tool/deploy_web.ps1` setzen; Sichtprüfung neben avesmaps.de bei z2, z4, z6.
+**Offen.** Zugang ist angefragt (Issue 7), die Site `heldensync-karten`
+angelegt. Sobald der Zugang kommt: schneiden, veröffentlichen,
+`KARTEN_KACHELN` in CI und `tool/deploy_web.ps1` setzen, Sichtprüfung neben
+avesmaps.de. Schritt für Schritt in
+[avesmaps_kartenzugang.md](avesmaps_kartenzugang.md).
 
 ### Für alle Bausteine
 
