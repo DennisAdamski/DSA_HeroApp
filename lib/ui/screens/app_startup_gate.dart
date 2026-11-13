@@ -38,6 +38,7 @@ import 'package:dsa_heldenverwaltung/domain/app_settings.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/firebase_options.dart';
 import 'package:dsa_heldenverwaltung/state/avatar_providers.dart';
+import 'package:dsa_heldenverwaltung/state/avesmaps_providers.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/externe_helden_providers.dart';
 import 'package:dsa_heldenverwaltung/state/firebase_providers.dart';
@@ -617,6 +618,9 @@ class _AppStartupGateState extends State<AppStartupGate> {
         widget.storageDirectoryPicker,
       ),
       appStoragePathsProvider.overrideWithValue(widget.storagePaths),
+      // Nur die laufende App fragt Avesmaps; ohne diesen Override (Tests)
+      // bleibt der Abruf aus.
+      avesmapsAktivProvider.overrideWithValue(true),
       firebaseBootstrapProvider.overrideWithValue(widget.firebaseBootstrap),
       customCatalogRepositoryProvider.overrideWithValue(
         customCatalogRepository ??

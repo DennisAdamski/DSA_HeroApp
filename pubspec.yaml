@@ -82,6 +82,8 @@ flutter:
     - assets/ui/codex/
     - assets/ui/fantasy_v1/
     - assets/ui/fantasy_weapons_v1/
+    # Lizenztext der Kartenschrift, angezeigt auf der Lizenzseite.
+    - assets/fonts/faculty_glyphic/OFL.txt
   fonts:
     # Bestehende Oberflaeche. Faellt mit ihr weg.
     # Achtung: Regular und 700 zeigen hier auf dieselbe Datei, der Fettschnitt
@@ -115,4 +117,9 @@ flutter:
     - family: InterTight
       fonts:
         - asset: assets/fonts/inter_tight/InterTight-Variable.ttf
+    # Kartenschrift im Stil von Avesmaps (SIL OFL 1.1), nur Regular; die
+    # Karte nutzt weder Fett- noch Kursivschnitt.
+    - family: FacultyGlyphic
+      fonts:
+        - asset: assets/fonts/faculty_glyphic/FacultyGlyphic-Regular.ttf
 

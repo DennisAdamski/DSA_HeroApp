@@ -1,13 +1,20 @@
+import 'package:dsa_heldenverwaltung/domain/avesmaps_ort.dart';
 import 'package:dsa_heldenverwaltung/domain/ort_eintrag.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/string_normalize.dart';
 
 /// Adresse der Avesmaps-Karte (Nachfolger von Avespfade).
 ///
 /// Die Seite lässt sich nicht einbetten (`X-Frame-Options: DENY`); die App
-/// verlinkt deshalb nur und übernimmt keine Karten- oder Ortsdaten von
-/// Avesmaps. Die Ortsauswahl stammt aus dem Ortsverzeichnis der Wiki
-/// Aventurica (siehe [sucheOrte]).
+/// verlinkt deshalb die Karte. Die Ortsauswahl stammt aus dem Ortsverzeichnis
+/// der Wiki Aventurica, ergänzt um Orte und Kartenpositionen aus Avesmaps
+/// (siehe [verbindeOrtsverzeichnisse] und [sucheOrte]).
 const String kAvesmapsHost = 'avesmaps.de';
+
+/// Quellenzeile der Ortsauswahl, so mit Avesmaps abgesprochen; steht dort,
+/// wo die App Orte und Kartenpositionen zeigt.
+const String kOrtsdatenQuellen =
+    'Ortsdaten: Wiki Aventurica (CC BY-SA) · '
+    'Karte & Ortsdaten: Avesmaps (avesmaps.de)';
 
 /// Adresse der Wiki Aventurica.
 const String kWikiAventuricaHost = 'de.wiki-aventurica.de';
@@ -135,4 +142,102 @@ List<OrtEintrag> sucheOrte(
     return a.name.compareTo(b.name);
   });
   return <OrtEintrag>[for (final t in treffer.take(limit)) t.ort];
+}
+
+// Schlüssel für die Gleichheit zweier Ortsnamen. Strenger als [suchFaltung]:
+// Ein Verweis auf einen Ort der Karte soll nicht an einer Umlaut-Umschreibung
+// hängen, die zwei verschiedene Orte zusammenfallen lässt.
+String _namensSchluessel(String name) => bereinigeStandort(name).toLowerCase();
+
+/// Verbindet das Ortsverzeichnis der Wiki Aventurica ([wiki]) mit dem von
+/// Avesmaps ([avesmaps]) zu einer Auswahlliste.
+///
+/// - Eine Siedlung aus [wiki] bekommt Kennung und Kartenposition des
+///   gleichnamigen Avesmaps-Orts. Verglichen wird zuerst der volle
+///   Wiki-Seitenname (`OrtEintrag.seite`, etwa „Auweiler (Darpatien)“), dann
+///   der Name; nur ein eindeutiger Treffer zählt.
+/// - Avesmaps-Orte ohne Gegenstück kommen als Siedlung mit ihrer Ortsklasse
+///   als Unterart dazu.
+/// - Regionen, Staaten, Flüsse und Straßen bleiben unverändert und ohne
+///   Position.
+///
+/// Die Reihenfolge von [wiki] bleibt erhalten, die zusätzlichen Orte folgen
+/// in der Reihenfolge von [avesmaps].
+List<OrtEintrag> verbindeOrtsverzeichnisse(
+  List<OrtEintrag> wiki,
+  List<AvesmapsOrt> avesmaps,
+) {
+  if (avesmaps.isEmpty) return wiki;
+  // Je Namen der Avesmaps-Ort, oder `null` bei mehreren gleichnamigen.
+  final nachName = <String, AvesmapsOrt?>{};
+  for (final ort in avesmaps) {
+    final schluessel = _namensSchluessel(ort.name);
+    nachName[schluessel] = nachName.containsKey(schluessel) ? null : ort;
+  }
+  final vergeben = <String>{};
+  final ergebnis = <OrtEintrag>[];
+  for (final eintrag in wiki) {
+    AvesmapsOrt? treffer;
+    if (eintrag.art == OrtArt.siedlung) {
+      if (eintrag.seite.isNotEmpty) {
+        treffer = nachName[_namensSchluessel(eintrag.seite)];
+      }
+      treffer ??= nachName[_namensSchluessel(eintrag.name)];
+    }
+    if (treffer == null || !vergeben.add(treffer.id)) {
+      ergebnis.add(eintrag);
+      continue;
+    }
+    ergebnis.add(
+      eintrag.mitKartenposition(
+        ortId: treffer.id,
+        kartenX: treffer.x,
+        kartenY: treffer.y,
+      ),
+    );
+  }
+  for (final ort in avesmaps) {
+    if (vergeben.contains(ort.id)) continue;
+    ergebnis.add(
+      OrtEintrag(
+        name: ort.name,
+        art: OrtArt.siedlung,
+        unterart: ort.artBezeichnung,
+        ortId: ort.id,
+        kartenX: ort.x,
+        kartenY: ort.y,
+      ),
+    );
+  }
+  return List<OrtEintrag>.unmodifiable(ergebnis);
+}
+
+/// Der Ort der Karte, auf den der eingegebene Ortsname [ort] verweist, oder
+/// `null`.
+///
+/// Hat der Nutzer einen Vorschlag gewählt ([gewaehlt]) und steht dessen Name
+/// noch im Feld, gilt dieser. Sonst zählt ein Eintrag aus [orte] mit
+/// Kartenposition, dessen Name dem Text gleicht (ohne Rücksicht auf Groß-
+/// und Kleinschreibung), sofern es genau einer ist. Gleichnamige Orte
+/// verknüpft nur die ausdrückliche Auswahl.
+OrtEintrag? ortsVerweisFuer(
+  String ort,
+  List<OrtEintrag> orte, {
+  OrtEintrag? gewaehlt,
+}) {
+  final schluessel = _namensSchluessel(ort);
+  if (schluessel.isEmpty) return null;
+  if (gewaehlt != null &&
+      gewaehlt.hatKartenposition &&
+      _namensSchluessel(gewaehlt.name) == schluessel) {
+    return gewaehlt;
+  }
+  OrtEintrag? treffer;
+  for (final eintrag in orte) {
+    if (!eintrag.hatKartenposition) continue;
+    if (_namensSchluessel(eintrag.name) != schluessel) continue;
+    if (treffer != null && treffer.ortId != eintrag.ortId) return null;
+    treffer = eintrag;
+  }
+  return treffer;
 }

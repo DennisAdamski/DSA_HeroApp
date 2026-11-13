@@ -216,4 +216,33 @@ void main() {
       expect(station.kartenY, 2.0);
     });
   });
+
+  group('reiseStationAbenteuerTitel', () {
+    const abenteuer = <HeroAdventureEntry>[
+      HeroAdventureEntry(id: 'nebel', title: '  Die Spuren im Nebel '),
+      HeroAdventureEntry(id: 'leer', title: '   '),
+    ];
+
+    test('nennt den Titel des zugeordneten Abenteuers', () {
+      expect(
+        reiseStationAbenteuerTitel(_s('a', adventureId: 'nebel'), abenteuer),
+        'Die Spuren im Nebel',
+      );
+    });
+
+    test('ohne Zuordnung gibt es keinen Titel', () {
+      expect(reiseStationAbenteuerTitel(_s('a'), abenteuer), isNull);
+    });
+
+    test('ein Abenteuer ohne Titel und ein entferntes bleiben sichtbar', () {
+      expect(
+        reiseStationAbenteuerTitel(_s('a', adventureId: 'leer'), abenteuer),
+        'Ohne Titel',
+      );
+      expect(
+        reiseStationAbenteuerTitel(_s('a', adventureId: 'weg'), abenteuer),
+        'Entferntes Abenteuer',
+      );
+    });
+  });
 }

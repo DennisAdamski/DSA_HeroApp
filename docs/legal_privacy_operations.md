@@ -40,6 +40,8 @@ derselben neutralen Meldung.
 | App-Sicherheit | IP-, Geräte-, Token- und App-Check-Daten | Missbrauchs- und Zugriffsschutz | Art. 6 Abs. 1 lit. f DSGVO | Google/Firebase | Anbieter- und Sicherheitsfristen |
 | Feedback | freigegebener Text, technische Diagnose, Request-ID | öffentliches GitHub-Issue | Art. 6 Abs. 1 lit. a DSGVO | GitHub, öffentlich | Metadaten 7 Tage; Issue grundsätzlich unbefristet bzw. auf Anfrage |
 | Bildgenerierung | Prompt, optionales Referenzbild | angeforderte Bildgenerierung | Art. 6 Abs. 1 lit. a DSGVO | OpenAI | standardmäßige Abuse-Logs bis zu 30 Tage, vorbehaltlich Ausnahmen |
+| Kartenbild (eigene Kacheln) | IP-Adresse, Browserangaben bzw. App-Kennung; keine Helden- oder Kontodaten | Hintergrund der Aventurien-Karte (Standort-Kachel, Vollbild), nur in Builds mit `KARTEN_KACHELN` | Art. 6 Abs. 1 lit. f DSGVO (Auslieferung des Kartenbilds wie das Hosting der App) | Google/Firebase (Hosting-Site `heldensync-karten`) | Kacheln im Browser- bzw. Bildcache; Serverprotokolle nach Firebase-Vorgaben |
+| Ortsdaten (Avesmaps) | IP-Adresse, App-Kennung bzw. Browserangaben, bei der Ersatzsuche der eingegebene Ortsname, bei den Ortsdetails die Kennung des Standorts; keine Helden- oder Kontodaten | Ortsauswahl mit Kartenposition (Standort, Reiseroute), Standort-Kachel (Lageskizze, Gebiete) | Art. 6 Abs. 1 lit. b DSGVO (vom Nutzer ausgelöste Ortsfunktion) | Betreiber von Avesmaps (avesmaps.de) | Ortsliste lokal bis zur Löschung der App-Daten; Serverprotokolle nach Vorgabe des Betreibers |
 
 Firebase Authentication wird laut Firebase ausschließlich in US-Rechenzentren
 verarbeitet. Andere verwendete Firebase-Dienste können auf globaler

@@ -53,6 +53,29 @@ void main() {
       expect(ids, contains('wildnis'));
     });
 
+    test('Standort folgt der Reiseroute und ergänzt eine gespeicherte '
+        'Anordnung hinter ihr', () {
+      expect(KartoSpielkachelArt.standort.id, 'standort');
+      expect(KartoSpielkachelArt.standort.standard, SpielkachelBreite.schmal);
+      expect(
+        KartoSpielkachelArt.values.indexOf(KartoSpielkachelArt.standort),
+        KartoSpielkachelArt.values.indexOf(KartoSpielkachelArt.reiseroute) + 1,
+      );
+      final ids = _ids(
+        loeseSpielansichtAuf(
+          const HeroSpielansicht(
+            kacheln: [
+              HeroSpielkachel(id: 'merkmale'),
+              HeroSpielkachel(id: 'reiseroute'),
+            ],
+          ),
+          verfuegbar: _alle,
+        ),
+      );
+      expect(ids.indexOf('standort'), ids.indexOf('reiseroute') + 1);
+      expect(ids.indexOf('merkmale'), lessThan(ids.indexOf('reiseroute')));
+    });
+
     test('gespeicherte Reihenfolge, fehlende Kacheln an ihrer Stelle', () {
       final kacheln = loeseSpielansichtAuf(
         const HeroSpielansicht(

@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
+import 'package:dsa_heldenverwaltung/domain/avesmaps_ort.dart';
 import 'package:dsa_heldenverwaltung/domain/ort_eintrag.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/standort_rules.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
@@ -13,6 +16,11 @@ import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
 ///
 /// Mit Eingabetaste übernimmt das Feld einen noch offenen Vorschlag; erst wenn
 /// keiner mehr offen ist, ruft es [onSubmitted] mit dem getippten Text auf.
+///
+/// Vorschläge mit Kartenposition (Orte aus Avesmaps) tragen ein Kartensymbol;
+/// [onOrtGewaehlt] meldet den gewählten Eintrag, damit der Aufrufer den
+/// Verweis auf den Ort übernehmen kann. Mit [onlineSuche] ergänzt das Feld
+/// die Vorschläge nach einer Tipppause um Treffer der Online-Suche.
 class KartoOrtFeld extends StatefulWidget {
   /// Erstellt das Feld über [controller] mit den Vorschlägen aus [orte].
   const KartoOrtFeld({
@@ -24,6 +32,8 @@ class KartoOrtFeld extends StatefulWidget {
     this.maxLength,
     this.onChanged,
     this.onSubmitted,
+    this.onOrtGewaehlt,
+    this.onlineSuche,
   });
 
   /// Text des Felds; gehört dem Aufrufer.
@@ -47,6 +57,16 @@ class KartoOrtFeld extends StatefulWidget {
   /// Eingabetaste ohne offenen Vorschlag.
   final ValueChanged<String>? onSubmitted;
 
+  /// Ein Vorschlag wurde übernommen (Tipp oder Eingabetaste).
+  final ValueChanged<OrtEintrag>? onOrtGewaehlt;
+
+  /// Online-Ortssuche als Ersatz, solange das Ortsverzeichnis von Avesmaps
+  /// nicht lokal vorliegt; `null` sucht nur in [orte].
+  final Future<List<AvesmapsOrt>> Function(String anfrage)? onlineSuche;
+
+  /// Tipppause, nach der die Online-Suche fragt.
+  static const Duration onlinePause = Duration(milliseconds: 400);
+
   @override
   State<KartoOrtFeld> createState() => _KartoOrtFeldState();
 }
@@ -54,6 +74,9 @@ class KartoOrtFeld extends StatefulWidget {
 class _KartoOrtFeldState extends State<KartoOrtFeld> {
   final FocusNode _fokus = FocusNode();
   final GlobalKey _feldKey = GlobalKey();
+  // Enter muss dieselbe Auswahl wie die sichtbare Liste verwenden, auch bei
+  // Online-Treffern und einer Auswahl mit den Pfeiltasten.
+  ({String text, OrtEintrag ort})? _sichtbarerVorschlag;
 
   @override
   void dispose() {
@@ -68,14 +91,34 @@ class _KartoOrtFeldState extends State<KartoOrtFeld> {
     return box is RenderBox && box.hasSize ? box.size.width : 320;
   }
 
-  Iterable<OrtEintrag> _vorschlaege(TextEditingValue wert) =>
-      sucheOrte(wert.text, widget.orte);
+  FutureOr<Iterable<OrtEintrag>> _vorschlaege(TextEditingValue wert) {
+    final lokal = sucheOrte(wert.text, widget.orte);
+    final suche = widget.onlineSuche;
+    if (suche == null || bereinigeStandort(wert.text).length < 2) return lokal;
+    return _mitOnlineTreffern(wert.text, lokal, suche);
+  }
+
+  // Wartet die Tipppause ab und mischt die Online-Treffer unter die lokalen.
+  // Ein inzwischen geänderter Text bricht ab; das Autocomplete verwirft
+  // überholte Ergebnisse ohnehin.
+  Future<Iterable<OrtEintrag>> _mitOnlineTreffern(
+    String text,
+    List<OrtEintrag> lokal,
+    Future<List<AvesmapsOrt>> Function(String anfrage) suche,
+  ) async {
+    await Future<void>.delayed(KartoOrtFeld.onlinePause);
+    if (!mounted || widget.controller.text != text) return lokal;
+    final online = await suche(bereinigeStandort(text));
+    if (online.isEmpty) return lokal;
+    return sucheOrte(text, verbindeOrtsverzeichnisse(widget.orte, online));
+  }
 
   // Offen ist ein Vorschlag, solange er sich vom getippten Text unterscheidet.
   bool _vorschlagOffen(String text) {
-    final treffer = _vorschlaege(TextEditingValue(text: text));
-    if (treffer.isEmpty) return false;
-    return treffer.first.name != bereinigeStandort(text);
+    final vorschlag = _sichtbarerVorschlag;
+    return vorschlag != null &&
+        vorschlag.text == text &&
+        vorschlag.ort.name != bereinigeStandort(text);
   }
 
   @override
@@ -88,7 +131,10 @@ class _KartoOrtFeldState extends State<KartoOrtFeld> {
         focusNode: _fokus,
         optionsBuilder: _vorschlaege,
         displayStringForOption: (ort) => ort.name,
-        onSelected: (ort) => widget.onChanged?.call(ort.name),
+        onSelected: (ort) {
+          widget.onOrtGewaehlt?.call(ort);
+          widget.onChanged?.call(ort.name);
+        },
         fieldViewBuilder: (context, controller, fokus, onFieldSubmitted) {
           return TextField(
             key: widget.feldSchluessel,
@@ -116,11 +162,18 @@ class _KartoOrtFeldState extends State<KartoOrtFeld> {
             },
           );
         },
-        optionsViewBuilder: (context, onSelected, optionen) => _Vorschlagsliste(
-          breite: _feldBreite(),
-          optionen: optionen.toList(growable: false),
-          onSelected: onSelected,
-        ),
+        optionsViewBuilder: (context, onSelected, optionen) {
+          final liste = optionen.toList(growable: false);
+          final index = AutocompleteHighlightedOption.of(context);
+          _sichtbarerVorschlag = liste.isEmpty
+              ? null
+              : (text: widget.controller.text, ort: liste[index]);
+          return _Vorschlagsliste(
+            breite: _feldBreite(),
+            optionen: liste,
+            onSelected: onSelected,
+          );
+        },
       ),
     );
   }
@@ -167,6 +220,14 @@ class _Vorschlagsliste extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: theme.textTheme.bodySmall,
                 ),
+                trailing: ort.hatKartenposition
+                    ? Icon(
+                        Icons.map_outlined,
+                        size: 16,
+                        semanticLabel: 'Mit Kartenposition',
+                        color: theme.colorScheme.onSurfaceVariant,
+                      )
+                    : null,
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: Abstand.weit,
                 ),

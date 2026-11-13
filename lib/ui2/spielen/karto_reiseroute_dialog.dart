@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/domain/hero_adventure_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_reise_station.dart';
 import 'package:dsa_heldenverwaltung/domain/ort_eintrag.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/standort_rules.dart';
+import 'package:dsa_heldenverwaltung/state/avesmaps_providers.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_datum_felder.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_ort_feld.dart';
@@ -15,6 +18,9 @@ class KartoReiseStationEingabe {
     required this.datum,
     required this.notiz,
     required this.adventureId,
+    this.ortId = '',
+    this.kartenX,
+    this.kartenY,
   }) : loeschen = false;
 
   /// Die Station soll entfernt werden.
@@ -23,18 +29,40 @@ class KartoReiseStationEingabe {
       datum = const HeroAdventureDateValue(),
       notiz = '',
       adventureId = '',
+      ortId = '',
+      kartenX = null,
+      kartenY = null,
       loeschen = true;
 
   final String ort;
   final HeroAdventureDateValue datum;
   final String notiz;
   final String adventureId;
+
+  /// Kennung des Orts der Karte, auf den [ort] verweist; leer ohne Verweis
+  /// (Freitext, Ort ohne Position oder Ortsverzeichnis nicht verfügbar).
+  final String ortId;
+
+  /// Kartenposition des verknüpften Orts, oder `null` ohne Verweis.
+  final double? kartenX;
+
+  /// Kartenposition des verknüpften Orts, oder `null` ohne Verweis.
+  final double? kartenY;
+
   final bool loeschen;
 
+  /// Ob die Eingabe einen Verweis auf einen Ort der Karte trägt.
+  bool get hatOrtsVerweis =>
+      ortId.isNotEmpty && kartenX != null && kartenY != null;
+
   /// Ob die Eingabe dieselben Werte wie [station] trägt.
+  ///
+  /// Eine Eingabe ohne Verweis lässt einen bestehenden Verweis der Station
+  /// unberührt; ein neuer oder anderer Verweis zählt als Änderung.
   bool gleichWie(HeroReiseStation station) =>
       !loeschen &&
       ort == station.ort &&
+      (!hatOrtsVerweis || ortId == station.ortId) &&
       notiz == station.notiz &&
       adventureId == station.adventureId &&
       datum.gleicheAngabe(station.datum);
@@ -42,14 +70,18 @@ class KartoReiseStationEingabe {
 
 /// Erfasst oder bearbeitet eine Station der Reiseroute: Ort, aventurisches
 /// Datum, Abenteuer und Notiz.
-class KartoReiseStationDialog extends StatefulWidget {
+///
+/// Verweist der Ortsname auf einen Ort mit Kartenposition (gewählter
+/// Vorschlag oder eindeutig gleicher Name), trägt die Eingabe dessen Kennung
+/// und Position.
+class KartoReiseStationDialog extends ConsumerStatefulWidget {
   /// Dialog für [station]; [bearbeitet] bietet zusätzlich das Löschen an.
   const KartoReiseStationDialog({
     super.key,
     required this.station,
     required this.abenteuer,
     this.bearbeitet = false,
-    this.orte = const <OrtEintrag>[],
+    this.orte,
   });
 
   /// Vorbelegung bzw. bestehende Station.
@@ -61,15 +93,19 @@ class KartoReiseStationDialog extends StatefulWidget {
   /// Ob eine vorhandene Station bearbeitet wird.
   final bool bearbeitet;
 
-  /// Ortsverzeichnis für die Vorschläge im Ortsfeld.
-  final List<OrtEintrag> orte;
+  /// Festes Ortsverzeichnis für die Vorschläge im Ortsfeld.
+  ///
+  /// Ohne Angabe gilt die laufende Auswahlliste (`ortsverzeichnisProvider`);
+  /// der Dialog fordert dann das Ortsverzeichnis von Avesmaps an.
+  final List<OrtEintrag>? orte;
 
   @override
-  State<KartoReiseStationDialog> createState() =>
+  ConsumerState<KartoReiseStationDialog> createState() =>
       _KartoReiseStationDialogState();
 }
 
-class _KartoReiseStationDialogState extends State<KartoReiseStationDialog> {
+class _KartoReiseStationDialogState
+    extends ConsumerState<KartoReiseStationDialog> {
   late final TextEditingController _ort = TextEditingController(
     text: widget.station.ort,
   );
@@ -78,6 +114,21 @@ class _KartoReiseStationDialogState extends State<KartoReiseStationDialog> {
     text: widget.station.notiz,
   );
   late String _abenteuerId = widget.station.adventureId;
+
+  // Zuletzt übernommener Vorschlag; gilt, solange sein Name im Feld steht.
+  OrtEintrag? _gewaehlt;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.orte == null) {
+      // Nach dem Bauen: Ein Provider darf währenddessen nicht geändert werden.
+      Future<void>.microtask(() {
+        if (!mounted) return;
+        ref.read(avesmapsOrteAnforderungProvider.notifier).fordereAn();
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -98,6 +149,8 @@ class _KartoReiseStationDialogState extends State<KartoReiseStationDialog> {
     final abenteuerIds = {for (final a in widget.abenteuer) a.id};
     final verwaist =
         _abenteuerId.isNotEmpty && !abenteuerIds.contains(_abenteuerId);
+    final fest = widget.orte;
+    final List<OrtEintrag> orte = fest ?? ref.watch(ortsverzeichnisProvider);
     return AlertDialog(
       title: Text(widget.bearbeitet ? 'Station bearbeiten' : 'Neue Station'),
       content: SizedBox(
@@ -109,9 +162,13 @@ class _KartoReiseStationDialogState extends State<KartoReiseStationDialog> {
               KartoOrtFeld(
                 feldSchluessel: const ValueKey<String>('karto-reise-ort'),
                 controller: _ort,
-                orte: widget.orte,
+                orte: orte,
                 autofocus: !widget.bearbeitet && widget.station.ort.isEmpty,
                 onChanged: (_) => setState(() {}),
+                onOrtGewaehlt: (ort) => _gewaehlt = ort,
+                onlineSuche: fest == null
+                    ? ref.watch(avesmapsOnlineSucheProvider)
+                    : null,
               ),
               const SizedBox(height: Abstand.weit),
               KartoDatumFelder(
@@ -178,14 +235,24 @@ class _KartoReiseStationDialogState extends State<KartoReiseStationDialog> {
           key: const ValueKey<String>('karto-reise-speichern'),
           onPressed: _leer
               ? null
-              : () => Navigator.of(context).pop(
-                  KartoReiseStationEingabe(
-                    ort: _ort.text.trim(),
-                    datum: _datum,
-                    notiz: _notiz.text.trim(),
-                    adventureId: _abenteuerId,
-                  ),
-                ),
+              : () {
+                  final verweis = ortsVerweisFuer(
+                    _ort.text,
+                    orte,
+                    gewaehlt: _gewaehlt,
+                  );
+                  Navigator.of(context).pop(
+                    KartoReiseStationEingabe(
+                      ort: _ort.text.trim(),
+                      datum: _datum,
+                      notiz: _notiz.text.trim(),
+                      adventureId: _abenteuerId,
+                      ortId: verweis?.ortId ?? '',
+                      kartenX: verweis?.kartenX,
+                      kartenY: verweis?.kartenY,
+                    ),
+                  );
+                },
           child: const Text('Speichern'),
         ),
       ],

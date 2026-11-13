@@ -9,6 +9,7 @@ import 'package:dsa_heldenverwaltung/data/avatar_gesicht/blazeface_lizenz.dart';
 import 'package:dsa_heldenverwaltung/data/firebase_bootstrap.dart';
 import 'package:dsa_heldenverwaltung/data/hive_settings_repository.dart';
 import 'package:dsa_heldenverwaltung/data/storage_directory_picker_impl.dart';
+import 'package:dsa_heldenverwaltung/data/avesmaps/avesmaps_lizenz.dart';
 import 'package:dsa_heldenverwaltung/data/wiki_aventurica_lizenz.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/app_startup_gate.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/auth/web_auth_gate.dart';
@@ -25,6 +26,7 @@ Future<void> _runApp() async {
   usePathUrlStrategy();
   registriereBlazeFaceLizenz();
   registriereWikiAventuricaLizenz();
+  registriereAvesmapsLizenz();
   debugPrint('[boot] hive init…');
   await Hive.initFlutter();
   debugPrint('[boot] firebase…');

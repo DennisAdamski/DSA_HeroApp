@@ -39,8 +39,8 @@ class HeroReiseStation {
   /// ID des Abenteuers, zu dem die Station gehört; leer ohne Zuordnung.
   final String adventureId;
 
-  /// Stabile Orts-ID aus dem Ortsverzeichnis (Avesmaps `public_id`); leer bei
-  /// frei eingetragenen Orten.
+  /// Dauerhafte Kennung des Orts bei Avesmaps (`id` der Entwickler-API); leer
+  /// bei frei eingetragenen Orten und Orten ohne Kartenposition.
   final String ortId;
 
   /// Kartenposition Ost-West im Avesmaps-Kartensystem, oder `null`.

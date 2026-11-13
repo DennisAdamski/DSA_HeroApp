@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:dsa_heldenverwaltung/domain/ort_eintrag.dart';
+import 'package:dsa_heldenverwaltung/state/avesmaps_providers.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/standort_rules.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_info_chip.dart';
@@ -31,6 +33,8 @@ class KartoStandortZeile extends StatelessWidget {
     required this.onSpeichern,
     this.oeffneLink = oeffneExtern,
     this.orte = const <OrtEintrag>[],
+    this.onBearbeiten,
+    this.liveOrte = false,
   });
 
   /// Gespeicherter Standort; leer, solange keiner festgehalten ist.
@@ -44,6 +48,14 @@ class KartoStandortZeile extends StatelessWidget {
 
   /// Ortsverzeichnis für die Vorschläge; leer, solange es nicht geladen ist.
   final List<OrtEintrag> orte;
+
+  /// Wird gerufen, bevor sich der Eingabedialog öffnet (etwa um das
+  /// Ortsverzeichnis von Avesmaps anzufordern).
+  final VoidCallback? onBearbeiten;
+
+  /// Ob der Dialog nachgeladene Orte aus der laufenden Auswahlliste liest.
+  /// Ohne diese Option bleibt [orte] die feste Liste für eigenständige Felder.
+  final bool liveOrte;
 
   @override
   Widget build(BuildContext context) {
@@ -87,13 +99,14 @@ class KartoStandortZeile extends StatelessWidget {
   }
 
   Future<void> _bearbeiten(BuildContext context) async {
-    final neu = await showDialog<String>(
-      context: context,
-      builder: (_) =>
-          _StandortDialog(anfang: bereinigeStandort(standort), orte: orte),
+    onBearbeiten?.call();
+    final neu = await zeigeStandortDialog(
+      context,
+      standort: standort,
+      orte: liveOrte ? null : orte,
     );
     if (neu == null) return;
-    await onSpeichern(bereinigeStandort(neu));
+    await onSpeichern(neu);
   }
 
   Future<void> _oeffnen(BuildContext context, Uri link) async {
@@ -112,13 +125,47 @@ class KartoStandortZeile extends StatelessWidget {
   }
 }
 
+/// Fragt den Standort ab, vorbelegt mit [standort] und mit Vorschlägen aus
+/// [orte].
+/// Ohne feste Liste beobachtet der Dialog `ortsverzeichnisProvider` sowie
+/// die Online-Suche, damit während der Eingabe geladene Orte verfügbar sind.
+///
+/// Liefert den bereinigten Text; ein leerer Text heißt „Standort entfernen“,
+/// `null` heißt abgebrochen. Gespeichert wird hier nichts.
+Future<String?> zeigeStandortDialog(
+  BuildContext context, {
+  required String standort,
+  List<OrtEintrag>? orte,
+}) async {
+  final neu = await showDialog<String>(
+    context: context,
+    builder: (_) {
+      final anfang = bereinigeStandort(standort);
+      if (orte != null) return _StandortDialog(anfang: anfang, orte: orte);
+      return Consumer(
+        builder: (context, ref, _) => _StandortDialog(
+          anfang: anfang,
+          orte: ref.watch(ortsverzeichnisProvider),
+          onlineSuche: ref.watch(avesmapsOnlineSucheProvider),
+        ),
+      );
+    },
+  );
+  return neu == null ? null : bereinigeStandort(neu);
+}
+
 // Eingabe des Standorts. Gibt den Text zurück; „Entfernen“ gibt einen leeren
 // Text zurück, Abbrechen gibt null zurück.
 class _StandortDialog extends StatefulWidget {
-  const _StandortDialog({required this.anfang, required this.orte});
+  const _StandortDialog({
+    required this.anfang,
+    required this.orte,
+    this.onlineSuche,
+  });
 
   final String anfang;
   final List<OrtEintrag> orte;
+  final AvesmapsOnlineSuche? onlineSuche;
 
   @override
   State<_StandortDialog> createState() => _StandortDialogState();
@@ -143,6 +190,7 @@ class _StandortDialogState extends State<_StandortDialog> {
         feldSchluessel: const ValueKey<String>('karto-spiel-standort-feld'),
         controller: _controller,
         orte: widget.orte,
+        onlineSuche: widget.onlineSuche,
         autofocus: true,
         maxLength: kStandortMaxLaenge,
         onSubmitted: (text) => Navigator.of(context).pop(text),
