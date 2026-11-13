@@ -28,11 +28,15 @@ enum OrtArt {
       OrtArt.values.asNameMap()[schluessel];
 }
 
-/// Ein Ort aus dem Ortsverzeichnis (Wiki Aventurica, CC BY-SA).
+/// Ein Ort der Ortsauswahl.
 ///
-/// Es sind nur Kurzfakten enthalten (Name, Art, Unterart, Region), keine
-/// Beschreibungstexte. Ein Held speichert weiter nur den Namen als Text; der
-/// Eintrag dient der Auswahl.
+/// Die Einträge stammen aus dem Ortsverzeichnis der Wiki Aventurica
+/// (CC BY-SA) und, sobald geladen, aus dem Ortsverzeichnis von Avesmaps
+/// (siehe `verbindeOrtsverzeichnisse`). Es sind nur Kurzfakten enthalten
+/// (Name, Art, Unterart, Region), keine Beschreibungstexte. Der Eintrag dient
+/// der Auswahl; ein Held speichert den Namen als Text und, wenn der Eintrag
+/// eine Kartenposition trägt, den Verweis darauf ([ortId], [kartenX],
+/// [kartenY]).
 class OrtEintrag {
   /// Erstellt einen Eintrag.
   OrtEintrag({
@@ -41,6 +45,9 @@ class OrtEintrag {
     this.unterart = '',
     this.region = '',
     this.seite = '',
+    this.ortId = '',
+    this.kartenX,
+    this.kartenY,
   });
 
   /// Anzeige- und Speichername (ohne Klammerzusatz des Wikis, z. B. „Havena“).
@@ -59,6 +66,35 @@ class OrtEintrag {
   /// Voller Wiki-Seitenname, wenn er vom [name] abweicht (etwa „Havena
   /// (Siedlung)“); sonst leer.
   final String seite;
+
+  /// Dauerhafte Kennung des Orts bei Avesmaps; leer ohne Gegenstück dort.
+  final String ortId;
+
+  /// Kartenposition Ost-West im Avesmaps-Kartensystem, oder `null`.
+  final double? kartenX;
+
+  /// Kartenposition Süd-Nord im Avesmaps-Kartensystem, oder `null`.
+  final double? kartenY;
+
+  /// Ob der Eintrag auf einen Ort der Karte verweist.
+  bool get hatKartenposition =>
+      ortId.isNotEmpty && kartenX != null && kartenY != null;
+
+  /// Derselbe Eintrag mit dem Verweis auf den Avesmaps-Ort.
+  OrtEintrag mitKartenposition({
+    required String ortId,
+    required double kartenX,
+    required double kartenY,
+  }) => OrtEintrag(
+    name: name,
+    art: art,
+    unterart: unterart,
+    region: region,
+    seite: seite,
+    ortId: ortId,
+    kartenX: kartenX,
+    kartenY: kartenY,
+  );
 
   /// Unterzeile der Auswahl: Art bzw. Unterart und Region.
   String get untertitel {

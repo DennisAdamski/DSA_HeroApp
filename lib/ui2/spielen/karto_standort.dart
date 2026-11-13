@@ -31,6 +31,7 @@ class KartoStandortZeile extends StatelessWidget {
     required this.onSpeichern,
     this.oeffneLink = oeffneExtern,
     this.orte = const <OrtEintrag>[],
+    this.onBearbeiten,
   });
 
   /// Gespeicherter Standort; leer, solange keiner festgehalten ist.
@@ -44,6 +45,10 @@ class KartoStandortZeile extends StatelessWidget {
 
   /// Ortsverzeichnis für die Vorschläge; leer, solange es nicht geladen ist.
   final List<OrtEintrag> orte;
+
+  /// Wird gerufen, bevor sich der Eingabedialog öffnet (etwa um das
+  /// Ortsverzeichnis von Avesmaps anzufordern).
+  final VoidCallback? onBearbeiten;
 
   @override
   Widget build(BuildContext context) {
@@ -87,6 +92,7 @@ class KartoStandortZeile extends StatelessWidget {
   }
 
   Future<void> _bearbeiten(BuildContext context) async {
+    onBearbeiten?.call();
     final neu = await showDialog<String>(
       context: context,
       builder: (_) =>

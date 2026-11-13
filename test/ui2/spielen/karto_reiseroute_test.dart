@@ -2,13 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:dsa_heldenverwaltung/catalog/ort_loader.dart';
+import 'package:dsa_heldenverwaltung/domain/avesmaps_ort.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_adventure_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_reise_station.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
+import 'package:dsa_heldenverwaltung/state/avesmaps_providers.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/state/ort_providers.dart';
 import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abschnitt.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_kachelgroesse.dart';
@@ -48,6 +52,7 @@ void main() {
     KartoKachelGroesse? groesse,
     double breite = 900,
     double skalierung = 1,
+    List<AvesmapsOrt>? avesmaps,
   }) async {
     tester.view.devicePixelRatio = 1;
     tester.view.physicalSize = Size(breite, 1200);
@@ -61,6 +66,12 @@ void main() {
       overrides: [
         heroRepositoryProvider.overrideWithValue(repo),
         rulesCatalogProvider.overrideWith((ref) async => testCatalog),
+        // Mit Avesmaps-Orten gilt ein festes, leeres Wiki-Verzeichnis, damit
+        // allein diese Orte die Verweise bestimmen.
+        if (avesmaps != null) ...[
+          ortKatalogProvider.overrideWith((ref) async => const OrtKatalog()),
+          avesmapsOrteProvider.overrideWith((ref) async => avesmaps),
+        ],
       ],
     );
     addTearDown(container.dispose);
@@ -193,8 +204,217 @@ void main() {
     await tester.tap(key('karto-reise-alle'));
     await tester.pumpAndSettle();
     expect(find.text('2 Stationen · 10 Tage unterwegs'), findsOneWidget);
-    expect(find.text('Die Spuren im Nebel'), findsOneWidget);
+
+    // Zuerst die Tabelle: je Station Datum, Ort, Abenteuer und Notiz.
+    expect(key('karto-reise-tabelle'), findsOneWidget);
+    for (final kopf in ['Datum', 'Ort', 'Abenteuer', 'Notiz']) {
+      expect(
+        find.descendant(
+          of: key('karto-reise-tabelle'),
+          matching: find.text(kopf),
+        ),
+        findsOneWidget,
+      );
+    }
+    Finder inZeile(String id, String text) => find.descendant(
+      of: key('karto-reise-zeile-$id'),
+      matching: find.text(text),
+    );
+    expect(inZeile('s1', '1. Boron 1043 BF'), findsOneWidget);
+    expect(inZeile('s1', 'Gareth'), findsOneWidget);
+    expect(inZeile('s1', 'Die Spuren im Nebel'), findsOneWidget);
+    expect(inZeile('s1', 'Aufbruch am Südtor.'), findsOneWidget);
+    expect(inZeile('s2', 'Punin'), findsOneWidget);
+    expect(inZeile('s2', '+10 Tage'), findsOneWidget);
+    expect(key('karto-reise-quellen'), findsOneWidget);
+
+    // Die Zeitleiste bleibt als zweite Ansicht, mit den Kartenlinks.
+    await tester.tap(find.text('Zeitleiste'));
+    await tester.pumpAndSettle();
+    expect(key('karto-reise-tabelle'), findsNothing);
     expect(find.byTooltip('Auf Avesmaps zeigen'), findsNWidgets(2));
+  });
+
+  testWidgets('eine Tabellenzeile öffnet die Station zum Bearbeiten', (
+    tester,
+  ) async {
+    await zeige(tester, held: _held(stationen: const [_gareth]));
+    await tester.tap(key('karto-reise-alle'));
+    await tester.pumpAndSettle();
+    await tester.tap(key('karto-reise-zeile-s1'));
+    await tester.pumpAndSettle();
+    await tester.enterText(key('karto-reise-notiz'), 'Aufbruch im Regen.');
+    await tester.pump();
+    await tester.tap(key('karto-reise-speichern'));
+    await tester.pumpAndSettle();
+
+    expect((await gespeichert()).single.notiz, 'Aufbruch im Regen.');
+    expect(
+      find.descendant(
+        of: key('karto-reise-zeile-s1'),
+        matching: find.text('Aufbruch im Regen.'),
+      ),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('schmal steht die Notiz unter dem Ort statt in eigener Spalte', (
+    tester,
+  ) async {
+    await zeige(tester, held: _held(stationen: const [_gareth]), breite: 390);
+    await tester.tap(key('karto-reise-alle'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.descendant(
+        of: key('karto-reise-tabelle'),
+        matching: find.text('Notiz'),
+      ),
+      findsNothing,
+    );
+    expect(
+      find.descendant(
+        of: key('karto-reise-zeile-s1'),
+        matching: find.text('Aufbruch am Südtor.'),
+      ),
+      findsOneWidget,
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  group('Verweis auf den Ort der Karte', () {
+    const orte = <AvesmapsOrt>[
+      AvesmapsOrt(id: 'ort-gareth', name: 'Gareth', x: 551.625, y: 532.969),
+      AvesmapsOrt(id: 'ort-punin', name: 'Punin', x: 420.5, y: 380.25),
+    ];
+
+    testWidgets('eine neue Station übernimmt Kennung und Position des '
+        'vorgeschlagenen Standorts', (tester) async {
+      await zeige(tester, avesmaps: orte);
+      await tester.tap(key('karto-reise-station-neu'));
+      await tester.pumpAndSettle();
+      await tester.tap(key('karto-reise-speichern'));
+      await tester.pumpAndSettle();
+
+      final station = (await gespeichert()).single;
+      expect(station.ort, 'Punin');
+      expect(station.ortId, 'ort-punin');
+      expect(station.kartenX, 420.5);
+      expect(station.kartenY, 380.25);
+    });
+
+    testWidgets('ein gewählter Vorschlag verknüpft die Station; die Luftlinie '
+        'zur vorigen erscheint', (tester) async {
+      await zeige(
+        tester,
+        avesmaps: orte,
+        held: _held(
+          stationen: [
+            _gareth.copyWith(
+              ortId: 'ort-gareth',
+              kartenX: 551.625,
+              kartenY: 532.969,
+            ),
+          ],
+        ),
+      );
+      await tester.tap(key('karto-reise-station-neu'));
+      await tester.pumpAndSettle();
+      await tester.enterText(key('karto-reise-ort'), 'Pun');
+      await tester.pumpAndSettle();
+      await tester.tap(key('karto-ort-vorschlag-0'));
+      await tester.pumpAndSettle();
+      await tester.tap(key('karto-reise-speichern'));
+      await tester.pumpAndSettle();
+
+      final station = (await gespeichert()).last;
+      expect(station.ort, 'Punin');
+      expect(station.ortId, 'ort-punin');
+      // Luftlinie Gareth–Punin: rund 205 Karteneinheiten mal drei Meilen.
+      expect(find.text('+6 Tage · 604 Meilen'), findsOneWidget);
+    });
+
+    testWidgets('Freitext bleibt ohne Verweis; ein geänderter Ortsname löst '
+        'den alten', (tester) async {
+      await zeige(
+        tester,
+        avesmaps: orte,
+        held: _held(
+          stationen: [
+            _gareth.copyWith(
+              ortId: 'ort-gareth',
+              kartenX: 551.625,
+              kartenY: 532.969,
+            ),
+          ],
+        ),
+      );
+      await tester.tap(key('karto-reise-station-s1'));
+      await tester.pumpAndSettle();
+      await tester.enterText(key('karto-reise-ort'), 'Vor den Toren Gareths');
+      await tester.pumpAndSettle();
+      await tester.tap(key('karto-reise-speichern'));
+      await tester.pumpAndSettle();
+
+      final station = (await gespeichert()).single;
+      expect(station.ort, 'Vor den Toren Gareths');
+      expect(station.ortId, isEmpty);
+      expect(station.kartenX, isNull);
+      expect(station.kartenY, isNull);
+    });
+
+    testWidgets('ohne Ortsverzeichnis bleibt ein bestehender Verweis '
+        'erhalten', (tester) async {
+      await zeige(
+        tester,
+        avesmaps: const <AvesmapsOrt>[],
+        held: _held(
+          stationen: [
+            _gareth.copyWith(
+              ortId: 'ort-gareth',
+              kartenX: 551.625,
+              kartenY: 532.969,
+            ),
+          ],
+        ),
+      );
+      await tester.tap(key('karto-reise-station-s1'));
+      await tester.pumpAndSettle();
+      await tester.enterText(key('karto-reise-notiz'), 'Aufbruch im Regen.');
+      await tester.pump();
+      await tester.tap(key('karto-reise-speichern'));
+      await tester.pumpAndSettle();
+
+      final station = (await gespeichert()).single;
+      expect(station.notiz, 'Aufbruch im Regen.');
+      expect(station.ortId, 'ort-gareth');
+      expect(station.kartenX, 551.625);
+    });
+
+    testWidgets('eine unveränderte, bereits verknüpfte Station wird nicht '
+        'neu geschrieben', (tester) async {
+      final vorher = DateTime.utc(2026, 11, 1);
+      await zeige(
+        tester,
+        avesmaps: orte,
+        held: _held(
+          stationen: [
+            _gareth.copyWith(
+              ortId: 'ort-gareth',
+              kartenX: 551.625,
+              kartenY: 532.969,
+              lastModified: vorher,
+            ),
+          ],
+        ),
+      );
+      await tester.tap(key('karto-reise-station-s1'));
+      await tester.pumpAndSettle();
+      await tester.tap(key('karto-reise-speichern'));
+      await tester.pumpAndSettle();
+
+      expect((await gespeichert()).single.lastModified, vorher);
+    });
   });
 
   testWidgets('während einer Planung ist das Anlegen gesperrt', (tester) async {

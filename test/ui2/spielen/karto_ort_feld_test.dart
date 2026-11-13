@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:dsa_heldenverwaltung/domain/avesmaps_ort.dart';
 import 'package:dsa_heldenverwaltung/domain/ort_eintrag.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_ort_feld.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_theme.dart';
@@ -16,10 +17,12 @@ void main() {
   late TextEditingController controller;
   late List<String> geaendert;
   late List<String> abgeschickt;
+  late List<OrtEintrag> gewaehlt;
 
   Future<void> zeige(
     WidgetTester tester, {
     List<OrtEintrag>? verzeichnis,
+    Future<List<AvesmapsOrt>> Function(String anfrage)? onlineSuche,
   }) async {
     tester.view.devicePixelRatio = 1;
     tester.view.physicalSize = const Size(390, 800);
@@ -29,6 +32,7 @@ void main() {
     addTearDown(controller.dispose);
     geaendert = [];
     abgeschickt = [];
+    gewaehlt = [];
     await tester.pumpWidget(
       MaterialApp(
         theme: buildKartoTheme(
@@ -44,6 +48,8 @@ void main() {
               orte: verzeichnis ?? orte,
               onChanged: geaendert.add,
               onSubmitted: abgeschickt.add,
+              onOrtGewaehlt: gewaehlt.add,
+              onlineSuche: onlineSuche,
             ),
           ),
         ),
@@ -123,5 +129,88 @@ void main() {
 
     expect(schluessel('karto-ort-vorschlaege'), findsNothing);
     expect(controller.text, 'Gareth');
+  });
+
+  testWidgets('ein Vorschlag mit Kartenposition trägt das Kartensymbol und '
+      'wird beim Übernehmen gemeldet', (tester) async {
+    await zeige(
+      tester,
+      verzeichnis: <OrtEintrag>[
+        OrtEintrag(
+          name: 'Gareth',
+          art: OrtArt.siedlung,
+          ortId: 'g',
+          kartenX: 551.6,
+          kartenY: 533,
+        ),
+        OrtEintrag(name: 'Garetien', art: OrtArt.region),
+      ],
+    );
+
+    await tester.enterText(schluessel('ort-feld'), 'gar');
+    await tester.pumpAndSettle();
+    expect(find.byIcon(Icons.map_outlined), findsOneWidget);
+
+    await tester.tap(schluessel('karto-ort-vorschlag-0'));
+    await tester.pumpAndSettle();
+    expect(gewaehlt.single.ortId, 'g');
+    expect(controller.text, 'Gareth');
+  });
+
+  group('Online-Suche als Ersatz', () {
+    testWidgets('fragt erst nach der Tipppause und nur für den letzten Text', (
+      tester,
+    ) async {
+      final anfragen = <String>[];
+      await zeige(
+        tester,
+        onlineSuche: (anfrage) async {
+          anfragen.add(anfrage);
+          return const <AvesmapsOrt>[
+            AvesmapsOrt(id: 'h2', name: 'Havenhus', art: 'dorf', x: 1, y: 2),
+          ];
+        },
+      );
+
+      await tester.enterText(schluessel('ort-feld'), 'ha');
+      await tester.pump(const Duration(milliseconds: 100));
+      await tester.enterText(schluessel('ort-feld'), 'hav');
+      await tester.pump(KartoOrtFeld.onlinePause);
+      await tester.pumpAndSettle();
+
+      expect(anfragen, <String>['hav']);
+      // Lokaler und Online-Treffer stehen zusammen in der Liste.
+      expect(find.text('Havena'), findsOneWidget);
+      expect(find.text('Havenhus'), findsOneWidget);
+
+      await tester.tap(find.text('Havenhus'));
+      await tester.pumpAndSettle();
+      expect(gewaehlt.single.ortId, 'h2');
+      expect(gewaehlt.single.unterart, 'Dorf');
+    });
+
+    testWidgets('unter zwei Zeichen und ohne Treffer bleibt es bei den '
+        'lokalen Vorschlägen', (tester) async {
+      var anfragen = 0;
+      await zeige(
+        tester,
+        onlineSuche: (_) async {
+          anfragen++;
+          return const <AvesmapsOrt>[];
+        },
+      );
+
+      await tester.enterText(schluessel('ort-feld'), 'h');
+      await tester.pump(KartoOrtFeld.onlinePause);
+      await tester.pumpAndSettle();
+      expect(anfragen, 0);
+      expect(find.text('Havena'), findsOneWidget);
+
+      await tester.enterText(schluessel('ort-feld'), 'hav');
+      await tester.pump(KartoOrtFeld.onlinePause);
+      await tester.pumpAndSettle();
+      expect(anfragen, 1);
+      expect(find.text('Havena'), findsOneWidget);
+    });
   });
 }

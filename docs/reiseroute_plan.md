@@ -10,7 +10,7 @@ und später auf einer Aventurien-Karte.
 | --- | --- | --- |
 | 0 | Anfrage an Avesmaps (Ortsverzeichnis, Kacheln, CORS, Namensnennung) | beantwortet (12.11.2026): Ortsdaten und Route ja, Kacheln nein |
 | 1 | Stationsliste am Helden, Spielkachel „Reiseroute“, Blatt mit Zeitleiste | umgesetzt |
-| 2 | Ortssuche mit Koordinaten, Reisewege, Karte mit Route und Pins | A2 und A1 gewählt (13.11.2026); Unterbau umgesetzt, Datenmodell und Ortsfeld offen |
+| 2 | Ortssuche mit Koordinaten, Reisewege, Karte mit Route und Pins | A2 und A1 sowie Tabellenansicht umgesetzt (13.11.2026); Reisewege und grafische Darstellung offen |
 
 ## Stufe 1 (umgesetzt)
 
@@ -179,9 +179,17 @@ zwischenspeichern:
 - Rücklink mit dem Seitennamen aus `wiki.url`, wie von Avesmaps gewünscht. Orte
   ohne Wiki-Seite bekommen keinen Link statt eines toten.
 
-### Unterbau für A2 und A1 (umgesetzt 13.11.2026)
+### A2 und A1 (umgesetzt 13.11.2026)
 
-Noch ohne Anbindung an die Oberfläche; die App stellt damit keine Anfrage.
+**Datenmodell.** Festgehalten wird je Station, wann der Held wo war und
+wozu: `datum`, `ort`, `adventureId`, `notiz`. Der Ort ist verknüpft über
+`ortId` (Avesmaps-`id`) und `kartenX`/`kartenY` als Schnappschuss bei der
+Auswahl. Alle Felder gab es schon; am Heldendokument hat sich nichts geändert.
+Der Standort im Zustand bleibt Text. Eine gespeicherte Verbindung zwischen
+Stationen (Anreise mit Weglänge und Reisetagen) ist zurückgestellt, bis die
+grafische Darstellung ansteht; bis dahin gilt die Luftlinie.
+
+**Abruf.**
 
 - `AvesmapsOrt` (`lib/domain/avesmaps_ort.dart`): `id`, `name`, `art`, `x`,
   `y`. Liegt nur im lokalen Zwischenspeicher, nie im Heldendokument.
@@ -190,10 +198,54 @@ Noch ohne Anbindung an die Oberfläche; die App stellt damit keine Anfrage.
   meldet `429`/`503` samt `Retry-After` als `AvesmapsFehler` und wiederholt
   nichts von sich aus.
 - `AvesmapsOrteRepository` mit `HiveAvesmapsOrteSpeicher` (Box
-  `avesmaps_orte_v1` im Heldenspeicher): Liste höchstens einmal in 24 Stunden,
-  nur auf Aufruf; nach einem Fehlschlag 15 Minuten Pause bzw. die Wartezeit
-  des Servers; scheitert das Auffrischen, gilt die ältere Liste weiter.
-- Tests: `test/data/avesmaps/`.
+  `avesmaps_orte_v1` im Heldenspeicher): Liste höchstens einmal in 24 Stunden;
+  nach einem Fehlschlag 15 Minuten Pause bzw. die Wartezeit des Servers;
+  scheitert das Auffrischen, gilt die ältere Liste weiter.
+- `lib/state/avesmaps_providers.dart`: `avesmapsAktivProvider` ist ohne
+  Override aus (Tests fragen nie das Netz) und wird nur in
+  `AppStartupGate._buildScope` eingeschaltet. Geladen wird erst nach
+  `AvesmapsOrteAnforderung.fordereAn()`, also wenn ein Ortsfeld oder das
+  Reiseroute-Blatt aufgeht.
+
+**Auswahl und Verweis.**
+
+- `verbindeOrtsverzeichnisse` (`standort_rules.dart`) mischt beide
+  Verzeichnisse zu `ortsverzeichnisProvider`: Wiki-Siedlungen bekommen
+  Kennung und Position des gleichnamigen Avesmaps-Orts (voller Seitenname vor
+  Name, nur eindeutig), übrige Avesmaps-Orte kommen als Siedlung dazu.
+  Vorschläge mit Position tragen ein Kartensymbol.
+- `ortsVerweisFuer` bestimmt beim Speichern den Verweis: der gewählte
+  Vorschlag, sonst ein eindeutig gleicher Name (ohne Umlaut-Faltung).
+  Gleichnamige Orte verknüpft nur die ausdrückliche Auswahl.
+- Schreibregeln (`KartoReiserouteSchreiben`): Ein neuer Ortsname löst den
+  alten Verweis. Bleibt der Name und liefert die Eingabe keinen Verweis (kein
+  Netz), bleibt der bestehende. Eine unveränderte, bereits verknüpfte Station
+  wird nicht neu geschrieben.
+- A1: Solange die Liste angefordert, aber nicht vorhanden ist, fragt das
+  Ortsfeld nach 400 ms Tipppause `/suche` und mischt die Treffer unter die
+  lokalen Vorschläge (`avesmapsOnlineSucheProvider`). Mit lokaler Liste gibt es
+  keine Suchanfragen.
+
+**Tabelle.** Das Reiseroute-Blatt zeigt die Stationen zuerst als Tabelle
+(`KartoReiseTabelle`: Nummer, Datum mit Abstand zur vorigen Station, Ort,
+Abenteuer, Notiz), umschaltbar auf die Zeitleiste. Unter 520 dp oder bei
+Schrift über dem 1,3-Fachen steht die Notiz gekürzt unter dem Ort. Der Filter
+nach Abenteuer gilt für beide Ansichten.
+
+**Pflichtteile.** `connect-src` in `firebase.json` erlaubt
+`https://avesmaps.de`. Quellenzeile `kOrtsdatenQuellen` im Blatt,
+Lizenzeintrag „Avesmaps (Ortsdaten)“ (`avesmaps_lizenz.dart`),
+Datenschutzerklärung Abschnitt 6 und Zeile im Verzeichnis der
+Verarbeitungstätigkeiten (Rechtsgrundlage dort noch zu bestätigen).
+
+**Tests.** `test/data/avesmaps/`, `test/state/avesmaps_providers_test.dart`,
+`test/rules/derived/standort_rules_test.dart`,
+`test/ui2/spielen/karto_reiseroute_test.dart`,
+`test/ui2/spielen/karto_ort_feld_test.dart`.
+
+**Offen.** Sichtprüfung im Web gegen die echte Schnittstelle; Verweis am
+Standort (`HeroState`), Anreise zwischen Stationen (B2) und die grafische
+Darstellung (C2).
 
 ### Für alle Bausteine
 
@@ -201,9 +253,9 @@ Noch ohne Anbindung an die Oberfläche; die App stellt damit keine Anfrage.
   Riverpod, per Konstruktor injizierbar. User-Agent außerhalb des Webs setzen.
   `429` und `503` mit `Retry-After` achten, nie automatisch in Schleife
   wiederholen. Tolerant lesen, unbekannte Felder ignorieren.
-- **Web-CSP:** `connect-src` in `firebase.json` kennt `https://avesmaps.de`
-  noch nicht (zwei Stellen); ohne den Eintrag blockiert der Browser jede
-  Anfrage.
+- **Web-CSP:** `connect-src` in `firebase.json` muss `https://avesmaps.de`
+  nennen (zwei Stellen, seit 13.11.2026 eingetragen); ohne den Eintrag
+  blockiert der Browser jede Anfrage.
 - **Datenschutz:** Die Anfragen gehen direkt vom Gerät an avesmaps.de (IP-
   Adresse, in den Apps die Kennung). Das gehört in die Datenschutzerklärung
   und in `docs/legal_privacy_operations.md`. Anfragen entstehen nur durch
@@ -214,13 +266,12 @@ Noch ohne Anbindung an die Oberfläche; die App stellt damit keine Anfrage.
   `lib/data/wiki_aventurica_lizenz.dart`). Die Ulisses-Zeile erst mit C3/C4.
 - **Tests:** Client gegen aufgezeichnete Antworten (`MockClient`), kein Netz
   im Test; Abgleich und Formatierung als Regeltests.
-- **Kleinigkeit:** Der Kommentar an `HeroReiseStation.ortId` nennt noch
-  `public_id`; das Feld heißt jetzt `id`.
 
 ### Empfohlene Reihenfolge
 
-1. **2a:** A2 mit Client, CSP, Datenschutztext und Namensnennung. Ergebnis:
-   Stationen mit Position, Luftlinie in der Zeitleiste.
+1. **2a (umgesetzt):** A2 und A1 mit Client, CSP, Datenschutztext und
+   Namensnennung. Ergebnis: Stationen mit Position, Luftlinie in Tabelle und
+   Zeitleiste.
 2. **2b:** B2 und D. Ergebnis: echte Weglängen und Reisetage, Gebietszeile,
    genaue Rücklinks.
 3. **2c:** C2 Routenskizze, mit `linie` aus 2b.

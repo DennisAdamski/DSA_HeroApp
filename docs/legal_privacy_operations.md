@@ -40,6 +40,7 @@ derselben neutralen Meldung.
 | App-Sicherheit | IP-, Geräte-, Token- und App-Check-Daten | Missbrauchs- und Zugriffsschutz | Art. 6 Abs. 1 lit. f DSGVO | Google/Firebase | Anbieter- und Sicherheitsfristen |
 | Feedback | freigegebener Text, technische Diagnose, Request-ID | öffentliches GitHub-Issue | Art. 6 Abs. 1 lit. a DSGVO | GitHub, öffentlich | Metadaten 7 Tage; Issue grundsätzlich unbefristet bzw. auf Anfrage |
 | Bildgenerierung | Prompt, optionales Referenzbild | angeforderte Bildgenerierung | Art. 6 Abs. 1 lit. a DSGVO | OpenAI | standardmäßige Abuse-Logs bis zu 30 Tage, vorbehaltlich Ausnahmen |
+| Ortsdaten (Avesmaps) | IP-Adresse, App-Kennung bzw. Browserangaben, bei der Ersatzsuche der eingegebene Ortsname; keine Helden- oder Kontodaten | Ortsauswahl mit Kartenposition (Standort, Reiseroute) | Nutzeranfrage; Rechtsgrundlage noch zu bestätigen | Betreiber von Avesmaps (avesmaps.de) | Ortsliste lokal bis zur Löschung der App-Daten; Serverprotokolle nach Vorgabe des Betreibers |
 
 Firebase Authentication wird laut Firebase ausschließlich in US-Rechenzentren
 verarbeitet. Andere verwendete Firebase-Dienste können auf globaler

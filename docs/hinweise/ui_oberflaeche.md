@@ -204,6 +204,13 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   Die Kachel „Reiseroute“ (`karto_reiseroute.dart`) zeigt die jüngsten
   Stationen von `HeroSheet.reiseStationen` als Zeitleiste und öffnet das
   Reiseroute-Blatt; Details in [reiseroute_plan.md](../reiseroute_plan.md).
+  Das Blatt zeigt zuerst die Tabelle (`KartoReiseTabelle`, Keys
+  `karto-reise-tabelle`, `karto-reise-zeile-<id>`), umschaltbar auf die
+  Zeitleiste (`karto-reise-ansicht`). Ortsfelder lesen
+  `ortsverzeichnisProvider` (Wiki Aventurica plus Avesmaps); wer ein neues
+  Ortsfeld baut, ruft beim Öffnen `AvesmapsOrteAnforderung.fordereAn()`, nie
+  beim Bauen der Spielansicht. In Tests bleibt Avesmaps ohne Override aus;
+  Orte mit Position kommen dort über `avesmapsOrteProvider.overrideWith`.
   **Wildnis (12.11.2026):** Die Kachel „Wildnis“ (`KartoSpielkachelArt.wildnis`,
   `ui2/spielen/wildnis/karto_wildnis_kachel.dart`) ist **eine** Kachel für alle
   Wildnistätigkeiten; oben wählt man die Tätigkeit (der Umschalter erscheint ab

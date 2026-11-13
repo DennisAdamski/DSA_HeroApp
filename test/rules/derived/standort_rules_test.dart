@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:dsa_heldenverwaltung/domain/avesmaps_ort.dart';
 import 'package:dsa_heldenverwaltung/domain/ort_eintrag.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/standort_rules.dart';
 
@@ -182,6 +183,156 @@ void main() {
       expect(wikiAventuricaLink('Auf der Reichsstraße', orte), isNull);
       expect(wikiAventuricaLink('   ', orte), isNull);
       expect(wikiAventuricaLink('Gareth', const <OrtEintrag>[]), isNull);
+    });
+  });
+
+  group('verbindeOrtsverzeichnisse', () {
+    final wiki = <OrtEintrag>[
+      OrtEintrag(name: 'Gareth', art: OrtArt.siedlung, region: 'Garetien'),
+      OrtEintrag(name: 'Garetien', art: OrtArt.region),
+      OrtEintrag(
+        name: 'Auweiler',
+        art: OrtArt.siedlung,
+        region: 'Darpatien',
+        seite: 'Auweiler (Darpatien)',
+      ),
+      OrtEintrag(name: 'Thorwal', art: OrtArt.staat),
+      OrtEintrag(name: 'Nostria', art: OrtArt.siedlung),
+    ];
+    const avesmaps = <AvesmapsOrt>[
+      AvesmapsOrt(id: 'g', name: 'Gareth', art: 'metropole', x: 551.6, y: 533),
+      AvesmapsOrt(id: 'a1', name: 'Auweiler (Darpatien)', x: 1, y: 2),
+      AvesmapsOrt(id: 'a2', name: 'Auweiler (Yantibair)', x: 3, y: 4),
+      AvesmapsOrt(id: 't', name: 'Thorwal', art: 'grossstadt', x: 5, y: 6),
+      AvesmapsOrt(id: 'n1', name: 'Nostria', x: 7, y: 8),
+      AvesmapsOrt(id: 'n2', name: 'Nostria', x: 9, y: 10),
+    ];
+
+    test('ohne Avesmaps-Orte bleibt das Wiki-Verzeichnis unverändert', () {
+      expect(
+        verbindeOrtsverzeichnisse(wiki, const <AvesmapsOrt>[]),
+        same(wiki),
+      );
+    });
+
+    test('eine Siedlung bekommt Kennung und Position, behält ihre Region', () {
+      final gareth = verbindeOrtsverzeichnisse(wiki, avesmaps).first;
+      expect(gareth.name, 'Gareth');
+      expect(gareth.region, 'Garetien');
+      expect(gareth.ortId, 'g');
+      expect(gareth.kartenX, 551.6);
+      expect(gareth.kartenY, 533);
+      expect(gareth.hatKartenposition, isTrue);
+    });
+
+    test('der volle Wiki-Seitenname entscheidet bei Klammerzusätzen', () {
+      final orte = verbindeOrtsverzeichnisse(wiki, avesmaps);
+      final darpatien = orte.firstWhere((o) => o.region == 'Darpatien');
+      expect(darpatien.name, 'Auweiler');
+      expect(darpatien.ortId, 'a1');
+      // Der zweite Auweiler kommt als eigener Eintrag mit vollem Namen dazu.
+      final yantibair = orte.firstWhere((o) => o.ortId == 'a2');
+      expect(yantibair.name, 'Auweiler (Yantibair)');
+      expect(yantibair.art, OrtArt.siedlung);
+    });
+
+    test('Regionen und Staaten bleiben ohne Position; der gleichnamige '
+        'Avesmaps-Ort kommt als Siedlung dazu', () {
+      final orte = verbindeOrtsverzeichnisse(wiki, avesmaps);
+      expect(
+        orte.firstWhere((o) => o.art == OrtArt.staat).hatKartenposition,
+        isFalse,
+      );
+      final stadt = orte.firstWhere((o) => o.ortId == 't');
+      expect(stadt.art, OrtArt.siedlung);
+      expect(stadt.unterart, 'Großstadt');
+      expect(stadt.untertitel, 'Großstadt');
+    });
+
+    test('mehrdeutige Namen verknüpfen nichts, beide Orte bleiben wählbar', () {
+      final orte = verbindeOrtsverzeichnisse(wiki, avesmaps);
+      final nostria = orte.where((o) => o.name == 'Nostria').toList();
+      expect(nostria, hasLength(3));
+      expect(nostria.first.hatKartenposition, isFalse);
+      expect(nostria.skip(1).map((o) => o.ortId), <String>['n1', 'n2']);
+    });
+
+    test('jeder Avesmaps-Ort erscheint genau einmal', () {
+      final orte = verbindeOrtsverzeichnisse(wiki, avesmaps);
+      expect(
+        orte.where((o) => o.ortId.isNotEmpty).map((o) => o.ortId).toList()
+          ..sort(),
+        <String>['a1', 'a2', 'g', 'n1', 'n2', 't'],
+      );
+      expect(orte, hasLength(wiki.length + 4));
+    });
+  });
+
+  group('ortsVerweisFuer', () {
+    final orte = verbindeOrtsverzeichnisse(
+      <OrtEintrag>[
+        OrtEintrag(name: 'Gareth', art: OrtArt.siedlung),
+        OrtEintrag(name: 'Garetien', art: OrtArt.region),
+      ],
+      const <AvesmapsOrt>[
+        AvesmapsOrt(id: 'g', name: 'Gareth', x: 551.6, y: 533),
+        AvesmapsOrt(id: 'n1', name: 'Nostria', x: 7, y: 8),
+        AvesmapsOrt(id: 'n2', name: 'Nostria', x: 9, y: 10),
+      ],
+    );
+
+    test('ein eindeutig gleicher Name verweist auf den Ort', () {
+      expect(ortsVerweisFuer('  gareth ', orte)?.ortId, 'g');
+    });
+
+    test('Freitext, Regionen und leere Eingaben verweisen auf nichts', () {
+      expect(ortsVerweisFuer('Auf der Reichsstraße', orte), isNull);
+      expect(ortsVerweisFuer('Garetien', orte), isNull);
+      expect(ortsVerweisFuer('   ', orte), isNull);
+      expect(ortsVerweisFuer('Gareth', const <OrtEintrag>[]), isNull);
+    });
+
+    test('eine Umlaut-Umschreibung reicht für den Verweis nicht', () {
+      final mitUmlaut = verbindeOrtsverzeichnisse(
+        const <OrtEintrag>[],
+        const <AvesmapsOrt>[AvesmapsOrt(id: 'l', name: 'Lauen', x: 1, y: 2)],
+      );
+      expect(ortsVerweisFuer('Lauen', mitUmlaut)?.ortId, 'l');
+      // `suchFaltung` ließe „Laun“ und „Lauen“ zusammenfallen.
+      expect(ortsVerweisFuer('Laun', mitUmlaut), isNull);
+    });
+
+    test('gleichnamige Orte verknüpft nur die ausdrückliche Auswahl', () {
+      expect(ortsVerweisFuer('Nostria', orte), isNull);
+      final gewaehlt = orte.firstWhere((o) => o.ortId == 'n2');
+      expect(ortsVerweisFuer('Nostria', orte, gewaehlt: gewaehlt)?.ortId, 'n2');
+    });
+
+    test('die Auswahl gilt nur, solange ihr Name im Feld steht', () {
+      final gewaehlt = orte.firstWhere((o) => o.ortId == 'n2');
+      expect(ortsVerweisFuer('Gareth', orte, gewaehlt: gewaehlt)?.ortId, 'g');
+      expect(
+        ortsVerweisFuer('Nostria am Meer', orte, gewaehlt: gewaehlt),
+        isNull,
+      );
+    });
+
+    test('ein gewählter Online-Treffer gilt auch ohne Verzeichnis', () {
+      final treffer = OrtEintrag(
+        name: 'Havena',
+        art: OrtArt.siedlung,
+        ortId: 'h',
+        kartenX: 1,
+        kartenY: 2,
+      );
+      expect(
+        ortsVerweisFuer(
+          'Havena',
+          const <OrtEintrag>[],
+          gewaehlt: treffer,
+        )?.ortId,
+        'h',
+      );
     });
   });
 }
