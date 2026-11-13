@@ -127,9 +127,18 @@ Reiseroute-Zeile anpassen und den Stand oben in dieser Datei aktualisieren.
   - Die neue Revision bekommt eigene Pfade, `aktuell.json` zeigt darauf.
   - Alte Revisionen in `build/karten/` liegen lassen, solange noch offene Sitzungen
     sie nutzen könnten; ein Deploy ersetzt die ganze Site.
-- **Kosten:** Firebase Hosting gibt im Spark-Tarif 10 GB Speicher und 360 MB Transfer
-  am Tag frei. Nach dem Start die Nutzung in der Konsole beobachten; eine Sitzung mit
-  viel Zoomen lädt einige MB.
+- **Kosten:** Das Projekt läuft im Blaze-Tarif (wegen Cloud Functions). Hosting ist
+  dort frei bis 10 GB Speicher und 360 MB Transfer am Tag, darüber kostet es 0,026 $ je GB
+  Speicher und 0,15 $ je GB Transfer (Stand 11/2026).
+  - Die Freigrenzen gelten für das ganze Projekt, also für die Karten-Site zusammen mit
+    Test und Produktion.
+  - Kacheln: geschätzt 70 MB bei 16384 px, rund 270 MB bei 32768 px.
+  - Eine Sitzung lädt etwa 0,5 MB (Kachel) bis 5–10 MB (viel Zoomen im Vollbild);
+    wiederkehrende Besuche kommen dank `immutable` aus dem Browser-Cache.
+  - In der Konsole die Aufbewahrung alter Releases der Karten-Site begrenzen (etwa
+    auf 2). Jedes behaltene Release zählt zum Speicher.
+  - Nach dem Start die Nutzung beobachten. Optional ein Budget-Alarm in der Google
+    Cloud Console.
 - **Vektorlagen:** Das Paket kann auch SVG mit den Ebenen Wege, Gebiete und
   Landschaften enthalten. Das wäre eine spätere Option, etwa für Reichsgrenzen, und
   braucht dieselben Lizenzpflichten.
