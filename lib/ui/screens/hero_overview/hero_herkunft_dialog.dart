@@ -133,6 +133,9 @@ class _HerkunftsEintragDialogState extends State<_HerkunftsEintragDialog> {
   Widget build(BuildContext context) {
     final istNeu = widget.bisher == null;
     return AlertDialog(
+      // Kleinerer Titel: „Modifikator“ bricht bei 360 px und Textfaktor 2
+      // sonst mitten im Wort um.
+      titleTextStyle: Theme.of(context).textTheme.titleMedium,
       title: Text(
         istNeu
             ? '${widget.herkunftName}: Modifikator hinzufügen'

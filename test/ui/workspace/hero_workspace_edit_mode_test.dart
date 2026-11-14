@@ -1014,6 +1014,25 @@ void main() {
         ),
         'Der Eingang wurde mit einem Runenkreis gesichert.',
       );
+      await tester.ensureVisible(
+        find.byKey(const ValueKey<String>('notes-adventure-note-dialog-ort')),
+      );
+      await tester.enterText(
+        find.byKey(const ValueKey<String>('notes-adventure-note-dialog-ort')),
+        'Tairach',
+      );
+      await tester.enterText(
+        find.byKey(
+          const ValueKey<String>('notes-adventure-note-dialog-datum-day'),
+        ),
+        '7',
+      );
+      await tester.enterText(
+        find.byKey(
+          const ValueKey<String>('notes-adventure-note-dialog-datum-year'),
+        ),
+        '1048',
+      );
       await tester.tap(
         find.byKey(const ValueKey<String>('notes-adventure-note-dialog-save')),
       );
@@ -1034,6 +1053,13 @@ void main() {
           const ValueKey<String>('notes-adventure-person-dialog-description'),
         ),
         'Verwundet, aber kampfbereit.',
+      );
+      await tester.ensureVisible(
+        find.byKey(const ValueKey<String>('notes-adventure-person-dialog-ort')),
+      );
+      await tester.enterText(
+        find.byKey(const ValueKey<String>('notes-adventure-person-dialog-ort')),
+        'Lager am Pass',
       );
       await tester.tap(
         find.byKey(
@@ -1113,7 +1139,11 @@ void main() {
       expect(hero.adventures.single.currentAventurianDate.day, isEmpty);
       expect(hero.adventures.single.apReward, 0);
       expect(hero.adventures.single.notes.single.title, 'Schlüsselstelle');
+      expect(hero.adventures.single.notes.single.ort, 'Tairach');
+      expect(hero.adventures.single.notes.single.datum.day, '7');
+      expect(hero.adventures.single.notes.single.datum.year, '1048');
       expect(hero.adventures.single.people.single.name, 'Aldare');
+      expect(hero.adventures.single.people.single.ort, 'Lager am Pass');
 
       await openWorkspace(tester, repo);
       await selectWorkspaceTab(tester, 'Chroniken, Kontakte & Abenteuer');

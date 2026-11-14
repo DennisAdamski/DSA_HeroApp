@@ -2669,7 +2669,7 @@ oberster JSON-Schlüssel, beidseitige Änderungen fragen nach.
 Die Übersicht ersetzt die drei Textfelder „Rasse/Kultur/Profession
 Modifikatoren“ durch je eine `HeroHerkunftSection`
 (`ui/screens/hero_overview/hero_herkunft_section.dart`): Chips der Gruppe,
-`+ Herkunftsmodifikator` im Header, Ändern/Entfernen im Bearbeitungsmodus und
+`+ Modifikator` im Header, Ändern/Entfernen im Bearbeitungsmodus und
 die beiden Abgleichsknöpfe bei einer Textabweichung. Das Widget rechnet nichts;
 es liest Liste, Abweichung und Sperren aus
 `hero_herkunft_migration_rules.dart` und meldet Änderungen über Callbacks.
