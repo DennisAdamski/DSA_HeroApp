@@ -276,7 +276,7 @@ void main() {
         firestore,
         'owner',
         ids: <String>['g'],
-        codes: <String>['CODE12345678'],
+        codes: <String>['CODE12345678', 'NEUERCODE001', 'NEUERCODE002'],
       );
       await besitzer.erstelleGruppe('Runde');
       final spieler = _dienst(firestore, 'spieler');
@@ -287,10 +287,16 @@ void main() {
       await besitzer.pushGeteilterHeld('g', _karte('npc'));
       await besitzer.speichereNotizen('g', 'Notiz');
 
-      await besitzer.entferneMitglied('g', 'spieler');
+      final neuerCode = await besitzer.entferneMitglied('g', 'spieler');
       expect(
         (await firestore.doc('groups_v2/g/members/spieler').get()).exists,
         isFalse,
+      );
+      // Der alte Code des entfernten Mitglieds gilt nicht mehr (SEC-04).
+      expect(neuerCode.joinCode, 'NEUERCODE001');
+      expect(
+        (await firestore.doc('groups_v2/g').get()).data()?['joinCode'],
+        'NEUERCODE001',
       );
 
       await besitzer.loescheGruppe('g');

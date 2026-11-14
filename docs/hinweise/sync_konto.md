@@ -168,6 +168,12 @@ harten Regeln und den Themenindex.
   vor „Gefecht beginnen“ (`syncGruppenVorGefecht` in `GefechtEinstieg`, acht
   Sekunden Zeitlimit; ein Fehler zeigt nur eine Meldung, das Gefecht startet
   mit dem lokalen Stand).
+  Mitglied ist laut Regeln nur, wer einen Mitgliedseintrag in einer
+  **bestehenden** Gruppe hat (`isGroupMember` prüft auch das Gruppendokument);
+  ein Eintrag, der das Löschen überlebt, gibt keinen Zugriff mehr. Lesen und
+  Aufräumen darf zusätzlich der Besitzer ohne eigenen Eintrag (`canReadGroup`),
+  damit `loescheGruppe` nach einem Abbruch wiederholbar bleibt. Es entwertet
+  zuerst den Beitrittscode; `entferneMitglied` erneuert ihn ebenfalls.
   Regeln: `functions/test/firestore_rules.rules.ts` (`npm run test:rules`,
   Java 21). Offen: Mitglieder entfernen (Dienst `entferneMitglied` vorhanden,
   keine Oberfläche), Live-Listener statt manuellem „Synchronisieren“, Gruppen

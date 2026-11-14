@@ -257,8 +257,15 @@ class GruppenSyncService {
     );
   }
 
-  /// Entfernt ein Mitglied samt Heldenkarte (nur Besitzer).
-  Future<void> entferneMitglied(String groupId, String uid) async {
+  /// Entfernt ein Mitglied samt Heldenkarte (nur Besitzer) und erneuert den
+  /// Beitrittscode.
+  ///
+  /// Das entfernte Mitglied kennt den bisherigen Code und könnte sonst sofort
+  /// wieder beitreten. Liefert den neuen Code zum Weitergeben.
+  Future<GruppenBeitrittscode> entferneMitglied(
+    String groupId,
+    String uid,
+  ) async {
     final gruppe = _gruppe(groupId);
     await _geschuetzt(
       () => gruppe.collection('hero_snapshots').doc(uid).delete(),
@@ -268,12 +275,19 @@ class GruppenSyncService {
       () => gruppe.collection('members').doc(uid).delete(),
       'Nur der Gruppenersteller kann Mitglieder entfernen.',
     );
+    return erneuereBeitrittscode(groupId);
   }
 
   /// Löscht die Gruppe samt Inhalten für alle Mitglieder (nur Besitzer).
+  ///
+  /// Besteht aus vielen Einzelschritten und ist wiederholbar: Nach einem
+  /// Abbruch führt ein erneuter Aufruf den Rest aus, auch wenn der eigene
+  /// Mitgliedseintrag schon fehlt (die Regeln lassen den Besitzer lesen).
   Future<void> loescheGruppe(String groupId) async {
     final uid = eigeneUid;
     final gruppe = _gruppe(groupId);
+    // Zuerst den Code entwerten: Während des Löschens tritt niemand mehr bei.
+    await erneuereBeitrittscode(groupId);
     for (final sammlung in const <String>[
       'hero_snapshots',
       'shared_heroes',

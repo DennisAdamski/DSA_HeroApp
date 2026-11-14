@@ -17,7 +17,7 @@ service cloud.firestore {
     // über den `joinCode` im Gruppendokument (nur Mitglieder lesen ihn); die
     // Sammlung `invitations` bleibt für ein späteres Backend reserviert.
     match /groups_v2/{groupId} {
-      allow read: if isGroupMember(groupId);
+      allow read: if canReadGroup(groupId);
       allow create: if isVerified()
                     && request.resource.data.ownerUid == request.auth.uid
                     && validGroup(request.resource.data);
@@ -27,7 +27,7 @@ service cloud.firestore {
       allow delete: if isGroupOwner(groupId);
 
       match /members/{memberId} {
-        allow read: if isGroupMember(groupId);
+        allow read: if canReadGroup(groupId);
         // Der Besitzer trägt Mitglieder ein; wer den Beitrittscode kennt,
         // trägt sich selbst als Mitglied ein.
         allow create: if (isGroupOwner(groupId) && validMember(request.resource.data))
@@ -42,7 +42,7 @@ service cloud.firestore {
       }
 
       match /hero_snapshots/{memberId} {
-        allow read: if isGroupMember(groupId);
+        allow read: if canReadGroup(groupId);
         allow create, update: if isVerified()
                               && request.auth.uid == memberId
                               && isGroupMember(groupId)
@@ -54,18 +54,18 @@ service cloud.firestore {
       // Geteilte Gruppeninfos: Alle Mitglieder dürfen gemeinsame Einträge
       // (z. B. NSC-Begleiter) lesen, anlegen, ändern und löschen.
       match /shared_heroes/{entryId} {
-        allow read: if isGroupMember(groupId);
+        allow read: if canReadGroup(groupId);
         allow create: if isGroupMember(groupId)
                       && request.resource.data.createdByUid == request.auth.uid
                       && request.resource.size() < 400 * 1024;
         allow update: if isGroupMember(groupId)
                       && request.resource.data.createdByUid == resource.data.createdByUid
                       && request.resource.size() < 400 * 1024;
-        allow delete: if isGroupMember(groupId);
+        allow delete: if canReadGroup(groupId);
       }
 
       match /shared_info/{infoId} {
-        allow read: if isGroupMember(groupId);
+        allow read: if canReadGroup(groupId);
         allow create, update: if (isGroupMember(groupId)
                                   && infoId == 'notizen'
                                   && validNotizen(request.resource.data))
@@ -126,9 +126,21 @@ service cloud.firestore {
              && request.auth.uid == userId;
     }
 
+    // Mitglied ist nur, wer einen Mitgliedseintrag in einer **bestehenden**
+    // Gruppe hat. Ohne die Prüfung des Gruppendokuments behielte ein Eintrag,
+    // der das Löschen der Gruppe überlebt (Beitritt währenddessen, Abbruch),
+    // Zugriff auf deren Unterdokumente.
     function isGroupMember(groupId) {
       return isVerified()
+             && exists(/databases/$(database)/documents/groups_v2/$(groupId))
              && exists(/databases/$(database)/documents/groups_v2/$(groupId)/members/$(request.auth.uid));
+    }
+
+    // Lesen und Aufräumen darf auch der Besitzer ohne eigenen Mitgliedseintrag:
+    // Bricht das Löschen der Gruppe nach seinem Eintrag ab, muss er es zu Ende
+    // führen können.
+    function canReadGroup(groupId) {
+      return isGroupMember(groupId) || isGroupOwner(groupId);
     }
 
     function isGroupOwner(groupId) {
