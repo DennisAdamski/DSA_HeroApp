@@ -13,8 +13,20 @@ import 'package:dsa_heldenverwaltung/domain/sync_models.dart';
 class FirestoreHeroSyncGateway
     implements RemoteHeroSyncGateway, RemoteHeroStateSyncGateway {
   /// Erstellt das Gateway fuer den privaten User-Subtree.
-  FirestoreHeroSyncGateway({required this.userId, FirebaseFirestore? firestore})
-    : _firestore = firestore ?? FirebaseFirestore.instance;
+  FirestoreHeroSyncGateway({
+    required this.userId,
+    FirebaseFirestore? firestore,
+    this.zeitlimit = const Duration(seconds: 30),
+  }) : _firestore = firestore ?? FirebaseFirestore.instance;
+
+  /// Höchstdauer eines einzelnen Firestore-Zugriffs.
+  ///
+  /// Ohne Netz endet ein direktes `set()` des Plugins erst mit der
+  /// Serverbestätigung; Speichern und App-Start warteten so lange. Nach dem
+  /// Limit gilt der Zugriff als Netzwerkfehler. Ein vom Plugin vorgemerkter
+  /// Schreibzugriff kann die Cloud später trotzdem erreichen; der nächste
+  /// Abgleich erkennt den Stand dann als inhaltsgleich.
+  final Duration zeitlimit;
 
   /// UID des angemeldeten Firebase-Users.
   final String userId;
@@ -276,9 +288,14 @@ class FirestoreHeroSyncGateway
   /// in typisierte Sync-Fehler.
   Future<T> _mapFirestoreErrors<T>(Future<T> Function() action) async {
     try {
-      return await action();
+      return await action().timeout(zeitlimit);
     } on FirebaseException catch (error) {
       throw _mapFirebaseException(error);
+    } on TimeoutException catch (error) {
+      throw SyncNetworkException(
+        'Firestore hat nicht rechtzeitig geantwortet.',
+        cause: error,
+      );
     }
   }
 
