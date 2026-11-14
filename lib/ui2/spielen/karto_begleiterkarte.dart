@@ -69,7 +69,6 @@ class KartoBegleiterAbschnitt extends StatelessWidget {
     );
     return KartoAbschnitt(
       titel: 'Begleiter',
-      stufe: KartoFlaechenstufe.senke,
       symbol: Icons.pets_outlined,
       child: weit
           // Weit: mehrere Begleiter nebeneinander, dazu je Karte die

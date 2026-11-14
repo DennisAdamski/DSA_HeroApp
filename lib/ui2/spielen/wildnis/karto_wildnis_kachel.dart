@@ -91,6 +91,16 @@ class _KartoWildnisKachelState extends ConsumerState<KartoWildnisKachel> {
   WildnisErgebnis? _ergebnis;
   bool _wuerfelt = false;
 
+  /// Ob die Vorschau alle möglichen Funde zeigt statt der ersten.
+  bool _alleFunde = false;
+
+  /// Schlüssel der aufgeklappten Vorschau- und Zielzeilen.
+  final Set<String> _offeneZeilen = <String>{};
+
+  void _schalteZeile(String schluessel) => setState(() {
+    if (!_offeneZeilen.remove(schluessel)) _offeneZeilen.add(schluessel);
+  });
+
   KartoWildnisTaetigkeit get _taetigkeit => widget.taetigkeiten.firstWhere(
     (t) => t.id == _taetigkeitId,
     orElse: () => widget.taetigkeiten.first,
@@ -109,6 +119,8 @@ class _KartoWildnisKachelState extends ConsumerState<KartoWildnisKachel> {
     _gelaendekunde = null;
     _ortskenntnis = null;
     _optionen.clear();
+    _alleFunde = false;
+    _offeneZeilen.clear();
   });
 
   void _waehleLandschaft(String schluessel) => _aendere(() {
@@ -116,6 +128,7 @@ class _KartoWildnisKachelState extends ConsumerState<KartoWildnisKachel> {
     // Die Erkennung gilt je Landschaft; ein Handwert gehörte zur alten.
     _gelaendekunde = null;
     _ortskenntnis = null;
+    _alleFunde = false;
   });
 
   @override
@@ -619,6 +632,9 @@ class _KartoWildnisKachelState extends ConsumerState<KartoWildnisKachel> {
     }
     final erschwernis = taetigkeit.erschwernis(kontext);
     final tawBeiDauer = taetigkeit.tawBeiDauer(kontext);
+    final hinweis = taetigkeit.erschwernisHinweis(kontext);
+    final ziel = taetigkeit.zielAngaben(kontext);
+    final leise = texte.etikett.copyWith(color: context.karto.schriftLeise);
     return KartoFlaeche(
       stufe: KartoFlaechenstufe.senke,
       klein: true,
@@ -631,10 +647,22 @@ class _KartoWildnisKachelState extends ConsumerState<KartoWildnisKachel> {
             'TaW $tawBeiDauer · Erschwernis ${_mitVorzeichen(erschwernis)}',
             style: texte.wert,
           ),
-          Text(
-            '$probe · ${taetigkeit.regelHinweis}',
-            style: texte.etikett.copyWith(color: context.karto.schriftLeise),
-          ),
+          if (hinweis != null)
+            Text(
+              key: const ValueKey<String>('karto-wildnis-erschwernis-hinweis'),
+              hinweis,
+              style: leise,
+            ),
+          Text('$probe · ${taetigkeit.regelHinweis}', style: leise),
+          if (ziel != null) ...[
+            const SizedBox(height: Abstand.normal),
+            _FundZeile(
+              zeile: ziel,
+              schluessel: 'karto-wildnis-ziel',
+              offen: _offeneZeilen.contains('ziel:${ziel.titel}'),
+              onTap: () => _schalteZeile('ziel:${ziel.titel}'),
+            ),
+          ],
         ],
       ),
     );
@@ -647,7 +675,8 @@ class _KartoWildnisKachelState extends ConsumerState<KartoWildnisKachel> {
   ) {
     final zeilen = taetigkeit.vorschau(kontext);
     if (zeilen.isEmpty) return const SizedBox.shrink();
-    final grenze = weit ? kWildnisVorschauWeit : kWildnisVorschauKurz;
+    final kurz = weit ? kWildnisVorschauWeit : kWildnisVorschauKurz;
+    final grenze = _alleFunde ? zeilen.length : kurz;
     final texte = Theme.of(context).textTheme;
     return Padding(
       padding: const EdgeInsets.only(top: Abstand.weit),
@@ -655,34 +684,29 @@ class _KartoWildnisKachelState extends ConsumerState<KartoWildnisKachel> {
         key: const ValueKey<String>('karto-wildnis-vorschau'),
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text('Mögliche Funde', style: texte.etikett),
+          Text('Mögliche Funde (${zeilen.length})', style: texte.etikett),
           const SizedBox(height: Abstand.eng),
-          for (final zeile in zeilen.take(grenze))
-            Padding(
-              padding: const EdgeInsets.only(bottom: Abstand.eng),
-              child: Text.rich(
-                TextSpan(
-                  children: [
-                    TextSpan(
-                      text: zeile.titel,
-                      style: texte.fliess.copyWith(fontWeight: FontWeight.w600),
-                    ),
-                    if (zeile.detail.isNotEmpty)
-                      TextSpan(
-                        text: '  ${zeile.detail}',
-                        style: texte.fliess.copyWith(
-                          color: context.karto.schriftLeise,
-                        ),
-                      ),
-                  ],
+          for (final (index, zeile) in zeilen.take(grenze).indexed)
+            _FundZeile(
+              zeile: zeile,
+              schluessel: 'karto-wildnis-fund-$index',
+              offen: _offeneZeilen.contains('fund:$index:${zeile.titel}'),
+              onTap: () => _schalteZeile('fund:$index:${zeile.titel}'),
+            ),
+          if (zeilen.length > kurz)
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton.icon(
+                key: const ValueKey<String>('karto-wildnis-vorschau-alle'),
+                onPressed: () => setState(() => _alleFunde = !_alleFunde),
+                icon: Icon(_alleFunde ? Icons.expand_less : Icons.expand_more),
+                label: Text(
+                  _alleFunde
+                      ? 'Weniger anzeigen'
+                      : 'Alle ${zeilen.length} anzeigen '
+                            '(${zeilen.length - grenze} weitere)',
                 ),
               ),
-            ),
-          if (zeilen.length > grenze)
-            Text(
-              '… und ${zeilen.length - grenze} weitere (Titel antippen für die '
-              'große Ansicht)',
-              style: texte.etikett.copyWith(color: context.karto.schriftLeise),
             ),
         ],
       ),
@@ -772,6 +796,114 @@ class _Schritt extends StatelessWidget {
           onPressed: wert < max ? () => onChanged(wert + 1) : null,
         ),
       ],
+    );
+  }
+}
+
+/// Eine Zeile der Vorschau oder das gewählte Ziel: Titel und Kurzangabe,
+/// bei vorhandenen Einzelheiten antippbar zum Aufklappen.
+class _FundZeile extends StatelessWidget {
+  const _FundZeile({
+    required this.zeile,
+    required this.schluessel,
+    required this.offen,
+    required this.onTap,
+  });
+
+  final WildnisErgebnisZeile zeile;
+  final String schluessel;
+  final bool offen;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final karto = context.karto;
+    final texte = Theme.of(context).textTheme;
+    final leise = texte.fliess.copyWith(color: karto.schriftLeise);
+    final kopf = Text.rich(
+      TextSpan(
+        children: [
+          TextSpan(
+            text: zeile.titel,
+            style: texte.fliess.copyWith(fontWeight: FontWeight.w600),
+          ),
+          if (zeile.detail.isNotEmpty)
+            TextSpan(text: '  ${zeile.detail}', style: leise),
+        ],
+      ),
+    );
+    if (!zeile.hatErlaeuterung) {
+      return Padding(
+        padding: const EdgeInsets.only(bottom: Abstand.eng),
+        child: kopf,
+      );
+    }
+    return Padding(
+      padding: const EdgeInsets.only(bottom: Abstand.eng),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Tooltip(
+            message: offen ? 'Einzelheiten zuklappen' : 'Einzelheiten zeigen',
+            child: InkWell(
+              key: ValueKey<String>(schluessel),
+              onTap: onTap,
+              borderRadius: BorderRadius.circular(kKartoRadiusKlein),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(
+                    offen ? Icons.expand_less : Icons.expand_more,
+                    size: 18,
+                    color: karto.schriftLeise,
+                  ),
+                  const SizedBox(width: Abstand.knapp),
+                  Expanded(child: kopf),
+                ],
+              ),
+            ),
+          ),
+          if (offen)
+            Padding(
+              key: ValueKey<String>('$schluessel-angaben'),
+              padding: const EdgeInsets.fromLTRB(
+                18 + Abstand.knapp,
+                Abstand.eng,
+                0,
+                Abstand.normal,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  for (final text in zeile.erlaeuterung)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: Abstand.eng),
+                      child: Text(text, style: texte.fliess),
+                    ),
+                  if (zeile.quelle.isNotEmpty)
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.menu_book_outlined,
+                          size: 14,
+                          color: karto.schriftLeise,
+                        ),
+                        const SizedBox(width: Abstand.knapp),
+                        Expanded(
+                          child: Text(
+                            'Mehr dazu: ${zeile.quelle}',
+                            style: texte.etikett.copyWith(
+                              color: karto.schriftLeise,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                ],
+              ),
+            ),
+        ],
+      ),
     );
   }
 }

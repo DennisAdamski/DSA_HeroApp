@@ -3,11 +3,17 @@
 
 Quelle: Wege des Entdeckers (WdE) S. 114-118, Abschnitt "Kraeuter und ihre
 Verbreitung" (Landschaftstabellen mit "Besonderen Heilkraeutern" und
-Bestimmungswerten); Erntezeit und Grundmenge aus dem Herbarium Aventuricum der
-Zoo Botanica Aventurica (ZBA, S. 228-277). Uebernommen sind nur
-Kurzfakten (Name, Bestimmung, Haeufigkeit je Landschaft, Gebietshinweis und die
-einzeilige Wirkung aus der Tabelle), keine Beschreibungstexte; deshalb ist
-nichts verschluesselt (siehe `tool/encrypt_catalog_fields.py`, Harte Regel 13).
+Bestimmungswerten); Erntezeit, Grundmenge und Fundstelle (`quelle`) aus dem
+Herbarium Aventuricum der Zoo Botanica Aventurica (ZBA, S. 227-276, gedruckte
+Seitenzahlen). Hier stehen nur Kurzfakten (Name, Bestimmung, Haeufigkeit je
+Landschaft, Gebietshinweis, einzeilige Wirkung, Seitenzahl).
+
+Die Kurzbeschreibung `beschreibung` (eigene Worte nach der ZBA) steht bewusst
+NICHT in diesem Skript: Sie ist ein aus dem Regelwerk abgeleiteter Text und
+liegt nur v3-verschluesselt in der JSON (Harte Regel 13). Das Skript uebernimmt
+sie beim Neuschreiben unveraendert aus der vorhandenen JSON (nach Name). Neue
+oder geaenderte Beschreibungen werden im Klartext in die JSON geschrieben und
+danach mit `python tool/encrypt_catalog_fields.py --format v3` verschluesselt.
 
 Die Daten stehen hier als kuratierte Tabelle, weil das Regelbuch keine
 maschinenlesbare Fassung hat. Jede Aenderung an der Tabelle ist gegen die
@@ -212,6 +218,34 @@ GRUNDMENGE: dict[str, str] = {
     "Zwölfblatt": "12 Stängel pro Pflanze",
 }
 
+# Name -> gedruckte Seite des Eintrags im Herbarium Aventuricum der ZBA
+QUELLE_SEITE: dict[str, int] = {
+    "Alraune": 227, "Arganstrauch": 228, "Atan-Kiefer": 228, "Atmon": 229,
+    "Axorda": 229, "Belmart": 230, "Bleichmohn": 252, "Blutblatt": 230,
+    "Boronie": 231, "Carlog": 232, "Chonchinis": 233, "Donf": 234,
+    "Egelschreck": 235, "Finage": 238, "Gulmond": 238, "Hiradwurz": 239,
+    "Horusche": 240, "Joruga": 243, "Kajubo": 244, "Khômknolle": 244,
+    "Klippenzahn": 245, "Kukura": 245, "Lulanie": 247, "Menchalkaktus": 249,
+    "Mibelrohr": 251, "Mirbelstein": 251, "Neckerkraut": 255, "Nothilf": 256,
+    "Olginwurz": 256, "Quinya": 259, "Rahjalieb": 260, "Rauschgurke": 261,
+    "Rote Pfeilblüte": 261, "Roter Drachenschlund": 262,
+    "Satuariensbusch": 263, "Schlangenzünglein": 263, "Talaschin": 268,
+    "Tarnele": 268, "Thonnys": 269, "Tigermohn": 254, "Traschbart": 269,
+    "Ulmenwürger": 271, "Vierblättrige Einbeere": 271, "Wirselkraut": 273,
+    "Yaganstrauch": 274, "Zunderschwamm": 275, "Zwölfblatt": 276,
+}
+
+# Abweichende Eintragsnamen in der ZBA
+QUELLE_NAME: dict[str, str] = {
+    "Bleichmohn": "Mohn: Bleichmohn",
+    "Tigermohn": "Mohn: Tigermohn",
+    "Kukura": "Kukuka",
+    "Quinya": "Quinja",
+    "Axorda": "Axorda-Baum",
+    "Khômknolle": "Khôm- oder Mhanadiknolle",
+    "Menchalkaktus": "Menchal-Kaktus",
+}
+
 H = "haeufig"
 SH = "sehrHaeufig"
 G = "gelegentlich"
@@ -329,7 +363,20 @@ LANDSCHAFTEN: dict[str, list[tuple[str, str, str]]] = {
 }
 
 
+def vorhandene_beschreibungen() -> dict[str, str]:
+    """Beschreibungen (meist verschluesselt) aus der vorhandenen JSON."""
+    if not ZIEL.is_file():
+        return {}
+    daten = json.loads(ZIEL.read_text(encoding="utf-8-sig"))
+    return {
+        eintrag["name"]: eintrag["beschreibung"]
+        for eintrag in daten.get("kraeuter", [])
+        if isinstance(eintrag, dict) and eintrag.get("beschreibung")
+    }
+
+
 def baue() -> dict:
+    beschreibungen = vorhandene_beschreibungen()
     vorkommen: dict[str, list[dict[str, str]]] = {name: [] for name in KRAEUTER}
     for landschaft, eintraege in LANDSCHAFTEN.items():
         for haeufigkeit, name, hinweis in eintraege:
@@ -356,12 +403,21 @@ def baue() -> dict:
         if ernte_monate:
             eintrag["erntemonate"] = ernte_monate
         eintrag["grundmenge"] = GRUNDMENGE[name]
+        if name not in QUELLE_SEITE:
+            raise SystemExit(f"Fundstelle fehlt: {name}")
+        eintrag["quelle"] = (
+            f"Zoo Botanica Aventurica S. {QUELLE_SEITE[name]}"
+            + (f" ({QUELLE_NAME[name]})" if name in QUELLE_NAME else "")
+        )
+        if name in beschreibungen:
+            eintrag["beschreibung"] = beschreibungen[name]
         eintrag["vorkommen"] = vorkommen[name]
         kraeuter.append(eintrag)
     return {
         "quelle": "Wege des Entdeckers S. 114-118 (Kräuter und ihre Verbreitung); "
-        "Erntezeit und Grundmenge: Zoo Botanica Aventurica, Herbarium",
-        "stand": "2026-11-11",
+        "Erntezeit, Grundmenge, Fundstelle und Kurzbeschreibung: Zoo Botanica "
+        "Aventurica, Herbarium",
+        "stand": "2026-11-14",
         "kraeuter": kraeuter,
     }
 
@@ -369,7 +425,7 @@ def baue() -> dict:
 def main() -> None:
     daten = baue()
     ZIEL.write_text(
-        json.dumps(daten, ensure_ascii=False, indent=1) + "\n", encoding="utf-8"
+        json.dumps(daten, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
     )
     print(f"{len(daten['kraeuter'])} Kräuter nach {ZIEL} geschrieben")
 

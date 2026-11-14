@@ -350,6 +350,71 @@ void main() {
     });
   });
 
+  group('kraeuterSuchziel', () {
+    test('liefert Kraut, Vorkommen und Suchschwierigkeit', () {
+      final ziel = kraeuterSuchziel(
+        _eingabe(modus: KraeuterSuchmodus.gezielt, ziel: 'B'),
+        _katalog,
+      )!;
+      expect(ziel.bezeichnung, 'B');
+      expect(ziel.suchschwierigkeit, 9);
+      expect(ziel.kandidat!.vorkommen.haeufigkeit, Kraeuterhaeufigkeit.selten);
+    });
+
+    test('ohne Kraut gilt die Pauschale, ohne Vorkommen nichts', () {
+      final pauschal = kraeuterSuchziel(
+        _eingabe(modus: KraeuterSuchmodus.gezielt),
+        _katalog,
+      )!;
+      expect(pauschal.suchschwierigkeit, 6);
+      expect(pauschal.kandidat, isNull);
+      expect(
+        kraeuterSuchziel(
+          _eingabe(modus: KraeuterSuchmodus.gezielt, ziel: 'Fern'),
+          _katalog,
+        ),
+        isNull,
+      );
+    });
+
+    test('andere Suchziele haben keine Suchschwierigkeit', () {
+      for (final modus in <KraeuterSuchmodus>[
+        KraeuterSuchmodus.beliebig,
+        KraeuterSuchmodus.wuerz,
+        KraeuterSuchmodus.konservierung,
+      ]) {
+        expect(kraeuterSuchziel(_eingabe(modus: modus), _katalog), isNull);
+      }
+    });
+
+    test('mehrere Vorkommen: das leichteste zählt', () {
+      const katalog = KraeuterKatalog(
+        kraeuter: <KrautEintrag>[
+          KrautEintrag(
+            name: 'Donf',
+            bestimmung: 6,
+            vorkommen: <KrautVorkommen>[
+              KrautVorkommen(
+                landschaft: Kraeuterlandschaft.dichterWald,
+                haeufigkeit: Kraeuterhaeufigkeit.sehrSelten,
+              ),
+              KrautVorkommen(
+                landschaft: Kraeuterlandschaft.dichterWald,
+                haeufigkeit: Kraeuterhaeufigkeit.selten,
+              ),
+            ],
+          ),
+        ],
+      );
+      final eingabe = kraeuterEingabeMitZiel(
+        _eingabe(modus: KraeuterSuchmodus.gezielt, ziel: 'Donf'),
+        katalog,
+      );
+      expect(eingabe.zielSuchschwierigkeit, 14);
+      expect(kraeuterProbenErschwernis(eingabe), 14);
+    });
+  });
+
   group('fuehreKraeutersucheDurch', () {
     test('würfelt 3W20 und liefert Probe, Erschwernis und TaW', () {
       final roller = _Folge(<int>[5, 5, 5]);
@@ -431,11 +496,14 @@ void main() {
     group('gezielt', () {
       test('rechnet Grundmengen aus der Suchschwierigkeit des Krauts', () {
         final ergebnis = fuehreKraeutersucheDurch(
-          _eingabe(modus: KraeuterSuchmodus.gezielt, ziel: 'B'),
+          _eingabe(modus: KraeuterSuchmodus.gezielt, ziel: 'B', taw: 19),
           _katalog,
           roller: _Folge(<int>[5, 5, 5]),
         );
-        // TaP* 10, Suchschwierigkeit 9: ceil(10 / 4,5) = 3
+        // Erschwernis 9 (Suchschwierigkeit), TaP* 19 - 9 = 10:
+        // ceil(10 / 4,5) = 3
+        expect(ergebnis.erschwernis, 9);
+        expect(ergebnis.tapStern, 10);
         expect(ergebnis.funde.single.bezeichnung, 'B');
         expect(ergebnis.funde.single.grundmengen, 3);
         expect(ergebnis.funde.single.suchschwierigkeit, 9);
@@ -443,11 +511,12 @@ void main() {
 
       test('Heilwirkung ohne Pflanze nutzt die Pauschale der Landschaft', () {
         final ergebnis = fuehreKraeutersucheDurch(
-          _eingabe(modus: KraeuterSuchmodus.gezielt),
+          _eingabe(modus: KraeuterSuchmodus.gezielt, taw: 16),
           _katalog,
           roller: _Folge(<int>[5, 5, 5]),
         );
-        // Dichter Wald: 6 -> ceil(10 / 3) = 4
+        // Dichter Wald: 6 erschwert die Probe, TaP* 10 -> ceil(10 / 3) = 4
+        expect(ergebnis.erschwernis, 6);
         expect(ergebnis.funde.single.grundmengen, 4);
         expect(ergebnis.funde.single.kraut, isNull);
       });
@@ -460,6 +529,7 @@ void main() {
         );
         expect(ergebnis.funde, isEmpty);
         expect(ergebnis.hinweis, contains('Fern'));
+        expect(ergebnis.erschwernis, 0);
       });
 
       test('Misserfolg ergibt keine Grundmengen', () {

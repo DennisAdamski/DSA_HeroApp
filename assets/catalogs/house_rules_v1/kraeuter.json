@@ -1,1539 +1,1633 @@
 {
- "quelle": "Wege des Entdeckers S. 114-118 (Kräuter und ihre Verbreitung); Erntezeit und Grundmenge: Zoo Botanica Aventurica, Herbarium",
- "stand": "2026-11-11",
- "kraeuter": [
-  {
-   "name": "Alraune",
-   "bestimmung": 9,
-   "wirkung": "Grundlage für Elixiere",
-   "erntezeit": "ganzjährig",
-   "grundmenge": "eine Pflanze",
-   "vorkommen": [
+  "quelle": "Wege des Entdeckers S. 114-118 (Kräuter und ihre Verbreitung); Erntezeit, Grundmenge, Fundstelle und Kurzbeschreibung: Zoo Botanica Aventurica, Herbarium",
+  "stand": "2026-11-14",
+  "kraeuter": [
     {
-     "landschaft": "dichterWald",
-     "haeufigkeit": "selten"
+      "name": "Alraune",
+      "bestimmung": 9,
+      "wirkung": "Grundlage für Elixiere",
+      "erntezeit": "ganzjährig",
+      "grundmenge": "eine Pflanze",
+      "quelle": "Zoo Botanica Aventurica S. 227",
+      "beschreibung": "enc:3:EwUXEz5EqFhq1QszeURB2AeS3yEGKGLEmL2Ek8sf3gRUU+Hn3UNNzFq4Vruxx6oeU1lbyXa3KmQ8ZOzSooBt8UAEKlafjskZmFd57xHJSd61UwatscJsxZ/2xrdW/3QGeYp2PORMEFRXkAa8w72ddik8hNbQpjbuBnHH6cFQsTI4TTDMZ9R2SCasTGJBE5SH7P15dEm2K8lMPzWzBrMqRoMWjhCtGt9ZftObg8xAhnxYQ+LwJA6Yu3CpJed6gYr7bX1p6hhB0O2upOFtmDKG5HzzbFqKbQpkOxDi/NImH3oWPP7smbSNNKdP/7LPmNaXiYw3Csu6zwn1ECsyI/wyhAdbKaFRU3VnDYZWGDe7J84GO4cAOaph8yc/SJnv23A77aMv/wQ/2RsvUgby0RwpZ+v+S/G6S3EygkoQXekFMGP7PCk52IbGCk0JKcI3MrUe2OM8mkJjXhLpfL1y",
+      "vorkommen": [
+        {
+          "landschaft": "dichterWald",
+          "haeufigkeit": "selten"
+        },
+        {
+          "landschaft": "lichterWald",
+          "haeufigkeit": "selten"
+        },
+        {
+          "landschaft": "suempfeNord",
+          "haeufigkeit": "sehrSelten"
+        },
+        {
+          "landschaft": "tundra",
+          "haeufigkeit": "sehrSelten"
+        },
+        {
+          "landschaft": "graslandHeide",
+          "haeufigkeit": "sehrSelten"
+        }
+      ]
     },
     {
-     "landschaft": "lichterWald",
-     "haeufigkeit": "selten"
+      "name": "Arganstrauch",
+      "bestimmung": 4,
+      "wirkung": "fördert Heilung",
+      "erntezeit": "ganzjährig",
+      "grundmenge": "eine Wurzel",
+      "quelle": "Zoo Botanica Aventurica S. 228",
+      "beschreibung": "enc:3:zzcEM+kA4WwdzRYmKG55e2jO9L2zp8TuMt0/j3fdj0T1LTj8iw0g/OMSmPzwMwoVmjfWkze8uKsy9i/6iMOp+QBgWy2l29LKnUlQN9QAVmz/KEK3pJ8zMTtXTzZXvTCj3GcMfCHrmLzWCQuDPq6QYRTuFMgTAm2VpbRySg1LyPCX7HKZ5ZUMQEmzL1k9+LQchVSk5Dx8Z5pbexzPEIfffuap5H0y5FqOpOkGVZWdINrzSSJBXm+ssfrERb63hBuwax/u+kWgsYLOT/k5Fs2wPuFRk/JEEG+LgwapiCnQ3QadBBqhQ9FF7eCMH196Zs4xb9HA9YXgFwg8ZljSzsGGKE0FJQNqrgm5v6zrqqJ3WWCWLKN3LVXygn0ZjDObwrhacEbDaHVN391Z5+bK+cVzgukonxhbpLKAJnfkGwWpmyaRRcBlcx10K5gaycuzG9/I5AU3J0zcsi007QQpnB7l2JyomQGVMxtfTGEuSzyoQ3vLYBEgKL/mSw3HikX2elcVOfYwpbZ03P4=",
+      "vorkommen": [
+        {
+          "landschaft": "dschungel",
+          "haeufigkeit": "gelegentlich"
+        },
+        {
+          "landschaft": "maraskanDschungel",
+          "haeufigkeit": "sehrSelten"
+        },
+        {
+          "landschaft": "suempfeSued",
+          "haeufigkeit": "selten"
+        },
+        {
+          "landschaft": "savanneSteppe",
+          "haeufigkeit": "sehrSelten"
+        }
+      ]
     },
     {
-     "landschaft": "suempfeNord",
-     "haeufigkeit": "sehrSelten"
+      "name": "Atan-Kiefer",
+      "bestimmung": 6,
+      "wirkung": "Grundlage für fiebersenkendes Mittel",
+      "gebiet": "Ausläufer des Ehernen Schwerts",
+      "erntezeit": "ganzjährig",
+      "grundmenge": "W20 Stein Rinde",
+      "quelle": "Zoo Botanica Aventurica S. 228",
+      "beschreibung": "enc:3:yoCrmuDKbCMrCOP5kyHvXyM1hliZUK8NqTuHQaP/lKE+pTlzcifcjr2PpHS7rLrnma+/1YWRhD7FPOD+RCF3gpALrBz91EeHQ4cfAF8cIiBRugDB++kvDB0MOMZUiXbCE79luPkiRPnMjrJOeKEha4xksyWwjjlnG7qxSi2d2blFFIHxmAHem3XyiHJZbqDdZdfQz7bBzJk3NxVea92zelNBupa1iBlsTQSVn+4+8gZljjDjjNt7jBC6wHLknrh9/NkYPW4+oDt/P8jSPke3NrExZB9LaO9+TTxvcKH12zZyvEYY9QqLrYCNYZcw/OqSDDZtnXJdAzG5fE6GBH9YhKYy1Voh1PEvoy8gaKvwfbegnKhOV2LDr8vd+rXL6vPOaHL8r1AGWBP5eE14gjMLiTEk4WTxuE3b77gIfivb+keEEtHq/vhEG5l2wAf78pgpVw==",
+      "vorkommen": [
+        {
+          "landschaft": "gebirge",
+          "haeufigkeit": "selten"
+        },
+        {
+          "landschaft": "hochgebirge",
+          "haeufigkeit": "selten",
+          "hinweis": "nur im Ehernen Schwert"
+        }
+      ]
     },
     {
-     "landschaft": "tundra",
-     "haeufigkeit": "sehrSelten"
+      "name": "Atmon",
+      "bestimmung": 5,
+      "wirkung": "Aufputschmittel",
+      "erntezeit": "Peraine",
+      "erntemonate": [
+        "peraine"
+      ],
+      "grundmenge": "W6 Büschel der ganzen Pflanze",
+      "quelle": "Zoo Botanica Aventurica S. 229",
+      "beschreibung": "enc:3:LUfsfsZknmMACLsNSZtjAR3xo9mm54pbr9D+Xjn5FoGgVZL/D/lkSIDoxZPeal/XLspvkfX7HR6AdAqpAe2z9XDJGSikyhYjdEUkBXm985d9awYWfWyesEWcrxlhV+hQ7A1A33EvVwA6Vc4JSY1BXE5y4btdNZBWvPsw1qBRH6wjXVU4QCn/N/I1vVnXdtkdnJnPvjswXzBUM+9ZIrTtMfQUF+ZPaM1GEy7LGzX5c2Qor/MEJvhfVht2JCbT7rEMLUI0c+ew3Mp5y2jgqAVgfztFBFnGyWQ9U/07PnMWQ32J7lFvIagUbpWdKmE0aDQhXrdoJCMMlJuLZ9EDyFKPa1U0xdAfIWFYROGGJCm8CXzVamZQ/qFRSeQ36GlFtIEEf+BA4KsjOjpQLuxdtoKmTXw3JGz2qNZVnUu5sKpI5w==",
+      "vorkommen": [
+        {
+          "landschaft": "suempfeSued",
+          "haeufigkeit": "sehrSelten",
+          "hinweis": "nur in Wüstenrandgebieten"
+        },
+        {
+          "landschaft": "savanneSteppe",
+          "haeufigkeit": "gelegentlich",
+          "hinweis": "nur in Wüstenrandgebieten"
+        },
+        {
+          "landschaft": "gebirge",
+          "haeufigkeit": "selten",
+          "hinweis": "nur im Khoramgebirge"
+        },
+        {
+          "landschaft": "hochgebirge",
+          "haeufigkeit": "selten",
+          "hinweis": "nur im Raschtulswall"
+        }
+      ]
     },
     {
-     "landschaft": "graslandHeide",
-     "haeufigkeit": "sehrSelten"
+      "name": "Axorda",
+      "bestimmung": 4,
+      "wirkung": "Grundlage für ein Mittel gegen Zorgan-Pocken",
+      "erntezeit": "ganzjährig",
+      "grundmenge": "ein Baum",
+      "quelle": "Zoo Botanica Aventurica S. 229 (Axorda-Baum)",
+      "beschreibung": "enc:3:6E/QKu5pbqU6Wi6Rx7/Fud8s0+Nyw8zunBFuEDy06G/YIx0bKs1K+uLU2bVKiEeuxdzkoPNC1Hfaw75MbyzZseqxfVe9aHcKAh811YMv6rNZib62pzYPITM9lnfg90alnmuGW6IIWsHDMnNLYj6GX8LasTvU+/FNbYxGRe/QjmHCSSUXMx11lt1tSHj3Ea1L53OFNo5KKVNyanXTMfdC1e5O2XqoLnPcW/dvvvOJv/40gNn00rrSmbf1pFDivYQQt8sDaNnGMnSz87BY2QhSScZGH9A80cZMy9kAjL8po7e6ran8uZqB7XGz9Hd+kDog0SISIW6DRY0YO/2enbB/6HF+uY1GueZzp4AWZ5WqHq9x1z4xtNqzMAIycPqTWgsirE5jjoZ4rayfFq1Sc8ATmzY0tH5Qlzhl6pTRMUE/fvwIoxRPk/clJwUNdJrGUw==",
+      "vorkommen": [
+        {
+          "landschaft": "maraskanDschungel",
+          "haeufigkeit": "sehrSelten"
+        },
+        {
+          "landschaft": "gebirge",
+          "haeufigkeit": "sehrSelten",
+          "hinweis": "nur Maraskankette"
+        }
+      ]
+    },
+    {
+      "name": "Belmart",
+      "bestimmung": 6,
+      "wirkung": "Gegengift, stoppt Krankheiten",
+      "erntezeit": "Peraine bis Boron",
+      "erntemonate": [
+        "peraine",
+        "ingerimm",
+        "rahja",
+        "namenlose_tage",
+        "praios",
+        "rondra",
+        "efferd",
+        "travia",
+        "boron"
+      ],
+      "grundmenge": "4W20 Blätter",
+      "quelle": "Zoo Botanica Aventurica S. 230",
+      "beschreibung": "enc:3:6BByO6LD5RTT68oP3oLiX4WGmlNgw8YAO1jHdIQPJOmznxBPs+YMSluFIyquFnqw0XPMy0x6ZgjvPjNUlp9H79f0aW1Pc4uae6sqZPaj5pJ7mp7qN+j366+aSDIXqyIsSRUk3nGExj/eTJ9BpoVnJz+orbp8LrJk2o/WE8iovUAvkfB/1v24Oxg4Z4UYar2pvJ9KcpFFO67v9dci/SveHQ2xfKTj4pfoJnhEz8SZyTtemyL7+CdIQrar5Po1AumR+x1qV+FFg6aOUcxNnxobgxuE/DA6QWBnDBrxLe5ZMA7i46HN+XYlEvpFJ8UAcAn/VBT1fXjtrc767umtgwRZY0cCR7hscWPEkdFLz0I/C1wFgPaeXGPx7DP6VWe5mDXfu8MhHSFvLDO+OYgL7HSGChR/nTHZIwGIXfDSR0IjTtmCcYRiVlN7ha/O/I4XxF3dn4uiWNOYU3gO5plKcR1Ak+X72JmtUdzetbXips2Ge7agq99knZld/Yxb",
+      "vorkommen": [
+        {
+          "landschaft": "dichterWald",
+          "haeufigkeit": "gelegentlich"
+        },
+        {
+          "landschaft": "lichterWald",
+          "haeufigkeit": "gelegentlich"
+        },
+        {
+          "landschaft": "suempfeNord",
+          "haeufigkeit": "sehrSelten"
+        },
+        {
+          "landschaft": "tundra",
+          "haeufigkeit": "sehrSelten"
+        },
+        {
+          "landschaft": "graslandHeide",
+          "haeufigkeit": "sehrSelten"
+        },
+        {
+          "landschaft": "gebirge",
+          "haeufigkeit": "sehrSelten"
+        }
+      ]
+    },
+    {
+      "name": "Bleichmohn",
+      "bestimmung": 5,
+      "wirkung": "Schmerzmittel",
+      "erntezeit": "Rondra",
+      "erntemonate": [
+        "rondra"
+      ],
+      "grundmenge": "W6 geschlossene Samenkapseln",
+      "quelle": "Zoo Botanica Aventurica S. 252 (Mohn: Bleichmohn)",
+      "beschreibung": "enc:3:KtIrlt8gCIbZKsmm8mHzOAvhGAVzRNzxFRdlDl3dXLO74e1MTVEVf3d/2iUQLdyU+pZRWC/unlOe0Vr+P46O/RbRTqDrGd67ifYV6YowSqZ1fhRApAFl2TjUq58tWfUSFVGbmvcGzkuFrDnIYZlFlRsivBIPYxZ5HkjgeUIw4tn+XYYwafkB3n34k+ajiUsSI0ZdBBqGJ6nI/6ZU0fNdL5nsjJFHkKPnv62sXkGVpzTshvLPeWN4VeIK69GQMItjZIS/rv7bY0pkNshr+dCzLBJmh8NAwkuGhfV/pW1R6reJXJRv9qUKuMSjTOPoXk9PbgHJeB0EjQkotbJvbVxwcyFkuxNoBKAtkzo=",
+      "vorkommen": [
+        {
+          "landschaft": "gebirge",
+          "haeufigkeit": "selten"
+        },
+        {
+          "landschaft": "hochgebirge",
+          "haeufigkeit": "sehrSelten"
+        }
+      ]
+    },
+    {
+      "name": "Blutblatt",
+      "bestimmung": 4,
+      "wirkung": "zeigt Magie an",
+      "erntezeit": "ganzjährig",
+      "grundmenge": "W20+2 Zweige pro 10 AsP der Quelle",
+      "quelle": "Zoo Botanica Aventurica S. 230",
+      "beschreibung": "enc:3:sJiBW540ag4jL1/NS6uI82f1TP8uD6xpHvvx4HtelahNXtHgwxJWyTDiq8tIiWrlaNprHDpII5ybR/VA3Ut0H5a/zQT2RiNdDpLDSHwIF6Qx8obYq5v1P2ZwUAiJkWVLPcjNTETiHS1A/Tevzrhd/lNLeifzg6abcLRgJBlXmKVMQcL0tt+a67pcTxlwdPJoPE0m+HIgk59RtAv+K6C9T3LhNpSaar9aYiC0jM2khO3P+9jtfD1WUPFLDx9JjEQoqwPlx1101T1Dq1AIoBUAyqCD6LwG7KI0nA7V3DKw4SoRD/PQHLzZ6sXHZ7o1GhchfsJ9eYzi1SKie7BSjplDEG2EmadKOtnOgXR3aKvuF5t18FoVoN94OyEcNg7Hy/yOXmbHav7/ykcs4T2wvgdchp+8dvUAnhZX9JU25N8FTosg8vKMyZLVvTfYRJae7yhUtrbh4xIOOAwrVdwZZFV2WQ==",
+      "vorkommen": [
+        {
+          "landschaft": "dichterWald",
+          "haeufigkeit": "selten"
+        },
+        {
+          "landschaft": "lichterWald",
+          "haeufigkeit": "selten"
+        },
+        {
+          "landschaft": "dschungel",
+          "haeufigkeit": "selten"
+        },
+        {
+          "landschaft": "maraskanDschungel",
+          "haeufigkeit": "selten"
+        },
+        {
+          "landschaft": "suempfeNord",
+          "haeufigkeit": "selten"
+        },
+        {
+          "landschaft": "suempfeSued",
+          "haeufigkeit": "selten"
+        },
+        {
+          "landschaft": "tundra",
+          "haeufigkeit": "selten"
+        },
+        {
+          "landschaft": "graslandHeide",
+          "haeufigkeit": "selten"
+        },
+        {
+          "landschaft": "savanneSteppe",
+          "haeufigkeit": "selten"
+        },
+        {
+          "landschaft": "gebirge",
+          "haeufigkeit": "selten"
+        },
+        {
+          "landschaft": "hochgebirge",
+          "haeufigkeit": "selten"
+        },
+        {
+          "landschaft": "wueste",
+          "haeufigkeit": "sehrSelten"
+        }
+      ]
+    },
+    {
+      "name": "Boronie",
+      "bestimmung": -2,
+      "wirkung": "erleichtert Boron-Liturgien",
+      "gebiet": "nur im Regenwald",
+      "erntezeit": "im Süden jederzeit, in Mittelaventurien zwischen Tsa und Boron",
+      "grundmenge": "5 Blüten",
+      "quelle": "Zoo Botanica Aventurica S. 231",
+      "beschreibung": "enc:3:TrDE4ok00XfVFXPxDbanZ781it8+6Z2nkNoK6P7kDYPEaSOzRW+279EToyjA6puzS8oOKb5OD8jUh0Pii3Fl6GR3MWn3fsBVpLZ2ZooiWSbMd+ENns5iNRo/m3/gppbxpjvFCM5zGYoJ5QOYCZL6r/Lh1c6Ju0InEahaiOovh+4X/w2BB+QYSIDQ/VNjPFlJFFL08/hF/X9L8ADpQVzn8E0xm47/N8IZSOzuunxrikTpET7/DkityWjhtOCU3CVN5HKoXFUfc4muX5OQUYcUsfMrWtAWR4mGjEd4MPoBEOPtu9nT3W91Q8PftbcZwYzAze/7vZZs9EasS6zMsbrxXlcQnU+7sr5uqJF9WuULgiDUZNDRICEo5ndAIkuq14R3GrbaDYhxEVg0NIPKhj0VDOQefs3FrzHQNTBF+FHqqMxM65qCn2cpizp9MNJhFawRYaWjBUrfYAyCqmg=",
+      "vorkommen": [
+        {
+          "landschaft": "dichterWald",
+          "haeufigkeit": "sehrSelten"
+        },
+        {
+          "landschaft": "dschungel",
+          "haeufigkeit": "selten"
+        },
+        {
+          "landschaft": "suempfeSued",
+          "haeufigkeit": "sehrSelten"
+        },
+        {
+          "landschaft": "graslandHeide",
+          "haeufigkeit": "sehrSelten"
+        }
+      ]
+    },
+    {
+      "name": "Carlog",
+      "bestimmung": 5,
+      "wirkung": "verleiht Dämmerungssicht",
+      "gebiet": "Gewässer an der Westküste, um Vallusa und am Yslisee",
+      "erntezeit": "Peraine oder Efferd",
+      "erntemonate": [
+        "peraine",
+        "efferd"
+      ],
+      "grundmenge": "W6 Blüten mit je einem Stempel",
+      "quelle": "Zoo Botanica Aventurica S. 232",
+      "beschreibung": "enc:3:zp3jN8nZlvPQNHBwfF6bJfij8sxoGY7wyg8w6up6P685YhBwsBeZxV7j2ww+4ebREGDES72Dtzd8ScbWcIvcSS3cXDCsR9K4RiJn42e1WnMhVWGh/r5ul4379lzYdP6nFD8/3LaOf2DsKSQxZqjbnN4jJtxa3C0MO9ZLJViBqi1jiBCml6OmFWDKibta+n6/pxPb//G+b2D3wjMwFhkY8aTIhPq1q8ljh4YYaPRJSrk5ePmtNZndaI8hM6+lGxPdc1tKcH7/WAslXV3BRvjOM0Aur4gd1yKX+EFPYo7faqA8EChJ+SbOtR9MGm77ZU4wCfJj40+4366Qqae2SdUAwe1lXxyg71WPUZPgAGgrwurDbglhGghK7yksDXSt/Qkiyb00rt00ndgCkzOgT1hP5mw=",
+      "vorkommen": [
+        {
+          "landschaft": "lichterWald",
+          "haeufigkeit": "sehrSelten"
+        },
+        {
+          "landschaft": "suempfeNord",
+          "haeufigkeit": "gelegentlich",
+          "hinweis": "nur an der Westküste, um Vallusa und am Yslisee"
+        },
+        {
+          "landschaft": "suempfeSued",
+          "haeufigkeit": "gelegentlich",
+          "hinweis": "nur an der Westküste"
+        },
+        {
+          "landschaft": "graslandHeide",
+          "haeufigkeit": "sehrSelten"
+        }
+      ]
+    },
+    {
+      "name": "Chonchinis",
+      "bestimmung": 5,
+      "wirkung": "Heilmittel bei Brand- und Ätzwunden",
+      "gebiet": "Garetien und weiter südlich",
+      "erntezeit": "Tsa bis Boron, vor allem im Efferd",
+      "erntemonate": [
+        "tsa",
+        "phex",
+        "peraine",
+        "ingerimm",
+        "rahja",
+        "namenlose_tage",
+        "praios",
+        "rondra",
+        "efferd",
+        "travia",
+        "boron"
+      ],
+      "grundmenge": "W20 Blätter",
+      "quelle": "Zoo Botanica Aventurica S. 233",
+      "beschreibung": "enc:3:lvpNSJMq7VAYLWypzs8TuZ7KB3T548SrLMG71/ZjrItwR/bHd/XB7S2+xQairnO54bAPO9rbszv9DOK5BPhRmMSxaK0Y7fUGq4U1GS2SSmMn5xUI1phDUdrgpTQu1QkXVHasUuG3yb6gfNCEiXgZYcYvOegrhKO7Zhmse3kvM4sW6Sfljqi7sdRlGCN4gBJ/moJGO1gqWuFbS6CPWCHzbFEtIECB+2c+mNjjH0K0KZPHOQglAETjrMBs4Du90nYFOBBXJfboAlWOXqgEvB0WsiYowDLoDUs3+Q4MxjFjZrK9L++HZtcjjAhmylUBHZzm/dBxT/nVDhRKm+XRr95vFOqERfpfEPJjVDjPil5IZUkqSlBloQ==",
+      "vorkommen": [
+        {
+          "landschaft": "lichterWald",
+          "haeufigkeit": "selten"
+        },
+        {
+          "landschaft": "graslandHeide",
+          "haeufigkeit": "gelegentlich"
+        },
+        {
+          "landschaft": "savanneSteppe",
+          "haeufigkeit": "gelegentlich"
+        },
+        {
+          "landschaft": "gebirge",
+          "haeufigkeit": "sehrSelten",
+          "hinweis": "von Garetien bis zu den Echsensümpfen"
+        }
+      ]
+    },
+    {
+      "name": "Donf",
+      "bestimmung": 6,
+      "wirkung": "fiebersenkend",
+      "erntezeit": "ganzjährig",
+      "grundmenge": "ein Stängel",
+      "quelle": "Zoo Botanica Aventurica S. 234",
+      "beschreibung": "enc:3:N3eKKXu902qbmVmqdmmpiDdnu6a8h8+o4u/0HqhTlGRiZ8QTyFB2JY2KHFhCeymLZvLgNfEPfo8lvfHZTyqsOUq0dDtc9bV/rjW4FPXFEJtuxAawUN4ChetenC/JC4GiD80OINTBjIKtIwDmLdXFBMSaewE0Kljt5u7QP7+WX0x53cbwXAG6Z/NK55wpk/xmPiUTS4X9EVIHAXiR6J21/h+LgBQZ62qaP9Bu2mTh40/aXi9M2txim5+FcPvIkEjKvnEgQUdUJXMEjYrG8vf8ZsdeYOGpva40/zmSs2pce0UFHRMBwnFHWD/rjJhwSSSnUHvqMVQwi9BZxN65Orvrn4x4nfo4VA052dyX0bXAZ2AuJX9NjC1QtY+yLiB/MKsNeTxgOtxnSuF6xlkJQ2ml6EZYoUhNwyIz3A==",
+      "vorkommen": [
+        {
+          "landschaft": "dschungel",
+          "haeufigkeit": "selten",
+          "hinweis": "nur an Seeufern"
+        },
+        {
+          "landschaft": "dschungel",
+          "haeufigkeit": "sehrSelten",
+          "hinweis": "nur an Flussufern"
+        },
+        {
+          "landschaft": "maraskanDschungel",
+          "haeufigkeit": "selten",
+          "hinweis": "nur an Seeufern"
+        },
+        {
+          "landschaft": "maraskanDschungel",
+          "haeufigkeit": "sehrSelten",
+          "hinweis": "nur an Flussufern"
+        },
+        {
+          "landschaft": "suempfeNord",
+          "haeufigkeit": "gelegentlich",
+          "hinweis": "im Norden nur bis Gerasim"
+        },
+        {
+          "landschaft": "suempfeSued",
+          "haeufigkeit": "gelegentlich"
+        },
+        {
+          "landschaft": "graslandHeide",
+          "haeufigkeit": "selten",
+          "hinweis": "nur an Seeufern"
+        },
+        {
+          "landschaft": "graslandHeide",
+          "haeufigkeit": "sehrSelten",
+          "hinweis": "nur in Flussauen"
+        },
+        {
+          "landschaft": "savanneSteppe",
+          "haeufigkeit": "selten",
+          "hinweis": "nur an Seeufern"
+        },
+        {
+          "landschaft": "savanneSteppe",
+          "haeufigkeit": "sehrSelten",
+          "hinweis": "nur in Flussauen"
+        },
+        {
+          "landschaft": "gebirge",
+          "haeufigkeit": "selten",
+          "hinweis": "nur an Seeufern"
+        }
+      ]
+    },
+    {
+      "name": "Egelschreck",
+      "bestimmung": 6,
+      "wirkung": "Grundlage für Wundheilung und Parasitenabwehr",
+      "erntezeit": "Spätsommer",
+      "erntemonate": [
+        "efferd"
+      ],
+      "grundmenge": "2W20 Blätter",
+      "quelle": "Zoo Botanica Aventurica S. 235",
+      "beschreibung": "enc:3:Sns3KltP00hgJDL+pGkMEOaCupp8Q70YnSK/M3Iw2nfOtlr1CAxqSS/ySCXzA9vyil5YJm/c8+NXWq4Im41WHt5WvlGKep+K6zpcD47f4rqoBH8alkvo3AhpcLNwb3FMokZsDpe431IMQzuY2P5t567GGBDGqZa3rW3O1C9PuTyR7KRY7mpJBQysecVTGmkpCILDc7wQ0VBaRjesjJ2MOOKs5IohPihGjvMw60etPSPs+NY538rEbwJC+r5/VlfBVL0NgbVAi1bVrWiOOnK5i4KzeX98fc6wq6byaL4LYDz/yhC8OH3ZxyOaOGYCi+f05+/0WkVoXdITOfjw9C7RnbIILTcTw2gfUXeova5XFEAxdBZYzCM9mvpteS1lqtO2OvXz9oYBm6eVeFflWdVJO93SEEIkuGdsJvl9suVJZDCfuVUzV20pNA==",
+      "vorkommen": [
+        {
+          "landschaft": "dichterWald",
+          "haeufigkeit": "selten",
+          "hinweis": "nur am Waldrand"
+        },
+        {
+          "landschaft": "lichterWald",
+          "haeufigkeit": "gelegentlich",
+          "hinweis": "nur am Waldrand"
+        },
+        {
+          "landschaft": "lichterWald",
+          "haeufigkeit": "selten",
+          "hinweis": "nur am Waldrand (Doppelnennung im Buch)"
+        },
+        {
+          "landschaft": "suempfeNord",
+          "haeufigkeit": "haeufig",
+          "hinweis": "im Norden nur bis zur Höhe von Lowangen"
+        },
+        {
+          "landschaft": "suempfeSued",
+          "haeufigkeit": "haeufig",
+          "hinweis": "im Süden nur bis zu den Echsensümpfen"
+        },
+        {
+          "landschaft": "graslandHeide",
+          "haeufigkeit": "gelegentlich",
+          "hinweis": "nur auf feuchten Wiesen und in Flussauen"
+        },
+        {
+          "landschaft": "gebirge",
+          "haeufigkeit": "gelegentlich",
+          "hinweis": "nur auf feuchten Wiesen und in Flussauen"
+        }
+      ]
+    },
+    {
+      "name": "Finage",
+      "bestimmung": 5,
+      "wirkung": "reduziert Eigenschaftsabzüge, Grundlage für Heilmittel",
+      "gebiet": "südlich der Linie Neetha–Thalusa",
+      "erntezeit": "Triebe im Peraine, Bast in Boron bis Firun",
+      "erntemonate": [
+        "boron",
+        "hesinde",
+        "firun",
+        "peraine"
+      ],
+      "grundmenge": "ein Baum mit W20 Trieben",
+      "quelle": "Zoo Botanica Aventurica S. 238",
+      "beschreibung": "enc:3:k3pc/AdcHBa0kBzCxzVBY1EE7H5DitcUBZCf1DEc69tEYaj+O+fl2qiIIrpXs31OdNW0qWTy5iTbhnIDLQk7IkDMBgpwPrrfEzLUC5BeadudHH/APFj5T1RGsnp07ByeyTe44cViB0uQdmyeLAdiXrqO/pUZkZJZZsFASjvvPJyFH6T1fdqFAobYBx4EjACeT7G8e6C8TESe3daHZZbwJyEbh8hr7LDLU6eZpqQJi4SZUOYeGEqv+fNGKLwpM38fL61JDxnqy9cyJTzxkyDKhImrsUWy1K7T+aRLX4wXZpuLLJKA9iaK5nYYKsqRdE87q8Br2Tby5TgpmLGSehgF3X6zgHId2NfZ9QTb0VZ4rq0ywXYZrBKiwGzVjmuXumG68yf4bxNA3VsBXAagdpO9cqinWhhyyCNWcx2wri4xFVSJAwxT/kY/pUk8fruz0rf8rPSbHeBq5XHfZy/wizXES70/0mNgppsRdte091Bmj/W5EmmQ6LEKxTdK4CWd+VaacOxRXJXTbQ==",
+      "vorkommen": [
+        {
+          "landschaft": "dichterWald",
+          "haeufigkeit": "selten"
+        },
+        {
+          "landschaft": "lichterWald",
+          "haeufigkeit": "selten"
+        },
+        {
+          "landschaft": "dschungel",
+          "haeufigkeit": "selten"
+        },
+        {
+          "landschaft": "savanneSteppe",
+          "haeufigkeit": "sehrSelten"
+        }
+      ]
+    },
+    {
+      "name": "Gulmond",
+      "bestimmung": 6,
+      "wirkung": "erhöht Konstitution",
+      "gebiet": "nördlich der Linie Nostria–Vallusa",
+      "erntezeit": "Frühling bis Herbst",
+      "erntemonate": [
+        "praios",
+        "rondra",
+        "efferd",
+        "travia",
+        "boron",
+        "hesinde",
+        "peraine",
+        "ingerimm",
+        "rahja",
+        "namenlose_tage"
+      ],
+      "grundmenge": "2W6 Blätter",
+      "quelle": "Zoo Botanica Aventurica S. 238",
+      "beschreibung": "enc:3:Qc5JrCy9EvKoUMNPSUOHEmdSIFNIzjb2SZkKrYZ2lm7QpVnWyLAbAFo17biiS4hNRNN36F1TbJmEJKFuaN/zhxUTyB4BwV4G+NncDWrJYVPYztNNd8avR7HPinrIAF8v60Yp6pgCpuz/SNULpMLDmHiZCc7G1wOTitAOU2QefYnWfVHQG0pB3g1DLkrho7YS1c+4R+YS26LE6HmbYXUn5334RY4kCQnhfQIOC3uGl1h8eGW0PJXWKzp9yEk/o/ToaQGawZl6aKD/SdvPZP5xwD1nepYXS6KQYqihSPBZRJRyp/F+LKkjAbOou4MSwkMqNKW9Tz+JvD4tJFTVtiAzwGx0wwdx4EhSTrPQRziVe2SOTV7zBF04U+tRJJbYcIq7Kx54FcUrEC+S4QZjWmQ9XavGm1JWkX/7NADfaCZGTGg8y2sc5/IY",
+      "vorkommen": [
+        {
+          "landschaft": "dichterWald",
+          "haeufigkeit": "gelegentlich"
+        },
+        {
+          "landschaft": "lichterWald",
+          "haeufigkeit": "gelegentlich"
+        },
+        {
+          "landschaft": "tundra",
+          "haeufigkeit": "haeufig"
+        },
+        {
+          "landschaft": "graslandHeide",
+          "haeufigkeit": "haeufig"
+        },
+        {
+          "landschaft": "gebirge",
+          "haeufigkeit": "gelegentlich"
+        }
+      ]
+    },
+    {
+      "name": "Hiradwurz",
+      "bestimmung": 8,
+      "wirkung": "hilft gegen Schlangengift",
+      "bestimmungHinweis": "+8 in der Trockenzeit, +5 in der Regenzeit",
+      "gebiet": "Amhalassih, Mhanadistan, Gorien, Aranien",
+      "erntezeit": "ganzjährig",
+      "grundmenge": "eine Wurzel",
+      "quelle": "Zoo Botanica Aventurica S. 239",
+      "beschreibung": "enc:3:Q3dYBSEeePVVV0EMftQxSEZpFYDhZlUJECXU8mhWvTPHUfr5izeVgxsaDkJilsFP3MbBb7BvjuOlCTIbIsEBjsIha0Ev8CfstMhgzMsR/l0g8U/GZQ/ieRV4CB97sP8eOrEQ1GOUhbqlujAbor+3iOYC0Kh+Ktpeq0ltoOTOHPpWoUeAWuN5z4MerHOEGGUFBveMPeLuVJNvfofEgVNlgCDcWMSrmg8tP7pckrz7Zl6Ze35TxDNnByvaKFNjNJp7/VY/xRbPwU46vf0rl07zDnhFaQl0367nDcA0vmlfJ9hykr9c+EeLO8AczWwRbB2qZEmq49nb6+Ua15NnKPAQ2cdqlz/gshXkyGKmYgzxmkv2f/HSQ7i08gNXAzGKPrk24ZHlQ6lKHSlzgFDpOxPX/aFbBa7r6wfz2r9jJgQKdcbklfwSaEtbYnnAgURW7Vo9MDyR",
+      "vorkommen": [
+        {
+          "landschaft": "savanneSteppe",
+          "haeufigkeit": "selten"
+        }
+      ]
+    },
+    {
+      "name": "Horusche",
+      "bestimmung": 7,
+      "wirkung": "verleiht Stärke",
+      "erntezeit": "ganzjährig",
+      "grundmenge": "W6 erntereife Schoten pro Pflanze, W3 Kerne pro Schote",
+      "quelle": "Zoo Botanica Aventurica S. 240",
+      "beschreibung": "enc:3:CT4Wcwg0KZtlqRvEgwGMpzXowd0Q1AYykQN59yeJWT1F66ve5i0BwWxna8J1dndfnHRYViCDder8HJyf4me2tZmjpS7D7bLepLz9LWZB5ak+jfk2cO10BDVlUgWIOoRO5hLRjXF6+q14nZp9I6DI31X+OO8exalgYVF0WHhZhj92emo7QCe/f3S4Qd4okPjx+g55TMYqcpvGy4Uy6BJlmV7u9ZQlgZhqJr1StaPOSd+HCrLLNUbPklv3aGO5Dl1NIFFv2ZO7x0kIHGxlejCht7UQ3MMNTwMrIm3mjQtgCDPpSSxr3CbF8aRHl33qfCBh5/J6G7UKuSJ04Nl3PhsNmAZC7Fk7Vgy8in9DSdp050FCsuThYrCrE5bJNSf7z6AyERQyzxquuHqPcQBN+Gg5/1cZqGw=",
+      "vorkommen": [
+        {
+          "landschaft": "maraskanDschungel",
+          "haeufigkeit": "selten",
+          "hinweis": "nur in feuchten Waldgebieten"
+        }
+      ]
+    },
+    {
+      "name": "Joruga",
+      "bestimmung": 7,
+      "wirkung": "Grundlage für Krankheitsbekämpfung",
+      "gebiet": "Andergast, Nostria, Albernia, Nordmarken",
+      "erntezeit": "Rahja bis Boron",
+      "erntemonate": [
+        "rahja",
+        "namenlose_tage",
+        "praios",
+        "rondra",
+        "efferd",
+        "travia",
+        "boron"
+      ],
+      "grundmenge": "eine Wurzel",
+      "quelle": "Zoo Botanica Aventurica S. 243",
+      "beschreibung": "enc:3:std9ml+vzRURaD2lTOKt6sZIbVt3+TBHDrHVnMEZUqcOHzoJPbJCYPPRNyGOgkhljkyhWFULM7UuIaSA9UAM+N8CeUgFy+dMnyDCuy8fGWC2m9rIwu7icHJtpGYy/a+npvjQJt+bN50ASDQcR4LQrQjsodb7c8p7OyeoGHxd39LV3trq+oC69xbjPU+3ikQWlKCx8ba712fPuJs4L/YHx8x3gh/lgdpCOqdwuHV4dOsvFxFY2UxjpqqCI/+WvVer9kYuqYGFmc2YLj5MjSctOwq7exQmI5JClA7oddbHBobemp5rKwEnDBSWNXCLsCpk4ygR0dUmegJfEVvqdKLLXfZsRKsdpZIpk6NfrdCBtvNQxUd1E+in6AkDE6nMrE7AA3P64FnJ7LhcM/pRc1oo+lkfgNlF50aj4UcGms2wD48J4vDjX5/E5sbyKXMMg+hEKLPvUEpdXE2zg/AKMrAj3dW6",
+      "vorkommen": [
+        {
+          "landschaft": "dichterWald",
+          "haeufigkeit": "selten"
+        },
+        {
+          "landschaft": "lichterWald",
+          "haeufigkeit": "gelegentlich"
+        },
+        {
+          "landschaft": "graslandHeide",
+          "haeufigkeit": "selten"
+        },
+        {
+          "landschaft": "gebirge",
+          "haeufigkeit": "sehrSelten"
+        }
+      ]
+    },
+    {
+      "name": "Kajubo",
+      "bestimmung": 4,
+      "wirkung": "ermöglicht Überleben ohne Atemluft",
+      "gebiet": "Altoum, Souram, Nikkali",
+      "erntezeit": "Phex bis Travia",
+      "erntemonate": [
+        "phex",
+        "peraine",
+        "ingerimm",
+        "rahja",
+        "namenlose_tage",
+        "praios",
+        "rondra",
+        "efferd",
+        "travia"
+      ],
+      "grundmenge": "2W6 Knospen",
+      "quelle": "Zoo Botanica Aventurica S. 244",
+      "beschreibung": "enc:3:7s+O4iJNQL2xOMWWDexU9EVrzXiqp86F8h7Ofrylp3WwSuotaeYjLmYm18Jv9PzMgghP+nET3PdJytovorWJr7FTKfGI9NOHuxLaPzgELcWfDZ7SMybwO/mrRmgT0KLbA5xSS6I1RrMkgmdxTgWtWbnUYoFwjIFdI3uZTbMUHkKy6YrbnCiO6016ccl4/Q1YrUo/AqYJepyfj5ANy/twsFdNaPFLqN0b9MDMArnxNIpoLa+Z6ymDubws+5WQ9tgAOLtIWLi8xF3cEc/7xdgeuuQc5r/lsgbRoVhCO3LqA12ONJz+sfCSihJXmVV5X34692ZQH28Z5WdIjSfdqp5MZ9kFF1B2l3bbNNEV+wxg7araHnLA8Nu9cSXJ4czzKK2lc6EpOlcbht+cfOhEvAEw/uXSYUnHQVAw5P7mxTjxXpageGaqiu9XTy3VK04m23stI/jwEy3QaWqPdypePOq+/Z8zBKhAzQ==",
+      "vorkommen": [
+        {
+          "landschaft": "dschungel",
+          "haeufigkeit": "selten",
+          "hinweis": "nur am Waldrand auf Altoum, Souram und Nikkali"
+        },
+        {
+          "landschaft": "suempfeSued",
+          "haeufigkeit": "sehrSelten",
+          "hinweis": "nur an den Küsten von Altoum, Souram und Nikkali"
+        }
+      ]
+    },
+    {
+      "name": "Khômknolle",
+      "bestimmung": 5,
+      "wirkung": "enthält Wasser",
+      "bestimmungHinweis": "+5, ohne Blätter +12",
+      "gebiet": "Gorien und Mhanadistan",
+      "erntezeit": "ganzjährig",
+      "grundmenge": "eine Wurzel mit bis zu W6 Maß klarem Wasser",
+      "quelle": "Zoo Botanica Aventurica S. 244 (Khôm- oder Mhanadiknolle)",
+      "beschreibung": "enc:3:lSeYbzrxuJZ4YkH9uDws69Y5ieKn5uOXKj4ShkrnFfvfaNtrqcdwL95aEawOaoBswGtKR/8UhhVzbXiaXP2XcDi6PUzPJLyN5QtyhhWVSkb+Z/IilaTAqMgmE17EhHtoxIF5/guV0EdBVIQYOvPIRelDkBW19sxK6quUjoEssmjk7NCQbaJz7FOA6RLCi9CjzwAIq3gbZOnrg+5xdFVbuSZ+VXkr5d0i1jSaCDF4Shore0n3kfAI6JdOPjOXNQ5EyP4tp+hUdszPhUuE8X5Xvkkajamqz/MNpwWYiZut8GEQT03YW/ldCd92b376oC7q1N+ykN5wdQS0+L9h8xohhEdHzm7qetUu/zKbC0/mGSuKMQhLkyulaXYaBVq9wKbaC6iebuy8g/GwGsp/6wPHUFu+ibjb8kEap6TUuJDhqzApBw==",
+      "vorkommen": [
+        {
+          "landschaft": "savanneSteppe",
+          "haeufigkeit": "selten"
+        },
+        {
+          "landschaft": "wueste",
+          "haeufigkeit": "sehrSelten",
+          "hinweis": "nur in der östlichen Khôm"
+        }
+      ]
+    },
+    {
+      "name": "Klippenzahn",
+      "bestimmung": 8,
+      "wirkung": "beschleunigt Wundheilung",
+      "gebiet": "Hochland von Orkland, Thorwal, Gjalsker Öden",
+      "erntezeit": "Peraine bis Rondra",
+      "erntemonate": [
+        "peraine",
+        "ingerimm",
+        "rahja",
+        "namenlose_tage",
+        "praios",
+        "rondra"
+      ],
+      "grundmenge": "2W6 Stängel",
+      "quelle": "Zoo Botanica Aventurica S. 245",
+      "beschreibung": "enc:3:6h7pb5Yz9XCnvX1UzPUnlp9Dvp0JKNE+YKMfgNutGCWbnCDwOrG/Hz25UTJWzI71+vJS+7O2yDCNXBIPWoGumbPf0m4PsM/tbiA1s6wqblrztubAj1m4beCFHGIaRr+zPaouDM/WDiy+sbQ/WlmrDgudr6K6wZ6kdZCT9xjAiIZKIO6LG/eEXvt/nuE8hBouQMWL26+hM28scZth8Nu0l9/QGkbKguNIZ/22/W4WxR4dYEMCPJuHMtm0ujRHtebrXRDvbZLEa+iNrk3d3k0bxBq+etxnoEUdWUkwTQgk++bfLYw1LglZal1U5VxgTJRl4gk8UnDLUfgG3h8Cmf1ka6IQdT/JHvcjzSovgIJHiQdC30GWOjLTCgVMimIDaosRJ0U5tdd5A0miUBd2rNOu+mAJL9vIhWYrXIi4RY/F827FgirNOduf1+9Q8wL+AeaAxpXKiMqnUICXfwrx",
+      "vorkommen": [
+        {
+          "landschaft": "graslandHeide",
+          "haeufigkeit": "gelegentlich"
+        },
+        {
+          "landschaft": "gebirge",
+          "haeufigkeit": "gelegentlich",
+          "hinweis": "nur im Orkland, Thorwal und in den Gjalsker Öden"
+        }
+      ]
+    },
+    {
+      "name": "Kukura",
+      "bestimmung": 10,
+      "wirkung": "erhöht Ausdauer",
+      "gebiet": "westliches Regengebirge",
+      "erntezeit": "ganzjährig",
+      "grundmenge": "1W3 × 20 Blätter",
+      "quelle": "Zoo Botanica Aventurica S. 245 (Kukuka)",
+      "beschreibung": "enc:3:hzxJumBJEFoLdCEzHSx9F6xar2fIsmLrN6T2NrT+JZacwwlg84q3T2evWWk+OHupX5X7SxMFBX+w5iZ69K7Mz+m2XFVL9OnKMak0Kj7fon8KDT4ElXWbrXl05y2ue9xaznWHPt6kaaUNDkNVYI4KlduhZmhMvvFl7uzcga06ohlt3TZUWRZ8xeu8O6SHrkmLpnNLD+2wQvpFVjXpcxvFSbViHFcaDHJvWFFcWOIsl2J51wviGMDujFh9Z4xli2d1qsMijRgLg1196wu7hnBiSPnRP8k7uUQZXHeWxk8ml2NiphN1VoaUJTSkxWZbw2HdXn1oR0Jcp1eZfuU6ylIcvsNHRU0lyavGt2symUlPcrkmV/4VD90CBeYaG6vuK7aDKuDQ5bI0uOKBgnBbkzwhD5ihu3zxFLd5EeMVxgpsXEwnewvzzFmsn9khd7dJ9XdUM4o0L5OlvxN+JudqH14RzHnEp5jJdrHY+Y9DUg2PYpKmqKuEthlI/A==",
+      "vorkommen": [
+        {
+          "landschaft": "dschungel",
+          "haeufigkeit": "selten"
+        }
+      ]
+    },
+    {
+      "name": "Lulanie",
+      "bestimmung": 5,
+      "wirkung": "Beruhigungsmittel",
+      "gebiet": "Mittelaventurien",
+      "erntezeit": "Rahja bis Rondra",
+      "erntemonate": [
+        "rahja",
+        "namenlose_tage",
+        "praios",
+        "rondra"
+      ],
+      "grundmenge": "eine Blüte",
+      "quelle": "Zoo Botanica Aventurica S. 247",
+      "beschreibung": "enc:3:RIHEb2i46vmrW3EZgK6yXgO47G7jGNSHjm24GEGzf3COfcc9M9GeNyvCQux4V0gSmWvMGeOSDNwDCFkNghb7YwPZL6tpZrZ/em11/LU1eI5GNnne2IOxA1b/qpRa3ur2RcyekcmgLCIXDCp3BDxQp2cxws9rcQ/lFQLWh1QTS4RT9FZ9ltFbwF8iRiBSM4jBviH5KjAsHsPzGsek2LZGClx99R+gaa2+k6jpOmyx9jteJCRvtPRXQ5vAleYdtAT52MdokC/t7b/vgSYmc9p8wnVp1J/LVBuTtGTTw5oU/cPdhTTCrQxWLOVDKVbsAxCw1nPhydZsAW6uXCObNbW923BUdomQU0izz1ej1sa+4B+BkGHwf/ryWcXn84rB6kUkYg+XcvEFgxc9/28sGw==",
+      "vorkommen": [
+        {
+          "landschaft": "dichterWald",
+          "haeufigkeit": "selten"
+        },
+        {
+          "landschaft": "lichterWald",
+          "haeufigkeit": "selten"
+        },
+        {
+          "landschaft": "suempfeNord",
+          "haeufigkeit": "sehrSelten",
+          "hinweis": "nur an Waldrändern und in Gehölzen Mittelaventuriens"
+        },
+        {
+          "landschaft": "graslandHeide",
+          "haeufigkeit": "sehrSelten",
+          "hinweis": "nur an Waldrändern und in Gehölzen Mittelaventuriens"
+        }
+      ]
+    },
+    {
+      "name": "Menchalkaktus",
+      "bestimmung": 4,
+      "wirkung": "hilft gegen viele Gifte",
+      "gebiet": "Randgebiete der Khôm, wüstenähnliche Gebiete in Gorien",
+      "erntezeit": "ganzjährig",
+      "grundmenge": "ein Kaktus mit W6 halben Maß Menchalsaft",
+      "quelle": "Zoo Botanica Aventurica S. 249 (Menchal-Kaktus)",
+      "beschreibung": "enc:3:w3u6nU9IzsI5EaYWneF2WPxMXrx9QxJ34B9Op4cscGPjKOSLWrgf3L1kFJn4eNxfAyWZ3VkNG3X3cNFTMqSZ0MQt9IawJf8lHu9aL+Ra6cTSUoQxhhlqg10PZVYgUUmgoF7VROBnQm4Raw1PeOjSPqAaaeo+vMxytJEXAHisJq7COM8Adgzr6uXusEecHofLBtILMUVBUVmMuknolZ44FFQ5uSvEhZ4f06MGfX3dl6qsVHCoLzL0/mQfQSo7jICVMEjFRtQcwoCWJXq8VThG2oML9lqScectXm819+/1xPCtXQRkJba3C/KZ67XhisvZMN2o/eosOa0NjWpEFVnmKZFyBjS5R/h2Yn1GsOGiD0uD2WmJCpMb50eaVt5DPEtATRfHQNtxHcstwthH7vtbUNewYVuEpqaSi7VF1Kz8u5Z4ImhFSforaas=",
+      "vorkommen": [
+        {
+          "landschaft": "savanneSteppe",
+          "haeufigkeit": "sehrSelten"
+        },
+        {
+          "landschaft": "wueste",
+          "haeufigkeit": "sehrSelten"
+        }
+      ]
+    },
+    {
+      "name": "Mibelrohr",
+      "bestimmung": 10,
+      "wirkung": "Grundlage für Aufputschmittel",
+      "gebiet": "See- und Flussufer der Westküste von Salza bis Mengbilla",
+      "erntezeit": "im Norden Ingerimm bis Efferd, im Süden stets außer Firun",
+      "erntemonate": [
+        "praios",
+        "rondra",
+        "efferd",
+        "travia",
+        "boron",
+        "hesinde",
+        "tsa",
+        "phex",
+        "peraine",
+        "ingerimm",
+        "rahja",
+        "namenlose_tage"
+      ],
+      "grundmenge": "2W6 Kolben pro Fundort",
+      "quelle": "Zoo Botanica Aventurica S. 251",
+      "beschreibung": "enc:3:yv2D++3u0/cnEJ4IJUjHde+/XtIV3RIX4CaBaGF71AKEQ+gbb0p+/IpGGvY+U1+0YSp01JxMaRIzQXZFrofZS0DK1O6z8JnGWgEyVf4K2PAYNVGA0MDitctr88W+9/dE0NsS94j33ZzahCyp0jWhM6LsplC0Cpy3OsmhiIIyM3/QGqUCBA76gunZLKdVrhkJ2cvrkmtW2fFLGxmzSbm539nxoqmS6Y0/lvUTfIdG9ZBk0WPJjd74N11eFpohoUS63tAsdjBHvaPzuNO3PKeZcOlBYN8c/rWl2c7g5Cinmk05CMNkSEq16z1vaCNURF30aU4OsO2YCsGUiI0DmFp49+knXfVjIFZFoA==",
+      "vorkommen": [
+        {
+          "landschaft": "lichterWald",
+          "haeufigkeit": "gelegentlich"
+        },
+        {
+          "landschaft": "suempfeNord",
+          "haeufigkeit": "sehrSelten",
+          "hinweis": "nur an der Westküste von Salza bis Mengbilla"
+        },
+        {
+          "landschaft": "suempfeSued",
+          "haeufigkeit": "sehrSelten",
+          "hinweis": "nur an der Westküste von Salza bis Mengbilla"
+        },
+        {
+          "landschaft": "graslandHeide",
+          "haeufigkeit": "gelegentlich"
+        },
+        {
+          "landschaft": "savanneSteppe",
+          "haeufigkeit": "gelegentlich"
+        }
+      ]
+    },
+    {
+      "name": "Mirbelstein",
+      "bestimmung": 8,
+      "wirkung": "Grundlage für ein Mittel gegen Ungeziefer und Elfen",
+      "gebiet": "Garetien, Darpatien, Warunk, Beilunk",
+      "erntezeit": "Peraine bis Boron",
+      "erntemonate": [
+        "peraine",
+        "ingerimm",
+        "rahja",
+        "namenlose_tage",
+        "praios",
+        "rondra",
+        "efferd",
+        "travia",
+        "boron"
+      ],
+      "grundmenge": "eine Wurzelknolle",
+      "quelle": "Zoo Botanica Aventurica S. 251",
+      "beschreibung": "enc:3:WhUy3LuginvXd7A7j66DGCgLQ57DJBf6nmH1xzXvQ/QB/MU4k9imuyAv5REcl5asN8CmCkNpLBo+k/HlEUX8a3FDCgEJ9Tg2bCI1WuH+V1q6QnfnjGEq3StspbycdmEMwr4XKpQ5qlMBda7GSVqm/RXN7nuBTWDckozXWxmF8CsCCSTCPwDNBK0l7Nn20ZHb6slQnmyyEBzg/XyEM1pY+k+0McJgLvwFGyHyg0iPuSPWxrJiyoZt1QIdl8/AtjEedzKyZo8yaFghB5mo7bsLdByPqRRpJF2AwaJh6hvh0WgS0/Zrbp/E7t6dxbVRDjLhs8FN4bzHJZb3o76W0y1PDiXdMrkSP32cSoXoR56rfvpkGjpHx8lvrne4utyJMjnUN3OWgE2GNPQ2BGRhHsqf8TbAIBxMvjkNT8ZFNNsweL/kcXUbvBEKCejBcZnrWfu614NfA0OfRVNl95+wUmpMizmt/WtIBc0=",
+      "vorkommen": [
+        {
+          "landschaft": "dichterWald",
+          "haeufigkeit": "haeufig"
+        },
+        {
+          "landschaft": "lichterWald",
+          "haeufigkeit": "haeufig"
+        },
+        {
+          "landschaft": "graslandHeide",
+          "haeufigkeit": "gelegentlich"
+        },
+        {
+          "landschaft": "gebirge",
+          "haeufigkeit": "selten"
+        }
+      ]
+    },
+    {
+      "name": "Neckerkraut",
+      "bestimmung": 4,
+      "wirkung": "gegen Kerkersieche",
+      "gebiet": "Westküste",
+      "erntezeit": "ganzjährig",
+      "grundmenge": "1W20+5 Blätter",
+      "quelle": "Zoo Botanica Aventurica S. 255",
+      "beschreibung": "enc:3:+JOYFKkZbdxnsE/vkB7piTfzm8W+p14YVMWTCJlMklgbkwuHVJWwFJCW1dHJjuQTS9Rmx9eKRWxR/UZ4Mn08BMkqBk+bgQ7jG7x9V6pPE3JTv8U/j90WLvj3kotKNZh1HcKD8n22eHwsQmkt1XAWYzRwf5N1e0BhkCSLGOS5gUZdulELQ9Ytb5KJvwbYo6iUC1pqMWeeoMI7Ww4kHe9GyO3Uks2Vqbf3LFfM/VYqb9ZDdMClg8b/Zdly4XMbFJ6UFmhb6b/sdTfbBY2KMwLVpmFG98RcMeq9XunyIhNJaAxIIBD1hLVMZIhvp6rYeaDbvsCKDYmVBdK09KxJ+e+12PZmQZ72hF4UbR3tXT5IZHTN1XgjnqLas5kkQ3ssS2doEz8Yaog0p15BfwWFh/+Q/4eW",
+      "vorkommen": [
+        {
+          "landschaft": "suempfeNord",
+          "haeufigkeit": "sehrSelten",
+          "hinweis": "nur an der Westküste"
+        },
+        {
+          "landschaft": "graslandHeide",
+          "haeufigkeit": "gelegentlich",
+          "hinweis": "nur am Strand der Westküste, selten auch auf Wiesen in Küstennähe"
+        }
+      ]
+    },
+    {
+      "name": "Nothilf",
+      "bestimmung": 6,
+      "wirkung": "heilt Brandwunden",
+      "gebiet": "Salamandersteine und Umgebung",
+      "erntezeit": "Blüten im Praios, Blätter im Peraine",
+      "erntemonate": [
+        "praios",
+        "peraine"
+      ],
+      "grundmenge": "W20+2 Blüten, 2W20+10 Blätter",
+      "quelle": "Zoo Botanica Aventurica S. 256",
+      "beschreibung": "enc:3:c8I6UwL/jwSwpdCz4IypPbxM7xdkQ64IEdbPqbVi5DaoHaInNP7e3+oijtDEHPgBof9g3Yq7z9nnUwNz26Aqzp2eQtCUJmIaP4gJ0K7HcgyjqSiYHNwio8uOBz/PlflpUqo9dOBl/6s6Ag4NIYUjaO42+d8cSa0y3BRQp6YLhhDKnm+kPk93s8C9DcXliU2EsSZqB4Gz3f3SKXErxddN7ABjmGfBO8MQiGeOMDQYiVEsr6ZyIPvqOFA9J+g0JoLmz0FhYHwbVGKb4nTwdsCMnMdMo+O/8AiW7PNOBbCREqKPAiX4QACeSLLP1xX+N3xso5aMgXwxNpz2hTPFu/qrlDnIEV09JxPxEGSPJO3sdkek1lee9yIOczwSkPK0dE4KzPU8WzZkqDddzT7OKkU/p/ohFKv829xi6Yk=",
+      "vorkommen": [
+        {
+          "landschaft": "dichterWald",
+          "haeufigkeit": "selten"
+        },
+        {
+          "landschaft": "lichterWald",
+          "haeufigkeit": "selten"
+        }
+      ]
+    },
+    {
+      "name": "Olginwurz",
+      "bestimmung": 10,
+      "wirkung": "Gegengift",
+      "gebiet": "Raschtulswall",
+      "erntezeit": "ganzjährig",
+      "grundmenge": "W3 Moosballen",
+      "quelle": "Zoo Botanica Aventurica S. 256",
+      "beschreibung": "enc:3:NhZQ0PxfGs3jUKZqpR/HNseUH8eVATCT4NVOEfeUNWII3BzFyXDUeCntiiOceccfQQtD1vNiheTT6FaiC0d30w+Ix+YteDV8Fpy+qXteUUxhAsvKWKdG214OdyjklxVWaaKYHaonMfAiktvrHSVq8GP5yxyT6XVHeKhis2GI6ZgXZOd98+QFG4Te6dmE2kXFu25zciuZj0lQMPC8sY1THBimw9L95UaddhIoqcL2A61/gh6rbfGQ6nDx6goog5PZpODSKDR8Jp3QEGbfamkuqDGf9GAsEJ035R41gnmUvhKKalKFtew2aYd2x/zupi8Q6gwKczXw+x0LXU4nYrYANaZy13JFTHoTrqRwwys9ApUqOYRN4t7ijWxY0hhMaYb5ajC7ilgSbo5VwBQzUVGcbCMdVrwU/ekkz05lIvKH",
+      "vorkommen": [
+        {
+          "landschaft": "dichterWald",
+          "haeufigkeit": "selten"
+        },
+        {
+          "landschaft": "lichterWald",
+          "haeufigkeit": "selten"
+        },
+        {
+          "landschaft": "graslandHeide",
+          "haeufigkeit": "selten"
+        },
+        {
+          "landschaft": "savanneSteppe",
+          "haeufigkeit": "selten"
+        },
+        {
+          "landschaft": "gebirge",
+          "haeufigkeit": "selten"
+        },
+        {
+          "landschaft": "hochgebirge",
+          "haeufigkeit": "selten"
+        }
+      ]
+    },
+    {
+      "name": "Quinya",
+      "bestimmung": 6,
+      "wirkung": "erhöht Körperkraft",
+      "gebiet": "südlich des Harodrôl",
+      "erntezeit": "Ingerimm bis Travia",
+      "erntemonate": [
+        "ingerimm",
+        "rahja",
+        "namenlose_tage",
+        "praios",
+        "rondra",
+        "efferd",
+        "travia"
+      ],
+      "grundmenge": "W3+2 Beeren",
+      "quelle": "Zoo Botanica Aventurica S. 259 (Quinja)",
+      "beschreibung": "enc:3:zDWElqjha7hhBuMtS/cE8TliGDVyLwKCNQpCWWORLsc/eRnhUdCjRMuNSklOe+l34xqlZKFOyySFLqoA+R9F3cLznzbB1aPBnWu/2RZxJFi1cRVTbrUJm23H6Tmlf6ZzH3uooOwuf4aWwPiTBHa3WLMz8Mnu8jTNvNy1D3ihVzCqKw3T6YGW1pETqTAM1CvnVedqOaXP/nnve/ZAadyE5ZEn/GSSwsXwUJX9H5VBcLx2vj14OqP0NPeyMrhk4elKcDmV2IKQgRQ0sWT8+x7QaxMCRMSEY5esN7bZOoWR3LRCEvMbF2Nu2EqDoa5sAd3B7bWlJi0tpaD9pS2g08mXyKS7Q+m9AMUX5oT+0dGp9mecNOaml+TsuRuk3KvAI4J1/G01BzJ83gIoC5dVSw2k0rW9S6KFejI=",
+      "vorkommen": [
+        {
+          "landschaft": "dichterWald",
+          "haeufigkeit": "gelegentlich"
+        },
+        {
+          "landschaft": "lichterWald",
+          "haeufigkeit": "gelegentlich"
+        },
+        {
+          "landschaft": "dschungel",
+          "haeufigkeit": "haeufig"
+        }
+      ]
+    },
+    {
+      "name": "Rahjalieb",
+      "bestimmung": 5,
+      "wirkung": "empfängnisverhütend",
+      "gebiet": "nicht weiter nördlich als Festum",
+      "erntezeit": "Phex bis Firun",
+      "erntemonate": [
+        "phex",
+        "peraine",
+        "ingerimm",
+        "rahja",
+        "namenlose_tage",
+        "praios",
+        "rondra",
+        "efferd",
+        "travia",
+        "boron",
+        "hesinde",
+        "firun"
+      ],
+      "grundmenge": "2W6 Blätter",
+      "quelle": "Zoo Botanica Aventurica S. 260",
+      "beschreibung": "enc:3:3myivDwDcmGI73r7Pf6xT/mINJ1nVehzg/WYYGEdFdOkB59pFSiXQ2vjDR3AfaHcluczFv47qQyeBPRuiXAJV2Bjuvn9Id7ugrOXqLMl6ED0qQcUYA+GCTiXGZ5IZcq9HJP1GCEYd68DrhOU8se99uWZnDaxULqix+Ib8DkV4rp19UAfPo051w/wkKgDl7Sn6QA4VS2rRPVluprHEL1b2vKH9IKkFcu+c4smltyZm8VRCsqsyF2UUXzfLTAoHBk+sTyBnjW8Y2aLec8vo9KvyNFEtOgddPhpTU8usREHlTI/zun4RIhyKInHf8IIVec/3siIhA8xcWKDDoG2meqlsqbL4wZqMTOkhX5QxnKXIu9/ihhRfcrmhkseR3bSmyr5LQfoZAA=",
+      "vorkommen": [
+        {
+          "landschaft": "dichterWald",
+          "haeufigkeit": "gelegentlich"
+        },
+        {
+          "landschaft": "lichterWald",
+          "haeufigkeit": "gelegentlich"
+        },
+        {
+          "landschaft": "dschungel",
+          "haeufigkeit": "haeufig"
+        },
+        {
+          "landschaft": "maraskanDschungel",
+          "haeufigkeit": "haeufig"
+        },
+        {
+          "landschaft": "suempfeNord",
+          "haeufigkeit": "gelegentlich"
+        },
+        {
+          "landschaft": "suempfeSued",
+          "haeufigkeit": "gelegentlich"
+        },
+        {
+          "landschaft": "graslandHeide",
+          "haeufigkeit": "gelegentlich"
+        },
+        {
+          "landschaft": "savanneSteppe",
+          "haeufigkeit": "gelegentlich"
+        },
+        {
+          "landschaft": "gebirge",
+          "haeufigkeit": "gelegentlich"
+        }
+      ]
+    },
+    {
+      "name": "Rauschgurke",
+      "bestimmung": 3,
+      "wirkung": "macht stärker und dümmer",
+      "gebiet": "Umgebung von Khunchom",
+      "erntezeit": "Tsa bis Boron",
+      "erntemonate": [
+        "tsa",
+        "phex",
+        "peraine",
+        "ingerimm",
+        "rahja",
+        "namenlose_tage",
+        "praios",
+        "rondra",
+        "efferd",
+        "travia",
+        "boron"
+      ],
+      "grundmenge": "3W6 reife Rauschgurken pro Baum",
+      "quelle": "Zoo Botanica Aventurica S. 261",
+      "beschreibung": "enc:3:rswu6sBpk7QKuzMm5bBwdBQr0bYS20ocn5NFYASDiScVn8s5sXDBPOHJFHwEMx8kp2s8LCR9oUg39ULsQ1vx0jNwaa6wU8liFZSa4h4gCAkMQle4tONa/M3jlApIcuf0kO/itWqkTxS5z1b5h7+pXuhB5NCe6+tWrft7gCdsySzQ4+BzhBz39zCWxx7NDOOMUypK6l/pLIPr8HvJLu67cyYTy1xP4EQY1Gxc17FeyQHpvHSJB6LhgQBxYBRftyFS/JwWS45UNieoQLhHilyOOnNQjMB8zw3nSWoQzRnOJNDu2t8Vcmatm5t97JeAgST1PN4o4APvNrx9ZU7YZCDPdERI+Y5lEmkACT/n+qySElvDLROPZoY/4hwo2CoN5fHVDqFDDPBxroMe61lWjXQdoh+xKwO4x+H7Pxzbkio6SneXEbLXnKR1oWKWvMLgqCXknzyazx5Fn6eysJkIf17drVB1jHV5L5ZRmw==",
+      "vorkommen": [
+        {
+          "landschaft": "lichterWald",
+          "haeufigkeit": "selten"
+        },
+        {
+          "landschaft": "maraskanDschungel",
+          "haeufigkeit": "gelegentlich"
+        }
+      ]
+    },
+    {
+      "name": "Rote Pfeilblüte",
+      "bestimmung": 7,
+      "wirkung": "spendet Lebensenergie",
+      "gebiet": "Südaventurien",
+      "erntezeit": "Peraine bis Rahja",
+      "erntemonate": [
+        "peraine",
+        "ingerimm",
+        "rahja"
+      ],
+      "grundmenge": "W6 Blüten",
+      "quelle": "Zoo Botanica Aventurica S. 261",
+      "beschreibung": "enc:3:dU4DUfo94kGnhMBoGeVYfknGDw2BkwKvRL2uC7weQ0ePxe6VrmKJCRCIje4DphzntyQyIGbN76SoI/91vjNaaFR3X+SQoXIIiecyz4VuWYlXh5YBTFe/eoZuQFLHU26U8tO0wiXs2H7XDd6KFUTCPqVefmAr7mrpp1L83EVdSuwKQSRUcyeqhiG+6cpcM/r3uvc5ZuAjUt/4JqQdFbMh/r/MUjAiJlQUq5h5IIck+P8ZXRule8hywsWa86kjJ+5gq3fAyJK7a+NjJHZk4quRbmwPonwDiprHERf4Es1Rwi3CTi0t7SblxRSF8xzxH1lochUTRG5eL6YPSObNSiU9pEjTxjq5IZ8f6UXT70cJPXbR5ZDGcMyE7PAwWcyaqzYqvFOGCcp1N8SkUZbPens=",
+      "vorkommen": [
+        {
+          "landschaft": "dichterWald",
+          "haeufigkeit": "selten"
+        },
+        {
+          "landschaft": "lichterWald",
+          "haeufigkeit": "sehrSelten"
+        },
+        {
+          "landschaft": "dschungel",
+          "haeufigkeit": "gelegentlich",
+          "hinweis": "nur in Küstennähe"
+        },
+        {
+          "landschaft": "suempfeSued",
+          "haeufigkeit": "gelegentlich",
+          "hinweis": "nur in Küstennähe"
+        }
+      ]
+    },
+    {
+      "name": "Roter Drachenschlund",
+      "bestimmung": 10,
+      "wirkung": "verhindert Ausbruch von Lykanthropie",
+      "bestimmungHinweis": "zur Blütezeit +3",
+      "gebiet": "Waldränder, Gehölze, Flussufer in Nordaventurien",
+      "erntezeit": "ganzjährig (Blüte im Ingerimm und Rahja)",
+      "grundmenge": "W6 Blätter",
+      "quelle": "Zoo Botanica Aventurica S. 262",
+      "beschreibung": "enc:3:alV5cb9M5zvGHFh5fpgLWJxdBuNL/Y+a6DCQRMMg3VDFwod6wy0GeeeH1XX3dsac1NLqSrZvXYqi9TPmBEqaEUX2Ps9lamk3KxI+p4o0VqBbU2Z23dB9CcY+UIYyOQkZmQqwW5hb7l+qNUMvZK6lE+VFZDvAjNbmJXIscXTdS8pJZcO6oX5VKhyJAIP5QKrrJnJMoEUvLx1pyr1Y+/g9tHeAD0MaecvRWqfJcPRsO1Gfmv2Kz/WAenfGE8Ms45N/Om44f/rFPdP8UpeeMz50qrPRZ6YuMFWh/O8NTJPFyFgYDue4fzdI63B4oWSXIT5rp9QYJo05laFtjzjHwNAcJDFBzDIfTuhi+0BUdgwmdicA0VgJ/zOHpKtjtMvF/p51SK5aIduh3wNUoO42RnUAcTKaKwCBFq5zyUdWnexs9SuHjA37Aqc8tpDQt+QuGkIcFLVMtQuEQcdf1iRQJu4FiwUPxM7yTyAwZltLNXI1DEC2zlfA57Z2s2cgY0dFRAwBRMm96A==",
+      "vorkommen": [
+        {
+          "landschaft": "dichterWald",
+          "haeufigkeit": "sehrSelten"
+        },
+        {
+          "landschaft": "lichterWald",
+          "haeufigkeit": "sehrSelten"
+        },
+        {
+          "landschaft": "suempfeNord",
+          "haeufigkeit": "sehrSelten"
+        },
+        {
+          "landschaft": "tundra",
+          "haeufigkeit": "sehrSelten"
+        },
+        {
+          "landschaft": "graslandHeide",
+          "haeufigkeit": "sehrSelten"
+        },
+        {
+          "landschaft": "gebirge",
+          "haeufigkeit": "sehrSelten"
+        }
+      ]
+    },
+    {
+      "name": "Satuariensbusch",
+      "bestimmung": -2,
+      "wirkung": "schützt vor Wundfieber",
+      "gebiet": "südlicher als die Gelbe Sichel",
+      "erntezeit": "Blätter Ingerimm bis Praios, Blüten Ingerimm bis Rahja, Frucht Efferd bis Travia, Saft Phex bis Praios",
+      "erntemonate": [
+        "praios",
+        "efferd",
+        "travia",
+        "phex",
+        "peraine",
+        "ingerimm",
+        "rahja",
+        "namenlose_tage"
+      ],
+      "grundmenge": "4W20 Blätter, W20 Blüten, W20 Früchte, W3 Flux Saft",
+      "quelle": "Zoo Botanica Aventurica S. 263",
+      "beschreibung": "enc:3:gyFBH0iRYARDhlgEndIY0sfK13hWcdUfrdlF/aPOjRYKAiu/CiN2ZXtUOWihQLvd+49PL97yorL0zu1iZTY/maDvXT2V9WF853Dn5BS9gtMyrwsbCi3PJDElrx8/R+H8PJL1JoMUzmUid3KGGP7cX6YGluaS8Y7Xc0jXXXMUchAYauK6q1MYVVQXpqaopDtVQKHDuOf+0oDEWHxnHXTXUgGZZbATO9Hx2/ZwJtqMuxnRdq2gkou5XX7N6rjoBSY51P5ylsLYC1A/NccRPcJ6cHJcDKA2QFJJxijAUxxK1nt7hzvgTSP64tsMefXkjwytuPJMYEDuzNTtKizm1UjaGRl7eLo9XDWUKeA3TAcVlA2tKXl7WOldSIVa5TqgsmAh2ZHMsSK9nIs78YBJcmSNtX7rh4F8qwYS5BWEVQJM+xh+OBVtJT75Xeka+skFrin3QF7HXxwjfJ9VFjNMH4lAS6E4yTOwhGOS5HLpga2cKirQtPFTwqAWyHO0jfpZdrUa1wqZcDb04B04U3M6qB+4DZbss6tKWRxOWfwGcKO4knXK",
+      "vorkommen": [
+        {
+          "landschaft": "dichterWald",
+          "haeufigkeit": "selten",
+          "hinweis": "Waldränder"
+        },
+        {
+          "landschaft": "lichterWald",
+          "haeufigkeit": "gelegentlich"
+        },
+        {
+          "landschaft": "graslandHeide",
+          "haeufigkeit": "selten",
+          "hinweis": "nur Waldränder und Gehölze"
+        },
+        {
+          "landschaft": "savanneSteppe",
+          "haeufigkeit": "selten",
+          "hinweis": "nur Waldränder und Gehölze"
+        },
+        {
+          "landschaft": "gebirge",
+          "haeufigkeit": "selten",
+          "hinweis": "nur Waldränder und Gehölze"
+        }
+      ]
+    },
+    {
+      "name": "Schlangenzünglein",
+      "bestimmung": 3,
+      "wirkung": "zeigt Magie an",
+      "gebiet": "Flussläufe auf Maraskan und am Golf von Perricum",
+      "erntezeit": "ganzjährig",
+      "grundmenge": "Saft einer Pflanze",
+      "quelle": "Zoo Botanica Aventurica S. 263",
+      "beschreibung": "enc:3:8/DBV2BV+lqpbotcf8anqosJ1IJ/JyplERSpKhkRR5nWv3locgF6KeweBuBBvtDdA+2QhO0pssrIaZ5cDr37HQr25GfeO2AKNLbeEjsLUTQcu2jK75Mq8yvjCkVw7ud9AIpug17xQ1MLF62SfZkANsq1WqE5JwJAPd/rnKJEX2iZSYTawtlgObkMRdT5A2FpJouFP0b4yTCxEANb+9tgtrvRI+/ScF/e0CXKSXGj0kBnYCNKz3irdZMOw6ogGvalMt223n3o8X+ttejXlFZi2Z4V1DW8k4iDVldC4ow1+etavRKwEgWmr/y87kd73ONUqz1/R2l2tM1AyilbMruznpycKTE+Rg1chKdNTM4nOfNVMfrC4s8e+8uaYdjDma7A/Oq7MNN9BjnfcGJZ3BAcquWIB3dLPXFh7yuw",
+      "vorkommen": [
+        {
+          "landschaft": "maraskanDschungel",
+          "haeufigkeit": "selten",
+          "hinweis": "nur Flussläufe"
+        },
+        {
+          "landschaft": "suempfeSued",
+          "haeufigkeit": "selten",
+          "hinweis": "nur auf Maraskan und am Golf von Perricum"
+        },
+        {
+          "landschaft": "savanneSteppe",
+          "haeufigkeit": "selten",
+          "hinweis": "nur an Flussläufen"
+        }
+      ]
+    },
+    {
+      "name": "Talaschin",
+      "bestimmung": 5,
+      "wirkung": "verhindert Körpergeruch",
+      "erntezeit": "ganzjährig",
+      "grundmenge": "W6 Flechten",
+      "quelle": "Zoo Botanica Aventurica S. 268",
+      "beschreibung": "enc:3:kzr7fISC5fliTO2LUMF2leba607kHNA/95iQz1YnWDqaRzMreHlrCIwGVZhSeH4z+SEdEc2T0dmKnZI6w8+PnYGXePiEJH2aV9nGdUQqgdl2bIiY1dA7N2ZsqwgxxqfftoEvbF7MDqDhPPFaHhjVnIYlx3iy3jlFLVCGoPBjlYOOTBA82jnCHxI30fD4bkAeJI1a5Q950YNLU+g6jcM4NlBFYXyum1OHwu+IeySNskhx7uOAwNpRjVbB57FikVp1CHkx0WNqqR3DXIHKkJLnPD/2ZOeSCm9EnKtq/4Zwrlqb1oSf3Ph8h4HfcO0MKz0r4cvv4CqSMjOlY96hIG+Cs/u0dO9AKu4HQFVkLfgJp6cIAXElZzSPTGMLhqs8TmunrPnLXSrU+O5Tw0+JO3bB1vNdDSjQOEgqV8qP00S+z8SUj3zOGbNLsWMrQajSw8Vd",
+      "vorkommen": [
+        {
+          "landschaft": "hochgebirge",
+          "haeufigkeit": "sehrSelten"
+        },
+        {
+          "landschaft": "wueste",
+          "haeufigkeit": "sehrSelten"
+        }
+      ]
+    },
+    {
+      "name": "Tarnele",
+      "bestimmung": 4,
+      "wirkung": "schmerzlindernd und heilungsfördernd",
+      "gebiet": "zwischen Mengbilla und Gerasim",
+      "erntezeit": "Ingerimm bis Travia",
+      "erntemonate": [
+        "ingerimm",
+        "rahja",
+        "namenlose_tage",
+        "praios",
+        "rondra",
+        "efferd",
+        "travia"
+      ],
+      "grundmenge": "ganze Pflanze",
+      "quelle": "Zoo Botanica Aventurica S. 268",
+      "beschreibung": "enc:3:y6RviO1XddslfRjy628N8H7WELoIE5h7q61qrb+TUqzKWeQCdcbcUWW/BW4oPH0aj1pC+BwqFRzKI7ulPlViaPIqwSl3IeboHfrButiFqlxaKZCaEKsWoCnjyHo8EyKRcQJcbSZxATmiaoTRBIZhVgJvPG6rusCWyFrBCEW1+qsY7odDKRIgCt+jZ7AvoS4wtP8Itf+qGoNu8mS6aSr0moat+eZIydcy1yhCkrRAUnKvSprIbYGfbPqHOQO6NLLmtrmrX0DplhPbdtSrAbJP7c+TDLkLP721to/lzyJRLYfe1VZ2CPj0ZB2vZ7ysB6oZU4Lno+snFukMoD0aPnGXP+MWix+mKcBKyN7dpigicjALshl6fenUDeb69A4AdRpfdyk2qW9Qs2AJlQsF/qSTEUHu8+b2eNPhJnvpTU4IYqJMBgSyJrwj8WPAwS7ohqbF24zLAb4=",
+      "vorkommen": [
+        {
+          "landschaft": "dichterWald",
+          "haeufigkeit": "gelegentlich"
+        },
+        {
+          "landschaft": "lichterWald",
+          "haeufigkeit": "gelegentlich"
+        },
+        {
+          "landschaft": "suempfeNord",
+          "haeufigkeit": "gelegentlich"
+        },
+        {
+          "landschaft": "suempfeSued",
+          "haeufigkeit": "gelegentlich"
+        },
+        {
+          "landschaft": "graslandHeide",
+          "haeufigkeit": "haeufig",
+          "hinweis": "nur in Flussauen und auf Wiesen zwischen Mengbilla und Gerasim"
+        },
+        {
+          "landschaft": "gebirge",
+          "haeufigkeit": "sehrSelten",
+          "hinweis": "Hochland zwischen Mengbilla und Gerasim"
+        }
+      ]
+    },
+    {
+      "name": "Thonnys",
+      "bestimmung": 12,
+      "wirkung": "erlaubt Astrale Meditation",
+      "bestimmungHinweis": "während der Blüte +5",
+      "gebiet": "nördlich der Linie Thorwal–Festum",
+      "erntezeit": "Peraine bis Travia",
+      "erntemonate": [
+        "peraine",
+        "ingerimm",
+        "rahja",
+        "namenlose_tage",
+        "praios",
+        "rondra",
+        "efferd",
+        "travia"
+      ],
+      "grundmenge": "W6+4 Blätter",
+      "quelle": "Zoo Botanica Aventurica S. 269",
+      "beschreibung": "enc:3:F/zsUeKh2OW4T2hkPBhoTXPklEQS7b1FfK8y3Kl1FC/cXrDWnggUgq+bv2m9723kv/muzInjlvXhVY3D3Hak7cTrF+RRPUYzlA1MSirswgqmkHhl+7O1XHx5kMgICZfONpFvw5oiyukKZ5yTbEtxWbQN+ONDkUXnjQCkNilXQgtLw2TZ6pcHIvLoTjVM7y1ypmOCqN1Yqh3AI+e+ThAkhb1BbhI4tVFwGUg74PiTncO8z9hX6AjT10Q/xCJqyL4gV10hNVnCBc05bGkqlv+4JSAJFA/FcDkW5fYPTu+4KXF5FQMsRPXn6rrSeDwp3s3SH5G+rFLsk/lbnBGgPNurrXV+w7NrJxekjclY6tu9RA30Ume8YcN+LNiiDeAkgLhoduKZeeyFzfxHKqFxYwjygogxLPiFAP4MArGL9zdlsaL8fiDlbszVNIAtRjI6KbphhHo68PwgCutJ3PF8nN0FLX0+NfSswkwZQhvfojZ7mdifMdg=",
+      "vorkommen": [
+        {
+          "landschaft": "dichterWald",
+          "haeufigkeit": "sehrSelten"
+        },
+        {
+          "landschaft": "lichterWald",
+          "haeufigkeit": "sehrSelten"
+        },
+        {
+          "landschaft": "tundra",
+          "haeufigkeit": "sehrSelten"
+        },
+        {
+          "landschaft": "graslandHeide",
+          "haeufigkeit": "sehrSelten"
+        }
+      ]
+    },
+    {
+      "name": "Tigermohn",
+      "bestimmung": 10,
+      "wirkung": "Beruhigungsmittel",
+      "gebiet": "Nord- und Mittelaventurien, Liebliches Feld, Aranien",
+      "erntezeit": "Travia",
+      "erntemonate": [
+        "travia"
+      ],
+      "grundmenge": "eine geschlossene Samenkapsel",
+      "quelle": "Zoo Botanica Aventurica S. 254 (Mohn: Tigermohn)",
+      "beschreibung": "enc:3:3HNVRgv6RDPd+IYGl6ocamYBULJqlxMHlaYBzM9NiZQCXk1S5x1iQhBECThgeJ0j7G3YQkVvUB9IjbIvPWDP6G4+KdK3GPRVuk8nxMObNGh0oCTysANQNm+UB9EqyNtXd2mqG97vW/bl2694mmXCD+dyrRyxsjjjpCg0UbrIvoOBlgolDhwK/2SyEfdtarcyyzY+HXTL4e/zKnJqxU++cXLsQUcFcupscExaNdaEFEjLDCnNL+DZ/m7ot9JfV+mvWQ69s9HMQlCZfr0DFLxwrWESlBnT5MJo5qYRXLS4pc1WD72C69BdfI2GQn6kjeuvFUOD2KVnrDiyXVgxtUkzfuZmhQSD+xA6LdLggagp0CyMZVhPsNvh439DikqhnOf3",
+      "vorkommen": [
+        {
+          "landschaft": "dichterWald",
+          "haeufigkeit": "selten",
+          "hinweis": "Waldrand"
+        },
+        {
+          "landschaft": "lichterWald",
+          "haeufigkeit": "selten",
+          "hinweis": "Waldrand"
+        },
+        {
+          "landschaft": "graslandHeide",
+          "haeufigkeit": "selten",
+          "hinweis": "Wiesen und Flussauen"
+        }
+      ]
+    },
+    {
+      "name": "Traschbart",
+      "bestimmung": 6,
+      "wirkung": "fiebersenkend",
+      "gebiet": "Steineichenwald, Finsterkamm, Koschberge, Eisenwald",
+      "erntezeit": "ganzjährig",
+      "grundmenge": "W6 Flechten",
+      "quelle": "Zoo Botanica Aventurica S. 269",
+      "beschreibung": "enc:3:GT/EhgaxIAQ7sAwvZo7rRGNGkqrOzigiziFTQX9RE7ql0X3ehALy2quSuysr5W0If5HP8So0OyyDZM0YX0aWH2BdLtyyeBOGR0kOXnx8mk85K4ZDUI4VfJKC99MgwuG/lkXL0Qa+B7omDthoe7qd0cdgPNXfyhRaivm0LqWY8e3Yt0PEdvlXNEuKyVyJjbEGnbhRtfIH/ZF+VufrEIz9NZs9lRP9a7R/Pya7pNOdwD7QV90YcyZ/S5bQIydjjRQ0z9b61AMp4N59v1dMa9y5LuXsGKqcktqfjj0tvx3lzKlqlMN916QCc72TCBpXX1zt2iV1Gn3UfnsaFsG1AS/mpEbBbfm4Z/CafvBrKe8H9UKOAVds4GDiTzUg8hQRDeFOMQoGbMDN72fSqXvLvWp3k4Az6Hwgusqanze/y8KJgSFKwu8=",
+      "vorkommen": [
+        {
+          "landschaft": "dichterWald",
+          "haeufigkeit": "haeufig"
+        },
+        {
+          "landschaft": "lichterWald",
+          "haeufigkeit": "haeufig"
+        },
+        {
+          "landschaft": "suempfeSued",
+          "haeufigkeit": "gelegentlich"
+        }
+      ]
+    },
+    {
+      "name": "Ulmenwürger",
+      "bestimmung": 2,
+      "wirkung": "verbessert Regeneration, verhindert Wundfieber",
+      "gebiet": "nördlich der Linie Havena–Perricum",
+      "erntezeit": "Efferd bis Travia",
+      "erntemonate": [
+        "efferd",
+        "travia"
+      ],
+      "grundmenge": "W20 Blüten",
+      "quelle": "Zoo Botanica Aventurica S. 271",
+      "beschreibung": "enc:3:vQrdlsOS67XnjnO+LzFrvqfvqKnorIR95RYGSBhvMuivB17kkC4Pxsrj6yu2pWuzG5rfOaxqwbixKuO6nANyAHtnhppxtbwqAXRYV86M5AeJzwQTuz7o+geFdWEN2Ib7AtCyoWZgrV02pMoAvSQG+0nPXMlrNK7BSAtptjeIqwp2LtIRsrN75bbxxuW4f8/7xKIJ1aN6xBP4o9FQxlnzb0QJReaUYd66hjLkuP/S3gjfvxS171T8SGTMf1pUUjCnV2JycZ5Myz8lJoNSqTSeQzJntt/4YXOpUW6XlHq6YOXCTKcLtKDjmXGjhLTlDBBnVUtybElpSGvV+C7WGhsaCa8HLZt52lNzLmVnYjhBPZxSOkFZsAofpav9u9T989Os5vOUbMHqIFJEjcTy7Q7cs+sbdVDOYQKX",
+      "vorkommen": [
+        {
+          "landschaft": "dichterWald",
+          "haeufigkeit": "gelegentlich"
+        },
+        {
+          "landschaft": "lichterWald",
+          "haeufigkeit": "gelegentlich"
+        },
+        {
+          "landschaft": "suempfeNord",
+          "haeufigkeit": "selten",
+          "hinweis": "nur an Waldrändern und in Gehölzen"
+        },
+        {
+          "landschaft": "tundra",
+          "haeufigkeit": "selten",
+          "hinweis": "nur an Waldrändern und in Gehölzen"
+        },
+        {
+          "landschaft": "graslandHeide",
+          "haeufigkeit": "selten",
+          "hinweis": "nur an Waldrändern und in Gehölzen"
+        },
+        {
+          "landschaft": "gebirge",
+          "haeufigkeit": "selten",
+          "hinweis": "nur an Waldrändern und in Gehölzen"
+        }
+      ]
+    },
+    {
+      "name": "Vierblättrige Einbeere",
+      "bestimmung": 5,
+      "wirkung": "stoppt Blutungen und gibt Lebensenergie",
+      "gebiet": "nördlich des Yaquir",
+      "erntezeit": "Phex bis Hesinde",
+      "erntemonate": [
+        "phex",
+        "peraine",
+        "ingerimm",
+        "rahja",
+        "namenlose_tage",
+        "praios",
+        "rondra",
+        "efferd",
+        "travia",
+        "boron",
+        "hesinde"
+      ],
+      "grundmenge": "ein Strauch mit 1W6 Beeren",
+      "quelle": "Zoo Botanica Aventurica S. 271",
+      "beschreibung": "enc:3:hyLiRPK2f2PXSMm2CX0KvHL9AIISRFk5kkFkuZSBd7ZQ5ego9GRxWxmLjw2nJWx7JAQY6coqs+LyTRcRUIoUkca8rWV+wpPTSN+dxca6iR8x3gEK3FleJG2T781/MuoN46Y3ikj309qaR5hHkgJJS8G8swfbwSIipaxQFEcdsE41PRx68aaf72h7y85S705xtEZeyMMPHVi0ELc4hjZgazHwpfz9luR5zb2zo3pAfAPunyznt7LmifgTM2YEah0w0Z53PhY0I2LtElPtZavd5M5e06Pt3Cof/EEwKLqVcESDbErb3/IxfJthNzCD+WBL37WL0wmURL85JpnJtuiFBZhif9FtcD4Xrbjv0VCj3uHktubAsTq+4cSPbzaV3F0mhjdfd9fKU8VsFDUkyJd6dHJ0/YGf5fjqHgFVKWK/Tplum2yxYvTC+oJY6io=",
+      "vorkommen": [
+        {
+          "landschaft": "dichterWald",
+          "haeufigkeit": "haeufig"
+        },
+        {
+          "landschaft": "lichterWald",
+          "haeufigkeit": "haeufig"
+        },
+        {
+          "landschaft": "suempfeNord",
+          "haeufigkeit": "sehrSelten"
+        },
+        {
+          "landschaft": "tundra",
+          "haeufigkeit": "gelegentlich"
+        },
+        {
+          "landschaft": "graslandHeide",
+          "haeufigkeit": "gelegentlich"
+        },
+        {
+          "landschaft": "gebirge",
+          "haeufigkeit": "sehrSelten"
+        }
+      ]
+    },
+    {
+      "name": "Wirselkraut",
+      "bestimmung": 5,
+      "wirkung": "stoppt Blutungen und gibt Lebensenergie",
+      "erntezeit": "jede Zeit außer Winter",
+      "erntemonate": [
+        "praios",
+        "rondra",
+        "efferd",
+        "travia",
+        "boron",
+        "hesinde",
+        "peraine",
+        "ingerimm",
+        "rahja",
+        "namenlose_tage"
+      ],
+      "grundmenge": "W6+4 Blätter",
+      "quelle": "Zoo Botanica Aventurica S. 273",
+      "beschreibung": "enc:3:kwHxFLCVn/9oNYTukIgDCXQi/mZoGquWO5bjxEj8fpa9JHVXc1245/9LWcwIZdi0mBg06r/UhCVrq0pCbugyd3KJhBvAO88ul4IbnDZkuljLyZfQ0Us4gwzDNyXWdZzGULxY/oaylELd0U6CQSWqwKuYA/4JKpKoweaG5tku1REWuHXWR/rDx4ZQI20EygToN+5KyiAeQCovDDryEEsh9I850r+9YFPGvinz0d2/+FV8yNgcKZAWWhV46PG+fjPivdJxQr2OS1WbEmD6nIjz/mF9WdWRwmIeZf27m48j63EDVFdNniTozK5Ccseksi11KFLoA4b+ZZe80QVFpb28b2ElFS1E+bJAenmtNq0oQ+2TMVyqQywt/QyeDyMryLlTZY4fs+soH/Si793xeepA3A==",
+      "vorkommen": [
+        {
+          "landschaft": "tundra",
+          "haeufigkeit": "haeufig"
+        },
+        {
+          "landschaft": "graslandHeide",
+          "haeufigkeit": "gelegentlich"
+        },
+        {
+          "landschaft": "savanneSteppe",
+          "haeufigkeit": "haeufig"
+        }
+      ]
+    },
+    {
+      "name": "Yaganstrauch",
+      "bestimmung": 6,
+      "wirkung": "erhöht Ausdauer",
+      "gebiet": "Aranische Küste, Maraskan",
+      "erntezeit": "Boron",
+      "erntemonate": [
+        "boron"
+      ],
+      "grundmenge": "W6 Nüsse",
+      "quelle": "Zoo Botanica Aventurica S. 274",
+      "beschreibung": "enc:3:9CJYmnDTrqWc2E0ugyGEWrEYN8gCwZE27tv4+GTogRNVOaK0P+MR9E72rGnk8wnPI4zDR7N3SyYQxAGW/9Bz3LIrMCtdmwd890vsNi+dOrcIvrHJvsSMOdeMPO6bMdax9RKN3HGJE0pT+PsslE8hEtEaoZgh1MeARUhRSg8gRBuYK+OFemnThu4fS6Vaxs5uFo2XanNTzSUGZefCuCwHPCF6/o1RDwtT0LTRKxhhihCZA2IFR3vfam8pRvlkFzp2zKBC6pLBudvIf1CVdn1zuAWJWkzFUJJH1WvqdJXfnQeMVfLulU2UGKCqDXfMnjTpq5+JwDaOfcXBQCDgMdsaXdzNojhgfqN0VmWG4L0dYbf1QjhiDPOwhnU8oDAwDnjRDkM=",
+      "vorkommen": [
+        {
+          "landschaft": "dichterWald",
+          "haeufigkeit": "gelegentlich"
+        },
+        {
+          "landschaft": "lichterWald",
+          "haeufigkeit": "gelegentlich"
+        },
+        {
+          "landschaft": "maraskanDschungel",
+          "haeufigkeit": "gelegentlich"
+        },
+        {
+          "landschaft": "gebirge",
+          "haeufigkeit": "selten",
+          "hinweis": "nur auf Maraskan und an der Aranischen Küste"
+        }
+      ]
+    },
+    {
+      "name": "Zunderschwamm",
+      "bestimmung": 4,
+      "wirkung": "ermöglicht Feuermachen",
+      "gebiet": "südlich des Blauen Sees",
+      "erntezeit": "ganzjährig",
+      "grundmenge": "W6 Pilze",
+      "quelle": "Zoo Botanica Aventurica S. 275",
+      "beschreibung": "enc:3:ooreONrruXLlNPbW6ChuN78GkF9OnBT/66IBUdVJaPr5dx6sEetrlPVCL257RFlAGVRq2v6wO0uinnYyh308iCDR2zj0toLkjQOPllgrq35X7of/QMWuXuXbS8rUdJ4JqrMDbt1HW9Ue768Ja0kZV1XSLQXpURSD3AWK2y8edN3USvax/u7ZBXVUquf1DuxgiEyWmE/Oehr9FPRKIlbvGJk8mrye8d/fmpnU8YZ1/Mtbh9lR0pJlW+CVAMnrkjiCzzAQF/dyI6fZSSTyg4OzoURzu6ZSfCZc41NTkoukEXTyrbQyNrDDzo9aNga7zeWZ01qkdUJBli64MysH",
+      "vorkommen": [
+        {
+          "landschaft": "dichterWald",
+          "haeufigkeit": "haeufig"
+        },
+        {
+          "landschaft": "lichterWald",
+          "haeufigkeit": "haeufig"
+        },
+        {
+          "landschaft": "dschungel",
+          "haeufigkeit": "gelegentlich"
+        },
+        {
+          "landschaft": "maraskanDschungel",
+          "haeufigkeit": "gelegentlich"
+        },
+        {
+          "landschaft": "suempfeNord",
+          "haeufigkeit": "selten",
+          "hinweis": "nur an Waldrändern und in Gehölzen südlich des Blauen Sees"
+        },
+        {
+          "landschaft": "tundra",
+          "haeufigkeit": "selten",
+          "hinweis": "nur an Waldrändern und in Gehölzen südlich des Blauen Sees"
+        },
+        {
+          "landschaft": "graslandHeide",
+          "haeufigkeit": "selten",
+          "hinweis": "nur an Waldrändern und in Gehölzen südlich des Blauen Sees"
+        },
+        {
+          "landschaft": "savanneSteppe",
+          "haeufigkeit": "selten",
+          "hinweis": "nur an Waldrändern und in Gehölzen"
+        },
+        {
+          "landschaft": "gebirge",
+          "haeufigkeit": "selten",
+          "hinweis": "nur an Waldrändern und in Gehölzen"
+        }
+      ]
+    },
+    {
+      "name": "Zwölfblatt",
+      "bestimmung": 5,
+      "wirkung": "schützt vor Ansteckung",
+      "gebiet": "nicht weiter nördlich als Riva",
+      "erntezeit": "Hesinde bis Praios",
+      "erntemonate": [
+        "hesinde",
+        "firun",
+        "tsa",
+        "phex",
+        "peraine",
+        "ingerimm",
+        "rahja",
+        "namenlose_tage",
+        "praios"
+      ],
+      "grundmenge": "12 Stängel pro Pflanze",
+      "quelle": "Zoo Botanica Aventurica S. 276",
+      "beschreibung": "enc:3:3hxhuf63aYlcyBbEsTO5K97Xy4YXNsjaxUm4wgMEJf0M+KI5DLjudjStiScfXF2d9wZ/KRDn+GPuuhcpnnnEu9qXvgJYFoSZuRc79pok3yMJiTI2dP/LiZueKyylrT00sxFFQdqsv6SdFEFongHn2+GiXawk0lTHMCafKNYFWY5JZ1nTCWyqzHfOjPKYM8nmGpC83fzQjJnBtj1W15HkhdfVknb3Gn7gXJdaZiZApcMAKir17DRIF05FJ5y/WFn60Y869zF7A6QYATMSJoPmRzEggRFJYUMxreEDFV1DwIA2dPIzUbCfpW4C7ctutFq8zaMOZ7izni18dqG4mXsqtc77kncKHjMrft+T4heKJNmxy1Vw0Zx1NS5bh7Ij6GHsydo3EQhCa5qeQb0bH0UMeIkUaiILa/Gngtl4dKUDf4xnbslkgeax/g8re60RDNRjHhBL3Su+L5PYJOvyvIRseAL6Whe0tfuwo7CBpG6l",
+      "vorkommen": [
+        {
+          "landschaft": "dichterWald",
+          "haeufigkeit": "gelegentlich"
+        },
+        {
+          "landschaft": "lichterWald",
+          "haeufigkeit": "gelegentlich"
+        }
+      ]
     }
-   ]
-  },
-  {
-   "name": "Arganstrauch",
-   "bestimmung": 4,
-   "wirkung": "fördert Heilung",
-   "erntezeit": "ganzjährig",
-   "grundmenge": "eine Wurzel",
-   "vorkommen": [
-    {
-     "landschaft": "dschungel",
-     "haeufigkeit": "gelegentlich"
-    },
-    {
-     "landschaft": "maraskanDschungel",
-     "haeufigkeit": "sehrSelten"
-    },
-    {
-     "landschaft": "suempfeSued",
-     "haeufigkeit": "selten"
-    },
-    {
-     "landschaft": "savanneSteppe",
-     "haeufigkeit": "sehrSelten"
-    }
-   ]
-  },
-  {
-   "name": "Atan-Kiefer",
-   "bestimmung": 6,
-   "wirkung": "Grundlage für fiebersenkendes Mittel",
-   "gebiet": "Ausläufer des Ehernen Schwerts",
-   "erntezeit": "ganzjährig",
-   "grundmenge": "W20 Stein Rinde",
-   "vorkommen": [
-    {
-     "landschaft": "gebirge",
-     "haeufigkeit": "selten"
-    },
-    {
-     "landschaft": "hochgebirge",
-     "haeufigkeit": "selten",
-     "hinweis": "nur im Ehernen Schwert"
-    }
-   ]
-  },
-  {
-   "name": "Atmon",
-   "bestimmung": 5,
-   "wirkung": "Aufputschmittel",
-   "erntezeit": "Peraine",
-   "erntemonate": [
-    "peraine"
-   ],
-   "grundmenge": "W6 Büschel der ganzen Pflanze",
-   "vorkommen": [
-    {
-     "landschaft": "suempfeSued",
-     "haeufigkeit": "sehrSelten",
-     "hinweis": "nur in Wüstenrandgebieten"
-    },
-    {
-     "landschaft": "savanneSteppe",
-     "haeufigkeit": "gelegentlich",
-     "hinweis": "nur in Wüstenrandgebieten"
-    },
-    {
-     "landschaft": "gebirge",
-     "haeufigkeit": "selten",
-     "hinweis": "nur im Khoramgebirge"
-    },
-    {
-     "landschaft": "hochgebirge",
-     "haeufigkeit": "selten",
-     "hinweis": "nur im Raschtulswall"
-    }
-   ]
-  },
-  {
-   "name": "Axorda",
-   "bestimmung": 4,
-   "wirkung": "Grundlage für ein Mittel gegen Zorgan-Pocken",
-   "erntezeit": "ganzjährig",
-   "grundmenge": "ein Baum",
-   "vorkommen": [
-    {
-     "landschaft": "maraskanDschungel",
-     "haeufigkeit": "sehrSelten"
-    },
-    {
-     "landschaft": "gebirge",
-     "haeufigkeit": "sehrSelten",
-     "hinweis": "nur Maraskankette"
-    }
-   ]
-  },
-  {
-   "name": "Belmart",
-   "bestimmung": 6,
-   "wirkung": "Gegengift, stoppt Krankheiten",
-   "erntezeit": "Peraine bis Boron",
-   "erntemonate": [
-    "peraine",
-    "ingerimm",
-    "rahja",
-    "namenlose_tage",
-    "praios",
-    "rondra",
-    "efferd",
-    "travia",
-    "boron"
-   ],
-   "grundmenge": "4W20 Blätter",
-   "vorkommen": [
-    {
-     "landschaft": "dichterWald",
-     "haeufigkeit": "gelegentlich"
-    },
-    {
-     "landschaft": "lichterWald",
-     "haeufigkeit": "gelegentlich"
-    },
-    {
-     "landschaft": "suempfeNord",
-     "haeufigkeit": "sehrSelten"
-    },
-    {
-     "landschaft": "tundra",
-     "haeufigkeit": "sehrSelten"
-    },
-    {
-     "landschaft": "graslandHeide",
-     "haeufigkeit": "sehrSelten"
-    },
-    {
-     "landschaft": "gebirge",
-     "haeufigkeit": "sehrSelten"
-    }
-   ]
-  },
-  {
-   "name": "Bleichmohn",
-   "bestimmung": 5,
-   "wirkung": "Schmerzmittel",
-   "erntezeit": "Rondra",
-   "erntemonate": [
-    "rondra"
-   ],
-   "grundmenge": "W6 geschlossene Samenkapseln",
-   "vorkommen": [
-    {
-     "landschaft": "gebirge",
-     "haeufigkeit": "selten"
-    },
-    {
-     "landschaft": "hochgebirge",
-     "haeufigkeit": "sehrSelten"
-    }
-   ]
-  },
-  {
-   "name": "Blutblatt",
-   "bestimmung": 4,
-   "wirkung": "zeigt Magie an",
-   "erntezeit": "ganzjährig",
-   "grundmenge": "W20+2 Zweige pro 10 AsP der Quelle",
-   "vorkommen": [
-    {
-     "landschaft": "dichterWald",
-     "haeufigkeit": "selten"
-    },
-    {
-     "landschaft": "lichterWald",
-     "haeufigkeit": "selten"
-    },
-    {
-     "landschaft": "dschungel",
-     "haeufigkeit": "selten"
-    },
-    {
-     "landschaft": "maraskanDschungel",
-     "haeufigkeit": "selten"
-    },
-    {
-     "landschaft": "suempfeNord",
-     "haeufigkeit": "selten"
-    },
-    {
-     "landschaft": "suempfeSued",
-     "haeufigkeit": "selten"
-    },
-    {
-     "landschaft": "tundra",
-     "haeufigkeit": "selten"
-    },
-    {
-     "landschaft": "graslandHeide",
-     "haeufigkeit": "selten"
-    },
-    {
-     "landschaft": "savanneSteppe",
-     "haeufigkeit": "selten"
-    },
-    {
-     "landschaft": "gebirge",
-     "haeufigkeit": "selten"
-    },
-    {
-     "landschaft": "hochgebirge",
-     "haeufigkeit": "selten"
-    },
-    {
-     "landschaft": "wueste",
-     "haeufigkeit": "sehrSelten"
-    }
-   ]
-  },
-  {
-   "name": "Boronie",
-   "bestimmung": -2,
-   "wirkung": "erleichtert Boron-Liturgien",
-   "gebiet": "nur im Regenwald",
-   "erntezeit": "im Süden jederzeit, in Mittelaventurien zwischen Tsa und Boron",
-   "grundmenge": "5 Blüten",
-   "vorkommen": [
-    {
-     "landschaft": "dichterWald",
-     "haeufigkeit": "sehrSelten"
-    },
-    {
-     "landschaft": "dschungel",
-     "haeufigkeit": "selten"
-    },
-    {
-     "landschaft": "suempfeSued",
-     "haeufigkeit": "sehrSelten"
-    },
-    {
-     "landschaft": "graslandHeide",
-     "haeufigkeit": "sehrSelten"
-    }
-   ]
-  },
-  {
-   "name": "Carlog",
-   "bestimmung": 5,
-   "wirkung": "verleiht Dämmerungssicht",
-   "gebiet": "Gewässer an der Westküste, um Vallusa und am Yslisee",
-   "erntezeit": "Peraine oder Efferd",
-   "erntemonate": [
-    "peraine",
-    "efferd"
-   ],
-   "grundmenge": "W6 Blüten mit je einem Stempel",
-   "vorkommen": [
-    {
-     "landschaft": "lichterWald",
-     "haeufigkeit": "sehrSelten"
-    },
-    {
-     "landschaft": "suempfeNord",
-     "haeufigkeit": "gelegentlich",
-     "hinweis": "nur an der Westküste, um Vallusa und am Yslisee"
-    },
-    {
-     "landschaft": "suempfeSued",
-     "haeufigkeit": "gelegentlich",
-     "hinweis": "nur an der Westküste"
-    },
-    {
-     "landschaft": "graslandHeide",
-     "haeufigkeit": "sehrSelten"
-    }
-   ]
-  },
-  {
-   "name": "Chonchinis",
-   "bestimmung": 5,
-   "wirkung": "Heilmittel bei Brand- und Ätzwunden",
-   "gebiet": "Garetien und weiter südlich",
-   "erntezeit": "Tsa bis Boron, vor allem im Efferd",
-   "erntemonate": [
-    "tsa",
-    "phex",
-    "peraine",
-    "ingerimm",
-    "rahja",
-    "namenlose_tage",
-    "praios",
-    "rondra",
-    "efferd",
-    "travia",
-    "boron"
-   ],
-   "grundmenge": "W20 Blätter",
-   "vorkommen": [
-    {
-     "landschaft": "lichterWald",
-     "haeufigkeit": "selten"
-    },
-    {
-     "landschaft": "graslandHeide",
-     "haeufigkeit": "gelegentlich"
-    },
-    {
-     "landschaft": "savanneSteppe",
-     "haeufigkeit": "gelegentlich"
-    },
-    {
-     "landschaft": "gebirge",
-     "haeufigkeit": "sehrSelten",
-     "hinweis": "von Garetien bis zu den Echsensümpfen"
-    }
-   ]
-  },
-  {
-   "name": "Donf",
-   "bestimmung": 6,
-   "wirkung": "fiebersenkend",
-   "erntezeit": "ganzjährig",
-   "grundmenge": "ein Stängel",
-   "vorkommen": [
-    {
-     "landschaft": "dschungel",
-     "haeufigkeit": "selten",
-     "hinweis": "nur an Seeufern"
-    },
-    {
-     "landschaft": "dschungel",
-     "haeufigkeit": "sehrSelten",
-     "hinweis": "nur an Flussufern"
-    },
-    {
-     "landschaft": "maraskanDschungel",
-     "haeufigkeit": "selten",
-     "hinweis": "nur an Seeufern"
-    },
-    {
-     "landschaft": "maraskanDschungel",
-     "haeufigkeit": "sehrSelten",
-     "hinweis": "nur an Flussufern"
-    },
-    {
-     "landschaft": "suempfeNord",
-     "haeufigkeit": "gelegentlich",
-     "hinweis": "im Norden nur bis Gerasim"
-    },
-    {
-     "landschaft": "suempfeSued",
-     "haeufigkeit": "gelegentlich"
-    },
-    {
-     "landschaft": "graslandHeide",
-     "haeufigkeit": "selten",
-     "hinweis": "nur an Seeufern"
-    },
-    {
-     "landschaft": "graslandHeide",
-     "haeufigkeit": "sehrSelten",
-     "hinweis": "nur in Flussauen"
-    },
-    {
-     "landschaft": "savanneSteppe",
-     "haeufigkeit": "selten",
-     "hinweis": "nur an Seeufern"
-    },
-    {
-     "landschaft": "savanneSteppe",
-     "haeufigkeit": "sehrSelten",
-     "hinweis": "nur in Flussauen"
-    },
-    {
-     "landschaft": "gebirge",
-     "haeufigkeit": "selten",
-     "hinweis": "nur an Seeufern"
-    }
-   ]
-  },
-  {
-   "name": "Egelschreck",
-   "bestimmung": 6,
-   "wirkung": "Grundlage für Wundheilung und Parasitenabwehr",
-   "erntezeit": "Spätsommer",
-   "erntemonate": [
-    "efferd"
-   ],
-   "grundmenge": "2W20 Blätter",
-   "vorkommen": [
-    {
-     "landschaft": "dichterWald",
-     "haeufigkeit": "selten",
-     "hinweis": "nur am Waldrand"
-    },
-    {
-     "landschaft": "lichterWald",
-     "haeufigkeit": "gelegentlich",
-     "hinweis": "nur am Waldrand"
-    },
-    {
-     "landschaft": "lichterWald",
-     "haeufigkeit": "selten",
-     "hinweis": "nur am Waldrand (Doppelnennung im Buch)"
-    },
-    {
-     "landschaft": "suempfeNord",
-     "haeufigkeit": "haeufig",
-     "hinweis": "im Norden nur bis zur Höhe von Lowangen"
-    },
-    {
-     "landschaft": "suempfeSued",
-     "haeufigkeit": "haeufig",
-     "hinweis": "im Süden nur bis zu den Echsensümpfen"
-    },
-    {
-     "landschaft": "graslandHeide",
-     "haeufigkeit": "gelegentlich",
-     "hinweis": "nur auf feuchten Wiesen und in Flussauen"
-    },
-    {
-     "landschaft": "gebirge",
-     "haeufigkeit": "gelegentlich",
-     "hinweis": "nur auf feuchten Wiesen und in Flussauen"
-    }
-   ]
-  },
-  {
-   "name": "Finage",
-   "bestimmung": 5,
-   "wirkung": "reduziert Eigenschaftsabzüge, Grundlage für Heilmittel",
-   "gebiet": "südlich der Linie Neetha–Thalusa",
-   "erntezeit": "Triebe im Peraine, Bast in Boron bis Firun",
-   "erntemonate": [
-    "boron",
-    "hesinde",
-    "firun",
-    "peraine"
-   ],
-   "grundmenge": "ein Baum mit W20 Trieben",
-   "vorkommen": [
-    {
-     "landschaft": "dichterWald",
-     "haeufigkeit": "selten"
-    },
-    {
-     "landschaft": "lichterWald",
-     "haeufigkeit": "selten"
-    },
-    {
-     "landschaft": "dschungel",
-     "haeufigkeit": "selten"
-    },
-    {
-     "landschaft": "savanneSteppe",
-     "haeufigkeit": "sehrSelten"
-    }
-   ]
-  },
-  {
-   "name": "Gulmond",
-   "bestimmung": 6,
-   "wirkung": "erhöht Konstitution",
-   "gebiet": "nördlich der Linie Nostria–Vallusa",
-   "erntezeit": "Frühling bis Herbst",
-   "erntemonate": [
-    "praios",
-    "rondra",
-    "efferd",
-    "travia",
-    "boron",
-    "hesinde",
-    "peraine",
-    "ingerimm",
-    "rahja",
-    "namenlose_tage"
-   ],
-   "grundmenge": "2W6 Blätter",
-   "vorkommen": [
-    {
-     "landschaft": "dichterWald",
-     "haeufigkeit": "gelegentlich"
-    },
-    {
-     "landschaft": "lichterWald",
-     "haeufigkeit": "gelegentlich"
-    },
-    {
-     "landschaft": "tundra",
-     "haeufigkeit": "haeufig"
-    },
-    {
-     "landschaft": "graslandHeide",
-     "haeufigkeit": "haeufig"
-    },
-    {
-     "landschaft": "gebirge",
-     "haeufigkeit": "gelegentlich"
-    }
-   ]
-  },
-  {
-   "name": "Hiradwurz",
-   "bestimmung": 8,
-   "wirkung": "hilft gegen Schlangengift",
-   "bestimmungHinweis": "+8 in der Trockenzeit, +5 in der Regenzeit",
-   "gebiet": "Amhalassih, Mhanadistan, Gorien, Aranien",
-   "erntezeit": "ganzjährig",
-   "grundmenge": "eine Wurzel",
-   "vorkommen": [
-    {
-     "landschaft": "savanneSteppe",
-     "haeufigkeit": "selten"
-    }
-   ]
-  },
-  {
-   "name": "Horusche",
-   "bestimmung": 7,
-   "wirkung": "verleiht Stärke",
-   "erntezeit": "ganzjährig",
-   "grundmenge": "W6 erntereife Schoten pro Pflanze, W3 Kerne pro Schote",
-   "vorkommen": [
-    {
-     "landschaft": "maraskanDschungel",
-     "haeufigkeit": "selten",
-     "hinweis": "nur in feuchten Waldgebieten"
-    }
-   ]
-  },
-  {
-   "name": "Joruga",
-   "bestimmung": 7,
-   "wirkung": "Grundlage für Krankheitsbekämpfung",
-   "gebiet": "Andergast, Nostria, Albernia, Nordmarken",
-   "erntezeit": "Rahja bis Boron",
-   "erntemonate": [
-    "rahja",
-    "namenlose_tage",
-    "praios",
-    "rondra",
-    "efferd",
-    "travia",
-    "boron"
-   ],
-   "grundmenge": "eine Wurzel",
-   "vorkommen": [
-    {
-     "landschaft": "dichterWald",
-     "haeufigkeit": "selten"
-    },
-    {
-     "landschaft": "lichterWald",
-     "haeufigkeit": "gelegentlich"
-    },
-    {
-     "landschaft": "graslandHeide",
-     "haeufigkeit": "selten"
-    },
-    {
-     "landschaft": "gebirge",
-     "haeufigkeit": "sehrSelten"
-    }
-   ]
-  },
-  {
-   "name": "Kajubo",
-   "bestimmung": 4,
-   "wirkung": "ermöglicht Überleben ohne Atemluft",
-   "gebiet": "Altoum, Souram, Nikkali",
-   "erntezeit": "Phex bis Travia",
-   "erntemonate": [
-    "phex",
-    "peraine",
-    "ingerimm",
-    "rahja",
-    "namenlose_tage",
-    "praios",
-    "rondra",
-    "efferd",
-    "travia"
-   ],
-   "grundmenge": "2W6 Knospen",
-   "vorkommen": [
-    {
-     "landschaft": "dschungel",
-     "haeufigkeit": "selten",
-     "hinweis": "nur am Waldrand auf Altoum, Souram und Nikkali"
-    },
-    {
-     "landschaft": "suempfeSued",
-     "haeufigkeit": "sehrSelten",
-     "hinweis": "nur an den Küsten von Altoum, Souram und Nikkali"
-    }
-   ]
-  },
-  {
-   "name": "Khômknolle",
-   "bestimmung": 5,
-   "wirkung": "enthält Wasser",
-   "bestimmungHinweis": "+5, ohne Blätter +12",
-   "gebiet": "Gorien und Mhanadistan",
-   "erntezeit": "ganzjährig",
-   "grundmenge": "eine Wurzel mit bis zu W6 Maß klarem Wasser",
-   "vorkommen": [
-    {
-     "landschaft": "savanneSteppe",
-     "haeufigkeit": "selten"
-    },
-    {
-     "landschaft": "wueste",
-     "haeufigkeit": "sehrSelten",
-     "hinweis": "nur in der östlichen Khôm"
-    }
-   ]
-  },
-  {
-   "name": "Klippenzahn",
-   "bestimmung": 8,
-   "wirkung": "beschleunigt Wundheilung",
-   "gebiet": "Hochland von Orkland, Thorwal, Gjalsker Öden",
-   "erntezeit": "Peraine bis Rondra",
-   "erntemonate": [
-    "peraine",
-    "ingerimm",
-    "rahja",
-    "namenlose_tage",
-    "praios",
-    "rondra"
-   ],
-   "grundmenge": "2W6 Stängel",
-   "vorkommen": [
-    {
-     "landschaft": "graslandHeide",
-     "haeufigkeit": "gelegentlich"
-    },
-    {
-     "landschaft": "gebirge",
-     "haeufigkeit": "gelegentlich",
-     "hinweis": "nur im Orkland, Thorwal und in den Gjalsker Öden"
-    }
-   ]
-  },
-  {
-   "name": "Kukura",
-   "bestimmung": 10,
-   "wirkung": "erhöht Ausdauer",
-   "gebiet": "westliches Regengebirge",
-   "erntezeit": "ganzjährig",
-   "grundmenge": "1W3 × 20 Blätter",
-   "vorkommen": [
-    {
-     "landschaft": "dschungel",
-     "haeufigkeit": "selten"
-    }
-   ]
-  },
-  {
-   "name": "Lulanie",
-   "bestimmung": 5,
-   "wirkung": "Beruhigungsmittel",
-   "gebiet": "Mittelaventurien",
-   "erntezeit": "Rahja bis Rondra",
-   "erntemonate": [
-    "rahja",
-    "namenlose_tage",
-    "praios",
-    "rondra"
-   ],
-   "grundmenge": "eine Blüte",
-   "vorkommen": [
-    {
-     "landschaft": "dichterWald",
-     "haeufigkeit": "selten"
-    },
-    {
-     "landschaft": "lichterWald",
-     "haeufigkeit": "selten"
-    },
-    {
-     "landschaft": "suempfeNord",
-     "haeufigkeit": "sehrSelten",
-     "hinweis": "nur an Waldrändern und in Gehölzen Mittelaventuriens"
-    },
-    {
-     "landschaft": "graslandHeide",
-     "haeufigkeit": "sehrSelten",
-     "hinweis": "nur an Waldrändern und in Gehölzen Mittelaventuriens"
-    }
-   ]
-  },
-  {
-   "name": "Menchalkaktus",
-   "bestimmung": 4,
-   "wirkung": "hilft gegen viele Gifte",
-   "gebiet": "Randgebiete der Khôm, wüstenähnliche Gebiete in Gorien",
-   "erntezeit": "ganzjährig",
-   "grundmenge": "ein Kaktus mit W6 halben Maß Menchalsaft",
-   "vorkommen": [
-    {
-     "landschaft": "savanneSteppe",
-     "haeufigkeit": "sehrSelten"
-    },
-    {
-     "landschaft": "wueste",
-     "haeufigkeit": "sehrSelten"
-    }
-   ]
-  },
-  {
-   "name": "Mibelrohr",
-   "bestimmung": 10,
-   "wirkung": "Grundlage für Aufputschmittel",
-   "gebiet": "See- und Flussufer der Westküste von Salza bis Mengbilla",
-   "erntezeit": "im Norden Ingerimm bis Efferd, im Süden stets außer Firun",
-   "erntemonate": [
-    "praios",
-    "rondra",
-    "efferd",
-    "travia",
-    "boron",
-    "hesinde",
-    "tsa",
-    "phex",
-    "peraine",
-    "ingerimm",
-    "rahja",
-    "namenlose_tage"
-   ],
-   "grundmenge": "2W6 Kolben pro Fundort",
-   "vorkommen": [
-    {
-     "landschaft": "lichterWald",
-     "haeufigkeit": "gelegentlich"
-    },
-    {
-     "landschaft": "suempfeNord",
-     "haeufigkeit": "sehrSelten",
-     "hinweis": "nur an der Westküste von Salza bis Mengbilla"
-    },
-    {
-     "landschaft": "suempfeSued",
-     "haeufigkeit": "sehrSelten",
-     "hinweis": "nur an der Westküste von Salza bis Mengbilla"
-    },
-    {
-     "landschaft": "graslandHeide",
-     "haeufigkeit": "gelegentlich"
-    },
-    {
-     "landschaft": "savanneSteppe",
-     "haeufigkeit": "gelegentlich"
-    }
-   ]
-  },
-  {
-   "name": "Mirbelstein",
-   "bestimmung": 8,
-   "wirkung": "Grundlage für ein Mittel gegen Ungeziefer und Elfen",
-   "gebiet": "Garetien, Darpatien, Warunk, Beilunk",
-   "erntezeit": "Peraine bis Boron",
-   "erntemonate": [
-    "peraine",
-    "ingerimm",
-    "rahja",
-    "namenlose_tage",
-    "praios",
-    "rondra",
-    "efferd",
-    "travia",
-    "boron"
-   ],
-   "grundmenge": "eine Wurzelknolle",
-   "vorkommen": [
-    {
-     "landschaft": "dichterWald",
-     "haeufigkeit": "haeufig"
-    },
-    {
-     "landschaft": "lichterWald",
-     "haeufigkeit": "haeufig"
-    },
-    {
-     "landschaft": "graslandHeide",
-     "haeufigkeit": "gelegentlich"
-    },
-    {
-     "landschaft": "gebirge",
-     "haeufigkeit": "selten"
-    }
-   ]
-  },
-  {
-   "name": "Neckerkraut",
-   "bestimmung": 4,
-   "wirkung": "gegen Kerkersieche",
-   "gebiet": "Westküste",
-   "erntezeit": "ganzjährig",
-   "grundmenge": "1W20+5 Blätter",
-   "vorkommen": [
-    {
-     "landschaft": "suempfeNord",
-     "haeufigkeit": "sehrSelten",
-     "hinweis": "nur an der Westküste"
-    },
-    {
-     "landschaft": "graslandHeide",
-     "haeufigkeit": "gelegentlich",
-     "hinweis": "nur am Strand der Westküste, selten auch auf Wiesen in Küstennähe"
-    }
-   ]
-  },
-  {
-   "name": "Nothilf",
-   "bestimmung": 6,
-   "wirkung": "heilt Brandwunden",
-   "gebiet": "Salamandersteine und Umgebung",
-   "erntezeit": "Blüten im Praios, Blätter im Peraine",
-   "erntemonate": [
-    "praios",
-    "peraine"
-   ],
-   "grundmenge": "W20+2 Blüten, 2W20+10 Blätter",
-   "vorkommen": [
-    {
-     "landschaft": "dichterWald",
-     "haeufigkeit": "selten"
-    },
-    {
-     "landschaft": "lichterWald",
-     "haeufigkeit": "selten"
-    }
-   ]
-  },
-  {
-   "name": "Olginwurz",
-   "bestimmung": 10,
-   "wirkung": "Gegengift",
-   "gebiet": "Raschtulswall",
-   "erntezeit": "ganzjährig",
-   "grundmenge": "W3 Moosballen",
-   "vorkommen": [
-    {
-     "landschaft": "dichterWald",
-     "haeufigkeit": "selten"
-    },
-    {
-     "landschaft": "lichterWald",
-     "haeufigkeit": "selten"
-    },
-    {
-     "landschaft": "graslandHeide",
-     "haeufigkeit": "selten"
-    },
-    {
-     "landschaft": "savanneSteppe",
-     "haeufigkeit": "selten"
-    },
-    {
-     "landschaft": "gebirge",
-     "haeufigkeit": "selten"
-    },
-    {
-     "landschaft": "hochgebirge",
-     "haeufigkeit": "selten"
-    }
-   ]
-  },
-  {
-   "name": "Quinya",
-   "bestimmung": 6,
-   "wirkung": "erhöht Körperkraft",
-   "gebiet": "südlich des Harodrôl",
-   "erntezeit": "Ingerimm bis Travia",
-   "erntemonate": [
-    "ingerimm",
-    "rahja",
-    "namenlose_tage",
-    "praios",
-    "rondra",
-    "efferd",
-    "travia"
-   ],
-   "grundmenge": "W3+2 Beeren",
-   "vorkommen": [
-    {
-     "landschaft": "dichterWald",
-     "haeufigkeit": "gelegentlich"
-    },
-    {
-     "landschaft": "lichterWald",
-     "haeufigkeit": "gelegentlich"
-    },
-    {
-     "landschaft": "dschungel",
-     "haeufigkeit": "haeufig"
-    }
-   ]
-  },
-  {
-   "name": "Rahjalieb",
-   "bestimmung": 5,
-   "wirkung": "empfängnisverhütend",
-   "gebiet": "nicht weiter nördlich als Festum",
-   "erntezeit": "Phex bis Firun",
-   "erntemonate": [
-    "phex",
-    "peraine",
-    "ingerimm",
-    "rahja",
-    "namenlose_tage",
-    "praios",
-    "rondra",
-    "efferd",
-    "travia",
-    "boron",
-    "hesinde",
-    "firun"
-   ],
-   "grundmenge": "2W6 Blätter",
-   "vorkommen": [
-    {
-     "landschaft": "dichterWald",
-     "haeufigkeit": "gelegentlich"
-    },
-    {
-     "landschaft": "lichterWald",
-     "haeufigkeit": "gelegentlich"
-    },
-    {
-     "landschaft": "dschungel",
-     "haeufigkeit": "haeufig"
-    },
-    {
-     "landschaft": "maraskanDschungel",
-     "haeufigkeit": "haeufig"
-    },
-    {
-     "landschaft": "suempfeNord",
-     "haeufigkeit": "gelegentlich"
-    },
-    {
-     "landschaft": "suempfeSued",
-     "haeufigkeit": "gelegentlich"
-    },
-    {
-     "landschaft": "graslandHeide",
-     "haeufigkeit": "gelegentlich"
-    },
-    {
-     "landschaft": "savanneSteppe",
-     "haeufigkeit": "gelegentlich"
-    },
-    {
-     "landschaft": "gebirge",
-     "haeufigkeit": "gelegentlich"
-    }
-   ]
-  },
-  {
-   "name": "Rauschgurke",
-   "bestimmung": 3,
-   "wirkung": "macht stärker und dümmer",
-   "gebiet": "Umgebung von Khunchom",
-   "erntezeit": "Tsa bis Boron",
-   "erntemonate": [
-    "tsa",
-    "phex",
-    "peraine",
-    "ingerimm",
-    "rahja",
-    "namenlose_tage",
-    "praios",
-    "rondra",
-    "efferd",
-    "travia",
-    "boron"
-   ],
-   "grundmenge": "3W6 reife Rauschgurken pro Baum",
-   "vorkommen": [
-    {
-     "landschaft": "lichterWald",
-     "haeufigkeit": "selten"
-    },
-    {
-     "landschaft": "maraskanDschungel",
-     "haeufigkeit": "gelegentlich"
-    }
-   ]
-  },
-  {
-   "name": "Rote Pfeilblüte",
-   "bestimmung": 7,
-   "wirkung": "spendet Lebensenergie",
-   "gebiet": "Südaventurien",
-   "erntezeit": "Peraine bis Rahja",
-   "erntemonate": [
-    "peraine",
-    "ingerimm",
-    "rahja"
-   ],
-   "grundmenge": "W6 Blüten",
-   "vorkommen": [
-    {
-     "landschaft": "dichterWald",
-     "haeufigkeit": "selten"
-    },
-    {
-     "landschaft": "lichterWald",
-     "haeufigkeit": "sehrSelten"
-    },
-    {
-     "landschaft": "dschungel",
-     "haeufigkeit": "gelegentlich",
-     "hinweis": "nur in Küstennähe"
-    },
-    {
-     "landschaft": "suempfeSued",
-     "haeufigkeit": "gelegentlich",
-     "hinweis": "nur in Küstennähe"
-    }
-   ]
-  },
-  {
-   "name": "Roter Drachenschlund",
-   "bestimmung": 10,
-   "wirkung": "verhindert Ausbruch von Lykanthropie",
-   "bestimmungHinweis": "zur Blütezeit +3",
-   "gebiet": "Waldränder, Gehölze, Flussufer in Nordaventurien",
-   "erntezeit": "ganzjährig (Blüte im Ingerimm und Rahja)",
-   "grundmenge": "W6 Blätter",
-   "vorkommen": [
-    {
-     "landschaft": "dichterWald",
-     "haeufigkeit": "sehrSelten"
-    },
-    {
-     "landschaft": "lichterWald",
-     "haeufigkeit": "sehrSelten"
-    },
-    {
-     "landschaft": "suempfeNord",
-     "haeufigkeit": "sehrSelten"
-    },
-    {
-     "landschaft": "tundra",
-     "haeufigkeit": "sehrSelten"
-    },
-    {
-     "landschaft": "graslandHeide",
-     "haeufigkeit": "sehrSelten"
-    },
-    {
-     "landschaft": "gebirge",
-     "haeufigkeit": "sehrSelten"
-    }
-   ]
-  },
-  {
-   "name": "Satuariensbusch",
-   "bestimmung": -2,
-   "wirkung": "schützt vor Wundfieber",
-   "gebiet": "südlicher als die Gelbe Sichel",
-   "erntezeit": "Blätter Ingerimm bis Praios, Blüten Ingerimm bis Rahja, Frucht Efferd bis Travia, Saft Phex bis Praios",
-   "erntemonate": [
-    "praios",
-    "efferd",
-    "travia",
-    "phex",
-    "peraine",
-    "ingerimm",
-    "rahja",
-    "namenlose_tage"
-   ],
-   "grundmenge": "4W20 Blätter, W20 Blüten, W20 Früchte, W3 Flux Saft",
-   "vorkommen": [
-    {
-     "landschaft": "dichterWald",
-     "haeufigkeit": "selten",
-     "hinweis": "Waldränder"
-    },
-    {
-     "landschaft": "lichterWald",
-     "haeufigkeit": "gelegentlich"
-    },
-    {
-     "landschaft": "graslandHeide",
-     "haeufigkeit": "selten",
-     "hinweis": "nur Waldränder und Gehölze"
-    },
-    {
-     "landschaft": "savanneSteppe",
-     "haeufigkeit": "selten",
-     "hinweis": "nur Waldränder und Gehölze"
-    },
-    {
-     "landschaft": "gebirge",
-     "haeufigkeit": "selten",
-     "hinweis": "nur Waldränder und Gehölze"
-    }
-   ]
-  },
-  {
-   "name": "Schlangenzünglein",
-   "bestimmung": 3,
-   "wirkung": "zeigt Magie an",
-   "gebiet": "Flussläufe auf Maraskan und am Golf von Perricum",
-   "erntezeit": "ganzjährig",
-   "grundmenge": "Saft einer Pflanze",
-   "vorkommen": [
-    {
-     "landschaft": "maraskanDschungel",
-     "haeufigkeit": "selten",
-     "hinweis": "nur Flussläufe"
-    },
-    {
-     "landschaft": "suempfeSued",
-     "haeufigkeit": "selten",
-     "hinweis": "nur auf Maraskan und am Golf von Perricum"
-    },
-    {
-     "landschaft": "savanneSteppe",
-     "haeufigkeit": "selten",
-     "hinweis": "nur an Flussläufen"
-    }
-   ]
-  },
-  {
-   "name": "Talaschin",
-   "bestimmung": 5,
-   "wirkung": "verhindert Körpergeruch",
-   "erntezeit": "ganzjährig",
-   "grundmenge": "W6 Flechten",
-   "vorkommen": [
-    {
-     "landschaft": "hochgebirge",
-     "haeufigkeit": "sehrSelten"
-    },
-    {
-     "landschaft": "wueste",
-     "haeufigkeit": "sehrSelten"
-    }
-   ]
-  },
-  {
-   "name": "Tarnele",
-   "bestimmung": 4,
-   "wirkung": "schmerzlindernd und heilungsfördernd",
-   "gebiet": "zwischen Mengbilla und Gerasim",
-   "erntezeit": "Ingerimm bis Travia",
-   "erntemonate": [
-    "ingerimm",
-    "rahja",
-    "namenlose_tage",
-    "praios",
-    "rondra",
-    "efferd",
-    "travia"
-   ],
-   "grundmenge": "ganze Pflanze",
-   "vorkommen": [
-    {
-     "landschaft": "dichterWald",
-     "haeufigkeit": "gelegentlich"
-    },
-    {
-     "landschaft": "lichterWald",
-     "haeufigkeit": "gelegentlich"
-    },
-    {
-     "landschaft": "suempfeNord",
-     "haeufigkeit": "gelegentlich"
-    },
-    {
-     "landschaft": "suempfeSued",
-     "haeufigkeit": "gelegentlich"
-    },
-    {
-     "landschaft": "graslandHeide",
-     "haeufigkeit": "haeufig",
-     "hinweis": "nur in Flussauen und auf Wiesen zwischen Mengbilla und Gerasim"
-    },
-    {
-     "landschaft": "gebirge",
-     "haeufigkeit": "sehrSelten",
-     "hinweis": "Hochland zwischen Mengbilla und Gerasim"
-    }
-   ]
-  },
-  {
-   "name": "Thonnys",
-   "bestimmung": 12,
-   "wirkung": "erlaubt Astrale Meditation",
-   "bestimmungHinweis": "während der Blüte +5",
-   "gebiet": "nördlich der Linie Thorwal–Festum",
-   "erntezeit": "Peraine bis Travia",
-   "erntemonate": [
-    "peraine",
-    "ingerimm",
-    "rahja",
-    "namenlose_tage",
-    "praios",
-    "rondra",
-    "efferd",
-    "travia"
-   ],
-   "grundmenge": "W6+4 Blätter",
-   "vorkommen": [
-    {
-     "landschaft": "dichterWald",
-     "haeufigkeit": "sehrSelten"
-    },
-    {
-     "landschaft": "lichterWald",
-     "haeufigkeit": "sehrSelten"
-    },
-    {
-     "landschaft": "tundra",
-     "haeufigkeit": "sehrSelten"
-    },
-    {
-     "landschaft": "graslandHeide",
-     "haeufigkeit": "sehrSelten"
-    }
-   ]
-  },
-  {
-   "name": "Tigermohn",
-   "bestimmung": 10,
-   "wirkung": "Beruhigungsmittel",
-   "gebiet": "Nord- und Mittelaventurien, Liebliches Feld, Aranien",
-   "erntezeit": "Travia",
-   "erntemonate": [
-    "travia"
-   ],
-   "grundmenge": "eine geschlossene Samenkapsel",
-   "vorkommen": [
-    {
-     "landschaft": "dichterWald",
-     "haeufigkeit": "selten",
-     "hinweis": "Waldrand"
-    },
-    {
-     "landschaft": "lichterWald",
-     "haeufigkeit": "selten",
-     "hinweis": "Waldrand"
-    },
-    {
-     "landschaft": "graslandHeide",
-     "haeufigkeit": "selten",
-     "hinweis": "Wiesen und Flussauen"
-    }
-   ]
-  },
-  {
-   "name": "Traschbart",
-   "bestimmung": 6,
-   "wirkung": "fiebersenkend",
-   "gebiet": "Steineichenwald, Finsterkamm, Koschberge, Eisenwald",
-   "erntezeit": "ganzjährig",
-   "grundmenge": "W6 Flechten",
-   "vorkommen": [
-    {
-     "landschaft": "dichterWald",
-     "haeufigkeit": "haeufig"
-    },
-    {
-     "landschaft": "lichterWald",
-     "haeufigkeit": "haeufig"
-    },
-    {
-     "landschaft": "suempfeSued",
-     "haeufigkeit": "gelegentlich"
-    }
-   ]
-  },
-  {
-   "name": "Ulmenwürger",
-   "bestimmung": 2,
-   "wirkung": "verbessert Regeneration, verhindert Wundfieber",
-   "gebiet": "nördlich der Linie Havena–Perricum",
-   "erntezeit": "Efferd bis Travia",
-   "erntemonate": [
-    "efferd",
-    "travia"
-   ],
-   "grundmenge": "W20 Blüten",
-   "vorkommen": [
-    {
-     "landschaft": "dichterWald",
-     "haeufigkeit": "gelegentlich"
-    },
-    {
-     "landschaft": "lichterWald",
-     "haeufigkeit": "gelegentlich"
-    },
-    {
-     "landschaft": "suempfeNord",
-     "haeufigkeit": "selten",
-     "hinweis": "nur an Waldrändern und in Gehölzen"
-    },
-    {
-     "landschaft": "tundra",
-     "haeufigkeit": "selten",
-     "hinweis": "nur an Waldrändern und in Gehölzen"
-    },
-    {
-     "landschaft": "graslandHeide",
-     "haeufigkeit": "selten",
-     "hinweis": "nur an Waldrändern und in Gehölzen"
-    },
-    {
-     "landschaft": "gebirge",
-     "haeufigkeit": "selten",
-     "hinweis": "nur an Waldrändern und in Gehölzen"
-    }
-   ]
-  },
-  {
-   "name": "Vierblättrige Einbeere",
-   "bestimmung": 5,
-   "wirkung": "stoppt Blutungen und gibt Lebensenergie",
-   "gebiet": "nördlich des Yaquir",
-   "erntezeit": "Phex bis Hesinde",
-   "erntemonate": [
-    "phex",
-    "peraine",
-    "ingerimm",
-    "rahja",
-    "namenlose_tage",
-    "praios",
-    "rondra",
-    "efferd",
-    "travia",
-    "boron",
-    "hesinde"
-   ],
-   "grundmenge": "ein Strauch mit 1W6 Beeren",
-   "vorkommen": [
-    {
-     "landschaft": "dichterWald",
-     "haeufigkeit": "haeufig"
-    },
-    {
-     "landschaft": "lichterWald",
-     "haeufigkeit": "haeufig"
-    },
-    {
-     "landschaft": "suempfeNord",
-     "haeufigkeit": "sehrSelten"
-    },
-    {
-     "landschaft": "tundra",
-     "haeufigkeit": "gelegentlich"
-    },
-    {
-     "landschaft": "graslandHeide",
-     "haeufigkeit": "gelegentlich"
-    },
-    {
-     "landschaft": "gebirge",
-     "haeufigkeit": "sehrSelten"
-    }
-   ]
-  },
-  {
-   "name": "Wirselkraut",
-   "bestimmung": 5,
-   "wirkung": "stoppt Blutungen und gibt Lebensenergie",
-   "erntezeit": "jede Zeit außer Winter",
-   "erntemonate": [
-    "praios",
-    "rondra",
-    "efferd",
-    "travia",
-    "boron",
-    "hesinde",
-    "peraine",
-    "ingerimm",
-    "rahja",
-    "namenlose_tage"
-   ],
-   "grundmenge": "W6+4 Blätter",
-   "vorkommen": [
-    {
-     "landschaft": "tundra",
-     "haeufigkeit": "haeufig"
-    },
-    {
-     "landschaft": "graslandHeide",
-     "haeufigkeit": "gelegentlich"
-    },
-    {
-     "landschaft": "savanneSteppe",
-     "haeufigkeit": "haeufig"
-    }
-   ]
-  },
-  {
-   "name": "Yaganstrauch",
-   "bestimmung": 6,
-   "wirkung": "erhöht Ausdauer",
-   "gebiet": "Aranische Küste, Maraskan",
-   "erntezeit": "Boron",
-   "erntemonate": [
-    "boron"
-   ],
-   "grundmenge": "W6 Nüsse",
-   "vorkommen": [
-    {
-     "landschaft": "dichterWald",
-     "haeufigkeit": "gelegentlich"
-    },
-    {
-     "landschaft": "lichterWald",
-     "haeufigkeit": "gelegentlich"
-    },
-    {
-     "landschaft": "maraskanDschungel",
-     "haeufigkeit": "gelegentlich"
-    },
-    {
-     "landschaft": "gebirge",
-     "haeufigkeit": "selten",
-     "hinweis": "nur auf Maraskan und an der Aranischen Küste"
-    }
-   ]
-  },
-  {
-   "name": "Zunderschwamm",
-   "bestimmung": 4,
-   "wirkung": "ermöglicht Feuermachen",
-   "gebiet": "südlich des Blauen Sees",
-   "erntezeit": "ganzjährig",
-   "grundmenge": "W6 Pilze",
-   "vorkommen": [
-    {
-     "landschaft": "dichterWald",
-     "haeufigkeit": "haeufig"
-    },
-    {
-     "landschaft": "lichterWald",
-     "haeufigkeit": "haeufig"
-    },
-    {
-     "landschaft": "dschungel",
-     "haeufigkeit": "gelegentlich"
-    },
-    {
-     "landschaft": "maraskanDschungel",
-     "haeufigkeit": "gelegentlich"
-    },
-    {
-     "landschaft": "suempfeNord",
-     "haeufigkeit": "selten",
-     "hinweis": "nur an Waldrändern und in Gehölzen südlich des Blauen Sees"
-    },
-    {
-     "landschaft": "tundra",
-     "haeufigkeit": "selten",
-     "hinweis": "nur an Waldrändern und in Gehölzen südlich des Blauen Sees"
-    },
-    {
-     "landschaft": "graslandHeide",
-     "haeufigkeit": "selten",
-     "hinweis": "nur an Waldrändern und in Gehölzen südlich des Blauen Sees"
-    },
-    {
-     "landschaft": "savanneSteppe",
-     "haeufigkeit": "selten",
-     "hinweis": "nur an Waldrändern und in Gehölzen"
-    },
-    {
-     "landschaft": "gebirge",
-     "haeufigkeit": "selten",
-     "hinweis": "nur an Waldrändern und in Gehölzen"
-    }
-   ]
-  },
-  {
-   "name": "Zwölfblatt",
-   "bestimmung": 5,
-   "wirkung": "schützt vor Ansteckung",
-   "gebiet": "nicht weiter nördlich als Riva",
-   "erntezeit": "Hesinde bis Praios",
-   "erntemonate": [
-    "hesinde",
-    "firun",
-    "tsa",
-    "phex",
-    "peraine",
-    "ingerimm",
-    "rahja",
-    "namenlose_tage",
-    "praios"
-   ],
-   "grundmenge": "12 Stängel pro Pflanze",
-   "vorkommen": [
-    {
-     "landschaft": "dichterWald",
-     "haeufigkeit": "gelegentlich"
-    },
-    {
-     "landschaft": "lichterWald",
-     "haeufigkeit": "gelegentlich"
-    }
-   ]
-  }
- ]
+  ]
 }

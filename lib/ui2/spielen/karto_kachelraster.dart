@@ -82,6 +82,12 @@ List<int> kartoRasterBelegung(
 /// Kacheln darüber. Die Kinder werden mit fester Breite und freier Höhe
 /// ausgelegt, ohne Intrinsics, damit Kacheln mit `LayoutBuilder` funktionieren.
 /// Fokus- und Lesefolge bleiben die Reihenfolge der Kinder.
+///
+/// **Lückenschluss:** Beginnt die nächste Kachel einer Spalte tiefer als die
+/// Unterkante plus Lücke (weil sie mehrere Spalten überspannt und auf die
+/// tiefste wartet), wird die Kachel darüber bis an sie heran gedehnt
+/// ([KartoRasterKachel.dehnbar]). Das ändert keine Lage: gedehnt wird nur in
+/// vorhandenen Leerraum. Die letzte Kachel einer Spalte behält ihre Höhe.
 class KartoKachelraster extends MultiChildRenderObjectWidget {
   /// Raster aus [children], die je in einer [KartoRasterKachel] stecken.
   const KartoKachelraster({
@@ -113,6 +119,7 @@ class KartoRasterKachel extends ParentDataWidget<KartoRasterParentData> {
     super.key,
     required this.breite,
     this.gewicht = 1,
+    this.dehnbar = true,
     required super.child,
   });
 
@@ -122,13 +129,22 @@ class KartoRasterKachel extends ParentDataWidget<KartoRasterParentData> {
   /// Nennhöhe für die Spaltenwahl; nur das Verhältnis zählt.
   final double gewicht;
 
+  /// Ob die Kachel Leerraum bis zur nächsten Kachel darunter füllen darf.
+  ///
+  /// `false` etwa für eingeklappte Kacheln, deren Kopf nicht aufgezogen
+  /// werden soll.
+  final bool dehnbar;
+
   @override
   void applyParentData(RenderObject renderObject) {
     final daten = renderObject.parentData! as KartoRasterParentData;
-    if (daten.breite != breite || daten.gewicht != gewicht) {
+    if (daten.breite != breite ||
+        daten.gewicht != gewicht ||
+        daten.dehnbar != dehnbar) {
       daten
         ..breite = breite
-        ..gewicht = gewicht;
+        ..gewicht = gewicht
+        ..dehnbar = dehnbar;
       renderObject.parent?.markNeedsLayout();
     }
   }
@@ -144,6 +160,9 @@ class KartoRasterParentData extends ContainerBoxParentData<RenderBox> {
 
   /// Nennhöhe für die Spaltenwahl.
   double gewicht = 1;
+
+  /// Ob die Kachel Leerraum unter sich füllen darf.
+  bool dehnbar = true;
 }
 
 /// Render-Objekt zu [KartoKachelraster].
@@ -191,6 +210,11 @@ class RenderKartoKachelraster extends RenderBox
 
     // Echte Unterkante je Spalte, samt folgender Lücke.
     final boden = List<double>.filled(spalten, 0);
+    // Letzte Kachel je Spalte, um sie an die nächste heran zu dehnen.
+    final letzte = List<RenderBox?>.filled(spalten, null);
+    // Oberkante der nächsten Kachel darunter, je Kachel die kleinste über
+    // ihre Spalten; fehlt der Eintrag, folgt keine Kachel.
+    final naechste = <RenderBox, double>{};
     var stelle = 0;
     var child = firstChild;
     while (child != null) {
@@ -208,9 +232,36 @@ class RenderKartoKachelraster extends RenderBox
       );
       daten.offset = Offset((einheit + luecke) * start, oben);
       for (var i = start; i < start + spanne; i++) {
+        final darueber = letzte[i];
+        if (darueber != null) {
+          naechste[darueber] = math.min(
+            naechste[darueber] ?? double.infinity,
+            oben,
+          );
+        }
+        letzte[i] = child;
         boden[i] = oben + child.size.height + luecke;
       }
       child = daten.nextSibling;
+    }
+
+    // Lückenschluss: Leerraum bis zur nächsten Kachel füllt die Kachel
+    // darüber. Die Lagen stehen fest, gedehnt wird nur in freien Raum.
+    for (final MapEntry(key: kachel, value: grenze) in naechste.entries) {
+      final daten = kachel.parentData! as KartoRasterParentData;
+      if (!daten.dehnbar) continue;
+      final ziel = grenze - luecke - daten.offset.dy;
+      if (ziel <= kachel.size.height + 0.5) continue;
+      // Nur eine Mindesthöhe, keine feste: mit fester Höhe wäre die Kachel
+      // eine Layoutgrenze, und wachsender Inhalt erreichte das Raster nicht.
+      kachel.layout(
+        BoxConstraints(
+          minWidth: kachel.size.width,
+          maxWidth: kachel.size.width,
+          minHeight: ziel,
+        ),
+        parentUsesSize: true,
+      );
     }
 
     final hoehe = firstChild == null ? 0.0 : boden.reduce(math.max) - luecke;

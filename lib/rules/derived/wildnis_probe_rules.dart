@@ -200,13 +200,28 @@ int wildnisTapStern(ProbeResult probe) {
 /// Eine Zeile der Ergebnisanzeige einer Wildnistätigkeit.
 class WildnisErgebnisZeile {
   /// Erstellt eine Zeile.
-  const WildnisErgebnisZeile({required this.titel, this.detail = ''});
+  const WildnisErgebnisZeile({
+    required this.titel,
+    this.detail = '',
+    this.erlaeuterung = const <String>[],
+    this.quelle = '',
+  });
 
   /// Hauptzeile (z. B. „Donf“).
   final String titel;
 
   /// Zusatz (z. B. „2 Grundmengen · Suchschwierigkeit 6“).
   final String detail;
+
+  /// Weitere Angaben zum Aufklappen (Wirkung, Erntezeit, Beschreibung …);
+  /// leer, wenn es nichts aufzuklappen gibt.
+  final List<String> erlaeuterung;
+
+  /// Fundstelle für weitere Angaben; leer ohne Angabe.
+  final String quelle;
+
+  /// Ob die Zeile aufklappbare Angaben trägt.
+  bool get hatErlaeuterung => erlaeuterung.isNotEmpty || quelle.isNotEmpty;
 }
 
 /// Tätigkeitsneutrales Ergebnis einer Wildnisprobe für die Anzeige.

@@ -16,7 +16,9 @@ import '../../ui2/shell/karto_test_support.dart';
 
 /// Der Zustandsblock der Spielansicht stellt in einer weiten Kachel zwei
 /// Spalten nebeneinander (SPIEL-07): links Belastung über Wunden, beide
-/// aufgeklappt, rechts die Statuswerte. Sonst bleibt alles wie bisher.
+/// aufgeklappt, rechts die Statuswerte. Sonst steht alles in einer Spalte,
+/// die Statuswerte als flaches Raster. Die Spielansicht lässt die Belastung
+/// weg (`mitBelastung: false`), weil „Dabei“ sie führt.
 void main() {
   final held = testHero('demo', 'Rondra');
   const start = HeroState(
@@ -34,6 +36,7 @@ void main() {
     KartoKachelGroesse? groesse = KartoKachelGroesse.weit,
     double skalierung = 1,
     HeroState zustand = start,
+    bool mitBelastung = true,
   }) async {
     tester.view.devicePixelRatio = 1;
     tester.view.physicalSize = Size(breite + 40, 1600);
@@ -46,7 +49,11 @@ void main() {
       catalog: null,
       epicAdvantagesActive: false,
     );
-    final block = KartoZustandsblock(heroId: 'demo', werte: werte);
+    final block = KartoZustandsblock(
+      heroId: 'demo',
+      werte: werte,
+      mitBelastung: mitBelastung,
+    );
     await tester.pumpWidget(
       ProviderScope(
         overrides: [heroRepositoryProvider.overrideWithValue(repo)],
@@ -152,10 +159,11 @@ void main() {
       // Eingeklappt: weder Zonenzeilen noch Belastungszeilen.
       expect(find.byTooltip('Wunde hinzufügen'), findsNothing);
       expect(k('workspace-vital-row-erschoepfung'), findsNothing);
-      // Die Statuswerte stehen darunter, mit ihrer Trennlinie.
+      // Die Statuswerte stehen darunter, mit ihrer Trennlinie, als Raster.
       expect(find.text('Statuswerte'), findsOneWidget);
       expect(find.byType(Divider), findsOneWidget);
-      expect(k('workspace-status-row-AT'), findsOneWidget);
+      expect(k('workspace-status-kachel-AT'), findsOneWidget);
+      expect(k('workspace-status-row-AT'), findsNothing);
       final belastung = tester.getTopLeft(find.text('Belastung'));
       final statuswerte = tester.getTopLeft(find.text('Statuswerte'));
       expect(statuswerte.dy, greaterThan(belastung.dy));
@@ -188,6 +196,105 @@ void main() {
       await zeige(tester, breite: KartoZustandsblock.zweiSpaltenAb);
       expect(k('karto-zustand-links'), findsOneWidget);
     });
+  });
+
+  group('ohne Belastung (Spielansicht)', () {
+    testWidgets('eine Spalte: nur Wunden und Statuswerte', (tester) async {
+      await zeige(tester, breite: 300, mitBelastung: false);
+      expect(find.text('Belastung'), findsNothing);
+      expect(find.text('Wunden'), findsOneWidget);
+      expect(k('workspace-status-kachel-BE'), findsOneWidget);
+    });
+
+    testWidgets('zwei Spalten: links nur die Wunden', (tester) async {
+      await zeige(tester, breite: 700, mitBelastung: false);
+      expect(find.text('Belastung'), findsNothing);
+      expect(k('workspace-vital-row-erschoepfung'), findsNothing);
+      expect(
+        find.descendant(
+          of: k('karto-zustand-links'),
+          matching: find.text('Wunden'),
+        ),
+        findsOneWidget,
+      );
+    });
+  });
+
+  group('Statuswert-Raster', () {
+    testWidgets('vier Spalten in einer schmalen Kachel, zwei Reihen', (
+      tester,
+    ) async {
+      await zeige(
+        tester,
+        breite: 270,
+        groesse: KartoKachelGroesse.kompakt,
+        mitBelastung: false,
+      );
+      final ini = tester.getRect(k('workspace-status-kachel-Ini'));
+      final pa = tester.getRect(k('workspace-status-kachel-PA'));
+      final at = tester.getRect(k('workspace-status-kachel-AT'));
+      final be = tester.getRect(k('workspace-status-kachel-BE'));
+      expect(pa.top, ini.top);
+      expect(at.top, greaterThan(ini.bottom));
+      expect(be.top, at.top);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('Tipp öffnet das Blatt, Schritte schreiben frisch', (
+      tester,
+    ) async {
+      final repo = await zeige(
+        tester,
+        breite: 300,
+        groesse: KartoKachelGroesse.kompakt,
+        mitBelastung: false,
+      );
+      await tester.tap(k('workspace-status-kachel-AT'));
+      await tester.pumpAndSettle();
+      expect(k('workspace-status-blatt-AT'), findsOneWidget);
+
+      // Das Blatt bleibt für mehrere Schritte offen.
+      await tester.tap(find.byTooltip('AT erhöhen'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('AT erhöhen'));
+      await tester.pumpAndSettle();
+      final danach = (await repo.loadHeroById('demo'))!;
+      expect(
+        dauermodifikatorWert(danach.persistentMods, Dauermodifikator.at),
+        2,
+      );
+
+      await tester.tap(k('workspace-status-blatt-schliessen'));
+      await tester.pumpAndSettle();
+      expect(k('workspace-status-blatt-AT'), findsNothing);
+    });
+
+    testWidgets('MR ist nur Anzeige und öffnet nichts', (tester) async {
+      await zeige(
+        tester,
+        breite: 300,
+        groesse: KartoKachelGroesse.kompakt,
+        mitBelastung: false,
+      );
+      await tester.tap(k('workspace-status-kachel-MR'));
+      await tester.pumpAndSettle();
+      expect(k('workspace-status-blatt-MR'), findsNothing);
+    });
+
+    for (final breite in [240.0, 300.0]) {
+      testWidgets('bei $breite dp und Schrift 2.0 ohne Überlauf', (
+        tester,
+      ) async {
+        await zeige(
+          tester,
+          breite: breite,
+          groesse: KartoKachelGroesse.kompakt,
+          skalierung: 2,
+          mitBelastung: false,
+        );
+        expect(tester.takeException(), isNull);
+      });
+    }
   });
 
   group('Schreiben in der Zweispaltenform', () {

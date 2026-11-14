@@ -17,7 +17,7 @@ enum KartoSpielkachelArt {
     'Ressourcen',
     breiten: SpielkachelBreite.values,
     standard: SpielkachelBreite.voll,
-    gewicht: 120,
+    gewicht: 180,
     ausblendbar: false,
     einklappbar: false,
   ),
@@ -27,18 +27,15 @@ enum KartoSpielkachelArt {
     'Häufige Proben',
     breiten: SpielkachelBreite.values,
     standard: SpielkachelBreite.mittel,
-    gewicht: 200,
+    gewicht: 120,
   ),
 
   /// Eigenschaften als Würfelleiste.
   eigenschaften(
     'Eigenschaften',
-    breiten: <SpielkachelBreite>[
-      SpielkachelBreite.mittel,
-      SpielkachelBreite.voll,
-    ],
+    breiten: SpielkachelBreite.values,
     standard: SpielkachelBreite.mittel,
-    gewicht: 140,
+    gewicht: 100,
   ),
 
   /// Kampfproben und Gefecht.
@@ -49,7 +46,7 @@ enum KartoSpielkachelArt {
       SpielkachelBreite.mittel,
     ],
     standard: SpielkachelBreite.schmal,
-    gewicht: 260,
+    gewicht: 110,
   ),
 
   /// Laufende Zauber und Effekte.
@@ -60,10 +57,10 @@ enum KartoSpielkachelArt {
       SpielkachelBreite.mittel,
     ],
     standard: SpielkachelBreite.schmal,
-    gewicht: 200,
+    gewicht: 110,
   ),
 
-  /// Wunden, Erschöpfung und weitere Zustände.
+  /// Wunden und Statuswerte; die Belastung steht in „Dabei“.
   zustand(
     'Zustand',
     breiten: <SpielkachelBreite>[
@@ -71,7 +68,7 @@ enum KartoSpielkachelArt {
       SpielkachelBreite.mittel,
     ],
     standard: SpielkachelBreite.schmal,
-    gewicht: 240,
+    gewicht: 260,
   ),
 
   /// Begleiter mit laufenden Werten; nur mit Begleitern vorhanden.
@@ -79,7 +76,7 @@ enum KartoSpielkachelArt {
     'Begleiter',
     breiten: SpielkachelBreite.values,
     standard: SpielkachelBreite.schmal,
-    gewicht: 220,
+    gewicht: 260,
   ),
 
   /// Geld und Verbrauchsgegenstände.
@@ -90,7 +87,7 @@ enum KartoSpielkachelArt {
       SpielkachelBreite.mittel,
     ],
     standard: SpielkachelBreite.schmal,
-    gewicht: 280,
+    gewicht: 320,
   ),
 
   /// Laufendes Abenteuer mit Standort, Notizen und Personen.
@@ -101,7 +98,7 @@ enum KartoSpielkachelArt {
       SpielkachelBreite.voll,
     ],
     standard: SpielkachelBreite.mittel,
-    gewicht: 450,
+    gewicht: 340,
   ),
 
   /// Reiseroute: Stationen mit Ort, Datum und Notiz.
@@ -109,7 +106,7 @@ enum KartoSpielkachelArt {
     'Reiseroute',
     breiten: SpielkachelBreite.values,
     standard: SpielkachelBreite.schmal,
-    gewicht: 280,
+    gewicht: 200,
   ),
 
   /// Aktueller Standort nach dem Vorbild der Ortsansicht von Avesmaps:
@@ -118,7 +115,7 @@ enum KartoSpielkachelArt {
     'Standort',
     breiten: SpielkachelBreite.values,
     standard: SpielkachelBreite.schmal,
-    gewicht: 380,
+    gewicht: 620,
   ),
 
   /// Vor- und Nachteile.
@@ -126,7 +123,7 @@ enum KartoSpielkachelArt {
     'Vor- und Nachteile',
     breiten: SpielkachelBreite.values,
     standard: SpielkachelBreite.schmal,
-    gewicht: 300,
+    gewicht: 160,
   ),
 
   /// Wildnistätigkeiten wie Kräuter suchen: Landschaft, Jahreszeit,

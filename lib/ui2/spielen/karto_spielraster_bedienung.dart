@@ -185,9 +185,9 @@ enum KartoEinfuegeSeite {
 /// Kachel im Anordnen-Modus: eine kompakte Karte statt des vollen Inhalts.
 ///
 /// Die Karte steht im selben Raster wie die echte Kachel (gleiche Breite und
-/// gleiches Richtgewicht), zeigt aber nur Symbol, Titel, Breite und die
-/// Bedienung. So passen viele Kacheln auf den Schirm, und man sieht, in
-/// welcher Spalte sie später stehen. Sie ist Ziel für das Ziehen einer anderen
+/// gleiches Richtgewicht) und zeigt Symbol, Titel, Breite, die Bedienung und
+/// darunter die gesperrte Vorschau in echter Höhe. So sieht man, in welcher
+/// Spalte die Kachel später steht und wie viel Platz sie einnimmt. Sie ist Ziel für das Ziehen einer anderen
 /// Kachel; eine Einfügelinie zeigt vor dem Loslassen, ob davor oder dahinter
 /// eingefügt wird. Gezogen wird am Griff (sofort) oder am Titel (nach kurzem
 /// Halten), damit die Seite sich auf Touchgeräten weiter scrollen lässt.
@@ -210,11 +210,11 @@ class KartoAnordnungskarte extends StatefulWidget {
 
   /// Baut den Inhalt der Kachel für die Vorschau in der Größenstufe, die sie
   /// bei der aktuellen Breite hätte; ohne Rückruf entfällt die Vorschau. Die
-  /// Karte sperrt die Bedienung des Inhalts und begrenzt seine Höhe.
+  /// Karte sperrt die Bedienung des Inhalts, zeigt ihn aber in voller Höhe:
+  /// so sieht man beim Anordnen, wie groß die Kachel später ist. Eine
+  /// eingeklappte Kachel zeigt keine Vorschau, weil auch sie später nur aus
+  /// ihrem Kopf besteht.
   final Widget Function(KartoKachelGroesse groesse)? vorschau;
-
-  /// Höhe des Vorschaubereichs; längerer Inhalt wird unten ausgeblendet.
-  static const double vorschauHoehe = 180;
 
   /// Eine andere, hierher gezogene Kachel soll [KartoEinfuegeSeite] dieser
   /// Karte eingefügt werden.
@@ -281,6 +281,8 @@ class _KartoAnordnungskarteState extends State<KartoAnordnungskarte> {
             return Opacity(
               opacity: _zieht ? 0.35 : 1,
               child: Stack(
+                // Reicht die Mindesthöhe des Lückenschlusses an die Karte.
+                fit: StackFit.passthrough,
                 children: [
                   _Karte(
                     karte: widget,
@@ -426,7 +428,11 @@ class _Karte extends StatelessWidget {
                       child: Padding(
                         padding: const EdgeInsets.only(left: Abstand.normal),
                         child: Text(
-                          spielkachelBreiteName(kachel.breite),
+                          kachel.eingeklappt
+                              ? '${spielkachelBreiteName(kachel.breite)} · '
+                                    'Eingeklappt'
+                              : spielkachelBreiteName(kachel.breite),
+                          key: ValueKey<String>('$schluessel-breite-name'),
                           style: texte.etikett.copyWith(
                             color: karto.schriftLeise,
                           ),
@@ -479,7 +485,7 @@ class _Karte extends StatelessWidget {
                       ),
                   ],
                 ),
-                if (widget.vorschau != null)
+                if (widget.vorschau != null && !kachel.eingeklappt)
                   _Vorschau(
                     schluessel: schluessel,
                     karto: karto,
@@ -504,9 +510,9 @@ String _groessenName(KartoKachelGroesse groesse) => switch (groesse) {
 
 /// Gesperrte Vorschau des Kachelinhalts in der Größenstufe der Karte.
 ///
-/// Der Inhalt wird mit der echten Kachelbreite ausgelegt, ist aber weder
-/// bedienbar noch fokussierbar noch für Bildschirmleser sichtbar; die Höhe ist
-/// auf [KartoAnordnungskarte.vorschauHoehe] begrenzt und blendet unten aus.
+/// Der Inhalt wird mit der echten Kachelbreite und in seiner echten Höhe
+/// ausgelegt, ist aber weder bedienbar noch fokussierbar noch für
+/// Bildschirmleser sichtbar.
 class _Vorschau extends StatelessWidget {
   const _Vorschau({
     required this.schluessel,
@@ -550,28 +556,11 @@ class _Vorschau extends StatelessWidget {
             borderRadius: BorderRadius.circular(kKartoRadiusKlein),
             child: Material(
               color: karto.blatt,
-              child: SizedBox(
+              child: KeyedSubtree(
                 key: ValueKey<String>('$schluessel-vorschau'),
-                height: KartoAnordnungskarte.vorschauHoehe,
-                child: ShaderMask(
-                  blendMode: BlendMode.dstIn,
-                  shaderCallback: (bounds) => const LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [Colors.white, Colors.white, Colors.transparent],
-                    stops: [0, 0.8, 1],
-                  ).createShader(bounds),
-                  child: ExcludeSemantics(
-                    child: ExcludeFocus(
-                      child: IgnorePointer(
-                        child: OverflowBox(
-                          alignment: Alignment.topLeft,
-                          minHeight: 0,
-                          maxHeight: double.infinity,
-                          child: inhalt(groesse),
-                        ),
-                      ),
-                    ),
+                child: ExcludeSemantics(
+                  child: ExcludeFocus(
+                    child: IgnorePointer(child: inhalt(groesse)),
                   ),
                 ),
               ),

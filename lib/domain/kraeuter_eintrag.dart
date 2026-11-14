@@ -124,8 +124,9 @@ class KrautVorkommen {
 
 /// Ein Kraut aus den Landschaftstabellen von Wege des Entdeckers.
 ///
-/// Der Katalog enthält nur Kurzfakten (Bestimmung, Häufigkeit je Landschaft,
-/// einzeilige Wirkung), keine Beschreibungstexte. Dasselbe Kraut kann in einer
+/// Der Katalog enthält Kurzfakten (Bestimmung, Häufigkeit je Landschaft,
+/// einzeilige Wirkung) und eine kurze, v3-verschlüsselte [beschreibung] in
+/// eigenen Worten samt Fundstelle ([quelle]). Dasselbe Kraut kann in einer
 /// Landschaft mehrfach vorkommen (etwa Donf an Seeufern „selten“, an Flussufern
 /// „sehr selten“).
 class KrautEintrag {
@@ -140,6 +141,9 @@ class KrautEintrag {
     this.erntezeit = '',
     this.erntemonate = const <String>[],
     this.grundmenge = '',
+    this.beschreibung = '',
+    this.beschreibungGesperrt = false,
+    this.quelle = '',
   });
 
   /// Name des Krauts.
@@ -174,6 +178,18 @@ class KrautEintrag {
   /// Grundmenge nutzbarer Pflanzenteile je Fund (z. B. „2W6 Blätter“); die
   /// Würfelangabe ist Freitext und wird nicht ausgewertet.
   final String grundmenge;
+
+  /// Kurzbeschreibung (Aussehen, Verwendung) in eigenen Worten; leer, wenn
+  /// keine vorliegt oder sie gesperrt ist. Nur zur Anzeige, nie für Regeln.
+  final String beschreibung;
+
+  /// Ob eine Beschreibung vorliegt, aber ohne Katalogpasswort nicht
+  /// entschlüsselt werden konnte.
+  final bool beschreibungGesperrt;
+
+  /// Fundstelle für weitere Angaben, z. B. „Zoo Botanica Aventurica S. 250“;
+  /// leer ohne Angabe.
+  final String quelle;
 }
 
 /// Geladene Kräutertabellen samt Diagnose.

@@ -746,40 +746,76 @@ void main() {
     String text(WidgetTester tester, String schluessel) =>
         tester.widget<Text>(_k(schluessel)).data!;
 
-    testWidgets('zeigt Last, Tragkraft und deren Herleitung', (tester) async {
+    String tipp(WidgetTester tester) => tester
+        .widget<Tooltip>(
+          find
+              .ancestor(
+                of: _k('karto-dabei-last'),
+                matching: find.byType(Tooltip),
+              )
+              .first,
+        )
+        .message!;
+
+    testWidgets('eine Zeile Last, die Herleitung steht im Tooltip', (
+      tester,
+    ) async {
       await zeige(tester, _held(eintraege: [schwer(4500)], dukaten: '0'));
       await tester.ensureVisible(_k('karto-dabei-last'));
-      expect(text(tester, 'karto-dabei-last'), 'Last 4,5 von 13 Stein');
-      expect(
-        text(tester, 'karto-dabei-tragkraft-formel'),
-        'Tragkraft 13 (Körperkraft)',
-      );
+      expect(text(tester, 'karto-dabei-last'), '4,5 / 13 Stein');
+      expect(tipp(tester), 'Tragkraft 13 (Körperkraft)');
       expect(_k('karto-dabei-last-hinweis'), findsNothing);
-      expect(_k('karto-dabei-last-ohne-gewicht'), findsNothing);
+      // Die Quellen pflegt der Inventar-Tab.
+      expect(find.text('+ Bärenrune'), findsNothing);
+      expect(find.text('+ Andere Tragkraftquelle'), findsNothing);
     });
 
-    testWidgets(
-      'über der Tragkraft steht die Folge, ohne Gewicht der Hinweis',
-      (tester) async {
-        await zeige(
-          tester,
-          _held(
-            dukaten: '0',
-            eintraege: [
-              schwer(14000),
-              const HeroInventoryEntry(gegenstand: 'Beutel', instanzId: 'b'),
-            ],
-          ),
-        );
-        await tester.ensureVisible(_k('karto-dabei-last'));
-        expect(text(tester, 'karto-dabei-last'), 'Last 14 von 13 Stein');
-        expect(text(tester, 'karto-dabei-last-hinweis'), contains('BE +1'));
-        expect(
-          text(tester, 'karto-dabei-last-ohne-gewicht'),
-          startsWith('1 getragener Eintrag hat kein Gewicht'),
-        );
-      },
-    );
+    testWidgets('über der Tragkraft steht BE +n, die Folge im Tooltip', (
+      tester,
+    ) async {
+      await zeige(
+        tester,
+        _held(
+          dukaten: '0',
+          eintraege: [
+            schwer(14000),
+            const HeroInventoryEntry(gegenstand: 'Beutel', instanzId: 'b'),
+          ],
+        ),
+      );
+      await tester.ensureVisible(_k('karto-dabei-last'));
+      // Ein Eintrag ohne Gewicht: die Last ist ein Mindestwert.
+      expect(text(tester, 'karto-dabei-last'), '≥ 14 / 13 Stein');
+      expect(text(tester, 'karto-dabei-last-hinweis'), 'BE +1');
+      expect(tipp(tester), contains('im Marsch'));
+      expect(tipp(tester), contains('1 getragener Eintrag hat kein Gewicht'));
+    });
+
+    testWidgets('Tragkraftquellen zählen mit, ohne hier zu stehen', (
+      tester,
+    ) async {
+      final held = _held(dukaten: '0').copyWith(
+        tragkraftBoni: const [
+          HeroTragkraftBonus(id: 'a', name: 'Rune', stein: 70, kk: 1),
+        ],
+      );
+      await zeige(tester, held);
+      await tester.ensureVisible(_k('karto-dabei-last'));
+      // 13 + 1 + 70
+      expect(text(tester, 'karto-dabei-last'), '0 / 84 Stein');
+      expect(find.text('Rune'), findsNothing);
+    });
+
+    testWidgets('Erschöpfung und Überanstrengung stehen nebeneinander', (
+      tester,
+    ) async {
+      await zeige(tester, _held());
+      expect(_k('karto-dabei-stufen-nebeneinander'), findsOneWidget);
+      final e = tester.getTopLeft(_k('karto-dabei-erschoepfung-menge'));
+      final u = tester.getTopLeft(_k('karto-dabei-ueberanstrengung-menge'));
+      expect(u.dy, e.dy);
+      expect(u.dx, greaterThan(e.dx));
+    });
 
     testWidgets(
       'Erschöpfung und Überanstrengung zählen vom gespeicherten Wert',
@@ -814,88 +850,16 @@ void main() {
       );
     });
 
-    testWidgets('Bärenrune: RkP* mal 10 Stein, Hausregel KK +1', (
+    testWidgets('während einer Planung zählen die Stufen weiter', (
       tester,
     ) async {
-      final aufbau = await zeige(tester, _held(dukaten: '0'));
-      await tippe(tester, _k('karto-dabei-baerenrune'));
-      await tester.enterText(_k('karto-dabei-baerenrune-rkp'), '7');
-      await tester.tap(_k('karto-dabei-baerenrune-kk'));
-      await tester.pumpAndSettle();
-      await tester.tap(_k('karto-dabei-baerenrune-ok'));
-      await tester.pumpAndSettle();
-
-      final quellen = (await aufbau.repo.loadHeroById('praiodan'))!
-          .tragkraftBoni;
-      expect(quellen, hasLength(1));
-      expect(quellen.single.stein, 70);
-      expect(quellen.single.kk, 1);
-      expect(quellen.single.name, 'Bärenrune (RkP* 7)');
-      await tester.ensureVisible(_k('karto-dabei-last'));
-      // 13 + 1 + 70
-      expect(text(tester, 'karto-dabei-last'), 'Last 0 von 84 Stein');
-      expect(find.text('Bärenrune (RkP* 7)'), findsOneWidget);
-    });
-
-    testWidgets('Bärenrune verlangt RkP* über 0', (tester) async {
-      final aufbau = await zeige(tester, _held());
-      await tippe(tester, _k('karto-dabei-baerenrune'));
-      await tester.tap(_k('karto-dabei-baerenrune-ok'));
-      await tester.pumpAndSettle();
-      expect(
-        find.text('Bitte die RkP* als Zahl über 0 eingeben.'),
-        findsOneWidget,
-      );
-      expect(
-        (await aufbau.repo.loadHeroById('praiodan'))!.tragkraftBoni,
-        isEmpty,
-      );
-    });
-
-    testWidgets('andere Quelle anlegen und wieder entfernen', (tester) async {
-      final aufbau = await zeige(tester, _held(dukaten: '0'));
-      await tippe(tester, _k('karto-dabei-tragkraft-quelle'));
-      await tester.enterText(
-        _k('karto-dabei-quelle-name'),
-        'Gürtel der Stärke',
-      );
-      await tester.enterText(_k('karto-dabei-quelle-stein'), '5');
-      await tester.tap(_k('karto-dabei-quelle-ok'));
-      await tester.pumpAndSettle();
-      expect(
-        (await aufbau.repo.loadHeroById('praiodan'))!.tragkraftBoni.single.name,
-        'Gürtel der Stärke',
-      );
-      await tester.ensureVisible(_k('karto-dabei-last'));
-      expect(text(tester, 'karto-dabei-last'), 'Last 0 von 18 Stein');
-
-      await tippe(tester, _k('karto-dabei-tragkraft-0-entfernen'));
-      expect(
-        (await aufbau.repo.loadHeroById('praiodan'))!.tragkraftBoni,
-        isEmpty,
-      );
-      expect(text(tester, 'karto-dabei-last'), 'Last 0 von 13 Stein');
-    });
-
-    testWidgets('Quellen sind während einer Planung gesperrt, Zähler nicht', (
-      tester,
-    ) async {
-      final held = _held(dukaten: '0').copyWith(
-        tragkraftBoni: const [
-          HeroTragkraftBonus(id: 'a', name: 'Rune', stein: 10),
-        ],
-      );
+      final held = _held(dukaten: '0');
       final aufbau = await zeige(tester, held);
       aufbau.container
           .read(advancementSessionProvider('praiodan').notifier)
           .start(hero: held, catalog: testCatalog);
       await tester.pumpAndSettle();
 
-      await tippe(tester, _k('karto-dabei-tragkraft-0-entfernen'));
-      expect(
-        (await aufbau.repo.loadHeroById('praiodan'))!.tragkraftBoni,
-        hasLength(1),
-      );
       await tippe(tester, _k('karto-dabei-erschoepfung-plus'));
       expect((await aufbau.repo.loadHeroState('praiodan'))!.erschoepfung, 1);
     });

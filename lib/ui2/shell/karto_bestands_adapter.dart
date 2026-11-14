@@ -81,9 +81,13 @@ abstract interface class KartoBestandsAdapter {
   Widget spielProtokoll(HeroComputedSnapshot werte, {int? hoechstens});
 
   /// Baut Belastung, Wunden und Statuswerte aus denselben Werten.
+  ///
+  /// Ohne [mitBelastung] entfallen Erschöpfung und Überanstrengung; die
+  /// Spielansicht führt sie in „Dabei“.
   Widget spielZustand({
     required String heroId,
     required HeroComputedSnapshot werte,
+    bool mitBelastung = true,
   });
 
   /// Öffnet Anlegen, Import und weitere Aktionen der bisherigen Heldenliste.

@@ -1044,6 +1044,36 @@ void main() {
       );
     });
 
+    testWidgets('Anordnen zeigt die Vorschau in echter Höhe, eingeklappt '
+        'ohne Vorschau', (tester) async {
+      await zeige(
+        tester,
+        held: magisch().copyWith(
+          adventures: const [_nebel],
+          spielansicht: const HeroSpielansicht(
+            kacheln: [HeroSpielkachel(id: 'kampf', eingeklappt: true)],
+          ),
+        ),
+        breite: 1280,
+        hoehe: 4000,
+      );
+      await tester.tap(k('karto-spiel-anordnen'));
+      await tester.pumpAndSettle();
+
+      double hoehe(String id) =>
+          tester.getSize(k('karto-kachel-$id-vorschau')).height;
+      // Keine einheitliche Höhe mehr: die Karten zeigen, wie groß die
+      // Kacheln sind.
+      expect(hoehe('abenteuer'), greaterThan(hoehe('eigenschaften')));
+
+      expect(k('karto-kachel-kampf-vorschau'), findsNothing);
+      expect(
+        tester.widget<Text>(k('karto-kachel-kampf-breite-name')).data,
+        endsWith('Eingeklappt'),
+      );
+      expect(tester.takeException(), isNull);
+    });
+
     testWidgets('Vorschau folgt der gewählten Breite', (tester) async {
       await zeige(tester, held: weltlich(), breite: 1280, hoehe: 4000);
       await tester.tap(k('karto-spiel-anordnen'));

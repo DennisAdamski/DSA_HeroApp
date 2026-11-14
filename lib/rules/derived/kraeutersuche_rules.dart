@@ -180,6 +180,7 @@ class KraeuterSucheEingabe {
     this.ausgeschlosseneKraeuter = const <String>{},
     this.monat = '',
     this.erntezeitModus = ErntezeitModus.nurErntezeit,
+    this.zielSuchschwierigkeit = 0,
   });
 
   /// Durchsuchte Landschaft.
@@ -226,13 +227,102 @@ class KraeuterSucheEingabe {
 
   /// Umgang mit der Erntezeit.
   final ErntezeitModus erntezeitModus;
+
+  /// Suchschwierigkeit des Suchziels bei [KraeuterSuchmodus.gezielt]; sie
+  /// erschwert die Probe (WdE S. 113, Probenmodifikationen: „bei der Suche
+  /// nach einer bestimmten Heilwirkung … nach Suchschwierigkeit“). Der
+  /// Aufrufer ermittelt sie mit [kraeuterSuchziel]; in anderen Modi 0.
+  final int zielSuchschwierigkeit;
+
+  /// Kopie mit anderer [zielSuchschwierigkeit].
+  KraeuterSucheEingabe mitZielSuchschwierigkeit(int wert) =>
+      KraeuterSucheEingabe(
+        landschaft: landschaft,
+        jahreszeit: jahreszeit,
+        taw: taw,
+        eigenschaften: eigenschaften,
+        dauerStunden: dauerStunden,
+        gelaendekunde: gelaendekunde,
+        ortskenntnis: ortskenntnis,
+        eingesetzteAsp: eingesetzteAsp,
+        situativeErschwernis: situativeErschwernis,
+        modus: modus,
+        zielKraut: zielKraut,
+        ausgeschlosseneKraeuter: ausgeschlosseneKraeuter,
+        monat: monat,
+        erntezeitModus: erntezeitModus,
+        zielSuchschwierigkeit: wert,
+      );
 }
+
+/// Suchziel einer gezielten Suche mit seiner Suchschwierigkeit.
+class KraeuterZiel {
+  /// Erstellt ein Suchziel.
+  const KraeuterZiel({
+    required this.bezeichnung,
+    required this.suchschwierigkeit,
+    this.kandidat,
+  });
+
+  /// Name des Krauts oder „Heilwirkung ohne bestimmte Pflanze“.
+  final String bezeichnung;
+
+  /// Suchschwierigkeit (Bestimmung plus Häufigkeit bzw. Pauschalwert).
+  final int suchschwierigkeit;
+
+  /// Das maßgebliche Vorkommen; `null` bei Pauschalsuche.
+  final KraeuterKandidat? kandidat;
+}
+
+/// Das Suchziel einer gezielten Suche: das leichteste findbare Vorkommen des
+/// gesuchten Krauts in der Landschaft, ohne bestimmtes Kraut die
+/// Pauschal-Suchschwierigkeit ([kraeuterPauschalSuchschwierigkeit]).
+///
+/// `null` außerhalb von [KraeuterSuchmodus.gezielt] und wenn das Kraut in der
+/// Landschaft nicht vorkommt, ausgeschlossen oder nicht zu ernten ist.
+KraeuterZiel? kraeuterSuchziel(
+  KraeuterSucheEingabe eingabe,
+  KraeuterKatalog katalog,
+) {
+  if (eingabe.modus != KraeuterSuchmodus.gezielt) return null;
+  final ziel = eingabe.zielKraut.trim();
+  if (ziel.isEmpty) {
+    return KraeuterZiel(
+      bezeichnung: 'Heilwirkung ohne bestimmte Pflanze',
+      suchschwierigkeit: kraeuterPauschalSuchschwierigkeit(eingabe.landschaft),
+    );
+  }
+  final kandidaten = _kandidatenDerSuche(
+    eingabe,
+    katalog,
+  ).where((k) => k.kraut.name == ziel).toList();
+  if (kandidaten.isEmpty) return null;
+  // Mehrere Vorkommen (z. B. Seeufer/Flussufer): das leichteste zählt.
+  final leichtestes = kandidaten.reduce(
+    (a, b) => b.suchschwierigkeit < a.suchschwierigkeit ? b : a,
+  );
+  return KraeuterZiel(
+    bezeichnung: leichtestes.kraut.name,
+    suchschwierigkeit: leichtestes.suchschwierigkeit,
+    kandidat: leichtestes,
+  );
+}
+
+/// [eingabe] mit der Suchschwierigkeit ihres Suchziels (siehe
+/// [kraeuterSuchziel]); ohne findbares Ziel 0.
+KraeuterSucheEingabe kraeuterEingabeMitZiel(
+  KraeuterSucheEingabe eingabe,
+  KraeuterKatalog katalog,
+) => eingabe.mitZielSuchschwierigkeit(
+  kraeuterSuchziel(eingabe, katalog)?.suchschwierigkeit ?? 0,
+);
 
 /// Gesamterschwernis der Probe (positiv = schwerer).
 ///
-/// Summe aus Landschaft/Jahreszeit, Geländekunde (−3/−1), passender
-/// Ortskenntnis (−7), eingesetzten AsP (je 3 AsP −1) und situativer
-/// Erschwernis.
+/// Summe aus Landschaft/Jahreszeit, Suchschwierigkeit des Suchziels
+/// ([KraeuterSucheEingabe.zielSuchschwierigkeit]), Geländekunde (−3/−1),
+/// passender Ortskenntnis (−7), eingesetzten AsP (je 3 AsP −1) und
+/// situativer Erschwernis.
 int kraeuterProbenErschwernis(KraeuterSucheEingabe eingabe) {
   return wildnisProbenErschwernis(
     _alsWildnisEingabe(eingabe, taw: eingabe.taw),
@@ -268,10 +358,9 @@ WildnisProbeEingabe _alsWildnisEingabe(
   return WildnisProbeEingabe(
     taw: taw,
     eigenschaften: eingabe.eigenschaften,
-    basisErschwernis: kraeuterLandschaftsErschwernis(
-      eingabe.landschaft,
-      eingabe.jahreszeit,
-    ),
+    basisErschwernis:
+        kraeuterLandschaftsErschwernis(eingabe.landschaft, eingabe.jahreszeit) +
+        eingabe.zielSuchschwierigkeit,
     gelaendekunde: eingabe.gelaendekunde,
     ortskenntnis: eingabe.ortskenntnis,
     eingesetzteAsp: eingabe.eingesetzteAsp,
@@ -530,18 +619,20 @@ class KraeuterSucheErgebnis {
 /// Modus [KraeuterSuchmodus.gezielt]: Grundmengen = TaP* geteilt durch die
 /// halbe Suchschwierigkeit, aufgerundet. Ohne [KraeuterSucheEingabe.zielKraut]
 /// gilt die Pauschal-Suchschwierigkeit der Landschaft; ein Kraut, das dort nicht
-/// vorkommt, ergibt keinen Fund (Hinweis im Ergebnis).
+/// vorkommt, ergibt keinen Fund (Hinweis im Ergebnis). Die Suchschwierigkeit
+/// des Ziels erschwert zusätzlich die Probe ([kraeuterSuchziel]).
 KraeuterSucheErgebnis fuehreKraeutersucheDurch(
   KraeuterSucheEingabe eingabe,
   KraeuterKatalog katalog, {
   required DiceRoller roller,
 }) {
-  final request = baueKraeutersucheProbe(eingabe);
+  final mitZiel = kraeuterEingabeMitZiel(eingabe, katalog);
+  final request = baueKraeutersucheProbe(mitZiel);
   final probe = evaluateProbe(
     request,
     createDigitalProbeRollInput(request, roller: roller),
   );
-  return werteKraeutersucheAus(eingabe, katalog, probe, roller: roller);
+  return werteKraeutersucheAus(mitZiel, katalog, probe, roller: roller);
 }
 
 /// Setzt eine bereits ausgewertete [probe] (etwa aus einem manuellen Wurf) in
@@ -553,7 +644,9 @@ KraeuterSucheErgebnis werteKraeutersucheAus(
   required DiceRoller roller,
 }) {
   final tap = kraeuterTapStern(probe);
-  final erschwernis = kraeuterProbenErschwernis(eingabe);
+  final erschwernis = kraeuterProbenErschwernis(
+    kraeuterEingabeMitZiel(eingabe, katalog),
+  );
   final taw = kraeuterSuchenTawBeiDauer(eingabe.taw, eingabe.dauerStunden);
   KraeuterSucheErgebnis ergebnis({
     List<KraeuterFund> funde = const <KraeuterFund>[],

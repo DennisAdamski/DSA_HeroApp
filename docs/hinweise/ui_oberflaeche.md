@@ -112,7 +112,9 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   Maximum wird nie gekürzt). **In einer weiten Kachel** (`KartoKachelGroesse.weit`,
   also auch im Vergrößern-Dialog) trägt jede Zelle eine Knopfreihe −5, −1, +1, +5
   unter dem Balken (`KartoRessourcenwert.onSchritt`, Keys
-  `karto-ressource-<art>-minus-5|minus-1|plus-1|plus-5`). Die Zellen sind dann
+  `karto-ressource-<art>-minus-5|minus-1|plus-1|plus-5`; eine zusammenhängende
+  Leiste auf `senke` mit Haarlinien zwischen den Segmenten, 48 dp hoch, statt
+  vier umrandeter Kästen). Die Zellen sind dann
   mindestens 240 dp breit, und die Spaltenzahl ist ausgewogen
   (`KartoRessourcenleiste.ausgewogeneSpalten`: 4 Ressourcen bei Platz für 3 ergeben
   2×2). Kompakt und normal bleibt alles wie vorher. Geschrieben wird über
@@ -134,8 +136,28 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   Höhe: Einklappen oder neue Daten verschieben nur Kacheln darunter in
   derselben Spalte, keine wechselt Spalte oder Breite (ein früheres
   „Ausweichen“ in Lücken entfiel). Die senkrechte Lage folgt der echten
-  Unterkante. Kinder werden ohne Intrinsics ausgelegt, `LayoutBuilder` in Kacheln
-  ist erlaubt. Was eine Kachel erlaubt (Breiten, Standardbreite, Ausblenden,
+  Unterkante. **Lückenschluss:** Beginnt die nächste Kachel einer Spalte tiefer
+  (eine mehrspaltige Kachel wartet auf ihre tiefste Spalte), wird die Kachel
+  darüber in einem zweiten Durchgang bis an sie heran gedehnt, mit
+  **Mindesthöhe** statt fester Höhe (mit fester Höhe wäre sie eine
+  Layoutgrenze, wachsender Inhalt erreichte das Raster nicht). Lagen ändern
+  sich dadurch nie; die letzte Kachel einer Spalte behält ihre Höhe.
+  `KartoRasterKachel.dehnbar: false` nimmt eine Kachel aus (eingeklappte
+  Kacheln, auch als Anordnungskarte). Eine Kachel muss die Mindesthöhe füllen: der
+  äußere `KartoAbschnitt` tut das (`StackFit.passthrough` an der Akzentkante);
+  wer ihn in `Align` oder ähnliches wickelt, lässt wieder ein Loch. Die
+  Richtgewichte sind an gemessene Höhen der Standardbreite angelehnt
+  (14.11.2026) und sollten ihnen folgen, wenn eine Kachel deutlich wächst.
+  **Eine Flächenstufe:** alle Kacheln liegen auf `feld`; die frühere `senke`
+  für Kampf, Effekte, Zustand und Begleiter wechselte im freien Raster
+  scheinbar zufällig. Unterschieden wird über Symbol (jede Kachel trägt eines,
+  `spielkachelSymbol`) und `KartoAkzent`. **Kopf-Bedienung bei Bedarf:**
+  Vergrößern-Symbol und Einklapp-Pfeil des äußeren Abschnitts sind mit
+  angeschlossener Maus nur sichtbar, solange Zeiger oder Fokus in der Kachel
+  liegen (`_Kachelzeiger`/`_BeiBedarf` in `karto_abschnitt.dart`,
+  `AnimatedOpacity`; bleiben im Baum, klickbar und in der Semantik). Ohne Maus
+  und eingeklappt (Pfeil) bleiben sie stehen. Kinder werden ohne Intrinsics
+  ausgelegt, `LayoutBuilder` in Kacheln ist erlaubt. Was eine Kachel erlaubt (Breiten, Standardbreite, Ausblenden,
   Einklappen), legt `KartoSpielkachelArt` in `karto_spielraster_ordnung.dart`
   fest; Ressourcen lassen sich weder ausblenden noch einklappen. Gespeichert wird **je Held** in `HeroSheet.spielansicht`
   (`HeroSpielansicht`/`HeroSpielkachel`, nur bei Belegung im JSON; Kacheln mit
@@ -148,9 +170,12 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   gesperrter **Live-Vorschau** des echten Inhalts (Key `karto-kachel-<id>-vorschau`,
   Etikett mit Stufe und Breite `…-vorschau-stufe`): der Inhalt wird in der
   Größenstufe der echten Kachelbreite gebaut (`vorschau`-Rückruf aus `_kachel`),
-  ist mit `IgnorePointer`/`ExcludeFocus`/`ExcludeSemantics` nicht bedienbar, 180 dp
-  hoch (`vorschauHoehe`) und blendet unten aus; sie folgt sofort einer geänderten
-  Breite. Ziehen am Griff oder am Titel (nach
+  ist mit `IgnorePointer`/`ExcludeFocus`/`ExcludeSemantics` nicht bedienbar
+  und steht in **echter Höhe** (keine Kappung mehr, seit 14.11.2026): so zeigt
+  der Anordnen-Modus, wie groß jede Kachel ist, und das Raster packt und dehnt
+  die Karten wie später die Kacheln. Eine eingeklappte Kachel zeigt keine
+  Vorschau, nur „… · Eingeklappt“ (Key `…-breite-name`). Die Vorschau folgt
+  sofort einer geänderten Breite. Ziehen am Griff oder am Titel (nach
   kurzem Halten), eine Einfügelinie zeigt „davor“ oder „danach“, abgelegt wird
   einfügend (`fuegeSpielkachelEin`), dazu Pfeile, Breitenmenü, Ausblenden,
   „Standard“; erst „Fertig“ schreibt einmal frisch
@@ -169,9 +194,11 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   (Keys `karto-kampf-ini|tp|rs|be`), bei Fernkampf Ladezeit, Geschoss,
   Entfernung, bei Belegung Wundabzug von Schwert-/Schildarm und
   Waffenmeisterschaft. Reine Anzeige aus der Kampfvorschau, ohne Rechnung; die
-  wichtigsten Zeilen stehen oben, weil die Anordnen-Vorschau nur 180 dp zeigt.
+  wichtigsten Zeilen stehen oben.
   Die Kachel bleibt standardmäßig schmal; das Panel erscheint nach dem
-  Verbreitern oder im Vergrößern-Dialog. **Eigenschaften:** Die Kachel passt ihre Spalten (8, 4, 2, 1) schon an die Breite an;
+  Verbreitern oder im Vergrößern-Dialog. **Eigenschaften:** Die Kachel erlaubt
+  seit 14.11.2026 auch „Schmal“ (Standard bleibt „Mittel“); schmal stehen die
+  acht Karten als 4 × 2. Die Kachel passt ihre Spalten (8, 4, 2, 1) schon an die Breite an;
   in `weit` zeigt eine Karte einen Wundabzug zusätzlich als „−4“ an der Karte
   selbst (`InspectorAttributeCard.abzugZeigen`, vom Adapter über die Stufe
   geschaltet), sonst nur im Tooltip. Mehr gibt die Datenlage nicht her, die
@@ -197,7 +224,18 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   aufgeklappt (`anfangsAufgeklappt`, danach frei einklappbar, nicht gespeichert),
   rechts die Statuswerte ohne Trennlinie (`mitTrenner: false`). Schmaler, in
   `kompakt`/`normal` und außerhalb einer Kachel bleibt es bei der einen Spalte
-  mit eingeklappten Abschnitten. Die klassischen Abschnitte bekamen nur
+  mit eingeklappten Abschnitten; die Statuswerte stehen dann als flaches
+  **Wertraster** (`InspectorStatuswerteBlock.raster`, 4 Spalten, bei wenig
+  Platz 2; Karten mit Kürzel, Ergebnis und Modifikator-Marke, Keys
+  `workspace-status-kachel-<Label>`). Ein Tipp öffnet ein kleines Blatt
+  (`workspace-status-blatt-<Label>`) mit derselben `InspectorValueRow`; es liest
+  den Snapshot selbst neu, bleibt für mehrere Schritte offen und meldet Fehler
+  im eigenen `ZustandFehlerBereich`. MR öffnet nichts; während einer Planung
+  ist nur BE antippbar. Zeilen, Raster und Blatt teilen eine Beschreibung
+  (`_statuswerte`), die Schreibwege sind dieselben. **Die Spielansicht** baut
+  den Block mit `spielZustand(mitBelastung: false)`: Zustand = Wunden +
+  Statuswerte, Erschöpfung und Überanstrengung stehen in „Dabei“; das Gefecht
+  behält die Belastung (Standard `true`). Die klassischen Abschnitte bekamen nur
   optionale Parameter mit unverändertem Standard; Schreibwege unverändert. „Dabei“ hält Betrag,
   Stift und Münzschritte beieinander und lässt die Verbrauchsgegenstände ab
   `kDabeiZweispaltigAb` (560 dp Kachelbreite) zweispaltig fließen.
@@ -257,7 +295,14 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   die Ergebnisanzeige. Die Kachel schreibt nichts am Helden; Eingaben und
   Ergebnis leben nur im Widget, jede Eingabe verwirft das Ergebnis. AsP werden
   nicht abgebucht. Das Vergrößern-Popup liefert das Raster; in `weit` zeigt die
-  Vorschau mehr Zeilen (`kWildnisVorschauWeit` statt `kWildnisVorschauKurz`).
+  Vorschau mehr Zeilen (`kWildnisVorschauWeit` statt `kWildnisVorschauKurz`),
+  „Alle N anzeigen“ blendet in jeder Größe die ganze Liste ein. Zeilen mit
+  `WildnisErgebnisZeile.erlaeuterung`/`quelle` klappen per Antippen auf
+  (Kräuter: Wirkung, Kurzbeschreibung bzw. Sperrhinweis ohne Katalogpasswort,
+  Bestimmung, Erntezeit, Grundmenge, Zoo-Botanica-Seite).
+  `erschwernisHinweis` erklärt einen Erschwernisanteil aus der Wahl (gezielte
+  Kräutersuche: Suchschwierigkeit des Krauts), `zielAngaben` zeigt die Angaben
+  zum gewählten Ziel unter der Zusammenfassung.
   **Neue Tätigkeit** (Nahrung sammeln, Pirschjagd …): Unterklasse von
   `KartoWildnisTaetigkeit` (`karto_wildnis_taetigkeit.dart`: Talentbestandteile,
   Eigenschaften, Landschaften und Landschaftsvorschlag je Ort, Dauern, eigene
@@ -624,12 +669,14 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   würde; Geld und Verbrauchsgegenstände bleiben bedienbar.
   **Belastung (10.11.2026):** Am Ende des Blocks steht der Abschnitt
   „Belastung“ (`_Belastung`), gespeist aus `HeroComputedSnapshot.tragkraft`
-  (`berechneTragkraft` in `tragkraft_rules.dart`, WdS S. 144). Er zeigt „Last x
-  von y Stein“ (1 Stein = 1 kg), die Herleitung der Tragkraft in einer Zeile
-  (`tragkraftFormel`), bei Überschreitung die Folge (`TragkraftErgebnis.hinweis`:
-  BE +1 je angefangene 50 % über der TK, über 2 × TK Verschnaufpausen alle KO
-  Spielrunden, ab 4 × TK Absetzen alle 5 × KO Schritt) und, falls getragene
-  Einträge kein Gewicht haben, einen Hinweis, dass die Last ein Mindestwert ist.
+  (`berechneTragkraft` in `tragkraft_rules.dart`, WdS S. 144). Seit 14.11.2026
+  knapp: **eine Zeile** „Belastung x / y Stein“ (1 Stein = 1 kg, Key
+  `karto-dabei-last`, „≥ “ davor, wenn getragene Einträge kein Gewicht haben),
+  bei Überschreitung in Siegelfarbe mit der Marke „BE +n“
+  (`karto-dabei-last-hinweis`). Die Herleitung (`tragkraftFormel`), die volle
+  Folge (`TragkraftErgebnis.hinweis`: BE +1 je angefangene 50 % über der TK,
+  über 2 × TK Verschnaufpausen alle KO Spielrunden, ab 4 × TK Absetzen alle
+  5 × KO Schritt) und der Mindestwert-Hinweis stehen im Tooltip der Zeile.
   **Last** = Gewicht aller vom Helden getragenen Einträge (Stückgewicht × Menge;
   was ein Begleiter trägt, zählt nicht) plus Geld (Dukat 25 g, Silbertaler,
   Heller und Kreuzer je 5 g bei kleinstmöglicher Münzzahl, Geographia
@@ -646,14 +693,22 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   `HeroSheet.tragkraftBoni` (`HeroTragkraftBonus`: Name, `stein`, optional `kk`
   nur für die Tragkraft; nur bei belegter Liste im JSON, Sync-Merge je ID). Nur
   **Dauerhaftes** gehört dorthin (Bärenrune bis zur Sonnenwende, dauerhafte
-  Gegenstände), keine Kurzzeitzauber. „+ Bärenrune“ rechnet RkP\* × 10 Stein
-  (Wege der Alchimie S. 161) und bietet die Hausregel „KK +1“ („Erweiterung und
-  Überarbeitung des Regelwerks“ Kap. 10) als Schalter; „+ Andere
-  Tragkraftquelle“ nimmt Name, Stein und KK. Quellen schreiben frisch über
-  `updateHero` (`mitTragkraftBonus`, `ohneTragkraftBonus`) und sind während einer
-  Planung gesperrt. Darunter stehen Erschöpfung und Überanstrengung mit −/+
+  Gegenstände), keine Kurzzeitzauber. **Gepflegt werden die Quellen im
+  Inventar-Tab** (`TragkraftQuellenAbschnitt` in
+  `lib/ui/screens/hero_inventory/tragkraft_quellen_abschnitt.dart`, unter dem
+  Geldfeld, Keys `inventory-tragkraft-*`): „Tragkraft y Stein“ mit der
+  Herleitung im Tooltip, die Quellen als Chips mit ×, „+ Bärenrune“ rechnet
+  RkP\* × 10 Stein (Wege der Alchimie S. 161) und bietet die Hausregel „KK +1“
+  („Erweiterung und Überarbeitung des Regelwerks“ Kap. 10) als Schalter; „+
+  Andere Tragkraftquelle“ nimmt Name, Stein und KK. Quellen schreiben frisch
+  über `aendereHeldMitMeldung` (`mitTragkraftBonus`, `ohneTragkraftBonus`) und
+  sind während einer Planung gesperrt. In „Dabei“ stehen unter der Lastzeile
+  Erschöpfung und Überanstrengung mit −/+, **nebeneinander** (Key
+  `karto-dabei-stufen-nebeneinander`), sobald zwei Zellen à
+  `kDabeiStufenZelleMin` (120 dp) passen, sonst untereinander
   (Laufzeitzustand, geschrieben über `updateHeroState` vom gespeicherten Wert,
-  nie unter 0, auch während einer Planung bedienbar wie im Zustandsblock).
+  nie unter 0, auch während einer Planung bedienbar wie im Zustandsblock). Der
+  Zustand der Spielansicht führt sie deshalb nicht mehr.
   Offen: Gepäck-Gewichte der Waffen- und Rüstungs-Slots sind nur so genau wie
   das im Inventar eingetragene Gewicht; die optionale Reiseregel „BE aus
   zusätzlicher Last je 25 %“ (WdS S. 144, Erschöpfung im Marsch) ist nicht

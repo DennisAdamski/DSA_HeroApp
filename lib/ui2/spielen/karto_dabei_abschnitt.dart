@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
-import 'package:dsa_heldenverwaltung/domain/hero_tragkraft_bonus.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/currency_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/tragkraft_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/spiel_dabei_rules.dart';
@@ -17,7 +16,6 @@ import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abschnitt.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_held_schreiben.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
-import 'package:uuid/uuid.dart';
 
 /// Anzahl Verbrauchsgegenstände, die ohne „Alle zeigen“ sichtbar bleiben.
 const int kDabeiSichtbar = 6;
@@ -56,7 +54,6 @@ class KartoDabeiAbschnitt extends ConsumerStatefulWidget {
     this.munition = const <DabeiMunition>[],
     this.begleiterVerbrauch = const <DabeiBegleiterVerbrauch>[],
     this.tragkraft,
-    this.tragkraftBoni = const <HeroTragkraftBonus>[],
     this.erschoepfung = 0,
     this.ueberanstrengung = 0,
     this.onBenutzen,
@@ -80,10 +77,9 @@ class KartoDabeiAbschnitt extends ConsumerStatefulWidget {
   final List<DabeiBegleiterVerbrauch> begleiterVerbrauch;
 
   /// Last und Tragkraft aus dem Regelmodul; ohne Wert entfällt „Belastung“.
+  ///
+  /// Die Tragkraftquellen (etwa die Bärenrune) pflegt der Inventar-Tab.
   final TragkraftErgebnis? tragkraft;
-
-  /// Dauerhafte Tragkraftquellen des Helden (z. B. Bärenrune).
-  final List<HeroTragkraftBonus> tragkraftBoni;
 
   /// Gespeicherte Erschöpfung (Laufzeitzustand).
   final int erschoepfung;
@@ -134,30 +130,6 @@ class _KartoDabeiAbschnittState extends ConsumerState<KartoDabeiAbschnitt>
 
   static int _ab0(int wert) => wert < 0 ? 0 : wert;
 
-  Future<void> _baerenruneHinzufuegen() async {
-    final ergebnis = await showDialog<({int rkp, bool kk})>(
-      context: context,
-      builder: (_) => const _BaerenruneDialog(),
-    );
-    if (ergebnis == null) return;
-    final bonus = baerenruneBonus(
-      id: const Uuid().v4(),
-      rkp: ergebnis.rkp,
-      hausregelKk: ergebnis.kk,
-    );
-    await _schreibe((held) => mitTragkraftBonus(held, bonus));
-  }
-
-  Future<void> _quelleHinzufuegen() async {
-    final ergebnis = await showDialog<HeroTragkraftBonus>(
-      context: context,
-      builder: (_) => const _QuelleDialog(),
-    );
-    if (ergebnis == null) return;
-    final bonus = ergebnis.copyWith(id: const Uuid().v4());
-    await _schreibe((held) => mitTragkraftBonus(held, bonus));
-  }
-
   Future<void> _betragAendern() async {
     final ergebnis = await showDialog<int>(
       context: context,
@@ -187,6 +159,7 @@ class _KartoDabeiAbschnittState extends ConsumerState<KartoDabeiAbschnitt>
 
     return KartoAbschnitt(
       titel: 'Dabei',
+      symbol: Icons.backpack_outlined,
       dicht: true,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -311,10 +284,8 @@ class _KartoDabeiAbschnittState extends ConsumerState<KartoDabeiAbschnitt>
             const SizedBox(height: Abstand.weit),
             _Belastung(
               tragkraft: widget.tragkraft!,
-              quellen: widget.tragkraftBoni,
               erschoepfung: widget.erschoepfung,
               ueberanstrengung: widget.ueberanstrengung,
-              gesperrt: gesperrt,
               onErschoepfung: (delta) => _schreibeZustand(
                 (z) => z.copyWith(erschoepfung: _ab0(z.erschoepfung + delta)),
               ),
@@ -323,10 +294,6 @@ class _KartoDabeiAbschnittState extends ConsumerState<KartoDabeiAbschnitt>
                   ueberanstrengung: _ab0(z.ueberanstrengung + delta),
                 ),
               ),
-              onBaerenrune: _baerenruneHinzufuegen,
-              onQuelle: _quelleHinzufuegen,
-              onEntfernen: (id) =>
-                  _schreibe((held) => ohneTragkraftBonus(held, id)),
             ),
           ],
           if (gesperrt) ...[
@@ -458,35 +425,31 @@ class _Geld extends StatelessWidget {
   }
 }
 
-/// Abschnitt „Belastung“: getragenes Gewicht gegen die Tragkraft, die
-/// dauerhaften Tragkraftquellen sowie Erschöpfung und Überanstrengung.
+/// Mindestbreite einer Zelle für Erschöpfung oder Überanstrengung.
+const double kDabeiStufenZelleMin = 120;
+
+/// Abschnitt „Belastung“: eine Zeile Last gegen Tragkraft, darunter
+/// Erschöpfung und Überanstrengung, nebeneinander, sofern Platz ist.
 ///
-/// Zeigt nur an, was das Regelmodul liefert (`berechneTragkraft`); die
-/// Schreibwege liegen beim Block.
+/// Zeigt nur an, was das Regelmodul liefert (`berechneTragkraft`). Die
+/// Herleitung der Tragkraft, die volle Folge einer Überschreitung und der
+/// Hinweis auf Einträge ohne Gewicht stehen im Tooltip der Lastzeile; die
+/// Tragkraftquellen pflegt der Inventar-Tab. Die Schreibwege liegen beim
+/// Block.
 class _Belastung extends StatelessWidget {
   const _Belastung({
     required this.tragkraft,
-    required this.quellen,
     required this.erschoepfung,
     required this.ueberanstrengung,
-    required this.gesperrt,
     required this.onErschoepfung,
     required this.onUeberanstrengung,
-    required this.onBaerenrune,
-    required this.onQuelle,
-    required this.onEntfernen,
   });
 
   final TragkraftErgebnis tragkraft;
-  final List<HeroTragkraftBonus> quellen;
   final int erschoepfung;
   final int ueberanstrengung;
-  final bool gesperrt;
   final void Function(int delta) onErschoepfung;
   final void Function(int delta) onUeberanstrengung;
-  final VoidCallback onBaerenrune;
-  final VoidCallback onQuelle;
-  final void Function(String id) onEntfernen;
 
   @override
   Widget build(BuildContext context) {
@@ -494,139 +457,117 @@ class _Belastung extends StatelessWidget {
     final texte = Theme.of(context).textTheme;
     final ueber = tragkraft.stufe != TragkraftStufe.frei;
     final hinweis = tragkraft.hinweis;
-    final formel = tragkraftFormel(tragkraft.tragkraft);
+    final mindestens = tragkraft.ohneGewicht > 0;
+    final tipp = [
+      'Tragkraft ${tragkraftFormel(tragkraft.tragkraft)}',
+      ?hinweis,
+      if (mindestens)
+        tragkraft.ohneGewicht == 1
+            ? '1 getragener Eintrag hat kein Gewicht: die Last ist '
+                  'mindestens so hoch.'
+            : '${tragkraft.ohneGewicht} getragene Einträge haben kein '
+                  'Gewicht: die Last ist mindestens so hoch.',
+    ].join('\n');
 
-    Widget stufenZeile(
+    Widget stufe(
       String schluessel,
       String name,
       int wert,
       void Function(int delta) onSchritt,
     ) {
-      return Padding(
-        padding: const EdgeInsets.only(top: Abstand.eng),
-        child: Row(
-          children: [
-            Expanded(
-              child: Text(
-                name,
-                style: texte.fliess.copyWith(color: karto.schrift),
-              ),
-            ),
-            _MengeSchritt(
-              schluessel: schluessel,
-              menge: '$wert',
-              name: name,
-              onMinus: wert > 0 ? () => onSchritt(-1) : null,
-              onPlus: () => onSchritt(1),
-            ),
-          ],
-        ),
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            name,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: texte.etikett.copyWith(color: karto.schriftLeise),
+          ),
+          _MengeSchritt(
+            schluessel: schluessel,
+            menge: '$wert',
+            name: name,
+            onMinus: wert > 0 ? () => onSchritt(-1) : null,
+            onPlus: () => onSchritt(1),
+          ),
+        ],
       );
     }
+
+    final stufen = <Widget>[
+      stufe(
+        'karto-dabei-erschoepfung',
+        'Erschöpfung',
+        erschoepfung,
+        onErschoepfung,
+      ),
+      stufe(
+        'karto-dabei-ueberanstrengung',
+        'Überanstrengung',
+        ueberanstrengung,
+        onUeberanstrengung,
+      ),
+    ];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(
-          'Belastung',
-          style: texte.marke.copyWith(color: karto.schriftLeise),
+        Tooltip(
+          message: tipp,
+          child: Wrap(
+            spacing: Abstand.normal,
+            runSpacing: Abstand.eng,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              Text(
+                'Belastung',
+                style: texte.marke.copyWith(color: karto.schriftLeise),
+              ),
+              Text(
+                '${mindestens ? '≥ ' : ''}'
+                '${formatiereStein(tragkraft.lastGramm)} / '
+                '${tragkraft.tragkraftStein} Stein',
+                key: const ValueKey<String>('karto-dabei-last'),
+                style: texte.wert.copyWith(
+                  color: ueber ? karto.siegel : karto.schrift,
+                ),
+              ),
+              if (ueber)
+                Text(
+                  'BE +${tragkraft.zusatzBe}',
+                  key: const ValueKey<String>('karto-dabei-last-hinweis'),
+                  style: texte.etikett.copyWith(color: karto.siegel),
+                ),
+            ],
+          ),
         ),
         const SizedBox(height: Abstand.eng),
-        Text(
-          'Last ${formatiereStein(tragkraft.lastGramm)} von '
-          '${tragkraft.tragkraftStein} Stein',
-          key: const ValueKey<String>('karto-dabei-last'),
-          style: texte.wert.copyWith(
-            color: ueber ? karto.siegel : karto.schrift,
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.only(top: Abstand.haar),
-          child: Text(
-            'Tragkraft $formel',
-            key: const ValueKey<String>('karto-dabei-tragkraft-formel'),
-            style: texte.etikett.copyWith(color: karto.schriftLeise),
-          ),
-        ),
-        if (hinweis != null)
-          Padding(
-            padding: const EdgeInsets.only(top: Abstand.eng),
-            child: Text(
-              hinweis,
-              key: const ValueKey<String>('karto-dabei-last-hinweis'),
-              style: texte.etikett.copyWith(color: karto.siegel),
-            ),
-          ),
-        if (tragkraft.ohneGewicht > 0)
-          Padding(
-            padding: const EdgeInsets.only(top: Abstand.eng),
-            child: Text(
-              tragkraft.ohneGewicht == 1
-                  ? '1 getragener Eintrag hat kein Gewicht: die Last ist '
-                        'mindestens so hoch.'
-                  : '${tragkraft.ohneGewicht} getragene Einträge haben kein '
-                        'Gewicht: die Last ist mindestens so hoch.',
-              key: const ValueKey<String>('karto-dabei-last-ohne-gewicht'),
-              style: texte.etikett.copyWith(color: karto.schriftLeise),
-            ),
-          ),
-        for (var i = 0; i < quellen.length; i++)
-          Padding(
-            key: ValueKey<String>('karto-dabei-tragkraft-$i'),
-            padding: const EdgeInsets.only(top: Abstand.eng),
-            child: Row(
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final nebeneinander =
+                constraints.maxWidth >= 2 * kDabeiStufenZelleMin + Abstand.weit;
+            if (!nebeneinander) {
+              return Column(
+                key: const ValueKey<String>('karto-dabei-stufen'),
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  stufen[0],
+                  const SizedBox(height: Abstand.eng),
+                  stufen[1],
+                ],
+              );
+            }
+            return Row(
+              key: const ValueKey<String>('karto-dabei-stufen-nebeneinander'),
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: Text(
-                    quellen[i].anzeigeName,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: texte.fliess.copyWith(color: karto.schrift),
-                  ),
-                ),
-                Text(
-                  [
-                    if (quellen[i].stein != 0) '+${quellen[i].stein} Stein',
-                    if (quellen[i].kk != 0)
-                      'KK ${quellen[i].kk > 0 ? '+' : ''}${quellen[i].kk}',
-                  ].join(' · '),
-                  style: texte.etikett.copyWith(color: karto.schriftLeise),
-                ),
-                _Knopf(
-                  key: ValueKey<String>('karto-dabei-tragkraft-$i-entfernen'),
-                  zeichen: '×',
-                  tipp: '${quellen[i].anzeigeName} entfernen',
-                  onTap: gesperrt ? null : () => onEntfernen(quellen[i].id),
-                ),
+                Expanded(child: stufen[0]),
+                const SizedBox(width: Abstand.weit),
+                Expanded(child: stufen[1]),
               ],
-            ),
-          ),
-        Wrap(
-          spacing: Abstand.normal,
-          children: [
-            TextButton(
-              key: const ValueKey<String>('karto-dabei-baerenrune'),
-              onPressed: gesperrt ? null : onBaerenrune,
-              child: const Text('+ Bärenrune'),
-            ),
-            TextButton(
-              key: const ValueKey<String>('karto-dabei-tragkraft-quelle'),
-              onPressed: gesperrt ? null : onQuelle,
-              child: const Text('+ Andere Tragkraftquelle'),
-            ),
-          ],
-        ),
-        stufenZeile(
-          'karto-dabei-erschoepfung',
-          'Erschöpfung',
-          erschoepfung,
-          onErschoepfung,
-        ),
-        stufenZeile(
-          'karto-dabei-ueberanstrengung',
-          'Überanstrengung',
-          ueberanstrengung,
-          onUeberanstrengung,
+            );
+          },
         ),
       ],
     );
@@ -927,187 +868,6 @@ class _Knopf extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-}
-
-/// Dialog „Bärenrune“: RkP* der Rune, dazu die Hausregel „KK +1“.
-///
-/// Liefert RkP* und den Schalter der Hausregel oder nichts bei Abbruch. Die
-/// Tragkraft (RkP* × 10 Stein) rechnet `baerenruneBonus`.
-class _BaerenruneDialog extends StatefulWidget {
-  const _BaerenruneDialog();
-
-  @override
-  State<_BaerenruneDialog> createState() => _BaerenruneDialogState();
-}
-
-class _BaerenruneDialogState extends State<_BaerenruneDialog> {
-  final TextEditingController _rkp = TextEditingController();
-  bool _kk = false;
-  String? _fehler;
-
-  @override
-  void dispose() {
-    _rkp.dispose();
-    super.dispose();
-  }
-
-  void _uebernehmen() {
-    final rkp = int.tryParse(_rkp.text.trim());
-    if (rkp == null || rkp <= 0) {
-      setState(() => _fehler = 'Bitte die RkP* als Zahl über 0 eingeben.');
-      return;
-    }
-    Navigator.of(context).pop((rkp: rkp, kk: _kk));
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('Bärenrune'),
-      content: SizedBox(
-        width: Breite.klein,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            TextField(
-              key: const ValueKey<String>('karto-dabei-baerenrune-rkp'),
-              controller: _rkp,
-              autofocus: true,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                labelText: 'RkP*',
-                helperText: 'Tragkraft + RkP* × 10 Stein (WdA S. 161)',
-                errorText: _fehler,
-              ),
-              onChanged: (_) {
-                if (_fehler != null) setState(() => _fehler = null);
-              },
-              onSubmitted: (_) => _uebernehmen(),
-            ),
-            CheckboxListTile(
-              key: const ValueKey<String>('karto-dabei-baerenrune-kk'),
-              contentPadding: EdgeInsets.zero,
-              controlAffinity: ListTileControlAffinity.leading,
-              value: _kk,
-              onChanged: (wert) => setState(() => _kk = wert ?? false),
-              title: const Text('Hausregel: zusätzlich KK +1'),
-            ),
-          ],
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Abbrechen'),
-        ),
-        FilledButton(
-          key: const ValueKey<String>('karto-dabei-baerenrune-ok'),
-          onPressed: _uebernehmen,
-          child: const Text('Hinzufügen'),
-        ),
-      ],
-    );
-  }
-}
-
-/// Dialog „Tragkraftquelle“: Name, zusätzliche Stein und KK nur für die
-/// Tragkraft. Liefert die Quelle (ohne ID) oder nichts bei Abbruch.
-class _QuelleDialog extends StatefulWidget {
-  const _QuelleDialog();
-
-  @override
-  State<_QuelleDialog> createState() => _QuelleDialogState();
-}
-
-class _QuelleDialogState extends State<_QuelleDialog> {
-  final TextEditingController _name = TextEditingController();
-  final TextEditingController _stein = TextEditingController();
-  final TextEditingController _kk = TextEditingController();
-  String? _fehler;
-
-  @override
-  void dispose() {
-    _name.dispose();
-    _stein.dispose();
-    _kk.dispose();
-    super.dispose();
-  }
-
-  void _uebernehmen() {
-    final name = _name.text.trim();
-    final stein = _stein.text.trim().isEmpty
-        ? 0
-        : int.tryParse(_stein.text.trim());
-    final kk = _kk.text.trim().isEmpty ? 0 : int.tryParse(_kk.text.trim());
-    if (name.isEmpty) {
-      setState(() => _fehler = 'Bitte einen Namen eingeben.');
-      return;
-    }
-    if (stein == null || stein < 0 || kk == null) {
-      setState(() => _fehler = 'Stein und KK müssen ganze Zahlen sein.');
-      return;
-    }
-    if (stein == 0 && kk == 0) {
-      setState(() => _fehler = 'Stein oder KK muss ungleich 0 sein.');
-      return;
-    }
-    Navigator.of(context)
-        .pop(HeroTragkraftBonus(id: '', name: name, stein: stein, kk: kk));
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('Tragkraftquelle'),
-      content: SizedBox(
-        width: Breite.klein,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              key: const ValueKey<String>('karto-dabei-quelle-name'),
-              controller: _name,
-              autofocus: true,
-              decoration: InputDecoration(
-                labelText: 'Name',
-                helperText: 'Nur Dauerhaftes, keine Kurzzeitzauber',
-                errorText: _fehler,
-              ),
-              onChanged: (_) {
-                if (_fehler != null) setState(() => _fehler = null);
-              },
-            ),
-            TextField(
-              key: const ValueKey<String>('karto-dabei-quelle-stein'),
-              controller: _stein,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(labelText: 'Zusätzliche Stein'),
-            ),
-            TextField(
-              key: const ValueKey<String>('karto-dabei-quelle-kk'),
-              controller: _kk,
-              keyboardType: const TextInputType.numberWithOptions(signed: true),
-              decoration: const InputDecoration(
-                labelText: 'KK nur für die Tragkraft',
-              ),
-            ),
-          ],
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Abbrechen'),
-        ),
-        FilledButton(
-          key: const ValueKey<String>('karto-dabei-quelle-ok'),
-          onPressed: _uebernehmen,
-          child: const Text('Hinzufügen'),
-        ),
-      ],
     );
   }
 }

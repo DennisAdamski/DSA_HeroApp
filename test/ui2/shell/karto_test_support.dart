@@ -73,6 +73,7 @@ class TestBestand implements KartoBestandsAdapter {
   Widget spielZustand({
     required String heroId,
     required HeroComputedSnapshot werte,
+    bool mitBelastung = true,
   }) => Text('Zustand $heroId');
 
   @override

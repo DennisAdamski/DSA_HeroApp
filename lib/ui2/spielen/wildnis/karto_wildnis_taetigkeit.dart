@@ -160,6 +160,14 @@ abstract class KartoWildnisTaetigkeit {
   /// Gesamterschwernis für [kontext] (positiv = schwerer).
   int erschwernis(KartoWildnisKontext kontext);
 
+  /// Erklärt einen Anteil der Erschwernis, der aus der Wahl stammt (etwa die
+  /// Suchschwierigkeit des gesuchten Krauts); `null` ohne solchen Anteil.
+  String? erschwernisHinweis(KartoWildnisKontext kontext) => null;
+
+  /// Angaben zum gewählten Ziel (etwa dem gesuchten Kraut) zum Aufklappen
+  /// unter der Zusammenfassung; `null` ohne Ziel.
+  WildnisErgebnisZeile? zielAngaben(KartoWildnisKontext kontext) => null;
+
   /// TaW der Probe nach gewählter Dauer.
   int tawBeiDauer(KartoWildnisKontext kontext);
 

@@ -1,12 +1,14 @@
+import 'package:dsa_heldenverwaltung/catalog/catalog_crypto.dart';
 import 'package:dsa_heldenverwaltung/catalog/json_asset.dart';
 import 'package:dsa_heldenverwaltung/domain/aventurian_date.dart';
 import 'package:dsa_heldenverwaltung/domain/kraeuter_eintrag.dart';
 
 /// Asset der Kräutertabellen (Wege des Entdeckers S. 114–118).
 ///
-/// Erzeugt von `tool/import_kraeuter.py`. Aufgenommen sind nur Kurzfakten
-/// (Name, Bestimmung, Häufigkeit je Landschaft, einzeilige Wirkung), keine
-/// Beschreibungstexte aus Regelwerken; deshalb ist nichts verschlüsselt.
+/// Erzeugt von `tool/import_kraeuter.py`. Kurzfakten (Name, Bestimmung,
+/// Häufigkeit je Landschaft, einzeilige Wirkung, Fundstelle) stehen im
+/// Klartext; die Kurzbeschreibung `beschreibung` ist v3-verschlüsselt (Harte
+/// Regel 13, `tool/encrypt_catalog_fields.py`).
 const String kraeuterAssetPfad = 'assets/catalogs/house_rules_v1/kraeuter.json';
 
 /// Liest die Rohdaten des Assets: ein Objekt mit der Liste `kraeuter` und
@@ -16,9 +18,13 @@ const String kraeuterAssetPfad = 'assets/catalogs/house_rules_v1/kraeuter.json';
 /// Liste aus `landschaft` und `haeufigkeit`, optional `hinweis`), optional
 /// `wirkung`, `gebiet`, `bestimmungHinweis`, `erntezeit`, `erntemonate`
 /// (Monatsschlüssel; fehlt das Feld, ist das Kraut ganzjährig zu ernten),
-/// `grundmenge`. Ein unvollständiger Eintrag
+/// `grundmenge`, `quelle`, `beschreibung`. Ein unvollständiger Eintrag
 /// landet in [KraeuterKatalog.verworfen] statt halb gelesen zu werden.
-KraeuterKatalog parseKraeuter(Object? roh) {
+///
+/// Mit dem v3-Katalogschlüssel [schluessel] wird `beschreibung`
+/// entschlüsselt; ohne Schlüssel oder bei falschem Passwort bleibt sie leer
+/// und [KrautEintrag.beschreibungGesperrt] ist gesetzt.
+KraeuterKatalog parseKraeuter(Object? roh, {CatalogKey? schluessel}) {
   if (roh is! Map || roh['kraeuter'] is! List) return const KraeuterKatalog();
   final liste = roh['kraeuter'] as List<dynamic>;
   final kraeuter = <KrautEintrag>[];
@@ -66,6 +72,10 @@ KraeuterKatalog parseKraeuter(Object? roh) {
       verworfen.add('#$i ($name): Vorkommen ungültig');
       continue;
     }
+    final (beschreibung, gesperrt) = _beschreibung(
+      eintrag['beschreibung'],
+      schluessel,
+    );
     kraeuter.add(
       KrautEintrag(
         name: name,
@@ -82,6 +92,9 @@ KraeuterKatalog parseKraeuter(Object? roh) {
                 normalizeAventurianMonth(monat.toString()),
         ]),
         grundmenge: text(eintrag['grundmenge']),
+        beschreibung: beschreibung,
+        beschreibungGesperrt: gesperrt,
+        quelle: text(eintrag['quelle']),
       ),
     );
   }
@@ -92,16 +105,33 @@ KraeuterKatalog parseKraeuter(Object? roh) {
   );
 }
 
+// Klartext der Beschreibung und ob sie gesperrt blieb.
+(String, bool) _beschreibung(Object? wert, CatalogKey? schluessel) {
+  if (wert is! String) return ('', false);
+  final roh = wert.trim();
+  if (!isEncryptedValue(roh)) return (roh, false);
+  if (schluessel == null) return ('', true);
+  final klartext = decryptCatalogValueV3(
+    encryptedValue: roh,
+    derivedKey: schluessel,
+  );
+  return klartext == null ? ('', true) : (klartext.trim(), false);
+}
+
 /// Lädt die Kräutertabellen aus dem Asset; [lader] ersetzt in Tests
-/// `rootBundle`.
+/// `rootBundle`, [schluessel] entschlüsselt die Beschreibungen.
 ///
 /// Fehlt das Asset oder ist es ungültig, ist der Katalog leer: Die
 /// Kräutersuche liefert dann keine Funde, statt zu werfen.
 Future<KraeuterKatalog> ladeKraeuter({
   Future<String> Function(String pfad)? lader,
+  CatalogKey? schluessel,
 }) async {
   try {
-    return parseKraeuter(await ladeJsonAsset(kraeuterAssetPfad, lader: lader));
+    return parseKraeuter(
+      await ladeJsonAsset(kraeuterAssetPfad, lader: lader),
+      schluessel: schluessel,
+    );
   } on Object {
     return const KraeuterKatalog();
   }

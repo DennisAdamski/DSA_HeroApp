@@ -257,6 +257,15 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   Klammerzusatz der Variante wird übergangen), nicht für jede Landschaft
   gleicher Art. Das Ergebnis ist eine Vorbelegung (`gelaendekundeHerkunft`,
   `ortskenntnisHerkunft` für die Anzeige); es schreibt nichts am Helden.
+  **Gezielte Kräutersuche (14.11.2026):** Laut WdE S. 113 (Probenmodifikationen)
+  erschwert bei der Suche nach einer bestimmten Heilwirkung oder Pflanze die
+  Suchschwierigkeit (Bestimmung + Häufigkeit) die **Probe**; zusätzlich teilt
+  sie die TaP\* für die Grundmengen. `kraeuterSuchziel` liefert das leichteste
+  findbare Vorkommen (ohne Pflanze die Pauschale der Landschaft),
+  `KraeuterSucheEingabe.zielSuchschwierigkeit` geht in die Basiserschwernis ein.
+  `fuehreKraeutersucheDurch`/`werteKraeutersucheAus` setzen sie selbst
+  (`kraeuterEingabeMitZiel`); wer nur `kraeuterProbenErschwernis` oder
+  `baueKraeutersucheProbe` aufruft, übergibt die Eingabe mit Ziel.
   **Bewusst offen:** Zoo Botanica S. 224 lässt Geländekunde und Ortskenntnis nur
   Erschwernisse abbauen, nicht darüber hinaus erleichtern; die Summe darf hier
   unter 0 fallen (WdE-Lesart, wie bisher).

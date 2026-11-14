@@ -45,10 +45,43 @@ const KraeuterKatalog _kraeuter = KraeuterKatalog(
     KrautEintrag(
       name: 'Donf',
       bestimmung: 1,
+      wirkung: 'fiebersenkend',
+      erntezeit: 'ganzjährig',
+      beschreibung: 'Sumpfpflanze mit violetter Blüte.',
+      quelle: 'Zoo Botanica Aventurica S. 234',
       vorkommen: <KrautVorkommen>[
         KrautVorkommen(
           landschaft: Kraeuterlandschaft.dschungel,
           haeufigkeit: Kraeuterhaeufigkeit.haeufig,
+        ),
+      ],
+    ),
+  ],
+);
+
+/// Sechs Kräuter im Dschungel, damit die Vorschau gekürzt wird.
+final KraeuterKatalog _vieleKraeuter = KraeuterKatalog(
+  kraeuter: <KrautEintrag>[
+    ..._kraeuter.kraeuter,
+    for (final name in <String>['Arganstrauch', 'Boronie', 'Finage', 'Kukura'])
+      KrautEintrag(
+        name: name,
+        bestimmung: 4,
+        beschreibungGesperrt: true,
+        vorkommen: const <KrautVorkommen>[
+          KrautVorkommen(
+            landschaft: Kraeuterlandschaft.dschungel,
+            haeufigkeit: Kraeuterhaeufigkeit.selten,
+          ),
+        ],
+      ),
+    const KrautEintrag(
+      name: 'Quinya',
+      bestimmung: 6,
+      vorkommen: <KrautVorkommen>[
+        KrautVorkommen(
+          landschaft: Kraeuterlandschaft.dschungel,
+          haeufigkeit: Kraeuterhaeufigkeit.gelegentlich,
         ),
       ],
     ),
@@ -90,6 +123,7 @@ void main() {
     KartoBestandsAdapter? bestand,
     double breite = 480,
     double skalierung = 1,
+    KraeuterKatalog kraeuter = _kraeuter,
   }) async {
     tester.view.devicePixelRatio = 1;
     tester.view.physicalSize = Size(breite, 3200);
@@ -108,7 +142,7 @@ void main() {
         ),
         rulesCatalogProvider.overrideWith((ref) async => testCatalog),
         ortKatalogProvider.overrideWith((ref) async => _orte),
-        kraeuterKatalogProvider.overrideWith((ref) async => _kraeuter),
+        kraeuterKatalogProvider.overrideWith((ref) async => kraeuter),
       ],
     );
     addTearDown(container.dispose);
@@ -339,6 +373,124 @@ void main() {
         ),
         findsNothing,
       );
+    });
+  });
+
+  group('Kräuterangaben', () {
+    Future<void> waehleGezielt(WidgetTester tester) async {
+      await tester.tap(k('karto-wildnis-option-ziel-beliebig'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Bestimmtes Kraut oder Heilwirkung').last);
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('gezielte Suche rechnet die Suchschwierigkeit ein', (
+      tester,
+    ) async {
+      await zeige(tester, held: _held());
+      await waehleGezielt(tester);
+      // Ohne bestimmte Pflanze: Dschungel −2, Pauschale +8.
+      expect(zusammenfassung(), 'TaW 9 · Erschwernis +6');
+      expect(
+        find.textContaining(
+          'Heilwirkung ohne bestimmte Pflanze: '
+          'Suchschwierigkeit +8',
+        ),
+        findsOneWidget,
+      );
+
+      await tester.tap(k('karto-wildnis-option-kraut-'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Donf (Suchschwierigkeit 3)').last);
+      await tester.pumpAndSettle();
+      // Dschungel −2, Donf +3 (Bestimmung +1, häufig +2).
+      expect(zusammenfassung(), 'TaW 9 · Erschwernis +1');
+      expect(
+        find.text(
+          'darin Donf: Suchschwierigkeit +3 (Bestimmung +1, häufig +2)',
+        ),
+        findsOneWidget,
+      );
+
+      // Die Angaben zum gesuchten Kraut lassen sich aufklappen.
+      expect(k('karto-wildnis-ziel-angaben'), findsNothing);
+      await tester.tap(k('karto-wildnis-ziel'));
+      await tester.pumpAndSettle();
+      expect(
+        find.descendant(
+          of: k('karto-wildnis-ziel-angaben'),
+          matching: find.text('Sumpfpflanze mit violetter Blüte.'),
+        ),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('beliebige Suche hat keine Kraut-Erschwernis', (tester) async {
+      await zeige(tester, held: _held());
+      expect(k('karto-wildnis-erschwernis-hinweis'), findsNothing);
+    });
+
+    testWidgets('die gekürzte Fundliste lässt sich ganz zeigen', (
+      tester,
+    ) async {
+      await zeige(tester, held: _held(), kraeuter: _vieleKraeuter);
+      Finder fund(String name) => find.descendant(
+        of: k('karto-wildnis-vorschau'),
+        matching: find.textContaining(name),
+      );
+      expect(find.text('Mögliche Funde (6)'), findsOneWidget);
+      expect(fund('Kukura'), findsNothing);
+      expect(find.text('Alle 6 anzeigen (3 weitere)'), findsOneWidget);
+
+      await tester.tap(k('karto-wildnis-vorschau-alle'));
+      await tester.pumpAndSettle();
+      for (final name in <String>['Donf', 'Quinya', 'Boronie', 'Kukura']) {
+        expect(fund(name), findsOneWidget, reason: name);
+      }
+      expect(find.text('Weniger anzeigen'), findsOneWidget);
+
+      await tester.tap(k('karto-wildnis-vorschau-alle'));
+      await tester.pumpAndSettle();
+      expect(fund('Kukura'), findsNothing);
+    });
+
+    testWidgets('ein Fund zeigt Beschreibung und Zoo-Botanica-Seite', (
+      tester,
+    ) async {
+      await zeige(tester, held: _held(), kraeuter: _vieleKraeuter);
+      await tester.tap(k('karto-wildnis-fund-0'));
+      await tester.pumpAndSettle();
+      final angaben = k('karto-wildnis-fund-0-angaben');
+      expect(
+        find.descendant(
+          of: angaben,
+          matching: find.text('Sumpfpflanze mit violetter Blüte.'),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(
+          of: angaben,
+          matching: find.text('Wirkung: fiebersenkend'),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.text('Mehr dazu: Zoo Botanica Aventurica S. 234'),
+        findsOneWidget,
+      );
+
+      // Gesperrte Beschreibung: Hinweis statt Text.
+      await tester.tap(k('karto-wildnis-fund-2'));
+      await tester.pumpAndSettle();
+      expect(
+        find.text('Beschreibung gesperrt: Katalogpasswort erforderlich.'),
+        findsOneWidget,
+      );
+
+      await tester.tap(k('karto-wildnis-fund-0'));
+      await tester.pumpAndSettle();
+      expect(angaben, findsNothing);
     });
   });
 

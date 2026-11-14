@@ -111,6 +111,34 @@ class KartoKraeutersucheTaetigkeit extends KartoWildnisTaetigkeit {
       kraeuterProbenErschwernis(_eingabe(kontext));
 
   @override
+  String? erschwernisHinweis(KartoWildnisKontext kontext) {
+    final ziel = _suchziel(kontext);
+    if (ziel == null) return null;
+    final kandidat = ziel.kandidat;
+    if (kandidat == null) {
+      return 'darin ${ziel.bezeichnung}: Suchschwierigkeit '
+          '${_mitVorzeichen(ziel.suchschwierigkeit)}';
+    }
+    final haeufigkeit = kandidat.vorkommen.haeufigkeit;
+    return 'darin ${ziel.bezeichnung}: Suchschwierigkeit '
+        '${_mitVorzeichen(ziel.suchschwierigkeit)} (Bestimmung '
+        '${_mitVorzeichen(kandidat.kraut.bestimmung)}, ${haeufigkeit.bezeichnung} '
+        '${_mitVorzeichen(haeufigkeit.aufschlag)})';
+  }
+
+  @override
+  WildnisErgebnisZeile? zielAngaben(KartoWildnisKontext kontext) {
+    final kandidat = _suchziel(kontext)?.kandidat;
+    if (kandidat == null) return null;
+    return WildnisErgebnisZeile(
+      titel: kandidat.kraut.name,
+      detail: kandidat.kraut.wirkung,
+      erlaeuterung: _erlaeuterung(kandidat),
+      quelle: kandidat.kraut.quelle,
+    );
+  }
+
+  @override
   int tawBeiDauer(KartoWildnisKontext kontext) =>
       kraeuterSuchenTawBeiDauer(kontext.taw, kontext.dauerStunden);
 
@@ -153,12 +181,56 @@ class KartoKraeutersucheTaetigkeit extends KartoWildnisTaetigkeit {
                 'Suchschwierigkeit ${kandidat.suchschwierigkeit} · '
                 'ab ${2 * (kandidat.suchschwierigkeit < 1 ? 1 : kandidat.suchschwierigkeit)} TaP*'
                 '${kandidat.inErntezeit ? '' : ' · außerhalb der Erntezeit'}',
+            erlaeuterung: _erlaeuterung(kandidat),
+            quelle: kandidat.kraut.quelle,
           ),
     ];
   }
 
+  // Das Suchziel der gezielten Suche, sofern der Katalog geladen ist.
+  KraeuterZiel? _suchziel(KartoWildnisKontext kontext) {
+    final katalog = kontext.daten;
+    if (katalog is! KraeuterKatalog) return null;
+    return kraeuterSuchziel(_eingabe(kontext), katalog);
+  }
+
+  // Angaben zum Aufklappen: Kurzfakten, Beschreibung, Hinweis auf Sperre.
+  static List<String> _erlaeuterung(KraeuterKandidat kandidat) {
+    final kraut = kandidat.kraut;
+    final vorkommen = kandidat.vorkommen;
+    return <String>[
+      if (kraut.wirkung.isNotEmpty) 'Wirkung: ${kraut.wirkung}',
+      if (kraut.beschreibung.isNotEmpty)
+        kraut.beschreibung
+      else if (kraut.beschreibungGesperrt)
+        'Beschreibung gesperrt: Katalogpasswort erforderlich.',
+      'Bestimmung ${_mitVorzeichen(kraut.bestimmung)} · '
+          '${vorkommen.haeufigkeit.bezeichnung} '
+          '${_mitVorzeichen(vorkommen.haeufigkeit.aufschlag)}'
+          '${kraut.bestimmungHinweis.isEmpty ? '' : ' (${kraut.bestimmungHinweis})'}',
+      if (vorkommen.hinweis.isNotEmpty) 'Vorkommen: ${vorkommen.hinweis}',
+      if (kraut.gebiet.isNotEmpty) 'Gebiet: ${kraut.gebiet}',
+      if (kraut.erntezeit.isNotEmpty) 'Erntezeit: ${kraut.erntezeit}',
+      if (kraut.grundmenge.isNotEmpty) 'Grundmenge: ${kraut.grundmenge}',
+    ];
+  }
+
+  static String _mitVorzeichen(int wert) =>
+      wert > 0 ? '+$wert' : (wert < 0 ? '−${-wert}' : '±0');
+
   // Übersetzt den allgemeinen Kontext in die Eingabe der Kräutersuche.
+  //
+  // Mit geladenem Katalog trägt die Eingabe die Suchschwierigkeit des
+  // Suchziels, damit Erschwernis, Probe und Auswertung übereinstimmen.
   KraeuterSucheEingabe _eingabe(KartoWildnisKontext kontext) {
+    final eingabe = _grundeingabe(kontext);
+    final katalog = kontext.daten;
+    return katalog is KraeuterKatalog
+        ? kraeuterEingabeMitZiel(eingabe, katalog)
+        : eingabe;
+  }
+
+  KraeuterSucheEingabe _grundeingabe(KartoWildnisKontext kontext) {
     final landschaft = Kraeuterlandschaft.ausSchluessel(
       kontext.landschaft.schluessel,
     );
@@ -204,13 +276,23 @@ class KartoKraeutersucheTaetigkeit extends KartoWildnisTaetigkeit {
     ];
     if (katalog is! KraeuterKatalog || landschaft == null) return werte;
     final gesehen = <String>{};
-    for (final kandidat in moeglicheKraeuter(
+    final kandidaten = moeglicheKraeuter(
       katalog,
       landschaft,
       monat: kontext.monat,
-    )) {
-      if (gesehen.add(kandidat.kraut.name)) {
-        werte.add((schluessel: kandidat.kraut.name, text: kandidat.kraut.name));
+    );
+    for (final kandidat in kandidaten) {
+      final name = kandidat.kraut.name;
+      if (gesehen.add(name)) {
+        // Mehrere Vorkommen: die Suche nimmt das leichteste.
+        final suchschwierigkeit = kandidaten
+            .where((k) => k.kraut.name == name)
+            .map((k) => k.suchschwierigkeit)
+            .reduce((a, b) => a < b ? a : b);
+        werte.add((
+          schluessel: name,
+          text: '$name (Suchschwierigkeit $suchschwierigkeit)',
+        ));
       }
     }
     return werte;

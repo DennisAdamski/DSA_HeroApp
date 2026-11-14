@@ -242,10 +242,18 @@ python tool/import_kraeuter.py   # schreibt kraeuter.json neu
 - Das Regelbuch hat keine maschinenlesbare Fassung: Die Daten stehen als
   kuratierte Tabelle in `tool/import_kraeuter.py`. Jede Änderung dort gegen die
   Buchseite prüfen (`dsa-rules`-MCP, Chunks 6310–6313).
-- Übernommen werden nur Kurzfakten, keine Beschreibungstexte; deshalb ist nichts
-  verschlüsselt (Harte Regel 13 betrifft Langtexte). Kommen Ernte, Grundmenge
-  oder Zubereitung aus der Zoo Botanica hinzu, sind Langtexte zu verschlüsseln
-  und in `PROTECTED_FIELDS` einzutragen.
+- Klartext sind nur Kurzfakten: Bestimmung, Häufigkeit, Wirkung, Gebiet,
+  Erntezeit, Grundmenge und die Fundstelle `quelle` („Zoo Botanica Aventurica
+  S. …“, gedruckte Seiten 227–276, Tabelle `QUELLE_SEITE`; die PDF-Seiten des
+  `dsa-rules`-Index liegen eine Seite höher).
+- `beschreibung` ist eine Kurzbeschreibung in eigenen Worten nach der Zoo
+  Botanica und deshalb v3-verschlüsselt (Harte Regel 13, `PROTECTED_FIELDS`,
+  `geschuetzte_langtexte_test.dart`). Sie steht **nicht** im Skript: Das
+  Skript übernimmt die vorhandenen (verschlüsselten) Werte nach Name. Neue oder
+  geänderte Beschreibungen im Klartext in die JSON schreiben und danach
+  `python tool/encrypt_catalog_fields.py --format v3` ausführen. Die App
+  entschlüsselt sie mit dem Katalogpasswort (`kraeuterKatalogProvider`); ohne
+  Passwort bleibt sie gesperrt, die Suche selbst braucht es nie.
 - Das Buch führt Egelschreck im Lichten Wald doppelt (gelegentlich und selten);
   beide Vorkommen sind übernommen.
 - Nach einer Änderung `flutter test test/catalog/kraeuter_katalog_test.dart`

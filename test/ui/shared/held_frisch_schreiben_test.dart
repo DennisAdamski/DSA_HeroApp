@@ -13,6 +13,8 @@ import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/bridges/karto_spiel_bruecke.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/zustand_aendern.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/wunden_detail_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_abschnitt.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_kachelgroesse.dart';
 
 import '../../test_support/bogen_test_repository.dart';
 import '../../ui2/shell/karto_test_support.dart';
@@ -72,7 +74,13 @@ void main() {
       if (werte == null) {
         return const SizedBox.shrink();
       }
-      return KartoZustandsblock(heroId: 'rondra', werte: werte);
+      // Weit: die Statuswerte stehen als Zeilen mit ihren Knöpfen; schmal
+      // stünden sie als Raster (siehe karto_zustandsblock_test.dart).
+      return KartoKachelSteuerung(
+        kennung: 'zustand',
+        groesse: KartoKachelGroesse.weit,
+        child: KartoZustandsblock(heroId: 'rondra', werte: werte),
+      );
     },
   );
 

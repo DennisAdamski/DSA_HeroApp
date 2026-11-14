@@ -39,7 +39,6 @@ import 'package:dsa_heldenverwaltung/ui2/spielen/standort/karto_standort_kachel.
 import 'package:dsa_heldenverwaltung/ui2/spielen/wildnis/karto_wildnis_kachel.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
-import 'package:dsa_heldenverwaltung/ui2/widgets/karto_flaeche.dart';
 import 'package:dsa_heldenverwaltung/ui2/widgets/karto_ornamente.dart';
 import 'package:dsa_heldenverwaltung/ui2/widgets/karto_seitenkopf.dart';
 import 'package:dsa_heldenverwaltung/ui2/gefecht/gefecht_einstieg.dart';
@@ -195,6 +194,8 @@ class _KartoSpielansichtState extends ConsumerState<KartoSpielansicht>
                       ),
                       breite: kacheln[i].breite,
                       gewicht: kacheln[i].art.gewicht,
+                      // Ein eingeklappter Kopf behält seine Höhe.
+                      dehnbar: !kacheln[i].eingeklappt,
                       child: _kachel(
                         context,
                         werte,
@@ -253,8 +254,8 @@ class _KartoSpielansichtState extends ConsumerState<KartoSpielansicht>
         onAusblenden: art.ausblendbar
             ? () => _aendereEntwurf(art, (k) => k.copyWith(ausgeblendet: true))
             : null,
-        // Der echte Inhalt in der Stufe, die die Kachel bei dieser Breite
-        // hätte; ausgeklappt, damit man sieht, was darin steht.
+        // Der echte Inhalt in der Stufe und Höhe, die die Kachel bei dieser
+        // Breite hätte; eine eingeklappte Kachel zeigt die Karte ohne ihn.
         vorschau: (groesse) => KartoKachelSteuerung(
           kennung: art.id,
           groesse: groesse,
@@ -288,6 +289,7 @@ class _KartoSpielansichtState extends ConsumerState<KartoSpielansicht>
     KartoSpielkachelArt.proben => _proben(context),
     KartoSpielkachelArt.eigenschaften => KartoAbschnitt(
       titel: 'Eigenschaften',
+      symbol: spielkachelSymbol(art),
       dicht: true,
       child: bestand.spielEigenschaftsproben(heroId: heroId, werte: werte),
     ),
@@ -295,9 +297,13 @@ class _KartoSpielansichtState extends ConsumerState<KartoSpielansicht>
     KartoSpielkachelArt.effekte => _effekte(context, werte),
     KartoSpielkachelArt.zustand => KartoAbschnitt(
       titel: 'Zustand',
-      stufe: KartoFlaechenstufe.senke,
       symbol: Icons.monitor_heart_outlined,
-      child: bestand.spielZustand(heroId: heroId, werte: werte),
+      // Erschöpfung und Überanstrengung stehen in „Dabei“ bei der Last.
+      child: bestand.spielZustand(
+        heroId: heroId,
+        werte: werte,
+        mitBelastung: false,
+      ),
     ),
     KartoSpielkachelArt.begleiter => _begleiter(context, werte),
     KartoSpielkachelArt.dabei => _dabei(context, werte),
@@ -511,6 +517,7 @@ class _KartoSpielansichtState extends ConsumerState<KartoSpielansicht>
   Widget _ressourcen(BuildContext context, HeroComputedSnapshot werte) =>
       KartoAbschnitt(
         titel: 'Ressourcen',
+        symbol: spielkachelSymbol(KartoSpielkachelArt.ressourcen),
         dicht: true,
         child: KartoRessourcenleiste(
           werte: werte,
@@ -535,6 +542,7 @@ class _KartoSpielansichtState extends ConsumerState<KartoSpielansicht>
 
   Widget _proben(BuildContext context) => KartoAbschnitt(
     titel: 'Häufige Proben',
+    symbol: spielkachelSymbol(KartoSpielkachelArt.proben),
     dicht: true,
     aktion: TextButton(
       key: const ValueKey<String>('karto-spiel-proben-waehlen'),
@@ -611,7 +619,6 @@ class _KartoSpielansichtState extends ConsumerState<KartoSpielansicht>
         munition: dabeiMunition(werte.hero.combatConfig),
         begleiterVerbrauch: dabeiBegleiterVerbrauch(werte.hero),
         tragkraft: werte.tragkraft,
-        tragkraftBoni: werte.hero.tragkraftBoni,
         erschoepfung: werte.state.erschoepfung,
         ueberanstrengung: werte.state.ueberanstrengung,
         // Trank, Heilmittel und Elixier benutzen den Dialog des Gefechts-
@@ -680,6 +687,7 @@ class _KartoSpielansichtState extends ConsumerState<KartoSpielansicht>
 
     return KartoAbschnitt(
       titel: 'Vor- und Nachteile',
+      symbol: spielkachelSymbol(KartoSpielkachelArt.merkmale),
       aktion: TextButton(
         key: const ValueKey<String>('karto-spiel-merkmale'),
         onPressed: catalog == null
@@ -703,9 +711,9 @@ class _KartoSpielansichtState extends ConsumerState<KartoSpielansicht>
     );
   }
 
-  // Kampf, Effekte, Zustand und Begleiter sitzen eine Flächenstufe tiefer,
-  // damit sie als Begleitflächen lesbar bleiben und nicht mit Schnellaktionen
-  // und Ressourcen um dieselbe Aufmerksamkeit konkurrieren.
+  // Alle Kacheln liegen auf derselben Flächenstufe: im freien Raster wechselte
+  // eine zweite Stufe scheinbar zufällig. Kampf und Effekte heben sich über
+  // Symbol und Akzent ab.
   Widget _kampf(HeroComputedSnapshot werte) => KartoAbschnitt(
     titel: 'Kampf',
     aktion: GefechtEinstieg(
@@ -715,7 +723,6 @@ class _KartoSpielansichtState extends ConsumerState<KartoSpielansicht>
       aktion: aktion,
       vorBearbeitung: vorHeldenbearbeitung,
     ),
-    stufe: KartoFlaechenstufe.senke,
     symbol: Icons.shield_outlined,
     akzent: KartoAkzent.messing,
     // In einer weiten Kachel kommen die Kampfwerte neben die Probenchips.
@@ -728,7 +735,6 @@ class _KartoSpielansichtState extends ConsumerState<KartoSpielansicht>
   Widget _effekte(BuildContext context, HeroComputedSnapshot werte) =>
       KartoAbschnitt(
         titel: 'Aktive Effekte',
-        stufe: KartoFlaechenstufe.senke,
         symbol: Icons.auto_awesome_outlined,
         akzent: KartoAkzent.astral,
         aktion: TextButton(

@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 
 import 'catalog_reference_names.dart';
@@ -17,13 +20,14 @@ void main() {
     'magische_sonderfertigkeiten.json': ['erklarung_lang'],
     'magie.json': ['wirkung', 'variants'],
     'kurzregeln.json': ['kurztext', 'hinweise', 'hausregel_text'],
+    'kraeuter.json': ['beschreibung'],
   };
 
   geschuetzt.forEach((datei, felder) {
     for (final feld in felder) {
       test('$datei: $feld ist verschluesselt (v3)', () {
         final klartext = <String>[
-          for (final eintrag in ladeKatalogDatei(datei))
+          for (final eintrag in _eintraege(datei))
             if (_istKlartext(eintrag[feld]))
               '${eintrag['id'] ?? eintrag['name']}',
         ];
@@ -32,6 +36,16 @@ void main() {
       });
     }
   });
+}
+
+/// Einträge einer Katalogdatei: Top-Level-Liste oder, wie beim
+/// Kräuterkatalog, die Liste `kraeuter` eines Objekts.
+List<Map<String, dynamic>> _eintraege(String datei) {
+  if (datei != 'kraeuter.json') return ladeKatalogDatei(datei);
+  var text = File('assets/catalogs/house_rules_v1/$datei').readAsStringSync();
+  if (text.startsWith('﻿')) text = text.substring(1);
+  final daten = jsonDecode(text) as Map<String, dynamic>;
+  return (daten['kraeuter'] as List).cast<Map<String, dynamic>>();
 }
 
 bool _istKlartext(Object? wert) {

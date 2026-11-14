@@ -1,12 +1,74 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:dsa_heldenverwaltung/catalog/catalog_crypto.dart';
 import 'package:dsa_heldenverwaltung/catalog/kraeuter_loader.dart';
 import 'package:dsa_heldenverwaltung/domain/aventurian_date.dart';
 import 'package:dsa_heldenverwaltung/domain/kraeuter_eintrag.dart';
 
 void main() {
+  group('Beschreibung und Quelle', () {
+    final salt = Uint8List.fromList(List<int>.generate(32, (i) => i));
+    final schluessel = deriveCatalogKey(password: 'geheim', salt: salt);
+
+    Map<String, Object?> roh(Object? beschreibung) => <String, Object?>{
+      'kraeuter': <Object?>[
+        <String, Object?>{
+          'name': 'Donf',
+          'bestimmung': 6,
+          'quelle': 'Zoo Botanica Aventurica S. 234',
+          'beschreibung': beschreibung,
+          'vorkommen': <Object?>[
+            <String, Object?>{
+              'landschaft': 'dschungel',
+              'haeufigkeit': 'selten',
+            },
+          ],
+        },
+      ],
+    };
+
+    test('entschlüsselt die Beschreibung mit dem Katalogschlüssel', () {
+      final verschluesselt = encryptCatalogValueV3(
+        plaintext: 'Sumpfpflanze mit violetter Blüte.',
+        derivedKey: schluessel,
+      );
+      final kraut = parseKraeuter(
+        roh(verschluesselt),
+        schluessel: schluessel,
+      ).kraeuter.single;
+      expect(kraut.beschreibung, 'Sumpfpflanze mit violetter Blüte.');
+      expect(kraut.beschreibungGesperrt, isFalse);
+      expect(kraut.quelle, 'Zoo Botanica Aventurica S. 234');
+    });
+
+    test('ohne oder mit falschem Schlüssel bleibt sie gesperrt', () {
+      final verschluesselt = encryptCatalogValueV3(
+        plaintext: 'geheim',
+        derivedKey: schluessel,
+      );
+      final ohne = parseKraeuter(roh(verschluesselt)).kraeuter.single;
+      expect(ohne.beschreibung, isEmpty);
+      expect(ohne.beschreibungGesperrt, isTrue);
+      expect(ohne.quelle, isNotEmpty);
+
+      final falsch = parseKraeuter(
+        roh(verschluesselt),
+        schluessel: deriveCatalogKey(password: 'falsch', salt: salt),
+      ).kraeuter.single;
+      expect(falsch.beschreibung, isEmpty);
+      expect(falsch.beschreibungGesperrt, isTrue);
+    });
+
+    test('fehlende Beschreibung ist weder Text noch gesperrt', () {
+      final kraut = parseKraeuter(roh(null)).kraeuter.single;
+      expect(kraut.beschreibung, isEmpty);
+      expect(kraut.beschreibungGesperrt, isFalse);
+    });
+  });
+
   group('parseKraeuter', () {
     test('liest Einträge samt Stand und Vorkommen', () {
       final katalog = parseKraeuter(<String, Object?>{
@@ -168,6 +230,20 @@ void main() {
           reason: landschaft.bezeichnung,
         );
       }
+    });
+
+    test('jedes Kraut hat Fundstelle und verschlüsselte Beschreibung', () {
+      for (final kraut in katalog.kraeuter) {
+        expect(
+          kraut.quelle,
+          startsWith('Zoo Botanica Aventurica S. '),
+          reason: kraut.name,
+        );
+        // Ohne Schlüssel geladen: vorhanden, aber gesperrt.
+        expect(kraut.beschreibungGesperrt, isTrue, reason: kraut.name);
+        expect(kraut.beschreibung, isEmpty, reason: kraut.name);
+      }
+      expect(kraut('Egelschreck').quelle, 'Zoo Botanica Aventurica S. 235');
     });
 
     test('jedes Kraut hat Erntezeit und Grundmenge (Zoo Botanica)', () {
