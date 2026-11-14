@@ -65,7 +65,6 @@ import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/avatar_gallery_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/avatar_gesichtsbefund.dart';
 import 'package:dsa_heldenverwaltung/state/avatar_providers.dart';
-import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_overview/avatar_generation_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/avatar_gallery_image.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_overview/epic_activation_dialog.dart';

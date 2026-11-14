@@ -647,14 +647,17 @@ class HeroActions {
           : promptAuszug,
     );
 
-    final updatedGallery = [...hero.appearance.avatarGallery, entry];
-    final updated = hero.copyWith(
-      appearance: hero.appearance.copyWith(
-        avatarGallery: updatedGallery,
-        aktivesBildId: entryId,
+    // Auf dem frisch geladenen Helden: Speichern des Bilds und
+    // Gesichtserkennung dauern, inzwischen Gespeichertes bleibt erhalten.
+    await updateHero(
+      heroId,
+      (aktuell) => aktuell.copyWith(
+        appearance: aktuell.appearance.copyWith(
+          avatarGallery: [...aktuell.appearance.avatarGallery, entry],
+          aktivesBildId: entryId,
+        ),
       ),
     );
-    await saveHero(updated);
   }
 
   /// Laedt ein eigenes Bild hoch und fuegt es zur Gallery hinzu.
@@ -669,7 +672,8 @@ class HeroActions {
         'und versuche es erneut.',
       );
     }
-    final hero = await _loadHeroById(heroId);
+    // Nur die Existenzprüfung; geändert wird unten der frische Stand.
+    await _loadHeroById(heroId);
     final heroStoragePath = await _resolveHeroStoragePath();
     final storage = _ref.read(avatarFileStorageProvider);
     const uuid = Uuid();
@@ -696,14 +700,17 @@ class HeroActions {
       erstelltAm: DateTime.now().toUtc().toIso8601String(),
     );
 
-    final updatedGallery = [...hero.appearance.avatarGallery, entry];
-    final updated = hero.copyWith(
-      appearance: hero.appearance.copyWith(
-        avatarGallery: updatedGallery,
-        aktivesBildId: entryId,
+    // Auf dem frisch geladenen Helden: Speichern des Bilds und
+    // Gesichtserkennung dauern, inzwischen Gespeichertes bleibt erhalten.
+    await updateHero(
+      heroId,
+      (aktuell) => aktuell.copyWith(
+        appearance: aktuell.appearance.copyWith(
+          avatarGallery: [...aktuell.appearance.avatarGallery, entry],
+          aktivesBildId: entryId,
+        ),
       ),
     );
-    await saveHero(updated);
   }
 
   /// Startet die Gesichtserkennung fuer ein gerade angelegtes Bild.
@@ -736,8 +743,11 @@ class HeroActions {
     required String heroId,
     required String galleryEntryId,
   }) async {
-    final hero = await _loadHeroById(heroId);
+    await updateHero(heroId, (hero) => _mitPrimaerbild(hero, galleryEntryId));
+  }
 
+  // Setzt das Primärbild und hält die Werte fest, zu denen es entstand.
+  HeroSheet _mitPrimaerbild(HeroSheet hero, String galleryEntryId) {
     final snapshot = AvatarSnapshot(
       erstelltAm: DateTime.now().toUtc().toIso8601String(),
       attributes: {
@@ -759,13 +769,12 @@ class HeroActions {
       augenfarbe: hero.appearance.augenfarbe,
     );
 
-    final updated = hero.copyWith(
+    return hero.copyWith(
       appearance: hero.appearance.copyWith(
         primaerbildId: galleryEntryId,
         avatarSnapshot: () => snapshot,
       ),
     );
-    await saveHero(updated);
   }
 
   /// Speichert einen Fokuspunkt fuer den kompakten Workspace-Header.
@@ -776,33 +785,33 @@ class HeroActions {
     required double focusY,
     double? zoom,
   }) async {
-    final hero = await _loadHeroById(heroId);
     final normalizedFocusX = focusX.clamp(0.0, 1.0).toDouble();
     final normalizedFocusY = focusY.clamp(0.0, 1.0).toDouble();
     final normalizedZoom = zoom?.clamp(1.0, 8.0).toDouble();
-    var didUpdate = false;
-    final updatedGallery = hero.appearance.avatarGallery
-        .map((entry) {
-          if (entry.id != galleryEntryId) {
-            return entry;
-          }
-          didUpdate = true;
-          return entry.copyWith(
-            headerFocusX: normalizedFocusX,
-            headerFocusY: normalizedFocusY,
-            headerZoom: normalizedZoom,
-          );
-        })
-        .toList(growable: false);
+    await updateHero(heroId, (hero) {
+      var didUpdate = false;
+      final updatedGallery = hero.appearance.avatarGallery
+          .map((entry) {
+            if (entry.id != galleryEntryId) {
+              return entry;
+            }
+            didUpdate = true;
+            return entry.copyWith(
+              headerFocusX: normalizedFocusX,
+              headerFocusY: normalizedFocusY,
+              headerZoom: normalizedZoom,
+            );
+          })
+          .toList(growable: false);
 
-    if (!didUpdate) {
-      return;
-    }
+      if (!didUpdate) {
+        return hero;
+      }
 
-    final updated = hero.copyWith(
-      appearance: hero.appearance.copyWith(avatarGallery: updatedGallery),
-    );
-    await saveHero(updated);
+      return hero.copyWith(
+        appearance: hero.appearance.copyWith(avatarGallery: updatedGallery),
+      );
+    });
   }
 
   /// Setzt ein Gallery-Bild als aktiv angezeigten Avatar.
@@ -810,16 +819,15 @@ class HeroActions {
     required String heroId,
     required String galleryEntryId,
   }) async {
-    final hero = await _loadHeroById(heroId);
-    final entry = hero.appearance.avatarGallery
-        .where((e) => e.id == galleryEntryId)
-        .firstOrNull;
-    if (entry == null) return;
-
-    final updated = hero.copyWith(
-      appearance: hero.appearance.copyWith(aktivesBildId: galleryEntryId),
-    );
-    await saveHero(updated);
+    await updateHero(heroId, (hero) {
+      final vorhanden = hero.appearance.avatarGallery.any(
+        (e) => e.id == galleryEntryId,
+      );
+      if (!vorhanden) return hero;
+      return hero.copyWith(
+        appearance: hero.appearance.copyWith(aktivesBildId: galleryEntryId),
+      );
+    });
   }
 
   /// Entfernt ein einzelnes Bild aus der Gallery.
@@ -840,41 +848,43 @@ class HeroActions {
       fileName: entry.fileName,
     );
 
-    final updatedGallery = hero.appearance.avatarGallery
-        .where((e) => e.id != galleryEntryId)
-        .toList();
-
-    // Primaerbild-Referenz aufraeuemen falls betroffen
-    final primaerbildId = hero.appearance.primaerbildId == galleryEntryId
-        ? ''
-        : hero.appearance.primaerbildId;
-
-    // Aktiv-Referenz aufraeumen falls betroffen
-    var aktivesBildId = hero.appearance.aktivesBildId == galleryEntryId
-        ? ''
-        : hero.appearance.aktivesBildId;
-
     // Wenn letztes Bild entfernt → auch Haupt-Avatar loeschen
-    var avatarFileName = hero.appearance.avatarFileName;
-    if (updatedGallery.isEmpty && avatarFileName.isNotEmpty) {
+    final letztesBild = hero.appearance.avatarGallery.every(
+      (e) => e.id == galleryEntryId,
+    );
+    final hauptbild = hero.appearance.avatarFileName;
+    final hauptbildGeloescht = letztesBild && hauptbild.isNotEmpty;
+    if (hauptbildGeloescht) {
       await storage.deleteAvatar(
         heroStoragePath: heroStoragePath,
-        avatarFileName: avatarFileName,
+        avatarFileName: hauptbild,
       );
-      avatarFileName = '';
-      aktivesBildId = '';
     }
 
-    final updated = hero.copyWith(
-      appearance: hero.appearance.copyWith(
-        avatarFileName: avatarFileName,
-        avatarGallery: updatedGallery,
-        primaerbildId: primaerbildId,
-        aktivesBildId: aktivesBildId,
-        avatarSnapshot: primaerbildId.isEmpty ? () => null : null,
-      ),
-    );
-    await saveHero(updated);
+    // Die Verweise auf dem frisch geladenen Helden aufräumen: Das Löschen der
+    // Dateien dauert, inzwischen Gespeichertes bleibt erhalten.
+    await updateHero(heroId, (aktuell) {
+      final bild = aktuell.appearance;
+      final galerie = bild.avatarGallery
+          .where((e) => e.id != galleryEntryId)
+          .toList();
+      final primaerbildId = bild.primaerbildId == galleryEntryId
+          ? ''
+          : bild.primaerbildId;
+      final aktivesBildId =
+          bild.aktivesBildId == galleryEntryId || galerie.isEmpty
+          ? ''
+          : bild.aktivesBildId;
+      return aktuell.copyWith(
+        appearance: bild.copyWith(
+          avatarFileName: hauptbildGeloescht ? '' : bild.avatarFileName,
+          avatarGallery: galerie,
+          primaerbildId: primaerbildId,
+          aktivesBildId: aktivesBildId,
+          avatarSnapshot: primaerbildId.isEmpty ? () => null : null,
+        ),
+      );
+    });
   }
 
   /// Entfernt den Avatar eines Helden (Legacy-Methode, entfernt alle Bilder).
@@ -903,16 +913,27 @@ class HeroActions {
       );
     }
 
-    final updated = hero.copyWith(
-      appearance: hero.appearance.copyWith(
-        avatarFileName: '',
-        avatarGallery: const [],
-        primaerbildId: '',
-        aktivesBildId: '',
-        avatarSnapshot: () => null,
-      ),
-    );
-    await saveHero(updated);
+    // Nur die eben gelöschten Bilder austragen, auf dem frischen Stand.
+    final geloescht = <String>{
+      for (final entry in hero.appearance.avatarGallery) entry.id,
+    };
+    await updateHero(heroId, (aktuell) {
+      final bild = aktuell.appearance;
+      final rest = bild.avatarGallery
+          .where((e) => !geloescht.contains(e.id))
+          .toList();
+      bool bleibt(String id) => rest.any((e) => e.id == id);
+      final primaerBleibt = bleibt(bild.primaerbildId);
+      return aktuell.copyWith(
+        appearance: bild.copyWith(
+          avatarFileName: '',
+          avatarGallery: rest,
+          primaerbildId: primaerBleibt ? bild.primaerbildId : '',
+          aktivesBildId: bleibt(bild.aktivesBildId) ? bild.aktivesBildId : '',
+          avatarSnapshot: primaerBleibt ? null : () => null,
+        ),
+      );
+    });
   }
 
   // ---------------------------------------------------------------------------
@@ -996,27 +1017,26 @@ class HeroActions {
     required String heroId,
     required String gruppenCode,
   }) async {
-    final hero = await _loadHeroById(heroId);
-    final ziel = hero.gruppen
-        .where((g) => g.gruppenCode == gruppenCode)
-        .firstOrNull;
-    if (ziel == null) return;
-    if (!ziel.kontoGruppe) {
-      throw const GruppenException(_altgruppeMeldung);
-    }
-    if (ziel.primaer && hero.gruppen.where((g) => g.primaer).length == 1) {
-      return;
-    }
-    await saveHero(
-      hero.copyWith(
+    await updateHero(heroId, (hero) {
+      final ziel = hero.gruppen
+          .where((g) => g.gruppenCode == gruppenCode)
+          .firstOrNull;
+      if (ziel == null) return hero;
+      if (!ziel.kontoGruppe) {
+        throw const GruppenException(_altgruppeMeldung);
+      }
+      if (ziel.primaer && hero.gruppen.where((g) => g.primaer).length == 1) {
+        return hero;
+      }
+      return hero.copyWith(
         gruppen: [
           for (final g in hero.gruppen)
             g.primaer != (g.gruppenCode == gruppenCode)
                 ? g.copyWith(primaer: g.gruppenCode == gruppenCode)
                 : g,
         ],
-      ),
-    );
+      );
+    });
   }
 
   /// Setzt [profil] als Regelprofil-Vorgabe der Gruppe (nur Besitzer).
@@ -1099,17 +1119,20 @@ class HeroActions {
         );
     await _ref.read(externeHeldenRepositoryProvider).save(held);
 
-    // Frisch laden: Der Upload kann lange gedauert haben.
-    final aktuell = await _loadHeroById(heroId);
-    final neueGruppen = List<HeroGruppenMitgliedschaft>.from(aktuell.gruppen);
-    final index = neueGruppen.indexWhere((g) => g.gruppenCode == gruppenCode);
-    if (index < 0) return;
-    final aktuelleMitgliedschaft = neueGruppen[index];
-    if (aktuelleMitgliedschaft.externeHeldIds.contains(held.id)) return;
-    neueGruppen[index] = aktuelleMitgliedschaft.copyWith(
-      externeHeldIds: [...aktuelleMitgliedschaft.externeHeldIds, held.id],
-    );
-    await saveHero(aktuell.copyWith(gruppen: neueGruppen));
+    // Auf dem frischen Stand: Der Upload kann lange gedauert haben.
+    await updateHero(heroId, (aktuell) {
+      final neueGruppen = List<HeroGruppenMitgliedschaft>.from(aktuell.gruppen);
+      final index = neueGruppen.indexWhere((g) => g.gruppenCode == gruppenCode);
+      if (index < 0) return aktuell;
+      final aktuelleMitgliedschaft = neueGruppen[index];
+      if (aktuelleMitgliedschaft.externeHeldIds.contains(held.id)) {
+        return aktuell;
+      }
+      neueGruppen[index] = aktuelleMitgliedschaft.copyWith(
+        externeHeldIds: [...aktuelleMitgliedschaft.externeHeldIds, held.id],
+      );
+      return aktuell.copyWith(gruppen: neueGruppen);
+    });
   }
 
   /// Entfernt einen externen Helden aus einer Gruppe.
@@ -1137,16 +1160,17 @@ class HeroActions {
           .entferneGeteiltenHeld(gruppenCode, externerHeldId);
     }
 
-    final aktuell = await _loadHeroById(heroId);
-    final neueGruppen = List<HeroGruppenMitgliedschaft>.from(aktuell.gruppen);
-    final index = neueGruppen.indexWhere((g) => g.gruppenCode == gruppenCode);
-    if (index < 0) return;
-    neueGruppen[index] = neueGruppen[index].copyWith(
-      externeHeldIds: neueGruppen[index].externeHeldIds
-          .where((id) => id != externerHeldId)
-          .toList(growable: false),
-    );
-    await saveHero(aktuell.copyWith(gruppen: neueGruppen));
+    await updateHero(heroId, (aktuell) {
+      final neueGruppen = List<HeroGruppenMitgliedschaft>.from(aktuell.gruppen);
+      final index = neueGruppen.indexWhere((g) => g.gruppenCode == gruppenCode);
+      if (index < 0) return aktuell;
+      neueGruppen[index] = neueGruppen[index].copyWith(
+        externeHeldIds: neueGruppen[index].externeHeldIds
+            .where((id) => id != externerHeldId)
+            .toList(growable: false),
+      );
+      return aktuell.copyWith(gruppen: neueGruppen);
+    });
   }
 
   /// Aktualisiert die eigene Visitenkarte in allen Konto-Gruppen des Helden.
@@ -1254,68 +1278,77 @@ class HeroActions {
       gesehen.add(mitglied.karte.heroId);
     }
 
-    // Frisch laden und nur die eigenen Felder aendern.
-    final aktuell = await _loadHeroById(heroId);
-    final neueGruppen = List<HeroGruppenMitgliedschaft>.from(aktuell.gruppen);
-    final index = neueGruppen.indexWhere((g) => g.gruppenCode == gruppenCode);
-    if (index < 0) return;
-    final bisher = neueGruppen[index];
-    final behalten = bisher.externeHeldIds.where(gesehen.contains).toList();
-    final neueIds = <String>[
-      ...behalten,
-      for (final id in gesehen)
-        if (!behalten.contains(id)) id,
-    ];
-    final idsGeaendert =
-        neueIds.length != bisher.externeHeldIds.length ||
-        !neueIds.every(bisher.externeHeldIds.contains);
-    if (!idsGeaendert && info.name == bisher.gruppenName) return;
-    neueGruppen[index] = bisher.copyWith(
-      gruppenName: info.name,
-      externeHeldIds: neueIds,
-    );
-    await saveHero(aktuell.copyWith(gruppen: neueGruppen));
+    // Auf dem frischen Stand und nur die eigenen Felder aendern.
+    await updateHero(heroId, (aktuell) {
+      final neueGruppen = List<HeroGruppenMitgliedschaft>.from(aktuell.gruppen);
+      final index = neueGruppen.indexWhere((g) => g.gruppenCode == gruppenCode);
+      if (index < 0) return aktuell;
+      final bisher = neueGruppen[index];
+      final behalten = bisher.externeHeldIds.where(gesehen.contains).toList();
+      final neueIds = <String>[
+        ...behalten,
+        for (final id in gesehen)
+          if (!behalten.contains(id)) id,
+      ];
+      final idsGeaendert =
+          neueIds.length != bisher.externeHeldIds.length ||
+          !neueIds.every(bisher.externeHeldIds.contains);
+      if (!idsGeaendert && info.name == bisher.gruppenName) return aktuell;
+      neueGruppen[index] = bisher.copyWith(
+        gruppenName: info.name,
+        externeHeldIds: neueIds,
+      );
+      return aktuell.copyWith(gruppen: neueGruppen);
+    });
   }
 
   // Haengt die Konto-Gruppe an den Helden, sofern er sie noch nicht kennt.
   Future<void> _traegeMitgliedschaftEin(String heroId, GruppenInfo info) async {
-    final hero = await _loadHeroById(heroId);
-    final neueGruppen = List<HeroGruppenMitgliedschaft>.from(hero.gruppen);
-    final index = neueGruppen.indexWhere((g) => g.gruppenCode == info.groupId);
-    // Die erste Konto-Gruppe wird primär; jede weitere bleibt es nicht von
-    // selbst, damit ein Held nie unbemerkt die Vorgabe wechselt.
-    final ersteKontoGruppe = !neueGruppen.any(
-      (g) => g.kontoGruppe && g.primaer,
-    );
-    if (index >= 0) {
-      if (neueGruppen[index].kontoGruppe) return;
-      neueGruppen[index] = neueGruppen[index].copyWith(
-        kontoGruppe: true,
-        gruppenName: info.name,
-        primaer: ersteKontoGruppe,
+    await updateHero(heroId, (hero) {
+      final neueGruppen = List<HeroGruppenMitgliedschaft>.from(hero.gruppen);
+      final index = neueGruppen.indexWhere(
+        (g) => g.gruppenCode == info.groupId,
       );
-    } else {
-      neueGruppen.add(
-        HeroGruppenMitgliedschaft(
-          gruppenCode: info.groupId,
-          gruppenName: info.name,
+      // Die erste Konto-Gruppe wird primär; jede weitere bleibt es nicht von
+      // selbst, damit ein Held nie unbemerkt die Vorgabe wechselt.
+      final ersteKontoGruppe = !neueGruppen.any(
+        (g) => g.kontoGruppe && g.primaer,
+      );
+      if (index >= 0) {
+        if (neueGruppen[index].kontoGruppe) return hero;
+        neueGruppen[index] = neueGruppen[index].copyWith(
           kontoGruppe: true,
+          gruppenName: info.name,
           primaer: ersteKontoGruppe,
-        ),
-      );
-    }
-    await saveHero(hero.copyWith(gruppen: neueGruppen));
+        );
+      } else {
+        neueGruppen.add(
+          HeroGruppenMitgliedschaft(
+            gruppenCode: info.groupId,
+            gruppenName: info.name,
+            kontoGruppe: true,
+            primaer: ersteKontoGruppe,
+          ),
+        );
+      }
+      return hero.copyWith(gruppen: neueGruppen);
+    });
   }
 
   Future<void> _entferneMitgliedschaft(
     String heroId,
     String gruppenCode,
   ) async {
-    final hero = await _loadHeroById(heroId);
-    final neueGruppen = hero.gruppen
-        .where((g) => g.gruppenCode != gruppenCode)
-        .toList(growable: false);
-    await saveHero(hero.copyWith(gruppen: neueGruppen));
+    await updateHero(heroId, (hero) {
+      if (!hero.gruppen.any((g) => g.gruppenCode == gruppenCode)) {
+        return hero;
+      }
+      return hero.copyWith(
+        gruppen: hero.gruppen
+            .where((g) => g.gruppenCode != gruppenCode)
+            .toList(growable: false),
+      );
+    });
   }
 
   // Die Mitgliedschaft steht bereits; ein Fehler hier heilt der naechste Sync.

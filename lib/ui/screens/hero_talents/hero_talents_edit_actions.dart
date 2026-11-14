@@ -84,7 +84,26 @@ extension _HeroTalentEditActions on _HeroTalentTableTabState {
       return;
     }
     if (widget.scope == _TalentTabScope.combat) {
-      final catalog = await ref.read(rulesCatalogProvider.future);
+      // Katalog, nach dem der Held rechnet (Regelprofil), nicht der allgemeine.
+      final catalog = ref
+          .read(heroRulesCatalogProvider(widget.heroId))
+          .valueOrNull;
+      if (catalog == null) {
+        // Nie auf `.future` warten (endet bei einem Fehler nicht): Im
+        // geöffneten Editor ist der Katalog des Helden geladen; sonst wird
+        // nicht ungeprüft gespeichert.
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Der Regelkatalog ist noch nicht geladen. Bitte gleich '
+                'erneut speichern.',
+              ),
+            ),
+          );
+        }
+        return;
+      }
       final issues = validateCombatTalentDistribution(
         talents: catalog.talents,
         talentEntries: _draftTalents,

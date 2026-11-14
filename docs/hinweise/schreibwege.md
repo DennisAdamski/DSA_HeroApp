@@ -88,3 +88,15 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   `syncNow` wartet vorher auf laufende Uploads. Tests, die danach die Cloud
   pruefen oder die Leitung umschalten, warten mit `warteAufUebertragungen()`
   (`test/data/zustand_schnell_tippen_sync_test.dart`).
+
+- Aktionen in `HeroActions`, die vor dem Schreiben warten (Bild speichern,
+  Gesichtserkennung, Gruppen-Cloudaufrufe), ändern den Bogen ausschließlich
+  über `updateHero(heroId, (aktuell) => …)`. Ein vorab mit `_loadHeroById`
+  geladener Held dient nur noch der Prüfung (Existenz, Limits, zu löschende
+  Dateien) und wird nie als Ganzes zurückgeschrieben; sonst ginge verloren,
+  was währenddessen gespeichert wird (auch eine Änderung, die noch in der
+  Warteschlange hinter einem laufenden Cloud-Upload wartet). Test:
+  `test/state/hero_actions_avatar_cloud_test.dart`.
+- Speicherprüfungen im Editor lesen den Katalog des Helden synchron
+  (`heroRulesCatalogProvider(heroId).valueOrNull`) und brechen mit einer
+  Meldung ab, wenn er fehlt; sie warten nie auf `rulesCatalogProvider.future`.
