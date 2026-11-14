@@ -143,12 +143,7 @@ void main() {
     );
     expect(tragkraftText(tester), 'Tragkraft 17 Stein');
 
-    await tester.tap(
-      find.descendant(
-        of: _k('inventory-tragkraft-quelle-0'),
-        matching: find.byIcon(Icons.cancel),
-      ),
-    );
+    await tester.tap(find.byTooltip('Gürtel der Stärke entfernen'));
     await tester.pumpAndSettle();
     expect((await gespeichert()).tragkraftBoni, isEmpty);
     expect(tragkraftText(tester), 'Tragkraft 12 Stein');

@@ -351,7 +351,8 @@ void main() {
     tester,
   ) async {
     await pump(tester, width: 1440);
-    final zeile = find.byKey(const ValueKey('workspace-status-row-Ini'));
+    // Die Zustandskachel zeigt die Statuswerte als Wertraster.
+    final zeile = find.byKey(const ValueKey('workspace-status-kachel-Ini'));
     await tester.ensureVisible(zeile);
     expect(zeile, findsOneWidget);
     expect(find.text('Statuswerte'), findsOneWidget);

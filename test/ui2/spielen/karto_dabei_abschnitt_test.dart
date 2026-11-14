@@ -794,7 +794,8 @@ void main() {
     testWidgets('Tragkraftquellen zählen mit, ohne hier zu stehen', (
       tester,
     ) async {
-      final held = _held(dukaten: '0').copyWith(
+      // Ohne Eintrag ohne Gewicht ist die Last exakt (kein "≥").
+      final held = _held(dukaten: '0', eintraege: const []).copyWith(
         tragkraftBoni: const [
           HeroTragkraftBonus(id: 'a', name: 'Rune', stein: 70, kk: 1),
         ],
