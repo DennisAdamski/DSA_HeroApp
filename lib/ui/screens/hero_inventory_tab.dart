@@ -24,6 +24,7 @@ import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/inventory_kampf_u
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/inventory_stapel_teilen.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/inventory_stapel_zusammenfuehren.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/inventory_verkaufen_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/hero_inventory/tragkraft_quellen_abschnitt.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/adaptive_table_columns.dart';
 import 'package:dsa_heldenverwaltung/ui/widgets/codex_tab_header.dart';
@@ -170,6 +171,17 @@ class _HeroInventoryTabState extends ConsumerState<HeroInventoryTab>
       totalValueSilber: totalValue,
     );
     final table = _buildTable(context);
+    // Dauerhafte Tragkraftquellen (Bärenrune usw.); die Spielansicht zeigt in
+    // „Dabei“ nur die Last.
+    final tragkraft = Padding(
+      padding: const EdgeInsets.fromLTRB(_pagePadding, 4, _pagePadding, 0),
+      child: TragkraftQuellenAbschnitt(
+        key: const ValueKey<String>('inventory-tragkraft'),
+        heroId: widget.heroId,
+        quellen: hero.tragkraftBoni,
+        readOnly: planungOffen,
+      ),
+    );
 
     if (isWide) {
       final listColumn = Column(
@@ -199,6 +211,7 @@ class _HeroInventoryTabState extends ConsumerState<HeroInventoryTab>
               onSchritt: _verschiebeDukaten,
             ),
           ),
+          tragkraft,
           const SizedBox(height: 8),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: _pagePadding - 4),
@@ -262,6 +275,7 @@ class _HeroInventoryTabState extends ConsumerState<HeroInventoryTab>
             onSchritt: _verschiebeDukaten,
           ),
         ),
+        tragkraft,
         const SizedBox(height: 8),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: _pagePadding - 4),
