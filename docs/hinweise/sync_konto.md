@@ -80,6 +80,20 @@ harten Regeln und den Themenindex.
   hiesigen Darstellung des Online-Stands gleicht, gilt als identisch. Ein
   Abgleich allein schreibt nie. Getestet wird das mit
   `speichereFremdenStand` in `test/data/sync_app_versionen_test.dart`.
+- Bewertungen eines Dokuments laufen nacheinander (`_abgleichReihenfolge` in
+  `SyncingHeroRepository`): Listener, `syncNow` und Uploads lesen sonst
+  denselben Ausgangsstand und melden einen Konflikt mit sich selbst. Ein
+  Upload überträgt immer den **frisch geladenen** lokalen Stand, nie eine beim
+  Aufruf erfasste Fassung. Datensätze mit einer Revision, die dieses Gerät
+  schon hinter sich gelassen hat (`_ueberholteRevisionen`), werden ignoriert.
+- Die stille Zusammenführung lädt hoch und schreibt erst danach lokal. Wer in
+  dieser Zeit speichert, wird nicht überschrieben: `_schreibeHeld` /
+  `_schreibeZustand` übertragen seine Änderung auf die zusammengeführte
+  Fassung; widerspricht sie dem Online-Stand, bleibt lokal alles stehen, die
+  Basis entfällt und ein Konflikt entscheidet. Getestet in
+  `test/data/sync_gleichzeitige_abgleiche_test.dart`.
+- Ein Übertragungsfehler lässt `saveHero` nie scheitern, gleich welchen Typs:
+  Der lokale Stand ist dann schon gespeichert, der Fehler steht im Sync-Status.
 - Entscheidungen zu Offline-Helden (`Offline-Held: …`-Konflikte beim Wechsel in
   ein Konto) müssen persistiert werden, sonst wiederholt sich die Frage bei
   jedem Start: die Konfliktliste lebt nur im Speicher und keiner der drei
