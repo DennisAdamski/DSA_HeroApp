@@ -207,10 +207,11 @@ Teilumfang festlegen. Nach Wichtigkeit sortiert.
   [ui_oberflaeche.md](hinweise/ui_oberflaeche.md)): additive Felder `ort` und
   `datum` an `HeroNoteEntry`/`HeroAdventurePersonEntry` (nur bei Belegung im
   JSON), Vorbelegung in Dialog und Schnell-Erfassung, Zeile „Ort · Datum“ auf
-  den Karten, Suchknopf mit Suchfeld in Abschnitt und Blatt. Die Notizen im
-  Notizen-Tab der Verwaltung (Bestandsoberfläche) zeigen die neuen Felder noch
-  nicht, erhalten sie aber beim Bearbeiten (`copyWith`). **Offen:** Ort und
-  Datum im Bestandseditor, Suche über die allgemeinen Notizen des Helden
+  den Karten, Suchknopf mit Suchfeld in Abschnitt und Blatt. Die Dialoge für
+  Abenteuer-Notizen und -Personen im Notizen-Tab der Verwaltung
+  (Bestandsoberfläche) bearbeiten Ort und Datum jetzt ebenfalls (14.11.2026,
+  Test in `hero_workspace_edit_mode_test.dart`). **Offen:** Suche über die
+  allgemeinen Notizen des Helden
   (`HeroSheet.notes`). *Erledigt 05.11.2026:* Umlautfaltung (`suchFaltung`,
   REV-08: „ö“, „oe“ und „o“ fallen zusammen); das Datum ist strukturiert
   gespeichert (`HeroAdventureDateValue`, REV-01).
@@ -221,8 +222,12 @@ Teilumfang festlegen. Nach Wichtigkeit sortiert.
   Kachelraster mit Spaltenzahl nach Breite, je Kachel Reihenfolge, Breite
   (schmal/mittel/voll), Ausblenden und Einklappen, soweit die Kachel es
   erlaubt; gespeichert je Held in `HeroSheet.spielansicht` und damit über den
-  Helden-Sync abgeglichen. **Offen:** kontoweite Vorlage für alle Helden,
-  Anordnen während einer offenen Planung.
+  Helden-Sync abgeglichen. **Vorlage (14.11.2026):** geräteweite
+  Vorlage in `AppSettings.spielansichtVorlage` (Menü „Vorlage“ im
+  Anordnen-Modus: speichern, laden, entfernen); Helden ohne eigene Anordnung
+  folgen ihr, am Helden wird nichts geschrieben. **Offen:** kontoweite Vorlage
+  (Sync über Firestore, bewusst zurückgestellt), Anordnen während einer
+  offenen Planung.
   **Größenstufen der Kacheln (04.11.2026):** Jede Kachel kennt
   `kompakt`/`normal`/`weit` nach ihrer eigenen Breite und zeigt in `weit` mehr
   oder anderes, ohne Standardbreiten zu ändern: Ressourcen (±5/±1), Kampf
@@ -404,9 +409,10 @@ HTTP 403, weil das frische Profil einen nicht registrierten Debug-Token erzeugt.
 Auf `heldensync-test.web.app` (Build `66698c5`) wurde im echten Edge ein
 Kultur-Modifikator samt Freitext-Fragment angelegt, gespeichert, synchronisiert
 (0 offene Konflikte) und wieder entfernt; dort ist nur die Zwei-Geräte-Prüfung
-offen. Nicht geprüft: Abweichung durch ältere App und Export → Import. Kleine
-Optikmängel bei 360 px/Textfaktor 2 (kein Überlauf): der Button
-„+ Herkunftsmodifikator“ und der Dialogtitel brechen mitten im Wort um.
+offen. Nicht geprüft: Abweichung durch ältere App und Export → Import. Die
+Optikmängel bei 360 px/Textfaktor 2 (Button und Dialogtitel brachen mitten im
+Wort um) sind behoben (14.11.2026): Button „+ Modifikator“, Dialogtitel in
+`titleMedium`.
 
 ## ARCH-03 — Gemeinsame Ausrüstungsdaten für Inventar und Kampf
 

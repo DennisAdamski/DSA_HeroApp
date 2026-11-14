@@ -233,6 +233,20 @@ class KartoSpielkachel {
   int get hashCode => Object.hash(art, breite, ausgeblendet, eingeklappt);
 }
 
+/// Die für einen Helden gültige Anordnung: seine eigene oder die Vorlage.
+///
+/// Ein Held ohne eigene Kacheln folgt der geräteweiten [vorlage]. Seine
+/// unbekannten Felder bleiben erhalten; die Vorlage wird nie am Helden
+/// gespeichert, solange er sie nicht selbst ändert. Ohne Vorlage gilt [held].
+HeroSpielansicht? wirksameSpielansicht(
+  HeroSpielansicht? held,
+  HeroSpielansicht? vorlage,
+) {
+  if (vorlage == null || vorlage.kacheln.isEmpty) return held;
+  if (held != null && held.kacheln.isNotEmpty) return held;
+  return (held ?? const HeroSpielansicht()).copyWith(kacheln: vorlage.kacheln);
+}
+
 /// Löst die gespeicherte Anordnung gegen die [verfuegbar]en Kacheln auf.
 ///
 /// Gespeicherte Kacheln stehen in ihrer Reihenfolge. Eine verfügbare Kachel

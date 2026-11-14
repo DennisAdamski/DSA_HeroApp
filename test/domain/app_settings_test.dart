@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dsa_heldenverwaltung/domain/app_settings.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_spielansicht.dart';
 import 'package:dsa_heldenverwaltung/domain/rules_index_remote_config.dart';
 
 void main() {
@@ -184,6 +185,41 @@ void main() {
           .copyWith(dunkelModus: true)
           .merkmaleAufgeklappt,
       isTrue,
+    );
+  });
+
+  test('Vorlage der Spielansicht round-trippt und bleibt ohne Vorlage weg', () {
+    expect(const AppSettings().spielansichtVorlage, isNull);
+    // Ohne Vorlage steht kein Schluessel im JSON.
+    expect(
+      const AppSettings().toJson().containsKey('spielansichtVorlage'),
+      isFalse,
+    );
+
+    const vorlage = HeroSpielansicht(
+      kacheln: [
+        HeroSpielkachel(id: 'kampf', breite: SpielkachelBreite.mittel),
+        HeroSpielkachel(id: 'protokoll', ausgeblendet: true),
+      ],
+    );
+    final restored = AppSettings.fromJson(
+      const AppSettings(spielansichtVorlage: vorlage).toJson(),
+    );
+    expect(restored.spielansichtVorlage, vorlage);
+
+    // Andere Aenderungen lassen die Vorlage stehen, `null` entfernt sie.
+    final mitVorlage = const AppSettings(spielansichtVorlage: vorlage);
+    expect(mitVorlage.copyWith(dunkelModus: true).spielansichtVorlage, vorlage);
+    expect(
+      mitVorlage.copyWith(spielansichtVorlage: null).spielansichtVorlage,
+      isNull,
+    );
+
+    // Unlesbare Werte ergeben keine Vorlage.
+    expect(
+      AppSettings.fromJson(<String, dynamic>{'spielansichtVorlage': 'x'})
+          .spielansichtVorlage,
+      isNull,
     );
   });
 }

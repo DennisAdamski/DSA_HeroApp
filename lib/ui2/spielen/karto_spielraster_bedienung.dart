@@ -51,7 +51,9 @@ class KartoAnordnenKnopf extends StatelessWidget {
   }
 }
 
-/// „Standard“, „Abbrechen“ und „Fertig“ des Anordnen-Modus.
+enum _VorlagenWahl { speichern, laden, loeschen }
+
+/// „Vorlage“, „Standard“, „Abbrechen“ und „Fertig“ des Anordnen-Modus.
 class KartoAnordnenAbschluss extends StatelessWidget {
   /// Abschlussknöpfe; während des Speicherns gesperrt.
   const KartoAnordnenAbschluss({
@@ -60,7 +62,20 @@ class KartoAnordnenAbschluss extends StatelessWidget {
     required this.onStandard,
     required this.onAbbrechen,
     required this.onFertig,
+    this.onVorlageSpeichern,
+    this.onVorlageLaden,
+    this.onVorlageLoeschen,
   });
+
+  /// Speichert den Entwurf als geräteweite Vorlage; `null` blendet das Menü
+  /// „Vorlage“ aus.
+  final VoidCallback? onVorlageSpeichern;
+
+  /// Lädt die Vorlage in den Entwurf; `null`, solange es keine Vorlage gibt.
+  final VoidCallback? onVorlageLaden;
+
+  /// Entfernt die Vorlage; `null`, solange es keine Vorlage gibt.
+  final VoidCallback? onVorlageLoeschen;
 
   /// Ob „Fertig“ gerade schreibt.
   final bool speichert;
@@ -81,6 +96,53 @@ class KartoAnordnenAbschluss extends StatelessWidget {
       runSpacing: Abstand.eng,
       crossAxisAlignment: WrapCrossAlignment.center,
       children: [
+        if (onVorlageSpeichern != null)
+          PopupMenuButton<_VorlagenWahl>(
+            key: const ValueKey<String>('karto-spiel-anordnen-vorlage'),
+            enabled: !speichert,
+            tooltip: 'Vorlage für alle Helden auf diesem Gerät',
+            onSelected: (wahl) => switch (wahl) {
+              _VorlagenWahl.speichern => onVorlageSpeichern!(),
+              _VorlagenWahl.laden => onVorlageLaden?.call(),
+              _VorlagenWahl.loeschen => onVorlageLoeschen?.call(),
+            },
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                key: ValueKey<String>('karto-spiel-anordnen-vorlage-speichern'),
+                value: _VorlagenWahl.speichern,
+                child: Text('Als Vorlage speichern'),
+              ),
+              PopupMenuItem(
+                key: const ValueKey<String>(
+                  'karto-spiel-anordnen-vorlage-laden',
+                ),
+                value: _VorlagenWahl.laden,
+                enabled: onVorlageLaden != null,
+                child: const Text('Vorlage laden'),
+              ),
+              PopupMenuItem(
+                key: const ValueKey<String>(
+                  'karto-spiel-anordnen-vorlage-loeschen',
+                ),
+                value: _VorlagenWahl.loeschen,
+                enabled: onVorlageLoeschen != null,
+                child: const Text('Vorlage entfernen'),
+              ),
+            ],
+            child: const Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: Abstand.normal,
+                vertical: Abstand.eng,
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text('Vorlage'),
+                  Icon(Icons.arrow_drop_down, size: 20),
+                ],
+              ),
+            ),
+          ),
         TextButton(
           key: const ValueKey<String>('karto-spiel-anordnen-standard'),
           onPressed: speichert ? null : onStandard,

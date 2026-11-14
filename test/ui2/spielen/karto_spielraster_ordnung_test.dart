@@ -293,4 +293,47 @@ void main() {
       expect(kampf.eingeklappt, isTrue);
     });
   });
+
+  group('wirksameSpielansicht', () {
+    const vorlage = HeroSpielansicht(
+      kacheln: [
+        HeroSpielkachel(id: 'kampf', breite: SpielkachelBreite.mittel),
+        HeroSpielkachel(id: 'ressourcen'),
+      ],
+    );
+    const eigene = HeroSpielansicht(
+      kacheln: [HeroSpielkachel(id: 'dabei', eingeklappt: true)],
+    );
+
+    test('ein Held ohne Anordnung folgt der Vorlage', () {
+      expect(wirksameSpielansicht(null, vorlage), vorlage);
+      expect(wirksameSpielansicht(const HeroSpielansicht(), vorlage), vorlage);
+    });
+
+    test('die eigene Anordnung geht der Vorlage vor', () {
+      expect(wirksameSpielansicht(eigene, vorlage), eigene);
+    });
+
+    test('ohne Vorlage gilt die Anordnung des Helden unverändert', () {
+      expect(wirksameSpielansicht(null, null), isNull);
+      expect(wirksameSpielansicht(eigene, null), eigene);
+      expect(wirksameSpielansicht(eigene, const HeroSpielansicht()), eigene);
+    });
+
+    test('unbekannte Felder des Helden bleiben erhalten', () {
+      const held = HeroSpielansicht(unbekannteFelder: {'neu': 1});
+      final wirksam = wirksameSpielansicht(held, vorlage)!;
+      expect(wirksam.kacheln, vorlage.kacheln);
+      expect(wirksam.unbekannteFelder, {'neu': 1});
+    });
+
+    test('die Vorlage ordnet die Kacheln beim Auflösen an', () {
+      final kacheln = loeseSpielansichtAuf(
+        wirksameSpielansicht(null, vorlage),
+        verfuegbar: {KartoSpielkachelArt.ressourcen, KartoSpielkachelArt.kampf},
+      );
+      expect(kacheln.first.art, KartoSpielkachelArt.kampf);
+      expect(kacheln.first.breite, SpielkachelBreite.mittel);
+    });
+  });
 }

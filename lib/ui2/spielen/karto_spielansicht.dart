@@ -11,6 +11,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_wirkung_rules.da
 import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_anzeige_rules.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_merkmal.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_spielansicht.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
@@ -129,8 +130,10 @@ class _KartoSpielansichtState extends ConsumerState<KartoSpielansicht>
     // Während einer Planung bräche jede Heldenänderung den Runden-Hash;
     // Anordnen und Einklappen ruhen dann.
     final gesperrt = ref.watch(advancementSessionProvider(heroId)) != null;
+    final vorlage = ref.watch(spielansichtVorlageProvider);
+    // Ein Held ohne eigene Anordnung folgt der geräteweiten Vorlage.
     final gespeichert = loeseSpielansichtAuf(
-      werte.hero.spielansicht,
+      wirksameSpielansicht(werte.hero.spielansicht, vorlage),
       verfuegbar: _verfuegbar(werte),
     );
     final entwurf = gesperrt ? null : _entwurf;
@@ -169,6 +172,19 @@ class _KartoSpielansichtState extends ConsumerState<KartoSpielansicht>
                         ),
                         onAbbrechen: () => setState(() => _entwurf = null),
                         onFertig: () => _anordnenBeenden(gespeichert),
+                        onVorlageSpeichern: () =>
+                            _vorlageSpeichern(entwurf, vorlage),
+                        onVorlageLaden: vorlage == null
+                            ? null
+                            : () => setState(
+                                () => _entwurf = loeseSpielansichtAuf(
+                                  vorlage,
+                                  verfuegbar: _verfuegbar(werte),
+                                ),
+                              ),
+                        onVorlageLoeschen: vorlage == null
+                            ? null
+                            : _vorlageLoeschen,
                       ),
               ),
               if (entwurf != null) ...[
@@ -462,13 +478,40 @@ class _KartoSpielansichtState extends ConsumerState<KartoSpielansicht>
     if (gelungen && mounted) setState(() => _entwurf = null);
   }
 
-  // Einklappen schreibt sofort und nur den einen Eintrag.
+  // Die Vorlage liegt in den Geräteeinstellungen und berührt keinen Helden.
+  Future<void> _vorlageSpeichern(
+    List<KartoSpielkachel> entwurf,
+    HeroSpielansicht? vorlage,
+  ) async {
+    await ref
+        .read(settingsActionsProvider)
+        .setSpielansichtVorlage(schreibeSpielansicht(entwurf, basis: vorlage));
+    _hinweis(
+      'Vorlage gespeichert. Helden ohne eigene Anordnung folgen ihr auf '
+      'diesem Gerät.',
+    );
+  }
+
+  Future<void> _vorlageLoeschen() async {
+    await ref.read(settingsActionsProvider).setSpielansichtVorlage(null);
+    _hinweis('Vorlage entfernt.');
+  }
+
+  void _hinweis(String text) {
+    if (!mounted) return;
+    ScaffoldMessenger.maybeOf(context)
+        ?.showSnackBar(SnackBar(content: Text(text)));
+  }
+
+  // Einklappen schreibt sofort und nur den einen Eintrag. Folgt der Held der
+  // Vorlage, bleibt deren Anordnung dabei erhalten.
   Future<void> _einklappen(KartoSpielkachelArt art, bool eingeklappt) async {
     if (!await vorHeldenbearbeitung() || !mounted) return;
+    final vorlage = ref.read(spielansichtVorlageProvider);
     await _schreibe(
       (held) => held.copyWith(
         spielansicht: mitEingeklappt(
-          held.spielansicht,
+          wirksameSpielansicht(held.spielansicht, vorlage),
           art,
           eingeklappt: eingeklappt,
         ),

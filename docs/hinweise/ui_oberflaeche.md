@@ -182,7 +182,18 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   über `updateHero`, ohne Änderung gar nicht. Den Einklappknopf zeigt der
   äußerste `KartoAbschnitt` einer Kachel über `KartoKachelSteuerung`; er
   schreibt sofort nur den einen Eintrag (`mitEingeklappt`). Während einer
-  Planung sind Anordnen und Einklappen gesperrt. Jede Kachel kennt ihre **Größenstufe** `KartoKachelGroesse`
+  Planung sind Anordnen und Einklappen gesperrt. **Vorlage (14.11.2026):** Im
+  Anordnen-Modus bietet das Menü „Vorlage“ (`karto-spiel-anordnen-vorlage`)
+  „Als Vorlage speichern“, „Vorlage laden“ und „Vorlage entfernen“. Die Vorlage
+  ist eine `HeroSpielansicht` in `AppSettings.spielansichtVorlage`
+  (**geräteweit**, kein Sync, nur bei Belegung im JSON; Provider
+  `spielansichtVorlageProvider`, Schreiber `setSpielansichtVorlage`). Ein Held
+  ohne eigene Kacheln folgt ihr (`wirksameSpielansicht`, Auflösung und
+  `_einklappen` gehen darüber, damit Einklappen die Anordnung der Vorlage
+  übernimmt statt auf den Standard zu fallen); am Helden wird nichts
+  geschrieben, bis er selbst „Fertig“ drückt. „Standard“ schreibt bewusst eine
+  eigene Standardanordnung und löst den Helden damit von der Vorlage. „Speichern“
+  und „Laden“ berühren keinen Helden; „Laden“ füllt nur den Entwurf. Jede Kachel kennt ihre **Größenstufe** `KartoKachelGroesse`
   (`kompakt` <420, `normal` <600, `weit` ab 600 dp **Kachelbreite**, nicht
   Fensterbreite), über `KartoKachelSteuerung.groesseVon(context)` auch in
   verschachtelten Abschnitten lesbar; Inhalte zeigen mit der Stufe mehr oder
