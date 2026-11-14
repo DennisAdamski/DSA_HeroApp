@@ -196,6 +196,50 @@ void main() {
       },
     );
 
+    test('geleerte Notiz und entferntes Bild eines geteilten Eintrags '
+        'erreichen die Gruppe (MODELL-01)', () async {
+      final besitzer = _dienst(
+        firestore,
+        'owner',
+        ids: <String>['g'],
+        codes: <String>['CODE12345678'],
+      );
+      await besitzer.erstelleGruppe('Runde');
+      await besitzer.pushGeteilterHeld(
+        'g',
+        HeldVisitenkarte(
+          heroId: 'npc-1',
+          name: 'Esel',
+          exportedAt: DateTime.utc(2026, 1, 1),
+          istManuell: true,
+          notizen: 'Packesel',
+          avatarThumbnailBase64: 'QUJD',
+        ),
+      );
+      // Ein Feld, das diese App-Version nicht kennt, bleibt online stehen.
+      await firestore.doc('groups_v2/g/shared_heroes/npc-1').update(
+        <String, dynamic>{'zukunft': 7},
+      );
+
+      await besitzer.pushGeteilterHeld(
+        'g',
+        HeldVisitenkarte(
+          heroId: 'npc-1',
+          name: 'Esel',
+          exportedAt: DateTime.utc(2026, 1, 2),
+          istManuell: true,
+        ),
+      );
+
+      final eintrag = (await besitzer.ladeInhalt('g')).geteilte.single;
+      expect(eintrag.notizen, isEmpty);
+      expect(eintrag.avatarThumbnailBase64, isNull);
+      final roh = (await firestore.doc('groups_v2/g/shared_heroes/npc-1').get())
+          .data()!;
+      expect(roh['zukunft'], 7);
+      expect(roh['createdByUid'], 'owner');
+    });
+
     test(
       'geteilter Eintrag behält den Ersteller bei Änderung durch andere',
       () async {

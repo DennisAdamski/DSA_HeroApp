@@ -363,6 +363,13 @@ class GruppenSyncService {
     );
     final daten = karte.toFirestoreJson();
     if (vorhanden.exists) {
+      // `update` lässt Felder stehen, die diese App-Version nicht kennt, und
+      // den Ersteller. Felder, die die Karte nur bei Belegung schreibt,
+      // müssen deshalb ausdrücklich entfernt werden; sonst käme eine geleerte
+      // Notiz oder ein entferntes Bild beim nächsten Abgleich zurück.
+      for (final feld in const <String>['notizen', 'avatarThumbnailBase64']) {
+        daten.putIfAbsent(feld, FieldValue.delete);
+      }
       await _geschuetzt(
         () => eintrag.update(daten),
         'Der gemeinsame Eintrag konnte nicht gespeichert werden.',
