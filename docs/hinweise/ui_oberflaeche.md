@@ -613,6 +613,11 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   einen Ladezustand, der nie endet. Wer warten muss, abonniert stattdessen den
   `AsyncValue` (`ref.listenManual`) und wertet `error` und `hasValue` aus;
   Muster: `_awaitCatalogReady` in `lib/ui/screens/heroes_home_screen.dart`.
+  Für das einfache Warten gibt es `warteAufAsyncProvider` (mit `Ref`) und
+  `warteAufAsyncProviderImWidget` (mit `WidgetRef`) in
+  `lib/state/async_value_compat.dart`: Wert oder Fehler des Providers, sonst
+  `TimeoutException` nach 30 Sekunden. In `lib/` gibt es kein
+  `read(provider.future)` mehr.
   Die Katalogkette in `lib/state/catalog_providers.dart` benutzt weiterhin
   `await ref.watch(dep.future)` — bewusst: ein `ref.watch(dep)` im
   Provider-Body macht den Provider rebuild-abhängig und bricht dadurch den

@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/catalog/house_rule_catalog_resolver.dart';
 import 'package:dsa_heldenverwaltung/catalog/house_rule_pack.dart';
 import 'package:dsa_heldenverwaltung/catalog/house_rule_pack_admin.dart';
@@ -49,7 +50,10 @@ class HouseRulePackAdminActions {
     required Map<String, dynamic> manifestJson,
     String previousPackId = '',
   }) async {
-    final runtimeData = await _ref.read(catalogRuntimeDataProvider.future);
+    final runtimeData = await warteAufAsyncProvider(
+      _ref,
+      catalogRuntimeDataProvider,
+    );
     final draftManifest = HouseRulePackManifest.fromJson(
       manifestJson,
       isBuiltIn: false,
@@ -106,7 +110,10 @@ class HouseRulePackAdminActions {
     required Map<String, dynamic> manifestJson,
     String previousPackId = '',
   }) async {
-    final snapshot = await _ref.read(houseRulePackAdminSnapshotProvider.future);
+    final snapshot = await warteAufAsyncProvider(
+      _ref,
+      houseRulePackAdminSnapshotProvider,
+    );
     final normalizedPreviousPackId = previousPackId.trim();
     final manifest = HouseRulePackManifest.fromJson(
       manifestJson,
@@ -143,7 +150,10 @@ class HouseRulePackAdminActions {
 
   /// Entfernt ein importiertes Hausregel-Paket und laedt den Katalog neu.
   Future<void> deletePack(String packId) async {
-    final snapshot = await _ref.read(houseRulePackAdminSnapshotProvider.future);
+    final snapshot = await warteAufAsyncProvider(
+      _ref,
+      houseRulePackAdminSnapshotProvider,
+    );
     final repository = _ref.read(houseRulePackRepositoryProvider);
     await repository.deletePack(
       catalogVersion: snapshot.catalogVersion,
@@ -154,7 +164,10 @@ class HouseRulePackAdminActions {
 
   /// Exportiert ein importiertes Paket als kanonisch formatiertes JSON.
   Future<String> exportPackJson(String packId) async {
-    final snapshot = await _ref.read(houseRulePackAdminSnapshotProvider.future);
+    final snapshot = await warteAufAsyncProvider(
+      _ref,
+      houseRulePackAdminSnapshotProvider,
+    );
     final entry = snapshot.importedPacks.where(
       (pack) => pack.id == packId.trim(),
     );
@@ -169,7 +182,10 @@ class HouseRulePackAdminActions {
 
   /// Schlaegt eine neue freie Paket-ID fuer Kopien oder Klone vor.
   Future<String> suggestCopyPackId(String basePackId) async {
-    final snapshot = await _ref.read(houseRulePackAdminSnapshotProvider.future);
+    final snapshot = await warteAufAsyncProvider(
+      _ref,
+      houseRulePackAdminSnapshotProvider,
+    );
     final normalizedBaseId = basePackId.trim().isEmpty
         ? 'hausregelpaket'
         : basePackId.trim();

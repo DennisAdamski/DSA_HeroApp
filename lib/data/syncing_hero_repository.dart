@@ -616,26 +616,38 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
 
     final remoteIds = records.map((record) => record.id).toSet();
     final localHeroes = await local.listHeroes();
+    // Jeder Held für sich: Scheitert einer (etwa an einem unlesbaren
+    // Online-Dokument), gleichen die übrigen trotzdem ab. Fehler der Leitung
+    // betreffen dagegen alle und brechen den Abgleich wie bisher ab.
+    final gescheitert = <String>[];
     for (final hero in localHeroes) {
       if (_istGesperrt(hero.id)) {
         continue;
       }
-      if (remoteIds.contains(hero.id)) {
-        final record = records.firstWhere((entry) => entry.id == hero.id);
-        final metadata = await metadataStore.load(_heroKey(hero.id));
-        if (record.revision == metadata?.remoteRevision) {
-          final localHash = heroContentHash(hero);
-          if (localHash != metadata?.localHash) {
-            await _pushHeroIfSafe(hero.id);
-          } else {
-            await _ergaenzeBasis(_heroKey(hero.id), metadata!, hero.toJson());
+      try {
+        if (remoteIds.contains(hero.id)) {
+          final record = records.firstWhere((entry) => entry.id == hero.id);
+          final metadata = await metadataStore.load(_heroKey(hero.id));
+          if (record.revision == metadata?.remoteRevision) {
+            final localHash = heroContentHash(hero);
+            if (localHash != metadata?.localHash) {
+              await _pushHeroIfSafe(hero.id);
+            } else {
+              await _ergaenzeBasis(_heroKey(hero.id), metadata!, hero.toJson());
+            }
           }
+          continue;
         }
-        continue;
+        await _pushHeroIfSafe(hero.id);
+      } on SyncException {
+        rethrow;
+      } on Object catch (error, stackTrace) {
+        _meldeEinzelfehler('Held', hero.id, error, stackTrace);
+        gescheitert.add(hero.id);
       }
-      await _pushHeroIfSafe(hero.id);
     }
-    return applyFailures;
+    _reportApplyFailures('Helden', gescheitert);
+    return applyFailures + gescheitert.length;
   }
 
   Future<int> _syncHeroStates() async {
@@ -651,25 +663,37 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
     final recordsById = <String, RemoteHeroStateRecord>{
       for (final record in records) record.heroId: record,
     };
+    final gescheitert = <String>[];
     for (final hero in await local.listHeroes()) {
       if (_istGesperrt(hero.id)) {
         continue;
       }
-      final state = await local.loadHeroState(hero.id);
-      if (state == null) {
-        continue;
+      try {
+        final state = await local.loadHeroState(hero.id);
+        if (state == null) {
+          continue;
+        }
+        final record = recordsById[hero.id];
+        if (record != null &&
+            !await _hasPendingLocalStateChange(hero.id, state, record)) {
+          await _ergaenzeZustandsbasis(hero.id, state, record);
+          continue;
+        }
+        // Über dieselbe Bündelung wie beim Speichern, damit ein Klick während
+        // des Abgleichs keinen zweiten, parallelen Upload startet.
+        await _zustandsUploads.stosseAn(
+          hero.id,
+          () => _ladeZustandHoch(hero.id),
+        );
+      } on SyncException {
+        rethrow;
+      } on Object catch (error, stackTrace) {
+        _meldeEinzelfehler('Zustand', hero.id, error, stackTrace);
+        gescheitert.add(hero.id);
       }
-      final record = recordsById[hero.id];
-      if (record != null &&
-          !await _hasPendingLocalStateChange(hero.id, state, record)) {
-        await _ergaenzeZustandsbasis(hero.id, state, record);
-        continue;
-      }
-      // Über dieselbe Bündelung wie beim Speichern, damit ein Klick während
-      // des Abgleichs keinen zweiten, parallelen Upload startet.
-      await _zustandsUploads.stosseAn(hero.id, () => _ladeZustandHoch(hero.id));
     }
-    return applyFailures;
+    _reportApplyFailures('Zustands', gescheitert);
+    return applyFailures + gescheitert.length;
   }
 
   /// Ob ein lokal geaenderter Zustand auf unveraenderter Online-Basis wartet.
@@ -940,6 +964,19 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
           remoteRecord: fresh,
           localTimestamp: hero.lastModified ?? metadata?.updatedAt,
         );
+      } else {
+        // Abgeglichen laut Metadaten, online aber spurlos verschwunden (kein
+        // Tombstone): nie still übergehen, sonst bliebe der Held für immer
+        // unübertragen, ohne dass es jemand merkt.
+        _melde(
+          SyncFailure(
+            kind: SyncErrorKind.conflict,
+            message:
+                'Der Online-Stand von „${hero.name}“ fehlt. Der Held bleibt '
+                'lokal erhalten, wird aber nicht übertragen.',
+            occurredAt: DateTime.now().toUtc(),
+          ),
+        );
       }
       return;
     }
@@ -978,6 +1015,24 @@ class SyncingHeroRepository implements HeroRepository, AppSyncController {
     }
     _reportApplyFailures('Zustands', failedIds);
     return failedIds.length;
+  }
+
+  void _meldeEinzelfehler(
+    String art,
+    String heroId,
+    Object error,
+    StackTrace stackTrace,
+  ) {
+    FlutterError.reportError(
+      FlutterErrorDetails(
+        exception: error,
+        stack: stackTrace,
+        library: 'syncing_hero_repository',
+        context: ErrorDescription(
+          '$art $heroId konnte nicht abgeglichen werden',
+        ),
+      ),
+    );
   }
 
   void _reportApplyFailures(String label, List<String> failedIds) {

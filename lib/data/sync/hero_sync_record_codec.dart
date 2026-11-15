@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 
 import 'package:dsa_heldenverwaltung/data/sync/remote_hero_sync_gateway.dart';
@@ -147,6 +148,50 @@ RemoteHeroStateRecord? decodeRemoteHeroStateRecord({
     contentHash: contentHash,
     isDeleted: false,
     updatedAt: updatedAt,
+  );
+}
+
+/// Dekodiert [dokumente] einzeln und überspringt, was sich nicht lesen lässt.
+///
+/// Ein einzelnes unlesbares Online-Dokument (etwa aus einer neueren
+/// App-Version) darf weder den Abgleich der übrigen Helden noch die
+/// Beobachtung abbrechen. Jedes übersprungene Dokument geht an [melde].
+List<R> dekodiereEinzeln<D, R extends Object>(
+  Iterable<D> dokumente,
+  R? Function(D dokument) dekodiere, {
+  required void Function(D dokument, Object fehler, StackTrace stackTrace)
+  melde,
+}) {
+  final ergebnis = <R>[];
+  for (final dokument in dokumente) {
+    try {
+      final record = dekodiere(dokument);
+      if (record != null) {
+        ergebnis.add(record);
+      }
+    } on Object catch (fehler, stackTrace) {
+      melde(dokument, fehler, stackTrace);
+    }
+  }
+  return List<R>.unmodifiable(ergebnis);
+}
+
+/// Meldet ein übersprungenes Online-Dokument an die Fehlerberichte.
+void meldeUnlesbaresSyncDokument(
+  String art,
+  String id,
+  Object fehler,
+  StackTrace stackTrace,
+) {
+  FlutterError.reportError(
+    FlutterErrorDetails(
+      exception: fehler,
+      stack: stackTrace,
+      library: 'hero_sync_record_codec',
+      context: ErrorDescription(
+        'Online-Dokument ($art) $id ist nicht lesbar und wird übersprungen',
+      ),
+    ),
   );
 }
 

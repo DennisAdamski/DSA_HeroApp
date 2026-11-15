@@ -178,3 +178,9 @@ harten Regeln und den Themenindex.
   Java 21). Offen: Mitglieder entfernen (Dienst `entferneMitglied` vorhanden,
   keine Oberfläche), Live-Listener statt manuellem „Synchronisieren“, Gruppen
   unter Windows (REST-Transport ohne Firestore-SDK).
+- Unlesbare Online-Dokumente werden einzeln übersprungen (`dekodiereEinzeln`
+  in beiden Gateways), und `syncNow` gleicht jeden Helden für sich ab: Ein
+  einzelner Fehlschlag (kein Fehler der Leitung) steht danach im Sync-Status,
+  die übrigen Helden gleichen trotzdem ab. Fehlt der Online-Stand eines laut
+  Metadaten abgeglichenen Helden spurlos, meldet der Status das, statt den
+  Upload still zu überspringen.

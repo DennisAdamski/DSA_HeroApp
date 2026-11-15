@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/catalog/catalog_crypto.dart';
 
 import 'package:dsa_heldenverwaltung/catalog/catalog_decrypt_runner.dart';
@@ -220,7 +221,10 @@ class CatalogActions {
       );
     }
 
-    final adminSnapshot = await _ref.read(catalogAdminSnapshotProvider.future);
+    final adminSnapshot = await warteAufAsyncProvider(
+      _ref,
+      catalogAdminSnapshotProvider,
+    );
     final baseConflict = adminSnapshot
         .section(section)
         .baseEntries
@@ -267,7 +271,10 @@ class CatalogActions {
     required CatalogSectionId section,
     required String entryId,
   }) async {
-    final adminSnapshot = await _ref.read(catalogAdminSnapshotProvider.future);
+    final adminSnapshot = await warteAufAsyncProvider(
+      _ref,
+      catalogAdminSnapshotProvider,
+    );
     final repository = _ref.read(customCatalogRepositoryProvider);
     await repository.deleteEntry(
       catalogVersion: adminSnapshot.catalogVersion,

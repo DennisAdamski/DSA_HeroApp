@@ -109,7 +109,13 @@ class AvatarBackfillService {
     required this.storage,
     required this.cloud,
     required this.markers,
+    this.cloudZeitlimit = const Duration(seconds: 60),
   });
+
+  /// Höchstdauer eines einzelnen Cloud-Zugriffs. Ein hängender Zugriff zählt
+  /// als Fehlschlag dieser Datei; sonst endete der Lauf nie, und bis zum
+  /// Neustart begänne kein weiterer.
+  final Duration cloudZeitlimit;
 
   /// Lokale Ablage; hier ist bewusst die **rohe** Plattformablage gemeint,
   /// nicht der `SyncingAvatarStorage` — sonst laedt schon das Lesen nach.
@@ -159,16 +165,18 @@ class AvatarBackfillService {
       }
 
       if (localBytes != null) {
-        if (await cloud.exists(fileName)) {
+        if (await cloud.exists(fileName).timeout(cloudZeitlimit)) {
           await _mark(fileName, localBytes.length);
           return report._plus(skipped: 1);
         }
-        await cloud.upload(fileName, localBytes);
+        await cloud.upload(fileName, localBytes).timeout(cloudZeitlimit);
         await _mark(fileName, localBytes.length);
         return report._plus(uploaded: 1);
       }
 
-      final remoteBytes = await cloud.download(fileName);
+      final remoteBytes = await cloud
+          .download(fileName)
+          .timeout(cloudZeitlimit);
       if (remoteBytes == null) {
         return report._plus(missing: 1);
       }

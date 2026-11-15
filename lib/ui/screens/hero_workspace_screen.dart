@@ -103,11 +103,8 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
       if (!mounted) {
         return;
       }
-      unawaited(
-        ref
-            .read(rulesCatalogProvider.future)
-            .then<void>((_) {}, onError: (Object error, StackTrace stack) {}),
-      );
+      // Nur anstoßen; gewartet wird hier nicht (nie über `.future`).
+      ref.read(rulesCatalogProvider);
     });
   }
 

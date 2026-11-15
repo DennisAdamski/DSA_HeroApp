@@ -438,7 +438,10 @@ class HeroActions {
     final codec = _ref.read(heroTransferCodecProvider);
     final hero = await _loadHeroById(heroId);
     final state = (await repo.loadHeroState(heroId)) ?? const HeroState.empty();
-    final runtimeData = await _ref.read(catalogRuntimeDataProvider.future);
+    final runtimeData = await warteAufAsyncProvider(
+      _ref,
+      catalogRuntimeDataProvider,
+    );
     final transferCatalogEntries = _buildTransferCatalogEntries(
       hero: hero,
       runtimeData: runtimeData,
@@ -578,7 +581,10 @@ class HeroActions {
   Future<void> _uebernimmTransferKatalog(
     List<HeroTransferCatalogEntry> eintraege,
   ) async {
-    final runtimeData = await _ref.read(catalogRuntimeDataProvider.future);
+    final runtimeData = await warteAufAsyncProvider(
+      _ref,
+      catalogRuntimeDataProvider,
+    );
     final repository = _ref.read(customCatalogRepositoryProvider);
     await repository.importTransferEntries(
       catalogVersion: runtimeData.baseData.version,
@@ -1448,7 +1454,10 @@ class HeroActions {
 
   /// Ermittelt den aktuell wirksamen Heldenspeicherpfad.
   Future<String> _resolveHeroStoragePath() async {
-    final location = await _ref.read(heroStorageLocationProvider.future);
+    final location = await warteAufAsyncProvider(
+      _ref,
+      heroStorageLocationProvider,
+    );
     return location.effectivePath;
   }
 

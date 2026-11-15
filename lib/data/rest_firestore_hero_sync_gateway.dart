@@ -101,19 +101,23 @@ class RestFirestoreHeroSyncGateway
   @override
   Future<List<RemoteHeroRecord>> loadAllHeroes() async {
     final documents = await _rest.listDocuments(_heroesCollectionPath);
-    return documents
-        .map((document) => _decodeHeroRecord(document.id, document.fields))
-        .whereType<RemoteHeroRecord>()
-        .toList(growable: false);
+    return dekodiereEinzeln(
+      documents,
+      (document) => _decodeHeroRecord(document.id, document.fields),
+      melde: (document, fehler, stack) =>
+          meldeUnlesbaresSyncDokument('Held', document.id, fehler, stack),
+    );
   }
 
   @override
   Future<List<RemoteHeroStateRecord>> loadAllHeroStates() async {
     final documents = await _rest.listDocuments(_statesCollectionPath);
-    return documents
-        .map((document) => _decodeStateRecord(document.id, document.fields))
-        .whereType<RemoteHeroStateRecord>()
-        .toList(growable: false);
+    return dekodiereEinzeln(
+      documents,
+      (document) => _decodeStateRecord(document.id, document.fields),
+      melde: (document, fehler, stack) =>
+          meldeUnlesbaresSyncDokument('Zustand', document.id, fehler, stack),
+    );
   }
 
   @override

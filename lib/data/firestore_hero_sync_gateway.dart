@@ -92,19 +92,23 @@ class FirestoreHeroSyncGateway
   @override
   Future<List<RemoteHeroRecord>> loadAllHeroes() async {
     final snapshot = await _mapFirestoreErrors(() => _heroesCollection.get());
-    return snapshot.docs
-        .map(_decodeHeroRecord)
-        .whereType<RemoteHeroRecord>()
-        .toList(growable: false);
+    return dekodiereEinzeln(
+      snapshot.docs,
+      _decodeHeroRecord,
+      melde: (doc, fehler, stack) =>
+          meldeUnlesbaresSyncDokument('Held', doc.id, fehler, stack),
+    );
   }
 
   @override
   Future<List<RemoteHeroStateRecord>> loadAllHeroStates() async {
     final snapshot = await _mapFirestoreErrors(() => _statesCollection.get());
-    return snapshot.docs
-        .map(_decodeStateRecord)
-        .whereType<RemoteHeroStateRecord>()
-        .toList(growable: false);
+    return dekodiereEinzeln(
+      snapshot.docs,
+      _decodeStateRecord,
+      melde: (doc, fehler, stack) =>
+          meldeUnlesbaresSyncDokument('Zustand', doc.id, fehler, stack),
+    );
   }
 
   @override
@@ -182,20 +186,24 @@ class FirestoreHeroSyncGateway
   @override
   Stream<List<RemoteHeroRecord>> watchHeroes() {
     return _mapStreamErrors(_heroesCollection.snapshots()).map((snapshot) {
-      return snapshot.docs
-          .map(_decodeHeroRecord)
-          .whereType<RemoteHeroRecord>()
-          .toList(growable: false);
+      return dekodiereEinzeln(
+        snapshot.docs,
+        _decodeHeroRecord,
+        melde: (doc, fehler, stack) =>
+            meldeUnlesbaresSyncDokument('Held', doc.id, fehler, stack),
+      );
     });
   }
 
   @override
   Stream<List<RemoteHeroStateRecord>> watchHeroStates() {
     return _mapStreamErrors(_statesCollection.snapshots()).map((snapshot) {
-      return snapshot.docs
-          .map(_decodeStateRecord)
-          .whereType<RemoteHeroStateRecord>()
-          .toList(growable: false);
+      return dekodiereEinzeln(
+        snapshot.docs,
+        _decodeStateRecord,
+        melde: (doc, fehler, stack) =>
+            meldeUnlesbaresSyncDokument('Zustand', doc.id, fehler, stack),
+      );
     });
   }
 
