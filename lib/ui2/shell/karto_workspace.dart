@@ -23,6 +23,7 @@ import 'package:dsa_heldenverwaltung/ui2/spielen/karto_spielansicht.dart';
 import 'package:dsa_heldenverwaltung/ui2/widgets/karto_papier.dart';
 import 'package:dsa_heldenverwaltung/ui2/widgets/karto_probenkuerzel.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
+import 'package:dsa_heldenverwaltung/ui2/theme/karto_heldensiegel_profil.dart';
 import 'package:dsa_heldenverwaltung/ui_shared/feedback/open_feedback.dart';
 
 part 'karto_workspace_navigation.dart';
@@ -93,7 +94,14 @@ class _KartoWorkspaceState extends ConsumerState<KartoWorkspace> {
     final computed = ref.watch(heroComputedProvider(widget.heroId));
     final session = ref.watch(advancementSessionProvider(widget.heroId));
     final catalog = ref.watch(rulesCatalogProvider);
-    final hero = computed.asData?.value.hero;
+    final snapshot = computed.asData?.value;
+    final hero = snapshot?.hero;
+    final siegel = KartoSiegelProfil.ausAngaben(
+      rasse: hero?.background.rasse ?? '',
+      kultur: hero?.background.kultur ?? '',
+      magisch: snapshot?.resourceActivation.magic.isEnabled ?? false,
+      karmal: snapshot?.resourceActivation.divine.isEnabled ?? false,
+    );
     if (_bereich == KartoArbeitsbereich.entwickeln &&
         session == null &&
         !catalog.hasError &&
@@ -117,7 +125,9 @@ class _KartoWorkspaceState extends ConsumerState<KartoWorkspace> {
             onAuswahl: _wechsleBereich,
             // Identitaet und globale Aktionen fuellen die Spalte nur dort, wo
             // es eine gibt. Schmal traegt sie die AppBar.
-            kopf: schmal || hero == null ? null : _navigationsKopf(hero),
+            kopf: schmal || hero == null
+                ? null
+                : _navigationsKopf(hero, siegel),
             fuss: schmal ? null : _navigationsFuss(),
             vorgemerkt: session?.entries.length ?? 0,
           );
@@ -232,7 +242,7 @@ class _KartoWorkspaceState extends ConsumerState<KartoWorkspace> {
 
   // Die Marke zeigt, wessen Bogen offen ist. Das Bild kommt ueber die Bruecke,
   // weil Avatare ausschliesslich `AvatarGalleryImage` rendern darf.
-  Widget _navigationsKopf(HeroSheet hero) {
+  Widget _navigationsKopf(HeroSheet hero, KartoSiegelProfil siegel) {
     final dateiname = hero.appearance.aktivesBild?.fileName;
     const groesse = 112.0;
     return Column(
@@ -242,6 +252,7 @@ class _KartoWorkspaceState extends ConsumerState<KartoWorkspace> {
         const KartoMarkenzeile(),
         const SizedBox(height: Abstand.bahn),
         KartoHeldenmarke(
+          siegel: siegel,
           name: hero.name,
           herkunft: _herkunft(hero),
           groesse: groesse,
@@ -698,6 +709,16 @@ class _BereichsBlendeState extends State<_BereichsBlende>
     begin: const Offset(0, 0.01),
     end: Offset.zero,
   ).animate(_verlauf);
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Eine während des Übergangs geänderte Effektwahl gilt sofort.
+    if (kartoDauer(context, Bewegung.mittel) == Duration.zero) {
+      _steuerung.stop();
+      _steuerung.value = 1;
+    }
+  }
 
   @override
   void didUpdateWidget(_BereichsBlende alt) {

@@ -48,6 +48,8 @@ class AppSettings {
   const AppSettings({
     this.debugModus = false,
     this.dunkelModus = false,
+    this.animationen = true,
+    this.dekorativeEffekte = true,
     this.heroStoragePath,
     this.lastSelectedHeroId,
     this.avatarApiConfig = const AvatarApiConfig(),
@@ -68,6 +70,12 @@ class AppSettings {
 
   final bool debugModus;
   final bool dunkelModus;
+
+  /// Erlaubt Animationen auf diesem Geraet; Systemvorgaben haben Vorrang.
+  final bool animationen;
+
+  /// Erlaubt kurze Licht- und Magieeffekte zusaetzlich zu Bedienanimationen.
+  final bool dekorativeEffekte;
   final String? heroStoragePath;
 
   /// Zuletzt auf der Startseite ausgewaehlte Helden-ID.
@@ -116,6 +124,8 @@ class AppSettings {
   AppSettings copyWith({
     bool? debugModus,
     bool? dunkelModus,
+    bool? animationen,
+    bool? dekorativeEffekte,
     Object? heroStoragePath = keepFieldValue,
     Object? lastSelectedHeroId = keepFieldValue,
     AvatarApiConfig? avatarApiConfig,
@@ -135,6 +145,8 @@ class AppSettings {
     return AppSettings(
       debugModus: debugModus ?? this.debugModus,
       dunkelModus: dunkelModus ?? this.dunkelModus,
+      animationen: animationen ?? this.animationen,
+      dekorativeEffekte: dekorativeEffekte ?? this.dekorativeEffekte,
       heroStoragePath: identical(heroStoragePath, keepFieldValue)
           ? this.heroStoragePath
           : heroStoragePath as String?,
@@ -166,6 +178,8 @@ class AppSettings {
   Map<String, dynamic> toJson() => {
     'debugModus': debugModus,
     'dunkelModus': dunkelModus,
+    'animationen': animationen,
+    'dekorativeEffekte': dekorativeEffekte,
     'heroStoragePath': heroStoragePath,
     'lastSelectedHeroId': lastSelectedHeroId,
     'avatarApiConfig': avatarApiConfig.toJson(),
@@ -211,6 +225,12 @@ class AppSettings {
     return AppSettings(
       debugModus: json['debugModus'] as bool? ?? false,
       dunkelModus: json['dunkelModus'] as bool? ?? false,
+      animationen: json['animationen'] is bool
+          ? json['animationen'] as bool
+          : true,
+      dekorativeEffekte: json['dekorativeEffekte'] is bool
+          ? json['dekorativeEffekte'] as bool
+          : true,
       heroStoragePath: heroStoragePath == null || heroStoragePath.isEmpty
           ? null
           : heroStoragePath,

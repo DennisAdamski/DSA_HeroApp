@@ -4,6 +4,8 @@ import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
 import 'package:dsa_heldenverwaltung/ui2/widgets/karto_ornamente.dart';
+import 'package:dsa_heldenverwaltung/ui2/theme/karto_heldensiegel_profil.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_spieltisch_siegel.dart';
 
 /// Identitaetsbereich der dunklen Bereichsnavigation.
 ///
@@ -23,6 +25,7 @@ class KartoHeldenmarke extends StatelessWidget {
     this.herkunft,
     this.bild,
     this.groesse = 112,
+    this.siegel,
   });
 
   /// Ausgeschriebener Heldenname.
@@ -39,6 +42,9 @@ class KartoHeldenmarke extends StatelessWidget {
 
   /// Kantenlaenge der Fassung einschliesslich Ring.
   final double groesse;
+
+  /// Optionales persönliches Siegel; der Avatar und seine Bildgröße bleiben erhalten.
+  final KartoSiegelProfil? siegel;
 
   /// Kantenlaenge, die ein Bild in einer Fassung von [groesse] fuellt.
   ///
@@ -77,11 +83,39 @@ class KartoHeldenmarke extends StatelessWidget {
       children: [
         // Der Ring liegt im Vordergrund, damit ein randvolles Bild ihn nicht
         // ueberdeckt.
-        KartoKompassring(
-          groesse: groesse,
-          farbe: token.messingNavigation,
-          schein: true,
-          child: bild?.call(monogramm) ?? monogramm,
+        SizedBox.square(
+          dimension: groesse,
+          child: Stack(
+            children: [
+              KartoKompassring(
+                groesse: groesse,
+                farbe: token.messingNavigation,
+                schein: true,
+                child: bild?.call(monogramm) ?? monogramm,
+              ),
+              if (siegel != null)
+                Positioned(
+                  right: 0,
+                  bottom: 0,
+                  child: Tooltip(
+                    message: siegel!.beschreibung,
+                    excludeFromSemantics: true,
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: token.navigation,
+                        shape: BoxShape.circle,
+                      ),
+                      child: KartoSpieltischSiegel(
+                        key: const ValueKey('karto-portraet-siegel'),
+                        profil: siegel,
+                        groesse: 40,
+                        farbe: token.messingNavigation,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
         ),
         const SizedBox(height: Abstand.weit),
         Tooltip(

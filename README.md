@@ -327,6 +327,20 @@ ueber den injizierten `KartoBestandsAdapter` (`lib/ui/bridges/`); Tabs,
 Editoraktionen und Leave-Guard der Verwaltung teilen sich beide Oberflaechen
 ueber denselben `WorkspaceManagementCoordinator`.
 
+Unter `Einstellungen > Darstellung` lassen sich die **Animationen** der neuen
+Oberfläche und zusätzliche **dekorative Effekte** getrennt abschalten. Dazu
+gehören weiches Ein- und Ausklappen, Rückmeldungen bei Ressourcenänderungen
+und kurze Licht- bzw. Magieschimmer an Spielkacheln. Die Wahl bleibt auf dem
+Gerät gespeichert; „Bewegung reduzieren“ im Betriebssystem hat Vorrang.
+Persönliche Heldensiegel ergänzen Porträt und Spieltisch-Kopf: auch profane
+Helden erhalten ein eigenes Grundmotiv, je nach erfasster Rasse. Vorhandene
+Magie- und Karmabefähigungen ergänzen unabhängige Zeichen.
+Eine [Motivübersicht](docs/screenshots/heldensiegel/README.md) zeigt den Entwurf.
+Für zwölf menschliche Kulturen und acht Grundmotive sind transparente
+[Bildsiegel](docs/heldensiegel_assets.md) eingebunden. Bei Menschen und
+Halbelfen entscheidet die eingetragene unterstützte Kultur. Andere oder
+unbekannte Angaben erhalten ein allgemeines Spezies- beziehungsweise neutrales Bild.
+
 Eine offene Entwicklungsplanung bleibt beim Wechsel zu **Held verwalten**
 erhalten. Die Verwaltung ist zum Ansehen zugänglich. Vor einer Bearbeitung
 erscheint die Warnung, dass die geplante Entwicklung verloren geht:

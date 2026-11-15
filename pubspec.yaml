@@ -82,6 +82,7 @@ flutter:
     - assets/ui/codex/
     - assets/ui/fantasy_v1/
     - assets/ui/fantasy_weapons_v1/
+    - assets/ui/heldensiegel_v1/
     # Lizenztext der Kartenschrift, angezeigt auf der Lizenzseite.
     - assets/fonts/faculty_glyphic/OFL.txt
   fonts:

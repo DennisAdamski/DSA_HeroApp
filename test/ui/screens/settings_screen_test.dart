@@ -14,6 +14,37 @@ import 'package:dsa_heldenverwaltung/ui/screens/settings_screen.dart';
 
 void main() {
   testWidgets(
+    'Effektoptionen werden getrennt gespeichert und wieder angezeigt',
+    (tester) async {
+      final repository = _FakeSettingsRepository();
+      addTearDown(repository.close);
+      _setSurfaceSize(tester, const Size(1200, 1200));
+      await tester.pumpWidget(_buildTestApp(repository: repository));
+      await tester.pumpAndSettle();
+      final animationen = find.byKey(
+        const ValueKey<String>('settings-animationen'),
+      );
+      final dekoration = find.byKey(
+        const ValueKey<String>('settings-dekorative-effekte'),
+      );
+      await tester.ensureVisible(animationen);
+      await tester.tap(animationen);
+      await tester.pumpAndSettle();
+      expect(repository.load().animationen, isFalse);
+      expect(repository.load().dekorativeEffekte, isTrue);
+      await tester.ensureVisible(dekoration);
+      await tester.tap(dekoration);
+      await tester.pumpAndSettle();
+      expect(repository.load().dekorativeEffekte, isFalse);
+      await tester.pumpWidget(const SizedBox());
+      await tester.pumpWidget(_buildTestApp(repository: repository));
+      await tester.pumpAndSettle();
+      expect(tester.widget<SwitchListTile>(animationen).value, isFalse);
+      expect(tester.widget<SwitchListTile>(dekoration).value, isFalse);
+    },
+  );
+
+  testWidgets(
     'wide layouts keep the navigation list visible and swap the detail pane',
     (tester) async {
       final repository = _FakeSettingsRepository();

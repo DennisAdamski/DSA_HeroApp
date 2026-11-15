@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_bewegung.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_wert_rueckmeldung.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_stroke.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
@@ -100,6 +101,16 @@ class KartoRessourcenwert extends StatelessWidget {
     return (aktuell / maximum).clamp(0.0, 1.0);
   }
 
+  // Ohne Tween ist auch ein bereits laufender Balken sofort am Ziel.
+  Widget _balken(BuildContext context, Color akzent, double anteil) {
+    return LinearProgressIndicator(
+      value: anteil,
+      minHeight: 4,
+      backgroundColor: context.karto.raster,
+      valueColor: AlwaysStoppedAnimation<Color>(akzent),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final karto = context.karto;
@@ -149,19 +160,23 @@ class KartoRessourcenwert extends StatelessWidget {
           // rueckt er deshalb in eine eigene Zeile unter den Wert
           // ([_WertZeile]).
           _WertZeile(
-            wert: Text.rich(
-              TextSpan(
-                style: texte.wertGross.copyWith(color: karto.schrift),
-                children: <InlineSpan>[
-                  TextSpan(text: '$aktuell'),
-                  TextSpan(
-                    text: ' / $maximum',
-                    style: texte.wert.copyWith(color: karto.schriftStumm),
-                  ),
-                ],
+            wert: KartoWertRueckmeldung(
+              wert: aktuell,
+              farbe: akzent,
+              child: Text.rich(
+                TextSpan(
+                  style: texte.wertGross.copyWith(color: karto.schrift),
+                  children: <InlineSpan>[
+                    TextSpan(text: '$aktuell'),
+                    TextSpan(
+                      text: ' / $maximum',
+                      style: texte.wert.copyWith(color: karto.schriftStumm),
+                    ),
+                  ],
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
             ),
             hinweis: zusatz == null
                 ? null
@@ -184,17 +199,15 @@ class KartoRessourcenwert extends StatelessWidget {
               borderRadius: BorderRadius.circular(kKartoRadiusKlein),
               // Ohne Anfangswert beginnt die Tween am Ziel: der erste Aufbau
               // zeichnet sofort, erst eine Aenderung laeuft nach.
-              child: TweenAnimationBuilder<double>(
-                tween: Tween<double>(end: _anteil),
-                duration: kartoDauer(context, Bewegung.mittel),
-                curve: Bewegung.kurve,
-                builder: (context, anteil, _) => LinearProgressIndicator(
-                  value: anteil,
-                  minHeight: 4,
-                  backgroundColor: karto.raster,
-                  valueColor: AlwaysStoppedAnimation<Color>(akzent),
-                ),
-              ),
+              child: kartoDauer(context, Bewegung.mittel) == Duration.zero
+                  ? _balken(context, akzent, _anteil)
+                  : TweenAnimationBuilder<double>(
+                      tween: Tween<double>(end: _anteil),
+                      duration: kartoDauer(context, Bewegung.mittel),
+                      curve: Bewegung.kurve,
+                      builder: (context, anteil, _) =>
+                          _balken(context, akzent, anteil),
+                    ),
             ),
           ),
           if (onSchritt != null) ...[

@@ -151,7 +151,81 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   **Eine Flächenstufe:** alle Kacheln liegen auf `feld`; die frühere `senke`
   für Kampf, Effekte, Zustand und Begleiter wechselte im freien Raster
   scheinbar zufällig. Unterschieden wird über Symbol (jede Kachel trägt eines,
-  `spielkachelSymbol`) und `KartoAkzent`. **Kopf-Bedienung bei Bedarf:**
+  `spielkachelSymbol`) und `KartoAkzent`.
+  **Heldenbogen-Fassung (erster Entwurf, 15.11.2026):** Nur äußere Abschnitte
+  mit `KartoKachelSteuerung` erhalten über `KartoHeldenbogenRahmen`
+  (`lib/ui2/spielen/karto_heldenbogen_rahmen.dart`) eine feine Messingkontur
+  und kleine Kartuschenecken. Der Vordergrundzeichner braucht keinen Layoutplatz
+  und nimmt keine Eingaben entgegen. Serifentitel mit 20 dp, 16 dp Innenraum
+  und eine feine Linie unter dem geöffneten Kopf geben den Kacheln mehr Kontur.
+  Die bisherige kräftige Messingoberkante entfällt dort; astrale Tönungen
+  bleiben erhalten. Verschachtelte Abschnitte behalten ihre schlichte Fassung.
+  Die Farben folgen den bestehenden Hell-/Dunkel-Token; keine Bildassets.
+  **Optionale Bewegung und Atmosphäre:** Unter Einstellungen → Darstellung
+  stehen „Animationen“ und „Dekorative Effekte“. Beide sind standardmäßig
+  aktiv und getrennt gerätelokal in `AppSettings` gespeichert; keine Änderung
+  am Helden oder seinem Sync. `DsaAppShell.builder` legt die reaktive
+  `KartoEffektEinstellungen` um den Navigator, damit auch Dialoge und andere
+  Routen die Auswahl erhalten. `kartoDauer` berücksichtigt Appwahl und
+  `MediaQuery.disableAnimations`; die Systemeinstellung hat Vorrang.
+  Dekorative Lichtläufe benötigen zusätzlich `kartoDekorationAktiv`.
+  Die Messingkontur reagiert auf Zeiger und Tastaturfokus. Beim Betreten oder
+  Antippen läuft einmalig ein 850-ms-Lichtschimmer über die Kontur; bei
+  astralen Kacheln mit kurzem Funkeln in der Astralfarbe. Keine Dauerschleifen
+  und keine Überlagerung der Inhalte. `KartoWertRueckmeldung` hebt geänderte
+  Ressourcenwerte 500 ms hervor, zeigt aber sofort die echte Zahl.
+  `KartoKlappinhalt` animiert explizites Einklappen über einen Größenfaktor
+  (250 ms); er animiert keine beliebigen Inhaltsänderungen und vermeidet
+  `AnimatedSize`-Rückkopplungen mit mehrfach gemessenen Kacheln. Beim Schließen
+  sind Inhalt, Tastaturfokus und Semantik sofort gesperrt; nach dem Übergang
+  wird der Inhalt entfernt. Abschalten beendet laufende Effekte sofort.
+  **Bewegter Spieltisch-Kopf:** `KartoSeitenkopf.titelVorsatz` erlaubt ein
+  kompaktes Motiv vor dem weiterhin flexiblen Titeltext. Nur die Spielansicht
+  setzt dort `KartoSpieltischSiegel` (`spielen/karto_spieltisch_siegel.dart`):
+  die vorhandene 32-dp-Kompassrose dreht sich beim ersten Aufbau kurz ein,
+  während ein Messinglicht über ihren Außenring läuft (1.100 ms). Danach ruht
+  sie; Zeigerbetreten oder Antippen spielen den Effekt erneut. Themewechsel
+  und normale Datenänderungen starten ihn nicht neu. Die Dekoration hat keine
+  eigene Semantik und keinen Tastaturstopp. Beide Effektfreigaben und die
+  Systemeinstellung gelten; Abschalten beendet die Bewegung sofort.
+  **Persönliche Heldensiegel:** `KartoSiegelProfil` in
+  `ui2/theme/karto_heldensiegel_profil.dart` ordnet bekannte Rassenbezeichnungen
+  ausschließlich kosmetischen Motiven zu. Menschen erhalten eine Schildform,
+  Elfen Blattlinien, Halbelfen deren Kombination, Zwerge eine kantige Gravur,
+  Echsenwesen Schuppenrauten, Orks gepaarte Spitzen und Goblins Wegmarken.
+  Auch profane Helden erhalten ein vollständiges Grundmotiv. Leere, unbekannte
+  oder mehrdeutige Angaben bleiben neutral; explizite Halbelfen dürfen die
+  menschliche und elfische Abstammung zusätzlich nennen. Aliasgruppen sind
+  bewusst explizit, keine Teilwortsuche und kein Regel- oder Katalogparser.
+  `KartoHeldensiegel` stellt die Motive als Bilder mit Vektorrückfall dar. Ein astraler Stern
+  und eine neutrale karmale Strahlenmarke werden unabhängig ergänzt — nur aus
+  den vorhandenen `resourceActivation`-Werten des Compute-Snapshots, niemals
+  aus der Rasse, Profession oder einem eingetragenen Zauber. Beide Zeichen
+  dürfen gleichzeitig erscheinen. Es sind keine Gottheitssymbole.
+  `KartoHeldenmarke.siegel` ergänzt das unveränderte Avatarbild um eine kleine
+  Plakette am Ring; im schmalen Workspace zeigt der Spieltisch-Kopf dasselbe
+  Motiv. `KartoAbschnitt.titelMotiv` erlaubt das persönliche Motiv am Abschnitt
+  „Magie und Karma“. Alle bewegten Siegel verwenden weiterhin den vorhandenen
+  endlichen Auftritt und die beiden Effektfreigaben. Kein neuer Speicherweg,
+  keine neue Heldeneinstellung und keine Änderung am Helden-Hash oder Sync.
+  Motivübersicht: [Heldensiegel](../screenshots/heldensiegel/README.md).
+  **Bildassets:** Zwölf Kultursiegel erhalten ihre unterstützte Kultur über
+  `HeroBackground.kultur`. Beschriftungen und normalisierte Aliase stehen
+  gemeinsam in `KartoSiegelKultur`. Nur bei leerem Kulturfeld
+  werden alte Rassenangaben wie „Thorwaler“ als Rückfall genutzt. Unbekannte
+  oder mehrdeutige Kulturangaben wählen kein willkürliches Kulturbild, sondern
+  das allgemeine Bild des Grundmotivs. Acht Grundmotive decken neutrale Angaben,
+  Menschen, Elfen, Halbelfen, Zwerge, Achaz, Orks und Goblins ab. Ohne Kulturangabe
+  wird „Mittelländer“ nicht mit „Mittelreich“ gleichgesetzt. `KartoHeldensiegel`
+  lädt die 20 transparenten
+  PNGs aus `assets/ui/heldensiegel_v1/` farbig und mit `BoxFit.contain`.
+  Die Dekodierbreite folgt Größe und Pixeldichte, begrenzt auf 512 Pixel.
+  Befähigungszeichen zeichnet ein separater Vordergrund-Painter; Bildfehler
+  zeigen das vorhandene Vektormotiv. Header: 48 dp inklusive 8 dp Lichtsaum,
+  Porträtplakette und Magiekopf: 40 dp inklusive Saum. Bild- und Monogramm-
+  Größe im Porträtring bleiben unverändert. Details:
+  [Bildsiegel](../heldensiegel_assets.md).
+  **Kopf-Bedienung bei Bedarf:**
   Vergrößern-Symbol und Einklapp-Pfeil des äußeren Abschnitts sind mit
   angeschlossener Maus nur sichtbar, solange Zeiger oder Fokus in der Kachel
   liegen (`_Kachelzeiger`/`_BeiBedarf` in `karto_abschnitt.dart`,
@@ -509,8 +583,9 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   (`lib/ui2/widgets/karto_papier.dart`) legt hell die vorhandene
   Pergamenttextur per Multiplikation auf `blatt`, dunkel bleibt der Grund
   glatt; Rasterbilder müssen `KartoPapier.textur` vorab laden. Jede Animation
-  nimmt ihre Dauer über `kartoDauer` (`lib/ui2/foundation/karto_bewegung.dart`)
-  und steht bei abgeschalteten Systemanimationen sofort am Ziel. Begleitflächen
+  berücksichtigt `kartoDauer` (`lib/ui2/foundation/karto_bewegung.dart`)
+  und steht bei abgeschalteten App- oder Systemanimationen sofort am Ziel;
+  dekorative Controller prüfen zusätzlich `kartoDekorationAktiv`. Begleitflächen
   heben sich nur über `KartoAkzent` (Messingkante, astrale Tönung) ab, nie
   über freie Farben.
 - Im Bestandsbaum (`buildKartoCompatTheme`) trägt `bodySmall` die aufrechte

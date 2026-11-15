@@ -47,6 +47,7 @@ class KartoSeitenkopf extends StatelessWidget {
     this.tippSchluessel,
     this.titelSchluessel,
     this.unterzeileSchluessel,
+    this.titelVorsatz,
   });
 
   /// Name der Arbeitsflaeche, etwa `Am Spieltisch`.
@@ -104,6 +105,9 @@ class KartoSeitenkopf extends StatelessWidget {
   /// Schluessel der Unterzeile (`management-active-helper`).
   final Key? unterzeileSchluessel;
 
+  /// Optionales kompaktes Motiv vor dem Titel; der Text bleibt flexibel.
+  final Widget? titelVorsatz;
+
   @override
   Widget build(BuildContext context) {
     final token = KartoTheme.of(context);
@@ -113,13 +117,22 @@ class KartoSeitenkopf extends StatelessWidget {
     final text = beschreibung?.trim() ?? '';
     final titelStil = kompakt ? texte.titel : texte.titelGross;
 
+    final titelText = Text(titel, key: titelSchluessel, style: titelStil);
+    final titelMitMotiv = titelVorsatz == null
+        ? titelText
+        : Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              titelVorsatz!,
+              const SizedBox(width: Abstand.normal),
+              Flexible(child: titelText),
+            ],
+          );
     Widget titelzeile(Color pfeilfarbe) => onTap == null
-        ? Text(titel, key: titelSchluessel, style: titelStil)
+        ? titelMitMotiv
         : Row(
             children: [
-              Flexible(
-                child: Text(titel, key: titelSchluessel, style: titelStil),
-              ),
+              Flexible(child: titelMitMotiv),
               const SizedBox(width: Abstand.eng),
               Icon(
                 Icons.chevron_right,

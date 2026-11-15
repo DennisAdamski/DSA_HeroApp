@@ -4,6 +4,8 @@ import 'package:flutter/rendering.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_bewegung.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_kachelgroesse.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_heldenbogen_rahmen.dart';
+import 'package:dsa_heldenverwaltung/ui2/spielen/karto_klappinhalt.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
 import 'package:dsa_heldenverwaltung/ui2/widgets/karto_flaeche.dart';
@@ -17,9 +19,9 @@ import 'package:dsa_heldenverwaltung/ui2/widgets/karto_flaeche.dart';
 ///
 /// Listenaktionen stehen laut Projektrichtlinie im Abschnittskopf.
 ///
-/// Ein [akzent] hebt einzelne Begleitflaechen hervor, ohne eine weitere
-/// Flaechenstufe einzufuehren: eine Messingkante oben wie bei einer
-/// Kartenkartusche, oder eine leichte astrale Toenung fuer laufende Zauber.
+/// Äußere Spielkacheln tragen die feine Heldenbogen-Fassung. Ein [akzent]
+/// hebt das Symbol hervor oder tönt die Fläche für laufende Zauber; innere
+/// Abschnitte behalten ihre schlichte Fassung und optionale Messingoberkante.
 class KartoAbschnitt extends StatelessWidget {
   /// Erstellt einen benannten Abschnitt.
   const KartoAbschnitt({
@@ -30,6 +32,7 @@ class KartoAbschnitt extends StatelessWidget {
     this.aktion,
     this.stufe = KartoFlaechenstufe.feld,
     this.symbol,
+    this.titelMotiv,
     this.akzent,
     this.dicht = false,
   });
@@ -56,6 +59,9 @@ class KartoAbschnitt extends StatelessWidget {
   /// Kleines Symbol vor der Überschrift, in der Farbe des Akzents.
   final IconData? symbol;
 
+  /// Optionales persönliches Motiv anstelle des Standardsymbols.
+  final Widget? titelMotiv;
+
   /// Hervorhebung einer Begleitfläche; `null` lässt den Abschnitt schlicht.
   final KartoAkzent? akzent;
 
@@ -72,14 +78,27 @@ class KartoAbschnitt extends StatelessWidget {
     final zweitzeile = hinweis?.trim() ?? '';
     final akzentFarbe = akzent?.farbe(karto);
     final vergroessern = steuerung?.onVergroessern;
-    final titelBlock = symbol == null
-        ? Text(titel, style: texte.abschnitt)
+    final heldenbogen = steuerung != null;
+    final titelStil = heldenbogen
+        ? texte.abschnitt.copyWith(fontSize: 20, letterSpacing: 0)
+        : texte.abschnitt;
+    final motiv =
+        titelMotiv ??
+        (symbol == null
+            ? null
+            : Icon(
+                symbol,
+                size: heldenbogen ? 21 : 18,
+                color: akzentFarbe ?? karto.messing,
+              ));
+    final titelBlock = motiv == null
+        ? Text(titel, style: titelStil)
         : Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(symbol, size: 18, color: akzentFarbe ?? karto.messing),
+              motiv,
               const SizedBox(width: Abstand.normal),
-              Flexible(child: Text(titel, style: texte.abschnitt)),
+              Flexible(child: Text(titel, style: titelStil)),
             ],
           );
     // Mit Rückruf ist der Name die Klickfläche für die vergrößerte Ansicht;
@@ -117,7 +136,9 @@ class KartoAbschnitt extends StatelessWidget {
     final flaeche = KartoFlaeche(
       stufe: stufe,
       toenung: akzent?.toenung(karto),
-      innen: EdgeInsets.all(knapp ? Abstand.weit : Abstand.block),
+      innen: EdgeInsets.all(
+        heldenbogen ? Abstand.block : (knapp ? Abstand.weit : Abstand.block),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisSize: MainAxisSize.min,
@@ -168,20 +189,36 @@ class KartoAbschnitt extends StatelessWidget {
               },
             ),
           ),
-          if (!eingeklappt) ...[
-            SizedBox(height: knapp ? Abstand.normal : Abstand.weit),
-            // Die Steuerung gilt nur dem äußersten Abschnitt einer Kachel.
-            steuerung == null
-                ? child
-                : KartoKachelSteuerung._leer(
-                    groesse: steuerung.groesse,
-                    child: child,
+          KartoKlappinhalt(
+            eingeklappt: eingeklappt,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (heldenbogen) ...[
+                  const SizedBox(height: Abstand.normal),
+                  Divider(
+                    height: 1,
+                    thickness: 0.8,
+                    color: karto.messing.withValues(alpha: 0.32),
                   ),
-          ],
+                ],
+                SizedBox(height: knapp ? Abstand.normal : Abstand.weit),
+                // Die Steuerung gilt nur dem äußersten Abschnitt einer Kachel.
+                steuerung == null
+                    ? child
+                    : KartoKachelSteuerung._leer(
+                        groesse: steuerung.groesse,
+                        child: child,
+                      ),
+              ],
+            ),
+          ),
         ],
       ),
     );
-    final kante = akzent?.kante(karto);
+    // Die Messingfassung ersetzt die frühere kräftige Oberkante nur außen.
+    final kante = heldenbogen ? null : akzent?.kante(karto);
     // Eine einseitige Kante vertraegt keinen Radius an der Dekoration; sie
     // liegt deshalb als Leiste ueber der Flaeche und wird mit ihr gerundet.
     final kachel = kante == null
@@ -206,7 +243,15 @@ class KartoAbschnitt extends StatelessWidget {
           );
     // Nur der äußerste Abschnitt einer Kachel blendet seine Kopf-Bedienung
     // bei Bedarf ein.
-    return steuerung == null ? kachel : _Kachelzeiger(child: kachel);
+    return steuerung == null
+        ? kachel
+        : _Kachelzeiger(
+            builder: (aktiv) => KartoHeldenbogenRahmen(
+              aktiv: aktiv,
+              magisch: akzent == KartoAkzent.astral,
+              child: kachel,
+            ),
+          );
   }
 
   // Der Einklappknopf steht neben Titel und Kopfaktion, nicht in deren
@@ -251,9 +296,9 @@ class KartoAbschnitt extends StatelessWidget {
 /// ein. So zeigt eine Seite mit vielen Kacheln nicht an jeder dauerhaft zwei
 /// Bediensymbole.
 class _Kachelzeiger extends StatefulWidget {
-  const _Kachelzeiger({required this.child});
+  const _Kachelzeiger({required this.builder});
 
-  final Widget child;
+  final Widget Function(bool aktiv) builder;
 
   @override
   State<_Kachelzeiger> createState() => _KachelzeigerState();
@@ -286,7 +331,13 @@ class _KachelzeigerState extends State<_Kachelzeiger> {
         canRequestFocus: false,
         skipTraversal: true,
         onFocusChange: (fokus) => _setze(fokus: fokus),
-        child: _KachelzeigerScope(notifier: _aktiv, child: widget.child),
+        child: _KachelzeigerScope(
+          notifier: _aktiv,
+          child: ValueListenableBuilder<bool>(
+            valueListenable: _aktiv,
+            builder: (context, aktiv, _) => widget.builder(aktiv),
+          ),
+        ),
       ),
     );
   }
