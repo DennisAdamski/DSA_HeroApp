@@ -6,6 +6,7 @@ import 'package:uuid/uuid.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/spell_effect_healing_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/wund_anzeige_rules.dart';
 import 'package:dsa_heldenverwaltung/state/ablauf_providers.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
@@ -316,7 +317,7 @@ class _HeilungPanelState extends ConsumerState<HeilungPanel> {
           Text(
             'LeP ${state.currentLep} → ${vorschau.zustand.currentLep}'
             '${vorschau.asp > 0 ? ' · AsP ${state.currentAsp} → ${vorschau.zustand.currentAsp}' : ''}'
-            '${vorschau.wunden > 0 ? ' · ${vorschau.wunden == 1 ? '1 Wunde' : '${vorschau.wunden} Wunden'} geschlossen' : ''}',
+            '${vorschau.wunden > 0 ? ' · ${wundenText(vorschau.wunden)} geschlossen' : ''}',
             key: const ValueKey<String>('heilung-vorschau'),
             style: theme.textTheme.titleMedium,
           ),

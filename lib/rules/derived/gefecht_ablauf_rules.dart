@@ -138,19 +138,6 @@ Gefechtshandlung? setzeGefechtsHandlungFort(Gefechtshandlung h) {
   return h.copyWith(verbleibend: h.verbleibend - 1);
 }
 
-/// Explizite Korrektur ist kein erneutes Umwandeln und bleibt sichtbar getrennt.
-Gefechtszustand korrigiereGefecht(
-  Gefechtszustand s, {
-  required int iniVerlust,
-  required Gefechtsumwandlung umwandlung,
-  int? iniWurf,
-}) => s.copyWith(
-  iniVerlust: 0,
-  ungeklaerterIniVerlust: iniVerlust,
-  umwandlung: umwandlung,
-  iniWurf: iniWurf,
-);
-
 /// Ressourcenbereich öffnet bei Wunden oder LE unter der Hälfte automatisch.
 bool gefechtDurchhaltenOeffnen({
   required bool wundAbzuege,
@@ -203,10 +190,3 @@ ResolvedProbeRequest? gefechtRequestFuerAuftrag(
         original.initialSituationalModifier - p.erschwernis,
   );
 }
-
-/// DK ist nur für Aktionen verpflichtend, die ihre automatische Rechnung benötigen.
-bool gefechtAuftragBrauchtDk(GefechtAuftrag auftrag, Gefechtswerte w) =>
-    auftrag.aktion == Gefechtsaktion.gezieltesAusweichen ||
-    auftrag.aktion == Gefechtsaktion.freiesAusweichen ||
-    auftrag.aktion == Gefechtsaktion.parade ||
-    auftrag.aktion == Gefechtsaktion.angriff && !w.fernkampf;

@@ -145,7 +145,7 @@ class _CombatOffhandSectionState extends State<CombatOffhandSection> {
               key: ValueKey<String>('combat-offhand-remove-$i'),
               tooltip: 'Nebenhand-Ausrüstung entfernen',
               onPressed: () => _removeEntry(i),
-              icon: const Icon(Icons.delete),
+              icon: const Icon(Icons.delete_outline),
             ),
           ],
         ),

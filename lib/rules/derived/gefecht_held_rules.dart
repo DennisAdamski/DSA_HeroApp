@@ -224,11 +224,7 @@ Gefechtspruefung pruefeGefechtsmanoever(
   }
   final voraussetzungen = evaluateRequirements(
     m.voraussetzungenStruktur,
-    buildHeroRequirementContext(
-      snapshot.hero,
-      catalog: katalog,
-      mods: snapshot.derivedStats.modifiers,
-    ),
+    buildHeroRequirementContext(snapshot.hero, catalog: katalog),
   );
   for (final v in voraussetzungen) {
     if (!basisAnsage && v.status == RequirementStatus.nichtErfuellt) {

@@ -10,6 +10,8 @@ import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/catalog_entry_editor_screen.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/string_normalize.dart';
+import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 
 /// Einstiegsscreen für die Verwaltung synchronisierbarer Custom-Kataloge.
 class CatalogManagementScreen extends ConsumerWidget {
@@ -292,8 +294,7 @@ class _CatalogSectionScreenState extends ConsumerState<CatalogSectionScreen> {
           if (searchNeedle.isEmpty) {
             return true;
           }
-          final haystack = '${entry.name} ${entry.id}'.trim().toLowerCase();
-          return haystack.contains(searchNeedle);
+          return passtZurSuche('${entry.name} ${entry.id}', searchNeedle);
         })
         .toList(growable: false);
   }
@@ -388,28 +389,15 @@ class CatalogEntryDetailScreen extends ConsumerWidget {
                     const SizedBox(width: 12),
                     FilledButton.tonalIcon(
                       onPressed: () async {
-                        final confirmed = await showDialog<bool>(
+                        final confirmed = await showAdaptiveConfirmDialog(
                           context: context,
-                          builder: (dialogContext) => AlertDialog(
-                            title: const Text('Custom-Eintrag löschen?'),
-                            content: Text(
+                          title: 'Custom-Eintrag löschen?',
+                          content:
                               'Der Eintrag "${resolvedEntry.name}" wird aus dem Heldenspeicher entfernt.',
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () =>
-                                    Navigator.of(dialogContext).pop(false),
-                                child: const Text('Abbrechen'),
-                              ),
-                              FilledButton(
-                                onPressed: () =>
-                                    Navigator.of(dialogContext).pop(true),
-                                child: const Text('Löschen'),
-                              ),
-                            ],
-                          ),
+                          confirmLabel: 'Löschen',
+                          isDestructive: true,
                         );
-                        if (confirmed != true) {
+                        if (confirmed != AdaptiveConfirmResult.confirm) {
                           return;
                         }
                         await ref

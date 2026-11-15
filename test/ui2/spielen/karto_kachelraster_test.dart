@@ -27,6 +27,8 @@ void main() {
     List<(SpielkachelBreite, double)> kacheln, {
     // Nenngewichte je Kachel; ohne Angabe gilt die Höhe als Gewicht.
     Map<int, double> gewichte = const <int, double>{},
+    // Kacheln, die keinen Leerraum füllen dürfen.
+    Set<int> starr = const <int>{},
   }) async {
     tester.view.devicePixelRatio = 1;
     tester.view.physicalSize = const Size(1200, 800);
@@ -46,7 +48,13 @@ void main() {
                   KartoRasterKachel(
                     breite: art,
                     gewicht: gewichte[i] ?? hoehe,
-                    child: SizedBox(key: ValueKey<int>(i), height: hoehe),
+                    dehnbar: !starr.contains(i),
+                    // Mindesthöhe statt fester Höhe, wie eine echte Kachel:
+                    // sie darf über ihren Inhalt hinaus gedehnt werden.
+                    child: ConstrainedBox(
+                      key: ValueKey<int>(i),
+                      constraints: BoxConstraints(minHeight: hoehe),
+                    ),
                   ),
               ],
             ),
@@ -98,6 +106,111 @@ void main() {
       (SpielkachelBreite.voll, 20),
     ]);
     expect(lage(tester, 2), const Rect.fromLTWH(0, 110, 610, 20));
+  });
+
+  group('Lückenschluss', () {
+    // Zwei Spalten: links 100 hoch, rechts 30, darunter eine volle Kachel.
+    const kacheln = [
+      (SpielkachelBreite.schmal, 100.0),
+      (SpielkachelBreite.schmal, 30.0),
+      (SpielkachelBreite.voll, 20.0),
+      (SpielkachelBreite.schmal, 40.0),
+    ];
+
+    testWidgets('die kürzere Kachel reicht bis an die Kachel darunter', (
+      tester,
+    ) async {
+      await zeige(tester, 610, kacheln);
+      expect(lage(tester, 0), const Rect.fromLTWH(0, 0, 300, 100));
+      expect(lage(tester, 1), const Rect.fromLTWH(310, 0, 300, 100));
+      // Die Lagen bleiben, wie sie ohne Dehnen wären.
+      expect(lage(tester, 2), const Rect.fromLTWH(0, 110, 610, 20));
+    });
+
+    testWidgets('die letzte Kachel einer Spalte behält ihre Höhe', (
+      tester,
+    ) async {
+      await zeige(tester, 610, kacheln);
+      // Unter der vollen Kachel steht links nur noch Kachel 3; rechts bleibt
+      // frei, und die volle Kachel wird nicht in diesen Raum gezogen.
+      expect(lage(tester, 2).height, 20);
+      expect(lage(tester, 3), const Rect.fromLTWH(0, 140, 300, 40));
+      expect(tester.getSize(find.byType(KartoKachelraster)).height, 180);
+    });
+
+    testWidgets('eine gedehnte Kachel mit LayoutBuilder kommt zur Ruhe', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        Directionality(
+          textDirection: TextDirection.ltr,
+          child: Align(
+            alignment: Alignment.topLeft,
+            child: SizedBox(
+              width: 610,
+              child: KartoKachelraster(
+                luecke: 10,
+                children: [
+                  const KartoRasterKachel(
+                    breite: SpielkachelBreite.schmal,
+                    gewicht: 100,
+                    child: SizedBox(height: 100),
+                  ),
+                  KartoRasterKachel(
+                    breite: SpielkachelBreite.schmal,
+                    gewicht: 30,
+                    child: LayoutBuilder(
+                      builder: (context, constraints) => ConstrainedBox(
+                        key: const ValueKey<int>(1),
+                        constraints: const BoxConstraints(minHeight: 30),
+                      ),
+                    ),
+                  ),
+                  const KartoRasterKachel(
+                    breite: SpielkachelBreite.voll,
+                    gewicht: 20,
+                    child: SizedBox(height: 20),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+      // Ein Layout, das jedes Bild ein neues anfordert, liefe hier in die
+      // Zeitüberschreitung.
+      await tester.pumpAndSettle();
+      expect(lage(tester, 1).height, 100);
+    });
+
+    testWidgets('eine starre Kachel wird nicht gedehnt', (tester) async {
+      await zeige(tester, 610, kacheln, starr: {1});
+      expect(lage(tester, 1), const Rect.fromLTWH(310, 0, 300, 30));
+      expect(lage(tester, 2), const Rect.fromLTWH(0, 110, 610, 20));
+    });
+
+    testWidgets(
+      'gedehnt wird bis zur höheren Nachbarspalte, auch nach Wachstum',
+      (tester) async {
+        await zeige(tester, 610, kacheln);
+        expect(lage(tester, 2).top, 110);
+        // Kachel 1 wächst über die bisher höchste Spalte hinaus.
+        await zeige(
+          tester,
+          610,
+          const [
+            (SpielkachelBreite.schmal, 100.0),
+            (SpielkachelBreite.schmal, 150.0),
+            (SpielkachelBreite.voll, 20.0),
+            (SpielkachelBreite.schmal, 40.0),
+          ],
+          gewichte: const {0: 100, 1: 30, 2: 20, 3: 40},
+        );
+        expect(lage(tester, 1).height, 150);
+        expect(lage(tester, 0).height, 150);
+        expect(lage(tester, 2).top, 160);
+      },
+    );
   });
 
   test('Belegung: höchste freie Stelle nach Gewicht, links vor rechts', () {

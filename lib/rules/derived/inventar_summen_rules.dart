@@ -38,3 +38,13 @@ int inventarGesamtwertSilber(Iterable<HeroInventoryEntry> eintraege) {
     (summe, e) => summe + inventarStapelWertSilber(e),
   );
 }
+
+/// Gewicht in Gramm als Anzeigetext: „850 g“, ab 1000 g „1,5 kg“ mit
+/// Dezimalkomma. [nullText] erscheint für 0 und weniger.
+String formatiereGewichtGramm(int gramm, {String nullText = '0 g'}) {
+  if (gramm <= 0) return nullText;
+  if (gramm < 1000) return '$gramm g';
+  final kilo = gramm / 1000.0;
+  final ganz = kilo.truncateToDouble() == kilo;
+  return '${kilo.toStringAsFixed(ganz ? 0 : 1).replaceAll('.', ',')} kg';
+}

@@ -1,5 +1,6 @@
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/ap_level_rules.dart';
 
 import 'hero_merkmal_zuordnung_rules.dart';
 
@@ -22,3 +23,16 @@ String? detectMagicStatus(HeroSheet hero, RulesCatalog catalog) {
 /// Gültige ausdrücklich bestätigte Statuskennungen für Erwerbsnachweise.
 bool isValidMagicStatus(String? status) =>
     const {'full', 'half', 'quarter'}.contains(status);
+
+/// Zaubererkategorie zu einer erkannten Statuskennung.
+///
+/// Nur ein ausdrücklich erkannter Halb- oder Viertelzauberer mindert den
+/// epischen AsP-Stufenbonus. Ohne erkannten Status (kein Vorteil, kein
+/// Katalog, widersprüchliche Angaben) bleibt es beim vollen Bonus, damit
+/// bestehende epische Helden nicht stillschweigend AsP verlieren.
+ZaubererKategorie zaubererKategorieAusStatus(String? status) =>
+    switch (status) {
+      'half' => ZaubererKategorie.halb,
+      'quarter' => ZaubererKategorie.viertel,
+      _ => ZaubererKategorie.voll,
+    };

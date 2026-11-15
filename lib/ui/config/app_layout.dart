@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dsa_heldenverwaltung/ui_shared/layout/breiten_schwellen.dart';
 
 /// Gemeinsame Layoutklassen fuer kompakte, Tablet- und breite Arbeitsflaechen.
 enum AppLayoutClass {
@@ -16,13 +17,13 @@ enum AppLayoutClass {
 }
 
 /// Untergrenze fuer Tablet-Portrait-Layouts.
-const double kTabletPortraitBreakpoint = 744;
+const double kTabletPortraitBreakpoint = kSchwelleTablet;
 
 /// Untergrenze fuer Tablet-Landscape-Layouts.
-const double kTabletLandscapeBreakpoint = 1024;
+const double kTabletLandscapeBreakpoint = kSchwelleBreit;
 
 /// Untergrenze fuer sehr breite Desktop-/iPad-Pro-Layouts.
-const double kDesktopWideBreakpoint = 1366;
+const double kDesktopWideBreakpoint = kSchwelleSehrBreit;
 
 /// Ermittelt die app-weite Layoutklasse anhand der verfuegbaren Breite.
 AppLayoutClass appLayoutForWidth(double width) {

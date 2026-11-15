@@ -6,6 +6,8 @@
 /// Unterschiede, damit die Konflikt-UI kompakt bleiben kann.
 library;
 
+import 'package:dsa_heldenverwaltung/domain/unbekannte_json_felder.dart';
+
 /// Art eines einzelnen Diff-Eintrags.
 enum SyncDiffKind {
   /// Wert existiert auf beiden Seiten, unterscheidet sich aber.
@@ -219,7 +221,7 @@ void _diffValues(
   List<String> path,
   _DiffCollector collector,
 ) {
-  if (_deepEquals(local, remote)) {
+  if (jsonRohwertGleich(local, remote)) {
     return;
   }
   if (local is Map && remote is Map) {
@@ -249,7 +251,7 @@ void _diffLists(
   if (_isPrimitiveList(local) && _isPrimitiveList(remote)) {
     // Mengenbasiert: reine Umsortierung ergibt kein Diff.
     for (final value in local) {
-      if (!remote.any((other) => _deepEquals(value, other))) {
+      if (!remote.any((other) => jsonRohwertGleich(value, other))) {
         collector.add(
           SyncDiffEntry(
             path: path,
@@ -260,7 +262,7 @@ void _diffLists(
       }
     }
     for (final value in remote) {
-      if (!local.any((other) => _deepEquals(value, other))) {
+      if (!local.any((other) => jsonRohwertGleich(value, other))) {
         collector.add(
           SyncDiffEntry(
             path: path,
@@ -368,33 +370,4 @@ String _listElementLabel(Map<dynamic, dynamic> element, String id) {
     return name.trim();
   }
   return id;
-}
-
-bool _deepEquals(Object? a, Object? b) {
-  if (identical(a, b)) {
-    return true;
-  }
-  if (a is Map && b is Map) {
-    if (a.length != b.length) {
-      return false;
-    }
-    for (final key in a.keys) {
-      if (!b.containsKey(key) || !_deepEquals(a[key], b[key])) {
-        return false;
-      }
-    }
-    return true;
-  }
-  if (a is List && b is List) {
-    if (a.length != b.length) {
-      return false;
-    }
-    for (var i = 0; i < a.length; i++) {
-      if (!_deepEquals(a[i], b[i])) {
-        return false;
-      }
-    }
-    return true;
-  }
-  return a == b;
 }

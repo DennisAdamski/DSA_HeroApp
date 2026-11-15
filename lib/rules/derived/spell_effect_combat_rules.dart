@@ -241,12 +241,28 @@ bool heldKenntBlindkampf(HeroSheet held, RulesCatalog? katalog) {
 }
 
 /// Ob der Held die Sonderfertigkeit Konzentrationsstärke beherrscht.
-bool heldKenntKonzentrationsstaerke(HeroSheet held, RulesCatalog? katalog) {
-  return heroSpecialAbilityNames(
-    held,
-    catalog: katalog,
-  ).any((name) => name.trim().toLowerCase().startsWith('konzentrationsstärke'));
-}
+bool heldKenntKonzentrationsstaerke(HeroSheet held, RulesCatalog? katalog) =>
+    _kenntSonderfertigkeit(held, katalog, 'konzentrationsstärke');
+
+/// Ob der Held die Sonderfertigkeit Simultanzaubern beherrscht.
+bool heldKenntSimultanzaubern(HeroSheet held, RulesCatalog? katalog) =>
+    _kenntSonderfertigkeit(held, katalog, 'simultanzaubern');
+
+/// Ob der Held die Sonderfertigkeit Zauberkontrolle beherrscht.
+bool heldKenntZauberkontrolle(HeroSheet held, RulesCatalog? katalog) =>
+    _kenntSonderfertigkeit(held, katalog, 'zauberkontrolle');
+
+// Gestufte Sonderfertigkeiten tragen einen Zusatz („Konzentrationsstärke I“);
+// verglichen wird deshalb der Anfang des Namens. Vor- und Nachteile wirken
+// über den Katalog mit ihrem aktuellen Namen (ARCH-02).
+bool _kenntSonderfertigkeit(
+  HeroSheet held,
+  RulesCatalog? katalog,
+  String namensanfang,
+) => heroSpecialAbilityNames(
+  held,
+  catalog: katalog,
+).any((name) => name.trim().toLowerCase().startsWith(namensanfang));
 
 /// Wie [berechneSpellEffectBeitraege], liest die Sonderfertigkeiten des
 /// Helden (Blindkampf, Konzentrationsstärke) und den laufenden Axxeleratus

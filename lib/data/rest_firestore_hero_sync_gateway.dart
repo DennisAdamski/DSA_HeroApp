@@ -59,6 +59,7 @@ class RestFirestoreHeroSyncGateway
       '$_heroesCollectionPath/$heroId',
       fields,
       previousRevision: previousRevision,
+      art: SyncDokumentArt.held,
     );
     return _decodeHeroRecord(heroId, savedFields) ??
         RemoteHeroRecord(
@@ -86,6 +87,7 @@ class RestFirestoreHeroSyncGateway
       '$_statesCollectionPath/$heroId',
       fields,
       previousRevision: previousRevision,
+      art: SyncDokumentArt.zustand,
     );
     return _decodeStateRecord(heroId, savedFields) ??
         RemoteHeroStateRecord(
@@ -154,6 +156,7 @@ class RestFirestoreHeroSyncGateway
       '$_heroesCollectionPath/${hero.id}',
       fields,
       previousRevision: previousRevision,
+      art: SyncDokumentArt.held,
     );
     return _decodeHeroRecord(hero.id, savedFields) ??
         RemoteHeroRecord(
@@ -186,6 +189,7 @@ class RestFirestoreHeroSyncGateway
       '$_statesCollectionPath/$heroId',
       fields,
       previousRevision: previousRevision,
+      art: SyncDokumentArt.zustand,
     );
     return _decodeStateRecord(heroId, savedFields) ??
         RemoteHeroStateRecord(
@@ -234,6 +238,7 @@ class RestFirestoreHeroSyncGateway
     String documentPath,
     Map<String, dynamic> fields, {
     required String? previousRevision,
+    required SyncDokumentArt art,
   }) async {
     if (previousRevision == null) {
       return _rest.patchDocumentFields(documentPath, fields);
@@ -245,9 +250,10 @@ class RestFirestoreHeroSyncGateway
         expectedRevision: previousRevision,
       );
     }
-    final currentRevision = readSyncRevision(
+    final currentRevision = revisionAusDokument(
       current.fields,
       _readTimestamp(current.fields[HeroSyncRecordFields.lastModified]),
+      art: art,
     );
     if (currentRevision != previousRevision) {
       throw SyncPreconditionException(

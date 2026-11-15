@@ -125,6 +125,9 @@ class _Aufbau {
       <Map<String, Map<String, Object?>>>[];
   Object? speicherfehler;
 
+  /// `false` wie im Web: Eigene Katalogeinträge werden nicht übernommen.
+  bool katalogUebernimmt = true;
+
   HeldImportieren get ablauf => HeldImportieren(
     repository: repo,
     speichere: (held) async {
@@ -140,6 +143,7 @@ class _Aufbau {
     },
     uebernimmKatalog: (eintraege) async {
       ereignisse.add('katalog:${eintraege.length}');
+      return katalogUebernimmt ? eintraege.length : 0;
     },
     speichereGaleriebild: ablage.galerie,
     speichereHauptbild: ablage.hauptbild,
@@ -230,24 +234,39 @@ void main() {
     });
   });
 
+  HeroTransferBundle mitKatalog() => HeroTransferBundle(
+    exportedAt: _uhr,
+    hero: _held(),
+    state: _zustand,
+    catalogEntries: const [
+      HeroTransferCatalogEntry(
+        section: CatalogSectionId.talents,
+        id: 'tal_eigen',
+        data: {'id': 'tal_eigen'},
+      ),
+    ],
+  );
+
   test('übernimmt den Katalog vor dem Helden', () async {
     final aufbau = _Aufbau();
-    await aufbau.ablauf.importiere(
-      HeroTransferBundle(
-        exportedAt: _uhr,
-        hero: _held(),
-        state: _zustand,
-        catalogEntries: const [
-          HeroTransferCatalogEntry(
-            section: CatalogSectionId.talents,
-            id: 'tal_eigen',
-            data: {'id': 'tal_eigen'},
-          ),
-        ],
-      ),
+    final ergebnis = await aufbau.ablauf.importiere(
+      mitKatalog(),
       neuAnlegen: false,
     );
     expect(aufbau.ereignisse, ['katalog:1', 'held']);
+    expect(ergebnis.ausgelasseneKatalogeintraege, 0);
+  });
+
+  // Im Web gibt es keine eigenen Kataloge; der Held kommt trotzdem an, und
+  // der Import nennt die ausgelassenen Einträge (REV-20).
+  test('importiert ohne Katalogübernahme und meldet die Lücke', () async {
+    final aufbau = _Aufbau()..katalogUebernimmt = false;
+    final ergebnis = await aufbau.ablauf.importiere(
+      mitKatalog(),
+      neuAnlegen: false,
+    );
+    expect(aufbau.gespeichert, hasLength(1));
+    expect(ergebnis.ausgelasseneKatalogeintraege, 1);
   });
 
   group('Bilder', () {

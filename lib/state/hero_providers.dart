@@ -5,18 +5,14 @@ export 'package:dsa_heldenverwaltung/state/hero_actions.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/catalog/regelprofil_aufloesung.dart';
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_regelprofil.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/combat_rules.dart';
-import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
-import 'package:dsa_heldenverwaltung/rules/derived/resource_activation_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/house_rules/house_rule_registry.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
-import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_actions.dart';
 import 'package:dsa_heldenverwaltung/state/hero_base_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
@@ -96,21 +92,6 @@ final heroByIdFutureProvider = FutureProvider.family<HeroSheet?, String>((
   return repo.loadHeroById(heroId);
 });
 
-/// Ausgewaehlter Held fuer die Startansicht.
-///
-/// Faellt auf den ersten Helden im Index zurueck, wenn keine Auswahl gesetzt.
-final selectedHeroProvider = Provider<HeroSheet?>((ref) {
-  final snapshot = ref.watch(heroIndexProvider).valueOrNull;
-  if (snapshot == null || snapshot.sortedIds.isEmpty) {
-    return null;
-  }
-  final selectedId = ref.watch(selectedHeroIdProvider);
-  if (selectedId == null) {
-    return snapshot.byId[snapshot.sortedIds.first];
-  }
-  return snapshot.byId[selectedId] ?? snapshot.byId[snapshot.sortedIds.first];
-});
-
 /// Regelprofil des Helden; `null` heißt: er folgt dem globalen Stand.
 ///
 /// Ein Profil, das eine neuere App-Version geschrieben hat und diese Version
@@ -131,15 +112,11 @@ final heroRegelProfilProvider = Provider.family<HeroRegelProfil?, String>((
 /// Vorwärmen, Overrides in Tests und alle bisherigen Werte unverändert. Mit
 /// Profil entsteht der Katalog aus den Paketkopien des Helden.
 final heroRulesCatalogProvider =
-    Provider.family<AsyncValue<RulesCatalog>, String>((ref, heroId) {
-      final profil = ref.watch(heroRegelProfilProvider(heroId));
-      if (profil == null) {
-        return ref.watch(rulesCatalogProvider);
-      }
-      return ref
-          .watch(regelProfilAufloesungProvider(profil))
-          .whenData((aufloesung) => aufloesung.katalog);
-    });
+    Provider.family<AsyncValue<RulesCatalog>, String>(
+      (ref, heroId) => ref.watch(
+        regelkatalogFuer(ref.watch(heroRegelProfilProvider(heroId))),
+      ),
+    );
 
 /// Ob ein Hausregel-Paket für den Helden wirkt: nach seinem Profil, sonst
 /// nach den Einstellungen. Die Elternkette der Pakete gilt in beiden Fällen.
@@ -215,29 +192,6 @@ final heroComputedProvider =
         ),
       );
     });
-
-/// Effektiver Aktivierungsstatus fuer Magie und goettliche Ressourcen je Held.
-final resourceActivationProvider =
-    Provider.family<AsyncValue<HeroResourceActivation>, String>((ref, heroId) {
-      final computedAsync = ref.watch(heroComputedProvider(heroId));
-      return computedAsync.whenData((snapshot) => snapshot.resourceActivation);
-    });
-
-/// Effektive Eigenschaften inklusive Text- und Zustand-Modifikatoren.
-final effectiveAttributesProvider =
-    Provider.family<AsyncValue<Attributes>, String>((ref, heroId) {
-      final computedAsync = ref.watch(heroComputedProvider(heroId));
-      return computedAsync.whenData((snapshot) => snapshot.effectiveAttributes);
-    });
-
-/// Abgeleitete Werte je Held, berechnet aus Sheet + State.
-final derivedStatsProvider = Provider.family<AsyncValue<DerivedStats>, String>((
-  ref,
-  heroId,
-) {
-  final computedAsync = ref.watch(heroComputedProvider(heroId));
-  return computedAsync.whenData((snapshot) => snapshot.derivedStats);
-});
 
 /// Kampfvorschau je Held auf Basis des zentralen Compute-Snapshots.
 final combatPreviewProvider =

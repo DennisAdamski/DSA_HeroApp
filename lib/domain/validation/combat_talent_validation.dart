@@ -23,30 +23,7 @@ class CombatTalentValidationIssue {
 ///   3. type ist 'nahkampf' oder 'fernkampf'
 /// Das erlaubt auch Katalogdaten zu erkennen, die nur eines der drei
 /// Felder korrekt befuellen.
-bool isCombatTalentDef(TalentDef talent) {
-  if (talent.group.trim().toLowerCase() == 'kampftalent') {
-    return true;
-  }
-  if (talent.weaponCategory.trim().isNotEmpty) {
-    return true;
-  }
-  final type = talent.type.trim().toLowerCase();
-  return type == 'nahkampf' || type == 'fernkampf';
-}
-
-/// Bereinigt eine Liste von Talent-IDs: trimmt Leerzeichen, entfernt
-/// Leerstrings und Duplikate. Gibt ein unveraenderliches Set zurueck.
-Set<String> normalizeHiddenTalentIds(Iterable<String> hiddenTalentIds) {
-  final normalized = <String>{};
-  for (final id in hiddenTalentIds) {
-    final trimmed = id.trim();
-    if (trimmed.isEmpty) {
-      continue;
-    }
-    normalized.add(trimmed);
-  }
-  return normalized;
-}
+bool isCombatTalentDef(TalentDef talent) => talent.istKampftalent;
 
 /// Validiert die AT/PA-Verteilung aller Kampftalente eines Helden.
 ///

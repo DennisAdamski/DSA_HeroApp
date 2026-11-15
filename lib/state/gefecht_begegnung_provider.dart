@@ -3,10 +3,7 @@ import 'package:dsa_heldenverwaltung/domain/gefecht_gegner.dart';
 import 'package:dsa_heldenverwaltung/domain/wund_zustand.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_gegner_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_ueberzahl_rules.dart'
-    show
-        setzeGefechtsBeteiligung,
-        setzeGefechtsmitstreiterZiel,
-        setzeGefechtstaktik;
+    show setzeGefechtsBeteiligung, setzeGefechtsmitstreiterZiel;
 
 /// Hält die lokale Gegnerliste gemeinsam für alle Heldensitzungen.
 class GefechtsbegegnungsController extends Notifier<Gefechtsbegegnung> {
@@ -66,9 +63,6 @@ class GefechtsbegegnungsController extends Notifier<Gefechtsbegegnung> {
         gegnerId: gegnerId,
         teilnehmerId: teilnehmerId,
       );
-
-  /// Hält das bestätigte Ergebnis der Aktion Taktik einmal pro Kampf fest.
-  void taktikSetzen(Gefechtstaktik t) => state = setzeGefechtstaktik(state, t);
 
   /// Legt die Beteiligung eines Teilnehmers der eigenen Seite fest.
   void beteiligungSetzen(

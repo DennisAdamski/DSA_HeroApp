@@ -8,6 +8,7 @@ import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/state/regelprofil_gruppe_providers.dart';
 import 'package:dsa_heldenverwaltung/state/regelprofil_vorschau_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_overview/hero_regelprofil_section.dart';
+import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 
 /// Regelprofil-Vorgabe einer Konto-Gruppe (ARCH-04).
 ///
@@ -231,28 +232,17 @@ class GruppeRegelprofilKarte extends ConsumerWidget {
 
   Future<void> _vorgabeEntfernen(BuildContext context, WidgetRef ref) async {
     final messenger = ScaffoldMessenger.of(context);
-    final ja = await showDialog<bool>(
+    final ja = await showAdaptiveConfirmDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Vorgabe entfernen?'),
-        content: const Text(
+      title: 'Vorgabe entfernen?',
+      content:
           'Die Gruppe gibt danach kein Regelprofil mehr vor. Helden, die die '
           'Vorgabe übernommen haben, behalten ihr Profil.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Abbrechen'),
-          ),
-          FilledButton(
-            key: const ValueKey<String>('gruppe-regelprofil-entfernen-ok'),
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Entfernen'),
-          ),
-        ],
-      ),
+      confirmLabel: 'Entfernen',
+      isDestructive: true,
+      confirmKey: const ValueKey<String>('gruppe-regelprofil-entfernen-ok'),
     );
-    if (ja != true) return;
+    if (ja != AdaptiveConfirmResult.confirm) return;
     try {
       await ref.read(heroActionsProvider).entferneRegelVorgabe(gruppenCode);
       ref.invalidate(gruppenRegelVorgabeProvider(gruppenCode));

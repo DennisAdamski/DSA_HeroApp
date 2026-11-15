@@ -1,3 +1,5 @@
+import 'package:dsa_heldenverwaltung/domain/copy_with_sentinel.dart';
+
 /// Stand der über die Cloud bezogenen Regel-Wissensbasis auf diesem Gerät.
 ///
 /// Gerätelokal in den App-Einstellungen. Der frühere WebDAV-Bezug (Server-URL,
@@ -15,11 +17,11 @@ class RulesIndexRemoteConfig {
   final String installedVersion;
 
   RulesIndexRemoteConfig copyWith({
-    Object? lastSyncedAt = _copySentinel,
+    Object? lastSyncedAt = keepFieldValue,
     String? installedVersion,
   }) {
     return RulesIndexRemoteConfig(
-      lastSyncedAt: identical(lastSyncedAt, _copySentinel)
+      lastSyncedAt: identical(lastSyncedAt, keepFieldValue)
           ? this.lastSyncedAt
           : lastSyncedAt as DateTime?,
       installedVersion: installedVersion ?? this.installedVersion,
@@ -41,5 +43,3 @@ class RulesIndexRemoteConfig {
     );
   }
 }
-
-const Object _copySentinel = Object();

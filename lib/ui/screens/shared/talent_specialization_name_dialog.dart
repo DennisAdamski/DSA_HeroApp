@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:dsa_heldenverwaltung/rules/derived/talent_specialization_hints.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/string_normalize.dart';
 
 /// Fragt den Namen einer Talent-Spezialisierung ab und bietet dabei die
 /// Regelwerks-Empfehlungen an. Gemeinsam genutzt von Steigerung und Talente-Tab.
@@ -197,8 +198,7 @@ class _TalentSpecializationNameDialogState
             final query = value.text.trim().toLowerCase();
             if (query.isEmpty) return const Iterable<String>.empty();
             return options.where(
-              (option) =>
-                  option.toLowerCase().contains(query) && !_isOwned(option),
+              (option) => passtZurSuche(option, query) && !_isOwned(option),
             );
           },
           onSelected: _pick,

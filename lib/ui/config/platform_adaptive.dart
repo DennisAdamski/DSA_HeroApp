@@ -41,13 +41,3 @@ MaterialTapTargetSize adaptiveTapTargetSize(BuildContext context) =>
     isApplePlatform(context)
     ? MaterialTapTargetSize.padded
     : MaterialTapTargetSize.shrinkWrap;
-
-// ---------------------------------------------------------------------------
-// Adaptive Scroll-Physik
-// ---------------------------------------------------------------------------
-
-/// BouncingScrollPhysics auf Apple, ClampingScrollPhysics sonst.
-ScrollPhysics adaptiveScrollPhysics(BuildContext context) =>
-    isApplePlatform(context)
-    ? const BouncingScrollPhysics()
-    : const ClampingScrollPhysics();

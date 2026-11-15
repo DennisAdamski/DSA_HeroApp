@@ -12,6 +12,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/begleiter_herleitung_rules.da
 import 'package:dsa_heldenverwaltung/rules/derived/combat_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/eigenschaft_herleitung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/herleitung.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/string_normalize.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/talent_herleitung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/zauber_herleitung_rules.dart';
 import 'package:dsa_heldenverwaltung/state/hero_computed_snapshot.dart';
@@ -321,4 +322,4 @@ String _schrittText(HerleitungsSchritt schritt) => <String>[
 ].join(' ');
 
 String _normalisiere(String text) =>
-    text.toLowerCase().replaceAll(RegExp(r'\s+'), ' ').trim();
+    suchFaltung(text).replaceAll(RegExp(r'\s+'), ' ');

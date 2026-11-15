@@ -11,11 +11,11 @@ import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/wund_anzeige_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/wund_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/wund_zonen_rules.dart';
-import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/hero_overview/stat_modifier_detail_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/dice_log_persistence.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/planung_bearbeiten_guard.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/probe_request_factory.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/zustand_aendern.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/workspace/sb_probe_werte.dart';
@@ -86,12 +86,18 @@ class _WundenDetailDialog extends ConsumerWidget {
       );
     }
 
-    // Die Wundschwelle liegt im Bogen; während einer Planung ruht sie wie
-    // alle Bogen-Sofortaktionen. Die Wunden selbst (Zustand) bleiben
-    // bedienbar.
-    final planungOffen = ref.watch(advancementSessionProvider(heroId)) != null;
-
+    // Die Wundschwelle liegt im Bogen. Wie die Modifikatoren der Übersicht
+    // fragt sie bei offener Planung, ob diese verworfen werden soll
+    // (`planung_bearbeiten_guard.dart`). Die Wunden selbst (Zustand) bleiben
+    // ohnehin bedienbar.
     Future<void> wundschwelleBearbeiten() async {
+      final darfBearbeiten = await bestaetigeBearbeitungBeiPlanung(
+        context: context,
+        heroId: heroId,
+      );
+      if (!darfBearbeiten || !context.mounted) {
+        return;
+      }
       final result = await showStatModifierDetailDialog(
         context: context,
         statLabel: 'Wundschwelle',
@@ -123,11 +129,9 @@ class _WundenDetailDialog extends ConsumerWidget {
           ),
           IconButton(
             key: const ValueKey<String>('wunden-wundschwelle-modifikatoren'),
-            tooltip: planungOffen
-                ? 'Wundschwelle-Modifikatoren – während der Planung gesperrt'
-                : 'Wundschwelle-Modifikatoren',
+            tooltip: 'Wundschwelle-Modifikatoren',
             icon: const Icon(Icons.settings, size: 20),
-            onPressed: planungOffen ? null : wundschwelleBearbeiten,
+            onPressed: wundschwelleBearbeiten,
           ),
         ],
       ),

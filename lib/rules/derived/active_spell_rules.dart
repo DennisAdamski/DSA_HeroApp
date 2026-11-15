@@ -110,14 +110,6 @@ bool isAxxeleratusEffectActive({
   );
 }
 
-/// Liefert die erfasste Wirkungsdauer eines Effekts oder `null`.
-SpellDuration? activeSpellEffectDuration({
-  required HeroState state,
-  required String effectId,
-}) {
-  return state.activeSpellEffects.detailFor(effectId).duration;
-}
-
 /// Fasst die erfassten Werte eines Effekts als Text zusammen.
 ///
 /// Liefert einen leeren String fuer Effekte ohne eigene Zahlenwerte
@@ -158,23 +150,4 @@ String describeAttributeModifiers(AttributeModifiers mods) {
   add('KO', mods.ko);
   add('KK', mods.kk);
   return parts.join(' ');
-}
-
-/// Sammelt alle aktiven Effekte, deren Wirkungsdauer abgelaufen ist.
-///
-/// Abgelaufene Effekte werden nicht automatisch deaktiviert: Ob ein Zauber
-/// wirklich endet, entscheidet die Spielleitung -- die App zeigt den Ablauf
-/// deshalb nur an.
-List<ActiveSpellEffectDefinition> expiredActiveSpellEffects(HeroState state) {
-  final expired = <ActiveSpellEffectDefinition>[];
-  for (final effect in importantActiveSpellEffects) {
-    if (!state.activeSpellEffects.isActive(effect.id)) {
-      continue;
-    }
-    final duration = state.activeSpellEffects.detailFor(effect.id).duration;
-    if (duration?.isExpired ?? false) {
-      expired.add(effect);
-    }
-  }
-  return List<ActiveSpellEffectDefinition>.unmodifiable(expired);
 }

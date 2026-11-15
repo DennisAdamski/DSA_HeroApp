@@ -1,12 +1,16 @@
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
+import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_companion.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
 import 'package:dsa_heldenverwaltung/domain/vitalwirkung.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/currency_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/kampf_aenderung_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/spiel_dabei_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/inventar_aenderung_rules.dart';
 
 // Block „Dabei“ (SPIEL-02): Geldstand und Verbrauchsgegenstände zählen. Die
 // Schritte rechnen vom gespeicherten Wert, ändern nur ihr eigenes Feld und
@@ -53,6 +57,7 @@ HeroSheet _held({
 
 void main() {
   benutzenTests();
+  munitionTests();
   group('Auswahl der Verbrauchsgegenstände', () {
     test('nur manuelle Verbrauchsgegenstände des Helden', () {
       final fackel = _verbrauch('Fackel', '3', id: 'a');
@@ -76,6 +81,112 @@ void main() {
       // Eine ältere App hat `anzahl` abweichend von `menge` geändert.
       expect(dabeiMengeAenderbar(_verbrauch('A', '5', menge: 4)), isFalse);
     });
+  });
+
+  group('Verbrauchsgegenstände von Begleitern', () {
+    HeroInventoryEntry beiBegleiter(
+      String name,
+      String anzahl,
+      String? traegerId, {
+      InventoryItemSource source = InventoryItemSource.manuell,
+      InventoryItemType typ = InventoryItemType.verbrauchsgegenstand,
+    }) => _verbrauch(
+      name,
+      anzahl,
+      id: 'id-$name',
+      menge: int.tryParse(anzahl),
+      source: source,
+      typ: typ,
+      traeger: InventoryTraeger.begleiter,
+    ).copyWith(traegerId: traegerId);
+
+    HeroSheet heldMit(List<HeroInventoryEntry> eintraege) =>
+        _held(eintraege: eintraege).copyWith(
+          companions: const [
+            HeroCompanion(id: 'b1', name: 'Rosinante'),
+            HeroCompanion(id: 'b2', name: 'Falke'),
+          ],
+        );
+
+    test('Auswahl: nur manuelle Verbrauchsgegenstände von Begleitern', () {
+      expect(
+        istDabeiBegleiterVerbrauchsgegenstand(beiBegleiter('Hafer', '5', 'b1')),
+        isTrue,
+      );
+      // Der Held trägt es selbst: gehört in die Liste des Helden.
+      expect(
+        istDabeiBegleiterVerbrauchsgegenstand(_verbrauch('Fackel', '3')),
+        isFalse,
+      );
+      expect(
+        istDabeiBegleiterVerbrauchsgegenstand(
+          beiBegleiter(
+            'Pfeil',
+            '9',
+            'b1',
+            source: InventoryItemSource.geschoss,
+          ),
+        ),
+        isFalse,
+      );
+      expect(
+        istDabeiBegleiterVerbrauchsgegenstand(
+          beiBegleiter('Sattel', '1', 'b1', typ: InventoryItemType.ausruestung),
+        ),
+        isFalse,
+      );
+    });
+
+    test(
+      'gruppiert nach Begleiter in deren Reihenfolge, Verwaiste zuletzt',
+      () {
+        final held = heldMit([
+          beiBegleiter('Futter', '2', 'b2'),
+          beiBegleiter('Hafer', '5', 'b1'),
+          beiBegleiter('Wasser', '3', 'b1'),
+          beiBegleiter('Brot', '1', 'weg'),
+          _verbrauch('Fackel', '3'),
+        ]);
+        final gruppen = dabeiBegleiterVerbrauch(held);
+        expect(gruppen.map((g) => g.name), ['Rosinante', 'Falke', 'Begleiter']);
+        expect(gruppen[0].eintraege.map((e) => e.gegenstand), [
+          'Hafer',
+          'Wasser',
+        ]);
+        expect(gruppen[1].eintraege.single.gegenstand, 'Futter');
+        expect(gruppen[2].begleiterId, '');
+        // Die Liste des Helden bleibt unberührt.
+        expect(dabeiVerbrauchsgegenstaende(held.inventoryEntries).length, 1);
+      },
+    );
+
+    test('ohne Verbrauchsgegenstand eines Begleiters keine Gruppe', () {
+      expect(
+        dabeiBegleiterVerbrauch(heldMit([_verbrauch('Fackel', '3')])),
+        isEmpty,
+      );
+    });
+
+    test('ein unbenannter Begleiter heißt „Begleiter“', () {
+      final held = _held(eintraege: [beiBegleiter('Hafer', '5', 'b1')])
+          .copyWith(companions: const [HeroCompanion(id: 'b1')]);
+      expect(dabeiBegleiterVerbrauch(held).single.name, 'Begleiter');
+    });
+
+    test(
+      'die Menge zählt vom gespeicherten Wert und trifft nur den Eintrag',
+      () {
+        final hafer = beiBegleiter('Hafer', '5', 'b1');
+        final held = heldMit([hafer, beiBegleiter('Wasser', '3', 'b1')]);
+        final neu = mitVerbrauchsmengenSchritt(held, hafer, -2);
+        expect(neu.inventoryEntries[0].menge, 3);
+        expect(neu.inventoryEntries[0].anzahl, '3');
+        expect(neu.inventoryEntries[1].menge, 3);
+        // Der Träger bleibt, der Eintrag geht nicht an den Helden über.
+        expect(neu.inventoryEntries[0].traegerTyp, InventoryTraeger.begleiter);
+        expect(neu.inventoryEntries[0].traegerId, 'b1');
+      },
+    );
   });
 
   group('Menge ändern', () {
@@ -229,18 +340,18 @@ void main() {
 
     test('Schritt rechnet vom gespeicherten Geldstand', () {
       var held = _held(dukaten: '12,5');
-      held = mitGeldSchritt(held, dsaKreuzerPerSilber);
+      held = mitDukatenSchritt(held, dsaKreuzerPerSilber);
       expect(held.dukaten, '12,6');
-      held = mitGeldSchritt(held, -dsaKreuzerPerDukat);
+      held = mitDukatenSchritt(held, -dsaKreuzerPerDukat);
       expect(held.dukaten, '11,6');
-      held = mitGeldSchritt(held, 3);
+      held = mitDukatenSchritt(held, 3);
       expect(held.dukaten, '11,603');
     });
 
     test('Abzug über den Bestand wirft, statt still bei 0 zu kappen', () {
       final held = _held(dukaten: '1');
       expect(
-        () => mitGeldSchritt(held, -(dsaKreuzerPerDukat + 1)),
+        () => mitDukatenSchritt(held, -(dsaKreuzerPerDukat + 1)),
         throwsA(
           isA<StateError>().having(
             (e) => e.message,
@@ -249,13 +360,13 @@ void main() {
           ),
         ),
       );
-      expect(mitGeldSchritt(held, -dsaKreuzerPerDukat).dukaten, '0');
+      expect(mitDukatenSchritt(held, -dsaKreuzerPerDukat).dukaten, '0');
     });
 
     test('unlesbarer Geldstand wirft; Schritt 0 ändert nichts', () {
       final held = _held(dukaten: 'ca. viel');
-      expect(() => mitGeldSchritt(held, 1), throwsA(isA<StateError>()));
-      expect(identical(mitGeldSchritt(held, 0), held), isTrue);
+      expect(() => mitDukatenSchritt(held, 1), throwsA(isA<StateError>()));
+      expect(identical(mitDukatenSchritt(held, 0), held), isTrue);
     });
   });
 }
@@ -290,6 +401,171 @@ void benutzenTests() {
         vitalwirkung: Vitalwirkung(),
       );
       expect(dabeiBenutzbar(catalog: null, eintrag: leer), isFalse);
+    });
+  });
+}
+
+MainWeaponSlot _bogen({
+  String id = 'w-bogen',
+  String name = 'Kurzbogen',
+  List<RangedProjectile> geschosse = const [],
+  int aktiv = 0,
+  WeaponCombatType typ = WeaponCombatType.ranged,
+}) => MainWeaponSlot(
+  id: id,
+  name: name,
+  combatType: typ,
+  rangedProfile: RangedWeaponProfile(
+    projectiles: geschosse,
+    selectedProjectileIndex: aktiv,
+  ),
+);
+
+HeroSheet _schuetze(List<MainWeaponSlot> waffen) =>
+    _held().copyWith(combatConfig: CombatConfig(weapons: waffen));
+
+// Munition (SPIEL-02): Geschossbestände der Fernkampfwaffen zählen am
+// Kampf-Slot, vom gespeicherten Wert aus.
+void munitionTests() {
+  group('Munition', () {
+    const pfeile = RangedProjectile(id: 'p-pfeil', name: 'Pfeile', count: 20);
+    const jagd = RangedProjectile(id: 'p-jagd', name: 'Jagdpfeile', count: 4);
+
+    test('nur benannte Geschosse benannter Fernkampfwaffen', () {
+      final config = CombatConfig(
+        weapons: [
+          _bogen(
+            geschosse: const [
+              pfeile,
+              RangedProjectile(name: ' '),
+              jagd,
+            ],
+            aktiv: 2,
+          ),
+          _bogen(id: 'w-schwert', name: 'Schwert', typ: WeaponCombatType.melee),
+          _bogen(id: '', name: ' ', geschosse: const [pfeile]),
+        ],
+      );
+      final liste = dabeiMunition(config);
+      expect(liste.map((m) => m.name), ['Pfeile', 'Jagdpfeile']);
+      expect(liste.map((m) => m.geschossIndex), [0, 2]);
+      expect(liste.map((m) => m.aktiv), [false, true]);
+      expect(liste.first.waffenName, 'Kurzbogen');
+      expect(liste.first.anzahl, 20);
+    });
+
+    test('Schritt ändert nur den Bestand dieses Geschosses', () {
+      final held = _schuetze([
+        _bogen(geschosse: const [pfeile, jagd]),
+      ]);
+      final m = dabeiMunition(held.combatConfig)[1];
+      final neu = mitMunitionsSchritt(held, m, -1);
+      final geschosse =
+          neu.combatConfig.weaponSlots.single.rangedProfile.projectiles;
+      expect(geschosse.map((g) => g.count), [20, 3]);
+      expect(neu.dukaten, held.dukaten);
+      expect(neu.inventoryEntries, held.inventoryEntries);
+    });
+
+    test('rechnet vom gespeicherten Bestand, nicht vom angezeigten', () {
+      final angezeigt = dabeiMunition(
+        _schuetze([
+          _bogen(geschosse: const [pfeile]),
+        ]).combatConfig,
+      ).single;
+      final gespeichert = _schuetze([
+        _bogen(geschosse: [pfeile.copyWith(count: 7)]),
+      ]);
+      final neu = mitMunitionsSchritt(gespeichert, angezeigt, -1);
+      expect(
+        neu
+            .combatConfig
+            .weaponSlots
+            .single
+            .rangedProfile
+            .projectiles
+            .single
+            .count,
+        6,
+      );
+    });
+
+    test('ohne ID über Name und Position, auch bei geändertem Bestand', () {
+      const ohneId = RangedProjectile(name: 'Bolzen', count: 10);
+      final angezeigt = dabeiMunition(
+        _schuetze([
+          _bogen(id: '', name: 'Armbrust', geschosse: const [ohneId]),
+        ]).combatConfig,
+      ).single;
+      final gespeichert = _schuetze([
+        _bogen(
+          id: '',
+          name: 'Armbrust',
+          geschosse: [ohneId.copyWith(count: 9)],
+        ),
+      ]);
+      final neu = mitMunitionsSchritt(gespeichert, angezeigt, 1);
+      expect(
+        neu
+            .combatConfig
+            .weaponSlots
+            .single
+            .rangedProfile
+            .projectiles
+            .single
+            .count,
+        10,
+      );
+    });
+
+    test('bei 0 und am Höchstbestand ändert sich nichts', () {
+      final leer = _schuetze([
+        _bogen(geschosse: [pfeile.copyWith(count: 0)]),
+      ]);
+      final m = dabeiMunition(leer.combatConfig).single;
+      expect(m.kannAbziehen, isFalse);
+      expect(identical(mitMunitionsSchritt(leer, m, -1), leer), isTrue);
+
+      final voll = _schuetze([
+        _bogen(geschosse: [pfeile.copyWith(count: kGeschossHoechstbestand)]),
+      ]);
+      final v = dabeiMunition(voll.combatConfig).single;
+      expect(v.kannHinzufuegen, isFalse);
+      expect(identical(mitMunitionsSchritt(voll, v, 1), voll), isTrue);
+    });
+
+    test('entfernte Waffe oder entferntes Geschoss melden den Grund', () {
+      final m = dabeiMunition(
+        _schuetze([
+          _bogen(geschosse: const [pfeile]),
+        ]).combatConfig,
+      ).single;
+      expect(
+        () => mitMunitionsSchritt(_schuetze(const []), m, 1),
+        throwsA(
+          isA<StateError>().having(
+            (e) => e.message,
+            'message',
+            contains('Kurzbogen'),
+          ),
+        ),
+      );
+      expect(
+        () => mitMunitionsSchritt(
+          _schuetze([
+            _bogen(geschosse: const [jagd]),
+          ]),
+          m,
+          1,
+        ),
+        throwsA(
+          isA<StateError>().having(
+            (e) => e.message,
+            'message',
+            contains('Pfeile'),
+          ),
+        ),
+      );
     });
   });
 }

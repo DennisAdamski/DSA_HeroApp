@@ -189,12 +189,6 @@ int gefechtsPatzerW6Summe(ProbeResult r) {
   return r.diceValues[0] + r.diceValues[1];
 }
 
-/// Defekte werden flüchtig gesperrt und niemals aus dem Inventar entfernt.
-String? gefechtKampfmittelGesperrt(
-  GefechtsPatzerstand s,
-  GefechtsKampfmittelwahl w,
-) => s.gesperrteMittel[gefechtsMittelSchluessel(w)];
-
 /// Der Verlust gilt bis Rundenende, ungeklärte Folgewürfe bis ihrem Abschluss.
 bool gefechtPatzerSperrt(GefechtsPatzerstand s, int runde) =>
     s.verloreneRunde == runde || gefechtFolgewuerfeOffen(s);

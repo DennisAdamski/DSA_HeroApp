@@ -1,6 +1,11 @@
 # Konzept: Spielunterstützung („Spielmodus")
 
-Stand: 2026-07-12 · Status: Entwurf zur Abstimmung
+Stand: 2026-07-12 · Status: Entwurf zur Abstimmung (historisch)
+
+> **Hinweis (05.11.2026):** Dieses Konzept gibt den Planungsstand vom Juli 2026
+> wieder. Der heutige Umsetzungsstand der Spielunterstützung steht in der
+> [Roadmap](architecture_roadmap.md) unter SPIEL-01 bis SPIEL-07; Einzelheiten
+> zur Spielansicht in [ui_oberflaeche.md](hinweise/ui_oberflaeche.md).
 
 Ziel: Die App soll während einer laufenden DSA-Session aktiv unterstützen — Proben würfeln, Kampf führen, Ressourcen pflegen und Regeln nachschlagen. Dieses Konzept baut bewusst auf dem auf, was bereits existiert, statt Neues daneben zu stellen.
 

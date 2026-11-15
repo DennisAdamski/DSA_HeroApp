@@ -13,6 +13,7 @@ library;
 
 import 'package:dsa_heldenverwaltung/catalog/special_ability_def.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/cost_text_parsing.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/string_normalize.dart';
 
 /// Baut den speicherbaren Anzeigenamen aus Basisname und Variante.
 ///
@@ -64,15 +65,7 @@ String? specialAbilityVariant(String gespeicherterName) {
 /// Sonderzeichen durch einzelne Leerzeichen — dieselbe Strategie wie beim
 /// Vor-/Nachteil-Abgleich, damit `Gelaendekunde` und `Geländekunde` gleich
 /// behandelt werden.
-String normalizeSpecialAbilityName(String value) {
-  var text = value.toLowerCase().trim();
-  text = text
-      .replaceAll(String.fromCharCode(228), 'ae') // ä
-      .replaceAll(String.fromCharCode(246), 'oe') // ö
-      .replaceAll(String.fromCharCode(252), 'ue') // ü
-      .replaceAll(String.fromCharCode(223), 'ss'); // ß
-  return text.replaceAll(RegExp(r'[^a-z0-9]+'), ' ').trim();
-}
+String normalizeSpecialAbilityName(String value) => vergleichsSchluessel(value);
 
 /// Zaehlt, wie viele der bereits eingetragenen Namen zu [basisName] gehoeren.
 ///

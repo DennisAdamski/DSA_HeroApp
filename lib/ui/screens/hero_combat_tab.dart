@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:dsa_heldenverwaltung/rules/derived/spell_effect_instance_rules.dart';
 
+import 'package:dsa_heldenverwaltung/rules/derived/modifier_fragment_text.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/string_normalize.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/planung_bearbeiten_guard.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/async_wert_abwarten.dart';
 import 'package:dsa_heldenverwaltung/catalog/house_rule_provenance.dart';
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
@@ -23,8 +25,6 @@ import 'package:dsa_heldenverwaltung/rules/derived/kampf_slot_pruefung_rules.dar
 import 'package:dsa_heldenverwaltung/rules/derived/kampfgegenstand_ablegen_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/learning_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/maneuver_rules.dart';
-import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
-import 'package:dsa_heldenverwaltung/rules/derived/modifier_source_breakdown.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/requirement_evaluation_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/special_ability_chain_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/two_weapon_combat_rules.dart';
@@ -375,11 +375,9 @@ class _HeroCombatTabState extends ConsumerState<HeroCombatTab>
                 overrideTalents: _draftTalents,
                 epicAdvantagesRuleActive: epicAdvantagesActive,
               );
-              final effectiveAttributes = computeEffectiveAttributes(
-                hero,
-                tempAttributeMods: effektiveTempAttributeMods(state),
-                catalog: catalog,
-              );
+              // Eine Quelle für effektive Eigenschaften (REV-22).
+              final effectiveAttributes =
+                  berechnet?.effectiveAttributes ?? hero.attributes;
 
               return Column(
                 children: [

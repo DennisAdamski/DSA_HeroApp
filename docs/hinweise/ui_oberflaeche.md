@@ -87,7 +87,9 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   Spalten; die klassische Optik bleibt beim Standard). Der Abschnitt
   „Abenteuer“ (`karto_abenteuer_abschnitt.dart`) trägt Titel, aventurisches
   Datum, Standort (`KartoStandortZeile`, hängt am Zustand, nicht am
-  Abenteuer), Kurzbeschreibung (3 Zeilen, „Mehr“), eine Schnell-Erfassung
+  Abenteuer; die Eingabe schlägt Orte aus `orte.json` vor, `KartoOrtFeld` mit
+  `sucheOrte`, Freitext bleibt erlaubt, der Kartenlink entfällt für Namen, die
+  nur als Region, Staat, Fluss oder Straße bekannt sind, `kartenlinkSinnvoll`), Kurzbeschreibung (3 Zeilen, „Mehr“), eine Schnell-Erfassung
   für Notizen und die Karten für Personen und Notizen. Alles lässt sich dort
   direkt ändern; „Öffnen“ (Key `karto-spiel-abenteuer-oeffnen`) bleibt der Weg
   zum Vollblatt. Gezeigt werden zunächst drei Personen und vier Notizen nach
@@ -110,7 +112,9 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   Maximum wird nie gekürzt). **In einer weiten Kachel** (`KartoKachelGroesse.weit`,
   also auch im Vergrößern-Dialog) trägt jede Zelle eine Knopfreihe −5, −1, +1, +5
   unter dem Balken (`KartoRessourcenwert.onSchritt`, Keys
-  `karto-ressource-<art>-minus-5|minus-1|plus-1|plus-5`). Die Zellen sind dann
+  `karto-ressource-<art>-minus-5|minus-1|plus-1|plus-5`; eine zusammenhängende
+  Leiste auf `senke` mit Haarlinien zwischen den Segmenten, 48 dp hoch, statt
+  vier umrandeter Kästen). Die Zellen sind dann
   mindestens 240 dp breit, und die Spaltenzahl ist ausgewogen
   (`KartoRessourcenleiste.ausgewogeneSpalten`: 4 Ressourcen bei Platz für 3 ergeben
   2×2). Kompakt und normal bleibt alles wie vorher. Geschrieben wird über
@@ -132,8 +136,28 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   Höhe: Einklappen oder neue Daten verschieben nur Kacheln darunter in
   derselben Spalte, keine wechselt Spalte oder Breite (ein früheres
   „Ausweichen“ in Lücken entfiel). Die senkrechte Lage folgt der echten
-  Unterkante. Kinder werden ohne Intrinsics ausgelegt, `LayoutBuilder` in Kacheln
-  ist erlaubt. Was eine Kachel erlaubt (Breiten, Standardbreite, Ausblenden,
+  Unterkante. **Lückenschluss:** Beginnt die nächste Kachel einer Spalte tiefer
+  (eine mehrspaltige Kachel wartet auf ihre tiefste Spalte), wird die Kachel
+  darüber in einem zweiten Durchgang bis an sie heran gedehnt, mit
+  **Mindesthöhe** statt fester Höhe (mit fester Höhe wäre sie eine
+  Layoutgrenze, wachsender Inhalt erreichte das Raster nicht). Lagen ändern
+  sich dadurch nie; die letzte Kachel einer Spalte behält ihre Höhe.
+  `KartoRasterKachel.dehnbar: false` nimmt eine Kachel aus (eingeklappte
+  Kacheln, auch als Anordnungskarte). Eine Kachel muss die Mindesthöhe füllen: der
+  äußere `KartoAbschnitt` tut das (`StackFit.passthrough` an der Akzentkante);
+  wer ihn in `Align` oder ähnliches wickelt, lässt wieder ein Loch. Die
+  Richtgewichte sind an gemessene Höhen der Standardbreite angelehnt
+  (14.11.2026) und sollten ihnen folgen, wenn eine Kachel deutlich wächst.
+  **Eine Flächenstufe:** alle Kacheln liegen auf `feld`; die frühere `senke`
+  für Kampf, Effekte, Zustand und Begleiter wechselte im freien Raster
+  scheinbar zufällig. Unterschieden wird über Symbol (jede Kachel trägt eines,
+  `spielkachelSymbol`) und `KartoAkzent`. **Kopf-Bedienung bei Bedarf:**
+  Vergrößern-Symbol und Einklapp-Pfeil des äußeren Abschnitts sind mit
+  angeschlossener Maus nur sichtbar, solange Zeiger oder Fokus in der Kachel
+  liegen (`_Kachelzeiger`/`_BeiBedarf` in `karto_abschnitt.dart`,
+  `AnimatedOpacity`; bleiben im Baum, klickbar und in der Semantik). Ohne Maus
+  und eingeklappt (Pfeil) bleiben sie stehen. Kinder werden ohne Intrinsics
+  ausgelegt, `LayoutBuilder` in Kacheln ist erlaubt. Was eine Kachel erlaubt (Breiten, Standardbreite, Ausblenden,
   Einklappen), legt `KartoSpielkachelArt` in `karto_spielraster_ordnung.dart`
   fest; Ressourcen lassen sich weder ausblenden noch einklappen. Gespeichert wird **je Held** in `HeroSheet.spielansicht`
   (`HeroSpielansicht`/`HeroSpielkachel`, nur bei Belegung im JSON; Kacheln mit
@@ -146,16 +170,30 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   gesperrter **Live-Vorschau** des echten Inhalts (Key `karto-kachel-<id>-vorschau`,
   Etikett mit Stufe und Breite `…-vorschau-stufe`): der Inhalt wird in der
   Größenstufe der echten Kachelbreite gebaut (`vorschau`-Rückruf aus `_kachel`),
-  ist mit `IgnorePointer`/`ExcludeFocus`/`ExcludeSemantics` nicht bedienbar, 180 dp
-  hoch (`vorschauHoehe`) und blendet unten aus; sie folgt sofort einer geänderten
-  Breite. Ziehen am Griff oder am Titel (nach
+  ist mit `IgnorePointer`/`ExcludeFocus`/`ExcludeSemantics` nicht bedienbar
+  und steht in **echter Höhe** (keine Kappung mehr, seit 14.11.2026): so zeigt
+  der Anordnen-Modus, wie groß jede Kachel ist, und das Raster packt und dehnt
+  die Karten wie später die Kacheln. Eine eingeklappte Kachel zeigt keine
+  Vorschau, nur „… · Eingeklappt“ (Key `…-breite-name`). Die Vorschau folgt
+  sofort einer geänderten Breite. Ziehen am Griff oder am Titel (nach
   kurzem Halten), eine Einfügelinie zeigt „davor“ oder „danach“, abgelegt wird
   einfügend (`fuegeSpielkachelEin`), dazu Pfeile, Breitenmenü, Ausblenden,
   „Standard“; erst „Fertig“ schreibt einmal frisch
   über `updateHero`, ohne Änderung gar nicht. Den Einklappknopf zeigt der
   äußerste `KartoAbschnitt` einer Kachel über `KartoKachelSteuerung`; er
   schreibt sofort nur den einen Eintrag (`mitEingeklappt`). Während einer
-  Planung sind Anordnen und Einklappen gesperrt. Jede Kachel kennt ihre **Größenstufe** `KartoKachelGroesse`
+  Planung sind Anordnen und Einklappen gesperrt. **Vorlage (14.11.2026):** Im
+  Anordnen-Modus bietet das Menü „Vorlage“ (`karto-spiel-anordnen-vorlage`)
+  „Als Vorlage speichern“, „Vorlage laden“ und „Vorlage entfernen“. Die Vorlage
+  ist eine `HeroSpielansicht` in `AppSettings.spielansichtVorlage`
+  (**geräteweit**, kein Sync, nur bei Belegung im JSON; Provider
+  `spielansichtVorlageProvider`, Schreiber `setSpielansichtVorlage`). Ein Held
+  ohne eigene Kacheln folgt ihr (`wirksameSpielansicht`, Auflösung und
+  `_einklappen` gehen darüber, damit Einklappen die Anordnung der Vorlage
+  übernimmt statt auf den Standard zu fallen); am Helden wird nichts
+  geschrieben, bis er selbst „Fertig“ drückt. „Standard“ schreibt bewusst eine
+  eigene Standardanordnung und löst den Helden damit von der Vorlage. „Speichern“
+  und „Laden“ berühren keinen Helden; „Laden“ füllt nur den Entwurf. Jede Kachel kennt ihre **Größenstufe** `KartoKachelGroesse`
   (`kompakt` <420, `normal` <600, `weit` ab 600 dp **Kachelbreite**, nicht
   Fensterbreite), über `KartoKachelSteuerung.groesseVon(context)` auch in
   verschachtelten Abschnitten lesbar; Inhalte zeigen mit der Stufe mehr oder
@@ -167,9 +205,11 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   (Keys `karto-kampf-ini|tp|rs|be`), bei Fernkampf Ladezeit, Geschoss,
   Entfernung, bei Belegung Wundabzug von Schwert-/Schildarm und
   Waffenmeisterschaft. Reine Anzeige aus der Kampfvorschau, ohne Rechnung; die
-  wichtigsten Zeilen stehen oben, weil die Anordnen-Vorschau nur 180 dp zeigt.
+  wichtigsten Zeilen stehen oben.
   Die Kachel bleibt standardmäßig schmal; das Panel erscheint nach dem
-  Verbreitern oder im Vergrößern-Dialog. **Eigenschaften:** Die Kachel passt ihre Spalten (8, 4, 2, 1) schon an die Breite an;
+  Verbreitern oder im Vergrößern-Dialog. **Eigenschaften:** Die Kachel erlaubt
+  seit 14.11.2026 auch „Schmal“ (Standard bleibt „Mittel“); schmal stehen die
+  acht Karten als 4 × 2. Die Kachel passt ihre Spalten (8, 4, 2, 1) schon an die Breite an;
   in `weit` zeigt eine Karte einen Wundabzug zusätzlich als „−4“ an der Karte
   selbst (`InspectorAttributeCard.abzugZeigen`, vom Adapter über die Stufe
   geschaltet), sonst nur im Tooltip. Mehr gibt die Datenlage nicht her, die
@@ -195,13 +235,94 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   aufgeklappt (`anfangsAufgeklappt`, danach frei einklappbar, nicht gespeichert),
   rechts die Statuswerte ohne Trennlinie (`mitTrenner: false`). Schmaler, in
   `kompakt`/`normal` und außerhalb einer Kachel bleibt es bei der einen Spalte
-  mit eingeklappten Abschnitten. Die klassischen Abschnitte bekamen nur
+  mit eingeklappten Abschnitten; die Statuswerte stehen dann als flaches
+  **Wertraster** (`InspectorStatuswerteBlock.raster`, 4 Spalten, bei wenig
+  Platz 2; Karten mit Kürzel, Ergebnis und Modifikator-Marke, Keys
+  `workspace-status-kachel-<Label>`). Ein Tipp öffnet ein kleines Blatt
+  (`workspace-status-blatt-<Label>`) mit derselben `InspectorValueRow`; es liest
+  den Snapshot selbst neu, bleibt für mehrere Schritte offen und meldet Fehler
+  im eigenen `ZustandFehlerBereich`. MR öffnet nichts; während einer Planung
+  ist nur BE antippbar. Zeilen, Raster und Blatt teilen eine Beschreibung
+  (`_statuswerte`), die Schreibwege sind dieselben. **Die Spielansicht** baut
+  den Block mit `spielZustand(mitBelastung: false)`: Zustand = Wunden +
+  Statuswerte, Erschöpfung und Überanstrengung stehen in „Dabei“; das Gefecht
+  behält die Belastung (Standard `true`). Die klassischen Abschnitte bekamen nur
   optionale Parameter mit unverändertem Standard; Schreibwege unverändert. „Dabei“ hält Betrag,
   Stift und Münzschritte beieinander und lässt die Verbrauchsgegenstände ab
   `kDabeiZweispaltigAb` (560 dp Kachelbreite) zweispaltig fließen.
   Die Kachel „Reiseroute“ (`karto_reiseroute.dart`) zeigt die jüngsten
   Stationen von `HeroSheet.reiseStationen` als Zeitleiste und öffnet das
   Reiseroute-Blatt; Details in [reiseroute_plan.md](../reiseroute_plan.md).
+  Das Blatt zeigt zuerst die Tabelle (`KartoReiseTabelle`, Keys
+  `karto-reise-tabelle`, `karto-reise-zeile-<id>`), umschaltbar auf die
+  Zeitleiste (`karto-reise-ansicht`). Ortsfelder lesen
+  `ortsverzeichnisProvider` (Wiki Aventurica plus Avesmaps); wer ein neues
+  Ortsfeld baut, ruft beim Öffnen `AvesmapsOrteAnforderung.fordereAn()`, nie
+  beim Bauen der Spielansicht. Erneutes Öffnen prüft die Liste wieder unter
+  Beachtung von Tagescache und Fehlerpause. Standortdialoge beobachten ohne
+  feste `orte`-Liste das laufende Verzeichnis und die Online-Suche;
+  `KartoStandortZeile.liveOrte` aktiviert dies für die Abenteuer-Kachel.
+  Enter übernimmt den sichtbaren hervorgehobenen Vorschlag auch online.
+  In Tests bleibt Avesmaps ohne Override aus;
+  Orte mit Position kommen dort über `avesmapsOrteProvider.overrideWith`.
+  **Standort (13.11.2026):** Die Kachel „Standort“
+  (`KartoSpielkachelArt.standort` hinter der Reiseroute,
+  `ui2/spielen/standort/karto_standort_kachel.dart`) folgt der Infotafel von
+  Avesmaps: Name, Ortsklasse und Gebiet, eigene Lageskizze
+  (`KartoLageskizze`, `CustomPainter`, kein Kartenbild), Fakten mit 96 dp
+  Bezeichnungsspalte, „In der Nähe“ (`kNaheOrteKurz`/`kNaheOrteWeit`) und
+  Rücklinks. Rechnung in `standort_lage_rules.dart`. Avesmaps-Daten erst nach
+  „Kartendaten laden“ (`fordereAn()`); eine früher geladene Tagesliste liest
+  `avesmapsOrteProvider` auch ohne Anforderung aus dem Speicher (ohne Netz).
+  Ortsdetails (`avesmapsOrtsdetailsProvider`) nur nach der Anforderung. Der
+  Eingabedialog ist `zeigeStandortDialog`; gespeichert wird über
+  `standortSetzen`. Tests überschreiben `avesmapsOrteSpeicherProvider` statt
+  den Heldenspeicher zu öffnen.
+  **Karte (13.11.2026):** `lib/ui2/karte/` zeichnet die Aventurien-Karte im
+  Stil von Avesmaps selbst (`KartoKarte`, `CustomPainter`, keine
+  Kartenbibliothek); die Lageskizze der Standort-Kachel ist ein nicht
+  interaktiver Ausschnitt, `zeigeKarte` das Vollbild. Stilwerte nur aus
+  `karto_karten_stil.dart` (Kanon von Avesmaps, Marken kippen nicht mit dem
+  Theme), Geometrie aus `karten_rules.dart`. Kein Kartenbild von avesmaps.de;
+  Kacheln nur von der eigenen Site (`KARTEN_KACHELN`, ohne Angabe Papier mit
+  Landschimmer, Tests laden so nie ein Bild). Der Kachelspeicher lädt nur in
+  `benoetige`, nie beim Zeichnen. Ein Tipp auf die interaktive Karte kommt
+  wegen des Doppeltipps verzögert (in Tests 400 ms pumpen).
+  Ortsfakten (Einwohner, Tempel, wichtige Orte) kommen aus
+  `ortsfaktenProvider`; Tests überschreiben ihn statt das Asset zu laden.
+  Die Standort-Kachel gliedert mit `_Rubrik` (Bezeichnung plus Haarlinie),
+  Wege und Gottheiten sind `_Marke`n; Reihenfolge und Gruppierung rechnen
+  `reiheNachVielfalt` und `tempelNachGottheit`, nie das Widget.
+  **Wildnis (12.11.2026):** Die Kachel „Wildnis“ (`KartoSpielkachelArt.wildnis`,
+  `ui2/spielen/wildnis/karto_wildnis_kachel.dart`) ist **eine** Kachel für alle
+  Wildnistätigkeiten; oben wählt man die Tätigkeit (der Umschalter erscheint ab
+  zwei Tätigkeiten). Gemeinsam sind Standort, Landschaft (Vorschlag aus
+  `findeOrt` + `landschaftenFuerOrt`), Jahreszeit (aus
+  `resolveCurrentAdventureDate`), Geländekunde und Ortskenntnis (aus
+  `werteWildnisSonderfertigkeitenAus`, von Hand überschreibbar), Dauer, AsP,
+  Erschwernis, TaW aus den Bestandteil-Talenten, die Probe über
+  `KartoGefechtsAdapter.gefechtsProbe` (schreibt selbst ins Würfelprotokoll,
+  kein Import aus `lib/ui`; ohne Gefechtsbrücke bleibt der Knopf gesperrt) und
+  die Ergebnisanzeige. Die Kachel schreibt nichts am Helden; Eingaben und
+  Ergebnis leben nur im Widget, jede Eingabe verwirft das Ergebnis. AsP werden
+  nicht abgebucht. Das Vergrößern-Popup liefert das Raster; in `weit` zeigt die
+  Vorschau mehr Zeilen (`kWildnisVorschauWeit` statt `kWildnisVorschauKurz`),
+  „Alle N anzeigen“ blendet in jeder Größe die ganze Liste ein. Zeilen mit
+  `WildnisErgebnisZeile.erlaeuterung`/`quelle` klappen per Antippen auf
+  (Kräuter: Wirkung, Kurzbeschreibung bzw. Sperrhinweis ohne Katalogpasswort,
+  Bestimmung, Erntezeit, Grundmenge, Zoo-Botanica-Seite).
+  `erschwernisHinweis` erklärt einen Erschwernisanteil aus der Wahl (gezielte
+  Kräutersuche: Suchschwierigkeit des Krauts), `zielAngaben` zeigt die Angaben
+  zum gewählten Ziel unter der Zusammenfassung.
+  **Neue Tätigkeit** (Nahrung sammeln, Pirschjagd …): Unterklasse von
+  `KartoWildnisTaetigkeit` (`karto_wildnis_taetigkeit.dart`: Talentbestandteile,
+  Eigenschaften, Landschaften und Landschaftsvorschlag je Ort, Dauern, eigene
+  Wahlen `KartoWildnisOption`, `erschwernis`, `baueProbe`, `auswerten`,
+  `vorschau`) plus Regelfunktion in `lib/rules/derived/`, dann ein Eintrag in
+  `kartoWildnisTaetigkeiten`; Kachel und Raster bleiben unverändert. Als
+  erste ist `KartoKraeutersucheTaetigkeit` (KL/IN/FF laut WdE S. 113, nicht das
+  MU/IN/FF des Standard-Metatalents) umgesetzt. Standardplatz: vor dem
+  Würfelprotokoll, damit bestehende Anordnungen nicht verschoben werden.
   **Vor- und Nachteile:** In `weit` zeigt die eingeklappte Übersicht
   (`KartoMerkmalsuebersicht`) je Art bis zu `kMerkmaleZeilenWeit` (3) statt einer
   Zeile, also mehr Einträge ohne Aufklappen; aufgeklappt stehen Vorteile und
@@ -336,7 +457,8 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   behält die technische Schreibsperre als Rückfall. Wechsel, die den Workspace
   abbauen (Heldenwahl,
   Heldenliste, Rückkehr zur Bestandsoberfläche, System-Zurück), fragen
-  zusätzlich nach dem offenen Plan; aufgelegte Screens (Einstellungen,
+  zusätzlich nach dem offenen Plan, sofern er Einträge hat (ein leerer
+  Plan endet in beiden Oberflächen ohne Rückfrage); aufgelegte Screens (Einstellungen,
   Token-Blatt) prüfen nur den Editor, weil die Sitzung im gemeinsamen
   `ProviderScope` liegt und einen Push überlebt.
   Beim tatsächlichen Oberflächenwechsel in den Einstellungen greift jedoch
@@ -518,7 +640,16 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   „Alle zeigen“). Die Regeln liegen in `spiel_dabei_rules.dart`:
   `dabeiVerbrauchsgegenstaende` nimmt nur manuelle Verbrauchsgegenstände des
   Helden (keine mit dem Kampf verknüpften, keine abgelegten, keine von
-  Begleitern getragenen); Munition bleibt im Kampfbereich. Jeder Klick schreibt
+  Begleitern getragenen); Munition bleibt im Kampfbereich. **Beim Begleiter
+  (10.11.2026):** Was ein Begleiter trägt, steht darunter je Begleiter als
+  „Beim Begleiter: <Name>“ (`dabeiBegleiterVerbrauch`, Reihenfolge der
+  Begleiter am Helden; Einträge eines nicht mehr vorhandenen Begleiters in
+  einer Gruppe „Begleiter“; gleiche Auswahl wie beim Helden mit Träger
+  `begleiter`, `istDabeiBegleiterVerbrauchsgegenstand`). Die Zeilen zählen mit
+  −/+ über denselben Schritt `mitVerbrauchsmengenSchritt` (Träger und Träger-ID
+  bleiben), haben aber kein „Benutzen“, weil der Held sie nicht bei sich hat;
+  Keys `karto-dabei-begleiter-<gruppe>-<zeile>`. Die Last des Begleiters zählt
+  nicht zur Belastung des Helden. Jeder Klick schreibt
   frisch über `HeroActions.updateHero`: `mitGeldSchritt` und
   `mitVerbrauchsmengenSchritt` rechnen vom **gespeicherten** Wert, finden den
   Eintrag über die Instanz-ID und ändern nur ihr Feld (Menge über
@@ -533,6 +664,66 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   nicht bei Menge 0). Es öffnet über `gefechtsVitalwirkung` den bestehenden
   Anwenden-/Einnehmen-Dialog, der Wirkung (Zustand) und das Stück (Bogen)
   selbst bucht; der Block schreibt dabei nichts. Der Aufruf läuft über `aktion`.
+  **Munition (07.11.2026):** Zwischen Geld und Verbrauchsgegenständen steht,
+  sobald eine benannte Fernkampfwaffe benannte Geschosse führt, der Abschnitt
+  „Munition“ (`dabeiMunition`, je Geschoss Name, Waffe, „aktiv“ für das
+  gewählte Geschoss, Bestand mit −/+; Keys `karto-dabei-munition-<i>`). Der
+  Bestand gehört dem Kampf-Slot (`RangedProjectile.count`): `mitMunitionsSchritt`
+  ändert über `mitKampfAenderung`/`mitGeschossSchritt` nur diesen Bestand,
+  gerechnet vom gespeicherten Wert (0 bis `kGeschossHoechstbestand`), Waffe und
+  Geschoss über ihre IDs, ohne ID über Name und Position. Den verknüpften
+  Inventareintrag gleicht `updateHero` beim Speichern selbst ab; der Block
+  schreibt nie ins Inventar. Solange ein Gefecht des Helden läuft
+  (`gefechtProvider`), ist die Munition gesperrt (Hinweis
+  `kDabeiMunitionImGefecht`), weil das Gefecht Ladezustand und Schuss am
+  Bestand führt und eine fremde Bestandsänderung den Ladezustand zurücksetzen
+  würde; Geld und Verbrauchsgegenstände bleiben bedienbar.
+  **Belastung (10.11.2026):** Am Ende des Blocks steht der Abschnitt
+  „Belastung“ (`_Belastung`), gespeist aus `HeroComputedSnapshot.tragkraft`
+  (`berechneTragkraft` in `tragkraft_rules.dart`, WdS S. 144). Seit 14.11.2026
+  knapp: **eine Zeile** „Belastung x / y Stein“ (1 Stein = 1 kg, Key
+  `karto-dabei-last`, „≥ “ davor, wenn getragene Einträge kein Gewicht haben),
+  bei Überschreitung in Siegelfarbe mit der Marke „BE +n“
+  (`karto-dabei-last-hinweis`). Die Herleitung (`tragkraftFormel`), die volle
+  Folge (`TragkraftErgebnis.hinweis`: BE +1 je angefangene 50 % über der TK,
+  über 2 × TK Verschnaufpausen alle KO Spielrunden, ab 4 × TK Absetzen alle
+  5 × KO Schritt) und der Mindestwert-Hinweis stehen im Tooltip der Zeile.
+  **Last** = Gewicht aller vom Helden getragenen Einträge (Stückgewicht × Menge;
+  was ein Begleiter trägt, zählt nicht) plus Geld (Dukat 25 g, Silbertaler,
+  Heller und Kreuzer je 5 g bei kleinstmöglicher Münzzahl, Geographia
+  Aventurica S. 141) plus die **Hälfte** von allem, was eng am Körper
+  getragen wird (`istAmLeibGetragen`, Tischregel des Nutzers vom 10.11.2026:
+  Rüstung, Kleidung, getragene Ausrüstungsgegenstände und Waffen in den
+  Händen, also jede angelegte bzw. ausgerüstete Ausrüstung; das Buch nennt nur
+  Kleidung und Rüstung, WdS S. 144). Alles andere zählt voll: Gepäck, nicht
+  angelegte Waffen und Rüstungen, Geschosse und Verbrauchsgut. **Tragkraft** =
+  dauerhafte KK (`HeroStatInputs.permanent`, ohne laufende Zauber wie Attributo
+  oder Karnifilo, im Snapshot als `permanentAttributes`), bei epischer
+  KK-Haupteigenschaft mit aktiver Regel × 1,5 (aufgerundet, Epische Stufen Kap.
+  2.1), plus die Tragkraftquellen des Helden. Die Quellen liegen additiv in
+  `HeroSheet.tragkraftBoni` (`HeroTragkraftBonus`: Name, `stein`, optional `kk`
+  nur für die Tragkraft; nur bei belegter Liste im JSON, Sync-Merge je ID). Nur
+  **Dauerhaftes** gehört dorthin (Bärenrune bis zur Sonnenwende, dauerhafte
+  Gegenstände), keine Kurzzeitzauber. **Gepflegt werden die Quellen im
+  Inventar-Tab** (`TragkraftQuellenAbschnitt` in
+  `lib/ui/screens/hero_inventory/tragkraft_quellen_abschnitt.dart`, unter dem
+  Geldfeld, Keys `inventory-tragkraft-*`): „Tragkraft y Stein“ mit der
+  Herleitung im Tooltip, die Quellen als Chips mit ×, „+ Bärenrune“ rechnet
+  RkP\* × 10 Stein (Wege der Alchimie S. 161) und bietet die Hausregel „KK +1“
+  („Erweiterung und Überarbeitung des Regelwerks“ Kap. 10) als Schalter; „+
+  Andere Tragkraftquelle“ nimmt Name, Stein und KK. Quellen schreiben frisch
+  über `aendereHeldMitMeldung` (`mitTragkraftBonus`, `ohneTragkraftBonus`) und
+  sind während einer Planung gesperrt. In „Dabei“ stehen unter der Lastzeile
+  Erschöpfung und Überanstrengung mit −/+, **nebeneinander** (Key
+  `karto-dabei-stufen-nebeneinander`), sobald zwei Zellen à
+  `kDabeiStufenZelleMin` (120 dp) passen, sonst untereinander
+  (Laufzeitzustand, geschrieben über `updateHeroState` vom gespeicherten Wert,
+  nie unter 0, auch während einer Planung bedienbar wie im Zustandsblock). Der
+  Zustand der Spielansicht führt sie deshalb nicht mehr.
+  Offen: Gepäck-Gewichte der Waffen- und Rüstungs-Slots sind nur so genau wie
+  das im Inventar eingetragene Gewicht; die optionale Reiseregel „BE aus
+  zusätzlicher Last je 25 %“ (WdS S. 144, Erschöpfung im Marsch) ist nicht
+  eingerechnet.
   Der Block
   sperrt sich während einer Planung; die Schritte reihen sich je Held ein und
   haben bewusst keinen Doppelklickschutz, damit jeder Klick zählt. Ohne
@@ -612,12 +803,13 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   seiner Abhängigkeiten gar nicht erst neu gebaut. Beides zusammen ergibt
   einen Ladezustand, der nie endet. Wer warten muss, abonniert stattdessen den
   `AsyncValue` (`ref.listenManual`) und wertet `error` und `hasValue` aus;
-  Muster: `_awaitCatalogReady` in `lib/ui/screens/heroes_home_screen.dart`.
-  Für das einfache Warten gibt es `warteAufAsyncProvider` (mit `Ref`) und
-  `warteAufAsyncProviderImWidget` (mit `WidgetRef`) in
-  `lib/state/async_value_compat.dart`: Wert oder Fehler des Providers, sonst
-  `TimeoutException` nach 30 Sekunden. In `lib/` gibt es kein
-  `read(provider.future)` mehr.
+  Muster: `_awaitCatalogReady` in `lib/ui/screens/heroes_home_screen.dart`,
+  allgemein `warteAufAsyncWert` (`ui/screens/shared/async_wert_abwarten.dart`,
+  mit Timeout). Held-gebundene Bausteine, die auch heldenlos laufen, lesen
+  den Katalog über `beobachteHeldenKatalog`
+  (`ui/screens/shared/held_katalog.dart`); Dialogrouten liegen außerhalb des
+  `PlanungsBearbeitungsBereich`, die Helden-ID wird deshalb beim Öffnen
+  mitgegeben.
   Die Katalogkette in `lib/state/catalog_providers.dart` benutzt weiterhin
   `await ref.watch(dep.future)` — bewusst: ein `ref.watch(dep)` im
   Provider-Body macht den Provider rebuild-abhängig und bricht dadurch den

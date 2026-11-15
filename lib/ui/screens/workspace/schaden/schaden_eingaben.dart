@@ -180,7 +180,7 @@ extension _SchadenInhalt on _SchadenPanelState {
           const SizedBox(height: 8),
           Text(
             'Schwellen ${vorschlag.schwellen.join(' / ')} · $echteSp SP → '
-            'Vorschlag: ${_wundenText(vorschlag.wunden)}',
+            'Vorschlag: ${wundenText(vorschlag.wunden)}',
             key: const ValueKey<String>('schaden-vorschlag'),
           ),
         ],
@@ -195,7 +195,7 @@ extension _SchadenInhalt on _SchadenPanelState {
             theme,
             'schaden-zone-voll',
             '${wundZoneLabel[zone]} hat nur noch Platz für '
-                '${_wundenText(frei)}; weitere verfallen.',
+                '${wundenText(frei)}; weitere verfallen.',
           ),
         const SizedBox(height: 8),
         _wundenZeile(theme, wunden, frei),
@@ -357,6 +357,4 @@ extension _SchadenInhalt on _SchadenPanelState {
       ),
     );
   }
-
-  String _wundenText(int anzahl) => anzahl == 1 ? '1 Wunde' : '$anzahl Wunden';
 }

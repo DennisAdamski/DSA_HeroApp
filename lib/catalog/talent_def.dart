@@ -42,6 +42,22 @@ class TalentDef {
   final bool active; // Im App verfuegbar und anzeigbar?
   final RuleMeta? ruleMeta; // Strukturierte Herkunfts- und Freischaltmetadaten
 
+  /// Ob das Talent ein Fernkampftalent ist (`type == 'fernkampf'`).
+  bool get istFernkampf => type.trim().toLowerCase() == 'fernkampf';
+
+  /// Ob das Talent ein Kampftalent ist.
+  ///
+  /// Drei Merkmale gelten als ODER-Verknüpfung, damit auch Katalogdaten mit
+  /// nur einem gefüllten Feld erkannt werden: Gruppe `Kampftalent`, nicht
+  /// leere [weaponCategory] oder Typ `nahkampf`/`fernkampf`. Groß- und
+  /// Kleinschreibung sowie Randleerzeichen zählen nicht.
+  bool get istKampftalent {
+    if (group.trim().toLowerCase() == 'kampftalent') return true;
+    if (weaponCategory.trim().isNotEmpty) return true;
+    final typ = type.trim().toLowerCase();
+    return typ == 'nahkampf' || typ == 'fernkampf';
+  }
+
   factory TalentDef.fromJson(Map<String, dynamic> json) {
     final ruleMetaJson = readCatalogObject(json, 'ruleMeta');
     return TalentDef(

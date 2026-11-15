@@ -97,6 +97,6 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   was währenddessen gespeichert wird (auch eine Änderung, die noch in der
   Warteschlange hinter einem laufenden Cloud-Upload wartet). Test:
   `test/state/hero_actions_avatar_cloud_test.dart`.
-- Speicherprüfungen im Editor lesen den Katalog des Helden synchron
-  (`heroRulesCatalogProvider(heroId).valueOrNull`) und brechen mit einer
-  Meldung ab, wenn er fehlt; sie warten nie auf `rulesCatalogProvider.future`.
+- Speicherprüfungen im Editor rechnen mit dem Katalog des Helden
+  (`heroRulesCatalogProvider(heroId)`) und warten darauf über das Abo
+  (`warteAufAsyncWert`), nie über `rulesCatalogProvider.future`.

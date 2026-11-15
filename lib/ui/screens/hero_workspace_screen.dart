@@ -7,7 +7,6 @@ import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/feedback/feedback_submission.dart';
 import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
 import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
-import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/advancement/advancement_catalog.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
 import 'package:dsa_heldenverwaltung/ui/config/app_layout.dart';
@@ -30,6 +29,7 @@ import 'package:dsa_heldenverwaltung/ui/screens/workspace_edit_contract.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/ui_shared/feedback/open_feedback.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/async_wert_abwarten.dart';
 
 part 'workspace/workspace_layout.dart';
 part 'workspace/workspace_advancement.dart';
@@ -103,8 +103,14 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
       if (!mounted) {
         return;
       }
-      // Nur anstoßen; gewartet wird hier nicht (nie über `.future`).
-      ref.read(rulesCatalogProvider);
+      // Über das Abo statt `.future`: hält die Katalogkette aktiv und endet
+      // auch bei einem Fehler; der Katalog des Helden wärmt sein Regelprofil.
+      unawaited(
+        warteAufAsyncWert(
+          ref,
+          heroRulesCatalogProvider(widget.heroId),
+        ).then<void>((_) {}, onError: (Object error, StackTrace stack) {}),
+      );
     });
   }
 
@@ -291,7 +297,7 @@ class _HeroWorkspaceScreenState extends ConsumerState<HeroWorkspaceScreen>
   Widget build(BuildContext context) {
     final hero = ref.watch(heroByIdProvider(widget.heroId));
     final session = ref.watch(advancementSessionProvider(widget.heroId));
-    ref.watch(rulesCatalogProvider);
+    ref.watch(heroRulesCatalogProvider(widget.heroId));
     // Der Regelnachschlag wird erst nach dem Entsperren angeboten; hier
     // beobachtet, damit der Knopf beim Entsperren erscheint.
     ref.watch(catalogContentVisibleProvider);

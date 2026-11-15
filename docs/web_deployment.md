@@ -80,6 +80,42 @@ Zur Rücknahme in der Firebase-Konsole die vorherige Veröffentlichung der
 betreffenden Site wiederherstellen. Der nächste erfolgreiche Branch-Push
 veröffentlicht wieder automatisch. Keine geplanten oder manuellen Actions-Trigger.
 
+## Kartenkacheln
+
+Das Kartenbild der Aventurien-Karte liegt auf einer **eigenen** Hosting-Site
+`heldensync-karten` mit eigener Konfiguration `firebase.karten.json`. Es
+gehört nicht ins Repository und nicht in `build/web`: CI und
+`tool/deploy_web.ps1` fassen es nie an, und die Sicherheitsprüfungen der
+App-Sites (`tool/test_security_config.py`) bleiben unberührt. Ohne Kacheln
+zeichnet die App die Karte aus den Ortsdaten (Papier mit Landschimmer).
+
+Einmalig: `firebase hosting:sites:create heldensync-karten`.
+
+Ablauf je Kartenfassung:
+
+1. Zugang bei Avesmaps (Karten-API, Issue 7). Das `paket.zip` im Browser über
+   den Zugangslink laden; Schlüssel nie in Skripte oder ins Repository. Der
+   Zugang hat eine Frist und eine begrenzte Zahl an Abrufen.
+2. Schneiden (Pillow oder pyvips nötig):
+   `python -I tool/avesmaps_karte_kacheln.py --paket <pfad>/paket.zip`.
+   Ergebnis unter `build/karten/`: `aktuell.json` und `<revision>/{z}/{x}/{y}.webp`
+   samt `LIZENZ.txt` und Logo. Serie `modern` (ohne Beschriftung im Bild),
+   zuerst 16384 px (z0–5, 1365 Kacheln); 32768 px (z6) braucht viel Speicher.
+3. Veröffentlichen: `firebase deploy --config firebase.karten.json --only hosting`.
+4. Web-Builds bekommen `--dart-define=KARTEN_KACHELN=https://heldensync-karten.web.app`
+   (CI und `tool/deploy_web.ps1`, sobald die Kacheln online sind). Die CSP beider
+   App-Sites erlaubt die Herkunft bereits bei `img-src` und `connect-src`.
+
+Die Kachelpfade enthalten die Revision (Hash des Kartenbilds) und sind
+unveränderlich (`immutable`); nur `aktuell.json` ist `no-cache`. Eine neue
+Kartenfassung bekommt eine neue Revision, alte Builds laden weiter ihre
+Kacheln. Wegen Flutter Web (CanvasKit lädt Bilder per `fetch`) liefert die
+Site `Access-Control-Allow-Origin: *`; die Kacheln sind ohnehin öffentlich.
+Lizenzpflichten (nur nicht-kommerziell, Fanprojekt-Logo, Ulisses-Zeile,
+Lizenz-URI) stehen in [reiseroute_plan.md](reiseroute_plan.md), der ganze
+Ablauf ab Erhalt des Zugangs in
+[avesmaps_kartenzugang.md](avesmaps_kartenzugang.md).
+
 ## Automatische Übernahme von main
 
 Jeder Push auf `main` mergt den aktuellen main-Stand automatisch nach `test`.

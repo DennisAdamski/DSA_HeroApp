@@ -20,16 +20,6 @@ void main() {
     );
   }
 
-  test('normalizeHiddenTalentIds trims and deduplicates ids', () {
-    final ids = normalizeHiddenTalentIds(<String>[
-      '  sword  ',
-      '',
-      'sword',
-      'bow',
-    ]);
-    expect(ids, <String>{'sword', 'bow'});
-  });
-
   test('isCombatTalentDef detects combat talents by group and type', () {
     final byGroup = TalentDef(
       id: 'a',
@@ -49,6 +39,31 @@ void main() {
 
     expect(isCombatTalentDef(byGroup), isTrue);
     expect(isCombatTalentDef(byType), isTrue);
+  });
+
+  test('TalentDef.istKampftalent und istFernkampf (REV-31)', () {
+    TalentDef talent({
+      String group = 'Körper',
+      String type = '',
+      String weaponCategory = '',
+    }) => TalentDef(
+      id: 't',
+      name: 'T',
+      group: group,
+      steigerung: 'B',
+      attributes: const <String>['MU', 'GE', 'KK'],
+      type: type,
+      weaponCategory: weaponCategory,
+    );
+
+    expect(talent().istKampftalent, isFalse);
+    expect(talent(group: ' kampftalent ').istKampftalent, isTrue);
+    expect(talent(weaponCategory: 'Schwert').istKampftalent, isTrue);
+    expect(talent(type: ' Nahkampf').istKampftalent, isTrue);
+    expect(talent(type: 'FERNKAMPF ').istKampftalent, isTrue);
+    expect(talent(type: 'Gabe').istKampftalent, isFalse);
+    expect(talent(type: 'FERNKAMPF ').istFernkampf, isTrue);
+    expect(talent(type: 'nahkampf').istFernkampf, isFalse);
   });
 
   test(

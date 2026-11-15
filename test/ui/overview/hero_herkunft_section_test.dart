@@ -61,7 +61,7 @@ HeroBackground get _basis =>
 void main() {
   testWidgets('Hinzufügen abbrechen verändert keine Einträge', (tester) async {
     final aufbau = await _zeige(tester, background: _basis);
-    await tester.tap(find.text('+ Herkunftsmodifikator'));
+    await tester.tap(find.text('+ Modifikator'));
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('herkunft-dialog-modus')), findsOneWidget);
     await tester.tap(find.text('Abbrechen'));
@@ -80,7 +80,7 @@ void main() {
 
   testWidgets('Eigenschaft mit Ziel und Betrag hinzufügen', (tester) async {
     final aufbau = await _zeige(tester, background: _basis);
-    await tester.tap(find.text('+ Herkunftsmodifikator'));
+    await tester.tap(find.text('+ Modifikator'));
     await tester.pumpAndSettle();
     await tester.tap(
       find.byKey(const ValueKey('herkunft-dialog-ziel-eigenschaft')),
@@ -109,7 +109,7 @@ void main() {
     tester,
   ) async {
     final aufbau = await _zeige(tester, background: _basis);
-    await tester.tap(find.text('+ Herkunftsmodifikator'));
+    await tester.tap(find.text('+ Modifikator'));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('herkunft-dialog-uebernehmen')));
     await tester.pumpAndSettle();
@@ -124,7 +124,7 @@ void main() {
     tester,
   ) async {
     final aufbau = await _zeige(tester, background: _basis);
-    await tester.tap(find.text('+ Herkunftsmodifikator'));
+    await tester.tap(find.text('+ Modifikator'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Freier Text'));
     await tester.pumpAndSettle();
@@ -182,7 +182,7 @@ void main() {
 
   testWidgets('ohne Bearbeitungsmodus gibt es keine Aktionen', (tester) async {
     await _zeige(tester, background: _basis, bearbeitbar: false);
-    expect(find.text('+ Herkunftsmodifikator'), findsNothing);
+    expect(find.text('+ Modifikator'), findsNothing);
     expect(find.byKey(const ValueKey('herkunft-chip-rasse-0')), findsNothing);
     expect(find.text('MU+1'), findsOneWidget);
   });
@@ -309,7 +309,24 @@ void main() {
           textFaktor: faktor,
         );
         expect(tester.takeException(), isNull);
-        await tester.tap(find.text('+ Herkunftsmodifikator'));
+        // Kein Umbruch mitten im Wort: der Knopftext ist mindestens so breit
+        // wie sein längstes Wort (Umbruch am Leerzeichen ist erlaubt).
+        final stil = tester.widget<Text>(find.text('+ Modifikator')).style;
+        final wortBreite = (TextPainter(
+          text: TextSpan(
+            text: 'Modifikator',
+            style: DefaultTextStyle.of(
+              tester.element(find.text('+ Modifikator')),
+            ).style.merge(stil),
+          ),
+          textDirection: TextDirection.ltr,
+          textScaler: TextScaler.linear(faktor),
+        )..layout()).width;
+        expect(
+          tester.getSize(find.text('+ Modifikator')).width,
+          greaterThanOrEqualTo(wortBreite - 1),
+        );
+        await tester.tap(find.text('+ Modifikator'));
         await tester.pumpAndSettle();
         expect(tester.takeException(), isNull);
         expect(

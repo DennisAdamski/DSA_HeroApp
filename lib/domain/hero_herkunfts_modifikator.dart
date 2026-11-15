@@ -1,3 +1,4 @@
+import 'package:dsa_heldenverwaltung/domain/copy_with_sentinel.dart';
 import 'package:dsa_heldenverwaltung/domain/unbekannte_json_felder.dart';
 
 /// Art eines Herkunftsmodifikators (ARCH-02, Herkunftsmerkmale).
@@ -78,7 +79,7 @@ class HeroHerkunftsModifikator {
     String? id,
     HeroHerkunftsModifikatorArt? art,
     String? ziel,
-    Object? betrag = _unveraendert,
+    Object? betrag = keepFieldValue,
     String? text,
     Map<String, Object?>? unbekannteFelder,
     Map<String, Object?>? unbekannteEnumWerte,
@@ -92,7 +93,7 @@ class HeroHerkunftsModifikator {
       id: id ?? this.id,
       art: art ?? this.art,
       ziel: ziel ?? this.ziel,
-      betrag: identical(betrag, _unveraendert) ? this.betrag : betrag as int?,
+      betrag: identical(betrag, keepFieldValue) ? this.betrag : betrag as int?,
       text: text ?? this.text,
       unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
       unbekannteEnumWerte:
@@ -215,5 +216,3 @@ const Object _jsonNull = _JsonNull();
 class _JsonNull {
   const _JsonNull();
 }
-
-const Object _unveraendert = Object();

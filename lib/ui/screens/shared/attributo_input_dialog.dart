@@ -119,7 +119,9 @@ class _AttributoInputDialogState extends State<_AttributoInputDialog> {
               child: TextField(
                 key: ValueKey<String>('attributo-input-$abbr'),
                 controller: _controllers[i],
-                keyboardType: TextInputType.number,
+                keyboardType: const TextInputType.numberWithOptions(
+                  signed: true,
+                ),
                 inputFormatters: [
                   FilteringTextInputFormatter.allow(RegExp(r'-?\d*')),
                 ],

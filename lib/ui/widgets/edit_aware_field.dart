@@ -136,7 +136,7 @@ class EditAwareIntField extends StatelessWidget {
         suffixIcon: suffixIcon,
         suffixIconConstraints: suffixIconConstraints,
       ),
-      keyboardType: TextInputType.number,
+      keyboardType: const TextInputType.numberWithOptions(signed: true),
       inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'-?\d*'))],
       onChanged: onChanged == null
           ? null

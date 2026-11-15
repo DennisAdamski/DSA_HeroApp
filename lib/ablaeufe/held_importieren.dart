@@ -11,8 +11,9 @@ import 'package:dsa_heldenverwaltung/domain/hero_appearance.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_transfer_bundle.dart';
 import 'package:dsa_heldenverwaltung/domain/sync_models.dart';
 
-/// Übernimmt eingebettete eigene Katalogeinträge eines Exports.
-typedef ImportKatalogUebernehmen = Future<void> Function(
+/// Übernimmt eingebettete eigene Katalogeinträge eines Exports und liefert,
+/// wie viele davon übernommen wurden (im Web keine).
+typedef ImportKatalogUebernehmen = Future<int> Function(
   List<HeroTransferCatalogEntry> eintraege,
 );
 
@@ -37,6 +38,7 @@ class HeldImportErgebnis {
   const HeldImportErgebnis({
     required this.heroId,
     required this.fehlendeBilder,
+    this.ausgelasseneKatalogeintraege = 0,
   });
 
   /// ID des importierten (ggf. neu angelegten) Helden.
@@ -45,6 +47,10 @@ class HeldImportErgebnis {
   /// Bilder, die nicht gespeichert werden konnten, und unter einer neuen ID
   /// zusätzlich Galerieeinträge ohne Bilddaten im Export.
   final int fehlendeBilder;
+
+  /// Eingebettete eigene Katalogeinträge, die nicht übernommen wurden (im
+  /// Web gibt es keine eigenen Kataloge).
+  final int ausgelasseneKatalogeintraege;
 }
 
 /// Anwendungsablauf „Held importieren“ (ARCH-05).
@@ -134,8 +140,10 @@ class HeldImportieren {
     }
 
     final katalogeintraege = bundle.catalogEntries;
+    var ausgelasseneKatalogeintraege = 0;
     if (katalogeintraege != null && katalogeintraege.isNotEmpty) {
-      await uebernimmKatalog(katalogeintraege);
+      final uebernommen = await uebernimmKatalog(katalogeintraege);
+      ausgelasseneKatalogeintraege = katalogeintraege.length - uebernommen;
     }
 
     var vorgang = ImportVorgang(
@@ -191,7 +199,11 @@ class HeldImportieren {
         rethrow;
       }
     }
-    return HeldImportErgebnis(heroId: heroId, fehlendeBilder: bilder.fehlend);
+    return HeldImportErgebnis(
+      heroId: heroId,
+      fehlendeBilder: bilder.fehlend,
+      ausgelasseneKatalogeintraege: ausgelasseneKatalogeintraege,
+    );
   }
 
   // Schließt [vorgang] nach einem gescheiterten Schritt ab; liefert, ob das

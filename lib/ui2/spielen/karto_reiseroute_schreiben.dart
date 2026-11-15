@@ -7,6 +7,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/reiseroute_rules.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_held_schreiben.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_reiseroute_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui2/widgets/karto_bestaetigen.dart';
 
 /// Gemeinsamer Schreibweg für Reiseroute-Kachel und Reiseroute-Blatt.
 ///
@@ -44,6 +45,9 @@ mixin KartoReiserouteSchreiben<T extends ConsumerStatefulWidget>
     if (eingabe == null || eingabe.loeschen) return;
     final station = vorschlag.copyWith(
       ort: eingabe.ort,
+      ortId: eingabe.ortId,
+      kartenX: eingabe.kartenX,
+      kartenY: eingabe.kartenY,
       datum: eingabe.datum,
       notiz: eingabe.notiz,
       adventureId: eingabe.adventureId,
@@ -75,9 +79,11 @@ mixin KartoReiserouteSchreiben<T extends ConsumerStatefulWidget>
       (held) => ersetzeReiseStation(
         held,
         station.id,
-        // Per `copyWith`, damit unbekannte Felder bleiben. Ein neuer Ortsname
-        // löst die Kartenposition des alten Orts.
-        (s) => s.ort == eingabe.ort
+        // Per `copyWith`, damit unbekannte Felder bleiben. Bleibt der
+        // Ortsname und trägt die Eingabe keinen Verweis (etwa ohne Netz),
+        // bleibt der bestehende Verweis. Sonst gilt der Verweis der Eingabe:
+        // Ein neuer Ortsname löst die Kartenposition des alten Orts.
+        (s) => s.ort == eingabe.ort && !eingabe.hatOrtsVerweis
             ? s.copyWith(
                 datum: eingabe.datum,
                 notiz: eingabe.notiz,
@@ -86,9 +92,9 @@ mixin KartoReiserouteSchreiben<T extends ConsumerStatefulWidget>
               )
             : s.copyWith(
                 ort: eingabe.ort,
-                ortId: '',
-                kartenX: null,
-                kartenY: null,
+                ortId: eingabe.ortId,
+                kartenX: eingabe.kartenX,
+                kartenY: eingabe.kartenY,
                 datum: eingabe.datum,
                 notiz: eingabe.notiz,
                 adventureId: eingabe.adventureId,
@@ -99,23 +105,11 @@ mixin KartoReiserouteSchreiben<T extends ConsumerStatefulWidget>
   }
 
   Future<bool> _bestaetigeLoeschen() async {
-    final ja = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Station löschen?'),
-        content: const Text('Das lässt sich nicht rückgängig machen.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Abbrechen'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Löschen'),
-          ),
-        ],
-      ),
+    return kartoBestaetigen(
+      context,
+      titel: 'Station löschen?',
+      text: 'Das lässt sich nicht rückgängig machen.',
+      bestaetigen: 'Löschen',
     );
-    return ja ?? false;
   }
 }

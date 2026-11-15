@@ -28,6 +28,54 @@ void main() {
       expect(KartoSpielkachelArt.protokoll.standard, SpielkachelBreite.schmal);
     });
 
+    test('Wildnis steht vor dem Protokoll und ergänzt eine gespeicherte '
+        'Anordnung ohne sie zu verschieben', () {
+      expect(KartoSpielkachelArt.wildnis.standard, SpielkachelBreite.schmal);
+      expect(KartoSpielkachelArt.wildnis.id, 'wildnis');
+      expect(
+        KartoSpielkachelArt.values.indexOf(KartoSpielkachelArt.wildnis),
+        KartoSpielkachelArt.values.indexOf(KartoSpielkachelArt.protokoll) - 1,
+      );
+      // Ein Held, der die Kachel noch nicht kennt: seine Reihenfolge bleibt,
+      // die neue Kachel kommt hinter ihre Vorgängerin.
+      final ohneWildnis = loeseSpielansichtAuf(
+        const HeroSpielansicht(
+          kacheln: [
+            HeroSpielkachel(id: 'merkmale'),
+            HeroSpielkachel(id: 'protokoll'),
+            HeroSpielkachel(id: 'ressourcen'),
+          ],
+        ),
+        verfuegbar: _alle,
+      );
+      final ids = _ids(ohneWildnis);
+      expect(ids.take(2), ['merkmale', 'protokoll']);
+      expect(ids, contains('wildnis'));
+    });
+
+    test('Standort folgt der Reiseroute und ergänzt eine gespeicherte '
+        'Anordnung hinter ihr', () {
+      expect(KartoSpielkachelArt.standort.id, 'standort');
+      expect(KartoSpielkachelArt.standort.standard, SpielkachelBreite.schmal);
+      expect(
+        KartoSpielkachelArt.values.indexOf(KartoSpielkachelArt.standort),
+        KartoSpielkachelArt.values.indexOf(KartoSpielkachelArt.reiseroute) + 1,
+      );
+      final ids = _ids(
+        loeseSpielansichtAuf(
+          const HeroSpielansicht(
+            kacheln: [
+              HeroSpielkachel(id: 'merkmale'),
+              HeroSpielkachel(id: 'reiseroute'),
+            ],
+          ),
+          verfuegbar: _alle,
+        ),
+      );
+      expect(ids.indexOf('standort'), ids.indexOf('reiseroute') + 1);
+      expect(ids.indexOf('merkmale'), lessThan(ids.indexOf('reiseroute')));
+    });
+
     test('gespeicherte Reihenfolge, fehlende Kacheln an ihrer Stelle', () {
       final kacheln = loeseSpielansichtAuf(
         const HeroSpielansicht(
@@ -243,6 +291,49 @@ void main() {
       final kampf = neu.firstWhere((x) => x.art == k);
       expect(kampf.breite, SpielkachelBreite.mittel);
       expect(kampf.eingeklappt, isTrue);
+    });
+  });
+
+  group('wirksameSpielansicht', () {
+    const vorlage = HeroSpielansicht(
+      kacheln: [
+        HeroSpielkachel(id: 'kampf', breite: SpielkachelBreite.mittel),
+        HeroSpielkachel(id: 'ressourcen'),
+      ],
+    );
+    const eigene = HeroSpielansicht(
+      kacheln: [HeroSpielkachel(id: 'dabei', eingeklappt: true)],
+    );
+
+    test('ein Held ohne Anordnung folgt der Vorlage', () {
+      expect(wirksameSpielansicht(null, vorlage), vorlage);
+      expect(wirksameSpielansicht(const HeroSpielansicht(), vorlage), vorlage);
+    });
+
+    test('die eigene Anordnung geht der Vorlage vor', () {
+      expect(wirksameSpielansicht(eigene, vorlage), eigene);
+    });
+
+    test('ohne Vorlage gilt die Anordnung des Helden unverändert', () {
+      expect(wirksameSpielansicht(null, null), isNull);
+      expect(wirksameSpielansicht(eigene, null), eigene);
+      expect(wirksameSpielansicht(eigene, const HeroSpielansicht()), eigene);
+    });
+
+    test('unbekannte Felder des Helden bleiben erhalten', () {
+      const held = HeroSpielansicht(unbekannteFelder: {'neu': 1});
+      final wirksam = wirksameSpielansicht(held, vorlage)!;
+      expect(wirksam.kacheln, vorlage.kacheln);
+      expect(wirksam.unbekannteFelder, {'neu': 1});
+    });
+
+    test('die Vorlage ordnet die Kacheln beim Auflösen an', () {
+      final kacheln = loeseSpielansichtAuf(
+        wirksameSpielansicht(null, vorlage),
+        verfuegbar: {KartoSpielkachelArt.ressourcen, KartoSpielkachelArt.kampf},
+      );
+      expect(kacheln.first.art, KartoSpielkachelArt.kampf);
+      expect(kacheln.first.breite, SpielkachelBreite.mittel);
     });
   });
 }

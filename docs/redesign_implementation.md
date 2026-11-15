@@ -7,6 +7,11 @@ das freigegebene [Mockup](mockups/README.md). **R1, R2 und R3 sind umgesetzt**
 (siehe Übergabestatus). Die Abnahme steht in
 [redesign_acceptance.md](redesign_acceptance.md).
 
+> **Hinweis (05.11.2026):** ARCH-01 ist seit dem 15.10.2026 abgenommen,
+> einschließlich des Schadensablaufs mit Rücknahme (siehe
+> [Roadmap](architecture_roadmap.md)). Die Vermerke „ARCH-01 bleibt offen“
+> weiter unten geben den damaligen Übergabestand wieder.
+
 ## Empfehlung
 
 Den bereits begonnenen Neubau unter `lib/ui2/` weiterführen. Flutter, Riverpod,

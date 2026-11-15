@@ -146,7 +146,7 @@ class _Geraet {
         }
         return held;
       },
-      uebernimmKatalog: (_) async {},
+      uebernimmKatalog: (_) async => 0,
       speichereGaleriebild: ablage.galerie,
       speichereHauptbild: ({required heroId, required bytes}) async => '',
       loescheBild: ablage.loesche,

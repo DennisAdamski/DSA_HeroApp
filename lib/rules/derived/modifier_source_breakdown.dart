@@ -1,5 +1,6 @@
 import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/domain/attribute_modifiers.dart';
+import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_herkunft.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
@@ -115,6 +116,30 @@ StatModifiers aggregateNamedStatModifiers(
     rs: sum('rs'),
   );
 }
+
+/// Dauerhafte Eigenschaften: gespeicherte Werte mit Text- und benannten
+/// Modifikatoren, ohne Inventar, temporäre Boni und Wunden.
+///
+/// Grundlage für Steigerungsgrenzen und Erwerbsvoraussetzungen; alle
+/// Ansichten prüfen Voraussetzungen damit gegen dieselben Werte.
+Attributes dauerhafteEigenschaften(
+  HeroSheet hero, {
+  required RulesCatalog? catalog,
+}) {
+  final parsed = parseModifierTextsForHero(hero, catalog: catalog);
+  final named = aggregateNamedAttributeModifiers(hero.attributeModifiers);
+  return applyAttributeModifiers(hero.attributes, parsed.attributeMods + named);
+}
+
+/// Dauerhafte Modifikatoren der Basiswerte: Inspector (`persistentMods`),
+/// benannte und Textmodifikatoren, ohne Inventar, temporäre Boni und Wunden.
+StatModifiers dauerhafteStatModifikatoren(
+  HeroSheet hero, {
+  required RulesCatalog? catalog,
+}) =>
+    hero.persistentMods +
+    aggregateNamedStatModifiers(hero.statModifiers) +
+    parseModifierTextsForHero(hero, catalog: catalog).statMods;
 
 /// Aggregiert benannte Eigenschafts-Modifikatoren zu einem AttributeModifiers-Objekt.
 AttributeModifiers aggregateNamedAttributeModifiers(

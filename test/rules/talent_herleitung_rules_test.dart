@@ -316,6 +316,8 @@ void main() {
         effectiveStartAttributes: snapshot.effectiveStartAttributes,
         attributeMaximums: snapshot.attributeMaximums,
         effectiveAttributes: snapshot.effectiveAttributes,
+        permanentAttributes: snapshot.permanentAttributes,
+        tragkraft: snapshot.tragkraft,
         probenEigenschaften: snapshot.probenEigenschaften.copyWith(
           mu: snapshot.effectiveAttributes.mu - 2,
         ),

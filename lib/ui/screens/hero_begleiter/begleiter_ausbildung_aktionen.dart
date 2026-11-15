@@ -61,7 +61,7 @@ extension _ReittierAusbildungAktionen on _HeroBegleiterTabState {
     if (!_kannSofortBuchen) return;
     final antwort = await showAdaptiveConfirmDialog(
       context: context,
-      title: 'Schritt zurücknehmen',
+      title: 'Schritt zurücknehmen?',
       content:
           'Den Schritt ${reittierSchrittText(ausbildung.schritte.last.nach, ausbildung.schritte.last.art)} '
           'zurücknehmen? Übernommene Sonderfertigkeiten bleiben stehen.',

@@ -4,10 +4,12 @@ import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/active_spell_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/ap_level_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/herleitung.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ini_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/kampfbasis_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/magic_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/magic_status_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_source_breakdown.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/ressourcen_rules.dart';
@@ -205,6 +207,8 @@ bool gleicheStatModifikatoren(StatModifiers a, StatModifiers b) {
 ///
 /// [permanentAttributes] (ohne temporäre Zauberboni) tragen die
 /// Ressourcen-Höchstwerte, [effectiveAttributes] alle übrigen Werte.
+/// [zaubererStatus] (`full`, `half`, `quarter`) bestimmt den AsP-Stufenbonus
+/// epischer Stufen.
 /// [wundGs] ist der GS-Anteil der Wunden, der in [quellen] enthalten ist;
 /// er senkt die GS nie unter 1 (WdS S. 111).
 /// [zauberEigenschaften] (Karnifilo) wirken nur auf INI- und FK-Basis, je
@@ -218,6 +222,7 @@ BasiswertHerleitungen computeBasiswertHerleitungen({
   required List<StatModifikatorQuelle> quellen,
   required bool hasFlinkFromVorteile,
   required bool hasBehaebigFromNachteile,
+  String? zaubererStatus,
   int wundGs = 0,
   List<SpellEffectEigenschaftsQuelle> zauberEigenschaften =
       const <SpellEffectEigenschaftsQuelle>[],
@@ -258,13 +263,23 @@ BasiswertHerleitungen computeBasiswertHerleitungen({
     untergrenze: 0,
     bezeichnung: untergrenze,
   );
+  final kategorie = zaubererKategorieAusStatus(zaubererStatus);
+  final stufeAsp = stufenanteilAsp(sheet, kategorie);
+  final epischeStufen = sheet.level - stufeAu;
   final asp = mitUntergrenze(
     <HerleitungsSchritt>[
       _grundwert(
         grundwertAsp(p),
         '(MU ${p.mu} + IN ${p.inn} + CH ${p.ch}) / 2',
       ),
-      _stufe(sheet.level * 2, 'Stufe ${sheet.level} × 2'),
+      _stufe(
+        stufeAsp,
+        epischeStufen <= 0
+            ? 'Stufe ${sheet.level} × 2'
+            : 'Aktivierungsstufe $stufeAu × 2 + $epischeStufen epische '
+                  '${epischeStufen == 1 ? 'Stufe' : 'Stufen'} '
+                  '(${_kategorieName(kategorie)})',
+      ),
       _zukauf(bought.asp),
       ...mods('asp'),
     ],
@@ -575,3 +590,10 @@ HerleitungsSchritt _sf(String name, int betrag) => HerleitungsSchritt(
   art: HerleitungsArt.sonderfertigkeit,
   quelle: 'Sonderfertigkeit',
 );
+
+String _kategorieName(ZaubererKategorie kategorie) => switch (kategorie) {
+  ZaubererKategorie.voll => 'Vollzauberer, je 2 AsP',
+  ZaubererKategorie.halb => 'Halbzauberer, je 1 AsP',
+  ZaubererKategorie.viertel => 'Viertelzauberer, kein AsP',
+  ZaubererKategorie.keine => 'kein Zauberer, kein AsP',
+};

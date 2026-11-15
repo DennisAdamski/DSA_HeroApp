@@ -5,11 +5,11 @@ import 'package:dsa_heldenverwaltung/catalog/spell_def.dart';
 import 'package:dsa_heldenverwaltung/domain/artefakt_daten.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_wirken_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/magic_rules.dart';
-import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
-import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
-import 'package:dsa_heldenverwaltung/ui/screens/shared/planung_bearbeiten_guard.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/planung_bearbeiten_guard.dart';
 import 'package:dsa_heldenverwaltung/ui/screens/shared/protected_content_helpers.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/held_katalog.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/string_normalize.dart';
 
 /// Fragt einen in ein Artefakt gesprochenen Zauber ab.
 ///
@@ -24,7 +24,8 @@ Future<ArtefaktZauber?> zeigeArtefaktZauberDialog(
   BuildContext context, {
   ArtefaktZauber? start,
 }) {
-  // Vor dem Öffnen ermitteln: Der Dialog liegt außerhalb des Heldenbereichs.
+  // Die Dialogroute liegt außerhalb des Verwaltungsbereichs; die Helden-ID
+  // wird deshalb hier gelesen und mitgegeben.
   final heroId = PlanungsBearbeitungsBereich.heldVon(context);
   return showDialog<ArtefaktZauber>(
     context: context,
@@ -37,8 +38,7 @@ class _ArtefaktZauberDialog extends ConsumerStatefulWidget {
 
   final ArtefaktZauber? start;
 
-  /// Held, in dessen Bereich der Dialog geöffnet wurde; sein Regelprofil
-  /// bestimmt den Katalog. `null` außerhalb eines Heldenbereichs.
+  /// Held, dessen Katalog (Regelprofil) die Zauberauswahl liefert.
   final String? heroId;
 
   @override
@@ -303,22 +303,16 @@ class _ArtefaktZauberDialogState extends ConsumerState<_ArtefaktZauberDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final heroId = widget.heroId;
-    final katalog =
-        (heroId == null
-                ? ref.watch(rulesCatalogProvider)
-                : ref.watch(heroRulesCatalogProvider(heroId)))
-            .asData
-            ?.value;
+    final katalog = beobachteHeldenKatalog(ref, widget.heroId).asData?.value;
     final spellId = _zauber.spellId;
     final def = katalog == null || spellId == null
         ? null
         : katalog.spells.where((s) => s.id == spellId).firstOrNull;
-    final suchtext = _suche.text.trim().toLowerCase();
+    final suchtext = suchFaltung(_suche.text);
     final treffer = katalog == null || suchtext.isEmpty
         ? const <SpellDef>[]
         : katalog.spells
-              .where((s) => s.name.toLowerCase().contains(suchtext))
+              .where((s) => passtZurSuche(s.name, suchtext))
               .take(6)
               .toList(growable: false);
     return AlertDialog(

@@ -1,5 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/hero_stat_inputs.dart';
+
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_background.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
@@ -183,7 +187,7 @@ void main() {
       nachteileText: 'KO-2, KK+5',
     );
 
-    final effective = computeEffectiveAttributes(hero, catalog: null);
+    final effective = _effektiv(hero, null);
 
     expect(effective.mu, 11);
     expect(effective.kl, 9);
@@ -288,3 +292,13 @@ void main() {
     );
   });
 }
+
+/// Effektive Eigenschaften über die eine Quelle `computeHeroStatInputs`.
+Attributes _effektiv(HeroSheet held, RulesCatalog? katalog) =>
+    computeHeroStatInputs(
+      hero: held,
+      state: const HeroState.empty(),
+      talents: const [],
+      epicAdvantagesActive: false,
+      catalog: katalog,
+    ).effective;

@@ -260,7 +260,7 @@ Herleitung herleiteAusweichen({
       bezeichnung: kAusweichenIniBonusSchritt,
       betrag: iniBonus,
       art: HerleitungsArt.modifikator,
-      formel: '(Kampf-INI $kampfInitiative − 20) / 10, aufgerundet',
+      formel: 'Kampf-INI $kampfInitiative: über 20 +1, über 30 +2, über 40 +3',
     ),
     HerleitungsSchritt(
       bezeichnung: 'Manueller Mod',

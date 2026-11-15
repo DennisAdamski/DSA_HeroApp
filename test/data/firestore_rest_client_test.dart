@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -17,6 +18,21 @@ void main() {
   }
 
   group('FirestoreRestClient', () {
+    test('ein hängender Request endet mit SyncNetworkException', () async {
+      final haengt = MockClient((request) => Completer<http.Response>().future);
+      final schnell = FirestoreRestClient(
+        projectId: 'test-project',
+        idTokenProvider: () async => 'token-1',
+        zeitlimit: const Duration(milliseconds: 20),
+        httpClient: haengt,
+      );
+
+      await expectLater(
+        schnell.getDocument('users/user-1/heroes/h-1'),
+        throwsA(isA<SyncNetworkException>()),
+      );
+    });
+
     test('getDocument parses fields and updateTime', () async {
       final httpClient = MockClient((request) async {
         return http.Response(

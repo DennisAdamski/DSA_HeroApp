@@ -2,13 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
+import 'package:dsa_heldenverwaltung/domain/gefecht.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_companion.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_inventory_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_spielansicht.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_tragkraft_bonus.dart';
 import 'package:dsa_heldenverwaltung/domain/inventory_item_modifier.dart';
 import 'package:dsa_heldenverwaltung/domain/vitalwirkung.dart';
 import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
+import 'package:dsa_heldenverwaltung/state/gefecht_provider.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/test_support/fake_repository.dart';
 import 'package:dsa_heldenverwaltung/ui2/shell/karto_gefechts_adapter.dart';
@@ -490,6 +495,107 @@ void main() {
     expect(bestand.benutzt, isEmpty);
   });
 
+  group('Munition', () {
+    HeroSheet schuetze() => _held().copyWith(
+      combatConfig: const CombatConfig(
+        weapons: [
+          MainWeaponSlot(
+            id: 'w-bogen',
+            name: 'Kurzbogen',
+            combatType: WeaponCombatType.ranged,
+            rangedProfile: RangedWeaponProfile(
+              projectiles: [
+                RangedProjectile(id: 'p-pfeil', name: 'Pfeile', count: 2),
+              ],
+              selectedProjectileIndex: 0,
+            ),
+          ),
+        ],
+      ),
+    );
+
+    int bestand(HeroSheet held) => held
+        .combatConfig
+        .weaponSlots
+        .single
+        .rangedProfile
+        .projectiles
+        .single
+        .count;
+
+    testWidgets('ohne Fernkampfwaffe kein Abschnitt', (tester) async {
+      await zeige(tester, _held());
+      expect(find.text('Munition'), findsNothing);
+    });
+
+    testWidgets('zeigt Geschoss, Waffe und Bestand', (tester) async {
+      await zeige(tester, schuetze());
+      await tester.ensureVisible(_k('karto-dabei-munition-0'));
+      expect(find.text('Munition'), findsOneWidget);
+      expect(find.text('Pfeile'), findsOneWidget);
+      expect(find.text('Kurzbogen · aktiv'), findsOneWidget);
+      expect(tester.widget<Text>(_k('karto-dabei-munition-0-menge')).data, '2');
+    });
+
+    testWidgets('Schritte zählen alle und führen das Inventar mit', (
+      tester,
+    ) async {
+      final aufbau = await zeige(tester, schuetze());
+      final minus = _k('karto-dabei-munition-0-minus');
+      await tester.ensureVisible(minus);
+      await tester.tap(minus);
+      await tester.tap(minus);
+      await tester.pumpAndSettle();
+      final gespeichert = (await aufbau.repo.loadHeroById('praiodan'))!;
+      expect(bestand(gespeichert), 0);
+      // Der verknüpfte Inventareintrag folgt dem Slot.
+      final eintrag = gespeichert.inventoryEntries.singleWhere(
+        (e) => e.source == InventoryItemSource.geschoss,
+      );
+      expect(eintrag.anzahl, '0');
+      expect(gespeichert.dukaten, '12,5');
+      expect(tester.widget<Text>(_k('karto-dabei-munition-0-menge')).data, '0');
+      // Leer: Minus gesperrt, Plus bleibt.
+      await tippe(tester, minus);
+      expect(bestand((await aufbau.repo.loadHeroById('praiodan'))!), 0);
+      await tippe(tester, _k('karto-dabei-munition-0-plus'));
+      expect(bestand((await aufbau.repo.loadHeroById('praiodan'))!), 1);
+    });
+
+    testWidgets('schmal mit Schrift 2 ohne Überlauf', (tester) async {
+      await zeige(tester, schuetze(), breite: 360, skalierung: 2);
+      await tester.ensureVisible(_k('karto-dabei-munition-0'));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('ein laufendes Gefecht sperrt die Munition', (tester) async {
+      final aufbau = await zeige(tester, schuetze());
+      aufbau.container
+          .read(gefechtProvider('praiodan').notifier)
+          .setzen(const Gefechtszustand(iniWurf: 6, dk: 'N'));
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(_k('karto-dabei-munition-gefecht'));
+      await tippe(tester, _k('karto-dabei-munition-0-plus'));
+      expect(bestand((await aufbau.repo.loadHeroById('praiodan'))!), 2);
+      // Geld bleibt bedienbar.
+      await tippe(tester, _k('karto-dabei-geld-d-plus'));
+      expect((await aufbau.repo.loadHeroById('praiodan'))!.dukaten, '13,5');
+    });
+
+    testWidgets('eine offene Planung sperrt auch die Munition', (tester) async {
+      final held = schuetze();
+      final aufbau = await zeige(tester, held);
+      aufbau.container
+          .read(advancementSessionProvider('praiodan').notifier)
+          .start(hero: held, catalog: testCatalog);
+      await tester.pumpAndSettle();
+      await tippe(tester, _k('karto-dabei-munition-0-plus'));
+      expect(bestand((await aufbau.repo.loadHeroById('praiodan'))!), 2);
+      expect(_k('karto-dabei-munition-gefecht'), findsNothing);
+    });
+  });
+
   testWidgets('eine offene Planung sperrt alle Schritte', (tester) async {
     final held = _held();
     final aufbau = await zeige(tester, held);
@@ -505,6 +611,259 @@ void main() {
     final gespeichert = (await aufbau.repo.loadHeroById('praiodan'))!;
     expect(gespeichert.dukaten, '12,5');
     expect(gespeichert.inventoryEntries.first.menge, 3);
+  });
+
+  group('Verbrauchsgegenstände von Begleitern', () {
+    HeroInventoryEntry beiBegleiter(String name, int menge, String traegerId) =>
+        HeroInventoryEntry(
+          gegenstand: name,
+          anzahl: '$menge',
+          menge: menge,
+          instanzId: 'id-$name',
+          itemType: InventoryItemType.verbrauchsgegenstand,
+          traegerTyp: InventoryTraeger.begleiter,
+          traegerId: traegerId,
+        );
+
+    HeroSheet heldMit() =>
+        _held(
+          dukaten: '0',
+          eintraege: [
+            _verbrauch('Fackel', 3),
+            beiBegleiter('Hafer', 5, 'b1'),
+            beiBegleiter('Wasser', 2, 'b1'),
+            beiBegleiter('Futter', 4, 'b2'),
+          ],
+        ).copyWith(
+          companions: const [
+            HeroCompanion(id: 'b1', name: 'Rosinante'),
+            HeroCompanion(id: 'b2', name: 'Falke'),
+          ],
+        );
+
+    testWidgets('zeigt je Begleiter eine Gruppe, getrennt vom Helden', (
+      tester,
+    ) async {
+      await zeige(tester, heldMit());
+      await tester.ensureVisible(_k('karto-dabei-begleiter-0'));
+      expect(
+        tester.widget<Text>(_k('karto-dabei-begleiter-0')).data,
+        'Beim Begleiter: Rosinante',
+      );
+      expect(
+        tester.widget<Text>(_k('karto-dabei-begleiter-1')).data,
+        'Beim Begleiter: Falke',
+      );
+      expect(find.text('Hafer'), findsOneWidget);
+      expect(find.text('Futter'), findsOneWidget);
+      // Der Held behält seine eigene Liste, ohne „Benutzen“ am Begleiter.
+      expect(tester.widget<Text>(_k('karto-dabei-0-menge')).data, '3');
+      expect(
+        tester.widget<Text>(_k('karto-dabei-begleiter-0-0-menge')).data,
+        '5',
+      );
+      expect(_k('karto-dabei-begleiter-0-0-benutzen'), findsNothing);
+    });
+
+    testWidgets(
+      '−/+ zählt vom gespeicherten Wert und ändert nur diesen Eintrag',
+      (tester) async {
+        final aufbau = await zeige(tester, heldMit());
+        final minus = _k('karto-dabei-begleiter-0-0-minus');
+        await tester.ensureVisible(minus);
+        await tester.tap(minus);
+        await tester.tap(minus);
+        await tester.pumpAndSettle();
+        final gespeichert = (await aufbau.repo.loadHeroById('praiodan'))!;
+        final hafer = gespeichert.inventoryEntries.firstWhere(
+          (e) => e.gegenstand == 'Hafer',
+        );
+        expect(hafer.menge, 3);
+        expect(hafer.anzahl, '3');
+        // Träger bleibt der Begleiter, alles andere unberührt.
+        expect(hafer.traegerTyp, InventoryTraeger.begleiter);
+        expect(hafer.traegerId, 'b1');
+        expect(
+          gespeichert.inventoryEntries
+              .firstWhere((e) => e.gegenstand == 'Wasser')
+              .menge,
+          2,
+        );
+        expect(
+          gespeichert.inventoryEntries
+              .firstWhere((e) => e.gegenstand == 'Fackel')
+              .menge,
+          3,
+        );
+        expect(
+          tester.widget<Text>(_k('karto-dabei-begleiter-0-0-menge')).data,
+          '3',
+        );
+
+        await tippe(tester, _k('karto-dabei-begleiter-1-0-plus'));
+        expect(
+          (await aufbau.repo.loadHeroById('praiodan'))!.inventoryEntries
+              .firstWhere((e) => e.gegenstand == 'Futter')
+              .menge,
+          5,
+        );
+      },
+    );
+
+    testWidgets('ohne Begleiterlast gibt es keine Gruppe', (tester) async {
+      await zeige(tester, _held());
+      expect(_k('karto-dabei-begleiter-0'), findsNothing);
+    });
+
+    testWidgets('eine offene Planung sperrt auch die Begleiterzeilen', (
+      tester,
+    ) async {
+      final held = heldMit();
+      final aufbau = await zeige(tester, held);
+      aufbau.container
+          .read(advancementSessionProvider('praiodan').notifier)
+          .start(hero: held, catalog: testCatalog);
+      await tester.pumpAndSettle();
+      await tippe(tester, _k('karto-dabei-begleiter-0-0-minus'));
+      expect(
+        (await aufbau.repo.loadHeroById('praiodan'))!.inventoryEntries
+            .firstWhere((e) => e.gegenstand == 'Hafer')
+            .menge,
+        5,
+      );
+    });
+  });
+
+  group('Belastung (Last und Tragkraft)', () {
+    HeroInventoryEntry schwer(int gramm) => HeroInventoryEntry(
+      gegenstand: 'Amboss',
+      anzahl: '1',
+      menge: 1,
+      instanzId: 'amboss',
+      gewichtGramm: gramm,
+    );
+
+    String text(WidgetTester tester, String schluessel) =>
+        tester.widget<Text>(_k(schluessel)).data!;
+
+    String tipp(WidgetTester tester) => tester
+        .widget<Tooltip>(
+          find
+              .ancestor(
+                of: _k('karto-dabei-last'),
+                matching: find.byType(Tooltip),
+              )
+              .first,
+        )
+        .message!;
+
+    testWidgets('eine Zeile Last, die Herleitung steht im Tooltip', (
+      tester,
+    ) async {
+      await zeige(tester, _held(eintraege: [schwer(4500)], dukaten: '0'));
+      await tester.ensureVisible(_k('karto-dabei-last'));
+      expect(text(tester, 'karto-dabei-last'), '4,5 / 13 Stein');
+      expect(tipp(tester), 'Tragkraft 13 (Körperkraft)');
+      expect(_k('karto-dabei-last-hinweis'), findsNothing);
+      // Die Quellen pflegt der Inventar-Tab.
+      expect(find.text('+ Bärenrune'), findsNothing);
+      expect(find.text('+ Andere Tragkraftquelle'), findsNothing);
+    });
+
+    testWidgets('über der Tragkraft steht BE +n, die Folge im Tooltip', (
+      tester,
+    ) async {
+      await zeige(
+        tester,
+        _held(
+          dukaten: '0',
+          eintraege: [
+            schwer(14000),
+            const HeroInventoryEntry(gegenstand: 'Beutel', instanzId: 'b'),
+          ],
+        ),
+      );
+      await tester.ensureVisible(_k('karto-dabei-last'));
+      // Ein Eintrag ohne Gewicht: die Last ist ein Mindestwert.
+      expect(text(tester, 'karto-dabei-last'), '≥ 14 / 13 Stein');
+      expect(text(tester, 'karto-dabei-last-hinweis'), 'BE +1');
+      expect(tipp(tester), contains('im Marsch'));
+      expect(tipp(tester), contains('1 getragener Eintrag hat kein Gewicht'));
+    });
+
+    testWidgets('Tragkraftquellen zählen mit, ohne hier zu stehen', (
+      tester,
+    ) async {
+      // Ohne Eintrag ohne Gewicht ist die Last exakt (kein "≥").
+      final held = _held(dukaten: '0', eintraege: const []).copyWith(
+        tragkraftBoni: const [
+          HeroTragkraftBonus(id: 'a', name: 'Rune', stein: 70, kk: 1),
+        ],
+      );
+      await zeige(tester, held);
+      await tester.ensureVisible(_k('karto-dabei-last'));
+      // 13 + 1 + 70
+      expect(text(tester, 'karto-dabei-last'), '0 / 84 Stein');
+      expect(find.text('Rune'), findsNothing);
+    });
+
+    testWidgets('Erschöpfung und Überanstrengung stehen nebeneinander', (
+      tester,
+    ) async {
+      await zeige(tester, _held());
+      expect(_k('karto-dabei-stufen-nebeneinander'), findsOneWidget);
+      final e = tester.getTopLeft(_k('karto-dabei-erschoepfung-menge'));
+      final u = tester.getTopLeft(_k('karto-dabei-ueberanstrengung-menge'));
+      expect(u.dy, e.dy);
+      expect(u.dx, greaterThan(e.dx));
+    });
+
+    testWidgets(
+      'Erschöpfung und Überanstrengung zählen vom gespeicherten Wert',
+      (tester) async {
+        final aufbau = await zeige(tester, _held());
+        final plus = _k('karto-dabei-erschoepfung-plus');
+        await tester.ensureVisible(plus);
+        await tester.tap(plus);
+        await tester.tap(plus);
+        await tester.pumpAndSettle();
+        expect((await aufbau.repo.loadHeroState('praiodan'))!.erschoepfung, 2);
+        expect(text(tester, 'karto-dabei-erschoepfung-menge'), '2');
+
+        await tippe(tester, _k('karto-dabei-erschoepfung-minus'));
+        expect((await aufbau.repo.loadHeroState('praiodan'))!.erschoepfung, 1);
+
+        await tippe(tester, _k('karto-dabei-ueberanstrengung-plus'));
+        final zustand = (await aufbau.repo.loadHeroState('praiodan'))!;
+        expect(zustand.ueberanstrengung, 1);
+        expect(zustand.erschoepfung, 1);
+        // Der Bogen bleibt unberührt.
+        expect((await aufbau.repo.loadHeroById('praiodan'))!.dukaten, '12,5');
+      },
+    );
+
+    testWidgets('Minus ist bei 0 gesperrt', (tester) async {
+      final aufbau = await zeige(tester, _held());
+      await tippe(tester, _k('karto-dabei-erschoepfung-minus'));
+      expect(
+        (await aufbau.repo.loadHeroState('praiodan'))?.erschoepfung ?? 0,
+        0,
+      );
+    });
+
+    testWidgets('während einer Planung zählen die Stufen weiter', (
+      tester,
+    ) async {
+      final held = _held(dukaten: '0');
+      final aufbau = await zeige(tester, held);
+      aufbau.container
+          .read(advancementSessionProvider('praiodan').notifier)
+          .start(hero: held, catalog: testCatalog);
+      await tester.pumpAndSettle();
+
+      await tippe(tester, _k('karto-dabei-erschoepfung-plus'));
+      expect((await aufbau.repo.loadHeroState('praiodan'))!.erschoepfung, 1);
+    });
   });
 }
 

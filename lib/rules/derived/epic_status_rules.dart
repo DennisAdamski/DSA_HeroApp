@@ -9,6 +9,13 @@
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 
+/// Punkte, die beim Aktivieren auf die Eigenschafts-Obergrenzen verteilt
+/// werden (Hausregel „Epische Stufen“, Kap. 2.1).
+const int kEpischeObergrenzenPunkte = 5;
+
+/// Höchster Obergrenzen-Bonus einer einzelnen Eigenschaft.
+const int kEpischerObergrenzenBonusJeEigenschaft = 2;
+
 /// Setzt den epischen Status des Helden.
 ///
 /// `epicStartAp` ist der aktuelle AP-Verbrauch, `epicUnactivatedTalentIds`

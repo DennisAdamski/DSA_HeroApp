@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 
+import 'package:dsa_heldenverwaltung/ui2/foundation/karto_bewegung.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
 import 'package:dsa_heldenverwaltung/ui2/spielen/karto_kachelgroesse.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
@@ -99,10 +101,12 @@ class KartoAbschnitt extends StatelessWidget {
                   children: [
                     Flexible(child: titelBlock),
                     const SizedBox(width: Abstand.knapp),
-                    Icon(
-                      Icons.open_in_full,
-                      size: 14,
-                      color: karto.schriftLeise,
+                    _BeiBedarf(
+                      child: Icon(
+                        Icons.open_in_full,
+                        size: 14,
+                        color: karto.schriftLeise,
+                      ),
                     ),
                   ],
                 ),
@@ -178,24 +182,31 @@ class KartoAbschnitt extends StatelessWidget {
       ),
     );
     final kante = akzent?.kante(karto);
-    if (kante == null) return flaeche;
     // Eine einseitige Kante vertraegt keinen Radius an der Dekoration; sie
     // liegt deshalb als Leiste ueber der Flaeche und wird mit ihr gerundet.
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(kKartoRadius),
-      child: Stack(
-        children: [
-          flaeche,
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            height: 3,
-            child: ColoredBox(color: kante),
-          ),
-        ],
-      ),
-    );
+    final kachel = kante == null
+        ? flaeche
+        : ClipRRect(
+            borderRadius: BorderRadius.circular(kKartoRadius),
+            child: Stack(
+              // Reicht die Vorgaben durch: dehnt das Raster die Kachel
+              // (Lückenschluss), füllt die Fläche die ganze Höhe.
+              fit: StackFit.passthrough,
+              children: [
+                flaeche,
+                Positioned(
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: 3,
+                  child: ColoredBox(color: kante),
+                ),
+              ],
+            ),
+          );
+    // Nur der äußerste Abschnitt einer Kachel blendet seine Kopf-Bedienung
+    // bei Bedarf ein.
+    return steuerung == null ? kachel : _Kachelzeiger(child: kachel);
   }
 
   // Der Einklappknopf steht neben Titel und Kopfaktion, nicht in deren
@@ -212,17 +223,106 @@ class KartoAbschnitt extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(child: kopfzeile),
-        IconButton(
-          key: ValueKey<String>('karto-kachel-${steuerung.kennung}-einklappen'),
-          tooltip: eingeklappt ? '$titel aufklappen' : '$titel einklappen',
-          visualDensity: VisualDensity.compact,
-          icon: Icon(
-            eingeklappt ? Icons.expand_more : Icons.expand_less,
-            color: karto.schriftLeise,
+        // Eingeklappt bleibt der Pfeil stehen: er ist dann der einzige
+        // Hinweis, dass die Kachel mehr enthält.
+        _BeiBedarf(
+          immer: eingeklappt,
+          child: IconButton(
+            key: ValueKey<String>(
+              'karto-kachel-${steuerung.kennung}-einklappen',
+            ),
+            tooltip: eingeklappt ? '$titel aufklappen' : '$titel einklappen',
+            visualDensity: VisualDensity.compact,
+            icon: Icon(
+              eingeklappt ? Icons.expand_more : Icons.expand_less,
+              color: karto.schriftLeise,
+            ),
+            onPressed: () => einklappen(!eingeklappt),
           ),
-          onPressed: () => einklappen(!eingeklappt),
         ),
       ],
+    );
+  }
+}
+
+/// Merkt, ob der Zeiger über einer Kachel steht oder der Fokus in ihr liegt.
+///
+/// [_BeiBedarf] blendet danach die Kopf-Bedienung (Vergrößern, Einklappen)
+/// ein. So zeigt eine Seite mit vielen Kacheln nicht an jeder dauerhaft zwei
+/// Bediensymbole.
+class _Kachelzeiger extends StatefulWidget {
+  const _Kachelzeiger({required this.child});
+
+  final Widget child;
+
+  @override
+  State<_Kachelzeiger> createState() => _KachelzeigerState();
+}
+
+class _KachelzeigerState extends State<_Kachelzeiger> {
+  final ValueNotifier<bool> _aktiv = ValueNotifier<bool>(false);
+  bool _zeiger = false;
+  bool _fokus = false;
+
+  void _setze({bool? zeiger, bool? fokus}) {
+    _zeiger = zeiger ?? _zeiger;
+    _fokus = fokus ?? _fokus;
+    _aktiv.value = _zeiger || _fokus;
+  }
+
+  @override
+  void dispose() {
+    _aktiv.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (_) => _setze(zeiger: true),
+      onExit: (_) => _setze(zeiger: false),
+      child: Focus(
+        // Nimmt selbst keinen Fokus; meldet nur den der Bedienelemente darin.
+        canRequestFocus: false,
+        skipTraversal: true,
+        onFocusChange: (fokus) => _setze(fokus: fokus),
+        child: _KachelzeigerScope(notifier: _aktiv, child: widget.child),
+      ),
+    );
+  }
+}
+
+class _KachelzeigerScope extends InheritedNotifier<ValueNotifier<bool>> {
+  const _KachelzeigerScope({required super.notifier, required super.child});
+}
+
+/// Blendet [child] nur ein, solange die Kachel den Zeiger oder Fokus hat.
+///
+/// Ohne angeschlossene Maus (Touch-Geräte) bleibt [child] immer sichtbar,
+/// weil es dort kein Hover gibt. Ausgeblendet bleibt es im Baum und
+/// bedienbar: ein Klick auf die Stelle oder der Tabulator erreicht es weiter.
+class _BeiBedarf extends StatelessWidget {
+  const _BeiBedarf({required this.child, this.immer = false});
+
+  final Widget child;
+
+  /// Hält [child] unabhängig vom Zeiger sichtbar.
+  final bool immer;
+
+  @override
+  Widget build(BuildContext context) {
+    final scope = context
+        .dependOnInheritedWidgetOfExactType<_KachelzeigerScope>();
+    final maus = RendererBinding.instance.mouseTracker.mouseIsConnected;
+    final sichtbar =
+        immer || scope == null || !maus || (scope.notifier?.value ?? true);
+    return AnimatedOpacity(
+      opacity: sichtbar ? 1 : 0,
+      duration: kartoDauer(context, Bewegung.kurz),
+      curve: Bewegung.kurve,
+      // Auch ausgeblendet für Vorleseprogramme vorhanden.
+      alwaysIncludeSemantics: true,
+      child: child,
     );
   }
 }

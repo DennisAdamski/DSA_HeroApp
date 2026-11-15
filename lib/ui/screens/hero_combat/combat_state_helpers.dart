@@ -124,24 +124,27 @@ extension _CombatStateHelpers on _HeroCombatTabState {
       return;
     }
 
-    // Katalog, nach dem der Held rechnet (Regelprofil), nicht der allgemeine.
-    final catalog = ref
-        .read(heroRulesCatalogProvider(widget.heroId))
-        .valueOrNull;
-    if (catalog == null) {
-      // Nie auf `.future` warten (endet bei einem Fehler nicht): Im
-      // geöffneten Editor ist der Katalog des Helden geladen; sonst wird
-      // nicht ungeprüft gespeichert.
+    // Held-gebundener Katalog (Regelprofil); Warten über das Abo, damit ein
+    // Ladefehler das Speichern beendet statt es hängen zu lassen.
+    final RulesCatalog catalog;
+    try {
+      catalog = await warteAufAsyncWert(
+        ref,
+        heroRulesCatalogProvider(widget.heroId),
+      );
+    } on Object catch (error) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text(
-              'Der Regelkatalog ist noch nicht geladen. Bitte gleich '
-              'erneut speichern.',
+              'Speichern nicht möglich, Regelkatalog fehlt: $error',
             ),
           ),
         );
       }
+      return;
+    }
+    if (!mounted) {
       return;
     }
     final weaponValidation = pruefeKampfSlots(
@@ -335,15 +338,5 @@ extension _CombatStateHelpers on _HeroCombatTabState {
       normalized.add(trimmed);
     }
     return List<String>.unmodifiable(normalized);
-  }
-
-  String _normalizeToken(String raw) {
-    var value = raw.trim().toLowerCase();
-    value = value
-        .replaceAll(String.fromCharCode(228), 'ae')
-        .replaceAll(String.fromCharCode(246), 'oe')
-        .replaceAll(String.fromCharCode(252), 'ue')
-        .replaceAll(String.fromCharCode(223), 'ss');
-    return value.replaceAll(RegExp(r'[^a-z0-9]+'), '');
   }
 }

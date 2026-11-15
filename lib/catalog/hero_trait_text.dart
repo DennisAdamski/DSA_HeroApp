@@ -1,4 +1,5 @@
 import 'package:dsa_heldenverwaltung/catalog/hero_trait_def.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/string_normalize.dart';
 
 /// Zerlegt den gespeicherten Vorteil-/Nachteil-Text in einzelne Fragmente.
 ///
@@ -35,7 +36,7 @@ String serializeHeroTraitFragments(Iterable<String> fragments) {
 
 /// Prüft, ob ein Textfragment durch einen der Katalogeinträge abgedeckt ist.
 bool isKnownHeroTraitFragment(String fragment, Iterable<HeroTraitDef> traits) {
-  final normalizedFragment = _normalizeTraitText(fragment);
+  final normalizedFragment = vergleichsSchluessel(fragment);
   if (normalizedFragment.isEmpty) {
     return false;
   }
@@ -206,8 +207,8 @@ List<String> mergeHeroTraitFragment({
     if (existing == null || existing.value == null) {
       continue;
     }
-    if (_normalizeTraitText(existing.choice) !=
-        _normalizeTraitText(incoming.choice)) {
+    if (vergleichsSchluessel(existing.choice) !=
+        vergleichsSchluessel(incoming.choice)) {
       continue;
     }
     result[index] = buildHeroTraitSelectionText(
@@ -240,12 +241,12 @@ bool _matchesTraitFragment(String normalizedFragment, HeroTraitDef trait) {
 
 Set<String> _normalizedPatternsForTrait(HeroTraitDef trait) {
   final patterns = <String>{};
-  patterns.add(_normalizeTraitText(trait.name));
+  patterns.add(vergleichsSchluessel(trait.name));
   final template = trait.selectionTemplate.trim();
   if (template.isNotEmpty) {
-    patterns.add(_normalizeTraitText(_templatePrefix(template)));
+    patterns.add(vergleichsSchluessel(_templatePrefix(template)));
   }
-  patterns.add(_normalizeTraitText(_namePrefix(trait.name)));
+  patterns.add(vergleichsSchluessel(_namePrefix(trait.name)));
   return patterns;
 }
 
@@ -262,14 +263,4 @@ String _namePrefix(String name) {
   result = result.replaceAll(RegExp(r'\([^)]*\)'), '').trim();
   result = result.replaceAll(RegExp(r'\s+'), ' ').trim();
   return result;
-}
-
-String _normalizeTraitText(String value) {
-  var text = value.toLowerCase().trim();
-  text = text
-      .replaceAll(String.fromCharCode(228), 'ae')
-      .replaceAll(String.fromCharCode(246), 'oe')
-      .replaceAll(String.fromCharCode(252), 'ue')
-      .replaceAll(String.fromCharCode(223), 'ss');
-  return text.replaceAll(RegExp(r'[^a-z0-9]+'), ' ').trim();
 }

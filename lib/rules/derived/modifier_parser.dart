@@ -5,6 +5,7 @@ import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/direkter_modifikator_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_herkunft_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/hero_merkmal_wirkung_rules.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/magic_status_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_parse_result.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/modifier_text_parser.dart';
 
@@ -56,10 +57,14 @@ ModifierParseResult parseModifierTextsForHero(
     _modifierParseCache[key] = parsed;
   }
   final herkunft = werteHerkunftAus(hero.background).gesamt;
-  return mitMerkmalWirkungen(
+  final ergebnis = mitMerkmalWirkungen(
     _mitHerkunft(herkunft, parsed),
     merkmale.wirkungen,
   );
+  // Nur epische Helden brauchen den Status (AsP-Stufenbonus); die Erkennung
+  // läuft über die gleiche Zusammenführung wie die Magieeinrichtung.
+  if (!hero.isEpisch || catalog == null) return ergebnis;
+  return ergebnis.mitZaubererStatus(detectMagicStatus(hero, catalog));
 }
 
 // Addiert das Herkunftsergebnis auf das Textergebnis von Vor-/Nachteilen.
@@ -101,19 +106,6 @@ ModifierParseResult mitMerkmalWirkungen(
     hasLinkshaenderFromVorteile:
         parsed.hasLinkshaenderFromVorteile || wirkungen.linkshaender,
     unknownFragments: parsed.unknownFragments,
-  );
-}
-
-/// Berechnet effektive Attribute inklusive Textmodifikatoren.
-Attributes computeEffectiveAttributes(
-  HeroSheet hero, {
-  AttributeModifiers tempAttributeMods = const AttributeModifiers(),
-  required RulesCatalog? catalog,
-}) {
-  final parsed = parseModifierTextsForHero(hero, catalog: catalog);
-  return applyAttributeModifiers(
-    hero.attributes,
-    parsed.attributeMods + tempAttributeMods,
   );
 }
 

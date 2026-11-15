@@ -123,7 +123,8 @@ einen Themenindex; Details stehen nach Thema in [docs/hinweise/](docs/hinweise/)
   [ARCH-06-Abnahme](docs/arch06_abnahme.md), [Magische Kenntnisse](docs/magische_kenntnisse.md),
   [Spielmodus](docs/spielmodus_konzept.md), [Feedback](docs/feedback_github_plan.md),
   [Kurzregel-Kompendium](docs/kurzregeln_redaktion.md),
-  [Reiseroute](docs/reiseroute_plan.md).
+  [Reiseroute](docs/reiseroute_plan.md) mit
+  [Kartenzugang Avesmaps](docs/avesmaps_kartenzugang.md).
 - Assets: [Waffensymbole](docs/fantasy_weapon_assets.md),
   [Fantasy-Assets](docs/fantasy_assets.md). Mockups: [docs/mockups/](docs/mockups/README.md).
 - Die frühere lange Einstiegsliste steht in

@@ -5,8 +5,10 @@ import 'package:flutter/rendering.dart';
 
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_bewegung.dart';
 import 'package:dsa_heldenverwaltung/ui2/foundation/karto_spacing.dart';
+import 'package:dsa_heldenverwaltung/ui2/foundation/karto_stroke.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
+import 'package:dsa_heldenverwaltung/ui2/widgets/karto_flaeche.dart';
 
 /// Darstellender Ressourcenwert mit Balken.
 ///
@@ -197,20 +199,37 @@ class KartoRessourcenwert extends StatelessWidget {
           ),
           if (onSchritt != null) ...[
             const SizedBox(height: Abstand.normal),
-            Row(
-              children: [
-                for (final (i, schritt) in schritte.indexed) ...[
-                  if (i > 0) const SizedBox(width: Abstand.eng),
-                  Expanded(
-                    child: _SchrittKnopf(
-                      schluesselTeil: 'karto-ressource-${schluessel ?? 'wert'}',
-                      bezeichnung: bezeichnung,
-                      schritt: schritt,
-                      onSchritt: onSchritt!,
-                    ),
-                  ),
-                ],
-              ],
+            // Eine zusammenhängende, zurückgesetzte Leiste statt vier
+            // umrandeter Kästen: bei drei oder vier Ressourcen stünden sonst
+            // zwölf bis sechzehn Rahmen nebeneinander.
+            KartoFlaeche(
+              stufe: KartoFlaechenstufe.senke,
+              kante: null,
+              klein: true,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(kKartoRadiusKlein),
+                child: Row(
+                  children: [
+                    for (final (i, schritt) in schritte.indexed) ...[
+                      if (i > 0)
+                        SizedBox(
+                          width: Strich.hoehenlinie,
+                          height: 20,
+                          child: ColoredBox(color: karto.hoehenlinie),
+                        ),
+                      Expanded(
+                        child: _SchrittKnopf(
+                          schluesselTeil:
+                              'karto-ressource-${schluessel ?? 'wert'}',
+                          bezeichnung: bezeichnung,
+                          schritt: schritt,
+                          onSchritt: onSchritt!,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
             ),
           ],
         ],
@@ -231,9 +250,9 @@ class KartoRessourcenwert extends StatelessWidget {
   }
 }
 
-/// Ein Knopf der Schrittreihe unter dem Balken.
+/// Ein Segment der Schrittleiste unter dem Balken.
 ///
-/// Mindestens 48 dp hoch; die Breite teilen sich die vier Knoepfe der Reihe.
+/// Mindestens 48 dp hoch; die Breite teilen sich die vier Segmente der Leiste.
 /// Das Minuszeichen ist das echte „−“ (U+2212), nicht der Bindestrich.
 class _SchrittKnopf extends StatelessWidget {
   const _SchrittKnopf({
@@ -255,14 +274,15 @@ class _SchrittKnopf extends StatelessWidget {
     final name = schritt < 0 ? 'minus-${-schritt}' : 'plus-$schritt';
     return Tooltip(
       message: '$bezeichnung $beschriftung',
-      child: OutlinedButton(
+      child: TextButton(
         key: ValueKey<String>('$schluesselTeil-$name'),
         onPressed: () => onSchritt(schritt),
-        style: OutlinedButton.styleFrom(
+        style: TextButton.styleFrom(
           minimumSize: const Size(0, 48),
           padding: EdgeInsets.zero,
           foregroundColor: karto.schrift,
-          side: BorderSide(color: karto.hoehenlinie),
+          // Die Leiste rundet; die Segmente selbst sind eckig.
+          shape: const RoundedRectangleBorder(),
         ),
         child: Text(beschriftung),
       ),

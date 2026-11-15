@@ -9,13 +9,7 @@ import 'package:dsa_heldenverwaltung/catalog/reittier_ausbildung_katalog.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_companion/reittier_ausbildungsstufe.dart';
 
 import 'begleiter_kampfprofil_rules.dart';
-
-/// Wert mit Vorzeichen und typografischem Minus („+3“, „−1“, „±0“).
-String mitVorzeichen(int wert) => switch (wert) {
-  > 0 => '+$wert',
-  < 0 => '−${-wert}',
-  _ => '±0',
-};
+import 'modifier_fragment_text.dart';
 
 /// Kurztext aller Änderungen, z. B. „LO +4 · AT +1 · TP (Tritt) +1“;
 /// leer, wenn nichts geändert wird.

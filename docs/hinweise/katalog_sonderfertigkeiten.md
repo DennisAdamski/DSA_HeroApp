@@ -202,7 +202,9 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   werden vor PBKDF2 NFC-normalisiert, damit Eingaben mit Umlauten
   unabhaengig von NFC/NFD-Codepoint-Repraesentation funktionieren.
 - **Regelbuch-Langtexte nie im Klartext einchecken.** Neue oder neu importierte
-  Texte aus Regelwerken (`erklarung_lang`, `wirkung`, `variants`, ...) gehen
+  Texte aus Regelwerken (`erklarung_lang`, `wirkung`, `variants`, auch eigene
+  Zusammenfassungen wie `kurzregeln.json`/`kurztext` oder
+  `kraeuter.json`/`beschreibung`, ...) gehen
   nur verschluesselt ins Repo: Feld in `PROTECTED_FIELDS` von
   `tool/encrypt_catalog_fields.py` und in
   `test/catalog/geschuetzte_langtexte_test.dart` eintragen, dann

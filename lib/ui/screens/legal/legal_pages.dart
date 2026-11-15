@@ -156,18 +156,44 @@ class PrivacyPolicyScreen extends StatelessWidget {
               'https://developers.openai.com/api/docs/guides/your-data',
         ),
         const _LegalSection(
-          title: '6. Empfänger und Drittlandtransfers',
+          title: '6. Ortsdaten von Avesmaps',
+          text:
+              'Wenn du ein Ortsfeld (Standort, Station der Reiseroute) oder '
+              'die Reiseroute öffnest oder in der Standort-Kachel '
+              '„Kartendaten laden“ wählst, ruft die App das Ortsverzeichnis '
+              'des Fanprojekts Avesmaps (avesmaps.de) ab, höchstens einmal '
+              'täglich, und speichert es lokal. Danach lädt die '
+              'Standort-Kachel zum Standort dessen Gebiete und Wiki-Artikel '
+              '(nur die Kennung des Orts wird gesendet). Liegt das '
+              'Verzeichnis noch nicht vor, sendet die App stattdessen den '
+              'eingegebenen Ortsnamen als Suchanfrage. Dabei erhält der '
+              'Betreiber von '
+              'Avesmaps technisch bedingt deine IP-Adresse und, in den Apps, '
+              'die Kennung „DSA_HeroApp“; im Browser die üblichen '
+              'Browserangaben. Heldendaten oder Kontodaten werden nicht '
+              'übertragen. Die Verarbeitung erfolgt für die von dir '
+              'aufgerufene Ortsauswahl. Ein Kartenbild lädt die App nicht '
+              'von avesmaps.de, sondern, sofern vorhanden, von einer '
+              'eigenen Firebase-Hosting-Seite dieser App; dabei fallen nur '
+              'die technisch nötigen Verbindungsdaten (IP-Adresse, '
+              'Browserangaben) an. Rechtsgrundlage für den Abruf der '
+              'Ortsdaten ist Art. 6 Abs. 1 lit. b DSGVO, für die '
+              'Auslieferung des Kartenbilds Art. 6 Abs. 1 lit. f DSGVO.',
+        ),
+        const _LegalSection(
+          title: '7. Empfänger und Drittlandtransfers',
           text:
               'Empfänger sind Google/Firebase für Authentifizierung, Hosting, '
               'Datenbank, Storage, Functions und App Check, GitHub für '
-              'öffentlich abgesendetes Feedback sowie OpenAI nur bei '
-              'freiwilliger Bildgenerierung. Dabei können Daten in den USA '
+              'öffentlich abgesendetes Feedback, OpenAI nur bei '
+              'freiwilliger Bildgenerierung sowie der Betreiber von Avesmaps '
+              'für den Abruf der Ortsdaten. Dabei können Daten in den USA '
               'verarbeitet werden. Maßgeblich sind die jeweiligen '
               'Verarbeitungsbedingungen, Angemessenheitsbeschlüsse und '
               'Standardvertragsklauseln.',
         ),
         const _LegalSection(
-          title: '7. Speicherdauer und Löschung',
+          title: '8. Speicherdauer und Löschung',
           text:
               'Lokale Daten bleiben bis zu ihrer Löschung in der App oder im '
               'Betriebssystem erhalten. Kontodaten, synchronisierte Helden, '
@@ -179,7 +205,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
               'Sicherheits- und Anbieterfristen.',
         ),
         _LegalSection(
-          title: '8. Deine Rechte',
+          title: '9. Deine Rechte',
           text:
               'Du hast nach Maßgabe der DSGVO insbesondere Rechte auf Auskunft, '
               'Berichtigung, Löschung, Einschränkung, Datenübertragbarkeit und '
@@ -190,9 +216,9 @@ class PrivacyPolicyScreen extends StatelessWidget {
               'Datenschutzaufsichtsbehörde.',
         ),
         const _LegalSection(
-          title: '9. Stand und Änderungen',
+          title: '10. Stand und Änderungen',
           text:
-              'Stand: 18. Oktober 2026. Bei neuen Telemetrie-, Analyse- oder '
+              'Stand: 13. November 2026. Bei neuen Telemetrie-, Analyse- oder '
               'Marketingfunktionen sowie bei geänderten Dienstleistern wird '
               'diese Erklärung vor deren Einsatz aktualisiert.',
         ),

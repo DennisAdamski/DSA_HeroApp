@@ -1,5 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/hero_stat_inputs.dart';
+
 import 'package:dsa_heldenverwaltung/domain/attribute_modifiers.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/bought_stats.dart';
@@ -7,7 +10,6 @@ import 'package:dsa_heldenverwaltung/domain/hero_sheet.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_state.dart';
 import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/derived_stats.dart';
-import 'package:dsa_heldenverwaltung/rules/derived/modifier_parser.dart';
 
 void main() {
   test('derived stats compute with current formulas and modifiers', () {
@@ -219,11 +221,18 @@ void main() {
     final basis = computeDerivedStats(ohne, state);
     final erhoeht = computeDerivedStats(mit, state);
 
-    expect(
-      computeEffectiveAttributes(mit, catalog: null).ko,
-      computeEffectiveAttributes(ohne, catalog: null).ko + 2,
-    );
+    expect(_effektiv(mit, null).ko, _effektiv(ohne, null).ko + 2);
     expect(erhoeht.maxLep, greaterThan(basis.maxLep));
     expect(erhoeht.maxAu, greaterThan(basis.maxAu));
   });
 }
+
+/// Effektive Eigenschaften über die eine Quelle `computeHeroStatInputs`.
+Attributes _effektiv(HeroSheet held, RulesCatalog? katalog) =>
+    computeHeroStatInputs(
+      hero: held,
+      state: const HeroState.empty(),
+      talents: const [],
+      epicAdvantagesActive: false,
+      catalog: katalog,
+    ).effective;

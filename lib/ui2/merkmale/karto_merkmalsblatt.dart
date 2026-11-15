@@ -25,6 +25,7 @@ import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_typography.dart';
 import 'package:dsa_heldenverwaltung/ui2/widgets/karto_flaeche.dart';
 import 'package:dsa_heldenverwaltung/ui2/widgets/karto_kartenraster.dart';
+import 'package:dsa_heldenverwaltung/rules/derived/trait_advancement_rules.dart';
 
 /// Öffnet das Merkmalsblatt eines Helden.
 ///

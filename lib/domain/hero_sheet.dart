@@ -2,6 +2,7 @@ import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/bought_stats.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart';
 import 'package:dsa_heldenverwaltung/domain/combat_config/inventar_verweise.dart';
+import 'package:dsa_heldenverwaltung/domain/copy_with_sentinel.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_appearance.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_adventure_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_advancement_entry.dart';
@@ -24,6 +25,7 @@ import 'package:dsa_heldenverwaltung/domain/hero_rituals.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_spielansicht.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_spell_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_talent_entry.dart';
+import 'package:dsa_heldenverwaltung/domain/hero_tragkraft_bonus.dart';
 import 'package:dsa_heldenverwaltung/domain/magic_special_ability.dart';
 import 'package:dsa_heldenverwaltung/domain/stat_modifiers.dart';
 import 'package:dsa_heldenverwaltung/domain/unbekannte_json_felder.dart';
@@ -101,6 +103,7 @@ class HeroSheet {
     this.probenFavoriten = const <HeroProbenFavorit>[],
     this.spielansicht,
     this.reiseStationen = const <HeroReiseStation>[],
+    this.tragkraftBoni = const <HeroTragkraftBonus>[],
     this.epicLockedWaffenmeisterCategories = const <String>{},
     this.epicUnactivatedTalentIds = const <String>{},
   }) : rawStartAttributes = rawStartAttributes ?? startAttributes ?? attributes,
@@ -260,6 +263,12 @@ class HeroSheet {
   /// behalten.
   final List<HeroReiseStation> reiseStationen;
 
+  /// Dauerhafte Tragkraftquellen wie eine Bärenrune (SPIEL-02).
+  ///
+  /// Nur Dauerhaftes, keine Kurzzeitzauber. Nur bei belegter Liste im JSON,
+  /// damit Bestandshelden ihren Inhalts-Hash behalten.
+  final List<HeroTragkraftBonus> tragkraftBoni;
+
   /// Waffenmeister-Kategorien, die beim Epic-Werden nicht erlernbar waren
   /// und daher auch nachtraeglich gesperrt bleiben.
   final Set<String> epicLockedWaffenmeisterCategories;
@@ -316,7 +325,7 @@ class HeroSheet {
     List<HeroAdvancementEntry>? advancementHistory,
     List<UnbekannterVerlaufseintrag>? unbekannteVerlaufseintraege,
     Map<String, Object?>? unbekannteFelder,
-    Object? lastModified = _copySentinel,
+    Object? lastModified = keepFieldValue,
     HeroAttributeSePool? attributeSePool,
     HeroStatSePool? statSePool,
     List<HeroCompanion>? companions,
@@ -329,11 +338,12 @@ class HeroSheet {
     int? epicStartAp,
     Attributes? epicAttributeMaxBonus,
     Attributes? epicMainAttributes,
-    Object? epicActivationPolicy = _copySentinel,
-    Object? regelProfil = _copySentinel,
+    Object? epicActivationPolicy = keepFieldValue,
+    Object? regelProfil = keepFieldValue,
     List<HeroProbenFavorit>? probenFavoriten,
-    Object? spielansicht = _copySentinel,
+    Object? spielansicht = keepFieldValue,
     List<HeroReiseStation>? reiseStationen,
+    List<HeroTragkraftBonus>? tragkraftBoni,
     Set<String>? epicLockedWaffenmeisterCategories,
     Set<String>? epicUnactivatedTalentIds,
   }) {
@@ -392,7 +402,7 @@ class HeroSheet {
       unbekannteVerlaufseintraege:
           unbekannteVerlaufseintraege ?? this.unbekannteVerlaufseintraege,
       unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
-      lastModified: identical(lastModified, _copySentinel)
+      lastModified: identical(lastModified, keepFieldValue)
           ? this.lastModified
           : lastModified as DateTime?,
       attributeSePool: attributeSePool ?? this.attributeSePool,
@@ -409,17 +419,18 @@ class HeroSheet {
       epicAttributeMaxBonus:
           epicAttributeMaxBonus ?? this.epicAttributeMaxBonus,
       epicMainAttributes: epicMainAttributes ?? this.epicMainAttributes,
-      epicActivationPolicy: identical(epicActivationPolicy, _copySentinel)
+      epicActivationPolicy: identical(epicActivationPolicy, keepFieldValue)
           ? this.epicActivationPolicy
           : epicActivationPolicy as String?,
-      regelProfil: identical(regelProfil, _copySentinel)
+      regelProfil: identical(regelProfil, keepFieldValue)
           ? this.regelProfil
           : regelProfil as HeroRegelProfil?,
       probenFavoriten: probenFavoriten ?? this.probenFavoriten,
-      spielansicht: identical(spielansicht, _copySentinel)
+      spielansicht: identical(spielansicht, keepFieldValue)
           ? this.spielansicht
           : spielansicht as HeroSpielansicht?,
       reiseStationen: reiseStationen ?? this.reiseStationen,
+      tragkraftBoni: tragkraftBoni ?? this.tragkraftBoni,
       epicLockedWaffenmeisterCategories:
           epicLockedWaffenmeisterCategories ??
           this.epicLockedWaffenmeisterCategories,
@@ -492,6 +503,7 @@ class HeroSheet {
     'probenFavoriten',
     'spielansicht',
     'reiseStationen',
+    'tragkraftBoni',
     'epicLockedWaffenmeisterCategories',
     'epicUnactivatedTalentIds',
     ...HeroAppearance.jsonSchluessel,
@@ -613,6 +625,11 @@ class HeroSheet {
       // Nur bei belegter Liste: Bestandshelden behalten ihren Inhalts-Hash.
       if (reiseStationen.isNotEmpty)
         'reiseStationen': reiseStationen
+            .map((entry) => entry.toJson())
+            .toList(growable: false),
+      // Nur bei belegter Liste: Bestandshelden behalten ihren Inhalts-Hash.
+      if (tragkraftBoni.isNotEmpty)
+        'tragkraftBoni': tragkraftBoni
             .map((entry) => entry.toJson())
             .toList(growable: false),
       'epicLockedWaffenmeisterCategories': epicLockedWaffenmeisterCategories
@@ -878,6 +895,7 @@ class HeroSheet {
             )
           : null,
       reiseStationen: leseReiseStationen(json['reiseStationen']),
+      tragkraftBoni: leseTragkraftBoni(json['tragkraftBoni']),
       epicLockedWaffenmeisterCategories: _parseStringSet(
         json['epicLockedWaffenmeisterCategories'],
       ),
@@ -905,8 +923,6 @@ Set<String> _parseStringSet(dynamic raw) {
   }
   return Set<String>.unmodifiable(result);
 }
-
-const Object _copySentinel = Object();
 
 List<TalentSpecialAbility> _parseTalentSpecialAbilities(dynamic raw) {
   if (raw is List) {

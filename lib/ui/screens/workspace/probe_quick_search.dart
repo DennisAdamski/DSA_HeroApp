@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dsa_heldenverwaltung/catalog/spell_def.dart';
 import 'package:dsa_heldenverwaltung/catalog/talent_def.dart';
-import 'package:dsa_heldenverwaltung/domain/attribute_codes.dart';
 import 'package:dsa_heldenverwaltung/domain/attributes.dart';
 import 'package:dsa_heldenverwaltung/domain/dice_log_entry.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_proben_favorit.dart';
@@ -424,7 +423,6 @@ List<ProbeQuickSearchCandidate> _buildCandidates({
     ),
     ..._buildCombatCandidates(snapshot),
     ..._buildTalentCandidates(
-      hero: hero,
       snapshot: snapshot,
       catalogTalents: catalogTalents,
       talentBeOverride: talentBeOverride,
@@ -439,37 +437,29 @@ List<ProbeQuickSearchCandidate> _buildCandidates({
   return candidates;
 }
 
-/// Baut die acht Eigenschafts-Schnellproben aus den Probenwerten (Wunden
-/// eingerechnet); [grundwerte] zeigen den Abzug an.
+/// Übersetzt einen Regel-Kandidaten in einen Suchtreffer der [kategorie].
+ProbeQuickSearchCandidate _ausKandidat(
+  ProbenKandidat kandidat,
+  ProbeQuickSearchCategory kategorie,
+) => ProbeQuickSearchCandidate(
+  category: kategorie,
+  name: kandidat.name,
+  favorit: kandidat.favorit,
+  detail: kandidat.detail,
+  buildRequest: () => kandidat.request,
+);
+
+/// Baut die acht Eigenschafts-Schnellproben (`eigenschaftsProbenKandidaten`).
 List<ProbeQuickSearchCandidate> _buildAttributeCandidates(
   Attributes probenEigenschaften,
   Attributes grundwerte,
-) {
-  final candidates = <ProbeQuickSearchCandidate>[];
-  for (final code in AttributeCode.values) {
-    final label = attributeCodeKey(code);
-    final value = readAttributeValue(probenEigenschaften, code);
-    final abzug = value - readAttributeValue(grundwerte, code);
-    final wundText = abzug == 0 ? '' : ' (Wunden −${-abzug})';
-    candidates.add(
-      ProbeQuickSearchCandidate(
-        category: ProbeQuickSearchCategory.attribute,
-        name: label,
-        favorit: HeroProbenFavorit.von(ProbenFavoritArt.eigenschaft, label),
-        detail: 'Eigenschaftsprobe · Wert $value$wundText',
-        buildRequest: () => buildAttributeProbeRequest(
-          label: label,
-          effectiveValue: value,
-          verweis: HeroProbenFavorit.von(
-            ProbenFavoritArt.eigenschaft,
-            label,
-          ).id,
-        ),
-      ),
-    );
-  }
-  return candidates;
-}
+) => [
+  for (final k in eigenschaftsProbenKandidaten(
+    probenEigenschaften: probenEigenschaften,
+    grundwerte: grundwerte,
+  ))
+    _ausKandidat(k, ProbeQuickSearchCategory.attribute),
+];
 
 /// Baut AT/PA/Ausweichen-Schnellproben aus der aktiven Kampfvorschau.
 List<ProbeQuickSearchCandidate> _buildCombatCandidates(
@@ -517,75 +507,21 @@ List<ProbeQuickSearchCandidate> _buildCombatCandidates(
   return candidates;
 }
 
-/// Baut Talentproben für alle aktiven, würfelbaren Talente des Helden.
-///
-/// Kampftalente bleiben außen vor, weil sie über AT/PA gewürfelt werden;
-/// würfelbar sind nur Talente mit vollständiger Drei-Eigenschaften-Kette.
+/// Baut Talent- und Ausweichproben (`talentProbenKandidaten`).
 List<ProbeQuickSearchCandidate> _buildTalentCandidates({
-  required HeroSheet hero,
   required HeroComputedSnapshot snapshot,
   required List<TalentDef> catalogTalents,
   required int? talentBeOverride,
   required bool epicAdvantagesActive,
-}) {
-  final candidates = <ProbeQuickSearchCandidate>[];
-  for (final talent in catalogTalents) {
-    if (talent.group == 'Kampftalent') {
-      continue;
-    }
-    // Dieselbe TaW*-Rechnung wie im Gefecht (`talent_probe_rules.dart`).
-    final wert = talentProbenwertFuer(
-      snapshot: snapshot,
-      talent: talent,
-      epicAdvantagesActive: epicAdvantagesActive,
-      talentBeOverride: talentBeOverride,
-    );
-    if (wert == null) {
-      continue;
-    }
-    final chain = wert.ziele.map((target) => target.label).join('/');
-    candidates.add(
-      ProbeQuickSearchCandidate(
-        category: ProbeQuickSearchCategory.talent,
-        name: talent.name,
-        favorit: HeroProbenFavorit.von(ProbenFavoritArt.talent, talent.id),
-        detail: '$chain · TaW* ${wert.taw}',
-        buildRequest: () => buildTalentProbeRequest(
-          title: talent.name,
-          targets: wert.ziele,
-          basePool: wert.taw,
-          spezialisierungen: wert.spezialisierungen,
-          tawHerleitung: wert.herleitung.taw,
-          verweis: probenVerweis(ProbenFavoritArt.talent, talent.id),
-        ),
-      ),
-    );
-  }
-  // Ausweichproben auf verwandte Talente (Meisterentscheid, Basis S. 113).
-  for (final e in talentErsatzproben(
+}) => [
+  for (final k in talentProbenKandidaten(
     snapshot: snapshot,
     katalog: catalogTalents,
     epicAdvantagesActive: epicAdvantagesActive,
     talentBeOverride: talentBeOverride,
-  )) {
-    final chain = e.request.targets.map((target) => target.label).join('/');
-    candidates.add(
-      ProbeQuickSearchCandidate(
-        category: ProbeQuickSearchCategory.talent,
-        name: e.request.title.replaceFirst(kTalentprobeTitel, ''),
-        detail:
-            '$chain · Ausweichen, TaW* ${e.request.basePool} · '
-            'Meisterentscheid'
-            '${e.option.bedingung == null ? '' : ' · ${e.option.bedingung}'}',
-        buildRequest: () => e.request,
-      ),
-    );
-  }
-  candidates.sort(
-    (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
-  );
-  return candidates;
-}
+  ))
+    _ausKandidat(k, ProbeQuickSearchCategory.talent),
+];
 
 /// Baut Zauberproben für alle gelernten Zauber des Helden.
 List<ProbeQuickSearchCandidate> _buildSpellCandidates({

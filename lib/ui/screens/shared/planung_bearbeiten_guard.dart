@@ -1,8 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:dsa_heldenverwaltung/catalog/rules_catalog.dart';
 import 'package:dsa_heldenverwaltung/state/advancement_providers.dart';
+import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
+import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
+
+/// Regelkatalog für Ansichten im Bereich eines Helden (Regel 7).
+///
+/// Im [PlanungsBearbeitungsBereich] ist das der Katalog des Helden, außerhalb
+/// davon der globale. [heroId] ersetzt die Suche im Baum, etwa für Dialoge,
+/// die auf dem Root-Navigator außerhalb des Bereichs liegen. Mit
+/// [beobachten] (Standard) wird im `build` beobachtet, sonst nur gelesen.
+AsyncValue<RulesCatalog> katalogImBereich(
+  BuildContext context,
+  WidgetRef ref, {
+  String? heroId,
+  bool beobachten = true,
+}) {
+  final held = heroId ?? PlanungsBearbeitungsBereich.heldVon(context);
+  if (held == null) {
+    return beobachten
+        ? ref.watch(rulesCatalogProvider)
+        : ref.read(rulesCatalogProvider);
+  }
+  return beobachten
+      ? ref.watch(heroRulesCatalogProvider(held))
+      : ref.read(heroRulesCatalogProvider(held));
+}
 
 /// Verbindet eingebettete Verwaltungsansichten mit dem zugehörigen Helden.
 ///

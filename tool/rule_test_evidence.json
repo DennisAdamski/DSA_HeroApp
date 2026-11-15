@@ -78,6 +78,13 @@
       "rationale": "Alle 9 Tests gelesen. Die Einträge sind synthetische Maps (z. B. id 'spell.foo', wirkung 'Geheime Wirkung', 'Variante A/B/C'); Feldnamen wie wirkung/variants dienen nur als Struktur. Es wird kein Katalog-Inhalt als Buchaussage behauptet, nur Entschlüsselungs- und Durchreichverhalten.",
       "sources": []
     },
+    "test/catalog/catalog_source_data_copy_test.dart": {
+      "kind": "product_contract",
+      "status": "verified",
+      "summary": "Prüft, dass CatalogSourceData.copyWith den v3-Salt und die übrigen Rohdatenfelder erhält und nur die übergebenen Sektionen ersetzt.",
+      "rationale": "Datenvertrag der Katalogschicht ohne Regelbehauptung.",
+      "sources": []
+    },
     "test/catalog/combat_special_ability_catalog_test.dart": {
       "kind": "official",
       "status": "verified",
@@ -344,6 +351,52 @@
         "result": "confirmed",
         "note": "Wege der Helden S. 249 und 16 (Chunk 4704, 4058), Erweiterung und Überarbeitung des Regelwerks S. 2 und 22 (Chunk 25817, 25834), Wege des Schwerts S. 169 (Chunk 7248) erneut gelesen: Begabung eine Spalte leichter bis A+, Körperliche Talente Spalte D, Hausregel Akrobatik A*, Verpflichtungen laut Hausregel nicht immer 12 GP."
       }
+    },
+    "test/catalog/house_rule_pack_kette_test.dart": {
+      "kind": "product_contract",
+      "status": "verified",
+      "summary": "Drei Tests zur Elternkette der Hausregel-Pakete: Kette bis zum Root, Selbstreferenz und Zweierkreis enden, Aktivierung folgt der Kette, Zyklen werden als Problem gemeldet und das Paket bleibt als Root sichtbar.",
+      "rationale": "Synthetische Pakete ohne Patches; geprüft wird nur die Paketverwaltung der App (Ladeschutz gegen zyklische Importe). Keine Regelbehauptung, kein Katalogeintrag.",
+      "sources": []
+    },
+    "test/catalog/json_asset_test.dart": {
+      "kind": "product_contract",
+      "status": "verified",
+      "summary": "Prüft das Lesen von JSON-Assets mit und ohne führende BOM und die Weitergabe von Formatfehlern.",
+      "rationale": "Technischer Ladevertrag ohne Regelbehauptung.",
+      "sources": []
+    },
+    "test/catalog/kraeuter_katalog_test.dart": {
+      "kind": "official",
+      "status": "verified",
+      "summary": "Sichert die Kräutertabellen (kraeuter.json) gegen Wege des Entdeckers S. 114–118 ab: 47 Kräuter, jede der zwölf Landschaften hat Einträge, Namen sind eindeutig; Stichproben Wirselkraut (Bestimmung +5, in Tundra und Steppe häufig), Satuariensbusch (Bestimmung −2), Donf im Dschungel zweimal (Seeufer selten, Flussufer sehr selten), Thonnys (Bestimmung +12, während der Blüte +5) und die sechs Kräuter des Hochgebirges (Atan-Kiefer, Atmon, Blutblatt, Olginwurz, Bleichmohn, Talaschin). Die Lese-Tests (unvollständige Einträge werden mit Grund verworfen, ungültige Wurzel und fehlendes Asset ergeben einen leeren Katalog) sind technischer Katalogvertrag. Erntezeit und Grundmenge je Kraut stammen aus dem Herbarium der Zoo Botanica (Stichproben: Zwölfblatt Ernte Hesinde bis Praios, 12 Stängel pro Pflanze; Tigermohn nur im Travia; Wirselkraut jede Zeit außer Winter; Alraune ganzjährig).",
+      "rationale": "Test, lib/catalog/kraeuter_loader.dart und tool/import_kraeuter.py gelesen; die Stichproben per DSA-MCP gegen die Tabellen geprüft. Die Datei enthält nur Kurzfakten (Name, Bestimmung, Häufigkeit je Landschaft, einzeilige Wirkung), keine Beschreibungstexte. Das Buch führt Egelschreck im Lichten Wald doppelt (gelegentlich und selten); beide Einträge sind übernommen. Erntezeit und Grundmenge wurden aus dem Index der Zoo Botanica (S. 228–277) gelesen und gegen die Bestimmungswerte der Landschaftstabellen abgeglichen: Chonchinis hat in der Zoo Botanica Bestimmung +6, in Wege des Entdeckers +5 (der Katalog führt +5). Spätsommer (Egelschreck) ist als Efferd eingetragen.",
+      "sources": [
+        {
+          "title": "Wege des Entdeckers – Kräuter und ihre Verbreitung (Landschaftstabellen)",
+          "pages": "114–118",
+          "mcpChunks": [
+            6309,
+            6310,
+            6311,
+            6312,
+            6313
+          ],
+          "checkedOn": "2026-11-11"
+        },
+        {
+          "title": "Zoo Botanica Aventurica – Herbarium Aventuricum (Ernte, Grundmenge je Pflanze)",
+          "pages": "228–277",
+          "mcpChunks": [
+            8449,
+            8554,
+            8518,
+            8447,
+            8468
+          ],
+          "checkedOn": "2026-11-11"
+        }
+      ]
     },
     "test/catalog/kurzregel_katalog_test.dart": {
       "kind": "product_contract",
@@ -4223,6 +4276,83 @@
       "rationale": "Technischer Vertrag der Hilfsfunktionen; die Rundungsregel selbst (Wege der Helden S. 6) belegen die Regeltests der aufrufenden Regeln. Eine eigene Quellenprüfung ist für die Arithmetik nicht anwendbar.",
       "sources": []
     },
+    "test/rules/derived/kraeutersuche_rules_test.dart": {
+      "kind": "official",
+      "status": "verified",
+      "summary": "Sichert die Kräutersuche (Wege des Entdeckers S. 113–118) ab: Suchschwierigkeit = Bestimmung plus Häufigkeit (sehr häufig +1, häufig +2, gelegentlich +4, selten +8, sehr selten +16); Grundmengen bei gezielter Suche = TaP* geteilt durch die halbe Suchschwierigkeit, aufgerundet; bei beliebiger Suche wird ein Kraut mit höchstens der halben TaP* als Suchschwierigkeit gewählt und seine Suchschwierigkeit abgezogen, bis nichts mehr passt; Würzkräuter geben die halben TaP* als Erleichterung für Kochen-Proben (je Probe höchstens 3), Konservierungsmittel je TaP* einen Tag Haltbarkeit; zwei Stunden Suche steigern den TaW um die Hälfte; Erschwernisse für passende Geländekunde −3, ähnliche −1, passende Ortskenntnis −7 und je 3 AsP −1; die Jahreszeit-Modifikationen und Pauschal-Suchschwierigkeiten der zwölf Landschaftstabellen (Dichter Wald Sommer/Herbst 0, Winter +6, Frühling +4; Lichter Wald −6/0/−2; Hochgebirge +6/+12/+10; Wüste +12 usw.). Eine gelungene Talentprobe zählt immer als mindestens 1 TaP* (Basisregelwerk S. 113 f.). Die Jahreszeiten folgen dem Sonnenlauf: Sommer ab 1. Praios, Herbst ab 1. Travia, Winter ab 1. Firun, Frühling ab 1. Peraine (Geographia Aventurica S. 189). Die TaP* einer Metatalent-Probe dürfen den TaW (bei zwei Stunden den erhöhten TaW) nicht übersteigen, auch wenn die Probe erleichtert ist (Wege des Entdeckers S. 106). Die Erntezeit der Kräuter (Zoo Botanica, Herbarium: Angabe „Ernte“) bestimmt, ob nutzbare Pflanzenteile im Monat der Suche zu ernten sind; ohne Monat gelten alle Kräuter.",
+      "rationale": "Datei und lib/rules/derived/kraeutersuche_rules.dart vollständig gelesen, alle Regelzahlen per DSA-MCP gegen den Buchtext geprüft. App-Entscheidungen ohne Buchaussage sind getrennt: die Auswahl der Funde bei beliebiger Suche ist nach Häufigkeit gewichtet (das Buch überlässt sie dem Meister), halbe TaW- und TaP*-Punkte werden kaufmännisch aufgerundet, die Namenlosen Tage zählen zum Frühling, die Jahreszeit-Zeile der Landschaftstabellen gilt als vollständige Landschaftserschwernis (sie enthält den Regionszuschlag des Nahrungssammelns bereits), bei Suchschwierigkeit unter 1 wird mit 1 gerechnet, die Zuordnung der Ortsunterarten zu Landschaften sowie Vorschau und TaP*-Verteilung (rechnerische Hilfen über alle 8000 Würfe). Bei den Pauschal-Suchschwierigkeiten gilt die im Buch genannte Summe, obwohl die Summanden einzelner Landschaften nicht zu ihr passen (z. B. Wüste: Bestimmung +2, selten +16, Summe +6). Zusätzliche App-Entscheidungen: Kräuter außerhalb ihrer Erntezeit werden standardmäßig nicht gefunden (Modus nurErntezeit; das Buch nennt für andere Zeiten nur einen höheren Bestimmungswert nach Meisterermessen, Modus alle blendet nichts aus); Erntezeiten mit Teilen oder Gebieten (z. B. Satuariensbusch, Mibelrohr) gelten als Vereinigung der Monate.",
+      "sources": [
+        {
+          "title": "Wege des Entdeckers – Kräuter Suchen (Talent, Dauer, Modifikationen, Probenergebnis)",
+          "pages": "112–114",
+          "mcpChunks": [
+            6306,
+            6307,
+            6308
+          ],
+          "checkedOn": "2026-11-11"
+        },
+        {
+          "title": "Wege des Entdeckers – Kräuter und ihre Verbreitung (Landschaftstabellen)",
+          "pages": "114–118",
+          "mcpChunks": [
+            6309,
+            6310,
+            6311,
+            6312,
+            6313
+          ],
+          "checkedOn": "2026-11-11"
+        },
+        {
+          "title": "Basisregelwerk (2. Auflage 2011) – Talentproben, mindestens 1 TaP* bei Erfolg",
+          "pages": "113–114",
+          "mcpChunks": [
+            534,
+            535,
+            536
+          ],
+          "checkedOn": "2026-11-11"
+        },
+        {
+          "title": "Geographia Aventurica (2. Auflage) – Sonnenbahn, Sonnenwenden und Tagundnachtgleichen",
+          "pages": "189",
+          "mcpChunks": [
+            1325,
+            1326
+          ],
+          "checkedOn": "2026-11-11"
+        },
+        {
+          "title": "Wege des Entdeckers – Metatalente zum Jagen und Sammeln (TaP* nicht über dem TaW)",
+          "pages": "106–107",
+          "mcpChunks": [
+            6293,
+            6294
+          ],
+          "checkedOn": "2026-11-11"
+        },
+        {
+          "title": "Wege des Schwerts – Anhang 3: Metatalent Kräuter Suchen (Suchschwierigkeit, zwei Stunden)",
+          "pages": "190–191",
+          "mcpChunks": [
+            7302,
+            7303,
+            7304
+          ],
+          "checkedOn": "2026-11-11"
+        },
+        {
+          "title": "Zoo Botanica Aventurica – Herbarium: Erläuterungen (Verbreitung, Bestimmung, Ernte, Grundmenge)",
+          "pages": "227",
+          "mcpChunks": [
+            8436,
+            8437
+          ],
+          "checkedOn": "2026-11-11"
+        }
+      ]
+    },
     "test/rules/derived/reiseroute_rules_test.dart": {
       "kind": "product_contract",
       "status": "verified",
@@ -4233,8 +4363,8 @@
     "test/rules/derived/standort_rules_test.dart": {
       "kind": "product_contract",
       "status": "verified",
-      "summary": "Prüft die Bereinigung des Standorttexts (Leerraum außen entfernen, innen falten, Höchstlänge kürzen) und den Aufbau des Avesmaps-Siedlungslinks (URL-Kodierung, kein Link bei leerem Standort).",
-      "rationale": "Beide Testgruppen und lib/rules/derived/standort_rules.dart gelesen: Zeichenkettenbereinigung und URL-Bau für einen externen Kartendienst. Ortsnamen (‚Gareth‘, ‚Bad Garetz Süd‘) sind Eingabebeispiele ohne Regelbehauptung; das Regelwerk trifft zu Anzeigetext und Link-Format keine Aussage.",
+      "summary": "Prüft die Bereinigung des Standorttexts (Leerraum außen entfernen, innen falten, Höchstlänge kürzen), den Aufbau des Avesmaps-Siedlungslinks (URL-Kodierung, kein Link bei leerem Standort), die Suche der Ortsauswahl (gleicher Name vor Namensanfang vor Wortanfang vor Teilstring vor Regiontreffer, Umlaute und Umschreibungen gleichwertig, Siedlungen vor Regionen vor Staaten, Begrenzung, Freitext ohne Treffer) die Entscheidung, ob ein Kartenlink sinnvoll ist (nur Siedlungen; unbekannte Namen behalten ihn) und den Link auf die Wiki-Aventurica-Seite (voller Seitenname, Siedlung vor Staat, Kodierung, kein Link für Freitext).",
+      "rationale": "Testgruppen und lib/rules/derived/standort_rules.dart gelesen: Zeichenkettenbereinigung, URL-Bau für einen externen Kartendienst und Suchrangfolge über ein Ortsverzeichnis. Ortsnamen (‚Gareth‘, ‚Havena‘, ‚Bad Garetz Süd‘) sind Eingabebeispiele ohne Regelbehauptung; das Regelwerk trifft zu Anzeigetext, Link-Format und Suchrangfolge keine Aussage.",
       "sources": []
     },
     "test/rules/derived/string_normalize_test.dart": {
@@ -8209,6 +8339,21 @@
         "note": "Wege der Helden S. 21 (Chunk 4071), Wege der Zauberei S. 19 und 32 (Chunk 4987, 5022) erneut gelesen: AT-Basis (MU+GE+KK)/5, PA-Basis (IN+GE+KK)/5, FK-Basis (IN+FF+KK)/5, INI-Basis (MU+MU+IN+GE)/5, Leiteigenschaft Gildenmagier KL, Gedankenschutz MU 15, IN 13, SF Eiserner Wille I."
       }
     },
+    "test/rules/hohe_ini_bonus_test.dart": {
+      "kind": "official",
+      "status": "verified",
+      "summary": "Prüft den Bonus der optionalen Regel „Hohe Initiative-Werte“: über 20 +1, über 30 +2, über 40 +3, kein Bonus unter 21 und keine vierte Stufe über 50. Kampfvorschau (PA, Ausweichen) und Gefecht nutzen dieselbe Funktion.",
+      "sources": [
+        {
+          "title": "Wege des Schwerts (Optional: Hohe Initiative-Werte)",
+          "pages": "78",
+          "mcpChunks": [
+            7039
+          ],
+          "checkedOn": "2026-11-07"
+        }
+      ]
+    },
     "test/rules/house_rule_registry_test.dart": {
       "kind": "product_contract",
       "status": "verified",
@@ -9139,6 +9284,13 @@
           "checkedOn": "2026-11-02"
         }
       ]
+    },
+    "test/rules/merkmal_suche_rules_test.dart": {
+      "kind": "product_contract",
+      "status": "verified",
+      "summary": "Prüft die gemeinsame Katalogsuche für Vor- und Nachteile: Umlautfaltung, Suche über Name, Quelle und Marker, nur aktive Einträge, Kürzung auf 80 Treffer.",
+      "rationale": "Such- und Anzeigelogik der App ohne Regelbehauptung; die Namen im Test sind reine Beispieleingaben.",
+      "sources": []
     },
     "test/rules/meta_talent_rules_test.dart": {
       "kind": "official",
@@ -11551,9 +11703,61 @@
     "test/rules/spiel_dabei_rules_test.dart": {
       "kind": "product_contract",
       "status": "verified",
-      "summary": "Sichert den Block 'Dabei' der Spielansicht (SPIEL-02) ab: welche Inventareintraege als Verbrauchsgegenstand zaehlen (nur manuelle, vom Helden getragene, nicht abgelegte, nicht mit dem Kampf verknuepfte), Name, Mengentext und Aenderbarkeit, die Mengenschritte (vom gespeicherten Wert, Instanz-ID, Grenzen 0 bis 9999, Freitext und Abweichung werden abgewiesen, Hash-relevante Felder bleiben unberuehrt), die Geldschritte (D/S/K-Aufschluesselung, Betrag lesen, Abzug nur bis zum Bestand, Fehler statt stillem Kappen bei 0) und die Entscheidung, wann 'Benutzen' angeboten wird (hinterlegte Vitalwirkung oder Katalogelixier).",
+      "summary": "Sichert den Block 'Dabei' der Spielansicht (SPIEL-02) ab: welche Inventareintraege als Verbrauchsgegenstand zaehlen (nur manuelle, vom Helden getragene, nicht abgelegte, nicht mit dem Kampf verknuepfte), Name, Mengentext und Aenderbarkeit, die Mengenschritte (vom gespeicherten Wert, Instanz-ID, Grenzen 0 bis 9999, Freitext und Abweichung werden abgewiesen, Hash-relevante Felder bleiben unberuehrt), die Geldschritte (D/S/K-Aufschluesselung, Betrag lesen, Abzug nur bis zum Bestand, Fehler statt stillem Kappen bei 0) und die Entscheidung, wann 'Benutzen' angeboten wird (hinterlegte Vitalwirkung oder Katalogelixier), sowie die Verbrauchsgegenstaende von Begleitern (Auswahl mit Traeger Begleiter, Gruppierung je Begleiter, Verwaiste, Menge zaehlt vom gespeicherten Wert ohne den Traeger zu aendern).",
       "rationale": "Datei und lib/rules/derived/spiel_dabei_rules.dart vollstaendig gelesen. Es geht um Auswahl-, Schreib- und Verlustfreiheitslogik eines App-Blocks; Gegenstaende (Fackel, Proviant, Heiltrank) und Mengen sind Beispieleingaben ohne Regelbezug, das Buch kennt weder Verbrauchsgegenstands-Arten noch Hoechstmengen. Die einzigen Zahlen mit Regelbezug sind die Muenzfaktoren (1 Dukat = 10 Silbertaler = 1.000 Kreuzer; 12,53 -> 12 D / 5 S / 30 K); sie stuetzen sich auf die bereits verifizierte Umrechnung in test/rules/currency_rules_test.dart (Basisregelwerk S. 265, MCP-Chunks 902 bis 905), hier werden sie nur angewendet. Per MCP erneut gesucht nach 'Dukat Silbertaler Kreuzer Umrechnung Muenzen': Treffer ist u. a. Geographia Aventurica, Chunk 1232 (Masse, Geld, Gewichte), bereits in der verifizierten Umrechnung belegt; keine abweichende Aussage gefunden.",
       "sources": []
+    },
+    "test/rules/tragkraft_rules_test.dart": {
+      "kind": "official",
+      "status": "verified",
+      "summary": "Sichert Last und Tragkraft des Helden (SPIEL-02) gegen Wege des Schwerts S. 144 ab: Tragkraft in Stein entspricht der Körperkraft; die Last ist das Gewicht des Getragenen plus die Hälfte von Kleidung und Rüstung am Leib (ein auf den Rucksack geschnalltes Kettenhemd zählt voll); pro angefangenen 50 % Last über der Tragkraft steigt die BE um 1; über der doppelten Tragkraft sind Verschnaufpausen alle KO Spielrunden fällig, ab der vierfachen Tragkraft muss die Last alle 5 × KO Schritt abgesetzt werden. Die Bärenrune erhöht die Tragkraft um RkP* × 10 Stein (Wege der Alchimie S. 161); die Hausregel ergänzt KK +1. Die epische KK-Haupteigenschaft rechnet die Tragkraftgrenzenbasis mit KK × 1,5 statt KK (Epische Stufen S. 4, Aufrundung nach der Tischregel). 1 Stein sind 1 kg, 1 Unze 25 g; ein Dukat besteht aus einer Unze Gold, Silbertaler, Heller und Kreuzer wiegen je 5 Skrupel (Geographia Aventurica S. 140 f.).",
+      "rationale": "Datei und lib/rules/derived/tragkraft_rules.dart vollständig gelesen, alle Regelzahlen per DSA-MCP gegen den Buchtext geprüft. App-Entscheidungen ohne Buchaussage sind getrennt: welche Einträge als eng am Körper getragen gelten und nur zur Hälfte zählen (Tischregel des Nutzers vom 10.11.2026: Rüstung, Kleidung, getragene Ausrüstungsgegenstände und Waffen in den Händen, also jede angelegte bzw. ausgerüstete Ausrüstung; das Buch nennt nur Kleidung und Rüstung, der Test 'Waffen und Schild in den Händen zählen halb' ist daher Nutzerregel und keine Buchaussage), die kleinstmögliche Münzzahl für das Geldgewicht, das Zählen nur dauerhafter Quellen (keine Kurzzeitzauber) sowie die Schreib- und Anzeigelogik (Einträge ohne Gewicht, Begleiterlast, Quellenliste, Formatierung). Nicht eingerechnet ist die optionale Reiseregel „BE aus zusätzlicher Last je 25 %“ (WdS S. 144).",
+      "sources": [
+        {
+          "title": "Wege des Schwerts – Last und Tragkraft",
+          "pages": "144",
+          "mcpChunks": [
+            7189,
+            7190
+          ],
+          "checkedOn": "2026-11-10"
+        },
+        {
+          "title": "Wege der Alchimie (2. Auflage 2012) – Bärenrune",
+          "pages": "161",
+          "mcpChunks": [
+            3071,
+            3072
+          ],
+          "checkedOn": "2026-11-10"
+        },
+        {
+          "title": "Geographia Aventurica (2. Auflage) – Maße, Geld, Gewichte",
+          "pages": "140–141",
+          "mcpChunks": [
+            1232,
+            1233,
+            1234
+          ],
+          "checkedOn": "2026-11-10"
+        },
+        {
+          "title": "Hausregel: Erweiterung und Überarbeitung des Regelwerks – Runen & Zauberzeichen (Bärenrune KK +1)",
+          "pages": "27",
+          "mcpChunks": [
+            25836
+          ],
+          "checkedOn": "2026-11-10"
+        },
+        {
+          "title": "Hausregel: Epische Stufen – Haupteigenschaft Körperkraft",
+          "pages": "4",
+          "mcpChunks": [
+            25739
+          ],
+          "checkedOn": "2026-11-10"
+        }
+      ]
     },
     "test/rules/steigerung_herleitung_rules_test.dart": {
       "kind": "official",
@@ -13030,6 +13234,98 @@
       "status": "verified",
       "summary": "Sichert die reine Anzeige-/Auswahllogik der Spielansicht ab: welche Würfelprotokoll-Einträge als wiederholbare Probe gelten (Titelpräfix je ProbeType, nicht neutral, keine Buchung), Kurzname ohne Präfix, Liste der zuletzt gewürfelten verschiedenen Proben (neueste zuerst, Dedup nach Art+Titel, Begrenzung auf kZuletztGewuerfeltMax=6 bzw. hoechstens, Sortierung nach Zeitstempel, unveränderte Eingabe, unveränderbare Ausgabe, leeres Protokoll).",
       "rationale": "Datei und Produktionslogik (lib/rules/derived/zuletzt_gewuerfelt_rules.dart, DiceLogEntry) vollständig gelesen. Alle 9 Testfälle prüfen Protokoll-Filterung, Titelpräfixe, Deduplikation, Sortierung, die Obergrenze 6 (Komfortwert für ein Tablet-Layout) und Immutability; keine Zahl, Formel oder Voraussetzung einer DSA-Probe wird behauptet, die Fixturewerte (Talent-/Probentitel, Würfelwert 5, Zeitstempel) sind reine Beispieleingaben. Per MCP gesucht nach 'Probe wiederholen zuletzt gewürfelte Proben Würfelprotokoll' und 'Probe wiederholen erneut würfeln nach misslungener Probe': das Buch kennt nur kontextbezogene Wiederholungsregeln einzelner Zauber/Effekte (Treffer u. a. Wege der Zauberei, Chunk 5001, PDF S. 24, Wiederholung einer misslungenen Zauberprobe mit Erschwernis), aber kein Würfelprotokoll und keine Regel, welche Proben 'wiederholbar' sind; die Funktion bewertet nicht, ob eine Wiederholung regelkonform ist, sondern listet nur frühere Proben als Schnellzugriff.",
+      "sources": []
+    },
+    "test/catalog/ort_katalog_test.dart": {
+      "kind": "product_contract",
+      "status": "verified",
+      "summary": "Prüft das Lesen des Ortsverzeichnisses (Name, Art, Unterart, Region, Seitenname, Stand; unvollständige Einträge werden mit Grund verworfen, ungültige Wurzel und fehlendes Asset ergeben einen leeren Katalog) und die Datei orte.json selbst (lesbar, Stand als Datum, über 1000 Siedlungen und über 500 Regionen, Gareth, Havena und Thorwal als Siedlung, keine Klammerzusätze im Namen, keine doppelten Name-Art-Paare).",
+      "rationale": "Test und lib/catalog/ort_loader.dart gelesen: technischer Katalogvertrag für ein aus der Wiki Aventurica (CC BY-SA) importiertes Namensverzeichnis. Es enthält nur Kurzfakten ohne Regelaussage; die Mindestzahlen sind Plausibilitätsgrenzen für den Import, keine Behauptung über den Umfang Aventuriens.",
+      "sources": []
+    },
+    "test/rules/derived/wildnis_probe_rules_test.dart": {
+      "kind": "official",
+      "status": "verified",
+      "summary": "Sichert den tätigkeitsneutralen Kern der Wildnisproben ab: Die Erschwernis ist die Summe aus Basiserschwernis (Landschaft, Jahreszeit, Dauer), Geländekunde (passend −3, ähnlich −1), passender Ortskenntnis (−7), eingesetzten AsP (je 3 AsP −1) und situativer Erschwernis (Wege des Entdeckers S. 112 f.); die Probe ist eine Talentprobe 3W20 gegen drei Eigenschaften mit dem TaW als Pool und der negierten Erschwernis als Modifikator. Die TaP* einer gelungenen Probe sind mindestens 1 und höchstens der TaW. Die Kräutersuche nutzt denselben Kern, bildet ihre Landschaften auf Geländekunden ab und zeigt ihr Ergebnis in der gemeinsamen Anzeigeform.",
+      "rationale": "Datei und lib/rules/derived/wildnis_probe_rules.dart vollständig gelesen, die Zahlen (−3/−1/−7, 3 AsP je Punkt) per DSA-MCP gegen den Buchtext von Wege des Entdeckers S. 113 geprüft; die Zoo Botanica nennt für die Jagd dieselbe Erleichterung durch Geländekunde und Ortskenntnis. App-Entscheidungen ohne Buchaussage: angebrochene 3 AsP zählen nicht, negative AsP erleichtern nichts, die Zuordnung der Kräuterlandschaften zu den Geländekunden (Waldkundig für dichten und lichten Wald, Gebirgskundig auch im Hochgebirge; ähnlich: Dschungel und Maraskan sowie Steppenkundig im Grasland, weil das Buch die Ähnlichkeit dem Meister überlässt) und die Textform der Ergebnisanzeige. Die Deckelung der Erleichterung durch Sonderfertigkeiten auf 0 (Zoo Botanica S. 224) ist bewusst nicht umgesetzt.",
+      "sources": [
+        {
+          "title": "Wege des Entdeckers – Nahrung sammeln und Kräuter Suchen (Modifikationen nach Sonderfertigkeiten, Region, AsP)",
+          "pages": "112–113",
+          "mcpChunks": [
+            6305,
+            6306,
+            6307
+          ],
+          "checkedOn": "2026-11-11"
+        },
+        {
+          "title": "Zoo Botanica Aventurica – Jagdtalente: Geländekunde und Ortskenntnis verringern die Erschwernis",
+          "pages": "61, 224",
+          "mcpChunks": [
+            8031,
+            8032,
+            8430
+          ],
+          "checkedOn": "2026-11-11"
+        }
+      ]
+    },
+    "test/rules/derived/wildnis_sonderfertigkeit_rules_test.dart": {
+      "kind": "official",
+      "status": "verified",
+      "summary": "Sichert die Erkennung von Geländekunde und Ortskenntnis aus den Sonderfertigkeiten des Helden ab: Geländekunde wird je Gelände erworben (Waldkundig, Dschungelkundig, Maraskankundig, Sumpfkundig, Steppenkundig, Gebirgskundig, Wüstenkundig, Eiskundig, Höhlenkundig, Meereskundig) und erleichtert Proben im vertrauten Gelände um 3, ähnliches Gelände nach Meisterentscheid um 1; Ortskenntnis wird je Ort oder Strecke erworben und lässt 7 Punkte Erschwernis entfallen, wenn der Held am passenden Ort ist (Wege der Helden S. 276–278; Wege des Entdeckers S. 112 f.).",
+      "rationale": "Datei und lib/rules/derived/wildnis_sonderfertigkeit_rules.dart vollständig gelesen, die Regelzahlen und die Geländearten per DSA-MCP gegen Wege der Helden und Wege des Entdeckers geprüft. App-Entscheidungen ohne Buchaussage: Die Sonderfertigkeiten werden aus dem gespeicherten Namen `Basisname (Variante)` gelesen, Umlaute und die Kurzform der Variante (`Wald`) gelten gleich, Altbestand ohne oder mit unbekannter Variante zählt nicht, die beste Stufe mehrerer Geländekunden gewinnt, ähnliche Gelände nennt die Landschaftsabbildung der Tätigkeit ausdrücklich, und die Ortskenntnis gilt nur für den Standort des Helden (Vergleich nach Suchfaltung, ein Klammerzusatz der Variante wie `Gareth (Südquartier)` wird übergangen), nicht für jede Landschaft gleicher Art. Die Erkennung ist eine Vorbelegung und schreibt nichts am Helden.",
+      "sources": [
+        {
+          "title": "Wege der Helden – Geländekunde und Ortskenntnis",
+          "pages": "276–278",
+          "mcpChunks": [
+            4785,
+            4786,
+            4787,
+            4788
+          ],
+          "checkedOn": "2026-11-11"
+        },
+        {
+          "title": "Wege des Entdeckers – Nahrung sammeln und Kräuter Suchen (Modifikationen nach Sonderfertigkeiten, Region, AsP)",
+          "pages": "112–113",
+          "mcpChunks": [
+            6305,
+            6306,
+            6307
+          ],
+          "checkedOn": "2026-11-11"
+        }
+      ]
+    },
+    "test/rules/derived/karten_rules_test.dart": {
+      "kind": "product_contract",
+      "status": "verified",
+      "summary": "Prüft die Kartenpunkte der Reiseroute (nur Stationen mit Kartenposition, Etappennummer bleibt die der Zeitleiste), den Kartenausschnitt um Route und Standort (Rand, Mindestkante, Ersatz ohne Punkte) und die Begrenzung des Ortsverzeichnisses (umschließendes Rechteck, ohne Orte die ganze Karte).",
+      "rationale": "Testdatei und lib/rules/derived/karten_rules.dart gelesen: reine Geometrie im Koordinatensystem von Avesmaps (0 bis 1024, y nach Norden) für die Kartendarstellung. Das Regelwerk trifft dazu keine Aussage; der Maßstab von drei Meilen je Karteneinheit stammt aus der Avesmaps-Dokumentation und ist im Eintrag zu reiseroute_rules_test vermerkt.",
+      "sources": []
+    },
+    "test/rules/derived/standort_lage_rules_test.dart": {
+      "kind": "product_contract",
+      "status": "verified",
+      "summary": "Prüft die Himmelsrichtung zwischen zwei Kartenpunkten (y nach Norden), die Zuordnung des Standorts zu einem Avesmaps-Ort (über die Kennung des verbundenen Verzeichnisses, sonst nur ein eindeutig gleicher Name), die Orte in der Nähe (nur Siedlungen, nächste zuerst, begrenzt), die Meilenformatierung, das tolerante Lesen der Ortsdetails mit Gebietszeile und Reich, den Rücklink auf Avesmaps (Seitenname, sonst Kennung, sonst Name), die Positionsanzeige und die Lageskizze (kleinster Halbmesser mit genug Siedlungen, normierte Versätze, Beschriftung bedeutender Orte, Höchstzahl der Namen).",
+      "rationale": "Testgruppen und lib/rules/derived/standort_lage_rules.dart gelesen: Abstands- und Richtungsrechnung über Kartenkoordinaten, Textformatierung und Link-Bau für einen externen Kartendienst. Das Regelwerk trifft zu Anzeige, Nachbarschaftsliste und Link-Format keine Aussage; Ortsnamen sind Eingabebeispiele ohne Regelbehauptung.",
+      "sources": []
+    },
+    "test/rules/derived/ortsfakten_rules_test.dart": {
+      "kind": "product_contract",
+      "status": "verified",
+      "summary": "Prüft die Ortsauskunft aus dem Wiki-Katalog (Zuordnung über den Wiki-Seitennamen, nur Siedlungen), die Trennung in Tempel samt Schreinen und Heiligtümern (ein Unheiligtum zählt nicht) und übrige Bauwerke nach Bedeutung, die Reihung reihum je Art, die Gruppierung der Tempel nach Gottheit aus der Zugehörigkeit, die Einwohneranzeige mit Tausenderpunkten sowie ihre Teilung in Zahl und Zusatz, die Bauwerkzeile und den Wiki-Link sowie die Zuordnung eines Avesmaps-Orts zu seinem Eintrag über Kennung oder Namen.",
+      "rationale": "Testdatei und lib/rules/derived/ortsfakten_rules.dart gelesen: Anzeige- und Sortierlogik über Katalogdaten aus der Wiki Aventurica. Das Regelwerk trifft zu Einwohnerformat, Bauwerksrangfolge und Link-Format keine Aussage; Orts- und Bauwerksnamen sind Eingabebeispiele ohne Regelbehauptung.",
+      "sources": []
+    },
+    "test/catalog/ortsfakten_katalog_test.dart": {
+      "kind": "product_contract",
+      "status": "verified",
+      "summary": "Prüft das Lesen der Ortsfakten (Einwohner, Oberhaupt, Verkehrswege, Bauwerke je Siedlung; Unlesbares und leere Einträge fallen weg, ungültige Wurzel und fehlendes Asset ergeben einen leeren Katalog) und die Datei ortsfakten.json selbst (datiert, über 1000 Siedlungen und Bauwerke, Gareth und Punin mit Einwohnern, Oberhaupt und Tempeln, Schlüssel fast immer Seiten des Ortsverzeichnisses, nur kurze Angaben).",
+      "rationale": "Testdatei, lib/catalog/ortsfakten_loader.dart und tool/import_wiki_ortsfakten.py gelesen: maschinell aus Infoboxen der Wiki Aventurica (CC BY-SA) ausgelesene Kurzfakten ohne Beschreibungstext. Geprüft wird die Datenhaltung, keine Regel des Regelwerks; Einwohnerzahlen sind Wiki-Angaben ohne Regelbehauptung.",
       "sources": []
     }
   }

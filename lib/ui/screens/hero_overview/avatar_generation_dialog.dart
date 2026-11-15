@@ -10,6 +10,7 @@ import 'package:dsa_heldenverwaltung/rules/derived/avatar_prompt_rules.dart';
 import 'package:dsa_heldenverwaltung/rules/derived/avatar_snapshot_diff.dart';
 import 'package:dsa_heldenverwaltung/state/avatar_providers.dart';
 import 'package:dsa_heldenverwaltung/state/hero_providers.dart';
+import 'package:dsa_heldenverwaltung/state/warte_auf_wert.dart';
 
 /// Dialog fuer die KI-basierte Portraet-Generierung.
 class AvatarGenerationDialog extends ConsumerStatefulWidget {
@@ -406,8 +407,9 @@ class _AvatarGenerationDialogState
     try {
       List<int> bytes;
       if (_useReferenceImage && client.supportsReferenceImage) {
-        final refBytes = await ref.read(
-          primaerbildBytesProvider(widget.heroId).future,
+        final refBytes = await warteAufWertImWidget(
+          ref,
+          primaerbildBytesProvider(widget.heroId),
         );
         if (refBytes != null && refBytes.isNotEmpty) {
           bytes = await client.generatePortraitWithReference(

@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 
 import 'package:dsa_heldenverwaltung/rules/derived/gefecht_kampfwerte_rules.dart';
 
-import 'gefecht_anordnung.dart';
 import 'gefecht_herleitung_schritte.dart';
+
+import 'package:dsa_heldenverwaltung/ui2/foundation/karto_breakpoints.dart';
 
 /// Schmale, fixierte Leiste der Kampfwerte (INI, AT, PA, Ausweichen …).
 ///
@@ -109,7 +110,7 @@ Future<void> zeigeGefechtKampfwert(
   BuildContext context,
   GefechtsKampfwert wert,
 ) {
-  final breit = MediaQuery.sizeOf(context).width >= kGefechtZweispaltig;
+  final breit = kartoBreiteVon(context) != KartoBreite.schmal;
   if (breit) {
     return showDialog<void>(
       context: context,

@@ -5,6 +5,7 @@
 library;
 
 import 'package:dsa_heldenverwaltung/domain/combat_config.dart' show ArmorPiece;
+import 'package:dsa_heldenverwaltung/domain/copy_with_sentinel.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_companion/hero_companion_attack.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_companion/hero_companion_sonderfertigkeit.dart';
 import 'package:dsa_heldenverwaltung/domain/hero_companion/hero_companion_speed.dart';
@@ -341,43 +342,43 @@ class HeroCompanion {
     String? gewicht,
     String? groesse,
     String? alter,
-    Object? mu = _keepNull,
-    Object? kl = _keepNull,
-    Object? inn = _keepNull,
-    Object? ch = _keepNull,
-    Object? ff = _keepNull,
-    Object? ge = _keepNull,
-    Object? ko = _keepNull,
-    Object? kk = _keepNull,
-    Object? ini = _keepNull,
-    Object? magieresistenz = _keepNull,
-    Object? loyalitaet = _keepNull,
-    Object? apGesamt = _keepNull,
-    Object? apAusgegeben = _keepNull,
+    Object? mu = keepFieldValue,
+    Object? kl = keepFieldValue,
+    Object? inn = keepFieldValue,
+    Object? ch = keepFieldValue,
+    Object? ff = keepFieldValue,
+    Object? ge = keepFieldValue,
+    Object? ko = keepFieldValue,
+    Object? kk = keepFieldValue,
+    Object? ini = keepFieldValue,
+    Object? magieresistenz = keepFieldValue,
+    Object? loyalitaet = keepFieldValue,
+    Object? apGesamt = keepFieldValue,
+    Object? apAusgegeben = keepFieldValue,
     List<HeroCompanionSpeed>? geschwindigkeiten,
-    Object? maxLep = _keepNull,
-    Object? maxAup = _keepNull,
-    Object? maxAsp = _keepNull,
+    Object? maxLep = keepFieldValue,
+    Object? maxAup = keepFieldValue,
+    Object? maxAsp = keepFieldValue,
     String? tragkraft,
     String? zugkraft,
     String? ausbildung,
     String? futterbedarf,
     String? vorteile,
     String? nachteile,
-    Object? gw = _keepNull,
-    Object? au = _keepNull,
+    Object? gw = keepFieldValue,
+    Object? au = keepFieldValue,
     List<HeroCompanionAttack>? angriffe,
     List<HeroCompanionSonderfertigkeit>? sonderfertigkeiten,
     List<ArmorPiece>? ruestungsTeile,
     int? ruestungsgewoehnung,
     List<HeroRitualCategory>? ritualCategories,
     Map<String, int>? steigerungen,
-    Object? startLep = _keepNull,
-    Object? startAup = _keepNull,
-    Object? startAsp = _keepNull,
-    Object? startMr = _keepNull,
-    Object? reittierAusbildung = _keepNull,
-    Object? vertrautenBindung = _keepNull,
+    Object? startLep = keepFieldValue,
+    Object? startAup = keepFieldValue,
+    Object? startAsp = keepFieldValue,
+    Object? startMr = keepFieldValue,
+    Object? reittierAusbildung = keepFieldValue,
+    Object? vertrautenBindung = keepFieldValue,
     Map<String, Object?>? unbekannteFelder,
     Map<String, Object?>? unbekannteEnumWerte,
   }) {
@@ -391,59 +392,61 @@ class HeroCompanion {
       gewicht: gewicht ?? this.gewicht,
       groesse: groesse ?? this.groesse,
       alter: alter ?? this.alter,
-      mu: identical(mu, _keepNull) ? this.mu : mu as int?,
-      kl: identical(kl, _keepNull) ? this.kl : kl as int?,
-      inn: identical(inn, _keepNull) ? this.inn : inn as int?,
-      ch: identical(ch, _keepNull) ? this.ch : ch as int?,
-      ff: identical(ff, _keepNull) ? this.ff : ff as int?,
-      ge: identical(ge, _keepNull) ? this.ge : ge as int?,
-      ko: identical(ko, _keepNull) ? this.ko : ko as int?,
-      kk: identical(kk, _keepNull) ? this.kk : kk as int?,
-      ini: identical(ini, _keepNull) ? this.ini : ini as int?,
-      magieresistenz: identical(magieresistenz, _keepNull)
+      mu: identical(mu, keepFieldValue) ? this.mu : mu as int?,
+      kl: identical(kl, keepFieldValue) ? this.kl : kl as int?,
+      inn: identical(inn, keepFieldValue) ? this.inn : inn as int?,
+      ch: identical(ch, keepFieldValue) ? this.ch : ch as int?,
+      ff: identical(ff, keepFieldValue) ? this.ff : ff as int?,
+      ge: identical(ge, keepFieldValue) ? this.ge : ge as int?,
+      ko: identical(ko, keepFieldValue) ? this.ko : ko as int?,
+      kk: identical(kk, keepFieldValue) ? this.kk : kk as int?,
+      ini: identical(ini, keepFieldValue) ? this.ini : ini as int?,
+      magieresistenz: identical(magieresistenz, keepFieldValue)
           ? this.magieresistenz
           : magieresistenz as int?,
-      loyalitaet: identical(loyalitaet, _keepNull)
+      loyalitaet: identical(loyalitaet, keepFieldValue)
           ? this.loyalitaet
           : loyalitaet as int?,
-      apGesamt: identical(apGesamt, _keepNull)
+      apGesamt: identical(apGesamt, keepFieldValue)
           ? this.apGesamt
           : apGesamt as int?,
-      apAusgegeben: identical(apAusgegeben, _keepNull)
+      apAusgegeben: identical(apAusgegeben, keepFieldValue)
           ? this.apAusgegeben
           : apAusgegeben as int?,
       geschwindigkeiten: geschwindigkeiten ?? this.geschwindigkeiten,
-      maxLep: identical(maxLep, _keepNull) ? this.maxLep : maxLep as int?,
-      maxAup: identical(maxAup, _keepNull) ? this.maxAup : maxAup as int?,
-      maxAsp: identical(maxAsp, _keepNull) ? this.maxAsp : maxAsp as int?,
+      maxLep: identical(maxLep, keepFieldValue) ? this.maxLep : maxLep as int?,
+      maxAup: identical(maxAup, keepFieldValue) ? this.maxAup : maxAup as int?,
+      maxAsp: identical(maxAsp, keepFieldValue) ? this.maxAsp : maxAsp as int?,
       tragkraft: tragkraft ?? this.tragkraft,
       zugkraft: zugkraft ?? this.zugkraft,
       ausbildung: ausbildung ?? this.ausbildung,
       futterbedarf: futterbedarf ?? this.futterbedarf,
       vorteile: vorteile ?? this.vorteile,
       nachteile: nachteile ?? this.nachteile,
-      gw: identical(gw, _keepNull) ? this.gw : gw as int?,
-      au: identical(au, _keepNull) ? this.au : au as int?,
+      gw: identical(gw, keepFieldValue) ? this.gw : gw as int?,
+      au: identical(au, keepFieldValue) ? this.au : au as int?,
       angriffe: angriffe ?? this.angriffe,
       sonderfertigkeiten: sonderfertigkeiten ?? this.sonderfertigkeiten,
       ruestungsTeile: ruestungsTeile ?? this.ruestungsTeile,
       ruestungsgewoehnung: ruestungsgewoehnung ?? this.ruestungsgewoehnung,
       ritualCategories: ritualCategories ?? this.ritualCategories,
       steigerungen: steigerungen ?? this.steigerungen,
-      startLep: identical(startLep, _keepNull)
+      startLep: identical(startLep, keepFieldValue)
           ? this.startLep
           : startLep as int?,
-      startAup: identical(startAup, _keepNull)
+      startAup: identical(startAup, keepFieldValue)
           ? this.startAup
           : startAup as int?,
-      startAsp: identical(startAsp, _keepNull)
+      startAsp: identical(startAsp, keepFieldValue)
           ? this.startAsp
           : startAsp as int?,
-      startMr: identical(startMr, _keepNull) ? this.startMr : startMr as int?,
-      reittierAusbildung: identical(reittierAusbildung, _keepNull)
+      startMr: identical(startMr, keepFieldValue)
+          ? this.startMr
+          : startMr as int?,
+      reittierAusbildung: identical(reittierAusbildung, keepFieldValue)
           ? this.reittierAusbildung
           : reittierAusbildung as ReittierAusbildung?,
-      vertrautenBindung: identical(vertrautenBindung, _keepNull)
+      vertrautenBindung: identical(vertrautenBindung, keepFieldValue)
           ? this.vertrautenBindung
           : vertrautenBindung as VertrautenBindung?,
       unbekannteFelder: unbekannteFelder ?? this.unbekannteFelder,
@@ -738,9 +741,6 @@ int? _parseIntOrString(dynamic value) {
   if (value is String) return int.tryParse(value.trim());
   return null;
 }
-
-/// Sentinel-Wert fuer nullable copyWith-Felder.
-const Object _keepNull = Object();
 
 bool _speedListEqual(List<HeroCompanionSpeed> a, List<HeroCompanionSpeed> b) {
   if (a.length != b.length) return false;

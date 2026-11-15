@@ -212,13 +212,16 @@ class _RessourcenBlatt extends ConsumerWidget {
 ///
 /// Fasst genau die Teile des Vitals-Tabs zusammen, die nicht Ressourcen sind.
 /// Die Bausteine bleiben die vorhandenen: Wunden bringen ihren eigenen
-/// Detaildialog mit, Belastung ihren eigenen Schreibweg.
+/// Detaildialog mit, Belastung ihren eigenen Schreibweg. Ohne [mitBelastung]
+/// entfällt die Belastung; die Spielansicht führt Erschöpfung und
+/// Überanstrengung in „Dabei“.
 ///
 /// In einer **weiten** Kachel (SPIEL-07, [KartoKachelGroesse.weit]) mit
 /// mindestens [zweiSpaltenAb] Breite stehen zwei Spalten nebeneinander: links
 /// Belastung über Wunden, beide von Anfang an aufgeklappt, rechts die
-/// Statuswerte. Sonst bleibt es bei der einen Spalte mit eingeklappten
-/// Abschnitten. Die Abschnitte und ihre Schreibwege sind in beiden Formen
+/// Statuswerte als Zeilen. Sonst steht alles in einer Spalte mit eingeklappten
+/// Abschnitten, die Statuswerte als flaches Wertraster
+/// ([InspectorStatuswerteBlock.raster]). Die Schreibwege sind in beiden Formen
 /// dieselben.
 class KartoZustandsblock extends StatelessWidget {
   /// Erstellt den Zustandsblock aus dem bereits gelesenen Snapshot.
@@ -226,6 +229,7 @@ class KartoZustandsblock extends StatelessWidget {
     super.key,
     required this.heroId,
     required this.werte,
+    this.mitBelastung = true,
   });
 
   /// ID im gemeinsam genutzten Heldenspeicher.
@@ -233,6 +237,9 @@ class KartoZustandsblock extends StatelessWidget {
 
   /// Gemeinsamer Snapshot des Spielbereichs.
   final HeroComputedSnapshot werte;
+
+  /// Ob Erschöpfung und Überanstrengung im Block stehen.
+  final bool mitBelastung;
 
   /// Breite, ab der zwei Spalten à mindestens 300 dp nebeneinander passen.
   ///
@@ -273,6 +280,8 @@ class KartoZustandsblock extends StatelessWidget {
             // Neben den anderen Abschnitten statt darunter braucht er keine
             // Trennlinie.
             mitTrenner: !zweispaltig,
+            // In einer Spalte acht Zeilen untereinander wären zu tief.
+            raster: !zweispaltig,
           );
           return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -287,8 +296,10 @@ class KartoZustandsblock extends StatelessWidget {
                         key: const ValueKey<String>('karto-zustand-links'),
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          belastung(),
-                          const SizedBox(height: 14),
+                          if (mitBelastung) ...[
+                            belastung(),
+                            const SizedBox(height: 14),
+                          ],
                           wunden(),
                         ],
                       ),
@@ -303,8 +314,7 @@ class KartoZustandsblock extends StatelessWidget {
                   ],
                 )
               else ...[
-                belastung(),
-                const SizedBox(height: 14),
+                if (mitBelastung) ...[belastung(), const SizedBox(height: 14)],
                 wunden(),
                 const SizedBox(height: 14),
                 statuswerte(),

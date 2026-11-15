@@ -80,11 +80,7 @@ AdvancementOption? _talentOption(AdvancementContext context, String id) {
   final entry = hero.talents[id] ?? const HeroTalentEntry();
   final befund = context.begabungen.talent(def);
   final begabt = befund.istBegabt(gifted: entry.gifted);
-  final combat =
-      def.group == 'Kampftalent' ||
-      def.type == 'nahkampf' ||
-      def.type == 'fernkampf' ||
-      def.weaponCategory.isNotEmpty;
+  final combat = def.istKampftalent;
   final attrs = context.permanentAttributes;
   var maximum = combat
       ? computeCombatTalentMaxValue(
@@ -99,7 +95,7 @@ AdvancementOption? _talentOption(AdvancementContext context, String id) {
         );
   if (hero.isEpisch && hero.epicUnactivatedTalentIds.contains(id)) {
     final names = combat
-        ? (def.type == 'fernkampf' ? ['FF', 'GE', 'KK'] : ['GE', 'KK'])
+        ? (def.istFernkampf ? ['FF', 'GE', 'KK'] : ['GE', 'KK'])
         : def.attributes;
     for (final name in names) {
       final code = parseAttributeCode(name);

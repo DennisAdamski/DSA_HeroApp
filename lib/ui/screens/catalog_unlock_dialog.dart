@@ -3,13 +3,13 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:dsa_heldenverwaltung/state/async_value_compat.dart';
 import 'package:dsa_heldenverwaltung/catalog/catalog_crypto.dart';
 import 'package:dsa_heldenverwaltung/catalog/catalog_runtime_data.dart';
 import 'package:dsa_heldenverwaltung/catalog/catalog_section_id.dart';
 import 'package:dsa_heldenverwaltung/state/catalog_providers.dart';
 import 'package:dsa_heldenverwaltung/state/settings_providers.dart';
 import 'package:dsa_heldenverwaltung/ui/config/adaptive_dialog.dart';
+import 'package:dsa_heldenverwaltung/ui/screens/shared/async_wert_abwarten.dart';
 
 /// Oeffnet einen Dialog zur Eingabe des Katalog-Entschluesselungspassworts.
 ///
@@ -26,10 +26,7 @@ Future<bool> showCatalogUnlockDialog({
   // Passworts nutzlos, weil keine `enc:`-Werte mehr gefunden werden).
   final CatalogSourceData sourceData;
   try {
-    sourceData = await warteAufAsyncProviderImWidget(
-      ref,
-      baseCatalogSourceDataProvider,
-    );
+    sourceData = await warteAufAsyncWert(ref, baseCatalogSourceDataProvider);
   } on Object {
     if (!context.mounted) return false;
     ScaffoldMessenger.of(context).showSnackBar(

@@ -286,6 +286,7 @@ void _reiseberichtBuchung() {
         buchung: abgleich(gebucht, entwurf),
         gebucht: gebucht,
         entwurf: entwurf,
+        catalog: null,
       );
 
       final kriegskunst = ergebnis.talents['Kriegskunst']!;
