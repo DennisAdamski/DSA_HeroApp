@@ -60,6 +60,19 @@ class HouseRulePackRepository {
           filePath: manifestFile.path,
           isBuiltIn: false,
         );
+        if (!istSichererPaketOrdner(manifest.id)) {
+          // Nie anbieten: Löschen und Umbenennen bauen den Ordner aus der ID.
+          issues.add(
+            HouseRulePackIssue(
+              packTitle: manifest.title,
+              filePath: manifestFile.path,
+              message:
+                  'Die Paket-ID enthält eine Pfadangabe; das Paket wird '
+                  'ignoriert.',
+            ),
+          );
+          continue;
+        }
         if (!seenIds.add(manifest.id)) {
           issues.add(
             HouseRulePackIssue(
@@ -84,6 +97,15 @@ class HouseRulePackRepository {
           HouseRulePackIssue(
             filePath: manifestFile.path,
             message: 'Manifest konnte nicht gelesen werden: ${error.message}',
+          ),
+        );
+      } on Object catch (error) {
+        // Etwa ein Feld falschen Typs: Ein einzelnes beschädigtes Paket darf
+        // weder die übrigen Pakete noch den ganzen Katalog scheitern lassen.
+        issues.add(
+          HouseRulePackIssue(
+            filePath: manifestFile.path,
+            message: 'Manifest ist nicht lesbar: $error',
           ),
         );
       }
@@ -180,10 +202,31 @@ class HouseRulePackRepository {
     );
   }
 
+  /// Ob [packId] als Ordnername unterhalb des Paketordners taugt.
+  ///
+  /// Die ID stammt aus einer importierten Datei. Mit Pfadtrennern, `..` oder
+  /// einem absoluten Pfad läge der Ordner außerhalb des Paketordners; ein
+  /// Speichern schriebe dorthin, ein Löschen entfernte ihn rekursiv.
+  static bool istSichererPaketOrdner(String packId) {
+    final id = packId.trim();
+    return id.isNotEmpty &&
+        id != '.' &&
+        id != '..' &&
+        !id.contains('/') &&
+        !id.contains(r'\') &&
+        !id.contains(':') &&
+        !id.codeUnits.any((einheit) => einheit < 0x20);
+  }
+
   Directory _packDirectory({
     required String catalogVersion,
     required String packId,
   }) {
+    if (!istSichererPaketOrdner(packId)) {
+      throw FormatException(
+        'Die Paket-ID "$packId" darf keine Pfadangaben enthalten.',
+      );
+    }
     return Directory(
       path.join(
         _versionRootDirectory(catalogVersion: catalogVersion).path,
