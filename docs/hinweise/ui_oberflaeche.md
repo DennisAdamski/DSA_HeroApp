@@ -197,7 +197,7 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   oder mehrdeutige Angaben bleiben neutral; explizite Halbelfen dürfen die
   menschliche und elfische Abstammung zusätzlich nennen. Aliasgruppen sind
   bewusst explizit, keine Teilwortsuche und kein Regel- oder Katalogparser.
-  `KartoHeldensiegel` zeichnet die Motive ohne Bildassets. Ein astraler Stern
+  `KartoHeldensiegel` stellt die Motive als Bilder mit Vektorrückfall dar. Ein astraler Stern
   und eine neutrale karmale Strahlenmarke werden unabhängig ergänzt — nur aus
   den vorhandenen `resourceActivation`-Werten des Compute-Snapshots, niemals
   aus der Rasse, Profession oder einem eingetragenen Zauber. Beide Zeichen
@@ -209,12 +209,15 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   endlichen Auftritt und die beiden Effektfreigaben. Kein neuer Speicherweg,
   keine neue Heldeneinstellung und keine Änderung am Helden-Hash oder Sync.
   Motivübersicht: [Heldensiegel](../screenshots/heldensiegel/README.md).
-  **Erste Bildassets:** Thorwaler, Norbarden und Novadis erhalten ihre
-  unterstützte Kultur über `HeroBackground.kultur`. Nur bei leerem Kulturfeld
+  **Bildassets:** Zwölf Kultursiegel erhalten ihre unterstützte Kultur über
+  `HeroBackground.kultur`. Beschriftungen und normalisierte Aliase stehen
+  gemeinsam in `KartoSiegelKultur`. Nur bei leerem Kulturfeld
   werden alte Rassenangaben wie „Thorwaler“ als Rückfall genutzt. Unbekannte
-  oder mehrdeutige Kulturangaben wählen kein willkürliches Bild; Achaz behalten
-  ihr eigenes Kristall-/Echsenmotiv. Die restlichen Spezies-/Kulturmotive bleiben
-  vorerst beim Vektorrückfall. `KartoHeldensiegel` lädt die vier transparenten
+  oder mehrdeutige Kulturangaben wählen kein willkürliches Kulturbild, sondern
+  das allgemeine Bild des Grundmotivs. Acht Grundmotive decken neutrale Angaben,
+  Menschen, Elfen, Halbelfen, Zwerge, Achaz, Orks und Goblins ab. Ohne Kulturangabe
+  wird „Mittelländer“ nicht mit „Mittelreich“ gleichgesetzt. `KartoHeldensiegel`
+  lädt die 20 transparenten
   PNGs aus `assets/ui/heldensiegel_v1/` farbig und mit `BoxFit.contain`.
   Die Dekodierbreite folgt Größe und Pixeldichte, begrenzt auf 512 Pixel.
   Befähigungszeichen zeichnet ein separater Vordergrund-Painter; Bildfehler

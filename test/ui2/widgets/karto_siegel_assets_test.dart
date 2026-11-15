@@ -10,13 +10,24 @@ import 'package:dsa_heldenverwaltung/ui2/widgets/karto_heldensiegel.dart';
 /// Die produktiven Siegel sind gebündelte Bilder mit echten Alphakanten.
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-  for (final name in ['thorwaler', 'norbarden', 'novadis', 'achaz']) {
+  final pfade = {
+    for (final motiv in KartoSiegelMotiv.values)
+      KartoSiegelProfil(motiv: motiv).assetPfad!,
+    for (final kultur in KartoSiegelKultur.values)
+      KartoSiegelProfil(
+        motiv: KartoSiegelMotiv.mensch,
+        kultur: kultur,
+      ).assetPfad!,
+  };
+  test('zwölf Kulturen und acht Grundmotive haben eindeutige Bilddateien', () {
+    expect(pfade, hasLength(20));
+  });
+  for (final pfad in pfade) {
+    final name = pfad.split('/').last;
     test(
       '$name ist gebündelt, ausreichend groß und wirklich transparent',
       () async {
-        final data = await rootBundle.load(
-          'assets/ui/heldensiegel_v1/$name.png',
-        );
+        final data = await rootBundle.load(pfad);
         final codec = await ui.instantiateImageCodec(data.buffer.asUint8List());
         try {
           final frame = await codec.getNextFrame();

@@ -93,15 +93,14 @@ class KartoSiegelProfil {
   /// Unterstützte eingetragene Kultur; unabhängig von Befähigungen.
   final KartoSiegelKultur? kultur;
 
-  /// Bild für den freigegebenen ersten Satz; andere Motive behalten ihren Rückfall.
+  /// Fertiges Kultur- oder Speziesbild; unbekannte Angaben erhalten das neutrale Motiv.
   String? get assetPfad {
-    if (motiv == KartoSiegelMotiv.echse) {
-      return 'assets/ui/heldensiegel_v1/achaz.png';
-    }
     final kultur = this.kultur;
-    return kultur == null
-        ? null
-        : 'assets/ui/heldensiegel_v1/${kultur.name}.png';
+    if (kultur != null) {
+      return 'assets/ui/heldensiegel_v1/${kultur.name}.png';
+    }
+    final datei = motiv == KartoSiegelMotiv.echse ? 'achaz' : motiv.name;
+    return 'assets/ui/heldensiegel_v1/$datei.png';
   }
 
   /// Kurze Erklärung für den rein visuellen Tooltip.
@@ -116,12 +115,7 @@ class KartoSiegelProfil {
       KartoSiegelMotiv.ork => 'Orkisches Spitzensiegel',
       KartoSiegelMotiv.goblin => 'Goblinisches Wegsiegel',
     };
-    final grund = switch (kultur) {
-      KartoSiegelKultur.thorwaler => 'Thorwalsches Kultursiegel',
-      KartoSiegelKultur.norbarden => 'Norbardisches Kultursiegel',
-      KartoSiegelKultur.novadis => 'Novadisches Kultursiegel',
-      null => grundmotiv,
-    };
+    final grund = kultur?.beschreibung ?? grundmotiv;
     return [
       grund,
       if (magisch) 'Astraler Akzent',
@@ -141,40 +135,143 @@ class KartoSiegelProfil {
   int get hashCode => Object.hash(motiv, kultur, magisch, karmal);
 }
 
-/// Zunächst als Bildasset verfügbare menschliche Kultursiegel.
+/// Freigegebene menschliche Kultursiegel samt Beschriftung und Schreibweisen.
 enum KartoSiegelKultur {
   /// Schiff, Wellen und Walflosse.
-  thorwaler,
+  thorwaler('Thorwalsches Kultursiegel', {
+    'thorwal',
+    'thorwaler',
+    'thorwalerin',
+  }),
 
   /// Reisewagen, Rad und Gepäck.
-  norbarden,
+  norbarden('Norbardisches Kultursiegel', {
+    'norbarde',
+    'norbarden',
+    'norbardin',
+    'norbardensippe',
+  }),
 
   /// Pferd, Dünen und Sonne.
-  novadis,
+  novadis('Novadisches Kultursiegel', {
+    'novadi',
+    'novadis',
+    'novadin',
+    'khom',
+    'khomnomaden',
+  }),
+
+  /// Heraldischer Löwe und Stadttor.
+  mittelreicher('Mittelreichisches Kultursiegel', {
+    'mittelreich',
+    'mittelreicher',
+    'mittelreicherin',
+    'mittellaendisch',
+    'mittellaendische',
+  }),
+
+  /// Rapier, Feder und Lorbeer.
+  horasier('Horasisches Kultursiegel', {
+    'horasreich',
+    'horasier',
+    'horasierin',
+    'horasisch',
+    'horasische',
+  }),
+
+  /// Palastbogen, Öllampe und Palmzweig.
+  tulamiden('Tulamidisches Kultursiegel', {
+    'tulamiden',
+    'tulamide',
+    'tulamidin',
+    'tulamidisch',
+    'tulamidische',
+    'mhanadistan',
+    'mhanadistani',
+  }),
+
+  /// Laufender Wolf vor verschneiten Nadelbäumen.
+  nivesen('Nivesisches Kultursiegel', {
+    'nivesen',
+    'nivese',
+    'nivesin',
+    'nivesisch',
+    'nivesische',
+    'nivesenstaemme',
+  }),
+
+  /// Bär, Tannenzweig und befestigtes Tor.
+  bornlaender('Bornländisches Kultursiegel', {
+    'bornland',
+    'bornlaender',
+    'bornlaenderin',
+    'bornlaendisch',
+    'bornlaendische',
+  }),
+
+  /// Geschwungene Klinge und tropische Farnwedel.
+  maraskaner('Maraskanisches Kultursiegel', {
+    'maraskan',
+    'maraskaner',
+    'maraskanerin',
+    'maraskanisch',
+    'maraskanische',
+  }),
+
+  /// Rabe mit ausgebreiteten Schwingen und goldenem Palmzweig.
+  alanfaner('Al’Anfanisches Kultursiegel', {
+    'alanfa',
+    'anfa',
+    'alanfaner',
+    'anfaner',
+    'alanfanerin',
+    'anfanerin',
+    'alanfanisch',
+    'anfanisch',
+  }),
+
+  /// Eichenblatt, Eicheln und Holzaxt.
+  andergaster('Andergastisches Kultursiegel', {
+    'andergast',
+    'andergaster',
+    'andergasterin',
+    'andergastisch',
+    'andergastische',
+  }),
+
+  /// Silberner Fisch über Wellen.
+  nostrier('Nostrisches Kultursiegel', {
+    'nostria',
+    'nostrier',
+    'nostrierin',
+    'nostrisch',
+    'nostrische',
+  });
+
+  const KartoSiegelKultur(this.beschreibung, this.aliase);
+
+  /// Benutzerlesbare Bezeichnung des rein kosmetischen Motivs.
+  final String beschreibung;
+
+  /// Explizite, normalisierte Schreibweisen ohne unsichere Teilwortsuche.
+  final Set<String> aliase;
 }
 
 // Mehrdeutige Angaben erhalten kein willkürlich ausgewähltes Kulturbild.
 KartoSiegelKultur? _kulturFuer(String angabe) {
-  final normal = angabe.toLowerCase().replaceAll('ô', 'o');
+  var normal = angabe.toLowerCase();
+  for (final ersatz in const {
+    'ä': 'ae',
+    'ö': 'oe',
+    'ü': 'ue',
+    'ô': 'o',
+  }.entries) {
+    normal = normal.replaceAll(ersatz.key, ersatz.value);
+  }
   final woerter = normal.split(RegExp('[^a-z]+')).toSet();
   final treffer = <KartoSiegelKultur>{};
-  for (final gruppe in const {
-    KartoSiegelKultur.thorwaler: {'thorwal', 'thorwaler', 'thorwalerin'},
-    KartoSiegelKultur.norbarden: {
-      'norbarde',
-      'norbarden',
-      'norbardin',
-      'norbardensippe',
-    },
-    KartoSiegelKultur.novadis: {
-      'novadi',
-      'novadis',
-      'novadin',
-      'khom',
-      'khomnomaden',
-    },
-  }.entries) {
-    if (gruppe.value.any(woerter.contains)) treffer.add(gruppe.key);
+  for (final kultur in KartoSiegelKultur.values) {
+    if (kultur.aliase.any(woerter.contains)) treffer.add(kultur);
   }
   return treffer.length == 1 ? treffer.single : null;
 }

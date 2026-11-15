@@ -336,10 +336,10 @@ Persönliche Heldensiegel ergänzen Porträt und Spieltisch-Kopf: auch profane
 Helden erhalten ein eigenes Grundmotiv, je nach erfasster Rasse. Vorhandene
 Magie- und Karmabefähigungen ergänzen unabhängige Zeichen.
 Eine [Motivübersicht](docs/screenshots/heldensiegel/README.md) zeigt den Entwurf.
-Für Thorwaler, Norbarden, Novadis und Achaz sind inzwischen transparente
+Für zwölf menschliche Kulturen und acht Grundmotive sind transparente
 [Bildsiegel](docs/heldensiegel_assets.md) eingebunden. Bei Menschen und
-Halbelfen entscheidet die eingetragene Kultur; andere Motive behalten zunächst
-ihre vorhandene Darstellung.
+Halbelfen entscheidet die eingetragene unterstützte Kultur. Andere oder
+unbekannte Angaben erhalten ein allgemeines Spezies- beziehungsweise neutrales Bild.
 
 Eine offene Entwicklungsplanung bleibt beim Wechsel zu **Held verwalten**
 erhalten. Die Verwaltung ist zum Ansehen zugänglich. Vor einer Bearbeitung

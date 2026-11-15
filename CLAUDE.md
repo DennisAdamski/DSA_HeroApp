@@ -32,7 +32,7 @@ abschaltbare Kompassanimation und verwendet die vorhandene Kompassrose.
 Mit `KartoSiegelProfil` (`ui2/theme/`) und `KartoHeldensiegel` (`ui2/widgets/`)
 erhalten Porträt, Spieltisch und Magiebereich persönliche Motive. Die reine
 Darstellungszuordnung verändert weder Befähigungen noch Heldendaten.
-Die ersten Bildsiegel liegen unter `assets/ui/heldensiegel_v1/` und werden
+Die 20 Bildsiegel liegen unter `assets/ui/heldensiegel_v1/` und werden
 über `KartoSiegelProfil.assetPfad` zugeordnet; Details und Vorschau stehen in
 [heldensiegel_assets.md](docs/heldensiegel_assets.md).
 
