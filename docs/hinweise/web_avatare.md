@@ -103,3 +103,10 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   `SyncingAvatarStorage` im Web: dort gilt der lokale Write als Erfolg, aber
   IndexedDB ist kein haltbarer Speicher — im Browser zählt ein Bild erst als
   gespeichert, wenn der Upload durch ist.
+
+- `LocalAvatarFileStorage` nimmt nur einzelne Dateinamen ohne Pfadangabe
+  (`istSichererAvatarDateiname`). Bildnamen stehen im Heldenbogen und kommen
+  damit auch aus importierten Heldendateien, ebenso Helden- und Eintrags-ID,
+  aus denen neue Namen entstehen. Laden liefert bei einem Namen mit Pfad
+  `null`, Löschen tut nichts, Speichern wirft `FormatException`. Test:
+  `test/data/avatar_file_storage_pfad_test.dart`.
