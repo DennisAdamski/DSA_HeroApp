@@ -2,6 +2,9 @@
 
 Erster begutachtbarer Stand vom 15.11.2026.
 
+Dies ist der frühere Vektorentwurf. Die ersten freigegebenen Bildassets zeigt
+die [neue Einbauvorschau](../heldensiegel-bilder/erste-vier.png).
+
 [Motivübersicht aus dem Flutter-Renderer](motive.png)
 
 Die vier Siegel jeder Gruppe zeigen von links nach rechts: profan, magisch,

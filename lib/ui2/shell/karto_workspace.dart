@@ -98,6 +98,7 @@ class _KartoWorkspaceState extends ConsumerState<KartoWorkspace> {
     final hero = snapshot?.hero;
     final siegel = KartoSiegelProfil.ausAngaben(
       rasse: hero?.background.rasse ?? '',
+      kultur: hero?.background.kultur ?? '',
       magisch: snapshot?.resourceActivation.magic.isEnabled ?? false,
       karmal: snapshot?.resourceActivation.divine.isEnabled ?? false,
     );

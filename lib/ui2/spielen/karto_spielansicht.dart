@@ -156,8 +156,10 @@ class _KartoSpielansichtState extends ConsumerState<KartoSpielansicht>
               KartoSeitenkopf(
                 titel: 'Am Spieltisch',
                 titelVorsatz: KartoSpieltischSiegel(
+                  groesse: 48,
                   profil: KartoSiegelProfil.ausAngaben(
                     rasse: werte.hero.background.rasse,
+                    kultur: werte.hero.background.kultur,
                     magisch: werte.resourceActivation.magic.isEnabled,
                     karmal: werte.resourceActivation.divine.isEnabled,
                   ),

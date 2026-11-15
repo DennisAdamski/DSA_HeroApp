@@ -95,9 +95,10 @@ class _GefechtMagieState extends State<GefechtMagie> {
     final magie = KartoAbschnitt(
       titel: 'Magie und Karma',
       titelMotiv: KartoSpieltischSiegel(
-        groesse: 32,
+        groesse: 40,
         profil: KartoSiegelProfil.ausAngaben(
           rasse: werte.hero.background.rasse,
+          kultur: werte.hero.background.kultur,
           magisch: werte.resourceActivation.magic.isEnabled,
           karmal: werte.resourceActivation.divine.isEnabled,
         ),

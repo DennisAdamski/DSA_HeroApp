@@ -209,6 +209,19 @@ Ausgelagert aus der früheren `CLAUDE.md` (Stand 16.10.2026), Wortlaut unveränd
   endlichen Auftritt und die beiden Effektfreigaben. Kein neuer Speicherweg,
   keine neue Heldeneinstellung und keine Änderung am Helden-Hash oder Sync.
   Motivübersicht: [Heldensiegel](../screenshots/heldensiegel/README.md).
+  **Erste Bildassets:** Thorwaler, Norbarden und Novadis erhalten ihre
+  unterstützte Kultur über `HeroBackground.kultur`. Nur bei leerem Kulturfeld
+  werden alte Rassenangaben wie „Thorwaler“ als Rückfall genutzt. Unbekannte
+  oder mehrdeutige Kulturangaben wählen kein willkürliches Bild; Achaz behalten
+  ihr eigenes Kristall-/Echsenmotiv. Die restlichen Spezies-/Kulturmotive bleiben
+  vorerst beim Vektorrückfall. `KartoHeldensiegel` lädt die vier transparenten
+  PNGs aus `assets/ui/heldensiegel_v1/` farbig und mit `BoxFit.contain`.
+  Die Dekodierbreite folgt Größe und Pixeldichte, begrenzt auf 512 Pixel.
+  Befähigungszeichen zeichnet ein separater Vordergrund-Painter; Bildfehler
+  zeigen das vorhandene Vektormotiv. Header: 48 dp inklusive 8 dp Lichtsaum,
+  Porträtplakette und Magiekopf: 40 dp inklusive Saum. Bild- und Monogramm-
+  Größe im Porträtring bleiben unverändert. Details:
+  [Bildsiegel](../heldensiegel_assets.md).
   **Kopf-Bedienung bei Bedarf:**
   Vergrößern-Symbol und Einklapp-Pfeil des äußeren Abschnitts sind mit
   angeschlossener Maus nur sichtbar, solange Zeiger oder Fokus in der Kachel

@@ -8,9 +8,9 @@ import 'package:dsa_heldenverwaltung/ui2/theme/karto_heldensiegel_profil.dart';
 import 'package:dsa_heldenverwaltung/ui2/widgets/karto_heldensiegel.dart';
 import 'package:dsa_heldenverwaltung/ui2/widgets/karto_ornamente.dart';
 
-/// Endlicher Kompassauftritt am Spieltisch; danach bleibt das Siegel ruhig.
+/// Endlicher Siegelauftritt am Spieltisch; danach bleibt das Motiv ruhig.
 class KartoSpieltischSiegel extends StatefulWidget {
-  /// Zeigt die vorhandene Kompassrose mit optionalem Messinglicht.
+  /// Zeigt das persönliche Siegel oder die Kompassrose mit optionalem Messinglicht.
   const KartoSpieltischSiegel({
     super.key,
     this.profil,

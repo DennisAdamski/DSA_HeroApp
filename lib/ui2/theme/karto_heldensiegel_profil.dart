@@ -26,17 +26,21 @@ enum KartoSiegelMotiv {
 }
 
 /// Kosmetisches Profil aus Rassenangabe und bereits berechneten Befähigungen.
+///
+/// Eine unterstützte menschliche Kultur ergänzt das Grundmotiv um ein Bildasset.
 class KartoSiegelProfil {
   /// Erstellt ein unabhängiges Grundmotiv mit kombinierbaren Zusatzzeichen.
   const KartoSiegelProfil({
     this.motiv = KartoSiegelMotiv.neutral,
     this.magisch = false,
     this.karmal = false,
+    this.kultur,
   });
 
   /// Ordnet nur bekannte Schreibweisen zu; freie unbekannte Texte bleiben neutral.
   factory KartoSiegelProfil.ausAngaben({
     required String rasse,
+    String kultur = '',
     bool magisch = false,
     bool karmal = false,
   }) {
@@ -63,7 +67,18 @@ class KartoSiegelProfil {
     final motiv = treffer.length == 1
         ? treffer.single
         : KartoSiegelMotiv.neutral;
-    return KartoSiegelProfil(motiv: motiv, magisch: magisch, karmal: karmal);
+    final kulturBasis = kultur.trim().isEmpty ? rasse : kultur;
+    final erlaubtKultursiegel = const {
+      KartoSiegelMotiv.neutral,
+      KartoSiegelMotiv.mensch,
+      KartoSiegelMotiv.halbelf,
+    }.contains(motiv);
+    return KartoSiegelProfil(
+      motiv: motiv,
+      magisch: magisch,
+      karmal: karmal,
+      kultur: erlaubtKultursiegel ? _kulturFuer(kulturBasis) : null,
+    );
   }
 
   /// Grundmotiv bleibt auch für profane Helden vollständig.
@@ -75,9 +90,23 @@ class KartoSiegelProfil {
   /// Vorhandene Karmabefähigung, unabhängig von der Magiebefähigung.
   final bool karmal;
 
+  /// Unterstützte eingetragene Kultur; unabhängig von Befähigungen.
+  final KartoSiegelKultur? kultur;
+
+  /// Bild für den freigegebenen ersten Satz; andere Motive behalten ihren Rückfall.
+  String? get assetPfad {
+    if (motiv == KartoSiegelMotiv.echse) {
+      return 'assets/ui/heldensiegel_v1/achaz.png';
+    }
+    final kultur = this.kultur;
+    return kultur == null
+        ? null
+        : 'assets/ui/heldensiegel_v1/${kultur.name}.png';
+  }
+
   /// Kurze Erklärung für den rein visuellen Tooltip.
   String get beschreibung {
-    final grund = switch (motiv) {
+    final grundmotiv = switch (motiv) {
       KartoSiegelMotiv.neutral => 'Neutrales Heldensiegel',
       KartoSiegelMotiv.mensch => 'Heraldisches Heldensiegel',
       KartoSiegelMotiv.elf => 'Elfisches Blattsiegel',
@@ -86,6 +115,12 @@ class KartoSiegelProfil {
       KartoSiegelMotiv.echse => 'Schuppensiegel',
       KartoSiegelMotiv.ork => 'Orkisches Spitzensiegel',
       KartoSiegelMotiv.goblin => 'Goblinisches Wegsiegel',
+    };
+    final grund = switch (kultur) {
+      KartoSiegelKultur.thorwaler => 'Thorwalsches Kultursiegel',
+      KartoSiegelKultur.norbarden => 'Norbardisches Kultursiegel',
+      KartoSiegelKultur.novadis => 'Novadisches Kultursiegel',
+      null => grundmotiv,
     };
     return [
       grund,
@@ -98,11 +133,50 @@ class KartoSiegelProfil {
   bool operator ==(Object other) =>
       other is KartoSiegelProfil &&
       other.motiv == motiv &&
+      other.kultur == kultur &&
       other.magisch == magisch &&
       other.karmal == karmal;
 
   @override
-  int get hashCode => Object.hash(motiv, magisch, karmal);
+  int get hashCode => Object.hash(motiv, kultur, magisch, karmal);
+}
+
+/// Zunächst als Bildasset verfügbare menschliche Kultursiegel.
+enum KartoSiegelKultur {
+  /// Schiff, Wellen und Walflosse.
+  thorwaler,
+
+  /// Reisewagen, Rad und Gepäck.
+  norbarden,
+
+  /// Pferd, Dünen und Sonne.
+  novadis,
+}
+
+// Mehrdeutige Angaben erhalten kein willkürlich ausgewähltes Kulturbild.
+KartoSiegelKultur? _kulturFuer(String angabe) {
+  final normal = angabe.toLowerCase().replaceAll('ô', 'o');
+  final woerter = normal.split(RegExp('[^a-z]+')).toSet();
+  final treffer = <KartoSiegelKultur>{};
+  for (final gruppe in const {
+    KartoSiegelKultur.thorwaler: {'thorwal', 'thorwaler', 'thorwalerin'},
+    KartoSiegelKultur.norbarden: {
+      'norbarde',
+      'norbarden',
+      'norbardin',
+      'norbardensippe',
+    },
+    KartoSiegelKultur.novadis: {
+      'novadi',
+      'novadis',
+      'novadin',
+      'khom',
+      'khomnomaden',
+    },
+  }.entries) {
+    if (gruppe.value.any(woerter.contains)) treffer.add(gruppe.key);
+  }
+  return treffer.length == 1 ? treffer.single : null;
 }
 
 // Explizite Aliasgruppen statt Teilwortsuche: „Menschenfreund“ ist keine Rasse.

@@ -5,9 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_heldensiegel_profil.dart';
 import 'package:dsa_heldenverwaltung/ui2/theme/karto_tokens.dart';
 
-/// Kleine, codegezeichnete Heldensiegel ohne Semantik oder eigene Bedienung.
+/// Farbige Bildsiegel mit Vektorrückfall, ohne eigene Semantik oder Bedienung.
 class KartoHeldensiegel extends StatelessWidget {
-  /// Zeichnet ein vollständiges Grundmotiv samt unabhängigen Zusatzzeichen.
+  /// Zeigt das zugeordnete Bild oder Grundmotiv samt unabhängigen Zusatzzeichen.
   const KartoHeldensiegel({
     super.key,
     required this.profil,
@@ -26,15 +26,31 @@ class KartoHeldensiegel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final token = context.karto;
+    final ton = farbe ?? token.messing;
+    final basis = CustomPaint(
+      size: Size.square(groesse),
+      painter: _SiegelGrundmotiv(profil, ton),
+    );
+    final pfad = profil.assetPfad;
+    final pixelFaktor = MediaQuery.maybeDevicePixelRatioOf(context) ?? 1;
+    final ladebreite = math.min(512, (groesse * pixelFaktor).ceil());
+    final inhalt = pfad == null
+        ? basis
+        : Image.asset(
+            pfad,
+            width: groesse,
+            height: groesse,
+            fit: BoxFit.contain,
+            cacheWidth: ladebreite,
+            excludeFromSemantics: true,
+            errorBuilder: (context, error, stack) => basis,
+          );
     return ExcludeSemantics(
       child: IgnorePointer(
         child: CustomPaint(
-          size: Size.square(groesse),
-          painter: _SiegelZeichner(
-            profil,
-            farbe ?? context.karto.messing,
-            context.karto.astralenergie,
-          ),
+          foregroundPainter: _SiegelZusatz(profil, ton, token.astralenergie),
+          child: inhalt,
         ),
       ),
     );
@@ -42,12 +58,11 @@ class KartoHeldensiegel extends StatelessWidget {
 }
 
 // Einheitlicher Zeichenraum: alle Ornamente bleiben im Ring, frei vom Porträt.
-class _SiegelZeichner extends CustomPainter {
-  const _SiegelZeichner(this.profil, this.farbe, this.astral);
+class _SiegelGrundmotiv extends CustomPainter {
+  const _SiegelGrundmotiv(this.profil, this.farbe);
 
   final KartoSiegelProfil profil;
   final Color farbe;
-  final Color astral;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -129,26 +144,6 @@ class _SiegelZeichner extends CustomPainter {
       case KartoSiegelMotiv.neutral:
         _stern(canvas, stift, const Offset(50, 50), 27);
     }
-    // Beide Befähigungen können gleichzeitig sichtbar sein; keine Rangfolge.
-    if (profil.magisch) {
-      final magie = Paint()
-        ..color = astral
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 3;
-      _stern(canvas, magie, const Offset(77, 22), 9);
-    }
-    if (profil.karmal) {
-      final mitte = const Offset(77, 78);
-      canvas.drawCircle(mitte, 5, stift);
-      for (var i = 0; i < 8; i++) {
-        final winkel = i * math.pi / 4;
-        canvas.drawLine(
-          mitte + Offset.fromDirection(winkel, 8),
-          mitte + Offset.fromDirection(winkel, 11),
-          stift,
-        );
-      }
-    }
     canvas.restore();
   }
 
@@ -195,7 +190,7 @@ class _SiegelZeichner extends CustomPainter {
   }
 
   // Vierpunktstern bleibt auch bei kleinen Siegeln klar erkennbar.
-  void _stern(Canvas canvas, Paint stift, Offset mitte, double radius) {
+  static void _stern(Canvas canvas, Paint stift, Offset mitte, double radius) {
     final punkte = <Offset>[];
     for (var i = 0; i < 8; i++) {
       punkte.add(
@@ -210,12 +205,56 @@ class _SiegelZeichner extends CustomPainter {
   }
 
   // Benannte Zeichenhilfe hält die einzelnen Motivdefinitionen übersichtlich.
-  void _zug(Canvas canvas, Paint stift, List<Offset> punkte) {
+  static void _zug(Canvas canvas, Paint stift, List<Offset> punkte) {
     canvas.drawPath(Path()..addPolygon(punkte, false), stift);
   }
 
   @override
-  bool shouldRepaint(_SiegelZeichner oldDelegate) =>
+  bool shouldRepaint(_SiegelGrundmotiv oldDelegate) =>
+      oldDelegate.profil != profil || oldDelegate.farbe != farbe;
+}
+
+// Befähigungen bleiben eine eigene Ebene und werden nicht ins Bild eingemalt.
+class _SiegelZusatz extends CustomPainter {
+  const _SiegelZusatz(this.profil, this.farbe, this.astral);
+
+  final KartoSiegelProfil profil;
+  final Color farbe;
+  final Color astral;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (size.isEmpty) return;
+    canvas.save();
+    canvas.scale(size.width / 100, size.height / 100);
+    final stift = Paint()
+      ..color = farbe
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.5;
+    if (profil.magisch) {
+      final magie = Paint()
+        ..color = astral
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 3;
+      _SiegelGrundmotiv._stern(canvas, magie, const Offset(77, 22), 9);
+    }
+    if (profil.karmal) {
+      const mitte = Offset(77, 78);
+      canvas.drawCircle(mitte, 5, stift);
+      for (var i = 0; i < 8; i++) {
+        final winkel = i * math.pi / 4;
+        canvas.drawLine(
+          mitte + Offset.fromDirection(winkel, 8),
+          mitte + Offset.fromDirection(winkel, 11),
+          stift,
+        );
+      }
+    }
+    canvas.restore();
+  }
+
+  @override
+  bool shouldRepaint(_SiegelZusatz oldDelegate) =>
       oldDelegate.profil != profil ||
       oldDelegate.farbe != farbe ||
       oldDelegate.astral != astral;

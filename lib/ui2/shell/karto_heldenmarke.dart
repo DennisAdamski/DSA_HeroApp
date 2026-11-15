@@ -108,7 +108,7 @@ class KartoHeldenmarke extends StatelessWidget {
                       child: KartoSpieltischSiegel(
                         key: const ValueKey('karto-portraet-siegel'),
                         profil: siegel,
-                        groesse: 36,
+                        groesse: 40,
                         farbe: token.messingNavigation,
                       ),
                     ),
